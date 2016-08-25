@@ -6,10 +6,10 @@ import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
 
-import com.mysql.fabric.xmlrpc.base.Array;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
+import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.inter.RdInter;
 import com.navinfo.dataservice.dao.glm.model.rd.inter.RdInterLink;
@@ -44,7 +44,14 @@ public class Operation implements IOperation {
 		result.insertObject(command.getRdInter(), ObjStatus.DELETE, command.getPid());
 		
 		//维护CRFO:如果删除的CRFI属于某个CRFO，要从CRFO组成信息中去掉
-		//TODO
+		com.navinfo.dataservice.engine.edit.operation.obj.rdobject.delete.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdobject.delete.Operation(conn);
+		
+		List<Integer> pidList = new ArrayList<>();
+		
+		pidList.add(command.getPid());
+		
+		operation.deleteByType(pidList, ObjType.RDINTER, result);
+		
 		return null;
 	}
 	
@@ -77,6 +84,9 @@ public class Operation implements IOperation {
 
 					if (nodePidList.contains(interNode.getNodePid())) {
 						result.insertObject(rdInter, ObjStatus.DELETE, rdInter.getPid());
+						//维护CRF对象
+						com.navinfo.dataservice.engine.edit.operation.obj.rdobject.update.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdobject.update.Operation(conn);
+						operation.updateRdObjectForRdInter(rdInter, result);
 						break;
 					}
 				} else if (nodes.size() == 2) {
@@ -86,6 +96,9 @@ public class Operation implements IOperation {
 					if (nodePidList.contains(interNode_1.getNodePid())
 							&& nodePidList.contains(interNode_2.getNodePid())) {
 						result.insertObject(rdInter, ObjStatus.DELETE, rdInter.getPid());
+						//维护CRF对象
+						com.navinfo.dataservice.engine.edit.operation.obj.rdobject.update.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdobject.update.Operation(conn);
+						operation.updateRdObjectForRdInter(rdInter, result);
 						break;
 					}
 				}
@@ -120,15 +133,5 @@ public class Operation implements IOperation {
 				result.insertObject(interLink, ObjStatus.DELETE, interLink.getLinkPid());
 			}
 		}
-	}
-	
-	public static void main(String[] args) {
-		List<Integer> list1 = new ArrayList<>();
-		list1.add(1);
-		list1.add(2);
-		List<Integer> list2 = new ArrayList<>();
-		list2 = list1;
-		list2.add(3);
-		System.out.println(list1);
 	}
 }

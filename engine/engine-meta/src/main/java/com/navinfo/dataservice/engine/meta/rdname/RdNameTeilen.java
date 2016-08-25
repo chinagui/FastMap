@@ -176,7 +176,7 @@ public class RdNameTeilen {
 		engRdName.setBasePhonetic("");
 		// 英文名
 		engRdName.setLangCode("ENG");
-		engRdName.setNameGroupId(chiRdName.getNameGroupId());
+		engRdName.setNameGroupid(chiRdName.getNameGroupid());
 
 		// 赋值行政区划，道路名类型，国家编号（英文跟中文保持一致）
 		engRdName.setAdminId(chiRdName.getAdminId());

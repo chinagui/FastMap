@@ -63,6 +63,39 @@ public class TaskController extends BaseController {
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}
+	
+	/*
+	 * 规划管理页面--任务管理--创建任务
+	 * 点击“发布”，变更内容作为消息推送，任务状态为“开启”；发布成功或失败弹出提示框“发布成功/发布失败”
+	 * 1.选择某一条或多条记录，点击“发布”按钮，变更内容进行消息推送，发布成功或失败弹出提示框“发布成功/发布失败”
+	 * 2.未选中记录时，提示“请选择任务”；
+	 * 3.“关闭状态”记录不能进行发布
+	 * ①原则：查找本次发布与上次发布之间的变更内容进行消息推送(暂无)
+	 * ②记录创建后，未进行发布，任务状态为“草稿”，发布过一次后，状态为“开启”，再发布后状态不变更
+	 */
+	@RequestMapping(value = "/task/pushMsg")
+	public ModelAndView pushMsg(HttpServletRequest request){
+		try{
+			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
+			String parameter = request.getParameter("parameter");
+			if (StringUtils.isEmpty(parameter)){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}		
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(parameter));			
+			if(dataJson==null){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			long userId=tokenObj.getUserId();
+			JSONArray taskIds=dataJson.getJSONArray("taskIds");
+			//long userId=2;
+			String msg=TaskService.getInstance().taskPushMsg(userId, taskIds);
+			return new ModelAndView("jsonView", success(msg));
+		}catch(Exception e){
+			log.error("创建失败，原因："+e.getMessage(), e);
+			return new ModelAndView("jsonView",exception(e));
+		}
+	}
+	
 	/*
 	 * 规划管理页面--任务管理--修改任务页面
 	 */

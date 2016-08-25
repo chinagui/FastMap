@@ -55,7 +55,7 @@ public class RdRoadSearch implements ISearch {
 
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "WITH TMP1 AS (SELECT LINK_PID, GEOMETRY FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2) SELECT /*+index(b)*/ B.PID, A.LINK_PID, A.GEOMETRY FROM TMP1 A, RD_ROAD_LINK B WHERE A.LINK_PID = B.LINK_PID";
+		String sql = "WITH TMP1 AS (SELECT LINK_PID, GEOMETRY FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2) SELECT /*+index(b)*/ B.PID, A.LINK_PID, A.GEOMETRY FROM TMP1 A, RD_ROAD_LINK B WHERE A.LINK_PID = B.LINK_PID AND B.U_RECORD != 2";
 
 		PreparedStatement pstmt = null;
 

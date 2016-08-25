@@ -26,7 +26,7 @@ public class AdFace implements IObj {
 
 	private int pid;
 
-	protected int regionId;
+	private int regionId;
 
 	private Geometry geometry;
 

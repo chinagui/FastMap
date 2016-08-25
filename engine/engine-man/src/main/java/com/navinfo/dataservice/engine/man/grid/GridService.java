@@ -4,6 +4,7 @@ import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -19,11 +20,14 @@ import org.apache.log4j.Logger;
 import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.api.man.model.Grid;
+import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.statics.iface.StaticsApi;
 import com.navinfo.dataservice.api.statics.model.GridStatInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.engine.man.subtask.SubtaskOperation;
+import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
@@ -315,7 +319,7 @@ public class GridService {
 			
 			for(int i=0;i<GridStatList.size();i++){
 				GridStatInfo statInfo=GridStatList.get(i);
-				if (0==type && statInfo.getPercentPoi()==100){
+								if (0==type && statInfo.getPercentPoi()==100){
 					gridProduce.add(statInfo.getGridId());
 				}
 				if (1==type && statInfo.getPercentRoad()==100){
@@ -369,6 +373,52 @@ public class GridService {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new ServiceException("查询可融合grid失败:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	public Page subtaskList(int gridId,int stage,final int curPageNum,final int pageSize) throws ServiceException {
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+
+			String selectSql = "select s.SUBTASK_ID, s.NAME, s.TYPE,s.STATUS from SUBTASK s, SUBTASK_GRID_MAPPING sgm"
+					+ " where sgm.SUBTASK_ID = s.SUBTASK_ID"
+					+ " and sgm.GRID_ID = " + gridId
+					+ " and s.STAGE = " + stage;
+			
+
+			ResultSetHandler<Page> rsHandler = new ResultSetHandler<Page>() {
+				public Page handle(ResultSet rs) throws SQLException {
+					List<HashMap<Object, Object>> list = new ArrayList<HashMap<Object, Object>>();
+					Page page = new Page(curPageNum);
+				    page.setPageSize(pageSize);
+				    int total = 0;
+					while (rs.next()) {
+						if(total==0){
+							total=rs.getInt("TOTAL_RECORD_NUM_");
+						}
+						HashMap<Object, Object> map = new HashMap<Object, Object>();
+						map.put("subtaskId", rs.getInt("subtask_id"));
+						map.put("name", rs.getString("name"));
+						map.put("type", rs.getInt("type"));
+						map.put("status", rs.getInt("status"));
+						list.add(map);
+					}
+					page.setTotalCount(total);
+					page.setResult(list);
+					return page;
+				}
+			};
+
+			return run.query(curPageNum, pageSize,conn, selectSql,rsHandler);
+			
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询grid所在子任务:" + e.getMessage(), e);
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}

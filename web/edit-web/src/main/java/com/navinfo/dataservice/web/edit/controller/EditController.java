@@ -28,6 +28,7 @@ import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
+import com.navinfo.dataservice.dao.glm.selector.SelectorUtils;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.dao.pidservice.PidService;
@@ -107,6 +108,44 @@ public class EditController extends BaseController {
 					data);
 
 			return new ModelAndView("jsonView", success(array));
+
+		} catch (Exception e) {
+
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+	
+	
+	@RequestMapping(value = "/getByElementCondition")
+	public ModelAndView getSearchBy(HttpServletRequest request)
+			throws ServletException, IOException {
+
+		String parameter = request.getParameter("parameter");
+
+		Connection conn = null;
+
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			String tableName = jsonReq.getString("type");
+			int pageNum = jsonReq.getInt("pageNum");
+			int pageSize = jsonReq.getInt("pageSize");
+			int dbId = jsonReq.getInt("dbId");
+			JSONObject data = jsonReq.getJSONObject("data");
+			conn = DBConnector.getInstance().getConnectionById(dbId);
+			SelectorUtils selectorUtils = new SelectorUtils(conn);
+			JSONObject jsonObject = selectorUtils.loadByElementCondition(data,tableName, pageSize, pageNum, false);
+			return new ModelAndView("jsonView", success(jsonObject));
 
 		} catch (Exception e) {
 

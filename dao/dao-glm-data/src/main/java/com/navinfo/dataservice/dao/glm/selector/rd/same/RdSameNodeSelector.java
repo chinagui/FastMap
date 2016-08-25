@@ -172,7 +172,7 @@ public class RdSameNodeSelector extends AbstractSelector {
 			while (resultSet.next()) {
 				RdSameNode sameNode = new RdSameNode();
 
-				int pid = resultSet.getInt("pid");
+				int pid = resultSet.getInt("group_id");
 
 				if (!pidSet.contains(pid)) {
 					ReflectionAttrUtils.executeResultSet(sameNode, resultSet);

@@ -396,13 +396,23 @@ public class Process extends AbstractProcess<Command> {
 		// CRF交叉点
 		OpRefRdInter opRefRdInter = new OpRefRdInter(this.getConn());
 		opRefRdInter.run(this.getResult(), this.rdLinkBreakpoint, newLinks);
+		// CRF道路
+		OpRefRdRoad opRefRdRoad = new OpRefRdRoad(this.getConn());
+		opRefRdRoad.run(this.getResult(), this.rdLinkBreakpoint, newLinks);	
+		// CRF对象
+		OpRefRdObject opRefRdObject = new OpRefRdObject(this.getConn());
+		opRefRdObject.run(this.getResult(), this.rdLinkBreakpoint, newLinks);
 		// 收费站
 		OpRefRdTollgate opRefRdTollgate = new OpRefRdTollgate(this.getConn());
 		opRefRdTollgate.run(this.getResult(), oldLink, newLinks);
-		
+
 		// 语音引导
 		OpRefRdVoiceguide opRefRdVoiceguide = new OpRefRdVoiceguide(this.getConn());
 		opRefRdVoiceguide.run(this.getResult(), this.rdLinkBreakpoint, newLinks);
+
+		// 可变限速
+		OpRefRdVariableSpeed opRefRdVariableSpeed = new OpRefRdVariableSpeed(this.getConn());
+		opRefRdVariableSpeed.run(this.getResult(), this.rdLinkBreakpoint, newLinks);
 	}
 
 	/**
@@ -581,14 +591,14 @@ public class Process extends AbstractProcess<Command> {
 		infectList.add(interLink.getPid());
 
 		infects.put("RDINTER", infectList);
-		
+
 		// 收费站
 		infectList = new ArrayList<Integer>();
 		for (RdTollgate tdTollgate : this.getCommand().getRdTollgates()) {
 			infectList.add(tdTollgate.pid());
 		}
 		infects.put("RDTOLLGATE", infectList);
-		
+
 		return infects;
 
 	}

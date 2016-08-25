@@ -62,7 +62,7 @@ public class InforManService {
 					+ bean.getDayProducePlanEndDate() + "','yyyy-mm-dd hh24:mi:ss.ff'),to_timestamp('"
 					+ bean.getMonthProducePlanStartDate() + "','yyyy-mm-dd hh24:mi:ss.ff'),to_timestamp('"
 					+ bean.getMonthProducePlanEndDate() + "','yyyy-mm-dd hh24:mi:ss.ff'))";
-			run.update(conn, createSql, bean.getInforId(), 1, bean.getDescp(), userId);
+			run.update(conn, createSql, bean.getInforId(), 2, bean.getDescp(), userId);
 			
 			InforManOperation.insertInforBlockMapping(conn,blockIdArray,bean.getInforId());
 		} catch (Exception e) {

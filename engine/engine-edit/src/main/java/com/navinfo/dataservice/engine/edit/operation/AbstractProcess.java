@@ -11,6 +11,7 @@ import com.navinfo.dataservice.commons.exception.DataNotChangeException;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IProcess;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
@@ -148,12 +149,12 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 
 			checkResult();
 
-			if (this.getCommand().getOperType().equals(OperType.CREATE)
+			if (!this.getCommand().getOperType().equals(OperType.DELETE)
 					&& !this.getCommand().getObjType().equals(ObjType.RDBRANCH)
 					&& !this.getCommand().getObjType().equals(ObjType.RDELECEYEPAIR)
 					&& !this.getCommand().getObjType().equals(ObjType.LUFACE)
 					&& !this.getCommand().getObjType().equals(ObjType.LCFACE)) {
-				handleResult(this.getCommand().getObjType(), result);
+				handleResult(this.getCommand().getObjType(), this.getCommand().getOperType(), result);
 			}
 
 			String preCheckMsg = this.preCheck();
@@ -167,6 +168,8 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 
 			conn.commit();
 
+			System.out.print("操作成功\r\n");
+
 		} catch (Exception e) {
 
 			conn.rollback();
@@ -175,6 +178,8 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 		} finally {
 			try {
 				conn.close();
+
+				System.out.print("结束\r\n");
 			} catch (Exception e) {
 
 			}
@@ -258,26 +263,32 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 		this.checkCommand = checkCommand;
 	}
 
-	public void handleResult(ObjType objType, Result result) {
-		for (IRow row : result.getAddObjects()) {
-			if (objType.equals(row.objType())) {
-				result.setPrimaryPid(row.parentPKValue());
-
-				break;
+	public void handleResult(ObjType objType, OperType operType, Result result) {
+		switch (operType) {
+		case CREATE:
+			for (IRow row : result.getAddObjects()) {
+				if (objType.equals(row.objType())) {
+					result.setPrimaryPid(row.parentPKValue());
+					break;
+				}
 			}
+			break;
+		case UPDATE:
+			for (IRow row : result.getAddObjects()) {
+				result.setPrimaryPid(row.parentPKValue());
+				return;
+			}
+			for (IRow row : result.getUpdateObjects()) {
+				result.setPrimaryPid(row.parentPKValue());
+				return;
+			}
+			for (IRow row : result.getDelObjects()) {
+				result.setPrimaryPid(row.parentPKValue());
+				return;
+			}
+			break;
+		default:
+			break;
 		}
 	}
-
-//	public void handleResult(ObjType objType, Result result) {
-//		for (IRow row : result.getAddObjects()) {
-//			if (objType.equals(row.objType())) {
-//				if (row instanceof IObj) {
-//					IObj obj = (IObj) row;
-//					result.setPrimaryPid(obj.pid());
-//				} else {
-//					result.setPrimaryPid(row.parentPKValue());
-//				}
-//			}
-//		}
-//	}
 }

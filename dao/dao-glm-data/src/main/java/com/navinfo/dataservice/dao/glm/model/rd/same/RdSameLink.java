@@ -9,6 +9,7 @@ import java.util.Map;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -17,7 +18,7 @@ import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 
 public class RdSameLink implements IObj {
-	
+
 	private String rowId;
 
 	private int pid;
@@ -25,16 +26,15 @@ public class RdSameLink implements IObj {
 	private List<IRow> parts = new ArrayList<IRow>();
 
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
-	public Map<String, RdSameLinkPart> partMap = new HashMap<>();	
+	public Map<String, RdSameLinkPart> partMap = new HashMap<>();
 
 	public RdSameLink() {
 
 	}
 
-	public void setPid(int nodePid) {
-		this.pid = nodePid;
+	public void setPid(int pid) {
+		this.pid = pid;
 	}
-
 
 	@Override
 	public String tableName() {
@@ -99,7 +99,6 @@ public class RdSameLink implements IObj {
 	@Override
 	public void copy(IRow row) {
 
-		
 	}
 
 	@Override
@@ -169,8 +168,6 @@ public class RdSameLink implements IObj {
 
 	@Override
 	public boolean fillChangeFields(JSONObject json) throws Exception {
-		
-
 
 		Iterator keys = json.keys();
 
@@ -200,11 +197,10 @@ public class RdSameLink implements IObj {
 
 					if (!newValue.equals(oldValue)) {
 						Object value = json.get(key);
-						
-						if(value instanceof String){
+
+						if (value instanceof String) {
 							changedFields.put(key, newValue.replace("'", "''"));
-						}
-						else{
+						} else {
 							changedFields.put(key, value);
 						}
 
@@ -219,8 +215,6 @@ public class RdSameLink implements IObj {
 		} else {
 			return false;
 		}
-
-	
 
 	}
 
@@ -240,15 +234,15 @@ public class RdSameLink implements IObj {
 
 	@Override
 	public Map<Class<? extends IRow>, List<IRow>> childList() {
-		Map<Class<? extends IRow>,List<IRow>> childList = new HashMap<Class<? extends IRow>, List<IRow>>();
-		childList.put(RdSameNodePart.class, parts);
+		Map<Class<? extends IRow>, List<IRow>> childList = new HashMap<Class<? extends IRow>, List<IRow>>();
+		childList.put(RdSameLinkPart.class, parts);
 		return childList;
 	}
 
 	@Override
-	public Map<Class<? extends IRow>,Map<String,?>> childMap() {
-		Map<Class<? extends IRow>,Map<String,?>> childMap = new HashMap<Class<? extends IRow>,Map<String,?>>();
-		childMap.put(RdSameNodePart.class, partMap);
+	public Map<Class<? extends IRow>, Map<String, ?>> childMap() {
+		Map<Class<? extends IRow>, Map<String, ?>> childMap = new HashMap<Class<? extends IRow>, Map<String, ?>>();
+		childMap.put(RdSameLinkPart.class, partMap);
 		return childMap;
 	}
 }

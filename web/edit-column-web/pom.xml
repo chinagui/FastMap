@@ -43,6 +43,12 @@
 			<groupId>com.navinfo.dataservice</groupId>
 			<artifactId>engine-photo</artifactId>
 		</dependency>
+		
+		<dependency>
+			<groupId>com.navinfo.dataservice</groupId>
+			<artifactId>edit-control-column</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
 
 		<dependency>
 			<groupId>com.navinfo.dataservice</groupId>
@@ -66,6 +72,11 @@
 		<dependency>
 			<groupId>com.navinfo.dataservice</groupId>
 			<artifactId>api-man</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.navinfo.dataservice</groupId>
+			<artifactId>edit-control-column</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>

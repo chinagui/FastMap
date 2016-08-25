@@ -23,6 +23,7 @@ import com.navinfo.dataservice.dao.glm.selector.ad.zone.ZoneLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.lc.LcLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.lu.LuLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.crf.RdObjectSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.rw.RwLinkSelector;
@@ -55,27 +56,30 @@ public class SearchProcess {
 	private JsonConfig getJsonConfig() {
 		JsonConfig jsonConfig = new JsonConfig();
 
-		jsonConfig.registerJsonValueProcessor(String.class, new JsonValueProcessor() {
+		jsonConfig.registerJsonValueProcessor(String.class,
+				new JsonValueProcessor() {
 
-			@Override
-			public Object processObjectValue(String key, Object value, JsonConfig arg2) {
-				if (value == null) {
-					return null;
-				}
+					@Override
+					public Object processObjectValue(String key, Object value,
+							JsonConfig arg2) {
+						if (value == null) {
+							return null;
+						}
 
-				if (JSONUtils.mayBeJSON(value.toString())) {
-					return "\"" + value + "\"";
-				}
+						if (JSONUtils.mayBeJSON(value.toString())) {
+							return "\"" + value + "\"";
+						}
 
-				return value;
+						return value;
 
-			}
+					}
 
-			@Override
-			public Object processArrayValue(Object value, JsonConfig arg1) {
-				return value;
-			}
-		});
+					@Override
+					public Object processArrayValue(Object value,
+							JsonConfig arg1) {
+						return value;
+					}
+				});
 
 		return jsonConfig;
 	}
@@ -86,7 +90,8 @@ public class SearchProcess {
 	 * @return 查询结果
 	 * @throws Exception
 	 */
-	public JSONObject searchDataBySpatial(List<ObjType> types, String box) throws Exception {
+	public JSONObject searchDataBySpatial(List<ObjType> types, String box)
+			throws Exception {
 
 		JSONObject json = new JSONObject();
 
@@ -124,7 +129,8 @@ public class SearchProcess {
 	 * @return 查询结果
 	 * @throws Exception
 	 */
-	public JSONObject searchDataByTileWithGap(List<ObjType> types, int x, int y, int z, int gap) throws Exception {
+	public JSONObject searchDataByTileWithGap(List<ObjType> types, int x,
+			int y, int z, int gap) throws Exception {
 
 		JSONObject json = new JSONObject();
 
@@ -136,7 +142,8 @@ public class SearchProcess {
 
 				ISearch search = factory.createSearch(type);
 
-				List<SearchSnapshot> list = search.searchDataByTileWithGap(x, y, z, gap);
+				List<SearchSnapshot> list = search.searchDataByTileWithGap(x,
+						y, z, gap);
 
 				JSONArray array = new JSONArray();
 
@@ -182,7 +189,8 @@ public class SearchProcess {
 
 	}
 
-	public JSONArray searchDataByCondition(ObjType type, JSONObject condition) throws Exception {
+	public JSONArray searchDataByCondition(ObjType type, JSONObject condition)
+			throws Exception {
 
 		try {
 			JSONArray array = new JSONArray();
@@ -205,6 +213,33 @@ public class SearchProcess {
 				break;
 
 			case RDLINK:
+
+				if (condition.containsKey("queryType")
+						&& condition.containsKey("linkPid")
+						&& condition.containsKey("direct")) {
+
+					String queryType = condition.getString("queryType");
+
+					if (queryType.equals("RDLINKSPEEDLIMIT")
+							|| queryType.equals("RDSPEEDLIMIT")) {
+
+						int linkPid = condition.getInt("linkPid");
+
+						int direct = condition.getInt("direct");
+
+						RdLinkSearchUtils searchUtils = new RdLinkSearchUtils(
+								conn);
+						List<Integer> nextLinkPids = searchUtils
+								.getConnectLinks(linkPid, direct, queryType);
+
+						for (int pid : nextLinkPids) {
+							array.add(pid);
+						}
+					}
+
+					return array;
+				}
+
 				if (condition.containsKey("nodePid")) {
 
 					int nodePid = condition.getInt("nodePid");
@@ -220,7 +255,8 @@ public class SearchProcess {
 					int cruuentNodePidDir = condition.getInt("nodePidDir");
 					int cuurentLinkPid = condition.getInt("linkPid");
 					RdLinkSearchUtils searchUtils = new RdLinkSearchUtils(conn);
-					List<RdLink> links = searchUtils.getNextTrackLinks(cuurentLinkPid, cruuentNodePidDir);
+					List<RdLink> links = searchUtils.getNextTrackLinks(
+							cuurentLinkPid, cruuentNodePidDir);
 					for (RdLink link : links) {
 						array.add(link.Serialize(ObjLevel.BRIEF));
 					}
@@ -253,18 +289,21 @@ public class SearchProcess {
 
 					RdBranchSelector selector = new RdBranchSelector(conn);
 
-					IRow row = selector.loadByDetailId(detailId, branchType, rowId, false);
+					IRow row = selector.loadByDetailId(detailId, branchType,
+							rowId, false);
 
 					array.add(row.Serialize(ObjLevel.FULL));
 				}
 				break;
 			case ADADMINGROUP:
 				if (condition.containsKey("subTaskId")) {
-					AdAdminTreeSelector adAdminTreeSelector = new AdAdminTreeSelector(conn);
+					AdAdminTreeSelector adAdminTreeSelector = new AdAdminTreeSelector(
+							conn);
 
 					int subTaskId = condition.getInt("subTaskId");
 
-					IRow row = adAdminTreeSelector.loadRowsBySubTaskId(subTaskId, false);
+					IRow row = adAdminTreeSelector.loadRowsBySubTaskId(
+							subTaskId, false);
 
 					array.add(row.Serialize(ObjLevel.BRIEF));
 				} else {
@@ -275,7 +314,8 @@ public class SearchProcess {
 				if (condition.containsKey("nodePid")) {
 					int nodePid = condition.getInt("nodePid");
 					AdLinkSelector selector = new AdLinkSelector(this.conn);
-					List<AdLink> adLinks = selector.loadByNodePid(nodePid, true);
+					List<AdLink> adLinks = selector
+							.loadByNodePid(nodePid, true);
 					for (AdLink link : adLinks) {
 						array.add(link.Serialize(ObjLevel.BRIEF));
 					}
@@ -285,7 +325,8 @@ public class SearchProcess {
 				if (condition.containsKey("nodePid")) {
 					int nodePid = condition.getInt("nodePid");
 					RwLinkSelector selector = new RwLinkSelector(this.conn);
-					List<RwLink> rwLinks = selector.loadByNodePid(nodePid, true);
+					List<RwLink> rwLinks = selector
+							.loadByNodePid(nodePid, true);
 					for (RwLink link : rwLinks) {
 						array.add(link.Serialize(ObjLevel.BRIEF));
 					}
@@ -297,38 +338,57 @@ public class SearchProcess {
 
 					ZoneLinkSelector selector = new ZoneLinkSelector(this.conn);
 
-					List<ZoneLink> zoneLinks = selector.loadByNodePid(nodePid, true);
+					List<ZoneLink> zoneLinks = selector.loadByNodePid(nodePid,
+							true);
 
 					for (ZoneLink link : zoneLinks) {
 						array.add(link.Serialize(ObjLevel.BRIEF));
 					}
 				}
+				break;
 			case LULINK:
 				if (condition.containsKey("nodePid")) {
 					int nodePid = condition.getInt("nodePid");
 
 					LuLinkSelector selector = new LuLinkSelector(this.conn);
 
-					List<LuLink> luLinks = selector.loadByNodePid(nodePid, true);
+					List<LuLink> luLinks = selector
+							.loadByNodePid(nodePid, true);
 
 					for (LuLink link : luLinks) {
 						array.add(link.Serialize(ObjLevel.BRIEF));
 					}
 				}
+				break;
 			case LCLINK:
 				if (condition.containsKey("nodePid")) {
 					int nodePid = condition.getInt("nodePid");
 
 					LcLinkSelector selector = new LcLinkSelector(this.conn);
 
-					List<LcLink> lcLinks = selector.loadByNodePid(nodePid, true);
+					List<LcLink> lcLinks = selector
+							.loadByNodePid(nodePid, true);
 
 					for (LcLink link : lcLinks) {
 						array.add(link.Serialize(ObjLevel.BRIEF));
 					}
 				}
-			}
+				break;
+			case RDOBJECTNAME:
+				if (condition.containsKey("pid")) {
+					int pid = condition.getInt("pid");
 
+					RdObjectSelector selector = new RdObjectSelector(this.conn);
+
+					List<String> names = selector
+							.getRdObjectName(pid, true);
+
+					for (String name : names) {
+						array.add(name);
+					}
+				}
+				break;
+			}
 			return array;
 		} catch (Exception e) {
 

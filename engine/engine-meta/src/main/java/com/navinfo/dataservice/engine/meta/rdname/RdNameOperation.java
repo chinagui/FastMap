@@ -80,17 +80,17 @@ public class RdNameOperation {
 			pstmt = conn.prepareStatement(insertSql);
 
 			Integer nameId = rdName.getNameId();
-			Integer nameGroupId = rdName.getNameGroupId();
+			Integer nameGroupid = rdName.getNameGroupid();
 			
 			if (rdName.getNameId() == null) {
 				nameId = applyPid();
 			}
-			if (rdName.getNameGroupId() == null) {
-				nameGroupId = applyPid();
+			if (rdName.getNameGroupid() == null) {
+				nameGroupid = applyPid();
 			}
 
 			pstmt.setLong(1, nameId);
-			pstmt.setLong(2, nameGroupId);
+			pstmt.setLong(2, nameGroupid);
 			pstmt.setString(3, rdName.getLangCode());
 			pstmt.setString(4, rdName.getName());
 			pstmt.setString(5, rdName.getType());
@@ -137,7 +137,7 @@ public class RdNameOperation {
 			pstmt.execute();
 
 			rdName.setNameId(nameId);
-			rdName.setNameGroupId(nameGroupId);
+			rdName.setNameGroupid(nameGroupid);
 			return rdName;
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -177,17 +177,12 @@ public class RdNameOperation {
 				// 判断是新增中文名还是英文/葡文名
 				if (rdName.getLangCode() == "CHI" || rdName.getLangCode() == "CHT") {
 					// 中文名
-					rdName.setCity(true);
+//					rdName.setCity(true);
 					rdName = saveName(rdName);
 				} else {
 					// 英文/葡文名
-					if (checkEngName(rdName.getNameGroupId())) {
-						// 已存在英文/葡文名
-						new Exception("已存在英文/葡文名");
-					} else {
-						rdName.setCity(true);
-						rdName = saveName(rdName);
-					}
+//					rdName.setCity(true);
+					rdName = saveName(rdName);
 				}
 			} else {
 				// 修改
@@ -207,7 +202,7 @@ public class RdNameOperation {
 	 * @return
 	 * @throws Exception
 	 */
-	public boolean checkEngName(int nameGroupId) throws Exception {
+	public boolean checkEngName(int nameGroupid) throws Exception {
 		
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
@@ -219,7 +214,7 @@ public class RdNameOperation {
 			conn = DBConnector.getInstance().getMetaConnection();
 			pstmt = conn.prepareStatement(sql);
 			
-			pstmt.setLong(1, nameGroupId);
+			pstmt.setLong(1, nameGroupid);
 
 			resultSet = pstmt.executeQuery();
 			
@@ -274,8 +269,8 @@ public class RdNameOperation {
 		sb.append("PROCESS_FLAG = ?,");
 		sb.append("U_RECORD = ?,");
 		sb.append("U_FIELDS = ?,");
-		sb.append("SPLIT_FLAG = ?,");
-		sb.append("CITY = ?");
+		sb.append("SPLIT_FLAG = ?");
+//		sb.append("CITY = ?");
 		sb.append(" WHERE NAME_ID = ?");
 		
 		PreparedStatement pstmt = null;
@@ -319,16 +314,16 @@ public class RdNameOperation {
 				pstmt.setNull(22, Types.INTEGER);
 			}
 			pstmt.setInt(23, rdName.getProcessFlag());
-			pstmt.setInt(24, rdName.getuRecord());
+			pstmt.setInt(24, 3);
 			pstmt.setString(25, rdName.getuFields());
 			pstmt.setInt(26, rdName.getSplitFlag());
-			pstmt.setString(27, rdName.getCity());
-			pstmt.setLong(28, rdName.getNameId());
+//			pstmt.setString(27, rdName.getCity());
+			pstmt.setLong(27, rdName.getNameId());
 
 			pstmt.execute();
 			
 			// 查询是否存在英文/葡文名
-			if (checkEngName(rdName.getNameGroupId())) {
+			if (checkEngName(rdName.getNameGroupid())) {
 				// 存在，则更新“道路类型（ROAD_TYPE）”、“国家编号(CODE_TYPE)”、“行政区划(ADMIN_ID)”
 				String sql = "UPDATE rd_name SET road_type=?,code_type=?,admin_id=? WHERE name_groupid=? and lang_code in ('ENG','POR')";
 				subPstms = conn.prepareStatement(sql);
@@ -336,7 +331,7 @@ public class RdNameOperation {
 				subPstms.setInt(1, rdName.getRoadType());
 				subPstms.setInt(2, rdName.getCodeType());
 				subPstms.setInt(3, rdName.getAdminId());
-				subPstms.setLong(4, rdName.getNameGroupId());
+				subPstms.setLong(4, rdName.getNameGroupid());
 				
 				subPstms.execute();
 			}
@@ -370,6 +365,55 @@ public class RdNameOperation {
 			throw e;
 		}
 		
+	}
+	
+	/**
+	 * 整任务拆分
+	 * @param tips
+	 * @throws Exception
+	 */
+	public void teilenRdNameByTask(JSONArray tips) throws Exception {
+		RdNameTeilen teilen = new RdNameTeilen();
+		
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		Connection conn = null;
+		
+		try {
+			conn = DBConnector.getInstance().getMetaConnection();
+			StringBuilder sql = new StringBuilder();
+			String tmep = "";
+			if (tips.size()>0) {
+				sql.append("SELECT a.name_id,a.name_groupid,a.lang_code,a.road_type");
+				sql.append(" FROM rd_name a where a.split_flag!=1");
+				sql.append(" AND a.SRC_RESUME in (");
+				for (int i=0;i<tips.size();i++) {
+					JSONObject tipsObj = tips.getJSONObject(i);
+					sql.append(tmep);
+					tmep = ",";
+					sql.append("'");
+					sql.append(tipsObj.getString("id"));
+					sql.append("'");
+				}
+				sql.append(")");
+			}
+			
+			if (sql.length()>0) {
+				pstmt = conn.prepareStatement(sql.toString());
+				resultSet = pstmt.executeQuery();
+				while (resultSet.next()) {
+					teilen.teilenName(resultSet.getInt("name_id"), resultSet.getInt("name_groupid"), resultSet.getString("lang_code"), resultSet.getInt("road_type"));
+				}
+			}
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+			DbUtils.closeQuietly(conn);
+		}
 	}
 	
 }

@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import org.junit.Before;
@@ -120,11 +121,155 @@ public class commonTest extends InitApplication {
 
 			objType.add(ObjType.RDDIRECTROUTE);
 
-			System.out.println(p.searchDataByTileWithGap(objType, 107926, 49598, 17, 80));
+			System.out.println(p.searchDataByTileWithGap(objType, 107926,
+					49598, 17, 80));
 
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
+	@Test
+	public void getTitleWithGap_0818_1() {
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getConnectionById(42);
+
+			SearchProcess p = new SearchProcess(conn);
+
+			List<ObjType> objType = new ArrayList<>();
+
+			objType.add(ObjType.ZONELINK);
+
+			System.out.println(p.searchDataByTileWithGap(objType, 431779,
+					198455, 19, 80));
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Test
+	public void getTitleWithGap_0818_2() {
+
+		Connection conn = null;
+
+		try {
+			conn = DBConnector.getInstance().getConnectionById(42);
+
+			SearchProcess p = new SearchProcess(conn);
+
+			List<ObjType> objType = new ArrayList<>();
+
+			objType.add(ObjType.LULINK);
+
+			System.out.println(p.searchDataByTileWithGap(objType, 431779,
+					198455, 19, 80));
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Test
+	public void getByCondition() {
+
+		Connection conn = null;
+
+		try {
+
+			String parameter = "{\"dbId\":42,\"type\":\"RDLINK\",\"data\":{\"queryType\":\"RDSPEEDLIMIT\",\"linkPid\":732235,\"direct\":3}}";
+
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			String objType = jsonReq.getString("type");
+
+			int dbId = jsonReq.getInt("dbId");
+
+			JSONObject data = jsonReq.getJSONObject("data");
+
+			conn = DBConnector.getInstance().getConnectionById(dbId);
+
+			SearchProcess p = new SearchProcess(conn);
+
+			JSONArray array = p.searchDataByCondition(ObjType.valueOf(objType),
+					data);
+
+			System.out.println(array);
+
+		} catch (Exception e) {
+
+			e.printStackTrace();
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+
+	@Test
+	public void getTitleWithGap_0819() {
+
+		Connection conn = null;
+
+		try {
+			conn = DBConnector.getInstance().getConnectionById(42);
+
+			SearchProcess p = new SearchProcess(conn);
+
+			List<ObjType> objType = new ArrayList<>();
+
+			objType.add(ObjType.RDLINKSPEEDLIMIT);
+
+			System.out.println(p.searchDataByTileWithGap(objType, 107941,
+					49613, 17, 80));
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Test
+	public void createTest_1() throws Exception {
+
+		String parameter = "{\"command\":\"BATCH\",\"dbId\":42,\"type\":\"RDLINKSPEEDLIMIT\",\"data\":{\"direct\":2,\"linkPids\":[100008842,100008844,100008845],\"linkSpeedLimit\":{\"speedType\":0,\"fromSpeedLimit\":100,\"fromLimitSrc\":2,\"toSpeedLimit\":100,\"toLimitSrc\":3,\"speedClassWork\":1}}}";
+
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+	
+		@Test
+	public void createTest_0822() throws Exception {
+
+		String parameter = "{\"command\":\"BATCH\",\"type\":\"RDLINKSPEEDLIMIT\",\"dbId\":42,\"data\":{\"linkPids\":[88026339,732545,735601],\"direct\":2,\"linkSpeedLimit\":{\"speedType\":0,\"fromSpeedLimit\":60,\"toSpeedLimit\":0,\"speedClassWork\":1}}}";
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+	
+	@Test
+	public void test_List_Sub() throws Exception {
+		List<Integer> listPid =new ArrayList<Integer>();
+		
+		listPid.add(1);
+		listPid.add(2);
+		listPid.add(3);
+		listPid.add(4);
+		
+		
+	
+		List<Integer> linkPidTemp = listPid.subList(0, 2);
+
+	
+
+		listPid.subList(0, 2).clear();
+		
+		int count=listPid.size();
+	}
+	
 }

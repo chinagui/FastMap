@@ -1,12 +1,12 @@
 package com.navinfo.dataservice.engine.edit.operation;
 
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
 import com.navinfo.dataservice.dao.glm.iface.IProcess;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 /**
  * 操作控制器
@@ -88,7 +88,8 @@ public class Transaction {
 				return new com.navinfo.dataservice.engine.edit.operation.topo.depart.updowndepartlink.Command(
 						json, requester);
 			case BATCH:
-				return new com.navinfo.dataservice.engine.edit.operation.batch.rdlink.Command(json, requester);
+				return new com.navinfo.dataservice.engine.edit.operation.batch.rdlink.Command(
+						json, requester);
 			}
 		case RDNODE:
 			switch (operType) {
@@ -170,6 +171,11 @@ public class Transaction {
 			case CREATE:
 				return new com.navinfo.dataservice.engine.edit.operation.obj.rdlink.rdlinkspeedlimit.create.Command(
 						json, requester);
+			case BATCH:
+				return new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlinkspeedlimit.Command(
+						json, requester);
+			default:
+				break;
 			}
 		case ADADMIN:
 			switch (operType) {
@@ -663,6 +669,18 @@ public class Transaction {
 			default:
 				break;
 			}
+
+		case RDSAMELINK:
+			switch (operType) {
+			case CREATE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdsamelink.create.Command(
+						json, requester);
+			case DELETE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdsamelink.delete.Command(
+						json, requester);
+			default:
+				break;
+			}
 		}
 
 		throw new Exception("不支持的操作类型");
@@ -700,7 +718,8 @@ public class Transaction {
 				return new com.navinfo.dataservice.engine.edit.operation.topo.depart.updowndepartlink.Process(
 						command);
 			case BATCH:
-				return new com.navinfo.dataservice.engine.edit.operation.batch.rdlink.Process(command);				
+				return new com.navinfo.dataservice.engine.edit.operation.batch.rdlink.Process(
+						command);
 			}
 		case RDNODE:
 			switch (operType) {
@@ -782,6 +801,11 @@ public class Transaction {
 			case CREATE:
 				return new com.navinfo.dataservice.engine.edit.operation.obj.rdlink.rdlinkspeedlimit.create.Process(
 						command);
+			case BATCH:
+				return new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlinkspeedlimit.Process(
+						command);
+			default:
+				break;
 			}
 		case ADADMIN:
 			switch (operType) {
@@ -1273,6 +1297,18 @@ public class Transaction {
 						command);
 			case DELETE:
 				return new com.navinfo.dataservice.engine.edit.operation.obj.rdroad.delete.Process(
+						command);
+			default:
+				break;
+			}
+
+		case RDSAMELINK:
+			switch (operType) {
+			case CREATE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdsamelink.create.Process(
+						command);
+			case DELETE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.rdsamelink.delete.Process(
 						command);
 			default:
 				break;

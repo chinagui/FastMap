@@ -46,20 +46,7 @@ public class RdVoiceguideTest  extends InitApplication{
 
 	
 	
-	@Test
-	public void testGetByPid() {
-		Connection conn;
-		try {
-			conn = DBConnector.getInstance().getConnectionById(42);
 
-			SearchProcess p = new SearchProcess(conn);
-
-			System.out.println(p.searchDataByPid(ObjType.RDVOICEGUIDE, 100000007).Serialize(ObjLevel.BRIEF));
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
 	
 	@Test
 	public void createTest_1() throws Exception {
@@ -102,4 +89,44 @@ public class RdVoiceguideTest  extends InitApplication{
 		String msg = t.run();
 	}
 
+	
+	
+
+	@Test
+	public void testRender_0816() {
+		Connection conn;
+		try {
+			conn = DBConnector.getInstance().getConnectionById(42);
+
+			RdVoiceguideSearch search = new RdVoiceguideSearch(conn);
+
+			List<SearchSnapshot> data = search.searchDataByTileWithGap(215889,
+					99229, 18, 80);
+
+			System.out.println("data:"
+					+ ResponseUtils.assembleRegularResult(data));
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	
+	@Test
+	public void testGetByPid_0817() {
+		Connection conn;
+		try {
+			conn = DBConnector.getInstance().getConnectionById(42);
+
+			SearchProcess p = new SearchProcess(conn);
+
+			System.out.println(p.searchDataByPid(ObjType.RDVOICEGUIDE, 100000034).Serialize(ObjLevel.BRIEF));
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	
+	
 }

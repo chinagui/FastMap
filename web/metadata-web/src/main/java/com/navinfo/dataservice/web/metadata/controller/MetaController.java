@@ -37,6 +37,8 @@ import com.navinfo.dataservice.engine.meta.pinyin.PinyinConverter;
 import com.navinfo.dataservice.engine.meta.rdname.RdNameImportor;
 import com.navinfo.dataservice.engine.meta.rdname.RdNameOperation;
 import com.navinfo.dataservice.engine.meta.rdname.RdNameSelector;
+import com.navinfo.dataservice.engine.meta.rdname.ScRoadnameTypename;
+import com.navinfo.dataservice.engine.meta.workitem.Workitem;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -649,12 +651,28 @@ public class MetaController extends BaseController {
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 			
-			JSONArray dataList = jsonReq.getJSONArray("data");
+			int flag = jsonReq.getInt("flag");
 			
 			RdNameOperation operation = new RdNameOperation();
 			
-			operation.teilenRdName(dataList);
-			
+			if (flag>0) {
+				JSONArray dataList = jsonReq.getJSONArray("data");
+				
+				operation.teilenRdName(dataList);
+			} else {
+				int subtaskId = jsonReq.getInt("subtaskId");
+				
+				ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
+				
+				Subtask subtask = apiService.queryBySubtaskId(subtaskId);
+				
+				FccApi apiFcc=(FccApi) ApplicationContextUtil.getBean("fccApi");
+				
+				JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(),1901,new JSONArray());
+				
+				operation.teilenRdNameByTask(tips);
+			}
+
 			return new ModelAndView("jsonView", success());
 		} catch (Exception e) {
 	
@@ -664,6 +682,138 @@ public class MetaController extends BaseController {
 		}
 	}
 	
+	/**
+	 * 获取nametype
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException
+	 */
+	@RequestMapping(value = "/rdname/nametype")
+	public ModelAndView webNameType(HttpServletRequest request)
+			throws ServletException, IOException {
+		String parameter = request.getParameter("parameter");
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			
+			int pageSize = jsonReq.getInt("pageSize");
+			int pageNum = jsonReq.getInt("pageNum");
+			
+			String name = "";
+			if (jsonReq.containsKey("name")) {
+				name = jsonReq.getString("name");
+			}
+			
+			String sortby = "";
+			if (jsonReq.containsKey("sortby")) {
+				sortby = jsonReq.getString("sortby");
+			}
+			
+			ScRoadnameTypename typename = new ScRoadnameTypename();
+			
+			JSONObject data = typename.getNameType(pageNum,pageSize,name,sortby);
+			
+			return new ModelAndView("jsonView", success(data));
+		} catch (Exception e) {
 	
+			logger.error(e.getMessage(), e);
+	
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
 
+	/**
+	 * 获取行政区划
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException
+	 */
+	@RequestMapping(value = "/rdname/adminarea")
+	public ModelAndView webAdminarea(HttpServletRequest request)
+			throws ServletException, IOException {
+		String parameter = request.getParameter("parameter");
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			
+			int pageSize = jsonReq.getInt("pageSize");
+			int pageNum = jsonReq.getInt("pageNum");
+			
+			String name = "";
+			if (jsonReq.containsKey("name")) {
+				name = jsonReq.getString("name");
+			}
+			
+			String sortby = "";
+			if (jsonReq.containsKey("sortby")) {
+				sortby = jsonReq.getString("sortby");
+			}
+			
+			ScPointAdminArea adminarea = new ScPointAdminArea();
+			
+			JSONObject data = adminarea.getAdminArea(pageSize,pageNum,name,sortby);
+			
+			return new ModelAndView("jsonView", success(data));
+		} catch (Exception e) {
+	
+			logger.error(e.getMessage(), e);
+	
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
+	
+	/**
+	 * 查询该组下是否存在英文/葡文名
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException
+	 */
+	@RequestMapping(value = "/rdname/group")
+	public ModelAndView webEngGroup(HttpServletRequest request)
+			throws ServletException, IOException {
+		String parameter = request.getParameter("parameter");
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			
+			int nameGroupid = jsonReq.getInt("nameGroupid");
+			
+			RdNameOperation operation = new RdNameOperation();
+			
+			boolean result = operation.checkEngName(nameGroupid);
+			
+			return new ModelAndView("jsonView", success(result));
+		} catch (Exception e) {
+	
+			logger.error(e.getMessage(), e);
+	
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
+	
+	@RequestMapping(value = "/deep/workitem")
+	public ModelAndView getWorkItemMap(HttpServletRequest request)
+			throws ServletException, IOException {
+		String parameter = request.getParameter("parameter");
+		
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			
+			int type = 0;
+			if (jsonReq.containsKey("type")) {
+				type = jsonReq.getInt("type");
+			}
+			
+			Workitem workitem = new Workitem();
+			
+			JSONArray result = workitem.getDataMap(type);
+			
+			return new ModelAndView("jsonView", success(result));
+		} catch (Exception e) {
+	
+			logger.error(e.getMessage(), e);
+	
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
 }

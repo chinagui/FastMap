@@ -31,7 +31,7 @@ public class ZoneLinkSearch implements ISearch {
 		ZoneLinkSelector selector = new ZoneLinkSelector(conn);
 
 		IObj obj = (IObj) selector.loadById(pid, false);
-		
+
 		return obj;
 	}
 
@@ -115,8 +115,8 @@ public class ZoneLinkSearch implements ISearch {
 
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "select a.link_pid,        a.geometry,  a.s_node_pid,        a.e_node_pid   from zone_link a          where a.u_record != 2      and sdo_within_distance(a.geometry, sdo_geometry(:1, 8307), 'DISTANCE=0') =        'TRUE'";
-
+		String sql = "WITH TMP1 AS (SELECT LINK_PID, GEOMETRY, S_NODE_PID, E_NODE_PID FROM ZONE_LINK WHERE U_RECORD != 2 AND SDO_WITHIN_DISTANCE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'DISTANCE=0') = 'TRUE') SELECT A.*, (SELECT COUNT(1) FROM ZONE_LINK_KIND Z WHERE Z.LINK_PID = A.LINK_PID AND Z.U_RECORD != 2 AND Z.KIND = 1) AOI, (SELECT COUNT(1) FROM ZONE_LINK_KIND Z WHERE Z.LINK_PID = A.LINK_PID AND Z.U_RECORD != 2 AND Z.KIND = 2) KD FROM TMP1 A";
+		
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
@@ -142,6 +142,19 @@ public class ZoneLinkSearch implements ISearch {
 				m.put("a", resultSet.getString("s_node_pid"));
 
 				m.put("b", resultSet.getString("e_node_pid"));
+
+				int sameLinkKind = 0;
+
+				if (resultSet.getInt("kd") >0) {
+
+					sameLinkKind = 2;
+
+				} else if (resultSet.getInt("aoi") > 0) {
+
+					sameLinkKind = 1;
+				}
+
+				m.put("c", sameLinkKind);
 
 				snapshot.setM(m);
 

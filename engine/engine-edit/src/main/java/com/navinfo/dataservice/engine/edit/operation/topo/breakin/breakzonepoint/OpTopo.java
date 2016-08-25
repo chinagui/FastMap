@@ -132,6 +132,7 @@ public class OpTopo implements IOperation {
 			ZoneNode node = (ZoneNode) NodeOperateUtils.createNode(command.getPoint().getX(), command.getPoint().getY(),ObjType.ZONENODE);
 			result.insertObject(node, ObjStatus.INSERT, node.pid());
 			breakNodePid =  node.pid();
+			this.command.setBreakNode(node);
 		}else{
 			breakNodePid = this.command.getBreakNodePid();
 		}

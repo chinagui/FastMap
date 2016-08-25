@@ -53,6 +53,8 @@ public class Command extends AbstractCommand {
 	private RdNode eNode;
 
 	private int breakNodePid;//在以已存在的node通过移动位置来打断LINK的记录
+	
+	private RdNode breakNode;
 
 	private List<RdRestriction> restrictions;
 
@@ -205,6 +207,14 @@ public class Command extends AbstractCommand {
 
 	public void seteNode(RdNode eNode) {
 		this.eNode = eNode;
+	}
+	
+	public RdNode getBreakNode() {
+		return breakNode;
+	}
+
+	public void setBreakNode(RdNode breakNode) {
+		this.breakNode = breakNode;
 	}
 
 	public List<AdAdmin> getAdAdmins() {

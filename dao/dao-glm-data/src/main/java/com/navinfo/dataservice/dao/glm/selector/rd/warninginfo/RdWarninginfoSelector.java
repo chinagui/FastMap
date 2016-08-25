@@ -8,11 +8,12 @@ import java.util.List;
 
 import org.apache.commons.dbutils.DbUtils;
 
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.model.rd.warninginfo.RdWarninginfo;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
 
-public class RdWarninginfoSelector extends  AbstractSelector{
+public class RdWarninginfoSelector extends AbstractSelector {
 
 	private Connection conn;
 
@@ -22,20 +23,18 @@ public class RdWarninginfoSelector extends  AbstractSelector{
 		this.conn = conn;
 	}
 
-	public List<Integer> loadPidByNode(int nodePid, boolean isLock) throws Exception 
-	{
+	public List<Integer> loadPidByNode(int nodePid, boolean isLock)
+			throws Exception {
 		List<Integer> infectList = new ArrayList<Integer>();
-		
-		List<RdWarninginfo> warninginfos = loadByNode(
-				nodePid, isLock);
+
+		List<RdWarninginfo> warninginfos = loadByNode(nodePid, isLock);
 
 		for (RdWarninginfo warninginfo : warninginfos) {
 			infectList.add(warninginfo.getPid());
 		}
-		
-		return infectList;		
+
+		return infectList;
 	}
-	
 
 	public List<RdWarninginfo> loadByNode(int nodePid, boolean isLock)
 			throws Exception {
@@ -80,20 +79,18 @@ public class RdWarninginfoSelector extends  AbstractSelector{
 
 		return rows;
 	}
-	
-	
-	public List<Integer> loadPidByLink(int linkPid, boolean isLock) throws Exception 
-	{
+
+	public List<Integer> loadPidByLink(int linkPid, boolean isLock)
+			throws Exception {
 		List<Integer> infectList = new ArrayList<Integer>();
-		
-		List<RdWarninginfo> warninginfos = loadByLink(
-				linkPid, isLock);
+
+		List<RdWarninginfo> warninginfos = loadByLink(linkPid, isLock);
 
 		for (RdWarninginfo warninginfo : warninginfos) {
 			infectList.add(warninginfo.getPid());
 		}
-		
-		return infectList;		
+
+		return infectList;
 	}
 
 	public List<RdWarninginfo> loadByLink(int linkPid, boolean isLock)
@@ -140,31 +137,34 @@ public class RdWarninginfoSelector extends  AbstractSelector{
 
 		return rows;
 	}
-	
+
 	public List<RdWarninginfo> loadByLinks(List<Integer> linkPids,
 			boolean isLock) throws Exception {
-		
 		List<RdWarninginfo> rows = new ArrayList<RdWarninginfo>();
-		
-		if(linkPids==null ||linkPids.size()==0)
-		{
+
+		if (linkPids == null || linkPids.size() == 0) {
 			return rows;
 		}
-		
+
+		List<Integer> linkPidTemp = new ArrayList<Integer>();
+
+		linkPidTemp.addAll(linkPids);
+
 		int pointsDataLimit = 100;
-		
-		while (linkPids.size() >= pointsDataLimit) {
-			List<Integer> listPid = linkPids.subList(0, pointsDataLimit);
+
+		while (linkPidTemp.size() >= pointsDataLimit) {
+
+			List<Integer> listPid = linkPidTemp.subList(0, pointsDataLimit);
 
 			rows.addAll(loadByLinkPids(listPid, isLock));
-			
-			linkPids.subList(0, pointsDataLimit).clear();
+
+			linkPidTemp.subList(0, pointsDataLimit).clear();
 		}
 
-		if (!linkPids.isEmpty()) {
-			rows.addAll(loadByLinkPids(linkPids, isLock));
+		if (!linkPidTemp.isEmpty()) {
+			rows.addAll(loadByLinkPids(linkPidTemp, isLock));
 		}
-	
+
 		return rows;
 	}
 
@@ -172,26 +172,19 @@ public class RdWarninginfoSelector extends  AbstractSelector{
 			boolean isLock) throws Exception {
 		List<RdWarninginfo> rows = new ArrayList<RdWarninginfo>();
 
-		if(linkPids==null ||linkPids.size()==0)
-		{
+		if (linkPids == null || linkPids.size() == 0) {
 			return rows;
 		}
-		
-		StringBuilder strLinkPids = new StringBuilder();
-
-		for (Integer pid : linkPids) {
-			strLinkPids.append(" " + pid.toString() +",");
-		}
-
+	
 		String sql = "select a.* from rd_warninginfo a where a.u_record!=:1 and a.link_pid in ( "
-				+ strLinkPids.toString() + ") ";
+				+ StringUtils.getInteStr(linkPids) + ") ";
 
 		if (isLock) {
 			sql += " for update nowait";
 		}
-		
-		sql=sql.replace(",)", ")");
-		
+
+		sql = sql.replace(",)", ")");
+
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
@@ -199,7 +192,7 @@ public class RdWarninginfoSelector extends  AbstractSelector{
 		try {
 			pstmt = this.conn.prepareStatement(sql);
 
-			pstmt.setInt(1, 2);		
+			pstmt.setInt(1, 2);
 
 			resultSet = pstmt.executeQuery();
 
@@ -224,7 +217,5 @@ public class RdWarninginfoSelector extends  AbstractSelector{
 
 		return rows;
 	}
-
-	
 
 }

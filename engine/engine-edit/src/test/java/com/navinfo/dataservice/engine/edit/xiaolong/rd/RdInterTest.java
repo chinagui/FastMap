@@ -51,7 +51,7 @@ public class RdInterTest extends InitApplication {
 
 	@Test
 	public void testAddRdInter() {
-		String parameter = "{\"command\":\"CREATE\",\"dbId\":42,\"type\":\"RDINTER\",\"data\":{\"links\":[100008413],\"nodes\":[100025497,100025498]}}";
+		String parameter = "{\"command\":\"DELETE\",\"dbId\":42,\"type\":\"RDGATE\",\"objId\":100000000}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
@@ -133,7 +133,7 @@ public class RdInterTest extends InitApplication {
 
 			RdInterSearch search = new RdInterSearch(conn);
 			
-			List<SearchSnapshot> data = search.searchDataByTileWithGap(107943, 49613, 17, 80);
+			List<SearchSnapshot> data = search.searchDataByTileWithGap(107944, 49615, 17, 80);
 			
 			System.out.println("data:"+ResponseUtils.assembleRegularResult(data));
 

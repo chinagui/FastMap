@@ -6,13 +6,16 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.dbutils.DbUtils;
 
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneFace;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneFaceTopo;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
 import com.navinfo.navicommons.database.sql.DBUtils;
+import com.vividsolutions.jts.geom.Geometry;
 
 /**
  * ZONE:Face查询接口
@@ -38,8 +41,7 @@ public class ZoneFaceSelector extends AbstractSelector {
 	 * @return
 	 * @throws Exception
 	 */
-	public List<ZoneFace> loadZoneFaceByLinkId(int linkPid, boolean isLock)
-			throws Exception {
+	public List<ZoneFace> loadZoneFaceByLinkId(int linkPid, boolean isLock) throws Exception {
 		List<ZoneFace> faces = new ArrayList<ZoneFace>();
 		StringBuilder bf = new StringBuilder();
 		bf.append("select b.* from zone_face b where b.face_pid in (select a.face_pid ");
@@ -80,8 +82,7 @@ public class ZoneFaceSelector extends AbstractSelector {
 		return faces;
 	}
 
-	public List<ZoneFace> loadZoneFaceByNodeId(int nodePid, boolean isLock)
-			throws Exception {
+	public List<ZoneFace> loadZoneFaceByNodeId(int nodePid, boolean isLock) throws Exception {
 
 		List<ZoneFace> faces = new ArrayList<ZoneFace>();
 
@@ -130,8 +131,7 @@ public class ZoneFaceSelector extends AbstractSelector {
 	}
 
 	private void setChildData(ZoneFace face, boolean isLock) throws Exception {
-		List<IRow> adFaceTopo = new ZoneFaceTopoSelector(conn)
-				.loadRowsByParentId(face.getPid(), isLock);
+		List<IRow> adFaceTopo = new ZoneFaceTopoSelector(conn).loadRowsByParentId(face.getPid(), isLock);
 
 		for (IRow row : adFaceTopo) {
 			row.setMesh(face.mesh());
@@ -144,6 +144,37 @@ public class ZoneFaceSelector extends AbstractSelector {
 
 			face.zoneFaceTopoMap.put(obj.rowId(), obj);
 		}
+	}
+
+	/**
+	 * 根据传入几何参数查找与之相关联的ZoneFace面</br>
+	 * ADMIN_TYPE类型为:</br>
+	 * KDZone（8）或AOI（9）
+	 * 
+	 * @param geometry
+	 * @return
+	 */
+	public List<ZoneFace> loadRelateFaceByGeometry(Geometry geometry) {
+		List<ZoneFace> faces = new ArrayList<ZoneFace>();
+		String sql = "select t1.geometry, t2.region_id from zone_face t1, ad_admin t2 where t1.u_record <> 2 and t2.u_record <> 2 and t1.region_id = t2.region_id and (t2.admin_type = 8 or t2.admin_type = 9) and sdo_relate(t1.geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') = 'TRUE' ";
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		try {
+			pstmt = conn.prepareStatement(sql);
+			String wkt = GeoTranslator.jts2Wkt(geometry);
+			pstmt.setString(1, wkt);
+			resultSet = pstmt.executeQuery();
+			while (resultSet.next()) {
+				ZoneFace face = new ZoneFace();
+				ReflectionAttrUtils.executeResultSet(face, resultSet);
+				faces.add(face);
+			}
+		} catch (Exception e) {
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+		return faces;
 	}
 
 }

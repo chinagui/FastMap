@@ -6,15 +6,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 public class RdWarninginfo implements IObj {
 	private int pid;
@@ -25,13 +25,13 @@ public class RdWarninginfo implements IObj {
 
 	private String typeCode;
 
-	private int validDis=0;
+	private int validDis = 0;
 
-	private int warnDis=0;
+	private int warnDis = 0;
 
 	private String timeDomain;
 
-	private int vehicle=0;
+	private long vehicle = 0;
 
 	private String descript;
 
@@ -95,11 +95,11 @@ public class RdWarninginfo implements IObj {
 		this.timeDomain = timeDomain;
 	}
 
-	public int getVehicle() {
+	public long getVehicle() {
 		return vehicle;
 	}
 
-	public void setVehicle(int vehicle) {
+	public void setVehicle(long vehicle) {
 		this.vehicle = vehicle;
 	}
 
@@ -289,7 +289,9 @@ public class RdWarninginfo implements IObj {
 		return "pid";
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see com.navinfo.dataservice.dao.glm.iface.IRow#childMap()
 	 */
 	@Override
@@ -298,11 +300,13 @@ public class RdWarninginfo implements IObj {
 		return null;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see com.navinfo.dataservice.dao.glm.iface.IObj#childMap()
 	 */
 	@Override
-	public Map<Class<? extends IRow>,Map<String,?>> childMap() {
+	public Map<Class<? extends IRow>, Map<String, ?>> childMap() {
 		// TODO Auto-generated method stub
 		return null;
 	}

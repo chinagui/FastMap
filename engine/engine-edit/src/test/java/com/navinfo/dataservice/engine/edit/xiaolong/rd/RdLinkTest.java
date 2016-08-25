@@ -40,7 +40,7 @@ public class RdLinkTest extends InitApplication{
 
 			SearchProcess p = new SearchProcess(conn);
 
-			System.out.println(p.searchDataByPid(ObjType.RDRESTRICTION, 29119).Serialize(ObjLevel.BRIEF));
+			System.out.println(p.searchDataByPid(ObjType.RDLINK, 13677569).Serialize(ObjLevel.BRIEF));
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -49,7 +49,7 @@ public class RdLinkTest extends InitApplication{
 	
 	@Test
 	public void testDelete() {
-		String parameter = "{\"command\":\"DELETE\",\"dbId\":42,\"type\":\"RDLINK\",\"objId\":469358}";
+		String parameter = "{\"command\":\"DELETE\",\"dbId\":42,\"type\":\"RDLINK\",\"objId\":100008767}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

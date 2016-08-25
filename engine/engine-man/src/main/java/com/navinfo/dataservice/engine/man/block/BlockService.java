@@ -20,6 +20,7 @@ import com.navinfo.dataservice.api.man.model.BlockMan;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.DateUtilsEx;
@@ -31,6 +32,7 @@ import com.navinfo.navicommons.exception.ServiceException;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import oracle.sql.CLOB;
+import oracle.sql.STRUCT;
 
 /**
  * @ClassName: BlockService
@@ -60,20 +62,25 @@ public class BlockService {
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
 			JSONArray blockArray = json.getJSONArray("blocks");
-			int updateCount=0;
+			int updateCount = 0;
 			List<Integer> blockIdList = new ArrayList<Integer>();
 			String createSql = "insert into block_man (BLOCK_MAN_ID, CREATE_USER_ID,BLOCK_ID,COLLECT_GROUP_ID, COLLECT_PLAN_START_DATE,"
 					+ "COLLECT_PLAN_END_DATE,DAY_EDIT_GROUP_ID,DAY_EDIT_PLAN_START_DATE,DAY_EDIT_PLAN_END_DATE,MONTH_EDIT_GROUP_ID,"
 					+ "MONTH_EDIT_PLAN_START_DATE,MONTH_EDIT_PLAN_END_DATE,DAY_PRODUCE_PLAN_START_DATE,DAY_PRODUCE_PLAN_END_DATE,"
-					+ "MONTH_PRODUCE_PLAN_START_DATE,MONTH_PRODUCE_PLAN_END_DATE,DESCP) "
+					+ "MONTH_PRODUCE_PLAN_START_DATE,MONTH_PRODUCE_PLAN_END_DATE,DESCP,STATUS) "
 					+ "values(BLOCK_MAN_SEQ.NEXTVAL,?,?,?,to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),?,"
 					+ "to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),?,to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),"
 					+ "to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),"
 					+ "to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),?)";
 
 			Object[][] param = new Object[blockArray.size()][];
+			List<Integer> updateBlockList = BlockOperation.queryOperationBlocks(conn, blockArray);
 			for (int i = 0; i < blockArray.size(); i++) {
 				JSONObject block = blockArray.getJSONObject(i);
+				if (updateBlockList.contains(block.getInt("blockId"))) {
+					continue;
+				}
+
 				Object[] obj = new Object[] { userId, block.getInt("blockId"), block.getInt("collectGroupId"),
 						block.getString("collectPlanStartDate"), block.getString("collectPlanEndDate"),
 						block.getInt("dayEditGroupId"), block.getString("dayEditPlanStartDate"),
@@ -81,14 +88,14 @@ public class BlockService {
 						block.getString("monthEditPlanStartDate"), block.getString("monthEditPlanEndDate"),
 						block.getString("dayProducePlanStartDate"), block.getString("dayProducePlanEndDate"),
 						block.getString("monthProducePlanStartDate"), block.getString("monthProducePlanEndDate"),
-						block.getString("descp") };
+						block.getString("descp"),2};
 				param[i] = obj;
 				blockIdList.add(block.getInt("blockId"));
 			}
 			BlockOperation.openBlockByBlockIdList(conn, blockIdList);
 
-			int[] rows=run.batch(conn, createSql, param);
-			updateCount=rows.length;
+			int[] rows = run.batch(conn, createSql, param);
+			updateCount = rows.length;
 			return updateCount;
 
 		} catch (Exception e) {
@@ -107,27 +114,35 @@ public class BlockService {
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
 			JSONArray blockArray = json.getJSONArray("blocks");
-			int updateCount=0;
+			List blockIdList=new ArrayList();
+			int updateCount = 0;
 			String createSql = "update block_man set COLLECT_GROUP_ID=?, COLLECT_PLAN_START_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),"
 					+ "COLLECT_PLAN_END_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),DAY_EDIT_GROUP_ID=?,DAY_EDIT_PLAN_START_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),DAY_EDIT_PLAN_END_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),MONTH_EDIT_GROUP_ID=?,"
 					+ "MONTH_EDIT_PLAN_START_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),MONTH_EDIT_PLAN_END_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),DAY_PRODUCE_PLAN_START_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),DAY_PRODUCE_PLAN_END_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),"
-					+ "MONTH_PRODUCE_PLAN_START_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),MONTH_PRODUCE_PLAN_END_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'), DESCP=? where BLOCK_ID=?";
+					+ "MONTH_PRODUCE_PLAN_START_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),MONTH_PRODUCE_PLAN_END_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'), DESCP=?,STATUS=? where BLOCK_ID=?";
 
 			Object[][] param = new Object[blockArray.size()][];
+			List<Integer> updateBlockList = BlockOperation.queryOperationBlocks(conn, blockArray);
 			for (int i = 0; i < blockArray.size(); i++) {
 				JSONObject block = blockArray.getJSONObject(i);
 				BlockMan bean = (BlockMan) JSONObject.toBean(block, BlockMan.class);
-				Object[] obj = new Object[] { bean.getCollectGroupId(), bean.getCollectPlanStartDate(),
-						bean.getCollectPlanEndDate(), bean.getDayEditGroupId(), bean.getDayEditPlanStartDate(),
-						bean.getDayEditPlanEndDate(), bean.getMonthEditGroupId(), bean.getMonthEditPlanStartDate(),
-						bean.getMonthEditPlanEndDate(), bean.getDayProducePlanStartDate(),
-						bean.getDayProducePlanEndDate(), bean.getMonthProducePlanStartDate(),
-						bean.getMonthProducePlanStartDate(), bean.getDescp(), bean.getBlockId() };
-				param[i] = obj;
+				if (updateBlockList.contains(bean.getBlockId())) {
+					Object[] obj = new Object[] { bean.getCollectGroupId(), bean.getCollectPlanStartDate(),
+							bean.getCollectPlanEndDate(), bean.getDayEditGroupId(), bean.getDayEditPlanStartDate(),
+							bean.getDayEditPlanEndDate(), bean.getMonthEditGroupId(), bean.getMonthEditPlanStartDate(),
+							bean.getMonthEditPlanEndDate(), bean.getDayProducePlanStartDate(),
+							bean.getDayProducePlanEndDate(), bean.getMonthProducePlanStartDate(),
+							bean.getMonthProducePlanStartDate(), bean.getDescp(), bean.getStatus(),bean.getBlockId() };
+					param[i] = obj;
+					if(1==bean.getStatus()){
+						blockIdList.add(bean.getBlockId());
+					}
+				}
 			}
 
-			int[] rows=run.batch(conn, createSql, param);
-			updateCount=rows.length;
+			int[] rows = run.batch(conn, createSql, param);
+			BlockOperation.updateMainBlock(conn,blockIdList);
+			updateCount = rows.length;
 			return updateCount;
 
 		} catch (Exception e) {
@@ -143,7 +158,7 @@ public class BlockService {
 		Connection conn = null;
 		try {
 			conn = DBConnector.getInstance().getManConnection();
-			String selectSql = "select t.BLOCK_ID,t.BLOCK_NAME,t.GEOMETRY.get_wkt() as GEOMETRY from BLOCK t where sdo_within_distance(t.geometry,  sdo_geom.sdo_mbr(sdo_geometry(?, 8307)), 'DISTANCE=0') = 'TRUE'";
+			String selectSql = "select t.BLOCK_ID,t.BLOCK_NAME,t.GEOMETRY from BLOCK t where sdo_within_distance(t.geometry,  sdo_geom.sdo_mbr(sdo_geometry(?, 8307)), 'DISTANCE=0') = 'TRUE'";
 			return BlockOperation.queryProduceBlock(conn, selectSql, json);
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -163,7 +178,7 @@ public class BlockService {
 			String planningStatus = ((json.getJSONArray("planningStatus").toString()).replace('[', '(')).replace(']',
 					')');
 
-			String selectSql = "select t.BLOCK_ID,t.BLOCK_NAME,t.GEOMETRY.get_wkt() as GEOMETRY,t.PLAN_STATUS,t.CITY_ID from BLOCK t where t.PLAN_STATUS in "
+			String selectSql = "select t.BLOCK_ID,t.BLOCK_NAME,t.GEOMETRY,t.PLAN_STATUS,t.CITY_ID from BLOCK t where t.PLAN_STATUS in "
 					+ planningStatus;
 
 			if (StringUtils.isNotEmpty(json.getString("snapshot"))) {
@@ -201,7 +216,7 @@ public class BlockService {
 			JSONObject obj = JSONObject.fromObject(json);
 			Block bean = (Block) JSONObject.toBean(obj, Block.class);
 
-			String selectSql = "select t.BLOCK_ID,t.CITY_ID, t.BLOCK_NAME, t.GEOMETRY.get_wkt() as GEOMETRY,"
+			String selectSql = "select t.BLOCK_ID,t.CITY_ID, t.BLOCK_NAME, t.GEOMETRY,"
 					+ " t.PLAN_STATUS, k.name taskName, b.collect_group_id, b.day_edit_group_id,"
 					+ " b.month_edit_group_id, to_char(b.collect_plan_start_date, 'yyyymmdd') collect_plan_start_date, to_char(b.collect_plan_end_date, 'yyyymmdd') collect_plan_end_date,"
 					+ " to_char(b.day_edit_plan_start_date, 'yyyymmdd') day_edit_plan_start_date, to_char(b.day_edit_plan_end_date, 'yyyymmdd') day_edit_plan_end_date, to_char(b.month_edit_plan_start_date, 'yyyymmdd') month_edit_plan_start_date,"
@@ -218,13 +233,13 @@ public class BlockService {
 						map.put("blockId", rs.getInt("BLOCK_ID"));
 						map.put("cityId", rs.getInt("CITY_ID"));
 						map.put("blockName", rs.getString("BLOCK_NAME"));
-						CLOB clob = (CLOB) rs.getObject("GEOMETRY");
-						String clobStr = DataBaseUtils.clob2String(clob);
+						STRUCT struct=(STRUCT)rs.getObject("GEOMETRY");
 						try {
+							String clobStr = GeoTranslator.struct2Wkt(struct);
 							map.put("geometry", Geojson.wkt2Geojson(clobStr));
-						} catch (Exception e) {
+						} catch (Exception e1) {
 							// TODO Auto-generated catch block
-							e.printStackTrace();
+							e1.printStackTrace();
 						}
 						map.put("planStatus", rs.getInt("PLAN_STATUS"));
 						map.put("taskName", rs.getString("taskName"));
@@ -270,7 +285,7 @@ public class BlockService {
 			JSONArray groupIds = json.getJSONArray("groupIds");
 			String groups = ((groupIds.toString()).replace('[', '(')).replace(']', ')');
 
-			selectSql = "select b.BLOCK_ID,b.CITY_ID, b.BLOCK_NAME, b.GEOMETRY.get_wkt() as GEOMETRY,"
+			selectSql = "select b.BLOCK_ID,b.CITY_ID, b.BLOCK_NAME, b.GEOMETRY,"
 					+ " b.PLAN_STATUS from block_man t,block b,task k,subtask s where t.block_id=b.block_id and b.city_id=k.city_id and k.task_id=s.task_id and t.latest=1 and k.latest=1 and s.stage=? ";
 
 			if (0 == stage) {
@@ -364,6 +379,11 @@ public class BlockService {
 					if ("blockName".equals(key)) {
 						selectSql += " and t.block_name like '%" + conditionJson.getString(key) + "%'";
 					}
+					if ("status".equals(key)) {
+						String status = ((conditionJson.getJSONArray(key).toString()).replace('[', '('))
+								.replace(']', ')');
+						selectSql += " and m.status in " + status;
+					}
 				}
 			}
 			if (null != orderJson && !orderJson.isEmpty()) {
@@ -388,6 +408,84 @@ public class BlockService {
 				selectSql += " order by m.block_id";
 			}
 			return BlockOperation.selectBlockList(conn, selectSql, null, currentPageNum, pageSize);
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询列表失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+
+	public List listAll(JSONObject conditionJson, JSONObject orderJson) throws Exception {
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+
+			String selectSql = "select distinct m.BLOCK_ID,m.DESCP,m.COLLECT_GROUP_ID,u.GROUP_NAME COLLECT_GROUP,"
+					+ "m.DAY_EDIT_GROUP_ID,(select distinct group_name from user_group"
+					+ "  where group_id = m.DAY_EDIT_GROUP_ID) DAY_EDIT_GROUP, m.MONTH_EDIT_GROUP_ID,(select distinct group_name"
+					+ "  from user_group where group_id = m.MONTH_EDIT_GROUP_ID) MONTH_EDIT_GROUP,"
+					+ " to_char(m.COLLECT_PLAN_START_DATE, 'yyyymmdd') COLLECT_PLAN_START_DATE,"
+					+ " to_char(m.COLLECT_PLAN_END_DATE, 'yyyymmdd') COLLECT_PLAN_END_DATE,"
+					+ " to_char(m.DAY_EDIT_PLAN_START_DATE, 'yyyymmdd') DAY_EDIT_PLAN_START_DATE,"
+					+ " to_char(m.DAY_EDIT_PLAN_END_DATE, 'yyyymmdd') DAY_EDIT_PLAN_END_DATE,"
+					+ " to_char(m.MONTH_EDIT_PLAN_START_DATE, 'yyyymmdd') MONTH_EDIT_PLAN_START_DATE,"
+					+ " to_char(m.MONTH_EDIT_PLAN_END_DATE, 'yyyymmdd') MONTH_EDIT_PLAN_END_DATE,"
+					+ " to_char(m.DAY_PRODUCE_PLAN_START_DATE, 'yyyymmdd') DAY_PRODUCE_PLAN_START_DATE,"
+					+ " to_char(m.DAY_PRODUCE_PLAN_END_DATE, 'yyyymmdd') DAY_PRODUCE_PLAN_END_DATE,"
+					+ " to_char(m.MONTH_PRODUCE_PLAN_START_DATE, 'yyyymmdd') MONTH_PRODUCE_PLAN_START_DATE,"
+					+ " to_char(m.MONTH_PRODUCE_PLAN_END_DATE, 'yyyymmdd') MONTH_PRODUCE_PLAN_END_DATE,"
+					+ " t.BLOCK_NAME," + " nvl(u.user_real_name, '') USER_REAL_NAME," + " m.STATUS," + " k.TASK_ID,"
+					+ " k.NAME," + " to_char(k.PLAN_START_DATE, 'yyyymmdd') PLAN_START_DATE,"
+					+ " to_char(k.PLAN_END_DATE, 'yyyymmdd') PLAN_END_DATE,"
+					+ " to_char(k.MONTH_EDIT_PLAN_START_DATE, 'yyyymmdd') TASK_START_DATE,"
+					+ " to_char(k.MONTH_EDIT_PLAN_END_DATE, 'yyyymmdd') TASK_END_DATE"
+					+ " from block_man m, block t, user_info u, task k, user_group u"
+					+ " where m.block_id = t.block_id(+) and m.latest = 1 and m.create_user_id = u.user_id(+)"
+					+ " and t.city_id = k.city_id(+)" + " and k.latest = 1" + "and m.collect_group_id = u.group_id(+)";
+			if (null != conditionJson && !conditionJson.isEmpty()) {
+				Iterator keys = conditionJson.keys();
+				while (keys.hasNext()) {
+					String key = (String) keys.next();
+					if ("blockId".equals(key)) {
+						selectSql += " and t.block_id=" + conditionJson.getInt(key);
+					}
+					if ("createUserName".equals(key)) {
+						selectSql += " and u.USER_REAL_NAME like '%" + conditionJson.getString(key) + "%'";
+					}
+					if ("blockName".equals(key)) {
+						selectSql += " and t.block_name like '%" + conditionJson.getString(key) + "%'";
+					}
+					if ("status".equals(key)) {
+						String status = ((conditionJson.getJSONArray(key).toString()).replace('[', '('))
+								.replace(']', ')');
+						selectSql += " and t.status in " + status;
+					}
+				}
+			}
+			if (null != orderJson && !orderJson.isEmpty()) {
+				Iterator keys = orderJson.keys();
+				while (keys.hasNext()) {
+					String key = (String) keys.next();
+					if ("collectPlanStartDate".equals(key)) {
+						selectSql += (" order by t.COLLECT_PLAN_START_DATE "
+								+ orderJson.getString("collectPlanStartDate"));
+						break;
+					}
+					if ("collectPlanEndDate".equals(key)) {
+						selectSql += (" order by t.COLLECT_PLAN_END_DATE " + orderJson.getString("collectPlanEndDate"));
+						break;
+					}
+					if ("blockId".equals(key)) {
+						selectSql += (" order by m.block_id " + orderJson.getString("blockId"));
+						break;
+					}
+				}
+			} else {
+				selectSql += " order by m.block_id";
+			}
+			return BlockOperation.selectAllBlock(conn, selectSql, null);
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

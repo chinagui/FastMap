@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import net.sf.json.JSONArray;
+
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
@@ -33,6 +35,21 @@ public class TaskOperation {
 			QueryRunner run = new QueryRunner();
 			String updateCity="UPDATE TASK SET LATEST=0 WHERE LATEST=1 AND CITY_ID="+cityId;
 			run.update(conn,updateCity);			
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("创建失败，原因为:"+e.getMessage(),e);
+		}
+	}
+	
+	/*
+	 * task的status字段，修改成开启
+	 */
+	public static void updateStatus(Connection conn,JSONArray taskIds) throws Exception{
+		try{
+			QueryRunner run = new QueryRunner();
+			String updateSql="UPDATE TASK SET STATUS=1 WHERE TASK_ID IN ("+taskIds.join(",")+")";
+			run.update(conn,updateSql);			
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -188,7 +205,7 @@ public class TaskOperation {
 			String createSql = "insert into task (TASK_ID,NAME,CITY_ID, CREATE_USER_ID, CREATE_DATE, STATUS, DESCP, "
 					+ "PLAN_START_DATE, PLAN_END_DATE, MONTH_EDIT_PLAN_START_DATE, MONTH_EDIT_PLAN_END_DATE, "
 					+ "MONTH_EDIT_GROUP_ID,LATEST) "
-					+ "values(TASK_SEQ.NEXTVAL,'"+bean.getName()+"',"+bean.getCityId()+","+bean.getCreateUserId()+",sysdate,1,'"
+					+ "values(TASK_SEQ.NEXTVAL,'"+bean.getName()+"',"+bean.getCityId()+","+bean.getCreateUserId()+",sysdate,2,'"
 					+  bean.getDescp()+"',to_timestamp('"+ bean.getPlanStartDate()
 					+"','yyyy-mm-dd hh24:mi:ss.ff'),to_timestamp('"+ bean.getPlanEndDate()+"','yyyy-mm-dd hh24:mi:ss.ff'),to_timestamp('"+  bean.getMonthEditPlanStartDate()
 					+"','yyyy-mm-dd hh24:mi:ss.ff'),to_timestamp('"+ bean.getMonthEditPlanEndDate()+"','yyyy-mm-dd hh24:mi:ss.ff'),"+  bean.getMonthEditGroupId()+",1)";

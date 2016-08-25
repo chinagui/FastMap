@@ -36,7 +36,8 @@ public class LuLinkSearch implements ISearch {
 	}
 
 	@Override
-	public List<SearchSnapshot> searchDataBySpatial(String wkt) throws Exception {
+	public List<SearchSnapshot> searchDataBySpatial(String wkt)
+			throws Exception {
 
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
@@ -102,18 +103,20 @@ public class LuLinkSearch implements ISearch {
 	}
 
 	@Override
-	public List<SearchSnapshot> searchDataByCondition(String condition) throws Exception {
+	public List<SearchSnapshot> searchDataByCondition(String condition)
+			throws Exception {
 
 		return null;
 	}
 
 	@Override
-	public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z, int gap) throws Exception {
+	public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z,
+			int gap) throws Exception {
 
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "select a.link_pid, a.geometry, a.s_node_pid, a.e_node_pid from lu_link a where a.u_record != 2 and sdo_within_distance(a.geometry, sdo_geometry(:1, 8307), 'DISTANCE=0') = 'TRUE'";
-
+		String sql = "WITH TMP1 AS (SELECT LINK_PID, GEOMETRY, S_NODE_PID, E_NODE_PID FROM LU_LINK WHERE U_RECORD != 2 AND SDO_WITHIN_DISTANCE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'DISTANCE=0') = 'TRUE') SELECT A.*, (SELECT COUNT(1) FROM LU_LINK_KIND L WHERE L.LINK_PID = A.LINK_PID AND L.U_RECORD != 2 AND L.KIND = 21) BUA, (SELECT COUNT(1) FROM LU_LINK_KIND L WHERE L.LINK_PID = A.LINK_PID AND L.U_RECORD != 2 AND L.KIND IN (1,2,3,4,5,6,7,22,23,40)) SAMEKIND FROM TMP1 A";
+		
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
@@ -132,6 +135,7 @@ public class LuLinkSearch implements ISearch {
 			double py = MercatorProjection.tileYToPixelY(y);
 
 			while (resultSet.next()) {
+				
 				SearchSnapshot snapshot = new SearchSnapshot();
 
 				JSONObject m = new JSONObject();
@@ -139,6 +143,19 @@ public class LuLinkSearch implements ISearch {
 				m.put("a", resultSet.getString("s_node_pid"));
 
 				m.put("b", resultSet.getString("e_node_pid"));
+
+				int sameLinkKind = 1;
+
+				if (resultSet.getInt("bua") > 0) {
+
+					sameLinkKind = 2;
+
+				} else if (resultSet.getInt("samekind") > 0) {
+
+					sameLinkKind = 3;
+				}
+
+				m.put("c", sameLinkKind);
 
 				snapshot.setM(m);
 
@@ -192,7 +209,8 @@ public class LuLinkSearch implements ISearch {
 
 		LuLinkSearch search = new LuLinkSearch(conn);
 
-		List<SearchSnapshot> res = search.searchDataByTileWithGap(215829, 99329, 18, 20);
+		List<SearchSnapshot> res = search.searchDataByTileWithGap(215829,
+				99329, 18, 20);
 
 		for (SearchSnapshot s : res) {
 			System.out.println(s.Serialize(null));

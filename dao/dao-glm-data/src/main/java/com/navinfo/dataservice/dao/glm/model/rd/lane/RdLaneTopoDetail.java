@@ -7,16 +7,19 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
 /**
  * 道路:详细车道连通表，仅记录客车（小汽车）可通行的车道连通关系
+ * 
  * @author zhaokaikai
  *
  */
@@ -50,12 +53,12 @@ public class RdLaneTopoDetail implements IObj {
 		this.inLinkPid = inLinkPid;
 	}
 
-	public int getNode_pid() {
-		return node_pid;
+	public int getNodePid() {
+		return nodePid;
 	}
 
-	public void setNode_pid(int node_pid) {
-		this.node_pid = node_pid;
+	public void setNodePid(int nodePid) {
+		this.nodePid = nodePid;
 	}
 
 	public int getOutLinkPid() {
@@ -82,64 +85,31 @@ public class RdLaneTopoDetail implements IObj {
 		this.timeDomain = timeDomain;
 	}
 
-	public int getVehicle() {
+	public long getVehicle() {
 		return vehicle;
 	}
 
-	public void setVehicle(int vehicle) {
+	public void setVehicle(long vehicle) {
 		this.vehicle = vehicle;
 	}
 
-	public int getTollForm() {
-		return tollForm;
-	}
-
-	public void setTollForm(int tollForm) {
-		this.tollForm = tollForm;
-	}
-
-	public int getCardType() {
-		return cardType;
-	}
-
-	public void setCardType(int cardType) {
-		this.cardType = cardType;
-	}
-
-	public int getTopologyId() {
-		return topologyId;
-	}
-
-	public void setTopologyId(int topologyId) {
-		this.topologyId = topologyId;
-	}
-
-	public int getRcFlag() {
-		return rcFlag;
-	}
-
-	public void setRcFlag(int rcFlag) {
-		this.rcFlag = rcFlag;
-	}
-
-	private int intLanePid; // 进入车道 
-	private int outLanePid; // 退出车道
-	private int inLinkPid ;// 进入 LINK 
-	private int node_pid;  //进入 NODE 
-	private int outLinkPid;//退出 LINK 
-	private int reachDir = 0; //通达方向 
-	private int timeDomain;//时间段 
-	private int vehicle = 0;//车辆类型 
-	private int tollForm = 0;//收费方式
-	private int cardType = 0;//领卡类型
-	private int topologyId = 0;//车信连通号码
-	private int rcFlag  = 0 ; //车道连通关系来源
 	
+
+	private int intLanePid; // 进入车道
+	private int outLanePid; // 退出车道
+	private int inLinkPid;// 进入 LINK
+	private int nodePid; // 进入 NODE
+	private int outLinkPid;// 退出 LINK
+	private int reachDir = 0; // 通达方向
+	private int timeDomain;// 时间段
+	private long vehicle = 0;// 车辆类型
+
+
 	private List<IRow> topoVias = new ArrayList<IRow>();
 
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 	public Map<String, RdLaneTopoVia> mapVia = new HashMap<>();
-	
+
 	public RdLaneTopoDetail() {
 
 	}
@@ -243,9 +213,6 @@ public class RdLaneTopoDetail implements IObj {
 		children.add(topoVias);
 		return children;
 	}
-
-
-
 
 	public List<IRow> getTopoVias() {
 		return topoVias;

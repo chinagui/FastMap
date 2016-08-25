@@ -21,6 +21,9 @@ import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.engine.edit.utils.CalLinkOperateUtils;
 import com.navinfo.dataservice.engine.edit.utils.RdGscOperateUtils;
 import com.navinfo.dataservice.engine.edit.utils.RdLinkOperateUtils;
+import com.navinfo.dataservice.engine.edit.utils.batch.AdminIDBatchUtils;
+import com.navinfo.dataservice.engine.edit.utils.batch.UrbanBatchUtils;
+import com.navinfo.dataservice.engine.edit.utils.batch.ZoneIDBatchUtils;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
@@ -57,9 +60,7 @@ public class Operation implements IOperation {
 
 		Map<Integer, List<RdLink>> map = new HashMap<Integer, List<RdLink>>();
 		List<RdLink> links = new ArrayList<RdLink>();
-		Set<String> meshes = CompGeometryUtil
-				.geoToMeshesWithoutBreak(GeoTranslator.geojson2Jts(command
-						.getLinkGeom()));
+		Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(GeoTranslator.geojson2Jts(command.getLinkGeom()));
 		if (meshes.size() == 1) {
 			JSONObject content = new JSONObject();
 			result.setPrimaryPid(this.command.getUpdateLink().getPid());
@@ -69,37 +70,43 @@ public class Operation implements IOperation {
 			if (null != geo)
 				length = GeometryUtils.getLinkLength(geo);
 			content.put("length", length);
-			boolean isChanged = this.command.getUpdateLink().fillChangeFields(
-					content);
+			boolean isChanged = this.command.getUpdateLink().fillChangeFields(content);
 			if (isChanged) {
-				result.insertObject(this.command.getUpdateLink(),
-						ObjStatus.UPDATE, this.command.getLinkPid());
+				result.insertObject(this.command.getUpdateLink(), ObjStatus.UPDATE, this.command.getLinkPid());
 			}
 			// 拷贝原link，set属性
 			RdLink link = new RdLink();
 			link.copy(this.command.getUpdateLink());
 			link.setPid(this.command.getUpdateLink().pid());
-			link.setGeometry(GeoTranslator.geojson2Jts(
-					this.command.getLinkGeom(), 100000, 0));
+			link.setGeometry(GeoTranslator.geojson2Jts(this.command.getLinkGeom(), 100000, 0));
 			links.add(link);
+			// 设置Link的urban属性
+			UrbanBatchUtils.updateUrban(this.command.getUpdateLink(), link.getGeometry(), conn);
+			// 设置link的AdminId
+			AdminIDBatchUtils.updateAdminID(this.command.getUpdateLink(), link.getGeometry(), conn);
+			// 设置link的ZoneId
+			ZoneIDBatchUtils.updateZoneID(this.command.getUpdateLink(), link.getGeometry(), conn, result);
 		} else {
 			Iterator<String> it = meshes.iterator();
 			Map<Coordinate, Integer> maps = new HashMap<Coordinate, Integer>();
-			Geometry g = GeoTranslator.transform(this.command.getUpdateLink()
-					.getGeometry(), 0.00001, 5);
-			maps.put(g.getCoordinates()[0], this.command.getUpdateLink()
-					.getsNodePid());
-			maps.put(g.getCoordinates()[g.getCoordinates().length - 1],
-					this.command.getUpdateLink().geteNodePid());
+			Geometry g = GeoTranslator.transform(this.command.getUpdateLink().getGeometry(), 0.00001, 5);
+			maps.put(g.getCoordinates()[0], this.command.getUpdateLink().getsNodePid());
+			maps.put(g.getCoordinates()[g.getCoordinates().length - 1], this.command.getUpdateLink().geteNodePid());
 			while (it.hasNext()) {
 				String meshIdStr = it.next();
-				Geometry geomInter = GeoTranslator.transform(
-						MeshUtils.linkInterMeshPolygon(GeoTranslator
-								.geojson2Jts(command.getLinkGeom()), MeshUtils
-								.mesh2Jts(meshIdStr)), 1, 5);
-				links.addAll(RdLinkOperateUtils.getCreateRdLinksWithMesh(
-						geomInter, maps, result));
+				Geometry geomInter = GeoTranslator.transform(MeshUtils.linkInterMeshPolygon(
+						GeoTranslator.geojson2Jts(command.getLinkGeom()), MeshUtils.mesh2Jts(meshIdStr)), 1, 5);
+				List<RdLink> rdLinkds = RdLinkOperateUtils.getCreateRdLinksWithMesh(geomInter, maps, result);
+				links.addAll(rdLinkds);
 
+				for (RdLink link : rdLinkds) {
+					// 设置Link的urban属性
+					UrbanBatchUtils.updateUrban(link, null, conn);
+					// 设置link的区划号码
+					AdminIDBatchUtils.updateAdminID(this.command.getUpdateLink(), link.getGeometry(), conn);
+					// 设置link的ZoneId
+					ZoneIDBatchUtils.updateZoneID(this.command.getUpdateLink(), link.getGeometry(), conn, result);
+				}
 			}
 			deleteRdLink(result);
 		}
@@ -121,8 +128,7 @@ public class Operation implements IOperation {
 	 * 
 	 */
 	private void deleteRdLink(Result result) throws Exception {
-		result.insertObject(this.command.getUpdateLink(), ObjStatus.DELETE,
-				this.command.getLinkPid());
+		result.insertObject(this.command.getUpdateLink(), ObjStatus.DELETE, this.command.getLinkPid());
 	}
 
 	// public void breakLine(int sNodePid, int eNodePid, Result result) throws
@@ -182,8 +188,7 @@ public class Operation implements IOperation {
 	 * @param result
 	 * @throws Exception
 	 */
-	private void handleEffectOnRdGsc(List<RdGsc> gscList,
-			List<RdLink> linkList, Result result) throws Exception {
+	private void handleEffectOnRdGsc(List<RdGsc> gscList, List<RdLink> linkList, Result result) throws Exception {
 		for (RdGsc gsc : gscList) {
 			Geometry gscGeo = gsc.getGeometry();
 
@@ -199,12 +204,10 @@ public class Operation implements IOperation {
 						gscLink.setLinkPid(link.getPid());
 
 						// 计算立交点序号和起终点标识
-						RdGscOperateUtils.calShpSeqNum(gscLink, gscGeo,
-								linkGeo.getCoordinates());
+						RdGscOperateUtils.calShpSeqNum(gscLink, gscGeo, linkGeo.getCoordinates());
 
 						if (!gscLink.changedFields().isEmpty()) {
-							result.insertObject(gscLink, ObjStatus.UPDATE,
-									gsc.getPid());
+							result.insertObject(gscLink, ObjStatus.UPDATE, gsc.getPid());
 						}
 					}
 				}
@@ -217,8 +220,7 @@ public class Operation implements IOperation {
 	 * 
 	 * @throws Exception
 	 */
-	private void updataRelationObj(RdLink oldLink, List<RdLink> newLinks,
-			Result result) throws Exception {
+	private void updataRelationObj(RdLink oldLink, List<RdLink> newLinks, Result result) throws Exception {
 
 		CalLinkOperateUtils calLinkOperateUtils = new CalLinkOperateUtils();
 
@@ -268,7 +270,16 @@ public class Operation implements IOperation {
 		// 维护CRF交叉点
 		com.navinfo.dataservice.engine.edit.operation.obj.rdinter.update.Operation rdinterOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdinter.update.Operation(
 				this.conn);
+		// 维护CRF道路
+		com.navinfo.dataservice.engine.edit.operation.obj.rdroad.update.Operation rdRoadOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdroad.update.Operation(
+				this.conn);
+		rdRoadOperation.breakRdLink(oldLink.getPid(), newLinks, result);
+
 		rdinterOperation.breakRdLink(oldLink, newLinks, result);
+		// 维护CRF对象
+		com.navinfo.dataservice.engine.edit.operation.obj.rdobject.update.Operation rdObjectOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdobject.update.Operation(
+				this.conn);
+		rdObjectOperation.breakRdObjectLink(oldLink, newLinks, result);
 		// 收费站
 		com.navinfo.dataservice.engine.edit.operation.obj.rdtollgate.update.Operation rdTollgateOpeartion = new com.navinfo.dataservice.engine.edit.operation.obj.rdtollgate.update.Operation(
 				this.conn);
@@ -278,6 +289,11 @@ public class Operation implements IOperation {
 		com.navinfo.dataservice.engine.edit.operation.obj.rdvoiceguide.update.Operation voiceguideOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdvoiceguide.update.Operation(
 				conn);
 		voiceguideOperation.breakRdLink(oldLink, sortLinks, result);
+
+		// 维护可变限速关系
+		com.navinfo.dataservice.engine.edit.operation.obj.rdvariablespeed.update.Operation variableSpeedOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdvariablespeed.update.Operation(
+				this.conn);
+		variableSpeedOperation.breakLine(oldLink, newLinks, result);
 	}
 
 }

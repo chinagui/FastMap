@@ -1,7 +1,10 @@
 package com.navinfo.dataservice.engine.meta.area;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -21,6 +24,17 @@ import com.navinfo.navicommons.exception.ServiceException;
  */
 public class ScPointAdminArea {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
+	
+	private Connection conn;
+	
+	public ScPointAdminArea() {
+		
+	}
+	
+	public ScPointAdminArea(Connection conn) {
+		this.conn = conn;
+	}
+	
 	/**
 	 * 根据省份获取电话列表
 	 * @param name
@@ -135,4 +149,102 @@ public class ScPointAdminArea {
 		DbUtils.commitAndCloseQuietly(conn);
 	}
   }
+	
+	/**
+	 * 获取行政区划号和名称
+	 * @return
+	 * @throws Exception
+	 */
+	public JSONObject getAdminArea(int pageSize,int pageNum,String name,String sortby) throws Exception {
+		
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		Connection conn = null;
+		
+		JSONObject result = new JSONObject();
+		
+		String sql = "SELECT * FROM (SELECT c.*, rownum rn FROM (SELECT COUNT (1) OVER (PARTITION BY 1) total,adminareacode,whole from SC_POINT_ADMINAREA";
+		if (!name.isEmpty()) {
+			sql +=  " where whole='"+name+"'";
+		}
+		if (!sortby.isEmpty()) {
+			sql += " ORDER BY "+sortby;
+		}
+		sql += ")c WHERE rownum<= :1) WHERE rn>= :2";
+		
+		try {
+			conn = DBConnector.getInstance().getMetaConnection();
+			
+			int startRow = pageNum * pageSize + 1;
+
+			int endRow = (pageNum + 1) * pageSize;
+			
+			pstmt = conn.prepareStatement(sql);
+			
+			pstmt.setInt(1, endRow);
+
+			pstmt.setInt(2, startRow);
+			
+			resultSet = pstmt.executeQuery();
+			
+			JSONArray dataList = new JSONArray();
+			
+			int total = 0;
+			
+			while (resultSet.next()) {
+				if (total == 0) {
+					total = resultSet.getInt("total");
+				}
+				JSONObject data = new JSONObject();
+				data.put("adminareacode", resultSet.getInt("adminareacode"));
+				data.put("whole", resultSet.getString("whole"));
+				dataList.add(data);
+			}
+			
+			result.put("total", total);
+			result.put("data", dataList);
+			
+			return result;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+			DbUtils.closeQuietly(conn);
+		}
+	}
+	
+	
+	public Map<String, String> getAdminMap() throws Exception {
+		
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+		
+		String sql = "select distinct adminareacode,whole from SC_POINT_ADMINAREA";
+		
+		Map<String,String> adminMap = new HashMap<String,String>();
+		
+		try {
+			
+			pstmt = conn.prepareStatement(sql);
+			
+			resultSet = pstmt.executeQuery();
+			
+			while (resultSet.next()) {
+				adminMap.put(resultSet.getString("adminareacode"), resultSet.getString("whole"));
+			}
+			
+			return adminMap;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+		
+	}
+	
 }

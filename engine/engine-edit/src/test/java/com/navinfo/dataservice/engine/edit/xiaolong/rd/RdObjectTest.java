@@ -184,7 +184,7 @@ public class RdObjectTest extends InitApplication {
 
 			RdObjectSearch search = new RdObjectSearch(conn);
 			
-			List<SearchSnapshot> data = search.searchDataByTileWithGap(107944, 49616, 17, 80);
+			List<SearchSnapshot> data = search.searchDataByTileWithGap(107944, 49614, 17, 80);
 			
 			System.out.println("data:"+ResponseUtils.assembleRegularResult(data));
 
@@ -200,7 +200,7 @@ public class RdObjectTest extends InitApplication {
 		Connection conn;
 		try {
 			
-			String parameter = "{\"type\":\"RDOBJECTNAME\",\"dbId\":42,\"data\":{\"pid\":}}";
+			String parameter = "{\"type\":\"RDOBJECTNAME\",\"dbId\":42,\"data\":{\"pid\":5011367}}";
 			
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 

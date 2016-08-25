@@ -12,6 +12,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.collections.CollectionUtils;
+
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
@@ -73,6 +75,8 @@ public class RdObjectSearch implements ISearch {
 			pstmt = conn.prepareStatement(sql);
 
 			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
+			
+			System.out.println(wkt);
 
 			pstmt.setString(1, wkt);
 
@@ -147,18 +151,18 @@ public class RdObjectSearch implements ISearch {
 
 					linkPidList.add(linkPid);
 				}
-
+				
+				String nodeWkt = resultSet.getString("node_geo");
+				
 				int nodePid = resultSet.getInt("node_pid");
 
-				if (!nodePidList.contains(nodePid)) {
+				if (nodeWkt != null && !nodePidList.contains(nodePid)) {
 
 					if (!resultMap.containsKey("node")) {
 						resultMap.put("node", new ArrayList<JSONObject>());
 					}
 
 					List<JSONObject> nodeList = resultMap.get("node");
-
-					String nodeWkt = resultSet.getString("node_geo");
 
 					Geometry nodeGeo = wktReader.read(nodeWkt);
 
@@ -203,9 +207,12 @@ public class RdObjectSearch implements ISearch {
 				List<JSONObject> nodeObjList = rdOjbMap.get("node");
 
 				JSONArray gNodeArray = new JSONArray();
-
-				for (JSONObject nodeJObj : nodeObjList) {
-					gNodeArray.add(nodeJObj);
+				
+				if(CollectionUtils.isNotEmpty(nodeObjList))
+				{
+					for (JSONObject nodeJObj : nodeObjList) {
+						gNodeArray.add(nodeJObj);
+					}
 				}
 				
 				JSONObject jsonM = new JSONObject();

@@ -27,6 +27,8 @@ public class Command extends AbstractCommand {
 	
 	private JSONArray linkArray;
 	
+	private JSONArray nameArray;
+	
 	private RdObject rdObject;
 	
 	private int pid;
@@ -85,6 +87,19 @@ public class Command extends AbstractCommand {
 		{
 			this.linkArray = content.getJSONArray("links");
 		}
+		
+		if(content.containsKey("names"))
+		{
+			this.nameArray = content.getJSONArray("names");
+		}
+	}
+
+	public JSONArray getNameArray() {
+		return nameArray;
+	}
+
+	public void setNameArray(JSONArray nameArray) {
+		this.nameArray = nameArray;
 	}
 
 	public JSONArray getInterArray() {

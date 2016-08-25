@@ -152,7 +152,7 @@ public class RdObjectTest extends InitApplication {
 	
 	@Test
 	public void testDelRdLink() {
-		String parameter = "{\"command\":\"DELETE\",\"type\":\"RDLINK\",\"dbId\":42,\"objId\":100008960}";
+		String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDOBJECT\",\"dbId\":42,\"data\":{\"names\":[{\"pid\":100000046,\"nameGroupid\":1,\"langCode\":\"CHI\",\"name\":\"西红门南桥\",\"phonetic\":\"Xi+Hong+Men+Nan+Qiao\",\"srcFlag\":0,\"objStatus\":\"INSERT\"}],\"pid\":100000046}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
@@ -184,7 +184,7 @@ public class RdObjectTest extends InitApplication {
 
 			RdObjectSearch search = new RdObjectSearch(conn);
 			
-			List<SearchSnapshot> data = search.searchDataByTileWithGap(107944, 49614, 17, 80);
+			List<SearchSnapshot> data = search.searchDataByTileWithGap(107946, 49616, 17, 80);
 			
 			System.out.println("data:"+ResponseUtils.assembleRegularResult(data));
 

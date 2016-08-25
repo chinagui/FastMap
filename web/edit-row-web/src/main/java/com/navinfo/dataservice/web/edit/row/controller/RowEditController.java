@@ -2,6 +2,7 @@ package com.navinfo.dataservice.web.edit.row.controller;
 
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -154,5 +155,39 @@ public class RowEditController extends BaseController {
 				}
 			}
 		}
+	}
+	
+	/**
+	 * poi操作修改poi状态为已作业，鲜度信息为0 zhaokk sourceFlag 0 web 1 Android
+	 * 
+	 * @param row
+	 * @throws Exception
+	 */
+	public void upatePoiStatus(String rowId,Connection conn) throws Exception {
+		StringBuilder sb = new StringBuilder(" MERGE INTO poi_edit_status T1 ");
+		sb.append(" USING (SELECT '" + rowId + "' as a, 2 as b,0 as c FROM dual) T2 ");
+		sb.append(" ON ( T1.row_id=T2.a) ");
+		sb.append(" WHEN MATCHED THEN ");
+		sb.append(" UPDATE SET T1.status = T2.b,T1.fresh_verified= T2.c ");
+		sb.append(" WHEN NOT MATCHED THEN ");
+		sb.append(" INSERT (T1.row_id,T1.status,T1.fresh_verified) VALUES(T2.a,T2.b,T2.c)");
+		PreparedStatement pstmt = null;
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+			pstmt.executeUpdate();
+		} catch (Exception e) {
+			throw e;
+
+		} finally {
+			try {
+				if (pstmt != null) {
+					pstmt.close();
+				}
+			} catch (Exception e) {
+
+			}
+
+		}
+
 	}
 }

@@ -7,6 +7,7 @@ import java.util.Map;
 import com.navinfo.dataservice.engine.edit.bo.ad.AdLinkBo;
 import com.navinfo.dataservice.engine.edit.po.BasicPo;
 
+@Deprecated
 public class PoFactory {
 
 	private volatile static PoFactory instance;

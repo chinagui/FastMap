@@ -1,6 +1,6 @@
 package com.navinfo.dataservice.engine.edit.bo;
 
-import com.navinfo.dataservice.dao.glm.iface.IObj;
+import com.navinfo.dataservice.engine.edit.model.BasicObj;
 
 public class BoFactory {
 	private volatile static BoFactory instance;
@@ -20,11 +20,11 @@ public class BoFactory {
 
 	}
 	
-	public AbstractBo create(IObj po) throws Exception{
-		String className = po.getClass().getName();
+	public AbstractBo create(BasicObj obj) throws Exception{
+		String className = obj.getClass().getName();
 		Class<?> clazz = Class.forName(className.replace("dao.glm.model", "engine.edit.bo") + "Bo");
 		AbstractBo bo = (AbstractBo) clazz.newInstance();
-		bo.setPo(po);
+		bo.setObj(obj);
 		return bo;
 	}
 }

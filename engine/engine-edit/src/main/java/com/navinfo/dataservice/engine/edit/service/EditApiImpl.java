@@ -37,4 +37,8 @@ public class EditApiImpl implements EditApi {
 
 		return json;
 	}
+	@Override
+	public long applyPid(String tableName, int count) throws Exception {
+		return PidService.getInstance().applyPid(tableName, count);
+	}
 }

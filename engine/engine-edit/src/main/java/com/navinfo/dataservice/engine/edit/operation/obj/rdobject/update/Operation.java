@@ -97,15 +97,25 @@ public class Operation implements IOperation {
 				subObj.remove((Integer) objectInter.getInterPid());
 			}
 		}
+		
+		List<Integer> pidList = new ArrayList<>();
+		
 		for (int i = 0; i < subObj.size(); i++) {
+			
+			int interPid = subObj.getInt(i);
+			
+			if(!pidList.contains(interPid))
+			{
+				RdObjectInter rdObjectInter = new RdObjectInter();
 
-			RdObjectInter rdObjectInter = new RdObjectInter();
+				rdObjectInter.setInterPid(interPid);
 
-			rdObjectInter.setInterPid(subObj.getInt(i));
+				rdObjectInter.setPid(rdObject.getPid());
 
-			rdObjectInter.setPid(rdObject.getPid());
-
-			result.insertObject(rdObjectInter, ObjStatus.INSERT, rdObjectInter.getInterPid());
+				result.insertObject(rdObjectInter, ObjStatus.INSERT, rdObjectInter.getInterPid());
+				
+				pidList.add(interPid);
+			}
 		}
 
 	}
@@ -131,15 +141,25 @@ public class Operation implements IOperation {
 				subObj.remove((Integer) objectRoad.getRoadPid());
 			}
 		}
+		
+		List<Integer> pidList = new ArrayList<>();
+		
 		for (int i = 0; i < subObj.size(); i++) {
+			
+			int roadPid = subObj.getInt(i);
+			
+			if(!pidList.contains(roadPid))
+			{
+				RdObjectRoad rdObjectRoad = new RdObjectRoad();
 
-			RdObjectRoad rdObjectRoad = new RdObjectRoad();
+				rdObjectRoad.setRoadPid(subObj.getInt(i));
 
-			rdObjectRoad.setRoadPid(subObj.getInt(i));
+				rdObjectRoad.setPid(rdObject.getPid());
 
-			rdObjectRoad.setPid(rdObject.getPid());
-
-			result.insertObject(rdObjectRoad, ObjStatus.INSERT, rdObjectRoad.getRoadPid());
+				result.insertObject(rdObjectRoad, ObjStatus.INSERT, rdObjectRoad.getRoadPid());
+				
+				pidList.add(roadPid);
+			}
 		}
 
 	}
@@ -164,16 +184,25 @@ public class Operation implements IOperation {
 				subObj.remove((Integer) objLink.getLinkPid());
 			}
 		}
-
+		
+		List<Integer> pidList = new ArrayList<>();
+		
 		for (int i = 0; i < subObj.size(); i++) {
+			
+			int linkPid = subObj.getInt(i);
+			
+			if(pidList.contains(linkPid))
+			{
+				RdObjectLink objLink = new RdObjectLink();
 
-			RdObjectLink objLink = new RdObjectLink();
+				objLink.setLinkPid(subObj.getInt(i));
 
-			objLink.setLinkPid(subObj.getInt(i));
+				objLink.setPid(rdObject.getPid());
 
-			objLink.setPid(rdObject.getPid());
-
-			result.insertObject(objLink, ObjStatus.INSERT, objLink.getLinkPid());
+				result.insertObject(objLink, ObjStatus.INSERT, objLink.getLinkPid());
+				
+				pidList.add(linkPid);
+			}
 		}
 	}
 

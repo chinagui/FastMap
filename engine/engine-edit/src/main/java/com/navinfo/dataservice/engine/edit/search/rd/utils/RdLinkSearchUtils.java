@@ -152,8 +152,8 @@ public class RdLinkSearchUtils {
 
 				LineSegment lineSegment = getLineSegment(link, connectNodePid);
 
-				double angle = AngleCalculator.getConnectLinksAngle(
-						targetlineSegment, lineSegment);
+				double angle = Math.abs(180 - AngleCalculator
+						.getConnectLinksAngle(targetlineSegment, lineSegment));
 
 				if (angle < minAngle) {
 
@@ -231,8 +231,10 @@ public class RdLinkSearchUtils {
 				LineSegment nextLinklineSegment = getLineSegment(ad,
 						cruuentNodePidDir);
 				// 计算当前线直线和联通直线夹角 选出当前线延长线夹角最小
-				double minAngle = AngleCalculator.getConnectLinksAngle(
-						currentLinklineSegment, nextLinklineSegment);
+				double minAngle = Math.abs(180 - AngleCalculator
+						.getConnectLinksAngle(currentLinklineSegment,
+								nextLinklineSegment));
+				
 				if (map.size() > 0) {
 					if (map.keySet().iterator().next() > minAngle) {
 						map.clear();

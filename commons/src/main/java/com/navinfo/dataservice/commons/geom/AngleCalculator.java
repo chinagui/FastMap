@@ -152,11 +152,11 @@ public class AngleCalculator {
 	}
 
 	/**
-	 * 计算link2和link1的夹角
+	 * 计算两个线段之间的夹角
 	 * 
-	 * @param link1
-	 * @param link2
-	 * @return
+	 * @param preLink
+	 * @param nextLink
+	 * @return 两线段 挂接返回两线段的夹角，不挂接返回9999；
 	 */
 	public static double getConnectLinksAngle(LineSegment preLink,
 			LineSegment nextLink) {
@@ -167,50 +167,108 @@ public class AngleCalculator {
 		Coordinate nextS = nextLink.getCoordinate(0);
 		Coordinate nextE = nextLink.getCoordinate(1);
 
-		double a1 = 0;
-
-		double a2 = 0;
+		double rad = 0;
 
 		if (preS.equals(nextS)) {
-			a1 = getAngle(new LngLatPoint(preE.x, preE.y), new LngLatPoint(
-					preS.x, preS.y));
 
-			a2 = getAngle(new LngLatPoint(nextS.x, nextS.y), new LngLatPoint(
-					nextE.x, nextE.y));
+			rad = radianOfCounterclockwise(preE, preS, nextE);
+
 		} else if (preS.equals(nextE)) {
-			a1 = getAngle(new LngLatPoint(preE.x, preE.y), new LngLatPoint(
-					preS.x, preS.y));
-			a2 = getAngle(new LngLatPoint(nextE.x, nextE.y), new LngLatPoint(
-					nextS.x, nextS.y));
-		}
 
-		else if (preE.equals(nextS)) {
-			a1 = getAngle(new LngLatPoint(preS.x, preS.y), new LngLatPoint(
-					preE.x, preE.y));
+			rad = radianOfCounterclockwise(preE, preS, nextS);
 
-			a2 = getAngle(new LngLatPoint(nextS.x, nextS.y), new LngLatPoint(
-					nextE.x, nextE.y));
-		}
+		} else if (preE.equals(nextS)) {
 
-		else if (preE.equals(nextE)) {
-			a1 = getAngle(new LngLatPoint(preS.x, preS.y), new LngLatPoint(
-					preE.x, preE.y));
-			a2 = getAngle(new LngLatPoint(nextE.x, nextE.y), new LngLatPoint(
-					nextS.x, nextS.y));
+			rad = radianOfCounterclockwise(preS, preE, nextE);
+
+		} else if (preE.equals(nextE)) {
+
+			rad = radianOfCounterclockwise(preS, preE, nextS);
+
 		} else {
-			a1 = getAngle(new LngLatPoint(preS.x, preS.y), new LngLatPoint(
-					preE.x, preE.y));
-			a2 = getAngle(new LngLatPoint(nextS.x, nextS.y), new LngLatPoint(
-					nextE.x, nextE.y));
+			// 两线段不连接
+			return 9999;
 		}
 
-		if (a1 > 180)
-			a1 = 360 - a1;
+		double angle = (rad * 180) / Math.PI;
 
-		if (a2 > 180)
-			a2 = 360 - a2;
+		if (angle > 180)
+			angle = 360 - angle;
 
-		return Math.abs(a2 - a1);
+		return angle;
+	}
+
+	/**
+	 * 计算3点之间弧度
+	 * 
+	 * @param shapePoint1
+	 * @param nodePoint
+	 * @param shapePoint3
+	 * @return
+	 */
+	private static double radianOfCounterclockwise(Coordinate shapePoint1,
+			Coordinate nodePoint, Coordinate shapePoint3) {
+
+		double PI = Math.PI;
+
+		double dy1 = 0.0, dy2 = 0.0, dx1 = 0.0, dx2 = 0.0, A1 = 0.0, A2 = 0.0, A = 0.0;
+
+		Coordinate point2 = new Coordinate(nodePoint.x, nodePoint.y, 0);
+
+		dy1 = (double) point2.y - (double) shapePoint1.y;
+
+		dy2 = (double) shapePoint3.y - (double) point2.y;
+
+		if (point2.x != shapePoint1.x) {
+			dx1 = (double) point2.x - (double) shapePoint1.x;
+
+			A1 = Math.atan(dy1 / dx1);
+		} else {
+			A1 = PI / 2;
+		}
+
+		if (point2.x != shapePoint3.x) {
+			dx2 = (double) shapePoint3.x - (double) point2.x;
+
+			A2 = Math.atan(dy2 / dx2);
+		} else {
+			A2 = PI / 2;
+		}
+
+		// 判断A1的角度
+		if ((A1 >= 0) && (0 >= dy1) && (0 >= dx1)) {
+			A1 += 0; // 第一象限
+		} else if ((A1 > 0) && (dy1 >= 0) && (dx1 >= 0)) {
+			A1 += PI; // 第三象限
+		} else if ((0 >= A1) && (0 >= dy1) && (dx1 > 0)) {
+			A1 += PI; // 第二象限
+		} else if ((A1 < 0) && (dy1 >= 0) && (dx1 < 0)) {
+			A1 += 2 * PI; // 第四象限
+		}
+
+		// 判断A2的角度
+		if ((A2 >= 0) && (0 >= dy2) && (0 >= dx2)) {
+			A2 += PI; // 第三象限
+		} else if ((A2 > 0) && (dy2 >= 0) && (dx2 >= 0)) {
+			A2 += 0; // 第一象限
+		} else if ((0 >= A2) && (0 >= dy2) && (dx2 > 0)) {
+			A2 += 2 * PI; // 第四象限
+		} else if ((A2 < 0) && (dy2 >= 0) && (dx2 < 0)) {
+			A2 += PI; // 第二象限
+		}
+
+		// 求夹角
+		if (A1 == 0) {
+			A = A2;
+		} else if (A1 > A2) // && A2 >= 0)
+		{
+			A = 2 * PI + A2 - A1;
+		} else if (A2 > A1) {
+			A = A2 - A1;
+		} else if (A2 == A1) {
+			A = 2 * PI;
+		}
+		return A;
 	}
 
 	/**

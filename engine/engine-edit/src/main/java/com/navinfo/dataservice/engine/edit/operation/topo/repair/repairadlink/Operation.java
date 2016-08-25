@@ -68,40 +68,55 @@ public class Operation implements IOperation {
 	private void updateLink(Result result) throws Exception {
 		Map<Integer, List<AdLink>> map = new HashMap<Integer, List<AdLink>>();
 		List<AdLink> links = new ArrayList<AdLink>();
-		Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(GeoTranslator.geojson2Jts(command.getLinkGeom()));
+		Set<String> meshes = CompGeometryUtil
+				.geoToMeshesWithoutBreak(GeoTranslator.geojson2Jts(command
+						.getLinkGeom()));
 		if (meshes.size() == 1) {
 			JSONObject content = new JSONObject();
 			result.setPrimaryPid(this.command.getUpdateLink().getPid());
 			content.put("geometry", command.getLinkGeom());
 			Geometry geo = GeoTranslator.geojson2Jts(command.getLinkGeom());
 			double length = 0;
-			if(null != geo)
+			if (null != geo)
 				length = GeometryUtils.getLinkLength(geo);
 			content.put("length", length);
-			boolean isChanged = this.command.getUpdateLink().fillChangeFields(content);
+			boolean isChanged = this.command.getUpdateLink().fillChangeFields(
+					content);
 			AdLink adLink = new AdLink();
 			adLink.copy(this.command.getUpdateLink());
 			if (isChanged) {
-				result.insertObject(this.command.getUpdateLink(), ObjStatus.UPDATE, this.command.getLinkPid());
-				adLink.setGeometry(GeoTranslator.geojson2Jts(command.getLinkGeom(), 100000, 0));
+				result.insertObject(this.command.getUpdateLink(),
+						ObjStatus.UPDATE, this.command.getLinkPid());
+				adLink.setGeometry(GeoTranslator.geojson2Jts(
+						command.getLinkGeom(), 100000, 0));
 			}
 			links.add(adLink);
 		} else {
 			Iterator<String> it = meshes.iterator();
 			Map<Coordinate, Integer> maps = new HashMap<Coordinate, Integer>();
-			Geometry g = GeoTranslator.transform(this.command.getUpdateLink().getGeometry(), 0.00001, 5);
-			maps.put(g.getCoordinates()[0], this.command.getUpdateLink().getsNodePid());
-			maps.put(g.getCoordinates()[g.getCoordinates().length - 1], this.command.getUpdateLink().geteNodePid());
+			Geometry g = GeoTranslator.transform(this.command.getUpdateLink()
+					.getGeometry(), 0.00001, 5);
+			maps.put(g.getCoordinates()[0], this.command.getUpdateLink()
+					.getsNodePid());
+			maps.put(g.getCoordinates()[g.getCoordinates().length - 1],
+					this.command.getUpdateLink().geteNodePid());
 			while (it.hasNext()) {
 				String meshIdStr = it.next();
-				Geometry geomInter = GeoTranslator.transform(MeshUtils.linkInterMeshPolygon(
-						GeoTranslator.geojson2Jts(command.getLinkGeom()), MeshUtils.mesh2Jts(meshIdStr)), 1, 5);
-				links.addAll(AdLinkOperateUtils.getCreateAdLinksWithMesh(geomInter, maps, result));
+				Geometry geomInter = GeoTranslator.transform(
+						MeshUtils.linkInterMeshPolygon(GeoTranslator
+								.geojson2Jts(command.getLinkGeom()), MeshUtils
+								.mesh2Jts(meshIdStr)), 1, 5);
+				links.addAll(AdLinkOperateUtils.getCreateAdLinksWithMesh(
+						geomInter, maps, result));
 
 			}
-			result.insertObject(this.command.getUpdateLink(), ObjStatus.DELETE, this.command.getLinkPid());
+			result.insertObject(this.command.getUpdateLink(), ObjStatus.DELETE,
+					this.command.getLinkPid());
 		}
 		map.put(this.command.getLinkPid(), links);
+
+		updataRelationObj(links, result);
+
 		this.map = map;
 	}
 
@@ -124,7 +139,8 @@ public class Operation implements IOperation {
 						}
 						links.addAll(this.map.get(obj.getLinkPid()));
 					} else {
-						links.add((AdLink) new AdLinkSelector(conn).loadById(obj.getLinkPid(), true));
+						links.add((AdLink) new AdLinkSelector(conn).loadById(
+								obj.getLinkPid(), true));
 					}
 
 					result.insertObject(obj, ObjStatus.DELETE, face.getPid());
@@ -146,6 +162,24 @@ public class Operation implements IOperation {
 				}
 			}
 
+		}
+	}
+
+	/**
+	 * 维护关联要素
+	 * 
+	 * @throws Exception
+	 */
+	private void updataRelationObj(List<AdLink> links, Result result)
+			throws Exception {
+
+		if (links.size() == 1) {
+			// 维护同一线
+			com.navinfo.dataservice.engine.edit.operation.obj.rdsamelink.update.Operation samelinkOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdsamelink.update.Operation(
+					this.conn);
+
+			samelinkOperation.repairLink(links.get(0),
+					this.command.getRequester(), result);
 		}
 	}
 

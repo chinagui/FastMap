@@ -1,10 +1,16 @@
 package com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakadpoint;
 
 import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.List;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
@@ -15,9 +21,6 @@ import com.navinfo.dataservice.engine.edit.utils.AdLinkOperateUtils;
 import com.navinfo.dataservice.engine.edit.utils.NodeOperateUtils;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 /**
  * @author zhaokk 创建行政区划点有关行政区划线具体操作类
@@ -156,6 +159,16 @@ public class OpTopo implements IOperation {
 				adLink.geteNodePid(), adLink, result);
 		command.seteAdLink(elink);
 		log.debug("5.1 生成第二条link信息 pid = " + elink.getPid());
+
+		updataRelationObj(adLink, result);
 	}
 
+	private void updataRelationObj(AdLink breakLink, Result result)
+			throws Exception {
+
+		OpRefRelationObj opRefRelationObj = new OpRefRelationObj(this.conn);
+
+		// 处理同一线
+		opRefRelationObj.handleSameLink(breakLink, this.command, result);
+	}
 }

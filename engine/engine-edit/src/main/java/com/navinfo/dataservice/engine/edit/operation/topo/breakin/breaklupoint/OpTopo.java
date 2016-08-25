@@ -1,6 +1,8 @@
 package com.navinfo.dataservice.engine.edit.operation.topo.breakin.breaklupoint;
 
 import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.List;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -8,9 +10,11 @@ import net.sf.json.JSONObject;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.lu.LuLink;
 import com.navinfo.dataservice.dao.glm.model.lu.LuNode;
 import com.navinfo.dataservice.dao.glm.selector.lu.LuLinkSelector;
@@ -162,6 +166,16 @@ public class OpTopo implements IOperation {
 				GeoTranslator.geojson2Jts(eGeojson, 0.00001, 5), breakNodePid,
 				luLink.geteNodePid(), luLink, result);
 		command.seteLuLink(elink);
+
+		updataRelationObj(luLink, result);
 	}
 
+	private void updataRelationObj(LuLink breakLink, Result result)
+			throws Exception {
+
+		OpRefRelationObj opRefRelationObj = new OpRefRelationObj(this.conn);
+
+		// 处理同一线
+		opRefRelationObj.handleSameLink(breakLink, this.command, result);
+	}
 }

@@ -3,8 +3,8 @@ package com.navinfo.dataservice.engine.edit.operation.obj.rdsamelink.delete;
 import java.sql.Connection;
 
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
-import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameLink;
 import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameLinkPart;
@@ -44,15 +44,14 @@ public class Operation implements IOperation {
 		return null;
 	}
 
-	public void deleteByLink(int linkPid, ObjType objType, Result result)
-			throws Exception {
+	public void deleteByLink(IRow deleteLink, Result result) throws Exception {
 
-		String tableName = ReflectionAttrUtils.getTableNameByObjType(objType);
+		String tableName = deleteLink.parentTableName().toUpperCase();
 
 		RdSameLinkSelector sameLinkSelector = new RdSameLinkSelector(this.conn);
 
-		RdSameLinkPart sameLinkPart = sameLinkSelector.loadLinkPartByLink(linkPid,
-				tableName, true);
+		RdSameLinkPart sameLinkPart = sameLinkSelector.loadLinkPartByLink(
+				deleteLink.parentPKValue(), tableName, true);
 
 		if (sameLinkPart == null) {
 			return;
@@ -62,8 +61,11 @@ public class Operation implements IOperation {
 				sameLinkPart.getGroupId(), true, true);
 
 		if (sameLink.getParts().size() < 3) {
+
 			delete(result, sameLink);
+
 		} else {
+
 			result.insertObject(sameLinkPart, ObjStatus.DELETE,
 					sameLinkPart.getGroupId());
 

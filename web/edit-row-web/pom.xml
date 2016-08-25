@@ -38,15 +38,16 @@
 		</dependency>
 		<dependency>
 			<groupId>com.navinfo.dataservice</groupId>
-			<artifactId>engine-edit</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.navinfo.dataservice</groupId>
 			<artifactId>engine-photo</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>com.navinfo.dataservice</groupId>
 			<artifactId>biz-commons</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>net.sf.json-lib</groupId>
+			<artifactId>json-lib</artifactId>
+			<classifier>jdk15</classifier>
 		</dependency>
 		<dependency>
 			<groupId>com.navinfo.dataservice</groupId>
@@ -180,6 +181,6 @@
 		</dependency>
 	</dependencies>
 	<build>
-		<finalName>edit</finalName>
+		<finalName>editrow</finalName>
 	</build>
 </project>

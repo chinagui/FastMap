@@ -1,9 +1,9 @@
 package com.navinfo.dataservice.engine.edit.bo.ad;
 
-import com.navinfo.dataservice.dao.glm.iface.IObj;
-import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
 import com.navinfo.dataservice.engine.edit.bo.AbstractBo;
-import com.navinfo.dataservice.engine.edit.bo.NodeBo;
+import com.navinfo.dataservice.engine.edit.bo.AbstractNodeBo;
+import com.navinfo.dataservice.engine.edit.model.BasicObj;
+import com.navinfo.dataservice.engine.edit.model.ad.AdNode;
 import com.vividsolutions.jts.geom.Geometry;
 
 /** 
@@ -12,33 +12,23 @@ import com.vividsolutions.jts.geom.Geometry;
  * @date 2016年7月15日
  * @Description: BoAdNode.java
  */
-public class AdNodeBo extends NodeBo{
+public class AdNodeBo extends AbstractNodeBo{
 	
-	protected AdNode po;
-
-	@Override
-	public void setPo(IObj po) {
-		this.po=(AdNode)po;
-	}
-
-	@Override
-	public IObj getPo() {
-		return po;
-	}
-
-	@Override
-	public Geometry getGeometry() {
-		return po.getGeometry();
-	}
-
-	@Override
-	public void setGeometry(Geometry geo) {
-		this.po.setGeometry(geo);
-		
-	}
+	protected AdNode obj;
 
 	@Override
 	public AdNodeBo copy() throws Exception {
 		return null;
+	}
+
+	@Override
+	public void setObj(BasicObj obj) {
+		obj = (AdNode)obj;
+	}
+
+	@Override
+	public AdNode getObj() {
+		// TODO Auto-generated method stub
+		return obj;
 	}
 }

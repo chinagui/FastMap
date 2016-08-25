@@ -9,20 +9,19 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
-import com.navinfo.dataservice.dao.glm.iface.IObj;
-import com.navinfo.dataservice.dao.glm.iface.IRow;
-import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
-import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
-import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLinkMesh;
-import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdNodeSelector;
 import com.navinfo.dataservice.dao.pidservice.PidService;
 import com.navinfo.dataservice.engine.edit.bo.AbstractBo;
+import com.navinfo.dataservice.engine.edit.bo.AbstractLinkBo;
 import com.navinfo.dataservice.engine.edit.bo.BoFactory;
 import com.navinfo.dataservice.engine.edit.bo.LinkBreakResult;
-import com.navinfo.dataservice.engine.edit.bo.NodeBo;
-import com.navinfo.dataservice.engine.edit.bo.LinkBo;
-import com.navinfo.dataservice.engine.edit.bo.PoFactory;
+import com.navinfo.dataservice.engine.edit.bo.AbstractNodeBo;
+import com.navinfo.dataservice.engine.edit.model.AbstractLink;
+import com.navinfo.dataservice.engine.edit.model.BasicObj;
+import com.navinfo.dataservice.engine.edit.model.BasicRow;
+import com.navinfo.dataservice.engine.edit.model.ad.AdLink;
+import com.navinfo.dataservice.engine.edit.model.ad.AdLinkMesh;
+import com.navinfo.dataservice.engine.edit.model.ad.AdNode;
 import com.navinfo.dataservice.engine.edit.utils.NodeOperateUtils;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
@@ -35,21 +34,32 @@ import com.vividsolutions.jts.geom.Point;
  * @date 2016年7月15日
  * @Description: BoAdLink.java
  */
-public class AdLinkBo extends LinkBo {
+public class AdLinkBo extends AbstractLinkBo {
 	protected Logger log = LoggerRepos.getLogger(this.getClass());
 	
-	private AdLink po;
+	private AdLink obj;
 	private AdNodeBo snodeBo;
 	private AdNodeBo enodeBo;
+
+	public List<BasicRow> getMeshes(){
+		return obj.getMeshes();
+	}
+	public void setMeshes(List<BasicRow> meshes){
+		if(getObj().checkChildren(getMeshes(), meshes)){
+			((AdLink)getObj()).setMeshes(meshes);
+		}
+	}
+
+	
 	@Override
 	public LinkBreakResult breakoff(Point point) throws Exception {
 		LinkBreakResult result = super.breakoff(point);
 		//设置新增的两条link的KIND
-		AdLink newLeftLink = (AdLink)result.getNewLeftLink().getPo();
+		AdLink newLeftLink = (AdLink)result.getNewLeftLink().getObj();
 		if (newLeftLink.getMeshes()!=null&&newLeftLink.getMeshes().size() == 2) {
 			newLeftLink.setKind(0);
 		}
-		AdLink newRightLink = (AdLink)result.getNewRightLink().getPo();
+		AdLink newRightLink = (AdLink)result.getNewRightLink().getObj();
 		if (newRightLink.getMeshes()!=null&&newRightLink.getMeshes().size() == 2) {
 			newRightLink.setKind(0);
 		}
@@ -61,67 +71,36 @@ public class AdLinkBo extends LinkBo {
 		return snodeBo;
 	}
 	@Override
-	public AdNodeBo loadSnodeBo()throws Exception{
-		if (null == snodeBo) {
-			AdNodeSelector adNodeSel = new AdNodeSelector(conn);
-			AdNode adNode = (AdNode)adNodeSel.loadById(po.getsNodePid(), true);
-			snodeBo = (AdNodeBo) BoFactory.getInstance().create(adNode);
-		}
-		return snodeBo;
-	}
-	@Override
-	public void setSnodeBo(NodeBo snodeBo)throws Exception {
+	public void setSnodeBo(AbstractNodeBo snodeBo)throws Exception {
 		if(!(snodeBo instanceof AdNodeBo)){
 			throw new Exception("不支持的类型");
 		}
 		this.snodeBo = (AdNodeBo)snodeBo;
-		this.po.setsNodePid(snodeBo.getPo().pid());
+		this.setsNodePid(snodeBo.getObj().getPid());
 	}
 	@Override
 	public AdNodeBo getEnodeBo(){
 		return enodeBo;
 	}
+
 	@Override
-	public AdNodeBo loadEnodeBo() throws Exception {
-		if (null == enodeBo) {
-			AdNodeSelector adNodeSel = new AdNodeSelector(conn);
-			AdNode adNode = (AdNode)adNodeSel.loadById(po.geteNodePid(), true);
-			enodeBo = (AdNodeBo) BoFactory.getInstance().create(adNode);
-		}
-		return enodeBo;
-	}
-	@Override
-	public void setEnodeBo(NodeBo enodeBo) throws Exception{
+	public void setEnodeBo(AbstractNodeBo enodeBo) throws Exception{
 		if(!(enodeBo instanceof AdNodeBo)){
 			throw new Exception("不支持的类型");
 		}
 		this.enodeBo = (AdNodeBo)enodeBo;
-		this.po.seteNodePid(enodeBo.getPo().pid());
+		this.seteNodePid(enodeBo.getObj().getPid());
 	}
 
 	@Override
-	public IObj getPo() {
+	public BasicObj getObj() {
 		// TODO Auto-generated method stub
-		return po;
+		return obj;
 	}
 
 	@Override
-	public void setPo(IObj po) {
-		this.po = (AdLink) po;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.navinfo.dataservice.engine.edit.bo.LinkBo#getGeometry()
-	 */
-	@Override
-	public Geometry getGeometry() {
-		return po.getGeometry();
-	}
-	@Override
-	public void setGeometry(Geometry geo){
-		this.po.setGeometry(geo);
-		this.po.setLength(GeometryUtils.getLinkLength(geo));
-		
+	public void setObj(BasicObj obj) {
+		this.obj = (AdLink) obj;
 	}
 
 	/**
@@ -130,18 +109,17 @@ public class AdLinkBo extends LinkBo {
 	@Override
 	public AdLinkBo copy() throws Exception{
 		AdLinkBo newBo = new AdLinkBo();
-		AdLink newPo = new AdLink();
-		newPo.copy(po);
-		newPo.setPid(PidService.getInstance().applyAdNodePid());
-		newBo.setPo(newPo);
-		return null;
+		BasicObj newObj = obj.copyObj(PidService.getInstance().applyAdNodePid());
+		newBo.setObj(newObj);
+		return newBo;
 	}
 	
 	@Override
-	public NodeBo createNewNodeBo(double x,double y)throws Exception{
+	public AbstractNodeBo createNewNodeBo(double x,double y)throws Exception{
 		AdNodeBo newBo = new AdNodeBo();
-		AdNode adNode = NodeOperateUtils.createAdNode(x, y);
-		newBo.setPo(adNode);
+		//TODO
+//		AdNode adNode = NodeOperateUtils.createAdNode(x, y);
+//		newBo.setPo(adNode);
 		return newBo;
 	}
 	
@@ -149,14 +127,14 @@ public class AdLinkBo extends LinkBo {
 	public void computeMeshes()throws Exception{
 		Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(getGeometry());
 		if(meshes!=null){
-			List<IRow> meshIRows = new ArrayList<IRow>();
+			List<BasicRow> meshIRows = new ArrayList<BasicRow>();
 			for(String mesh:meshes){
 				AdLinkMesh adLinkMesh = new AdLinkMesh();
-				adLinkMesh.setLinkPid(po.getPid());
-				adLinkMesh.setMesh(Integer.parseInt(mesh));
+				adLinkMesh.setLinkPid(obj.getPid());
+				adLinkMesh.setMeshId(Integer.parseInt(mesh));
 				meshIRows.add(adLinkMesh);
 			}
-			po.setMeshes(meshIRows);
+			obj.setMeshes(meshIRows);
 		}
 	}
 }

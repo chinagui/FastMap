@@ -1,37 +1,36 @@
 package com.navinfo.dataservice.engine.edit.bo;
 
-import com.navinfo.dataservice.dao.glm.iface.Result;
-import com.vividsolutions.jts.geom.Geometry;
+import com.navinfo.dataservice.engine.edit.model.OperationResult;
 
 
-public class LinkBreakResult extends Result {
+public class LinkBreakResult extends OperationResult {
 
-	protected LinkBo targetLinkBo;
-	protected LinkBo newLeftLink;
-	protected LinkBo newRightLink;
-	protected NodeBo newNode;
-	public LinkBo getTargetLinkBo() {
+	protected AbstractLinkBo targetLinkBo;
+	protected AbstractLinkBo newLeftLink;
+	protected AbstractLinkBo newRightLink;
+	protected AbstractNodeBo newNode;
+	public AbstractLinkBo getTargetLinkBo() {
 		return targetLinkBo;
 	}
-	public void setTargetLinkBo(LinkBo targetLinkBo) {
+	public void setTargetLinkBo(AbstractLinkBo targetLinkBo) {
 		this.targetLinkBo = targetLinkBo;
 	}
-	public LinkBo getNewLeftLink() {
+	public AbstractLinkBo getNewLeftLink() {
 		return newLeftLink;
 	}
-	public void setNewLeftLink(LinkBo newLeftLink) {
+	public void setNewLeftLink(AbstractLinkBo newLeftLink) {
 		this.newLeftLink = newLeftLink;
 	}
-	public LinkBo getNewRightLink() {
+	public AbstractLinkBo getNewRightLink() {
 		return newRightLink;
 	}
-	public void setNewRightLink(LinkBo newRightLink) {
+	public void setNewRightLink(AbstractLinkBo newRightLink) {
 		this.newRightLink = newRightLink;
 	}
-	public NodeBo getNewNode() {
+	public AbstractNodeBo getNewNode() {
 		return newNode;
 	}
-	public void setNewNode(NodeBo newNode) {
+	public void setNewNode(AbstractNodeBo newNode) {
 		this.newNode = newNode;
 	}
 }

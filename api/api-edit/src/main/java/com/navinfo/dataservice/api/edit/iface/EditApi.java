@@ -8,5 +8,5 @@ package com.navinfo.dataservice.api.edit.iface;
 *  
 */
 public interface EditApi {
-	
+	public long applyPid(String tableName,int count)throws Exception;
 }

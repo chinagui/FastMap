@@ -108,7 +108,7 @@ public class DbConnectConfig {
 	
 	/**
 	 * 
-	 * @param connectString:"ORALCE,ip,port,sid,username/dbname,user passwd"
+	 * @param connectString:"ORALCE/MYSQL,ip,port,sid,username/dbname,user passwd"
 	 * @param bizType
 	 * @return
 	 * @throws Exception

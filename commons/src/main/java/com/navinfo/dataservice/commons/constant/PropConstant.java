@@ -79,4 +79,6 @@ public class PropConstant {
 	public static final String dataSourceType="datasource.sql.type";
 	
 	public static final String dataSourceStatEnable="datasource.sql.stat.enable";
+	
+	public static final String pidServers="pid.connection.string";
 }

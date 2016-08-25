@@ -26,8 +26,13 @@ public class BasicPo {
 	private void addOldValue(String colName,Object value){
 		if(oldValues==null){
 			oldValues = new HashMap<String,Object>();
+			oldValues.put(colName, value);
+		}else{
+			//old值已经保存下来的不要再覆盖，防止多次修改时丢失原始值
+			if(!oldValues.containsKey(colName)){
+				oldValues.put(colName, value);
+			}
 		}
-		oldValues.put(colName, value);
 	}
 	public <T> void setAttrByCol(String colName,T newValue)throws Exception{
 		//colName->getter

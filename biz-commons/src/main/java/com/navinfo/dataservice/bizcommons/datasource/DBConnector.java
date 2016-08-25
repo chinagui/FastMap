@@ -46,7 +46,7 @@ public class DBConnector {
 						connConfig = DbConnectConfig
 								.createConnectConfig(manDb.getConnectParam());
 					} catch (Exception e) {
-						throw new SQLException("从datahub获取元数据信息失败："
+						throw new SQLException("从datahub获取管理库信息失败："
 								+ e.getMessage(), e);
 					}
 					manDataSource = MultiDataSourceFactory.getInstance()
@@ -94,7 +94,7 @@ public class DBConnector {
 						connConfig = DbConnectConfig
 								.createConnectConfig(metaDb.getConnectParam());
 					} catch (Exception e) {
-						throw new SQLException("从datahub获取元数据信息失败："
+						throw new SQLException("从datahub获取FM母库信息失败："
 								+ e.getMessage(), e);
 					}
 					mkDataSource = MultiDataSourceFactory.getInstance()
@@ -118,7 +118,7 @@ public class DBConnector {
 						connConfig = DbConnectConfig
 								.createConnectConfig(metaDb.getConnectParam());
 					} catch (Exception e) {
-						throw new SQLException("从datahub获取元数据信息失败："
+						throw new SQLException("从datahub获取PID数据库信息失败："
 								+ e.getMessage(), e);
 					}
 					pidDataSource = MultiDataSourceFactory.getInstance()
@@ -172,7 +172,7 @@ public class DBConnector {
 						connConfig = DbConnectConfig
 								.createConnectConfig(db.getConnectParam());
 					} catch (Exception e) {
-						throw new SQLException("从datahub获取元数据信息失败："
+						throw new SQLException("从datahub获取统计库信息失败："
 								+ e.getMessage(), e);
 					}
 					statClient = MultiDataSourceFactory.getInstance()

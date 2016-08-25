@@ -16,27 +16,65 @@ import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
 import com.navinfo.dataservice.dao.pidservice.PidService;
 import com.navinfo.dataservice.engine.edit.bo.ad.AdNodeBo;
+import com.navinfo.dataservice.engine.edit.model.AbstractLink;
+import com.navinfo.dataservice.engine.edit.model.OperationType;
 import com.navinfo.dataservice.engine.edit.utils.NodeOperateUtils;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
 
-public abstract class LinkBo extends AbstractBo {
+/**
+ * 实现了通用Link有的属性，geometry，length，s_node_pid,e_node_pid
+ * @ClassName: LinkBo
+ * @author xiaoxiaowen4127
+ * @date 2016年8月17日
+ * @Description: LinkBo.java
+ */
+public abstract class AbstractLinkBo extends AbstractBo {
 
-	public abstract Geometry getGeometry();
-	public abstract void setGeometry(Geometry geo);
+	public Geometry getGeometry(){
+		return ((AbstractLink)getObj()).getGeometry();
+	}
+	public void setGeometry(Geometry geo){
+		if(getObj().checkValue("GEOMETRY", getGeometry(), geo)){
+			((AbstractLink)getObj()).setGeometry(geo);
+		}
+	}
+	public long getsNodePid() {
+		return ((AbstractLink)getObj()).getsNodePid();
+	}
+	public void setsNodePid(long sNodePid) {
+		if(getObj().checkValue("S_NODE_PID", getsNodePid(), sNodePid)){
+			((AbstractLink)getObj()).setsNodePid(sNodePid);
+		}
+	}
+	public long geteNodePid() {
+		return ((AbstractLink)getObj()).geteNodePid();
+	}
+	public void seteNodePid(long eNodePid) {
+		if(getObj().checkValue("E_NODE_PID", geteNodePid(), eNodePid)){
+			((AbstractLink)getObj()).seteNodePid(eNodePid);
+		}
+	}
+
+	public double getLength() {
+		return ((AbstractLink)getObj()).getLength();
+	}
+	public void setLength(double length) {
+		if(getObj().checkValue("LENGTH", getLength(), length)){
+			((AbstractLink)getObj()).setLength(length);
+		}
+	}
 	
-	public abstract NodeBo getSnodeBo();
-	public abstract NodeBo loadSnodeBo()throws Exception;
-	public abstract void setSnodeBo(NodeBo snodeBo)throws Exception;
+	public abstract AbstractNodeBo getSnodeBo();
+	public abstract void setSnodeBo(AbstractNodeBo snodeBo)throws Exception;
 	
-	public abstract NodeBo getEnodeBo();
-	public abstract NodeBo loadEnodeBo()throws Exception;
-	public abstract void setEnodeBo(NodeBo enodeBo)throws Exception;
+	public abstract AbstractNodeBo getEnodeBo();
+	public abstract void setEnodeBo(AbstractNodeBo enodeBo)throws Exception;
 	
 	public abstract void computeMeshes()throws Exception;
-	public abstract NodeBo createNewNodeBo(double x,double y)throws Exception;
+	public abstract AbstractNodeBo createNewNodeBo(double x,double y)throws Exception;
 	
 	/**
 	 * 完成了跟几何相关的所有属性和子表赋值
@@ -47,7 +85,6 @@ public abstract class LinkBo extends AbstractBo {
 	 */
 	public LinkBreakResult breakoff(Point point) throws Exception {
 		LinkBreakResult result = new LinkBreakResult();
-		result.setPrimaryPid(getPo().pid());
 		//判断打断点是否在形状点上还是在线段上
 		log.info("判断打断点是否在形状点上还是在线段上");
 		Geometry geo = GeoTranslator.transform(point, 100000, 5);
@@ -109,33 +146,38 @@ public abstract class LinkBo extends AbstractBo {
 		Geometry newRightGeo = GeoTranslator.geojson2Jts(eGeojson,0.00001,5);
 		//
 		log.info("2 删除要打断的线信息");
-		result.insertObject(getPo(), ObjStatus.DELETE, getPo().pid());
+		getObj().setOpType(OperationType.DELETE);
+		result.putObj(getObj());
 		result.setTargetLinkBo(this);
 
 		log.debug("3 生成打断点的信息");
-		NodeBo breakNodeBo = createNewNodeBo(point.getX(), point.getY());
-		result.insertObject(breakNodeBo.getPo(), ObjStatus.INSERT, breakNodeBo.getPo().pid());
+		AbstractNodeBo breakNodeBo = createNewNodeBo(point.getX(), point.getY());
+		breakNodeBo.getObj().setOpType(OperationType.INSERT);
+		result.putObj(breakNodeBo.getObj());
 		result.setNewNode(breakNodeBo);
-		int breakNodePid = breakNodeBo.getPo().pid();
+		long breakNodePid = breakNodeBo.getObj().getPid();
 		log.debug("3.1 打断点的pid = " + breakNodePid);
 
 		log.debug("4 组装 第一条link 的信息");
-		LinkBo leftLinkBo = (LinkBo)this.copy();
+		AbstractLinkBo leftLinkBo = (AbstractLinkBo)this.copy();
+		leftLinkBo.getObj().setOpType(OperationType.INSERT);
 		leftLinkBo.setGeometry(GeoTranslator.transform(newLeftGeo, 100000, 0));
+		leftLinkBo.setLength(GeometryUtils.getLinkLength(getGeometry()));
 		leftLinkBo.setSnodeBo(this.getSnodeBo());
 		leftLinkBo.setEnodeBo(breakNodeBo);
-		result.insertObject(leftLinkBo.getPo(), ObjStatus.INSERT, leftLinkBo.getPo().pid());
+		result.putObj(leftLinkBo.getObj());
 		result.setNewLeftLink(leftLinkBo);
-		log.debug("4.1 生成第一条link信息 pid = " + leftLinkBo.getPo().pid());
+		log.debug("4.1 生成第一条link信息 pid = " + leftLinkBo.getObj().getPid());
 
 		log.debug("5 组装 第二条link 的信息");
-		LinkBo rightLinkBo = (LinkBo)this.copy();
+		AbstractLinkBo rightLinkBo = (AbstractLinkBo)this.copy();
 		rightLinkBo.setGeometry(GeoTranslator.transform(newRightGeo, 100000, 0));
+		rightLinkBo.setLength(GeometryUtils.getLinkLength(getGeometry()));
 		rightLinkBo.setSnodeBo(breakNodeBo);
 		rightLinkBo.setEnodeBo(this.getEnodeBo());
-		result.insertObject(rightLinkBo.getPo(), ObjStatus.INSERT, rightLinkBo.getPo().pid());
+		result.putObj(rightLinkBo.getObj());
 		result.setNewRightLink(rightLinkBo);
-		log.debug("5.1 生成第二条link信息 pid = " + rightLinkBo.getPo().pid());
+		log.debug("5.1 生成第二条link信息 pid = " + rightLinkBo.getObj().getPid());
 		
 		return result;
 	}

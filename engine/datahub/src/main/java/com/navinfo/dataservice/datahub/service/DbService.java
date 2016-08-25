@@ -376,6 +376,28 @@ public class DbService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+
+	public DbInfo getRandomDbByBizType(String bizType)throws DataHubException{
+		DbInfo db=null;
+		Connection conn = null;
+		try{
+			String sql = "SELECT * FROM ("+mainSql+" WHERE D.SERVER_ID=S.SERVER_ID AND D.BIZ_TYPE=? AND D.DB_ROLE=0 ORDER BY DBMS_RANDOM.VALUE) WHERE ROWNUM=1";
+			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
+			QueryRunner run = new QueryRunner();
+			db = run.query(conn,sql, new DbResultSetHandler(true),bizType);
+			
+		}catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new DataHubException("从管理库中查询出现sql或格式错误，原因："+e.getMessage(),e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+		if(db==null){
+			throw new DataHubException("未查询到该数据库的信息。");
+		}
+		return db;
+	}
 	public static void main(String[] args){
 		try{
 //			String conString = dbMan.getDbConnectStrByPid(1L);

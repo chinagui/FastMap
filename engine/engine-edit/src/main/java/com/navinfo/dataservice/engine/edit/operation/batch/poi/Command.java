@@ -32,7 +32,6 @@ public class Command extends AbstractCommand implements ICommand {
 	public Command(JSONObject json, String requester) throws Exception {
 		try {
 			this.requester = requester;
-			this.setDbId(json.getInt("dbId"));
 			this.setPid(json.getInt("pid"));
 			IxPoi poi = new IxPoi();
 			poi.Unserialize(json.getJSONObject("poi"));

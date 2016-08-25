@@ -2,6 +2,7 @@ package com.navinfo.dataservice.commons.geom;
 
 import oracle.spatial.geometry.JGeometry;
 
+import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.LineSegment;
 
 /**
@@ -19,7 +20,8 @@ public class AngleCalculator {
 	 *            AB连线与正北方向的夹角（0~360）
 	 * @return B点的经纬度
 	 */
-	public static LngLatPoint getMyLatLng(LngLatPoint A, double distance, double angle) {
+	public static LngLatPoint getMyLatLng(LngLatPoint A, double distance,
+			double angle) {
 
 		double dx = distance * 1000 * Math.sin(Math.toRadians(angle));
 		double dy = distance * 1000 * Math.cos(Math.toRadians(angle));
@@ -100,48 +102,117 @@ public class AngleCalculator {
 			LngLatPoint startPoint = new LngLatPoint(points[size - 2],
 					points[size - 1]);
 
-			LngLatPoint endPoint = new LngLatPoint(points[size - 4], points[size - 3]);
+			LngLatPoint endPoint = new LngLatPoint(points[size - 4],
+					points[size - 3]);
 
 			angle = getAngle(startPoint, endPoint);
 		}
 
 		return angle;
 	}
-	
+
 	/**
 	 * 以link1为正北方向，计算link2和link1的夹角
+	 * 
 	 * @param link1
 	 * @param link2
 	 * @return
 	 */
-	public static double getAngle(LineSegment link1, LineSegment link2){
-		
-		double a1 = getAngle(new LngLatPoint(link1.p0.x, link1.p0.y),new LngLatPoint(link1.p1.x, link1.p1.y));
-		
-		double a2 = getAngle(new LngLatPoint(link2.p0.x, link2.p0.y),new LngLatPoint(link2.p1.x, link2.p1.y));
-		
-		if (a2>=a1){
-			return Math.round(a2-a1); 
-		}
-		else{
-			return Math.round(a2-a1+360);
+	public static double getAngle(LineSegment link1, LineSegment link2) {
+
+		double a1 = getAngle(new LngLatPoint(link1.p0.x, link1.p0.y),
+				new LngLatPoint(link1.p1.x, link1.p1.y));
+
+		double a2 = getAngle(new LngLatPoint(link2.p0.x, link2.p0.y),
+				new LngLatPoint(link2.p1.x, link2.p1.y));
+
+		if (a2 >= a1) {
+			return Math.round(a2 - a1);
+		} else {
+			return Math.round(a2 - a1 + 360);
 		}
 	}
+
 	/**
 	 * 以link1为正北方向，计算link2和link1的夹角
+	 * 
 	 * @param link1
 	 * @param link2
 	 * @return
 	 */
-	public static double getnMinAngle(LineSegment link1, LineSegment link2){
-		
-		double a1 = getAngle (new LngLatPoint(link1.p0.x, link1.p0.y),new LngLatPoint(link1.p1.x, link1.p1.y));
-		
-		double a2 = getAngle(new LngLatPoint(link2.p0.x, link2.p0.y),new LngLatPoint(link2.p1.x, link2.p1.y));
-		
-		return Math.abs(a2-a1);
+	public static double getnMinAngle(LineSegment link1, LineSegment link2) {
+
+		double a1 = getAngle(new LngLatPoint(link1.p0.x, link1.p0.y),
+				new LngLatPoint(link1.p1.x, link1.p1.y));
+
+		double a2 = getAngle(new LngLatPoint(link2.p0.x, link2.p0.y),
+				new LngLatPoint(link2.p1.x, link2.p1.y));
+
+		return Math.abs(a2 - a1);
 	}
-	
+
+	/**
+	 * 计算link2和link1的夹角
+	 * 
+	 * @param link1
+	 * @param link2
+	 * @return
+	 */
+	public static double getConnectLinksAngle(LineSegment preLink,
+			LineSegment nextLink) {
+
+		Coordinate preS = preLink.getCoordinate(0);
+		Coordinate preE = preLink.getCoordinate(1);
+
+		Coordinate nextS = nextLink.getCoordinate(0);
+		Coordinate nextE = nextLink.getCoordinate(1);
+
+		double a1 = 0;
+
+		double a2 = 0;
+
+		if (preS.equals(nextS)) {
+			a1 = getAngle(new LngLatPoint(preE.x, preE.y), new LngLatPoint(
+					preS.x, preS.y));
+
+			a2 = getAngle(new LngLatPoint(nextS.x, nextS.y), new LngLatPoint(
+					nextE.x, nextE.y));
+		} else if (preS.equals(nextE)) {
+			a1 = getAngle(new LngLatPoint(preE.x, preE.y), new LngLatPoint(
+					preS.x, preS.y));
+			a2 = getAngle(new LngLatPoint(nextE.x, nextE.y), new LngLatPoint(
+					nextS.x, nextS.y));
+		}
+
+		else if (preE.equals(nextS)) {
+			a1 = getAngle(new LngLatPoint(preS.x, preS.y), new LngLatPoint(
+					preE.x, preE.y));
+
+			a2 = getAngle(new LngLatPoint(nextS.x, nextS.y), new LngLatPoint(
+					nextE.x, nextE.y));
+		}
+
+		else if (preE.equals(nextE)) {
+			a1 = getAngle(new LngLatPoint(preS.x, preS.y), new LngLatPoint(
+					preE.x, preE.y));
+			a2 = getAngle(new LngLatPoint(nextE.x, nextE.y), new LngLatPoint(
+					nextS.x, nextS.y));
+		} else {
+			a1 = getAngle(new LngLatPoint(preS.x, preS.y), new LngLatPoint(
+					preE.x, preE.y));
+			a2 = getAngle(new LngLatPoint(nextS.x, nextS.y), new LngLatPoint(
+					nextE.x, nextE.y));
+		}
+
+		if (a1 > 180)
+			a1 = 360 - a1;
+
+		if (a2 > 180)
+			a2 = 360 - a2;
+
+		return Math.abs(a2 - a1);
+	}
+
 	/**
 	 * 计算大地距离的辅助类
 	 */
@@ -174,7 +245,6 @@ public class AngleCalculator {
 		}
 
 	}
-
 
 	public static void main(String[] args) {
 		LngLatPoint A = new LngLatPoint(113.249648, 23.401553);

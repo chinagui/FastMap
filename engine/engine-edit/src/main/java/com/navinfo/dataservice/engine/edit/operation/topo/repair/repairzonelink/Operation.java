@@ -14,6 +14,7 @@ import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneFace;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneFaceTopo;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneLink;
@@ -30,7 +31,8 @@ public class Operation implements IOperation {
 	private Command command;
 
 	private Connection conn;
-    private Map<Integer,List<ZoneLink>> map ;
+	private Map<Integer, List<ZoneLink>> map;
+
 	public Map<Integer, List<ZoneLink>> getMap() {
 		return map;
 	}
@@ -49,14 +51,16 @@ public class Operation implements IOperation {
 
 	@Override
 	public String run(Result result) throws Exception {
-		//修行修改线信息
+		// 修行修改线信息
 		this.updateLink(result);
-		//修行修改面信息
+		// 修行修改面信息
 		this.updateFace(result);
 		return null;
 	}
+
 	/**
 	 * 修改线的信息
+	 * 
 	 * @param result
 	 * @throws Exception
 	 */
@@ -72,87 +76,115 @@ public class Operation implements IOperation {
 			content.put("geometry", command.getLinkGeom());
 			Geometry geo = GeoTranslator.geojson2Jts(command.getLinkGeom());
 			double length = 0;
-			if(null != geo)
+			if (null != geo)
 				length = GeometryUtils.getLinkLength(geo);
 			content.put("length", length);
-			boolean isChanged = this.command.getUpdateLink().fillChangeFields(content);
-			
-			//需要往map中加入的对象，拷贝command.getUpdateLink()
+			boolean isChanged = this.command.getUpdateLink().fillChangeFields(
+					content);
+
+			// 需要往map中加入的对象，拷贝command.getUpdateLink()
 			ZoneLink link = new ZoneLink();
 			if (isChanged) {
-				result.insertObject(this.command.getUpdateLink(), ObjStatus.UPDATE,
-						this.command.getLinkPid());
-				
+				result.insertObject(this.command.getUpdateLink(),
+						ObjStatus.UPDATE, this.command.getLinkPid());
+
 				link.copy(this.command.getUpdateLink());
-				
-				link.setGeometry(GeoTranslator.geojson2Jts(command
-						.getLinkGeom(),100000,0));
+
+				link.setGeometry(GeoTranslator.geojson2Jts(
+						command.getLinkGeom(), 100000, 0));
 			}
-			
+
 			links.add(link);
-		}
-		else {
+		} else {
 			Iterator<String> it = meshes.iterator();
 			Map<Coordinate, Integer> maps = new HashMap<Coordinate, Integer>();
-			Geometry g= GeoTranslator.transform(this.command.getUpdateLink().getGeometry(),0.00001,5);
-			maps.put( g.getCoordinates()[0], this.command.getUpdateLink().getsNodePid());
-			maps.put(g.getCoordinates()[g.getCoordinates().length-1], this.command.getUpdateLink().geteNodePid());
+			Geometry g = GeoTranslator.transform(this.command.getUpdateLink()
+					.getGeometry(), 0.00001, 5);
+			maps.put(g.getCoordinates()[0], this.command.getUpdateLink()
+					.getsNodePid());
+			maps.put(g.getCoordinates()[g.getCoordinates().length - 1],
+					this.command.getUpdateLink().geteNodePid());
 			while (it.hasNext()) {
 				String meshIdStr = it.next();
-				Geometry geomInter = GeoTranslator.transform(MeshUtils
-						.linkInterMeshPolygon(GeoTranslator
-								.geojson2Jts(command.getLinkGeom()),
-								MeshUtils.mesh2Jts(meshIdStr)), 1, 5);
-				links.addAll(ZoneLinkOperateUtils.getCreateZoneLinksWithMesh(geomInter, maps,result));
+				Geometry geomInter = GeoTranslator.transform(
+						MeshUtils.linkInterMeshPolygon(GeoTranslator
+								.geojson2Jts(command.getLinkGeom()), MeshUtils
+								.mesh2Jts(meshIdStr)), 1, 5);
+				links.addAll(ZoneLinkOperateUtils.getCreateZoneLinksWithMesh(
+						geomInter, maps, result));
 
 			}
-			result.insertObject(this.command.getUpdateLink(), ObjStatus.DELETE, this.command.getLinkPid());
+			result.insertObject(this.command.getUpdateLink(), ObjStatus.DELETE,
+					this.command.getLinkPid());
 		}
+
+		updataRelationObj(links, result);
+
 		map.put(this.command.getLinkPid(), links);
 		this.map = map;
 	}
+
 	/**
 	 * 修改面的信息
+	 * 
 	 * @param result
 	 * @throws Exception
 	 */
-	private void updateFace(Result result) throws Exception{
+	private void updateFace(Result result) throws Exception {
 		if (command.getFaces() != null && command.getFaces().size() > 0) {
 			for (ZoneFace face : command.getFaces()) {
 				boolean flag = false;
 				List<ZoneLink> links = new ArrayList<ZoneLink>();
 				for (IRow iRow : face.getFaceTopos()) {
 					ZoneFaceTopo obj = (ZoneFaceTopo) iRow;
-				    if(this.map.containsKey(obj.getLinkPid())){
-				    	if(this.map.get(obj.getLinkPid()).size() > 1){
-				    		flag =true;
+					if (this.map.containsKey(obj.getLinkPid())) {
+						if (this.map.get(obj.getLinkPid()).size() > 1) {
+							flag = true;
 						}
-				    	links.addAll(this.map.get(obj.getLinkPid()));
-				    }else{
-				    	links.add((ZoneLink) new ZoneLinkSelector(conn).loadById(
-							obj.getLinkPid(), true));
-				    }
-					
+						links.addAll(this.map.get(obj.getLinkPid()));
+					} else {
+						links.add((ZoneLink) new ZoneLinkSelector(conn)
+								.loadById(obj.getLinkPid(), true));
+					}
+
 					result.insertObject(obj, ObjStatus.DELETE, face.getPid());
-					
+
 				}
-				if(flag){
-					//如果跨图幅需要重新生成面并且删除原有面信息
-					com.navinfo.dataservice.engine.edit.operation.obj.zoneface.create.Operation opFace = new com.navinfo.dataservice.engine.edit.operation.obj.zoneface.create.Operation(result);
+				if (flag) {
+					// 如果跨图幅需要重新生成面并且删除原有面信息
+					com.navinfo.dataservice.engine.edit.operation.obj.zoneface.create.Operation opFace = new com.navinfo.dataservice.engine.edit.operation.obj.zoneface.create.Operation(
+							result);
 					List<IObj> objs = new ArrayList<IObj>();
 					objs.addAll(links);
 					opFace.createFaceByZoneLink(objs);
 					result.insertObject(face, ObjStatus.DELETE, face.getPid());
-				}
-				else{
-					//如果不跨图幅只需要维护面的行政几何
-					com.navinfo.dataservice.engine.edit.operation.obj.zoneface.create.Operation opFace = new com.navinfo.dataservice.engine.edit.operation.obj.zoneface.create.Operation(result,face);
+				} else {
+					// 如果不跨图幅只需要维护面的行政几何
+					com.navinfo.dataservice.engine.edit.operation.obj.zoneface.create.Operation opFace = new com.navinfo.dataservice.engine.edit.operation.obj.zoneface.create.Operation(
+							result, face);
 					opFace.reCaleFaceGeometry(links);
 				}
-				
-		}
-	
+
+			}
+
 		}
 	}
-	
+
+	/**
+	 * 维护关联要素
+	 * 
+	 * @throws Exception
+	 */
+	private void updataRelationObj(List<ZoneLink> links, Result result)
+			throws Exception {
+
+		if (links.size() == 1) {
+			// 维护同一线
+			com.navinfo.dataservice.engine.edit.operation.obj.rdsamelink.update.Operation samelinkOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdsamelink.update.Operation(
+					this.conn);
+
+			samelinkOperation.repairLink(links.get(0),
+					this.command.getRequester(), result);
+		}
+	}
 }

@@ -83,9 +83,7 @@ public class RdLinkSearchUtils {
 		if (!linkPids.contains(targetLink.getPid())) {
 
 			linkPids.add(targetLink.getPid());
-		}
-		else
-		{
+		} else {
 			return;
 		}
 		if (linkPids.size() > 998) {
@@ -154,8 +152,8 @@ public class RdLinkSearchUtils {
 
 				LineSegment lineSegment = getLineSegment(link, connectNodePid);
 
-				double angle = AngleCalculator.getnMinAngle(targetlineSegment,
-						lineSegment);
+				double angle = AngleCalculator.getConnectLinksAngle(
+						targetlineSegment, lineSegment);
 
 				if (angle < minAngle) {
 
@@ -233,7 +231,7 @@ public class RdLinkSearchUtils {
 				LineSegment nextLinklineSegment = getLineSegment(ad,
 						cruuentNodePidDir);
 				// 计算当前线直线和联通直线夹角 选出当前线延长线夹角最小
-				double minAngle = AngleCalculator.getnMinAngle(
+				double minAngle = AngleCalculator.getConnectLinksAngle(
 						currentLinklineSegment, nextLinklineSegment);
 				if (map.size() > 0) {
 					if (map.keySet().iterator().next() > minAngle) {

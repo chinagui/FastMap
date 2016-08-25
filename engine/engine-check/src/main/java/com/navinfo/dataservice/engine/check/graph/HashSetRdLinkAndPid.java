@@ -34,8 +34,8 @@ public class HashSetRdLinkAndPid{
 	public void addAll(HashSetRdLinkAndPid rdObjSet){
 		if(rdObjSet==null||rdObjSet.size()==0){return;}
 		if(this.size()==0){
-			this.rdLinkSet=rdObjSet.getRdLinkSet();
-			this.pidLinkMap=rdObjSet.getPidLinkMap();
+			this.rdLinkSet.addAll(rdObjSet.getRdLinkSet());
+			this.pidLinkMap.putAll(rdObjSet.getPidLinkMap());
 			return;
 		}
 		HashSet<Integer> linkPidSet=new HashSet<Integer>();

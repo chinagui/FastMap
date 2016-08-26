@@ -20,11 +20,11 @@ public abstract class baseRule {
 	private ChainLoader loader;
 	
 	private Connection conn;
-	private static Logger log = Logger.getLogger(baseRule.class);
+	public Logger log = Logger.getLogger(baseRule.class);
 	List<NiValException> checkResultList=new ArrayList<NiValException>();
 	
 	public baseRule(){
-		this.log = LoggerRepos.getLogger(this.log);
+		//this.log = LoggerRepos.getLogger(this.log);
 	}
 	
 	public Connection setConn(Connection conn) {

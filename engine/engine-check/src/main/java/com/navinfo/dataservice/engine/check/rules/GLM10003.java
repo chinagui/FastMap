@@ -1,5 +1,8 @@
 package com.navinfo.dataservice.engine.check.rules;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -7,9 +10,9 @@ import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.slope.RdSlope;
+import com.navinfo.dataservice.dao.glm.model.rd.slope.RdSlopeVia;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.check.core.baseRule;
-import com.navinfo.dataservice.engine.check.graph.LinksConnectedInOneDirection;
 
 /** 
  * @ClassName: GLM10003
@@ -69,16 +72,55 @@ public class GLM10003 extends baseRule {
 				if(viaLinks.size() == 0){
 					continue;
 				}
-				LinksConnectedInOneDirection linksConnectedInOneDirection = new LinksConnectedInOneDirection(startNode,outLink,viaLinks);
-				if(!linksConnectedInOneDirection.isConnected()){
+				
+				if(!rdSlopViasConnectedInOneDirection(startNode,viaLinks)){
 					this.setCheckResult("", "", 0);
 					return;
 				}
-				
-
 			}
 		}
 
+	}
+	
+	private boolean rdSlopViasConnectedInOneDirection(int startNode,List<IRow> viaLinks) throws Exception{
+		//获取接续link的顺序pid
+		List<Integer> linkPids = new ArrayList<Integer>();
+		Iterator<IRow> viaLinksIter = viaLinks.iterator();
+		while(viaLinksIter.hasNext()){
+			RdSlopeVia rdSlopeVia = (RdSlopeVia) viaLinksIter.next();
+			linkPids.add(rdSlopeVia.getSeqNum()-1, rdSlopeVia.getLinkPid());
+		}
+		RdLinkSelector rdLinkSelector=new RdLinkSelector(this.getConn());
+		List<RdLink> rdLinkList = rdLinkSelector.loadByPids(linkPids, false);
+		Map<Integer,RdLink> rdLinkMap = new HashMap<Integer,RdLink>();
+		//获取接续link顺序列表
+		Iterator<RdLink> rdLinkListIer = rdLinkList.iterator();
+		while(rdLinkListIer.hasNext()){
+			RdLink rdLink = (RdLink) rdLinkListIer.next();
+			int index = linkPids.indexOf(rdLink.getPid());
+			rdLinkMap.put(index, rdLink);
+		}
+		//接续link是否沿通行方向
+		for(int i = 0;i<rdLinkMap.size();i++){
+			if(!rdLinkMap.containsKey(i+1)){
+				return false;
+			}
+			RdLink rdLink = (RdLink) rdLinkMap.get(i+1);
+			if(rdLink.getsNodePid()==startNode){
+				startNode = rdLink.geteNodePid();
+				if(rdLink.getDirect() == 3){
+					return false;
+				}
+			}else if(rdLink.geteNodePid()==startNode){
+				startNode = rdLink.getsNodePid();
+				if(rdLink.getDirect() == 2){
+					return false;
+				}
+			}else{
+				return false;
+			}
+		}
+		return true;
 	}
 
 	/* (non-Javadoc)

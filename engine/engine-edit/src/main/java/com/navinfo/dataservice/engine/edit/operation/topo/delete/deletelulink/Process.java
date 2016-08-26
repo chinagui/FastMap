@@ -43,7 +43,8 @@ public class Process extends AbstractProcess<Command> {
 
 	private void lockLuNode() throws Exception {
 		LuNodeSelector selector = new LuNodeSelector(this.getConn());
-		List<LuNode> nodes = selector.loadEndLuNodeByLinkPid(this.getCommand().getLinkPid(), false);
+		List<LuNode> nodes = selector.loadEndLuNodeByLinkPid(this.getCommand()
+				.getLinkPid(), false);
 		this.getCommand().setNodes(nodes);
 
 		List<Integer> nodePids = new ArrayList<Integer>();
@@ -55,24 +56,40 @@ public class Process extends AbstractProcess<Command> {
 
 	private void lockLuLink() throws Exception {
 		LuLinkSelector selector = new LuLinkSelector(this.getConn());
-		LuLink link = (LuLink) selector.loadById(this.getCommand().getLinkPid(), true);
+		LuLink link = (LuLink) selector.loadById(
+				this.getCommand().getLinkPid(), true);
 		this.getCommand().setLink(link);
 	}
 
 	private void lockLuFace() throws Exception {
 		LuFaceSelector selector = new LuFaceSelector(this.getConn());
-		List<LuFace> faces = selector.loadLuFaceByLinkId(this.getCommand().getLinkPid(), true);
+		List<LuFace> faces = selector.loadLuFaceByLinkId(this.getCommand()
+				.getLinkPid(), true);
 		this.getCommand().setFaces(faces);
 	}
 
 	@Override
 	public String exeOperation() throws Exception {
+		
 		new OpTopo(this.getCommand()).run(this.getResult());
 		// 同一点关系
 		OpRefRdSameNode opRefRdSameNode = new OpRefRdSameNode(getConn());
+
 		opRefRdSameNode.run(getResult(), this.getCommand().getLink());
-		
+
+		updataRelationObj();
+
 		return new OpRefLuFace(this.getCommand()).run(this.getResult());
 	}
 
+	/**
+	 * 维护关联要素
+	 * 
+	 * @throws Exception
+	 */
+	private void updataRelationObj() throws Exception {
+		OpRefRelationObj opRefRelationObj = new OpRefRelationObj(getConn());
+
+		opRefRelationObj.handleSameLink(this.getResult(), this.getCommand());
+	}
 }

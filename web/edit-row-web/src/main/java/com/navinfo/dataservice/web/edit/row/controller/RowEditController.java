@@ -2,6 +2,7 @@ package com.navinfo.dataservice.web.edit.row.controller;
 
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -15,15 +16,20 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.navinfo.dataservice.api.edit.iface.EditApi;
+import com.navinfo.dataservice.api.job.iface.JobApi;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.exception.DataNotChangeException;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
+import com.navinfo.dataservice.commons.token.AccessToken;
+import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 import com.navinfo.navicommons.database.QueryRunner;
+import com.navinfo.navicommons.database.sql.DBUtils;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 @Controller
@@ -38,10 +44,29 @@ public class RowEditController extends BaseController {
 		try {
 
 			JSONObject json = JSONObject.fromObject(parameter);
-
+			
+			OperType operType = Enum.valueOf(OperType.class, json.getString("command"));
+			
+			int dbId = json.getInt("dbId");
+			
 			EditApi editApi = (EditApi) ApplicationContextUtil.getBean("editApi");
 
 			JSONObject result = editApi.run(json);
+			
+			int pid = 0;
+			
+			if(operType !=  OperType.CREATE)
+			{
+				pid = json.getInt("objId");
+			}
+			else
+			{
+				pid = result.getInt("pid");
+			}
+			
+			Connection conn = DBConnector.getInstance().getConnectionById(dbId);
+			
+			upatePoiStatus(pid,conn);
 
 			return new ModelAndView("jsonView", success(result));
 		} catch (DataNotChangeException e) {
@@ -153,6 +178,69 @@ public class RowEditController extends BaseController {
 					e.printStackTrace();
 				}
 			}
+		}
+	}
+	
+	/**
+	 * poi操作修改poi状态为已作业，鲜度信息为0 zhaokk sourceFlag 0 web 1 Android
+	 * 
+	 * @param row
+	 * @throws Exception
+	 */
+	public void upatePoiStatus(int pid,Connection conn) throws Exception {
+		StringBuilder sb = new StringBuilder(" MERGE INTO poi_edit_status T1 ");
+		sb.append(" USING (SELECT row_id as a , 2 AS b,0 AS C FROM ix_poi where pid = :1) T2 ");
+		sb.append(" ON ( T1.row_id=T2.a) ");
+		sb.append(" WHEN MATCHED THEN ");
+		sb.append(" UPDATE SET T1.status = T2.b,T1.fresh_verified= T2.c ");
+		sb.append(" WHEN NOT MATCHED THEN ");
+		sb.append(" INSERT (T1.row_id,T1.status,T1.fresh_verified) VALUES(T2.a,T2.b,T2.c)");
+		PreparedStatement pstmt = null;
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+			pstmt.setInt(1, pid);
+			pstmt.executeUpdate();
+		} catch (Exception e) {
+			throw e;
+
+		} finally {
+			DBUtils.closeStatement(pstmt);
+			DBUtils.closeConnection(conn);
+		}
+
+	}
+	
+	/**
+	 * POI提交
+	 * 根据所选grid进行POI数据的提交，自动执行检查、批处理
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException
+	 */
+	@RequestMapping(value = "/poi/base/release")
+	public ModelAndView getPoiBaseRelease(HttpServletRequest request)
+			throws ServletException, IOException {
+
+		String parameter = request.getParameter("parameter");
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			int dbId = jsonReq.getInt("dbId");
+			JSONArray gridIds=jsonReq.getJSONArray("gridIds");
+			
+			JSONObject jobReq=new JSONObject();
+			jobReq.put("targetDbId", dbId);
+			jobReq.put("gridIds", gridIds);
+					
+			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
+			long userId=tokenObj.getUserId();
+			//long userId=2;
+			JobApi apiService=(JobApi) ApplicationContextUtil.getBean("jobApi");
+			long jobId=apiService.createJob("editPoiBaseRelease", jobReq, userId, "POI行编提交");	
+			return new ModelAndView("jsonView", success(jobId));
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
 	}
 }

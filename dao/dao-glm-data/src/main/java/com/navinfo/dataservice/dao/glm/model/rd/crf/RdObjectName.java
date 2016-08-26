@@ -14,7 +14,6 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
-import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -44,9 +43,6 @@ public class RdObjectName implements IRow {
 	
 	//名称发音
 	private String phonetic;
-	
-	//LANDMARK坐标
-	private Geometry geometry;
 	
 	private String rowId;
 	
@@ -106,14 +102,6 @@ public class RdObjectName implements IRow {
 
 	public void setPid(int pid) {
 		this.pid = pid;
-	}
-
-	public Geometry getGeometry() {
-		return geometry;
-	}
-
-	public void setGeometry(Geometry geometry) {
-		this.geometry = geometry;
 	}
 
 	public String getRowId() {

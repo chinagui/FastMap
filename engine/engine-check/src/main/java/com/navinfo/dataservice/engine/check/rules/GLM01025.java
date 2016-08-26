@@ -42,7 +42,6 @@ public class GLM01025 extends baseRule {
 	public void postCheck(CheckCommand checkCommand) throws Exception {
 		
 		String sql = "select a.node_pid from rd_node a where a.node_pid = :1 and a.geometry.sdo_point.x = :2 and a.geometry.sdo_point.y = :3 union all select a.node_pid from rd_node a where a.node_pid = :4 and a.geometry.sdo_point.x = :5 and a.geometry.sdo_point.y = :6 ";
-		PreparedStatement pstmt = getConn().prepareStatement(sql);
 
 		List<IRow> objList = checkCommand.getGlmList();
 		
@@ -68,7 +67,7 @@ public class GLM01025 extends baseRule {
 					sx = coords[0].x;
 					sy = coords[0].y;
 				}
-				
+				PreparedStatement pstmt = getConn().prepareStatement(sql);
 				pstmt.setInt(1, rdLink.getsNodePid());				
 				pstmt.setDouble(2, sx);				
 				pstmt.setDouble(3, sy);				
@@ -93,13 +92,13 @@ public class GLM01025 extends baseRule {
 				}
 				
 				resultSet.close();
-				
+				pstmt.close();
 				if(!hasEnode || !hasSnode){
 					this.setCheckResult(rdLink.getGeometry(), "[RD_LINK,"+rdLink.getPid()+"]", rdLink.getMeshId());
 					return;	
 				}
 			}
-			pstmt.close();
+			
 		}
 	}
 	

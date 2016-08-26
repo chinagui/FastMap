@@ -7,11 +7,7 @@ import java.util.Map;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.directroute.RdDirectroute;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
-import com.navinfo.dataservice.dao.glm.model.rd.slope.RdSlope;
-import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.check.core.baseRule;
-import com.navinfo.dataservice.engine.check.graph.LinksConnectedInOneDirection;
 import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
 
 /** 

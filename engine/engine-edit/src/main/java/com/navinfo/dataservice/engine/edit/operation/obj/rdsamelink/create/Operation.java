@@ -2,18 +2,24 @@ package com.navinfo.dataservice.engine.edit.operation.obj.rdsamelink.create;
 
 import java.sql.Connection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+
+import org.apache.commons.collections.CollectionUtils;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameLink;
 import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameLinkPart;
+import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameNode;
+import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameNodePart;
 import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
 import com.navinfo.dataservice.dao.glm.selector.rd.same.RdSameLinkSelector;
 import com.navinfo.dataservice.dao.pidservice.PidService;
@@ -89,9 +95,9 @@ public class Operation implements IOperation {
 
 			rdSameLink.getParts().add(sameLinkPart);
 		}
-		
+
 		result.insertObject(rdSameLink, ObjStatus.INSERT, rdSameLink.getPid());
-		
+
 		// 更新坐标
 		updateLinkGeo(mainPid, mainTableName.toUpperCase(), linkMap, result);
 	}
@@ -104,8 +110,7 @@ public class Operation implements IOperation {
 		Geometry linkGeometry = selector.getMainLinkGeometry(linkPid,
 				tableName, false);
 
-		if(linkGeometry==null)
-		{
+		if (linkGeometry == null) {
 			return;
 		}
 		// 组装参数
@@ -136,7 +141,7 @@ public class Operation implements IOperation {
 	}
 
 	/**
-	 * 调用点的移动接口，维护点的坐标
+	 * 调用线修形接口，维护线的坐标
 	 * 
 	 * @param type
 	 * @throws Exception
@@ -175,6 +180,42 @@ public class Operation implements IOperation {
 		default:
 			break;
 		}
+	}
+
+	/**
+	 * 给打断同一线link调用的方法，创建同一线关系
+	 * 
+	 * @param result
+	 *            结果集
+	 * @param sameLinkList
+	 *            组成link集合
+	 * @throws Exception
+	 */
+	public void breakSameLink(Result result, List<IRow> linkList)
+			throws Exception {
+		if (CollectionUtils.isNotEmpty(linkList)) {
+			return;
+		}
+
+		RdSameLink rdSameLink = new RdSameLink();
+
+		rdSameLink.setPid(PidService.getInstance().applyRdSameLinkPid());
+
+		for (IRow row : linkList) {
+			RdSameLinkPart sameLinkPart = new RdSameLinkPart();
+
+			sameLinkPart.setGroupId(rdSameLink.getPid());
+
+			sameLinkPart.setLinkPid(row.parentPKValue());
+
+			sameLinkPart.setTableName(ReflectionAttrUtils
+					.getTableNameByObjType(row.objType()));
+
+			rdSameLink.getParts().add(sameLinkPart);
+		}
+
+		result.insertObject(rdSameLink, ObjStatus.INSERT, rdSameLink.getPid());
+
 	}
 
 }

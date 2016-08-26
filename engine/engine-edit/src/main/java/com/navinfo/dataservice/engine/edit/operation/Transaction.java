@@ -272,6 +272,9 @@ public class Transaction {
 			case DELETE:
 				return new com.navinfo.dataservice.engine.edit.operation.obj.poi.delete.Command(
 						json, requester);
+			case BATCH:
+				return new com.navinfo.dataservice.engine.edit.operation.batch.poi.Command(
+						json, requester);
 			}
 		case IXPOIPARENT:
 			switch (operType) {
@@ -901,6 +904,9 @@ public class Transaction {
 						command);
 			case DELETE:
 				return new com.navinfo.dataservice.engine.edit.operation.obj.poi.delete.Process(
+						command);
+			case BATCH:
+				return new com.navinfo.dataservice.engine.edit.operation.batch.poi.Process(
 						command);
 			}
 		case IXPOIPARENT:

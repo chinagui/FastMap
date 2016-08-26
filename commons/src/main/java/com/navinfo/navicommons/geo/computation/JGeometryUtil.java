@@ -11,6 +11,9 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.MultiPoint;
+import com.vividsolutions.jts.operation.buffer.BufferOp;
+import com.vividsolutions.jts.operation.buffer.BufferParameters;
+import com.vividsolutions.jts.operation.polygonize.Polygonizer;
 import com.vividsolutions.jts.triangulate.ConformingDelaunayTriangulationBuilder;
 
 import oracle.spatial.geometry.JGeometry;
@@ -161,10 +164,16 @@ public class JGeometryUtil {
 		builder.setSites(mp);
 		// 实际为GeometryCollection（组成的geometry紧密相连）
 		Geometry ts = builder.getTriangles(gf);
-
+		
 		// 以0的距离进行缓冲（因为各多边形两两共边），生成一个多边形
 		// 此时则将点云构造成了多边形
-		Geometry union = ts.buffer(2);
+		Geometry union = ts.buffer(0);
+		
+//		BufferOp bufOp = new BufferOp(ts);  
+//        bufOp.setEndCapStyle(BufferParameters.CAP_SQUARE);  
+//        Geometry bg = bufOp.getResultGeometry(0);  
+//        
+//        Polygonizer p = new Polygonizer(); 
 		
 		return union;
 	}

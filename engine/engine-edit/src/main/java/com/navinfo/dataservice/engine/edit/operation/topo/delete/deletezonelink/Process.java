@@ -18,7 +18,7 @@ import com.navinfo.dataservice.engine.edit.operation.AbstractProcess;
  * 删除ZONE线执行类
  * 
  * @author zhaokk
- *
+ * 
  */
 public class Process extends AbstractProcess<Command> {
 
@@ -31,7 +31,8 @@ public class Process extends AbstractProcess<Command> {
 
 		ZoneLinkSelector selector = new ZoneLinkSelector(this.getConn());
 
-		ZoneLink link = (ZoneLink) selector.loadById(this.getCommand().getLinkPid(), true);
+		ZoneLink link = (ZoneLink) selector.loadById(this.getCommand()
+				.getLinkPid(), true);
 
 		this.getCommand().setLink(link);
 	}
@@ -41,7 +42,8 @@ public class Process extends AbstractProcess<Command> {
 
 		ZoneNodeSelector selector = new ZoneNodeSelector(this.getConn());
 
-		List<ZoneNode> nodes = selector.loadEndZoneNodeByLinkPid(this.getCommand().getLinkPid(), false);
+		List<ZoneNode> nodes = selector.loadEndZoneNodeByLinkPid(this
+				.getCommand().getLinkPid(), false);
 
 		List<Integer> nodePids = new ArrayList<Integer>();
 
@@ -56,7 +58,8 @@ public class Process extends AbstractProcess<Command> {
 	// 锁定盲端节点
 	public void lockZoneFace() throws Exception {
 		ZoneFaceSelector selector = new ZoneFaceSelector(this.getConn());
-		List<ZoneFace> faces = selector.loadZoneFaceByLinkId(this.getCommand().getLinkPid(), true);
+		List<ZoneFace> faces = selector.loadZoneFaceByLinkId(this.getCommand()
+				.getLinkPid(), true);
 		this.getCommand().setFaces(faces);
 	}
 
@@ -82,15 +85,29 @@ public class Process extends AbstractProcess<Command> {
 
 	@Override
 	public String exeOperation() throws Exception {
+		
 		// 删除行政区划线有关行政区划点、线具体操作
 		IOperation op = new OpTopo(this.getCommand());
 		op.run(this.getResult());
 		// 同一点关系
 		OpRefRdSameNode opRefRdSameNode = new OpRefRdSameNode(getConn());
 		opRefRdSameNode.run(getResult(), this.getCommand().getLink());
+
+		updataRelationObj();
 		// 删除行政区划线有关行政区划面具体操作
 		IOperation opAdFace = new OpRefAdFace(this.getCommand());
 		return opAdFace.run(this.getResult());
 	}
 
+	/**
+	 * 维护关联要素
+	 * 
+	 * @throws Exception
+	 */
+	private void updataRelationObj() throws Exception {
+		
+		OpRefRelationObj opRefRelationObj = new OpRefRelationObj(getConn());
+
+		opRefRelationObj.handleSameLink(this.getResult(), this.getCommand());
+	}
 }

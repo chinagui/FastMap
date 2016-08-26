@@ -1,7 +1,10 @@
 package com.navinfo.dataservice.engine.check.rules;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Iterator;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -39,43 +42,74 @@ public class RDBRANCHOutLinkUnidirectional extends baseRule {
 			//获取新建RdBranch信息
 			if(obj instanceof RdBranch ){
 				RdBranch rdBranch = (RdBranch)obj;
-				RdLinkSelector rdLinkSelector=new RdLinkSelector(this.getConn());
+				
 				int outLinkPid = rdBranch.getOutLinkPid();
 				int nodePid = rdBranch.getNodePid();
-				//退出线
-				RdLink outLink = (RdLink) rdLinkSelector.loadByIdOnlyRdLink(outLinkPid, false);
-				//推出线为单方向
-				if(outLink.getDirect()!=2 && outLink.getDirect()!=3){
-					this.setCheckResult("", "", 0);
-					return;
+				List<IRow> vias = rdBranch.getVias();
+				
+				Map<String, Object> changedFields = rdBranch.changedFields();
+				if(!changedFields.isEmpty()&&changedFields.containsKey("outLinkPid")){
+					outLinkPid = (int) changedFields.get("outLinkPid");
 				}
-				//经过线Pid
-				List<Integer> vialinkPids = new ArrayList<Integer>();
-				for(IRow deObj:rdBranch.getVias()){
-					if(deObj instanceof RdBranchVia){
-						RdBranchVia rdBranchVia = (RdBranchVia)deObj;
-						vialinkPids.add(rdBranchVia.getLinkPid());
+				if(!changedFields.isEmpty()&&changedFields.containsKey("vias")){
+					vias = (List<IRow>) changedFields.get("vias");
+				}
+				//退出线
+				RdLinkSelector rdLinkSelector=new RdLinkSelector(this.getConn());
+				RdLink outLink = (RdLink) rdLinkSelector.loadByIdOnlyRdLink(outLinkPid, false);
+				//退出是否沿通行方向
+				if(outLink.getDirect()==1){
+					continue;
+				}
+				
+				if(vias.size() == 0){
+					if(outLink.getDirect()==2&&outLink.getsNodePid()==nodePid){
+						continue;
+					}
+					if(outLink.getDirect()==3&&outLink.geteNodePid()==nodePid){
+						continue;
 					}
 				}
 				
 				int endNode = 0;
-				
-				if(outLink.getDirect()==2){
+				if(outLink.getDirect() == 2){
 					endNode = outLink.getsNodePid();
-				}else if(outLink.getDirect()==3){
+				}else if(outLink.getDirect() == 3){
 					endNode = outLink.geteNodePid();
 				}
-				//经过线信息
-				List<RdLink> viaRdLinks = rdLinkSelector.loadByPids(vialinkPids,false);
-				//经过线是否沿通行方向联通
-				TwoNodeConnected twoNodeConnected = new TwoNodeConnected(nodePid,endNode,viaRdLinks);
-				if(!twoNodeConnected.isConnected()){
+
+				if(!rdBranchViasConnectedInOneDirection(nodePid,endNode,vias)){
 					this.setCheckResult("", "", 0);
 					return;
-				}
+				}	
 			}
 		}
 
+	}
+	
+	private boolean rdBranchViasConnectedInOneDirection(int startNode,int endNode,List<IRow> viaLinks) throws Exception{
+		RdLinkSelector rdLinkSelector=new RdLinkSelector(this.getConn());
+		Map<Integer,Object> viaLinkGroups = new HashMap<Integer,Object>();
+		Iterator<IRow> viaLinksIter = viaLinks.iterator();
+		while(viaLinksIter.hasNext()){
+			RdBranchVia rdBranchVia = (RdBranchVia) viaLinksIter.next();
+			int groupId = rdBranchVia.getGroupId();
+			if(viaLinkGroups.containsKey(groupId)){
+				Map<Integer,RdLink> rdLinkMap = (Map<Integer, RdLink>) viaLinkGroups.get(groupId);
+				RdLink rdLink = (RdLink) rdLinkSelector.loadByIdOnlyRdLink(rdBranchVia.getLinkPid(), false);
+				rdLinkMap.put(rdBranchVia.getSeqNum(), rdLink);
+				viaLinkGroups.put(groupId, rdLinkMap);
+			}else{
+				Map<Integer,RdLink> rdLinkMap = new HashMap<Integer, RdLink>();
+				RdLink rdLink = (RdLink) rdLinkSelector.loadByIdOnlyRdLink(rdBranchVia.getLinkPid(), false);
+				rdLinkMap.put(rdBranchVia.getSeqNum(), rdLink);
+				viaLinkGroups.put(groupId, rdLinkMap);
+			}
+		}
+		
+		
+		return false;
+		
 	}
 
 	/* (non-Javadoc)

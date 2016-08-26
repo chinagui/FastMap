@@ -1,14 +1,17 @@
 package com.navinfo.dataservice.engine.check.rules;
 
 import java.util.List;
+import java.util.Map;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.slope.RdSlope;
+import com.navinfo.dataservice.dao.glm.model.rd.slope.RdSlopeVia;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.check.core.baseRule;
-import com.navinfo.dataservice.engine.check.graph.LinksConnectedInOneDirection;
 
 /** 
  * @ClassName: CHECK_RDSLOPE_DIRECTION
@@ -39,11 +42,21 @@ public class CHECK_RDSLOPE_DIRECTION extends baseRule {
 				int startNode = rdSlope.getNodePid();
 				//接续线信息
 				List<IRow> viaLinks = rdSlope.getSlopeVias();
-				//获取退出线信息
+				//退出线信息
 				int outLinkPid = rdSlope.getLinkPid();
+				
+				//修改信息
+				Map<String, Object> changedFields = rdSlope.changedFields();
+				
+				if(!changedFields.isEmpty()&&changedFields.containsKey("outLinkPid")){
+					outLinkPid = (int) changedFields.get("outLinkPid");
+				}
+				if(!changedFields.isEmpty()&&changedFields.containsKey("viaLinks")){
+					viaLinks = (List<IRow>) changedFields.get("viaLinks");
+				}
+				
 				RdLinkSelector rdLinkSelector=new RdLinkSelector(this.getConn());
 				RdLink outLink = (RdLink) rdLinkSelector.loadByIdOnlyRdLink(outLinkPid, false);
-				
 				//退出是否沿通行方向
 				if(outLink.getDirect()==2 && outLink.geteNodePid() == startNode){
 					this.setCheckResult("", "", 0);
@@ -52,18 +65,64 @@ public class CHECK_RDSLOPE_DIRECTION extends baseRule {
 					this.setCheckResult("", "", 0);
 					return;
 				}
+				
 				//接续线是否沿通行方向联通
 				if(viaLinks.size() == 0){
 					continue;
 				}
-				LinksConnectedInOneDirection linksConnectedInOneDirection = new LinksConnectedInOneDirection(startNode,outLink,viaLinks);
-				if(!linksConnectedInOneDirection.isConnected()){
+				
+				if(outLink.getsNodePid() == startNode){
+					startNode = outLink.geteNodePid();
+				}else{
+					startNode = outLink.getsNodePid();
+				}
+				
+				if(!rdSlopViasConnectedInOneDirection(startNode,viaLinks)){
 					this.setCheckResult("", "", 0);
 					return;
 				}
 			}
 		}
 
+	}
+	
+	private boolean rdSlopViasConnectedInOneDirection(int startNode,List<IRow> viaLinks) throws Exception{
+		//获取接续link的顺序pid
+		List<Integer> linkPids = new ArrayList<Integer>();
+		Iterator<IRow> viaLinksIter = viaLinks.iterator();
+		while(viaLinksIter.hasNext()){
+			RdSlopeVia rdSlopeVia = (RdSlopeVia) viaLinksIter.next();
+			linkPids.add(rdSlopeVia.getSeqNum()-1, rdSlopeVia.getLinkPid());
+		}
+		RdLinkSelector rdLinkSelector=new RdLinkSelector(this.getConn());
+		List<RdLink> rdLinkList = rdLinkSelector.loadByPids(linkPids, false);
+		List<RdLink> rdLinkListInSeq = new ArrayList<RdLink>();
+		//获取接续link顺序列表
+		Iterator<RdLink> rdLinkListIer = rdLinkList.iterator();
+		while(rdLinkListIer.hasNext()){
+			RdLink rdLink = (RdLink) rdLinkListIer.next();
+			int index = linkPids.indexOf(rdLink.getPid());
+			rdLinkListInSeq.add(index, rdLink);
+		}
+		//接续link是否沿通行方向
+		Iterator<RdLink> rdLinkListInSeqIer = rdLinkList.iterator();
+		while(rdLinkListInSeqIer.hasNext()){
+			RdLink rdLink = (RdLink) rdLinkListInSeqIer.next();
+			if(rdLink.getsNodePid()==startNode){
+				startNode = rdLink.geteNodePid();
+				if(rdLink.getDirect() == 3){
+					return false;
+				}
+			}else if(rdLink.geteNodePid()==startNode){
+				startNode = rdLink.getsNodePid();
+				if(rdLink.getDirect() == 2){
+					return false;
+				}
+			}else{
+				return false;
+			}
+		}
+		return true;
 	}
 
 	/* (non-Javadoc)

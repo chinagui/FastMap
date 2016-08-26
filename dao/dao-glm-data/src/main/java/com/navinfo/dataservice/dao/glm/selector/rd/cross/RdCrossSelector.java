@@ -188,4 +188,26 @@ public class RdCrossSelector extends AbstractSelector {
 			cross.nameMap.put(obj.rowId(), obj);
 		}
 	}
+	
+	public List<RdCross> loadCrossBySql(String sql, boolean isLock) throws Exception {
+
+		List<RdCross> result = new ArrayList<RdCross>();
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		try {
+			pstmt = this.conn.prepareStatement(sql);
+			resultSet = pstmt.executeQuery();
+			while (resultSet.next()) {
+				RdCross cross = new RdCross();
+				ReflectionAttrUtils.executeResultSet(cross, resultSet);		
+				result.add(cross);
+			}
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+		}
+		return result;
+	}
 }

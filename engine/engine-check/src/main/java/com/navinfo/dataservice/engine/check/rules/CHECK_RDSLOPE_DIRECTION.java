@@ -3,6 +3,7 @@ package com.navinfo.dataservice.engine.check.rules;
 import java.util.List;
 import java.util.Map;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
@@ -57,7 +58,7 @@ public class CHECK_RDSLOPE_DIRECTION extends baseRule {
 				
 				RdLinkSelector rdLinkSelector=new RdLinkSelector(this.getConn());
 				RdLink outLink = (RdLink) rdLinkSelector.loadByIdOnlyRdLink(outLinkPid, false);
-				//退出是否沿通行方向
+				//退出线是否沿通行方向
 				if(outLink.getDirect()==2 && outLink.geteNodePid() == startNode){
 					this.setCheckResult("", "", 0);
 					return;
@@ -96,18 +97,20 @@ public class CHECK_RDSLOPE_DIRECTION extends baseRule {
 		}
 		RdLinkSelector rdLinkSelector=new RdLinkSelector(this.getConn());
 		List<RdLink> rdLinkList = rdLinkSelector.loadByPids(linkPids, false);
-		List<RdLink> rdLinkListInSeq = new ArrayList<RdLink>();
+		Map<Integer,RdLink> rdLinkMap = new HashMap<Integer,RdLink>();
 		//获取接续link顺序列表
 		Iterator<RdLink> rdLinkListIer = rdLinkList.iterator();
 		while(rdLinkListIer.hasNext()){
 			RdLink rdLink = (RdLink) rdLinkListIer.next();
 			int index = linkPids.indexOf(rdLink.getPid());
-			rdLinkListInSeq.add(index, rdLink);
+			rdLinkMap.put(index, rdLink);
 		}
 		//接续link是否沿通行方向
-		Iterator<RdLink> rdLinkListInSeqIer = rdLinkList.iterator();
-		while(rdLinkListInSeqIer.hasNext()){
-			RdLink rdLink = (RdLink) rdLinkListInSeqIer.next();
+		for(int i = 0;i<rdLinkMap.size();i++){
+			if(!rdLinkMap.containsKey(i+1)){
+				return false;
+			}
+			RdLink rdLink = (RdLink) rdLinkMap.get(i+1);
 			if(rdLink.getsNodePid()==startNode){
 				startNode = rdLink.geteNodePid();
 				if(rdLink.getDirect() == 3){

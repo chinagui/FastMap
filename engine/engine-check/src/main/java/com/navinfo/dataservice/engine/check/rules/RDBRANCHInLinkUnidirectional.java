@@ -42,32 +42,12 @@ public class RDBRANCHInLinkUnidirectional extends baseRule {
 				int nodePid = rdBranch.getNodePid();
 				//进入线
 				RdLink inLink = (RdLink) rdLinkSelector.loadByIdOnlyRdLink(inLinkPid, false);
-				//进入线为单方向
-				if(inLink.getDirect()!=2 && inLink.getDirect()!=3){
+				//进入线为单方向则进入线需沿通行方向与进入点挂接
+				if(inLink.getDirect()==2 && inLink.geteNodePid()!=nodePid){
 					this.setCheckResult("", "", 0);
 					return;
 				}
-				//经过线Pid
-				List<Integer> vialinkPids = new ArrayList<Integer>();
-				for(IRow deObj:rdBranch.getVias()){
-					if(deObj instanceof RdBranchVia){
-						RdBranchVia rdBranchVia = (RdBranchVia)deObj;
-						vialinkPids.add(rdBranchVia.getLinkPid());
-					}
-				}
-				
-				int startNode = 0;
-				
-				if(inLink.getDirect()==3){
-					startNode = inLink.getsNodePid();
-				}else if(inLink.getDirect()==2){
-					startNode = inLink.geteNodePid();
-				}
-				//经过线信息
-				List<RdLink> viaRdLinks = rdLinkSelector.loadByPids(vialinkPids,false);
-				//经过线是否沿通行方向联通
-				TwoNodeConnected twoNodeConnected = new TwoNodeConnected(startNode,nodePid,viaRdLinks);
-				if(!twoNodeConnected.isConnected()){
+				if(inLink.getDirect()==3 && inLink.getsNodePid()!=nodePid){
 					this.setCheckResult("", "", 0);
 					return;
 				}

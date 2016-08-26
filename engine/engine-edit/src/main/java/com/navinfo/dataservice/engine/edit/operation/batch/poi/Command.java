@@ -33,6 +33,7 @@ public class Command extends AbstractCommand implements ICommand {
 		try {
 			this.requester = requester;
 			this.setPid(json.getInt("pid"));
+			this.setDbId(json.getInt("dbId"));
 			IxPoi poi = new IxPoi();
 			poi.Unserialize(json.getJSONObject("poi"));
 			this.setPoi(poi);

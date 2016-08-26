@@ -18,7 +18,7 @@ public class BatchProcess {
 	 * @param poi
 	 * @throws Exception
 	 */
-	public void execute(String classNames,IxPoi poi) throws Exception {
+	public void execute(String classNames,IxPoi poi,int dbId) throws Exception {
 		JSONObject poiObj = new JSONObject();
 		try {
 			String[] classes = classNames.split(",");
@@ -28,13 +28,16 @@ public class BatchProcess {
 				JSONObject data = obj.run(poi);
 				result.putAll(data);
 			}
-			poi.fillChangeFields(result);
-			
-			poiObj.put("poi", poi.Serialize(null));
-			poiObj.put("pid", poi.getPid());
-			poiObj.put("type", "IXPOI");
-			poiObj.put("command", "BATCH");
-			
+			if (result.size()>0) {
+				result.put("pid", poi.getPid());
+				result.put("rowId", poi.getRowId());
+				poi.fillChangeFields(result);
+				poiObj.put("poi", poi.Serialize(null));
+				poiObj.put("pid", poi.getPid());
+				poiObj.put("type", "IXPOI");
+				poiObj.put("command", "BATCH");
+				poiObj.put("dbId", dbId);
+			}
 			
 			EditApi apiService=(EditApi) ApplicationContextUtil.getBean("editApi");
 			apiService.run(poiObj);

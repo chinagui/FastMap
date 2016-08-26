@@ -147,7 +147,8 @@ public class TipsSelector {
 				JSONObject deep = JSONObject.fromObject(json.getString("deep"));
 				
 				//g字段重新赋值的（显示坐标：取Tips的geo）
-				if (type == 1604 || type == 1601 || type == 1602 || type == 1605 || type == 1606 ) {
+				if (type == 1604 || type == 1601 || type == 1602 
+				 || type == 1605 || type == 1606 || type == 1607 ) {
 
 					JSONObject deepGeo = deep.getJSONObject("geo");
 
@@ -172,14 +173,20 @@ public class TipsSelector {
 						|| type == 1105 || type == 1109 || type == 1107
 						|| type == 1110 || type == 1104 || type == 1111
 						|| type == 1113 || type == 1304 || type == 1305
-						|| type == 1404 || type == 1804  ) {
+						|| type == 1404 || type == 1804 || type == 1108
+						|| type == 1112 || type == 1306 || type == 1410
+						|| type == 1310 || type == 1204 || type == 1311
+						|| type == 1308 ) {
 
 					if(deep.containsKey("agl")){
 						m.put("c", String.valueOf(deep.getDouble("agl")));
 					}
 					
-					if (type == 1203) {
+					if (type == 1203 || type == 1108 ) {
 						m.put("d", String.valueOf(deep.get("dr")));
+					}
+					if (type == 1112 ) {
+						m.put("d", String.valueOf(deep.get("loc")));
 					}
 					else if (type == 1105) {
 						
@@ -205,6 +212,17 @@ public class TipsSelector {
 					else if(type == 1107){
 						m.put("d", deep.getString("name"));
 					}
+					else if(type == 1306){
+						JSONArray arrResult=new JSONArray();
+						JSONArray arr=deep.getJSONArray("info");
+						if(arr!=null){
+							for (Object object : arr) {
+								String info=JSONObject.fromObject(object).getString("info");
+								arrResult.add(info);
+							}
+						}
+						m.put("d", arrResult);
+					}
 
 					else if(type == 1109){
 						
@@ -228,6 +246,13 @@ public class TipsSelector {
 					}else if(type == 1111){
 						m.put("d", String.valueOf(deep.getDouble("value")));
 						m.put("e", String.valueOf(deep.getDouble("se")));
+					}else if(type == 1310 || type == 1204){
+						JSONObject gSLoc = deep.getJSONObject("gSLoc");
+						Geojson.coord2Pixel(gSLoc, z, px, py);
+						JSONObject gELoc = deep.getJSONObject("gELoc");
+						Geojson.coord2Pixel(gELoc, z, px, py);
+						m.put("d", gSLoc.getJSONArray("coordinates"));
+						m.put("e", gELoc.getJSONArray("coordinates"));
 					}
 
 				}else if(type == 1106){
@@ -236,6 +261,15 @@ public class TipsSelector {
 					m.put("c",  String.valueOf(deep.getInt("inCt")));
 				}else if(type == 1103){
 					m.put("c",  String.valueOf(deep.getInt("loc")));
+				}else if(  type== 1607){
+					m.put("c", geojson.getJSONArray("coordinates"));
+					m.put("d", deep.getString("name"));
+				}else if(type == 1705){
+					m.put("c", deep.getString("name"));
+				}else if(type == 1707){
+					m.put("c", deep.getString("rdNm"));
+					m.put("d", deep.getString("num"));
+					m.put("e", deep.getString("src"));
 				}
 				else if( type == 1510  || type == 1514 || type == 1501 || type == 1515
 						|| type == 1502||type == 1503 || type == 1504
@@ -243,7 +277,7 @@ public class TipsSelector {
 						|| type == 1508 || type == 1513
 						|| type == 1512 || type == 1516 
 						|| type == 1507 || type == 1511
-						|| type == 1517  ){
+						|| type == 1517 || type == 1509 ){
 					JSONObject gSLoc = deep.getJSONObject("gSLoc");
 					Geojson.coord2Pixel(gSLoc, z, px, py);
 					JSONObject gELoc = deep.getJSONObject("gELoc");
@@ -251,7 +285,7 @@ public class TipsSelector {
 					m.put("c", gSLoc.getJSONArray("coordinates"));
 					m.put("d", gELoc.getJSONArray("coordinates"));
 					
-					if(type ==1510 || type == 1507 || type == 1511){
+					if(type ==1510 || type == 1507 || type == 1511 || type == 1509 ){
 						
 						m.put("e", deep.getString("name"));
 					}
@@ -499,7 +533,8 @@ public class TipsSelector {
 
 			if (type == 1201 || type == 1203 || type == 1101 || type == 1109 
 					|| type == 1111 || type == 1113 || type == 1202 || type == 1207
-					 || type == 1208 || type == 1304 || type == 1305) {
+					 || type == 1208 || type == 1304 || type == 1305 || type == 1308
+					 || type == 1311) {
 				JSONObject f = deep.getJSONObject("f");
 
 				if (f.getInt("type") == 1) {
@@ -511,7 +546,9 @@ public class TipsSelector {
 					|| type == 1403|| type == 1401 || type == 1402
 					|| type == 1405|| type == 1406 || type == 1409 
 					|| type == 1105 || type == 1107 || type == 1703
-					 || type == 1404 || type == 1804) {
+					|| type == 1404 || type == 1804 || type == 1108 
+					|| type == 1112 || type == 1303 || type == 1306 
+					|| type == 1410 ) {
 				JSONObject f = deep.getJSONObject("in");
 
 				if (f.getInt("type") == 1) {
@@ -526,7 +563,8 @@ public class TipsSelector {
 			} else if (type == 1604 || type == 1514 || type== 1515 || type==1502  
 					|| type==1503  || type==1504  || type==1505  || type==1506  
 					|| type==1508  || type==1513  || type==1512  || type==1516
-					|| type==1517  || type==1605  || type==1606   
+					|| type==1517  || type==1605  || type==1606  || type==1310
+					|| type==1204
 					) {
 				JSONArray a = deep.getJSONArray("f_array");
 
@@ -536,6 +574,10 @@ public class TipsSelector {
 						linkPids.add(Integer.valueOf(f.getString("id")));
 					}
 				}
+			}
+			//删除记录
+			else if(type == 2101){
+				linkPids.add(Integer.valueOf(Integer.valueOf(deep.getString("rId"))));
 			}
 		}
 
@@ -598,7 +640,7 @@ public class TipsSelector {
 			
 			
 			//几个g需要显示：取Tips的geo
-			if(type == 160e4||type == 1601 ||type == 1602 || type == 1605 || type == 1606){
+			if(type == 1604||type == 1601 ||type == 1602 || type == 1605 || type == 1606 || type==1607 ){
 				
 				JSONObject deepGeo = deep.getJSONObject("geo");
 
@@ -610,7 +652,8 @@ public class TipsSelector {
 			//f
 			if (type == 1201 || type == 1203 || type == 1101 || type == 1111
 					 || type == 1113 || type == 1202 || type == 1207 || type == 1208
-					 || type == 1304 || type == 1305) {
+					 || type == 1304 || type == 1305 || type == 1308
+					 || type == 1311 ) {
 				JSONObject f = deep.getJSONObject("f");
 
 				//type=1 :道路LINK，有名称，则显示道路名称，如果没有，则显示“无名路”
@@ -691,8 +734,14 @@ public class TipsSelector {
 				m.put("e", name);
 			}
 			//in
+					
 			else if (type == 1301 || type == 1407 || type == 1302
-					|| type == 1403 || type == 1404 || type == 1804) {
+					|| type == 1403|| type == 1401 || type == 1402
+					|| type == 1405|| type == 1406 || type == 1409 
+					|| type == 1105 || type == 1107 || type == 1703
+					|| type == 1404 || type == 1804 || type == 1108 
+					|| type == 1112 || type == 1303 || type == 1306 
+					|| type == 1410 ) {
 				JSONObject f = deep.getJSONObject("in");
 
 				if (f.getInt("type") == 1) {
@@ -763,7 +812,8 @@ public class TipsSelector {
 			else if (type == 1604 || type == 1514 || type == 1515 || type == 1502
 					|| type==1503  || type==1504  || type==1505  || type==1506  
 					|| type==1508  || type==1513  || type==1512  || type==1516
-					|| type==1517  || type==1605  || type==1606 ) {
+					|| type==1517  || type==1605  || type==1606  || type==1310
+					|| type==1204) {
 				JSONArray a = deep.getJSONArray("f_array");
 
 				boolean hasLink = false;
@@ -806,7 +856,15 @@ public class TipsSelector {
 						m.put("e", name);
 					}
 				}*/
-			} else if (type == 1704 || type == 1510 || type == 1107) {
+			}
+			//删除记录
+			else if(type == 2101){
+				int linkPid = Integer.valueOf(deep.getString("rId"));
+				String name = map.get(linkPid);
+				m.put("e", name);
+			}
+			else if (type == 1704 || type == 1510 || type == 1107 || type == 1507 || type == 1511
+					|| type == 1601  || type == 1602 || type == 1509 || type ==1705 || type == 1607  ) {
 
 				String name = deep.getString("name");
 
@@ -833,9 +891,10 @@ public class TipsSelector {
 				if (a.size() > 0) {
 					m.put("e", a.get(0));
 				}
-			} else if (type == 1507 || type == 1511
-					|| type == 1601  || type == 1602 ) {
-					m.put("e", deep.getString("name"));
+			}
+			//里程桩
+			else if(type == 1707){
+				m.put("e", deep.getString("rdNm")+"("+deep.getString("num")+")");
 			}
 			else if (type == 1501){
 				m.put("e", "上下线分离");
@@ -851,6 +910,12 @@ public class TipsSelector {
 				m.put("e", "红绿灯");
 			}else if(type==1103){
 				m.put("e", "红绿灯方位");
+			}else if(type==1701){
+				m.put("e", "障碍物");
+			}else if(type==1702){
+				m.put("e", "铁路道口");
+			}else if(type==1706){
+				m.put("e", "GPS打点");
 			}
 
 			

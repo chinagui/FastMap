@@ -7,8 +7,5 @@ import net.sf.json.JSONObject;
 public abstract class IBatch {
 
 	
-	public JSONObject run(IxPoi poi) {
-		// 在具体检查规则中实现
-		return null;
-	}
+	public abstract JSONObject run(IxPoi poi)  throws Exception  ;
 }

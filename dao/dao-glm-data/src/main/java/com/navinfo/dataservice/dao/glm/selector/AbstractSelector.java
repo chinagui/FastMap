@@ -79,7 +79,7 @@ public class AbstractSelector implements ISelector {
 			if (resultSet.next()) {
 				// 设置主表信息
 				ReflectionAttrUtils.executeResultSet(row, resultSet);
-				if (noChild == null || noChild[0]) {
+				if (noChild == null || noChild.length == 0 ||  noChild[0]) {
 					if (row instanceof IObj) {
 						IObj obj = (IObj) row;
 						// 子表list map

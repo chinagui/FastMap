@@ -12,6 +12,7 @@ import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.log.LogWriter;
+import com.navinfo.dataservice.engine.edit.model.OperationResult;
 import com.navinfo.dataservice.engine.edit.operation.OperatorFactory;
 import com.navinfo.dataservice.engine.edit.operation.PoiMsgPublisher;
 
@@ -29,7 +30,7 @@ public class OperatorRunner {
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 			op.setConn(conn);
 			op.loadData();
-			Result result = op.execute();
+			OperationResult result = op.execute();
 			CheckCommand checkCmd=null;
 //			String preCheckMsg = preCheck();
 //			if (preCheckMsg != null) {

@@ -38,6 +38,7 @@ import com.navinfo.dataservice.engine.meta.rdname.RdNameImportor;
 import com.navinfo.dataservice.engine.meta.rdname.RdNameOperation;
 import com.navinfo.dataservice.engine.meta.rdname.RdNameSelector;
 import com.navinfo.dataservice.engine.meta.rdname.ScRoadnameTypename;
+import com.navinfo.dataservice.engine.meta.workitem.Workitem;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -780,6 +781,32 @@ public class MetaController extends BaseController {
 			RdNameOperation operation = new RdNameOperation();
 			
 			boolean result = operation.checkEngName(nameGroupid);
+			
+			return new ModelAndView("jsonView", success(result));
+		} catch (Exception e) {
+	
+			logger.error(e.getMessage(), e);
+	
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
+	
+	@RequestMapping(value = "/deep/workitem")
+	public ModelAndView getWorkItemMap(HttpServletRequest request)
+			throws ServletException, IOException {
+		String parameter = request.getParameter("parameter");
+		
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			
+			int type = 0;
+			if (jsonReq.containsKey("type")) {
+				type = jsonReq.getInt("type");
+			}
+			
+			Workitem workitem = new Workitem();
+			
+			JSONArray result = workitem.getDataMap(type);
 			
 			return new ModelAndView("jsonView", success(result));
 		} catch (Exception e) {

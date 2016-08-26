@@ -135,5 +135,7 @@ public class PidSequenceName {
 	public static final String rdVoiceguideName = "SEQ_RD_VOICEGUIDE";
 
 	public static final String rdVoiceguideDetailName = "SEQ_RD_VOICEGUIDE_DETAIL";
+	
+	public static final String samePoiPidName = "SEQ_IX_SAMEPOI";
 
 }

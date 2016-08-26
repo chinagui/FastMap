@@ -11,6 +11,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.geom.AngleCalculator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
@@ -18,6 +19,8 @@ import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.operation.Transaction;
 import com.navinfo.dataservice.engine.edit.search.SearchProcess;
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.LineSegment;
 
 public class commonTest extends InitApplication {
 
@@ -178,7 +181,7 @@ public class commonTest extends InitApplication {
 
 		try {
 
-			String parameter = "{\"dbId\":42,\"type\":\"RDLINK\",\"data\":{\"queryType\":\"RDSPEEDLIMIT\",\"linkPid\":735584,\"direct\":2}}";
+			String parameter = "{\"dbId\":42,\"type\":\"RDLINK\",\"data\":{\"queryType\":\"RDSPEEDLIMIT\",\"linkPid\":732235,\"direct\":2}}";
 
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
@@ -242,8 +245,8 @@ public class commonTest extends InitApplication {
 
 		String msg = t.run();
 	}
-	
-		@Test
+
+	@Test
 	public void createTest_0822() throws Exception {
 
 		String parameter = "{\"command\":\"BATCH\",\"type\":\"RDLINKSPEEDLIMIT\",\"dbId\":42,\"data\":{\"linkPids\":[88026339,732545,735601],\"direct\":2,\"linkSpeedLimit\":{\"speedType\":0,\"fromSpeedLimit\":60,\"toSpeedLimit\":0,\"speedClassWork\":1}}}";
@@ -251,25 +254,29 @@ public class commonTest extends InitApplication {
 
 		String msg = t.run();
 	}
-	
+
 	@Test
 	public void test_List_Sub() throws Exception {
-		List<Integer> listPid =new ArrayList<Integer>();
-		
+		List<Integer> listPid = new ArrayList<Integer>();
+
 		listPid.add(1);
 		listPid.add(2);
 		listPid.add(3);
 		listPid.add(4);
-		
-		
-	
+
 		List<Integer> linkPidTemp = listPid.subList(0, 2);
 
-	
-
 		listPid.subList(0, 2).clear();
-		
-		int count=listPid.size();
+
+		int count = listPid.size();
 	}
-	
+	@Test
+	public void test_Angle() {
+		LineSegment link1 = new LineSegment(new Coordinate(116.16409, 39.87546,
+				0), new Coordinate(116.16426, 39.87548, 0));
+
+		LineSegment link2 = new LineSegment(new Coordinate(116.16426, 39.87548,
+				0), new Coordinate(116.16409, 39.87546, 0));
+		double a1 = AngleCalculator.getAngle(link1, link2);
+	}
 }

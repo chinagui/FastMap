@@ -1,6 +1,5 @@
 package com.navinfo.dataservice.commons.geom;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,7 +15,6 @@ import org.mapfish.geo.MfGeoJSONWriter;
 import org.mapfish.geo.MfGeometry;
 
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
-import com.navinfo.dataservice.commons.util.ArrayUtil;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.algorithm.Angle;
 import com.vividsolutions.jts.geom.Coordinate;

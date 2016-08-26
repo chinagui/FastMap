@@ -10,6 +10,7 @@ import org.apache.commons.dbutils.DbUtils;
 
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 public class IxPoiDeepStatusSelector extends AbstractSelector {
@@ -272,6 +273,50 @@ public class IxPoiDeepStatusSelector extends AbstractSelector {
 			}
 			
 			return rowIdList;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt); 
+		}
+	}
+	
+	/**
+	 * 精编任务的统计查询
+	 * @param taskId
+	 * @return
+	 * @throws Exception
+	 */
+	public JSONArray taskStatistics(int taskId) throws Exception {
+		
+		JSONArray result = new JSONArray();
+		
+		StringBuilder sql = new StringBuilder();
+		sql.append("SELECT w.second_work_item,s.second_work_status,count(1) num");
+		sql.append(" FROM poi_deep_status s, poi_deep_workitem_conf w");
+		sql.append(" WHERE s.work_item_id = w.work_item_id");
+		sql.append(" AND s.second_work_status in (1,2)");
+		sql.append(" AND task_id="+taskId);
+		sql.append(" group by w.second_work_item,s.second_work_status");
+		
+		PreparedStatement pstmt = null;
+		
+		ResultSet resultSet = null;
+		
+		try {
+			pstmt = conn.prepareStatement(sql.toString());
+
+			resultSet = pstmt.executeQuery();
+			
+			while (resultSet.next()) {
+				JSONObject data = new JSONObject();
+				data.put("secondWorkItem", resultSet.getString("second_work_item"));
+				data.put("secondWorkStatus", resultSet.getInt("second_work_status"));
+				data.put("total", resultSet.getInt("num"));
+				result.add(data);
+			}
+			
+			return result;
 		} catch (Exception e) {
 			throw e;
 		} finally {

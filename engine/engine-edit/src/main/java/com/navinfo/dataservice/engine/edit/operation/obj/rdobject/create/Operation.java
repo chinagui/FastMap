@@ -1,5 +1,8 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdobject.create;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
@@ -41,6 +44,9 @@ public class Operation implements IOperation {
 		rdObject.setGeometry(this.command.getPointGeo());
 		
 		JSONArray linkArray = this.command.getLinkArray();
+		
+		List<Integer> pidList = new ArrayList<>();
+		
 		if(linkArray != null)
 		{
 			//设置子表rd_object_link
@@ -48,44 +54,61 @@ public class Operation implements IOperation {
 			{
 				int linkPid = linkArray.getInt(i);
 				
-				RdObjectLink objectLink = new RdObjectLink();
-				
-				objectLink.setLinkPid(linkPid);
-				
-				objectLink.setPid(rdObject.getPid());
-				
-				rdObject.getLinks().add(objectLink);
+				if(!pidList.contains(linkPid))
+				{
+					RdObjectLink objectLink = new RdObjectLink();
+					
+					objectLink.setLinkPid(linkPid);
+					
+					objectLink.setPid(rdObject.getPid());
+					
+					rdObject.getLinks().add(objectLink);
+					
+					pidList.add(linkPid);
+				}
 			}
 		}
 		
 		JSONArray interArray = this.command.getInterArray();
 		//设置子表rd_object_inter
+		pidList.clear();
 		for(int i = 0; i<interArray.size();i++)
 		{
 			int interPid = interArray.getInt(i);
 			
-			RdObjectInter objectInter = new RdObjectInter();
-			
-			objectInter.setPid(rdObject.getPid());
-			
-			objectInter.setInterPid(interPid);
-			
-			rdObject.getInters().add(objectInter);
+			if(!pidList.contains(interPid))
+			{
+				RdObjectInter objectInter = new RdObjectInter();
+				
+				objectInter.setPid(rdObject.getPid());
+				
+				objectInter.setInterPid(interPid);
+				
+				rdObject.getInters().add(objectInter);
+				
+				pidList.add(interPid);
+			}
 		}
 		
+		pidList.clear();
 		JSONArray roadArray = this.command.getRoadArray();
 		//设置子表rd_object_road
 		for(int i = 0; i<roadArray.size();i++)
 		{
 			int roadPid = roadArray.getInt(i);
 			
-			RdObjectRoad objectRoad = new RdObjectRoad();
-			
-			objectRoad.setPid(rdObject.getPid());
-			
-			objectRoad.setRoadPid(roadPid);
-			
-			rdObject.getRoads().add(objectRoad);
+			if(!pidList.contains(roadPid))
+			{
+				RdObjectRoad objectRoad = new RdObjectRoad();
+				
+				objectRoad.setPid(rdObject.getPid());
+				
+				objectRoad.setRoadPid(roadPid);
+				
+				rdObject.getRoads().add(objectRoad);
+				
+				pidList.add(roadPid);
+			}
 		}
 		
 		result.insertObject(rdObject, ObjStatus.INSERT, rdObject.getPid());

@@ -10,6 +10,12 @@ import net.sf.json.JSONObject;
 *  
 */
 public interface EditApi {
-	
-	public void columnSave(JSONObject dataObj) throws Exception; 
+	public long applyPid(String tableName,int count)throws Exception;
+	/**
+	 * 编辑接口（包含要素的新增、修改、删除、移动、修行、打断、父子关系）
+	 * @param dataObj
+	 * @return
+	 * @throws Exception
+	 */
+	public JSONObject run(JSONObject dataObj) throws Exception; 
 }

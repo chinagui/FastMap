@@ -187,7 +187,7 @@ public class ColumnCoreControl {
 				poiObj.put("dbId", dbId);
 				poiObj.put("data", data.getJSONObject(i));
 				EditApi apiEdit=(EditApi) ApplicationContextUtil.getBean("editApi");
-				apiEdit.columnSave(poiObj);
+				apiEdit.run(poiObj);
 			}
 			
 		} catch (Exception e) {
@@ -230,6 +230,35 @@ public class ColumnCoreControl {
 	}
 	
 	/**
+	 * 精编任务的统计查询
+	 * @param jsonReq
+	 * @return
+	 * @throws Exception
+	 */
+	public JSONArray taskStatistics(JSONObject jsonReq)  throws Exception {
+		
+		Connection conn = null;
+		
+		try {
+			int taskId = jsonReq.getInt("taskId");
+			
+			ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
+			Subtask subtask = apiService.queryBySubtaskId(taskId);
+			int dbId = subtask.getDbId();
+			
+			conn = DBConnector.getInstance().getConnectionById(dbId);
+			
+			IxPoiDeepStatusSelector ixPoiDeepStatusSelector = new IxPoiDeepStatusSelector(conn);
+			
+			return ixPoiDeepStatusSelector.taskStatistics(taskId);
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(conn);
+		}
+	}
+	
+	/**
 	 * 查询二级作业项的统计信息
 	 * @param jsonReq
 	 * @param userId
@@ -257,10 +286,8 @@ public class ColumnCoreControl {
 		} catch (Exception e) {
 			throw e;
 		} finally {
-			
+			DbUtils.closeQuietly(conn);
 		}
-		
-		
 	}
 	
 }

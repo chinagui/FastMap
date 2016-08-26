@@ -51,9 +51,6 @@ public class RdObjectSelector extends AbstractSelector {
 		try {
 			StringBuilder sb = new StringBuilder(
 					"select b.name from( select c.NAME_GROUPID from rd_object_link a,rd_link_form b,rd_link_name c where a.pid = :1 and a.LINK_PID = b.LINK_PID and b.LINK_PID=c.LINK_PID and ((b.FORM_OF_WAY = 15 and c.NAME_TYPE = 1) or c.NAME_TYPE = 2) and a.U_RECORD !=2 group by c.NAME_GROUPID union all select /*+ leading(A,B) use_hash(A,B)*/ d.NAME_GROUPID from rd_object_inter a,rd_inter_link b,rd_link_form c,rd_link_name d where a.pid = 7514 and a.INTER_PID = b.PID and b.LINK_PID=c.LINK_PID and c.LINK_PID = d.LINK_PID and ((c.FORM_OF_WAY = 15 and d.NAME_TYPE = 1) or d.NAME_TYPE = 2) and a.U_RECORD !=2 group by d.NAME_GROUPID union all select /*+ leading(A,B) use_hash(A,B)*/ d.NAME_GROUPID from rd_object_road a,rd_road_link b,rd_link_form c,rd_link_name d where a.pid = 7514 and a.road_PID = b.PID and b.LINK_PID=c.LINK_PID and c.LINK_PID = d.LINK_PID and ((c.FORM_OF_WAY = 15 and d.NAME_TYPE = 1) or d.NAME_TYPE = 2) and a.U_RECORD !=2 group by d.NAME_GROUPID)tmp,rd_name b where tmp.name_groupid=b.name_groupid(+) and b.lang_code(+)='CHI' group by tmp.NAME_GROUPID,b.name");
-			if (isLock) {
-				sb.append(" for update nowait");
-			}
 			pstmt = getConn().prepareStatement(sb.toString());
 
 			pstmt.setInt(1, pid);

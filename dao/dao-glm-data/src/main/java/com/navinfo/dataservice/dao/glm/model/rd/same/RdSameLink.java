@@ -32,8 +32,8 @@ public class RdSameLink implements IObj {
 
 	}
 
-	public void setPid(int nodePid) {
-		this.pid = nodePid;
+	public void setPid(int pid) {
+		this.pid = pid;
 	}
 
 	@Override

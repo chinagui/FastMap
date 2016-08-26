@@ -26,7 +26,8 @@ public class OpTopo implements IOperation {
 
 	private JSONArray jaDisplayLink;
 
-	public OpTopo(Command command, Connection conn, RdLink rdLinkBreakpoint, JSONArray jaDisplayLink) {
+	public OpTopo(Command command, Connection conn, RdLink rdLinkBreakpoint,
+			JSONArray jaDisplayLink) {
 		this.command = command;
 
 		this.rdLinkBreakpoint = rdLinkBreakpoint;
@@ -44,15 +45,19 @@ public class OpTopo implements IOperation {
 
 		geoPoint.put("type", "Point");
 
-		geoPoint.put("coordinates", new double[] { command.getPoint().getX(), command.getPoint().getY() });
+		geoPoint.put("coordinates", new double[] { command.getPoint().getX(),
+				command.getPoint().getY() });
 
 		if (command.getBreakNodePid() == 0) {
 
-			RdNode node = NodeOperateUtils.createRdNode(command.getPoint().getX(), command.getPoint().getY());
+			RdNode node = NodeOperateUtils.createRdNode(command.getPoint()
+					.getX(), command.getPoint().getY());
 
 			result.insertObject(node, ObjStatus.INSERT, node.pid());
 
 			command.setBreakNodePid(node.getPid());
+
+			command.setBreakNode(node);
 		}
 		// else{
 		// result.insertObject(breakPoint, ObjStatus.UPDATE);
@@ -64,9 +69,11 @@ public class OpTopo implements IOperation {
 
 		command.getLink2().setsNodePid(command.getBreakNodePid());
 
-		result.insertObject(command.getLink1(), ObjStatus.INSERT, command.getLink1().pid());
+		result.insertObject(command.getLink1(), ObjStatus.INSERT, command
+				.getLink1().pid());
 
-		result.insertObject(command.getLink2(), ObjStatus.INSERT, command.getLink2().pid());
+		result.insertObject(command.getLink2(), ObjStatus.INSERT, command
+				.getLink2().pid());
 
 		jaDisplayLink.add(command.getLink1().Serialize(ObjLevel.BRIEF));
 
@@ -77,7 +84,8 @@ public class OpTopo implements IOperation {
 
 	private void breakpoint(Result result) throws Exception {
 
-		JSONObject geojson = GeoTranslator.jts2Geojson(rdLinkBreakpoint.getGeometry());
+		JSONObject geojson = GeoTranslator.jts2Geojson(rdLinkBreakpoint
+				.getGeometry());
 
 		Point point = command.getPoint();
 
@@ -106,13 +114,16 @@ public class OpTopo implements IOperation {
 			if (!hasFound) {
 
 				// 打断点和形状点重合
-				if (Math.abs(lon - jaPE.getDouble(0)) < 0.0000001 && Math.abs(lat - jaPE.getDouble(1)) < 0.0000001) {
+				if (Math.abs(lon - jaPE.getDouble(0)) < 0.0000001
+						&& Math.abs(lat - jaPE.getDouble(1)) < 0.0000001) {
 					ja1.add(new double[] { lon, lat });
 					hasFound = true;
 				}
 				// 打断点在线段上
-				else if (GeoTranslator.isIntersection(new double[] { jaPS.getDouble(0), jaPS.getDouble(1) },
-						new double[] { jaPE.getDouble(0), jaPE.getDouble(1) }, new double[] { lon, lat })) {
+				else if (GeoTranslator.isIntersection(
+						new double[] { jaPS.getDouble(0), jaPS.getDouble(1) },
+						new double[] { jaPE.getDouble(0), jaPE.getDouble(1) },
+						new double[] { lon, lat })) {
 					ja1.add(new double[] { lon, lat });
 					ja2.add(new double[] { lon, lat });
 					hasFound = true;
@@ -151,12 +162,13 @@ public class OpTopo implements IOperation {
 		RdLink link1 = new RdLink();
 
 		link1.copy(rdLinkBreakpoint);
-		
+
 		link1.setPid(PidService.getInstance().applyLinkPid());
 
 		link1.setGeometry(GeoTranslator.geojson2Jts(geojson1));
 
-		double length1 = GeometryUtils.getLinkLength(GeoTranslator.transform(link1.getGeometry(), 0.00001, 5));
+		double length1 = GeometryUtils.getLinkLength(GeoTranslator.transform(
+				link1.getGeometry(), 0.00001, 5));
 
 		link1.setLength(length1);
 
@@ -165,12 +177,13 @@ public class OpTopo implements IOperation {
 		RdLink link2 = new RdLink();
 
 		link2.copy(rdLinkBreakpoint);
-		
+
 		link2.setPid(PidService.getInstance().applyLinkPid());
 
 		link2.setGeometry(GeoTranslator.geojson2Jts(geojson2));
 
-		double length2 = GeometryUtils.getLinkLength(GeoTranslator.transform(link2.getGeometry(), 0.00001, 5));
+		double length2 = GeometryUtils.getLinkLength(GeoTranslator.transform(
+				link2.getGeometry(), 0.00001, 5));
 
 		link2.setLength(length2);
 

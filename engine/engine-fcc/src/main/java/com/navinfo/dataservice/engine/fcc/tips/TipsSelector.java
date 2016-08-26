@@ -253,6 +253,33 @@ public class TipsSelector {
 						Geojson.coord2Pixel(gELoc, z, px, py);
 						m.put("d", gSLoc.getJSONArray("coordinates"));
 						m.put("e", gELoc.getJSONArray("coordinates"));
+					}else if( type == 1305){
+						String time =deep.getString("time");
+						if(StringUtils.isEmpty(time)){
+							m.put("d", 0);
+						}else{
+							m.put("d", 1);
+						}
+						
+					}else if(type ==1308 ){
+						
+						JSONArray arr=deep.getJSONArray("c_array");
+						boolean flag=false;
+						if(arr!=null && arr.size()!=0){
+							for (Object object : arr) {
+								JSONObject timeObj=JSONObject.fromObject(object);
+								String time=timeObj.getString("time");
+								if(StringUtils.isEmpty(time)){
+								flag=true;
+								break;
+							}
+							}
+							if(flag){
+								m.put("d", 0);
+							}else{
+								m.put("d", 1);
+							}
+						}
 					}
 
 				}else if(type == 1106){

@@ -16,17 +16,20 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.navinfo.dataservice.api.edit.iface.EditApi;
+import com.navinfo.dataservice.api.job.iface.JobApi;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.exception.DataNotChangeException;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
+import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.DBUtils;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 @Controller
@@ -205,5 +208,39 @@ public class RowEditController extends BaseController {
 			DBUtils.closeConnection(conn);
 		}
 
+	}
+	
+	/**
+	 * POI提交
+	 * 根据所选grid进行POI数据的提交，自动执行检查、批处理
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException
+	 */
+	@RequestMapping(value = "/poi/base/release")
+	public ModelAndView getPoiBaseRelease(HttpServletRequest request)
+			throws ServletException, IOException {
+
+		String parameter = request.getParameter("parameter");
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			int dbId = jsonReq.getInt("dbId");
+			JSONArray gridIds=jsonReq.getJSONArray("gridIds");
+			
+			JSONObject jobReq=new JSONObject();
+			jobReq.put("targetDbId", dbId);
+			jobReq.put("gridIds", gridIds);
+					
+			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
+			long userId=tokenObj.getUserId();
+			//long userId=2;
+			JobApi apiService=(JobApi) ApplicationContextUtil.getBean("jobApi");
+			long jobId=apiService.createJob("editPoiBaseRelease", jobReq, userId, "POI行编提交");	
+			return new ModelAndView("jsonView", success(jobId));
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
 	}
 }

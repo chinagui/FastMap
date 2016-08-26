@@ -98,9 +98,9 @@ public class GLM01025 extends baseRule {
 					this.setCheckResult(rdLink.getGeometry(), "[RD_LINK,"+rdLink.getPid()+"]", rdLink.getMeshId());
 					return;	
 				}
-			}
-			pstmt.close();
+			}	
 		}
+		pstmt.close();
 	}
 	
 	

@@ -92,7 +92,7 @@ public class Operation implements IOperation {
 
 			if (currLevel == 5) {
 
-				throw new Exception("此link不是该组同一关系中的主要素，不能进行打断操作");
+				throw new Exception("此link不是该组同一关系中的主要素，不能进行此操作");
 			}
 
 			oldLinkPid = ((LuLink) oldLink).getPid();
@@ -107,6 +107,101 @@ public class Operation implements IOperation {
 		return info;
 	}
 
+	public String repairLink(IObj repairLink, String requester, Result result)
+			throws Exception {
+
+		int[] info = getBreakInfo(repairLink);
+
+		int breakLinkPid = info[0];
+
+		// 级别：：1:道路>2:行政区划>
+		// 3:ZONELINK>4:土地利用（BUA边界线）＞5土地利用（大学，购物中心，医院，体育场，公墓，停车场，工业区，邮区边界线，FM面边界线）；
+		int currLevel = info[1];
+
+		String linkTableName = repairLink.parentTableName().toUpperCase();
+
+		RdSameLinkSelector sameLinkSelector = new RdSameLinkSelector(this.conn);
+
+		RdSameLinkPart originalPart = sameLinkSelector.loadLinkPartByLink(
+				breakLinkPid, linkTableName, true);
+
+		// 被打断link不存在同一关系，不处理
+		if (originalPart == null) {
+
+			return null;
+		}
+
+		RdSameLink originalSameLink = (RdSameLink) sameLinkSelector.loadById(
+				originalPart.getGroupId(), true, true);
+
+		// 同一线中其他的组成link
+		List<RdSameLinkPart> linkParts = new ArrayList<RdSameLinkPart>();
+
+		int highLevel = getLinkPartsInfo(currLevel, originalSameLink, linkParts);
+
+		if (currLevel > highLevel) {
+
+			throw new Exception("此link不是该组同一关系中的主要素，不能进行打断操作");
+		}
+
+		// link的修形requester可用信息相同，可共用。
+		JSONObject repairJson = JSONObject.fromObject(requester);
+
+		for (RdSameLinkPart part : linkParts) {
+
+			if (linkTableName == part.getTableName()
+					&& breakLinkPid == part.getLinkPid()) {
+				continue;
+			}
+
+			repairLink(part, repairJson, result);
+		}
+
+		return null;
+
+	}
+
+	/**
+	 * 对统一关系的其他组成link调用修形功能
+	 * 
+	 * @param part
+	 * @param repairJson
+	 * @param result
+	 * @throws Exception
+	 */
+	private void repairLink(RdSameLinkPart part, JSONObject repairJson,
+			Result result) throws Exception {
+		ObjType type = ReflectionAttrUtils.getObjTypeByTableName(part
+				.getTableName());
+
+		switch (type) {
+
+		case ADLINK:
+			com.navinfo.dataservice.engine.edit.operation.topo.repair.repairadlink.Command adCommand = new com.navinfo.dataservice.engine.edit.operation.topo.repair.repairadlink.Command(
+					repairJson, null);
+			com.navinfo.dataservice.engine.edit.operation.topo.repair.repairadlink.Process adProcess = new com.navinfo.dataservice.engine.edit.operation.topo.repair.repairadlink.Process(
+					adCommand, result, conn);
+			adProcess.innerRun();
+			break;
+		case ZONELINK:
+			com.navinfo.dataservice.engine.edit.operation.topo.repair.repairzonelink.Command zoneCommand = new com.navinfo.dataservice.engine.edit.operation.topo.repair.repairzonelink.Command(
+					repairJson, null);
+			com.navinfo.dataservice.engine.edit.operation.topo.repair.repairzonelink.Process zoneProcess = new com.navinfo.dataservice.engine.edit.operation.topo.repair.repairzonelink.Process(
+					zoneCommand, result, conn);
+			zoneProcess.innerRun();
+			break;
+		case LULINK:
+			com.navinfo.dataservice.engine.edit.operation.topo.repair.repairlulink.Command luCommand = new com.navinfo.dataservice.engine.edit.operation.topo.repair.repairlulink.Command(
+					repairJson, null);
+			com.navinfo.dataservice.engine.edit.operation.topo.repair.repairlulink.Process luProcess = new com.navinfo.dataservice.engine.edit.operation.topo.repair.repairlulink.Process(
+					luCommand, result, conn);
+			luProcess.innerRun();
+			break;
+		default:
+			break;
+		}
+	}
+
 	/**
 	 * 打断link维护rdsamelink。
 	 * 
@@ -118,8 +213,8 @@ public class Operation implements IOperation {
 	 * @param conn
 	 * @throws Exception
 	 */
-	public String breakRdLink(IObj breakLink, List<IObj> newLinks,
-			IRow newNode, JSONObject breakJson, Result result) throws Exception {
+	public String breakLink(IObj breakLink, List<IObj> newLinks,
+			IRow newNode, String requester, Result result) throws Exception {
 
 		int[] info = getBreakInfo(breakLink);
 
@@ -155,18 +250,24 @@ public class Operation implements IOperation {
 			throw new Exception("此link不是该组同一关系中的主要素，不能进行打断操作");
 		}
 
+		// 新生成同一点node组
 		List<IRow> newNodes = new ArrayList<IRow>();
 
 		newNodes.add(newNode);
 
+		// 新生成同一线link组1
 		List<IRow> links1 = new ArrayList<IRow>();
 
+		// 新生成同一线link组2
 		List<IRow> links2 = new ArrayList<IRow>();
 
 		Coordinate falgPoint = getFalgPoint(breakLink);
 
 		handleCurrNewLink(falgPoint, newLinks, links1, links2);
-
+		
+		// link的打断requester可用信息相同，可共用。
+		JSONObject breakJson = JSONObject.fromObject(requester);		
+		
 		for (RdSameLinkPart part : linkParts) {
 
 			if (linkTableName == part.getTableName()
@@ -192,8 +293,17 @@ public class Operation implements IOperation {
 		}
 
 		// 新建同一点
+		com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create.Operation samenodeOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create.Operation(
+				null, null);
+		samenodeOperation.breakSameLink(result, newNodes);
 
 		// 新建同一线
+		com.navinfo.dataservice.engine.edit.operation.obj.rdsamelink.create.Operation sameLinkOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdsamelink.create.Operation(
+				null, null);
+
+		sameLinkOperation.breakSameLink(result, links1);
+
+		sameLinkOperation.breakSameLink(result, links2);
 
 		// 删除原始同一线
 		result.insertObject(originalSameLink, ObjStatus.DELETE,
@@ -201,6 +311,17 @@ public class Operation implements IOperation {
 		return null;
 	}
 
+	/**
+	 * 获取同一线的part信息
+	 * 
+	 * @param currLevel
+	 *            被打断link的对应等级
+	 * @param originalSameLink
+	 *            被打断同一线
+	 * @param linkParts
+	 *            同一线的part组
+	 * @return 同一线组成link的对应的最高等级
+	 */
 	private int getLinkPartsInfo(int currLevel, RdSameLink originalSameLink,
 			List<RdSameLinkPart> linkParts) {
 
@@ -229,6 +350,12 @@ public class Operation implements IOperation {
 		return highLevel;
 	}
 
+	/**
+	 * 获取标识点位，打断时判断新生成的link分组
+	 * 
+	 * @param oldLink
+	 * @return
+	 */
 	private Coordinate getFalgPoint(IObj oldLink) {
 
 		ObjType linkType = oldLink.objType();
@@ -255,6 +382,14 @@ public class Operation implements IOperation {
 		return coordinate;
 	}
 
+	/**
+	 * 打断时通过标识点位 将新生成link进行分组
+	 * 
+	 * @param falgPoint
+	 * @param newLinks
+	 * @param links1
+	 * @param links2
+	 */
 	private void handleCurrNewLink(Coordinate falgPoint, List<IObj> newLinks,
 			List<IRow> links1, List<IRow> links2) {
 
@@ -294,7 +429,7 @@ public class Operation implements IOperation {
 	}
 
 	/**
-	 * 调用link打断接口
+	 * 调用adlink打断接口
 	 * 
 	 * @param type
 	 * @throws Exception
@@ -328,7 +463,7 @@ public class Operation implements IOperation {
 	}
 
 	/**
-	 * 调用link打断接口
+	 * 调用lulink打断接口
 	 * 
 	 * @param type
 	 * @throws Exception
@@ -361,7 +496,7 @@ public class Operation implements IOperation {
 	}
 
 	/**
-	 * 调用link打断接口
+	 * 调用zonelink打断接口
 	 * 
 	 * @param type
 	 * @throws Exception

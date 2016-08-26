@@ -14,6 +14,7 @@ import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.crf.RdObject;
 import com.navinfo.dataservice.dao.glm.model.rd.crf.RdObjectInter;
 import com.navinfo.dataservice.dao.glm.model.rd.crf.RdObjectLink;
+import com.navinfo.dataservice.dao.glm.model.rd.crf.RdObjectName;
 import com.navinfo.dataservice.dao.glm.model.rd.crf.RdObjectRoad;
 import com.navinfo.dataservice.dao.glm.model.rd.inter.RdInter;
 import com.navinfo.dataservice.dao.glm.model.rd.inter.RdInterLink;
@@ -21,6 +22,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.road.RdRoad;
 import com.navinfo.dataservice.dao.glm.model.rd.road.RdRoadLink;
 import com.navinfo.dataservice.dao.glm.selector.rd.crf.RdObjectSelector;
+import com.navinfo.dataservice.dao.pidservice.PidService;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -72,6 +74,11 @@ public class Operation implements IOperation {
 			updateObjectLink(result, content);
 		}
 
+		// name子表
+		if (content.containsKey("names")) {
+			updateObjectName(result, content);
+		}
+
 		result.setPrimaryPid(rdObject.parentPKValue());
 
 		return null;
@@ -97,15 +104,24 @@ public class Operation implements IOperation {
 				subObj.remove((Integer) objectInter.getInterPid());
 			}
 		}
+
+		List<Integer> pidList = new ArrayList<>();
+
 		for (int i = 0; i < subObj.size(); i++) {
 
-			RdObjectInter rdObjectInter = new RdObjectInter();
+			int interPid = subObj.getInt(i);
 
-			rdObjectInter.setInterPid(subObj.getInt(i));
+			if (!pidList.contains(interPid)) {
+				RdObjectInter rdObjectInter = new RdObjectInter();
 
-			rdObjectInter.setPid(rdObject.getPid());
+				rdObjectInter.setInterPid(interPid);
 
-			result.insertObject(rdObjectInter, ObjStatus.INSERT, rdObjectInter.getInterPid());
+				rdObjectInter.setPid(rdObject.getPid());
+
+				result.insertObject(rdObjectInter, ObjStatus.INSERT, rdObjectInter.getInterPid());
+
+				pidList.add(interPid);
+			}
 		}
 
 	}
@@ -131,15 +147,24 @@ public class Operation implements IOperation {
 				subObj.remove((Integer) objectRoad.getRoadPid());
 			}
 		}
+
+		List<Integer> pidList = new ArrayList<>();
+
 		for (int i = 0; i < subObj.size(); i++) {
 
-			RdObjectRoad rdObjectRoad = new RdObjectRoad();
+			int roadPid = subObj.getInt(i);
 
-			rdObjectRoad.setRoadPid(subObj.getInt(i));
+			if (!pidList.contains(roadPid)) {
+				RdObjectRoad rdObjectRoad = new RdObjectRoad();
 
-			rdObjectRoad.setPid(rdObject.getPid());
+				rdObjectRoad.setRoadPid(subObj.getInt(i));
 
-			result.insertObject(rdObjectRoad, ObjStatus.INSERT, rdObjectRoad.getRoadPid());
+				rdObjectRoad.setPid(rdObject.getPid());
+
+				result.insertObject(rdObjectRoad, ObjStatus.INSERT, rdObjectRoad.getRoadPid());
+
+				pidList.add(roadPid);
+			}
 		}
 
 	}
@@ -165,15 +190,73 @@ public class Operation implements IOperation {
 			}
 		}
 
+		List<Integer> pidList = new ArrayList<>();
+
 		for (int i = 0; i < subObj.size(); i++) {
 
-			RdObjectLink objLink = new RdObjectLink();
+			int linkPid = subObj.getInt(i);
 
-			objLink.setLinkPid(subObj.getInt(i));
+			if (pidList.contains(linkPid)) {
+				RdObjectLink objLink = new RdObjectLink();
 
-			objLink.setPid(rdObject.getPid());
+				objLink.setLinkPid(subObj.getInt(i));
 
-			result.insertObject(objLink, ObjStatus.INSERT, objLink.getLinkPid());
+				objLink.setPid(rdObject.getPid());
+
+				result.insertObject(objLink, ObjStatus.INSERT, objLink.getLinkPid());
+
+				pidList.add(linkPid);
+			}
+		}
+	}
+
+	/**
+	 * 更新link子表
+	 * 
+	 * @param result
+	 * @param content
+	 * @throws Exception
+	 */
+	private void updateObjectName(Result result, JSONObject content) throws Exception {
+		JSONArray names = this.command.getNameArray();
+
+		for (int i = 0; i < names.size(); i++) {
+
+			JSONObject nameJson = names.getJSONObject(i);
+
+			if (nameJson.containsKey("objStatus")) {
+
+				if (!ObjStatus.INSERT.toString().equals(nameJson.getString("objStatus"))) {
+
+					RdObjectName name = rdObject.nameMap.get(nameJson.getString("rowId"));
+
+					if (ObjStatus.DELETE.toString().equals(nameJson.getString("objStatus"))) {
+						result.insertObject(name, ObjStatus.DELETE, rdObject.pid());
+
+					} else if (ObjStatus.UPDATE.toString().equals(nameJson.getString("objStatus"))) {
+
+						boolean isChanged = name.fillChangeFields(nameJson);
+
+						if (isChanged) {
+							result.insertObject(name, ObjStatus.UPDATE, rdObject.pid());
+						}
+					}
+				} else {
+					RdObjectName name = new RdObjectName();
+
+					name.Unserialize(nameJson);
+
+					name.setPid(rdObject.getPid());
+
+					name.setNameId(PidService.getInstance().applyAdAdminNamePid());
+
+					name.setNameGroupid(rdObject.getNames().size() + 1);
+
+					result.insertObject(name, ObjStatus.INSERT, name.getNameId());
+
+				}
+			}
+
 		}
 	}
 
@@ -338,36 +421,32 @@ public class Operation implements IOperation {
 	 */
 	public void breakRdObjectLink(RdLink oldLink, List<RdLink> newLinks, Result result) throws Exception {
 		RdObjectSelector selector = new RdObjectSelector(conn);
-		
+
 		String linkPid = String.valueOf(oldLink.getPid());
-		
-		Map<String,RdObject> rdObjMap = selector.loadRdObjectByPidAndType(linkPid, ObjType.RDLINK, true);
-		
+
+		Map<String, RdObject> rdObjMap = selector.loadRdObjectByPidAndType(linkPid, ObjType.RDLINK, true);
+
 		RdObject rdObject = rdObjMap.get(linkPid);
-		
-		//CRF对象不为null,需要维护rd_object_link,将新的links加入该表
-		if(rdObject != null)
-		{
+
+		// CRF对象不为null,需要维护rd_object_link,将新的links加入该表
+		if (rdObject != null) {
 			List<IRow> links = rdObject.getLinks();
-			
-			for(IRow row : links)
-			{
+
+			for (IRow row : links) {
 				RdObjectLink objLink = (RdObjectLink) row;
-				
-				if(objLink.getLinkPid() == oldLink.getPid())
-				{
+
+				if (objLink.getLinkPid() == oldLink.getPid()) {
 					result.insertObject(objLink, ObjStatus.DELETE, objLink.getLinkPid());
 				}
 			}
-			
-			for(RdLink link : newLinks)
-			{
+
+			for (RdLink link : newLinks) {
 				RdObjectLink objLink = new RdObjectLink();
-				
+
 				objLink.setLinkPid(link.getPid());
-				
+
 				objLink.setPid(rdObject.getPid());
-				
+
 				result.insertObject(objLink, ObjStatus.INSERT, objLink.getLinkPid());
 			}
 		}

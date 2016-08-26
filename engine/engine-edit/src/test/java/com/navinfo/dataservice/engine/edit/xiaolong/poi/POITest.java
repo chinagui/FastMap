@@ -85,7 +85,7 @@ public class POITest extends InitApplication{
 	
 	@Test
 	public void addPoi(){
-		String parameter = "{\"command\":\"UPDATE\",\"dbId\":25,\"type\":\"IXPOIPARENT\",\"objId\":690895,\"parentPid\":7172445}";
+		String parameter = "{\"command\":\"CREATE\",\"type\":\"IXPOI\",\"dbId\":42,\"data\":{\"longitude\":116.36739134788513,\"latitude\":40.05330749471645,\"x_guide\":116.36786341667175,\"y_guide\":40.05213311921041,\"linkPid\":692713}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

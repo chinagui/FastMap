@@ -15,7 +15,6 @@ import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.search.RdObjectSearch;
-import com.navinfo.dataservice.dao.glm.selector.rd.crf.RdObjectSelector;
 import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.operation.Transaction;
 import com.navinfo.dataservice.engine.edit.search.SearchProcess;
@@ -153,7 +152,7 @@ public class RdObjectTest extends InitApplication {
 	
 	@Test
 	public void testDelRdLink() {
-		String parameter = "{\"command\":\"DELETE\",\"type\":\"RDLINK\",\"dbId\":42,\"objId\":100008960}";
+		String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDOBJECT\",\"dbId\":42,\"data\":{\"names\":[{\"pid\":100000046,\"nameGroupid\":1,\"langCode\":\"CHI\",\"name\":\"西红门南桥\",\"phonetic\":\"Xi+Hong+Men+Nan+Qiao\",\"srcFlag\":0,\"objStatus\":\"INSERT\"}],\"pid\":100000046}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
@@ -185,7 +184,7 @@ public class RdObjectTest extends InitApplication {
 
 			RdObjectSearch search = new RdObjectSearch(conn);
 			
-			List<SearchSnapshot> data = search.searchDataByTileWithGap(107892, 49725, 17, 80);
+			List<SearchSnapshot> data = search.searchDataByTileWithGap(107946, 49616, 17, 80);
 			
 			System.out.println("data:"+ResponseUtils.assembleRegularResult(data));
 
@@ -201,7 +200,7 @@ public class RdObjectTest extends InitApplication {
 		Connection conn;
 		try {
 			
-			String parameter = "{\"type\":\"RDOBJECTNAME\",\"dbId\":42,\"data\":{\"pid\":}}";
+			String parameter = "{\"type\":\"RDOBJECTNAME\",\"dbId\":42,\"data\":{\"pid\":5011367}}";
 			
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 

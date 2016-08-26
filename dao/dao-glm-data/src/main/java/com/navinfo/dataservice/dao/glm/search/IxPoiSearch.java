@@ -352,11 +352,14 @@ public class IxPoiSearch implements ISearch {
 			}
 			
 			IxPoiSelector poiSelector = new IxPoiSelector(conn);
+			IxPoiNameSelector nameSelector = new IxPoiNameSelector(conn);
 			IxPoiAddressSelector addressSelector = new IxPoiAddressSelector(conn);
 			IxPoiDeepStatusSelector ixPoiDeepStatusSelector = new IxPoiDeepStatusSelector(conn);
 			
 			for (String rowId:rowIds) {
 				IxPoi poi = (IxPoi) poiSelector.loadByRowId(rowId, isLock);
+				List<IRow> nameList = nameSelector.loadRowsByParentId(poi.getPid(), false);
+				poi.setNames(nameList);
 				List<IRow> addressList = addressSelector.loadRowsByParentId(poi.getPid(), isLock);
 				poi.setAddresses(addressList);
 				poi.setPhotos(new AbstractSelector(IxPoiPhoto.class,conn).loadRowsByParentId(poi.getPid(), isLock));
@@ -479,11 +482,14 @@ public class IxPoiSearch implements ISearch {
 			}
 			
 			IxPoiSelector poiSelector = new IxPoiSelector(conn);
+			IxPoiNameSelector nameSelector = new IxPoiNameSelector(conn);
 			IxPoiAddressSelector addressSelector = new IxPoiAddressSelector(conn);
 			IxPoiDeepStatusSelector ixPoiDeepStatusSelector = new IxPoiDeepStatusSelector(conn);
 			
 			for (String rowId:rowIds) {
 				IxPoi poi = (IxPoi) poiSelector.loadByRowId(rowId, isLock);
+				List<IRow> nameList = nameSelector.loadRowsByParentId(poi.getPid(), false);
+				poi.setNames(nameList);
 				List<IRow> addressList = addressSelector.loadRowsByParentId(poi.getPid(), isLock);
 				poi.setAddresses(addressList);
 				poi.setPhotos(new AbstractSelector(IxPoiPhoto.class,conn).loadRowsByParentId(poi.getPid(), isLock));
@@ -652,12 +658,9 @@ public class IxPoiSearch implements ISearch {
 						
 						result.addAll(sigleWordList);
 					}
-					
-					
 				}
 			}
-			
-			return null;
+			return result;
 		} catch (Exception e) {
 			throw e;
 		}

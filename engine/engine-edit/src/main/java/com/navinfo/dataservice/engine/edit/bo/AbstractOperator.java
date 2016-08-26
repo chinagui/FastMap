@@ -6,8 +6,8 @@ import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
-import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.log.LogWriter;
+import com.navinfo.dataservice.engine.edit.model.OperationResult;
 import com.navinfo.dataservice.engine.edit.operation.OperatorFactory;
 import com.navinfo.dataservice.engine.edit.operation.PoiMsgPublisher;
 
@@ -29,13 +29,13 @@ public abstract class AbstractOperator {
 	
     public abstract void loadData() throws Exception;
     
-    public abstract Result execute() throws Exception;
+    public abstract OperationResult execute() throws Exception;
     
-    public void flush(Result result) throws Exception{
-    	LogWriter lw = new LogWriter(conn);
-		lw.generateLog(cmd, result);
-		OperatorFactory.recordData(conn, result);
-		lw.recordLog(cmd, result);
+    public void flush(OperationResult result) throws Exception{
+//    	LogWriter lw = new LogWriter(conn);
+//		lw.generateLog(cmd, result);
+//		OperatorFactory.recordData(conn, result);
+//		lw.recordLog(cmd, result);
 
 //		PoiMsgPublisher.publish(result);
     }

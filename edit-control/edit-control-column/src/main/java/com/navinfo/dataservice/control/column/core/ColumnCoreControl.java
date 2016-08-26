@@ -187,7 +187,7 @@ public class ColumnCoreControl {
 				poiObj.put("dbId", dbId);
 				poiObj.put("data", data.getJSONObject(i));
 				EditApi apiEdit=(EditApi) ApplicationContextUtil.getBean("editApi");
-				apiEdit.columnSave(poiObj);
+				apiEdit.run(poiObj);
 			}
 			
 		} catch (Exception e) {

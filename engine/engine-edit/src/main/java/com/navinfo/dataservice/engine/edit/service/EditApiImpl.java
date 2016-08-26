@@ -1,29 +1,44 @@
 package com.navinfo.dataservice.engine.edit.service;
 
+import org.springframework.stereotype.Service;
+
 import com.navinfo.dataservice.api.edit.iface.EditApi;
+import com.navinfo.dataservice.engine.edit.operation.Transaction;
 
 import net.sf.json.JSONObject;
 
 /**
- * 
- * @author wangdongbin
- *
+ * editApi的实现类
+* @ClassName: EditApiImpl 
+* @author Zhang Xiaolong
+* @date 2016年8月24日 下午7:16:24 
+* @Description: TODO
  */
+@Service("editApi")
 public class EditApiImpl implements EditApi {
-	
-	/**
-	 * 精编作业保存
-	 * add by wangdongbin
-	 */
-	@Override
-	public void columnSave(JSONObject dataObj) throws Exception {
-		com.navinfo.dataservice.engine.edit.operation.obj.poi.update.Command command =
-			new com.navinfo.dataservice.engine.edit.operation.obj.poi.update.Command(
-					dataObj, new String());
-		com.navinfo.dataservice.engine.edit.operation.obj.poi.update.Process process =
-			new com.navinfo.dataservice.engine.edit.operation.obj.poi.update.Process(
-					command);
-		process.run();
-	}
 
+	@Override
+	public JSONObject run(JSONObject dataObj) throws Exception {
+		Transaction t = new Transaction(dataObj.toString());
+
+		String msg = t.run();
+
+		String log = t.getLogs();
+
+		JSONObject json = new JSONObject();
+
+		json.put("result", msg);
+
+		json.put("log", log);
+
+		json.put("check", t.getCheckLog());
+
+		json.put("pid", t.getPid());
+
+		return json;
+	}
+	@Override
+	public long applyPid(String tableName, int count) throws Exception {
+		return PidService.getInstance().applyPid(tableName, count);
+	}
 }

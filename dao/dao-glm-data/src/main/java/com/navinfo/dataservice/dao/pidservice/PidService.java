@@ -387,8 +387,7 @@ public class PidService {
 				PidRangeCombine prc = PidServiceUtils.applyPid(pidRange);
 
 				if (prc.getPid() != -1) {
-					PidServiceUtils.updatePidRange(conn, pidSeqName,
-							prc.getPidRange());
+					PidServiceUtils.updatePidRange(conn, pidSeqName, prc.getPidRange());
 
 					pid = prc.getPid();
 				} else {
@@ -571,5 +570,15 @@ public class PidService {
 	 */
 	public synchronized int applyRdVoiceguideDetailPid() throws Exception {
 		return applyPid(PidSequenceName.rdVoiceguideDetailName);
+	}
+
+	/**
+	 * 申请IX_SAMEPOI
+	 * 
+	 * @return
+	 * @throws Exception
+	 */
+	public synchronized int applySamepoiPid() throws Exception {
+		return applyPid(PidSequenceName.samePoiPidName);
 	}
 }

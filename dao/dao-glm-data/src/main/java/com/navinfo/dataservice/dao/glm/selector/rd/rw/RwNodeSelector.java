@@ -5,8 +5,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
+
 import com.navinfo.dataservice.dao.glm.iface.IRow;
-import com.navinfo.dataservice.dao.glm.model.rd.node.RdNodeMesh;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLink;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwNode;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwNodeMesh;
@@ -198,7 +198,7 @@ public class RwNodeSelector extends AbstractSelector {
 	private void setChildData(RwNode node, boolean isLock)
 			throws Exception {
 
-		List<IRow> meshes = new AbstractSelector(RdNodeMesh.class,conn).loadRowsByParentId(node.getPid(), isLock);
+		List<IRow> meshes = new AbstractSelector(RwNodeMesh.class,conn).loadRowsByParentId(node.getPid(), isLock);
 
 		node.setMeshes(meshes);
 

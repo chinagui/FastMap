@@ -8,9 +8,7 @@
 		<artifactId>web</artifactId>
 		<version>0.0.1-SNAPSHOT</version>
 	</parent>
-	<groupId>com.navinfo.dataservice</groupId>
 	<artifactId>edit-column-web</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
 	<packaging>war</packaging>
 	<name>edit-column-web Maven Webapp</name>
 	<url>http://maven.apache.org</url>
@@ -35,6 +33,11 @@
 		<dependency>
 			<groupId>com.navinfo.dataservice</groupId>
 			<artifactId>dao-glm-data</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.navinfo.dataservice</groupId>
+			<artifactId>edit-control-column</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>com.navinfo.dataservice</groupId>

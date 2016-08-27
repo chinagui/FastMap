@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+@authur:liuqing
+@time:2010-08-24
+-->
+<sqls>
+    <feature name="ck">
+        <step value="100">
+            <sql condition="mesh"><![CDATA[SELECT P.* FROM NI_VAL_EXCEPTION P WHERE P.MESH_ID [mesh];]]></sql>
+            <sql condition="mesh"><![CDATA[SELECT P.* FROM CK_RESULT_OBJECT P WHERE EXISTS (SELECT 1 FROM NI_VAL_EXCEPTION T WHERE P.MD5_CODE=T.MD5_CODE AND T.MESH_ID [mesh]);]]></sql>
+        </step>
+        <step value="101">
+            <sql condition="mesh"><![CDATA[DELETE FROM NI_VAL_EXCEPTION P WHERE P.MESH_ID [mesh];]]></sql>
+            <sql condition="mesh"><![CDATA[DELETE FROM FROM CK_RESULT_OBJECT P WHERE EXISTS (SELECT 1 FROM NI_VAL_EXCEPTION T WHERE P.MD5_CODE=T.MD5_CODE AND T.MESH_ID [mesh]);]]></sql>
+        </step>
+    </feature>
+</sqls>

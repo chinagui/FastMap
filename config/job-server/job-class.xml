@@ -60,9 +60,6 @@
 		class="com.navinfo.dataservice.edit.job.EditPoiBaseReleaseJob"
 	 	request="com.navinfo.dataservice.edit.job.EditPoiBaseReleaseJobRequest"
 	/>
-	<type name="niRobot" 
-		class="com.navinfo.nirobot.robot.RobotJob"
-	 	request="com.navinfo.nirobot.robot.RobotJobRequest"
-	/>
+
 	
 </mapping>

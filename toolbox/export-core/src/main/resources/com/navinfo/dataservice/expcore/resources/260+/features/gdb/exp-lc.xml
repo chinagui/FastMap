@@ -1,0 +1,309 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+@authur:liuqing
+@time:2010-08-23
+-->
+<sqls>
+    <!--///////////////////////////////////////////////////土地覆盖/////////////////////////////////////////////////////////-->
+    <feature name="LC_FEATURE">
+        <!--
+            土地覆盖提取原则:
+            1.FACE直接根据图幅号提取
+            2.根据face提取link ，根据link提取node
+            3.土地覆盖根据FACE的要素关系提取
+        -->
+        <step value="7">
+            <!--提取图幅内link-->
+            <sql condition="mesh"><![CDATA[
+                    INSERT /*+ append */
+                    INTO TEMP_LC_LINK
+                    (PID)
+                    (SELECT P.LINK_PID
+                      FROM LC_LINK_MESH P
+                     WHERE  P.MESH_ID [mesh]);
+                     ]]></sql>
+
+            <sql condition="area"><![CDATA[
+                    INSERT /*+ append */
+                    INTO TEMP_LC_LINK
+                    (PID)
+                    (SELECT  P.LINK_PID
+                      FROM LC_LINK P
+                     WHERE SDO_ANYINTERACT(P.GEOMETRY,[area]) = 'TRUE');
+                     ]]></sql>
+
+
+            <!--提取图廓点-->
+            <sql condition="mesh" sqlType="dataIntegrity"><![CDATA[
+                     INSERT /*+ append */
+                     INTO TEMP_LC_NODE
+                       (PID)
+                       (SELECT NODE_PID
+                          FROM (SELECT COUNT(1), N.NODE_PID
+                                  FROM LC_NODE_MESH M,
+                                       (SELECT NODE_PID FROM LC_NODE_MESH WHERE MESH_ID [mesh]) N
+                                 WHERE N.NODE_PID = M.NODE_PID
+                                 GROUP BY N.NODE_PID
+                                HAVING COUNT(1) > 1)
+                       );
+                     ]]></sql>
+        </step>
+
+        <step value="10">
+            <!--根据图框线提取face-->
+            <sql condition="mesh" sqlType="dataIntegrity"><![CDATA[
+                         INSERT /*+ append */
+                         INTO TEMP_LC_FACE
+                           (PID)
+                           (
+                            SELECT DISTINCT FT.FACE_PID
+                              FROM (SELECT COUNT(1), N.PID
+                                      FROM LC_LINK_MESH M, TEMP_LC_LINK N
+                                     WHERE N.PID = M.LINK_PID
+                                     GROUP BY N.PID
+                                    HAVING COUNT(1) > 1) T,
+                                   LC_FACE_TOPO FT
+                             WHERE T.PID = FT.LINK_PID
+                           );
+                         ]]></sql>
+
+
+        </step>
+        <step value="13">
+            <!--根据图框线提取的face补link-->
+            <sql condition="mesh" sqlType="dataIntegrity"><![CDATA[
+                         INSERT /*+ append */
+                         INTO TEMP_LC_LINK
+                           (PID)
+                           (SELECT T.LINK_PID
+                              FROM TEMP_LC_FACE P, LC_FACE_TOPO T
+                             WHERE P.PID = T.FACE_PID);
+                         ]]></sql>
+
+            <!--根据图廓点提取link-->
+            <sql condition="mesh" sqlType="dataIntegrity"><![CDATA[
+                    INSERT /*+ append */
+                    INTO TEMP_LC_LINK
+                      (PID)
+                      (SELECT L.LINK_PID
+                          FROM LC_LINK L
+                         WHERE L.S_NODE_PID IN (SELECT PID FROM TEMP_LC_NODE)
+                        UNION ALL
+                        SELECT L.LINK_PID
+                          FROM LC_LINK L
+                         WHERE L.E_NODE_PID IN (SELECT PID FROM TEMP_LC_NODE)
+                        );
+                    ]]></sql>
+
+        </step>
+        <step value="16">
+            <!--按图幅提取FACE信息-->
+            <!--提取图幅内的face-->
+            <sql condition="mesh"><![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_LC_FACE
+                          (PID)
+                          (SELECT P.FACE_PID FROM LC_FACE P WHERE P.MESH_ID [mesh]);
+                        ]]></sql>
+            <sql condition="area"><![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_LC_FACE
+                          (PID)
+                          (SELECT P.FACE_PID FROM LC_FACE P WHERE SDO_ANYINTERACT(GEOMETRY,[area]) = 'TRUE');
+                        ]]></sql>
+        </step>
+        <step value="19">
+            <!--face去重复-->
+            <sql>
+                <![CDATA[
+                    DELETE FROM TEMP_LC_FACE A
+                    WHERE A.ROWID !=
+                           (SELECT MAX(B.ROWID) FROM TEMP_LC_FACE B WHERE A.PID = B.PID);
+                    ]]></sql>
+
+        </step>
+        <step value="22">
+            <!--提取face关联的lc_feature-->
+            <sql><![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_LC_FEATURE
+                          (PID)
+                          (SELECT DISTINCT P.FEATURE_PID
+                          FROM LC_FACE P,
+                          TEMP_LC_FACE T
+                          WHERE P.FEATURE_PID!=0 AND P.FEATURE_PID!=-1
+                           AND P.FACE_PID=T.PID);
+                        ]]></sql>
+
+            <!--根据face补link-->
+            <sql sqlType="dataIntegrity"><![CDATA[
+                         INSERT /*+ append */
+                         INTO TEMP_LC_LINK
+                           (PID)
+                           (SELECT T.LINK_PID
+                              FROM TEMP_LC_FACE P, LC_FACE_TOPO T
+                             WHERE P.PID = T.FACE_PID);
+                         ]]></sql>
+
+        </step>
+
+        <step value="25">
+            <!--LINK去重-->
+            <sql>
+                <![CDATA[
+                    DELETE FROM TEMP_LC_LINK A
+                     WHERE A.ROWID !=
+                           (SELECT MAX(B.ROWID) FROM TEMP_LC_LINK B WHERE A.PID = B.PID);
+                    ]]></sql>
+        </step>
+        <!--提取node-->
+        <step value="28">
+            <!--查询LINK的两端端点并去重-->
+            <sql><![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_LC_NODE
+                          (PID)
+                          (SELECT P.S_NODE_PID FROM LC_LINK P, TEMP_LC_LINK T WHERE P.LINK_PID = T.PID
+                            UNION ALL
+                           SELECT P.E_NODE_PID FROM LC_LINK P, TEMP_LC_LINK T WHERE P.LINK_PID = T.PID);
+                        ]]></sql>
+        </step>
+        <step value="31">
+            <!--NODE去重-->
+            <sql>
+                <![CDATA[
+                    DELETE FROM TEMP_LC_NODE A
+                     WHERE A.ROWID !=
+                           (SELECT MAX(B.ROWID) FROM TEMP_LC_NODE B WHERE A.PID = B.PID);
+                    ]]></sql>
+        </step>
+
+
+        <step value="100">
+            <!--
+                根据图幅号直接提取数据表：
+                1.LC_FACE
+                2.LC_FACE_TOPO
+                3.LC_LINK
+                4.LC_LINK_MESH
+                5.LC_LINK_KIND
+                6.LC_NODE
+                7.LC_NODE_MESH
+                9.LC_FEATURE
+                10.LC_FACE_NAME
+            -->
+            <!--LC_FACE-->
+            <sql><![CDATA[SELECT P.* FROM LC_FACE P,TEMP_LC_FACE T WHERE P.FACE_PID=T.PID; ]]></sql>
+
+            <!--LC_FACE_TOPO-->
+            <sql><![CDATA[
+                        SELECT P.*
+                          FROM LC_FACE_TOPO P, TEMP_LC_FACE R
+                         WHERE P.FACE_PID = R.PID ;
+                        ]]></sql>
+            <!--LC_LINK-->
+            <sql><![CDATA[
+                         SELECT P.*
+                          FROM LC_LINK P, TEMP_LC_LINK T
+                         WHERE P.LINK_PID = T.PID;
+                         ]]></sql>
+
+            <!--LC_LINK_MESH-->
+            <sql><![CDATA[
+                         SELECT P.*
+                          FROM LC_LINK_MESH P, TEMP_LC_LINK T
+                         WHERE P.LINK_PID = T.PID;
+                         ]]></sql>
+            <!--LC_LINK_KIND-->
+            <sql><![CDATA[
+                         SELECT P.*
+                          FROM LC_LINK_KIND P, TEMP_LC_LINK T
+                         WHERE P.LINK_PID = T.PID;
+                         ]]></sql>
+            <!--LC_NODE-->
+            <sql><![CDATA[
+                        SELECT P.*
+                          FROM LC_NODE P, TEMP_LC_NODE R
+                         WHERE P.NODE_PID = R.PID;
+                        ]]></sql>
+            <!--LC_NODE_MESH-->
+            <sql><![CDATA[
+                        SELECT P.*
+                          FROM LC_NODE_MESH P, TEMP_LC_NODE R
+                         WHERE P.NODE_PID = R.PID;
+                        ]]></sql>
+            <!--LC_FEATURE-->
+            <sql><![CDATA[
+                         SELECT P.*
+                          FROM LC_FEATURE P, TEMP_LC_FEATURE R
+                         WHERE P.FEATURE_PID = R.PID;
+                         ]]></sql>
+            <!--LC_FACE_NAME-->
+            <sql><![CDATA[
+                         SELECT P.*
+                          FROM LC_FACE_NAME P, TEMP_LC_FACE R
+                         WHERE P.FACE_PID = R.PID;
+                         ]]></sql>
+        </step>
+
+        <step value="101">
+            <!--
+                                        根据图幅号删除数据表：
+                1.LC_FACE
+                2.LC_FACE_TOPO
+                3.LC_LINK
+                4.LC_LINK_MESH
+                5.LC_LINK_KIND
+                6.LC_NODE
+                7.LC_NODE_MESH
+                8.LC_FEATURE
+                9.LC_FACE_NAME
+            -->
+            <!--LC_FACE-->
+            <sql><![CDATA[DELETE FROM LC_FACE P WHERE P.FACE_PID IN (SELECT T.PID FROM TEMP_LC_FACE T ); ]]></sql>
+            <sql><![CDATA[DELETE FROM LC_FACE_TOPO P WHERE P.FACE_PID IN (SELECT T.PID FROM TEMP_LC_FACE T ); ]]></sql>
+            <sql><![CDATA[DELETE FROM LC_LINK P WHERE P.LINK_PID IN (SELECT T.PID FROM TEMP_LC_LINK T ); ]]></sql>
+            <sql><![CDATA[DELETE FROM LC_LINK_MESH P WHERE P.LINK_PID IN (SELECT T.PID FROM TEMP_LC_LINK T ); ]]></sql>
+            <sql><![CDATA[DELETE FROM LC_LINK_KIND P WHERE P.LINK_PID IN (SELECT T.PID FROM TEMP_LC_LINK T ); ]]></sql>
+            <sql><![CDATA[DELETE FROM LC_NODE P WHERE P.NODE_PID IN (SELECT T.PID FROM TEMP_LC_NODE T ); ]]></sql>
+            <sql><![CDATA[DELETE FROM LC_NODE_MESH P WHERE P.NODE_PID IN (SELECT T.PID FROM TEMP_LC_NODE T ); ]]></sql>
+            <sql><![CDATA[DELETE FROM LC_FEATURE P WHERE P.FEATURE_PID IN (SELECT T.PID FROM TEMP_LC_FEATURE T ); ]]></sql>
+            <sql><![CDATA[DELETE FROM LC_FACE_NAME P WHERE P.FACE_PID IN (SELECT T.PID FROM TEMP_LC_FACE T ); ]]></sql>
+        </step>
+        <step value="102">
+            <!--查找重复信息：
+            -->
+            <sql><![CDATA[
+					INSERT /*+ append */ INTO TEMP_LC_FACE
+					  SELECT FACE_PID
+					    FROM LC_FACE A
+					   WHERE A.ROWID !=
+					         (SELECT MAX(B.ROWID) FROM LC_FACE  B WHERE A.FACE_PID = B.FACE_PID);
+				]]></sql>
+
+            <sql><![CDATA[
+					INSERT /*+ append */ INTO TEMP_LC_LINK
+					  SELECT LINK_PID
+					    FROM LC_LINK A
+					   WHERE A.ROWID !=
+					         (SELECT MAX(B.ROWID) FROM LC_LINK  B WHERE A.LINK_PID = B.LINK_PID);
+				]]></sql>
+
+			<sql><![CDATA[
+					INSERT /*+ append */ INTO TEMP_LC_NODE
+					  SELECT NODE_PID
+					    FROM LC_NODE A
+					   WHERE A.ROWID !=
+					         (SELECT MAX(B.ROWID) FROM LC_NODE  B WHERE A.NODE_PID = B.NODE_PID);
+				]]></sql>
+
+			<sql><![CDATA[
+					INSERT /*+ append */ INTO TEMP_LC_FEATURE
+					  SELECT FEATURE_PID
+					    FROM LC_FEATURE A
+					   WHERE A.ROWID !=
+					         (SELECT MAX(B.ROWID) FROM LC_FEATURE  B WHERE A.FEATURE_PID = B.FEATURE_PID);
+				]]></sql>
+        </step>
+    </feature>
+</sqls>

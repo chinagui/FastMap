@@ -111,7 +111,7 @@ public class RdLaneCondition implements IRow {
 
 	@Override
 	public String parentPKName() {
-		return "lane_id";
+		return "lane_pid";
 	}
 
 	@Override

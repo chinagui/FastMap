@@ -37,7 +37,10 @@ public class Operation implements IOperation {
 	public Operation(Connection conn) {
 		this.conn = conn;
 	}
-
+	public Operation(Command command,Connection conn) {
+		this.command = command;
+		this.conn = conn;
+	}
 	@Override
 	public String run(Result result) throws Exception {
 		RdTollgate tollgate = this.command.getTollgate();

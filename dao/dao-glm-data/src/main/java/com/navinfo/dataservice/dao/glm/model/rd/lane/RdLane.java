@@ -428,7 +428,7 @@ public class RdLane implements IObj {
 
 	@Override
 	public String primaryKey() {
-		return "group_id";
+		return "lane_pid";
 	}
 
 	@Override

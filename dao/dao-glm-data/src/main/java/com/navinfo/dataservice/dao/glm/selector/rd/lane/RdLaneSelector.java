@@ -64,7 +64,7 @@ public class RdLaneSelector extends AbstractSelector {
 			resultSet = pstmt.executeQuery();
 
 			while (resultSet.next()) {
-				RdLane slope = (RdLane) this.loadById(resultSet.getInt("pid"), false);
+				RdLane slope = (RdLane) this.loadById(resultSet.getInt("lane_pid"), false);
 				lanes.add(slope);
 			}
 

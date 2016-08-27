@@ -11,6 +11,7 @@ import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNodeMesh;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneNode;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneNodeMesh;
 import com.navinfo.dataservice.dao.glm.model.lc.LcNode;
+import com.navinfo.dataservice.dao.glm.model.lc.LcNodeMesh;
 import com.navinfo.dataservice.dao.glm.model.lu.LuNode;
 import com.navinfo.dataservice.dao.glm.model.lu.LuNodeMesh;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
@@ -222,7 +223,7 @@ public class NodeOperateUtils {
 
 		for (String mesh : MeshUtils.point2Meshes(x, y)) {
 
-			LuNodeMesh nodeMesh = new LuNodeMesh();
+			LcNodeMesh nodeMesh = new LcNodeMesh();
 			nodeMesh.setNodePid(node.getPid());
 			nodeMesh.setMeshId(Integer.parseInt(mesh));
 			nodeMeshs.add(nodeMesh);

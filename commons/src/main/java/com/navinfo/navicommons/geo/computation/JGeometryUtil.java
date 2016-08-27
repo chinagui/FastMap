@@ -167,14 +167,12 @@ public class JGeometryUtil {
 		
 		// 以0的距离进行缓冲（因为各多边形两两共边），生成一个多边形
 		// 此时则将点云构造成了多边形
-		Geometry union = ts.buffer(0);
+		Geometry union = ts.buffer(0.00005);
 		
-//		BufferOp bufOp = new BufferOp(ts);  
-//        bufOp.setEndCapStyle(BufferParameters.CAP_SQUARE);  
-//        Geometry bg = bufOp.getResultGeometry(0);  
-//        
-//        Polygonizer p = new Polygonizer(); 
+		BufferOp bufOp = new BufferOp(union);  
+        bufOp.setEndCapStyle(BufferParameters.CAP_ROUND);  
+        Geometry bg = bufOp.getResultGeometry(0);  
 		
-		return union;
+		return bg;
 	}
 }

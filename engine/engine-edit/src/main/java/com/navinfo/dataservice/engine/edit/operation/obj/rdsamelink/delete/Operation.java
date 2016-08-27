@@ -58,7 +58,7 @@ public class Operation implements IOperation {
 		}
 
 		RdSameLink sameLink = (RdSameLink) sameLinkSelector.loadById(
-				sameLinkPart.getGroupId(), true, true);
+				sameLinkPart.getGroupId(), true);
 
 		if (sameLink.getParts().size() < 3) {
 

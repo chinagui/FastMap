@@ -184,7 +184,7 @@ public class RdObjectTest extends InitApplication {
 
 			RdObjectSearch search = new RdObjectSearch(conn);
 			
-			List<SearchSnapshot> data = search.searchDataByTileWithGap(107946, 49616, 17, 80);
+			List<SearchSnapshot> data = search.searchDataByTileWithGap(107899, 49610, 17, 80);
 			
 			System.out.println("data:"+ResponseUtils.assembleRegularResult(data));
 

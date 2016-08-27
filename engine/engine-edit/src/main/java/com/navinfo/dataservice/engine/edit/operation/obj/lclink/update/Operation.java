@@ -6,6 +6,7 @@ import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.lc.LcLink;
+import com.navinfo.dataservice.dao.glm.model.lc.LcLinkKind;
 import com.navinfo.dataservice.dao.glm.model.lc.LcLinkMesh;
 
 public class Operation implements IOperation {
@@ -44,6 +45,11 @@ public class Operation implements IOperation {
 		if (content.containsKey("meshes")) {
 			JSONArray forms = content.getJSONArray("meshes");
 			this.saveMeshes(result, forms);
+		}
+
+		if (content.containsKey("kinds")) {
+			JSONArray kinds = content.getJSONArray("kinds");
+			this.saveKinds(result, kinds);
 		}
 
 		return null;
@@ -90,6 +96,33 @@ public class Operation implements IOperation {
 
 		}
 
+	}
+
+	/*
+	 * 修改对应子表LC_LINK_KIND
+	 */
+	private void saveKinds(Result result, JSONArray kinds) throws Exception {
+		for (int i = 0; i < kinds.size(); i++) {
+			JSONObject kindJson = kinds.getJSONObject(i);
+			if (kindJson.containsKey("objStatus")) {
+				if (!ObjStatus.INSERT.toString().equals(kindJson.getString("objStatus"))) {
+					LcLinkKind mesh = updateLink.lcLinkKindMap.get(kindJson.getString("rowId"));
+					if (ObjStatus.DELETE.toString().equals(kindJson.getString("objStatus"))) {
+						result.insertObject(mesh, ObjStatus.DELETE, updateLink.pid());
+					} else if (ObjStatus.UPDATE.toString().equals(kindJson.getString("objStatus"))) {
+						boolean isChanged = mesh.fillChangeFields(kindJson);
+						if (isChanged) {
+							result.insertObject(mesh, ObjStatus.UPDATE, updateLink.pid());
+						}
+					}
+				} else {
+					LcLinkKind kind = new LcLinkKind();
+					kind.Unserialize(kindJson);
+					kind.setLinkPid(this.updateLink.pid());
+					result.insertObject(kind, ObjStatus.INSERT, updateLink.pid());
+				}
+			}
+		}
 	}
 
 }

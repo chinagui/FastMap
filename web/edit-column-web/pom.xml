@@ -28,42 +28,26 @@
 			<version>3.1.0</version>
 			<scope>provided</scope>
 		</dependency>
-
 		<dependency>
 			<groupId>com.navinfo.dataservice</groupId>
 			<artifactId>commons</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>com.navinfo.dataservice</groupId>
-			<artifactId>engine-edit</artifactId>
+			<artifactId>dao-glm-data</artifactId>
 		</dependency>
-		
 		<dependency>
 			<groupId>com.navinfo.dataservice</groupId>
 			<artifactId>engine-photo</artifactId>
 		</dependency>
-		
-		<dependency>
-			<groupId>com.navinfo.dataservice</groupId>
-			<artifactId>edit-control-column</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
-		</dependency>
-
-		<dependency>
-			<groupId>com.navinfo.dataservice</groupId>
-			<artifactId>engine-check</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
-		</dependency>
-
-		<dependency>
-			<groupId>com.navinfo.dataservice</groupId>
-			<artifactId>commons</artifactId>
-		</dependency>
-
 		<dependency>
 			<groupId>com.navinfo.dataservice</groupId>
 			<artifactId>biz-commons</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>net.sf.json-lib</groupId>
+			<artifactId>json-lib</artifactId>
+			<classifier>jdk15</classifier>
 		</dependency>
 		<dependency>
 			<groupId>com.navinfo.dataservice</groupId>
@@ -75,10 +59,12 @@
 		</dependency>
 		<dependency>
 			<groupId>com.navinfo.dataservice</groupId>
-			<artifactId>edit-control-column</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<artifactId>api-edit</artifactId>
 		</dependency>
-
+		<dependency>
+			<groupId>com.navinfo.dataservice</groupId>
+			<artifactId>api-job</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
@@ -195,6 +181,6 @@
 		</dependency>
 	</dependencies>
 	<build>
-		<finalName>edit</finalName>
+		<finalName>editcolumn</finalName>
 	</build>
 </project>

@@ -2,6 +2,7 @@ package com.navinfo.dataservice.engine.edit.zhangyuntao.ad;
 
 import org.junit.Test;
 
+import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.zhangyuntao.eleceye.TestUtil;
 
@@ -26,5 +27,16 @@ public class TestAdFace extends InitApplication {
 	@Override
 	public void init() {
 		super.initContext();
+	}
+
+	public static void main(String[] args) {
+		String wkt = MercatorProjection.getWktWithGap(107940, 49581, 17, 80);
+		System.out.println(wkt);
+		wkt = MercatorProjection.getWktWithGap(107940, 49582, 17, 80);
+		System.out.println(wkt);
+		wkt = MercatorProjection.getWktWithGap(107939, 49581, 17, 80);
+		System.out.println(wkt);
+		wkt = MercatorProjection.getWktWithGap(107939, 49582, 17, 80);
+		System.out.println(wkt);
 	}
 }

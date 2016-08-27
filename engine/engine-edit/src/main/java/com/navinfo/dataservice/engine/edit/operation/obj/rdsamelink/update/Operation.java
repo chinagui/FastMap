@@ -132,7 +132,7 @@ public class Operation implements IOperation {
 		}
 
 		RdSameLink originalSameLink = (RdSameLink) sameLinkSelector.loadById(
-				originalPart.getGroupId(), true, true);
+				originalPart.getGroupId(), true);
 
 		// 同一线中其他的组成link
 		List<RdSameLinkPart> linkParts = new ArrayList<RdSameLinkPart>();
@@ -238,7 +238,7 @@ public class Operation implements IOperation {
 		}
 
 		RdSameLink originalSameLink = (RdSameLink) sameLinkSelector.loadById(
-				originalPart.getGroupId(), true, true);
+				originalPart.getGroupId(), true);
 
 		// 同一线中其他的组成link
 		List<RdSameLinkPart> linkParts = new ArrayList<RdSameLinkPart>();

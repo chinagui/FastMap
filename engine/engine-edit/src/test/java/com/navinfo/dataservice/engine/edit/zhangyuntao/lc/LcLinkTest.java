@@ -22,7 +22,7 @@ import net.sf.json.JSONObject;
  * @date: 2016年8月8日 下午1:35:39
  * @version: v1.0
  */
-public class LcLinkTest extends InitApplication{
+public class LcLinkTest extends InitApplication {
 
 	public LcLinkTest() {
 	}
@@ -31,11 +31,13 @@ public class LcLinkTest extends InitApplication{
 	public void init() {
 		super.initContext();
 	}
+
 	@Test
 	public void createLuLinkTest() {
 		String parameter = "{\"command\":\"CREATE\",\"dbId\":43,\"data\":{\"eNodePid\":100034582,\"sNodePid\":100034584,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.24096274375916,40.9146071161593],[116.23830199241638,40.91574217557027]]},\"catchLinks\":[{\"nodePid\":100034584,\"lon\":116.24096274375916,\"lat\":40.9146071161593},{\"nodePid\":100034582,\"lon\":116.23830199241638,\"lat\":40.91574217557027}]},\"type\":\"LCLINK\"}";
 		TestUtil.run(parameter);
 	}
+
 	@Test
 	public void testSearchByGap() {
 		String parameter = "{\"projectId\":11,\"gap\":80,\"types\":[\"ADNODE\"],\"z\":17,\"x\":107945,\"y\":49615}";
@@ -69,5 +71,11 @@ public class LcLinkTest extends InitApplication{
 			e.printStackTrace();
 		}
 
+	}
+
+	@Test
+	public void breakLcLink() {
+		String parameter = "{\"command\":\"BREAK\",\"dbId\":42,\"objId\":100035081,\"data\":{\"longitude\":116.47200963815628,\"latitude\":40.07116277263092},\"type\":\"LCLINK\"}";
+		TestUtil.run(parameter);
 	}
 }

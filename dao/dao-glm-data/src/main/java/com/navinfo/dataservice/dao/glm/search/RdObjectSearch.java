@@ -63,7 +63,7 @@ public class RdObjectSearch implements ISearch {
 	public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z, int gap) throws Exception {
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "WITH TMP1           AS (	SELECT LINK_PID, GEOMETRY FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1 , 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2) , tmp2 AS (	SELECT /*+ leading(A,B) use_hash(A,B)*/ C.PID, A.LINK_PID AS objPid, sdo_util.to_wktgeometry_varchar(A.GEOMETRY) AS geometry,2 AS objType,c.ROAD_PID as childpid FROM TMP1 A, RD_ROAD_LINK B,Rd_object_road C WHERE A.LINK_PID = B.LINK_PID AND C.ROAD_PID = b.pid AND B.U_RECORD != 2 ), tmp3                     AS (SELECT /*+ leading(A,B) use_hash(A,B)*/ b.PID, A.LINK_PID AS objPid,sdo_util. to_wktgeometry_varchar(A .GEOMETRY) AS geometry,0 AS objType ,a.link_pid as childpid FROM TMP1 A, Rd_object_link b WHERE A.LINK_PID = B.LINK_PID AND B.U_RECORD != 2 ), TMP4                                  AS (	SELECT node_pid , GEOMETRY FROM RD_NODE WHERE SDO_RELATE ( GEOMETRY , SDO_GEOMETRY (:2 , 8307), 'mask=anyinteract' ) = 'TRUE' AND U_RECORD != 2) , tmp5 AS (	SELECT /*+ leading(A,B) use_hash(A,B)*/ C.PID, A.NODE_PID AS objPid,sdo_util.to_wktgeometry_varchar(A.GEOMETRY) AS geometry,1 AS objType, c.INTER_PID as childpid FROM TMP4 A, RD_INTER_NODE B,Rd_object_INTER C WHERE A.NODE_PID = B.NODE_PID AND C.inter_PID = b.pid AND B.U_RECORD != 2 ) SELECT tmp7.*,sdo_util.to_wktgeometry_varchar(tmp8.geometry) AS objGeo FROM(	SELECT tmp6.* FROM(	SELECT * FROM tmp2 UNION ALL 	SELECT * FROM tmp3 UNION ALL 	SELECT * FROM tmp5 ) tmp6 group by tmp6.pid,tmp6.objpid,tmp6.geometry,tmp6.objType,tmp6.childpid) tmp7 LEFT JOIN rd_object tmp8 ON tmp7.pid = tmp8.pid where tmp8.u_record !=2";
+		String sql = "WITH TMP1 AS (SELECT LINK_PID, GEOMETRY FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2), tmp_1 as( select /*+ leading(A,B) use_hash(A,B)*/ b.pid,c.pid as road_pid from TMP1 A, RD_ROAD_LINK B, RD_OBJECT_ROAD C WHERE A.LINK_PID = B.LINK_PID AND C.ROAD_PID = B.PID AND B.U_RECORD != 2 and C.u_record !=2 group by b.pid,c.pid ), TMP2 AS (select tmp_1.pid, A.LINK_PID AS OBJPID, SDO_UTIL.TO_WKTGEOMETRY_VARCHAR(C.GEOMETRY) AS GEOMETRY, 2 AS OBJTYPE, tmp_1.ROAD_PID AS CHILDPID FROM tmp_1,RD_ROAD_LINK A,RD_LINK C WHERE A.pid = tmp_1.road_pid and c.link_pid = a.link_pid AND A.U_RECORD != 2 AND c.u_record !=2), tmp_3 as ( select /*+ leading(A,B) use_hash(A,B)*/ b.pid  from TMP1 A, RD_OBJECT_LINK B WHERE A.LINK_PID = B.LINK_PID AND B.U_RECORD != 2 group by b.pid ), TMP3 AS (SELECT /*+ leading(A,B) use_hash(A,B)*/ tmp_3.PID, b.LINK_PID AS OBJPID, SDO_UTIL.  TO_WKTGEOMETRY_VARCHAR(c.GEOMETRY) AS GEOMETRY, 0          AS OBJTYPE, b.LINK_PID AS CHILDPID FROM tmp_3, RD_OBJECT_LINK B,RD_LINK C WHERE tmp_3.pid = B.pid and b.link_pid = c.link_pid AND B.U_RECORD != 2), TMP4 AS (SELECT NODE_PID, GEOMETRY FROM RD_NODE WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:2, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2), TMP5 AS (SELECT /*+ leading(A,B) use_hash(A,B)*/ C.PID, A.NODE_PID AS OBJPID, SDO_UTIL.TO_WKTGEOMETRY_VARCHAR(A.GEOMETRY) AS GEOMETRY, 1 AS OBJTYPE, C.INTER_PID AS CHILDPID FROM TMP4 A, RD_INTER_NODE B, RD_OBJECT_INTER C WHERE A.NODE_PID = B.NODE_PID AND C.INTER_PID = B.PID AND B.U_RECORD != 2), tmp_9 as( select /*+ leading(A,B) use_hash(A,B)*/ b.pid,c.pid as inter_pid from TMP1 A, RD_INTER_LINK B, RD_OBJECT_INTER C WHERE A.LINK_PID = B.LINK_PID AND C.INTER_PID = B.PID AND B.U_RECORD != 2 and C.u_record !=2 group by b.pid,c.pid ), tmp9 AS (select tmp_9.pid, A.LINK_PID AS OBJPID, SDO_UTIL.TO_WKTGEOMETRY_VARCHAR(C.GEOMETRY) AS GEOMETRY, 2 AS OBJTYPE, tmp_9.inter_PID AS CHILDPID FROM tmp_9,RD_INTER_LINK A,RD_LINK C WHERE A.pid = tmp_9.inter_pid and c.link_pid = a.link_pid AND A.U_RECORD != 2 AND c.u_record !=2) SELECT TMP7.*, SDO_UTIL.TO_WKTGEOMETRY_VARCHAR(TMP8.GEOMETRY) AS OBJGEO FROM (SELECT TMP6.* FROM (SELECT * FROM TMP2 UNION ALL SELECT * FROM TMP3 UNION ALL SELECT * FROM TMP5 UNION ALL SELECT * FROM TMP9) TMP6 GROUP BY TMP6.PID, TMP6.OBJPID, TMP6.GEOMETRY, TMP6.OBJTYPE, TMP6.CHILDPID) TMP7 LEFT JOIN RD_OBJECT TMP8 ON TMP7.PID = TMP8.PID WHERE TMP8.U_RECORD != 2";
 
 		PreparedStatement pstmt = null;
 
@@ -243,7 +243,27 @@ public class RdObjectSearch implements ISearch {
 				
 				Geometry boundary = metry.getBoundary();
 				
-				JSONObject obj = Geojson.link2Pixel(GeoTranslator.jts2Geojson(boundary), px, py, z);
+				System.out.println(boundary.toText());
+				
+				Coordinate[] cs = boundary.getCoordinates();
+				
+				double[][] ps = new double[cs.length][2];
+
+				for (int i = 0; i < cs.length; i++) {
+					ps[i][0] = cs[i].x;
+
+					ps[i][1] = cs[i].y;
+				}
+				
+				JSONObject geojson = new JSONObject();
+
+				geojson.put("type", "LineString");
+
+				geojson.put("coordinates", ps);
+				
+				System.out.println(geojson.toString());
+				
+				JSONObject obj = Geojson.link2Pixel(geojson, px, py, z);
 				
 				jsonM.put("a", gLinkArray);
 

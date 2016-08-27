@@ -7,10 +7,13 @@ import java.util.Set;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 
+import com.vividsolutions.jts.algorithm.ConvexHull;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.MultiPoint;
+import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.operation.buffer.BufferOp;
 import com.vividsolutions.jts.operation.buffer.BufferParameters;
 import com.vividsolutions.jts.operation.polygonize.Polygonizer;
@@ -174,5 +177,29 @@ public class JGeometryUtil {
         Geometry bg = bufOp.getResultGeometry(0);  
 		
 		return bg;
+	}
+	
+	public static Geometry getBuffer(Coordinate[] coordinates) {
+
+		GeometryFactory geometryFactory = new GeometryFactory();
+
+		MultiPoint MultiPoint = geometryFactory.createMultiPoint(coordinates);
+
+		ConvexHull hull = new ConvexHull(MultiPoint);
+
+		Geometry geosRing = hull.getConvexHull();
+
+		Geometry buff = geosRing.buffer(0.00002);
+
+		Polygon myPolygon = (Polygon) buff;
+
+		LineString exteriorRing = myPolygon.getExteriorRing();
+		
+		BufferOp bufOp = new BufferOp(exteriorRing);  
+        bufOp.setEndCapStyle(BufferParameters.CAP_ROUND);  
+        Geometry bg = bufOp.getResultGeometry(0);  
+
+		return bg;
+
 	}
 }

@@ -164,7 +164,7 @@ public class TipsUpload {
 			
 			// 名称,调用元数据库接口入库
 			MetadataApi metaApi=(MetadataApi) ApplicationContextUtil.getBean("metaApi");
-			JSONArray names = geo.getJSONArray("n_array");
+			JSONArray names = deep.getJSONArray("n_array");
 			for (Object name : names) {
 				if (name != null && StringUtils.isNotEmpty(name.toString())) {
 					try {

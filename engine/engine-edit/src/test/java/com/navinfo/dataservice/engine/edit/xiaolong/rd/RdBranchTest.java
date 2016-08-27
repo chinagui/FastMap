@@ -24,7 +24,7 @@ public class RdBranchTest extends InitApplication {
 
 	@Test
 	public void testAdd3dBranch() {
-		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDBRANCH\",\"dbId\":42,\"data\":{\"branchType\":7,\"inLinkPid\":585721,\"nodePid\":462721,\"outLinkPid\":584277}}";
+		String parameter = "{\"type\":\"RDBRANCH\",\"command\":\"UPDATE\",\"dbId\":42,\"data\":{\"details\":[{\"estabType\":2,\"pid\":100000438,\"objStatus\":\"UPDATE\"}],\"pid\":23037}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

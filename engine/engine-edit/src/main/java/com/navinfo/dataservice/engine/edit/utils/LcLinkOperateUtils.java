@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.json.JSONException;
+
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -16,14 +17,13 @@ import com.navinfo.dataservice.dao.glm.model.lc.LcLink;
 import com.navinfo.dataservice.dao.glm.model.lc.LcLinkKind;
 import com.navinfo.dataservice.dao.glm.model.lc.LcLinkMesh;
 import com.navinfo.dataservice.dao.glm.model.lc.LcNode;
-import com.navinfo.dataservice.dao.glm.model.lc.LcNodeMesh;
 import com.navinfo.dataservice.dao.pidservice.PidService;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.navinfo.navicommons.geo.computation.GeometryTypeName;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
-import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -130,6 +130,14 @@ public class LcLinkOperateUtils {
 		link.setsNodePid(sNodePid);
 		link.seteNodePid(eNodePid);
 		result.insertObject(link, ObjStatus.INSERT, link.pid());
+		for (IRow row : sourcelink.getKinds()) {
+			LcLinkKind sourceKind = (LcLinkKind) row;
+			LcLinkKind kind = new LcLinkKind();
+			kind.setLinkPid(link.getPid());
+			kind.setKind(sourceKind.getKind());
+			kind.setForm(sourceKind.getForm());
+			result.insertObject(kind, ObjStatus.INSERT, kind.getLinkPid());
+		}
 		return link;
 	}
 

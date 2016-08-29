@@ -2,7 +2,9 @@ package com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane;
 
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import net.sf.json.JSONObject;
 
@@ -43,6 +45,7 @@ public class Operation implements IOperation {
 	private List<String> lanInfos;
 	private int passageNum;
 	private RdTollgate tollgate;
+
 
 	public RdTollgate getTollgate() {
 		return tollgate;
@@ -110,8 +113,9 @@ public class Operation implements IOperation {
 		this.limit = limit;
 	}
 
-	public Operation(Command command) {
+	public Operation(Command command, Connection conn) {
 		this.command = command;
+		this.conn = conn;
 	}
 
 	public Operation(Connection conn) {
@@ -133,49 +137,53 @@ public class Operation implements IOperation {
 	private void createRdLanes(Result result) throws Exception {
 
 		for (int i = 0; i < this.command.getLinks().size(); i++) {
-			int laneDir = 1;
+			
 			List<RdLane> lanes = new ArrayList<RdLane>();
 			RdLink link = (RdLink) this.command.getLinks().get(i);
+			Map<Integer, RdLane> map = new HashMap<Integer, RdLane>();
+			Map<Integer, List<RdLane>> mapLane = new HashMap<Integer, List<RdLane>>();
 			// 计算link上原有的车道信息
-			lanes = this.caleRdLanesForDir(i, laneDir, link);
+			mapLane =this.caleRdLanesForDir(i, link);
+			lanes = mapLane.values().iterator().next();
+			int laneDir = mapLane.keySet().iterator().next();
 			if (lanes.size() > 0) {
-				for (int m = 0; m < this.command.getLaneInfos().size(); m++) {
-					JSONObject jsonLaneInfo = this.command.getLaneInfos()
-							.getJSONObject(m);
-					if (i == 0) {
-						if (jsonLaneInfo.getInt("lanePid") == 0) {
-							this.createRdLane(result, link.getPid(), laneDir);
-						} else {
-							for (RdLane lane : lanes) {
 
-								if (jsonLaneInfo.getInt("lanePid") == lane
-										.getPid()) {
-									// 修改Rdlane
-									com.navinfo.dataservice.engine.edit.operation.obj.rdlane.update.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdlane.update.Operation();
-									operation.updateRdLane(result,
-											jsonLaneInfo, lane);
-								} else {
-									// 删除RDLANE
-									com.navinfo.dataservice.engine.edit.operation.obj.rdlane.delete.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdlane.delete.Operation(
-											conn);
-									operation.deleteRdLane(result,
-											lane.getPid());
-								}
-							}
-
+				if (i == 0) {
+					for (RdLane lane : lanes) {
+						map.put(lane.getPid(), lane);
+					}
+					for (int m = 0; m < this.command.getLaneInfos().size(); m++) {
+						JSONObject jsonLaneInfo = this.command.getLaneInfos()
+								.getJSONObject(m);
+						if (map.containsKey(jsonLaneInfo.getInt("pid"))) {
+							jsonLaneInfo.put("laneNum", this.command
+									.getLaneInfos().size());
+							com.navinfo.dataservice.engine.edit.operation.obj.rdlane.update.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdlane.update.Operation();
+							operation.updateRdLane(result, jsonLaneInfo,
+									map.get(jsonLaneInfo.getInt("pid")));
+							map.remove(jsonLaneInfo.getInt("pid"));
 						}
-
-					} else {
-						for (RdLane lane : lanes) {
-							// 删除rdlane
+						if (jsonLaneInfo.getInt("pid") == 0) {
+							this.createRdLane(result, jsonLaneInfo,
+									link.getPid(), laneDir);
+						}
+					}
+					if (map.size() > 0) {
+						for (int key : map.keySet()) {
+							// 删除RDLANE
 							com.navinfo.dataservice.engine.edit.operation.obj.rdlane.delete.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdlane.delete.Operation(
 									conn);
-							operation.deleteRdLane(result, lane.getPid());
+							operation.deleteRdLane(result, map.get(key));
 						}
-						// 新增rdlane
-						this.createRdLane(result, link.getPid(), laneDir);
-
 					}
+
+				}else{
+					for(RdLane lane : lanes){
+						com.navinfo.dataservice.engine.edit.operation.obj.rdlane.delete.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdlane.delete.Operation(
+								conn);
+						operation.deleteRdLane(result, lane);
+					}
+					this.createRdLane(result, link.getPid(), laneDir);
 				}
 
 			} else {
@@ -183,6 +191,73 @@ public class Operation implements IOperation {
 			}
 
 		}
+	}
+
+	private void createRdLane(Result result, JSONObject jsonLaneInfo,
+			int linkPid, int laneDir) throws Exception {
+		RdLane lane = new RdLane();
+		if (jsonLaneInfo.getInt("pid") != 0) {
+			lane = (RdLane) new RdLaneSelector(conn).loadById(
+					jsonLaneInfo.getInt("pid"), true, true);
+		}
+
+		lane.setPid(PidService.getInstance().applyRdLanePid());
+		lane.setLinkPid(linkPid);
+		lane.setLaneNum(this.command.getLaneInfos().size());
+
+		lane.setLaneDir(laneDir);
+		if (jsonLaneInfo.containsKey("seqNum")) {
+			lane.setSeqNum(jsonLaneInfo.getInt("seqNum"));
+		}
+		if (jsonLaneInfo.containsKey("arrowDir")) {
+			lane.setArrowDir(jsonLaneInfo.getString("arrowDir"));
+
+		}
+		if (jsonLaneInfo.containsKey("centerDivider")) {
+			lane.setCenterDivider(jsonLaneInfo.getInt("centerDivider"));
+		}
+		if (jsonLaneInfo.containsKey("laneForming")) {
+			lane.setLaneForming(jsonLaneInfo.getInt("laneForming"));
+		}
+		if (jsonLaneInfo.containsKey("laneType")) {
+			lane.setLaneType(jsonLaneInfo.getInt("laneType"));
+		}
+		if (jsonLaneInfo.containsKey("laneDivider")) {
+			lane.setLaneDivider(jsonLaneInfo.getInt("laneDivider"));
+		}
+		// 车道限速
+		if (jsonLaneInfo.containsKey("")) {
+		}
+		if (jsonLaneInfo.containsKey("contditions")) {
+			List<IRow> conditionRows = new ArrayList<IRow>();
+			for (int i = 0; i < jsonLaneInfo.getJSONArray("contditions").size(); i++) {
+				JSONObject conditionObject = jsonLaneInfo.getJSONArray(
+						"contditions").getJSONObject(i);
+				RdLaneCondition condition = new RdLaneCondition();
+
+				if (conditionObject.containsKey("direction")) {
+					condition.setDirection(conditionObject.getInt("direction"));
+				}
+				if (conditionObject.containsKey("vehicleTime")) {
+					condition.setVehicleTime(conditionObject
+							.getString("vehicleTime"));
+				}
+				if (conditionObject.containsKey("vehicle")) {
+					condition.setVehicle(conditionObject.getLong("vehicle"));
+				}
+				if (conditionObject.containsKey("directionTime")) {
+					condition.setDirectionTime(conditionObject
+							.getString("directionTime"));
+				}
+				conditionRows.add(condition);
+
+			}
+
+			lane.setConditions(conditionRows);
+
+		}
+		result.insertObject(lane, ObjStatus.INSERT, lane.getPid());
+
 	}
 
 	/***
@@ -229,68 +304,8 @@ public class Operation implements IOperation {
 	private void createRdLane(Result result, int linkPid, int laneDir)
 			throws Exception {
 		for (int m = 0; m < this.command.getLaneInfos().size(); m++) {
-			JSONObject jsonLaneInfo = this.command.getLaneInfos()
-					.getJSONObject(m);
-			RdLane lane = new RdLane();
-			if (jsonLaneInfo.getInt("lanePid") != 0) {
-				lane = (RdLane) new RdLaneSelector(conn).loadById(
-						jsonLaneInfo.getInt("lanePid"), true, true);
-			}
-
-			lane.setPid(PidService.getInstance().applyRdLanePid());
-			lane.setLinkPid(linkPid);
-			lane.setLaneNum(this.command.getLaneInfos().size());
-			lane.setSeqNum(m + 1);
-			lane.setLaneDir(laneDir);
-			if (jsonLaneInfo.containsKey("arrowDir")) {
-				lane.setArrowDir(jsonLaneInfo.getString("arrowDir"));
-
-			}
-			if (jsonLaneInfo.containsKey("centerDivider")) {
-				lane.setCenterDivider(jsonLaneInfo.getInt("centerDivider"));
-			}
-			if (jsonLaneInfo.containsKey("laneForming")) {
-				lane.setLaneForming(jsonLaneInfo.getInt("laneForming"));
-			}
-			if (jsonLaneInfo.containsKey("laneType")) {
-				lane.setLaneType(jsonLaneInfo.getInt("laneType"));
-			}
-			if (jsonLaneInfo.containsKey("laneDivider")) {
-				lane.setLaneDivider(jsonLaneInfo.getInt("laneDivider"));
-			}
-			// 车道限速
-			if (jsonLaneInfo.containsKey("")) {
-			}
-			if (jsonLaneInfo.containsKey("contditions")) {
-				List<IRow> conditionRows = new ArrayList<IRow>();
-				for (int i = 0; i < jsonLaneInfo.getJSONArray("contditions")
-						.size(); i++) {
-					JSONObject conditionObject = jsonLaneInfo.getJSONArray(
-							"contditions").getJSONObject(i);
-					RdLaneCondition condition = new RdLaneCondition();
-
-					if (conditionObject.containsKey("direction")) {
-						condition.setDirection(conditionObject
-								.getInt("direction"));
-					}
-					if (conditionObject.containsKey("vehicleTime")) {
-						condition.setVehicleTime(conditionObject
-								.getString("vehicleTime"));
-					}
-					if (conditionObject.containsKey("vehicle")) {
-						condition
-								.setVehicle(conditionObject.getLong("vehicle"));
-					}
-					if (conditionObject.containsKey("directionTime")) {
-						condition.setDirectionTime(conditionObject
-								.getString("directionTime"));
-					}
-					conditionRows.add(condition);
-				}
-
-				lane.setConditions(conditionRows);
-			}
-
+			this.createRdLane(result, this.command.getLaneInfos()
+					.getJSONObject(m), linkPid, laneDir);
 		}
 
 	}
@@ -304,9 +319,10 @@ public class Operation implements IOperation {
 	 * @return
 	 * @throws Exception
 	 */
-	private List<RdLane> caleRdLanesForDir(int i, int laneDir, RdLink link)
+	private Map<Integer, List<RdLane>> caleRdLanesForDir(int i,RdLink link)
 			throws Exception {
-
+		int laneDir = 1;
+		Map<Integer, List<RdLane>> map = new HashMap<Integer, List<RdLane>>();
 		List<RdLane> lanes = new ArrayList<RdLane>();
 		if (link.getDirect() == 2 || link.getDirect() == 3) {
 			lanes = new RdLaneSelector(conn).loadByLink(link.getPid(), 0, true);
@@ -331,8 +347,8 @@ public class Operation implements IOperation {
 				}
 			}
 		}
-
-		return lanes;
+        map.put(laneDir, lanes);
+		return map;
 	}
 
 	/***
@@ -361,7 +377,7 @@ public class Operation implements IOperation {
 					// 删除车道信息
 					com.navinfo.dataservice.engine.edit.operation.obj.rdlane.delete.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdlane.delete.Operation(
 							conn);
-					operation.deleteRdLane(result, lane.getPid());
+					operation.deleteRdLane(result, lane);
 				}
 			}
 		} else {
@@ -506,7 +522,7 @@ public class Operation implements IOperation {
 
 		if (lanes.size() >= laneInfos.size()) {
 			for (int i = laneInfos.size(); i < lanes.size(); i++) {
-				this.deleLaneForAttr(result, lanes.get(i).getPid());
+				this.deleLaneForAttr(result, lanes.get(i));
 			}
 			for (int i = 0; i < laneInfos.size(); i++) {
 				if (laneInfos.get(i) != lanes.get(i).getArrowDir()) {
@@ -529,7 +545,7 @@ public class Operation implements IOperation {
 			for (int i = 0; i < lanes.size(); i++) {
 				if (laneInfos.get(i) != lanes.get(i).getArrowDir()) {
 
-					this.deleLaneForAttr(result, lanes.get(i).getPid());
+					this.deleLaneForAttr(result, lanes.get(i));
 
 				} else {
 					if (laneInfos.size() != lanes.size()) {
@@ -552,10 +568,10 @@ public class Operation implements IOperation {
 	 * @param lanePid
 	 * @throws Exception
 	 */
-	private void deleLaneForAttr(Result result, int lanePid) throws Exception {
+	private void deleLaneForAttr(Result result, RdLane lane) throws Exception {
 		com.navinfo.dataservice.engine.edit.operation.obj.rdlane.delete.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdlane.delete.Operation(
 				conn);
-		operation.deleteRdLane(result, lanePid);
+		operation.deleteRdLane(result, lane);
 	}
 
 	/***
@@ -573,12 +589,16 @@ public class Operation implements IOperation {
 	}
 
 	/***
-	 * 1、	当收费站新增或删除或收费站通道数发生变更时，需要进行详细车道维护。
-	   2、	当收费站新增时且收费站通道数不为0时，收费站挂接的进入link和退出link需要按收费站的通道数维护详细车道
-	   3、	当收费站删除时，原收费站挂接的link需要按link的车道数进行详细车道的维护，详细维护原则如下：
-                              当link的左右车道数不为0时，则按照左车道数更新该link逆方向详细车道数，按照右车道数更新该link顺方向的详细车道数；当link的左右车道数为0时，则按照总车道数生成该link车道数。如果link为单方向，则详细车道物理车道数=link总车道数，如果link为双方向，则详细车道单侧的物理车道数=link总车道数/2，如果总车道数为奇数时，则为(link总车道数+1)/2。其余属性赋默认值，车道限制不生成记录。
-      4、	当收费站通道数变更时，则根据收费站通道数对收费站进入link和退出link进行详细车道数维护。
-
+	 * 1、 当收费站新增或删除或收费站通道数发生变更时，需要进行详细车道维护。 2、
+	 * 当收费站新增时且收费站通道数不为0时，收费站挂接的进入link和退出link需要按收费站的通道数维护详细车道 3、
+	 * 当收费站删除时，原收费站挂接的link需要按link的车道数进行详细车道的维护，详细维护原则如下：
+	 * 当link的左右车道数不为0时，则按照左车道数更新该link逆方向详细车道数
+	 * ，按照右车道数更新该link顺方向的详细车道数；当link的左右车道数为0时
+	 * ，则按照总车道数生成该link车道数。如果link为单方向，则详细车道物理车道数
+	 * =link总车道数，如果link为双方向，则详细车道单侧的物理车道数
+	 * =link总车道数/2，如果总车道数为奇数时，则为(link总车道数+1)/2。其余属性赋默认值，车道限制不生成记录。 4、
+	 * 当收费站通道数变更时，则根据收费站通道数对收费站进入link和退出link进行详细车道数维护。
+	 * 
 	 * @param result
 	 * @throws Exception
 	 */
@@ -612,7 +632,7 @@ public class Operation implements IOperation {
 			}
 			if (this.getPassageNum() < lanes.size()) {
 				for (int i = this.getPassageNum(); i < lanes.size(); i++) {
-					this.deleLaneForAttr(result, lanes.get(i).getPid());
+					this.deleLaneForAttr(result, lanes.get(i));
 				}
 				for (int i = 0; i < this.getPassageNum(); i++) {
 					this.updateLaneForAttr(result, lanes.get(i),

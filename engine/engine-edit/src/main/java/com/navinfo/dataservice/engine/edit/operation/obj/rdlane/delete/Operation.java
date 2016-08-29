@@ -47,7 +47,7 @@ public class Operation implements IOperation {
 		if (this.command.getLanes().size() > 0) {
 			for (RdLane lane : this.command.getLanes()) {
 				if (lane.getPid() == this.command.getRdLane().getPid()) {
-					this.deleteRdLane(result, lane.getPid());
+					this.deleteRdLane(result, this.command.getRdLane());
 					continue;
 				}
 				if (lane.getSeqNum() > this.command.getRdLane().getSeqNum()) {
@@ -66,9 +66,9 @@ public class Operation implements IOperation {
 	 * @param lanePid
 	 * @throws Exception
 	 */
-	public void deleteRdLane(Result result, int lanePid) throws Exception {
-		this.deleteRdLaneTopoDetail(result, lanePid);
-		result.insertObject(this.command.getRdLane(), ObjStatus.DELETE, lanePid);
+	public void deleteRdLane(Result result, RdLane lane) throws Exception {
+		this.deleteRdLaneTopoDetail(result, lane.getPid());
+		result.insertObject(lane, ObjStatus.DELETE, lane.getPid());
 	}
 
 	/***

@@ -9,8 +9,8 @@ import org.apache.commons.dbutils.DbUtils;
 
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.lane.RdLane;
+import com.navinfo.dataservice.dao.glm.model.rd.lane.RdLaneTopoDetail;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
-
 
 /***
  * 
@@ -24,7 +24,7 @@ public class RdLaneTopoDetailSelector extends AbstractSelector {
 	public RdLaneTopoDetailSelector(Connection conn) {
 		super(conn);
 		this.conn = conn;
-		this.setCls(RdLane.class);
+		this.setCls(RdLaneTopoDetail.class);
 	}
 
 	/***
@@ -36,10 +36,10 @@ public class RdLaneTopoDetailSelector extends AbstractSelector {
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
-		List<Integer> topoPids = new  ArrayList<Integer>();
+		List<Integer> topoPids = new ArrayList<Integer>();
 
 		try {
-			String sql = "SELECT topo_pid FROM rd_lane_topo_detail WHERE (out_lane_pid =:1 or in_lane_pid = :2) and u_record !=2";
+			String sql = "SELECT topo_id FROM rd_lane_topo_detail WHERE (out_lane_pid =:1 or in_lane_pid = :2) and u_record !=2";
 
 			if (isLock) {
 				sql += " for update nowait";
@@ -48,19 +48,23 @@ public class RdLaneTopoDetailSelector extends AbstractSelector {
 			pstmt = conn.prepareStatement(sql);
 
 			pstmt.setInt(1, lanePid);
-
+			pstmt.setInt(2, lanePid);
 			resultSet = pstmt.executeQuery();
-           
+
 			while (resultSet.next()) {
-				topoPids.add(resultSet.getInt("pid"));
+				topoPids.add(resultSet.getInt("topo_id"));
 			}
-			return new RdLaneTopoDetailSelector(conn).loadByIds(topoPids, true, true);
+			if (topoPids.size() > 0) {
+				return new RdLaneTopoDetailSelector(conn).loadByIds(topoPids,
+						true, true);
+			}
 		} catch (Exception e) {
 			throw e;
 		} finally {
 			DbUtils.closeQuietly(resultSet);
 			DbUtils.closeQuietly(pstmt);
 		}
+		return new ArrayList<IRow>();
 	}
 
 }

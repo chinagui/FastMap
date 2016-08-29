@@ -3,10 +3,12 @@ package com.navinfo.dataservice.engine.edit.operation;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.IProcess;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Command;
 
 /**
  * 操作控制器
@@ -60,7 +62,7 @@ public class Transaction {
 	 * @return 命令
 	 */
 	private AbstractCommand createCommand() throws Exception {
-		JSONObject json = JSONObject.fromObject(requester);
+		JSONObject json = JSONObject.fromObject(requester,JsonUtils.getStrConfig());
 
 		operType = Enum.valueOf(OperType.class, json.getString("command"));
 
@@ -680,6 +682,30 @@ public class Transaction {
 						json, requester);
 			case DELETE:
 				return new com.navinfo.dataservice.engine.edit.operation.obj.rdsamelink.delete.Command(
+						json, requester);
+			default:
+				break;
+			}
+		case RDLANE:
+			switch (operType) {
+			case DELETE:
+				return new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.delete.Command(json, requester);
+			case BATCH:
+				return new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Command(
+						json, requester);
+			default:
+				break;
+			}
+		case IXSAMEPOI:
+			switch (operType) {
+			case CREATE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.samepoi.create.Command(
+						json, requester);
+			case UPDATE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.samepoi.update.Command(
+						json, requester);
+			case DELETE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.samepoi.delete.Command(
 						json, requester);
 			default:
 				break;
@@ -1319,6 +1345,31 @@ public class Transaction {
 			default:
 				break;
 			}
+		case RDLANE:
+			switch (operType) {
+			case DELETE:
+				return new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.delete.Process(command);
+			
+			case BATCH:
+				return new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Process(
+						command);
+			default:
+				break;
+			}
+		case IXSAMEPOI:
+			switch (operType) {
+			case CREATE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.samepoi.create.Process(
+						command);
+			case UPDATE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.samepoi.update.Process(
+						command);
+			case DELETE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.samepoi.delete.Process(
+						command);
+			default:
+				break;
+			}
 		}
 
 		throw new Exception("不支持的操作类型");
@@ -1360,5 +1411,9 @@ public class Transaction {
 	public int getPid() {
 		return process.getResult().getPrimaryPid();
 	}
-
+	public static void main(String[] args) {
+		String requester ="{\"data\":{\"infos\":\"[1],[2],[3]\"}}";
+		JSONObject json = JSONObject.fromObject(requester,JsonUtils.getStrConfig());
+		System.out.println(json);
+	}
 }

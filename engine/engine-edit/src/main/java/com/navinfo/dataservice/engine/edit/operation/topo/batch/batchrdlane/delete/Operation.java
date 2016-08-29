@@ -22,8 +22,9 @@ public class Operation implements IOperation {
 	private Command command;
 	private Connection conn;
 
-	public Operation(Command command) {
+	public Operation(Command command,Connection conn) {
 		this.command = command;
+		this.conn = conn;
 	}
 
 	public Operation(Connection conn) {
@@ -48,7 +49,7 @@ public class Operation implements IOperation {
 			// 删除车道信息
 			com.navinfo.dataservice.engine.edit.operation.obj.rdlane.delete.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdlane.delete.Operation(
 					conn);
-			operation.deleteRdLane(result, lane.getPid());
+			operation.deleteRdLane(result, lane);
 		}
 	}
 

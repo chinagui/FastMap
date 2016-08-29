@@ -48,7 +48,7 @@ public class Operation implements IOperation {
 			// 删除车道信息
 			com.navinfo.dataservice.engine.edit.operation.obj.rdlane.delete.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdlane.delete.Operation(
 					conn);
-			operation.deleteRdLane(result, lane.getPid());
+			operation.deleteRdLane(result, lane);
 		}
 	}
 

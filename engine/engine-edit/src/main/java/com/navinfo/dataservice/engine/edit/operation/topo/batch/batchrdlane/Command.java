@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -76,9 +77,10 @@ public class Command extends AbstractCommand {
 		JSONObject data = json.getJSONObject("data");
 		this.setDbId(json.getInt("dbId"));
 		for (int i = 0; i < data.getJSONArray("linkPids").size(); i++) {
+			linkPids = new ArrayList<Integer>();
 			this.getLinkPids().add((data.getJSONArray("linkPids").getInt(i)));
 		}
-
+        this.setLaneDir(data.getInt("laneDir"));
 		this.setLaneInfos(data.getJSONArray("laneInfos"));
 
 	}

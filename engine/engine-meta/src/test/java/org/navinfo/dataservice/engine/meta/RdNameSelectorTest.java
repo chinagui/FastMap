@@ -6,12 +6,14 @@ package org.navinfo.dataservice.engine.meta;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.web.servlet.ModelAndView;
 
 import com.navinfo.dataservice.api.fcc.iface.FccApi;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.engine.meta.rdname.RdNameSelector;
+import com.navinfo.dataservice.engine.meta.rdname.ScRoadnameTypename;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -35,24 +37,27 @@ public class RdNameSelectorTest {
 	@Test
 	public void testGetRdName()
 	{
-		String parameter = "{\"subtaskId\":\"163\",\"pageNum\":1,\"pageSize\":20,\"params\":{\"name\":\"\"},sortby:\"\"}";
+		String parameter = "{\"pageNum\":1,\"pageSize\":10,\"sortby\":\"\",\"name\":\"快速路\"}";
 
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
-
-			RdNameSelector selector = new RdNameSelector();
 			
-			int subtaskId = jsonReq.getInt("subtaskId");
+			int pageSize = jsonReq.getInt("pageSize");
+			int pageNum = jsonReq.getInt("pageNum");
 			
-			ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
+			String name = "";
+			if (jsonReq.containsKey("name")) {
+				name = jsonReq.getString("name");
+			}
 			
-			Subtask subtask = apiService.queryBySubtaskId(subtaskId);
+			String sortby = "";
+			if (jsonReq.containsKey("sortby")) {
+				sortby = jsonReq.getString("sortby");
+			}
 			
-			FccApi apiFcc=(FccApi) ApplicationContextUtil.getBean("fccApi");
+			ScRoadnameTypename typename = new ScRoadnameTypename();
 			
-			JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(),1901,new JSONArray());
-			
-			JSONObject data = selector.searchForWeb(jsonReq,tips);
+			JSONObject data = typename.getNameType(pageNum,pageSize,name,sortby);
 			
 			System.out.println(data);
 

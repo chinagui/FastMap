@@ -128,7 +128,7 @@ public class Operation implements IOperation {
 
 		if (currLevel == 5) {
 
-			throw new Exception("此link不是该组同一关系中的主要素，不能进行此操作");
+			return null;
 		}
 
 		RdSameLink originalSameLink = (RdSameLink) sameLinkSelector.loadById(
@@ -141,7 +141,7 @@ public class Operation implements IOperation {
 
 		if (currLevel > highLevel) {
 
-			throw new Exception("此link不是该组同一关系中的主要素，不能进行打断操作");
+			return null;
 		}
 
 		// link的修形requester可用信息相同，可共用。
@@ -153,6 +153,8 @@ public class Operation implements IOperation {
 					&& breakLinkPid == part.getLinkPid()) {
 				continue;
 			}
+
+			repairJson.element("objId", part.getLinkPid());
 
 			repairLink(part, repairJson, result);
 		}
@@ -179,6 +181,7 @@ public class Operation implements IOperation {
 		case ADLINK:
 			com.navinfo.dataservice.engine.edit.operation.topo.repair.repairadlink.Command adCommand = new com.navinfo.dataservice.engine.edit.operation.topo.repair.repairadlink.Command(
 					repairJson, null);
+
 			com.navinfo.dataservice.engine.edit.operation.topo.repair.repairadlink.Process adProcess = new com.navinfo.dataservice.engine.edit.operation.topo.repair.repairadlink.Process(
 					adCommand, result, conn);
 			adProcess.innerRun();
@@ -239,7 +242,7 @@ public class Operation implements IOperation {
 
 		if (currLevel == 5) {
 
-			throw new Exception("此link不是该组同一关系中的主要素，不能进行此操作");
+			return null;
 		}
 
 		RdSameLink originalSameLink = (RdSameLink) sameLinkSelector.loadById(
@@ -252,7 +255,7 @@ public class Operation implements IOperation {
 
 		if (currLevel > highLevel) {
 
-			throw new Exception("此link不是该组同一关系中的主要素，不能进行打断操作");
+			return null;
 		}
 
 		// 新生成同一点node组
@@ -275,7 +278,7 @@ public class Operation implements IOperation {
 
 		for (RdSameLinkPart part : linkParts) {
 
-			if (linkTableName == part.getTableName()
+			if (linkTableName.equals(part.getTableName())
 					&& breakLinkPid == part.getLinkPid()) {
 				continue;
 			}
@@ -283,7 +286,10 @@ public class Operation implements IOperation {
 			ObjType type = ReflectionAttrUtils.getObjTypeByTableName(part
 					.getTableName());
 
+			breakJson.element("objId", part.getLinkPid());
+
 			if (type == ObjType.ADLINK) {
+
 				breakAdLink(breakJson, newNodes, links1, links2, falgPoint,
 						result);
 			}

@@ -31,7 +31,7 @@ public class IxSamepoi implements IObj {
 
 	private String rowId;
 
-	private int relationType;
+	private int relationType = 1;
 
 	private List<IRow> parts = new ArrayList<IRow>();
 

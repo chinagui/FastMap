@@ -24,6 +24,7 @@ import com.navinfo.dataservice.commons.exception.DataNotChangeException;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
+import com.navinfo.dataservice.control.row.batch.BatchProcess;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -40,7 +41,9 @@ public class RowEditController extends BaseController {
 	public ModelAndView run(HttpServletRequest request) throws ServletException, IOException {
 
 		String parameter = request.getParameter("parameter");
-
+		
+		Connection conn = null;
+		
 		try {
 
 			JSONObject json = JSONObject.fromObject(parameter);
@@ -64,9 +67,13 @@ public class RowEditController extends BaseController {
 				pid = result.getInt("pid");
 			}
 			
-			Connection conn = DBConnector.getInstance().getConnectionById(dbId);
+			conn = DBConnector.getInstance().getConnectionById(dbId);
 			
 			upatePoiStatus(pid,conn);
+			
+			json.put("objId", pid);
+			BatchProcess batchProcess = new BatchProcess();
+			batchProcess.execute("", json, conn);
 
 			return new ModelAndView("jsonView", success(result));
 		} catch (DataNotChangeException e) {
@@ -78,6 +85,14 @@ public class RowEditController extends BaseController {
 			logger.error(e.getMessage(), e);
 
 			return new ModelAndView("jsonView", fail(e.getMessage()));
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
 		}
 	}
 

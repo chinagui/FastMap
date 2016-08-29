@@ -90,11 +90,6 @@ public class Operation implements IOperation {
 				}
 			}
 
-			if (currLevel == 5) {
-
-				throw new Exception("此link不是该组同一关系中的主要素，不能进行此操作");
-			}
-
 			oldLinkPid = ((LuLink) oldLink).getPid();
 		}
 
@@ -129,6 +124,11 @@ public class Operation implements IOperation {
 		if (originalPart == null) {
 
 			return null;
+		}
+
+		if (currLevel == 5) {
+
+			throw new Exception("此link不是该组同一关系中的主要素，不能进行此操作");
 		}
 
 		RdSameLink originalSameLink = (RdSameLink) sameLinkSelector.loadById(
@@ -213,8 +213,8 @@ public class Operation implements IOperation {
 	 * @param conn
 	 * @throws Exception
 	 */
-	public String breakLink(IObj breakLink, List<IObj> newLinks,
-			IRow newNode, String requester, Result result) throws Exception {
+	public String breakLink(IObj breakLink, List<IObj> newLinks, IRow newNode,
+			String requester, Result result) throws Exception {
 
 		int[] info = getBreakInfo(breakLink);
 
@@ -235,6 +235,11 @@ public class Operation implements IOperation {
 		if (originalPart == null) {
 
 			return null;
+		}
+
+		if (currLevel == 5) {
+
+			throw new Exception("此link不是该组同一关系中的主要素，不能进行此操作");
 		}
 
 		RdSameLink originalSameLink = (RdSameLink) sameLinkSelector.loadById(
@@ -264,10 +269,10 @@ public class Operation implements IOperation {
 		Coordinate falgPoint = getFalgPoint(breakLink);
 
 		handleCurrNewLink(falgPoint, newLinks, links1, links2);
-		
+
 		// link的打断requester可用信息相同，可共用。
-		JSONObject breakJson = JSONObject.fromObject(requester);		
-		
+		JSONObject breakJson = JSONObject.fromObject(requester);
+
 		for (RdSameLinkPart part : linkParts) {
 
 			if (linkTableName == part.getTableName()

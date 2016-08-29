@@ -62,7 +62,7 @@ public class RdLinkTest extends InitApplication{
 	@Test
 	public void testAddRdLink()
 	{
-		String parameter = "{\"command\":\"UPDATE\",\"dbId\":25,\"type\":\"RDLINK\",\"objId\":577195,\"data\":{\"limits\":[false,false,{\"linkPid\":577195,\"rowId\":\"3657658936FF2443E050A8C083049593\",\"type\":9,\"limitDir\":0,\"timeDomain\":\"[[(t2)(t6)]*[(h7m0)(h20m0)]]\",\"vehicle\":0,\"tollType\":9,\"weather\":9,\"inputTime\":\"\",\"processFlag\":0,\"objStatus\":\"DELETE\"}],\"pid\":577195}}";
+		String parameter = "{\"command\":\"CREATE\",\"dbId\":42,\"type\":\"RDGATE\",\"data\":{\"inLinkPid\":86035080,\"nodePid\":73174043,\"outLinkPid\":86035081}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

@@ -18,39 +18,42 @@ import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
 
 public class RdGateSearch implements ISearch {
-	
+
 	private Connection conn;
-	
-	public RdGateSearch (Connection conn) {
+
+	public RdGateSearch(Connection conn) {
 		this.conn = conn;
 	}
 
 	@Override
 	public IObj searchDataByPid(int pid) throws Exception {
-		AbstractSelector abSelector = new AbstractSelector(RdGate.class,this.conn);
+		AbstractSelector abSelector = new AbstractSelector(RdGate.class,
+				this.conn);
 		IObj obj = (IObj) abSelector.loadById(pid, true);
 		return obj;
 	}
 
 	@Override
-	public List<SearchSnapshot> searchDataBySpatial(String wkt) throws Exception {
+	public List<SearchSnapshot> searchDataBySpatial(String wkt)
+			throws Exception {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public List<SearchSnapshot> searchDataByCondition(String condition) throws Exception {
+	public List<SearchSnapshot> searchDataByCondition(String condition)
+			throws Exception {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z, int gap) throws Exception {
+	public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z,
+			int gap) throws Exception {
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		
-		String sql = "WITH tmp1 AS (	SELECT a.geometry,a.node_pid FROM rd_node a,rd_gate b WHERE sdo_relate(a.geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') = 'TRUE' AND a.NODE_PID = b.NODE_PID and a.u_record != 2) select a.pid,a.type,a.node_pid,tmp1.geometry as geometry  from rd_gate a,tmp1 WHERE a.node_pid = tmp1.node_pid AND a.u_record != 2";
-		
+		String sql = "WITH tmp1 AS (	SELECT a.geometry,a.node_pid FROM rd_node a,rd_gate b WHERE sdo_relate(a.geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') = 'TRUE' AND a.NODE_PID = b.NODE_PID and a.u_record != 2) select a.pid,a.type,a.dir,a.node_pid,tmp1.geometry as geometry  from rd_gate a,tmp1 WHERE a.node_pid = tmp1.node_pid AND a.u_record != 2";
+
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
@@ -74,6 +77,8 @@ public class RdGateSearch implements ISearch {
 				JSONObject m = new JSONObject();
 
 				m.put("a", resultSet.getString("type"));
+
+				m.put("b", resultSet.getString("dir"));
 
 				snapshot.setM(m);
 

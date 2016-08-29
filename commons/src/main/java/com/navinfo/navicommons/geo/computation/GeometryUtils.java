@@ -8,8 +8,11 @@ import net.sf.json.JSONObject;
 import org.json.JSONException;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.vividsolutions.jts.algorithm.ConvexHull;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.MultiPoint;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.io.ParseException;
@@ -17,7 +20,8 @@ import com.vividsolutions.jts.io.WKTReader;
 
 public class GeometryUtils {
 	private static double EARTH_RADIUS = 6378137;
-	private static double metersPerDegree = 2.0 * Math.PI * EARTH_RADIUS / 360.0;
+	private static double metersPerDegree = 2.0 * Math.PI * EARTH_RADIUS
+			/ 360.0;
 	private static double radiansPerDegree = Math.PI / 180.0;
 
 	private static double rad(double d) {
@@ -28,13 +32,15 @@ public class GeometryUtils {
 		return distance / metersPerDegree;
 	}
 
-	public static double getDistance(double lat1, double lng1, double lat2, double lng2) {
+	public static double getDistance(double lat1, double lng1, double lat2,
+			double lng2) {
 		double radLat1 = rad(lat1);
 		double radLat2 = rad(lat2);
 		double a = radLat1 - radLat2;
 		double b = rad(lng1) - rad(lng2);
-		double s = 2 * Math.asin(Math.sqrt(
-				Math.pow(Math.sin(a / 2), 2) + Math.cos(radLat1) * Math.cos(radLat2) * Math.pow(Math.sin(b / 2), 2)));
+		double s = 2 * Math.asin(Math.sqrt(Math.pow(Math.sin(a / 2), 2)
+				+ Math.cos(radLat1) * Math.cos(radLat2)
+				* Math.pow(Math.sin(b / 2), 2)));
 		s = s * EARTH_RADIUS;
 		s = Math.round(s * 10000) / 10000.0;
 		return s;
@@ -54,7 +60,8 @@ public class GeometryUtils {
 	 * @return line的Geo
 	 * @throws Exception
 	 */
-	public static Geometry getLineFromPoint(double[] p1, double[] p2) throws Exception {
+	public static Geometry getLineFromPoint(double[] p1, double[] p2)
+			throws Exception {
 		StringBuilder sb = new StringBuilder("LINESTRING (" + p1[0]);
 
 		sb.append(" " + p1[1]);
@@ -127,7 +134,8 @@ public class GeometryUtils {
 		Coordinate next = ring[iNext];
 
 		if (prev.equals(hip) || next.equals(hip) || prev.equals(next)) {
-			throw new Exception("degenerate ring (does not contain 3 different points)");
+			throw new Exception(
+					"degenerate ring (does not contain 3 different points)");
 		}
 
 		// translate so that hip is at the origin.
@@ -192,55 +200,54 @@ public class GeometryUtils {
 
 		return getLinkLength(g);
 	}
-	
+
 	/**
 	 * 获取自相交线的交点
-	 * @param geometryList 自相交线的线段几何的集合
+	 * 
+	 * @param geometryList
+	 *            自相交线的线段几何的集合
 	 * @return 自相交线的交点
 	 * @throws Exception
 	 */
-	public static Geometry getIntersectGeoBySingleLine(List<Geometry> geometryList) throws Exception {
-		
+	public static Geometry getIntersectGeoBySingleLine(
+			List<Geometry> geometryList) throws Exception {
+
 		StringBuilder sb = new StringBuilder("MULTIPOINT (");
-		
+
 		for (int i = 0; i < geometryList.size(); i++) {
-			
+
 			Geometry tmp1 = geometryList.get(i);
-			
+
 			Geometry tmp2 = null;
-			
-			if(i == (geometryList.size() -1 ))
-			{
+
+			if (i == (geometryList.size() - 1)) {
 				tmp2 = geometryList.get(0);
-			}
-			else
-			{
+			} else {
 				tmp2 = geometryList.get(i + 1);
 			}
 			if (tmp1.intersects(tmp2)) {
 
 				Geometry interGeo = tmp1.intersection(tmp2);
-				
-				if(!tmp1.getBoundary().contains(interGeo) && !tmp2.getBoundary().contains(interGeo))
-				{
+
+				if (!tmp1.getBoundary().contains(interGeo)
+						&& !tmp2.getBoundary().contains(interGeo)) {
 					Coordinate coor = interGeo.getCoordinate();
-					
-					sb.append(coor.x+" ");
-					
-					sb.append(coor.y+",");
+
+					sb.append(coor.x + " ");
+
+					sb.append(coor.y + ",");
 				}
 			} else {
 				break;
 			}
 		}
-		
-		if(sb.toString().contains(","))
-		{
+
+		if (sb.toString().contains(",")) {
 			sb.deleteCharAt(sb.lastIndexOf(","));
 		}
-		
+
 		sb.append(")");
-		
+
 		return getMulPointByWKT(sb.toString());
 	}
 
@@ -257,7 +264,8 @@ public class GeometryUtils {
 
 		Geometry geo1 = geometryList.get(1);
 
-		Geometry result = GeoTranslator.transform(geo0.intersection(geo1), 1, 0);
+		Geometry result = GeoTranslator
+				.transform(geo0.intersection(geo1), 1, 0);
 
 		for (int i = 1; i < (geometryList.size() - 1); i++) {
 			Geometry tmp1 = geometryList.get(i);
@@ -291,8 +299,9 @@ public class GeometryUtils {
 	 * @return
 	 * @throws Exception
 	 */
-	public static Geometry getInterPointFromSelf(Geometry geometry) throws Exception {
-		
+	public static Geometry getInterPointFromSelf(Geometry geometry)
+			throws Exception {
+
 		Coordinate coorArray[] = geometry.getCoordinates();
 
 		List<Geometry> geometryList = new ArrayList<>();
@@ -312,7 +321,7 @@ public class GeometryUtils {
 		}
 
 		Geometry geo = getIntersectGeoBySingleLine(geometryList);
-		
+
 		geo = GeoTranslator.transform(geo, 1, 0);
 
 		return geo;
@@ -328,7 +337,8 @@ public class GeometryUtils {
 	 * @return Map<Integer,Integer> value:start_end 标识
 	 * @throws JSONException
 	 */
-	public static Integer getStartOrEndType(Coordinate[] coors, Geometry standGeo) throws JSONException {
+	public static Integer getStartOrEndType(Coordinate[] coors,
+			Geometry standGeo) throws JSONException {
 		int flag = 0;
 		if (coors[0].equals(standGeo.getCoordinate())) {
 
@@ -364,20 +374,20 @@ public class GeometryUtils {
 
 		return mpoint;
 	}
-	
+
 	public static double[] getCoordinate(Geometry geo) {
-		
+
 		Coordinate[] coords = geo.getCoordinates();
-		
-		double[] points = new double[coords.length*2];
-		
-		for(int i=0;i<coords.length;i++){
-			
-			points[2*i] = coords[i].x;
-			
-			points[2*i+1] = coords[i].y;
+
+		double[] points = new double[coords.length * 2];
+
+		for (int i = 0; i < coords.length; i++) {
+
+			points[2 * i] = coords[i].x;
+
+			points[2 * i + 1] = coords[i].y;
 		}
-		
+
 		return points;
 	}
 
@@ -450,16 +460,19 @@ public class GeometryUtils {
 		double a = 0.0;
 		for (int i = 0; i < points.size(); ++i) {
 			int j = (i + 1) % points.size();
-			double xi = points.get(i)[0] * metersPerDegree * Math.cos(points.get(i)[1] * radiansPerDegree);
+			double xi = points.get(i)[0] * metersPerDegree
+					* Math.cos(points.get(i)[1] * radiansPerDegree);
 			double yi = points.get(i)[1] * metersPerDegree;
-			double xj = points.get(j)[0] * metersPerDegree * Math.cos(points.get(j)[1] * radiansPerDegree);
+			double xj = points.get(j)[0] * metersPerDegree
+					* Math.cos(points.get(j)[1] * radiansPerDegree);
 			double yj = points.get(j)[1] * metersPerDegree;
 			a += xi * yj - xj * yi;
 		}
 		return Math.abs(a / 2.0);
 	}
 
-	public static JSONObject connectLinks(List<Geometry> geoms) throws ParseException {
+	public static JSONObject connectLinks(List<Geometry> geoms)
+			throws ParseException {
 		JSONObject json = new JSONObject();
 
 		json.put("type", "LineString");
@@ -497,16 +510,39 @@ public class GeometryUtils {
 
 		return json;
 	}
+
 	/**
 	 * @Description:TODO 两个面是否相交
-	 * @param String scrWkt,Geometry geom         
+	 * @param String
+	 *            scrWkt,Geometry geom
 	 * @return boolean
-	 * @throws ParseException 
+	 * @throws ParseException
 	 */
-	public static boolean IsIntersectPolygon(String scrWkt,String clobStr) throws ParseException{
-		
-		Geometry srcGeom=GeometryUtils.getPolygonByWKT(scrWkt);
-		Geometry Geom=GeometryUtils.getPolygonByWKT(clobStr);
+	public static boolean IsIntersectPolygon(String scrWkt, String clobStr)
+			throws ParseException {
+
+		Geometry srcGeom = GeometryUtils.getPolygonByWKT(scrWkt);
+		Geometry Geom = GeometryUtils.getPolygonByWKT(clobStr);
 		return srcGeom.intersects(Geom);
+	}
+
+	public static LineString getBuffer(Coordinate[] coordinates, double distance) {
+
+		GeometryFactory geometryFactory = new GeometryFactory();
+
+		MultiPoint MultiPoint = geometryFactory.createMultiPoint(coordinates);
+
+		ConvexHull hull = new ConvexHull(MultiPoint);
+
+		Geometry geosRing = hull.getConvexHull();
+
+		Geometry buff = geosRing.buffer(distance);
+
+		Polygon myPolygon = (Polygon) buff;
+
+		LineString exteriorRing = myPolygon.getExteriorRing();
+
+		return exteriorRing;
+
 	}
 }

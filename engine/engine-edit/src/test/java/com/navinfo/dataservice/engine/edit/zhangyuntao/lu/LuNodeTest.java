@@ -64,7 +64,7 @@ public class LuNodeTest extends InitApplication {
 
 	@Test
 	public void testSearchByGap() {
-		String parameter = "{\"projectId\":11,\"gap\":80,\"types\":[\"ADNODE\"],\"z\":17,\"x\":107945,\"y\":49615}";
+		String parameter = "{\"projectId\":42,\"gap\":80,\"types\":[\"RDLINK\"],\"z\":17,\"x\":107942,\"y\":49586}";
 		JSONObject jsonReq = JSONObject.fromObject(parameter);
 
 		JSONArray type = jsonReq.getJSONArray("types");

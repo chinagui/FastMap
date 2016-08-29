@@ -7,10 +7,13 @@ import java.util.Set;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 
+import com.vividsolutions.jts.algorithm.ConvexHull;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.MultiPoint;
+import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.operation.buffer.BufferOp;
 import com.vividsolutions.jts.operation.buffer.BufferParameters;
 import com.vividsolutions.jts.operation.polygonize.Polygonizer;
@@ -167,14 +170,36 @@ public class JGeometryUtil {
 		
 		// 以0的距离进行缓冲（因为各多边形两两共边），生成一个多边形
 		// 此时则将点云构造成了多边形
-		Geometry union = ts.buffer(0);
+		Geometry union = ts.buffer(0.00005);
 		
-//		BufferOp bufOp = new BufferOp(ts);  
-//        bufOp.setEndCapStyle(BufferParameters.CAP_SQUARE);  
-//        Geometry bg = bufOp.getResultGeometry(0);  
-//        
-//        Polygonizer p = new Polygonizer(); 
+		BufferOp bufOp = new BufferOp(union);  
+        bufOp.setEndCapStyle(BufferParameters.CAP_ROUND);  
+        Geometry bg = bufOp.getResultGeometry(0);  
 		
-		return union;
+		return bg;
+	}
+	
+	public static Geometry getBuffer(Coordinate[] coordinates) {
+
+		GeometryFactory geometryFactory = new GeometryFactory();
+
+		MultiPoint MultiPoint = geometryFactory.createMultiPoint(coordinates);
+
+		ConvexHull hull = new ConvexHull(MultiPoint);
+
+		Geometry geosRing = hull.getConvexHull();
+
+		Geometry buff = geosRing.buffer(0.00002);
+
+		Polygon myPolygon = (Polygon) buff;
+
+		LineString exteriorRing = myPolygon.getExteriorRing();
+		
+		BufferOp bufOp = new BufferOp(exteriorRing);  
+        bufOp.setEndCapStyle(BufferParameters.CAP_ROUND);  
+        Geometry bg = bufOp.getResultGeometry(0);  
+
+		return bg;
+
 	}
 }

@@ -13,7 +13,8 @@ import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
  * @ClassName: GLM06005
  * @author songdongyan
  * @date 2016年8月24日
- * @Description: GLM06005.java
+ * @Description: 分岔口中一条进入线只能对应两条或两条以上的退出线
+ * 理解：分岔口中一条进入线，需要沿通行方向挂接至少两条link
  */
 public class GLM06005 extends baseRule {
 

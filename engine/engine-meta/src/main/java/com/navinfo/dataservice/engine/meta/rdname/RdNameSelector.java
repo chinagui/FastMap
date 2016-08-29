@@ -274,9 +274,9 @@ public class RdNameSelector {
 			sql.append(" ) c");
 			sql.append(" WHERE rownum <= :1)  WHERE rn >= :2");
 			
-			int startRow = pageNum * pageSize + 1;
+			int startRow = (pageNum-1) * pageSize + 1;
 
-			int endRow = (pageNum + 1) * pageSize;
+			int endRow = pageNum * pageSize;
 
 			pstmt = conn.prepareStatement(sql.toString());
 

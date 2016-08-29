@@ -16,7 +16,7 @@ public class RdRestrictionTest extends InitApplication{
 	
 	@Test
 	public void testAddRestriction() {
-		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDRESTRICTION\",\"projectId\":11,\"data\":{\"inLinkPid\":100004072,\"nodePid\":100020258,\"infos\":\"1\"}}";
+		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDRESTRICTION\",\"dbId\":42,\"data\":{\"inLinkPid\":100009708,\"nodePid\":100027027,\"outLinkPids\":[100009705,100009706,100009707],\"infos\":\"[1],[2],[3]\"}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
@@ -28,7 +28,7 @@ public class RdRestrictionTest extends InitApplication{
 
 	@Test
 	public void testDeleteRestriction() {
-		String parameter = "{\"command\":\"DELETE\",\"type\":\"RDRESTRICTION\",\"projectId\":11,\"objId\": 100000186}";
+		String parameter = "{\"command\":\"DELETE\",\"type\":\"RDRESTRICTION\",\"dbId\":42,\"objId\": 100000480}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

@@ -110,8 +110,9 @@ public class Operation implements IOperation {
 		this.limit = limit;
 	}
 
-	public Operation(Command command) {
+	public Operation(Command command,Connection conn) {
 		this.command = command;
+		this.conn = conn;
 	}
 
 	public Operation(Connection conn) {
@@ -143,14 +144,15 @@ public class Operation implements IOperation {
 					JSONObject jsonLaneInfo = this.command.getLaneInfos()
 							.getJSONObject(m);
 					if (i == 0) {
-						if (jsonLaneInfo.getInt("lanePid") == 0) {
+						if (jsonLaneInfo.getInt("pid") == 0) {
 							this.createRdLane(result, link.getPid(), laneDir);
 						} else {
 							for (RdLane lane : lanes) {
 
-								if (jsonLaneInfo.getInt("lanePid") == lane
+								if (jsonLaneInfo.getInt("pid") == lane
 										.getPid()) {
 									// 修改Rdlane
+									jsonLaneInfo.put("laneNum", this.command.getLaneInfos().size());
 									com.navinfo.dataservice.engine.edit.operation.obj.rdlane.update.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdlane.update.Operation();
 									operation.updateRdLane(result,
 											jsonLaneInfo, lane);
@@ -159,7 +161,7 @@ public class Operation implements IOperation {
 									com.navinfo.dataservice.engine.edit.operation.obj.rdlane.delete.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdlane.delete.Operation(
 											conn);
 									operation.deleteRdLane(result,
-											lane.getPid());
+											lane);
 								}
 							}
 
@@ -170,7 +172,7 @@ public class Operation implements IOperation {
 							// 删除rdlane
 							com.navinfo.dataservice.engine.edit.operation.obj.rdlane.delete.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdlane.delete.Operation(
 									conn);
-							operation.deleteRdLane(result, lane.getPid());
+							operation.deleteRdLane(result, lane);
 						}
 						// 新增rdlane
 						this.createRdLane(result, link.getPid(), laneDir);
@@ -232,16 +234,19 @@ public class Operation implements IOperation {
 			JSONObject jsonLaneInfo = this.command.getLaneInfos()
 					.getJSONObject(m);
 			RdLane lane = new RdLane();
-			if (jsonLaneInfo.getInt("lanePid") != 0) {
+			if (jsonLaneInfo.getInt("pid") != 0) {
 				lane = (RdLane) new RdLaneSelector(conn).loadById(
-						jsonLaneInfo.getInt("lanePid"), true, true);
+						jsonLaneInfo.getInt("pid"), true, true);
 			}
 
 			lane.setPid(PidService.getInstance().applyRdLanePid());
 			lane.setLinkPid(linkPid);
 			lane.setLaneNum(this.command.getLaneInfos().size());
-			lane.setSeqNum(m + 1);
+			
 			lane.setLaneDir(laneDir);
+			if(jsonLaneInfo.containsKey("seqNum")){
+				lane.setSeqNum(jsonLaneInfo.getInt("seqNum"));
+			}
 			if (jsonLaneInfo.containsKey("arrowDir")) {
 				lane.setArrowDir(jsonLaneInfo.getString("arrowDir"));
 
@@ -286,10 +291,15 @@ public class Operation implements IOperation {
 								.getString("directionTime"));
 					}
 					conditionRows.add(condition);
+					
+					
 				}
 
 				lane.setConditions(conditionRows);
+				
+				
 			}
+			result.insertObject(lane, ObjStatus.INSERT, lane.getPid());
 
 		}
 
@@ -361,7 +371,7 @@ public class Operation implements IOperation {
 					// 删除车道信息
 					com.navinfo.dataservice.engine.edit.operation.obj.rdlane.delete.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdlane.delete.Operation(
 							conn);
-					operation.deleteRdLane(result, lane.getPid());
+					operation.deleteRdLane(result, lane);
 				}
 			}
 		} else {
@@ -506,7 +516,7 @@ public class Operation implements IOperation {
 
 		if (lanes.size() >= laneInfos.size()) {
 			for (int i = laneInfos.size(); i < lanes.size(); i++) {
-				this.deleLaneForAttr(result, lanes.get(i).getPid());
+				this.deleLaneForAttr(result, lanes.get(i));
 			}
 			for (int i = 0; i < laneInfos.size(); i++) {
 				if (laneInfos.get(i) != lanes.get(i).getArrowDir()) {
@@ -529,7 +539,7 @@ public class Operation implements IOperation {
 			for (int i = 0; i < lanes.size(); i++) {
 				if (laneInfos.get(i) != lanes.get(i).getArrowDir()) {
 
-					this.deleLaneForAttr(result, lanes.get(i).getPid());
+					this.deleLaneForAttr(result, lanes.get(i));
 
 				} else {
 					if (laneInfos.size() != lanes.size()) {
@@ -552,10 +562,10 @@ public class Operation implements IOperation {
 	 * @param lanePid
 	 * @throws Exception
 	 */
-	private void deleLaneForAttr(Result result, int lanePid) throws Exception {
+	private void deleLaneForAttr(Result result, RdLane lane) throws Exception {
 		com.navinfo.dataservice.engine.edit.operation.obj.rdlane.delete.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdlane.delete.Operation(
 				conn);
-		operation.deleteRdLane(result, lanePid);
+		operation.deleteRdLane(result, lane);
 	}
 
 	/***
@@ -612,7 +622,7 @@ public class Operation implements IOperation {
 			}
 			if (this.getPassageNum() < lanes.size()) {
 				for (int i = this.getPassageNum(); i < lanes.size(); i++) {
-					this.deleLaneForAttr(result, lanes.get(i).getPid());
+					this.deleLaneForAttr(result, lanes.get(i));
 				}
 				for (int i = 0; i < this.getPassageNum(); i++) {
 					this.updateLaneForAttr(result, lanes.get(i),

@@ -4,6 +4,7 @@ import java.sql.Connection;
 
 import com.navinfo.dataservice.api.edit.iface.EditApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.control.row.batch.util.IBatch;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 
@@ -26,11 +27,12 @@ public class BatchProcess {
 		try {
 			
 			IxPoiSelector ixPoiSelector = new IxPoiSelector(conn);
-			IxPoi poi = (IxPoi) ixPoiSelector.loadById(json.getInt("pid"), true, true);
+			IxPoi poi = (IxPoi) ixPoiSelector.loadById(json.getInt("objId"), true, true);
 			
 			String[] classes = classNames.split(",");
 			JSONObject result = new JSONObject();
 			for (String className:classes) {
+				className = "com.navinfo.dataservice.control.row.batch." + className;
 				IBatch obj = (IBatch) Class.forName(className).newInstance();
 				JSONObject data = obj.run(poi,conn,json);
 				result.putAll(data);

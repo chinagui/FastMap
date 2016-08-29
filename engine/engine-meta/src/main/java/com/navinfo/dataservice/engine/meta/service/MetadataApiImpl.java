@@ -13,6 +13,7 @@ import com.navinfo.dataservice.engine.meta.engshort.ScEngshortSelector;
 import com.navinfo.dataservice.engine.meta.kindcode.KindCodeSelector;
 import com.navinfo.dataservice.engine.meta.mesh.MeshSelector;
 import com.navinfo.dataservice.engine.meta.pinyin.PinyinConvertSelector;
+import com.navinfo.dataservice.engine.meta.pinyin.PinyinConverter;
 import com.navinfo.dataservice.engine.meta.rdname.RdNameImportor;
 
 /**
@@ -88,6 +89,17 @@ public class MetadataApiImpl implements MetadataApi {
 	public Map<String, String> getEngshortMap(Connection conn) throws Exception {
 		ScEngshortSelector scEngshortSelector = new ScEngshortSelector(conn);
 		return scEngshortSelector.getEngShortMap();
+	}
+
+
+
+	@Override
+	public String[] pyConvert(String word) throws Exception {
+		PinyinConverter py = new PinyinConverter();
+
+		String[] result = py.convert(word);
+		
+		return result;
 	}
 
 

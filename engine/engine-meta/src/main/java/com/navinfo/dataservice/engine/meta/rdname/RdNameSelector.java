@@ -219,7 +219,7 @@ public class RdNameSelector {
 			
 			String tmep = "";
 			if (tips.size()>0) {
-				sql.append(" a.SRC_RESUME in (");
+				sql.append(" and a.SRC_RESUME in (");
 				for (int i=0;i<tips.size();i++) {
 					JSONObject tipsObj = tips.getJSONObject(i);
 					sql.append(tmep);

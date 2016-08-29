@@ -167,7 +167,7 @@ public class ScPointAdminArea {
 		
 		String sql = "SELECT * FROM (SELECT c.*, rownum rn FROM (SELECT COUNT (1) OVER (PARTITION BY 1) total,adminareacode,whole from SC_POINT_ADMINAREA";
 		if (!name.isEmpty()) {
-			sql +=  " where whole='"+name+"'";
+			sql +=  " where whole like '%"+name+"%'";
 		}
 		if (!sortby.isEmpty()) {
 			sql += " ORDER BY "+sortby;
@@ -177,9 +177,9 @@ public class ScPointAdminArea {
 		try {
 			conn = DBConnector.getInstance().getMetaConnection();
 			
-			int startRow = pageNum * pageSize + 1;
+			int startRow = (pageNum-1) * pageSize + 1;
 
-			int endRow = (pageNum + 1) * pageSize;
+			int endRow = pageNum * pageSize;
 			
 			pstmt = conn.prepareStatement(sql);
 			

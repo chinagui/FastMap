@@ -55,6 +55,16 @@
 
 		<dependency>
 			<groupId>com.navinfo.dataservice</groupId>
+			<artifactId>api-datahub</artifactId>
+		</dependency>
+		
+		<dependency>
+			<groupId>com.navinfo.dataservice</groupId>
+			<artifactId>api-fcc</artifactId>
+		</dependency>
+		
+		<dependency>
+			<groupId>com.navinfo.dataservice</groupId>
 			<artifactId>engine-photo</artifactId>
 		</dependency>
 		<dependency>

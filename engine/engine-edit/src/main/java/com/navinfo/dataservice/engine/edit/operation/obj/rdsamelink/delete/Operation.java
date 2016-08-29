@@ -1,14 +1,16 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdsamelink.delete;
 
 import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameLink;
 import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameLinkPart;
-import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
 import com.navinfo.dataservice.dao.glm.selector.rd.same.RdSameLinkSelector;
 
 public class Operation implements IOperation {
@@ -73,4 +75,40 @@ public class Operation implements IOperation {
 
 	}
 
+	public void deleteByUpDownPartLink(List<RdLink> deleteLinks, Result result)
+			throws Exception {
+
+		List<Integer> groupIds = new ArrayList<Integer>();
+
+		RdSameLinkSelector sameLinkSelector = new RdSameLinkSelector(this.conn);
+
+		for (RdLink deleteLink : deleteLinks) {
+
+			String tableName = deleteLink.parentTableName().toUpperCase();
+
+			RdSameLinkPart sameLinkPart = sameLinkSelector.loadLinkPartByLink(
+					deleteLink.parentPKValue(), tableName, true);
+
+			if (sameLinkPart == null) {
+				return;
+			}
+
+			// 去重
+			groupIds.remove(sameLinkPart.getGroupId());
+
+			groupIds.add(sameLinkPart.getGroupId());
+
+		}
+
+		List<IRow> sameLinkRows = sameLinkSelector.loadByIds(groupIds, true,
+				true);
+
+		for (IRow row : sameLinkRows) {
+
+			RdSameLink sameLink = (RdSameLink) row;
+
+			delete(result, sameLink);
+		}
+
+	}
 }

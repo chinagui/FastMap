@@ -12,7 +12,7 @@ import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
-public class PoiBatchProcessorFM_BAT_20_104 implements IBatch {
+public class PoiBatchProcessorFM_BAT_20_103 implements IBatch {
 
 	@Override
 	public JSONObject run(IxPoi poi, Connection conn, JSONObject json) throws Exception {

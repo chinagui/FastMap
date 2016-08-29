@@ -22,8 +22,9 @@ public class Operation implements IOperation {
 	private Command command;
 	private Connection conn;
 
-	public Operation(Command command) {
+	public Operation(Command command,Connection conn) {
 		this.command = command;
+		this.conn = conn;
 	}
 
 	public Operation(Connection conn) {

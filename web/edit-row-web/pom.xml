@@ -8,9 +8,7 @@
 		<artifactId>web</artifactId>
 		<version>0.0.1-SNAPSHOT</version>
 	</parent>
-	<groupId>com.navinfo.dataservice</groupId>
 	<artifactId>edit-row-web</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
 	<packaging>war</packaging>
 	<name>edit-row-web Maven Webapp</name>
 	<url>http://maven.apache.org</url>
@@ -40,6 +38,13 @@
 			<groupId>com.navinfo.dataservice</groupId>
 			<artifactId>engine-photo</artifactId>
 		</dependency>
+		
+		<dependency>
+			<groupId>com.navinfo.dataservice</groupId>
+			<artifactId>edit-control-row</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		
 		<dependency>
 			<groupId>com.navinfo.dataservice</groupId>
 			<artifactId>biz-commons</artifactId>

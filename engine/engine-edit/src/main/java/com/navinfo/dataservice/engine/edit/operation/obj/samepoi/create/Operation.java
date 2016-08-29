@@ -29,10 +29,10 @@ public class Operation implements IOperation {
 		result.insertObject(samePoi, ObjStatus.INSERT, samePoi.pid());
 
 		IxSamepoiPart samePoiPart = null;
-		for (String id : command.getPoiIds()) {
+		for (Object obj : command.getPidArray()) {
 			samePoiPart = new IxSamepoiPart();
 			samePoiPart.setGroupId(samePoi.pid());
-			samePoiPart.setPoiPid(Integer.valueOf(id));
+			samePoiPart.setPoiPid(Integer.valueOf(obj.toString()));
 			result.insertObject(samePoiPart, ObjStatus.INSERT, samePoi.pid());
 		}
 		return null;

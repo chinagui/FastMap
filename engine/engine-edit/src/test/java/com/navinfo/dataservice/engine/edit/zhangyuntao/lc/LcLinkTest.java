@@ -1,7 +1,11 @@
 package com.navinfo.dataservice.engine.edit.zhangyuntao.lc;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import org.junit.Test;
 
@@ -76,6 +80,22 @@ public class LcLinkTest extends InitApplication {
 	@Test
 	public void breakLcLink() {
 		String parameter = "{\"command\":\"BREAK\",\"dbId\":42,\"objId\":100035081,\"data\":{\"longitude\":116.47200963815628,\"latitude\":40.07116277263092},\"type\":\"LCLINK\"}";
+		parameter = "{\"command\":\"BREAK\",\"dbId\":42,\"objId\":100035116,\"data\":{\"longitude\":116.47133282255058,\"latitude\":40.074483115728164},\"type\":\"LCLINK\"}";
 		TestUtil.run(parameter);
+	}
+
+	@Test
+	public void print() throws Exception {
+		String sql = "select t1.link_pid from lc_link t1 where not exists (select t2.link_pid from lc_link_kind t2 where t1.link_pid = t2.link_pid)";
+		sql = "select * from lu_link t1 where not exists (select t2.link_pid from lu_link_kind t2 where t1.link_pid = t2.link_pid)";
+		Connection conn = DBConnector.getInstance().getConnectionById(42);
+		PreparedStatement pstmt = conn.prepareStatement(sql);
+		ResultSet resultSet = pstmt.executeQuery();
+		while (resultSet.next()) {
+			sql = "insert into lu_link_kind(link_pid, kind ,u_record , row_id) values(" + resultSet.getInt("link_pid")
+					+ ",0 ,0 ,'" + UUID.randomUUID().toString().replaceAll("-", "") + "');";
+			System.out.println(sql);
+		}
+
 	}
 }

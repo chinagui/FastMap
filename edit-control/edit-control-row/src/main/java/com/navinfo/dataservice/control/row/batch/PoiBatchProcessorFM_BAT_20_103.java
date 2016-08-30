@@ -4,6 +4,7 @@ import java.sql.Connection;
 
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.util.ExcelReader;
 import com.navinfo.dataservice.control.row.batch.util.IBatch;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
@@ -35,12 +36,15 @@ public class PoiBatchProcessorFM_BAT_20_103 implements IBatch {
 				
 				if (objStatus.equals(OperType.CREATE) || objStatus.equals(OperType.UPDATE)) {
 					// 半角转全角
+					String fullName = address.getString("fullname");
+					fullName = ExcelReader.h2f(fullName);
 					
 					MetadataApi apiService=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 
-					String[] pyStr = apiService.pyConvert(address.getString("fullname"));
+					String[] pyStr = apiService.pyConvert(fullName);
 					
 					JSONObject data = new JSONObject();
+					data.put("fullname", fullName);
 					data.put("fullnamePhonetic", pyStr[1]);
 					data.put("objStatus", ObjStatus.UPDATE.toString());
 					resultArray.add(data);

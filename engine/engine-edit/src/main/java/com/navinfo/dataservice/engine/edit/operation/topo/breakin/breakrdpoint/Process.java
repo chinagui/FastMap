@@ -77,8 +77,7 @@ public class Process extends AbstractProcess<Command> {
 		this.jaDisplayLink = new JSONArray();
 	}
 
-	public Process(Command command, Connection conn, Result result)
-			throws Exception {
+	public Process(Command command, Connection conn, Result result) throws Exception {
 		super();
 		this.setCommand(command);
 		// 初始化检查参数
@@ -95,145 +94,121 @@ public class Process extends AbstractProcess<Command> {
 		try {
 			RdLinkSelector linkSelector = new RdLinkSelector(this.getConn());
 
-			this.rdLinkBreakpoint = (RdLink) linkSelector.loadById(this
-					.getCommand().getLinkPid(), true);
+			this.rdLinkBreakpoint = (RdLink) linkSelector.loadById(this.getCommand().getLinkPid(), true);
 
-			this.getResult().insertObject(rdLinkBreakpoint, ObjStatus.DELETE,
-					rdLinkBreakpoint.pid());
+			this.getResult().insertObject(rdLinkBreakpoint, ObjStatus.DELETE, rdLinkBreakpoint.pid());
 
 			RdNodeSelector nodeSelector = new RdNodeSelector(this.getConn());
 
-			RdNode sNode = (RdNode) nodeSelector.loadById(
-					rdLinkBreakpoint.getsNodePid(), true);
+			RdNode sNode = (RdNode) nodeSelector.loadById(rdLinkBreakpoint.getsNodePid(), true);
 
 			this.getCommand().setsNode(sNode);
 
-			RdNode eNode = (RdNode) nodeSelector.loadById(
-					rdLinkBreakpoint.geteNodePid(), true);
+			RdNode eNode = (RdNode) nodeSelector.loadById(rdLinkBreakpoint.geteNodePid(), true);
 
 			this.getCommand().seteNode(eNode);
 
 			// 获取此LINK上交限进入线
-			List<RdRestriction> restrictions = new RdRestrictionSelector(
-					this.getConn()).loadRdRestrictionByLinkPid(this
-					.getCommand().getLinkPid(), true);
+			List<RdRestriction> restrictions = new RdRestrictionSelector(this.getConn())
+					.loadRdRestrictionByLinkPid(this.getCommand().getLinkPid(), true);
 
 			this.getCommand().setRestrictions(restrictions);
 
 			// 获取此LINK上交限退出线
-			List<RdRestrictionDetail> details = new RdRestrictionDetailSelector(
-					this.getConn()).loadDetailsByLinkPid(this.getCommand()
-					.getLinkPid(), true);
+			List<RdRestrictionDetail> details = new RdRestrictionDetailSelector(this.getConn())
+					.loadDetailsByLinkPid(this.getCommand().getLinkPid(), true);
 
 			this.getCommand().setRestrictionDetails(details);
 
 			// 获取LINK上交限经过线
-			List<List<Entry<Integer, RdRestrictionVia>>> restrictVias = new RdRestrictionViaSelector(
-					this.getConn()).loadRestrictionViaByLinkPid(this
-					.getCommand().getLinkPid(), true);
+			List<List<Entry<Integer, RdRestrictionVia>>> restrictVias = new RdRestrictionViaSelector(this.getConn())
+					.loadRestrictionViaByLinkPid(this.getCommand().getLinkPid(), true);
 
 			this.getCommand().setRestrictListVias(restrictVias);
 
 			// 获取此LINK上车信进入线
-			List<RdLaneConnexity> laneConnexitys = new RdLaneConnexitySelector(
-					this.getConn()).loadRdLaneConnexityByLinkPid(this
-					.getCommand().getLinkPid(), true);
+			List<RdLaneConnexity> laneConnexitys = new RdLaneConnexitySelector(this.getConn())
+					.loadRdLaneConnexityByLinkPid(this.getCommand().getLinkPid(), true);
 
 			this.getCommand().setLaneConnexitys(laneConnexitys);
 
 			// 获取此LINK上车信退出线
-			List<RdLaneTopology> topos = new RdLaneTopologySelector(
-					this.getConn()).loadToposByLinkPid(this.getCommand()
-					.getLinkPid(), true);
+			List<RdLaneTopology> topos = new RdLaneTopologySelector(this.getConn())
+					.loadToposByLinkPid(this.getCommand().getLinkPid(), true);
 
 			this.getCommand().setLaneTopologys(topos);
 
 			// 获取LINK上车信经过线
-			List<List<Entry<Integer, RdLaneVia>>> laneVias = new RdLaneViaSelector(
-					this.getConn()).loadRdLaneViaByLinkPid(this.getCommand()
-					.getLinkPid(), true);
+			List<List<Entry<Integer, RdLaneVia>>> laneVias = new RdLaneViaSelector(this.getConn())
+					.loadRdLaneViaByLinkPid(this.getCommand().getLinkPid(), true);
 
 			this.getCommand().setLaneVias(laneVias);
 
 			// 获取link上的点限速
 			List<RdSpeedlimit> limits = new RdSpeedlimitSelector(this.getConn())
-					.loadSpeedlimitByLinkPid(this.getCommand().getLinkPid(),
-							true);
+					.loadSpeedlimitByLinkPid(this.getCommand().getLinkPid(), true);
 
 			this.getCommand().setSpeedlimits(limits);
 
 			// 获取以改LINK作为分歧进入线的分歧
 
 			List<RdBranch> inBranchs = new RdBranchSelector(this.getConn())
-					.loadRdBranchByInLinkPid(this.getCommand().getLinkPid(),
-							true);
+					.loadRdBranchByInLinkPid(this.getCommand().getLinkPid(), true);
 
 			this.getCommand().setInBranchs(inBranchs);
 
 			// 获取已该LINK作为分歧退出线的分歧
 
 			List<RdBranch> outBranchs = new RdBranchSelector(this.getConn())
-					.loadRdBranchByOutLinkPid(this.getCommand().getLinkPid(),
-							true);
+					.loadRdBranchByOutLinkPid(this.getCommand().getLinkPid(), true);
 
 			this.getCommand().setOutBranchs(outBranchs);
 
 			// 获取该LINK为分歧经过线的BRANCH_VIA
 
-			List<List<RdBranchVia>> branchVias = new RdBranchViaSelector(
-					this.getConn()).loadRdBranchViaByLinkPid(this.getCommand()
-					.getLinkPid(), true);
+			List<List<RdBranchVia>> branchVias = new RdBranchViaSelector(this.getConn())
+					.loadRdBranchViaByLinkPid(this.getCommand().getLinkPid(), true);
 
 			this.getCommand().setBranchVias(branchVias);
 
 			// 获取由该link组成的立交（RDGSC）
 			RdGscSelector selector = new RdGscSelector(this.getConn());
 
-			List<RdGsc> rdGscList = selector.loadRdGscLinkByLinkPid(this
-					.getCommand().getLinkPid(), "RD_LINK", true);
+			List<RdGsc> rdGscList = selector.loadRdGscLinkByLinkPid(this.getCommand().getLinkPid(), "RD_LINK", true);
 
 			this.getCommand().setRdGscs(rdGscList);
 
 			// 获取由该link作为关联link的行政区划代表点
 			AdAdminSelector adSelector = new AdAdminSelector(this.getConn());
 
-			List<AdAdmin> adAdminList = adSelector.loadRowsByLinkId(this
-					.getCommand().getLinkPid(), true);
+			List<AdAdmin> adAdminList = adSelector.loadRowsByLinkId(this.getCommand().getLinkPid(), true);
 
 			this.getCommand().setAdAdmins(adAdminList);
 
 			// 获取由该link作为关联link的电子眼
-			RdElectroniceyeSelector eleceyeSelector = new RdElectroniceyeSelector(
-					this.getConn());
-			List<RdElectroniceye> eleceyes = eleceyeSelector
-					.loadListByRdLinkId(this.getCommand().getLinkPid(), true);
+			RdElectroniceyeSelector eleceyeSelector = new RdElectroniceyeSelector(this.getConn());
+			List<RdElectroniceye> eleceyes = eleceyeSelector.loadListByRdLinkId(this.getCommand().getLinkPid(), true);
 			this.getCommand().setEleceyes(eleceyes);
 
 			// 获取由该link作为关联link的大门
 			RdGateSelector gateSelector = new RdGateSelector(this.getConn());
-			List<RdGate> gates = gateSelector.loadByLink(this.getCommand()
-					.getLinkPid(), true);
+			List<RdGate> gates = gateSelector.loadByLink(this.getCommand().getLinkPid(), true);
 			this.getCommand().setGates(gates);
 
 			// 获取该link关联的分叉口提示
 			RdSeSelector rdSeSelector = new RdSeSelector(this.getConn());
-			List<RdSe> rdSes = rdSeSelector.loadRdSesWithLinkPid(this
-					.getCommand().getLinkPid(), true);
+			List<RdSe> rdSes = rdSeSelector.loadRdSesWithLinkPid(this.getCommand().getLinkPid(), true);
 			this.getCommand().setRdSes(rdSes);
 
 			// 获取该link关联的减速带
-			RdSpeedbumpSelector speedbumpSelector = new RdSpeedbumpSelector(
-					this.getConn());
-			List<RdSpeedbump> speedbumps = speedbumpSelector.loadByLinkPid(this
-					.getCommand().getLinkPid(), true);
+			RdSpeedbumpSelector speedbumpSelector = new RdSpeedbumpSelector(this.getConn());
+			List<RdSpeedbump> speedbumps = speedbumpSelector.loadByLinkPid(this.getCommand().getLinkPid(), true);
 			this.getCommand().setRdSpeedbumps(speedbumps);
 
 			// 获取该link关联的收费站
-			RdTollgateSelector tollgateSelector = new RdTollgateSelector(
-					this.getConn());
-			List<RdTollgate> tollgates = tollgateSelector
-					.loadRdTollgatesWithLinkPid(this.getCommand().getLinkPid(),
-							true);
+			RdTollgateSelector tollgateSelector = new RdTollgateSelector(this.getConn());
+			List<RdTollgate> tollgates = tollgateSelector.loadRdTollgatesWithLinkPid(this.getCommand().getLinkPid(),
+					true);
 			this.getCommand().setRdTollgates(tollgates);
 
 			return true;
@@ -254,21 +229,17 @@ public class Process extends AbstractProcess<Command> {
 				throw new Exception(preCheckMsg);
 			}
 			IOperation operation = null;
-			operation = new OpTopo(this.getCommand(), this.getConn(),
-					this.rdLinkBreakpoint, jaDisplayLink);
+			operation = new OpTopo(this.getCommand(), this.getConn(), this.rdLinkBreakpoint, jaDisplayLink);
 			msg = operation.run(this.getResult());
 			OpRefRestrict opRefRestrict = new OpRefRestrict(this.getCommand());
 			opRefRestrict.run(this.getResult());
 			OpRefBranch opRefBranch = new OpRefBranch(this.getCommand());
 			opRefBranch.run(this.getResult());
-			OpRefLaneConnexity opRefLaneConnexity = new OpRefLaneConnexity(
-					this.getCommand());
+			OpRefLaneConnexity opRefLaneConnexity = new OpRefLaneConnexity(this.getCommand());
 			opRefLaneConnexity.run(this.getResult());
-			OpRefSpeedlimit opRefSpeedlimit = new OpRefSpeedlimit(
-					this.getCommand());
+			OpRefSpeedlimit opRefSpeedlimit = new OpRefSpeedlimit(this.getCommand());
 			opRefSpeedlimit.run(this.getResult());
-			OpRefRdGsc opRefRdGsc = new OpRefRdGsc(this.getCommand(),
-					this.getConn());
+			OpRefRdGsc opRefRdGsc = new OpRefRdGsc(this.getCommand(), this.getConn());
 			opRefRdGsc.run(this.getResult());
 			OpRefAdAdmin opRefAdAdmin = new OpRefAdAdmin(this.getCommand());
 			opRefAdAdmin.run(this.getResult());
@@ -299,8 +270,7 @@ public class Process extends AbstractProcess<Command> {
 				}
 				IOperation operation = null;
 
-				operation = new OpTopo(this.getCommand(), this.getConn(),
-						this.rdLinkBreakpoint, jaDisplayLink);
+				operation = new OpTopo(this.getCommand(), this.getConn(), this.rdLinkBreakpoint, jaDisplayLink);
 
 				msg = operation.run(this.getResult());
 
@@ -388,30 +358,25 @@ public class Process extends AbstractProcess<Command> {
 		OpRefBranch opRefBranch = new OpRefBranch(this.getCommand());
 		opRefBranch.run(this.getResult());
 		// 车信
-		OpRefLaneConnexity opRefLaneConnexity = new OpRefLaneConnexity(
-				this.getCommand());
+		OpRefLaneConnexity opRefLaneConnexity = new OpRefLaneConnexity(this.getCommand());
 		opRefLaneConnexity.run(this.getResult());
 		// 限速
 		OpRefSpeedlimit opRefSpeedlimit = new OpRefSpeedlimit(this.getCommand());
 		opRefSpeedlimit.run(this.getResult());
 		// 立交
-		OpRefRdGsc opRefRdGsc = new OpRefRdGsc(this.getCommand(),
-				this.getConn());
+		OpRefRdGsc opRefRdGsc = new OpRefRdGsc(this.getCommand(), this.getConn());
 		opRefRdGsc.run(this.getResult());
 		// 行政区划
 		OpRefAdAdmin opRefAdAdmin = new OpRefAdAdmin(this.getCommand());
 		opRefAdAdmin.run(this.getResult());
 		// 警示信息
-		OpRefRdWarninginfo opRefRdWarninginfo = new OpRefRdWarninginfo(
-				this.getConn());
+		OpRefRdWarninginfo opRefRdWarninginfo = new OpRefRdWarninginfo(this.getConn());
 		opRefRdWarninginfo.run(this.getResult(), oldLink, newLinks);
 		// 信号灯
-		OpRefRdTrafficsignal ofOpRefRdTrafficsignal = new OpRefRdTrafficsignal(
-				this.getConn());
+		OpRefRdTrafficsignal ofOpRefRdTrafficsignal = new OpRefRdTrafficsignal(this.getConn());
 		ofOpRefRdTrafficsignal.run(this.getResult(), oldLink, newLinks);
 		// 电子眼
-		OpRefRdElectroniceye opRefRdElectroniceye = new OpRefRdElectroniceye(
-				this.getConn());
+		OpRefRdElectroniceye opRefRdElectroniceye = new OpRefRdElectroniceye(this.getConn());
 		opRefRdElectroniceye.run(this.getResult(), oldLink, newLinks);
 		// 大门
 		OpRefRdGate opRefRdGate = new OpRefRdGate(this.getConn());
@@ -426,10 +391,8 @@ public class Process extends AbstractProcess<Command> {
 		OpRefRdSlope opRefRdSlope = new OpRefRdSlope(this.getConn());
 		opRefRdSlope.run(this.getResult(), oldLink, newLinks);
 		// 顺行
-		OpRefRdDirectroute opRefRdDirectroute = new OpRefRdDirectroute(
-				this.getConn());
-		opRefRdDirectroute.run(this.getResult(), this.rdLinkBreakpoint,
-				newLinks);
+		OpRefRdDirectroute opRefRdDirectroute = new OpRefRdDirectroute(this.getConn());
+		opRefRdDirectroute.run(this.getResult(), this.rdLinkBreakpoint, newLinks);
 		// CRF交叉点
 		OpRefRdInter opRefRdInter = new OpRefRdInter(this.getConn());
 		opRefRdInter.run(this.getResult(), this.rdLinkBreakpoint, newLinks);
@@ -444,23 +407,21 @@ public class Process extends AbstractProcess<Command> {
 		opRefRdTollgate.run(this.getResult(), oldLink, newLinks);
 
 		// 语音引导
-		OpRefRdVoiceguide opRefRdVoiceguide = new OpRefRdVoiceguide(
-				this.getConn());
-		opRefRdVoiceguide
-				.run(this.getResult(), this.rdLinkBreakpoint, newLinks);
+		OpRefRdVoiceguide opRefRdVoiceguide = new OpRefRdVoiceguide(this.getConn());
+		opRefRdVoiceguide.run(this.getResult(), this.rdLinkBreakpoint, newLinks);
 
 		// 可变限速
-		OpRefRdVariableSpeed opRefRdVariableSpeed = new OpRefRdVariableSpeed(
-				this.getConn());
-		opRefRdVariableSpeed.run(this.getResult(), this.rdLinkBreakpoint,
-				newLinks);
-		
-		if (!this.getCommand().getOperationType().equals("innerRun")) {
-			OpRefRelationObj opRefRelationObj = new OpRefRelationObj(
-					this.getConn());
+		OpRefRdVariableSpeed opRefRdVariableSpeed = new OpRefRdVariableSpeed(this.getConn());
+		opRefRdVariableSpeed.run(this.getResult(), this.rdLinkBreakpoint, newLinks);
 
-			opRefRelationObj.handleSameLink(this.rdLinkBreakpoint,
-					this.getCommand(), this.getResult());
+		// POI被动维护
+		OpRefPoi opRefPoi = new OpRefPoi(this.getConn());
+		opRefPoi.run(this.getResult(), this.rdLinkBreakpoint, newLinks);
+
+		if (!this.getCommand().getOperationType().equals("innerRun")) {
+			OpRefRelationObj opRefRelationObj = new OpRefRelationObj(this.getConn());
+
+			opRefRelationObj.handleSameLink(this.rdLinkBreakpoint, this.getCommand(), this.getResult());
 		}
 	}
 
@@ -515,8 +476,7 @@ public class Process extends AbstractProcess<Command> {
 
 		infectList = new ArrayList<Integer>();
 
-		for (List<Entry<Integer, RdLaneVia>> listVias : this.getCommand()
-				.getLaneVias()) {
+		for (List<Entry<Integer, RdLaneVia>> listVias : this.getCommand().getLaneVias()) {
 			for (Entry<Integer, RdLaneVia> entry : listVias) {
 				infectList.add(entry.getKey());
 			}
@@ -542,8 +502,7 @@ public class Process extends AbstractProcess<Command> {
 
 		infectList = new ArrayList<Integer>();
 
-		for (RdRestrictionDetail detail : this.getCommand()
-				.getRestrictionDetails()) {
+		for (RdRestrictionDetail detail : this.getCommand().getRestrictionDetails()) {
 			infectList.add(detail.getPid());
 		}
 
@@ -551,8 +510,7 @@ public class Process extends AbstractProcess<Command> {
 
 		infectList = new ArrayList<Integer>();
 
-		for (List<Entry<Integer, RdRestrictionVia>> vias : this.getCommand()
-				.geListRestrictVias()) {
+		for (List<Entry<Integer, RdRestrictionVia>> vias : this.getCommand().geListRestrictVias()) {
 			for (Entry<Integer, RdRestrictionVia> entry : vias) {
 				infectList.add(entry.getKey());
 			}
@@ -577,20 +535,16 @@ public class Process extends AbstractProcess<Command> {
 		infects.put("ADADMIN", infectList);
 
 		// 警示信息
-		RdWarninginfoSelector selector = new RdWarninginfoSelector(
-				this.getConn());
+		RdWarninginfoSelector selector = new RdWarninginfoSelector(this.getConn());
 
-		infectList = selector.loadPidByLink(this.getCommand().getLinkPid(),
-				false);
+		infectList = selector.loadPidByLink(this.getCommand().getLinkPid(), false);
 
 		infects.put("RDWARNINGINFO", infectList);
 
 		// 信号灯
-		RdTrafficsignalSelector trafficSelector = new RdTrafficsignalSelector(
-				this.getConn());
+		RdTrafficsignalSelector trafficSelector = new RdTrafficsignalSelector(this.getConn());
 
-		List<RdTrafficsignal> rdTrafficsignals = trafficSelector.loadByLinkPid(
-				true, this.getCommand().getLinkPid());
+		List<RdTrafficsignal> rdTrafficsignals = trafficSelector.loadByLinkPid(true, this.getCommand().getLinkPid());
 
 		if (CollectionUtils.isNotEmpty(rdTrafficsignals)) {
 			infectList = new ArrayList<Integer>();
@@ -609,8 +563,7 @@ public class Process extends AbstractProcess<Command> {
 
 		// 大门
 		RdGateSelector gateSelector = new RdGateSelector(this.getConn());
-		List<RdGate> gates = gateSelector.loadByLink(this.getCommand()
-				.getLinkPid(), true);
+		List<RdGate> gates = gateSelector.loadByLink(this.getCommand().getLinkPid(), true);
 		infectList = new ArrayList<Integer>();
 		for (RdGate gate : gates) {
 			infectList.add(gate.pid());
@@ -632,19 +585,16 @@ public class Process extends AbstractProcess<Command> {
 		infects.put("RDSPEEDBUMP", infectList);
 
 		// 顺行
-		RdDirectrouteSelector directrouteSelector = new RdDirectrouteSelector(
-				this.getConn());
+		RdDirectrouteSelector directrouteSelector = new RdDirectrouteSelector(this.getConn());
 
-		infectList = directrouteSelector.loadPidByLink(this.getCommand()
-				.getLinkPid(), false);
+		infectList = directrouteSelector.loadPidByLink(this.getCommand().getLinkPid(), false);
 
 		infects.put("RDDIRECTROUTE", infectList);
 
 		// CRF交叉点
 		RdInterSelector interSelector = new RdInterSelector(this.getConn());
 
-		RdInterLink interLink = interSelector.loadByLinkPid(this.getCommand()
-				.getLinkPid(), false);
+		RdInterLink interLink = interSelector.loadByLinkPid(this.getCommand().getLinkPid(), false);
 
 		infectList = new ArrayList<Integer>();
 

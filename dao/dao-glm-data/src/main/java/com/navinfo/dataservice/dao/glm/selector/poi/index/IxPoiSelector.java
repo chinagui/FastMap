@@ -3,6 +3,8 @@ package com.navinfo.dataservice.dao.glm.selector.poi.index;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.List;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -322,7 +324,10 @@ public class IxPoiSelector extends AbstractSelector {
 	 * @return poi对象
 	 * @throws Exception
 	 */
-	public IxPoi loadIxPoiByLinkPid(int linkPid, boolean isLock) throws Exception {
+	public List<IxPoi> loadIxPoiByLinkPid(int linkPid, boolean isLock) throws Exception {
+		
+		List<IxPoi> poiList = new ArrayList<>();
+		
 		IxPoi ixPoi = null;
 
 		String sql = "select * from  ix_poi where link_pid=:1 and u_record !=2";
@@ -345,6 +350,7 @@ public class IxPoiSelector extends AbstractSelector {
 			if (resultSet.next()) {
 				ixPoi = new IxPoi();
 				ReflectionAttrUtils.executeResultSet(ixPoi, resultSet);
+				poiList.add(ixPoi);
 			}
 
 		} catch (Exception e) {
@@ -358,6 +364,6 @@ public class IxPoiSelector extends AbstractSelector {
 			DBUtils.closeStatement(pstmt);
 		}
 
-		return ixPoi;
+		return poiList;
 	}
 }

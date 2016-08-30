@@ -39,6 +39,11 @@ import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.operator.BasicOperator;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 import com.navinfo.dataservice.dao.pidservice.PidService;
+import com.navinfo.navicommons.geo.computation.CompLineUtil;
+import com.navinfo.navicommons.geo.computation.DoubleLine;
+import com.navinfo.navicommons.geo.computation.DoublePoint;
+import com.navinfo.navicommons.geo.computation.GeometryUtils;
+import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONArray;
@@ -51,6 +56,10 @@ public class Operation implements IOperation {
 	private IxPoi ixPoi;
 
 	private Connection conn;
+
+	public Operation(Connection conn) {
+		this.conn = conn;
+	}
 
 	public Operation(Command command, IxPoi ixPoi, Connection conn) {
 		this.command = command;
@@ -1513,35 +1522,155 @@ public class Operation implements IOperation {
 	 * @throws Exception
 	 */
 	public void breakLinkForPoi(RdLink oldLink, List<RdLink> newLinks, Result result) throws Exception {
+
 		IxPoiSelector ixPoiSelector = new IxPoiSelector(conn);
 
-		IxPoi ixPoi = ixPoiSelector.loadIxPoiByLinkPid(oldLink.getPid(), true);
+		List<IxPoi> poiList = ixPoiSelector.loadIxPoiByLinkPid(oldLink.getPid(), true);
+
+		for (IxPoi ixPoi : poiList) {
+			RdLink resultLink = breakPoiGuideLink(ixPoi, oldLink, newLinks);
+
+			if (resultLink != null) {
+				ixPoi.changedFields().put("linkPid", resultLink.getPid());
+
+				result.insertObject(ixPoi, ObjStatus.UPDATE, ixPoi.getPid());
+			}
+		}
+	}
+
+	/**
+	 * 针对修行移动的打断
+	 * 
+	 * @throws Exception
+	 */
+	public void updateLinkSideForPoi(RdLink oldLink, List<RdLink> newLinks, Result result) throws Exception {
+
+		IxPoiSelector ixPoiSelector = new IxPoiSelector(conn);
+
+		List<IxPoi> poiList = ixPoiSelector.loadIxPoiByLinkPid(oldLink.getPid(), true);
+
+		for (IxPoi ixPoi : poiList) {
+			if (ixPoi == null) {
+				return;
+			}
+
+			RdLink resultLink = breakPoiGuideLink(ixPoi, oldLink, newLinks);
+
+			if (resultLink != null) {
+				ixPoi.changedFields().put("linkPid", resultLink.getPid());
+
+				updatePoiGuideLinkSide(ixPoi, resultLink);
+			} else {
+				updatePoiGuideLinkSide(ixPoi, newLinks.get(0));
+			}
+
+			result.insertObject(ixPoi, ObjStatus.UPDATE, ixPoi.getPid());
+		}
+
+	}
+
+	/**
+	 * 更新poi在引导link的的方位
+	 * 
+	 * @param ixPoi
+	 *            poi对象
+	 * @param rdLink
+	 *            引导link对象
+	 * @throws Exception
+	 */
+	private void updatePoiGuideLinkSide(IxPoi ixPoi, RdLink rdLink) throws Exception {
+		Geometry poiGeo = ixPoi.getGeometry();
+
+		Geometry linkGeo = rdLink.getGeometry();
+
+		Coordinate nearestPoint = GeometryUtils.GetNearestPointOnLine(poiGeo.getCoordinate(), linkGeo);
 		
-		if(ixPoi != null)
-		{
-			double xGuide = ixPoi.getxGuide();
-			
-			double yGuide = ixPoi.getyGuide();
-			
-			JSONObject geojson = new JSONObject();
+		JSONObject geojson = new JSONObject();
 
-			geojson.put("type", "Point");
+		geojson.put("type", "Point");
 
-			geojson.put("coordinates", new double[] {xGuide,yGuide});
-			
-			Geometry point = GeoTranslator.geojson2Jts(geojson, 100000, 0);
-			
-			for(RdLink newLink : newLinks)
-			{
-				if(newLink.getGeometry().isWithinDistance(point, 1))
-				{
-					ixPoi.changedFields().put("linkPid", newLink.getPid());
+		geojson.put("coordinates", new double[] {nearestPoint.x,nearestPoint.y});
+		
+		Geometry point = GeoTranslator.geojson2Jts(geojson, 1, 0);
+		
+		// 如果poi点位在线上则更新side为3，否则计算左右
+		if (poiGeo.distance(linkGeo) <= 1) {
+			ixPoi.changedFields().put("side", 3);
+		} else {
+			// poi的位置点
+			DoublePoint doublePoint = new DoublePoint(poiGeo.getCoordinate().x, poiGeo.getCoordinate().y);
+
+			Coordinate cor[] = linkGeo.getCoordinates();
+
+			for (int i = 0; i < cor.length - 1; i++) {
+
+				Coordinate cor1 = cor[i];
+
+				Coordinate cor2 = cor[i + 1];
+
+				// 判断点是否在线段上
+				boolean isIntersection = GeoTranslator.isIntersectionInLine(new double[] { cor1.x, cor1.y },
+						new double[] { cor2.x, cor2.y }, new double[] { nearestPoint.x, nearestPoint.y });
+				if (isIntersection) {
 					
-					result.insertObject(ixPoi, ObjStatus.UPDATE, ixPoi.getPid());
+					Geometry guidePoint = GeoTranslator.transform(point, 0.00001, 5);
 					
+					ixPoi.changedFields().put("xGuide", guidePoint.getCoordinate().x);
+					
+					ixPoi.changedFields().put("yGuide", guidePoint.getCoordinate().y);
+					
+					DoublePoint startPoint = new DoublePoint(cor1.x, cor1.y);
+
+					DoublePoint endPoint = new DoublePoint(cor2.x, cor2.y);
+
+					DoubleLine doubleLine = new DoubleLine(startPoint, endPoint);
+
+					boolean flag = CompLineUtil.isRightSide(doubleLine, doublePoint);
+
+					if (flag) {
+						ixPoi.changedFields().put("side", 2);
+					} else {
+						ixPoi.changedFields().put("side", 1);
+					}
 					break;
 				}
 			}
 		}
+	}
+
+	/**
+	 * 打断link维护poi关系的公共方法,不加入result
+	 * 
+	 * @param oldLink
+	 * @param newLinks
+	 * @param result
+	 * @return
+	 * @throws Exception
+	 */
+	private RdLink breakPoiGuideLink(IxPoi ixPoi, RdLink oldLink, List<RdLink> newLinks) throws Exception {
+		RdLink resultLink = null;
+
+		if (ixPoi != null && newLinks.size() > 1) {
+			double xGuide = ixPoi.getxGuide();
+
+			double yGuide = ixPoi.getyGuide();
+
+			JSONObject geojson = new JSONObject();
+
+			geojson.put("type", "Point");
+
+			geojson.put("coordinates", new double[] { xGuide, yGuide });
+
+			Geometry point = GeoTranslator.geojson2Jts(geojson, 100000, 0);
+
+			for (RdLink newLink : newLinks) {
+				if (newLink.getGeometry().isWithinDistance(point, 1)) {
+					resultLink = newLink;
+					break;
+				}
+			}
+		}
+
+		return resultLink;
 	}
 }

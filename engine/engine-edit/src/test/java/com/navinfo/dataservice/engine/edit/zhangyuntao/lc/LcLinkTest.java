@@ -43,6 +43,13 @@ public class LcLinkTest extends InitApplication {
 	}
 
 	@Test
+	public void update() {
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":1003,\"type\":\"LCLINK\",\"objId\":130588,\"data\":{\"kinds\":[{\"kind\":3,\"rowId\":\"3B1913AE1DD1F1F1E050A8C08304C345\",\"objStatus\":\"UPDATE\",\"form\":2}],\"pid\":130588}}";
+		parameter = "{\"command\":\"UPDATE\",\"dbId\":1003,\"type\":\"LCLINK\",\"objId\":62662500,\"data\":{\"kinds\":[{\"kind\":2,\"rowId\":\"3B1913AE1EF0F1F1E050A8C08304C345\",\"objStatus\":\"UPDATE\",\"form\":4}],\"pid\":62662500}}";
+		TestUtil.run(parameter);
+	}
+
+	@Test
 	public void testSearchByGap() {
 		String parameter = "{\"projectId\":11,\"gap\":80,\"types\":[\"ADNODE\"],\"z\":17,\"x\":107945,\"y\":49615}";
 		parameter = "{\"dbId\":43,\"gap\":80,\"types\":[\"LCLINK\"],\"z\":19,\"x\":431743,\"y\":198519}";

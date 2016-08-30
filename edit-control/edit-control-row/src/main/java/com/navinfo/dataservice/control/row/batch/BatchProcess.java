@@ -46,10 +46,10 @@ public class BatchProcess {
 				poiObj.put("type", "IXPOI");
 				poiObj.put("command", "BATCH");
 				poiObj.put("dbId", json.getInt("dbId"));
+				
+				EditApi apiService=(EditApi) ApplicationContextUtil.getBean("editApi");
+				apiService.run(poiObj);
 			}
-			
-			EditApi apiService=(EditApi) ApplicationContextUtil.getBean("editApi");
-			apiService.run(poiObj);
 			
 		} catch (Exception e) {
 			throw e;

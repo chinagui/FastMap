@@ -15,6 +15,7 @@ import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneLink;
 import com.navinfo.dataservice.dao.glm.model.lc.LcLink;
 import com.navinfo.dataservice.dao.glm.model.lu.LuLink;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
+import com.navinfo.dataservice.dao.glm.model.rd.lane.RdLane;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLink;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdAdminTreeSelector;
@@ -25,6 +26,7 @@ import com.navinfo.dataservice.dao.glm.selector.lu.LuLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.crf.RdObjectSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.lane.RdLaneSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.rw.RwLinkSelector;
 import com.navinfo.dataservice.engine.edit.search.rd.utils.RdLinkSearchUtils;
@@ -388,6 +390,18 @@ public class SearchProcess {
 					}
 				}
 				break;
+			case RDLANE:
+				if(condition.containsKey("linkPid")){
+					int linkPid = condition.getInt("linkPid");
+					int laneDir = condition.getInt("laneDir");
+					RdLaneSelector selector = new RdLaneSelector(this.conn);
+					List<RdLane> lanes = selector.loadByLink(linkPid, laneDir, false);
+					for(RdLane lane:lanes){
+						array.add(lane);
+					}
+					
+				}
+				
 			}
 			return array;
 		} catch (Exception e) {

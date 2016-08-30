@@ -12,9 +12,12 @@ import org.junit.Test;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.AngleCalculator;
+import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
+import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
+import com.navinfo.dataservice.dao.glm.search.RdObjectSearch;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.operation.Transaction;
@@ -99,20 +102,47 @@ public class commonTest extends InitApplication {
 	public void createRdNode0801() throws Exception {
 		// parameter:{\"command\":\"MOVE\",\"dbId\":42,\"objId\":100025193,\"data\":{\"longitude\":116.62476941943167,\"latitude\":39.999848815977785},\"type\":\"RDNODE\"}
 		String parameter = "{\"command\":\"CREATE\",\"dbId\":42,\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.46844625473021,40.06658556344194],[116.47164344787598,40.06670872450823]]},\"catchLinks\":[]},\"type\":\"RDLINK\"}";
-		
-		
+
+		Transaction t = new Transaction(parameter);
+		String msg = t.run();
+	}
+
+	@Test
+	public void create_0826_1() throws Exception {
+		// parameter:{\"command\":\"MOVE\",\"dbId\":42,\"objId\":100025193,\"data\":{\"longitude\":116.62476941943167,\"latitude\":39.999848815977785},\"type\":\"RDNODE\"}
+		String parameter = "{\"command\":\"CREATE\",\"dbId\":42,\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.39003992080687,40.03934507769796],[116.39385938644409,40.03917258290088]]},\"catchLinks\":[]},\"type\":\"RDLINK\"}";
+
+		Transaction t = new Transaction(parameter);
+		String msg = t.run();
+	}
+
+	@Test
+	public void create_0826_2() throws Exception {
+		// parameter:{\"command\":\"MOVE\",\"dbId\":42,\"objId\":100025193,\"data\":{\"longitude\":116.62476941943167,\"latitude\":39.999848815977785},\"type\":\"RDNODE\"}
+		String parameter = "{\"command\":\"CREATE\",\"dbId\":42,\"data\":{\"eNodePid\":0,\"sNodePid\":100026325,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.3981831073761,40.052363068455136],[116.40051126480103,40.05151717991128]]},\"catchLinks\":[{\"nodePid\":100026325,\"lon\":116.3981831073761,\"lat\":40.052363068455136}]},\"type\":\"RDLINK\"}";
 		Transaction t = new Transaction(parameter);
 		String msg = t.run();
 	}
 	
 	@Test
-	public void create_0826_1() throws Exception {
+	public void create_0826_3() throws Exception {
 		// parameter:{\"command\":\"MOVE\",\"dbId\":42,\"objId\":100025193,\"data\":{\"longitude\":116.62476941943167,\"latitude\":39.999848815977785},\"type\":\"RDNODE\"}
-		String parameter = "{\"command\":\"CREATE\",\"dbId\":42,\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.39003992080687,40.03934507769796],[116.39385938644409,40.03917258290088]]},\"catchLinks\":[]},\"type\":\"RDLINK\"}";
+		String parameter = "{\"command\":\"CREATE\",\"dbId\":42,\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.39896094799042,40.05339372428832],[116.39964222908021,40.054350454598364]]},\"catchLinks\":[{\"linkPid\":100009127,\"lon\":116.39896094799042,\"lat\":40.05339372428832}]},\"type\":\"RDLINK\"}";
 		
 		Transaction t = new Transaction(parameter);
 		String msg = t.run();
 	}
+	
+	
+	@Test
+	public void create_0826_4() throws Exception {
+		// parameter:{\"command\":\"MOVE\",\"dbId\":42,\"objId\":100025193,\"data\":{\"longitude\":116.62476941943167,\"latitude\":39.999848815977785},\"type\":\"RDNODE\"}
+		String parameter = "{\"command\":\"CREATE\",\"dbId\":42,\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.39898796175908,40.05340591977955],[116.39977633953094,40.05463788168161]]},\"catchLinks\":[{\"linkPid\":100009127,\"lon\":116.3989772170534,\"lat\":40.05339774425346}]},\"type\":\"RDLINK\"}";
+		
+		Transaction t = new Transaction(parameter);
+		String msg = t.run();
+	}
+	
 
 	@Test
 	public void updata0805_01() throws Exception {
@@ -264,6 +294,28 @@ public class commonTest extends InitApplication {
 
 		String msg = t.run();
 	}
+	
+	@Test
+	public void run_0829() throws Exception {
+
+		String parameter = "{\"command\":\"CREATE\",\"dbId\":1005,\"objId\":87669302,\"data\":{\"longitude\":116.37677623850006,\"latitude\":40.03536495436415},\"type\":\"RDNODE\"}";
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+	
+	@Test
+	public void run_0829_1() throws Exception {
+
+		String parameter = "{\"command\":\"CREATE\",\"dbId\":42,\"objId\":100009697,\"data\":{\"longitude\":116.38704563998596,\"latitude\":40.04266076687047},\"type\":\"RDNODE\"}";
+		
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+	
 
 	@Test
 	public void test_List_Sub() throws Exception {
@@ -280,6 +332,7 @@ public class commonTest extends InitApplication {
 
 		int count = listPid.size();
 	}
+
 	@Test
 	public void test_Angle() {
 		LineSegment link1 = new LineSegment(new Coordinate(116.16409, 39.87546,
@@ -289,4 +342,36 @@ public class commonTest extends InitApplication {
 				0), new Coordinate(116.16409, 39.87546, 0));
 		double a1 = AngleCalculator.getAngle(link1, link2);
 	}
+	
+	
+	@Test
+	public void testCrfObjectRender()
+	{
+		Connection conn;
+		try {
+			conn = DBConnector.getInstance().getConnectionById(42);
+
+			RdObjectSearch search = new RdObjectSearch(conn);
+			
+			List<SearchSnapshot> data = search.searchDataByTileWithGap(107907, 49609, 17, 80);
+			
+			System.out.println("data:"+ResponseUtils.assembleRegularResult(data));
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+	}
+	
+	
+	@Test
+	public void testJosn()
+	{
+		JSONObject repairJson=new JSONObject();
+		
+		repairJson.put("id", 1);
+		
+		repairJson.element("id", 2);
+	}
+
 }

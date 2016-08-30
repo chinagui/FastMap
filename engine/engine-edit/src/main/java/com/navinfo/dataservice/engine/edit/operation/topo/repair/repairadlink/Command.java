@@ -29,6 +29,16 @@ public class Command extends AbstractCommand {
 	
 	private AdLink updateLink;
 	
+	private String operationType="";	
+	
+	public String getOperationType() {
+		return operationType;
+	}
+
+	public void setOperationType(String operationType) {
+		this.operationType = operationType;
+	}
+
 	public AdLink getUpdateLink() {
 		return updateLink;
 	}

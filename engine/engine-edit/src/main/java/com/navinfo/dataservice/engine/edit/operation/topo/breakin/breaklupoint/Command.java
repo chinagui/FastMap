@@ -25,6 +25,16 @@ public class Command extends AbstractCommand {
 
 	private LuNode breakNode;
 
+	private String operationType = "";
+
+	public String getOperationType() {
+		return operationType;
+	}
+
+	public void setOperationType(String operationType) {
+		this.operationType = operationType;
+	}
+
 	private int breakNodePid = 0;
 
 	public int getBreakNodePid() {

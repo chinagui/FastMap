@@ -169,12 +169,14 @@ public class Operation implements IOperation {
 			throws Exception {
 
 		if (links.size() == 1) {
-			// 维护同一线
-			com.navinfo.dataservice.engine.edit.operation.obj.rdsamelink.update.Operation samelinkOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdsamelink.update.Operation(
-					this.conn);
+			if (!this.command.getOperationType().equals("innerRun")) {
+				// 维护同一线
+				com.navinfo.dataservice.engine.edit.operation.obj.rdsamelink.update.Operation samelinkOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdsamelink.update.Operation(
+						this.conn);
 
-			samelinkOperation.repairLink(links.get(0),
-					this.command.getRequester(), result);
+				samelinkOperation.repairLink(links.get(0),
+						this.command.getRequester(), result);
+			}
 		}
 	}
 

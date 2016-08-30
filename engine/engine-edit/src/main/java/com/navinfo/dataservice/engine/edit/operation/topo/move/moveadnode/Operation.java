@@ -135,9 +135,25 @@ public class Operation implements IOperation {
 	 */
 	private void updataRelationObj(AdLink link, List<AdLink> links, Result result) throws Exception {
 		// 同一点关系
-		com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create.Operation sameNodeOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create.Operation(
-				null, this.conn);
-		sameNodeOperation.moveMainNodeForTopo(this.command.getJson(), ObjType.ADNODE, result);
+		JSONObject updateJson = this.command.getJson();
+		
+		String mainType = updateJson.getString("mainType");
+		if(updateJson.containsKey("mainType"))
+		{
+			if(mainType == ObjType.ADNODE.toString())
+			{
+				com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create.Operation sameNodeOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create.Operation(
+						null, this.conn);
+				sameNodeOperation.moveMainNodeForTopo(updateJson, ObjType.ADNODE, result);
+			}
+		}
+		else
+		{
+			com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create.Operation sameNodeOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create.Operation(
+					null, this.conn);
+			sameNodeOperation.moveMainNodeForTopo(updateJson, ObjType.ADNODE, result);
+		}
+		
 	}
 
 	/*

@@ -124,17 +124,30 @@ public class Operation implements IOperation {
 	}
 
 	/**
-	 *  维护关联要素
+	 * 维护关联要素
+	 * 
 	 * @param link
 	 * @param links
 	 * @param result
-	 * @throws Exception 
+	 * @throws Exception
 	 */
 	private void updataRelationObj(ZoneLink link, List<ZoneLink> links, Result result) throws Exception {
 		// 同一点关系
-		com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create.Operation sameNodeOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create.Operation(
-				null, this.conn);
-		sameNodeOperation.moveMainNodeForTopo(this.command.getJson(), ObjType.ZONENODE, result);
+		JSONObject updateJson = this.command.getJson();
+
+		String mainType = updateJson.getString("mainType");
+		if (updateJson.containsKey("mainType")) {
+			if (mainType == ObjType.ZONENODE.toString()) {
+				com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create.Operation sameNodeOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create.Operation(
+						null, this.conn);
+				sameNodeOperation.moveMainNodeForTopo(this.command.getJson(), ObjType.ZONENODE, result);
+			}
+		} else {
+			com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create.Operation sameNodeOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create.Operation(
+					null, this.conn);
+			sameNodeOperation.moveMainNodeForTopo(this.command.getJson(), ObjType.ZONENODE, result);
+		}
+
 	}
 
 	/*

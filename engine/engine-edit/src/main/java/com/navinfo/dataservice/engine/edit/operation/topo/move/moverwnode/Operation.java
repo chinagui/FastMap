@@ -116,10 +116,6 @@ public class Operation implements IOperation {
 	 * @throws Exception 
 	 */
 	private void updataRelationObj(Result result) throws Exception {
-		// 同一点关系
-		com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create.Operation sameNodeOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create.Operation(
-				null, this.conn);
-		sameNodeOperation.moveMainNodeForTopo(this.command.getJson(), ObjType.RWNODE, result);
 	}
 	
 	/*

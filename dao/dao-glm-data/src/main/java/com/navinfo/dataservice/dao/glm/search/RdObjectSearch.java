@@ -245,8 +245,6 @@ public class RdObjectSearch implements ISearch {
 				
 				boundary = GeoTranslator.transform(boundary,1,5);
 				
-				System.out.println(boundary.toText());
-				
 				Coordinate[] cs = boundary.getCoordinates();
 				
 				double[][] ps = new double[cs.length][2];
@@ -262,8 +260,6 @@ public class RdObjectSearch implements ISearch {
 				geojson.put("type", "LineString");
 
 				geojson.put("coordinates", ps);
-				
-				System.out.println(geojson.toString());
 				
 				JSONObject obj = Geojson.link2Pixel(geojson, px, py, z);
 				

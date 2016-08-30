@@ -193,7 +193,7 @@ public class Operation implements IOperation {
 	 */
 	public void breakSameLink(Result result, List<IRow> linkList)
 			throws Exception {
-		if (CollectionUtils.isNotEmpty(linkList)) {
+		if (CollectionUtils.isEmpty(linkList)) {
 			return;
 		}
 

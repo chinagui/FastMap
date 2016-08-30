@@ -6,18 +6,19 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
 import com.navinfo.dataservice.commons.util.JsonUtils;
+import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 
-public class LuFaceName implements IRow {
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
-	private int nameId;
+public class LuFaceName implements IObj {
+
+	private int pid;
 	
 	private int facePid;
 	
@@ -101,7 +102,7 @@ public class LuFaceName implements IRow {
 		
 		this.name = sourceFaceName.getName();
 		
-		this.nameId = sourceFaceName.getNameId();
+		this.pid = sourceFaceName.getPid();
 		
 		this.phonetic = sourceFaceName.getPhonetic();
 		
@@ -195,14 +196,13 @@ public class LuFaceName implements IRow {
 	public void setMesh(int mesh) {
 	}
 
-	public int getNameId() {
-		return nameId;
+	public int getPid() {
+		return pid;
 	}
 
-	public void setNameId(int nameId) {
-		this.nameId = nameId;
+	public void setPid(int pid) {
+		this.pid = pid;
 	}
-
 
 	public int getFacePid() {
 		return facePid;
@@ -254,5 +254,30 @@ public class LuFaceName implements IRow {
 
 	public void setNameGroupid(int nameGroupid) {
 		this.nameGroupid = nameGroupid;
+	}
+
+	@Override
+	public List<IRow> relatedRows() {
+		return null;
+	}
+
+	@Override
+	public int pid() {
+		return this.pid;
+	}
+
+	@Override
+	public String primaryKey() {
+		return "name_id";
+	}
+
+	@Override
+	public Map<Class<? extends IRow>, List<IRow>> childList() {
+		return null;
+	}
+
+	@Override
+	public Map<Class<? extends IRow>, Map<String, ?>> childMap() {
+		return null;
 	}
 }

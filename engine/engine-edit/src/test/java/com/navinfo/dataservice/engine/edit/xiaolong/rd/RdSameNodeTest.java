@@ -58,7 +58,7 @@ public class RdSameNodeTest extends InitApplication {
 
 			RdSameNodeSearch search = new RdSameNodeSearch(conn);
 			
-			List<SearchSnapshot> data = search.searchDataByTileWithGap(107945, 49614, 17, 80);
+			List<SearchSnapshot> data = search.searchDataByTileWithGap(863505, 396921, 20, 80);
 			
 			System.out.println("data:"+ResponseUtils.assembleRegularResult(data));
 
@@ -70,7 +70,7 @@ public class RdSameNodeTest extends InitApplication {
 	
 	@Test
 	public void testAddRdSameNode() {
-		String parameter = "{\"command\":\"CREATE\",\"dbId\":42,\"type\":\"RDSAMENODE\",\"data\":{\"nodes\":[{\"nodePid\":\"100034833\",\"type\":\"LUNODE\",\"isMain\":1},{\"nodePid\":\"100034835\",\"type\":\"LUNODE\",\"isMain\":0}]}}";
+		String parameter = "{\"command\":\"MOVE\",\"dbId\":42,\"objId\":100027114,\"data\":{\"longitude\":116.3906729221344,\"latitude\":40.035476160960805},\"type\":\"RDNODE\"}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

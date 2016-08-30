@@ -21,6 +21,12 @@ public class RdNodeTest extends InitApplication {
 	public void init() {
 		super.initContext();
 	}
+	
+	@Test
+	public void create(){
+		String parameter = "{\"command\":\"CREATE\",\"dbId\":1005,\"objId\":87669302,\"data\":{\"longitude\":116.37677623850006,\"latitude\":40.03536495436415},\"type\":\"RDNODE\"}";
+		TestUtil.run(parameter);
+	}
 
 	@Test
 	public void testBreak() {

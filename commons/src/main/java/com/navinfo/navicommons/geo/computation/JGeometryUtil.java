@@ -170,7 +170,7 @@ public class JGeometryUtil {
 		
 		// 以0的距离进行缓冲（因为各多边形两两共边），生成一个多边形
 		// 此时则将点云构造成了多边形
-		Geometry union = ts.buffer(0.00005);
+		Geometry union = ts.buffer(0.0001);
 		
 		BufferOp bufOp = new BufferOp(union);  
         bufOp.setEndCapStyle(BufferParameters.CAP_ROUND);  
@@ -189,17 +189,17 @@ public class JGeometryUtil {
 
 		Geometry geosRing = hull.getConvexHull();
 
-		Geometry buff = geosRing.buffer(0.00002);
+		Geometry buff = geosRing.buffer(0);
 
 		Polygon myPolygon = (Polygon) buff;
 
 		LineString exteriorRing = myPolygon.getExteriorRing();
 		
-		BufferOp bufOp = new BufferOp(exteriorRing);  
-        bufOp.setEndCapStyle(BufferParameters.CAP_ROUND);  
-        Geometry bg = bufOp.getResultGeometry(0);  
+//		BufferOp bufOp = new BufferOp(exteriorRing);  
+//        bufOp.setEndCapStyle(BufferParameters.CAP_ROUND);  
+//        Geometry bg = bufOp.getResultGeometry(0);  
 
-		return bg;
+		return exteriorRing;
 
 	}
 }

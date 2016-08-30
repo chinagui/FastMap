@@ -454,11 +454,14 @@ public class Process extends AbstractProcess<Command> {
 				this.getConn());
 		opRefRdVariableSpeed.run(this.getResult(), this.rdLinkBreakpoint,
 				newLinks);
+		
+		if (!this.getCommand().getOperationType().equals("innerRun")) {
+			OpRefRelationObj opRefRelationObj = new OpRefRelationObj(
+					this.getConn());
 
-		OpRefRelationObj opRefRelationObj = new OpRefRelationObj(this.getConn());
-
-		opRefRelationObj.handleSameLink(this.rdLinkBreakpoint,
-				this.getCommand(), this.getResult());
+			opRefRelationObj.handleSameLink(this.rdLinkBreakpoint,
+					this.getCommand(), this.getResult());
+		}
 	}
 
 	/**

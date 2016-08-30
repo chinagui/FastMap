@@ -1,7 +1,11 @@
 package com.navinfo.dataservice.engine.edit.zhangyuntao.lc;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import org.junit.Test;
 
@@ -35,6 +39,13 @@ public class LcLinkTest extends InitApplication {
 	@Test
 	public void createLuLinkTest() {
 		String parameter = "{\"command\":\"CREATE\",\"dbId\":43,\"data\":{\"eNodePid\":100034582,\"sNodePid\":100034584,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.24096274375916,40.9146071161593],[116.23830199241638,40.91574217557027]]},\"catchLinks\":[{\"nodePid\":100034584,\"lon\":116.24096274375916,\"lat\":40.9146071161593},{\"nodePid\":100034582,\"lon\":116.23830199241638,\"lat\":40.91574217557027}]},\"type\":\"LCLINK\"}";
+		TestUtil.run(parameter);
+	}
+
+	@Test
+	public void update() {
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":1003,\"type\":\"LCLINK\",\"objId\":130588,\"data\":{\"kinds\":[{\"kind\":3,\"rowId\":\"3B1913AE1DD1F1F1E050A8C08304C345\",\"objStatus\":\"UPDATE\",\"form\":2}],\"pid\":130588}}";
+		parameter = "{\"command\":\"UPDATE\",\"dbId\":1003,\"type\":\"LCLINK\",\"objId\":62662500,\"data\":{\"kinds\":[{\"kind\":2,\"rowId\":\"3B1913AE1EF0F1F1E050A8C08304C345\",\"objStatus\":\"UPDATE\",\"form\":4}],\"pid\":62662500}}";
 		TestUtil.run(parameter);
 	}
 
@@ -76,6 +87,22 @@ public class LcLinkTest extends InitApplication {
 	@Test
 	public void breakLcLink() {
 		String parameter = "{\"command\":\"BREAK\",\"dbId\":42,\"objId\":100035081,\"data\":{\"longitude\":116.47200963815628,\"latitude\":40.07116277263092},\"type\":\"LCLINK\"}";
+		parameter = "{\"command\":\"BREAK\",\"dbId\":42,\"objId\":100035116,\"data\":{\"longitude\":116.47133282255058,\"latitude\":40.074483115728164},\"type\":\"LCLINK\"}";
 		TestUtil.run(parameter);
+	}
+
+	@Test
+	public void print() throws Exception {
+		String sql = "select t1.link_pid from lc_link t1 where not exists (select t2.link_pid from lc_link_kind t2 where t1.link_pid = t2.link_pid)";
+		sql = "select * from lu_link t1 where not exists (select t2.link_pid from lu_link_kind t2 where t1.link_pid = t2.link_pid)";
+		Connection conn = DBConnector.getInstance().getConnectionById(42);
+		PreparedStatement pstmt = conn.prepareStatement(sql);
+		ResultSet resultSet = pstmt.executeQuery();
+		while (resultSet.next()) {
+			sql = "insert into lu_link_kind(link_pid, kind ,u_record , row_id) values(" + resultSet.getInt("link_pid")
+					+ ",0 ,0 ,'" + UUID.randomUUID().toString().replaceAll("-", "") + "');";
+			System.out.println(sql);
+		}
+
 	}
 }

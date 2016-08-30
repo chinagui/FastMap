@@ -4,6 +4,7 @@ import java.sql.Connection;
 
 import com.navinfo.dataservice.api.edit.iface.EditApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.control.row.batch.util.BatchList;
 import com.navinfo.dataservice.control.row.batch.util.IBatch;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
@@ -22,18 +23,17 @@ public class BatchProcess {
 	 * @param poi
 	 * @throws Exception
 	 */
-	public void execute(String classNames,JSONObject json,Connection conn) throws Exception {
+	public void execute(JSONObject json,Connection conn) throws Exception {
 		JSONObject poiObj = new JSONObject();
 		try {
 			
 			IxPoiSelector ixPoiSelector = new IxPoiSelector(conn);
 			IxPoi poi = (IxPoi) ixPoiSelector.loadById(json.getInt("objId"), true, true);
 			
-			String[] classes = classNames.split(",");
 			JSONObject result = new JSONObject();
-			for (String className:classes) {
-				className = "com.navinfo.dataservice.control.row.batch." + className;
-				IBatch obj = (IBatch) Class.forName(className).newInstance();
+			for (BatchList className:BatchList.values()) {
+				String classType = "com.navinfo.dataservice.control.row.batch." + className;
+				IBatch obj = (IBatch) Class.forName(classType).newInstance();
 				JSONObject data = obj.run(poi,conn,json);
 				result.putAll(data);
 			}

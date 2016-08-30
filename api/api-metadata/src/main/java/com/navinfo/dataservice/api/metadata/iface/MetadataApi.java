@@ -37,4 +37,6 @@ public interface MetadataApi {
 	public Map<String,List<String>> getNavicovpyMap(Connection conn) throws Exception;
 	
 	public Map<String,String> getEngshortMap(Connection conn) throws Exception;
+	
+	public String[] pyConvert(String word) throws Exception;
 }

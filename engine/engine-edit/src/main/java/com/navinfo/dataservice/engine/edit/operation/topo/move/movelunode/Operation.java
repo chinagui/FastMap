@@ -127,20 +127,33 @@ public class Operation implements IOperation {
 		}
 		this.map = map;
 	}
-	
+
 	/**
 	 * @param link
 	 * @param links
 	 * @param result
-	 * @throws Exception 
+	 * @throws Exception
 	 */
 	private void updataRelationObj(LuLink link, List<LuLink> links, Result result) throws Exception {
 		// 同一点关系
-		com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create.Operation sameNodeOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create.Operation(
-				null, this.conn);
-		sameNodeOperation.moveMainNodeForTopo(this.command.getJson(), ObjType.LUNODE, result);
+		JSONObject updateJson = this.command.getJson();
+
+		if (updateJson.containsKey("mainType")) {
+			String mainType = updateJson.getString("mainType");
+			if (mainType == ObjType.LUNODE.toString()) {
+				// 同一点关系
+				com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create.Operation sameNodeOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create.Operation(
+						null, this.conn);
+				sameNodeOperation.moveMainNodeForTopo(this.command.getJson(), ObjType.LUNODE, result);
+			}
+		} else {
+			// 同一点关系
+			com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create.Operation sameNodeOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create.Operation(
+					null, this.conn);
+			sameNodeOperation.moveMainNodeForTopo(this.command.getJson(), ObjType.LUNODE, result);
+		}
 	}
-	
+
 	/*
 	 * 更新土地利用点信息
 	 */

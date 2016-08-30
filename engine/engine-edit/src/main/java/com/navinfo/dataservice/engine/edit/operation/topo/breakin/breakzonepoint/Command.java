@@ -28,6 +28,16 @@ public class Command extends AbstractCommand {
 	private int linkPid;
 	private int breakNodePid = 0;
 
+	private String operationType = "";
+
+	public String getOperationType() {
+		return operationType;
+	}
+
+	public void setOperationType(String operationType) {
+		this.operationType = operationType;
+	}
+
 	private ZoneNode breakNode;
 
 	public int getBreakNodePid() {

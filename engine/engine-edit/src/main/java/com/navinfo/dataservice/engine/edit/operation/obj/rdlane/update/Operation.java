@@ -47,8 +47,8 @@ public class Operation implements IOperation {
 	public void updateRdLane(Result result, JSONObject content, RdLane rdLane)
 			throws Exception {
 
-		if (content.containsKey("objStatus")) {
-			boolean isChanged = this.command.getRdLane().fillChangeFields(
+		
+			boolean isChanged = rdLane.fillChangeFields(
 					content);
 
 			if (isChanged) {
@@ -58,7 +58,7 @@ public class Operation implements IOperation {
 			if (content.containsKey("conditions")) {
 				this.updateCondition(result, rdLane,
 						content.getJSONArray("conditions"));
-			}
+			
 		}
 	}
 

@@ -1,12 +1,13 @@
 package com.navinfo.dataservice.engine.edit.operation;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
+import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.IProcess;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 /**
  * 操作控制器
@@ -60,7 +61,7 @@ public class Transaction {
 	 * @return 命令
 	 */
 	private AbstractCommand createCommand() throws Exception {
-		JSONObject json = JSONObject.fromObject(requester);
+		JSONObject json = JSONObject.fromObject(requester, JsonUtils.getStrConfig());
 
 		operType = Enum.valueOf(OperType.class, json.getString("command"));
 
@@ -359,6 +360,8 @@ public class Transaction {
 			switch (operType) {
 			case CREATE:
 				return new com.navinfo.dataservice.engine.edit.operation.obj.luface.create.Command(json, requester);
+			case UPDATE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.luface.update.Command(json, requester);
 			case DELETE:
 				return new com.navinfo.dataservice.engine.edit.operation.obj.luface.delete.Command(json, requester);
 			}
@@ -395,6 +398,8 @@ public class Transaction {
 			switch (operType) {
 			case CREATE:
 				return new com.navinfo.dataservice.engine.edit.operation.obj.lcface.create.Command(json, requester);
+			case UPDATE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.lcface.update.Command(json, requester);
 			case DELETE:
 				return new com.navinfo.dataservice.engine.edit.operation.obj.lcface.delete.Command(json, requester);
 			}
@@ -600,6 +605,17 @@ public class Transaction {
 				return new com.navinfo.dataservice.engine.edit.operation.obj.rdsamelink.create.Command(json, requester);
 			case DELETE:
 				return new com.navinfo.dataservice.engine.edit.operation.obj.rdsamelink.delete.Command(json, requester);
+			default:
+				break;
+			}
+		case RDLANE:
+			switch (operType) {
+			case DELETE:
+				return new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.delete.Command(json,
+						requester);
+			case BATCH:
+				return new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Command(json,
+						requester);
 			default:
 				break;
 			}
@@ -882,6 +898,8 @@ public class Transaction {
 			switch (operType) {
 			case CREATE:
 				return new com.navinfo.dataservice.engine.edit.operation.obj.luface.create.Process(command);
+			case UPDATE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.luface.update.Process(command);
 			case DELETE:
 				return new com.navinfo.dataservice.engine.edit.operation.obj.luface.delete.Process(command);
 			}
@@ -1047,6 +1065,8 @@ public class Transaction {
 			switch (operType) {
 			case CREATE:
 				return new com.navinfo.dataservice.engine.edit.operation.obj.lcface.create.Process(command);
+			case UPDATE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.lcface.update.Process(command);
 			case DELETE:
 				return new com.navinfo.dataservice.engine.edit.operation.obj.lcface.delete.Process(command);
 			}
@@ -1103,6 +1123,16 @@ public class Transaction {
 			default:
 				break;
 			}
+		case RDLANE:
+			switch (operType) {
+			case DELETE:
+				return new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.delete.Process(command);
+
+			case BATCH:
+				return new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Process(command);
+			default:
+				break;
+			}
 		case IXSAMEPOI:
 			switch (operType) {
 			case CREATE:
@@ -1156,4 +1186,9 @@ public class Transaction {
 		return process.getResult().getPrimaryPid();
 	}
 
+	public static void main(String[] args) {
+		String requester = "{\"data\":{\"infos\":\"[1],[2],[3]\"}}";
+		JSONObject json = JSONObject.fromObject(requester, JsonUtils.getStrConfig());
+		System.out.println(json);
+	}
 }

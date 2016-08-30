@@ -249,12 +249,14 @@ public class Operation implements IOperation {
 		List<RdLink> sortLinks = calLinkOperateUtils.sortLink(newLinks);
 
 		if (newLinks.size() == 1) {
-			// 维护同一线
-			com.navinfo.dataservice.engine.edit.operation.obj.rdsamelink.update.Operation samelinkOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdsamelink.update.Operation(
-					this.conn);
+			if (!this.command.getOperationType().equals("innerRun")) {
+				// 维护同一线
+				com.navinfo.dataservice.engine.edit.operation.obj.rdsamelink.update.Operation samelinkOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdsamelink.update.Operation(
+						this.conn);
 
-			samelinkOperation.repairLink(newLinks.get(0),
-					this.command.getRequester(), result);
+				samelinkOperation.repairLink(newLinks.get(0),
+						this.command.getRequester(), result);
+			}
 		}
 
 		/*

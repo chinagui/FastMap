@@ -32,7 +32,7 @@ public class LcFaceName implements IRow {
 
 	private int nameGroupid = 1;
 
-	private String longCode;
+	private String langCode;
 
 	private String name;
 
@@ -66,12 +66,12 @@ public class LcFaceName implements IRow {
 		this.nameGroupid = nameGroupid;
 	}
 
-	public String getLongCode() {
-		return longCode;
+	public String getLangCode() {
+		return langCode;
 	}
 
-	public void setLongCode(String longCode) {
-		this.longCode = longCode;
+	public void setLangCode(String langCode) {
+		this.langCode = langCode;
 	}
 
 	public String getName() {
@@ -164,7 +164,7 @@ public class LcFaceName implements IRow {
 		this.pid = source.pid;
 		this.facePid = source.facePid;
 		this.nameGroupid = source.nameGroupid;
-		this.longCode = source.longCode;
+		this.langCode = source.langCode;
 		this.name = source.name;
 		this.phonetic = source.phonetic;
 		this.srcFlag = source.srcFlag;

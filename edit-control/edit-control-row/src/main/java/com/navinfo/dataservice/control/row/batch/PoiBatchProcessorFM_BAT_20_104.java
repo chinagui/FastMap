@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.util.ExcelReader;
 import com.navinfo.dataservice.control.row.batch.util.IBatch;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -62,14 +63,21 @@ public class PoiBatchProcessorFM_BAT_20_104 implements IBatch {
 				newStandardName.setNameGroupid(nameGroupid+1);
 				newStandardName.setName(standardName);
 				newStandardName.setLangCode(langCode);
+				
+				
+				// 标准，原始转全角
+				standardName = ExcelReader.h2f(standardName);
+				newStandardName.setName(standardName);
+				
+				originalName = ExcelReader.h2f(originalName);
+				originalPoiName.setName(originalName);
+				
 				// 转拼音
 				MetadataApi apiService=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 				String[] pyStr = apiService.pyConvert(standardName);
 				newStandardName.setNamePhonetic(pyStr[1]);
 				JSONObject nameStandardJson = newStandardName.Serialize(null);
 				nameStandardJson.put("objStatus", ObjStatus.INSERT.toString());
-				
-				// 标准，原始转全角
 				
 				JSONObject nameOriginalJson = originalPoiName.Serialize(null);
 				nameOriginalJson.put("objStatus", ObjStatus.UPDATE.toString());

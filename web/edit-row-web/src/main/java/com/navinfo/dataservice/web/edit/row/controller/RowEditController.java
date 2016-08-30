@@ -73,7 +73,7 @@ public class RowEditController extends BaseController {
 			
 			json.put("objId", pid);
 			BatchProcess batchProcess = new BatchProcess();
-			batchProcess.execute("", json, conn);
+			batchProcess.execute(json, conn);
 
 			return new ModelAndView("jsonView", success(result));
 		} catch (DataNotChangeException e) {

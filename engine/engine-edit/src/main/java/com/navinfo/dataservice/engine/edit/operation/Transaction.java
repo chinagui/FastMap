@@ -630,6 +630,17 @@ public class Transaction {
 			default:
 				break;
 			}
+		case IXPOIUPLOAD:
+			switch (operType) {
+				case CREATE:
+					return new com.navinfo.dataservice.engine.edit.operation.obj.poi.upload.create.Command(json, requester);
+				case UPDATE:
+					return new com.navinfo.dataservice.engine.edit.operation.obj.poi.update.Command(json, requester);
+				case DELETE:
+					return new com.navinfo.dataservice.engine.edit.operation.obj.poi.upload.delete.Command(json, requester);
+				default:
+					break;
+			}
 		}
 
 		throw new Exception("不支持的操作类型");
@@ -1143,6 +1154,17 @@ public class Transaction {
 				return new com.navinfo.dataservice.engine.edit.operation.obj.samepoi.delete.Process(command);
 			default:
 				break;
+			}
+		case IXPOIUPLOAD:
+			switch (operType) {
+				case CREATE:
+					return new com.navinfo.dataservice.engine.edit.operation.obj.poi.upload.create.Process(command);
+				case UPDATE:
+					return new com.navinfo.dataservice.engine.edit.operation.obj.poi.update.Process(command);
+				case DELETE:
+					return new com.navinfo.dataservice.engine.edit.operation.obj.poi.upload.delete.Process(command);
+				default:
+					break;
 			}
 		}
 

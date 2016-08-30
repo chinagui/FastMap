@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.edit.operation.obj.poi.upload;
+package com.navinfo.dataservice.control.app.upload;
 
 import java.io.FileInputStream;
 import java.sql.Connection;
@@ -13,16 +13,16 @@ import java.util.Scanner;
 
 import org.apache.commons.dbutils.DbUtils;
 
+import com.navinfo.dataservice.api.edit.iface.EditApi;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
-import com.navinfo.dataservice.dao.glm.iface.OperStage;
-import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiGasstation;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiHotel;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiParking;
@@ -36,8 +36,6 @@ import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiParent;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiPhoto;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 import com.navinfo.dataservice.dao.pidservice.PidService;
-import com.navinfo.dataservice.engine.edit.operation.obj.poi.update.Command;
-import com.navinfo.dataservice.engine.edit.operation.obj.poi.update.Process;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.DBUtils;
 import com.navinfo.navicommons.geo.computation.CompGridUtil;
@@ -50,6 +48,13 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 public class UploadOperation {
+	
+	private EditApi apiService;
+	
+	public UploadOperation() {
+		this.apiService=(EditApi) ApplicationContextUtil.getBean("editApi");
+	}
+	
 	/**
 	 * 读取txt，解析，入库
 	 * 
@@ -251,27 +256,31 @@ public class UploadOperation {
 					List<JSONObject> poiList = (List<JSONObject>) insertObj.get(dbId);
 					for (int i = 0; i < poiList.size(); i++) {
 						JSONObject jo = poiList.get(i);
-						IxPoi poi = new IxPoi();
 						JSONObject perRetObj = obj2PoiForInsert(jo, version);
 						int flag = perRetObj.getInt("flag");
 						if (flag == 1) {
-							poi.Unserialize(perRetObj.getJSONObject("ret"));
-							Result result = new Result();
-							result.setOperStage(OperStage.Collect);
-							JSONObject poiObj = new JSONObject();
-							poiObj.put("dbId", dbId);
-							poiObj.put("objId", poi.getPid());
+							JSONObject poiObj = perRetObj.getJSONObject("ret");
+							
+							JSONObject json = new JSONObject();
+							
+							json.put("dbId", dbId);
+							json.put("objId", poiObj.getInt("pid"));
+							json.put("command", "CREATE");
+							json.put("type", "IXPOIUPLOAD");
+							json.put("data", poiObj);
 							// 调用一次插入
-							CommandForUpload poiCommand = new CommandForUpload(poiObj, null);
-							ProcessForUpload poiProcess = new ProcessForUpload(poiCommand);
-							result.insertObject(poi, ObjStatus.INSERT, poi.getPid());
-							poiProcess.setResult(result);
-							poiProcess.run();
+							apiService.run(json);
+							
+//							CommandForUpload poiCommand = new CommandForUpload(poiObj, null);
+//							ProcessForUpload poiProcess = new ProcessForUpload(poiCommand);
+							
+//							poiProcess.setResult(result);
+//							poiProcess.run();
 							count++;
 
 							// 鲜度验证，POI状态更新
 							String rawFields = jo.getString("rawFields");
-							upatePoiStatusForAndroid(conn, poi.getRowId(), 0, rawFields);
+							upatePoiStatusForAndroid(conn, poiObj.getString("rowId"), 0, rawFields);
 						} else if (flag == 0) {
 							errList.add(perRetObj.getJSONObject("ret"));
 						}
@@ -313,10 +322,14 @@ public class UploadOperation {
 							commandJson.put("dbId", Integer.parseInt(dbId));
 							commandJson.put("data", poiJson);
 							commandJson.put("objId", poiJson.getInt("pid"));
+							commandJson.put("command", "UPDATE");
+							commandJson.put("type", "IXPOIUPLOAD");
 							// 调用一次更新
-							Command updateCommand = new Command(commandJson, null);
-							Process updateProcess = new Process(updateCommand);
-							updateProcess.run();
+							apiService.run(commandJson);
+							
+//							Command updateCommand = new Command(commandJson, null);
+//							Process updateProcess = new Process(updateCommand);
+//							updateProcess.run();
 							count++;
 
 							// 鲜度验证，POI状态更新
@@ -364,13 +377,17 @@ public class UploadOperation {
 						JSONObject poiObj = new JSONObject();
 						poiObj.put("dbId", dbId);
 						poiObj.put("objId", pid);
+						poiObj.put("command", "DELETE");
+						poiObj.put("type", "IXPOIUPLOAD");
 						try {
-							Result result = new Result();
-							result.setOperStage(OperStage.Collect);
-							CommandForDelete poiCommand = new CommandForDelete(poiObj, null);
-							ProcessForDelete poiProcess = new ProcessForDelete(poiCommand);
-							poiProcess.setResult(result);
-							poiProcess.run();
+							// 调用一次删除
+							apiService.run(poiObj);
+//							Result result = new Result();
+//							result.setOperStage(OperStage.Collect);
+//							CommandForDelete poiCommand = new CommandForDelete(poiObj, null);
+//							ProcessForDelete poiProcess = new ProcessForDelete(poiCommand);
+//							poiProcess.setResult(result);
+//							poiProcess.run();
 							count++;
 
 							// 鲜度验证，POI状态更新

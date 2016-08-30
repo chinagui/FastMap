@@ -163,9 +163,22 @@ public class Process extends AbstractProcess<Command> {
 		// 同一点关系
 		OpRefRdSameNode opRefRdSameNode = new OpRefRdSameNode(getConn());
 		opRefRdSameNode.run(getResult(), this.getCommand());
+		
+		updataRelationObj();
 		// 删除行政区划点有关行政区划面具体操作
 		IOperation opAdFace = new OpRefAdFace(this.getCommand());
 		return opAdFace.run(this.getResult());
 	}
 
+
+	/**
+	 * 维护关联要素
+	 * 
+	 * @throws Exception
+	 */
+	private void updataRelationObj() throws Exception {
+		OpRefRelationObj opRefRelationObj = new OpRefRelationObj(getConn());
+
+		opRefRelationObj.handleSameLink(this.getResult(), this.getCommand());
+	}
 }

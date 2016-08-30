@@ -48,7 +48,7 @@ public class Operation implements IOperation {
 	 * @return info[] 1:oldLinkPid,2 打断Link对应同一线等级
 	 * @throws Exception
 	 */
-	private int[] getBreakInfo(IObj oldLink) throws Exception {
+	private int[] getOperationInfo(IObj oldLink) throws Exception {
 
 		ObjType linkType = oldLink.objType();
 
@@ -105,9 +105,9 @@ public class Operation implements IOperation {
 	public String repairLink(IObj repairLink, String requester, Result result)
 			throws Exception {
 
-		int[] info = getBreakInfo(repairLink);
+		int[] info = getOperationInfo(repairLink);
 
-		int breakLinkPid = info[0];
+		int repairLinkPid = info[0];
 
 		// 级别：：1:道路>2:行政区划>
 		// 3:ZONELINK>4:土地利用（BUA边界线）＞5土地利用（大学，购物中心，医院，体育场，公墓，停车场，工业区，邮区边界线，FM面边界线）；
@@ -118,7 +118,7 @@ public class Operation implements IOperation {
 		RdSameLinkSelector sameLinkSelector = new RdSameLinkSelector(this.conn);
 
 		RdSameLinkPart originalPart = sameLinkSelector.loadLinkPartByLink(
-				breakLinkPid, linkTableName, true);
+				repairLinkPid, linkTableName, true);
 
 		// 被打断link不存在同一关系，不处理
 		if (originalPart == null) {
@@ -128,7 +128,7 @@ public class Operation implements IOperation {
 
 		if (currLevel == 5) {
 
-			return null;
+			throw new Exception("此link不是该组同一关系中的主要素，不能进行此操作");
 		}
 
 		RdSameLink originalSameLink = (RdSameLink) sameLinkSelector.loadById(
@@ -141,7 +141,7 @@ public class Operation implements IOperation {
 
 		if (currLevel > highLevel) {
 
-			return null;
+			throw new Exception("此link不是该组同一关系中的主要素，不能进行此操作");
 		}
 
 		// link的修形requester可用信息相同，可共用。
@@ -150,7 +150,7 @@ public class Operation implements IOperation {
 		for (RdSameLinkPart part : linkParts) {
 
 			if (linkTableName == part.getTableName()
-					&& breakLinkPid == part.getLinkPid()) {
+					&& repairLinkPid == part.getLinkPid()) {
 				continue;
 			}
 
@@ -161,48 +161,6 @@ public class Operation implements IOperation {
 
 		return null;
 
-	}
-
-	/**
-	 * 对统一关系的其他组成link调用修形功能
-	 * 
-	 * @param part
-	 * @param repairJson
-	 * @param result
-	 * @throws Exception
-	 */
-	private void repairLink(RdSameLinkPart part, JSONObject repairJson,
-			Result result) throws Exception {
-		ObjType type = ReflectionAttrUtils.getObjTypeByTableName(part
-				.getTableName());
-
-		switch (type) {
-
-		case ADLINK:
-			com.navinfo.dataservice.engine.edit.operation.topo.repair.repairadlink.Command adCommand = new com.navinfo.dataservice.engine.edit.operation.topo.repair.repairadlink.Command(
-					repairJson, null);
-
-			com.navinfo.dataservice.engine.edit.operation.topo.repair.repairadlink.Process adProcess = new com.navinfo.dataservice.engine.edit.operation.topo.repair.repairadlink.Process(
-					adCommand, result, conn);
-			adProcess.innerRun();
-			break;
-		case ZONELINK:
-			com.navinfo.dataservice.engine.edit.operation.topo.repair.repairzonelink.Command zoneCommand = new com.navinfo.dataservice.engine.edit.operation.topo.repair.repairzonelink.Command(
-					repairJson, null);
-			com.navinfo.dataservice.engine.edit.operation.topo.repair.repairzonelink.Process zoneProcess = new com.navinfo.dataservice.engine.edit.operation.topo.repair.repairzonelink.Process(
-					zoneCommand, result, conn);
-			zoneProcess.innerRun();
-			break;
-		case LULINK:
-			com.navinfo.dataservice.engine.edit.operation.topo.repair.repairlulink.Command luCommand = new com.navinfo.dataservice.engine.edit.operation.topo.repair.repairlulink.Command(
-					repairJson, null);
-			com.navinfo.dataservice.engine.edit.operation.topo.repair.repairlulink.Process luProcess = new com.navinfo.dataservice.engine.edit.operation.topo.repair.repairlulink.Process(
-					luCommand, result, conn);
-			luProcess.innerRun();
-			break;
-		default:
-			break;
-		}
 	}
 
 	/**
@@ -219,7 +177,7 @@ public class Operation implements IOperation {
 	public String breakLink(IObj breakLink, List<IObj> newLinks, IRow newNode,
 			String requester, Result result) throws Exception {
 
-		int[] info = getBreakInfo(breakLink);
+		int[] info = getOperationInfo(breakLink);
 
 		int breakLinkPid = info[0];
 
@@ -242,7 +200,7 @@ public class Operation implements IOperation {
 
 		if (currLevel == 5) {
 
-			return null;
+			throw new Exception("此link不是该组同一关系中的主要素，不能进行此操作");
 		}
 
 		RdSameLink originalSameLink = (RdSameLink) sameLinkSelector.loadById(
@@ -255,7 +213,7 @@ public class Operation implements IOperation {
 
 		if (currLevel > highLevel) {
 
-			return null;
+			throw new Exception("此link不是该组同一关系中的主要素，不能进行此操作");
 		}
 
 		// 新生成同一点node组
@@ -449,8 +407,12 @@ public class Operation implements IOperation {
 			List<IRow> links1, List<IRow> links2, Coordinate falgPoint,
 			Result result) throws Exception {
 
+		breakJson.element("type", "ADLINK");
+
 		com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakadpoint.Command adCommand = new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakadpoint.Command(
 				breakJson, null);
+
+		adCommand.setOperationType("innerRun");
 
 		com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakadpoint.Process adProcess = new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakadpoint.Process(
 				adCommand, result, conn);
@@ -483,8 +445,12 @@ public class Operation implements IOperation {
 			List<IRow> links1, List<IRow> links2, Coordinate falgPoint,
 			Result result) throws Exception {
 
+		breakJson.element("type", "LULINK");
+
 		com.navinfo.dataservice.engine.edit.operation.topo.breakin.breaklupoint.Command luCommand = new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breaklupoint.Command(
 				breakJson, null);
+
+		luCommand.setOperationType("innerRun");
 
 		com.navinfo.dataservice.engine.edit.operation.topo.breakin.breaklupoint.Process luProcess = new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breaklupoint.Process(
 				luCommand, result, conn);
@@ -516,8 +482,12 @@ public class Operation implements IOperation {
 			List<IRow> links1, List<IRow> links2, Coordinate falgPoint,
 			Result result) throws Exception {
 
+		breakJson.element("type", "ZONELINK");
+
 		com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakzonepoint.Command zoneCommand = new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakzonepoint.Command(
 				breakJson, null);
+
+		zoneCommand.setOperationType("innerRun");
 
 		com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakzonepoint.Process zoneProcess = new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakzonepoint.Process(
 				zoneCommand, result, conn);
@@ -539,6 +509,55 @@ public class Operation implements IOperation {
 		}
 
 		return null;
+	}
+
+	/**
+	 * 对统一关系的其他组成link调用修形功能
+	 * 
+	 * @param part
+	 * @param repairJson
+	 * @param result
+	 * @throws Exception
+	 */
+	private void repairLink(RdSameLinkPart part, JSONObject repairJson,
+			Result result) throws Exception {
+		ObjType type = ReflectionAttrUtils.getObjTypeByTableName(part
+				.getTableName());
+
+		switch (type) {
+
+		case ADLINK:
+			repairJson.element("type", "ADLINK");
+			com.navinfo.dataservice.engine.edit.operation.topo.repair.repairadlink.Command adCommand = new com.navinfo.dataservice.engine.edit.operation.topo.repair.repairadlink.Command(
+					repairJson, null);
+
+			adCommand.setOperationType("innerRun");
+
+			com.navinfo.dataservice.engine.edit.operation.topo.repair.repairadlink.Process adProcess = new com.navinfo.dataservice.engine.edit.operation.topo.repair.repairadlink.Process(
+					adCommand, result, conn);
+			adProcess.innerRun();
+			break;
+		case ZONELINK:
+			repairJson.element("type", "ZONELINK");
+			com.navinfo.dataservice.engine.edit.operation.topo.repair.repairzonelink.Command zoneCommand = new com.navinfo.dataservice.engine.edit.operation.topo.repair.repairzonelink.Command(
+					repairJson, null);
+			zoneCommand.setOperationType("innerRun");
+			com.navinfo.dataservice.engine.edit.operation.topo.repair.repairzonelink.Process zoneProcess = new com.navinfo.dataservice.engine.edit.operation.topo.repair.repairzonelink.Process(
+					zoneCommand, result, conn);
+			zoneProcess.innerRun();
+			break;
+		case LULINK:
+			repairJson.element("type", "LULINK");
+			com.navinfo.dataservice.engine.edit.operation.topo.repair.repairlulink.Command luCommand = new com.navinfo.dataservice.engine.edit.operation.topo.repair.repairlulink.Command(
+					repairJson, null);
+			luCommand.setOperationType("innerRun");
+			com.navinfo.dataservice.engine.edit.operation.topo.repair.repairlulink.Process luProcess = new com.navinfo.dataservice.engine.edit.operation.topo.repair.repairlulink.Process(
+					luCommand, result, conn);
+			luProcess.innerRun();
+			break;
+		default:
+			break;
+		}
 	}
 
 }

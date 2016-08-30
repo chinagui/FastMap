@@ -438,6 +438,13 @@ public class PidService {
 	public synchronized int applyLuFacePid() throws Exception {
 		return this.applyPid(PidSequenceName.luFacePidName);
 	}
+	
+	/**
+	 * 申请lu_face_name_pid
+	 */
+	public synchronized int applyLuFaceNamePid() throws Exception {
+		return this.applyPid(PidSequenceName.luFaceNamePidName);
+	}
 
 	/**
 	 * 申请rd_electroniceye
@@ -494,6 +501,13 @@ public class PidService {
 	 */
 	public synchronized int applyLcFacePid() throws Exception {
 		return this.applyPid(PidSequenceName.lcFacePidName);
+	}
+	
+	/**
+	 * 申请lc_face_name_pid
+	 */
+	public synchronized int applyLcFaceNamePid() throws Exception {
+		return this.applyPid(PidSequenceName.lcFaceNamePidName);
 	}
 
 	/**

@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.navinfo.dataservice.commons.util.JsonUtils;
+import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -22,7 +23,7 @@ import net.sf.json.JSONObject;
  * @date: 2016年7月27日 上午9:36:23
  * @version: v1.0
  */
-public class LcFaceName implements IRow {
+public class LcFaceName implements IObj {
 
 	private int pid;
 
@@ -32,7 +33,7 @@ public class LcFaceName implements IRow {
 
 	private int nameGroupid = 1;
 
-	private String longCode;
+	private String langCode;
 
 	private String name;
 
@@ -66,12 +67,12 @@ public class LcFaceName implements IRow {
 		this.nameGroupid = nameGroupid;
 	}
 
-	public String getLongCode() {
-		return longCode;
+	public String getLangCode() {
+		return langCode;
 	}
 
-	public void setLongCode(String longCode) {
-		this.longCode = longCode;
+	public void setLangCode(String langCode) {
+		this.langCode = langCode;
 	}
 
 	public String getName() {
@@ -164,7 +165,7 @@ public class LcFaceName implements IRow {
 		this.pid = source.pid;
 		this.facePid = source.facePid;
 		this.nameGroupid = source.nameGroupid;
-		this.longCode = source.longCode;
+		this.langCode = source.langCode;
 		this.name = source.name;
 		this.phonetic = source.phonetic;
 		this.srcFlag = source.srcFlag;
@@ -254,6 +255,31 @@ public class LcFaceName implements IRow {
 
 	@Override
 	public void setMesh(int mesh) {
+	}
+
+	@Override
+	public List<IRow> relatedRows() {
+		return null;
+	}
+
+	@Override
+	public int pid() {
+		return this.pid;
+	}
+
+	@Override
+	public String primaryKey() {
+		return "name_id";
+	}
+
+	@Override
+	public Map<Class<? extends IRow>, List<IRow>> childList() {
+		return null;
+	}
+
+	@Override
+	public Map<Class<? extends IRow>, Map<String, ?>> childMap() {
+		return null;
 	}
 
 }

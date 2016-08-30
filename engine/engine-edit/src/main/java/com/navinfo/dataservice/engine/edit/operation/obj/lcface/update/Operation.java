@@ -5,6 +5,7 @@ import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.lc.LcFace;
 import com.navinfo.dataservice.dao.glm.model.lc.LcFaceName;
+import com.navinfo.dataservice.dao.pidservice.PidService;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -61,6 +62,7 @@ public class Operation implements IOperation {
 				} else {
 					LcFaceName name = new LcFaceName();
 					name.Unserialize(nameJson);
+					name.setPid(PidService.getInstance().applyLcFaceNamePid());
 					name.setFacePid(face.pid());
 					result.insertObject(name, ObjStatus.INSERT, face.pid());
 				}

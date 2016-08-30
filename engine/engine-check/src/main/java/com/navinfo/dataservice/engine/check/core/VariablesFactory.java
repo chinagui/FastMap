@@ -12,6 +12,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionDetail;
 import com.navinfo.dataservice.dao.glm.model.rd.slope.RdSlope;
+import com.navinfo.dataservice.dao.glm.model.rd.voiceguide.RdVoiceguide;
 import com.navinfo.dataservice.dao.glm.model.rd.warninginfo.RdWarninginfo;
 
 public class VariablesFactory {
@@ -68,6 +69,66 @@ public class VariablesFactory {
 		if(data instanceof RdGate){
 			RdGate rdGate=(RdGate) data;
 			rdLinkSet.add(String.valueOf(rdGate.getOutLinkPid()));}
+		return rdLinkSet;
+	}
+	/**
+	 * @param data
+	 * @return
+	 */
+	public static Set<String> getRdDirectroutePid(IRow data) {
+		// TODO Auto-generated method stub
+		Set<String> rdLinkSet=new HashSet<String>();
+		if(data instanceof RdGate){
+			RdDirectroute rdDirectroute=(RdDirectroute) data;
+			rdLinkSet.add(String.valueOf(rdDirectroute.getPid()));}
+		return rdLinkSet;
+	}
+	/**
+	 * @param data
+	 * @return
+	 */
+	public static Set<String> getRdSlopePid(IRow data) {
+		// TODO Auto-generated method stub
+		Set<String> rdLinkSet=new HashSet<String>();
+		if(data instanceof RdSlope){
+			RdSlope rdSlope=(RdSlope) data;
+			rdLinkSet.add(String.valueOf(rdSlope.getPid()));}
+		return rdLinkSet;
+	}
+	/**
+	 * @param data
+	 * @return
+	 */
+	public static Set<String> getRdWarninginfoPid(IRow data) {
+		// TODO Auto-generated method stub
+		Set<String> rdLinkSet=new HashSet<String>();
+		if(data instanceof RdWarninginfo){
+			RdWarninginfo rdWarninginfo=(RdWarninginfo) data;
+			rdLinkSet.add(String.valueOf(rdWarninginfo.getPid()));}
+		return rdLinkSet;
+	}
+	/**
+	 * @param data
+	 * @return
+	 */
+	public static Set<String> getRdBranchPid(IRow data) {
+		// TODO Auto-generated method stub
+		Set<String> rdLinkSet=new HashSet<String>();
+		if(data instanceof RdBranch){
+			RdBranch rdBranch=(RdBranch) data;
+			rdLinkSet.add(String.valueOf(rdBranch.getPid()));}
+		return rdLinkSet;
+	}
+	/**
+	 * @param data
+	 * @return
+	 */
+	public static Set<String> getRdVoiceGuidePid(IRow data) {
+		// TODO Auto-generated method stub
+		Set<String> rdLinkSet=new HashSet<String>();
+		if(data instanceof RdVoiceguide){
+			RdVoiceguide rdVoiceguide=(RdVoiceguide) data;
+			rdLinkSet.add(String.valueOf(rdVoiceguide.getPid()));}
 		return rdLinkSet;
 	}
 }

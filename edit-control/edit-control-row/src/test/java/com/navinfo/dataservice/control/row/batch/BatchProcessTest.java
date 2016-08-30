@@ -29,7 +29,7 @@ public class BatchProcessTest {
 		try {
 			conn = DBConnector.getInstance().getConnectionById(42);
 			BatchProcess batchProcess = new BatchProcess();
-			batchProcess.execute("PoiBatchProcessorFM_BAT_20_103",json,conn);
+			batchProcess.execute(json,conn);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

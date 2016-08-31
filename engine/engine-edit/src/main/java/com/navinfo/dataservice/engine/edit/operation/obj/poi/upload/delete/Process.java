@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.edit.operation.obj.poi.upload;
+package com.navinfo.dataservice.engine.edit.operation.obj.poi.upload.delete;
 
 
 import java.util.ArrayList;
@@ -8,6 +8,8 @@ import org.apache.commons.collections.CollectionUtils;
 
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.OperStage;
+import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiChildren;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiParent;
@@ -17,7 +19,7 @@ import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.operation.AbstractProcess;
 
-public class ProcessForDelete extends AbstractProcess<CommandForDelete> {
+public class Process extends AbstractProcess<Command> {
 
 	private IxPoi ixPoi;
 
@@ -25,7 +27,7 @@ public class ProcessForDelete extends AbstractProcess<CommandForDelete> {
 
 	private IxPoiChildren ixPoiChildren;
 
-	public ProcessForDelete(AbstractCommand command) throws Exception {
+	public Process(AbstractCommand command) throws Exception {
 		super(command);
 	}
 
@@ -81,8 +83,12 @@ public class ProcessForDelete extends AbstractProcess<CommandForDelete> {
 
 	@Override
 	public String exeOperation() throws Exception {
+		Result result = new Result();
+		result.setOperStage(OperStage.Collect);
+		this.setResult(result);
+		
 		// 删除poi操作
-		IOperation op = new OperationForDelete(this.getCommand(), this.ixPoi);
+		IOperation op = new Operation(this.getCommand(), this.ixPoi);
 		String msg = op.run(this.getResult());
 		// 维护poi父子关系
 		IOperation opParent = new OpRefParent(this.getCommand(), ixPoiParents, ixPoiChildren);

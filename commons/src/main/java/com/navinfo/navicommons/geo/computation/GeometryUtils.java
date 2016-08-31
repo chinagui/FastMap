@@ -609,7 +609,7 @@ public class GeometryUtils {
 		}
 		return targetPoint;
 	}
-
+	
 	/**
 	 * 计算垂足点
 	 */
@@ -642,7 +642,61 @@ public class GeometryUtils {
 		}
 		return targetPoint;
 	}
+	
+	/**
+	 * 计算点位在link的位置（side = 1：左侧，side=2：右侧，side = 3：link上）
+	 * @param point 需要计算的点位坐标
+	 * @param link link的几何
+	 * @param guideGeo 点在线上的垂足点位
+	 * @return 位置信息
+	 * @throws Exception
+	 */
+	public static int calulatPointSideOflink(Geometry point, Geometry link, Geometry guideGeo) throws Exception {
+		int side = 0;
 
+		// 如果poi点位在线上则更新side为3，否则计算左右
+		if (point.distance(link) <= 1) {
+			side = 3;
+		} else {
+			// poi的位置点
+			DoublePoint doublePoint = new DoublePoint(point.getCoordinate().x, point.getCoordinate().y);
+
+			Coordinate cor[] = link.getCoordinates();
+
+			for (int i = 0; i < cor.length - 1; i++) {
+
+				Coordinate cor1 = cor[i];
+
+				Coordinate cor2 = cor[i + 1];
+
+				// 判断点是否在线段上
+				boolean isIntersection = GeoTranslator.isIntersectionInLine(new double[] { cor1.x, cor1.y },
+						new double[] { cor2.x, cor2.y },
+						new double[] { guideGeo.getCoordinate().x, guideGeo.getCoordinate().y });
+				if (isIntersection) {
+
+					DoublePoint startPoint = new DoublePoint(cor1.x, cor1.y);
+
+					DoublePoint endPoint = new DoublePoint(cor2.x, cor2.y);
+
+					DoubleLine doubleLine = new DoubleLine(startPoint, endPoint);
+
+					boolean flag = CompLineUtil.isRightSide(doubleLine, doublePoint);
+
+					if (flag) {
+						side = 2;
+
+					} else {
+						side = 1;
+					}
+					break;
+				}
+			}
+		}
+
+		return side;
+	}
+	
 	/**
 	 * 判断点point是否在point1和point2组成的线上
 	 */

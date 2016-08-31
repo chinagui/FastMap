@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.edit.operation.obj.poi.android;
+package com.navinfo.dataservice.control.app.search;
 
 import java.sql.Connection;
 

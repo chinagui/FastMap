@@ -30,17 +30,6 @@ import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiIntroduction;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiParking;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiRestaurant;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiTourroute;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkIntRtic;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkLimit;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkLimitTruck;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkName;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkRtic;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkSidewalk;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkSpeedlimit;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkWalkstair;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkZone;
-import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiEditStatusSelector;
 import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONArray;
@@ -370,6 +359,10 @@ public class IxPoi implements IObj {
 	private List<IRow> carrentals = new ArrayList<IRow>();
 
 	public Map<String, IxPoiCarrental> carrentalMap = new HashMap<String, IxPoiCarrental>();
+
+	private List<IRow> samepoiParts = new ArrayList<IRow>();
+
+	public Map<String, IxSamepoiPart> samepoiMap = new HashMap<String, IxSamepoiPart>();
 
 	private List<IRow> operateRefs = new ArrayList<IRow>();
 
@@ -977,6 +970,14 @@ public class IxPoi implements IObj {
 		this.children = children;
 	}
 
+	public List<IRow> getSamepoiParts() {
+		return samepoiParts;
+	}
+
+	public void setSamepoiParts(List<IRow> samepoiParts) {
+		this.samepoiParts = samepoiParts;
+	}
+
 	@Override
 	public String rowId() {
 		return this.rowId;
@@ -1578,8 +1579,7 @@ public class IxPoi implements IObj {
 
 			} else if ("geometry".equals(key)) {
 
-				Geometry jts = GeoTranslator.geojson2Jts(
-						json.getJSONObject(key), 100000, 0);
+				Geometry jts = GeoTranslator.geojson2Jts(json.getJSONObject(key), 100000, 0);
 
 				this.setGeometry(jts);
 
@@ -1695,6 +1695,8 @@ public class IxPoi implements IObj {
 		// 设置子表IX_POI_CARRENTAL
 		childMap.put(IxPoiCarrental.class, carrentals);
 
+//		childMap.put(IxSamepoi.class, samepois);
+
 		return childMap;
 	}
 
@@ -1779,6 +1781,8 @@ public class IxPoi implements IObj {
 
 		// 设置子表IX_POI_CARRENTAL
 		childMap.put(IxPoiCarrental.class, carrentalMap);
+
+//		childMap.put(IxSamepoi.class, samepoiMap);
 
 		return childMap;
 	}

@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.edit.operation.obj.poi.upload;
+package com.navinfo.dataservice.engine.edit.operation.obj.poi.upload.delete;
 
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
@@ -6,7 +6,7 @@ import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 
 import net.sf.json.JSONObject;
 
-public class CommandForUpload extends AbstractCommand {
+public class Command extends AbstractCommand {
 
 	private String requester;
 
@@ -35,7 +35,7 @@ public class CommandForUpload extends AbstractCommand {
 		return requester;
 	}
 
-	public CommandForUpload(JSONObject json, String requester) {
+	public Command(JSONObject json, String requester) {
 		this.requester = requester;
 
 		this.setDbId(json.getInt("dbId"));

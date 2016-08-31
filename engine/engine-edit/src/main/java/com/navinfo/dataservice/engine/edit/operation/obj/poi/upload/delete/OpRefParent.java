@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.edit.operation.obj.poi.upload;
+package com.navinfo.dataservice.engine.edit.operation.obj.poi.upload.delete;
 
 import java.util.List;
 
@@ -11,13 +11,13 @@ import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiChildren;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiParent;
 
 public class OpRefParent implements IOperation{
-	private CommandForDelete command;
+	private Command command;
 
 	private List<IxPoiParent> ixPoiParents;
 	
 	private IxPoiChildren ixPoiChildren;
 
-	public OpRefParent(CommandForDelete command, List<IxPoiParent> ixPoiParents,IxPoiChildren ixPoiChildren) {
+	public OpRefParent(Command command, List<IxPoiParent> ixPoiParents,IxPoiChildren ixPoiChildren) {
 		this.command = command;
 
 		this.ixPoiParents = ixPoiParents;

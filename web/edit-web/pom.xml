@@ -8,9 +8,7 @@
 		<artifactId>web</artifactId>
 		<version>0.0.1-SNAPSHOT</version>
 	</parent>
-	<groupId>com.navinfo.dataservice</groupId>
 	<artifactId>edit-web</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
 	<packaging>war</packaging>
 	<name>edit-web Maven Webapp</name>
 	<url>http://maven.apache.org</url>
@@ -32,6 +30,12 @@
 		<dependency>
 			<groupId>com.navinfo.dataservice</groupId>
 			<artifactId>commons</artifactId>
+		</dependency>
+		
+		<dependency>
+			<groupId>com.navinfo.dataservice</groupId>
+			<artifactId>edit-control-app</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>

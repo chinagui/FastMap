@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.commons.xinge;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.json.JSONObject;
@@ -32,9 +33,11 @@ public class XingeUtil {
 	
 	public static long iosAccessId = 2100042998;
 	public static String iosSecrectKey = "a547532e1c19cdb1e013651ff68798a8";
-	
-	public static long androidAccessId = 2100042998;
-	public static String androidSecrectKey = "a547532e1c19cdb1e013651ff68798a8";
+	//ACCESS ID 2100217503
+	//应用包名 com.fastmap.hdACCESS KEY A6P38J54SEAB测试设备 0台 修改 
+	//SECRET KEY cf1b0732b1da1a467cf7974f86feccee
+	public static long androidAccessId = 2100217552;
+	public static String androidSecrectKey = "1972b848aa2f4c44719d53e0359b1483";
 
 	public XingeUtil(String devicePlatform,String deviceToken,String title,String content,int msgType,String otherInfo) {
 		this.devicePlatform=devicePlatform;
@@ -91,6 +94,20 @@ public class XingeUtil {
 		action.setActionType(1);
 		localMessage.setAction(action);
 		return localMessage;
-	}   
-
+	}  
+	
+	public static void main(String[] args) throws Exception{
+		String title="test";
+		String content="testContent";
+		int msgType=1;
+		String otherInfo="other";
+		String token="ebc0713493b6ea8147f897d8a49a8b892daff698";
+		
+		XingeUtil xingeUtil=new XingeUtil("Android", token,
+				title, content, msgType, otherInfo);
+		JSONObject msgReturn=xingeUtil.pushSingleDevice();
+		if(msgReturn.getInt("ret_code")==-1){
+			System.out.println(msgReturn);}
+		System.out.println("success");
+	}
 }

@@ -93,10 +93,10 @@ public class Operation implements IOperation {
 				return;
 			}
 
-			// 去重
-			groupIds.remove(sameLinkPart.getGroupId());
+			if (!groupIds.contains(sameLinkPart.getGroupId())) {
 
-			groupIds.add(sameLinkPart.getGroupId());
+				groupIds.add(sameLinkPart.getGroupId());
+			}
 
 		}
 

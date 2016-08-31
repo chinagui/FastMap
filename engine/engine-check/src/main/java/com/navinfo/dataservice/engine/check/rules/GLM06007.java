@@ -14,6 +14,7 @@ import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
  * @author songdongyan
  * @date 2016年8月24日
  * @Description: 如果分岔口点,不允许有两条及以上的进入线。屏蔽条件：如果多组分岔口信息，进入线不同退出线相同的，不报log
+ * 理解：同意分岔口点，只要进入线相同就报log
  */
 public class GLM06007 extends baseRule {
 

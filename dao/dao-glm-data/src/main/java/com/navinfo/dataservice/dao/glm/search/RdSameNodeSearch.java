@@ -73,7 +73,6 @@ public class RdSameNodeSearch implements ISearch {
 			pstmt.setString(2, wkt);
 			pstmt.setString(3, wkt);
 			pstmt.setString(4, wkt);
-			pstmt.setString(5, wkt);
 
 			System.out.println(wkt);
 

@@ -1,7 +1,9 @@
 package com.navinfo.dataservice.control.row.batch;
 
+import java.sql.Connection;
 import java.util.List;
 
+import com.navinfo.dataservice.control.row.batch.util.IBatch;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiGasstation;
@@ -10,15 +12,21 @@ import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
-public class PoiBatchProcessorFM_BAT_20_114 extends IBatch {
+public class PoiBatchProcessorFM_BAT_20_114 implements IBatch {
 
 	@Override
-	public JSONObject run(IxPoi poi) throws Exception {
-		JSONObject reuslt = new JSONObject();
+	public JSONObject run(IxPoi poi,Connection conn,JSONObject json) throws Exception {
+		JSONObject result = new JSONObject();
 		
 		try {
+			JSONObject poiData = json.getJSONObject("data");
+			
+			if (!poiData.containsKey("gasstations")) {
+				return result;
+			}
+			
 			if (poi.getuRecord() != 1 && poi.getuRecord() != 3) {
-				return reuslt;
+				return result;
 			}
 			
 			String adminId = String.valueOf(poi.getAdminReal());
@@ -33,6 +41,13 @@ public class PoiBatchProcessorFM_BAT_20_114 extends IBatch {
 				
 				for (IRow gasstation:gasstationList) {
 					IxPoiGasstation ixPoiGasstation = (IxPoiGasstation) gasstation;
+					
+					int gasURecord = ixPoiGasstation.getuRecord();
+					
+					if (gasURecord != 1 && gasURecord != 3) {
+						continue;
+					}
+					
 					String oilType = ixPoiGasstation.getOilType();
 					boolean changeFlag = false;
 					if (oilType.indexOf("90")>-1) {
@@ -55,10 +70,13 @@ public class PoiBatchProcessorFM_BAT_20_114 extends IBatch {
 					}
 				}
 				
-				reuslt.put("gasstations", dataArray);
+				if (dataArray.size()>0) {
+					result.put("gasstations", dataArray);
+				}
+				
 			}
 			
-			return reuslt;
+			return result;
 		} catch (Exception e) {
 			throw e;
 		}

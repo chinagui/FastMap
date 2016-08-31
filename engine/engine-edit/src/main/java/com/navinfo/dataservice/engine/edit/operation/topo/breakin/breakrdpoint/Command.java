@@ -52,9 +52,19 @@ public class Command extends AbstractCommand {
 
 	private RdNode eNode;
 
-	private int breakNodePid;//在以已存在的node通过移动位置来打断LINK的记录
-	
+	private int breakNodePid;// 在以已存在的node通过移动位置来打断LINK的记录
+
 	private RdNode breakNode;
+
+	private String operationType = "";
+
+	public String getOperationType() {
+		return operationType;
+	}
+
+	public void setOperationType(String operationType) {
+		this.operationType = operationType;
+	}
 
 	private List<RdRestriction> restrictions;
 
@@ -75,21 +85,21 @@ public class Command extends AbstractCommand {
 	private List<RdBranch> outBranchs;
 
 	private List<List<RdBranchVia>> branchVias;
-	
+
 	private List<RdGsc> rdGscs;
-	
+
 	private List<AdAdmin> adAdmins;
-	
+
 	private List<RdElectroniceye> eleceyes;
-	
+
 	private List<RdGate> gates;
-	
+
 	private List<RdSe> rdSes;
-	
+
 	private List<RdSpeedbump> rdSpeedbumps;
-	
+
 	private List<RdTollgate> rdTollgates;
-	
+
 	private boolean isCheckInfect = false;
 
 	public boolean isCheckInfect() {
@@ -181,7 +191,8 @@ public class Command extends AbstractCommand {
 		return listRestrictionVias;
 	}
 
-	public void setRestrictListVias(List<List<Entry<Integer, RdRestrictionVia>>> listVias) {
+	public void setRestrictListVias(
+			List<List<Entry<Integer, RdRestrictionVia>>> listVias) {
 		this.listRestrictionVias = listVias;
 	}
 
@@ -208,7 +219,7 @@ public class Command extends AbstractCommand {
 	public void seteNode(RdNode eNode) {
 		this.eNode = eNode;
 	}
-	
+
 	public RdNode getBreakNode() {
 		return breakNode;
 	}
@@ -268,15 +279,16 @@ public class Command extends AbstractCommand {
 
 		geoPoint.put("type", "Point");
 
-		geoPoint.put("coordinates", new double[] {data.getDouble("longitude"),
+		geoPoint.put("coordinates", new double[] { data.getDouble("longitude"),
 				data.getDouble("latitude") });
-		
+
 		Geometry geometry = GeoTranslator.geojson2Jts(geoPoint, 1, 5);
-		
-		if(data.containsKey("breakNodePid")){
+
+		if (data.containsKey("breakNodePid")) {
 			this.setBreakNodePid(data.getInt("breakNodePid"));
 		}
-		Coordinate coord = new Coordinate(geometry.getCoordinate().x, geometry.getCoordinate().y);
+		Coordinate coord = new Coordinate(geometry.getCoordinate().x,
+				geometry.getCoordinate().y);
 
 		this.setDbId(json.getInt("dbId"));
 
@@ -352,17 +364,17 @@ public class Command extends AbstractCommand {
 		this.gates = gates;
 	}
 
-//	public void createGlmList() throws Exception {
-//		// TODO Auto-generated method stub
-//		List<IRow> glmList=new ArrayList<IRow>();		
-//		
-//		RdLink linkObj=new RdLink();
-//		RdNode node=new RdNode();
-//		linkObj.setPid(this.linkPid);
-//		glmList.add(linkObj);
-//		node.setGeometry(point);
-//		glmList.add(node);
-//		this.setGlmList(glmList);
-//	}
-	
+	// public void createGlmList() throws Exception {
+	// // TODO Auto-generated method stub
+	// List<IRow> glmList=new ArrayList<IRow>();
+	//
+	// RdLink linkObj=new RdLink();
+	// RdNode node=new RdNode();
+	// linkObj.setPid(this.linkPid);
+	// glmList.add(linkObj);
+	// node.setGeometry(point);
+	// glmList.add(node);
+	// this.setGlmList(glmList);
+	// }
+
 }

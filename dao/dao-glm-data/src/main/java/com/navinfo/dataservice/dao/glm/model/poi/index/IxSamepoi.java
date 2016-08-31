@@ -31,7 +31,7 @@ public class IxSamepoi implements IObj {
 
 	private String rowId;
 
-	private int relationType;
+	private int relationType = 1;
 
 	private List<IRow> parts = new ArrayList<IRow>();
 
@@ -138,7 +138,7 @@ public class IxSamepoi implements IObj {
 
 	@Override
 	public String parentPKName() {
-		return "GROUP_ID";
+		return "PID";
 	}
 
 	@Override
@@ -148,7 +148,7 @@ public class IxSamepoi implements IObj {
 
 	@Override
 	public String parentTableName() {
-		return "IX_SAMEPOI";
+		return "IX_POI";
 	}
 
 	@Override

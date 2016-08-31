@@ -91,6 +91,8 @@ public class PidSequenceName {
 	public static final String luLinkPidName = "SEQ_LU_LINK";
 
 	public static final String luFacePidName = "SEQ_LU_FACE";
+	
+	public static final String luFaceNamePidName = "SEQ_LU_FACE_NAME";
 
 	public static final String rdElectroniceyePidName = "SEQ_RD_ELECTRONICEYE";
 
@@ -109,6 +111,8 @@ public class PidSequenceName {
 	public static final String lcLinkPidName = "SEQ_LC_LINK";
 
 	public static final String lcFacePidName = "SEQ_LC_FACE";
+
+	public static final String lcFaceNamePidName = "SEQ_LC_FACE_NAME";
 
 	public static final String rdSePidName = "SEQ_RD_SE";
 

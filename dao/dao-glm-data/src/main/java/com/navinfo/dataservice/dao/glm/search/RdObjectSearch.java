@@ -63,7 +63,7 @@ public class RdObjectSearch implements ISearch {
 	public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z, int gap) throws Exception {
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "WITH TMP1           AS (	SELECT LINK_PID, GEOMETRY FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1 , 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2) , tmp2 AS (	SELECT /*+ leading(A,B) use_hash(A,B)*/ C.PID, A.LINK_PID AS objPid, sdo_util.to_wktgeometry_varchar(A.GEOMETRY) AS geometry,2 AS objType,c.ROAD_PID as childpid FROM TMP1 A, RD_ROAD_LINK B,Rd_object_road C WHERE A.LINK_PID = B.LINK_PID AND C.ROAD_PID = b.pid AND B.U_RECORD != 2 ), tmp3                     AS (SELECT /*+ leading(A,B) use_hash(A,B)*/ b.PID, A.LINK_PID AS objPid,sdo_util. to_wktgeometry_varchar(A .GEOMETRY) AS geometry,0 AS objType ,a.link_pid as childpid FROM TMP1 A, Rd_object_link b WHERE A.LINK_PID = B.LINK_PID AND B.U_RECORD != 2 ), TMP4                                  AS (	SELECT node_pid , GEOMETRY FROM RD_NODE WHERE SDO_RELATE ( GEOMETRY , SDO_GEOMETRY (:2 , 8307), 'mask=anyinteract' ) = 'TRUE' AND U_RECORD != 2) , tmp5 AS (	SELECT /*+ leading(A,B) use_hash(A,B)*/ C.PID, A.NODE_PID AS objPid,sdo_util.to_wktgeometry_varchar(A.GEOMETRY) AS geometry,1 AS objType, c.INTER_PID as childpid FROM TMP4 A, RD_INTER_NODE B,Rd_object_INTER C WHERE A.NODE_PID = B.NODE_PID AND C.inter_PID = b.pid AND B.U_RECORD != 2 ) SELECT tmp7.*,sdo_util.to_wktgeometry_varchar(tmp8.geometry) AS objGeo FROM(	SELECT tmp6.* FROM(	SELECT * FROM tmp2 UNION ALL 	SELECT * FROM tmp3 UNION ALL 	SELECT * FROM tmp5 ) tmp6 group by tmp6.pid,tmp6.objpid,tmp6.geometry,tmp6.objType,tmp6.childpid) tmp7 LEFT JOIN rd_object tmp8 ON tmp7.pid = tmp8.pid where tmp8.u_record !=2";
+		String sql = "WITH TMP1 AS (SELECT LINK_PID FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2 group by link_pid), TMP4 AS (SELECT NODE_PID FROM RD_NODE WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:2, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2 group by node_pid), TMP_1 AS (SELECT /*+ leading(A,B) use_hash(A,B)*/ C.PID FROM TMP1 A, RD_ROAD_LINK B, RD_OBJECT_ROAD C WHERE A.LINK_PID = B.LINK_PID AND  B.PID =C.ROAD_PID AND B.U_RECORD != 2 AND C.U_RECORD != 2 GROUP BY C.PID), TMP_3 AS (SELECT /*+ leading(A,B) use_hash(A,B)*/ B.PID FROM TMP1 A, RD_OBJECT_LINK B WHERE A.LINK_PID = B.LINK_PID AND B.U_RECORD != 2 GROUP BY B.PID), TMP_5 AS (SELECT /*+ leading(A,B) use_hash(A,B)*/ C.PID FROM TMP4 A, RD_INTER_NODE B, RD_OBJECT_INTER C WHERE A.NODE_PID = B.NODE_PID AND C.INTER_PID = B.PID AND B.U_RECORD != 2 AND C.U_RECORD != 2 GROUP BY C.PID), TMP_9 AS (SELECT /*+ leading(A,B) use_hash(A,B)*/ C.PID FROM TMP1 A, RD_INTER_LINK B, RD_OBJECT_INTER C WHERE A.LINK_PID = B.LINK_PID AND C.INTER_PID = B.PID AND B.U_RECORD != 2 AND C.U_RECORD != 2 GROUP BY C.PID), tmp_10 as( select pid from tmp_1 union select pid from tmp_3 union select pid from tmp_5 union select pid from tmp_9 ), TMP2 AS (SELECT  /*+ leading(B,D) use_hash(B,D)*/ B.PID, A.LINK_PID AS OBJPID, SDO_UTIL.TO_WKTGEOMETRY_VARCHAR(C.GEOMETRY) AS GEOMETRY, 2 AS OBJTYPE, D.ROAD_PID AS CHILDPID FROM tmp_10 B,RD_OBJECT_ROAD D,RD_ROAD_LINK A, RD_LINK C WHERE B.pid = d.pid and d.road_pid = a.pid AND C.LINK_PID = A.LINK_PID AND A.U_RECORD != 2 AND C.U_RECORD != 2), TMP3 AS (SELECT /*+ leading(A,B) use_hash(A,B)*/ A.PID, B.LINK_PID AS OBJPID, SDO_UTIL.  TO_WKTGEOMETRY_VARCHAR(C.GEOMETRY) AS GEOMETRY, 0          AS OBJTYPE, B.LINK_PID AS CHILDPID FROM tmp_10 A, RD_OBJECT_LINK B, RD_LINK C WHERE A.PID = B.PID AND B.LINK_PID = C.LINK_PID AND B.U_RECORD != 2), TMP5 AS (SELECT /*+ leading(B,D) use_hash(B,D)*/ B.PID, A.NODE_PID AS OBJPID, SDO_UTIL.TO_WKTGEOMETRY_VARCHAR(C.GEOMETRY) AS GEOMETRY, 3 AS OBJTYPE, d.INTER_PID AS CHILDPID FROM TMP_10 B,RD_OBJECT_INTER D,RD_INTER_NODE A, RD_NODE C WHERE B.pid = d.pid and d.INTER_PID = a.pid AND C.NODE_PID = A.NODE_PID AND A.U_RECORD != 2 and d.U_RECORD !=2 AND C.U_RECORD != 2),  TMP9 AS (SELECT /*+ leading(B,D) use_hash(B,D)*/ B.PID, A.LINK_PID AS OBJPID, SDO_UTIL.TO_WKTGEOMETRY_VARCHAR(C.GEOMETRY) AS GEOMETRY, 1 AS OBJTYPE, D.INTER_PID AS CHILDPID FROM TMP_10 B,RD_OBJECT_INTER D,RD_INTER_LINK A, RD_LINK C WHERE B.pid = d.pid and d.INTER_pid = a.pid AND A.LINK_PID = C.LINK_PID AND A.U_RECORD != 2 and d.u_record !=2 AND C.U_RECORD != 2) SELECT TMP7.*, SDO_UTIL.TO_WKTGEOMETRY_VARCHAR(TMP8.GEOMETRY) AS OBJGEO FROM (SELECT TMP6.* FROM (SELECT * FROM TMP2 UNION ALL SELECT * FROM TMP3 UNION ALL SELECT * FROM TMP5 UNION ALL SELECT * FROM TMP9) TMP6 GROUP BY TMP6.PID, TMP6.OBJPID, TMP6.GEOMETRY, TMP6.OBJTYPE, TMP6.CHILDPID) TMP7 LEFT JOIN RD_OBJECT TMP8 ON TMP7.PID = TMP8.PID WHERE TMP8.U_RECORD != 2 ";
 
 		PreparedStatement pstmt = null;
 
@@ -76,11 +76,11 @@ public class RdObjectSearch implements ISearch {
 
 			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
 
-			System.out.println(wkt);
-
 			pstmt.setString(1, wkt);
 
 			pstmt.setString(2, wkt);
+			
+			System.out.println(wkt);
 
 			resultSet = pstmt.executeQuery();
 
@@ -125,7 +125,7 @@ public class RdObjectSearch implements ISearch {
 				// type:0 表示返回的结果是rd_object_link的数据，type:1表示inter,type:2表示road
 				int type = resultSet.getInt("objType");
 
-				if (type != 1) {
+				if (type != 3) {
 					int linkPid = resultSet.getInt("objPid");
 
 					if (!linkPidList.contains(linkPid)) {
@@ -237,13 +237,31 @@ public class RdObjectSearch implements ISearch {
 
 				JSONObject jsonM = new JSONObject();
 
-				Coordinate[] coordinates = getLineFromMuitPoint(gLinkArray, gNodeArray);
+				Coordinate[] coordinates = getLineFromMuitPoint(gLinkArray,gNodeArray);
 
 				Geometry metry = JGeometryUtil.getPolygonFromPoint(coordinates);
 				
 				Geometry boundary = metry.getBoundary();
 				
-				JSONObject obj = Geojson.link2Pixel(GeoTranslator.jts2Geojson(boundary), px, py, z);
+				boundary = GeoTranslator.transform(boundary,1,5);
+				
+				Coordinate[] cs = boundary.getCoordinates();
+				
+				double[][] ps = new double[cs.length][2];
+
+				for (int i = 0; i < cs.length; i++) {
+					ps[i][0] = cs[i].x;
+
+					ps[i][1] = cs[i].y;
+				}
+				
+				JSONObject geojson = new JSONObject();
+
+				geojson.put("type", "LineString");
+
+				geojson.put("coordinates", ps);
+				
+				JSONObject obj = Geojson.link2Pixel(geojson, px, py, z);
 				
 				jsonM.put("a", gLinkArray);
 
@@ -303,20 +321,23 @@ public class RdObjectSearch implements ISearch {
 			obj.remove("linkCor");
 		}
 
-		for (int i = 0; i < nodeArray.size(); i++) {
-			JSONObject obj = nodeArray.getJSONObject(i);
+		if(nodeArray != null)
+		{
+			for (int i = 0; i < nodeArray.size(); i++) {
+				JSONObject obj = nodeArray.getJSONObject(i);
 
-			JSONArray pointArray = obj.getJSONArray("nodeCor");
+				JSONArray pointArray = obj.getJSONArray("nodeCor");
 
-			double x = pointArray.getDouble(0);
+				double x = pointArray.getDouble(0);
 
-			double y = pointArray.getDouble(1);
+				double y = pointArray.getDouble(1);
 
-			if (!pointStr.contains(x + "_" + y)) {
-				pointStr.add(x + "_" + y);
+				if (!pointStr.contains(x + "_" + y)) {
+					pointStr.add(x + "_" + y);
+				}
+				
+				obj.remove("nodeCor");
 			}
-			
-			obj.remove("nodeCor");
 		}
 
 		Coordinate[] coordinates = new Coordinate[pointStr.size()];

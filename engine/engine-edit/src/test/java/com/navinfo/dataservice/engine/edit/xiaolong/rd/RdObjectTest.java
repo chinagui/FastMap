@@ -51,7 +51,7 @@ public class RdObjectTest extends InitApplication {
 
 	@Test
 	public void testAddRdObject() {
-		String parameter = "{\"command\":\"CREATE\",\"dbId\":42,\"type\":\"RDOBJECT\",\"data\":{\"links\":[100008960],\"inters\":[],\"roads\":[],\"longitude\":116.41008675098419,\"latitude\":40.041312308921576}}";
+		String parameter = "{\"command\":\"CREATE\",\"dbId\":42,\"type\":\"RDSAMENODE\",\"data\":{\"nodes\":[{\"nodePid\":\"100027134\",\"type\":\"RDNODE\",\"isMain\":1},{\"nodePid\":\"100025966\",\"type\":\"ADNODE\",\"isMain\":0}]}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
@@ -184,7 +184,7 @@ public class RdObjectTest extends InitApplication {
 
 			RdObjectSearch search = new RdObjectSearch(conn);
 			
-			List<SearchSnapshot> data = search.searchDataByTileWithGap(107946, 49616, 17, 80);
+			List<SearchSnapshot> data = search.searchDataByTileWithGap(107934, 49615, 17, 80);
 			
 			System.out.println("data:"+ResponseUtils.assembleRegularResult(data));
 

@@ -26,6 +26,16 @@ public class Command extends AbstractCommand {
 	private List<AdFace> faces;
 	private int breakNodePid = 0;
 
+	private String operationType = "";
+
+	public String getOperationType() {
+		return operationType;
+	}
+
+	public void setOperationType(String operationType) {
+		this.operationType = operationType;
+	}
+
 	private AdNode breakNode;
 
 	public int getBreakNodePid() {

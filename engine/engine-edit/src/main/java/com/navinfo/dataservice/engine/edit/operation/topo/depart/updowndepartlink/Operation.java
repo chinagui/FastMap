@@ -78,14 +78,16 @@ public class Operation implements IOperation {
 		// 传入起点和终点Point
 		Point sPoint = JtsGeometryFactory.createPoint(GeoTranslator.transform(this
 				.getStartAndEndNode(links, 0).getGeometry(),0.00001,5).getCoordinate());
-		RdNode snode = this.getStartAndEndNode(links, 0);
+		RdNode sNode = this.getStartAndEndNode(links, 0);
+		
+		command.setsNode(sNode);
 		RdNode eNode = this.getStartAndEndNode(links, 1);
 		LineString[] lines = CompPolylineUtil.separate(sPoint, lineStrings,
 				command.getDistance());
 
 		// 生成分离后右线
 		Map<Geometry, RdNode> map = new HashMap<Geometry, RdNode>();
-		map.put(GeoTranslator.transform(snode.getGeometry(),0.00001,5), snode);
+		map.put(GeoTranslator.transform(sNode.getGeometry(),0.00001,5), sNode);
 		map.put(GeoTranslator.transform(eNode.getGeometry(),0.00001,5), eNode);
 		List<RdLink> upLists = new ArrayList<RdLink>();
 		List<RdLink> downLists = new ArrayList<RdLink>();
@@ -100,7 +102,9 @@ public class Operation implements IOperation {
 				nextLink = command.getLinks().get(i+1);
 			}
 			downLists.addAll(this.createDownRdLink(departLink, result,
-					currentLink, nextLink, map));
+					currentLink, nextLink, map));		
+	
+		this.command.getRightLinkMapping().put(currentLink.pid(), departLink);
 			
 		}// 生成分离后左线
 		for (int i = lines.length-1; i >= command.getLinkPids().size(); i--) {
@@ -115,6 +119,8 @@ public class Operation implements IOperation {
 			}
 			upLists.addAll(this.createUpRdLink(departLink, result,
 					currentLink, nextLink, map));
+			
+			this.command.getLeftLinkMapping().put(currentLink.pid(), departLink);
 		}
 		//维护挂接线信息
 		this.updateAdjacentLines(lines,map,result);
@@ -620,10 +626,13 @@ public class Operation implements IOperation {
 	 */
 	private void updataRelationObj(Result result) throws Exception
 	{
-		//维护警示信息		
-		com.navinfo.dataservice.engine.edit.operation.obj.rdwarninginfo.delete.Operation  warninginfoOperation=new com.navinfo.dataservice.engine.edit.operation.obj.rdwarninginfo.delete.Operation(conn);
+		OpRefRelationObj OpRefRelationObj = new OpRefRelationObj(this.conn);
 
-		warninginfoOperation.batchDeleteByLink(command.getLinks(), result);
+		OpRefRelationObj.handlerdWarninginfo(this.command, result);
+
+		OpRefRelationObj.handleSameLink(this.command, result);
+		
+		OpRefRelationObj.handlerdSpeedlimit(this.command, result);
 	}
 	/**
 	 * @param startLine

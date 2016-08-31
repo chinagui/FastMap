@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -18,7 +19,7 @@ import net.sf.json.JSONObject;
 public class Command extends AbstractCommand {
 
 	private String requester;
-	private List<Integer> linkPids;
+	private List<Integer> linkPids = new ArrayList<Integer>();
 	private List<IRow> links;
 	private int laneDir;// 车道方向
 
@@ -78,7 +79,7 @@ public class Command extends AbstractCommand {
 		for (int i = 0; i < data.getJSONArray("linkPids").size(); i++) {
 			this.getLinkPids().add((data.getJSONArray("linkPids").getInt(i)));
 		}
-
+		this.setLaneDir(data.getInt("laneDir"));
 		this.setLaneInfos(data.getJSONArray("laneInfos"));
 
 	}

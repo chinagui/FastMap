@@ -210,7 +210,7 @@ public class Operation implements IOperation {
 	private void caleRdlaneForRdLaneconnexity(Result result) throws Exception {
 		String laneInfo = command.getContent().getString("laneInfo");
 
-		if (StringUtils.isNotEmpty(laneInfo)) {
+/*		if (StringUtils.isNotEmpty(laneInfo)) {
 			String lanes = laneInfo.replace("[", "").replace("]", "");
 			List<String> laneList = Arrays.asList(lanes.split(","));
 			com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation operation = new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation(
@@ -219,7 +219,7 @@ public class Operation implements IOperation {
 			operation.setConnexity(lane);
 			operation.refRdLaneForRdLaneconnexity(result);
 
-		}
+		}*/
 
 	}
 

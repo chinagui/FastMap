@@ -11,6 +11,7 @@ import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLink;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLinkName;
+import com.navinfo.dataservice.dao.glm.model.rd.rw.RwNode;
 import com.navinfo.dataservice.dao.glm.search.RwLinkSearch;
 import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.operation.Transaction;
@@ -35,15 +36,10 @@ public class RwLinkTest extends InitApplication {
 
 			SearchProcess p = new SearchProcess(conn);
 			
-			RwLink obj = (RwLink) p.searchDataByPid(ObjType.RWLINK, 100007144);
+			RwNode obj = (RwNode) p.searchDataByPid(ObjType.RWNODE, 100007634);
 
 			System.out.println(obj.Serialize(ObjLevel.BRIEF));
 			
-			for(Entry<String, RwLinkName> entry : obj.linkNameMap.entrySet())
-			{
-				System.out.println(entry.getKey()+":value:"+entry.getValue().Serialize(null));
-			}
-
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

@@ -49,7 +49,7 @@ public class Command extends AbstractCommand {
 
 	@Override
 	public OperType getOperType() {
-		return OperType.BATCH;
+		return OperType.DELETE;
 	}
 
 	@Override

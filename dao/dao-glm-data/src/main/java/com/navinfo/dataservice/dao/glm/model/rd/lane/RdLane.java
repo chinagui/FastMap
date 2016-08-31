@@ -39,7 +39,7 @@ public class RdLane implements IObj {
 	private int laneMark = 0;//车道标线
 	private int width =0 ;//车道宽度
 	private int restrictHeight= 0;//车道限高
-	private int ransitionArea = 0;//交换区域 
+	private int transitionArea = 0;//交换区域 
 	private int fromMaxSpeed = 0;//顺向最高限速
 	private int toMaxSpeed = 0;//逆向最高限速 
 	private int fromMinSpeed = 0;//顺向最低限速
@@ -144,12 +144,12 @@ public class RdLane implements IObj {
 		this.restrictHeight = restrictHeight;
 	}
 
-	public int getRansitionArea() {
-		return ransitionArea;
+	public int getTransitionArea() {
+		return transitionArea;
 	}
 
-	public void setRansitionArea(int ransitionArea) {
-		this.ransitionArea = ransitionArea;
+	public void setTransitionArea(int transitionArea) {
+		this.transitionArea = transitionArea;
 	}
 
 	public int getFromMaxSpeed() {
@@ -428,7 +428,7 @@ public class RdLane implements IObj {
 
 	@Override
 	public String primaryKey() {
-		return "group_id";
+		return "lane_pid";
 	}
 
 	@Override

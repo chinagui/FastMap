@@ -39,9 +39,6 @@ import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.operator.BasicOperator;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 import com.navinfo.dataservice.dao.pidservice.PidService;
-import com.navinfo.navicommons.geo.computation.CompLineUtil;
-import com.navinfo.navicommons.geo.computation.DoubleLine;
-import com.navinfo.navicommons.geo.computation.DoublePoint;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -1584,57 +1581,26 @@ public class Operation implements IOperation {
 		Geometry linkGeo = rdLink.getGeometry();
 
 		Coordinate nearestPoint = GeometryUtils.GetNearestPointOnLine(poiGeo.getCoordinate(), linkGeo);
-		
+
 		JSONObject geojson = new JSONObject();
 
 		geojson.put("type", "Point");
 
-		geojson.put("coordinates", new double[] {nearestPoint.x,nearestPoint.y});
+		geojson.put("coordinates", new double[] { nearestPoint.x, nearestPoint.y });
+
+		Geometry nearestPointGeo = GeoTranslator.geojson2Jts(geojson, 1, 0);
+
+		int side = GeometryUtils.calulatPointSideOflink(poiGeo, linkGeo, nearestPointGeo);
 		
-		Geometry point = GeoTranslator.geojson2Jts(geojson, 1, 0);
-		
-		// 如果poi点位在线上则更新side为3，否则计算左右
-		if (poiGeo.distance(linkGeo) <= 1) {
-			ixPoi.changedFields().put("side", 3);
-		} else {
-			// poi的位置点
-			DoublePoint doublePoint = new DoublePoint(poiGeo.getCoordinate().x, poiGeo.getCoordinate().y);
+		if(side != 0)
+		{
+			Geometry guidePoint = GeoTranslator.transform(nearestPointGeo, 0.00001, 5);
 
-			Coordinate cor[] = linkGeo.getCoordinates();
+			ixPoi.changedFields().put("xGuide", guidePoint.getCoordinate().x);
 
-			for (int i = 0; i < cor.length - 1; i++) {
-
-				Coordinate cor1 = cor[i];
-
-				Coordinate cor2 = cor[i + 1];
-
-				// 判断点是否在线段上
-				boolean isIntersection = GeoTranslator.isIntersectionInLine(new double[] { cor1.x, cor1.y },
-						new double[] { cor2.x, cor2.y }, new double[] { nearestPoint.x, nearestPoint.y });
-				if (isIntersection) {
-					
-					Geometry guidePoint = GeoTranslator.transform(point, 0.00001, 5);
-					
-					ixPoi.changedFields().put("xGuide", guidePoint.getCoordinate().x);
-					
-					ixPoi.changedFields().put("yGuide", guidePoint.getCoordinate().y);
-					
-					DoublePoint startPoint = new DoublePoint(cor1.x, cor1.y);
-
-					DoublePoint endPoint = new DoublePoint(cor2.x, cor2.y);
-
-					DoubleLine doubleLine = new DoubleLine(startPoint, endPoint);
-
-					boolean flag = CompLineUtil.isRightSide(doubleLine, doublePoint);
-
-					if (flag) {
-						ixPoi.changedFields().put("side", 2);
-					} else {
-						ixPoi.changedFields().put("side", 1);
-					}
-					break;
-				}
-			}
+			ixPoi.changedFields().put("yGuide", guidePoint.getCoordinate().y);
+			
+			ixPoi.changedFields().put("side", side);
 		}
 	}
 

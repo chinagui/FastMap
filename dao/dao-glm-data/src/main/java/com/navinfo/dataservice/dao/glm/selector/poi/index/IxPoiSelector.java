@@ -14,6 +14,7 @@ import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
@@ -325,9 +326,9 @@ public class IxPoiSelector extends AbstractSelector {
 	 * @throws Exception
 	 */
 	public List<IxPoi> loadIxPoiByLinkPid(int linkPid, boolean isLock) throws Exception {
-		
+
 		List<IxPoi> poiList = new ArrayList<>();
-		
+
 		IxPoi ixPoi = null;
 
 		String sql = "select * from  ix_poi where link_pid=:1 and u_record !=2";
@@ -365,5 +366,17 @@ public class IxPoiSelector extends AbstractSelector {
 		}
 
 		return poiList;
+	}
+
+	public IRow loadByIdAndChildren(int id, boolean isLock) throws Exception {
+		IxPoi poi = (IxPoi) super.loadById(id, isLock);
+
+		IxSamepoiPartSelector samepoiPartsSelector = new IxSamepoiPartSelector(conn);
+
+		List<IRow> parts = samepoiPartsSelector.loadByPoiPid(poi.pid(), isLock);
+
+		poi.setSamepoiParts(parts);
+
+		return poi;
 	}
 }

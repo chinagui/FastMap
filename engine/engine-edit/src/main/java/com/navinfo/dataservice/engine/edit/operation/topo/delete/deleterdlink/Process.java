@@ -434,6 +434,9 @@ public class Process extends AbstractProcess<Command> {
 				.getLink());
 		// 同一线
 		opRefRelationObj.handleSameLink(this.getResult(), this.getCommand());
+		
+		//poi引导link
+		opRefRelationObj.handlePoiGuideLink(this.getResult(), this.getCommand().getLink());
 	}
 
 	/**
@@ -601,6 +604,7 @@ public class Process extends AbstractProcess<Command> {
 		infectList = voiceguideSelector.loadPidByLink(this.getCommand()
 				.getLinkPid(), false);
 		infects.put("RDVOICEGUIDE", infectList);
+		
 
 		return infects;
 	}

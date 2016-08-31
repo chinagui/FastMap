@@ -7,8 +7,12 @@ import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.pidservice.PidService;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
+import com.navinfo.navicommons.geo.computation.GeometryUtils;
+import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONObject;
 
@@ -63,6 +67,23 @@ public class Operation implements IOperation {
 		ixPoi.setxGuide(command.getXguide());
 		ixPoi.setyGuide(command.getYguide());
 		ixPoi.setLinkPid(command.getLinkPid());
+		
+		//计算poi在link的位置信息（side）
+		RdLinkSelector  selector = new RdLinkSelector(conn);
+		RdLink link = (RdLink) selector.loadById(command.getLinkPid(), true, true);
+		
+		JSONObject geojson = new JSONObject();
+
+		geojson.put("type", "Point");
+
+		geojson.put("coordinates", new double[] { command.getXguide(),command.getYguide() });
+
+		Geometry nearestPointGeo = GeoTranslator.geojson2Jts(geojson, 100000, 0);
+		
+		int side = GeometryUtils.calulatPointSideOflink(ixPoi.getGeometry(), link.getGeometry(), nearestPointGeo);
+		
+		ixPoi.setSide(side);
+		
 		result.insertObject(ixPoi, ObjStatus.INSERT, ixPoi.getPid());
 		return msg;
 	}

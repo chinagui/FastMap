@@ -1,7 +1,5 @@
 package com.navinfo.dataservice.engine.edit.service;
 
-import java.sql.Connection;
-
 import org.springframework.stereotype.Service;
 
 import com.navinfo.dataservice.api.edit.iface.EditApi;
@@ -44,26 +42,5 @@ public class EditApiImpl implements EditApi {
 	@Override
 	public long applyPid(String tableName, int count) throws Exception {
 		return PidService.getInstance().applyPid(tableName, count);
-	}
-
-	@Override
-	public JSONObject run(JSONObject dataObj, Connection conn) throws Exception {
-		Transaction t = new Transaction(dataObj.toString(),conn);
-
-		String msg = t.run();
-
-		String log = t.getLogs();
-
-		JSONObject json = new JSONObject();
-
-		json.put("result", msg);
-
-		json.put("log", log);
-
-		json.put("check", t.getCheckLog());
-
-		json.put("pid", t.getPid());
-
-		return json;
 	}
 }

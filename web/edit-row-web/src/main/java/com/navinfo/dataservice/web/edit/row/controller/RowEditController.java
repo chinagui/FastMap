@@ -9,6 +9,7 @@ import java.sql.SQLException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
@@ -40,7 +41,7 @@ public class RowEditController extends BaseController {
 	private static final Logger logger = Logger.getLogger(RowEditController.class);
 
 	@RequestMapping(value = "/run")
-	public ModelAndView run(HttpServletRequest request) throws ServletException, IOException {
+	public ModelAndView run(HttpServletRequest request) throws Exception {
 
 		String parameter = request.getParameter("parameter");
 		
@@ -60,7 +61,7 @@ public class RowEditController extends BaseController {
 			
 			EditApi editApi = (EditApi) ApplicationContextUtil.getBean("editApi");
 
-			JSONObject result = editApi.run(json,conn);
+			JSONObject result = editApi.run(json);
 			
 			StringBuffer buf = new StringBuffer();
 			
@@ -86,30 +87,23 @@ public class RowEditController extends BaseController {
 				buf.append(String.valueOf(pid));
 			}
 			
-			json.put("objId", pid);
-			BatchProcess batchProcess = new BatchProcess();
-			batchProcess.execute(json, conn);
+//			json.put("objId", pid);
+//			BatchProcess batchProcess = new BatchProcess();
+//			batchProcess.execute(json, conn);
 			
 			upatePoiStatus(buf.toString(),conn);
 			
 			return new ModelAndView("jsonView", success(result));
 		} catch (DataNotChangeException e) {
+			DbUtils.rollbackAndClose(conn);
 			logger.error(e.getMessage(), e);
-
 			return new ModelAndView("jsonView", success(e.getMessage()));
 		} catch (Exception e) {
-
+			DbUtils.rollbackAndClose(conn);
 			logger.error(e.getMessage(), e);
-
 			return new ModelAndView("jsonView", fail(e.getMessage()));
 		} finally {
-			if (conn != null) {
-				try {
-					conn.close();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
+			DbUtils.close(conn);
 		}
 	}
 
@@ -221,7 +215,7 @@ public class RowEditController extends BaseController {
 	 */
 	public void upatePoiStatus(String pids,Connection conn) throws Exception {
 		StringBuilder sb = new StringBuilder(" MERGE INTO poi_edit_status T1 ");
-		sb.append(" USING (SELECT row_id as a , 2 AS b,0 AS C FROM ix_poi where pid = ("+pids+")) T2 ");
+		sb.append(" USING (SELECT row_id as a , 2 AS b,0 AS C FROM ix_poi where pid in ("+pids+")) T2 ");
 		sb.append(" ON ( T1.row_id=T2.a) ");
 		sb.append(" WHEN MATCHED THEN ");
 		sb.append(" UPDATE SET T1.status = T2.b,T1.fresh_verified= T2.c ");

@@ -24,6 +24,10 @@ public class VariablesFactory {
 		if(data instanceof RdRestrictionDetail){rdLinkSet.add(String.valueOf(((RdRestrictionDetail) data).getOutLinkPid()));}
 		if(data instanceof RdLinkForm){rdLinkSet.add(String.valueOf(((RdLinkForm) data).getLinkPid()));}
 		if(data instanceof RdWarninginfo){rdLinkSet.add(String.valueOf(((RdWarninginfo) data).getLinkPid()));}
+		if(data instanceof RdDirectroute){
+			rdLinkSet.add(String.valueOf(((RdDirectroute) data).getInLinkPid()));
+			rdLinkSet.add(String.valueOf(((RdDirectroute) data).getOutLinkPid()));
+		}
 		return rdLinkSet;
 	}
 	public static Set<String> getRdNodePid(IRow data){

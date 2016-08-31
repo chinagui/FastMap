@@ -6,8 +6,10 @@ import java.util.List;
 
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
+import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkSpeedlimit;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -24,7 +26,7 @@ public class SpeedLimitUtils {
 	public SpeedLimitUtils() {
 	}
 
-	public static int[] updateRdLink(RdLink rdLink, JSONObject json) {
+	public static void updateRdLink(RdLink rdLink, JSONObject json, Result result) {
 		boolean kindChange = false, laneChange = false, directChange = false, formChange = false, urbanChange = false;
 		RdLink link = new RdLink();
 		link.copy(rdLink);
@@ -63,7 +65,7 @@ public class SpeedLimitUtils {
 		if (null != rows && !rows.isEmpty()) {
 			for (IRow row : rows) {
 				if (isWalkigWay(((RdLinkForm) row).getFormOfWay())) {
-					return speedLimit;
+					return;
 				}
 			}
 		}
@@ -118,7 +120,7 @@ public class SpeedLimitUtils {
 							if (changeInnerA1A2OrA1A2(oldKindValue, newKindValue)
 									|| changeA1OrA2ToA3(oldKindValue, newKindValue)
 									|| changeA3ToA1OrA2(oldKindValue, newKindValue)) {
-								speedLimit = SpeedlimitBatchUtils.calcSpeedLimit(link, newForm);
+								speedLimit = calcSpeedLimit(link, newForm);
 							}
 						}
 					} else {
@@ -128,7 +130,7 @@ public class SpeedLimitUtils {
 									|| (changeA3ToA1OrA2(oldKindValue, newKindValue)
 											&& directPairToSingle(oldDirect, newDirect))
 									|| changeA1OrA2ToA3(oldKindValue, newKindValue)) {
-								speedLimit = SpeedlimitBatchUtils.calcSpeedLimit(link, newForm);
+								speedLimit = calcSpeedLimit(link, newForm);
 							}
 						}
 					}
@@ -139,7 +141,7 @@ public class SpeedLimitUtils {
 							if ((changeInnerA1OrA1A2(oldKindValue, newKindValue))
 									|| changeA1OrA2ToA3(oldKindValue, newKindValue)
 									|| changeA3ToA1OrA2(oldKindValue, newKindValue)) {
-								speedLimit = SpeedlimitBatchUtils.calcSpeedLimit(link, newForm);
+								speedLimit = calcSpeedLimit(link, newForm);
 							}
 						}
 					} else {
@@ -147,7 +149,7 @@ public class SpeedLimitUtils {
 						if (!urbanChange) {
 							if (changeInnerA1A2OrA1A2A3(oldKindValue, newKindValue)
 									|| changeHSToA1(oldKindValue, newKindValue)) {
-								return SpeedlimitBatchUtils.calcSpeedLimit(link, newForm);
+								speedLimit = calcSpeedLimit(link, newForm);
 							}
 						}
 					}
@@ -163,7 +165,7 @@ public class SpeedLimitUtils {
 								&& (directPairToSingle(oldDirect, newDirect)
 										|| directSingleToPair(oldDirect, newDirect)))
 								|| changeA1ToHS(oldKindValue, newKindValue)) {
-							speedLimit = SpeedlimitBatchUtils.calcSpeedLimit(link, newForm);
+							speedLimit = calcSpeedLimit(link, newForm);
 						}
 					}
 				} else {
@@ -173,7 +175,7 @@ public class SpeedLimitUtils {
 							if (changeInnerA1A2OrA1A2(oldKindValue, newKindValue)
 									|| changeA1OrA2ToA3(oldKindValue, newKindValue)
 									|| changeA3ToA1OrA2(oldKindValue, newKindValue)) {
-								speedLimit = SpeedlimitBatchUtils.calcSpeedLimit(link, newForm);
+								speedLimit = calcSpeedLimit(link, newForm);
 							}
 						}
 					} else {
@@ -181,7 +183,7 @@ public class SpeedLimitUtils {
 						if (!urbanChange) {
 							if (changeInA1A2A3(oldKindValue, newKindValue) || changeInA2(oldKindValue, newKindValue)
 									|| changeHSToA1(oldKindValue, newKindValue)) {
-								speedLimit = SpeedlimitBatchUtils.calcSpeedLimit(link, newForm);
+								speedLimit = calcSpeedLimit(link, newForm);
 							}
 						} else {
 							// AE变 BCD不变
@@ -197,13 +199,13 @@ public class SpeedLimitUtils {
 						// BCD变 AE不变
 						if (!urbanChange) {
 							if (isContain(rdLink.getKind(), A1, A2, A3)) {
-								speedLimit = SpeedlimitBatchUtils.calcSpeedLimit(link, newForm);
+								speedLimit = calcSpeedLimit(link, newForm);
 							}
 						}
 					} else {
 						// BC变 ADE不变
 						if (!urbanChange) {
-							speedLimit = SpeedlimitBatchUtils.calcSpeedLimit(link, newForm);
+							speedLimit = calcSpeedLimit(link, newForm);
 						}
 					}
 				} else {
@@ -211,13 +213,13 @@ public class SpeedLimitUtils {
 						// BD变 ACE不变
 						if (!urbanChange) {
 							if (isContain(rdLink.getKind(), A1, A2)) {
-								speedLimit = SpeedlimitBatchUtils.calcSpeedLimit(link, newForm);
+								speedLimit = calcSpeedLimit(link, newForm);
 							}
 						}
 					} else {
 						// B变 ACDE不变
 						if (isContain(rdLink.getKind(), A1)) {
-							return SpeedlimitBatchUtils.calcSpeedLimit(link, newForm);
+							speedLimit = calcSpeedLimit(link, newForm);
 						} else if (isContain(rdLink.getKind(), A2, A3)) {
 							// 限速值保持不变
 						}
@@ -229,14 +231,14 @@ public class SpeedLimitUtils {
 						// CD变 ABE不变
 						if (!urbanChange) {
 							if (isContain(rdLink.getKind(), A1, A2)) {
-								speedLimit = SpeedlimitBatchUtils.calcSpeedLimit(link, newForm);
+								speedLimit = calcSpeedLimit(link, newForm);
 							}
 						}
 					} else {
 						// C变 ABDE不变
 						if (!urbanChange) {
 							if (isContain(rdLink.getKind(), A1, A2)) {
-								speedLimit = SpeedlimitBatchUtils.calcSpeedLimit(link, newForm);
+								speedLimit = calcSpeedLimit(link, newForm);
 							}
 						}
 					}
@@ -245,18 +247,36 @@ public class SpeedLimitUtils {
 						// D变 ABCE不变
 						if (!urbanChange) {
 							if (isContain(rdLink.getKind(), A1, A2)) {
-								speedLimit = SpeedlimitBatchUtils.calcSpeedLimit(link, newForm);
+								speedLimit = calcSpeedLimit(link, newForm);
 							}
 						}
 					} else {
 						// E变 ABCD不变
 						if (isContain(rdLink.getKind(), A1) && urbanChange)
-							speedLimit = SpeedlimitBatchUtils.calcSpeedLimit(link, newForm);
+							speedLimit = calcSpeedLimit(link, newForm);
 					}
 				}
 			}
 		}
-		return speedLimit;
+
+		// 更新限速值
+		for (Integer speed : speedLimit) {
+			if (0 == speed)
+				continue;
+			for (IRow row : rdLink.getLimits()) {
+				RdLinkSpeedlimit limit = (RdLinkSpeedlimit) row;
+				if (0 == limit.getSpeedType()) {
+					if (0 == speedLimit[0]) {
+						limit.changedFields().put("fromSpeedLimit", speedLimit[0]);
+						limit.changedFields().put("toSpeedLimit", speedLimit[0]);
+					} else {
+						limit.changedFields().put("fromSpeedLimit", speedLimit[1]);
+						limit.changedFields().put("toSpeedLimit", speedLimit[2]);
+					}
+					result.insertObject(limit, ObjStatus.UPDATE, limit.parentPKValue());
+				}
+			}
+		}
 	}
 
 	/**
@@ -288,6 +308,7 @@ public class SpeedLimitUtils {
 	 * @param rdLink
 	 * @return
 	 */
+	@SuppressWarnings("unused")
 	private static boolean isUrban(RdLink rdLink) {
 		return rdLink.getUrban() == 1;
 	}
@@ -511,5 +532,121 @@ public class SpeedLimitUtils {
 
 	public static void main(String[] args) {
 		isContain(8, A2);
+	}
+
+	/**
+	 * 根据RdLink类型计算速度值
+	 * 
+	 * @param rdLink
+	 * @return int[总速度值， 左侧车道速度值， 右侧车道速度值]</br>
+	 * 
+	 *         当RdLink为双方向时总速度值为空， 当RdLink为单方向时仅返回总速度值
+	 */
+	public static int[] calcSpeedLimit(RdLink rdLink, int formOfWay) {
+		int speedLimit = 0;
+		speedLimit = walkWaySpeed(formOfWay);
+		if (0 != speedLimit) {
+			if (1 == rdLink.getDirect()) {
+				return new int[] { 0, speedLimit, speedLimit };
+			} else {
+				return new int[] { speedLimit, 0, 0 };
+			}
+		}
+
+		int leftSpeedLimit = 0;
+		int rightSpeedLimit = 0;
+		int laneNum, laneLeft, laneRight;
+
+		int kind = rdLink.getKind();
+		laneNum = rdLink.getLaneNum();
+
+		// 3,4,6,7级道路
+		if (Arrays.asList(A1).contains(kind)) {
+			// 双方向
+			if (1 == rdLink.getDirect()) {
+				// 双向车道数不同
+				if (0 == laneNum) {
+					laneLeft = rdLink.getLaneLeft();
+					laneRight = rdLink.getLaneRight();
+
+					leftSpeedLimit = loadSpeedLimit(laneLeft, rdLink.getDirect());
+					rightSpeedLimit = loadSpeedLimit(laneRight, rdLink.getDirect());
+				} else {
+					laneLeft = laneRight = laneNum % 2 == 0 ? laneNum / 2 : (laneNum + 1) / 2;
+					// 双向车道数相同
+					leftSpeedLimit = rightSpeedLimit = loadSpeedLimit(laneLeft, rdLink.getDirect());
+				}
+			} else {
+				speedLimit = loadSpeedLimit(laneNum, rdLink.getDirect());
+			}
+		} else {
+			speedLimit = loadOtherSpeedLimit(kind);
+		}
+
+		if (1 == rdLink.getUrban()) {
+			speedLimit = speedLimit >= 50 ? speedLimit - 10 : speedLimit;
+			leftSpeedLimit = leftSpeedLimit >= 50 ? leftSpeedLimit - 10 : leftSpeedLimit;
+			rightSpeedLimit = rightSpeedLimit >= 50 ? rightSpeedLimit - 10 : rightSpeedLimit;
+		}
+
+		return new int[] { speedLimit, leftSpeedLimit, rightSpeedLimit };
+	}
+
+	/**
+	 * RdLink的Kind为8，9，10，11，13时获取速度值
+	 * 
+	 * @param kind
+	 * @return
+	 */
+	private static int loadOtherSpeedLimit(int kind) {
+		int speedLimit = 0;
+		if (8 == kind) {
+			speedLimit = 15;
+		} else if (9 == kind) {
+			speedLimit = 15;
+		} else if (10 == kind) {
+			speedLimit = 10;
+		} else if (11 == kind) {
+			speedLimit = 10;
+		} else if (13 == kind) {
+			speedLimit = 15;
+		}
+		return speedLimit;
+	}
+
+	/**
+	 * RdLink的Kind为3，4，6，7时根据laneNum获取速度值
+	 * 
+	 * @param laneNum
+	 * @return
+	 */
+	private static int loadSpeedLimit(int laneNum, int direct) {
+		int speedLimit = 0;
+		if (1 == laneNum) {
+			speedLimit = 1 == direct ? 50 : 60;
+		} else if (2 == laneNum) {
+			speedLimit = 1 == direct ? 60 : 70;
+		} else if (3 == laneNum) {
+			speedLimit = 1 == direct ? 70 : 80;
+		} else if (4 <= laneNum) {
+			speedLimit = 80;
+		}
+		return speedLimit;
+	}
+
+	/**
+	 * 判断是否为私道、区域内道路、步行街中的一种
+	 * 
+	 * @param forms
+	 * @return
+	 */
+	private static int walkWaySpeed(int formOfWay) {
+		if (18 == formOfWay)
+			return 15;
+		if (20 == formOfWay)
+			return 10;
+		if (52 == formOfWay)
+			return 15;
+		return 0;
 	}
 }

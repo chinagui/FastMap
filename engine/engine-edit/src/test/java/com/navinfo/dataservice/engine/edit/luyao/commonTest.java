@@ -316,6 +316,18 @@ public class commonTest extends InitApplication {
 		String msg = t.run();
 	}
 	
+	
+	
+	@Test
+	public void run_0831_1() throws Exception {
+
+		String parameter = "{\"command\":\"CREATE\",\"dbId\":42,\"objId\":100009891,\"data\":{\"longitude\":116.38622093892067,\"latitude\":40.04213625094478},\"type\":\"RDNODE\"}";
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+	
 
 	@Test
 	public void test_List_Sub() throws Exception {

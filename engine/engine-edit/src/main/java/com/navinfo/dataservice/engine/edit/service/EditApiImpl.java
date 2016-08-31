@@ -1,5 +1,7 @@
 package com.navinfo.dataservice.engine.edit.service;
 
+import java.sql.Connection;
+
 import org.springframework.stereotype.Service;
 
 import com.navinfo.dataservice.api.edit.iface.EditApi;
@@ -9,10 +11,11 @@ import net.sf.json.JSONObject;
 
 /**
  * editApi的实现类
-* @ClassName: EditApiImpl 
-* @author Zhang Xiaolong
-* @date 2016年8月24日 下午7:16:24 
-* @Description: TODO
+ * 
+ * @ClassName: EditApiImpl
+ * @author Zhang Xiaolong
+ * @date 2016年8月24日 下午7:16:24
+ * @Description: TODO
  */
 @Service("editApi")
 public class EditApiImpl implements EditApi {
@@ -37,8 +40,30 @@ public class EditApiImpl implements EditApi {
 
 		return json;
 	}
+
 	@Override
 	public long applyPid(String tableName, int count) throws Exception {
 		return PidService.getInstance().applyPid(tableName, count);
+	}
+
+	@Override
+	public JSONObject run(JSONObject dataObj, Connection conn) throws Exception {
+		Transaction t = new Transaction(dataObj.toString(),conn);
+
+		String msg = t.run();
+
+		String log = t.getLogs();
+
+		JSONObject json = new JSONObject();
+
+		json.put("result", msg);
+
+		json.put("log", log);
+
+		json.put("check", t.getCheckLog());
+
+		json.put("pid", t.getPid());
+
+		return json;
 	}
 }

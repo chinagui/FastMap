@@ -37,8 +37,8 @@ public class Operation implements IOperation {
 			}
 		}
 
-		if (content.containsKey("names")) {
-			JSONArray names = content.getJSONArray("names");
+		if (content.containsKey("faceNames")) {
+			JSONArray names = content.getJSONArray("faceNames");
 			this.updateNames(result, names, face);
 		}
 

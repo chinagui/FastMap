@@ -1,17 +1,17 @@
-package com.navinfo.dataservice.engine.edit.operation.obj.poi.upload;
+package com.navinfo.dataservice.engine.edit.operation.obj.poi.upload.delete;
 
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 
-public class OperationForDelete implements IOperation {
+public class Operation implements IOperation {
 
-	private CommandForDelete command;
+	private Command command;
 
 	private IxPoi ixPoi;
 
-	public OperationForDelete(CommandForDelete command, IxPoi ixPoi) {
+	public Operation(Command command, IxPoi ixPoi) {
 		this.command = command;
 
 		this.ixPoi = ixPoi;

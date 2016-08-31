@@ -180,11 +180,15 @@ public class Operation implements IOperation {
 				this.conn);
 		eleceyeOperation.moveEleceye(oldLink, newLinks, result);
 
+		// poi被动维护（引导link，方位）
+		com.navinfo.dataservice.engine.edit.operation.obj.poi.update.Operation poiUpdateOption = new com.navinfo.dataservice.engine.edit.operation.obj.poi.update.Operation(
+				this.conn);
+		poiUpdateOption.updateLinkSideForPoi(oldLink, newLinks, result);
+
 		// 同一点关系
 		JSONObject updateJson = this.command.getJson();
-		
-		if(updateJson.containsKey("mainType"))
-		{
+
+		if (updateJson.containsKey("mainType")) {
 			String mainType = updateJson.getString("mainType");
 
 			if (mainType == ObjType.RDNODE.toString()) {
@@ -192,9 +196,7 @@ public class Operation implements IOperation {
 						null, this.conn);
 				sameNodeOperation.moveMainNodeForTopo(this.command.getJson(), ObjType.RDNODE, result);
 			}
-		}
-		else
-		{
+		} else {
 			com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create.Operation sameNodeOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create.Operation(
 					null, this.conn);
 			sameNodeOperation.moveMainNodeForTopo(this.command.getJson(), ObjType.RDNODE, result);

@@ -8,8 +8,6 @@ import org.junit.Test;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
-import com.navinfo.dataservice.dao.glm.search.RdLinkSearch;
-import com.navinfo.dataservice.dao.glm.search.RwLinkSearch;
 import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.operation.Transaction;
 import com.navinfo.dataservice.engine.edit.search.SearchProcess;
@@ -75,7 +73,20 @@ public class RdLinkTest extends InitApplication{
 	@Test
 	public void testRepairLink()
 	{
-		String parameter = "{\"command\":\"UPDATE\",\"dbId\":25,\"type\":\"RDLINK\",\"objId\":50113355,\"data\":{\"names\":[{\"linkPid\":50113355,\"rowId\":\"\",\"nameGroupid\":2625347,\"name\":\"京宝三纬路\",\"seqNum\":1,\"nameClass\":1,\"inputTime\":\"\",\"nameType\":0,\"srcFlag\":9,\"routeAtt\":0,\"code\":0,\"objStatus\":\"INSERT\"}],\"pid\":50113355}}";
+		String parameter = "{\"command\":\"REPAIR\",\"dbId\":42,\"objId\":100009905,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.41885,40.03103],[116.41926,40.03054],[116.41975,40.03115],[116.42048,40.02972],[116.42100870609283,40.02980381724441],[116.42156,40.02957],[116.42024,40.02951]]},\"interLinks\":[],\"interNodes\":[]},\"type\":\"RDLINK\"}";
+		Transaction t = new Transaction(parameter);
+		try {
+			String msg = t.run();
+			System.out.println(msg);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void testBreakRdLink()
+	{
+		String parameter = "{\"command\":\"BREAK\",\"dbId\":42,\"objId\":100009852,\"data\":{\"longitude\":116.3935117845917,\"latitude\":40.01393783844508},\"type\":\"RDLINK\"}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

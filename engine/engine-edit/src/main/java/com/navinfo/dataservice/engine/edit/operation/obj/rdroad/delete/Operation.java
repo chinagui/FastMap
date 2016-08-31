@@ -58,9 +58,9 @@ public class Operation implements IOperation {
 
 		List<RdRoadLink> rdRoadLinks = rdRoadLinkSelector.loadByLinks(linkPids,
 				true);
-		
-		if(rdRoadLinks.size()<1)
-		{
+
+		if (rdRoadLinks.size() < 1) {
+
 			return null;
 		}
 
@@ -79,29 +79,27 @@ public class Operation implements IOperation {
 
 		List<IRow> rows = roadSelector.loadByIds(rdRoadPids, true, true);
 
-		Set<Integer> deleteLinkbyRoad = new HashSet<Integer>();
+		Set<Integer> deleteRoad = new HashSet<Integer>();
 
 		for (IRow roadRow : rows) {
 
 			RdRoad road = (RdRoad) roadRow;
 
-			boolean isAllDelete = true;
+			int deleteCount = 0;
 
 			for (IRow linkRow : road.getLinks()) {
 
 				RdRoadLink roadLink = (RdRoadLink) linkRow;
 
-				if (!linkPids.contains(roadLink.getLinkPid())) {
+				if (linkPids.contains(roadLink.getLinkPid())) {
 
-					isAllDelete = false;
-
-					continue;
+					deleteCount++;
 				}
-
-				deleteLinkbyRoad.add(roadLink.getLinkPid());
 			}
 
-			if (isAllDelete) {
+			if ((road.getLinks().size() - deleteCount) < 2) {
+
+				deleteRoad.add(road.getPid());
 
 				delete(result, road);
 			}
@@ -109,7 +107,7 @@ public class Operation implements IOperation {
 
 		for (RdRoadLink roadLink : rdRoadLinks) {
 
-			if (!deleteLinkbyRoad.contains(roadLink.getLinkPid())) {
+			if (!deleteRoad.contains(roadLink.getPid())) {
 
 				result.insertObject(roadLink, ObjStatus.DELETE,
 						roadLink.getPid());
@@ -117,6 +115,5 @@ public class Operation implements IOperation {
 		}
 
 		return null;
-
 	}
 }

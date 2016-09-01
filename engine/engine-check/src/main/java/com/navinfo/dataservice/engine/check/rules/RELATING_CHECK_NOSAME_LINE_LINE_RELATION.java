@@ -27,6 +27,7 @@ import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
  * @author songdongyan
  * @date 2016年8月18日
  * @Description: 相同的进入线，进入点，经过线，退出线，不能创建两组相同类型分歧
+ * 相同的进入线、进入点不能创建两组（车信、普通交限、顺行、分叉口提示、分歧、语音引导、收费站、大门、自然语音引导）
  */
 public class RELATING_CHECK_NOSAME_LINE_LINE_RELATION extends baseRule {
 

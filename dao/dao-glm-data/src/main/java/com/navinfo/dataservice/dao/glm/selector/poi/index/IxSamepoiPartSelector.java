@@ -26,7 +26,7 @@ public class IxSamepoiPartSelector extends AbstractSelector {
 
 	public List<IRow> loadByPoiPid(int poiPid, boolean isLock) throws Exception {
 		List<IRow> list = new ArrayList<IRow>();
-		String sql = "SELECT * FROM IX_SAMEPOI_PART WHERE POI_PID = :1 AND U_RECORD != 2";
+		String sql = "SELECT * FROM IX_SAMEPOI_PART WHERE GROUP_ID IN (SELECT GROUP_ID FROM IX_SAMEPOI_PART WHERE POI_PID = :1 AND U_RECORD != 2)";
 
 		if (isLock) {
 			sql += " for update nowait";

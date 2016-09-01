@@ -8,6 +8,7 @@ import org.apache.commons.collections.CollectionUtils;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.exception.DataNotChangeException;
+import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IProcess;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -17,6 +18,8 @@ import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.log.LogWriter;
 import com.navinfo.dataservice.engine.check.CheckEngine;
+
+import net.sf.json.JSONObject;
 
 /**
  * @ClassName: Abstractprocess
@@ -55,7 +58,10 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 	public AbstractProcess(AbstractCommand command) throws Exception {
 		this.command = (T) command;
 		this.result = new Result();
-		this.conn = DBConnector.getInstance().getConnectionById(this.command.getDbId());
+		if(!command.getDbFlag())
+		{
+			this.conn = DBConnector.getInstance().getConnectionById(this.command.getDbId());
+		}
 		// 初始化检查参数
 		this.initCheckCommand();
 	}

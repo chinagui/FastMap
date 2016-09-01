@@ -1,5 +1,7 @@
 package com.navinfo.dataservice.api.edit.iface;
 
+import java.sql.Connection;
+
 import net.sf.json.JSONObject;
 
 /** 

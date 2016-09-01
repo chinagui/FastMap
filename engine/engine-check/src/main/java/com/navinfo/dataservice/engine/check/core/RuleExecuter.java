@@ -66,6 +66,16 @@ public class RuleExecuter {
 			{variablevalue=VariablesFactory.getRdGateInLinkPid(data);break;}
 			case RDGATE_OUTLINKPID:
 			{variablevalue=VariablesFactory.getRdGateOutLinkPid(data);break;}
+			case RDDIRECTROUTE_PID:
+			{variablevalue=VariablesFactory.getRdDirectroutePid(data);break;}
+			case RDSLOPE_PID:
+			{variablevalue=VariablesFactory.getRdSlopePid(data);break;}
+			case RDWARNINGINFO_PID:
+			{variablevalue=VariablesFactory.getRdWarninginfoPid(data);break;}
+			case RDBRANCH_PID:
+			{variablevalue=VariablesFactory.getRdBranchPid(data);break;}
+			case RDVOICEGUIDE_PID:
+			{variablevalue=VariablesFactory.getRdVoiceGuidePid(data);break;}
 		}
 		if(!variablesValueMap.containsKey(variable)){
 			variablesValueMap.put(variable, new HashSet<String>());}

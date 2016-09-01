@@ -59,6 +59,18 @@ public class UserInfoController extends BaseController {
 				dataJson.remove("devicePlatform");
 				dataJson.remove("deviceVersion");
 			}
+			if (dataJson.containsKey("deviceModel")) {
+				userDevice.setDeviceModel(dataJson.getString("deviceModel"));
+				dataJson.remove("deviceModel");
+			}
+			if (dataJson.containsKey("deviceSystemVersion")) {
+				userDevice.setDeviceSystemVersion(dataJson.getString("deviceSystemVersion"));
+				dataJson.remove("deviceSystemVersion");
+			}
+			if (dataJson.containsKey("deviceDescendantVersion")) {
+				userDevice.setDeviceDescendantVersion(dataJson.getString("deviceDescendantVersion"));
+				dataJson.remove("deviceDescendantVersion");
+			}
 
 			UserInfo userInfo = (UserInfo) JSONObject.toBean(dataJson, UserInfo.class);
 

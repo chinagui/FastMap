@@ -1,5 +1,7 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.poi.update;
 
+import java.sql.Connection;
+
 import com.navinfo.dataservice.dao.glm.iface.IProcess;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
@@ -12,9 +14,17 @@ public class Process extends AbstractProcess<Command> implements IProcess {
 
 	public Process(AbstractCommand command) throws Exception {
 		super(command);
-		// TODO Auto-generated constructor stub
 	}
-
+	
+	/**
+	 * @param command
+	 * @throws Exception
+	 */
+	public Process(AbstractCommand command,Connection conn) throws Exception {
+		super(command);
+		this.setConn(conn);
+	}
+	
 	@Override
 	public boolean prepareData() throws Exception {
 

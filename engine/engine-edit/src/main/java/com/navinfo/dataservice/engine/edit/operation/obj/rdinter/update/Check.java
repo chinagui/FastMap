@@ -168,7 +168,7 @@ public class Check {
 			List<Integer> linkPids = (List<Integer>) JSONArray.toCollection(linkArray);
 			if(linkList.size() != linkPids.size())
 			{
-				new Exception("传递的link参数不正确:包含的link个数错误");
+				throw new Exception("传递的link参数不正确:包含的link个数错误");
 			}
 			else
 			{

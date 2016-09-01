@@ -27,31 +27,29 @@ public class RuleExecuter {
 	
 	CheckCommand checkCommand=new CheckCommand();
 	private List<IRow> dataList=new ArrayList<IRow>();
-	private List<VariableName> checkSuitVariables=new ArrayList<VariableName>();
+	//private List<VariableName> checkSuitVariables=new ArrayList<VariableName>();
 	private Connection conn;
 	private Map<VariableName,Set<String>> variablesValueMap=new HashMap<VariableName,Set<String>>();
 	private ChainLoader loader=new ChainLoader();
 	
 	private static Logger log = Logger.getLogger(CheckEngine.class);
 
-	public RuleExecuter(CheckCommand checkCommand,List<VariableName> checkSuitVariables,Connection conn) {
+	public RuleExecuter(CheckCommand checkCommand,Connection conn) {
 		// TODO Auto-generated constructor stub
 		this.checkCommand=checkCommand;
 		this.setDataList(checkCommand.getGlmList());
-		this.checkSuitVariables=checkSuitVariables;
+		//this.checkSuitVariables=checkSuitVariables;
 		this.conn=conn;
-		if(!checkSuitVariables.isEmpty()){createVariablesValues();}
+		//if(!checkSuitVariables.isEmpty()){createVariablesValues();}
 	}
 	
 	/*
 	 * 根据数据确定变量的values
 	 * 随后执行sql语句的时候会通过变量替换values，形成可执行sql
 	 */
-	private void createVariablesValues(){
+	private void createVariablesValues(VariableName variable){
 		for(int i=0;i<dataList.size();i++){
-			for(int j=0;j<checkSuitVariables.size();j++){
-				createVariableFactory(dataList.get(i),checkSuitVariables.get(j));
-			}
+			createVariableFactory(dataList.get(i),variable);
 		}
 	}
 	
@@ -164,13 +162,21 @@ public class RuleExecuter {
 		return exeSqlRule(rule,sql,variableList);
 	}
 	
+	private Set<String> getVariableValue(VariableName variableName){
+		if(variablesValueMap.containsKey(variableName)){
+			return variablesValueMap.get(variableName);
+		}
+		createVariablesValues(variableName);
+		return variablesValueMap.get(variableName);
+	}
+	
 	private List<NiValException> exeSqlRule(CheckRule rule,String sql,List<VariableName> variableList) throws Exception{
 		List<String> sqlList=new ArrayList<String>();
 		List<String> sqlListTmp=new ArrayList<String>();
 		sqlList.add(sql);
 		//将sql语句中的参数进行替换，形成可执行的sql语句
 		for(int i=0;i<variableList.size();i++){
-			Set<String> variableValueList=variablesValueMap.get(variableList.get(i));
+			Set<String> variableValueList=getVariableValue(variableList.get(i));
 			if(variableValueList==null || variableValueList.size()==0){
 				sqlListTmp=new ArrayList<String>();
 				sqlList=new ArrayList<String>();
@@ -208,11 +214,13 @@ class checkResultDatabaseOperator extends DatabaseOperator{
 	public List<Object> settleResultSet(ResultSet resultSet) throws Exception{
 		List<Object> resultList=new ArrayList<Object>();
 		while (resultSet.next()){
-			
-			STRUCT struct = (STRUCT) resultSet.getObject("geometry");
-			Geometry geometry = GeoTranslator.struct2Jts(struct, 100000, 0);			
-			Geometry pointGeo=GeoHelper.getPointFromGeo(geometry);
-			String pointWkt = GeoTranslator.jts2Wkt(pointGeo, 0.00001, 5);
+			String pointWkt ="";
+			try{
+				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
+				Geometry geometry = GeoTranslator.struct2Jts(struct, 100000, 0);			
+				Geometry pointGeo=GeoHelper.getPointFromGeo(geometry);
+				pointWkt = GeoTranslator.jts2Wkt(pointGeo, 0.00001, 5);
+			}catch(Exception e){}
 			
 			String targets=resultSet.getString(2);
 			int meshId=resultSet.getInt(3);

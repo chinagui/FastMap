@@ -4,6 +4,8 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.navinfo.dataservice.commons.util.JsonUtils;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
@@ -382,8 +384,7 @@ public class SearchProcess {
 
 					RdObjectSelector selector = new RdObjectSelector(this.conn);
 
-					List<String> names = selector
-							.getRdObjectName(pid, true);
+					List<String> names = selector.getRdObjectName(pid, true);
 
 					for (String name : names) {
 						array.add(name);
@@ -391,17 +392,34 @@ public class SearchProcess {
 				}
 				break;
 			case RDLANE:
-				if(condition.containsKey("linkPid")){
+				if (condition.containsKey("linkPid")) {
 					int linkPid = condition.getInt("linkPid");
 					int laneDir = condition.getInt("laneDir");
 					RdLaneSelector selector = new RdLaneSelector(this.conn);
-					List<RdLane> lanes = selector.loadByLink(linkPid, laneDir, false);
-					for(RdLane lane:lanes){
+					List<RdLane> lanes = selector.loadByLink(linkPid, laneDir,
+							false);
+					for (RdLane lane : lanes) {
 						array.add(lane);
 					}
-					
+
 				}
-				
+				if (condition.containsKey("linkPids")) {
+					JsonUtils.getStringValueFromJSONArray(condition
+							.getJSONArray("linkPids"));
+					
+					@SuppressWarnings("unchecked")
+					List<Integer> pids = (List<Integer>)JSONArray.toCollection(condition
+							.getJSONArray("linkPids"), Integer.class);  
+					RdLaneSelector selector = new RdLaneSelector(this.conn);
+					List<RdLane> lanes = selector.loadByLinks(pids, 0,
+							false);
+					for (RdLane lane : lanes) {
+						array.add(lane);
+					}
+
+
+				}
+
 			}
 			return array;
 		} catch (Exception e) {

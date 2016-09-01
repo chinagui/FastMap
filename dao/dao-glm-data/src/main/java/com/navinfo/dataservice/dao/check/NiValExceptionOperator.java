@@ -3,6 +3,12 @@ package com.navinfo.dataservice.dao.check;
 import java.security.MessageDigest;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import oracle.spatial.geometry.JGeometry;
 
 import com.navinfo.dataservice.bizcommons.glm.Glm;
 import com.navinfo.dataservice.bizcommons.glm.GlmCache;
@@ -10,19 +16,30 @@ import com.navinfo.dataservice.bizcommons.glm.GlmGridCalculator;
 import com.navinfo.dataservice.bizcommons.glm.GlmGridCalculatorFactory;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
+import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeSelector;
 import com.navinfo.dataservice.dao.log.LogWriter;
 import com.navinfo.dataservice.dao.pidservice.PidService;
 import com.navinfo.dataservice.dao.pool.OracleAddress;
+import com.navinfo.navicommons.geo.computation.CompGridUtil;
+import com.navinfo.navicommons.geo.computation.GeometryUtils;
+import com.navinfo.navicommons.geo.computation.MeshUtils;
+import com.vividsolutions.jts.geom.Geometry;
 
 public class NiValExceptionOperator {
 
 	private Connection conn;
-
 	private String gdbVersion;
+	private Map<String, Geometry> geometryMap=new HashMap<String, Geometry>();
+	private Map<String, Integer> meshMap=new HashMap<String, Integer>();
+	private CkObjectNodeLoader objectNodeLoader=CkObjectNodeLoader.getInstance();
 
 	public NiValExceptionOperator() {
 
@@ -38,38 +55,27 @@ public class NiValExceptionOperator {
 		//this.gdbVersion = selector.getGdbVersion(projectId);
 	}
 
-	public void insertCheckLogGrid(String md5, String targets) throws Exception {
+	public void insertCheckLogGrid(String md5, String loc) throws Exception {
 
 		Glm glm = GlmCache.getInstance().getGlm(gdbVersion);
 
 		GlmGridCalculator calculator = GlmGridCalculatorFactory.getInstance()
 				.create(gdbVersion);
 
-		String value = StringUtils.removeBlankChar(targets);
-
 		String insertSql = "INSERT INTO NI_VAL_EXCEPTION_GRID (md5_code,GRID_ID) VALUES (?,?)";
 
 		PreparedStatement stmt = null;
 		try {
 			stmt = conn.prepareStatement(insertSql);
-
-			if (value != null && value.length() > 2) {
-				String subValue = value.substring(1, value.length() - 1);
-				for (String table : subValue.split("\\];\\[")) {
-					String[] arr = table.split(",");
-					String pidColName = glm.getTablePidColName(arr[0]);
-					String[] grids = calculator.calc(arr[0], pidColName,
-							Long.valueOf(arr[1]), conn);
-					if(grids!=null){
-						for (String grid : grids) {
-							stmt.setString(1, md5);
-							stmt.setLong(2, Long.valueOf(grid));
-							stmt.addBatch();
-						}
-					}
+			JGeometry geo = GeoTranslator.wkt2JGrometry(loc);
+			String[] grids = CompGridUtil.point2Grids(geo.getPoint()[0],geo.getPoint()[1]);
+			if(grids!=null){
+				for (String grid : grids) {
+					stmt.setString(1, md5);
+					stmt.setLong(2, Long.valueOf(grid));
+					stmt.addBatch();
 				}
 			}
-
 			stmt.executeBatch();
 			stmt.clearBatch();
 
@@ -83,9 +89,60 @@ public class NiValExceptionOperator {
 			}
 		}
 	}
+	
+	private List<Object> calGeometryAndMesh(String tableName,String pid) throws Exception{
+		List<Object> list=new ArrayList<Object>();
+		String key=tableName+":"+pid;
+		if(geometryMap.containsKey(key)){
+			list.add(geometryMap.get(key));
+			list.add(meshMap.get(key));
+		}
+		if(list.size()==0){
+			CkObjectNode objectNode=objectNodeLoader.getObjectNode(tableName);
+			if(objectNode.getMeshTable().equals("RD_LINK")){
+				RdLinkSelector linkSelector=new RdLinkSelector(conn);
+				String sql=objectNode.getMeshSql();
+				sql=sql.replace("!OBJECT_PID!", pid);
+				RdLink link=linkSelector.loadBySql(sql, false).get(0);
+				geometryMap.put(key, GeometryUtils.getPointFromGeo(link.getGeometry()));
+				meshMap.put(key, link.mesh());
+			}
+			if(objectNode.getMeshTable().equals("RD_NODE")){
+				RdNodeSelector nodeSelector=new RdNodeSelector(conn);
+				String sql=objectNode.getMeshSql();
+				sql.replace("!OBJECT_PID!", pid);
+				RdNode node=nodeSelector.loadBySql(sql, false).get(0);
+				Geometry geo=node.getGeometry();
+				geometryMap.put(key, node.getGeometry());
+				meshMap.put(key, Integer.valueOf(MeshUtils.point2Meshes(geo.getCoordinate().x, geo.getCoordinate().y)[0]));
+			}
+			list.add(geometryMap.get(key));
+			list.add(meshMap.get(key));
+		}
+		return list;
+	}
+	
+	private List calGeoAndMeshWithTarget(String targets) throws Exception{
+		List<Object> list=null;
+		String value=StringUtils.removeBlankChar(targets);
+		if (value != null && value.length() > 2) {
+			String subValue = value.substring(1, value.length() - 1);
+			for (String table : subValue.split("\\];\\[")) {
+				String[] arr = table.split(",");
+				list=calGeometryAndMesh(arr[0],arr[1]);
+				if(list!=null && list.size()!=0){return list;}
+			}
+		}
+		return list;
+	}
 
 	public void insertCheckLog(String ruleId, String loc, String targets,
 			int meshId, String worker) throws Exception {
+		if(loc==null||loc.isEmpty()){
+			List<Object> list=calGeoAndMeshWithTarget(targets);
+			loc = GeoTranslator.jts2Wkt((Geometry) list.get(0), 0.00001, 5);
+			meshId = (int) list.get(1);
+		}
 
 		String sql = "merge into ni_val_exception a using ( select * from ( select :1 as MD5_CODE from dual) where MD5_CODE not in ( select MD5_CODE          from ni_val_exception          where MD5_CODE is not null        union all        select RESERVED as MDS_CODE          from ck_exception          where RESERVED is not null          )) b on (a.MD5_CODE = b.MD5_CODE) when not matched then   insert     (MD5_CODE, ruleid, information, location, targets, mesh_id, worker, \"LEVEL\", created, updated )   values     (:2, :3, :4, sdo_geometry(:5, 8307), :6, :7, :8, :9, sysdate, sysdate)";
 		PreparedStatement pstmt = conn.prepareStatement(sql);
@@ -120,7 +177,7 @@ public class NiValExceptionOperator {
 
 				op.insertCkResultObject(md5, targets);
 
-				this.insertCheckLogGrid(md5, targets);
+				this.insertCheckLogGrid(md5, loc);
 			}
 
 		} catch (Exception e) {
@@ -130,15 +187,18 @@ public class NiValExceptionOperator {
 			try {
 				pstmt.close();
 			} catch (Exception e) {
-
 			}
-
 		}
-
 	}
 
 	public void insertCheckLog(String ruleId, String loc, String targets,
 			int meshId, String log, String worker) throws Exception {
+		
+		if(loc==null||loc.isEmpty()){
+			List<Object> list=calGeoAndMeshWithTarget(targets);
+			loc = GeoTranslator.jts2Wkt((Geometry) list.get(0), 0.00001, 5);
+			meshId = (int) list.get(1);
+		}
 
 		String sql = "merge into ni_val_exception a using ( select * from ( select :1 as MD5_CODE from dual) where MD5_CODE not in ( select MD5_CODE          from ni_val_exception          where MD5_CODE is not null        union all        select reserved as MD5_CODE          from ck_exception          where reserved is not null          )) b on (a.MD5_CODE = b.MD5_CODE) when not matched then   insert     (MD5_CODE, ruleid, information, location, targets, mesh_id, worker, \"LEVEL\", created, updated )   values     (:2, :3, :4, sdo_geometry(:5, 8307), :6, :7, :8, :9, sysdate, sysdate)";
 		PreparedStatement pstmt = conn.prepareStatement(sql);
@@ -172,7 +232,7 @@ public class NiValExceptionOperator {
 
 				op.insertCkResultObject(md5, targets);
 				
-				this.insertCheckLogGrid(md5, targets);
+				this.insertCheckLogGrid(md5, loc);
 			}
 
 		} catch (Exception e) {

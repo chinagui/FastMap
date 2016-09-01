@@ -24,9 +24,9 @@ import com.navinfo.dataservice.engine.check.core.VariableName;
 public class CheckEngine {
 	private CheckCommand checkCommand = null;
 	private Connection conn;
-	private List<VariableName> myCheckSuitPostVariables=new ArrayList<VariableName>();
-	private List<VariableName> myCheckSuitPreVariables=new ArrayList<VariableName>();
-	private List<CheckRule> checkRuleList=new ArrayList<CheckRule>();
+	public List<VariableName> myCheckSuitPostVariables=new ArrayList<VariableName>();
+	public List<VariableName> myCheckSuitPreVariables=new ArrayList<VariableName>();
+	public List<CheckRule> checkRuleList=new ArrayList<CheckRule>();
 	
 	public Connection getConn() {
 		return conn;
@@ -128,7 +128,7 @@ public class CheckEngine {
 	/*
 	 * 后检查
 	 */
-	private List<NiValException> exePostCheck() throws Exception{
+	public List<NiValException> exePostCheck() throws Exception{
 		log.info("start postCheck");
 		List<NiValException> checkResultList = new ArrayList<NiValException>();
 		RuleExecuter ruleExecuterObj=new RuleExecuter(this.checkCommand,this.myCheckSuitPostVariables,this.conn);

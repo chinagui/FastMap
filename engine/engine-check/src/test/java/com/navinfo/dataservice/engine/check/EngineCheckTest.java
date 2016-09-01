@@ -69,7 +69,6 @@ public class EngineCheckTest {
 		
 		CheckEngine checkEngine=new CheckEngine(checkCommand,conn);
 		checkEngine.checkRuleList.add(getRule());;
-		checkEngine.myCheckSuitPostVariables.add(Enum.valueOf(VariableName.class, "RDBRANCH_PID"));
 		checkEngine.saveCheckResult(checkEngine.exePostCheck());
 		conn.commit();
 		System.out.println("end");

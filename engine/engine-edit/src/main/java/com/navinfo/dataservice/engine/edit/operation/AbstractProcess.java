@@ -252,6 +252,7 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 	@Override
 	public boolean recordData() throws Exception {
 		LogWriter lw = new LogWriter(conn);
+		lw.setUserId(command.getUserId());
 		lw.generateLog(command, result);
 		OperatorFactory.recordData(conn, result);
 		lw.recordLog(command, result);

@@ -1,8 +1,7 @@
 package com.navinfo.dataservice.engine.edit.operation;
 
-import java.sql.Connection;
-
 import com.navinfo.dataservice.commons.util.JsonUtils;
+import com.navinfo.dataservice.dao.glm.iface.IProcess;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
@@ -34,13 +33,21 @@ public class Transaction {
 	 * 命令对象
 	 */
 	private AbstractCommand command;
-	
-	private Connection conn;
-	
+
 	/**
 	 * 操作进程对象
 	 */
-	private AbstractProcess<AbstractCommand> process;
+	private IProcess process;
+	
+    private long userId;
+    
+	public long getUserId() {
+		return userId;
+	}
+
+	public void setUserId(long userId) {
+		this.userId = userId;
+	}
 
 	public OperType getOperType() {
 		return operType;
@@ -49,12 +56,6 @@ public class Transaction {
 	public Transaction(String requester) {
 		this.requester = requester;
 	}
-	
-	public Transaction(String requester,Connection  conn) {
-		this.requester = requester;
-		this.conn = conn;
-	}
-
 	public String getRequester() {
 		return requester;
 	}
@@ -270,7 +271,7 @@ public class Transaction {
 			}
 		case RWNODE:
 			switch (operType) {
-			case CREATE:
+ 			case CREATE:
 				return new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrwpoint.Command(json,
 						requester);
 			case UPDATE:
@@ -662,7 +663,7 @@ public class Transaction {
 	 * @return 操作进程
 	 * @throws Exception
 	 */
-	private AbstractProcess createProcess(AbstractCommand command) throws Exception {
+	private IProcess createProcess(AbstractCommand command) throws Exception {
 
 		switch (objType) {
 		case RDLINK:
@@ -1192,25 +1193,9 @@ public class Transaction {
 	 */
 	public String run() throws Exception {
 		command = this.createCommand();
-
+        command.setUserId(userId);
 		process = this.createProcess(command);
-		
-		return process.run();
 
-	}
-	
-	public String poiRun() throws Exception {
-		command = this.createCommand();
-		
-		if(conn != null)
-		{
-			command.setDbFlag(true);
-			
-			process.setConn(conn);
-		}
-
-		process = this.createProcess(command);
-		
 		return process.run();
 
 	}

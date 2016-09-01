@@ -68,7 +68,6 @@ public class SelectorUtils {
 			pstmt.setInt(1, endRow);
 			pstmt.setInt(2, startRow);
 			resultSet = pstmt.executeQuery();
-			System.out.println(buffer.toString());
 			while (resultSet.next()) {
 				if (total == 0) {
 					total = resultSet.getInt("total");

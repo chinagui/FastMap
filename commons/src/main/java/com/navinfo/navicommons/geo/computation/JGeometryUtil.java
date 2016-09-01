@@ -11,12 +11,10 @@ import com.vividsolutions.jts.algorithm.ConvexHull;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.MultiPoint;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.operation.buffer.BufferOp;
 import com.vividsolutions.jts.operation.buffer.BufferParameters;
-import com.vividsolutions.jts.operation.polygonize.Polygonizer;
 import com.vividsolutions.jts.triangulate.ConformingDelaunayTriangulationBuilder;
 
 import oracle.spatial.geometry.JGeometry;
@@ -193,13 +191,7 @@ public class JGeometryUtil {
 
 		Polygon myPolygon = (Polygon) buff;
 
-		LineString exteriorRing = myPolygon.getExteriorRing();
-		
-//		BufferOp bufOp = new BufferOp(exteriorRing);  
-//        bufOp.setEndCapStyle(BufferParameters.CAP_ROUND);  
-//        Geometry bg = bufOp.getResultGeometry(0);  
-
-		return exteriorRing;
+		return myPolygon;
 
 	}
 }

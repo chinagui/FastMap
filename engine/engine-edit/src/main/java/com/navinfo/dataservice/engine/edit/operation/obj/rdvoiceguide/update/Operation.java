@@ -173,9 +173,9 @@ public class Operation implements IOperation {
 			if (link.getsNodePid() == voiceguide.getNodePid()
 					|| link.geteNodePid() == voiceguide.getNodePid()) {
 
-				voiceguide.changedFields().put("inLinkPid", link);
+				voiceguide.changedFields().put("inLinkPid", link.getPid());
 
-				result.insertObject(voiceguide, ObjStatus.DELETE,
+				result.insertObject(voiceguide, ObjStatus.UPDATE,
 						voiceguide.pid());
 
 				break;
@@ -238,7 +238,7 @@ public class Operation implements IOperation {
 				if (link.getsNodePid() == connectionNodePid
 						|| link.geteNodePid() == connectionNodePid) {
 
-					detail.changedFields().put("outLinkPid", link);
+					detail.changedFields().put("outLinkPid", link.getPid());
 
 					result.insertObject(detail, ObjStatus.UPDATE,
 							voiceguide.pid());

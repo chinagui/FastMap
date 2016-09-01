@@ -123,26 +123,24 @@ public class commonTest extends InitApplication {
 		Transaction t = new Transaction(parameter);
 		String msg = t.run();
 	}
-	
+
 	@Test
 	public void create_0826_3() throws Exception {
 		// parameter:{\"command\":\"MOVE\",\"dbId\":42,\"objId\":100025193,\"data\":{\"longitude\":116.62476941943167,\"latitude\":39.999848815977785},\"type\":\"RDNODE\"}
 		String parameter = "{\"command\":\"CREATE\",\"dbId\":42,\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.39896094799042,40.05339372428832],[116.39964222908021,40.054350454598364]]},\"catchLinks\":[{\"linkPid\":100009127,\"lon\":116.39896094799042,\"lat\":40.05339372428832}]},\"type\":\"RDLINK\"}";
-		
+
 		Transaction t = new Transaction(parameter);
 		String msg = t.run();
 	}
-	
-	
+
 	@Test
 	public void create_0826_4() throws Exception {
 		// parameter:{\"command\":\"MOVE\",\"dbId\":42,\"objId\":100025193,\"data\":{\"longitude\":116.62476941943167,\"latitude\":39.999848815977785},\"type\":\"RDNODE\"}
 		String parameter = "{\"command\":\"CREATE\",\"dbId\":42,\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.39898796175908,40.05340591977955],[116.39977633953094,40.05463788168161]]},\"catchLinks\":[{\"linkPid\":100009127,\"lon\":116.3989772170534,\"lat\":40.05339774425346}]},\"type\":\"RDLINK\"}";
-		
+
 		Transaction t = new Transaction(parameter);
 		String msg = t.run();
 	}
-	
 
 	@Test
 	public void updata0805_01() throws Exception {
@@ -294,28 +292,36 @@ public class commonTest extends InitApplication {
 
 		String msg = t.run();
 	}
-	
+
 	@Test
 	public void run_0829() throws Exception {
 
 		String parameter = "{\"command\":\"CREATE\",\"dbId\":1005,\"objId\":87669302,\"data\":{\"longitude\":116.37677623850006,\"latitude\":40.03536495436415},\"type\":\"RDNODE\"}";
-		
+
 		Transaction t = new Transaction(parameter);
 
 		String msg = t.run();
 	}
-	
+
 	@Test
 	public void run_0829_1() throws Exception {
 
 		String parameter = "{\"command\":\"CREATE\",\"dbId\":42,\"objId\":100009697,\"data\":{\"longitude\":116.38704563998596,\"latitude\":40.04266076687047},\"type\":\"RDNODE\"}";
-		
-		
+
 		Transaction t = new Transaction(parameter);
 
 		String msg = t.run();
 	}
-	
+
+	@Test
+	public void run_0831_1() throws Exception {
+
+		String parameter = "{\"command\":\"CREATE\",\"dbId\":42,\"objId\":100009891,\"data\":{\"longitude\":116.38622093892067,\"latitude\":40.04213625094478},\"type\":\"RDNODE\"}";
+
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
 
 	@Test
 	public void test_List_Sub() throws Exception {
@@ -342,36 +348,62 @@ public class commonTest extends InitApplication {
 				0), new Coordinate(116.16409, 39.87546, 0));
 		double a1 = AngleCalculator.getAngle(link1, link2);
 	}
-	
-	
+
 	@Test
-	public void testCrfObjectRender()
-	{
+	public void testCrfObjectRender() {
 		Connection conn;
 		try {
 			conn = DBConnector.getInstance().getConnectionById(42);
 
 			RdObjectSearch search = new RdObjectSearch(conn);
-			
-			List<SearchSnapshot> data = search.searchDataByTileWithGap(107907, 49609, 17, 80);
-			
-			System.out.println("data:"+ResponseUtils.assembleRegularResult(data));
+
+			List<SearchSnapshot> data = search.searchDataByTileWithGap(107907,
+					49609, 17, 80);
+
+			System.out.println("data:"
+					+ ResponseUtils.assembleRegularResult(data));
 
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+
 	}
-	
-	
+
 	@Test
-	public void testJosn()
-	{
-		JSONObject repairJson=new JSONObject();
-		
+	public void testJosn() {
+		JSONObject repairJson = new JSONObject();
+
 		repairJson.put("id", 1);
-		
+
 		repairJson.element("id", 2);
 	}
+
+	@Test
+	public void run_0831_2() throws Exception {
+
+		String parameter = "{\"command\":\"DELETE\",\"dbId\":42,\"type\":\"RDLINK\",\"objId\":100009894}";
+
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+	
+	@Test
+	public void run_0831_3() throws Exception {
+
+		String parameter = "{\"command\":\"DELETE\",\"dbId\":42,\"type\":\"RDLINK\",\"objId\":100009799}";
+
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+	
+	
+	
+	
+	
+	
+	
+	
 
 }

@@ -9,6 +9,7 @@ import java.sql.SQLException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
@@ -24,7 +25,9 @@ import com.navinfo.dataservice.commons.exception.DataNotChangeException;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
+import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.control.row.batch.BatchProcess;
+import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -38,7 +41,7 @@ public class RowEditController extends BaseController {
 	private static final Logger logger = Logger.getLogger(RowEditController.class);
 
 	@RequestMapping(value = "/run")
-	public ModelAndView run(HttpServletRequest request) throws ServletException, IOException {
+	public ModelAndView run(HttpServletRequest request) throws Exception {
 
 		String parameter = request.getParameter("parameter");
 		
@@ -50,49 +53,57 @@ public class RowEditController extends BaseController {
 			
 			OperType operType = Enum.valueOf(OperType.class, json.getString("command"));
 			
+			ObjType objType = Enum.valueOf(ObjType.class, json.getString("type"));
+			
 			int dbId = json.getInt("dbId");
+			
+			conn = DBConnector.getInstance().getConnectionById(dbId);
 			
 			EditApi editApi = (EditApi) ApplicationContextUtil.getBean("editApi");
 
 			JSONObject result = editApi.run(json);
 			
+			StringBuffer buf = new StringBuffer();
+			
 			int pid = 0;
 			
 			if(operType !=  OperType.CREATE)
 			{
-				pid = json.getInt("objId");
+				if(objType == ObjType.IXSAMEPOI)
+				{
+					String poiPids = JsonUtils.getStringValueFromJSONArray(json.getJSONArray("poiPids"));
+					buf.append(poiPids);
+				}
+				else
+				{
+					pid = json.getInt("objId");
+					
+					buf.append(String.valueOf(pid));
+				}
 			}
 			else
 			{
 				pid = result.getInt("pid");
+				buf.append(String.valueOf(pid));
 			}
 			
-			conn = DBConnector.getInstance().getConnectionById(dbId);
+//			json.put("objId", pid);
+//			BatchProcess batchProcess = new BatchProcess();
+//			batchProcess.execute(json, conn);
 			
-			upatePoiStatus(pid,conn);
+			upatePoiStatus(buf.toString(),conn);
 			
-			json.put("objId", pid);
-			BatchProcess batchProcess = new BatchProcess();
-			batchProcess.execute(json, conn);
-
 			return new ModelAndView("jsonView", success(result));
 		} catch (DataNotChangeException e) {
+			DbUtils.rollbackAndClose(conn);
 			logger.error(e.getMessage(), e);
-
 			return new ModelAndView("jsonView", success(e.getMessage()));
 		} catch (Exception e) {
-
+			DbUtils.rollbackAndClose(conn);
 			logger.error(e.getMessage(), e);
-
 			return new ModelAndView("jsonView", fail(e.getMessage()));
 		} finally {
-			if (conn != null) {
-				try {
-					conn.close();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
+			DbUtils.close(conn);
 		}
 	}
 
@@ -202,9 +213,9 @@ public class RowEditController extends BaseController {
 	 * @param row
 	 * @throws Exception
 	 */
-	public void upatePoiStatus(int pid,Connection conn) throws Exception {
+	public void upatePoiStatus(String pids,Connection conn) throws Exception {
 		StringBuilder sb = new StringBuilder(" MERGE INTO poi_edit_status T1 ");
-		sb.append(" USING (SELECT row_id as a , 2 AS b,0 AS C FROM ix_poi where pid = :1) T2 ");
+		sb.append(" USING (SELECT row_id as a , 2 AS b,0 AS C FROM ix_poi where pid in ("+pids+")) T2 ");
 		sb.append(" ON ( T1.row_id=T2.a) ");
 		sb.append(" WHEN MATCHED THEN ");
 		sb.append(" UPDATE SET T1.status = T2.b,T1.fresh_verified= T2.c ");
@@ -213,14 +224,12 @@ public class RowEditController extends BaseController {
 		PreparedStatement pstmt = null;
 		try {
 			pstmt = conn.prepareStatement(sb.toString());
-			pstmt.setInt(1, pid);
 			pstmt.executeUpdate();
 		} catch (Exception e) {
 			throw e;
 
 		} finally {
 			DBUtils.closeStatement(pstmt);
-			DBUtils.closeConnection(conn);
 		}
 
 	}

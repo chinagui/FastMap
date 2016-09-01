@@ -9,10 +9,11 @@ import net.sf.json.JSONObject;
 
 /**
  * editApi的实现类
-* @ClassName: EditApiImpl 
-* @author Zhang Xiaolong
-* @date 2016年8月24日 下午7:16:24 
-* @Description: TODO
+ * 
+ * @ClassName: EditApiImpl
+ * @author Zhang Xiaolong
+ * @date 2016年8月24日 下午7:16:24
+ * @Description: TODO
  */
 @Service("editApi")
 public class EditApiImpl implements EditApi {
@@ -37,6 +38,7 @@ public class EditApiImpl implements EditApi {
 
 		return json;
 	}
+
 	@Override
 	public long applyPid(String tableName, int count) throws Exception {
 		return PidService.getInstance().applyPid(tableName, count);

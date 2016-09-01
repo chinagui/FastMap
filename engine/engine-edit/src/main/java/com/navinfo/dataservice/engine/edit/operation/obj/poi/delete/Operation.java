@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.poi.delete;
 
 import java.sql.Connection;
+import java.util.List;
 
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -43,10 +44,13 @@ public class Operation implements IOperation {
 	public void deleteGuideLink(int linkPid, Result result) throws Exception {
 		IxPoiSelector selector = new IxPoiSelector(conn);
 
-		IxPoi poi = (IxPoi) selector.loadIxPoiByLinkPid(linkPid, true);
+		List<IxPoi> poiList = selector.loadIxPoiByLinkPid(linkPid, true);
 		
-		poi.changedFields().put("linkPid", 0);
-		
-		result.insertObject(poi, ObjStatus.UPDATE, poi.getPid());
+		for(IxPoi poi : poiList)
+		{
+			poi.changedFields().put("linkPid", 0);
+			
+			result.insertObject(poi, ObjStatus.UPDATE, poi.getPid());
+		}
 	}
 }

@@ -136,4 +136,5 @@ public class RdTrafficsignalSelector extends AbstractSelector {
 
 		return rows;
 	}
+	
 }

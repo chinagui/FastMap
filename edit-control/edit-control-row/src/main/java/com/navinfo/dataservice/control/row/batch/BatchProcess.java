@@ -8,7 +8,7 @@ import java.util.List;
 
 import org.apache.commons.dbutils.DbUtils;
 
-import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.control.row.batch.util.IBatch;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
@@ -77,8 +77,8 @@ public class BatchProcess {
 		
 		Connection conn = null;
 		try {
-			String sql = "select process_path from batch_rule where kind='row' and status=1";
-			conn = DBConnector.getInstance().getManConnection();
+			String sql = "select process_path from batch_rule where kind='row' and steps='save' and rule_status=1";
+			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
 			pstmt = conn.prepareStatement(sql);
 			resultSet = pstmt.executeQuery();
 			List<String> batchList = new ArrayList<String>();

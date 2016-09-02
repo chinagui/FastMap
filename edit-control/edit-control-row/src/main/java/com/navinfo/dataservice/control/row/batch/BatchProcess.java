@@ -77,7 +77,7 @@ public class BatchProcess {
 		
 		Connection conn = null;
 		try {
-			String sql = "select process_path from batch_rule where kind='row' and rule_status=1";
+			String sql = "select process_path from batch_rule where kind='row' and steps='save' and rule_status=1";
 			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
 			pstmt = conn.prepareStatement(sql);
 			resultSet = pstmt.executeQuery();

@@ -542,7 +542,7 @@ public class SpeedLimitUtils {
 	 * 
 	 *         当RdLink为双方向时总速度值为空， 当RdLink为单方向时仅返回总速度值
 	 */
-	public static int[] calcSpeedLimit(RdLink rdLink, int formOfWay) {
+	private static int[] calcSpeedLimit(RdLink rdLink, int formOfWay) {
 		int speedLimit = 0;
 		speedLimit = walkWaySpeed(formOfWay);
 		if (0 != speedLimit) {

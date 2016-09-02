@@ -31,6 +31,7 @@ public class RdTollgateTest extends InitApplication {
 	@Test
 	public void insert() {
 		String parameter = "{'command':'CREATE',` 'dbId':42, 'type':'RDTOLLGATE', 'data':{'inLinkPid':123, 'nodePid':213, 'outLinkPid':321}}";
+		parameter = "{\"command\":\"CREATE\",\"type\":\"IXPOI\",\"dbId\":42,\"data\":{\"longitude\":116.43301963806152,\"latitude\":40.027877331076056,\"x_guide\":116.4328129589824,\"y_guide\":40.027881798111885,\"linkPid\":15341035}}";
 		TestUtil.run(parameter);
 	}
 
@@ -56,7 +57,7 @@ public class RdTollgateTest extends InitApplication {
 
 			SearchProcess p = new SearchProcess(conn);
 
-			System.out.println(p.searchDataByPid(ObjType.IXPOI, 88727767).Serialize(ObjLevel.FULL));
+			System.out.println(p.searchDataByPid(ObjType.IXPOI, 3583550).Serialize(ObjLevel.FULL));
 
 			// RdTollgateSelector selector = new RdTollgateSelector(conn);
 			// RdTollgate tollgate = selector.loadById(1055, true);

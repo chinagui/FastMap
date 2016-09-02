@@ -159,28 +159,28 @@ public class Operation implements IOperation {
 		switch (type) {
 		case RDNODE:
 			com.navinfo.dataservice.engine.edit.operation.topo.move.moverdnode.Command updatecommand = new com.navinfo.dataservice.engine.edit.operation.topo.move.moverdnode.Command(
-					updateContent, command.getRequester());
+					updateContent, null);
 			com.navinfo.dataservice.engine.edit.operation.topo.move.moverdnode.Process process = new com.navinfo.dataservice.engine.edit.operation.topo.move.moverdnode.Process(
 					updatecommand, result, conn);
 			process.innerRun();
 			break;
 		case ADNODE:
 			com.navinfo.dataservice.engine.edit.operation.topo.move.moveadnode.Command adCommand = new com.navinfo.dataservice.engine.edit.operation.topo.move.moveadnode.Command(
-					updateContent, command.getRequester());
+					updateContent, null);
 			com.navinfo.dataservice.engine.edit.operation.topo.move.moveadnode.Process adProcess = new com.navinfo.dataservice.engine.edit.operation.topo.move.moveadnode.Process(
 					adCommand, result, conn);
 			adProcess.innerRun();
 			break;
 		case ZONENODE:
 			com.navinfo.dataservice.engine.edit.operation.topo.move.movezonenode.Command zoneCommand = new com.navinfo.dataservice.engine.edit.operation.topo.move.movezonenode.Command(
-					updateContent, command.getRequester());
+					updateContent, null);
 			com.navinfo.dataservice.engine.edit.operation.topo.move.movezonenode.Process zoneProcess = new com.navinfo.dataservice.engine.edit.operation.topo.move.movezonenode.Process(
 					zoneCommand, result, conn);
 			zoneProcess.innerRun();
 			break;
 		case LUNODE:
 			com.navinfo.dataservice.engine.edit.operation.topo.move.movelunode.Command luCommand = new com.navinfo.dataservice.engine.edit.operation.topo.move.movelunode.Command(
-					updateContent, command.getRequester());
+					updateContent, null);
 			com.navinfo.dataservice.engine.edit.operation.topo.move.movelunode.Process luProcess = new com.navinfo.dataservice.engine.edit.operation.topo.move.movelunode.Process(
 					luCommand, result, conn);
 			luProcess.innerRun();
@@ -247,12 +247,22 @@ public class Operation implements IOperation {
 
 				for (IRow row : sameNodePart) {
 					RdSameNodePart part = (RdSameNodePart) row;
+					
+					JSONObject updateJson = new JSONObject();
+					
+					Object obj = JSONObject.toBean(updateContent);
+					
+					updateJson = JSONObject.fromObject(obj);
 
 					ObjType partType = ReflectionAttrUtils.getObjTypeByTableName(part.getTableName());
+					
+					updateJson.element("objId", part.getNodePid());
+					
+					updateJson.element("type", partType);
+					
+					updateJson.put("mainType", type);
 
-					updateContent.put("objId", nodePid);
-
-					movePartNodeMap.put(partType, updateContent);
+					movePartNodeMap.put(partType, updateJson);
 				}
 
 				handleMovePartNodeMap(nodePid, type, movePartNodeMap, result);

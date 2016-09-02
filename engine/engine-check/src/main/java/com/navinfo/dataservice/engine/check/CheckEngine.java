@@ -19,14 +19,11 @@ import com.navinfo.dataservice.engine.check.core.CheckRuleLoader;
 import com.navinfo.dataservice.engine.check.core.CheckSuitLoader;
 import com.navinfo.dataservice.engine.check.core.NiValException;
 import com.navinfo.dataservice.engine.check.core.RuleExecuter;
-import com.navinfo.dataservice.engine.check.core.VariableName;
 
 public class CheckEngine {
 	private CheckCommand checkCommand = null;
 	private Connection conn;
-	private List<VariableName> myCheckSuitPostVariables=new ArrayList<VariableName>();
-	private List<VariableName> myCheckSuitPreVariables=new ArrayList<VariableName>();
-	private List<CheckRule> checkRuleList=new ArrayList<CheckRule>();
+	public List<CheckRule> checkRuleList=new ArrayList<CheckRule>();
 	
 	public Connection getConn() {
 		return conn;
@@ -60,8 +57,6 @@ public class CheckEngine {
 		String suitCode = objType.toString()+"_"+operType.toString()+"_"+checkType;
 		log.info(suitCode);
 		this.checkRuleList = CheckSuitLoader.getInstance().getCheckSuit(suitCode);
-		this.myCheckSuitPostVariables=CheckSuitLoader.getInstance().getCheckSuitPostVariables(suitCode);
-		this.myCheckSuitPreVariables=CheckSuitLoader.getInstance().getCheckSuitPreVariables(suitCode);
 	}
 	
 	/*
@@ -97,7 +92,7 @@ public class CheckEngine {
 	private List<NiValException> exePreCheck() throws Exception{
 		log.info("start preCheck");
 		//获取前检查需要执行规则列表
-		RuleExecuter ruleExecuterObj=new RuleExecuter(this.checkCommand,this.myCheckSuitPreVariables,this.conn);
+		RuleExecuter ruleExecuterObj=new RuleExecuter(this.checkCommand,this.conn);
 		for (int i=0;i<this.checkRuleList.size();i++){			
 			CheckRule rule=this.checkRuleList.get(i);
 			try{
@@ -128,10 +123,10 @@ public class CheckEngine {
 	/*
 	 * 后检查
 	 */
-	private List<NiValException> exePostCheck() throws Exception{
+	public List<NiValException> exePostCheck() throws Exception{
 		log.info("start postCheck");
 		List<NiValException> checkResultList = new ArrayList<NiValException>();
-		RuleExecuter ruleExecuterObj=new RuleExecuter(this.checkCommand,this.myCheckSuitPostVariables,this.conn);
+		RuleExecuter ruleExecuterObj=new RuleExecuter(this.checkCommand,this.conn);
 		for (int i=0;i<this.checkRuleList.size();i++){
 			CheckRule rule=this.checkRuleList.get(i);
 			try{
@@ -162,12 +157,6 @@ public class CheckEngine {
 			CheckRule myCheckRule = CheckRuleLoader.getInstance().getCheckRule(ruleStr);							
 			if(myCheckRule != null){
 				this.checkRuleList.add(myCheckRule);
-				if("POST".equals(checkType) && myCheckRule.getPostVariables()!=null && myCheckRule.getPostVariables().size()>0){
-					this.myCheckSuitPostVariables.removeAll(myCheckRule.getPostVariables());
-					this.myCheckSuitPostVariables.addAll(myCheckRule.getPostVariables());}
-				if("PRE".equals(checkType) && myCheckRule.getPreVariables()!=null && myCheckRule.getPreVariables().size()>0){
-					this.myCheckSuitPreVariables.removeAll(myCheckRule.getPreVariables());
-					this.myCheckSuitPreVariables.addAll(myCheckRule.getPreVariables());}
 			}							
 		}
 	}

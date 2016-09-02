@@ -17,17 +17,27 @@ import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 public class Command extends AbstractCommand {
 
 	private String requester;
-	
+
 	private int linkPid;
-	
+
 	private JSONObject linkGeom;
-	
+
 	private JSONArray interLines;
-	
+
 	private JSONArray interNodes;
-	
+
 	private RdLink updateLink;
-	
+
+	private String operationType = "";
+
+	public String getOperationType() {
+		return operationType;
+	}
+
+	public void setOperationType(String operationType) {
+		this.operationType = operationType;
+	}
+
 	private List<RdGsc> gscList;
 
 	public List<RdGsc> getGscList() {
@@ -53,7 +63,7 @@ public class Command extends AbstractCommand {
 	public JSONArray getInterNodes() {
 		return interNodes;
 	}
-	
+
 	public RdLink getUpdateLink() {
 		return updateLink;
 	}
@@ -64,38 +74,39 @@ public class Command extends AbstractCommand {
 
 	@Override
 	public OperType getOperType() {
-		
+
 		return OperType.REPAIR;
 	}
 
 	@Override
 	public String getRequester() {
-		
+
 		return requester;
 	}
 
 	@Override
 	public ObjType getObjType() {
-		
+
 		return ObjType.RDLINK;
 	}
-	
-	public Command(JSONObject json,String requester) throws JSONException{
-		
+
+	public Command(JSONObject json, String requester) throws JSONException {
+
 		this.requester = requester;
-		
+
 		this.setDbId(json.getInt("dbId"));
-		
+
 		this.linkPid = json.getInt("objId");
-		
+
 		JSONObject data = json.getJSONObject("data");
-		
+
 		JSONObject geometry = data.getJSONObject("geometry");
-		
-		this.linkGeom = GeoTranslator.jts2Geojson(GeoTranslator.geojson2Jts(geometry, 1, 5));
-		
+
+		this.linkGeom = GeoTranslator.jts2Geojson(GeoTranslator.geojson2Jts(
+				geometry, 1, 5));
+
 		this.interLines = data.getJSONArray("interLinks");
-		
+
 		this.interNodes = data.getJSONArray("interNodes");
 	}
 

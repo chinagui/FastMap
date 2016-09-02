@@ -12,8 +12,10 @@ import com.vividsolutions.jts.algorithm.ConvexHull;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.LineSegment;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.MultiPoint;
+import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
@@ -291,6 +293,40 @@ public class GeometryUtils {
 
 		return result;
 	}
+	
+	/*
+	 * 功能：获取线段geo的中点坐标
+	 * 返回值格式：String pointWkt = "Point ("+x+" "+y+")";
+	 */
+	public static Geometry getMidPointByLine(Geometry geo) throws Exception{
+		Coordinate[] cs = geo.getCoordinates();
+		
+		int midP = (int)Math.round(cs.length/2d);
+		double x = 0;
+		double y = 0;
+		if (cs.length%2==0){
+			x = cs[midP-1].x;
+			y = cs[midP-1].y;
+		}
+		else{
+			x = cs[midP].x;
+			y = cs[midP].y;}
+		
+		Geometry pointWkt = GeoTranslator.point2Jts(x, y);
+		return pointWkt;		
+		
+	}
+	
+	/*
+	 * 根据geo返回一个中心点，用于web端定位
+	 */
+	public static Geometry getPointFromGeo(Geometry geo) throws Exception{
+		Geometry pointGeo;
+		if (geo instanceof Point){pointGeo=geo;}
+		else if (geo instanceof LineString){pointGeo=getMidPointByLine(geo);}
+		else{pointGeo=geo.getCentroid();}
+		return pointGeo;
+	}
 
 	/**
 	 * 获取一条link自相交的点 （可能有多个点）
@@ -545,4 +581,213 @@ public class GeometryUtils {
 		return exteriorRing;
 
 	}
+
+	/**
+	 * 计算点与移动后的线之间最近点的坐标
+	 * 
+	 * @param point
+	 * @param geom
+	 * @return
+	 */
+	public static Coordinate GetNearestPointOnLine(Coordinate point, Geometry geom) {
+		Coordinate[] coll = geom.getCoordinates();
+
+		Coordinate targetPoint = new Coordinate();
+
+		if (coll.length < 2) {
+			return null;
+		}
+
+		double minDistance = 0;
+
+		targetPoint = coll[0];
+
+		minDistance = GeometryUtils.getDistance(point, targetPoint);
+
+		for (int i = 0; i < coll.length - 1; i++) {
+			Coordinate point1 = new Coordinate();
+			Coordinate point2 = new Coordinate();
+			Coordinate pedalPoint = new Coordinate();
+
+			point1 = coll[i];
+			point2 = coll[i + 1];
+
+			pedalPoint = GetPedalPoint(point1, point2, point);
+
+			boolean isPointAtLine = IsPointAtLineInter(point1, point2,
+					pedalPoint);
+
+			// 如果在线上
+			if (isPointAtLine) {
+				double pedalLong = GeometryUtils.getDistance(point, pedalPoint);
+				if (pedalLong < minDistance) {
+					minDistance = pedalLong;
+					targetPoint = pedalPoint;
+				}
+			} else {
+				// 计算与点1的最小距离
+				double long1 = GeometryUtils.getDistance(point1, point);
+				// 计算与点2的最小距离
+				double long2 = GeometryUtils.getDistance(point2, point);
+				if (long1 <= long2) {
+					if (long1 < minDistance) {
+						minDistance = long1;
+						targetPoint = point1;
+					}
+				} else {
+					if (long2 < minDistance) {
+						minDistance = long2;
+						targetPoint = point2;
+					}
+				}
+			}
+		}
+		return targetPoint;
+	}
+	
+	/**
+	 * 计算垂足点
+	 */
+	public static Coordinate GetPedalPoint(Coordinate point1, Coordinate point2,
+			Coordinate point) {
+		Coordinate targetPoint = new Coordinate();
+
+		double x1, x2, y1, y2;
+		x1 = point1.x;
+		y1 = point1.y;
+		x2 = point2.x;
+		y2 = point2.y;
+
+		if (x1 == x2 && y1 == y2) {
+			return null;
+		} else if (x1 == x2) {
+			targetPoint.x = x1;
+			targetPoint.y = point.y;
+		} else if (y1 == y2) {
+			targetPoint.x = point.x;
+			targetPoint.y = y1;
+		} else {
+			double k = (y2 - y1) / (x2 - x1);
+			double x = (k * k * x1 + k * (point.y - y1) + point.x)
+					/ (k * k + 1);
+			double y = k * (x - x1) + y1;
+
+			targetPoint.x = x;
+			targetPoint.y = y;
+		}
+		return targetPoint;
+	}
+	
+	/**
+	 * 计算点位在link的位置（side = 1：左侧，side=2：右侧，side = 3：link上）
+	 * @param point 需要计算的点位坐标
+	 * @param link link的几何
+	 * @param guideGeo 点在线上的垂足点位
+	 * @return 位置信息
+	 * @throws Exception
+	 */
+	public static int calulatPointSideOflink(Geometry point, Geometry link, Geometry guideGeo) throws Exception {
+		int side = 0;
+
+		// 如果poi点位在线上则更新side为3，否则计算左右
+		if (point.distance(link) <= 1) {
+			side = 3;
+		} else {
+			// poi的位置点
+			DoublePoint doublePoint = new DoublePoint(point.getCoordinate().x, point.getCoordinate().y);
+
+			Coordinate cor[] = link.getCoordinates();
+
+			for (int i = 0; i < cor.length - 1; i++) {
+
+				Coordinate cor1 = cor[i];
+
+				Coordinate cor2 = cor[i + 1];
+
+				// 判断点是否在线段上
+				boolean isIntersection = GeoTranslator.isIntersectionInLine(new double[] { cor1.x, cor1.y },
+						new double[] { cor2.x, cor2.y },
+						new double[] { guideGeo.getCoordinate().x, guideGeo.getCoordinate().y });
+				if (isIntersection) {
+
+					DoublePoint startPoint = new DoublePoint(cor1.x, cor1.y);
+
+					DoublePoint endPoint = new DoublePoint(cor2.x, cor2.y);
+
+					DoubleLine doubleLine = new DoubleLine(startPoint, endPoint);
+
+					boolean flag = CompLineUtil.isRightSide(doubleLine, doublePoint);
+
+					if (flag) {
+						side = 2;
+
+					} else {
+						side = 1;
+					}
+					break;
+				}
+			}
+		}
+
+		return side;
+	}
+	
+	/**
+	 * 判断点point是否在point1和point2组成的线上
+	 */
+	private static boolean IsPointAtLineInter(Coordinate point1, Coordinate point2,
+			Coordinate point) {
+		boolean result = false;
+
+		LineSegment lineSegment = new LineSegment(point1, point2);
+
+		if (lineSegment.distance(point) > 1) {
+
+			return result;
+		}
+
+		double x1, x2, y1, y2, x, y;
+
+		x1 = point1.x;
+		y1 = point1.y;
+		x2 = point2.x;
+		y2 = point2.y;
+		x = point.x;
+		y = point.y;
+
+		if (x >= min(x1, x2) && x <= max(x1, x2) && y >= min(y1, y2)
+				&& y <= max(y1, y2)) {
+			result = true;
+		}
+		return result;
+	}
+
+	/**
+	 * 判断两点的最小值
+	 * 
+	 * @param x1
+	 * @param x2
+	 * @return
+	 */
+	private static double min(double x1, double x2) {
+		if (x1 > x2)
+			return x2;
+		else
+			return x1;
+	}
+
+	/**
+	 * 判断两点的最大值
+	 * 
+	 * @param x1
+	 * @param x2
+	 * @return
+	 */
+	private static double max(double x1, double x2) {
+		if (x1 < x2)
+			return x2;
+		else
+			return x1;
+	}
+
 }

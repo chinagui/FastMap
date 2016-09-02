@@ -318,10 +318,7 @@ public class Process extends AbstractProcess<Command> {
 		IOperation opRefAdAdmin = new OpRefAdAdmin(this.getCommand());
 		opRefAdAdmin.run(this.getResult());
 
-		// 警示信息
-		OpRefRdWarninginfo opRefRdWarninginfo = new OpRefRdWarninginfo(
-				this.getConn());
-		opRefRdWarninginfo.run(this.getResult(), this.getCommand());
+	
 
 		// 电子眼
 		OpRefRdElectroniceye opRefRdElectroniceye = new OpRefRdElectroniceye(
@@ -351,19 +348,12 @@ public class Process extends AbstractProcess<Command> {
 		OpRefRdSlope opRefRdSlope = new OpRefRdSlope(this.getConn());
 		opRefRdSlope.run(this.getResult(), this.getCommand());
 
-		// 顺行
-		OpRefRdDirectroute opRefRdDirectroute = new OpRefRdDirectroute(
-				this.getConn());
-		opRefRdDirectroute.run(this.getResult(), this.getCommand());
-
+	
 		// CRF交叉点
 		OpRefRdInter opRefRdInter = new OpRefRdInter(this.getConn());
 		opRefRdInter.run(this.getResult(), this.getCommand());
 
-		// CRF道路
-		OpRefRdRoad opRefRdRoad = new OpRefRdRoad(this.getConn());
-		opRefRdRoad.run(this.getResult(), this.getCommand());
-
+	
 		// 同一点关系
 		OpRefRdSameNode opRefRdSameNode = new OpRefRdSameNode(getConn());
 		opRefRdSameNode.run(getResult(), this.getCommand());
@@ -371,12 +361,24 @@ public class Process extends AbstractProcess<Command> {
 		// 收费站
 		OpRefRdTollgate opRefRdTollgate = new OpRefRdTollgate(this.getConn(),
 				this.getCommand());
-		opRefRdTollgate.run(this.getResult());
-
-		// 语音引导
-		OpRefRdVoiceguide opRefRdVoiceguide = new OpRefRdVoiceguide(
+		opRefRdTollgate.run(this.getResult());		
+		
+		OpRefRelationObj opRefRelationObj = new OpRefRelationObj(
 				this.getConn());
-		opRefRdVoiceguide.run(this.getResult(), this.getCommand());
+		// 顺行		
+		opRefRelationObj.handleDirectroute(this.getResult(), this.getCommand());
+		
+		// CRF道路		
+		opRefRelationObj.handleRdroad(this.getResult(), this.getCommand());
+		
+		// 警示信息		
+		opRefRelationObj.handleWarninginfo(this.getResult(), this.getCommand());		
+		
+		// 语音引导		
+		opRefRelationObj.handleVoiceguide(this.getResult(), this.getCommand());
+		
+		// 同一线		
+		opRefRelationObj.handleSameLink(this.getResult(), this.getCommand());
 	}
 
 	/**

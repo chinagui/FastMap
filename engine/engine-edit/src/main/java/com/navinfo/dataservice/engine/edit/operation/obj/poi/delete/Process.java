@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.poi.delete;
 
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,6 +27,15 @@ public class Process extends AbstractProcess<Command> {
 
 	public Process(AbstractCommand command) throws Exception {
 		super(command);
+	}
+	
+	/**
+	 * @param command
+	 * @throws Exception
+	 */
+	public Process(AbstractCommand command,Connection conn) throws Exception {
+		super(command);
+		this.setConn(conn);
 	}
 
 	public boolean prepareData() throws Exception {

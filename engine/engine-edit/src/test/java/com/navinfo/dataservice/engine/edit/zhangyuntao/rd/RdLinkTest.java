@@ -1,7 +1,6 @@
 package com.navinfo.dataservice.engine.edit.zhangyuntao.rd;
 
 import java.sql.Connection;
-import java.util.Arrays;
 
 import org.junit.Test;
 
@@ -50,8 +49,7 @@ public class RdLinkTest extends InitApplication {
 			RdLinkSelector selector = new RdLinkSelector(conn);
 			RdLink link = (RdLink) selector.loadById(589615, false, null);
 			JSONObject json = JSONObject.fromObject("{\"urban\":1,\"pid\":589615,\"objStatus\":\"UPDATE\"}");
-			int[] ary = SpeedLimitUtils.updateRdLink(link, json);
-			System.out.println(Arrays.toString(ary));
+			SpeedLimitUtils.updateRdLink(link, json, null);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -78,7 +76,7 @@ public class RdLinkTest extends InitApplication {
 		parameter = "{\"type\":\"RDBRANCH\",\"command\":\"UPDATE\",\"dbId\":42,\"data\":{\"details\":[{\"estabType\":2,\"pid\":100000438,\"objStatus\":\"UPDATE\"}],\"pid\":23037}}";
 		TestUtil.run(parameter);
 	}
-	
+
 	public static void main(String[] args) {
 		System.out.println((MercatorProjection.longitudeToPixelX(110.2, (byte) 17) - 107942));
 		System.out.println((110.2 + 180) / 360 * ((long) Tile.TILE_SIZE << 17));

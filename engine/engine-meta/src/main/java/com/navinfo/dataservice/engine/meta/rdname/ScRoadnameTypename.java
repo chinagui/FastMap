@@ -30,7 +30,7 @@ public class ScRoadnameTypename {
 		
 		String sql = "SELECT * FROM (SELECT c.*, rownum rn FROM (SELECT COUNT (1) OVER (PARTITION BY 1) total,s.* from SC_ROADNAME_TYPENAME s ";
 		if (!name.isEmpty()) {
-			sql +=  " where s.name='"+name+"'";
+			sql +=  " where s.name like '%"+name+"%'";
 		}
 		if (!sortby.isEmpty()) {
 			sql += " ORDER BY s."+sortby;
@@ -40,9 +40,9 @@ public class ScRoadnameTypename {
 		try {
 			conn = DBConnector.getInstance().getMetaConnection();
 			
-			int startRow = pageNum * pageSize + 1;
+			int startRow = (pageNum-1) * pageSize + 1;
 
-			int endRow = (pageNum + 1) * pageSize;
+			int endRow = pageNum * pageSize;
 			
 			pstmt = conn.prepareStatement(sql);
 			

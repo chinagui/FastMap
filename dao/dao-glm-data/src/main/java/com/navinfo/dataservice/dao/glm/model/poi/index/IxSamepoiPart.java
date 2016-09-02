@@ -138,7 +138,7 @@ public class IxSamepoiPart implements IRow {
 
 	@Override
 	public String parentTableName() {
-		return "IX_SAMEPOI_PART";
+		return "IX_SAMEPOI";
 	}
 
 	@Override

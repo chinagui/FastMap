@@ -11,12 +11,10 @@ import com.vividsolutions.jts.algorithm.ConvexHull;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.MultiPoint;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.operation.buffer.BufferOp;
 import com.vividsolutions.jts.operation.buffer.BufferParameters;
-import com.vividsolutions.jts.operation.polygonize.Polygonizer;
 import com.vividsolutions.jts.triangulate.ConformingDelaunayTriangulationBuilder;
 
 import oracle.spatial.geometry.JGeometry;
@@ -170,7 +168,7 @@ public class JGeometryUtil {
 		
 		// 以0的距离进行缓冲（因为各多边形两两共边），生成一个多边形
 		// 此时则将点云构造成了多边形
-		Geometry union = ts.buffer(0.00005);
+		Geometry union = ts.buffer(0.0001);
 		
 		BufferOp bufOp = new BufferOp(union);  
         bufOp.setEndCapStyle(BufferParameters.CAP_ROUND);  
@@ -189,17 +187,11 @@ public class JGeometryUtil {
 
 		Geometry geosRing = hull.getConvexHull();
 
-		Geometry buff = geosRing.buffer(0.00002);
+		Geometry buff = geosRing.buffer(0);
 
 		Polygon myPolygon = (Polygon) buff;
 
-		LineString exteriorRing = myPolygon.getExteriorRing();
-		
-		BufferOp bufOp = new BufferOp(exteriorRing);  
-        bufOp.setEndCapStyle(BufferParameters.CAP_ROUND);  
-        Geometry bg = bufOp.getResultGeometry(0);  
-
-		return bg;
+		return myPolygon;
 
 	}
 }

@@ -219,7 +219,7 @@ public class RdNameSelector {
 			
 			String tmep = "";
 			if (tips.size()>0) {
-				sql.append(" a.SRC_RESUME in (");
+				sql.append(" and a.SRC_RESUME in (");
 				for (int i=0;i<tips.size();i++) {
 					JSONObject tipsObj = tips.getJSONObject(i);
 					sql.append(tmep);
@@ -274,9 +274,9 @@ public class RdNameSelector {
 			sql.append(" ) c");
 			sql.append(" WHERE rownum <= :1)  WHERE rn >= :2");
 			
-			int startRow = pageNum * pageSize + 1;
+			int startRow = (pageNum-1) * pageSize + 1;
 
-			int endRow = (pageNum + 1) * pageSize;
+			int endRow = pageNum * pageSize;
 
 			pstmt = conn.prepareStatement(sql.toString());
 

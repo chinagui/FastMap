@@ -32,8 +32,6 @@ public class CheckSuitLoader {
 	 * 存放各个检查suit的key为suitCode(feature_operation_operationType拼接而成)， value为[ruleCode]
 	 */
 	private Map<String, ArrayList<CheckRule>> map = new HashMap<String, ArrayList<CheckRule>>();
-	private Map<String, List<VariableName>> mapPostVariables = new HashMap<String, List<VariableName>>();	
-	private Map<String, List<VariableName>> mapPreVariables = new HashMap<String, List<VariableName>>();
 	
 	public ArrayList<CheckRule> getCheckSuit(String suitCode) throws Exception {
 		
@@ -47,8 +45,6 @@ public class CheckSuitLoader {
 					ResultSet resultSet = null;
 					Connection conn = null;					
 					ArrayList<CheckRule> checkRuleList = new ArrayList<CheckRule>();
-					List<VariableName> postVariablesList=new ArrayList<VariableName>();	
-					List<VariableName> preVariablesList=new ArrayList<VariableName>();	
 					try {
 						conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
 						pstmt = conn.prepareStatement(sql);
@@ -61,17 +57,9 @@ public class CheckSuitLoader {
 							CheckRule myCheckRule = CheckRuleLoader.getInstance().getCheckRule(ruleCode);							
 							if(myCheckRule != null){
 								checkRuleList.add(myCheckRule);
-								if("POST".equals(paras[2]) && myCheckRule.getPostVariables()!=null && myCheckRule.getPostVariables().size()>0){
-									postVariablesList.removeAll(myCheckRule.getPostVariables());
-									postVariablesList.addAll(myCheckRule.getPostVariables());}
-								if("PRE".equals(paras[2]) && myCheckRule.getPreVariables()!=null && myCheckRule.getPreVariables().size()>0){
-									preVariablesList.removeAll(myCheckRule.getPreVariables());
-									preVariablesList.addAll(myCheckRule.getPreVariables());}
 							}							
 						}
 						map.put(suitCode,checkRuleList);
-						mapPostVariables.put(suitCode, postVariablesList);
-						mapPreVariables.put(suitCode, preVariablesList);
 					} catch (Exception e) {
 						throw new Exception(e);
 					} finally {
@@ -99,15 +87,6 @@ public class CheckSuitLoader {
 
 		return map.get(suitCode);
 	}
-	
-	public List<VariableName> getCheckSuitPostVariables(String suitCode){
-		return mapPostVariables.get(suitCode);
-	}
-	
-	public List<VariableName> getCheckSuitPreVariables(String suitCode){
-		return mapPreVariables.get(suitCode);
-	}
-	
 	
 	public static void main(String args[]) throws Exception {
 		

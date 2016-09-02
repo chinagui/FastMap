@@ -14,7 +14,7 @@ public interface ISelector {
 	 * @param isLock
 	 *            是否加锁
 	 * @param loadChild 
-	 * 			是否加载子表
+	 * 			是否加载子表 （不传：加载子表；传true，不加载子表;传false,加载子表
 	 * @return IRow
 	 * @throws Exception
 	 */

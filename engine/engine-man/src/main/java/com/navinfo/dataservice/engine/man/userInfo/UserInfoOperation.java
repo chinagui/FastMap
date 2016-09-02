@@ -6,6 +6,7 @@ import java.util.HashMap;
 
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.MapHandler;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import java.sql.Connection;
@@ -249,8 +250,6 @@ public class UserInfoOperation {
 			String querySql = "select d.device_id"
 					+ " from user_device d"
 					+ " where d.device_token = '" + userDevice.getDeviceToken() + "'" 
-					+ " and d.device_platform = '" + userDevice.getDevicePlatform() + "'"
-					+ " and d.device_version = '" + userDevice.getDeviceVersion() + "'"
 					+ " and d.user_id = " + userInfo.getUserId();
 					
 			ResultSetHandler<UserDevice> rsHandler = new ResultSetHandler<UserDevice>() {
@@ -314,10 +313,11 @@ public class UserInfoOperation {
 	/**
 	 * @param conn
 	 * @param userId
+	 * @param deviceToken 
 	 * @param deviceId
 	 * @throws Exception 
 	 */
-	public static void updateDeviceStatus(Connection conn, long userId, int deviceId) throws Exception {
+	public static void updateDeviceStatus(Connection conn, long userId, String deviceToken, int deviceId) throws Exception {
 		// TODO Auto-generated method stub
 		try{
 			QueryRunner run = new QueryRunner();
@@ -325,14 +325,13 @@ public class UserInfoOperation {
 			// 更新user_device状态信息
 			String updateSql = "update user_device set status = 0"
 					+ " where user_id = " + userId
-					+ " and device_id != " + deviceId;
+					+ " or device_token = '" + deviceToken + "'";
 					
 	
 			run.update(conn, updateSql);
 			
 			updateSql = "update user_device set status = 1"
-					+ " where user_id = " + userId
-					+ " and device_id = " + deviceId;
+					+ " where device_id = " + deviceId;
 					
 	
 			run.update(conn, updateSql);
@@ -343,5 +342,122 @@ public class UserInfoOperation {
 			throw new Exception("查询userDevice，原因为:"+e.getMessage(),e);
 		}
 		
+	}
+
+	/**
+	 * @param conn
+	 * @return
+	 * @throws Exception 
+	 */
+	public static int getUserDeviceId(Connection conn) throws Exception {
+		// TODO Auto-generated method stub
+		try{
+			QueryRunner run = new QueryRunner();
+
+			// 获取device_id
+			String querySql = "select USER_DEVICE_SEQ.NEXTVAL as deviceId from dual";
+
+			int deviceId = Integer.valueOf(run
+						.query(conn, querySql, new MapHandler()).get("deviceId")
+						.toString());
+			return deviceId;
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("查询userDevice，原因为:"+e.getMessage(),e);
+		}
+	}
+
+	/**
+	 * @param conn
+	 * @param userId
+	 * @param userDevice
+	 * @throws Exception 
+	 */
+	public static void mergeUserDevice(Connection conn, long userId, UserDevice userDevice) throws Exception {
+		// TODO Auto-generated method stub
+		try{
+			QueryRunner run = new QueryRunner();
+
+			String updateSql = "";
+			String insertSql = "(UD.DEVICE_ID,UD.USER_ID";
+			String values = "VALUES (" + userDevice.getDeviceId() + "," + userId;
+			
+			if (userDevice!=null&&userDevice.getDeviceToken()!=null && StringUtils.isNotEmpty(userDevice.getDeviceToken().toString())){
+				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
+				updateSql += " DEVICE_TOKEN= " + "'" + userDevice.getDeviceToken() + "'";
+				insertSql += ",DEVICE_TOKEN";
+				values += ",'" + userDevice.getDeviceToken() + "'";
+			};
+			if (userDevice!=null&&userDevice.getDevicePlatform()!=null && StringUtils.isNotEmpty(userDevice.getDevicePlatform().toString())){
+				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
+				updateSql += " DEVICE_PLATFORM= " + "'" + userDevice.getDevicePlatform() + "'";
+				insertSql += ",DEVICE_PLATFORM";
+				values += ",'" + userDevice.getDevicePlatform() + "'";
+			};
+			if (userDevice!=null&&userDevice.getDeviceVersion()!=null && StringUtils.isNotEmpty(userDevice.getDeviceVersion().toString())){
+				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
+				updateSql += " DEVICE_VERSION= " + "'" + userDevice.getDeviceVersion() + "'";
+				insertSql += ",DEVICE_VERSION";
+				values += ",'" + userDevice.getDeviceVersion() + "'";
+			};
+			if (userDevice!=null&&userDevice.getDeviceModel()!=null && StringUtils.isNotEmpty(userDevice.getDeviceModel().toString())){
+				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
+				updateSql += " DEVICE_MODEL= " + "'" + userDevice.getDeviceModel() + "'";
+				insertSql += ",DEVICE_MODEL";
+				values += ",'" + userDevice.getDeviceModel() + "'";
+			};
+			if (userDevice!=null&&userDevice.getDeviceSystemVersion()!=null && StringUtils.isNotEmpty(userDevice.getDeviceSystemVersion().toString())){
+				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
+				updateSql += " DEVICE_SYSTEM_VERSION= " + "'" + userDevice.getDeviceSystemVersion() + "'";
+				insertSql += ",DEVICE_SYSTEM_VERSION";
+				values += ",'" + userDevice.getDeviceSystemVersion() + "'";
+			};
+			if (userDevice!=null&&userDevice.getDeviceDescendantVersion()!=null && StringUtils.isNotEmpty(userDevice.getDeviceDescendantVersion().toString())){
+				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
+				updateSql += " DEVICE_DESCENDANT_VERSION= " + "'" + userDevice.getDeviceDescendantVersion() + "'";
+				insertSql += ",DEVICE_DESCENDANT_VERSION";
+				values += ",'" + userDevice.getDeviceDescendantVersion() + "'";
+			};
+
+			// 插入user_device
+			String sql = "MERGE INTO USER_DEVICE UD"
+					+ " USING (SELECT DISTINCT " + userDevice.getDeviceId()
+					+ " AS DEVICE_ID FROM USER_DEVICE) TEMP"
+					+ " ON (UD.DEVICE_ID = TEMP.DEVICE_ID)"
+					+ " WHEN MATCHED THEN UPDATE SET " + updateSql + " WHERE UD.DEVICE_ID=" + userDevice.getDeviceId()
+					+ " WHEN NOT MATCHED THEN INSERT " + insertSql + ") " + values + ")" ;
+
+			run.update(conn, sql);
+
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("插入userDevice，原因为:"+e.getMessage(),e);
+		}
+	}
+
+	/**
+	 * @param conn
+	 * @param userId
+	 * @param deviceId
+	 * @throws Exception 
+	 */
+	public static void mergeUserUpload(Connection conn, long userId, int deviceId) throws Exception {
+		// TODO Auto-generated method stub
+		try{
+			QueryRunner run = new QueryRunner();
+
+			// 插入user_device
+			String sql = "MERGE INTO USER_UPLOAD UU"
+					+ " USING (SELECT DISTINCT " + userId + " AS USER_ID"
+					+ ", " + deviceId + " AS DEVICE_ID FROM USER_UPLOAD U_U) TEMP "
+					+ " ON (UU.USER_ID = TEMP.USER_ID AND UU.DEVICE_ID = TEMP.DEVICE_ID)"
+					+ " WHEN NOT MATCHED THEN INSERT (UU.USER_ID, UU.DEVICE_ID) VALUES (" + userId + "," + deviceId+")";
+
+			run.update(conn, sql);
+
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("插入userDevice，原因为:"+e.getMessage(),e);
+		}
 	}
 }

@@ -142,5 +142,16 @@ public class RdBranchTest extends InitApplication{
 		Transaction t = new Transaction(parameter);		;
 		String msg = t.run();
 	}
+	
+
+	@Test
+	public void update_0827() throws Exception {
+		String parameter = "{\"type\":\"RDBRANCH\",\"command\":\"UPDATE\",\"dbId\":42,\"data\":{\"details\":[{\"estabType\":3,\"pid\":100000438,\"objStatus\":\"UPDATE\"}],\"pid\":23037}}";
+		
+		
+		log.info(parameter);
+		Transaction t = new Transaction(parameter);		;
+		String msg = t.run();
+	}
 
 }

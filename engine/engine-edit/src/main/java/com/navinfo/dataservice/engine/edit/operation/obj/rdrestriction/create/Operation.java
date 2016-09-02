@@ -81,8 +81,13 @@ public class Operation implements IOperation {
 		restrict.setNodePid(inNodePid);
 
 		List<Integer> outLinkPids = command.getOutLinkPids();
+		
+		boolean hasSelectOutLink = true;
 
 		if (CollectionUtils.isEmpty(outLinkPids)) {
+			
+			hasSelectOutLink = false;
+			
 			// 计算退出线，只算直接和进入点联通的线，不算经过线
 			outLinkPids = calOutLinkPids();
 		}
@@ -126,7 +131,7 @@ public class Operation implements IOperation {
 		}
 		
 		//删除某一交限方向的多个退出link，选取正北或者正南方向夹角最小的
-		if(CollectionUtils.isNotEmpty(outLinkPids))
+		if(CollectionUtils.isNotEmpty(outLinkPids) && !hasSelectOutLink)
 		{
 			deleteMultLinkOnSameDir(outLinkPids, infoList);
 		}
@@ -137,7 +142,7 @@ public class Operation implements IOperation {
 			throw new Exception("未计算出退出线，请手动指定退出线");
 		}
 		
-		details.addAll(createDetail(restrict, outLinkPids, infoList));
+		details.addAll(createDetail(restrict, outLinkPids, infoList,infArray,hasSelectOutLink));
 
 		restrict.setDetails(details);
 
@@ -393,16 +398,20 @@ public class Operation implements IOperation {
 	 * @param restrict
 	 * @param outLinkPids
 	 * @param infoList
+	 * @param infArray 
+	 * @param hasSelectOutLink 
 	 * @return
 	 * @throws Exception
 	 */
 	public List<RdRestrictionDetail> createDetail(RdRestriction restrict, List<Integer> outLinkPids,
-			List<Integer> infoList) throws Exception {
+			List<Integer> infoList, String[] infArray, boolean hasSelectOutLink) throws Exception {
 
 		List<RdRestrictionDetail> details = new ArrayList<>();
 
-		for (int outLinkPid : outLinkPids) {
-
+		for (int i=0;i<outLinkPids.size();i++) {
+			
+			int outLinkPid = outLinkPids.get(i);
+					
 			RdRestrictionDetail detail = new RdRestrictionDetail();
 
 			detail.setOutLinkPid(outLinkPid);
@@ -412,15 +421,21 @@ public class Operation implements IOperation {
 			double angle = AngleCalculator.getAngle(inLinkSegment, outLinkSegment);
 
 			int restricInfo = this.calRestricInfo(angle);
-
-			if (infoList.contains(restricInfo)) {
+			
+			if(hasSelectOutLink)
+			{
 				detail.setMesh(restrict.mesh());
 
 				detail.setPid(PidService.getInstance().applyRestrictionDetailPid());
 
 				detail.setRestricPid(restrict.getPid());
-
-				detail.setRestricInfo(restricInfo);
+				
+				if(!infArray[i].contains("["))
+				{
+					detail.setFlag(1);
+				}
+				
+				detail.setRestricInfo(infoList.get(i));
 
 				detail.setRelationshipType(relationTypeMap.get(detail.getOutLinkPid()));
 
@@ -458,8 +473,57 @@ public class Operation implements IOperation {
 				detail.setVias(vias);
 
 				details.add(detail);
+			}
+			else
+			{
+				if (infoList.contains(restricInfo)) {
+					detail.setMesh(restrict.mesh());
 
-				infoList.remove(infoList.indexOf(restricInfo));
+					detail.setPid(PidService.getInstance().applyRestrictionDetailPid());
+
+					detail.setRestricPid(restrict.getPid());
+
+					detail.setRestricInfo(restricInfo);
+
+					detail.setRelationshipType(relationTypeMap.get(detail.getOutLinkPid()));
+
+					if (detail.getRelationshipType() == 1) {
+						check.checkGLM26017(conn, command.getNodePid());
+
+						check.checkGLM08033(conn, command.getInLinkPid(), outLinkPid);
+					}
+
+					List<Integer> viaLinkPids = viaLinkPidMap.get(detail.getOutLinkPid());
+
+					int seqNum = 1;
+
+					List<IRow> vias = new ArrayList<IRow>();
+
+					if (CollectionUtils.isNotEmpty(viaLinkPids)) {
+						for (Integer viaLinkPid : viaLinkPids) {
+
+							RdRestrictionVia via = new RdRestrictionVia();
+
+							via.setMesh(restrict.mesh());
+
+							via.setDetailId(detail.getPid());
+
+							via.setSeqNum(seqNum);
+
+							via.setLinkPid(viaLinkPid);
+
+							vias.add(via);
+
+							seqNum++;
+						}
+					}
+
+					detail.setVias(vias);
+
+					details.add(detail);
+
+					infoList.remove(infoList.indexOf(restricInfo));
+				}
 			}
 		}
 

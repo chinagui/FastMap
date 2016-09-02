@@ -165,10 +165,11 @@ public class OpTopo implements IOperation {
 
 	private void updataRelationObj(AdLink breakLink, Result result)
 			throws Exception {
+		if (!this.command.getOperationType().equals("innerRun")) {
+			OpRefRelationObj opRefRelationObj = new OpRefRelationObj(this.conn);
 
-		OpRefRelationObj opRefRelationObj = new OpRefRelationObj(this.conn);
-
-		// 处理同一线
-		opRefRelationObj.handleSameLink(breakLink, this.command, result);
+			// 处理同一线
+			opRefRelationObj.handleSameLink(breakLink, this.command, result);
+		}
 	}
 }

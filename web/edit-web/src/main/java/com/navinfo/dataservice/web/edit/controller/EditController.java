@@ -48,11 +48,12 @@ public class EditController extends BaseController {
 			throws ServletException, IOException {
 
 		String parameter = request.getParameter("parameter");
+		AccessToken tokenObj=(AccessToken) request.getAttribute("token");
 
 		try {
 
 			Transaction t = new Transaction(parameter);
-
+            t.setUserId(tokenObj.getUserId());
 			String msg = t.run();
 
 			String log = t.getLogs();

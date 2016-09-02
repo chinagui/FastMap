@@ -8,6 +8,7 @@ import java.util.List;
 import org.apache.commons.dbutils.DbUtils;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.web.servlet.ModelAndView;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -15,6 +16,7 @@ import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
+import com.navinfo.dataservice.dao.glm.selector.SelectorUtils;
 import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.operation.Transaction;
 import com.navinfo.dataservice.engine.edit.search.SearchProcess;
@@ -122,6 +124,39 @@ public class RdLinkTest extends InitApplication {
 			System.out.println(msg);
 		} catch (Exception e) {
 			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void testGetByElementCondition()
+	{
+		String parameter = "{\"dbId\":42,\"pageNum\":1,\"pageSize\":5,\"data\":{\"linkPid\":\"11111\"},\"type\":\"RDLINK\"}";
+
+		Connection conn = null;
+
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			String tableName = jsonReq.getString("type");
+			int pageNum = jsonReq.getInt("pageNum");
+			int pageSize = jsonReq.getInt("pageSize");
+			int dbId = jsonReq.getInt("dbId");
+			JSONObject data = jsonReq.getJSONObject("data");
+			conn = DBConnector.getInstance().getConnectionById(dbId);
+			SelectorUtils selectorUtils = new SelectorUtils(conn);
+			JSONObject jsonObject = selectorUtils.loadByElementCondition(data,tableName, pageSize, pageNum, false);
+			System.out.println(jsonObject.toString());
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
 		}
 	}
 }

@@ -1539,9 +1539,8 @@ public class UploadOperation {
 	 */
 	public void upatePoiStatusForAndroid(Connection conn, String rowId, int freshFlag, String rawFields)
 			throws Exception {
-		IxPoi ixPoi = new IxPoi();
 		StringBuilder sb = new StringBuilder(" MERGE INTO poi_edit_status T1 ");
-		sb.append(" USING (SELECT '" + ixPoi.getRowId() + "' as a, 1 as b," + freshFlag + " as c,'" + rawFields
+		sb.append(" USING (SELECT '" + rowId + "' as a, 1 as b," + freshFlag + " as c,'" + rawFields
 				+ "' as d," + "sysdate as e" + "  FROM dual) T2 ");
 		sb.append(" ON ( T1.row_id=T2.a) ");
 		sb.append(" WHEN MATCHED THEN ");

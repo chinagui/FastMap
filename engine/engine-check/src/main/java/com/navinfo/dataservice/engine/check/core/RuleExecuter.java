@@ -74,6 +74,10 @@ public class RuleExecuter {
 			{variablevalue=VariablesFactory.getRdBranchPid(data);break;}
 			case RDVOICEGUIDE_PID:
 			{variablevalue=VariablesFactory.getRdVoiceGuidePid(data);break;}
+			case RDTOLLGATE_PID:
+			{variablevalue=VariablesFactory.getRdTollgatePid(data);break;}
+			case RDGATE_PID:
+			{variablevalue=VariablesFactory.getRdGatePid(data);break;}
 		}
 		if(!variablesValueMap.containsKey(variable)){
 			variablesValueMap.put(variable, new HashSet<String>());}

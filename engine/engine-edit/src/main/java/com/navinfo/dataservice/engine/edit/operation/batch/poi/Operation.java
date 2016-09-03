@@ -26,6 +26,8 @@ public class Operation implements IOperation {
 
 	private void exeBatch(Result result) throws Exception {
 		try {
+			// 数据加锁
+			
 			result.insertObject(command.getPoi(), ObjStatus.UPDATE, command.getPid());
 		} catch (Exception e) {
 			throw e;

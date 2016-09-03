@@ -23,6 +23,9 @@ public class EditApiImpl implements EditApi {
 	
 	private long token;
 	
+	public EditApiImpl(){
+	}
+	
 	public EditApiImpl(Connection conn){
 		this.conn = conn;
 	}

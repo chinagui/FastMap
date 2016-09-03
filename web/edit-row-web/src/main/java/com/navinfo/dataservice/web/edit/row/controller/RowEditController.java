@@ -16,7 +16,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
-import com.navinfo.dataservice.api.edit.iface.EditApi;
 import com.navinfo.dataservice.api.job.iface.JobApi;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
@@ -26,9 +25,11 @@ import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.commons.util.JsonUtils;
+import com.navinfo.dataservice.control.row.batch.BatchProcess;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
+import com.navinfo.dataservice.engine.edit.service.EditApiImpl;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.DBUtils;
 
@@ -50,6 +51,10 @@ public class RowEditController extends BaseController {
 
 			JSONObject json = JSONObject.fromObject(parameter);
 			
+			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			
+			long userId = tokenObj.getUserId();
+			
 			OperType operType = Enum.valueOf(OperType.class, json.getString("command"));
 			
 			ObjType objType = Enum.valueOf(ObjType.class, json.getString("type"));
@@ -58,9 +63,11 @@ public class RowEditController extends BaseController {
 			
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 			
-			EditApi editApi = (EditApi) ApplicationContextUtil.getBean("editApi");
-
-			JSONObject result = editApi.run(json);
+			EditApiImpl editApiImpl = new EditApiImpl(conn);
+			
+			editApiImpl.setToken(userId);
+			
+			JSONObject result = editApiImpl.runPoi(json);
 			
 			StringBuffer buf = new StringBuffer();
 			
@@ -86,9 +93,11 @@ public class RowEditController extends BaseController {
 				buf.append(String.valueOf(pid));
 			}
 			
-//			json.put("objId", pid);
-//			BatchProcess batchProcess = new BatchProcess();
-//			batchProcess.execute(json, conn);
+			if (operType == OperType.UPDATE) {
+				json.put("objId", pid);
+				BatchProcess batchProcess = new BatchProcess();
+				batchProcess.execute(json, conn, editApiImpl);
+			}
 			
 			upatePoiStatus(buf.toString(),conn);
 			
@@ -102,7 +111,7 @@ public class RowEditController extends BaseController {
 			logger.error(e.getMessage(), e);
 			return new ModelAndView("jsonView", fail(e.getMessage()));
 		} finally {
-			DbUtils.close(conn);
+			DbUtils.commitAndClose(conn);
 		}
 	}
 

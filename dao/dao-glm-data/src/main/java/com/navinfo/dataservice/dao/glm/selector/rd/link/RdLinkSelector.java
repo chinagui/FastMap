@@ -46,8 +46,7 @@ public class RdLinkSelector extends AbstractSelector {
 		this.setCls(RdLink.class);
 	}
 
-	public List<RdLink> loadByNodePid(int nodePid, boolean isLock)
-			throws Exception {
+	public List<RdLink> loadByNodePid(int nodePid, boolean isLock) throws Exception {
 
 		List<RdLink> links = new ArrayList<RdLink>();
 
@@ -97,8 +96,7 @@ public class RdLinkSelector extends AbstractSelector {
 	/*
 	 * 仅加载主表RDLINK，其他子表若有需要，请单独加载
 	 */
-	public List<RdLink> loadByNodePidOnlyRdLink(int nodePid, boolean isLock)
-			throws Exception {
+	public List<RdLink> loadByNodePidOnlyRdLink(int nodePid, boolean isLock) throws Exception {
 
 		List<RdLink> links = new ArrayList<RdLink>();
 
@@ -191,8 +189,7 @@ public class RdLinkSelector extends AbstractSelector {
 
 		RdLink rdLink = new RdLink();
 
-		StringBuilder sb = new StringBuilder(
-				"select * from rd_link where link_pid = :1 and u_record !=2");
+		StringBuilder sb = new StringBuilder("select * from rd_link where link_pid = :1 and u_record !=2");
 
 		if (isLock) {
 			sb.append(" for update nowait");
@@ -226,8 +223,7 @@ public class RdLinkSelector extends AbstractSelector {
 		}
 	}
 
-	public Map<Integer, String> loadNameByLinkPids(Set<Integer> linkPids)
-			throws Exception {
+	public Map<Integer, String> loadNameByLinkPids(Set<Integer> linkPids) throws Exception {
 
 		Map<Integer, String> map = new HashMap<Integer, String>();
 
@@ -247,8 +243,7 @@ public class RdLinkSelector extends AbstractSelector {
 			clob.setString(1, StringUtils.join(linkPids, ","));
 			sb.append(" and b.link_pid IN (select to_number(column_value) from table(clob_to_table(?)))");
 		} else {
-			sb.append(" and b.link_pid IN (" + StringUtils.join(linkPids, ",")
-					+ ")");
+			sb.append(" and b.link_pid IN (" + StringUtils.join(linkPids, ",") + ")");
 		}
 
 		PreparedStatement pstmt = null;
@@ -290,8 +285,7 @@ public class RdLinkSelector extends AbstractSelector {
 		return map;
 	}
 
-	public List<RdLink> loadTrackLink(int linkPid, int nodePidDir,
-			boolean isLock) throws Exception {
+	public List<RdLink> loadTrackLink(int linkPid, int nodePidDir, boolean isLock) throws Exception {
 
 		List<RdLink> list = new ArrayList<RdLink>();
 		RdLink link = (RdLink) this.loadById(linkPid, isLock);
@@ -348,17 +342,13 @@ public class RdLinkSelector extends AbstractSelector {
 		}
 	}
 
-	public List<RdLink> loadByPids(List<Integer> pids, boolean isLock)
-			throws Exception {
+	public List<RdLink> loadByPids(List<Integer> pids, boolean isLock) throws Exception {
 		List<RdLink> rdLinks = new ArrayList<RdLink>();
 
-		StringBuilder sb = new StringBuilder(
-				"select * from rd_link where link_pid in ( "
-						+ com.navinfo.dataservice.commons.util.StringUtils
-								.getInteStr(pids) + ") and u_record!=2");
-		sb.append(" order by instr('"
-				+ com.navinfo.dataservice.commons.util.StringUtils
-						.getInteStr(pids) + "',link_pid)");
+		StringBuilder sb = new StringBuilder("select * from rd_link where link_pid in ( "
+				+ com.navinfo.dataservice.commons.util.StringUtils.getInteStr(pids) + ") and u_record!=2");
+		sb.append(" order by instr('" + com.navinfo.dataservice.commons.util.StringUtils.getInteStr(pids)
+				+ "',link_pid)");
 
 		if (isLock) {
 			sb.append(" for update nowait");
@@ -392,8 +382,8 @@ public class RdLinkSelector extends AbstractSelector {
 	}
 
 	// 获取上下线分离节点关节挂接的link
-	public List<RdLink> loadByDepartNodePid(int nodePid, int currentLinkPid,
-			int nextLinkPid, boolean isLock) throws Exception {
+	public List<RdLink> loadByDepartNodePid(int nodePid, int currentLinkPid, int nextLinkPid, boolean isLock)
+			throws Exception {
 
 		List<RdLink> links = new ArrayList<RdLink>();
 
@@ -439,13 +429,10 @@ public class RdLinkSelector extends AbstractSelector {
 
 	}
 
-	public JSONArray loadGeomtryByLinkPids(List<Integer> linkPids)
-			throws Exception {
+	public JSONArray loadGeomtryByLinkPids(List<Integer> linkPids) throws Exception {
 
-		StringBuilder sb = new StringBuilder(
-				"select geometry,e_node_pid,s_node_pid from rd_link where link_pid in ( "
-						+ com.navinfo.dataservice.commons.util.StringUtils
-								.getInteStr(linkPids) + ") and  u_record !=2");
+		StringBuilder sb = new StringBuilder("select geometry,e_node_pid,s_node_pid from rd_link where link_pid in ( "
+				+ com.navinfo.dataservice.commons.util.StringUtils.getInteStr(linkPids) + ") and  u_record !=2");
 
 		PreparedStatement pstmt = null;
 
@@ -466,8 +453,7 @@ public class RdLinkSelector extends AbstractSelector {
 			}
 
 			if (geos.size() > 0) {
-				return GeometryUtils.connectLinks(geos).getJSONArray(
-						"coordinates");
+				return GeometryUtils.connectLinks(geos).getJSONArray("coordinates");
 			} else {
 				throw new Exception("未找到link");
 			}
@@ -490,11 +476,10 @@ public class RdLinkSelector extends AbstractSelector {
 	 * @return
 	 * @throws Exception
 	 */
-	public List<RdLink> loadInLinkByNodePid(int nodePid, int form,
-			boolean isLock) throws Exception {
+	public List<RdLink> loadInLinkByNodePid(int nodePid, int form, boolean isLock) throws Exception {
 		List<RdLink> list = new ArrayList<RdLink>();
 
-		String sql = "SELECT a.* FROM rd_link a left join RD_LINK_FORM b on a.LINK_PID = b.link_pid WHERE b.FORM_OF_WAY != :1 and a.u_record !=2 and((a.s_node_pid = :2 AND a.direct = 3) OR (a.e_node_pid = :3 AND a.direct = 2) OR (a.direct = 1 AND (a.s_node_pid =:4 OR a.e_node_pid = :5)))";
+		String sql = "SELECT a.* FROM rd_link a left join RD_LINK_FORM b on a.LINK_PID = b.link_pid and b.FORM_OF_WAY != :1 WHERE a.u_record !=2 and((a.s_node_pid = :2 AND a.direct = 3) OR (a.e_node_pid = :3 AND a.direct = 2) OR (a.direct = 1 AND (a.s_node_pid =:4 OR a.e_node_pid = :5)))";
 
 		PreparedStatement pstmt = null;
 
@@ -536,16 +521,13 @@ public class RdLinkSelector extends AbstractSelector {
 	 * @return
 	 * @throws Exception
 	 */
-	public List<RdLink> loadLinkPidByNodePids(String nodePidsStr, boolean isLock)
-			throws Exception {
+	public List<RdLink> loadLinkPidByNodePids(String nodePidsStr, boolean isLock) throws Exception {
 		List<RdLink> list = new ArrayList<>();
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
 		try {
-			StringBuilder sb = new StringBuilder(
-					"select link_pid,IMI_CODE from rd_link where S_NODE_PID in("
-							+ nodePidsStr + ") and E_NODE_PID in ("
-							+ nodePidsStr + ") and u_record !=2");
+			StringBuilder sb = new StringBuilder("select link_pid,IMI_CODE from rd_link where S_NODE_PID in("
+					+ nodePidsStr + ") and E_NODE_PID in (" + nodePidsStr + ") and u_record !=2");
 			if (isLock) {
 				sb.append(" for update nowait");
 			}
@@ -575,8 +557,7 @@ public class RdLinkSelector extends AbstractSelector {
 		// 获取LINK对应的关联数据
 
 		// rd_link_form
-		List<IRow> forms = new AbstractSelector(RdLinkForm.class, conn)
-				.loadRowsByParentId(rdLink.getPid(), isLock);
+		List<IRow> forms = new AbstractSelector(RdLinkForm.class, conn).loadRowsByParentId(rdLink.getPid(), isLock);
 
 		for (IRow row : forms) {
 			row.setMesh(rdLink.getMeshId());
@@ -585,8 +566,8 @@ public class RdLinkSelector extends AbstractSelector {
 		rdLink.setForms(forms);
 
 		// rd_link_int_rtic
-		List<IRow> intRtics = new AbstractSelector(RdLinkIntRtic.class, conn)
-				.loadRowsByParentId(rdLink.getPid(), isLock);
+		List<IRow> intRtics = new AbstractSelector(RdLinkIntRtic.class, conn).loadRowsByParentId(rdLink.getPid(),
+				isLock);
 
 		for (IRow row : intRtics) {
 			row.setMesh(rdLink.getMeshId());
@@ -595,8 +576,7 @@ public class RdLinkSelector extends AbstractSelector {
 		rdLink.setIntRtics(intRtics);
 
 		// rd_link_limit
-		List<IRow> limits = new AbstractSelector(RdLinkLimit.class, conn)
-				.loadRowsByParentId(rdLink.getPid(), isLock);
+		List<IRow> limits = new AbstractSelector(RdLinkLimit.class, conn).loadRowsByParentId(rdLink.getPid(), isLock);
 
 		for (IRow row : limits) {
 			row.setMesh(rdLink.getMeshId());
@@ -605,8 +585,8 @@ public class RdLinkSelector extends AbstractSelector {
 		rdLink.setLimits(limits);
 
 		// rd_link_limit_truck
-		List<IRow> trucks = new AbstractSelector(RdLinkLimitTruck.class, conn)
-				.loadRowsByParentId(rdLink.getPid(), isLock);
+		List<IRow> trucks = new AbstractSelector(RdLinkLimitTruck.class, conn).loadRowsByParentId(rdLink.getPid(),
+				isLock);
 
 		for (IRow row : trucks) {
 			row.setMesh(rdLink.getMeshId());
@@ -615,8 +595,7 @@ public class RdLinkSelector extends AbstractSelector {
 		rdLink.setLimitTrucks(trucks);
 
 		// rd_link_name
-		List<IRow> names = new AbstractSelector(RdLinkName.class, conn)
-				.loadRowsByParentId(rdLink.getPid(), isLock);
+		List<IRow> names = new AbstractSelector(RdLinkName.class, conn).loadRowsByParentId(rdLink.getPid(), isLock);
 
 		for (IRow row : names) {
 			row.setMesh(rdLink.getMeshId());
@@ -625,8 +604,7 @@ public class RdLinkSelector extends AbstractSelector {
 		rdLink.setNames(names);
 
 		// rd_link_rtic
-		List<IRow> rtics = new AbstractSelector(RdLinkRtic.class, conn)
-				.loadRowsByParentId(rdLink.getPid(), isLock);
+		List<IRow> rtics = new AbstractSelector(RdLinkRtic.class, conn).loadRowsByParentId(rdLink.getPid(), isLock);
 
 		for (IRow row : rtics) {
 			row.setMesh(rdLink.getMeshId());
@@ -635,8 +613,8 @@ public class RdLinkSelector extends AbstractSelector {
 		rdLink.setRtics(rtics);
 
 		// rd_link_sidewalk
-		List<IRow> sidewalks = new AbstractSelector(RdLinkSidewalk.class, conn)
-				.loadRowsByParentId(rdLink.getPid(), isLock);
+		List<IRow> sidewalks = new AbstractSelector(RdLinkSidewalk.class, conn).loadRowsByParentId(rdLink.getPid(),
+				isLock);
 
 		for (IRow row : sidewalks) {
 			row.setMesh(rdLink.getMeshId());
@@ -645,8 +623,8 @@ public class RdLinkSelector extends AbstractSelector {
 		rdLink.setSidewalks(sidewalks);
 
 		// rd_link_speedlimit
-		List<IRow> speedlimits = new AbstractSelector(RdLinkSpeedlimit.class,
-				conn).loadRowsByParentId(rdLink.getPid(), isLock);
+		List<IRow> speedlimits = new AbstractSelector(RdLinkSpeedlimit.class, conn).loadRowsByParentId(rdLink.getPid(),
+				isLock);
 
 		for (IRow row : speedlimits) {
 			row.setMesh(rdLink.getMeshId());
@@ -655,8 +633,8 @@ public class RdLinkSelector extends AbstractSelector {
 		rdLink.setSpeedlimits(speedlimits);
 
 		// rd_link_walkstair
-		List<IRow> walkstairs = new AbstractSelector(RdLinkWalkstair.class,
-				conn).loadRowsByParentId(rdLink.getPid(), isLock);
+		List<IRow> walkstairs = new AbstractSelector(RdLinkWalkstair.class, conn).loadRowsByParentId(rdLink.getPid(),
+				isLock);
 
 		for (IRow row : walkstairs) {
 			row.setMesh(rdLink.getMeshId());
@@ -665,8 +643,7 @@ public class RdLinkSelector extends AbstractSelector {
 		rdLink.setWalkstairs(walkstairs);
 
 		// rd_link_zone
-		List<IRow> zones = new AbstractSelector(RdLinkZone.class, conn)
-				.loadRowsByParentId(rdLink.getPid(), isLock);
+		List<IRow> zones = new AbstractSelector(RdLinkZone.class, conn).loadRowsByParentId(rdLink.getPid(), isLock);
 
 		rdLink.setZones(zones);
 	}
@@ -674,8 +651,7 @@ public class RdLinkSelector extends AbstractSelector {
 	/*
 	 * 仅加载RDLINK的pid
 	 */
-	public List<Integer> loadLinkPidByNodePid(int nodePid, boolean isLock)
-			throws Exception {
+	public List<Integer> loadLinkPidByNodePid(int nodePid, boolean isLock) throws Exception {
 
 		List<Integer> links = new ArrayList<Integer>();
 
@@ -717,7 +693,6 @@ public class RdLinkSelector extends AbstractSelector {
 		return links;
 
 	}
-	
 
 	/**
 	 * 加载与面相交或者在面内的link
@@ -729,8 +704,7 @@ public class RdLinkSelector extends AbstractSelector {
 	 * @return 面内link集合，link只加载主表信息
 	 * @throws Exception
 	 */
-	public List<RdLink> loadLinkByFaceGeo(int facePid, String tableName,
-			boolean isLock) throws Exception {
+	public List<RdLink> loadLinkByFaceGeo(int facePid, String tableName, boolean isLock) throws Exception {
 
 		List<RdLink> rdLinks = new ArrayList<RdLink>();
 
@@ -738,7 +712,8 @@ public class RdLinkSelector extends AbstractSelector {
 
 		sb.append(tableName);
 
-		sb.append(" B WHERE B.FACE_PID = :1 AND A.U_RECORD != 2 AND B.U_RECORD != 2 AND SDO_RELATE(A.GEOMETRY, B.GEOMETRY, 'mask=anyinteract') = 'TRUE'");
+		sb.append(
+				" B WHERE B.FACE_PID = :1 AND A.U_RECORD != 2 AND B.U_RECORD != 2 AND SDO_RELATE(A.GEOMETRY, B.GEOMETRY, 'mask=anyinteract') = 'TRUE'");
 
 		if (isLock) {
 

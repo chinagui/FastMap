@@ -20,7 +20,7 @@ public class Command extends AbstractCommand {
 
 	private String requester;
 	private List<RdLaneTopoDetail> laneToptInfos;//车道联通信息
-	private List<IRow> delToptInfos;//要删除车道联通信息
+	private List<IRow> delToptInfos = new ArrayList<IRow>() ;//要删除车道联通信息
 	public List<IRow> getDelToptInfos() {
 		return delToptInfos;
 	}
@@ -76,20 +76,20 @@ public class Command extends AbstractCommand {
 		this.requester = requester;
 		this.setDbId(json.getInt("dbId"));
 		JSONObject data = json.getJSONObject("data");
-		this.setInLanePid(data.getInt("inLanePid"));
 		this.setInLinkPid(data.getInt("inLinkPid"));
 		this.setNodePid(data.getInt("inNodePid"));
+		laneToptInfos = new ArrayList<RdLaneTopoDetail>();
+		topoIds = new ArrayList<Integer>();
 		if(data.containsKey("topoIds")){
-			topoIds = new ArrayList<Integer>();
 			for(int i = 0 ; i < data.getJSONArray("topoIds").size();i++){
 				topoIds.add(data.getJSONArray("topoIds").getInt(i));
 			}
 		}
 		this.setTopoIds(topoIds);
-		for(int i = 0;i < data.getJSONArray("laneTopotnfos").size(); i++ ){
+		for(int i = 0;i < data.getJSONArray("laneTopoInfos").size(); i++ ){
 			RdLaneTopoDetail  laneTopoDetail = new RdLaneTopoDetail();
 			JSONObject jsonObject = data.getJSONArray("laneTopoInfos").getJSONObject(i);
-			laneTopoDetail.setIntLanePid(this.getInLanePid());
+			laneTopoDetail.setInLanePid(jsonObject.getInt("inLanePid"));
 			laneTopoDetail.setInLinkPid(this.getInLinkPid());
 			laneTopoDetail.setNodePid(this.getNodePid());
 			laneTopoDetail.setOutLanePid(jsonObject.getInt("outLanePid"));

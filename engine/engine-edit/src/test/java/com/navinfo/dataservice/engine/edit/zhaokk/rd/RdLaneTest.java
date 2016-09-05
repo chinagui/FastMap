@@ -24,7 +24,7 @@ public class RdLaneTest extends InitApplication {
 	@Test
 	public void testAddBatchRdLane() {
 		String parameter = "{\"command\":\"BATCH\",\"type\":\"RDLANE\",\"dbId\":42,"
-				+ "\"data\":{\"linkPids\":[100009699,100009700],\"laneDir\":2,\"laneInfos\":[{\"pid\":0,\"seqNum\":1,\"arrowDir\":\"o\"},{\"pid\":0,\"seqNum\":2,\"arrowDir\":\"t\"}]}}";
+				+ "\"data\":{\"linkPids\":[100010969,100010976,100010977],\"laneDir\":2,\"laneInfos\":[{\"pid\":0,\"seqNum\":1,\"arrowDir\":\"a\"},{\"pid\":0,\"seqNum\":2,\"arrowDir\":\"b\"},{\"pid\":0,\"seqNum\":3,\"arrowDir\":\"c\"}]}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

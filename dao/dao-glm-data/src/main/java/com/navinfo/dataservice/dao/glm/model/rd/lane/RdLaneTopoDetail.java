@@ -29,12 +29,12 @@ public class RdLaneTopoDetail implements IObj {
 
 	private int pid;
 
-	public int getIntLanePid() {
-		return intLanePid;
+	public int getInLanePid() {
+		return inLanePid;
 	}
 
-	public void setIntLanePid(int intLanePid) {
-		this.intLanePid = intLanePid;
+	public void setInLanePid(int inLanePid) {
+		this.inLanePid = inLanePid;
 	}
 
 	public int getOutLanePid() {
@@ -95,7 +95,7 @@ public class RdLaneTopoDetail implements IObj {
 
 	
 
-	private int intLanePid; // 进入车道
+	private int inLanePid; // 进入车道
 	private int outLanePid; // 退出车道
 	private int inLinkPid;// 进入 LINK
 	private int nodePid; // 进入 NODE
@@ -317,14 +317,14 @@ public class RdLaneTopoDetail implements IObj {
 	@Override
 	public Map<Class<? extends IRow>, List<IRow>> childList() {
 		Map<Class<? extends IRow>, List<IRow>> childList = new HashMap<Class<? extends IRow>, List<IRow>>();
-		childList.put(RdLaneCondition.class, topoVias);
+		childList.put(RdLaneTopoVia.class, topoVias);
 		return childList;
 	}
 
 	@Override
 	public Map<Class<? extends IRow>, Map<String, ?>> childMap() {
 		Map<Class<? extends IRow>, Map<String, ?>> childMap = new HashMap<Class<? extends IRow>, Map<String, ?>>();
-		childMap.put(RdLaneCondition.class, mapVia);
+		childMap.put(RdLaneTopoVia.class, mapVia);
 		return childMap;
 	}
 }

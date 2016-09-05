@@ -1,7 +1,6 @@
 ﻿<configMap>
 
-<!-- common part -->
-	<!--管理数据库的连接 -->
+	<!-- common part -->
 	<SYS.server.type>ORACLE</SYS.server.type>
 	<SYS.jdbc.driverClassName>oracle.jdbc.driver.OracleDriver</SYS.jdbc.driverClassName>
 	<SYS.jdbc.url>jdbc:oracle:thin:@192.168.4.131:1521/orcl</SYS.jdbc.url>

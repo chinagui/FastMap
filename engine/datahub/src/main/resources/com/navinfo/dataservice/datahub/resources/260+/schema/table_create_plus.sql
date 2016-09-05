@@ -69,37 +69,13 @@ create table POI_DEEP_WORKITEM_CONF
 comment on column POI_DEEP_WORKITEM_CONF.ID
   is '主键';
 comment on column POI_DEEP_WORKITEM_CONF.FIRST_WORK_ITEM
-  is '一级作业项,poi_name:中文名称；
-poi_address:中文地址；
-poi_englishname:英文名称；
-poi_englishaddress：英文地址
-';
+  is '一级作业项:poi_name-中文名称,poi_address-中文地址,poi_englishname-英文名称,poi_englishaddress-英文地址';
 comment on column POI_DEEP_WORKITEM_CONF.SECOND_WORK_ITEM
-  is '二级作业项,nameUnify: 名称统一;
- shortName: 简称作业;
- namePinyin:名称拼音作业;
-addrSplit :地址拆分作业;
-addrPinyin:地址拼音作业;
-photoEngName:照片录入英文名作业;
-chiEngName:中文既是英文作业;
-confirmEngName:人工确认英文名作业;
-officalStandardEngName:官方标准化英文作业;
-nonImportantLongEngName:非重要分类英文名超长作业;
-engMapAddress: 英文版地图作业;
-nonImportantLongEngAddress: 非重要分类英文地址超长作业;
- engNameInvalidChar: 英文名非法字符检查;
-portuNameInvalidChar:葡文名非法字符检查;
-macaoEngName: 澳门英文名作业;
-officalStandardPortuName: 官方标准化葡文作业;
-engAddrInvalidChar : 英文地址非法字符检查;
-portuAddrInvalidChar: 葡文地址非法字符检查;
-longEngAddress: 英文地址超长作业;
-longPortuAddress : 葡文地址超长作业;
-';
+  is '二级作业项:nameUnify-名称统一,shortName-简称作业,namePinyin-名称拼音作业,addrSplit-地址拆分作业,addrPinyin-地址拼音作业,photoEngName-照片录入英文名作业,chiEngName-中文既是英文作业,confirmEngName-人工确认英文名作业,officalStandardEngName-官方标准化英文作业,nonImportantLongEngName-非重要分类英文名超长作业,engMapAddress-英文版地图作业,nonImportantLongEngAddress-非重要分类英文地址超长作业,engNameInvalidChar-英文名非法字符检查,portuNameInvalidChar-葡文名非法字符检查,macaoEngName-澳门英文名作业,officalStandardPortuName-官方标准化葡文作业,engAddrInvalidChar-英文地址非法字符检查,portuAddrInvalidChar-葡文地址非法字符检查,longEngAddress-英文地址超长作业,longPortuAddress-葡文地址超长作业,';
 comment on column POI_DEEP_WORKITEM_CONF.WORK_ITEM_ID
   is '作业项规则号';
 comment on column POI_DEEP_WORKITEM_CONF.TYPE
-  is '1常规大陆；2常规港澳';
+  is '1常规大陆,2常规港澳';
 
 create table POI_DEEP_OP_CONF
 (
@@ -119,38 +95,14 @@ create table POI_DEEP_OP_CONF
   SUBMIT_EXECLASSIFY   NUMBER(1) default 0,
   SUBMIT_CLASSIFYRULES VARCHAR2(100),
   TYPE                 NUMBER(1)
-)
+);
 -- Add comments to the columns 
 comment on column POI_DEEP_OP_CONF.ID
   is '主键';
 comment on column POI_DEEP_OP_CONF.FIRST_WORK_ITEM
-  is '一级作业项,poi_name:中文名称；
-poi_address:中文地址；
-poi_englishname:英文名称；
-poi_englishaddress：英文地址
-';
+  is '一级作业项:poi_name-中文名称,poi_address-中文地址,poi_englishname-英文名称,poi_englishaddress-英文地址';
 comment on column POI_DEEP_OP_CONF.SECOND_WORK_ITEM
-  is 'nameUnify: 名称统一;
- shortName: 简称作业;
- namePinyin:名称拼音作业;
-addrSplit :地址拆分作业;
-addrPinyin:地址拼音作业;
-photoEngName:照片录入英文名作业;
-chiEngName:中文既是英文作业;
-confirmEngName:人工确认英文名作业;
-officalStandardEngName:官方标准化英文作业;
-nonImportantLongEngName:非重要分类英文名超长作业;
-engMapAddress: 英文版地图作业;
-nonImportantLongEngAddress: 非重要分类英文地址超长作业;
- engNameInvalidChar: 英文名非法字符检查;
-portuNameInvalidChar:葡文名非法字符检查;
-macaoEngName: 澳门英文名作业;
-officalStandardPortuName: 官方标准化葡文作业;
-engAddrInvalidChar : 英文地址非法字符检查;
-portuAddrInvalidChar: 葡文地址非法字符检查;
-longEngAddress: 英文地址超长作业;
-longPortuAddress : 葡文地址超长作业;
-';
+  is 'nameUnify-名称统一,shortName-简称作业,namePinyin-名称拼音作业,addrSplit-地址拆分作业,addrPinyin-地址拼音作业,photoEngName-照片录入英文名作业,chiEngName-中文既是英文作业,confirmEngName-人工确认英文名作业,officalStandardEngName-官方标准化英文作业,nonImportantLongEngName-非重要分类英文名超长作业,engMapAddress-英文版地图作业,nonImportantLongEngAddress-非重要分类英文地址超长作业,engNameInvalidChar-英文名非法字符检查,portuNameInvalidChar-葡文名非法字符检查,macaoEngName-澳门英文名作业,officalStandardPortuName-官方标准化葡文作业,engAddrInvalidChar-英文地址非法字符检查,portuAddrInvalidChar-葡文地址非法字符检查,longEngAddress-英文地址超长作业,longPortuAddress-葡文地址超长作业';
 comment on column POI_DEEP_OP_CONF.SAVE_EXEBATCH
   is '保存时是否执行批处理,0否  1是';
 comment on column POI_DEEP_OP_CONF.SAVE_BATCHRULES
@@ -176,7 +128,7 @@ comment on column POI_DEEP_OP_CONF.SUBMIT_EXECLASSIFY
 comment on column POI_DEEP_OP_CONF.SUBMIT_CLASSIFYRULES
   is '提交时要执行的重分类规则[]';
 comment on column POI_DEEP_OP_CONF.TYPE
-  is '1常规大陆；2常规港澳';
+  is '1常规大陆,2常规港澳';
 
 /* GDB+ log part */
 create table LOG_OPERATION (

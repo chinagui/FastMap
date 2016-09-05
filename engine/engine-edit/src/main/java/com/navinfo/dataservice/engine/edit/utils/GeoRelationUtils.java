@@ -6,6 +6,7 @@ import java.util.List;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.IntersectionMatrix;
 import com.vividsolutions.jts.geom.LineString;
 
 /**
@@ -29,6 +30,10 @@ public abstract class GeoRelationUtils {
 		return link.relate(ring, "1FF0FF212");
 	}
 
+	public static boolean Interior(IntersectionMatrix matrix) {
+		return matrix.matches("1FF0FF212");
+	}
+
 	/**
 	 * link包含在ring内，两个端点在ring组成线上</br>
 	 * 对应业务规则B
@@ -39,6 +44,10 @@ public abstract class GeoRelationUtils {
 	 */
 	public static boolean InteriorAnd2Intersection(Geometry link, Geometry ring) {
 		return link.relate(ring, "1FFF0F212");
+	}
+
+	public static boolean InteriorAnd2Intersection(IntersectionMatrix matrix) {
+		return matrix.matches("1FFF0F212");
 	}
 
 	/**
@@ -53,6 +62,10 @@ public abstract class GeoRelationUtils {
 		return link.relate(ring, "1FF00F212");
 	}
 
+	public static boolean InteriorAnd1Intersection(IntersectionMatrix matrix) {
+		return matrix.matches("1FF00F212");
+	}
+
 	/**
 	 * link完全在ring的组成线上</br>
 	 * 对应业务规则D
@@ -63,6 +76,10 @@ public abstract class GeoRelationUtils {
 	 */
 	public static boolean Boundary(Geometry link, Geometry ring) {
 		return link.relate(ring, "F1FF0F212");
+	}
+
+	public static boolean Boundary(IntersectionMatrix matrix) {
+		return matrix.matches("F1FF0F212");
 	}
 
 	/**
@@ -77,6 +94,10 @@ public abstract class GeoRelationUtils {
 		return link.relate(ring, "FF1F0F212");
 	}
 
+	public static boolean ExteriorAnd2Intersection(IntersectionMatrix matrix) {
+		return matrix.matches("FF1F0F212");
+	}
+
 	/**
 	 * link在ring外，有一部分link与ring的组成线重叠，两个端点在ring外</br>
 	 * 对应业务规则F
@@ -87,6 +108,10 @@ public abstract class GeoRelationUtils {
 	 */
 	public static boolean ExteriorAndLineOverlap(Geometry link, Geometry ring) {
 		return link.relate(ring, "F11FF0212");
+	}
+
+	public static boolean ExteriorAndLineOverlap(IntersectionMatrix matrix) {
+		return matrix.matches("F11FF0212");
 	}
 
 	/**
@@ -101,6 +126,10 @@ public abstract class GeoRelationUtils {
 		return link.relate(ring, "101FF0212");
 	}
 
+	public static boolean CrossAnd2IntersectExterior(IntersectionMatrix matrix) {
+		return matrix.matches("101FF0212");
+	}
+
 	/**
 	 * link穿过ring的组成线，壹个端点处于ring外部，壹个端点处于ring内部</br>
 	 * 对应业务规则H
@@ -111,6 +140,10 @@ public abstract class GeoRelationUtils {
 	 */
 	public static boolean CrossAnd1IntersectExterior(Geometry link, Geometry ring) {
 		return link.relate(ring, "1010F0212");
+	}
+
+	public static boolean CrossAnd1IntersectExterior(IntersectionMatrix matrix) {
+		return matrix.matches("1010F0212");
 	}
 
 	public static boolean IsLinkOnLeftOfRing(Geometry link, Geometry ring) {

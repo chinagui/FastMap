@@ -156,6 +156,9 @@ public class Operation implements IOperation {
 						JSONObject jsonLaneInfo = this.command.getLaneInfos()
 								.getJSONObject(m);
 						if (map.containsKey(jsonLaneInfo.getInt("pid"))) {
+							if(jsonLaneInfo.size() ==1||map.get(jsonLaneInfo.getInt("pid")).getLaneNum() == this.command.getLaneInfos().size()){
+								continue;
+							}
 							jsonLaneInfo.put("laneNum", this.command
 									.getLaneInfos().size());
 							com.navinfo.dataservice.engine.edit.operation.obj.rdlane.update.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdlane.update.Operation();
@@ -663,4 +666,5 @@ public class Operation implements IOperation {
 		}
 		return new RdLaneSelector(this.conn).loadByLink(linkPid, laneDir, true);
 	}
+
 }

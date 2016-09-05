@@ -12,6 +12,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionDetail;
 import com.navinfo.dataservice.dao.glm.model.rd.slope.RdSlope;
+import com.navinfo.dataservice.dao.glm.model.rd.tollgate.RdTollgate;
 import com.navinfo.dataservice.dao.glm.model.rd.voiceguide.RdVoiceguide;
 import com.navinfo.dataservice.dao.glm.model.rd.warninginfo.RdWarninginfo;
 
@@ -27,6 +28,10 @@ public class VariablesFactory {
 		if(data instanceof RdDirectroute){
 			rdLinkSet.add(String.valueOf(((RdDirectroute) data).getInLinkPid()));
 			rdLinkSet.add(String.valueOf(((RdDirectroute) data).getOutLinkPid()));
+		}
+		if(data instanceof RdGate){
+			rdLinkSet.add(String.valueOf(((RdGate) data).getInLinkPid()));
+			rdLinkSet.add(String.valueOf(((RdGate) data).getOutLinkPid()));
 		}
 		return rdLinkSet;
 	}
@@ -133,6 +138,30 @@ public class VariablesFactory {
 		if(data instanceof RdVoiceguide){
 			RdVoiceguide rdVoiceguide=(RdVoiceguide) data;
 			rdLinkSet.add(String.valueOf(rdVoiceguide.getPid()));}
+		return rdLinkSet;
+	}
+	/**
+	 * @param data
+	 * @return
+	 */
+	public static Set<String> getRdTollgatePid(IRow data) {
+		// TODO Auto-generated method stub
+		Set<String> rdLinkSet=new HashSet<String>();
+		if(data instanceof RdTollgate){
+			RdTollgate rdTollgate=(RdTollgate) data;
+			rdLinkSet.add(String.valueOf(rdTollgate.getPid()));}
+		return rdLinkSet;
+	}
+	/**
+	 * @param data
+	 * @return
+	 */
+	public static Set<String> getRdGatePid(IRow data) {
+		// TODO Auto-generated method stub
+		Set<String> rdLinkSet=new HashSet<String>();
+		if(data instanceof RdGate){
+			RdGate rdGate=(RdGate) data;
+			rdLinkSet.add(String.valueOf(rdGate.getPid()));}
 		return rdLinkSet;
 	}
 }

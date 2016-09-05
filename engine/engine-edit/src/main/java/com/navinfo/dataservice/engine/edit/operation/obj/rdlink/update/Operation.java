@@ -1,9 +1,7 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdlink.update;
 
 import java.sql.Connection;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
+import java.util.Map;
 
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -20,6 +18,9 @@ import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkSpeedlimit;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkWalkstair;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkZone;
 import com.navinfo.dataservice.engine.edit.utils.batch.SpeedLimitUtils;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 public class Operation implements IOperation {
 
@@ -131,6 +132,7 @@ public class Operation implements IOperation {
 		}
 		this.refRdLaneForRdlinkKind(result);
 		this.calSpeedLimit(updateLink, command.getUpdateContent(), result);
+		this.updateRdTraffic(result);
 		return null;
 	}
 
@@ -664,11 +666,31 @@ public class Operation implements IOperation {
 
 	/**
 	 * 更新车道限速信息
-	 * @param link 原始RdLink
-	 * @param json 待修改属性JSON
-	 * @param result 结果集
+	 * 
+	 * @param link
+	 *            原始RdLink
+	 * @param json
+	 *            待修改属性JSON
+	 * @param result
+	 *            结果集
 	 */
 	private void calSpeedLimit(RdLink link, JSONObject json, Result result) {
 		SpeedLimitUtils.updateRdLink(link, json, result);
+	}
+
+	/**
+	 * 修改link方向维护信号灯关系
+	 * @param result
+	 * @throws Exception
+	 */
+	private void updateRdTraffic(Result result) throws Exception {
+		Map<String, Object> changeFields = updateLink.changedFields();
+
+		if (changeFields.containsKey("direct")) {
+			com.navinfo.dataservice.engine.edit.operation.obj.trafficsignal.update.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.trafficsignal.update.Operation(
+					conn);
+
+			operation.updateRdCrossByModifyLinkDirect(updateLink, result);
+		}
 	}
 }

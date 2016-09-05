@@ -431,8 +431,7 @@ public class Process extends AbstractProcess<Command> {
 	 * @return
 	 * @throws Exception
 	 */
-	private Map<String, List<Integer>> confirmRelationObj() throws Exception {
-		Map<String, List<Integer>> infects = new HashMap<String, List<Integer>>();
+	private Map<String, List<Integer>> confirmRelationObj() throws Exception { Map<String, List<Integer>> infects = new HashMap<String, List<Integer>>();
 
 		List<List<RdBranchVia>> branchVias = this.getCommand().getBranchVias();
 

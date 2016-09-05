@@ -21,10 +21,10 @@ import com.navinfo.dataservice.dao.pidservice.PidService;
 public class Operation implements IOperation {
 
 	private Command command;
-	
+
 	private Connection conn;
 
-	public Operation(Command command,Connection conn) {
+	public Operation(Command command, Connection conn) {
 		this.command = command;
 		this.conn = conn;
 	}
@@ -33,7 +33,7 @@ public class Operation implements IOperation {
 	public String run(Result result) throws Exception {
 		String msg = null;
 
-		//组装数据：key：cross的nodePid,value:node组成的link
+		// 组装数据：key：cross的nodePid,value:node组成的link
 		Map<Integer, List<Integer>> nodeLinkPidMap = getNodeLinkMap();
 
 		createRdTrafficSignal(result, nodeLinkPidMap);
@@ -51,18 +51,16 @@ public class Operation implements IOperation {
 		RdLinkSelector linkSelector = new RdLinkSelector(this.conn);
 
 		for (IRow row : nodes) {
-			//link form：50为交叉口道路
+			// link form：50为交叉口道路
 			List<RdLink> links = linkSelector.loadInLinkByNodePid(((RdCrossNode) row).getNodePid(), 50, true);
 
 			List<Integer> linkPidList = new ArrayList<>();
 
 			for (RdLink link : links) {
 				Collection<List<Integer>> values = nodeLinkPidMap.values();
-				
-				for(List<Integer> pidList : values)
-				{
-					if(pidList.contains(link.getPid()))
-					{
+
+				for (List<Integer> pidList : values) {
+					if (pidList.contains(link.getPid())) {
 						continue;
 					}
 				}
@@ -71,7 +69,7 @@ public class Operation implements IOperation {
 
 			nodeLinkPidMap.put(((RdCrossNode) row).getNodePid(), linkPidList);
 		}
-		
+
 		return nodeLinkPidMap;
 	}
 
@@ -99,7 +97,6 @@ public class Operation implements IOperation {
 			cross.changedFields().put("signal", 1);
 
 			result.insertObject(cross, ObjStatus.UPDATE, cross.pid());
-
 		} else {
 			throw new Exception("该路口没有进入线可以创建信号灯");
 		}

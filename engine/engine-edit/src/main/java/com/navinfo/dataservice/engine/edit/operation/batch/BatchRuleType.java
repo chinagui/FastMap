@@ -5,5 +5,8 @@ package com.navinfo.dataservice.engine.edit.operation.batch;
  */
 public enum BatchRuleType {
 	BATCHUBAN,
+	BATCHDELURBAN,
+	BATCHREGIONIDRDLINK,
+	BATCHREGIONIDPOI
 
 }

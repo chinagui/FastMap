@@ -15,7 +15,9 @@ import org.apache.commons.lang.StringUtils;
 import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
 import com.navinfo.navicommons.database.sql.DBUtils;
@@ -51,8 +53,8 @@ public class IxPoiSelector extends AbstractSelector {
 	 * @return
 	 * @throws Exception
 	 */
-	public JSONObject loadPids(boolean isLock, int pid, String pidName, int type, String g, int pageSize, int pageNum)
-			throws Exception {
+	public JSONObject loadPids(boolean isLock, int pid, String pidName,
+			int type, String g, int pageSize, int pageNum) throws Exception {
 
 		JSONObject result = new JSONObject();
 
@@ -65,10 +67,8 @@ public class IxPoiSelector extends AbstractSelector {
 		StringBuilder buffer = new StringBuilder();
 		buffer.append(" SELECT * ");
 		buffer.append(" FROM (SELECT c.*, ROWNUM rn ");
-		buffer.append(
-				" FROM (SELECT /*+ leading(ip,ipn,ps) use_hash(ip,ipn,ps)*/  COUNT (1) OVER (PARTITION BY 1) total,");
-		buffer.append(
-				" ip.pid,ip.kind_code,ps.status, 0 as freshness_vefication,ipn.name,ip.geometry,ip.collect_time,ip.u_record ");
+		buffer.append(" FROM (SELECT /*+ leading(ip,ipn,ps) use_hash(ip,ipn,ps)*/  COUNT (1) OVER (PARTITION BY 1) total,");
+		buffer.append(" ip.pid,ip.kind_code,ps.status, 0 as freshness_vefication,ipn.name,ip.geometry,ip.collect_time,ip.u_record ");
 		buffer.append(" FROM ix_poi ip, ix_poi_name ipn, poi_edit_status ps ");
 		buffer.append(" WHERE     ip.pid = ipn.poi_pid and ip.row_id = ps.row_id ");
 		buffer.append(" AND lang_code = 'CHI'");
@@ -76,8 +76,8 @@ public class IxPoiSelector extends AbstractSelector {
 		buffer.append(" AND ip.u_record != 2 ");
 		buffer.append(" AND name_class = 1");
 		buffer.append(" AND ps.status = " + type + "");
-		buffer.append(" AND sdo_within_distance(ip.geometry, sdo_geometry(    '" + g
-				+ "'  , 8307), 'mask=anyinteract') = 'TRUE' ");
+		buffer.append(" AND sdo_within_distance(ip.geometry, sdo_geometry(    '"
+				+ g + "'  , 8307), 'mask=anyinteract') = 'TRUE' ");
 		if (pid != 0) {
 			buffer.append(" AND ip.pid = " + pid + "");
 		} else {
@@ -111,7 +111,8 @@ public class IxPoiSelector extends AbstractSelector {
 				JSONObject json = new JSONObject();
 				json.put("pid", resultSet.getInt("pid"));
 				json.put("kindCode", resultSet.getString("kind_code"));
-				json.put("freshnessVefication", resultSet.getInt("freshness_vefication"));
+				json.put("freshnessVefication",
+						resultSet.getInt("freshness_vefication"));
 				json.put("name", resultSet.getString("name"));
 				json.put("geometry", GeoTranslator.jts2Geojson(geometry));
 				json.put("uRecord", resultSet.getInt("u_record"));
@@ -325,7 +326,8 @@ public class IxPoiSelector extends AbstractSelector {
 	 * @return poi对象
 	 * @throws Exception
 	 */
-	public List<IxPoi> loadIxPoiByLinkPid(int linkPid, boolean isLock) throws Exception {
+	public List<IxPoi> loadIxPoiByLinkPid(int linkPid, boolean isLock)
+			throws Exception {
 
 		List<IxPoi> poiList = new ArrayList<>();
 
@@ -371,12 +373,72 @@ public class IxPoiSelector extends AbstractSelector {
 	public IRow loadByIdAndChildren(int id, boolean isLock) throws Exception {
 		IxPoi poi = (IxPoi) super.loadById(id, isLock);
 
-		IxSamepoiPartSelector samepoiPartsSelector = new IxSamepoiPartSelector(conn);
+		IxSamepoiPartSelector samepoiPartsSelector = new IxSamepoiPartSelector(
+				conn);
 
 		List<IRow> parts = samepoiPartsSelector.loadByPoiPid(poi.pid(), isLock);
 
 		poi.setSamepoiParts(parts);
 
 		return poi;
+	}
+
+	/**
+	 * 加载在adface面内或者在面上的索引
+	 * 
+	 * @param facePid
+	 * @param isLock
+	 * @return
+	 * @throws Exception
+	 */
+	public List<IxPoi> loadByAdFace(int facePid, boolean isLock)
+			throws Exception {
+
+		List<IxPoi> pois = new ArrayList<IxPoi>();
+
+		StringBuilder sb = new StringBuilder(
+				"SELECT A.* FROM IX_POI A, AD_FACE B WHERE B.FACE_PID = :1 AND A.U_RECORD != 2");
+
+		sb.append(" AND B.U_RECORD != 2 AND SDO_RELATE(A.GEOMETRY, B.GEOMETRY, 'MASK=ANYINTERACT') = 'TRUE'");
+
+		if (isLock) {
+
+			sb.append(" for update nowait");
+		}
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+
+			pstmt = conn.prepareStatement(sb.toString());
+
+			pstmt.setInt(1, facePid);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+
+				IxPoi row = new IxPoi();
+
+				ReflectionAttrUtils.executeResultSet(row, resultSet);
+
+				pois.add(row);
+
+			}
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+
+			DBUtils.closeResultSet(resultSet);
+
+			DBUtils.closeStatement(pstmt);
+		}
+
+		return pois;
+
 	}
 }

@@ -24,7 +24,7 @@ public abstract class MeshUtils {
 //		System.out.println(""+second2Decimal(300.0));
 //		String[] results = point2Meshes(116.74963, 39.0);
 //		Set<String> results = getNeighborMeshSet("605602",2);
-		String wkt = mesh2WKT("605603");
+		String wkt = mesh2WKT("595652");//595650,595651,595652
 		System.out.println(wkt);
 //		List<String> results = lonlat2MeshIds(76.01,30.33333);
 //		System.out.println(StringUtils.join(results,","));

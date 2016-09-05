@@ -8,18 +8,14 @@ import org.apache.commons.collections.CollectionUtils;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.exception.DataNotChangeException;
-import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IProcess;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
-import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.log.LogWriter;
 import com.navinfo.dataservice.engine.check.CheckEngine;
-
-import net.sf.json.JSONObject;
 
 /**
  * @ClassName: Abstractprocess
@@ -58,7 +54,7 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 	public AbstractProcess(AbstractCommand command) throws Exception {
 		this.command = (T) command;
 		this.result = new Result();
-		if(!command.getDbFlag())
+		if(conn == null && !command.getDbFlag())
 		{
 			this.conn = DBConnector.getInstance().getConnectionById(this.command.getDbId());
 		}
@@ -193,6 +189,48 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 
 		return msg;
 	}
+	
+	public String innerRun() throws Exception {
+		String msg;
+		try {
+
+			this.prepareData();
+
+			msg = exeOperation();
+
+			checkResult();
+
+			if (!this.getCommand().getOperType().equals(OperType.DELETE)
+					&& !this.getCommand().getObjType().equals(ObjType.RDBRANCH)
+					&& !this.getCommand().getObjType().equals(ObjType.RDELECEYEPAIR)
+					&& !this.getCommand().getObjType().equals(ObjType.LUFACE)
+					&& !this.getCommand().getObjType().equals(ObjType.LCFACE)) {
+				handleResult(this.getCommand().getObjType(), this.getCommand().getOperType(), result);
+			}
+
+			String preCheckMsg = this.preCheck();
+
+			if (preCheckMsg != null) {
+				throw new Exception(preCheckMsg);
+			}
+			this.recordData();
+
+			this.postCheck();
+
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			try {
+			
+
+				System.out.print("结束\r\n");
+			} catch (Exception e) {
+
+			}
+		}
+
+		return msg;
+	}
 
 	/**
 	 * 检查请求是否执行了某些操作
@@ -233,25 +271,15 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 		}
 		this.checkCommand.setGlmList(resultList);
 	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see com.navinfo.dataservice.dao.glm.iface.IProcess#getPostCheck()
-	 */
 	@Override
 	public String getPostCheck() throws Exception {
 		return postCheckMsg;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see com.navinfo.dataservice.dao.glm.iface.IProcess#recordData()
-	 */
 	@Override
 	public boolean recordData() throws Exception {
 		LogWriter lw = new LogWriter(conn);
+		lw.setUserId(command.getUserId());
 		lw.generateLog(command, result);
 		OperatorFactory.recordData(conn, result);
 		lw.recordLog(command, result);

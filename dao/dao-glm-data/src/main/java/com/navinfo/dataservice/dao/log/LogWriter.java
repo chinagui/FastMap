@@ -54,14 +54,25 @@ public class LogWriter {
 
 	private GlmGridCalculator gridCalculator;
 	
-	public LogWriter(){
-		
+	private long userId;
+
+	public long getUserId() {
+		return userId;
+	}
+
+	public void setUserId(long userId) {
+		this.userId = userId;
+	}
+
+	public LogWriter() {
+
 	}
 
 	public LogWriter(Connection conn) throws Exception {
 		this.conn = conn;
 
-		String gdbVersion = SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion);
+		String gdbVersion = SystemConfigFactory.getSystemConfig().getValue(
+				PropConstant.gdbVersion);
 
 		this.gridCalculator = GlmGridCalculatorFactory.getInstance().create(
 				gdbVersion);
@@ -78,20 +89,19 @@ public class LogWriter {
 		String sql = "insert into log_operation (op_id, us_id, op_cmd, op_dt, op_sg, com_sta, lock_sta) values (?,?,?,to_date(?,'yyyymmddhh24miss'),?,?,?)";
 
 		try {
-
 			for (LogOperation logOperation : operations) {
 				pstmt = this.conn.prepareStatement(sql);
 
 				pstmt.setString(1, logOperation.getOpId());
 
-				pstmt.setString(2, logOperation.getUsId());
+				pstmt.setString(2, String.valueOf(this.getUserId()));
 
 				pstmt.setString(3, logOperation.getOpCmd());
 
 				pstmt.setString(4, logOperation.getOpDt());
 
 				pstmt.setInt(5, logOperation.getOpSg());
-				
+
 				pstmt.setInt(6, logOperation.getComSta());
 
 				pstmt.setInt(7, logOperation.getLockSta());
@@ -100,7 +110,6 @@ public class LogWriter {
 
 				pstmt.close();
 				this.insertLogdayRelease(logOperation.getOpId());
-
 				for (LogDetail r : logOperation.getDetails()) {
 					this.insertLogDetail(r);
 				}
@@ -119,65 +128,69 @@ public class LogWriter {
 
 		}
 	}
+
 	/**
-	 * zhaokk
-	 * 增加日出品信息
+	 * zhaokk 增加日出品信息
+	 * 
 	 * @param opId
-	 * @throws Exception 
+	 * @throws Exception
 	 */
 	private void insertLogdayRelease(String opId) throws Exception {
 
 		String sql = "insert into log_day_release (op_id, rel_poi_sta,rel_poi_dt,rel_all_sta,rel_all_dt,rel_poi_lock,rel_all_lock) values (?,?,?,?,?,?,?)";
-		try{
+		try {
 			QueryRunner run = new QueryRunner();
-			LogDayRelease release  = new LogDayRelease(opId);
-			run.update(conn, sql,opId,release.getRelPoiSta(),release.getRelPoiDt(),release.getRelAllSta(),release.getRelAllDt(),release.getRelPoiLock(),release.getRelAllLock());
-			
-		}catch (Exception e) {
-			throw new Exception("增加日出品信息SQL错误，"+e.getMessage(),e);
+			LogDayRelease release = new LogDayRelease(opId);
+			run.update(conn, sql, opId, release.getRelPoiSta(),
+					release.getRelPoiDt(), release.getRelAllSta(),
+					release.getRelAllDt(), release.getRelPoiLock(),
+					release.getRelAllLock());
+
+		} catch (Exception e) {
+			throw new Exception("增加日出品信息SQL错误，" + e.getMessage(), e);
 		}
 	}
 
-//	private void insertRow2Sql(Statement stmt, LogOperation logOperation)
-//			throws Exception {
-//
-//		StringBuilder sb = new StringBuilder("insert into ");
-//
-//		sb.append(logOperation.tableName());
-//
-//		sb.append("(op_id, us_id, op_cmd, op_dt, op_sg) values (");
-//
-//		sb.append("'" + logOperation.getOpId() + "'");
-//
-//		if (logOperation.getUsId() == null) {
-//			sb.append(",null");
-//		} else {
-//			sb.append(",'" + logOperation.getUsId() + "'");
-//		}
-//
-//		if (logOperation.getOpCmd() == null) {
-//			sb.append(",null");
-//		} else {
-//			sb.append(",'" + logOperation.getOpCmd() + "'");
-//		}
-//
-//		if (logOperation.getOpDt() == null) {
-//			sb.append(",null");
-//		} else {
-//			sb.append(",to_date('" + logOperation.getOpDt()
-//					+ "','yyyymmddhh24miss')");
-//		}
-//
-//		sb.append("," + logOperation.getOpSg());
-//
-//		sb.append(")");
-//
-//		stmt.addBatch(sb.toString());
-//
-//		for (LogDetail r : logOperation.getDetails()) {
-//			this.insertLogDetail2Sql(r, stmt);
-//		}
-//	}
+	// private void insertRow2Sql(Statement stmt, LogOperation logOperation)
+	// throws Exception {
+	//
+	// StringBuilder sb = new StringBuilder("insert into ");
+	//
+	// sb.append(logOperation.tableName());
+	//
+	// sb.append("(op_id, us_id, op_cmd, op_dt, op_sg) values (");
+	//
+	// sb.append("'" + logOperation.getOpId() + "'");
+	//
+	// if (logOperation.getUsId() == null) {
+	// sb.append(",null");
+	// } else {
+	// sb.append(",'" + logOperation.getUsId() + "'");
+	// }
+	//
+	// if (logOperation.getOpCmd() == null) {
+	// sb.append(",null");
+	// } else {
+	// sb.append(",'" + logOperation.getOpCmd() + "'");
+	// }
+	//
+	// if (logOperation.getOpDt() == null) {
+	// sb.append(",null");
+	// } else {
+	// sb.append(",to_date('" + logOperation.getOpDt()
+	// + "','yyyymmddhh24miss')");
+	// }
+	//
+	// sb.append("," + logOperation.getOpSg());
+	//
+	// sb.append(")");
+	//
+	// stmt.addBatch(sb.toString());
+	//
+	// for (LogDetail r : logOperation.getDetails()) {
+	// this.insertLogDetail2Sql(r, stmt);
+	// }
+	// }
 
 	private void insertLogDetail(LogDetail detail) throws Exception {
 
@@ -281,55 +294,54 @@ public class LogWriter {
 		}
 
 	}
-	
-	public void insertLogOperation2Sql(LogOperation op, Statement stmt) throws Exception{
-		
+
+	public void insertLogOperation2Sql(LogOperation op, Statement stmt)
+			throws Exception {
+
 		StringBuilder sb = new StringBuilder("insert into ");
-		
+
 		sb.append(op.tableName());
-		
+
 		sb.append("(op_id, us_id, op_cmd, op_dt, op_sg, com_sta, com_dt, lock_sta) values (");
-		
+
 		sb.append("hextoraw('" + op.getOpId() + "')");
-		
+
 		sb.append("," + op.getUsId());
-		
+
 		if (op.getOpCmd() == null) {
 			sb.append(",null");
 		} else {
 			sb.append(",'" + op.getOpCmd() + "'");
 		}
-		
+
 		if (op.getOpDt() == null) {
 			sb.append(",null");
 		} else {
-			sb.append(",to_date('" + op.getOpDt()
-					+ "','yyyymmddhh24miss')");
+			sb.append(",to_date('" + op.getOpDt() + "','yyyymmddhh24miss')");
 		}
-		
+
 		sb.append("," + op.getOpSg());
-		
+
 		sb.append("," + op.getComSta());
-		
+
 		if (op.getComDt() == null) {
 			sb.append(",null");
 		} else {
-			sb.append(",to_date('" + op.getComDt()
-					+ "','yyyymmddhh24miss')");
+			sb.append(",to_date('" + op.getComDt() + "','yyyymmddhh24miss')");
 		}
-		
+
 		sb.append("," + op.getLockSta());
-		
+
 		sb.append(")");
-		
+
 		stmt.addBatch(sb.toString());
-		
+
 		for (LogDetail r : op.getDetails()) {
 			this.insertLogDetail2Sql(r, stmt);
 		}
-		
+
 		this.insertLogDayRelease2Sql(op.getRelease(), stmt);
-		
+
 	}
 
 	private void insertLogDetail2Sql(LogDetail detail, Statement stmt)
@@ -381,12 +393,12 @@ public class LogWriter {
 		sb.append(")");
 
 		stmt.addBatch(sb.toString());
-		
+
 		for (LogDetailGrid r : detail.getGrids()) {
 			this.insertLogDetailGrid2Sql(r, stmt);
 		}
 	}
-	
+
 	private void insertLogDetailGrid2Sql(LogDetailGrid grid, Statement stmt)
 			throws Exception {
 		StringBuilder sb = new StringBuilder("insert into ");
@@ -398,18 +410,18 @@ public class LogWriter {
 		sb.append("hextoraw('" + grid.getLogRowId() + "')");
 
 		sb.append("," + grid.getGridId());
-		
+
 		sb.append("," + grid.getGridType());
 
 		sb.append(")");
 
 		stmt.addBatch(sb.toString());
-		
+
 	}
-	
+
 	private void insertLogDayRelease2Sql(LogDayRelease release, Statement stmt)
 			throws Exception {
-		
+
 		StringBuilder sb = new StringBuilder("insert into ");
 
 		sb.append(release.tableName());
@@ -419,31 +431,31 @@ public class LogWriter {
 		sb.append("hextoraw('" + release.getOpId() + "')");
 
 		sb.append("," + release.getRelPoiSta());
-		
+
 		if (release.getRelPoiDt() == null) {
 			sb.append(",null");
 		} else {
 			sb.append(",to_date('" + release.getRelPoiDt()
 					+ "','yyyymmddhh24miss')");
 		}
-		
+
 		sb.append("," + release.getRelAllSta());
-		
+
 		if (release.getRelAllDt() == null) {
 			sb.append(",null");
 		} else {
 			sb.append(",to_date('" + release.getRelAllDt()
 					+ "','yyyymmddhh24miss')");
 		}
-		
+
 		sb.append("," + release.getRelPoiLock());
-		
+
 		sb.append("," + release.getRelAllLock());
-		
+
 		sb.append(")");
 
 		stmt.addBatch(sb.toString());
-		
+
 	}
 
 	private void updateRow2Sql(List<String> fieldNames, Statement stmt)
@@ -459,7 +471,8 @@ public class LogWriter {
 		boolean flag = false;
 		if (r.objType() == ObjType.RDNODE || r.objType() == ObjType.RDLINK
 				|| r.objType() == ObjType.ADLINK
-				|| r.objType() == ObjType.ADNODE|| r.objType() == ObjType.ADFACE) {
+				|| r.objType() == ObjType.ADNODE
+				|| r.objType() == ObjType.ADFACE) {
 
 			if (r.status() == ObjStatus.INSERT
 					|| r.status() == ObjStatus.DELETE) {
@@ -485,7 +498,7 @@ public class LogWriter {
 
 			operations.add(op);
 		}
-		
+
 		return flag;
 	}
 
@@ -655,12 +668,12 @@ public class LogWriter {
 							ldC.getGrids().add(grid);
 						}
 
-						if(flag){
+						if (flag) {
 							geoLogOperation.getDetails().add(ldC);
-						}
-						else{
-							LogOperation op = new LogOperation(UuidUtils.genUuid(), command
-									.getOperType().toString(), 1);
+						} else {
+							LogOperation op = new LogOperation(
+									UuidUtils.genUuid(), command.getOperType()
+											.toString(), 1);
 
 							ldC.setOpId(op.getOpId());
 
@@ -694,23 +707,23 @@ public class LogWriter {
 			ld.setRowId(UuidUtils.genUuid());
 
 			ld.setTbRowId(r.rowId());
-			
-			if(r.objType() == ObjType.RDSAMENODE)
-			{
+
+			if (r.objType() == ObjType.RDSAMENODE) {
 				RdSameNode sameNode = (RdSameNode) r;
-				RdSameNodePart part = (RdSameNodePart) sameNode.getParts().get(0);
+				RdSameNodePart part = (RdSameNodePart) sameNode.getParts().get(
+						0);
 				String nodeTableName = part.getTableName().toUpperCase();
 				gridCalculator.setTableName(nodeTableName);
 			}
-			
-			if(r.objType() == ObjType.RDSAMELINK)
-			{
+
+			if (r.objType() == ObjType.RDSAMELINK) {
 				RdSameLink sameLink = (RdSameLink) r;
-				RdSameLinkPart part = (RdSameLinkPart) sameLink.getParts().get(0);
+				RdSameLinkPart part = (RdSameLinkPart) sameLink.getParts().get(
+						0);
 				String tableName = part.getTableName().toUpperCase();
 				gridCalculator.setTableName(tableName);
 			}
-			
+
 			// 查询对象的grid，并生成LogDetailGrid
 			String[] grids = gridCalculator.calc(ld.getTbNm().toUpperCase(),
 					ld.getTbRowId(), conn);
@@ -765,12 +778,12 @@ public class LogWriter {
 							ldC.getGrids().add(grid);
 						}
 
-						if(flag){
+						if (flag) {
 							geoLogOperation.getDetails().add(ldC);
-						}
-						else{
-							LogOperation op = new LogOperation(UuidUtils.genUuid(), command
-									.getOperType().toString(), 1);
+						} else {
+							LogOperation op = new LogOperation(
+									UuidUtils.genUuid(), command.getOperType()
+											.toString(), 1);
 
 							ldC.setOpId(op.getOpId());
 
@@ -783,7 +796,7 @@ public class LogWriter {
 			}
 		}
 
-		if(geoLogOperation.getDetails().size()>0){
+		if (geoLogOperation.getDetails().size() > 0) {
 			operations.add(geoLogOperation);
 		}
 

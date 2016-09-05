@@ -218,5 +218,47 @@ public class RdNodeSelector extends AbstractSelector {
 
 		node.setForms(forms);
 	}
+	
+	/*
+	 * 仅加载rdnode表，其他子表若有需要，请单独加载
+	 */
+	public List<RdNode> loadBySql(String sql, boolean isLock) throws Exception {
+
+		List<RdNode> nodes = new ArrayList<RdNode>();
+
+		StringBuilder sb = new StringBuilder(sql);
+
+		if (isLock) {
+			sb.append(" for update nowait");
+		}
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+				RdNode rdNode = new RdNode();
+
+				ReflectionAttrUtils.executeResultSet(rdNode, resultSet);
+
+				nodes.add(rdNode);
+			}
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+		}
+
+		return nodes;
+
+	}
 
 }

@@ -10,23 +10,26 @@ public class Process extends AbstractProcess<Command> {
 		super(command);
 	}
 
-	
 	@Override
 	public boolean prepareData() throws Exception {
-		this.getCommand().setDelToptInfos(new RdLaneTopoDetailSelector(this.getConn()).loadByIds(this.getCommand().getTopoIds(), true, true));
+		if (this.getCommand().getTopoIds().size() > 0) {
+			this.getCommand().setDelToptInfos(
+					new RdLaneTopoDetailSelector(this.getConn()).loadByIds(this
+							.getCommand().getTopoIds(), true, true));
+		}
 		return true;
 	}
+
 	@Override
 	public String preCheck() throws Exception {
-		
+
 		return null;
 	}
-
 
 	@Override
 	public String exeOperation() throws Exception {
 		return new Operation(this.getCommand()).run(this.getResult());
-		
+
 	}
-	
+
 }

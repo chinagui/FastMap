@@ -479,7 +479,7 @@ public class RdLinkSelector extends AbstractSelector {
 	public List<RdLink> loadInLinkByNodePid(int nodePid, int form, boolean isLock) throws Exception {
 		List<RdLink> list = new ArrayList<RdLink>();
 
-		String sql = "SELECT a.* FROM rd_link a left join RD_LINK_FORM b on a.LINK_PID = b.link_pid WHERE b.FORM_OF_WAY != :1 and a.u_record !=2 and((a.s_node_pid = :2 AND a.direct = 3) OR (a.e_node_pid = :3 AND a.direct = 2) OR (a.direct = 1 AND (a.s_node_pid =:4 OR a.e_node_pid = :5)))";
+		String sql = "SELECT a.* FROM rd_link a left join RD_LINK_FORM b on a.LINK_PID = b.link_pid and b.FORM_OF_WAY != :1 WHERE a.u_record !=2 and((a.s_node_pid = :2 AND a.direct = 3) OR (a.e_node_pid = :3 AND a.direct = 2) OR (a.direct = 1 AND (a.s_node_pid =:4 OR a.e_node_pid = :5)))";
 
 		PreparedStatement pstmt = null;
 
@@ -515,6 +515,7 @@ public class RdLinkSelector extends AbstractSelector {
 
 	/**
 	 * 根据NodePid查询可以组合的link
+	 * 
 	 * @param nodePidsStr
 	 * @param isLock
 	 * @return
@@ -525,8 +526,8 @@ public class RdLinkSelector extends AbstractSelector {
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
 		try {
-			StringBuilder sb = new StringBuilder("select link_pid,IMI_CODE from rd_link where S_NODE_PID in(" + nodePidsStr
-					+ ") and E_NODE_PID in (" + nodePidsStr + ") and u_record !=2");
+			StringBuilder sb = new StringBuilder("select link_pid,IMI_CODE from rd_link where S_NODE_PID in("
+					+ nodePidsStr + ") and E_NODE_PID in (" + nodePidsStr + ") and u_record !=2");
 			if (isLock) {
 				sb.append(" for update nowait");
 			}
@@ -536,11 +537,11 @@ public class RdLinkSelector extends AbstractSelector {
 
 			while (resultSet.next()) {
 				RdLink link = new RdLink();
-				
+
 				link.setPid(resultSet.getInt("link_pid"));
-				
+
 				link.setImiCode(resultSet.getInt("IMI_CODE"));
-				
+
 				list.add(link);
 			}
 		} catch (Exception e) {
@@ -675,8 +676,8 @@ public class RdLinkSelector extends AbstractSelector {
 			resultSet = pstmt.executeQuery();
 
 			while (resultSet.next()) {
-				
-				int value = resultSet.getInt("link_pid");				
+
+				int value = resultSet.getInt("link_pid");
 
 				links.add(value);
 			}
@@ -690,6 +691,67 @@ public class RdLinkSelector extends AbstractSelector {
 		}
 
 		return links;
+
+	}
+
+	/**
+	 * 加载与面相交或者在面内的link
+	 * 
+	 * @param facePid
+	 * @param tableName
+	 *            face表名
+	 * @param isLock
+	 * @return 面内link集合，link只加载主表信息
+	 * @throws Exception
+	 */
+	public List<RdLink> loadLinkByFaceGeo(int facePid, String tableName, boolean isLock) throws Exception {
+
+		List<RdLink> rdLinks = new ArrayList<RdLink>();
+
+		StringBuilder sb = new StringBuilder("SELECT A.* FROM RD_LINK A, ");
+
+		sb.append(tableName);
+
+		sb.append(
+				" B WHERE B.FACE_PID = :1 AND A.U_RECORD != 2 AND B.U_RECORD != 2 AND SDO_RELATE(A.GEOMETRY, B.GEOMETRY, 'mask=anyinteract') = 'TRUE'");
+
+		if (isLock) {
+
+			sb.append(" for update nowait");
+		}
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+
+			pstmt = conn.prepareStatement(sb.toString());
+
+			pstmt.setInt(1, facePid);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+
+				RdLink link = new RdLink();
+
+				ReflectionAttrUtils.executeResultSet(link, resultSet);
+
+				rdLinks.add(link);
+			}
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+
+			DBUtils.closeResultSet(resultSet);
+
+			DBUtils.closeStatement(pstmt);
+		}
+
+		return rdLinks;
 
 	}
 

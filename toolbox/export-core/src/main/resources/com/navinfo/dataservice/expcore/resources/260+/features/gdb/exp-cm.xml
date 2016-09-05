@@ -1,0 +1,759 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+@authur:liuqing
+@time:2010-08-24
+索引需要重建
+-->
+<sqls>
+    <!--///////////////////////////////////////////////////市街图/////////////////////////////////////////////////////////-->
+    <feature name="CMG">
+        <!--
+                               市街图提取原则:
+            1.按mesh提取face
+            2.从face提取link
+            3.提取未组成face的孤立link
+            4.通过link提取两端的node
+            5.提取其它信息
+
+        -->
+        <step value="7">
+			
+			
+			<!--提取跨图幅的点和面，及关联的线和面-->
+			<!-- 20150511 补充  说明： 以下补充部分只支持按照图幅 -->
+			<!--提取跨图幅的点（共线/共面的点）-->
+			<sql condition="mesh" sqlType="dataIntegrity"><![CDATA[             
+			  INSERT /*+ append */
+			  INTO TEMP_CMG_BUILDNODE
+			    (PID)
+			    (SELECT NODE_PID
+			       FROM (SELECT COUNT(1), N.NODE_PID
+			               FROM CMG_BUILDNODE_MESH M,
+			                    (SELECT NODE_PID
+			                       FROM CMG_BUILDNODE_MESH
+			                      WHERE MESH_ID  [mesh]) N
+			              WHERE N.NODE_PID = M.NODE_PID
+			              GROUP BY N.NODE_PID
+			             HAVING COUNT(1) > 1));
+			   
+                     ]]></sql>   
+            
+            <!--提取图幅内的link-->
+            <sql condition="mesh"><![CDATA[
+                     INSERT /*+ append */
+                     INTO TEMP_CMG_BUILDLINK
+                       (PID)
+                       (SELECT P.LINK_PID
+                          FROM CMG_BUILDLINK_MESH P
+                         WHERE P.MESH_ID [mesh]);
+                     ]]></sql>  
+           </step>
+                    
+           <step value="9">
+             <!-- 提取跨图幅的node的面 -->
+            <sql condition="mesh" sqlType="dataIntegrity"><![CDATA[
+                         INSERT /*+ append */
+						 INTO TEMP_CMG_BUILDFACE
+						  (PID)
+						
+						  (SELECT DISTINCT (P.FACE_PID)
+						     FROM CMG_BUILDFACE_TOPO P
+						    WHERE EXISTS (SELECT 1
+						             FROM (SELECT L.LINK_PID
+						                     FROM CMG_BUILDLINK L, TEMP_CMG_BUILDNODE N
+						                    WHERE L.S_NODE_PID = N.PID
+						                   UNION ALL
+						                   SELECT L.LINK_PID
+						                     FROM CMG_BUILDLINK L, TEMP_CMG_BUILDNODE N
+						                    WHERE L.E_NODE_PID = N.PID) X
+						            WHERE P.LINK_PID = X.LINK_PID));
+
+                         ]]></sql>                     
+			<!-- 提取跨图幅的link的面 -->
+            <sql condition="mesh" sqlType="dataIntegrity"><![CDATA[
+                         INSERT /*+ append */
+                         INTO TEMP_CMG_BUILDFACE
+                           (PID)
+                           (
+                            SELECT DISTINCT FT.FACE_PID
+                              FROM (SELECT COUNT(1), N.PID
+                                      FROM CMG_BUILDLINK_MESH M, TEMP_CMG_BUILDLINK N
+                                     WHERE N.PID = M.LINK_PID
+                                     GROUP BY N.PID
+                                    HAVING COUNT(1) > 1) T,
+                                   CMG_BUILDFACE_TOPO FT
+                             WHERE T.PID = FT.LINK_PID
+                           );
+                         ]]></sql>
+           </step>
+           
+           <step value="11">
+           	 <!-- face去重 -->     
+             <sql><![CDATA[
+                       DELETE FROM TEMP_CMG_BUILDFACE A
+                            WHERE A.ROWID !=
+                                  (SELECT MAX(B.ROWID)
+                                     FROM TEMP_CMG_BUILDFACE B
+                                    WHERE A.PID = B.PID);
+                         ]]></sql>      
+           </step>
+           
+           <step value="13">
+            <!--根据跨图幅的线提取的face补link-->
+            <sql condition="mesh" sqlType="dataIntegrity"><![CDATA[
+                         INSERT /*+ append */
+                         INTO TEMP_CMG_BUILDLINK
+                           (PID)
+                           (SELECT T.LINK_PID
+                              FROM TEMP_CMG_BUILDFACE P, CMG_BUILDFACE_TOPO T
+                             WHERE P.PID = T.FACE_PID);
+                         ]]></sql>
+
+            <!--根据跨图幅的点提取link-->
+            <sql condition="mesh" sqlType="dataIntegrity"><![CDATA[
+                    INSERT /*+ append */
+                    INTO TEMP_CMG_BUILDLINK
+                      (PID)
+                      (SELECT L.LINK_PID
+                          FROM CMG_BUILDLINK L
+                         WHERE L.S_NODE_PID IN (SELECT PID FROM TEMP_CMG_BUILDNODE)
+                        UNION ALL
+                        SELECT L.LINK_PID
+                          FROM CMG_BUILDLINK L
+                         WHERE L.E_NODE_PID IN (SELECT PID FROM TEMP_CMG_BUILDNODE)
+                        );
+                    ]]></sql>
+              </step>      
+             <!-- link再次去重（不需要，放在后面一次性去重） -->
+			
+			<!-- 20150511 补充     end-->
+			
+			<step value="15">
+            <!--提取图幅内的街区面FACE表的组成link-->
+            <!-- 市街图face跨图幅，所以为了保证完整性，需要导出 face 的link -->
+            <sql condition="mesh"><![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_CMG_BUILDLINK
+                          (PID)
+                          (SELECT P.LINK_PID
+                             FROM CMG_BUILDFACE_TOPO P, CMG_BUILDFACE R
+                            WHERE P.FACE_PID = R.FACE_PID
+                              AND R.MESH_ID [mesh]);
+                        ]]></sql>
+            <sql condition="area"><![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_CMG_BUILDLINK
+                          (PID)
+                          (SELECT P.LINK_PID
+                             FROM CMG_BUILDFACE_TOPO P, CMG_BUILDFACE R
+                            WHERE P.FACE_PID = R.FACE_PID
+                              AND SDO_ANYINTERACT(R.GEOMETRY,
+                                              [area]) = 'TRUE');
+                        ]]></sql>
+
+
+            <!--提取link  修改到line  61-->
+      <!--    <sql condition="mesh"><![CDATA[
+                     INSERT /*+ append */
+                     INTO TEMP_CMG_BUILDLINK
+                       (PID)
+                       (SELECT P.LINK_PID
+                          FROM CMG_BUILDLINK_MESH P
+                         WHERE P.MESH_ID [mesh]);
+                     ]]></sql>  -->   
+
+
+            <sql condition="area"><![CDATA[
+                     INSERT /*+ append */
+                     INTO TEMP_CMG_BUILDLINK
+                       (PID)
+                       (SELECT P.LINK_PID
+                          FROM CMG_BUILDLINK P
+                         WHERE SDO_ANYINTERACT(P.GEOMETRY,[area]) = 'TRUE');
+                     ]]></sql>
+			</step>
+			
+			
+			<step value="16">
+            <!--根据图幅提取建筑物要素表,并去重 -->
+            <sql condition="mesh"><![CDATA[
+                    INSERT /*+ append */
+                    INTO TEMP_CMG_BUILDFACE
+                      (PID)
+                      (SELECT DISTINCT T.FACE_PID
+                         FROM CMG_BUILDFACE T
+                        WHERE  T.MESH_ID [mesh]);
+                    ]]></sql>
+            <sql condition="area"><![CDATA[
+                    INSERT /*+ append */
+                    INTO TEMP_CMG_BUILDFACE
+                      (PID)
+                      (SELECT DISTINCT T.FACE_PID
+                         FROM CMG_BUILDFACE T
+                        WHERE SDO_ANYINTERACT(T.GEOMETRY,
+                                              [area]) = 'TRUE');
+                    ]]></sql>
+        	</step>
+        	
+        <!--第5步骤，取立交link-->
+        <step value="19">
+			 <!-- face去重 -->     
+             <sql><![CDATA[
+                       DELETE FROM TEMP_CMG_BUILDFACE A
+                            WHERE A.ROWID !=
+                                  (SELECT MAX(B.ROWID)
+                                     FROM TEMP_CMG_BUILDFACE B
+                                    WHERE A.PID = B.PID);
+                         ]]></sql>  
+            <!--TEMP_CMG_BUILDLINK去重-->
+            <sql><![CDATA[
+                         DELETE FROM TEMP_CMG_BUILDLINK A
+                             WHERE A.ROWID !=
+                                   (SELECT MAX(B.ROWID) FROM TEMP_CMG_BUILDLINK B WHERE A.PID = B.PID);
+                         ]]></sql>
+		</step>
+
+
+		<step value="21">
+            <!--提取 CMG_BUILDING并去重-->
+            <sql><![CDATA[
+            			INSERT /*+ append */
+						INTO TEMP_CMG_BUILDING
+						    (PID)
+						    SELECT DISTINCT B.BUILDING_PID
+						      FROM CMG_BUILDFACE B, TEMP_CMG_BUILDFACE T
+						     WHERE B.FACE_PID = T.PID
+						     AND B.BUILDING_PID !=0 AND B.BUILDING_PID !=-1;
+						 ]]></sql>
+
+
+        </step>
+
+        <step value="22">
+            <!--查询CMG_BUILDLINK的两端端点并去重-->
+            <sql><![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_CMG_BUILDNODE
+                          (PID)
+                          (SELECT P.S_NODE_PID FROM CMG_BUILDLINK P, TEMP_CMG_BUILDLINK T WHERE P.LINK_PID = T.PID
+                            UNION
+                           SELECT P.E_NODE_PID FROM CMG_BUILDLINK P, TEMP_CMG_BUILDLINK T WHERE P.LINK_PID = T.PID);
+                        ]]></sql>
+
+        </step>
+        
+        <!--TEMP_CMG_BUILNODE去重-->
+        <step value="25">
+            <sql><![CDATA[
+                         DELETE FROM TEMP_CMG_BUILDNODE A
+							 WHERE A.ROWID !=
+       						(SELECT MAX(B.ROWID) FROM TEMP_CMG_BUILDNODE B WHERE A.PID = B.PID);
+                         ]]></sql>
+        
+        </step>
+
+        <step value="100">
+            <!--
+               	 根据图幅号直接提取数据表：
+            -->
+
+
+            <!--CMG-->
+            <!--CMG_BUILDFACE-->
+           <!--  <sql><![CDATA[SELECT /*+ index(P PK_CMG_BUILDFACE) */ P.* FROM CMG_BUILDFACE P,TEMP_CMG_BUILDFACE T WHERE P.FACE_PID=T.PID; ]]></sql> -->
+            <sql><![CDATA[SELECT P.* FROM CMG_BUILDFACE P,TEMP_CMG_BUILDFACE T WHERE P.FACE_PID=T.PID; ]]></sql>
+            <!--CMG_BUILDFACE_TOPO-->
+            <sql><![CDATA[SELECT P.* FROM CMG_BUILDFACE_TOPO P,TEMP_CMG_BUILDFACE T WHERE P.FACE_PID=T.PID; ]]></sql>
+            <!--CMG_BUILDING-->
+            <sql><![CDATA[SELECT P.*
+						  FROM CMG_BUILDING P, TEMP_CMG_BUILDING T
+						 WHERE P.PID = T.PID;
+						 ]]></sql>
+
+
+            <!--CMG_BUILDING_3DICON-->
+            <sql><![CDATA[SELECT P.*
+						  FROM CMG_BUILDING_3DICON P, TEMP_CMG_BUILDING T
+						 WHERE P.BUILDING_PID = T.PID;
+						 ]]></sql>
+            <!--CMG_BUILDING_3DMODEL-->
+            <sql><![CDATA[SELECT P.*
+						  FROM CMG_BUILDING_3DMODEL P, TEMP_CMG_BUILDING T
+						 WHERE P.BUILDING_PID = T.PID;
+						 ]]></sql>
+            <!--CMG_BUILDING_NAME-->
+            <sql><![CDATA[SELECT P.*
+						  FROM CMG_BUILDING_NAME P, TEMP_CMG_BUILDING T
+						 WHERE P.BUILDING_PID = T.PID;
+						 ]]></sql>
+            <!--CMG_BUILDING_POI-->
+            <sql><![CDATA[SELECT P.*
+						  FROM CMG_BUILDING_POI P, TEMP_CMG_BUILDING T
+						 WHERE P.BUILDING_PID = T.PID;
+						 ]]></sql>
+            <!--CMG_BUILDLINK-->
+            <sql><![CDATA[SELECT P.*
+						  FROM  CMG_BUILDLINK P, TEMP_CMG_BUILDLINK T
+						 WHERE P.LINK_PID = T.PID;
+						 ]]></sql>
+<!--             <sql><![CDATA[SELECT /*+ index(P PK_CMG_BUILDLINK) */ P.*
+						  FROM  CMG_BUILDLINK P, TEMP_CMG_BUILDLINK T
+						 WHERE P.LINK_PID = T.PID;
+						 ]]></sql> -->
+            <!--CMG_BUILDLINK_MESH-->
+            <sql><![CDATA[SELECT P.*
+						  FROM CMG_BUILDLINK_MESH P, TEMP_CMG_BUILDLINK T
+						 WHERE P.LINK_PID = T.PID;
+						 ]]></sql>
+            <!--CMG_BUILDNODE-->
+            <sql><![CDATA[SELECT  P.*
+						  FROM CMG_BUILDNODE P, TEMP_CMG_BUILDNODE T
+						 WHERE P.NODE_PID = T.PID;
+						 ]]></sql>
+<!--             <sql><![CDATA[SELECT /*+ index(P PK_CMG_BUILDNODE) */ P.*
+						  FROM CMG_BUILDNODE P, TEMP_CMG_BUILDNODE T
+						 WHERE P.NODE_PID = T.PID;
+						 ]]></sql> -->
+            <!--CMG_BUILDNODE_MESH-->
+            <sql><![CDATA[SELECT P.*
+						  FROM CMG_BUILDNODE_MESH P, TEMP_CMG_BUILDNODE T
+						 WHERE P.NODE_PID = T.PID;
+						 ]]></sql>
+            <!--CMG_BUILDNODE_MESH-->
+            <sql><![CDATA[SELECT P.*
+						  FROM CMG_BUILDFACE_TENANT P, TEMP_CMG_BUILDFACE T
+						 WHERE P.FACE_PID = T.PID;
+						 ]]></sql>
+
+        </step>
+
+        <step value="101">
+            <!--
+               	 根据图幅号直接提取数据表：
+            -->
+
+
+            <!--CMG-->
+            <!--CMG_BUILDFACE-->
+           <!--  <sql><![CDATA[SELECT /*+ index(P PK_CMG_BUILDFACE) */ P.* FROM CMG_BUILDFACE P,TEMP_CMG_BUILDFACE T WHERE P.FACE_PID=T.PID; ]]></sql> -->
+            <sql><![CDATA[DELETE FROM CMG_BUILDFACE P WHERE P.FACE_PID IN (SELECT T.PID FROM TEMP_CMG_BUILDFACE T ); ]]></sql>
+            <!--CMG_BUILDFACE_TOPO-->
+            <sql><![CDATA[DELETE FROM CMG_BUILDFACE_TOPO P WHERE P.FACE_PID IN (SELECT T.PID FROM TEMP_CMG_BUILDFACE T ); ]]></sql>
+            <!--CMG_BUILDING-->
+            <sql><![CDATA[DELETE FROM CMG_BUILDING P WHERE P.PID IN (SELECT T.PID FROM TEMP_CMG_BUILDING T ); ]]></sql>
+
+            <!--CMG_BUILDING_3DICON-->
+            <sql><![CDATA[DELETE FROM CMG_BUILDING_3DICON P WHERE P.BUILDING_PID IN (SELECT T.PID FROM TEMP_CMG_BUILDING T ); ]]></sql>
+
+            <!--CMG_BUILDING_3DMODEL-->
+            <sql><![CDATA[DELETE FROM CMG_BUILDING_3DMODEL P WHERE P.BUILDING_PID IN (SELECT T.PID FROM TEMP_CMG_BUILDING T ); ]]></sql>
+
+            <!--CMG_BUILDING_NAME-->
+            <sql><![CDATA[DELETE FROM CMG_BUILDING_NAME P WHERE P.BUILDING_PID IN (SELECT T.PID FROM TEMP_CMG_BUILDING T ); ]]></sql>
+
+            <!--CMG_BUILDING_POI-->
+            <sql><![CDATA[DELETE FROM CMG_BUILDING_POI P WHERE P.BUILDING_PID IN (SELECT T.PID FROM TEMP_CMG_BUILDING T ); ]]></sql>
+
+            <!--CMG_BUILDLINK-->
+            <sql><![CDATA[DELETE FROM CMG_BUILDLINK P WHERE P.LINK_PID IN (SELECT T.PID FROM TEMP_CMG_BUILDLINK T ); ]]></sql>
+
+            <!--CMG_BUILDLINK_MESH-->
+            <sql><![CDATA[DELETE FROM CMG_BUILDLINK_MESH P WHERE P.LINK_PID IN (SELECT T.PID FROM TEMP_CMG_BUILDLINK T ); ]]></sql>
+
+            <!--CMG_BUILDNODE-->
+            <sql><![CDATA[DELETE FROM CMG_BUILDNODE P WHERE P.NODE_PID IN (SELECT T.PID FROM TEMP_CMG_BUILDNODE T ); ]]></sql>
+
+            <!--CMG_BUILDNODE_MESH-->
+            <sql><![CDATA[DELETE FROM CMG_BUILDNODE_MESH P WHERE P.NODE_PID IN (SELECT T.PID FROM TEMP_CMG_BUILDNODE T ); ]]></sql>
+
+            <!--CMG_BUILDFACE_TENANT-->
+            <sql><![CDATA[DELETE FROM CMG_BUILDFACE_TENANT P WHERE P.FACE_PID IN (SELECT T.PID FROM TEMP_CMG_BUILDFACE T ); ]]></sql>
+
+
+        </step>
+
+
+        <step value="102">
+            <!--查找重复信息：
+            -->
+            <sql><![CDATA[
+					INSERT /*+ append */ INTO TEMP_CMG_BUILDFACE
+					  SELECT FACE_PID
+					    FROM CMG_BUILDFACE A
+					   WHERE A.ROWID !=
+					         (SELECT MAX(B.ROWID) FROM CMG_BUILDFACE  B WHERE A.FACE_PID = B.FACE_PID);
+				]]></sql>
+
+            <sql><![CDATA[
+					INSERT /*+ append */ INTO TEMP_CMG_BUILDING
+					  SELECT PID
+					    FROM CMG_BUILDING A
+					   WHERE A.ROWID !=
+					         (SELECT MAX(B.ROWID) FROM CMG_BUILDING  B WHERE A.PID = B.PID);
+				]]></sql>
+
+            <sql><![CDATA[
+					INSERT /*+ append */ INTO TEMP_CMG_BUILDLINK
+					  SELECT LINK_PID
+					    FROM CMG_BUILDLINK A
+					   WHERE A.ROWID !=
+					         (SELECT MAX(B.ROWID) FROM CMG_BUILDLINK  B WHERE A.LINK_PID = B.LINK_PID);
+				]]></sql>
+
+            <sql><![CDATA[
+					INSERT /*+ append */ INTO TEMP_CMG_BUILDNODE
+					  SELECT NODE_PID
+					    FROM CMG_BUILDNODE A
+					   WHERE A.ROWID !=
+					         (SELECT MAX(B.ROWID) FROM CMG_BUILDNODE  B WHERE A.NODE_PID = B.NODE_PID);
+				]]></sql>
+        </step>
+
+    </feature>
+
+
+    <feature name="CM">
+        <step value="7">
+        
+        <!--提取跨图幅的点和面，及关联的线和面-->
+      <!-- 20150511 补充  说明： 以下补充部分只支持按照图幅 -->
+      <!--提取跨图幅的点（共线/共面的点）-->
+      <sql condition="mesh" sqlType="dataIntegrity"><![CDATA[             
+        INSERT /*+ append */
+        INTO TEMP_CM_BUILDNODE
+          (PID)
+          (SELECT NODE_PID
+             FROM (SELECT COUNT(1), N.NODE_PID
+                     FROM CM_BUILDNODE_MESH M,
+                          (SELECT NODE_PID
+                             FROM CM_BUILDNODE_MESH
+                            WHERE MESH_ID  [mesh]) N
+                    WHERE N.NODE_PID = M.NODE_PID
+                    GROUP BY N.NODE_PID
+                   HAVING COUNT(1) > 1));
+         
+                     ]]></sql>   
+            
+            <!--提取图幅内的link-->
+            <sql condition="mesh"><![CDATA[
+                     INSERT /*+ append */
+                     INTO TEMP_CM_BUILDLINK
+                       (PID)
+                       (SELECT P.LINK_PID
+                          FROM CM_BUILDLINK_MESH P
+                         WHERE P.MESH_ID [mesh]);
+                     ]]></sql> 
+            </step>
+            
+            <step value="9">
+            
+            	<!-- 提取跨图幅的node的面 -->
+            <sql condition="mesh" sqlType="dataIntegrity"><![CDATA[
+                         INSERT /*+ append */
+             INTO TEMP_CM_BUILDFACE
+              (PID)
+            
+              (SELECT DISTINCT (P.FACE_PID)
+                 FROM CM_BUILDFACE_TOPO P
+                WHERE EXISTS (SELECT 1
+                         FROM (SELECT L.LINK_PID
+                                 FROM CM_BUILDLINK L, TEMP_CM_BUILDNODE N
+                                WHERE L.S_NODE_PID = N.PID
+                               UNION ALL
+                               SELECT L.LINK_PID
+                                 FROM CM_BUILDLINK L, TEMP_CM_BUILDNODE N
+                                WHERE L.E_NODE_PID = N.PID) X
+                        WHERE P.LINK_PID = X.LINK_PID));
+
+                         ]]></sql>
+               
+               <!-- 提取跨图幅的link的面 -->
+            <sql condition="mesh" sqlType="dataIntegrity"><![CDATA[
+                         INSERT /*+ append */
+                         INTO TEMP_CM_BUILDFACE
+                           (PID)
+                           (
+                            SELECT DISTINCT FT.FACE_PID
+                              FROM (SELECT COUNT(1), N.PID
+                                      FROM CM_BUILDLINK_MESH M, TEMP_CM_BUILDLINK N
+                                     WHERE N.PID = M.LINK_PID
+                                     GROUP BY N.PID
+                                    HAVING COUNT(1) > 1) T,
+                                   CM_BUILDFACE_TOPO FT
+                             WHERE T.PID = FT.LINK_PID
+                           );
+                         ]]></sql>
+            </step> 
+                                 
+      		<step value="11">
+            <!-- face去重 -->     
+             <sql><![CDATA[
+                       DELETE FROM TEMP_CM_BUILDFACE A
+                            WHERE A.ROWID !=
+                                  (SELECT MAX(B.ROWID)
+                                     FROM TEMP_CM_BUILDFACE B
+                                    WHERE A.PID = B.PID);
+                         ]]></sql>   
+            </step>
+            
+             <step value="13">  
+            <!--根据跨图幅的线提取的face补link-->
+            <sql condition="mesh" sqlType="dataIntegrity"><![CDATA[
+                         INSERT /*+ append */
+                         INTO TEMP_CM_BUILDLINK
+                           (PID)
+                           (SELECT T.LINK_PID
+                              FROM TEMP_CM_BUILDFACE P, CM_BUILDFACE_TOPO T
+                             WHERE P.PID = T.FACE_PID);
+                         ]]></sql>
+
+            <!--根据跨图幅的点提取link-->
+            <sql condition="mesh" sqlType="dataIntegrity"><![CDATA[
+                    INSERT /*+ append */
+                    INTO TEMP_CM_BUILDLINK
+                      (PID)
+                      (SELECT L.LINK_PID
+                          FROM CM_BUILDLINK L
+                         WHERE L.S_NODE_PID IN (SELECT PID FROM TEMP_CM_BUILDNODE)
+                        UNION ALL
+                        SELECT L.LINK_PID
+                          FROM CM_BUILDLINK L
+                         WHERE L.E_NODE_PID IN (SELECT PID FROM TEMP_CM_BUILDNODE)
+                        );
+                    ]]></sql>
+             </step>       
+             <!-- link再次去重（不需要，放在后面一次性去重） -->
+      		<!-- 20150511 补充     end-->
+      		
+      		<step value="15">
+            <!--提取图幅内的建筑物FACE表的组成link-->
+            <sql condition="mesh"><![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_CM_BUILDLINK
+                          (PID)
+                          (SELECT P.LINK_PID
+                             FROM CM_BUILDFACE_TOPO P, CM_BUILDFACE R
+                            WHERE P.FACE_PID = R.FACE_PID
+                              AND R.MESH_ID [mesh]);
+                        ]]></sql>
+
+            <sql condition="area"><![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_CM_BUILDLINK
+                          (PID)
+                          (SELECT P.LINK_PID
+                             FROM CM_BUILDFACE_TOPO P, CM_BUILDFACE R
+                            WHERE P.FACE_PID = R.FACE_PID
+                              AND SDO_ANYINTERACT(R.GEOMETRY,
+                                              [area]) = 'TRUE');
+                        ]]></sql>
+
+            <!--提取link 修改到line 437-->
+          <!--   <sql condition="mesh"><![CDATA[
+                         INSERT /*+ append */
+                         INTO TEMP_CM_BUILDLINK
+                           (PID)
+                           (SELECT P.LINK_PID
+                              FROM CM_BUILDLINK_MESH P
+                             WHERE P.MESH_ID [mesh]);
+                         ]]></sql>   -->
+
+
+            <sql condition="area"><![CDATA[
+                     INSERT /*+ append */
+                     INTO TEMP_CM_BUILDLINK
+                       (PID)
+                       (SELECT P.LINK_PID
+                          FROM CM_BUILDLINK P
+                         WHERE SDO_ANYINTERACT(P.GEOMETRY,[area]) = 'TRUE');
+                     ]]></sql>
+
+		</step>
+		
+		<step value="16">
+			<!--根据图幅提取建筑物要素表,并去重 -->
+            <sql condition="mesh"><![CDATA[
+                    INSERT /*+ append */
+                    INTO TEMP_CM_BUILDING
+                      (PID)
+                      (SELECT DISTINCT T.BUILDING_PID
+                         FROM CM_BUILDFACE T
+                        WHERE  T.MESH_ID [mesh]
+                        AND T.BUILDING_PID !=0 AND T.BUILDING_PID !=-1);
+                    ]]></sql>
+            <sql condition="area"><![CDATA[
+                    INSERT /*+ append */
+                    INTO TEMP_CM_BUILDING
+                      (PID)
+                      (SELECT DISTINCT T.BUILDING_PID
+                         FROM CM_BUILDFACE T
+                        WHERE SDO_ANYINTERACT(T.GEOMETRY,
+                                              [area]) = 'TRUE'
+                        AND T.BUILDING_PID !=0 AND T.BUILDING_PID !=-1);
+                    ]]></sql>
+                    
+             	<!--根据图幅提取Face -->
+	            <sql condition="mesh"><![CDATA[
+	                    INSERT /*+ append */
+	                    INTO TEMP_CM_BUILDFACE
+	                      (PID)
+	                      (SELECT DISTINCT T.FACE_PID
+	                         FROM CM_BUILDFACE T
+	                        WHERE  T.MESH_ID [mesh]);
+	                    ]]></sql>
+	            <sql condition="area"><![CDATA[
+	                    INSERT /*+ append */
+	                    INTO TEMP_CM_BUILDFACE
+	                      (PID)
+	                      (SELECT DISTINCT T.FACE_PID
+	                         FROM CM_BUILDFACE T
+	                        WHERE SDO_ANYINTERACT(T.GEOMETRY,
+	                                              [area]) = 'TRUE');
+	                    ]]></sql>
+
+        </step>
+        
+        
+        <step value="19">
+        	  <!-- face去重 -->     
+	             <sql><![CDATA[
+	                       DELETE FROM TEMP_CM_BUILDFACE A
+	                            WHERE A.ROWID !=
+	                                  (SELECT MAX(B.ROWID)
+	                                     FROM TEMP_CM_BUILDFACE B
+	                                    WHERE A.PID = B.PID);
+	                         ]]></sql>
+            <!--TEMP_CM_BUILDLINK去重-->
+            <sql><![CDATA[
+                         DELETE FROM TEMP_CM_BUILDLINK A
+                             WHERE A.ROWID !=
+                                   (SELECT MAX(B.ROWID) FROM TEMP_CM_BUILDLINK B WHERE A.PID = B.PID);
+                         ]]></sql>
+        </step>
+        <step value="22">
+            <!--查询CM_BUILDLINK的两端端点并去重-->
+            <sql><![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_CM_BUILDNODE
+                          (PID)
+                          (SELECT P.S_NODE_PID FROM CM_BUILDLINK P, TEMP_CM_BUILDLINK T WHERE P.LINK_PID = T.PID
+                            UNION
+                           SELECT P.E_NODE_PID FROM CM_BUILDLINK P, TEMP_CM_BUILDLINK T WHERE P.LINK_PID = T.PID);
+                        ]]></sql>
+        </step>
+        
+        <step value="25">
+        	 <!--TEMP_CM_BUILNODE去重-->
+            <sql><![CDATA[
+                         DELETE FROM TEMP_CM_BUILDNODE A
+							 WHERE A.ROWID !=
+       						(SELECT MAX(B.ROWID) FROM TEMP_CM_BUILDNODE B WHERE A.PID = B.PID);
+                         ]]></sql>
+        </step>
+
+        <step value="100">
+        <!-- 20150514 modified by liya -->
+           <!--CM_BUILDFACE-->
+           <!--   <sql condition="mesh"><![CDATA[SELECT P.* FROM CM_BUILDFACE P WHERE P.MESH_ID [mesh]; ]]></sql> -->
+           <sql><![CDATA[SELECT P.* FROM CM_BUILDFACE P,TEMP_CM_BUILDFACE T WHERE P.FACE_PID=T.PID; ]]></sql>
+            <sql condition="area"><![CDATA[
+                SELECT P.* FROM CM_BUILDFACE P WHERE SDO_ANYINTERACT(P.GEOMETRY,
+                                              [area]) = 'TRUE';
+
+                ]]></sql>
+            <!--CM_BUILDFACE_TOPO-->
+            <sql condition="mesh"><![CDATA[
+                         SELECT P.*
+                          FROM CM_BUILDFACE_TOPO P, CM_BUILDFACE F
+                         WHERE P.FACE_PID=F.FACE_PID AND
+                         F.MESH_ID [mesh];
+                          ]]></sql>
+
+            <sql condition="area"><![CDATA[
+                         SELECT P.*
+                          FROM CM_BUILDFACE_TOPO P, CM_BUILDFACE F
+                         WHERE P.FACE_PID=F.FACE_PID AND
+                         SDO_ANYINTERACT(F.GEOMETRY,
+                                              [area]) = 'TRUE';
+                          ]]></sql>
+
+            <!--CM_BUILDING-->
+            <sql><![CDATA[
+                         SELECT P.*
+                          FROM CM_BUILDING P, TEMP_CM_BUILDING F
+                         WHERE P.PID = F.PID;
+                          ]]></sql>
+
+
+            <!--CM_BUILDLINK-->
+            <sql><![CDATA[SELECT P.* FROM CM_BUILDLINK P,TEMP_CM_BUILDLINK T WHERE P.LINK_PID=T.PID; ]]></sql>
+            <!--CM_BUILDLINK_MESH-->
+            <sql><![CDATA[SELECT P.* FROM CM_BUILDLINK_MESH P,TEMP_CM_BUILDLINK T WHERE P.LINK_PID=T.PID; ]]></sql>
+            <!--CM_BUILDNODE-->
+            <sql><![CDATA[SELECT P.* FROM CM_BUILDNODE P,TEMP_CM_BUILDNODE T WHERE P.NODE_PID=T.PID; ]]></sql>
+            <!--CM_BUILDNODE_MESH-->
+            <sql><![CDATA[SELECT P.* FROM CM_BUILDNODE_MESH P,TEMP_CM_BUILDNODE T WHERE P.NODE_PID=T.PID; ]]></sql>
+
+
+        </step>
+
+        <step value="101">
+            <!--CM_BUILDFACE-->
+
+            <sql><![CDATA[DELETE FROM CM_BUILDFACE P WHERE P.FACE_PID IN (SELECT T.PID FROM TEMP_CM_BUILDFACE T  ); ]]></sql>
+
+            <!--CM_BUILDFACE_TOPO-->
+            <sql><![CDATA[DELETE FROM CM_BUILDFACE_TOPO P WHERE P.FACE_PID IN (SELECT T.PID FROM TEMP_CM_BUILDFACE T  ); ]]></sql>
+
+            <!--CM_BUILDING-->
+			<sql><![CDATA[DELETE FROM CM_BUILDING P WHERE P.PID IN (SELECT T.PID FROM TEMP_CM_BUILDING T ); ]]></sql>
+
+            <!--CM_BUILDLINK-->
+            <sql><![CDATA[DELETE FROM CM_BUILDLINK P WHERE P.LINK_PID IN (SELECT T.PID FROM TEMP_CM_BUILDLINK T ); ]]></sql>
+            <!--CM_BUILDLINK_MESH-->
+            <sql><![CDATA[DELETE FROM CM_BUILDLINK_MESH P WHERE P.LINK_PID IN (SELECT T.PID FROM TEMP_CM_BUILDLINK T ); ]]></sql>
+            <!--CM_BUILDNODE-->
+            <sql><![CDATA[DELETE FROM CM_BUILDNODE P WHERE P.NODE_PID IN (SELECT T.PID FROM TEMP_CM_BUILDNODE T ); ]]></sql>
+            <!--CM_BUILDNODE_MESH-->
+            <sql><![CDATA[DELETE FROM CM_BUILDNODE_MESH P WHERE P.NODE_PID IN (SELECT T.PID FROM TEMP_CM_BUILDNODE T ); ]]></sql>
+        </step>
+
+        <step value="102">
+            <!--查找重复信息：
+            -->
+            <sql><![CDATA[
+					INSERT /*+ append */ INTO TEMP_CM_BUILDFACE
+					  SELECT FACE_PID
+					    FROM CM_BUILDFACE A
+					   WHERE A.ROWID !=
+					         (SELECT MAX(B.ROWID) FROM CM_BUILDFACE  B WHERE A.FACE_PID = B.FACE_PID);
+				]]></sql>
+
+            <sql><![CDATA[
+					INSERT /*+ append */ INTO TEMP_CM_BUILDING
+					  SELECT PID
+					    FROM CM_BUILDING A
+					   WHERE A.ROWID !=
+					         (SELECT MAX(B.ROWID) FROM CM_BUILDING  B WHERE A.PID = B.PID);
+				]]></sql>
+
+            <sql><![CDATA[
+					INSERT /*+ append */ INTO TEMP_CM_BUILDLINK
+					  SELECT LINK_PID
+					    FROM CM_BUILDLINK A
+					   WHERE A.ROWID !=
+					         (SELECT MAX(B.ROWID) FROM CM_BUILDLINK  B WHERE A.LINK_PID = B.LINK_PID);
+				]]></sql>
+
+            <sql><![CDATA[
+					INSERT /*+ append */ INTO TEMP_CM_BUILDNODE
+					  SELECT NODE_PID
+					    FROM CM_BUILDNODE A
+					   WHERE A.ROWID !=
+					         (SELECT MAX(B.ROWID) FROM CM_BUILDNODE  B WHERE A.NODE_PID = B.NODE_PID);
+				]]></sql>
+        </step>
+
+    </feature>
+
+</sqls>

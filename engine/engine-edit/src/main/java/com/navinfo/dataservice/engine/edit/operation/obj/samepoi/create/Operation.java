@@ -1,11 +1,12 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.samepoi.create;
 
+import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxSamepoi;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxSamepoiPart;
-import com.navinfo.dataservice.dao.pidservice.PidService;
+
 
 /**
  * @Title: Operation.java
@@ -25,7 +26,7 @@ public class Operation implements IOperation {
 	@Override
 	public String run(Result result) throws Exception {
 		IxSamepoi samePoi = new IxSamepoi();
-		samePoi.setPid(PidService.getInstance().applySamepoiPid());
+		samePoi.setPid(PidUtil.getInstance().applySamepoiPid());
 		result.insertObject(samePoi, ObjStatus.INSERT, samePoi.pid());
 
 		IxSamepoiPart samePoiPart = null;

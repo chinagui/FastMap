@@ -1,22 +1,22 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdlaneconnexity.update;
 
 import java.sql.Connection;
-import java.util.Arrays;
+
 import java.util.HashSet;
-import java.util.List;
+
 import java.util.Set;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
-import com.navinfo.dataservice.commons.util.StringUtils;
+import com.navinfo.dataservice.bizcommons.service.PidUtil;
+
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneTopology;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneVia;
-import com.navinfo.dataservice.dao.pidservice.PidService;
 
 public class Operation implements IOperation {
 
@@ -116,7 +116,7 @@ public class Operation implements IOperation {
 
 						topo.Unserialize(json);
 
-						topo.setPid(PidService.getInstance()
+						topo.setPid(PidUtil.getInstance()
 								.applyLaneTopologyPid());
 
 						topo.setConnexityPid(lane.getPid());
@@ -210,16 +210,19 @@ public class Operation implements IOperation {
 	private void caleRdlaneForRdLaneconnexity(Result result) throws Exception {
 		String laneInfo = command.getContent().getString("laneInfo");
 
-/*		if (StringUtils.isNotEmpty(laneInfo)) {
-			String lanes = laneInfo.replace("[", "").replace("]", "");
-			List<String> laneList = Arrays.asList(lanes.split(","));
-			com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation operation = new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation(
-					conn);
-			operation.setLanInfos(laneList);
-			operation.setConnexity(lane);
-			operation.refRdLaneForRdLaneconnexity(result);
-
-		}*/
+		/*
+		 * if (StringUtils.isNotEmpty(laneInfo)) { String lanes =
+		 * laneInfo.replace("[", "").replace("]", ""); List<String> laneList =
+		 * Arrays.asList(lanes.split(","));
+		 * com.navinfo.dataservice.engine.edit.operation
+		 * .topo.batch.batchrdlane.Operation operation = new
+		 * com.navinfo.dataservice
+		 * .engine.edit.operation.topo.batch.batchrdlane.Operation( conn);
+		 * operation.setLanInfos(laneList); operation.setConnexity(lane);
+		 * operation.refRdLaneForRdLaneconnexity(result);
+		 * 
+		 * }
+		 */
 
 	}
 

@@ -4,13 +4,13 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.directroute.RdDirectroute;
 import com.navinfo.dataservice.dao.glm.model.rd.directroute.RdDirectrouteVia;
-import com.navinfo.dataservice.dao.pidservice.PidService;
 import com.navinfo.dataservice.engine.edit.utils.CalLinkOperateUtils;
 
 public class Operation implements IOperation {
@@ -41,7 +41,7 @@ public class Operation implements IOperation {
 
 		CalLinkOperateUtils calLinkOperateUtils = new CalLinkOperateUtils();
 
-		directroute.setPid(PidService.getInstance().applyRdDirectroutePid());
+		directroute.setPid(PidUtil.getInstance().applyRdDirectroutePid());
 
 		directroute.setInLinkPid(command.getInLinkPid());
 

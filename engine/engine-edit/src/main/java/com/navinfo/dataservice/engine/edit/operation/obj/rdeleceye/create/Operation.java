@@ -2,12 +2,12 @@ package com.navinfo.dataservice.engine.edit.operation.obj.rdeleceye.create;
 
 import org.json.JSONException;
 
+import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdElectroniceye;
-import com.navinfo.dataservice.dao.pidservice.PidService;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 
 import net.sf.json.JSONObject;
@@ -35,7 +35,7 @@ public class Operation implements IOperation {
 	public void createRdElectroniceye(Result result) throws Exception, JSONException {
 		RdElectroniceye eleceye = new RdElectroniceye();
 
-		eleceye.setPid(PidService.getInstance().applyElectroniceyePid());
+		eleceye.setPid(PidUtil.getInstance().applyElectroniceyePid());
 
 		eleceye.setLinkPid(command.getLinkPid());
 

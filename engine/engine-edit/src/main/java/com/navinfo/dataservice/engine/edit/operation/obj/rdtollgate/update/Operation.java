@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.util.Iterator;
 import java.util.List;
 
+import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
@@ -12,7 +13,6 @@ import com.navinfo.dataservice.dao.glm.model.rd.tollgate.RdTollgate;
 import com.navinfo.dataservice.dao.glm.model.rd.tollgate.RdTollgateName;
 import com.navinfo.dataservice.dao.glm.model.rd.tollgate.RdTollgatePassage;
 import com.navinfo.dataservice.dao.glm.selector.rd.tollgate.RdTollgateSelector;
-import com.navinfo.dataservice.dao.pidservice.PidService;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -118,7 +118,7 @@ public class Operation implements IOperation {
 							name.getNameId());
 				} else if (ObjStatus.INSERT.toString().equals(objStatus)) {
 					name = new RdTollgateName();
-					name.setNameId(PidService.getInstance()
+					name.setNameId(PidUtil.getInstance()
 							.applyRdTollgateNamePid());
 					name.setPid(this.command.getTollgate().getPid());
 					result.insertObject(name, ObjStatus.INSERT,

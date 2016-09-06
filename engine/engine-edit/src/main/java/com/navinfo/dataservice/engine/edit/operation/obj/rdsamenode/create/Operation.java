@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.apache.commons.collections.CollectionUtils;
 
+import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -20,7 +21,6 @@ import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameNodePart;
 import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
 import com.navinfo.dataservice.dao.glm.selector.lu.LuLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.same.RdSameNodeSelector;
-import com.navinfo.dataservice.dao.pidservice.PidService;
 import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONArray;
@@ -54,7 +54,7 @@ public class Operation implements IOperation {
 
 		RdSameNode rdSameNode = new RdSameNode();
 
-		rdSameNode.setPid(PidService.getInstance().applyRdSameNodePid());
+		rdSameNode.setPid(PidUtil.getInstance().applyRdSameNodePid());
 
 		JSONArray nodeArray = this.command.getNodeArray();
 
@@ -201,7 +201,7 @@ public class Operation implements IOperation {
 		if (CollectionUtils.isNotEmpty(sameNodeList)) {
 			RdSameNode rdSameNode = new RdSameNode();
 
-			rdSameNode.setPid(PidService.getInstance().applyRdSameNodePid());
+			rdSameNode.setPid(PidUtil.getInstance().applyRdSameNodePid());
 
 			for (IRow row : sameNodeList) {
 				RdSameNodePart sameNodePart = new RdSameNodePart();

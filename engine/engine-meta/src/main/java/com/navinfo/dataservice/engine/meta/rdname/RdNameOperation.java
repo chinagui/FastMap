@@ -9,7 +9,7 @@ import java.sql.Types;
 import org.apache.commons.dbutils.DbUtils;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
-import com.navinfo.dataservice.dao.pidservice.PidService;
+import com.navinfo.dataservice.bizcommons.service.PidUtil;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -158,8 +158,7 @@ public class RdNameOperation {
 	 * @time:2016-6-28 下午4:39:47
 	 */
 	private int applyPid() throws Exception {
-		PidService pidSercice = new PidService();
-		return pidSercice.applyRdNamePid();
+		return PidUtil.getInstance().applyRdNamePid();
 	}
 	
 	/**

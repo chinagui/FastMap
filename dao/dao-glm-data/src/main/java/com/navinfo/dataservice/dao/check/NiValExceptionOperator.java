@@ -14,6 +14,7 @@ import com.navinfo.dataservice.bizcommons.glm.Glm;
 import com.navinfo.dataservice.bizcommons.glm.GlmCache;
 import com.navinfo.dataservice.bizcommons.glm.GlmGridCalculator;
 import com.navinfo.dataservice.bizcommons.glm.GlmGridCalculatorFactory;
+import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
@@ -26,7 +27,6 @@ import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeSelector;
 import com.navinfo.dataservice.dao.log.LogWriter;
-import com.navinfo.dataservice.dao.pidservice.PidService;
 import com.navinfo.dataservice.dao.pool.OracleAddress;
 import com.navinfo.navicommons.geo.computation.CompGridUtil;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
@@ -348,7 +348,7 @@ public class NiValExceptionOperator {
 
 				ckexception.copy(exception);
 
-				int pid = PidService.getInstance().applyCkExceptionId();
+				int pid = PidUtil.getInstance().applyCkExceptionId();
 
 				ckexception.setExceptionId(pid);
 

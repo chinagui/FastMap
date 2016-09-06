@@ -5,6 +5,7 @@ import java.sql.Connection;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
@@ -12,7 +13,6 @@ import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
-import com.navinfo.dataservice.dao.pidservice.PidService;
 import com.navinfo.dataservice.engine.edit.utils.NodeOperateUtils;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Geometry;
@@ -163,7 +163,7 @@ public class OpTopo implements IOperation {
 
 		link1.copy(rdLinkBreakpoint);
 
-		link1.setPid(PidService.getInstance().applyLinkPid());
+		link1.setPid(PidUtil.getInstance().applyLinkPid());
 
 		link1.setGeometry(GeoTranslator.geojson2Jts(geojson1));
 
@@ -178,7 +178,7 @@ public class OpTopo implements IOperation {
 
 		link2.copy(rdLinkBreakpoint);
 
-		link2.setPid(PidService.getInstance().applyLinkPid());
+		link2.setPid(PidUtil.getInstance().applyLinkPid());
 
 		link2.setGeometry(GeoTranslator.geojson2Jts(geojson2));
 

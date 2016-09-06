@@ -3,11 +3,12 @@ package com.navinfo.dataservice.impcore.deepinfo;
 import java.sql.Connection;
 import java.sql.Statement;
 
+import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiGasstation;
 import com.navinfo.dataservice.dao.glm.operator.BasicOperator;
-import com.navinfo.dataservice.dao.pidservice.PidService;
+
 import com.navinfo.dataservice.impcore.exception.DataErrorException;
 
 import net.sf.json.JSONObject;
@@ -25,7 +26,7 @@ public class GasStationImporter {
 
 		IxPoiGasstation gas = new IxPoiGasstation();
 
-		gas.setPid(PidService.getInstance().applyPoiGasstationId());
+		gas.setPid(PidUtil.getInstance().applyPoiGasstationId());
 
 		gas.setPoiPid(poi.getInt("pid"));
 

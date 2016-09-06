@@ -4,13 +4,14 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.road.RdRoad;
 import com.navinfo.dataservice.dao.glm.model.rd.road.RdRoadLink;
-import com.navinfo.dataservice.dao.pidservice.PidService;
+
 
 public class Operation implements IOperation {
 
@@ -44,7 +45,7 @@ public class Operation implements IOperation {
 
 		RdRoad road = new RdRoad();
 
-		road.setPid(PidService.getInstance().applyRdVoiceguidePid());
+		road.setPid(PidUtil.getInstance().applyRdVoiceguidePid());
 
 		List<IRow> roadLinks = new ArrayList<IRow>();
 

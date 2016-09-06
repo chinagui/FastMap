@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -19,7 +20,6 @@ import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLink;
 import com.navinfo.dataservice.dao.glm.selector.rd.gsc.RdGscSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.rw.RwLinkSelector;
-import com.navinfo.dataservice.dao.pidservice.PidService;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -369,7 +369,7 @@ public class RdGscOperateUtils {
 	public static RdGsc addRdGsc(Geometry gscGeo) throws Exception {
 		RdGsc rdGsc = new RdGsc();
 
-		rdGsc.setPid(PidService.getInstance().applyRdGscPid());
+		rdGsc.setPid(PidUtil.getInstance().applyRdGscPid());
 
 		rdGsc.setGeometry(gscGeo);
 

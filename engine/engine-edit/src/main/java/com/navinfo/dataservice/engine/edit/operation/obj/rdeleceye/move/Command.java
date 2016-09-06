@@ -1,8 +1,6 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdeleceye.move;
 
-import org.json.JSONException;
 
-import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdElectroniceye;

@@ -3,12 +3,12 @@ package com.navinfo.dataservice.engine.edit.operation.obj.adadmin.update;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdmin;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdminName;
-import com.navinfo.dataservice.dao.pidservice.PidService;
 
 public class Operation implements IOperation {
 
@@ -78,7 +78,7 @@ public class Operation implements IOperation {
 
 						row.Unserialize(json);
 
-						row.setPid(PidService.getInstance().applyAdAdminNamePid());
+						row.setPid(PidUtil.getInstance().applyAdAdminNamePid());
 
 						row.setRegionId(adAdmin.getPid());
 

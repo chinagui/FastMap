@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -14,7 +15,6 @@ import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossNode;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeSelector;
-import com.navinfo.dataservice.dao.pidservice.PidService;
 
 public class Operation implements IOperation {
 
@@ -37,7 +37,7 @@ public class Operation implements IOperation {
 		
 		cross.setMesh(meshId);
 
-		cross.setPid(PidService.getInstance().applyRdCrossPid());
+		cross.setPid(PidUtil.getInstance().applyRdCrossPid());
 
 		result.setPrimaryPid(cross.getPid());
 		

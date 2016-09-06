@@ -3,6 +3,7 @@ package com.navinfo.dataservice.engine.edit.operation.obj.poi.update;
 import java.sql.Connection;
 import java.util.List;
 
+import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -38,7 +39,6 @@ import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiVideo;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.operator.BasicOperator;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
-import com.navinfo.dataservice.dao.pidservice.PidService;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -181,7 +181,7 @@ public class Operation implements IOperation {
 
 					row.Unserialize(json);
 
-					row.setPid(PidService.getInstance().applyPoiAddressId());
+					row.setPid(PidUtil.getInstance().applyPoiAddressId());
 
 					row.setPoiPid(ixPoi.getPid());
 
@@ -423,7 +423,7 @@ public class Operation implements IOperation {
 
 					row.Unserialize(json);
 
-					row.setPid(PidService.getInstance().applyPoiIconId());
+					row.setPid(PidUtil.getInstance().applyPoiIconId());
 
 					row.setPoiPid(ixPoi.getPid());
 
@@ -461,7 +461,7 @@ public class Operation implements IOperation {
 
 				row.Unserialize(json);
 
-				row.setPid(PidService.getInstance().applyPoiNameId());
+				row.setPid(PidUtil.getInstance().applyPoiNameId());
 
 				row.setPoiPid(ixPoi.getPid());
 
@@ -759,7 +759,7 @@ public class Operation implements IOperation {
 
 					row.Unserialize(json);
 
-					row.setPid(PidService.getInstance().applyPoiParkingsId());
+					row.setPid(PidUtil.getInstance().applyPoiParkingsId());
 
 					row.setPoiPid(ixPoi.getPid());
 
@@ -1149,7 +1149,7 @@ public class Operation implements IOperation {
 
 					row.Unserialize(json);
 
-					row.setPid(PidService.getInstance().applyPoiGasstationId());
+					row.setPid(PidUtil.getInstance().applyPoiGasstationId());
 
 					row.setPoiPid(ixPoi.getPid());
 
@@ -1249,7 +1249,7 @@ public class Operation implements IOperation {
 
 					row.Unserialize(json);
 
-					row.setPid(PidService.getInstance().applyPoiAttractionId());
+					row.setPid(PidUtil.getInstance().applyPoiAttractionId());
 
 					row.setPoiPid(ixPoi.getPid());
 
@@ -1299,7 +1299,7 @@ public class Operation implements IOperation {
 
 					row.Unserialize(json);
 
-					row.setPid(PidService.getInstance().applyPoiHotelId());
+					row.setPid(PidUtil.getInstance().applyPoiHotelId());
 
 					row.setPoiPid(ixPoi.getPid());
 
@@ -1349,7 +1349,7 @@ public class Operation implements IOperation {
 
 					row.Unserialize(json);
 
-					row.setPid(PidService.getInstance().applyPoiRestaurantId());
+					row.setPid(PidUtil.getInstance().applyPoiRestaurantId());
 
 					row.setPoiPid(ixPoi.getPid());
 

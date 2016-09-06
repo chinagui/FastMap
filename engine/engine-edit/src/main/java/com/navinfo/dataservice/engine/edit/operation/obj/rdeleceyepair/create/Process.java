@@ -6,8 +6,6 @@ import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.operation.AbstractProcess;
 
 public class Process extends AbstractProcess<Command> {
-	
-	private Check check = new Check();
 
 	public Process() {
 		super();
@@ -28,16 +26,20 @@ public class Process extends AbstractProcess<Command> {
 	public boolean prepareData() throws Exception {
 		// 根据pid1和pid2加载配对电子眼
 		Command command = this.getCommand();
-		RdElectroniceyeSelector selector = new RdElectroniceyeSelector(this.getConn());
+		RdElectroniceyeSelector selector = new RdElectroniceyeSelector(
+				this.getConn());
 
-		RdElectroniceye eleceye = (RdElectroniceye) selector.loadById(command.getEleceyePid1(), true);
+		RdElectroniceye eleceye = (RdElectroniceye) selector.loadById(
+				command.getEleceyePid1(), true);
 		if (Command.EXIT_KIND == eleceye.getKind()) {
 			command.setExitEleceye(eleceye);
-			eleceye = (RdElectroniceye) selector.loadById(command.getEleceyePid2(), true);
+			eleceye = (RdElectroniceye) selector.loadById(
+					command.getEleceyePid2(), true);
 			command.setEntryEleceye(eleceye);
 		} else {
 			command.setEntryEleceye(eleceye);
-			eleceye = (RdElectroniceye) selector.loadById(command.getEleceyePid2(), true);
+			eleceye = (RdElectroniceye) selector.loadById(
+					command.getEleceyePid2(), true);
 			command.setExitEleceye(eleceye);
 		}
 

@@ -1,12 +1,13 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdeleceyepair.create;
 
+import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdEleceyePair;
 import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdEleceyePart;
 import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdElectroniceye;
-import com.navinfo.dataservice.dao.pidservice.PidService;
+
 
 public class Operation implements IOperation {
 
@@ -29,7 +30,7 @@ public class Operation implements IOperation {
 
 		// 添加区间测速电子眼配对信息
 		RdEleceyePair pair = new RdEleceyePair();
-		pair.setPid(PidService.getInstance().applyEleceyePairPid());
+		pair.setPid(PidUtil.getInstance().applyEleceyePairPid());
 		result.insertObject(pair, ObjStatus.INSERT, pair.pid());
 		
 		// 添加区间测速电子眼的起始电子眼

@@ -2,7 +2,7 @@ package com.navinfo.dataservice.engine.edit.pid;
 
 import org.junit.Test;
 
-import com.navinfo.dataservice.engine.edit.service.PidService;
+import com.navinfo.dataservice.bizcommons.service.PidService;
 
 /** 
  * @ClassName: PidServiceTest

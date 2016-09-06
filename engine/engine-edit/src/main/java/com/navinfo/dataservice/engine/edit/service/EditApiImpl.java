@@ -5,6 +5,7 @@ import java.sql.Connection;
 import org.springframework.stereotype.Service;
 
 import com.navinfo.dataservice.api.edit.iface.EditApi;
+import com.navinfo.dataservice.bizcommons.service.PidService;
 import com.navinfo.dataservice.engine.edit.operation.Transaction;
 
 import net.sf.json.JSONObject;

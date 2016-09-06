@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.edit.service;
+package com.navinfo.dataservice.bizcommons.service;
 
 import java.sql.CallableStatement;
 import java.sql.Connection;

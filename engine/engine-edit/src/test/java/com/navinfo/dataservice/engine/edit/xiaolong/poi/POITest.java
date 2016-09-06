@@ -2,36 +2,25 @@ package com.navinfo.dataservice.engine.edit.xiaolong.poi;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.dbutils.DbUtils;
-import org.apache.commons.dbutils.ResultSetHandler;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.navinfo.dataservice.api.edit.iface.EditApi;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
-import com.navinfo.dataservice.commons.exception.DataNotChangeException;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
-import com.navinfo.dataservice.commons.util.JsonUtils;
-import com.navinfo.dataservice.control.row.batch.BatchProcess;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
-import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.search.AbstractSearch;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.operation.Transaction;
 import com.navinfo.dataservice.engine.edit.search.SearchProcess;
-import com.navinfo.dataservice.engine.edit.service.EditApiImpl;
-import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.DBUtils;
 
 import net.sf.json.JSONObject;
@@ -103,68 +92,68 @@ public class POITest extends InitApplication {
 		}
 	}
 
-	@Test
-	public void createPoiFromRowPro() throws Exception {
-
-		String parameter = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"IXPOI\",\"objId\":2574546,\"data\":{\"rowId\":\"3AE1FB52D86492F7E050A8C08304EE4C\",\"pid\":2574546,\"objStatus\":\"UPDATE\"}}";
-
-		Connection conn = null;
-
-		try {
-
-			JSONObject json = JSONObject.fromObject(parameter);
-
-			OperType operType = Enum.valueOf(OperType.class, json.getString("command"));
-
-			ObjType objType = Enum.valueOf(ObjType.class, json.getString("type"));
-
-			int dbId = json.getInt("dbId");
-
-			conn = DBConnector.getInstance().getConnectionById(dbId);
-
-			EditApiImpl editApiImpl = new EditApiImpl(conn);
-
-			editApiImpl.setToken(2);
-
-			JSONObject result = editApiImpl.runPoi(json);
-
-			StringBuffer buf = new StringBuffer();
-
-			int pid = 0;
-
-			if (operType != OperType.CREATE) {
-				if (objType == ObjType.IXSAMEPOI) {
-					String poiPids = JsonUtils.getStringValueFromJSONArray(json.getJSONArray("poiPids"));
-					buf.append(poiPids);
-				} else {
-					pid = json.getInt("objId");
-
-					buf.append(String.valueOf(pid));
-				}
-			} else {
-				pid = result.getInt("pid");
-				buf.append(String.valueOf(pid));
-			}
-
-			if (operType == OperType.UPDATE) {
-				json.put("objId", pid);
-				BatchProcess batchProcess = new BatchProcess();
-				batchProcess.execute(json, conn, editApiImpl);
-			}
-
-			upatePoiStatus(buf.toString(), conn);
-
-			System.out.println(result);
-
-		} catch (DataNotChangeException e) {
-			DbUtils.rollback(conn);
-		} catch (Exception e) {
-			e.printStackTrace();
-			DbUtils.rollback(conn);
-		} finally {
-			DbUtils.commitAndClose(conn);
-		}
-	}
+//	@Test
+//	public void createPoiFromRowPro() throws Exception {
+//
+//		String parameter = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"IXPOI\",\"objId\":2574546,\"data\":{\"rowId\":\"3AE1FB52D86492F7E050A8C08304EE4C\",\"pid\":2574546,\"objStatus\":\"UPDATE\"}}";
+//
+//		Connection conn = null;
+//
+//		try {
+//
+//			JSONObject json = JSONObject.fromObject(parameter);
+//
+//			OperType operType = Enum.valueOf(OperType.class, json.getString("command"));
+//
+//			ObjType objType = Enum.valueOf(ObjType.class, json.getString("type"));
+//
+//			int dbId = json.getInt("dbId");
+//
+//			conn = DBConnector.getInstance().getConnectionById(dbId);
+//
+//			EditApiImpl editApiImpl = new EditApiImpl(conn);
+//
+//			editApiImpl.setToken(2);
+//
+//			JSONObject result = editApiImpl.runPoi(json);
+//
+//			StringBuffer buf = new StringBuffer();
+//
+//			int pid = 0;
+//
+//			if (operType != OperType.CREATE) {
+//				if (objType == ObjType.IXSAMEPOI) {
+//					String poiPids = JsonUtils.getStringValueFromJSONArray(json.getJSONArray("poiPids"));
+//					buf.append(poiPids);
+//				} else {
+//					pid = json.getInt("objId");
+//
+//					buf.append(String.valueOf(pid));
+//				}
+//			} else {
+//				pid = result.getInt("pid");
+//				buf.append(String.valueOf(pid));
+//			}
+//
+//			if (operType == OperType.UPDATE) {
+//				json.put("objId", pid);
+//				BatchProcess batchProcess = new BatchProcess();
+//				batchProcess.execute(json, conn, editApiImpl);
+//			}
+//
+//			upatePoiStatus(buf.toString(), conn);
+//
+//			System.out.println(result);
+//
+//		} catch (DataNotChangeException e) {
+//			DbUtils.rollback(conn);
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//			DbUtils.rollback(conn);
+//		} finally {
+//			DbUtils.commitAndClose(conn);
+//		}
+//	}
 
 	@Test
 	public void testUpdatePoi() {

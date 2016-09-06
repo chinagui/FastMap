@@ -95,7 +95,7 @@ public class ColumnCoreControl {
 		} catch (Exception e) {
 			throw e;
 		} finally {
-			DbUtils.closeQuietly(conn);
+			DbUtils.commitAndClose(conn);
 		}
 	}
 	

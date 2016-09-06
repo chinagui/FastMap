@@ -2,12 +2,12 @@ package com.navinfo.dataservice.engine.edit.operation.obj.adadmin.create;
 
 import java.sql.Connection;
 
+import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdmin;
-import com.navinfo.dataservice.dao.pidservice.PidService;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 
 import net.sf.json.JSONObject;
@@ -58,7 +58,7 @@ public class Operation implements IOperation {
 			adAdmin.setMeshId(Integer.parseInt(meshIds[0]));
 		}
 
-		adAdmin.setPid(PidService.getInstance().applyAdAdminPid());
+		adAdmin.setPid(PidUtil.getInstance().applyAdAdminPid());
 
 		result.setPrimaryPid(adAdmin.getPid());
 

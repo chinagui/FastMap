@@ -2,13 +2,13 @@ package com.navinfo.dataservice.engine.edit.operation.obj.poiparent.update;
 
 import java.util.List;
 
+import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiChildren;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiParent;
-import com.navinfo.dataservice.dao.pidservice.PidService;
 
 public class Operation implements IOperation {
 
@@ -103,7 +103,7 @@ public class Operation implements IOperation {
 		if (parentsByParent == null || parentsByParent.size() == 0) {
 			parent = new IxPoiParent();
 
-			parent.setPid(PidService.getInstance().applyPoiGroupId());
+			parent.setPid(PidUtil.getInstance().applyPoiGroupId());
 
 			parent.setParentPoiPid(this.command.getParentPid());
 

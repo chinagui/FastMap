@@ -10,6 +10,7 @@ import net.sf.json.JSONObject;
 
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -25,7 +26,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkLimit;
 import com.navinfo.dataservice.dao.glm.model.rd.tollgate.RdTollgate;
 import com.navinfo.dataservice.dao.glm.selector.rd.lane.RdLaneSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
-import com.navinfo.dataservice.dao.pidservice.PidService;
+
 
 /**
  * 详细车道批量操作
@@ -204,7 +205,7 @@ public class Operation implements IOperation {
 					jsonLaneInfo.getInt("pid"), true, true);
 		}
 
-		lane.setPid(PidService.getInstance().applyRdLanePid());
+		lane.setPid(PidUtil.getInstance().applyRdLanePid());
 		lane.setLinkPid(linkPid);
 		lane.setLaneNum(this.command.getLaneInfos().size());
 
@@ -276,7 +277,7 @@ public class Operation implements IOperation {
 	private void createRdlane(Result result, int linkPid, int seqNum,
 			int laneDir, int laneNum) throws Exception {
 		RdLane rdLane = new RdLane();
-		rdLane.setPid(PidService.getInstance().applyRdLanePid());
+		rdLane.setPid(PidUtil.getInstance().applyRdLanePid());
 		rdLane.setLinkPid(linkPid);
 		rdLane.setSeqNum(seqNum);
 		rdLane.setLaneDir(laneDir);
@@ -287,7 +288,7 @@ public class Operation implements IOperation {
 	private void createRdlane(Result result, int linkPid, int seqNum,
 			int laneDir, int laneNum, String arrowDir) throws Exception {
 		RdLane rdLane = new RdLane();
-		rdLane.setPid(PidService.getInstance().applyRdLanePid());
+		rdLane.setPid(PidUtil.getInstance().applyRdLanePid());
 		rdLane.setLinkPid(linkPid);
 		rdLane.setSeqNum(seqNum);
 		rdLane.setLaneDir(laneDir);

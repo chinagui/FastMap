@@ -2,6 +2,7 @@ package com.navinfo.dataservice.engine.edit.operation.obj.poi.create;
 
 import java.sql.Connection;
 
+import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -9,7 +10,6 @@ import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
-import com.navinfo.dataservice.dao.pidservice.PidService;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Geometry;
@@ -61,7 +61,7 @@ public class Operation implements IOperation {
 		{
 			ixPoi.setMeshId(Integer.parseInt(meshIds[0]));
 		}
-		ixPoi.setPid(PidService.getInstance().applyPoiPid());
+		ixPoi.setPid(PidUtil.getInstance().applyPoiPid());
 		result.setPrimaryPid(ixPoi.getPid());
 		ixPoi.setGeometry(GeoTranslator.geojson2Jts(geoPoint, 100000, 0));
 		ixPoi.setxGuide(command.getXguide());

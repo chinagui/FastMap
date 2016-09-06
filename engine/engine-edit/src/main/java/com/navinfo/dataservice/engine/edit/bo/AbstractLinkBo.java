@@ -3,23 +3,12 @@ package com.navinfo.dataservice.engine.edit.bo;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+
+
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.dao.glm.iface.IObj;
-import com.navinfo.dataservice.dao.glm.iface.IRow;
-import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
-import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
-import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
-import com.navinfo.dataservice.dao.pidservice.PidService;
-import com.navinfo.dataservice.engine.edit.bo.ad.AdNodeBo;
 import com.navinfo.dataservice.engine.edit.model.AbstractLink;
 import com.navinfo.dataservice.engine.edit.model.OperationType;
-import com.navinfo.dataservice.engine.edit.utils.NodeOperateUtils;
-import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;

@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -19,7 +20,6 @@ import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSeriesbranch;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSignasreal;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSignboard;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
-import com.navinfo.dataservice.dao.pidservice.PidService;
 
 public class Operation implements IOperation {
 
@@ -85,7 +85,7 @@ public class Operation implements IOperation {
 
 		RdBranch branch = new RdBranch();
 
-		branch.setPid(PidService.getInstance().applyBranchPid());
+		branch.setPid(PidUtil.getInstance().applyBranchPid());
 
 		branch.setInLinkPid(command.getInLinkPid());
 
@@ -247,7 +247,7 @@ public class Operation implements IOperation {
 			throws Exception {
 		RdBranchDetail detail = new RdBranchDetail();
 
-		detail.setPid(PidService.getInstance().applyBranchDetailId());
+		detail.setPid(PidUtil.getInstance().applyBranchDetailId());
 
 		detail.setBranchPid(branch.getPid());
 
@@ -300,7 +300,7 @@ public class Operation implements IOperation {
 			throws Exception {
 		RdSignasreal signasreal = new RdSignasreal();
 
-		signasreal.setPid(PidService.getInstance().applyRdSignasreal());
+		signasreal.setPid(PidUtil.getInstance().applyRdSignasreal());
 
 		signasreal.setBranchPid(branch.getPid());
 
@@ -352,7 +352,7 @@ public class Operation implements IOperation {
 			throws Exception {
 		RdBranchSchematic schematic = new RdBranchSchematic();
 
-		schematic.setPid(PidService.getInstance().applyBranchSchematic());
+		schematic.setPid(PidUtil.getInstance().applyBranchSchematic());
 
 		schematic.setBranchPid(branch.getPid());
 
@@ -379,7 +379,7 @@ public class Operation implements IOperation {
 			throws Exception {
 		RdSignboard signboard = new RdSignboard();
 
-		signboard.setPid(PidService.getInstance().applyRdSignboard());
+		signboard.setPid(PidUtil.getInstance().applyRdSignboard());
 
 		signboard.setBranchPid(branch.getPid());
 

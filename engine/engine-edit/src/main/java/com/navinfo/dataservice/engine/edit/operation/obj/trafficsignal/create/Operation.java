@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -16,7 +17,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossNode;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.trafficsignal.RdTrafficsignal;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
-import com.navinfo.dataservice.dao.pidservice.PidService;
+
 
 public class Operation implements IOperation {
 
@@ -111,7 +112,7 @@ public class Operation implements IOperation {
 	private RdTrafficsignal createRdTrafficSignal(int nodePid, int linkPid) throws Exception {
 		RdTrafficsignal rdTrafficsignal = new RdTrafficsignal();
 
-		rdTrafficsignal.setPid(PidService.getInstance().applyRdTrafficsignalPid());
+		rdTrafficsignal.setPid(PidUtil.getInstance().applyRdTrafficsignalPid());
 
 		rdTrafficsignal.setLinkPid(linkPid);
 

@@ -1,10 +1,11 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdtollgate.create;
 
+import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.tollgate.RdTollgate;
-import com.navinfo.dataservice.dao.pidservice.PidService;
+
 
 /**
  * @Title: Operation.java
@@ -24,7 +25,7 @@ public class Operation implements IOperation {
 	@Override
 	public String run(Result result) throws Exception {
 		RdTollgate tollgate = new RdTollgate();
-		tollgate.setPid(PidService.getInstance().applyRdTollgatePid());
+		tollgate.setPid(PidUtil.getInstance().applyRdTollgatePid());
 		tollgate.setInLinkPid(this.command.getInLinkPid());
 		tollgate.setNodePid(this.command.getNodePid());
 		tollgate.setOutLinkPid(this.command.getOutLinkPid());

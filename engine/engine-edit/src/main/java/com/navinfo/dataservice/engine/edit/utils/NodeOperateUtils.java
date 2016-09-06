@@ -3,6 +3,7 @@ package com.navinfo.dataservice.engine.edit.utils;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
@@ -19,7 +20,6 @@ import com.navinfo.dataservice.dao.glm.model.rd.node.RdNodeForm;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNodeMesh;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwNode;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwNodeMesh;
-import com.navinfo.dataservice.dao.pidservice.PidService;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 
 public class NodeOperateUtils {
@@ -28,7 +28,7 @@ public class NodeOperateUtils {
 
 		RdNode node = new RdNode();
 
-		node.setPid(PidService.getInstance().applyNodePid());
+		node.setPid(PidUtil.getInstance().applyNodePid());
 
 		node.setGeometry(GeoTranslator.transform(GeoTranslator.point2Jts(x, y), 100000, 0));
 
@@ -72,7 +72,7 @@ public class NodeOperateUtils {
 
 		AdNode node = new AdNode();
 		// 申请pid
-		node.setPid(PidService.getInstance().applyAdNodePid());
+		node.setPid(PidUtil.getInstance().applyAdNodePid());
 		// 获取点的几何信息
 		node.setGeometry(GeoTranslator.transform(GeoTranslator.point2Jts(x, y), 100000, 0));
 		// 维护Node图幅信息
@@ -104,7 +104,7 @@ public class NodeOperateUtils {
 
 		RwNode node = new RwNode();
 		// 申请pid
-		node.setPid(PidService.getInstance().applyRwNodePid());
+		node.setPid(PidUtil.getInstance().applyRwNodePid());
 		// 获取点的几何信息
 		node.setGeometry(GeoTranslator.transform(GeoTranslator.point2Jts(x, y), 100000, 0));
 		// 维护Node图幅信息
@@ -136,7 +136,7 @@ public class NodeOperateUtils {
 
 		ZoneNode node = new ZoneNode();
 		// 申请pid
-		node.setPid(PidService.getInstance().applyZoneNodePid());
+		node.setPid(PidUtil.getInstance().applyZoneNodePid());
 		// 获取点的几何信息
 		node.setGeometry(GeoTranslator.transform(GeoTranslator.point2Jts(x, y), 100000, 0));
 		// 维护Node图幅信息
@@ -183,7 +183,7 @@ public class NodeOperateUtils {
 
 		LuNode node = new LuNode();
 		// 申请pid
-		node.setPid(PidService.getInstance().applyLuNodePid());
+		node.setPid(PidUtil.getInstance().applyLuNodePid());
 		// 获取点的几何信息
 		node.setGeometry(GeoTranslator.transform(GeoTranslator.point2Jts(x, y), 100000, 0));
 		// 维护Node图幅信息
@@ -211,7 +211,7 @@ public class NodeOperateUtils {
 
 		LcNode node = new LcNode();
 		// 申请pid
-		node.setPid(PidService.getInstance().applyLcNodePid());
+		node.setPid(PidUtil.getInstance().applyLcNodePid());
 		// 获取点的几何信息
 		node.setGeometry(GeoTranslator.transform(GeoTranslator.point2Jts(x, y), 100000, 0));
 		// 维护Node图幅信息

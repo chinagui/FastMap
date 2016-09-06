@@ -1,10 +1,10 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdse.create;
 
+import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.se.RdSe;
-import com.navinfo.dataservice.dao.pidservice.PidService;
 
 /**
  * @Title: Operation.java
@@ -24,7 +24,7 @@ public class Operation implements IOperation {
 	@Override
 	public String run(Result result) throws Exception {
 		RdSe rdSe = new RdSe();
-		rdSe.setPid(PidService.getInstance().applyRdSePid());
+		rdSe.setPid(PidUtil.getInstance().applyRdSePid());
 		rdSe.setInLinkPid(this.command.getContent().getInt("inLinkPid"));
 		rdSe.setNodePid(this.command.getContent().getInt("nodePid"));
 		rdSe.setOutLinkPid(this.command.getContent().getInt("outLinkPid"));

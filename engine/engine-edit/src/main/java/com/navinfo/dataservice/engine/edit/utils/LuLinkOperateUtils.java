@@ -12,6 +12,7 @@ import net.sf.json.JSONObject;
 
 import org.json.JSONException;
 
+import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -20,7 +21,6 @@ import com.navinfo.dataservice.dao.glm.model.lu.LuLink;
 import com.navinfo.dataservice.dao.glm.model.lu.LuLinkKind;
 import com.navinfo.dataservice.dao.glm.model.lu.LuLinkMesh;
 import com.navinfo.dataservice.dao.glm.model.lu.LuNode;
-import com.navinfo.dataservice.dao.pidservice.PidService;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.navinfo.navicommons.geo.computation.GeometryTypeName;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
@@ -62,7 +62,7 @@ public class LuLinkOperateUtils {
 	public static LuLink getLuLink(Geometry g, int sNodePid, int eNodePid, Result result) throws Exception {
 		LuLink link = new LuLink();
 		Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(g);
-		link.setPid(PidService.getInstance().applyLuLinkPid());
+		link.setPid(PidUtil.getInstance().applyLuLinkPid());
 		Iterator<String> it = meshes.iterator();
 		while (it.hasNext()) {
 			setLinkChildren(link, Integer.parseInt(it.next()));
@@ -91,7 +91,7 @@ public class LuLinkOperateUtils {
 		LuLink link = new LuLink();
 		link.copy(sourcelink);
 		Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(g);
-		link.setPid(PidService.getInstance().applyLuLinkPid());
+		link.setPid(PidUtil.getInstance().applyLuLinkPid());
 		Iterator<String> it = meshes.iterator();
 		while (it.hasNext()) {
 			setLinkChildren(link, Integer.parseInt(it.next()));
@@ -397,7 +397,7 @@ public class LuLinkOperateUtils {
 	public static void addLink(Geometry g, int sNodePid, int eNodePid, Result result) throws Exception {
 		LuLink link = new LuLink();
 		Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(g);
-		link.setPid(PidService.getInstance().applyLuLinkPid());
+		link.setPid(PidUtil.getInstance().applyLuLinkPid());
 		Iterator<String> it = meshes.iterator();
 		while (it.hasNext()) {
 			setLinkChildren(link, Integer.parseInt(it.next()));

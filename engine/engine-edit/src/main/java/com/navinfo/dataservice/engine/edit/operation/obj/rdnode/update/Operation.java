@@ -3,6 +3,7 @@ package com.navinfo.dataservice.engine.edit.operation.obj.rdnode.update;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
@@ -10,7 +11,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNodeForm;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNodeMesh;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNodeName;
-import com.navinfo.dataservice.dao.pidservice.PidService;
+
 
 public class Operation implements IOperation {
 
@@ -183,7 +184,7 @@ public class Operation implements IOperation {
 						
 						row.Unserialize(json);
 						
-						row.setPid(PidService.getInstance().applyNodeNameId());
+						row.setPid(PidUtil.getInstance().applyNodeNameId());
 						
 						row.setNodePid(rdnode.getPid());
 						

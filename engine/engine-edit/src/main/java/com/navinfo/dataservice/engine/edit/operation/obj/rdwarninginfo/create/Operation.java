@@ -1,12 +1,12 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdwarninginfo.create;
 
-import java.sql.Connection;
 
+import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.warninginfo.RdWarninginfo;
-import com.navinfo.dataservice.dao.pidservice.PidService;
+
 
 public class Operation implements IOperation {
 
@@ -30,7 +30,7 @@ public class Operation implements IOperation {
 
 		String msg = null;
 
-		warninginfo.setPid(PidService.getInstance().applyRdWarninginfoPid());
+		warninginfo.setPid(PidUtil.getInstance().applyRdWarninginfoPid());
 
 		result.setPrimaryPid(warninginfo.getPid());
 

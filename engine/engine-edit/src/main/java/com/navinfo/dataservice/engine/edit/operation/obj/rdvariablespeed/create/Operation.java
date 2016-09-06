@@ -4,12 +4,13 @@ import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
 
+import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.variablespeed.RdVariableSpeed;
 import com.navinfo.dataservice.dao.glm.model.rd.variablespeed.RdVariableSpeedVia;
-import com.navinfo.dataservice.dao.pidservice.PidService;
+
 
 public class Operation implements IOperation {
 
@@ -39,7 +40,7 @@ public class Operation implements IOperation {
 		
 		RdVariableSpeed variableSpeed = new RdVariableSpeed();
 		
-		variableSpeed.setPid(PidService.getInstance().applyRdVariableSpeedPid());
+		variableSpeed.setPid(PidUtil.getInstance().applyRdVariableSpeedPid());
 		
 		variableSpeed.setInLinkPid(inLinkPid);
 		

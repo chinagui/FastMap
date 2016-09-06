@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.alibaba.druid.util.StringUtils;
+import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.JtsGeometryFactory;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
@@ -24,7 +25,6 @@ import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLinkMesh;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
-import com.navinfo.dataservice.dao.pidservice.PidService;
 import com.navinfo.dataservice.engine.edit.utils.AdLinkOperateUtils;
 import com.navinfo.dataservice.engine.edit.utils.NodeOperateUtils;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
@@ -444,7 +444,7 @@ public class Operation implements IOperation {
 	 */
 	private void createFace() throws Exception {
 		AdFace face = new AdFace();
-		face.setPid(PidService.getInstance().applyAdFacePid());
+		face.setPid(PidUtil.getInstance().applyAdFacePid());
 		result.setPrimaryPid(face.getPid());
 		this.face = face;
 	}

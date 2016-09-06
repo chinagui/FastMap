@@ -19,7 +19,6 @@ import com.navinfo.dataservice.engine.edit.operation.AbstractProcess;
  *
  */
 public class Process extends AbstractProcess<Command> implements IProcess {
-	private Check check = new Check();
 	/**
 	 * @param command
 	 * @throws Exception

@@ -10,6 +10,7 @@ import org.apache.commons.collections.CollectionUtils;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -18,11 +19,10 @@ import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameLink;
 import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameLinkPart;
-import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameNode;
-import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameNodePart;
+
 import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
 import com.navinfo.dataservice.dao.glm.selector.rd.same.RdSameLinkSelector;
-import com.navinfo.dataservice.dao.pidservice.PidService;
+
 import com.vividsolutions.jts.geom.Geometry;
 
 public class Operation implements IOperation {
@@ -51,7 +51,7 @@ public class Operation implements IOperation {
 
 		RdSameLink rdSameLink = new RdSameLink();
 
-		rdSameLink.setPid(PidService.getInstance().applyRdSameLinkPid());
+		rdSameLink.setPid(PidUtil.getInstance().applyRdSameLinkPid());
 
 		JSONArray linkArray = this.command.getLinkArray();
 
@@ -199,7 +199,7 @@ public class Operation implements IOperation {
 
 		RdSameLink rdSameLink = new RdSameLink();
 
-		rdSameLink.setPid(PidService.getInstance().applyRdSameLinkPid());
+		rdSameLink.setPid(PidUtil.getInstance().applyRdSameLinkPid());
 
 		for (IRow row : linkList) {
 			RdSameLinkPart sameLinkPart = new RdSameLinkPart();

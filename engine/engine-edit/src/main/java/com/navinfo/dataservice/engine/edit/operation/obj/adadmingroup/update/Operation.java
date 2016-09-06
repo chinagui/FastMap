@@ -4,13 +4,14 @@ import java.sql.Connection;
 import java.util.List;
 
 import com.google.gson.Gson;
+import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdminGroup;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdminPart;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdminTree;
-import com.navinfo.dataservice.dao.pidservice.PidService;
+
 
 import net.sf.json.JSONObject;
 
@@ -66,7 +67,7 @@ public class Operation implements IOperation {
 		if (group != null && group.getGroupId() != 0) {
 			groupId = group.getGroupId();
 		} else {
-			groupId = PidService.getInstance().applyAdAdminGroupPid();
+			groupId = PidUtil.getInstance().applyAdAdminGroupPid();
 		}
 
 		// 在循环遍历过程中，给ObjType赋值的的树中的节点需要进行修改

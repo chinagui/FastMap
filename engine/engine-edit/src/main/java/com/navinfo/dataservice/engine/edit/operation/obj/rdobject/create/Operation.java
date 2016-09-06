@@ -3,6 +3,7 @@ package com.navinfo.dataservice.engine.edit.operation.obj.rdobject.create;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
@@ -10,7 +11,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.crf.RdObject;
 import com.navinfo.dataservice.dao.glm.model.rd.crf.RdObjectInter;
 import com.navinfo.dataservice.dao.glm.model.rd.crf.RdObjectLink;
 import com.navinfo.dataservice.dao.glm.model.rd.crf.RdObjectRoad;
-import com.navinfo.dataservice.dao.pidservice.PidService;
+
 
 import net.sf.json.JSONArray;
 
@@ -39,7 +40,7 @@ public class Operation implements IOperation {
 		
 		RdObject rdObject = new RdObject();
 		
-		rdObject.setPid(PidService.getInstance().applyRdObjectPid());
+		rdObject.setPid(PidUtil.getInstance().applyRdObjectPid());
 		
 		rdObject.setGeometry(this.command.getPointGeo());
 		

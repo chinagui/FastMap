@@ -1,11 +1,11 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.lcface.update;
 
+import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.lc.LcFace;
 import com.navinfo.dataservice.dao.glm.model.lc.LcFaceName;
-import com.navinfo.dataservice.dao.pidservice.PidService;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -45,24 +45,30 @@ public class Operation implements IOperation {
 		return null;
 	}
 
-	private void updateNames(Result result, JSONArray names, LcFace face) throws Exception {
+	private void updateNames(Result result, JSONArray names, LcFace face)
+			throws Exception {
 		for (int i = 0; i < names.size(); i++) {
 			JSONObject nameJson = names.getJSONObject(i);
 			if (nameJson.containsKey("objStatus")) {
-				if (!ObjStatus.INSERT.toString().equals(nameJson.getString("objStatus"))) {
-					LcFaceName name = face.lcFaceNameMap.get(nameJson.getString("rowId"));
-					if (ObjStatus.DELETE.toString().equals(nameJson.getString("objStatus"))) {
+				if (!ObjStatus.INSERT.toString().equals(
+						nameJson.getString("objStatus"))) {
+					LcFaceName name = face.lcFaceNameMap.get(nameJson
+							.getString("rowId"));
+					if (ObjStatus.DELETE.toString().equals(
+							nameJson.getString("objStatus"))) {
 						result.insertObject(name, ObjStatus.DELETE, face.pid());
-					} else if (ObjStatus.UPDATE.toString().equals(nameJson.getString("objStatus"))) {
+					} else if (ObjStatus.UPDATE.toString().equals(
+							nameJson.getString("objStatus"))) {
 						boolean isChanged = name.fillChangeFields(nameJson);
 						if (isChanged) {
-							result.insertObject(name, ObjStatus.UPDATE, face.pid());
+							result.insertObject(name, ObjStatus.UPDATE,
+									face.pid());
 						}
 					}
 				} else {
 					LcFaceName name = new LcFaceName();
 					name.Unserialize(nameJson);
-					name.setPid(PidService.getInstance().applyLcFaceNamePid());
+					name.setPid(PidUtil.getInstance().applyLcFaceNamePid());
 					name.setFacePid(face.pid());
 					result.insertObject(name, ObjStatus.INSERT, face.pid());
 				}

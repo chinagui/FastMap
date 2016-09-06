@@ -55,32 +55,4 @@ public class PoiRelease {
 		return jobId;
 	}
 
-	/**
-	 * poi操作修改poi状态为已作业，鲜度信息为0 zhaokk sourceFlag 0 web 1 Android
-	 * 
-	 * @param row
-	 * @throws Exception
-	 */
-	public void upatePoiStatus(String pids, Connection conn) throws Exception {
-		StringBuilder sb = new StringBuilder(" MERGE INTO poi_edit_status T1 ");
-		sb.append(" USING (SELECT row_id as a , 2 AS b,0 AS C FROM ix_poi where pid in ("
-				+ pids + ")) T2 ");
-		sb.append(" ON ( T1.row_id=T2.a) ");
-		sb.append(" WHEN MATCHED THEN ");
-		sb.append(" UPDATE SET T1.status = T2.b,T1.fresh_verified= T2.c ");
-		sb.append(" WHEN NOT MATCHED THEN ");
-		sb.append(" INSERT (T1.row_id,T1.status,T1.fresh_verified) VALUES(T2.a,T2.b,T2.c)");
-		PreparedStatement pstmt = null;
-		try {
-			pstmt = conn.prepareStatement(sb.toString());
-			pstmt.executeUpdate();
-		} catch (Exception e) {
-			throw e;
-
-		} finally {
-			DBUtils.closeStatement(pstmt);
-		}
-
-	}
-
 }

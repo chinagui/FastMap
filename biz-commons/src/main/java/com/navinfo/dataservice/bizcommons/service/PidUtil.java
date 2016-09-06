@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.edit.service;
+package com.navinfo.dataservice.bizcommons.service;
 
 import org.apache.log4j.Logger;
 
@@ -218,7 +218,7 @@ public class PidUtil {
 	 * @throws Exception
 	 */
 	public int applyRticCode() throws Exception {
-		return applyPid("RTIC_COD");
+		return applyPid("RTIC_CODE");
 
 	}
 

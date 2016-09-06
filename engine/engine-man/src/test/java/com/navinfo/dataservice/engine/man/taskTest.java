@@ -1,32 +1,60 @@
 package com.navinfo.dataservice.engine.man;
 
 import java.util.HashMap;
+import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
+import org.junit.Before;
 import org.junit.Test;
-
-import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.commons.json.JsonOperation;
+import com.navinfo.dataservice.engine.man.grid.GridService;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskService;
-import com.navinfo.dataservice.engine.man.task.TaskService;
 import com.navinfo.navicommons.exception.ServiceException;
+import com.navinfo.navicommons.geo.computation.GridUtils;
 
-public class taskTest {
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
-	public static void taskTestCreate() throws Exception {
-		// TODO Auto-generated constructor stub
-		String parameter = "{\"tasks\" :[{\"descp\":\"task1\", \"planStartDate\":\"20160430000000\",\"planEndDate\":\"20160630000000\",\"cityId\":1,\"geometry\":\"Polygon((116 23, 116 24))\"}]}";
-		if (StringUtils.isEmpty(parameter)){
-			throw new IllegalArgumentException("parameter参数不能为空。");
-		}		
-		JSONObject dataJson = JSONObject.fromObject(parameter);			
-		if(dataJson==null){
-			throw new IllegalArgumentException("parameter参数不能为空。");
+public class taskTest extends InitApplication{
+
+	@Test
+	public void taskTestCreate() throws Exception {
+		try {
+			// TODO Auto-generated constructor stub
+			String parameter = "{\"blockId\":151,\"stage\":1,\"type\":2,\"descp\":\"开发sp6开发sp6_2\",\"planStartDate\":\"20160905\",\"planEndDate\":\"20160927\",\"exeUserId\":\"1573\",\"gridIds\":[60566232,60566231,60566230,60566222,60566221,60566220],\"name\":\"开发sp6_2\"}";
+			JSONObject dataJson = JSONObject.fromObject(parameter);
+			if(dataJson==null){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			
+			JSONArray gridIds = new JSONArray();
+			
+			//创建区域专项子任务
+			if(dataJson.containsKey("taskId")){
+				List<Integer> gridIdList = GridService.getInstance().getGridListByTaskId(dataJson.getInt("taskId"));
+				gridIds.addAll(gridIdList);
+			}else{
+				gridIds = dataJson.getJSONArray("gridIds");
+			}
+			//根据gridIds获取wkt
+			String wkt = GridUtils.grids2Wkt(gridIds);
+			if(wkt.contains("MULTIPOLYGON")){
+				throw new IllegalArgumentException("请输入符合条件的grids");
+			}
+			
+			Object[] gridIdList = gridIds.toArray();
+			dataJson.put("gridIds",gridIdList);
+			
+			Subtask bean = (Subtask) JsonOperation.jsonToBean(dataJson,Subtask.class);
+			bean.setGeometry(wkt);
+				
+			SubtaskService.getInstance().create(bean);	
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
-		//TaskService service = new TaskService();
-		//service.create(1,dataJson);			
+				
 	}
 	
 	public static void taskTestUpdate() throws Exception {
@@ -41,10 +69,6 @@ public class taskTest {
 		}
 		//TaskService service = new TaskService();
 		//service.update(dataJson);			
-	}
-	
-	public static void main(String[] agr) throws Exception{
-		taskTest.taskTestUpdate();
 	}
 	
 	@Test
@@ -77,5 +101,11 @@ public class taskTest {
 		}
 		
 		JSONObject result = JsonOperation.beanToJson(data);
+	}
+
+	@Override
+	@Before
+	public void init() {
+		initContext();
 	}
 }

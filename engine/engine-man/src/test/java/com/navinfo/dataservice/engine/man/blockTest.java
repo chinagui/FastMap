@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
+import org.junit.Before;
+import org.junit.Test;
 
 import com.navinfo.dataservice.engine.man.block.BlockService;
 import com.navinfo.dataservice.engine.man.city.CityService;
@@ -11,7 +13,7 @@ import com.navinfo.dataservice.engine.man.city.CityService;
 import net.sf.json.JSONObject;
 
 
-public class blockTest {
+public class blockTest extends InitApplication{
 
 	public static List<?> TestQueryListByWkt() throws Exception {
 		// TODO Auto-generated constructor stub
@@ -27,9 +29,10 @@ public class blockTest {
 		return service.listByWkt(dataJson);	
 	}
 	
-	public static HashMap TestQueryBlockDetail() throws Exception {
+	@Test
+	public void  testQueryBlockDetail() throws Exception {
 		// TODO Auto-generated constructor stub
-		String parameter = "{\"blockId\":\"test-001\"}";
+		String parameter = "{\"blockId\":\"130\"}";
 		if (StringUtils.isEmpty(parameter)){
 			throw new IllegalArgumentException("parameter参数不能为空。");
 		}		
@@ -38,12 +41,13 @@ public class blockTest {
 			throw new IllegalArgumentException("parameter参数不能为空。");
 		}
 		BlockService service = BlockService.getInstance();
-		return service.query(dataJson);	
+		System.out.println(service.query(dataJson).toString());	
 	}
-	
 
-	public static void main(String[] args) throws Exception {
-		System.out.println(blockTest.TestQueryBlockDetail());
+	@Override
+	@Before
+	public void init() {
+		initContext();
 	}
 
 }

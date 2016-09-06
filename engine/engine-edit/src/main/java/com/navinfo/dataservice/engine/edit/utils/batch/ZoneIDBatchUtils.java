@@ -3,6 +3,8 @@ package com.navinfo.dataservice.engine.edit.utils.batch;
 import java.sql.Connection;
 import java.util.List;
 
+import org.apache.commons.collections.CollectionUtils;
+
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
@@ -102,6 +104,57 @@ public class ZoneIDBatchUtils extends BaseBatchUtils {
 				if (isCreate) {
 					linkZone = createLinkZone(link, faceRegionId, 0);
 					result.insertObject(linkZone, ObjStatus.INSERT, linkZone.parentPKValue());
+				}
+			}
+		} else {
+
+		}
+	}
+
+	/**
+	 * 在线批处理删除ZoneFace内部的ZoneId
+	 * 
+	 * @param link
+	 *            ZoneFace内部的link
+	 * @param geometry
+	 *            修形后的geometry，新增时传入null
+	 * @param conn
+	 *            数据库连接
+	 * @param result
+	 *            结果集
+	 * @throws Exception
+	 */
+	public static void deleteZoneID(RdLink link, Geometry geometry, Connection conn, Result result) throws Exception {
+		Geometry linkGeometry = geometry == null ? shrink(link.getGeometry()) : shrink(geometry);
+		RdLinkZone linkZone = null;
+		// 获取与link相关的ZoneFace
+		ZoneFace zoneFace = loadZoneFace(conn, linkGeometry);
+		if (null == zoneFace)
+			return;
+		// 获取关联face的regionId
+		int faceRegionId = zoneFace.getRegionId();
+		Geometry faceGeometry = shrink(zoneFace.getGeometry());
+		// 判断link与zoneFace的关系
+		// link在zoneFace内部
+		if (isContainOrCover(linkGeometry, faceGeometry)) {
+			// 新增或原link没有linkZone子数据时直接添加新的linkZone
+			if (null != geometry && CollectionUtils.isNotEmpty(link.getZones())) {
+				// 修行时如果原有linkZone数据将原有regionId更新
+				for (IRow row : link.getZones()) {
+					linkZone = (RdLinkZone) row;
+					if (faceRegionId != linkZone.getRegionId()) {
+						result.insertObject(linkZone, ObjStatus.DELETE, linkZone.parentPKValue());
+					}
+				}
+			}
+			// link在zoneFace组成线上
+		} else if (GeoRelationUtils.Boundary(linkGeometry, faceGeometry)) {
+			// link在zoneFace的右边
+			// 不存在该regionId的linkZone数据时新增一条
+			for (IRow row : link.getZones()) {
+				linkZone = (RdLinkZone) row;
+				if (linkZone.getRegionId() == faceRegionId && linkZone.getSide() == 1) {
+					result.insertObject(linkZone, ObjStatus.DELETE, linkZone.parentPKValue());
 				}
 			}
 		} else {

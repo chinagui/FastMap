@@ -19,15 +19,18 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.exception.DataNotChangeException;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.JsonUtils;
+import com.navinfo.dataservice.control.row.batch.BatchProcess;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.search.AbstractSearch;
+import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.operation.Transaction;
 import com.navinfo.dataservice.engine.edit.search.SearchProcess;
+import com.navinfo.dataservice.engine.edit.service.EditApiImpl;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.DBUtils;
 
@@ -102,7 +105,9 @@ public class POITest extends InitApplication {
 
 	@Test
 	public void createPoiFromRowPro() throws Exception {
-		String parameter = "{\"command\":\"CREATE\",\"type\":\"IXPOI\",\"dbId\":42,\"data\":{\"longitude\":116.41263484954834,\"latitude\":40.02841954590441,\"x_guide\":116.41212518018918,\"y_guide\":40.02858491300628,\"linkPid\":100009709}}";
+
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"IXPOI\",\"objId\":2574546,\"data\":{\"rowId\":\"3AE1FB52D86492F7E050A8C08304EE4C\",\"pid\":2574546,\"objStatus\":\"UPDATE\"}}";
+
 		Connection conn = null;
 
 		try {
@@ -117,9 +122,11 @@ public class POITest extends InitApplication {
 
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 
-			EditApi editApi = (EditApi) ApplicationContextUtil.getBean("editApi");
+			EditApiImpl editApiImpl = new EditApiImpl(conn);
 
-			JSONObject result = editApi.run(json);
+			editApiImpl.setToken(2);
+
+			JSONObject result = editApiImpl.runPoi(json);
 
 			StringBuffer buf = new StringBuffer();
 
@@ -139,28 +146,29 @@ public class POITest extends InitApplication {
 				buf.append(String.valueOf(pid));
 			}
 
-			json.put("objId", pid);
-//			BatchProcess batchProcess = new BatchProcess();
-//			batchProcess.execute(json, conn);
+			if (operType == OperType.UPDATE) {
+				json.put("objId", pid);
+				BatchProcess batchProcess = new BatchProcess();
+				batchProcess.execute(json, conn, editApiImpl);
+			}
 
 			upatePoiStatus(buf.toString(), conn);
-			
-			System.out.println(result.toString());
+
+			System.out.println(result);
 
 		} catch (DataNotChangeException e) {
-			e.printStackTrace();
-			DbUtils.rollbackAndClose(conn);
+			DbUtils.rollback(conn);
 		} catch (Exception e) {
 			e.printStackTrace();
-			DbUtils.rollbackAndClose(conn);
+			DbUtils.rollback(conn);
 		} finally {
-			DbUtils.close(conn);
+			DbUtils.commitAndClose(conn);
 		}
 	}
 
 	@Test
 	public void testUpdatePoi() {
-		String parameter = "{\"command\":\"UPDATE\",\"dbId\":42,\"type\":\"IXPOI\",\"objId\":20928963,\"data\":{\"contacts\":[{\"poiPid\":0,\"rowId\":\"42A096761F65438990B6A0AA4293DE2A\",\"objStatus\":\"UPDATE\",\"contact\":\"010-22222222\"}],\"rowId\":\"3524E590CA526E1AE050A8C08304BA17\",\"pid\":20928963}}";
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"IXPOI\",\"objId\":2574546,\"data\":{\"rowId\":\"3AE1FB52D86492F7E050A8C08304EE4C\",\"pid\":2574546,\"objStatus\":\"UPDATE\"}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
@@ -184,32 +192,34 @@ public class POITest extends InitApplication {
 
 	@Test
 	public void testGetPoiList() {
-		String parameter = "{\"dbId\":42,\"subtaskId\":117,\"type\":1,\"pageNum\":1,\"pageSize\":20,\"pidName\":\"\",\"pid\":0}";
+		String parameter = "{\"dbId\":17,\"subtaskId\":22,\"type\":1,\"pageNum\":1,\"pageSize\":20,\"pidName\":\"\",\"pid\":0}";
 		Connection conn = null;
 		Connection manConn = null;
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
 			int dbId = jsonReq.getInt("dbId");
+			// 项目管理（放开）
+			// subtaskId
 			int subtaskId = jsonReq.getInt("subtaskId");
+			int type = jsonReq.getInt("type");
 			ManApi apiService = (ManApi) ApplicationContextUtil.getBean("manApi");
-			manConn = DBConnector.getInstance().getManConnection();
-			Subtask subtaskObj = apiService.queryBySubtaskId(subtaskId);
-			String sql = "SELECT E.STATUS, COUNT(1) COUNT_NUM " + "  FROM POI_EDIT_STATUS E, IX_POI P"
-					+ " WHERE E.ROW_ID = P.ROW_ID" + "   AND SDO_RELATE(P.GEOMETRY, SDO_GEOMETRY('"
-					+ subtaskObj.getGeometry() + "', 8307), 'MASK=ANYINTERACT') =" + "       'TRUE'"
-					+ " GROUP BY E.STATUS";
+			Subtask subtask = apiService.queryBySubtaskId(subtaskId);
+			int pageNum = jsonReq.getInt("pageNum");
+			int pageSize = jsonReq.getInt("pageSize");
+			int pid = 0;
+			String pidName = "";
+			if (jsonReq.containsKey("pidName")) {
+				pidName = jsonReq.getString("pidName");
+			}
+			if (jsonReq.containsKey("pid")) {
+				pid = jsonReq.getInt("pid");
+			}
 			conn = DBConnector.getInstance().getConnectionById(dbId);
-			ResultSetHandler<JSONObject> rsHandler = new ResultSetHandler<JSONObject>() {
-				public JSONObject handle(ResultSet rs) throws SQLException {
-					JSONObject staticsObj = new JSONObject();
-					while (rs.next()) {
-						staticsObj.put(rs.getInt("STATUS"), rs.getInt("COUNT_NUM"));
-					}
-					return staticsObj;
-				}
-			};
-			QueryRunner run = new QueryRunner();
-			System.out.println(run.query(conn, sql, rsHandler));
+			IxPoiSelector selector = new IxPoiSelector(conn);
+			JSONObject jsonObject = selector.loadPids(false, pid, pidName, type, subtask.getGeometry(), pageSize,
+					pageNum);
+			System.out.println(jsonObject.toString());
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
 		} finally {
@@ -250,7 +260,6 @@ public class POITest extends InitApplication {
 			pstmt.executeUpdate();
 		} catch (Exception e) {
 			throw e;
-
 		} finally {
 			DBUtils.closeStatement(pstmt);
 		}

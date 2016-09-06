@@ -124,11 +124,9 @@ public class ZoneIDBatchUtils extends BaseBatchUtils {
 	 *            结果集
 	 * @throws Exception
 	 */
-	public static void deleteZoneID(RdLink link, Geometry geometry, Connection conn, Result result) throws Exception {
-		Geometry linkGeometry = geometry == null ? shrink(link.getGeometry()) : shrink(geometry);
+	public static void deleteZoneID(RdLink link, ZoneFace zoneFace, Connection conn, Result result) throws Exception {
+		Geometry linkGeometry = shrink(link.getGeometry());
 		RdLinkZone linkZone = null;
-		// 获取与link相关的ZoneFace
-		ZoneFace zoneFace = loadZoneFace(conn, linkGeometry);
 		if (null == zoneFace)
 			return;
 		// 获取关联face的regionId
@@ -137,8 +135,7 @@ public class ZoneIDBatchUtils extends BaseBatchUtils {
 		// 判断link与zoneFace的关系
 		// link在zoneFace内部
 		if (isContainOrCover(linkGeometry, faceGeometry)) {
-			// 新增或原link没有linkZone子数据时直接添加新的linkZone
-			if (null != geometry && CollectionUtils.isNotEmpty(link.getZones())) {
+			if (CollectionUtils.isNotEmpty(link.getZones())) {
 				// 修行时如果原有linkZone数据将原有regionId更新
 				for (IRow row : link.getZones()) {
 					linkZone = (RdLinkZone) row;
@@ -149,16 +146,13 @@ public class ZoneIDBatchUtils extends BaseBatchUtils {
 			}
 			// link在zoneFace组成线上
 		} else if (GeoRelationUtils.Boundary(linkGeometry, faceGeometry)) {
-			// link在zoneFace的右边
 			// 不存在该regionId的linkZone数据时新增一条
 			for (IRow row : link.getZones()) {
 				linkZone = (RdLinkZone) row;
-				if (linkZone.getRegionId() == faceRegionId && linkZone.getSide() == 1) {
+				if (linkZone.getRegionId() == faceRegionId) {
 					result.insertObject(linkZone, ObjStatus.DELETE, linkZone.parentPKValue());
 				}
 			}
-		} else {
-
 		}
 	}
 

@@ -15,6 +15,7 @@ import org.apache.commons.dbutils.DbUtils;
 
 import com.navinfo.dataservice.api.edit.iface.EditApi;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
@@ -35,7 +36,6 @@ import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiName;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiParent;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiPhoto;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
-import com.navinfo.dataservice.dao.pidservice.PidService;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.DBUtils;
 import com.navinfo.navicommons.geo.computation.CompGridUtil;
@@ -431,7 +431,7 @@ public class UploadOperation {
 		JSONObject retObj = new JSONObject();
 		try {
 			// POI主表
-			int pid = PidService.getInstance().applyPoiPid();
+			int pid = PidUtil.getInstance().applyPoiPid();
 			poi.setPid(pid);
 			poi.setKindCode(jo.getString("kindCode"));
 			// geometry按SDO_GEOMETRY格式原值转出
@@ -524,7 +524,7 @@ public class UploadOperation {
 			if (!poi.getOldName().isEmpty()) {
 				List<IRow> nameList = new ArrayList<IRow>();
 				IxPoiName poiName = new IxPoiName();
-				int nameId = PidService.getInstance().applyPoiNameId();
+				int nameId = PidUtil.getInstance().applyPoiNameId();
 				poiName.setPid(nameId);
 				poiName.setPoiPid(pid);
 				poiName.setNameGroupid(1);
@@ -541,7 +541,7 @@ public class UploadOperation {
 			if (!poi.getOldAddress().isEmpty()) {
 				List<IRow> addressList = new ArrayList<IRow>();
 				IxPoiAddress poiAddress = new IxPoiAddress();
-				int addressId = PidService.getInstance().applyPoiAddressId();
+				int addressId = PidUtil.getInstance().applyPoiAddressId();
 				poiAddress.setPid(addressId);
 				poiAddress.setPoiPid(pid);
 				poiAddress.setNameGroupid(1);
@@ -629,7 +629,7 @@ public class UploadOperation {
 
 			// 父子关系
 			if (jo.getJSONArray("relateChildren").size() > 0) {
-				int groupId = PidService.getInstance().applyPoiGroupId();
+				int groupId = PidUtil.getInstance().applyPoiGroupId();
 				IxPoiParent parent = new IxPoiParent();
 				List<IRow> parentList = new ArrayList<IRow>();
 				parent.setPid(groupId);
@@ -657,7 +657,7 @@ public class UploadOperation {
 				JSONObject gasObj = jo.getJSONObject("gasStation");
 				IxPoiGasstation gasStation = new IxPoiGasstation();
 				List<IRow> gasList = new ArrayList<IRow>();
-				gasStation.setPid(PidService.getInstance().applyPoiGasstationId());
+				gasStation.setPid(PidUtil.getInstance().applyPoiGasstationId());
 				gasStation.setPoiPid(pid);
 				gasStation.setServiceProv(gasObj.getString("servicePro"));
 				gasStation.setFuelType(gasObj.getString("fuelType"));
@@ -677,7 +677,7 @@ public class UploadOperation {
 				JSONObject parkingsObj = jo.getJSONObject("parkings");
 				IxPoiParking parkings = new IxPoiParking();
 				List<IRow> parkingsList = new ArrayList<IRow>();
-				parkings.setPid(PidService.getInstance().applyPoiParkingsId());
+				parkings.setPid(PidUtil.getInstance().applyPoiParkingsId());
 				parkings.setPoiPid(pid);
 				parkings.setParkingType(parkingsObj.getString("buildingType"));
 				parkings.setTollStd(parkingsObj.getString("tollStd"));
@@ -707,7 +707,7 @@ public class UploadOperation {
 				JSONObject hotelObj = jo.getJSONObject("hotel");
 				IxPoiHotel hotel = new IxPoiHotel();
 				List<IRow> hotelList = new ArrayList<IRow>();
-				hotel.setPid(PidService.getInstance().applyPoiHotelId());
+				hotel.setPid(PidUtil.getInstance().applyPoiHotelId());
 				hotel.setPoiPid(pid);
 				hotel.setCreditCard(hotelObj.getString("creditCards"));
 				hotel.setRating(hotelObj.getInt("rating"));
@@ -731,7 +731,7 @@ public class UploadOperation {
 				JSONObject foodtypesObj = jo.getJSONObject("foodtypes");
 				IxPoiRestaurant foodtypes = new IxPoiRestaurant();
 				List<IRow> foodtypesList = new ArrayList<IRow>();
-				foodtypes.setPid(PidService.getInstance().applyPoiFoodId());
+				foodtypes.setPid(PidUtil.getInstance().applyPoiFoodId());
 				foodtypes.setPoiPid(pid);
 				foodtypes.setFoodType(foodtypesObj.getString("foodtype"));
 				foodtypes.setCreditCard(foodtypesObj.getString("creditCards"));
@@ -899,7 +899,7 @@ public class UploadOperation {
 				if (oldNameStr.isEmpty()) {
 					JSONArray nameList = new JSONArray();
 					JSONObject poiName = new JSONObject();
-					int nameId = PidService.getInstance().applyPoiNameId();
+					int nameId = PidUtil.getInstance().applyPoiNameId();
 					poiName.put("objStatus", ObjStatus.INSERT.toString());
 					poiName.put("pid", nameId);
 					poiName.put("poiPid", pid);
@@ -948,7 +948,7 @@ public class UploadOperation {
 				if (oldAddressStr.isEmpty()) {
 					JSONArray addressList = new JSONArray();
 					JSONObject poiAddress = new JSONObject();
-					int addressId = PidService.getInstance().applyPoiAddressId();
+					int addressId = PidUtil.getInstance().applyPoiAddressId();
 					poiAddress.put("objStatus", ObjStatus.INSERT.toString());
 					poiAddress.put("pid", addressId);
 					poiAddress.put("poiPid", pid);
@@ -1111,7 +1111,7 @@ public class UploadOperation {
 				if (jo.getJSONArray("relateChildren").size() > 0 && oldParentList.size() == 0) {
 					JSONObject parent = new JSONObject();
 					JSONArray parentList = new JSONArray();
-					groupId = PidService.getInstance().applyPoiGroupId();
+					groupId = PidUtil.getInstance().applyPoiGroupId();
 					parent.put("objStatus", ObjStatus.INSERT.toString());
 					parent.put("pid", groupId);
 					parent.put("parentPoiPid", pid);
@@ -1214,7 +1214,7 @@ public class UploadOperation {
 					// 差分,区分新增修改
 					int ret = getDifferent(oldArray, newGasStation);
 					if (ret == 0) {
-						newGasStation.put("pid", PidService.getInstance().applyPoiGasstationId());
+						newGasStation.put("pid", PidUtil.getInstance().applyPoiGasstationId());
 						newGasStation.put("objStatus", ObjStatus.INSERT.toString());
 						newGasArray.add(newGasStation);
 						// 鲜度验证
@@ -1286,7 +1286,7 @@ public class UploadOperation {
 					// 差分,区分新增修改
 					int ret = getDifferent(oldArray, newParkings);
 					if (ret == 0) {
-						newParkings.put("pid", PidService.getInstance().applyPoiParkingsId());
+						newParkings.put("pid", PidUtil.getInstance().applyPoiParkingsId());
 						newParkings.put("objStatus", ObjStatus.INSERT.toString());
 						newParkingsArray.add(newParkings);
 						// 鲜度验证
@@ -1352,7 +1352,7 @@ public class UploadOperation {
 					// 差分,区分新增修改
 					int ret = getDifferent(oldArray, newHotel);
 					if (ret == 0) {
-						newHotel.put("pid", PidService.getInstance().applyPoiHotelId());
+						newHotel.put("pid", PidUtil.getInstance().applyPoiHotelId());
 						newHotel.put("objStatus", ObjStatus.INSERT.toString());
 						newHotelArray.add(newHotel);
 						// 鲜度验证
@@ -1411,7 +1411,7 @@ public class UploadOperation {
 					// 差分,区分新增修改
 					int ret = getDifferent(oldArray, newFoodtype);
 					if (ret == 0) {
-						newFoodtype.put("pid", PidService.getInstance().applyPoiFoodId());
+						newFoodtype.put("pid", PidUtil.getInstance().applyPoiFoodId());
 						newFoodtype.put("objStatus", ObjStatus.INSERT.toString());
 						newFoodtypeArray.add(newFoodtype);
 						// 鲜度验证

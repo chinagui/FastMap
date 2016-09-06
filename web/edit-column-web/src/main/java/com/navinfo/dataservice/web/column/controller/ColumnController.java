@@ -50,12 +50,12 @@ public class ColumnController extends BaseController {
 
 			String firstWorkItem = jsonReq.getString("firstWorkItem");
 
-			int groupId = jsonReq.getInt("groupId");
+//			int groupId = jsonReq.getInt("groupId");
 
 
 			ColumnCoreControl control = new ColumnCoreControl();
 
-			control.applyData(groupId, firstWorkItem, userId);
+			control.applyData(0, firstWorkItem, userId);
 
 			return new ModelAndView("jsonView", success());
 

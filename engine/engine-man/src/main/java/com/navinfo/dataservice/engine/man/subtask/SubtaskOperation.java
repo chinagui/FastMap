@@ -341,8 +341,8 @@ public class SubtaskOperation {
 			
 			SqlClause inClause = SqlClause.genGeoClauseWithGeoString(conn,bean.getGeometry());
 			if (inClause!=null)
-//				value.add(inClause.getSql());
-				value.add(inClause.getValues().get(0));
+//						value.add(inClause.getSql());
+					value.add(inClause.getValues().get(0));
 			
 			value.add(bean.getStage());
 			value.add(bean.getType());

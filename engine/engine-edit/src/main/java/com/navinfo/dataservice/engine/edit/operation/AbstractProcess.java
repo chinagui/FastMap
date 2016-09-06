@@ -221,8 +221,6 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 			throw e;
 		} finally {
 			try {
-			
-
 				System.out.print("结束\r\n");
 			} catch (Exception e) {
 

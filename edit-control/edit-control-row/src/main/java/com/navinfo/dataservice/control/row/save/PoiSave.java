@@ -77,11 +77,11 @@ public class PoiSave {
 			upatePoiStatus(buf.toString(), conn);
 
 		} catch (DataNotChangeException e) {
-			DbUtils.rollbackAndClose(conn);
+			DbUtils.rollback(conn);
 			logger.error(e.getMessage(), e);
 
 		} catch (Exception e) {
-			DbUtils.rollbackAndClose(conn);
+			DbUtils.rollback(conn);
 			logger.error(e.getMessage(), e);
 		} finally {
 			DbUtils.commitAndClose(conn);

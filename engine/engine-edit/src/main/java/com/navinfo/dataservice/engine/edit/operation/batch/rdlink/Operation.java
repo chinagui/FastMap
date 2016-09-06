@@ -6,6 +6,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.collections.CollectionUtils;
+
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
@@ -15,6 +17,7 @@ import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdmin;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFace;
+import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneFace;
 import com.navinfo.dataservice.dao.glm.model.lu.LuFace;
 import com.navinfo.dataservice.dao.glm.model.lu.LuFaceTopo;
 import com.navinfo.dataservice.dao.glm.model.lu.LuLink;
@@ -26,6 +29,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameNodePart;
 import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdAdminSelector;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdFaceSelector;
+import com.navinfo.dataservice.dao.glm.selector.ad.zone.ZoneFaceSelector;
 import com.navinfo.dataservice.dao.glm.selector.lu.LuFaceSelector;
 import com.navinfo.dataservice.dao.glm.selector.lu.LuLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
@@ -33,6 +37,7 @@ import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.same.RdSameNodeSelector;
 import com.navinfo.dataservice.engine.edit.operation.batch.BatchRuleType;
 import com.navinfo.dataservice.engine.edit.utils.GeoRelationUtils;
+import com.navinfo.dataservice.engine.edit.utils.batch.ZoneIDBatchUtils;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.IntersectionMatrix;
 import com.vividsolutions.jts.geom.LineString;
@@ -85,11 +90,40 @@ public class Operation implements IOperation {
 			case BATCHREGIONIDPOI:
 				this.batchRegionIdPoi(result);
 				break;
+			case BATCHDELZONEID:
+				this.bathDelZoneID(result);
+				break;
 			default:
 				break;
 			}
 		} else {
 			throw new Exception("规则号不能为空");
+		}
+	}
+
+	/**
+	 * 在线批处理删除zoneId
+	 * 
+	 * @param result
+	 * @throws Exception
+	 */
+	private void bathDelZoneID(Result result) throws Exception {
+
+		ZoneFaceSelector selector = new ZoneFaceSelector(conn);
+
+		ZoneFace zoneFace = (ZoneFace) selector.loadById(this.command.getPid(), true);
+
+		// 通过face查找符合的link
+		List<RdLink> links = filterZoneLinks(zoneFace);
+
+		for (RdLink link : links) {
+
+			if (CollectionUtils.isNotEmpty(link.getZones())) {
+
+				continue;
+			}
+
+			ZoneIDBatchUtils.deleteZoneID(link, zoneFace, conn, result);
 		}
 	}
 
@@ -144,6 +178,22 @@ public class Operation implements IOperation {
 			result.insertObject(link, ObjStatus.UPDATE, link.getPid());
 		}
 
+	}
+
+	/**
+	 * 获取Face内部的LINK
+	 * 
+	 * @return
+	 * @throws Exception
+	 */
+	private List<RdLink> filterZoneLinks(ZoneFace face) throws Exception {
+		List<RdLink> updateLinks = new ArrayList<RdLink>();
+
+		RdLinkSelector linkSelector = new RdLinkSelector(conn);
+
+		updateLinks = linkSelector.loadLinkByFaceGeo(face.getPid(), face.tableName(), true);
+
+		return updateLinks;
 	}
 
 	private List<RdLink> filterUrbanLinks() throws Exception {

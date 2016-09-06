@@ -39,21 +39,21 @@ public class ColumnCoreControl {
 			int hasApply = 0;
 			
 			// 查询该作业员名下已申请的数据数量
-			for (int taskId:subTaskIds) {
+//			for (int taskId:subTaskIds) {
 				
 				// 区分大陆，港澳任务
 				
-				Subtask subtask = apiService.queryBySubtaskId(taskId);
-				int dbId = subtask.getDbId();
-				if (dbId != oldDbId) {
-					DbUtils.closeQuietly(conn);
-					oldDbId = dbId;
-					conn = DBConnector.getInstance().getConnectionById(oldDbId);
-				}
-				IxPoiDeepStatusSelector selector = new IxPoiDeepStatusSelector(conn);
-				int tempCount = selector.queryHandlerCount(firstWorkItem,userId);
+//				Subtask subtask = apiService.queryBySubtaskId(taskId);
+//				int dbId = subtask.getDbId();
+//				if (dbId != oldDbId) {
+//					DbUtils.closeQuietly(conn);
+//					oldDbId = dbId;
+					conn = DBConnector.getInstance().getConnectionById(17);
+//				}
+				IxPoiDeepStatusSelector deepSelector = new IxPoiDeepStatusSelector(conn);
+				int tempCount = deepSelector.queryHandlerCount(firstWorkItem,userId);
 				hasApply += tempCount;
-			}
+//			}
 			
 			// 可申请数据条数
 			int canApply = 100 - hasApply;
@@ -63,16 +63,16 @@ public class ColumnCoreControl {
 			}
 			
 			// 查询可申请数据
-			for (int taskId:subTaskIds) {
-				Subtask subtask = apiService.queryBySubtaskId(taskId);
-				int dbId = subtask.getDbId();
-				if (dbId != oldDbId) {
-					DbUtils.closeQuietly(conn);
-					oldDbId = dbId;
-					conn = DBConnector.getInstance().getConnectionById(oldDbId);
-				}
+//			for (int taskId:subTaskIds) {
+//				Subtask subtask = apiService.queryBySubtaskId(taskId);
+//				int dbId = subtask.getDbId();
+//				if (dbId != oldDbId) {
+//					DbUtils.closeQuietly(conn);
+//					oldDbId = dbId;
+//					conn = DBConnector.getInstance().getConnectionById(oldDbId);
+//				}
 				IxPoiDeepStatusSelector selector = new IxPoiDeepStatusSelector(conn);
-				List<String> rowIds = selector.getRowIdByTaskId(taskId, firstWorkItem);
+				List<String> rowIds = selector.getRowIdByTaskId(20160906, firstWorkItem);
 				
 				// 判断是否已申请够
 				if (totalCount < canApply) {
@@ -88,9 +88,9 @@ public class ColumnCoreControl {
 						totalCount += rowIds.size();
 					}
 				} else {
-					break;
+//					break;
 				}
-			}
+//			}
 
 		} catch (Exception e) {
 			throw e;
@@ -145,7 +145,7 @@ public class ColumnCoreControl {
 		Connection conn = null;
 		
 		try {
-			int taskId= jsonReq.getInt("taskId");
+//			int taskId= jsonReq.getInt("taskId");
 			
 			ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
 			
@@ -154,11 +154,11 @@ public class ColumnCoreControl {
 			String firstWordItem = jsonReq.getString("firstWorkItem");
 			String secondWorkItem = jsonReq.getString("secondWorkItem");
 			
-			Subtask subtask = apiService.queryBySubtaskId(taskId);
-			int dbId = subtask.getDbId();
+//			Subtask subtask = apiService.queryBySubtaskId(taskId);
+//			int dbId = subtask.getDbId();
 			
 			// 获取未提交数据的rowId
-			conn = DBConnector.getInstance().getConnectionById(dbId);
+			conn = DBConnector.getInstance().getConnectionById(17);
 			IxPoiDeepStatusSelector selector = new IxPoiDeepStatusSelector(conn);
 			List<String> rowIdList = selector.columnQuery(status,secondWorkItem,userId);
 			

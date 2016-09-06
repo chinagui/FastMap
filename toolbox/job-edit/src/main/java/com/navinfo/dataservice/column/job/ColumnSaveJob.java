@@ -1,19 +1,20 @@
-package com.navinfo.dataservice.control.column.job;
+package com.navinfo.dataservice.column.job;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 import org.apache.commons.dbutils.DbUtils;
 
+import com.navinfo.dataservice.api.edit.iface.EditApi;
 import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
-import com.navinfo.dataservice.control.column.core.ColumnCoreControl;
-import com.navinfo.dataservice.control.column.core.ColumnCoreOperation;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.PoiDeepOpConf;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiOpConfSelector;
 import com.navinfo.dataservice.jobframework.exception.JobException;
@@ -48,8 +49,7 @@ public class ColumnSaveJob extends AbstractJob {
 			int dbId = subtask.getDbId();
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 			
-			ColumnCoreControl control = new ColumnCoreControl();
-			control.columnSave(dbId, data);
+			columnSave(dbId, data);
 			
 			// TODO 区分大陆/港澳
 			int type = 1;
@@ -80,12 +80,67 @@ public class ColumnSaveJob extends AbstractJob {
 			}
 			
 			// 修改poi_deep_status表作业项状态
-			control.updateDeepStatus(rowIdList, conn, 2);
+			updateDeepStatus(rowIdList, conn, 2);
 			
 		} catch (Exception e) {
 			throw new JobException(e);
 		} finally {
 			DbUtils.closeQuietly(conn);
+		}
+	}
+	
+	/**
+	 * 保存精编数据
+	 * @param dbId
+	 * @param data
+	 * @throws Exception
+	 */
+	public void columnSave(int dbId,JSONArray data) throws Exception {
+		try {
+			for (int i=0;i<data.size();i++) {
+				JSONObject poiObj = new JSONObject();
+				poiObj.put("dbId", dbId);
+				poiObj.put("data", data.getJSONObject(i));
+				EditApi apiEdit=(EditApi) ApplicationContextUtil.getBean("editApi");
+				apiEdit.run(poiObj);
+			}
+			
+		} catch (Exception e) {
+			throw e;
+		}
+	}
+	
+	/**
+	 * 更新配置表状态
+	 * @param rowIdList
+	 * @param conn
+	 * @throws Exception
+	 */
+	public void updateDeepStatus(List<String> rowIdList,Connection conn,int status) throws Exception {
+		StringBuilder sb = new StringBuilder();
+		sb.append("UPDATE poi_deep_status SET firstWorkStatus="+status+",secondWorkStatus="+status+" WHERE row_id in(");
+		
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+		try {
+			String temp="";
+			for (String rowId:rowIdList) {
+				sb.append(temp);
+				sb.append("'"+rowId+"'");
+				temp = ",";
+			}
+			sb.append(")");
+			
+			pstmt = conn.prepareStatement(sb.toString());
+			
+			pstmt.executeUpdate();
+			
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
 		}
 	}
 

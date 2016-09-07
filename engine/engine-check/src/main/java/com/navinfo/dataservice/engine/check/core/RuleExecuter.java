@@ -78,6 +78,8 @@ public class RuleExecuter {
 			{variablevalue=VariablesFactory.getRdTollgatePid(data);break;}
 			case RDGATE_PID:
 			{variablevalue=VariablesFactory.getRdGatePid(data);break;}
+			case RD_ELECTRONICEYE_PID:
+			{variablevalue=VariablesFactory.getRdElectroniceye(data);break;}
 		}
 		if(!variablesValueMap.containsKey(variable)){
 			variablesValueMap.put(variable, new HashSet<String>());}

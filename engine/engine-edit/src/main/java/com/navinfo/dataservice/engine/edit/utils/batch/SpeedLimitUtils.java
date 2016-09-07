@@ -81,7 +81,7 @@ public class SpeedLimitUtils {
 					formJSON = iterator.next();
 					if (formJSON.containsKey("objStatus")) {
 						String objStatus = formJSON.getString("objStatus");
-						if (ObjStatus.UPDATE.equals(objStatus)) {
+						if (ObjStatus.UPDATE.equals(Enum.valueOf(ObjStatus.class, objStatus))) {
 							if (isWalkigWay(formJSON.getInt("formOfWay"))) {
 								formChange = true;
 								if (0 == newForm || newForm < formJSON.getInt("formOfWay")) {
@@ -263,7 +263,7 @@ public class SpeedLimitUtils {
 		for (Integer speed : speedLimit) {
 			if (0 == speed)
 				continue;
-			for (IRow row : rdLink.getLimits()) {
+			for (IRow row : rdLink.getSpeedlimits()) {
 				RdLinkSpeedlimit limit = (RdLinkSpeedlimit) row;
 				if (0 == limit.getSpeedType()) {
 					if (0 == speedLimit[0]) {

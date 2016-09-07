@@ -82,7 +82,7 @@ public class ColumnCoreControl {
 						// 申请数据
 						updateHandler(subList,userId,conn);
 						totalCount += subList.size();
-					} else {
+					} else if (rowIds.size() > 0){
 						// 申请数据
 						updateHandler(rowIds,userId,conn);
 						totalCount += rowIds.size();
@@ -95,7 +95,7 @@ public class ColumnCoreControl {
 		} catch (Exception e) {
 			throw e;
 		} finally {
-			DbUtils.closeQuietly(conn);
+			DbUtils.commitAndClose(conn);
 		}
 	}
 	
@@ -171,61 +171,6 @@ public class ColumnCoreControl {
 			throw e;
 		} finally {
 			DbUtils.closeQuietly(conn);
-		}
-	}
-	
-	/**
-	 * 保存精编数据
-	 * @param dbId
-	 * @param data
-	 * @throws Exception
-	 */
-	public void columnSave(int dbId,JSONArray data) throws Exception {
-		try {
-			for (int i=0;i<data.size();i++) {
-				JSONObject poiObj = new JSONObject();
-				poiObj.put("dbId", dbId);
-				poiObj.put("data", data.getJSONObject(i));
-				EditApi apiEdit=(EditApi) ApplicationContextUtil.getBean("editApi");
-				apiEdit.run(poiObj);
-			}
-			
-		} catch (Exception e) {
-			throw e;
-		}
-	}
-	
-	/**
-	 * 更新配置表状态
-	 * @param rowIdList
-	 * @param conn
-	 * @throws Exception
-	 */
-	public void updateDeepStatus(List<String> rowIdList,Connection conn,int status) throws Exception {
-		StringBuilder sb = new StringBuilder();
-		sb.append("UPDATE poi_deep_status SET firstWorkStatus="+status+",secondWorkStatus="+status+" WHERE row_id in(");
-		
-		PreparedStatement pstmt = null;
-
-		ResultSet resultSet = null;
-		try {
-			String temp="";
-			for (String rowId:rowIdList) {
-				sb.append(temp);
-				sb.append("'"+rowId+"'");
-				temp = ",";
-			}
-			sb.append(")");
-			
-			pstmt = conn.prepareStatement(sb.toString());
-			
-			pstmt.executeUpdate();
-			
-		} catch (Exception e) {
-			throw e;
-		} finally {
-			DbUtils.closeQuietly(resultSet);
-			DbUtils.closeQuietly(pstmt);
 		}
 	}
 	

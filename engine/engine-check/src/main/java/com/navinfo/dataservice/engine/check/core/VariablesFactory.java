@@ -6,6 +6,7 @@ import java.util.Set;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
 import com.navinfo.dataservice.dao.glm.model.rd.directroute.RdDirectroute;
+import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdElectroniceye;
 import com.navinfo.dataservice.dao.glm.model.rd.gate.RdGate;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
@@ -13,6 +14,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionDetail;
 import com.navinfo.dataservice.dao.glm.model.rd.slope.RdSlope;
 import com.navinfo.dataservice.dao.glm.model.rd.tollgate.RdTollgate;
+import com.navinfo.dataservice.dao.glm.model.rd.trafficsignal.RdTrafficsignal;
 import com.navinfo.dataservice.dao.glm.model.rd.voiceguide.RdVoiceguide;
 import com.navinfo.dataservice.dao.glm.model.rd.warninginfo.RdWarninginfo;
 
@@ -51,8 +53,8 @@ public class VariablesFactory {
 			rdNodeSet.add(String.valueOf(((RdWarninginfo) data).getNodePid()));}
 		if(data instanceof RdDirectroute){
 			rdNodeSet.add(String.valueOf(((RdDirectroute) data).getNodePid()));}
-		
-		
+		if(data instanceof RdTrafficsignal){
+			rdNodeSet.add(String.valueOf(((RdTrafficsignal) data).getNodePid()));}
 		return rdNodeSet;
 	}
 	/**
@@ -164,4 +166,13 @@ public class VariablesFactory {
 			rdLinkSet.add(String.valueOf(rdGate.getPid()));}
 		return rdLinkSet;
 	}
+	
+	public static Set<String> getRdElectroniceye(IRow data){
+		Set<String> rdLinkSet=new HashSet<String>();
+		if(data instanceof RdElectroniceye){
+			rdLinkSet.add(String.valueOf(((RdElectroniceye)data).getPid()));
+		}
+		return rdLinkSet;
+	}
+	
 }

@@ -187,6 +187,11 @@ public class Operation implements IOperation {
 	private void updateObjectLink(Result result, JSONObject content)
 			throws Exception {
 		JSONArray subObj = this.command.getLinkArray();
+		
+		if(subObj == null)
+		{
+			throw new Exception("link参数不对");
+		}
 
 		for (IRow link : rdObject.getLinks()) {
 

@@ -82,7 +82,7 @@ public class ColumnCoreControl {
 						// 申请数据
 						updateHandler(subList,userId,conn);
 						totalCount += subList.size();
-					} else {
+					} else if (rowIds.size() > 0){
 						// 申请数据
 						updateHandler(rowIds,userId,conn);
 						totalCount += rowIds.size();

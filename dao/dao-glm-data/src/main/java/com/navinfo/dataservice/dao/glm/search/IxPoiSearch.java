@@ -405,7 +405,7 @@ public class IxPoiSearch implements ISearch {
 					for (int i=0;i<addressList.size();i++) {
 						IRow temp = addressList.get(i);
 						IxPoiAddress address = (IxPoiAddress) temp;
-						JSONObject addrObj = new JSONObject();
+						JSONObject addrObj = address.Serialize(null);
 						if (address.getLangCode().equals(langCode)) {
 							if (address.getAddrname()!=null && !address.getAddrname().isEmpty()) {
 								List<String> addrNameMultiPinyin = pyConvertor(address.getAddrname());

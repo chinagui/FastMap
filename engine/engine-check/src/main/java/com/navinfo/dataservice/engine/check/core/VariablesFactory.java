@@ -6,6 +6,7 @@ import java.util.Set;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
 import com.navinfo.dataservice.dao.glm.model.rd.directroute.RdDirectroute;
+import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdElectroniceye;
 import com.navinfo.dataservice.dao.glm.model.rd.gate.RdGate;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
@@ -165,4 +166,13 @@ public class VariablesFactory {
 			rdLinkSet.add(String.valueOf(rdGate.getPid()));}
 		return rdLinkSet;
 	}
+	
+	public static Set<String> getRdElectroniceye(IRow data){
+		Set<String> rdLinkSet=new HashSet<String>();
+		if(data instanceof RdElectroniceye){
+			rdLinkSet.add(String.valueOf(((RdElectroniceye)data).getPid()));
+		}
+		return rdLinkSet;
+	}
+	
 }

@@ -4,11 +4,11 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import com.navinfo.navicommons.database.sql.DBUtils;
+
+import net.sf.json.JSONObject;
 
 public class PinyinConvertSelector {
 	
@@ -22,7 +22,7 @@ public class PinyinConvertSelector {
 		this.conn = conn;
 	}
 	
-	public Map<String, List<String>> getNavicovpyMap() throws Exception{
+	public JSONObject getNavicovpyMap() throws Exception{
 		
 		String sql = "SELECT JT, PY2 FROM TY_NAVICOVPY_PY ORDER BY JT,PYORDER";
 		
@@ -30,7 +30,7 @@ public class PinyinConvertSelector {
 		
 		PreparedStatement pstmt = null;
 		
-		Map<String, List<String>> navicovpyMap = new HashMap<String, List<String>>();
+		JSONObject navicovpyMap = new JSONObject();
 		
 		try {
 			pstmt = conn.prepareStatement(sql);
@@ -41,7 +41,6 @@ public class PinyinConvertSelector {
 				String jt = resultSet.getString("JT");
 				if (jt.equals(oldJt)) {
 					pyList.add(resultSet.getString("PY2"));
-					navicovpyMap.remove(jt);
 					navicovpyMap.put(jt,pyList);
 				} else {
 					oldJt = jt;

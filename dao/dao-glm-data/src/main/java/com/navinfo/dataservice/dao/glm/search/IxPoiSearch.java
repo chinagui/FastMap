@@ -5,9 +5,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.dbutils.DbUtils;
 
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
@@ -38,17 +35,17 @@ public class IxPoiSearch implements ISearch {
 
 	private Connection conn;
 	
-	private Map<String,String> CHAINMAP;
+	private JSONObject CHAINMAP;
 	
-	private Map<String,String> KINDCODEMAP;
+	private JSONObject KINDCODEMAP;
 	
-	private Map<String,String> ADMINMAP;
+	private JSONObject ADMINMAP;
 	
-	private Map<String,String> CHARACTERMAP;
+	private JSONObject CHARACTERMAP;
 	
-	private Map<String,List<String>> NAVICOVPYMAP;
+	private JSONObject NAVICOVPYMAP;
 	
-	private Map<String,String> ENGSHORTMAP;
+	private JSONObject ENGSHORTMAP;
 
 	public IxPoiSearch(Connection conn) {
 		super();
@@ -219,25 +216,24 @@ public class IxPoiSearch implements ISearch {
 		
 		JSONArray dataList = new JSONArray();
 		
-		Connection metaConn = null;
-		
 		try {
 			
 			MetadataApi apiService=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 			
-			metaConn = DBConnector.getInstance().getMetaConnection();
 			
-			this.CHAINMAP = apiService.getChainMap(metaConn);
+			JSONObject metaData = apiService.getMetadataMap();
 			
-			this.KINDCODEMAP = apiService.getKindCodeMap(metaConn);
+			this.CHAINMAP = metaData.getJSONObject("chain");
 			
-			this.ADMINMAP =  apiService.getAdminMap(metaConn);
+			this.KINDCODEMAP = metaData.getJSONObject("kindCode");
 			
-			this.CHARACTERMAP = apiService.getCharacterMap(metaConn);
+			this.ADMINMAP =  metaData.getJSONObject("admin");
 			
-			this.NAVICOVPYMAP = apiService.getNavicovpyMap(metaConn);
+			this.CHARACTERMAP = metaData.getJSONObject("character");
 			
-			this.ENGSHORTMAP = apiService.getEngshortMap(metaConn);
+			this.NAVICOVPYMAP = metaData.getJSONObject("navicovpy");
+			
+			this.ENGSHORTMAP = metaData.getJSONObject("engshort");
 			
 			switch (firstWordItem) {
 				case "poi_name":
@@ -256,8 +252,6 @@ public class IxPoiSearch implements ISearch {
 			return dataList;
 		} catch (Exception e) {
 			throw e;
-		} finally {
-			DbUtils.commitAndCloseQuietly(metaConn);
 		}
 	}
 	
@@ -557,7 +551,7 @@ public class IxPoiSearch implements ISearch {
 			
 			for (int i=0;i<name.length();i++) {
 				if (CHARACTERMAP.containsKey(name.substring(i, i+1))) {
-					String correct = CHARACTERMAP.get(name.substring(i, i+1));
+					String correct = CHARACTERMAP.getString(name.substring(i, i+1));
 					if (correct.isEmpty()) {
 						correct = "";
 					} 
@@ -596,7 +590,7 @@ public class IxPoiSearch implements ISearch {
 							if (!addrNameSingle.isEmpty()) {
 								for (int j=0;j<addrNameSingle.length();j++) {
 									if (CHARACTERMAP.containsKey(addrNameSingle.substring(i, i+1))) {
-										String correct = CHARACTERMAP.get(addrNameSingle.substring(i, i+1));
+										String correct = CHARACTERMAP.getString(addrNameSingle.substring(i, i+1));
 										if (correct.isEmpty()) {
 											correct = "";
 										} 
@@ -616,7 +610,7 @@ public class IxPoiSearch implements ISearch {
 							if (!roadNameSingle.isEmpty()) {
 								for (int j=0;j<roadNameSingle.length();j++) {
 									if (CHARACTERMAP.containsKey(roadNameSingle.substring(i, i+1))) {
-										String correct = CHARACTERMAP.get(roadNameSingle.substring(i, i+1));
+										String correct = CHARACTERMAP.getString(roadNameSingle.substring(i, i+1));
 										if (correct.isEmpty()) {
 											correct = "";
 										} 
@@ -643,6 +637,7 @@ public class IxPoiSearch implements ISearch {
 	 * @return
 	 * @throws Exception
 	 */
+	@SuppressWarnings("unchecked")
 	private List<String> pyConvertor(String word) throws Exception{
 		List<String> result = new ArrayList<String>();
 		try {
@@ -650,7 +645,7 @@ public class IxPoiSearch implements ISearch {
 			for (int i=0;i<word.length();i++) {
 				List<String> sigleWordList = new ArrayList<String>();
 				if (NAVICOVPYMAP.containsKey(String.valueOf(word.charAt(i)))) {
-					List<String> sigleWord = NAVICOVPYMAP.get(String.valueOf(word.charAt(i)));
+					List<String> sigleWord = (List<String>) NAVICOVPYMAP.get(String.valueOf(word.charAt(i)));
 					if (sigleWord.size()>1) {
 						sigleWordList.add(Integer.toString(i));
 						sigleWordList.add(String.valueOf(word.charAt(i)));

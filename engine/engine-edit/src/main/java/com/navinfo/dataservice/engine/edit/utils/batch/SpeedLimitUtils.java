@@ -81,7 +81,7 @@ public class SpeedLimitUtils {
 					formJSON = iterator.next();
 					if (formJSON.containsKey("objStatus")) {
 						String objStatus = formJSON.getString("objStatus");
-						if (ObjStatus.UPDATE.equals(objStatus)) {
+						if (ObjStatus.UPDATE.equals(Enum.valueOf(ObjStatus.class, objStatus))) {
 							if (isWalkigWay(formJSON.getInt("formOfWay"))) {
 								formChange = true;
 								if (0 == newForm || newForm < formJSON.getInt("formOfWay")) {

@@ -154,7 +154,7 @@ public class Operation implements IOperation {
 						adLink.getGeometry(), 0.00001, 5);
 				mapLink.put(geometry, adLink);
 				
-				if(!mapNode.containsValue(geometry.getCoordinates()[0])){
+				if(!mapNode.containsKey(geometry.getCoordinates()[0])){
 						mapNode.put(geometry.getCoordinates()[0], adLink.getsNodePid());
 				}
 				if(!mapNode.containsValue(geometry.getCoordinates()[geometry.getCoordinates().length-1])){

@@ -146,7 +146,7 @@ public class Operation implements IOperation {
 						zoneLink.getGeometry(), 0.00001, 5);
 				mapLink.put(geometry, zoneLink);
 				
-				if(!mapNode.containsValue(geometry.getCoordinates()[0])){
+				if(!mapNode.containsKey(geometry.getCoordinates()[0])){
 						mapNode.put(geometry.getCoordinates()[0], zoneLink.getsNodePid());
 				}
 				if(!mapNode.containsValue(geometry.getCoordinates()[geometry.getCoordinates().length-1])){

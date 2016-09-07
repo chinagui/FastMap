@@ -23,7 +23,7 @@ public class AdNodeBo extends AbstractNodeBo{
 
 	@Override
 	public void setObj(BasicObj obj) {
-		obj = (AdNode)obj;
+		this.obj = (AdNode)obj;
 	}
 
 	@Override

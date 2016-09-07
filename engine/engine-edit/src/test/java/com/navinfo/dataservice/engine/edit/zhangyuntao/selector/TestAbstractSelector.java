@@ -49,7 +49,7 @@ public abstract class TestAbstractSelector<T extends IRow> {
 		this.conn = conn;
 	}
 
-	public IRow loadById(int id, boolean isLock) {
+	public IRow loadById(int id, boolean isLock) throws SQLException {
 		T t = null;
 		StringBuffer sb = null;
 		try {
@@ -80,7 +80,7 @@ public abstract class TestAbstractSelector<T extends IRow> {
 				this.loadChildren(t, isLock);
 			}
 		} catch (Exception e) {
-			new SQLException(e.getMessage(), "loadById查询出错");
+			throw new SQLException(e.getMessage(), "loadById查询出错");
 		} finally {
 			DbUtils.closeQuietly(conn);
 			DbUtils.closeQuietly(ptst);
@@ -88,7 +88,7 @@ public abstract class TestAbstractSelector<T extends IRow> {
 		return t;
 	}
 
-	public IRow loadByRowId(String rowId, boolean isLock) {
+	public IRow loadByRowId(String rowId, boolean isLock) throws SQLException {
 		T t = null;
 		StringBuffer sb = null;
 		try {
@@ -116,7 +116,7 @@ public abstract class TestAbstractSelector<T extends IRow> {
 				ReflectionAttrUtils.executeResultSet(t, resultSet);
 			}
 		} catch (Exception e) {
-			new SQLException(e.getMessage(), "loadByRowId查询出错");
+			throw new SQLException(e.getMessage(), "loadByRowId查询出错");
 		} finally {
 			DbUtils.closeQuietly(conn);
 			DbUtils.closeQuietly(ptst);
@@ -156,7 +156,7 @@ public abstract class TestAbstractSelector<T extends IRow> {
 				rows.add(t);
 			}
 		} catch (Exception e) {
-			new SQLException(e.getMessage(), "loadRowsByParentId查询出错");
+			throw new SQLException(e.getMessage(), "loadRowsByParentId查询出错");
 		} finally {
 			DbUtils.closeQuietly(conn);
 			DbUtils.closeQuietly(ptst);

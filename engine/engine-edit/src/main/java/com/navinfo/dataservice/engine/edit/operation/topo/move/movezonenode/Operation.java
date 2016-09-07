@@ -137,7 +137,7 @@ public class Operation implements IOperation {
 
 		if (updateJson.containsKey("mainType")) {
 			String mainType = updateJson.getString("mainType");
-			if (mainType == ObjType.ZONENODE.toString()) {
+			if (mainType.equals(ObjType.ZONENODE.toString())) {
 				com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create.Operation sameNodeOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create.Operation(
 						null, this.conn);
 				sameNodeOperation.moveMainNodeForTopo(this.command.getJson(), ObjType.ZONENODE, result);

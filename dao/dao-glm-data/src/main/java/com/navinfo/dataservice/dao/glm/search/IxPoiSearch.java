@@ -407,15 +407,15 @@ public class IxPoiSearch implements ISearch {
 						IxPoiAddress address = (IxPoiAddress) temp;
 						JSONObject addrObj = new JSONObject();
 						if (address.getLangCode().equals(langCode)) {
-							if (!address.getAddrname().isEmpty()) {
+							if (address.getAddrname()!=null && !address.getAddrname().isEmpty()) {
 								List<String> addrNameMultiPinyin = pyConvertor(address.getAddrname());
 								addrObj.put("addrNameMultiPinyin", addrNameMultiPinyin);
 							}
-							if (!address.getRoadname().isEmpty()) {
+							if (address.getRoadname()!=null && !address.getRoadname().isEmpty()) {
 								List<String> roadNameMultiPinyin = pyConvertor(address.getRoadname());
 								addrObj.put("roadNameMultiPinyin", roadNameMultiPinyin);
 							}
-							if (!address.getFullname().isEmpty()) {
+							if (address.getFullname()!=null && !address.getFullname().isEmpty()) {
 								List<String> fullNameMultiPinyin = pyConvertor(address.getFullname());
 								addrObj.put("fullNameMultiPinyin", fullNameMultiPinyin);
 							}

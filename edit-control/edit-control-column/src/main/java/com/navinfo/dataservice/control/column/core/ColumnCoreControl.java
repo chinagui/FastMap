@@ -48,11 +48,11 @@ public class ColumnCoreControl {
 //				if (dbId != oldDbId) {
 //					DbUtils.closeQuietly(conn);
 //					oldDbId = dbId;
-					conn = DBConnector.getInstance().getConnectionById(17);
+			conn = DBConnector.getInstance().getConnectionById(17);
 //				}
-				IxPoiDeepStatusSelector deepSelector = new IxPoiDeepStatusSelector(conn);
-				int tempCount = deepSelector.queryHandlerCount(firstWorkItem,userId);
-				hasApply += tempCount;
+			IxPoiDeepStatusSelector deepSelector = new IxPoiDeepStatusSelector(conn);
+			int tempCount = deepSelector.queryHandlerCount(firstWorkItem,userId);
+			hasApply += tempCount;
 //			}
 			
 			// 可申请数据条数

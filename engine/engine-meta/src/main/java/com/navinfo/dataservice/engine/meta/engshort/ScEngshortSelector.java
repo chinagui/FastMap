@@ -3,10 +3,10 @@ package com.navinfo.dataservice.engine.meta.engshort;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.HashMap;
-import java.util.Map;
 
 import com.navinfo.navicommons.database.sql.DBUtils;
+
+import net.sf.json.JSONObject;
 
 public class ScEngshortSelector {
 	
@@ -25,7 +25,7 @@ public class ScEngshortSelector {
 	 * @return
 	 * @throws Exception
 	 */
-	public Map<String,String> getEngShortMap() throws Exception {
+	public JSONObject getEngShortMap() throws Exception {
 		
 		String sql = "SELECT full_name,short_name FROM sc_engshort_list";
 		
@@ -33,7 +33,7 @@ public class ScEngshortSelector {
 		
 		PreparedStatement pstmt = null;
 		
-		Map<String,String> engshortMap = new HashMap<String,String>();
+		JSONObject engshortMap = new JSONObject();
 		
 		try {
 			pstmt = conn.prepareStatement(sql);

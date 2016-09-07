@@ -146,7 +146,7 @@ public class Operation implements IOperation {
 
 		for (RdSameLinkPart part : linkParts) {
 
-			if (linkTableName == part.getTableName()
+			if (linkTableName.equals(part.getTableName())
 					&& repairLinkPid == part.getLinkPid()) {
 				continue;
 			}

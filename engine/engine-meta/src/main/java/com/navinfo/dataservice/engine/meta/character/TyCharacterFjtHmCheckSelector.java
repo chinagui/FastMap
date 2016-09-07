@@ -3,10 +3,10 @@ package com.navinfo.dataservice.engine.meta.character;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.HashMap;
-import java.util.Map;
 
 import com.navinfo.navicommons.database.sql.DBUtils;
+
+import net.sf.json.JSONObject;
 
 public class TyCharacterFjtHmCheckSelector {
 	
@@ -20,7 +20,7 @@ public class TyCharacterFjtHmCheckSelector {
 		this.conn = conn;
 	}
 	
-	public Map<String, String> getCharacterMap() throws Exception{
+	public JSONObject getCharacterMap() throws Exception{
 		
 		String sql = "SELECT distinct hz,correct FROM ty_character_fjt_hm_check";
 		
@@ -28,7 +28,7 @@ public class TyCharacterFjtHmCheckSelector {
 		
 		PreparedStatement pstmt = null;
 		
-		Map<String,String> characterMap = new HashMap<String,String>();
+		JSONObject characterMap = new JSONObject();
 		
 		try {
 			pstmt = conn.prepareStatement(sql);

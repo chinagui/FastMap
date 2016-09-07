@@ -30,6 +30,7 @@ public class RuleExecuter {
 	//private List<VariableName> checkSuitVariables=new ArrayList<VariableName>();
 	private Connection conn;
 	private Map<VariableName,Set<String>> variablesValueMap=new HashMap<VariableName,Set<String>>();
+	private Map<String,List<IRow>> dataMap=new HashMap<String,List<IRow>>();
 	private ChainLoader loader=new ChainLoader();
 	
 	private static Logger log = Logger.getLogger(CheckEngine.class);
@@ -133,11 +134,48 @@ public class RuleExecuter {
 	public List<NiValException> exePostRule(CheckRule rule) throws Exception{
 		try{
 			log.info("start exe "+rule.getRuleCode());
+			loadGlmList(rule);
 			if(rule.getPostAccessorType()==AccessorType.SQL){
 				return exePostSqlRule(rule);
 			}else{return exePostJavaRule(rule);}}
 		finally{
 			log.info("end exe "+rule.getRuleCode());}
+	}
+	/**
+	 * 执行具体规则前，先加载规则数据
+	 * @throws Exception 
+	 */
+	private void loadGlmList(CheckRule rule) throws Exception{
+		String logSql=checkCommand.getLogSql();
+		//通过履历变更加载查询数据
+		if(logSql!=null && !logSql.isEmpty()){
+			variablesValueMap.clear();
+			List<IRow> dataList=new ArrayList<IRow>();
+			String tableName="RD_LINK";
+			if(!dataMap.containsKey(tableName)){
+				dataMap.put(tableName, LoadGlmList.loadByLogSql(conn, "RD_LINK", null, logSql));
+			}
+			List<IRow> dataListTmp=dataMap.get(tableName);
+			if(dataListTmp!=null && dataListTmp.size()>0){
+				dataList.addAll(dataListTmp);}
+			setDataList(dataList);
+			return;
+		}
+		String wkt=checkCommand.getWkt();
+		if(wkt!=null && !wkt.isEmpty()){
+			variablesValueMap.clear();
+			List<IRow> dataList=new ArrayList<IRow>();
+			String tableName="RD_LINK";
+			if(!dataMap.containsKey(tableName)){
+				dataMap.put(tableName, LoadGlmList.loadByWkt(conn, tableName, wkt));
+			}
+			List<IRow> dataListTmp=dataMap.get(tableName);
+			if(dataListTmp!=null && dataListTmp.size()>0){
+				dataList.addAll(dataListTmp);}
+			setDataList(dataList);
+			return;
+		}
+		//如果上面的情况都没有发生，则使用checkCommand传过来的glmlist，即本类中的dataList
 	}
 	
 	/*
@@ -178,22 +216,40 @@ public class RuleExecuter {
 		List<String> sqlList=new ArrayList<String>();
 		List<String> sqlListTmp=new ArrayList<String>();
 		sqlList.add(sql);
+		String firstVariable=variableList.get(0).toString();
 		//将sql语句中的参数进行替换，形成可执行的sql语句
-		for(int i=0;i<variableList.size();i++){
-			Set<String> variableValueList=getVariableValue(variableList.get(i));
+		if(variableList.size()==1 
+				&& (sql.replaceAll(firstVariable, "").length()+firstVariable.length())==sql.length()
+				&& ((sql.replaceAll("="+firstVariable, "").length()+firstVariable.length()+1)==sql.length()
+				||(sql.replaceAll("= "+firstVariable, "").length()+firstVariable.length()+2)==sql.length())){
+			//有1个变量，或者sql中变量出现1次,若set有多个。。可直接替换成in
+			Set<String> variableValueList=getVariableValue(variableList.get(0));
 			if(variableValueList==null || variableValueList.size()==0){
 				sqlListTmp=new ArrayList<String>();
 				sqlList=new ArrayList<String>();
-				break;
+			}else if(variableValueList.size()==1){
+				sqlListTmp.add(sql.replace(firstVariable, variableValueList.iterator().next()));
+			}else{
+				String sqlTmp=sql.replace("= "+firstVariable, "="+firstVariable);
+				sqlListTmp.add(sqlTmp.replace("="+firstVariable, "in ("+variableValueList.toString().replace("[", "").replace("]", "")+")"));
 			}
-			if(sqlListTmp.size()!=0){sqlList=sqlListTmp;sqlListTmp=new ArrayList<String>();}
-			for(int m=0;m<sqlList.size();m++){
-				Iterator<String> varIterator=variableValueList.iterator();
-				while(varIterator.hasNext()){
-					sqlListTmp.add(sqlList.get(m).replaceAll(variableList.get(i).toString(), varIterator.next()));
+		}else{
+			//有多个变量，或者sql中变量出现多次
+			for(int i=0;i<variableList.size();i++){
+				Set<String> variableValueList=getVariableValue(variableList.get(i));
+				if(variableValueList==null || variableValueList.size()==0){
+					sqlListTmp=new ArrayList<String>();
+					sqlList=new ArrayList<String>();
+					break;
 				}
-			}
-		}
+				if(sqlListTmp.size()!=0){sqlList=sqlListTmp;sqlListTmp=new ArrayList<String>();}
+				for(int m=0;m<sqlList.size();m++){
+					Iterator<String> varIterator=variableValueList.iterator();
+					while(varIterator.hasNext()){
+						sqlListTmp.add(sqlList.get(m).replaceAll(variableList.get(i).toString(), varIterator.next()));
+					}
+				}
+			}}
 		if(sqlListTmp.size()!=0){sqlList=sqlListTmp;}
 		//执行sql语句
 		List<NiValException> niValExceptionList=new ArrayList<NiValException>();

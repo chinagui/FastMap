@@ -269,9 +269,8 @@ public class IxPoiSearch implements ISearch {
 		JSONArray dataList = new JSONArray();
 		
 		try {
-			boolean isLock = true;
+			boolean isLock = false;
 			if (type.equals("integrate")) {
-				isLock = false;
 				// TODO 返回检查错误的数据
 			}
 			
@@ -288,9 +287,22 @@ public class IxPoiSearch implements ISearch {
 				
 				JSONObject poiObj = poi.Serialize(null);
 				poiObj.put("photoCount", poi.getPhotos().size());
-				poiObj.put("chainName", CHAINMAP.get(poi.getChain()));
-				poiObj.put("kindCodeName", KINDCODEMAP.get(poi.getKindCode()));
-				poiObj.put("detailArea", ADMINMAP.get(Integer.toString(poi.getAdminReal())));
+				if (CHAINMAP.containsKey(poi.getChain())) {
+					poiObj.put("chainName", CHAINMAP.get(poi.getChain()));
+				} else {
+					poiObj.put("chainName", poi.getChain());
+				}
+				if (KINDCODEMAP.containsKey(poi.getKindCode())) {
+					poiObj.put("kindCodeName", KINDCODEMAP.get(poi.getKindCode()));
+				} else {
+					poiObj.put("kindCodeName", poi.getKindCode());
+				}
+				if (ADMINMAP.containsKey(Integer.toString(poi.getAdminReal()))) {
+					poiObj.put("detailArea", ADMINMAP.get(Integer.toString(poi.getAdminReal())));
+				} else {
+					poiObj.put("detailArea", Integer.toString(poi.getAdminReal()));
+				}
+				
 				poiObj.put("classifyRules", status.getString("workItemId"));
 				poiObj.put("auditStatus", status.getInt("firstWorkStatus"));
 				
@@ -342,9 +354,8 @@ public class IxPoiSearch implements ISearch {
 		JSONArray dataList = new JSONArray();
 		
 		try {
-			boolean isLock = true;
+			boolean isLock = false;
 			if (type.equals("integrate")) {
-				isLock = false;
 				// TODO 返回检查错误的数据
 			}
 			
@@ -364,9 +375,21 @@ public class IxPoiSearch implements ISearch {
 				
 				JSONObject poiObj = poi.Serialize(null);
 				poiObj.put("photoCount", poi.getPhotos().size());
-				poiObj.put("chainName", CHAINMAP.get(poi.getChain()));
-				poiObj.put("kindCodeName", KINDCODEMAP.get(poi.getKindCode()));
-				poiObj.put("detailArea", ADMINMAP.get(Integer.toString(poi.getAdminReal())));
+				if (CHAINMAP.containsKey(poi.getChain())) {
+					poiObj.put("chainName", CHAINMAP.get(poi.getChain()));
+				} else {
+					poiObj.put("chainName", poi.getChain());
+				}
+				if (KINDCODEMAP.containsKey(poi.getKindCode())) {
+					poiObj.put("kindCodeName", KINDCODEMAP.get(poi.getKindCode()));
+				} else {
+					poiObj.put("kindCodeName", poi.getKindCode());
+				}
+				if (ADMINMAP.containsKey(Integer.toString(poi.getAdminReal()))) {
+					poiObj.put("detailArea", ADMINMAP.get(Integer.toString(poi.getAdminReal())));
+				} else {
+					poiObj.put("detailArea", Integer.toString(poi.getAdminReal()));
+				}
 				poiObj.put("classifyRules", status.getString("workItemId"));
 				poiObj.put("auditStatus", status.getInt("firstWorkStatus"));
 				
@@ -426,9 +449,8 @@ public class IxPoiSearch implements ISearch {
 		JSONArray dataList = new JSONArray();
 		
 		try {
-			boolean isLock = true;
+			boolean isLock = false;
 			if (type.equals("integrate")) {
-				isLock = false;
 				// TODO 返回检查错误的数据
 			}
 			
@@ -445,9 +467,21 @@ public class IxPoiSearch implements ISearch {
 				
 				JSONObject poiObj = poi.Serialize(null);
 				poiObj.put("photoCount", poi.getPhotos().size());
-				poiObj.put("chainName", CHAINMAP.get(poi.getChain()));
-				poiObj.put("kindCodeName", KINDCODEMAP.get(poi.getKindCode()));
-				poiObj.put("detailArea", ADMINMAP.get(Integer.toString(poi.getAdminReal())));
+				if (CHAINMAP.containsKey(poi.getChain())) {
+					poiObj.put("chainName", CHAINMAP.get(poi.getChain()));
+				} else {
+					poiObj.put("chainName", poi.getChain());
+				}
+				if (KINDCODEMAP.containsKey(poi.getKindCode())) {
+					poiObj.put("kindCodeName", KINDCODEMAP.get(poi.getKindCode()));
+				} else {
+					poiObj.put("kindCodeName", poi.getKindCode());
+				}
+				if (ADMINMAP.containsKey(Integer.toString(poi.getAdminReal()))) {
+					poiObj.put("detailArea", ADMINMAP.get(Integer.toString(poi.getAdminReal())));
+				} else {
+					poiObj.put("detailArea", Integer.toString(poi.getAdminReal()));
+				}
 				poiObj.put("classifyRules", status.getString("workItemId"));
 				poiObj.put("auditStatus", status.getInt("firstWorkStatus"));
 				
@@ -472,9 +506,8 @@ public class IxPoiSearch implements ISearch {
 		JSONArray dataList = new JSONArray();
 		
 		try {
-			boolean isLock = true;
+			boolean isLock = false;
 			if (type.equals("integrate")) {
-				isLock = false;
 				// TODO 返回检查错误的数据
 			}
 			
@@ -494,9 +527,21 @@ public class IxPoiSearch implements ISearch {
 				
 				JSONObject poiObj = poi.Serialize(null);
 				poiObj.put("photoCount", poi.getPhotos().size());
-				poiObj.put("chainName", CHAINMAP.get(poi.getChain()));
-				poiObj.put("kindCodeName", KINDCODEMAP.get(poi.getKindCode()));
-				poiObj.put("detailArea", ADMINMAP.get(Integer.toString(poi.getAdminReal())));
+				if (CHAINMAP.containsKey(poi.getChain())) {
+					poiObj.put("chainName", CHAINMAP.get(poi.getChain()));
+				} else {
+					poiObj.put("chainName", poi.getChain());
+				}
+				if (KINDCODEMAP.containsKey(poi.getKindCode())) {
+					poiObj.put("kindCodeName", KINDCODEMAP.get(poi.getKindCode()));
+				} else {
+					poiObj.put("kindCodeName", poi.getKindCode());
+				}
+				if (ADMINMAP.containsKey(Integer.toString(poi.getAdminReal()))) {
+					poiObj.put("detailArea", ADMINMAP.get(Integer.toString(poi.getAdminReal())));
+				} else {
+					poiObj.put("detailArea", Integer.toString(poi.getAdminReal()));
+				}
 				poiObj.put("classifyRules", status.getString("workItemId"));
 				poiObj.put("auditStatus", status.getInt("firstWorkStatus"));
 				

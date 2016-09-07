@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.control.column.core;
+package com.navinfo.dataservice.column.job;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

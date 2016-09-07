@@ -93,7 +93,7 @@ public class RdLinkTest extends InitApplication {
 
 	@Test
 	public void testAddRdLink() {
-		String parameter = "{\"command\":\"CREATE\",\"dbId\":42,\"type\":\"RDGATE\",\"data\":{\"inLinkPid\":86035080,\"nodePid\":73174043,\"outLinkPid\":86035081}}";
+		String parameter = "{\"command\":\"CREATE\",\"dbId\":17,\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.26767754554749,40.550477470513776],[116.26857876777648,40.54989866684336],[116.26917958259583,40.55050192689673],[116.26953363418579,40.54984975362789]]},\"catchLinks\":[]},\"type\":\"RDLINK\"}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

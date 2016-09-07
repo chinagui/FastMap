@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -14,7 +15,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.gate.RdGate;
 import com.navinfo.dataservice.dao.glm.model.rd.gate.RdGateCondition;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
-import com.navinfo.dataservice.dao.pidservice.PidService;
+
 
 public class Operation implements IOperation {
 	
@@ -52,7 +53,7 @@ public class Operation implements IOperation {
 		try {
 			this.result = result;
 			RdGate rdGate = new RdGate();
-			rdGate.setPid(PidService.getInstance().applyRdGate());
+			rdGate.setPid(PidUtil.getInstance().applyRdGate());
 			rdGate.setInLinkPid(command.getInLinkPid());
 			rdGate.setOutLinkPid(command.getOutLinkPid());
 			rdGate.setNodePid(command.getNodePid());

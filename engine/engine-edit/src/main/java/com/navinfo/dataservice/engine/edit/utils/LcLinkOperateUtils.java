@@ -9,6 +9,7 @@ import java.util.Set;
 
 import org.json.JSONException;
 
+import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -17,7 +18,6 @@ import com.navinfo.dataservice.dao.glm.model.lc.LcLink;
 import com.navinfo.dataservice.dao.glm.model.lc.LcLinkKind;
 import com.navinfo.dataservice.dao.glm.model.lc.LcLinkMesh;
 import com.navinfo.dataservice.dao.glm.model.lc.LcNode;
-import com.navinfo.dataservice.dao.pidservice.PidService;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.navinfo.navicommons.geo.computation.GeometryTypeName;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
@@ -60,7 +60,7 @@ public class LcLinkOperateUtils {
 	public static void addLink(Geometry g, int sNodePid, int eNodePid, Result result) throws Exception {
 		LcLink link = new LcLink();
 		Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(g);
-		link.setPid(PidService.getInstance().applyLcLinkPid());
+		link.setPid(PidUtil.getInstance().applyLcLinkPid());
 		Iterator<String> it = meshes.iterator();
 		List<IRow> meshIRows = new ArrayList<IRow>();
 		while (it.hasNext()) {
@@ -87,7 +87,7 @@ public class LcLinkOperateUtils {
 	public static LcLink getAddLink(Geometry g, int sNodePid, int eNodePid, Result result) throws Exception {
 		LcLink link = new LcLink();
 		Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(g);
-		link.setPid(PidService.getInstance().applyLcLinkPid());
+		link.setPid(PidUtil.getInstance().applyLcLinkPid());
 		Iterator<String> it = meshes.iterator();
 		List<IRow> meshIRows = new ArrayList<IRow>();
 		while (it.hasNext()) {
@@ -117,7 +117,7 @@ public class LcLinkOperateUtils {
 		LcLink link = new LcLink();
 		link.copy(sourcelink);
 		Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(g);
-		link.setPid(PidService.getInstance().applyLcLinkPid());
+		link.setPid(PidUtil.getInstance().applyLcLinkPid());
 		Iterator<String> it = meshes.iterator();
 		List<IRow> meshIRows = new ArrayList<IRow>();
 		while (it.hasNext()) {

@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.geom.AngleCalculator;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -20,7 +21,6 @@ import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneTopology;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneVia;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
-import com.navinfo.dataservice.dao.pidservice.PidService;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.LineSegment;
 
@@ -63,7 +63,7 @@ public class Operation implements IOperation {
 
 		lane.setMesh(meshId);
 
-		lane.setPid(PidService.getInstance().applyLaneConnexityPid());
+		lane.setPid(PidUtil.getInstance().applyLaneConnexityPid());
 
 		result.setPrimaryPid(lane.getPid());
 
@@ -92,7 +92,7 @@ public class Operation implements IOperation {
 
 			topo.setMesh(meshId);
 
-			topo.setPid(PidService.getInstance().applyLaneTopologyPid());
+			topo.setPid(PidUtil.getInstance().applyLaneTopologyPid());
 
 			topo.setConnexityPid(lane.getPid());
 

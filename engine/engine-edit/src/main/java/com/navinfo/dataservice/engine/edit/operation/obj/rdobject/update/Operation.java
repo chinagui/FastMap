@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -22,7 +23,6 @@ import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.road.RdRoad;
 import com.navinfo.dataservice.dao.glm.model.rd.road.RdRoadLink;
 import com.navinfo.dataservice.dao.glm.selector.rd.crf.RdObjectSelector;
-import com.navinfo.dataservice.dao.pidservice.PidService;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -91,15 +91,18 @@ public class Operation implements IOperation {
 	 * @param content
 	 * @throws Exception
 	 */
-	private void updateObjectInter(Result result, JSONObject content) throws Exception {
+	private void updateObjectInter(Result result, JSONObject content)
+			throws Exception {
 		JSONArray subObj = this.command.getInterArray();
 
 		for (IRow inter : rdObject.getInters()) {
 			RdObjectInter objectInter = (RdObjectInter) inter;
 			if (subObj == null) {
-				result.insertObject(objectInter, ObjStatus.DELETE, objectInter.getInterPid());
+				result.insertObject(objectInter, ObjStatus.DELETE,
+						objectInter.getInterPid());
 			} else if (!subObj.contains(objectInter.getInterPid())) {
-				result.insertObject(objectInter, ObjStatus.DELETE, objectInter.getInterPid());
+				result.insertObject(objectInter, ObjStatus.DELETE,
+						objectInter.getInterPid());
 			} else {
 				subObj.remove((Integer) objectInter.getInterPid());
 			}
@@ -118,7 +121,8 @@ public class Operation implements IOperation {
 
 				rdObjectInter.setPid(rdObject.getPid());
 
-				result.insertObject(rdObjectInter, ObjStatus.INSERT, rdObjectInter.getInterPid());
+				result.insertObject(rdObjectInter, ObjStatus.INSERT,
+						rdObjectInter.getInterPid());
 
 				pidList.add(interPid);
 			}
@@ -133,16 +137,19 @@ public class Operation implements IOperation {
 	 * @param content
 	 * @throws Exception
 	 */
-	private void updateObjectRoad(Result result, JSONObject content) throws Exception {
+	private void updateObjectRoad(Result result, JSONObject content)
+			throws Exception {
 		JSONArray subObj = this.command.getRoadArray();
 
 		for (IRow road : rdObject.getRoads()) {
 			RdObjectRoad objectRoad = (RdObjectRoad) road;
 
 			if (subObj == null) {
-				result.insertObject(objectRoad, ObjStatus.DELETE, objectRoad.getRoadPid());
+				result.insertObject(objectRoad, ObjStatus.DELETE,
+						objectRoad.getRoadPid());
 			} else if (!subObj.contains(objectRoad.getRoadPid())) {
-				result.insertObject(objectRoad, ObjStatus.DELETE, objectRoad.getRoadPid());
+				result.insertObject(objectRoad, ObjStatus.DELETE,
+						objectRoad.getRoadPid());
 			} else {
 				subObj.remove((Integer) objectRoad.getRoadPid());
 			}
@@ -161,7 +168,8 @@ public class Operation implements IOperation {
 
 				rdObjectRoad.setPid(rdObject.getPid());
 
-				result.insertObject(rdObjectRoad, ObjStatus.INSERT, rdObjectRoad.getRoadPid());
+				result.insertObject(rdObjectRoad, ObjStatus.INSERT,
+						rdObjectRoad.getRoadPid());
 
 				pidList.add(roadPid);
 			}
@@ -176,15 +184,22 @@ public class Operation implements IOperation {
 	 * @param content
 	 * @throws Exception
 	 */
-	private void updateObjectLink(Result result, JSONObject content) throws Exception {
+	private void updateObjectLink(Result result, JSONObject content)
+			throws Exception {
 		JSONArray subObj = this.command.getLinkArray();
+		
+		if(subObj == null)
+		{
+			throw new Exception("link参数不对");
+		}
 
 		for (IRow link : rdObject.getLinks()) {
 
 			RdObjectLink objLink = (RdObjectLink) link;
 
 			if (subObj == null || !subObj.contains(objLink.getLinkPid())) {
-				result.insertObject(objLink, ObjStatus.DELETE, objLink.getLinkPid());
+				result.insertObject(objLink, ObjStatus.DELETE,
+						objLink.getLinkPid());
 			} else {
 				subObj.remove((Integer) objLink.getLinkPid());
 			}
@@ -203,7 +218,8 @@ public class Operation implements IOperation {
 
 				objLink.setPid(rdObject.getPid());
 
-				result.insertObject(objLink, ObjStatus.INSERT, objLink.getLinkPid());
+				result.insertObject(objLink, ObjStatus.INSERT,
+						objLink.getLinkPid());
 
 				pidList.add(linkPid);
 			}
@@ -217,7 +233,8 @@ public class Operation implements IOperation {
 	 * @param content
 	 * @throws Exception
 	 */
-	private void updateObjectName(Result result, JSONObject content) throws Exception {
+	private void updateObjectName(Result result, JSONObject content)
+			throws Exception {
 		JSONArray names = this.command.getNameArray();
 
 		for (int i = 0; i < names.size(); i++) {
@@ -226,19 +243,25 @@ public class Operation implements IOperation {
 
 			if (nameJson.containsKey("objStatus")) {
 
-				if (!ObjStatus.INSERT.toString().equals(nameJson.getString("objStatus"))) {
+				if (!ObjStatus.INSERT.toString().equals(
+						nameJson.getString("objStatus"))) {
 
-					RdObjectName name = rdObject.nameMap.get(nameJson.getString("rowId"));
+					RdObjectName name = rdObject.nameMap.get(nameJson
+							.getString("rowId"));
 
-					if (ObjStatus.DELETE.toString().equals(nameJson.getString("objStatus"))) {
-						result.insertObject(name, ObjStatus.DELETE, rdObject.pid());
+					if (ObjStatus.DELETE.toString().equals(
+							nameJson.getString("objStatus"))) {
+						result.insertObject(name, ObjStatus.DELETE,
+								rdObject.pid());
 
-					} else if (ObjStatus.UPDATE.toString().equals(nameJson.getString("objStatus"))) {
+					} else if (ObjStatus.UPDATE.toString().equals(
+							nameJson.getString("objStatus"))) {
 
 						boolean isChanged = name.fillChangeFields(nameJson);
 
 						if (isChanged) {
-							result.insertObject(name, ObjStatus.UPDATE, rdObject.pid());
+							result.insertObject(name, ObjStatus.UPDATE,
+									rdObject.pid());
 						}
 					}
 				} else {
@@ -248,11 +271,12 @@ public class Operation implements IOperation {
 
 					name.setPid(rdObject.getPid());
 
-					name.setNameId(PidService.getInstance().applyAdAdminNamePid());
+					name.setNameId(PidUtil.getInstance().applyAdAdminNamePid());
 
 					name.setNameGroupid(rdObject.getNames().size() + 1);
 
-					result.insertObject(name, ObjStatus.INSERT, name.getNameId());
+					result.insertObject(name, ObjStatus.INSERT,
+							name.getNameId());
 
 				}
 			}
@@ -270,7 +294,8 @@ public class Operation implements IOperation {
 	 *            结果集
 	 * @throws Exception
 	 */
-	public void updateRdObjectForRdRoad(RdRoad road, Result result) throws Exception {
+	public void updateRdObjectForRdRoad(RdRoad road, Result result)
+			throws Exception {
 		List<IRow> roadLinks = road.getLinks();
 
 		List<Integer> linkPidList = new ArrayList<>();
@@ -283,8 +308,8 @@ public class Operation implements IOperation {
 
 		RdObjectSelector selector = new RdObjectSelector(conn);
 
-		Map<String, RdObject> rdObjectMap = selector.loadRdObjectByPidAndType(StringUtils.getInteStr(linkPidList),
-				ObjType.RDLINK, true);
+		Map<String, RdObject> rdObjectMap = selector.loadRdObjectByPidAndType(
+				StringUtils.getInteStr(linkPidList), ObjType.RDLINK, true);
 
 		for (Map.Entry<String, RdObject> entry : rdObjectMap.entrySet()) {
 			String tmpPids = entry.getKey();
@@ -303,7 +328,8 @@ public class Operation implements IOperation {
 
 				for (Integer tmpPid : tmpPidList) {
 					if (objLink.getLinkPid() == tmpPid) {
-						result.insertObject(objLink, ObjStatus.DELETE, objLink.getLinkPid());
+						result.insertObject(objLink, ObjStatus.DELETE,
+								objLink.getLinkPid());
 						updateRdObject = true;
 					}
 				}
@@ -328,7 +354,8 @@ public class Operation implements IOperation {
 
 					objRoad.setRoadPid(road.getPid());
 
-					result.insertObject(objRoad, ObjStatus.INSERT, objRoad.getRoadPid());
+					result.insertObject(objRoad, ObjStatus.INSERT,
+							objRoad.getRoadPid());
 				}
 			}
 		}
@@ -344,7 +371,8 @@ public class Operation implements IOperation {
 	 *            结果集
 	 * @throws Exception
 	 */
-	public void updateRdObjectForRdInter(RdInter inter, Result result) throws Exception {
+	public void updateRdObjectForRdInter(RdInter inter, Result result)
+			throws Exception {
 		List<IRow> interLinks = inter.getLinks();
 
 		List<Integer> linkPidList = new ArrayList<>();
@@ -357,8 +385,8 @@ public class Operation implements IOperation {
 
 		RdObjectSelector selector = new RdObjectSelector(conn);
 
-		Map<String, RdObject> rdObjectMap = selector.loadRdObjectByPidAndType(StringUtils.getInteStr(linkPidList),
-				ObjType.RDLINK, true);
+		Map<String, RdObject> rdObjectMap = selector.loadRdObjectByPidAndType(
+				StringUtils.getInteStr(linkPidList), ObjType.RDLINK, true);
 
 		for (Map.Entry<String, RdObject> entry : rdObjectMap.entrySet()) {
 			String tmpPids = entry.getKey();
@@ -377,7 +405,8 @@ public class Operation implements IOperation {
 
 				for (Integer tmpPid : tmpPidList) {
 					if (objLink.getLinkPid() == tmpPid) {
-						result.insertObject(objLink, ObjStatus.DELETE, objLink.getLinkPid());
+						result.insertObject(objLink, ObjStatus.DELETE,
+								objLink.getLinkPid());
 						updateRdObject = true;
 					}
 				}
@@ -402,7 +431,8 @@ public class Operation implements IOperation {
 
 					objRoad.setRoadPid(inter.getPid());
 
-					result.insertObject(objRoad, ObjStatus.INSERT, objRoad.getRoadPid());
+					result.insertObject(objRoad, ObjStatus.INSERT,
+							objRoad.getRoadPid());
 				}
 			}
 		}
@@ -419,12 +449,14 @@ public class Operation implements IOperation {
 	 *            结果集
 	 * @throws Exception
 	 */
-	public void breakRdObjectLink(RdLink oldLink, List<RdLink> newLinks, Result result) throws Exception {
+	public void breakRdObjectLink(RdLink oldLink, List<RdLink> newLinks,
+			Result result) throws Exception {
 		RdObjectSelector selector = new RdObjectSelector(conn);
 
 		String linkPid = String.valueOf(oldLink.getPid());
 
-		Map<String, RdObject> rdObjMap = selector.loadRdObjectByPidAndType(linkPid, ObjType.RDLINK, true);
+		Map<String, RdObject> rdObjMap = selector.loadRdObjectByPidAndType(
+				linkPid, ObjType.RDLINK, true);
 
 		RdObject rdObject = rdObjMap.get(linkPid);
 
@@ -436,7 +468,8 @@ public class Operation implements IOperation {
 				RdObjectLink objLink = (RdObjectLink) row;
 
 				if (objLink.getLinkPid() == oldLink.getPid()) {
-					result.insertObject(objLink, ObjStatus.DELETE, objLink.getLinkPid());
+					result.insertObject(objLink, ObjStatus.DELETE,
+							objLink.getLinkPid());
 				}
 			}
 
@@ -447,7 +480,8 @@ public class Operation implements IOperation {
 
 				objLink.setPid(rdObject.getPid());
 
-				result.insertObject(objLink, ObjStatus.INSERT, objLink.getLinkPid());
+				result.insertObject(objLink, ObjStatus.INSERT,
+						objLink.getLinkPid());
 			}
 		}
 	}

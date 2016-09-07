@@ -3,6 +3,8 @@ package com.navinfo.dataservice.engine.edit.utils.batch;
 import java.sql.Connection;
 import java.util.List;
 
+import org.apache.commons.collections.CollectionUtils;
+
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
@@ -106,6 +108,51 @@ public class ZoneIDBatchUtils extends BaseBatchUtils {
 			}
 		} else {
 
+		}
+	}
+
+	/**
+	 * 在线批处理删除ZoneFace内部的ZoneId
+	 * 
+	 * @param link
+	 *            ZoneFace内部的link
+	 * @param geometry
+	 *            修形后的geometry，新增时传入null
+	 * @param conn
+	 *            数据库连接
+	 * @param result
+	 *            结果集
+	 * @throws Exception
+	 */
+	public static void deleteZoneID(RdLink link, ZoneFace zoneFace, Connection conn, Result result) throws Exception {
+		Geometry linkGeometry = shrink(link.getGeometry());
+		RdLinkZone linkZone = null;
+		if (null == zoneFace)
+			return;
+		// 获取关联face的regionId
+		int faceRegionId = zoneFace.getRegionId();
+		Geometry faceGeometry = shrink(zoneFace.getGeometry());
+		// 判断link与zoneFace的关系
+		// link在zoneFace内部
+		if (isContainOrCover(linkGeometry, faceGeometry)) {
+			if (CollectionUtils.isNotEmpty(link.getZones())) {
+				// 修行时如果原有linkZone数据将原有regionId更新
+				for (IRow row : link.getZones()) {
+					linkZone = (RdLinkZone) row;
+					if (faceRegionId != linkZone.getRegionId()) {
+						result.insertObject(linkZone, ObjStatus.DELETE, linkZone.parentPKValue());
+					}
+				}
+			}
+			// link在zoneFace组成线上
+		} else if (GeoRelationUtils.Boundary(linkGeometry, faceGeometry)) {
+			// 不存在该regionId的linkZone数据时新增一条
+			for (IRow row : link.getZones()) {
+				linkZone = (RdLinkZone) row;
+				if (linkZone.getRegionId() == faceRegionId) {
+					result.insertObject(linkZone, ObjStatus.DELETE, linkZone.parentPKValue());
+				}
+			}
 		}
 	}
 

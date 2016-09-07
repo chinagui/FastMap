@@ -11,6 +11,7 @@ import java.util.Set;
 
 import org.json.JSONException;
 
+import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -20,7 +21,6 @@ import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneLink;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneLinkKind;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneLinkMesh;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneNode;
-import com.navinfo.dataservice.dao.pidservice.PidService;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.navinfo.navicommons.geo.computation.GeometryTypeName;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
@@ -67,7 +67,7 @@ public class ZoneLinkOperateUtils {
 	public static void addLink(Geometry g,int sNodePid, int eNodePid,Result result) throws Exception{
 		ZoneLink link = new ZoneLink();
 		Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(g);
-		link.setPid(PidService.getInstance().applyAdLinkPid());
+		link.setPid(PidUtil.getInstance().applyAdLinkPid());
 		Iterator<String> it = meshes.iterator();
 		while(it.hasNext()){
 			setLinkChildrenMesh(link,Integer.parseInt(it.next()));
@@ -89,7 +89,7 @@ public class ZoneLinkOperateUtils {
 	public static ZoneLink getAddLink(Geometry g,int sNodePid, int eNodePid,Result result) throws Exception{
 		ZoneLink link = new ZoneLink();
 		Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(g);
-		link.setPid(PidService.getInstance().applyAdLinkPid());
+		link.setPid(PidUtil.getInstance().applyAdLinkPid());
 		Iterator<String> it = meshes.iterator();
 		while(it.hasNext()){
 			setLinkChildrenMesh(link,Integer.parseInt(it.next()));
@@ -112,7 +112,7 @@ public class ZoneLinkOperateUtils {
 		ZoneLink link = new ZoneLink();
 		link.copy(sourcelink);
 		Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(g);
-		link.setPid(PidService.getInstance().applyAdLinkPid());
+		link.setPid(PidUtil.getInstance().applyAdLinkPid());
 		Iterator<String> it = meshes.iterator();
 		while(it.hasNext()){
 			setLinkChildrenMesh(link,Integer.parseInt(it.next()));

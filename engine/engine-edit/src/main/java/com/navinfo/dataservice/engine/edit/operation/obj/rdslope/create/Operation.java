@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -13,7 +14,7 @@ import com.navinfo.dataservice.dao.glm.iface.Result;
 
 import com.navinfo.dataservice.dao.glm.model.rd.slope.RdSlope;
 import com.navinfo.dataservice.dao.glm.model.rd.slope.RdSlopeVia;
-import com.navinfo.dataservice.dao.pidservice.PidService;
+
 
 /**
  * 新增坡度信息
@@ -43,7 +44,7 @@ public class Operation implements IOperation {
 	 */
 	private void createSlope(Result result) throws Exception {
 		RdSlope slope = new RdSlope();
-		slope.setPid(PidService.getInstance().applyRdSlopePid());
+		slope.setPid(PidUtil.getInstance().applyRdSlopePid());
 		slope.setNodePid(this.command.getInNodePid());
 		slope.setLinkPid(this.command.getOutLinkPid());
 		if (this.command.getSeriesLinkPids() != null) {

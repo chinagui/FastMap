@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -11,7 +12,7 @@ import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.lane.RdLaneTopoDetail;
 import com.navinfo.dataservice.dao.glm.model.rd.lane.RdLaneTopoVia;
-import com.navinfo.dataservice.dao.pidservice.PidService;
+
 
 /**
  * 车道联通批量操作
@@ -43,7 +44,7 @@ public class Operation implements IOperation {
 	private void createRdLaneTopos(Result result) throws Exception {
 		List<RdLaneTopoDetail>  details = this.command.getLaneToptInfos();
 		for(RdLaneTopoDetail detail:details){
-			detail.setPid(PidService.getInstance().applyRdLaneTopoPid());
+			detail.setPid(PidUtil.getInstance().applyRdLaneTopoPid());
 			for(IRow row :detail.getTopoVias()){
 				RdLaneTopoVia via = (RdLaneTopoVia)row;
 				via.setTopoId(detail.getPid());

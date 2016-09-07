@@ -15,7 +15,6 @@ import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.directroute.RdDirectroute;
 import com.navinfo.dataservice.dao.glm.model.rd.directroute.RdDirectrouteVia;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
-import com.navinfo.dataservice.dao.glm.model.rd.voiceguide.RdVoiceguideVia;
 import com.navinfo.dataservice.dao.glm.selector.rd.directroute.RdDirectrouteSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 
@@ -38,11 +37,7 @@ public class Operation implements IOperation {
 	@Override
 	public String run(Result result) throws Exception {
 
-		String msg = null;
-
-		msg = update(result);
-
-		return null;
+		return this.update(result);
 
 	}
 

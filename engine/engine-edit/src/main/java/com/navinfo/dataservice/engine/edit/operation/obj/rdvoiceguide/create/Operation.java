@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -11,7 +12,6 @@ import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.voiceguide.RdVoiceguide;
 import com.navinfo.dataservice.dao.glm.model.rd.voiceguide.RdVoiceguideDetail;
 import com.navinfo.dataservice.dao.glm.model.rd.voiceguide.RdVoiceguideVia;
-import com.navinfo.dataservice.dao.pidservice.PidService;
 import com.navinfo.dataservice.engine.edit.utils.CalLinkOperateUtils;
 
 public class Operation implements IOperation {
@@ -39,7 +39,7 @@ public class Operation implements IOperation {
 
 		RdVoiceguide voiceguide = new RdVoiceguide();
 
-		voiceguide.setPid(PidService.getInstance().applyRdVoiceguidePid());
+		voiceguide.setPid(PidUtil.getInstance().applyRdVoiceguidePid());
 
 		voiceguide.setInLinkPid(this.command.getInLinkPid());
 
@@ -54,7 +54,7 @@ public class Operation implements IOperation {
 
 			RdVoiceguideDetail detail = new RdVoiceguideDetail();
 
-			detail.setPid(PidService.getInstance().applyRdVoiceguideDetailPid());
+			detail.setPid(PidUtil.getInstance().applyRdVoiceguideDetailPid());
 			
 			detail.setOutLinkPid(outLinkPid);
 

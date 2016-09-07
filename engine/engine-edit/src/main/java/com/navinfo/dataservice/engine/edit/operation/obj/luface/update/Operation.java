@@ -1,11 +1,11 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.luface.update;
 
+import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.lu.LuFace;
 import com.navinfo.dataservice.dao.glm.model.lu.LuFaceName;
-import com.navinfo.dataservice.dao.pidservice.PidService;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -62,7 +62,7 @@ public class Operation implements IOperation {
 				} else {
 					LuFaceName name = new LuFaceName();
 					name.Unserialize(nameJson);
-					name.setPid(PidService.getInstance().applyLuFaceNamePid());
+					name.setPid(PidUtil.getInstance().applyLuFaceNamePid());
 					name.setFacePid(face.pid());
 					result.insertObject(name, ObjStatus.INSERT, face.pid());
 				}

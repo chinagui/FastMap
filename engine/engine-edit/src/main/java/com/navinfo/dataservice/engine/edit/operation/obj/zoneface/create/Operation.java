@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.alibaba.druid.util.StringUtils;
+import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.JtsGeometryFactory;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
@@ -17,15 +18,12 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
-import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneFace;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneFaceTopo;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneLink;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneLinkMesh;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneNode;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
-import com.navinfo.dataservice.dao.pidservice.PidService;
-import com.navinfo.dataservice.engine.edit.utils.AdLinkOperateUtils;
 import com.navinfo.dataservice.engine.edit.utils.NodeOperateUtils;
 import com.navinfo.dataservice.engine.edit.utils.ZoneLinkOperateUtils;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
@@ -148,10 +146,10 @@ public class Operation implements IOperation {
 						zoneLink.getGeometry(), 0.00001, 5);
 				mapLink.put(geometry, zoneLink);
 				
-				if(!mapNode.containsValue(geometry.getCoordinates()[0])){
+				if(!mapNode.containsKey(geometry.getCoordinates()[0])){
 						mapNode.put(geometry.getCoordinates()[0], zoneLink.getsNodePid());
 				}
-				if(!mapNode.containsValue(geometry.getCoordinates()[geometry.getCoordinates().length-1])){
+				if(!mapNode.containsKey(geometry.getCoordinates()[geometry.getCoordinates().length-1])){
 						mapNode.put(geometry.getCoordinates()[geometry.getCoordinates().length-1], zoneLink.geteNodePid());
 				}
 			}
@@ -434,7 +432,7 @@ public class Operation implements IOperation {
 	 */
 	private void createFace() throws Exception {
 		ZoneFace face = new ZoneFace();
-		face.setPid(PidService.getInstance().applyAdFacePid());
+		face.setPid(PidUtil.getInstance().applyAdFacePid());
 		result.setPrimaryPid(face.getPid());
 		this.face = face;
 	}

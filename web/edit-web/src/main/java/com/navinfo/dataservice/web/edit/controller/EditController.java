@@ -20,6 +20,7 @@ import com.navinfo.dataservice.api.job.iface.JobApi;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.exception.DataNotChangeException;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
@@ -291,7 +292,7 @@ public class EditController extends BaseController {
 
 			if (type.equals("rtic")) {
 
-				int code = PidService.getInstance().applyRticCode();
+				int code = PidUtil.getInstance().applyRticCode();
 
 				return new ModelAndView("jsonView", success(code));
 

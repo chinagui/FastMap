@@ -12,7 +12,6 @@ import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.slope.RdSlope;
 import com.navinfo.dataservice.dao.glm.model.rd.slope.RdSlopeVia;
-import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.slope.RdSlopeSelector;
 
 /**

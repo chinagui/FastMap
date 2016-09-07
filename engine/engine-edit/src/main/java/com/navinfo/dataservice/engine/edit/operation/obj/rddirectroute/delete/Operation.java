@@ -1,11 +1,10 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rddirectroute.delete;
 
 import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.HashMap;
+
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
+
 import java.util.Set;
 
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
@@ -15,9 +14,8 @@ import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.directroute.RdDirectroute;
 import com.navinfo.dataservice.dao.glm.model.rd.directroute.RdDirectrouteVia;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
-import com.navinfo.dataservice.dao.glm.model.rd.voiceguide.RdVoiceguideVia;
+
 import com.navinfo.dataservice.dao.glm.selector.rd.directroute.RdDirectrouteSelector;
-import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 
 public class Operation implements IOperation {
 

@@ -102,7 +102,7 @@ public class Operation implements IOperation {
 	 * @param result
 	 * @throws Exception
 	 */
-	public void updateRdCrossByModifyLinkDirect(RdLink updateLink, Result result) throws Exception {
+	public String updateRdCrossByModifyLinkDirect(RdLink updateLink, Result result) throws Exception {
 
 		RdTrafficsignalSelector selector = new RdTrafficsignalSelector(conn);
 
@@ -115,11 +115,11 @@ public class Operation implements IOperation {
 				int nodePid = rdTrafficsignal.getNodePid();
 				// 道路由双方向修改为单方向（且修改的方向为路口的退出方向）时，该link上的信号灯应删除。
 				if (updateLink.getDirect() == 1 && direct == 2 && updateLink.getsNodePid() == nodePid) {
-					throw new Exception("请注意，修改道路方向，可能需要对下列路口维护信号灯信息：" + rdTrafficsignal.getPid());
+					return "请注意，修改道路方向，可能需要对下列路口维护信号灯信息：" + rdTrafficsignal.getPid();
 				}
 				// 关联道路的方向为路口的进入方向，修改为路口的退出方向时，应删除该link上的信号灯。
 				else if (updateLink.getDirect() == 2 && direct == 3) {
-					throw new Exception("请注意，修改道路方向，可能需要对下列路口维护信号灯信息：" + rdTrafficsignal.getPid());
+					return "请注意，修改道路方向，可能需要对下列路口维护信号灯信息：" + rdTrafficsignal.getPid();
 				}
 			}
 		} else {
@@ -130,7 +130,7 @@ public class Operation implements IOperation {
 
 			if (CollectionUtils.isNotEmpty(rdTrafficsignals)) {
 				if (updateLink.getDirect() == 2 && (direct == 3 || direct == 1)) {
-					throw new Exception("请注意，修改道路方向，可能需要对下列路口LINK维护信号灯信息（LINK_PID）：" + updateLink.getPid());
+					return "请注意，修改道路方向，可能需要对下列路口LINK维护信号灯信息（LINK_PID）：" + updateLink.getPid();
 				}
 			}
 
@@ -141,9 +141,10 @@ public class Operation implements IOperation {
 
 			if (CollectionUtils.isNotEmpty(rdTrafficsignals2)) {
 				if (updateLink.getDirect() == 2 && (direct == 3 || direct == 1)) {
-					throw new Exception("请注意，修改道路方向，可能需要对下列路口LINK维护信号灯信息（LINK_PID）：" + updateLink.getPid());
+					return "请注意，修改道路方向，可能需要对下列路口LINK维护信号灯信息（LINK_PID）：" + updateLink.getPid();
 				}
 			}
 		}
+		return "";
 	}
 }

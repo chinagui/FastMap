@@ -1,10 +1,10 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdspeedbump.create;
 
+import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.speedbump.RdSpeedbump;
-import com.navinfo.dataservice.dao.pidservice.PidService;
 
 /**
  * @Title: Operation.java
@@ -24,7 +24,7 @@ public class Operation implements IOperation {
 	@Override
 	public String run(Result result) throws Exception {
 		RdSpeedbump speedbump = new RdSpeedbump();
-		speedbump.setPid(PidService.getInstance().applyRdSpeedbumpPid());
+		speedbump.setPid(PidUtil.getInstance().applyRdSpeedbumpPid());
 		speedbump.setLinkPid(this.command.getInLinkPid());
 		speedbump.setNodePid(this.command.getInNodePid());
 		result.insertObject(speedbump, ObjStatus.INSERT, speedbump.pid());

@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -15,7 +16,6 @@ import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkSpeedlimit;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
-import com.navinfo.dataservice.dao.pidservice.PidService;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.navinfo.navicommons.geo.computation.GeometryTypeName;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
@@ -156,7 +156,7 @@ public class RdLinkOperateUtils {
 		// 继承原有link信息
 		link.copy(sourceLink);
 		// 获取pid
-		link.setPid(PidService.getInstance().applyLinkPid());
+		link.setPid(PidUtil.getInstance().applyLinkPid());
 		// 计算Geometry
 		link.setGeometry(GeoTranslator.transform(link.getGeometry(), 100000, 0));
 		result.setPrimaryPid(link.getPid());
@@ -175,7 +175,7 @@ public class RdLinkOperateUtils {
 	public static IRow addLinkByNoResult(RdNode sNode, RdNode eNode, RdLink link, RdLink sourceLink) throws Exception {
 		// 继承原有link信息
 		Geometry geometry = link.getGeometry();
-		link.setPid(PidService.getInstance().applyLinkPid());
+		link.setPid(PidUtil.getInstance().applyLinkPid());
 		link.copy(sourceLink);
 		// 计算Geometry
 		link.setGeometry(GeoTranslator.transform(geometry, 100000, 0));
@@ -309,7 +309,7 @@ public class RdLinkOperateUtils {
 			link.setMeshId(Integer.parseInt(meshes.iterator().next()));
 		}
 
-		link.setPid(PidService.getInstance().applyLinkPid());
+		link.setPid(PidUtil.getInstance().applyLinkPid());
 
 		result.setPrimaryPid(link.getPid());
 

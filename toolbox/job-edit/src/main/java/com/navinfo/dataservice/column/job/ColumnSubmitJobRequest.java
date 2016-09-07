@@ -1,22 +1,20 @@
-package com.navinfo.dataservice.control.column.job;
+package com.navinfo.dataservice.column.job;
 
 import com.navinfo.dataservice.jobframework.exception.JobCreateException;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest;
 
-import net.sf.json.JSONArray;
-
 /**
  * 
  * @author wangdongbin
- * 描述：ColumnSaveJob请求参数的解析处理类
+ * 描述：ColumnSubmitJob请求参数的解析处理类
  *
  */
-public class ColumnSaveJobRequest extends AbstractJobRequest {
+public class ColumnSubmitJobRequest extends AbstractJobRequest {
 	
 	private int taskId;
 	private int userId;
-	private JSONArray data;
+	private String firstWorkItem;
 	private String secondWorkItem;
 
 	public int getTaskId() {
@@ -35,12 +33,12 @@ public class ColumnSaveJobRequest extends AbstractJobRequest {
 		this.userId = userId;
 	}
 
-	public JSONArray getData() {
-		return data;
+	public String getFirstWorkItem() {
+		return firstWorkItem;
 	}
 
-	public void setData(JSONArray data) {
-		this.data = data;
+	public void setFirstWorkItem(String firstWorkItem) {
+		this.firstWorkItem = firstWorkItem;
 	}
 
 	public String getSecondWorkItem() {

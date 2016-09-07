@@ -3,11 +3,11 @@ package com.navinfo.dataservice.impcore.deepinfo;
 import java.sql.Connection;
 import java.sql.Statement;
 
+import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiParking;
 import com.navinfo.dataservice.dao.glm.operator.BasicOperator;
-import com.navinfo.dataservice.dao.pidservice.PidService;
 import com.navinfo.dataservice.impcore.exception.DataErrorException;
 
 import net.sf.json.JSONObject;
@@ -30,7 +30,7 @@ public class ParkingImporter {
 
 		parking.setPoiPid(pid);
 
-		parking.setPid(PidService.getInstance().applyPoiParkingsId());
+		parking.setPid(PidUtil.getInstance().applyPoiParkingsId());
 
 		parking.setParkingType(JsonUtils.getString(parkings, "buildingType"));
 

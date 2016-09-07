@@ -3,13 +3,13 @@ package com.navinfo.dataservice.engine.edit.operation.obj.rdrestriction.update;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionCondition;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionDetail;
-import com.navinfo.dataservice.dao.pidservice.PidService;
 
 public class Operation implements IOperation {
 
@@ -32,16 +32,18 @@ public class Operation implements IOperation {
 		// 判断是否存在交限进入线
 		if (content.containsKey("objStatus")) {
 
-			if (ObjStatus.DELETE.toString().equals(content.getString("objStatus"))) {
+			if (ObjStatus.DELETE.toString().equals(
+					content.getString("objStatus"))) {
 				result.insertObject(restrict, ObjStatus.DELETE, restrict.pid());
-				
+
 				return null;
 			} else {
 
 				boolean isChanged = restrict.fillChangeFields(content);
 
 				if (isChanged) {
-					result.insertObject(restrict, ObjStatus.UPDATE, restrict.pid());
+					result.insertObject(restrict, ObjStatus.UPDATE,
+							restrict.pid());
 				}
 			}
 		}
@@ -55,50 +57,55 @@ public class Operation implements IOperation {
 
 				if (detailJson.containsKey("objStatus")) {
 
-					if (!ObjStatus.INSERT.toString()
-							.equals(detailJson.getString("objStatus"))) {
+					if (!ObjStatus.INSERT.toString().equals(
+							detailJson.getString("objStatus"))) {
 
 						RdRestrictionDetail detail = restrict.detailMap
 								.get(detailJson.getInt("pid"));
-						
-						if (detail == null){
-							throw new Exception("detailId="+detailJson.getInt("pid")+"的交限detail不存在");
+
+						if (detail == null) {
+							throw new Exception("detailId="
+									+ detailJson.getInt("pid") + "的交限detail不存在");
 						}
 
-						if (ObjStatus.DELETE.toString().equals(detailJson
-								.getString("objStatus"))) {
-							result.insertObject(detail, ObjStatus.DELETE, restrict.pid());
-							
+						if (ObjStatus.DELETE.toString().equals(
+								detailJson.getString("objStatus"))) {
+							result.insertObject(detail, ObjStatus.DELETE,
+									restrict.pid());
+
 							continue;
-						} else if (ObjStatus.UPDATE.toString().equals(detailJson
-								.getString("objStatus"))) {
+						} else if (ObjStatus.UPDATE.toString().equals(
+								detailJson.getString("objStatus"))) {
 
 							boolean isChanged = detail
 									.fillChangeFields(detailJson);
 
 							if (isChanged) {
-								result.insertObject(detail, ObjStatus.UPDATE, restrict.pid());
+								result.insertObject(detail, ObjStatus.UPDATE,
+										restrict.pid());
 							}
 						}
 					} else {
 						RdRestrictionDetail detail = new RdRestrictionDetail();
-						
+
 						detail.Unserialize(detailJson);
-						
-						detail.setPid(PidService.getInstance().applyRestrictionDetailPid());
-						
+
+						detail.setPid(PidUtil.getInstance()
+								.applyRestrictionDetailPid());
+
 						detail.setRestricPid(restrict.getPid());
-						
+
 						detail.setMesh(restrict.mesh());
-						
-						result.insertObject(detail, ObjStatus.INSERT, restrict.getPid());
-						
+
+						result.insertObject(detail, ObjStatus.INSERT,
+								restrict.getPid());
+
 						continue;
 					}
 				}
 
 				if (detailJson.containsKey("conditions")) {
-					
+
 					int detailId = detailJson.getInt("pid");
 
 					JSONArray conds = detailJson.getJSONArray("conditions");
@@ -111,42 +118,48 @@ public class Operation implements IOperation {
 									"传入请求内容格式错误，conditions不存在操作类型objType");
 						}
 
-						if (!ObjStatus.INSERT.toString()
-								.equals(cond.getString("objStatus"))) {
+						if (!ObjStatus.INSERT.toString().equals(
+								cond.getString("objStatus"))) {
 
-							RdRestrictionCondition condition = restrict.conditionMap.get(cond.getString("rowId"));
-							
-							if (condition == null){
-								throw new Exception("rowId="+cond.getString("rowId")+"的交限condition不存在");
+							RdRestrictionCondition condition = restrict.conditionMap
+									.get(cond.getString("rowId"));
+
+							if (condition == null) {
+								throw new Exception("rowId="
+										+ cond.getString("rowId")
+										+ "的交限condition不存在");
 							}
 
-							if (ObjStatus.DELETE.toString().equals(cond
-									.getString("objStatus"))) {
-								result.insertObject(condition, ObjStatus.DELETE, restrict.pid());
-								
-							} else if (ObjStatus.UPDATE.toString().equals(cond
-									.getString("objStatus"))) {
+							if (ObjStatus.DELETE.toString().equals(
+									cond.getString("objStatus"))) {
+								result.insertObject(condition,
+										ObjStatus.DELETE, restrict.pid());
+
+							} else if (ObjStatus.UPDATE.toString().equals(
+									cond.getString("objStatus"))) {
 
 								boolean isChanged = condition
 										.fillChangeFields(cond);
 
 								if (isChanged) {
-									result.insertObject(condition, ObjStatus.UPDATE, restrict.pid());
+									result.insertObject(condition,
+											ObjStatus.UPDATE, restrict.pid());
 								}
 							}
 						} else {
 							RdRestrictionCondition condition = new RdRestrictionCondition();
-							
+
 							condition.Unserialize(cond);
-							
+
 							condition.setDetailId(detailId);
-							
+
 							condition.setMesh(restrict.mesh());
-							
-							result.insertObject(condition, ObjStatus.INSERT, restrict.pid());
-							
+
+							result.insertObject(condition, ObjStatus.INSERT,
+									restrict.pid());
+
 						}
-					
+
 					}
 
 				}

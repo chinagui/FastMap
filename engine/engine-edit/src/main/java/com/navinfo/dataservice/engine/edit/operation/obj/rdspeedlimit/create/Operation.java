@@ -4,13 +4,13 @@ import java.sql.Connection;
 
 import net.sf.json.JSONObject;
 
+import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.speedlimit.RdSpeedlimit;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
-import com.navinfo.dataservice.dao.pidservice.PidService;
 
 public class Operation implements IOperation {
 
@@ -37,7 +37,7 @@ public class Operation implements IOperation {
 		
 		limit.setMeshId(meshId);
 		
-		limit.setPid(PidService.getInstance().applySpeedLimitPid());
+		limit.setPid(PidUtil.getInstance().applySpeedLimitPid());
 		
 		result.setPrimaryPid(limit.getPid());
 		

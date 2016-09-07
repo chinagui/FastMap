@@ -12,6 +12,7 @@ import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
 
+import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.geom.AngleCalculator;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -22,7 +23,6 @@ import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionDetail;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionVia;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
-import com.navinfo.dataservice.dao.pidservice.PidService;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.LineSegment;
 
@@ -62,13 +62,14 @@ public class Operation implements IOperation {
 	@Override
 	public String run(Result result) throws Exception {
 
-		int meshId = new RdLinkSelector(conn).loadById(command.getInLinkPid(), true).mesh();
+		int meshId = new RdLinkSelector(conn).loadById(command.getInLinkPid(),
+				true).mesh();
 
 		RdRestriction restrict = new RdRestriction();
 
 		restrict.setMesh(meshId);
 
-		restrict.setPid(PidService.getInstance().applyRestrictionPid());
+		restrict.setPid(PidUtil.getInstance().applyRestrictionPid());
 
 		result.setPrimaryPid(restrict.getPid());
 
@@ -81,25 +82,24 @@ public class Operation implements IOperation {
 		restrict.setNodePid(inNodePid);
 
 		List<Integer> outLinkPids = command.getOutLinkPids();
-		
+
 		boolean hasSelectOutLink = true;
 
 		if (CollectionUtils.isEmpty(outLinkPids)) {
-			
+
 			hasSelectOutLink = false;
-			
+
 			// 计算退出线，只算直接和进入点联通的线，不算经过线
 			outLinkPids = calOutLinkPids();
 		}
-		//如果和进入点没有联通的线，提示未计算出退出线，暂时不计算经过线
-		if(CollectionUtils.isEmpty(outLinkPids))
-		{
+		// 如果和进入点没有联通的线，提示未计算出退出线，暂时不计算经过线
+		if (CollectionUtils.isEmpty(outLinkPids)) {
 			throw new Exception("未计算出退出线，请手动指定退出线");
-		}	
-		//计算经过线
+		}
+		// 计算经过线
 		this.calViaLinks(inLinkPid, inNodePid, outLinkPids);
 
-		//检查
+		// 检查
 		Set<Integer> pids = new HashSet<Integer>();
 		pids.add(command.getInLinkPid());
 		for (Integer pid : outLinkPids) {
@@ -129,20 +129,19 @@ public class Operation implements IOperation {
 				infoList.add(Integer.parseInt(info));
 			}
 		}
-		
-		//删除某一交限方向的多个退出link，选取正北或者正南方向夹角最小的
-		if(CollectionUtils.isNotEmpty(outLinkPids) && !hasSelectOutLink)
-		{
+
+		// 删除某一交限方向的多个退出link，选取正北或者正南方向夹角最小的
+		if (CollectionUtils.isNotEmpty(outLinkPids) && !hasSelectOutLink) {
 			deleteMultLinkOnSameDir(outLinkPids, infoList);
 		}
-		
-		//根据方向确定完真实的退出线，没有提示手动指定
-		if(CollectionUtils.isEmpty(outLinkPids))
-		{
+
+		// 根据方向确定完真实的退出线，没有提示手动指定
+		if (CollectionUtils.isEmpty(outLinkPids)) {
 			throw new Exception("未计算出退出线，请手动指定退出线");
 		}
-		
-		details.addAll(createDetail(restrict, outLinkPids, infoList,infArray,hasSelectOutLink));
+
+		details.addAll(createDetail(restrict, outLinkPids, infoList, infArray,
+				hasSelectOutLink));
 
 		restrict.setDetails(details);
 
@@ -155,64 +154,60 @@ public class Operation implements IOperation {
 
 	/**
 	 * 删除同一交限方向的重复线，只留下正北或者正南夹角最小的线
-	 * @param outLinkPids 退出线
-	 * @param infoList 交限信息
+	 * 
+	 * @param outLinkPids
+	 *            退出线
+	 * @param infoList
+	 *            交限信息
 	 */
-	private void deleteMultLinkOnSameDir(List<Integer> outLinkPids, List<Integer> infoList) {
-		
-		//map结构：外层key：restricInfo 内层Map：内层key：angle，内存value outLinkPid
-		Map<Integer,Map<Double,Integer>> resAngleLinkMap = new HashMap<>();
-		
+	private void deleteMultLinkOnSameDir(List<Integer> outLinkPids,
+			List<Integer> infoList) {
+
+		// map结构：外层key：restricInfo 内层Map：内层key：angle，内存value outLinkPid
+		Map<Integer, Map<Double, Integer>> resAngleLinkMap = new HashMap<>();
+
 		List<Integer> resultOutLinkPids = new ArrayList<>();
-		
+
 		resultOutLinkPids.addAll(outLinkPids);
-		
-		for(Integer outPid : resultOutLinkPids)
-		{
+
+		for (Integer outPid : resultOutLinkPids) {
 			LineSegment outLinkSegment = outLinkSegmentMap.get(outPid);
-			
-			if(outLinkSegment != null)
-			{
-				//获取线的夹角
-				double angle = AngleCalculator.getAngle(inLinkSegment, outLinkSegment);
-				//计算交限信息
+
+			if (outLinkSegment != null) {
+				// 获取线的夹角
+				double angle = AngleCalculator.getAngle(inLinkSegment,
+						outLinkSegment);
+				// 计算交限信息
 				int restricInfo = this.calRestricInfo(angle);
-				
-				if(infoList.contains(restricInfo))
-				{
-					//map中只保存夹角最小的交和对应的退出线
-					Map<Double,Integer> angleMap = resAngleLinkMap.get(restricInfo);
-					if(angleMap == null)
-					{
-						Map<Double,Integer> angleLinkMap = new HashMap<>();
-						
+
+				if (infoList.contains(restricInfo)) {
+					// map中只保存夹角最小的交和对应的退出线
+					Map<Double, Integer> angleMap = resAngleLinkMap
+							.get(restricInfo);
+					if (angleMap == null) {
+						Map<Double, Integer> angleLinkMap = new HashMap<>();
+
 						angleLinkMap.put(angle, outPid);
-						
+
 						resAngleLinkMap.put(restricInfo, angleLinkMap);
-					}
-					else
-					{
+					} else {
 						double tmpAngle = angleMap.keySet().iterator().next();
-						
-						if(angle >= tmpAngle)
-						{
+
+						if (angle >= tmpAngle) {
 							outLinkPids.remove(outLinkPids.indexOf(outPid));
+						} else if (angle < tmpAngle) {
+							angleMap.put(angle, angleMap.values().iterator()
+									.next());
 						}
-						else if(angle < tmpAngle)
-						{
-							angleMap.put(angle, angleMap.values().iterator().next());
-						}
-						
+
 					}
-					
-				}
-				else
-				{
-					//线不在交限的方向内的删除
+
+				} else {
+					// 线不在交限的方向内的删除
 					outLinkPids.remove(outLinkPids.indexOf(outPid));
 				}
 			}
-			
+
 		}
 	}
 
@@ -226,16 +221,17 @@ public class Operation implements IOperation {
 
 		List<Integer> outLinkList = new ArrayList<>();
 		try {
-			List<RdLink> iRows = selector.loadByNodePid(command.getNodePid(), false);
+			List<RdLink> iRows = selector.loadByNodePid(command.getNodePid(),
+					false);
 
 			if (CollectionUtils.isNotEmpty(iRows)) {
 				for (RdLink link : iRows) {
 					outLinkList.add(link.getPid());
 				}
-				//剔除进入线，防止进入线和退出线是一条线
-				if(outLinkList.contains(command.getInLinkPid()))
-				{
-					outLinkList.remove(outLinkList.indexOf(command.getInLinkPid()));
+				// 剔除进入线，防止进入线和退出线是一条线
+				if (outLinkList.contains(command.getInLinkPid())) {
+					outLinkList.remove(outLinkList.indexOf(command
+							.getInLinkPid()));
 				}
 			}
 		} catch (Exception e) {
@@ -251,8 +247,8 @@ public class Operation implements IOperation {
 	 * @param outLinkPids
 	 * @throws Exception
 	 */
-	private void calViaLinks(int inLinkPid, int nodePid, List<Integer> outLinkPids)
-			throws Exception {
+	private void calViaLinks(int inLinkPid, int nodePid,
+			List<Integer> outLinkPids) throws Exception {
 
 		outLinkSegmentMap = new HashMap<Integer, LineSegment>();
 
@@ -398,54 +394,58 @@ public class Operation implements IOperation {
 	 * @param restrict
 	 * @param outLinkPids
 	 * @param infoList
-	 * @param infArray 
-	 * @param hasSelectOutLink 
+	 * @param infArray
+	 * @param hasSelectOutLink
 	 * @return
 	 * @throws Exception
 	 */
-	public List<RdRestrictionDetail> createDetail(RdRestriction restrict, List<Integer> outLinkPids,
-			List<Integer> infoList, String[] infArray, boolean hasSelectOutLink) throws Exception {
+	public List<RdRestrictionDetail> createDetail(RdRestriction restrict,
+			List<Integer> outLinkPids, List<Integer> infoList,
+			String[] infArray, boolean hasSelectOutLink) throws Exception {
 
 		List<RdRestrictionDetail> details = new ArrayList<>();
 
-		for (int i=0;i<outLinkPids.size();i++) {
-			
+		for (int i = 0; i < outLinkPids.size(); i++) {
+
 			int outLinkPid = outLinkPids.get(i);
-					
+
 			RdRestrictionDetail detail = new RdRestrictionDetail();
 
 			detail.setOutLinkPid(outLinkPid);
 
-			LineSegment outLinkSegment = outLinkSegmentMap.get(detail.getOutLinkPid());
+			LineSegment outLinkSegment = outLinkSegmentMap.get(detail
+					.getOutLinkPid());
 
-			double angle = AngleCalculator.getAngle(inLinkSegment, outLinkSegment);
+			double angle = AngleCalculator.getAngle(inLinkSegment,
+					outLinkSegment);
 
 			int restricInfo = this.calRestricInfo(angle);
-			
-			if(hasSelectOutLink)
-			{
+
+			if (hasSelectOutLink) {
 				detail.setMesh(restrict.mesh());
 
-				detail.setPid(PidService.getInstance().applyRestrictionDetailPid());
+				detail.setPid(PidUtil.getInstance().applyRestrictionDetailPid());
 
 				detail.setRestricPid(restrict.getPid());
-				
-				if(!infArray[i].contains("["))
-				{
+
+				if (!infArray[i].contains("[")) {
 					detail.setFlag(1);
 				}
-				
+
 				detail.setRestricInfo(infoList.get(i));
 
-				detail.setRelationshipType(relationTypeMap.get(detail.getOutLinkPid()));
+				detail.setRelationshipType(relationTypeMap.get(detail
+						.getOutLinkPid()));
 
 				if (detail.getRelationshipType() == 1) {
 					check.checkGLM26017(conn, command.getNodePid());
 
-					check.checkGLM08033(conn, command.getInLinkPid(), outLinkPid);
+					check.checkGLM08033(conn, command.getInLinkPid(),
+							outLinkPid);
 				}
 
-				List<Integer> viaLinkPids = viaLinkPidMap.get(detail.getOutLinkPid());
+				List<Integer> viaLinkPids = viaLinkPidMap.get(detail
+						.getOutLinkPid());
 
 				int seqNum = 1;
 
@@ -473,27 +473,29 @@ public class Operation implements IOperation {
 				detail.setVias(vias);
 
 				details.add(detail);
-			}
-			else
-			{
+			} else {
 				if (infoList.contains(restricInfo)) {
 					detail.setMesh(restrict.mesh());
 
-					detail.setPid(PidService.getInstance().applyRestrictionDetailPid());
+					detail.setPid(PidUtil.getInstance()
+							.applyRestrictionDetailPid());
 
 					detail.setRestricPid(restrict.getPid());
 
 					detail.setRestricInfo(restricInfo);
 
-					detail.setRelationshipType(relationTypeMap.get(detail.getOutLinkPid()));
+					detail.setRelationshipType(relationTypeMap.get(detail
+							.getOutLinkPid()));
 
 					if (detail.getRelationshipType() == 1) {
 						check.checkGLM26017(conn, command.getNodePid());
 
-						check.checkGLM08033(conn, command.getInLinkPid(), outLinkPid);
+						check.checkGLM08033(conn, command.getInLinkPid(),
+								outLinkPid);
 					}
 
-					List<Integer> viaLinkPids = viaLinkPidMap.get(detail.getOutLinkPid());
+					List<Integer> viaLinkPids = viaLinkPidMap.get(detail
+							.getOutLinkPid());
 
 					int seqNum = 1;
 

@@ -34,13 +34,13 @@ public class PidService {
 	 */
 	private static PidService pidService = null;
 
-	public synchronized static PidService getInstance() throws Exception {
+/*	public synchronized static PidService getInstance() throws Exception {
 		if (pidService == null) {
 			pidService = new PidService();
 		}
 		return pidService;
 	}
-
+*/
 	/**
 	 * 申請link_pid
 	 */

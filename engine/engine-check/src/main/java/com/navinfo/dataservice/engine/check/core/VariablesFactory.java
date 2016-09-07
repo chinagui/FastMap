@@ -13,6 +13,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionDetail;
 import com.navinfo.dataservice.dao.glm.model.rd.slope.RdSlope;
 import com.navinfo.dataservice.dao.glm.model.rd.tollgate.RdTollgate;
+import com.navinfo.dataservice.dao.glm.model.rd.trafficsignal.RdTrafficsignal;
 import com.navinfo.dataservice.dao.glm.model.rd.voiceguide.RdVoiceguide;
 import com.navinfo.dataservice.dao.glm.model.rd.warninginfo.RdWarninginfo;
 
@@ -51,8 +52,8 @@ public class VariablesFactory {
 			rdNodeSet.add(String.valueOf(((RdWarninginfo) data).getNodePid()));}
 		if(data instanceof RdDirectroute){
 			rdNodeSet.add(String.valueOf(((RdDirectroute) data).getNodePid()));}
-		
-		
+		if(data instanceof RdTrafficsignal){
+			rdNodeSet.add(String.valueOf(((RdTrafficsignal) data).getNodePid()));}
 		return rdNodeSet;
 	}
 	/**

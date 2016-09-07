@@ -13,12 +13,9 @@ import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
-import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneLink;
-import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneNode;
 import com.navinfo.dataservice.dao.glm.model.lu.LuLink;
 import com.navinfo.dataservice.dao.glm.model.lu.LuLinkKind;
-import com.navinfo.dataservice.dao.glm.model.lu.LuNode;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameLink;
 import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameLinkPart;
@@ -149,7 +146,7 @@ public class Operation implements IOperation {
 
 		for (RdSameLinkPart part : linkParts) {
 
-			if (linkTableName == part.getTableName()
+			if (linkTableName.equals(part.getTableName())
 					&& repairLinkPid == part.getLinkPid()) {
 				continue;
 			}

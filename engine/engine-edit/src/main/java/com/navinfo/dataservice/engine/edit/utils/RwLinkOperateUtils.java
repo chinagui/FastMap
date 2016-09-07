@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -13,7 +14,6 @@ import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLink;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwNode;
-import com.navinfo.dataservice.dao.pidservice.PidService;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.navinfo.navicommons.geo.computation.GeometryTypeName;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
@@ -47,7 +47,7 @@ public class RwLinkOperateUtils {
 			link.setMesh(Integer.parseInt(meshes.iterator().next()));
 		}
 		
-		link.setPid(PidService.getInstance().applyRwLinkPid());
+		link.setPid(PidUtil.getInstance().applyRwLinkPid());
 
 		result.setPrimaryPid(link.getPid());
 
@@ -225,7 +225,7 @@ public class RwLinkOperateUtils {
 		RwLink link = new RwLink();
 		link.copy(sourcelink);
 		Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(g);
-		link.setPid(PidService.getInstance().applyRwLinkPid());
+		link.setPid(PidUtil.getInstance().applyRwLinkPid());
 		if(meshes.size()>1)
 		{
 			throw new Exception("打断生成新RwLink失败：对应多个图幅");
@@ -333,7 +333,7 @@ public class RwLinkOperateUtils {
 	public static RwLink getAddLink(Geometry g,int sNodePid, int eNodePid,Result result) throws Exception{
 		RwLink link = new RwLink();
 		
-		link.setPid(PidService.getInstance().applyRwLinkPid());
+		link.setPid(PidUtil.getInstance().applyRwLinkPid());
 		
 		double linkLength = GeometryUtils.getLinkLength(g);
 		

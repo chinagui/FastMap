@@ -13,4 +13,5 @@ public enum OperType {
 	MOVE,
 	UPDOWNDEPART,
 	BATCH,
+	ONLINEBATCH;
 }

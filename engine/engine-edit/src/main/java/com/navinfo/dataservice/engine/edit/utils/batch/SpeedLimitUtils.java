@@ -263,7 +263,7 @@ public class SpeedLimitUtils {
 		for (Integer speed : speedLimit) {
 			if (0 == speed)
 				continue;
-			for (IRow row : rdLink.getLimits()) {
+			for (IRow row : rdLink.getSpeedlimits()) {
 				RdLinkSpeedlimit limit = (RdLinkSpeedlimit) row;
 				if (0 == limit.getSpeedType()) {
 					if (0 == speedLimit[0]) {

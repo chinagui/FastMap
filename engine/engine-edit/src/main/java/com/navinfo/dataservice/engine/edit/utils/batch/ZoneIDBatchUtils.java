@@ -155,6 +155,80 @@ public class ZoneIDBatchUtils extends BaseBatchUtils {
 			}
 		}
 	}
+	
+	/**
+	 * 在线批处理删除ZoneFace内部的ZoneId
+	 * 
+	 * @param link
+	 *            ZoneFace内部的link
+	 * @param geometry
+	 *            修形后的geometry，新增时传入null
+	 * @param conn
+	 *            数据库连接
+	 * @param result
+	 *            结果集
+	 * @throws Exception
+	 */
+	public static void setZoneID(RdLink link, ZoneFace zoneFace, Connection conn, Result result) throws Exception {
+		Geometry linkGeometry = shrink(link.getGeometry());
+		RdLinkZone linkZone = null;
+		if (null == zoneFace)
+			return;
+		// 获取关联face的regionId
+		int faceRegionId = zoneFace.getRegionId();
+		Geometry faceGeometry = shrink(zoneFace.getGeometry());
+		// 判断link与zoneFace的关系
+		// link在zoneFace内部
+		if (isContainOrCover(linkGeometry, faceGeometry)) {
+			// 新增或原link没有linkZone子数据时直接添加新的linkZone
+			if (link.getZones().isEmpty()) {
+				linkZone = createLinkZone(link, faceRegionId, 1);
+				result.insertObject(linkZone, ObjStatus.INSERT, linkZone.parentPKValue());
+			} else {
+				// 修行时如果原有linkZone数据将原有regionId更新
+				for (IRow row : link.getZones()) {
+					linkZone = (RdLinkZone) row;
+					if (faceRegionId != linkZone.getRegionId()) {
+						linkZone.changedFields().put("regionId", faceRegionId);
+						result.insertObject(linkZone, ObjStatus.UPDATE, linkZone.parentPKValue());
+					}
+				}
+			}
+			// link在zoneFace组成线上
+		} else if (GeoRelationUtils.Boundary(linkGeometry, faceGeometry)) {
+			// link在zoneFace的右边
+			if (GeoRelationUtils.IsLinkOnLeftOfRing(linkGeometry, faceGeometry)) {
+				// 不存在该regionId的linkZone数据时新增一条
+				boolean isCreate = true;
+				for (IRow row : link.getZones()) {
+					linkZone = (RdLinkZone) row;
+					if (linkZone.getRegionId() == faceRegionId && linkZone.getSide() == 1) {
+						isCreate = false;
+					}
+				}
+				if (isCreate) {
+					linkZone = createLinkZone(link, faceRegionId, 1);
+					result.insertObject(linkZone, ObjStatus.INSERT, linkZone.parentPKValue());
+				}
+			} else {
+				// link在zoneFace的左边
+				// 不存在该regionId的linkZone数据时新增一条
+				boolean isCreate = true;
+				for (IRow row : link.getZones()) {
+					linkZone = (RdLinkZone) row;
+					if (linkZone.getRegionId() != faceRegionId && linkZone.getSide() == 0) {
+						isCreate = false;
+					}
+				}
+				if (isCreate) {
+					linkZone = createLinkZone(link, faceRegionId, 0);
+					result.insertObject(linkZone, ObjStatus.INSERT, linkZone.parentPKValue());
+				}
+			}
+		} else {
+
+		}
+	}
 
 	// 根据linkGeometry获取相关联的ZoneFace，没有时返回Null
 	private static ZoneFace loadZoneFace(Connection conn, Geometry linkGeometry) throws Exception {

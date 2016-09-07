@@ -140,7 +140,7 @@ public class Operation implements IOperation {
 
 		if (updateJson.containsKey("mainType")) {
 			String mainType = updateJson.getString("mainType");
-			if (mainType == ObjType.LUNODE.toString()) {
+			if (mainType.equals(ObjType.LUNODE.toString())) {
 				// 同一点关系
 				com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create.Operation sameNodeOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create.Operation(
 						null, this.conn);

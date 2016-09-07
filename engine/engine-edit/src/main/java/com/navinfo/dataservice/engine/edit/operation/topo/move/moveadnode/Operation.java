@@ -141,7 +141,7 @@ public class Operation implements IOperation {
 		{
 			String mainType = updateJson.getString("mainType");
 			
-			if(mainType == ObjType.ADNODE.toString())
+			if(mainType.equals(ObjType.ADNODE.toString()))
 			{
 				com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create.Operation sameNodeOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create.Operation(
 						null, this.conn);

@@ -544,4 +544,5 @@ public class PidUtil {
 	public int applySamepoiPid() throws Exception {
 		return applyPid("IX_SAMEPOI");
 	}
+
 }

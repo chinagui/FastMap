@@ -12,7 +12,7 @@
 	<SYS.dataSource.maxIdle>10</SYS.dataSource.maxIdle>
 	<SYS.dataSource.minIdle>2</SYS.dataSource.minIdle>
 	<SYS.dataSource.maxWait>1000</SYS.dataSource.maxWait>
-	<datasource.sql.type>dbcp</datasource.sql.type>
+	<datasource.sql.type>druid</datasource.sql.type>
 	<datasource.sql.stat.enable>true</datasource.sql.stat.enable>
 
 </configMap>

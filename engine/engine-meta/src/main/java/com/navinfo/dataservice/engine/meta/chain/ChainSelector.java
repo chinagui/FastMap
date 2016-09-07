@@ -4,8 +4,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -176,7 +174,7 @@ public class ChainSelector {
 	 * @return
 	 * @throws Exception
 	 */
-	public Map<String, String> getChainMap() throws Exception{
+	public JSONObject getChainMap() throws Exception{
 		
 		String sql = "SELECT distinct chain_code,chain_name FROM SC_POINT_CHAIN_CODE";
 		
@@ -184,7 +182,7 @@ public class ChainSelector {
 		
 		PreparedStatement pstmt = null;
 		
-		Map<String,String> chainMap = new HashMap<String,String>();
+		JSONObject chainMap = new JSONObject();
 		
 		try {
 			pstmt = conn.prepareStatement(sql);

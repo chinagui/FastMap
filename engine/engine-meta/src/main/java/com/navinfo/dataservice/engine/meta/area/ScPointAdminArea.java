@@ -3,20 +3,18 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.log4j.Logger;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 /**
  * 区域信息查询
  * @author zhaokk
@@ -217,7 +215,7 @@ public class ScPointAdminArea {
 	}
 	
 	
-	public Map<String, String> getAdminMap() throws Exception {
+	public JSONObject getAdminMap() throws Exception {
 		
 		PreparedStatement pstmt = null;
 
@@ -225,7 +223,7 @@ public class ScPointAdminArea {
 		
 		String sql = "select distinct adminareacode,whole from SC_POINT_ADMINAREA";
 		
-		Map<String,String> adminMap = new HashMap<String,String>();
+		JSONObject adminMap = new JSONObject();
 		
 		try {
 			

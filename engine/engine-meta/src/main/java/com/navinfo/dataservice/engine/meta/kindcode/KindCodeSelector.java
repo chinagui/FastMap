@@ -4,8 +4,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -346,7 +344,7 @@ public class KindCodeSelector {
 		}
 	}
 	
-	public Map<String,String> getKindCodeMap() throws Exception {
+	public JSONObject getKindCodeMap() throws Exception {
 		
 		String sql = "select distinct kind_code,kind_name from SC_POINT_POICODE_NEW";
 		
@@ -354,7 +352,7 @@ public class KindCodeSelector {
 		
 		PreparedStatement pstmt = null;
 		
-		Map<String,String> kindCodeMap = new HashMap<String,String>();
+		JSONObject kindCodeMap = new JSONObject();
 		
 		try {
 			pstmt = conn.prepareStatement(sql);

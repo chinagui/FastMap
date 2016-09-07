@@ -116,13 +116,14 @@ public class MetadataApiImpl implements MetadataApi {
 			result.put("navicovpy", getNavicovpyMap(conn));
 			result.put("engshort", getEngshortMap(conn));
 			
+			return result;
 		} catch (Exception e) {
 			throw e;
 		} finally {
 			DbUtils.closeQuietly(conn);
 		}
 		
-		return null;
+		
 	}
 
 

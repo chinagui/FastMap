@@ -232,9 +232,9 @@ public class Operation implements IOperation {
 		// 车道限速
 		if (jsonLaneInfo.containsKey("")) {
 		}
-		if (jsonLaneInfo.containsKey("contditions")) {
+		if (jsonLaneInfo.containsKey("conditions")) {
 			List<IRow> conditionRows = new ArrayList<IRow>();
-			for (int i = 0; i < jsonLaneInfo.getJSONArray("contditions").size(); i++) {
+			for (int i = 0; i < jsonLaneInfo.getJSONArray("conditions").size(); i++) {
 				JSONObject conditionObject = jsonLaneInfo.getJSONArray(
 						"contditions").getJSONObject(i);
 				RdLaneCondition condition = new RdLaneCondition();

@@ -17,6 +17,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionDetail;
 import com.navinfo.dataservice.dao.glm.model.rd.slope.RdSlope;
 import com.navinfo.dataservice.dao.glm.model.rd.tollgate.RdTollgate;
+import com.navinfo.dataservice.dao.glm.model.rd.tollgate.RdTollgateName;
 import com.navinfo.dataservice.dao.glm.model.rd.trafficsignal.RdTrafficsignal;
 import com.navinfo.dataservice.dao.glm.model.rd.voiceguide.RdVoiceguide;
 import com.navinfo.dataservice.dao.glm.model.rd.warninginfo.RdWarninginfo;
@@ -155,6 +156,10 @@ public class VariablesFactory {
 		if(data instanceof RdTollgate){
 			RdTollgate rdTollgate=(RdTollgate) data;
 			rdLinkSet.add(String.valueOf(rdTollgate.getPid()));}
+		
+		if(data instanceof RdTollgateName){
+			RdTollgateName rdTollgateName=(RdTollgateName) data;
+			rdLinkSet.add(String.valueOf(rdTollgateName.getPid()));}
 		return rdLinkSet;
 	}
 	/**

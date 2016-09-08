@@ -4,6 +4,8 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.sf.json.JSONArray;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -38,6 +40,21 @@ public class RdLaneTopoTest extends InitApplication {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+	
+	
+	@Test
+	public void testLoadBatchRdLane() throws Exception {
+		Connection conn= DBConnector.getInstance().getConnectionById(17);
+		RdLaneSelector selector = new RdLaneSelector(conn);
+		List<Integer> linkPids = new ArrayList<Integer>();
+		linkPids.add(85586670);
+		linkPids.add(85586673);
+		
+		JSONArray arrays = selector.loadByLinks(linkPids,false);
+		System.out.println(arrays);
+		conn.close();
 	}
 
 }

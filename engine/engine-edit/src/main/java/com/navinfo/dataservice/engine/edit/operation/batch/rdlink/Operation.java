@@ -145,11 +145,8 @@ public class Operation implements IOperation {
 		for (RdLink link : links) {
 
 			if (CollectionUtils.isNotEmpty(link.getZones())) {
-
-				continue;
+				ZoneIDBatchUtils.deleteZoneID(link, zoneFace, conn, result);
 			}
-
-			ZoneIDBatchUtils.deleteZoneID(link, zoneFace, conn, result);
 		}
 	}
 

@@ -2,7 +2,9 @@ package com.navinfo.dataservice.engine.edit.operation.topo.move.movelcnode;
 
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +20,7 @@ import com.navinfo.dataservice.dao.glm.model.lc.LcFace;
 import com.navinfo.dataservice.dao.glm.model.lc.LcFaceTopo;
 import com.navinfo.dataservice.dao.glm.model.lc.LcLink;
 import com.navinfo.dataservice.dao.glm.model.lc.LcNode;
+import com.navinfo.dataservice.dao.glm.model.lc.LcNodeMesh;
 import com.navinfo.dataservice.dao.glm.selector.lc.LcLinkSelector;
 import com.navinfo.dataservice.engine.edit.utils.LcLinkOperateUtils;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
@@ -113,6 +116,38 @@ public class Operation implements IOperation {
 	}
 
 	private void updateNodeGeometry(Result result) throws Exception {
+		String meshes[] = MeshUtils.point2Meshes(command.getLongitude(), command.getLatitude());
+
+		Set<String> meshSet = new HashSet<String>(Arrays.asList(meshes));
+
+		boolean isChangeMesh = false;
+
+		for (IRow row : updateNode.getMeshes()) {
+			LcNodeMesh nodeMesh = (LcNodeMesh) row;
+		
+
+			if (!meshSet.contains(String.valueOf(nodeMesh.getMeshId()))) {
+				isChangeMesh = true;
+				break;
+			}
+		}
+		//图幅号发生改变后更新图幅号：先删除，后新增
+		if (isChangeMesh) {
+			for (IRow row : updateNode.getMeshes()) {
+				LcNodeMesh nodeMesh = (LcNodeMesh) row;
+
+				result.insertObject(nodeMesh, ObjStatus.DELETE, updateNode.getPid());
+			}
+
+			for (String mesh : meshes) {
+
+				LcNodeMesh nodeMesh = new LcNodeMesh();
+				nodeMesh.setNodePid(updateNode.getPid());
+				nodeMesh.setMeshId(Integer.parseInt(mesh));
+
+				result.insertObject(nodeMesh, ObjStatus.INSERT, updateNode.getPid());
+			}
+		}
 		// 计算点的几何形状
 		JSONObject geojson = new JSONObject();
 		geojson.put("type", "Point");

@@ -178,7 +178,7 @@ public class RwLinkTest extends InitApplication {
 	@Test
 	public void testMoveRwPoint()
 	{
-		String parameter = "{\"command\":\"MOVE\",\"dbId\":25,\"objId\":100007115,\"data\":{\"longitude\":116.47797346115112,\"latitude\":40.02029408726943},\"type\":\"RWNODE\"}";
+		String parameter = "{\"command\":\"MOVE\",\"dbId\":17,\"objId\":207000001,\"data\":{\"longitude\":116.25154137611388,\"latitude\":40.54194980053248},\"type\":\"RWNODE\"}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

@@ -175,14 +175,15 @@ public class IxPoiDeepStatusSelector extends AbstractSelector {
 	 * @return
 	 * @throws Exception
 	 */
-	public JSONObject getStatus(String rowId) throws Exception {
-		String sql = "SELECT work_item_id,first_work_status FROM poi_deep_status WHERE row_id=:1";
+	public JSONObject getStatus(String rowId,String secondWorkItem) throws Exception {
+		String sql = "SELECT work_item_id,first_work_status FROM poi_deep_status WHERE row_id=:1 AND second_work_item=:2";
 		
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
 		try {
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setString(1, rowId);
+			pstmt.setString(2, secondWorkItem);
 			resultSet = pstmt.executeQuery();
 			
 			JSONObject result = new JSONObject();

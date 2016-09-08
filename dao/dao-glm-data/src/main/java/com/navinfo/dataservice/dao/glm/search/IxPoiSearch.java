@@ -284,7 +284,7 @@ public class IxPoiSearch implements ISearch {
 				List<IRow> nameList = nameSelector.loadRowsByParentId(poi.getPid(), isLock);
 				poi.setNames(nameList);
 				poi.setPhotos(new AbstractSelector(IxPoiPhoto.class,conn).loadRowsByParentId(poi.getPid(), isLock));
-				JSONObject status = ixPoiDeepStatusSelector.getStatus(rowId);
+				JSONObject status = ixPoiDeepStatusSelector.getStatus(rowId,secondWorkItem);
 				
 				JSONObject poiObj = poi.Serialize(null);
 				poiObj.put("photoCount", poi.getPhotos().size());
@@ -372,7 +372,7 @@ public class IxPoiSearch implements ISearch {
 				List<IRow> addressList = addressSelector.loadRowsByParentId(poi.getPid(), isLock);
 				poi.setAddresses(addressList);
 				poi.setPhotos(new AbstractSelector(IxPoiPhoto.class,conn).loadRowsByParentId(poi.getPid(), isLock));
-				JSONObject status = ixPoiDeepStatusSelector.getStatus(rowId);
+				JSONObject status = ixPoiDeepStatusSelector.getStatus(rowId,secondWorkItem);
 				
 				JSONObject poiObj = poi.Serialize(null);
 				poiObj.put("photoCount", poi.getPhotos().size());
@@ -464,7 +464,7 @@ public class IxPoiSearch implements ISearch {
 				List<IRow> nameList = nameSelector.loadRowsByParentId(poi.getPid(), isLock);
 				poi.setNames(nameList);
 				poi.setPhotos(new AbstractSelector(IxPoiPhoto.class,conn).loadRowsByParentId(poi.getPid(), isLock));
-				JSONObject status = ixPoiDeepStatusSelector.getStatus(rowId);
+				JSONObject status = ixPoiDeepStatusSelector.getStatus(rowId,secondWorkItem);
 				
 				JSONObject poiObj = poi.Serialize(null);
 				poiObj.put("photoCount", poi.getPhotos().size());
@@ -524,7 +524,7 @@ public class IxPoiSearch implements ISearch {
 				List<IRow> addressList = addressSelector.loadRowsByParentId(poi.getPid(), isLock);
 				poi.setAddresses(addressList);
 				poi.setPhotos(new AbstractSelector(IxPoiPhoto.class,conn).loadRowsByParentId(poi.getPid(), isLock));
-				JSONObject status = ixPoiDeepStatusSelector.getStatus(rowId);
+				JSONObject status = ixPoiDeepStatusSelector.getStatus(rowId,secondWorkItem);
 				
 				JSONObject poiObj = poi.Serialize(null);
 				poiObj.put("photoCount", poi.getPhotos().size());

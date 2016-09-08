@@ -9,6 +9,8 @@ import com.navinfo.dataservice.dao.glm.model.rd.directroute.RdDirectroute;
 import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdEleceyePart;
 import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdElectroniceye;
 import com.navinfo.dataservice.dao.glm.model.rd.gate.RdGate;
+import com.navinfo.dataservice.dao.glm.model.rd.lane.RdLane;
+import com.navinfo.dataservice.dao.glm.model.rd.lane.RdLaneCondition;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
@@ -178,5 +180,14 @@ public class VariablesFactory {
 		}
 		return rdLinkSet;
 	}
-	
+	public static Set<String> getRdLanePid(IRow data){
+		Set<String> rdLinkSet=new HashSet<String>();
+		if(data instanceof RdLane){
+			rdLinkSet.add(String.valueOf(((RdLane)data).getPid()));
+		}
+		if(data instanceof RdLaneCondition){
+			rdLinkSet.add(String.valueOf(((RdLaneCondition)data).getLanePid()));
+		}
+		return rdLinkSet;
+	}
 }

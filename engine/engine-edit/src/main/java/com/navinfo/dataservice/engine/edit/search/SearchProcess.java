@@ -416,11 +416,11 @@ public class SearchProcess {
 					RdLaneSelector selector = new RdLaneSelector(this.conn);
 					RdLaneTopoDetailSelector detailSelector = new RdLaneTopoDetailSelector(conn);
 					List<IRow> rows = detailSelector.loadByLinkPids(pids, condition.getInt("nodePid"), false);
-					object.put("laneTopoInfos", selector.loadByLinks(pids, false)) ;
+					object.put("laneInfos", selector.loadByLinks(pids, false)) ;
 					for (IRow row : rows) {
 						arrayTopo.add(row);
 					}
-					object.put("laneInfos",arrayTopo);
+					object.put("laneTopoInfos",arrayTopo);
 					array.add(object);
 
 				}

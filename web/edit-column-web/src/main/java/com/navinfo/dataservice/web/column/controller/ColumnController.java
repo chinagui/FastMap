@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.web.column.controller;
 
 import java.io.IOException;
+import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -241,5 +242,34 @@ public class ColumnController extends BaseController {
 			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
 	}
+	
+	/**
+	 * 根据作业组，查询精编任务列表
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException
+	 */
+	@RequestMapping(value = "poi/deep/queryTaskList")
+	public ModelAndView queryTaskList(HttpServletRequest request)
+			throws ServletException, IOException {
+		try {
+			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
+			JSONObject jsonReq = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			
+			long userId=tokenObj.getUserId();
+			
+			ColumnCoreControl control = new ColumnCoreControl();
+			List result = control.queryTaskList(userId,jsonReq);
+			
+			return new ModelAndView("jsonView", success(result));
+		} catch (Exception e) {
+	
+			logger.error(e.getMessage(), e);
+	
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
+
 
 }

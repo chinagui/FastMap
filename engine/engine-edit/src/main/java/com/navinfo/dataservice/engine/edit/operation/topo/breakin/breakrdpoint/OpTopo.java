@@ -59,9 +59,7 @@ public class OpTopo implements IOperation {
 
 			command.setBreakNode(node);
 		}
-		// else{
-		// result.insertObject(breakPoint, ObjStatus.UPDATE);
-		// }
+		
 
 		result.setPrimaryPid(command.getBreakNodePid());
 

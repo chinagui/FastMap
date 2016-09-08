@@ -232,9 +232,9 @@ public class Operation implements IOperation {
 		// 车道限速
 		if (jsonLaneInfo.containsKey("")) {
 		}
-		if (jsonLaneInfo.containsKey("contditions")) {
+		if (jsonLaneInfo.containsKey("conditions")) {
 			List<IRow> conditionRows = new ArrayList<IRow>();
-			for (int i = 0; i < jsonLaneInfo.getJSONArray("contditions").size(); i++) {
+			for (int i = 0; i < jsonLaneInfo.getJSONArray("conditions").size(); i++) {
 				JSONObject conditionObject = jsonLaneInfo.getJSONArray(
 						"contditions").getJSONObject(i);
 				RdLaneCondition condition = new RdLaneCondition();
@@ -338,7 +338,7 @@ public class Operation implements IOperation {
 						this.command.getLaneDir(), true);
 			} else {
 				RdLink preLink = (RdLink) this.command.getLinks().get(i - 1);
-				if (preLink.getsNodePid() == link.getsNodePid()
+				if (preLink.getsNodePid() == link.geteNodePid()
 						|| preLink.geteNodePid() == link.getsNodePid()) {
 					lanes = new RdLaneSelector(conn).loadByLink(link.getPid(),
 							2, true);

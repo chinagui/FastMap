@@ -139,46 +139,18 @@ public class TaskService {
 		}
 	}
 	
-	public Page list(JSONObject conditionJson,JSONObject orderJson,int currentPageNum,int pageSize)throws Exception{
+	public Page list(JSONObject conditionJson,JSONObject orderJson,int currentPageNum,int pageSize,int snapshot)throws Exception{
 		Connection conn = null;
 		try{
 			conn = DBConnector.getInstance().getManConnection();
-			
-			String selectSql = "select T.*, nvl(C.CITY_NAME,'') CITY_NAME, nvl(U.USER_REAL_NAME,'') USER_REAL_NAME, nvl(G.GROUP_NAME,'') GROUP_NAME"
-					+ "  FROM TASK T, CITY C, USER_INFO U, USER_GROUP G"
-					+ " WHERE T.CITY_ID = C.CITY_ID(+)"
-					+ "   AND T.CREATE_USER_ID = U.USER_ID(+)"
-					+ "   AND T.MONTH_EDIT_GROUP_ID = G.GROUP_ID(+)"
-					+ "   AND T.LATEST = 1";
-			if(null!=conditionJson && !conditionJson.isEmpty()){
-				Iterator keys = conditionJson.keys();
-				while (keys.hasNext()) {
-					String key = (String) keys.next();
-					if ("taskId".equals(key)) {selectSql+=" and T.task_id="+conditionJson.getInt(key);}
-					if ("cityId".equals(key)) {selectSql+=" and T.city_id="+conditionJson.getInt(key);}
-					if ("createUserId".equals(key)) {selectSql+=" and T.create_user_id="+conditionJson.getInt(key);}
-					if ("descp".equals(key)) {selectSql+=" and T.descp='"+conditionJson.getString(key)+"'";}
-					if ("name".equals(key)) {selectSql+=" and T.name like '%"+conditionJson.getString(key)+"%'";}
-					if ("status".equals(key)) {selectSql+=" and T.status in ("+conditionJson.getJSONArray(key).join(",")+")";}
-					if ("createUserName".equals(key)) {selectSql+=" and U.USER_REAL_NAME like '%"+conditionJson.getString(key)+"%'";}
-					if ("cityName".equals(key)) {selectSql+=" and C.CITY_NAME like '%"+conditionJson.getString(key)+"%'";}
-					}
-				}
-			if(null!=orderJson && !orderJson.isEmpty()){
-				Iterator keys = orderJson.keys();
-				while (keys.hasNext()) {
-					String key = (String) keys.next();
-					if ("status".equals(key)) {selectSql+=" order by T.status "+orderJson.getString(key);break;}
-					if ("taskId".equals(key)) {selectSql+=" order by T.TASK_ID "+orderJson.getString(key);break;}
-					if ("planStartDate".equals(key)) {selectSql+=" order by T.PLAN_START_DATE "+orderJson.getString(key);break;}
-					if ("planEndDate".equals(key)) {selectSql+=" order by T.PLAN_END_DATE "+orderJson.getString(key);break;}
-					if ("monthEditPlanStartDate".equals(key)) {selectSql+=" order by T.MONTH_EDIT_PLAN_START_DATE "+orderJson.getString(key);break;}
-					if ("monthEditPlanEndDate".equals(key)) {selectSql+=" order by T.MONTH_EDIT_PLAN_END_DATE "+orderJson.getString(key);break;}
-					}
+			//返回简略信息
+			if (snapshot==1){
+				Page page = TaskOperation.getListSnapshot(conn,conditionJson,currentPageNum,pageSize);
+				return page;
 			}else{
-				selectSql+=" order by T.TASK_ID";
+				Page page = TaskOperation.getListIntegrate(conn,conditionJson,orderJson,currentPageNum,pageSize);
+				return page;
 			}
-			return TaskOperation.selectTaskBySql2(conn, selectSql, null,currentPageNum,pageSize);
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

@@ -319,7 +319,7 @@ public class IxPoiSearch implements ISearch {
 				
 				// 名称拼音作业，获取拼音组
 				if (secondWorkItem.equals("namePinYin")) {
-					List<String> pyList = new ArrayList<String>();
+					List<List<String>> pyList = new ArrayList<List<String>>();
 					for (IRow temp:nameList) {
 						IxPoiName name = (IxPoiName) temp;
 						if (name.getLangCode().equals(langCode) && name.getNameType() == 1) {
@@ -408,15 +408,15 @@ public class IxPoiSearch implements ISearch {
 						JSONObject addrObj = address.Serialize(null);
 						if (address.getLangCode().equals(langCode)) {
 							if (address.getAddrname()!=null && !address.getAddrname().isEmpty()) {
-								List<String> addrNameMultiPinyin = pyConvertor(address.getAddrname());
+								List<List<String>> addrNameMultiPinyin = pyConvertor(address.getAddrname());
 								addrObj.put("addrNameMultiPinyin", addrNameMultiPinyin);
 							}
 							if (address.getRoadname()!=null && !address.getRoadname().isEmpty()) {
-								List<String> roadNameMultiPinyin = pyConvertor(address.getRoadname());
+								List<List<String>> roadNameMultiPinyin = pyConvertor(address.getRoadname());
 								addrObj.put("roadNameMultiPinyin", roadNameMultiPinyin);
 							}
 							if (address.getFullname()!=null && !address.getFullname().isEmpty()) {
-								List<String> fullNameMultiPinyin = pyConvertor(address.getFullname());
+								List<List<String>> fullNameMultiPinyin = pyConvertor(address.getFullname());
 								addrObj.put("fullNameMultiPinyin", fullNameMultiPinyin);
 							}
 						}
@@ -683,8 +683,8 @@ public class IxPoiSearch implements ISearch {
 	 * @throws Exception
 	 */
 	@SuppressWarnings("unchecked")
-	private List<String> pyConvertor(String word) throws Exception{
-		List<String> result = new ArrayList<String>();
+	private List<List<String>> pyConvertor(String word) throws Exception{
+		List<List<String>> result = new ArrayList<List<String>>();
 		try {
 			word.replace(" ", "");
 			for (int i=0;i<word.length();i++) {
@@ -699,7 +699,7 @@ public class IxPoiSearch implements ISearch {
 							sigleWordList.add(tmpPinyin);
 						}
 						
-						result.addAll(sigleWordList);
+						result.add(sigleWordList);
 					}
 				}
 			}

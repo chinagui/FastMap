@@ -201,7 +201,7 @@ public class ColumnController extends BaseController {
 			JSONObject jsonReq = JSONObject.fromObject(URLDecode(parameter));
 			
 			ColumnCoreControl control = new ColumnCoreControl();
-			JSONArray result = control.taskStatistics(jsonReq);
+			JSONObject result = control.taskStatistics(jsonReq);
 			
 			return new ModelAndView("jsonView", success(result));
 		} catch (Exception e) {

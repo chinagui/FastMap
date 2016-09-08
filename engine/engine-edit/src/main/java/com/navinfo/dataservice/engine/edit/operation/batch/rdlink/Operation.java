@@ -75,9 +75,6 @@ public class Operation implements IOperation {
 		if (StringUtils.isNotEmpty(this.command.getRuleId())) {
 			BatchRuleType ruleType = Enum.valueOf(BatchRuleType.class, this.command.getRuleId());
 			switch (ruleType) {
-			case BATCHUBAN:
-				this.batchUrbanLink(result);
-				break;
 			case BATCHBUAURBAN:
 				this.bathBuaUrban(result);
 				break;
@@ -90,6 +87,9 @@ public class Operation implements IOperation {
 			case BATCHREGIONIDPOI:
 				this.batchRegionIdPoi(result);
 				break;
+			case BATCHZONEID:
+				this.bathZoneID(result);
+				break;
 			case BATCHDELZONEID:
 				this.bathDelZoneID(result);
 				break;
@@ -98,6 +98,32 @@ public class Operation implements IOperation {
 			}
 		} else {
 			throw new Exception("规则号不能为空");
+		}
+	}
+	
+	/**
+	 * 在线批处理删除zoneId
+	 * 
+	 * @param result
+	 * @throws Exception
+	 */
+	private void bathZoneID(Result result) throws Exception {
+
+		ZoneFaceSelector selector = new ZoneFaceSelector(conn);
+
+		ZoneFace zoneFace = (ZoneFace) selector.loadById(this.command.getPid(), true);
+
+		// 通过face查找符合的link
+		List<RdLink> links = filterZoneLinks(zoneFace);
+
+		for (RdLink link : links) {
+
+			if (CollectionUtils.isNotEmpty(link.getZones())) {
+
+				continue;
+			}
+
+			ZoneIDBatchUtils.setZoneID(link, zoneFace, conn, result);
 		}
 	}
 
@@ -119,11 +145,8 @@ public class Operation implements IOperation {
 		for (RdLink link : links) {
 
 			if (CollectionUtils.isNotEmpty(link.getZones())) {
-
-				continue;
+				ZoneIDBatchUtils.deleteZoneID(link, zoneFace, conn, result);
 			}
-
-			ZoneIDBatchUtils.deleteZoneID(link, zoneFace, conn, result);
 		}
 	}
 
@@ -142,24 +165,6 @@ public class Operation implements IOperation {
 
 			result.insertObject(link, ObjStatus.UPDATE, link.getPid());
 		}
-	}
-
-	private void batchUrbanLink(Result result) throws Exception {
-		// 通过face查找符合的link
-		List<RdLink> links = filterUrbanLinks();
-
-		for (RdLink link : links) {
-
-			if (link.getUrban() == 1) {
-
-				continue;
-			}
-
-			link.changedFields().put("urban", 1);
-
-			result.insertObject(link, ObjStatus.UPDATE, link.getPid());
-		}
-
 	}
 
 	private void batchDelUrbanLink(Result result) throws Exception {

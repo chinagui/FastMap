@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.dbutils.DbUtils;
@@ -287,17 +288,17 @@ public class IxPoiDeepStatusSelector extends AbstractSelector {
 	 * @return
 	 * @throws Exception
 	 */
-	public JSONArray taskStatistics(int taskId) throws Exception {
+	public JSONObject taskStatistics(int taskId) throws Exception {
 		
-		JSONArray result = new JSONArray();
+		JSONObject result = new JSONObject();
 		
 		StringBuilder sql = new StringBuilder();
-		sql.append("SELECT w.second_work_item,s.second_work_status,count(1) num");
+		sql.append("SELECT s.second_work_status,count(1) num");
 		sql.append(" FROM poi_deep_status s, poi_deep_workitem_conf w");
 		sql.append(" WHERE s.work_item_id = w.work_item_id");
 		sql.append(" AND s.second_work_status in (1,2)");
 		sql.append(" AND task_id="+taskId);
-		sql.append(" group by w.second_work_item,s.second_work_status");
+		sql.append(" group by s.second_work_status");
 		
 		PreparedStatement pstmt = null;
 		
@@ -308,13 +309,24 @@ public class IxPoiDeepStatusSelector extends AbstractSelector {
 
 			resultSet = pstmt.executeQuery();
 			
+			JSONObject data = new JSONObject();
+			
+			int needWork = 0;
+			int finished = 0;
+			
 			while (resultSet.next()) {
-				JSONObject data = new JSONObject();
-				data.put("secondWorkItem", resultSet.getString("second_work_item"));
-				data.put("secondWorkStatus", resultSet.getInt("second_work_status"));
-				data.put("total", resultSet.getInt("num"));
-				result.add(data);
+				if (resultSet.getInt("second_work_status") == 1) {
+					needWork = resultSet.getInt("num");
+					data.put("needWork", needWork);
+				} else if (resultSet.getInt("second_work_status") == 2) {
+					finished = resultSet.getInt("num");
+					data.put("finished", finished);
+				}
 			}
+			
+			data.put("all", needWork + finished);
+			
+			result.put("poi", data);
 			
 			return result;
 		} catch (Exception e) {
@@ -332,19 +344,25 @@ public class IxPoiDeepStatusSelector extends AbstractSelector {
 	 * @param type
 	 * @return
 	 * @throws Exception
+	 * 
+	 * return model:
+	 * {"data": {"total": {"count": 2, "check": 2}, "details": [{"count": 2, "id": "addrSplit", "check": 2}, {"count": 0, "id": "addrPinyin", "check": 0}]}, "errcode": 0, "errmsg": "success"}
 	 */
-	public JSONObject secondWorkStatistics(String secondWorkItem,long userId,int type) throws Exception {
+	@SuppressWarnings("rawtypes")
+	public JSONObject secondWorkStatistics(String firstWorkItem,long userId,int type) throws Exception {
 		
 		JSONObject result = new JSONObject();
 		
 		StringBuilder sql = new StringBuilder();
-		sql.append("SELECT count(1) num,s.second_work_status");
+		sql.append("SELECT count(1) num,s.second_work_status,w.second_work_item");
 		sql.append(" FROM poi_deep_status s, poi_deep_workitem_conf w");
 		sql.append(" WHERE s.work_item_id = w.work_item_id");
-		sql.append(" AND w.second_work_item='"+secondWorkItem+"'");
+		sql.append(" AND w.first_work_item='"+firstWorkItem+"'");
 		sql.append(" AND s.handler="+userId);
 		sql.append(" AND w.type="+type);
-		sql.append(" group by s.second_work_status");
+		sql.append(" AND s.second_work_status in (1,2)");
+		sql.append(" group by s.second_work_status,w.second_work_item");
+		sql.append(" order by w.second_work_item");
 		
 		PreparedStatement pstmt = null;
 		
@@ -356,19 +374,56 @@ public class IxPoiDeepStatusSelector extends AbstractSelector {
 			resultSet = pstmt.executeQuery();
 			
 			int total = 0;
-			int worked = 0;
+			int check = 0;
+			
+			JSONArray details = new JSONArray();
+			
+			JSONObject secondWork = new JSONObject();
 			
 			while (resultSet.next()) {
-				int tempcount = resultSet.getInt("num");
-				total += tempcount;
+				
+				String secondId = resultSet.getString("second_work_item");
+				
+				JSONObject data = new JSONObject();
+				data.put("check", 0);
+				data.put("work", 0);
+				
+				if (secondWork.containsKey(secondId)) {
+					data = secondWork.getJSONObject(secondId);
+				} 
+				
 				int status = resultSet.getInt("second_work_status");
-				if (status == 2) {
-					worked = tempcount;
+				
+				if (status == 1) {
+					data.put("check", resultSet.getInt("num"));
+				} else if (status == 2) {
+					data.put("work", resultSet.getInt("num"));
 				}
+				
+				secondWork.put(secondId, data);
 			}
 			
-			result.put("total", total);
-			result.put("worked", worked);
+			for (Iterator iter=secondWork.keys();iter.hasNext();) {
+				String id = (String) iter.next();
+				JSONObject data = secondWork.getJSONObject(id);
+				int count = data.getInt("check") + data.getInt("work");
+				
+				total += count;
+				check += data.getInt("check");
+				
+				JSONObject secondObj = new JSONObject();
+				secondObj.put("count", count);
+				secondObj.put("id", id);
+				secondObj.put("check", data.getInt("check"));
+				details.add(secondObj);
+			}
+			
+			JSONObject totalObj = new JSONObject();
+			totalObj.put("count", total);
+			totalObj.put("check", check);
+			
+			result.put("total", totalObj);
+			result.put("details", details);
 			
 			return result;
 		} catch (Exception e) {

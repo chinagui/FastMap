@@ -270,9 +270,8 @@ public class IxPoiSearch implements ISearch {
 		JSONArray dataList = new JSONArray();
 		
 		try {
-			boolean isLock = true;
+			boolean isLock = false;
 			if (type.equals("integrate")) {
-				isLock = false;
 				// TODO 返回检查错误的数据
 			}
 			
@@ -289,9 +288,22 @@ public class IxPoiSearch implements ISearch {
 				
 				JSONObject poiObj = poi.Serialize(null);
 				poiObj.put("photoCount", poi.getPhotos().size());
-				poiObj.put("chainName", CHAINMAP.get(poi.getChain()));
-				poiObj.put("kindCodeName", KINDCODEMAP.get(poi.getKindCode()));
-				poiObj.put("detailArea", ADMINMAP.get(Integer.toString(poi.getAdminReal())));
+				if (CHAINMAP.containsKey(poi.getChain())) {
+					poiObj.put("chainName", CHAINMAP.get(poi.getChain()));
+				} else {
+					poiObj.put("chainName", poi.getChain());
+				}
+				if (KINDCODEMAP.containsKey(poi.getKindCode())) {
+					poiObj.put("kindCodeName", KINDCODEMAP.get(poi.getKindCode()));
+				} else {
+					poiObj.put("kindCodeName", poi.getKindCode());
+				}
+				if (ADMINMAP.containsKey(Integer.toString(poi.getAdminReal()))) {
+					poiObj.put("detailArea", ADMINMAP.get(Integer.toString(poi.getAdminReal())));
+				} else {
+					poiObj.put("detailArea", Integer.toString(poi.getAdminReal()));
+				}
+				
 				poiObj.put("classifyRules", status.getString("workItemId"));
 				poiObj.put("auditStatus", status.getInt("firstWorkStatus"));
 				
@@ -308,7 +320,7 @@ public class IxPoiSearch implements ISearch {
 				
 				// 名称拼音作业，获取拼音组
 				if (secondWorkItem.equals("namePinYin")) {
-					List<String> pyList = new ArrayList<String>();
+					List<List<String>> pyList = new ArrayList<List<String>>();
 					for (IRow temp:nameList) {
 						IxPoiName name = (IxPoiName) temp;
 						if (name.getLangCode().equals(langCode) && name.getNameType() == 1) {
@@ -343,9 +355,8 @@ public class IxPoiSearch implements ISearch {
 		JSONArray dataList = new JSONArray();
 		
 		try {
-			boolean isLock = true;
+			boolean isLock = false;
 			if (type.equals("integrate")) {
-				isLock = false;
 				// TODO 返回检查错误的数据
 			}
 			
@@ -365,9 +376,21 @@ public class IxPoiSearch implements ISearch {
 				
 				JSONObject poiObj = poi.Serialize(null);
 				poiObj.put("photoCount", poi.getPhotos().size());
-				poiObj.put("chainName", CHAINMAP.get(poi.getChain()));
-				poiObj.put("kindCodeName", KINDCODEMAP.get(poi.getKindCode()));
-				poiObj.put("detailArea", ADMINMAP.get(Integer.toString(poi.getAdminReal())));
+				if (CHAINMAP.containsKey(poi.getChain())) {
+					poiObj.put("chainName", CHAINMAP.get(poi.getChain()));
+				} else {
+					poiObj.put("chainName", poi.getChain());
+				}
+				if (KINDCODEMAP.containsKey(poi.getKindCode())) {
+					poiObj.put("kindCodeName", KINDCODEMAP.get(poi.getKindCode()));
+				} else {
+					poiObj.put("kindCodeName", poi.getKindCode());
+				}
+				if (ADMINMAP.containsKey(Integer.toString(poi.getAdminReal()))) {
+					poiObj.put("detailArea", ADMINMAP.get(Integer.toString(poi.getAdminReal())));
+				} else {
+					poiObj.put("detailArea", Integer.toString(poi.getAdminReal()));
+				}
 				poiObj.put("classifyRules", status.getString("workItemId"));
 				poiObj.put("auditStatus", status.getInt("firstWorkStatus"));
 				
@@ -383,18 +406,18 @@ public class IxPoiSearch implements ISearch {
 					for (int i=0;i<addressList.size();i++) {
 						IRow temp = addressList.get(i);
 						IxPoiAddress address = (IxPoiAddress) temp;
-						JSONObject addrObj = new JSONObject();
+						JSONObject addrObj = address.Serialize(null);
 						if (address.getLangCode().equals(langCode)) {
-							if (!address.getAddrname().isEmpty()) {
-								List<String> addrNameMultiPinyin = pyConvertor(address.getAddrname());
+							if (address.getAddrname()!=null && !address.getAddrname().isEmpty()) {
+								List<List<String>> addrNameMultiPinyin = pyConvertor(address.getAddrname());
 								addrObj.put("addrNameMultiPinyin", addrNameMultiPinyin);
 							}
-							if (!address.getRoadname().isEmpty()) {
-								List<String> roadNameMultiPinyin = pyConvertor(address.getRoadname());
+							if (address.getRoadname()!=null && !address.getRoadname().isEmpty()) {
+								List<List<String>> roadNameMultiPinyin = pyConvertor(address.getRoadname());
 								addrObj.put("roadNameMultiPinyin", roadNameMultiPinyin);
 							}
-							if (!address.getFullname().isEmpty()) {
-								List<String> fullNameMultiPinyin = pyConvertor(address.getFullname());
+							if (address.getFullname()!=null && !address.getFullname().isEmpty()) {
+								List<List<String>> fullNameMultiPinyin = pyConvertor(address.getFullname());
 								addrObj.put("fullNameMultiPinyin", fullNameMultiPinyin);
 							}
 						}
@@ -427,9 +450,8 @@ public class IxPoiSearch implements ISearch {
 		JSONArray dataList = new JSONArray();
 		
 		try {
-			boolean isLock = true;
+			boolean isLock = false;
 			if (type.equals("integrate")) {
-				isLock = false;
 				// TODO 返回检查错误的数据
 			}
 			
@@ -446,9 +468,21 @@ public class IxPoiSearch implements ISearch {
 				
 				JSONObject poiObj = poi.Serialize(null);
 				poiObj.put("photoCount", poi.getPhotos().size());
-				poiObj.put("chainName", CHAINMAP.get(poi.getChain()));
-				poiObj.put("kindCodeName", KINDCODEMAP.get(poi.getKindCode()));
-				poiObj.put("detailArea", ADMINMAP.get(Integer.toString(poi.getAdminReal())));
+				if (CHAINMAP.containsKey(poi.getChain())) {
+					poiObj.put("chainName", CHAINMAP.get(poi.getChain()));
+				} else {
+					poiObj.put("chainName", poi.getChain());
+				}
+				if (KINDCODEMAP.containsKey(poi.getKindCode())) {
+					poiObj.put("kindCodeName", KINDCODEMAP.get(poi.getKindCode()));
+				} else {
+					poiObj.put("kindCodeName", poi.getKindCode());
+				}
+				if (ADMINMAP.containsKey(Integer.toString(poi.getAdminReal()))) {
+					poiObj.put("detailArea", ADMINMAP.get(Integer.toString(poi.getAdminReal())));
+				} else {
+					poiObj.put("detailArea", Integer.toString(poi.getAdminReal()));
+				}
 				poiObj.put("classifyRules", status.getString("workItemId"));
 				poiObj.put("auditStatus", status.getInt("firstWorkStatus"));
 				
@@ -473,9 +507,8 @@ public class IxPoiSearch implements ISearch {
 		JSONArray dataList = new JSONArray();
 		
 		try {
-			boolean isLock = true;
+			boolean isLock = false;
 			if (type.equals("integrate")) {
-				isLock = false;
 				// TODO 返回检查错误的数据
 			}
 			
@@ -495,9 +528,21 @@ public class IxPoiSearch implements ISearch {
 				
 				JSONObject poiObj = poi.Serialize(null);
 				poiObj.put("photoCount", poi.getPhotos().size());
-				poiObj.put("chainName", CHAINMAP.get(poi.getChain()));
-				poiObj.put("kindCodeName", KINDCODEMAP.get(poi.getKindCode()));
-				poiObj.put("detailArea", ADMINMAP.get(Integer.toString(poi.getAdminReal())));
+				if (CHAINMAP.containsKey(poi.getChain())) {
+					poiObj.put("chainName", CHAINMAP.get(poi.getChain()));
+				} else {
+					poiObj.put("chainName", poi.getChain());
+				}
+				if (KINDCODEMAP.containsKey(poi.getKindCode())) {
+					poiObj.put("kindCodeName", KINDCODEMAP.get(poi.getKindCode()));
+				} else {
+					poiObj.put("kindCodeName", poi.getKindCode());
+				}
+				if (ADMINMAP.containsKey(Integer.toString(poi.getAdminReal()))) {
+					poiObj.put("detailArea", ADMINMAP.get(Integer.toString(poi.getAdminReal())));
+				} else {
+					poiObj.put("detailArea", Integer.toString(poi.getAdminReal()));
+				}
 				poiObj.put("classifyRules", status.getString("workItemId"));
 				poiObj.put("auditStatus", status.getInt("firstWorkStatus"));
 				
@@ -639,8 +684,8 @@ public class IxPoiSearch implements ISearch {
 	 * @throws Exception
 	 */
 	@SuppressWarnings("unchecked")
-	private List<String> pyConvertor(String word) throws Exception{
-		List<String> result = new ArrayList<String>();
+	private List<List<String>> pyConvertor(String word) throws Exception{
+		List<List<String>> result = new ArrayList<List<String>>();
 		try {
 			word.replace(" ", "");
 			for (int i=0;i<word.length();i++) {
@@ -655,7 +700,7 @@ public class IxPoiSearch implements ISearch {
 							sigleWordList.add(tmpPinyin);
 						}
 						
-						result.addAll(sigleWordList);
+						result.add(sigleWordList);
 					}
 				}
 			}

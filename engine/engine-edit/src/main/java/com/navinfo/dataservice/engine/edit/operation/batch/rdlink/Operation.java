@@ -73,7 +73,8 @@ public class Operation implements IOperation {
 
 	private void batchRdLink(Result result) throws Exception {
 		if (StringUtils.isNotEmpty(this.command.getRuleId())) {
-			BatchRuleType ruleType = Enum.valueOf(BatchRuleType.class, this.command.getRuleId());
+			BatchRuleType ruleType = Enum.valueOf(BatchRuleType.class,
+					this.command.getRuleId());
 			switch (ruleType) {
 			case BATCHBUAURBAN:
 				this.bathBuaUrban(result);
@@ -100,7 +101,7 @@ public class Operation implements IOperation {
 			throw new Exception("规则号不能为空");
 		}
 	}
-	
+
 	/**
 	 * 在线批处理删除zoneId
 	 * 
@@ -111,7 +112,8 @@ public class Operation implements IOperation {
 
 		ZoneFaceSelector selector = new ZoneFaceSelector(conn);
 
-		ZoneFace zoneFace = (ZoneFace) selector.loadById(this.command.getPid(), true);
+		ZoneFace zoneFace = (ZoneFace) selector.loadById(this.command.getPid(),
+				true);
 
 		// 通过face查找符合的link
 		List<RdLink> links = filterZoneLinks(zoneFace);
@@ -137,7 +139,8 @@ public class Operation implements IOperation {
 
 		ZoneFaceSelector selector = new ZoneFaceSelector(conn);
 
-		ZoneFace zoneFace = (ZoneFace) selector.loadById(this.command.getPid(), true);
+		ZoneFace zoneFace = (ZoneFace) selector.loadById(this.command.getPid(),
+				true);
 
 		// 通过face查找符合的link
 		List<RdLink> links = filterZoneLinks(zoneFace);
@@ -196,7 +199,8 @@ public class Operation implements IOperation {
 
 		RdLinkSelector linkSelector = new RdLinkSelector(conn);
 
-		updateLinks = linkSelector.loadLinkByFaceGeo(face.getPid(), face.tableName(), true);
+		updateLinks = linkSelector.loadLinkByFaceGeo(face.getPid(),
+				face.tableName(), true);
 
 		return updateLinks;
 	}
@@ -207,7 +211,8 @@ public class Operation implements IOperation {
 
 		LuFaceSelector luFaceSelector = new LuFaceSelector(conn);
 
-		LuFace face = (LuFace) luFaceSelector.loadById(this.command.getPid(), true);
+		LuFace face = (LuFace) luFaceSelector.loadById(this.command.getPid(),
+				true);
 
 		if (face.getKind() != 21) {
 
@@ -224,18 +229,21 @@ public class Operation implements IOperation {
 
 		RdLinkSelector rdLinkSelector = new RdLinkSelector(this.conn);
 
-		List<RdLink> rdLinks = rdLinkSelector.loadLinkByFaceGeo(face.getPid(), face.tableName().toUpperCase(), true);
+		List<RdLink> rdLinks = rdLinkSelector.loadLinkByFaceGeo(face.getPid(),
+				face.tableName().toUpperCase(), true);
 
 		LineString linkGeometry = null;
 
-		Geometry faceGeometry = GeoTranslator.geojson2Jts(GeoTranslator.jts2Geojson(face.getGeometry()), 0.00001, 5);
+		Geometry faceGeometry = GeoTranslator.geojson2Jts(
+				GeoTranslator.jts2Geojson(face.getGeometry()), 0.00001, 5);
 
 		for (RdLink link : rdLinks) {
 
-			linkGeometry = (LineString) GeoTranslator.geojson2Jts(GeoTranslator.jts2Geojson(link.getGeometry()),
-					0.00001, 5);
+			linkGeometry = (LineString) GeoTranslator.geojson2Jts(
+					GeoTranslator.jts2Geojson(link.getGeometry()), 0.00001, 5);
 
-			IntersectionMatrix intersectionMatrix = linkGeometry.relate(faceGeometry);
+			IntersectionMatrix intersectionMatrix = linkGeometry
+					.relate(faceGeometry);
 
 			// Link完全在Polygon内
 			if (GeoRelationUtils.Interior(intersectionMatrix)) {
@@ -255,12 +263,14 @@ public class Operation implements IOperation {
 
 				for (LuLink lulink : meshLinks) {
 
-					if (linkGeometry.getStartPoint().intersects(lulink.getGeometry())) {
+					if (linkGeometry.getStartPoint().intersects(
+							lulink.getGeometry())) {
 
 						intersectsSNode = true;
 					}
 
-					if (linkGeometry.getEndPoint().intersects(lulink.getGeometry())) {
+					if (linkGeometry.getEndPoint().intersects(
+							lulink.getGeometry())) {
 
 						intersectsENode = true;
 					}
@@ -278,14 +288,16 @@ public class Operation implements IOperation {
 					continue;
 				}
 
-				boolean sNodeHaveSameNode = haveSameNodeByLU(link.getsNodePid(), luLinks);
+				boolean sNodeHaveSameNode = haveSameNodeByLU(
+						link.getsNodePid(), luLinks);
 
 				// 起点没有制作同一点
 				if (!sNodeHaveSameNode) {
 					continue;
 				}
 
-				boolean eNodeHaveSameNode = haveSameNodeByLU(link.geteNodePid(), luLinks);
+				boolean eNodeHaveSameNode = haveSameNodeByLU(
+						link.geteNodePid(), luLinks);
 
 				// 两个端点均与此Polygon的边界点制作了同一Node
 				if (sNodeHaveSameNode && eNodeHaveSameNode) {
@@ -331,7 +343,8 @@ public class Operation implements IOperation {
 					continue;
 				}
 
-				boolean haveSameNode = haveSameNodeByLU(intersectionNodePid, luLinks);
+				boolean haveSameNode = haveSameNodeByLU(intersectionNodePid,
+						luLinks);
 
 				// 交点制作了同一Node
 				if (haveSameNode) {
@@ -355,7 +368,8 @@ public class Operation implements IOperation {
 	 *            组成面的lulink组
 	 * @throws Exception
 	 */
-	private void getLuLinkInfo(LuFace face, List<LuLink> meshLinks, List<LuLink> luLinks) throws Exception {
+	private void getLuLinkInfo(LuFace face, List<LuLink> meshLinks,
+			List<LuLink> luLinks) throws Exception {
 		List<Integer> linkPids = new ArrayList<Integer>();
 
 		for (IRow row : face.getFaceTopos()) {
@@ -388,21 +402,25 @@ public class Operation implements IOperation {
 		}
 	}
 
-	private boolean haveSameNodeByLU(int rdNodePid, List<LuLink> luLinks) throws Exception {
+	private boolean haveSameNodeByLU(int rdNodePid, List<LuLink> luLinks)
+			throws Exception {
 
-		String tableName = ReflectionAttrUtils.getTableNameByObjType(ObjType.RDNODE);
+		String tableName = ReflectionAttrUtils
+				.getTableNameByObjType(ObjType.RDNODE);
 
-		RdSameNodeSelector rdSameNodeSelector = new RdSameNodeSelector(this.conn);
+		RdSameNodeSelector rdSameNodeSelector = new RdSameNodeSelector(
+				this.conn);
 
-		List<RdSameNode> sameNodes = rdSameNodeSelector.loadSameNodeByNodePids(String.valueOf(rdNodePid), tableName,
-				false);
+		List<RdSameNode> sameNodes = rdSameNodeSelector.loadSameNodeByNodePids(
+				String.valueOf(rdNodePid), tableName, false);
 
 		// 无同一关系
 		if (sameNodes.size() == 0) {
 			return false;
 		}
 
-		String luNodeTableName = ReflectionAttrUtils.getTableNameByObjType(ObjType.LUNODE);
+		String luNodeTableName = ReflectionAttrUtils
+				.getTableNameByObjType(ObjType.LUNODE);
 
 		Set<Integer> sameluNodes = new HashSet<Integer>();
 
@@ -423,7 +441,8 @@ public class Operation implements IOperation {
 		}
 
 		for (LuLink luLink : luLinks) {
-			if (sameluNodes.contains(luLink.getsNodePid()) || sameluNodes.contains(luLink.geteNodePid())) {
+			if (sameluNodes.contains(luLink.getsNodePid())
+					|| sameluNodes.contains(luLink.geteNodePid())) {
 
 				return true;
 			}
@@ -436,7 +455,8 @@ public class Operation implements IOperation {
 
 		AdFaceSelector adFaceSelector = new AdFaceSelector(conn);
 
-		AdFace face = (AdFace) adFaceSelector.loadById(this.command.getPid(), true, true);
+		AdFace face = (AdFace) adFaceSelector.loadById(this.command.getPid(),
+				true, true);
 
 		if (face.getRegionId() == 0) {
 
@@ -445,7 +465,8 @@ public class Operation implements IOperation {
 
 		AdAdminSelector adAdminSelector = new AdAdminSelector(conn);
 
-		AdAdmin admin = (AdAdmin) adAdminSelector.loadById(face.getRegionId(), true, true);
+		AdAdmin admin = (AdAdmin) adAdminSelector.loadById(face.getRegionId(),
+				true, true);
 
 		if (admin.getAdminType() < 0 && admin.getAdminType() > 7) {
 
@@ -466,25 +487,30 @@ public class Operation implements IOperation {
 
 		RdLinkSelector rdLinkSelector = new RdLinkSelector(conn);
 
-		List<RdLink> rdLinks = rdLinkSelector.loadLinkByFaceGeo(face.getPid(), face.tableName().toUpperCase(), true);
+		List<RdLink> rdLinks = rdLinkSelector.loadLinkByFaceGeo(face.getPid(),
+				face.tableName().toUpperCase(), true);
 
 		Geometry linkGeometry = null;
 
 		// 获取AdFace的regionId
 		Integer regionId = face.getRegionId();
 
-		Geometry faceGeometry = GeoTranslator.geojson2Jts(GeoTranslator.jts2Geojson(face.getGeometry()), 0.00001, 5);
+		Geometry faceGeometry = GeoTranslator.geojson2Jts(
+				GeoTranslator.jts2Geojson(face.getGeometry()), 0.00001, 5);
 
 		for (RdLink link : rdLinks) {
 
-			linkGeometry = (LineString) GeoTranslator.geojson2Jts(GeoTranslator.jts2Geojson(link.getGeometry()),
-					0.00001, 5);
+			linkGeometry = (LineString) GeoTranslator.geojson2Jts(
+					GeoTranslator.jts2Geojson(link.getGeometry()), 0.00001, 5);
 
-			IntersectionMatrix intersectionMatrix = linkGeometry.relate(faceGeometry);
+			IntersectionMatrix intersectionMatrix = linkGeometry
+					.relate(faceGeometry);
 
 			if (GeoRelationUtils.Interior(intersectionMatrix)
-					|| GeoRelationUtils.InteriorAnd2Intersection(intersectionMatrix)
-					|| GeoRelationUtils.InteriorAnd1Intersection(intersectionMatrix)) {
+					|| GeoRelationUtils
+							.InteriorAnd2Intersection(intersectionMatrix)
+					|| GeoRelationUtils
+							.InteriorAnd1Intersection(intersectionMatrix)) {
 
 				link.changedFields().put("leftRegionId", face.getRegionId());
 
@@ -497,7 +523,8 @@ public class Operation implements IOperation {
 				}
 
 			} else if (GeoRelationUtils.Boundary(intersectionMatrix)) {
-				if (GeoRelationUtils.IsLinkOnLeftOfRing(linkGeometry, faceGeometry)) {
+				if (GeoRelationUtils.IsLinkOnLeftOfRing(linkGeometry,
+						faceGeometry)) {
 					if (link.getLeftRegionId() != regionId)
 						link.changedFields().put("leftRegionId", regionId);
 				} else {
@@ -508,7 +535,10 @@ public class Operation implements IOperation {
 				continue;
 			}
 
-			result.insertObject(link, ObjStatus.UPDATE, link.getPid());
+			if (link.changedFields().size() > 0) {
+
+				result.insertObject(link, ObjStatus.UPDATE, link.getPid());
+			}
 		}
 
 	}

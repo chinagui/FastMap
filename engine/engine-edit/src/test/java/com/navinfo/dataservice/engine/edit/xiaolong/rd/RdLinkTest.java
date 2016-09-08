@@ -163,7 +163,7 @@ public class RdLinkTest extends InitApplication {
 	@Test
 	public void testBatch()
 	{
-		String parameter = "{\"command\":\"ONLINEBATCH\",\"type\":\"FACE\",\"dbId\":17,\"pid\":306000002,\"ruleId\":\"BATCHDELZONEID\"}";
+		String parameter = "{\"command\":\"ONLINEBATCH\",\"type\":\"FACE\",\"dbId\":17,\"pid\":210000001,\"ruleId\":\"BATCHDELZONEID\"}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

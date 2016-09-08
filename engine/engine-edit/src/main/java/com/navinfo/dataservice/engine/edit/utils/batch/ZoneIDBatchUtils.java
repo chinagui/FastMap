@@ -139,7 +139,7 @@ public class ZoneIDBatchUtils extends BaseBatchUtils {
 				// 修行时如果原有linkZone数据将原有regionId更新
 				for (IRow row : link.getZones()) {
 					linkZone = (RdLinkZone) row;
-					if (faceRegionId != linkZone.getRegionId()) {
+					if (faceRegionId == linkZone.getRegionId()) {
 						result.insertObject(linkZone, ObjStatus.DELETE, linkZone.parentPKValue());
 					}
 				}

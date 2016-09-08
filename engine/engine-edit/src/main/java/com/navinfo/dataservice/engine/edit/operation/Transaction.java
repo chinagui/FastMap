@@ -80,8 +80,12 @@ public class Transaction {
 	 * @return 命令
 	 */
 	private AbstractCommand createCommand() throws Exception {
-		JSONObject json = JSONObject.fromObject(requester, JsonUtils.getStrConfig());
-
+		
+		//修改net.sf.JSONObject的bug：string转json对象损失精度问题（解决方案目前有两种，一种替换新的jar包以及依赖的包，第二种先转fastjson后再转net.sf）
+		com.alibaba.fastjson.JSONObject fastJson = com.alibaba.fastjson.JSONObject.parseObject(requester);
+		
+		JSONObject json = JsonUtils.fastJson2netJson(fastJson);
+		
 		operType = Enum.valueOf(OperType.class, json.getString("command"));
 
 		objType = Enum.valueOf(ObjType.class, json.getString("type"));
@@ -702,6 +706,11 @@ public class Transaction {
 			case UPDOWNDEPART:
 				return new com.navinfo.dataservice.engine.edit.operation.topo.depart.updowndepartlink.Process(command);
 			case BATCH:
+				return new com.navinfo.dataservice.engine.edit.operation.batch.rdlink.Process(command);
+			}
+		case FACE:
+			switch (operType) {
+			case ONLINEBATCH:
 				return new com.navinfo.dataservice.engine.edit.operation.batch.rdlink.Process(command);
 			}
 		case RDNODE:

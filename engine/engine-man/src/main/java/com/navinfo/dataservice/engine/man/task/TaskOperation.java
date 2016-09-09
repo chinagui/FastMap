@@ -393,7 +393,7 @@ public class TaskOperation {
 			/*默认任务ID排序显示
 			 *搜索功能，搜索项包括：任务 ID，任务名称，创建人，城市/情报名称；
 			 *筛选功能，筛选项包括：任务状态(未规划/草稿/开启/关闭)
-			 *排序功能，排序项包括：任务 ID，任务总体计划开始时间，任务总体计划结束时间
+			 *排序功能，排序项包括：任务 ID，任务总体计划开始时间，任务总体计划结束时间,城市/情报名称,任务状态,任务类型
 			 *搜索、筛选、排序功能可同时使用*/
 			String conditionSql="";
 			String statusSql="";
@@ -430,9 +430,14 @@ public class TaskOperation {
 				Iterator keys = orderJson.keys();
 				while (keys.hasNext()) {
 					String key = (String) keys.next();
+					//城市/情报名称,任务状态,任务类型
 					if ("taskId".equals(key)) {orderSql+=" order by TASK_LIST.TASK_ID "+orderJson.getString(key);break;}
 					if ("planStartDate".equals(key)) {orderSql+=" order by TASK_LIST.PLAN_START_DATE "+orderJson.getString(key);break;}
 					if ("planEndDate".equals(key)) {orderSql+=" order by TASK_LIST.PLAN_END_DATE "+orderJson.getString(key);break;}
+					
+					if ("upperLevelName".equals(key)) {orderSql+=" order by TASK_LIST.UPPER_LEVEL_NAME "+orderJson.getString(key);break;}
+					if ("taskStatus".equals(key)) {orderSql+=" order by TASK_LIST.TASK_STATUS "+orderJson.getString(key);break;}
+					if ("taskType".equals(key)) {orderSql+=" order by TASK_LIST.TASK_TYPE "+orderJson.getString(key);break;}
 					}
 			}else{
 				orderSql+=" order by TASK_LIST.TASK_ID";

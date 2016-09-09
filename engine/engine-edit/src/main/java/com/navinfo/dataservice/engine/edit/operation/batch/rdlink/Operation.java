@@ -30,9 +30,9 @@ import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdAdminSelector;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdFaceSelector;
 import com.navinfo.dataservice.dao.glm.selector.ad.zone.ZoneFaceSelector;
+import com.navinfo.dataservice.dao.glm.selector.batch.BatchSelector;
 import com.navinfo.dataservice.dao.glm.selector.lu.LuFaceSelector;
 import com.navinfo.dataservice.dao.glm.selector.lu.LuLinkSelector;
-import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.same.RdSameNodeSelector;
 import com.navinfo.dataservice.engine.edit.operation.batch.BatchRuleType;
@@ -155,7 +155,7 @@ public class Operation implements IOperation {
 
 	private void bathBuaUrban(Result result) throws Exception {
 		// 通过face查找符合的link
-		List<RdLink> links = filterUrbanLinks();
+		List<RdLink> links = filterUrbanLinks(1);
 
 		for (RdLink link : links) {
 
@@ -172,7 +172,7 @@ public class Operation implements IOperation {
 
 	private void batchDelUrbanLink(Result result) throws Exception {
 
-		List<RdLink> updateLinks = filterUrbanLinks();
+		List<RdLink> updateLinks = filterUrbanLinks(0);
 
 		for (RdLink link : updateLinks) {
 
@@ -205,7 +205,13 @@ public class Operation implements IOperation {
 		return updateLinks;
 	}
 
-	private List<RdLink> filterUrbanLinks() throws Exception {
+	/**
+	 * 初步过滤lulink
+	 * @param batchType 1：赋urban，2：删urban
+	 * @return
+	 * @throws Exception
+	 */
+	private List<RdLink> filterUrbanLinks(int batchType) throws Exception {
 
 		List<RdLink> updateLinks = new ArrayList<RdLink>();
 
@@ -227,10 +233,10 @@ public class Operation implements IOperation {
 
 		getLuLinkInfo(face, meshLinks, luLinks);
 
-		RdLinkSelector rdLinkSelector = new RdLinkSelector(this.conn);
+		BatchSelector batchSelector = new BatchSelector(this.conn);
 
-		List<RdLink> rdLinks = rdLinkSelector.loadLinkByFaceGeo(face.getPid(),
-				face.tableName().toUpperCase(), true);
+		List<RdLink> rdLinks = batchSelector.loadLinkByLuFace(face.getPid(),
+				batchType, true);
 
 		LineString linkGeometry = null;
 
@@ -485,10 +491,10 @@ public class Operation implements IOperation {
 			return;
 		}
 
-		RdLinkSelector rdLinkSelector = new RdLinkSelector(conn);
+		BatchSelector batchSelector = new BatchSelector(conn);
 
-		List<RdLink> rdLinks = rdLinkSelector.loadLinkByFaceGeo(face.getPid(),
-				face.tableName().toUpperCase(), true);
+		List<RdLink> rdLinks = batchSelector.loadLinkByAdFace(face.getPid(),
+				true);
 
 		Geometry linkGeometry = null;
 
@@ -513,24 +519,32 @@ public class Operation implements IOperation {
 							.InteriorAnd1Intersection(intersectionMatrix)) {
 
 				if (link.getRightRegionId() != regionId) {
+
 					link.changedFields().put("rightRegionId", regionId);
 				}
 
 				if (link.getLeftRegionId() != regionId) {
+
 					link.changedFields().put("leftRegionId", regionId);
 				}
 
 			} else if (GeoRelationUtils.Boundary(intersectionMatrix)) {
+
 				if (GeoRelationUtils.IsLinkOnLeftOfRing(linkGeometry,
 						faceGeometry)) {
-					if (link.getLeftRegionId() != regionId)
+
+					if (link.getLeftRegionId() != regionId) {
+
 						link.changedFields().put("leftRegionId", regionId);
+					}
+
 				} else {
-					if (link.getRightRegionId() != regionId)
+
+					if (link.getRightRegionId() != regionId) {
+
 						link.changedFields().put("rightRegionId", regionId);
+					}
 				}
-			} else {
-				continue;
 			}
 
 			if (link.changedFields().size() > 0) {
@@ -549,21 +563,18 @@ public class Operation implements IOperation {
 			return;
 		}
 
-		IxPoiSelector ixPoiSelector = new IxPoiSelector(conn);
+		BatchSelector batchSelector = new BatchSelector(conn);
 
-		List<IxPoi> pois = ixPoiSelector.loadByAdFace(face.getPid(), true);
+		List<IxPoi> pois = batchSelector.loadPoiByAdFace(face.getPid(), true);
 
 		// 获取AdFace的regionId
 		Integer regionId = face.getRegionId();
 
 		for (IxPoi poi : pois) {
 
-			if (poi.getRegionId() != regionId) {
+			poi.changedFields().put("regionId", regionId);
 
-				poi.changedFields().put("regionId", regionId);
-
-				result.insertObject(poi, ObjStatus.UPDATE, poi.getPid());
-			}
+			result.insertObject(poi, ObjStatus.UPDATE, poi.getPid());
 		}
 	}
 

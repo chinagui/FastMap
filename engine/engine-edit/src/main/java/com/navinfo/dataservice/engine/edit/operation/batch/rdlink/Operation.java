@@ -512,8 +512,6 @@ public class Operation implements IOperation {
 					|| GeoRelationUtils
 							.InteriorAnd1Intersection(intersectionMatrix)) {
 
-				link.changedFields().put("leftRegionId", face.getRegionId());
-
 				if (link.getRightRegionId() != regionId) {
 					link.changedFields().put("rightRegionId", regionId);
 				}

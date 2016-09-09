@@ -5,7 +5,6 @@ import java.util.Map.Entry;
 
 import org.json.JSONException;
 
-import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdmin;
@@ -28,7 +27,6 @@ import com.navinfo.dataservice.dao.glm.model.rd.speedlimit.RdSpeedlimit;
 import com.navinfo.dataservice.dao.glm.model.rd.tollgate.RdTollgate;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Point;
 
@@ -275,20 +273,11 @@ public class Command extends AbstractCommand {
 
 		JSONObject data = json.getJSONObject("data");
 
-		JSONObject geoPoint = new JSONObject();
-
-		geoPoint.put("type", "Point");
-
-		geoPoint.put("coordinates", new double[] { data.getDouble("longitude"),
-				data.getDouble("latitude") });
-
-		Geometry geometry = GeoTranslator.geojson2Jts(geoPoint);
-
 		if (data.containsKey("breakNodePid")) {
 			this.setBreakNodePid(data.getInt("breakNodePid"));
 		}
-		Coordinate coord = new Coordinate(geometry.getCoordinate().x,
-				geometry.getCoordinate().y);
+		Coordinate coord = new Coordinate(data.getDouble("longitude"),
+				data.getDouble("latitude"));
 
 		this.setDbId(json.getInt("dbId"));
 
@@ -363,18 +352,4 @@ public class Command extends AbstractCommand {
 	public void setGates(List<RdGate> gates) {
 		this.gates = gates;
 	}
-
-	// public void createGlmList() throws Exception {
-	// // TODO Auto-generated method stub
-	// List<IRow> glmList=new ArrayList<IRow>();
-	//
-	// RdLink linkObj=new RdLink();
-	// RdNode node=new RdNode();
-	// linkObj.setPid(this.linkPid);
-	// glmList.add(linkObj);
-	// node.setGeometry(point);
-	// glmList.add(node);
-	// this.setGlmList(glmList);
-	// }
-
 }

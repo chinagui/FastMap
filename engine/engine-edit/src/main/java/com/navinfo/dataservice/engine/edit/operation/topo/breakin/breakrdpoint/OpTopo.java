@@ -2,9 +2,6 @@ package com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrdpoint;
 
 import java.sql.Connection;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
@@ -15,14 +12,16 @@ import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.engine.edit.utils.NodeOperateUtils;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
-import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 public class OpTopo implements IOperation {
 
 	private Command command;
 
-	private RdLink rdLinkBreakpoint;
+	private RdLink breakLink;
 
 	private JSONArray jaDisplayLink;
 
@@ -30,7 +29,7 @@ public class OpTopo implements IOperation {
 			JSONArray jaDisplayLink) {
 		this.command = command;
 
-		this.rdLinkBreakpoint = rdLinkBreakpoint;
+		this.breakLink = rdLinkBreakpoint;
 
 		this.jaDisplayLink = jaDisplayLink;
 
@@ -82,14 +81,13 @@ public class OpTopo implements IOperation {
 
 	private void breakpoint(Result result) throws Exception {
 
-		JSONObject geojson = GeoTranslator.jts2Geojson(rdLinkBreakpoint
+		JSONObject geojson = GeoTranslator.jts2Geojson(breakLink
 				.getGeometry());
 
 		Point point = command.getPoint();
 
-		Geometry geo = GeoTranslator.transform(point, 100000, 5);
-		double lon = geo.getCoordinate().x;
-		double lat = geo.getCoordinate().y;
+		double lon = point.getCoordinate().x*100000;
+		double lat = point.getCoordinate().y*100000;
 
 		JSONArray ja1 = new JSONArray();
 
@@ -159,7 +157,7 @@ public class OpTopo implements IOperation {
 
 		RdLink link1 = new RdLink();
 
-		link1.copy(rdLinkBreakpoint);
+		link1.copy(breakLink);
 
 		link1.setPid(PidUtil.getInstance().applyLinkPid());
 
@@ -174,7 +172,7 @@ public class OpTopo implements IOperation {
 
 		RdLink link2 = new RdLink();
 
-		link2.copy(rdLinkBreakpoint);
+		link2.copy(breakLink);
 
 		link2.setPid(PidUtil.getInstance().applyLinkPid());
 

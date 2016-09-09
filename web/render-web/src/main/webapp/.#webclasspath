@@ -1,4 +1,3 @@
-F:\Fm_projects_Src\FOS\mydataservice\web\render-web\src\main\webapp\WEB-INF\classes
 E:\app\maven_repo\javax\servlet\javax.servlet-api\3.1.0\javax.servlet-api-3.1.0.jar
 F:\Fm_projects_Src\FOS\mydataservice\commons\target\classes
 F:\Fm_projects_Src\FOS\mydataservice\commons\target\test-classes
@@ -9,7 +8,6 @@ E:\app\maven_repo\net\sf\json-lib\json-lib\2.4\json-lib-2.4-jdk15.jar
 E:\app\maven_repo\net\sf\ezmorph\ezmorph\1.0.6\ezmorph-1.0.6.jar
 E:\app\maven_repo\commons-lang\commons-lang\2.4\commons-lang-2.4.jar
 E:\app\maven_repo\org\apache\commons\commons-dbcp2\2.1\commons-dbcp2-2.1.jar
-E:\app\maven_repo\org\apache\commons\commons-pool2\2.3\commons-pool2-2.3.jar
 E:\app\maven_repo\commons-logging\commons-logging\1.2\commons-logging-1.2.jar
 E:\app\maven_repo\org\apache\solr\solr-solrj\5.2.1\solr-solrj-5.2.1.jar
 E:\app\maven_repo\org\apache\httpcomponents\httpclient\4.4.1\httpclient-4.4.1.jar
@@ -130,11 +128,11 @@ F:\Fm_projects_Src\FOS\mydataservice\api\api-datahub\target\test-classes
 E:\app\maven_repo\junit\junit\3.8.1\junit-3.8.1.jar
 F:\Fm_projects_Src\FOS\mydataservice\api\api-man\target\classes
 F:\Fm_projects_Src\FOS\mydataservice\api\api-man\target\test-classes
+E:\app\maven_repo\com\fasterxml\jackson\core\jackson-annotations\2.6.0-rc4\jackson-annotations-2.6.0-rc4.jar
+E:\app\maven_repo\com\fasterxml\jackson\core\jackson-databind\2.6.0-rc4\jackson-databind-2.6.0-rc4.jar
+E:\app\maven_repo\com\fasterxml\jackson\core\jackson-core\2.6.0-rc4\jackson-core-2.6.0-rc4.jar
 F:\Fm_projects_Src\FOS\mydataservice\biz-commons\target\classes
 F:\Fm_projects_Src\FOS\mydataservice\biz-commons\target\test-classes
-E:\app\maven_repo\com\fasterxml\jackson\core\jackson-databind\2.6.0-rc4\jackson-databind-2.6.0-rc4.jar
-E:\app\maven_repo\com\fasterxml\jackson\core\jackson-annotations\2.6.0-rc4\jackson-annotations-2.6.0-rc4.jar
-E:\app\maven_repo\com\fasterxml\jackson\core\jackson-core\2.6.0-rc4\jackson-core-2.6.0-rc4.jar
 F:\Fm_projects_Src\FOS\mydataservice\engine\engine-check\target\classes
 F:\Fm_projects_Src\FOS\mydataservice\engine\engine-check\target\test-classes
 E:\app\maven_repo\org\apache\hbase\hbase-server\1.0.1.1\hbase-server-1.0.1.1.jar

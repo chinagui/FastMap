@@ -282,7 +282,7 @@ public class Command extends AbstractCommand {
 		geoPoint.put("coordinates", new double[] { data.getDouble("longitude"),
 				data.getDouble("latitude") });
 
-		Geometry geometry = GeoTranslator.geojson2Jts(geoPoint, 1, 5);
+		Geometry geometry = GeoTranslator.geojson2Jts(geoPoint);
 
 		if (data.containsKey("breakNodePid")) {
 			this.setBreakNodePid(data.getInt("breakNodePid"));

@@ -16,15 +16,15 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 public class Operation implements IOperation {
-	
+
 	private Command command;
-	
+
 	private Connection conn;
-	
+
 	public Operation(Command command) {
 		this.command = command;
 	}
-	
+
 	public Operation(Connection conn) {
 		this.conn = conn;
 	}
@@ -38,7 +38,7 @@ public class Operation implements IOperation {
 		}
 		return null;
 	}
-	
+
 	public void updateRdGate(Result result) throws Exception {
 		JSONObject content = command.getContent();
 
@@ -50,12 +50,12 @@ public class Operation implements IOperation {
 			result.insertObject(rdGate, ObjStatus.UPDATE, rdGate.pid());
 			result.setPrimaryPid(rdGate.pid());
 		}
-		
+
 		if (content.containsKey("condition")) {
-			updateCondition(result,content.getJSONArray("condition"));
+			updateCondition(result, content.getJSONArray("condition"));
 		}
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	private void updateCondition(Result result, JSONArray array) throws Exception {
 		try {
@@ -66,27 +66,29 @@ public class Operation implements IOperation {
 				conditionObj = iterator.next();
 				if (conditionObj.containsKey("objStatus")) {
 					String objStatus = conditionObj.getString("objStatus");
-					condition = this.command.getRdGate().rdGateConditionMap.get(conditionObj.getString("rowId"));
-					if (ObjStatus.UPDATE.toString().equals(objStatus)) {
-						boolean isChange = condition.fillChangeFields(conditionObj);
-						if (isChange) {
-							result.insertObject(condition, ObjStatus.UPDATE, condition.getPid());
-						}
-					} else if (ObjStatus.DELETE.toString().equals(objStatus)) {
-						result.insertObject(condition, ObjStatus.DELETE, condition.getPid());
-					} else if (ObjStatus.INSERT.toString().equals(objStatus)) {
+					if (ObjStatus.INSERT.toString().equals(objStatus)) {
 						condition = new RdGateCondition();
 						condition.setPid(this.command.getPid());
 						result.insertObject(condition, ObjStatus.INSERT, condition.getPid());
+					} else {
+						condition = this.command.getRdGate().rdGateConditionMap.get(conditionObj.getString("rowId"));
+						if (ObjStatus.UPDATE.toString().equals(objStatus)) {
+							boolean isChange = condition.fillChangeFields(conditionObj);
+							if (isChange) {
+								result.insertObject(condition, ObjStatus.UPDATE, condition.getPid());
+							}
+						} else if (ObjStatus.DELETE.toString().equals(objStatus)) {
+							result.insertObject(condition, ObjStatus.DELETE, condition.getPid());
+						}
 					}
 				}
 			}
 		} catch (Exception e) {
 			throw e;
 		}
-		
+
 	}
-	
+
 	/**
 	 * 
 	 * @param linkPid
@@ -98,15 +100,15 @@ public class Operation implements IOperation {
 		if (conn == null) {
 			return;
 		}
-		
+
 		RdGateSelector gateSelector = new RdGateSelector(conn);
-		List<RdGate> rdGateList = gateSelector.loadByLink(linkPid,true);
-		for (RdGate gate:rdGateList) {
+		List<RdGate> rdGateList = gateSelector.loadByLink(linkPid, true);
+		for (RdGate gate : rdGateList) {
 			if (gate.getInLinkPid() == linkPid) {
 				// 打断进入线
 				int newInLink = 0;
-				for (RdLink newLink:newLinks) {
-					if (newLink.getsNodePid() == gate.getNodePid() || newLink.geteNodePid() == gate.getNodePid() ) {
+				for (RdLink newLink : newLinks) {
+					if (newLink.getsNodePid() == gate.getNodePid() || newLink.geteNodePid() == gate.getNodePid()) {
 						newInLink = newLink.getPid();
 						break;
 					}
@@ -120,14 +122,14 @@ public class Operation implements IOperation {
 						result.setPrimaryPid(gate.pid());
 					}
 				} else {
-					throw new Exception("错误的大门数据:"+gate.getPid());
+					throw new Exception("错误的大门数据:" + gate.getPid());
 				}
-				
+
 			} else {
 				// 打断退出线
 				int newInLink = 0;
-				for (RdLink newLink:newLinks) {
-					if (newLink.getsNodePid() == gate.getNodePid() || newLink.geteNodePid() == gate.getNodePid() ) {
+				for (RdLink newLink : newLinks) {
+					if (newLink.getsNodePid() == gate.getNodePid() || newLink.geteNodePid() == gate.getNodePid()) {
 						newInLink = newLink.getPid();
 						break;
 					}
@@ -141,7 +143,7 @@ public class Operation implements IOperation {
 						result.setPrimaryPid(gate.pid());
 					}
 				} else {
-					throw new Exception("错误的大门数据:"+gate.getPid());
+					throw new Exception("错误的大门数据:" + gate.getPid());
 				}
 			}
 		}

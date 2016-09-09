@@ -737,6 +737,10 @@ public class RdLinkSelector extends AbstractSelector {
 				RdLink link = new RdLink();
 
 				ReflectionAttrUtils.executeResultSet(link, resultSet);
+				
+				List<IRow> zones = this.loadRowsByClassParentId(RdLinkZone.class, link.getPid(), true, null);
+				
+				link.setZones(zones);
 
 				rdLinks.add(link);
 			}

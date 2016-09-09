@@ -10,6 +10,7 @@ import net.sf.json.JSONObject;
 
 import org.apache.log4j.Logger;
 
+import com.google.common.collect.Lists;
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -135,6 +136,7 @@ public class Operation implements IOperation {
 	 * @param result
 	 * @throws Exception
 	 */
+	@SuppressWarnings("unchecked")
 	private void createRdLanes(Result result) throws Exception {
 
 		for (int i = 0; i < this.command.getLinks().size(); i++) {
@@ -157,7 +159,7 @@ public class Operation implements IOperation {
 						JSONObject jsonLaneInfo = this.command.getLaneInfos()
 								.getJSONObject(m);
 						if (map.containsKey(jsonLaneInfo.getInt("pid"))) {
-							if(jsonLaneInfo.size() ==1||map.get(jsonLaneInfo.getInt("pid")).getLaneNum() == this.command.getLaneInfos().size()){
+							if(jsonLaneInfo.size() ==1&&map.get(jsonLaneInfo.getInt("pid")).getLaneNum() == this.command.getLaneInfos().size()){
 								continue;
 							}
 							jsonLaneInfo.put("laneNum", this.command
@@ -232,9 +234,9 @@ public class Operation implements IOperation {
 		// 车道限速
 		if (jsonLaneInfo.containsKey("")) {
 		}
-		if (jsonLaneInfo.containsKey("contditions")) {
+		if (jsonLaneInfo.containsKey("conditions")) {
 			List<IRow> conditionRows = new ArrayList<IRow>();
-			for (int i = 0; i < jsonLaneInfo.getJSONArray("contditions").size(); i++) {
+			for (int i = 0; i < jsonLaneInfo.getJSONArray("conditions").size(); i++) {
 				JSONObject conditionObject = jsonLaneInfo.getJSONArray(
 						"contditions").getJSONObject(i);
 				RdLaneCondition condition = new RdLaneCondition();
@@ -338,7 +340,7 @@ public class Operation implements IOperation {
 						this.command.getLaneDir(), true);
 			} else {
 				RdLink preLink = (RdLink) this.command.getLinks().get(i - 1);
-				if (preLink.getsNodePid() == link.getsNodePid()
+				if (preLink.getsNodePid() == link.geteNodePid()
 						|| preLink.geteNodePid() == link.getsNodePid()) {
 					lanes = new RdLaneSelector(conn).loadByLink(link.getPid(),
 							2, true);
@@ -667,5 +669,22 @@ public class Operation implements IOperation {
 		}
 		return new RdLaneSelector(this.conn).loadByLink(linkPid, laneDir, true);
 	}
+	
+	
+	public static void main(String[] args) {
+		Map<Integer, List<RdLane>> map = new HashMap<Integer, List<RdLane>>();
+		List<RdLane> lanes = new ArrayList<RdLane>();
+		RdLane lane = new RdLane();
+		lane.setPid(11101);
+		RdLane lane1 = new RdLane();
+		lane1.setPid(11102);
+		lanes.add(lane);
+		lanes.add(lane1);
+		map.put(1, lanes);
+		lanes =  map.values().iterator().next();
+		System.out.println(lanes.get(1).getPid());
+	}
+	
+
 
 }

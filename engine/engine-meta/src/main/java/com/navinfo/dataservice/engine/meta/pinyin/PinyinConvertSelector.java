@@ -22,6 +22,7 @@ public class PinyinConvertSelector {
 		this.conn = conn;
 	}
 	
+	@SuppressWarnings("unchecked")
 	public JSONObject getNavicovpyMap() throws Exception{
 		
 		String sql = "SELECT JT, PY2 FROM TY_NAVICOVPY_PY ORDER BY JT,PYORDER";
@@ -35,15 +36,14 @@ public class PinyinConvertSelector {
 		try {
 			pstmt = conn.prepareStatement(sql);
 			resultSet = pstmt.executeQuery();
-			String oldJt = "";
 			while (resultSet.next()) {
 				List<String> pyList = new ArrayList<String>();
 				String jt = resultSet.getString("JT");
-				if (jt.equals(oldJt)) {
+				if (navicovpyMap.containsKey(jt)) {
+					pyList = (List<String>) navicovpyMap.get(jt);
 					pyList.add(resultSet.getString("PY2"));
 					navicovpyMap.put(jt,pyList);
 				} else {
-					oldJt = jt;
 					pyList.add(resultSet.getString("PY2"));
 					navicovpyMap.put(jt,pyList);
 				}

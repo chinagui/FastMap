@@ -1,5 +1,7 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.samepoi.create;
 
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
+import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.operation.AbstractProcess;
 
@@ -12,12 +14,24 @@ import com.navinfo.dataservice.engine.edit.operation.AbstractProcess;
  */
 public class Process extends AbstractProcess<Command> {
 
+	private Check check = new Check();
+
 	public Process() {
 		super();
 	}
 
 	public Process(AbstractCommand command) throws Exception {
 		super(command);
+	}
+
+	@Override
+	public String preCheck() throws Exception {
+//		Command command = this.getCommand();
+//		IxPoiSelector selector = new IxPoiSelector(this.getConn());
+//		IxPoi poi = (IxPoi) selector.loadById(command.getPidArray().getInt(0), false, false);
+//		IxPoi otherPoi = (IxPoi) selector.loadById(command.getPidArray().getInt(1), false, false);
+//		check.checkKindOfPOI(poi, otherPoi);
+		return "";
 	}
 
 	@Override

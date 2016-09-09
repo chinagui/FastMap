@@ -29,6 +29,7 @@ import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.crf.RdObjectSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.lane.RdLaneSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.lane.RdLaneTopoDetailSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.rw.RwLinkSelector;
 import com.navinfo.dataservice.engine.edit.search.rd.utils.RdLinkSearchUtils;
@@ -404,6 +405,8 @@ public class SearchProcess {
 
 				}
 				if (condition.containsKey("linkPids")) {
+					JSONArray arrayTopo = new JSONArray();
+					JSONObject object = new JSONObject();
 					JsonUtils.getStringValueFromJSONArray(condition
 							.getJSONArray("linkPids"));
 					
@@ -411,12 +414,14 @@ public class SearchProcess {
 					List<Integer> pids = (List<Integer>)JSONArray.toCollection(condition
 							.getJSONArray("linkPids"), Integer.class);  
 					RdLaneSelector selector = new RdLaneSelector(this.conn);
-					List<RdLane> lanes = selector.loadByLinks(pids, 0,
-							false);
-					for (RdLane lane : lanes) {
-						array.add(lane);
+					RdLaneTopoDetailSelector detailSelector = new RdLaneTopoDetailSelector(conn);
+					List<IRow> rows = detailSelector.loadByLinkPids(pids, condition.getInt("nodePid"), false);
+					object.put("laneInfos", selector.loadByLinks(pids, false)) ;
+					for (IRow row : rows) {
+						arrayTopo.add(row);
 					}
-
+					object.put("laneTopoInfos",arrayTopo);
+					array.add(object);
 
 				}
 

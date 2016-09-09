@@ -86,7 +86,7 @@ public class IxPoiSearch implements ISearch {
 		StringBuilder sb=new StringBuilder();
 		
 //		sb.append("WITH TMP1 AS (SELECT PID, KIND_CODE, X_GUIDE, Y_GUIDE, GEOMETRY, ROW_ID FROM IX_POI WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'MASK=ANYINTERACT') = 'TRUE' AND U_RECORD != 2), TMP2 AS (SELECT PN.NAME, PN.POI_PID FROM IX_POI_NAME PN, TMP1 A WHERE PN.POI_PID = A.PID AND PN.LANG_CODE = 'CHI' AND PN.NAME_CLASS = 1 AND PN.NAME_TYPE = 2 AND PN.U_RECORD != 2) SELECT tmp.*,T.name FROM (SELECT A.*, B.STATUS, (SELECT COUNT(1) FROM IX_POI_PARENT P WHERE P.PARENT_POI_PID = A.PID AND P.U_RECORD != 2) PARENTCOUNT, (SELECT COUNT(1) FROM IX_POI_CHILDREN C WHERE C.CHILD_POI_PID = A.PID AND C.U_RECORD != 2) CHILDCOUNT FROM TMP1 A, POI_EDIT_STATUS B WHERE A.ROW_ID = B.ROW_ID)tmp LEFT JOIN TMP2 T ON T.POI_PID = tmp.PID  ");
-		sb.append("WITH TMP1 AS ( SELECT PID, KIND_CODE, X_GUIDE, Y_GUIDE, GEOMETRY, ROW_ID FROM IX_POI WHERE SDO_RELATE ( GEOMETRY, SDO_GEOMETRY (: 1, 8307), 'MASK=ANYINTERACT' ) = 'TRUE' AND U_RECORD != 2 ), TMP2 AS ( SELECT PN. NAME, PN.POI_PID FROM IX_POI_NAME PN, TMP1 A WHERE PN.POI_PID = A .PID AND PN.LANG_CODE = 'CHI' AND PN.NAME_CLASS = 1 AND PN.NAME_TYPE = 2 AND PN.U_RECORD != 2 ) SELECT tmp.*, T . NAME FROM ( SELECT A .*, B.STATUS, ( SELECT COUNT (1) FROM IX_POI_PARENT P WHERE P .PARENT_POI_PID = A .PID AND P .U_RECORD != 2 ) PARENTCOUNT, ( SELECT COUNT (1) FROM IX_POI_CHILDREN C WHERE C.CHILD_POI_PID = A .PID AND C.U_RECORD != 2 ) CHILDCOUNT, ( SELECT COUNT (1) FROM IX_SAMEPOI_PART ISP WHERE ISP.POI_PID = A .PID AND ISP.U_RECORD != 2 ) SAMEPOICOUNT FROM TMP1 A, POI_EDIT_STATUS B WHERE A .ROW_ID = B.ROW_ID ) tmp LEFT JOIN TMP2 T ON T .POI_PID = tmp.PID");
+		sb.append("WITH TMP1 AS ( SELECT PID, KIND_CODE,INDOOR, X_GUIDE, Y_GUIDE, GEOMETRY, ROW_ID FROM IX_POI WHERE SDO_RELATE ( GEOMETRY, SDO_GEOMETRY (: 1, 8307), 'MASK=ANYINTERACT' ) = 'TRUE' AND U_RECORD != 2 ), TMP2 AS ( SELECT PN. NAME, PN.POI_PID FROM IX_POI_NAME PN, TMP1 A WHERE PN.POI_PID = A .PID AND PN.LANG_CODE = 'CHI' AND PN.NAME_CLASS = 1 AND PN.NAME_TYPE = 2 AND PN.U_RECORD != 2 ) SELECT tmp.*, T . NAME FROM ( SELECT A .*, B.STATUS, ( SELECT COUNT (1) FROM IX_POI_PARENT P WHERE P .PARENT_POI_PID = A .PID AND P .U_RECORD != 2 ) PARENTCOUNT, ( SELECT COUNT (1) FROM IX_POI_CHILDREN C WHERE C.CHILD_POI_PID = A .PID AND C.U_RECORD != 2 ) CHILDCOUNT, ( SELECT COUNT (1) FROM IX_SAMEPOI_PART ISP WHERE ISP.POI_PID = A .PID AND ISP.U_RECORD != 2 ) SAMEPOICOUNT FROM TMP1 A, POI_EDIT_STATUS B WHERE A .ROW_ID = B.ROW_ID ) tmp LEFT JOIN TMP2 T ON T .POI_PID = tmp.PID");
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
@@ -128,6 +128,7 @@ public class IxPoiSearch implements ISearch {
 				m.put("e", resultSet.getString("name"));
 				
 				m.put("f", resultSet.getInt("samepoiCount") == 0 ? 0 : 1);
+				m.put("g", resultSet.getInt("indoor") == 0 ? 0 : 1);
 
 				Double xGuide = resultSet.getDouble("x_guide");
 
@@ -269,9 +270,8 @@ public class IxPoiSearch implements ISearch {
 		JSONArray dataList = new JSONArray();
 		
 		try {
-			boolean isLock = true;
+			boolean isLock = false;
 			if (type.equals("integrate")) {
-				isLock = false;
 				// TODO 返回检查错误的数据
 			}
 			
@@ -284,13 +284,26 @@ public class IxPoiSearch implements ISearch {
 				List<IRow> nameList = nameSelector.loadRowsByParentId(poi.getPid(), isLock);
 				poi.setNames(nameList);
 				poi.setPhotos(new AbstractSelector(IxPoiPhoto.class,conn).loadRowsByParentId(poi.getPid(), isLock));
-				JSONObject status = ixPoiDeepStatusSelector.getStatus(rowId);
+				JSONObject status = ixPoiDeepStatusSelector.getStatus(rowId,secondWorkItem);
 				
 				JSONObject poiObj = poi.Serialize(null);
 				poiObj.put("photoCount", poi.getPhotos().size());
-				poiObj.put("chainName", CHAINMAP.get(poi.getChain()));
-				poiObj.put("kindCodeName", KINDCODEMAP.get(poi.getKindCode()));
-				poiObj.put("detailArea", ADMINMAP.get(Integer.toString(poi.getAdminReal())));
+				if (CHAINMAP.containsKey(poi.getChain())) {
+					poiObj.put("chainName", CHAINMAP.get(poi.getChain()));
+				} else {
+					poiObj.put("chainName", poi.getChain());
+				}
+				if (KINDCODEMAP.containsKey(poi.getKindCode())) {
+					poiObj.put("kindCodeName", KINDCODEMAP.get(poi.getKindCode()));
+				} else {
+					poiObj.put("kindCodeName", poi.getKindCode());
+				}
+				if (ADMINMAP.containsKey(Integer.toString(poi.getAdminReal()))) {
+					poiObj.put("detailArea", ADMINMAP.get(Integer.toString(poi.getAdminReal())));
+				} else {
+					poiObj.put("detailArea", Integer.toString(poi.getAdminReal()));
+				}
+				
 				poiObj.put("classifyRules", status.getString("workItemId"));
 				poiObj.put("auditStatus", status.getInt("firstWorkStatus"));
 				
@@ -307,7 +320,7 @@ public class IxPoiSearch implements ISearch {
 				
 				// 名称拼音作业，获取拼音组
 				if (secondWorkItem.equals("namePinYin")) {
-					List<String> pyList = new ArrayList<String>();
+					List<List<String>> pyList = new ArrayList<List<String>>();
 					for (IRow temp:nameList) {
 						IxPoiName name = (IxPoiName) temp;
 						if (name.getLangCode().equals(langCode) && name.getNameType() == 1) {
@@ -342,9 +355,8 @@ public class IxPoiSearch implements ISearch {
 		JSONArray dataList = new JSONArray();
 		
 		try {
-			boolean isLock = true;
+			boolean isLock = false;
 			if (type.equals("integrate")) {
-				isLock = false;
 				// TODO 返回检查错误的数据
 			}
 			
@@ -360,13 +372,25 @@ public class IxPoiSearch implements ISearch {
 				List<IRow> addressList = addressSelector.loadRowsByParentId(poi.getPid(), isLock);
 				poi.setAddresses(addressList);
 				poi.setPhotos(new AbstractSelector(IxPoiPhoto.class,conn).loadRowsByParentId(poi.getPid(), isLock));
-				JSONObject status = ixPoiDeepStatusSelector.getStatus(rowId);
+				JSONObject status = ixPoiDeepStatusSelector.getStatus(rowId,secondWorkItem);
 				
 				JSONObject poiObj = poi.Serialize(null);
 				poiObj.put("photoCount", poi.getPhotos().size());
-				poiObj.put("chainName", CHAINMAP.get(poi.getChain()));
-				poiObj.put("kindCodeName", KINDCODEMAP.get(poi.getKindCode()));
-				poiObj.put("detailArea", ADMINMAP.get(Integer.toString(poi.getAdminReal())));
+				if (CHAINMAP.containsKey(poi.getChain())) {
+					poiObj.put("chainName", CHAINMAP.get(poi.getChain()));
+				} else {
+					poiObj.put("chainName", poi.getChain());
+				}
+				if (KINDCODEMAP.containsKey(poi.getKindCode())) {
+					poiObj.put("kindCodeName", KINDCODEMAP.get(poi.getKindCode()));
+				} else {
+					poiObj.put("kindCodeName", poi.getKindCode());
+				}
+				if (ADMINMAP.containsKey(Integer.toString(poi.getAdminReal()))) {
+					poiObj.put("detailArea", ADMINMAP.get(Integer.toString(poi.getAdminReal())));
+				} else {
+					poiObj.put("detailArea", Integer.toString(poi.getAdminReal()));
+				}
 				poiObj.put("classifyRules", status.getString("workItemId"));
 				poiObj.put("auditStatus", status.getInt("firstWorkStatus"));
 				
@@ -382,18 +406,18 @@ public class IxPoiSearch implements ISearch {
 					for (int i=0;i<addressList.size();i++) {
 						IRow temp = addressList.get(i);
 						IxPoiAddress address = (IxPoiAddress) temp;
-						JSONObject addrObj = new JSONObject();
+						JSONObject addrObj = address.Serialize(null);
 						if (address.getLangCode().equals(langCode)) {
-							if (!address.getAddrname().isEmpty()) {
-								List<String> addrNameMultiPinyin = pyConvertor(address.getAddrname());
+							if (address.getAddrname()!=null && !address.getAddrname().isEmpty()) {
+								List<List<String>> addrNameMultiPinyin = pyConvertor(address.getAddrname());
 								addrObj.put("addrNameMultiPinyin", addrNameMultiPinyin);
 							}
-							if (!address.getRoadname().isEmpty()) {
-								List<String> roadNameMultiPinyin = pyConvertor(address.getRoadname());
+							if (address.getRoadname()!=null && !address.getRoadname().isEmpty()) {
+								List<List<String>> roadNameMultiPinyin = pyConvertor(address.getRoadname());
 								addrObj.put("roadNameMultiPinyin", roadNameMultiPinyin);
 							}
-							if (!address.getFullname().isEmpty()) {
-								List<String> fullNameMultiPinyin = pyConvertor(address.getFullname());
+							if (address.getFullname()!=null && !address.getFullname().isEmpty()) {
+								List<List<String>> fullNameMultiPinyin = pyConvertor(address.getFullname());
 								addrObj.put("fullNameMultiPinyin", fullNameMultiPinyin);
 							}
 						}
@@ -426,9 +450,8 @@ public class IxPoiSearch implements ISearch {
 		JSONArray dataList = new JSONArray();
 		
 		try {
-			boolean isLock = true;
+			boolean isLock = false;
 			if (type.equals("integrate")) {
-				isLock = false;
 				// TODO 返回检查错误的数据
 			}
 			
@@ -441,13 +464,25 @@ public class IxPoiSearch implements ISearch {
 				List<IRow> nameList = nameSelector.loadRowsByParentId(poi.getPid(), isLock);
 				poi.setNames(nameList);
 				poi.setPhotos(new AbstractSelector(IxPoiPhoto.class,conn).loadRowsByParentId(poi.getPid(), isLock));
-				JSONObject status = ixPoiDeepStatusSelector.getStatus(rowId);
+				JSONObject status = ixPoiDeepStatusSelector.getStatus(rowId,secondWorkItem);
 				
 				JSONObject poiObj = poi.Serialize(null);
 				poiObj.put("photoCount", poi.getPhotos().size());
-				poiObj.put("chainName", CHAINMAP.get(poi.getChain()));
-				poiObj.put("kindCodeName", KINDCODEMAP.get(poi.getKindCode()));
-				poiObj.put("detailArea", ADMINMAP.get(Integer.toString(poi.getAdminReal())));
+				if (CHAINMAP.containsKey(poi.getChain())) {
+					poiObj.put("chainName", CHAINMAP.get(poi.getChain()));
+				} else {
+					poiObj.put("chainName", poi.getChain());
+				}
+				if (KINDCODEMAP.containsKey(poi.getKindCode())) {
+					poiObj.put("kindCodeName", KINDCODEMAP.get(poi.getKindCode()));
+				} else {
+					poiObj.put("kindCodeName", poi.getKindCode());
+				}
+				if (ADMINMAP.containsKey(Integer.toString(poi.getAdminReal()))) {
+					poiObj.put("detailArea", ADMINMAP.get(Integer.toString(poi.getAdminReal())));
+				} else {
+					poiObj.put("detailArea", Integer.toString(poi.getAdminReal()));
+				}
 				poiObj.put("classifyRules", status.getString("workItemId"));
 				poiObj.put("auditStatus", status.getInt("firstWorkStatus"));
 				
@@ -472,9 +507,8 @@ public class IxPoiSearch implements ISearch {
 		JSONArray dataList = new JSONArray();
 		
 		try {
-			boolean isLock = true;
+			boolean isLock = false;
 			if (type.equals("integrate")) {
-				isLock = false;
 				// TODO 返回检查错误的数据
 			}
 			
@@ -490,13 +524,25 @@ public class IxPoiSearch implements ISearch {
 				List<IRow> addressList = addressSelector.loadRowsByParentId(poi.getPid(), isLock);
 				poi.setAddresses(addressList);
 				poi.setPhotos(new AbstractSelector(IxPoiPhoto.class,conn).loadRowsByParentId(poi.getPid(), isLock));
-				JSONObject status = ixPoiDeepStatusSelector.getStatus(rowId);
+				JSONObject status = ixPoiDeepStatusSelector.getStatus(rowId,secondWorkItem);
 				
 				JSONObject poiObj = poi.Serialize(null);
 				poiObj.put("photoCount", poi.getPhotos().size());
-				poiObj.put("chainName", CHAINMAP.get(poi.getChain()));
-				poiObj.put("kindCodeName", KINDCODEMAP.get(poi.getKindCode()));
-				poiObj.put("detailArea", ADMINMAP.get(Integer.toString(poi.getAdminReal())));
+				if (CHAINMAP.containsKey(poi.getChain())) {
+					poiObj.put("chainName", CHAINMAP.get(poi.getChain()));
+				} else {
+					poiObj.put("chainName", poi.getChain());
+				}
+				if (KINDCODEMAP.containsKey(poi.getKindCode())) {
+					poiObj.put("kindCodeName", KINDCODEMAP.get(poi.getKindCode()));
+				} else {
+					poiObj.put("kindCodeName", poi.getKindCode());
+				}
+				if (ADMINMAP.containsKey(Integer.toString(poi.getAdminReal()))) {
+					poiObj.put("detailArea", ADMINMAP.get(Integer.toString(poi.getAdminReal())));
+				} else {
+					poiObj.put("detailArea", Integer.toString(poi.getAdminReal()));
+				}
 				poiObj.put("classifyRules", status.getString("workItemId"));
 				poiObj.put("auditStatus", status.getInt("firstWorkStatus"));
 				
@@ -638,8 +684,8 @@ public class IxPoiSearch implements ISearch {
 	 * @throws Exception
 	 */
 	@SuppressWarnings("unchecked")
-	private List<String> pyConvertor(String word) throws Exception{
-		List<String> result = new ArrayList<String>();
+	private List<List<String>> pyConvertor(String word) throws Exception{
+		List<List<String>> result = new ArrayList<List<String>>();
 		try {
 			word.replace(" ", "");
 			for (int i=0;i<word.length();i++) {
@@ -654,7 +700,7 @@ public class IxPoiSearch implements ISearch {
 							sigleWordList.add(tmpPinyin);
 						}
 						
-						result.addAll(sigleWordList);
+						result.add(sigleWordList);
 					}
 				}
 			}

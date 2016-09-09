@@ -399,7 +399,15 @@ public class commonTest extends InitApplication {
 	}
 	
 	
-	
+	@Test
+	public void run_00908_3() throws Exception {
+
+		String parameter = "{\"command\":\"ONLINEBATCH\",\"type\":\"FACE\",\"dbId\":17,\"pid\":2399,\"ruleId\":\"BATCHREGIONIDRDLINK\"}";
+
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
 	
 	
 	

@@ -85,10 +85,7 @@ public class RdLaneTopoDetailSelector extends AbstractSelector {
 		List<IRow> topos = new ArrayList<IRow>();
 
 		try {
-			String ids = org.apache.commons.lang.StringUtils
-					.join(linkPids, ",");
-			String sql = "SELECT topo_id FROM rd_lane_topo_detail WHERE IN_LINK_PID in ("
-					+ ids + ")  and NODE_PID =:1 and u_record !=2";
+			String sql = "SELECT topo_id FROM rd_lane_topo_detail WHERE IN_LINK_PID :=1  and NODE_PID =:2 and u_record !=2";
 
 			if (isLock) {
 				sql += " for update nowait";
@@ -96,7 +93,8 @@ public class RdLaneTopoDetailSelector extends AbstractSelector {
 
 			pstmt = conn.prepareStatement(sql);
 
-			pstmt.setInt(1, nodePid);
+			pstmt.setInt(1, linkPids.get(0));
+			pstmt.setInt(2, nodePid);
 			resultSet = pstmt.executeQuery();
 
 			while (resultSet.next()) {

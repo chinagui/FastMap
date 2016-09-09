@@ -14,7 +14,7 @@ public class KindCodeTest {
 	@Before
 	public void before() {
 		ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(
-				new String[] { "dubbo-consumer-datahub.xml" });
+				new String[] { "dubbo-consumer-datahub-test.xml" });
 		context.start();
 		new ApplicationContextUtil().setApplicationContext(context);
 	}

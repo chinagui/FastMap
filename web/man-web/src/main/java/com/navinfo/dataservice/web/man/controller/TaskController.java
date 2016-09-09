@@ -148,28 +148,31 @@ public class TaskController extends BaseController {
 	public ModelAndView list(HttpServletRequest request){
 		try{	
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));			
-			JSONObject condition = dataJson.getJSONObject("condition");			
-			JSONObject order = dataJson.getJSONObject("order");	
-			
+			JSONObject condition = new JSONObject();	
+			if(dataJson.containsKey("condition")){
+				condition=dataJson.getJSONObject("condition");
+			}
+			JSONObject order = new JSONObject();	
+			if(dataJson.containsKey("order")){
+				order=dataJson.getJSONObject("order");
+			}			
 			int curPageNum= 1;//默认为第一页
-			String curPage= dataJson.getString("pageNum");
-			if (StringUtils.isNotEmpty(curPage)){
-				curPageNum = Integer.parseInt(curPage);
+			if (dataJson.containsKey("pageNum")){
+				curPageNum = dataJson.getInt("pageNum");
 			}
 			int curPageSize= 20;//默认为20条记录/页
-			String curSize= dataJson.getString("pageSize");
-			if (StringUtils.isNotEmpty(curSize)){
-				curPageSize = Integer.parseInt(curSize);
+			if (dataJson.containsKey("pageSize")){
+				curPageSize = dataJson.getInt("pageSize");
 			}
-			Page data = TaskService.getInstance().list(condition,order,curPageNum,curPageSize);
-			List result=JsonOperation.beanToJsonList((List)data.getResult());
+			int snapshot = 0; 
+			if(dataJson.containsKey("snapshot")){
+				snapshot=dataJson.getInt("snapshot");
+			}
+			Page data = TaskService.getInstance().list(condition,order,curPageNum,curPageSize,snapshot);
 			Map<String, Object> returnMap=new HashMap<String, Object>();
-			returnMap.put("result", result);
-			//returnMap.put("pageSize", curPageSize);
-			//returnMap.put("pageNum", curPageNum);
+			returnMap.put("result", (List)data.getResult());
 			returnMap.put("totalCount", data.getTotalCount());
 			return new ModelAndView("jsonView", success(returnMap));
-			//return new ModelAndView("jsonView", success(data.getResult()));
 		}catch(Exception e){
 			log.error("获取列表失败，原因："+e.getMessage(), e);
 			return new ModelAndView("jsonView",exception(e));

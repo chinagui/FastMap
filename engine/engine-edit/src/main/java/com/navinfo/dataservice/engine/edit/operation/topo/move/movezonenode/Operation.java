@@ -2,7 +2,9 @@ package com.navinfo.dataservice.engine.edit.operation.topo.move.movezonenode;
 
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +20,8 @@ import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneFace;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneFaceTopo;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneLink;
+import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneNode;
+import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneNodeMesh;
 import com.navinfo.dataservice.dao.glm.selector.ad.zone.ZoneLinkSelector;
 import com.navinfo.dataservice.engine.edit.utils.ZoneLinkOperateUtils;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
@@ -154,7 +158,40 @@ public class Operation implements IOperation {
 	 * 移动行政区划点修改对应的点的信息
 	 */
 	private void updateNodeGeometry(Result result) throws Exception {
+		String meshes[] = MeshUtils.point2Meshes(command.getLongitude(), command.getLatitude());
 
+		Set<String> meshSet = new HashSet<String>(Arrays.asList(meshes));
+
+		boolean isChangeMesh = false;
+		
+		ZoneNode updateNode = this.command.getZoneNode();
+
+		for (IRow row : updateNode.getMeshes()) {
+			ZoneNodeMesh nodeMesh = (ZoneNodeMesh) row;
+		
+
+			if (!meshSet.contains(String.valueOf(nodeMesh.getMeshId()))) {
+				isChangeMesh = true;
+				break;
+			}
+		}
+		//图幅号发生改变后更新图幅号：先删除，后新增
+		if (isChangeMesh) {
+			for (IRow row : updateNode.getMeshes()) {
+				ZoneNodeMesh nodeMesh = (ZoneNodeMesh) row;
+
+				result.insertObject(nodeMesh, ObjStatus.DELETE, updateNode.getPid());
+			}
+
+			for (String mesh : meshes) {
+
+				ZoneNodeMesh nodeMesh = new ZoneNodeMesh();
+				nodeMesh.setNodePid(updateNode.getPid());
+				nodeMesh.setMeshId(Integer.parseInt(mesh));
+
+				result.insertObject(nodeMesh, ObjStatus.INSERT, updateNode.getPid());
+			}
+		}
 		// 计算点的几何形状
 		JSONObject geojson = new JSONObject();
 		geojson.put("type", "Point");

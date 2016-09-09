@@ -6,13 +6,18 @@ import java.util.Set;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
 import com.navinfo.dataservice.dao.glm.model.rd.directroute.RdDirectroute;
+import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdEleceyePart;
+import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdElectroniceye;
 import com.navinfo.dataservice.dao.glm.model.rd.gate.RdGate;
+import com.navinfo.dataservice.dao.glm.model.rd.lane.RdLane;
+import com.navinfo.dataservice.dao.glm.model.rd.lane.RdLaneCondition;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionDetail;
 import com.navinfo.dataservice.dao.glm.model.rd.slope.RdSlope;
 import com.navinfo.dataservice.dao.glm.model.rd.tollgate.RdTollgate;
+import com.navinfo.dataservice.dao.glm.model.rd.tollgate.RdTollgateName;
 import com.navinfo.dataservice.dao.glm.model.rd.trafficsignal.RdTrafficsignal;
 import com.navinfo.dataservice.dao.glm.model.rd.voiceguide.RdVoiceguide;
 import com.navinfo.dataservice.dao.glm.model.rd.warninginfo.RdWarninginfo;
@@ -151,6 +156,10 @@ public class VariablesFactory {
 		if(data instanceof RdTollgate){
 			RdTollgate rdTollgate=(RdTollgate) data;
 			rdLinkSet.add(String.valueOf(rdTollgate.getPid()));}
+		
+		if(data instanceof RdTollgateName){
+			RdTollgateName rdTollgateName=(RdTollgateName) data;
+			rdLinkSet.add(String.valueOf(rdTollgateName.getPid()));}
 		return rdLinkSet;
 	}
 	/**
@@ -163,6 +172,27 @@ public class VariablesFactory {
 		if(data instanceof RdGate){
 			RdGate rdGate=(RdGate) data;
 			rdLinkSet.add(String.valueOf(rdGate.getPid()));}
+		return rdLinkSet;
+	}
+	
+	public static Set<String> getRdElectroniceye(IRow data){
+		Set<String> rdLinkSet=new HashSet<String>();
+		if(data instanceof RdElectroniceye){
+			rdLinkSet.add(String.valueOf(((RdElectroniceye)data).getPid()));
+		}
+		if(data instanceof RdEleceyePart){
+			rdLinkSet.add(String.valueOf(((RdEleceyePart)data).getEleceyePid()));
+		}
+		return rdLinkSet;
+	}
+	public static Set<String> getRdLanePid(IRow data){
+		Set<String> rdLinkSet=new HashSet<String>();
+		if(data instanceof RdLane){
+			rdLinkSet.add(String.valueOf(((RdLane)data).getPid()));
+		}
+		if(data instanceof RdLaneCondition){
+			rdLinkSet.add(String.valueOf(((RdLaneCondition)data).getLanePid()));
+		}
 		return rdLinkSet;
 	}
 }

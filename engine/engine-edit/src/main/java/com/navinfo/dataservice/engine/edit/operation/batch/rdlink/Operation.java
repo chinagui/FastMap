@@ -30,9 +30,9 @@ import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdAdminSelector;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdFaceSelector;
 import com.navinfo.dataservice.dao.glm.selector.ad.zone.ZoneFaceSelector;
+import com.navinfo.dataservice.dao.glm.selector.batch.BatchSelector;
 import com.navinfo.dataservice.dao.glm.selector.lu.LuFaceSelector;
 import com.navinfo.dataservice.dao.glm.selector.lu.LuLinkSelector;
-import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.same.RdSameNodeSelector;
 import com.navinfo.dataservice.engine.edit.operation.batch.BatchRuleType;
@@ -73,11 +73,9 @@ public class Operation implements IOperation {
 
 	private void batchRdLink(Result result) throws Exception {
 		if (StringUtils.isNotEmpty(this.command.getRuleId())) {
-			BatchRuleType ruleType = Enum.valueOf(BatchRuleType.class, this.command.getRuleId());
+			BatchRuleType ruleType = Enum.valueOf(BatchRuleType.class,
+					this.command.getRuleId());
 			switch (ruleType) {
-			case BATCHUBAN:
-				this.batchUrbanLink(result);
-				break;
 			case BATCHBUAURBAN:
 				this.bathBuaUrban(result);
 				break;
@@ -89,6 +87,9 @@ public class Operation implements IOperation {
 				break;
 			case BATCHREGIONIDPOI:
 				this.batchRegionIdPoi(result);
+				break;
+			case BATCHZONEID:
+				this.bathZoneID(result);
 				break;
 			case BATCHDELZONEID:
 				this.bathDelZoneID(result);
@@ -107,11 +108,12 @@ public class Operation implements IOperation {
 	 * @param result
 	 * @throws Exception
 	 */
-	private void bathDelZoneID(Result result) throws Exception {
+	private void bathZoneID(Result result) throws Exception {
 
 		ZoneFaceSelector selector = new ZoneFaceSelector(conn);
 
-		ZoneFace zoneFace = (ZoneFace) selector.loadById(this.command.getPid(), true);
+		ZoneFace zoneFace = (ZoneFace) selector.loadById(this.command.getPid(),
+				true);
 
 		// 通过face查找符合的link
 		List<RdLink> links = filterZoneLinks(zoneFace);
@@ -123,13 +125,37 @@ public class Operation implements IOperation {
 				continue;
 			}
 
-			ZoneIDBatchUtils.deleteZoneID(link, zoneFace, conn, result);
+			ZoneIDBatchUtils.setZoneID(link, zoneFace, conn, result);
+		}
+	}
+
+	/**
+	 * 在线批处理删除zoneId
+	 * 
+	 * @param result
+	 * @throws Exception
+	 */
+	private void bathDelZoneID(Result result) throws Exception {
+
+		ZoneFaceSelector selector = new ZoneFaceSelector(conn);
+
+		ZoneFace zoneFace = (ZoneFace) selector.loadById(this.command.getPid(),
+				true);
+
+		// 通过face查找符合的link
+		List<RdLink> links = filterZoneLinks(zoneFace);
+
+		for (RdLink link : links) {
+
+			if (CollectionUtils.isNotEmpty(link.getZones())) {
+				ZoneIDBatchUtils.deleteZoneID(link, zoneFace, conn, result);
+			}
 		}
 	}
 
 	private void bathBuaUrban(Result result) throws Exception {
 		// 通过face查找符合的link
-		List<RdLink> links = filterUrbanLinks();
+		List<RdLink> links = filterUrbanLinks(1);
 
 		for (RdLink link : links) {
 
@@ -142,29 +168,11 @@ public class Operation implements IOperation {
 
 			result.insertObject(link, ObjStatus.UPDATE, link.getPid());
 		}
-	}
-
-	private void batchUrbanLink(Result result) throws Exception {
-		// 通过face查找符合的link
-		List<RdLink> links = filterUrbanLinks();
-
-		for (RdLink link : links) {
-
-			if (link.getUrban() == 1) {
-
-				continue;
-			}
-
-			link.changedFields().put("urban", 1);
-
-			result.insertObject(link, ObjStatus.UPDATE, link.getPid());
-		}
-
 	}
 
 	private void batchDelUrbanLink(Result result) throws Exception {
 
-		List<RdLink> updateLinks = filterUrbanLinks();
+		List<RdLink> updateLinks = filterUrbanLinks(0);
 
 		for (RdLink link : updateLinks) {
 
@@ -191,18 +199,26 @@ public class Operation implements IOperation {
 
 		RdLinkSelector linkSelector = new RdLinkSelector(conn);
 
-		updateLinks = linkSelector.loadLinkByFaceGeo(face.getPid(), face.tableName(), true);
+		updateLinks = linkSelector.loadLinkByFaceGeo(face.getPid(),
+				face.tableName(), true);
 
 		return updateLinks;
 	}
 
-	private List<RdLink> filterUrbanLinks() throws Exception {
+	/**
+	 * 初步过滤lulink
+	 * @param batchType 1：赋urban，2：删urban
+	 * @return
+	 * @throws Exception
+	 */
+	private List<RdLink> filterUrbanLinks(int batchType) throws Exception {
 
 		List<RdLink> updateLinks = new ArrayList<RdLink>();
 
 		LuFaceSelector luFaceSelector = new LuFaceSelector(conn);
 
-		LuFace face = (LuFace) luFaceSelector.loadById(this.command.getPid(), true);
+		LuFace face = (LuFace) luFaceSelector.loadById(this.command.getPid(),
+				true);
 
 		if (face.getKind() != 21) {
 
@@ -217,20 +233,23 @@ public class Operation implements IOperation {
 
 		getLuLinkInfo(face, meshLinks, luLinks);
 
-		RdLinkSelector rdLinkSelector = new RdLinkSelector(this.conn);
+		BatchSelector batchSelector = new BatchSelector(this.conn);
 
-		List<RdLink> rdLinks = rdLinkSelector.loadLinkByFaceGeo(face.getPid(), face.tableName().toUpperCase(), true);
+		List<RdLink> rdLinks = batchSelector.loadLinkByLuFace(face.getPid(),
+				batchType, true);
 
 		LineString linkGeometry = null;
 
-		Geometry faceGeometry = GeoTranslator.geojson2Jts(GeoTranslator.jts2Geojson(face.getGeometry()), 0.00001, 5);
+		Geometry faceGeometry = GeoTranslator.geojson2Jts(
+				GeoTranslator.jts2Geojson(face.getGeometry()), 0.00001, 5);
 
 		for (RdLink link : rdLinks) {
 
-			linkGeometry = (LineString) GeoTranslator.geojson2Jts(GeoTranslator.jts2Geojson(link.getGeometry()),
-					0.00001, 5);
+			linkGeometry = (LineString) GeoTranslator.geojson2Jts(
+					GeoTranslator.jts2Geojson(link.getGeometry()), 0.00001, 5);
 
-			IntersectionMatrix intersectionMatrix = linkGeometry.relate(faceGeometry);
+			IntersectionMatrix intersectionMatrix = linkGeometry
+					.relate(faceGeometry);
 
 			// Link完全在Polygon内
 			if (GeoRelationUtils.Interior(intersectionMatrix)) {
@@ -250,12 +269,14 @@ public class Operation implements IOperation {
 
 				for (LuLink lulink : meshLinks) {
 
-					if (linkGeometry.getStartPoint().intersects(lulink.getGeometry())) {
+					if (linkGeometry.getStartPoint().intersects(
+							lulink.getGeometry())) {
 
 						intersectsSNode = true;
 					}
 
-					if (linkGeometry.getEndPoint().intersects(lulink.getGeometry())) {
+					if (linkGeometry.getEndPoint().intersects(
+							lulink.getGeometry())) {
 
 						intersectsENode = true;
 					}
@@ -273,14 +294,16 @@ public class Operation implements IOperation {
 					continue;
 				}
 
-				boolean sNodeHaveSameNode = haveSameNodeByLU(link.getsNodePid(), luLinks);
+				boolean sNodeHaveSameNode = haveSameNodeByLU(
+						link.getsNodePid(), luLinks);
 
 				// 起点没有制作同一点
 				if (!sNodeHaveSameNode) {
 					continue;
 				}
 
-				boolean eNodeHaveSameNode = haveSameNodeByLU(link.geteNodePid(), luLinks);
+				boolean eNodeHaveSameNode = haveSameNodeByLU(
+						link.geteNodePid(), luLinks);
 
 				// 两个端点均与此Polygon的边界点制作了同一Node
 				if (sNodeHaveSameNode && eNodeHaveSameNode) {
@@ -326,7 +349,8 @@ public class Operation implements IOperation {
 					continue;
 				}
 
-				boolean haveSameNode = haveSameNodeByLU(intersectionNodePid, luLinks);
+				boolean haveSameNode = haveSameNodeByLU(intersectionNodePid,
+						luLinks);
 
 				// 交点制作了同一Node
 				if (haveSameNode) {
@@ -350,7 +374,8 @@ public class Operation implements IOperation {
 	 *            组成面的lulink组
 	 * @throws Exception
 	 */
-	private void getLuLinkInfo(LuFace face, List<LuLink> meshLinks, List<LuLink> luLinks) throws Exception {
+	private void getLuLinkInfo(LuFace face, List<LuLink> meshLinks,
+			List<LuLink> luLinks) throws Exception {
 		List<Integer> linkPids = new ArrayList<Integer>();
 
 		for (IRow row : face.getFaceTopos()) {
@@ -383,21 +408,25 @@ public class Operation implements IOperation {
 		}
 	}
 
-	private boolean haveSameNodeByLU(int rdNodePid, List<LuLink> luLinks) throws Exception {
+	private boolean haveSameNodeByLU(int rdNodePid, List<LuLink> luLinks)
+			throws Exception {
 
-		String tableName = ReflectionAttrUtils.getTableNameByObjType(ObjType.RDNODE);
+		String tableName = ReflectionAttrUtils
+				.getTableNameByObjType(ObjType.RDNODE);
 
-		RdSameNodeSelector rdSameNodeSelector = new RdSameNodeSelector(this.conn);
+		RdSameNodeSelector rdSameNodeSelector = new RdSameNodeSelector(
+				this.conn);
 
-		List<RdSameNode> sameNodes = rdSameNodeSelector.loadSameNodeByNodePids(String.valueOf(rdNodePid), tableName,
-				false);
+		List<RdSameNode> sameNodes = rdSameNodeSelector.loadSameNodeByNodePids(
+				String.valueOf(rdNodePid), tableName, false);
 
 		// 无同一关系
 		if (sameNodes.size() == 0) {
 			return false;
 		}
 
-		String luNodeTableName = ReflectionAttrUtils.getTableNameByObjType(ObjType.LUNODE);
+		String luNodeTableName = ReflectionAttrUtils
+				.getTableNameByObjType(ObjType.LUNODE);
 
 		Set<Integer> sameluNodes = new HashSet<Integer>();
 
@@ -418,7 +447,8 @@ public class Operation implements IOperation {
 		}
 
 		for (LuLink luLink : luLinks) {
-			if (sameluNodes.contains(luLink.getsNodePid()) || sameluNodes.contains(luLink.geteNodePid())) {
+			if (sameluNodes.contains(luLink.getsNodePid())
+					|| sameluNodes.contains(luLink.geteNodePid())) {
 
 				return true;
 			}
@@ -431,7 +461,8 @@ public class Operation implements IOperation {
 
 		AdFaceSelector adFaceSelector = new AdFaceSelector(conn);
 
-		AdFace face = (AdFace) adFaceSelector.loadById(this.command.getPid(), true, true);
+		AdFace face = (AdFace) adFaceSelector.loadById(this.command.getPid(),
+				true, true);
 
 		if (face.getRegionId() == 0) {
 
@@ -440,7 +471,8 @@ public class Operation implements IOperation {
 
 		AdAdminSelector adAdminSelector = new AdAdminSelector(conn);
 
-		AdAdmin admin = (AdAdmin) adAdminSelector.loadById(face.getRegionId(), true, true);
+		AdAdmin admin = (AdAdmin) adAdminSelector.loadById(face.getRegionId(),
+				true, true);
 
 		if (admin.getAdminType() < 0 && admin.getAdminType() > 7) {
 
@@ -459,51 +491,66 @@ public class Operation implements IOperation {
 			return;
 		}
 
-		RdLinkSelector rdLinkSelector = new RdLinkSelector(conn);
+		BatchSelector batchSelector = new BatchSelector(conn);
 
-		List<RdLink> rdLinks = rdLinkSelector.loadLinkByFaceGeo(face.getPid(), face.tableName().toUpperCase(), true);
+		List<RdLink> rdLinks = batchSelector.loadLinkByAdFace(face.getPid(),
+				true);
 
 		Geometry linkGeometry = null;
 
 		// 获取AdFace的regionId
 		Integer regionId = face.getRegionId();
 
-		Geometry faceGeometry = GeoTranslator.geojson2Jts(GeoTranslator.jts2Geojson(face.getGeometry()), 0.00001, 5);
+		Geometry faceGeometry = GeoTranslator.geojson2Jts(
+				GeoTranslator.jts2Geojson(face.getGeometry()), 0.00001, 5);
 
 		for (RdLink link : rdLinks) {
 
-			linkGeometry = (LineString) GeoTranslator.geojson2Jts(GeoTranslator.jts2Geojson(link.getGeometry()),
-					0.00001, 5);
+			linkGeometry = (LineString) GeoTranslator.geojson2Jts(
+					GeoTranslator.jts2Geojson(link.getGeometry()), 0.00001, 5);
 
-			IntersectionMatrix intersectionMatrix = linkGeometry.relate(faceGeometry);
+			IntersectionMatrix intersectionMatrix = linkGeometry
+					.relate(faceGeometry);
 
 			if (GeoRelationUtils.Interior(intersectionMatrix)
-					|| GeoRelationUtils.InteriorAnd2Intersection(intersectionMatrix)
-					|| GeoRelationUtils.InteriorAnd1Intersection(intersectionMatrix)) {
-
-				link.changedFields().put("leftRegionId", face.getRegionId());
+					|| GeoRelationUtils
+							.InteriorAnd2Intersection(intersectionMatrix)
+					|| GeoRelationUtils
+							.InteriorAnd1Intersection(intersectionMatrix)) {
 
 				if (link.getRightRegionId() != regionId) {
+
 					link.changedFields().put("rightRegionId", regionId);
 				}
 
 				if (link.getLeftRegionId() != regionId) {
+
 					link.changedFields().put("leftRegionId", regionId);
 				}
 
 			} else if (GeoRelationUtils.Boundary(intersectionMatrix)) {
-				if (GeoRelationUtils.IsLinkOnLeftOfRing(linkGeometry, faceGeometry)) {
-					if (link.getLeftRegionId() != regionId)
+
+				if (GeoRelationUtils.IsLinkOnLeftOfRing(linkGeometry,
+						faceGeometry)) {
+
+					if (link.getLeftRegionId() != regionId) {
+
 						link.changedFields().put("leftRegionId", regionId);
+					}
+
 				} else {
-					if (link.getRightRegionId() != regionId)
+
+					if (link.getRightRegionId() != regionId) {
+
 						link.changedFields().put("rightRegionId", regionId);
+					}
 				}
-			} else {
-				continue;
 			}
 
-			result.insertObject(link, ObjStatus.UPDATE, link.getPid());
+			if (link.changedFields().size() > 0) {
+
+				result.insertObject(link, ObjStatus.UPDATE, link.getPid());
+			}
 		}
 
 	}
@@ -516,21 +563,18 @@ public class Operation implements IOperation {
 			return;
 		}
 
-		IxPoiSelector ixPoiSelector = new IxPoiSelector(conn);
+		BatchSelector batchSelector = new BatchSelector(conn);
 
-		List<IxPoi> pois = ixPoiSelector.loadByAdFace(face.getPid(), true);
+		List<IxPoi> pois = batchSelector.loadPoiByAdFace(face.getPid(), true);
 
 		// 获取AdFace的regionId
 		Integer regionId = face.getRegionId();
 
 		for (IxPoi poi : pois) {
 
-			if (poi.getRegionId() != regionId) {
+			poi.changedFields().put("regionId", regionId);
 
-				poi.changedFields().put("regionId", regionId);
-
-				result.insertObject(poi, ObjStatus.UPDATE, poi.getPid());
-			}
+			result.insertObject(poi, ObjStatus.UPDATE, poi.getPid());
 		}
 	}
 

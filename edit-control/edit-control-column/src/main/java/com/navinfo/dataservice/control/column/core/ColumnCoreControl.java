@@ -48,11 +48,11 @@ public class ColumnCoreControl {
 //				if (dbId != oldDbId) {
 //					DbUtils.closeQuietly(conn);
 //					oldDbId = dbId;
-					conn = DBConnector.getInstance().getConnectionById(17);
+			conn = DBConnector.getInstance().getConnectionById(17);
 //				}
-				IxPoiDeepStatusSelector deepSelector = new IxPoiDeepStatusSelector(conn);
-				int tempCount = deepSelector.queryHandlerCount(firstWorkItem,userId);
-				hasApply += tempCount;
+			IxPoiDeepStatusSelector deepSelector = new IxPoiDeepStatusSelector(conn);
+			int tempCount = deepSelector.queryHandlerCount(firstWorkItem,userId);
+			hasApply += tempCount;
 //			}
 			
 			// 可申请数据条数
@@ -82,7 +82,7 @@ public class ColumnCoreControl {
 						// 申请数据
 						updateHandler(subList,userId,conn);
 						totalCount += subList.size();
-					} else {
+					} else if (rowIds.size() > 0){
 						// 申请数据
 						updateHandler(rowIds,userId,conn);
 						totalCount += rowIds.size();
@@ -180,7 +180,7 @@ public class ColumnCoreControl {
 	 * @return
 	 * @throws Exception
 	 */
-	public JSONArray taskStatistics(JSONObject jsonReq)  throws Exception {
+	public JSONObject taskStatistics(JSONObject jsonReq)  throws Exception {
 		
 		Connection conn = null;
 		
@@ -216,7 +216,7 @@ public class ColumnCoreControl {
 		
 		try {
 			int taskId = jsonReq.getInt("taskId");
-			String secondWorkItem = jsonReq.getString("secondWorkItem");
+			String firstWorkItem = jsonReq.getString("firstWorkItem");
 			int type = jsonReq.getInt("taskType");
 			
 			ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
@@ -227,7 +227,7 @@ public class ColumnCoreControl {
 			
 			IxPoiDeepStatusSelector ixPoiDeepStatusSelector = new IxPoiDeepStatusSelector(conn);
 			
-			return ixPoiDeepStatusSelector.secondWorkStatistics(secondWorkItem, userId, type);
+			return ixPoiDeepStatusSelector.secondWorkStatistics(firstWorkItem, userId, type);
 		} catch (Exception e) {
 			throw e;
 		} finally {

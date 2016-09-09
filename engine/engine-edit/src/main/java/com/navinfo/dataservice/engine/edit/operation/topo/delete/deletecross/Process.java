@@ -141,8 +141,6 @@ public class Process extends AbstractProcess<Command> {
 
 				laneConn.setRightExtend(resultSet.getInt("right_extend"));
 
-				laneConn.setSrcFlag(resultSet.getInt("src_flag"));
-
 				RdLaneTopologySelector topoSelector = new RdLaneTopologySelector(getConn());
 
 				laneConn.setTopos(topoSelector.loadRowsByParentId(laneConn.getPid(), true));

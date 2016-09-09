@@ -87,10 +87,10 @@ public class Operation implements IOperation {
 
 	private int getspeedClass(int speedValue) {
 
-		if (130 < speedValue) {
+		if (1300 < speedValue) {
 			return 1;
 		}
-		if (1001 <= speedValue && speedValue <= 130) {
+		if (1001 <= speedValue && speedValue <= 1300) {
 			return 2;
 		}
 		if (901 <= speedValue && speedValue <= 1000) {
@@ -105,10 +105,10 @@ public class Operation implements IOperation {
 		if (301 <= speedValue && speedValue <= 500) {
 			return 6;
 		}
-		if (1001 <= speedValue && speedValue <= 300) {
+		if (110 <= speedValue && speedValue <= 300) {
 			return 7;
 		}
-		if (speedValue <= 110) {
+		if (speedValue < 110) {
 			return 8;
 		}
 

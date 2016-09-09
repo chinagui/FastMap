@@ -77,11 +77,11 @@ public class RdLaneTopoDetail implements IObj {
 		this.reachDir = reachDir;
 	}
 
-	public int getTimeDomain() {
+	public String getTimeDomain() {
 		return timeDomain;
 	}
 
-	public void setTimeDomain(int timeDomain) {
+	public void setTimeDomain(String timeDomain) {
 		this.timeDomain = timeDomain;
 	}
 
@@ -101,7 +101,7 @@ public class RdLaneTopoDetail implements IObj {
 	private int nodePid; // 进入 NODE
 	private int outLinkPid;// 退出 LINK
 	private int reachDir = 0; // 通达方向
-	private int timeDomain;// 时间段
+	private String timeDomain ;// 时间段
 	private long vehicle = 0;// 车辆类型
 
 

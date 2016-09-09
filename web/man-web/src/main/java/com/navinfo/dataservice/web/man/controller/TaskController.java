@@ -180,6 +180,55 @@ public class TaskController extends BaseController {
 	}
 	
 	/*
+	 * 规划管理页面--任务管理--3.1.2	查询任务详情
+	 */
+	@SuppressWarnings("rawtypes")
+	@RequestMapping(value = "/task/query")
+	public ModelAndView query(HttpServletRequest request){
+		try{	
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			//taskId,taskType
+			int taskId= dataJson.getInt("taskId");
+			
+			Map<String, Object> data = TaskService.getInstance().query(taskId);
+			return new ModelAndView("jsonView", success(data));
+		}catch(Exception e){
+			log.error("获取列表失败，原因："+e.getMessage(), e);
+			return new ModelAndView("jsonView",exception(e));
+		}
+	}
+	
+	/*
+	 * 规划管理页面--任务管理--3.1.2	查询任务详情
+	 */
+	@SuppressWarnings("rawtypes")
+	@RequestMapping(value = "/task/queryMonthTask")
+	public ModelAndView queryMonthTask(HttpServletRequest request){
+		try{	
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			//taskId,taskType
+			int monthEditGroupId= dataJson.getInt("monthEditGroupId");
+			int curPageNum= 1;//默认为第一页
+			if (dataJson.containsKey("pageNum")){
+				curPageNum = dataJson.getInt("pageNum");
+			}
+			int curPageSize= 20;//默认为20条记录/页
+			if (dataJson.containsKey("pageSize")){
+				curPageSize = dataJson.getInt("pageSize");
+			}
+			
+			Page data = TaskService.getInstance().queryMonthTask(monthEditGroupId,curPageNum,curPageSize);
+			Map<String, Object> returnMap=new HashMap<String, Object>();
+			returnMap.put("result", (List)data.getResult());
+			returnMap.put("totalCount", data.getTotalCount());
+			return new ModelAndView("jsonView", success(returnMap));
+		}catch(Exception e){
+			log.error("获取列表失败，原因："+e.getMessage(), e);
+			return new ModelAndView("jsonView",exception(e));
+		}
+	}
+	
+	/*
 	 * 规划管理页面--任务管理--查看任务页面
 	 */
 	@SuppressWarnings("rawtypes")

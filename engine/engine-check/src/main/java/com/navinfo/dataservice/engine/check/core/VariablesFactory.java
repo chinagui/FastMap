@@ -5,12 +5,15 @@ import java.util.Set;
 
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
+import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchDetail;
 import com.navinfo.dataservice.dao.glm.model.rd.directroute.RdDirectroute;
 import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdEleceyePart;
 import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdElectroniceye;
 import com.navinfo.dataservice.dao.glm.model.rd.gate.RdGate;
 import com.navinfo.dataservice.dao.glm.model.rd.lane.RdLane;
 import com.navinfo.dataservice.dao.glm.model.rd.lane.RdLaneCondition;
+import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
+import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneTopology;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
@@ -132,6 +135,10 @@ public class VariablesFactory {
 		if(data instanceof RdBranch){
 			RdBranch rdBranch=(RdBranch) data;
 			rdLinkSet.add(String.valueOf(rdBranch.getPid()));}
+		
+		if(data instanceof RdBranchDetail){
+			RdBranchDetail rdBranchDetail=(RdBranchDetail) data;
+			rdLinkSet.add(String.valueOf(rdBranchDetail.getBranchPid()));}
 		return rdLinkSet;
 	}
 	/**
@@ -195,4 +202,29 @@ public class VariablesFactory {
 		}
 		return rdLinkSet;
 	}
+	
+	public static Set<String> getRdLaneConnexityPid(IRow data){
+		Set<String> rdLinkSet=new HashSet<String>();
+		if(data instanceof RdLaneConnexity){
+			rdLinkSet.add(String.valueOf(((RdLaneConnexity)data).getPid()));
+		}
+		if(data instanceof RdLaneTopology){
+			rdLinkSet.add(String.valueOf(((RdLaneTopology)data).getConnexityPid()));
+		}
+		return rdLinkSet;
+	}
+	
+	public static Set<String> getRdRestrictionPid(IRow data){
+		Set<String> rdLinkSet=new HashSet<String>();
+		if(data instanceof RdRestriction){
+			rdLinkSet.add(String.valueOf(((RdRestriction)data).getPid()));
+		}
+		if(data instanceof RdRestrictionDetail){
+			rdLinkSet.add(String.valueOf(((RdRestrictionDetail)data).getRestricPid()));
+		}
+		return rdLinkSet;
+	}
+	
+	
+	
 }

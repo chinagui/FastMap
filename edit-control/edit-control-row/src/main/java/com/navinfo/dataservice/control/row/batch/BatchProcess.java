@@ -54,6 +54,7 @@ public class BatchProcess {
 				poiObj.put("type", "IXPOI");
 				poiObj.put("command", "BATCH");
 				poiObj.put("dbId", json.getInt("dbId"));
+				poiObj.put("isLock", false);
 				
 				editApiImpl.runPoi(poiObj);
 			}

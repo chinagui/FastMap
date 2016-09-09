@@ -21,7 +21,7 @@ public class RdTollgatePassage implements IRow {
 	private int seqNum = 1;
 	private int tollForm;
 	private int cardType;
-	private BigInteger vehicle = new BigInteger("0");
+	private long vehicle = 0;
 	private String rowId;
 	public Map<String, Object> changedFields = new HashMap<String, Object>();
 
@@ -74,11 +74,11 @@ public class RdTollgatePassage implements IRow {
 		return false;
 	}
 
-	public BigInteger getVehicle() {
+	public long getVehicle() {
 		return vehicle;
 	}
 
-	public void setVehicle(BigInteger vehicle) {
+	public void setVehicle(long vehicle) {
 		this.vehicle = vehicle;
 	}
 

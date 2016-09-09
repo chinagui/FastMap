@@ -12,6 +12,8 @@ public class CheckCommand implements ICommand {
 	private OperType operType;
 	private ObjType objType;
 	private List<IRow> glmList;
+	private String logSql;
+	private String wkt;
 
 	@Override
 	public OperType getOperType() {
@@ -47,6 +49,22 @@ public class CheckCommand implements ICommand {
 	//获取检查对象list
 	public List<IRow> getGlmList(){
 		return this.glmList;
+	}
+
+	public String getLogSql() {
+		return logSql;
+	}
+
+	public void setLogSql(String logSql) {
+		this.logSql = logSql;
+	}
+
+	public String getWkt() {
+		return wkt;
+	}
+
+	public void setWkt(String wkt) {
+		this.wkt = wkt;
 	}
 	
 

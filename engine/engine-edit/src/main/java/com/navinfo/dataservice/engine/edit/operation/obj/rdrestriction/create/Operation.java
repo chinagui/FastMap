@@ -129,7 +129,6 @@ public class Operation implements IOperation {
 				infoList.add(Integer.parseInt(info));
 			}
 		}
-
 		// 删除某一交限方向的多个退出link，选取正北或者正南方向夹角最小的
 		if (CollectionUtils.isNotEmpty(outLinkPids) && !hasSelectOutLink) {
 			deleteMultLinkOnSameDir(outLinkPids, infoList);
@@ -483,6 +482,10 @@ public class Operation implements IOperation {
 					detail.setRestricPid(restrict.getPid());
 
 					detail.setRestricInfo(restricInfo);
+					
+					if (!infArray[i].contains("[")) {
+						detail.setFlag(1);
+					}
 
 					detail.setRelationshipType(relationTypeMap.get(detail
 							.getOutLinkPid()));

@@ -35,7 +35,7 @@ public class RowEditController extends BaseController {
 			return new ModelAndView("jsonView", success(result));
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
-			return new ModelAndView("jsonView", success(e.getMessage()));
+			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
 	}
 

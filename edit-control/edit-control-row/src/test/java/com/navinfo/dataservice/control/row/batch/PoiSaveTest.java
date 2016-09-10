@@ -41,7 +41,7 @@ public class PoiSaveTest {
 
 	@Test
 	public void testUpdatePoi() throws SQLException {
-		String parameter = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"IXPOI\",\"objId\":22551432,\"data\":{\"addresses\":[{\"nameGroupid\":1,\"poiPid\":0,\"langCode\":\"CHI\",\"fullname\":\"ces4\",\"objStatus\":\"INSERT\"}],\"rowId\":\"3AE1FB77610892F7E050A8C08304EE4C\",\"pid\":22551432}}";
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"IXPOI\",\"objId\":320000003,\"data\":{\"kindCode\":\"110101\",\"rowId\":\"20D854818CC44F4C8E2C4F849D72CC8D\",\"pid\":320000003,\"objStatus\":\"UPDATE\",\"chain\":\"\",\"poiMemo\":\"11\",\"level\":\"B2\",\"indoor\":\"3\",\"restaurants\":[{\"pid\":0,\"poiPid\":0,\"foodType\":\"\",\"creditCard\":\"\",\"avgCost\":0,\"parking\":0,\"travelguideFlag\":0,\"objStatus\":\"INSERT\"}]}}";
 		Connection conn = null;
 		JSONObject result = null;
 		try {
@@ -93,6 +93,7 @@ public class PoiSaveTest {
 
 		} catch (Exception e) {
 			DbUtils.rollback(conn);
+			e.printStackTrace();
 		} finally {
 			DbUtils.commitAndClose(conn);
 		}

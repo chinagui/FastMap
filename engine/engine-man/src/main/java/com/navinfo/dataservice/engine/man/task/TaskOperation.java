@@ -349,7 +349,7 @@ public class TaskOperation {
 	 * @param pageSize
 	 * @return
 	 */
-	private static ResultSetHandler getSnapshotQuery(final int currentPageNum,final int pageSize){
+	private static ResultSetHandler<Page> getSnapshotQuery(final int currentPageNum,final int pageSize){
 		//NVL(T.TASK_ID, 0) TASK_ID,NVL(T.NAME, '---') TASK_NAME, TO_CHAR(C.CITY_ID) UPPER_LEVEL_ID,
 		//C.CITY_NAME UPPER_LEVEL_NAME,1 TASK_TYPE,NVL(T.STATUS, 0) TASK_STATUS,C.PLAN_STATUS,
 		//NVL(T.FINISH_PERCENT, 0) FINISH_PERCENT,ROWNUM_,TOTAL_RECORD_NUM
@@ -660,7 +660,7 @@ public class TaskOperation {
 	 * @param pageSize
 	 * @return
 	 */
-	private static ResultSetHandler getIntegrateQuery(final int currentPageNum,final int pageSize){
+	private static ResultSetHandler<Page> getIntegrateQuery(final int currentPageNum,final int pageSize){
 		/*NVL(T.TASK_ID, 0) TASK_ID,NVL(T.NAME, '---') TASK_NAME,TO_CHAR(C.CITY_ID) UPPER_LEVEL_ID,
           C.CITY_NAME UPPER_LEVEL_NAME,1 TASK_TYPE,T.PLAN_START_DATE,T.PLAN_END_DATE,
           T.MONTH_EDIT_PLAN_START_DATE,T.MONTH_EDIT_PLAN_END_DATE,

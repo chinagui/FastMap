@@ -15,6 +15,7 @@ import org.springframework.web.servlet.ModelAndView;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
+import com.navinfo.dataservice.engine.man.block.BlockOperation;
 import com.navinfo.dataservice.engine.man.block.BlockService;
 import com.navinfo.navicommons.database.Page;
 
@@ -226,7 +227,7 @@ public class BlockController extends BaseController {
 			}
 
 			if (!(dataJson.containsKey("blockIds"))) {
-				throw new IllegalArgumentException("groupIds参数是必须的。");
+				throw new IllegalArgumentException("blockIds参数是必须的。");
 			}
 
 			JSONArray blockIds = dataJson.getJSONArray("blockIds");
@@ -247,27 +248,39 @@ public class BlockController extends BaseController {
 	public ModelAndView listAll(HttpServletRequest request) {
 		try {
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if (!dataJson.containsKey("enterParam")){
+				throw new IllegalArgumentException("enterParam参数是必须的。");
+			}
+			JSONObject enterParam = dataJson.getJSONObject("enterParam");
+			String listType =null;
+			if (dataJson.containsKey("listType")){
+				listType = dataJson.getString("listType");
+			}
 			JSONObject condition = dataJson.getJSONObject("condition");
 			JSONObject order = dataJson.getJSONObject("order");
+			List<HashMap> data = service.listAll(enterParam,listType,condition, order);
+
 			if (!dataJson.containsKey("pageNum")){
-				List<HashMap> data = service.listAll(condition, order);
+				
 				return new ModelAndView("jsonView", success(data));
+			}else{
+				int curPageNum = 1;// 默认为第一页
+				String curPage = dataJson.getString("pageNum");
+				if (StringUtils.isNotEmpty(curPage)) {
+					curPageNum = Integer.parseInt(curPage);
+				}
+				int curPageSize = 20;// 默认为20条记录/页
+				String curSize = dataJson.getString("pageSize");
+				if (StringUtils.isNotEmpty(curSize)) {
+					curPageSize = Integer.parseInt(curSize);
+				}
+				Map<String, Object> resultMap=new HashMap<String, Object>();
+				BlockOperation blockOperation= new BlockOperation();
+				resultMap.put("result", blockOperation.getPagedList(curPageNum, curPageSize, data));
+				resultMap.put("totalCount", data.size());
+				return new ModelAndView("jsonView", success(resultMap));
 			}
-			int curPageNum = 1;// 默认为第一页
-			String curPage = dataJson.getString("pageNum");
-			if (StringUtils.isNotEmpty(curPage)) {
-				curPageNum = Integer.parseInt(curPage);
-			}
-			int curPageSize = 20;// 默认为20条记录/页
-			String curSize = dataJson.getString("pageSize");
-			if (StringUtils.isNotEmpty(curSize)) {
-				curPageSize = Integer.parseInt(curSize);
-			}
-			Page data = service.listAll(condition, order, curPageNum, curPageSize);
-			Map<String, Object> resultMap=new HashMap<String, Object>();
-			resultMap.put("result", data.getResult());
-			resultMap.put("totalCount", data.getTotalCount());
-			return new ModelAndView("jsonView", success(resultMap));
+			
 		} catch (Exception e) {
 			log.error("获取列表失败，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", exception(e));

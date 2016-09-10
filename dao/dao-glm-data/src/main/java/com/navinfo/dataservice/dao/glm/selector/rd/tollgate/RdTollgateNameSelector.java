@@ -2,6 +2,7 @@ package com.navinfo.dataservice.dao.glm.selector.rd.tollgate;
 
 import java.sql.Connection;
 
+import com.navinfo.dataservice.dao.glm.model.rd.tollgate.RdTollgateName;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 
 /**
@@ -16,7 +17,7 @@ public class RdTollgateNameSelector extends AbstractSelector {
 	private Connection conn;
 
 	public RdTollgateNameSelector(Connection conn) throws Exception {
-		super(RdTollgateNameSelector.class, conn);
+		super(RdTollgateName.class, conn);
 		this.conn = conn;
 	}
 

@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.model.rd.crf.RdObject;
@@ -71,29 +72,36 @@ public class RdObjectSelector extends AbstractSelector {
 
 	/**
 	 * 根据crf对象的组成要素类型和要素类型的pid查询crf对象的map
-	 * @param pids 要素pids的string字符串
-	 * @param type 要素类型type
-	 * @param isLock 是否加锁
+	 * 
+	 * @param pids
+	 *            要素pids的string字符串
+	 * @param type
+	 *            要素类型type
+	 * @param isLock
+	 *            是否加锁
 	 * @return crf对象的map key:同一个crf对象组成要素的pid合并的字符串，value对应的pid
 	 * @throws Exception
 	 */
-	public Map<String,RdObject> loadRdObjectByPidAndType(String pids, ObjType type, boolean isLock) throws Exception {
-		Map<String,RdObject> objectMap = new HashMap<>();
+	public Map<String, RdObject> loadRdObjectByPidAndType(String pids, ObjType type, boolean isLock) throws Exception {
+		Map<String, RdObject> objectMap = new HashMap<>();
+		if (StringUtils.isEmpty(pids)) {
+			return objectMap;
+		}
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
 		String sql = "";
 		switch (type) {
 		case RDROAD:
-			sql = "select a.pid,a.row_id,listagg(b.road_pid,',')WITHIN GROUP(order by b.pid)as mapkey from rd_object a,rd_object_road b where a.PID = b.PID and b.ROAD_PID in(" + pids
-					+ ") and a.U_RECORD !=2 and b.U_RECORD !=2 group by a.pid,a.row_id";
+			sql = "select a.pid,a.row_id,listagg(b.road_pid,',')WITHIN GROUP(order by b.pid)as mapkey from rd_object a,rd_object_road b where a.PID = b.PID and b.ROAD_PID in("
+					+ pids + ") and a.U_RECORD !=2 and b.U_RECORD !=2 group by a.pid,a.row_id";
 			break;
 		case RDINTER:
-			sql = "select a.pid,a.row_id,listagg(b.inter_pid,',')WITHIN GROUP(order by b.pid) as mapkey from rd_object a,rd_object_inter b where a.PID = b.PID and b.inter_PID in(" + pids
-					+ ") and a.U_RECORD !=2 and b.U_RECORD !=2 group by a.pid,a.row_id";
+			sql = "select a.pid,a.row_id,listagg(b.inter_pid,',')WITHIN GROUP(order by b.pid) as mapkey from rd_object a,rd_object_inter b where a.PID = b.PID and b.inter_PID in("
+					+ pids + ") and a.U_RECORD !=2 and b.U_RECORD !=2 group by a.pid,a.row_id";
 			break;
 		case RDLINK:
-			sql = "select a.pid,a.row_id,listagg(b.link_pid,',')WITHIN GROUP(order by b.pid) as mapkey from rd_object a,rd_object_link b where a.PID = b.PID and b.link_pid in(" + pids
-					+ ") and a.U_RECORD !=2 and b.U_RECORD !=2 group by a.pid,a.row_id";
+			sql = "select a.pid,a.row_id,listagg(b.link_pid,',')WITHIN GROUP(order by b.pid) as mapkey from rd_object a,rd_object_link b where a.PID = b.PID and b.link_pid in("
+					+ pids + ") and a.U_RECORD !=2 and b.U_RECORD !=2 group by a.pid,a.row_id";
 			break;
 		default:
 			break;

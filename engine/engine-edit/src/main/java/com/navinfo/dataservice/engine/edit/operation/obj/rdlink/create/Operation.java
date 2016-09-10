@@ -28,14 +28,10 @@ public class Operation implements IOperation {
 
 	private Command command;
 
-	private Check check;
-
 	private Connection conn;
 
 	public Operation(Command command, Check check, Connection conn) {
 		this.command = command;
-
-		this.check = check;
 
 		this.conn = conn;
 	}
@@ -191,16 +187,19 @@ public class Operation implements IOperation {
 	}
 
 	public void breakLine(Result result) throws Exception {
-		for (int i = 0; i < command.getCatchLinks().size(); i++) {
-			JSONObject json = command.getCatchLinks().getJSONObject(i);
-			if (json.containsKey("breakNode")) {
+		for (int i = 0; i < command.getMapListJson().size(); i++) {
+			Map<String, Object> json = command.getMapListJson().get(i);
+			
+			JSONObject modifyJson = command.getCatchLinks().getJSONObject(i);
+			
+			if (modifyJson.containsKey("breakNode")) {
 				JSONObject breakJson = new JSONObject();
-				breakJson.put("objId", json.getInt("linkPid"));
+				breakJson.put("objId", json.get("linkPid"));
 				breakJson.put("dbId", command.getDbId());
 				JSONObject data = new JSONObject();
-				data.put("breakNodePid", json.getInt("breakNode"));
-				data.put("longitude", json.getDouble("lon"));
-				data.put("latitude", json.getDouble("lat"));
+				data.put("breakNodePid", modifyJson.getInt("breakNode"));
+				data.put("longitude", json.get("lon"));
+				data.put("latitude", json.get("lat"));
 				breakJson.put("data", data);
 				com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrdpoint.Command breakCommand = new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrdpoint.Command(
 						breakJson, breakJson.toString());

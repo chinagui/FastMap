@@ -5,9 +5,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.exception.DataNotChangeException;
+import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IProcess;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -29,6 +31,7 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 	private Connection conn;
 	private CheckCommand checkCommand = new CheckCommand();
 	private CheckEngine checkEngine = null;
+	public static Logger log = Logger.getLogger(AbstractProcess.class);
 
 	/**
 	 * @return the conn
@@ -49,12 +52,13 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 	private String postCheckMsg;
 
 	public AbstractProcess() {
+		this.log = LoggerRepos.getLogger(this.log);
 	}
 
 	public AbstractProcess(AbstractCommand command) throws Exception {
 		this.command = (T) command;
 		this.result = new Result();
-		if(conn == null && !command.getDbFlag())
+		if(!command.isHasConn())
 		{
 			this.conn = DBConnector.getInstance().getConnectionById(this.command.getDbId());
 		}

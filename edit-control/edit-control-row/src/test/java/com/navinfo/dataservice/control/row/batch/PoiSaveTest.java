@@ -1,43 +1,56 @@
-package com.navinfo.dataservice.control.row.save;
+/**
+ * 
+ */
+package com.navinfo.dataservice.control.row.batch;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.SQLException;
+
 import org.apache.commons.dbutils.DbUtils;
-import org.apache.log4j.Logger;
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.exception.DataNotChangeException;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.JsonUtils;
-import com.navinfo.dataservice.control.row.batch.BatchProcess;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
+import com.navinfo.dataservice.engine.edit.operation.Transaction;
 import com.navinfo.dataservice.engine.edit.service.EditApiImpl;
 import com.navinfo.navicommons.database.sql.DBUtils;
 
 import net.sf.json.JSONObject;
 
-public class PoiSave {
-	private static final Logger logger = Logger.getLogger(PoiSave.class);
+/**
+ * @ClassName: PoiSaveTest
+ * @author Zhang Xiaolong
+ * @date 2016年9月10日 上午8:36:49
+ * @Description: TODO
+ */
+public class PoiSaveTest {
+	@Before
+	public void before() {
+		ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(
+				new String[] { "dubbo-consumer-datahub-test.xml" });
+		context.start();
+		new ApplicationContextUtil().setApplicationContext(context);
+	}
 
-	/**
-	 * @zhaokk POI行編保存
-	 * @param classNames
-	 * @param poi
-	 * @return
-	 * @throws Exception
-	 */
-	public JSONObject save(String parameter, long userId) throws Exception {
-
+	@Test
+	public void testUpdatePoi() throws SQLException {
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"IXPOI\",\"objId\":307000001,\"data\":{\"kindCode\":\"110101\",\"rowId\":\"68C3E9C2DD124D50806668A7D800A9BB\",\"pid\":307000001,\"objStatus\":\"UPDATE\",\"chain\":\"3138\",\"restaurants\":[{\"_flag_\":true,\"pid\":307000001,\"poiPid\":0,\"foodType\":\"\",\"creditCard\":\"\",\"avgCost\":0,\"parking\":0,\"travelguideFlag\":0,\"objStatus\":\"DELETE\"}]}}";
 		Connection conn = null;
 		JSONObject result = null;
 		try {
 
 			JSONObject json = JSONObject.fromObject(parameter);
 
-			OperType operType = Enum.valueOf(OperType.class,
-					json.getString("command"));
+			OperType operType = Enum.valueOf(OperType.class, json.getString("command"));
 
-			ObjType objType = Enum.valueOf(ObjType.class,
-					json.getString("type"));
+			ObjType objType = Enum.valueOf(ObjType.class, json.getString("type"));
 
 			int dbId = json.getInt("dbId");
 
@@ -45,7 +58,7 @@ public class PoiSave {
 
 			EditApiImpl editApiImpl = new EditApiImpl(conn);
 
-			editApiImpl.setToken(userId);
+			editApiImpl.setToken(2);
 
 			result = editApiImpl.runPoi(json);
 
@@ -55,8 +68,7 @@ public class PoiSave {
 
 			if (operType != OperType.CREATE) {
 				if (objType == ObjType.IXSAMEPOI) {
-					String poiPids = JsonUtils.getStringValueFromJSONArray(json
-							.getJSONArray("poiPids"));
+					String poiPids = JsonUtils.getStringValueFromJSONArray(json.getJSONArray("poiPids"));
 					buf.append(poiPids);
 				} else {
 					pid = json.getInt("objId");
@@ -78,16 +90,14 @@ public class PoiSave {
 
 		} catch (DataNotChangeException e) {
 			DbUtils.rollback(conn);
-			logger.error(e.getMessage(), e);
-			throw e;
+
 		} catch (Exception e) {
 			DbUtils.rollback(conn);
-			logger.error(e.getMessage(), e);
-			throw e;
+			e.printStackTrace();
 		} finally {
 			DbUtils.commitAndClose(conn);
 		}
-		return result;
+		System.out.println(result.toString());
 	}
 
 	/**
@@ -98,8 +108,7 @@ public class PoiSave {
 	 */
 	public void upatePoiStatus(String pids, Connection conn) throws Exception {
 		StringBuilder sb = new StringBuilder(" MERGE INTO poi_edit_status T1 ");
-		sb.append(" USING (SELECT row_id as a , 2 AS b,0 AS C FROM ix_poi where pid in ("
-				+ pids + ")) T2 ");
+		sb.append(" USING (SELECT row_id as a , 2 AS b,0 AS C FROM ix_poi where pid in (" + pids + ")) T2 ");
 		sb.append(" ON ( T1.row_id=T2.a) ");
 		sb.append(" WHEN MATCHED THEN ");
 		sb.append(" UPDATE SET T1.status = T2.b,T1.fresh_verified= T2.c ");
@@ -117,5 +126,4 @@ public class PoiSave {
 		}
 
 	}
-
 }

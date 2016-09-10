@@ -227,7 +227,7 @@ public class BlockController extends BaseController {
 			}
 
 			if (!(dataJson.containsKey("blockIds"))) {
-				throw new IllegalArgumentException("groupIds参数是必须的。");
+				throw new IllegalArgumentException("blockIds参数是必须的。");
 			}
 
 			JSONArray blockIds = dataJson.getJSONArray("blockIds");
@@ -248,8 +248,14 @@ public class BlockController extends BaseController {
 	public ModelAndView listAll(HttpServletRequest request) {
 		try {
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if (!dataJson.containsKey("enterParam")){
+				throw new IllegalArgumentException("enterParam参数是必须的。");
+			}
 			JSONObject enterParam = dataJson.getJSONObject("enterParam");
-			String listType = dataJson.getString("listType");
+			String listType =null;
+			if (dataJson.containsKey("listType")){
+				listType = dataJson.getString("listType");
+			}
 			JSONObject condition = dataJson.getJSONObject("condition");
 			JSONObject order = dataJson.getJSONObject("order");
 			List<HashMap> data = service.listAll(enterParam,listType,condition, order);

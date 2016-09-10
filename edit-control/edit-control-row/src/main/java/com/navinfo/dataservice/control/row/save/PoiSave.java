@@ -79,10 +79,11 @@ public class PoiSave {
 		} catch (DataNotChangeException e) {
 			DbUtils.rollback(conn);
 			logger.error(e.getMessage(), e);
-
+			throw e;
 		} catch (Exception e) {
 			DbUtils.rollback(conn);
 			logger.error(e.getMessage(), e);
+			throw e;
 		} finally {
 			DbUtils.commitAndClose(conn);
 		}

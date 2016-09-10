@@ -41,7 +41,7 @@ public class PoiSaveTest {
 
 	@Test
 	public void testUpdatePoi() throws SQLException {
-		String parameter = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"IXPOI\",\"objId\":320000003,\"data\":{\"kindCode\":\"110101\",\"rowId\":\"20D854818CC44F4C8E2C4F849D72CC8D\",\"pid\":320000003,\"objStatus\":\"UPDATE\",\"chain\":\"\",\"poiMemo\":\"11\",\"level\":\"B2\",\"indoor\":\"3\",\"restaurants\":[{\"pid\":0,\"poiPid\":0,\"foodType\":\"\",\"creditCard\":\"\",\"avgCost\":0,\"parking\":0,\"travelguideFlag\":0,\"objStatus\":\"INSERT\"}]}}";
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"IXPOI\",\"objId\":307000001,\"data\":{\"kindCode\":\"110101\",\"rowId\":\"68C3E9C2DD124D50806668A7D800A9BB\",\"pid\":307000001,\"objStatus\":\"UPDATE\",\"chain\":\"3138\",\"restaurants\":[{\"_flag_\":true,\"pid\":307000001,\"poiPid\":0,\"foodType\":\"\",\"creditCard\":\"\",\"avgCost\":0,\"parking\":0,\"travelguideFlag\":0,\"objStatus\":\"DELETE\"}]}}";
 		Connection conn = null;
 		JSONObject result = null;
 		try {

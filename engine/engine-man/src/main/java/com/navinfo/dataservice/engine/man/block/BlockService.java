@@ -67,11 +67,11 @@ public class BlockService {
 			String createSql = "insert into block_man (BLOCK_MAN_ID, CREATE_USER_ID,BLOCK_ID,COLLECT_GROUP_ID, COLLECT_PLAN_START_DATE,"
 					+ "COLLECT_PLAN_END_DATE,DAY_EDIT_GROUP_ID,DAY_EDIT_PLAN_START_DATE,DAY_EDIT_PLAN_END_DATE,MONTH_EDIT_GROUP_ID,"
 					+ "MONTH_EDIT_PLAN_START_DATE,MONTH_EDIT_PLAN_END_DATE,DAY_PRODUCE_PLAN_START_DATE,DAY_PRODUCE_PLAN_END_DATE,"
-					+ "MONTH_PRODUCE_PLAN_START_DATE,MONTH_PRODUCE_PLAN_END_DATE,DESCP,STATUS) "
+					+ "MONTH_PRODUCE_PLAN_START_DATE,MONTH_PRODUCE_PLAN_END_DATE,DESCP,STATUS,TASK_ID) "
 					+ "values(BLOCK_MAN_SEQ.NEXTVAL,?,?,?,to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),?,"
 					+ "to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),?,to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),"
 					+ "to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),"
-					+ "to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),?,?)";
+					+ "to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),?,?,(SELECT DISTINCT TASK_ID FROM BLOCK T,TASK K WHERE T.CITY_ID=K.CITY_ID AND K.LATEST=1 AND T.BLOCK_ID=?))";
 
 			Object[][] param = new Object[blockArray.size()][];
 			List<Integer> updateBlockList = BlockOperation.queryOperationBlocks(conn, blockArray);
@@ -88,7 +88,7 @@ public class BlockService {
 						block.getString("monthEditPlanStartDate"), block.getString("monthEditPlanEndDate"),
 						block.getString("dayProducePlanStartDate"), block.getString("dayProducePlanEndDate"),
 						block.getString("monthProducePlanStartDate"), block.getString("monthProducePlanEndDate"),
-						block.getString("descp"), 2 };
+						block.getString("descp"), 2, block.getInt("blockId")};
 				param[i] = obj;
 				blockIdList.add(block.getInt("blockId"));
 			}
@@ -433,7 +433,7 @@ public class BlockService {
 			} else {
 				cityId = enterParam.getInt("cityId");
 			}
-			if (listType.isEmpty() || "snapshot".equals(listType)) {
+			if (listType==null || "snapshot".equals(listType)) {
 				if (!inforId.isEmpty()) {
 					selectSql = "SELECT m.block_id,m.block_name,m.status blockStatus,i.plan_status FROM BLOCK t,Block_Man m,infor i WHERE i.infor_id="+inforId
 							+ "AND i.task_id=m.task_id AND t.block_id=m.block_id AND m.latest = 1";
@@ -497,7 +497,7 @@ public class BlockService {
 						}
 					}
 					if ("createUserName".equals(key)) {
-						if (!listType.isEmpty() && "integrate".equals(listType)) {
+						if (listType!=null && "integrate".equals(listType)) {
 							selectSql += " and u.USER_REAL_NAME like '%" + conditionJson.getString(key) + "%'";
 						}
 					}
@@ -513,7 +513,7 @@ public class BlockService {
 						selectSql += " and m.status in " + blockStatus;
 					}
 					if ("taskName".equals(key)) {
-						if (!listType.isEmpty() && "integrate".equals(listType)) {
+						if (listType!=null && "integrate".equals(listType)) {
 							selectSql += " and k.name like '%" + conditionJson.getString(key) + "%'";
 						}
 					}
@@ -524,14 +524,14 @@ public class BlockService {
 				while (keys.hasNext()) {
 					String key = (String) keys.next();
 					if ("collectPlanStartDate".equals(key)) {
-						if (!listType.isEmpty() && "integrate".equals(listType)) {
+						if (listType!=null && "integrate".equals(listType)) {
 						selectSql += (" order by m.COLLECT_PLAN_START_DATE "
 								+ orderJson.getString("collectPlanStartDate"));
 						}
 						break;
 					}
 					if ("collectPlanEndDate".equals(key)) {
-						if (!listType.isEmpty() && "integrate".equals(listType)) {
+						if (listType!=null && "integrate".equals(listType)) {
 						selectSql += (" order by m.COLLECT_PLAN_END_DATE " + orderJson.getString("collectPlanEndDate"));
 						}
 						break;

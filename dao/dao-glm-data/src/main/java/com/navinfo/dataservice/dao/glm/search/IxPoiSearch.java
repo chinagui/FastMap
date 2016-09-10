@@ -319,18 +319,21 @@ public class IxPoiSearch implements ISearch {
 				}
 				
 				// 名称拼音作业，获取拼音组
-				if (secondWorkItem.equals("namePinYin")) {
+				if (secondWorkItem.equals("namePinyin")) {
 					List<List<String>> pyList = new ArrayList<List<String>>();
+					JSONArray nameArray = new JSONArray();
 					for (IRow temp:nameList) {
 						IxPoiName name = (IxPoiName) temp;
+						JSONObject nameObj = name.Serialize(null);
 						if (name.getLangCode().equals(langCode) && name.getNameType() == 1) {
 							if (name.getNameClass()==1||name.getNameClass()==3||name.getNameClass()==5||name.getNameClass()==8) {
 								pyList = pyConvertor(name.getName());
+								nameObj.put("multiPinyin", pyList);
 							}
 						}
-						
+						nameArray.add(nameObj);
 					}
-					poiObj.put("multiPinYin", pyList);
+					poiObj.put("names", nameArray);
 				}
 				
 				dataList.add(poiObj);

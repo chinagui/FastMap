@@ -17,6 +17,8 @@ public class Command extends AbstractCommand  implements ICommand{
 	
 	private int pid;
 	
+	private boolean isLock = true;
+	
 	public int getPid() {
 		return pid;
 	}
@@ -57,6 +59,19 @@ public class Command extends AbstractCommand  implements ICommand{
 		this.content = json.getJSONObject("data");	
 		
 		this.pid = this.content.getInt("pid");
+		
+		if(json.containsKey("isLock"))
+		{
+			isLock = json.getBoolean("isLock");
+		}
 	}
 
+	public boolean isLock() {
+		return isLock;
+	}
+
+	public void setLock(boolean isLock) {
+		this.isLock = isLock;
+	}
+	
 }

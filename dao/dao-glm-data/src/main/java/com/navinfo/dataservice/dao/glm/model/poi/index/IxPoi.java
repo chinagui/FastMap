@@ -190,7 +190,7 @@ public class IxPoi implements IObj {
 	private int uRecord;
 	// POI等级
 
-	private String level = "A";
+	private String level;
 	// 运动场馆
 	private String sportsVenue;
 	// 内部标示

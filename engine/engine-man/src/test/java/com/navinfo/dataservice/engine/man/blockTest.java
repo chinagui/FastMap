@@ -1,14 +1,17 @@
 package com.navinfo.dataservice.engine.man;
 
-import java.util.HashMap;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.navinfo.dataservice.api.man.model.Subtask;
+import com.navinfo.dataservice.api.man.model.subtask.SubtaskListByUser;
 import com.navinfo.dataservice.engine.man.block.BlockService;
-import com.navinfo.dataservice.engine.man.city.CityService;
+import com.navinfo.dataservice.engine.man.subtask.SubtaskService;
+import com.navinfo.navicommons.database.Page;
+import com.navinfo.navicommons.exception.ServiceException;
 
 import net.sf.json.JSONObject;
 
@@ -49,5 +52,36 @@ public class blockTest extends InitApplication{
 	public void init() {
 		initContext();
 	}
+	
+	@Test
+	public void testListByUser() throws ServiceException
+	{
+		String parameter = "{\"exeUserId\":\"2\",\"stage\":1,\"type\":2,\"snapshot\":0,\"pageNum\":1,\"pageSize\":20}";
+				
+				JSONObject dataJson = JSONObject.fromObject(parameter);
+		if(dataJson==null){
+			throw new IllegalArgumentException("parameter参数不能为空。");
+		}
+		
+		int curPageNum= 1;//默认为第一页
+		if(dataJson.containsKey("pageNum")){
+			curPageNum = dataJson.getInt("pageNum");
+			dataJson.remove("pageNum");
+		}
+		
+		int pageSize = 20;//默认页容量为10
+		if(dataJson.containsKey("pageSize")){
+			pageSize = dataJson.getInt("pageSize");
+			dataJson.remove("pageSize");
+		}
+		
+		int snapshot = dataJson.getInt("snapshot");
+		dataJson.remove("snapshot");
 
+        Subtask bean = (Subtask)JSONObject.toBean(dataJson, Subtask.class);
+        
+        Page page = SubtaskService.getInstance().listByUserPage(bean,snapshot,pageSize,curPageNum);
+        
+		System.out.println(page.getResult().toString());
+	}
 }

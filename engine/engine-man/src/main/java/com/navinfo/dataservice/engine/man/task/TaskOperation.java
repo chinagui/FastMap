@@ -1001,9 +1001,14 @@ public class TaskOperation {
 	}
 
 	public static Page queryMonthTask(Connection conn,
-			int monthEditGroupId, int currentPageNum,int pageSize) throws Exception {
+			int monthEditGroupId, JSONObject condition, int currentPageNum,int pageSize) throws Exception {
 		long pageStartNum = (currentPageNum - 1) * pageSize + 1;
 		long pageEndNum = currentPageNum * pageSize;
+		String conditionSql="";
+		if(null!=condition && !condition.isEmpty()){
+			String taskName=condition.getString("taskName");
+			conditionSql="   AND TASK_LIST.TASK_NAME LIKE '%"+taskName+"%'";
+		}
 		String selectSql="WITH T AS"
 				+ " (SELECT T.TASK_ID,"
 				+ "         T.NAME,"
@@ -1061,7 +1066,8 @@ public class TaskOperation {
 				+ "    FROM T, INFOR I"
 				+ "   WHERE T.TASK_ID = I.TASK_ID),"
 				+ " QUERY AS"
-				+ " (SELECT * FROM TASK_LIST WHERE MONTH_EDIT_GROUP_ID = "+monthEditGroupId+")"
+				+ " (SELECT * FROM TASK_LIST WHERE MONTH_EDIT_GROUP_ID = "+monthEditGroupId+conditionSql+""
+				+ "          ORDER BY TASK_LIST.TASK_STATUS DESC, TASK_LIST.FINISH_PERCENT ASC)"
 				+ " SELECT /*+FIRST_ROWS ORDERED*/"
 				+ " T.*, (SELECT COUNT(1) FROM QUERY) AS TOTAL_RECORD_NUM"
 				+ "  FROM (SELECT T.*, ROWNUM AS ROWNUM_ FROM QUERY T WHERE ROWNUM <= "+pageEndNum+") T"

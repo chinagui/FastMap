@@ -216,8 +216,12 @@ public class TaskController extends BaseController {
 			if (dataJson.containsKey("pageSize")){
 				curPageSize = dataJson.getInt("pageSize");
 			}
+			JSONObject condition = new JSONObject();	
+			if(dataJson.containsKey("condition")){
+				condition=dataJson.getJSONObject("condition");
+			}
 			
-			Page data = TaskService.getInstance().queryMonthTask(monthEditGroupId,curPageNum,curPageSize);
+			Page data = TaskService.getInstance().queryMonthTask(monthEditGroupId,condition,curPageNum,curPageSize);
 			Map<String, Object> returnMap=new HashMap<String, Object>();
 			returnMap.put("result", (List)data.getResult());
 			returnMap.put("totalCount", data.getTotalCount());

@@ -355,7 +355,7 @@ public class BlockOperation {
 		try {
 			QueryRunner run = new QueryRunner();
 			List<HashMap> blockList = new ArrayList<HashMap>();
-			if (listType.isEmpty() || "snapshot".equals(listType)){
+			if (listType==null|| "snapshot".equals(listType)){
 				ResultSetHandler<List> rsHandler = new ResultSetHandler<List>() {
 					public List handle(ResultSet rs) throws SQLException {
 						List<HashMap> list = new ArrayList<HashMap>();

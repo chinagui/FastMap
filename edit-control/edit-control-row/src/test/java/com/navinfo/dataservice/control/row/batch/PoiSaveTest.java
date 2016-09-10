@@ -41,7 +41,7 @@ public class PoiSaveTest {
 
 	@Test
 	public void testUpdatePoi() throws SQLException {
-		String parameter = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"IXPOI\",\"objId\":307000001,\"data\":{\"kindCode\":\"110101\",\"rowId\":\"68C3E9C2DD124D50806668A7D800A9BB\",\"pid\":307000001,\"objStatus\":\"UPDATE\",\"chain\":\"3138\",\"restaurants\":[{\"_flag_\":true,\"pid\":307000001,\"poiPid\":0,\"foodType\":\"\",\"creditCard\":\"\",\"avgCost\":0,\"parking\":0,\"travelguideFlag\":0,\"objStatus\":\"DELETE\"}]}}";
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"IXPOI\",\"objId\":46215,\"data\":{\"names\":[{\"name\":\"延庆区刘斌堡乡政府11\",\"rowId\":\"3AE1FCF7C56E92F7E050A8C08304EE4C\",\"pid\":127729392,\"objStatus\":\"UPDATE\"}],\"rowId\":\"3AE1FB4B75FF92F7E050A8C08304EE4C\",\"pid\":46215}}";
 		Connection conn = null;
 		JSONObject result = null;
 		try {

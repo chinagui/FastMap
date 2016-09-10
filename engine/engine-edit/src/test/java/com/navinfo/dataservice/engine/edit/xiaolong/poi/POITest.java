@@ -157,7 +157,7 @@ public class POITest extends InitApplication {
 
 	@Test
 	public void testUpdatePoi() {
-		String parameter = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"IXPOI\",\"objId\":2574546,\"data\":{\"rowId\":\"3AE1FB52D86492F7E050A8C08304EE4C\",\"pid\":2574546,\"objStatus\":\"UPDATE\"}}";
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"IXPOI\",\"objId\":22551432,\"data\":{\"addresses\":[{\"nameGroupid\":1,\"poiPid\":0,\"langCode\":\"CHI\",\"fullname\":\"ces2\",\"objStatus\":\"INSERT\"}],\"rowId\":\"3AE1FB77610892F7E050A8C08304EE4C\",\"pid\":22551432}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

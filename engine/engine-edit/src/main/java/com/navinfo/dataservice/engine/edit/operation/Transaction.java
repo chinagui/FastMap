@@ -1248,14 +1248,12 @@ public class Transaction {
 	public String innerRun() throws Exception {
 		command = this.createCommand();
 		command.setUserId(userId);
-
-		process = this.createProcess(command);
 		if (conn != null) {
-			command.setDbFlag(true);
-
-			process.setConn(conn);
+			command.setHasConn(true);
 		}
-
+		process = this.createProcess(command);
+		process.setConn(conn);
+		
 		return process.innerRun();
 
 	}

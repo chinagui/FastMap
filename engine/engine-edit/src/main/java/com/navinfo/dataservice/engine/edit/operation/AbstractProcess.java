@@ -58,7 +58,7 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 	public AbstractProcess(AbstractCommand command) throws Exception {
 		this.command = (T) command;
 		this.result = new Result();
-		if(conn == null && !command.getDbFlag())
+		if(!command.isHasConn())
 		{
 			this.conn = DBConnector.getInstance().getConnectionById(this.command.getDbId());
 		}

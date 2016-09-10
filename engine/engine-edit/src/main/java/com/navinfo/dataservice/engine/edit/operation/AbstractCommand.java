@@ -20,7 +20,7 @@ public abstract class AbstractCommand implements ICommand {
 		this.userId = userId;
 	}
 
-	private boolean dbFlag;
+	private boolean hasConn = false;
 
 	public int getDbId() {
 		return dbId;
@@ -30,12 +30,11 @@ public abstract class AbstractCommand implements ICommand {
 		this.dbId = dbId;
 	}
 
-	public boolean getDbFlag() {
-		return dbFlag;
+	public boolean isHasConn() {
+		return hasConn;
 	}
 
-	public void setDbFlag(boolean dbFlag) {
-		this.dbFlag = dbFlag;
+	public void setHasConn(boolean hasConn) {
+		this.hasConn = hasConn;
 	}
-
 }

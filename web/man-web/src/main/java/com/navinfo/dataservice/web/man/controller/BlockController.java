@@ -17,6 +17,7 @@ import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.engine.man.block.BlockOperation;
 import com.navinfo.dataservice.engine.man.block.BlockService;
+import com.navinfo.dataservice.engine.man.task.TaskService;
 import com.navinfo.navicommons.database.Page;
 
 import net.sf.json.JSONArray;
@@ -71,10 +72,11 @@ public class BlockController extends BaseController {
 			if (dataJson == null) {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
-			
+			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
+			long userId=tokenObj.getUserId();
 			JSONArray blockArray = dataJson.getJSONArray("blocks");
 			int blockSize=blockArray.size();
-			int updateCount=service.batchUpdate(dataJson);
+			int updateCount=service.batchUpdate(dataJson,userId);
 			String message = "批量修改block：" + updateCount + "个成功，" + (blockSize - updateCount) + "个失败。";
 			return new ModelAndView("jsonView", success(message));
 		} catch (Exception e) {
@@ -105,7 +107,7 @@ public class BlockController extends BaseController {
 			JSONArray blockArray = dataJson.getJSONArray("blocks");
 			int blockSize=blockArray.size();
 			int insertCount=service.batchOpen(userId, dataJson);
-			int updateCount=service.batchUpdate(dataJson);
+			int updateCount=service.batchUpdate(dataJson,userId);
 			String message = "批量保存block：" + updateCount + "个成功，" + (blockSize - (insertCount+updateCount)) + "个失败。";
 			return new ModelAndView("jsonView", success(message));
 		} catch (Exception e) {
@@ -322,6 +324,33 @@ public class BlockController extends BaseController {
 		} catch (Exception e) {
 			log.error("获取列表失败，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+	
+	/**
+	 * 发布对象：1.分配的采集作业组组长2.分配的日编作业组组长
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/block/pushMsg")
+	public ModelAndView pushMsg(HttpServletRequest request){
+		try{
+			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
+			String parameter = request.getParameter("parameter");
+			if (StringUtils.isEmpty(parameter)){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}		
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(parameter));			
+			if(dataJson==null){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			JSONArray blockIds=dataJson.getJSONArray("blockIds");
+			long userId=tokenObj.getUserId();
+			String msg=service.blockPushMsg(userId,blockIds);
+			return new ModelAndView("jsonView", success(msg));
+		}catch(Exception e){
+			log.error("发布失败，原因："+e.getMessage(), e);
+			return new ModelAndView("jsonView",exception(e));
 		}
 	}
 }

@@ -938,7 +938,7 @@ public class SubtaskOperation {
 			String selectSql = "";
 			//0采集，1日编，2月编
 			if(0 == stage){
-				selectSql = "SELECT S.SUBTASK_ID, S.STAGE, S.NAME, S.STATUS"
+				selectSql = "SELECT S.SUBTASK_ID, S.STAGE, S.NAME, S.TYPE, S.STATUS,S.PLAN_START_DATE,S.PLAN_END_DATE,B.BLOCK_ID,B.BLOCK_NAME"
 						+ " FROM SUBTASK S ,BLOCK B,BLOCK_MAN BM, USER_GROUP UG"
 						+ " WHERE S.STAGE = 0"
 						+ " AND S.BLOCK_ID = B.BLOCK_ID"
@@ -947,7 +947,7 @@ public class SubtaskOperation {
 						+ " AND UG.GROUP_ID = BM.COLLECT_GROUP_ID"
 						+ " AND UG.LEADER_ID = " + userId;
 			}else if(1 == stage){
-				selectSql = "SELECT S.SUBTASK_ID, S.STAGE, S.NAME, S.STATUS"
+				selectSql = "SELECT S.SUBTASK_ID, S.STAGE, S.NAME, S.TYPE, S.STATUS,S.PLAN_START_DATE,S.PLAN_END_DATE,B.BLOCK_ID,B.BLOCK_NAME"
 						+ " FROM SUBTASK S ,BLOCK B,BLOCK_MAN BM, USER_GROUP UG"
 						+ " WHERE S.STAGE = 1"
 						+ " AND S.BLOCK_ID = B.BLOCK_ID"
@@ -957,7 +957,7 @@ public class SubtaskOperation {
 						+ " AND UG.LEADER_ID = " + userId;
 			}
 			else if(2 ==stage){
-				selectSql = "SELECT S.SUBTASK_ID, S.STAGE, S.NAME, S.STATUS"
+				selectSql = "SELECT S.SUBTASK_ID, S.STAGE, S.NAME, S.TYPE, S.STATUS,S.PLAN_START_DATE,S.PLAN_END_DATE,T.TASK_ID,T.NAME AS TASK_NAME"
 						+ " FROM SUBTASK S ,TASK T, USER_GROUP UG"
 						+ " WHERE S.STAGE = 2"
 						+ " AND S.TASK_ID = T.TASK_ID"
@@ -1006,6 +1006,18 @@ public class SubtaskOperation {
 						subtask.put("subtaskId", rs.getInt("SUBTASK_ID"));
 						subtask.put("subtaskName", rs.getString("NAME"));
 						subtask.put("status", rs.getInt("STATUS"));
+						subtask.put("type", rs.getInt("TYPE"));
+						
+						subtask.put("planStartDate", df.format(rs.getTimestamp("PLAN_START_DATE")));
+						subtask.put("planEndDate", df.format(rs.getTimestamp("PLAN_END_DATE")));
+						
+						if(rs.getInt("STAGE") == 2){
+							subtask.put("taskId", rs.getInt("TASK_ID"));
+							subtask.put("taskName", rs.getString("TASK_NAME"));
+						}else{
+							subtask.put("blockId", rs.getInt("BLOCK_ID"));
+							subtask.put("blockName", rs.getString("BLOCK_NAME"));
+						}
 						
 						JSONObject stat = staticApi.getStatBySubtask(rs.getInt("SUBTASK_ID"));
 						int percent = stat.getInt("percent");

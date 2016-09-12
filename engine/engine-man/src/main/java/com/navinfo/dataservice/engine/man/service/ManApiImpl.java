@@ -77,6 +77,14 @@ public class ManApiImpl implements ManApi {
 	public List<Region> queryRegionWithGrids(List<Integer> grids) throws Exception {
 		return RegionService.getInstance().queryRegionWithGrids(grids);
 	}
+	/* (non-Javadoc)
+	 * @see com.navinfo.dataservice.api.man.iface.ManApi#queryCityIdByTaskId(int)
+	 */
+	@Override
+	public int queryCityIdByTaskId(int taskId) throws Exception {
+		// TODO Auto-generated method stub
+		return RegionService.getInstance().queryCityIdByTaskId(taskId);
+	}
 	
 }
 

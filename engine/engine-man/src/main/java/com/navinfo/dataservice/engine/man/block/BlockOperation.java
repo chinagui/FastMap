@@ -405,6 +405,7 @@ public class BlockOperation {
 							map.put("dayProducePlanEndDate", rs.getString("DAY_PRODUCE_PLAN_END_DATE"));
 							map.put("taskId", rs.getInt("TASK_ID"));
 							map.put("taskName", rs.getString("NAME"));
+							map.put("taskType", rs.getString("task_type"));
 							map.put("taskPlanStartDate", rs.getString("PLAN_START_DATE"));
 							map.put("taskPlanEndDate", rs.getString("PLAN_END_DATE"));
 							map.put("finishPercent",

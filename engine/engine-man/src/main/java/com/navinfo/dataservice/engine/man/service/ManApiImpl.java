@@ -10,6 +10,7 @@ import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Grid;
 import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.api.man.model.Subtask;
+import com.navinfo.dataservice.engine.man.city.CityService;
 import com.navinfo.dataservice.engine.man.grid.GridService;
 import com.navinfo.dataservice.engine.man.region.RegionService;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskService;
@@ -83,7 +84,7 @@ public class ManApiImpl implements ManApi {
 	@Override
 	public int queryCityIdByTaskId(int taskId) throws Exception {
 		// TODO Auto-generated method stub
-		return RegionService.getInstance().queryCityIdByTaskId(taskId);
+		return CityService.getInstance().queryCityIdByTaskId(taskId);
 	}
 	
 }

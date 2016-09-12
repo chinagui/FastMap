@@ -22,12 +22,15 @@ public class Process extends AbstractProcess<Command> {
 
 		int linkPid = this.getCommand().getLinkPid();
 
-		this.getCommand().setUpdateLink((RdLink) new RdLinkSelector(this.getConn()).loadById(linkPid, true));
+		this.getCommand().setUpdateLink(
+				(RdLink) new RdLinkSelector(this.getConn()).loadById(linkPid,
+						true));
 
 		// 查询需要修行的线上是否存在立交
 		RdGscSelector gscSelector = new RdGscSelector(this.getConn());
 
-		List<RdGsc> gscList = gscSelector.onlyLoadRdGscLinkByLinkPid(linkPid, "RD_LINK", true);
+		List<RdGsc> gscList = gscSelector.onlyLoadRdGscLinkByLinkPid(linkPid,
+				"RD_LINK", true);
 
 		this.getCommand().setGscList(gscList);
 
@@ -36,12 +39,12 @@ public class Process extends AbstractProcess<Command> {
 
 	@Override
 	public String preCheck() throws Exception {
-		String preCheckMsg=super.preCheck();
-		
-		if (!preCheckMsg.isEmpty()) {
+		String preCheckMsg = super.preCheck();
+
+		if (preCheckMsg != null && !preCheckMsg.isEmpty()) {
 			return preCheckMsg;
 		}
-		//check.checkIsVia(this.getConn(), this.getCommand().getLinkPid());
+		// check.checkIsVia(this.getConn(), this.getCommand().getLinkPid());
 
 		check.checkShapePointDistance(this.getCommand().getLinkGeom());
 
@@ -50,8 +53,10 @@ public class Process extends AbstractProcess<Command> {
 
 	@Override
 	public String exeOperation() throws Exception {
-		check.checkIsMoveGscPoint(this.getCommand().getLinkGeom(), this.getConn(), this.getCommand().getLinkPid());
-		return new Operation(this.getConn(), this.getCommand()).run(this.getResult());
+		check.checkIsMoveGscPoint(this.getCommand().getLinkGeom(),
+				this.getConn(), this.getCommand().getLinkPid());
+		return new Operation(this.getConn(), this.getCommand()).run(this
+				.getResult());
 	}
 
 }

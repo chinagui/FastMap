@@ -26,30 +26,17 @@ public class Subtask implements Serializable  {
 	private Integer createUserId ;
 	private Timestamp createDate ;
 	private Integer exeUserId ;
+	private Integer exeGroupId ;
 	private Integer status ;
 	private Timestamp planStartDate ;
 	private Timestamp planEndDate;
 	private String descp ;
-//	private Block block;
-//	private Task task;
-//	private BlockMan blockMan ;
 	private List<Integer> gridIds;
 	private Integer dbId ;
 	private Integer groupId;
-	
 	private String blockName;
-	private Timestamp blockCollectPlanStartDate;
-	private Timestamp blockCollectPlanEndDate;
-	private Timestamp blockDayEditPlanStartDate;
-	private Timestamp blockDayEditPlanEndDate;
-	private Timestamp blockCMonthEditPlanStartDate;
-	private Timestamp blockCMonthEditPlanEndDate;
-	
 	private String taskName;
-	private Timestamp taskCMonthEditPlanStartDate;
-	private Timestamp taskCMonthEditPlanEndDate;
 
-	
 	public Subtask (){
 	}
 	
@@ -63,24 +50,13 @@ public class Subtask implements Serializable  {
 			Integer createUserId,
 			Timestamp createDate,
 			Integer exeUserId,
+			Integer exeGroupId,
 			Integer status,
 			Timestamp planStartDate,
 			Timestamp planEndDate,
 			String descp,
-			String blockName,
-			Timestamp blockCollectPlanStartDate,
-			Timestamp blockCollectPlanEndDate,
-			Timestamp blockDayEditPlanStartDate,
-			Timestamp blockDayEditPlanEndDate,
-			Timestamp blockCMonthEditPlanStartDate,
-			Timestamp blockCMonthEditPlanEndDate,						
-			String taskName,
-			Timestamp taskCMonthEditPlanStartDate,
-			Timestamp taskCMonthEditPlanEndDate,
-//			Block block,
-//			Task task,
-//			BlockMan blockMan,
-			
+			String blockName,						
+			String taskName,	
 			List<Integer> gridIds,
 			Integer dbId,
 			Integer groupId){
@@ -94,23 +70,13 @@ public class Subtask implements Serializable  {
 		this.createUserId=createUserId ;
 		this.createDate=createDate ;
 		this.exeUserId=exeUserId ;
+		this.exeGroupId = exeGroupId;
 		this.status=status ;
 		this.planStartDate=planStartDate ;
 		this.planEndDate=planEndDate ;
 		this.descp=descp ;
-		this.blockName = blockName;
-		this.blockCollectPlanStartDate = blockCollectPlanStartDate;
-		this.blockCollectPlanEndDate = blockCollectPlanEndDate;
-		this.blockDayEditPlanStartDate = blockDayEditPlanStartDate;
-		this.blockDayEditPlanEndDate = blockDayEditPlanEndDate;
-		this.blockCMonthEditPlanStartDate = blockCMonthEditPlanStartDate;
-		this.blockCMonthEditPlanEndDate = blockCMonthEditPlanEndDate;		
+		this.blockName = blockName;		
 		this.taskName = taskName;
-		this.taskCMonthEditPlanStartDate = taskCMonthEditPlanStartDate;
-		this.taskCMonthEditPlanEndDate = taskCMonthEditPlanEndDate;
-//		this.block=block ;
-//		this.task=task ;
-//		this.blockMan=blockMan ;
 		this.gridIds = gridIds;
 		this.dbId = dbId;
 		this.groupId = groupId;
@@ -140,7 +106,6 @@ public class Subtask implements Serializable  {
 	public void setGridIds(List<Integer> list) {
 		this.gridIds = list;
 	}
-
 	public String getBlockName(){
 		return blockName;
 	}
@@ -153,73 +118,6 @@ public class Subtask implements Serializable  {
 	public void setTaskName(String taskName) {
 		this.taskName = taskName;
 	}
-	public Timestamp getBlockCollectPlanStartDate(){
-		return blockCollectPlanStartDate;
-	}
-	public void setBlockCollectPlanStartDate(Timestamp blockCollectPlanStartDate) {
-		this.blockCollectPlanStartDate = blockCollectPlanStartDate;
-	}
-	public Timestamp getBlockCollectPlanEndDate(){
-		return blockCollectPlanEndDate;
-	}
-	public void setBlockCollectPlanEndDate(Timestamp blockCollectPlanEndDate) {
-		this.blockCollectPlanEndDate = blockCollectPlanEndDate;
-	}
-	public Timestamp getBlockDayEditPlanStartDate(){
-		return blockDayEditPlanStartDate;
-	}
-	public void setBlockDayEditPlanStartDate(Timestamp blockDayEditPlanStartDate) {
-		this.blockDayEditPlanStartDate = blockDayEditPlanStartDate;
-	}
-	public Timestamp getBlockDayEditPlanEndDate(){
-		return blockDayEditPlanEndDate;
-	}
-	public void setBlockDayEditPlanEndDate(Timestamp blockDayEditPlanEndDate) {
-		this.blockDayEditPlanEndDate = blockDayEditPlanEndDate;
-	}
-	public Timestamp getBlockCMonthEditPlanStartDate(){
-		return blockCMonthEditPlanStartDate;
-	}
-	public void setBlockCMonthEditPlanStartDate(Timestamp blockCMonthEditPlanStartDate) {
-		this.blockCMonthEditPlanStartDate = blockCMonthEditPlanStartDate;
-	}
-	public Timestamp getBlockCMonthEditPlanEndDate(){
-		return blockCMonthEditPlanEndDate;
-	}
-	public void setBlockCMonthEditPlanEndDate(Timestamp blockCMonthEditPlanEndDate) {
-		this.blockCMonthEditPlanEndDate = blockCMonthEditPlanEndDate;
-	}
-	public Timestamp getTaskCMonthEditPlanStartDate(){
-		return taskCMonthEditPlanStartDate;
-	}
-	public void setTaskCMonthEditPlanStartDate(Timestamp taskCMonthEditPlanStartDate) {
-		this.taskCMonthEditPlanStartDate = taskCMonthEditPlanStartDate;
-	}
-	public Timestamp getTaskCMonthEditPlanEndDate(){
-		return taskCMonthEditPlanEndDate;
-	}
-	public void setTaskCMonthEditPlanEndDate(Timestamp taskCMonthEditPlanEndDate) {
-		this.taskCMonthEditPlanEndDate = taskCMonthEditPlanEndDate;
-	}
-
-//	public Block getBlock(){
-//		return block;
-//	}
-//	public void setBlock(Block block2) {
-//		this.block = block2;
-//	}
-//	public BlockMan getBlockMan(){
-//		return blockMan;
-//	}
-//	public void setBlockMan(BlockMan blockMan) {
-//		this.blockMan = blockMan;
-//	}
-//	public Task getTask(){
-//		return task;
-//	}
-//	public void setTask(Task task) {
-//		this.task = task;
-//	}
 	public Integer getSubtaskId() {
 		if(null==subtaskId){return 0;}
 		return subtaskId;
@@ -280,6 +178,13 @@ public class Subtask implements Serializable  {
 	public void setExeUserId(Integer exeUserId) {
 		this.exeUserId = exeUserId;
 	}
+	public Integer getExeGroupId() {
+		if(null==exeGroupId){return 0;}
+		return exeGroupId;
+	}
+	public void setExeGroupId(Integer exeGroupId) {
+		this.exeGroupId = exeGroupId;
+	}
 	public Integer getStatus() {
 		return status;
 	}
@@ -321,16 +226,8 @@ public class Subtask implements Serializable  {
 				+",createDate="+createDate
 				+",exeUserId="+exeUserId
 				+",status="+status
-				//+",planStartDate="+planStartDate
-				//+",planEndDate="+planEndDate
-//				+",startDate="+startDate
-//				+",endDate="+endDate
-				//+ ",block=" + block.toString()
-				//+ ",blockMan=" + blockMan.toString()
-				//+ ",task=" + task.toString()
 				+ ",dbId=" + dbId
 				+ ",groupId=" + groupId
-				//+ ",gridIds=" + gridIds
 				+",descp="+descp+"]";
 	}
 
@@ -358,9 +255,6 @@ public class Subtask implements Serializable  {
 		result = prime * result + ((dbId == null) ? 0 : dbId.hashCode());
 		result = prime * result + ((groupId == null) ? 0 : groupId.hashCode());
 		result = prime * result + ((gridIds == null) ? 0 : gridIds.hashCode());
-//		result = prime * result + ((block == null) ? 0 : block.hashCode());
-//		result = prime * result + ((blockMan == null) ? 0 : blockMan.hashCode());
-//		result = prime * result + ((task == null) ? 0 : task.hashCode());
 		result = prime * result + ((descp == null) ? 0 : descp.hashCode());
 		return result;
 	}
@@ -458,21 +352,6 @@ public class Subtask implements Serializable  {
 				return false;
 		} else if (!gridIds.equals(other.gridIds))
 			return false;
-//		if (block == null) {
-//			if (other.block != null)
-//				return false;
-//		} else if (!block.equals(other.block))
-//			return false;
-//		if (blockMan == null) {
-//			if (other.blockMan != null)
-//				return false;
-//		} else if (!blockMan.equals(other.blockMan))
-//			return false;
-//		if (task == null) {
-//			if (other.task != null)
-//				return false;
-//		} else if (!task.equals(other.task))
-//			return false;
 		if (descp == null) {
 			if (other.descp != null)
 				return false;
@@ -480,7 +359,4 @@ public class Subtask implements Serializable  {
 			return false;
 		return true;
 	}
-	
-	
-	
 }

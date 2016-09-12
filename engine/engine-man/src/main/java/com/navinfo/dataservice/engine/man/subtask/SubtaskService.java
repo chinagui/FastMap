@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
 
@@ -31,14 +32,17 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.json.JsonOperation;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.ArrayUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.xinge.XingeUtil;
+import com.navinfo.dataservice.engine.man.grid.GridService;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
+import com.navinfo.navicommons.geo.computation.GridUtils;
 
 /**
  * @ClassName: SubtaskService
@@ -80,7 +84,9 @@ public class SubtaskService {
 			SubtaskOperation.insertSubtask(conn, bean);
 			
 			// 插入SUBTASK_GRID_MAPPING
-			SubtaskOperation.insertSubtaskGridMapping(conn, bean);
+			if(bean.getGridIds() != null){
+				SubtaskOperation.insertSubtaskGridMapping(conn, bean);
+			}
 			
 			//消息发布
 			if(bean.getStatus()==1){
@@ -113,7 +119,7 @@ public class SubtaskService {
 					+ ",s.type"
 					+ ",s.stage"
 					+ ",s.status"
-					+ ", s.geometry.get_wkt() as geometry"
+					+ ", s.geometry"
 					+ ",s.descp"
 					+ " from subtask s "
 					+ "where SDO_GEOM.RELATE(geometry, 'ANYINTERACT', "
@@ -129,7 +135,15 @@ public class SubtaskService {
 					while (rs.next()) {
 						Subtask subtask = new Subtask();
 						subtask.setSubtaskId(rs.getInt("SUBTASK_ID"));
-						subtask.setGeometry(rs.getString("GEOMETRY"));
+						
+						STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
+						try {
+							subtask.setGeometry(GeoTranslator.struct2Wkt(struct));
+						} catch (Exception e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+						
 						subtask.setDescp(rs.getString("DESCP"));
 						subtask.setName(rs.getString("name"));
 						subtask.setType(rs.getInt("type"));
@@ -193,29 +207,22 @@ public class SubtaskService {
 	}
 	
 	
-	public Page list(int stage, JSONObject conditionJson, JSONObject orderJson, final int pageSize,
+	public Page list(long userId, int stage, JSONObject conditionJson, JSONObject orderJson, final int pageSize,
 			final int curPageNum,int snapshot) throws ServiceException {
-		Connection conn = null;
 		try {
-			QueryRunner run = new QueryRunner();
-			conn = DBConnector.getInstance().getManConnection();
 			//返回简略信息
 			if (snapshot==1){
-				Page page = SubtaskOperation.getListSnapshot(stage,conditionJson,orderJson,pageSize,curPageNum);
+				Page page = SubtaskOperation.getListSnapshot(userId,stage,conditionJson,orderJson,pageSize,curPageNum);
 				return page;
 			}else{
-				Page page = SubtaskOperation.getList(stage,conditionJson,orderJson,pageSize,curPageNum);
+				Page page = SubtaskOperation.getList(userId,stage,conditionJson,orderJson,pageSize,curPageNum);
 				return page;
 			}		
 
 		} catch (Exception e) {
-			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new ServiceException("查询列表失败，原因为:" + e.getMessage(), e);
-		} finally {
-			DbUtils.commitAndCloseQuietly(conn);
 		}
-
 	}
 	
 	
@@ -427,7 +434,7 @@ public class SubtaskService {
 					+ ",st.STATUS"
 					+ ",r.DAILY_DB_ID"
 					+ ",r.MONTHLY_DB_ID"
-					+ ",st.GEOMETRY.get_wkt() AS GEOMETRY";
+					+ ",st.GEOMETRY";
 
 			String fromSql_task = " from subtask st"
 					+ ",task t"
@@ -436,7 +443,6 @@ public class SubtaskService {
 
 			String fromSql_block = " from subtask st"
 					+ ",block b"
-					+ ",city c"
 					+ ",region r";
 
 			String conditionSql_task = " where st.task_id = t.task_id "
@@ -445,8 +451,7 @@ public class SubtaskService {
 					+ " and st.SUBTASK_ID=" + subtaskId;
 
 			String conditionSql_block = " where st.block_id = b.block_id "
-					+ "and b.city_id = c.city_id "
-					+ "and c.region_id = r.region_id "
+					+ "and b.region_id = r.region_id "
 					+ " and st.SUBTASK_ID=" + subtaskId;
 
 			
@@ -464,13 +469,18 @@ public class SubtaskService {
 						subtask.setName(rs.getString("NAME"));
 						subtask.setStage(rs.getInt("STAGE"));
 						subtask.setType(rs.getInt("TYPE"));
-						subtask.setPlanStartDate(rs
-								.getTimestamp("PLAN_START_DATE"));
+						subtask.setPlanStartDate(rs.getTimestamp("PLAN_START_DATE"));
 						subtask.setPlanEndDate(rs.getTimestamp("PLAN_END_DATE"));
 						subtask.setDescp(rs.getString("DESCP"));
 						subtask.setStatus(rs.getInt("STATUS"));
-	
-						subtask.setGeometry(rs.getString("GEOMETRY"));
+						
+						STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
+						try {
+							subtask.setGeometry(GeoTranslator.struct2Wkt(struct));
+						} catch (Exception e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
 						
 						try {
 							List<Integer> gridIds = SubtaskOperation.getGridIdsBySubtaskId(rs.getInt("SUBTASK_ID"));
@@ -652,6 +662,45 @@ public class SubtaskService {
 			throw new ServiceException("查询列表失败，原因为:" + e.getMessage(), e);
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+
+	/**
+	 * 根据参数生成subtask bean
+	 * @param userId
+	 * @param dataJson
+	 * @return Subtask
+	 * @throws ServiceException 
+	 */
+	public Subtask createSubtaskBean(long userId, JSONObject dataJson) throws ServiceException {
+		try{
+			String wkt = null;
+			if(dataJson.containsKey("gridIds")){
+				JSONArray gridIds = dataJson.getJSONArray("gridIds");
+				Object[] gridIdList = gridIds.toArray();
+				dataJson.put("gridIds",gridIdList);
+				//根据gridIds获取wkt
+				wkt = GridUtils.grids2Wkt(gridIds);
+				if(wkt.contains("MULTIPOLYGON")){
+					throw new IllegalArgumentException("请输入符合条件的grids");
+				}
+			}else{
+				if(dataJson.containsKey("taskId")){
+					int taskId = dataJson.getInt("taskId");
+					wkt = SubtaskOperation.getWktByTaskId(taskId);
+				}else if(dataJson.containsKey("blockId")){
+					int blockId = dataJson.getInt("blockId");
+					wkt = SubtaskOperation.getWktByBlockId(blockId);
+				}
+			}
+			
+			Subtask bean = (Subtask) JsonOperation.jsonToBean(dataJson,Subtask.class);
+			bean.setCreateUserId((int)userId);
+			bean.setGeometry(wkt);
+			return bean;
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			throw new ServiceException("子任务创建失败，原因为:" + e.getMessage(), e);
 		}
 	}
 }

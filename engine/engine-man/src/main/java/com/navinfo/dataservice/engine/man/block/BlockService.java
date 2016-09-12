@@ -88,7 +88,7 @@ public class BlockService {
 						block.getString("monthEditPlanStartDate"), block.getString("monthEditPlanEndDate"),
 						block.getString("dayProducePlanStartDate"), block.getString("dayProducePlanEndDate"),
 						block.getString("monthProducePlanStartDate"), block.getString("monthProducePlanEndDate"),
-						block.getString("descp"), 2, block.getInt("blockId")};
+						block.getString("descp"), 2, block.getInt("blockId") };
 				param[i] = obj;
 				blockIdList.add(block.getInt("blockId"));
 			}
@@ -273,7 +273,7 @@ public class BlockService {
 		}
 	}
 
-	public List<HashMap> listByGroup(JSONObject json) throws ServiceException {
+	public Page listByGroupId(JSONObject json, int currentPageNum, int pageSize) throws ServiceException {
 		Connection conn = null;
 		try {
 
@@ -281,23 +281,55 @@ public class BlockService {
 
 			String selectSql = null;
 			int stage = json.getInt("stage");
+			JSONObject conditionJson = json.getJSONObject("condition");
+			JSONObject orderJson = json.getJSONObject("order");
 
-			JSONArray groupIds = json.getJSONArray("groupIds");
-			String groups = ((groupIds.toString()).replace('[', '(')).replace(']', ')');
-
-			selectSql = "select b.BLOCK_ID,b.CITY_ID, b.BLOCK_NAME, b.GEOMETRY,"
-					+ " b.PLAN_STATUS from block_man t,block b,task k,subtask s where t.block_id=b.block_id and b.city_id=k.city_id and k.task_id=s.task_id and t.latest=1 and k.latest=1 and s.stage=? ";
-
+			int groupId = json.getInt("groupId");
 			if (0 == stage) {
-				selectSql += "and t.COLLECT_GROUP_ID in " + groups;
+				selectSql = "SELECT P.BLOCK_ID,P.BLOCK_NAME,P.STATUS,P.PLAN_START_DATE,P.PLAN_END_DATE,P.FLAG FROM "
+						+ " (SELECT DISTINCT B.BLOCK_ID,B.BLOCK_NAME,T.STATUS,to_char(T.COLLECT_PLAN_START_DATE, 'yyyymmdd') PLAN_START_DATE,to_char(T.COLLECT_PLAN_END_DATE, 'yyyymmdd') PLAN_END_DATE,1 FLAG,T.COLLECT_GROUP_ID "
+						+ "   FROM BLOCK_MAN T,BLOCK B,SUBTASK S   WHERE B.BLOCK_ID=T.BLOCK_ID "
+						+ "  AND T.BLOCK_ID=S.BLOCK_ID  AND T.LATEST = 1 AND S.STAGE =0  UNION ALL "
+						+ "  SELECT DISTINCT B.BLOCK_ID,B.BLOCK_NAME,T.STATUS,to_char(T.COLLECT_PLAN_START_DATE, 'yyyymmdd') PLAN_START_DATE,to_char(T.COLLECT_PLAN_END_DATE, 'yyyymmdd') PLAN_END_DATE,0 FLAG,T.COLLECT_GROUP_ID "
+						+ "   FROM BLOCK_MAN T,BLOCK B WHERE B.BLOCK_ID=T.BLOCK_ID   AND T.LATEST = 1 "
+						+ "   AND T.STATUS=1 AND NOT EXISTS (SELECT su.subtask_id FROM subtask su WHERE su.block_id=T.BLOCK_ID)) P"
+						+ " WHERE  P.COLLECT_GROUP_ID = " + groupId;
 
-			} else if (1 == stage) {
-				selectSql += "and t.DAY_EDIT_GROUP_ID in " + groups;
-			} else {
-				selectSql += "and t.MONTH_EDIT_GROUP_ID in " + groups;
+			}
+			if (1 == stage) {
+
+				selectSql = "SELECT P.BLOCK_ID,P.BLOCK_NAME,P.STATUS,P.PLAN_START_DATE,P.PLAN_END_DATE,P.FLAG FROM "
+						+ " (SELECT DISTINCT B.BLOCK_ID,B.BLOCK_NAME,T.STATUS,to_char(T.DAY_EDIT_PLAN_START_DATE, 'yyyymmdd') PLAN_START_DATE,to_char(T.DAY_EDIT_PLAN_END_DATE, 'yyyymmdd') PLAN_END_DATE,1 FLAG,T.DAY_EDIT_GROUP_ID "
+						+ "   FROM BLOCK_MAN T,BLOCK B,SUBTASK S   WHERE B.BLOCK_ID=T.BLOCK_ID "
+						+ "  AND T.BLOCK_ID=S.BLOCK_ID  AND T.LATEST = 1 AND S.STAGE =1  UNION ALL "
+						+ "  SELECT DISTINCT B.BLOCK_ID,B.BLOCK_NAME,T.STATUS,to_char(T.DAY_EDIT_PLAN_START_DATE, 'yyyymmdd') PLAN_START_DATE,to_char(T.DAY_EDIT_PLAN_END_DATE, 'yyyymmdd') PLAN_END_DATE,0 FLAG,T.DAY_EDIT_GROUP_ID "
+						+ "   FROM BLOCK_MAN T,BLOCK B WHERE B.BLOCK_ID=T.BLOCK_ID   AND T.LATEST = 1 "
+						+ "   AND T.STATUS=1 AND NOT EXISTS (SELECT su.subtask_id FROM subtask su WHERE su.block_id=T.BLOCK_ID)) P"
+						+ " WHERE  P.DAY_EDIT_GROUP_ID = " + groupId;
 			}
 
-			return BlockOperation.queryBlockByGroup(conn, selectSql, stage);
+			if (null != conditionJson && !conditionJson.isEmpty()) {
+				Iterator keys = conditionJson.keys();
+				while (keys.hasNext()) {
+					String key = (String) keys.next();
+					if ("blockName".equals(key)) {
+						selectSql += " and P.BLOCK_NAME like '%" + conditionJson.getString(key) + "%'";
+					}
+				}
+			}
+			if (null != orderJson && !orderJson.isEmpty()) {
+				Iterator keys = orderJson.keys();
+				while (keys.hasNext()) {
+					String key = (String) keys.next();
+					if ("blockId".equals(key)) {
+						selectSql += (" order by P.BLOCK_ID " + orderJson.getString("blockId"));
+						break;
+					}
+				}
+			} else {
+				selectSql += " order by P.BLOCK_ID";
+			}
+			return BlockOperation.queryBlockByGroup(conn, selectSql, stage, currentPageNum, pageSize);
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -421,7 +453,7 @@ public class BlockService {
 			throws Exception {
 		Connection conn = null;
 		String selectSql = "";
-		String selectNoPlanSqlByCityId = "";//未规划城市下的block查询
+		String selectNoPlanSqlByCityId = "";// 未规划城市下的block查询
 		try {
 			conn = DBConnector.getInstance().getManConnection();
 
@@ -433,15 +465,15 @@ public class BlockService {
 			} else {
 				cityId = enterParam.getInt("cityId");
 			}
-			if (listType==null || "snapshot".equals(listType)) {
+			if (listType == null || "snapshot".equals(listType)) {
 				if (!inforId.isEmpty()) {
-					selectSql = "SELECT m.block_id,m.block_name,m.status blockStatus,i.plan_status FROM BLOCK t,Block_Man m,infor i WHERE i.infor_id="+inforId
-							+ "AND i.task_id=m.task_id AND t.block_id=m.block_id AND m.latest = 1";
+					selectSql = "SELECT m.block_id,m.block_name,m.status blockStatus,i.plan_status FROM BLOCK t,Block_Man m,infor i WHERE i.infor_id="
+							+ inforId + "AND i.task_id=m.task_id AND t.block_id=m.block_id AND m.latest = 1";
 				} else {
 					selectSql = "SELECT t.block_id,t.block_name,m.status blockStatus,t.plan_status FROM BLOCK t,Block_Man m "
-							+ "WHERE t.block_id=m.block_id  AND m.latest = 1 AND t.city_id="+cityId;
-					selectNoPlanSqlByCityId=" SELECT t.block_id,t.block_name, t.plan_status "
-							+ "FROM BLOCK t WHERE t.plan_status=0 AND t.city_id="+cityId;
+							+ "WHERE t.block_id=m.block_id  AND m.latest = 1 AND t.city_id=" + cityId;
+					selectNoPlanSqlByCityId = " SELECT t.block_id,t.block_name, t.plan_status "
+							+ "FROM BLOCK t WHERE t.plan_status=0 AND t.city_id=" + cityId;
 				}
 
 			} else {
@@ -459,7 +491,8 @@ public class BlockService {
 							+ " k.TASK_ID, k.NAME, k.task_type "
 							+ " to_char(k.PLAN_START_DATE, 'yyyymmdd') PLAN_START_DATE,  "
 							+ " to_char(k.PLAN_END_DATE, 'yyyymmdd') PLAN_END_DATE, "
-							+ "	from block_man m, block t, user_info u, task k, user_group u,infor i where i.infor_id="+inforId
+							+ "	from block_man m, block t, user_info u, task k, user_group u,infor i where i.infor_id="
+							+ inforId
 							+ "	 AND m.block_id = t.block_id(+) and m.latest = 1 and m.create_user_id = u.user_id(+)  "
 							+ " and i.task_id = m.task_id AND m.task_id=k.task_id and k.latest = 1 and m.collect_group_id = u.group_id(+)";
 				} else {
@@ -479,9 +512,10 @@ public class BlockService {
 							+ " from block_man m, block t, user_info u, task k, user_group u"
 							+ " where m.block_id = t.block_id and m.latest = 1 and m.create_user_id = u.user_id(+)"
 							+ " and t.city_id = k.city_id and k.latest = 1 and m.collect_group_id = u.group_id(+)"
-							+ " AND t.city_id="+cityId;
+							+ " AND t.city_id=" + cityId;
 
-					selectNoPlanSqlByCityId = " SELECT t.block_id,t.block_name, t.plan_status FROM BLOCK t WHERE t.plan_status=0 AND t.city_id="+cityId;
+					selectNoPlanSqlByCityId = " SELECT t.block_id,t.block_name, t.plan_status FROM BLOCK t WHERE t.plan_status=0 AND t.city_id="
+							+ cityId;
 				}
 
 			}
@@ -492,28 +526,29 @@ public class BlockService {
 					String key = (String) keys.next();
 					if ("blockId".equals(key)) {
 						selectSql += " and t.block_id=" + conditionJson.getInt(key);
-						if (!selectNoPlanSqlByCityId.isEmpty()){
+						if (!selectNoPlanSqlByCityId.isEmpty()) {
 							selectNoPlanSqlByCityId += " and t.block_id=" + conditionJson.getInt(key);
 						}
 					}
 					if ("createUserName".equals(key)) {
-						if (listType!=null && "integrate".equals(listType)) {
+						if (listType != null && "integrate".equals(listType)) {
 							selectSql += " and u.USER_REAL_NAME like '%" + conditionJson.getString(key) + "%'";
 						}
 					}
 					if ("blockName".equals(key)) {
 						selectSql += " and t.block_name like '%" + conditionJson.getString(key) + "%'";
-						if (!selectNoPlanSqlByCityId.isEmpty()){
-							selectNoPlanSqlByCityId += " and t.block_name like '%" + conditionJson.getString(key) + "%'";
+						if (!selectNoPlanSqlByCityId.isEmpty()) {
+							selectNoPlanSqlByCityId += " and t.block_name like '%" + conditionJson.getString(key)
+									+ "%'";
 						}
 					}
 					if ("blockStatus".equals(key)) {
-						String blockStatus = ((conditionJson.getJSONArray(key).toString()).replace('[', '(')).replace(']',
-								')');
+						String blockStatus = ((conditionJson.getJSONArray(key).toString()).replace('[', '('))
+								.replace(']', ')');
 						selectSql += " and m.status in " + blockStatus;
 					}
 					if ("taskName".equals(key)) {
-						if (listType!=null && "integrate".equals(listType)) {
+						if (listType != null && "integrate".equals(listType)) {
 							selectSql += " and k.name like '%" + conditionJson.getString(key) + "%'";
 						}
 					}
@@ -524,21 +559,22 @@ public class BlockService {
 				while (keys.hasNext()) {
 					String key = (String) keys.next();
 					if ("collectPlanStartDate".equals(key)) {
-						if (listType!=null && "integrate".equals(listType)) {
-						selectSql += (" order by m.COLLECT_PLAN_START_DATE "
-								+ orderJson.getString("collectPlanStartDate"));
+						if (listType != null && "integrate".equals(listType)) {
+							selectSql += (" order by m.COLLECT_PLAN_START_DATE "
+									+ orderJson.getString("collectPlanStartDate"));
 						}
 						break;
 					}
 					if ("collectPlanEndDate".equals(key)) {
-						if (listType!=null && "integrate".equals(listType)) {
-						selectSql += (" order by m.COLLECT_PLAN_END_DATE " + orderJson.getString("collectPlanEndDate"));
+						if (listType != null && "integrate".equals(listType)) {
+							selectSql += (" order by m.COLLECT_PLAN_END_DATE "
+									+ orderJson.getString("collectPlanEndDate"));
 						}
 						break;
 					}
 					if ("blockId".equals(key)) {
 						selectSql += (" order by t.block_id " + orderJson.getString("blockId"));
-						if (!selectNoPlanSqlByCityId.isEmpty()){
+						if (!selectNoPlanSqlByCityId.isEmpty()) {
 							selectNoPlanSqlByCityId += (" order by t.block_id " + orderJson.getString("blockId"));
 						}
 						break;
@@ -546,11 +582,11 @@ public class BlockService {
 				}
 			} else {
 				selectSql += " order by t.block_id";
-				if (!selectNoPlanSqlByCityId.isEmpty()){
+				if (!selectNoPlanSqlByCityId.isEmpty()) {
 					selectNoPlanSqlByCityId += " order by t.block_id";
 				}
 			}
-			return BlockOperation.selectAllBlock(conn, selectSql,selectNoPlanSqlByCityId,listType);
+			return BlockOperation.selectAllBlock(conn, selectSql, selectNoPlanSqlByCityId, listType);
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

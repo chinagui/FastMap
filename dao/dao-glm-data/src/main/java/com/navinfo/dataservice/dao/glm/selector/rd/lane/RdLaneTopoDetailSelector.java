@@ -85,7 +85,7 @@ public class RdLaneTopoDetailSelector extends AbstractSelector {
 		List<IRow> topos = new ArrayList<IRow>();
 
 		try {
-			String sql = "SELECT topo_id FROM rd_lane_topo_detail WHERE IN_LINK_PID :=1  and NODE_PID =:2 and u_record !=2";
+			String sql = "SELECT topo_id FROM rd_lane_topo_detail WHERE IN_LINK_PID = :1  and NODE_PID = :2 and u_record !=2";
 
 			if (isLock) {
 				sql += " for update nowait";

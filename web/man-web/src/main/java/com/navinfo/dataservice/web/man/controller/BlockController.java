@@ -17,6 +17,7 @@ import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.engine.man.block.BlockOperation;
 import com.navinfo.dataservice.engine.man.block.BlockService;
+import com.navinfo.dataservice.engine.man.task.TaskService;
 import com.navinfo.navicommons.database.Page;
 
 import net.sf.json.JSONArray;
@@ -71,10 +72,11 @@ public class BlockController extends BaseController {
 			if (dataJson == null) {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
-			
+			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
+			long userId=tokenObj.getUserId();
 			JSONArray blockArray = dataJson.getJSONArray("blocks");
 			int blockSize=blockArray.size();
-			int updateCount=service.batchUpdate(dataJson);
+			int updateCount=service.batchUpdate(dataJson,userId);
 			String message = "批量修改block：" + updateCount + "个成功，" + (blockSize - updateCount) + "个失败。";
 			return new ModelAndView("jsonView", success(message));
 		} catch (Exception e) {
@@ -105,7 +107,7 @@ public class BlockController extends BaseController {
 			JSONArray blockArray = dataJson.getJSONArray("blocks");
 			int blockSize=blockArray.size();
 			int insertCount=service.batchOpen(userId, dataJson);
-			int updateCount=service.batchUpdate(dataJson);
+			int updateCount=service.batchUpdate(dataJson,userId);
 			String message = "批量保存block：" + updateCount + "个成功，" + (blockSize - (insertCount+updateCount)) + "个失败。";
 			return new ModelAndView("jsonView", success(message));
 		} catch (Exception e) {
@@ -187,29 +189,6 @@ public class BlockController extends BaseController {
 		}
 	}
 
-	/**
-	 * 根据用户组和作业阶段，返回属于该用户组的，有该作业阶段的子任务的Block。
-	 * 
-	 * @param request
-	 * @return
-	 */
-	@RequestMapping(value = "/block/listByGroup")
-	public ModelAndView listByGroup(HttpServletRequest request) {
-		try {
-			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
-			if (dataJson == null) {
-				throw new IllegalArgumentException("parameter参数不能为空。");
-			}
-			if (!(dataJson.containsKey("groupIds")) || !(dataJson.containsKey("stage"))) {
-				throw new IllegalArgumentException("groupIds、stage参数是必须的。");
-			}
-			List<HashMap> data = service.listByGroup(dataJson);
-			return new ModelAndView("jsonView", success(data));
-		} catch (Exception e) {
-			log.error("获取block列表失败，原因：" + e.getMessage(), e);
-			return new ModelAndView("jsonView", exception(e));
-		}
-	}
 
 	/**
 	 * 判断block是否可关闭:该block每个阶段的所有子任务均关闭，则该block可以关闭。
@@ -307,6 +286,71 @@ public class BlockController extends BaseController {
 		} catch (Exception e) {
 			log.error("获取block列表失败，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+	
+	/**
+	 *  根据采集组或者日编组，查询Block列表
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/block/listByGroupId")
+	public ModelAndView listByGroupId(HttpServletRequest request) {
+		try {
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if (!dataJson.containsKey("groupId")){
+				throw new IllegalArgumentException("groupId参数是必须的。");
+			}
+			if (!dataJson.containsKey("stage")){
+				throw new IllegalArgumentException("stage参数是必须的。");
+			}
+			int curPageNum = 1;// 默认为第一页
+			String curPage = dataJson.getString("pageNum");
+			if (StringUtils.isNotEmpty(curPage)) {
+				curPageNum = Integer.parseInt(curPage);
+			}
+			int curPageSize = 20;// 默认为20条记录/页
+			String curSize = dataJson.getString("pageSize");
+			if (StringUtils.isNotEmpty(curSize)) {
+				curPageSize = Integer.parseInt(curSize);
+			}
+			Map<String, Object> resultMap=new HashMap<String, Object>();
+			BlockOperation blockOperation= new BlockOperation();
+			Page page=service.listByGroupId(dataJson,curPageNum,curPageSize);
+			resultMap.put("result", page.getResult());
+			resultMap.put("totalCount", page.getTotalCount());
+			return new ModelAndView("jsonView", success(resultMap));
+			
+		} catch (Exception e) {
+			log.error("获取列表失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+	
+	/**
+	 * 发布对象：1.分配的采集作业组组长2.分配的日编作业组组长
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/block/pushMsg")
+	public ModelAndView pushMsg(HttpServletRequest request){
+		try{
+			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
+			String parameter = request.getParameter("parameter");
+			if (StringUtils.isEmpty(parameter)){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}		
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(parameter));			
+			if(dataJson==null){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			JSONArray blockIds=dataJson.getJSONArray("blockIds");
+			long userId=tokenObj.getUserId();
+			String msg=service.blockPushMsg(userId,blockIds);
+			return new ModelAndView("jsonView", success(msg));
+		}catch(Exception e){
+			log.error("发布失败，原因："+e.getMessage(), e);
+			return new ModelAndView("jsonView",exception(e));
 		}
 	}
 }

@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
 
@@ -119,16 +120,5 @@ public class RdNodeSearch implements ISearch {
 		}
 
 		return list;
-	}
-
-	public static void main(String[] args) throws Exception {
-		
-		Connection conn = DBConnector.getInstance().getConnectionById(11);
-		
-		RdNodeSearch s = new RdNodeSearch(conn);
-		
-		IObj obj = s.searchDataByPid(132837);
-		
-		System.out.println(obj.Serialize(null));
 	}
 }

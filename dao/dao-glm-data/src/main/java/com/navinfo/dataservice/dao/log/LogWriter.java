@@ -707,26 +707,26 @@ public class LogWriter {
 			ld.setRowId(UuidUtils.genUuid());
 
 			ld.setTbRowId(r.rowId());
-
+			
+			String sameTableName = null;
+			
 			if (r.objType() == ObjType.RDSAMENODE) {
 				RdSameNode sameNode = (RdSameNode) r;
 				RdSameNodePart part = (RdSameNodePart) sameNode.getParts().get(
 						0);
-				String nodeTableName = part.getTableName().toUpperCase();
-				gridCalculator.setTableName(nodeTableName);
+				sameTableName = part.getTableName().toUpperCase();
 			}
 
 			if (r.objType() == ObjType.RDSAMELINK) {
 				RdSameLink sameLink = (RdSameLink) r;
 				RdSameLinkPart part = (RdSameLinkPart) sameLink.getParts().get(
 						0);
-				String tableName = part.getTableName().toUpperCase();
-				gridCalculator.setTableName(tableName);
+				sameTableName = part.getTableName().toUpperCase();
 			}
 
 			// 查询对象的grid，并生成LogDetailGrid
 			String[] grids = gridCalculator.calc(ld.getTbNm().toUpperCase(),
-					ld.getTbRowId(), conn);
+					ld.getTbRowId(), conn,sameTableName);
 
 			for (String gridId : grids) {
 				LogDetailGrid grid = new LogDetailGrid();

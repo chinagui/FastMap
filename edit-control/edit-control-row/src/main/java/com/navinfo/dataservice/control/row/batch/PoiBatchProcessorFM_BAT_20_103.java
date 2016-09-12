@@ -9,6 +9,7 @@ import com.navinfo.dataservice.control.row.batch.util.IBatch;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
+import com.navinfo.dataservice.engine.edit.service.EditApiImpl;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -16,7 +17,7 @@ import net.sf.json.JSONObject;
 public class PoiBatchProcessorFM_BAT_20_103 implements IBatch {
 
 	@Override
-	public JSONObject run(IxPoi poi, Connection conn, JSONObject json) throws Exception {
+	public JSONObject run(IxPoi poi, Connection conn, JSONObject json,EditApiImpl editApiImpl) throws Exception {
 		JSONObject result = new JSONObject();
 		try {
 			JSONObject poiData = json.getJSONObject("data");

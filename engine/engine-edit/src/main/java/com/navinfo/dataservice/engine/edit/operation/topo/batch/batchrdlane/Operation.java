@@ -206,8 +206,8 @@ public class Operation implements IOperation {
 			lane = (RdLane) new RdLaneSelector(conn).loadById(
 					jsonLaneInfo.getInt("pid"), true, true);
 		}
-
-		lane.setPid(PidUtil.getInstance().applyRdLanePid());
+        int lanePid = PidUtil.getInstance().applyRdLanePid();
+		lane.setPid(lanePid);
 		lane.setLinkPid(linkPid);
 		lane.setLaneNum(this.command.getLaneInfos().size());
 
@@ -238,8 +238,9 @@ public class Operation implements IOperation {
 			List<IRow> conditionRows = new ArrayList<IRow>();
 			for (int i = 0; i < jsonLaneInfo.getJSONArray("conditions").size(); i++) {
 				JSONObject conditionObject = jsonLaneInfo.getJSONArray(
-						"contditions").getJSONObject(i);
+						"conditions").getJSONObject(i);
 				RdLaneCondition condition = new RdLaneCondition();
+				condition.setLanePid(lanePid);
 
 				if (conditionObject.containsKey("direction")) {
 					condition.setDirection(conditionObject.getInt("direction"));

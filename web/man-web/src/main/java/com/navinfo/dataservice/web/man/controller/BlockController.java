@@ -187,29 +187,6 @@ public class BlockController extends BaseController {
 		}
 	}
 
-	/**
-	 * 根据用户组和作业阶段，返回属于该用户组的，有该作业阶段的子任务的Block。
-	 * 
-	 * @param request
-	 * @return
-	 */
-	@RequestMapping(value = "/block/listByGroup")
-	public ModelAndView listByGroup(HttpServletRequest request) {
-		try {
-			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
-			if (dataJson == null) {
-				throw new IllegalArgumentException("parameter参数不能为空。");
-			}
-			if (!(dataJson.containsKey("groupIds")) || !(dataJson.containsKey("stage"))) {
-				throw new IllegalArgumentException("groupIds、stage参数是必须的。");
-			}
-			List<HashMap> data = service.listByGroup(dataJson);
-			return new ModelAndView("jsonView", success(data));
-		} catch (Exception e) {
-			log.error("获取block列表失败，原因：" + e.getMessage(), e);
-			return new ModelAndView("jsonView", exception(e));
-		}
-	}
 
 	/**
 	 * 判断block是否可关闭:该block每个阶段的所有子任务均关闭，则该block可以关闭。
@@ -306,6 +283,44 @@ public class BlockController extends BaseController {
 			return new ModelAndView("jsonView", success(data));
 		} catch (Exception e) {
 			log.error("获取block列表失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+	
+	/**
+	 *  根据采集组或者日编组，查询Block列表
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/block/listByGroupId")
+	public ModelAndView listByGroupId(HttpServletRequest request) {
+		try {
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if (!dataJson.containsKey("groupId")){
+				throw new IllegalArgumentException("groupId参数是必须的。");
+			}
+			if (!dataJson.containsKey("stage")){
+				throw new IllegalArgumentException("stage参数是必须的。");
+			}
+			int curPageNum = 1;// 默认为第一页
+			String curPage = dataJson.getString("pageNum");
+			if (StringUtils.isNotEmpty(curPage)) {
+				curPageNum = Integer.parseInt(curPage);
+			}
+			int curPageSize = 20;// 默认为20条记录/页
+			String curSize = dataJson.getString("pageSize");
+			if (StringUtils.isNotEmpty(curSize)) {
+				curPageSize = Integer.parseInt(curSize);
+			}
+			Map<String, Object> resultMap=new HashMap<String, Object>();
+			BlockOperation blockOperation= new BlockOperation();
+			Page page=service.listByGroupId(dataJson,curPageNum,curPageSize);
+			resultMap.put("result", page.getResult());
+			resultMap.put("totalCount", page.getTotalCount());
+			return new ModelAndView("jsonView", success(resultMap));
+			
+		} catch (Exception e) {
+			log.error("获取列表失败，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", exception(e));
 		}
 	}

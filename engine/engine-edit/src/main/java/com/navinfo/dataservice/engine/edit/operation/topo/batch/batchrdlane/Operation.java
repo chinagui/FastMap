@@ -207,7 +207,7 @@ public class Operation implements IOperation {
 					jsonLaneInfo.getInt("pid"), true, true);
 		}
 
-		lane.setPid(PidUtil.getInstance().applyRdLanePid());
+		//lane.setPid(PidUtil.getInstance().applyRdLanePid());
 		lane.setLinkPid(linkPid);
 		lane.setLaneNum(this.command.getLaneInfos().size());
 
@@ -238,7 +238,7 @@ public class Operation implements IOperation {
 			List<IRow> conditionRows = new ArrayList<IRow>();
 			for (int i = 0; i < jsonLaneInfo.getJSONArray("conditions").size(); i++) {
 				JSONObject conditionObject = jsonLaneInfo.getJSONArray(
-						"contditions").getJSONObject(i);
+						"conditions").getJSONObject(i);
 				RdLaneCondition condition = new RdLaneCondition();
 
 				if (conditionObject.containsKey("direction")) {

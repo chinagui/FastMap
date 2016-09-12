@@ -117,19 +117,20 @@ public class GlmGridCalculator {
 	 * @param tableName
 	 * @param rowIds
 	 * @param dataConn：数据所在库的连接
+	 * @param sameTableName 同一点或者同一线组成要素的tableName
 	 * @return: key-value:key-rowId,value-grid号码字符串数组
 	 * @throws Exception 
 	 */
-	public String[] calc(String tableName,String rowId,Connection dataConn)throws Exception{
+	public String[] calc(String tableName,String rowId,Connection dataConn,String ... sameTableName)throws Exception{
 		log.debug("calc :"+tableName+"-"+rowId);
 		String sql = assembleQueryGeoSql(tableName,rowId);
-		if(tableName.equals("RD_SAMENODE") && this.getTableName() != null)
+		if(tableName.equals("RD_SAMENODE") && sameTableName.length >0)
 		{
-			sql = sql.replaceAll("RD_NODE", this.getTableName());
+			sql = sql.replaceAll("RD_NODE", sameTableName[0]);
 		}
-		if(tableName.equals("RD_SAMELINK") && this.getTableName() != null)
+		if(tableName.equals("RD_SAMELINK") && sameTableName.length >0)
 		{
-			sql = sql.replaceAll("RD_LINK", this.getTableName());
+			sql = sql.replaceAll("RD_LINK", sameTableName[0]);
 		}
 		String[] grids = run.query(dataConn, sql, new SingleRowGridHandler(tableName));
 		return grids;

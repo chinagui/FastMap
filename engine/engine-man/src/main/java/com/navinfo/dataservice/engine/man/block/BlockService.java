@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.man.block;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.Format;
@@ -17,6 +18,7 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.man.model.Block;
 import com.navinfo.dataservice.api.man.model.BlockMan;
+import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
@@ -24,6 +26,10 @@ import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.DateUtilsEx;
+import com.navinfo.dataservice.commons.xinge.XingeUtil;
+import com.navinfo.dataservice.engine.man.task.TaskOperation;
+import com.navinfo.dataservice.engine.man.userDevice.UserDeviceService;
+import com.navinfo.dataservice.engine.man.userInfo.UserInfoService;
 import com.navinfo.navicommons.database.DataBaseUtils;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -622,6 +628,40 @@ public class BlockService {
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
+	}
+	
+	public String blockPushMsg(long userId,JSONArray blockIds) throws Exception{
+		Connection conn = null;
+		try{
+		conn = DBConnector.getInstance().getManConnection();
+		String BlockIds = "(";
+		BlockIds += StringUtils.join(blockIds, ",") + ")";
+		String selectSql="select DISTINCT t.block_id,t.block_name,(SELECT u.group_name FROM User_Group u "
+				+ "WHERE u.group_id=m.collect_group_id) collectGroupName,(SELECT u.group_name FROM User_Group u "
+				+ "WHERE u.group_id=m.day_edit_group_id) dayEditGroupName from block_man m,BLOCK t WHERE t.block_id=m.block_id and t.block_id in "+BlockIds;
+		PreparedStatement stmt = null;
+		try {
+			stmt = conn.prepareStatement(selectSql);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		ResultSet rs = stmt.executeQuery();
+		while (rs.next()) {
+			//调用消息保存方法
+			 //saveMsg()
+		}
+		BlockOperation.updateMainBlock(conn, JSONArray.toList(blockIds));
+
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("发布失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+		return "发布成功";
+		
 	}
 
 }

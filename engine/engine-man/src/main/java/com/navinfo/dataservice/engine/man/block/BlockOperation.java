@@ -586,7 +586,7 @@ public class BlockOperation {
 				String BlockIds = "(";
 				BlockIds += StringUtils.join(blockList.toArray(), ",") + ")";
 
-				String updateSql = "update block" + " set plan_status = 1" + " where block_id in " + BlockIds;
+				String updateSql = "update block_man" + " set status = 1" + " where block_id in " + BlockIds;
 
 				run.update(conn, updateSql);
 			}
@@ -668,4 +668,5 @@ public class BlockOperation {
 		}
 		return String.valueOf(finishPercent * 100) + "%";
 	}
+	
 }

@@ -72,10 +72,11 @@ public class BlockController extends BaseController {
 			if (dataJson == null) {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
-			
+			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
+			long userId=tokenObj.getUserId();
 			JSONArray blockArray = dataJson.getJSONArray("blocks");
 			int blockSize=blockArray.size();
-			int updateCount=service.batchUpdate(dataJson);
+			int updateCount=service.batchUpdate(dataJson,userId);
 			String message = "批量修改block：" + updateCount + "个成功，" + (blockSize - updateCount) + "个失败。";
 			return new ModelAndView("jsonView", success(message));
 		} catch (Exception e) {
@@ -106,7 +107,7 @@ public class BlockController extends BaseController {
 			JSONArray blockArray = dataJson.getJSONArray("blocks");
 			int blockSize=blockArray.size();
 			int insertCount=service.batchOpen(userId, dataJson);
-			int updateCount=service.batchUpdate(dataJson);
+			int updateCount=service.batchUpdate(dataJson,userId);
 			String message = "批量保存block：" + updateCount + "个成功，" + (blockSize - (insertCount+updateCount)) + "个失败。";
 			return new ModelAndView("jsonView", success(message));
 		} catch (Exception e) {

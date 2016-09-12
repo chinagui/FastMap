@@ -294,6 +294,53 @@ public class AbstractSelector implements ISelector {
 
 		return rows;
 	}
+	
+	public List<IRow> loadBySql(String sql, boolean isLock,boolean loadChild) throws Exception {
+		List<IRow> rowList = new ArrayList<>();
+		this.row = (IRow) cls.newInstance();
+
+		StringBuilder sb = new StringBuilder(sql);
+		if (isLock) {
+			sb.append(" for update nowait");
+		}
+
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+				// 设置主表信息
+				IRow row = (IRow) cls.newInstance();
+				ReflectionAttrUtils.executeResultSet(row, resultSet);
+				// 设置子表信息
+				if (loadChild) {
+					if (row instanceof IObj) {
+						IObj obj = (IObj) row;
+						// 子表list map
+						Map<Class<? extends IRow>, List<IRow>> childList = obj.childList();
+
+						// 子表map
+						Map<Class<? extends IRow>, Map<String, ?>> childMap = obj.childMap();
+						if (childList != null) {
+							setChildValue(obj, childList, childMap, isLock);
+						}
+					}
+				}
+				rowList.add(row);
+			}
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+		return rowList;
+	}
 
 	public List<IRow> loadRowsByParentIds(List<Integer> pids, boolean isLock) throws Exception {
 		List<IRow> rows = new ArrayList<IRow>();

@@ -9,6 +9,7 @@ import java.util.Map;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
+import com.navinfo.dataservice.commons.util.SerializeUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
@@ -189,7 +190,7 @@ public class IxPoi implements IObj {
 	private int uRecord;
 	// POI等级
 
-	private String level = "A";
+	private String level;
 	// 运动场馆
 	private String sportsVenue;
 	// 内部标示
@@ -1590,7 +1591,7 @@ public class IxPoi implements IObj {
 
 					f.setAccessible(true);
 
-					f.set(this, json.get(key));
+					f.set(this, SerializeUtils.convert(json.get(key), f.getType()));
 
 				}
 			}

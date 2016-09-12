@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -347,56 +348,83 @@ public class BlockOperation {
 		}
 	}
 	
-	
 	/*
 	 *不分页 查询block list
 	 */
-	public static List selectAllBlock(Connection conn, String selectSql, List<Object> values) throws Exception {
+	public static List selectAllBlock(final Connection conn, String selectSql, String selectNoPlanSqlByCityId,String listType) throws Exception {
 		try {
 			QueryRunner run = new QueryRunner();
-			ResultSetHandler<List> rsHandler = new ResultSetHandler<List>() {
-				public List handle(ResultSet rs) throws SQLException {
-					List<HashMap> list = new ArrayList<HashMap>();
-					while (rs.next()) {
-						HashMap map = new HashMap();
-						map.put("blockId", rs.getInt("BLOCK_ID"));
-						map.put("blockName", rs.getString("BLOCK_NAME"));
-						map.put("descp", rs.getString("DESCP"));
-						map.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
-						map.put("createUserName", rs.getString("USER_REAL_NAME"));
-						map.put("collectPlanStartDate", rs.getString("COLLECT_PLAN_START_DATE"));
-						map.put("collectPlanEndDate", rs.getString("COLLECT_PLAN_END_DATE"));
-						map.put("collectGroupId", rs.getInt("COLLECT_GROUP_ID"));
-						map.put("collectGroup", rs.getString("COLLECT_GROUP"));
-						map.put("dayEditPlanStartDate", rs.getString("DAY_EDIT_PLAN_START_DATE"));
-						map.put("dayEditPlanEndDate", rs.getString("DAY_EDIT_PLAN_END_DATE"));
-						map.put("dayEditGroupId", rs.getInt("DAY_EDIT_GROUP_ID"));
-						map.put("dayEditGroup", rs.getString("DAY_EDIT_GROUP"));
-						map.put("dayProducePlanStartDate", rs.getString("DAY_PRODUCE_PLAN_START_DATE"));
-						map.put("dayProducePlanEndDate", rs.getString("DAY_PRODUCE_PLAN_END_DATE"));
-						map.put("monthEditPlanStartDate", rs.getString("MONTH_EDIT_PLAN_START_DATE"));
-						map.put("monthEditPlanEndDate", rs.getString("MONTH_EDIT_PLAN_END_DATE"));
-						map.put("monthEditGroupId", rs.getInt("MONTH_EDIT_GROUP_ID"));
-						map.put("monthEditGroup", rs.getString("MONTH_EDIT_GROUP"));
-						map.put("monthProducePlanStartDate", rs.getString("MONTH_PRODUCE_PLAN_START_DATE"));
-						map.put("monthProducePlanEndDate", rs.getString("MONTH_PRODUCE_PLAN_END_DATE"));
-						map.put("status", rs.getInt("STATUS"));
-						map.put("taskId", rs.getInt("TASK_ID"));
-						map.put("taskName", rs.getString("NAME"));
-						map.put("taskPlanStartDate", rs.getString("PLAN_START_DATE"));
-						map.put("taskPlanEndDate", rs.getString("PLAN_END_DATE"));
-						map.put("taskMonthStartDate", rs.getString("TASK_START_DATE"));
-						map.put("taskMonthEndDate", rs.getString("TASK_END_DATE"));
-						list.add(map);
+			List<HashMap> blockList = new ArrayList<HashMap>();
+			if (listType==null|| "snapshot".equals(listType)){
+				ResultSetHandler<List> rsHandler = new ResultSetHandler<List>() {
+					public List handle(ResultSet rs) throws SQLException {
+						List<HashMap> list = new ArrayList<HashMap>();
+						while (rs.next()) {
+							HashMap map = new HashMap();
+							map.put("blockId", rs.getInt("BLOCK_ID"));
+							map.put("blockName", rs.getString("BLOCK_NAME"));
+							map.put("blockStatus", rs.getInt("blockStatus"));
+							map.put("planStatus", rs.getInt("plan_status"));
+							map.put("finishPercent",calculateBlockFinishPercent(conn,rs.getInt("BLOCK_ID"),rs.getInt("blockStatus")));
+							list.add(map);
+						}
+						return list;
 					}
-					return list;
-				}
-
-			};
-			if (null == values || values.size() == 0) {
-				return run.query(conn, selectSql, rsHandler);
+				};
+				blockList=run.query(conn, selectSql, rsHandler);
+			}else{
+				ResultSetHandler<List> rsHandler = new ResultSetHandler<List>(){
+					public List handle(ResultSet rs) throws SQLException {
+						List<HashMap> list = new ArrayList<HashMap>();
+						while (rs.next()) {
+							HashMap map = new HashMap();
+							map.put("blockId", rs.getInt("BLOCK_ID"));
+							map.put("blockName", rs.getString("BLOCK_NAME"));
+							map.put("blockStatus", rs.getInt("blockStatus"));
+							map.put("planStatus", rs.getInt("plan_status"));
+							map.put("descp", rs.getString("DESCP"));
+							map.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
+							map.put("createUserName", rs.getString("USER_REAL_NAME"));
+							map.put("collectPlanStartDate", rs.getString("COLLECT_PLAN_START_DATE"));
+							map.put("collectPlanEndDate", rs.getString("COLLECT_PLAN_END_DATE"));
+							map.put("collectGroupId", rs.getInt("COLLECT_GROUP_ID"));
+							map.put("collectGroup", rs.getString("COLLECT_GROUP"));
+							map.put("dayEditPlanStartDate", rs.getString("DAY_EDIT_PLAN_START_DATE"));
+							map.put("dayEditPlanEndDate", rs.getString("DAY_EDIT_PLAN_END_DATE"));
+							map.put("dayEditGroupId", rs.getInt("DAY_EDIT_GROUP_ID"));
+							map.put("dayEditGroup", rs.getString("DAY_EDIT_GROUP"));
+							map.put("dayProducePlanStartDate", rs.getString("DAY_PRODUCE_PLAN_START_DATE"));
+							map.put("dayProducePlanEndDate", rs.getString("DAY_PRODUCE_PLAN_END_DATE"));
+							map.put("taskId", rs.getInt("TASK_ID"));
+							map.put("taskName", rs.getString("NAME"));
+							map.put("taskPlanStartDate", rs.getString("PLAN_START_DATE"));
+							map.put("taskPlanEndDate", rs.getString("PLAN_END_DATE"));
+							map.put("finishPercent",calculateBlockFinishPercent(conn,rs.getInt("BLOCK_ID"),rs.getInt("blockStatus")));
+							list.add(map);
+						}
+						return list;
+					}
+				};
+				blockList=run.query(conn, selectSql, rsHandler);
 			}
-			return run.query(conn, selectSql, rsHandler, values.toArray());
+
+			  if (!selectNoPlanSqlByCityId.isEmpty()){
+				  ResultSetHandler<List> rsHandler = new ResultSetHandler<List>() {
+						public List handle(ResultSet rs) throws SQLException {
+							List<HashMap> list = new ArrayList<HashMap>();
+							while (rs.next()) {
+								HashMap map = new HashMap();
+								map.put("blockId", rs.getInt("BLOCK_ID"));
+								map.put("blockName", rs.getString("BLOCK_NAME"));
+								map.put("planStatus", rs.getInt("plan_status"));
+								list.add(map);
+							}
+							return list;
+						}
+					};
+					blockList.addAll(run.query(conn, selectNoPlanSqlByCityId, rsHandler));
+				 }
+			   return blockList;
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -562,4 +590,61 @@ public class BlockOperation {
 			throw new Exception("更新失败，原因为:" + e.getMessage(), e);
 		}
 	}
+	/**
+	 * 得到分页后的数据
+	 * @param pageNum
+	 * @param pageSize
+	 * @param data
+	 * @return
+	 */
+	public List getPagedList(int pageNum,int pageSize,List<HashMap> data) {  
+        int fromIndex = (pageNum - 1) * pageSize;  
+        if (fromIndex >= data.size()) {  
+            return Collections.emptyList();  
+        }  
+  
+        int toIndex = pageNum * pageSize;  
+        if (toIndex >= data.size()) {  
+            toIndex = data.size();  
+        }  
+        return data.subList(fromIndex, toIndex);  
+    }  
+	/**
+	 *  block完成度：统计原则：block关联的所有子任务完成度，子任务A完成度*(1/子任务个数N)+子任务B完成度*(1/子任务个数N)+...+子任务N完成度*(1/子任务个数N)
+	 * @param conn
+	 * @param blockId
+	 * @param blockStatus
+	 * @return
+	 * @throws SQLException 
+	 */
+	public static String calculateBlockFinishPercent(Connection conn,int blockId,int blockStatus) throws SQLException {  
+		if (blockStatus!=1){
+			return "---";
+		}else{
+			String selectFinishPercentSql="  SELECT distinct f.subtask_id,f.finish_percent FROM subtask s,subtask_finish f  WHERE s.subtask_id=f.subtask_id AND s.status=1 AND s.block_id="+blockId;
+			String selectSubTaskCount=" SELECT COUNT(1) total FROM subtask s WHERE s.status=1 and s.block_id="+blockId;
+			PreparedStatement stmt = null;
+			try {
+				stmt = conn.prepareStatement(selectSubTaskCount);
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			ResultSet rs = stmt.executeQuery();
+			int subtaskCount=0;
+			while (rs.next()) {
+				subtaskCount=rs.getInt("record_");    
+			}
+			if (subtaskCount==0){
+				return "0%";
+			}
+			float finishPercent=0;
+			PreparedStatement stmt1 = conn.prepareStatement(selectFinishPercentSql);
+			ResultSet rs1 = stmt1.executeQuery();
+			while(rs1.next()){
+				finishPercent+=rs1.getInt("finish_percent")/(subtaskCount*100);
+			}
+			return String.valueOf(finishPercent*100)+"%";
+		}
+    }  
 }

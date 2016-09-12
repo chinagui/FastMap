@@ -31,7 +31,7 @@ public class Process extends AbstractProcess<Command> implements IProcess {
 		IxPoiSelector selector = new IxPoiSelector(this.getConn());
 
 		this.ixPoi = (IxPoi) selector
-				.loadById(this.getCommand().getPid(), true);
+				.loadById(this.getCommand().getPid(), this.getCommand().isLock());
 
 		return true;
 	}

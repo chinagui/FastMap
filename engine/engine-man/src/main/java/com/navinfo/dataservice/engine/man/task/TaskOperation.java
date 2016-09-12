@@ -5,9 +5,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -15,6 +18,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.man.model.Task;
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
+import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.navicommons.database.Page;
@@ -217,6 +222,510 @@ public class TaskOperation {
 			throw new Exception("创建失败，原因为:"+e.getMessage(),e);
 		}
 	}
+	
+	public static Page getListSnapshot(Connection conn,JSONObject conditionJson,int currentPageNum,int pageSize) throws Exception{
+		try{
+			QueryRunner run = new QueryRunner();
+			//根据任务名称或城市名称模糊查询，显示搜索结果
+			//用户在输入名称的时候，我们并不知道他输入的是情报名称，城市名称，任务名称，所以都要查一下
+			//界面输入：全国。。这个时候是返回 全国多源，全国代理店,即查非情报所有任务的cityName
+			long pageStartNum = (currentPageNum - 1) * pageSize + 1;
+			long pageEndNum = currentPageNum * pageSize;
+			String conditionSql="";
+			if(null!=conditionJson && !conditionJson.isEmpty()){
+				String name=conditionJson.getString("name");
+				conditionSql="   where TASK_LIST.UPPER_LEVEL_NAME LIKE '%"+name+"%' OR TASK_LIST.TASK_NAME LIKE '%"+name+"%'";
+			}			
+			
+			//分页显示列表，不带条件查询
+			String selectSql = "WITH T AS"
+					+ " (SELECT T.TASK_ID,"
+					+ "         T.NAME,"
+					+ "         T.CITY_ID,"
+					+ "         T.TASK_TYPE,"
+					+ "         T.STATUS,"
+					+ "         SUM(NVL(F.FINISH_PERCENT, 0)) / COUNT(DISTINCT S.SUBTASK_ID) FINISH_PERCENT"
+					+ "    FROM SUBTASK S, TASK T, SUBTASK_FINISH F"
+					+ "   WHERE S.TASK_ID = T.TASK_ID"
+					+ "     AND T.LATEST = 1"
+					+ "     AND S.SUBTASK_ID = F.SUBTASK_ID(+)"
+					+ "   GROUP BY T.TASK_ID, T.NAME, T.CITY_ID, T.TASK_TYPE, T.STATUS"
+					+ "  UNION"
+					+ "  SELECT T.TASK_ID,"
+					+ "         T.NAME,"
+					+ "         T.CITY_ID,"
+					+ "         T.TASK_TYPE,"
+					+ "         T.STATUS,"
+					+ "         SUM(NVL(F.FINISH_PERCENT, 0)) / COUNT(DISTINCT S.SUBTASK_ID) FINISH_PERCENT"
+					+ "    FROM SUBTASK S, BLOCK B, CITY C, TASK T, SUBTASK_FINISH F"
+					+ "   WHERE S.BLOCK_ID = B.BLOCK_ID"
+					+ "     AND B.CITY_ID = C.CITY_ID"
+					+ "     AND C.CITY_ID = T.CITY_ID"
+					+ "     AND T.LATEST = 1"
+					+ "     AND S.SUBTASK_ID = F.SUBTASK_ID(+)"
+					+ "   GROUP BY T.TASK_ID, T.NAME, T.CITY_ID, T.TASK_TYPE, T.STATUS"
+					+ "   UNION"
+					+ "  SELECT T.TASK_ID,"
+					+ "         T.NAME,"
+					+ "         T.CITY_ID,"
+					+ "         T.TASK_TYPE,"
+					+ "         T.STATUS,"
+					+ "         0 FINISH_PERCENT"
+					+ "    FROM TASK T"
+					+ "   WHERE T.LATEST = 1"
+					+ "     AND NOT EXISTS"
+					+ "   (SELECT 1"
+					+ "            FROM SUBTASK S, BLOCK B, CITY C"
+					+ "           WHERE S.BLOCK_ID = B.BLOCK_ID"
+					+ "             AND B.CITY_ID = C.CITY_ID"
+					+ "             AND C.CITY_ID = T.CITY_ID"
+					+ "          UNION"
+					+ "          SELECT 1 FROM SUBTASK S WHERE S.TASK_ID = T.TASK_ID)),"
+					+ "TASK_LIST AS(SELECT NVL(T.TASK_ID, 0) TASK_ID,"
+					+ "       NVL(T.NAME, '---') TASK_NAME,"
+					+ "       TO_CHAR(C.CITY_ID) UPPER_LEVEL_ID,"
+					+ "       C.CITY_NAME UPPER_LEVEL_NAME,"
+					+ "       1 TASK_TYPE,"
+					+ "       NVL(T.STATUS, 0) TASK_STATUS,"
+					+ "       C.PLAN_STATUS,"
+					+ "       NVL(T.FINISH_PERCENT, 0) FINISH_PERCENT"
+					+ "  FROM T, CITY C"
+					+ " WHERE T.CITY_ID(+) = C.CITY_ID"
+					+ "   AND C.REGION_ID <> 0   "
+					+ " UNION ALL"
+					+ " SELECT NVL(T.TASK_ID, 0) TASK_ID,"
+					+ "       NVL(T.NAME, '---') NAME,"
+					+ "       TO_CHAR(C.CITY_ID) UPPER_LEVEL_ID,"
+					+ "       C.CITY_NAME UPPER_LEVEL_NAME,"
+					+ "       2 TASK_TYPE,"
+					+ "       NVL(T.STATUS, 0) TASK_STATUS,"
+					+ "       C.PLAN_STATUS,"
+					+ "       NVL(T.FINISH_PERCENT, 0) FINISH_PERCENT"
+					+ "  FROM T, CITY C"
+					+ " WHERE T.CITY_ID(+) = C.CITY_ID"
+					+ "   AND C.CITY_ID = 100000"
+					+ " UNION ALL"
+					+ " SELECT NVL(T.TASK_ID, 0) TASK_ID,"
+					+ "       NVL(T.NAME, '---') NAME,"
+					+ "       TO_CHAR(C.CITY_ID) UPPER_LEVEL_ID,"
+					+ "       C.CITY_NAME UPPER_LEVEL_NAME,"
+					+ "       3 TASK_TYPE,"
+					+ "       NVL(T.STATUS, 0) TASK_STATUS,"
+					+ "       C.PLAN_STATUS,"
+					+ "       NVL(T.FINISH_PERCENT, 0) FINISH_PERCENT"
+					+ "  FROM T, CITY C"
+					+ " WHERE T.CITY_ID(+) = C.CITY_ID"
+					+ "   AND C.CITY_ID = 100001"
+					+ " UNION ALL"
+					+ " SELECT NVL(T.TASK_ID, 0) TASK_ID,"
+					+ "       NVL(T.NAME, '---') NAME,"
+					+ "       I.INFOR_ID,"
+					+ "       I.INFOR_NAME,"
+					+ "       4 TASK_TYPE,"
+					+ "       NVL(T.STATUS, 0) TASK_STATUS,"
+					+ "       I.PLAN_STATUS,"
+					+ "       NVL(T.FINISH_PERCENT, 0) FINISH_PERCENT"
+					+ "  FROM T, INFOR I"
+					+ " WHERE T.TASK_ID(+) = I.TASK_ID),"
+					+ " FINAL_TABLE AS"
+					+ " (SELECT *"
+					+ "    FROM TASK_LIST"
+					+ conditionSql
+					+ "   ORDER BY TASK_LIST.TASK_STATUS DESC, TASK_LIST.FINISH_PERCENT ASC)"
+					+ " SELECT /*+FIRST_ROWS ORDERED*/"
+					+ " TT.*, (SELECT COUNT(1) FROM FINAL_TABLE) AS TOTAL_RECORD_NUM"
+					+ "  FROM (SELECT FINAL_TABLE.*, ROWNUM AS ROWNUM_ FROM FINAL_TABLE  WHERE ROWNUM <= "+pageEndNum+") TT"
+					+ " WHERE TT.ROWNUM_ >= "+pageStartNum;
+			//System.out.println(selectSql);
+			return run.query(conn, selectSql, getSnapshotQuery(currentPageNum,pageSize));		
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("创建失败，原因为:"+e.getMessage(),e);
+		}
+	}
+	
+	/**
+	 * TASK_STATUS:1常规，2多源，3代理店，4情报
+	 * @param currentPageNum
+	 * @param pageSize
+	 * @return
+	 */
+	private static ResultSetHandler<Page> getSnapshotQuery(final int currentPageNum,final int pageSize){
+		//NVL(T.TASK_ID, 0) TASK_ID,NVL(T.NAME, '---') TASK_NAME, TO_CHAR(C.CITY_ID) UPPER_LEVEL_ID,
+		//C.CITY_NAME UPPER_LEVEL_NAME,1 TASK_TYPE,NVL(T.STATUS, 0) TASK_STATUS,C.PLAN_STATUS,
+		//NVL(T.FINISH_PERCENT, 0) FINISH_PERCENT,ROWNUM_,TOTAL_RECORD_NUM
+		ResultSetHandler<Page> rsHandler = new ResultSetHandler<Page>(){
+			public Page handle(ResultSet rs) throws SQLException {
+				List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
+				Page page = new Page(currentPageNum);
+			    page.setPageSize(pageSize);
+			    int total=0;
+				while(rs.next()){
+					Map<String, Object> map = new HashMap<String, Object>();
+					map.put("taskId", rs.getInt("TASK_ID"));
+					map.put("taskName", rs.getString("TASK_NAME"));
+					map.put("upperLevelId", rs.getString("UPPER_LEVEL_ID"));
+					map.put("upperLevelName", rs.getString("UPPER_LEVEL_NAME"));
+					map.put("taskType", rs.getInt("TASK_TYPE"));
+					map.put("taskStatus", rs.getInt("TASK_STATUS"));
+					map.put("planStatus", rs.getInt("PLAN_STATUS"));
+					map.put("finishPercent", rs.getInt("FINISH_PERCENT"));
+					//map.put("ROWNUM_", rs.getInt("ROWNUM_"));
+					//map.put("TOTAL_RECORD_NUM", rs.getInt("TOTAL_RECORD_NUM"));
+					total=rs.getInt("TOTAL_RECORD_NUM");
+					list.add(map);
+				}
+				page.setTotalCount(total);
+				page.setResult(list);
+				return page;
+			}
+    	};
+    	return rsHandler;
+	}
+	
+	public static Page getListIntegrate(Connection conn,JSONObject conditionJson,JSONObject orderJson,int currentPageNum,int pageSize) throws Exception{
+		try{
+			QueryRunner run = new QueryRunner();
+			long pageStartNum = (currentPageNum - 1) * pageSize + 1;
+			long pageEndNum = currentPageNum * pageSize;
+			
+			/*默认任务ID排序显示
+			 *搜索功能，搜索项包括：任务 ID，任务名称，创建人，城市/情报名称；
+			 *筛选功能，筛选项包括：任务状态(未规划/草稿/开启/关闭)
+			 *排序功能，排序项包括：任务 ID，任务总体计划开始时间，任务总体计划结束时间,城市/情报名称,任务状态,任务类型
+			 *搜索、筛选、排序功能可同时使用*/
+			String conditionSql="";
+			String statusSql="";
+			if(null!=conditionJson && !conditionJson.isEmpty()){
+				Iterator keys = conditionJson.keys();
+				while (keys.hasNext()) {
+					String key = (String) keys.next();
+					if("taskStatus".equals(key) || "planStatus".equals(key)){
+						if(!statusSql.isEmpty()){statusSql+=" or ";}
+					}
+					else{
+						if(conditionSql.isEmpty()){conditionSql+=" where ";}
+						else{conditionSql+=" and ";}}
+					
+					//城市/情报名称
+					if ("upperLevelName".equals(key)) {conditionSql+=" TASK_LIST.UPPER_LEVEL_NAME like '%"+conditionJson.getString(key)+"%'";}
+					if ("taskId".equals(key)) {conditionSql+=" TASK_LIST.TASK_ID="+conditionJson.getInt(key);}
+					if ("taskName".equals(key)) {conditionSql+=" TASK_LIST.TASK_NAME like '%"+conditionJson.getString(key)+"%'";}
+					if ("createUserName".equals(key)) {conditionSql+=" TASK_LIST.create_User_Name like '%"+conditionJson.getString(key)+"%'";}
+					
+					if ("taskStatus".equals(key)) {statusSql+=" (TASK_LIST.TASK_STATUS IN ("+conditionJson.getJSONArray(key).join(",")+")"
+							+ " AND TASK_LIST.PLAN_STATUS!=0)";}
+					if ("planStatus".equals(key)) {statusSql+=" TASK_LIST.PLAN_STATUS="+conditionJson.getInt(key);}
+					}
+				if(conditionSql.isEmpty()){
+					//只有status
+					conditionSql+=" where "+statusSql;}
+				else if(!statusSql.isEmpty()){//有非status
+					conditionSql+=" and ("+statusSql+")";}
+				}
+			
+			String orderSql="";
+			if(null!=orderJson && !orderJson.isEmpty()){
+				Iterator keys = orderJson.keys();
+				while (keys.hasNext()) {
+					String key = (String) keys.next();
+					//城市/情报名称,任务状态,任务类型
+					if ("taskId".equals(key)) {orderSql+=" order by TASK_LIST.TASK_ID "+orderJson.getString(key);break;}
+					if ("planStartDate".equals(key)) {orderSql+=" order by TASK_LIST.PLAN_START_DATE "+orderJson.getString(key);break;}
+					if ("planEndDate".equals(key)) {orderSql+=" order by TASK_LIST.PLAN_END_DATE "+orderJson.getString(key);break;}
+					
+					if ("upperLevelName".equals(key)) {orderSql+=" order by TASK_LIST.UPPER_LEVEL_NAME "+orderJson.getString(key);break;}
+					if ("taskStatus".equals(key)) {orderSql+=" order by TASK_LIST.TASK_STATUS "+orderJson.getString(key);break;}
+					if ("taskType".equals(key)) {orderSql+=" order by TASK_LIST.TASK_TYPE "+orderJson.getString(key);break;}
+					}
+			}else{
+				orderSql+=" order by TASK_LIST.TASK_ID";
+			}
+			
+			//分页显示列表，不带条件查询
+			String selectSql = "WITH T AS"
+					+ " (SELECT T.TASK_ID,"
+					+ "         T.NAME,"
+					+ "         T.DESCP,"
+					+ "         T.CITY_ID,"
+					+ "         T.TASK_TYPE,"
+					+ "         T.PLAN_START_DATE,"
+					+ "         T.PLAN_END_DATE,"
+					+ "         T.MONTH_EDIT_PLAN_START_DATE,"
+					+ "         T.MONTH_EDIT_PLAN_END_DATE,"
+					+ "         T.MONTH_EDIT_GROUP_ID,"
+					+ "         T.MONTH_PRODUCE_PLAN_START_DATE,"
+					+ "         T.MONTH_PRODUCE_PLAN_END_DATE,"
+					+ "         T.STATUS,"
+					+ "         NVL(T.CREATE_USER_ID, 0) CREATE_USER_ID,"
+					+ "         NVL(U.USER_REAL_NAME, '---') CREATE_USER_NAME,"
+					+ "         NVL(G.GROUP_NAME, '---') MONTH_EDIT_GROUP_NAME,"
+					+ "         SUM(NVL(F.FINISH_PERCENT, 0)) /COUNT(DISTINCT NVL(S.SUBTASK_ID, 1)) FINISH_PERCENT"
+					+ "    FROM SUBTASK S, TASK T, SUBTASK_FINISH F, USER_INFO U, USER_GROUP G"
+					+ "   WHERE S.TASK_ID = T.TASK_ID"
+					+ "     AND T.LATEST = 1"
+					+ "     AND T.CREATE_USER_ID = U.USER_ID(+)"
+					+ "     AND T.MONTH_EDIT_GROUP_ID = G.GROUP_ID(+)"
+					+ "     AND S.SUBTASK_ID = F.SUBTASK_ID(+)"
+					+ "   GROUP BY T.TASK_ID,"
+					+ "            T.NAME,"
+					+ "            T.DESCP,"
+					+ "            T.CITY_ID,"
+					+ "            T.TASK_TYPE,"
+					+ "            T.STATUS,"
+					+ "            T.CREATE_USER_ID,"
+					+ "            U.USER_REAL_NAME,"
+					+ "            G.GROUP_NAME,T.PLAN_START_DATE,"
+					+ "            T.PLAN_END_DATE,"
+					+ "            T.MONTH_EDIT_PLAN_START_DATE,"
+					+ "            T.MONTH_EDIT_PLAN_END_DATE,"
+					+ "         T.MONTH_EDIT_GROUP_ID,"
+					+ "         T.MONTH_PRODUCE_PLAN_START_DATE,"
+					+ "         T.MONTH_PRODUCE_PLAN_END_DATE"
+					+ " UNION"
+					+ "  SELECT T.TASK_ID,"
+					+ "         T.NAME,"
+					+ "         T.DESCP,"
+					+ "         T.CITY_ID,"
+					+ "         T.TASK_TYPE,"
+					+ "         T.PLAN_START_DATE,"
+					+ "         T.PLAN_END_DATE,"
+					+ "         T.MONTH_EDIT_PLAN_START_DATE,"
+					+ "         T.MONTH_EDIT_PLAN_END_DATE,"
+					+ "         T.MONTH_EDIT_GROUP_ID,"
+					+ "         T.MONTH_PRODUCE_PLAN_START_DATE,"
+					+ "         T.MONTH_PRODUCE_PLAN_END_DATE,"
+					+ "         T.STATUS,"
+					+ "         NVL(T.CREATE_USER_ID, 0) CREATE_USER_ID,"
+					+ "         NVL(U.USER_REAL_NAME, '---') CREATE_USER_NAME,"
+					+ "         NVL(G.GROUP_NAME, '---') MONTH_EDIT_GROUP_NAME,"
+					+ "         SUM(NVL(F.FINISH_PERCENT, 0)) /COUNT(DISTINCT NVL(S.SUBTASK_ID, 1)) FINISH_PERCENT"
+					+ "    FROM SUBTASK        S,"
+					+ "         BLOCK          B,"
+					+ "         CITY           C,"
+					+ "         TASK           T,"
+					+ "         SUBTASK_FINISH F,"
+					+ "         USER_INFO      U,"
+					+ "         USER_GROUP     G"
+					+ "   WHERE S.BLOCK_ID = B.BLOCK_ID"
+					+ "     AND B.CITY_ID = C.CITY_ID"
+					+ "     AND C.CITY_ID = T.CITY_ID"
+					+ "     AND T.LATEST = 1"
+					+ "     AND T.CREATE_USER_ID = U.USER_ID(+)"
+					+ "     AND T.MONTH_EDIT_GROUP_ID = G.GROUP_ID(+)"
+					+ "     AND S.SUBTASK_ID = F.SUBTASK_ID(+)"
+					+ "   GROUP BY T.TASK_ID,"
+					+ "            T.NAME,"
+					+ "            T.DESCP,"
+					+ "            T.CITY_ID,"
+					+ "            T.TASK_TYPE,"
+					+ "            T.STATUS,"
+					+ "            T.CREATE_USER_ID,"
+					+ "            U.USER_REAL_NAME,"
+					+ "            G.GROUP_NAME,"
+					+ "            T.PLAN_START_DATE,"
+					+ "         T.PLAN_END_DATE,"
+					+ "         T.MONTH_EDIT_PLAN_START_DATE,"
+					+ "         T.MONTH_EDIT_PLAN_END_DATE,"
+					+ "         T.MONTH_EDIT_GROUP_ID,"
+					+ "         T.MONTH_PRODUCE_PLAN_START_DATE,"
+					+ "         T.MONTH_PRODUCE_PLAN_END_DATE"
+					+ "  UNION"
+					+ "  SELECT T.TASK_ID,"
+					+ "         T.NAME,"
+					+ "         T.DESCP,"
+					+ "         T.CITY_ID,"
+					+ "         T.TASK_TYPE,"
+					+ "         T.PLAN_START_DATE,"
+					+ "         T.PLAN_END_DATE,"
+					+ "         T.MONTH_EDIT_PLAN_START_DATE,"
+					+ "         T.MONTH_EDIT_PLAN_END_DATE,"
+					+ "         T.MONTH_EDIT_GROUP_ID,"
+					+ "         T.MONTH_PRODUCE_PLAN_START_DATE,"
+					+ "         T.MONTH_PRODUCE_PLAN_END_DATE,"
+					+ "         T.STATUS,"
+					+ "         NVL(T.CREATE_USER_ID, 0) CREATE_USER_ID,"
+					+ "         NVL(U.USER_REAL_NAME, '---') CREATE_USER_NAME,"
+					+ "         NVL(G.GROUP_NAME, '---') MONTH_EDIT_GROUP_NAME,"
+					+ "         0 FINISH_PERCENT"
+					+ "    FROM TASK T, USER_INFO U, USER_GROUP G"
+					+ "   WHERE T.LATEST = 1"
+					+ "     AND T.CREATE_USER_ID = U.USER_ID(+)"
+					+ "     AND T.MONTH_EDIT_GROUP_ID = G.GROUP_ID(+)"
+					+ "     AND NOT EXISTS"
+					+ "   (SELECT 1"
+					+ "            FROM SUBTASK S, BLOCK B, CITY C"
+					+ "           WHERE S.BLOCK_ID = B.BLOCK_ID"
+					+ "             AND B.CITY_ID = C.CITY_ID"
+					+ "             AND C.CITY_ID = T.CITY_ID"
+					+ "          UNION"
+					+ "          SELECT 1 FROM SUBTASK S WHERE S.TASK_ID = T.TASK_ID)),"
+					+ "TASK_LIST AS"
+					+ " (SELECT NVL(T.TASK_ID, 0) TASK_ID,"
+					+ "         NVL(T.NAME, '---') TASK_NAME,"
+					+ "         NVL(T.DESCP,'---') TASK_DESCP,"
+					+ "         TO_CHAR(C.CITY_ID) UPPER_LEVEL_ID,"
+					+ "         C.CITY_NAME UPPER_LEVEL_NAME,"
+					+ "         1 TASK_TYPE,"
+					+ "         T.PLAN_START_DATE,"
+					+ "         T.PLAN_END_DATE,"
+					+ "         T.MONTH_EDIT_PLAN_START_DATE,"
+					+ "         T.MONTH_EDIT_PLAN_END_DATE,"
+					+ "         NVL(T.MONTH_EDIT_GROUP_ID, 0) MONTH_EDIT_GROUP_ID,"
+					+ "         T.MONTH_PRODUCE_PLAN_START_DATE,"
+					+ "         T.MONTH_PRODUCE_PLAN_END_DATE,"
+					+ "         NVL(T.CREATE_USER_ID, 0) CREATE_USER_ID,"
+					+ "         NVL(T.CREATE_USER_NAME, '---') CREATE_USER_NAME,"
+					+ "         NVL(T.MONTH_EDIT_GROUP_NAME, '---') MONTH_EDIT_GROUP_NAME,"
+					+ "         NVL(T.STATUS, 0) TASK_STATUS,"
+					+ "         C.PLAN_STATUS,"
+					+ "         NVL(T.FINISH_PERCENT, 0) FINISH_PERCENT"
+					+ "    FROM T, CITY C"
+					+ "   WHERE T.CITY_ID(+) = C.CITY_ID"
+					+ "     AND C.REGION_ID <> 0"
+					+ "  UNION ALL"
+					+ "  SELECT NVL(T.TASK_ID, 0) TASK_ID,"
+					+ "         NVL(T.NAME, '---') NAME,"
+					+ "         NVL(T.DESCP,'---') TASK_DESCP,"
+					+ "         TO_CHAR(C.CITY_ID) UPPER_LEVEL_ID,"
+					+ "         C.CITY_NAME UPPER_LEVEL_NAME,"
+					+ "         2 TASK_TYPE,"
+					+ "         T.PLAN_START_DATE,"
+					+ "         T.PLAN_END_DATE,"
+					+ "         T.MONTH_EDIT_PLAN_START_DATE,"
+					+ "         T.MONTH_EDIT_PLAN_END_DATE,"
+					+ "         NVL(T.MONTH_EDIT_GROUP_ID, 0) MONTH_EDIT_GROUP_ID,"
+					+ "         T.MONTH_PRODUCE_PLAN_START_DATE,"
+					+ "         T.MONTH_PRODUCE_PLAN_END_DATE,"
+					+ "         NVL(T.CREATE_USER_ID, 0) CREATE_USER_ID,"
+					+ "         NVL(T.CREATE_USER_NAME, '---') CREATE_USER_NAME,"
+					+ "         NVL(T.MONTH_EDIT_GROUP_NAME, '---') MONTH_EDIT_GROUP_NAME,"
+					+ "         NVL(T.STATUS, 0) TASK_STATUS,"
+					+ "         C.PLAN_STATUS,"
+					+ "         NVL(T.FINISH_PERCENT, 0) FINISH_PERCENT"
+					+ "    FROM T, CITY C"
+					+ "   WHERE T.CITY_ID(+) = C.CITY_ID"
+					+ "     AND C.CITY_ID = 100000"
+					+ "  UNION ALL"
+					+ "  SELECT NVL(T.TASK_ID, 0) TASK_ID,"
+					+ "         NVL(T.NAME, '---') NAME,"
+					+ "         NVL(T.DESCP,'---') TASK_DESCP,"
+					+ "         TO_CHAR(C.CITY_ID) UPPER_LEVEL_ID,"
+					+ "         C.CITY_NAME UPPER_LEVEL_NAME,"
+					+ "         3 TASK_TYPE,"
+					+ "         T.PLAN_START_DATE,"
+					+ "         T.PLAN_END_DATE,"
+					+ "         T.MONTH_EDIT_PLAN_START_DATE,"
+					+ "         T.MONTH_EDIT_PLAN_END_DATE,"
+					+ "         NVL(T.MONTH_EDIT_GROUP_ID,0) MONTH_EDIT_GROUP_ID,"
+					+ "         T.MONTH_PRODUCE_PLAN_START_DATE,"
+					+ "         T.MONTH_PRODUCE_PLAN_END_DATE,"
+					+ "         NVL(T.CREATE_USER_ID, 0) CREATE_USER_ID,"
+					+ "         NVL(T.CREATE_USER_NAME, '---') CREATE_USER_NAME,"
+					+ "         NVL(T.MONTH_EDIT_GROUP_NAME, '---') MONTH_EDIT_GROUP_NAME,"
+					+ "         NVL(T.STATUS, 0) TASK_STATUS,"
+					+ "         C.PLAN_STATUS,"
+					+ "         NVL(T.FINISH_PERCENT, 0) FINISH_PERCENT"
+					+ "    FROM T, CITY C"
+					+ "   WHERE T.CITY_ID(+) = C.CITY_ID"
+					+ "     AND C.CITY_ID = 100001"
+					+ "  UNION ALL"
+					+ "  SELECT NVL(T.TASK_ID, 0) TASK_ID,"
+					+ "         NVL(T.NAME, '---') NAME,"
+					+ "         NVL(T.DESCP,'---') TASK_DESCP,"
+					+ "         I.INFOR_ID,"
+					+ "         I.INFOR_NAME,"
+					+ "         4 TASK_TYPE,"
+					+ "         T.PLAN_START_DATE,"
+					+ "         T.PLAN_END_DATE,"
+					+ "         T.MONTH_EDIT_PLAN_START_DATE,"
+					+ "         T.MONTH_EDIT_PLAN_END_DATE,"
+					+ "         NVL(T.MONTH_EDIT_GROUP_ID,0) MONTH_EDIT_GROUP_ID,"
+					+ "         T.MONTH_PRODUCE_PLAN_START_DATE,"
+					+ "         T.MONTH_PRODUCE_PLAN_END_DATE,"
+					+ "         NVL(T.CREATE_USER_ID, 0) CREATE_USER_ID,"
+					+ "         NVL(T.CREATE_USER_NAME, '---') CREATE_USER_NAME,"
+					+ "         NVL(T.MONTH_EDIT_GROUP_NAME, '---') MONTH_EDIT_GROUP_NAME,"
+					+ "         NVL(T.STATUS, 0) TASK_STATUS,"
+					+ "         I.PLAN_STATUS,"
+					+ "         NVL(T.FINISH_PERCENT, 0) FINISH_PERCENT"
+					+ "    FROM T, INFOR I"
+					+ "   WHERE T.TASK_ID(+) = I.TASK_ID),"
+					+ " QUERY AS"
+					+ " (SELECT *"
+					+ "    FROM TASK_LIST"
+					+conditionSql
+					+orderSql
+					+ ")"
+					+ " SELECT /*+FIRST_ROWS ORDERED*/"
+					+ " T.*, (SELECT COUNT(1) FROM QUERY) AS TOTAL_RECORD_NUM"
+					+ "  FROM (SELECT T.*, ROWNUM AS ROWNUM_ FROM QUERY T WHERE ROWNUM <= "+pageEndNum+") T"
+					+ " WHERE T.ROWNUM_ >= "+pageStartNum;
+			return run.query(conn, selectSql, getIntegrateQuery(currentPageNum,pageSize));		
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("创建失败，原因为:"+e.getMessage(),e);
+		}
+	}
+	
+	/**
+	 * TASK_STATUS:1常规，2多源，3代理店，4情报
+	 * @param currentPageNum
+	 * @param pageSize
+	 * @return
+	 */
+	private static ResultSetHandler<Page> getIntegrateQuery(final int currentPageNum,final int pageSize){
+		/*NVL(T.TASK_ID, 0) TASK_ID,NVL(T.NAME, '---') TASK_NAME,TO_CHAR(C.CITY_ID) UPPER_LEVEL_ID,
+          C.CITY_NAME UPPER_LEVEL_NAME,1 TASK_TYPE,T.PLAN_START_DATE,T.PLAN_END_DATE,
+          T.MONTH_EDIT_PLAN_START_DATE,T.MONTH_EDIT_PLAN_END_DATE,
+          NVL(T.MONTH_EDIT_GROUP_ID, 0) MONTH_EDIT_GROUP_ID,T.MONTH_PRODUCE_PLAN_START_DATE,
+          T.MONTH_PRODUCE_PLAN_END_DATE,NVL(T.CREATE_USER_ID, 0) CREATE_USER_ID,
+          NVL(T.CREATE_USER_NAME, '---') CREATE_USER_NAME,NVL(T.MONTH_EDIT_GROUP_NAME, '---') MONTH_EDIT_GROUP_NAME,
+          NVL(T.STATUS, 0) TASK_STATUS,C.PLAN_STATUS,NVL(T.FINISH_PERCENT, 0) FINISH_PERCENT,
+          ROWNUM_,TOTAL_RECORD_NUM*/
+		final String version=SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion);
+		ResultSetHandler<Page> rsHandler = new ResultSetHandler<Page>(){
+			public Page handle(ResultSet rs) throws SQLException {
+				List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
+				Page page = new Page(currentPageNum);
+			    page.setPageSize(pageSize);
+			    int total=0;
+				while(rs.next()){
+					Map<String, Object> map = new HashMap<String, Object>();
+					map.put("taskId", rs.getInt("TASK_ID"));
+					map.put("taskName", rs.getString("TASK_NAME"));
+					map.put("taskDescp", rs.getString("TASK_DESCP"));
+					map.put("upperLevelId", rs.getString("UPPER_LEVEL_ID"));
+					map.put("upperLevelName", rs.getString("UPPER_LEVEL_NAME"));
+					map.put("taskType", rs.getInt("TASK_TYPE"));
+					map.put("planStartDate", DateUtils.dateToString(rs.getTimestamp("PLAN_START_DATE")));
+					map.put("planEndDate", DateUtils.dateToString(rs.getTimestamp("PLAN_END_DATE")));
+					map.put("monthEditPlanStartDate", DateUtils.dateToString(rs.getTimestamp("MONTH_EDIT_PLAN_START_DATE")));
+					map.put("monthEditPlanEndDate", DateUtils.dateToString(rs.getTimestamp("MONTH_EDIT_PLAN_END_DATE")));
+					map.put("monthEditGroupId", rs.getInt("MONTH_EDIT_GROUP_ID"));
+					map.put("monthProducePlanStartDate", DateUtils.dateToString(rs.getTimestamp("MONTH_PRODUCE_PLAN_START_DATE")));
+					map.put("monthProducePlanEndDate", DateUtils.dateToString(rs.getTimestamp("MONTH_PRODUCE_PLAN_END_DATE")));
+					map.put("createUserId", rs.getInt("CREATE_USER_ID"));
+					map.put("createUserName", rs.getString("CREATE_USER_NAME"));
+					map.put("monthEditGroupName", rs.getString("MONTH_EDIT_GROUP_NAME"));
+					map.put("taskStatus", rs.getInt("TASK_STATUS"));
+					map.put("planStatus", rs.getInt("PLAN_STATUS"));
+					map.put("finishPercent", rs.getInt("FINISH_PERCENT"));
+					map.put("version", version);
+					//map.put("ROWNUM_", rs.getInt("ROWNUM_"));
+					//map.put("TOTAL_RECORD_NUM", rs.getInt("TOTAL_RECORD_NUM"));
+					total=rs.getInt("TOTAL_RECORD_NUM");
+					list.add(map);
+				}
+				page.setTotalCount(total);
+				page.setResult(list);
+				return page;
+			}
+    	};
+    	return rsHandler;
+	}
 		
 	public static void updateTask(Connection conn,Task bean) throws Exception{
 		try{
@@ -269,6 +778,341 @@ public class TaskOperation {
 			log.error(e.getMessage(), e);
 			throw new Exception("创建失败，原因为:"+e.getMessage(),e);
 		}
+	}
+
+	public static List<Map<String, Object>> queryTask(Connection conn,int taskId) throws Exception {
+		String selectSql="WITH T AS"
+				+ " (SELECT T.TASK_ID,"
+				+ "         T.NAME,"
+				+ "         T.DESCP,"
+				+ "         T.CITY_ID,"
+				+ "         T.TASK_TYPE,"
+				+ "         T.PLAN_START_DATE,"
+				+ "         T.PLAN_END_DATE,"
+				+ "         T.MONTH_EDIT_PLAN_START_DATE,"
+				+ "         T.MONTH_EDIT_PLAN_END_DATE,"
+				+ "         T.MONTH_EDIT_GROUP_ID,"
+				+ "         T.MONTH_PRODUCE_PLAN_START_DATE,"
+				+ "         T.MONTH_PRODUCE_PLAN_END_DATE,"
+				+ "         T.STATUS,"
+				+ "         NVL(T.CREATE_USER_ID, 0) CREATE_USER_ID,"
+				+ "         NVL(U.USER_REAL_NAME, '---') CREATE_USER_NAME,"
+				+ "         NVL(G.GROUP_NAME, '---') MONTH_EDIT_GROUP_NAME,"
+				+ "         SUM(NVL(F.FINISH_PERCENT, 0)) /COUNT(DISTINCT NVL(S.SUBTASK_ID, 1)) FINISH_PERCENT"
+				+ "    FROM SUBTASK S, TASK T, SUBTASK_FINISH F, USER_INFO U, USER_GROUP G"
+				+ "   WHERE S.TASK_ID = T.TASK_ID"
+				+ "     AND T.LATEST = 1"
+				+ "     AND T.CREATE_USER_ID = U.USER_ID(+)"
+				+ "     AND T.MONTH_EDIT_GROUP_ID = G.GROUP_ID(+)"
+				+ "     AND S.SUBTASK_ID = F.SUBTASK_ID(+)"
+				+ "   GROUP BY T.TASK_ID,"
+				+ "            T.NAME,"
+				+ "            T.DESCP,"
+				+ "            T.CITY_ID,"
+				+ "            T.TASK_TYPE,"
+				+ "            T.STATUS,"
+				+ "            T.CREATE_USER_ID,"
+				+ "            U.USER_REAL_NAME,"
+				+ "            G.GROUP_NAME,"
+				+ "            T.PLAN_START_DATE,"
+				+ "            T.PLAN_END_DATE,"
+				+ "            T.MONTH_EDIT_PLAN_START_DATE,"
+				+ "            T.MONTH_EDIT_PLAN_END_DATE,"
+				+ "            T.MONTH_EDIT_GROUP_ID,"
+				+ "            T.MONTH_PRODUCE_PLAN_START_DATE,"
+				+ "            T.MONTH_PRODUCE_PLAN_END_DATE"
+				+ "  UNION"
+				+ "  SELECT T.TASK_ID,"
+				+ "         T.NAME,"
+				+ "         T.DESCP,"
+				+ "         T.CITY_ID,"
+				+ "         T.TASK_TYPE,"
+				+ "         T.PLAN_START_DATE,"
+				+ "         T.PLAN_END_DATE,"
+				+ "         T.MONTH_EDIT_PLAN_START_DATE,"
+				+ "         T.MONTH_EDIT_PLAN_END_DATE,"
+				+ "         T.MONTH_EDIT_GROUP_ID,"
+				+ "         T.MONTH_PRODUCE_PLAN_START_DATE,"
+				+ "         T.MONTH_PRODUCE_PLAN_END_DATE,"
+				+ "         T.STATUS,"
+				+ "         NVL(T.CREATE_USER_ID, 0) CREATE_USER_ID,"
+				+ "         NVL(U.USER_REAL_NAME, '---') CREATE_USER_NAME,"
+				+ "         NVL(G.GROUP_NAME, '---') MONTH_EDIT_GROUP_NAME,"
+				+ "         SUM(NVL(F.FINISH_PERCENT, 0)) /COUNT(DISTINCT NVL(S.SUBTASK_ID, 1)) FINISH_PERCENT"
+				+ "    FROM SUBTASK        S,"
+				+ "         BLOCK          B,"
+				+ "         CITY           C,"
+				+ "         TASK           T,"
+				+ "         SUBTASK_FINISH F,"
+				+ "         USER_INFO      U,"
+				+ "         USER_GROUP     G"
+				+ "   WHERE S.BLOCK_ID = B.BLOCK_ID"
+				+ "     AND B.CITY_ID = C.CITY_ID"
+				+ "     AND C.CITY_ID = T.CITY_ID"
+				+ "     AND T.LATEST = 1"
+				+ "     AND T.CREATE_USER_ID = U.USER_ID(+)"
+				+ "     AND T.MONTH_EDIT_GROUP_ID = G.GROUP_ID(+)"
+				+ "     AND S.SUBTASK_ID = F.SUBTASK_ID(+)"
+				+ "   GROUP BY T.TASK_ID,"
+				+ "            T.NAME,"
+				+ "            T.DESCP,"
+				+ "            T.CITY_ID,"
+				+ "            T.TASK_TYPE,"
+				+ "            T.STATUS,"
+				+ "            T.CREATE_USER_ID,"
+				+ "            U.USER_REAL_NAME,"
+				+ "            G.GROUP_NAME,"
+				+ "            T.PLAN_START_DATE,"
+				+ "            T.PLAN_END_DATE,"
+				+ "            T.MONTH_EDIT_PLAN_START_DATE,"
+				+ "            T.MONTH_EDIT_PLAN_END_DATE,"
+				+ "            T.MONTH_EDIT_GROUP_ID,"
+				+ "            T.MONTH_PRODUCE_PLAN_START_DATE,"
+				+ "            T.MONTH_PRODUCE_PLAN_END_DATE"
+				+ "  UNION"
+				+ "  SELECT T.TASK_ID,"
+				+ "         T.NAME,"
+				+ "         T.DESCP,"
+				+ "         T.CITY_ID,"
+				+ "         T.TASK_TYPE,"
+				+ "         T.PLAN_START_DATE,"
+				+ "         T.PLAN_END_DATE,"
+				+ "         T.MONTH_EDIT_PLAN_START_DATE,"
+				+ "         T.MONTH_EDIT_PLAN_END_DATE,"
+				+ "         T.MONTH_EDIT_GROUP_ID,"
+				+ "         T.MONTH_PRODUCE_PLAN_START_DATE,"
+				+ "         T.MONTH_PRODUCE_PLAN_END_DATE,"
+				+ "         T.STATUS,"
+				+ "         NVL(T.CREATE_USER_ID, 0) CREATE_USER_ID,"
+				+ "         NVL(U.USER_REAL_NAME, '---') CREATE_USER_NAME,"
+				+ "         NVL(G.GROUP_NAME, '---') MONTH_EDIT_GROUP_NAME,"
+				+ "         0 FINISH_PERCENT"
+				+ "    FROM TASK T, USER_INFO U, USER_GROUP G"
+				+ "   WHERE T.LATEST = 1"
+				+ "     AND T.CREATE_USER_ID = U.USER_ID(+)"
+				+ "     AND T.MONTH_EDIT_GROUP_ID = G.GROUP_ID(+)"
+				+ "     AND NOT EXISTS"
+				+ "   (SELECT 1"
+				+ "            FROM SUBTASK S, BLOCK B, CITY C"
+				+ "           WHERE S.BLOCK_ID = B.BLOCK_ID"
+				+ "             AND B.CITY_ID = C.CITY_ID"
+				+ "             AND C.CITY_ID = T.CITY_ID"
+				+ "          UNION"
+				+ "          SELECT 1 FROM SUBTASK S WHERE S.TASK_ID = T.TASK_ID)),"
+				+ " TASK_LIST AS"
+				+ " (SELECT NVL(T.TASK_ID, 0) TASK_ID,"
+				+ "         NVL(T.NAME, '---') TASK_NAME,"
+				+ "         NVL(T.DESCP,'---') TASK_DESCP,"
+				+ "         TO_CHAR(C.CITY_ID) UPPER_LEVEL_ID,"
+				+ "         C.CITY_NAME UPPER_LEVEL_NAME,"
+				+ "         T.TASK_TYPE,"
+				+ "         T.PLAN_START_DATE,"
+				+ "         T.PLAN_END_DATE,"
+				+ "         T.MONTH_EDIT_PLAN_START_DATE,"
+				+ "         T.MONTH_EDIT_PLAN_END_DATE,"
+				+ "         NVL(T.MONTH_EDIT_GROUP_ID, 0) MONTH_EDIT_GROUP_ID,"
+				+ "         T.MONTH_PRODUCE_PLAN_START_DATE,"
+				+ "         T.MONTH_PRODUCE_PLAN_END_DATE,"
+				+ "         NVL(T.CREATE_USER_ID, 0) CREATE_USER_ID,"
+				+ "         NVL(T.CREATE_USER_NAME, '---') CREATE_USER_NAME,"
+				+ "         NVL(T.MONTH_EDIT_GROUP_NAME, '---') MONTH_EDIT_GROUP_NAME,"
+				+ "         NVL(T.STATUS, 0) TASK_STATUS,"
+				+ "         C.PLAN_STATUS,"
+				+ "         NVL(T.FINISH_PERCENT, 0) FINISH_PERCENT"
+				+ "    FROM T, CITY C"
+				+ "   WHERE T.CITY_ID = C.CITY_ID"
+				+ "     AND C.CITY_ID <> 100002"
+				+ "  UNION ALL"
+				+ "  SELECT NVL(T.TASK_ID, 0) TASK_ID,"
+				+ "         NVL(T.NAME, '---') NAME,"
+				+ "         NVL(T.DESCP,'---') DESCP,"
+				+ "         I.INFOR_ID,"
+				+ "         I.INFOR_NAME,"
+				+ "         4 TASK_TYPE,"
+				+ "         T.PLAN_START_DATE,"
+				+ "         T.PLAN_END_DATE,"
+				+ "         T.MONTH_EDIT_PLAN_START_DATE,"
+				+ "         T.MONTH_EDIT_PLAN_END_DATE,"
+				+ "         NVL(T.MONTH_EDIT_GROUP_ID, 0) MONTH_EDIT_GROUP_ID,"
+				+ "         T.MONTH_PRODUCE_PLAN_START_DATE,"
+				+ "         T.MONTH_PRODUCE_PLAN_END_DATE,"
+				+ "         NVL(T.CREATE_USER_ID, 0) CREATE_USER_ID,"
+				+ "         NVL(T.CREATE_USER_NAME, '---') CREATE_USER_NAME,"
+				+ "         NVL(T.MONTH_EDIT_GROUP_NAME, '---') MONTH_EDIT_GROUP_NAME,"
+				+ "         NVL(T.STATUS, 0) TASK_STATUS,"
+				+ "         I.PLAN_STATUS,"
+				+ "         NVL(T.FINISH_PERCENT, 0) FINISH_PERCENT"
+				+ "    FROM T, INFOR I"
+				+ "   WHERE T.TASK_ID = I.TASK_ID)"
+				+ " SELECT * FROM TASK_LIST WHERE TASK_ID = "+taskId;
+		QueryRunner run=new QueryRunner();
+		return run.query(conn, selectSql, getAllIntegrateQuery());	
+	}
+	
+	/**
+	 * TASK_STATUS:1常规，2多源，3代理店，4情报
+	 * @param currentPageNum
+	 * @param pageSize
+	 * @return
+	 */
+	private static ResultSetHandler<List<Map<String, Object>>> getAllIntegrateQuery(){
+		/*NVL(T.TASK_ID, 0) TASK_ID,NVL(T.NAME, '---') TASK_NAME,TO_CHAR(C.CITY_ID) UPPER_LEVEL_ID,
+          C.CITY_NAME UPPER_LEVEL_NAME,1 TASK_TYPE,T.PLAN_START_DATE,T.PLAN_END_DATE,
+          T.MONTH_EDIT_PLAN_START_DATE,T.MONTH_EDIT_PLAN_END_DATE,
+          NVL(T.MONTH_EDIT_GROUP_ID, 0) MONTH_EDIT_GROUP_ID,T.MONTH_PRODUCE_PLAN_START_DATE,
+          T.MONTH_PRODUCE_PLAN_END_DATE,NVL(T.CREATE_USER_ID, 0) CREATE_USER_ID,
+          NVL(T.CREATE_USER_NAME, '---') CREATE_USER_NAME,NVL(T.MONTH_EDIT_GROUP_NAME, '---') MONTH_EDIT_GROUP_NAME,
+          NVL(T.STATUS, 0) TASK_STATUS,C.PLAN_STATUS,NVL(T.FINISH_PERCENT, 0) FINISH_PERCENT,
+          ROWNUM_,TOTAL_RECORD_NUM*/
+		final String version=SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion);
+		ResultSetHandler<List<Map<String, Object>>> rsHandler = new ResultSetHandler<List<Map<String, Object>>>(){
+			public List<Map<String, Object>> handle(ResultSet rs) throws SQLException {
+				List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
+				while(rs.next()){
+					Map<String, Object> map = new HashMap<String, Object>();
+					map.put("taskId", rs.getInt("TASK_ID"));
+					map.put("taskName", rs.getString("TASK_NAME"));
+					map.put("taskDescp", rs.getString("TASK_DESCP"));
+					map.put("upperLevelId", rs.getString("UPPER_LEVEL_ID"));
+					map.put("upperLevelName", rs.getString("UPPER_LEVEL_NAME"));
+					map.put("taskType", rs.getInt("TASK_TYPE"));
+					map.put("planStartDate", DateUtils.dateToString(rs.getTimestamp("PLAN_START_DATE")));
+					map.put("planEndDate", DateUtils.dateToString(rs.getTimestamp("PLAN_END_DATE")));
+					map.put("monthEditPlanStartDate", DateUtils.dateToString(rs.getTimestamp("MONTH_EDIT_PLAN_START_DATE")));
+					map.put("monthEditPlanEndDate", DateUtils.dateToString(rs.getTimestamp("MONTH_EDIT_PLAN_END_DATE")));
+					map.put("monthEditGroupId", rs.getInt("MONTH_EDIT_GROUP_ID"));
+					map.put("monthProducePlanStartDate", DateUtils.dateToString(rs.getTimestamp("MONTH_PRODUCE_PLAN_START_DATE")));
+					map.put("monthProducePlanEndDate", DateUtils.dateToString(rs.getTimestamp("MONTH_PRODUCE_PLAN_END_DATE")));
+					map.put("createUserId", rs.getInt("CREATE_USER_ID"));
+					map.put("createUserName", rs.getString("CREATE_USER_NAME"));
+					map.put("monthEditGroupName", rs.getString("MONTH_EDIT_GROUP_NAME"));
+					map.put("taskStatus", rs.getInt("TASK_STATUS"));
+					map.put("planStatus", rs.getInt("PLAN_STATUS"));
+					map.put("finishPercent", rs.getInt("FINISH_PERCENT"));
+					map.put("version", version);
+					//map.put("ROWNUM_", rs.getInt("ROWNUM_"));
+					//map.put("TOTAL_RECORD_NUM", rs.getInt("TOTAL_RECORD_NUM"));
+					list.add(map);
+				}
+				return list;
+			}
+    	};
+    	return rsHandler;
+	}
+
+	public static Page queryMonthTask(Connection conn,
+			int monthEditGroupId, JSONObject condition, int currentPageNum,int pageSize) throws Exception {
+		long pageStartNum = (currentPageNum - 1) * pageSize + 1;
+		long pageEndNum = currentPageNum * pageSize;
+		String conditionSql="";
+		if(null!=condition && !condition.isEmpty()){
+			String taskName=condition.getString("taskName");
+			conditionSql="   AND TASK_LIST.TASK_NAME LIKE '%"+taskName+"%'";
+		}
+		String selectSql="WITH T AS"
+				+ " (SELECT T.TASK_ID,"
+				+ "         T.NAME,"
+				+ "         T.CITY_ID,"
+				+ "         T.TASK_TYPE,"
+				+ "         T.MONTH_EDIT_PLAN_START_DATE,"
+				+ "         T.MONTH_EDIT_PLAN_END_DATE,"
+				+ "         T.MONTH_EDIT_GROUP_ID,"
+				+ "         T.STATUS,"
+				+ "         NVL(G.GROUP_NAME, '---') MONTH_EDIT_GROUP_NAME,"
+				+ "         SUM(NVL(F.FINISH_PERCENT, 0)) /COUNT(DISTINCT NVL(S.SUBTASK_ID, 1)) FINISH_PERCENT"
+				+ "    FROM SUBTASK S, TASK T, SUBTASK_FINISH F, USER_GROUP G"
+				+ "   WHERE S.TASK_ID = T.TASK_ID"
+				+ "     AND T.LATEST = 1"
+				+ "     AND T.MONTH_EDIT_GROUP_ID = G.GROUP_ID"
+				+ "     AND S.SUBTASK_ID = F.SUBTASK_ID(+)"
+				+ "   GROUP BY T.TASK_ID,"
+				+ "            T.NAME,"
+				+ "            T.CITY_ID,"
+				+ "            T.TASK_TYPE,"
+				+ "            T.STATUS,"
+				+ "            G.GROUP_NAME,"
+				+ "            T.MONTH_EDIT_PLAN_START_DATE,"
+				+ "            T.MONTH_EDIT_PLAN_END_DATE,"
+				+ "            T.MONTH_EDIT_GROUP_ID),"
+				+ "TASK_LIST AS"
+				+ " (SELECT NVL(T.TASK_ID, 0) TASK_ID,"
+				+ "         NVL(T.NAME, '---') TASK_NAME,"
+				+ "         TO_CHAR(C.CITY_ID) UPPER_LEVEL_ID,"
+				+ "         C.CITY_NAME UPPER_LEVEL_NAME,"
+				+ "         T.TASK_TYPE,"
+				+ "         T.MONTH_EDIT_PLAN_START_DATE,"
+				+ "         T.MONTH_EDIT_PLAN_END_DATE,"
+				+ "         NVL(T.MONTH_EDIT_GROUP_ID, 0) MONTH_EDIT_GROUP_ID,"
+				+ "         NVL(T.MONTH_EDIT_GROUP_NAME, '---') MONTH_EDIT_GROUP_NAME,"
+				+ "         NVL(T.STATUS, 0) TASK_STATUS,"
+				+ "         C.PLAN_STATUS,"
+				+ "         NVL(T.FINISH_PERCENT, 0) FINISH_PERCENT"
+				+ "    FROM T, CITY C"
+				+ "   WHERE T.CITY_ID = C.CITY_ID"
+				+ "     AND C.CITY_ID <> 100002"
+				+ "  UNION ALL"
+				+ "  SELECT NVL(T.TASK_ID, 0) TASK_ID,"
+				+ "         NVL(T.NAME, '---') NAME,"
+				+ "         I.INFOR_ID,"
+				+ "         I.INFOR_NAME,"
+				+ "         4 TASK_TYPE,"
+				+ "         T.MONTH_EDIT_PLAN_START_DATE,"
+				+ "         T.MONTH_EDIT_PLAN_END_DATE,"
+				+ "         NVL(T.MONTH_EDIT_GROUP_ID, 0) MONTH_EDIT_GROUP_ID,"
+				+ "         NVL(T.MONTH_EDIT_GROUP_NAME, '---') MONTH_EDIT_GROUP_NAME,"
+				+ "         NVL(T.STATUS, 0) TASK_STATUS,"
+				+ "         I.PLAN_STATUS,"
+				+ "         NVL(T.FINISH_PERCENT, 0) FINISH_PERCENT"
+				+ "    FROM T, INFOR I"
+				+ "   WHERE T.TASK_ID = I.TASK_ID),"
+				+ " QUERY AS"
+				+ " (SELECT * FROM TASK_LIST WHERE MONTH_EDIT_GROUP_ID = "+monthEditGroupId+conditionSql+""
+				+ "          ORDER BY TASK_LIST.TASK_STATUS DESC, TASK_LIST.FINISH_PERCENT ASC)"
+				+ " SELECT /*+FIRST_ROWS ORDERED*/"
+				+ " T.*, (SELECT COUNT(1) FROM QUERY) AS TOTAL_RECORD_NUM"
+				+ "  FROM (SELECT T.*, ROWNUM AS ROWNUM_ FROM QUERY T WHERE ROWNUM <= "+pageEndNum+") T"
+				+ " WHERE T.ROWNUM_ >= "+pageStartNum;
+		QueryRunner run=new QueryRunner();
+		return run.query(conn, selectSql, getMonthTaskSnapShotQuery(currentPageNum,pageSize));	
+	}
+	
+	/**
+	 * TASK_STATUS:1常规，2多源，3代理店，4情报
+	 * @param currentPageNum
+	 * @param pageSize
+	 * @return
+	 */
+	private static ResultSetHandler<Page> getMonthTaskSnapShotQuery(final int currentPageNum,final int pageSize){
+		
+		ResultSetHandler<Page> rsHandler = new ResultSetHandler<Page>(){
+			public Page handle(ResultSet rs) throws SQLException {
+				List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
+				Page page = new Page(currentPageNum);
+			    page.setPageSize(pageSize);
+			    int total=0;
+				while(rs.next()){
+					Map<String, Object> map = new HashMap<String, Object>();
+					map.put("taskId", rs.getInt("TASK_ID"));
+					map.put("taskName", rs.getString("TASK_NAME"));
+					map.put("upperLevelId", rs.getString("UPPER_LEVEL_ID"));
+					map.put("upperLevelName", rs.getString("UPPER_LEVEL_NAME"));
+					map.put("taskType", rs.getInt("TASK_TYPE"));
+					map.put("monthEditPlanStartDate", DateUtils.dateToString(rs.getTimestamp("MONTH_EDIT_PLAN_START_DATE")));
+					map.put("monthEditPlanEndDate", DateUtils.dateToString(rs.getTimestamp("MONTH_EDIT_PLAN_END_DATE")));
+					map.put("monthEditGroupId", rs.getInt("MONTH_EDIT_GROUP_ID"));
+					map.put("monthEditGroupName", rs.getString("MONTH_EDIT_GROUP_NAME"));
+					map.put("taskStatus", rs.getInt("TASK_STATUS"));
+					map.put("planStatus", rs.getInt("PLAN_STATUS"));
+					map.put("finishPercent", rs.getInt("FINISH_PERCENT"));
+					total=rs.getInt("TOTAL_RECORD_NUM");
+					list.add(map);
+				}
+				page.setTotalCount(total);
+				page.setResult(list);
+				return page;
+			}
+    	};
+    	return rsHandler;
 	}
 
 }

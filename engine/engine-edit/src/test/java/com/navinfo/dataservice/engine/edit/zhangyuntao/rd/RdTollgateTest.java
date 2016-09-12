@@ -1,15 +1,14 @@
 package com.navinfo.dataservice.engine.edit.zhangyuntao.rd;
 
-import java.sql.Connection;
-
-import org.junit.Test;
-
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.search.SearchProcess;
 import com.navinfo.dataservice.engine.edit.zhangyuntao.eleceye.TestUtil;
+import org.junit.Test;
+
+import java.sql.Connection;
 
 /**
  * @Title: RdTollgateTest.java
@@ -45,7 +44,7 @@ public class RdTollgateTest extends InitApplication {
 	public void update() {
 		String parameter = "{'command':'UPDATE', 'dbId':42, 'type':'RDTOLLGATE', data:{'pid':100034747, 'type':2, 'names':[{'nameGroupid':11, 'rowId':'7AA43E40216E4B06829B2A89D049A6F9', 'objStatus':'UPDATE'}]}}";
 		parameter = "{\"command\":\"UPDATE\",\"type\":\"RDVARIABLESPEED\",\"dbId\":43,\"data\":{\"location\":6,\"pid\":100000075,\"objStatus\":\"UPDATE\",\"vehicle\":2147483648}}";
-		parameter = "{\"command\":\"UPDATE\",\"type\":\"RDTOLLGATE\",\"dbId\":42,\"data\":{\"passageNum\":1,\"rowId\":\"A325E8E045854724B096AE5EF32C9AE5\",\"pid\":100034781,\"objStatus\":\"UPDATE\",\"etcFigureCode\":\"T0100000\",\"names\":[{\"pid\":0,\"nameId\":0,\"nameGroupid\":1,\"langCode\":\"CHI\",\"name\":\"收费站\",\"phonetic\":\"Shou+Fei+Zhan\",\"uFields\":null,\"uDate\":null,\"rowId\":null,\"uRecord\":0,\"objStatus\":\"INSERT\"}],\"passages\":[{\"pid\":0,\"seqNum\":1,\"tollForm\":0,\"cardType\":0,\"vehicle\":0,\"uFields\":null,\"uDate\":null,\"rowId\":null,\"uRecord\":0,\"objStatus\":\"INSERT\"}]}}";
+		parameter = "{\"command\":\"UPDATE\",\"type\":\"RDTOLLGATE\",\"dbId\":17,\"data\":{\"names\":[{\"pid\":0,\"nameId\":0,\"nameGroupid\":1,\"langCode\":\"CHI\",\"name\":\"收费站1111\",\"phonetic\":\"Shou+Fei+Zhan+Yi+Yi+Yi+Yi\",\"rowId\":\"\",\"objStatus\":\"INSERT\"},{\"pid\":0,\"nameId\":0,\"nameGroupid\":2,\"langCode\":\"CHI\",\"name\":\"收费站2222\",\"phonetic\":\"Shou+Fei+Zhan\",\"rowId\":\"\",\"objStatus\":\"INSERT\"}],\"rowId\":\"398CB320F2CA4B098A037EA62EBF4095\",\"pid\":100034814}}";
 		TestUtil.run(parameter);
 	}
 

@@ -7,15 +7,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 public class RdLaneConnexity implements IObj {
 	
@@ -38,8 +38,6 @@ public class RdLaneConnexity implements IObj {
 	private int leftExtend;
 	
 	private int rightExtend;
-	
-	private int srcFlag;
 	
 	private List<IRow> topos = new ArrayList<IRow>();
 
@@ -123,14 +121,6 @@ public class RdLaneConnexity implements IObj {
 
 	public void setRightExtend(int rightExtend) {
 		this.rightExtend = rightExtend;
-	}
-
-	public int getSrcFlag() {
-		return srcFlag;
-	}
-
-	public void setSrcFlag(int srcFlag) {
-		this.srcFlag = srcFlag;
 	}
 
 	public List<IRow> getTopos() {

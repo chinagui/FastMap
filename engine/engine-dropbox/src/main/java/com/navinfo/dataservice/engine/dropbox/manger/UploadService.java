@@ -215,7 +215,9 @@ public class UploadService {
 			
 			HashMap<Object,Object> data = new HashMap<Object,Object>();
 			
-			dbController.insertIxPoiPhoto(dbId,pid,photoId);
+			//由前端在保存POI时维护
+			//dbController.insertIxPoiPhoto(dbId,pid,photoId);
+			
 			data.put("PID", photoId);
 			return data;
 		};

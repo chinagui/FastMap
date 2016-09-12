@@ -3,6 +3,7 @@ package com.navinfo.dataservice.web.man.controller;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -101,28 +102,9 @@ public class SubtaskController extends BaseController {
 			}
 			
 			long userId = tokenObj.getUserId();
-			JSONArray gridIds = new JSONArray();
-			
-			//创建区域专项子任务
-			if(dataJson.containsKey("taskId")){
-				List<Integer> gridIdList = GridService.getInstance().getGridListByTaskId(dataJson.getInt("taskId"));
-				gridIds.addAll(gridIdList);
-			}else{
-				gridIds = dataJson.getJSONArray("gridIds");
-			}
-			//根据gridIds获取wkt
-			String wkt = GridUtils.grids2Wkt(gridIds);
-			if(wkt.contains("MULTIPOLYGON")){
-				throw new IllegalArgumentException("请输入符合条件的grids");
-			}
-			
-			Object[] gridIdList = gridIds.toArray();
-			dataJson.put("gridIds",gridIdList);
-			
-			Subtask bean = (Subtask) JsonOperation.jsonToBean(dataJson,Subtask.class);
-			bean.setCreateUserId((int)userId);
-			bean.setGeometry(wkt);
-				
+			//根据参数生成subtask bean
+			Subtask bean = SubtaskService.getInstance().createSubtaskBean(userId,dataJson);
+			//创建subtask	
 			SubtaskService.getInstance().create(bean);	
 
 			NullResponse result = new NullResponse(0,"创建成功",null);
@@ -175,29 +157,10 @@ public class SubtaskController extends BaseController {
 			}
 			SubtaskListByWktResponse responseListByWkt = new SubtaskListByWktResponse(0,"success",subtaskListByWktList);
 			return responseListByWkt;
-
-//			//根据需要的返回字段拼装结果
-//			List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
-//
-//			for(int i=0;i<subtaskList.size();i++){
-//				HashMap<String, Object> subtask = new HashMap<String, Object>();
-//				subtask.put("subtaskId", subtaskList.get(i).getSubtaskId());
-//				subtask.put("geometry", subtaskList.get(i).getGeometry());
-//				subtask.put("descp", subtaskList.get(i).getDescp());
-//				subtask.put("name", subtaskList.get(i).getName());
-//				subtask.put("stage", subtaskList.get(i).getStage());
-//				subtask.put("status", subtaskList.get(i).getStatus());
-//				subtask.put("type", subtaskList.get(i).getType());
-//				subtask.put("gridIds", subtaskList.get(i).getGridIds());
-//				list.add(subtask);
-//			}
-//			return new ModelAndView("jsonView", success(list));
-
 		}catch(Exception e){
 			log.error("查询失败，原因："+e.getMessage(), e);
 			SubtaskListByWktResponse responseListByWkt = new SubtaskListByWktResponse(-1,e.getMessage(),null);
 			return responseListByWkt;
-//			return new ModelAndView("jsonView",exception(e));
 		}
 	}
 	
@@ -207,6 +170,8 @@ public class SubtaskController extends BaseController {
 	public SubtaskListResponse list(@ApiParam(required =true, name = "access_token", value="接口调用凭证")@RequestParam( value = "access_token") String access_token
 			,@ApiParam(required =true, name = "parameter", value="{<br/>\"stage\":1\\\\作业阶段,<br/>\"condition\":1\\\\搜索条件（JSON），均可选，不支持组合。<br/>\t{\"subtaskId\"子任务Id<br/>\"subtaskName\"子任务名称<br/>\"ExeUserId\"作业员<br/>\"blockId\"所属blockId<br/>\"blockName\"所属block名称<br/>\"taskId\"所属任务id<br/>\"taskName\"所属任务名称},<br/>\"order\":\\\\排序条件（JSON），可选，按照时间查询,json中只有一个有效排序条件，不支持组合排序。<br/>\t{<br/>\"subtaskId\":\"desc\",<br/>\"status\":\"desc\",<br/>\"planStartDate\":\"desc\"//降序，asc升序,<br/>\"planEndDate\":\"desc\",<br/>\"blockId\":\"desc\"},<br/>\"pageNum\":1\\\\页码,<br/>\"pageSize\":1\\\\每页条数<br/>}")@RequestParam( value = "parameter") String postData			,HttpServletRequest request){
 		try{		
+			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
+			long userId = tokenObj.getUserId();
 			
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
 			if(dataJson==null){
@@ -218,7 +183,7 @@ public class SubtaskController extends BaseController {
 				curPageNum = dataJson.getInt("pageNum");
 			}
 			
-			int pageSize = 20;//默认页容量为20
+			int pageSize = 30;//默认页容量为20
 			if(dataJson.containsKey("pageSize")){
 				pageSize = dataJson.getInt("pageSize");
 			}
@@ -241,17 +206,7 @@ public class SubtaskController extends BaseController {
 			//作业阶段
 			int stage = dataJson.getInt("stage");
 			
-			Page page = SubtaskService.getInstance().list(stage,condition,order,pageSize,curPageNum,snapshot);
-
-//			Map<String,Object> map = new HashMap<String,Object>();
-//			map.put("pageSize", page.getPageSize());
-//			map.put("pageNum", page.thePageNum());
-//			map.put("start", page.getStart());
-//			map.put("totalCount", page.getTotalCount());
-//			map.put("result", page.getResult());
-//			
-//			SubtaskListPage pageList = new SubtaskListPage();
-//			pageList = (SubtaskListPage)map;
+			Page page = SubtaskService.getInstance().list(userId,stage,condition,order,pageSize,curPageNum,snapshot);
 
 			SubtaskListPage pageList = new SubtaskListPage(page.getPageSize(),page.thePageNum(),page.getStart(),page.getTotalCount(),(List<SubtaskList>)page.getResult());
 			SubtaskListResponse responseList = new SubtaskListResponse(0,"success",pageList);
@@ -326,6 +281,7 @@ public class SubtaskController extends BaseController {
 			
 			Subtask subtask = SubtaskService.getInstance().query(bean);	
 			if(subtask!=null&&subtask.getSubtaskId()!=null){
+				SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
 				SubtaskListByUser subtaskListByUser = new SubtaskListByUser(subtask.getSubtaskId()
 						,subtask.getName()
 						,subtask.getStage()
@@ -335,41 +291,18 @@ public class SubtaskController extends BaseController {
 						,subtask.getDbId()
 						,subtask.getGridIds()
 						,subtask.getGeometry()
-						, subtask.getPlanStartDate()
-						, subtask.getPlanEndDate());
+						, df.format(subtask.getPlanStartDate())
+						, df.format(subtask.getPlanEndDate()));
 				SubtaskQueryResponse response = new SubtaskQueryResponse(0,"success",subtaskListByUser);
 				return response;
 			}else{
-				throw new Exception("该任务不存在");
+				throw new Exception("该子任务不存在");
 			}
 
-//			//根据需要的返回字段拼装结果
-//			HashMap<String, Object> data = new HashMap<String, Object>();
-//			if(subtask!=null&&subtask.getSubtaskId()!=null){
-//				data.put("subtaskId", subtask.getSubtaskId());
-//				data.put("stage", subtask.getStage());
-//				data.put("type", subtask.getType());
-//				data.put("planStartDate", subtask.getPlanStartDate());
-//				data.put("planEndDate", subtask.getPlanEndDate());
-//				data.put("descp", subtask.getDescp());
-//				data.put("name", subtask.getName());
-//				data.put("gridIds", subtask.getGridIds());
-//				data.put("dbId", subtask.getDbId());
-//				data.put("geometry", subtask.getGeometry());
-//			}
-//			else{
-//				throw new Exception("该任务不存在");
-//			}
-//			
-//			JSONObject result = JsonOperation.beanToJson(data);
-//			
-//			return new ModelAndView("jsonView", success(data));
-			
 		}catch(Exception e){
 			log.error("获取明细失败，原因："+e.getMessage(), e);
 			SubtaskQueryResponse response = new SubtaskQueryResponse(0,"success",null);
 			return response;
-//			return new ModelAndView("jsonView",exception(e));
 		}
 	}
 	

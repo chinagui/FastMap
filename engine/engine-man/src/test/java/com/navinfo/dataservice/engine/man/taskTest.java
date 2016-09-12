@@ -74,7 +74,7 @@ public class taskTest extends InitApplication{
 	@Test
 	public void testGetByTask() throws ServiceException
 	{
-		JSONObject dataJson = JSONObject.fromObject("{\"subtaskId\":\"82\"}");
+		JSONObject dataJson = JSONObject.fromObject("{\"subtaskId\":\"22\"}");
 		if(dataJson==null){
 			throw new IllegalArgumentException("parameter参数不能为空。");
 		}
@@ -101,6 +101,8 @@ public class taskTest extends InitApplication{
 		}
 		
 		JSONObject result = JsonOperation.beanToJson(data);
+		
+		System.out.println(result);
 	}
 
 	@Override

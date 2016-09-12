@@ -207,7 +207,7 @@ public class Operation implements IOperation {
 					jsonLaneInfo.getInt("pid"), true, true);
 		}
 
-		//lane.setPid(PidUtil.getInstance().applyRdLanePid());
+		lane.setPid(PidUtil.getInstance().applyRdLanePid());
 		lane.setLinkPid(linkPid);
 		lane.setLaneNum(this.command.getLaneInfos().size());
 

@@ -310,6 +310,8 @@ public class IxPoiSearch implements ISearch {
 				
 				poiObj.put("classifyRules", status.getString("workItemId"));
 				poiObj.put("auditStatus", status.getInt("firstWorkStatus"));
+				// TODO
+				poiObj.put("refMsg", "");
 				
 				List<String> msgList = new ArrayList<String>();
 				// 港澳作业,参考信息
@@ -405,6 +407,8 @@ public class IxPoiSearch implements ISearch {
 				}
 				poiObj.put("classifyRules", status.getString("workItemId"));
 				poiObj.put("auditStatus", status.getInt("firstWorkStatus"));
+				// TODO
+				poiObj.put("refMsg", "");
 				
 				List<String> msgList = new ArrayList<String>();
 				// 港澳作业,参考信息
@@ -502,6 +506,8 @@ public class IxPoiSearch implements ISearch {
 				}
 				poiObj.put("classifyRules", status.getString("workItemId"));
 				poiObj.put("auditStatus", status.getInt("firstWorkStatus"));
+				// TODO
+				poiObj.put("refMsg", "");
 				
 				List<String> namesList = new ArrayList<String>();
 				
@@ -587,6 +593,8 @@ public class IxPoiSearch implements ISearch {
 				}
 				poiObj.put("classifyRules", status.getString("workItemId"));
 				poiObj.put("auditStatus", status.getInt("firstWorkStatus"));
+				// TODO
+				poiObj.put("refMsg", "");
 				
 				List<String> addressesList = new ArrayList<String>();
 				for (IRow temp:addressList) {

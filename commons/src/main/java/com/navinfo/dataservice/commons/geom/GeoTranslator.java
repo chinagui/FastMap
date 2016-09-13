@@ -273,6 +273,13 @@ public class GeoTranslator {
 		return geom;
 	}
 	
+	public static Geometry wkt2Geometry(String wkt) throws Exception{
+		GeometryFactory geometryFactory = new GeometryFactory();  
+		WKTReader reader = new WKTReader( geometryFactory );  
+		Geometry geometry=reader.read(wkt);  
+		return geometry;
+	}
+	
 	public static JGeometry Jts2JGeometry(Geometry jts, double scale, int precision) throws GeometryExceptionWithContext{
 		
 		WKT wkt = new WKT();  

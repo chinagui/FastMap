@@ -181,7 +181,7 @@ public class GdbBatchJob extends AbstractJob {
 			JobInfo commitJobInfo = new JobInfo(jobInfo.getId(), jobInfo.getGuid());
 			AbstractJob commitJob = JobCreateStrategy.createAsSubJob(commitJobInfo, req.getSubJobRequest("commit"), this);
 			commitJob.run();
-			if (commitJob.getJobInfo().getResponse().getInt("exeStatus") != 3) {
+			if (commitJob.getJobInfo().getStatus() != 3) {
 				String msg = (commitJob.getException()==null)?"未知错误。":"错误："+commitJob.getException().getMessage();
 				throw new Exception("回区域库时job内部发生"+msg);
 			}

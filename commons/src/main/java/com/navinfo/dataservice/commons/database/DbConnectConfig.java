@@ -102,8 +102,8 @@ public class DbConnectConfig {
 	 * @return
 	 */
 	public String toConnectString(){
-		return this.serverType+this.serverIp+String.valueOf(this.serverPort)
-		+(DbServerType.TYPE_ORACLE.equals(serverType)?serviceName:dbName)+this.userName+userPasswd;
+		return this.serverType+","+this.serverIp+","+String.valueOf(this.serverPort)+","
+		+(DbServerType.TYPE_ORACLE.equals(serverType)?serviceName:dbName)+","+this.userName+","+userPasswd;
 	};
 	
 	/**

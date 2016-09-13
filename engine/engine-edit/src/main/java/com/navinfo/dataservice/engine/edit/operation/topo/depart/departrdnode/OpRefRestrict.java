@@ -17,11 +17,11 @@ public class OpRefRestrict implements IOperation {
 	@Override
 	public String run(Result result) throws Exception {
 
-		for( RdRestriction restrict : command.getRestrictions()){
+		/*for( RdRestriction restrict : command.getRestrictions()){
 			
 			result.insertObject(restrict, ObjStatus.DELETE, restrict.pid());
 		}
-		
+		*/
 		return null;
 	}
 

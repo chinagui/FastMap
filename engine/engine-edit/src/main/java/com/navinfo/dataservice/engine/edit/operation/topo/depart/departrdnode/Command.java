@@ -1,122 +1,109 @@
 package com.navinfo.dataservice.engine.edit.operation.topo.depart.departrdnode;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import net.sf.json.JSONObject;
 
-import com.navinfo.dataservice.dao.glm.iface.ICommand;
-import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
-import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
-import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
-import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.Point;
 
 public class Command extends AbstractCommand {
 
 	private int linkPid;
 
 	private String requester;
+	private int nodePid;
+	private RdLink rdLink;
+	private List<RdLink> links;
+	private RdNode node;
+	public RdNode getNode() {
+		return node;
+	}
 
-	private int eNodePid = -1;
+	public void setNode(RdNode node) {
+		this.node = node;
+	}
 
-	private int sNodePid = -1;
+	public List<RdLink> getLinks() {
+		return links;
+	}
 
-	private double slon;
+	public void setLinks(List<RdLink> links) {
+		this.links = links;
+	}
 
-	private double slat;
+	private int catchNodePid;
+	private Point point;
 
-	private double elon;
+	public RdLink getRdLink() {
+		return rdLink;
+	}
 
-	private double elat;
+	public void setRdLink(RdLink rdLink) {
+		this.rdLink = rdLink;
+	}
 
-	private List<RdRestriction> restrictions;
+	public int getCatchNodePid() {
+		return catchNodePid;
+	}
 
-	private List<RdLaneConnexity> lanes;
+	public void setCatchNodePid(int catchNodePid) {
+		this.catchNodePid = catchNodePid;
+	}
 
-	private List<RdBranch> branches;
+	private Geometry geometry;
+
+	public int getNodePid() {
+		return nodePid;
+	}
+
+	public void setNodePid(int nodePid) {
+		this.nodePid = nodePid;
+	}
+
+	public void setLinkPid(int linkPid) {
+		this.linkPid = linkPid;
+	}
 
 	public Command(JSONObject json, String requester) throws Exception {
 		this.requester = requester;
-
-		JSONObject data = json.getJSONObject("data");
-
-		this.linkPid = data.getInt("linkPid");
-
-		if (data.containsKey("sNodePid")) {
-			this.sNodePid = data.getInt("sNodePid");
-
-			this.slon = Math.round(data.getDouble("slon") * 100000) / 100000.0;
-
-			this.slat = Math.round(data.getDouble("slat") * 100000) / 100000.0;
-		}
-
-		if (data.containsKey("eNodePid")) {
-			this.sNodePid = data.getInt("eNodePid");
-
-			this.elon = Math.round(data.getDouble("elon") * 100000) / 100000.0;
-
-			this.elat = Math.round(data.getDouble("elat") * 100000) / 100000.0;
-		}
-
 		this.setDbId(json.getInt("dbId"));
-		//createGlmList();
+		JSONObject data = json.getJSONObject("data");
+		this.nodePid = data.getInt("objId");
+		this.catchNodePid = data.getInt("catchNodePid");
+		this.setLinkPid(data.getInt("linkPid"));
+		GeoTranslator.point2Jts(
+				data.getJSONObject("data").getDouble("longitude"), data
+						.getJSONObject("data").getDouble("latitude"));
+		this.geometry = GeoTranslator.geojson2Jts(
+				data.getJSONObject("geometry"), 1, 5);
+
+	}
+
+	public Point getPoint() {
+		return point;
+	}
+
+	public void setPoint(Point point) {
+		this.point = point;
+	}
+
+	public Geometry getGeometry() {
+		return geometry;
+	}
+
+	public void setGeometry(Geometry geometry) {
+		this.geometry = geometry;
 	}
 
 	public int getLinkPid() {
 		return linkPid;
-	}
-
-	public int geteNodePid() {
-		return eNodePid;
-	}
-
-	public int getsNodePid() {
-		return sNodePid;
-	}
-
-	public double getSlon() {
-		return slon;
-	}
-
-	public double getSlat() {
-		return slat;
-	}
-
-	public double getElon() {
-		return elon;
-	}
-
-	public double getElat() {
-		return elat;
-	}
-
-	public List<RdRestriction> getRestrictions() {
-		return restrictions;
-	}
-
-	public void setRestrictions(List<RdRestriction> restrictions) {
-		this.restrictions = restrictions;
-	}
-
-	public List<RdLaneConnexity> getLanes() {
-		return lanes;
-	}
-
-	public void setLanes(List<RdLaneConnexity> lanes) {
-		this.lanes = lanes;
-	}
-
-	public List<RdBranch> getBranches() {
-		return branches;
-	}
-
-	public void setBranches(List<RdBranch> branches) {
-		this.branches = branches;
 	}
 
 	@Override
@@ -133,19 +120,4 @@ public class Command extends AbstractCommand {
 	public ObjType getObjType() {
 		return ObjType.RDLINK;
 	}
-//	public void createGlmList() throws Exception {
-//		// TODO Auto-generated method stub
-//		List<IRow> glmList=new ArrayList<IRow>();		
-//		
-//		RdLink linkObj=new RdLink();
-//		RdNode eNode=new RdNode();
-//		RdNode sNode=new RdNode();
-//		linkObj.setPid(this.linkPid);
-//		glmList.add(linkObj);
-//		if(this.sNodePid!=-1){sNode.setPid(this.sNodePid);glmList.add(sNode);}
-//		if(this.eNodePid!=-1){eNode.setPid(this.eNodePid);glmList.add(eNode);}	
-//		
-//		this.setGlmList(glmList);
-//	}
-
 }

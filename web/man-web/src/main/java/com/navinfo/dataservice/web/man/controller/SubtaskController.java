@@ -1,3 +1,4 @@
+
 package com.navinfo.dataservice.web.man.controller;
 
 import java.sql.ResultSet;
@@ -298,7 +299,9 @@ public class SubtaskController extends BaseController {
 						,subtask.getBlockName()
 						,subtask.getTaskId()
 						,subtask.getTaskName()
-						,subtask.getExecuter()					
+						,subtask.getExecuter()
+						,subtask.getPercent()
+						,subtask.getVersion()
 						);
 				SubtaskQueryResponse response = new SubtaskQueryResponse(0,"success",subtaskQuery);
 				return response;

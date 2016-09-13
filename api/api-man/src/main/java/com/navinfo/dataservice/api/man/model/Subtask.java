@@ -1,12 +1,9 @@
+
 package com.navinfo.dataservice.api.man.model;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.List;
-
-import com.navinfo.dataservice.api.man.model.Task;
-import com.navinfo.dataservice.api.man.model.Block;
-import com.navinfo.dataservice.api.man.model.BlockMan;
 
 
 /** 

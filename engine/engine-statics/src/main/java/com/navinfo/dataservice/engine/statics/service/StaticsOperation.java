@@ -1,16 +1,14 @@
+
 package com.navinfo.dataservice.engine.statics.service;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.bson.Document;
 
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Sorts;
-import com.navinfo.dataservice.api.statics.model.GridStatInfo;
 import com.navinfo.dataservice.engine.statics.StatMain;
 import com.navinfo.dataservice.engine.statics.tools.MongoDao;
 
@@ -303,3 +301,5 @@ public class StaticsOperation {
 		return result;
 	}
 }
+
+

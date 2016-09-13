@@ -1,3 +1,4 @@
+
 package com.navinfo.dataservice.api.man.model.subtask;
 
 import java.util.List;
@@ -26,6 +27,9 @@ public class SubtaskQuery extends SubtaskListByUser {
 	private Integer taskId ;
 	private String taskName;
 	
+	private String version;
+	private int percent;
+	
 	public SubtaskQuery (Integer subtaskId ,
 			String name,
 			Integer status,
@@ -41,7 +45,9 @@ public class SubtaskQuery extends SubtaskListByUser {
 			String blockName,
 			Integer taskId,
 			String taskName,
-			String executer
+			String executer,
+			Integer percent,
+			String version
 			){
 		super(subtaskId, name, stage, type, status, descp, dbId,gridIds,geometry,planStartDate,planEndDate);
 
@@ -53,6 +59,8 @@ public class SubtaskQuery extends SubtaskListByUser {
 		this.taskId=taskId ;
 		this.taskName = taskName;
 
+		this.percent=percent ;
+		this.version = version;
 	}
 	public String getBlockName(){
 		return blockName;
@@ -86,6 +94,30 @@ public class SubtaskQuery extends SubtaskListByUser {
 	}
 	public void setExecuter(String executer) {
 		this.executer = executer;
+	}
+	/**
+	 * @return the version
+	 */
+	public String getVersion() {
+		return version;
+	}
+	/**
+	 * @param version the version to set
+	 */
+	public void setVersion(String version) {
+		this.version = version;
+	}
+	/**
+	 * @return the percent
+	 */
+	public int getPercent() {
+		return percent;
+	}
+	/**
+	 * @param percent the percent to set
+	 */
+	public void setPercent(int percent) {
+		this.percent = percent;
 	}
 
 

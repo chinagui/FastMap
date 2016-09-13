@@ -4,7 +4,6 @@ package com.navinfo.dataservice.engine.man.userInfo;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
-import java.util.Map;
 
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.MapHandler;
@@ -205,35 +204,29 @@ public class UserInfoOperation {
 	 * @return
 	 * @throws Exception 
 	 */
-	public static Map<Object, Object> getUserRole(Connection conn, UserInfo userInfo) throws Exception {
+	public static String getUserRole(Connection conn, UserInfo userInfo) throws Exception {
 		// TODO Auto-generated method stub
 		try{
 			QueryRunner run = new QueryRunner();
-//			Map<Object, Object> role = new HashMap<Object, Object>();
-//			role.put("roleId", 0);
-//			role.put("roleName", "");
 			
 			// 插入user_upload
-			String querySql = "select r.role_id,r.role_name"
+			String querySql = "select r.role_name"
 					+ " from role r,role_user_mapping rum"
 					+ " where rum.user_id = " + userInfo.getUserId()
 					+ " and rum.role_id = r.role_id ";
 					
-			ResultSetHandler<Map<Object, Object>> rsHandler = new ResultSetHandler<Map<Object, Object>>() {
-				public Map<Object, Object> handle(ResultSet rs) throws SQLException {
-//					String role = new String();
-					Map<Object, Object> role = new HashMap<Object, Object>();
+			ResultSetHandler<String> rsHandler = new ResultSetHandler<String>() {
+				public String handle(ResultSet rs) throws SQLException {
+					String role = new String();
 					if (rs.next()) {
-						role.put("roleId", rs.getInt("role_id"));
-						role.put("roleName", rs.getString("role_name"));
-//						role = rs.getString("role_name");
+						role = rs.getString("role_name");
 					}
 					return role;
 				}
 
 			};
 
-			Map<Object, Object> role = run.query(conn, querySql, rsHandler);
+			String role = run.query(conn, querySql, rsHandler);
 			return role;
 			
 		}catch(Exception e){
@@ -462,44 +455,6 @@ public class UserInfoOperation {
 					+ " WHEN NOT MATCHED THEN INSERT (UU.USER_ID, UU.DEVICE_ID) VALUES (" + userId + "," + deviceId+")";
 
 			run.update(conn, sql);
-
-		}catch(Exception e){
-			log.error(e.getMessage(), e);
-			throw new Exception("插入userDevice，原因为:"+e.getMessage(),e);
-		}
-	}
-
-	/**
-	 * @param conn
-	 * @param user_info
-	 * @return
-	 * @throws Exception 
-	 */
-	public static Map<Object, Object> getUserGroup(Connection conn, UserInfo userInfo) throws Exception {
-		// TODO Auto-generated method stub
-		try{
-			QueryRunner run = new QueryRunner();
-			
-			// 查询用户组信息
-			String querySql = "SELECT UG.GROUP_NAME,UG.GROUP_TYPE"
-					+ " FROM USER_GROUP UG,GROUP_USER_MAPPING GUM"
-					+ " WHERE UG.GROUP_ID = GUM.GROUP_ID"
-					+ " AND GUM.USER_ID = " + userInfo.getUserId();
-					
-			ResultSetHandler<Map<Object, Object>> rsHandler = new ResultSetHandler<Map<Object, Object>>() {
-				public Map<Object, Object> handle(ResultSet rs) throws SQLException {
-					Map<Object, Object> group = new HashMap<Object, Object>();
-					if (rs.next()) {
-						group.put("groupName", rs.getString("GROUP_NAME"));
-						group.put("groupType", rs.getInt("GROUP_TYPE"));
-					}
-					return group;
-				}
-
-			};
-
-			Map<Object, Object> group = run.query(conn, querySql, rsHandler);
-			return group;
 
 		}catch(Exception e){
 			log.error(e.getMessage(), e);

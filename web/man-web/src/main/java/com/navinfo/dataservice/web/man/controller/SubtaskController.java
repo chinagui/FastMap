@@ -39,7 +39,6 @@ import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.man.model.subtask.SubtaskList;
 import com.navinfo.dataservice.api.man.model.subtask.SubtaskListByUser;
 import com.navinfo.dataservice.api.man.model.subtask.SubtaskListByWkt;
-import com.navinfo.dataservice.api.man.model.subtask.SubtaskQuery;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.json.JsonOperation;
@@ -284,26 +283,18 @@ public class SubtaskController extends BaseController {
 			Subtask subtask = SubtaskService.getInstance().query(bean);	
 			if(subtask!=null&&subtask.getSubtaskId()!=null){
 				SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
-				SubtaskQuery subtaskQuery = new SubtaskQuery(subtask.getSubtaskId()
+				SubtaskListByUser subtaskListByUser = new SubtaskListByUser(subtask.getSubtaskId()
 						,subtask.getName()
-						,subtask.getStatus()
-						,subtask.getDescp()
 						,subtask.getStage()
 						,subtask.getType()
+						,subtask.getStatus()
+						,subtask.getDescp()
+						,subtask.getDbId()
 						,subtask.getGridIds()
 						,subtask.getGeometry()
 						, df.format(subtask.getPlanStartDate())
-						, df.format(subtask.getPlanEndDate())
-						,subtask.getDbId()
-						,subtask.getBlockId()
-						,subtask.getBlockName()
-						,subtask.getTaskId()
-						,subtask.getTaskName()
-						,subtask.getExecuter()
-						,subtask.getPercent()
-						,subtask.getVersion()
-						);
-				SubtaskQueryResponse response = new SubtaskQueryResponse(0,"success",subtaskQuery);
+						, df.format(subtask.getPlanEndDate()));
+				SubtaskQueryResponse response = new SubtaskQueryResponse(0,"success",subtaskListByUser);
 				return response;
 			}else{
 				throw new Exception("该子任务不存在");

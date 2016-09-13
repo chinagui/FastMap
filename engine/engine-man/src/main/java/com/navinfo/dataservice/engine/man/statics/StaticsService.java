@@ -227,10 +227,11 @@ public class StaticsService {
 				DbUtils.commitAndCloseQuietly(conn);
 			}
 	}
+<<<<<<< HEAD
+=======
 
 
-
-	public JSONObject querymonthTaskOverView() throws Exception{
+	public JSONObject querymonthTaskOverView()throws Exception{
 		Connection conn = null;
 		try {	
 			conn = DBConnector.getInstance().getManConnection();
@@ -355,5 +356,7 @@ public class StaticsService {
 				DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-
+	
+	
+>>>>>>> bc9ca68a7edd3878158f336a17ba7a8566dd485a
 }

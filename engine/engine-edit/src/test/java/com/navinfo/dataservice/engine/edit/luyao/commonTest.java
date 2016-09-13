@@ -410,7 +410,15 @@ public class commonTest extends InitApplication {
 	}
 	
 	
-	
+	@Test
+	public void run_00912_1() throws Exception {
+
+		String parameter = "{\"type\":\"RDBRANCH\",\"command\":\"UPDATE\",\"dbId\":17,\"data\":{\"details\":[{\"branchType\":1,\"pid\":220000001,\"objStatus\":\"UPDATE\",\"patternCode\":\"8\"}],\"pid\":205000003}}";
+
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
 	
 	
 

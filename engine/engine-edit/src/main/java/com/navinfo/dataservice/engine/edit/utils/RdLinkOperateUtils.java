@@ -153,10 +153,12 @@ public class RdLinkOperateUtils {
 	 */
 	public static IRow addLinkBySourceLink(RdNode sNode, RdNode eNode, RdLink link, RdLink sourceLink, Result result)
 			throws Exception {
-		// 继承原有link信息
-		link.copy(sourceLink);
+		
 		// 获取pid
 		link.setPid(PidUtil.getInstance().applyLinkPid());
+		// 继承原有link信息
+		link.copy(sourceLink);
+	
 		// 计算Geometry
 		link.setGeometry(GeoTranslator.transform(link.getGeometry(), 100000, 0));
 		result.setPrimaryPid(link.getPid());

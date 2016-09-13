@@ -17,6 +17,7 @@ import org.apache.log4j.Logger;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.jobframework.exception.JobCreateException;
 import com.navinfo.dataservice.api.job.model.JobInfo;
+import com.navinfo.dataservice.api.job.model.JobStatus;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 
 /**
@@ -98,7 +99,9 @@ public class JobThreadPoolExecutor extends ThreadPoolExecutor implements Observe
 				jobPool.put(jobInfo.getType().toString(), set);
 			}
 			AbstractJob job = JobCreateStrategy.create(jobInfo);
+			//计算总步骤数
 			super.execute(job);
+			jobInfo.startJob(job.getRequest().getStepCount());
 			log.debug("开始执行job(jobIdentity:"+jobInfo.getIdentity()+")......");
 			return true;
 		}catch(Exception e){
@@ -108,7 +111,9 @@ public class JobThreadPoolExecutor extends ThreadPoolExecutor implements Observe
 					set.remove(jobInfo.getIdentity());
 				}
 			}
-			log.debug("执行job(jobIdentity:"+jobInfo.getIdentity()+")失败："+e.getMessage());
+			String msg = "尝试执行job("+jobInfo.getIdentity()+")失败："+e.getMessage();
+			jobInfo.endJob(JobStatus.STATUS_FAILURE, msg);
+			log.debug(msg);
 			log.error(e);
 		}
 		return false;

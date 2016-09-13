@@ -13,6 +13,7 @@ import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.job.model.JobInfo;
+import com.navinfo.dataservice.api.job.model.JobStatus;
 import com.navinfo.dataservice.api.job.model.JobStep;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
@@ -38,21 +39,20 @@ public class JobService {
 		return SingletonHolder.INSTANCE;
 	}
 	
-	public int create(String jobType,JSONObject request,long userId,String descp)throws ServiceException{
+	public long create(String jobType,JSONObject request,long userId,String descp)throws ServiceException{
 		Connection conn = null;
 		try{
 			//持久化
 			QueryRunner run = new QueryRunner();
 			conn = MultiDataSourceFactory.getInstance().getSysDataSource()
 					.getConnection();
-			int jobId = run.queryForInt(conn, "SELECT JOB_ID_SEQ.NEXTVAL FROM DUAL");
+			long jobId = run.queryForLong(conn, "SELECT JOB_ID_SEQ.NEXTVAL FROM DUAL");
 			String jobGuid = UuidUtils.genUuid();
 			String jobInfoSql = "INSERT INTO JOB_INFO(JOB_ID,JOB_TYPE,CREATE_TIME,STATUS,JOB_REQUEST,JOB_GUID,USER_ID,DESCP)"
-					+ " VALUES (?,?,SYSDATE,1,?,?,?,?)";
-			run.update(conn, jobInfoSql, jobId,jobType,request.toString(),jobGuid,userId,descp);
+					+ " VALUES (?,?,SYSDATE,?,?,?,?,?)";
+			run.update(conn, jobInfoSql, jobId,jobType,JobStatus.STATUS_CREATE,request.toString(),jobGuid,userId,descp);
 			//发送run_job消息
-			JobMsgPublisher.runJob(jobId,jobGuid,jobType, request);
-			//
+			JobMsgPublisher.runJob(jobId,jobGuid,jobType,request);
 			return jobId;
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -65,7 +65,7 @@ public class JobService {
 	public List<JobInfo> getAllJob()throws ServiceException{
 		return null;
 	}
-	public JobInfo getJobById(int jobId)throws ServiceException{
+	public JobInfo getJobById(long jobId)throws ServiceException{
 		Connection conn = null;
 		JobInfo jobInfo = null;
 		try{
@@ -114,7 +114,7 @@ public class JobService {
 		public JobInfo handle(ResultSet rs) throws SQLException {
 			JobInfo jobInfo = null;
 			if(rs.next()){
-				int id = rs.getInt("JOB_ID");
+				long id = rs.getLong("JOB_ID");
 				String guid = rs.getString("JOB_GUID");
 				jobInfo = new JobInfo(id,guid);
 				jobInfo.setType(rs.getString("JOB_TYPE"));

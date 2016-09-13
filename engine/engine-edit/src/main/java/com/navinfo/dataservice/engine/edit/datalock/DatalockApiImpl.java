@@ -19,7 +19,7 @@ public class DatalockApiImpl implements DatalockApi {
 
 	@Override
 	public int lockGrid(int regionId, int lockObject, Collection<Integer> grids,
-			int lockType,String dbType,int jobId) throws Exception {
+			int lockType,String dbType,long jobId) throws Exception {
 		return GridLockManager.getInstance().lock(regionId, lockObject, grids, lockType,dbType, jobId);
 	}
 
@@ -29,7 +29,7 @@ public class DatalockApiImpl implements DatalockApi {
 	}
 
 	@Override
-	public FmEditLock lockGrid(int dbId, int lockObject, Collection<Integer> grids, int lockType,int jobId) throws Exception {
+	public FmEditLock lockGrid(int dbId, int lockObject, Collection<Integer> grids, int lockType,long jobId) throws Exception {
 		return GridLockManager.getInstance().lock(dbId, lockObject, grids, lockType, jobId);
 	}
 

@@ -1,19 +1,18 @@
 package com.navinfo.dataservice.jobframework.runjob;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.edit.model.FmEditLock;
 import com.navinfo.dataservice.api.job.model.JobInfo;
+import com.navinfo.dataservice.api.job.model.JobStatus;
 import com.navinfo.dataservice.api.job.model.JobStep;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.mq.job.JobMsgPublisher;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.exception.LockException;
-import com.navinfo.dataservice.jobframework.sample.SamplebJobRequest;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -43,7 +42,7 @@ public abstract class AbstractJob implements Runnable {
 	
 	protected List<Integer> lockDbIds;
 	protected List<FmEditLock> editLocks;
-	
+
 	public AbstractJob(JobInfo jobInfo){
 		this.jobInfo=jobInfo;
 	}
@@ -55,38 +54,19 @@ public abstract class AbstractJob implements Runnable {
 			jobInfo.setResponse(new JSONObject());
 			volidateRequest();
 			lock();
-			jobInfo.setStatus(2);
-			response("检查、初始化任务执行环境及相关操作已完成...",jobInfo.getStatus());
+			response("检查、初始化任务执行环境及相关操作已完成...",null);
 			execute();
-			jobInfo.setStatus(3);
+			endJob(JobStatus.STATUS_SUCCESS,"job执行成功");
 		}catch(Exception e){
-			jobInfo.setStatus(4);
 			exception = e;
 			log.error(e.getMessage(),e);
-			JSONObject errorJson=new JSONObject();
-			errorJson.put("error", e.getMessage());
-			try {
-				response("job执行出错...",errorJson);
-			} catch (Exception e1) {
-				log.error("", e1);
-				log.warn("注意：job执行出错。错误信息写入失败");
-			}
+			endJob(JobStatus.STATUS_FAILURE,StringUtils.cutSpecLength(e.getMessage(), 1000));
 		}finally{
 			try{
 				unlock();
 			}catch(LockException le){
 				log.error(le.getMessage(),le);
 				log.warn("注意：job执行完成后解锁失败。");
-			}
-			try{
-				if(this.getParent()!=null){
-					JSONObject returnJson=new JSONObject();
-					returnJson.put(jobInfo.getType()+","+jobInfo.getDescp(), jobInfo.getResponse());
-					this.getParent().response("", returnJson);}
-				response("job执行完成。",jobInfo.getStatus());				
-			}catch(Exception err){
-				log.error(err.getMessage(),err);
-				log.warn("注意：job执行完成后修改任务状态出错。");
 			}
 			log.info("job执行完成。status="+jobInfo.getStatus());
 		}
@@ -127,7 +107,7 @@ public abstract class AbstractJob implements Runnable {
 		//data添加到jobInfo
 		if(data!=null){
 			for(String key:data.keySet()){
-				jobInfo.getResponse().put(key, data.get(key));
+				jobInfo.addResponse(key, data.get(key));
 			}
 		}
 		//发送消息
@@ -136,10 +116,10 @@ public abstract class AbstractJob implements Runnable {
 			//step如果有parent需要添加到parent
 			if(parent==null){
 				JobStep step = jobInfo.addStep(stepMsg);
-				JobMsgPublisher.responseJob(jobInfo.getId(),jobInfo.getStatus(),jobInfo.getStepCount(), jobInfo.getResponse(),step);
+				JobMsgPublisher.responseJob(jobInfo.getId(),step);
 			}else{
 				JobStep step = parent.jobInfo.addStep("[from sub job(type:"+jobInfo.getType().toString()+")]"+stepMsg);
-				JobMsgPublisher.responseJob(parent.jobInfo.getId(),parent.jobInfo.getStatus(),parent.jobInfo.getStepCount(), parent.jobInfo.getResponse(),step);
+				JobMsgPublisher.responseJob(parent.jobInfo.getId(),step);
 			}
 		}catch(Exception e){
 			log.error(e.getMessage(),e);
@@ -147,10 +127,21 @@ public abstract class AbstractJob implements Runnable {
 			
 		}
 	}
-	private void response(String stepMsg,int status)throws JobException{
-		Map<String,Object> data = new HashMap<String,Object>();
-		data.put("exeStatus", status);
-		response(stepMsg,data);
+	private void endJob(int status,String resultMsg){
+		jobInfo.endJob(status, resultMsg);
+		//发送消息
+		if(runAsMethod)return;//如果作为方法执行，不需要反馈
+		if(parent==null){//独立job
+			try{
+				log.debug("job主体执行完成，发送end_job消息(status:"+status+",resultMsg:"+resultMsg+")");
+				JobMsgPublisher.endJob(jobInfo.getId(), status,resultMsg,jobInfo.getResponse());
+			}catch(Exception e){
+				log.warn("******注意：job执行主体已经完毕，发送end_job消息过程出现错误。该错误已忽略，需手工对应。******");
+				log.error(e.getMessage(),e);
+			}
+		}else{//作为子job
+			log.debug("子job主体执行完成，不发送end_job消息(status:"+status+",resultMsg:"+resultMsg+")");
+		}
 	}
 	private void lock()throws LockException{
 		if(parent==null){
@@ -222,4 +213,5 @@ public abstract class AbstractJob implements Runnable {
 	public void setEditLocks(List<FmEditLock> editLocks) {
 		this.editLocks = editLocks;
 	}
+
 }

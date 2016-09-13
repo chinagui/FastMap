@@ -42,7 +42,7 @@ public abstract class AbstractJobRequest {
 	public abstract String getJobType();
 	
 	public int getStepCount()throws JobException{
-		int count = myStepCount();
+		int count = myStepCount()+1;
 		if(subJobRequests!=null){
 			for(AbstractJobRequest r:subJobRequests.values()){
 				count+=r.getStepCount();

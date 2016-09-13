@@ -22,7 +22,7 @@ import net.sf.json.JSONObject;
 public class JobApiImpl implements JobApi{
 	protected Logger log = LoggerRepos.getLogger(this.getClass());
 
-	public int createJob(String jobType,JSONObject request,long userId,String descp)throws Exception{
+	public long createJob(String jobType,JSONObject request,long userId,String descp)throws Exception{
 		try{
 			return JobService.getInstance().create(jobType, request, userId, descp);
 		}catch(Exception e){
@@ -30,7 +30,7 @@ public class JobApiImpl implements JobApi{
 			throw new Exception(e.getMessage(),e);
 		}
 	}
-	public JobInfo getJobById(int jobId)throws Exception{
+	public JobInfo getJobById(long jobId)throws Exception{
 		try{
 			return JobService.getInstance().getJobById(jobId);
 		}catch(Exception e){

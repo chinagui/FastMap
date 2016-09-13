@@ -99,7 +99,7 @@ public class GridLockManager{
 			DbUtils.commitAndCloseQuietly(conn);
 		}
     }
-    public FmEditLock lock(int dbId,int lockObject,Collection<Integer> grids,int lockType,int jobId)throws LockException{
+    public FmEditLock lock(int dbId,int lockObject,Collection<Integer> grids,int lockType,long jobId)throws LockException{
     	Region r = null;
     	try{
         	ManApi man = (ManApi) ApplicationContextUtil.getBean("manApi");
@@ -129,7 +129,7 @@ public class GridLockManager{
      * @return 本次申请锁的批次号
      * @throws LockException
      */
-    public int lock(int regionId, int lockObject, Collection<Integer> grids,int lockType,String dbType,int jobId)throws LockException{
+    public int lock(int regionId, int lockObject, Collection<Integer> grids,int lockType,String dbType,long jobId)throws LockException{
     	if(grids==null){
     		throw new LockException("申请锁失败：传入grids为空，请检查。");
     	}

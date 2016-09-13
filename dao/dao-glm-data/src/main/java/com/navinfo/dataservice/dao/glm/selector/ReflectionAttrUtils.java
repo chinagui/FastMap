@@ -59,11 +59,11 @@ public class ReflectionAttrUtils {
 			try {
 				field = clazz.getDeclaredField(fieldName);
 			} catch (NoSuchFieldException e) {
-				if ("uRecord".equals(fieldName) || "uFields".equals(fieldName)
-						|| "uDate".equals(fieldName))
-					continue;
-				System.out.println(fieldName + "在" + clazz.getName()
-						+ "中没有对应的属性");
+//				if ("uRecord".equals(fieldName) || "uFields".equals(fieldName)
+//						|| "uDate".equals(fieldName))
+//					continue;
+//				System.out.println(fieldName + "在" + clazz.getName()
+//						+ "中没有对应的属性");
 				continue;
 			}
 			Object value = map.get(fieldName);

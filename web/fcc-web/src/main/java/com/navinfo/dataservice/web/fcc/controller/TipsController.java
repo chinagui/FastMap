@@ -48,14 +48,32 @@ public class TipsController extends BaseController {
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
-			String grid = jsonReq.getString("grid");
-
-			String date = jsonReq.getString("date");
-
+			//grid和date的对象数组
+			JSONArray condition = jsonReq.getJSONArray("condition");
+			
 			TipsSelector selector = new TipsSelector();
 			
-			return new ModelAndView("jsonView", success(selector.checkUpdate(
-					grid, date)));
+			JSONArray  resutArr=new JSONArray();
+			
+			for (Object object : condition) {
+				
+				JSONObject obj=JSONObject.fromObject(object);
+				
+				String grid=obj.getString("grid");
+				
+				String date=obj.getString("date");
+				
+				JSONObject result=new JSONObject();
+				
+				result.put("grid", grid);
+				
+				result.put("result", selector.checkUpdate(
+						grid,date));
+				
+				resutArr.add(result);
+			}
+			
+			return new ModelAndView("jsonView", success(resutArr));
 
 		} catch (Exception e) {
 
@@ -169,16 +187,14 @@ public class TipsController extends BaseController {
 			if (!file.exists()) {
 				file.mkdirs();
 			}
-
-			String date = jsonReq.getString("date");
+			//grid和date的对象数组
+			JSONArray condition = jsonReq.getJSONArray("condition");
 
 			TipsExporter op = new TipsExporter();
-
-			JSONArray grids = jsonReq.getJSONArray("grids");
 			
 			Set<String> images = new HashSet<String>();
 
-			op.export(grids, date, filePath, "tips.txt", images);
+			op.export(condition, filePath, "tips.txt", images);
 			
 			if(images.size()>0){
 			

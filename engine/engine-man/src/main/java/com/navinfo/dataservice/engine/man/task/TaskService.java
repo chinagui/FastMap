@@ -11,24 +11,17 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
-import com.navinfo.dataservice.engine.man.block.BlockOperation;
 import com.navinfo.dataservice.engine.man.city.CityOperation;
 import com.navinfo.dataservice.engine.man.common.DbOperation;
-import com.navinfo.dataservice.engine.man.inforMan.InforManOperation;
-import com.navinfo.dataservice.engine.man.inforMan.InforManService;
 import com.navinfo.dataservice.engine.man.userDevice.UserDeviceService;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoService;
-import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.json.JsonOperation;
-import com.navinfo.dataservice.api.man.model.Infor;
 import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.xinge.XingeUtil;
 import com.navinfo.navicommons.database.Page;
-import com.navinfo.navicommons.database.QueryRunner;
-import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -68,19 +61,8 @@ public class TaskService {
 			for (int i = 0; i < taskArray.size(); i++) {
 				JSONObject taskJson = taskArray.getJSONObject(i);
 				Task bean = (Task) JsonOperation.jsonToBean(taskJson,Task.class);
-				//情报任务，需要同时创建block任务
-				if(bean.getTaskType()==4){
-					bean.setCityId(100002);
-				}
 				bean.setCreateUserId((int) userId);
-				int taskId=createWithBean(conn,bean);
-				//情报任务，需要同时创建block任务
-				if(bean.getTaskType()==4){
-					String inforId=taskJson.getString("inforId");
-					createInforBlockMan(conn,inforId,(int) userId,taskId);
-					//修改情报任务状态
-					InforManOperation.updateTask(conn,inforId,taskId);
-				}				
+				createWithBean(conn,bean);
 				total+=1;			
 			}
 			return "任务批量创建"+total+"个成功，0个失败";
@@ -91,69 +73,6 @@ public class TaskService {
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
 		}
-	}
-	
-	/**
-	 * 根据情报id创建blockMan，若跨2个block，需要创建各自的blockMan
-	 * @param conn
-	 * @param inforId
-	 * @param userId
-	 * @param taskId
-	 * @throws Exception
-	 */
-	private void createInforBlockMan(Connection conn,String inforId,int userId,int taskId) throws Exception{
-		//查询情报infor
-		Infor inforObj=InforManService.getInstance().query(inforId);
-		String inforGeo=inforObj.getGeometry();
-		//查询情报city100002对应的所有block
-		//select block_id,geometry from block where city_id=100002
-		String sql="select * from block where city_id=100002";
-		List<HashMap> inforBlockList = BlockOperation.queryBlockBySql(conn, sql);
-		String[] inforGeoList=inforGeo.split(";");
-		List<Integer> blockIdList=new ArrayList<Integer>();
-		for(String geoTmp:inforGeoList){
-			Geometry inforTmp=GeoTranslator.wkt2Geometry(geoTmp);
-			for(HashMap<String, Object> inforBlock:inforBlockList){
-				//JSONObject
-				JSONObject geo=(JSONObject) inforBlock.get("geometry");			
-				Geometry geoBlock=GeoTranslator.geojson2Jts(geo);
-				Integer blockId=(Integer) inforBlock.get("blockId");
-				//仅插入1条记录
-				if(geoBlock.contains(inforTmp) || geoBlock.covers(inforTmp) || geoBlock.equals(inforTmp)){
-					if(!blockIdList.contains(blockId)){
-						blockIdList.add(blockId);
-						createInforBlockMan(conn,blockId,userId,taskId);
-					}
-					break;
-				}
-				if(blockIdList.contains(blockId)){continue;}
-				//交叉,插入1条记录
-				boolean tt=geoBlock.within(inforTmp);
-				tt=inforTmp.within(geoBlock);
-				Geometry innerGeo=geoBlock.intersection(inforTmp);
-				if(innerGeo!=null && !innerGeo.isEmpty()){
-					if(!blockIdList.contains(blockId)){
-						blockIdList.add(blockId);
-						createInforBlockMan(conn,blockId,userId,taskId);
-					}
-				}
-			}}
-		BlockOperation.openBlockByBlockIdList(conn, blockIdList);
-	}
-	
-	/**
-	 * 创建情报任务
-	 * @param conn
-	 * @param blockId
-	 * @param userId
-	 * @param taskId
-	 * @throws Exception
-	 */
-	private void createInforBlockMan(Connection conn,Integer blockId,int userId,int taskId) throws Exception{
-		String sql="insert into block_man (block_man_id,block_id,status,latest,create_user_id,create_date,task_id)"
-				+ "values(BLOCK_MAN_SEQ.NEXTVAL,"+blockId+",2,1,"+userId+",sysdate,"+taskId+")";
-		QueryRunner run = new QueryRunner();
-		run.update(conn,sql);	
 	}
 	
 	public String taskPushMsg(long userId,JSONArray taskIds) throws Exception{
@@ -185,12 +104,9 @@ public class TaskService {
 	 * @param bean
 	 * @throws Exception
 	 */
-	public int createWithBean(Connection conn,Task bean) throws Exception{
-		int taskId=0;
+	public void createWithBean(Connection conn,Task bean) throws Exception{
 		try{
 			TaskOperation.updateLatest(conn,bean.getCityId());
-			taskId=TaskOperation.getNewTaskId(conn);
-			bean.setTaskId(taskId);
 			TaskOperation.insertTask(conn, bean);
 			CityOperation.updatePlanStatus(conn,bean.getCityId(),1);
 		}catch(Exception e){
@@ -198,7 +114,6 @@ public class TaskService {
 			log.error(e.getMessage(), e);
 			throw new Exception("创建失败，原因为:"+e.getMessage(),e);
 		}
-		return taskId;
 	}
 	
 	public String update(long userId,JSONObject json) throws Exception{
@@ -209,30 +124,12 @@ public class TaskService {
 			
 			JSONArray taskArray=json.getJSONArray("tasks");
 			conn = DBConnector.getInstance().getManConnection();
-			JSONObject condition=new JSONObject();
-			JSONArray taskStatus=new JSONArray();
-			taskStatus.add(1);//任务是开启状态
-			condition.put("taskStatus", taskStatus);
-			JSONArray taskIds=new JSONArray();
 			for (int i = 0; i < taskArray.size(); i++) {
 				JSONObject taskJson = taskArray.getJSONObject(i);
 				Task bean=(Task) JsonOperation.jsonToBean(taskJson,Task.class);
-				taskIds.add(bean.getTaskId());
 				TaskOperation.updateTask(conn, bean);		
 				total+=1;
 			}			
-			List<Map<String, Object>> openTasks = TaskOperation.queryTaskTable(conn, condition);
-			/*任务创建/编辑/关闭
-			 * 1.所有生管角色
-			 * 2.分配的月编作业组组长
-			 * 任务:XXX(任务名称)内容发生变更，请关注*/
-			
-			String msgTitle="任务修改";
-			for(Map<String, Object> task:openTasks){
-				String msgContent="任务:"+task.get("taskName")+"内容发生变更，请关注";
-				//发布消息
-			}
-
 			return "任务批量修改"+total+"个成功，0个失败";
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);

@@ -2,7 +2,9 @@ package com.navinfo.dataservice.engine.man.userInfo;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.MapHandler;
@@ -10,6 +12,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import java.sql.Connection;
+
 import com.navinfo.dataservice.api.man.model.UserDevice;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.engine.man.task.TaskOperation;
@@ -27,6 +30,28 @@ public class UserInfoOperation {
 	
 	public UserInfoOperation() {
 		// TODO Auto-generated constructor stub
+	}
+	
+	public static List<Integer> getUserListBySql(Connection conn,String sql) throws Exception{
+		try{
+
+			QueryRunner run = new QueryRunner();
+			ResultSetHandler<List<Integer>> rsHandler = new ResultSetHandler<List<Integer>>() {
+				public List<Integer> handle(ResultSet rs) throws SQLException {
+					List<Integer> userIdList = new ArrayList<Integer>();
+					while (rs.next()) {
+						userIdList.add(rs.getInt("USER_ID"));
+					}
+					return userIdList;
+				}
+			};
+			List<Integer> userIdList = run.query(conn, sql, rsHandler);
+			return userIdList;
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}
+	
 	}
 	
 	public static HashMap<Object,Object> loginGetUserInfo(Connection conn,UserInfo userInfo,UserDevice userDevice) throws Exception{
@@ -117,8 +142,7 @@ public class UserInfoOperation {
 					+ "','" 
 					+ userDevice.getDeviceVersion() + "')";
 
-			run.update(conn, createSql);
-			
+			run.update(conn, createSql);			
 			return deviceId;
 			
 			

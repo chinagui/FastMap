@@ -51,8 +51,8 @@ public class LayerService {
 		Connection conn = null;
 		try{
 			conn = DBConnector.getInstance().getManConnection();			
-			String createSql = "insert into customised_layer (LAYER_ID, LAYER_NAME,GEOMETRY, CREATE_USER_ID, CREATE_DATE) "
-					+ "values(customised_layer_seq.nextval,'"+layerName+"',sdo_geometry('"+wkt+"',8307),"+userId+",sysdate)";			
+			String createSql = "insert into customised_layer (LAYER_ID, LAYER_NAME,GEOMETRY, CREATE_USER_ID, CREATE_DATE,STATUS) "
+					+ "values(customised_layer_seq.nextval,'"+layerName+"',sdo_geometry('"+wkt+"',8307),"+userId+",sysdate,1)";			
 			DbOperation.exeUpdateOrInsertBySql(conn, createSql);
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -95,7 +95,7 @@ public class LayerService {
 		Connection conn = null;
 		try{
 			conn = DBConnector.getInstance().getManConnection();			
-			String updateSql = "delete from customised_layer where LAYER_ID="+layerId;			
+			String updateSql = "UPDATE customised_layer SET STATUS=0 where LAYER_ID="+layerId;			
 			DbOperation.exeUpdateOrInsertBySql(conn, updateSql);	    	
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -112,7 +112,7 @@ public class LayerService {
 			conn =  DBConnector.getInstance().getManConnection();	
 			
 			String selectSql ="SELECT LAYER_ID,LAYER_NAME,T.GEOMETRY,CREATE_USER_ID,CREATE_DATE FROM CUSTOMISED_LAYER t"
-					+ " where SDO_ANYINTERACT(geometry,sdo_geometry('"+wkt+"',8307))='TRUE'";
+					+ " where SDO_ANYINTERACT(geometry,sdo_geometry('"+wkt+"',8307))='TRUE' AND T.STATUS=1";
 			return this.query(selectSql, conn);
 			/*ResultSetHandler<List<Layer>> rsHandler = new ResultSetHandler<List<Layer>>(){
 				public List<Layer> handle(ResultSet rs) throws SQLException{
@@ -176,7 +176,7 @@ public class LayerService {
 		try{
 			conn = DBConnector.getInstance().getManConnection();
 			
-			String selectSql = "SELECT LAYER_ID,LAYER_NAME,T.GEOMETRY,CREATE_USER_ID,CREATE_DATE FROM CUSTOMISED_LAYER t where 1=1";
+			String selectSql = "SELECT LAYER_ID,LAYER_NAME,T.GEOMETRY,CREATE_USER_ID,CREATE_DATE FROM CUSTOMISED_LAYER t where T.STATUS=1";
 			if(null!=conditionJson && !conditionJson.isEmpty()){
 				Iterator keys = conditionJson.keys();
 				while (keys.hasNext()) {

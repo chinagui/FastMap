@@ -14,9 +14,11 @@ import net.sf.json.JSONObject;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.commons.dbutils.handlers.MapHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
@@ -30,6 +32,24 @@ public class TaskOperation {
 	
 	public TaskOperation() {
 		// TODO Auto-generated constructor stub
+	}
+	
+	public static int getNewTaskId(Connection conn) throws Exception {
+		// TODO Auto-generated method stub
+		try{
+			QueryRunner run = new QueryRunner();
+
+			String querySql = "select TASK_SEQ.NEXTVAL as taskId from dual";
+
+			int taskId = Integer.valueOf(run
+					.query(conn, querySql, new MapHandler()).get("taskId")
+					.toString());
+			return taskId;
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("关闭失败，原因为:"+e.getMessage(),e);
+		}
 	}
 	
 	/*
@@ -125,13 +145,13 @@ public class TaskOperation {
 						Task map = new Task();
 						map.setTaskId(rs.getInt("TASK_ID"));
 						map.setCityName(rs.getString("CITY_NAME"));
-						map.setName(rs.getString("NAME"));
+						map.setTaskName(rs.getString("NAME"));
 						map.setCityId(rs.getInt("CITY_ID"));
 						map.setCreateUserId(rs.getInt("CREATE_USER_ID"));
 						map.setCreateUserName(rs.getString("USER_REAL_NAME"));
 						map.setCreateDate(rs.getTimestamp("CREATE_DATE"));
-						map.setStatus(rs.getInt("STATUS"));
-						map.setDescp(rs.getString("DESCP"));
+						map.setTaskStatus(rs.getInt("STATUS"));
+						map.setTaskDescp(rs.getString("DESCP"));
 						map.setPlanStartDate(rs.getTimestamp("PLAN_START_DATE"));
 						map.setPlanEndDate(rs.getTimestamp("PLAN_END_DATE"));
 						map.setMonthEditPlanStartDate(rs.getTimestamp("MONTH_EDIT_PLAN_START_DATE"));
@@ -174,13 +194,13 @@ public class TaskOperation {
 						Task map = new Task();
 						map.setTaskId(rs.getInt("TASK_ID"));
 						map.setCityName(rs.getString("CITY_NAME"));
-						map.setName(rs.getString("NAME"));
+						map.setTaskName(rs.getString("NAME"));
 						map.setCityId(rs.getInt("CITY_ID"));
 						map.setCreateUserId(rs.getInt("CREATE_USER_ID"));
 						map.setCreateUserName(rs.getString("USER_REAL_NAME"));
 						map.setCreateDate(rs.getTimestamp("CREATE_DATE"));
-						map.setStatus(rs.getInt("STATUS"));
-						map.setDescp(rs.getString("DESCP"));
+						map.setTaskStatus(rs.getInt("STATUS"));
+						map.setTaskDescp(rs.getString("DESCP"));
 						map.setPlanStartDate(rs.getTimestamp("PLAN_START_DATE"));
 						map.setPlanEndDate(rs.getTimestamp("PLAN_END_DATE"));
 						map.setMonthEditPlanStartDate(rs.getTimestamp("MONTH_EDIT_PLAN_START_DATE"));
@@ -207,13 +227,18 @@ public class TaskOperation {
 	public static void insertTask(Connection conn,Task bean) throws Exception{
 		try{
 			QueryRunner run = new QueryRunner();
+			String taskIdStr="TASK_SEQ.NEXTVAL";
+			if(bean.getTaskId()!=null && bean.getTaskId()!=0){
+				taskIdStr=bean.getTaskId().toString();
+			}
 			String createSql = "insert into task (TASK_ID,NAME,CITY_ID, CREATE_USER_ID, CREATE_DATE, STATUS, DESCP, "
 					+ "PLAN_START_DATE, PLAN_END_DATE, MONTH_EDIT_PLAN_START_DATE, MONTH_EDIT_PLAN_END_DATE, "
-					+ "MONTH_EDIT_GROUP_ID,LATEST) "
-					+ "values(TASK_SEQ.NEXTVAL,'"+bean.getName()+"',"+bean.getCityId()+","+bean.getCreateUserId()+",sysdate,2,'"
-					+  bean.getDescp()+"',to_timestamp('"+ bean.getPlanStartDate()
+					+ "MONTH_EDIT_GROUP_ID,TASK_TYPE,LATEST) "
+					+ "values("+taskIdStr+",'"+bean.getTaskName()+"',"+bean.getCityId()+","+bean.getCreateUserId()+",sysdate,2,'"
+					+  bean.getTaskDescp()+"',to_timestamp('"+ bean.getPlanStartDate()
 					+"','yyyy-mm-dd hh24:mi:ss.ff'),to_timestamp('"+ bean.getPlanEndDate()+"','yyyy-mm-dd hh24:mi:ss.ff'),to_timestamp('"+  bean.getMonthEditPlanStartDate()
-					+"','yyyy-mm-dd hh24:mi:ss.ff'),to_timestamp('"+ bean.getMonthEditPlanEndDate()+"','yyyy-mm-dd hh24:mi:ss.ff'),"+  bean.getMonthEditGroupId()+",1)";
+					+"','yyyy-mm-dd hh24:mi:ss.ff'),to_timestamp('"+ bean.getMonthEditPlanEndDate()+"','yyyy-mm-dd hh24:mi:ss.ff'),"+  bean.getMonthEditGroupId()
+					+","+bean.getTaskType()+",1)";
 			
 			run.update(conn,createSql);			
 		}catch(Exception e){
@@ -733,15 +758,15 @@ public class TaskOperation {
 			QueryRunner run = new QueryRunner();
 			String updateSql="";
 			List<Object> values=new ArrayList();
-			if (bean!=null&&bean.getDescp()!=null && StringUtils.isNotEmpty(bean.getDescp().toString())){
+			if (bean!=null&&bean.getTaskDescp()!=null && StringUtils.isNotEmpty(bean.getTaskDescp().toString())){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql+=" DESCP=? ";
-				values.add(bean.getDescp());
+				values.add(bean.getTaskDescp());
 			};
-			if (bean!=null&&bean.getName()!=null && StringUtils.isNotEmpty(bean.getName().toString())){
+			if (bean!=null&&bean.getTaskName()!=null && StringUtils.isNotEmpty(bean.getTaskName().toString())){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql+=" NAME=? ";
-				values.add(bean.getName());
+				values.add(bean.getTaskName());
 			};
 			if (bean!=null&&bean.getPlanStartDate()!=null && StringUtils.isNotEmpty(bean.getPlanStartDate().toString())){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
@@ -778,6 +803,45 @@ public class TaskOperation {
 			log.error(e.getMessage(), e);
 			throw new Exception("创建失败，原因为:"+e.getMessage(),e);
 		}
+	}
+	
+	/**
+	 * 
+	 * @param conn
+	 * @param condition 搜索条件{"taskIds":[1,2,3],"taskStatus":[1,2]}
+	 * @return [{"taskId":12,"taskStatus":1,"taskName":"123"}]
+	 */
+	public static List<Map<String, Object>> queryTaskTable(Connection conn,JSONObject condition) throws Exception{
+		
+		String conditionSql="";
+		if(null!=condition && !condition.isEmpty()){
+			Iterator keys = condition.keys();
+			while (keys.hasNext()) {
+				String key = (String) keys.next();
+				
+				if ("taskIds".equals(key)) {conditionSql+=" AND t.task_id IN ("+condition.getJSONArray(key).join(",")+")";}
+				if ("taskStatus".equals(key)) {conditionSql+=" AND T.STATUS IN ("+condition.getJSONArray(key).join(",")+")";}
+			}
+		}
+		
+		String selectSql="select t.task_id,t.status task_status,t.NAME task_name from task t where 1=1 "+conditionSql;
+		
+		ResultSetHandler<List<Map<String, Object>>> rsHandler = new ResultSetHandler<List<Map<String, Object>>>(){
+			public List<Map<String, Object>> handle(ResultSet rs) throws SQLException {
+				List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
+				while(rs.next()){
+					Map<String, Object> map = new HashMap<String, Object>();
+					map.put("taskId", rs.getInt("TASK_ID"));
+					map.put("taskStatus", rs.getInt("TASK_STATUS"));
+					map.put("taskName", rs.getString("TASK_NAME"));
+					list.add(map);
+				}
+				return list;
+			}
+    	};
+		
+		QueryRunner run=new QueryRunner();
+		return run.query(conn, selectSql, rsHandler);
 	}
 
 	public static List<Map<String, Object>> queryTask(Connection conn,int taskId) throws Exception {

@@ -41,7 +41,7 @@ public class BatchProcess {
 			JSONObject result = new JSONObject();
 			for (String batch:batchList) {
 				IBatch obj = (IBatch) Class.forName(batch).newInstance();
-				JSONObject data = obj.run(poi,conn,json);
+				JSONObject data = obj.run(poi,conn,json,editApiImpl);
 				result.putAll(data);
 			}
 			

@@ -22,7 +22,7 @@ public class SubtaskListByUser implements Serializable {
 	}
 	
 	public SubtaskListByUser(int subtaskId,String name,int stage,int type,int status,String descp,int dbId,List<Integer> gridIds
-			,String geometry,Timestamp planStartDate,Timestamp planEndDate) {
+			,String geometry,String planStartDate,String planEndDate) {
 		// TODO Auto-generated constructor stub
 		this.subtaskId = subtaskId;
 		this.name = name;
@@ -53,9 +53,9 @@ public class SubtaskListByUser implements Serializable {
 	@ApiModelProperty(position = 1, required = true, value = "子任务所属大区库的id")
 	private Integer dbId ;
 	@ApiModelProperty(position = 1, required = true, value = "计划开始时间")
-	private Timestamp planStartDate ;
+	private String planStartDate ;
 	@ApiModelProperty(position = 1, required = true, value = "计划结束时间")
-	private Timestamp planEndDate;
+	private String planEndDate;
 
 	@ApiModelProperty(position = 1, required = false, value = "子任务几何")
 	private String geometry ;
@@ -113,16 +113,16 @@ public class SubtaskListByUser implements Serializable {
 	public void setGeometry(String geometry) {
 		this.geometry = geometry;
 	}
-	public Timestamp getPlanStartDate() {
+	public String getPlanStartDate() {
 		return planStartDate;
 	}
-	public void setPlanStartDate(Timestamp planStartDate) {
+	public void setPlanStartDate(String planStartDate) {
 		this.planStartDate = planStartDate;
 	}
-	public Timestamp getPlanEndDate() {
+	public String getPlanEndDate() {
 		return planEndDate;
 	}
-	public void setPlanEndDate(Timestamp planEndDate) {
+	public void setPlanEndDate(String planEndDate) {
 		this.planEndDate = planEndDate;
 	}
 	public int getDbId(){

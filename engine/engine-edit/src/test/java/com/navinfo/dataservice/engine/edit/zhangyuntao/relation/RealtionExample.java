@@ -3,6 +3,7 @@ package com.navinfo.dataservice.engine.edit.zhangyuntao.relation;
 import java.sql.Connection;
 import java.util.List;
 
+import com.navinfo.dataservice.engine.edit.zhangyuntao.eleceye.TestUtil;
 import org.junit.Test;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
@@ -71,5 +72,11 @@ public class RealtionExample extends InitApplication {
 		JSONObject json = GeoTranslator.jts2Geojson(((RdLink) rdSelector.loadById(linkPid, false)).getGeometry());
 		Geometry geometry = GeoTranslator.geojson2Jts(json, 0.00001, 5);
 		return geometry;
+	}
+
+	@Test
+	public void getByCondition() throws Exception{
+		String paremeter = "{\"type\":\"RDLANE\",\"dbId\":17,\"data\":{\"linkPids\":[54013444,54013443],\"nodePid\":19039389,\"laneDir\":1}}";
+		TestUtil.getByCondition(paremeter);
 	}
 }

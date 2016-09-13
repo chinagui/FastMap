@@ -10,7 +10,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.man.model.BlockMan;
-import com.navinfo.dataservice.api.man.model.Infor;
 import com.navinfo.dataservice.api.man.model.InforMan;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.json.JsonOperation;
@@ -173,12 +172,12 @@ public class InforManService {
 		}
 	}
 
-	public Infor query(String inforId) throws Exception {
+	public InforMan query(String inforId) throws Exception {
 		Connection conn = null;
 		try {
 			conn = DBConnector.getInstance().getManConnection();
-			String selectSql = "select * from infor where INFOR_ID='" + inforId + "'";
-			List<Infor> list = InforManOperation.selectTaskBySql2(conn, selectSql, null);
+			String selectSql = "select * from infor_man where INFOR_ID='" + inforId + "'";
+			List<InforMan> list = InforManOperation.selectTaskBySql2(conn, selectSql, null);
 			if (list.size() > 0) {
 				return list.get(0);
 			} else {

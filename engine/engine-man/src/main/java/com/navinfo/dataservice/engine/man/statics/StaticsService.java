@@ -227,6 +227,8 @@ public class StaticsService {
 				DbUtils.commitAndCloseQuietly(conn);
 			}
 	}
+<<<<<<< HEAD
+=======
 
 
 	public JSONObject querymonthTaskOverView()throws Exception{
@@ -356,4 +358,5 @@ public class StaticsService {
 	}
 	
 	
+>>>>>>> bc9ca68a7edd3878158f336a17ba7a8566dd485a
 }

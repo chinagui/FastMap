@@ -8,17 +8,18 @@ import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeSelector;
+import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.operation.AbstractProcess;
 
 public class Process extends AbstractProcess<Command> {
 
 	private Check check = new Check();
 
-	public Process(Command command) throws Exception {
+	public Process(AbstractCommand command) throws Exception {
 		super(command);
 	}
 
-	public Process(Command command, Connection conn) throws Exception {
+	public Process(AbstractCommand command, Connection conn) throws Exception {
 		this(command);
 		this.setConn(conn);
 	}
@@ -115,7 +116,7 @@ public class Process extends AbstractProcess<Command> {
 
 	@Override
 	public String exeOperation() throws Exception {
-		Operation operation = new Operation(this.getCommand());
+		Operation operation = new Operation(this.getCommand(),this.getConn());
 		String msg = operation.run(this.getResult());
 		return msg;
 

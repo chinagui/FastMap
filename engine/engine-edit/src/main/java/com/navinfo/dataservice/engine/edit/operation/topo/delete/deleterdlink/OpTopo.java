@@ -1,5 +1,9 @@
 package com.navinfo.dataservice.engine.edit.operation.topo.delete.deleterdlink;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import com.navinfo.dataservice.dao.glm.iface.AlertObject;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
@@ -34,5 +38,45 @@ public class OpTopo implements IOperation {
 		
 		return msg;
 	}
+	
+	public List<AlertObject> getDeleteLinkInfectData()
+	{
+		RdLink link = command.getLink();
+		
+		AlertObject alertObj = new AlertObject();
 
+		alertObj.setObjType(link.objType());
+
+		alertObj.setPid(link.getPid());
+
+		alertObj.setStatus(ObjStatus.DELETE);
+
+		List<AlertObject> alertList = new ArrayList<>();
+
+		alertList.add(alertObj);
+		
+		return alertList;
+	}
+	
+	public List<AlertObject> getDeleteNodeInfectData()
+	{
+		List<RdNode> nodeList = command.getNodes();
+		
+		List<AlertObject> alertList = new ArrayList<>();
+		
+		for(RdNode node : nodeList)
+		{
+			AlertObject alertObj = new AlertObject();
+
+			alertObj.setObjType(node.objType());
+
+			alertObj.setPid(node.getPid());
+
+			alertObj.setStatus(ObjStatus.DELETE);
+
+			alertList.add(alertObj);
+		}
+		
+		return alertList;
+	}
 }

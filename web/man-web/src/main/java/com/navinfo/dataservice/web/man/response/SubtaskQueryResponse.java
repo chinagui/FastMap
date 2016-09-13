@@ -1,7 +1,8 @@
 package com.navinfo.dataservice.web.man.response;
 
+import java.util.List;
 
-import com.navinfo.dataservice.api.man.model.subtask.SubtaskQuery;
+import com.navinfo.dataservice.api.man.model.subtask.SubtaskListByUser;
 import com.wordnik.swagger.annotations.ApiModelProperty;
 
 /** 
@@ -20,32 +21,18 @@ public class SubtaskQueryResponse extends Response {
 	}
 
 	@ApiModelProperty(position = 1, required = true, value = "数据")
-	public SubtaskQuery data;
-	
-	public void SetData(SubtaskQuery data){
-		this.data = data;
-	}
-	public SubtaskQuery GetData(){
-		return data;
-	}
-	
-    public SubtaskQueryResponse(int errcode,String errmsg,SubtaskQuery data){
+	public SubtaskListByUser data;
+
+	public void SetData(SubtaskListByUser data){
+    	this.data = data;
+    }
+    public SubtaskListByUser GetData(){
+    	return data;
+    }
+
+    public SubtaskQueryResponse(int errcode,String errmsg,SubtaskListByUser data){
     	this.errcode = errcode;
     	this.errmsg = errmsg;
     	this.data = data;
     }
-//	public SubtaskListByUser data;
-//
-//	public void SetData(SubtaskListByUser data){
-//    	this.data = data;
-//    }
-//    public SubtaskListByUser GetData(){
-//    	return data;
-//    }
-//
-//    public SubtaskQueryResponse(int errcode,String errmsg,SubtaskListByUser data){
-//    	this.errcode = errcode;
-//    	this.errmsg = errmsg;
-//    	this.data = data;
-//    }
 }

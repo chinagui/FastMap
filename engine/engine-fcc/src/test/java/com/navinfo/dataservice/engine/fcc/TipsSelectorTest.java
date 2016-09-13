@@ -41,7 +41,7 @@ public class TipsSelectorTest {
 	
 
 	//根据网格、类型、作业状态获取tips的snapshot列表（rowkey，点位，类型）
-	@Test
+	//@Test
 	public void testGetSnapshot() {
 		ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(
 				new String[] { "dubbo-consumer-datahub.xml"});
@@ -84,11 +84,11 @@ public class TipsSelectorTest {
 		types.add(1110);
 		types.add(1515);
 		types.add(1105);
-		types.add(1806);
-		types.add(1901);*/
+		types.add(1806);*/
+		types.add(1509);
 		try {
-			System.out.println(solrSelector.searchDataByTileWithGap(107944, 49615, 17,
-					20, types,"m"));
+			System.out.println(solrSelector.searchDataByTileWithGap(107919, 49617, 17,
+					80, types,"d"));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -388,6 +388,7 @@ public class TipsSelectorTest {
 				System.out.println(d);
 			}
 		}
+		
 
 
 }

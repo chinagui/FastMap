@@ -36,9 +36,6 @@ public class Subtask implements Serializable  {
 	private Integer groupId;
 	private String blockName;
 	private String taskName;
-	private String version;
-	private String executer;
-	private int percent;
 
 	public Subtask (){
 	}
@@ -361,47 +358,5 @@ public class Subtask implements Serializable  {
 		} else if (!descp.equals(other.descp))
 			return false;
 		return true;
-	}
-
-	/**
-	 * @return the version
-	 */
-	public String getVersion() {
-		return version;
-	}
-
-	/**
-	 * @param version the version to set
-	 */
-	public void setVersion(String version) {
-		this.version = version;
-	}
-
-	/**
-	 * @return the executer
-	 */
-	public String getExecuter() {
-		return executer;
-	}
-
-	/**
-	 * @param executer the executer to set
-	 */
-	public void setExecuter(String executer) {
-		this.executer = executer;
-	}
-
-	/**
-	 * @return the percent
-	 */
-	public int getPercent() {
-		return percent;
-	}
-
-	/**
-	 * @param percent the percent to set
-	 */
-	public void setPercent(int percent) {
-		this.percent = percent;
 	}
 }

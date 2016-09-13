@@ -2,6 +2,8 @@ package com.navinfo.dataservice.engine.edit.operation.topo.repair.repairrdlink;
 
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.rd.gsc.RdGscSelector;
@@ -41,7 +43,7 @@ public class Process extends AbstractProcess<Command> {
 	public String preCheck() throws Exception {
 		String preCheckMsg = super.preCheck();
 
-		if (preCheckMsg != null && !preCheckMsg.isEmpty()) {
+		if (!StringUtils.isEmpty(preCheckMsg)) {
 			return preCheckMsg;
 		}
 		// check.checkIsVia(this.getConn(), this.getCommand().getLinkPid());

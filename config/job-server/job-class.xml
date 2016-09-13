@@ -60,6 +60,13 @@
 		class="com.navinfo.dataservice.edit.job.EditPoiBaseReleaseJob"
 	 	request="com.navinfo.dataservice.edit.job.EditPoiBaseReleaseJobRequest"
 	/>
-
+	<type name="columnSaveJob" 
+		class="com.navinfo.dataservice.column.job.ColumnSaveJob"
+	 	request="com.navinfo.dataservice.column.job.ColumnSaveJobRequest"
+	/>
+	<type name="columnSubmitJob" 
+		class="com.navinfo.dataservice.column.job.ColumnSubmitJob"
+	 	request="com.navinfo.dataservice.column.job.ColumnSubmitJobRequest"
+	/>
 	
 </mapping>

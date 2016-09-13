@@ -188,7 +188,7 @@ public class Operation implements IOperation {
 		// 组装更新线的参数
 		// 保证是同一个连接
 		com.navinfo.dataservice.engine.edit.operation.obj.rdnode.update.Command updatecommand = new com.navinfo.dataservice.engine.edit.operation.obj.rdnode.update.Command(
-				updateContent, command.getRequester());
+				updateContent, command.getRequester(),this.command.getNode());
 		com.navinfo.dataservice.engine.edit.operation.obj.rdnode.update.Process process = new com.navinfo.dataservice.engine.edit.operation.obj.rdnode.update.Process(
 				updatecommand, result, conn);
 		process.innerRun();

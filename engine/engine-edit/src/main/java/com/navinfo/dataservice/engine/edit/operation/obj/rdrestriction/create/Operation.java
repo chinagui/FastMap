@@ -133,7 +133,8 @@ public class Operation implements IOperation {
 		if (CollectionUtils.isNotEmpty(outLinkPids) && !hasSelectOutLink) {
 			deleteMultLinkOnSameDir(outLinkPids, infoList);
 		}
-
+		
+		check.checkSameInAndOutLink(inLinkPid, outLinkPids);
 		// 根据方向确定完真实的退出线，没有提示手动指定
 		if (CollectionUtils.isEmpty(outLinkPids)) {
 			throw new Exception("未计算出退出线，请手动指定退出线");

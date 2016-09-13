@@ -7,6 +7,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -423,7 +424,11 @@ public class UserInfoService {
 			}
 			
 			//查询角色信息
-			String role = UserInfoOperation.getUserRole(conn, user_info);
+//			String role = UserInfoOperation.getUserRole(conn, user_info);
+			Map<Object,Object> role = UserInfoOperation.getUserRole(conn, user_info);
+			
+			//查询用户组信息
+			Map<Object,Object> group = UserInfoOperation.getUserGroup(conn, user_info);
 			
 			//userDevice，如果存在该用户该device记录，获取device_id；如果不存在，添加该用户该device记录，
 			int deviceId = 0;
@@ -449,7 +454,24 @@ public class UserInfoService {
 			if (access_token != null) {
 				result.put("access_token", access_token.getTokenString());
 				result.put("expires_in", access_token.getTimestamp());
-				result.put("role", role);
+				
+				if(!role.isEmpty()){
+					result.put("roleId", role.get("roleId"));
+					result.put("roleName", role.get("roleName"));
+				}
+//				else{
+//					result.put("roleId", 0);
+//					result.put("roleName", "");
+//				}
+				
+				if(!group.isEmpty()){
+					result.put("groupType", group.get("groupType"));
+					result.put("groupName", group.get("groupName"));
+				}
+//				else{
+//					result.put("groupType", null);
+//					result.put("groupName", "");
+//				}			
 				result.put("deviceId", deviceId);
 				result.put("userId", user_info.getUserId());
 				result.put("userRealName", user_info.getUserRealName());

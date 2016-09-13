@@ -435,6 +435,11 @@ public class SubtaskService {
 					+ ",r.DAILY_DB_ID"
 					+ ",r.MONTHLY_DB_ID"
 					+ ",st.GEOMETRY";
+			String selectBlockSql = ",B.BLOCK_ID,B.BLOCK_NAME";
+			String selectTaskSql = ",T.TASK_ID AS BLOCK_ID,T.NAME AS BLOCK_NAME";
+			String selectUserSql = ",u.user_real_name as executer";
+			String selectGroupSql = ",ug.group_name as executer";
+			
 
 			String fromSql_task = " from subtask st"
 					+ ",task t"
@@ -444,6 +449,10 @@ public class SubtaskService {
 			String fromSql_block = " from subtask st"
 					+ ",block b"
 					+ ",region r";
+			
+			String fromSql_user = " ,user_info u";
+			
+			String fromSql_group = " ,user_group ug";
 
 			String conditionSql_task = " where st.task_id = t.task_id "
 					+ "and t.city_id = c.city_id "
@@ -453,16 +462,26 @@ public class SubtaskService {
 			String conditionSql_block = " where st.block_id = b.block_id "
 					+ "and b.region_id = r.region_id "
 					+ " and st.SUBTASK_ID=" + subtaskId;
+			
+			String conditionSql_user = " and st.exe_user_id = u.user_id";
+
+			String conditionSql_group = " and st.exe_group_id = ug.group_id";
 
 			
-			selectSql = selectSql + fromSql_task
-					+ conditionSql_task
-					+ " union all " + selectSql
-					+ fromSql_block + conditionSql_block;
+//			selectSql = selectSql + fromSql_task
+//					+ conditionSql_task
+//					+ " union all " + selectSql
+//					+ fromSql_block + conditionSql_block;
+			
+			selectSql = selectSql + selectTaskSql + selectUserSql + fromSql_task + fromSql_user + conditionSql_task + conditionSql_user
+					+ " union all " + selectSql + selectTaskSql + selectGroupSql + fromSql_task + fromSql_group + conditionSql_task + conditionSql_group
+					+ " union all " + selectSql + selectBlockSql + selectUserSql + fromSql_block + fromSql_user + conditionSql_block + conditionSql_user
+					+ " union all " + selectSql + selectBlockSql + selectGroupSql + fromSql_block + fromSql_group + conditionSql_block + conditionSql_group;
 			
 
 			ResultSetHandler<Subtask> rsHandler = new ResultSetHandler<Subtask>() {
 				public Subtask handle(ResultSet rs) throws SQLException {
+					StaticsApi staticApi=(StaticsApi) ApplicationContextUtil.getBean("staticsApi");
 					if (rs.next()) {
 						Subtask subtask = new Subtask();
 						subtask.setSubtaskId(rs.getInt("SUBTASK_ID"));
@@ -493,11 +512,28 @@ public class SubtaskService {
 	
 						if (1 == rs.getInt("STAGE")) {
 							subtask.setDbId(rs.getInt("DAILY_DB_ID"));
+							subtask.setBlockId(rs.getInt("BLOCK_ID"));
+							subtask.setBlockName(rs.getString("BLOCK_NAME"));
 						} else if (2 == rs.getInt("STAGE")) {
 							subtask.setDbId(rs.getInt("MONTHLY_DB_ID"));
+							subtask.setBlockId(rs.getInt("BLOCK_ID"));
+							subtask.setBlockName(rs.getString("BLOCK_NAME"));
 						} else {
 							subtask.setDbId(rs.getInt("MONTHLY_DB_ID"));
+							subtask.setTaskId(rs.getInt("BLOCK_ID"));
+							subtask.setTaskName(rs.getString("BLOCK_NAME"));
 						}
+						
+						if(1 == rs.getInt("STATUS")){
+							JSONObject stat = staticApi.getStatBySubtask(rs.getInt("SUBTASK_ID"));
+							int percent = stat.getInt("percent");						
+							subtask.setPercent(percent);
+						}
+						
+						subtask.setVersion(SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
+						
+						subtask.setExecuter(rs.getString("executer"));
+						
 						return subtask;
 					}
 					return null;

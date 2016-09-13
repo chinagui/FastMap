@@ -1,6 +1,8 @@
 package com.navinfo.dataservice.engine.man.task;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -11,12 +13,14 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.engin.man.message.MessageOperation;
 import com.navinfo.dataservice.engine.man.block.BlockOperation;
 import com.navinfo.dataservice.engine.man.city.CityOperation;
 import com.navinfo.dataservice.engine.man.common.DbOperation;
 import com.navinfo.dataservice.engine.man.inforMan.InforManOperation;
 import com.navinfo.dataservice.engine.man.inforMan.InforManService;
 import com.navinfo.dataservice.engine.man.userDevice.UserDeviceService;
+import com.navinfo.dataservice.engine.man.userInfo.UserInfoOperation;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoService;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.json.JsonOperation;
@@ -157,17 +161,25 @@ public class TaskService {
 	}
 	
 	public String taskPushMsg(long userId,JSONArray taskIds) throws Exception{
-		String msgTitle="任务通知";
-		UserDeviceService userDeviceService=new UserDeviceService();
-		UserInfoService userService=UserInfoService.getInstance();
-		UserInfo userObj=userService.queryUserInfoByUserId((int)userId);
-		String msgContent="";
-		//String msgContent="【Fastmap】通知："+userObj.getUserRealName()+"已分配“"+bean.getName()+"”任务；请下载数据，安排作业！";
-		userDeviceService.pushMessage(userId, msgTitle, msgContent, 
-				XingeUtil.PUSH_MSG_TYPE_PROJECT, "");
 		Connection conn = null;
 		try{
 			conn = DBConnector.getInstance().getManConnection();
+			//发送消息
+			JSONObject condition=new JSONObject();
+			condition.put("taskIds",taskIds);
+			List<Map<String, Object>> openTasks = TaskOperation.queryTaskTable(conn, condition);
+			/*任务创建/编辑/关闭
+			 * 1.所有生管角色
+			 * 2.分配的月编作业组组长
+			 * 任务:XXX(任务名称)内容发生变更，请关注*/			
+			String msgTitle="任务开启";
+			List<String> msgContentList=new ArrayList<String>();
+			for(Map<String, Object> task:openTasks){
+				msgContentList.add("任务:"+task.get("taskName")+"内容发生变更，请关注");
+			}
+			if(msgContentList.size()>0){
+				taskPushMsg(conn,msgTitle,msgContentList);
+			}		
 			TaskOperation.updateStatus(conn,taskIds);
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -220,19 +232,21 @@ public class TaskService {
 				taskIds.add(bean.getTaskId());
 				TaskOperation.updateTask(conn, bean);		
 				total+=1;
-			}			
+			}
+			condition.put("taskIds",taskIds);
 			List<Map<String, Object>> openTasks = TaskOperation.queryTaskTable(conn, condition);
 			/*任务创建/编辑/关闭
 			 * 1.所有生管角色
 			 * 2.分配的月编作业组组长
-			 * 任务:XXX(任务名称)内容发生变更，请关注*/
-			
+			 * 任务:XXX(任务名称)内容发生变更，请关注*/			
 			String msgTitle="任务修改";
+			List<String> msgContentList=new ArrayList<String>();
 			for(Map<String, Object> task:openTasks){
-				String msgContent="任务:"+task.get("taskName")+"内容发生变更，请关注";
-				//发布消息
+				msgContentList.add("任务:"+task.get("taskName")+"内容发生变更，请关注");
 			}
-
+			if(msgContentList.size()>0){
+				taskPushMsg(conn,msgTitle,msgContentList);
+			}
 			return "任务批量修改"+total+"个成功，0个失败";
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -243,6 +257,26 @@ public class TaskService {
 		}
 	}
 	
+	/*任务创建/编辑/关闭
+	 * 1.所有生管角色
+	 * 2.分配的月编作业组组长
+	 * 任务:XXX(任务名称)内容发生变更，请关注*/
+	public void taskPushMsg(Connection conn,String msgTile,List<String> msgContentList) throws Exception{
+		String userSql="SELECT DISTINCT M.USER_ID FROM ROLE_USER_MAPPING M WHERE M.ROLE_ID IN (3, 6)";
+		List<Integer> userIdList=UserInfoOperation.getUserListBySql(conn, userSql);
+		Object[][] msgList=new Object[userIdList.size()*msgContentList.size()][3];
+		int num=0;
+		for(int userId:userIdList){
+			for(String msgContent:msgContentList){
+				msgList[num][0]=userId;
+				msgList[num][1]=msgTile;
+				msgList[num][2]=msgContent;
+				num+=1;
+			}
+		}
+		MessageOperation.batchInsert(conn,msgList);
+	}
+		
 	public Page list(JSONObject conditionJson,JSONObject orderJson,int currentPageNum,int pageSize,int snapshot)throws Exception{
 		Connection conn = null;
 		try{
@@ -351,6 +385,24 @@ public class TaskService {
 						+ "WHERE TASK_ID IN ("+newTask.toString().replace("[", "").
 						replace("]", "").replace("\"", "")+")";
 				DbOperation.exeUpdateOrInsertBySql(conn, updateSql);}
+			
+			//发送消息
+			JSONObject condition=new JSONObject();
+			condition.put("taskIds",JSONArray.fromObject(newTask));
+			List<Map<String, Object>> openTasks = TaskOperation.queryTaskTable(conn, condition);
+			/*任务创建/编辑/关闭
+			 * 1.所有生管角色
+			 * 2.分配的月编作业组组长
+			 * 任务:XXX(任务名称)内容发生变更，请关注*/			
+			String msgTitle="任务关闭";
+			List<String> msgContentList=new ArrayList<String>();
+			for(Map<String, Object> task:openTasks){
+				msgContentList.add("任务:"+task.get("taskName")+"内容发生变更，请关注");
+			}
+			if(msgContentList.size()>0){
+				taskPushMsg(conn,msgTitle,msgContentList);
+			}
+			
 	    	return checkMap;
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);

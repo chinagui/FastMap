@@ -820,7 +820,7 @@ public class TaskOperation {
 				String key = (String) keys.next();
 				
 				if ("taskIds".equals(key)) {conditionSql+=" AND t.task_id IN ("+condition.getJSONArray(key).join(",")+")";}
-				if ("taskStatus".equals(key)) {conditionSql+=" AND T.TASK_STATUS IN ("+condition.getJSONArray(key).join(",")+")";}
+				if ("taskStatus".equals(key)) {conditionSql+=" AND T.STATUS IN ("+condition.getJSONArray(key).join(",")+")";}
 			}
 		}
 		
@@ -833,7 +833,7 @@ public class TaskOperation {
 					Map<String, Object> map = new HashMap<String, Object>();
 					map.put("taskId", rs.getInt("TASK_ID"));
 					map.put("taskStatus", rs.getInt("TASK_STATUS"));
-					map.put("taskName", rs.getInt("TASK_NAME"));
+					map.put("taskName", rs.getString("TASK_NAME"));
 					list.add(map);
 				}
 				return list;

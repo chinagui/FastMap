@@ -292,7 +292,11 @@ public class IxPoiSearch implements ISearch {
 				if (CHAINMAP.containsKey(poi.getChain())) {
 					poiObj.put("chainName", CHAINMAP.get(poi.getChain()));
 				} else {
-					poiObj.put("chainName", poi.getChain());
+					if (poi.getChain() == null) {
+						poiObj.put("chainName", "");
+					} else {
+						poiObj.put("chainName", poi.getChain());
+					}
 				}
 				if (KINDCODEMAP.containsKey(poi.getKindCode())) {
 					poiObj.put("kindCodeName", KINDCODEMAP.get(poi.getKindCode()));
@@ -308,11 +312,12 @@ public class IxPoiSearch implements ISearch {
 				poiObj.put("classifyRules", status.getString("workItemId"));
 				poiObj.put("auditStatus", status.getInt("firstWorkStatus"));
 				
+				List<String> msgList = new ArrayList<String>();
 				// 港澳作业,参考信息
 				if (langCode.equals("CHT")&&(secondWorkItem.equals("nameUnify") || secondWorkItem.equals("shortName"))) {
-					List<String> msgList = getNamerefMsg(secondWorkItem,nameList);
-					poiObj.put("namerefMsg", msgList);
+					msgList = getNamerefMsg(secondWorkItem,nameList);
 				}
+				poiObj.put("namerefMsg", msgList);
 				
 				// 名称统一，查询父名称
 				if (secondWorkItem.equals("nameUnify")) {
@@ -383,7 +388,11 @@ public class IxPoiSearch implements ISearch {
 				if (CHAINMAP.containsKey(poi.getChain())) {
 					poiObj.put("chainName", CHAINMAP.get(poi.getChain()));
 				} else {
-					poiObj.put("chainName", poi.getChain());
+					if (poi.getChain() == null) {
+						poiObj.put("chainName", "");
+					} else {
+						poiObj.put("chainName", poi.getChain());
+					}
 				}
 				if (KINDCODEMAP.containsKey(poi.getKindCode())) {
 					poiObj.put("kindCodeName", KINDCODEMAP.get(poi.getKindCode()));
@@ -398,11 +407,12 @@ public class IxPoiSearch implements ISearch {
 				poiObj.put("classifyRules", status.getString("workItemId"));
 				poiObj.put("auditStatus", status.getInt("firstWorkStatus"));
 				
+				List<String> msgList = new ArrayList<String>();
 				// 港澳作业,参考信息
 				if (langCode.equals("CHT")) {
-					List<String> msgList = getAddrrefMsg(addressList);
-					poiObj.put("namerefMsg", msgList);
+					msgList = getAddrrefMsg(addressList);
 				}
+				poiObj.put("addrrefMsg", msgList);
 				
 				// 地址拼音作业，获取拼音组
 				if (secondWorkItem.equals("addrPinyin")) {
@@ -475,7 +485,11 @@ public class IxPoiSearch implements ISearch {
 				if (CHAINMAP.containsKey(poi.getChain())) {
 					poiObj.put("chainName", CHAINMAP.get(poi.getChain()));
 				} else {
-					poiObj.put("chainName", poi.getChain());
+					if (poi.getChain() == null) {
+						poiObj.put("chainName", "");
+					} else {
+						poiObj.put("chainName", poi.getChain());
+					}
 				}
 				if (KINDCODEMAP.containsKey(poi.getKindCode())) {
 					poiObj.put("kindCodeName", KINDCODEMAP.get(poi.getKindCode()));
@@ -535,7 +549,11 @@ public class IxPoiSearch implements ISearch {
 				if (CHAINMAP.containsKey(poi.getChain())) {
 					poiObj.put("chainName", CHAINMAP.get(poi.getChain()));
 				} else {
-					poiObj.put("chainName", poi.getChain());
+					if (poi.getChain() == null) {
+						poiObj.put("chainName", "");
+					} else {
+						poiObj.put("chainName", poi.getChain());
+					}
 				}
 				if (KINDCODEMAP.containsKey(poi.getKindCode())) {
 					poiObj.put("kindCodeName", KINDCODEMAP.get(poi.getKindCode()));

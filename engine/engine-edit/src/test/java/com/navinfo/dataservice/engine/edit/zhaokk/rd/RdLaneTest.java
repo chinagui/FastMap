@@ -20,11 +20,11 @@ public class RdLaneTest extends InitApplication {
 	public void init() {
 		initContext();
 	}
-
+	//{"command":"BATCH","type":"RDLANE","dbId":17,"data":{"linkPids":["200000021"],"laneDir":2,"laneInfos":[{"pid":205000006,"conditions":[{"direction":"2","directionTime":"[[(t5t6t7)]]","vehicle":120,"vehicleTime":null,"geoLiveType":"RDLANECONDITION"}],"seqNum":1}],"geoLiveType":"RDLANE"}}
 	@Test
 	public void testAddBatchRdLane() {
 		String parameter = "{\"command\":\"BATCH\",\"type\":\"RDLANE\",\"dbId\":17,"
-				+ "\"data\":{\"linkPids\":[309000008],\"laneDir\":2,\"laneInfos\":[{\"pid\":300000002,\"seqNum\":1,\"arrowDir\":\"a\"},{\"pid\":307000005,\"seqNum\":2,\"arrowDir\":\"c\"}]}}";
+				+ "\"data\":{\"linkPids\":[309000008],\"laneDir\":2,\"laneInfos\":[{\"pid\":0,\"seqNum\":1,\"arrowDir\":\"a\",\"conditions\":[{\"direction\":\"2\",\"directionTime\":\"[[(t5t6t7)]]\",\"vehicle\":120,\"vehicleTime\":null}]},{\"pid\":0,\"seqNum\":2,\"arrowDir\":\"c\"}]}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

@@ -161,6 +161,7 @@ public class StaticsService {
 		StaticsApi api=(StaticsApi) ApplicationContextUtil.getBean("staticsApi");
 		
 		return api.getStatBySubtask(subtaskId);
+
 	}
 	
 	public JSONObject queryTaskOverView() throws JSONException, Exception{

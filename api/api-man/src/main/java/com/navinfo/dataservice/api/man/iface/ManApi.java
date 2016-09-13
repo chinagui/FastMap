@@ -37,6 +37,7 @@ public interface ManApi{
 	public int queryAdminIdBySubtask(int subtaskId) throws Exception;
 	
 	public int queryDbIdByAdminId(int adminId) throws Exception;
+	public int queryCityIdByTaskId(int taskId) throws Exception;
 
 	public String querySpecVersionByType(int type) throws Exception;
 	

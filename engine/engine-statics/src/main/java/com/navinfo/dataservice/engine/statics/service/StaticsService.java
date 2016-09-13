@@ -13,9 +13,13 @@ import org.bson.Document;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Sorts;
+import com.navinfo.dataservice.api.man.iface.ManApi;
+import com.navinfo.dataservice.api.man.model.Subtask;
+import com.navinfo.dataservice.api.statics.iface.StaticsApi;
 import com.navinfo.dataservice.api.statics.model.BlockExpectStatInfo;
 import com.navinfo.dataservice.api.statics.model.GridChangeStatInfo;
 import com.navinfo.dataservice.api.statics.model.GridStatInfo;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.engine.statics.StatMain;
 import com.navinfo.dataservice.engine.statics.expect.ExpectStatusMain;
 import com.navinfo.dataservice.engine.statics.expect.PoiCollectExpectMain;
@@ -369,43 +373,128 @@ public class StaticsService {
 		
 		JSONObject data = new JSONObject();
 		
-		data.put("subtaskId", subtaskId);
-		
-		data.put("percent", 10);
-		
-		JSONObject poi = new JSONObject();
-		
-		poi.put("total", 30);
-		
-		poi.put("finish", 1);
-		
-		poi.put("working", 29);
-		
-		data.put("poi", poi);
-		
-		JSONObject road = new JSONObject();
-		
-		road.put("total", 27);
-		
-		road.put("finish", 4);
-		
-		road.put("working", 23);
-		
-		data.put("road", road);
-		
+		ManApi api=(ManApi) ApplicationContextUtil.getBean("ManApi");
+	
+		Subtask subtask = null;
+		try {
+			subtask = api.queryBySubtaskId(subtaskId);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		//POI采集,道路采集，一体化采集
+		if((subtask.getType()==0&&subtask.getStage()==0)
+				||(subtask.getType()==1&&subtask.getStage()==0)
+				||(subtask.getType()==2&&subtask.getStage()==0)){
+			String poiColName = PoiCollectMain.col_name_grid;
+			String roadColName = RoadCollectMain.col_name_grid;
+			List<Integer> gridIds = subtask.getGridIds();
+			
+			JSONObject result = StaticsOperation.getSubtaskStatByGrids(gridIds,poiColName,roadColName);
+			//POI采集
+			if(subtask.getType()==0){
+				data = StaticsOperation.assembleResult(subtaskId,"poi",result);
+			}
+			//道路采集
+			else if(subtask.getType()==1){
+				data = StaticsOperation.assembleResult(subtaskId,"road",result);
+			}
+			//一体化采集
+			else if(subtask.getType()==2){
+				data = StaticsOperation.assembleResult(subtaskId,"unity",result);
+			}
+		}
+		//POI日编，一体化GRID粗编
+		else if((subtask.getType()==0&&subtask.getStage()==1)
+				||(subtask.getType()==3&&subtask.getStage()==1)){
+			String poiColName = PoiDailyMain.col_name_grid;
+			String roadColName = RoadDailyMain.col_name_grid;
+			List<Integer> gridIds = subtask.getGridIds();
+					
+			JSONObject result = StaticsOperation.getSubtaskStatByGrids(gridIds,poiColName,roadColName);
+			//POI日编
+			if(subtask.getType()==0){
+				data = StaticsOperation.assembleResult(subtaskId,"poi",result);
+			}
+			//一体化GRID粗编
+			else if(subtask.getType()==1){
+				data = StaticsOperation.assembleResult(subtaskId,"unity",result);
+			}
+		}
+		//道路grid精编，道路grid粗编
+		else if((subtask.getType()==8&&subtask.getStage()==2)
+				||(subtask.getType()==9&&subtask.getStage()==2)){
+			String poiColName = PoiMonthlyMain.col_name_grid;
+			String roadColName = RoadMonthlyMain.col_name_grid;
+			List<Integer> gridIds = subtask.getGridIds();
+					
+			JSONObject result = StaticsOperation.getSubtaskStatByGrids(gridIds,poiColName,roadColName);
+
+			data = StaticsOperation.assembleResult(subtaskId,"road",result);
+		}
+		//多源POI，一体化区域粗编
+		//根据block
+		else if((subtask.getType()==4&&subtask.getStage()==1)
+				||(subtask.getType()==5&&subtask.getStage()==1)){
+			String poiColName = PoiDailyMain.col_name_block;
+			String roadColName = PoiDailyMain.col_name_block;
+			int blockId = subtask.getBlockId();
+					
+			JSONObject result = StaticsOperation.getBlockStat(blockId,poiColName,roadColName);
+			//一体化区域粗编
+			if(subtask.getType()==4){
+				data = StaticsOperation.assembleResult(subtaskId,"unity",result);
+			}
+			//多源POI
+			else if(subtask.getType()==5){
+				data = StaticsOperation.assembleResult(subtaskId,"poi",result);
+			}
+		}
+		//代理店，POI专项，道路区域专项
+		//根据city
+		else if((subtask.getType()==6&&subtask.getStage()==2)
+				||(subtask.getType()==7&&subtask.getStage()==2)
+				||(subtask.getType()==10&&subtask.getStage()==2)){
+			String poiColName = PoiMonthlyMain.col_name_city;
+			String roadColName = RoadMonthlyMain.col_name_city;
+			int taskId = subtask.getTaskId();
+			int cityId = 0;
+			try {
+				cityId = api.queryCityIdByTaskId(taskId);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+					
+			JSONObject result = StaticsOperation.getCityStat(cityId,poiColName,roadColName);
+			//代理店,POI专项
+			if(subtask.getType()==6||subtask.getType()==7){
+				data = StaticsOperation.assembleResult(subtaskId,"poi",result);
+			}
+			//道路区域专项
+			else if(subtask.getType()==10){
+				data = StaticsOperation.assembleResult(subtaskId,"road",result);
+			}
+		}
+	
 		return data;
 	}
 	
 	public static void main(String[] args) throws Exception {
+		StaticsService staticsService = new StaticsService();
+		JSONObject data = new JSONObject();
+		data = staticsService.getStatBySubtask(38);
+		System.out.println("ok");
+		
 //		String wkt = "POLYGON ((116.55736132939865 40.37309069499443, 116.88314510913636 40.37309069499443, 116.88314510913636 40.25788148053289, 116.55736132939865 40.25788148053289, 116.55736132939865 40.37309069499443))";
 //		
 //		WKTReader r = new WKTReader();
 //		Geometry geo = r.read(wkt);
 //		Set<String> grids = CompGeometryUtil.geo2GridsWithoutBreak(geo);
 		
-		List<String> grids = new ArrayList<String>();
-		grids.add("60563600");
-		StaticsService.getInstance().getLatestStatByGrids(grids, PoiDailyMain.col_name_grid, RoadDailyMain.col_name_grid);
+//		List<String> grids = new ArrayList<String>();
+//		grids.add("60563600");
+//		StaticsService.getInstance().getLatestStatByGrids(grids, PoiDailyMain.col_name_grid, RoadDailyMain.col_name_grid);
 		
 //		StaticsService.getInstance().getChangeStatByGrids(grids, 0, 2, "20160620");
 	}

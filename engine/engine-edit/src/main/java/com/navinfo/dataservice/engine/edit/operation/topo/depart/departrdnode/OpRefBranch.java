@@ -17,10 +17,10 @@ public class OpRefBranch implements IOperation {
 	@Override
 	public String run(Result result) throws Exception {
 
-		for( RdBranch branch : command.getBranches()){
+	/*	for( RdBranch branch : command.getBranches()){
 			
 			result.insertObject(branch, ObjStatus.DELETE, branch.pid());
-		}
+		}*/
 		
 		return null;
 	}

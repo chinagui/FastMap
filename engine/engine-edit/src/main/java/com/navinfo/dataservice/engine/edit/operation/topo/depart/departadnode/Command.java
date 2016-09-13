@@ -1,7 +1,6 @@
 package com.navinfo.dataservice.engine.edit.operation.topo.depart.departadnode;
 import net.sf.json.JSONObject;
 
-import com.navinfo.dataservice.dao.glm.iface.ICommand;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;

@@ -33,42 +33,39 @@ public class TipsExporter {
 	public TipsExporter() {
 	}
 
-	private List<Get> generateGets(JSONArray grids, String date)
+	private List<Get> generateGets(String gridId, String date)
 			throws Exception {
 		List<Get> gets = new ArrayList<Get>();
 
 		Set<String> set = new HashSet<String>();
 
-		for (int i = 0; i < grids.size(); i++) {
-			String gridId = grids.getString(i);
 
-			String wkt = GridUtils.grid2Wkt(gridId);
+		String wkt = GridUtils.grid2Wkt(gridId);
 
-			List<String> rowkeys = solr.queryTipsMobile(wkt, date);
+		List<String> rowkeys = solr.queryTipsMobile(wkt, date);
 
-			for (String rowkey : rowkeys) {
-				if (set.contains(rowkey)) {
-					continue;
-				}
-
-				set.add(rowkey);
-
-				Get get = new Get(rowkey.getBytes());
-
-				get.addColumn("data".getBytes(), "geometry".getBytes());
-
-				get.addColumn("data".getBytes(), "deep".getBytes());
-
-				get.addColumn("data".getBytes(), "source".getBytes());
-
-				get.addColumn("data".getBytes(), "track".getBytes());
-
-				get.addColumn("data".getBytes(), "feedback".getBytes());
-
-				gets.add(get);
+		for (String rowkey : rowkeys) {
+			if (set.contains(rowkey)) {
+				continue;
 			}
 
+			set.add(rowkey);
+
+			Get get = new Get(rowkey.getBytes());
+
+			get.addColumn("data".getBytes(), "geometry".getBytes());
+
+			get.addColumn("data".getBytes(), "deep".getBytes());
+
+			get.addColumn("data".getBytes(), "source".getBytes());
+
+			get.addColumn("data".getBytes(), "track".getBytes());
+
+			get.addColumn("data".getBytes(), "feedback".getBytes());
+
+			gets.add(get);
 		}
+
 
 		return gets;
 	}
@@ -347,8 +344,8 @@ public class TipsExporter {
 	/**
 	 * 根据网格和时间导出tips
 	 * 
-	 * @param grids
-	 *            网格数组 整型
+	 * @param condition
+	 *            网格 、时间戳对象数组 整型
 	 * @param date
 	 *            时间
 	 * @param fileName
@@ -356,7 +353,7 @@ public class TipsExporter {
 	 * @return 导出个数
 	 * @throws Exception
 	 */
-	public int export(JSONArray grids, String date, String folderName,
+	public int export(JSONArray condition, String folderName,
 			String fileName, Set<String> patternImages) throws Exception {
 
 		int count = 0;
@@ -370,10 +367,23 @@ public class TipsExporter {
 		fileName = folderName + fileName;
 
 		PrintWriter pw = new PrintWriter(fileName);
+		
+		List<Get> getsAll = new ArrayList<>();
+		
+		for (Object obj : condition) {
+			
+			JSONObject conJson=JSONObject.fromObject(obj);
+			
+			String grid=conJson.getString("grid");
+			
+			String date=conJson.getString("date");
+			
+			List<Get> gets = generateGets(grid, date);
+			
+			getsAll.addAll(gets);
+		}
 
-		List<Get> gets = generateGets(grids, date);
-
-		JSONArray ja = exportByGets(gets, patternImages);
+		JSONArray ja = exportByGets(getsAll, patternImages);
 
 		for (int j = 0; j < ja.size(); j++) {
 			pw.println(ja.getJSONObject(j).toString());
@@ -387,21 +397,24 @@ public class TipsExporter {
 	}
 
 	public static void main(String[] args) throws Exception {
-		JSONArray grids = new JSONArray();
+		JSONArray condition = new JSONArray();
 
 		String s ="60560301,60560302,60560303,60560311,60560312,60560313,60560322,60560323,60560331,60560332,60560333,60560320,60560330,60560300,60560321,60560310";
 		
 		String[] st = s.split(",");
 		
 		for(String ss : st){
-			grids.add(ss);
+			JSONObject obj=new JSONObject();
+			obj.put("grid", ss);
+			obj.put("date", "20160912205811");
+			condition.add(obj);
 		}
 
 		Set<String> images = new HashSet<String>();
 
 		TipsExporter exporter = new TipsExporter();
-		System.out.println(exporter.export(grids, "20150302010101",
-				"C:/Users/wangshishuai3966/Desktop", "1.txt", images));
+		System.out.println(exporter.export(condition,
+				"F:/07 DataService/test", "1.txt", images));
 		System.out.println(images);
 		System.out.println("done");
 	}

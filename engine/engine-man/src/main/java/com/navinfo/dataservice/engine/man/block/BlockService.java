@@ -476,18 +476,20 @@ public class BlockService {
 			}
 			if (listType == null || "snapshot".equals(listType)) {
 				if (!inforId.isEmpty()) {
-					selectSql = "SELECT m.block_id,m.block_name,m.status blockStatus,i.plan_status FROM BLOCK t,Block_Man m,infor i WHERE i.infor_id="
-							+ inforId + "AND i.task_id=m.task_id AND t.block_id=m.block_id AND m.latest = 1";
+					selectSql = "WITH T AS (SELECT m.block_id,m.block_name,m.status blockStatus,i.plan_status FROM BLOCK t,Block_Man m,infor i WHERE i.infor_id="
+							+inforId +" AND i.task_id=m.task_id AND t.block_id=m.block_id AND m.latest = 1) "
+							+"SELECT block_id,block_name,blockStatus,plan_status from T WHERE 1=1";
 				} else {
-					selectSql = "SELECT t.block_id,t.block_name,m.status blockStatus,t.plan_status FROM BLOCK t,Block_Man m "
-							+ "WHERE t.block_id=m.block_id  AND m.latest = 1 AND t.city_id=" + cityId;
-					selectNoPlanSqlByCityId = " SELECT t.block_id,t.block_name, t.plan_status "
-							+ "FROM BLOCK t WHERE t.plan_status=0 AND t.city_id=" + cityId;
+					  selectSql = "WITH T AS (SELECT t.block_id,t.block_name,m.status blockStatus,t.plan_status FROM BLOCK t,Block_Man m"
+								+ "WHERE t.block_id=m.block_id  AND m.latest = 1 AND t.city_id=" + cityId 
+								+" UNION ALL  SELECT t.block_id,t.block_name,0 blockStatus,t.plan_status "
+								+ "FROM BLOCK t WHERE t.plan_status=0 AND t.city_id=" + cityId   
+								+" ) SELECT block_id,block_name,blockStatus,plan_status from T  WHERE 1=1";
 				}
 
 			} else {
 				if (!inforId.isEmpty()) {
-					selectSql = " select distinct t.block_id,t.block_name,m.status blockStatus,t.plan_status,m.DESCP, nvl(u.user_real_name, '') USER_REAL_NAME,"
+					selectSql = "WITH T AS (select distinct t.block_id,t.block_name,m.status blockStatus,t.plan_status,m.DESCP, nvl(u.user_real_name, '') USER_REAL_NAME,"
 							+ " m.COLLECT_GROUP_ID,u.GROUP_NAME COLLECT_GROUP, "
 							+ " m.DAY_EDIT_GROUP_ID,(select distinct group_name from user_group  "
 							+ " where group_id = m.DAY_EDIT_GROUP_ID) DAY_EDIT_GROUP, "
@@ -503,9 +505,13 @@ public class BlockService {
 							+ "	from block_man m, block t, user_info u, task k, user_group u,infor i where i.infor_id="
 							+ inforId
 							+ "	 AND m.block_id = t.block_id(+) and m.latest = 1 and m.create_user_id = u.user_id(+)  "
-							+ " and i.task_id = m.task_id AND m.task_id=k.task_id and k.latest = 1 and m.collect_group_id = u.group_id(+)";
+							+ " and i.task_id = m.task_id AND m.task_id=k.task_id and k.latest = 1 and m.collect_group_id = u.group_id(+) ) "
+							+ " SELECT block_id,block_name,blockStatus,plan_status,DESCP,USER_REAL_NAME,COLLECT_GROUP_ID,COLLECT_GROUP"
+							+ " DAY_EDIT_GROUP_ID,DAY_EDIT_GROUP,COLLECT_PLAN_START_DATE,COLLECT_PLAN_END_DATE,DAY_EDIT_PLAN_START_DATE "
+							+ "DAY_EDIT_PLAN_END_DATE,DAY_PRODUCE_PLAN_START_DATE,DAY_PRODUCE_PLAN_END_DATE,TASK_ID,NAME, task_type"
+							+ " PLAN_START_DATE,PLAN_END_DATE from T  WHERE 1=1";
 				} else {
-					selectSql = " select distinct t.block_id,t.block_name,m.status blockStatus,t.plan_status,m.DESCP, nvl(u.user_real_name, '') USER_REAL_NAME,"
+					selectSql = "WITH T AS (select distinct t.block_id,t.block_name,m.status blockStatus,t.plan_status,m.DESCP, nvl(u.user_real_name, '') USER_REAL_NAME,"
 							+ " m.COLLECT_GROUP_ID,u.GROUP_NAME COLLECT_GROUP, "
 							+ " m.DAY_EDIT_GROUP_ID,(select distinct group_name from user_group "
 							+ " where group_id = m.DAY_EDIT_GROUP_ID) DAY_EDIT_GROUP,"
@@ -521,10 +527,15 @@ public class BlockService {
 							+ " from block_man m, block t, user_info u, task k, user_group u"
 							+ " where m.block_id = t.block_id and m.latest = 1 and m.create_user_id = u.user_id(+)"
 							+ " and t.city_id = k.city_id and k.latest = 1 and m.collect_group_id = u.group_id(+)"
-							+ " AND t.city_id=" + cityId;
-
-					selectNoPlanSqlByCityId = " SELECT t.block_id,t.block_name, t.plan_status FROM BLOCK t WHERE t.plan_status=0 AND t.city_id="
-							+ cityId;
+							+ " AND t.city_id=" + cityId
+					        +" UNION ALL SELECT t.block_id,t.block_name, 0 blockStatus,t.plan_status,'---' DESCP,'---' USER_REAL_NAME,0 COLLECT_GROUP_ID,'---' COLLECT_GROUP"
+							+ " 0 DAY_EDIT_GROUP_ID,'---' DAY_EDIT_GROUP,'---' COLLECT_PLAN_START_DATE,'---' COLLECT_PLAN_END_DATE,'---' DAY_EDIT_PLAN_START_DATE "
+							+ "'---' DAY_EDIT_PLAN_END_DATE,'---' DAY_PRODUCE_PLAN_START_DATE,'---' DAY_PRODUCE_PLAN_END_DATE,0 TASK_ID,'---' NAME, 0 task_type"
+							+ " '---' PLAN_START_DATE,'---' PLAN_END_DATE FROM BLOCK t WHERE t.plan_status=0 AND t.city_id="+cityId
+					+ ") SELECT block_id,block_name,blockStatus,plan_status,DESCP,USER_REAL_NAME,COLLECT_GROUP_ID,COLLECT_GROUP"
+					+ " DAY_EDIT_GROUP_ID,DAY_EDIT_GROUP,COLLECT_PLAN_START_DATE,COLLECT_PLAN_END_DATE,DAY_EDIT_PLAN_START_DATE "
+					+ "DAY_EDIT_PLAN_END_DATE,DAY_PRODUCE_PLAN_START_DATE,DAY_PRODUCE_PLAN_END_DATE,TASK_ID,NAME, task_type"
+					+ " PLAN_START_DATE,PLAN_END_DATE from T  WHERE 1=1";
 				}
 
 			}
@@ -534,31 +545,24 @@ public class BlockService {
 				while (keys.hasNext()) {
 					String key = (String) keys.next();
 					if ("blockId".equals(key)) {
-						selectSql += " and t.block_id=" + conditionJson.getInt(key);
-						if (!selectNoPlanSqlByCityId.isEmpty()) {
-							selectNoPlanSqlByCityId += " and t.block_id=" + conditionJson.getInt(key);
-						}
+						selectSql += " and T.block_id=" + conditionJson.getInt(key);
 					}
 					if ("createUserName".equals(key)) {
 						if (listType != null && "integrate".equals(listType)) {
-							selectSql += " and u.USER_REAL_NAME like '%" + conditionJson.getString(key) + "%'";
+							selectSql += " and T.USER_REAL_NAME like '%" + conditionJson.getString(key) + "%'";
 						}
 					}
 					if ("blockName".equals(key)) {
-						selectSql += " and t.block_name like '%" + conditionJson.getString(key) + "%'";
-						if (!selectNoPlanSqlByCityId.isEmpty()) {
-							selectNoPlanSqlByCityId += " and t.block_name like '%" + conditionJson.getString(key)
-									+ "%'";
-						}
+						selectSql += " and T.block_name like '%" + conditionJson.getString(key) + "%'";
 					}
 					if ("blockStatus".equals(key)) {
 						String blockStatus = ((conditionJson.getJSONArray(key).toString()).replace('[', '('))
 								.replace(']', ')');
-						selectSql += " and m.status in " + blockStatus;
+						selectSql += " and T.blockStatus in " + blockStatus;
 					}
 					if ("taskName".equals(key)) {
 						if (listType != null && "integrate".equals(listType)) {
-							selectSql += " and k.name like '%" + conditionJson.getString(key) + "%'";
+							selectSql += " and T.NAME like '%" + conditionJson.getString(key) + "%'";
 						}
 					}
 				}
@@ -568,34 +572,22 @@ public class BlockService {
 				while (keys.hasNext()) {
 					String key = (String) keys.next();
 					if ("blockName".equals(key)) {
-						selectSql += (" order by t.block_name " + orderJson.getString("blockName"));
-						if (!selectNoPlanSqlByCityId.isEmpty()) {
-							selectNoPlanSqlByCityId += (" order by t.block_name " + orderJson.getString("blockName"));
-						}
+						selectSql += (" order by T.block_name " + orderJson.getString("blockName"));
 						break;
 					}
 					if ("planStatus".equals(key)) {
-						selectSql += (" order by t.plan_status " + orderJson.getString("planStatus"));
-						if (!selectNoPlanSqlByCityId.isEmpty()) {
-							selectNoPlanSqlByCityId += (" order by t.plan_status " + orderJson.getString("planStatus"));
-						}
+						selectSql += (" order by T.plan_status " + orderJson.getString("planStatus"));
 						break;
 					}
 					if ("blockId".equals(key)) {
-						selectSql += (" order by t.block_id " + orderJson.getString("blockId"));
-						if (!selectNoPlanSqlByCityId.isEmpty()) {
-							selectNoPlanSqlByCityId += (" order by t.block_id " + orderJson.getString("blockId"));
-						}
+						selectSql += (" order by T.block_id " + orderJson.getString("blockId"));
 						break;
 					}
 				}
 			} else {
 				selectSql += " order by t.block_id";
-				if (!selectNoPlanSqlByCityId.isEmpty()) {
-					selectNoPlanSqlByCityId += " order by t.block_id";
-				}
 			}
-			return BlockOperation.selectAllBlock(conn, selectSql, selectNoPlanSqlByCityId, listType);
+			return BlockOperation.selectAllBlock(conn, selectSql, listType);
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

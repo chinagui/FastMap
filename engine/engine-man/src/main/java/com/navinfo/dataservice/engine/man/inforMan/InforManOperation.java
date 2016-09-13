@@ -3,7 +3,6 @@ package com.navinfo.dataservice.engine.man.inforMan;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -13,7 +12,6 @@ import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.man.model.BlockMan;
-import com.navinfo.dataservice.api.man.model.Infor;
 import com.navinfo.dataservice.api.man.model.InforMan;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
@@ -31,38 +29,32 @@ public class InforManOperation {
 		// TODO Auto-generated constructor stub
 	}
 	
-	public static void updateTask(Connection conn,String inforId,int taskId) throws Exception{
-		String sql="update infor set plan_status=1,task_id="+taskId+" where infor_id='"+inforId+"'";
-		QueryRunner run = new QueryRunner();
-		run.update(conn,sql);
-	}
-	
 	/*
 	 * 根据sql语句查询inforMan
-	 * private String inforName;
-	private String geometry;
-	private Integer inforLevel;
-	private Integer planStatus;
-	private String inforContent;
-	private Integer taskId;
-	private Timestamp insertTime;
 	 */
-	public static List<Infor> selectTaskBySql2(Connection conn,String selectSql,List<Object> values) throws Exception{
+	public static List<InforMan> selectTaskBySql2(Connection conn,String selectSql,List<Object> values) throws Exception{
 		try{
 			QueryRunner run = new QueryRunner();
-			ResultSetHandler<List<Infor>> rsHandler = new ResultSetHandler<List<Infor>>(){
-				public List<Infor> handle(ResultSet rs) throws SQLException {
-					List<Infor> list = new ArrayList<Infor>();
+			ResultSetHandler<List<InforMan>> rsHandler = new ResultSetHandler<List<InforMan>>(){
+				public List<InforMan> handle(ResultSet rs) throws SQLException {
+					List<InforMan> list = new ArrayList<InforMan>();
 					while(rs.next()){
-						Infor map = new Infor();
+						InforMan map = new InforMan();
 						map.setInforId(rs.getString("INFOR_ID"));
-						map.setInforName(rs.getString("INFOR_NAME"));
-						map.setGeometry(rs.getString("GEOMETRY"));
-						map.setInforLevel(rs.getInt("INFOR_LEVEL"));
-						map.setPlanStatus(rs.getInt("PLAN_STATUS"));
-						map.setInforContent(rs.getString("INFOR_CONTENT"));
-						map.setTaskId(rs.getInt("TASK_ID"));						
-						map.setInsertTime(rs.getTimestamp("INSERT_TIME"));
+						map.setInforStatus(rs.getInt("INFOR_STATUS"));
+						map.setDescp(rs.getString("DESCP"));
+						map.setCreateUserId(rs.getInt("CREATE_USER_ID"));
+						map.setCreateDate(rs.getTimestamp("CREATE_DATE"));
+						map.setCollectPlanStartDate(rs.getTimestamp("COLLECT_PLAN_START_DATE"));
+						map.setCollectPlanEndDate(rs.getTimestamp("COLLECT_PLAN_END_DATE"));
+						map.setDayEditPlanStartDate(rs.getTimestamp("DAY_EDIT_PLAN_START_DATE"));
+						map.setDayEditPlanEndDate(rs.getTimestamp("DAY_EDIT_PLAN_END_DATE"));
+						map.setMonthEditPlanStartDate(rs.getTimestamp("MONTH_EDIT_PLAN_START_DATE"));
+						map.setMonthEditPlanEndDate(rs.getTimestamp("MONTH_EDIT_PLAN_END_DATE"));
+						map.setDayEditPlanStartDate(rs.getTimestamp("DAY_PRODUCE_PLAN_START_DATE"));
+						map.setDayEditPlanEndDate(rs.getTimestamp("DAY_PRODUCE_PLAN_END_DATE"));
+						map.setMonthProducePlanStartDate(rs.getTimestamp("MONTH_PRODUCE_PLAN_START_DATE"));
+						map.setMonthProducePlanEndDate(rs.getTimestamp("MONTH_PRODUCE_PLAN_END_DATE"));
 						list.add(map);
 					}
 					return list;

@@ -971,13 +971,17 @@ public class TipsSelector {
 	 * @return
 	 * @throws Exception
 	 */
-	public boolean checkUpdate(String grid, String date) throws Exception {
+	public int checkUpdate(String grid, String date) throws Exception {
 
 		String wkt = GridUtils.grid2Wkt(grid);
 
 		boolean flag = conn.checkTipsMobile(wkt, date);
+		
+		if(flag) {
+			return 1;
+		}
 
-		return flag;
+		return 0;
 	}
 
 	public static void main(String[] args) throws Exception {

@@ -74,6 +74,7 @@ public class RdLinkTest extends InitApplication {
 		parameter = "{\"command\":\"CREATE\",\"dbId\":42,\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.46462410688399,40.08142281644134],[116.4649111032486,40.08155210738431]]},\"catchLinks\":[]},\"type\":\"RDLINK\"}";
 		parameter = "{\"command\":\"CREATE\",\"dbId\":42,\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.46958351135254,40.0753458651827],[116.47236227989198,40.07571530019432]]},\"catchLinks\":[]},\"type\":\"RDLINK\"}";
 		parameter = "{\"type\":\"RDBRANCH\",\"command\":\"UPDATE\",\"dbId\":42,\"data\":{\"details\":[{\"estabType\":2,\"pid\":100000438,\"objStatus\":\"UPDATE\"}],\"pid\":23037}}";
+		parameter = "{\"command\":\"CREATE\",\"dbId\":17,\"type\":\"RDLINK\",\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"kind\":7,\"laneNum\":1,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.36877,40.04402],[116.36601,40.0505],[116.36493,40.05416]]}}}";
 		TestUtil.run(parameter);
 	}
 

@@ -49,11 +49,16 @@ public class Process extends AbstractProcess<Command> {
 
 	@Override
 	public boolean prepareData() throws Exception {
-		RdNodeSelector nodeSelector = new RdNodeSelector(this.getConn());
 
-		this.updateNode = (RdNode) nodeSelector.loadById(this.getCommand()
-				.getNodePid(), true);
-		if (this.getCommand().getLinks().size() > 0) {
+		if (this.getCommand().getNode() == null) {
+			RdNodeSelector nodeSelector = new RdNodeSelector(this.getConn());
+			this.updateNode = (RdNode) nodeSelector.loadById(this.getCommand()
+					.getNodePid(), true);
+		}else{
+			this.updateNode = this.getCommand().getNode();
+		}
+
+		if (this.getCommand().getLinks().size() == 0) {
 			lockRdLink();
 		}
 
@@ -85,8 +90,9 @@ public class Process extends AbstractProcess<Command> {
 			this.postCheck();
 
 		} catch (Exception e) {
-
+			e.printStackTrace();
 			this.getConn().rollback();
+			
 
 			throw e;
 		}

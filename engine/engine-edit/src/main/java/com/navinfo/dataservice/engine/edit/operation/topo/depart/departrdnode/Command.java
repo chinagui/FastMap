@@ -10,7 +10,6 @@ import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
-import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
 
 public class Command extends AbstractCommand {
@@ -22,6 +21,7 @@ public class Command extends AbstractCommand {
 	private RdLink rdLink;
 	private List<RdLink> links;
 	private RdNode node;
+
 	public RdNode getNode() {
 		return node;
 	}
@@ -57,8 +57,6 @@ public class Command extends AbstractCommand {
 		this.catchNodePid = catchNodePid;
 	}
 
-	private Geometry geometry;
-
 	public int getNodePid() {
 		return nodePid;
 	}
@@ -78,11 +76,8 @@ public class Command extends AbstractCommand {
 		this.nodePid = data.getInt("objId");
 		this.catchNodePid = data.getInt("catchNodePid");
 		this.setLinkPid(data.getInt("linkPid"));
-		GeoTranslator.point2Jts(
-				data.getJSONObject("data").getDouble("longitude"), data
-						.getJSONObject("data").getDouble("latitude"));
-		this.geometry = GeoTranslator.geojson2Jts(
-				data.getJSONObject("geometry"), 1, 5);
+		this.setPoint((Point) GeoTranslator.point2Jts(
+				data.getDouble("longitude"), data.getDouble("latitude")));
 
 	}
 
@@ -92,14 +87,6 @@ public class Command extends AbstractCommand {
 
 	public void setPoint(Point point) {
 		this.point = point;
-	}
-
-	public Geometry getGeometry() {
-		return geometry;
-	}
-
-	public void setGeometry(Geometry geometry) {
-		this.geometry = geometry;
 	}
 
 	public int getLinkPid() {

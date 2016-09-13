@@ -155,7 +155,7 @@ public class RdRestrictionSelector extends AbstractSelector {
 	}
 
 	/**
-	 * 查询退出线为该link，并且只有一条退出线的交限
+	 * 查询退出线为该link
 	 * 
 	 * @param linkPid
 	 * @param isLock
@@ -166,7 +166,7 @@ public class RdRestrictionSelector extends AbstractSelector {
 			boolean isLock) throws Exception {
 		List<RdRestriction> reses = new ArrayList<RdRestriction>();
 
-		String sql = "select a.* from rd_restriction a  where a.pid in (  select b.restric_pid from rd_restriction_detail b where b.restric_pid in (    select restric_pid from rd_restriction_detail where u_record!=2 and out_link_pid=:1 )     group by b.restric_pid having count(1)=1) and     a.u_record != 2    ";
+		String sql = "select a.* from rd_restriction a  where a.pid in (  select b.restric_pid from rd_restriction_detail b where b.restric_pid in (    select restric_pid from rd_restriction_detail where u_record!=2 and out_link_pid=:1 )     group by b.restric_pid) and     a.u_record != 2    ";
 
 		if (isLock) {
 			sql = sql + " for update nowait";

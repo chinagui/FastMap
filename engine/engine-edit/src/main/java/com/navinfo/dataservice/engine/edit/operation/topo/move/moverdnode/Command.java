@@ -11,6 +11,7 @@ import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -27,6 +28,16 @@ public class Command extends AbstractCommand {
 	private List<RdLink> links;
 
 	private JSONObject json;
+	
+	private RdNode node;
+
+	public RdNode getNode() {
+		return node;
+	}
+
+	public void setNode(RdNode node) {
+		this.node = node;
+	}
 
 	public List<RdLink> getLinks() {
 		return links;
@@ -59,11 +70,12 @@ public class Command extends AbstractCommand {
 		this.setDbId(json.getInt("dbId"));
 	}
 
-	public Command(JSONObject json, RdLink rdLink) throws JSONException {
+	public Command(JSONObject json, RdLink rdLink,RdNode node) throws JSONException {
 		this(json, "");
         List<RdLink> links = new ArrayList<>(); 
         links.add(rdLink);
 		this.setLinks(links);
+		this.node = node;
 
 	}
 

@@ -75,64 +75,85 @@ public class Operation implements IOperation {
 
 		data.put("longitude", this.command.getPoint().getX());
 
-		data.put("latitude", this.command.getPoint().getX());
+		data.put("latitude", this.command.getPoint().getY());
 		updateContent.put("objId", this.command.getNodePid());
 		updateContent.put("data", data);
 		com.navinfo.dataservice.engine.edit.operation.topo.move.moverdnode.Command updatecommand = new com.navinfo.dataservice.engine.edit.operation.topo.move.moverdnode.Command(
-				updateContent, this.command.getRdLink());
+				updateContent, this.command.getRdLink(),this.command.getNode());
 		com.navinfo.dataservice.engine.edit.operation.topo.move.moverdnode.Process process = new com.navinfo.dataservice.engine.edit.operation.topo.move.moverdnode.Process(
 				updatecommand, result, conn);
 		process.innerRun();
 	}
 
 	private void updateLinkGeomtry(Result result, int nodePid) throws Exception {
-		Set<String> meshes = CompGeometryUtil
-				.geoToMeshesWithoutBreak(this.command.getGeometry());
+		Geometry geom = GeoTranslator.transform(this.command.getRdLink()
+				.getGeometry(), 0.00001, 5);
+
+		Coordinate[] cs = geom.getCoordinates();
+
+		double[][] ps = new double[cs.length][2];
+
+		for (int i = 0; i < cs.length; i++) {
+			ps[i][0] = cs[i].x;
+
+			ps[i][1] = cs[i].y;
+		}
+
+		if (this.command.getRdLink().getsNodePid() == command.getNodePid()) {
+			ps[0][0] = this.command.getPoint().getX();
+
+			ps[0][1] = this.command.getPoint().getY();
+		} else {
+			ps[ps.length - 1][0] = this.command.getPoint().getX();
+
+			ps[ps.length - 1][1] = this.command.getPoint().getY();
+		}
+
+		JSONObject geojson = new JSONObject();
+
+		geojson.put("type", "LineString");
+
+		geojson.put("coordinates", ps);
+		Geometry geo = GeoTranslator.geojson2Jts(geojson, 1, 5);
+
+		Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(geo);
 		// 修改线的几何属性
 		// 如果没有跨图幅只是修改线的几何
 		List<RdLink> links = new ArrayList<RdLink>();
 		if (meshes.size() == 1) {
 			JSONObject updateContent = new JSONObject();
-			if (this.command.getGeometry().getCoordinates()[0]
-					.equals(this.command.getPoint().getCoordinate())) {
+			if (this.command.getRdLink().geteNodePid() == this.command
+					.getNodePid()) {
 				updateContent.put("sNodePid", nodePid);
 			} else {
 				updateContent.put("eNodePid", nodePid);
 			}
-			updateContent.put("geometry",
-					GeoTranslator.jts2Geojson(this.command.getGeometry()));
-			updateContent.put("length",
-					GeometryUtils.getLinkLength(this.command.getGeometry()));
+			updateContent.put("geometry", geojson);
+			updateContent.put("length", GeometryUtils.getLinkLength(geo));
 			this.command.getRdLink().fillChangeFields(updateContent);
 			result.insertObject(this.command.getRdLink(), ObjStatus.UPDATE,
 					this.command.getLinkPid());
 			// 如果跨图幅就需要打断生成新的link
 		} else {
 			Map<Coordinate, Integer> maps = new HashMap<Coordinate, Integer>();
-			if (this.command.getGeometry().getCoordinates()[0]
-					.equals(this.command.getPoint().getCoordinate())) {
-				maps.put(this.command.getGeometry().getCoordinates()[0],
-						nodePid);
+			if (geo.getCoordinates()[0].equals(this.command.getPoint()
+					.getCoordinate())) {
+				maps.put(geo.getCoordinates()[0], nodePid);
 
-				maps.put(
-						this.command.getGeometry().getCoordinates()[this.command
-								.getGeometry().getCoordinates().length - 1],
+				maps.put(geo.getCoordinates()[geo.getCoordinates().length - 1],
 						this.command.getRdLink().geteNodePid());
 			} else {
-				maps.put(this.command.getGeometry().getCoordinates()[0],
-						this.command.getRdLink().geteNodePid());
+				maps.put(geo.getCoordinates()[0], this.command.getRdLink()
+						.geteNodePid());
 
-				maps.put(
-						this.command.getGeometry().getCoordinates()[this.command
-								.getGeometry().getCoordinates().length - 1],
+				maps.put(geo.getCoordinates()[geo.getCoordinates().length - 1],
 						nodePid);
 			}
 
 			Iterator<String> it = meshes.iterator();
 			while (it.hasNext()) {
 				String meshIdStr = it.next();
-				Geometry geomInter = MeshUtils.linkInterMeshPolygon(
-						this.command.getGeometry(),
+				Geometry geomInter = MeshUtils.linkInterMeshPolygon(geo,
 						MeshUtils.mesh2Jts(meshIdStr));
 				geomInter = GeoTranslator.geojson2Jts(
 						GeoTranslator.jts2Geojson(geomInter), 1, 5);

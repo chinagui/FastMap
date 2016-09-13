@@ -227,6 +227,4 @@ public class StaticsService {
 				DbUtils.commitAndCloseQuietly(conn);
 			}
 	}
-	
-	
 }

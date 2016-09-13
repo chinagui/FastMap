@@ -14,7 +14,7 @@ import net.sf.json.JSONObject;
 * @Description: 不属于任何
 */
 public class JobInfo implements Serializable{
-	private int id;
+	private long id;
 	private String type;
 	private Date createTime;
 	private Date beginTime;
@@ -22,22 +22,23 @@ public class JobInfo implements Serializable{
 	private int status;
 	private JSONObject request;
 	private JSONObject response;
+	private String resultMsg;
 	private long userId;
 	private String descp;
 	private List<JobStep> steps;
 	private int stepCount=0;
 	private String guid;
 	private String identity;
-	public JobInfo(int id,String guid){
+	public JobInfo(long id,String guid){
 		this.id=id;
 		this.guid=guid;
 		this.identity=id+"-"+guid;
 	}
 /* getter & setter */
-	public int getId() {
+	public long getId() {
 		return id;
 	}
-	public void setId(int id) {
+	public void setId(long id) {
 		this.id = id;
 	}
 	public String getType() {
@@ -81,6 +82,12 @@ public class JobInfo implements Serializable{
 	}
 	public void setResponse(JSONObject response) {
 		this.response = response;
+	}
+	public String getResultMsg() {
+		return resultMsg;
+	}
+	public void setResultMsg(String resultMsg) {
+		this.resultMsg = resultMsg;
 	}
 	public String getGuid() {
 		return guid;
@@ -179,6 +186,21 @@ public class JobInfo implements Serializable{
 			steps.add(step);
 		}
 		return step;
+	}
+
+	public void addResponse(String key,Object value) {
+		if(response==null){
+			response = new JSONObject();
+		}
+		response.put(key, value);
+	}
+	public void startJob(int stepCount){
+		this.status=JobStatus.STATUS_START;
+		this.stepCount=stepCount;
+	}
+	public void endJob(int status,String resultMsg) {
+		this.status=status;
+		this.resultMsg=resultMsg;
 	}
 	public static void main(String[] args){
 		List<String> list = new ArrayList<String>();

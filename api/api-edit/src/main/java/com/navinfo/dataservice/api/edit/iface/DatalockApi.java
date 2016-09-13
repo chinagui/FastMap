@@ -13,7 +13,7 @@ import com.navinfo.dataservice.api.edit.model.FmEditLock;
 *  
 */
 public interface DatalockApi {
-	FmEditLock lockGrid(int dbId,int lockObject,Collection<Integer> grids,int lockType,int jobId)throws Exception;
-	public int lockGrid(int regionId, int lockObject, Collection<Integer> grids,int lockType,String dbType,int jobId)throws Exception;
+	FmEditLock lockGrid(int dbId,int lockObject,Collection<Integer> grids,int lockType,long jobId)throws Exception;
+	public int lockGrid(int regionId, int lockObject, Collection<Integer> grids,int lockType,String dbType,long jobId)throws Exception;
 	public int unlockGrid(int lockSeq,String dbType)throws Exception;
 }

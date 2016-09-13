@@ -10,9 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 import org.json.JSONException;
@@ -26,12 +23,14 @@ import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
-import com.navinfo.dataservice.engine.man.block.BlockOperation;
 import com.navinfo.dataservice.engine.man.block.BlockService;
 import com.navinfo.dataservice.engine.man.city.CityService;
 import com.navinfo.navicommons.exception.ServiceException;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.vividsolutions.jts.geom.Geometry;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 @Service
 public class StaticsService {
@@ -227,8 +226,6 @@ public class StaticsService {
 				DbUtils.commitAndCloseQuietly(conn);
 			}
 	}
-<<<<<<< HEAD
-=======
 
 
 	public JSONObject querymonthTaskOverView()throws Exception{
@@ -357,6 +354,4 @@ public class StaticsService {
 		}
 	}
 	
-	
->>>>>>> bc9ca68a7edd3878158f336a17ba7a8566dd485a
 }

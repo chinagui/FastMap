@@ -185,7 +185,6 @@ public class GdbExportJobRequest extends AbstractJobRequest {
 
 	@Override
 	public void defineSubJobRequests() throws JobCreateException {
-		// TODO Auto-generated method stub
 		
 	}
 

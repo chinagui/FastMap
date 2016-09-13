@@ -69,11 +69,12 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 			AbstractJob valJob = JobCreateStrategy.createAsSubJob(valJobInfo,
 					releaseJobRequest.getSubJobRequest("validation"), this);
 			valJob.run();
-			if (valJob.getJobInfo().getResponse().getInt("exeStatus") != 3) {
-				throw new Exception("执行检查时job执行失败。");
+			if (valJob.getJobInfo().getStatus() != 3) {
+				String msg = (valJob.getException()==null)?"未知错误。":"错误："+valJob.getException().getMessage();
+				throw new Exception("执行检查job内部发生"+msg);
 			}
 			int valDbId=valJob.getJobInfo().getResponse().getInt("valDbId");
-			jobInfo.getResponse().put("val&BatchDbId", valDbId);
+			jobInfo.addResponse("val&BatchDbId", valDbId);
 			log.info("end gdb check");
 			//判断是否有检查错误，有检查错误则直接返回不进行后续步骤
 			log.info("check exception2");
@@ -96,8 +97,9 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 			AbstractJob batchJob = JobCreateStrategy.createAsSubJob(batchJobInfo,
 					releaseJobRequest.getSubJobRequest("batch"), this);
 			batchJob.run();
-			if (batchJob.getJobInfo().getResponse().getInt("exeStatus") != 3) {
-				throw new Exception("批处理时job执行失败。");
+			if (batchJob.getJobInfo().getStatus() != 3) {
+				String msg = (batchJob.getException()==null)?"未知错误。":"错误："+batchJob.getException().getMessage();
+				throw new Exception("执行批处理job内部发生"+msg);
 			}
 			log.info("end gdb batch");
 			//修改数据提交状态

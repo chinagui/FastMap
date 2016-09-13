@@ -104,8 +104,9 @@ public class Operation implements IOperation {
 
 				// 添加修改过几何的RDLINK，该集合用于修改关联要素
 				RdLink geoLink = new RdLink();
-				geoLink.copy(link);
 				geoLink.setPid(link.getPid());
+				geoLink.copy(link);
+				
 				Geometry tmpGeo = GeoTranslator.geojson2Jts(geojson, 100000, 5);
 				geoLink.setGeometry(tmpGeo);
 				newGeoLinks.add(geoLink);
@@ -188,7 +189,7 @@ public class Operation implements IOperation {
 		// 组装更新线的参数
 		// 保证是同一个连接
 		com.navinfo.dataservice.engine.edit.operation.obj.rdnode.update.Command updatecommand = new com.navinfo.dataservice.engine.edit.operation.obj.rdnode.update.Command(
-				updateContent, command.getRequester());
+				updateContent, command.getRequester(),this.command.getNode());
 		com.navinfo.dataservice.engine.edit.operation.obj.rdnode.update.Process process = new com.navinfo.dataservice.engine.edit.operation.obj.rdnode.update.Process(
 				updatecommand, result, conn);
 		process.innerRun();

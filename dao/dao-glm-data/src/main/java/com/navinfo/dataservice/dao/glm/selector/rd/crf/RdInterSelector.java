@@ -164,4 +164,46 @@ public class RdInterSelector extends AbstractSelector {
 		}
 		return rdInterLink;
 	}
+	
+	public List<RdInter> loadRdInterByOutLinkPid(int linkPid, boolean isLock) throws Exception {
+		List<RdInter> interList = new ArrayList<RdInter>();
+
+		String sql = "select * from rd_inter where pid in(select pid from rd_inter_link b where b.pid int(select pid from rd_inter_link where u_record !=2 and link_pid = :1) group by b.pid) and u_record !=2";
+
+		if (isLock) {
+			sql += " for update nowait";
+		}
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sql);
+
+			pstmt.setInt(1, linkPid);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+				RdInter inter = new RdInter();
+
+				ReflectionAttrUtils.executeResultSet(inter, resultSet);
+
+				List<IRow> interLinks = new AbstractSelector(RdInterLink.class, conn).loadRowsByParentId(inter.getPid(),true);
+				
+				inter.setLinks(interLinks);
+				
+				interList.add(inter);
+			}
+		} catch (Exception e) {
+
+			throw e;
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+		}
+
+		return interList;
+	}
 }

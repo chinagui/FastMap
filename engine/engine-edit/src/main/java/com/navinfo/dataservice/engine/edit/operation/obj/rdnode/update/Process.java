@@ -15,7 +15,8 @@ public class Process extends AbstractProcess<Command> {
 		super(command);
 	}
 
-	public Process(Command command, Result result, Connection conn) throws Exception {
+	public Process(Command command, Result result, Connection conn)
+			throws Exception {
 		super(command);
 		// this.setCommand(command);
 		this.setResult(result);
@@ -27,14 +28,19 @@ public class Process extends AbstractProcess<Command> {
 
 	@Override
 	public boolean prepareData() throws Exception {
+		if (this.getCommand().getNode() != null) {
+			this.rdnode = this.getCommand().getNode();
+			return true;
+		}
 
 		RdNodeSelector selector = new RdNodeSelector(this.getConn());
 
-		this.rdnode = (RdNode) selector.loadById(this.getCommand().getPid(), true);
+		this.rdnode = (RdNode) selector.loadById(this.getCommand().getPid(),
+				true);
 
 		return true;
 	}
-	
+
 	public String innerRun() throws Exception {
 		String msg;
 		try {
@@ -61,10 +67,11 @@ public class Process extends AbstractProcess<Command> {
 
 		return msg;
 	}
-	
+
 	@Override
 	public String exeOperation() throws Exception {
-		return new Operation(this.getCommand(), this.rdnode).run(this.getResult());
+		return new Operation(this.getCommand(), this.rdnode).run(this
+				.getResult());
 	}
 
 }

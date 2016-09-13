@@ -11,33 +11,56 @@ import java.sql.Timestamp;
 */
 public class Task{
 	private Integer taskId ;
-	private String name;
+	private String taskName;
 	private Integer cityId ;
 	private String cityName;
 	private String version;
 	private Integer createUserId ;
 	private String createUserName;
 	private Timestamp createDate ;
-	private Integer status ;
-	private String descp ;
+	private Integer taskStatus ;
+	private String taskDescp ;
 	private Timestamp planStartDate ;
 	private Timestamp planEndDate ;
 	private Timestamp monthEditPlanStartDate ;
 	private Timestamp monthEditPlanEndDate ;
 	private Integer monthEditGroupId ;
 	private String monthEditGroupName;
+	private Timestamp monthProducePlanStartDate ;
+	private Timestamp monthProducePlanEndDate ;
+	//1常规，2多源，3代理店，4情报
+	private Integer TaskType;
 	private Integer latest ;
 	
+	public Timestamp getMonthProducePlanStartDate() {
+		return monthProducePlanStartDate;
+	}
+	public void setMonthProducePlanStartDate(Timestamp monthProducePlanStartDate) {
+		this.monthProducePlanStartDate = monthProducePlanStartDate;
+	}
+	public Timestamp getMonthProducePlanEndDate() {
+		return monthProducePlanEndDate;
+	}
+	public void setMonthProducePlanEndDate(Timestamp monthProducePlanEndDate) {
+		this.monthProducePlanEndDate = monthProducePlanEndDate;
+	}
+	public Integer getTaskType() {
+		return TaskType;
+	}
+	public void setTaskType(Integer taskType) {
+		TaskType = taskType;
+	}
+		
 	public Task (){
 	}
 	public Task (Integer taskId ,String name,Integer cityId,Integer createUserId,Timestamp createDate,Integer status,String descp,Timestamp planStartDate,Timestamp planEndDate,Timestamp monthEditPlanStartDate,Timestamp monthEditPlanEndDate,Integer monthEditGroupId,Integer latest){
 		this.taskId=taskId ;
-		this.name=name;
+		this.taskName=name;
 		this.cityId=cityId ;
 		this.createUserId=createUserId ;
 		this.createDate=createDate ;
-		this.status=status ;
-		this.setDescp(descp) ;
+		this.taskStatus=status ;
+		this.setTaskDescp(descp) ;
 		this.planStartDate=planStartDate ;
 		this.planEndDate=planEndDate ;
 		this.monthEditPlanStartDate=monthEditPlanStartDate ;
@@ -70,19 +93,19 @@ public class Task{
 	public void setCreateDate(Timestamp createDate) {
 		this.createDate = createDate;
 	}
-	public Integer getStatus() {
-		return status;
+	public Integer getTaskStatus() {
+		return taskStatus;
 	}
-	public void setStatus(Integer status) {
-		this.status = status;
+	public void setTaskStatus(Integer status) {
+		this.taskStatus = status;
 	}
-	public String getDescp() {
-		if(null==descp){return "";}
-		return descp;
+	public String getTaskDescp() {
+		if(null==taskDescp){return "";}
+		return taskDescp;
 	}
-	public void setDescp(String descp) {
-		if(null==descp){this.descp="";}
-		this.descp = descp;
+	public void setTaskDescp(String descp) {
+		if(null==descp){this.taskDescp="";}
+		this.taskDescp = descp;
 	}
 	public Timestamp getPlanEndDate() {
 		return planEndDate;
@@ -113,7 +136,7 @@ public class Task{
 	 */
 	@Override
 	public String toString() {
-		return "Task [taskId=" + taskId +",cityId="+cityId+",createUserId="+createUserId+",createDate="+createDate+",status="+status+",descp="+descp+",planStartDate="+planStartDate+",planEndDate="+planEndDate+",monthEditPlanStartDate="+monthEditPlanStartDate+",monthEditPlanEndDate="+monthEditPlanEndDate+",monthEditGroupId="+monthEditGroupId+",latest="+latest+"]";
+		return "Task [taskId=" + taskId +",cityId="+cityId+",createUserId="+createUserId+",createDate="+createDate+",status="+taskStatus+",descp="+taskDescp+",planStartDate="+planStartDate+",planEndDate="+planEndDate+",monthEditPlanStartDate="+monthEditPlanStartDate+",monthEditPlanEndDate="+monthEditPlanEndDate+",monthEditGroupId="+monthEditGroupId+",latest="+latest+"]";
 	}
 
 
@@ -128,8 +151,8 @@ public class Task{
 		result = prime * result + ((cityId == null) ? 0 : cityId.hashCode());
 		result = prime * result + ((createUserId == null) ? 0 : createUserId.hashCode());
 		result = prime * result + ((createDate == null) ? 0 : createDate.hashCode());
-		result = prime * result + ((status == null) ? 0 : status.hashCode());
-		result = prime * result + ((descp == null) ? 0 : descp.hashCode());
+		result = prime * result + ((taskStatus == null) ? 0 : taskStatus.hashCode());
+		result = prime * result + ((taskDescp == null) ? 0 : taskDescp.hashCode());
 		result = prime * result + ((planStartDate == null) ? 0 : planStartDate.hashCode());
 		result = prime * result + ((planEndDate == null) ? 0 : planEndDate.hashCode());
 		result = prime * result + ((monthEditPlanStartDate == null) ? 0 : monthEditPlanStartDate.hashCode());
@@ -172,15 +195,15 @@ public class Task{
 				return false;
 		} else if (!createDate.equals(other.createDate))
 			return false;
-		if (status == null) {
-			if (other.status != null)
+		if (taskStatus == null) {
+			if (other.taskStatus != null)
 				return false;
-		} else if (!status.equals(other.status))
+		} else if (!taskStatus.equals(other.taskStatus))
 			return false;
-		if (descp == null) {
-			if (other.descp != null)
+		if (taskDescp == null) {
+			if (other.taskDescp != null)
 				return false;
-		} else if (!descp.equals(other.descp))
+		} else if (!taskDescp.equals(other.taskDescp))
 			return false;
 		if (planStartDate == null) {
 			if (other.planStartDate != null)
@@ -215,13 +238,13 @@ public class Task{
 			return false;
 		return true;
 	}
-	public String getName() {
-		if(null==name){return "";}
-		return name;
+	public String getTaskName() {
+		if(null==taskName){return "";}
+		return taskName;
 	}
-	public void setName(String name) {
-		if(null==name){this.name="";}
-		this.name = name;
+	public void setTaskName(String name) {
+		if(null==name){this.taskName="";}
+		this.taskName = name;
 	}
 	public Timestamp getPlanStartDate() {
 		return planStartDate;

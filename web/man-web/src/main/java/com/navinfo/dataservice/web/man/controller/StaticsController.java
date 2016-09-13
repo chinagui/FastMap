@@ -169,4 +169,15 @@ public class StaticsController extends BaseController {
 			return new ModelAndView("jsonView", exception(e));
 		}
 	}
+	
+	@RequestMapping(value = "/statics/monthTask/overview")
+	public ModelAndView querymonthTaskOverView(HttpServletRequest request) {
+		try {
+			JSONObject data = StaticsService.getInstance().querymonthTaskOverView();
+			return new ModelAndView("jsonView", success(data));
+		} catch (Exception e) {
+			log.error("创建失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
 }

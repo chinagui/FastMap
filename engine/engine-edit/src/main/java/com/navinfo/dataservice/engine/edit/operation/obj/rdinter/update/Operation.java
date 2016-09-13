@@ -149,6 +149,8 @@ public class Operation implements IOperation {
 
 		if (interLink != null) {
 			result.insertObject(interLink, ObjStatus.DELETE, interLink.getLinkPid());
+			
+			List<Integer> hasAddNodePidList = new ArrayList<>();
 
 			List<Integer> oldNodePidList = new ArrayList<>();
 
@@ -159,7 +161,7 @@ public class Operation implements IOperation {
 			// 新增rd_inter_link表中数据
 			for (RdLink link : newLinks) {
 
-				if (!oldNodePidList.contains(link.getsNodePid())) {
+				if (!oldNodePidList.contains(link.getsNodePid()) && !hasAddNodePidList.contains(link.getsNodePid())) {
 					RdInterNode interNode = new RdInterNode();
 
 					interNode.setPid(interLink.getPid());
@@ -167,8 +169,10 @@ public class Operation implements IOperation {
 					interNode.setNodePid(link.getsNodePid());
 
 					result.insertObject(interNode, ObjStatus.INSERT, interNode.getNodePid());
+					
+					hasAddNodePidList.add(interNode.getNodePid());
 				}
-				if (!oldNodePidList.contains(link.geteNodePid())) {
+				if (!oldNodePidList.contains(link.geteNodePid()) && !hasAddNodePidList.contains(link.getsNodePid())) {
 					RdInterNode interNode = new RdInterNode();
 
 					interNode.setPid(interLink.getPid());
@@ -176,6 +180,8 @@ public class Operation implements IOperation {
 					interNode.setNodePid(link.geteNodePid());
 
 					result.insertObject(interNode, ObjStatus.INSERT, interNode.getNodePid());
+					
+					hasAddNodePidList.add(interNode.getNodePid());
 				}
 
 				RdInterLink newInterLink = new RdInterLink();

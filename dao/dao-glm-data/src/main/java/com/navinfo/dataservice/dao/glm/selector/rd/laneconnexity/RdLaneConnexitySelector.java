@@ -146,7 +146,7 @@ public class RdLaneConnexitySelector extends AbstractSelector {
 	public List<RdLaneConnexity> loadRdLaneConnexityByOutLinkPid(int linkPid, boolean isLock) throws Exception {
 		List<RdLaneConnexity> laneConns = new ArrayList<RdLaneConnexity>();
 
-		String sql = "select * from rd_lane_connexity  where pid in (  select b.CONNEXITY_PID from rd_lane_topology b where b.CONNEXITY_PID in (    select CONNEXITY_PID from rd_lane_topology where u_record!=2 and out_link_pid=:1 )     group by b.CONNEXITY_PID having count(1)=1) and  u_record != 2";
+		String sql = "select * from rd_lane_connexity  where pid in (  select b.CONNEXITY_PID from rd_lane_topology b where b.CONNEXITY_PID in (    select CONNEXITY_PID from rd_lane_topology where u_record!=2 and out_link_pid=:1 )     group by b.CONNEXITY_PID) and  u_record != 2";
 
 		if (isLock) {
 			sql += " for update nowait";

@@ -1,5 +1,9 @@
 package com.navinfo.dataservice.engine.man.statics;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -9,22 +13,30 @@ import java.util.Set;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+import org.apache.commons.dbutils.DbUtils;
+import org.apache.log4j.Logger;
 import org.json.JSONException;
 import org.springframework.stereotype.Service;
 
 import com.navinfo.dataservice.api.statics.iface.StaticsApi;
 import com.navinfo.dataservice.api.statics.model.BlockExpectStatInfo;
 import com.navinfo.dataservice.api.statics.model.GridChangeStatInfo;
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
+import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.engine.man.block.BlockOperation;
 import com.navinfo.dataservice.engine.man.block.BlockService;
 import com.navinfo.dataservice.engine.man.city.CityService;
+import com.navinfo.navicommons.exception.ServiceException;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.vividsolutions.jts.geom.Geometry;
 
 @Service
 public class StaticsService {
+	
+	private Logger log = LoggerRepos.getLogger(this.getClass());
 
 	private StaticsService(){}
 	private static class SingletonHolder{
@@ -150,6 +162,70 @@ public class StaticsService {
 		
 		return api.getStatBySubtask(subtaskId);
 
+	}
+	
+	public JSONObject queryTaskOverView() throws JSONException, Exception{
+		
+		Connection conn = null;
+		try {
+	
+			conn = DBConnector.getInstance().getManConnection();
+			JSONObject taskStaticsJson= new JSONObject();
+			taskStaticsJson.put(0, 0);
+			taskStaticsJson.put(1, 0);
+			taskStaticsJson.put(2, 0);
+			
+			JSONObject cityStaticsJson= new JSONObject();
+			cityStaticsJson.put(0, 0);
+			cityStaticsJson.put(1, 0);
+			cityStaticsJson.put(2, 0);
+			
+			JSONObject inforStaticsJson= new JSONObject();
+			
+			String selectTaskSql = "SELECT status,COUNT(1) taskCount FROM task GROUP BY status";
+			String selectCitySql = "SELECT plan_status,COUNT(1) planCount FROM city GROUP BY plan_status";
+			String selectInforSql = "SELECT 2 status,COUNT(1) inforCount FROM INFOR I WHERE I.TASK_ID IS NULL"
+					+" UNION ALL"
+					+" SELECT 1 status,COUNT(1) inforCount FROM TASK T WHERE T.TASK_TYPE=4 AND T.STATUS IN (1,2)"
+					+" UNION ALL"
+					+" SELECT 0 status,COUNT(1) inforCount FROM TASK T WHERE T.TASK_TYPE=4 AND T.STATUS=0";	
+			PreparedStatement stmtTask = null;
+			PreparedStatement stmtCity = null;
+			PreparedStatement stmtInfor = null;
+			try {
+				stmtTask = conn.prepareStatement(selectTaskSql);
+				stmtCity = conn.prepareStatement(selectCitySql);
+				stmtInfor = conn.prepareStatement(selectInforSql);
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			ResultSet rsTask = stmtTask.executeQuery();
+			ResultSet rsCity = stmtCity.executeQuery();
+			ResultSet rsInfor = stmtInfor.executeQuery();
+		
+			while (rsTask.next()) {
+				taskStaticsJson.put(rsTask.getInt("status"),rsTask.getInt("taskCount"));
+			}
+			while (rsCity.next()) {
+				cityStaticsJson.put(rsCity.getInt("plan_status"),rsTask.getInt("planCount"));
+			}
+			while (rsInfor.next()) {
+				inforStaticsJson.put(rsInfor.getInt("status"),rsTask.getInt("inforCount"));
+			}
+			JSONObject staticsJson= new JSONObject();
+			staticsJson.put("task", taskStaticsJson);
+			staticsJson.put("city", cityStaticsJson);
+			staticsJson.put("infor", inforStaticsJson);
+			return staticsJson;
+			
+			} catch (Exception e) {
+				DbUtils.rollbackAndCloseQuietly(conn);
+				log.error(e.getMessage(), e);
+			throw new ServiceException("查询失败:" + e.getMessage(), e);
+		} finally {
+				DbUtils.commitAndCloseQuietly(conn);
+			}
 	}
 	
 	

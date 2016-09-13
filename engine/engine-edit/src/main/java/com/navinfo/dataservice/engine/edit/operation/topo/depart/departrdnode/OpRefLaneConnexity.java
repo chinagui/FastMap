@@ -17,11 +17,11 @@ public class OpRefLaneConnexity implements IOperation {
 	@Override
 	public String run(Result result) throws Exception {
 
-		for( RdLaneConnexity lane : command.getLanes()){
+	/*	for( RdLaneConnexity lane : command.getLanes()){
 			
 			result.insertObject(lane, ObjStatus.DELETE, lane.pid());
 		}
-		
+		*/
 		return null;
 	}
 

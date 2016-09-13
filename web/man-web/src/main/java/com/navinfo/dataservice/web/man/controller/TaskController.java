@@ -41,6 +41,9 @@ public class TaskController extends BaseController {
 	 * (1)未规划，未创建任务的均为未规划
 	 * (2)已规划，所有已经创建任务的城市均为已规划
 	 * 3.city图层可操作功能为：创建任务，查看任务（查看/编辑/关闭），规划推荐
+	 * 1.	支持创建这四种类型的任务：1常规，2多源，3代理店，4情报
+	 * 2.	常规任务创建和原来一致
+	 * 3.	情报任务创建：task表创建情报任务后，需根据infor表中情报几何，计算情报涉及的大区block，在block_man表中，生成这些大区block对应的记录，为草稿状态
 	 */
 	@RequestMapping(value = "/task/create")
 	public ModelAndView create(HttpServletRequest request){
@@ -199,7 +202,7 @@ public class TaskController extends BaseController {
 	}
 	
 	/*
-	 * 规划管理页面--任务管理--3.1.2	查询任务详情
+	 * 规划管理页面--月编管理
 	 */
 	@SuppressWarnings("rawtypes")
 	@RequestMapping(value = "/task/queryMonthTask")

@@ -356,7 +356,7 @@ public class BlockOperation {
 	/*
 	 * 不分页 查询block list
 	 */
-	public static List selectAllBlock(final Connection conn, String selectSql, String selectNoPlanSqlByCityId,
+	public static List selectAllBlock(final Connection conn, String selectSql, 
 			String listType) throws Exception {
 		try {
 			QueryRunner run = new QueryRunner();
@@ -416,24 +416,6 @@ public class BlockOperation {
 					}
 				};
 				blockList = run.query(conn, selectSql, rsHandler);
-			}
-
-			if (!selectNoPlanSqlByCityId.isEmpty()) {
-
-				ResultSetHandler<List> rsHandler = new ResultSetHandler<List>() {
-					public List handle(ResultSet rs) throws SQLException {
-						List<HashMap> list = new ArrayList<HashMap>();
-						while (rs.next()) {
-							HashMap map = new HashMap();
-							map.put("blockId", rs.getInt("BLOCK_ID"));
-							map.put("blockName", rs.getString("BLOCK_NAME"));
-							map.put("planStatus", rs.getInt("plan_status"));
-							list.add(map);
-						}
-						return list;
-					}
-				};
-				blockList.addAll(run.query(conn, selectNoPlanSqlByCityId, rsHandler));
 			}
 			return blockList;
 		} catch (Exception e) {

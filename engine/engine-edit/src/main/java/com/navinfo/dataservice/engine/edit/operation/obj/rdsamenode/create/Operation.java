@@ -159,7 +159,7 @@ public class Operation implements IOperation {
 		switch (type) {
 		case RDNODE:
 			com.navinfo.dataservice.engine.edit.operation.topo.move.moverdnode.Command updatecommand = new com.navinfo.dataservice.engine.edit.operation.topo.move.moverdnode.Command(
-					updateContent, null);
+					updateContent, "");
 			com.navinfo.dataservice.engine.edit.operation.topo.move.moverdnode.Process process = new com.navinfo.dataservice.engine.edit.operation.topo.move.moverdnode.Process(
 					updatecommand, result, conn);
 			process.innerRun();

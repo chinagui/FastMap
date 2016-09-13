@@ -17,6 +17,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
 import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdElectroniceye;
 import com.navinfo.dataservice.dao.glm.model.rd.gate.RdGate;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
+import com.navinfo.dataservice.dao.glm.model.rd.inter.RdInter;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
@@ -244,6 +245,27 @@ public class Process extends AbstractProcess<Command> {
 	
 	public void lockRdInter() throws Exception {
 		
+		RdInterSelector selector = new RdInterSelector(this.getConn());
+		
+		List<RdInter> intersList = selector.loadRdInterByOutLinkPid(this.getCommand().getLinkPid(), true);
+
+		List<RdInter> deleteInterList = new ArrayList<>();
+
+		List<RdInter> updateInterList = new ArrayList<>();
+
+		for (RdInter rdInter : intersList) {
+			List<IRow> inters = rdInter.getLinks();
+
+			if (inters.size() == 1) {
+				deleteInterList.add(rdInter);
+			} else {
+				updateInterList.add(rdInter);
+			}
+		}
+
+		this.getCommand().setUpdateInters(updateInterList);
+
+		this.getCommand().setDeleteInters(deleteInterList);
 	}
 
 	@Override

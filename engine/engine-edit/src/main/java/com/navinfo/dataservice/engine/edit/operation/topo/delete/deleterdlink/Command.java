@@ -67,6 +67,10 @@ public class Command extends AbstractCommand {
 	private List<RdGate> rdGates;
 	
 	private List<RdInter> inters;
+	
+	private List<RdInter> updateInters;
+	
+	private List<RdInter> deleteInters;
 
 	private boolean isCheckInfect = false;
 
@@ -279,5 +283,21 @@ public class Command extends AbstractCommand {
 
 	public void setInters(List<RdInter> inters) {
 		this.inters = inters;
+	}
+
+	public List<RdInter> getUpdateInters() {
+		return updateInters;
+	}
+
+	public void setUpdateInters(List<RdInter> updateInters) {
+		this.updateInters = updateInters;
+	}
+
+	public List<RdInter> getDeleteInters() {
+		return deleteInters;
+	}
+
+	public void setDeleteInters(List<RdInter> deleteInters) {
+		this.deleteInters = deleteInters;
 	}
 }

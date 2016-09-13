@@ -58,7 +58,6 @@ public class Operation implements IOperation {
 	}
 
 	private void updateLinkGeomtry(Result result) throws Exception {
-		Map<Integer, List<RdLink>> map = new HashMap<Integer, List<RdLink>>();
 		for (RdLink link : command.getLinks()) {
 
 			Geometry geom = GeoTranslator.transform(link.getGeometry(), 0.00001, 5);
@@ -112,7 +111,6 @@ public class Operation implements IOperation {
 				newGeoLinks.add(geoLink);
 
 				links.add(link);
-				map.put(link.getPid(), links);
 				result.insertObject(link, ObjStatus.UPDATE, link.pid());
 				// 如果跨图幅就需要打断生成新的link
 			} else {
@@ -129,8 +127,6 @@ public class Operation implements IOperation {
 				}
 				// 添加新生成的RDLINK的集合，该集合用于修改关联要素
 				newGeoLinks.addAll(links);
-
-				map.put(link.getPid(), links);
 
 				result.insertObject(link, ObjStatus.DELETE, link.pid());
 			}

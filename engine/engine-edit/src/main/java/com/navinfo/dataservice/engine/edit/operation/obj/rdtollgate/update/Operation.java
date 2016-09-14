@@ -136,9 +136,9 @@ public class Operation implements IOperation {
      * 根据被删除的RdLink的Pid、新生成的RdLink<br>
      * 维护原RdLink上关联的收费站
      *
-     * @param result   待处理的结果集
-     * @param oldLinkPid  被删除RdLink的Pid
-     * @param newLinks 新生成的RdLink的集合
+     * @param result     待处理的结果集
+     * @param oldLinkPid 被删除RdLink的Pid
+     * @param newLinks   新生成的RdLink的集合
      * @return
      * @throws Exception
      */
@@ -152,17 +152,24 @@ public class Operation implements IOperation {
         for (RdTollgate rdTollgate : rdTollgates) {
             // 收费站的进入点的Pid
             int nodePid = rdTollgate.getNodePid();
-            for (RdLink link : newLinks) {
-                // 如果新生成线的起点的Pid与收费站的nodePid相等
-                // 则该新生成线为退出线，修改退出线Pid
-                if (nodePid == link.getsNodePid()) {
-                    rdTollgate.changedFields().put("outLinkPid", link.pid());
-                    break;
-                    // 如果新生成线的终点的Pid与收费站的nodePid相等
-                    // 则该新生成线为进入线，修改进入线Pid
-                } else if (nodePid == link.geteNodePid()) {
-                    rdTollgate.changedFields().put("inLinkPid", link.pid());
-                    break;
+            // 处理进入线被打断的收费站
+            if (oldLinkPid == rdTollgate.getInLinkPid()) {
+                for (RdLink link : newLinks) {
+                    if (nodePid == link.geteNodePid() || nodePid == link.getsNodePid()) {
+                        // 如果新生成线的终点的Pid与收费站的nodePid相等
+                        // 则该新生成线为进入线，修改进入线Pid
+                        rdTollgate.changedFields().put("inLinkPid", link.pid());
+                        break;
+                    }
+                }
+            } else {
+                for (RdLink link : newLinks) {
+                    if (nodePid == link.getsNodePid() || nodePid == link.geteNodePid()) {
+                        // 如果新生成线的起点的Pid与收费站的nodePid相等
+                        // 则该新生成线为退出线，修改退出线Pid
+                        rdTollgate.changedFields().put("outLinkPid", link.pid());
+                        break;
+                    }
                 }
             }
             // 将需要修改的收费站放入结果集中

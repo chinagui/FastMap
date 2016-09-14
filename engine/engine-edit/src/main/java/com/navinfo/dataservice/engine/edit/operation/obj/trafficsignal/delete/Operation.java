@@ -1,10 +1,12 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.trafficsignal.delete;
 
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
 
+import com.navinfo.dataservice.dao.glm.iface.AlertObject;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -108,5 +110,34 @@ public class Operation implements IOperation {
 					trafficsignal.getPid());
 		}
 	}
+	
+	/**
+	 * 删除link对限速的删除影响
+	 * @return
+	 * @throws Exception 
+	 */
+	public List<AlertObject> getDeleteRdTrafficInfectData(int linkPid,Connection conn) throws Exception {
+		
+		RdTrafficsignalSelector trafficsignalSelector = new RdTrafficsignalSelector(conn);
 
+		List<RdTrafficsignal> trafficsignals = trafficsignalSelector.loadByLinkPid(true,
+				linkPid);
+		
+		List<AlertObject> alertList = new ArrayList<>();
+
+		for (RdTrafficsignal trafficsiginal : trafficsignals) {
+
+			AlertObject alertObj = new AlertObject();
+
+			alertObj.setObjType(trafficsiginal.objType());
+
+			alertObj.setPid(trafficsiginal.getPid());
+
+			alertObj.setStatus(ObjStatus.DELETE);
+
+			alertList.add(alertObj);
+		}
+
+		return alertList;
+	}
 }

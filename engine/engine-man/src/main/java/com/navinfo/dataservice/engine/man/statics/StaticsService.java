@@ -38,25 +38,28 @@ public class StaticsService {
 	
 	private Logger log = LoggerRepos.getLogger(this.getClass());
 
-	private StaticsService(){}
 	private static class SingletonHolder{
 		private static final StaticsService INSTANCE =new StaticsService();
 	}
+
 	public static StaticsService getInstance(){
 		return SingletonHolder.INSTANCE;
 	}
 
-	
 	/**
 	 * 根据输入的范围和类型，查询范围内的所有grid的相应的统计信息，并返回grid列表和统计信息。
+	 * 
 	 * @param wkt
-	 * @param type 0POI, 1ROAD
-	 * @param stage 0采集 1日编 2月编
+	 * @param type
+	 *            0POI, 1ROAD
+	 * @param stage
+	 *            0采集 1日编 2月编
 	 * @return 
 	 * @throws Exception 
 	 * @throws JSONException 
 	 */
-	public List<GridChangeStatInfo> gridChangeStaticQuery(String wkt,int stage, int type, String date) throws JSONException, Exception{
+	public List<GridChangeStatInfo> gridChangeStaticQuery(String wkt, int stage, int type, String date)
+			throws JSONException, Exception {
 		//通过wkt获取gridIdList
 		Geometry geo=GeoTranslator.geojson2Jts(Geojson.wkt2Geojson(wkt));
 		Set<String> grids= CompGeometryUtil.geo2GridsWithoutBreak(geo);
@@ -228,7 +231,6 @@ public class StaticsService {
 			}
 	}
 
-
 	public JSONObject querymonthTaskOverView()throws Exception{
 		Connection conn = null;
 		try {	
@@ -255,53 +257,28 @@ public class StaticsService {
 			otherStaticsJson.put(6, 0);
 			otherStaticsJson.put(7, 0);	
 			
-			String gridSql = "WITH NOWGRID AS"
-					+ " (SELECT C.CITY_ID, ST.TYPE, COUNT(DISTINCT M.GRID_ID) USEGRID"
+			String gridSql = "WITH NOWGRID AS" + " (SELECT C.CITY_ID, ST.TYPE, COUNT(DISTINCT M.GRID_ID) USEGRID"
 					+ "    FROM SUBTASK_GRID_MAPPING M, SUBTASK ST, TASK T, CITY C"
-					+ "   WHERE M.SUBTASK_ID = ST.SUBTASK_ID"
-					+ "     AND ST.STAGE = 2"
-					+ "     AND ST.TYPE IN (8, 9)"
-					+ "     AND T.TASK_ID = ST.TASK_ID"
-					+ "     AND C.CITY_ID = T.CITY_ID"
-					+ "     and t.latest=1"
-					+ "   GROUP BY C.CITY_ID, ST.TYPE),"
-					+ " CITYGRID AS"
-					+ " (SELECT CITY_ID, COUNT(DISTINCT GRID_ID) ALLGRID"
-					+ "    FROM GRID"
-					+ "   WHERE CITY_ID IS NOT NULL"
-					+ "   GROUP BY CITY_ID)"
-					+ " SELECT NOWGRID.TYPE,"
+					+ "   WHERE M.SUBTASK_ID = ST.SUBTASK_ID" + "     AND ST.STAGE = 2" + "     AND ST.TYPE IN (8, 9)"
+					+ "     AND T.TASK_ID = ST.TASK_ID" + "     AND C.CITY_ID = T.CITY_ID" + "     and t.latest=1"
+					+ "   GROUP BY C.CITY_ID, ST.TYPE)," + " CITYGRID AS"
+					+ " (SELECT CITY_ID, COUNT(DISTINCT GRID_ID) ALLGRID" + "    FROM GRID"
+					+ "   WHERE CITY_ID IS NOT NULL" + "   GROUP BY CITY_ID)" + " SELECT NOWGRID.TYPE,"
 					+ "       SUM(CITYGRID.ALLGRID - NOWGRID.USEGRID) NOTUSERGRID,"
-					+ "       SUM(NOWGRID.USEGRID) USEGRID"
-					+ "  FROM NOWGRID, CITYGRID"
-					+ " WHERE NOWGRID.CITY_ID = CITYGRID.CITY_ID"
-					+ " GROUP BY NOWGRID.TYPE";
+					+ "       SUM(NOWGRID.USEGRID) USEGRID" + "  FROM NOWGRID, CITYGRID"
+					+ " WHERE NOWGRID.CITY_ID = CITYGRID.CITY_ID" + " GROUP BY NOWGRID.TYPE";
 			//“月编总览“子任务个数
-			String otherSql = "SELECT 'subtaskCount' DESCP,ST.STATUS, COUNT(1) COUNTNUM"
-					+ "  FROM SUBTASK ST"
-					+ " WHERE ST.STAGE = 2"
-					+ " GROUP BY ST.STATUS"
-					+ " UNION ALL"
+			String otherSql = "SELECT 'subtaskCount' DESCP,ST.STATUS, COUNT(1) COUNTNUM" + "  FROM SUBTASK ST"
+					+ " WHERE ST.STAGE = 2" + " GROUP BY ST.STATUS" + " UNION ALL"
 					//“月编概览”city个数：待分配,已分配"
-					+ " SELECT 'cityCount' DESCP,1 TYPE, COUNT(DISTINCT T.CITY_ID) CITYNUM"
-					+ "  FROM TASK T"
-					+ " WHERE T.LATEST = 1"
-					+ "   AND NOT EXISTS (SELECT 1"
-					+ "          FROM SUBTASK ST"
-					+ "         WHERE ST.TASK_ID = T.TASK_ID"
-					+ "           AND ST.TYPE = 10)"
-					+ " UNION ALL"
-					+ " SELECT 'cityCount' DESCP,2 TYPE, COUNT(DISTINCT T.CITY_ID) "
-					+ "  FROM TASK T, SUBTASK ST"
-					+ " WHERE T.LATEST = 1"
-					+ "   AND ST.TASK_ID = T.TASK_ID"
-					+ "   AND ST.TYPE = 10"
-					+ "   UNION ALL"
+					+ " SELECT 'cityCount' DESCP,1 TYPE, COUNT(DISTINCT T.CITY_ID) CITYNUM" + "  FROM TASK T"
+					+ " WHERE T.LATEST = 1" + "   AND NOT EXISTS (SELECT 1" + "          FROM SUBTASK ST"
+					+ "         WHERE ST.TASK_ID = T.TASK_ID" + "           AND ST.TYPE = 10)" + " UNION ALL"
+					+ " SELECT 'cityCount' DESCP,2 TYPE, COUNT(DISTINCT T.CITY_ID) " + "  FROM TASK T, SUBTASK ST"
+					+ " WHERE T.LATEST = 1" + "   AND ST.TASK_ID = T.TASK_ID" + "   AND ST.TYPE = 10" + "   UNION ALL"
 					//POI专项概览”,"代理店"子任务个数"
-					+ " SELECT 'otherSubtaskCount' DESCP,ST.TYPE, COUNT(1) SUBNUM"
-					+ "  FROM SUBTASK ST"
-					+ " WHERE ST.TYPE IN (6, 7)"
-					+ " GROUP BY ST.TYPE";
+					+ " SELECT 'otherSubtaskCount' DESCP,ST.TYPE, COUNT(1) SUBNUM" + "  FROM SUBTASK ST"
+					+ " WHERE ST.TYPE IN (6, 7)" + " GROUP BY ST.TYPE";
 			PreparedStatement stmtGrid = null;
 			PreparedStatement stmtOther = null;
 			try {
@@ -335,7 +312,8 @@ public class StaticsService {
 					cityStaticsJson.put(rsOther.getInt("STATUS"), rsOther.getInt("COUNTNUM"));
 				}
 				if(descp.equals("otherSubtaskCount")){
-					otherStaticsJson.put(rsOther.getInt("STATUS"), rsOther.getInt("COUNTNUM"));}
+					otherStaticsJson.put(rsOther.getInt("STATUS"), rsOther.getInt("COUNTNUM"));
+			}
 			}
 			
 			JSONObject staticsJson= new JSONObject();
@@ -355,4 +333,202 @@ public class StaticsService {
 		}
 	}
 	
+	public JSONObject queryCollectOverView(int groupId) throws Exception {
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+
+			JSONObject subtaskStaticsJson = new JSONObject();
+			subtaskStaticsJson.put(0, 0);
+			subtaskStaticsJson.put(1, 0);
+			subtaskStaticsJson.put(2, 0);
+
+			// 1 待分配，2 已分配
+			JSONObject gridRoadCollectStaticsJson = new JSONObject();
+			gridRoadCollectStaticsJson.put(1, 0);
+			gridRoadCollectStaticsJson.put(2, 0);
+
+			JSONObject gridPoiCollectStaticsJson = new JSONObject();
+			gridPoiCollectStaticsJson.put(1, 0);
+			gridPoiCollectStaticsJson.put(2, 0);
+
+			JSONObject gridUnityStaticsJson = new JSONObject();
+			gridUnityStaticsJson.put(1, 0);
+			gridUnityStaticsJson.put(2, 0);
+
+			String subtaskSql = "SELECT ST.STATUS, COUNT(1) COUNTNUM" + " FROM SUBTASK ST,BLOCK_MAN BM"
+					+ " WHERE ST.BLOCK_ID=BM.BLOCK_ID AND BM.COLLECT_GROUP_ID=" + groupId + " AND ST.STAGE = 0 "
+					+ " GROUP BY ST.STATUS";
+
+			String gridSql = "WITH GROUPGRID AS" + " (SELECT G.BLOCK_ID, COUNT(G.GRID_ID) BLOCKGRID"
+					+ " 		    FROM BLOCK_MAN BM, GRID G" + " 		   WHERE BM.COLLECT_GROUP_ID=" + groupId
+					+ " 		     AND BM.STATUS IN (1, 2)" + " 		     AND BM.BLOCK_ID = G.BLOCK_ID"
+					+ " 		   GROUP BY G.BLOCK_ID)" + " 		ASSIGNGRID AS"
+					+ " 		 (SELECT BM.BLOCK_ID, S.TYPE, COUNT(DISTINCT SG.GRID_ID) ASSIGNCOUNT"
+					+ " 		    FROM BLOCK_MAN BM, SUBTASK S, SUBTASK_GRID_MAPPING SG"
+					+ " 		   WHERE BM.COLLECT_GROUP_ID = " + groupId + " 		     AND BM.STATUS IN (1, 2)"
+					+ " 		     AND BM.BLOCK_ID = S.BLOCK_ID" + " 		     AND S.TYPE IN (0, 1, 2) AND S.STAGE=0"
+					+ " 		     AND S.SUBTASK_ID = SG.GRID_ID" + " 		   GROUP BY BM.BLOCK_ID, S.TYPE)"
+					+ " 		SELECT ASSIGNGRID.TYPE,"
+					+ " 		       (SUM(GROUPGRID.BLOCKGRID) - SUM(ASSIGNGRID.ASSIGNCOUNT) WAITASSIGNGRID, "
+					+ "	SUM(ASSIGNGRID.ASSIGNCOUNT) AlREADYASSIGNGRID FROM GROUPGRID, ASSIGNGRID "
+					+ "	WHERE GROUPGRID.BLOCK_ID = ASSIGNGRID.BLOCK_ID GROUP BY ASSIGNGRID.TYPE";
+
+			PreparedStatement stmtGrid = null;
+			PreparedStatement stmtSubtask = null;
+			try {
+				stmtGrid = conn.prepareStatement(gridSql);
+				stmtSubtask = conn.prepareStatement(subtaskSql);
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+}
+			ResultSet rsGrid = stmtGrid.executeQuery();
+			ResultSet rsSubtask = stmtSubtask.executeQuery();
+
+			while (rsGrid.next()) {
+				// poi采集
+				if (rsGrid.getInt("TYPE") == 0) {
+					gridPoiCollectStaticsJson.put(1, rsGrid.getInt("WAITASSIGNGRID"));
+					gridPoiCollectStaticsJson.put(2, rsGrid.getInt("AlREADYASSIGNGRID"));
+				}
+				// 道路采集
+				if (rsGrid.getInt("TYPE") == 1) {
+					gridRoadCollectStaticsJson.put(1, rsGrid.getInt("WAITASSIGNGRID"));
+					gridRoadCollectStaticsJson.put(2, rsGrid.getInt("AlREADYASSIGNGRID"));
+				}
+				// 一体化采集
+				if (rsGrid.getInt("TYPE") == 2) {
+					gridUnityStaticsJson.put(1, rsGrid.getInt("WAITASSIGNGRID"));
+					gridUnityStaticsJson.put(2, rsGrid.getInt("AlREADYASSIGNGRID"));
+				}
+			}
+			while (rsSubtask.next()) {
+
+				subtaskStaticsJson.put(rsSubtask.getInt("STATUS"), rsSubtask.getInt("COUNTNUM"));
+			}
+
+			JSONObject staticsJson = new JSONObject();
+			staticsJson.put("subtaskStatics", subtaskStaticsJson);
+			staticsJson.put("gridPoiStatics", gridPoiCollectStaticsJson);
+			staticsJson.put("gridRoadStatics", gridRoadCollectStaticsJson);
+			staticsJson.put("gridUnityStatics", gridUnityStaticsJson);
+			return staticsJson;
+
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询失败:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+
+	public JSONObject queryDayEidtOverView(int groupId) throws Exception {
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+
+			JSONObject subtaskStaticsJson = new JSONObject();
+			subtaskStaticsJson.put(0, 0);
+			subtaskStaticsJson.put(1, 0);
+			subtaskStaticsJson.put(2, 0);
+
+			// 1 待分配，2 已分配
+			JSONObject blockUnityStaticsJson = new JSONObject();
+			blockUnityStaticsJson.put(1, 0);
+			blockUnityStaticsJson.put(2, 0);
+
+			JSONObject gridPoiCollectStaticsJson = new JSONObject();
+			gridPoiCollectStaticsJson.put(1, 0);
+			gridPoiCollectStaticsJson.put(2, 0);
+
+			JSONObject gridUnityStaticsJson = new JSONObject();
+			gridUnityStaticsJson.put(1, 0);
+			gridUnityStaticsJson.put(2, 0);
+
+			JSONObject sourcePoiStaticsJson = new JSONObject();
+			sourcePoiStaticsJson.put(2, 0);
+
+			String subtaskSql = "SELECT 'subtask' DESCP,ST.STATUS, COUNT(1) COUNTNUM" + " FROM SUBTASK ST,BLOCK_MAN BM"
+					+ " WHERE ST.BLOCK_ID=BM.BLOCK_ID AND BM.COLLECT_GROUP_ID=" + groupId + " AND ST.STAGE = 0 "
+					+ " GROUP BY ST.STATUS" + " UNION ALL"
+					+ " SELECT 'block' DESCP,1 STATUS, COUNT(DISTINCT T.BLOCK_ID) BLOCKNUM " + "   FROM BlOCK_MAN T "
+					+ "  WHERE T.LATEST = 1 AND T.STATUS IN (1,2) AND T.DAY_EDIT_GROUP_ID=" + groupId
+					+ "    AND NOT EXISTS (SELECT 1 " + "           FROM SUBTASK ST "
+					+ "          WHERE ST.BLOCK_ID = T.BLOCK_ID" + "            AND ST.TYPE = 4) " + "  UNION ALL "
+					+ "  SELECT 'block' DESCP,2 STATUS, COUNT(DISTINCT T.BLOCK_ID) BLOCKNUM "
+					+ "   FROM BlOCK_MAN T, SUBTASK ST " + "  WHERE T.LATEST = 1 AND T.DAY_EDIT_GROUP_ID=" + groupId
+					+ "    AND ST.TASK_ID = T.TASK_ID " + "    AND ST.TYPE = 4" + "    UNION ALL "
+					+ "  SELECT 'sourcePoi' DESCP,2 STATUS, COUNT(1) SUBNUM " + "   FROM SUBTASK ST "
+					+ "  WHERE ST.TYPE=5 AND ST.EXE_GROUP_ID=" + groupId + "  GROUP BY ST.TYPE";
+
+			String gridSql = "WITH GROUPGRID AS" + " (SELECT G.BLOCK_ID, COUNT(G.GRID_ID) BLOCKGRID"
+					+ " 		    FROM BLOCK_MAN BM, GRID G" + " 		   WHERE BM.DAY_EDIT_GROUP_ID=" + groupId
+					+ " 		     AND BM.STATUS IN (1, 2)" + " 		     AND BM.BLOCK_ID = G.BLOCK_ID"
+					+ " 		   GROUP BY G.BLOCK_ID)" + " 		ASSIGNGRID AS"
+					+ " 		 (SELECT BM.BLOCK_ID, S.TYPE, COUNT(DISTINCT SG.GRID_ID) ASSIGNCOUNT"
+					+ " 		    FROM BLOCK_MAN BM, SUBTASK S, SUBTASK_GRID_MAPPING SG"
+					+ " 		   WHERE BM.DAY_EDIT_GROUP_ID = " + groupId + " 		     AND BM.STATUS IN (1, 2)"
+					+ " 		     AND BM.BLOCK_ID = S.BLOCK_ID" + " 		     AND S.TYPE IN (0,2) AND S.STAGE=1"
+					+ " 		     AND S.SUBTASK_ID = SG.GRID_ID" + " 		   GROUP BY BM.BLOCK_ID, S.TYPE)"
+					+ " 		SELECT ASSIGNGRID.TYPE,"
+					+ " 		       (SUM(GROUPGRID.BLOCKGRID) - SUM(ASSIGNGRID.ASSIGNCOUNT) WAITASSIGNGRID, "
+					+ "	SUM(ASSIGNGRID.ASSIGNCOUNT) AlREADYASSIGNGRID FROM GROUPGRID, ASSIGNGRID "
+					+ "	WHERE GROUPGRID.BLOCK_ID = ASSIGNGRID.BLOCK_ID GROUP BY ASSIGNGRID.TYPE";
+
+			PreparedStatement stmtGrid = null;
+			PreparedStatement stmtSubtask = null;
+			try {
+				stmtGrid = conn.prepareStatement(gridSql);
+				stmtSubtask = conn.prepareStatement(subtaskSql);
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			ResultSet rsGrid = stmtGrid.executeQuery();
+			ResultSet rsSubtask = stmtSubtask.executeQuery();
+
+			while (rsGrid.next()) {
+				// poi采集
+				if (rsGrid.getInt("TYPE") == 0) {
+					gridPoiCollectStaticsJson.put(1, rsGrid.getInt("WAITASSIGNGRID"));
+					gridPoiCollectStaticsJson.put(2, rsGrid.getInt("AlREADYASSIGNGRID"));
+				}
+				// 一体化采集
+				if (rsGrid.getInt("TYPE") == 2) {
+					gridUnityStaticsJson.put(1, rsGrid.getInt("WAITASSIGNGRID"));
+					gridUnityStaticsJson.put(2, rsGrid.getInt("AlREADYASSIGNGRID"));
+				}
+			}
+			while (rsSubtask.next()) {
+				if (rsSubtask.getString("DESCP") == "subtask") {
+					subtaskStaticsJson.put(rsSubtask.getInt("STATUS"), rsSubtask.getInt("COUNTNUM"));
+				}
+				if (rsSubtask.getString("DESCP") == "block") {
+					blockUnityStaticsJson.put(rsSubtask.getInt("STATUS"), rsSubtask.getInt("COUNTNUM"));
+				}
+				if (rsSubtask.getString("DESCP") == "sourcePoi") {
+					sourcePoiStaticsJson.put(rsSubtask.getInt("STATUS"), rsSubtask.getInt("COUNTNUM"));
+				}
+
+			}
+
+			JSONObject staticsJson = new JSONObject();
+			staticsJson.put("subtaskStatics", subtaskStaticsJson);
+			staticsJson.put("gridPoiStatics", gridPoiCollectStaticsJson);
+			staticsJson.put("blockUnityStatics", blockUnityStaticsJson);
+			staticsJson.put("gridUnityStatics", gridUnityStaticsJson);
+			staticsJson.put("sourcePoiStatics", sourcePoiStaticsJson);
+			return staticsJson;
+
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询失败:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+
 }

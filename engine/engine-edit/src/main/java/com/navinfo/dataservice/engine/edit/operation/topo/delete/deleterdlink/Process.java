@@ -17,7 +17,6 @@ import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
 import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdElectroniceye;
 import com.navinfo.dataservice.dao.glm.model.rd.gate.RdGate;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
-import com.navinfo.dataservice.dao.glm.model.rd.inter.RdInter;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
@@ -116,29 +115,18 @@ public class Process extends AbstractProcess<Command> {
 
 		List<RdRestriction> restrictions = restriction.loadRdRestrictionByLinkPid(this.getCommand().getLinkPid(), true);
 
-		this.getCommand().setInLinkRestrictions(restrictions);
 		// 获取退出线为该link，并且只有一根退出线的交限
-
 		List<RdRestriction> restrictions2 = restriction.loadRdRestrictionByOutLinkPid(this.getCommand().getLinkPid(),
 				true);
-
 		List<RdRestriction> outLinkDeleteResList = new ArrayList<>();
-
-		List<RdRestriction> outLinkUpdateResList = new ArrayList<>();
 
 		for (RdRestriction rdRestriction : restrictions2) {
 			List<IRow> details = rdRestriction.getDetails();
 
 			if (details.size() == 1) {
 				outLinkDeleteResList.add(rdRestriction);
-			} else {
-				outLinkUpdateResList.add(rdRestriction);
 			}
 		}
-
-		this.getCommand().setOutDeleteLinkRestrictions(outLinkDeleteResList);
-
-		this.getCommand().setOutUpdateLinkRestrictions(outLinkUpdateResList);
 
 		restrictions.addAll(outLinkDeleteResList);
 
@@ -151,29 +139,19 @@ public class Process extends AbstractProcess<Command> {
 
 		List<RdLaneConnexity> lanes = selector.loadRdLaneConnexityByLinkPid(this.getCommand().getLinkPid(), true);
 
-		this.getCommand().setInLinkRdLaneConnexitys(lanes);
-
 		// 获取退出线为该link
 
 		List<RdLaneConnexity> lanes2 = selector.loadRdLaneConnexityByOutLinkPid(this.getCommand().getLinkPid(), true);
 
 		List<RdLaneConnexity> outLinkDeleteLaneList = new ArrayList<>();
 
-		List<RdLaneConnexity> outLinkUpdateLaneList = new ArrayList<>();
-
 		for (RdLaneConnexity rdLaneConnexity : lanes2) {
 			List<IRow> topos = rdLaneConnexity.getTopos();
 
 			if (topos.size() == 1) {
 				outLinkDeleteLaneList.add(rdLaneConnexity);
-			} else {
-				outLinkUpdateLaneList.add(rdLaneConnexity);
-			}
+			} 
 		}
-
-		this.getCommand().setOutLinkDeleteRdLaneConnexitys(outLinkDeleteLaneList);
-
-		this.getCommand().setOutLinkUpdateRdLaneConnexitys(outLinkUpdateLaneList);
 
 		lanes.addAll(lanes2);
 
@@ -186,12 +164,8 @@ public class Process extends AbstractProcess<Command> {
 
 		List<RdBranch> branches = selector.loadRdBranchByInLinkPid(this.getCommand().getLinkPid(), true);
 
-		this.getCommand().setInLinkBranchs(branches);
-
 		// 获取退出线为该link，并且只有一根退出线的车信
 		List<RdBranch> branches2 = selector.loadRdBranchByOutLinkPid(this.getCommand().getLinkPid(), true);
-
-		this.getCommand().setOutLinkDeleteBranchs(branches2);
 
 		branches.addAll(branches2);
 
@@ -235,37 +209,6 @@ public class Process extends AbstractProcess<Command> {
 		List<RdElectroniceye> eleceyes = selector.loadListByRdLinkId(this.getCommand().getLinkPid(), true);
 
 		this.getCommand().setElectroniceyes(eleceyes);
-	}
-	
-	public void lockRdGate() throws Exception {
-		RdGateSelector rdGateSelector = new RdGateSelector(this.getConn());
-		List<RdGate> rdGate = rdGateSelector.loadByLink(this.getCommand().getLinkPid(), true);
-		this.getCommand().setRdGates(rdGate);
-	}
-	
-	public void lockRdInter() throws Exception {
-		
-		RdInterSelector selector = new RdInterSelector(this.getConn());
-		
-		List<RdInter> intersList = selector.loadRdInterByOutLinkPid(this.getCommand().getLinkPid(), true);
-
-		List<RdInter> deleteInterList = new ArrayList<>();
-
-		List<RdInter> updateInterList = new ArrayList<>();
-
-		for (RdInter rdInter : intersList) {
-			List<IRow> inters = rdInter.getLinks();
-
-			if (inters.size() == 1) {
-				deleteInterList.add(rdInter);
-			} else {
-				updateInterList.add(rdInter);
-			}
-		}
-
-		this.getCommand().setUpdateInters(updateInterList);
-
-		this.getCommand().setDeleteInters(deleteInterList);
 	}
 
 	@Override

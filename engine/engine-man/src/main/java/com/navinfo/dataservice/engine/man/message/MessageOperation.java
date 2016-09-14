@@ -56,9 +56,7 @@ public class MessageOperation {
 
 			value.add(new Timestamp(System.currentTimeMillis()).toString().substring(0, 10));
 
-			String createSql = "insert into MESSAGE " ;
-			String column = "(MSG_ID, MSG_TITLE, MSG_CONTENT,PUSH_USER, MSG_RECERVER,MSG_STATUS,PUSH_TIME";
-			String values = "values(?,?,?,?,?,?,?";
+			String createSql = "insert into MESSAGE (MSG_ID, MSG_TITLE, MSG_CONTENT,PUSH_USER, MSG_RECERVER,MSG_STATUS,PUSH_TIME) values(?,?,?,?,?,?,to_date(?,'yyyy-MM-dd HH24:MI:ss'))" ;
 
 			run.update(conn, createSql,value.toArray());
 

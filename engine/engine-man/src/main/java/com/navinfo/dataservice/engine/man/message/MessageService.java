@@ -14,9 +14,13 @@ import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
 
 import com.navinfo.dataservice.api.man.model.Message;
+import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.commons.xinge.XingeUtil;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskOperation;
+import com.navinfo.dataservice.engine.man.userDevice.UserDeviceService;
+import com.navinfo.dataservice.engine.man.userInfo.UserInfoService;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
 
@@ -35,7 +39,7 @@ public class MessageService {
 		return SingletonHolder.INSTANCE;
 	}
 	//获取消息列表
-	public List<Object> list(int userId,int status) throws ServiceException {
+	public Map<String,Object> list(long userId,int status) throws ServiceException {
 		Connection conn = null;
 		try {
 			conn = DBConnector.getInstance().getManConnection();
@@ -66,7 +70,11 @@ public class MessageService {
 				}
 			};
 
-			return run.query(conn, selectSql,rsHandler);
+			List<Object> data = run.query(conn, selectSql,rsHandler);
+			Map<String,Object> result = new HashMap<String,Object>();
+			result.put("data", data);
+			result.put("total",data.size());
+			return result;
 			
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -78,7 +86,7 @@ public class MessageService {
 	}
 	
 	//创建消息
-	public void create(Message message) throws ServiceException {
+	public void push(Message message,Integer push) throws ServiceException {
 		Connection conn = null;
 		try {
 			conn = DBConnector.getInstance().getManConnection();
@@ -90,9 +98,17 @@ public class MessageService {
 			if(message.getMsgStatus()== null){
 				message.setMsgStatus(0);
 			}
-			
+			//推送消息
+			if(1 == push){
+				UserDeviceService userDeviceService=new UserDeviceService();
+				userDeviceService.pushMessage(message.getReceiverId(), message.getMsgTitle(), message.getMsgContent(), 
+						XingeUtil.PUSH_MSG_TYPE_PROJECT, "");
+			}
 			// 插入message
-			MessageOperation.insertMessage(conn, message);
+			else{
+				message.setMsgId(MessageOperation.getMessageId(conn));
+				MessageOperation.insertMessage(conn, message);
+			}
 
 			
 		} catch (Exception e) {

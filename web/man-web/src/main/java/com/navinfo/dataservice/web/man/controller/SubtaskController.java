@@ -50,6 +50,7 @@ import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.engine.man.grid.GridService;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskOperation;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskService;
+import com.navinfo.dataservice.engine.man.task.TaskService;
 import com.navinfo.dataservice.web.man.page.SubtaskListByUserPage;
 import com.navinfo.dataservice.web.man.page.SubtaskListPage;
 import com.navinfo.dataservice.web.man.response.NullResponse;
@@ -393,5 +394,32 @@ public class SubtaskController extends BaseController {
 		}
 	}
 	
+	
+	/*
+	 * 发布功能：选中一条/多条开启状态记录后，点击“发布”按钮，将这些记录进行消息推送。未选中记录时，提示“请选择子任务”；发布后提示“发布成功”/“发布失败”
+	 * 草稿状态记录，点击发布后，子任务状态变更为“开启”，同时进行消息推送
+	 * 开启状态记录，点击发布后，子任务状态不变更，只进行消息推送
+	 * ps:开启状态时，“保存”包含消息发布功能，点击“发布”仍可单独发布消息
+	 */
+	@RequestMapping(value = "/pushMsg")
+	public ModelAndView pushMsg(HttpServletRequest request){
+		try{
+			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));			
+			if(dataJson==null){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			long userId=tokenObj.getUserId();
+			
+			JSONArray subTaskIds=dataJson.getJSONArray("subTaskIds");
+			
+			String msg= SubtaskService.getInstance().pushMsg(userId,subTaskIds);
+
+			return new ModelAndView("jsonView", success(msg));
+		}catch(Exception e){
+			log.error("创建失败，原因："+e.getMessage(), e);
+			return new ModelAndView("jsonView",exception(e));
+		}
+	}
 
 }

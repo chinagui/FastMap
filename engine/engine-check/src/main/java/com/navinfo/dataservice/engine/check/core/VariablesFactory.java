@@ -6,6 +6,11 @@ import java.util.Set;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchDetail;
+import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchRealimage;
+import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchSchematic;
+import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSeriesbranch;
+import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSignasreal;
+import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSignboard;
 import com.navinfo.dataservice.dao.glm.model.rd.directroute.RdDirectroute;
 import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdEleceyePart;
 import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdElectroniceye;
@@ -23,6 +28,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.tollgate.RdTollgate;
 import com.navinfo.dataservice.dao.glm.model.rd.tollgate.RdTollgateName;
 import com.navinfo.dataservice.dao.glm.model.rd.trafficsignal.RdTrafficsignal;
 import com.navinfo.dataservice.dao.glm.model.rd.voiceguide.RdVoiceguide;
+import com.navinfo.dataservice.dao.glm.model.rd.voiceguide.RdVoiceguideDetail;
 import com.navinfo.dataservice.dao.glm.model.rd.warninginfo.RdWarninginfo;
 
 public class VariablesFactory {
@@ -138,7 +144,22 @@ public class VariablesFactory {
 		
 		if(data instanceof RdBranchDetail){
 			RdBranchDetail rdBranchDetail=(RdBranchDetail) data;
-			rdLinkSet.add(String.valueOf(rdBranchDetail.getBranchPid()));}
+			rdLinkSet.add(String.valueOf(rdBranchDetail.getBranchPid()));}		
+		if(data instanceof RdBranchRealimage){
+			RdBranchRealimage rdBranchRealimage=(RdBranchRealimage) data;
+			rdLinkSet.add(String.valueOf(rdBranchRealimage.getBranchPid()));}
+		if(data instanceof RdBranchSchematic){
+			RdBranchSchematic rdBranchSchematic=(RdBranchSchematic) data;
+			rdLinkSet.add(String.valueOf(rdBranchSchematic.getBranchPid()));}
+		if(data instanceof RdSignasreal){
+			RdSignasreal rdSignasreal=(RdSignasreal) data;
+			rdLinkSet.add(String.valueOf(rdSignasreal.getBranchPid()));}
+		if(data instanceof RdSignboard){
+			RdSignboard rdSignboard=(RdSignboard) data;
+			rdLinkSet.add(String.valueOf(rdSignboard.getBranchPid()));}
+		if(data instanceof RdSeriesbranch){
+			RdSeriesbranch rdSeriesbranch=(RdSeriesbranch) data;
+			rdLinkSet.add(String.valueOf(rdSeriesbranch.getBranchPid()));}
 		return rdLinkSet;
 	}
 	/**
@@ -222,6 +243,24 @@ public class VariablesFactory {
 		if(data instanceof RdRestrictionDetail){
 			rdLinkSet.add(String.valueOf(((RdRestrictionDetail)data).getRestricPid()));
 		}
+		return rdLinkSet;
+	}
+	
+	
+	public static Set<String> getRdVoiceguideDetailPid(IRow data){
+		Set<String> rdLinkSet=new HashSet<String>();
+		if(data instanceof RdVoiceguideDetail){
+			rdLinkSet.add(String.valueOf(((RdVoiceguideDetail)data).getPid()));
+		}
+		
+		return rdLinkSet;
+	}
+	
+	public static Set<String> getRdTrafficsignalPid(IRow data){
+		Set<String> rdLinkSet=new HashSet<String>();
+		if(data instanceof RdTrafficsignal){
+			rdLinkSet.add(String.valueOf(((RdTrafficsignal)data).getPid()));
+		}		
 		return rdLinkSet;
 	}
 	

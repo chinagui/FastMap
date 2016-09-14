@@ -1,11 +1,17 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdbranch.delete;
 
+import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.navinfo.dataservice.dao.glm.iface.AlertObject;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
+import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 
 public class Operation implements IOperation {
 
@@ -104,4 +110,64 @@ public class Operation implements IOperation {
 		return null;
 	}
 
+	/**
+	 * 删除进入link对分歧的删除影响
+	 * 
+	 * @return
+	 * @throws Exception
+	 */
+	public List<AlertObject> getDeleteBranchInfectData(int linkPid, Connection conn) throws Exception {
+
+		RdBranchSelector selector = new RdBranchSelector(conn);
+
+		List<RdBranch> branches = selector.loadRdBranchByInLinkPid(linkPid, true);
+
+		List<AlertObject> alertList = new ArrayList<>();
+
+		for (RdBranch branch : branches) {
+
+			AlertObject alertObj = new AlertObject();
+
+			alertObj.setObjType(branch.objType());
+
+			alertObj.setPid(branch.getPid());
+
+			alertObj.setStatus(ObjStatus.DELETE);
+
+			alertList.add(alertObj);
+		}
+
+		return alertList;
+	}
+
+	/**
+	 * 删除退出link对分歧的删除影响
+	 * 
+	 * @return
+	 * @throws Exception 
+	 */
+	public List<AlertObject> getDeleteBOutLinkranchInfectData(int linkPid,Connection conn) throws Exception {
+		
+		RdBranchSelector selector = new RdBranchSelector(conn);
+
+		// 获取退出线为该link
+		List<RdBranch> branches2 = selector.loadRdBranchByOutLinkPid(linkPid, true);
+		
+		List<AlertObject> alertList = new ArrayList<>();
+
+		for (RdBranch branch : branches2) {
+
+			AlertObject alertObj = new AlertObject();
+
+			alertObj.setObjType(branch.objType());
+
+			alertObj.setPid(branch.getPid());
+
+			alertObj.setStatus(ObjStatus.DELETE);
+
+			alertList.add(alertObj);
+		}
+
+		return alertList;
+	}
 }

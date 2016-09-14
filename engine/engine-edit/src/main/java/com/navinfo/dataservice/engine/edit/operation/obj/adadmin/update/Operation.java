@@ -3,7 +3,11 @@ package com.navinfo.dataservice.engine.edit.operation.obj.adadmin.update;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
+import com.navinfo.dataservice.dao.glm.iface.AlertObject;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
@@ -92,5 +96,29 @@ public class Operation implements IOperation {
 
 		return null;
 	}
+	
+	/**
+	 * 删除link对行政区划代表点的更新影响分析
+	 * @return
+	 */
+	public List<AlertObject> getUpdateAdminInfectData(List<AdAdmin> adminList) {
 
+		List<AlertObject> alertList = new ArrayList<>();
+
+		for (AdAdmin adAdmin : adminList) {
+
+			AlertObject alertObj = new AlertObject();
+
+			alertObj.setObjType(adAdmin.objType());
+
+			alertObj.setPid(adAdmin.getPid());
+
+			alertObj.setStatus(ObjStatus.UPDATE);
+
+			alertList.add(alertObj);
+		}
+
+		return alertList;
+	}
+	
 }

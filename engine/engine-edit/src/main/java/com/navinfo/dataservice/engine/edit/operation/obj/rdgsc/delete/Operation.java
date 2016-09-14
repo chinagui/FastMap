@@ -1,9 +1,15 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdgsc.delete;
 
+import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.navinfo.dataservice.dao.glm.iface.AlertObject;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
+import com.navinfo.dataservice.dao.glm.selector.rd.gsc.RdGscSelector;
 
 /**
  * 
@@ -30,5 +36,33 @@ public class Operation implements IOperation {
 				
 		return null;
 	}
+	
+	/**
+	 * 删除link对立交的删除影响
+	 * @return
+	 * @throws Exception 
+	 */
+	public List<AlertObject> getDeleteRdGscInfectData(int linkPid,Connection conn) throws Exception {
+		
+		RdGscSelector selector = new RdGscSelector(conn);
 
+		List<RdGsc> rdGscList = selector.loadRdGscLinkByLinkPid(linkPid, "RD_LINK", true);
+		
+		List<AlertObject> alertList = new ArrayList<>();
+
+		for (RdGsc rdGsc : rdGscList) {
+
+			AlertObject alertObj = new AlertObject();
+
+			alertObj.setObjType(rdGsc.objType());
+
+			alertObj.setPid(rdGsc.getPid());
+
+			alertObj.setStatus(ObjStatus.DELETE);
+
+			alertList.add(alertObj);
+		}
+
+		return alertList;
+	}
 }

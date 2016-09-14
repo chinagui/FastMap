@@ -2,6 +2,7 @@ package com.navinfo.dataservice.web.man.controller;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -145,7 +146,26 @@ public class StaticsController extends BaseController {
 			int subtaskId = dataJson.getInt("subtaskId");
 			SubtaskStatInfo data = StaticsService.getInstance()
 					.subtaskStatQuery(subtaskId);
-			return new ModelAndView("jsonView", success(data));
+			
+			//拼结果
+
+			Map<String,Object> poi = new HashMap<String,Object>();
+			poi.put("total", data.getTotalPoi());
+			poi.put("finish", data.getFinishPoi());
+			poi.put("working", data.getWorkingPoi());
+			
+			Map<String,Object> road = new HashMap<String,Object>();
+			road.put("total", data.getTotalRoad());
+			road.put("finish", data.getFinishRoad());
+			road.put("working", data.getWorkingRoad());
+			
+			Map<String,Object> result = new HashMap<String,Object>();
+			road.put("subtaskId", data.getSubtaskId());
+			road.put("percent", data.getPercent());
+			road.put("working", poi);
+			road.put("road", road);
+
+			return new ModelAndView("jsonView", success(result));
 		} catch (Exception e) {
 			log.error("创建失败，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", exception(e));

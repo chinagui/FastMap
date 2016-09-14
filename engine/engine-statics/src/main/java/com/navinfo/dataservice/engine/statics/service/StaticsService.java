@@ -437,7 +437,7 @@ public class StaticsService {
 				subtaskStatInfo = StaticsOperation.assembleResult(subtaskId,"poi",result);
 			}
 			//一体化GRID粗编
-			else if(subtask.getType()==1){
+			else if(subtask.getType()==3){
 				subtaskStatInfo = StaticsOperation.assembleResult(subtaskId,"unity",result);
 			}
 		}

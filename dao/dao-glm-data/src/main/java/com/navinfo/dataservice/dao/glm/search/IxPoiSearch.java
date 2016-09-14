@@ -199,8 +199,9 @@ public class IxPoiSearch implements ISearch {
 
 	public static void main(String[] args) throws Exception {
 
-		Connection conn = DBConnector.getInstance().getConnectionById(11);
-		new IxPoiSearch(conn).searchDataByTileWithGap(215890, 99229, 18, 80);
+//		Connection conn = DBConnector.getInstance().getConnectionById(11);
+//		new IxPoiSearch(conn).searchDataByTileWithGap(215890, 99229, 18, 80);
+		System.out.println(MercatorProjection.getWktWithGap(107940, 49615, 17, 80));
 	}
 	
 	/**

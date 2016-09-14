@@ -5,7 +5,6 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -53,12 +52,15 @@ public class JobController extends BaseController {
 			if(paraJson.get("request")==null){
 				throw new IllegalArgumentException("request参数不能为空。");
 			}
-			String jobType = paraJson.getString("jobType");;
+			String jobType = paraJson.getString("jobType");
 			JSONObject jobRequest = paraJson.getJSONObject("request");
 			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
-			int userId = (int) tokenObj.getUserId();
-			String descp = (String)paraJson.get("descp");
-			int jobId = JobService.getInstance().create(jobType, jobRequest, Long.valueOf(userId), descp);
+			long userId = tokenObj.getUserId();
+			String descp = null;
+			if(paraJson.containsKey("descp")){
+				descp = paraJson.getString("descp");
+			}
+			long jobId = JobService.getInstance().create(jobType, jobRequest, userId, descp);
 			Map<String,Object> data = new HashMap<String,Object>();
 			data.put("jobId", jobId);
 			return new ModelAndView("jsonView", success("job已创建。",data));

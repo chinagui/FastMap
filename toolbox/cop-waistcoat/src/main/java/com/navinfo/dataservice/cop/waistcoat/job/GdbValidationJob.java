@@ -43,7 +43,6 @@ public class GdbValidationJob extends AbstractJob {
 			//先找是否有传入的库，传入的库不需要导数据
 			if(req.getValDbId()>0){
 				valDbId = req.getValDbId();
-				jobInfo.getResponse().put("valDbId", valDbId);
 				DbInfo valDb = datahub.getDbById(valDbId);
 				valSchema = new OracleSchema(
 						DbConnectConfig.createConnectConfig(valDb.getConnectParam()));
@@ -69,7 +68,7 @@ public class GdbValidationJob extends AbstractJob {
 							throw new Exception("未设置创建检查子版本库request参数。");
 						}
 					}
-					jobInfo.getResponse().put("valDbId", valDbId);
+					jobInfo.addResponse("valDbId", valDbId);
 					valSchema = new OracleSchema(
 							DbConnectConfig.createConnectConfig(valDb.getConnectParam()));
 				}
@@ -87,7 +86,8 @@ public class GdbValidationJob extends AbstractJob {
 					AbstractJob expValDbJob = JobCreateStrategy.createAsSubJob(expValDbJobInfo, req.getSubJobRequest("expValDb"), this);
 					expValDbJob.run();
 					if (expValDbJob.getJobInfo().getResponse().getInt("exeStatus") != 3) {
-						throw new Exception("批处理子版本库导数据时job执行失败。");
+						String msg = (expValDbJob.getException()==null)?"未知错误。":"错误："+expValDbJob.getException().getMessage();
+						throw new Exception("检查子版本导数据时job内部发生"+msg);
 					}
 					//cop 子版本物理删除逻辑删除数据
 					DbInfo valDb = datahub.getDbById(valDbId);
@@ -107,8 +107,9 @@ public class GdbValidationJob extends AbstractJob {
 			JobInfo valJobInfo = new JobInfo(jobInfo.getId(),jobInfo.getGuid());
 			AbstractJob valJob = JobCreateStrategy.createAsSubJob(valJobInfo, req.getSubJobRequest("val"), this);
 			valJob.run();
-			if(valJob.getJobInfo().getResponse().getInt("exeStatus")!=3){
-				throw new Exception("检查job内部执行失败。");
+			if(valJob.getJobInfo().getStatus()!=3){
+				String msg = (valJob.getException()==null)?"未知错误。":"错误："+valJob.getException().getMessage();
+				throw new Exception("检查job内部发生"+msg);
 			}
 			// 3. 检查结果搬迁
 			CkResultTool.generateCkMd5(valSchema);

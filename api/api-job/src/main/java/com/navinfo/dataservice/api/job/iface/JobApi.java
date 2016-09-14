@@ -11,8 +11,8 @@ import net.sf.json.JSONObject;
 * @Description: TODO
 */
 public interface JobApi {
-	int createJob(String jobType,JSONObject request,long userId,String descp)throws Exception;
-	JobInfo getJobById(int jobId)throws Exception;
+	long createJob(String jobType,JSONObject request,long userId,String descp)throws Exception;
+	JobInfo getJobById(long jobId)throws Exception;
 	JobInfo getJobByGuid(String jobGuid)throws Exception;
 	String help();
 }

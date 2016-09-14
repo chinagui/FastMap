@@ -8,6 +8,7 @@ import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.dao.mq.job.JobMsgSubscriber;
 import com.navinfo.dataservice.jobframework.runjob.RunJobHandler;
 import com.navinfo.dataservice.jobframework.runjob.RunJobSubscriberSignal;
+import com.navinfo.dataservice.jobframework.service.EndJobHandler;
 import com.navinfo.dataservice.jobframework.service.ResponseJobHandler;
 
 /** 
@@ -29,8 +30,11 @@ public class JobFinderFromMQ implements JobFinder {
 			JobMsgSubscriber.SubscribeJob(JobMsgType.MSG_RESPONSE_JOB, new ResponseJobHandler(),null);
 			break;
 		case MSG_CREATE_JOB:
+			break;
 		case MSG_END_JOB:
-			// ...
+			JobMsgSubscriber.SubscribeJob(JobMsgType.MSG_END_JOB, new EndJobHandler(), null);
+			break;
+		default:
 			break;
 		}
 	}

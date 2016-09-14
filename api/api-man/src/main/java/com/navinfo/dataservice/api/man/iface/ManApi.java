@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.navinfo.dataservice.api.man.model.Grid;
+import com.navinfo.dataservice.api.man.model.Message;
 import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.api.man.model.Subtask;
 
@@ -42,5 +43,9 @@ public interface ManApi{
 	public String querySpecVersionByType(int type) throws Exception;
 	
 	public List<Region> queryRegionWithGrids(List<Integer> grids) throws Exception;
+	
+	public void pushMessage(Message message,Integer push) throws Exception;
+	
+	public List<Integer> getGridIdsBySubtaskId(int subtaskId) throws Exception;
 }
 

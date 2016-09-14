@@ -8,6 +8,7 @@ import org.bson.Document;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Sorts;
+import com.navinfo.dataservice.api.statics.model.SubtaskStatInfo;
 import com.navinfo.dataservice.engine.statics.StatMain;
 import com.navinfo.dataservice.engine.statics.tools.MongoDao;
 
@@ -34,9 +35,9 @@ public class StaticsOperation {
 	 * @param poiColName 
 	 * @return
 	 */
-	public static JSONObject getSubtaskStatByGrids(List<Integer> gridIds, String poiColName, String roadColName) {
+	public static SubtaskStatInfo getSubtaskStatByGrids(List<Integer> gridIds, String poiColName, String roadColName) {
 		// TODO Auto-generated method stub
-		JSONObject data = new JSONObject();
+		SubtaskStatInfo subtaskStatInfo = new SubtaskStatInfo();
 		
 		List<String> gridIdList = new ArrayList<String>();
 		for(int i = 0;i<gridIds.size();i++){
@@ -93,19 +94,52 @@ public class StaticsOperation {
 			}
 		}
 		
-		JSONObject poi = new JSONObject();
-		poi.put("total", totalPOI);
-		poi.put("finish", finishPOI);
-		poi.put("working", (totalPOI-finishPOI));
-		data.put("poi", poi);
+		subtaskStatInfo.setTotalPoi(totalPOI);
+		subtaskStatInfo.setWorkingPoi(totalPOI-finishPOI);
+		subtaskStatInfo.setFinishPoi(finishPOI);
 		
-		JSONObject road = new JSONObject();
-		road.put("total", totalROAD);
-		road.put("finish", finishROAD);
-		road.put("working", (totalROAD-finishROAD));
-		data.put("road", road);
+		subtaskStatInfo.setFinishRoad(finishROAD);
+		subtaskStatInfo.setTotalRoad(totalROAD);
+		subtaskStatInfo.setWorkingRoad(totalROAD-finishROAD);
 		
-		return data;
+		return subtaskStatInfo;
+	}
+
+
+	/**
+	 * @param subtaskId
+	 * @param string
+	 * @param result
+	 * @return
+	 */
+	public static SubtaskStatInfo assembleResult(int subtaskId, String type, SubtaskStatInfo subtaskStatInfo) {
+		// TODO Auto-generated method stub
+		subtaskStatInfo.setSubtaskId(subtaskId);
+
+		int percent = 100;
+
+		if(type.equals("poi")){
+			if(subtaskStatInfo.getTotalPoi()!=0){
+				percent = (int) (subtaskStatInfo.getFinishPoi()*100/subtaskStatInfo.getTotalPoi());
+			}
+		}else if(type.equals("road")){
+			if(subtaskStatInfo.getTotalRoad()!=0){
+				percent = (int) (subtaskStatInfo.getFinishRoad()*100/subtaskStatInfo.getTotalRoad());
+			}
+		}else{
+			int percentPOI = 100;
+			if(subtaskStatInfo.getTotalPoi()!=0){
+				percentPOI = (int) (subtaskStatInfo.getFinishPoi()*100/subtaskStatInfo.getTotalPoi());
+			}
+			int percentROAD = 100;
+			if(subtaskStatInfo.getTotalRoad()!=0){
+				percentROAD = (int) (subtaskStatInfo.getFinishRoad()*100/subtaskStatInfo.getTotalRoad());
+			}
+			percent = (int) (percentROAD*0.5 + percentPOI*0.5);
+		}
+
+		subtaskStatInfo.setPercent(percent);
+		return subtaskStatInfo;
 	}
 
 	/**
@@ -114,14 +148,14 @@ public class StaticsOperation {
 	 * @param roadColName
 	 * @return
 	 */
-	public static JSONObject getBlockStat(int blockId, String poiColName, String roadColName) {
+	public static SubtaskStatInfo getSubtaskStatByBlock(int blockId, String poiColName, String roadColName) {
 		// TODO Auto-generated method stub
-		JSONObject data = new JSONObject();
+		SubtaskStatInfo subtaskStatInfo = new SubtaskStatInfo();
+		
 		List<String> blockIdList = new ArrayList<String>();
 		blockIdList.add(String.valueOf(blockId));
 		int total = blockIdList.size();
 
-		List<String> gridIdList = new ArrayList<String>();
 		int totalPOI = 0;
 		int finishPOI = 0;
 		int totalROAD = 0;
@@ -169,19 +203,15 @@ public class StaticsOperation {
 			}
 		}
 		
-		JSONObject poi = new JSONObject();
-		poi.put("total", totalPOI);
-		poi.put("finish", finishPOI);
-		poi.put("working", (totalPOI-finishPOI));
-		data.put("poi", poi);
+		subtaskStatInfo.setTotalPoi(totalPOI);
+		subtaskStatInfo.setWorkingPoi(totalPOI-finishPOI);
+		subtaskStatInfo.setFinishPoi(finishPOI);
 		
-		JSONObject road = new JSONObject();
-		road.put("total", totalROAD);
-		road.put("finish", finishROAD);
-		road.put("working", (totalROAD-finishROAD));
-		data.put("road", road);
+		subtaskStatInfo.setFinishRoad(finishROAD);
+		subtaskStatInfo.setTotalRoad(totalROAD);
+		subtaskStatInfo.setWorkingRoad(totalROAD-finishROAD);
 		
-		return data;
+		return subtaskStatInfo;
 	}
 
 	/**
@@ -190,14 +220,13 @@ public class StaticsOperation {
 	 * @param roadColName
 	 * @return
 	 */
-	public static JSONObject getCityStat(int cityId, String poiColName, String roadColName) {
+	public static SubtaskStatInfo getSubtaskStatByCity(int cityId, String poiColName, String roadColName) {
 		// TODO Auto-generated method stub
-		JSONObject data = new JSONObject();
+		SubtaskStatInfo subtaskStatInfo = new SubtaskStatInfo();
 		List<String> blockIdList = new ArrayList<String>();
 		blockIdList.add(String.valueOf(cityId));
 		int total = blockIdList.size();
 
-		List<String> gridIdList = new ArrayList<String>();
 		int totalPOI = 0;
 		int finishPOI = 0;
 		int totalROAD = 0;
@@ -226,7 +255,7 @@ public class StaticsOperation {
 			}
 		}
 
-		iter = md.find(poiColName, Filters.in("block_id", blockIdList))
+		iter = md.find(poiColName, Filters.in("city_id", blockIdList))
 				.sort(Sorts.descending("stat_date")).batchSize(total)
 				.iterator();
 
@@ -245,59 +274,15 @@ public class StaticsOperation {
 			}
 		}
 		
-		JSONObject poi = new JSONObject();
-		poi.put("total", totalPOI);
-		poi.put("finish", finishPOI);
-		poi.put("working", (totalPOI-finishPOI));
-		data.put("poi", poi);
+		subtaskStatInfo.setTotalPoi(totalPOI);
+		subtaskStatInfo.setWorkingPoi(totalPOI-finishPOI);
+		subtaskStatInfo.setFinishPoi(finishPOI);
 		
-		JSONObject road = new JSONObject();
-		road.put("total", totalROAD);
-		road.put("finish", finishROAD);
-		road.put("working", (totalROAD-finishROAD));
-		data.put("road", road);
+		subtaskStatInfo.setFinishRoad(finishROAD);
+		subtaskStatInfo.setTotalRoad(totalROAD);
+		subtaskStatInfo.setWorkingRoad(totalROAD-finishROAD);
 		
-		return data;
-	}
-
-	/**
-	 * @param subtaskId
-	 * @param string
-	 * @param result
-	 * @return
-	 */
-	public static JSONObject assembleResult(int subtaskId, String type, JSONObject data) {
-		// TODO Auto-generated method stub
-		JSONObject result = new JSONObject();
-		result.put("subtaskId", subtaskId);
-		
-		JSONObject poi = result.getJSONObject("poi");
-		JSONObject road = result.getJSONObject("road");
-		
-		int percent = 100;
-
-		if(type.equals("poi")){
-			if(poi.getInt("total")!=0){
-				percent = poi.getInt("finish")*100/poi.getInt("total");
-			}
-		}else if(type.equals("road")){
-			if(road.getInt("total")!=0){
-				percent = road.getInt("finish")*100/road.getInt("total");
-			}
-		}else{
-			int percentPOI = 100;
-			if(poi.getInt("total")!=0){
-				percentPOI = poi.getInt("finish")*100/poi.getInt("total");
-			}
-			int percentROAD = 100;
-			if(road.getInt("total")!=0){
-				percentROAD = road.getInt("finish")*100/road.getInt("total");
-			}
-			percent = (int) (percentROAD*0.5 + percentPOI*0.5);
-		}
-
-		result.put("percent", percent);
-		return result;
+		return subtaskStatInfo;
 	}
 }
 

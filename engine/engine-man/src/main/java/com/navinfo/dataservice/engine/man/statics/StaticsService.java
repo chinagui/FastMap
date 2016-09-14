@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import com.navinfo.dataservice.api.statics.iface.StaticsApi;
 import com.navinfo.dataservice.api.statics.model.BlockExpectStatInfo;
 import com.navinfo.dataservice.api.statics.model.GridChangeStatInfo;
+import com.navinfo.dataservice.api.statics.model.SubtaskStatInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
@@ -155,7 +156,7 @@ public class StaticsService {
 		return data;
 	}
 	
-	public JSONObject subtaskStatQuery(int subtaskId) throws JSONException, Exception{
+	public SubtaskStatInfo subtaskStatQuery(int subtaskId) throws JSONException, Exception{
 		
 		StaticsApi api=(StaticsApi) ApplicationContextUtil.getBean("staticsApi");
 		

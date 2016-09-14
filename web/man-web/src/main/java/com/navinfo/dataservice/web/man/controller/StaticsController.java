@@ -15,6 +15,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import com.navinfo.dataservice.api.statics.model.BlockExpectStatInfo;
 import com.navinfo.dataservice.api.statics.model.GridChangeStatInfo;
+import com.navinfo.dataservice.api.statics.model.SubtaskStatInfo;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.engine.man.statics.StaticsService;
@@ -142,7 +143,7 @@ public class StaticsController extends BaseController {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
 			int subtaskId = dataJson.getInt("subtaskId");
-			JSONObject data = StaticsService.getInstance()
+			SubtaskStatInfo data = StaticsService.getInstance()
 					.subtaskStatQuery(subtaskId);
 			return new ModelAndView("jsonView", success(data));
 		} catch (Exception e) {

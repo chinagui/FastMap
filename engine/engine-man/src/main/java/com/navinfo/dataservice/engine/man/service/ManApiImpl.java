@@ -61,7 +61,7 @@ public class ManApiImpl implements ManApi {
 	public Subtask queryBySubtaskId(Integer subtaskId)
 			throws Exception {
 		// TODO Auto-generated method stub
-		return SubtaskService.getInstance().queryBySubtaskId(subtaskId);
+		return SubtaskService.getInstance().queryBySubtaskIdS(subtaskId);
 	}
 	@Override
 	public int queryAdminIdBySubtask(int subtaskId) throws Exception {

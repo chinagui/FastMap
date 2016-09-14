@@ -245,6 +245,125 @@ public class SubtaskService {
 	/*
 	 * 根据subtaskId查询一个任务的详细信息。 参数为Subtask对象
 	 */
+	public Subtask queryBySubtaskIdS(Integer subtaskId) throws ServiceException {
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+			
+			String selectSql = "select st.SUBTASK_ID "
+					+ ",st.NAME"
+					+ ",st.DESCP"
+					+ ",st.PLAN_START_DATE"
+					+ ",st.PLAN_END_DATE"
+					+ ",st.STAGE"
+					+ ",st.TYPE"
+					+ ",st.STATUS"
+					+ ",r.DAILY_DB_ID"
+					+ ",r.MONTHLY_DB_ID"
+					+ ",st.GEOMETRY";
+			String userSql = ",u.user_real_name as executer";
+			String groupSql = ",ug.group_name as executer";
+			String taskSql = ",T.TASK_ID AS BLOCK_ID,T.NAME AS BLOCK_NAME";
+			String blockSql = ",B.BLOCK_ID, B.BLOCK_NAME";
+
+			String fromSql_task = " from subtask st"
+					+ ",task t"
+					+ ",city c"
+					+ ",region r";
+
+			String fromSql_block = " from subtask st"
+					+ ",block b"
+					+ ",region r";
+			
+			String fromSql_user = "  ,user_info u";
+
+			String fromSql_group = " , user_group ug";
+
+			String conditionSql_task = " where st.task_id = t.task_id "
+					+ "and t.city_id = c.city_id "
+					+ "and c.region_id = r.region_id "
+					+ " and st.SUBTASK_ID=" + subtaskId;
+
+			String conditionSql_block = " where st.block_id = b.block_id "
+					+ "and b.region_id = r.region_id "
+					+ " and st.SUBTASK_ID=" + subtaskId;
+			
+			String conditionSql_user = " and st.exe_user_id = u.user_id";
+			String conditionSql_group = " and st.exe_group_id = ug.group_id";
+
+			
+			selectSql = selectSql + userSql + taskSql + fromSql_task + fromSql_user + conditionSql_task + conditionSql_user
+					+ " union all " + selectSql + userSql + blockSql + fromSql_block + fromSql_user + conditionSql_block + conditionSql_user
+					+ " union all " + selectSql + groupSql + taskSql + fromSql_task + fromSql_group + conditionSql_task + conditionSql_group
+					+ " union all " + selectSql + groupSql + blockSql + fromSql_block + fromSql_group + conditionSql_block + conditionSql_group;
+			
+
+			ResultSetHandler<Subtask> rsHandler = new ResultSetHandler<Subtask>() {
+				public Subtask handle(ResultSet rs) throws SQLException {
+					StaticsApi staticApi=(StaticsApi) ApplicationContextUtil.getBean("staticsApi");
+					if (rs.next()) {
+						Subtask subtask = new Subtask();
+						subtask.setSubtaskId(rs.getInt("SUBTASK_ID"));
+						subtask.setName(rs.getString("NAME"));
+						subtask.setStage(rs.getInt("STAGE"));
+						subtask.setType(rs.getInt("TYPE"));
+						subtask.setPlanStartDate(rs.getTimestamp("PLAN_START_DATE"));
+						subtask.setPlanEndDate(rs.getTimestamp("PLAN_END_DATE"));
+						subtask.setDescp(rs.getString("DESCP"));
+						subtask.setStatus(rs.getInt("STATUS"));
+						
+						STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
+						try {
+							subtask.setGeometry(GeoTranslator.struct2Wkt(struct));
+						} catch (Exception e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+						
+						try {
+							List<Integer> gridIds = SubtaskOperation.getGridIdsBySubtaskId(rs.getInt("SUBTASK_ID"));
+							subtask.setGridIds(gridIds);
+						} catch (Exception e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+
+	
+						if (1 == rs.getInt("STAGE")) {
+							subtask.setDbId(rs.getInt("DAILY_DB_ID"));
+							subtask.setBlockId(rs.getInt("BLOCK_ID"));
+							subtask.setBlockName(rs.getString("BLOCK_NAME"));
+						} else if (2 == rs.getInt("STAGE")) {
+							subtask.setDbId(rs.getInt("MONTHLY_DB_ID"));
+							subtask.setTaskId(rs.getInt("BLOCK_ID"));
+							subtask.setTaskName(rs.getString("BLOCK_NAME"));
+						} else {
+							subtask.setDbId(rs.getInt("MONTHLY_DB_ID"));
+							subtask.setBlockId(rs.getInt("BLOCK_ID"));
+							subtask.setBlockName(rs.getString("BLOCK_NAME"));
+						}
+
+						return subtask;
+					}
+					return null;
+				}
+	
+			};
+
+			return run.query(conn, selectSql,rsHandler);
+			
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询明细失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	/*
+	 * 根据subtaskId查询一个任务的详细信息。 参数为Subtask对象
+	 */
 	public Subtask queryBySubtaskId(Integer subtaskId) throws ServiceException {
 		Connection conn = null;
 		try {

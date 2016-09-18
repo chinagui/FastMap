@@ -412,9 +412,9 @@ public class SubtaskController extends BaseController {
 			}
 			long userId=tokenObj.getUserId();
 			
-			JSONArray subTaskIds=dataJson.getJSONArray("subTaskIds");
+			JSONArray subtaskIds=dataJson.getJSONArray("subtaskIds");
 			
-			String msg= SubtaskService.getInstance().pushMsg(userId,subTaskIds);
+			String msg= SubtaskService.getInstance().pushMsg(userId,subtaskIds);
 
 			return new ModelAndView("jsonView", success(msg));
 		}catch(Exception e){

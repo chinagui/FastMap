@@ -1,8 +1,10 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdtollgate.delete;
 
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.List;
 
+import com.navinfo.dataservice.dao.glm.iface.AlertObject;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
@@ -19,14 +21,14 @@ import com.navinfo.dataservice.dao.glm.selector.rd.tollgate.RdTollgateSelector;
 public class Operation implements IOperation {
 
 	private Command command;
-	
+
 	private Connection conn;
 
 	public Operation(Command command) {
 		this.command = command;
 	}
-	
-	public Operation(Connection conn){
+
+	public Operation(Connection conn) {
 		this.conn = conn;
 	}
 
@@ -55,5 +57,35 @@ public class Operation implements IOperation {
 			}
 		}
 		return null;
+	}
+
+	/**
+	 * 删除link对收费站的删除影响
+	 * 
+	 * @return
+	 * @throws Exception
+	 */
+	public List<AlertObject> getDeleteRdWarningInfectData(int linkPid, Connection conn) throws Exception {
+
+		RdTollgateSelector rdTollgateSelector = new RdTollgateSelector(conn);
+
+		List<RdTollgate> rdTollgates = rdTollgateSelector.loadRdTollgatesWithLinkPid(linkPid, true);
+
+		List<AlertObject> alertList = new ArrayList<>();
+
+		for (RdTollgate rdTollgate : rdTollgates) {
+
+			AlertObject alertObj = new AlertObject();
+
+			alertObj.setObjType(rdTollgate.objType());
+
+			alertObj.setPid(rdTollgate.getPid());
+
+			alertObj.setStatus(ObjStatus.DELETE);
+
+			alertList.add(alertObj);
+		}
+
+		return alertList;
 	}
 }

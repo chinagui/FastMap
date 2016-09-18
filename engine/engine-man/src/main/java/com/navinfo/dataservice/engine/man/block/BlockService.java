@@ -113,7 +113,7 @@ public class BlockService {
 		}
 	}
 
-	public int batchUpdate(JSONObject json,long userId) throws ServiceException {
+	public int batchUpdate(JSONObject json, long userId) throws ServiceException {
 		Connection conn = null;
 		try {
 
@@ -145,10 +145,11 @@ public class BlockService {
 					}
 				}
 			}
-
-			int[] rows = run.batch(conn, createSql, param);
-			blockPushMsg(userId,blockIdList);
-			updateCount = rows.length;
+			if (param[0]!=null){
+				int[] rows = run.batch(conn, createSql, param);
+				updateCount = rows.length;
+			}
+			blockPushMsg(userId, blockIdList);
 			return updateCount;
 
 		} catch (Exception e) {
@@ -476,15 +477,15 @@ public class BlockService {
 			}
 			if (listType == null || "snapshot".equals(listType)) {
 				if (!inforId.isEmpty()) {
-					selectSql = "WITH T AS (SELECT m.block_id,m.block_name,m.status blockStatus,i.plan_status FROM BLOCK t,Block_Man m,infor i WHERE i.infor_id="
-							+inforId +" AND i.task_id=m.task_id AND t.block_id=m.block_id AND m.latest = 1) "
-							+"SELECT block_id,block_name,blockStatus,plan_status from T WHERE 1=1";
+					selectSql = "WITH T AS (SELECT m.block_id,t.block_name,m.status blockStatus,i.plan_status FROM BLOCK t,Block_Man m,infor i WHERE i.infor_id='"
+							+ inforId + "' AND i.task_id=m.task_id AND t.block_id=m.block_id AND m.latest = 1) "
+							+ "SELECT block_id,block_name,blockStatus,plan_status from T WHERE 1=1";
 				} else {
-					  selectSql = "WITH T AS (SELECT t.block_id,t.block_name,m.status blockStatus,t.plan_status FROM BLOCK t,Block_Man m"
-								+ "WHERE t.block_id=m.block_id  AND m.latest = 1 AND t.city_id=" + cityId 
-								+" UNION ALL  SELECT t.block_id,t.block_name,0 blockStatus,t.plan_status "
-								+ "FROM BLOCK t WHERE t.plan_status=0 AND t.city_id=" + cityId   
-								+" ) SELECT block_id,block_name,blockStatus,plan_status from T  WHERE 1=1";
+					selectSql = " WITH T AS (SELECT t.block_id,t.block_name,m.status blockStatus,t.plan_status FROM BLOCK t,Block_Man m"
+							+ " WHERE t.block_id=m.block_id  AND m.latest = 1 AND t.city_id=" + cityId
+							+ " UNION ALL  SELECT t.block_id,t.block_name,0 blockStatus,t.plan_status "
+							+ "FROM BLOCK t WHERE t.plan_status=0 AND t.city_id=" + cityId
+							+ " ) SELECT block_id,block_name,blockStatus,plan_status from T  WHERE 1=1";
 				}
 
 			} else {
@@ -502,14 +503,14 @@ public class BlockService {
 							+ " k.TASK_ID, k.NAME, k.task_type "
 							+ " to_char(k.PLAN_START_DATE, 'yyyymmdd') PLAN_START_DATE,  "
 							+ " to_char(k.PLAN_END_DATE, 'yyyymmdd') PLAN_END_DATE, "
-							+ "	from block_man m, block t, user_info u, task k, user_group u,infor i where i.infor_id="
+							+ "	from block_man m, block t, user_info u, task k, user_group u,infor i where i.infor_id='"
 							+ inforId
-							+ "	 AND m.block_id = t.block_id(+) and m.latest = 1 and m.create_user_id = u.user_id(+)  "
+							+ "' AND m.block_id = t.block_id(+) and m.latest = 1 and m.create_user_id = u.user_id(+)  "
 							+ " and i.task_id = m.task_id AND m.task_id=k.task_id and k.latest = 1 and m.collect_group_id = u.group_id(+) ) "
 							+ " SELECT block_id,block_name,blockStatus,plan_status,DESCP,USER_REAL_NAME,COLLECT_GROUP_ID,COLLECT_GROUP"
 							+ " DAY_EDIT_GROUP_ID,DAY_EDIT_GROUP,COLLECT_PLAN_START_DATE,COLLECT_PLAN_END_DATE,DAY_EDIT_PLAN_START_DATE "
-							+ "DAY_EDIT_PLAN_END_DATE,DAY_PRODUCE_PLAN_START_DATE,DAY_PRODUCE_PLAN_END_DATE,TASK_ID,NAME, task_type"
-							+ " PLAN_START_DATE,PLAN_END_DATE from T  WHERE 1=1";
+							+ " DAY_EDIT_PLAN_END_DATE,DAY_PRODUCE_PLAN_START_DATE,DAY_PRODUCE_PLAN_END_DATE,TASK_ID,NAME, task_type"
+							+ " PLAN_START_DATE,PLAN_END_DATE from T  WHERE 1=1 ";
 				} else {
 					selectSql = "WITH T AS (select distinct t.block_id,t.block_name,m.status blockStatus,t.plan_status,m.DESCP, nvl(u.user_real_name, '') USER_REAL_NAME,"
 							+ " m.COLLECT_GROUP_ID,u.GROUP_NAME COLLECT_GROUP, "
@@ -528,14 +529,15 @@ public class BlockService {
 							+ " where m.block_id = t.block_id and m.latest = 1 and m.create_user_id = u.user_id(+)"
 							+ " and t.city_id = k.city_id and k.latest = 1 and m.collect_group_id = u.group_id(+)"
 							+ " AND t.city_id=" + cityId
-					        +" UNION ALL SELECT t.block_id,t.block_name, 0 blockStatus,t.plan_status,'---' DESCP,'---' USER_REAL_NAME,0 COLLECT_GROUP_ID,'---' COLLECT_GROUP"
-							+ " 0 DAY_EDIT_GROUP_ID,'---' DAY_EDIT_GROUP,'---' COLLECT_PLAN_START_DATE,'---' COLLECT_PLAN_END_DATE,'---' DAY_EDIT_PLAN_START_DATE "
-							+ "'---' DAY_EDIT_PLAN_END_DATE,'---' DAY_PRODUCE_PLAN_START_DATE,'---' DAY_PRODUCE_PLAN_END_DATE,0 TASK_ID,'---' NAME, 0 task_type"
-							+ " '---' PLAN_START_DATE,'---' PLAN_END_DATE FROM BLOCK t WHERE t.plan_status=0 AND t.city_id="+cityId
-					+ ") SELECT block_id,block_name,blockStatus,plan_status,DESCP,USER_REAL_NAME,COLLECT_GROUP_ID,COLLECT_GROUP"
-					+ " DAY_EDIT_GROUP_ID,DAY_EDIT_GROUP,COLLECT_PLAN_START_DATE,COLLECT_PLAN_END_DATE,DAY_EDIT_PLAN_START_DATE "
-					+ "DAY_EDIT_PLAN_END_DATE,DAY_PRODUCE_PLAN_START_DATE,DAY_PRODUCE_PLAN_END_DATE,TASK_ID,NAME, task_type"
-					+ " PLAN_START_DATE,PLAN_END_DATE from T  WHERE 1=1";
+							+ " UNION ALL SELECT t.block_id,t.block_name, 0 blockStatus,t.plan_status,'---' DESCP,'---' USER_REAL_NAME,0 COLLECT_GROUP_ID,'---' COLLECT_GROUP,"
+							+ " 0 DAY_EDIT_GROUP_ID,'---' DAY_EDIT_GROUP,'---' COLLECT_PLAN_START_DATE,'---' COLLECT_PLAN_END_DATE,'---' DAY_EDIT_PLAN_START_DATE, "
+							+ " '---' DAY_EDIT_PLAN_END_DATE,'---' DAY_PRODUCE_PLAN_START_DATE,'---' DAY_PRODUCE_PLAN_END_DATE,0 TASK_ID,'---' NAME, 0 task_type,"
+							+ " '---' PLAN_START_DATE,'---' PLAN_END_DATE FROM BLOCK t WHERE t.plan_status=0 AND t.city_id="
+							+ cityId
+							+ ") SELECT block_id,block_name,blockStatus,plan_status,DESCP,USER_REAL_NAME,COLLECT_GROUP_ID,COLLECT_GROUP,"
+							+ " DAY_EDIT_GROUP_ID,DAY_EDIT_GROUP,COLLECT_PLAN_START_DATE,COLLECT_PLAN_END_DATE,DAY_EDIT_PLAN_START_DATE, "
+							+ " DAY_EDIT_PLAN_END_DATE,DAY_PRODUCE_PLAN_START_DATE,DAY_PRODUCE_PLAN_END_DATE,TASK_ID,NAME, task_type,"
+							+ " PLAN_START_DATE,PLAN_END_DATE from T  WHERE 1=1 ";
 				}
 
 			}
@@ -585,7 +587,7 @@ public class BlockService {
 					}
 				}
 			} else {
-				selectSql += " order by t.block_id";
+				selectSql += " order by T.block_id";
 			}
 			return BlockOperation.selectAllBlock(conn, selectSql, listType);
 		} catch (Exception e) {
@@ -624,39 +626,43 @@ public class BlockService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-	
-	public String blockPushMsg(long userId,List blockList) throws Exception{
-		Connection conn = null;
-		try{
-		conn = DBConnector.getInstance().getManConnection();
-		String BlockIds = "(";
-		BlockIds += StringUtils.join(blockList.toArray(), ",") + ")";
-		String selectSql="select DISTINCT t.block_id,t.block_name,(SELECT u.group_name FROM User_Group u "
-				+ "WHERE u.group_id=m.collect_group_id) collectGroupName,(SELECT u.group_name FROM User_Group u "
-				+ "WHERE u.group_id=m.day_edit_group_id) dayEditGroupName from block_man m,BLOCK t WHERE t.block_id=m.block_id and t.block_id in "+BlockIds;
-		PreparedStatement stmt = null;
-		try {
-			stmt = conn.prepareStatement(selectSql);
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		ResultSet rs = stmt.executeQuery();
-		while (rs.next()) {
-			//调用消息保存方法
-			 //saveMsg()
-		}
-		BlockOperation.updateMainBlock(conn, blockList);
 
-		}catch(Exception e){
+	public String blockPushMsg(long userId, List blockList) throws Exception {
+		Connection conn = null;
+		try {
+			if (blockList.size()==0){
+				return "";
+			}
+			conn = DBConnector.getInstance().getManConnection();
+			String BlockIds = "(";
+			BlockIds += StringUtils.join(blockList.toArray(), ",") + ")";
+			String selectSql = "select DISTINCT t.block_id,t.block_name,(SELECT u.group_name FROM User_Group u "
+					+ "WHERE u.group_id=m.collect_group_id) collectGroupName,(SELECT u.group_name FROM User_Group u "
+					+ "WHERE u.group_id=m.day_edit_group_id) dayEditGroupName from block_man m,BLOCK t WHERE t.block_id=m.block_id and t.block_id in "
+					+ BlockIds;
+			PreparedStatement stmt = null;
+			try {
+				stmt = conn.prepareStatement(selectSql);
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			ResultSet rs = stmt.executeQuery();
+			while (rs.next()) {
+				// 调用消息保存方法
+				// saveMsg()
+			}
+			BlockOperation.updateMainBlock(conn, blockList);
+
+		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
-			throw new Exception("发布失败，原因为:"+e.getMessage(),e);
-		}finally{
+			throw new Exception("发布失败，原因为:" + e.getMessage(), e);
+		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 		return "发布成功";
-		
+
 	}
 
 }

@@ -9,6 +9,7 @@ import net.sf.json.JSONObject;
 import com.navinfo.dataservice.api.statics.model.BlockExpectStatInfo;
 import com.navinfo.dataservice.api.statics.model.GridChangeStatInfo;
 import com.navinfo.dataservice.api.statics.model.GridStatInfo;
+import com.navinfo.dataservice.api.statics.model.SubtaskStatInfo;
 
 /**
  * @ClassName: DatahubApiService
@@ -47,5 +48,6 @@ public interface StaticsApi {
 	
 	public List<BlockExpectStatInfo> getExpectStatByBlock(int blockId, int stage, int type);
 	
-	public JSONObject getStatBySubtask(int subtaskId);
+	public SubtaskStatInfo getStatBySubtask(int subtaskId);
+
 }

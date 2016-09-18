@@ -32,22 +32,6 @@ public class Command extends AbstractCommand {
 
 	private List<RdNode> nodes;
 
-	private List<RdRestriction> inLinkRestrictions;
-
-	private List<RdRestriction> outDeleteLinkRestrictions;
-
-	private List<RdRestriction> outUpdateLinkRestrictions;
-
-	private List<RdLaneConnexity> inLinkRdLaneConnexitys;
-
-	private List<RdLaneConnexity> outLinkDeleteRdLaneConnexitys;
-
-	private List<RdLaneConnexity> outLinkUpdateRdLaneConnexitys;
-
-	private List<RdBranch> inLinkBranchs;
-
-	private List<RdBranch> outLinkDeleteBranchs;
-
 	private List<RdRestriction> restrictions;
 
 	private List<RdLaneConnexity> lanes;
@@ -68,10 +52,6 @@ public class Command extends AbstractCommand {
 	
 	private List<RdInter> inters;
 	
-	private List<RdInter> updateInters;
-	
-	private List<RdInter> deleteInters;
-
 	private boolean isCheckInfect = false;
 
 	public boolean isCheckInfect() {
@@ -205,70 +185,6 @@ public class Command extends AbstractCommand {
 		this.electroniceyes = electroniceyes;
 	}
 
-	public List<RdRestriction> getInLinkRestrictions() {
-		return inLinkRestrictions;
-	}
-
-	public void setInLinkRestrictions(List<RdRestriction> inLinkRestrictions) {
-		this.inLinkRestrictions = inLinkRestrictions;
-	}
-
-	public List<RdRestriction> getOutDeleteLinkRestrictions() {
-		return outDeleteLinkRestrictions;
-	}
-
-	public void setOutDeleteLinkRestrictions(List<RdRestriction> outDeleteLinkRestrictions) {
-		this.outDeleteLinkRestrictions = outDeleteLinkRestrictions;
-	}
-
-	public List<RdRestriction> getOutUpdateLinkRestrictions() {
-		return outUpdateLinkRestrictions;
-	}
-
-	public void setOutUpdateLinkRestrictions(List<RdRestriction> outUpdateLinkRestrictions) {
-		this.outUpdateLinkRestrictions = outUpdateLinkRestrictions;
-	}
-
-	public List<RdBranch> getInLinkBranchs() {
-		return inLinkBranchs;
-	}
-
-	public void setInLinkBranchs(List<RdBranch> inLinkBranchs) {
-		this.inLinkBranchs = inLinkBranchs;
-	}
-
-	public List<RdBranch> getOutLinkDeleteBranchs() {
-		return outLinkDeleteBranchs;
-	}
-
-	public void setOutLinkDeleteBranchs(List<RdBranch> outLinkDeleteBranchs) {
-		this.outLinkDeleteBranchs = outLinkDeleteBranchs;
-	}
-
-	public List<RdLaneConnexity> getInLinkRdLaneConnexitys() {
-		return inLinkRdLaneConnexitys;
-	}
-
-	public void setInLinkRdLaneConnexitys(List<RdLaneConnexity> inLinkRdLaneConnexitys) {
-		this.inLinkRdLaneConnexitys = inLinkRdLaneConnexitys;
-	}
-
-	public List<RdLaneConnexity> getOutLinkDeleteRdLaneConnexitys() {
-		return outLinkDeleteRdLaneConnexitys;
-	}
-
-	public void setOutLinkDeleteRdLaneConnexitys(List<RdLaneConnexity> outLinkDeleteRdLaneConnexitys) {
-		this.outLinkDeleteRdLaneConnexitys = outLinkDeleteRdLaneConnexitys;
-	}
-
-	public List<RdLaneConnexity> getOutLinkUpdateRdLaneConnexitys() {
-		return outLinkUpdateRdLaneConnexitys;
-	}
-
-	public void setOutLinkUpdateRdLaneConnexitys(List<RdLaneConnexity> outLinkUpdateRdLaneConnexitys) {
-		this.outLinkUpdateRdLaneConnexitys = outLinkUpdateRdLaneConnexitys;
-	}
-
 	public List<RdGate> getRdGates() {
 		return rdGates;
 	}
@@ -283,21 +199,5 @@ public class Command extends AbstractCommand {
 
 	public void setInters(List<RdInter> inters) {
 		this.inters = inters;
-	}
-
-	public List<RdInter> getUpdateInters() {
-		return updateInters;
-	}
-
-	public void setUpdateInters(List<RdInter> updateInters) {
-		this.updateInters = updateInters;
-	}
-
-	public List<RdInter> getDeleteInters() {
-		return deleteInters;
-	}
-
-	public void setDeleteInters(List<RdInter> deleteInters) {
-		this.deleteInters = deleteInters;
 	}
 }

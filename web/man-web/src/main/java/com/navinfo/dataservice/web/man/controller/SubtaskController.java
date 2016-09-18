@@ -1,3 +1,4 @@
+
 package com.navinfo.dataservice.web.man.controller;
 
 import java.sql.ResultSet;
@@ -38,6 +39,7 @@ import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.man.model.subtask.SubtaskList;
 import com.navinfo.dataservice.api.man.model.subtask.SubtaskListByUser;
 import com.navinfo.dataservice.api.man.model.subtask.SubtaskListByWkt;
+import com.navinfo.dataservice.api.man.model.subtask.SubtaskQuery;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.json.JsonOperation;
@@ -48,6 +50,7 @@ import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.engine.man.grid.GridService;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskOperation;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskService;
+import com.navinfo.dataservice.engine.man.task.TaskService;
 import com.navinfo.dataservice.web.man.page.SubtaskListByUserPage;
 import com.navinfo.dataservice.web.man.page.SubtaskListPage;
 import com.navinfo.dataservice.web.man.response.NullResponse;
@@ -282,18 +285,26 @@ public class SubtaskController extends BaseController {
 			Subtask subtask = SubtaskService.getInstance().query(bean);	
 			if(subtask!=null&&subtask.getSubtaskId()!=null){
 				SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
-				SubtaskListByUser subtaskListByUser = new SubtaskListByUser(subtask.getSubtaskId()
+				SubtaskQuery subtaskQuery = new SubtaskQuery(subtask.getSubtaskId()
 						,subtask.getName()
-						,subtask.getStage()
-						,subtask.getType()
 						,subtask.getStatus()
 						,subtask.getDescp()
-						,subtask.getDbId()
+						,subtask.getStage()
+						,subtask.getType()
 						,subtask.getGridIds()
 						,subtask.getGeometry()
 						, df.format(subtask.getPlanStartDate())
-						, df.format(subtask.getPlanEndDate()));
-				SubtaskQueryResponse response = new SubtaskQueryResponse(0,"success",subtaskListByUser);
+						, df.format(subtask.getPlanEndDate())
+						,subtask.getDbId()
+						,subtask.getBlockId()
+						,subtask.getBlockName()
+						,subtask.getTaskId()
+						,subtask.getTaskName()
+						,subtask.getExecuter()
+						,subtask.getPercent()
+						,subtask.getVersion()
+						);
+				SubtaskQueryResponse response = new SubtaskQueryResponse(0,"success",subtaskQuery);
 				return response;
 			}else{
 				throw new Exception("该子任务不存在");
@@ -383,5 +394,32 @@ public class SubtaskController extends BaseController {
 		}
 	}
 	
+	
+	/*
+	 * 发布功能：选中一条/多条开启状态记录后，点击“发布”按钮，将这些记录进行消息推送。未选中记录时，提示“请选择子任务”；发布后提示“发布成功”/“发布失败”
+	 * 草稿状态记录，点击发布后，子任务状态变更为“开启”，同时进行消息推送
+	 * 开启状态记录，点击发布后，子任务状态不变更，只进行消息推送
+	 * ps:开启状态时，“保存”包含消息发布功能，点击“发布”仍可单独发布消息
+	 */
+	@RequestMapping(value = "/pushMsg")
+	public ModelAndView pushMsg(HttpServletRequest request){
+		try{
+			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));			
+			if(dataJson==null){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			long userId=tokenObj.getUserId();
+			
+			JSONArray subTaskIds=dataJson.getJSONArray("subTaskIds");
+			
+			String msg= SubtaskService.getInstance().pushMsg(userId,subTaskIds);
+
+			return new ModelAndView("jsonView", success(msg));
+		}catch(Exception e){
+			log.error("创建失败，原因："+e.getMessage(), e);
+			return new ModelAndView("jsonView",exception(e));
+		}
+	}
 
 }

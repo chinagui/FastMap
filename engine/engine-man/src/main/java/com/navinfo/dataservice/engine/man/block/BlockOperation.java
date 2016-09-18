@@ -568,7 +568,7 @@ public class BlockOperation {
 				String BlockIds = "(";
 				BlockIds += StringUtils.join(blockList.toArray(), ",") + ")";
 
-				String updateSql = "update block_man" + " set status = 1" + " where block_id in " + BlockIds;
+				String updateSql = "update block_man" + " set status = 1" + " where block_id in " + BlockIds +" and status!=0";
 
 				run.update(conn, updateSql);
 			}

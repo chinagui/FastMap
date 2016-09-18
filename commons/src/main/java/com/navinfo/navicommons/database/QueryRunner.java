@@ -70,6 +70,12 @@ public class QueryRunner extends QueryRunnerBase {
         
         return runner.queryForInt(conn, sql, params);
     }
+    @Override
+    public long queryForLong(Connection conn, String sql, Object... params)
+        throws SQLException {
+        
+        return runner.queryForLong(conn, sql, params);
+    }
 
     @Override
     public String queryForString(DataSource ds, String sql, Object... params)

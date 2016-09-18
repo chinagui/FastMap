@@ -1,9 +1,5 @@
 package com.navinfo.dataservice.engine.edit.operation.topo.delete.deleterdlink;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import com.navinfo.dataservice.dao.glm.iface.AlertObject;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
@@ -27,29 +23,5 @@ public class OpRefRdGsc implements IOperation {
 		}
 		
 		return null;
-	}
-	
-	/**
-	 * 删除link对立交的删除影响
-	 * @return
-	 */
-	public List<AlertObject> getDeleteRdGscInfectData() {
-
-		List<AlertObject> alertList = new ArrayList<>();
-
-		for (RdGsc rdGsc : command.getRdGscs()) {
-
-			AlertObject alertObj = new AlertObject();
-
-			alertObj.setObjType(rdGsc.objType());
-
-			alertObj.setPid(rdGsc.getPid());
-
-			alertObj.setStatus(ObjStatus.DELETE);
-
-			alertList.add(alertObj);
-		}
-
-		return alertList;
 	}
 }

@@ -12,6 +12,7 @@ import com.navinfo.dataservice.api.statics.iface.StaticsApi;
 import com.navinfo.dataservice.api.statics.model.BlockExpectStatInfo;
 import com.navinfo.dataservice.api.statics.model.GridChangeStatInfo;
 import com.navinfo.dataservice.api.statics.model.GridStatInfo;
+import com.navinfo.dataservice.api.statics.model.SubtaskStatInfo;
 import com.navinfo.dataservice.engine.statics.poicollect.PoiCollectMain;
 import com.navinfo.dataservice.engine.statics.poidaily.PoiDailyMain;
 import com.navinfo.dataservice.engine.statics.roadcollect.RoadCollectMain;
@@ -67,7 +68,7 @@ public class StaticsApiImpl implements StaticsApi {
 	}
 
 	@Override
-	public JSONObject getStatBySubtask(int subtaskId) {
+	public SubtaskStatInfo getStatBySubtask(int subtaskId) {
 		return StaticsService.getInstance().getStatBySubtask(subtaskId);
 	}
 }

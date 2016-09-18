@@ -11,74 +11,78 @@ import com.navinfo.dataservice.dao.glm.model.rd.se.RdSe;
 import com.navinfo.dataservice.dao.glm.selector.rd.se.RdSeSelector;
 
 /**
+ * @author zhangyt
  * @Title: Operation.java
  * @Description: TODO
- * @author zhangyt
  * @date: 2016年8月1日 下午2:51:14
  * @version: v1.0
  */
 public class Operation implements IOperation {
 
-	private Command command;
+    private Command command;
 
-	private Connection conn;
+    private Connection conn;
 
-	public Operation(Command command) {
-		this.command = command;
-	}
+    public Operation(Command command) {
+        this.command = command;
+    }
 
-	public Operation(Connection conn) {
-		super();
-		this.conn = conn;
-	}
+    public Operation(Connection conn) {
+        super();
+        this.conn = conn;
+    }
 
-	@Override
-	public String run(Result result) throws Exception {
-		boolean isChange = command.getRdSe().fillChangeFields(command.getContent());
-		if (isChange) {
-			result.insertObject(command.getRdSe(), ObjStatus.UPDATE, command.getRdSe().pid());
-		}
-		return null;
-	}
+    @Override
+    public String run(Result result) throws Exception {
+        boolean isChange = command.getRdSe().fillChangeFields(command.getContent());
+        if (isChange) {
+            result.insertObject(command.getRdSe(), ObjStatus.UPDATE, command.getRdSe().pid());
+        }
+        return null;
+    }
 
-	/**
-	 * 根据被删除的RdLink的Pid、新生成的RdLink<br>
-	 * 维护原RdLink上关联的分叉口提示
-	 * 
-	 * @param result
-	 *            待处理的结果集
-	 * @param oldLink
-	 *            被删除RdLink的Pid
-	 * @param newLinks
-	 *            新生成的RdLink的集合
-	 * @return
-	 * @throws Exception
-	 */
-	public String breakRdSe(Result result, int oldLink, List<RdLink> newLinks) throws Exception {
-		RdSeSelector selector = new RdSeSelector(this.conn);
-		// 查询所有与被删除RdLink关联的分叉口提示
-		List<RdSe> rdSes = selector.loadRdSesWithLinkPid(oldLink, true);
-		// 循环处理每一个分叉口提示
-		for (RdSe rdSe : rdSes) {
-			// 分叉口提示的进入点的Pid
-			int nodePid = rdSe.getNodePid();
-			for (RdLink link : newLinks) {
-				// 如果新生成线的起点的Pid与分叉口提示的nodePid相等
-				// 则该新生成线为退出线，修改退出线Pid
-				if (nodePid == link.getsNodePid()) {
-					rdSe.changedFields().put("outLinkPid", link.pid());
-					break;
-					// 如果新生成线的终点的Pid与分叉口提示的nodePid相等
-					// 则该新生成线为进入线，修改进入线Pid
-				} else if (nodePid == link.geteNodePid()) {
-					rdSe.changedFields().put("inLinkPid", link.pid());
-					break;
-				}
-			}
-			// 将需要修改的分叉口提示放入结果集中
-			result.insertObject(rdSe, ObjStatus.UPDATE, rdSe.pid());
-		}
-		return null;
-	}
+    /**
+     * 根据被删除的RdLink的Pid、新生成的RdLink<br>
+     * 维护原RdLink上关联的分叉口提示
+     *
+     * @param result   待处理的结果集
+     * @param oldLink  被删除RdLink的Pid
+     * @param newLinks 新生成的RdLink的集合
+     * @return
+     * @throws Exception
+     */
+    public String breakRdSe(Result result, int oldLink, List<RdLink> newLinks) throws Exception {
+        RdSeSelector selector = new RdSeSelector(this.conn);
+        // 查询所有与被删除RdLink关联的分叉口提示
+        List<RdSe> rdSes = selector.loadRdSesWithLinkPid(oldLink, true);
+        // 循环处理每一个分叉口提示
+        for (RdSe rdSe : rdSes) {
+            // 分叉口提示的进入点的Pid
+            int nodePid = rdSe.getNodePid();
+            if (oldLink == rdSe.getInLinkPid()) {
+                for (RdLink link : newLinks) {
+                    if (nodePid == link.getsNodePid() || nodePid == link.geteNodePid()) {
+                        // 如果新生成线的终点的Pid与分叉口提示的nodePid相等
+                        // 则该新生成线为进入线，修改进入线Pid
+                        rdSe.changedFields().put("inLinkPid", link.pid());
+                        break;
+                    }
+                }
+            } else {
+                for (RdLink link : newLinks) {
+                    if (nodePid == link.getsNodePid() || nodePid == link.geteNodePid()) {
+                        // 如果新生成线的起点的Pid与分叉口提示的nodePid相等
+                        // 则该新生成线为退出线，修改退出线Pid
+                        rdSe.changedFields().put("outLinkPid", link.pid());
+                        break;
+                    }
+                }
+            }
+            for (RdLink link : newLinks)
+                // 将需要修改的分叉口提示放入结果集中
+                result.insertObject(rdSe, ObjStatus.UPDATE, rdSe.pid());
+        }
+        return null;
+    }
 
 }

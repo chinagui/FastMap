@@ -238,6 +238,13 @@ public class StringUtils {
 	public static boolean isEmpty(String str) {
 		return org.apache.commons.lang.StringUtils.isEmpty(str);
 	}
+	
+	public static String cutSpecLength(String str,int len){
+		if(str==null||str.length()<=len){
+			return str;
+		}
+		return str.substring(0, len)+"......";
+	}
 
 	public static void main(String[] args) {
 

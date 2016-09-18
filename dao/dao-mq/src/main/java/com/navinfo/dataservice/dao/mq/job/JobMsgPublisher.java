@@ -33,7 +33,7 @@ public class JobMsgPublisher {
 		MsgPublisher.publish2WorkQueue("create_job", jobMsg.toString());
 		return "";
 	}
-	public static void runJob(int jobId,String jobGuid,String type,JSONObject jobRequest)throws Exception{
+	public static void runJob(long jobId,String jobGuid,String type,JSONObject jobRequest)throws Exception{
 		if(jobRequest==null){
 			throw new Exception("jobRequest不能为空");
 		}
@@ -51,25 +51,6 @@ public class JobMsgPublisher {
 	 * @param jobResponse
 	 * @throws Exception
 	 */
-	public static void responseJob(long jobId,int status,int stepCount,JSONObject jobResponse,JobStep step)throws Exception{
-		if(jobResponse==null){
-			throw new Exception("jobResponse不能为空");
-		}
-		JSONObject jobMsg = new JSONObject();
-		jobMsg.put("jobId", jobId);
-		jobMsg.put("response", jobResponse);
-		jobMsg.put("status", status);
-		jobMsg.put("stepCount", stepCount);
-		jobMsg.put("step", JSONObject.fromObject(step));
-		MsgPublisher.publish2WorkQueue("resp_job", jobMsg.toString());
-	}
-
-	/**
-	 * 用于job web Server 持久化job执行过程中的反馈
-	 * @param jobId
-	 * @param jobResponse
-	 * @throws Exception
-	 */
 	public static void responseJob(long jobId,JobStep step)throws Exception{
 		if(step==null){
 			throw new Exception("step不能为空");
@@ -78,5 +59,23 @@ public class JobMsgPublisher {
 		jobMsg.put("jobId", jobId);
 		jobMsg.put("step", JSONObject.fromObject(step));
 		MsgPublisher.publish2WorkQueue("resp_job", jobMsg.toString());
+	}
+
+	/**
+	 * 用于job Server 在执行完一个job时发送end_job消息
+	 * @param jobId
+	 * @param jobResponse
+	 * @throws Exception
+	 */
+	public static void endJob(long jobId,int status,String resultMsg,JSONObject jobResponse)throws Exception{
+		if(jobResponse==null){
+			throw new Exception("step不能为空");
+		}
+		JSONObject jobMsg = new JSONObject();
+		jobMsg.put("jobId", jobId);
+		jobMsg.put("status", status);
+		jobMsg.put("resultMsg", StringUtils.isEmpty(resultMsg)?"":resultMsg);
+		jobMsg.put("response", jobResponse);
+		MsgPublisher.publish2WorkQueue("end_job", jobMsg.toString());
 	}
 }

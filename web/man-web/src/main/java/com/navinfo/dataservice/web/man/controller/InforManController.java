@@ -11,6 +11,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.navinfo.dataservice.api.man.model.Infor;
 import com.navinfo.dataservice.api.man.model.InforMan;
 import com.navinfo.dataservice.commons.json.JsonOperation;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
@@ -149,7 +150,8 @@ public class InforManController extends BaseController {
 			if (dataJson == null) {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
-			InforMan data = service.query(dataJson.getString("inforId"));
+			Infor data = service.query(dataJson.getString("inforId"));
+			
 			if(data!=null){
 				return new ModelAndView("jsonView", success(JsonOperation.beanToJson(data)));
 			}

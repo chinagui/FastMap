@@ -29,6 +29,18 @@ public class StartupListener implements ApplicationListener<ContextRefreshedEven
 					}
 				}
 			}.start();
+			new Thread(){
+				@Override
+				public void run(){
+					try{
+						JobFinder finder = new JobFinderFromMQ();
+						finder.startFinding(JobMsgType.MSG_END_JOB);
+					}catch(Exception e){
+						System.out.println(e.getMessage());
+						e.printStackTrace();
+					}
+				}
+			}.start();
 		}
 	}
 	

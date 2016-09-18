@@ -500,9 +500,9 @@ public class BlockService {
 							+ " to_char(m.DAY_EDIT_PLAN_END_DATE, 'yyyymmdd') DAY_EDIT_PLAN_END_DATE,  "
 							+ " to_char(m.DAY_PRODUCE_PLAN_START_DATE, 'yyyymmdd') DAY_PRODUCE_PLAN_START_DATE,  "
 							+ " to_char(m.DAY_PRODUCE_PLAN_END_DATE, 'yyyymmdd') DAY_PRODUCE_PLAN_END_DATE,  "
-							+ " k.TASK_ID, k.NAME, k.task_type "
+							+ " k.TASK_ID, k.NAME, k.task_type, "
 							+ " to_char(k.PLAN_START_DATE, 'yyyymmdd') PLAN_START_DATE,  "
-							+ " to_char(k.PLAN_END_DATE, 'yyyymmdd') PLAN_END_DATE, "
+							+ " to_char(k.PLAN_END_DATE, 'yyyymmdd') PLAN_END_DATE "
 							+ "	from block_man m, block t, user_info u, task k, user_group u,infor i where i.infor_id='"
 							+ inforId
 							+ "' AND m.block_id = t.block_id(+) and m.latest = 1 and m.create_user_id = u.user_id(+)  "

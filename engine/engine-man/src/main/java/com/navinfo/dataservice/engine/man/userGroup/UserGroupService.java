@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -443,10 +444,57 @@ public class UserGroupService {
 					return list;
 				}
 	    		
-	    	}		;
+	    	};
 	    	
 	    	
 	    	return run.query(conn, selectSql, rsHandler);
+	    	
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询列表失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	/**
+	 *根据父用户组ID获取子用户组列表
+	 * @param groupId
+	 * @return
+	 * @throws ServiceException 
+	 */
+	public Map<String, Object> listByGroupId(int groupId) throws ServiceException {
+		// TODO Auto-generated method stub
+		Connection conn = null;
+		try{
+			QueryRunner run = new QueryRunner();
+			conn = DBConnector.getInstance().getManConnection();
+
+			String selectSql = "SELECT UG.GROUP_ID,UG.GROUP_NAME"
+					+ " FROM USER_GROUP UG"
+					+ " WHERE UG.PARENT_GROUP_ID = " + groupId;
+
+			ResultSetHandler<List<HashMap<String, Object>>> rsHandler = new ResultSetHandler<List<HashMap<String, Object>>>(){
+				public List<HashMap<String, Object>> handle(ResultSet rs) throws SQLException {
+					List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
+					while(rs.next()){
+						HashMap<String, Object> group = new HashMap<String, Object>();
+						group.put("groupId", rs.getInt("GROUP_ID"));
+						group.put("groupName", rs.getString("GROUP_NAME"));
+						list.add(group);
+					}
+					return list;
+				}
+	    		
+	    	};
+
+	    	List<HashMap<String, Object>> userGroupList = run.query(conn, selectSql, rsHandler);
+	    	
+	    	Map<String,Object> result = new HashMap<String,Object>();
+			result.put("total", userGroupList.size());
+			result.put("data", userGroupList);
+			
+	    	return result;
 	    	
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);

@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -27,8 +28,10 @@ import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.DateUtilsEx;
 import com.navinfo.dataservice.commons.xinge.XingeUtil;
+import com.navinfo.dataservice.engine.man.message.MessageOperation;
 import com.navinfo.dataservice.engine.man.task.TaskOperation;
 import com.navinfo.dataservice.engine.man.userDevice.UserDeviceService;
+import com.navinfo.dataservice.engine.man.userInfo.UserInfoOperation;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoService;
 import com.navinfo.navicommons.database.DataBaseUtils;
 import com.navinfo.navicommons.database.Page;
@@ -647,10 +650,19 @@ public class BlockService {
 				e.printStackTrace();
 			}
 			ResultSet rs = stmt.executeQuery();
+			List<String> msgContentList=new ArrayList<String>();
 			while (rs.next()) {
-				// 调用消息保存方法
-				// saveMsg()
+				msgContentList.add("block:"+rs.getString("BLOCK_NAME")+"内容发生变更，请关注");
 			}
+			/*block创建/编辑/关闭
+			1.分配的采集作业组组长
+			2.分配的日编作业组组长
+			block:XXX(block名称)内容发生变更，请关注*/
+			String msgTitle="block发布";
+			if(msgContentList.size()>0){
+				blockPushMsg(conn,msgTitle,msgContentList);
+			}
+
 			BlockOperation.updateMainBlock(conn, blockList);
 
 		} catch (Exception e) {
@@ -662,6 +674,23 @@ public class BlockService {
 		}
 		return "发布成功";
 
+	}
+
+	private void blockPushMsg(Connection conn, String msgTitle,
+			List<String> msgContentList) throws Exception {
+		String userSql="SELECT DISTINCT M.USER_ID FROM ROLE_USER_MAPPING M WHERE M.ROLE_ID IN (4, 5)";
+		List<Integer> userIdList=UserInfoOperation.getUserListBySql(conn, userSql);
+		Object[][] msgList=new Object[userIdList.size()*msgContentList.size()][3];
+		int num=0;
+		for(int userId:userIdList){
+			for(String msgContent:msgContentList){
+				msgList[num][0]=userId;
+				msgList[num][1]=msgTitle;
+				msgList[num][2]=msgContent;
+				num+=1;
+			}
+		}
+		MessageOperation.batchInsert(conn,msgList);		
 	}
 
 }

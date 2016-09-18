@@ -187,11 +187,11 @@ public class StaticsService {
 			
 			String selectTaskSql = "SELECT status,COUNT(1) taskCount FROM task GROUP BY status";
 			String selectCitySql = "SELECT plan_status,COUNT(1) planCount FROM city GROUP BY plan_status";
-			String selectInforSql = "SELECT 2 status,COUNT(1) inforCount FROM INFOR I WHERE I.TASK_ID IS NULL"
+			String selectInforSql = "SELECT 0 status,COUNT(1) inforCount FROM INFOR I WHERE I.TASK_ID IS NULL"
 					+" UNION ALL"
 					+" SELECT 1 status,COUNT(1) inforCount FROM TASK T WHERE T.TASK_TYPE=4 AND T.STATUS IN (1,2)"
 					+" UNION ALL"
-					+" SELECT 0 status,COUNT(1) inforCount FROM TASK T WHERE T.TASK_TYPE=4 AND T.STATUS=0";	
+					+" SELECT 2 status,COUNT(1) inforCount FROM TASK T WHERE T.TASK_TYPE=4 AND T.STATUS=0";	
 			PreparedStatement stmtTask = null;
 			PreparedStatement stmtCity = null;
 			PreparedStatement stmtInfor = null;

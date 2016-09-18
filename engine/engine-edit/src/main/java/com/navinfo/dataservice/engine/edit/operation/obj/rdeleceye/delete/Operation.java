@@ -1,8 +1,10 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdeleceye.delete;
 
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.List;
 
+import com.navinfo.dataservice.dao.glm.iface.AlertObject;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -53,5 +55,33 @@ public class Operation implements IOperation {
 		}
 		return null;
 	}
+	
+	/**
+	 * 删除link对电子眼的删除影响
+	 * @return
+	 * @throws Exception 
+	 */
+	public List<AlertObject> getDeleteRdEyeInfectData(int linkPid,Connection conn) throws Exception {
+		
+		RdElectroniceyeSelector selector = new RdElectroniceyeSelector(conn);
 
+		List<RdElectroniceye> eleceyes = selector.loadListByRdLinkId(linkPid, true);
+		
+		List<AlertObject> alertList = new ArrayList<>();
+
+		for (RdElectroniceye electr : eleceyes) {
+
+			AlertObject alertObj = new AlertObject();
+
+			alertObj.setObjType(electr.objType());
+
+			alertObj.setPid(electr.getPid());
+
+			alertObj.setStatus(ObjStatus.DELETE);
+
+			alertList.add(alertObj);
+		}
+
+		return alertList;
+	}
 }

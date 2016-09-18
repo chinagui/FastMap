@@ -1,8 +1,10 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdspeedbump.delete;
 
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.List;
 
+import com.navinfo.dataservice.dao.glm.iface.AlertObject;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
@@ -57,5 +59,33 @@ public class Operation implements IOperation {
 		}
 		return null;
 	}
+	
+	/**
+	 * 删除link对减速带的删除影响
+	 * @return
+	 * @throws Exception 
+	 */
+	public List<AlertObject> getDeleteRdSpeedbumpInfectData(int linkPid,Connection conn) throws Exception {
+		
+		RdSpeedbumpSelector rdSpeedbumpSelector = new RdSpeedbumpSelector(conn);
+		
+		List<RdSpeedbump> rdSpeedbumps = rdSpeedbumpSelector.loadByLinkPid(linkPid, true);
+		
+		List<AlertObject> alertList = new ArrayList<>();
 
+		for (RdSpeedbump speedbump : rdSpeedbumps) {
+
+			AlertObject alertObj = new AlertObject();
+
+			alertObj.setObjType(speedbump.objType());
+
+			alertObj.setPid(speedbump.getPid());
+
+			alertObj.setStatus(ObjStatus.DELETE);
+
+			alertList.add(alertObj);
+		}
+
+		return alertList;
+	}
 }

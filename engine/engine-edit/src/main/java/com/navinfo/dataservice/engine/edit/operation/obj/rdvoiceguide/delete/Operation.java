@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.navinfo.dataservice.dao.glm.iface.AlertObject;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -175,5 +176,34 @@ public class Operation implements IOperation {
 			}
 
 		}
+	}
+	
+	/**
+	 * 删除link对语音引导的删除影响
+	 * @return
+	 * @throws Exception 
+	 */
+	public List<AlertObject> getDeleteRdVoiceguideInfectData(int linkPid,Connection conn) throws Exception {
+		
+		RdVoiceguideSelector voiceguideSelector = new RdVoiceguideSelector(conn);
+
+		List<RdVoiceguide> voiceGuideList = voiceguideSelector.loadRdVoiceguideByLinkPid(linkPid, true);
+		
+		List<AlertObject> alertList = new ArrayList<>();
+
+		for (RdVoiceguide voiceguide : voiceGuideList) {
+
+			AlertObject alertObj = new AlertObject();
+
+			alertObj.setObjType(voiceguide.objType());
+
+			alertObj.setPid(voiceguide.getPid());
+
+			alertObj.setStatus(ObjStatus.DELETE);
+
+			alertList.add(alertObj);
+		}
+
+		return alertList;
 	}
 }

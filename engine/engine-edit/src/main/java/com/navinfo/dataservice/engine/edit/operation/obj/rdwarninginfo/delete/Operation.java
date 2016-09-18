@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.navinfo.dataservice.dao.glm.iface.AlertObject;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
@@ -132,5 +133,34 @@ public class Operation implements IOperation {
 			result.insertObject(warninginfo, ObjStatus.DELETE,
 					warninginfo.getPid());
 		}
+	}
+	
+	/**
+	 * 删除link对警示信息的删除影响
+	 * @return
+	 * @throws Exception 
+	 */
+	public List<AlertObject> getDeleteRdWarningInfectData(int linkPid,Connection conn) throws Exception {
+		
+		RdWarninginfoSelector selector = new RdWarninginfoSelector(conn);
+
+		List<RdWarninginfo> warninginfos = selector.loadByLink(linkPid, true);
+		
+		List<AlertObject> alertList = new ArrayList<>();
+
+		for (RdWarninginfo warninginfo : warninginfos) {
+
+			AlertObject alertObj = new AlertObject();
+
+			alertObj.setObjType(warninginfo.objType());
+
+			alertObj.setPid(warninginfo.getPid());
+
+			alertObj.setStatus(ObjStatus.DELETE);
+
+			alertList.add(alertObj);
+		}
+
+		return alertList;
 	}
 }

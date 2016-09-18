@@ -181,7 +181,7 @@ public class UserGroupController extends BaseController {
 	}
 	
 	/*
-	 * 根据用户组类型获取用户组列表。用户组下用户信息
+	 * 根据用户组类型获取一级用户组列表。用户组下用户信息
 	 * groupType：0采集，1日编，2月编，不传则返回所有组
 	 */
 	@RequestMapping(value = "/userGroup/listByType")

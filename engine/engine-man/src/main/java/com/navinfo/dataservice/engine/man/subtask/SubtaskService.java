@@ -31,6 +31,8 @@ import com.navinfo.dataservice.api.man.model.BlockMan;
 import com.navinfo.dataservice.api.man.model.Message;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.man.model.Task;
+import com.navinfo.dataservice.api.man.model.UserGroup;
+import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.api.statics.iface.StaticsApi;
 import com.navinfo.dataservice.api.statics.model.SubtaskStatInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
@@ -46,6 +48,7 @@ import com.navinfo.dataservice.commons.xinge.XingeUtil;
 import com.navinfo.dataservice.engine.man.grid.GridService;
 import com.navinfo.dataservice.engine.man.message.MessageService;
 import com.navinfo.dataservice.engine.man.task.TaskOperation;
+import com.navinfo.dataservice.engine.man.userInfo.UserInfoOperation;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
@@ -583,6 +586,12 @@ public class SubtaskService {
 
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
+			
+			//获取用户所在组
+			UserInfo userInfo = new UserInfo();
+			userInfo.setUserId(bean.getExeUserId());
+			Map<Object,Object> userGroup = UserInfoOperation.getUserGroup(conn, userInfo);
+			bean.setExeGroupId((int)userGroup.get("groupId"));
 
 			Page page = new Page();
 			//snapshot=1不返回geometry和gridIds

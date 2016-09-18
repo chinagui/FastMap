@@ -485,11 +485,13 @@ public class SubtaskOperation {
 			String conditionSql_task = " where st.task_id = t.task_id "
 					+ "and t.city_id = c.city_id "
 					+ "and c.region_id = r.region_id "
-					+ "and st.EXE_USER_ID = " + bean.getExeUserId() + " ";
+					+ "and (st.EXE_USER_ID = " + bean.getExeUserId() + " or st.EXE_GROUP_ID = " + bean.getExeGroupId() + ")";
+//					+ "and st.EXE_USER_ID = " + bean.getExeUserId() + " ";
 
 			String conditionSql_block = " where st.block_id = b.block_id "
 					+ "and b.region_id = r.region_id "
-					+ "and st.EXE_USER_ID = " + bean.getExeUserId() + " ";
+					+ "and (st.EXE_USER_ID = " + bean.getExeUserId() + " or st.EXE_GROUP_ID = " + bean.getExeGroupId() + ")";
+//					+ "and st.EXE_USER_ID = " + bean.getExeUserId() + " ";
 
 			if (bean.getStage() != null) {
 				conditionSql_task = conditionSql_task + " and st.STAGE = "
@@ -604,11 +606,13 @@ public class SubtaskOperation {
 			String conditionSql_task = " where st.task_id = t.task_id "
 					+ "and t.city_id = c.city_id "
 					+ "and c.region_id = r.region_id "
-					+ "and st.EXE_USER_ID = " + bean.getExeUserId();
+					+ "and (st.EXE_USER_ID = " + bean.getExeUserId() + " or st.EXE_GROUP_ID = " + bean.getExeGroupId() + ")";
+//					+ "and st.EXE_USER_ID = " + bean.getExeUserId();
 
 			String conditionSql_block = " where st.block_id = b.block_id "
 					+ "and b.region_id = r.region_id "
-					+ "and st.EXE_USER_ID = " + bean.getExeUserId();
+					+ "and (st.EXE_USER_ID = " + bean.getExeUserId() + " or st.EXE_GROUP_ID = " + bean.getExeGroupId() + ")";
+//					+ "and st.EXE_USER_ID = " + bean.getExeUserId();
 
 			if (bean.getStage() != null) {
 				conditionSql_task = conditionSql_task + " and st.STAGE = "

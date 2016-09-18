@@ -354,10 +354,11 @@ public class UserGroupService {
 
 			String selectSql = "select ug.GROUP_ID"
 					+ ",ug.GROUP_NAME,ug.GROUP_TYPE"
-					+ " from user_group ug";
+					+ " from user_group ug"
+					+ " WHERE UG.PARENT_GROUP_ID IS NULL";
 					
 			if(userGroup.getGroupType() != null){	
-				selectSql += " where ug.group_type =" + userGroup.getGroupType();
+				selectSql += " AND ug.group_type =" + userGroup.getGroupType();
 			}
 
 			ResultSetHandler<List<UserGroup>> rsHandler = new ResultSetHandler<List<UserGroup>>(){

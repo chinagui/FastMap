@@ -502,14 +502,13 @@ public class BlockService {
 							+ " to_char(m.DAY_PRODUCE_PLAN_END_DATE, 'yyyymmdd') DAY_PRODUCE_PLAN_END_DATE,  "
 							+ " k.TASK_ID, k.NAME, k.task_type, "
 							+ " to_char(k.PLAN_START_DATE, 'yyyymmdd') PLAN_START_DATE,  "
-							+ " to_char(k.PLAN_END_DATE, 'yyyymmdd') PLAN_END_DATE "
-							+ "	from block_man m, block t, user_info u, task k, user_group u,infor i where i.infor_id='"
+							+ " to_char(k.PLAN_END_DATE, 'yyyymmdd') PLAN_END_DATE from block_man m, block t, user_info u, task k, user_group u,infor i where i.infor_id='"
 							+ inforId
 							+ "' AND m.block_id = t.block_id(+) and m.latest = 1 and m.create_user_id = u.user_id(+)  "
 							+ " and i.task_id = m.task_id AND m.task_id=k.task_id and k.latest = 1 and m.collect_group_id = u.group_id(+) ) "
-							+ " SELECT block_id,block_name,blockStatus,plan_status,DESCP,USER_REAL_NAME,COLLECT_GROUP_ID,COLLECT_GROUP"
-							+ " DAY_EDIT_GROUP_ID,DAY_EDIT_GROUP,COLLECT_PLAN_START_DATE,COLLECT_PLAN_END_DATE,DAY_EDIT_PLAN_START_DATE "
-							+ " DAY_EDIT_PLAN_END_DATE,DAY_PRODUCE_PLAN_START_DATE,DAY_PRODUCE_PLAN_END_DATE,TASK_ID,NAME, task_type"
+							+ " SELECT block_id,block_name,blockStatus,plan_status,DESCP,USER_REAL_NAME,COLLECT_GROUP_ID,COLLECT_GROUP,"
+							+ " DAY_EDIT_GROUP_ID,DAY_EDIT_GROUP,COLLECT_PLAN_START_DATE,COLLECT_PLAN_END_DATE,DAY_EDIT_PLAN_START_DATE, "
+							+ " DAY_EDIT_PLAN_END_DATE,DAY_PRODUCE_PLAN_START_DATE,DAY_PRODUCE_PLAN_END_DATE,TASK_ID,NAME, task_type,"
 							+ " PLAN_START_DATE,PLAN_END_DATE from T  WHERE 1=1 ";
 				} else {
 					selectSql = "WITH T AS (select distinct t.block_id,t.block_name,m.status blockStatus,t.plan_status,m.DESCP, nvl(u.user_real_name, '') USER_REAL_NAME,"

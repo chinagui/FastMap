@@ -221,13 +221,24 @@ public class SubtaskService {
 	
 	public Page list(long userId, int stage, JSONObject conditionJson, JSONObject orderJson, final int pageSize,
 			final int curPageNum,int snapshot) throws ServiceException {
+		Connection conn = null;
 		try {
+
+			QueryRunner run = new QueryRunner();
+			conn = DBConnector.getInstance().getManConnection();
+			
+			//获取用户角色信息
+			UserInfo userInfo = new UserInfo();
+			userInfo.setUserId((int)userId);
+			Map<Object, Object> role = UserInfoOperation.getUserRole(conn, userInfo);
+			int roleId = (int) role.get("roleId");
+			
 			//返回简略信息
 			if (snapshot==1){
-				Page page = SubtaskOperation.getListSnapshot(userId,stage,conditionJson,orderJson,pageSize,curPageNum);
+				Page page = SubtaskOperation.getListSnapshot(userId,roleId,stage,conditionJson,orderJson,pageSize,curPageNum);
 				return page;
 			}else{
-				Page page = SubtaskOperation.getList(userId,stage,conditionJson,orderJson,pageSize,curPageNum);
+				Page page = SubtaskOperation.getList(userId,roleId,stage,conditionJson,orderJson,pageSize,curPageNum);
 				return page;
 			}		
 
@@ -384,8 +395,8 @@ public class SubtaskService {
 					+ ",r.DAILY_DB_ID"
 					+ ",r.MONTHLY_DB_ID"
 					+ ",st.GEOMETRY";
-			String userSql = ",u.user_real_name as executer";
-			String groupSql = ",ug.group_name as executer";
+			String userSql = ",u.user_id as executer_id,u.user_real_name as executer";
+			String groupSql = ",ug.group_id as executer_id,ug.group_name as executer";
 			String taskSql = ",T.TASK_ID AS BLOCK_ID,T.NAME AS BLOCK_NAME";
 			String blockSql = ",B.BLOCK_ID, B.BLOCK_NAME";
 
@@ -468,6 +479,7 @@ public class SubtaskService {
 						
 						
 						subtask.setExecuter(rs.getString("EXECUTER"));
+						subtask.setExecuterId(rs.getInt("EXECUTER_ID"));
 						
 						if(1 == rs.getInt("STATUS")){
 							SubtaskStatInfo stat = staticApi.getStatBySubtask(rs.getInt("SUBTASK_ID"));

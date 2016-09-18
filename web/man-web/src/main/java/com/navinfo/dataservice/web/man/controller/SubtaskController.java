@@ -301,6 +301,7 @@ public class SubtaskController extends BaseController {
 						,subtask.getTaskId()
 						,subtask.getTaskName()
 						,subtask.getExecuter()
+						,subtask.getExecuterId()
 						,subtask.getPercent()
 						,subtask.getVersion()
 						);

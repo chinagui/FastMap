@@ -778,7 +778,8 @@ public class SubtaskOperation {
 
 	/**
 	 * @param userId 
-	 * @param stage
+	 * @param roleId
+	 * @param stage 
 	 * @param conditionJson
 	 * @param orderJson
 	 * @param pageSize
@@ -786,7 +787,7 @@ public class SubtaskOperation {
 	 * @return
 	 * @throws ServiceException 
 	 */
-	public static Page getList(long userId, int stage, JSONObject conditionJson, JSONObject orderJson, final int pageSize,
+	public static Page getList(long userId, int roleId, int stage, JSONObject conditionJson, JSONObject orderJson, final int pageSize,
 			final int curPageNum) throws ServiceException {
 		Connection conn = null;
 		// TODO Auto-generated method stub
@@ -810,6 +811,15 @@ public class SubtaskOperation {
 						+ " AND BM.COLLECT_GROUP_ID = UG.GROUP_ID"
 						+ " AND S.STAGE = " + stage
 						+ " AND UG.LEADER_ID = " + userId;
+				if(3==roleId){
+					selectUserSql = "SELECT S.SUBTASK_ID, S.NAME, S.STAGE, S.TYPE, S.DESCP, S.STATUS, S.PLAN_START_DATE, S.PLAN_END_DATE, S.GEOMETRY, B.BLOCK_ID, B.BLOCK_NAME, U.USER_REAL_NAME AS EXECUTER"
+							+ " FROM SUBTASK S, BLOCK B, USER_INFO U, BLOCK_MAN BM"
+							+ " WHERE S.BLOCK_ID = B.BLOCK_ID"
+							+ " AND U.USER_ID = S.EXE_USER_ID"
+							+ " AND B.BLOCK_ID = BM.BLOCK_ID"
+							+ " AND BM.LATEST = 1"
+							+ " AND S.STAGE = " + stage;
+				}
 			} else if (1 == stage) {
 				selectUserSql = "SELECT S.SUBTASK_ID, S.NAME, S.STAGE, S.TYPE, S.DESCP, S.STATUS, S.PLAN_START_DATE, S.PLAN_END_DATE, S.GEOMETRY, B.BLOCK_ID, B.BLOCK_NAME, U.USER_REAL_NAME AS EXECUTER"
 						+ " FROM SUBTASK S, BLOCK B, USER_INFO U, BLOCK_MAN BM, USER_GROUP UG"
@@ -829,7 +839,22 @@ public class SubtaskOperation {
 						+ " AND BM.DAY_EDIT_GROUP_ID = UG.GROUP_ID"
 						+ " AND S.STAGE = " + stage
 						+ " AND UG.LEADER_ID = " + userId;
-				
+				if(3==roleId){
+					selectUserSql = "SELECT S.SUBTASK_ID, S.NAME, S.STAGE, S.TYPE, S.DESCP, S.STATUS, S.PLAN_START_DATE, S.PLAN_END_DATE, S.GEOMETRY, B.BLOCK_ID, B.BLOCK_NAME, U.USER_REAL_NAME AS EXECUTER"
+							+ " FROM SUBTASK S, BLOCK B, USER_INFO U, BLOCK_MAN BM"
+							+ " WHERE S.BLOCK_ID = B.BLOCK_ID"
+							+ " AND U.USER_ID = S.EXE_USER_ID"
+							+ " AND B.BLOCK_ID = BM.BLOCK_ID"
+							+ " AND BM.LATEST = 1"
+							+ " AND S.STAGE = " + stage;
+					selectGroupSql = "SELECT S.SUBTASK_ID, S.NAME, S.STAGE, S.TYPE, S.DESCP, S.STATUS, S.PLAN_START_DATE, S.PLAN_END_DATE, S.GEOMETRY, B.BLOCK_ID, B.BLOCK_NAME, UG1.GROUP_NAME AS EXECUTER"
+							+ " FROM SUBTASK S, BLOCK B, BLOCK_MAN BM,USER_GROUP UG1"
+							+ " WHERE S.BLOCK_ID = B.BLOCK_ID"
+							+ " AND UG1.GROUP_ID = S.EXE_GROUP_ID"
+							+ " AND B.BLOCK_ID = BM.BLOCK_ID"
+							+ " AND BM.LATEST = 1"
+							+ " AND S.STAGE = " + stage;
+				}
 			} else if (2 == stage) {
 				selectUserSql = "SELECT S.SUBTASK_ID,S.NAME,S.STAGE,S.TYPE,S.DESCP,S.STATUS,S.PLAN_START_DATE,S.PLAN_END_DATE,S.GEOMETRY,T.TASK_ID,T.NAME AS TASK_NAME,T.TASK_TYPE,U.USER_REAL_NAME AS EXECUTER"
 						+ " FROM SUBTASK S, USER_INFO U, TASK T, USER_GROUP UG"
@@ -848,6 +873,21 @@ public class SubtaskOperation {
 						+ " AND T.MONTH_EDIT_GROUP_ID = UG.GROUP_ID"
 						+ " AND S.STAGE = " + stage
 						+ " AND UG.LEADER_ID = " + userId;
+				if(3==roleId){
+					selectUserSql = "SELECT S.SUBTASK_ID,S.NAME,S.STAGE,S.TYPE,S.DESCP,S.STATUS,S.PLAN_START_DATE,S.PLAN_END_DATE,S.GEOMETRY,T.TASK_ID,T.NAME AS TASK_NAME,T.TASK_TYPE,U.USER_REAL_NAME AS EXECUTER"
+							+ " FROM SUBTASK S, USER_INFO U, TASK T"
+							+ " WHERE S.TASK_ID = T.TASK_ID"
+							+ " AND U.USER_ID = S.EXE_USER_ID"
+							+ " AND T.LATEST = 1"
+							+ " AND S.STAGE = " + stage;
+					
+					selectGroupSql = "SELECT S.SUBTASK_ID,S.NAME,S.STAGE,S.TYPE,S.DESCP,S.STATUS,S.PLAN_START_DATE,S.PLAN_END_DATE,S.GEOMETRY,T.TASK_ID,T.NAME AS TASK_NAME,T.TASK_TYPE,UG1.GROUP_NAME AS EXECUTER"
+							+ " FROM SUBTASK S, TASK T,USER_GROUP UG1"
+							+ " WHERE S.TASK_ID = T.TASK_ID"
+							+ " AND UG1.GROUP_ID = S.EXE_GROUP_ID"
+							+ " AND T.LATEST = 1"
+							+ " AND S.STAGE = " + stage;
+				}
 			} 
 		
 			//查询条件
@@ -970,7 +1010,8 @@ public class SubtaskOperation {
 
 	/**
 	 * @param userId 
-	 * @param stage
+	 * @param roleId
+	 * @param stage 
 	 * @param conditionJson
 	 * @param orderJson
 	 * @param pageSize
@@ -978,7 +1019,7 @@ public class SubtaskOperation {
 	 * @return
 	 * @throws ServiceException 
 	 */
-	public static Page getListSnapshot(long userId, int stage, JSONObject conditionJson, JSONObject orderJson, final int pageSize,
+	public static Page getListSnapshot(long userId, int roleId, int stage, JSONObject conditionJson, JSONObject orderJson, final int pageSize,
 			final int curPageNum) throws ServiceException {
 		Connection conn = null;
 		// TODO Auto-generated method stub
@@ -997,6 +1038,14 @@ public class SubtaskOperation {
 						+ " AND BM.LATEST = 1"
 						+ " AND UG.GROUP_ID = BM.COLLECT_GROUP_ID"
 						+ " AND UG.LEADER_ID = " + userId;
+				if(3==roleId){
+					selectSql = "SELECT S.SUBTASK_ID, S.STAGE, S.NAME, S.TYPE, S.STATUS,S.PLAN_START_DATE,S.PLAN_END_DATE,B.BLOCK_ID,B.BLOCK_NAME"
+							+ " FROM SUBTASK S ,BLOCK B,BLOCK_MAN BM"
+							+ " WHERE S.STAGE = 0"
+							+ " AND S.BLOCK_ID = B.BLOCK_ID"
+							+ " AND B.BLOCK_ID = BM.BLOCK_ID"
+							+ " AND BM.LATEST = 1";
+				}
 			}else if(1 == stage){
 				selectSql = "SELECT S.SUBTASK_ID, S.STAGE, S.NAME, S.TYPE, S.STATUS,S.PLAN_START_DATE,S.PLAN_END_DATE,B.BLOCK_ID,B.BLOCK_NAME"
 						+ " FROM SUBTASK S ,BLOCK B,BLOCK_MAN BM, USER_GROUP UG"
@@ -1006,6 +1055,14 @@ public class SubtaskOperation {
 						+ " AND BM.LATEST = 1"
 						+ " AND UG.GROUP_ID = BM.DAY_EDIT_GROUP_ID"
 						+ " AND UG.LEADER_ID = " + userId;
+				if(3==roleId){
+					selectSql = "SELECT S.SUBTASK_ID, S.STAGE, S.NAME, S.TYPE, S.STATUS,S.PLAN_START_DATE,S.PLAN_END_DATE,B.BLOCK_ID,B.BLOCK_NAME"
+							+ " FROM SUBTASK S ,BLOCK B,BLOCK_MAN BM, USER_GROUP UG"
+							+ " WHERE S.STAGE = 1"
+							+ " AND S.BLOCK_ID = B.BLOCK_ID"
+							+ " AND B.BLOCK_ID = BM.BLOCK_ID"
+							+ " AND BM.LATEST = 1";
+				}
 			}
 			else if(2 ==stage){
 				selectSql = "SELECT S.SUBTASK_ID, S.STAGE, S.NAME, S.TYPE, S.STATUS,S.PLAN_START_DATE,S.PLAN_END_DATE,T.TASK_ID,T.NAME AS TASK_NAME"
@@ -1015,6 +1072,13 @@ public class SubtaskOperation {
 						+ " AND UG.GROUP_ID = T.MONTH_EDIT_GROUP_ID"
 						+ " AND T.LATEST = 1"
 						+ " AND UG.LEADER_ID = " + userId;
+				if(3==roleId){
+					selectSql = "SELECT S.SUBTASK_ID, S.STAGE, S.NAME, S.TYPE, S.STATUS,S.PLAN_START_DATE,S.PLAN_END_DATE,T.TASK_ID,T.NAME AS TASK_NAME"
+							+ " FROM SUBTASK S ,TASK T, USER_GROUP UG"
+							+ " WHERE S.STAGE = 2"
+							+ " AND S.TASK_ID = T.TASK_ID"
+							+ " AND T.LATEST = 1";
+				}
 			}
 
 			//查询条件

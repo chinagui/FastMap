@@ -33,6 +33,7 @@ public class Subtask implements Serializable  {
 	private String blockName;
 	private String taskName;
 	private String version;
+	private Integer executerId;
 	private String executer;
 	private int percent;
 
@@ -399,6 +400,20 @@ public class Subtask implements Serializable  {
 	 */
 	public void setPercent(int percent) {
 		this.percent = percent;
+	}
+
+	/**
+	 * @return the executerId
+	 */
+	public Integer getExecuterId() {
+		return executerId;
+	}
+
+	/**
+	 * @param executerId the executerId to set
+	 */
+	public void setExecuterId(Integer executerId) {
+		this.executerId = executerId;
 	}
 }
 

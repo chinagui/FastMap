@@ -8,11 +8,14 @@ import org.springframework.stereotype.Service;
 
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Grid;
+import com.navinfo.dataservice.api.man.model.Message;
 import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.engine.man.city.CityService;
 import com.navinfo.dataservice.engine.man.grid.GridService;
+import com.navinfo.dataservice.engine.man.message.MessageService;
 import com.navinfo.dataservice.engine.man.region.RegionService;
+import com.navinfo.dataservice.engine.man.subtask.SubtaskOperation;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskService;
 import com.navinfo.dataservice.engine.man.version.VersionService;
 /*
@@ -58,7 +61,7 @@ public class ManApiImpl implements ManApi {
 	public Subtask queryBySubtaskId(Integer subtaskId)
 			throws Exception {
 		// TODO Auto-generated method stub
-		return SubtaskService.getInstance().queryBySubtaskId(subtaskId);
+		return SubtaskService.getInstance().queryBySubtaskIdS(subtaskId);
 	}
 	@Override
 	public int queryAdminIdBySubtask(int subtaskId) throws Exception {
@@ -86,6 +89,14 @@ public class ManApiImpl implements ManApi {
 		// TODO Auto-generated method stub
 		return CityService.getInstance().queryCityIdByTaskId(taskId);
 	}
-	
+	@Override
+	public void pushMessage(Message message,Integer push) throws Exception{
+		MessageService.getInstance().push(message, push);
+	}
+	@Override
+	public List<Integer> getGridIdsBySubtaskId(int subtaskId) throws Exception {
+		// TODO Auto-generated method stub
+		return SubtaskOperation.getGridIdsBySubtaskId(subtaskId);
+	}
 }
 

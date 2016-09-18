@@ -56,9 +56,7 @@ public class MessageOperation {
 
 			value.add(new Timestamp(System.currentTimeMillis()).toString().substring(0, 10));
 
-			String createSql = "insert into MESSAGE " ;
-			String column = "(MSG_ID, MSG_TITLE, MSG_CONTENT,PUSH_USER, MSG_RECERVER,MSG_STATUS,PUSH_TIME";
-			String values = "values(?,?,?,?,?,?,?";
+			String createSql = "insert into MESSAGE (MSG_ID, MSG_TITLE, MSG_CONTENT,PUSH_USER, MSG_RECERVER,MSG_STATUS,PUSH_TIME) values(?,?,?,?,?,?,to_date(?,'yyyy-MM-dd HH24:MI:ss'))" ;
 
 			run.update(conn, createSql,value.toArray());
 
@@ -91,6 +89,23 @@ public class MessageOperation {
 			log.error(e.getMessage(), e);
 			throw new Exception("关闭失败，原因为:"+e.getMessage(),e);
 		}
+	}
+	
+	/**
+	 * 
+	 * @param conn
+	 * @param msgList  
+	 * 			Object[][] msgList=new Object[userIdList.size()*msgContentList.size()][3];
+	 * 			msgList[num][0]=userId;
+				msgList[num][1]=msgTile;
+				msgList[num][2]=msgContent;
+	 * @throws Exception
+	 */
+	public static void batchInsert(Connection conn,Object[][] msgList) throws Exception{
+		String insertSql="INSERT INTO MESSAGE  (MSG_ID, PUSH_USER, MSG_TITLE, MSG_CONTENT, MSG_STATUS)"
+				+ " VALUES  (MESSAGE_SEQ.NEXTVAL, ?, ?, ?, 0)";
+		QueryRunner run = new QueryRunner();
+		run.batch(conn,insertSql, msgList);
 	}
 
 }

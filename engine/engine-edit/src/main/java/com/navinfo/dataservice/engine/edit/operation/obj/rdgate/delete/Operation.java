@@ -1,8 +1,10 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdgate.delete;
 
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.List;
 
+import com.navinfo.dataservice.dao.glm.iface.AlertObject;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
@@ -59,5 +61,33 @@ public class Operation implements IOperation {
 			throw e;
 		}
 	}
-	
+		
+	/**
+	 * 删除link对大门的删除影响
+	 * @return
+	 * @throws Exception 
+	 */
+	public List<AlertObject> getDeleteRdGateInfectData(int linkPid,Connection conn) throws Exception {
+		
+		RdGateSelector rdGateSelector = new RdGateSelector(conn);
+		
+		List<RdGate> rdGateList = rdGateSelector.loadByLink(linkPid, true);
+		
+		List<AlertObject> alertList = new ArrayList<>();
+
+		for (RdGate rdGate : rdGateList) {
+
+			AlertObject alertObj = new AlertObject();
+
+			alertObj.setObjType(rdGate.objType());
+
+			alertObj.setPid(rdGate.getPid());
+
+			alertObj.setStatus(ObjStatus.DELETE);
+
+			alertList.add(alertObj);
+		}
+
+		return alertList;
+	}
 }

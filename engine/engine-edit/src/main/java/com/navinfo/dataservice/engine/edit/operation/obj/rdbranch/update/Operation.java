@@ -5,9 +5,6 @@ import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -24,6 +21,9 @@ import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSignasreal;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSignboard;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSignboardName;
 import com.navinfo.dataservice.engine.edit.utils.CalLinkOperateUtils;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 public class Operation implements IOperation {
 

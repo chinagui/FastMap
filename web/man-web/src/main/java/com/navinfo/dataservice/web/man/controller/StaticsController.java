@@ -2,6 +2,7 @@ package com.navinfo.dataservice.web.man.controller;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -15,6 +16,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import com.navinfo.dataservice.api.statics.model.BlockExpectStatInfo;
 import com.navinfo.dataservice.api.statics.model.GridChangeStatInfo;
+import com.navinfo.dataservice.api.statics.model.SubtaskStatInfo;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.engine.man.statics.StaticsService;
@@ -142,9 +144,28 @@ public class StaticsController extends BaseController {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
 			int subtaskId = dataJson.getInt("subtaskId");
-			JSONObject data = StaticsService.getInstance()
+			SubtaskStatInfo data = StaticsService.getInstance()
 					.subtaskStatQuery(subtaskId);
-			return new ModelAndView("jsonView", success(data));
+			
+			//拼结果
+
+			Map<String,Object> poi = new HashMap<String,Object>();
+			poi.put("total", data.getTotalPoi());
+			poi.put("finish", data.getFinishPoi());
+			poi.put("working", data.getWorkingPoi());
+			
+			Map<String,Object> road = new HashMap<String,Object>();
+			road.put("total", data.getTotalRoad());
+			road.put("finish", data.getFinishRoad());
+			road.put("working", data.getWorkingRoad());
+			
+			Map<String,Object> result = new HashMap<String,Object>();
+			road.put("subtaskId", data.getSubtaskId());
+			road.put("percent", data.getPercent());
+			road.put("working", poi);
+			road.put("road", road);
+
+			return new ModelAndView("jsonView", success(result));
 		} catch (Exception e) {
 			log.error("创建失败，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", exception(e));
@@ -163,6 +184,56 @@ public class StaticsController extends BaseController {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
 			JSONObject data = StaticsService.getInstance().queryTaskOverView();
+			return new ModelAndView("jsonView", success(data));
+		} catch (Exception e) {
+			log.error("创建失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+	
+	@RequestMapping(value = "/statics/monthTask/overview")
+	public ModelAndView querymonthTaskOverView(HttpServletRequest request) {
+		try {
+			JSONObject data = StaticsService.getInstance().querymonthTaskOverView();
+			return new ModelAndView("jsonView", success(data));
+		} catch (Exception e) {
+			log.error("创建失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+	
+	@RequestMapping(value = "/statics/collect/overview")
+	public ModelAndView queryCollectOverView(HttpServletRequest request) {
+		try {
+			String parameter = request.getParameter("parameter");
+			if (StringUtils.isEmpty(parameter)) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(parameter));
+			if (dataJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			int groupId=dataJson.getInt("groupId");
+			JSONObject data = StaticsService.getInstance().queryCollectOverView(groupId);
+			return new ModelAndView("jsonView", success(data));
+		} catch (Exception e) {
+			log.error("创建失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+	@RequestMapping(value = "/statics/dayEdit/overview")
+	public ModelAndView queryDayEidtOverView(HttpServletRequest request) {
+		try {
+			String parameter = request.getParameter("parameter");
+			if (StringUtils.isEmpty(parameter)) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(parameter));
+			if (dataJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			int groupId=dataJson.getInt("groupId");
+			JSONObject data = StaticsService.getInstance().queryDayEidtOverView(groupId);
 			return new ModelAndView("jsonView", success(data));
 		} catch (Exception e) {
 			log.error("创建失败，原因：" + e.getMessage(), e);

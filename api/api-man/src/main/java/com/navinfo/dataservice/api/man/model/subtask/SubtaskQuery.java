@@ -18,7 +18,7 @@ public class SubtaskQuery extends SubtaskListByUser {
 	public SubtaskQuery() {
 		// TODO Auto-generated constructor stub
 	}
-	
+	private Integer executerId;
 	private String  executer;
 
 	private Integer blockId;
@@ -46,11 +46,13 @@ public class SubtaskQuery extends SubtaskListByUser {
 			Integer taskId,
 			String taskName,
 			String executer,
+			Integer executerId,
 			Integer percent,
 			String version
 			){
 		super(subtaskId, name, stage, type, status, descp, dbId,gridIds,geometry,planStartDate,planEndDate);
 
+		this.setExecuterId(executerId);
 		this.executer = executer;
 
 		this.blockId=blockId ;
@@ -118,6 +120,18 @@ public class SubtaskQuery extends SubtaskListByUser {
 	 */
 	public void setPercent(int percent) {
 		this.percent = percent;
+	}
+	/**
+	 * @return the executerId
+	 */
+	public Integer getExecuterId() {
+		return executerId;
+	}
+	/**
+	 * @param executerId the executerId to set
+	 */
+	public void setExecuterId(Integer executerId) {
+		this.executerId = executerId;
 	}
 
 

@@ -138,7 +138,7 @@ public class RdLinkForm implements IRow {
 	public void copy(IRow row) {
 
 		RdLinkForm formSource = (RdLinkForm) row;
-
+		
 		this.setFormOfWay(formSource.getFormOfWay());
 
 		this.setRowId(formSource.getRowId());

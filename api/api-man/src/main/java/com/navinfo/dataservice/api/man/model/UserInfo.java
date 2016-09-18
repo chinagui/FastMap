@@ -59,6 +59,7 @@ public class UserInfo  {
 		this.userPassword = userPassword;
 	}
 	public String getUserEmail() {
+		if(null==userEmail){return "";}
 		return userEmail;
 	}
 	public void setUserEmail(String userEmail) {
@@ -83,12 +84,14 @@ public class UserInfo  {
 		this.userScore = userScore;
 	}
 	public Object getUserIcon() {
+		if(null==userIcon){return "";}
 		return userIcon;
 	}
 	public void setUserIcon(Object userIcon) {
 		this.userIcon = userIcon;
 	}
 	public String getUserGpsid() {
+		if(null==userGpsid){return "";}
 		return userGpsid;
 	}
 	public void setUserGpsid(String userGpsid) {

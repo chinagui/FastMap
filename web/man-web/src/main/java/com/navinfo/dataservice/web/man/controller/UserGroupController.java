@@ -3,6 +3,7 @@ package com.navinfo.dataservice.web.man.controller;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -19,6 +20,7 @@ import com.navinfo.dataservice.api.man.model.UserGroup;
 import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
+import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.engine.man.userGroup.UserGroupService;
 import com.navinfo.navicommons.database.Page;
 
@@ -154,6 +156,30 @@ public class UserGroupController extends BaseController {
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}
+	
+	
+	@RequestMapping(value = "/userGroup/listByGroupId")
+	public ModelAndView listByGroupId(HttpServletRequest request){
+		try{			
+//			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
+//			long userId = tokenObj.getUserId();
+			
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if(dataJson==null){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			
+			int groupId = dataJson.getInt("groupId");
+
+			Map<String,Object> result = UserGroupService.getInstance().listByGroupId(groupId);
+			
+			return new ModelAndView("jsonView", success(result));
+		}catch(Exception e){
+			log.error("获取列表失败，原因："+e.getMessage(), e);
+			return new ModelAndView("jsonView",exception(e));
+		}
+	}
+	
 	/*
 	 * 根据用户组类型获取用户组列表。用户组下用户信息
 	 * groupType：0采集，1日编，2月编，不传则返回所有组

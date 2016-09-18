@@ -505,7 +505,7 @@ public class UserInfoOperation {
 			QueryRunner run = new QueryRunner();
 			
 			// 查询用户组信息
-			String querySql = "SELECT UG.GROUP_NAME,UG.GROUP_TYPE"
+			String querySql = "SELECT UG.GROUP_ID,UG.GROUP_NAME,UG.GROUP_TYPE"
 					+ " FROM USER_GROUP UG,GROUP_USER_MAPPING GUM"
 					+ " WHERE UG.GROUP_ID = GUM.GROUP_ID"
 					+ " AND GUM.USER_ID = " + userInfo.getUserId();
@@ -514,6 +514,7 @@ public class UserInfoOperation {
 				public Map<Object, Object> handle(ResultSet rs) throws SQLException {
 					Map<Object, Object> group = new HashMap<Object, Object>();
 					if (rs.next()) {
+						group.put("groupId", rs.getInt("GROUP_ID"));
 						group.put("groupName", rs.getString("GROUP_NAME"));
 						group.put("groupType", rs.getInt("GROUP_TYPE"));
 					}

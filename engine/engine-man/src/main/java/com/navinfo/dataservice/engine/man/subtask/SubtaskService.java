@@ -668,13 +668,13 @@ public class SubtaskService {
 	 * @return
 	 * @throws Exception 
 	 */
-	public String pushMsg(long userId, JSONArray subTaskIds) throws Exception {
+	public String pushMsg(long userId, JSONArray subtaskIds) throws Exception {
 		// TODO Auto-generated method stub
 		Connection conn = null;
 		try{
 			conn = DBConnector.getInstance().getManConnection();
 			//查询子任务
-			List<Subtask> subtaskList = SubtaskOperation.getSubtaskListBySubtaskIdList(conn, subTaskIds);
+			List<Subtask> subtaskList = SubtaskOperation.getSubtaskListBySubtaskIdList(conn, subtaskIds);
 			
 			Iterator<Subtask> iter = subtaskList.iterator();
 			while(iter.hasNext()){

@@ -231,7 +231,7 @@ public class RdBranchSelector extends AbstractSelector {
 	public List<RdBranch> loadRdBranchByOutLinkPid(int linkPid, boolean isLock) throws Exception {
 		List<RdBranch> branchs = new ArrayList<RdBranch>();
 
-		String sql = "select a.*, c.node_pid out_node_pid,d.mesh_id   from rd_branch a, rd_link b, rd_cross_node c,rd_link d  where a.relationship_type = 1    and a.out_link_pid = b.link_pid    and c.node_pid in (b.s_node_pid, b.e_node_pid)    and a.out_link_pid = :1    and a.u_record != 2    and a.in_link_pid = d.link_pid union all select a.*,        case          when b.s_node_pid in (d.s_node_pid, d.e_node_pid) then           b.s_node_pid          else           b.e_node_pid        end out_node_pid,e.mesh_id   from rd_branch a, rd_link b, rd_branch_via c, rd_link d,rd_link e  where a.relationship_type = 2    and a.branch_pid = c.branch_pid    and a.out_link_pid = b.link_pid    and c.link_pid = d.link_pid    and (b.s_node_pid in (d.s_node_pid, d.e_node_pid) or        b.e_node_pid in (d.s_node_pid, d.e_node_pid))    and b.link_pid = :2    and a.u_record != 2    and a.in_link_pid = e.link_pid ";
+		String sql = "SELECT a.*, a.node_pid out_node_pid FROM rd_branch a WHERE a.relationship_type = 1 AND a.out_link_pid = :1 AND a.u_record != 2 UNION ALL SELECT a.*, CASE WHEN b.s_node_pid IN (d.s_node_pid, d.e_node_pid) THEN b. s_node_pid ELSE b.e_node_pid END out_node_pid FROM rd_branch a, rd_link b, rd_branch_via C, rd_link d WHERE a.relationship_type = 2 AND a.branch_pid = C.branch_pid AND a.out_link_pid = b.link_pid AND C.link_pid = d.link_pid AND (b.s_node_pid IN (d.s_node_pid, d.e_node_pid) OR b.e_node_pid IN (d.s_node_pid, d.e_node_pid)) and b.link_pid = :2  AND a.u_record != 2";
 
 		PreparedStatement pstmt = null;
 

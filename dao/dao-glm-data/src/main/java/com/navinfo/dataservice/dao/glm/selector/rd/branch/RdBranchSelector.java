@@ -463,4 +463,48 @@ public class RdBranchSelector extends AbstractSelector {
 			branch.viaMap.put(obj.rowId(), obj);
 		}
 	}
+	
+	/**
+	 * 根据经过线查询分歧
+	 * @param linkPid 进入线
+	 * @param isLock 是否锁
+	 * @return 经过线的分歧集
+	 * @throws Exception
+	 */
+	public List<RdBranch> loadRdBranchByViaLinkPid(int linkPid, boolean isLock) throws Exception {
+		List<RdBranch> branchs = new ArrayList<RdBranch>();
+
+		String sql = "select a.* from rd_branch a,rd_branch_via b where a.branch_pid = b.branch_pid and b.link_pid = :1 and a.U_RECORD !=2 and b.U_RECORD !=2";
+
+		if (isLock) {
+			sql += " for update nowait";
+		}
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sql);
+
+			pstmt.setInt(1, linkPid);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+				RdBranch branch = new RdBranch();
+
+				ReflectionAttrUtils.executeResultSet(branch, resultSet);
+
+				branchs.add(branch);
+			}
+		} catch (Exception e) {
+
+			throw e;
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+		}
+		return branchs;
+	}
 }

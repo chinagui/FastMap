@@ -639,9 +639,9 @@ public class SubtaskService {
 				dataJson.put("gridIds",gridIdList);
 				//根据gridIds获取wkt
 				wkt = GridUtils.grids2Wkt(gridIds);
-				if(wkt.contains("MULTIPOLYGON")){
-					throw new IllegalArgumentException("请输入符合条件的grids");
-				}
+//				if(wkt.contains("MULTIPOLYGON")){
+//					throw new IllegalArgumentException("请输入符合条件的grids");
+//				}
 			}else{
 				if(dataJson.containsKey("taskId")){
 					int taskId = dataJson.getInt("taskId");

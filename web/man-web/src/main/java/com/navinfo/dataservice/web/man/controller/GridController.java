@@ -46,7 +46,7 @@ public class GridController extends BaseController {
 			if (!dataJson.containsKey("wkt") || !dataJson.containsKey("stage")){
 				throw new IllegalArgumentException("wkt/stage不能为空");
 			}
-			List<HashMap> data = GridService.getInstance().queryListByAlloc(dataJson);
+			List<HashMap<String, Integer>> data = GridService.getInstance().queryListByAlloc(dataJson);
 			return new ModelAndView("jsonView", success(data));
 		} catch (Exception e) {
 			log.error("获取grid列表失败，原因：" + e.getMessage(), e);
@@ -144,6 +144,29 @@ public class GridController extends BaseController {
 			return new ModelAndView("jsonView", exception(e));
 		}
 	}
-
+	
+	/**
+	 * 作业管理--采集管理--采集子任务范围选择
+	 * block为大区block时，后台自动计算并在地图上显示该大区block中情报关联的grid
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/grid/listByInforBlockId")
+	public ModelAndView listByInforBlockId(HttpServletRequest request) {
+		try {
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if(dataJson==null){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			
+			int blockId = dataJson.getInt("blockId");
+			
+			List<Integer> data = GridService.getInstance().listByInforBlockId(blockId);
+			return new ModelAndView("jsonView", success(data));
+		} catch (Exception e) {
+			log.error("获取grid列表失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
 
 }

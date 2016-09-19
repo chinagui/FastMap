@@ -59,17 +59,17 @@ public class GridOperation {
 		}
 	}
 
-	public static List<HashMap> queryGirdBySql(Connection conn, String selectSql, Clob clobGrids) throws Exception {
+	public static List<HashMap<String,Integer>> queryGirdBySql(Connection conn, String selectSql, Clob clobGrids) throws Exception {
 		try {
 			QueryRunner run = new QueryRunner();
-			ResultSetHandler<List<HashMap>> rsHandler = new ResultSetHandler<List<HashMap>>() {
-				public List<HashMap> handle(ResultSet rs) throws SQLException {
-					List<HashMap> list = new ArrayList<HashMap>();
+			ResultSetHandler<List<HashMap<String,Integer>>> rsHandler = new ResultSetHandler<List<HashMap<String,Integer>>>() {
+				public List<HashMap<String,Integer>> handle(ResultSet rs) throws SQLException {
+					List<HashMap<String,Integer>> list = new ArrayList<HashMap<String,Integer>>();
 					while (rs.next()) {
-						HashMap map = new HashMap<String, Integer>();
+						HashMap<String,Integer> map = new HashMap<String, Integer>();
 						map.put("gridId", rs.getInt("grid_id"));
 						map.put("status", 1);
-						map.put("type", "");
+//						map.put("type", "");
 						list.add(map);
 					}
 					return list;

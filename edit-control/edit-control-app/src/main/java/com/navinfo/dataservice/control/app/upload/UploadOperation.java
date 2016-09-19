@@ -1084,7 +1084,7 @@ public class UploadOperation {
 						photoIdList.add(photoId);
 						photoObj.put("objStatus", ObjStatus.INSERT.toString());
 						photoObj.put("poiPid", pid);
-						photoObj.put("pid", photoId);
+						photoObj.put("fccPid", photoId);
 						photoObj.put("tag", photo.getInt("tag"));
 						photoObj.put("rowId", photoId);
 						photoList.add(photoObj);

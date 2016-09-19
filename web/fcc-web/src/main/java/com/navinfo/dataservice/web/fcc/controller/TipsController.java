@@ -63,6 +63,11 @@ public class TipsController extends BaseController {
 				
 				String date=obj.getString("date");
 				
+				if("null".equalsIgnoreCase(date)){
+				    
+				    date=null;
+				}
+				
 				JSONObject result=new JSONObject();
 				
 				result.put("grid", grid);

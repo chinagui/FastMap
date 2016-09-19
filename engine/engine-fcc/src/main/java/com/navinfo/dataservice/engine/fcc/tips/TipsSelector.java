@@ -993,7 +993,7 @@ public class TipsSelector {
 		// System.out.println(checkUpdate("59567201","20151227163723"));
 //		ConfigLoader
 //				.initDBConn("C:/Users/wangshishuai3966/Desktop/config.properties");
-		TipsSelector selector = new TipsSelector();
+	/*	TipsSelector selector = new TipsSelector();
 		JSONArray types = new JSONArray();
 		types.add(1515);
 		//selector.searchDataByTileWithGap(107946, 49617, 17, 20, types);
@@ -1005,8 +1005,8 @@ public class TipsSelector {
 		JSONArray stage = new JSONArray();
 		stage.add(1);
 		int type = 1101;
-		int projectId=11;
-		System.out.println(selector.getSnapshot(grid, stage, type, projectId,"m"));
+		int projectId=11;*/
+	//	System.out.println(selector.getSnapshot(grid, stage, type, projectId,"m"));
 		// System.out.println(selector.getStats(a, b));
 
 		// JSONArray types = new JSONArray();
@@ -1015,6 +1015,11 @@ public class TipsSelector {
 		// System.out.println(selector.searchDataByTileWithGap(107944, 49615,
 		// 17,
 		// 20, types));
+		
+		
+		String wkt = GridUtils.grid2Wkt("59567201");
+		
+		System.out.println("0000000000----"+wkt);
 	}
 	
 	/**

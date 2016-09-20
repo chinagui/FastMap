@@ -1,12 +1,12 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rddirectroute.delete;
 
 import java.sql.Connection;
-
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-
 import java.util.Set;
 
+import com.navinfo.dataservice.dao.glm.iface.AlertObject;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -14,7 +14,6 @@ import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.directroute.RdDirectroute;
 import com.navinfo.dataservice.dao.glm.model.rd.directroute.RdDirectrouteVia;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
-
 import com.navinfo.dataservice.dao.glm.selector.rd.directroute.RdDirectrouteSelector;
 
 public class Operation implements IOperation {
@@ -114,5 +113,36 @@ public class Operation implements IOperation {
 				}
 			}
 		}
+	}
+	
+	/**
+	 * 删除link对顺行的删除影响
+	 * @return
+	 * @throws Exception 
+	 */
+	public List<AlertObject> getDeleteRdDirectrouteInfectData(int linkPid,Connection conn) throws Exception {
+		
+		RdDirectrouteSelector directrouteSelector = new RdDirectrouteSelector(conn);
+
+		List<RdDirectroute> directroutes = directrouteSelector.loadByInOutLink(linkPid, true);
+
+		directroutes.addAll(directrouteSelector.loadByPassLink(linkPid, true));
+		
+		List<AlertObject> alertList = new ArrayList<>();
+
+		for (RdDirectroute directroute : directroutes) {
+
+			AlertObject alertObj = new AlertObject();
+
+			alertObj.setObjType(directroute.objType());
+
+			alertObj.setPid(directroute.getPid());
+
+			alertObj.setStatus(ObjStatus.DELETE);
+
+			alertList.add(alertObj);
+		}
+
+		return alertList;
 	}
 }

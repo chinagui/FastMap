@@ -378,6 +378,10 @@ public class TipsExporter {
 			
 			String date=conJson.getString("date");
 			
+			if("null".equalsIgnoreCase(date)){
+			    date=null;
+			}
+			
 			List<Get> gets = generateGets(grid, date);
 			
 			getsAll.addAll(gets);

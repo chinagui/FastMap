@@ -638,9 +638,9 @@ public class BlockService {
 			conn = DBConnector.getInstance().getManConnection();
 			String BlockIds = "(";
 			BlockIds += StringUtils.join(blockList.toArray(), ",") + ")";
-			String selectSql = "select DISTINCT t.block_id,t.block_name,(SELECT u.group_name FROM User_Group u "
-					+ "WHERE u.group_id=m.collect_group_id) collectGroupName,(SELECT u.group_name FROM User_Group u "
-					+ "WHERE u.group_id=m.day_edit_group_id) dayEditGroupName from block_man m,BLOCK t WHERE t.block_id=m.block_id and t.block_id in "
+			String selectSql = "select DISTINCT t.block_id,t.block_name,(SELECT u.leader_id FROM User_Group u "
+					+ "WHERE u.group_id=m.collect_group_id) collectGroupLeader,(SELECT u.leader_id FROM User_Group u "
+					+ "WHERE u.group_id=m.day_edit_group_id) dayEditGroupLeader from block_man m,BLOCK t WHERE t.block_id=m.block_id and t.block_id in "
 					+ BlockIds;
 			PreparedStatement stmt = null;
 			try {

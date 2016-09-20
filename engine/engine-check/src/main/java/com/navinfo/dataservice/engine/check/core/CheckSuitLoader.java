@@ -39,8 +39,8 @@ public class CheckSuitLoader {
 			synchronized(this) {
 				if (!map.containsKey(suitCode)) {
 					//切分suitCode为FEATURE OPERATION OPERATION_TYPE
-					String[] paras = suitCode.split("_");					
-					String sql = "select RULE_CODE from CK_SUITE where FEATURE = ? AND OPERATION = ? AND OPERATION_TYPE = ?";			
+					//String[] paras = suitCode.split("_");					
+					String sql = "select RULE_CODE from ck_suite_rule_mapping where suite_id = ?";			
 					PreparedStatement pstmt = null;
 					ResultSet resultSet = null;
 					Connection conn = null;					
@@ -48,9 +48,9 @@ public class CheckSuitLoader {
 					try {
 						conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
 						pstmt = conn.prepareStatement(sql);
-						pstmt.setString(1,paras[0]);
-						pstmt.setString(2,paras[1]);
-						pstmt.setString(3,paras[2]);
+						pstmt.setString(1,suitCode);
+						//pstmt.setString(2,paras[1]);
+						//pstmt.setString(3,paras[2]);
 						resultSet = pstmt.executeQuery();						
 						while (resultSet.next()) {
 							String ruleCode = resultSet.getString("RULE_CODE");							

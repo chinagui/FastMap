@@ -616,7 +616,7 @@ public class UploadOperation {
 						photoIdList.add(photoId);
 						IxPoiPhoto poiPhoto = new IxPoiPhoto();
 						poiPhoto.setPoiPid(pid);
-						poiPhoto.setPid(photoId);
+						poiPhoto.setFccPid(photoId);
 						poiPhoto.setTag(photo.getInt("tag"));
 						poiPhoto.setRowId(photoId);
 						photoList.add(poiPhoto);
@@ -1071,7 +1071,7 @@ public class UploadOperation {
 			JSONArray photoList = new JSONArray();
 			for (IRow oldPhotoIRow : oldPhotoList) {
 				IxPoiPhoto oldPhoto = (IxPoiPhoto) oldPhotoIRow;
-				photoIdList.add(oldPhoto.getPid());
+				photoIdList.add(oldPhoto.getFccPid());
 			}
 			for (int k = 0; k < attachments.size(); k++) {
 				JSONObject photo = attachments.getJSONObject(k);

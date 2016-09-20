@@ -31,7 +31,7 @@ public class IxPoiPhoto implements IRow {
 
 	private String memo;// 备注信息
 
-	private String pid;// FCC库照片号码
+	private String fccPid;// FCC库照片号码
 
 	private int tag = 1; // 标识
 
@@ -59,12 +59,12 @@ public class IxPoiPhoto implements IRow {
 		this.photoId = photoId;
 	}
 
-	public String getPid() {
-		return pid;
+	public String getFccPid() {
+		return fccPid;
 	}
 
-	public void setPid(String pid) {
-		this.pid = pid;
+	public void setFccPid(String fccPid) {
+		this.fccPid = fccPid;
 	}
 
 	public int getTag() {
@@ -210,7 +210,10 @@ public class IxPoiPhoto implements IRow {
 				continue;
 			} else {
 				if (!"objStatus".equals(key)) {
-
+					if(key.equals("fccPid"))
+					{
+						key = "pid";
+					}
 					Field field = this.getClass().getDeclaredField(key);
 
 					field.setAccessible(true);

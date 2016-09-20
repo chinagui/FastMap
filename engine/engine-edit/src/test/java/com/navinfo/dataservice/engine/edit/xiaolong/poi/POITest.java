@@ -36,11 +36,11 @@ public class POITest extends InitApplication {
 	@Test
 	public void testGetByPid() {
 		try {
-			Connection conn = DBConnector.getInstance().getConnectionById(42);
+			Connection conn = DBConnector.getInstance().getConnectionById(17);
 
 			AbstractSearch search = new AbstractSearch();
 
-			IRow jsonObject = search.searchDataByPid(IxPoi.class, 73352736, conn);
+			IRow jsonObject = search.searchDataByPid(IxPoi.class, 203000009, conn);
 
 			System.out.println(jsonObject.Serialize(ObjLevel.FULL));
 		} catch (Exception e) {
@@ -157,7 +157,7 @@ public class POITest extends InitApplication {
 
 	@Test
 	public void testUpdatePoi() {
-		String parameter = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"IXPOI\",\"objId\":46215,\"data\":{\"names\":[{\"name\":\"延庆区刘斌堡乡政府11\",\"rowId\":\"3AE1FCF7C56E92F7E050A8C08304EE4C\",\"pid\":127729392,\"objStatus\":\"UPDATE\"}],\"rowId\":\"3AE1FB4B75FF92F7E050A8C08304EE4C\",\"pid\":46215}}";
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"IXPOI\",\"objId\":3452060,\"data\":{\"photos\":[{\"fccPid\":\"1d536903ae5c4faa9675fb0cba09006d\",\"tag\":1,\"photoId\":0,\"status\":\"\",\"memo\":\"\",\"objStatus\":\"INSERT\"}],\"rowId\":\"3AE1FB55484A92F7E050A8C08304EE4C\",\"pid\":3452060}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

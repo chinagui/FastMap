@@ -21,6 +21,7 @@ import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFace;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiChildren;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiParent;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiPhoto;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -118,7 +119,12 @@ public class BasicOperator extends AbstractOperator {
 					key.append(M_ROW_ID + ",");
 					row.setRowId(UuidUtils.genUuid());
 					value.append("'" + row.rowId() + "',");
-				} else {
+				} else if(row instanceof IxPoiPhoto && name.equals("fccPid"))
+				{
+					key.append("pid,");
+					value.append(oj + ",");
+				}
+				else {
 					key.append(StringUtils.toColumnName(name) + ",");
 					value.append(oj + ",");
 				}
@@ -162,11 +168,14 @@ public class BasicOperator extends AbstractOperator {
 			Object value = field.get(row);
 
 			column = StringUtils.toColumnName(column);
-
+			
 			if (value instanceof String || value == null) {
-
+				
 				if (!StringUtils.isStringSame(String.valueOf(value), String.valueOf(columnValue))) {
-
+					if(row instanceof IxPoiPhoto && column.equals("fccPid"))
+					{
+						column = "pid";
+					}
 					if (columnValue == null) {
 						sb.append(column + "=null,");
 					} else {

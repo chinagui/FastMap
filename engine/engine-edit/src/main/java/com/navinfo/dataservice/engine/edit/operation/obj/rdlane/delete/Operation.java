@@ -1,8 +1,10 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdlane.delete;
 
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.List;
 
+import com.navinfo.dataservice.dao.glm.iface.AlertObject;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
@@ -100,5 +102,32 @@ public class Operation implements IOperation {
 			result.insertObject(lane, ObjStatus.DELETE, lane.getPid());
 		}
 	}
+	
+	/**
+	 * 删除link对电子眼的删除影响
+	 * @return
+	 * @throws Exception 
+	 */
+	public List<AlertObject> getDeleteRdLaneInfectData(int linkPid,Connection conn) throws Exception {
+		
+		List<RdLane> lanes = new RdLaneSelector(conn).loadByLink(linkPid, 1,
+				true);
+		
+		List<AlertObject> alertList = new ArrayList<>();
 
+		for (RdLane lane : lanes) {
+
+			AlertObject alertObj = new AlertObject();
+
+			alertObj.setObjType(lane.objType());
+
+			alertObj.setPid(lane.getPid());
+
+			alertObj.setStatus(ObjStatus.DELETE);
+
+			alertList.add(alertObj);
+		}
+
+		return alertList;
+	}
 }

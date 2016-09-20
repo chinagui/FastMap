@@ -1038,6 +1038,10 @@ public class SubtaskOperation {
 				public Page handle(ResultSet rs) throws SQLException {
 					SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
 					List<HashMap<Object,Object>> list = new ArrayList<HashMap<Object,Object>>();
+					List<HashMap<Object,Object>> openList = new ArrayList<HashMap<Object,Object>>();
+					List<HashMap<Object,Object>> closeList = new ArrayList<HashMap<Object,Object>>();
+					List<HashMap<Object,Object>> draftList = new ArrayList<HashMap<Object,Object>>();
+					Map<Integer,Object> draftMap = new HashMap<Integer,Object>();
 					Page page = new Page(curPageNum);
 				    page.setPageSize(pageSize);
 				    int total = 0;
@@ -1063,21 +1067,41 @@ public class SubtaskOperation {
 							subtask.put("blockName", rs.getString("BLOCK_NAME"));
 						}
 						
+						if(2==rs.getInt("STATUS")){
+							draftList.add(subtask);
+							continue;
+						}else if(0==rs.getInt("STATUS")){
+							closeList.add(subtask);
+							continue;
+						}
+						
 						SubtaskStatInfo stat = staticApi.getStatBySubtask(rs.getInt("SUBTASK_ID"));
 						int percent = stat.getPercent();
 						
 						subtask.put("percent", percent);
+						
+						draftMap.put(rs.getInt("SUBTASK_ID"), subtask);
 	
-						list.add(subtask);
+//						list.add(subtask);
 					}
 	
+					//开启子任务根据完成度排序
+					Object[] key_arr = draftMap.keySet().toArray();     
+					Arrays.sort(key_arr);     
+					for  (Object key : key_arr) {     
+						openList.add((HashMap<Object, Object>) draftMap.get(key));     
+					}  
+					
+					list.addAll(draftList);
+					list.addAll(openList);
+					list.addAll(closeList);
+					
 					page.setTotalCount(total);
 					page.setResult(list);
 					return page;
 				}
 	
 			};
-
 			return run.query(curPageNum, pageSize, conn, selectSql, rsHandler);
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);

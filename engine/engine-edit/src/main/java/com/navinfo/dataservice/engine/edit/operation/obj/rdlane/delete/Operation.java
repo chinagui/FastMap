@@ -104,7 +104,7 @@ public class Operation implements IOperation {
 	}
 	
 	/**
-	 * 删除link对电子眼的删除影响
+	 * 删除link对详细车道的删除影响
 	 * @return
 	 * @throws Exception 
 	 */

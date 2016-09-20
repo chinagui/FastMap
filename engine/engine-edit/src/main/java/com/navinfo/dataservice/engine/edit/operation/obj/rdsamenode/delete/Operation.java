@@ -1,10 +1,12 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.delete;
 
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
 
+import com.navinfo.dataservice.dao.glm.iface.AlertObject;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -92,5 +94,55 @@ public class Operation implements IOperation {
 				result.insertObject(nodePart, ObjStatus.DELETE, nodePart.getNodePid());
 			}
 		}
+	}
+	
+	/**
+	 * 删除link对同一点的影响
+	 * @return
+	 * @throws Exception 
+	 */
+	public List<AlertObject> getDeleteLinkSameNodeInfectData(int sNodePid,int eNodePid,String tableName,Connection conn) throws Exception {
+		
+		RdSameNodeSelector sameNodeSelector = new RdSameNodeSelector(conn);
+		
+		List<AlertObject> alertList = new ArrayList<>();
+
+		List<RdSameNode> sameNodes = sameNodeSelector.loadSameNodeByNodePids(sNodePid+","+eNodePid, tableName, true);
+		
+		if(CollectionUtils.isNotEmpty(sameNodes))
+		{
+			for(RdSameNode sameNode : sameNodes)
+			{
+				// 删除线后对应删除点，如果同一关系组成点只剩一个点，需要删除主表对象以及所有子表数据
+				List<IRow> parts = sameNode.getParts();
+				
+				if(parts.size() == 2)
+				{
+					AlertObject alertObj = new AlertObject();
+
+					alertObj.setObjType(sameNode.objType());
+
+					alertObj.setPid(sameNode.getPid());
+
+					alertObj.setStatus(ObjStatus.DELETE);
+
+					alertList.add(alertObj);
+				}
+				else if(parts.size()>2)
+				{
+					AlertObject alertObj = new AlertObject();
+
+					alertObj.setObjType(sameNode.objType());
+
+					alertObj.setPid(sameNode.getPid());
+
+					alertObj.setStatus(ObjStatus.UPDATE);
+
+					alertList.add(alertObj);
+				}
+			}
+		}
+
+		return alertList;
 	}
 }

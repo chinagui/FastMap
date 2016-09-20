@@ -168,7 +168,7 @@ public class RdInterSelector extends AbstractSelector {
 	public List<RdInter> loadRdInterByOutLinkPid(int linkPid, boolean isLock) throws Exception {
 		List<RdInter> interList = new ArrayList<RdInter>();
 
-		String sql = "select * from rd_inter where pid in(select pid from rd_inter_link b where b.pid int(select pid from rd_inter_link where u_record !=2 and link_pid = :1) group by b.pid) and u_record !=2";
+		String sql = "select * from rd_inter where pid in(select b.pid from rd_inter_link b where b.pid in(select pid from rd_inter_link where u_record !=2 and link_pid = :1) group by b.pid) and u_record !=2";
 
 		if (isLock) {
 			sql += " for update nowait";

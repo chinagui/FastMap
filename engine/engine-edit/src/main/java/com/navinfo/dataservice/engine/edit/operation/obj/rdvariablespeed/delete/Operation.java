@@ -7,6 +7,7 @@ import java.util.List;
 import com.navinfo.dataservice.dao.glm.iface.AlertObject;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
+import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.variablespeed.RdVariableSpeed;
@@ -64,7 +65,7 @@ public class Operation implements IOperation {
 	 * @return
 	 * @throws Exception
 	 */
-	public List<AlertObject> getDeleteRdTrafficInfectData(int linkPid, Connection conn) throws Exception {
+	public List<AlertObject> getDeleteRdVariableInfectData(int linkPid, Connection conn) throws Exception {
 
 		RdVariableSpeedSelector selector = new RdVariableSpeedSelector(conn);
 
@@ -94,7 +95,7 @@ public class Operation implements IOperation {
 	 * @return
 	 * @throws Exception
 	 */
-	public List<AlertObject> getUpdateRdTrafficInfectData(int linkPid, Connection conn) throws Exception {
+	public List<AlertObject> getUpdateRdVariableInfectData(int linkPid, Connection conn) throws Exception {
 
 		RdVariableSpeedSelector selector = new RdVariableSpeedSelector(conn);
 
@@ -106,11 +107,11 @@ public class Operation implements IOperation {
 
 			AlertObject alertObj = new AlertObject();
 
-			alertObj.setObjType(rdVariableSpeedVia.objType());
+			alertObj.setObjType(ObjType.RDVARIABLESPEED);
 
 			alertObj.setPid(rdVariableSpeedVia.getVspeedPid());
 
-			alertObj.setStatus(ObjStatus.DELETE);
+			alertObj.setStatus(ObjStatus.UPDATE);
 
 			alertList.add(alertObj);
 		}

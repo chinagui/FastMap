@@ -172,7 +172,7 @@ public class BasicOperator extends AbstractOperator {
 			if (value instanceof String || value == null) {
 				
 				if (!StringUtils.isStringSame(String.valueOf(value), String.valueOf(columnValue))) {
-					if(row instanceof IxPoiPhoto && column.equals("fccPid"))
+					if(row instanceof IxPoiPhoto && column.equals("fcc_pid"))
 					{
 						column = "pid";
 					}
@@ -226,6 +226,7 @@ public class BasicOperator extends AbstractOperator {
 		String sql = sb.toString();
 		sql = sql.replace(", where", " where");
 		stmt.addBatch(sql);
+		System.out.println(sql);
 		this.modifyPoiStatus();
 
 	}

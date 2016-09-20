@@ -210,12 +210,8 @@ public class IxPoiPhoto implements IRow {
 				continue;
 			} else {
 				if (!"objStatus".equals(key)) {
-					if(key.equals("fccPid"))
-					{
-						key = "pid";
-					}
 					Field field = this.getClass().getDeclaredField(key);
-
+					
 					field.setAccessible(true);
 
 					Object objValue = field.get(this);
@@ -232,7 +228,6 @@ public class IxPoiPhoto implements IRow {
 
 					if (!newValue.equals(oldValue)) {
 						Object value = json.get(key);
-
 						if (value instanceof String) {
 							changedFields.put(key, newValue.replace("'", "''"));
 						} else {

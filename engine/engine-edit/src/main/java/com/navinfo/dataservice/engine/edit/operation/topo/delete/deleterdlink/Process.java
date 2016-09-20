@@ -638,11 +638,11 @@ public class Process extends AbstractProcess<Command> {
 		// 可变限速
 		com.navinfo.dataservice.engine.edit.operation.obj.rdvariablespeed.delete.Operation rdVariableOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdvariablespeed.delete.Operation(
 				conn);
-		List<AlertObject> rdVariableAlertDataList = rdVariableOperation.getDeleteRdTrafficInfectData(linkPid, conn);
+		List<AlertObject> rdVariableAlertDataList = rdVariableOperation.getDeleteRdVariableInfectData(linkPid, conn);
 		if (CollectionUtils.isNotEmpty(rdVariableAlertDataList)) {
 			infects.put("删除link删除可变限速", rdVariableAlertDataList);
 		}
-		List<AlertObject> rdVariableUpdateAlertDataList = rdVariableOperation.getUpdateRdTrafficInfectData(linkPid,
+		List<AlertObject> rdVariableUpdateAlertDataList = rdVariableOperation.getUpdateRdVariableInfectData(linkPid,
 				conn);
 		if (CollectionUtils.isNotEmpty(rdVariableUpdateAlertDataList)) {
 			infects.put("删除link维护可变限速", rdVariableUpdateAlertDataList);

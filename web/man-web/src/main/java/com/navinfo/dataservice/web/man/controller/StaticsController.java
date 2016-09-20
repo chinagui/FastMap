@@ -160,10 +160,10 @@ public class StaticsController extends BaseController {
 			road.put("working", data.getWorkingRoad());
 			
 			Map<String,Object> result = new HashMap<String,Object>();
-			road.put("subtaskId", data.getSubtaskId());
-			road.put("percent", data.getPercent());
-			road.put("working", poi);
-			road.put("road", road);
+			result.put("subtaskId", data.getSubtaskId());
+			result.put("percent", data.getPercent());
+			result.put("working", poi);
+			result.put("road", road);
 
 			return new ModelAndView("jsonView", success(result));
 		} catch (Exception e) {

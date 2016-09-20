@@ -508,6 +508,7 @@ public class UserInfoOperation {
 			String querySql = "SELECT UG.GROUP_ID,UG.GROUP_NAME,UG.GROUP_TYPE"
 					+ " FROM USER_GROUP UG,GROUP_USER_MAPPING GUM"
 					+ " WHERE UG.GROUP_ID = GUM.GROUP_ID"
+					+ " AND UG.PARENT_GROUP_ID IS NULL"
 					+ " AND GUM.USER_ID = " + userInfo.getUserId();
 					
 			ResultSetHandler<Map<Object, Object>> rsHandler = new ResultSetHandler<Map<Object, Object>>() {

@@ -184,7 +184,7 @@ public class StaticsOperation {
 			}
 		}
 
-		iter = md.find(poiColName, Filters.in("block_id", blockIdList))
+		iter = md.find(roadColName, Filters.in("block_id", blockIdList))
 				.sort(Sorts.descending("stat_date")).batchSize(total)
 				.iterator();
 

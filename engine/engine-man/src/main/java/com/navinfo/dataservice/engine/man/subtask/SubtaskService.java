@@ -223,15 +223,17 @@ public class SubtaskService {
 			final int curPageNum,int snapshot) throws ServiceException {
 		Connection conn = null;
 		try {
-
-			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
 			
 			//获取用户角色信息
 			UserInfo userInfo = new UserInfo();
 			userInfo.setUserId((int)userId);
 			Map<Object, Object> role = UserInfoOperation.getUserRole(conn, userInfo);
-			int roleId = (int) role.get("roleId");
+			//默认为普通用户
+			int roleId = 2;
+			if(!role.isEmpty()){
+				roleId = (int) role.get("roleId");
+			}
 			
 			//返回简略信息
 			if (snapshot==1){
@@ -595,16 +597,16 @@ public class SubtaskService {
 		// TODO Auto-generated method stub
 		Connection conn = null;
 		try {
-
-			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
 			
 			//获取用户所在组
 			UserInfo userInfo = new UserInfo();
 			userInfo.setUserId(bean.getExeUserId());
 			Map<Object,Object> userGroup = UserInfoOperation.getUserGroup(conn, userInfo);
-			bean.setExeGroupId((int)userGroup.get("groupId"));
-
+			if(!userGroup.isEmpty()){
+				bean.setExeGroupId((int)userGroup.get("groupId"));
+			}
+			
 			Page page = new Page();
 			//snapshot=1不返回geometry和gridIds
 			if(snapshot==1){

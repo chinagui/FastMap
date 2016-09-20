@@ -248,7 +248,7 @@ public class RdWarninginfo implements IObj {
 
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) throws Exception {
-		return JSONObject.fromObject(this, JsonUtils.getStrConfig());
+		return JSONObject.fromObject(this);
 	}
 
 	@Override

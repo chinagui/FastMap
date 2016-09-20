@@ -32,7 +32,7 @@ public class PoiSave {
 		try {
 
 			JSONObject json = JSONObject.fromObject(parameter);
-
+			
 			OperType operType = Enum.valueOf(OperType.class,
 					json.getString("command"));
 
@@ -42,6 +42,13 @@ public class PoiSave {
 			int dbId = json.getInt("dbId");
 
 			conn = DBConnector.getInstance().getConnectionById(dbId);
+			
+			JSONObject poiData = json.getJSONObject("data");
+			
+			if (poiData.size()==0 && operType == OperType.UPDATE && objType != ObjType.IXSAMEPOI) {
+				upatePoiStatus(json.getString("objId"), conn, false);
+				return result;
+			}
 
 			EditApiImpl editApiImpl = new EditApiImpl(conn);
 
@@ -74,8 +81,9 @@ public class PoiSave {
 				batchProcess.execute(json, conn, editApiImpl);
 			}
 
-			upatePoiStatus(buf.toString(), conn);
-
+			upatePoiStatus(buf.toString(), conn, true);
+			
+			return result;
 		} catch (DataNotChangeException e) {
 			DbUtils.rollback(conn);
 			logger.error(e.getMessage(), e);
@@ -87,7 +95,6 @@ public class PoiSave {
 		} finally {
 			DbUtils.commitAndClose(conn);
 		}
-		return result;
 	}
 
 	/**
@@ -96,15 +103,23 @@ public class PoiSave {
 	 * @param row
 	 * @throws Exception
 	 */
-	public void upatePoiStatus(String pids, Connection conn) throws Exception {
-		StringBuilder sb = new StringBuilder(" MERGE INTO poi_edit_status T1 ");
-		sb.append(" USING (SELECT row_id as a , 2 AS b,0 AS C FROM ix_poi where pid in ("
-				+ pids + ")) T2 ");
-		sb.append(" ON ( T1.row_id=T2.a) ");
-		sb.append(" WHEN MATCHED THEN ");
-		sb.append(" UPDATE SET T1.status = T2.b,T1.fresh_verified= T2.c ");
-		sb.append(" WHEN NOT MATCHED THEN ");
-		sb.append(" INSERT (T1.row_id,T1.status,T1.fresh_verified) VALUES(T2.a,T2.b,T2.c)");
+	public void upatePoiStatus(String pids, Connection conn, boolean flag) throws Exception {
+		StringBuilder sb = new StringBuilder();
+		if (flag) {
+			sb.append(" MERGE INTO poi_edit_status T1 ");
+			sb.append(" USING (SELECT row_id as a , 2 AS b,0 AS C FROM ix_poi where pid in ("
+					+ pids + ")) T2 ");
+			sb.append(" ON ( T1.row_id=T2.a) ");
+			sb.append(" WHEN MATCHED THEN ");
+			sb.append(" UPDATE SET T1.status = T2.b,T1.fresh_verified= T2.c ");
+			sb.append(" WHEN NOT MATCHED THEN ");
+			sb.append(" INSERT (T1.row_id,T1.status,T1.fresh_verified) VALUES(T2.a,T2.b,T2.c)");
+		} else {
+			sb.append(" UPDATE poi_edit_status T1 SET T1.status = 2 where T1.row_id = ");
+			sb.append(" (SELECT row_id as a FROM ix_poi where pid = " + pids + ")");
+		}
+		
+		
 		PreparedStatement pstmt = null;
 		try {
 			pstmt = conn.prepareStatement(sb.toString());

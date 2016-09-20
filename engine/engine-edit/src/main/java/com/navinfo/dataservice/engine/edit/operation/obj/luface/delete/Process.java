@@ -6,7 +6,7 @@ import com.navinfo.dataservice.engine.edit.operation.AbstractProcess;
 
 public class Process extends AbstractProcess<Command> implements IProcess {
 
-	private Check check;
+	private Check check = new Check();
 	
 	public Process(AbstractCommand command) throws Exception {
 		super(command);

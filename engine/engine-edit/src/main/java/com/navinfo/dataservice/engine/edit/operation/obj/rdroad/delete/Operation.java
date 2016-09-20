@@ -6,9 +6,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.collections.CollectionUtils;
+
+import com.navinfo.dataservice.dao.glm.iface.AlertObject;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
+import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.road.RdRoad;
 import com.navinfo.dataservice.dao.glm.model.rd.road.RdRoadLink;
@@ -115,5 +119,42 @@ public class Operation implements IOperation {
 		}
 
 		return null;
+	}
+	
+	/**
+	 * 删除link对CRF Road的删除影响
+	 * 
+	 * @return
+	 * @throws Exception
+	 */
+	public List<AlertObject> getUpdateRdRoadInfectData(int linkPid, Connection conn) throws Exception {
+		
+		List<Integer> linkPidList = new ArrayList<>();
+		
+		linkPidList.add(linkPid);
+		
+		RdRoadLinkSelector rdRoadLinkSelector = new RdRoadLinkSelector(
+				this.conn);
+		
+		List<RdRoadLink> rdRoadLinks = rdRoadLinkSelector.loadByLinks(linkPidList,
+				true);
+
+		List<AlertObject> alertList = new ArrayList<>();
+
+		if(CollectionUtils.isNotEmpty(rdRoadLinks))
+		{
+			RdRoadLink roadLink = rdRoadLinks.get(0);
+			
+			AlertObject alertObj = new AlertObject();
+
+			alertObj.setObjType(ObjType.RDROAD);
+
+			alertObj.setPid(roadLink.getPid());
+
+			alertObj.setStatus(ObjStatus.UPDATE);
+
+			alertList.add(alertObj);
+		}
+		return alertList;
 	}
 }

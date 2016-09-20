@@ -10,7 +10,6 @@ import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
-import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeSelector;
 
 public class OpTopo implements IOperation {
@@ -41,10 +40,7 @@ public class OpTopo implements IOperation {
 		return msg;
 	}
 
-	public List<AlertObject> getDeleteLinkInfectData(int linkPid, Connection conn) throws Exception {
-		RdLinkSelector selector = new RdLinkSelector(conn);
-
-		RdLink link = (RdLink) selector.loadById(linkPid, true);
+	public List<AlertObject> getDeleteLinkInfectData(RdLink link, Connection conn) throws Exception {
 
 		AlertObject alertObj = new AlertObject();
 

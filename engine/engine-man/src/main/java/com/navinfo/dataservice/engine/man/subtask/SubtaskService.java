@@ -225,22 +225,18 @@ public class SubtaskService {
 		try {
 			conn = DBConnector.getInstance().getManConnection();
 			
-			//获取用户角色信息
+			//获取用户所在组信息
 			UserInfo userInfo = new UserInfo();
 			userInfo.setUserId((int)userId);
-			Map<Object, Object> role = UserInfoOperation.getUserRole(conn, userInfo);
-			//默认为普通用户
-			int roleId = 2;
-			if(!role.isEmpty()){
-				roleId = (int) role.get("roleId");
-			}
+			Map<Object, Object> group = UserInfoOperation.getUserGroup(conn, userInfo);
+			int groupId = (int) group.get("groupId");
 			
 			//返回简略信息
 			if (snapshot==1){
-				Page page = SubtaskOperation.getListSnapshot(userId,roleId,stage,conditionJson,orderJson,pageSize,curPageNum);
+				Page page = SubtaskOperation.getListSnapshot(userId,groupId,stage,conditionJson,orderJson,pageSize,curPageNum);
 				return page;
 			}else{
-				Page page = SubtaskOperation.getList(userId,roleId,stage,conditionJson,orderJson,pageSize,curPageNum);
+				Page page = SubtaskOperation.getList(userId,groupId,stage,conditionJson,orderJson,pageSize,curPageNum);
 				return page;
 			}		
 

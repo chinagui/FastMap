@@ -119,7 +119,6 @@ public class Result implements ISerializable {
 		default:
 			break;
 		}
-		System.out.println(json);
 		logs.add(json);
 
 	}
@@ -168,7 +167,6 @@ public class Result implements ISerializable {
 	 */
 	public String getLogs() {
 		BranchResultHandle.handleResult(listAddIRow,logs);
-		System.out.println(logs.toString());
 		return logs.toString();
 
 	}

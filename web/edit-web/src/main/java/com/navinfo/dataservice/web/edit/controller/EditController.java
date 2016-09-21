@@ -46,12 +46,13 @@ public class EditController extends BaseController {
 	@RequestMapping(value = "/run")
 	public ModelAndView run(HttpServletRequest request)
 			throws ServletException, IOException {
-
+		
 		String parameter = request.getParameter("parameter");
 		AccessToken tokenObj=(AccessToken) request.getAttribute("token");
 
 		try {
-
+			long beginRunTime=System.currentTimeMillis();
+			logger.info("BEGIN EDIT RUN");
 			Transaction t = new Transaction(parameter);
             t.setUserId(tokenObj.getUserId());
 			String msg = t.run();
@@ -67,7 +68,9 @@ public class EditController extends BaseController {
 			json.put("check", t.getCheckLog());
 
 			json.put("pid", t.getPid());
-
+			long endRunTime=System.currentTimeMillis();
+			logger.info("END EDIT RUN");
+			logger.info("edit run total use time   " + String.valueOf(endRunTime-beginRunTime));
 			return new ModelAndView("jsonView", success(json));
 		}
 		catch (DataNotChangeException e)

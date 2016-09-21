@@ -31,6 +31,8 @@ import com.navinfo.dataservice.api.man.model.BlockMan;
 import com.navinfo.dataservice.api.man.model.Message;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.man.model.Task;
+import com.navinfo.dataservice.api.man.model.UserGroup;
+import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.api.statics.iface.StaticsApi;
 import com.navinfo.dataservice.api.statics.model.SubtaskStatInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
@@ -46,6 +48,7 @@ import com.navinfo.dataservice.commons.xinge.XingeUtil;
 import com.navinfo.dataservice.engine.man.grid.GridService;
 import com.navinfo.dataservice.engine.man.message.MessageService;
 import com.navinfo.dataservice.engine.man.task.TaskOperation;
+import com.navinfo.dataservice.engine.man.userInfo.UserInfoOperation;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
@@ -218,13 +221,22 @@ public class SubtaskService {
 	
 	public Page list(long userId, int stage, JSONObject conditionJson, JSONObject orderJson, final int pageSize,
 			final int curPageNum,int snapshot) throws ServiceException {
+		Connection conn = null;
 		try {
+			conn = DBConnector.getInstance().getManConnection();
+			
+			//获取用户所在组信息
+			UserInfo userInfo = new UserInfo();
+			userInfo.setUserId((int)userId);
+			Map<Object, Object> group = UserInfoOperation.getUserGroup(conn, userInfo);
+			int groupId = (int) group.get("groupId");
+			
 			//返回简略信息
 			if (snapshot==1){
-				Page page = SubtaskOperation.getListSnapshot(userId,stage,conditionJson,orderJson,pageSize,curPageNum);
+				Page page = SubtaskOperation.getListSnapshot(userId,groupId,stage,conditionJson,orderJson,pageSize,curPageNum);
 				return page;
 			}else{
-				Page page = SubtaskOperation.getList(userId,stage,conditionJson,orderJson,pageSize,curPageNum);
+				Page page = SubtaskOperation.getList(userId,groupId,stage,conditionJson,orderJson,pageSize,curPageNum);
 				return page;
 			}		
 
@@ -381,8 +393,8 @@ public class SubtaskService {
 					+ ",r.DAILY_DB_ID"
 					+ ",r.MONTHLY_DB_ID"
 					+ ",st.GEOMETRY";
-			String userSql = ",u.user_real_name as executer";
-			String groupSql = ",ug.group_name as executer";
+			String userSql = ",u.user_id as executer_id,u.user_real_name as executer";
+			String groupSql = ",ug.group_id as executer_id,ug.group_name as executer";
 			String taskSql = ",T.TASK_ID AS BLOCK_ID,T.NAME AS BLOCK_NAME";
 			String blockSql = ",B.BLOCK_ID, B.BLOCK_NAME";
 
@@ -465,6 +477,7 @@ public class SubtaskService {
 						
 						
 						subtask.setExecuter(rs.getString("EXECUTER"));
+						subtask.setExecuterId(rs.getInt("EXECUTER_ID"));
 						
 						if(1 == rs.getInt("STATUS")){
 							SubtaskStatInfo stat = staticApi.getStatBySubtask(rs.getInt("SUBTASK_ID"));
@@ -580,10 +593,16 @@ public class SubtaskService {
 		// TODO Auto-generated method stub
 		Connection conn = null;
 		try {
-
-			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
-
+			
+			//获取用户所在组
+			UserInfo userInfo = new UserInfo();
+			userInfo.setUserId(bean.getExeUserId());
+			Map<Object,Object> userGroup = UserInfoOperation.getUserGroup(conn, userInfo);
+			if(!userGroup.isEmpty()){
+				bean.setExeGroupId((int)userGroup.get("groupId"));
+			}
+			
 			Page page = new Page();
 			//snapshot=1不返回geometry和gridIds
 			if(snapshot==1){
@@ -618,9 +637,9 @@ public class SubtaskService {
 				dataJson.put("gridIds",gridIdList);
 				//根据gridIds获取wkt
 				wkt = GridUtils.grids2Wkt(gridIds);
-				if(wkt.contains("MULTIPOLYGON")){
-					throw new IllegalArgumentException("请输入符合条件的grids");
-				}
+//				if(wkt.contains("MULTIPOLYGON")){
+//					throw new IllegalArgumentException("请输入符合条件的grids");
+//				}
 			}else{
 				if(dataJson.containsKey("taskId")){
 					int taskId = dataJson.getInt("taskId");
@@ -647,13 +666,13 @@ public class SubtaskService {
 	 * @return
 	 * @throws Exception 
 	 */
-	public String pushMsg(long userId, JSONArray subTaskIds) throws Exception {
+	public String pushMsg(long userId, JSONArray subtaskIds) throws Exception {
 		// TODO Auto-generated method stub
 		Connection conn = null;
 		try{
 			conn = DBConnector.getInstance().getManConnection();
 			//查询子任务
-			List<Subtask> subtaskList = SubtaskOperation.getSubtaskListBySubtaskIdList(conn, subTaskIds);
+			List<Subtask> subtaskList = SubtaskOperation.getSubtaskListBySubtaskIdList(conn, subtaskIds);
 			
 			Iterator<Subtask> iter = subtaskList.iterator();
 			while(iter.hasNext()){

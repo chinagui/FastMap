@@ -517,7 +517,6 @@ public class UserInfoService {
 					}
 					return list;
 				}
-
 			};
 			return run.query(conn, selectSql, rsHandler, values.toArray());
 		} catch (Exception e) {

@@ -463,7 +463,7 @@ public class StaticsService {
 		else if((subtask.getType()==4&&subtask.getStage()==1)
 				||(subtask.getType()==5&&subtask.getStage()==1)){
 			String poiColName = PoiDailyMain.col_name_block;
-			String roadColName = PoiDailyMain.col_name_block;
+			String roadColName = RoadDailyMain.col_name_block;
 			int blockId = subtask.getBlockId();
 					
 			SubtaskStatInfo result = StaticsOperation.getSubtaskStatByBlock(blockId,poiColName,roadColName);

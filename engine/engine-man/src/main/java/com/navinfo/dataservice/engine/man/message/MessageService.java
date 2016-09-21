@@ -3,6 +3,7 @@ package com.navinfo.dataservice.engine.man.message;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -110,6 +111,53 @@ public class MessageService {
 				MessageOperation.insertMessage(conn, message);
 			}
 
+			
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询明细失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	/**
+	 * @param msgId
+	 * @return
+	 * @throws ServiceException 
+	 */
+	public Map<String, Object> query(int msgId) throws ServiceException {
+		// TODO Auto-generated method stub
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+			
+			String selectSql = "SELECT M.MSG_ID, M.MSG_TITLE, M.MSG_CONTENT, M.PUSH_USER, M.PUSH_TIME, M.MSG_STATUS,M.MSG_RECERVER,U.USER_REAL_NAME"
+					+ " FROM MESSAGE M, USER_INFO U"
+					+ " WHERE U.USER_ID = M.PUSH_USER"
+					+ " AND M.MSG_ID = " + msgId;
+
+			ResultSetHandler<Map<String,Object>> rsHandler = new ResultSetHandler<Map<String,Object>>() {
+				public Map<String,Object> handle(ResultSet rs) throws SQLException {
+					Map<String,Object> msg = new HashMap<String,Object>();
+					SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
+					if (rs.next()) {
+						msg.put("msgId", rs.getInt("MSG_ID"));
+						msg.put("msgTitle", rs.getString("MSG_TITLE"));
+						msg.put("msgContent", rs.getString("MSG_CONTENT"));
+						msg.put("time", rs.getString("PUSH_TIME"));
+						msg.put("status", rs.getInt("MSG_STATUS"));
+						msg.put("pushUser", rs.getString("USER_REAL_NAME"));
+					}
+					return msg;
+				}
+			};
+
+			Map<String,Object> message = run.query(conn, selectSql,rsHandler);
+			
+			MessageOperation.updateMessageStatus(conn,msgId);
+			
+			return message;
 			
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);

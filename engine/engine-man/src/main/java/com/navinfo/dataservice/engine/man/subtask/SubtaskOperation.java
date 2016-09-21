@@ -485,11 +485,13 @@ public class SubtaskOperation {
 			String conditionSql_task = " where st.task_id = t.task_id "
 					+ "and t.city_id = c.city_id "
 					+ "and c.region_id = r.region_id "
-					+ "and st.EXE_USER_ID = " + bean.getExeUserId() + " ";
+					+ "and (st.EXE_USER_ID = " + bean.getExeUserId() + " or st.EXE_GROUP_ID = " + bean.getExeGroupId() + ")";
+//					+ "and st.EXE_USER_ID = " + bean.getExeUserId() + " ";
 
 			String conditionSql_block = " where st.block_id = b.block_id "
 					+ "and b.region_id = r.region_id "
-					+ "and st.EXE_USER_ID = " + bean.getExeUserId() + " ";
+					+ "and (st.EXE_USER_ID = " + bean.getExeUserId() + " or st.EXE_GROUP_ID = " + bean.getExeGroupId() + ")";
+//					+ "and st.EXE_USER_ID = " + bean.getExeUserId() + " ";
 
 			if (bean.getStage() != null) {
 				conditionSql_task = conditionSql_task + " and st.STAGE = "
@@ -604,11 +606,13 @@ public class SubtaskOperation {
 			String conditionSql_task = " where st.task_id = t.task_id "
 					+ "and t.city_id = c.city_id "
 					+ "and c.region_id = r.region_id "
-					+ "and st.EXE_USER_ID = " + bean.getExeUserId();
+					+ "and (st.EXE_USER_ID = " + bean.getExeUserId() + " or st.EXE_GROUP_ID = " + bean.getExeGroupId() + ")";
+//					+ "and st.EXE_USER_ID = " + bean.getExeUserId();
 
 			String conditionSql_block = " where st.block_id = b.block_id "
 					+ "and b.region_id = r.region_id "
-					+ "and st.EXE_USER_ID = " + bean.getExeUserId();
+					+ "and (st.EXE_USER_ID = " + bean.getExeUserId() + " or st.EXE_GROUP_ID = " + bean.getExeGroupId() + ")";
+//					+ "and st.EXE_USER_ID = " + bean.getExeUserId();
 
 			if (bean.getStage() != null) {
 				conditionSql_task = conditionSql_task + " and st.STAGE = "
@@ -774,7 +778,8 @@ public class SubtaskOperation {
 
 	/**
 	 * @param userId 
-	 * @param stage
+	 * @param groupId
+	 * @param stage 
 	 * @param conditionJson
 	 * @param orderJson
 	 * @param pageSize
@@ -782,7 +787,7 @@ public class SubtaskOperation {
 	 * @return
 	 * @throws ServiceException 
 	 */
-	public static Page getList(long userId, int stage, JSONObject conditionJson, JSONObject orderJson, final int pageSize,
+	public static Page getList(long userId, int groupId, int stage, JSONObject conditionJson, JSONObject orderJson, final int pageSize,
 			final int curPageNum) throws ServiceException {
 		Connection conn = null;
 		// TODO Auto-generated method stub
@@ -798,52 +803,46 @@ public class SubtaskOperation {
 			// 0采集，1日编，2月编，
 			if (0 == stage) {
 				selectUserSql = "SELECT S.SUBTASK_ID, S.NAME, S.STAGE, S.TYPE, S.DESCP, S.STATUS, S.PLAN_START_DATE, S.PLAN_END_DATE, S.GEOMETRY, B.BLOCK_ID, B.BLOCK_NAME, U.USER_REAL_NAME AS EXECUTER"
-						+ " FROM SUBTASK S, BLOCK B, USER_INFO U, BLOCK_MAN BM, USER_GROUP UG"
+						+ " FROM SUBTASK S, BLOCK B, USER_INFO U, BLOCK_MAN BM"
 						+ " WHERE S.BLOCK_ID = B.BLOCK_ID"
 						+ " AND U.USER_ID = S.EXE_USER_ID"
 						+ " AND B.BLOCK_ID = BM.BLOCK_ID"
 						+ " AND BM.LATEST = 1"
-						+ " AND BM.COLLECT_GROUP_ID = UG.GROUP_ID"
-						+ " AND S.STAGE = " + stage
-						+ " AND UG.LEADER_ID = " + userId;
+						+ " AND BM.COLLECT_GROUP_ID = " + groupId
+						+ " AND S.STAGE = " + stage;
 			} else if (1 == stage) {
 				selectUserSql = "SELECT S.SUBTASK_ID, S.NAME, S.STAGE, S.TYPE, S.DESCP, S.STATUS, S.PLAN_START_DATE, S.PLAN_END_DATE, S.GEOMETRY, B.BLOCK_ID, B.BLOCK_NAME, U.USER_REAL_NAME AS EXECUTER"
-						+ " FROM SUBTASK S, BLOCK B, USER_INFO U, BLOCK_MAN BM, USER_GROUP UG"
+						+ " FROM SUBTASK S, BLOCK B, USER_INFO U, BLOCK_MAN BM"
 						+ " WHERE S.BLOCK_ID = B.BLOCK_ID"
 						+ " AND U.USER_ID = S.EXE_USER_ID"
 						+ " AND B.BLOCK_ID = BM.BLOCK_ID"
 						+ " AND BM.LATEST = 1"
-						+ " AND BM.DAY_EDIT_GROUP_ID = UG.GROUP_ID"
-						+ " AND S.STAGE = " + stage
-						+ " AND UG.LEADER_ID = " + userId;
+						+ " AND BM.DAY_EDIT_GROUP_ID = " + groupId
+						+ " AND S.STAGE = " + stage;
 				selectGroupSql = "SELECT S.SUBTASK_ID, S.NAME, S.STAGE, S.TYPE, S.DESCP, S.STATUS, S.PLAN_START_DATE, S.PLAN_END_DATE, S.GEOMETRY, B.BLOCK_ID, B.BLOCK_NAME, UG1.GROUP_NAME AS EXECUTER"
-						+ " FROM SUBTASK S, BLOCK B, BLOCK_MAN BM, USER_GROUP UG, USER_GROUP UG1"
+						+ " FROM SUBTASK S, BLOCK B, BLOCK_MAN BM, USER_GROUP UG1"
 						+ " WHERE S.BLOCK_ID = B.BLOCK_ID"
 						+ " AND UG1.GROUP_ID = S.EXE_GROUP_ID"
 						+ " AND B.BLOCK_ID = BM.BLOCK_ID"
 						+ " AND BM.LATEST = 1"
-						+ " AND BM.DAY_EDIT_GROUP_ID = UG.GROUP_ID"
-						+ " AND S.STAGE = " + stage
-						+ " AND UG.LEADER_ID = " + userId;
-				
+						+ " AND BM.DAY_EDIT_GROUP_ID = " + groupId
+						+ " AND S.STAGE = " + stage;
 			} else if (2 == stage) {
 				selectUserSql = "SELECT S.SUBTASK_ID,S.NAME,S.STAGE,S.TYPE,S.DESCP,S.STATUS,S.PLAN_START_DATE,S.PLAN_END_DATE,S.GEOMETRY,T.TASK_ID,T.NAME AS TASK_NAME,T.TASK_TYPE,U.USER_REAL_NAME AS EXECUTER"
-						+ " FROM SUBTASK S, USER_INFO U, TASK T, USER_GROUP UG"
+						+ " FROM SUBTASK S, USER_INFO U, TASK T"
 						+ " WHERE S.TASK_ID = T.TASK_ID"
 						+ " AND U.USER_ID = S.EXE_USER_ID"
 						+ " AND T.LATEST = 1"
-						+ " AND T.MONTH_EDIT_GROUP_ID = UG.GROUP_ID"
-						+ " AND S.STAGE = " + stage
-						+ " AND UG.LEADER_ID = " + userId;
+						+ " AND T.MONTH_EDIT_GROUP_ID = " + groupId
+						+ " AND S.STAGE = " + stage;
 				
 				selectGroupSql = "SELECT S.SUBTASK_ID,S.NAME,S.STAGE,S.TYPE,S.DESCP,S.STATUS,S.PLAN_START_DATE,S.PLAN_END_DATE,S.GEOMETRY,T.TASK_ID,T.NAME AS TASK_NAME,T.TASK_TYPE,UG1.GROUP_NAME AS EXECUTER"
-						+ " FROM SUBTASK S, TASK T, USER_GROUP UG, USER_GROUP UG1"
+						+ " FROM SUBTASK S, TASK T, USER_GROUP UG1"
 						+ " WHERE S.TASK_ID = T.TASK_ID"
 						+ " AND UG1.GROUP_ID = S.EXE_GROUP_ID"
 						+ " AND T.LATEST = 1"
-						+ " AND T.MONTH_EDIT_GROUP_ID = UG.GROUP_ID"
-						+ " AND S.STAGE = " + stage
-						+ " AND UG.LEADER_ID = " + userId;
+						+ " AND T.MONTH_EDIT_GROUP_ID = " + groupId
+						+ " AND S.STAGE = " + stage;
 			} 
 		
 			//查询条件
@@ -966,7 +965,8 @@ public class SubtaskOperation {
 
 	/**
 	 * @param userId 
-	 * @param stage
+	 * @param groupId
+	 * @param stage 
 	 * @param conditionJson
 	 * @param orderJson
 	 * @param pageSize
@@ -974,7 +974,7 @@ public class SubtaskOperation {
 	 * @return
 	 * @throws ServiceException 
 	 */
-	public static Page getListSnapshot(long userId, int stage, JSONObject conditionJson, JSONObject orderJson, final int pageSize,
+	public static Page getListSnapshot(long userId, int groupId, int stage, JSONObject conditionJson, JSONObject orderJson, final int pageSize,
 			final int curPageNum) throws ServiceException {
 		Connection conn = null;
 		// TODO Auto-generated method stub
@@ -986,31 +986,28 @@ public class SubtaskOperation {
 			//0采集，1日编，2月编
 			if(0 == stage){
 				selectSql = "SELECT S.SUBTASK_ID, S.STAGE, S.NAME, S.TYPE, S.STATUS,S.PLAN_START_DATE,S.PLAN_END_DATE,B.BLOCK_ID,B.BLOCK_NAME"
-						+ " FROM SUBTASK S ,BLOCK B,BLOCK_MAN BM, USER_GROUP UG"
+						+ " FROM SUBTASK S ,BLOCK B,BLOCK_MAN BM"
 						+ " WHERE S.STAGE = 0"
 						+ " AND S.BLOCK_ID = B.BLOCK_ID"
 						+ " AND B.BLOCK_ID = BM.BLOCK_ID"
 						+ " AND BM.LATEST = 1"
-						+ " AND UG.GROUP_ID = BM.COLLECT_GROUP_ID"
-						+ " AND UG.LEADER_ID = " + userId;
+						+ " AND BM.COLLECT_GROUP_ID = " + groupId;
 			}else if(1 == stage){
 				selectSql = "SELECT S.SUBTASK_ID, S.STAGE, S.NAME, S.TYPE, S.STATUS,S.PLAN_START_DATE,S.PLAN_END_DATE,B.BLOCK_ID,B.BLOCK_NAME"
-						+ " FROM SUBTASK S ,BLOCK B,BLOCK_MAN BM, USER_GROUP UG"
+						+ " FROM SUBTASK S ,BLOCK B,BLOCK_MAN BM"
 						+ " WHERE S.STAGE = 1"
 						+ " AND S.BLOCK_ID = B.BLOCK_ID"
 						+ " AND B.BLOCK_ID = BM.BLOCK_ID"
 						+ " AND BM.LATEST = 1"
-						+ " AND UG.GROUP_ID = BM.DAY_EDIT_GROUP_ID"
-						+ " AND UG.LEADER_ID = " + userId;
+						+ " AND BM.DAY_EDIT_GROUP_ID = " + groupId;
 			}
 			else if(2 ==stage){
 				selectSql = "SELECT S.SUBTASK_ID, S.STAGE, S.NAME, S.TYPE, S.STATUS,S.PLAN_START_DATE,S.PLAN_END_DATE,T.TASK_ID,T.NAME AS TASK_NAME"
-						+ " FROM SUBTASK S ,TASK T, USER_GROUP UG"
+						+ " FROM SUBTASK S ,TASK T"
 						+ " WHERE S.STAGE = 2"
 						+ " AND S.TASK_ID = T.TASK_ID"
-						+ " AND UG.GROUP_ID = T.MONTH_EDIT_GROUP_ID"
 						+ " AND T.LATEST = 1"
-						+ " AND UG.LEADER_ID = " + userId;
+						+ " AND T.MONTH_EDIT_GROUP_ID = " + groupId;
 			}
 
 			//查询条件
@@ -1041,6 +1038,10 @@ public class SubtaskOperation {
 				public Page handle(ResultSet rs) throws SQLException {
 					SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
 					List<HashMap<Object,Object>> list = new ArrayList<HashMap<Object,Object>>();
+					List<HashMap<Object,Object>> openList = new ArrayList<HashMap<Object,Object>>();
+					List<HashMap<Object,Object>> closeList = new ArrayList<HashMap<Object,Object>>();
+					List<HashMap<Object,Object>> draftList = new ArrayList<HashMap<Object,Object>>();
+					Map<Integer,Object> draftMap = new HashMap<Integer,Object>();
 					Page page = new Page(curPageNum);
 				    page.setPageSize(pageSize);
 				    int total = 0;
@@ -1066,21 +1067,41 @@ public class SubtaskOperation {
 							subtask.put("blockName", rs.getString("BLOCK_NAME"));
 						}
 						
+						if(2==rs.getInt("STATUS")){
+							draftList.add(subtask);
+							continue;
+						}else if(0==rs.getInt("STATUS")){
+							closeList.add(subtask);
+							continue;
+						}
+						
 						SubtaskStatInfo stat = staticApi.getStatBySubtask(rs.getInt("SUBTASK_ID"));
 						int percent = stat.getPercent();
 						
 						subtask.put("percent", percent);
+						
+						draftMap.put(rs.getInt("SUBTASK_ID"), subtask);
 	
-						list.add(subtask);
+//						list.add(subtask);
 					}
 	
+					//开启子任务根据完成度排序
+					Object[] key_arr = draftMap.keySet().toArray();     
+					Arrays.sort(key_arr);     
+					for  (Object key : key_arr) {     
+						openList.add((HashMap<Object, Object>) draftMap.get(key));     
+					}  
+					
+					list.addAll(draftList);
+					list.addAll(openList);
+					list.addAll(closeList);
+					
 					page.setTotalCount(total);
 					page.setResult(list);
 					return page;
 				}
 	
 			};
-
 			return run.query(curPageNum, pageSize, conn, selectSql, rsHandler);
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);

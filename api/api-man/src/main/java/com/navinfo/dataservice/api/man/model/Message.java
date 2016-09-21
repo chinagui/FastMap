@@ -24,6 +24,7 @@ public class Message {
 	private Integer receiverId;
 	private Timestamp pushTime;
 	private Integer msgStatus;
+	private String pushUser;
 	
 	
 	public Message(Integer msgId
@@ -32,7 +33,8 @@ public class Message {
 			,Integer pushUserId
 			,Integer receiverId
 			,Timestamp pushTime
-			,Integer msgStatus){
+			,Integer msgStatus
+			,String pushUser){
 		this.msgId = msgId;
 		this.msgTitle = msgTitle;
 		this.msgContent=msgContext;
@@ -40,6 +42,7 @@ public class Message {
 		this.receiverId=receiverId;
 		this.pushTime=pushTime;
 		this.msgStatus=msgStatus;
+		this.pushUser=pushUser;
 	}
 	/**
 	 * @return the msgId
@@ -124,6 +127,18 @@ public class Message {
 	 */
 	public void setMsgStatus(Integer msgStatus) {
 		this.msgStatus = msgStatus;
+	}
+	/**
+	 * @return the pushUser
+	 */
+	public String getPushUser() {
+		return pushUser;
+	}
+	/**
+	 * @param pushUser the pushUser to set
+	 */
+	public void setPushUser(String pushUser) {
+		this.pushUser = pushUser;
 	}
 	
 	

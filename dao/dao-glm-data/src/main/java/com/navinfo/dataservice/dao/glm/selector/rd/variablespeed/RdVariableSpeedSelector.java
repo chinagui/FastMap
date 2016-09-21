@@ -244,6 +244,9 @@ public class RdVariableSpeedSelector extends AbstractSelector {
 			resultSet = pstmt.executeQuery();
 
 			while (resultSet.next()) {
+				RdVariableSpeedVia rdVariableSpeedVia = new RdVariableSpeedVia();
+				ReflectionAttrUtils.executeResultSet(rdVariableSpeedVia, resultSet);
+				rdVariableSpeeds.add(rdVariableSpeedVia);
 			}
 		} catch (Exception e) {
 			throw e;

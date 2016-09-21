@@ -21,7 +21,7 @@ public interface ManApi{
 	
 	public Subtask queryBySubtaskId(Integer subtaskId) throws Exception ;
 	
-	List<Grid> listGrids()throws Exception;
+//	List<Grid> listGrids()throws Exception;
 	/**
 	
 	 * @param taskList subTaskId的列表
@@ -30,8 +30,8 @@ public interface ManApi{
 	 * @return MultiValueMap key是regionId，value是大区中满足条件的grid的列表
 	 * @throws Exception
 	 */
-	public Map queryRegionGridMappingOfSubtasks(List<Integer> taskList) throws Exception;
-	public Set<Integer> queryGrid(int limit) throws Exception;
+//	public Map queryRegionGridMappingOfSubtasks(List<Integer> taskList) throws Exception;
+//	public Set<Integer> queryGrid(int limit) throws Exception;
 	public List<Region> queryRegionList() throws Exception;
 	Region queryRegionByDbId(int dbId)throws Exception;
 	

@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -27,8 +28,10 @@ import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.DateUtilsEx;
 import com.navinfo.dataservice.commons.xinge.XingeUtil;
+import com.navinfo.dataservice.engine.man.message.MessageOperation;
 import com.navinfo.dataservice.engine.man.task.TaskOperation;
 import com.navinfo.dataservice.engine.man.userDevice.UserDeviceService;
+import com.navinfo.dataservice.engine.man.userInfo.UserInfoOperation;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoService;
 import com.navinfo.navicommons.database.DataBaseUtils;
 import com.navinfo.navicommons.database.Page;
@@ -500,16 +503,15 @@ public class BlockService {
 							+ " to_char(m.DAY_EDIT_PLAN_END_DATE, 'yyyymmdd') DAY_EDIT_PLAN_END_DATE,  "
 							+ " to_char(m.DAY_PRODUCE_PLAN_START_DATE, 'yyyymmdd') DAY_PRODUCE_PLAN_START_DATE,  "
 							+ " to_char(m.DAY_PRODUCE_PLAN_END_DATE, 'yyyymmdd') DAY_PRODUCE_PLAN_END_DATE,  "
-							+ " k.TASK_ID, k.NAME, k.task_type "
+							+ " k.TASK_ID, k.NAME, k.task_type, "
 							+ " to_char(k.PLAN_START_DATE, 'yyyymmdd') PLAN_START_DATE,  "
-							+ " to_char(k.PLAN_END_DATE, 'yyyymmdd') PLAN_END_DATE, "
-							+ "	from block_man m, block t, user_info u, task k, user_group u,infor i where i.infor_id='"
+							+ " to_char(k.PLAN_END_DATE, 'yyyymmdd') PLAN_END_DATE from block_man m, block t, user_info u, task k, user_group u,infor i where i.infor_id='"
 							+ inforId
 							+ "' AND m.block_id = t.block_id(+) and m.latest = 1 and m.create_user_id = u.user_id(+)  "
 							+ " and i.task_id = m.task_id AND m.task_id=k.task_id and k.latest = 1 and m.collect_group_id = u.group_id(+) ) "
-							+ " SELECT block_id,block_name,blockStatus,plan_status,DESCP,USER_REAL_NAME,COLLECT_GROUP_ID,COLLECT_GROUP"
-							+ " DAY_EDIT_GROUP_ID,DAY_EDIT_GROUP,COLLECT_PLAN_START_DATE,COLLECT_PLAN_END_DATE,DAY_EDIT_PLAN_START_DATE "
-							+ " DAY_EDIT_PLAN_END_DATE,DAY_PRODUCE_PLAN_START_DATE,DAY_PRODUCE_PLAN_END_DATE,TASK_ID,NAME, task_type"
+							+ " SELECT block_id,block_name,blockStatus,plan_status,DESCP,USER_REAL_NAME,COLLECT_GROUP_ID,COLLECT_GROUP,"
+							+ " DAY_EDIT_GROUP_ID,DAY_EDIT_GROUP,COLLECT_PLAN_START_DATE,COLLECT_PLAN_END_DATE,DAY_EDIT_PLAN_START_DATE, "
+							+ " DAY_EDIT_PLAN_END_DATE,DAY_PRODUCE_PLAN_START_DATE,DAY_PRODUCE_PLAN_END_DATE,TASK_ID,NAME, task_type,"
 							+ " PLAN_START_DATE,PLAN_END_DATE from T  WHERE 1=1 ";
 				} else {
 					selectSql = "WITH T AS (select distinct t.block_id,t.block_name,m.status blockStatus,t.plan_status,m.DESCP, nvl(u.user_real_name, '') USER_REAL_NAME,"
@@ -636,9 +638,9 @@ public class BlockService {
 			conn = DBConnector.getInstance().getManConnection();
 			String BlockIds = "(";
 			BlockIds += StringUtils.join(blockList.toArray(), ",") + ")";
-			String selectSql = "select DISTINCT t.block_id,t.block_name,(SELECT u.group_name FROM User_Group u "
-					+ "WHERE u.group_id=m.collect_group_id) collectGroupName,(SELECT u.group_name FROM User_Group u "
-					+ "WHERE u.group_id=m.day_edit_group_id) dayEditGroupName from block_man m,BLOCK t WHERE t.block_id=m.block_id and t.block_id in "
+			String selectSql = "select DISTINCT t.block_id,t.block_name,(SELECT u.leader_id FROM User_Group u "
+					+ "WHERE u.group_id=m.collect_group_id) collectGroupLeader,(SELECT u.leader_id FROM User_Group u "
+					+ "WHERE u.group_id=m.day_edit_group_id) dayEditGroupLeader from block_man m,BLOCK t WHERE t.block_id=m.block_id and t.block_id in "
 					+ BlockIds;
 			PreparedStatement stmt = null;
 			try {
@@ -648,10 +650,19 @@ public class BlockService {
 				e.printStackTrace();
 			}
 			ResultSet rs = stmt.executeQuery();
+			List<String> msgContentList=new ArrayList<String>();
 			while (rs.next()) {
-				// 调用消息保存方法
-				// saveMsg()
+				msgContentList.add("block:"+rs.getString("BLOCK_NAME")+"内容发生变更，请关注");
 			}
+			/*block创建/编辑/关闭
+			1.分配的采集作业组组长
+			2.分配的日编作业组组长
+			block:XXX(block名称)内容发生变更，请关注*/
+			String msgTitle="block发布";
+			if(msgContentList.size()>0){
+				blockPushMsg(conn,msgTitle,msgContentList);
+			}
+
 			BlockOperation.updateMainBlock(conn, blockList);
 
 		} catch (Exception e) {
@@ -663,6 +674,23 @@ public class BlockService {
 		}
 		return "发布成功";
 
+	}
+
+	private void blockPushMsg(Connection conn, String msgTitle,
+			List<String> msgContentList) throws Exception {
+		String userSql="SELECT DISTINCT M.USER_ID FROM ROLE_USER_MAPPING M WHERE M.ROLE_ID IN (4, 5)";
+		List<Integer> userIdList=UserInfoOperation.getUserListBySql(conn, userSql);
+		Object[][] msgList=new Object[userIdList.size()*msgContentList.size()][3];
+		int num=0;
+		for(int userId:userIdList){
+			for(String msgContent:msgContentList){
+				msgList[num][0]=userId;
+				msgList[num][1]=msgTitle;
+				msgList[num][2]=msgContent;
+				num+=1;
+			}
+		}
+		MessageOperation.batchInsert(conn,msgList);		
 	}
 
 }

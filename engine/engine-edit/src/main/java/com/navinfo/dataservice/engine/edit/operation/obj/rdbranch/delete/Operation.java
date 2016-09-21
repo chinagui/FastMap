@@ -170,4 +170,36 @@ public class Operation implements IOperation {
 
 		return alertList;
 	}
+	
+	/**
+	 * 删除link作为经过线对分歧的删除影响
+	 * 
+	 * @return
+	 * @throws Exception 
+	 */
+	public List<AlertObject> getDeleteBViaLinkranchInfectData(int linkPid,Connection conn) throws Exception {
+		
+		RdBranchSelector selector = new RdBranchSelector(conn);
+
+		// 获取退出线为该link
+		List<RdBranch> branches = selector.loadRdBranchByViaLinkPid(linkPid, true);
+		
+		List<AlertObject> alertList = new ArrayList<>();
+
+		for (RdBranch branch : branches) {
+
+			AlertObject alertObj = new AlertObject();
+
+			alertObj.setObjType(branch.objType());
+
+			alertObj.setPid(branch.getPid());
+
+			alertObj.setStatus(ObjStatus.DELETE);
+
+			alertList.add(alertObj);
+		}
+
+		return alertList;
+	}
+	
 }

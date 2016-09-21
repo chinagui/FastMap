@@ -113,7 +113,7 @@ public class RdVoiceguideSelector extends AbstractSelector {
 	 * @return
 	 * @throws Exception
 	 */
-	List<RdVoiceguide> loadRdVoiceguideByLinkPid(int linkPid, boolean isLock)
+	public List<RdVoiceguide> loadRdVoiceguideByLinkPid(int linkPid, boolean isLock)
 			throws Exception {
 
 		List<RdVoiceguide> voiceguides = new ArrayList<RdVoiceguide>();

@@ -16,15 +16,17 @@ public class UserGroup  {
 	private String groupName ;
 	private Integer groupType ;
 	private Integer leaderId ;
+	private Integer parentGroupId ;
 	
 	public UserGroup (){
 	}
 	
-	public UserGroup (Integer groupId ,String groupName,Integer groupType,Integer leaderId){
+	public UserGroup (Integer groupId ,String groupName,Integer groupType,Integer leaderId,Integer parentGroupId){
 		this.groupId=groupId ;
 		this.groupName=groupName ;
 		this.groupType=groupType ;
 		this.leaderId=leaderId ;
+		this.parentGroupId = parentGroupId;
 	}
 	public Integer getGroupId() {
 		return groupId;
@@ -107,6 +109,20 @@ public class UserGroup  {
 		} else if (!leaderId.equals(other.leaderId))
 			return false;
 		return true;
+	}
+
+	/**
+	 * @return the parentGroupId
+	 */
+	public Integer getParentGroupId() {
+		return parentGroupId;
+	}
+
+	/**
+	 * @param parentGroupId the parentGroupId to set
+	 */
+	public void setParentGroupId(Integer parentGroupId) {
+		this.parentGroupId = parentGroupId;
 	}
 	
 	

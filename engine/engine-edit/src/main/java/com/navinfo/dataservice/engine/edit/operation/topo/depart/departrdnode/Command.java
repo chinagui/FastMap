@@ -72,8 +72,8 @@ public class Command extends AbstractCommand {
 	public Command(JSONObject json, String requester) throws Exception {
 		this.requester = requester;
 		this.setDbId(json.getInt("dbId"));
+		this.nodePid = json.getInt("objId");
 		JSONObject data = json.getJSONObject("data");
-		this.nodePid = data.getInt("objId");
 		this.catchNodePid = data.getInt("catchNodePid");
 		this.setLinkPid(data.getInt("linkPid"));
 		this.setPoint((Point) GeoTranslator.point2Jts(

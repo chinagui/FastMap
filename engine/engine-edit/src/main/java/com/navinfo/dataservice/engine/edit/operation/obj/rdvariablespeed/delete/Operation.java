@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.navinfo.dataservice.dao.glm.iface.AlertObject;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
@@ -52,10 +53,27 @@ public class Operation implements IOperation {
 			result.insertObject(rdVariableSpeed, ObjStatus.DELETE, rdVariableSpeed.getPid());
 		}
 
-		List<RdVariableSpeedVia> viaList = selector.loadRdVariableSpeedVia(link.getPid(), true);
+		List<RdVariableSpeed> variableSpeed = selector.loadRdVariableSpeedByViaLinkPid(link.getPid(), true);
 
-		for (RdVariableSpeedVia via : viaList) {
-			result.insertObject(via, ObjStatus.DELETE, via.getLinkPid());
+		for(RdVariableSpeed speed : variableSpeed)
+		{
+			List<IRow> viaList = speed.getVias();
+			int selectSeqNum = 0;
+			for (IRow via : viaList) {
+				RdVariableSpeedVia speedVia = (RdVariableSpeedVia) via;
+				int viaSeqNum = speedVia.getSeqNum();
+				//找到接续线的序号，大于该序号的link都需要删除
+				if(speedVia.getLinkPid() == link.getPid())
+				{
+					selectSeqNum = viaSeqNum;
+					result.insertObject(speedVia, ObjStatus.DELETE, speedVia.getLinkPid());
+				}
+				else if(selectSeqNum != 0 && selectSeqNum<viaSeqNum)
+				{
+					result.insertObject(speedVia, ObjStatus.DELETE, speedVia.getLinkPid());
+				}
+			}
+			
 		}
 	}
 

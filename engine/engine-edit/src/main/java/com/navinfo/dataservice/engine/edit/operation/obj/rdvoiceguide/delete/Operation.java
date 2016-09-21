@@ -26,12 +26,11 @@ public class Operation implements IOperation {
 
 		this.command = command;
 	}
-	
+
 	public Operation(Connection conn) {
 
 		this.conn = conn;
 	}
-
 
 	@Override
 	public String run(Result result) throws Exception {
@@ -60,8 +59,7 @@ public class Operation implements IOperation {
 		RdVoiceguideSelector selector = new RdVoiceguideSelector(conn);
 
 		// link为进入线
-		List<RdVoiceguide> voiceguides = selector.loadRdVoiceguideByLinkPid(
-				linkPid, 1, true);
+		List<RdVoiceguide> voiceguides = selector.loadRdVoiceguideByLinkPid(linkPid, 1, true);
 
 		for (RdVoiceguide voiceguide : voiceguides) {
 			delete(result, voiceguide);
@@ -78,8 +76,24 @@ public class Operation implements IOperation {
 		deleteByPassLink(linkPid, voiceguides, result);
 	}
 
-	private void deleteByOutLink(int linkPid, List<RdVoiceguide> voiceguides,
-			Result result) {
+	/**
+	 * 根据路口pid删除路口关系的语音引导
+	 * 
+	 * @param crossPid
+	 * @param result
+	 * @throws Exception
+	 */
+	public void deleteByCross(int crossPid, Result result) throws Exception {
+		RdVoiceguideSelector selector = new RdVoiceguideSelector(conn);
+
+		List<RdVoiceguide> voiceguides = selector.getVoiceGuideByCrossPid(crossPid, true);
+
+		for (RdVoiceguide voiceguide : voiceguides) {
+			delete(result, voiceguide);
+		}
+	}
+
+	private void deleteByOutLink(int linkPid, List<RdVoiceguide> voiceguides, Result result) {
 
 		for (RdVoiceguide voiceguide : voiceguides) {
 
@@ -103,16 +117,14 @@ public class Operation implements IOperation {
 			} else {
 				// 删除详细信息
 				for (RdVoiceguideDetail detail : deleteDetails) {
-					result.insertObject(detail, ObjStatus.DELETE,
-							voiceguide.pid());
+					result.insertObject(detail, ObjStatus.DELETE, voiceguide.pid());
 				}
 			}
 
 		}
 	}
 
-	private void deleteByPassLink(int linkPid, List<RdVoiceguide> voiceguides,
-			Result result) {
+	private void deleteByPassLink(int linkPid, List<RdVoiceguide> voiceguides, Result result) {
 
 		for (RdVoiceguide voiceguide : voiceguides) {
 
@@ -170,28 +182,58 @@ public class Operation implements IOperation {
 				}
 				// 删除详细信息
 				for (RdVoiceguideDetail detail : deleteDetails) {
-					result.insertObject(detail, ObjStatus.DELETE,
-							voiceguide.pid());
+					result.insertObject(detail, ObjStatus.DELETE, voiceguide.pid());
 				}
 			}
 
 		}
 	}
-	
+
 	/**
 	 * 删除link对语音引导的删除影响
+	 * 
 	 * @return
-	 * @throws Exception 
+	 * @throws Exception
 	 */
-	public List<AlertObject> getDeleteRdVoiceguideInfectData(int linkPid,Connection conn) throws Exception {
-		
+	public List<AlertObject> getDeleteRdVoiceguideInfectData(int linkPid, Connection conn) throws Exception {
+
 		RdVoiceguideSelector voiceguideSelector = new RdVoiceguideSelector(conn);
 
 		List<RdVoiceguide> voiceGuideList = voiceguideSelector.loadRdVoiceguideByLinkPid(linkPid, true);
-		
+
 		List<AlertObject> alertList = new ArrayList<>();
 
 		for (RdVoiceguide voiceguide : voiceGuideList) {
+
+			AlertObject alertObj = new AlertObject();
+
+			alertObj.setObjType(voiceguide.objType());
+
+			alertObj.setPid(voiceguide.getPid());
+
+			alertObj.setStatus(ObjStatus.DELETE);
+
+			alertList.add(alertObj);
+		}
+
+		return alertList;
+	}
+
+	/**
+	 * 删除路口对语音引导的删除影响
+	 * 
+	 * @return
+	 * @throws Exception
+	 */
+	public List<AlertObject> getDeleteCrossVoiceGuideInfectData(int crossPid) throws Exception {
+
+		RdVoiceguideSelector selector = new RdVoiceguideSelector(conn);
+
+		List<RdVoiceguide> voiceguides = selector.getVoiceGuideByCrossPid(crossPid, true);
+
+		List<AlertObject> alertList = new ArrayList<>();
+
+		for (RdVoiceguide voiceguide : voiceguides) {
 
 			AlertObject alertObj = new AlertObject();
 

@@ -21,6 +21,10 @@ public class Operation implements IOperation {
 
 	private IRow row;
 
+	public Operation()
+	{
+	}
+
 	public Operation(Command command, RdBranch branch, IRow row) {
 		this.command = command;
 
@@ -202,4 +206,29 @@ public class Operation implements IOperation {
 		return alertList;
 	}
 	
+	/**
+	 * 删除路口对分歧的删除影响
+	 * 
+	 * @return
+	 * @throws Exception 
+	 */
+	public List<AlertObject> getDeleteCrossBranchInfectData(List<RdBranch> branches) throws Exception {
+		
+		List<AlertObject> alertList = new ArrayList<>();
+
+		for (RdBranch branch : branches) {
+
+			AlertObject alertObj = new AlertObject();
+
+			alertObj.setObjType(branch.objType());
+
+			alertObj.setPid(branch.getPid());
+
+			alertObj.setStatus(ObjStatus.DELETE);
+
+			alertList.add(alertObj);
+		}
+
+		return alertList;
+	}
 }

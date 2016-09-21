@@ -214,4 +214,47 @@ public class RdVoiceguideSelector extends AbstractSelector {
 		return pids;
 
 	}
+	
+	/**
+	 * 根据路口pid查询路口关系的顺行
+	 * @param crossPid 路口pid
+	 * @param isLock 是否加锁
+	 * @return 交限集合
+	 * @throws Exception
+	 */
+	public List<RdVoiceguide> getVoiceGuideByCrossPid(int crossPid,boolean isLock) throws Exception {
+
+		List<RdVoiceguide> result = new ArrayList<RdVoiceguide>();
+
+		String sql = "select * from RD_VOICEGUIDE a where exists (select null from rd_cross_node b where b.pid=:1 and a.node_pid=b.node_pid) and u_record!=2";
+
+		sql = sql + " for update nowait";
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = getConn().prepareStatement(sql);
+
+			pstmt.setInt(1, crossPid);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+				RdVoiceguide voiceguide = new RdVoiceguide();
+
+				ReflectionAttrUtils.executeResultSet(voiceguide, resultSet);
+
+				result.add(voiceguide);
+			}
+		} catch (Exception e) {
+
+			throw e;
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+		}
+		return result;
+	}
 }

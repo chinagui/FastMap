@@ -46,7 +46,7 @@ public class GridController extends BaseController {
 			if (!dataJson.containsKey("wkt") || !dataJson.containsKey("stage")){
 				throw new IllegalArgumentException("wkt/stage不能为空");
 			}
-			List<HashMap<String, Integer>> data = GridService.getInstance().queryListByAlloc(dataJson);
+			List<HashMap<String, Object>> data = GridService.getInstance().queryListByAlloc(dataJson);
 			return new ModelAndView("jsonView", success(data));
 		} catch (Exception e) {
 			log.error("获取grid列表失败，原因：" + e.getMessage(), e);

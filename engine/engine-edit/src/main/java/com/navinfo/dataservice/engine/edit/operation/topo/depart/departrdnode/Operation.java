@@ -166,7 +166,7 @@ public class Operation implements IOperation {
 
     private void updateRealation(List<RdLink> newLinks, Result result) throws Exception {
         // 构造修改后的link几何
-        newLinks = newLinks.isEmpty() ? assemblyLinks(newLinks) : newLinks;
+        assemblyLinks(newLinks);
 
         // 维护电子眼
         OpRefElectroniceye opRefElectroniceye = new OpRefElectroniceye(this.conn);

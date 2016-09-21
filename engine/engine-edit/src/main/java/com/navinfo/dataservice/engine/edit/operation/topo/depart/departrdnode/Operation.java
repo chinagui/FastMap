@@ -161,36 +161,35 @@ public class Operation implements IOperation {
                     this.command.getRdLink().pid());
 
         }
-        this.updateRealation(links, result);
+        this.updateRelation(links, result);
     }
 
-    private void updateRealation(List<RdLink> newLinks, Result result) throws Exception {
+    private void updateRelation(List<RdLink> newLinks, Result result) throws Exception {
         // 构造修改后的link几何
         assemblyLinks(newLinks);
 
         // 维护电子眼
         OpRefElectroniceye opRefElectroniceye = new OpRefElectroniceye(this.conn);
-        opRefElectroniceye.updateRealation(command, newLinks, result);
+        opRefElectroniceye.updateRelation(command, newLinks, result);
         //维护IxPoi
         OpRefIxPoi opRefIxPoi = new OpRefIxPoi(this.conn);
-        opRefIxPoi.updateRealation(command, newLinks, result);
+        opRefIxPoi.updateRelation(command, newLinks, result);
         // 维护RdGsc
         OpRefRdgsc opRefRdgsc = new OpRefRdgsc(this.conn);
-        opRefRdgsc.updateRealation(command, newLinks, result);
+        opRefRdgsc.updateRelation(command, newLinks, result);
         // 维护CRF对象
         OpRefRdObject opRefRdObject = new OpRefRdObject(this.conn);
-        opRefRdObject.updateRealation(command, newLinks, result);
+        opRefRdObject.updateRelation(command, newLinks, result);
         // 维护同一关系
         OpRefRdSamelink opRefRdSamelink = new OpRefRdSamelink(this.conn);
-        opRefRdSamelink.updateRealation(command, newLinks, result);
+        opRefRdSamelink.updateRelation(command, newLinks, result);
         // 维护点限速
         OpRefSpeedlimit opRefSpeedlimit = new OpRefSpeedlimit(this.conn);
-        opRefSpeedlimit.updateRealation(command, newLinks, result);
+        opRefSpeedlimit.updateRelation(command, newLinks, result);
     }
 
     private List<RdLink> assemblyLinks(List<RdLink> newLinks) throws JSONException {
-        // 如果newLinks为空代表没有新创建link
-        // 这种情况时将几何修改过后的link放入newLinks
+        // 如果newLinkl
         if (newLinks.isEmpty()) {
             RdLink rdLink = command.getRdLink();
             RdLink newLink = new RdLink();

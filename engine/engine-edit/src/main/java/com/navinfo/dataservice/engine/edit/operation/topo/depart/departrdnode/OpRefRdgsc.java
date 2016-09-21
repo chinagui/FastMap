@@ -17,7 +17,7 @@ public class OpRefRdgsc {
         this.conn = conn;
     }
 
-    public void updateRealation(Command command, List<RdLink> newLinks, Result result) throws Exception {
+    public void updateRelation(Command command, List<RdLink> newLinks, Result result) throws Exception {
         com.navinfo.dataservice.engine.edit.operation.obj.rdgsc.depart.Operation operation = new
                 com.navinfo.dataservice.engine.edit.operation.obj.rdgsc.depart.Operation(this.conn);
         operation.depart(command.getNodePid(), command.getRdLink(), newLinks, result);

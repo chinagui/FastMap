@@ -189,12 +189,16 @@ public class Operation implements IOperation {
     }
 
     private List<RdLink> assemblyLinks(List<RdLink> newLinks) throws JSONException {
-        RdLink rdLink = command.getRdLink();
-        RdLink newLink = new RdLink();
-        newLink.copy(rdLink);
-        newLink.setGeometry(GeoTranslator.geojson2Jts((JSONObject) rdLink.changedFields().get("geometry")));
-        newLink.setLength(GeometryUtils.getLinkLength(newLink.getGeometry()));
-        newLinks.add(newLink);
+        // 如果newLinks为空代表没有新创建link
+        // 这种情况时将几何修改过后的link放入newLinks
+        if (newLinks.isEmpty()) {
+            RdLink rdLink = command.getRdLink();
+            RdLink newLink = new RdLink();
+            newLink.copy(rdLink);
+            newLink.setGeometry(GeoTranslator.geojson2Jts((JSONObject) rdLink.changedFields().get("geometry")));
+            newLink.setLength(GeometryUtils.getLinkLength(newLink.getGeometry()));
+            newLinks.add(newLink);
+        }
         return newLinks;
     }
 

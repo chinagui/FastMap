@@ -105,7 +105,7 @@ public class RdLinkTest extends InitApplication {
 
 	@Test
 	public void testRepairLink() {
-		String parameter = "{\"command\":\"REPAIR\",\"dbId\":42,\"objId\":100009905,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.41885,40.03103],[116.41926,40.03054],[116.41975,40.03115],[116.42048,40.02972],[116.42100870609283,40.02980381724441],[116.42156,40.02957],[116.42024,40.02951]]},\"interLinks\":[],\"interNodes\":[]},\"type\":\"RDLINK\"}";
+		String parameter = "{\"command\":\"REPAIR\",\"dbId\":17,\"objId\":309000092,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.27721,40.55273],[116.27744216546803,40.552798113177765],[116.27771973609924,40.552882305427765],[116.278,40.55296]]},\"interLinks\":[],\"interNodes\":[]},\"type\":\"RDLINK\"}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

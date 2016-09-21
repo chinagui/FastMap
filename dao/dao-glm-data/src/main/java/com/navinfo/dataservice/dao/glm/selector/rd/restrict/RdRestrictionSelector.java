@@ -10,6 +10,7 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneVia;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionCondition;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionDetail;
@@ -344,11 +345,32 @@ public class RdRestrictionSelector extends AbstractSelector {
 	private void setChildData(RdRestriction restrict, boolean isLock)
 			throws Exception {
 
-		RdRestrictionDetailSelector detail = new RdRestrictionDetailSelector(
+		RdRestrictionDetailSelector detailSelector = new RdRestrictionDetailSelector(
 				conn);
+		
+		restrict.setDetails(detailSelector.loadRowsByParentId(restrict.getPid(), isLock));
+		
+		RdRestrictionViaSelector viaSelector=new RdRestrictionViaSelector(conn);
+		
+		AbstractSelector conditionSelector =new AbstractSelector(RdRestrictionCondition.class,conn);
+		
+		for (IRow row : restrict.getDetails()) {
 
-		restrict.setDetails(detail.loadRowsByParentId(restrict.getPid(), isLock));
+			RdRestrictionDetail detail = (RdRestrictionDetail) row;
 
+			detail.setVias(viaSelector.loadRowsByParentId(detail.getPid(), isLock));
+			
+			detail.setConditions(conditionSelector.loadRowsByParentId(detail.getPid(), isLock));
+
+			for (IRow row2 : detail.getConditions()) {
+
+				RdRestrictionCondition condition = (RdRestrictionCondition) row2;
+				
+				detail.conditionMap.put(condition.getRowId(), condition);
+			}
+			
+			restrict.detailMap.put(detail.getPid(), detail);
+		}
 	}
 
 }

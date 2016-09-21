@@ -283,4 +283,94 @@ public class RdLaneConnexitySelector extends AbstractSelector {
 		}
 		return laneConns;
 	}
+	
+	/**
+	 * 根据link类型获取车信
+	 * @param linkPid
+	 * @param linkType 1：进入线；2：退出线，3：经过线
+	 * @param isLock
+	 * @return
+	 * @throws Exception
+	 */
+	public List<RdLaneConnexity> loadByLink(int linkPid, int linkType,
+			boolean isLock) throws Exception {
+		
+		List<RdLaneConnexity> laneConns = new ArrayList<RdLaneConnexity>();
+
+		String sql = "";
+		
+		if (linkType == 1) {
+			sql = "SELECT * FROM RD_LANE_CONNEXITY WHERE IN_LINK_PID = :1 AND U_RECORD!=2 ";
+		}
+		else if (linkType == 2) {
+			
+			sql = "SELECT * WHERE U_RECORD != 2 FROM RD_LANE_CONNEXITY AND PID IN (SELECT DISTINCT (CONNEXITY_PID) WHERE U_RECORD != 2 FROM RD_LANE_TOPOLOGY AND OUT_LINK_PID = :1)";
+		}
+		
+		else if (linkType == 3) {
+			
+			sql = "SELECT * FROM RD_LANE_CONNEXITY WHERE U_RECORD != 2 AND PID IN (SELECT DISTINCT (CONNEXITY_PID) FROM RD_LANE_TOPOLOGY WHERE U_RECORD != 2 AND TOPOLOGY_ID IN (SELECT DISTINCT (TOPOLOGY_ID) FROM RD_LANE_VIA WHERE U_RECORD != 2 AND LINK_PID = :1))";
+		}
+		else 
+		{
+			return laneConns;
+		}
+
+		if (isLock) {
+			sql += " for update nowait";
+		}
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sql);
+
+			pstmt.setInt(1, linkPid);
+
+			resultSet = pstmt.executeQuery();
+
+			RdLaneTopologySelector topoSelector = new RdLaneTopologySelector(conn);
+			
+			RdLaneViaSelector viaSelector =new RdLaneViaSelector(conn);
+			
+			while (resultSet.next()) {
+				
+				RdLaneConnexity laneConn = new RdLaneConnexity();
+
+				ReflectionAttrUtils.executeResultSet(laneConn, resultSet);				
+
+				laneConn.setTopos(topoSelector.loadRowsByParentId(laneConn.pid(), isLock));
+
+				for (IRow row : laneConn.getTopos()) {
+
+					RdLaneTopology topo = (RdLaneTopology) row;
+
+					topo.setVias(viaSelector.loadRowsByParentId(topo.getPid(), isLock));
+					
+					laneConn.topologyMap.put(topo.getPid(), topo);
+
+					for (IRow row2 : topo.getVias()) {
+
+						RdLaneVia via = (RdLaneVia) row2;
+
+						laneConn.viaMap.put(via.getRowId(), via);
+						
+						topo.viaMap.put(via.getRowId(), via);
+					}
+				}
+
+				laneConns.add(laneConn);
+			}
+		} catch (Exception e) {
+
+			throw e;
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+		}
+		return laneConns;
+	}
+
 }

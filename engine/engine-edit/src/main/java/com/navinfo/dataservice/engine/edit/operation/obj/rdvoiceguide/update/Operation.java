@@ -386,5 +386,246 @@ public class Operation implements IOperation {
 			}
 		}
 	}
+	
+	/**
+	 * 分离节点
+	 * @param link 
+	 * @param nodePid
+	 * @param rdlinks 
+	 * @param result
+	 * @throws Exception
+	 */
+	public void departNode(RdLink link, int nodePid, List<RdLink> rdlinks,
+			Result result) throws Exception {
+
+		int linkPid = link.getPid();
+
+		// 需要分离节点处理的RdVoiceguide
+		Map<Integer, RdVoiceguide> voiceguideDepart = new HashMap<Integer, RdVoiceguide>();
+
+		// 需要分离节点处理的RdVoiceguideDetail
+		Map<Integer, RdVoiceguideDetail> detailDepart = new HashMap<Integer, RdVoiceguideDetail>();
+		
+		// 分离节点不处理，跨图幅打断需要处理的RdVoiceguide
+		Map<Integer, RdVoiceguide> voiceguideOther = null;
+
+		// 分离节点不处理，跨图幅打断需要处理的RdVoiceguideDetail
+		Map<Integer, RdVoiceguideDetail> detailOther = null;
+
+		if (rdlinks!=null &&rdlinks.size() >1) {			
+			
+			voiceguideOther = new HashMap<Integer, RdVoiceguide>();
+
+			detailOther = new HashMap<Integer, RdVoiceguideDetail>();
+		}
+		
+		RdVoiceguideSelector selector = new RdVoiceguideSelector(
+				this.conn);
+
+		// link作为进入线的RdVoiceguide
+		List<RdVoiceguide> voiceguides = selector.loadRdVoiceguideByLinkPid(linkPid,1, true);
+
+		getInLinkDepartInfo(nodePid, voiceguides, voiceguideDepart,
+				voiceguideOther);
+
+		// link作为退出线的RdVoiceguide
+		voiceguides = selector.loadRdVoiceguideByLinkPid(linkPid,2, true);
+
+		Map<Integer, RdVoiceguideDetail> detailTmp = new HashMap<Integer, RdVoiceguideDetail>();
+
+		getOutLinkDepartInfo(nodePid, linkPid, voiceguides, detailTmp,
+				detailOther);
+
+		for (RdVoiceguide voiceguide : voiceguides) {
+
+			if (!detailTmp.containsKey(voiceguide.getPid())) {
+
+				continue;
+			}
+
+			if (voiceguide.getDetails().size() > 1) {
+
+				RdVoiceguideDetail delTopology = detailTmp.get(voiceguide
+						.getPid());
+
+				detailDepart.put(delTopology.getPid(), delTopology);
+
+			} else {
+
+				voiceguideDepart.put(voiceguide.getPid(), voiceguide);
+			}
+		}
+
+		for (RdVoiceguideDetail delTopology : detailDepart.values()) {
+
+			result.insertObject(delTopology, ObjStatus.DELETE,
+					delTopology.pid());
+		}
+
+		for (RdVoiceguide voiceguide : voiceguideDepart.values()) {
+
+			result.insertObject(voiceguide, ObjStatus.DELETE,
+					voiceguide.pid());
+		}
+
+		if (voiceguideOther == null || detailOther == null) {
+			
+			return;
+		}
+
+		int connectNode = link.getsNodePid() == nodePid ? link.geteNodePid()
+				: link.getsNodePid();
+
+		for (RdLink rdlink : rdlinks) {
+			
+			if (rdlink.getsNodePid() != connectNode
+					&& rdlink.geteNodePid() != connectNode) {
+				
+				continue;
+			}
+
+			for (RdVoiceguide voiceguide : voiceguideOther.values()) {
+				
+				voiceguide.changedFields().put("inLinkPid", rdlink.getPid());
+
+				result.insertObject(voiceguide, ObjStatus.UPDATE,
+						voiceguide.pid());
+			}
+
+			for (RdVoiceguideDetail laneTopology : detailOther.values()) {
+				
+				laneTopology.changedFields().put("outLinkPid", rdlink.getPid());
+
+				result.insertObject(laneTopology, ObjStatus.UPDATE,
+						laneTopology.pid());
+			}
+		}
+	}
+
+	/**
+	 * 获取link作为进入线时语音引导的信息
+	 * 
+	 * @param nodePid
+	 *            分离点
+	 * @param voiceguides
+	 *            link作为进入线的所有RdVoiceguide
+	 * @param voiceguideDepart
+	 *            分离点为进入点的语音引导
+	 * @param voiceguideOther
+	 *            分离点不是进入点的语音引导
+	 * @throws Exception
+	 */
+	private void getInLinkDepartInfo(int nodePid,
+			List<RdVoiceguide> voiceguides,
+			Map<Integer, RdVoiceguide> voiceguideDepart,
+			Map<Integer, RdVoiceguide> voiceguideOther) throws Exception {
+
+		for (RdVoiceguide voiceguide : voiceguides) {
+
+			if (voiceguide.getNodePid() == nodePid) {
+				
+				voiceguideDepart.put(voiceguide.getPid(), voiceguide);
+
+			} else if (voiceguideOther != null) {
+
+				voiceguideOther.put(voiceguide.getPid(), voiceguide);
+			}
+		}
+	}
+
+	/**
+	 * 获取link作为退出线时语音引导的信息
+	 * 
+	 * @param nodePid
+	 *            分离点
+	 * @param linkPid
+	 *            分离线
+	 * @param voiceguides
+	 *            link作为退出线的所有RdVoiceguide
+	 * @param detailTmp
+	 *            分离点为退出线的进入点的语音引导
+	 * @param detailOther
+	 *            分离点不是退出线的进入点的语音引导
+	 * @throws Exception
+	 */
+	private void getOutLinkDepartInfo(int nodePid, int linkPid,
+			List<RdVoiceguide> voiceguides,
+			Map<Integer, RdVoiceguideDetail> detailTmp,
+			Map<Integer, RdVoiceguideDetail> detailOther) throws Exception {
+
+		RdLinkSelector rdLinkSelector = new RdLinkSelector(this.conn);
+
+		for (RdVoiceguide voiceguide : voiceguides) {
+
+			for (IRow rowTopology : voiceguide.getDetails()) {
+
+				RdVoiceguideDetail detail = (RdVoiceguideDetail) rowTopology;
+
+				// 排除其他退出线
+				if (detail.getOutLinkPid() != linkPid) {
+					continue;
+				}
+
+				// 分离node为语音引导进入点
+				if (voiceguide.getNodePid() == nodePid) {
+
+					detailTmp.put(detail.getVoiceguidePid(), detail);
+
+					continue;
+				}
+
+				// 无经过线
+				if (detail.getVias().size() == 0) {
+
+					if (detailOther != null) {
+
+						detailOther.put(detail.getVoiceguidePid(), detail);
+					}
+
+					continue;
+				}
+
+				List<Integer> linkPids = new ArrayList<Integer>();
+
+				for (IRow rowVia : detail.getVias()) {
+
+					RdVoiceguideVia via = (RdVoiceguideVia) rowVia;
+
+					if (!linkPids.contains(via.getLinkPid())) {
+
+						linkPids.add(via.getLinkPid());
+					}
+				}
+
+				List<IRow> linkViaRows = rdLinkSelector.loadByIds(linkPids,
+						true, false);
+
+				boolean isConnect = false;
+
+				for (IRow rowLink : linkViaRows) {
+
+					RdLink rdLink = (RdLink) rowLink;
+
+					// 经过线挂接与退出线的分离node挂接
+					if (rdLink.geteNodePid() == nodePid
+							|| rdLink.getsNodePid() == nodePid) {
+
+						isConnect = true;
+
+						break;
+					}
+				}
+
+				if (isConnect) {
+
+					detailTmp.put(detail.getVoiceguidePid(), detail);
+
+				} else if (detailOther != null) {
+
+					detailOther.put(detail.getVoiceguidePid(), detail);
+				}
+			}
+		}
+	}
 
 }

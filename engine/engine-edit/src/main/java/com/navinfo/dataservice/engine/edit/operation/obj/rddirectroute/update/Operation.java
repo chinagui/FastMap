@@ -347,6 +347,87 @@ public class Operation implements IOperation {
 				}
 			}
 		}
-
 	}
+	
+	/**
+	 * 分离节点
+	 * @param link 
+	 * @param nodePid
+	 * @param rdlinks 
+	 * @param result
+	 * @throws Exception
+	 */
+	public void departNode(RdLink link, int nodePid, List<RdLink> rdlinks,
+			Result result) throws Exception {
+
+		int linkPid = link.getPid();
+
+		// 分离节点不处理的link为进入线的RdDirectroute
+		Map<Integer, RdDirectroute> directrouteInLink =null;
+		
+		//分离节点不处理的link为退出线的RdDirectroute
+		Map<Integer, RdDirectroute> directrouteOutLink = null;
+
+		if (rdlinks != null && rdlinks.size() > 1) {
+
+			directrouteInLink = new HashMap<Integer, RdDirectroute>();
+
+			directrouteOutLink = new HashMap<Integer, RdDirectroute>();
+		}
+		
+		RdDirectrouteSelector selector = new RdDirectrouteSelector(
+				this.conn);
+
+		// 在link上的RdDirectroute
+		List<RdDirectroute> directroutes = selector.loadByInOutLink(linkPid, true);
+
+		for(RdDirectroute directroute:directroutes)
+		{
+			if(directroute.getNodePid()==nodePid)
+			{
+				result.insertObject(directroute, ObjStatus.DELETE,
+						directroute.getPid());
+			}
+			else if(directrouteInLink!=null&&directroute.getInLinkPid()==linkPid)
+			{
+				directrouteInLink.put(directroute.getPid(), directroute);
+			}
+			else if(directrouteOutLink!=null&&directroute.getOutLinkPid()==linkPid)
+			{
+				directrouteOutLink.put(directroute.getPid(), directroute);
+			}
+		}
+	
+		if (directrouteOutLink == null|| directrouteInLink==null) {
+			
+			return;
+		}
+		
+		int connectNode = link.getsNodePid() == nodePid ? link.geteNodePid()
+				: link.getsNodePid();
+
+		for (RdLink rdlink : rdlinks) {
+
+			if (rdlink.getsNodePid() != connectNode
+					&& rdlink.geteNodePid() != connectNode) {
+
+				continue;
+			}
+			
+			for (RdDirectroute directroute : directrouteInLink.values()) {
+
+				directroute.changedFields().put("inLinkPid", rdlink.getPid());
+
+				result.insertObject(directroute, ObjStatus.UPDATE, directroute.pid());
+			}
+
+			for (RdDirectroute directroute : directrouteOutLink.values()) {
+
+				directroute.changedFields().put("outLinkPid", rdlink.getPid());
+
+				result.insertObject(directroute, ObjStatus.UPDATE, directroute.pid());
+			}
+		}
+	}
+	
 }

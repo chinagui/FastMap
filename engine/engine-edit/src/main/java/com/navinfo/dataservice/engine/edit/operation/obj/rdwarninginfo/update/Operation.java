@@ -1,7 +1,9 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdwarninginfo.update;
 
 import java.sql.Connection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import net.sf.json.JSONObject;
 
@@ -99,5 +101,66 @@ public class Operation implements IOperation {
 			}
 		}
 	}
+	
+	/**
+	 * 分离节点
+	 * @param link 
+	 * @param nodePid
+	 * @param rdlinks 
+	 * @param result
+	 * @throws Exception
+	 */
+	public void departNode(RdLink link, int nodePid, List<RdLink> rdlinks,
+			Result result) throws Exception {
 
+		int linkPid = link.getPid();
+	
+		// 跨图幅处理的RdWarninginfo
+		Map<Integer, RdWarninginfo> warninginfoMesh =null;	
+
+		if (rdlinks != null && rdlinks.size() > 1) {
+
+			warninginfoMesh = new HashMap<Integer, RdWarninginfo>();
+		}		
+		
+		RdWarninginfoSelector selector = new RdWarninginfoSelector(conn);
+
+		List<RdWarninginfo> warninginfos = selector.loadByLink(linkPid, true);
+		
+		for (RdWarninginfo warninginfo : warninginfos) {
+			
+			if (warninginfo.getNodePid() == nodePid) {
+
+				result.insertObject(warninginfo, ObjStatus.DELETE,
+						warninginfo.getPid());
+
+			} else if (warninginfoMesh != null) {
+
+				warninginfoMesh.put(warninginfo.getPid(), warninginfo);
+			}
+		}
+	
+		if (warninginfoMesh == null ) {
+			
+			return;
+		}
+		
+		int connectNode = link.getsNodePid() == nodePid ? link.geteNodePid()
+				: link.getsNodePid();
+
+		for (RdLink rdlink : rdlinks) {
+
+			if (rdlink.getsNodePid() != connectNode
+					&& rdlink.geteNodePid() != connectNode) {
+
+				continue;
+			}
+			for (RdWarninginfo warninginfo : warninginfoMesh.values()) {
+
+				warninginfo.changedFields().put("linkPid", rdlink.getPid());
+
+				result.insertObject(warninginfo, ObjStatus.UPDATE, warninginfo.pid());
+			}
+		}
+	}
 }

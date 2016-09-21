@@ -17,8 +17,10 @@ import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.model.rd.gate.RdGate;
+import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.warninginfo.RdWarninginfo;
 import com.navinfo.dataservice.dao.glm.search.AbstractSearch;
+import com.navinfo.dataservice.dao.glm.search.RdRestrictionSearch;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.operation.Transaction;
@@ -40,9 +42,9 @@ public class POITest extends InitApplication {
 		try {
 			Connection conn = DBConnector.getInstance().getConnectionById(17);
 
-			AbstractSearch search = new AbstractSearch();
+			RdRestrictionSearch search = new RdRestrictionSearch(conn);
 
-			IRow jsonObject = search.searchDataByPid(IxPoi.class, 3452060, conn);
+			IRow jsonObject = search.searchDataByPid(208000002);
 
 			System.out.println(jsonObject.Serialize(ObjLevel.FULL));
 		} catch (Exception e) {

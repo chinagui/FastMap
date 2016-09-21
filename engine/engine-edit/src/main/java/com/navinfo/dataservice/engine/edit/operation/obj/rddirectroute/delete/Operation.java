@@ -54,8 +54,7 @@ public class Operation implements IOperation {
 
 		RdDirectrouteSelector selector = new RdDirectrouteSelector(conn);
 
-		List<RdDirectroute> directroutes = selector.loadByInOutLink(
-				oldLink.getPid(), true);
+		List<RdDirectroute> directroutes = selector.loadByInOutLink(oldLink.getPid(), true);
 		// 删除link做进入线或退出线的顺行
 		for (RdDirectroute directroute : directroutes) {
 
@@ -70,8 +69,24 @@ public class Operation implements IOperation {
 		}
 	}
 
-	private void DeletePassLink(RdDirectroute directroute, RdLink oldLink,
-			Result result) throws Exception {
+	/**
+	 * 根据路口pid删除路口关系的顺行
+	 * 
+	 * @param crossPid
+	 * @param result
+	 * @throws Exception
+	 */
+	public void deleteByCross(int crossPid, Result result) throws Exception {
+		RdDirectrouteSelector selector = new RdDirectrouteSelector(conn);
+
+		List<RdDirectroute> directroutes = selector.getRestrictionByCrossPid(crossPid, true);
+
+		for (RdDirectroute directroute : directroutes) {
+			delete(result, directroute);
+		}
+	}
+
+	private void DeletePassLink(RdDirectroute directroute, RdLink oldLink, Result result) throws Exception {
 
 		if (directroute.getVias().size() == 0) {
 
@@ -108,26 +123,56 @@ public class Operation implements IOperation {
 
 				if (deleteGroupId.contains(via.getGroupId())) {
 
-					result.insertObject(via, ObjStatus.DELETE,
-							directroute.pid());
+					result.insertObject(via, ObjStatus.DELETE, directroute.pid());
 				}
 			}
 		}
 	}
-	
+
 	/**
 	 * 删除link对顺行的删除影响
+	 * 
 	 * @return
-	 * @throws Exception 
+	 * @throws Exception
 	 */
-	public List<AlertObject> getDeleteRdDirectrouteInfectData(int linkPid,Connection conn) throws Exception {
-		
+	public List<AlertObject> getDeleteRdDirectrouteInfectData(int linkPid, Connection conn) throws Exception {
+
 		RdDirectrouteSelector directrouteSelector = new RdDirectrouteSelector(conn);
 
 		List<RdDirectroute> directroutes = directrouteSelector.loadByInOutLink(linkPid, true);
 
 		directroutes.addAll(directrouteSelector.loadByPassLink(linkPid, true));
-		
+
+		List<AlertObject> alertList = new ArrayList<>();
+
+		for (RdDirectroute directroute : directroutes) {
+
+			AlertObject alertObj = new AlertObject();
+
+			alertObj.setObjType(directroute.objType());
+
+			alertObj.setPid(directroute.getPid());
+
+			alertObj.setStatus(ObjStatus.DELETE);
+
+			alertList.add(alertObj);
+		}
+
+		return alertList;
+	}
+
+	/**
+	 * 删除路口对顺行的删除影响
+	 * 
+	 * @return
+	 * @throws Exception
+	 */
+	public List<AlertObject> getDeleteCrossDirectoureInfectData(int crossPid) throws Exception {
+
+		RdDirectrouteSelector selector = new RdDirectrouteSelector(conn);
+
+		List<RdDirectroute> directroutes = selector.getRestrictionByCrossPid(crossPid, true);
+
 		List<AlertObject> alertList = new ArrayList<>();
 
 		for (RdDirectroute directroute : directroutes) {

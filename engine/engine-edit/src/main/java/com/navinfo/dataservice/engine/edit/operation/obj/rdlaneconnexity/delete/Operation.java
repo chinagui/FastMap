@@ -15,6 +15,10 @@ import com.navinfo.dataservice.dao.glm.selector.rd.laneconnexity.RdLaneConnexity
 public class Operation implements IOperation {
 
 	private RdLaneConnexity lane;
+	
+	public Operation()
+	{
+	}
 
 	public Operation(Command command, RdLaneConnexity lane) {
 		this.lane = lane;
@@ -121,6 +125,32 @@ public class Operation implements IOperation {
 		List<AlertObject> alertList = new ArrayList<>();
 
 		for (RdLaneConnexity rdLaneConnexity : outLinkDeleteLaneList) {
+
+			AlertObject alertObj = new AlertObject();
+
+			alertObj.setObjType(rdLaneConnexity.objType());
+
+			alertObj.setPid(rdLaneConnexity.getPid());
+
+			alertObj.setStatus(ObjStatus.DELETE);
+
+			alertList.add(alertObj);
+		}
+
+		return alertList;
+	}
+	
+	/**
+	 * 删除路口对车信的删除影响
+	 * 
+	 * @return
+	 * @throws Exception
+	 */
+	public List<AlertObject> getDeleteCrossRdlaneConInfectData(List<RdLaneConnexity> rdLaneConnexities) throws Exception {
+
+		List<AlertObject> alertList = new ArrayList<>();
+
+		for (RdLaneConnexity rdLaneConnexity : rdLaneConnexities) {
 
 			AlertObject alertObj = new AlertObject();
 

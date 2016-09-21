@@ -32,23 +32,22 @@ public class OpRefSpeedlimit implements IOperation {
 	// 处理点限速
 	private void handleSpeedlimit(List<RdSpeedlimit> list) throws Exception {
 
-		for (RdSpeedlimit rr : list) {
-			Map<String, Object> changedFields = rr.changedFields();
-
+		for (RdSpeedlimit limit : list) {
+		
 			int inLinkPid = 0;
 
-			if (rr.getGeometry().distance(command.getLink1().getGeometry()) < rr
+			if (limit.getGeometry().distance(command.getLink1().getGeometry()) < limit
 					.getGeometry().distance(command.getLink2().getGeometry())) {
 
-				rr.setLinkPid(command.getLink1().getPid());
-			}else{
-				rr.setLinkPid(command.getLink2().getPid());
+				inLinkPid = command.getLink1().getPid();
+			} else {
+				
+				inLinkPid = command.getLink2().getPid();
 			}
 
-			changedFields.put("linkPid", inLinkPid);
+			limit.changedFields().put("linkPid", inLinkPid);
 
-			result.insertObject(rr, ObjStatus.UPDATE, rr.pid());
-
+			result.insertObject(limit, ObjStatus.UPDATE, limit.pid());
 		}
 	}
 

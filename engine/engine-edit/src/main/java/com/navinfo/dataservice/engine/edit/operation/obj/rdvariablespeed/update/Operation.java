@@ -10,6 +10,7 @@ import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.variablespeed.RdVariableSpeed;
 import com.navinfo.dataservice.dao.glm.model.rd.variablespeed.RdVariableSpeedVia;
+import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.variablespeed.RdVariableSpeedSelector;
 
 import net.sf.json.JSONArray;
@@ -234,6 +235,107 @@ public class Operation implements IOperation {
 						result.insertObject(rdVariableSpeed, ObjStatus.UPDATE, rdVariableSpeed.getPid());
 						break;
 					}
+				}
+			}
+		}
+	}
+
+	
+	/**
+	 * 分离节点，暂不考虑库跨图幅的情况
+	 * 
+	 * @param link
+	 * @param nodePid
+	 * @param rdlinks
+	 * @param result
+	 * @throws Exception
+	 */
+	public void departNode(RdLink link, int nodePid, List<RdLink> rdlinks,
+			Result result) throws Exception {
+
+		int linkPid = link.getPid();
+
+		RdVariableSpeedSelector selector = new RdVariableSpeedSelector(this.conn);
+
+		// link为退出线或进入线的RdVariableSpeed
+		List<RdVariableSpeed> speeds = selector.loadRdVariableSpeedByLinkPid(linkPid, true);
+
+		for (RdVariableSpeed speed : speeds) {
+
+			if (speed.getNodePid() == nodePid) {
+
+				result.insertObject(speed, ObjStatus.DELETE, speed.getPid());
+
+			} else if(speed.getOutLinkPid()==linkPid){
+				// 删除link为退出线的可变限速接续link
+				for (IRow row : speed.getVias()) {
+
+					result.insertObject(row, ObjStatus.DELETE, speed.getPid());
+				}
+			}
+		}
+		// link为接续link的RdVariableSpeed
+		speeds = selector.loadRdVariableSpeedByViaLinkPid(linkPid, true);
+
+		if (speeds.size() == 0) {
+			return;
+		}
+
+		RdLinkSelector RdLinkSelector = new RdLinkSelector(this.conn);
+
+		for (RdVariableSpeed speed : speeds) {
+
+			int currSeqNum = 1;
+
+			for (IRow Row : speed.getVias()) {
+
+				RdVariableSpeedVia via = (RdVariableSpeedVia) Row;
+
+				if (via.getLinkPid() == linkPid) {
+
+					currSeqNum = via.getSeqNum();
+
+					break;
+				}
+			}
+
+			RdLink preLink = null;
+
+			if (currSeqNum == 1) {
+
+				preLink = (RdLink) RdLinkSelector.loadById(speed.getOutLinkPid(),
+						true, true);
+			} else {
+
+				for (IRow Row : speed.getVias()) {
+
+					RdVariableSpeedVia via = (RdVariableSpeedVia) Row;
+
+					if (via.getSeqNum() == currSeqNum - 1) {
+
+						preLink = (RdLink) RdLinkSelector.loadById(
+								via.getLinkPid(), true, true);
+
+						break;
+					}
+				}
+			}
+
+			int flagSeqNum = currSeqNum;
+
+			if (preLink.getsNodePid() == nodePid
+					|| preLink.geteNodePid() == nodePid) {
+
+				flagSeqNum = currSeqNum - 1;
+			}
+
+			for (IRow row : speed.getVias()) {
+
+				RdVariableSpeedVia via = (RdVariableSpeedVia) row;
+
+				if (via.getSeqNum() > flagSeqNum) {
+
+					result.insertObject(row, ObjStatus.DELETE, speed.getPid());
 				}
 			}
 		}

@@ -1,8 +1,10 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdtollgate.update;
 
 import java.sql.Connection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
@@ -12,6 +14,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.tollgate.RdTollgate;
 import com.navinfo.dataservice.dao.glm.model.rd.tollgate.RdTollgateName;
 import com.navinfo.dataservice.dao.glm.model.rd.tollgate.RdTollgatePassage;
+import com.navinfo.dataservice.dao.glm.selector.rd.gate.RdGateSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.tollgate.RdTollgateSelector;
 
 import net.sf.json.JSONArray;
@@ -194,4 +197,85 @@ public class Operation implements IOperation {
             operation.refRdLaneForTollgate(result);
         }
     }
+    
+	/**
+	 * 分离节点
+	 * @param link 
+	 * @param nodePid
+	 * @param rdlinks 
+	 * @param result
+	 * @throws Exception
+	 */
+	public void departNode(RdLink link, int nodePid, List<RdLink> rdlinks,
+			Result result) throws Exception {
+
+		int linkPid = link.getPid();
+
+		// 分离节点不处理的link为进入线的大门
+		Map<Integer, RdTollgate> tollgateInLink =null;
+		
+		//分离节点不处理的link为退出线的大门
+		Map<Integer, RdTollgate> tollgateOutLink = null;
+
+		if (rdlinks != null && rdlinks.size() > 1) {
+
+			tollgateInLink = new HashMap<Integer, RdTollgate>();
+
+			tollgateOutLink = new HashMap<Integer, RdTollgate>();
+		}
+		
+		RdTollgateSelector selector = new RdTollgateSelector(
+				this.conn);
+
+		// 在link上的RdTollgate
+		List<RdTollgate> tollgates = selector.loadRdTollgatesWithLinkPid(linkPid, true);
+
+		for(RdTollgate tollgate:tollgates)
+		{
+			if(tollgate.getNodePid()==nodePid)
+			{
+				result.insertObject(tollgate, ObjStatus.DELETE,
+						tollgate.getPid());
+			}
+			else if(tollgateInLink!=null&&tollgate.getInLinkPid()==linkPid)
+			{
+				tollgateInLink.put(tollgate.getPid(), tollgate);
+			}
+			else if(tollgateOutLink!=null&&tollgate.getOutLinkPid()==linkPid)
+			{
+				tollgateOutLink.put(tollgate.getPid(), tollgate);
+			}
+		}
+	
+		if (tollgateOutLink == null|| tollgateInLink==null) {
+			
+			return;
+		}
+		
+		int connectNode = link.getsNodePid() == nodePid ? link.geteNodePid()
+				: link.getsNodePid();
+
+		for (RdLink rdlink : rdlinks) {
+
+			if (rdlink.getsNodePid() != connectNode
+					&& rdlink.geteNodePid() != connectNode) {
+
+				continue;
+			}
+			
+			for (RdTollgate tollgate : tollgateInLink.values()) {
+
+				tollgate.changedFields().put("inLinkPid", rdlink.getPid());
+
+				result.insertObject(tollgate, ObjStatus.UPDATE, tollgate.pid());
+			}
+
+			for (RdTollgate tollgate : tollgateOutLink.values()) {
+
+				tollgate.changedFields().put("outLinkPid", rdlink.getPid());
+
+				result.insertObject(tollgate, ObjStatus.UPDATE, tollgate.pid());
+			}
+		}
+	}
 }

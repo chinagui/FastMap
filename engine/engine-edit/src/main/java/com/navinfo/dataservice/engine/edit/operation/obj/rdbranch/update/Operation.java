@@ -1,7 +1,13 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdbranch.update;
 
 import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -20,10 +26,9 @@ import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSeriesbranch;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSignasreal;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSignboard;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSignboardName;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.edit.utils.CalLinkOperateUtils;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 public class Operation implements IOperation {
 
@@ -686,4 +691,89 @@ public class Operation implements IOperation {
 			}
 		}
 	}
+	
+	/**
+	 * 分离节点
+	 * @param link 
+	 * @param nodePid
+	 * @param rdlinks 
+	 * @param result
+	 * @throws Exception
+	 */
+	public void departNode(RdLink link, int nodePid, List<RdLink> rdlinks,
+			Result result) throws Exception {
+
+		int linkPid = link.getPid();
+
+		// 分离节点不处理的以link为进入线RdBranch
+		Map<Integer, RdBranch> branchInLink =null;
+		
+		// 分离节点不处理的以link为退出线RdBranch
+		Map<Integer, RdBranch> branchOutLink = null;
+
+		if (rdlinks != null && rdlinks.size() > 1) {
+
+			branchInLink = new HashMap<Integer, RdBranch>();
+
+			branchOutLink = new HashMap<Integer, RdBranch>();
+		}
+		
+		RdBranchSelector selector = new RdBranchSelector(
+				this.conn);
+
+		List<RdBranch> branchs =new ArrayList<RdBranch>();
+		
+		// link作为进入线的RdBranch
+		branchs.addAll(selector.loadByLinkPid(linkPid, 1, true));
+
+		// link作为 退出线的RdBranch
+		branchs.addAll(selector.loadByLinkPid(linkPid, 2, true));
+
+		for (RdBranch branch : branchs) {
+			
+			if (branch.getNodePid() == nodePid) {
+
+				result.insertObject(branch, ObjStatus.DELETE, branch.getPid());
+
+			} else if (branchInLink != null) {
+
+				branchInLink.put(branch.getPid(), branch);
+
+			} else if (branchOutLink != null) {
+
+				branchOutLink.put(branch.getPid(), branch);
+			}
+		}
+
+		if (branchOutLink == null || branchInLink == null) {
+			
+			return;
+		}
+		
+		int connectNode = link.getsNodePid() == nodePid ? link.geteNodePid()
+				: link.getsNodePid();
+
+		for (RdLink rdlink : rdlinks) {
+
+			if (rdlink.getsNodePid() != connectNode
+					&& rdlink.geteNodePid() != connectNode) {
+
+				continue;
+			}
+			for (RdBranch branch : branchInLink.values()) {
+
+				branch.changedFields().put("inLinkPid", rdlink.getPid());
+
+				result.insertObject(branch, ObjStatus.UPDATE, branch.pid());
+			}
+
+			for (RdBranch branch : branchOutLink.values()) {
+
+				branch.changedFields().put("outLinkPid", rdlink.getPid());
+
+				result.insertObject(branch, ObjStatus.UPDATE, branch.pid());
+			}
+		}
+	}
+	
 }

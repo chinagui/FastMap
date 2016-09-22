@@ -675,6 +675,8 @@ public class RdBranchSelector extends AbstractSelector {
 				RdBranchViaSelector viaSelector = new RdBranchViaSelector(getConn());
 
 				branch.setVias(viaSelector.loadRowsByParentId(branch.getPid(), true));
+				
+				result.add(branch);
 			}
 		} catch (Exception e) {
 

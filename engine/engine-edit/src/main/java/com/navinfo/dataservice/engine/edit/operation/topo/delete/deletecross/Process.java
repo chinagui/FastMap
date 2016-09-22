@@ -87,37 +87,77 @@ public class Process extends AbstractProcess<Command> {
 
 		return true;
 	}
-
+	
 	@Override
-	public String exeOperation() throws Exception {
-		if (!this.getCommand().isCheckInfect()) {
-			IOperation op = new OpTopo(this.getCommand(), getConn());
+	public String run() throws Exception {
 
-			op.run(this.getResult());
+		try {
+			if (!this.getCommand().isCheckInfect()) {
+				this.getConn().setAutoCommit(false);
+				String preCheckMsg = this.preCheck();
+				if (preCheckMsg != null) {
+					throw new Exception(preCheckMsg);
+				}
 
-			IOperation opRefRestrict = new OpRefRdRestriction(this.getCommand());
+				prepareData();
 
-			opRefRestrict.run(this.getResult());
+				updataRelationObj();
 
-			IOperation opRefLaneConnexity = new OpRefRdLaneConnexity(this.getCommand());
+				recordData();
 
-			opRefLaneConnexity.run(this.getResult());
+				postCheck();
 
-			// 删除信号灯
-			OpRefTrafficsignal opRefTrafficsignal = new OpRefTrafficsignal(this.getConn());
+				this.getConn().commit();
+			} else {
 
-			opRefTrafficsignal.run(this.getResult(), this.getCommand().getCross().getNodes());
+				Map<String, List<AlertObject>> infects = confirmRelationObj();
+				
+				this.getConn().commit();
 
-			IOperation opRefBranch = new OpRefRdBranch(this.getCommand());
+				return JSONObject.fromObject(infects).toString();
+			}
 
-			return opRefBranch.run(this.getResult());
-		} else {
-			Map<String, List<AlertObject>> infects = confirmRelationObj();
+		} catch (Exception e) {
 
-			this.getConn().commit();
+			this.getConn().rollback();
 
-			return JSONObject.fromObject(infects).toString();
+			throw e;
+		} finally {
+			try {
+				this.getConn().close();
+			} catch (Exception e) {
+
+			}
 		}
+
+		return null;
+	}
+	
+	/**
+	 * @throws Exception 
+	 * 
+	 */
+	private void updataRelationObj() throws Exception {
+		IOperation op = new OpTopo(this.getCommand(), getConn());
+
+		op.run(this.getResult());
+
+		IOperation opRefRestrict = new OpRefRdRestriction(this.getCommand());
+
+		opRefRestrict.run(this.getResult());
+
+		IOperation opRefLaneConnexity = new OpRefRdLaneConnexity(this.getCommand());
+
+		opRefLaneConnexity.run(this.getResult());
+
+		// 删除信号灯
+		OpRefTrafficsignal opRefTrafficsignal = new OpRefTrafficsignal(this.getConn());
+
+		opRefTrafficsignal.run(this.getResult(), this.getCommand().getCross().getNodes());
+
+		IOperation opRefBranch = new OpRefRdBranch(this.getCommand());
+		
+		opRefBranch.run(this.getResult());
 	}
 
 	/**
@@ -181,5 +221,10 @@ public class Process extends AbstractProcess<Command> {
 			infects.put("删除路口删除顺行", directoureAlertData);
 		}
 		return infects;
+	}
+
+	@Override
+	public String exeOperation() throws Exception {
+		return null;
 	}
 }

@@ -69,7 +69,7 @@ public class GridOperation {
 						HashMap<String,Object> map = new HashMap<String, Object>();
 						map.put("gridId", rs.getInt("grid_id"));
 						map.put("status", 1);
-						map.put("type", "");
+//						map.put("type", "");
 						list.add(map);
 					}
 					return list;

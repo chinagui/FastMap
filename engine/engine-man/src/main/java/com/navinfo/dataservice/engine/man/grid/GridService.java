@@ -244,6 +244,9 @@ public class GridService {
 			Polygon polygon = (Polygon) GeometryUtils.getPolygonByWKT(json.getString("wkt"));
 			Set<?> grids = (Set<?>) CompGeometryUtil.geo2GridsWithoutBreak(polygon);
 			int stage = json.getInt("stage");
+			if(json.containsKey("type")){
+				
+			}
 //			int type = json.getInt("type");
 
 			String waitAssignSql = "select g.grid_id"
@@ -254,16 +257,23 @@ public class GridService {
 					+ "(select s.subtask_id"
 					+ " from subtask_grid_mapping sgm,subtask s"
 					+ " where sgm.grid_id = g.grid_id"
-					+ " and sgm.subtask_id = s.subtask_id"
-					+ " and s.stage=" + stage + ")";
-//					+ " and s.stage=" + stage
-//					+ " and s.type=" + type + ")";
+					+ " and sgm.subtask_id = s.subtask_id";
+			if(json.containsKey("type")){
+				waitAssignSql +=  " and s.stage=" + stage
+						+ " and s.type=" + json.getInt("type") + ")";
+			}else{
+				waitAssignSql +=  " and s.stage=" + stage + ")";
+			}
+			
 			String alreadyAssignSql = "select distinct g.grid_id"
 					+ " from subtask_grid_mapping g,subtask s"
-					+ " where g.subtask_id=s.subtask_id "
-					+ "and s.stage=" + stage;
-//					+ "and s.stage=" + stage
-//					+ "and s.type=" + type;
+					+ " where g.subtask_id=s.subtask_id ";
+			if(json.containsKey("type")){
+				alreadyAssignSql +=  " and s.stage=" + stage
+						+ " and s.type=" + json.getInt("type");
+			}else{
+				alreadyAssignSql +=  " and s.stage=" + stage;
+			}
 
 			List<String> gridList = new ArrayList<String>();
 			gridList.addAll((Collection<? extends String>) grids);

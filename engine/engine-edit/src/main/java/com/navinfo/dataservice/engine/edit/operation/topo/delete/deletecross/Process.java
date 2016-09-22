@@ -143,10 +143,12 @@ public class Process extends AbstractProcess<Command> {
 
 		op.run(this.getResult());
 
+		//交限
 		IOperation opRefRestrict = new OpRefRdRestriction(this.getCommand());
 
 		opRefRestrict.run(this.getResult());
 
+		//车信
 		IOperation opRefLaneConnexity = new OpRefRdLaneConnexity(this.getCommand());
 
 		opRefLaneConnexity.run(this.getResult());
@@ -155,10 +157,19 @@ public class Process extends AbstractProcess<Command> {
 		OpRefTrafficsignal opRefTrafficsignal = new OpRefTrafficsignal(this.getConn());
 
 		opRefTrafficsignal.run(this.getResult(), this.getCommand().getCross().getNodes());
-
+		
+		//分歧
 		IOperation opRefBranch = new OpRefRdBranch(this.getCommand());
 		
 		opRefBranch.run(this.getResult());
+		
+		//顺行
+		OpRefDirectoroute opRefDirectoroute = new OpRefDirectoroute(this.getConn());
+		opRefDirectoroute.run(this.getResult(), this.getCommand().getPid());
+		
+		//语音引导
+		OpRefVoiceGuide opRefVoiceGuide = new OpRefVoiceGuide(this.getConn());
+		opRefVoiceGuide.run(this.getResult(), this.getCommand().getPid());
 	}
 
 	/**

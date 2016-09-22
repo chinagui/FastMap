@@ -372,5 +372,70 @@ public class RdLaneConnexitySelector extends AbstractSelector {
 		}
 		return laneConns;
 	}
+	
+	/**
+	 * 根据路口pid查询车信信息
+	 * @param crossPid 路口pid
+	 * @param isLock 是否加锁
+	 * @return 车信对象集合
+	 * @throws Exception
+	 */
+	public List<RdLaneConnexity> getRdLaneConnexityByCrossPid(int crossPid,boolean isLock) throws Exception {
+		List<RdLaneConnexity> result = new ArrayList<RdLaneConnexity>();
 
+		String sql = "select * from rd_lane_connexity a where exists (select null from rd_cross_node b where b.pid=:1 and a.node_pid=b.node_pid) and u_record!=2";
+		if(isLock)
+		{
+			sql = sql + " for update nowait";
+		}
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = getConn().prepareStatement(sql);
+
+			pstmt.setInt(1, crossPid);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+				RdLaneConnexity laneConn = new RdLaneConnexity();
+
+				laneConn.setPid(resultSet.getInt("pid"));
+
+				laneConn.setRowId(resultSet.getString("row_id"));
+
+				laneConn.setInLinkPid(resultSet.getInt("in_link_pid"));
+
+				laneConn.setNodePid(resultSet.getInt("node_pid"));
+
+				laneConn.setLaneInfo(resultSet.getString("lane_info"));
+
+				laneConn.setConflictFlag(resultSet.getInt("conflict_flag"));
+
+				laneConn.setKgFlag(resultSet.getInt("kg_flag"));
+
+				laneConn.setLaneNum(resultSet.getInt("lane_num"));
+
+				laneConn.setLeftExtend(resultSet.getInt("left_extend"));
+
+				laneConn.setRightExtend(resultSet.getInt("right_extend"));
+
+				RdLaneTopologySelector topoSelector = new RdLaneTopologySelector(getConn());
+
+				laneConn.setTopos(topoSelector.loadRowsByParentId(laneConn.getPid(), true));
+
+				result.add(laneConn);
+			}
+		} catch (Exception e) {
+
+			throw e;
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+		}
+		return result;
+	}
 }

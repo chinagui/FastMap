@@ -39,8 +39,6 @@ import net.sf.json.JSONObject;
 
 public class Process extends AbstractProcess<Command> {
 
-	private Map<String, List<AlertObject>> infects = new HashMap<String, List<AlertObject>>();
-
 	public Process(AbstractCommand command) throws Exception {
 		super(command);
 	}
@@ -261,6 +259,8 @@ public class Process extends AbstractProcess<Command> {
 			} else {
 
 				Map<String, List<AlertObject>> infects = confirmRelationObj();
+				
+				this.getConn().commit();
 
 				return JSONObject.fromObject(infects).toString();
 			}
@@ -422,6 +422,8 @@ public class Process extends AbstractProcess<Command> {
 	 * @throws Exception
 	 */
 	private Map<String, List<AlertObject>> confirmRelationObj() throws Exception {
+		Map<String, List<AlertObject>> infects = new HashMap<String, List<AlertObject>>();
+		
 		// 检查link是否可以删除
 		String msg = preCheck();
 

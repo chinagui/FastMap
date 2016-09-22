@@ -35,11 +35,8 @@ import net.sf.json.JSONObject;
 
 public class Process extends AbstractProcess<Command> {
 
-	private Map<String, List<AlertObject>> infects = new HashMap<String, List<AlertObject>>();
-
 	public Process(AbstractCommand command) throws Exception {
 		super(command);
-		// TODO Auto-generated constructor stub
 	}
 
 	public void lockRdLink() throws Exception {
@@ -234,7 +231,9 @@ public class Process extends AbstractProcess<Command> {
 			} else {
 
 				Map<String, List<AlertObject>> infects = confirmRelationObj();
-
+				
+				this.getConn().commit();
+				
 				return JSONObject.fromObject(infects).toString();
 			}
 
@@ -353,6 +352,9 @@ public class Process extends AbstractProcess<Command> {
 	 * @throws Exception
 	 */
 	private Map<String, List<AlertObject>> confirmRelationObj() throws Exception {
+		
+		Map<String, List<AlertObject>> infects = new HashMap<String, List<AlertObject>>();
+		
 		// 检查是否可以删除
 		String msg = preCheck();
 
@@ -362,16 +364,18 @@ public class Process extends AbstractProcess<Command> {
 
 		// 获取该rdnode对象
 		lockRdNode();
-
+		
+		lockRdLink();
+		
+		lockEndRdNode();
+		
 		if (this.getCommand().getNode() == null) {
 
 			throw new Exception("指定删除的RDNODE不存在！");
 		}
 
 		Connection conn = getConn();
-
-		lockRdLink();
-
+		
 		List<RdLink> links = this.getCommand().getLinks();
 
 		// 行政区划代表点
@@ -397,7 +401,8 @@ public class Process extends AbstractProcess<Command> {
 			infects.put("删除Link", linkAlertDataList);
 		}
 		// node
-		List<AlertObject> nodeAlertDataList = opTopo.getDeleteNodeInfectData(this.getCommand().getNodePid(), conn);
+		OpTopo nodeTOpo = new OpTopo();
+		List<AlertObject> nodeAlertDataList = nodeTOpo.getDeleteNodeInfectData(this.getCommand().getNodePids(), conn);
 		if (CollectionUtils.isNotEmpty(nodeAlertDataList)) {
 			infects.put("删除Node", nodeAlertDataList);
 		}

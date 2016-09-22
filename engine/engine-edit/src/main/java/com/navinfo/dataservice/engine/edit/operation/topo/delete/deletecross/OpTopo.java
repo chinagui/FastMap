@@ -9,6 +9,7 @@ import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISelector;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
+import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossLink;
@@ -24,6 +25,9 @@ public class OpTopo implements IOperation {
 	private Command command;
 
 	private Connection conn;
+	
+	public OpTopo() {
+	}
 
 	public OpTopo(Command command, Connection conn) {
 
@@ -175,6 +179,30 @@ public class OpTopo implements IOperation {
 				alertList.add(alertObj);
 			}
 		}
+
+		return alertList;
+	}
+	
+	/**
+	 * 删除路口的提示
+	 * @param crossPid 路口pid
+	 * @param conn 数据库conn
+	 * @return 提示信息
+	 * @throws Exception
+	 */
+	public List<AlertObject> getDeleteCrossInfectData(int crossPid) throws Exception {
+		
+		List<AlertObject> alertList = new ArrayList<>();
+		
+		AlertObject alertObj = new AlertObject();
+
+		alertObj.setObjType(ObjType.RDCROSS);
+
+		alertObj.setPid(crossPid);
+
+		alertObj.setStatus(ObjStatus.DELETE);
+		
+		alertList.add(alertObj);
 
 		return alertList;
 	}

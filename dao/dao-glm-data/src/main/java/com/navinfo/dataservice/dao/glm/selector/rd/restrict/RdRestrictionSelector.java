@@ -10,7 +10,6 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
-import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneVia;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionCondition;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionDetail;
@@ -372,5 +371,61 @@ public class RdRestrictionSelector extends AbstractSelector {
 			restrict.detailMap.put(detail.getPid(), detail);
 		}
 	}
+	
+	/**
+	 * 根据路口pid查询路口关系的交限
+	 * @param crossPid 路口pid
+	 * @param isLock 是否加锁
+	 * @return 交限集合
+	 * @throws Exception
+	 */
+	public List<RdRestriction> getRestrictionByCrossPid(int crossPid,boolean isLock) throws Exception {
 
+		List<RdRestriction> result = new ArrayList<RdRestriction>();
+
+		String sql = "select * from rd_restriction a where exists (select null from rd_cross_node b where b.pid=:1 and a.node_pid=b.node_pid) and u_record!=2";
+
+		sql = sql + " for update nowait";
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = getConn().prepareStatement(sql);
+
+			pstmt.setInt(1, crossPid);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+				RdRestriction restrict = new RdRestriction();
+
+				restrict.setPid(resultSet.getInt("pid"));
+
+				restrict.setInLinkPid(resultSet.getInt("in_link_pid"));
+
+				restrict.setNodePid(resultSet.getInt("node_pid"));
+
+				restrict.setRestricInfo(resultSet.getString("restric_info"));
+
+				restrict.setKgFlag(resultSet.getInt("kg_flag"));
+
+				restrict.setRowId(resultSet.getString("row_id"));
+
+				RdRestrictionDetailSelector detail = new RdRestrictionDetailSelector(getConn());
+
+				restrict.setDetails(detail.loadRowsByParentId(restrict.getPid(), true));
+
+				result.add(restrict);
+			}
+		} catch (Exception e) {
+
+			throw e;
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+		}
+		return result;
+	}
 }

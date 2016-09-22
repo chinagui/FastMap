@@ -614,4 +614,75 @@ public class RdBranchSelector extends AbstractSelector {
 		}
 		return branchs;
 	}
+	
+	/**
+	 * 根据路口pid查询分歧
+	 * @param crossPid 路口pid
+	 * @param isLock 是否加锁
+	 * @return 分歧集合
+	 * @throws Exception
+	 */
+	public List<RdBranch> getRdBranchByCrossPid(int crossPid,boolean isLock) throws Exception {
+
+		List<RdBranch> result = new ArrayList<RdBranch>();
+
+		String sql = "select * from rd_branch a where exists (select null from rd_cross_node b where b.pid=:1 and a.node_pid=b.node_pid) and u_record!=2";
+		
+		if(isLock)
+		{
+			sql = sql + " for update nowait";
+		}
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = getConn().prepareStatement(sql);
+
+			pstmt.setInt(1, crossPid);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+
+				RdBranch branch = new RdBranch();
+
+				branch.setPid(resultSet.getInt("branch_pid"));
+
+				branch.setInLinkPid(resultSet.getInt("in_link_pid"));
+
+				branch.setNodePid(resultSet.getInt("node_pid"));
+
+				branch.setOutLinkPid(resultSet.getInt("out_link_pid"));
+
+				branch.setRelationshipType(resultSet.getInt("relationship_type"));
+
+				branch.setRowId(resultSet.getString("row_id"));
+
+				branch.setDetails(new AbstractSelector(RdBranchDetail.class, getConn()).loadRowsByParentId(branch.getPid(), true));
+
+				branch.setSignboards(new AbstractSelector(RdSignboard.class, getConn()).loadRowsByParentId(branch.getPid(), true));
+
+				branch.setSignasreals(new AbstractSelector(RdSignasreal.class, getConn()).loadRowsByParentId(branch.getPid(), true));
+
+				branch.setSeriesbranches(new AbstractSelector(RdSeriesbranch.class, getConn()).loadRowsByParentId(branch.getPid(), true));
+
+				branch.setRealimages(new AbstractSelector(RdBranchRealimage.class, getConn()).loadRowsByParentId(branch.getPid(), true));
+
+				branch.setSchematics(new AbstractSelector(RdBranchSchematic.class, getConn()).loadRowsByParentId(branch.getPid(), true));
+
+				RdBranchViaSelector viaSelector = new RdBranchViaSelector(getConn());
+
+				branch.setVias(viaSelector.loadRowsByParentId(branch.getPid(), true));
+			}
+		} catch (Exception e) {
+
+			throw e;
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+		}
+		return result;
+	}
 }

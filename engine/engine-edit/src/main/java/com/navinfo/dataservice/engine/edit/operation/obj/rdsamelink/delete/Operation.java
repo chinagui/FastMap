@@ -124,42 +124,40 @@ public class Operation implements IOperation {
 
 		RdSameLinkSelector sameLinkSelector = new RdSameLinkSelector(this.conn);
 
+		List<AlertObject> alertList = new ArrayList<>();
+		
 		RdSameLinkPart sameLinkPart = sameLinkSelector.loadLinkPartByLink(
 				link.parentPKValue(), tableName, true);
 
-		if (sameLinkPart == null) {
-			return null;
+		if(sameLinkPart != null)
+		{
+			RdSameLink sameLink = (RdSameLink) sameLinkSelector.loadById(
+					sameLinkPart.getGroupId(), true);
+
+			if (sameLink.getParts().size() < 3) {
+				AlertObject alertObj = new AlertObject();
+
+				alertObj.setObjType(sameLink.objType());
+
+				alertObj.setPid(sameLink.getPid());
+
+				alertObj.setStatus(ObjStatus.DELETE);
+
+				alertList.add(alertObj);
+
+			} else {
+
+				AlertObject alertObj = new AlertObject();
+
+				alertObj.setObjType(sameLink.objType());
+
+				alertObj.setPid(sameLink.getPid());
+
+				alertObj.setStatus(ObjStatus.UPDATE);
+
+				alertList.add(alertObj);
+			}
 		}
-		
-		List<AlertObject> alertList = new ArrayList<>();
-		
-		RdSameLink sameLink = (RdSameLink) sameLinkSelector.loadById(
-				sameLinkPart.getGroupId(), true);
-
-		if (sameLink.getParts().size() < 3) {
-			AlertObject alertObj = new AlertObject();
-
-			alertObj.setObjType(sameLink.objType());
-
-			alertObj.setPid(sameLink.getPid());
-
-			alertObj.setStatus(ObjStatus.DELETE);
-
-			alertList.add(alertObj);
-
-		} else {
-
-			AlertObject alertObj = new AlertObject();
-
-			alertObj.setObjType(sameLink.objType());
-
-			alertObj.setPid(sameLink.getPid());
-
-			alertObj.setStatus(ObjStatus.UPDATE);
-
-			alertList.add(alertObj);
-		}
-
 		return alertList;
 	}
 }

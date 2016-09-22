@@ -16,7 +16,7 @@ public class RdCrossTest extends InitApplication{
 	
 	@Test
 	public void testAddCross() {
-		String parameter = "{\"command\":\"DELETE\",\"type\":\"RDCROSS\",\"dbId\":17,\"objId\":201000003,\"infect\":1}";
+		String parameter = "{\"command\":\"DELETE\",\"dbId\":17,\"type\":\"RDNODE\",\"objId\":300000011,\"infect\":1}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

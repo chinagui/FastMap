@@ -15,6 +15,10 @@ import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 public class OpTopo implements IOperation {
 
 	private Command command;
+	
+	public OpTopo()
+	{
+	}
 
 	public OpTopo(Command command) {
 
@@ -41,19 +45,22 @@ public class OpTopo implements IOperation {
 		return msg;
 	}
 
-	public List<AlertObject> getDeleteNodeInfectData(int nodePid, Connection conn) throws Exception {
+	public List<AlertObject> getDeleteNodeInfectData(List<Integer> nodePids, Connection conn) throws Exception {
 
 		List<AlertObject> alertList = new ArrayList<>();
+		
+		for(Integer nodePid : nodePids)
+		{
+			AlertObject alertObj = new AlertObject();
 
-		AlertObject alertObj = new AlertObject();
+			alertObj.setObjType(ObjType.RDNODE);
 
-		alertObj.setObjType(ObjType.RDNODE);
+			alertObj.setPid(nodePid);
 
-		alertObj.setPid(nodePid);
+			alertObj.setStatus(ObjStatus.DELETE);
 
-		alertObj.setStatus(ObjStatus.DELETE);
-
-		alertList.add(alertObj);
+			alertList.add(alertObj);
+		}
 
 		return alertList;
 	}

@@ -304,7 +304,7 @@ public class RdLaneConnexitySelector extends AbstractSelector {
 		}
 		else if (linkType == 2) {
 			
-			sql = "SELECT * WHERE U_RECORD != 2 FROM RD_LANE_CONNEXITY AND PID IN (SELECT DISTINCT (CONNEXITY_PID) WHERE U_RECORD != 2 FROM RD_LANE_TOPOLOGY AND OUT_LINK_PID = :1)";
+			sql = "SELECT * FROM RD_LANE_CONNEXITY WHERE U_RECORD != 2  AND PID IN (SELECT DISTINCT (CONNEXITY_PID) FROM RD_LANE_TOPOLOGY WHERE U_RECORD != 2  AND OUT_LINK_PID = :1)";
 		}
 		
 		else if (linkType == 3) {

@@ -162,7 +162,7 @@ public class StaticsController extends BaseController {
 			Map<String,Object> result = new HashMap<String,Object>();
 			result.put("subtaskId", data.getSubtaskId());
 			result.put("percent", data.getPercent());
-			result.put("working", poi);
+			result.put("poi", poi);
 			result.put("road", road);
 
 			return new ModelAndView("jsonView", success(result));

@@ -51,16 +51,33 @@ public class Operation implements IOperation {
 		List<AlertObject> alertList = new ArrayList<>();
 
 		for (RdGsc rdGsc : rdGscList) {
+			
+			int linkSize = rdGsc.getLinks().size();
+			
+			if(linkSize > 2)
+			{
+				AlertObject alertObj = new AlertObject();
 
-			AlertObject alertObj = new AlertObject();
+				alertObj.setObjType(rdGsc.objType());
 
-			alertObj.setObjType(rdGsc.objType());
+				alertObj.setPid(rdGsc.getPid());
 
-			alertObj.setPid(rdGsc.getPid());
+				alertObj.setStatus(ObjStatus.UPDATE);
 
-			alertObj.setStatus(ObjStatus.DELETE);
+				alertList.add(alertObj);
+			}
+			else
+			{
+				AlertObject alertObj = new AlertObject();
 
-			alertList.add(alertObj);
+				alertObj.setObjType(rdGsc.objType());
+
+				alertObj.setPid(rdGsc.getPid());
+
+				alertObj.setStatus(ObjStatus.DELETE);
+
+				alertList.add(alertObj);
+			}
 		}
 
 		return alertList;

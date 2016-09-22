@@ -504,15 +504,15 @@ public class Process extends AbstractProcess<Command> {
 			infects.put("删除link删除立交", delGscAlertDataList);
 		}
 		// 限速关系
-		List<AlertObject> delSpeedLimitAlertDataList = new ArrayList<>();
+		List<AlertObject> updateSpeedLimitAlertDataList = new ArrayList<>();
 		com.navinfo.dataservice.engine.edit.operation.obj.rdspeedlimit.delete.Operation rdSpeedLimitOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdspeedlimit.delete.Operation(
 				null, null);
 		for (RdLink link : links) {
 			int linkPid = link.getPid();
-			delSpeedLimitAlertDataList.addAll(rdSpeedLimitOperation.getDeleteRdSpeedLimitInfectData(linkPid, conn));
+			updateSpeedLimitAlertDataList.addAll(rdSpeedLimitOperation.getUpdateRdSpeedLimitInfectData(linkPid, conn));
 		}
-		if (CollectionUtils.isNotEmpty(delSpeedLimitAlertDataList)) {
-			infects.put("删除link删除限速关系", delSpeedLimitAlertDataList);
+		if (CollectionUtils.isNotEmpty(updateSpeedLimitAlertDataList)) {
+			infects.put("删除link维护限速关系", updateSpeedLimitAlertDataList);
 		}
 		// 电子眼
 		List<AlertObject> delRdEyeAlertDataList = new ArrayList<>();
@@ -520,7 +520,7 @@ public class Process extends AbstractProcess<Command> {
 				conn);
 		for (RdLink link : links) {
 			int linkPid = link.getPid();
-			delRdEyeAlertDataList.addAll(rdEyeOperation.getDeleteRdEyeInfectData(linkPid, conn));
+			delRdEyeAlertDataList.addAll(rdEyeOperation.getUpdateRdEyeInfectData(linkPid, conn));
 		}
 		if (CollectionUtils.isNotEmpty(delRdEyeAlertDataList)) {
 			infects.put("删除link删除电子眼", delRdEyeAlertDataList);

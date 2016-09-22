@@ -204,34 +204,34 @@ public class Operation implements IOperation {
 		Map<Integer, RdRestrictionDetail> detailDepart = new HashMap<Integer, RdRestrictionDetail>();
 		
 		// 分离节点不处理，跨图幅打断需要处理的RdRestriction
-		Map<Integer, RdRestriction> restrictionOther = null;
+		Map<Integer, RdRestriction> restrictionMesh = null;
 
 		// 分离节点不处理，跨图幅打断需要处理的RdRestrictionDetail
-		Map<Integer, RdRestrictionDetail> detailOther = null;
+		Map<Integer, RdRestrictionDetail> detailMesh = null;
 
 		if (rdlinks!=null &&rdlinks.size() >1) {			
 			
-			restrictionOther = new HashMap<Integer, RdRestriction>();
+			restrictionMesh = new HashMap<Integer, RdRestriction>();
 
-			detailOther = new HashMap<Integer, RdRestrictionDetail>();
+			detailMesh = new HashMap<Integer, RdRestrictionDetail>();
 		}
 		
 		RdRestrictionSelector selector = new RdRestrictionSelector(
 				this.conn);
 
 		// link作为进入线的RdRestriction
-		List<RdRestriction> restrictions = selector.loadRdRestrictionByLinkPid(linkPid, true);
-
+		List<RdRestriction> restrictions = selector
+				.loadByLink(linkPid, 1, true);
 		getInLinkDepartInfo(nodePid, restrictions, restrictionDepart,
-				restrictionOther);
+				restrictionMesh);
 
 		// link作为退出线的RdRestriction
-		restrictions = selector.loadRdRestrictionByOutLinkPid(linkPid, true);
+		restrictions = selector.loadByLink(linkPid, 2, true);
 
 		Map<Integer, RdRestrictionDetail> detailTmp = new HashMap<Integer, RdRestrictionDetail>();
 
 		getOutLinkDepartInfo(nodePid, linkPid, restrictions, detailTmp,
-				detailOther);
+				detailMesh);
 
 		for (RdRestriction restriction : restrictions) {
 
@@ -242,10 +242,10 @@ public class Operation implements IOperation {
 
 			if (restriction.getDetails().size() > 1) {
 
-				RdRestrictionDetail delTopology = detailTmp.get(restriction
+				RdRestrictionDetail delDetail = detailTmp.get(restriction
 						.getPid());
 
-				detailDepart.put(delTopology.getPid(), delTopology);
+				detailDepart.put(delDetail.getPid(), delDetail);
 
 			} else {
 
@@ -253,10 +253,10 @@ public class Operation implements IOperation {
 			}
 		}
 
-		for (RdRestrictionDetail delTopology : detailDepart.values()) {
+		for (RdRestrictionDetail delDetail : detailDepart.values()) {
 
-			result.insertObject(delTopology, ObjStatus.DELETE,
-					delTopology.pid());
+			result.insertObject(delDetail, ObjStatus.DELETE,
+					delDetail.pid());
 		}
 
 		for (RdRestriction restriction : restrictionDepart.values()) {
@@ -265,7 +265,7 @@ public class Operation implements IOperation {
 					restriction.pid());
 		}
 
-		if (restrictionOther == null || detailOther == null) {
+		if (restrictionMesh == null || detailMesh == null) {
 			
 			return;
 		}
@@ -281,7 +281,7 @@ public class Operation implements IOperation {
 				continue;
 			}
 
-			for (RdRestriction restriction : restrictionOther.values()) {
+			for (RdRestriction restriction : restrictionMesh.values()) {
 				
 				restriction.changedFields().put("inLinkPid", rdlink.getPid());
 
@@ -289,12 +289,12 @@ public class Operation implements IOperation {
 						restriction.pid());
 			}
 
-			for (RdRestrictionDetail laneTopology : detailOther.values()) {
+			for (RdRestrictionDetail detail : detailMesh.values()) {
 				
-				laneTopology.changedFields().put("outLinkPid", rdlink.getPid());
+				detail.changedFields().put("outLinkPid", rdlink.getPid());
 
-				result.insertObject(laneTopology, ObjStatus.UPDATE,
-						laneTopology.pid());
+				result.insertObject(detail, ObjStatus.UPDATE,
+						detail.pid());
 			}
 		}
 	}
@@ -308,23 +308,23 @@ public class Operation implements IOperation {
 	 *            link作为进入线的所有RdRestriction
 	 * @param restrictionDepart
 	 *            分离点为进入点的交限
-	 * @param restrictionOther
+	 * @param restrictionMesh
 	 *            分离点不是进入点的交限
 	 * @throws Exception
 	 */
 	private void getInLinkDepartInfo(int nodePid,
 			List<RdRestriction> restrictions,
 			Map<Integer, RdRestriction> restrictionDepart,
-			Map<Integer, RdRestriction> restrictionOther) throws Exception {
+			Map<Integer, RdRestriction> restrictionMesh) throws Exception {
 
 		for (RdRestriction restriction : restrictions) {
 
 			if (restriction.getNodePid() == nodePid) {
 				restrictionDepart.put(restriction.getPid(), restriction);
 
-			} else if (restrictionOther != null) {
+			} else if (restrictionMesh != null) {
 
-				restrictionOther.put(restriction.getPid(), restriction);
+				restrictionMesh.put(restriction.getPid(), restriction);
 			}
 		}
 	}
@@ -340,25 +340,26 @@ public class Operation implements IOperation {
 	 *            link作为退出线的所有RdRestriction
 	 * @param detailTmp
 	 *            分离点为退出线的进入点的交限
-	 * @param detailOther
+	 * @param detailMesh
 	 *            分离点不是退出线的进入点的交限
 	 * @throws Exception
 	 */
 	private void getOutLinkDepartInfo(int nodePid, int linkPid,
 			List<RdRestriction> restrictions,
 			Map<Integer, RdRestrictionDetail> detailTmp,
-			Map<Integer, RdRestrictionDetail> detailOther) throws Exception {
+			Map<Integer, RdRestrictionDetail> detailMesh) throws Exception {
 
 		RdLinkSelector rdLinkSelector = new RdLinkSelector(this.conn);
 
 		for (RdRestriction restriction : restrictions) {
 
-			for (IRow rowTopology : restriction.getDetails()) {
+			for (IRow rowDetail : restriction.getDetails()) {
 
-				RdRestrictionDetail detail = (RdRestrictionDetail) rowTopology;
+				RdRestrictionDetail detail = (RdRestrictionDetail) rowDetail;
 
 				// 排除其他退出线
 				if (detail.getOutLinkPid() != linkPid) {
+					
 					continue;
 				}
 
@@ -373,9 +374,9 @@ public class Operation implements IOperation {
 				// 无经过线
 				if (detail.getVias().size() == 0) {
 
-					if (detailOther != null) {
+					if (detailMesh != null) {
 
-						detailOther.put(detail.getRestricPid(), detail);
+						detailMesh.put(detail.getRestricPid(), detail);
 					}
 
 					continue;
@@ -416,9 +417,9 @@ public class Operation implements IOperation {
 
 					detailTmp.put(detail.getRestricPid(), detail);
 
-				} else if (detailOther != null) {
+				} else if (detailMesh != null) {
 
-					detailOther.put(detail.getRestricPid(), detail);
+					detailMesh.put(detail.getRestricPid(), detail);
 				}
 			}
 		}

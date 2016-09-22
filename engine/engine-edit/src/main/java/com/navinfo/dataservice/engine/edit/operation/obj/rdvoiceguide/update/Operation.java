@@ -406,17 +406,17 @@ public class Operation implements IOperation {
 		// 需要分离节点处理的RdVoiceguideDetail
 		Map<Integer, RdVoiceguideDetail> detailDepart = new HashMap<Integer, RdVoiceguideDetail>();
 		
-		// 分离节点不处理，跨图幅打断需要处理的RdVoiceguide
-		Map<Integer, RdVoiceguide> voiceguideOther = null;
+		// 跨图幅打断需要处理的RdVoiceguide
+		Map<Integer, RdVoiceguide> voiceguideMesh = null;
 
-		// 分离节点不处理，跨图幅打断需要处理的RdVoiceguideDetail
-		Map<Integer, RdVoiceguideDetail> detailOther = null;
+		// 跨图幅打断需要处理的RdVoiceguideDetail
+		Map<Integer, RdVoiceguideDetail> detailMesh = null;
 
 		if (rdlinks!=null &&rdlinks.size() >1) {			
 			
-			voiceguideOther = new HashMap<Integer, RdVoiceguide>();
+			voiceguideMesh = new HashMap<Integer, RdVoiceguide>();
 
-			detailOther = new HashMap<Integer, RdVoiceguideDetail>();
+			detailMesh = new HashMap<Integer, RdVoiceguideDetail>();
 		}
 		
 		RdVoiceguideSelector selector = new RdVoiceguideSelector(
@@ -426,7 +426,7 @@ public class Operation implements IOperation {
 		List<RdVoiceguide> voiceguides = selector.loadRdVoiceguideByLinkPid(linkPid,1, true);
 
 		getInLinkDepartInfo(nodePid, voiceguides, voiceguideDepart,
-				voiceguideOther);
+				voiceguideMesh);
 
 		// link作为退出线的RdVoiceguide
 		voiceguides = selector.loadRdVoiceguideByLinkPid(linkPid,2, true);
@@ -434,7 +434,7 @@ public class Operation implements IOperation {
 		Map<Integer, RdVoiceguideDetail> detailTmp = new HashMap<Integer, RdVoiceguideDetail>();
 
 		getOutLinkDepartInfo(nodePid, linkPid, voiceguides, detailTmp,
-				detailOther);
+				detailMesh);
 
 		for (RdVoiceguide voiceguide : voiceguides) {
 
@@ -456,10 +456,10 @@ public class Operation implements IOperation {
 			}
 		}
 
-		for (RdVoiceguideDetail delTopology : detailDepart.values()) {
+		for (RdVoiceguideDetail delDetail : detailDepart.values()) {
 
-			result.insertObject(delTopology, ObjStatus.DELETE,
-					delTopology.pid());
+			result.insertObject(delDetail, ObjStatus.DELETE,
+					delDetail.pid());
 		}
 
 		for (RdVoiceguide voiceguide : voiceguideDepart.values()) {
@@ -468,7 +468,7 @@ public class Operation implements IOperation {
 					voiceguide.pid());
 		}
 
-		if (voiceguideOther == null || detailOther == null) {
+		if (voiceguideMesh == null || detailMesh == null) {
 			
 			return;
 		}
@@ -484,7 +484,7 @@ public class Operation implements IOperation {
 				continue;
 			}
 
-			for (RdVoiceguide voiceguide : voiceguideOther.values()) {
+			for (RdVoiceguide voiceguide : voiceguideMesh.values()) {
 				
 				voiceguide.changedFields().put("inLinkPid", rdlink.getPid());
 
@@ -492,12 +492,12 @@ public class Operation implements IOperation {
 						voiceguide.pid());
 			}
 
-			for (RdVoiceguideDetail laneTopology : detailOther.values()) {
+			for (RdVoiceguideDetail detail : detailMesh.values()) {
 				
-				laneTopology.changedFields().put("outLinkPid", rdlink.getPid());
+				detail.changedFields().put("outLinkPid", rdlink.getPid());
 
-				result.insertObject(laneTopology, ObjStatus.UPDATE,
-						laneTopology.pid());
+				result.insertObject(detail, ObjStatus.UPDATE,
+						detail.pid());
 			}
 		}
 	}

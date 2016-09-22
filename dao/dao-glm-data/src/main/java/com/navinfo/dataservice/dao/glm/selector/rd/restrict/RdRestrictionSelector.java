@@ -363,7 +363,7 @@ public class RdRestrictionSelector extends AbstractSelector {
 		}
 		else if (linkType == 2) {
 			
-			sql = "SELECT * WHERE U_RECORD != 2 FROM RD_RESTRICTION AND PID IN (SELECT DISTINCT (RESTRIC_PID) WHERE U_RECORD != 2 FROM RD_RESTRICTION_DETAIL AND OUT_LINK_PID = :1)";
+			sql = "SELECT * FROM RD_RESTRICTION WHERE U_RECORD != 2  AND PID IN (SELECT DISTINCT (RESTRIC_PID)  FROM RD_RESTRICTION_DETAIL WHERE U_RECORD != 2  AND OUT_LINK_PID = :1)";
 		}
 		
 		else if (linkType == 3) {

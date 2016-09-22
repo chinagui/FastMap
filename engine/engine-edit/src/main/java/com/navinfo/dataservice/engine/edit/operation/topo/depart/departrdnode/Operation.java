@@ -119,9 +119,9 @@ public class Operation implements IOperation {
             JSONObject updateContent = new JSONObject();
             if (this.command.getRdLink().geteNodePid() == this.command
                     .getNodePid()) {
-                updateContent.put("sNodePid", nodePid);
-            } else {
                 updateContent.put("eNodePid", nodePid);
+            } else {
+                updateContent.put("sNodePid", nodePid);
             }
             updateContent.put("geometry", geojson);
             updateContent.put("length", GeometryUtils.getLinkLength(geo));

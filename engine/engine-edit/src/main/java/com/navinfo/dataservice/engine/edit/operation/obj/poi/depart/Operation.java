@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.poi.depart;
 
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
@@ -10,6 +11,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -33,9 +35,14 @@ public class Operation {
         if (newLinks.size() == 1) {
             Geometry linkGeo = newLinks.get(0).getGeometry();
             for (IxPoi poi : pois) {
+                // 判断Poi引导坐标所处线段几何是否发生变化
+                Geometry oldPoint = GeoTranslator.point2Jts(poi.getxGuide(), poi.getyGuide());
+                Geometry nochangeGeo = GeoTranslator.transform(oldLink.getGeometry(), 0.00001, 5).intersection(linkGeo);
+                if (GeoTranslator.transform(oldPoint, 0.00001, 5).intersects(nochangeGeo)) continue;
+
                 Coordinate coor = null;
                 // 计算poi坐标与移动后link几何最近的点
-                coor = GeometryUtils.GetNearestPointOnLine(poi.getGeometry().getCoordinate(), linkGeo);
+                coor = GeometryUtils.GetNearestPointOnLine(oldPoint.getCoordinate(), linkGeo);
                 if (null != coor) {
                     poi.changedFields().put("xGuide", coor.x);
                     poi.changedFields().put("yGuide", coor.y);
@@ -48,12 +55,21 @@ public class Operation {
                 Coordinate minCoor = null;
                 int minLinkPid = 0;
                 double minLength = 0;
-                Coordinate poiCoor = poi.getGeometry().getCoordinate();
+                Geometry oldPoint = GeoTranslator.point2Jts(poi.getxGuide(), poi.getyGuide());
+
+                // 判断Poi引导坐标所处线段几何是否发生变化
+                List<Geometry> geometries = new ArrayList<Geometry>();
+                for (RdLink link : newLinks) {
+                    geometries.add(link.getGeometry());
+                }
+                Geometry nochangeGeo = GeoTranslator.transform(oldLink.getGeometry(), 0.00001, 5).intersection(GeoTranslator.geojson2Jts(GeometryUtils.connectLinks(geometries)));
+                if (GeoTranslator.transform(oldPoint, 0.00001, 5).intersects(nochangeGeo)) continue;
+
                 for (RdLink link : newLinks) {
                     Geometry linkGeo = link.getGeometry();
-                    Coordinate tmpCoor = GeometryUtils.GetNearestPointOnLine(poiCoor, linkGeo);
+                    Coordinate tmpCoor = GeometryUtils.GetNearestPointOnLine(oldPoint.getCoordinate(), linkGeo);
                     if (null != tmpCoor) {
-                        double length = GeometryUtils.getDistance(poiCoor, tmpCoor);
+                        double length = GeometryUtils.getDistance(oldPoint.getCoordinate(), tmpCoor);
                         if (minLength == 0 || length < minLength) {
                             minLength = length;
                             minCoor = tmpCoor;

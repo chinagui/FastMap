@@ -18,8 +18,8 @@ public class OpRefSpeedlimit implements IOperation {
 	public String run(Result result) throws Exception {
 
 		for( RdSpeedlimit limit : command.getLimits()){
-			
-			result.insertObject(limit, ObjStatus.DELETE, limit.pid());
+			limit.changedFields().put("linkPid", 0);
+			result.insertObject(limit, ObjStatus.UPDATE, limit.pid());
 		}
 		
 		return null;

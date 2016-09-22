@@ -42,15 +42,13 @@ public class Operation implements IOperation {
 	}
 
 	// 删除与links有关的所有电子眼以及组成信息表
-	public String deleteRelectroniceye(Result result, List<Integer> linkPids) throws Exception {
+	public String updateRelectroniceye(Result result, List<Integer> linkPids) throws Exception {
 		RdElectroniceyeSelector selector = new RdElectroniceyeSelector(this.conn);
 		for (Integer linkPid : linkPids) {
 			List<RdElectroniceye> eleceyes = selector.loadListByRdLinkId(linkPid, true);
 			for (RdElectroniceye eleceye : eleceyes) {
-				result.insertObject(eleceye, ObjStatus.DELETE, eleceye.pid());
-				for (IRow pair : eleceye.getPairs()) {
-					result.insertObject(pair, ObjStatus.DELETE, pair.parentPKValue());
-				}
+				eleceye.changedFields().put("linkPid", 0);
+				result.insertObject(eleceye, ObjStatus.UPDATE, eleceye.pid());
 			}
 		}
 		return null;
@@ -61,7 +59,7 @@ public class Operation implements IOperation {
 	 * @return
 	 * @throws Exception 
 	 */
-	public List<AlertObject> getDeleteRdEyeInfectData(int linkPid,Connection conn) throws Exception {
+	public List<AlertObject> getUpdateRdEyeInfectData(int linkPid,Connection conn) throws Exception {
 		
 		RdElectroniceyeSelector selector = new RdElectroniceyeSelector(conn);
 
@@ -77,7 +75,7 @@ public class Operation implements IOperation {
 
 			alertObj.setPid(electr.getPid());
 
-			alertObj.setStatus(ObjStatus.DELETE);
+			alertObj.setStatus(ObjStatus.UPDATE);
 
 			alertList.add(alertObj);
 		}

@@ -128,6 +128,8 @@ public class OpTopo implements IOperation {
 				alertObj.setPid(cross.getPid());
 
 				alertObj.setStatus(ObjStatus.DELETE);
+				
+				alertList.add(alertObj);
 			}
 		}
 

@@ -29,7 +29,7 @@ public class OpRefRdElectroniceye {
 		// 删除所有与linkPids关联的电子眼
 		com.navinfo.dataservice.engine.edit.operation.obj.rdeleceye.delete.Operation op = new com.navinfo.dataservice.engine.edit.operation.obj.rdeleceye.delete.Operation(
 				this.conn);
-		return op.deleteRelectroniceye(result, this.command.getLinkPids());
+		return op.updateRelectroniceye(result, this.command.getLinkPids());
 	}
 
 }

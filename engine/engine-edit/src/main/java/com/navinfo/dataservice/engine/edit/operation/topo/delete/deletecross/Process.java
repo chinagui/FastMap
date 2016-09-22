@@ -109,7 +109,8 @@ public class Process extends AbstractProcess<Command> {
 
 				this.getConn().commit();
 			} else {
-
+				prepareData();
+				
 				Map<String, List<AlertObject>> infects = confirmRelationObj();
 				
 				this.getConn().commit();

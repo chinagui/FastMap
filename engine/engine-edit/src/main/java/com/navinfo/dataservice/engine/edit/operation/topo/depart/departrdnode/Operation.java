@@ -184,9 +184,35 @@ public class Operation implements IOperation {
         OpRefRdSamelink opRefRdSamelink = new OpRefRdSamelink(this.conn);
         opRefRdSamelink.updateRelation(command, newLinks, result);
         // 维护点限速
-        OpRefSpeedlimit opRefSpeedlimit = new OpRefSpeedlimit(this.conn);
+        OpRefSpeedlimit opRefSpeedlimit = new OpRefSpeedlimit(this.conn);        
         opRefSpeedlimit.updateRelation(command, newLinks, result);
-    }
+
+		OpRefRelationObj opRefRelationObj = new OpRefRelationObj(this.conn);
+		// 维护分歧
+		opRefRelationObj.handleRdBranch(command, newLinks, result);
+		// 维护顺行
+		opRefRelationObj.handleRdDirectroute(command, newLinks, result);
+		// 维护大门
+		opRefRelationObj.handleRdGate(command, newLinks, result);
+		// 维护车信
+		opRefRelationObj.handleRdLaneconnexity(command, newLinks, result);
+		// 维护交限
+		opRefRelationObj.handleRdRestriction(command, newLinks, result);
+		// 维护分岔提示
+		opRefRelationObj.handleRdSe(command, newLinks, result);
+		// 维护坡度
+		opRefRelationObj.handleRdSlope(command, newLinks, result);
+		// 维护减速带
+		opRefRelationObj.handleRdSpeedbump(command, newLinks, result);
+		// 维护收费站
+		opRefRelationObj.handleRdTollgate(command, newLinks, result);
+		// 维护可变限速
+		opRefRelationObj.handleRdVariableSpeed(command, newLinks, result);
+		// 维护语音引导
+		opRefRelationObj.handleRdVoiceguide(command, newLinks, result);
+		// 维护警示信息
+		opRefRelationObj.handleRdWarninginfo(command, newLinks, result);
+	}
 
     private List<RdLink> assemblyLinks(List<RdLink> newLinks) throws JSONException {
         // 如果newLinkl

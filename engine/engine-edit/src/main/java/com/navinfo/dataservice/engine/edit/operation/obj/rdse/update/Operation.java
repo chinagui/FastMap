@@ -109,10 +109,10 @@ public class Operation implements IOperation {
 
 		int linkPid = link.getPid();
 
-		// 分离节点不处理的link为进入线的分岔口
+		// 跨图幅处理的link为进入线的分岔口
 		Map<Integer, RdSe> seInLink = null;
 
-		// 分离节点不处理的link为退出线的分岔口
+		// 跨图幅处理的link为退出线的分岔口
 		Map<Integer, RdSe> seOutLink = null;
 
 		if (rdlinks != null && rdlinks.size() > 1) {

@@ -362,10 +362,10 @@ public class Operation implements IOperation {
 
 		int linkPid = link.getPid();
 
-		// 分离节点不处理的link为进入线的RdDirectroute
-		Map<Integer, RdDirectroute> directrouteInLink =null;
-		
-		//分离节点不处理的link为退出线的RdDirectroute
+		// 跨图幅处理的link为进入线的RdDirectroute
+		Map<Integer, RdDirectroute> directrouteInLink = null;
+
+		// 跨图幅处理的link为退出线的RdDirectroute
 		Map<Integer, RdDirectroute> directrouteOutLink = null;
 
 		if (rdlinks != null && rdlinks.size() > 1) {

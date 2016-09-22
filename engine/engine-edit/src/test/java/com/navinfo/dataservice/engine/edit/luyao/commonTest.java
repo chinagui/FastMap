@@ -448,5 +448,14 @@ public class commonTest extends InitApplication {
 
 		String msg = t.run();
 	}
-	
+	@Test
+	public void run_00921_2() throws Exception {
+
+		String parameter = "{\"command\":\"REPAIR\",\"dbId\":17,\"objId\":309000092,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.27721,40.55273],[116.27744216546803,40.552798113177765],[116.27771973609924,40.552882305427765],[116.278,40.55296]]},\"interLinks\":[],\"interNodes\":[]},\"type\":\"RDLINK\"}";
+		
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
 }

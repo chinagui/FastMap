@@ -238,6 +238,10 @@ public class RdDirectrouteSelector extends AbstractSelector {
 
 				ReflectionAttrUtils.executeResultSet(directroute, resultSet);
 
+				directroute.setVias(new AbstractSelector(
+						RdDirectrouteVia.class, getConn()).loadRowsByParentId(
+						directroute.getPid(), isLock));
+				
 				result.add(directroute);
 			}
 		} catch (Exception e) {

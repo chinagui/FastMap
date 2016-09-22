@@ -45,6 +45,11 @@ public class Operation implements IOperation {
 
 		this.conn = conn;
 	}
+	
+	public Operation(Connection conn) {
+		
+		this.conn = conn;
+	}
 
 	@Override
 	public String run(Result result) throws Exception {
@@ -705,10 +710,10 @@ public class Operation implements IOperation {
 
 		int linkPid = link.getPid();
 
-		// 分离节点不处理的以link为进入线RdBranch
+		// 跨图幅处理的以link为进入线RdBranch
 		Map<Integer, RdBranch> branchInLink =null;
 		
-		// 分离节点不处理的以link为退出线RdBranch
+		// 跨图幅处理的以link为退出线RdBranch
 		Map<Integer, RdBranch> branchOutLink = null;
 
 		if (rdlinks != null && rdlinks.size() > 1) {
@@ -735,11 +740,11 @@ public class Operation implements IOperation {
 
 				result.insertObject(branch, ObjStatus.DELETE, branch.getPid());
 
-			} else if (branchInLink != null) {
+			} else if (branchInLink != null && branch.getInLinkPid() == linkPid) {
 
 				branchInLink.put(branch.getPid(), branch);
 
-			} else if (branchOutLink != null) {
+			} else if (branchOutLink != null&& branch.getOutLinkPid() == linkPid) {
 
 				branchOutLink.put(branch.getPid(), branch);
 			}

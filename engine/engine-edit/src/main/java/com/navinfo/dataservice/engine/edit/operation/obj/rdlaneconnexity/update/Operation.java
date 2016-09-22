@@ -247,17 +247,17 @@ public class Operation implements IOperation {
 		// 需要分离节点处理的RdLaneTopology
 		Map<Integer, RdLaneTopology> topologyDepart = new HashMap<Integer, RdLaneTopology>();
 
-		// 分离节点不处理，跨图幅打断需要处理的RdLaneConnexity
-		Map<Integer, RdLaneConnexity> connexityOther = null;
+		//跨图幅打断需要处理的RdLaneConnexity
+		Map<Integer, RdLaneConnexity> connexityMesh = null;
 
-		// 分离节点不处理，跨图幅打断需要处理的RdLaneTopology
-		Map<Integer, RdLaneTopology> topologyOther = null;
+		//跨图幅打断需要处理的RdLaneTopology
+		Map<Integer, RdLaneTopology> topologyMesh = null;
 
 		if (rdlinks != null && rdlinks.size() > 1) {
 
-			connexityOther = new HashMap<Integer, RdLaneConnexity>();
+			connexityMesh = new HashMap<Integer, RdLaneConnexity>();
 
-			topologyOther = new HashMap<Integer, RdLaneTopology>();
+			topologyMesh = new HashMap<Integer, RdLaneTopology>();
 		}
 
 		RdLaneConnexitySelector selector = new RdLaneConnexitySelector(
@@ -268,7 +268,7 @@ public class Operation implements IOperation {
 				true);
 
 		getInLinkDepartInfo(nodePid, laneConnexitys, connexityDepart,
-				connexityOther);
+				connexityMesh);
 
 		// link作为退出线的RdLaneConnexity
 		laneConnexitys = selector.loadByLink(linkPid, 2, true);
@@ -276,7 +276,7 @@ public class Operation implements IOperation {
 		Map<Integer, RdLaneTopology> topologyTmp = new HashMap<Integer, RdLaneTopology>();
 
 		getOutLinkDepartInfo(nodePid, linkPid, laneConnexitys, topologyTmp,
-				topologyOther);
+				topologyMesh);
 
 		for (RdLaneConnexity laneConnexity : laneConnexitys) {
 
@@ -310,7 +310,7 @@ public class Operation implements IOperation {
 					laneConnexity.pid());
 		}
 
-		if (connexityOther == null || topologyOther == null) {
+		if (connexityMesh == null || topologyMesh == null) {
 
 			return;
 		}
@@ -326,7 +326,7 @@ public class Operation implements IOperation {
 				continue;
 			}
 
-			for (RdLaneConnexity laneConnexity : connexityOther.values()) {
+			for (RdLaneConnexity laneConnexity : connexityMesh.values()) {
 
 				laneConnexity.changedFields().put("inLinkPid", rdlink.getPid());
 
@@ -334,7 +334,7 @@ public class Operation implements IOperation {
 						laneConnexity.pid());
 			}
 
-			for (RdLaneTopology laneTopology : topologyOther.values()) {
+			for (RdLaneTopology laneTopology : topologyMesh.values()) {
 
 				laneTopology.changedFields().put("outLinkPid", rdlink.getPid());
 
@@ -353,23 +353,24 @@ public class Operation implements IOperation {
 	 *            link作为进入线的所有RdLaneConnexity
 	 * @param connexityDepart
 	 *            分离点为进入点的车信
-	 * @param connexityOther
+	 * @param connexityMesh
 	 *            分离点不是进入点的车信
 	 * @throws Exception
 	 */
 	private void getInLinkDepartInfo(int nodePid,
 			List<RdLaneConnexity> laneConnexitys,
 			Map<Integer, RdLaneConnexity> connexityDepart,
-			Map<Integer, RdLaneConnexity> connexityOther) throws Exception {
+			Map<Integer, RdLaneConnexity> connexityMesh) throws Exception {
 
 		for (RdLaneConnexity laneConnexity : laneConnexitys) {
 
 			if (laneConnexity.getNodePid() == nodePid) {
+				
 				connexityDepart.put(laneConnexity.getPid(), laneConnexity);
 
-			} else if (connexityOther != null) {
+			} else if (connexityMesh != null) {
 
-				connexityOther.put(laneConnexity.getPid(), laneConnexity);
+				connexityMesh.put(laneConnexity.getPid(), laneConnexity);
 			}
 		}
 	}
@@ -385,14 +386,14 @@ public class Operation implements IOperation {
 	 *            link作为退出线的所有RdLaneConnexity
 	 * @param topologyTmp
 	 *            分离点为退出线的进入点的车信
-	 * @param topologyOther
+	 * @param topologyMesh
 	 *            分离点不是退出线的进入点的车信
 	 * @throws Exception
 	 */
 	private void getOutLinkDepartInfo(int nodePid, int linkPid,
 			List<RdLaneConnexity> laneConnexitys,
 			Map<Integer, RdLaneTopology> topologyTmp,
-			Map<Integer, RdLaneTopology> topologyOther) throws Exception {
+			Map<Integer, RdLaneTopology> topologyMesh) throws Exception {
 
 		RdLinkSelector rdLinkSelector = new RdLinkSelector(this.conn);
 
@@ -418,9 +419,9 @@ public class Operation implements IOperation {
 				// 无经过线
 				if (topo.getVias().size() == 0) {
 
-					if (topologyOther != null) {
+					if (topologyMesh != null) {
 
-						topologyOther.put(topo.getConnexityPid(), topo);
+						topologyMesh.put(topo.getConnexityPid(), topo);
 					}
 
 					continue;
@@ -461,9 +462,9 @@ public class Operation implements IOperation {
 
 					topologyTmp.put(topo.getConnexityPid(), topo);
 
-				} else if (topologyOther != null) {
+				} else if (topologyMesh != null) {
 
-					topologyOther.put(topo.getConnexityPid(), topo);
+					topologyMesh.put(topo.getConnexityPid(), topo);
 				}
 			}
 		}

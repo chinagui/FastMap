@@ -211,10 +211,10 @@ public class Operation implements IOperation {
 
 		int linkPid = link.getPid();
 
-		// 分离节点不处理的link为进入线的大门
-		Map<Integer, RdTollgate> tollgateInLink =null;
-		
-		//分离节点不处理的link为退出线的大门
+		// 跨图幅处理的link为进入线的RdTollgate
+		Map<Integer, RdTollgate> tollgateInLink = null;
+
+		// 跨图幅处理的link为退出线的RdTollgate
 		Map<Integer, RdTollgate> tollgateOutLink = null;
 
 		if (rdlinks != null && rdlinks.size() > 1) {

@@ -9,11 +9,16 @@ import java.util.List;
 import java.util.Set;
 
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
+import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionCondition;
+import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionDetail;
 import com.navinfo.dataservice.dao.glm.model.rd.voiceguide.RdVoiceguide;
 import com.navinfo.dataservice.dao.glm.model.rd.voiceguide.RdVoiceguideDetail;
 import com.navinfo.dataservice.dao.glm.model.rd.voiceguide.RdVoiceguideVia;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
+import com.navinfo.dataservice.dao.glm.selector.rd.restrict.RdRestrictionDetailSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.restrict.RdRestrictionViaSelector;
 import com.navinfo.navicommons.database.sql.DBUtils;
 
 public class RdVoiceguideSelector extends AbstractSelector {
@@ -75,19 +80,7 @@ public class RdVoiceguideSelector extends AbstractSelector {
 
 				ReflectionAttrUtils.executeResultSet(voiceguide, resultSet);
 
-				// 组装RdVoiceguideDetail
-				voiceguide.setDetails(new AbstractSelector(
-						RdVoiceguideDetail.class, getConn())
-						.loadRowsByParentId(voiceguide.getPid(), isLock));
-
-				for (IRow row : voiceguide.getDetails()) {
-					RdVoiceguideDetail detail = (RdVoiceguideDetail) row;
-
-					// 组装RdVoiceguideVia
-					detail.setVias(new AbstractSelector(RdVoiceguideVia.class,
-							getConn()).loadRowsByParentId(detail.getPid(),
-							isLock));
-				}
+				setChildData(voiceguide, true);
 
 				voiceguides.add(voiceguide);
 			}
@@ -246,6 +239,8 @@ public class RdVoiceguideSelector extends AbstractSelector {
 
 				ReflectionAttrUtils.executeResultSet(voiceguide, resultSet);
 
+				setChildData(voiceguide, true);
+
 				result.add(voiceguide);
 			}
 		} catch (Exception e) {
@@ -256,5 +251,34 @@ public class RdVoiceguideSelector extends AbstractSelector {
 			DBUtils.closeStatement(pstmt);
 		}
 		return result;
+	}
+	
+	private void setChildData(RdVoiceguide voiceguide, boolean isLock)
+			throws Exception {
+
+		// 组装RdVoiceguideDetail
+		voiceguide.setDetails(new AbstractSelector(
+				RdVoiceguideDetail.class, getConn())
+				.loadRowsByParentId(voiceguide.getPid(), isLock));
+
+		for (IRow rowDetail : voiceguide.getDetails()) {
+			
+			RdVoiceguideDetail detail = (RdVoiceguideDetail) rowDetail;
+
+			// 组装RdVoiceguideVia
+			detail.setVias(new AbstractSelector(RdVoiceguideVia.class,
+					getConn()).loadRowsByParentId(detail.getPid(),
+					isLock));
+			
+			for(IRow viaRow :detail.getVias())
+			{
+				RdVoiceguideVia via=(RdVoiceguideVia)viaRow;
+				
+				detail.directrouteViaMap.put(via.getRowId(), via);	
+			}
+			
+			voiceguide.detailMap.put(detail.getRowId(), detail);			
+		}
+
 	}
 }

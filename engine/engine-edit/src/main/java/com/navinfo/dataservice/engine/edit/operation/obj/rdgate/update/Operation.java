@@ -164,10 +164,10 @@ public class Operation implements IOperation {
 
 		int linkPid = link.getPid();
 
-		// 分离节点不处理的link为进入线的大门
+		// 跨图幅处理的link为进入线的RdGate
 		Map<Integer, RdGate> gateInLink =null;
 		
-		//分离节点不处理的link为退出线的大门
+		// 跨图幅处理的link为退出线的RdGate
 		Map<Integer, RdGate> gateOutLink = null;
 
 		if (rdlinks != null && rdlinks.size() > 1) {
@@ -183,19 +183,18 @@ public class Operation implements IOperation {
 		// 在link上的RdGate
 		List<RdGate> gates = selector.loadByLink(linkPid, true);
 
-		for(RdGate gate:gates)
-		{
-			if(gate.getNodePid()==nodePid)
-			{
-				result.insertObject(gate, ObjStatus.DELETE,
-						gate.getPid());
-			}
-			else if(gateInLink!=null&&gate.getInLinkPid()==linkPid)
-			{
+		for (RdGate gate : gates) {
+
+			if (gate.getNodePid() == nodePid) {
+
+				result.insertObject(gate, ObjStatus.DELETE, gate.getPid());
+
+			} else if (gateInLink != null && gate.getInLinkPid() == linkPid) {
+
 				gateInLink.put(gate.getPid(), gate);
-			}
-			else if(gateOutLink!=null&&gate.getOutLinkPid()==linkPid)
-			{
+
+			} else if (gateOutLink != null && gate.getOutLinkPid() == linkPid) {
+
 				gateOutLink.put(gate.getPid(), gate);
 			}
 		}

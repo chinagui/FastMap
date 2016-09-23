@@ -58,7 +58,7 @@ public class RdSpeedlimitSearch implements ISearch {
 
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "with tmp1 as  (select link_pid, geometry     from rd_link    where sdo_relate(geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') =          'TRUE'      and u_record != 2) select a.pid,     a.link_pid,    a.speed_type,        a.direct,        a.capture_flag,        a.speed_flag,        a.speed_value,        a.lane_speed_value,        a.speed_dependent,        b.geometry link_geom,        a.geometry point_geom   from rd_speedlimit a, tmp1 b  where a.link_pid = b.link_pid    and a.u_record != 2 and a.speed_type in (0,3,4)";
+		String sql = "SELECT a.pid, a.link_pid, a.speed_type, a.direct, a.capture_flag, a.speed_flag, a.speed_value, a.lane_speed_value, a.speed_dependent,b.geometry link_geom,a.geometry point_geom FROM rd_speedlimit  a left join rd_link b on a.link_pid = b.link_pid WHERE sdo_relate(a.geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') = 'TRUE' AND a.u_record != 2 and a.speed_type IN (0,3,4)";
 
 		PreparedStatement pstmt = null;
 
@@ -194,13 +194,18 @@ public class RdSpeedlimitSearch implements ISearch {
 
 		double angle = 0;
 
+		STRUCT struct2 = (STRUCT) resultSet.getObject("link_geom");
+		
+		if(struct2 == null)
+		{
+			return angle;
+		}
+		
 		STRUCT struct1 = (STRUCT) resultSet.getObject("point_geom");
 
 		JGeometry geom1 = JGeometry.load(struct1);
 
 		double[] point = geom1.getFirstPoint();
-
-		STRUCT struct2 = (STRUCT) resultSet.getObject("link_geom");
 
 		JGeometry geom2 = JGeometry.load(struct2);
 

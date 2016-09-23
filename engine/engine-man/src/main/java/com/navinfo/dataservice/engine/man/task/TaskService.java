@@ -372,25 +372,25 @@ public class TaskService {
 				String updateSql="UPDATE TASK SET STATUS=0 "
 						+ "WHERE TASK_ID IN ("+newTask.toString().replace("[", "").
 						replace("]", "").replace("\"", "")+")";
-				DbOperation.exeUpdateOrInsertBySql(conn, updateSql);}
+				DbOperation.exeUpdateOrInsertBySql(conn, updateSql);
 			
-			//发送消息
-			JSONObject condition=new JSONObject();
-			condition.put("taskIds",JSONArray.fromObject(newTask));
-			List<Map<String, Object>> openTasks = TaskOperation.queryTaskTable(conn, condition);
-			/*任务创建/编辑/关闭
-			 * 1.所有生管角色
-			 * 2.分配的月编作业组组长
-			 * 任务:XXX(任务名称)内容发生变更，请关注*/			
-			String msgTitle="任务关闭";
-			List<String> msgContentList=new ArrayList<String>();
-			for(Map<String, Object> task:openTasks){
-				msgContentList.add("任务:"+task.get("taskName")+"内容发生变更，请关注");
+				//发送消息
+				JSONObject condition=new JSONObject();
+				condition.put("taskIds",JSONArray.fromObject(newTask));
+				List<Map<String, Object>> openTasks = TaskOperation.queryTaskTable(conn, condition);
+				/*任务创建/编辑/关闭
+				 * 1.所有生管角色
+				 * 2.分配的月编作业组组长
+				 * 任务:XXX(任务名称)内容发生变更，请关注*/			
+				String msgTitle="任务关闭";
+				List<String> msgContentList=new ArrayList<String>();
+				for(Map<String, Object> task:openTasks){
+					msgContentList.add("任务:"+task.get("taskName")+"内容发生变更，请关注");
+				}
+				if(msgContentList.size()>0){
+					taskPushMsg(conn,msgTitle,msgContentList);
+				}
 			}
-			if(msgContentList.size()>0){
-				taskPushMsg(conn,msgTitle,msgContentList);
-			}
-			
 	    	return checkMap;
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);

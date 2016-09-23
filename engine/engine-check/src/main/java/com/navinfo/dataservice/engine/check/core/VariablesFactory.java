@@ -24,6 +24,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionDetail;
 import com.navinfo.dataservice.dao.glm.model.rd.slope.RdSlope;
+import com.navinfo.dataservice.dao.glm.model.rd.speedbump.RdSpeedbump;
 import com.navinfo.dataservice.dao.glm.model.rd.tollgate.RdTollgate;
 import com.navinfo.dataservice.dao.glm.model.rd.tollgate.RdTollgateName;
 import com.navinfo.dataservice.dao.glm.model.rd.trafficsignal.RdTrafficsignal;
@@ -260,6 +261,13 @@ public class VariablesFactory {
 		Set<String> rdLinkSet=new HashSet<String>();
 		if(data instanceof RdTrafficsignal){
 			rdLinkSet.add(String.valueOf(((RdTrafficsignal)data).getPid()));
+		}		
+		return rdLinkSet;
+	}
+	public static Set<String> getRdSpeedbumpPid(IRow data) {
+		Set<String> rdLinkSet=new HashSet<String>();
+		if(data instanceof RdSpeedbump){
+			rdLinkSet.add(String.valueOf(((RdSpeedbump)data).getPid()));
 		}		
 		return rdLinkSet;
 	}

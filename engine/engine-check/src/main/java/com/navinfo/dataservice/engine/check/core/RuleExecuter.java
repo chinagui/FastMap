@@ -91,6 +91,8 @@ public class RuleExecuter {
 			{variablevalue=VariablesFactory.getRdVoiceguideDetailPid(data);break;}
 			case RDTRAFFICSIGNAL_PID:
 			{variablevalue=VariablesFactory.getRdTrafficsignalPid(data);break;}
+			case RDSPEEDBUMP_PID:
+			{variablevalue=VariablesFactory.getRdSpeedbumpPid(data);break;}
 		}
 		if(!variablesValueMap.containsKey(variable)){
 			variablesValueMap.put(variable, new HashSet<String>());}

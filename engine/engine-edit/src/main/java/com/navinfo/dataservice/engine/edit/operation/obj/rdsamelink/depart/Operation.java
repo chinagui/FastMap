@@ -25,13 +25,19 @@ public class Operation {
     }
 
     public void depart(int nodePid, RdLink oldLink, List<RdLink> newLinks, Result result, String requester) throws Exception {
+        // 加载RdSameLinkSelector、RdLinkSelector
         RdSameLinkSelector rdSameLinkSelector = new RdSameLinkSelector(this.conn);
-        RdSameLinkPart part = rdSameLinkSelector.loadLinkPartByLink(oldLink.pid(), "RD_LINK", true);
-
         RdLinkSelector rdLinkSelector = new RdLinkSelector(this.conn);
+        // 查询是否为同一线
+        RdSameLinkPart part = rdSameLinkSelector.loadLinkPartByLink(oldLink.pid(), "RD_LINK", true);
+        // 查询分离点挂接线数量
         List<RdLink> links = rdLinkSelector.loadByNodePid(nodePid, true);
-        if (null != links && links.size() > 1 && null != links && !links.isEmpty()) {
-            throw new Exception("此RDLink为主要素，并且被分离的node挂接了至少两根link，则不允许分离节点");
+        // 当分离线为同一线时维护同一关系
+        if (null != part) {
+            if (null != links && links.size() > 1)
+                throw new Exception("此RDLink为主要素，并且被分离的node挂接了至少两根link，则不允许分离节点");
+        } else {
+            return;
         }
         AbstractSelector abstractSelector = new AbstractSelector(RdSameLinkPart.class, this.conn);
         List<IRow> parts = abstractSelector.loadRowsByParentId(part.getGroupId(), true);

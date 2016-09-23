@@ -11,6 +11,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -34,10 +35,14 @@ public class Operation {
         if (newLinks.size() == 1) {
             Geometry linkGeo = newLinks.get(0).getGeometry();
             for (RdSpeedlimit speedlimit : speedlimits) {
+                // 判断点限速所处段几何是否发生变化
+                Geometry nochangeGeo = GeoTranslator.transform(oldLink.getGeometry(), 0.00001, 5).intersection(linkGeo);
+                if (GeoTranslator.transform(speedlimit.getGeometry(), 0.00001, 5).intersects(nochangeGeo)) continue;
+
                 // 计算speedlimit几何与移动后link几何最近的点
                 Coordinate coor = GeometryUtils.GetNearestPointOnLine(speedlimit.getGeometry().getCoordinate(), linkGeo);
                 if (null != coor) {
-                    speedlimit.changedFields().put("geometry", GeoTranslator.point2Jts(coor.x, coor.y));
+                    speedlimit.changedFields().put("geometry", GeoTranslator.jts2Geojson(GeoTranslator.point2Jts(coor.x, coor.y)));
                     result.insertObject(speedlimit, ObjStatus.UPDATE, speedlimit.pid());
                 }
             }
@@ -47,12 +52,20 @@ public class Operation {
                 Coordinate minCoor = null;
                 int minLinkPid = 0;
                 double minLength = 0;
-                Coordinate limitCoor = speedlimit.getGeometry().getCoordinate();
+                Geometry limitGeo = speedlimit.getGeometry();
+                // 判断点限速所处段几何是否发生变化
+                List<Geometry> geometries = new ArrayList<Geometry>();
+                for (RdLink link : newLinks) {
+                    geometries.add(link.getGeometry());
+                }
+                Geometry nochangeGeo = GeoTranslator.transform(oldLink.getGeometry(), 0.00001, 5).intersection(GeoTranslator.geojson2Jts(GeometryUtils.connectLinks(geometries)));
+                if (GeoTranslator.transform(speedlimit.getGeometry(), 0.00001, 5).intersects(nochangeGeo)) continue;
+
                 for (RdLink link : newLinks) {
                     Geometry linkGeo = link.getGeometry();
-                    Coordinate tmpCoor = GeometryUtils.GetNearestPointOnLine(limitCoor, linkGeo);
+                    Coordinate tmpCoor = GeometryUtils.GetNearestPointOnLine(limitGeo.getCoordinate(), linkGeo);
                     if (null != tmpCoor) {
-                        double length = GeometryUtils.getDistance(limitCoor, tmpCoor);
+                        double length = GeometryUtils.getDistance(limitGeo.getCoordinate(), tmpCoor);
                         if (minLength == 0 || length < minLength) {
                             minLength = length;
                             minCoor = tmpCoor;
@@ -61,7 +74,7 @@ public class Operation {
                     }
                 }
                 if (null != minCoor) {
-                    speedlimit.changedFields().put("geometry", GeoTranslator.point2Jts(minCoor.x, minCoor.y));
+                    speedlimit.changedFields().put("geometry", GeoTranslator.jts2Geojson(GeoTranslator.point2Jts(minCoor.x, minCoor.y)));
                     speedlimit.changedFields().put("linkPid", minLinkPid);
                     result.insertObject(speedlimit, ObjStatus.UPDATE, speedlimit.pid());
                 }

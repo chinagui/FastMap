@@ -58,7 +58,7 @@ public class BatchController extends BaseController {
 	}
 	
 	/**
-	 * 检查批处理
+	 * 执行批处理
 	 * dbId	是	子任务id
 	 * 根据输入的子任务和检查类型，对任务范围内的数据执行
 	 * @param request
@@ -66,7 +66,7 @@ public class BatchController extends BaseController {
 	 * @throws ServletException
 	 * @throws IOException
 	 */
-	@RequestMapping(value = "/check/run")
+	@RequestMapping(value = "/batch/run")
 	public ModelAndView checkRun(HttpServletRequest request)
 			throws ServletException, IOException {
 

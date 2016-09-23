@@ -49,7 +49,7 @@ public class AlertObject {
 	}
 	
 	public JSONObject Serialize(ObjLevel objLevel) throws Exception {
-		JSONObject json = JSONObject.fromObject(this, JsonUtils.getStrConfig());
+		JSONObject json = JSONObject.fromObject(this);
 
 		return json;
 	}

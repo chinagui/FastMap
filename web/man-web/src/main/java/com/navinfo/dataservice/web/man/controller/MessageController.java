@@ -10,6 +10,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.navinfo.dataservice.api.man.model.Message;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
@@ -29,7 +30,7 @@ public class MessageController extends BaseController {
 	
 	private MessageService service=MessageService.getInstance();
 
-
+	//获取消息列表
 	@RequestMapping(value = "/message/list")
 	public ModelAndView list(HttpServletRequest request) {
 		try {
@@ -49,5 +50,25 @@ public class MessageController extends BaseController {
 			return new ModelAndView("jsonView", exception(e));
 		}
 	}
-
+	//查询消息
+	@RequestMapping(value = "/message/query")
+	public ModelAndView query(HttpServletRequest request) {
+		try {
+			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
+			long userId = tokenObj.getUserId();
+			
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if(dataJson==null){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			
+			int msgId = dataJson.getInt("msgId");
+			Map<String,Object> msg = MessageService.getInstance().query(msgId);
+			
+			return new ModelAndView("jsonView", success(msg));
+		} catch (Exception e) {
+			log.error("获取城市列表失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
 }

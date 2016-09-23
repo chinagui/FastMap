@@ -59,8 +59,6 @@ public class IxPoiParentSelector extends AbstractSelector {
 			sb.append(" for update nowait");
 		}
 
-		System.out.println(sb.toString());
-
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;

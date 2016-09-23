@@ -1,8 +1,10 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdgate.update;
 
 import java.sql.Connection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -145,6 +147,84 @@ public class Operation implements IOperation {
 				} else {
 					throw new Exception("错误的大门数据:" + gate.getPid());
 				}
+			}
+		}
+	}
+	
+	/**
+	 * 分离节点
+	 * @param link 
+	 * @param nodePid
+	 * @param rdlinks 
+	 * @param result
+	 * @throws Exception
+	 */
+	public void departNode(RdLink link, int nodePid, List<RdLink> rdlinks,
+			Result result) throws Exception {
+
+		int linkPid = link.getPid();
+
+		// 跨图幅处理的link为进入线的RdGate
+		Map<Integer, RdGate> gateInLink =null;
+		
+		// 跨图幅处理的link为退出线的RdGate
+		Map<Integer, RdGate> gateOutLink = null;
+
+		if (rdlinks != null && rdlinks.size() > 1) {
+
+			gateInLink = new HashMap<Integer, RdGate>();
+
+			gateOutLink = new HashMap<Integer, RdGate>();
+		}
+		
+		RdGateSelector selector = new RdGateSelector(
+				this.conn);
+
+		// 在link上的RdGate
+		List<RdGate> gates = selector.loadByLink(linkPid, true);
+
+		for (RdGate gate : gates) {
+
+			if (gate.getNodePid() == nodePid) {
+
+				result.insertObject(gate, ObjStatus.DELETE, gate.getPid());
+
+			} else if (gateInLink != null && gate.getInLinkPid() == linkPid) {
+
+				gateInLink.put(gate.getPid(), gate);
+
+			} else if (gateOutLink != null && gate.getOutLinkPid() == linkPid) {
+
+				gateOutLink.put(gate.getPid(), gate);
+			}
+		}
+	
+		if (gateOutLink == null|| gateInLink==null) {
+			return;
+		}
+		
+		int connectNode = link.getsNodePid() == nodePid ? link.geteNodePid()
+				: link.getsNodePid();
+
+		for (RdLink rdlink : rdlinks) {
+
+			if (rdlink.getsNodePid() != connectNode
+					&& rdlink.geteNodePid() != connectNode) {
+
+				continue;
+			}
+			for (RdGate gate : gateInLink.values()) {
+
+				gate.changedFields().put("inLinkPid", rdlink.getPid());
+
+				result.insertObject(gate, ObjStatus.UPDATE, gate.pid());
+			}
+
+			for (RdGate gate : gateOutLink.values()) {
+
+				gate.changedFields().put("outLinkPid", rdlink.getPid());
+
+				result.insertObject(gate, ObjStatus.UPDATE, gate.pid());
 			}
 		}
 	}

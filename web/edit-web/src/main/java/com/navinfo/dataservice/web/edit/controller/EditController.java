@@ -46,12 +46,13 @@ public class EditController extends BaseController {
 	@RequestMapping(value = "/run")
 	public ModelAndView run(HttpServletRequest request)
 			throws ServletException, IOException {
-
+		
 		String parameter = request.getParameter("parameter");
 		AccessToken tokenObj=(AccessToken) request.getAttribute("token");
 
 		try {
-
+			long beginRunTime=System.currentTimeMillis();
+			logger.info("BEGIN EDIT RUN");
 			Transaction t = new Transaction(parameter);
             t.setUserId(tokenObj.getUserId());
 			String msg = t.run();
@@ -67,8 +68,17 @@ public class EditController extends BaseController {
 			json.put("check", t.getCheckLog());
 
 			json.put("pid", t.getPid());
-
-			return new ModelAndView("jsonView", success(json));
+			long endRunTime=System.currentTimeMillis();
+			logger.info("END EDIT RUN");
+			logger.info("edit run total use time   " + String.valueOf(endRunTime-beginRunTime));
+			if(parameter.contains("\"infect\":1"))
+			{
+				return new ModelAndView("jsonView", infect(json));
+			}
+			else
+			{
+				return new ModelAndView("jsonView", success(json));
+			}
 		}
 		catch (DataNotChangeException e)
 		{
@@ -315,140 +325,6 @@ public class EditController extends BaseController {
 		}
 	}
 
-	@RequestMapping(value = "/poi/base/list")
-	public ModelAndView getPoiList(HttpServletRequest request)
-			throws ServletException, IOException {
 
-		String parameter = request.getParameter("parameter");
-
-		Connection conn = null;
-
-		try {
-			JSONObject jsonReq = JSONObject.fromObject(parameter);
-
-			int dbId = jsonReq.getInt("dbId");
-			// 项目管理（放开）
-			// subtaskId
-			int subtaskId = jsonReq.getInt("subtaskId");
-			int type = jsonReq.getInt("type");
-			ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
-			Subtask subtask = apiService.queryBySubtaskId(subtaskId);
-			int pageNum = jsonReq.getInt("pageNum");
-			int pageSize = jsonReq.getInt("pageSize");
-			int pid =0;
-			String pidName = "";
-			if (jsonReq.containsKey("pidName")){
-				pidName = jsonReq.getString("pidName");
-			}if(jsonReq.containsKey("pid")){
-				pid =jsonReq.getInt("pid");
-			}
-			conn = DBConnector.getInstance().getConnectionById(dbId);
-			IxPoiSelector selector = new IxPoiSelector(conn);
-			JSONObject jsonObject = selector.loadPids(false,pid,pidName,type,subtask.getGeometry(),pageSize, pageNum);
-			return new ModelAndView("jsonView", success(jsonObject));
-		} catch (Exception e) {
-			logger.error(e.getMessage(), e);
-			return new ModelAndView("jsonView", fail(e.getMessage()));
-		} finally {
-			if (conn != null) {
-				try {
-					conn.close();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		}
-	}
-	
-	@RequestMapping(value = "/poi/base/count")
-	public ModelAndView getPoiBaseCount(HttpServletRequest request)
-			throws ServletException, IOException {
-
-		String parameter = request.getParameter("parameter");
-		Connection conn = null;
-		Connection manConn=null;
-		try {
-			JSONObject jsonReq = JSONObject.fromObject(parameter);
-			int subtaskId=jsonReq.getInt("subtaskId");
-			ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
-			manConn=DBConnector.getInstance().getManConnection();
-			Subtask subtaskObj=apiService.queryBySubtaskId(subtaskId);
-			String sql="SELECT E.STATUS, COUNT(1) COUNT_NUM "
-					+ "  FROM POI_EDIT_STATUS E, IX_POI P"
-					+ " WHERE E.ROW_ID = P.ROW_ID"
-					+ "   AND E.STATUS IN (1,2)"
-					+ "   AND SDO_RELATE(P.GEOMETRY, SDO_GEOMETRY('"+subtaskObj.getGeometry()+"', 8307), 'MASK=ANYINTERACT') ="
-					+ "       'TRUE'"
-					+ " GROUP BY E.STATUS";
-			int dbId=subtaskObj.getDbId();
-			conn = DBConnector.getInstance().getConnectionById(dbId);
-			ResultSetHandler<JSONObject> rsHandler = new ResultSetHandler<JSONObject>(){
-				public JSONObject handle(ResultSet rs) throws SQLException {
-					JSONObject staticsObj=new JSONObject();
-					int total=0;
-					while(rs.next()){
-						staticsObj.put(rs.getInt("STATUS"), rs.getInt("COUNT_NUM"));
-						total+=rs.getInt("COUNT_NUM");
-					}
-					staticsObj.put(4, total);
-					return staticsObj;
-				}	    		
-	    	};		
-	    	QueryRunner run = new QueryRunner();
-	    	JSONObject resultJson=run.query(conn, sql,rsHandler);
-			return new ModelAndView("jsonView", success(resultJson));
-		} catch (Exception e) {
-			logger.error(e.getMessage(), e);
-			return new ModelAndView("jsonView", fail(e.getMessage()));
-		} finally {
-			if (conn != null) {
-				try {
-					conn.close();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-			if (manConn != null) {
-				try {
-					manConn.close();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		}
-	}
-	/**
-	 * POI提交
-	 * 根据所选grid进行POI数据的提交，自动执行检查、批处理
-	 * @param request
-	 * @return
-	 * @throws ServletException
-	 * @throws IOException
-	 */
-	@RequestMapping(value = "/poi/base/release")
-	public ModelAndView getPoiBaseRelease(HttpServletRequest request)
-			throws ServletException, IOException {
-
-		String parameter = request.getParameter("parameter");
-		try {
-			JSONObject jsonReq = JSONObject.fromObject(parameter);
-			int dbId = jsonReq.getInt("dbId");
-			JSONArray gridIds=jsonReq.getJSONArray("gridIds");
-			
-			JSONObject jobReq=new JSONObject();
-			jobReq.put("targetDbId", dbId);
-			jobReq.put("gridIds", gridIds);
-					
-			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
-			long userId=tokenObj.getUserId();
-			//long userId=2;
-			JobApi apiService=(JobApi) ApplicationContextUtil.getBean("jobApi");
-			long jobId=apiService.createJob("editPoiBaseRelease", jobReq, userId, "POI行编提交");	
-			return new ModelAndView("jsonView", success(jobId));
-		} catch (Exception e) {
-			logger.error(e.getMessage(), e);
-			return new ModelAndView("jsonView", fail(e.getMessage()));
-		}
-	}
 	
 }

@@ -1,22 +1,27 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdlaneconnexity.update;
 
 import java.sql.Connection;
-
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
-
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
-
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneTopology;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneVia;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.glm.selector.rd.laneconnexity.RdLaneConnexitySelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 
 public class Operation implements IOperation {
 
@@ -25,6 +30,11 @@ public class Operation implements IOperation {
 	private RdLaneConnexity lane;
 
 	private Connection conn;
+
+	public Operation(Connection conn) {
+
+		this.conn = conn;
+	}
 
 	public Operation(Command command, RdLaneConnexity lane, Connection conn) {
 		this.command = command;
@@ -224,6 +234,240 @@ public class Operation implements IOperation {
 		 * }
 		 */
 
+	}
+
+	public void departNode(RdLink link, int nodePid, List<RdLink> rdlinks,
+			Result result) throws Exception {
+
+		int linkPid = link.getPid();
+
+		// 需要分离节点处理的RdLaneConnexity
+		Map<Integer, RdLaneConnexity> connexityDepart = new HashMap<Integer, RdLaneConnexity>();
+
+		// 需要分离节点处理的RdLaneTopology
+		Map<Integer, RdLaneTopology> topologyDepart = new HashMap<Integer, RdLaneTopology>();
+
+		//跨图幅打断需要处理的RdLaneConnexity
+		Map<Integer, RdLaneConnexity> connexityMesh = null;
+
+		//跨图幅打断需要处理的RdLaneTopology
+		Map<Integer, RdLaneTopology> topologyMesh = null;
+
+		if (rdlinks != null && rdlinks.size() > 1) {
+
+			connexityMesh = new HashMap<Integer, RdLaneConnexity>();
+
+			topologyMesh = new HashMap<Integer, RdLaneTopology>();
+		}
+
+		RdLaneConnexitySelector selector = new RdLaneConnexitySelector(
+				this.conn);
+
+		// link作为进入线的RdLaneConnexity
+		List<RdLaneConnexity> laneConnexitys = selector.loadByLink(linkPid, 1,
+				true);
+
+		getInLinkDepartInfo(nodePid, laneConnexitys, connexityDepart,
+				connexityMesh);
+
+		// link作为退出线的RdLaneConnexity
+		laneConnexitys = selector.loadByLink(linkPid, 2, true);
+
+		Map<Integer, RdLaneTopology> topologyTmp = new HashMap<Integer, RdLaneTopology>();
+
+		getOutLinkDepartInfo(nodePid, linkPid, laneConnexitys, topologyTmp,
+				topologyMesh);
+
+		for (RdLaneConnexity laneConnexity : laneConnexitys) {
+
+			if (!topologyTmp.containsKey(laneConnexity.getPid())) {
+
+				continue;
+			}
+
+			if (laneConnexity.getTopos().size() > 1) {
+
+				RdLaneTopology delTopology = topologyTmp.get(laneConnexity
+						.getPid());
+
+				topologyDepart.put(delTopology.getPid(), delTopology);
+
+			} else {
+
+				connexityDepart.put(laneConnexity.getPid(), laneConnexity);
+			}
+		}
+
+		for (RdLaneTopology delTopology : topologyDepart.values()) {
+
+			result.insertObject(delTopology, ObjStatus.DELETE,
+					delTopology.pid());
+		}
+
+		for (RdLaneConnexity laneConnexity : connexityDepart.values()) {
+
+			result.insertObject(laneConnexity, ObjStatus.DELETE,
+					laneConnexity.pid());
+		}
+
+		if (connexityMesh == null || topologyMesh == null) {
+
+			return;
+		}
+
+		int connectNode = link.getsNodePid() == nodePid ? link.geteNodePid()
+				: link.getsNodePid();
+
+		for (RdLink rdlink : rdlinks) {
+
+			if (rdlink.getsNodePid() != connectNode
+					&& rdlink.geteNodePid() != connectNode) {
+
+				continue;
+			}
+
+			for (RdLaneConnexity laneConnexity : connexityMesh.values()) {
+
+				laneConnexity.changedFields().put("inLinkPid", rdlink.getPid());
+
+				result.insertObject(laneConnexity, ObjStatus.UPDATE,
+						laneConnexity.pid());
+			}
+
+			for (RdLaneTopology laneTopology : topologyMesh.values()) {
+
+				laneTopology.changedFields().put("outLinkPid", rdlink.getPid());
+
+				result.insertObject(laneTopology, ObjStatus.UPDATE,
+						laneTopology.pid());
+			}
+		}
+	}
+
+	/**
+	 * 获取link作为进入线时车信的信息
+	 * 
+	 * @param nodePid
+	 *            分离点
+	 * @param laneConnexitys
+	 *            link作为进入线的所有RdLaneConnexity
+	 * @param connexityDepart
+	 *            分离点为进入点的车信
+	 * @param connexityMesh
+	 *            分离点不是进入点的车信
+	 * @throws Exception
+	 */
+	private void getInLinkDepartInfo(int nodePid,
+			List<RdLaneConnexity> laneConnexitys,
+			Map<Integer, RdLaneConnexity> connexityDepart,
+			Map<Integer, RdLaneConnexity> connexityMesh) throws Exception {
+
+		for (RdLaneConnexity laneConnexity : laneConnexitys) {
+
+			if (laneConnexity.getNodePid() == nodePid) {
+				
+				connexityDepart.put(laneConnexity.getPid(), laneConnexity);
+
+			} else if (connexityMesh != null) {
+
+				connexityMesh.put(laneConnexity.getPid(), laneConnexity);
+			}
+		}
+	}
+
+	/**
+	 * 获取link作为退出线时车信的信息
+	 * 
+	 * @param nodePid
+	 *            分离点
+	 * @param linkPid
+	 *            分离线
+	 * @param laneConnexitys
+	 *            link作为退出线的所有RdLaneConnexity
+	 * @param topologyTmp
+	 *            分离点为退出线的进入点的车信
+	 * @param topologyMesh
+	 *            分离点不是退出线的进入点的车信
+	 * @throws Exception
+	 */
+	private void getOutLinkDepartInfo(int nodePid, int linkPid,
+			List<RdLaneConnexity> laneConnexitys,
+			Map<Integer, RdLaneTopology> topologyTmp,
+			Map<Integer, RdLaneTopology> topologyMesh) throws Exception {
+
+		RdLinkSelector rdLinkSelector = new RdLinkSelector(this.conn);
+
+		for (RdLaneConnexity laneConnexity : laneConnexitys) {
+
+			for (IRow rowTopology : laneConnexity.getTopos()) {
+
+				RdLaneTopology topo = (RdLaneTopology) rowTopology;
+
+				// 排除其他退出线
+				if (topo.getOutLinkPid() != linkPid) {
+					continue;
+				}
+
+				// 分离node为车信进入点
+				if (laneConnexity.getNodePid() == nodePid) {
+
+					topologyTmp.put(topo.getConnexityPid(), topo);
+
+					continue;
+				}
+
+				// 无经过线
+				if (topo.getVias().size() == 0) {
+
+					if (topologyMesh != null) {
+
+						topologyMesh.put(topo.getConnexityPid(), topo);
+					}
+
+					continue;
+				}
+
+				List<Integer> linkPids = new ArrayList<Integer>();
+
+				for (IRow rowVia : topo.getVias()) {
+
+					RdLaneVia via = (RdLaneVia) rowVia;
+
+					if (!linkPids.contains(via.getLinkPid())) {
+
+						linkPids.add(via.getLinkPid());
+					}
+				}
+
+				List<IRow> linkViaRows = rdLinkSelector.loadByIds(linkPids,
+						true, false);
+
+				boolean isConnect = false;
+
+				for (IRow rowLink : linkViaRows) {
+
+					RdLink rdLink = (RdLink) rowLink;
+
+					// 经过线挂接与退出线的分离node挂接
+					if (rdLink.geteNodePid() == nodePid
+							|| rdLink.getsNodePid() == nodePid) {
+
+						isConnect = true;
+
+						break;
+					}
+				}
+
+				if (isConnect) {
+
+					topologyTmp.put(topo.getConnexityPid(), topo);
+
+				} else if (topologyMesh != null) {
+
+					topologyMesh.put(topo.getConnexityPid(), topo);
+				}
+			}
+		}
 	}
 
 }

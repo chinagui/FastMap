@@ -9,11 +9,16 @@ import java.util.List;
 import java.util.Set;
 
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
+import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionCondition;
+import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionDetail;
 import com.navinfo.dataservice.dao.glm.model.rd.voiceguide.RdVoiceguide;
 import com.navinfo.dataservice.dao.glm.model.rd.voiceguide.RdVoiceguideDetail;
 import com.navinfo.dataservice.dao.glm.model.rd.voiceguide.RdVoiceguideVia;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
+import com.navinfo.dataservice.dao.glm.selector.rd.restrict.RdRestrictionDetailSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.restrict.RdRestrictionViaSelector;
 import com.navinfo.navicommons.database.sql.DBUtils;
 
 public class RdVoiceguideSelector extends AbstractSelector {
@@ -75,19 +80,7 @@ public class RdVoiceguideSelector extends AbstractSelector {
 
 				ReflectionAttrUtils.executeResultSet(voiceguide, resultSet);
 
-				// 组装RdVoiceguideDetail
-				voiceguide.setDetails(new AbstractSelector(
-						RdVoiceguideDetail.class, getConn())
-						.loadRowsByParentId(voiceguide.getPid(), isLock));
-
-				for (IRow row : voiceguide.getDetails()) {
-					RdVoiceguideDetail detail = (RdVoiceguideDetail) row;
-
-					// 组装RdVoiceguideVia
-					detail.setVias(new AbstractSelector(RdVoiceguideVia.class,
-							getConn()).loadRowsByParentId(detail.getPid(),
-							isLock));
-				}
+				setChildData(voiceguide, true);
 
 				voiceguides.add(voiceguide);
 			}
@@ -212,6 +205,80 @@ public class RdVoiceguideSelector extends AbstractSelector {
 		pids.addAll(SetPids);
 
 		return pids;
+
+	}
+	
+	/**
+	 * 根据路口pid查询路口关系的顺行
+	 * @param crossPid 路口pid
+	 * @param isLock 是否加锁
+	 * @return 交限集合
+	 * @throws Exception
+	 */
+	public List<RdVoiceguide> getVoiceGuideByCrossPid(int crossPid,boolean isLock) throws Exception {
+
+		List<RdVoiceguide> result = new ArrayList<RdVoiceguide>();
+
+		String sql = "select * from RD_VOICEGUIDE a where exists (select null from rd_cross_node b where b.pid=:1 and a.node_pid=b.node_pid) and u_record!=2";
+
+		sql = sql + " for update nowait";
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = getConn().prepareStatement(sql);
+
+			pstmt.setInt(1, crossPid);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+				RdVoiceguide voiceguide = new RdVoiceguide();
+
+				ReflectionAttrUtils.executeResultSet(voiceguide, resultSet);
+
+				setChildData(voiceguide, true);
+
+				result.add(voiceguide);
+			}
+		} catch (Exception e) {
+
+			throw e;
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+		}
+		return result;
+	}
+	
+	private void setChildData(RdVoiceguide voiceguide, boolean isLock)
+			throws Exception {
+
+		// 组装RdVoiceguideDetail
+		voiceguide.setDetails(new AbstractSelector(
+				RdVoiceguideDetail.class, getConn())
+				.loadRowsByParentId(voiceguide.getPid(), isLock));
+
+		for (IRow rowDetail : voiceguide.getDetails()) {
+			
+			RdVoiceguideDetail detail = (RdVoiceguideDetail) rowDetail;
+
+			// 组装RdVoiceguideVia
+			detail.setVias(new AbstractSelector(RdVoiceguideVia.class,
+					getConn()).loadRowsByParentId(detail.getPid(),
+					isLock));
+			
+			for(IRow viaRow :detail.getVias())
+			{
+				RdVoiceguideVia via=(RdVoiceguideVia)viaRow;
+				
+				detail.directrouteViaMap.put(via.getRowId(), via);	
+			}
+			
+			voiceguide.detailMap.put(detail.getRowId(), detail);			
+		}
 
 	}
 }

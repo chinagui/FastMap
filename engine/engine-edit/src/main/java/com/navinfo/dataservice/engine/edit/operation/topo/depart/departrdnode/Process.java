@@ -102,18 +102,6 @@ public class Process extends AbstractProcess<Command> {
 		return null;
 	}
 
-	public void processRefObj() throws Exception {
-		IOperation opRefRestrict = new OpRefRestrict(this.getCommand());
-		opRefRestrict.run(this.getResult());
-
-		IOperation opRefBranch = new OpRefBranch(this.getCommand());
-		opRefBranch.run(this.getResult());
-
-		IOperation opRefLaneConnexity = new OpRefLaneConnexity(
-				this.getCommand());
-		opRefLaneConnexity.run(this.getResult());
-	}
-
 	@Override
 	public String exeOperation() throws Exception {
 		Operation operation = new Operation(this.getCommand(),this.getConn());

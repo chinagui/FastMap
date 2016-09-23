@@ -1,28 +1,26 @@
 package com.navinfo.dataservice.engine.edit.operation.topo.delete.deletecross;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.util.ArrayList;
+import java.sql.Connection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.apache.commons.collections.CollectionUtils;
+
+import com.navinfo.dataservice.dao.glm.iface.AlertObject;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
-import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchDetail;
-import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchRealimage;
-import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchSchematic;
-import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSeriesbranch;
-import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSignasreal;
-import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSignboard;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
-import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
-import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchViaSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossSelector;
-import com.navinfo.dataservice.dao.glm.selector.rd.laneconnexity.RdLaneTopologySelector;
-import com.navinfo.dataservice.dao.glm.selector.rd.restrict.RdRestrictionDetailSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.laneconnexity.RdLaneConnexitySelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.restrict.RdRestrictionSelector;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.operation.AbstractProcess;
+
+import net.sf.json.JSONObject;
 
 public class Process extends AbstractProcess<Command> {
 
@@ -40,206 +38,31 @@ public class Process extends AbstractProcess<Command> {
 	}
 
 	public void lockRdRestriction() throws Exception {
+		RdRestrictionSelector selector = new RdRestrictionSelector(this.getConn());
 
-		List<RdRestriction> result = new ArrayList<RdRestriction>();
+		List<RdRestriction> rdRestrictions = selector.getRestrictionByCrossPid(this.getCommand().getPid(), true);
 
-		String sql = "select * from rd_restriction a where exists (select null from rd_cross_node b where b.pid=:1 and a.node_pid=b.node_pid) and u_record!=2";
-
-		sql = sql + " for update nowait";
-
-		PreparedStatement pstmt = null;
-
-		ResultSet resultSet = null;
-
-		try {
-			pstmt = getConn().prepareStatement(sql);
-
-			pstmt.setInt(1, this.getCommand().getPid());
-
-			resultSet = pstmt.executeQuery();
-
-			while (resultSet.next()) {
-				RdRestriction restrict = new RdRestriction();
-
-				restrict.setPid(resultSet.getInt("pid"));
-
-				restrict.setInLinkPid(resultSet.getInt("in_link_pid"));
-
-				restrict.setNodePid(resultSet.getInt("node_pid"));
-
-				restrict.setRestricInfo(resultSet.getString("restric_info"));
-
-				restrict.setKgFlag(resultSet.getInt("kg_flag"));
-
-				restrict.setRowId(resultSet.getString("row_id"));
-
-				RdRestrictionDetailSelector detail = new RdRestrictionDetailSelector(getConn());
-
-				restrict.setDetails(detail.loadRowsByParentId(restrict.getPid(), true));
-
-				result.add(restrict);
-			}
-
-			this.getCommand().setRestricts(result);
-		} catch (Exception e) {
-
-			throw e;
-		} finally {
-			try {
-				resultSet.close();
-			} catch (Exception e) {
-
-			}
-
-			try {
-				pstmt.close();
-			} catch (Exception e) {
-
-			}
-		}
-
+		this.getCommand().setRestricts(rdRestrictions);
 	}
 
 	public void lockRdLaneConnexity() throws Exception {
-		List<RdLaneConnexity> result = new ArrayList<RdLaneConnexity>();
+		RdLaneConnexitySelector selector = new RdLaneConnexitySelector(getConn());
 
-		String sql = "select * from rd_lane_connexity a where exists (select null from rd_cross_node b where b.pid=:1 and a.node_pid=b.node_pid) and u_record!=2";
+		List<RdLaneConnexity> rdLaneConnexities = selector.getRdLaneConnexityByCrossPid(this.getCommand().getPid(),
+				true);
 
-		sql = sql + " for update nowait";
-
-		PreparedStatement pstmt = null;
-
-		ResultSet resultSet = null;
-
-		try {
-			pstmt = getConn().prepareStatement(sql);
-
-			pstmt.setInt(1, this.getCommand().getPid());
-
-			resultSet = pstmt.executeQuery();
-
-			while (resultSet.next()) {
-				RdLaneConnexity laneConn = new RdLaneConnexity();
-
-				laneConn.setPid(resultSet.getInt("pid"));
-
-				laneConn.setRowId(resultSet.getString("row_id"));
-
-				laneConn.setInLinkPid(resultSet.getInt("in_link_pid"));
-
-				laneConn.setNodePid(resultSet.getInt("node_pid"));
-
-				laneConn.setLaneInfo(resultSet.getString("lane_info"));
-
-				laneConn.setConflictFlag(resultSet.getInt("conflict_flag"));
-
-				laneConn.setKgFlag(resultSet.getInt("kg_flag"));
-
-				laneConn.setLaneNum(resultSet.getInt("lane_num"));
-
-				laneConn.setLeftExtend(resultSet.getInt("left_extend"));
-
-				laneConn.setRightExtend(resultSet.getInt("right_extend"));
-
-				RdLaneTopologySelector topoSelector = new RdLaneTopologySelector(getConn());
-
-				laneConn.setTopos(topoSelector.loadRowsByParentId(laneConn.getPid(), true));
-
-				result.add(laneConn);
-			}
-
-			this.getCommand().setLanes(result);
-		} catch (Exception e) {
-
-			throw e;
-		} finally {
-			try {
-				resultSet.close();
-			} catch (Exception e) {
-
-			}
-
-			try {
-				pstmt.close();
-			} catch (Exception e) {
-
-			}
-		}
+		this.getCommand().setLanes(rdLaneConnexities);
 	}
 
 	public void lockRdBranch() throws Exception {
 
-		List<RdBranch> result = new ArrayList<RdBranch>();
+		RdBranchSelector selector = new RdBranchSelector(getConn());
 
-		String sql = "select * from rd_branch a where exists (select null from rd_cross_node b where b.pid=:1 and a.node_pid=b.node_pid) and u_record!=2";
+		List<RdBranch> branches = selector.getRdBranchByCrossPid(this.getCommand().getPid(), true);
 
-		sql = sql + " for update nowait";
-
-		PreparedStatement pstmt = null;
-
-		ResultSet resultSet = null;
-
-		try {
-			pstmt = getConn().prepareStatement(sql);
-
-			pstmt.setInt(1, this.getCommand().getPid());
-
-			resultSet = pstmt.executeQuery();
-
-			while (resultSet.next()) {
-
-				RdBranch branch = new RdBranch();
-
-				branch.setPid(resultSet.getInt("branch_pid"));
-
-				branch.setInLinkPid(resultSet.getInt("in_link_pid"));
-
-				branch.setNodePid(resultSet.getInt("node_pid"));
-
-				branch.setOutLinkPid(resultSet.getInt("out_link_pid"));
-
-				branch.setRelationshipType(resultSet.getInt("relationship_type"));
-
-				branch.setRowId(resultSet.getString("row_id"));
-
-				branch.setDetails(new AbstractSelector(RdBranchDetail.class, getConn()).loadRowsByParentId(branch.getPid(), true));
-
-				branch.setSignboards(new AbstractSelector(RdSignboard.class, getConn()).loadRowsByParentId(branch.getPid(), true));
-
-				branch.setSignasreals(new AbstractSelector(RdSignasreal.class, getConn()).loadRowsByParentId(branch.getPid(), true));
-
-				branch.setSeriesbranches(new AbstractSelector(RdSeriesbranch.class, getConn()).loadRowsByParentId(branch.getPid(), true));
-
-				branch.setRealimages(new AbstractSelector(RdBranchRealimage.class, getConn()).loadRowsByParentId(branch.getPid(), true));
-
-				branch.setSchematics(new AbstractSelector(RdBranchSchematic.class, getConn()).loadRowsByParentId(branch.getPid(), true));
-
-				RdBranchViaSelector viaSelector = new RdBranchViaSelector(getConn());
-
-				branch.setVias(viaSelector.loadRowsByParentId(branch.getPid(), true));
-
-			}
-
-			this.getCommand().setBranches(result);
-		} catch (Exception e) {
-
-			throw e;
-		} finally {
-			try {
-				resultSet.close();
-			} catch (Exception e) {
-
-			}
-
-			try {
-				pstmt.close();
-			} catch (Exception e) {
-
-			}
-		}
-
+		this.getCommand().setBranches(branches);
 	}
-
+	
 	@Override
 	public boolean prepareData() throws Exception {
 
@@ -264,17 +87,68 @@ public class Process extends AbstractProcess<Command> {
 
 		return true;
 	}
-
+	
 	@Override
-	public String exeOperation() throws Exception {
+	public String run() throws Exception {
+
+		try {
+			if (!this.getCommand().isCheckInfect()) {
+				this.getConn().setAutoCommit(false);
+				String preCheckMsg = this.preCheck();
+				if (preCheckMsg != null) {
+					throw new Exception(preCheckMsg);
+				}
+
+				prepareData();
+
+				updataRelationObj();
+
+				recordData();
+
+				postCheck();
+
+				this.getConn().commit();
+			} else {
+				prepareData();
+				
+				Map<String, List<AlertObject>> infects = confirmRelationObj();
+				
+				this.getConn().commit();
+
+				return JSONObject.fromObject(infects).toString();
+			}
+
+		} catch (Exception e) {
+
+			this.getConn().rollback();
+
+			throw e;
+		} finally {
+			try {
+				this.getConn().close();
+			} catch (Exception e) {
+
+			}
+		}
+
+		return null;
+	}
+	
+	/**
+	 * @throws Exception 
+	 * 
+	 */
+	private void updataRelationObj() throws Exception {
 		IOperation op = new OpTopo(this.getCommand(), getConn());
 
 		op.run(this.getResult());
 
+		//交限
 		IOperation opRefRestrict = new OpRefRdRestriction(this.getCommand());
 
 		opRefRestrict.run(this.getResult());
 
+		//车信
 		IOperation opRefLaneConnexity = new OpRefRdLaneConnexity(this.getCommand());
 
 		opRefLaneConnexity.run(this.getResult());
@@ -283,11 +157,86 @@ public class Process extends AbstractProcess<Command> {
 		OpRefTrafficsignal opRefTrafficsignal = new OpRefTrafficsignal(this.getConn());
 
 		opRefTrafficsignal.run(this.getResult(), this.getCommand().getCross().getNodes());
-
+		
+		//分歧
 		IOperation opRefBranch = new OpRefRdBranch(this.getCommand());
-
-		return opRefBranch.run(this.getResult());
-
+		
+		opRefBranch.run(this.getResult());
+		
+		//顺行
+		OpRefDirectoroute opRefDirectoroute = new OpRefDirectoroute(this.getConn());
+		opRefDirectoroute.run(this.getResult(), this.getCommand().getPid());
+		
+		//语音引导
+		OpRefVoiceGuide opRefVoiceGuide = new OpRefVoiceGuide(this.getConn());
+		opRefVoiceGuide.run(this.getResult(), this.getCommand().getPid());
 	}
 
+	/**
+	 * 删除node影响到的关联要素
+	 * 
+	 * @return
+	 * @throws Exception
+	 */
+	private Map<String, List<AlertObject>> confirmRelationObj() throws Exception {
+		Map<String, List<AlertObject>> infects = new HashMap<String, List<AlertObject>>();
+		
+		Connection conn = getConn();
+		
+		int crossPid = this.getCommand().getPid();
+		
+		//路口自身删除提示
+		OpTopo crossTopo = new OpTopo();
+		List<AlertObject> alertObject = crossTopo.getDeleteCrossInfectData(crossPid);
+		infects.put("删除路口", alertObject);
+		//信号灯
+		com.navinfo.dataservice.engine.edit.operation.obj.trafficsignal.delete.Operation trafficOperation = new com.navinfo.dataservice.engine.edit.operation.obj.trafficsignal.delete.Operation(
+				conn);		
+		List<AlertObject> trafficAlertData = trafficOperation.getDeleteCrossTrafficInfectData(this.getCommand().getCross().getNodes(),conn);
+		if(CollectionUtils.isNotEmpty(trafficAlertData))
+		{
+			infects.put("删除路口删除路口信号灯", trafficAlertData);
+		}
+		//车信
+		com.navinfo.dataservice.engine.edit.operation.obj.rdlaneconnexity.delete.Operation rdLaneConOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdlaneconnexity.delete.Operation();
+		List<AlertObject> rdLaneConAlertData = rdLaneConOperation.getDeleteCrossRdlaneConInfectData(this.getCommand().getLanes());
+		if(CollectionUtils.isNotEmpty(rdLaneConAlertData))
+		{
+			infects.put("删除路口删除路口车信", rdLaneConAlertData);
+		}
+		//交限
+		com.navinfo.dataservice.engine.edit.operation.obj.rdrestriction.delete.Operation rdResOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdrestriction.delete.Operation();
+		List<AlertObject> rdResAlertData = rdResOperation.getDeleteCrossRestrictInfectData(this.getCommand().getRestricts());
+		if(CollectionUtils.isNotEmpty(rdResAlertData))
+		{
+			infects.put("删除路口删除路口交限", rdResAlertData);
+		}
+		//分歧
+		com.navinfo.dataservice.engine.edit.operation.obj.rdbranch.delete.Operation rdBranchOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdbranch.delete.Operation();
+		List<AlertObject> rdBranchAlertData = rdBranchOperation.getDeleteCrossBranchInfectData(this.getCommand().getBranches());
+		if(CollectionUtils.isNotEmpty(rdBranchAlertData))
+		{
+			infects.put("删除路口删除路口分歧", rdBranchAlertData);
+		}
+		//语音引导
+		com.navinfo.dataservice.engine.edit.operation.obj.rdvoiceguide.delete.Operation voiceGuideOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdvoiceguide.delete.Operation(conn);
+		List<AlertObject> voiceGuideAlertData = voiceGuideOperation.getDeleteCrossVoiceGuideInfectData(crossPid);
+		if(CollectionUtils.isNotEmpty(voiceGuideAlertData))
+		{
+			infects.put("删除路口删除语音引导", voiceGuideAlertData);
+		}
+		//顺行
+		com.navinfo.dataservice.engine.edit.operation.obj.rddirectroute.delete.Operation directoureOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rddirectroute.delete.Operation(conn);
+		List<AlertObject> directoureAlertData = directoureOperation.getDeleteCrossDirectoureInfectData(crossPid);
+		if(CollectionUtils.isNotEmpty(directoureAlertData))
+		{
+			infects.put("删除路口删除顺行", directoureAlertData);
+		}
+		return infects;
+	}
+
+	@Override
+	public String exeOperation() throws Exception {
+		return null;
+	}
 }

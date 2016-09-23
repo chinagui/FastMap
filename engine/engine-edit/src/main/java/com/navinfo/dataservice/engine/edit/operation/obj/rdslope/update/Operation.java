@@ -3,6 +3,7 @@ package com.navinfo.dataservice.engine.edit.operation.obj.rdslope.update;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
+
 import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
@@ -12,6 +13,7 @@ import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.slope.RdSlope;
 import com.navinfo.dataservice.dao.glm.model.rd.slope.RdSlopeVia;
+import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.slope.RdSlopeSelector;
 
 /**
@@ -249,6 +251,106 @@ public class Operation implements IOperation {
 					break;
 				}
 
+			}
+		}
+	}
+
+	/**
+	 * 分离节点，暂不考虑库跨图幅的情况
+	 * 
+	 * @param link
+	 * @param nodePid
+	 * @param rdlinks
+	 * @param result
+	 * @throws Exception
+	 */
+	public void departNode(RdLink link, int nodePid, List<RdLink> rdlinks,
+			Result result) throws Exception {
+
+		int linkPid = link.getPid();
+
+		RdSlopeSelector selector = new RdSlopeSelector(this.conn);
+
+		// link为退出线的RdSlope
+		List<RdSlope> slopes = selector.loadByOutLink(linkPid, true);
+
+		for (RdSlope slope : slopes) {
+
+			if (slope.getNodePid() == nodePid) {
+
+				result.insertObject(slope, ObjStatus.DELETE, slope.getPid());
+
+			} else {
+				// 只删除接续link
+				for (IRow row : slope.getSlopeVias()) {
+
+					result.insertObject(row, ObjStatus.DELETE, slope.getPid());
+				}
+			}
+		}
+		// link为接续link的RdSlope
+		slopes = selector.loadByViaLink(linkPid, true);
+
+		if (slopes.size() == 0) {
+			return;
+		}
+
+		RdLinkSelector RdLinkSelector = new RdLinkSelector(this.conn);
+
+		for (RdSlope slope : slopes) {
+
+			int currSeqNum = 1;
+
+			for (IRow Row : slope.getSlopeVias()) {
+
+				RdSlopeVia via = (RdSlopeVia) Row;
+
+				if (via.getLinkPid() == linkPid) {
+
+					currSeqNum = via.getSeqNum();
+
+					break;
+				}
+			}
+
+			RdLink preLink = null;
+
+			if (currSeqNum == 1) {
+
+				preLink = (RdLink) RdLinkSelector.loadById(slope.getLinkPid(),
+						true, true);
+			} else {
+
+				for (IRow Row : slope.getSlopeVias()) {
+
+					RdSlopeVia via = (RdSlopeVia) Row;
+
+					if (via.getSeqNum() == currSeqNum - 1) {
+
+						preLink = (RdLink) RdLinkSelector.loadById(
+								via.getLinkPid(), true, true);
+
+						break;
+					}
+				}
+			}
+
+			int flagSeqNum = currSeqNum;
+
+			if (preLink.getsNodePid() == nodePid
+					|| preLink.geteNodePid() == nodePid) {
+
+				flagSeqNum = currSeqNum - 1;
+			}
+
+			for (IRow row : slope.getSlopeVias()) {
+
+				RdSlopeVia via = (RdSlopeVia) row;
+
+				if (via.getSeqNum() > flagSeqNum) {
+
+					result.insertObject(row, ObjStatus.DELETE, slope.getPid());
+				}
 			}
 		}
 	}

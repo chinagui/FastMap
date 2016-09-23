@@ -16,11 +16,11 @@ import com.navinfo.dataservice.engine.edit.service.EditApiImpl;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
-public class PoiBatchProcessFM_BAT_20_194_1 implements IBatch {
+public class PoiBatchProcessorFM_BAT_20_194_1 implements IBatch {
 	
 	private List<String> kindCodeList = new ArrayList<String>();
 	
-	public PoiBatchProcessFM_BAT_20_194_1() {
+	public PoiBatchProcessorFM_BAT_20_194_1() {
 		kindCodeList.add("130105");
 		kindCodeList.add("140203");
 		kindCodeList.add("140302");

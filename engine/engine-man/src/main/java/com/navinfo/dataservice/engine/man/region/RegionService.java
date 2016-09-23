@@ -190,7 +190,11 @@ public class RegionService {
 	}
 	public List<Region> queryRegionWithGrids(List<Integer> grids) throws Exception{
 		assert CollectionUtils.isNotEmpty(grids);
-		String sql = "select grid_id,region_id from grid g where 1=1 ";
+//		String sql = "select grid_id,region_id from grid g where 1=1 ";
+		String sql = "SELECT DISTINCT R.REGION_ID,BGM.GRID_ID"
+				+ " FROM REGION R, BLOCK B, BLOCK_GRID_MAPPING BGM"
+				+ " WHERE R.REGION_ID = B.REGION_ID"
+				+ " AND B.BLOCK_ID = BGM.BLOCK_ID ";
 		QueryRunner queryRunner = new QueryRunner();
 		Connection conn = null;
 		try {

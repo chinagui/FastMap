@@ -638,7 +638,8 @@ public class BlockOperation {
 		ResultSet rs = stmt.executeQuery();
 		int subtaskCount = 0;
 		while (rs.next()) {
-			subtaskCount = rs.getInt("record_");
+//			subtaskCount = rs.getInt("record_");
+			subtaskCount = rs.getInt("total");
 		}
 		if (subtaskCount == 0) {
 			return "0%";

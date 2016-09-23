@@ -233,16 +233,19 @@ public class SubtaskService {
 			
 			//返回简略信息
 			if (snapshot==1){
-				Page page = SubtaskOperation.getListSnapshot(userId,groupId,stage,conditionJson,orderJson,pageSize,curPageNum);
+				Page page = SubtaskOperation.getListSnapshot(conn,userId,groupId,stage,conditionJson,orderJson,pageSize,curPageNum);
 				return page;
 			}else{
-				Page page = SubtaskOperation.getList(userId,groupId,stage,conditionJson,orderJson,pageSize,curPageNum);
+				Page page = SubtaskOperation.getList(conn,userId,groupId,stage,conditionJson,orderJson,pageSize,curPageNum);
 				return page;
 			}		
 
 		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new ServiceException("查询列表失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
 	

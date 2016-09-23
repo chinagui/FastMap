@@ -731,7 +731,7 @@ public class UploadOperation {
 				JSONObject foodtypesObj = jo.getJSONObject("foodtypes");
 				IxPoiRestaurant foodtypes = new IxPoiRestaurant();
 				List<IRow> foodtypesList = new ArrayList<IRow>();
-				foodtypes.setPid(PidUtil.getInstance().applyPoiFoodId());
+				foodtypes.setPid(PidUtil.getInstance().applyPoiRestaurantId());
 				foodtypes.setPoiPid(pid);
 				foodtypes.setFoodType(foodtypesObj.getString("foodtype"));
 				foodtypes.setCreditCard(foodtypesObj.getString("creditCards"));

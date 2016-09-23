@@ -16,7 +16,10 @@ import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossLink;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossName;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossNode;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
+import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeSelector;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -44,8 +47,7 @@ public class Operation implements IOperation {
 
 		if (content.containsKey("objStatus")) {
 
-			if (ObjStatus.DELETE.toString().equals(
-					content.getString("objStatus"))) {
+			if (ObjStatus.DELETE.toString().equals(content.getString("objStatus"))) {
 				result.insertObject(cross, ObjStatus.DELETE, cross.pid());
 
 				return null;
@@ -68,32 +70,24 @@ public class Operation implements IOperation {
 
 				if (nodeJson.containsKey("objStatus")) {
 
-					if (!ObjStatus.INSERT.toString().equals(
-							nodeJson.getString("objStatus"))) {
+					if (!ObjStatus.INSERT.toString().equals(nodeJson.getString("objStatus"))) {
 
-						RdCrossNode node = cross.nodeMap.get(nodeJson
-								.getString("rowId"));
+						RdCrossNode node = cross.nodeMap.get(nodeJson.getString("rowId"));
 
 						if (node == null) {
-							throw new Exception("rowId="
-									+ nodeJson.getString("rowId")
-									+ "的rd_cross_node不存在");
+							throw new Exception("rowId=" + nodeJson.getString("rowId") + "的rd_cross_node不存在");
 						}
 
-						if (ObjStatus.DELETE.toString().equals(
-								nodeJson.getString("objStatus"))) {
-							result.insertObject(node, ObjStatus.DELETE,
-									cross.pid());
+						if (ObjStatus.DELETE.toString().equals(nodeJson.getString("objStatus"))) {
+							result.insertObject(node, ObjStatus.DELETE, cross.pid());
 
 							continue;
-						} else if (ObjStatus.UPDATE.toString().equals(
-								nodeJson.getString("objStatus"))) {
+						} else if (ObjStatus.UPDATE.toString().equals(nodeJson.getString("objStatus"))) {
 
 							boolean isChanged = node.fillChangeFields(nodeJson);
 
 							if (isChanged) {
-								result.insertObject(node, ObjStatus.UPDATE,
-										cross.pid());
+								result.insertObject(node, ObjStatus.UPDATE, cross.pid());
 							}
 						}
 					} else {
@@ -123,32 +117,24 @@ public class Operation implements IOperation {
 
 				if (json.containsKey("objStatus")) {
 
-					if (!ObjStatus.INSERT.toString().equals(
-							json.getString("objStatus"))) {
+					if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
 
-						RdCrossLink node = cross.linkMap.get(json
-								.getString("rowId"));
+						RdCrossLink node = cross.linkMap.get(json.getString("rowId"));
 
 						if (node == null) {
-							throw new Exception("rowId="
-									+ json.getString("rowId")
-									+ "的rd_cross_link不存在");
+							throw new Exception("rowId=" + json.getString("rowId") + "的rd_cross_link不存在");
 						}
 
-						if (ObjStatus.DELETE.toString().equals(
-								json.getString("objStatus"))) {
-							result.insertObject(node, ObjStatus.DELETE,
-									cross.pid());
+						if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
+							result.insertObject(node, ObjStatus.DELETE, cross.pid());
 
 							continue;
-						} else if (ObjStatus.UPDATE.toString().equals(
-								json.getString("objStatus"))) {
+						} else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
 
 							boolean isChanged = node.fillChangeFields(json);
 
 							if (isChanged) {
-								result.insertObject(node, ObjStatus.UPDATE,
-										cross.pid());
+								result.insertObject(node, ObjStatus.UPDATE, cross.pid());
 							}
 						}
 					} else {
@@ -178,32 +164,24 @@ public class Operation implements IOperation {
 
 				if (json.containsKey("objStatus")) {
 
-					if (!ObjStatus.INSERT.toString().equals(
-							json.getString("objStatus"))) {
+					if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
 
-						RdCrossName name = cross.nameMap.get(json
-								.getString("rowId"));
+						RdCrossName name = cross.nameMap.get(json.getString("rowId"));
 
 						if (name == null) {
-							throw new Exception("rowId="
-									+ json.getString("rowId")
-									+ "的rd_cross_name不存在");
+							throw new Exception("rowId=" + json.getString("rowId") + "的rd_cross_name不存在");
 						}
 
-						if (ObjStatus.DELETE.toString().equals(
-								json.getString("objStatus"))) {
-							result.insertObject(name, ObjStatus.DELETE,
-									cross.pid());
+						if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
+							result.insertObject(name, ObjStatus.DELETE, cross.pid());
 
 							continue;
-						} else if (ObjStatus.UPDATE.toString().equals(
-								json.getString("objStatus"))) {
+						} else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
 
 							boolean isChanged = name.fillChangeFields(json);
 
 							if (isChanged) {
-								result.insertObject(name, ObjStatus.UPDATE,
-										cross.pid());
+								result.insertObject(name, ObjStatus.UPDATE, cross.pid());
 							}
 						}
 					} else {
@@ -211,8 +189,7 @@ public class Operation implements IOperation {
 
 						name.Unserialize(json);
 
-						name.setNameId(PidUtil.getInstance()
-								.applyRdCrossNameId());
+						name.setNameId(PidUtil.getInstance().applyRdCrossNameId());
 
 						name.setPid(cross.getPid());
 
@@ -307,11 +284,9 @@ public class Operation implements IOperation {
 				if (needDelete && deleteRow != null) {
 
 					if (forms.size() == 1) {
-						result.insertObject(deleteRow, ObjStatus.UPDATE,
-								cross.pid());
+						result.insertObject(deleteRow, ObjStatus.UPDATE, cross.pid());
 					} else {
-						result.insertObject(deleteRow, ObjStatus.DELETE,
-								cross.pid());
+						result.insertObject(deleteRow, ObjStatus.DELETE, cross.pid());
 					}
 				}
 			} else {
@@ -385,80 +360,4 @@ public class Operation implements IOperation {
 		}
 
 	}
-	
-	public List<AlertObject> getDeleteRdCross(List<Integer> nodePids,List<RdCross> crossList) {
-		List<AlertObject> alertList = new ArrayList<>();
-
-		for (RdCross cross : crossList) {
-			List<IRow> nodes = new ArrayList<IRow>();
-
-			AlertObject alertObj = new AlertObject();
-
-			// 判断线上是否还存在其他路口：1.存在,将关系表数据删除2.不存在，直接讲路口删除
-			for (IRow row : cross.getNodes()) {
-				RdCrossNode node = (RdCrossNode) row;
-
-				if (nodePids.contains(node.getNodePid())) {
-					nodes.add(node);
-				}
-			}
-
-			if (nodes.size() == cross.getNodes().size()) {
-				alertObj.setObjType(cross.objType());
-
-				alertObj.setPid(cross.getPid());
-
-				alertObj.setStatus(ObjStatus.DELETE);
-			}
-		}
-
-		return alertList;
-	}
-
-	public List<AlertObject> getUpdateRdCross(List<Integer> nodePids,List<RdCross> crossList) {
-		List<AlertObject> alertList = new ArrayList<>();
-
-		for (RdCross cross : crossList) {
-			List<IRow> nodes = new ArrayList<IRow>();
-
-			// 判断线上是否还存在其他路口：1.存在,将关系表数据删除2.不存在，直接讲路口删除
-			for (IRow row : cross.getNodes()) {
-				RdCrossNode node = (RdCrossNode) row;
-
-				if (nodePids.contains(node.getNodePid())) {
-					nodes.add(node);
-				}
-			}
-
-			if (nodes.size() != cross.getNodes().size()) {
-				AlertObject alertObj = new AlertObject();
-
-				alertObj.setObjType(cross.objType());
-
-				alertObj.setPid(cross.getPid());
-
-				alertObj.setStatus(ObjStatus.UPDATE);
-				
-				alertList.add(alertObj);
-
-//				for (IRow row : cross.getLinks()) {
-//					RdCrossLink link = (RdCrossLink) row;
-//
-//					if (link.getLinkPid() == command.getLinkPid()) {
-//						AlertObject alertObj = new AlertObject();
-//
-//						alertObj.setObjType(cross.objType());
-//
-//						alertObj.setPid(cross.getPid());
-//
-//						alertObj.setStatus(ObjStatus.DELETE);
-//						break;
-//					}
-//				}
-			}
-		}
-
-		return alertList;
-	}
-
 }

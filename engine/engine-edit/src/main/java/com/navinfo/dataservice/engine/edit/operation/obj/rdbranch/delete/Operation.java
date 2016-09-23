@@ -21,6 +21,10 @@ public class Operation implements IOperation {
 
 	private IRow row;
 
+	public Operation()
+	{
+	}
+
 	public Operation(Command command, RdBranch branch, IRow row) {
 		this.command = command;
 
@@ -156,6 +160,63 @@ public class Operation implements IOperation {
 		List<AlertObject> alertList = new ArrayList<>();
 
 		for (RdBranch branch : branches2) {
+
+			AlertObject alertObj = new AlertObject();
+
+			alertObj.setObjType(branch.objType());
+
+			alertObj.setPid(branch.getPid());
+
+			alertObj.setStatus(ObjStatus.DELETE);
+
+			alertList.add(alertObj);
+		}
+
+		return alertList;
+	}
+	
+	/**
+	 * 删除link作为经过线对分歧的删除影响
+	 * 
+	 * @return
+	 * @throws Exception 
+	 */
+	public List<AlertObject> getDeleteBViaLinkranchInfectData(int linkPid,Connection conn) throws Exception {
+		
+		RdBranchSelector selector = new RdBranchSelector(conn);
+
+		// 获取退出线为该link
+		List<RdBranch> branches = selector.loadRdBranchByViaLinkPid(linkPid, true);
+		
+		List<AlertObject> alertList = new ArrayList<>();
+
+		for (RdBranch branch : branches) {
+
+			AlertObject alertObj = new AlertObject();
+
+			alertObj.setObjType(branch.objType());
+
+			alertObj.setPid(branch.getPid());
+
+			alertObj.setStatus(ObjStatus.DELETE);
+
+			alertList.add(alertObj);
+		}
+
+		return alertList;
+	}
+	
+	/**
+	 * 删除路口对分歧的删除影响
+	 * 
+	 * @return
+	 * @throws Exception 
+	 */
+	public List<AlertObject> getDeleteCrossBranchInfectData(List<RdBranch> branches) throws Exception {
+		
+		List<AlertObject> alertList = new ArrayList<>();
+
+		for (RdBranch branch : branches) {
 
 			AlertObject alertObj = new AlertObject();
 

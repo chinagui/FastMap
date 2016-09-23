@@ -6,14 +6,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 public class RdBranchVia implements IRow {
 
@@ -150,7 +150,17 @@ public class RdBranchVia implements IRow {
 
 	@Override
 	public void copy(IRow row) {
+		RdBranchVia via = (RdBranchVia) row;
 
+		this.branchPid = via.branchPid;
+		
+		this.rowId = via.rowId;
+		
+		this.seqNum = via.seqNum;
+		
+		this.linkPid = via.linkPid;
+		
+		this.groupId = via.groupId;
 	}
 
 	@Override

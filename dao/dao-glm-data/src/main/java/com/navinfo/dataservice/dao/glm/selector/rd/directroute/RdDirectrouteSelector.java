@@ -8,10 +8,8 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.directroute.RdDirectroute;
 import com.navinfo.dataservice.dao.glm.model.rd.directroute.RdDirectrouteVia;
-import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdEleceyePart;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
 import com.navinfo.navicommons.database.sql.DBUtils;
@@ -208,5 +206,51 @@ public class RdDirectrouteSelector extends AbstractSelector {
 
 		return pids;
 	}
+	
+	/**
+	 * 根据路口pid查询路口关系的顺行
+	 * @param crossPid 路口pid
+	 * @param isLock 是否加锁
+	 * @return 交限集合
+	 * @throws Exception
+	 */
+	public List<RdDirectroute> getRestrictionByCrossPid(int crossPid,boolean isLock) throws Exception {
 
+		List<RdDirectroute> result = new ArrayList<RdDirectroute>();
+
+		String sql = "select * from RD_DIRECTROUTE a where exists (select null from rd_cross_node b where b.pid=:1 and a.node_pid=b.node_pid) and u_record!=2";
+
+		sql = sql + " for update nowait";
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = getConn().prepareStatement(sql);
+
+			pstmt.setInt(1, crossPid);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+				RdDirectroute directroute = new RdDirectroute();
+
+				ReflectionAttrUtils.executeResultSet(directroute, resultSet);
+
+				directroute.setVias(new AbstractSelector(
+						RdDirectrouteVia.class, getConn()).loadRowsByParentId(
+						directroute.getPid(), isLock));
+				
+				result.add(directroute);
+			}
+		} catch (Exception e) {
+
+			throw e;
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+		}
+		return result;
+	}
 }

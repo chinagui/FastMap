@@ -108,4 +108,27 @@ public class MessageOperation {
 		run.batch(conn,insertSql, msgList);
 	}
 
+
+
+	/**
+	 * @param conn
+	 * @param msgId
+	 * @throws Exception 
+	 */
+	public static void updateMessageStatus(Connection conn, int msgId) throws Exception {
+		// TODO Auto-generated method stub
+		try{
+			QueryRunner run = new QueryRunner();
+
+			String updateSql = "UPDATE MESSAGE M SET M.MSG_STATUS = 1 WHERE M.MSG_ID=" + msgId;
+			run.update(conn, updateSql);
+
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("关闭失败，原因为:"+e.getMessage(),e);
+		}
+		
+	}
+
 }

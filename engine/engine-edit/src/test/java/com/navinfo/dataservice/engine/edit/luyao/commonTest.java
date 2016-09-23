@@ -13,6 +13,7 @@ import org.junit.Test;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.AngleCalculator;
 import com.navinfo.dataservice.commons.util.ResponseUtils;
+import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
@@ -31,6 +32,24 @@ public class commonTest extends InitApplication {
 	@Before
 	public void init() {
 		initContext();
+	}
+	
+	@Test
+	public void testGetByPid_0() {
+		Connection conn;
+		try {
+			conn = DBConnector.getInstance().getConnectionById(17);
+
+			SearchProcess p = new SearchProcess(conn);
+
+			IObj obj=p.searchDataByPid(ObjType.RDWARNINGINFO, 204000003);
+			System.out.println(obj.Serialize(ObjLevel.BRIEF));
+			System.out.println(obj.Serialize(ObjLevel.FULL));
+			System.out.println(obj.Serialize(ObjLevel.HISTORY));
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Test
@@ -421,5 +440,22 @@ public class commonTest extends InitApplication {
 	}
 	
 	
+@Test
+	public void run_00921_1() throws Exception {
 
+		String parameter = "{\"type\":\"RDBRANCH\",\"command\":\"UPDATE\",\"dbId\":17,\"data\":{\"details\":[{\"names\":[{\"pid\":308000001,\"objStatus\":\"UPDATE\",\"name\":\"11111\",\"phonetic\":\"Yi+Yi+Yi+Yi+Yi\",\"voiceFile\":\"YiYiYiYiYi\",\"nameGroupid\":2},{\"pid\":304000003,\"objStatus\":\"UPDATE\",\"name\":\"2222\",\"phonetic\":\"Er+Er+Er+Er\",\"voiceFile\":\"ErErErEr\",\"nameGroupid\":1}],\"pid\":40254881}],\"pid\":40291389}}";
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+	@Test
+	public void run_00921_2() throws Exception {
+
+		String parameter = "{\"command\":\"REPAIR\",\"dbId\":17,\"objId\":309000092,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.27721,40.55273],[116.27744216546803,40.552798113177765],[116.27771973609924,40.552882305427765],[116.278,40.55296]]},\"interLinks\":[],\"interNodes\":[]},\"type\":\"RDLINK\"}";
+		
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
 }

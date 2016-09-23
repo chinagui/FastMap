@@ -1,8 +1,10 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdse.delete;
 
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.List;
 
+import com.navinfo.dataservice.dao.glm.iface.AlertObject;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
@@ -56,5 +58,33 @@ public class Operation implements IOperation {
 		}
 		return null;
 	}
+	
+	/**
+	 * 删除link对分叉口提示的删除影响
+	 * @return
+	 * @throws Exception 
+	 */
+	public List<AlertObject> getDeleteRdSeInfectData(int linkPid,Connection conn) throws Exception {
+		
+		RdSeSelector selector = new RdSeSelector(conn);
 
+		List<RdSe> seList = selector.loadRdSesWithLinkPid(linkPid, true);
+		
+		List<AlertObject> alertList = new ArrayList<>();
+
+		for (RdSe se : seList) {
+
+			AlertObject alertObj = new AlertObject();
+
+			alertObj.setObjType(se.objType());
+
+			alertObj.setPid(se.getPid());
+
+			alertObj.setStatus(ObjStatus.DELETE);
+
+			alertList.add(alertObj);
+		}
+
+		return alertList;
+	}
 }

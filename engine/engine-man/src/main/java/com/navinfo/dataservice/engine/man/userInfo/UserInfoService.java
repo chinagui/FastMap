@@ -466,6 +466,7 @@ public class UserInfoService {
 //				}
 				
 				if(!group.isEmpty()){
+					result.put("groupId", group.get("groupId"));
 					result.put("groupType", group.get("groupType"));
 					result.put("groupName", group.get("groupName"));
 				}
@@ -517,7 +518,6 @@ public class UserInfoService {
 					}
 					return list;
 				}
-
 			};
 			return run.query(conn, selectSql, rsHandler, values.toArray());
 		} catch (Exception e) {

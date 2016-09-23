@@ -16,7 +16,11 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
+import com.navinfo.dataservice.dao.glm.model.rd.gate.RdGate;
+import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
+import com.navinfo.dataservice.dao.glm.model.rd.warninginfo.RdWarninginfo;
 import com.navinfo.dataservice.dao.glm.search.AbstractSearch;
+import com.navinfo.dataservice.dao.glm.search.RdRestrictionSearch;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.operation.Transaction;
@@ -36,11 +40,11 @@ public class POITest extends InitApplication {
 	@Test
 	public void testGetByPid() {
 		try {
-			Connection conn = DBConnector.getInstance().getConnectionById(42);
+			Connection conn = DBConnector.getInstance().getConnectionById(17);
 
-			AbstractSearch search = new AbstractSearch();
+			RdRestrictionSearch search = new RdRestrictionSearch(conn);
 
-			IRow jsonObject = search.searchDataByPid(IxPoi.class, 73352736, conn);
+			IRow jsonObject = search.searchDataByPid(208000002);
 
 			System.out.println(jsonObject.Serialize(ObjLevel.FULL));
 		} catch (Exception e) {
@@ -157,7 +161,7 @@ public class POITest extends InitApplication {
 
 	@Test
 	public void testUpdatePoi() {
-		String parameter = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"IXPOI\",\"objId\":46215,\"data\":{\"names\":[{\"name\":\"延庆区刘斌堡乡政府11\",\"rowId\":\"3AE1FCF7C56E92F7E050A8C08304EE4C\",\"pid\":127729392,\"objStatus\":\"UPDATE\"}],\"rowId\":\"3AE1FB4B75FF92F7E050A8C08304EE4C\",\"pid\":46215}}";
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"IXPOI\",\"objId\":3452060,\"data\":{\"photos\":[{\"fccPid\":\"4c3e0a43742e4f908d1e102343a110e4\",\"tag\":1,\"photoId\":0,\"status\":\"\",\"memo\":\"\",\"objStatus\":\"INSERT\"},{\"fccPid\":\"9e4e27bb912047ca923d7b628299d618\",\"rowId\":\"46BEC9A37C594562BDA8260B532B20FE\",\"objStatus\":\"UPDATE\"},{\"rowId\":\"2ADB648758DC426D92BBDA08B6623DC0\",\"objStatus\":\"UPDATE\",\"fccPid\":\"c4c16f1e25e643bcaec9e34ad80b93b3\"}],\"rowId\":\"3AE1FB55484A92F7E050A8C08304EE4C\",\"pid\":3452060}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

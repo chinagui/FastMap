@@ -28,11 +28,11 @@ public class Operation implements IOperation {
 	}
 	
 	/**
-	 * 删除link对限速的删除影响
+	 * 删除link对限速的更新影响
 	 * @return
 	 * @throws Exception 
 	 */
-	public List<AlertObject> getDeleteRdSpeedLimitInfectData(int linkPid,Connection conn) throws Exception {
+	public List<AlertObject> getUpdateRdSpeedLimitInfectData(int linkPid,Connection conn) throws Exception {
 		
 		RdSpeedlimitSelector selector = new RdSpeedlimitSelector(conn);
 
@@ -48,7 +48,7 @@ public class Operation implements IOperation {
 
 			alertObj.setPid(limit.getPid());
 
-			alertObj.setStatus(ObjStatus.DELETE);
+			alertObj.setStatus(ObjStatus.UPDATE);
 
 			alertList.add(alertObj);
 		}

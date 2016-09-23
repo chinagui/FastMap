@@ -44,7 +44,7 @@ public class GLM03004 extends baseRule{
 			        sb.append(rdNodePid);
 			        sb.append(" or rn.S_NODE_PID= ");
 			        sb.append(rdNodePid);
-			        sb.append(" )");
+			        sb.append(" ) and rn.U_RECORD <> 2");
 					String sql = sb.toString();
 					
 					DatabaseOperator getObj=new DatabaseOperator();

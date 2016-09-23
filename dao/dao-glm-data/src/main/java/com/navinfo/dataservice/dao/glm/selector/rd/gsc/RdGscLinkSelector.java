@@ -70,4 +70,46 @@ public class RdGscLinkSelector extends AbstractSelector {
 
 		return rows;
 	}
+
+	public List<RdGscLink> loadByLinkId(int linkId, boolean isLock) throws Exception {
+		List<RdGscLink> rows = new ArrayList<RdGscLink>();
+
+		String sql = "select * from rd_gsc_link where u_record!=:1 and link_pid = :2";
+
+		if (isLock) {
+			sql += " for update nowait";
+		}
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = this.conn.prepareStatement(sql);
+
+			pstmt.setInt(1, 2);
+
+			pstmt.setInt(2, linkId);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+
+				RdGscLink link = new RdGscLink();
+
+				ReflectionAttrUtils.executeResultSet(link, resultSet);
+
+				rows.add(link);
+			}
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+		}
+
+		return rows;
+	}
 }

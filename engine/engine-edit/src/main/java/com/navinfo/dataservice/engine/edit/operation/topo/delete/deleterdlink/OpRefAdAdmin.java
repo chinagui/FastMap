@@ -20,7 +20,7 @@ public class OpRefAdAdmin implements IOperation {
 		for (AdAdmin adAdmin : command.getAdAdmins()) {
 
 			adAdmin.changedFields().put("linkPid", 0);
-
+			
 			result.insertObject(adAdmin, ObjStatus.UPDATE, adAdmin.pid());
 		}
 

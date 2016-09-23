@@ -3,6 +3,7 @@ package com.navinfo.dataservice.engine.edit.operation.obj.adadmin.update;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,6 +14,7 @@ import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdmin;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdminName;
+import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdAdminSelector;
 
 public class Operation implements IOperation {
 
@@ -96,16 +98,22 @@ public class Operation implements IOperation {
 
 		return null;
 	}
-	
+
 	/**
 	 * 删除link对行政区划代表点的更新影响分析
+	 * 
 	 * @return
+	 * @throws Exception
 	 */
-	public List<AlertObject> getUpdateAdminInfectData(List<AdAdmin> adminList) {
+	public List<AlertObject> getUpdateAdminInfectData(int linkPid, Connection conn) throws Exception {
+
+		AdAdminSelector selector = new AdAdminSelector(conn);
+
+		List<AdAdmin> adAdminList = selector.loadRowsByLinkId(linkPid, true);
 
 		List<AlertObject> alertList = new ArrayList<>();
 
-		for (AdAdmin adAdmin : adminList) {
+		for (AdAdmin adAdmin : adAdminList) {
 
 			AlertObject alertObj = new AlertObject();
 
@@ -120,5 +128,5 @@ public class Operation implements IOperation {
 
 		return alertList;
 	}
-	
+
 }

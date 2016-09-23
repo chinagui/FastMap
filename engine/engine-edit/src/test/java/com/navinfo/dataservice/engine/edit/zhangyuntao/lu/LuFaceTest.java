@@ -53,6 +53,12 @@ public class LuFaceTest extends InitApplication {
 		String requester = "{\"command\":\"UPDATE\",\"dbId\":43,\"type\":\"LUFACE\",\"objId\":378,\"data\":{\"faceNames\":[{\"pid\":0,\"nameGroupid\":756,\"langCode\":\"CHI\",\"name\":\"44444\",\"phonetic\":\"4444\",\"srcFlag\":0,\"objStatus\":\"INSERT\"}],\"pid\":378}}";
 		TestUtil.run(requester);
 	}
+
+	@Test
+	public void delete(){
+		String parameter = "{\"command\":\"DELETE\",\"dbId\":17,\"type\":\"LUFACE\",\"objId\":301000000}";
+		TestUtil.run(parameter);
+	}
 	
 	
 }

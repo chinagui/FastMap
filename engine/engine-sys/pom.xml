@@ -26,5 +26,9 @@
 		<groupId>com.navinfo.dataservice</groupId>
 		<artifactId>commons</artifactId>
 	</dependency>
+	<dependency>
+		<groupId>com.navinfo.dataservice</groupId>
+		<artifactId>dao-mq</artifactId>
+	</dependency>
   </dependencies>
 </project>

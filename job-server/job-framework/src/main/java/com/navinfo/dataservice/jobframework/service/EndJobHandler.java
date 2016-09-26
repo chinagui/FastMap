@@ -41,7 +41,7 @@ public class EndJobHandler implements MsgHandler {
 			int status = jobMsg.getInt("status");
 			String resultMsg = jobMsg.getString("resultMsg");
 			JSONObject resp = jobMsg.getJSONObject("response");
-			String jobInfoSql = "UPDATE JOB_INFO SET STATUS=?,RESULT_MSG=?,JOB_RESPONSE=? WHERE JOB_ID=?";
+			String jobInfoSql = "UPDATE JOB_INFO SET END_TIME=SYSDATE,STATUS=?,RESULT_MSG=?,JOB_RESPONSE=? WHERE JOB_ID=?";
 			runner.update(conn, jobInfoSql,status,resultMsg,resp.toString(),jobId);
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);

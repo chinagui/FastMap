@@ -290,12 +290,6 @@ public class PidUtil {
 	public int applyPoiHotelId() throws Exception {
 		return applyPid("IX_POI_HOTEL");
 	}
-	/**
-	 * 申请PoiFoodId
-	 */
-	public int applyPoiFoodId() throws Exception {
-		return applyPid("IX_POI_FOOD");
-	}
 
 	/**
 	 * 申请PoiIconId

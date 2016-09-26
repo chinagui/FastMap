@@ -550,7 +550,7 @@ public class Process extends AbstractProcess<Command> {
 				conn);
 		List<AlertObject> delRdEyeAlertDataList = rdEyeOperation.getUpdateRdEyeInfectData(linkPid, conn);
 		if (CollectionUtils.isNotEmpty(delRdEyeAlertDataList)) {
-			infects.put("删除link删除电子眼", delRdEyeAlertDataList);
+			infects.put("删除link维护电子眼", delRdEyeAlertDataList);
 		}
 		// 大门
 		com.navinfo.dataservice.engine.edit.operation.obj.rdgate.delete.Operation rdGateOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdgate.delete.Operation(

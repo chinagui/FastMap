@@ -387,9 +387,22 @@ public class Operation implements IOperation {
 			{
 				result.insertObject(directroute, ObjStatus.DELETE,
 						directroute.getPid());
+				continue;
 			}
-			else if(directrouteInLink!=null&&directroute.getInLinkPid()==linkPid)
-			{
+			// 分离node是经过线和退出线的连接node
+			if (directroute.getVias().size() > 0
+					&& directroute.getOutLinkPid() == linkPid) {
+
+				if (isConnect(directroute, nodePid)) {
+
+					result.insertObject(directroute, ObjStatus.DELETE,
+							directroute.getPid());
+
+					continue;
+				}
+			}
+			if (directrouteInLink != null
+					&& directroute.getInLinkPid() == linkPid) {
 				directrouteInLink.put(directroute.getPid(), directroute);
 			}
 			else if(directrouteOutLink!=null&&directroute.getOutLinkPid()==linkPid)
@@ -429,5 +442,41 @@ public class Operation implements IOperation {
 			}
 		}
 	}
-	
+	private boolean isConnect(RdDirectroute directroute, int nodePid) throws Exception {
+
+		RdLinkSelector rdLinkSelector = new RdLinkSelector(this.conn);
+
+		List<Integer> linkPids = new ArrayList<Integer>();
+
+		for (IRow rowVia : directroute.getVias()) {
+
+			RdDirectrouteVia via = (RdDirectrouteVia) rowVia;
+
+			if (!linkPids.contains(via.getLinkPid())) {
+
+				linkPids.add(via.getLinkPid());
+			}
+		}
+
+		List<IRow> linkViaRows = rdLinkSelector
+				.loadByIds(linkPids, true, false);
+
+		boolean isConnect = false;
+
+		for (IRow rowLink : linkViaRows) {
+
+			RdLink rdLink = (RdLink) rowLink;
+
+			// 经过线与退出线的分离node挂接
+			if (rdLink.geteNodePid() == nodePid
+					|| rdLink.getsNodePid() == nodePid) {
+
+				isConnect = true;
+
+				break;
+			}
+		}
+
+		return isConnect;
+	}
 }

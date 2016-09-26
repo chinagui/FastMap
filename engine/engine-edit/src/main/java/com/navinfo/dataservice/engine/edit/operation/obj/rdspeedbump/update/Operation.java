@@ -1,7 +1,9 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdspeedbump.update;
 
 import java.sql.Connection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -69,6 +71,68 @@ public class Operation implements IOperation {
 		}
 
 		return null;
+	}
+	
+	/**
+	 * 分离节点
+	 * @param link 
+	 * @param nodePid
+	 * @param rdlinks 
+	 * @param result
+	 * @throws Exception
+	 */
+	public void departNode(RdLink link, int nodePid, List<RdLink> rdlinks,
+			Result result) throws Exception {
+
+		int linkPid = link.getPid();
+	
+		// 跨图幅处理的RdSpeedbump
+		Map<Integer, RdSpeedbump> speedbumpMesh =null;	
+
+		if (rdlinks != null && rdlinks.size() > 1) {
+
+			speedbumpMesh = new HashMap<Integer, RdSpeedbump>();
+		}		
+		
+		RdSpeedbumpSelector selector = new RdSpeedbumpSelector(conn);
+
+		List<RdSpeedbump> speedbumps = selector.loadByLinkPid(linkPid, true);
+		
+		for (RdSpeedbump speedbump : speedbumps) {
+			
+			if (speedbump.getNodePid() == nodePid) {
+
+				result.insertObject(speedbump, ObjStatus.DELETE,
+						speedbump.getPid());
+
+			} else if (speedbumpMesh != null) {
+
+				speedbumpMesh.put(speedbump.getPid(), speedbump);
+			}
+		}
+	
+		if (speedbumpMesh == null ) {
+			
+			return;
+		}
+		
+		int connectNode = link.getsNodePid() == nodePid ? link.geteNodePid()
+				: link.getsNodePid();
+
+		for (RdLink rdlink : rdlinks) {
+
+			if (rdlink.getsNodePid() != connectNode
+					&& rdlink.geteNodePid() != connectNode) {
+
+				continue;
+			}
+			for (RdSpeedbump speedbump : speedbumpMesh.values()) {
+
+				speedbump.changedFields().put("linkPid", rdlink.getPid());
+
+				result.insertObject(speedbump, ObjStatus.UPDATE, speedbump.pid());
+			}
+		}
 	}
 
 }

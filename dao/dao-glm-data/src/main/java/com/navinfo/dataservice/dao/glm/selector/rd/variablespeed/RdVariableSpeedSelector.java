@@ -134,12 +134,8 @@ public class RdVariableSpeedSelector extends AbstractSelector {
 	/**
 	 * 根据进入线或者进入点或者退出线查询可变限速
 	 * 
-	 * @param inLinkPid
-	 *            进入线pid
-	 * @param nodePid
-	 *            进入点pid
-	 * @param outLinkPid
-	 *            退出线pid
+	 * @param linkPid
+	 *            进入线或者退出线link pid
 	 * @param isLock
 	 *            是否加锁
 	 * @return 可变限速集合
@@ -150,14 +146,15 @@ public class RdVariableSpeedSelector extends AbstractSelector {
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
 		try {
-			StringBuilder sb = new StringBuilder("select * from RD_VARIABLE_SPEED where u_record !=2 and (in_link_pid = :1 or out_link_pid = :2)");
+			StringBuilder sb = new StringBuilder(
+					"select * from RD_VARIABLE_SPEED where u_record !=2 and (in_link_pid = :1 or out_link_pid = :2)");
 			if (isLock) {
 				sb.append(" for update nowait");
 			}
 			pstmt = getConn().prepareStatement(sb.toString());
-			
+
 			pstmt.setInt(1, linkPid);
-			
+
 			pstmt.setInt(2, linkPid);
 
 			resultSet = pstmt.executeQuery();
@@ -165,6 +162,9 @@ public class RdVariableSpeedSelector extends AbstractSelector {
 			while (resultSet.next()) {
 				RdVariableSpeed rdVariableSpeed = new RdVariableSpeed();
 				ReflectionAttrUtils.executeResultSet(rdVariableSpeed, resultSet);
+				List<IRow> vias = this.loadRowsByClassParentId(RdVariableSpeedVia.class, rdVariableSpeed.getPid(),
+						isLock, "seq_num");
+				rdVariableSpeed.setVias(vias);
 				rdVariableSpeeds.add(rdVariableSpeed);
 			}
 		} catch (Exception e) {
@@ -180,6 +180,7 @@ public class RdVariableSpeedSelector extends AbstractSelector {
 	 * 根据接续线查询可变限速对象
 	 * 
 	 * @param viaLinkPid
+	 *            接续线linkpid
 	 * @param isLock
 	 * @return
 	 * @throws Exception
@@ -191,10 +192,7 @@ public class RdVariableSpeedSelector extends AbstractSelector {
 		try {
 			StringBuilder sb = new StringBuilder(
 					"select a.* from rd_variable_speed a,rd_variable_speed_via b where a.VSPEED_PID = b.VSPEED_PID ");
-
-			if (viaLinkPid != null) {
-				sb.append(" and b.link_pid =" + viaLinkPid + " and a.u_record !=2 and b.u_record !=2");
-			}
+			sb.append(" and b.link_pid =" + viaLinkPid + " and a.u_record !=2 and b.u_record !=2");
 			if (isLock) {
 				sb.append(" for update nowait");
 			}
@@ -218,7 +216,7 @@ public class RdVariableSpeedSelector extends AbstractSelector {
 		}
 		return rdVariableSpeeds;
 	}
-	
+
 	/**
 	 * 根据接续线查询接续线对象
 	 * 
@@ -238,7 +236,7 @@ public class RdVariableSpeedSelector extends AbstractSelector {
 				sb.append(" for update nowait");
 			}
 			pstmt = getConn().prepareStatement(sb.toString());
-			
+
 			pstmt.setInt(1, viaLinkPid);
 
 			resultSet = pstmt.executeQuery();

@@ -71,7 +71,14 @@ public class EditController extends BaseController {
 			long endRunTime=System.currentTimeMillis();
 			logger.info("END EDIT RUN");
 			logger.info("edit run total use time   " + String.valueOf(endRunTime-beginRunTime));
-			return new ModelAndView("jsonView", success(json));
+			if(parameter.contains("\"infect\":1"))
+			{
+				return new ModelAndView("jsonView", infect(json));
+			}
+			else
+			{
+				return new ModelAndView("jsonView", success(json));
+			}
 		}
 		catch (DataNotChangeException e)
 		{

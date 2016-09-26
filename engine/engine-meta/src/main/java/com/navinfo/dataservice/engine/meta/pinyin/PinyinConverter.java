@@ -80,8 +80,6 @@ public class PinyinConverter {
 
 		PinyinConverter py = new PinyinConverter();
 		
-		
-
 		String[] res = py.convert("北京市");
 		
 		System.out.println(res);

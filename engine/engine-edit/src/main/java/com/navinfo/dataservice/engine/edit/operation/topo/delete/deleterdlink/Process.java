@@ -39,8 +39,6 @@ import net.sf.json.JSONObject;
 
 public class Process extends AbstractProcess<Command> {
 
-	private Map<String, List<AlertObject>> infects = new HashMap<String, List<AlertObject>>();
-
 	public Process(AbstractCommand command) throws Exception {
 		super(command);
 	}
@@ -261,6 +259,8 @@ public class Process extends AbstractProcess<Command> {
 			} else {
 
 				Map<String, List<AlertObject>> infects = confirmRelationObj();
+				
+				this.getConn().commit();
 
 				return JSONObject.fromObject(infects).toString();
 			}
@@ -422,6 +422,8 @@ public class Process extends AbstractProcess<Command> {
 	 * @throws Exception
 	 */
 	private Map<String, List<AlertObject>> confirmRelationObj() throws Exception {
+		Map<String, List<AlertObject>> infects = new HashMap<String, List<AlertObject>>();
+		
 		// 检查link是否可以删除
 		String msg = preCheck();
 
@@ -533,22 +535,22 @@ public class Process extends AbstractProcess<Command> {
 				null, null);
 		List<AlertObject> delGscAlertDataList = rdGscOperation.getDeleteRdGscInfectData(linkPid, conn);
 		if (CollectionUtils.isNotEmpty(delGscAlertDataList)) {
-			infects.put("删除link删除立交", delGscAlertDataList);
+			infects.put("删除link维护立交", delGscAlertDataList);
 		}
 		// 限速关系
 		com.navinfo.dataservice.engine.edit.operation.obj.rdspeedlimit.delete.Operation rdSpeedLimitOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdspeedlimit.delete.Operation(
 				null, null);
-		List<AlertObject> delSpeedLimitAlertDataList = rdSpeedLimitOperation.getDeleteRdSpeedLimitInfectData(linkPid,
+		List<AlertObject> updateSpeedLimitAlertDataList = rdSpeedLimitOperation.getUpdateRdSpeedLimitInfectData(linkPid,
 				conn);
-		if (CollectionUtils.isNotEmpty(delSpeedLimitAlertDataList)) {
-			infects.put("删除link删除限速关系", delSpeedLimitAlertDataList);
+		if (CollectionUtils.isNotEmpty(updateSpeedLimitAlertDataList)) {
+			infects.put("删除link维护限速关系", updateSpeedLimitAlertDataList);
 		}
 		// 电子眼
 		com.navinfo.dataservice.engine.edit.operation.obj.rdeleceye.delete.Operation rdEyeOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdeleceye.delete.Operation(
 				conn);
-		List<AlertObject> delRdEyeAlertDataList = rdEyeOperation.getDeleteRdEyeInfectData(linkPid, conn);
+		List<AlertObject> delRdEyeAlertDataList = rdEyeOperation.getUpdateRdEyeInfectData(linkPid, conn);
 		if (CollectionUtils.isNotEmpty(delRdEyeAlertDataList)) {
-			infects.put("删除link删除电子眼", delRdEyeAlertDataList);
+			infects.put("删除link维护电子眼", delRdEyeAlertDataList);
 		}
 		// 大门
 		com.navinfo.dataservice.engine.edit.operation.obj.rdgate.delete.Operation rdGateOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdgate.delete.Operation(

@@ -71,6 +71,10 @@ public class SubtaskOperation {
 			QueryRunner run = new QueryRunner();
 			String updateSql="";
 
+			if (bean!=null&&bean.getName()!=null && StringUtils.isNotEmpty(bean.getName().toString())){
+				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
+				updateSql += " NAME= " + "'" + bean.getName() + "'";
+			};
 			if (bean!=null&&bean.getDescp()!=null && StringUtils.isNotEmpty(bean.getDescp().toString())){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql += " DESCP= " + "'" + bean.getDescp() + "'";
@@ -777,6 +781,7 @@ public class SubtaskOperation {
 
 
 	/**
+	 * @param conn 
 	 * @param userId 
 	 * @param groupId
 	 * @param stage 
@@ -787,13 +792,11 @@ public class SubtaskOperation {
 	 * @return
 	 * @throws ServiceException 
 	 */
-	public static Page getList(long userId, int groupId, int stage, JSONObject conditionJson, JSONObject orderJson, final int pageSize,
+	public static Page getList(Connection conn, long userId, int groupId, int stage, JSONObject conditionJson, JSONObject orderJson, final int pageSize,
 			final int curPageNum) throws ServiceException {
-		Connection conn = null;
 		// TODO Auto-generated method stub
 		try{
 			QueryRunner run = new QueryRunner();
-			conn = DBConnector.getInstance().getManConnection();
 			
 			String selectSql = "";
 			String selectUserSql = "";
@@ -957,13 +960,12 @@ public class SubtaskOperation {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new ServiceException("查询列表失败，原因为:" + e.getMessage(), e);
-		} finally {
-			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
 
 
 	/**
+	 * @param conn 
 	 * @param userId 
 	 * @param groupId
 	 * @param stage 
@@ -974,13 +976,11 @@ public class SubtaskOperation {
 	 * @return
 	 * @throws ServiceException 
 	 */
-	public static Page getListSnapshot(long userId, int groupId, int stage, JSONObject conditionJson, JSONObject orderJson, final int pageSize,
+	public static Page getListSnapshot(Connection conn, long userId, int groupId, int stage, JSONObject conditionJson, JSONObject orderJson, final int pageSize,
 			final int curPageNum) throws ServiceException {
-		Connection conn = null;
 		// TODO Auto-generated method stub
 		try{
 			QueryRunner run = new QueryRunner();
-			conn = DBConnector.getInstance().getManConnection();
 			
 			String selectSql = "";
 			//0采集，1日编，2月编
@@ -1107,8 +1107,6 @@ public class SubtaskOperation {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new ServiceException("查询列表失败，原因为:" + e.getMessage(), e);
-		} finally {
-			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
 

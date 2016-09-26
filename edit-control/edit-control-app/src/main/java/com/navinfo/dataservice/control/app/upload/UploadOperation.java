@@ -1411,7 +1411,7 @@ public class UploadOperation {
 					// 差分,区分新增修改
 					int ret = getDifferent(oldArray, newFoodtype);
 					if (ret == 0) {
-						newFoodtype.put("pid", PidUtil.getInstance().applyPoiFoodId());
+						newFoodtype.put("pid", PidUtil.getInstance().applyPoiRestaurantId());
 						newFoodtype.put("objStatus", ObjStatus.INSERT.toString());
 						newFoodtypeArray.add(newFoodtype);
 						// 鲜度验证

@@ -7,7 +7,7 @@ import org.junit.Test;
 /**
  * Created by chaixin on 2016/9/26 0026.
  */
-public class IxPoi extends InitApplication{
+public class IxPoiTest extends InitApplication{
 
 
     @Override

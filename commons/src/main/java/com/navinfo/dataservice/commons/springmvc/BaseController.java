@@ -75,7 +75,9 @@ public class BaseController {
     protected Map<String,?> success(Object result) {
         return createModelMap(0,"success",result);
     }
-    
+    protected Map<String,?> infect(Object result) {
+        return createModelMap(999,"success",result);
+    }
     private Map<String,?> createModelMap(int code,String msg,Object data){
     	Map<String,Object> result = new HashMap<String,Object>();
     	result.put("errcode", code);

@@ -90,18 +90,18 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 				throw new Exception("所有grid均存在检查错误，终止提交操作！");
 			}
 			//对grids执行批处理
-			log.info("start gdb batch");
-			JobInfo batchJobInfo = new JobInfo(jobInfo.getId(), jobInfo.getGuid());
-			releaseJobRequest.getSubJobRequest("batch").setAttrValue("grids", allGrid);
-			releaseJobRequest.getSubJobRequest("batch").setAttrValue("batchDbId", valDbId);
-			AbstractJob batchJob = JobCreateStrategy.createAsSubJob(batchJobInfo,
-					releaseJobRequest.getSubJobRequest("batch"), this);
-			batchJob.run();
-			if (batchJob.getJobInfo().getStatus() != 3) {
-				String msg = (batchJob.getException()==null)?"未知错误。":"错误："+batchJob.getException().getMessage();
-				throw new Exception("执行批处理job内部发生"+msg);
-			}
-			log.info("end gdb batch");
+//			log.info("start gdb batch");
+//			JobInfo batchJobInfo = new JobInfo(jobInfo.getId(), jobInfo.getGuid());
+//			releaseJobRequest.getSubJobRequest("batch").setAttrValue("grids", allGrid);
+//			releaseJobRequest.getSubJobRequest("batch").setAttrValue("batchDbId", valDbId);
+//			AbstractJob batchJob = JobCreateStrategy.createAsSubJob(batchJobInfo,
+//					releaseJobRequest.getSubJobRequest("batch"), this);
+//			batchJob.run();
+//			if (batchJob.getJobInfo().getStatus() != 3) {
+//				String msg = (batchJob.getException()==null)?"未知错误。":"错误："+batchJob.getException().getMessage();
+//				throw new Exception("执行批处理job内部发生"+msg);
+//			}
+//			log.info("end gdb batch");
 			//修改数据提交状态
 			log.info("start change poi_edit_status=3 commit");
 			commitPoi(allGrid,releaseJobRequest);

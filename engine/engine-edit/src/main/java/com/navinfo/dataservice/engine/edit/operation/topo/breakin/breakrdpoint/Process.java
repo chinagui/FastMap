@@ -8,9 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
 import org.apache.commons.collections.CollectionUtils;
 
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
@@ -62,6 +59,9 @@ import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.operation.AbstractProcess;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Point;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 public class Process extends AbstractProcess<Command> {
 
@@ -352,8 +352,6 @@ public class Process extends AbstractProcess<Command> {
 
 	@Override
 	public String preCheck() throws Exception {
-
-		check.checkIsCrossLink(this.getConn(), this.getCommand().getLinkPid());
 
 		Point breakPoint = this.getCommand().getPoint();
 
@@ -730,5 +728,10 @@ public class Process extends AbstractProcess<Command> {
 
 		return infects;
 
+	}
+	public static void main(String[] args) {
+		long l1= System.currentTimeMillis();
+		System.out.println(l1);
+		
 	}
 }

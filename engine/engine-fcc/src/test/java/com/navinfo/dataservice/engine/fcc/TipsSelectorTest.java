@@ -389,6 +389,16 @@ public class TipsSelectorTest {
 			}
 		}
 		
+		public static void main(String[] args) {
+			
+			TipsSelectorTest test=new TipsSelectorTest();
+			try {
+				test.update("0220011d8405593377421c984adc368b877abe");
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		
 
 
 }

@@ -1,7 +1,7 @@
 package com.navinfo.dataservice.engine.man.task;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.dbutils.DbUtils;
+import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
@@ -18,21 +19,13 @@ import com.navinfo.dataservice.engine.man.block.BlockOperation;
 import com.navinfo.dataservice.engine.man.city.CityOperation;
 import com.navinfo.dataservice.engine.man.common.DbOperation;
 import com.navinfo.dataservice.engine.man.inforMan.InforManOperation;
-import com.navinfo.dataservice.engine.man.inforMan.InforManService;
-import com.navinfo.dataservice.engine.man.userDevice.UserDeviceService;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoOperation;
-import com.navinfo.dataservice.engine.man.userInfo.UserInfoService;
-import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.json.JsonOperation;
-import com.navinfo.dataservice.api.man.model.Infor;
 import com.navinfo.dataservice.api.man.model.Task;
-import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
-import com.navinfo.dataservice.commons.xinge.XingeUtil;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
-import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -107,41 +100,36 @@ public class TaskService {
 	 */
 	private void createInforBlockMan(Connection conn,String inforId,int userId,int taskId) throws Exception{
 		//查询情报infor
-		Infor inforObj=InforManService.getInstance().query(inforId);
-		String inforGeo=inforObj.getGeometry();
+		//Infor inforObj=InforManService.getInstance().query(inforId);
+		//String inforGeo=inforObj.getGeometry();
 		//查询情报city100002对应的所有block
 		//select block_id,geometry from block where city_id=100002
-		String sql="select * from block where city_id=100002";
-		List<HashMap> inforBlockList = BlockOperation.queryBlockBySql(conn, sql);
-		String[] inforGeoList=inforGeo.split(";");
+		String selectSql="SELECT DISTINCT B.BLOCK_ID"
+				+ "  FROM BLOCK B, BLOCK_GRID_MAPPING M, INFOR_GRID_MAPPING IM"
+				+ " WHERE B.CITY_ID = 100002"
+				+ "   AND B.BLOCK_ID = M.BLOCK_ID"
+				+ "   AND IM.GRID_ID = M.GRID_ID"
+				+ "   AND IM.INFOR_ID='"+inforId+"'";
 		List<Integer> blockIdList=new ArrayList<Integer>();
-		for(String geoTmp:inforGeoList){
-			Geometry inforTmp=GeoTranslator.wkt2Geometry(geoTmp);
-			for(HashMap<String, Object> inforBlock:inforBlockList){
-				//JSONObject
-				JSONObject geo=(JSONObject) inforBlock.get("geometry");			
-				Geometry geoBlock=GeoTranslator.geojson2Jts(geo);
-				Integer blockId=(Integer) inforBlock.get("blockId");
-				//仅插入1条记录
-				if(geoBlock.contains(inforTmp) || geoBlock.covers(inforTmp) || geoBlock.equals(inforTmp)){
-					if(!blockIdList.contains(blockId)){
-						blockIdList.add(blockId);
-						createInforBlockMan(conn,blockId,userId,taskId);
+		try {
+			QueryRunner run = new QueryRunner();
+			ResultSetHandler<List<Integer>> rsHandler = new ResultSetHandler<List<Integer>>() {
+				public List<Integer> handle(ResultSet rs) throws SQLException {
+					List<Integer> list = new ArrayList<Integer>();
+					while (rs.next()) {
+						list.add(rs.getInt("BLOCK_ID"));
 					}
-					break;
+					return list;
 				}
-				if(blockIdList.contains(blockId)){continue;}
-				//交叉,插入1条记录
-				boolean tt=geoBlock.within(inforTmp);
-				tt=inforTmp.within(geoBlock);
-				Geometry innerGeo=geoBlock.intersection(inforTmp);
-				if(innerGeo!=null && !innerGeo.isEmpty()){
-					if(!blockIdList.contains(blockId)){
-						blockIdList.add(blockId);
-						createInforBlockMan(conn,blockId,userId,taskId);
-					}
-				}
-			}}
+
+			};
+			blockIdList= run.query(conn, selectSql, rsHandler);
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:" + e.getMessage(), e);
+		}
+		for(int blockId:blockIdList){createInforBlockMan(conn,blockId,userId,taskId);}
 		BlockOperation.openBlockByBlockIdList(conn, blockIdList);
 	}
 	
@@ -384,25 +372,25 @@ public class TaskService {
 				String updateSql="UPDATE TASK SET STATUS=0 "
 						+ "WHERE TASK_ID IN ("+newTask.toString().replace("[", "").
 						replace("]", "").replace("\"", "")+")";
-				DbOperation.exeUpdateOrInsertBySql(conn, updateSql);}
+				DbOperation.exeUpdateOrInsertBySql(conn, updateSql);
 			
-			//发送消息
-			JSONObject condition=new JSONObject();
-			condition.put("taskIds",JSONArray.fromObject(newTask));
-			List<Map<String, Object>> openTasks = TaskOperation.queryTaskTable(conn, condition);
-			/*任务创建/编辑/关闭
-			 * 1.所有生管角色
-			 * 2.分配的月编作业组组长
-			 * 任务:XXX(任务名称)内容发生变更，请关注*/			
-			String msgTitle="任务关闭";
-			List<String> msgContentList=new ArrayList<String>();
-			for(Map<String, Object> task:openTasks){
-				msgContentList.add("任务:"+task.get("taskName")+"内容发生变更，请关注");
+				//发送消息
+				JSONObject condition=new JSONObject();
+				condition.put("taskIds",JSONArray.fromObject(newTask));
+				List<Map<String, Object>> openTasks = TaskOperation.queryTaskTable(conn, condition);
+				/*任务创建/编辑/关闭
+				 * 1.所有生管角色
+				 * 2.分配的月编作业组组长
+				 * 任务:XXX(任务名称)内容发生变更，请关注*/			
+				String msgTitle="任务关闭";
+				List<String> msgContentList=new ArrayList<String>();
+				for(Map<String, Object> task:openTasks){
+					msgContentList.add("任务:"+task.get("taskName")+"内容发生变更，请关注");
+				}
+				if(msgContentList.size()>0){
+					taskPushMsg(conn,msgTitle,msgContentList);
+				}
 			}
-			if(msgContentList.size()>0){
-				taskPushMsg(conn,msgTitle,msgContentList);
-			}
-			
 	    	return checkMap;
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);

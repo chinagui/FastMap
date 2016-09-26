@@ -24,6 +24,7 @@ import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiPhoto;
 
 import oracle.sql.STRUCT;
 
@@ -39,8 +40,7 @@ public class ReflectionAttrUtils {
 	 * @return 泛型类型对象
 	 * @throws Exception
 	 */
-	public static void executeResultSet(IRow row, ResultSet rs)
-			throws Exception {
+	public static void executeResultSet(IRow row, ResultSet rs) throws Exception {
 		Class<?> clazz = row.getClass();
 		ResultSetMetaData rsm = rs.getMetaData();
 		int columnCount = rsm.getColumnCount();
@@ -59,20 +59,21 @@ public class ReflectionAttrUtils {
 			try {
 				field = clazz.getDeclaredField(fieldName);
 			} catch (NoSuchFieldException e) {
-//				if ("uRecord".equals(fieldName) || "uFields".equals(fieldName)
-//						|| "uDate".equals(fieldName))
-//					continue;
-//				System.out.println(fieldName + "在" + clazz.getName()
-//						+ "中没有对应的属性");
+				// if ("uRecord".equals(fieldName) ||
+				// "uFields".equals(fieldName)
+				// || "uDate".equals(fieldName))
+				// continue;
+				// System.out.println(fieldName + "在" + clazz.getName()
+				// + "中没有对应的属性");
 				continue;
 			}
 			Object value = map.get(fieldName);
 			if (null != value) {
 				switch (field.getType().getName()) {
 				case "java.lang.String":
-					if (fieldName.equalsIgnoreCase("rowid"))
+					if (fieldName.equalsIgnoreCase("rowid")) {
 						value = rs.getString("row_id");
-					else
+					} else
 						value = String.valueOf(value);
 					break;
 				case "int":
@@ -91,8 +92,7 @@ public class ReflectionAttrUtils {
 					value = new BigDecimal(value.toString());
 				case "java.sql.Date":
 				case "java.util.Date":
-					value = rs
-							.getTimestamp(StringUtils.toColumnName(fieldName));
+					value = rs.getTimestamp(StringUtils.toColumnName(fieldName));
 					break;
 				case "com.vividsolutions.jts.geom.Geometry":
 					value = GeoTranslator.struct2Jts((STRUCT) value, 100000, 0);
@@ -113,8 +113,7 @@ public class ReflectionAttrUtils {
 	 * @return
 	 * @throws Exception
 	 */
-	public static String getTableNameByObjType(ObjType objType)
-			throws Exception {
+	public static String getTableNameByObjType(ObjType objType) throws Exception {
 		switch (objType) {
 		case RDNODE:
 			return "RD_NODE";
@@ -148,8 +147,7 @@ public class ReflectionAttrUtils {
 	 * @return
 	 * @throws Exception
 	 */
-	public static ObjType getObjTypeByTableName(String tableName)
-			throws Exception {
+	public static ObjType getObjTypeByTableName(String tableName) throws Exception {
 		switch (tableName) {
 		case "RD_NODE":
 			return ObjType.RDNODE;
@@ -189,6 +187,8 @@ public class ReflectionAttrUtils {
 		if (row instanceof IObj) {
 			if (((IObj) row).primaryKey().equalsIgnoreCase(field))
 				return "pid";
+		} else if (row instanceof IxPoiPhoto && field.equalsIgnoreCase("pid")) {
+			return "fccPid";
 		}
 		char[] chars = field.toLowerCase().toCharArray();
 		StringBuffer sb = new StringBuffer();
@@ -197,8 +197,7 @@ public class ReflectionAttrUtils {
 			if (c == '_') {
 				int j = i + 1;
 				if (j < chars.length) {
-					sb.append(org.apache.commons.lang.StringUtils
-							.upperCase(CharUtils.toString(chars[j])));
+					sb.append(org.apache.commons.lang.StringUtils.upperCase(CharUtils.toString(chars[j])));
 					i++;
 				}
 			} else {

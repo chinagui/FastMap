@@ -79,8 +79,11 @@ public class SolrController {
 	public boolean checkTipsMobile(String wkt, String date)
 			throws SolrServerException, IOException {
 
-		String param = "wkt:\"intersects(" + wkt + ")\" AND t_date:[" + date
-				+ " TO *]";
+	   String param = "wkt:\"intersects(" + wkt + ")\"";
+
+        if (date != null && !date.equals("")) {
+            param += " AND t_date:[" + date + " TO *]";
+        }
 
 		SolrQuery query = new SolrQuery();
 

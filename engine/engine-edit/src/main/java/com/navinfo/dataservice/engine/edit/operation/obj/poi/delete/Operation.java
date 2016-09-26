@@ -1,8 +1,10 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.poi.delete;
 
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.List;
 
+import com.navinfo.dataservice.dao.glm.iface.AlertObject;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
@@ -52,5 +54,34 @@ public class Operation implements IOperation {
 			
 			result.insertObject(poi, ObjStatus.UPDATE, poi.getPid());
 		}
+	}
+	
+	/**
+	 * 删除link对POI的维护影响
+	 * @return
+	 * @throws Exception 
+	 */
+	public List<AlertObject> getUpdatePoiInfectData(int linkPid,Connection conn) throws Exception {
+		
+		IxPoiSelector selector = new IxPoiSelector(conn);
+
+		List<IxPoi> poiList = selector.loadIxPoiByLinkPid(linkPid, true);
+		
+		List<AlertObject> alertList = new ArrayList<>();
+
+		for (IxPoi ixPoi : poiList) {
+
+			AlertObject alertObj = new AlertObject();
+
+			alertObj.setObjType(ixPoi.objType());
+
+			alertObj.setPid(ixPoi.getPid());
+
+			alertObj.setStatus(ObjStatus.UPDATE);
+
+			alertList.add(alertObj);
+		}
+
+		return alertList;
 	}
 }

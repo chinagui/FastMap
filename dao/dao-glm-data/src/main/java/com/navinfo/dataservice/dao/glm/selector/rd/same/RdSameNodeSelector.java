@@ -141,7 +141,7 @@ public class RdSameNodeSelector extends AbstractSelector {
 	}
 
 	/**
-	 * 根据nodePid查询CRF交叉点对象
+	 * 根据nodePid查询同一点对象
 	 * 
 	 * @param nodePidStr
 	 * @param isLock

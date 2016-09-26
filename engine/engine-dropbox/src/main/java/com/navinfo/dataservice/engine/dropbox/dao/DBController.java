@@ -364,7 +364,7 @@ public class DBController {
 			IxPoiPhoto photo = new IxPoiPhoto();
 			
 			photo.setPoiPid(pid);
-			photo.setPid(photoId);
+			photo.setFccPid(photoId);
 			photo.setTag(1);
 			
 			Result result = new Result();

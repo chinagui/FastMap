@@ -75,6 +75,54 @@ public class RdSlopeSelector extends AbstractSelector {
 			DbUtils.closeQuietly(pstmt);
 		}
 	}
+	
+	/***
+	 * 
+	 * 通过接续线查找坡度信息
+	 * 
+	 * @param linkPid
+	 * @param isLock
+	 * @return
+	 * @throws Exception
+	 */
+	public List<RdSlope> loadByViaLink(int linkPid, boolean isLock)
+			throws Exception {
+
+		List<RdSlope> rows = new ArrayList<RdSlope>();
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			String sql = "SELECT pid FROM RD_SLOPE WHERE U_RECORD != 2 AND PID IN (SELECT DISTINCT (SLOPE_PID) FROM RD_SLOPE_VIA WHERE U_RECORD != 2 AND LINK_PID = :1)";
+
+			if (isLock) {
+				sql += " for update nowait";
+			}
+
+			pstmt = conn.prepareStatement(sql);
+
+			pstmt.setInt(1, linkPid);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+				AbstractSelector abSelector = new AbstractSelector(
+						RdSlope.class, conn);
+				RdSlope slope = (RdSlope) abSelector.loadById(
+						resultSet.getInt("pid"), false);
+				rows.add(slope);
+			}
+
+			return rows;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+	}
 
 	/***
 	 * 
@@ -140,7 +188,7 @@ public class RdSlopeSelector extends AbstractSelector {
 		ResultSet resultSet = null;
 		RdLink link = null;
 		try {
-			String sql = "SELECT rs.link_pid,rl.s_node_pid,rl.e_node_pid FROM rd_slope_via rs ,rd_link rl WHERE rs.link_pid = rl.link_pid and  rs.slope_pid =:1 and rs.seqNum = :2 and rs.u_record !=2 and rl.u_record !=2";
+			String sql = "SELECT rs.link_pid,rl.s_node_pid,rl.e_node_pid FROM rd_slope_via rs ,rd_link rl WHERE rs.link_pid = rl.link_pid and  rs.slope_pid =:1 and rs.seq_num = :2 and rs.u_record !=2 and rl.u_record !=2";
 
 			if (isLock) {
 				sql += " for update nowait";

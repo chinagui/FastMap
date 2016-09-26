@@ -443,8 +443,8 @@ public class HBaseOperateTest {
 		HBaseOperateTest test = new HBaseOperateTest();
 		String rowkey = "0212055b268d5faff94b59b94ad7aec3348d4f";
 		// test.QueryAll();
-		 //test.QueryByCondition1(rowkey);
-		 test.QueryByCondition4();
+		 test.QueryByCondition1(rowkey);
+		// test.QueryByCondition4();
 		
 	//	test.insertData();
 		//test.selectByFilter();

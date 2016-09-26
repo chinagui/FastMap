@@ -223,28 +223,29 @@ public class SubtaskService {
 			final int curPageNum,int snapshot) throws ServiceException {
 		Connection conn = null;
 		try {
-
-			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
 			
-			//获取用户角色信息
+			//获取用户所在组信息
 			UserInfo userInfo = new UserInfo();
 			userInfo.setUserId((int)userId);
-			Map<Object, Object> role = UserInfoOperation.getUserRole(conn, userInfo);
-			int roleId = (int) role.get("roleId");
+			Map<Object, Object> group = UserInfoOperation.getUserGroup(conn, userInfo);
+			int groupId = (int) group.get("groupId");
 			
 			//返回简略信息
 			if (snapshot==1){
-				Page page = SubtaskOperation.getListSnapshot(userId,roleId,stage,conditionJson,orderJson,pageSize,curPageNum);
+				Page page = SubtaskOperation.getListSnapshot(conn,userId,groupId,stage,conditionJson,orderJson,pageSize,curPageNum);
 				return page;
 			}else{
-				Page page = SubtaskOperation.getList(userId,roleId,stage,conditionJson,orderJson,pageSize,curPageNum);
+				Page page = SubtaskOperation.getList(conn,userId,groupId,stage,conditionJson,orderJson,pageSize,curPageNum);
 				return page;
 			}		
 
 		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new ServiceException("查询列表失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
 	
@@ -595,16 +596,16 @@ public class SubtaskService {
 		// TODO Auto-generated method stub
 		Connection conn = null;
 		try {
-
-			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
 			
 			//获取用户所在组
 			UserInfo userInfo = new UserInfo();
 			userInfo.setUserId(bean.getExeUserId());
 			Map<Object,Object> userGroup = UserInfoOperation.getUserGroup(conn, userInfo);
-			bean.setExeGroupId((int)userGroup.get("groupId"));
-
+			if(!userGroup.isEmpty()){
+				bean.setExeGroupId((int)userGroup.get("groupId"));
+			}
+			
 			Page page = new Page();
 			//snapshot=1不返回geometry和gridIds
 			if(snapshot==1){
@@ -639,9 +640,9 @@ public class SubtaskService {
 				dataJson.put("gridIds",gridIdList);
 				//根据gridIds获取wkt
 				wkt = GridUtils.grids2Wkt(gridIds);
-				if(wkt.contains("MULTIPOLYGON")){
-					throw new IllegalArgumentException("请输入符合条件的grids");
-				}
+//				if(wkt.contains("MULTIPOLYGON")){
+//					throw new IllegalArgumentException("请输入符合条件的grids");
+//				}
 			}else{
 				if(dataJson.containsKey("taskId")){
 					int taskId = dataJson.getInt("taskId");

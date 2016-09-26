@@ -180,10 +180,15 @@ public class CheckController extends BaseController {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 			int subtaskId=jsonReq.getInt("subtaskId");
 			int checkType=jsonReq.getInt("checkType");
+			String ckRules = "";
+			if (jsonReq.containsKey("ckRules")) {
+				ckRules = jsonReq.getString("ckRules");
+			}
+			
 			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
 			long userId=tokenObj.getUserId();
 			//long userId=2;
-			long jobId=CheckService.getInstance().checkRun(subtaskId,userId,checkType);				
+			long jobId=CheckService.getInstance().checkRun(subtaskId,userId,checkType,ckRules);				
 			return new ModelAndView("jsonView", success(jobId));
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
@@ -361,6 +366,45 @@ public class CheckController extends BaseController {
 			logger.error(e.getMessage(), e);
 			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+	
+	/**
+	 * 检查规则查询
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException
+	 * @author wangdongbin
+	 */
+	@RequestMapping(value = "/check/getCkRules")
+	public ModelAndView getCkRules(HttpServletRequest request)
+			throws ServletException, IOException {
+		String parameter = request.getParameter("parameter");
+		Connection conn =null;
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			
+			int pageSize = jsonReq.getInt("pageSize");
+
+			int pageNum = jsonReq.getInt("pageNum");
+			
+			String type = jsonReq.getString("type");
+			
+			JSONArray result = CheckService.getInstance().getCkRules(pageSize, pageNum, type);
+			
+			return new ModelAndView("jsonView", success(result));
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		} finally {
 			if (conn != null) {
 				try {
 					conn.close();

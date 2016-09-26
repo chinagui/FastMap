@@ -65,7 +65,7 @@ public class Operation implements IOperation {
 	 * @return
 	 * @throws Exception
 	 */
-	public List<AlertObject> getDeleteRdWarningInfectData(int linkPid, Connection conn) throws Exception {
+	public List<AlertObject> getDeleteRdTollageInfectData(int linkPid, Connection conn) throws Exception {
 
 		RdTollgateSelector rdTollgateSelector = new RdTollgateSelector(conn);
 

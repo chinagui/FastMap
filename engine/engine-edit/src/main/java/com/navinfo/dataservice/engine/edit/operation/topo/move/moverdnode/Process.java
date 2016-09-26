@@ -4,6 +4,8 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.collections.CollectionUtils;
+
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
@@ -58,7 +60,7 @@ public class Process extends AbstractProcess<Command> {
 			this.updateNode = this.getCommand().getNode();
 		}
 
-		if (this.getCommand().getLinks().size() == 0) {
+		if (CollectionUtils.isEmpty(this.getCommand().getLinks())) {
 			lockRdLink();
 		}
 

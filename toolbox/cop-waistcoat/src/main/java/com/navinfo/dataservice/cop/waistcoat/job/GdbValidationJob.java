@@ -59,8 +59,9 @@ public class GdbValidationJob extends AbstractJob {
 							AbstractJob createValDbJob = JobCreateStrategy.createAsSubJob(createValDbJobInfo,
 									req.getSubJobRequest("createValDb"), this);
 							createValDbJob.run();
-							if (createValDbJob.getJobInfo().getResponse().getInt("exeStatus") != 3) {
-								throw new Exception("创建检查子版本库时job执行失败。");
+							if (createValDbJob.getJobInfo().getStatus() != 3) {
+								String msg = (createValDbJob.getException()==null)?"未知错误。":"错误："+createValDbJob.getException().getMessage();
+								throw new Exception("创建检查子版本库时job内部发生"+msg);
 							}
 							valDbId = createValDbJob.getJobInfo().getResponse().getInt("outDbId");
 							valDb = datahub.getDbById(valDbId);
@@ -85,7 +86,7 @@ public class GdbValidationJob extends AbstractJob {
 					JobInfo expValDbJobInfo = new JobInfo(jobInfo.getId(), jobInfo.getGuid());
 					AbstractJob expValDbJob = JobCreateStrategy.createAsSubJob(expValDbJobInfo, req.getSubJobRequest("expValDb"), this);
 					expValDbJob.run();
-					if (expValDbJob.getJobInfo().getResponse().getInt("exeStatus") != 3) {
+					if (expValDbJob.getJobInfo().getStatus() != 3) {
 						String msg = (expValDbJob.getException()==null)?"未知错误。":"错误："+expValDbJob.getException().getMessage();
 						throw new Exception("检查子版本导数据时job内部发生"+msg);
 					}

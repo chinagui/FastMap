@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.navinfo.dataservice.dao.glm.iface.AlertObject;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -110,5 +111,53 @@ public class Operation implements IOperation {
 			delete(result, sameLink);
 		}
 
+	}
+	
+	/**
+	 * 删除link对同一线的影响
+	 * @return
+	 * @throws Exception 
+	 */
+	public List<AlertObject> getDeleteLinkSameLinkInfectData(RdLink link,Connection conn) throws Exception {
+		
+		String tableName = link.parentTableName().toUpperCase();
+
+		RdSameLinkSelector sameLinkSelector = new RdSameLinkSelector(this.conn);
+
+		List<AlertObject> alertList = new ArrayList<>();
+		
+		RdSameLinkPart sameLinkPart = sameLinkSelector.loadLinkPartByLink(
+				link.parentPKValue(), tableName, true);
+
+		if(sameLinkPart != null)
+		{
+			RdSameLink sameLink = (RdSameLink) sameLinkSelector.loadById(
+					sameLinkPart.getGroupId(), true);
+
+			if (sameLink.getParts().size() < 3) {
+				AlertObject alertObj = new AlertObject();
+
+				alertObj.setObjType(sameLink.objType());
+
+				alertObj.setPid(sameLink.getPid());
+
+				alertObj.setStatus(ObjStatus.DELETE);
+
+				alertList.add(alertObj);
+
+			} else {
+
+				AlertObject alertObj = new AlertObject();
+
+				alertObj.setObjType(sameLink.objType());
+
+				alertObj.setPid(sameLink.getPid());
+
+				alertObj.setStatus(ObjStatus.UPDATE);
+
+				alertList.add(alertObj);
+			}
+		}
+		return alertList;
 	}
 }

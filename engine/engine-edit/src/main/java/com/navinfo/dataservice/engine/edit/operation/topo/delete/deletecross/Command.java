@@ -26,6 +26,8 @@ public class Command extends AbstractCommand {
 	
 	private List<RdBranch> branches;
 	
+	private boolean isCheckInfect = false;
+	
 	public RdCross getCross() {
 		return cross;
 	}
@@ -72,8 +74,19 @@ public class Command extends AbstractCommand {
 		this.pid = json.getInt("objId");
 		
 		this.setDbId(json.getInt("dbId"));
+		
+		if (json.containsKey("infect") && json.getInt("infect") == 1) {
+			this.isCheckInfect = true;
+		}
 	}
 
+	public boolean isCheckInfect() {
+		return isCheckInfect;
+	}
+
+	public void setCheckInfect(boolean isCheckInfect) {
+		this.isCheckInfect = isCheckInfect;
+	}
 
 	@Override
 	public OperType getOperType() {
@@ -91,5 +104,4 @@ public class Command extends AbstractCommand {
 		
 		return requester;
 	}
-
 }

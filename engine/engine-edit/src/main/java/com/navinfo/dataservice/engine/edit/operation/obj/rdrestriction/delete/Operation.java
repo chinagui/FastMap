@@ -16,6 +16,10 @@ public class Operation implements IOperation {
 
 	private RdRestriction restrict;
 
+	public Operation()
+	{
+	}
+	
 	public Operation(Command command, RdRestriction restrict) {
 		this.restrict = restrict;
 	}
@@ -129,6 +133,32 @@ public class Operation implements IOperation {
 			alertObj.setObjType(rdRestriction.objType());
 
 			alertObj.setPid(rdRestriction.getPid());
+
+			alertObj.setStatus(ObjStatus.DELETE);
+
+			alertList.add(alertObj);
+		}
+
+		return alertList;
+	}
+
+	/**
+	 * 删除路口对交限的删除影响
+	 * 
+	 * @return
+	 * @throws Exception
+	 */
+	public List<AlertObject> getDeleteCrossRestrictInfectData(List<RdRestriction> restrictions) throws Exception {
+
+		List<AlertObject> alertList = new ArrayList<>();
+
+		for (RdRestriction restriction : restrictions) {
+
+			AlertObject alertObj = new AlertObject();
+
+			alertObj.setObjType(restriction.objType());
+
+			alertObj.setPid(restriction.getPid());
 
 			alertObj.setStatus(ObjStatus.DELETE);
 

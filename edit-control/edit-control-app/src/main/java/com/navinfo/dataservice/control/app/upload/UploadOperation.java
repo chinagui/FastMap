@@ -616,7 +616,7 @@ public class UploadOperation {
 						photoIdList.add(photoId);
 						IxPoiPhoto poiPhoto = new IxPoiPhoto();
 						poiPhoto.setPoiPid(pid);
-						poiPhoto.setPid(photoId);
+						poiPhoto.setFccPid(photoId);
 						poiPhoto.setTag(photo.getInt("tag"));
 						poiPhoto.setRowId(photoId);
 						photoList.add(poiPhoto);
@@ -731,7 +731,7 @@ public class UploadOperation {
 				JSONObject foodtypesObj = jo.getJSONObject("foodtypes");
 				IxPoiRestaurant foodtypes = new IxPoiRestaurant();
 				List<IRow> foodtypesList = new ArrayList<IRow>();
-				foodtypes.setPid(PidUtil.getInstance().applyPoiFoodId());
+				foodtypes.setPid(PidUtil.getInstance().applyPoiRestaurantId());
 				foodtypes.setPoiPid(pid);
 				foodtypes.setFoodType(foodtypesObj.getString("foodtype"));
 				foodtypes.setCreditCard(foodtypesObj.getString("creditCards"));
@@ -1071,7 +1071,7 @@ public class UploadOperation {
 			JSONArray photoList = new JSONArray();
 			for (IRow oldPhotoIRow : oldPhotoList) {
 				IxPoiPhoto oldPhoto = (IxPoiPhoto) oldPhotoIRow;
-				photoIdList.add(oldPhoto.getPid());
+				photoIdList.add(oldPhoto.getFccPid());
 			}
 			for (int k = 0; k < attachments.size(); k++) {
 				JSONObject photo = attachments.getJSONObject(k);
@@ -1084,7 +1084,7 @@ public class UploadOperation {
 						photoIdList.add(photoId);
 						photoObj.put("objStatus", ObjStatus.INSERT.toString());
 						photoObj.put("poiPid", pid);
-						photoObj.put("pid", photoId);
+						photoObj.put("fccPid", photoId);
 						photoObj.put("tag", photo.getInt("tag"));
 						photoObj.put("rowId", photoId);
 						photoList.add(photoObj);

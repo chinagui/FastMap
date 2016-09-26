@@ -20,7 +20,7 @@ public class IxPoiEditStatusSelector extends AbstractSelector {
 	}
 
 	public int loadStatusByRowId(String rowId, boolean isLock) throws Exception {
-		int status = -1;
+		int status = 0;
 
 		String sql = "select status from poi_edit_status where row_id=hextoraw(:1)";
 
@@ -41,9 +41,7 @@ public class IxPoiEditStatusSelector extends AbstractSelector {
 
 			if (resultSet.next()) {
 				status = resultSet.getInt("status");
-			} else {
-				throw new DataNotFoundException("数据不存在");
-			}
+			} 
 		} catch (Exception e) {
 
 			throw e;

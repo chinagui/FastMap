@@ -134,6 +134,7 @@ public class BlockOperation {
 						map.put("planStartDate", rs.getString("PLAN_START_DATE"));
 						map.put("planEndDate", rs.getString("PLAN_END_DATE"));
 						map.put("assignStatus", rs.getInt("flag"));
+						map.put("type", rs.getInt("TASK_TYPE"));
 						map.put("finishPercent",
 								calculateBlockFinishPercent(conn, rs.getInt("BLOCK_ID"), rs.getInt("STATUS"), stage));
 
@@ -637,7 +638,8 @@ public class BlockOperation {
 		ResultSet rs = stmt.executeQuery();
 		int subtaskCount = 0;
 		while (rs.next()) {
-			subtaskCount = rs.getInt("record_");
+//			subtaskCount = rs.getInt("record_");
+			subtaskCount = rs.getInt("total");
 		}
 		if (subtaskCount == 0) {
 			return "0%";

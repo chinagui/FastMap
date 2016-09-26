@@ -283,4 +283,159 @@ public class RdLaneConnexitySelector extends AbstractSelector {
 		}
 		return laneConns;
 	}
+	
+	/**
+	 * 根据link类型获取车信
+	 * @param linkPid
+	 * @param linkType 1：进入线；2：退出线，3：经过线
+	 * @param isLock
+	 * @return
+	 * @throws Exception
+	 */
+	public List<RdLaneConnexity> loadByLink(int linkPid, int linkType,
+			boolean isLock) throws Exception {
+		
+		List<RdLaneConnexity> laneConns = new ArrayList<RdLaneConnexity>();
+
+		String sql = "";
+		
+		if (linkType == 1) {
+			sql = "SELECT * FROM RD_LANE_CONNEXITY WHERE IN_LINK_PID = :1 AND U_RECORD!=2 ";
+		}
+		else if (linkType == 2) {
+			
+			sql = "SELECT * FROM RD_LANE_CONNEXITY WHERE U_RECORD != 2  AND PID IN (SELECT DISTINCT (CONNEXITY_PID) FROM RD_LANE_TOPOLOGY WHERE U_RECORD != 2  AND OUT_LINK_PID = :1)";
+		}
+		
+		else if (linkType == 3) {
+			
+			sql = "SELECT * FROM RD_LANE_CONNEXITY WHERE U_RECORD != 2 AND PID IN (SELECT DISTINCT (CONNEXITY_PID) FROM RD_LANE_TOPOLOGY WHERE U_RECORD != 2 AND TOPOLOGY_ID IN (SELECT DISTINCT (TOPOLOGY_ID) FROM RD_LANE_VIA WHERE U_RECORD != 2 AND LINK_PID = :1))";
+		}
+		else 
+		{
+			return laneConns;
+		}
+
+		if (isLock) {
+			sql += " for update nowait";
+		}
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sql);
+
+			pstmt.setInt(1, linkPid);
+
+			resultSet = pstmt.executeQuery();
+
+			RdLaneTopologySelector topoSelector = new RdLaneTopologySelector(conn);
+			
+			RdLaneViaSelector viaSelector =new RdLaneViaSelector(conn);
+			
+			while (resultSet.next()) {
+				
+				RdLaneConnexity laneConn = new RdLaneConnexity();
+
+				ReflectionAttrUtils.executeResultSet(laneConn, resultSet);				
+
+				laneConn.setTopos(topoSelector.loadRowsByParentId(laneConn.pid(), isLock));
+
+				for (IRow row : laneConn.getTopos()) {
+
+					RdLaneTopology topo = (RdLaneTopology) row;
+
+					topo.setVias(viaSelector.loadRowsByParentId(topo.getPid(), isLock));
+					
+					laneConn.topologyMap.put(topo.getPid(), topo);
+
+					for (IRow row2 : topo.getVias()) {
+
+						RdLaneVia via = (RdLaneVia) row2;
+
+						laneConn.viaMap.put(via.getRowId(), via);
+						
+						topo.viaMap.put(via.getRowId(), via);
+					}
+				}
+
+				laneConns.add(laneConn);
+			}
+		} catch (Exception e) {
+
+			throw e;
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+		}
+		return laneConns;
+	}
+	
+	/**
+	 * 根据路口pid查询车信信息
+	 * @param crossPid 路口pid
+	 * @param isLock 是否加锁
+	 * @return 车信对象集合
+	 * @throws Exception
+	 */
+	public List<RdLaneConnexity> getRdLaneConnexityByCrossPid(int crossPid,boolean isLock) throws Exception {
+		List<RdLaneConnexity> result = new ArrayList<RdLaneConnexity>();
+
+		String sql = "select * from rd_lane_connexity a where exists (select null from rd_cross_node b where b.pid=:1 and a.node_pid=b.node_pid) and u_record!=2";
+		if(isLock)
+		{
+			sql = sql + " for update nowait";
+		}
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = getConn().prepareStatement(sql);
+
+			pstmt.setInt(1, crossPid);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+				RdLaneConnexity laneConn = new RdLaneConnexity();
+
+				laneConn.setPid(resultSet.getInt("pid"));
+
+				laneConn.setRowId(resultSet.getString("row_id"));
+
+				laneConn.setInLinkPid(resultSet.getInt("in_link_pid"));
+
+				laneConn.setNodePid(resultSet.getInt("node_pid"));
+
+				laneConn.setLaneInfo(resultSet.getString("lane_info"));
+
+				laneConn.setConflictFlag(resultSet.getInt("conflict_flag"));
+
+				laneConn.setKgFlag(resultSet.getInt("kg_flag"));
+
+				laneConn.setLaneNum(resultSet.getInt("lane_num"));
+
+				laneConn.setLeftExtend(resultSet.getInt("left_extend"));
+
+				laneConn.setRightExtend(resultSet.getInt("right_extend"));
+
+				RdLaneTopologySelector topoSelector = new RdLaneTopologySelector(getConn());
+
+				laneConn.setTopos(topoSelector.loadRowsByParentId(laneConn.getPid(), true));
+
+				result.add(laneConn);
+			}
+		} catch (Exception e) {
+
+			throw e;
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+		}
+		return result;
+	}
 }

@@ -13,6 +13,7 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionCondition;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionDetail;
+import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionVia;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
 import com.navinfo.navicommons.database.sql.DBUtils;
@@ -340,15 +341,162 @@ public class RdRestrictionSelector extends AbstractSelector {
 		return result;
 
 	}
+	
+	/**
+	 * 根据link类型获取RdRestriction
+	 * @param linkPid
+	 * @param linkType 1：进入线；2：退出线，3：经过线
+	 * @param isLock
+	 * @return
+	 * @throws Exception
+	 */
+	public List<RdRestriction> loadByLink(int linkPid, int linkType,
+			boolean isLock) throws Exception {
+		
+		List<RdRestriction> restrictions = new ArrayList<RdRestriction>();
+
+		String sql = "";
+		
+		if (linkType == 1) {
+			sql = "SELECT A.* FROM RD_RESTRICTION A WHERE A.IN_LINK_PID = :1 AND A.U_RECORD != 2 ";
+
+		}
+		else if (linkType == 2) {
+			
+			sql = "SELECT * FROM RD_RESTRICTION WHERE U_RECORD != 2  AND PID IN (SELECT DISTINCT (RESTRIC_PID)  FROM RD_RESTRICTION_DETAIL WHERE U_RECORD != 2  AND OUT_LINK_PID = :1)";
+		}
+		
+		else if (linkType == 3) {
+			
+			sql = "SELECT * FROM RD_RESTRICTION WHERE U_RECORD != 2 AND PID IN (SELECT DISTINCT (RESTRIC_PID) FROM RD_RESTRICTION_DETAIL WHERE U_RECORD != 2 AND DETAIL_ID IN (SELECT DISTINCT (DETAIL_ID) FROM RD_RESTRICTION_VIA WHERE U_RECORD != 2 AND LINK_PID = :1))";
+		}
+		else 
+		{
+			return restrictions;
+		}
+
+		if (isLock) {
+			sql += " FOR UPDATE NOWAIT";
+		}
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sql);
+
+			pstmt.setInt(1, linkPid);
+
+			resultSet = pstmt.executeQuery();
+			
+			while (resultSet.next()) {
+				
+				RdRestriction restriction = new RdRestriction();
+
+				ReflectionAttrUtils.executeResultSet(restriction, resultSet);
+				
+				setChildData( restriction,  isLock);				
+
+				restrictions.add(restriction);
+			}
+		} catch (Exception e) {
+
+			throw e;
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+		}
+		return restrictions;
+	}
+	
+	
 
 	private void setChildData(RdRestriction restrict, boolean isLock)
 			throws Exception {
 
-		RdRestrictionDetailSelector detail = new RdRestrictionDetailSelector(
+		RdRestrictionDetailSelector detailSelector = new RdRestrictionDetailSelector(
 				conn);
+		
+		restrict.setDetails(detailSelector.loadRowsByParentId(restrict.getPid(), isLock));
+		
+		RdRestrictionViaSelector viaSelector=new RdRestrictionViaSelector(conn);
+		
+		AbstractSelector conditionSelector =new AbstractSelector(RdRestrictionCondition.class,conn);
+		
+		for (IRow row : restrict.getDetails()) {
 
-		restrict.setDetails(detail.loadRowsByParentId(restrict.getPid(), isLock));
+			RdRestrictionDetail detail = (RdRestrictionDetail) row;
 
+			detail.setVias(viaSelector.loadRowsByParentId(detail.getPid(), isLock));
+			
+			detail.setConditions(conditionSelector.loadRowsByParentId(detail.getPid(), isLock));
+
+			for (IRow row2 : detail.getConditions()) {
+
+				RdRestrictionCondition condition = (RdRestrictionCondition) row2;
+				
+				detail.conditionMap.put(condition.getRowId(), condition);
+			}
+			
+			restrict.detailMap.put(detail.getPid(), detail);
+		}
 	}
+	
+	/**
+	 * 根据路口pid查询路口关系的交限
+	 * @param crossPid 路口pid
+	 * @param isLock 是否加锁
+	 * @return 交限集合
+	 * @throws Exception
+	 */
+	public List<RdRestriction> getRestrictionByCrossPid(int crossPid,boolean isLock) throws Exception {
 
+		List<RdRestriction> result = new ArrayList<RdRestriction>();
+
+		String sql = "select * from rd_restriction a where exists (select null from rd_cross_node b where b.pid=:1 and a.node_pid=b.node_pid) and u_record!=2";
+
+		sql = sql + " for update nowait";
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = getConn().prepareStatement(sql);
+
+			pstmt.setInt(1, crossPid);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+				RdRestriction restrict = new RdRestriction();
+
+				restrict.setPid(resultSet.getInt("pid"));
+
+				restrict.setInLinkPid(resultSet.getInt("in_link_pid"));
+
+				restrict.setNodePid(resultSet.getInt("node_pid"));
+
+				restrict.setRestricInfo(resultSet.getString("restric_info"));
+
+				restrict.setKgFlag(resultSet.getInt("kg_flag"));
+
+				restrict.setRowId(resultSet.getString("row_id"));
+
+				RdRestrictionDetailSelector detail = new RdRestrictionDetailSelector(getConn());
+
+				restrict.setDetails(detail.loadRowsByParentId(restrict.getPid(), true));
+
+				result.add(restrict);
+			}
+		} catch (Exception e) {
+
+			throw e;
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+		}
+		return result;
+	}
 }

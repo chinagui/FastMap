@@ -26,7 +26,8 @@ import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSeriesbranch;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSignasreal;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSignboard;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSignboardName;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.edit.utils.CalLinkOperateUtils;
 
@@ -45,9 +46,9 @@ public class Operation implements IOperation {
 
 		this.conn = conn;
 	}
-	
+
 	public Operation(Connection conn) {
-		
+
 		this.conn = conn;
 	}
 
@@ -696,12 +697,13 @@ public class Operation implements IOperation {
 			}
 		}
 	}
-	
+
 	/**
 	 * 分离节点
-	 * @param link 
+	 * 
+	 * @param link
 	 * @param nodePid
-	 * @param rdlinks 
+	 * @param rdlinks
 	 * @param result
 	 * @throws Exception
 	 */
@@ -711,8 +713,8 @@ public class Operation implements IOperation {
 		int linkPid = link.getPid();
 
 		// 跨图幅处理的以link为进入线RdBranch
-		Map<Integer, RdBranch> branchInLink =null;
-		
+		Map<Integer, RdBranch> branchInLink = null;
+
 		// 跨图幅处理的以link为退出线RdBranch
 		Map<Integer, RdBranch> branchOutLink = null;
 
@@ -722,12 +724,11 @@ public class Operation implements IOperation {
 
 			branchOutLink = new HashMap<Integer, RdBranch>();
 		}
-		
-		RdBranchSelector selector = new RdBranchSelector(
-				this.conn);
 
-		List<RdBranch> branchs =new ArrayList<RdBranch>();
-		
+		RdBranchSelector selector = new RdBranchSelector(this.conn);
+
+		List<RdBranch> branchs = new ArrayList<RdBranch>();
+
 		// link作为进入线的RdBranch
 		branchs.addAll(selector.loadByLinkPid(linkPid, 1, true));
 
@@ -735,26 +736,41 @@ public class Operation implements IOperation {
 		branchs.addAll(selector.loadByLinkPid(linkPid, 2, true));
 
 		for (RdBranch branch : branchs) {
-			
+
 			if (branch.getNodePid() == nodePid) {
 
 				result.insertObject(branch, ObjStatus.DELETE, branch.getPid());
 
-			} else if (branchInLink != null && branch.getInLinkPid() == linkPid) {
+				continue;
+			}
+
+			// 分离node是经过线和退出线的连接node
+			if (branch.getVias().size() > 0
+					&& branch.getOutLinkPid() == linkPid
+					&& isConnect(branch, nodePid)) {
+
+				result.insertObject(branch, ObjStatus.DELETE, branch.getPid());
+
+				continue;
+
+			}
+
+			if (branchInLink != null && branch.getInLinkPid() == linkPid) {
 
 				branchInLink.put(branch.getPid(), branch);
 
-			} else if (branchOutLink != null&& branch.getOutLinkPid() == linkPid) {
+			} else if (branchOutLink != null
+					&& branch.getOutLinkPid() == linkPid) {
 
 				branchOutLink.put(branch.getPid(), branch);
 			}
 		}
 
 		if (branchOutLink == null || branchInLink == null) {
-			
+
 			return;
 		}
-		
+
 		int connectNode = link.getsNodePid() == nodePid ? link.geteNodePid()
 				: link.getsNodePid();
 
@@ -780,5 +796,42 @@ public class Operation implements IOperation {
 			}
 		}
 	}
-	
+
+	private boolean isConnect(RdBranch branch, int nodePid) throws Exception {
+
+		RdLinkSelector rdLinkSelector = new RdLinkSelector(this.conn);
+
+		List<Integer> linkPids = new ArrayList<Integer>();
+
+		for (IRow rowVia : branch.getVias()) {
+
+			RdBranchVia via = (RdBranchVia) rowVia;
+
+			if (!linkPids.contains(via.getLinkPid())) {
+
+				linkPids.add(via.getLinkPid());
+			}
+		}
+
+		List<IRow> linkViaRows = rdLinkSelector
+				.loadByIds(linkPids, true, false);
+
+		boolean isConnect = false;
+
+		for (IRow rowLink : linkViaRows) {
+
+			RdLink rdLink = (RdLink) rowLink;
+
+			// 经过线与退出线的分离node挂接
+			if (rdLink.geteNodePid() == nodePid
+					|| rdLink.getsNodePid() == nodePid) {
+
+				isConnect = true;
+
+				break;
+			}
+		}
+
+		return isConnect;
+	}
 }

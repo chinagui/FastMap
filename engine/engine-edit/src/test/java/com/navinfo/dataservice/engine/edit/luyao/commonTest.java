@@ -458,4 +458,15 @@ public class commonTest extends InitApplication {
 
 		String msg = t.run();
 	}
+	
+	@Test
+	public void run_00926_1() throws Exception {
+
+		String parameter = "{\"command\":\"CREATE\",\"dbId\":17,\"type\":\"IXSAMEPOI\",\"poiPids\":[307000011,308000014]}";
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+	
 }

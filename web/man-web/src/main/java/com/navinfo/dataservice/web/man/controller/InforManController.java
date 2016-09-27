@@ -150,7 +150,7 @@ public class InforManController extends BaseController {
 			if (dataJson == null) {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
-			Infor data = service.query(dataJson.getString("inforId"));
+			HashMap<String,Object> data = service.query(dataJson.getString("inforId"));
 			
 			if(data!=null){
 				return new ModelAndView("jsonView", success(JsonOperation.beanToJson(data)));

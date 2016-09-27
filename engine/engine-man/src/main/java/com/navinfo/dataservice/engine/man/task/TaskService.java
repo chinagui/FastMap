@@ -188,7 +188,10 @@ public class TaskService {
 	public int createWithBean(Connection conn,Task bean) throws Exception{
 		int taskId=0;
 		try{
-			TaskOperation.updateLatest(conn,bean.getCityId());
+			//情报任务不更新
+			if(bean.getTaskType()!=4){
+				TaskOperation.updateLatest(conn,bean.getCityId());
+			}			
 			taskId=TaskOperation.getNewTaskId(conn);
 			bean.setTaskId(taskId);
 			TaskOperation.insertTask(conn, bean);

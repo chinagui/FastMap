@@ -188,6 +188,16 @@ public class RdLinkLimit implements IRow {
 		this.setType(sourceLimit.getType());
 		
 		this.setMesh(sourceLimit.mesh());
+		
+		this.setVehicle(sourceLimit.getVehicle());
+		
+		this.setTollType(sourceLimit.getTollType());
+		
+		this.setWeather(sourceLimit.getWeather());
+		
+		this.setInputTime(sourceLimit.getInputTime());
+		
+		this.setProcessFlag(sourceLimit.getProcessFlag());
 	}
 
 	@Override

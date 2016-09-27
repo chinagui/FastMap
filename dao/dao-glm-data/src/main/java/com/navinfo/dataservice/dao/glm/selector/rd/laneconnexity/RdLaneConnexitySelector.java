@@ -168,23 +168,17 @@ public class RdLaneConnexitySelector extends AbstractSelector {
 
 				ReflectionAttrUtils.executeResultSet(laneConn, resultSet);
 
-				int meshId = resultSet.getInt("mesh_id");
-
-				laneConn.setMesh(meshId);
-
 				RdLaneTopologySelector topoSelector = new RdLaneTopologySelector(conn);
 
 				laneConn.setTopos(topoSelector.loadRowsByParentId(laneConn.pid(), isLock));
 
 				for (IRow row : laneConn.getTopos()) {
-					row.setMesh(meshId);
 
 					RdLaneTopology topo = (RdLaneTopology) row;
 
 					laneConn.topologyMap.put(topo.getPid(), topo);
 
 					for (IRow row2 : topo.getVias()) {
-						row2.setMesh(meshId);
 
 						RdLaneVia via = (RdLaneVia) row2;
 

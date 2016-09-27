@@ -188,13 +188,23 @@ public class RdLinkName implements IRow {
 
 		RdLinkName nameSource = (RdLinkName) row;
 
+		this.setNameGroupid(nameSource.getNameGroupid());
+		
+		this.setSeqNum(nameSource.getSeqNum());
+		
 		this.setNameClass(nameSource.getNameClass());
+		
+		this.setInputTime(nameSource.getInputTime());
 
 		this.setNameType(nameSource.getNameType());
+		
+		this.setSrcFlag(nameSource.getSrcFlag());
+		
+		this.setRouteAtt(nameSource.getRouteAtt());
+		
+		this.setCode(nameSource.getCode());
 
-		this.setRowId(nameSource.getRowId());
-
-		this.setSeqNum(nameSource.getSeqNum());
+		this.setRowId(nameSource.getRowId());		
 
 		this.setMesh(row.mesh());
 		

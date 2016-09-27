@@ -43,6 +43,10 @@ public class RefreshFmgdbRoad {
 			info2.setRequest(req2);
 			AbstractJob job2 = JobCreateStrategy.createAsMethod(info2);
 			job2.run();
+			if(job2.getJobInfo().getStatus()!=3){
+				String msg = (job2.getException()==null)?"未知错误。":"错误："+job2.getException().getMessage();
+				throw new Exception("刷新gdb+库job内部发生"+msg);
+			}
 			response.put("full_copy_road", "success");
 		}catch (Exception e) {
 			response.put("msg", "ERROR:" + e.getMessage());

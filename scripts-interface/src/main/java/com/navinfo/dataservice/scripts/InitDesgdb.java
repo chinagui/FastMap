@@ -63,8 +63,9 @@ public class InitDesgdb {
 				info1.setRequest(req1);
 				AbstractJob job1 = JobCreateStrategy.createAsMethod(info1);
 				job1.run();
-				if(job1.getJobInfo().getResponse().getInt("exeStatus")!=3){
-					throw new Exception("创建出品库job执行失败。");
+				if(job1.getJobInfo().getStatus()!=3){
+					String msg = (job1.getException()==null)?"未知错误。":"错误："+job1.getException().getMessage();
+					throw new Exception("创建出品库过程中job内部发生"+msg);
 				}
 				int dbDay = job1.getJobInfo().getResponse().getInt("outDbId");
 				response.put(key, dbDay);
@@ -79,8 +80,9 @@ public class InitDesgdb {
 				info2.setRequest(req2);
 				AbstractJob job2 = JobCreateStrategy.createAsMethod(info2);
 				job2.run();
-				if(job2.getJobInfo().getResponse().getInt("exeStatus")!=3){
-					throw new Exception("出品库复制数据job执行失败");
+				if(job2.getJobInfo().getStatus()!=3){
+					String msg = (job2.getException()==null)?"未知错误。":"错误："+job2.getException().getMessage();
+					throw new Exception("出品库复制数据过程中job内部发生"+msg);
 				}
 				log.debug(key+"End......");
 			}

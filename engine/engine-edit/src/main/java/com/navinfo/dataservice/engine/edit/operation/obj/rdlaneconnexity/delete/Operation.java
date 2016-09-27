@@ -140,6 +140,36 @@ public class Operation implements IOperation {
 		return alertList;
 	}
 	
+
+	/**
+	 * 删除经过link对车信的删除影响分析
+	 * 
+	 * @return
+	 * @throws Exception 
+	 */
+	public List<AlertObject> getDeleteViaLinkRdLanConnexityInfectData(int linkPid, Connection conn) throws Exception {
+		RdLaneConnexitySelector selector = new RdLaneConnexitySelector(conn);
+
+		List<RdLaneConnexity> viaLane = selector.loadByLink(linkPid,3,true);
+
+		List<AlertObject> alertList = new ArrayList<>();
+
+		for (RdLaneConnexity rdLaneConnexity : viaLane) {
+
+			AlertObject alertObj = new AlertObject();
+
+			alertObj.setObjType(rdLaneConnexity.objType());
+
+			alertObj.setPid(rdLaneConnexity.getPid());
+
+			alertObj.setStatus(ObjStatus.DELETE);
+
+			alertList.add(alertObj);
+		}
+
+		return alertList;
+	}
+	
 	/**
 	 * 删除路口对车信的删除影响
 	 * 

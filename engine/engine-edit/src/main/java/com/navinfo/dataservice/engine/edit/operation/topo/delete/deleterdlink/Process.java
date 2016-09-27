@@ -107,6 +107,8 @@ public class Process extends AbstractProcess<Command> {
 		RdLaneConnexitySelector selector = new RdLaneConnexitySelector(this.getConn());
 
 		List<RdLaneConnexity> lanes = selector.loadRdLaneConnexityByLinkPid(this.getCommand().getLinkPid(), true);
+		
+		List<RdLaneConnexity> viaLanes = selector.loadByLink(this.getCommand().getLinkPid(),3,true);
 
 		// 获取退出线为该link
 
@@ -123,6 +125,8 @@ public class Process extends AbstractProcess<Command> {
 		}
 
 		lanes.addAll(lanes2);
+		
+		lanes.addAll(viaLanes);
 
 		this.getCommand().setLanes(lanes);
 	}
@@ -498,6 +502,12 @@ public class Process extends AbstractProcess<Command> {
 
 		if (CollectionUtils.isNotEmpty(delOutRdLaneConAlertDataList)) {
 			infects.put("删除link作为退出线的车信信息", delOutRdLaneConAlertDataList);
+		}
+		List<AlertObject> delViaRdLaneConAlertDataList = rdLaneConOperation
+				.getDeleteViaLinkRdLanConnexityInfectData(linkPid, conn);
+
+		if (CollectionUtils.isNotEmpty(delViaRdLaneConAlertDataList)) {
+			infects.put("删除link作为经过线的车信信息", delViaRdLaneConAlertDataList);
 		}
 
 		// 分歧

@@ -127,6 +127,15 @@ public class RdLinkZone implements IRow {
 	@Override
 	public void copy(IRow row) {
 
+		RdLinkZone source = (RdLinkZone) row;
+
+		this.setRegionId(source.getRegionId());
+
+		this.setType(source.getType());		
+
+		this.setSide(source.getSide());
+		
+		this.setMesh(source.mesh());
 	}
 
 	@Override

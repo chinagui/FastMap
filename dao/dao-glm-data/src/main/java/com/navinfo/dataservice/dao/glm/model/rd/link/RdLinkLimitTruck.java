@@ -176,6 +176,15 @@ public class RdLinkLimitTruck implements IRow {
 
 		this.setTimeDomain(sourceLimit.getTimeDomain());
 
+		this.setResTrailer(sourceLimit.getResTrailer());
+		
+		this.setResWeigh(sourceLimit.getResWeigh());
+		
+		this.setResAxleLoad(sourceLimit.getResAxleLoad());
+		
+		this.setResAxleCount(sourceLimit.getResAxleCount());
+		
+		this.setResOut(sourceLimit.getResOut());
 		
 	}
 

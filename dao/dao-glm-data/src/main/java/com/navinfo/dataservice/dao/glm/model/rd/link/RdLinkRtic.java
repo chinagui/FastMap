@@ -147,7 +147,12 @@ public class RdLinkRtic implements IRow {
 
 	@Override
 	public void copy(IRow row) {
-
+		RdLinkRtic rtic = (RdLinkRtic) row;
+		this.setCode(rtic.getCode());
+		this.setRank(rtic.getRank());
+		this.setRticDir(rtic.getRticDir());
+		this.setUpdownFlag(rtic.getUpdownFlag());
+		this.setRangeType(rtic.getRangeType());
 	}
 
 	@Override

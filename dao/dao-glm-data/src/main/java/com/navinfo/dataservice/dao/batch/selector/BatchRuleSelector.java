@@ -35,7 +35,7 @@ public class BatchRuleSelector extends AbstractSelector {
 		try {
 			StringBuilder sb = new StringBuilder();
 			sb.append("select c.*,m.suite_id from batch_rule_cop c,batch_suite_rule_mapping_cop m ");
-			sb.append("where c.rule_code = m.rule_code and m.suite_id in (");
+			sb.append("where c.rule_code = m.rule_code and m.suite_id in ( '', ");
 			String suiteCode = "";
 			for (int i=0;i<suiteArray.size();i++) {
 				JSONObject suiteObj = suiteArray.getJSONObject(i);

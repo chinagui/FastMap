@@ -34,7 +34,7 @@ public class CkSuiteSelector extends AbstractSelector {
 
 			int endRow = pageNum * pageSize;
 			
-			sb.append("SELECT * FROM (SELECT c.*, rownum rn FROM (select a.* from ck_suite_cop a  where a.feature=:1) c WHERE rownum <= :2)  WHERE rn >= :3");
+			sb.append("SELECT * FROM (SELECT c.*, rownum rn FROM (select COUNT (1) OVER (PARTITION BY 1) total,a.* from ck_suite_cop a  where a.feature=:1) c WHERE rownum <= :2)  WHERE rn >= :3");
 			
 			pstmt = conn.prepareStatement(sb.toString());
 
@@ -51,6 +51,7 @@ public class CkSuiteSelector extends AbstractSelector {
 				data.put("feature", resultSet.getString("feature"));
 				data.put("suiteName", resultSet.getString("suite_name"));
 				data.put("ruleCode", resultSet.getString("rule_code"));
+				data.put("total", resultSet.getInt("total"));
 				result.add(data);
 			}
 			

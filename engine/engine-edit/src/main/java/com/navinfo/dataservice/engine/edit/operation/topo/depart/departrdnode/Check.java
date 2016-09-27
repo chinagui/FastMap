@@ -58,8 +58,8 @@ public class Check {
 	//该线是经过线，移动该线造成线线关系（车信、线线交限、线线语音引导、线线分歧、线线顺行）从inLink到outlink的不连续
 	public void checkIsVia(Connection conn,int linkPid) throws Exception
 	{
-		String sql = "select link_pid from rd_lane_via where link_pid =:1 and rownum=1 union all select link_pid from rd_restriction_via where link_pid =:2 and rownum=1 union all select link_pid from RD_VOICEGUIDE_VIA where link_pid =:3 and rownum=1 union all select link_pid from rd_branch_via where link_pid =:4 and rownum=1 union all select link_pid from rd_directroute_via where link_pid =:5 and rownum=1";
-
+		String sql = "SELECT LINK_PID FROM RD_LANE_VIA WHERE LINK_PID = :1 AND ROWNUM = 1 AND U_RECORD != 2 UNION ALL SELECT LINK_PID FROM RD_RESTRICTION_VIA WHERE LINK_PID = :2 AND ROWNUM = 1 AND U_RECORD != 2 UNION ALL SELECT LINK_PID FROM RD_VOICEGUIDE_VIA WHERE LINK_PID = :3 AND ROWNUM = 1 AND U_RECORD != 2 UNION ALL SELECT LINK_PID FROM RD_BRANCH_VIA WHERE LINK_PID = :4 AND ROWNUM = 1 AND U_RECORD != 2 UNION ALL SELECT LINK_PID FROM RD_DIRECTROUTE_VIA WHERE LINK_PID = :5 AND ROWNUM = 1 AND U_RECORD != 2";
+		
 		PreparedStatement pstmt = conn.prepareStatement(sql);
 
 		pstmt.setInt(1, linkPid);

@@ -32,8 +32,8 @@ public class departNodeTest extends InitApplication {
 	@Test
 	public void departNode() throws Exception {
 
-		String parameter = "{\"command\":\"DEPART\",\"type\":\"RDLINK\",\"dbId\":17,\"objId\":320000089,"
-				+ "\"data\":{\"linkPid\":204000100,\"catchNodePid\":0,\"longitude\":116.13071,\"latitude\":40.56006}}";
+		String parameter = "{\"command\":\"DEPART\",\"type\":\"RDLINK\",\"dbId\":17,\"objId\":202000088,"
+				+ "\"data\":{\"linkPid\":320000125,\"catchNodePid\":310000099,\"longitude\":116.26585,\"latitude\":40.54694}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
@@ -48,7 +48,7 @@ public class departNodeTest extends InitApplication {
 	public void departNode_1() throws Exception {
 
 		String parameter = "{\"command\":\"DEPART\",\"type\":\"RDLINK\",\"dbId\":17,\"objId\":303000092,"
-				+ "\"data\":{\"linkPid\":204000100,\"catchNodePid\":320000089,\"longitude\":116.12935,\"latitude\":40.55974}}";
+				+ "\"data\":{\"linkPid\":309000132,\"catchNodePid\":320000089,\"longitude\":116.12935,\"latitude\":40.55974}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
@@ -61,8 +61,8 @@ public class departNodeTest extends InitApplication {
 	@Test
 	public void departNode_2() throws Exception {
 
-		String parameter = "{\"command\":\"DEPART\",\"type\":\"RDLINK\",\"dbId\":17,\"objId\":208000085,"
-				+ "\"data\":{\"linkPid\":308000123,\"catchNodePid\":320000089,\"longitude\":116.12935,\"latitude\":40.55974}}";
+		String parameter = "{\"command\":\"DEPART\",\"type\":\"RDLINK\",\"dbId\":17,\"objId\":208000111S,"
+				+ "\"data\":{\"linkPid\":309000132,\"catchNodePid\":320000089,\"longitude\":116.12935,\"latitude\":40.55974}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

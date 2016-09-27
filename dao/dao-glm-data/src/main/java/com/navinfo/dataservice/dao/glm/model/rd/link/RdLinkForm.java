@@ -140,7 +140,10 @@ public class RdLinkForm implements IRow {
 		RdLinkForm formSource = (RdLinkForm) row;
 		
 		this.setFormOfWay(formSource.getFormOfWay());
-
+		this.setExtendedForm(formSource.getExtendedForm());
+		this.setAuxiFlag(formSource.getAuxiFlag());
+		this.setKgFlag(formSource.getKgFlag());
+		
 		this.setRowId(formSource.getRowId());
 
 		this.setMesh(row.mesh());

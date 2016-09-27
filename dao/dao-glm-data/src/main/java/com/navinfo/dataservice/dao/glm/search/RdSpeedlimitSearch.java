@@ -58,7 +58,7 @@ public class RdSpeedlimitSearch implements ISearch {
 
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "SELECT a.pid, a.link_pid, a.speed_type, a.direct, a.capture_flag, a.speed_flag, a.speed_value, a.lane_speed_value, a.speed_dependent,b.geometry link_geom,a.geometry point_geom FROM rd_speedlimit  a left join rd_link b on a.link_pid = b.link_pid WHERE sdo_relate(a.geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') = 'TRUE' AND a.u_record != 2 and a.speed_type IN (0,3,4)";
+		String sql = "SELECT a.pid, a.link_pid, a.speed_type, a.direct, a.capture_flag, a.speed_flag, a.speed_value, a.lane_speed_value, a.speed_dependent,b.geometry link_geom,a.geometry point_geom,a.descript FROM rd_speedlimit  a left join rd_link b on a.link_pid = b.link_pid WHERE sdo_relate(a.geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') = 'TRUE' AND a.u_record != 2 and a.speed_type IN (0,3,4)";
 
 		PreparedStatement pstmt = null;
 
@@ -159,6 +159,8 @@ public class RdSpeedlimitSearch implements ISearch {
 				jsonM.put("d", resultSet.getInt("direct"));
 				
 				jsonM.put("e", resultSet.getInt("link_pid"));
+				
+				jsonM.put("f", resultSet.getInt("descript"));
 
 				snapshot.setM(jsonM);
 

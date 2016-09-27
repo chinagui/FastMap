@@ -83,6 +83,8 @@ public class Process extends AbstractProcess<Command> {
 		RdRestrictionSelector restriction = new RdRestrictionSelector(this.getConn());
 
 		List<RdRestriction> restrictions = restriction.loadRdRestrictionByLinkPid(this.getCommand().getLinkPid(), true);
+		//经过link
+		List<RdRestriction> viaRestrictions = restriction.loadByLink(this.getCommand().getLinkPid(), 3,true);
 
 		// 获取退出线为该link，并且只有一根退出线的交限
 		List<RdRestriction> restrictions2 = restriction.loadRdRestrictionByOutLinkPid(this.getCommand().getLinkPid(),
@@ -98,6 +100,8 @@ public class Process extends AbstractProcess<Command> {
 		}
 
 		restrictions.addAll(outLinkDeleteResList);
+		
+		restrictions.addAll(viaRestrictions);
 
 		this.getCommand().setRestrictions(restrictions);
 	}
@@ -136,11 +140,15 @@ public class Process extends AbstractProcess<Command> {
 		RdBranchSelector selector = new RdBranchSelector(this.getConn());
 
 		List<RdBranch> branches = selector.loadRdBranchByInLinkPid(this.getCommand().getLinkPid(), true);
+		
+		List<RdBranch> viaBranch = selector.loadByLinkPid(this.getCommand().getLinkPid(), 3,true);
 
 		// 获取退出线为该link，并且只有一根退出线的车信
 		List<RdBranch> branches2 = selector.loadRdBranchByOutLinkPid(this.getCommand().getLinkPid(), true);
 
 		branches.addAll(branches2);
+		
+		branches.addAll(viaBranch);
 
 		this.getCommand().setBranches(branches);
 	}
@@ -483,6 +491,10 @@ public class Process extends AbstractProcess<Command> {
 		List<AlertObject> delOutResAlertDataList = rdrestrictionOperation.getDeleteOutLinkResInfectData(linkPid, conn);
 		if (CollectionUtils.isNotEmpty(delOutResAlertDataList)) {
 			infects.put("删除link作为退入线的交限信息", delOutResAlertDataList);
+		}
+		List<AlertObject> delViaResAlertDataList = rdrestrictionOperation.getDeleteViaLinkResInfectData(linkPid, conn);
+		if (CollectionUtils.isNotEmpty(delViaResAlertDataList)) {
+			infects.put("删除link作为经过线的交限信息", delViaResAlertDataList);
 		}
 
 		// 车信

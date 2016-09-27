@@ -39,26 +39,23 @@ public class RdSpeedlimitSearch implements ISearch {
 	}
 
 	@Override
-	public List<SearchSnapshot> searchDataBySpatial(String wkt)
-			throws Exception {
+	public List<SearchSnapshot> searchDataBySpatial(String wkt) throws Exception {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public List<SearchSnapshot> searchDataByCondition(String condition)
-			throws Exception {
+	public List<SearchSnapshot> searchDataByCondition(String condition) throws Exception {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z,
-			int gap) throws Exception {
+	public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z, int gap) throws Exception {
 
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "SELECT a.pid, a.link_pid, a.speed_type, a.direct, a.capture_flag, a.speed_flag, a.speed_value, a.lane_speed_value, a.speed_dependent,b.geometry link_geom,a.geometry point_geom FROM rd_speedlimit  a left join rd_link b on a.link_pid = b.link_pid WHERE sdo_relate(a.geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') = 'TRUE' AND a.u_record != 2 and a.speed_type IN (0,3,4)";
+		String sql = "SELECT a.pid, a.link_pid, a.speed_type, a.direct, a.capture_flag, a.speed_flag, a.speed_value, a.lane_speed_value, a.speed_dependent,b.geometry link_geom,a.geometry point_geom,a.descript FROM rd_speedlimit  a left join rd_link b on a.link_pid = b.link_pid WHERE sdo_relate(a.geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') = 'TRUE' AND a.u_record != 2 and a.speed_type IN (0,3,4)";
 
 		PreparedStatement pstmt = null;
 
@@ -100,32 +97,32 @@ public class RdSpeedlimitSearch implements ISearch {
 				int speedDependent = resultSet.getInt("speed_dependent");
 
 				jsonM.put("a", String.valueOf(speedType));
-				
+
 				StringBuilder sb = new StringBuilder();
 
 				if (speedType == 0) {
-					
+
 					sb.append(captureFlag);
-					
+
 					sb.append("|");
-					
+
 					sb.append(speedFlag);
-					
+
 					sb.append("|");
-					
+
 					sb.append(speedValue / 10);
-					
+
 				} else if (speedType == 3) {
 					sb.append(captureFlag);
-					
+
 					sb.append("|");
-					
+
 					sb.append(speedValue / 10);
-					
+
 					sb.append("|");
-					
+
 					sb.append(speedDependent);
-					
+
 				} else {
 					String[] lanes = laneSpeedValue.split("\\|");
 
@@ -142,7 +139,7 @@ public class RdSpeedlimitSearch implements ISearch {
 						sb.append(Integer.valueOf(lanes[i]) / 10);
 					}
 
-				}				
+				}
 				jsonM.put("b", sb.toString());
 
 				STRUCT struct2 = (STRUCT) resultSet.getObject("point_geom");
@@ -153,12 +150,13 @@ public class RdSpeedlimitSearch implements ISearch {
 
 				jsonM.put("c", String.valueOf((int) angle));
 
-				snapshot.setG(Geojson.lonlat2Pixel(geom2.getFirstPoint()[0],
-						geom2.getFirstPoint()[1], z, px, py));
-				
+				snapshot.setG(Geojson.lonlat2Pixel(geom2.getFirstPoint()[0], geom2.getFirstPoint()[1], z, px, py));
+
 				jsonM.put("d", resultSet.getInt("direct"));
-				
+
 				jsonM.put("e", resultSet.getInt("link_pid"));
+
+				jsonM.put("f", resultSet.getString("descript") == null?"":resultSet.getString("descript"));
 
 				snapshot.setM(jsonM);
 
@@ -195,12 +193,11 @@ public class RdSpeedlimitSearch implements ISearch {
 		double angle = 0;
 
 		STRUCT struct2 = (STRUCT) resultSet.getObject("link_geom");
-		
-		if(struct2 == null)
-		{
+
+		if (struct2 == null) {
 			return angle;
 		}
-		
+
 		STRUCT struct1 = (STRUCT) resultSet.getObject("point_geom");
 
 		JGeometry geom1 = JGeometry.load(struct1);
@@ -246,8 +243,7 @@ public class RdSpeedlimitSearch implements ISearch {
 
 		sb.append(")");
 
-		angle = DisplayUtils.calIncloudedAngle(sb.toString(),
-				resultSet.getInt("direct"));
+		angle = DisplayUtils.calIncloudedAngle(sb.toString(), resultSet.getInt("direct"));
 
 		return angle;
 
@@ -271,8 +267,7 @@ public class RdSpeedlimitSearch implements ISearch {
 
 		RdSpeedlimitSearch a = new RdSpeedlimitSearch(conn);
 
-		System.out.println(JSONArray.fromObject(a.searchDataByTileWithGap(
-				107951, 49621, 17, 20)));
+		System.out.println(JSONArray.fromObject(a.searchDataByTileWithGap(107951, 49621, 17, 20)));
 
 	}
 }

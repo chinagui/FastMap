@@ -59,8 +59,9 @@ public class RefreshDesgdbRoad {
 				info1.setRequest(req1);
 				AbstractJob job1 = JobCreateStrategy.createAsMethod(info1);
 				job1.run();
-				if(job1.getJobInfo().getResponse().getInt("exeStatus")!=3){
-					throw new Exception("出品库job执行失败。类型:"+type);
+				if(job1.getJobInfo().getStatus()!=3){
+					String msg = (job1.getException()==null)?"未知错误。":"错误："+job1.getException().getMessage();
+					throw new Exception("出品库job内部发生"+msg);
 				}
 				response.put(type+"_refresh", "success");
 			}

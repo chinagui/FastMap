@@ -141,7 +141,37 @@ public class Operation implements IOperation {
 
 		return alertList;
 	}
+	
+	/**
+	 * 删除经过link对交限的删除影响分析
+	 * 
+	 * @return
+	 * @throws Exception
+	 */
+	public List<AlertObject> getDeleteViaLinkResInfectData(int linkPid, Connection conn) throws Exception {
 
+		RdRestrictionSelector restriction = new RdRestrictionSelector(conn);
+		// 获取退出线为该link
+		List<RdRestriction> restrictionsVia = restriction.loadByLink(linkPid, 3, true);
+
+		List<AlertObject> alertList = new ArrayList<>();
+
+		for (RdRestriction rdRestriction : restrictionsVia) {
+
+			AlertObject alertObj = new AlertObject();
+
+			alertObj.setObjType(rdRestriction.objType());
+
+			alertObj.setPid(rdRestriction.getPid());
+
+			alertObj.setStatus(ObjStatus.DELETE);
+
+			alertList.add(alertObj);
+		}
+
+		return alertList;
+	}
+	
 	/**
 	 * 删除路口对交限的删除影响
 	 * 

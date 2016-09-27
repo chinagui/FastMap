@@ -41,9 +41,9 @@ public class CkResultToolTest extends ClassPathXmlAppContextInit {
 	public void moveNiVal_01(){
 		try{
 			DatahubApi datahub = (DatahubApi)ApplicationContextUtil.getBean("datahubApi");
-			DbInfo dbSrc = datahub.getDbById(100);
+			DbInfo dbSrc = datahub.getDbById(110);
 			OracleSchema srcSchema = new OracleSchema(DbConnectConfig.createConnectConfig(dbSrc.getConnectParam()));
-			DbInfo tarDb = datahub.getDbById(25);
+			DbInfo tarDb = datahub.getDbById(17);
 			OracleSchema tarSchema = new OracleSchema(DbConnectConfig.createConnectConfig(tarDb.getConnectParam()));
 			Set<Integer> grids = new HashSet<Integer>();
 			grids.add(59567101);

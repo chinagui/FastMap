@@ -16,7 +16,7 @@ public class RdRestrictionTest extends InitApplication{
 	
 	@Test
 	public void testAddRestriction() {
-		String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDLANECONNEXITY\",\"dbId\":17,\"data\":{\"pid\":31986,\"objStatus\":\"UPDATE\",\"inLinkPid\":574126,\"nodePid\":470125,\"laneInfo\":\"[l],a,a,[c]\",\"leftExtend\":1,\"rightExtend\":1,\"topos\":[{\"options\":{},\"pid\":77620,\"objStatus\":\"UPDATE\",\"connexityPid\":31990,\"inLaneInfo\":4096,\"outLinkPid\":582698,\"reachDir\":3,\"relationshipType\":2},{\"options\":{},\"pid\":77621,\"objStatus\":\"UPDATE\",\"connexityPid\":31990,\"outLinkPid\":15443269,\"reachDir\":2,\"relationshipType\":2},{\"options\":{},\"pid\":8766549,\"objStatus\":\"UPDATE\",\"connexityPid\":31990,\"inLaneInfo\":32768,\"outLinkPid\":730636,\"reachDir\":4,\"relationshipType\":1},{\"options\":{},\"pid\":8766550,\"objStatus\":\"UPDATE\",\"connexityPid\":31990,\"inLaneInfo\":24576,\"outLinkPid\":574125,\"reachDir\":1,\"relationshipType\":1}]}}";
+		String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDRESTRICTION\",\"dbId\":17,\"data\":{\"restricInfo\":\"2\",\"pid\":6937515,\"objStatus\":\"UPDATE\",\"details\":[{\"pid\":7112407,\"restricPid\":6937515,\"outLinkPid\":582745,\"flag\":1,\"restricInfo\":3,\"type\":2,\"relationshipType\":1,\"conditions\":[],\"geoLiveType\":\"RDRESTRICTIONDETAIL\",\"objStatus\":\"DELETE\"},{\"type\":\"1\",\"pid\":7112406,\"objStatus\":\"UPDATE\",\"conditions\":[{\"pid\":0,\"rowId\":\"0\",\"vehicle\":0,\"resTrailer\":0,\"resWeigh\":0,\"resAxleLoad\":0,\"resAxleCount\":0,\"resOut\":0,\"objStatus\":\"INSERT\"}]}]}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

@@ -30,9 +30,9 @@ public class CkSuiteSelector extends AbstractSelector {
 		try {
 			JSONArray result = new JSONArray();
 			
-			int startRow = pageNum * pageSize + 1;
+			int startRow = (pageNum-1) * pageSize + 1;
 
-			int endRow = (pageNum + 1) * pageSize;
+			int endRow = pageNum * pageSize;
 			
 			sb.append("SELECT * FROM (SELECT c.*, rownum rn FROM (select a.* from ck_suite_cop a  where a.feature=:1) c WHERE rownum <= :2)  WHERE rn >= :3");
 			

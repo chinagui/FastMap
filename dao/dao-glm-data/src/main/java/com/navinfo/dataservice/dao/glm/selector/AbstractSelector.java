@@ -282,6 +282,17 @@ public class AbstractSelector implements ISelector {
 				ReflectionAttrUtils.executeResultSet(rowInner, resultSet);
 
 				rows.add(rowInner);
+				if (rowInner instanceof IObj) {
+					IObj obj = (IObj) rowInner;
+					// 子表list map
+					Map<Class<? extends IRow>, List<IRow>> childList = obj.childList();
+
+					// 子表map
+					Map<Class<? extends IRow>, Map<String, ?>> childMap = obj.childMap();
+					if (childList != null) {
+						setChildValue(obj, childList, childMap, isLock);
+					}
+				}
 			}
 		} catch (Exception e) {
 

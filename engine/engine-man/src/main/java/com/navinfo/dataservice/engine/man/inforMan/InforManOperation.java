@@ -11,12 +11,14 @@ import java.util.List;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.log4j.Logger;
+import org.json.JSONException;
 
 import com.navinfo.dataservice.api.man.model.BlockMan;
 import com.navinfo.dataservice.api.man.model.Infor;
 import com.navinfo.dataservice.api.man.model.InforMan;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -47,22 +49,36 @@ public class InforManOperation {
 	private Integer taskId;
 	private Timestamp insertTime;
 	 */
-	public static List<Infor> selectTaskBySql2(Connection conn,String selectSql,List<Object> values) throws Exception{
+	public static List<HashMap<String,Object>> selectTaskBySql2(Connection conn,String selectSql,List<Object> values) throws Exception{
 		try{
 			QueryRunner run = new QueryRunner();
-			ResultSetHandler<List<Infor>> rsHandler = new ResultSetHandler<List<Infor>>(){
-				public List<Infor> handle(ResultSet rs) throws SQLException {
-					List<Infor> list = new ArrayList<Infor>();
+			ResultSetHandler<List<HashMap<String,Object>>> rsHandler = new ResultSetHandler<List<HashMap<String,Object>>>(){
+				public List<HashMap<String,Object>> handle(ResultSet rs) throws SQLException {
+					List<HashMap<String,Object>> list = new ArrayList<HashMap<String,Object>>();
 					while(rs.next()){
-						Infor map = new Infor();
-						map.setInforId(rs.getString("INFOR_ID"));
-						map.setInforName(rs.getString("INFOR_NAME"));
-						map.setGeometry(rs.getString("GEOMETRY"));
-						map.setInforLevel(rs.getInt("INFOR_LEVEL"));
-						map.setPlanStatus(rs.getInt("PLAN_STATUS"));
-						map.setInforContent(rs.getString("INFOR_CONTENT"));
-						map.setTaskId(rs.getInt("TASK_ID"));						
-						map.setInsertTime(rs.getTimestamp("INSERT_TIME"));
+						HashMap<String,Object> map = new HashMap<String,Object>();
+						map.put("inforId", rs.getString("INFOR_ID"));
+						map.put("inforName", rs.getString("INFOR_NAME"));
+						JSONArray geoList = new JSONArray();
+						String inforGeo=rs.getString("GEOMETRY");
+						String[] inforGeoList=inforGeo.split(";");
+						for(String geoTmp:inforGeoList){
+							try {
+								geoList.add(GeoTranslator.jts2Geojson(GeoTranslator.wkt2Geometry(geoTmp)));
+							} catch (JSONException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							} catch (Exception e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+						}
+						map.put("geometry", geoList);
+						map.put("inforLevel",rs.getInt("INFOR_LEVEL"));
+						map.put("planStatus",rs.getInt("PLAN_STATUS"));
+						map.put("inforContent",rs.getString("INFOR_CONTENT"));
+						map.put("taskId",rs.getInt("TASK_ID"));						
+						map.put("insertTime",rs.getTimestamp("INSERT_TIME"));
 						list.add(map);
 					}
 					return list;

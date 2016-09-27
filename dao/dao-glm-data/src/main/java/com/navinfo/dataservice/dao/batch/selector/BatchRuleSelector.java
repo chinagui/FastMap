@@ -39,9 +39,11 @@ public class BatchRuleSelector extends AbstractSelector {
 			String suiteCode = "";
 			for (int i=0;i<suiteArray.size();i++) {
 				JSONObject suiteObj = suiteArray.getJSONObject(i);
-				suiteCode += suiteObj.getString("ruleCode") + ",";
+				suiteCode += "'" + suiteObj.getString("ruleCode") + "',";
 			}
-			suiteCode = suiteCode.substring(0, suiteCode.length()-1);
+			if (suiteCode.length()>0) {
+				suiteCode = suiteCode.substring(0, suiteCode.length()-1);
+			}
 			sb.append(suiteCode + ") ");
 			sb.append("order by m.suite_id");
 			

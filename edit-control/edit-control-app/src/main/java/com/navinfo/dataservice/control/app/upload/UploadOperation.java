@@ -524,6 +524,9 @@ public class UploadOperation {
 			poi.setuRecord(1);
 
 			poi.setRowId(UuidUtils.genUuid().toUpperCase());
+			
+			// 新增卡车标识20160927
+			poi.setTruckFlag(jo.getInt("truck"));
 
 			// 名称
 			if (!poi.getOldName().isEmpty()) {
@@ -892,6 +895,47 @@ public class UploadOperation {
 			poiJson.put("rowId", oldPoi.getRowId());
 
 			poiJson.put("objStatus", ObjStatus.UPDATE.toString());
+			
+			// 新增卡车标识20160927
+			poiJson.put("truckFlag",jo.getInt("truck"));
+			
+			// 新增poiMemo字段录入20160927
+			String poiMemo = "";
+			// 照片
+			JSONArray attachments = jo.getJSONArray("attachments");
+			List<IRow> oldPhotoList = oldPoi.getPhotos();
+			List<String> photoIdList = new ArrayList<String>();
+			JSONArray photoList = new JSONArray();
+			for (IRow oldPhotoIRow : oldPhotoList) {
+				IxPoiPhoto oldPhoto = (IxPoiPhoto) oldPhotoIRow;
+				photoIdList.add(oldPhoto.getFccPid());
+			}
+			for (int k = 0; k < attachments.size(); k++) {
+				JSONObject photo = attachments.getJSONObject(k);
+	
+				int type = photo.getInt("type");
+				if (type == 1) {
+					String photoId = photo.getString("id");
+					if (!photoIdList.contains(photoId)) {
+						JSONObject photoObj = new JSONObject();
+						photoIdList.add(photoId);
+						photoObj.put("objStatus", ObjStatus.INSERT.toString());
+						photoObj.put("poiPid", pid);
+						photoObj.put("fccPid", photoId);
+						photoObj.put("tag", photo.getInt("tag"));
+						photoObj.put("rowId", photoId);
+						photoList.add(photoObj);
+						// 鲜度验证
+						freshFlag = false;
+					}
+				} else if (type == 3) {
+					poiMemo = photo.getString("content");
+				}
+			}
+			if (photoList.size() > 0) {
+				poiJson.put("photos", photoList);
+			}
+			poiJson.put("poiMemo", poiMemo);
 
 			// 鲜度验证
 			if (oldPoi.fillChangeFields(poiJson)) {
@@ -1078,44 +1122,6 @@ public class UploadOperation {
 
 				poiJson.put("contacts", newContactArray);
 			}
-
-			// 新增poiMemo字段录入20160927
-			String poiMemo = "";
-			// 照片
-			JSONArray attachments = jo.getJSONArray("attachments");
-			List<IRow> oldPhotoList = oldPoi.getPhotos();
-			List<String> photoIdList = new ArrayList<String>();
-			JSONArray photoList = new JSONArray();
-			for (IRow oldPhotoIRow : oldPhotoList) {
-				IxPoiPhoto oldPhoto = (IxPoiPhoto) oldPhotoIRow;
-				photoIdList.add(oldPhoto.getFccPid());
-			}
-			for (int k = 0; k < attachments.size(); k++) {
-				JSONObject photo = attachments.getJSONObject(k);
-
-				int type = photo.getInt("type");
-				if (type == 1) {
-					String photoId = photo.getString("id");
-					if (!photoIdList.contains(photoId)) {
-						JSONObject photoObj = new JSONObject();
-						photoIdList.add(photoId);
-						photoObj.put("objStatus", ObjStatus.INSERT.toString());
-						photoObj.put("poiPid", pid);
-						photoObj.put("fccPid", photoId);
-						photoObj.put("tag", photo.getInt("tag"));
-						photoObj.put("rowId", photoId);
-						photoList.add(photoObj);
-						// 鲜度验证
-						freshFlag = false;
-					}
-				} else if (type == 3) {
-					poiMemo = photo.getString("content");
-				}
-			}
-			if (photoList.size() > 0) {
-				poiJson.put("photos", photoList);
-			}
-			poiJson.put("poiMemo", poiMemo);
 
 			// 父
 			List<IRow> oldParentList = oldPoi.getParents();

@@ -510,7 +510,12 @@ public class UploadOperation {
 
 			JSONObject indoor = jo.getJSONObject("indoor");
 			if (!indoor.isNullObject() && indoor.has("type")) {
-				poi.setIndoor(indoor.getInt("type"));
+				if (indoor.getInt("type") == 3) {
+					poi.setIndoor(1);
+				} else {
+					poi.setIndoor(0);
+				}
+				
 			} else {
 				poi.setIndoor(0);
 			}
@@ -603,6 +608,8 @@ public class UploadOperation {
 				poi.setContacts(contacts);
 			}
 
+			// 新增POI_MEMO录入20160927
+			String poiMemo = "";
 			// 照片
 			JSONArray attachments = jo.getJSONArray("attachments");
 			List<String> photoIdList = new ArrayList<String>();
@@ -621,8 +628,11 @@ public class UploadOperation {
 						poiPhoto.setRowId(photoId);
 						photoList.add(poiPhoto);
 					}
+				} else if (type == 3) {
+					poiMemo = photo.getString("content");
 				}
 			}
+			poi.setPoiMemo(poiMemo);
 			if (photoList.size() > 0) {
 				poi.setPhotos(photoList);
 			}
@@ -869,7 +879,12 @@ public class UploadOperation {
 
 			JSONObject indoor = jo.getJSONObject("indoor");
 			if (!indoor.isNullObject() && indoor.has("type")) {
-				poiJson.put("indoor", indoor.getInt("type"));
+				if (indoor.getInt("type") == 3) {
+					poiJson.put("indoor", 1);
+				} else {
+					poiJson.put("indoor", 0);
+				}
+				
 			} else {
 				poiJson.put("indoor", 0);
 			}
@@ -1064,6 +1079,8 @@ public class UploadOperation {
 				poiJson.put("contacts", newContactArray);
 			}
 
+			// 新增poiMemo字段录入20160927
+			String poiMemo = "";
 			// 照片
 			JSONArray attachments = jo.getJSONArray("attachments");
 			List<IRow> oldPhotoList = oldPoi.getPhotos();
@@ -1091,11 +1108,14 @@ public class UploadOperation {
 						// 鲜度验证
 						freshFlag = false;
 					}
+				} else if (type == 3) {
+					poiMemo = photo.getString("content");
 				}
 			}
 			if (photoList.size() > 0) {
 				poiJson.put("photos", photoList);
 			}
+			poiJson.put("poiMemo", poiMemo);
 
 			// 父
 			List<IRow> oldParentList = oldPoi.getParents();

@@ -432,6 +432,7 @@ public class Process extends AbstractProcess<Command> {
 		List<AlertObject> updateRdLaneConAlertDataList = new ArrayList<>();
 		List<AlertObject> delInRdLaneConAlertDataList = new ArrayList<>();
 		List<AlertObject> delOutRdLaneConAlertDataList = new ArrayList<>();
+		List<AlertObject> delViaRdLaneConAlertDataList = new ArrayList<>();
 		// 车信
 		com.navinfo.dataservice.engine.edit.operation.obj.rdlaneconnexity.delete.Operation rdLaneConOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdlaneconnexity.delete.Operation(
 				null, null);
@@ -442,6 +443,8 @@ public class Process extends AbstractProcess<Command> {
 					.addAll(rdLaneConOperation.getDeleteInLinkRdLaneConnexityInfectData(linkPid, conn));
 			delOutRdLaneConAlertDataList
 					.addAll(rdLaneConOperation.getDeleteOutLinkRdLanConnexityInfectData(linkPid, conn));
+			delViaRdLaneConAlertDataList.addAll(rdLaneConOperation
+					.getDeleteViaLinkRdLanConnexityInfectData(linkPid, conn));
 		}
 		if (CollectionUtils.isNotEmpty(updateRdLaneConAlertDataList)) {
 			infects.put("维护link关联的车信信息", updateRdLaneConAlertDataList);
@@ -452,7 +455,9 @@ public class Process extends AbstractProcess<Command> {
 		if (CollectionUtils.isNotEmpty(delOutRdLaneConAlertDataList)) {
 			infects.put("删除link作为退出线的车信信息", delOutRdLaneConAlertDataList);
 		}
-
+		if (CollectionUtils.isNotEmpty(delViaRdLaneConAlertDataList)) {
+			infects.put("删除link作为经过线的车信信息", delViaRdLaneConAlertDataList);
+		}
 		// 分歧
 		List<AlertObject> delInRdBranchAlertDataList = new ArrayList<>();
 		List<AlertObject> delOutRdBranchAlertDataList = new ArrayList<>();

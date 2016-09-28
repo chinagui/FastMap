@@ -47,8 +47,9 @@ public class RefreshRegiongdbRoad {
 				info1.setRequest(req1);
 				AbstractJob job1 = JobCreateStrategy.createAsMethod(info1);
 				job1.run();
-				if(job1.getJobInfo().getResponse().getInt("exeStatus")!=3){
-					throw new Exception("日库job执行失败。region:"+r.getRegionId());
+				if(job1.getJobInfo().getStatus()!=3){
+					String msg = (job1.getException()==null)?"未知错误。":"错误："+job1.getException().getMessage();
+					throw new Exception("日库job内部发生"+msg);
 				}
 				response.put("region_"+r.getRegionId()+"_day_refresh", "success");
 				//月db
@@ -63,8 +64,9 @@ public class RefreshRegiongdbRoad {
 				info2.setRequest(req2);
 				AbstractJob job2 = JobCreateStrategy.createAsMethod(info2);
 				job2.run();
-				if(job2.getJobInfo().getResponse().getInt("exeStatus")!=3){
-					throw new Exception("月库job执行失败。region:"+r.getRegionId());
+				if(job2.getJobInfo().getStatus()!=3){
+					String msg = (job2.getException()==null)?"未知错误。":"错误："+job2.getException().getMessage();
+					throw new Exception("月库job内部发生"+msg);
 				}
 				response.put("region_"+r.getRegionId()+"_month_refresh", "success");
 			}

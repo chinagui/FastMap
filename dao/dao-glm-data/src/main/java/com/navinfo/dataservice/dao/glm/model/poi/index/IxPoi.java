@@ -202,6 +202,9 @@ public class IxPoi implements IObj {
 
 	// POI状态：1：待作业,2：已作业,3：已提交
 	private int status;
+	
+	//卡车标识
+	private int truckFlag = 0;
 
 	public String getLevel() {
 		return level;
@@ -1786,6 +1789,14 @@ public class IxPoi implements IObj {
 //		childMap.put(IxSamepoi.class, samepoiMap);
 
 		return childMap;
+	}
+
+	public int getTruckFlag() {
+		return truckFlag;
+	}
+
+	public void setTruckFlag(int truckFlag) {
+		this.truckFlag = truckFlag;
 	}
 
 }

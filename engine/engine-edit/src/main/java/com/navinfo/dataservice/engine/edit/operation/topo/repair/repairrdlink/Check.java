@@ -109,13 +109,16 @@ public class Check {
 	}
 	
 	public void checkIsMoveGscPoint(JSONObject linkGeo, Connection conn, int linkPid) throws Exception {
+		
 		Geometry geo = GeoTranslator.geojson2Jts(linkGeo, 100000, 0);
 
 		RdGscSelector selector = new RdGscSelector(conn);
 
-		List<RdGsc> rdGscList = selector.onlyLoadRdGscLinkByLinkPid(linkPid, "RD_LINK", true);
+		List<RdGsc> rdGscList = selector.onlyLoadRdGscLinkByLinkPid(linkPid,
+				"RD_LINK", true);
 
-		boolean flag = RdGscOperateUtils.isMoveGscLink(geo, rdGscList);
+		boolean flag = RdGscOperateUtils.isMoveGscLink(geo, rdGscList,
+				"RD_LINK", linkPid);
 
 		if (flag) {
 			throw new Exception("不允许去除有立交关系的形状点");

@@ -81,4 +81,8 @@ public class PropConstant {
 	public static final String dataSourceStatEnable="datasource.sql.stat.enable";
 	
 	public static final String pidServers="pid.connection.string";
+	
+	public static final String fmStat="fm_stat";
+	public static final String mongoHost="mongo_host";
+	public static final String mongoPort="mongo_port";
 }

@@ -20,7 +20,7 @@ public class BatchSuiteSelector extends AbstractSelector {
 		this.conn = conn;
 	}
 	
-	public JSONArray getSuite(int pageSize,int pageNum, String type) throws Exception {
+	public JSONArray getSuite(int pageSize,int pageNum, int type) throws Exception {
 		StringBuilder sb = new StringBuilder();
 		
 		PreparedStatement pstmt = null;
@@ -38,7 +38,7 @@ public class BatchSuiteSelector extends AbstractSelector {
 			
 			pstmt = conn.prepareStatement(sb.toString());
 
-			pstmt.setString(1, type);
+			pstmt.setInt(1, type);
 
 			pstmt.setInt(2, endRow);
 
@@ -48,9 +48,10 @@ public class BatchSuiteSelector extends AbstractSelector {
 			
 			while (resultSet.next()) {
 				JSONObject data = new JSONObject();
-				data.put("feature", resultSet.getString("feature"));
+				data.put("suiteId", resultSet.getString("suite_id"));
 				data.put("suiteName", resultSet.getString("suite_name"));
-				data.put("ruleCode", resultSet.getString("rule_code"));
+				data.put("suiteRange", resultSet.getString("suite_range"));
+				data.put("feature", resultSet.getString("feature"));
 				data.put("total", resultSet.getInt("total"));
 				result.add(data);
 			}

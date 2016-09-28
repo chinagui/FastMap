@@ -190,7 +190,7 @@ public class Process extends AbstractProcess<Command> {
 		List<AlertObject> alertObject = crossTopo.getDeleteCrossInfectData(crossPid);
 		if(CollectionUtils.isNotEmpty(this.getCommand().getCross().getNames()))
 		{
-			infects.put("删除路口(此路口记录路口名称信息，请注意维护)", alertObject);
+			infects.put("删除路口(此路口记录有路口名称信息，请注意维护)", alertObject);
 		}
 		else
 		{

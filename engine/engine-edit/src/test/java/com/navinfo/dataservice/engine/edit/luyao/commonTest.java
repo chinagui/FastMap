@@ -479,4 +479,15 @@ public class commonTest extends InitApplication {
 		String msg = t.run();
 	}
 	
+	
+	@Test
+	public void run_00928_1() throws Exception {
+
+		String parameter = "{\"command\":\"BREAK\",\"dbId\":17,\"objId\":205000148,\"data\":{\"longitude\":116.261,\"latitude\":40.54496},\"type\":\"RDLINK\"}";
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+	
 }

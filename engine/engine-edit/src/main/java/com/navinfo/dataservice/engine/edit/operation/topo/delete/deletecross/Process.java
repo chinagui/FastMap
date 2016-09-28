@@ -188,7 +188,15 @@ public class Process extends AbstractProcess<Command> {
 		//路口自身删除提示
 		OpTopo crossTopo = new OpTopo();
 		List<AlertObject> alertObject = crossTopo.getDeleteCrossInfectData(crossPid);
-		infects.put("删除路口", alertObject);
+		if(CollectionUtils.isNotEmpty(this.getCommand().getCross().getNames()))
+		{
+			infects.put("删除路口(此路口记录路口名称信息，请注意维护)", alertObject);
+		}
+		else
+		{
+			infects.put("删除路口", alertObject);
+		}
+		
 		//信号灯
 		com.navinfo.dataservice.engine.edit.operation.obj.trafficsignal.delete.Operation trafficOperation = new com.navinfo.dataservice.engine.edit.operation.obj.trafficsignal.delete.Operation(
 				conn);		

@@ -39,9 +39,12 @@ public class Operation implements IOperation {
 
 	@Override
 	public String run(Result result) throws Exception {
-
-		result.insertObject(command.getRdTrafficsignal(), ObjStatus.DELETE, command.getPid());
-
+		
+		for(RdTrafficsignal trafficsignal : command.getRdTrafficsignalList())
+		{
+			result.insertObject(trafficsignal, ObjStatus.DELETE, trafficsignal.getPid());
+		}
+		
 		// 维护路口signal属性(如果此路口的“信号灯”原为“有路口红绿灯”，则将其修改为“无红绿灯”)
 		RdCross cross = this.command.getRdCross();
 

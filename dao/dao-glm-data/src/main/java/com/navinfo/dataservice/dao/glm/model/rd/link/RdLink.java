@@ -609,6 +609,24 @@ public class RdLink implements IObj {
 		}
 
 		this.setIntRtics(intRtics);
+		
+		
+		List<IRow> rticsSources = sourceLink.getRtics();
+
+		List<IRow> rtics = new ArrayList<IRow>();
+
+		for (IRow fs : rticsSources) {
+
+			RdLinkRtic f = new RdLinkRtic();
+
+			f.copy(fs);
+
+			f.setLinkPid(this.getPid());
+
+			rtics.add(f);
+		}
+
+		this.setRtics(rtics);		
 
 		List<IRow> limitTrucksSources = sourceLink.getLimitTrucks();
 
@@ -660,6 +678,43 @@ public class RdLink implements IObj {
 		}
 
 		this.setZones(zones);
+		
+		
+		
+		List<IRow> sidewalkSources = sourceLink.getSidewalks();
+
+		List<IRow> sidewalks = new ArrayList<IRow>();
+
+		for (IRow fs : sidewalkSources) {
+
+			RdLinkSidewalk f = new RdLinkSidewalk();
+
+			f.copy(fs);
+
+			f.setLinkPid(this.getPid());
+
+			sidewalks.add(f);
+		}
+
+		this.setSidewalks(sidewalks);
+		
+		
+		List<IRow> walkstairSources = sourceLink.getWalkstairs();
+
+		List<IRow> walkstairs = new ArrayList<IRow>();
+
+		for (IRow fs : walkstairSources) {
+
+			RdLinkWalkstair f = new RdLinkWalkstair();
+
+			f.copy(fs);
+
+			f.setLinkPid(this.getPid());
+
+			walkstairs.add(f);
+		}
+
+		this.setWalkstairs(walkstairs);		
 	}
 
 	@Override

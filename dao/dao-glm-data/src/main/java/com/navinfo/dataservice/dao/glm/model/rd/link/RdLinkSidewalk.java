@@ -149,6 +149,12 @@ public class RdLinkSidewalk implements IRow {
 	@Override
 	public void copy(IRow row) {
 
+		RdLinkSidewalk source  = (RdLinkSidewalk) row;
+		this.setSidewalkLoc(source.getSidewalkLoc());
+		this.setDividerType(source.getDividerType());
+		this.setWorkDir(source.getWorkDir());
+		this.setProcessFlag(source.getProcessFlag());
+		this.setCaptureFlag(source.getCaptureFlag());		
 	}
 
 	@Override

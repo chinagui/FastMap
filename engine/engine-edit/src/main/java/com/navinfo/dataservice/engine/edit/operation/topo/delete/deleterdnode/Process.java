@@ -10,10 +10,10 @@ import org.apache.commons.collections.CollectionUtils;
 
 import com.navinfo.dataservice.dao.glm.iface.AlertObject;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdmin;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
-import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
@@ -22,7 +22,6 @@ import com.navinfo.dataservice.dao.glm.model.rd.speedlimit.RdSpeedlimit;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdAdminSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossSelector;
-import com.navinfo.dataservice.dao.glm.selector.rd.gsc.RdGscSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.laneconnexity.RdLaneConnexitySelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeSelector;
@@ -105,30 +104,96 @@ public class Process extends AbstractProcess<Command> {
 	// 锁定进入线为该link的交限
 	public void lockRdRestriction() throws Exception {
 		// 获取进入线为该link的交限
-
 		RdRestrictionSelector restriction = new RdRestrictionSelector(this.getConn());
+		
+		List<RdRestriction> restrictions = new ArrayList<>();
 
-		List<RdRestriction> restrictions = restriction.loadRdRestrictionByNodePid(this.getCommand().getNodePid(), true);
+		for(Integer linkPid : this.getCommand().getLinkPids())
+		{
+			List<RdRestriction> restrictionList = restriction.loadRdRestrictionByLinkPid(linkPid, true);
+			//经过link
+			List<RdRestriction> viaRestrictions = restriction.loadByLink(linkPid, 3,true);
+
+			// 获取退出线为该link，并且只有一根退出线的交限
+			List<RdRestriction> restrictions2 = restriction.loadRdRestrictionByOutLinkPid(linkPid,
+					true);
+			List<RdRestriction> outLinkDeleteResList = new ArrayList<>();
+
+			for (RdRestriction rdRestriction : restrictions2) {
+				List<IRow> details = rdRestriction.getDetails();
+
+				if (details.size() == 1) {
+					outLinkDeleteResList.add(rdRestriction);
+				}
+			}
+
+			restrictions.addAll(outLinkDeleteResList);
+			
+			restrictions.addAll(viaRestrictions);
+			
+			restrictions.addAll(restrictionList);
+		}
 
 		this.getCommand().setRestrictions(restrictions);
 	}
 
 	public void lockRdLaneConnexity() throws Exception {
+		List<RdLaneConnexity> laneList = new ArrayList<>();
+		for(Integer linkPid : this.getCommand().getLinkPids())
+		{
+			RdLaneConnexitySelector selector = new RdLaneConnexitySelector(this.getConn());
 
-		RdLaneConnexitySelector selector = new RdLaneConnexitySelector(this.getConn());
+			List<RdLaneConnexity> lanes = selector.loadRdLaneConnexityByLinkPid(linkPid, true);
+			
+			List<RdLaneConnexity> viaLanes = selector.loadByLink(linkPid,3,true);
 
-		List<RdLaneConnexity> lanes = selector.loadRdLaneConnexityByNodePid(this.getCommand().getNodePid(), true);
+			// 获取退出线为该link
 
-		this.getCommand().setLanes(lanes);
+			List<RdLaneConnexity> lanes2 = selector.loadRdLaneConnexityByOutLinkPid(linkPid, true);
+
+			List<RdLaneConnexity> outLinkDeleteLaneList = new ArrayList<>();
+
+			for (RdLaneConnexity rdLaneConnexity : lanes2) {
+				List<IRow> topos = rdLaneConnexity.getTopos();
+
+				if (topos.size() == 1) {
+					outLinkDeleteLaneList.add(rdLaneConnexity);
+				}
+			}
+
+			laneList.addAll(lanes2);
+			
+			laneList.addAll(lanes);
+			
+			laneList.addAll(viaLanes);
+		}
+
+		this.getCommand().setLanes(laneList);
 	}
 
 	public void lockRdBranch() throws Exception {
+		
+		List<RdBranch> branchList = new ArrayList<>();
+		for(Integer linkPid : this.getCommand().getLinkPids())
+		{
+			RdBranchSelector selector = new RdBranchSelector(this.getConn());
 
-		RdBranchSelector selector = new RdBranchSelector(this.getConn());
+			List<RdBranch> branches = selector.loadRdBranchByInLinkPid(linkPid, true);
+			
+			List<RdBranch> viaBranch = selector.loadByLinkPid(linkPid, 3,true);
 
-		List<RdBranch> branches = selector.loadRdBranchByNodePid(this.getCommand().getNodePid(), true);
+			// 获取退出线为该link，并且只有一根退出线的车信
+			List<RdBranch> branches2 = selector.loadRdBranchByOutLinkPid(linkPid, true);
 
-		this.getCommand().setBranches(branches);
+			branchList.addAll(branches2);
+			
+			branchList.addAll(viaBranch);
+			
+			branchList.addAll(branches);
+		}
+		
+
+		this.getCommand().setBranches(branchList);
 	}
 
 	public void lockRdCross() throws Exception {
@@ -148,15 +213,6 @@ public class Process extends AbstractProcess<Command> {
 		List<RdSpeedlimit> limits = selector.loadSpeedlimitByLinkPids(this.getCommand().getLinkPids(), true);
 
 		this.getCommand().setLimits(limits);
-	}
-
-	public void lockRdGsc() throws Exception {
-
-		RdGscSelector selector = new RdGscSelector(this.getConn());
-
-		List<RdGsc> rdGscList = selector.loadRdGscLinkByLinkPids(this.getCommand().getLinkPids(), "RD_LINK", true);
-
-		this.getCommand().setRdGscs(rdGscList);
 	}
 
 	private void lockAdAdmin() throws Exception {
@@ -198,8 +254,6 @@ public class Process extends AbstractProcess<Command> {
 		lockRdCross();
 
 		lockRdSpeedlimits();
-
-		lockRdGsc();
 
 		lockAdAdmin();
 
@@ -285,7 +339,7 @@ public class Process extends AbstractProcess<Command> {
 		opRefSpeedlimit.run(this.getResult());
 
 		// 立交
-		IOperation opRefRdGsc = new OpRefRdGsc(this.getCommand());
+		IOperation opRefRdGsc = new OpRefRdGsc(this.getCommand(),this.getConn());
 		opRefRdGsc.run(this.getResult());
 
 		// 行政区划
@@ -413,11 +467,13 @@ public class Process extends AbstractProcess<Command> {
 		List<AlertObject> updateResAlertDataList = new ArrayList<>();
 		List<AlertObject> delInResAlertDataList = new ArrayList<>();
 		List<AlertObject> delOutResAlertDataList = new ArrayList<>();
+		List<AlertObject> delViaResAlertDataList = new ArrayList<>();
 		for (RdLink link : links) {
 			int linkPid = link.getPid();
 			updateResAlertDataList.addAll(rdrestrictionOperation.getUpdateResInfectData(linkPid, conn));
 			delInResAlertDataList.addAll(rdrestrictionOperation.getDeleteInLinkResInfectData(linkPid, conn));
 			delOutResAlertDataList.addAll(rdrestrictionOperation.getDeleteOutLinkResInfectData(linkPid, conn));
+			delViaResAlertDataList.addAll(rdrestrictionOperation.getDeleteViaLinkResInfectData(linkPid, conn));
 		}
 		if (CollectionUtils.isNotEmpty(updateResAlertDataList)) {
 			infects.put("维护link关联的交限信息", updateResAlertDataList);
@@ -427,6 +483,9 @@ public class Process extends AbstractProcess<Command> {
 		}
 		if (CollectionUtils.isNotEmpty(delOutResAlertDataList)) {
 			infects.put("删除link作为退入线的交限信息", delOutResAlertDataList);
+		}
+		if (CollectionUtils.isNotEmpty(delViaResAlertDataList)) {
+			infects.put("删除link作为经过线的交限信息", delViaResAlertDataList);
 		}
 
 		List<AlertObject> updateRdLaneConAlertDataList = new ArrayList<>();
@@ -506,7 +565,7 @@ public class Process extends AbstractProcess<Command> {
 			delGscAlertDataList.addAll(rdGscOperation.getDeleteRdGscInfectData(linkPid, conn));
 		}
 		if (CollectionUtils.isNotEmpty(delGscAlertDataList)) {
-			infects.put("删除link删除立交", delGscAlertDataList);
+			infects.put("删除link维护立交", delGscAlertDataList);
 		}
 		// 限速关系
 		List<AlertObject> updateSpeedLimitAlertDataList = new ArrayList<>();

@@ -137,4 +137,50 @@ public class RdTrafficsignalSelector extends AbstractSelector {
 		return rows;
 	}
 	
+	/**
+	 * 根据一个信号灯pid查询路口处所有信号灯
+	 * 
+	 * @param id
+	 * @param isLock
+	 * @return
+	 * @throws Exception
+	 */
+	public List<RdTrafficsignal> loadByTrafficPid(boolean isLock,int pid) throws Exception {
+		List<RdTrafficsignal> rows = new ArrayList<RdTrafficsignal>();
+		
+		StringBuilder sb = new StringBuilder(
+				"select * from rd_trafficsignal where node_pid in(select node_pid from rd_trafficsignal where pid = :1) and u_record !=2");
+
+		if (isLock) {
+			sb.append(" for update nowait");
+		}
+
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+			
+			pstmt.setInt(1, pid);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+				RdTrafficsignal rdTrafficsignal = new RdTrafficsignal();
+				ReflectionAttrUtils.executeResultSet(rdTrafficsignal, resultSet);
+				rows.add(rdTrafficsignal);
+			} 
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+
+		return rows;
+	}
 }

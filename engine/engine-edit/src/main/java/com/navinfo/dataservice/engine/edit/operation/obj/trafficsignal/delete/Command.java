@@ -1,6 +1,6 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.trafficsignal.delete;
 
-import net.sf.json.JSONObject;
+import java.util.List;
 
 import com.navinfo.dataservice.dao.glm.iface.ICommand;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
@@ -8,6 +8,8 @@ import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
 import com.navinfo.dataservice.dao.glm.model.rd.trafficsignal.RdTrafficsignal;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
+
+import net.sf.json.JSONObject;
 
 /**
  * 
@@ -20,7 +22,7 @@ public class Command extends AbstractCommand  implements ICommand {
 
 	private String requester;
 
-	private RdTrafficsignal rdTrafficsignal;
+	private List<RdTrafficsignal> rdTrafficsignalList;
 	
 	private RdCross rdCross;
 
@@ -44,13 +46,13 @@ public class Command extends AbstractCommand  implements ICommand {
 	public ObjType getObjType() {
 		return ObjType.RDTRAFFICSIGNAL;
 	}
-	
-	public RdTrafficsignal getRdTrafficsignal() {
-		return rdTrafficsignal;
+
+	public List<RdTrafficsignal> getRdTrafficsignalList() {
+		return rdTrafficsignalList;
 	}
 
-	public void setRdTrafficsignal(RdTrafficsignal rdTrafficsignal) {
-		this.rdTrafficsignal = rdTrafficsignal;
+	public void setRdTrafficsignalList(List<RdTrafficsignal> rdTrafficsignalList) {
+		this.rdTrafficsignalList = rdTrafficsignalList;
 	}
 
 	@Override

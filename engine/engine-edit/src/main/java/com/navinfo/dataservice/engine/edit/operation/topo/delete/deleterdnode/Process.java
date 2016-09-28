@@ -185,9 +185,11 @@ public class Process extends AbstractProcess<Command> {
 			// 获取退出线为该link，并且只有一根退出线的车信
 			List<RdBranch> branches2 = selector.loadRdBranchByOutLinkPid(linkPid, true);
 
-			branches.addAll(branches2);
+			branchList.addAll(branches2);
 			
-			branches.addAll(viaBranch);
+			branchList.addAll(viaBranch);
+			
+			branchList.addAll(branches);
 		}
 		
 
@@ -465,11 +467,13 @@ public class Process extends AbstractProcess<Command> {
 		List<AlertObject> updateResAlertDataList = new ArrayList<>();
 		List<AlertObject> delInResAlertDataList = new ArrayList<>();
 		List<AlertObject> delOutResAlertDataList = new ArrayList<>();
+		List<AlertObject> delViaResAlertDataList = new ArrayList<>();
 		for (RdLink link : links) {
 			int linkPid = link.getPid();
 			updateResAlertDataList.addAll(rdrestrictionOperation.getUpdateResInfectData(linkPid, conn));
 			delInResAlertDataList.addAll(rdrestrictionOperation.getDeleteInLinkResInfectData(linkPid, conn));
 			delOutResAlertDataList.addAll(rdrestrictionOperation.getDeleteOutLinkResInfectData(linkPid, conn));
+			delViaResAlertDataList.addAll(rdrestrictionOperation.getDeleteViaLinkResInfectData(linkPid, conn));
 		}
 		if (CollectionUtils.isNotEmpty(updateResAlertDataList)) {
 			infects.put("维护link关联的交限信息", updateResAlertDataList);
@@ -479,6 +483,9 @@ public class Process extends AbstractProcess<Command> {
 		}
 		if (CollectionUtils.isNotEmpty(delOutResAlertDataList)) {
 			infects.put("删除link作为退入线的交限信息", delOutResAlertDataList);
+		}
+		if (CollectionUtils.isNotEmpty(delViaResAlertDataList)) {
+			infects.put("删除link作为经过线的交限信息", delViaResAlertDataList);
 		}
 
 		List<AlertObject> updateRdLaneConAlertDataList = new ArrayList<>();

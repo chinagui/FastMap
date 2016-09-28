@@ -75,7 +75,7 @@ public class CheckService {
 	 * @return
 	 * @author wangdongbin
 	 */
-	public JSONArray getCkRules(int pageSize,int pageNum, String type) throws Exception {
+	public JSONArray getCkRules(int pageSize,int pageNum, int type) throws Exception {
 		
 		Connection conn = null;
 		

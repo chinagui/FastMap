@@ -3,6 +3,8 @@ package com.navinfo.dataservice.engine.statics.tools;
 import org.apache.log4j.Logger;
 
 import com.mongodb.MongoClient;
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
+import com.navinfo.dataservice.commons.constant.PropConstant;
 
 public class MongoManager {
 
@@ -12,8 +14,10 @@ public class MongoManager {
 
 	private static MongoClient mongo = null;
 
-	private static final String host = SystemMessage.getString("config", "mongo_host");
-	private static final Integer port = Integer.valueOf(SystemMessage.getString("config", "mongo_port"));
+	private static final String host = SystemConfigFactory.getSystemConfig()
+			.getValue(PropConstant.mongoHost);//SystemMessage.getString("config", "mongo_host");
+	private static final Integer port = Integer.valueOf(SystemConfigFactory.getSystemConfig()
+			.getValue(PropConstant.mongoPort));//Integer.valueOf(SystemMessage.getString("config", "mongo_port"));
 
 	/**
 	 * 私有化

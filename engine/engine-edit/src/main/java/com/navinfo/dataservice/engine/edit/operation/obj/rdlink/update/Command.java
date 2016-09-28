@@ -8,50 +8,59 @@ import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 
 public class Command extends AbstractCommand {
 
-	private String requester;
-	
-	private int linkPid;
-	
-	private JSONObject updateContent;
+    private String requester;
 
-	public int getLinkPid() {
-		return linkPid;
-	}
+    private int linkPid;
 
+    private boolean infect = false;
 
-	public void setLinkPid(int linkPid) {
-		this.linkPid = linkPid;
-	}
+    private JSONObject updateContent;
+
+    public int getLinkPid() {
+        return linkPid;
+    }
 
 
-	public JSONObject getUpdateContent() {
-		return updateContent;
-	}
+    public void setLinkPid(int linkPid) {
+        this.linkPid = linkPid;
+    }
 
 
-	@Override
-	public OperType getOperType() {
-		return OperType.UPDATE;
-	}
-	
-	@Override
-	public ObjType getObjType() {
-		return ObjType.RDLINK;
-	}
+    public JSONObject getUpdateContent() {
+        return updateContent;
+    }
 
-	@Override
-	public String getRequester() {
-		return requester;
-	}
-	
-	public Command(JSONObject json, String requester) {
-		this.requester = requester;
+    public boolean isInfect() {
+        return infect;
+    }
 
-		this.setDbId(json.getInt("dbId"));
-		
-		this.updateContent = json.getJSONObject("data");
-		
-		this.linkPid = this.updateContent.getInt("pid");
-	}
+    @Override
+    public OperType getOperType() {
+        return OperType.UPDATE;
+    }
+
+    @Override
+    public ObjType getObjType() {
+        return ObjType.RDLINK;
+    }
+
+    @Override
+    public String getRequester() {
+        return requester;
+    }
+
+    public Command(JSONObject json, String requester) {
+        this.requester = requester;
+
+        this.setDbId(json.getInt("dbId"));
+
+        this.updateContent = json.getJSONObject("data");
+
+        this.linkPid = this.updateContent.getInt("pid");
+
+        // 参数包含infect则认为启用检查
+        if (updateContent.containsKey("infect"))
+            infect = true;
+    }
 
 }

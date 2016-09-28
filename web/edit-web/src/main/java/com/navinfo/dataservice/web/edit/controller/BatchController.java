@@ -40,7 +40,7 @@ public class BatchController extends BaseController {
 
 			int pageNum = jsonReq.getInt("pageNum");
 			
-			String type = jsonReq.getString("type");
+			int type = jsonReq.getInt("type");
 			
 			JSONArray result = BatchService.getInstance().getBatchRules(pageSize, pageNum, type);
 			

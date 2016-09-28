@@ -31,6 +31,7 @@ public class Process extends AbstractProcess<Command> {
 
 	@Override
 	public String exeOperation() throws Exception {
+		check.checkIsMoveGscPoint(this.getCommand().getLinkGeom(), this.getConn(), this.getCommand().getLinkPid());
 		return new Operation(this.getConn(), this.getCommand()).run(this.getResult());
 	}
 

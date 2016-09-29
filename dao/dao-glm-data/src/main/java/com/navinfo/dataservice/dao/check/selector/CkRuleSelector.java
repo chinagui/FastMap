@@ -59,7 +59,12 @@ public class CkRuleSelector extends AbstractSelector {
 				data.put("ruleName", resultSet.getString("rule_name"));
 				data.put("ruleDesc", resultSet.getString("rule_desc"));
 				data.put("ruleLevel", resultSet.getInt("rule_level"));
-				data.put("depends", resultSet.getString("depends"));
+				if ( resultSet.getString("depends") == null) {
+					data.put("depends", "");
+				} else {
+					data.put("depends", resultSet.getString("depends"));
+				}
+				
 				
 				if (ckRules.containsKey(suiteKey)) {
 					JSONArray tempRuleList = ckRules.getJSONArray(suiteKey);

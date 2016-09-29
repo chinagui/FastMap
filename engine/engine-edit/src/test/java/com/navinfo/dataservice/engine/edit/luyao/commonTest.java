@@ -458,4 +458,58 @@ public class commonTest extends InitApplication {
 
 		String msg = t.run();
 	}
+	
+	@Test
+	public void run_00926_1() throws Exception {
+
+		String parameter = "{\"command\":\"CREATE\",\"dbId\":17,\"type\":\"IXSAMEPOI\",\"poiPids\":[307000011,308000014]}";
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+	
+	@Test
+	public void run_00926_2() throws Exception {
+
+		String parameter = "{\"command\":\"BREAK\",\"dbId\":17,\"objId\":309000144,\"data\":{\"longitude\":116.26802,\"latitude\":40.54648},\"type\":\"RDLINK\"}";
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+	
+	
+	@Test
+	public void run_00928_1() throws Exception {
+
+		String parameter = "{\"command\":\"BREAK\",\"dbId\":17,\"objId\":205000148,\"data\":{\"longitude\":116.261,\"latitude\":40.54496},\"type\":\"RDLINK\"}";
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+	
+	@Test
+	public void run_00928_2() throws Exception {
+
+		String parameter = "{\"type\":\"RDBRANCH\",\"command\":\"UPDATE\",\"dbId\":17,\"data\":{\"details\":[{\"branchType\":2,\"rowId\":\"61E533B51B6C40E4B916403BCD9CEDE8\",\"pid\":202000013,\"objStatus\":\"UPDATE\",\"estabType\":0,\"nameKind\":0}],\"pid\":304000020}}";
+		
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+	
+	@Test
+	public void run_00928_3() throws Exception {
+
+		String parameter = "{\"command\":\"REPAIR\",\"dbId\":17,\"objId\":204000154,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.26463,40.54527],[116.26564,40.54528]]},\"interLinks\":[],\"interNodes\":[]},\"type\":\"RDLINK\"}";
+		
+		
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
 }

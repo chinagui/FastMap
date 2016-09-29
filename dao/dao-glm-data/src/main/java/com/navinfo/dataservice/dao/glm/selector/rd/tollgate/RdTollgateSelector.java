@@ -45,7 +45,7 @@ public class RdTollgateSelector extends AbstractSelector {
 	public List<RdTollgate> loadRdTollgatesWithLinkPid(int linkPid, boolean isLock) throws Exception {
 		List<RdTollgate> rdTollgates = new ArrayList<RdTollgate>();
 		StringBuilder sb = new StringBuilder(
-				"select t.pid ss, t.row_id, t.node_pid from rd_tollgate t where (in_link_pid = :1 or out_link_pid = :2) and u_record != 2");
+				"select t.pid ss, t.row_id, t.node_pid, t.in_link_pid, t.out_link_pid from rd_tollgate t where (in_link_pid = :1 or out_link_pid = :2) and u_record != 2");
 		if (isLock) {
 			sb.append(" for update nowait");
 		}

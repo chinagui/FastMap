@@ -64,7 +64,7 @@ public class IxPoiParkingSelector extends AbstractSelector {
 				ixPoiParking.setHandicapNum(resultSet.getInt("handicap_num"));
 				ixPoiParking.setMiniNum(resultSet.getInt("mini_num"));
 				ixPoiParking.setVipNum(resultSet.getInt("vip_num"));
-				ixPoiParking.setHaveSpecialplace("have_specialplace");
+				ixPoiParking.setHaveSpecialplace(resultSet.getString("have_specialplace"));
 				ixPoiParking.setCertificate(resultSet.getInt("certificate"));
 				ixPoiParking.setRowId(resultSet.getString("row_id"));
 				rows.add(ixPoiParking);

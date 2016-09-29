@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -651,6 +652,44 @@ public class BlockOperation {
 			finishPercent += rs1.getInt("finish_percent") / (subtaskCount * 100);
 		}
 		return String.valueOf(finishPercent * 100) + "%";
+	}
+
+	/**
+	 * @param conn
+	 * @param blockArray
+	 * @return
+	 * @throws Exception 
+	 */
+	public static Map<Integer, String> queryBlockNameByBlocks(Connection conn, JSONArray blockArray) throws Exception {
+		// TODO Auto-generated method stub
+		try {
+			QueryRunner run = new QueryRunner();
+			List<Integer> updateBlockList = new ArrayList<Integer>();
+			List<Integer> blockList = new ArrayList<Integer>();
+
+			for (int i = 0; i < blockArray.size(); i++) {
+				JSONObject block = blockArray.getJSONObject(i);
+				blockList.add(block.getInt("blockId"));
+			}
+			String BlockIds = "(";
+			BlockIds += StringUtils.join(blockList.toArray(), ",") + ")";
+
+			String selectSql = "select b.block_id,b.block_name from block b where b.block_id in " + BlockIds;
+
+			Map<Integer,String> blockNameMap = new HashMap<Integer,String>();
+			PreparedStatement stmt = conn.prepareStatement(selectSql);
+			ResultSet rs = stmt.executeQuery();
+			while (rs.next()) {
+				blockNameMap.put(rs.getInt("block_id"), rs.getString("block_name"));
+			}
+
+			return blockNameMap;
+
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("更新失败，原因为:" + e.getMessage(), e);
+		}
 	}
 	
 }

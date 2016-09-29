@@ -6,6 +6,7 @@ import java.sql.Connection;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -16,6 +17,7 @@ import com.navinfo.dataservice.engine.edit.batch.BatchService;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+@Controller
 public class BatchController extends BaseController {
 	
 	/**
@@ -38,7 +40,7 @@ public class BatchController extends BaseController {
 
 			int pageNum = jsonReq.getInt("pageNum");
 			
-			String type = jsonReq.getString("type");
+			int type = jsonReq.getInt("type");
 			
 			JSONArray result = BatchService.getInstance().getBatchRules(pageSize, pageNum, type);
 			

@@ -89,8 +89,9 @@ public class InitRegiondb {
 				info1.setRequest(req1);
 				AbstractJob job1 = JobCreateStrategy.createAsMethod(info1);
 				job1.run();
-				if(job1.getJobInfo().getResponse().getInt("exeStatus")!=3){
-					throw new Exception("job1执行失败");
+				if(job1.getJobInfo().getStatus()!=3){
+					String msg = (job1.getException()==null)?"未知错误。":"错误："+job1.getException().getMessage();
+					throw new Exception("创建日库DB过程中job内部发生"+msg);
 				}
 				int dbDay = job1.getJobInfo().getResponse().getInt("outDbId");
 				response.put("region_"+key+"_day_db", dbDay);
@@ -107,8 +108,9 @@ public class InitRegiondb {
 				info2.setRequest(req2);
 				AbstractJob job2 = JobCreateStrategy.createAsMethod(info2);
 				job2.run();
-				if(job2.getJobInfo().getResponse().getInt("exeStatus")!=3){
-					throw new Exception("job2执行失败");
+				if(job2.getJobInfo().getStatus()!=3){
+					String msg = (job2.getException()==null)?"未知错误。":"错误："+job2.getException().getMessage();
+					throw new Exception("日库导数据过程中job内部发生"+msg);
 				}
 				response.put("region_"+key+"_day_exp", "success");
 				//给日库和月库安装包
@@ -128,8 +130,9 @@ public class InitRegiondb {
 				info3.setRequest(req3);
 				AbstractJob job3 = JobCreateStrategy.createAsMethod(info3);
 				job3.run();
-				if(job3.getJobInfo().getResponse().getInt("exeStatus")!=3){
-					throw new Exception("job3执行失败");
+				if(job3.getJobInfo().getStatus()!=3){
+					String msg = (job3.getException()==null)?"未知错误。":"错误："+job3.getException().getMessage();
+					throw new Exception("创建月库DB过程中job内部发生"+msg);
 				}
 				int dbMonth = job3.getJobInfo().getResponse().getInt("outDbId");
 				response.put("region_"+key+"_month", dbMonth);
@@ -143,8 +146,9 @@ public class InitRegiondb {
 				info4.setRequest(req4);
 				AbstractJob job4 = JobCreateStrategy.createAsMethod(info4);
 				job4.run();
-				if(job4.getJobInfo().getResponse().getInt("exeStatus")!=3){
-					throw new Exception("job4执行失败");
+				if(job4.getJobInfo().getStatus()!=3){
+					String msg = (job4.getException()==null)?"未知错误。":"错误："+job4.getException().getMessage();
+					throw new Exception("月库导数据过程中job内部发生"+msg);
 				}
 				response.put("region_"+key+"_month_exp", "success");
 				installPckUtils(dbMonth);

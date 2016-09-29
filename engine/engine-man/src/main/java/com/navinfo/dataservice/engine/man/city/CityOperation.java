@@ -34,6 +34,25 @@ public class CityOperation {
 		}
 	}
 	
+	public static void close(Connection conn)throws Exception{
+		try{
+			String updateCity="UPDATE CITY C"
+					+ "   SET C.PLAN_STATUS = 2"
+					+ " WHERE NOT EXISTS (SELECT 1"
+					+ "          FROM TASK T"
+					+ "         WHERE T.CITY_ID = C.CITY_ID"
+					+ "           AND T.STATUS <> 0"
+					+ "			  AND T.LATEST=1)"
+					+ "   AND C.PLAN_STATUS = 1";
+			QueryRunner run = new QueryRunner();
+			run.update(conn,updateCity);			
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("关闭city失败，原因为:"+e.getMessage(),e);
+		}
+	}
+	
 	
 	public static List<Integer> queryTaskByCityId(Connection conn, int cityId) throws Exception {
 		// TODO Auto-generated method stub

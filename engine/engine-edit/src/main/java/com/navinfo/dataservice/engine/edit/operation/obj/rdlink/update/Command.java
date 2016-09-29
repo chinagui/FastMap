@@ -59,7 +59,7 @@ public class Command extends AbstractCommand {
         this.linkPid = this.updateContent.getInt("pid");
 
         // 参数包含infect则认为启用检查
-        if (updateContent.containsKey("infect"))
+        if (json.containsKey("infect"))
             infect = true;
     }
 

@@ -577,6 +577,11 @@ public class RdGscOperateUtils {
 	public static boolean isMoveGscLink(Geometry linkGeo, List<RdGsc> gscList,
 			String tableName, int linkPid) {
 
+		if(gscList.size()==0)
+		{
+			return false;
+		}
+		
 		for (RdGsc rdGsc : gscList) {
 
 			Coordinate[] coordinates = linkGeo.getCoordinates();

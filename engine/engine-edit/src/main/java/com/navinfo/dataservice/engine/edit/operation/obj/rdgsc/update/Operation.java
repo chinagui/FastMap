@@ -45,6 +45,10 @@ public class Operation implements IOperation {
 
 	}
 	
+	public Operation() {
+		
+	}
+	
 	@Override
 	public String run(Result result) throws Exception {
 
@@ -177,6 +181,7 @@ public class Operation implements IOperation {
 								.equals(linkTableName)) {
 					continue;
 				}
+				
 				gscTmp.add(gscLink);
 			}
 

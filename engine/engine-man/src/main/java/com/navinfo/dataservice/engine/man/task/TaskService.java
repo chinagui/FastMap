@@ -383,6 +383,12 @@ public class TaskService {
 						+ "WHERE TASK_ID IN ("+newTask.toString().replace("[", "").
 						replace("]", "").replace("\"", "")+")";
 				DbOperation.exeUpdateOrInsertBySql(conn, updateSql);
+				
+				//关闭对应的city
+				CityOperation.close(conn);
+				
+				//关闭对应的infor
+				InforManOperation.closeByTasks(conn,newTask);
 			
 				//发送消息
 				JSONObject condition=new JSONObject();

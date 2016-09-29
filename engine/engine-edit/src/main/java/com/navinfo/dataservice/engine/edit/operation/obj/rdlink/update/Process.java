@@ -11,60 +11,70 @@ import com.navinfo.dataservice.engine.edit.operation.AbstractProcess;
 
 public class Process extends AbstractProcess<Command> {
 
-	public Process(AbstractCommand command) throws Exception {
-		super(command);
-		// TODO Auto-generated constructor stub
-	}
+    public Process(AbstractCommand command) throws Exception {
+        super(command);
+        // TODO Auto-generated constructor stub
+    }
 
-	public Process(Command command, Result result, Connection conn) throws Exception {
-		super(command);
-		// this.setCommand(command);
-		this.setResult(result);
-		this.setConn(conn);
+    public Process(Command command, Result result, Connection conn) throws Exception {
+        super(command);
+        // this.setCommand(command);
+        this.setResult(result);
+        this.setConn(conn);
 
-	}
+    }
 
-	private RdLink updateLink;
+    private RdLink updateLink;
 
-	@Override
-	public boolean prepareData() throws Exception {
+    @Override
+    public boolean prepareData() throws Exception {
 
-		RdLinkSelector linkSelector = new RdLinkSelector(this.getConn());
+        RdLinkSelector linkSelector = new RdLinkSelector(this.getConn());
 
-		this.updateLink = (RdLink) linkSelector.loadById(this.getCommand().getLinkPid(), true);
+        this.updateLink = (RdLink) linkSelector.loadById(this.getCommand().getLinkPid(), true);
 
-		return false;
-	}
+        return false;
+    }
 
-	@Override
-	public String exeOperation() throws Exception {
-		return new Operation(this.getCommand(), updateLink,this.getConn()).run(this.getResult());
-	}
-	
-	public String innerRun() throws Exception {
-		String msg;
-		try {
-			this.prepareData();
+    @Override
+    public String exeOperation() throws Exception {
+        Operation operation = new Operation(this.getCommand(), updateLink, this.getConn());
+        // 判断是否检查，如检查发现没有受影响信号灯直接执行修改，如有影响则返回提示信息
+        if (getCommand().isInfect()) {
+            String msg = operation.updateRdTraffic(this.getResult());
+            if (null == msg || msg.isEmpty()) {
+                operation.run(this.getResult());
+            }
+        } else {
+            operation.run(this.getResult());
+        }
+        return "";
+    }
 
-			String preCheckMsg = this.preCheck();
+    public String innerRun() throws Exception {
+        String msg;
+        try {
+            this.prepareData();
 
-			if (preCheckMsg != null) {
-				throw new Exception(preCheckMsg);
-			}
+            String preCheckMsg = this.preCheck();
 
-			IOperation operation = new Operation(this.getCommand(), this.updateLink);
+            if (preCheckMsg != null) {
+                throw new Exception(preCheckMsg);
+            }
 
-			msg = operation.run(this.getResult());
+            IOperation operation = new Operation(this.getCommand(), this.updateLink);
 
-			this.postCheck();
+            msg = operation.run(this.getResult());
 
-		} catch (Exception e) {
+            this.postCheck();
 
-			this.getConn().rollback();
+        } catch (Exception e) {
 
-			throw e;
-		}
+            this.getConn().rollback();
 
-		return msg;
-	}
+            throw e;
+        }
+
+        return msg;
+    }
 }

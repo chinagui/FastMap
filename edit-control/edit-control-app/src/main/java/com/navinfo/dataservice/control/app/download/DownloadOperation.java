@@ -167,7 +167,12 @@ public class DownloadOperation {
 			}
 			
 			JSONObject indoor = new JSONObject();
-			indoor.put("type", poi.getIndoor());
+			if (poi.getIndoor() == 1) {
+				indoor.put("type", 3);
+			} else {
+				indoor.put("type", poi.getIndoor());
+			}
+			
 			if (address.getFloor() == null) {
 				indoor.put("floor", "");
 			} else {

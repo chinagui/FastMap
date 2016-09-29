@@ -576,37 +576,22 @@ public class RdGscOperateUtils {
 	 */
 	public static boolean isMoveGscLink(Geometry linkGeo, List<RdGsc> gscList,
 			String tableName, int linkPid) {
-		boolean flag = false;
 
 		for (RdGsc rdGsc : gscList) {
 
-			for (IRow row : rdGsc.getLinks()) {
-				
-				RdGscLink gscLink = (RdGscLink) row;
-				
-				if (gscLink.getLinkPid() != linkPid
-						|| !gscLink.getTableName().toUpperCase()
-								.equals(tableName.toUpperCase())) {
-					continue;
-				}
-				
-				Coordinate[] coordinate=linkGeo.getCoordinates();
-				
-				if(coordinate.length-1<gscLink.getShpSeqNum())
-				{
-					return true;
-				}
-				
-				GeometryFactory geoFactory = new GeometryFactory();
-				
-				Point point = geoFactory.createPoint(coordinate[gscLink.getShpSeqNum()]);
-				
-				if (rdGsc.getGeometry().distance(point) > 1) {
-					return true;
+			Coordinate[] coordinates = linkGeo.getCoordinates();
+
+			Coordinate gscCoord = rdGsc.getGeometry().getCoordinate();
+
+			for (Coordinate nodeCoord : coordinates) {
+
+				if (gscCoord.equals(nodeCoord)) {
+
+					return false;
 				}
 			}
 		}
 
-		return flag;
+		return true;
 	}
 }

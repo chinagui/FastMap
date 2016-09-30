@@ -279,7 +279,7 @@ public class RdGscSelector extends AbstractSelector {
 	 */
 	private void setChild(RdGsc rdGsc,boolean isLock) throws Exception
 	{
-		List<IRow> links = new RdGscLinkSelector(conn).loadRowsByClassParentId(RdGscLink.class, rdGsc.getPid(), isLock, "shp_seq_num");
+		List<IRow> links = new RdGscLinkSelector(conn).loadRowsByClassParentId(RdGscLink.class, rdGsc.getPid(), isLock, "zlevel");
 
 		rdGsc.setLinks(links);
 

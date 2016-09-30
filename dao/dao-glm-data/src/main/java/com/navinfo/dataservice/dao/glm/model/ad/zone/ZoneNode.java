@@ -335,14 +335,14 @@ public class ZoneNode implements IObj {
 	@Override
 	public Map<Class<? extends IRow>, List<IRow>> childList() {
 		Map<Class<? extends IRow>,List<IRow>> childList = new HashMap<>();
-		childList.put(AdNodeMesh.class, meshes);
+		childList.put(ZoneNodeMesh.class, meshes);
 		return childList;
 	}
 
 	@Override
 	public Map<Class<? extends IRow>,Map<String,?>> childMap() {
 		Map<Class<? extends IRow>,Map<String,?>>childMap = new HashMap<>();
-		childMap.put(AdNodeMesh.class, meshMap);
+		childMap.put(ZoneNodeMesh.class, meshMap);
 		return childMap;
 	}
 

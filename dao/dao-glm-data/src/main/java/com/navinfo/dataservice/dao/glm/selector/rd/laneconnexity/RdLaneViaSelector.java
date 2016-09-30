@@ -206,8 +206,7 @@ public class RdLaneViaSelector extends AbstractSelector {
 				}
 			}
 		} catch (Exception e) {
-			throw e;
-
+			return viaLinks;
 		} finally {
 			try {
 				if (pstmt != null) {

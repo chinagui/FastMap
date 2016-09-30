@@ -26,6 +26,8 @@ public class OpRefRdGsc implements IOperation {
 			}
 			else
 			{
+				boolean hasFind = false;
+				
 				for(IRow row : rdGsc.getLinks())
 				{
 					RdGscLink gscLink = (RdGscLink) row;
@@ -33,6 +35,13 @@ public class OpRefRdGsc implements IOperation {
 					if(gscLink.getLinkPid() == command.getLinkPid())
 					{
 						result.insertObject(gscLink, ObjStatus.DELETE, gscLink.getPid());
+						hasFind = true;
+					}
+					if(hasFind && gscLink.getLinkPid() != command.getLinkPid())
+					{
+						gscLink.changedFields().put("zlevel", gscLink.getZlevel() -1);
+						
+						result.insertObject(gscLink, ObjStatus.UPDATE, gscLink.getPid());
 					}
 				}
 			}

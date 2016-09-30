@@ -42,6 +42,8 @@ public class RdRestrictionDetail implements IObj {
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 
 	public Map<String, RdRestrictionCondition> conditionMap = new HashMap<String, RdRestrictionCondition>();
+	
+	public Map<String, RdRestrictionVia> viaMap = new HashMap<String, RdRestrictionVia>();
 
 	//outNodePid不属于模型字段，使用protected修饰符。
 	protected int outNodePid;
@@ -400,6 +402,7 @@ public class RdRestrictionDetail implements IObj {
 	public Map<Class<? extends IRow>, List<IRow>> childList() {
 		Map<Class<? extends IRow>,List<IRow>> childList = new HashMap<Class<? extends IRow>, List<IRow>>();
 		childList.put(RdRestrictionCondition.class, conditions);
+		childList.put(RdRestrictionVia.class, vias);
 		return childList;
 	}
 
@@ -407,6 +410,7 @@ public class RdRestrictionDetail implements IObj {
 	public Map<Class<? extends IRow>,Map<String,?>> childMap() {
 		Map<Class<? extends IRow>,Map<String,?>> childMap = new HashMap<Class<? extends IRow>,Map<String,?>>();
 		childMap.put(RdRestrictionCondition.class, conditionMap);
+		childMap.put(RdRestrictionVia.class, viaMap);
 		return childMap;
 	}
 }

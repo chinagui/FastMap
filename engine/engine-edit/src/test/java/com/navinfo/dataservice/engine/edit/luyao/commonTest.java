@@ -479,4 +479,78 @@ public class commonTest extends InitApplication {
 		String msg = t.run();
 	}
 	
+	
+	@Test
+	public void run_00928_1() throws Exception {
+
+		String parameter = "{\"command\":\"BREAK\",\"dbId\":17,\"objId\":205000148,\"data\":{\"longitude\":116.261,\"latitude\":40.54496},\"type\":\"RDLINK\"}";
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+	
+	@Test
+	public void run_00928_2() throws Exception {
+
+		String parameter = "{\"type\":\"RDBRANCH\",\"command\":\"UPDATE\",\"dbId\":17,\"data\":{\"details\":[{\"branchType\":2,\"rowId\":\"61E533B51B6C40E4B916403BCD9CEDE8\",\"pid\":202000013,\"objStatus\":\"UPDATE\",\"estabType\":0,\"nameKind\":0}],\"pid\":304000020}}";
+		
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+	
+	@Test
+	public void run_00928_3() throws Exception {
+
+		String parameter = "{\"command\":\"REPAIR\",\"dbId\":17,\"objId\":204000154,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.26463,40.54527],[116.26564,40.54528]]},\"interLinks\":[],\"interNodes\":[]},\"type\":\"RDLINK\"}";
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+	
+	@Test
+	public void run_00928_4() throws Exception {
+
+		String parameter = "{\"type\":\"RDBRANCH\",\"command\":\"UPDATE\",\"dbId\":17,\"data\":{\"signboards\":[{\"names\":[{\"phonetic\":\"ａ\",\"pid\":209000001,\"objStatus\":\"UPDATE\",\"nameGroupid\":1}],\"pid\":220000003}],\"pid\":304000021}}";
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+	
+	@Test
+	public void run_00929_1() throws Exception {
+
+		String parameter = "{\"command\":\"REPAIR\",\"dbId\":17,\"objId\":209000152,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.28325,40.56169],[116.28362850249809,40.561585569738845],[116.28385110928193,40.5615244049076],[116.28419,40.56143],[116.28452681622852,40.56133650839071],[116.28464803308924,40.561302935344315],[116.28492113608729,40.561226541258385],[116.28516,40.56116]]},\"interLinks\":[],\"interNodes\":[]},\"type\":\"RDLINK\"}";
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+	
+	@Test
+	public void run_00929_2() throws Exception {
+
+		String parameter = "{\"command\":\"REPAIR\",\"dbId\":17,\"objId\":204000167,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.28252,40.55834],[116.28275,40.55826],[116.2828685512793,40.55821583513286],[116.2831,40.55813],[116.28333,40.55805],[116.28363,40.55793],[116.28385,40.55785]]},\"interLinks\":[],\"interNodes\":[]},\"type\":\"RDLINK\"}";
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+	
+	@Test
+	public void run_00929_3() throws Exception {
+
+		String parameter = "{\"command\":\"REPAIR\",\"dbId\":17,\"objId\":204000167,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.28252,40.55834],[116.2831,40.55813],[116.28333,40.55805],[116.28363,40.55793],[116.28385,40.55785]]},\"interLinks\":[],\"interNodes\":[]},\"type\":\"RDLINK\"}";
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+	
+	
+	
 }

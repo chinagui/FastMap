@@ -36,7 +36,7 @@ public class BatchService {
 	 * @return
 	 * @author wangdongbin
 	 */
-	public JSONArray getBatchRules(int pageSize,int pageNum, String type) throws Exception {
+	public JSONArray getBatchRules(int pageSize,int pageNum, int type) throws Exception {
 		
 		Connection conn = null;
 		

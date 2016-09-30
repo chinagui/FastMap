@@ -79,4 +79,14 @@ public class RdLinkTest extends InitApplication {
         String parameter = "{\"command\":\"DEPART\",\"type\":\"RDLINK\",\"dbId\":17,\"objId\":307000087,\"data\":{\"linkPid\":208000085,\"catchNodePid\":0,\"longitude\":116.30355,\"latitude\":40.55671}}";
         TestUtil.run(parameter);
     }
+
+    @Test
+    public void search(){
+        String parameter = "http://192.168.4.188:8000/service/render/obj/getByTileWithGap?parameter={\"dbId\":108,\"gap\":80,\"types\":[\"RDLINK\"],\"z\":16,\"x\":53949,\"y\":24796}";
+        try {
+            TestSearch.testSearchGap(parameter);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

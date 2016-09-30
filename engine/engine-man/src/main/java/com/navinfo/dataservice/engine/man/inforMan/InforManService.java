@@ -201,7 +201,7 @@ public class InforManService {
 			String inforIdStr = inforIdslist.toString().replace("[", "'").replace("]", "'").replace(" ", "")
 					.replace(",", "','");
 
-			String updateSql = "UPDATE INFOR_MAN SET INFOR_STATUS=0 WHERE INFOR_ID IN (" + inforIdStr + ")";
+			String updateSql = "UPDATE INFOR SET PLAN_STATUS=2 WHERE INFOR_ID IN (" + inforIdStr + ")";
 			DbOperation.exeUpdateOrInsertBySql(conn, updateSql);
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);

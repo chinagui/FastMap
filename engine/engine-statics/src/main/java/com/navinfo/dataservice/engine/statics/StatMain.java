@@ -3,6 +3,8 @@ package com.navinfo.dataservice.engine.statics;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
+import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.engine.statics.expect.ExpectStatusMain;
 import com.navinfo.dataservice.engine.statics.expect.PoiCollectExpectMain;
 import com.navinfo.dataservice.engine.statics.expect.PoiDailyExpectMain;
@@ -17,7 +19,8 @@ import com.navinfo.dataservice.engine.statics.season.RoadSeasonMain;
 
 public class StatMain {
 	// 定义统计库名称
-	public static final String db_name = "fm_stat";
+	public static final String db_name = SystemConfigFactory.getSystemConfig()
+			.getValue(PropConstant.fmStat);//"fm_stat";
 	// 定义当前统计时间
 	private static final String stat_time = new SimpleDateFormat("yyyyMMddkkmmss").format(new Date());
 

@@ -34,18 +34,16 @@ public class CkRuleSelector extends AbstractSelector {
 		
 		try {
 			StringBuilder sb = new StringBuilder();
-			sb.append("select c.*,m.suite_id from ck_rule_cop c,ck_suite_rule_mapping_cop m ");
-			sb.append("where c.rule_code = m.rule_code and m.suite_id in ( '', ");
+			sb.append("select c.* from ck_rule_cop c ");
+			sb.append("where c.rule_status=1 and c.suite_id in ('' ");
 			String suiteCode = "";
 			for (int i=0;i<suiteArray.size();i++) {
 				JSONObject suiteObj = suiteArray.getJSONObject(i);
-				suiteCode += "'" + suiteObj.getString("ruleCode") + "',";
+				suiteCode += ",'" + suiteObj.getString("suiteId") + "'";
 			}
-			if (suiteCode.length()>0) {
-				suiteCode = suiteCode.substring(0, suiteCode.length()-1);
-			}
+			
 			sb.append(suiteCode + ") ");
-			sb.append("order by m.suite_id");
+			sb.append("order by c.suite_id");
 			
 			pstmt = conn.prepareStatement(sb.toString());
 			resultSet = pstmt.executeQuery();
@@ -60,8 +58,13 @@ public class CkRuleSelector extends AbstractSelector {
 				data.put("ruleCode", resultSet.getString("rule_code"));
 				data.put("ruleName", resultSet.getString("rule_name"));
 				data.put("ruleDesc", resultSet.getString("rule_desc"));
-				data.put("severity", resultSet.getString("severity"));
-				data.put("memo", resultSet.getString("rule_memo"));
+				data.put("ruleLevel", resultSet.getInt("rule_level"));
+				if ( resultSet.getString("depends") == null) {
+					data.put("depends", "");
+				} else {
+					data.put("depends", resultSet.getString("depends"));
+				}
+				
 				
 				if (ckRules.containsKey(suiteKey)) {
 					JSONArray tempRuleList = ckRules.getJSONArray(suiteKey);
@@ -75,7 +78,7 @@ public class CkRuleSelector extends AbstractSelector {
 			}
 			for (int i=0;i<suiteArray.size();i++) {
 				JSONObject suiteObj = suiteArray.getJSONObject(i);
-				suiteObj.put("rules", ckRules.getJSONArray(suiteObj.getString("ruleCode")));
+				suiteObj.put("rules", ckRules.getJSONArray(suiteObj.getString("suiteId")));
 				result.add(suiteObj);
 			}
 			

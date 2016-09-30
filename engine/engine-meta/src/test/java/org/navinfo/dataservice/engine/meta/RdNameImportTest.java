@@ -94,7 +94,7 @@ public class RdNameImportTest {
 	@Test
 	public void testGetRdName()
 	{
-		String parameter = "{\"options\":{},\"geoLiveType\":\"ROADNAME\",\"pid\":null,\"nameId\":null,\"nameGroupId\":null,\"langCode\":\"CHI\",\"name\":\"jj\",\"type\":\"\",\"base\":\"\",\"prefix\":\"\",\"infix\":\"\",\"suffix\":\"\",\"namePhonetic\":\"\",\"typePhonetic\":\"\",\"basePhonetic\":\"\",\"prefixPhonetic\":\"\",\"infixPhonetic\":\"\",\"suffixPhonetic\":\"\",\"srcFlag\":0,\"roadType\":0,\"adminId\":\"安徽省合肥市瑶海区\",\"codeType\":0,\"voiceFile\":\"\",\"srcResume\":\"\",\"paRegionId\":null,\"splitFlag\":0,\"memo\":\"\",\"routeId\":0,\"uRecord\":\"\",\"uFields\":\"\",\"city\":\"\",\"_initHooksCalled\":true}";
+		String parameter = "{\"subtaskId\":43,\"pageNum\":1,\"pageSize\":20,\"sortby\":\"\",\"params\":{\"name\":\"\",\"adminId\":\"\"}}";
 
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);

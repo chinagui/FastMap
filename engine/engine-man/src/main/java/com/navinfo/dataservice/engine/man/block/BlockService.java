@@ -73,16 +73,19 @@ public class BlockService {
 			JSONArray blockArray = json.getJSONArray("blocks");
 			int updateCount = 0;
 			List<Integer> blockIdList = new ArrayList<Integer>();
-			String createSql = "insert into block_man (BLOCK_MAN_ID, CREATE_USER_ID,BLOCK_ID,COLLECT_GROUP_ID, COLLECT_PLAN_START_DATE,"
+			String createSql = "insert into block_man (BLOCK_MAN_ID, BLOCK_MAN_NAME,CREATE_USER_ID,BLOCK_ID,COLLECT_GROUP_ID, COLLECT_PLAN_START_DATE,"
 					+ "COLLECT_PLAN_END_DATE,DAY_EDIT_GROUP_ID,DAY_EDIT_PLAN_START_DATE,DAY_EDIT_PLAN_END_DATE,MONTH_EDIT_GROUP_ID,"
 					+ "MONTH_EDIT_PLAN_START_DATE,MONTH_EDIT_PLAN_END_DATE,DAY_PRODUCE_PLAN_START_DATE,DAY_PRODUCE_PLAN_END_DATE,"
 					+ "MONTH_PRODUCE_PLAN_START_DATE,MONTH_PRODUCE_PLAN_END_DATE,DESCP,STATUS,TASK_ID) "
-					+ "values(BLOCK_MAN_SEQ.NEXTVAL,?,?,?,to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),?,"
+					+ "values(BLOCK_MAN_SEQ.NEXTVAL,?,?,?,?,to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),?,"
 					+ "to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),?,to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),"
 					+ "to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),"
 					+ "to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),?,?,(SELECT DISTINCT TASK_ID FROM BLOCK T,TASK K WHERE T.CITY_ID=K.CITY_ID AND K.LATEST=1 AND T.BLOCK_ID=?))";
 
 			Object[][] param = new Object[blockArray.size()][];
+			
+			//获取block名称
+			Map<Integer,String> blockNameMap = BlockOperation.queryBlockNameByBlocks(conn, blockArray);
 			List<Integer> updateBlockList = BlockOperation.queryOperationBlocks(conn, blockArray);
 			for (int i = 0; i < blockArray.size(); i++) {
 				JSONObject block = blockArray.getJSONObject(i);
@@ -90,7 +93,7 @@ public class BlockService {
 					continue;
 				}
 
-				Object[] obj = new Object[] { userId, block.getInt("blockId"), block.getInt("collectGroupId"),
+				Object[] obj = new Object[] { blockNameMap.get(block.getInt("blockId")),userId, block.getInt("blockId"), block.getInt("collectGroupId"),
 						block.getString("collectPlanStartDate"), block.getString("collectPlanEndDate"),
 						block.getInt("dayEditGroupId"), block.getString("dayEditPlanStartDate"),
 						block.getString("dayEditPlanEndDate"), block.getInt("monthEditGroupId"),
@@ -103,8 +106,14 @@ public class BlockService {
 			}
 			BlockOperation.openBlockByBlockIdList(conn, blockIdList);
 
-			int[] rows = run.batch(conn, createSql, param);
-			updateCount = rows.length;
+			int[] rows = null;
+			if(param[0]!=null){
+				rows = run.batch(conn, createSql, param);
+			}
+			if(rows!=null){
+				updateCount = rows.length;
+			}
+			
 			return updateCount;
 
 		} catch (Exception e) {

@@ -416,7 +416,7 @@ public class RdNameSelector {
 			rdNameObj.put("splitFlag", resultSet.getInt("SPLIT_FLAG"));
 			rdNameObj.put("memo", resultSet.getString("MEMO"));
 			rdNameObj.put("routeId", resultSet.getInt("ROUTE_ID"));
-			rdNameObj.put("processFlag", resultSet.getInt("PROCESS_FLAG"));
+//			rdNameObj.put("processFlag", resultSet.getInt("PROCESS_FLAG"));
 //			rdNameObj.put("city", resultSet.getString("CITY"));
 			return rdNameObj;
 		} catch (Exception e) {

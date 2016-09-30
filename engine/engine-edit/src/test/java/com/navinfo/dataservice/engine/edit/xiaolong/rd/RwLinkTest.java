@@ -69,15 +69,15 @@ public class RwLinkTest extends InitApplication {
 	{
 		Connection conn;
 		try {
-			conn = DBConnector.getInstance().getConnectionById(42);
+			conn = DBConnector.getInstance().getConnectionById(19);
 
-			String parameter = "{\"dbId\":42,\"type\":\"RWLINK\",\"nodePid\":100005919}";
+			String parameter = "{\"inLinkPid\":86035302,\"nodePid\":468393,\"outLinkPid\":19613243}";
 
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
 			SearchProcess p = new SearchProcess(conn);
 
-			System.out.println(p.searchDataByCondition(ObjType.RWLINK, jsonReq));
+			System.out.println(p.searchDataByCondition(ObjType.RDLANEVIA, jsonReq));
 
 		} catch (Exception e) {
 			e.printStackTrace();

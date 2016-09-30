@@ -177,7 +177,7 @@ public class Operation implements IOperation {
 				RdGscLink gscLink = (RdGscLink) row;
 
 				if (gscLink.getLinkPid() != linkPid
-						|| gscLink.getTableName().toUpperCase()
+						|| !gscLink.getTableName().toUpperCase()
 								.equals(linkTableName)) {
 					continue;
 				}
@@ -186,7 +186,9 @@ public class Operation implements IOperation {
 			}
 
 			if (gscTmp.size() == 1) {
+				
 				updateLink.put(gscTmp.get(0), gsc.getGeometry());
+				
 			} else if (gscTmp.size() > 1) {
 				selfGsc.add(gsc);
 			}

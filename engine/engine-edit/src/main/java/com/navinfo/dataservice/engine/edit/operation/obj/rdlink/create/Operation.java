@@ -50,7 +50,9 @@ public class Operation implements IOperation {
 		Map<Geometry, JSONObject> map = new HashMap<Geometry, JSONObject>();
 
 		if (command.getCatchLinks().size() > 0) {
-			this.caleCatchModifyLink();
+
+			//this.caleCatchModifyLink();
+
 			map = RdLinkOperateUtils.splitRdLink(command.getGeometry(),
 					command.getsNodePid(), command.geteNodePid(),
 					command.getCatchLinks(), result);
@@ -246,16 +248,20 @@ public class Operation implements IOperation {
 						0.00001, 5);
 				if (geometry.getCoordinates()[0].x == modifyJson
 						.getDouble("lon")
-						&& geometry.getCoordinates()[0].x == modifyJson
-								.getDouble("lat")) {
+
+				&& geometry.getCoordinates()[0].y == modifyJson
+
+				.getDouble("lat")) {
 					modifyJson.remove("linkPid");
 					modifyJson.put("nodePid", link.getsNodePid());
 
 				}
 				if (geometry.getCoordinates()[geometry.getCoordinates().length - 1].x == modifyJson
 						.getDouble("lon")
+
 						&& geometry.getCoordinates()[geometry.getCoordinates().length - 1].x == modifyJson
-								.getDouble("lat")) {
+
+						.getDouble("lat")) {
 					modifyJson.remove("linkPid");
 					modifyJson.put("nodePid", link.geteNodePid());
 

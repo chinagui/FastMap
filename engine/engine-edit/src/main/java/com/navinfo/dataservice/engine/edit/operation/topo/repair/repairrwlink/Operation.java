@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.sf.json.JSONObject;
+
 import org.apache.commons.collections.CollectionUtils;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
@@ -24,8 +26,6 @@ import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
-
-import net.sf.json.JSONObject;
 
 public class Operation implements IOperation {
 
@@ -97,11 +97,15 @@ public class Operation implements IOperation {
 			}
 			result.insertObject(this.command.getUpdateLink(), ObjStatus.DELETE, this.command.getLinkPid());
 		}
-		// 处理对立交的影响
-		if (CollectionUtils.isNotEmpty(this.command.getGscList())) {
-			handleEffectOnRdGsc(this.command.getGscList(), links, result);
-		}
+//		// 处理对立交的影响
+//		if (CollectionUtils.isNotEmpty(this.command.getGscList())) {
+//			handleEffectOnRdGsc(this.command.getGscList(), links, result);
+//		}
+		
+		updataRelationObj(this.command.getUpdateLink(), links, result);
+		
 		map.put(this.command.getLinkPid(), links);
+		
 		this.map = map;
 	}
 
@@ -138,5 +142,25 @@ public class Operation implements IOperation {
 			}
 		}
 	}
+	
+	 /**
+     * 维护关联要素
+     *
+     * @throws Exception
+     */
+    private void updataRelationObj(RwLink oldLink, List<RwLink> newLinks, Result result) throws Exception 
+    {
+		// 立交
+		com.navinfo.dataservice.engine.edit.operation.obj.rdgsc.update.Operation gscOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdgsc.update.Operation();
+
+		Map<Integer, Geometry> newLinkMap = new HashMap<Integer, Geometry>();
+
+		for (RwLink link : newLinks) {
+			newLinkMap.put(link.getPid(), link.getGeometry());
+		}
+
+		gscOperation.repairLink(this.command.getGscList(), newLinkMap, oldLink,
+				result);
+    }
 
 }

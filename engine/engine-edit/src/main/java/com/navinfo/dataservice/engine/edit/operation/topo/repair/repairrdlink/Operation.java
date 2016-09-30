@@ -114,10 +114,10 @@ public class Operation implements IOperation {
 
         updataRelationObj(this.command.getUpdateLink(), links, result);
 
-        // 处理对立交的影响
-        if (CollectionUtils.isNotEmpty(this.command.getGscList())) {
-            handleEffectOnRdGsc(this.command.getGscList(), links, result);
-        }
+//        // 处理对立交的影响
+//        if (CollectionUtils.isNotEmpty(this.command.getGscList())) {
+//            handleEffectOnRdGsc(this.command.getGscList(), links, result);
+//        }
         map.put(this.command.getLinkPid(), links);
         this.map = map;
         return null;
@@ -252,7 +252,23 @@ public class Operation implements IOperation {
         // 维护点限速坐标
         com.navinfo.dataservice.engine.edit.operation.obj.rdspeedlimit.move.Operation speedlimitOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdspeedlimit.move.Operation(this.conn);
         speedlimitOperation.moveSpeedlimit(oldLink, newLinks, result);
+        
+        
+        // 立交
+        com.navinfo.dataservice.engine.edit.operation.obj.rdgsc.update.Operation gscOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdgsc.update.Operation(
+                );
+        
+        Map<Integer,Geometry>  newLinkMap=new  HashMap<Integer,Geometry>();
+        
+        for(RdLink link: newLinks)
+        {
+        	newLinkMap.put(link.getPid(), link.getGeometry());
+        }
 
+		gscOperation.repairLink(this.command.getGscList(), newLinkMap, oldLink,
+				result);       
+        
+      
 		/*
          * 条件以下为仅打断情况下需要处理的元素 (size < 2说明没有进行打断操作)
 		 */
@@ -313,6 +329,8 @@ public class Operation implements IOperation {
         com.navinfo.dataservice.engine.edit.operation.obj.rdvariablespeed.update.Operation variableSpeedOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdvariablespeed.update.Operation(
                 this.conn);
         variableSpeedOperation.breakLine(oldLink, newLinks, result);
+        
+        
     }
 
 }

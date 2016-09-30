@@ -157,6 +157,8 @@ public class InitRegiondb {
 				insertDbIds(conn,key,dbDay,dbMonth);
 				//更新grid表
 				insertGrids(conn,key);
+				//维护情报的block
+				maintainInfoBlock(conn,key);
 				conn.commit();
 				response.put("region_"+key+"_man_rows", "success");
 			}
@@ -240,6 +242,13 @@ public class InitRegiondb {
 	private static void insertDbIds(Connection conn,int regionId,int dayDbId,int monthDbId)throws Exception{
 		String sql = "UPDATE REGION SET DAILY_DB_ID=?,MONTHLY_DB_ID=? WHERE REGION_ID=?";
 		new QueryRunner().update(conn, sql,dayDbId,monthDbId,regionId);
+	}
+	private static void maintainInfoBlock(Connection conn,int regionId)throws Exception{
+		QueryRunner run = new QueryRunner();
+		String sql = "INSERT INTO BLOCK (BLOCK_ID,CITY_ID,GEOMETRY,PLAN_STATUS,REGION_ID) VALUES (BLOCK_SEQ.NEXTVAL,100002,NULL,?)";
+		run.update(conn, sql, regionId);
+		String sql2 = "INSERT INTO BLOCK_GRID_MAPPING (GRID_ID,BLOCK_ID) SELECT G.GRID_ID,B.BLOCK_ID FROM BLOCK B,GRID G WHERE B.REGION_ID=G.REGION_ID AND B.CITY_ID=100002 AND B.REGION_ID=?";
+		run.update(conn, sql2,regionId);
 	}
 	
 	public static void main(String[] args){

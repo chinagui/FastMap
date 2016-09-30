@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.DoubleUtil;
@@ -286,6 +287,37 @@ public class CompGeometryUtil {
 		return set;
 
 	}
+	
+	public static Set<String> polygon2GridsWithoutBreak(Polygon p){
+		Set<String> grids = new HashSet<String>();
+		if(p!=null&&p.getGeometryType().equals(GeometryTypeName.POLYGON)){
+			// 最小外包矩形
+			Geometry mbr = p.getEnvelope();
+			Coordinate[] mbrCoords = mbr.getCoordinates();
+			// 最小外包矩形的图幅
+			String[] mbrMeshes = MeshUtils.rect2Meshes(mbrCoords[0].x,
+					mbrCoords[0].y, mbrCoords[2].x, mbrCoords[2].y);
+			for (String mesh : mbrMeshes) {
+
+				Set<String> gridIds = CompGridUtil.mesh2Grid(mesh);
+
+				// 图幅是否被面包含
+				if (p.contains(JtsGeometryConvertor.convert(MeshUtils.mesh2Rect(mesh)))) {
+					grids.addAll(gridIds);
+				} else {
+					
+					//计算被面包含的Grid
+					for(String gridId : gridIds){
+						if(p.intersects(JtsGeometryConvertor.convert(CompGridUtil.grid2Rect(gridId)))){
+							grids.add(gridId);
+						}
+					}
+				}
+			}
+			
+		}
+		return grids;
+	}
 
 	public static Set<String> geo2GridsWithoutBreak(Geometry geo)
 			throws Exception {
@@ -366,5 +398,15 @@ public class CompGeometryUtil {
 		}
 
 		return grids;
+	}
+	
+	public static void main(String[] args) {
+		try{
+			Geometry g = JtsGeometryFactory.read("POLYGON ((116.46875 40.04167, 116.5 40.04167, 116.5 40.02083, 116.53125 40.02083, 116.53125 40.0, 116.53125 39.97917, 116.5 39.97917, 116.5 39.95833, 116.46875 39.95833, 116.4375 39.95833, 116.40625 39.95833, 116.40625 39.97917, 116.40625 40.0, 116.375 40.0, 116.375 40.02083, 116.375 40.04167, 116.40625 40.04167, 116.40625 40.0625, 116.4375 40.0625, 116.4375 40.04167, 116.46875 40.04167))");
+			Set<String> results = geo2GridsWithoutBreak(g);
+			System.out.println(StringUtils.join(results,","));
+		}catch(Exception e){
+			e.printStackTrace();
+		}
 	}
 }

@@ -75,7 +75,7 @@ public class ImportBlock {
 		
 		
 		
-		String sql = "insert into BAK_BLOCK_01 (block_id, city_id, block_name, geometry,plan_status,region_id) values (?,?,?,sdo_geometry(?,8307),0,(select region_id from city where city_id=?))";
+		String sql = "insert into BLOCK (block_id, city_id, block_name, geometry,plan_status,region_id) values (?,?,?,sdo_geometry(?,8307),0,(select region_id from city where city_id=?))";
 		Clob clob = ConnectionUtil.createClob(conn);
 		clob.setString(1, block.getGeometry().toString());
 		
@@ -86,7 +86,7 @@ public class ImportBlock {
 		Clob clob2 = conn.createClob();
 		clob2.setString(1, StringUtils.join(grids, ","));
 		
-		String updateSql = "INSERT INTO BAK_BLOCK_G_M_01 select to_number(column_value),? from table(clob_to_table(?))";
+		String updateSql = "INSERT INTO BLOCK_GRID_MAPPING select to_number(column_value),? from table(clob_to_table(?))";
 		
 		runner.update(conn, updateSql, block.getBlockId(), clob2);
 	}
@@ -95,7 +95,7 @@ public class ImportBlock {
 		
 		String wkt = GridUtils.grids2Wkt(grids);
 		
-		String sql = "insert into BAK_CITY_01 (city_id, city_name, admin_id, province_name, geometry, region_id, plan_status) values (?,?,(select admincode from cp_region_province where province=?),?,sdo_geometry(?,8307),(select region_id from cp_region_province where province=?),0)";
+		String sql = "insert into CITY (city_id, city_name, admin_id, province_name, geometry, region_id, plan_status) values (?,?,(select admincode from cp_region_province where province=?),?,sdo_geometry(?,8307),(select region_id from cp_region_province where province=?),0)";
 		Clob clob = ConnectionUtil.createClob(conn);
 		clob.setString(1, wkt);
 		

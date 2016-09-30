@@ -144,7 +144,7 @@ public class GridLockManager{
 			int lockSeq = run.queryForInt(conn, "SELECT GRID_LOCK_SEQ.NEXTVAL FROM DUAL");
 			//当size超过1000时，才转clob，提高效率
 			String gridInClause = null;
-			Clob clobGrids=null;
+			Clob clobGrids=null; 
 			if(size>1000){
 				clobGrids=conn.createClob();
 				clobGrids.setString(1, StringUtils.join(grids, ","));

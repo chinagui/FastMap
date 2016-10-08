@@ -28,7 +28,6 @@ import net.sf.json.JSONObject;
 @Controller
 public class SysMsgController extends BaseController {
 protected Logger log = Logger.getLogger(this.getClass());
-	
 	/**
 	 * 查询所有的未读消息
 	 * @param request

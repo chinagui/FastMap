@@ -4,7 +4,6 @@
 	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee 
 	http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
 	<display-name>sys web app</display-name>
-	
 	<!-- Spring MVC -->
 	<servlet>
 		<servlet-name>service</servlet-name>
@@ -23,7 +22,7 @@
 	</servlet>
 	<servlet-mapping>
 		<servlet-name>service</servlet-name>
-		<url-pattern>/*</url-pattern>
+		<url-pattern>/</url-pattern>
 	</servlet-mapping>
 	<filter>
 		<filter-name>Spring character encoding filter</filter-name>
@@ -41,6 +40,7 @@
 		<filter-name>Spring character encoding filter</filter-name>
 		<url-pattern>/*</url-pattern>
 	</filter-mapping>
+	
 	<filter>
 		<filter-name>TokenValidateFilter</filter-name>
 		<filter-class>com.navinfo.dataservice.commons.token.TokenValidateFilter</filter-class>

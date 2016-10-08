@@ -187,7 +187,7 @@ public class RdLinkOperateUtils {
 		link.setGeometry(GeoTranslator.transform(geometry, 100000, 0));
 		
 		link.setLength(linkLength);
-		link.setOriginLinkPid(sourceLink.getPid());
+		link.setOriginLinkPid(link.getPid());
 		link.setsNodePid(sNode.getPid());
 		link.seteNodePid(eNode.getPid());
 		

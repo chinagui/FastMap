@@ -46,6 +46,11 @@ public class TipsController extends BaseController {
 		String parameter = request.getParameter("parameter");
 
 		try {
+		    
+		    if (StringUtils.isEmpty(parameter)) {
+                throw new IllegalArgumentException("parameter参数不能为空。");
+            }
+		    
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
 			//grid和date的对象数组
@@ -60,6 +65,10 @@ public class TipsController extends BaseController {
 				JSONObject obj=JSONObject.fromObject(object);
 				
 				String grid=obj.getString("grid");
+				
+				 if (StringUtils.isEmpty(grid)) {
+		                throw new IllegalArgumentException("参数错误：grid不能为空。");
+		            }
 				
 				String date=obj.getString("date");
 				
@@ -95,6 +104,10 @@ public class TipsController extends BaseController {
 		String parameter = request.getParameter("parameter");
 
 		try {
+		    if (StringUtils.isEmpty(parameter)) {
+                throw new IllegalArgumentException("parameter参数不能为空。");
+            }
+		    
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
 			String rowkey = jsonReq.getString("rowkey");
@@ -132,7 +145,11 @@ public class TipsController extends BaseController {
 		String parameter = request.getParameter("parameter");
 
 		try {
-
+		    
+		    if (StringUtils.isEmpty(parameter)) {
+                throw new IllegalArgumentException("parameter参数不能为空。");
+            }
+		    
 			JSONObject json = JSONObject.fromObject(parameter);
 
 			int jobId = json.getInt("jobId");
@@ -174,6 +191,10 @@ public class TipsController extends BaseController {
 		String parameter = request.getParameter("parameter");
 
 		try {
+		    if (StringUtils.isEmpty(parameter)) {
+                throw new IllegalArgumentException("parameter参数不能为空。");
+            }
+		    
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
 			String day = StringUtils.getCurrentDay();
@@ -239,9 +260,18 @@ public class TipsController extends BaseController {
 		String parameter = request.getParameter("parameter");
 
 		try {
+		    if (StringUtils.isEmpty(parameter)) {
+                throw new IllegalArgumentException("parameter参数不能为空。");
+            }
+		    
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
 			String rowkey = jsonReq.getString("rowkey");
+			
+			 if (StringUtils.isEmpty(rowkey)) {
+                 throw new IllegalArgumentException("参数错误：rowkey不能为空");
+             }
+
 
 			TipsSelector selector = new TipsSelector();
 
@@ -265,9 +295,18 @@ public class TipsController extends BaseController {
 		String parameter = request.getParameter("parameter");
 
 		try {
+		    
+		    if (StringUtils.isEmpty(parameter)) {
+                throw new IllegalArgumentException("parameter参数不能为空。");
+            }
+		    
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
 			String wkt = jsonReq.getString("wkt");
+			
+			 if (StringUtils.isEmpty(wkt)) {
+	                throw new IllegalArgumentException("参数错误：wkt不能为空");
+	            }
 
 			TipsSelector selector = new TipsSelector();
 
@@ -290,9 +329,18 @@ public class TipsController extends BaseController {
 		String parameter = request.getParameter("parameter");
 
 		try {
+		    
+		    if (StringUtils.isEmpty(parameter)) {
+                throw new IllegalArgumentException("parameter参数不能为空。");
+            }
+		    
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
 			JSONArray grids = jsonReq.getJSONArray("grids");
+			
+			if (grids==null||grids.size()==0) {
+                throw new IllegalArgumentException("参数错误:grids不能为空。");
+            }
 
 			int type = jsonReq.getInt("type");
 
@@ -301,6 +349,21 @@ public class TipsController extends BaseController {
 			int dbId = jsonReq.getInt("dbId");
 			
 			String mdFlag = jsonReq.getString("mdFlag");
+			
+			if (grids==null||grids.size()==0) {
+                throw new IllegalArgumentException("参数错误:grids不能为空。");
+            }
+            
+            if (stage==null||stage.size()==0) {
+                throw new IllegalArgumentException("参数错误:stage不能为空。");
+            }
+            
+           /* if (dbId==0) {
+                throw new IllegalArgumentException("参数错误:dbId不能为0。");
+            }*/
+            if (StringUtils.isEmpty(mdFlag)) {
+                throw new IllegalArgumentException("参数错误:mdFlag不能为空。");
+            }
 
 			TipsSelector selector = new TipsSelector();
 
@@ -331,6 +394,14 @@ public class TipsController extends BaseController {
 			JSONArray grids = jsonReq.getJSONArray("grids");
 
 			JSONArray stages = jsonReq.getJSONArray("stage");
+			
+			if (grids==null||grids.size()==0) {
+                throw new IllegalArgumentException("参数错误:grids不能为空。");
+            }
+			
+			if (stages==null||stages.size()==0) {
+                throw new IllegalArgumentException("参数错误:stages不能为空。");
+            }
 
 			TipsSelector selector = new TipsSelector();
 

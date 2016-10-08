@@ -103,7 +103,7 @@ public class Operation implements IOperation {
 				ZoneLink zoneLink = new ZoneLink();
 				zoneLink.copy(link);
 				zoneLink.setGeometry(GeoTranslator.geojson2Jts(geojson, 100000, 5));
-				links.add(link);
+				links.add(zoneLink);
 				map.put(link.getPid(), links);
 				result.insertObject(link, ObjStatus.UPDATE, link.pid());
 				// 如果跨图幅就需要打断生成新的link

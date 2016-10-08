@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 
@@ -12,6 +13,8 @@ import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneVia;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
 import com.navinfo.navicommons.database.sql.DBUtils;
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.LineSegment;
 
 public class RdLaneViaSelector extends AbstractSelector {
 
@@ -111,44 +114,108 @@ public class RdLaneViaSelector extends AbstractSelector {
 		DBUtils.closeStatement(pstmt);
 		return list;
 	}
-	
+
 	// 维护经过线方向
-		public List<Entry<Integer, RdLaneVia>> repaireViaDirect(
-				List<Entry<Integer, RdLaneVia>> vias, int preSNodePid,
-				int preENodePid, int linkPid) {
-			List<Entry<Integer, RdLaneVia>> newVias = new ArrayList<Entry<Integer, RdLaneVia>>();
+	public List<Entry<Integer, RdLaneVia>> repaireViaDirect(List<Entry<Integer, RdLaneVia>> vias, int preSNodePid,
+			int preENodePid, int linkPid) {
+		List<Entry<Integer, RdLaneVia>> newVias = new ArrayList<Entry<Integer, RdLaneVia>>();
 
-			for (Entry<Integer, RdLaneVia> entry : vias) {
+		for (Entry<Integer, RdLaneVia> entry : vias) {
 
-				RdLaneVia v = entry.getValue();
+			RdLaneVia v = entry.getValue();
 
-				if (v.getLinkPid() == linkPid) {
+			if (v.getLinkPid() == linkPid) {
 
-					if (preSNodePid != 0 && preENodePid != 0) {
-						if (v.igetsNodePid() == preSNodePid
-								|| v.igetsNodePid() == preENodePid) {
+				if (preSNodePid != 0 && preENodePid != 0) {
+					if (v.igetsNodePid() == preSNodePid || v.igetsNodePid() == preENodePid) {
 
-						} else {
-							int tempPid = v.igetsNodePid();
-
-							v.isetsNodePid(v.igeteNodePid());
-
-							v.iseteNodePid(tempPid);
-						}
 					} else {
-						if (v.igeteNodePid() == v.igetInNodePid()) {
-							int tempPid = v.igetsNodePid();
+						int tempPid = v.igetsNodePid();
 
-							v.isetsNodePid(v.igeteNodePid());
+						v.isetsNodePid(v.igeteNodePid());
 
-							v.iseteNodePid(tempPid);
-						}
+						v.iseteNodePid(tempPid);
+					}
+				} else {
+					if (v.igeteNodePid() == v.igetInNodePid()) {
+						int tempPid = v.igetsNodePid();
+
+						v.isetsNodePid(v.igeteNodePid());
+
+						v.iseteNodePid(tempPid);
 					}
 				}
-
-				newVias.add(new AbstractMap.SimpleEntry(entry.getKey(), v));
 			}
 
-			return newVias;
+			newVias.add(new AbstractMap.SimpleEntry(entry.getKey(), v));
 		}
+
+		return newVias;
+	}
+
+	/**
+	 * 计算经过线
+	 * 
+	 * @param inLinkPid 进入线
+	 * @param nodePid 进入点
+	 * @param outLinkPid 退出线
+	 * @throws Exception
+	 */
+	public List<Integer> calViaLinks(int inLinkPid, int nodePid, int outLinkPid) throws Exception {
+
+		String sql = "select * from table(package_utils.get_restrict_points(:1,:2,:3))";
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		List<Integer> viaLinks = new ArrayList<Integer>();
+
+		try {
+			pstmt = conn.prepareStatement(sql);
+
+			pstmt.setInt(1, inLinkPid);
+
+			pstmt.setInt(2, nodePid);
+
+			pstmt.setInt(3, outLinkPid);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+
+				String viaPath = resultSet.getString("via_path");
+
+				if (viaPath != null) {
+
+					String splits[] = viaPath.split(",");
+
+					for (String s : splits) {
+						if (!s.equals("")) {
+
+							int viaPid = Integer.valueOf(s);
+
+							if (viaPid == inLinkPid || viaPid == outLinkPid) {
+								continue;
+							}
+
+							viaLinks.add(viaPid);
+						}
+					}
+
+				}
+			}
+		} catch (Exception e) {
+			return viaLinks;
+		} finally {
+			try {
+				if (pstmt != null) {
+					pstmt.close();
+				}
+			} catch (Exception e) {
+			}
+
+		}
+		return viaLinks;
+	}
 }

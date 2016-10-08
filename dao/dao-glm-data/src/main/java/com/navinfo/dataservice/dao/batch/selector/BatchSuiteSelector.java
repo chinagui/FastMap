@@ -20,7 +20,7 @@ public class BatchSuiteSelector extends AbstractSelector {
 		this.conn = conn;
 	}
 	
-	public JSONArray getSuite(int pageSize,int pageNum, String type) throws Exception {
+	public JSONArray getSuite(int pageSize,int pageNum, int type) throws Exception {
 		StringBuilder sb = new StringBuilder();
 		
 		PreparedStatement pstmt = null;
@@ -30,15 +30,15 @@ public class BatchSuiteSelector extends AbstractSelector {
 		try {
 			JSONArray result = new JSONArray();
 			
-			int startRow = pageNum * pageSize + 1;
+			int startRow = (pageNum-1) * pageSize + 1;
 
-			int endRow = (pageNum + 1) * pageSize;
+			int endRow = pageNum * pageSize;
 			
-			sb.append("SELECT * FROM (SELECT c.*, rownum rn FROM (select a.* from batch_suite_cop a  where a.feature=:1) c WHERE rownum <= :2)  WHERE rn >= :3");
+			sb.append("SELECT * FROM (SELECT c.*, rownum rn FROM (select COUNT (1) OVER (PARTITION BY 1) total, a.* from batch_suite_cop a  where a.feature=:1) c WHERE rownum <= :2)  WHERE rn >= :3");
 			
 			pstmt = conn.prepareStatement(sb.toString());
 
-			pstmt.setString(1, type);
+			pstmt.setInt(1, type);
 
 			pstmt.setInt(2, endRow);
 
@@ -48,9 +48,11 @@ public class BatchSuiteSelector extends AbstractSelector {
 			
 			while (resultSet.next()) {
 				JSONObject data = new JSONObject();
-				data.put("feature", resultSet.getString("feature"));
+				data.put("suiteId", resultSet.getString("suite_id"));
 				data.put("suiteName", resultSet.getString("suite_name"));
-				data.put("ruleCode", resultSet.getString("rule_code"));
+				data.put("suiteRange", resultSet.getString("suite_range"));
+				data.put("feature", resultSet.getString("feature"));
+				data.put("total", resultSet.getInt("total"));
 				result.add(data);
 			}
 			

@@ -71,6 +71,10 @@
 			<groupId>com.navinfo.dataservice</groupId>
 			<artifactId>api-man</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>com.navinfo.dataservice</groupId>
+			<artifactId>api-metadata</artifactId>
+		</dependency>
 
 		<dependency>
 			<groupId>log4j</groupId>

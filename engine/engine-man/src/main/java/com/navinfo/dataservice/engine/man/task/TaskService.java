@@ -74,7 +74,7 @@ public class TaskService {
 				//情报任务，需要同时创建block任务
 				if(bean.getTaskType()==4){
 					String inforId=taskJson.getString("inforId");
-					createInforBlockMan(conn,inforId,(int) userId,taskId);
+					createInforBlock(conn,inforId,(int) userId,taskId);
 					//修改情报任务状态
 					InforManOperation.updateTask(conn,inforId,taskId);
 				}				
@@ -98,38 +98,45 @@ public class TaskService {
 	 * @param taskId
 	 * @throws Exception
 	 */
-	private void createInforBlockMan(Connection conn,String inforId,int userId,int taskId) throws Exception{
+	private void createInforBlock(Connection conn,String inforId,int userId,int taskId) throws Exception{
 		//查询情报infor
 		//Infor inforObj=InforManService.getInstance().query(inforId);
 		//String inforGeo=inforObj.getGeometry();
 		//查询情报city100002对应的所有block
 		//select block_id,geometry from block where city_id=100002
-		String selectSql="SELECT DISTINCT B.BLOCK_ID"
-				+ "  FROM BLOCK B, BLOCK_GRID_MAPPING M, INFOR_GRID_MAPPING IM"
+		String selectSql="SELECT DISTINCT B.BLOCK_ID,I.INFOR_NAME||'_'||B.BLOCK_NAME BLOCK_NAME"
+				+ "  FROM BLOCK B, BLOCK_GRID_MAPPING M, INFOR_GRID_MAPPING IM,INFOR I"
 				+ " WHERE B.CITY_ID = 100002"
 				+ "   AND B.BLOCK_ID = M.BLOCK_ID"
 				+ "   AND IM.GRID_ID = M.GRID_ID"
+				+ "   AND IM.INFOR_ID = I.INFOR_ID"
 				+ "   AND IM.INFOR_ID='"+inforId+"'";
-		List<Integer> blockIdList=new ArrayList<Integer>();
+		List<Map<String, Object>> blockList=new ArrayList<Map<String, Object>>();
 		try {
 			QueryRunner run = new QueryRunner();
-			ResultSetHandler<List<Integer>> rsHandler = new ResultSetHandler<List<Integer>>() {
-				public List<Integer> handle(ResultSet rs) throws SQLException {
-					List<Integer> list = new ArrayList<Integer>();
+			ResultSetHandler<List<Map<String, Object>>> rsHandler = new ResultSetHandler<List<Map<String, Object>>>() {
+				public List<Map<String, Object>> handle(ResultSet rs) throws SQLException {
+					List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
 					while (rs.next()) {
-						list.add(rs.getInt("BLOCK_ID"));
+						Map<String, Object> blockTmp=new HashMap<String, Object>();
+						blockTmp.put("blockId", rs.getInt("BLOCK_ID"));
+						blockTmp.put("blockName", rs.getString("BLOCK_NAME"));
+						list.add(blockTmp);
 					}
 					return list;
 				}
 
 			};
-			blockIdList= run.query(conn, selectSql, rsHandler);
+			blockList= run.query(conn, selectSql, rsHandler);
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new Exception("查询失败，原因为:" + e.getMessage(), e);
 		}
-		for(int blockId:blockIdList){createInforBlockMan(conn,blockId,userId,taskId);}
+		List<Integer> blockIdList=new ArrayList<Integer>();
+		for(Map<String, Object> blockId:blockList){
+			blockIdList.add((Integer) blockId.get("blockId"));
+			createInforBlockMan(conn,(Integer) blockId.get("blockId"),String.valueOf(blockId.get("blockName")),userId,taskId);}
 		BlockOperation.openBlockByBlockIdList(conn, blockIdList);
 	}
 	
@@ -141,9 +148,9 @@ public class TaskService {
 	 * @param taskId
 	 * @throws Exception
 	 */
-	private void createInforBlockMan(Connection conn,Integer blockId,int userId,int taskId) throws Exception{
-		String sql="insert into block_man (block_man_id,block_id,status,latest,create_user_id,create_date,task_id)"
-				+ "values(BLOCK_MAN_SEQ.NEXTVAL,"+blockId+",2,1,"+userId+",sysdate,"+taskId+")";
+	private void createInforBlockMan(Connection conn,Integer blockId,String blockName,int userId,int taskId) throws Exception{
+		String sql="insert into block_man (block_man_id,block_id,block_man_name,status,latest,create_user_id,create_date,task_id)"
+				+ "values(BLOCK_MAN_SEQ.NEXTVAL,"+blockId+",'"+blockName+"',2,1,"+userId+",sysdate,"+taskId+")";
 		QueryRunner run = new QueryRunner();
 		run.update(conn,sql);	
 	}
@@ -188,7 +195,10 @@ public class TaskService {
 	public int createWithBean(Connection conn,Task bean) throws Exception{
 		int taskId=0;
 		try{
-			TaskOperation.updateLatest(conn,bean.getCityId());
+			//情报任务不更新
+			if(bean.getTaskType()!=4){
+				TaskOperation.updateLatest(conn,bean.getCityId());
+			}			
 			taskId=TaskOperation.getNewTaskId(conn);
 			bean.setTaskId(taskId);
 			TaskOperation.insertTask(conn, bean);
@@ -373,6 +383,12 @@ public class TaskService {
 						+ "WHERE TASK_ID IN ("+newTask.toString().replace("[", "").
 						replace("]", "").replace("\"", "")+")";
 				DbOperation.exeUpdateOrInsertBySql(conn, updateSql);
+				
+				//关闭对应的city
+				CityOperation.close(conn);
+				
+				//关闭对应的infor
+				InforManOperation.closeByTasks(conn,newTask);
 			
 				//发送消息
 				JSONObject condition=new JSONObject();

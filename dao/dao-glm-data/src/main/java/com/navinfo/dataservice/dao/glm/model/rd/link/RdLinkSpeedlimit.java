@@ -198,6 +198,29 @@ public class RdLinkSpeedlimit implements IRow {
 	@Override
 	public void copy(IRow row) {
 
+		RdLinkSpeedlimit sourceLimit = (RdLinkSpeedlimit) row;
+
+		this.setSpeedType(sourceLimit.getSpeedType());
+
+		this.setFromSpeedLimit(sourceLimit.getFromSpeedLimit());		
+
+		this.setToSpeedLimit(sourceLimit.getToSpeedLimit());	
+
+		this.setSpeedClass(sourceLimit.getSpeedClass());
+		
+		this.setFromLimitSrc(sourceLimit.getFromLimitSrc());
+		
+		this.setToLimitSrc(sourceLimit.getToLimitSrc());
+		
+		this.setSpeedDependent(sourceLimit.getSpeedDependent());
+		
+		this.setTimeDomain(sourceLimit.getTimeDomain());
+		
+		this.setSpeedClassWork(sourceLimit.getSpeedClassWork());	
+		
+		this.setRowId(sourceLimit.getRowId());
+		
+		this.setMesh(sourceLimit.mesh());
 	}
 
 	@Override

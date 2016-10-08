@@ -32,6 +32,7 @@ check (CODE_TYPE in (0,1,2,3,4,5,6,7)) disable ,
 check (SPLIT_FLAG in (0,1,2)) disable ,
    MEMO                 VARCHAR2(200),
    ROUTE_ID             NUMBER(10),
+   PROCESS_FLAG         NUMBER(1)      default 0,
    U_RECORD             NUMBER(2),
    U_FIELDS             VARCHAR2(1000),
    constraint PK_RD_NAME primary key (NAME_ID)

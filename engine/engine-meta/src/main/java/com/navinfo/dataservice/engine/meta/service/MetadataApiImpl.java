@@ -2,6 +2,7 @@ package com.navinfo.dataservice.engine.meta.service;
 
 import java.sql.Connection;
 
+import com.navinfo.dataservice.engine.meta.kind.KindSelector;
 import org.apache.commons.dbutils.DbUtils;
 import org.springframework.stereotype.Service;
 
@@ -21,111 +22,106 @@ import net.sf.json.JSONObject;
 
 /**
  * @author wangshishuai3966
- * 
  */
 @Service("metadataApi")
 public class MetadataApiImpl implements MetadataApi {
-	
-	@Override
-	public int queryAdminIdByLocation(double longitude, double latitude)
-			throws Exception {
-		
-		MeshSelector selector = new MeshSelector();
-		
-		return selector.getAdminIdByLocation(longitude, latitude);
-		
-	}
-	
+
+    @Override
+    public int queryAdminIdByLocation(double longitude, double latitude)
+            throws Exception {
+
+        MeshSelector selector = new MeshSelector();
+
+        return selector.getAdminIdByLocation(longitude, latitude);
+
+    }
 
 
-	@Override
-	public void nameImport(String name, double longitude, double latitude,
-			String rowkey) throws Exception {
-		RdNameImportor nameImportor=new RdNameImportor();
-		nameImportor.importName(name, longitude, latitude, rowkey);
-		
-	}
+    @Override
+    public void nameImport(String name, double longitude, double latitude,
+                           String rowkey) throws Exception {
+        RdNameImportor nameImportor = new RdNameImportor();
+        nameImportor.importName(name, longitude, latitude, rowkey);
+
+    }
 
 
-
-	public JSONObject getChainMap(Connection conn) throws Exception {
-		ChainSelector chainSelector = new ChainSelector(conn);
-		return chainSelector.getChainMap();
-	}
-
+    public JSONObject getChainMap(Connection conn) throws Exception {
+        ChainSelector chainSelector = new ChainSelector(conn);
+        return chainSelector.getChainMap();
+    }
 
 
-	public JSONObject getKindCodeMap(Connection conn) throws Exception {
-		KindCodeSelector kindCodeSelector = new KindCodeSelector(conn);
-		return kindCodeSelector.getKindCodeMap();
-	}
+    public JSONObject getKindCodeMap(Connection conn) throws Exception {
+        KindCodeSelector kindCodeSelector = new KindCodeSelector(conn);
+        return kindCodeSelector.getKindCodeMap();
+    }
 
 
-
-	public JSONObject getAdminMap(Connection conn) throws Exception {
-		ScPointAdminArea areaSelector = new ScPointAdminArea(conn);
-		return areaSelector.getAdminMap();
-	}
-
+    public JSONObject getAdminMap(Connection conn) throws Exception {
+        ScPointAdminArea areaSelector = new ScPointAdminArea(conn);
+        return areaSelector.getAdminMap();
+    }
 
 
-	public JSONObject getCharacterMap(Connection conn) throws Exception {
-		TyCharacterFjtHmCheckSelector tyCharacterFjtHmCheckSelector = new TyCharacterFjtHmCheckSelector(conn);
-		return tyCharacterFjtHmCheckSelector.getCharacterMap();
-	}
+    public JSONObject getCharacterMap(Connection conn) throws Exception {
+        TyCharacterFjtHmCheckSelector tyCharacterFjtHmCheckSelector = new TyCharacterFjtHmCheckSelector(conn);
+        return tyCharacterFjtHmCheckSelector.getCharacterMap();
+    }
 
 
-
-	public JSONObject getNavicovpyMap(Connection conn) throws Exception {
-		PinyinConvertSelector pinyinConvertSelector = new PinyinConvertSelector(conn);
-		return pinyinConvertSelector.getNavicovpyMap();
-	}
-
+    public JSONObject getNavicovpyMap(Connection conn) throws Exception {
+        PinyinConvertSelector pinyinConvertSelector = new PinyinConvertSelector(conn);
+        return pinyinConvertSelector.getNavicovpyMap();
+    }
 
 
-	public JSONObject getEngshortMap(Connection conn) throws Exception {
-		ScEngshortSelector scEngshortSelector = new ScEngshortSelector(conn);
-		return scEngshortSelector.getEngShortMap();
-	}
+    public JSONObject getEngshortMap(Connection conn) throws Exception {
+        ScEngshortSelector scEngshortSelector = new ScEngshortSelector(conn);
+        return scEngshortSelector.getEngShortMap();
+    }
+
+    public JSONObject getKindMap(Connection conn) throws Exception {
+        KindSelector selector = new KindSelector(conn);
+        return selector.getKinkMap();
+    }
 
 
+    @Override
+    public String[] pyConvert(String word) throws Exception {
+        PinyinConverter py = new PinyinConverter();
 
-	@Override
-	public String[] pyConvert(String word) throws Exception {
-		PinyinConverter py = new PinyinConverter();
+        String[] result = py.convert(word);
 
-		String[] result = py.convert(word);
-		
-		return result;
-	}
-
+        return result;
+    }
 
 
-	@Override
-	public JSONObject getMetadataMap() throws Exception {
-		JSONObject result = new JSONObject();
-		Connection conn = null;
-		try {
-			
-			conn = DBConnector.getInstance().getMetaConnection();
-			
-			result.put("chain", getChainMap(conn));
-			result.put("kindCode", getKindCodeMap(conn));
-			result.put("admin", getAdminMap(conn));
-			result.put("character", getCharacterMap(conn));
-			result.put("navicovpy", getNavicovpyMap(conn));
-			result.put("engshort", getEngshortMap(conn));
-			
-			return result;
-		} catch (Exception e) {
-			throw e;
-		} finally {
-			DbUtils.closeQuietly(conn);
-		}
-		
-		
-	}
+    @Override
+    public JSONObject getMetadataMap() throws Exception {
+        JSONObject result = new JSONObject();
+        Connection conn = null;
+        try {
 
+            conn = DBConnector.getInstance().getMetaConnection();
+
+            result.put("chain", getChainMap(conn));
+            result.put("kindCode", getKindCodeMap(conn));
+            result.put("admin", getAdminMap(conn));
+            result.put("character", getCharacterMap(conn));
+            result.put("navicovpy", getNavicovpyMap(conn));
+            result.put("engshort", getEngshortMap(conn));
+            result.put("kind", getKindMap(conn));
+
+            return result;
+        } catch (Exception e) {
+            throw e;
+        } finally {
+            DbUtils.closeQuietly(conn);
+        }
+
+
+    }
 
 
 }

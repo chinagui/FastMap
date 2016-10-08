@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -220,19 +221,19 @@ public class BlockOperation {
 	 * @return 根据BlockId列表获取其中所有可关闭的block blockIdList
 	 * @throws Exception
 	 */
-	public static List<Integer> getBlockListReadyToClose(Connection conn, List<Integer> blockIdList) throws Exception {
+	public static List<Integer> getBlockListReadyToClose(Connection conn, List<Integer> blockManIdList) throws Exception {
 		// TODO Auto-generated method stub
 
 		try {
 			QueryRunner run = new QueryRunner();
 
 			String BlockIds = "(";
-			BlockIds += StringUtils.join(blockIdList.toArray(), ",") + ")";
+			BlockIds += StringUtils.join(blockManIdList.toArray(), ",") + ")";
 
-			String selectSql = "select distinct b.block_id "
-					+ ",listagg(st.status , ',') within group(order by b.block_id) as status" + " from subtask st"
-					+ ", block b " + " where st.block_id = b.block_id" + " and b.plan_status = 1"
-					+ " and b.block_id in " + BlockIds + " group by b.block_id";
+			String selectSql = "select distinct b.block_man_id "
+					+ ",listagg(st.status , ',') within group(order by b.block_man_id) as status" + " from subtask st"
+					+ ", block_man b " + " where st.block_man_id = b.block_man_id"
+					+ " and b.block_man_id in " + BlockIds + " group by b.block_man_id";
 
 			ResultSetHandler<List<Integer>> rsHandler = new ResultSetHandler<List<Integer>>() {
 				public List<Integer> handle(ResultSet rs) throws SQLException {
@@ -241,7 +242,7 @@ public class BlockOperation {
 						String[] s = rs.getString("status").split(",");
 						List<String> status = (List<String>) Arrays.asList(s);
 						if (!status.contains("1")) {
-							list.add(rs.getInt("block_id"));
+							list.add(rs.getInt("block_man_id"));
 						}
 
 					}
@@ -265,22 +266,26 @@ public class BlockOperation {
 	 * @param blockList
 	 * @throws Exception
 	 */
-	public static void closeBlockByBlockIdList(Connection conn, List<Integer> blockList) throws Exception {
+	public static void closeBlockByBlockIdList(Connection conn, List<Integer> blockManList) throws Exception {
 		// TODO Auto-generated method stub
 		try {
 			QueryRunner run = new QueryRunner();
-			if (!blockList.isEmpty()) {
+			if (!blockManList.isEmpty()) {
 				String BlockIds = "(";
-				BlockIds += StringUtils.join(blockList.toArray(), ",") + ")";
-				// 更新block表
-				String updateSql = "update block" + " set plan_status = 2" + " where block_id in " + BlockIds;
-
-				run.update(conn, updateSql);
-
+				BlockIds += StringUtils.join(blockManList.toArray(), ",") + ")";
 				// 更新block_man
-				updateSql = "update block_man" + " set status = 0" + " where latest = 1 and block_id in " + BlockIds;
-
+				String updateSql = "update block_man" + " set status = 0" + " where latest = 1 and block_man_id in " + BlockIds;
 				run.update(conn, updateSql);
+				
+				updateSql="UPDATE block C"
+						+ "   SET C.PLAN_STATUS = 2"
+						+ " WHERE NOT EXISTS (SELECT 1"
+						+ "          FROM block_man T"
+						+ "         WHERE T.block_ID = C.block_ID"
+						+ "           AND T.STATUS <> 0"
+						+ "			  AND T.LATEST=1)"
+						+ "   AND C.PLAN_STATUS = 1";
+				run.update(conn, updateSql);				
 			}
 
 		} catch (Exception e) {
@@ -561,15 +566,15 @@ public class BlockOperation {
 	 * @param blockList
 	 * @throws Exception
 	 */
-	public static void updateMainBlock(Connection conn, List<Integer> blockList) throws Exception {
+	public static void updateMainBlock(Connection conn, List<Integer> blockManIds) throws Exception {
 		// TODO Auto-generated method stub
 		try {
 			QueryRunner run = new QueryRunner();
-			if (!blockList.isEmpty()) {
+			if (!blockManIds.isEmpty()) {
 				String BlockIds = "(";
-				BlockIds += StringUtils.join(blockList.toArray(), ",") + ")";
+				BlockIds += StringUtils.join(blockManIds.toArray(), ",") + ")";
 
-				String updateSql = "update block_man" + " set status = 1" + " where block_id in " + BlockIds +" and status!=0";
+				String updateSql = "update block_man" + " set status = 1" + " where block_man_id in " + BlockIds +" and status!=0";
 
 				run.update(conn, updateSql);
 			}
@@ -651,6 +656,44 @@ public class BlockOperation {
 			finishPercent += rs1.getInt("finish_percent") / (subtaskCount * 100);
 		}
 		return String.valueOf(finishPercent * 100) + "%";
+	}
+
+	/**
+	 * @param conn
+	 * @param blockArray
+	 * @return
+	 * @throws Exception 
+	 */
+	public static Map<Integer, String> queryBlockNameByBlocks(Connection conn, JSONArray blockArray) throws Exception {
+		// TODO Auto-generated method stub
+		try {
+			QueryRunner run = new QueryRunner();
+			List<Integer> updateBlockList = new ArrayList<Integer>();
+			List<Integer> blockList = new ArrayList<Integer>();
+
+			for (int i = 0; i < blockArray.size(); i++) {
+				JSONObject block = blockArray.getJSONObject(i);
+				blockList.add(block.getInt("blockId"));
+			}
+			String BlockIds = "(";
+			BlockIds += StringUtils.join(blockList.toArray(), ",") + ")";
+
+			String selectSql = "select b.block_id,b.block_name from block b where b.block_id in " + BlockIds;
+
+			Map<Integer,String> blockNameMap = new HashMap<Integer,String>();
+			PreparedStatement stmt = conn.prepareStatement(selectSql);
+			ResultSet rs = stmt.executeQuery();
+			while (rs.next()) {
+				blockNameMap.put(rs.getInt("block_id"), rs.getString("block_name"));
+			}
+
+			return blockNameMap;
+
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("更新失败，原因为:" + e.getMessage(), e);
+		}
 	}
 	
 }

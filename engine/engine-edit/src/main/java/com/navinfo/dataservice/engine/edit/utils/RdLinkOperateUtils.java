@@ -177,15 +177,27 @@ public class RdLinkOperateUtils {
 	public static IRow addLinkByNoResult(RdNode sNode, RdNode eNode, RdLink link, RdLink sourceLink) throws Exception {
 		// 继承原有link信息
 		Geometry geometry = link.getGeometry();
+		
 		link.setPid(PidUtil.getInstance().applyLinkPid());
+		
 		link.copy(sourceLink);
+		
+		double linkLength = GeometryUtils.getLinkLength(geometry);
 		// 计算Geometry
 		link.setGeometry(GeoTranslator.transform(geometry, 100000, 0));
-		double linkLength = GeometryUtils.getLinkLength(link.getGeometry());
+		
 		link.setLength(linkLength);
 		link.setOriginLinkPid(link.getPid());
 		link.setsNodePid(sNode.getPid());
 		link.seteNodePid(eNode.getPid());
+		
+		Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(geometry);
+
+		if (meshes.size() > 1) {
+			throw new Exception("创建RDLINK失败：对应多个图幅");
+		} else {
+			link.setMeshId(Integer.parseInt(meshes.iterator().next()));
+		}
 		return link;
 	}
 
@@ -267,6 +279,7 @@ public class RdLinkOperateUtils {
 		// 创建线
 		if (sourceLink != null && sourceLink.getPid() != 0) {
 			links.add((RdLink) addLinkByNoResult(sNode, eNode, link, sourceLink));
+			result.insertObject(link, ObjStatus.INSERT, link.pid());
 		}
 	}
 

@@ -209,12 +209,12 @@ public class BlockController extends BaseController {
 				throw new IllegalArgumentException("blockIds参数是必须的。");
 			}
 
-			JSONArray blockIds = dataJson.getJSONArray("blockIds");
-			List<Integer> blockIdList = (List<Integer>) JSONArray.toCollection(blockIds, Integer.class);
+			JSONArray blockManIds = dataJson.getJSONArray("blockManIds");
+			List<Integer> blockManIdList = (List<Integer>) JSONArray.toCollection(blockManIds, Integer.class);
 
-			List<Integer> unClosedBlock = BlockService.getInstance().close(blockIdList);
+			List<Integer> unClosedBlock = BlockService.getInstance().close(blockManIdList);
 
-			String message = "批量关闭block：" + (blockIdList.size() - unClosedBlock.size()) + "个成功，" + unClosedBlock.size() + "个失败。";			
+			String message = "批量关闭block：" + (blockManIdList.size() - unClosedBlock.size()) + "个成功，" + unClosedBlock.size() + "个失败。";			
 			return new ModelAndView("jsonView", success(message));
 
 		} catch (Exception e) {

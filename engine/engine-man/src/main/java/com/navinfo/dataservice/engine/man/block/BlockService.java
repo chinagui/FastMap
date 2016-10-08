@@ -361,32 +361,30 @@ public class BlockService {
 		}
 	}
 
-	public List<Integer> close(List<Integer> blockIdList) throws ServiceException {
+	public List<Integer> close(List<Integer> blockManIdList) throws ServiceException {
 		Connection conn = null;
 		try {
 
 			conn = DBConnector.getInstance().getManConnection();
 
 			// 获取所有blockIdList中可以关闭的block
-			List<Integer> blockReadyToClose = BlockOperation.getBlockListReadyToClose(conn, blockIdList);
+			List<Integer> blockReadyToClose = BlockOperation.getBlockListReadyToClose(conn, blockManIdList);
 
 			if (!blockReadyToClose.isEmpty()) {
 				BlockOperation.closeBlockByBlockIdList(conn, blockReadyToClose);
 			}
 
 			List<Integer> unClosedBlocks = new ArrayList<Integer>();
-			for (int i = 0; i < blockIdList.size(); i++) {
-				if (!blockReadyToClose.contains(blockIdList.get(i))) {
-					unClosedBlocks.add(blockIdList.get(i));
+			for (int i = 0; i < blockManIdList.size(); i++) {
+				if (!blockReadyToClose.contains(blockManIdList.get(i))) {
+					unClosedBlocks.add(blockManIdList.get(i));
 				}
 			}
-
 			return unClosedBlocks;
-
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
-			throw new ServiceException("查询失败:" + e.getMessage(), e);
+			throw new ServiceException("block关闭失败:" + e.getMessage(), e);
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}

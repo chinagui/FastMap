@@ -41,20 +41,21 @@ public class RdLinkTest extends InitApplication {
 
 	@Test
 	public void testAddRdLink() {
-		//{"command":"CREATE","dbId":17,"type":"RDLINK","data":{"eNodePid":0,"sNodePid":0,"kind":7,"laneNum":1,"geometry":{"type":"LineString","coordinates":[[116.36877,40.04402],[116.36601,40.0505],[116.36493,40.05416]]}}}
-		//
+	/*	//{"command":"CREATE","dbId":17,"type":"RDLINK","data":{"eNodePid":0,"sNodePid":0,"kind":7,"laneNum":1,"geometry":{"type":"LineString","coordinates":[[116.36877,40.04402],[116.36601,40.0505],[116.36493,40.05416]]}}}
+		//{"command":"CREATE","dbId":17,"data":{"eNodePid":0,"sNodePid":0,"geometry":{"type":"LineString","coordinates":[[116.29326045513153,40.56219207425306],[116.29347239505566,40.56218427401308],[116.29386931657791,40.56196079765951],[116.29403293132782,40.56180185821568]]},"catchLinks":[{"linkPid":302000182,"lon":116.29347239505566,"lat":40.56218427401308},{"linkPid":203000181,"lon":116.29386931657791,"lat":40.56196079765951}]},"type":"RDLINK"}
 		// parameter={"command":"CREATE","dbId":42,"data":{"eNodePid":0,"sNodePid":0,"geometry":{"type":"LineString","coordinates":},"catchLinks":[]},"type":"RDLINK"}
-		String line = "[[116.36877,40.04402],[116.36601,40.0505],[116.36493,40.05416]]";
-		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDLINK\",\"dbId\":17,"
+		String line = "[[116.29326045513153,40.56219207425306],[116.29347239505566,40.56218427401308],[116.29386931657791,40.56196079765951],[116.29403293132782,40.56180185821568]]";
+		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDLINK\",\"dbId\":42,"
 				+ "\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"kind\":7,\"laneNum\":1,\"geometry\":{\"type\":\"LineString\","
-				+ "\"coordinates\":" + line + "}}}";
-		Transaction t = new Transaction(parameter);
+				+ "\"coordinates\":" + line + "}
+				+ \"catchLinks\":[{\"linkPid\":302000182,\"lon\":116.29347239505566,\"lat\":40.56218427401308},{\"linkPid\":203000181,\"lon\":116.29386931657791,\"lat\":40.56196079765951}]"}}";
+		//Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
 			System.out.println(msg);
 		} catch (Exception e) {
 			e.printStackTrace();
-		}
+		}*/
 	}
 
 	@Test

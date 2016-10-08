@@ -562,15 +562,15 @@ public class BlockOperation {
 	 * @param blockList
 	 * @throws Exception
 	 */
-	public static void updateMainBlock(Connection conn, List<Integer> blockList) throws Exception {
+	public static void updateMainBlock(Connection conn, List<Integer> blockManIds) throws Exception {
 		// TODO Auto-generated method stub
 		try {
 			QueryRunner run = new QueryRunner();
-			if (!blockList.isEmpty()) {
+			if (!blockManIds.isEmpty()) {
 				String BlockIds = "(";
-				BlockIds += StringUtils.join(blockList.toArray(), ",") + ")";
+				BlockIds += StringUtils.join(blockManIds.toArray(), ",") + ")";
 
-				String updateSql = "update block_man" + " set status = 1" + " where block_id in " + BlockIds +" and status!=0";
+				String updateSql = "update block_man" + " set status = 1" + " where block_man_id in " + BlockIds +" and status!=0";
 
 				run.update(conn, updateSql);
 			}

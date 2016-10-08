@@ -161,7 +161,7 @@ public class Process extends AbstractProcess<Command> {
 				}
 			}
 
-			laneList.addAll(lanes2);
+			laneList.addAll(outLinkDeleteLaneList);
 			
 			laneList.addAll(lanes);
 			

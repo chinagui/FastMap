@@ -131,13 +131,13 @@ public class Operation implements IOperation {
 		for (IRow row : nodes) {
 			RdInterNode interNode = (RdInterNode) row;
 			if (interNode.getNodePid() == link.getsNodePid() || interNode.getNodePid() == link.geteNodePid()) {
-				result.insertObject(interNode, ObjStatus.DELETE, interNode.getNodePid());
+				result.insertObject(interNode, ObjStatus.DELETE, interNode.getPid());
 			}
 		}
 		for (IRow row : links) {
 			RdInterLink interLink = (RdInterLink) row;
 			if (interLink.getLinkPid() == link.getPid()) {
-				result.insertObject(interLink, ObjStatus.DELETE, interLink.getLinkPid());
+				result.insertObject(interLink, ObjStatus.DELETE, interLink.getPid());
 			}
 		}
 	}

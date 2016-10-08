@@ -4,12 +4,11 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGscLink;
@@ -89,23 +88,14 @@ public class RdGscSelector extends AbstractSelector {
 	 * @return
 	 * @throws Exception
 	 */
-	public List<RdGsc> loadRdGscLinkByLinkPids(List<Integer> linkPids, String tableName,boolean isLock) throws Exception {
+	public List<RdGsc> loadRdGscByLinkPids(String linkPids, String tableName,boolean isLock) throws Exception {
 		List<RdGsc> rdgscs = new ArrayList<RdGsc>();
 
-		if (linkPids.size() == 0) {
+		if (StringUtils.isEmpty(linkPids)) {
 			return rdgscs;
 		}
 
-		// 去重操作
-		Set<Integer> linkPidsSet = new HashSet<Integer>(linkPids);
-
-		StringBuffer s = new StringBuffer("");
-		for (Integer pid : linkPidsSet) {
-			s.append(pid + ",");
-		}
-		s.deleteCharAt(s.lastIndexOf(","));
-
-		String sql = "SELECT a.* FROM rd_gsc a,rd_gsc_link b WHERE a.pid = b.pid AND b.link_pid in (" + s.toString()
+		String sql = "SELECT a.* FROM rd_gsc a,rd_gsc_link b WHERE a.pid = b.pid AND b.link_pid in (" + linkPids
 				+ ") and a.u_record!=2 and b.table_name = :1";
 
 		if (isLock) {
@@ -289,7 +279,7 @@ public class RdGscSelector extends AbstractSelector {
 	 */
 	private void setChild(RdGsc rdGsc,boolean isLock) throws Exception
 	{
-		List<IRow> links = new RdGscLinkSelector(conn).loadRowsByParentId(rdGsc.getPid(), isLock);
+		List<IRow> links = new RdGscLinkSelector(conn).loadRowsByClassParentId(RdGscLink.class, rdGsc.getPid(), isLock, "zlevel");
 
 		rdGsc.setLinks(links);
 

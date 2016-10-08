@@ -169,9 +169,12 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 				throw new Exception(preCheckMsg);
 			}
 			this.recordData();
-
+			long startPostCheckTime=System.currentTimeMillis();
+			log.info("BEGIN  POSTCHECK ");
 			this.postCheck();
-
+			long endPostCheckTime=System.currentTimeMillis();
+			log.info("BEGIN  POSTCHECK ");
+			log.info("post check use time   " + String.valueOf(endPostCheckTime-startPostCheckTime));
 			conn.commit();
 
 			System.out.print("操作成功\r\n");

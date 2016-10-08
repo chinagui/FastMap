@@ -10,7 +10,9 @@ import net.sf.json.JSONObject;
 import org.hbase.async.KeyValue;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.fcc.HBaseController;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 
@@ -39,8 +41,8 @@ public class TileSelector extends BaseController {
 				+ String.format("%07d", y);
 
 		HBaseController control = new HBaseController();
-		
-		ArrayList<KeyValue> list = control.getByRowkey("RDLINK_"+dbId, key, null);
+		String prefix = SystemConfigFactory.getSystemConfig().getValue("render.table.prefix");
+		ArrayList<KeyValue> list = control.getByRowkey((StringUtils.isEmpty(prefix)?"":prefix+"_")+"RDLINK_"+dbId, key, null);
 
 		for (KeyValue kv : list) {
 			listResult.add(new String(kv.value()));
@@ -69,8 +71,9 @@ public class TileSelector extends BaseController {
 				+ String.format("%07d", y);
 
 		HBaseController control = new HBaseController();
-		
-		ArrayList<KeyValue> list = control.getByRowkey("RWLINK_"+dbId, key, null);
+
+		String prefix = SystemConfigFactory.getSystemConfig().getValue("render.table.prefix");
+		ArrayList<KeyValue> list = control.getByRowkey((StringUtils.isEmpty(prefix)?"":prefix+"_")+"RWLINK_"+dbId, key, null);
 
 		for (KeyValue kv : list) {
 			listResult.add(new String(kv.value()));
@@ -99,8 +102,9 @@ public class TileSelector extends BaseController {
 				+ String.format("%07d", y);
 
 		HBaseController control = new HBaseController();
-		
-		ArrayList<KeyValue> list = control.getByRowkey("ADLINK_"+dbId, key, null);
+
+		String prefix = SystemConfigFactory.getSystemConfig().getValue("render.table.prefix");
+		ArrayList<KeyValue> list = control.getByRowkey((StringUtils.isEmpty(prefix)?"":prefix+"_")+"ADLINK_"+dbId, key, null);
 
 		for (KeyValue kv : list) {
 			listResult.add(new String(kv.value()));

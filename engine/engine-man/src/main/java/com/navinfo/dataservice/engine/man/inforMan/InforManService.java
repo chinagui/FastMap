@@ -2,6 +2,7 @@ package com.navinfo.dataservice.engine.man.inforMan;
 
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
@@ -173,12 +174,12 @@ public class InforManService {
 		}
 	}
 
-	public Infor query(String inforId) throws Exception {
+	public HashMap<String,Object> query(String inforId) throws Exception {
 		Connection conn = null;
 		try {
 			conn = DBConnector.getInstance().getManConnection();
 			String selectSql = "select * from infor where INFOR_ID='" + inforId + "'";
-			List<Infor> list = InforManOperation.selectTaskBySql2(conn, selectSql, null);
+			List<HashMap<String,Object>> list = InforManOperation.selectTaskBySql2(conn, selectSql, null);
 			if (list.size() > 0) {
 				return list.get(0);
 			} else {
@@ -200,7 +201,7 @@ public class InforManService {
 			String inforIdStr = inforIdslist.toString().replace("[", "'").replace("]", "'").replace(" ", "")
 					.replace(",", "','");
 
-			String updateSql = "UPDATE INFOR_MAN SET INFOR_STATUS=0 WHERE INFOR_ID IN (" + inforIdStr + ")";
+			String updateSql = "UPDATE INFOR SET PLAN_STATUS=2 WHERE INFOR_ID IN (" + inforIdStr + ")";
 			DbOperation.exeUpdateOrInsertBySql(conn, updateSql);
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);

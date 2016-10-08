@@ -148,7 +148,7 @@ public class Operation implements IOperation {
 		RdInterLink interLink = interSelector.loadByLinkPid(oldLink.getPid(), true);
 
 		if (interLink != null) {
-			result.insertObject(interLink, ObjStatus.DELETE, interLink.getLinkPid());
+			result.insertObject(interLink, ObjStatus.DELETE, interLink.getPid());
 			
 			List<Integer> hasAddNodePidList = new ArrayList<>();
 

@@ -138,6 +138,13 @@ public class RdLinkWalkstair implements IRow {
 
 	@Override
 	public void copy(IRow row) {
+		
+		RdLinkWalkstair source  = (RdLinkWalkstair) row;
+		this.setStairLoc(source.getStairLoc());
+		this.setStairFlag(source.getStairFlag());
+	
+		this.setWorkDir(source.getWorkDir());
+		this.setCaptureFlag(source.getCaptureFlag());
 	}
 
 	@Override

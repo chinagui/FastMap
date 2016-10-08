@@ -1,5 +1,9 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.trafficsignal.delete;
 
+import java.util.List;
+
+import org.apache.commons.collections.CollectionUtils;
+
 import com.navinfo.dataservice.dao.glm.iface.IProcess;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
@@ -27,21 +31,24 @@ public class Process extends AbstractProcess<Command> implements IProcess {
 
 		RdTrafficsignalSelector selector = new RdTrafficsignalSelector(this.getConn());
 
-		RdTrafficsignal rdTrafficsignal = (RdTrafficsignal) selector.loadById(this.getCommand().getPid(), true);
+		List<RdTrafficsignal> trafficsignalList = selector.loadByTrafficPid(true, this.getCommand().getPid());
 
-		this.getCommand().setRdTrafficsignal(rdTrafficsignal);
-
-		RdCrossNodeSelector crossNodeSelector = new RdCrossNodeSelector(this.getConn());
-
-		IRow crossNode = crossNodeSelector.loadByNodeId(rdTrafficsignal.getNodePid(), true);
-
-		RdCrossSelector crossSelector = new RdCrossSelector(this.getConn());
-
-		RdCross cross = (RdCross) crossSelector.loadById(crossNode.parentPKValue(), true);
+		this.getCommand().setRdTrafficsignalList(trafficsignalList);
 		
-		if(cross.getSignal() != 0)
+		if(CollectionUtils.isNotEmpty(trafficsignalList))
 		{
-			this.getCommand().setRdCross(cross);
+			RdCrossNodeSelector crossNodeSelector = new RdCrossNodeSelector(this.getConn());
+
+			IRow crossNode = crossNodeSelector.loadByNodeId(trafficsignalList.get(0).getNodePid(), true);
+
+			RdCrossSelector crossSelector = new RdCrossSelector(this.getConn());
+
+			RdCross cross = (RdCross) crossSelector.loadById(crossNode.parentPKValue(), true);
+			
+			if(cross.getSignal() != 0)
+			{
+				this.getCommand().setRdCross(cross);
+			}
 		}
 
 		return true;

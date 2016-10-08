@@ -61,5 +61,4 @@ public class SysMsg implements Serializable{
 		this.pushUserId = pushUserId;
 	}
 	
-	
 }

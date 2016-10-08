@@ -2,11 +2,7 @@ package com.navinfo.dataservice.engine.sys.msg;
 
 import java.util.List;
 
-import org.junit.Before;
 import org.junit.Test;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
-
-import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.mq.sys.SysMsgPublisher;
 import com.navinfo.navicommons.database.Page;
 
@@ -15,10 +11,10 @@ public class SysMsgTest {
 	@Test
 	public void sysMsgInsert(){
 		SysMsg sysMsg = new SysMsg();
-		sysMsg.setMsgTitle("测试9");
-		sysMsg.setMsgContent("测试9");
-		sysMsg.setPushUserId(1664L);
-		long[] targetUserIds = {1,4};
+		sysMsg.setMsgTitle("测试18");
+		sysMsg.setMsgContent("测试18");
+		sysMsg.setPushUserId(0L);
+		long[] targetUserIds = {1664,1};
 		try {
 			SysMsgPublisher.publishMsg(sysMsg.getMsgTitle(), sysMsg.getMsgContent(), sysMsg.getPushUserId(), targetUserIds);
 		} catch (Exception e) {
@@ -31,7 +27,7 @@ public class SysMsgTest {
 	@Test
 	public void getUnReadSysMsg(){
 		SysMsgService sysMsgService = SysMsgService.getInstance();
-		long userId = 1L;
+		long userId = 1664L;
 		try {
 			List<SysMsg> unread = sysMsgService.getUnread(userId);
 			System.out.println(unread);

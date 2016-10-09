@@ -58,5 +58,22 @@ public class StaticTest {
 //		temp = result;
 	}
 	
+	@Test
+	public void getOpen100TaskIdList() throws Exception{
+		StaticsService staticsService = StaticsService.getInstance();
+		List<Integer> data = staticsService.getOpen100TaskIdList();
+		System.out.println("getOpen100TaskIdList:"+data);
+//		List<Integer> gridIds = new ArrayList<Integer>();
+//		gridIds.add(60560303);
+//		gridIds.add(123456);
+//		String poiColName = PoiCollectMain.col_name_grid;
+//		String roadColName = RoadCollectMain.col_name_grid;
+//		SubtaskStatInfo result = StaticsOperation.getSubtaskStatByGrids(gridIds, poiColName, roadColName);
+//		SubtaskStatInfo temp = result;
+//		System.out.println("ok");
+//		
+//		result = StaticsOperation.getSubtaskStatByBlock(1, poiColName, roadColName);
+//		temp = result;
+	}
 
 }

@@ -27,7 +27,7 @@ public class RdGscTest extends InitApplication{
 	
 	@Test
 	public void testCreate() {
-		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDGSC\",\"dbId\":17,\"data\":{\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[116.39986753463745,40.03331571492196],[116.39986753463745,40.033792168980135],[116.40036106109618,40.033792168980135],[116.40036106109618,40.03331571492196],[116.39986753463745,40.03331571492196]]]},\"linkObjs\":[{\"pid\":\"210000215\",\"type\":\"RDLINK\",\"zlevel\":0},{\"pid\":\"210000215\",\"type\":\"RDLINK\",\"zlevel\":1}]}}";
+		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDGSC\",\"dbId\":17,\"data\":{\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[116.39919966459276,40.033399916096805],[116.39919966459276,40.033617606457234],[116.39954566955566,40.033617606457234],[116.39954566955566,40.033399916096805],[116.39919966459276,40.033399916096805]]]},\"linkObjs\":[{\"pid\":\"209000210\",\"type\":\"RDLINK\",\"zlevel\":0},{\"pid\":\"209000210\",\"type\":\"RDLINK\",\"zlevel\":1}]}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

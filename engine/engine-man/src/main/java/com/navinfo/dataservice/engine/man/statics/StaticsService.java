@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 import com.navinfo.dataservice.api.statics.iface.StaticsApi;
 import com.navinfo.dataservice.api.statics.model.BlockExpectStatInfo;
 import com.navinfo.dataservice.api.statics.model.GridChangeStatInfo;
+import com.navinfo.dataservice.api.statics.model.GridStatInfo;
 import com.navinfo.dataservice.api.statics.model.SubtaskStatInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
@@ -167,59 +169,95 @@ public class StaticsService {
 
 	}
 	
-	public JSONObject queryTaskOverView() throws JSONException, Exception{
-		
+	public JSONObject queryTaskOverView(int taskType) throws JSONException, Exception{		
 		Connection conn = null;
-		try {
-	
+		try {	
 			conn = DBConnector.getInstance().getManConnection();
 			JSONObject taskStaticsJson= new JSONObject();
+			//0关闭 1开启,<100 2未规划+草稿 3已完成=开启，=100
 			taskStaticsJson.put(0, 0);
 			taskStaticsJson.put(1, 0);
 			taskStaticsJson.put(2, 0);
+			taskStaticsJson.put(3, 0);
 			
 			JSONObject cityStaticsJson= new JSONObject();
 			cityStaticsJson.put(0, 0);
 			cityStaticsJson.put(1, 0);
 			cityStaticsJson.put(2, 0);
 			
-			JSONObject inforStaticsJson= new JSONObject();
-			
-			String selectTaskSql = "SELECT status,COUNT(1) taskCount FROM task GROUP BY status";
-			String selectCitySql = "SELECT plan_status,COUNT(1) planCount FROM city GROUP BY plan_status";
-			String selectInforSql = "SELECT 0 status,COUNT(1) inforCount FROM INFOR I WHERE I.TASK_ID IS NULL"
-					+" UNION ALL"
-					+" SELECT 1 status,COUNT(1) inforCount FROM TASK T WHERE T.TASK_TYPE=4 AND T.STATUS IN (1,2)"
-					+" UNION ALL"
-					+" SELECT 2 status,COUNT(1) inforCount FROM TASK T WHERE T.TASK_TYPE=4 AND T.STATUS=0";	
+			String selectTaskSql="";
+			String selectCitySql="";
+			if(taskType==1){	
+				selectTaskSql = "SELECT 2 STATUS, COUNT(1) taskCount"
+						+ "  FROM CITY"
+						+ " WHERE CITY_ID NOT IN (100000, 100001, 100002)"
+						+ "   AND PLAN_STATUS = 0"
+						+ " UNION ALL"
+						+ " SELECT STATUS, COUNT(1)"
+						+ "  FROM TASK"
+						+ " WHERE LATEST = 1"
+						+ "   AND TASK_TYPE = 1"
+						+ " GROUP BY STATUS";
+				selectCitySql = "SELECT plan_status,COUNT(1) planCount FROM city where CITY_ID NOT IN (100000, 100001, 100002) GROUP BY plan_status";
+			}else if (taskType==4) {
+				selectTaskSql = "SELECT 2 STATUS, COUNT(1) taskCount"
+						+ "  FROM INFOR"
+						+ " WHERE PLAN_STATUS = 0"
+						+ " UNION ALL"
+						+ " SELECT STATUS, COUNT(1)"
+						+ "  FROM TASK"
+						+ " WHERE LATEST = 1"
+						+ "   AND TASK_TYPE = 4"
+						+ " GROUP BY STATUS"; 
+				selectCitySql = "SELECT plan_status,COUNT(1) planCount FROM INFOR GROUP BY plan_status";
+			}
 			PreparedStatement stmtTask = null;
 			PreparedStatement stmtCity = null;
-			PreparedStatement stmtInfor = null;
 			try {
 				stmtTask = conn.prepareStatement(selectTaskSql);
 				stmtCity = conn.prepareStatement(selectCitySql);
-				stmtInfor = conn.prepareStatement(selectInforSql);
 			} catch (SQLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			ResultSet rsTask = stmtTask.executeQuery();
 			ResultSet rsCity = stmtCity.executeQuery();
-			ResultSet rsInfor = stmtInfor.executeQuery();
 		
 			while (rsTask.next()) {
-				taskStaticsJson.put(rsTask.getInt("status"),rsTask.getInt("taskCount"));
+				int status=rsTask.getInt("status");
+				int num=(int) taskStaticsJson.get(String.valueOf(status));
+				taskStaticsJson.put(status,num+rsTask.getInt("taskCount"));
 			}
 			while (rsCity.next()) {
-				cityStaticsJson.put(rsCity.getInt("plan_status"),rsTask.getInt("planCount"));
+				cityStaticsJson.put(rsCity.getInt("plan_status"),rsCity.getInt("planCount"));
 			}
-			while (rsInfor.next()) {
-				inforStaticsJson.put(rsInfor.getInt("status"),rsTask.getInt("inforCount"));
+			//获取任务开启，完成度100%的任务list
+			List<Integer> taskList=new ArrayList<Integer>();
+			StaticsApi api=(StaticsApi) ApplicationContextUtil.getBean("staticsApi");
+			taskList=api.getOpen100TaskIdList();
+			int openTaskNum=0;
+			if(taskList!=null && taskList.size()>0){
+				String selectSql="SELECT COUNT(1) NUM"
+						+ "  FROM TASK"
+						+ " WHERE LATEST = 1"
+						+ "   AND TASK_TYPE = 1"
+						+ "   AND STATUS = 1"
+						+ "   AND TASK_ID IN ("+taskList.toString().replace("[", "").replace("]", "").replace("\"", "")+")";
+				PreparedStatement stmtOpenTask100 = null;
+				stmtOpenTask100 = conn.prepareStatement(selectSql);
+				ResultSet rsOpenTask100 = stmtOpenTask100.executeQuery();
+				while (rsOpenTask100.next()) {
+					openTaskNum=rsOpenTask100.getInt("NUM");
+					break;
+				}
+				if(openTaskNum>0){
+					int num50=(int) taskStaticsJson.get(1);
+					taskStaticsJson.put(1,num50-openTaskNum);
+					taskStaticsJson.put(3,openTaskNum);}
 			}
 			JSONObject staticsJson= new JSONObject();
 			staticsJson.put("task", taskStaticsJson);
 			staticsJson.put("city", cityStaticsJson);
-			staticsJson.put("infor", inforStaticsJson);
 			return staticsJson;
 			
 			} catch (Exception e) {

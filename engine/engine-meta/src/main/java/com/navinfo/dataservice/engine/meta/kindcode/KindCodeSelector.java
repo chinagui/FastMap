@@ -232,7 +232,7 @@ public class KindCodeSelector {
 
 	/**
 	 * 通过region（1：港澳，0：大陆）信息获取KindCode信息
-	 * 
+	 * 只返回外业分类(type<>2)
 	 * @return
 	 * @throws Exception
 	 */
@@ -248,7 +248,7 @@ public class KindCodeSelector {
 
 		sb.append(" from SC_POINT_POICODE_NEW t  ");
 		
-		sb.append(" where t.kg_des<>'GD' ");
+		sb.append(" where t.kg_des<>'GD'  and type<>2 ");
 		
 		if (region == 0) {
 			sb.append(" and (t.mhm_des='DHM' or t.mhm_des='D') ");
@@ -341,7 +341,7 @@ public class KindCodeSelector {
 								jsonObject.put("kindId",
 										rs.getString("kind_code"));
 								jsonObject.put("extend", rs.getString("extend"));
-
+								jsonObject.put("level", rs.getString("level"));
 							}
 							return jsonObject;
 						}

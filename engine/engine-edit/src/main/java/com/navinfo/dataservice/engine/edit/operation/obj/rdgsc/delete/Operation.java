@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.navinfo.dataservice.dao.glm.iface.AlertObject;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
@@ -13,15 +14,21 @@ import com.navinfo.dataservice.dao.glm.selector.rd.gsc.RdGscSelector;
 
 /**
  * 
-* @Title: Operation.java 
-* @Description: 删除立交操作类
-* @author 张小龙   
-* @date 2016年4月18日 下午3:06:03 
-* @version V1.0
+ * @Title: Operation.java
+ * @Description: 删除立交操作类
+ * @author 张小龙
+ * @date 2016年4月18日 下午3:06:03
+ * @version V1.0
  */
 public class Operation implements IOperation {
 
 	private RdGsc rdGsc;
+
+	private Connection conn;
+
+	public Operation(Connection conn) {
+		this.conn = conn;
+	}
 
 	public Operation(Command command, RdGsc rdGsc) {
 
@@ -33,29 +40,49 @@ public class Operation implements IOperation {
 	public String run(Result result) throws Exception {
 
 		result.insertObject(rdGsc, ObjStatus.DELETE, rdGsc.pid());
-				
+
 		return null;
 	}
-	
+
+	/**
+	 * 删除link维护立交（包含多线立交）
+	 * 
+	 * @param linkPidList
+	 * @param result
+	 * @throws Exception
+	 */
+	public void deleteByLinkPid(List<IRow> linkRow, Result result) throws Exception {
+		RdGscSelector selector = new RdGscSelector(conn);
+		for (IRow link : linkRow) {
+			int linkPid = link.parentPKValue();
+
+			String tableName = link.tableName();
+
+			List<RdGsc> gscList = selector.loadRdGscLinkByLinkPid(linkPid, tableName, true);
+			
+			
+		}
+	}
+
 	/**
 	 * 删除link对立交的删除影响
+	 * 
 	 * @return
-	 * @throws Exception 
+	 * @throws Exception
 	 */
-	public List<AlertObject> getDeleteRdGscInfectData(int linkPid,Connection conn) throws Exception {
-		
+	public List<AlertObject> getDeleteRdGscInfectData(int linkPid, Connection conn) throws Exception {
+
 		RdGscSelector selector = new RdGscSelector(conn);
 
 		List<RdGsc> rdGscList = selector.loadRdGscLinkByLinkPid(linkPid, "RD_LINK", true);
-		
+
 		List<AlertObject> alertList = new ArrayList<>();
 
 		for (RdGsc rdGsc : rdGscList) {
-			
+
 			int linkSize = rdGsc.getLinks().size();
-			
-			if(linkSize > 2)
-			{
+
+			if (linkSize > 2) {
 				AlertObject alertObj = new AlertObject();
 
 				alertObj.setObjType(rdGsc.objType());
@@ -65,9 +92,7 @@ public class Operation implements IOperation {
 				alertObj.setStatus(ObjStatus.UPDATE);
 
 				alertList.add(alertObj);
-			}
-			else
-			{
+			} else {
 				AlertObject alertObj = new AlertObject();
 
 				alertObj.setObjType(rdGsc.objType());

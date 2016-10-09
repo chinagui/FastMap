@@ -181,8 +181,8 @@ public class Operation implements IOperation {
 			}
 			this.caleRelationRdLink(links, newLinks, preLink);
 			// 插入新的接续link信息
-			for (int i = 0; i < links.size(); i++) {
-				if (i == 0) {
+			for (int i = 1; i < links.size(); i++) {
+				if (i == 1) {
 					via.changedFields().put("linkPid", links.get(i).getPid());
 					result.insertObject(via, ObjStatus.UPDATE,
 							via.getSlopePid());
@@ -236,6 +236,7 @@ public class Operation implements IOperation {
 	 */
 	private void caleRelationRdLink(List<RdLink> resultLinks,
 			List<RdLink> sourceLinks, RdLink preLink) {
+		resultLinks.add(preLink);
 		while (resultLinks.size() < sourceLinks.size()) {
 			for (RdLink link : sourceLinks) {
 

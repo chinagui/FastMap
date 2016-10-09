@@ -11,13 +11,16 @@ import java.util.Map.Entry;
 
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGscLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLink;
+import com.navinfo.dataservice.dao.glm.model.rd.rw.RwNode;
 import com.navinfo.dataservice.dao.glm.selector.rd.gsc.RdGscSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.rw.RwLinkSelector;
@@ -528,10 +531,54 @@ public class RdGscOperateUtils {
 	}
 
 	/**
+	 * 检查移动的node点位是否是立交点位
+	 * 
+	 * @param rows
+	 * @param conn
+	 * @param nodePid
+	 * @param nodeTableName
+	 * @throws Exception
+	 */
+	public static void checkIsMoveGscNodePoint(List<IRow> rows, Connection conn,IObj nodeObj)
+			throws Exception {
+		RdGscSelector selector = new RdGscSelector(conn);
+		
+		Geometry nodeGeo = null;
+		
+		switch (nodeObj.objType()) {
+		case RDNODE:
+			nodeGeo = ((RdNode)nodeObj).getGeometry();
+			break;
+		case RWNODE:
+			nodeGeo = ((RwNode)nodeObj).getGeometry();
+			break;
+		default:
+			break;
+		}
+		
+		for (IRow row : rows) {
+			int linkPid = row.parentPKValue();
+
+			String tableName = row.tableName().toUpperCase();
+
+			List<RdGsc> rdGscList = selector.onlyLoadRdGscLinkByLinkPid(linkPid, tableName, true);
+			
+			for(RdGsc gsc : rdGscList)
+			{
+				if(gsc.getGeometry().distance(nodeGeo)<1)
+				{
+					throw new Exception("创建或修改link，节点不能到已有的立交点处，请先删除立交关系");
+				}
+			}
+		}
+	}
+
+	/**
 	 * 判断移动的形状点是否是立交点位
 	 * 
 	 */
-	public static void checkIsMoveGscPoint(JSONObject linkGeo, Connection conn, int linkPid,String tableName) throws Exception {
+	public static void checkIsMoveGscPoint(JSONObject linkGeo, Connection conn, int linkPid, String tableName)
+			throws Exception {
 
 		Geometry geo = GeoTranslator.geojson2Jts(linkGeo, 100000, 0);
 
@@ -561,8 +608,11 @@ public class RdGscOperateUtils {
 			return false;
 		}
 
+		
 		for (RdGsc rdGsc : gscList) {
 
+			boolean flag = true;
+			
 			Coordinate[] coordinates = linkGeo.getCoordinates();
 
 			Coordinate gscCoord = rdGsc.getGeometry().getCoordinate();
@@ -571,11 +621,17 @@ public class RdGscOperateUtils {
 
 				if (gscCoord.equals(nodeCoord)) {
 
-					return false;
+					flag= false;
 				}
 			}
+			
+			if(flag)
+			{
+				return flag;
+			}
+			
 		}
 
-		return true;
+		return false;
 	}
 }

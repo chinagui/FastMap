@@ -111,7 +111,7 @@ public class Operation implements IOperation {
 
 						allTopoLinks.add(topo.getOutLinkPid());
 					}
-					if (linkPidList.containsAll(allTopoLinks)) {
+					if (allTopoLinks.containsAll(linkPidList)) {
 						deleteLanesMap.put(lane.getPid(), lane);
 					} else if (delTopogy != null) {
 						deleteDetailLanesList.add(delTopogy);
@@ -164,7 +164,7 @@ public class Operation implements IOperation {
 								}
 							}
 						}
-						if (allTopoLinks.containsAll(delTopoLinks)) {
+						if (delTopoLinks.containsAll(allTopoLinks)) {
 							deleteLanesMap.put(lane.getPid(), lane);
 						} else {
 							deleteDetailLanesList.addAll(updateLaneTopoList);

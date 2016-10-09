@@ -377,8 +377,45 @@ public class IxPoiSelector extends AbstractSelector {
 		List<IRow> parts = samepoiPartsSelector.loadByPoiPid(poi.pid(), isLock);
 
 		poi.setSamepoiParts(parts);
+		
+		poi.setRawFields(loadRawByRowId(poi.getRowId()));
 
 		return poi;
+	}
+	
+	/**
+	 * 查询最新RAW_FIELDS
+	 * @param rowId
+	 * @return
+	 * @throws Exception
+	 */
+	public String loadRawByRowId(String rowId) throws Exception {
+
+		String sql="SELECT RAW_FIELDS FROM POI_EDIT_STATUS WHERE ROW_ID="+rowId+" ORDER BY UPLOAD_DATE DESC";
+	
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+		try {
+			pstmt = conn.prepareStatement(sql);
+			resultSet = pstmt.executeQuery();
+			String rawFields=null;
+			while (resultSet.next()) {
+				rawFields=resultSet.getString("RAW_FIELDS");
+				break;
+			}
+			return rawFields;
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+
+			DBUtils.closeResultSet(resultSet);
+
+			DBUtils.closeStatement(pstmt);
+
+		}
 	}
 
 }

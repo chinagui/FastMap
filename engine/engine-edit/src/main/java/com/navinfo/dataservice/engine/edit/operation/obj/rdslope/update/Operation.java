@@ -189,7 +189,7 @@ public class Operation implements IOperation {
 					continue;
 				}
 				this.addRdslopeVia(via.getSlopePid(), links.get(i).getPid(),
-						via.getSeqNum() + i, result);
+						via.getSeqNum() + i-1, result);
 			}
 			// 维护原有的link信息
 			this.caleRdSlopeVia(slope, via.getSeqNum(), newLinks.size(), result);

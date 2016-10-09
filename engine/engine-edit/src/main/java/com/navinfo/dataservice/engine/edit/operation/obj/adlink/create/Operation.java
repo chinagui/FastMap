@@ -8,7 +8,12 @@ import java.util.Set;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdLinkSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.edit.utils.AdLinkOperateUtils;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
@@ -43,7 +48,9 @@ public class Operation implements IOperation {
 		// 如果创建行政区划线有对应的挂接AD_NODE和ADFACE
 		// 执行挂接线处理逻辑
 		if (command.getCatchLinks().size() > 0) {
-			map = AdLinkOperateUtils.splitLink(command.getGeometry(), command.getsNodePid(), command.geteNodePid(),
+			this.caleCatchModifyAdLink();
+			map = AdLinkOperateUtils.splitLink(command.getGeometry(),
+					command.getsNodePid(), command.geteNodePid(),
 					command.getCatchLinks(), result);
 
 		}
@@ -51,8 +58,8 @@ public class Operation implements IOperation {
 		// 创建对应的ADNODE
 		if (command.getCatchLinks().size() == 0 || map.size() == 0) {
 			JSONObject se = new JSONObject();
-			se = AdLinkOperateUtils.createAdNodeForLink(command.getGeometry(), command.getsNodePid(),
-					command.geteNodePid(), result);
+			se = AdLinkOperateUtils.createAdNodeForLink(command.getGeometry(),
+					command.getsNodePid(), command.geteNodePid(), result);
 			map.put(command.getGeometry(), se);
 		}
 		// 创建行政区划线信息
@@ -62,29 +69,75 @@ public class Operation implements IOperation {
 
 		return msg;
 	}
+	/***
+	 * 当前台未开启挂接功能是，如果传入的点正好是link的端点 应按照挂接node来传参数
+	 * 
+	 * @throws Exception
+	 */
+	private void caleCatchModifyAdLink() throws Exception {
+		for (int i = 0; i < command.getCatchLinks().size(); i++) {
+			JSONObject modifyJson = command.getCatchLinks().getJSONObject(i);
+			if (modifyJson.containsKey("linkPid")) {
+				AdLinkSelector linkSelector = new AdLinkSelector(conn);
+				IRow row = linkSelector.loadById(modifyJson.getInt("linkPid"),
+						false, true);
+				AdLink link = (AdLink) row;
+				Geometry geometry = GeoTranslator.transform(link.getGeometry(),
+						0.00001, 5);
+				if (geometry.getCoordinates()[0].x == modifyJson
+						.getDouble("lon")
+
+				&& geometry.getCoordinates()[0].y == modifyJson
+
+				.getDouble("lat")) {
+					modifyJson.remove("linkPid");
+					modifyJson.put("nodePid", link.getsNodePid());
+
+				}
+				if (geometry.getCoordinates()[geometry.getCoordinates().length - 1].x == modifyJson
+						.getDouble("lon")
+
+						&& geometry.getCoordinates()[geometry.getCoordinates().length - 1].y == modifyJson
+
+						.getDouble("lat")) {
+					modifyJson.remove("linkPid");
+					modifyJson.put("nodePid", link.geteNodePid());
+
+				}
+			}
+		}
+
+	}
+
 	/*
 	 * 创建多条被分割的线 1.按照线是否跨图幅逻辑走不同分支生成线
 	 */
 
-	public void createAdLinks(Map<Geometry, JSONObject> map, Result result) throws Exception {
+	public void createAdLinks(Map<Geometry, JSONObject> map, Result result)
+			throws Exception {
 
 		for (Geometry g : map.keySet()) {
 			Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(g);
 			// 不跨图幅
 			if (meshes.size() == 1) {
-				this.createAdLinkWithNoMesh(g, (int) map.get(g).get("s"), (int) map.get(g).get("e"), result);
+				this.createAdLinkWithNoMesh(g, (int) map.get(g).get("s"),
+						(int) map.get(g).get("e"), result);
 			}
 			// 跨图幅
 			else {
 				Map<Coordinate, Integer> maps = new HashMap<Coordinate, Integer>();
 				maps.put(g.getCoordinates()[0], (int) map.get(g).get("s"));
-				maps.put(g.getCoordinates()[g.getCoordinates().length - 1], (int) map.get(g).get("e"));
+				maps.put(g.getCoordinates()[g.getCoordinates().length - 1],
+						(int) map.get(g).get("e"));
 				Iterator<String> it = meshes.iterator();
 				while (it.hasNext()) {
 					String meshIdStr = it.next();
-					Geometry geomInter = MeshUtils.linkInterMeshPolygon(g, MeshUtils.mesh2Jts(meshIdStr));
-					geomInter = GeoTranslator.geojson2Jts(GeoTranslator.jts2Geojson(geomInter), 1, 5);
-					AdLinkOperateUtils.createAdLinkWithMesh(geomInter, maps, result);
+					Geometry geomInter = MeshUtils.linkInterMeshPolygon(g,
+							MeshUtils.mesh2Jts(meshIdStr));
+					geomInter = GeoTranslator.geojson2Jts(
+							GeoTranslator.jts2Geojson(geomInter), 1, 5);
+					AdLinkOperateUtils.createAdLinkWithMesh(geomInter, maps,
+							result);
 
 				}
 			}
@@ -97,10 +150,13 @@ public class Operation implements IOperation {
 	 * 创建行政区划线 不跨图幅生成线
 	 */
 
-	private void createAdLinkWithNoMesh(Geometry g, int sNodePid, int eNodePid, Result result) throws Exception {
+	private void createAdLinkWithNoMesh(Geometry g, int sNodePid, int eNodePid,
+			Result result) throws Exception {
 		if (g != null) {
-			JSONObject node = AdLinkOperateUtils.createAdNodeForLink(g, sNodePid, eNodePid, result);
-			AdLinkOperateUtils.addLink(g, (int) node.get("s"), (int) node.get("e"), result);
+			JSONObject node = AdLinkOperateUtils.createAdNodeForLink(g,
+					sNodePid, eNodePid, result);
+			AdLinkOperateUtils.addLink(g, (int) node.get("s"),
+					(int) node.get("e"), result);
 		}
 	}
 

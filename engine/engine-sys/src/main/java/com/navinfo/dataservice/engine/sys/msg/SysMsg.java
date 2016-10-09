@@ -16,6 +16,8 @@ public class SysMsg implements Serializable{
 	private String msgContent;
 	private Date createTime;
 	private long targetUserId;
+	private String msgTitle;
+	private long pushUserId;
 	public long getMsgId() {
 		return msgId;
 	}
@@ -45,6 +47,18 @@ public class SysMsg implements Serializable{
 	}
 	public void setTargetUserId(long targetUserId) {
 		this.targetUserId = targetUserId;
+	}
+	public String getMsgTitle() {
+		return msgTitle;
+	}
+	public void setMsgTitle(String msgTitle) {
+		this.msgTitle = msgTitle;
+	}
+	public Long getPushUserId() {
+		return pushUserId;
+	}
+	public void setPushUserId(Long pushUserId) {
+		this.pushUserId = pushUserId;
 	}
 	
 }

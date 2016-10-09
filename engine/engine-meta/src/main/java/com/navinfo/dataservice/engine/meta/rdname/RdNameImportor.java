@@ -1,11 +1,15 @@
 package com.navinfo.dataservice.engine.meta.rdname;
 
 import java.lang.reflect.Field;
+import java.sql.Connection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.dbutils.DbUtils;
+
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.ExcelReader;
 import com.navinfo.dataservice.commons.util.RomanUtils;
@@ -227,33 +231,43 @@ public class RdNameImportor {
 	 * @return
 	 * @throws Exception
 	 */
-	public JSONObject importRdNameFromWeb(JSONObject params) throws Exception {
+	public JSONObject importRdNameFromWeb(JSONObject params,int dbId) throws Exception {
 		JSONObject result = new JSONObject();
 		
-		RdNameSelector selector = new RdNameSelector();
+		Connection conn = null;
 		
-		RdName rdName = Json2Obj(params);
-		
-		// 判断是否存在重复name
-		JSONObject rdNameExists = selector.checkRdNameExists(rdName);
-		
-		// 存在重复name
-		if (rdNameExists.size() > 0) {
-			result.put("flag", -1);
-			result.put("data", rdNameExists);
+		try {
+			conn = DBConnector.getInstance().getConnectionById(dbId);
+			
+			RdNameSelector selector = new RdNameSelector(conn);
+			
+			RdName rdName = Json2Obj(params);
+			
+			// 判断是否存在重复name
+			JSONObject rdNameExists = selector.checkRdNameExists(rdName);
+			
+			// 存在重复name
+			if (rdNameExists.size() > 0) {
+				result.put("flag", -1);
+				result.put("data", rdNameExists);
+				return result;
+			}
+			
+			RdNameOperation operation = new RdNameOperation(conn);
+			// 新增或更新一条道路名
+			RdName rdNameNew = operation.saveOrUpdate(rdName);
+			
+			JSONObject json = JSONObject.fromObject(rdNameNew);
+			
+			result.put("flag", 1);
+			result.put("data", json);
+			
 			return result;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
 		}
-		
-		RdNameOperation operation = new RdNameOperation();
-		// 新增或更新一条道路名
-		RdName rdNameNew = operation.saveOrUpdate(rdName);
-		
-		JSONObject json = JSONObject.fromObject(rdNameNew);
-		
-		result.put("flag", 1);
-		result.put("data", json);
-		
-		return result;
 	}
 	
 	/**

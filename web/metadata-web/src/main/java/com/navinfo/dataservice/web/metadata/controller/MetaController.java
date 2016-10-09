@@ -2,6 +2,7 @@ package com.navinfo.dataservice.web.metadata.controller;
 
 import java.io.File;
 import java.io.IOException;
+import java.sql.Connection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -9,6 +10,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 import org.apache.uima.pear.util.FileUtil;
 import org.springframework.stereotype.Controller;
@@ -18,6 +20,7 @@ import org.springframework.web.servlet.ModelAndView;
 import com.navinfo.dataservice.api.fcc.iface.FccApi;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfig;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
@@ -276,6 +279,10 @@ public class MetaController extends BaseController {
 
 			byte[] data = selector.getById(id);
 
+			if (data.length == 0) {
+				throw new Exception("id值不存在");
+			}
+			
 			response.getOutputStream().write(data);
 
 		} catch (Exception e) {
@@ -590,11 +597,13 @@ public class MetaController extends BaseController {
 			
 			Subtask subtask = apiService.queryBySubtaskId(subtaskId);
 			
+			int dbId = subtask.getDbId();
+			
 			FccApi apiFcc=(FccApi) ApplicationContextUtil.getBean("fccApi");
 			
 			JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(),1901,new JSONArray());
 			
-			JSONObject data = selector.searchForWeb(jsonReq,tips);
+			JSONObject data = selector.searchForWeb(jsonReq,tips,dbId);
 
 			return new ModelAndView("jsonView", success(data));
 
@@ -623,9 +632,11 @@ public class MetaController extends BaseController {
 			
 			JSONObject data = jsonReq.getJSONObject("data");
 			
+			int dbId = jsonReq.getInt("dbId");
+			
 			RdNameImportor importor = new RdNameImportor();
 			
-			JSONObject result = importor.importRdNameFromWeb(data);
+			JSONObject result = importor.importRdNameFromWeb(data,dbId);
 			
 			return new ModelAndView("jsonView", success(result));
 		} catch (Exception e) {
@@ -648,12 +659,19 @@ public class MetaController extends BaseController {
 	public ModelAndView webTeilen(HttpServletRequest request)
 			throws ServletException, IOException {
 		String parameter = request.getParameter("parameter");
+		
+		Connection conn = null;
+		
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 			
 			int flag = jsonReq.getInt("flag");
 			
-			RdNameOperation operation = new RdNameOperation();
+			int dbId = jsonReq.getInt("dbId");
+			
+			conn = DBConnector.getInstance().getConnectionById(dbId);
+			
+			RdNameOperation operation = new RdNameOperation(conn);
 			
 			if (flag>0) {
 				JSONArray dataList = jsonReq.getJSONArray("data");
@@ -679,6 +697,8 @@ public class MetaController extends BaseController {
 			logger.error(e.getMessage(), e);
 	
 			return new ModelAndView("jsonView", fail(e.getMessage()));
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
 	
@@ -773,12 +793,18 @@ public class MetaController extends BaseController {
 	public ModelAndView webEngGroup(HttpServletRequest request)
 			throws ServletException, IOException {
 		String parameter = request.getParameter("parameter");
+		
+		Connection conn = null;
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 			
 			int nameGroupid = jsonReq.getInt("nameGroupid");
 			
-			RdNameOperation operation = new RdNameOperation();
+			int dbId = jsonReq.getInt("dbId");
+			
+			conn = DBConnector.getInstance().getConnectionById(dbId);
+			
+			RdNameOperation operation = new RdNameOperation(conn);
 			
 			boolean result = operation.checkEngName(nameGroupid);
 			
@@ -788,6 +814,8 @@ public class MetaController extends BaseController {
 			logger.error(e.getMessage(), e);
 	
 			return new ModelAndView("jsonView", fail(e.getMessage()));
+		} finally {
+			DbUtils.closeQuietly(conn);
 		}
 	}
 	

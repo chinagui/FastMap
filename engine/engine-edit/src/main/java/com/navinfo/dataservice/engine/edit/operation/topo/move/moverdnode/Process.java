@@ -7,6 +7,7 @@ import java.util.List;
 import org.apache.commons.collections.CollectionUtils;
 
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
@@ -14,6 +15,7 @@ import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeSelector;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.operation.AbstractProcess;
+import com.navinfo.dataservice.engine.edit.utils.RdGscOperateUtils;
 
 public class Process extends AbstractProcess<Command> {
 
@@ -22,8 +24,7 @@ public class Process extends AbstractProcess<Command> {
 		// TODO Auto-generated constructor stub
 	}
 
-	public Process(Command command, Result result, Connection conn)
-			throws Exception {
+	public Process(Command command, Result result, Connection conn) throws Exception {
 		super();
 		this.setCommand(command);
 		this.setResult(result);
@@ -37,16 +38,17 @@ public class Process extends AbstractProcess<Command> {
 
 		RdLinkSelector selector = new RdLinkSelector(this.getConn());
 
-		List<RdLink> links = selector.loadByNodePid(this.getCommand()
-				.getNodePid(), true);
+		List<RdLink> links = selector.loadByNodePid(this.getCommand().getNodePid(), true);
 
-		List<Integer> linkPids = new ArrayList<Integer>();
+		List<IRow> rows = new ArrayList<>();
 
 		for (RdLink link : links) {
-			linkPids.add(link.getPid());
+			rows.add(link);
 		}
 
 		this.getCommand().setLinks(links);
+
+		this.getCommand().setRows(rows);
 	}
 
 	@Override
@@ -54,9 +56,8 @@ public class Process extends AbstractProcess<Command> {
 
 		if (this.getCommand().getNode() == null) {
 			RdNodeSelector nodeSelector = new RdNodeSelector(this.getConn());
-			this.updateNode = (RdNode) nodeSelector.loadById(this.getCommand()
-					.getNodePid(), true);
-		}else{
+			this.updateNode = (RdNode) nodeSelector.loadById(this.getCommand().getNodePid(), true);
+		} else {
 			this.updateNode = this.getCommand().getNode();
 		}
 
@@ -69,8 +70,10 @@ public class Process extends AbstractProcess<Command> {
 
 	@Override
 	public String exeOperation() throws Exception {
-		return new Operation(this.getCommand(), updateNode, this.getConn())
-				.run(this.getResult());
+
+		RdGscOperateUtils.checkIsMoveGscNodePoint(this.getCommand().getRows(), this.getConn(),
+				updateNode);
+		return new Operation(this.getCommand(), updateNode, this.getConn()).run(this.getResult());
 	}
 
 	public String innerRun() throws Exception {
@@ -84,8 +87,7 @@ public class Process extends AbstractProcess<Command> {
 				throw new Exception(preCheckMsg);
 			}
 
-			IOperation operation = new Operation(this.getCommand(), updateNode,
-					this.getConn());
+			IOperation operation = new Operation(this.getCommand(), updateNode, this.getConn());
 
 			msg = operation.run(this.getResult());
 
@@ -94,7 +96,6 @@ public class Process extends AbstractProcess<Command> {
 		} catch (Exception e) {
 			e.printStackTrace();
 			this.getConn().rollback();
-			
 
 			throw e;
 		}

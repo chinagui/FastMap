@@ -15,6 +15,8 @@ public class Subtask implements Serializable  {
 	private Integer subtaskId ;
 	private String name ;
 	private Integer blockId;
+	private Integer blockManId;
+	private Integer cityId ;
 	private Integer taskId ;
 	private String geometry ;
 	private Integer stage ;
@@ -30,7 +32,7 @@ public class Subtask implements Serializable  {
 	private List<Integer> gridIds;
 	private Integer dbId ;
 	private Integer groupId;
-	private String blockName;
+	private String blockManName;
 	private String taskName;
 	private String version;
 	private Integer executerId;
@@ -43,6 +45,8 @@ public class Subtask implements Serializable  {
 	public Subtask (Integer subtaskId ,
 			String name,
 			Integer blockId,
+			Integer blockManId,
+			Integer cityId,
 			Integer taskId,
 			String geometry,
 			Integer stage,
@@ -55,7 +59,7 @@ public class Subtask implements Serializable  {
 			Timestamp planStartDate,
 			Timestamp planEndDate,
 			String descp,
-			String blockName,						
+			String blockManName,						
 			String taskName,	
 			List<Integer> gridIds,
 			Integer dbId,
@@ -63,6 +67,8 @@ public class Subtask implements Serializable  {
 		this.subtaskId=subtaskId ;
 		this.name = name;
 		this.blockId=blockId ;
+		this.blockManId=blockManId ;
+		this.cityId=cityId ;
 		this.taskId=taskId ;
 		this.geometry=geometry ;
 		this.stage=stage ;
@@ -75,7 +81,7 @@ public class Subtask implements Serializable  {
 		this.planStartDate=planStartDate ;
 		this.planEndDate=planEndDate ;
 		this.descp=descp ;
-		this.blockName = blockName;		
+		this.blockManName = blockManName;		
 		this.taskName = taskName;
 		this.gridIds = gridIds;
 		this.dbId = dbId;
@@ -105,12 +111,6 @@ public class Subtask implements Serializable  {
 	}
 	public void setGridIds(List<Integer> list) {
 		this.gridIds = list;
-	}
-	public String getBlockName(){
-		return blockName;
-	}
-	public void setBlockName(String blockName) {
-		this.blockName = blockName;
 	}
 	public String getTaskName(){
 		return taskName;
@@ -414,6 +414,48 @@ public class Subtask implements Serializable  {
 	 */
 	public void setExecuterId(Integer executerId) {
 		this.executerId = executerId;
+	}
+
+	/**
+	 * @return the blockManId
+	 */
+	public Integer getBlockManId() {
+		return blockManId;
+	}
+
+	/**
+	 * @param blockManId the blockManId to set
+	 */
+	public void setBlockManId(Integer blockManId) {
+		this.blockManId = blockManId;
+	}
+
+	/**
+	 * @return the blockManName
+	 */
+	public String getBlockManName() {
+		return blockManName;
+	}
+
+	/**
+	 * @param blockManName the blockManName to set
+	 */
+	public void setBlockManName(String blockManName) {
+		this.blockManName = blockManName;
+	}
+
+	/**
+	 * @return the cityId
+	 */
+	public Integer getCityId() {
+		return cityId;
+	}
+
+	/**
+	 * @param cityId the cityId to set
+	 */
+	public void setCityId(Integer cityId) {
+		this.cityId = cityId;
 	}
 }
 

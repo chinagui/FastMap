@@ -374,7 +374,7 @@ public class ColumnCoreControl {
 			String blockSql = "SELECT S.SUBTASK_ID, S.NAME,R.MONTHLY_DB_ID FROM BLOCK_MAN BM, SUBTASK S, REGION R, BLOCK B"
 					+ "," + temp + "TEMP"
 					+ " WHERE BM.MONTH_EDIT_GROUP_ID = TEMP.GROUP_ID"
-					+ " AND BM.BLOCK_ID = S.BLOCK_ID"
+					+ " AND BM.BLOCK_MAN_ID = S.BLOCK_MAN_ID"
 					+ " AND BM.LATEST = 1"
 					+ " AND BM.BLOCK_ID = B.BLOCK_ID"
 					+ " AND B.REGION_ID = R.REGION_ID"

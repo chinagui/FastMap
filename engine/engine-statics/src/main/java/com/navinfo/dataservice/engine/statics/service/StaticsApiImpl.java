@@ -71,4 +71,13 @@ public class StaticsApiImpl implements StaticsApi {
 	public SubtaskStatInfo getStatBySubtask(int subtaskId) {
 		return StaticsService.getInstance().getStatBySubtask(subtaskId);
 	}
+
+	/* (non-Javadoc)
+	 * @see com.navinfo.dataservice.api.statics.iface.StaticsApi#getStatBySubtaskIdList(java.util.List)
+	 */
+	@Override
+	public Map<Integer, SubtaskStatInfo> getStatBySubtaskIdList(List<Integer> subtaskIdList) {
+		// TODO Auto-generated method stub
+		return StaticsService.getInstance().getStatBySubtaskIdList(subtaskIdList);
+	}
 }

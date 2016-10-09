@@ -19,6 +19,8 @@ public class SubtaskStatInfo implements Serializable {
 	
 	private int subtaskId;
 	private int percent;
+	private int progress;
+	private int diffDate;
 
 	private double totalPoi;
 	private double finishPoi;
@@ -143,6 +145,34 @@ public class SubtaskStatInfo implements Serializable {
 	 */
 	public void setWorkingRoad(double workingRoad) {
 		this.workingRoad = workingRoad;
+	}
+
+	/**
+	 * @return the progress
+	 */
+	public int getProgress() {
+		return progress;
+	}
+
+	/**
+	 * @param progress the progress to set
+	 */
+	public void setProgress(int progress) {
+		this.progress = progress;
+	}
+
+	/**
+	 * @return the diffDate
+	 */
+	public int getDiffDate() {
+		return diffDate;
+	}
+
+	/**
+	 * @param diffDate the diffDate to set
+	 */
+	public void setDiffDate(int diffDate) {
+		this.diffDate = diffDate;
 	}
 	
 

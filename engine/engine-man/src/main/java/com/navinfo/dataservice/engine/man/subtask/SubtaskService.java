@@ -218,6 +218,7 @@ public class SubtaskService {
 		}
 	}
 	
+
 	
 	public Page list(long userId, int stage, JSONObject conditionJson, JSONObject orderJson, final int pageSize,
 			final int curPageNum,int snapshot) throws ServiceException {
@@ -279,8 +280,8 @@ public class SubtaskService {
 					+ ",st.GEOMETRY";
 			String userSql = ",u.user_real_name as executer";
 			String groupSql = ",ug.group_name as executer";
-			String taskSql = ",T.TASK_ID AS BLOCK_ID,T.NAME AS BLOCK_NAME";
-			String blockSql = ",B.BLOCK_ID, B.BLOCK_NAME";
+			String taskSql = ",T.CITY_ID AS BLOCK_ID,T.TASK_ID AS BLOCK_MAN_ID,T.NAME AS BLOCK_MAN_NAME";
+			String blockSql = ",B.BLOCK_ID,BM.BLOCK_MAN_ID, BM.BLOCK_MAN_NAME";
 
 			String fromSql_task = " from subtask st"
 					+ ",task t"
@@ -288,7 +289,7 @@ public class SubtaskService {
 					+ ",region r";
 
 			String fromSql_block = " from subtask st"
-					+ ",block b"
+					+ ",block b,block_man bm"
 					+ ",region r";
 			
 			String fromSql_user = "  ,user_info u";
@@ -300,8 +301,9 @@ public class SubtaskService {
 					+ "and c.region_id = r.region_id "
 					+ " and st.SUBTASK_ID=" + subtaskId;
 
-			String conditionSql_block = " where st.block_id = b.block_id "
+			String conditionSql_block = " where st.block_man_id = bm.block_man_id "
 					+ "and b.region_id = r.region_id "
+					+ "and bm.block_id = b.block_id"
 					+ " and st.SUBTASK_ID=" + subtaskId;
 			
 			String conditionSql_user = " and st.exe_user_id = u.user_id";
@@ -348,15 +350,18 @@ public class SubtaskService {
 						if (1 == rs.getInt("STAGE")) {
 							subtask.setDbId(rs.getInt("DAILY_DB_ID"));
 							subtask.setBlockId(rs.getInt("BLOCK_ID"));
-							subtask.setBlockName(rs.getString("BLOCK_NAME"));
+							subtask.setBlockManId(rs.getInt("BLOCK_MAN_ID"));
+							subtask.setBlockManName(rs.getString("BLOCK_MAN_NAME"));
 						} else if (2 == rs.getInt("STAGE")) {
 							subtask.setDbId(rs.getInt("MONTHLY_DB_ID"));
-							subtask.setTaskId(rs.getInt("BLOCK_ID"));
-							subtask.setTaskName(rs.getString("BLOCK_NAME"));
+							subtask.setCityId(rs.getInt("BLOCK_ID"));
+							subtask.setTaskId(rs.getInt("BLOCK_MAN_ID"));
+							subtask.setTaskName(rs.getString("BLOCK_MAN_NAME"));
 						} else {
 							subtask.setDbId(rs.getInt("MONTHLY_DB_ID"));
 							subtask.setBlockId(rs.getInt("BLOCK_ID"));
-							subtask.setBlockName(rs.getString("BLOCK_NAME"));
+							subtask.setBlockManId(rs.getInt("BLOCK_MAN_ID"));
+							subtask.setBlockManName(rs.getString("BLOCK_MAN_NAME"));
 						}
 
 						return subtask;
@@ -398,8 +403,8 @@ public class SubtaskService {
 					+ ",st.GEOMETRY";
 			String userSql = ",u.user_id as executer_id,u.user_real_name as executer";
 			String groupSql = ",ug.group_id as executer_id,ug.group_name as executer";
-			String taskSql = ",T.TASK_ID AS BLOCK_ID,T.NAME AS BLOCK_NAME";
-			String blockSql = ",B.BLOCK_ID, B.BLOCK_NAME";
+			String taskSql = ",T.CITY_ID AS BLOCK_ID,T.TASK_ID AS BLOCK_MAN_ID,T.NAME AS BLOCK_MAN_NAME";
+			String blockSql = ",B.BLOCK_ID,BM.BLOCK_MAN_ID, BM.BLOCK_MAN_NAME";
 
 			String fromSql_task = " from subtask st"
 					+ ",task t"
@@ -407,7 +412,7 @@ public class SubtaskService {
 					+ ",region r";
 
 			String fromSql_block = " from subtask st"
-					+ ",block b"
+					+ ",block b,block_man bm"
 					+ ",region r";
 			
 			String fromSql_user = "  ,user_info u";
@@ -419,8 +424,9 @@ public class SubtaskService {
 					+ "and c.region_id = r.region_id "
 					+ " and st.SUBTASK_ID=" + subtaskId;
 
-			String conditionSql_block = " where st.block_id = b.block_id "
+			String conditionSql_block = " where st.block_man_id = bm.block_man_id "
 					+ "and b.region_id = r.region_id "
+					+ "and bm.block_id = b.block_id"
 					+ " and st.SUBTASK_ID=" + subtaskId;
 			
 			String conditionSql_user = " and st.exe_user_id = u.user_id";
@@ -467,18 +473,20 @@ public class SubtaskService {
 						if (1 == rs.getInt("STAGE")) {
 							subtask.setDbId(rs.getInt("DAILY_DB_ID"));
 							subtask.setBlockId(rs.getInt("BLOCK_ID"));
-							subtask.setBlockName(rs.getString("BLOCK_NAME"));
+							subtask.setBlockManId(rs.getInt("BLOCK_MAN_ID"));
+							subtask.setBlockManName(rs.getString("BLOCK_MAN_NAME"));
 						} else if (2 == rs.getInt("STAGE")) {
 							subtask.setDbId(rs.getInt("MONTHLY_DB_ID"));
-							subtask.setTaskId(rs.getInt("BLOCK_ID"));
-							subtask.setTaskName(rs.getString("BLOCK_NAME"));
+							subtask.setCityId(rs.getInt("BLOCK_ID"));
+							subtask.setTaskId(rs.getInt("BLOCK_MAN_ID"));
+							subtask.setTaskName(rs.getString("BLOCK_MAN_NAME"));
 						} else {
 							subtask.setDbId(rs.getInt("MONTHLY_DB_ID"));
 							subtask.setBlockId(rs.getInt("BLOCK_ID"));
-							subtask.setBlockName(rs.getString("BLOCK_NAME"));
+							subtask.setBlockManId(rs.getInt("BLOCK_MAN_ID"));
+							subtask.setBlockManName(rs.getString("BLOCK_MAN_NAME"));
 						}
-						
-						
+
 						subtask.setExecuter(rs.getString("EXECUTER"));
 						subtask.setExecuterId(rs.getInt("EXECUTER_ID"));
 						
@@ -587,12 +595,13 @@ public class SubtaskService {
 	/**
 	 * @param bean
 	 * @param snapshot
+	 * @param platForm
 	 * @param pageSize
-	 * @param curPageNum
+	 * @param curPageNum 
 	 * @return
 	 * @throws ServiceException 
 	 */
-	public Page listByUserPage(Subtask bean, int snapshot, int pageSize, int curPageNum) throws ServiceException {
+	public Page listByUserPage(Subtask bean, int snapshot, int platForm, int pageSize, int curPageNum) throws ServiceException {
 		// TODO Auto-generated method stub
 		Connection conn = null;
 		try {
@@ -609,9 +618,9 @@ public class SubtaskService {
 			Page page = new Page();
 			//snapshot=1不返回geometry和gridIds
 			if(snapshot==1){
-				page = SubtaskOperation.getListByUserSnapshotPage(conn, bean,curPageNum,pageSize);
+				page = SubtaskOperation.getListByUserSnapshotPage(conn, bean,curPageNum,pageSize,platForm);
 			}else{
-				page = SubtaskOperation.getListByUserPage(conn, bean,curPageNum,pageSize);		
+				page = SubtaskOperation.getListByUserPage(conn, bean,curPageNum,pageSize,platForm);		
 			}
 			
 			return page;
@@ -647,9 +656,9 @@ public class SubtaskService {
 				if(dataJson.containsKey("taskId")){
 					int taskId = dataJson.getInt("taskId");
 					wkt = SubtaskOperation.getWktByTaskId(taskId);
-				}else if(dataJson.containsKey("blockId")){
-					int blockId = dataJson.getInt("blockId");
-					wkt = SubtaskOperation.getWktByBlockId(blockId);
+				}else if(dataJson.containsKey("blockManId")){
+					int blockManId = dataJson.getInt("blockManId");
+					wkt = SubtaskOperation.getWktByBlockManId(blockManId);
 				}
 			}
 			
@@ -723,4 +732,61 @@ public class SubtaskService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+
+//	/**
+//	 * @param condition
+//	 * @param pageSize
+//	 * @param curPageNum
+//	 * @return
+//	 */
+//	public Page list(JSONObject condition, int pageSize,int curPageNum) throws ServiceException {
+//		Connection conn = null;
+//		try {
+//			conn = DBConnector.getInstance().getManConnection();
+//			
+//			Page page = SubtaskOperation.getListSnapshot(conn,condition,pageSize,curPageNum);
+//			return page;
+//
+//		} catch (Exception e) {
+//			DbUtils.rollbackAndCloseQuietly(conn);
+//			log.error(e.getMessage(), e);
+//			throw new ServiceException("查询列表失败，原因为:" + e.getMessage(), e);
+//		} finally {
+//			DbUtils.commitAndCloseQuietly(conn);
+//		}
+//	}
+	
+	
+//	public Page listByGroup(long userId, int stage, JSONObject conditionJson, JSONObject orderJson, final int pageSize,
+//			final int curPageNum,int snapshot) throws ServiceException {
+//		Connection conn = null;
+//		try {
+//			conn = DBConnector.getInstance().getManConnection();
+//			
+//			//获取用户所在组信息
+//			UserInfo userInfo = new UserInfo();
+//			userInfo.setUserId((int)userId);
+//			Map<Object, Object> group = UserInfoOperation.getUserGroup(conn, userInfo);
+//			int groupId = (int) group.get("groupId");
+//			
+//			Page page = SubtaskOperation.getList(conn,userId,groupId,stage,conditionJson,orderJson,pageSize,curPageNum);
+//			return page;
+//			
+//			//返回简略信息
+////			if (snapshot==1){
+////				Page page = SubtaskOperation.getListSnapshot(conn,userId,groupId,stage,conditionJson,orderJson,pageSize,curPageNum);
+////				return page;
+////			}else{
+////				Page page = SubtaskOperation.getList(conn,userId,groupId,stage,conditionJson,orderJson,pageSize,curPageNum);
+////				return page;
+////			}		
+//
+//		} catch (Exception e) {
+//			DbUtils.rollbackAndCloseQuietly(conn);
+//			log.error(e.getMessage(), e);
+//			throw new ServiceException("查询列表失败，原因为:" + e.getMessage(), e);
+//		} finally {
+//			DbUtils.commitAndCloseQuietly(conn);
+//		}
+//	}
 }

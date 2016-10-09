@@ -398,9 +398,9 @@ public class SubtaskOperation {
 			String column = "(SUBTASK_ID, NAME, GEOMETRY,STAGE, TYPE, CREATE_USER_ID, CREATE_DATE, STATUS, PLAN_START_DATE, PLAN_END_DATE, DESCP";
 			String values = "values(?,?,sdo_geometry(?,8307),?,?,?,to_date(?,'yyyy-MM-dd HH24:MI:ss'),?,to_date(?,'yyyy-MM-dd HH24:MI:ss'),to_date(?,'yyyy-MM-dd HH24:MI:ss'),?";
 
-			if(0!=bean.getBlockId()){
-				column += ", BLOCK_ID";
-				value.add(bean.getBlockId());
+			if(0!=bean.getBlockManId()){
+				column += ", BLOCK_MAN_ID";
+				value.add(bean.getBlockManId());
 				values += ",?";
 
 			}else{
@@ -469,22 +469,22 @@ public class SubtaskOperation {
 	 * @param bean
 	 * @param curPageNum
 	 * @param pageSize
+	 * @param platForm 
 	 * @return
 	 * @throws Exception 
 	 */
-	public static Page getListByUserSnapshotPage(Connection conn, Subtask bean, final int curPageNum, final int pageSize) throws Exception {
+	public static Page getListByUserSnapshotPage(Connection conn, Subtask bean, final int curPageNum, final int pageSize, int platForm) throws Exception {
 		// TODO Auto-generated method stub
 		try{
 			QueryRunner run = new QueryRunner();
-			String selectSql = "select st.SUBTASK_ID " + ",st.NAME"
-					+ ",st.DESCP" + ",st.PLAN_START_DATE" + ",st.PLAN_END_DATE"
-					+ ",st.STAGE" + ",st.TYPE" + ",st.STATUS"
-					+ ",r.DAILY_DB_ID" + ",r.MONTHLY_DB_ID";
+			String selectSql = "select st.SUBTASK_ID ,st.NAME"
+					+ ",st.DESCP,st.PLAN_START_DATE,st.PLAN_END_DATE"
+					+ ",st.STAGE,st.TYPE,st.STATUS"
+					+ ",r.DAILY_DB_ID,r.MONTHLY_DB_ID";
 
-			String fromSql_task = " from subtask st" + ",task t" + ",city c"
-					+ ",region r";
+			String fromSql_task = " from subtask st,task t,city c,region r";
 
-			String fromSql_block = " from subtask st" + ",block b" + ",region r";
+			String fromSql_block = " from subtask st,block_man bm,block b,region r";
 
 			String conditionSql_task = " where st.task_id = t.task_id "
 					+ "and t.city_id = c.city_id "
@@ -492,8 +492,9 @@ public class SubtaskOperation {
 					+ "and (st.EXE_USER_ID = " + bean.getExeUserId() + " or st.EXE_GROUP_ID = " + bean.getExeGroupId() + ")";
 //					+ "and st.EXE_USER_ID = " + bean.getExeUserId() + " ";
 
-			String conditionSql_block = " where st.block_id = b.block_id "
+			String conditionSql_block = " where st.block_man_id = bm.block_man_id "
 					+ "and b.region_id = r.region_id "
+					+ "and bm.block_id = b.block_id "
 					+ "and (st.EXE_USER_ID = " + bean.getExeUserId() + " or st.EXE_GROUP_ID = " + bean.getExeGroupId() + ")";
 //					+ "and st.EXE_USER_ID = " + bean.getExeUserId() + " ";
 
@@ -502,6 +503,16 @@ public class SubtaskOperation {
 						+ bean.getStage();
 				conditionSql_block = conditionSql_block + " and st.STAGE = "
 						+ bean.getStage();
+			}else{
+				if(0 == platForm){
+					//采集端
+					conditionSql_task = conditionSql_task + " and st.STAGE in (0) ";
+					conditionSql_block = conditionSql_block + " and st.STAGE in (0) ";
+				}else if(1 == platForm){
+					//编辑端
+					conditionSql_task = conditionSql_task + " and st.STAGE in (1,2) ";
+					conditionSql_block = conditionSql_block + " and st.STAGE in (1,2) ";
+				}
 			}
 
 			if (bean.getType() != null) {
@@ -579,10 +590,11 @@ public class SubtaskOperation {
 	 * @param bean
 	 * @param curPageNum
 	 * @param pageSize
+	 * @param platForm 
 	 * @return
 	 * @throws Exception 
 	 */
-	public static Page getListByUserPage(Connection conn, Subtask bean, final int curPageNum, final int pageSize) throws Exception {
+	public static Page getListByUserPage(Connection conn, Subtask bean, final int curPageNum, final int pageSize, int platForm) throws Exception {
 		// TODO Auto-generated method stub
 		try{
 			QueryRunner run = new QueryRunner();
@@ -604,6 +616,7 @@ public class SubtaskOperation {
 					+ ",region r";
 
 			String fromSql_block = " from subtask st"
+					+ ",block_man bm"
 					+ ",block b"
 					+ ",region r";
 
@@ -613,7 +626,8 @@ public class SubtaskOperation {
 					+ "and (st.EXE_USER_ID = " + bean.getExeUserId() + " or st.EXE_GROUP_ID = " + bean.getExeGroupId() + ")";
 //					+ "and st.EXE_USER_ID = " + bean.getExeUserId();
 
-			String conditionSql_block = " where st.block_id = b.block_id "
+			String conditionSql_block = " where st.block_man_id = bm.block_man_id "
+					+ "and bm.block_id = b.block_id "
 					+ "and b.region_id = r.region_id "
 					+ "and (st.EXE_USER_ID = " + bean.getExeUserId() + " or st.EXE_GROUP_ID = " + bean.getExeGroupId() + ")";
 //					+ "and st.EXE_USER_ID = " + bean.getExeUserId();
@@ -623,6 +637,16 @@ public class SubtaskOperation {
 						+ bean.getStage();
 				conditionSql_block = conditionSql_block + " and st.STAGE = "
 						+ bean.getStage();
+			}else{
+				if(0 == platForm){
+					//采集端
+					conditionSql_task = conditionSql_task + " and st.STAGE in (0) ";
+					conditionSql_block = conditionSql_block + " and st.STAGE in (0) ";
+				}else if(1 == platForm){
+					//编辑端
+					conditionSql_task = conditionSql_task + " and st.STAGE in (1,2) ";
+					conditionSql_block = conditionSql_block + " and st.STAGE in (1,2) ";
+				}
 			}
 
 			if (bean.getType() != null) {
@@ -983,6 +1007,7 @@ public class SubtaskOperation {
 			QueryRunner run = new QueryRunner();
 			
 			String selectSql = "";
+			
 			//0采集，1日编，2月编
 			if(0 == stage){
 				selectSql = "SELECT S.SUBTASK_ID, S.STAGE, S.NAME, S.TYPE, S.STATUS,S.PLAN_START_DATE,S.PLAN_END_DATE,B.BLOCK_ID,B.BLOCK_NAME"
@@ -1157,13 +1182,13 @@ public class SubtaskOperation {
 	 * @return
 	 * @throws Exception 
 	 */
-	public static String getWktByBlockId(int blockId) throws Exception {
+	public static String getWktByBlockManId(int blockManId) throws Exception {
 		// TODO Auto-generated method stub
 		Connection conn = null;
 		try{
 			conn = DBConnector.getInstance().getManConnection();
 			QueryRunner run = new QueryRunner();
-			String selectSql = "SELECT B.GEOMETRY FROM BLOCK B WHERE B.BLOCK_ID = " + blockId;
+			String selectSql = "SELECT B.GEOMETRY FROM BLOCK B,BLOCK_MAN BM WHERE B.BLOCK_ID = BM.BLOCK_ID AND BM.BLOCK_MAN_ID = " + blockManId;
 			
 			ResultSetHandler<String> rsHandler = new ResultSetHandler<String>() {
 				public String handle(ResultSet rs) throws SQLException {
@@ -1339,5 +1364,170 @@ public class SubtaskOperation {
 		}
 		
 	}
+
+
+//	/**
+//	 * @param conn
+//	 * @param condition
+//	 * @param pageSize
+//	 * @param curPageNum
+//	 * @return
+//	 */
+//	public static List<Map<String,Object>> getListSnapshot(Connection conn, JSONObject condition, final int pageSize, final int curPageNum) {
+//		// TODO Auto-generated method stub
+//		try{
+//			QueryRunner run = new QueryRunner();
+//			
+//			String sql = "";
+//
+//			
+//			String selectSqlCollect = "SELECT S.SUBTASK_ID, S.STAGE, S.NAME, S.TYPE, S.STATUS,U.USER_REAL_NAME AS EXECUTER"
+//					+ " FROM SUBTASK S ,BLOCK_MAN BM,USER_INFO U"
+//					+ " WHERE S.STAGE = 0"
+//					+ " AND S.BLOCK_MAN_ID = BM.BLOCK_MAN_ID"
+//					+ " AND U.USER_ID = S.EXE_USER_ID";
+//
+//			String selectSqlDailyUser = "SELECT S.SUBTASK_ID, S.STAGE, S.NAME, S.TYPE, S.STATUS,U.USER_REAL_NAME AS EXECUTER"
+//					+ " FROM SUBTASK S ,BLOCK_MAN BM,USER_INFO U"
+//					+ " WHERE S.STAGE = 1"
+//					+ " AND S.BLOCK_MAN_ID = BM.BLOCK_MAN_ID"
+//					+ " AND U.USER_ID = S.EXE_USER_ID";
+//			String selectSqlDailyGroup = "SELECT S.SUBTASK_ID, S.STAGE, S.NAME, S.TYPE, S.STATUS, UG.GROUP_NAME AS EXECUTER"
+//					+ " FROM SUBTASK S ,BLOCK_MAN BM, USER_GROUP UG"
+//					+ " WHERE S.STAGE = 1"
+//					+ " AND S.BLOCK_MAN_ID = BM.BLOCK_MAN_ID"
+//					+ " AND UG.GROUP_ID = S.EXE_GROUP_ID";
+//
+//			String selectSqlMonthlyUser = "SELECT S.SUBTASK_ID, S.STAGE, S.NAME, S.TYPE, S.STATUS,U.USER_REAL_NAME AS EXECUTER"
+//					+ " FROM SUBTASK S ,TASK T,USER_INFO U"
+//					+ " WHERE S.STAGE = 2"
+//					+ " AND S.TASK_ID = T.TASK_ID"
+//					+ " AND U.USER_ID = S.EXE_USER_ID";
+//			String selectSqlMonthlyGroup = "SELECT S.SUBTASK_ID, S.STAGE, S.NAME, S.TYPE, S.STATUS, UG.GROUP_NAME AS EXECUTER"
+//					+ " FROM SUBTASK S ,TASK T, USER_GROUP UG"
+//					+ " WHERE S.STAGE = 2"
+//					+ " AND S.TASK_ID = T.TASK_ID"
+//					+ " AND UG.GROUP_ID = S.EXE_GROUP_ID";
+//
+//
+//			//查询条件
+//			String conditionSql = "";
+//			int stage = -1;
+//			int taskFlg = 0;
+//			int status = -1;
+//			int progress = -1;
+//			int completionStatus = -1;
+//			int planStatus = -1;
+//			Iterator<?> keys = condition.keys();
+//			while (keys.hasNext()) {
+//				String key = (String) keys.next();
+//				//模糊查询
+//				if ("subtaskName".equals(key)) {	
+//					conditionSql+=" AND S.NAME like '%" + condition.getString(key) +"%'";
+//				}
+//				//查询条件
+//				if ("blockManId".equals(key)) {conditionSql+=" AND S.BLOCK_MAN_ID="+condition.getInt(key);}
+//				if ("taskId".equals(key)) {
+//					conditionSql+=" AND S.TASK_ID="+condition.getInt(key);
+//					taskFlg = 1;
+//				}
+//				if ("stage".equals(key)) {stage = condition.getInt(key);}
+//				//筛选条件
+//				if ("status".equals(key)) {
+//					conditionSql+=" AND S.STATUS="+condition.getInt(key);
+//					status = condition.getInt(key);
+//				}
+//				if ("progress".equals(key)) {progress = condition.getInt(key);}
+//				if ("completionStatus".equals(key)) {completionStatus = condition.getInt(key);}
+//				//排序方式
+//				if ("planStatus".equals(key)) {planStatus = condition.getInt(key);}
+//
+//			}
+//			
+//			if(stage==0){
+//				//采集
+//				sql = selectSqlCollect + conditionSql;
+//			}else if(stage==1){
+//				//日编
+//				sql = selectSqlDailyUser + conditionSql + " UNION ALL " + selectSqlDailyGroup + conditionSql;
+//			}else if(stage==2){
+//				//月编
+//				sql = selectSqlMonthlyUser + conditionSql + " UNION ALL " + selectSqlMonthlyGroup + conditionSql;
+//			}else{
+//				if(0 == taskFlg){
+//					//采集/日编
+//					sql = selectSqlCollect + conditionSql + " UNION ALL " + selectSqlDailyUser + conditionSql + " UNION ALL " + selectSqlDailyGroup + conditionSql;
+//				}else{
+//					//月编
+//					sql = selectSqlMonthlyUser + conditionSql + " UNION ALL " + selectSqlMonthlyGroup + conditionSql;
+//				}
+//			}
+//			
+//			
+//			ResultSetHandler<List<Map<String,Object>>> rsHandler = new ResultSetHandler<List<Map<String,Object>>>() {
+//				public List<Map<String,Object>> handle(ResultSet rs) throws SQLException {
+//					List<HashMap<Object,Object>> list = new ArrayList<HashMap<Object,Object>>();
+//					
+//					Map<Integer,HashMap<Object,Object>> openMap = new HashMap<Integer,HashMap<Object,Object>>();
+//					Map<Integer,HashMap<Object,Object>> closeMap = new HashMap<Integer,HashMap<Object,Object>>();
+//					Map<Integer,HashMap<Object,Object>> draftMap = new HashMap<Integer,HashMap<Object,Object>>();
+//					
+////					Map<Integer,Object> draftMap = new HashMap<Integer,Object>();
+//				    int total = 0;
+//				    StaticsApi staticApi=(StaticsApi) ApplicationContextUtil.getBean("staticsApi");
+//					while (rs.next()) {
+//						total += 1;
+//						HashMap<Object,Object> subtask = new HashMap<Object,Object>();
+//						subtask.put("subtaskId", rs.getInt("SUBTASK_ID"));
+//						subtask.put("subtaskName", rs.getString("NAME"));
+//						subtask.put("status", rs.getInt("STATUS"));
+//						subtask.put("type", rs.getInt("TYPE"));
+//						
+//						if(2==rs.getInt("STATUS")){
+//							draftMap.put(rs.getInt("SUBTASK_ID"), subtask);
+//						}else if(0==rs.getInt("STATUS")){
+//							closeMap.put(rs.getInt("SUBTASK_ID"), subtask);
+//						}
+//						
+//						SubtaskStatInfo stat = staticApi.getStatBySubtask(rs.getInt("SUBTASK_ID"));
+//						int percent = stat.getPercent();
+//						
+//						subtask.put("percent", percent);
+//						
+//						draftMap.put(rs.getInt("SUBTASK_ID"), subtask);
+//	
+////						list.add(subtask);
+//					}
+//	
+//					//开启子任务根据完成度排序
+//					Object[] key_arr = draftMap.keySet().toArray();     
+//					Arrays.sort(key_arr);     
+//					for  (Object key : key_arr) {     
+//						openList.add((HashMap<Object, Object>) draftMap.get(key));     
+//					}  
+//					
+//					list.addAll(draftList);
+//					list.addAll(openList);
+//					list.addAll(closeList);
+//					
+//					page.setTotalCount(total);
+//					page.setResult(list);
+//					return page;
+//				}
+//	
+//			};
+//			return run.query(curPageNum, pageSize, conn, sql, rsHandler);
+//			
+//			//筛选条件
+////			"status"//子任务状态。0关闭，1开启,2草稿,1完成
+////			"progress" //进度。1正常(实际作业小于预期)，2异常(实际作业等于或大于预期)
+////			"completionStatus"//完成状态。0逾期，1按时，2提前
+//
+//		} catch (Exception e) {
+//			DbUtils.rollbackAndCloseQuietly(conn);
+//			log.error(e.getMessage(), e);
+//			throw new ServiceException("查询列表失败，原因为:" + e.getMessage(), e);
+//		}
+//	}
 		
 }

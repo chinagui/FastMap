@@ -97,21 +97,24 @@ public class Operation implements IOperation {
 			for (RdLaneConnexity lane : outLinkLanes) {
 				if (!deleteLanesMap.containsKey(lane.getPid())) {
 					List<Integer> allTopoLinks = new ArrayList<>();
-
+					
+					List<Integer> delTopoLinks = new ArrayList<>();
+					
 					List<IRow> rows = lane.getTopos();
 
 					RdLaneTopology delTopogy = null;
 
 					for (IRow row : rows) {
 						RdLaneTopology topo = (RdLaneTopology) row;
-
+						
+						allTopoLinks.add(topo.getOutLinkPid());
+						
 						if (topo.getOutLinkPid() == linkPid) {
 							delTopogy = topo;
+							delTopoLinks.add(topo.getOutLinkPid());
 						}
-
-						allTopoLinks.add(topo.getOutLinkPid());
 					}
-					if (allTopoLinks.containsAll(linkPidList)) {
+					if (delTopoLinks.containsAll(allTopoLinks)) {
 						deleteLanesMap.put(lane.getPid(), lane);
 					} else if (delTopogy != null) {
 						deleteDetailLanesList.add(delTopogy);

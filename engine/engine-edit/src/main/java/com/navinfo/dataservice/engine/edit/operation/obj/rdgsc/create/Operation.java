@@ -140,6 +140,10 @@ public class Operation implements IOperation {
 			updateLinkGeo(gscLink, row, gscGeo);
 
 			if (!gscLink.changedFields().isEmpty()) {
+				int seqNum = (int) gscLink.changedFields().get("shpSeqNum");
+				
+				gscLink.setShpSeqNum(seqNum);
+				
 				result.insertObject(gscLink, ObjStatus.INSERT, gscLink.getPid());
 			}
 		}
@@ -159,7 +163,7 @@ public class Operation implements IOperation {
 		Geometry gscGeo = null;
 
 		if (interGeo != null && !interGeo.isEmpty()) {
-
+			
 			// 矩形框
 			Geometry spatial = GeoTranslator.transform(GeoTranslator.geojson2Jts(command.getGeoObject()), 100000, 0);
 

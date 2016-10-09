@@ -107,13 +107,13 @@ public class RdLinkTest extends InitApplication {
 	@Test
 	public void breankRdLink() {
 		// 05d420113061454b8b45083f2ff15dd8
-
+    //{"command":"CREATE","dbId":17,"objId":202000173,"data":{"longitude":119.51203372122866,"latitude":39.80374531851753},"type":"RDNODE"}
 		// AFABA38D96AC41E09E0A385F653C8FA0
 		// 72ade565c57c4747986b6402382908d6
 		// parameter:{"command":"BREAK","dbId":42,"objId":100007804,"data":{"longitude":116.64105676404851,"latitude":39.827078818848676},"type":"RDLINK"}
 		// access_token:00000002IRBME52A8A7DE96FAC8D03B1AB9ECA00A2977965
 		// parameter:{"command":"CREATE","dbId":42,"objId":100007804,"data":{"longitude":116.64105541766425,"latitude":39.827078822935626},"type":"RDNODE"}
-		String parameter = "{\"command\":\"BREAK\",\"dbId\":42,\"objId\":100007804,\"data\":{\"longitude\":116.64105676404851,\"latitude\":39.827078818848676},\"type\":\"RDLINK\"}";
+		String parameter = "{\"command\":\"CREATE\",\"dbId\":17,\"objId\":202000173,\"data\":{\"longitude\":119.51203372122866,\"latitude\":39.80374531851753},\"type\":\"RDNODE\"}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

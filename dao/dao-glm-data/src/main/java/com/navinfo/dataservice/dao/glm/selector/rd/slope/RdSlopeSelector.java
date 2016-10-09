@@ -143,7 +143,7 @@ public class RdSlopeSelector extends AbstractSelector {
 		ResultSet resultSet = null;
 
 		try {
-			String sql = "SELECT link_pid,slope_pid,seq_num FROM rd_slope_via WHERE link_pid =:1 and u_record !=2";
+			String sql = "SELECT link_pid,slope_pid,seq_num,row_id FROM rd_slope_via WHERE link_pid =:1 and u_record !=2";
 
 			if (isLock) {
 				sql += " for update nowait";

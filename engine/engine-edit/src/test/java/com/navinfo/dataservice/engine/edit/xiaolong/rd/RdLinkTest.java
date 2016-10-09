@@ -38,7 +38,7 @@ public class RdLinkTest extends InitApplication {
 	public void testGetByPid() {
 		Connection conn;
 		try {
-			conn = DBConnector.getInstance().getConnectionById(42);
+			conn = DBConnector.getInstance().getConnectionById(19);
 
 			String parameter = "{\"type\":\"RWLINK\",\"dbId\":42,\"objId\":100007138}";
 
@@ -46,7 +46,7 @@ public class RdLinkTest extends InitApplication {
 
 			SearchProcess p = new SearchProcess(conn);
 
-			System.out.println(p.searchDataByPid(ObjType.RDLINK, 13677569).Serialize(ObjLevel.BRIEF));
+			System.out.println(p.searchDataByPid(ObjType.RDLANECONNEXITY, 32060).Serialize(ObjLevel.BRIEF));
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -81,7 +81,7 @@ public class RdLinkTest extends InitApplication {
 
 	@Test
 	public void testDelete() {
-		String parameter = "{\"command\":\"DELETE\",\"dbId\":17,\"type\":\"RDLINK\",\"objId\":305000137,\"infect\":1}";
+		String parameter = "{\"command\":\"DELETE\",\"dbId\":17,\"type\":\"RDLINK\",\"objId\":304000176,\"infect\":1}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
@@ -93,7 +93,7 @@ public class RdLinkTest extends InitApplication {
 
 	@Test
 	public void testAddRdLink() {
-		String parameter = "{\"command\":\"CREATE\",\"dbId\":2025,\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.38760447502136,39.92955851913814],[116.38859808643267,39.930396683905066]]},\"catchLinks\":[{\"linkPid\":203000143,\"lon\":116.38859808643267,\"lat\":39.930396683905066}]},\"type\":\"RDLINK\"}";
+		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDVOICEGUIDE\",\"dbId\":19,\"data\":{\"inLinkPid\":88026690,\"outLinkPids\":[88026689],\"nodePid\":74186328}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
@@ -105,7 +105,7 @@ public class RdLinkTest extends InitApplication {
 
 	@Test
 	public void testRepairLink() {
-		String parameter = "{\"command\":\"REPAIR\",\"dbId\":17,\"objId\":309000092,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.27721,40.55273],[116.27744216546803,40.552798113177765],[116.27771973609924,40.552882305427765],[116.278,40.55296]]},\"interLinks\":[],\"interNodes\":[]},\"type\":\"RDLINK\"}";
+		String parameter = "{\"command\":\"REPAIR\",\"dbId\":17,\"objId\":220000149,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.48037,40.01393],[116.48042020187387,40.01396883684602],[116.48049,40.01402],[116.48059,40.0141],[116.48082,40.01411]]},\"interLinks\":[],\"interNodes\":[]},\"type\":\"RDLINK\"}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

@@ -42,12 +42,10 @@ public class RdLinkTest extends InitApplication {
 	@Test
 	public void testAddRdLink() {
 		//{"command":"CREATE","dbId":17,"type":"RDLINK","data":{"eNodePid":0,"sNodePid":0,"kind":7,"laneNum":1,"geometry":{"type":"LineString","coordinates":[[116.36877,40.04402],[116.36601,40.0505],[116.36493,40.05416]]}}}
-		//
+		//{"command":"CREATE","dbId":17,"data":{"eNodePid":0,"sNodePid":0,"geometry":{"type":"LineString","coordinates":[[116.29326045513153,40.56219207425306],[116.29347239505566,40.56218427401308],[116.29386931657791,40.56196079765951],[116.29403293132782,40.56180185821568]]},"catchLinks":[{"linkPid":302000182,"lon":116.29347239505566,"lat":40.56218427401308},{"linkPid":203000181,"lon":116.29386931657791,"lat":40.56196079765951}]},"type":"RDLINK"}
 		// parameter={"command":"CREATE","dbId":42,"data":{"eNodePid":0,"sNodePid":0,"geometry":{"type":"LineString","coordinates":},"catchLinks":[]},"type":"RDLINK"}
-		String line = "[[116.36877,40.04402],[116.36601,40.0505],[116.36493,40.05416]]";
-		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDLINK\",\"dbId\":17,"
-				+ "\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"kind\":7,\"laneNum\":1,\"geometry\":{\"type\":\"LineString\","
-				+ "\"coordinates\":" + line + "}}}";
+		//String line = "[[116.29326045513153,40.56219207425306],[116.29347239505566,40.56218427401308],[116.29386931657791,40.56196079765951],[116.29403293132782,40.56180185821568]]";
+		String parameter ="{\"command\":\"CREATE\",\"dbId\":17,\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.29326045513153,40.56219207425306],[116.29347239505566,40.56218427401308],[116.29386931657791,40.56196079765951],[116.29403293132782,40.56180185821568]]},\"catchLinks\":[{\"linkPid\":302000182,\"lon\":116.29347239505566,\"lat\":40.56218427401308},{\"linkPid\":203000181,\"lon\":116.29386931657791,\"lat\":40.56196079765951}]},\"type\":\"RDLINK\"}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
@@ -109,13 +107,13 @@ public class RdLinkTest extends InitApplication {
 	@Test
 	public void breankRdLink() {
 		// 05d420113061454b8b45083f2ff15dd8
-
+    //{"command":"CREATE","dbId":17,"objId":202000173,"data":{"longitude":119.51203372122866,"latitude":39.80374531851753},"type":"RDNODE"}
 		// AFABA38D96AC41E09E0A385F653C8FA0
 		// 72ade565c57c4747986b6402382908d6
 		// parameter:{"command":"BREAK","dbId":42,"objId":100007804,"data":{"longitude":116.64105676404851,"latitude":39.827078818848676},"type":"RDLINK"}
 		// access_token:00000002IRBME52A8A7DE96FAC8D03B1AB9ECA00A2977965
 		// parameter:{"command":"CREATE","dbId":42,"objId":100007804,"data":{"longitude":116.64105541766425,"latitude":39.827078822935626},"type":"RDNODE"}
-		String parameter = "{\"command\":\"BREAK\",\"dbId\":42,\"objId\":100007804,\"data\":{\"longitude\":116.64105676404851,\"latitude\":39.827078818848676},\"type\":\"RDLINK\"}";
+		String parameter = "{\"command\":\"CREATE\",\"dbId\":17,\"objId\":202000173,\"data\":{\"longitude\":119.51203372122866,\"latitude\":39.80374531851753},\"type\":\"RDNODE\"}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

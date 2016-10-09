@@ -25,7 +25,10 @@ public interface StaticsApi {
 
 	public List<GridStatInfo> getLatestMonthlyEditStatByGrids(List<String> grids)
 			throws Exception;
-
+	
+	public List<Integer> getOpen100TaskIdList()
+			throws Exception;
+	
 	/**
 	 * 
 	 * 获取变迁统计信息

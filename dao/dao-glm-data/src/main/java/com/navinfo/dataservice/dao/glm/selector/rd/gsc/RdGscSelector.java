@@ -181,7 +181,9 @@ public class RdGscSelector extends AbstractSelector {
 		}
 		return rdGscList;
 	}
-
+	
+	
+	
 	/**
 	 * 根据立交的线反向获取立交
 	 * 
@@ -279,7 +281,7 @@ public class RdGscSelector extends AbstractSelector {
 	 */
 	private void setChild(RdGsc rdGsc,boolean isLock) throws Exception
 	{
-		List<IRow> links = new RdGscLinkSelector(conn).loadRowsByParentId(rdGsc.getPid(), isLock);
+		List<IRow> links = new RdGscLinkSelector(conn).loadRowsByClassParentId(RdGscLink.class, rdGsc.getPid(), isLock, "zlevel");
 
 		rdGsc.setLinks(links);
 

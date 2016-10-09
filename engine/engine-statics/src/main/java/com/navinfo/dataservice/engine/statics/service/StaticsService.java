@@ -29,6 +29,7 @@ import com.navinfo.dataservice.engine.statics.expect.PoiMonthlyExpectMain;
 import com.navinfo.dataservice.engine.statics.expect.RoadCollectExpectMain;
 import com.navinfo.dataservice.engine.statics.expect.RoadDailyExpectMain;
 import com.navinfo.dataservice.engine.statics.expect.RoadMonthlyExpectMain;
+import com.navinfo.dataservice.engine.statics.overview.OverviewMain;
 import com.navinfo.dataservice.engine.statics.poicollect.PoiCollectMain;
 import com.navinfo.dataservice.engine.statics.poidaily.PoiDailyMain;
 import com.navinfo.dataservice.engine.statics.poimonthly.PoiMonthlyMain;
@@ -506,6 +507,13 @@ public class StaticsService {
 		return subtaskStatInfo;
 	}
 	
+	public List<Integer> getOpen100TaskIdList() {
+		// TODO Auto-generated method stub
+		
+		List<Integer> taskIdList=StaticsOperation.getOpen100TaskIdList();
+		return taskIdList;
+	}
+
 	/**
 	 * 
 	 * 查询subtask完成情况

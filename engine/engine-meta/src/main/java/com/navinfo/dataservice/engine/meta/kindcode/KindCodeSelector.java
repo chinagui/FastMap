@@ -46,6 +46,8 @@ public class KindCodeSelector {
 		sb.append(" SELECT DISTINCT t.class_code, t.class_name, t.class_code id ");
 
 		sb.append(" FROM sc_point_poicode_new t ");
+		
+		sb.append(" WHERE t.kg_des<>'GD' ");
 
 		Connection conn = null;
 		try {
@@ -109,6 +111,8 @@ public class KindCodeSelector {
 		sb.append(" t.sub_class_code,t.sub_class_name, t.class_code||t.sub_class_code id ");
 
 		sb.append(" FROM sc_point_poicode_new t " + " WHERE t.class_code=? ");
+		
+		sb.append(" AND t.kg_des<>'GD' ");
 
 		Connection conn = null;
 		try {
@@ -173,6 +177,8 @@ public class KindCodeSelector {
 		sb.append(" SELECT t.kind_code,t.kind_name from SC_POINT_POICODE_NEW t");
 
 		sb.append(" WHERE t.class_code=? AND t.sub_class_code=? ");
+		
+		sb.append(" AND t.kg_des<>'GD' ");
 
 		if (region == 0) {
 			sb.append(" and (t.mhm_des='DHM' or t.mhm_des='D') ");
@@ -181,7 +187,7 @@ public class KindCodeSelector {
 		if (region == 1) {
 			sb.append(" and (t.mhm_des='DHM' or t.mhm_des='HM') ");
 		}
-
+		
 		Connection conn = null;
 		try {
 			QueryRunner run = new QueryRunner();
@@ -226,7 +232,7 @@ public class KindCodeSelector {
 
 	/**
 	 * 通过region（1：港澳，0：大陆）信息获取KindCode信息
-	 * 
+	 * 只返回外业分类(type<>2)
 	 * @return
 	 * @throws Exception
 	 */
@@ -240,14 +246,19 @@ public class KindCodeSelector {
 		sb.append(" (select f.chain from SC_FM_CONTROL f where f.kind_code = t.kind_code) chain, ");
 		sb.append(" (select f.disp_onlink from SC_FM_CONTROL f where f.kind_code = t.kind_code) disp_onlink ");
 
-		sb.append(" from SC_POINT_POICODE_NEW t ");
+		sb.append(" from SC_POINT_POICODE_NEW t  ");
+		
+		sb.append(" where t.kg_des<>'GD'  and type<>2 ");
+		
 		if (region == 0) {
-			sb.append(" where (t.mhm_des='DHM' or t.mhm_des='D') ");
+			sb.append(" and (t.mhm_des='DHM' or t.mhm_des='D') ");
 		}
 
 		if (region == 1) {
-			sb.append(" where (t.mhm_des='DHM' or t.mhm_des='HM') ");
+			sb.append(" and (t.mhm_des='DHM' or t.mhm_des='HM') ");
 		}
+		
+		
 
 		Connection conn = null;
 		try {
@@ -346,7 +357,9 @@ public class KindCodeSelector {
 	
 	public JSONObject getKindCodeMap() throws Exception {
 		
-		String sql = "select distinct kind_code,kind_name from SC_POINT_POICODE_NEW";
+		String sql = "select distinct kind_code,kind_name from SC_POINT_POICODE_NEW ";
+		
+		sql +=" where  t.kg_des<>'GD' ";
 		
 		ResultSet resultSet = null;
 		

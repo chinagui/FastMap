@@ -30,6 +30,7 @@ import com.navinfo.dataservice.dao.glm.selector.rd.crf.RdObjectSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.lane.RdLaneSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.lane.RdLaneTopoDetailSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.laneconnexity.RdLaneViaSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.rw.RwLinkSelector;
 import com.navinfo.dataservice.engine.edit.search.rd.utils.RdLinkSearchUtils;
@@ -389,6 +390,24 @@ public class SearchProcess {
 
 					for (String name : names) {
 						array.add(name);
+					}
+				}
+				break;
+			case RDLANEVIA:
+				if (condition.containsKey("inLinkPid")&&condition.containsKey("nodePid")&&condition.containsKey("outLinkPid")) {
+					
+					int inLinkPid = condition.getInt("inLinkPid");
+					
+					int nodePid = condition.getInt("nodePid");
+					
+					int outLinkPid = condition.getInt("outLinkPid");
+					
+					RdLaneViaSelector selector = new RdLaneViaSelector(this.conn);
+					
+					List<Integer> viaList = selector.calViaLinks(inLinkPid, nodePid, outLinkPid);
+
+					for (int viaLinkPid : viaList) {
+						array.add(viaLinkPid);
 					}
 				}
 				break;

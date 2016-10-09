@@ -86,4 +86,10 @@ public class LcNodeTest extends InitApplication {
 			e.printStackTrace();
 		}
 	}
+
+	@Test
+	public void move(){
+		String paramtere = "{\"command\":\"MOVE\",\"dbId\":17,\"objId\":202000020,\"data\":{\"longitude\":116.57113194465636,\"latitude\":40.350800065249},\"type\":\"LCNODE\"}";
+		TestUtil.run(paramtere);
+	}
 }

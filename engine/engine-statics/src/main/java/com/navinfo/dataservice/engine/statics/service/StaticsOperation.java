@@ -10,6 +10,7 @@ import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Sorts;
 import com.navinfo.dataservice.api.statics.model.SubtaskStatInfo;
 import com.navinfo.dataservice.engine.statics.StatMain;
+import com.navinfo.dataservice.engine.statics.overview.OverviewMain;
 import com.navinfo.dataservice.engine.statics.tools.MongoDao;
 
 import net.sf.json.JSONObject;
@@ -103,6 +104,16 @@ public class StaticsOperation {
 		subtaskStatInfo.setWorkingRoad(totalROAD-finishROAD);
 		
 		return subtaskStatInfo;
+	}
+	
+	public static String getLastStatDate(String colName){
+		MongoDao md = new MongoDao(StatMain.db_name);
+		Document doc1 = md
+				.find(colName, null).first();
+		Document doc = md
+				.find(colName, null)
+				.sort(Sorts.descending("stat_date")).first();
+		return JSONObject.fromObject(doc).getString("stat_date");
 	}
 
 
@@ -284,6 +295,22 @@ public class StaticsOperation {
 		
 		return subtaskStatInfo;
 	}
+
+	public static List<Integer> getOpen100TaskIdList() {
+		// TODO Auto-generated method stub
+		MongoDao md = new MongoDao(StatMain.db_name);
+		String colName = OverviewMain.col_name_task;
+		MongoCursor<Document> iter = md
+				.find(colName, Filters.and(Filters.eq("percent", 100), Filters.eq("taskStatus", 1),Filters.eq("stat_date", getLastStatDate(colName))))
+				.iterator();
+		List<Integer> taskIdList=new ArrayList<Integer>();
+		while (iter.hasNext()) {
+			JSONObject json = JSONObject.fromObject(iter.next());
+			int taskId = json.getInt("taskId");
+			taskIdList.add(taskId);
+		}
+		return taskIdList;
+	} 
 }
 
 

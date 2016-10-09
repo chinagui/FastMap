@@ -15,6 +15,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
+import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionDetail;
 import com.navinfo.dataservice.dao.glm.model.rd.speedlimit.RdSpeedlimit;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 
@@ -33,6 +34,8 @@ public class Command extends AbstractCommand {
 	private List<RdNode> nodes;
 
 	private List<RdRestriction> restrictions;
+	
+	private List<RdRestrictionDetail> delDetailResList;
 
 	private List<RdLaneConnexity> lanes;
 
@@ -88,6 +91,14 @@ public class Command extends AbstractCommand {
 
 	public void setLimits(List<RdSpeedlimit> limits) {
 		this.limits = limits;
+	}
+	
+	public List<RdRestrictionDetail> getDelDetailResList() {
+		return delDetailResList;
+	}
+
+	public void setDelDetailResList(List<RdRestrictionDetail> delDetailResList) {
+		this.delDetailResList = delDetailResList;
 	}
 
 	public List<RdNode> getNodes() {

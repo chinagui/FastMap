@@ -58,7 +58,11 @@ public class BatchRuleSelector extends AbstractSelector {
 				data.put("ruleName", resultSet.getString("rule_name"));
 				data.put("ruleDesc", resultSet.getString("rule_desc"));
 				data.put("severity", resultSet.getString("severity"));
-				data.put("depends", resultSet.getString("depends"));
+				if ( resultSet.getString("depends") == null) {
+					data.put("depends", "");
+				} else {
+					data.put("depends", resultSet.getString("depends"));
+				}
 				
 				if (batchRules.containsKey(suiteKey)) {
 					JSONArray tempRuleList = batchRules.getJSONArray(suiteKey);

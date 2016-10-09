@@ -236,6 +236,7 @@ public class Operation implements IOperation {
 	 */
 	private void caleRelationRdLink(List<RdLink> resultLinks,
 			List<RdLink> sourceLinks, RdLink preLink) {
+		resultLinks.add(preLink);
 		while (resultLinks.size() < sourceLinks.size()) {
 			for (RdLink link : sourceLinks) {
 

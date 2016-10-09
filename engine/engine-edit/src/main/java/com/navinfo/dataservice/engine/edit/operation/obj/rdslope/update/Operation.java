@@ -151,6 +151,7 @@ public class Operation implements IOperation {
 					break;
 				}
 			}
+			slinks.add(preLink);
 			this.caleRelationRdLink(slinks, newLinks, preLink);
 			// 插入新的接续link信息
 			for (int i = 0; i < slinks.size(); i++) {
@@ -181,15 +182,15 @@ public class Operation implements IOperation {
 			}
 			this.caleRelationRdLink(links, newLinks, preLink);
 			// 插入新的接续link信息
-			for (int i = 1; i < links.size(); i++) {
-				if (i == 1) {
+			for (int i = 0; i < links.size(); i++) {
+				if (i == 0) {
 					via.changedFields().put("linkPid", links.get(i).getPid());
 					result.insertObject(via, ObjStatus.UPDATE,
 							via.getSlopePid());
 					continue;
 				}
 				this.addRdslopeVia(via.getSlopePid(), links.get(i).getPid(),
-						via.getSeqNum() + i-1, result);
+						via.getSeqNum() + i, result);
 			}
 			// 维护原有的link信息
 			this.caleRdSlopeVia(slope, via.getSeqNum(), newLinks.size(), result);
@@ -236,7 +237,6 @@ public class Operation implements IOperation {
 	 */
 	private void caleRelationRdLink(List<RdLink> resultLinks,
 			List<RdLink> sourceLinks, RdLink preLink) {
-		resultLinks.add(preLink);
 		while (resultLinks.size() < sourceLinks.size()) {
 			for (RdLink link : sourceLinks) {
 

@@ -4,18 +4,14 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
-import net.sf.json.JSONObject;
-
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
-import com.navinfo.dataservice.dao.glm.selector.rd.gsc.RdGscSelector;
-import com.navinfo.dataservice.engine.edit.utils.RdGscOperateUtils;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
+
+import net.sf.json.JSONObject;
 
 public class Check {
 
@@ -105,24 +101,6 @@ public class Check {
 			if (distance <= 2) {
 				throwException("相邻形状点不可过近，不能小于2m");
 			}
-		}
-	}
-	
-	public void checkIsMoveGscPoint(JSONObject linkGeo, Connection conn,
-			int linkPid) throws Exception {
-
-		Geometry geo = GeoTranslator.geojson2Jts(linkGeo, 100000, 0);
-
-		RdGscSelector selector = new RdGscSelector(conn);
-
-		List<RdGsc> rdGscList = selector.onlyLoadRdGscLinkByLinkPid(linkPid,
-				"LC_LINK", true);
-
-		boolean flag = RdGscOperateUtils.isMoveGscLink(geo, rdGscList,
-				"LC_LINK", linkPid);
-
-		if (flag) {
-			throw new Exception("不允许去除有立交关系的形状点");
 		}
 	}
 

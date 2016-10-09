@@ -2,14 +2,12 @@ package com.navinfo.dataservice.engine.edit.utils;
 
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
@@ -26,12 +24,12 @@ import com.navinfo.dataservice.dao.glm.selector.rd.rw.RwLinkSelector;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.Point;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 public class RdGscOperateUtils {
-	public static JSONArray calCoordinateByNotSelfInter(JSONObject geojson,
-			Geometry gscGeo) throws Exception {
+	public static JSONArray calCoordinateByNotSelfInter(JSONObject geojson, Geometry gscGeo) throws Exception {
 		// 立交点的坐标
 		double lon = gscGeo.getCoordinate().x;
 
@@ -63,10 +61,8 @@ public class RdGscOperateUtils {
 					}
 				}
 				// 交点在线段上
-				else if (GeoTranslator.isIntersection(
-						new double[] { jaPS.getDouble(0), jaPS.getDouble(1) },
-						new double[] { jaPE.getDouble(0), jaPE.getDouble(1) },
-						new double[] { lon, lat })) {
+				else if (GeoTranslator.isIntersection(new double[] { jaPS.getDouble(0), jaPS.getDouble(1) },
+						new double[] { jaPE.getDouble(0), jaPE.getDouble(1) }, new double[] { lon, lat })) {
 					ja1.add(jaPS);
 
 					ja1.add(new double[] { lon, lat });
@@ -91,8 +87,7 @@ public class RdGscOperateUtils {
 		return ja1;
 	}
 
-	public static JSONArray calCoordinateBySelfInter(JSONObject geojson,
-			Geometry gscGeo) throws Exception {
+	public static JSONArray calCoordinateBySelfInter(JSONObject geojson, Geometry gscGeo) throws Exception {
 
 		// 立交点的坐标
 		double lon = gscGeo.getCoordinate().x;
@@ -112,8 +107,7 @@ public class RdGscOperateUtils {
 			// 判断点是否在线段上
 			boolean isIntersection = GeoTranslator.isIntersectionInLine(
 					new double[] { jaPS.getDouble(0), jaPS.getDouble(1) },
-					new double[] { jaPE.getDouble(0), jaPE.getDouble(1) },
-					new double[] { lon, lat });
+					new double[] { jaPE.getDouble(0), jaPE.getDouble(1) }, new double[] { lon, lat });
 
 			// 交点和形状点重合
 			if (lon == jaPS.getDouble(0) && lat == jaPS.getDouble(1)) {
@@ -148,8 +142,7 @@ public class RdGscOperateUtils {
 	 *            lin的形状点数组
 	 * @return int类型序号
 	 */
-	public static List<Integer> calcShpSeqNum(Geometry gscGeo,
-			Coordinate[] linkCoors) {
+	public static List<Integer> calcShpSeqNum(Geometry gscGeo, Coordinate[] linkCoors) {
 
 		List<Integer> shpSeqNum = new ArrayList<>();
 
@@ -221,8 +214,8 @@ public class RdGscOperateUtils {
 	 * @param result
 	 * @throws Exception
 	 */
-	public static void handleInterEffect(boolean flag, RdGsc gsc,
-			Coordinate[] linkCoor, Result result) throws Exception {
+	public static void handleInterEffect(boolean flag, RdGsc gsc, Coordinate[] linkCoor, Result result)
+			throws Exception {
 		for (IRow gscLink : gsc.getLinks()) {
 
 			RdGscLink link = (RdGscLink) gscLink;
@@ -247,8 +240,8 @@ public class RdGscOperateUtils {
 	 * @return 打断点在立交组成link上的位置
 	 * @throws Exception
 	 */
-	public static int calCoordinateBySelfInter(JSONObject geojson,
-			Geometry gscGeo, Geometry breakPoint) throws Exception {
+	public static int calCoordinateBySelfInter(JSONObject geojson, Geometry gscGeo, Geometry breakPoint)
+			throws Exception {
 
 		int result = -1;
 
@@ -282,10 +275,8 @@ public class RdGscOperateUtils {
 			JSONArray jaPE = jaLink.getJSONArray(i + 1);
 
 			// 判断点是否在线段上
-			boolean isIntersection = GeoTranslator.isIntersection(new double[] {
-					jaPS.getDouble(0), jaPS.getDouble(1) },
-					new double[] { jaPE.getDouble(0), jaPE.getDouble(1) },
-					new double[] { breakLon, breakLat });
+			boolean isIntersection = GeoTranslator.isIntersection(new double[] { jaPS.getDouble(0), jaPS.getDouble(1) },
+					new double[] { jaPE.getDouble(0), jaPE.getDouble(1) }, new double[] { breakLon, breakLat });
 
 			if (isIntersection) {
 				if (!hasFisrtFound) {
@@ -318,9 +309,8 @@ public class RdGscOperateUtils {
 	 * @return lever和link map对象
 	 * @throws Exception
 	 */
-	public static Map<Integer, IRow> handleLink(
-			Map<Integer, RdGscLink> gscLinkMap,
-			List<Geometry> linksGeometryList, Connection conn) throws Exception {
+	public static Map<Integer, IRow> handleLink(Map<Integer, RdGscLink> gscLinkMap, List<Geometry> linksGeometryList,
+			Connection conn) throws Exception {
 
 		Map<Integer, IRow> linkMap = new HashMap<>();
 
@@ -400,8 +390,7 @@ public class RdGscOperateUtils {
 	 * @return 新的link的形状点
 	 * @throws Exception
 	 */
-	public static JSONObject updateLinkGeo(RdGscLink rdGscLink,
-			Geometry linkGeo, Geometry gscGeo) throws Exception {
+	public static JSONObject updateLinkGeo(RdGscLink rdGscLink, Geometry linkGeo, Geometry gscGeo) throws Exception {
 
 		// link的几何
 		JSONObject geojson = GeoTranslator.jts2Geojson(linkGeo);
@@ -419,13 +408,11 @@ public class RdGscOperateUtils {
 		JSONObject updateContent = new JSONObject();
 
 		// 新的link的几何
-		JSONObject geoJson = GeoTranslator.jts2Geojson(
-				GeoTranslator.geojson2Jts(geojson1), 0.00001, 5);
+		JSONObject geoJson = GeoTranslator.jts2Geojson(GeoTranslator.geojson2Jts(geojson1), 0.00001, 5);
 
 		updateContent.put("geometry", geoJson);
 
-		Coordinate[] linkCoor = GeoTranslator.geojson2Jts(geoJson, 100000, 0)
-				.getCoordinates();
+		Coordinate[] linkCoor = GeoTranslator.geojson2Jts(geoJson, 100000, 0).getCoordinates();
 
 		// 获取link起终点标识
 		int startEndFlag = GeometryUtils.getStartOrEndType(linkCoor, gscGeo);
@@ -438,8 +425,7 @@ public class RdGscOperateUtils {
 		} else if (startEndFlag == 2) {
 			rdGscLink.setShpSeqNum(linkCoor.length - 1);
 		} else {
-			List<Integer> shpSeqNumList = RdGscOperateUtils.calcShpSeqNum(
-					gscGeo, linkCoor);
+			List<Integer> shpSeqNumList = RdGscOperateUtils.calcShpSeqNum(gscGeo, linkCoor);
 			rdGscLink.setShpSeqNum(shpSeqNumList.get(0));
 		}
 		return geoJson;
@@ -456,13 +442,12 @@ public class RdGscOperateUtils {
 	 * @return 新的link的形状点
 	 * @throws Exception
 	 */
-	public static JSONObject updateLinkGeoBySelf(RdGscLink rdGscLink,
-			Geometry linkGeo, Geometry gscGeo) throws Exception {
+	public static JSONObject updateLinkGeoBySelf(RdGscLink rdGscLink, Geometry linkGeo, Geometry gscGeo)
+			throws Exception {
 		// link的几何
 		JSONObject geojson = GeoTranslator.jts2Geojson(linkGeo);
 
-		JSONArray ja1 = RdGscOperateUtils.calCoordinateBySelfInter(geojson,
-				gscGeo);
+		JSONArray ja1 = RdGscOperateUtils.calCoordinateBySelfInter(geojson, gscGeo);
 
 		JSONObject geojson1 = new JSONObject();
 
@@ -473,8 +458,7 @@ public class RdGscOperateUtils {
 		JSONObject updateContent = new JSONObject();
 
 		// 新的link的几何
-		JSONObject geoJson = GeoTranslator.jts2Geojson(
-				GeoTranslator.geojson2Jts(geojson1), 0.00001, 5);
+		JSONObject geoJson = GeoTranslator.jts2Geojson(GeoTranslator.geojson2Jts(geojson1), 0.00001, 5);
 
 		updateContent.put("geometry", geoJson);
 
@@ -490,8 +474,7 @@ public class RdGscOperateUtils {
 	 * @param linkCoor
 	 * @throws Exception
 	 */
-	public static void calShpSeqNum(RdGscLink rdGscLink, Geometry gscGeo,
-			Coordinate[] linkCoor) throws Exception {
+	public static void calShpSeqNum(RdGscLink rdGscLink, Geometry gscGeo, Coordinate[] linkCoor) throws Exception {
 		List<Integer> shpSeqNumList = null;
 
 		// 获取link起终点标识
@@ -520,27 +503,47 @@ public class RdGscOperateUtils {
 	 * 检查线上是否已经在已知点位存在立交点
 	 * 
 	 * @param gscGeo
-	 * @param linkPidList
+	 * @param collection
+	 *            立交组成线的对象集合
 	 * @param conn
 	 * @return boolean
 	 * @throws Exception
 	 */
-	public static boolean checkIsHasGsc(Geometry gscGeo,
-			List<Integer> linkPidList, Connection conn) throws Exception {
+	public static boolean checkIsHasGsc(Geometry gscGeo, Collection<RdGscLink> collection, Connection conn)
+			throws Exception {
 		boolean flag = false;
 
 		RdGscSelector selector = new RdGscSelector(conn);
 
-		List<RdGsc> rdGscList = selector.loadRdGscByInterLinkPids(linkPidList,
-				false);
-
-		for (RdGsc gsc : rdGscList) {
-			if (gsc.getGeometry().equals(gscGeo)) {
-				flag = true;
-				break;
+		for (RdGscLink gscLink : collection) {
+			List<RdGsc> rdGscList = selector.loadRdGscLinkByLinkPid(gscLink.getLinkPid(), gscLink.getTableName(), true);
+			for (RdGsc gsc : rdGscList) {
+				if (gsc.getGeometry().equals(gscGeo)) {
+					return true;
+				}
 			}
 		}
+
 		return flag;
+	}
+
+	/**
+	 * 判断移动的形状点是否是立交点位
+	 * 
+	 */
+	public static void checkIsMoveGscPoint(JSONObject linkGeo, Connection conn, int linkPid,String tableName) throws Exception {
+
+		Geometry geo = GeoTranslator.geojson2Jts(linkGeo, 100000, 0);
+
+		RdGscSelector selector = new RdGscSelector(conn);
+
+		List<RdGsc> rdGscList = selector.onlyLoadRdGscLinkByLinkPid(linkPid, tableName, true);
+
+		boolean flag = isMoveGscLink(geo, rdGscList);
+
+		if (flag) {
+			throw new Exception("不允许去除有立交关系的形状点");
+		}
 	}
 
 	/**
@@ -553,35 +556,11 @@ public class RdGscOperateUtils {
 	 * @return T/F
 	 */
 	public static boolean isMoveGscLink(Geometry linkGeo, List<RdGsc> gscList) {
-		boolean flag = false;
 
-		for (RdGsc rdGsc : gscList) {
-			if (rdGsc.getGeometry().distance(linkGeo) > 1) {
-				flag = true;
-				break;
-			}
-		}
-
-		return flag;
-	}
-
-	/**
-	 * 判断移动的形状点是否是立交点位
-	 * 
-	 * @param linkGeo
-	 *            立交组成线
-	 * @param gscList
-	 *            立交集
-	 * @return T/F
-	 */
-	public static boolean isMoveGscLink(Geometry linkGeo, List<RdGsc> gscList,
-			String tableName, int linkPid) {
-
-		if(gscList.size()==0)
-		{
+		if (gscList.size() == 0) {
 			return false;
 		}
-		
+
 		for (RdGsc rdGsc : gscList) {
 
 			Coordinate[] coordinates = linkGeo.getCoordinates();

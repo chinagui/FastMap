@@ -6,13 +6,18 @@ import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
 
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.AlertObject;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameLinkPart;
 import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameNode;
 import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameNodePart;
+import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.same.RdSameLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.same.RdSameNodeSelector;
 
 /**
@@ -144,5 +149,111 @@ public class Operation implements IOperation {
 		}
 
 		return alertList;
+	}
+	
+	public void deleteByUpDownPartLink(int sNodePid, int eNodePid,
+			List<RdLink> targetLinks, Result result) throws Exception {
+		// 目标link之间的挂接node
+		List<Integer> nodePids = new ArrayList<Integer>();
+
+		// 目标linkPid
+		List<Integer> targetLinkPids = new ArrayList<Integer>();
+
+		for (RdLink link : targetLinks) {
+
+			if (!targetLinkPids.contains(link.getPid())) {
+				targetLinkPids.add(link.getPid());
+			}
+
+			if (!nodePids.contains(link.getsNodePid())) {
+
+				nodePids.add(link.getsNodePid());
+			}
+
+			if (!nodePids.contains(link.geteNodePid())) {
+
+				nodePids.add(link.geteNodePid());
+			}
+
+			// 过滤端点
+			if (nodePids.contains(sNodePid)) {
+				nodePids.remove(sNodePid);
+			}
+
+			if (nodePids.contains(eNodePid)) {
+				nodePids.remove(eNodePid);
+			}
+		}
+		
+		List<RdSameNode> delSameNodes =new  ArrayList<RdSameNode>();
+		
+		RdSameNodeSelector sameNodeSelector = new RdSameNodeSelector(conn);
+		
+		if (nodePids.size() > 0) {
+			
+			String ids = StringUtils.getInteStr(nodePids);			
+
+			// 目标link串中间点上的同一点关系全部删除；
+			delSameNodes = sameNodeSelector.loadSameNodeByNodePids(ids,
+					"RD_NODE", true);
+		}
+
+		// 目标link串的两个端点如果有同一点关系，若该点参与的同一node关系组中的所有node挂接的link中均不参与另一同一线关系，则删除该同一点；
+		List<RdSameNode> sameNodes = sameNodeSelector.loadSameNodeByNodePids(
+				String.valueOf(sNodePid), "RD_NODE", true);
+
+		if (sameNodes.size() > 0) {
+
+			boolean haveSamelink = haveSamelink(sNodePid, targetLinkPids);
+
+			if (!haveSamelink) {
+				delSameNodes.addAll(sameNodes);
+			}
+		}
+
+		sameNodes = sameNodeSelector.loadSameNodeByNodePids(
+				String.valueOf(eNodePid), "RD_NODE", true);
+
+		if (sameNodes.size() > 0) {
+
+			boolean haveSamelink = haveSamelink(eNodePid, targetLinkPids);
+
+			if (!haveSamelink) {
+				delSameNodes.addAll(sameNodes);
+			}
+		}
+
+		for (RdSameNode sameNode : sameNodes) {
+
+			result.insertObject(sameNode, ObjStatus.DELETE, sameNode.getPid());
+		}
+	}
+
+	private boolean haveSamelink(int nodePid, List<Integer> targetLinkPids)
+			throws Exception {
+		
+		RdLinkSelector linkSelector = new RdLinkSelector(this.conn);
+
+		RdSameLinkSelector sameLinkSelector = new RdSameLinkSelector(this.conn);
+
+		List<Integer> linkPids = linkSelector.loadLinkPidByNodePid(nodePid,
+				true);
+
+		for (int linkPid : linkPids) {
+
+			if (targetLinkPids.contains(linkPid)) {
+
+				continue;
+			}
+
+			RdSameLinkPart sameLinkPart = sameLinkSelector.loadLinkPartByLink(
+					linkPid, "RD_LINK", true);
+
+			if (sameLinkPart != null) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 }

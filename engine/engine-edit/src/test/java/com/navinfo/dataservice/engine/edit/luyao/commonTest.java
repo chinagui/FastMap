@@ -574,6 +574,28 @@ public class commonTest extends InitApplication {
 		String msg = t.run();
 	}
 	
+	@Test
+	public void run_1010_1() throws Exception {
+
+		ArrayList<Integer> pids=new ArrayList<Integer>();
+		
+		pids.add(1);
+		pids.add(1);
+		pids.add(1);
+		pids.add(1);
+		pids.add(1);
+		
+		pids.add(4);
+		
+	
+		pids.remove(1);
+		
+		pids.add(3);
+		
+		pids.remove(2);
+		
+		pids.add(5);
+	}
 	
 	
 }

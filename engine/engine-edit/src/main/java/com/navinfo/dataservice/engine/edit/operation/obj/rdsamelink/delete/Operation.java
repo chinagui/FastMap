@@ -12,6 +12,7 @@ import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameLink;
 import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameLinkPart;
+import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.same.RdSameLinkSelector;
 
 public class Operation implements IOperation {
@@ -76,29 +77,85 @@ public class Operation implements IOperation {
 
 	}
 
-	public void deleteByUpDownPartLink(List<RdLink> deleteLinks, Result result)
-			throws Exception {
+	/**
+	 * a) 目标link串上的同一线关系全部删除
+	 * b) 目标link串中间点上挂接的线的同一线关系全部删除
+	 * @param sNodePid
+	 * @param eNodePid
+	 * @param targetLinks
+	 * @param result
+	 * @throws Exception
+	 */
+	public void deleteByUpDownPartLink(int sNodePid, int eNodePid,
+			List<RdLink> targetLinks, Result result) throws Exception {
+		
+		//关联linkPid
+		List<Integer> relationLinkPids = new ArrayList<Integer>();
+	
+		//目标link之间的挂接node
+		List<Integer> nodePids= new ArrayList<Integer>();
+		
+		for (RdLink link : targetLinks) {
+			
+			if (!relationLinkPids.contains(link.getPid())) {
+				
+				relationLinkPids.add(link.getPid());
+			}
 
+			if (!nodePids.contains(link.getsNodePid())) {
+
+				nodePids.add(link.getsNodePid());
+			}
+
+			if (!nodePids.contains(link.geteNodePid())) {
+
+				nodePids.add(link.geteNodePid());
+			}
+
+			// 过滤端点
+			if (nodePids.contains(sNodePid)) {
+				nodePids.remove(sNodePid);
+			}
+
+			if (nodePids.contains(eNodePid)) {
+				nodePids.remove(eNodePid);
+			}
+		}
+
+		if (nodePids.size() > 0) {
+			
+			RdLinkSelector linkSelector = new RdLinkSelector(this.conn);
+
+			List<RdLink> links = linkSelector.loadByNodePids(nodePids,
+					true);
+
+			for (RdLink link : links) {
+
+				if (!relationLinkPids.contains(link.getPid())) {
+					
+					relationLinkPids.add(link.getPid());
+				}
+			}
+		}
+		
 		List<Integer> groupIds = new ArrayList<Integer>();
 
 		RdSameLinkSelector sameLinkSelector = new RdSameLinkSelector(this.conn);
 
-		for (RdLink deleteLink : deleteLinks) {
-
-			String tableName = deleteLink.parentTableName().toUpperCase();
-
+		for (int linkPid : relationLinkPids) {
+		
 			RdSameLinkPart sameLinkPart = sameLinkSelector.loadLinkPartByLink(
-					deleteLink.parentPKValue(), tableName, true);
+					linkPid, "RD_LINK", true);
 
 			if (sameLinkPart == null) {
-				return;
+				
+				continue;
 			}
 
 			if (!groupIds.contains(sameLinkPart.getGroupId())) {
 
 				groupIds.add(sameLinkPart.getGroupId());
 			}
-
 		}
 
 		List<IRow> sameLinkRows = sameLinkSelector.loadByIds(groupIds, true,
@@ -110,7 +167,6 @@ public class Operation implements IOperation {
 
 			delete(result, sameLink);
 		}
-
 	}
 	
 	/**

@@ -15,9 +15,15 @@ public class OpRefRelationObj {
     // 同一线
     public String handleSameLink(Command command, Result result) throws Exception {
         com.navinfo.dataservice.engine.edit.operation.obj.rdsamelink.delete.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdsamelink.delete.Operation(conn);
-        operation.deleteByUpDownPartLink(command.getLinks(), result);
-        return null;
+        operation.deleteByUpDownPartLink(command.getsNode().getPid(),command.geteNode().getPid(),command.getLinks(), result);
+        return "";
     }
+    // 同一点
+    public String handleSameNode(Command command, Result result) throws Exception {
+        com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.delete.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.delete.Operation(conn);
+        operation.deleteByUpDownPartLink(command.getsNode().getPid(),command.geteNode().getPid(),command.getLinks(), result);
+        return "";
+    }    
 
     // 警示信息
     public String handlerdWarninginfo(Command command, Result result) throws Exception {

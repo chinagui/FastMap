@@ -259,6 +259,8 @@ public class RdVariableSpeedSelector extends AbstractSelector {
      */
     public List<RdVariableSpeed> loadRdVariableSpeedByNodePids(List<Integer> nodePids, boolean isLock) throws Exception {
         List<RdVariableSpeed> rdVariableSpeeds = new ArrayList<>();
+        if (nodePids.isEmpty())
+            return rdVariableSpeeds;
         PreparedStatement pstmt = null;
         ResultSet resultSet = null;
         try {

@@ -272,6 +272,8 @@ public class RdSlopeSelector extends AbstractSelector {
     public List<RdSlope> loadByNodePids(Collection<Integer> nodePids, boolean isLock)
             throws Exception {
         List<RdSlope> rows = new ArrayList<RdSlope>();
+        if (nodePids.isEmpty())
+            return rows;
 
         StringBuffer sb = new StringBuffer();
         Iterator<Integer> it = nodePids.iterator();

@@ -94,6 +94,8 @@ public class RdSpeedbumpSelector extends AbstractSelector {
 
     public List<RdSpeedbump> loadByNodePids(Collection<Integer> pids, boolean isLock) throws Exception {
         List<RdSpeedbump> speedbumps = new ArrayList<RdSpeedbump>();
+        if (pids.isEmpty())
+            return speedbumps;
         StringBuffer sb = new StringBuffer();
         Iterator<Integer> it = pids.iterator();
         while (it.hasNext()) {

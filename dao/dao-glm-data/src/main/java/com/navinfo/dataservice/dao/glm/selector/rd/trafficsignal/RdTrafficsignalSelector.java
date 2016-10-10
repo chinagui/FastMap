@@ -195,6 +195,8 @@ public class RdTrafficsignalSelector extends AbstractSelector {
      */
     public List<RdTrafficsignal> loadByNodePids(Collection<Integer> nodePids, boolean isLock) throws Exception {
         List<RdTrafficsignal> rows = new ArrayList<RdTrafficsignal>();
+        if (nodePids.isEmpty())
+            return rows;
         Iterator<Integer> it = nodePids.iterator();
         StringBuffer buffer = new StringBuffer();
         while (it.hasNext()) {

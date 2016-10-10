@@ -81,7 +81,11 @@ public class Operation implements IOperation {
 		RdNode sNode = this.getStartAndEndNode(links, 0);
 		
 		command.setsNode(sNode);
+		
 		RdNode eNode = this.getStartAndEndNode(links, 1);
+		
+		command.seteNode(eNode);
+		
 		LineString[] lines = CompPolylineUtil.separate(sPoint, lineStrings,
 				command.getDistance());
 
@@ -639,6 +643,8 @@ public class Operation implements IOperation {
 		opRefRelationObj.handlerdWarninginfo(this.command, result);
 
 		opRefRelationObj.handleSameLink(this.command, result);
+		
+		opRefRelationObj.handleSameNode(this.command, result);
 
 		opRefRelationObj.handlerdSpeedlimit(this.command, result);
 

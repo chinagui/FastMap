@@ -160,12 +160,17 @@ public class Operation implements IOperation {
 		int inLaneInfo = 0;
 
 		int size = dirs.size();
-
+		
 		for (int i = 0; i < size; i++) {
+			
 			Set<Integer> set = dirs.get(i);
 
 			if (set.contains(reachDir)) {
+
 				inLaneInfo += Math.pow(2, size - 1 - i);
+
+				inLaneInfo = inLaneInfo << (16 - size); // 向 左补位至16位
+				
 			}
 		}
 

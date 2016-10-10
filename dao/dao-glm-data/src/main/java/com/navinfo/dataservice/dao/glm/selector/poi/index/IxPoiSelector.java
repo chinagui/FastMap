@@ -41,6 +41,7 @@ public class IxPoiSelector extends AbstractSelector {
 
 	/**
 	 * @zhaokk 查询poi列表值
+	 * 20161010修改 by jch,1）去掉官方原始查询条件；2）删除poi可见
 	 * @param isLock
 	 * @param pid
 	 * @param pidName
@@ -69,10 +70,13 @@ public class IxPoiSelector extends AbstractSelector {
 		buffer.append(" ip.pid,ip.kind_code,ps.status, 0 as freshness_vefication,ipn.name,ip.geometry,ip.collect_time,ip.u_record ");
 		buffer.append(" FROM ix_poi ip, ix_poi_name ipn, poi_edit_status ps ");
 		buffer.append(" WHERE     ip.pid = ipn.poi_pid and ip.row_id = ps.row_id ");
-		buffer.append(" AND lang_code = 'CHI'");
-		buffer.append(" AND ipn.name_type = 2 ");
-		buffer.append(" AND ip.u_record != 2 ");
-		buffer.append(" AND name_class = 1");
+		
+		if (StringUtils.isNotBlank(pidName)) {
+			buffer.append(" AND lang_code = 'CHI'");
+			buffer.append(" AND ipn.name_type = 2 ");
+			buffer.append(" AND name_class = 1");
+		}
+		
 		buffer.append(" AND ps.status = " + type + "");
 		buffer.append(" AND sdo_within_distance(ip.geometry, sdo_geometry(    '"
 				+ g + "'  , 8307), 'mask=anyinteract') = 'TRUE' ");

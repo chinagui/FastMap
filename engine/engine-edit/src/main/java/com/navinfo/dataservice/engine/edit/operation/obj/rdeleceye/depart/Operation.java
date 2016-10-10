@@ -116,8 +116,13 @@ public class Operation {
             if (rdElectroniceyeMap.containsKey(link.getPid())) {
                 List<RdElectroniceye> rdElectroniceyeList = rdElectroniceyeMap.get(link.getPid());
                 for (RdElectroniceye rdElectroniceye : rdElectroniceyeList) {
-                    // 电子眼为逆方向则关联link为右线
-                    updateRdElectroniceye(rightLink, rdElectroniceye, result);
+                    int direct = rdElectroniceye.getDirect();
+                    if (2 == direct)
+                        // 电子眼为顺方向则关联link为右线
+                        updateRdElectroniceye(rightLink, rdElectroniceye, result);
+                    else if (3 == direct)
+                        // 电子眼为逆方向则关联link为左线
+                        updateRdElectroniceye(leftLink, rdElectroniceye, result);
                 }
             }
         }

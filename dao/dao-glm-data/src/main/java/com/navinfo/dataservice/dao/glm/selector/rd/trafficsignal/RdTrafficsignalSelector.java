@@ -210,7 +210,10 @@ public class RdTrafficsignalSelector extends AbstractSelector {
             while (it.hasNext()) {
                 buffer.append(it.next()).append(",");
             }
-            pstmt.setString(1, buffer.substring(1, buffer.length() - 1));
+            if (buffer.length() > 0)
+                pstmt.setString(1, buffer.substring(1, buffer.length() - 1));
+            else
+                pstmt.setString(1, "");
             resultSet = pstmt.executeQuery();
             while (resultSet.next()) {
                 RdTrafficsignal rdTrafficsignal = new RdTrafficsignal();

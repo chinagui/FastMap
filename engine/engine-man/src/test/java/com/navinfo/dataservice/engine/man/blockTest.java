@@ -80,7 +80,7 @@ public class blockTest extends InitApplication{
 
         Subtask bean = (Subtask)JSONObject.toBean(dataJson, Subtask.class);
         
-        Page page = SubtaskService.getInstance().listByUserPage(bean,snapshot,pageSize,curPageNum);
+        Page page = SubtaskService.getInstance().listByUserPage(bean,snapshot,1,pageSize,curPageNum);
         
 		System.out.println(page.getResult().toString());
 	}

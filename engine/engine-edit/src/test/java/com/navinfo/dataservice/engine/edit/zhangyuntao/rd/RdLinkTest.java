@@ -94,7 +94,7 @@ public class RdLinkTest extends InitApplication {
     @Test
     public void updownDepart(){
         String parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"dbId\":17,\"distance\":\"6.6\",\"data\":{\"linkPids\":[209000217]}}";
-        parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"dbId\":17,\"distance\":\"21.9\",\"data\":{\"linkPids\":[19613156,19613157,574068,49101300,49101302,49101303,564779,19613158]}}";
+        parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"dbId\":17,\"distance\":\"15.1\",\"data\":{\"linkPids\":[204000239]}}";
         TestUtil.run(parameter);
     }
 }

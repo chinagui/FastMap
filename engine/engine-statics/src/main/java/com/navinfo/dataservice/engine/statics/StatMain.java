@@ -38,6 +38,10 @@ public class StatMain {
 	private static final String flag_season_road = "sr";
 	// 统计预期图
 	private static final String flag_expect_stat="es";
+	//统计结果库
+	public static final String col_name_subtask = "fm_stat_collect_overview_subtask";
+	public static final String col_name_blockman = "fm_stat_collect_overview_blockman";
+	public static final String col_name_task = "fm_stat_collect_overview_task";
 	
 	/**
 	 * @param args

@@ -224,7 +224,7 @@ public class RdLinkOperateUtils {
 				String meshIdStr = it.next();
 				Geometry geomInter = MeshUtils.linkInterMeshPolygon(link.getGeometry(), MeshUtils.mesh2Jts(meshIdStr));
 				geomInter = GeoTranslator.geojson2Jts(GeoTranslator.jts2Geojson(geomInter), 1, 5);
-				createRdLinkWithMesh(geomInter, maps, sourceLink, result, links);
+				createRdLinkWithMeshNoResult(geomInter, maps, sourceLink, result, links);
 
 			}
 		}
@@ -245,9 +245,24 @@ public class RdLinkOperateUtils {
 			}
 		}
 	}
+	
+	public static void createRdLinkWithMeshNoResult(Geometry g, Map<Coordinate, Integer> maps, RdLink sourceLink, Result result,
+			List<RdLink> links) throws Exception {
+		if (g != null) {
+			if (g.getGeometryType() == GeometryTypeName.LINESTRING) {
+				calRdLinkWithMeshNoResult(g, maps, sourceLink, result, links);
+			}
+			if (g.getGeometryType() == GeometryTypeName.MULTILINESTRING) {
+				for (int i = 0; i < g.getNumGeometries(); i++) {
+					calRdLinkWithMeshNoResult(g.getGeometryN(i), maps, sourceLink, result, links);
+				}
+
+			}
+		}
+	}
 
 	/*
-	 * 创建行政区划线 针对跨图幅创建图廓点不能重复
+	 * 创建道路线线 针对跨图幅创建图廓点不能重复
 	 */
 	private static void calRdLinkWithMesh(Geometry g, Map<Coordinate, Integer> maps, RdLink sourceLink, Result result,
 			List<RdLink> links) throws Exception {
@@ -280,6 +295,44 @@ public class RdLinkOperateUtils {
 		if (sourceLink != null && sourceLink.getPid() != 0) {
 			links.add((RdLink) addLinkByNoResult(sNode, eNode, link, sourceLink));
 			result.insertObject(link, ObjStatus.INSERT, link.pid());
+		}
+	}
+	
+	
+	
+	/*
+	 * 创建道路线线 针对跨图幅创建图廓点不能重复
+	 */
+	private static void calRdLinkWithMeshNoResult(Geometry g, Map<Coordinate, Integer> maps, RdLink sourceLink, Result result,
+			List<RdLink> links) throws Exception {
+		// 定义创建行政区划线的起始Pid 默认为0
+		int sNodePid = 0;
+		int eNodePid = 0;
+		// 判断新创建的线起点对应的pid是否存在，如果存在取出赋值
+		if (maps.containsKey(g.getCoordinates()[0])) {
+			sNodePid = maps.get(g.getCoordinates()[0]);
+		}
+		// 判断新创建的线终始点对应的pid是否存在，如果存在取出赋值
+		if (maps.containsKey(g.getCoordinates()[g.getCoordinates().length - 1])) {
+			eNodePid = maps.get(g.getCoordinates()[g.getCoordinates().length - 1]);
+		}
+		// 创建线对应的点
+		JSONObject node = createRdNodeForLink(g, sNodePid, eNodePid, result);
+		if (!maps.containsValue(node.get("s"))) {
+			maps.put(g.getCoordinates()[0], (int) node.get("s"));
+		}
+		if (!maps.containsValue(node.get("e"))) {
+			maps.put(g.getCoordinates()[g.getCoordinates().length - 1], (int) node.get("e"));
+		}
+		RdNode sNode = new RdNode();
+		sNode.setPid((int) node.get("s"));
+		RdNode eNode = new RdNode();
+		eNode.setPid((int) node.get("e"));
+		RdLink link = new RdLink();
+		link.setGeometry(g);
+		// 创建线
+		if (sourceLink != null && sourceLink.getPid() != 0) {
+			links.add((RdLink) addLinkByNoResult(sNode, eNode, link, sourceLink));
 		}
 	}
 

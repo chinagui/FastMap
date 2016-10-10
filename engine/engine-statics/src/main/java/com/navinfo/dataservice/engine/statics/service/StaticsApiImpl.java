@@ -76,4 +76,14 @@ public class StaticsApiImpl implements StaticsApi {
 	public List<Integer> getOpen100TaskIdList() throws Exception {
 		return StaticsService.getInstance().getOpen100TaskIdList();
 	}
+
+	/* (non-Javadoc)
+	 * @see com.navinfo.dataservice.api.statics.iface.StaticsApi#getStatBySubtaskIdList(java.util.List)
+	 */
+	@Override
+	public Map<Integer, SubtaskStatInfo> getStatBySubtaskIdList(List<Integer> subtaskIdList) {
+		// TODO Auto-generated method stub
+		return StaticsService.getInstance().getStatBySubtaskIdList(subtaskIdList);
+	}
+
 }

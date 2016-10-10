@@ -27,6 +27,7 @@ import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.rdname.RdNameSelector;
 import com.navinfo.dataservice.engine.edit.operation.Transaction;
 import com.navinfo.dataservice.engine.edit.search.SearchProcess;
+import com.navinfo.dataservice.engine.release.Release;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -347,5 +348,29 @@ public class EditController extends BaseController {
 			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
 	}
-	
+	/**
+	 * road提交 根据所选grid进行road数据的提交
+	 * 
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException
+	 */
+	@RequestMapping(value = "/road/base/release")
+	public ModelAndView getPoiBaseRelease(HttpServletRequest request)
+			throws ServletException, IOException {
+
+		String parameter = request.getParameter("parameter");
+		AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			int subtaskId = jsonReq.getInt("subtaskId");
+			Release release = new Release();
+			release.roadRelease(subtaskId);
+			return new ModelAndView("jsonView", success());
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
 }

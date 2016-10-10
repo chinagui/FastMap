@@ -188,6 +188,7 @@ public class Operation implements IOperation {
 		RdLink innerLink =  new RdLink();
 		innerLink.setsNodePid(sNode.getPid());
 		innerLink.setsNodePid(eNode.getPid());
+		innerLink.setPid(1);
 		innerLink.setGeometry(JtsGeometryFactory.createLineString(coordinates));
 		List<RdLink> links = RdLinkOperateUtils.addRdLink(sNode, eNode, innerLink,
 				innerLink, result);

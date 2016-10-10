@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.variablespeed.RdVariableSpeed;
 import com.navinfo.dataservice.dao.glm.model.rd.variablespeed.RdVariableSpeedVia;
@@ -258,24 +259,20 @@ public class RdVariableSpeedSelector extends AbstractSelector {
      */
     public List<RdVariableSpeed> loadRdVariableSpeedByNodePids(List<Integer> nodePids, boolean isLock) throws Exception {
         List<RdVariableSpeed> rdVariableSpeeds = new ArrayList<>();
+        if (nodePids.isEmpty())
+            return rdVariableSpeeds;
         PreparedStatement pstmt = null;
         ResultSet resultSet = null;
         try {
+            String ids = StringUtils.getInteStr(nodePids);
+            if (ids.length() == 0)
+                ids = "''";
             StringBuilder sb = new StringBuilder(
-                    "select * from RD_VARIABLE_SPEED where u_record !=2 and node_pid in (:1)");
+                    "select * from RD_VARIABLE_SPEED where u_record !=2 and node_pid in (" + ids + ")");
             if (isLock) {
                 sb.append(" for update nowait");
             }
             pstmt = getConn().prepareStatement(sb.toString());
-            StringBuffer buffer = new StringBuffer();
-            Iterator<Integer> it = nodePids.iterator();
-            while (it.hasNext()) {
-                buffer.append(it.next()).append(",");
-            }
-            if (buffer.length() > 0)
-                pstmt.setString(1, buffer.substring(0, buffer.length() - 1));
-            else
-                pstmt.setString(1, "");
             resultSet = pstmt.executeQuery();
             while (resultSet.next()) {
                 RdVariableSpeed rdVariableSpeed = new RdVariableSpeed();

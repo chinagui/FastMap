@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import com.navinfo.dataservice.commons.util.StringUtils;
 import org.apache.commons.dbutils.DbUtils;
 
 import com.navinfo.dataservice.dao.glm.model.rd.speedbump.RdSpeedbump;
@@ -60,7 +61,15 @@ public class RdSpeedbumpSelector extends AbstractSelector {
 
     public List<RdSpeedbump> loadByLinkPids(Collection<Integer> pids, boolean isLock) throws Exception {
         List<RdSpeedbump> speedbumps = new ArrayList<RdSpeedbump>();
-        String sql = "select * from rd_speedbump where link_pid in ( :1 ) and u_record != 2";
+        StringBuffer sb = new StringBuffer();
+        Iterator<Integer> it = pids.iterator();
+        while (it.hasNext()) {
+            sb.append(it.next()).append(",");
+        }
+        String inter = "";
+        if (sb.length() > 0)
+            inter = sb.substring(0, sb.length() - 1);
+        String sql = "select * from rd_speedbump where link_pid in ( " + inter + ") and u_record != 2";
         if (isLock) {
             sql += " for update nowait";
         }
@@ -68,15 +77,6 @@ public class RdSpeedbumpSelector extends AbstractSelector {
         ResultSet resultSet = null;
         try {
             pstmt = conn.prepareStatement(sql);
-            StringBuffer sb = new StringBuffer();
-            Iterator<Integer> it = pids.iterator();
-            while (it.hasNext()) {
-                sb.append(it.next()).append(",");
-            }
-            if (sb.length() > 0)
-                pstmt.setString(1, sb.substring(0, sb.length() - 1));
-            else
-                pstmt.setString(1, "");
             resultSet = pstmt.executeQuery();
             while (resultSet.next()) {
                 RdSpeedbump speedbump = new RdSpeedbump();
@@ -94,7 +94,18 @@ public class RdSpeedbumpSelector extends AbstractSelector {
 
     public List<RdSpeedbump> loadByNodePids(Collection<Integer> pids, boolean isLock) throws Exception {
         List<RdSpeedbump> speedbumps = new ArrayList<RdSpeedbump>();
-        String sql = "select * from rd_speedbump where node_pid in ( :1 ) and u_record != 2";
+        if (pids.isEmpty())
+            return speedbumps;
+        StringBuffer sb = new StringBuffer();
+        Iterator<Integer> it = pids.iterator();
+        while (it.hasNext()) {
+            sb.append(it.next()).append(",");
+        }
+        String inter = "''";
+        if (sb.length() > 0)
+            inter = sb.substring(0, sb.length() - 1);
+
+        String sql = "select * from rd_speedbump where node_pid in ( " + inter + " ) and u_record != 2";
         if (isLock) {
             sql += " for update nowait";
         }
@@ -102,15 +113,6 @@ public class RdSpeedbumpSelector extends AbstractSelector {
         ResultSet resultSet = null;
         try {
             pstmt = conn.prepareStatement(sql);
-            StringBuffer sb = new StringBuffer();
-            Iterator<Integer> it = pids.iterator();
-            while (it.hasNext()) {
-                sb.append(it.next()).append(",");
-            }
-            if (sb.length() > 0)
-                pstmt.setString(1, sb.substring(0, sb.length() - 1));
-            else
-                pstmt.setString(1, "");
             resultSet = pstmt.executeQuery();
             while (resultSet.next()) {
                 RdSpeedbump speedbump = new RdSpeedbump();

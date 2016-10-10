@@ -110,10 +110,10 @@ public class Operation {
             List<IxPoi> pois = selector.loadIxPoiByLinkPid(link.pid(), true);
             // 判断每一个POI与分离后左右线的距离，更新距离近的线为进入线
             for (IxPoi poi : pois) {
-                Coordinate coor = poi.getGeometry().getCoordinate();
-                Coordinate leftCoor = GeometryUtils.GetNearestPointOnLine(coor, leftLink.getGeometry());
+                Coordinate coor = GeoTranslator.transform(poi.getGeometry(), 0.00001, 5).getCoordinate();
+                Coordinate leftCoor = GeometryUtils.GetNearestPointOnLine(coor, GeoTranslator.transform(leftLink.getGeometry(), 0.00001, 5));
                 double leftDistance = GeometryUtils.getDistance(coor, leftCoor);
-                Coordinate rightCoor = GeometryUtils.GetNearestPointOnLine(coor, rightLink.getGeometry());
+                Coordinate rightCoor = GeometryUtils.GetNearestPointOnLine(coor, GeoTranslator.transform(rightLink.getGeometry(), 0.00001, 5));
                 double rightDistance = GeometryUtils.getDistance(coor, rightCoor);
                 int pid = 0;
                 double x = 0, y = 0;
@@ -126,9 +126,10 @@ public class Operation {
                     x = rightCoor.x;
                     y = rightCoor.y;
                 }
+                Geometry poiGeo = GeoTranslator.transform(GeoTranslator.point2Jts(x, y), 1, 5);
                 poi.changedFields().put("linkPid", pid);
-                poi.changedFields().put("xGuide", x);
-                poi.changedFields().put("yGuide", y);
+                poi.changedFields().put("xGuide", poiGeo.getCoordinate().x);
+                poi.changedFields().put("yGuide", poiGeo.getCoordinate().y);
                 result.insertObject(poi, ObjStatus.UPDATE, poi.pid());
             }
         }

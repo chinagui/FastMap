@@ -46,7 +46,7 @@ public class Operation {
             Set<Integer> tmpNodePids = new HashSet<Integer>();
             tmpNodePids.add(link.getsNodePid());
             tmpNodePids.add(link.geteNodePid());
-            List<Integer> nodePids = Arrays.asList(tmpNodePids.toArray(new Integer[]{})).subList(1, tmpNodePids.size() - 1);
+            List<Integer> nodePids = new ArrayList<>(tmpNodePids).subList(1, tmpNodePids.size() - 1);
             slopes.addAll(selector.loadByNodePids(nodePids, true));
             if (!slopes.isEmpty()) {
                 for (RdSlope slope : slopes) {

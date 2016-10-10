@@ -251,6 +251,9 @@ public class RdLinkSearchUtils {
 			cuurentLinkPid = link.getPid();
 			cruuentNodePidDir = (cruuentNodePidDir == link.getsNodePid()) ? link
 					.geteNodePid() : link.getsNodePid();
+			if(link.getsNodePid() ==fristLink.getsNodePid()||link.getsNodePid() ==fristLink.geteNodePid()||link.geteNodePid() ==fristLink.getsNodePid()||link.geteNodePid() ==fristLink.geteNodePid()){
+				break;
+			}
 			if (tracks.size() >= 99 || tracks.contains(link)) {
 				break;
 			}

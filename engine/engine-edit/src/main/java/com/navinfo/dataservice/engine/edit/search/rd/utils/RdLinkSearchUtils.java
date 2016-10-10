@@ -5,12 +5,15 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
 
+import com.google.common.collect.Sets;
 import com.navinfo.dataservice.commons.geom.AngleCalculator;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
@@ -208,16 +211,13 @@ public class RdLinkSearchUtils {
 			int cruuentNodePidDir) throws Exception {
 		RdLinkSelector linkSelector = new RdLinkSelector(conn);
 		List<RdLink> tracks = new ArrayList<RdLink>();
-		int fristNodePid =0;
+		Set<Integer> nodes = new HashSet<Integer>();
+	
 		// 添加当前选中的link
 		RdLink fristLink = (RdLink) linkSelector.loadByIdOnlyRdLink(
 				cuurentLinkPid, true);
-		if(fristLink.getsNodePid() ==cruuentNodePidDir){
-			fristNodePid =fristLink.geteNodePid();
-		}else{
-			fristNodePid =fristLink.getsNodePid();
-		}
-		
+		nodes.add(fristLink.getsNodePid());
+		nodes.add(fristLink.geteNodePid());
 		tracks.add(fristLink);
 		// 查找当前link联通的links
 		List<RdLink> nextLinks = linkSelector.loadTrackLink(cuurentLinkPid,
@@ -258,12 +258,13 @@ public class RdLinkSearchUtils {
 			cuurentLinkPid = link.getPid();
 			cruuentNodePidDir = (cruuentNodePidDir == link.getsNodePid()) ? link
 					.geteNodePid() : link.getsNodePid();
-			if(link.getsNodePid() ==fristNodePid||link.geteNodePid() ==fristNodePid){
+			if(nodes.contains(cruuentNodePidDir)){
 				break;
 			}
 			if (tracks.size() >= 99 || tracks.contains(link)) {
 				break;
 			}
+			nodes.add(cruuentNodePidDir);
 			tracks.add(link);
 			// 赋值查找下一组联通links
 			nextLinks = linkSelector.loadTrackLink(cuurentLinkPid,

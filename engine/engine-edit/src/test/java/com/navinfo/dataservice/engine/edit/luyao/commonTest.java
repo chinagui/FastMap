@@ -574,28 +574,17 @@ public class commonTest extends InitApplication {
 		String msg = t.run();
 	}
 	
-	@Test
+		@Test
 	public void run_1010_1() throws Exception {
 
-		ArrayList<Integer> pids=new ArrayList<Integer>();
-		
-		pids.add(1);
-		pids.add(1);
-		pids.add(1);
-		pids.add(1);
-		pids.add(1);
-		
-		pids.add(4);
-		
-	
-		pids.remove(1);
-		
-		pids.add(3);
-		
-		pids.remove(2);
-		
-		pids.add(5);
+		String parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"dbId\":17,\"distance\":\"6.6\",\"data\":{\"linkPids\":[301000279,206000223]}}";
+
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
 	}
 	
+	
+
 	
 }

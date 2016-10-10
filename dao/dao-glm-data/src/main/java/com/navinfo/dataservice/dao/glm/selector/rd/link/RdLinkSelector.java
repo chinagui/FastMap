@@ -177,26 +177,28 @@ public class RdLinkSelector extends AbstractSelector {
 	/*
 	 * 仅加载主表RDLINK，其他子表若有需要，请单独加载
 	 */
-	private List<RdLink> loadByNodePid(List<Integer> nodePids, boolean isLock) throws Exception {
-
-		String ids = org.apache.commons.lang.StringUtils.join(nodePids, ",");
+	private List<RdLink> loadByNodePid(List<Integer> nodePids, boolean isLock) throws Exception {		
 		
 		List<RdLink> links = new ArrayList<RdLink>();
 
-		StringBuilder sb = new StringBuilder(
-				"SELECT * FROM RD_LINK WHERE S_NODE_PID IN ( ");
+		if (nodePids == null || nodePids.isEmpty()) {
+
+			return links;
+		}
+
+		String ids = org.apache.commons.lang.StringUtils.join(nodePids, ",");
+
+		StringBuilder sb = new StringBuilder("SELECT * FROM RD_LINK WHERE");
+
+		sb.append("( ");
+
+		sb.append(" S_NODE_PID IN ( " + ids + ")" );
 		
-		sb.append(ids);
-		
-		sb.append(" ) AND U_RECORD != 2  ");
-		
-		sb.append(" UNION ALL ");
-		
-		sb.append(" SELECT * FROM RD_LINK WHERE E_NODE_PID IN (  ");
-		
-		sb.append(ids);		
-		
-		sb.append(" ) AND U_RECORD != 2  ");
+		sb.append("  OR  E_NODE_PID IN ( " + ids + ")");
+
+		sb.append(")");
+
+		sb.append(" AND U_RECORD != 2  ");
 		
 		if (isLock) {
 			sb.append(" for update nowait");
@@ -207,11 +209,7 @@ public class RdLinkSelector extends AbstractSelector {
 		ResultSet resultSet = null;
 
 		try {
-			pstmt = conn.prepareStatement(sb.toString());
-
-			pstmt.setString(1, ids);
-
-			pstmt.setString(2, ids);
+			pstmt = conn.prepareStatement(sb.toString());		
 
 			resultSet = pstmt.executeQuery();
 

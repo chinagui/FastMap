@@ -177,11 +177,13 @@ public class Operation implements IOperation {
 
 			// 过滤端点
 			if (nodePids.contains(sNodePid)) {
-				nodePids.remove(sNodePid);
+
+				nodePids.remove((Integer) sNodePid);
 			}
 
 			if (nodePids.contains(eNodePid)) {
-				nodePids.remove(eNodePid);
+
+				nodePids.remove((Integer) eNodePid);
 			}
 		}
 		

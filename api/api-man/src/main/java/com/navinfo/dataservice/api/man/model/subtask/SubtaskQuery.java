@@ -22,8 +22,10 @@ public class SubtaskQuery extends SubtaskListByUser {
 	private String  executer;
 
 	private Integer blockId;
-	private String blockName;
+	private Integer blockManId;
+	private String blockManName;
 	
+	private Integer cityId ;
 	private Integer taskId ;
 	private String taskName;
 	
@@ -42,7 +44,9 @@ public class SubtaskQuery extends SubtaskListByUser {
 			String planEndDate,
 			Integer dbId,
 			Integer blockId,
-			String blockName,
+			Integer blockManId,
+			String blockManName,
+			Integer cityId,
 			Integer taskId,
 			String taskName,
 			String executer,
@@ -56,19 +60,15 @@ public class SubtaskQuery extends SubtaskListByUser {
 		this.executer = executer;
 
 		this.blockId=blockId ;
-		this.blockName = blockName;
+		this.blockManId=blockManId ;
+		this.blockManName = blockManName;
 		
+		this.cityId=cityId ;
 		this.taskId=taskId ;
 		this.taskName = taskName;
 
 		this.percent=percent ;
 		this.version = version;
-	}
-	public String getBlockName(){
-		return blockName;
-	}
-	public void setBlockName(String blockName) {
-		this.blockName = blockName;
 	}
 	public String getTaskName(){
 		return taskName;
@@ -132,6 +132,42 @@ public class SubtaskQuery extends SubtaskListByUser {
 	 */
 	public void setExecuterId(Integer executerId) {
 		this.executerId = executerId;
+	}
+	/**
+	 * @return the blockManId
+	 */
+	public Integer getBlockManId() {
+		return blockManId;
+	}
+	/**
+	 * @param blockManId the blockManId to set
+	 */
+	public void setBlockManId(Integer blockManId) {
+		this.blockManId = blockManId;
+	}
+	/**
+	 * @return the blockManName
+	 */
+	public String getBlockManName() {
+		return blockManName;
+	}
+	/**
+	 * @param blockManName the blockManName to set
+	 */
+	public void setBlockManName(String blockManName) {
+		this.blockManName = blockManName;
+	}
+	/**
+	 * @return the cityId
+	 */
+	public Integer getCityId() {
+		return cityId;
+	}
+	/**
+	 * @param cityId the cityId to set
+	 */
+	public void setCityId(Integer cityId) {
+		this.cityId = cityId;
 	}
 
 

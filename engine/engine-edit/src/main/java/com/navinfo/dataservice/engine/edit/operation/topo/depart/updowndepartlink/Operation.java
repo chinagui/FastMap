@@ -335,12 +335,12 @@ public class Operation implements IOperation {
 					if (linkRtic.getUpdownFlag() == 0) {
 						linkRtics.add(linkRtic);
 					}
-					linkRtic.setRticDir(2);
+					//linkRtic.setRticDir(2);
 				} else {
 					if (linkRtic.getUpdownFlag() == 1) {
 						linkRtics.add(linkRtic);
 					}
-					linkRtic.setRticDir(3);
+					//linkRtic.setRticDir(3);
 
 				}
 			}
@@ -360,12 +360,12 @@ public class Operation implements IOperation {
 					if (linkRtic.getUpdownFlag() == 0) {
 						linkIntRtics.add(linkRtic);
 					}
-					linkRtic.setRticDir(2);
+					//linkRtic.setRticDir(2);
 				} else {
 					if (linkRtic.getUpdownFlag() == 1) {
 						linkIntRtics.add(linkRtic);
 					}
-					linkRtic.setRticDir(3);
+					//linkRtic.setRticDir(3);
 
 				}
 			}

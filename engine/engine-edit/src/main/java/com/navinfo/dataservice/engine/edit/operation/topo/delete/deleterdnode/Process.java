@@ -453,11 +453,8 @@ public class Process extends AbstractProcess<Command> {
 		// 立交
 		List<AlertObject> delGscAlertDataList = new ArrayList<>();
 		com.navinfo.dataservice.engine.edit.operation.obj.rdgsc.delete.Operation rdGscOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdgsc.delete.Operation(
-				null, null);
-		for (RdLink link : links) {
-			int linkPid = link.getPid();
-			delGscAlertDataList.addAll(rdGscOperation.getDeleteRdGscInfectData(linkPid, conn));
-		}
+				conn);
+		delGscAlertDataList.addAll(rdGscOperation.getDeleteRdGscInfectData(links));
 		if (CollectionUtils.isNotEmpty(delGscAlertDataList)) {
 			infects.put("删除link维护立交", delGscAlertDataList);
 		}

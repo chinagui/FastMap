@@ -52,7 +52,10 @@ public class OpTopo implements IOperation {
 
 		List<AlertObject> alertList = new ArrayList<>();
 
-		alertList.add(alertObj);
+		if(!alertList.contains(alertObj))
+		{
+			alertList.add(alertObj);
+		}
 
 		return alertList;
 	}
@@ -73,7 +76,10 @@ public class OpTopo implements IOperation {
 
 			alertObj.setStatus(ObjStatus.DELETE);
 
-			alertList.add(alertObj);
+			if(!alertList.contains(alertObj))
+			{
+				alertList.add(alertObj);
+			}
 		}
 
 		return alertList;

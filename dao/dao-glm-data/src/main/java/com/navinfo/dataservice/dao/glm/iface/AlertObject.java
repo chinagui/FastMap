@@ -3,8 +3,6 @@
  */
 package com.navinfo.dataservice.dao.glm.iface;
 
-import com.navinfo.dataservice.commons.util.JsonUtils;
-
 import net.sf.json.JSONObject;
 
 /** 
@@ -52,5 +50,26 @@ public class AlertObject {
 		JSONObject json = JSONObject.fromObject(this);
 
 		return json;
+	}
+
+	@Override
+	public boolean equals(Object obj){
+		if(obj instanceof AlertObject)
+		{
+			AlertObject compAlert = (AlertObject) obj;
+			
+			if(compAlert.getPid() == this.getPid() && compAlert.getObjType().equals(this.getObjType()) && compAlert.getStatus().equals(this.getStatus()))
+			{
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+		else
+		{
+			return false;
+		}
 	}
 }

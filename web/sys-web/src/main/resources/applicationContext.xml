@@ -36,28 +36,28 @@
 	
 	<websocket:handlers>
 		<websocket:mapping 	path="/sysMsg/webSocketServer" handler="sysMsgWebSocketHandler"/>
-		<!-- ÎÕÊÖÐ­Òé½Ó¿Ú --> 
+		<!-- ï¿½ï¿½ï¿½ï¿½Ð­ï¿½ï¿½Ó¿ï¿½ --> 
 		<websocket:handshake-interceptors>
 			<bean class="com.navinfo.dataservice.web.sys.websocket.WebSocketHandshakeInterceptor"></bean>
 		</websocket:handshake-interceptors>
 	</websocket:handlers>
 	
-	<!-- sockjsÐ­Òé -->
+	<!-- sockjsÐ­ï¿½ï¿½ -->
 	<websocket:handlers >
 		<websocket:mapping 	path="/sysMsg/sockjs/webSocketServer" handler="sysMsgWebSocketHandler"/>
-		<!-- ÎÕÊÖÐ­Òé½Ó¿Ú --> 
+		<!-- ï¿½ï¿½ï¿½ï¿½Ð­ï¿½ï¿½Ó¿ï¿½ --> 
 		<websocket:handshake-interceptors>
 			<bean class="com.navinfo.dataservice.web.sys.websocket.WebSocketHandshakeInterceptor"></bean>
 		</websocket:handshake-interceptors>
-		<!-- sockjs ÆôÓÃ±êÖ¾-->
+		<!-- sockjs ï¿½ï¿½ï¿½Ã±ï¿½Ö¾-->
 		<websocket:sockjs/>
 	</websocket:handlers>
 	
 	<!-- stomp and message broker config start -->
-	<!-- /app Îªcotroller ´¦ÀíµÄÇ°×º-->
+	<!-- /app Îªcotroller ï¿½ï¿½ï¿½ï¿½ï¿½Ç°×º-->
 	<websocket:message-broker application-destination-prefix="/app">
-		<!-- websocket µ×²ãÁ¬½ÓµØÖ· -->
-		<!-- websocket µ×²ãÁ¬½ÓµØÖ· Ê¹ÓÃstompÊÇÊ¹ÓÃ¸ÃÂ·¾¶"/sysMsg"" -->
+		<!-- websocket ï¿½×²ï¿½ï¿½ï¿½ï¿½Óµï¿½Ö· -->
+		<!-- websocket ï¿½×²ï¿½ï¿½ï¿½ï¿½Óµï¿½Ö· Ê¹ï¿½ï¿½stompï¿½ï¿½Ê¹ï¿½Ã¸ï¿½Â·ï¿½ï¿½"/sysMsg"" -->
 		<websocket:stomp-endpoint path="/sysMsg">
 			<websocket:sockjs />
 		</websocket:stomp-endpoint>

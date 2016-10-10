@@ -118,7 +118,7 @@ public class Operation implements IOperation {
 	 * @throws Exception
 	 */
 	private void createGsc() throws Exception {
-		
+
 		Geometry gscGeo = checkHasInter(interGeometry);
 
 		RdGsc rdGsc = RdGscOperateUtils.addRdGsc(gscGeo);
@@ -140,6 +140,10 @@ public class Operation implements IOperation {
 			updateLinkGeo(gscLink, row, gscGeo);
 
 			if (!gscLink.changedFields().isEmpty()) {
+				int seqNum = (int) gscLink.changedFields().get("shpSeqNum");
+
+				gscLink.setShpSeqNum(seqNum);
+
 				result.insertObject(gscLink, ObjStatus.INSERT, gscLink.getPid());
 			}
 		}
@@ -165,7 +169,7 @@ public class Operation implements IOperation {
 
 			// 立交组成线和矩形框交点
 			gscGeo = interGeo.intersection(spatial);
-			
+
 			// 立交检查：1.点位是否重复 2.是否和矩形框有交点
 			check.checkGsc(gscGeo, command.getLinkMap());
 
@@ -249,7 +253,7 @@ public class Operation implements IOperation {
 			if (changed) {
 				result.insertObject(linkObj, ObjStatus.UPDATE, linkObj.pid());
 			}
-			
+
 			linkCoor = GeoTranslator.geojson2Jts(jsonObj, 100000, 0).getCoordinates();
 
 		}
@@ -273,10 +277,8 @@ public class Operation implements IOperation {
 	private JSONObject calcLinkGeo(RdGscLink gscLink, Geometry geometry, Geometry gscGeo) throws Exception {
 		JSONObject jsonObj = null;
 
-		if (isSelfGsc && !selfGscHasUpdate) {
+		if (isSelfGsc) {
 			jsonObj = RdGscOperateUtils.updateLinkGeoBySelf(gscLink, geometry, gscGeo);
-
-			selfGscHasUpdate = true;
 		} else {
 			jsonObj = RdGscOperateUtils.updateLinkGeo(gscLink, geometry, gscGeo);
 		}

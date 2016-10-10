@@ -391,7 +391,7 @@ public class IxPoiSelector extends AbstractSelector {
 	 */
 	public String loadRawByRowId(String rowId) throws Exception {
 
-		String sql="SELECT RAW_FIELDS FROM POI_EDIT_STATUS WHERE ROW_ID="+rowId+" ORDER BY UPLOAD_DATE DESC";
+		String sql="SELECT RAW_FIELDS FROM POI_EDIT_STATUS WHERE ROW_ID=HEXTORAW('"+rowId+"') ORDER BY UPLOAD_DATE DESC";
 	
 		PreparedStatement pstmt = null;
 

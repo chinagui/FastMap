@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.meta.rdname;
 
+import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -19,7 +20,17 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 public class RdNameSelector {
+	
+	private Connection conn;
+	
+	public RdNameSelector() {
+		
+	} 
 
+	public RdNameSelector(Connection conn) {
+		this.conn = conn;
+	}
+	
 	public JSONObject searchByName(String name, int pageSize, int pageNum)
 			throws Exception {
 
@@ -187,7 +198,7 @@ public class RdNameSelector {
 	 * @throws Exception
 	 */
 	@SuppressWarnings({ "static-access", "unchecked" })
-	public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exception {
+public JSONObject searchForWeb(JSONObject params,JSONArray tips,int dbId) throws Exception {
 		
 		PreparedStatement pstmt = null;
 
@@ -195,10 +206,14 @@ public class RdNameSelector {
 
 		Connection conn = null;
 		
+		Connection subconn = null;
+		
 		try {
 			JSONObject result = new JSONObject();
 			
 			conn = DBConnector.getInstance().getMetaConnection();
+			
+			subconn = DBConnector.getInstance().getConnectionById(dbId);
 			
 			ScPointAdminArea scPointAdminArea = new ScPointAdminArea(conn);
 					
@@ -217,20 +232,26 @@ public class RdNameSelector {
 			sql.append(" FROM (select COUNT (1) OVER (PARTITION BY 1) total,a.* ");
 			sql.append(" from rd_name a where 1=1");
 			
+			String ids = "";
 			String tmep = "";
+			Clob pidClod = null;
 			if (tips.size()>0) {
-				sql.append(" and a.SRC_RESUME in (");
 				for (int i=0;i<tips.size();i++) {
 					JSONObject tipsObj = tips.getJSONObject(i);
-					sql.append(tmep);
+					ids += tmep;
 					tmep = ",";
-					sql.append("'");
-					sql.append(tipsObj.getString("id"));
-					sql.append("'");
+					ids += "'" + tipsObj.getString("id") + "'";
 				}
-				sql.append(")");
+				if (tips.size()>1000) {
+					pidClod = subconn.createClob();
+					pidClod.setString(1, ids);
+					sql.append(" and a.SRC_RESUME in (select to_number(pid) from table(clob_to_table(:3)))");
+				} else {
+					sql.append(" and a.SRC_RESUME in (");
+					sql.append(ids);
+					sql.append(")");
+				}
 			}
-			
 			
 			// 添加过滤器条件
 			Iterator<String> keys = param.keys();
@@ -254,7 +275,6 @@ public class RdNameSelector {
 			
 			sql.append(" ORDER BY a.NAME_GROUPID,a.NAME_ID");
 			
-			
 			// 添加排序条件
 			if (sortby.length()>0) {
 				int index = sortby.indexOf("-");
@@ -277,8 +297,13 @@ public class RdNameSelector {
 			int startRow = (pageNum-1) * pageSize + 1;
 
 			int endRow = pageNum * pageSize;
-
-			pstmt = conn.prepareStatement(sql.toString());
+			
+			pstmt = subconn.prepareStatement(sql.toString());
+			
+			if(tips.size() > 1000)
+			{
+				pstmt.setClob(3, pidClod);
+			}
 
 			pstmt.setInt(1, endRow);
 
@@ -305,6 +330,7 @@ public class RdNameSelector {
 			DbUtils.closeQuietly(resultSet);
 			DbUtils.closeQuietly(pstmt);
 			DbUtils.closeQuietly(conn);
+			DbUtils.closeQuietly(subconn);
 		}
 	}
 	
@@ -321,8 +347,6 @@ public class RdNameSelector {
 
 		ResultSet resultSet = null;
 
-		Connection conn = null;
-		
 		// 检查是否存在同一行政区划、同一道路类型（默认是未区分）的相同的道路名数据
 		//（对于“行政区划”为“全国”时，不判断是否重名，即允许重复名称记录存在，但NAME_GROUPID不同；）
 		StringBuilder sb = new StringBuilder();
@@ -367,7 +391,6 @@ public class RdNameSelector {
 		} finally {
 			DbUtils.closeQuietly(resultSet);
 			DbUtils.closeQuietly(pstmt);
-			DbUtils.closeQuietly(conn);
 		}
 	}
 	

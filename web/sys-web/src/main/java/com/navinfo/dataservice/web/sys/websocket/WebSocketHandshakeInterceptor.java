@@ -11,7 +11,7 @@ import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.server.support.HttpSessionHandshakeInterceptor;
 
-import com.navinfo.dataservice.commons.util.StringUtils;
+import com.navinfo.dataservice.commons.token.AccessToken;
 
 
 
@@ -26,11 +26,9 @@ public class WebSocketHandshakeInterceptor extends HttpSessionHandshakeIntercept
 			HttpSession session = serverRequest.getServletRequest().getSession(false);
 			if (session != null) {
 				HttpServletRequest httpServletRequest = serverRequest.getServletRequest();
-				String userId = httpServletRequest.getParameter("userId");
+				AccessToken tokenObj = (AccessToken) httpServletRequest.getAttribute("token");
+				String userId = Long.toString(tokenObj.getUserId());
 				// 使用userId区分WebSocketHandler，以便定向发送消息
-				if (StringUtils.isEmpty(userId)) {
-					throw new IllegalArgumentException("userId参数不能为空。");
-				}
 				attributes.put("userId", userId);
 			}
 		}

@@ -101,21 +101,24 @@ public class Operation implements IOperation {
 			for (RdRestriction restriction : outLinkLanes) {
 				if (!deleteLanesMap.containsKey(restriction.getPid())) {
 					List<Integer> allTopoLinks = new ArrayList<>();
-
+					
+					List<Integer> delTopoLinks = new ArrayList<>();
+					
 					List<IRow> rows = restriction.getDetails();
 
 					RdRestrictionDetail detail = null;
 
 					for (IRow row : rows) {
 						RdRestrictionDetail topo = (RdRestrictionDetail) row;
-
+						
+						allTopoLinks.add(topo.getOutLinkPid());
+						
 						if (topo.getOutLinkPid() == linkPid) {
 							detail = topo;
+							delTopoLinks.add(topo.getOutLinkPid());
 						}
-
-						allTopoLinks.add(topo.getOutLinkPid());
 					}
-					if (linkPidList.containsAll(allTopoLinks)) {
+					if (delTopoLinks.containsAll(allTopoLinks)) {
 						deleteLanesMap.put(restriction.getPid(), restriction);
 					} else if(detail != null){
 						deleteDetailList.add(detail);
@@ -167,7 +170,7 @@ public class Operation implements IOperation {
 								}
 							}
 						}
-						if (allTopoLinks.containsAll(delTopoLinks)) {
+						if (delTopoLinks.containsAll(allTopoLinks)) {
 							deleteLanesMap.put(restriction.getPid(), restriction);
 						} else{
 							deleteDetailList.addAll(updateDetailList);

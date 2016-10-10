@@ -341,7 +341,7 @@ public class KindCodeSelector {
 								jsonObject.put("kindId",
 										rs.getString("kind_code"));
 								jsonObject.put("extend", rs.getString("extend"));
-
+								jsonObject.put("level", rs.getString("level"));
 							}
 							return jsonObject;
 						}

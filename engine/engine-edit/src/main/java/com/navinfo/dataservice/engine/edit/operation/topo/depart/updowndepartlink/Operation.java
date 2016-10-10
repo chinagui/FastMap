@@ -158,7 +158,7 @@ public class Operation implements IOperation {
 		    	flagBooleans.add(CompPolylineUtil.isRightSide(JtsGeometryFactory.createLineString(currentLink.getGeometry().getCoordinates()), JtsGeometryFactory.createLineString(nextLink.getGeometry().getCoordinates()), JtsGeometryFactory.createLineString(link.getGeometry().getCoordinates())));
 		    }
 		   if (flagBooleans.size() >1 ){
-			   this.createInnerLine(lines[i],lines[lines.length-i],map,result);
+			   this.createInnerLine(lines[i],lines[lines.length-i-1],map,result);
 		   }
 		}
 		
@@ -177,9 +177,13 @@ public class Operation implements IOperation {
 		Coordinate[] coordinates = new Coordinate[2];
 		Coordinate sCoordinate = lineDownString.getCoordinates()[lineDownString.getCoordinates().length-1];
 		Coordinate eCoordinate = lineUpString.getCoordinates()[0];
+		coordinates[0]= sCoordinate;
+		coordinates[1]= eCoordinate;
 		RdNode sNode = map.get(JtsGeometryFactory.createPoint(sCoordinate));
 		RdNode eNode = map.get(JtsGeometryFactory.createPoint(eCoordinate));
 		RdLink innerLink =  new RdLink();
+		innerLink.setsNodePid(sNode.getPid());
+		innerLink.setsNodePid(eNode.getPid());
 		innerLink.setGeometry(JtsGeometryFactory.createLineString(coordinates));
 		RdLinkOperateUtils.addRdLink(sNode, eNode, innerLink,
 				innerLink, result);
@@ -213,7 +217,7 @@ public class Operation implements IOperation {
 					
 					targetLine = CompPolylineUtil.cut(lines[i], lines[i+1],JtsGeometryFactory.createLineString(GeoTranslator.transform(link.getGeometry(), 0.00001, 5).getCoordinates()),currentPoint,true );
 				}else{
-					targetLine =CompPolylineUtil.cut(lines[lines.length-i], lines[lines.length-i-1],JtsGeometryFactory.createLineString(GeoTranslator.transform(link.getGeometry(), 0.00001, 5).getCoordinates()),currentPoint,false );
+					targetLine =CompPolylineUtil.cut(lines[lines.length-i-1], lines[lines.length-i-2],JtsGeometryFactory.createLineString(GeoTranslator.transform(link.getGeometry(), 0.00001, 5).getCoordinates()),currentPoint,false );
 				}
 				if (targetLine.getCoordinate() != null){
 					
@@ -626,13 +630,27 @@ public class Operation implements IOperation {
 	 */
 	private void updataRelationObj(Result result) throws Exception
 	{
-		OpRefRelationObj OpRefRelationObj = new OpRefRelationObj(this.conn);
+		OpRefRelationObj opRefRelationObj = new OpRefRelationObj(this.conn);
 
-		OpRefRelationObj.handlerdWarninginfo(this.command, result);
+		opRefRelationObj.handlerdWarninginfo(this.command, result);
 
-		OpRefRelationObj.handleSameLink(this.command, result);
-		
-		OpRefRelationObj.handlerdSpeedlimit(this.command, result);
+		opRefRelationObj.handleSameLink(this.command, result);
+
+		opRefRelationObj.handlerdSpeedlimit(this.command, result);
+
+		opRefRelationObj.handlerdRdElectroniceye(this.command, result);
+
+		opRefRelationObj.handlerRdLinkRtic(this.command, result);
+
+		opRefRelationObj.handlerIxPoi(this.command, result);
+
+		opRefRelationObj.handlerRdSpeedbump(this.command, result);
+
+		opRefRelationObj.handlerRdSlope(this.command, result);
+
+		opRefRelationObj.handlerRdVariableSpeed(this.command, result);
+
+		opRefRelationObj.handlerRdTrafficsignal(this.command, result);
 	}
 	/**
 	 * @param startLine

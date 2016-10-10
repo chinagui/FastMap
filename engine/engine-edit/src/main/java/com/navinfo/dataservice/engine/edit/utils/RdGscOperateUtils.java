@@ -127,8 +127,9 @@ public class RdGscOperateUtils {
 					ja1.add(jaPE);
 				}
 			} else {
-				if (i > 0) {
-					ja1.add(jaPS);
+				ja1.add(jaPS);
+				if (i == jaLink.size() - 2) {
+					ja1.add(jaPE);
 				}
 			}
 		}
@@ -539,34 +540,31 @@ public class RdGscOperateUtils {
 	 * @param nodeTableName
 	 * @throws Exception
 	 */
-	public static void checkIsMoveGscNodePoint(List<IRow> rows, Connection conn,IObj nodeObj)
-			throws Exception {
+	public static void checkIsMoveGscNodePoint(List<IRow> rows, Connection conn, IObj nodeObj) throws Exception {
 		RdGscSelector selector = new RdGscSelector(conn);
-		
+
 		Geometry nodeGeo = null;
-		
+
 		switch (nodeObj.objType()) {
 		case RDNODE:
-			nodeGeo = ((RdNode)nodeObj).getGeometry();
+			nodeGeo = ((RdNode) nodeObj).getGeometry();
 			break;
 		case RWNODE:
-			nodeGeo = ((RwNode)nodeObj).getGeometry();
+			nodeGeo = ((RwNode) nodeObj).getGeometry();
 			break;
 		default:
 			break;
 		}
-		
+
 		for (IRow row : rows) {
 			int linkPid = row.parentPKValue();
 
 			String tableName = row.tableName().toUpperCase();
 
 			List<RdGsc> rdGscList = selector.onlyLoadRdGscLinkByLinkPid(linkPid, tableName, true);
-			
-			for(RdGsc gsc : rdGscList)
-			{
-				if(gsc.getGeometry().distance(nodeGeo)<1)
-				{
+
+			for (RdGsc gsc : rdGscList) {
+				if (gsc.getGeometry().distance(nodeGeo) < 1) {
 					throw new Exception("创建或修改link，节点不能到已有的立交点处，请先删除立交关系");
 				}
 			}
@@ -608,11 +606,10 @@ public class RdGscOperateUtils {
 			return false;
 		}
 
-		
 		for (RdGsc rdGsc : gscList) {
 
 			boolean flag = true;
-			
+
 			Coordinate[] coordinates = linkGeo.getCoordinates();
 
 			Coordinate gscCoord = rdGsc.getGeometry().getCoordinate();
@@ -621,15 +618,14 @@ public class RdGscOperateUtils {
 
 				if (gscCoord.equals(nodeCoord)) {
 
-					flag= false;
+					flag = false;
 				}
 			}
-			
-			if(flag)
-			{
+
+			if (flag) {
 				return flag;
 			}
-			
+
 		}
 
 		return false;

@@ -4,15 +4,19 @@ import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.model.rd.speedlimit.RdSpeedlimit;
 import com.navinfo.dataservice.dao.glm.selector.rd.speedlimit.RdSpeedlimitSelector;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
+import net.sf.json.JSONObject;
 
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 用于维护节点分离对点限速的影响
@@ -80,5 +84,57 @@ public class Operation {
                 }
             }
         }
+    }
+
+    // 用于维护上下线分离对点限速的影响
+    public String updownDepart(RdNode sNode, List<RdLink> links, Map<Integer, RdLink> leftLinks, Map<Integer, RdLink> rightLinks, Result result) throws Exception {
+        // 查找上下线分离对影响到的点限速
+        List<Integer> linkPids = new ArrayList<Integer>();
+        linkPids.addAll(leftLinks.keySet());
+        RdSpeedlimitSelector rdSpeedlimitSelector = new RdSpeedlimitSelector(conn);
+        List<RdSpeedlimit> rdSpeedlimits = rdSpeedlimitSelector.loadSpeedlimitByLinkPids(linkPids, true);
+        // 点限速数量为零则不需要维护
+        if (rdSpeedlimits.size() == 0) {
+            return "";
+        }
+        // 构建RdLinkPid-电子眼的对应集合
+        Map<Integer, List<RdSpeedlimit>> rdSpeedlimitMap = new HashMap<Integer, List<RdSpeedlimit>>();
+        for (RdSpeedlimit rdSpeedlimit : rdSpeedlimits) {
+            List<RdSpeedlimit> list = rdSpeedlimitMap.get(rdSpeedlimit.getLinkPid());
+            if (null != list) {
+                list.add(rdSpeedlimit);
+            } else {
+                list = new ArrayList<RdSpeedlimit>();
+                list.add(rdSpeedlimit);
+                rdSpeedlimitMap.put(rdSpeedlimit.getLinkPid(), list);
+            }
+        }
+        for (RdLink link : links) {
+            RdLink leftLink = leftLinks.get(link.pid());
+            RdLink rightLink = rightLinks.get(link.pid());
+            if (rdSpeedlimitMap.containsKey(link.getPid())) {
+                List<RdSpeedlimit> rdSpeedlimitList = rdSpeedlimitMap.get(link.getPid());
+                for (RdSpeedlimit rdSpeedlimit : rdSpeedlimitList) {
+                    // 点限速为逆方向则关联link为右线
+                    updateRdSpeedlimit(rightLink, rdSpeedlimit, result);
+                }
+            }
+        }
+        return "";
+    }
+
+    // 更新点限速信息
+    private void updateRdSpeedlimit(RdLink link, RdSpeedlimit rdSpeedlimit, Result result) throws Exception {
+        // 计算原点限速坐标到分离后link的垂足点
+        Coordinate targetPoint = GeometryUtils.GetNearestPointOnLine(rdSpeedlimit.getGeometry().getCoordinate(), link.getGeometry());
+        JSONObject geoPoint = new JSONObject();
+        geoPoint.put("type", "Point");
+        geoPoint.put("coordinates", new double[]{targetPoint.x, targetPoint.y});
+        Geometry tmpGeo = GeoTranslator.geojson2Jts(geoPoint);
+        geoPoint = GeoTranslator.jts2Geojson(tmpGeo, 0.00001, 5);
+        rdSpeedlimit.changedFields().put("geometry", geoPoint);
+        rdSpeedlimit.changedFields().put("linkPid", link.getPid());
+        // 更新点限速坐标以及挂接线
+        result.insertObject(rdSpeedlimit, ObjStatus.UPDATE, rdSpeedlimit.pid());
     }
 }

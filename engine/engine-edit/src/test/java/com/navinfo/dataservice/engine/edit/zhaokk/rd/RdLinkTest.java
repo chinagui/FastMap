@@ -79,8 +79,10 @@ public class RdLinkTest extends InitApplication {
 
 	@Test
 	public void departRdLink() {
-		String line = "[100005822,100005823]";
-		String parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"distance\":25.3,\"dbId\":42,\"data\":{\"linkPids\":"
+		
+		//parameter:{"command":"UPDOWNDEPART","type":"RDLINK","dbId":17,"distance":"13.4","data":{"linkPids":[302000223,205000223]}}
+		String line = "[302000223,205000223]";
+		String parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"distance\":25.3,\"dbId\":17,\"data\":{\"linkPids\":"
 				+ line + "}}";
 		Transaction t = new Transaction(parameter);
 		try {

@@ -106,6 +106,7 @@ public class Operation {
                 list.add(rdElectroniceye);
             } else {
                 list = new ArrayList<RdElectroniceye>();
+                list.add(rdElectroniceye);
                 rdElectroniceyeMap.put(rdElectroniceye.getLinkPid(), list);
             }
         }

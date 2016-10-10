@@ -105,6 +105,7 @@ public class Operation {
                 list.add(rdSpeedlimit);
             } else {
                 list = new ArrayList<RdSpeedlimit>();
+                list.add(rdSpeedlimit);
                 rdSpeedlimitMap.put(rdSpeedlimit.getLinkPid(), list);
             }
         }

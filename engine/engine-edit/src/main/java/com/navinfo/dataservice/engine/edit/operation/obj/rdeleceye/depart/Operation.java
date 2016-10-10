@@ -132,12 +132,10 @@ public class Operation {
     // 更新电子眼信息
     private void updateRdElectroniceye(RdLink link, RdElectroniceye rdElectroniceye, Result result) throws Exception {
         // 计算原电子眼坐标到分离后link的垂足点
-        Coordinate targetPoint = GeometryUtils.GetNearestPointOnLine(rdElectroniceye.getGeometry().getCoordinate(), link.getGeometry());
+        Coordinate targetPoint = GeometryUtils.GetNearestPointOnLine(GeoTranslator.transform(rdElectroniceye.getGeometry(), 0.00001, 5).getCoordinate(), GeoTranslator.transform(link.getGeometry(), 0.00001, 5));
         JSONObject geoPoint = new JSONObject();
         geoPoint.put("type", "Point");
         geoPoint.put("coordinates", new double[]{targetPoint.x, targetPoint.y});
-        Geometry tmpGeo = GeoTranslator.geojson2Jts(geoPoint);
-        geoPoint = GeoTranslator.jts2Geojson(tmpGeo, 0.00001, 5);
         rdElectroniceye.changedFields().put("geometry", geoPoint);
         rdElectroniceye.changedFields().put("linkPid", link.getPid());
         // 更新电子眼坐标以及挂接线

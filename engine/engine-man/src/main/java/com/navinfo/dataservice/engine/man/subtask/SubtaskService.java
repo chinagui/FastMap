@@ -219,38 +219,6 @@ public class SubtaskService {
 	}
 	
 
-	
-	public Page list(long userId, int stage, JSONObject conditionJson, JSONObject orderJson, final int pageSize,
-			final int curPageNum,int snapshot) throws ServiceException {
-		Connection conn = null;
-		try {
-			conn = DBConnector.getInstance().getManConnection();
-			
-			//获取用户所在组信息
-			UserInfo userInfo = new UserInfo();
-			userInfo.setUserId((int)userId);
-			Map<Object, Object> group = UserInfoOperation.getUserGroup(conn, userInfo);
-			int groupId = (int) group.get("groupId");
-			
-			//返回简略信息
-			if (snapshot==1){
-				Page page = SubtaskOperation.getListSnapshot(conn,userId,groupId,stage,conditionJson,orderJson,pageSize,curPageNum);
-				return page;
-			}else{
-				Page page = SubtaskOperation.getList(conn,userId,groupId,stage,conditionJson,orderJson,pageSize,curPageNum);
-				return page;
-			}		
-
-		} catch (Exception e) {
-			DbUtils.rollbackAndCloseQuietly(conn);
-			log.error(e.getMessage(), e);
-			throw new ServiceException("查询列表失败，原因为:" + e.getMessage(), e);
-		} finally {
-			DbUtils.commitAndCloseQuietly(conn);
-		}
-	}
-	
-
 	/*
 	 * 根据subtaskId查询一个任务的详细信息。 参数为Subtask对象
 	 */
@@ -732,32 +700,8 @@ public class SubtaskService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-
-//	/**
-//	 * @param condition
-//	 * @param pageSize
-//	 * @param curPageNum
-//	 * @return
-//	 */
-//	public Page list(JSONObject condition, int pageSize,int curPageNum) throws ServiceException {
-//		Connection conn = null;
-//		try {
-//			conn = DBConnector.getInstance().getManConnection();
-//			
-//			Page page = SubtaskOperation.getListSnapshot(conn,condition,pageSize,curPageNum);
-//			return page;
-//
-//		} catch (Exception e) {
-//			DbUtils.rollbackAndCloseQuietly(conn);
-//			log.error(e.getMessage(), e);
-//			throw new ServiceException("查询列表失败，原因为:" + e.getMessage(), e);
-//		} finally {
-//			DbUtils.commitAndCloseQuietly(conn);
-//		}
-//	}
 	
-	
-//	public Page listByGroup(long userId, int stage, JSONObject conditionJson, JSONObject orderJson, final int pageSize,
+//	public Page list(long userId, int stage, JSONObject conditionJson, JSONObject orderJson, final int pageSize,
 //			final int curPageNum,int snapshot) throws ServiceException {
 //		Connection conn = null;
 //		try {
@@ -769,17 +713,14 @@ public class SubtaskService {
 //			Map<Object, Object> group = UserInfoOperation.getUserGroup(conn, userInfo);
 //			int groupId = (int) group.get("groupId");
 //			
-//			Page page = SubtaskOperation.getList(conn,userId,groupId,stage,conditionJson,orderJson,pageSize,curPageNum);
-//			return page;
-//			
 //			//返回简略信息
-////			if (snapshot==1){
-////				Page page = SubtaskOperation.getListSnapshot(conn,userId,groupId,stage,conditionJson,orderJson,pageSize,curPageNum);
-////				return page;
-////			}else{
-////				Page page = SubtaskOperation.getList(conn,userId,groupId,stage,conditionJson,orderJson,pageSize,curPageNum);
-////				return page;
-////			}		
+//			if (snapshot==1){
+//				Page page = SubtaskOperation.getListSnapshot(conn,userId,groupId,stage,conditionJson,orderJson,pageSize,curPageNum);
+//				return page;
+//			}else{
+//				Page page = SubtaskOperation.getList(conn,userId,groupId,stage,conditionJson,orderJson,pageSize,curPageNum);
+//				return page;
+//			}		
 //
 //		} catch (Exception e) {
 //			DbUtils.rollbackAndCloseQuietly(conn);
@@ -789,4 +730,63 @@ public class SubtaskService {
 //			DbUtils.commitAndCloseQuietly(conn);
 //		}
 //	}
+
+	/**
+	 * @param planStatus 
+	 * @param condition
+	 * @param filter 
+	 * @param pageSize
+	 * @param curPageNum
+	 * @return
+	 */
+	public Page list(int planStatus, JSONObject condition, JSONObject filter, int pageSize,int curPageNum) throws ServiceException {
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			
+			Page page = SubtaskOperation.getList(conn,planStatus,condition,filter,pageSize,curPageNum);
+			return page;
+
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询列表失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	
+	public Page listByGroup(long groupId, int stage, JSONObject conditionJson, JSONObject orderJson, final int pageSize,
+			final int curPageNum,int snapshot) throws ServiceException {
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			
+//			//获取用户所在组信息
+//			UserInfo userInfo = new UserInfo();
+//			userInfo.setUserId((int)userId);
+//			Map<Object, Object> group = UserInfoOperation.getUserGroup(conn, userInfo);
+//			int groupId = (int) group.get("groupId");
+			
+			Page page = SubtaskOperation.getListByGroup(conn,groupId,stage,conditionJson,orderJson,pageSize,curPageNum);
+			return page;
+			
+//			//返回简略信息
+//			if (snapshot==1){
+//				Page page = SubtaskOperation.getListSnapshot(conn,userId,groupId,stage,conditionJson,orderJson,pageSize,curPageNum);
+//				return page;
+//			}else{
+//				Page page = SubtaskOperation.getList(conn,userId,groupId,stage,conditionJson,orderJson,pageSize,curPageNum);
+//				return page;
+//			}		
+
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询列表失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
 }

@@ -381,6 +381,7 @@ public class StaticsService {
 	 */
 	public SubtaskStatInfo getStatBySubtask(int subtaskId){
 		SubtaskStatInfo subtaskStatInfo = new SubtaskStatInfo();
+		subtaskStatInfo.setSubtaskId(subtaskId);
 		ManApi api=(ManApi) ApplicationContextUtil.getBean("manApi");
 	
 		Subtask subtask = null;

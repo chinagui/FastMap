@@ -82,7 +82,7 @@ public class RdNameSelector {
 
 				json.put("name", nameStr);
 				
-				json.put("type", roadType);
+				json.put("roadType", roadType);
 				
 				json.put("province", province);
 

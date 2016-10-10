@@ -151,8 +151,11 @@ public class RdElectroniceyeSelector extends AbstractSelector {
     public List<RdElectroniceye> loadListByRdLinkIds(List<Integer> linkPids, boolean isLock) throws Exception {
         List<RdElectroniceye> eleceyes = new ArrayList<RdElectroniceye>();
         RdElectroniceye eleceye = new RdElectroniceye();
-
-        String sql = "select * from " + eleceye.tableName() + " where link_pid in ( :1 ) and u_record != 2 ";
+        String ids = StringUtils.getInteStr(linkPids);
+        if (ids.length() == 0) {
+            ids = "''";
+        }
+        String sql = "select * from " + eleceye.tableName() + " where link_pid in ( " + ids + " ) and u_record != 2 ";
 
         if (isLock) {
             sql += " for update nowait";
@@ -164,16 +167,6 @@ public class RdElectroniceyeSelector extends AbstractSelector {
 
         try {
             pstmt = this.conn.prepareStatement(sql);
-
-            StringBuffer sb = new StringBuffer("");
-            for (Integer pid : linkPids) {
-                sb.append(pid).append(",");
-            }
-            if (sb.length() > 0)
-                pstmt.setString(1, sb.substring(0, sb.length() - 1));
-            else
-                pstmt.setString(1, "");
-
             resultSet = pstmt.executeQuery();
 
             while (resultSet.next()) {

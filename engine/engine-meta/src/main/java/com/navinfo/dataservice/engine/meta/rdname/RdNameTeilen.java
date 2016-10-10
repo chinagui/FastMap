@@ -25,9 +25,17 @@ import com.navinfo.navicommons.database.QueryRunner;
  */
 public class RdNameTeilen {
 	
+	private Connection conn;
+	
 	private static final String  SIMPLE_CHINESE="CHI";
 	
+	public RdNameTeilen() {
+		
+	}
 	
+	public RdNameTeilen(Connection conn) {
+		this.conn = conn;
+	}
 
 	/**
 	 * 道路名拆分
@@ -42,28 +50,45 @@ public class RdNameTeilen {
 
 		CallableStatement cstmt = null;
 		PreparedStatement pst=null;
-		Connection conn = null;
+		Connection subconn = null;
 		try {
-			conn = DBConnector.getInstance().getMetaConnection();
-			String spName = "{call NAVI_RD_NAME_SPLITE.RD_NAME_SPLIT_UPDATE(?)}";
-			cstmt = conn.prepareCall(spName);
-			cstmt.setString(1, String.valueOf(nameId));
-			cstmt.executeUpdate();
-			
-			// 拆分时处理英文名称：拆分完简体中文后，根据组号，来拆分英文名,大陆的拆分英文，港澳的不拆分英文
-			if (SIMPLE_CHINESE.equals(langCode)) {
-				teilenEngName(conn,String.valueOf(nameGroupId), String.valueOf(nameId),roadType);
+			if (conn == null) {
+				subconn = DBConnector.getInstance().getMetaConnection();
+				String spName = "{call NAVI_RD_NAME_SPLITE.RD_NAME_SPLIT_UPDATE(?)}";
+				cstmt = subconn.prepareCall(spName);
+				cstmt.setString(1, String.valueOf(nameId));
+				cstmt.executeUpdate();
+				
+				// 拆分时处理英文名称：拆分完简体中文后，根据组号，来拆分英文名,大陆的拆分英文，港澳的不拆分英文
+				if (SIMPLE_CHINESE.equals(langCode)) {
+					teilenEngName(subconn,String.valueOf(nameGroupId), String.valueOf(nameId),roadType);
+				}
+				String updateSql = "update rd_name set U_FIELDS = to_char(sysdate,'YYYY-MM-DD HH24:MI:SS'),split_flag=2 where NAME_GROUPID = " +  nameGroupId;
+				pst=subconn.prepareStatement(updateSql);
+				pst.execute(updateSql);
+			} else {
+				conn = DBConnector.getInstance().getMetaConnection();
+				String spName = "{call NAVI_RD_NAME_SPLITE.RD_NAME_SPLIT_UPDATE(?)}";
+				cstmt = conn.prepareCall(spName);
+				cstmt.setString(1, String.valueOf(nameId));
+				cstmt.executeUpdate();
+				
+				// 拆分时处理英文名称：拆分完简体中文后，根据组号，来拆分英文名,大陆的拆分英文，港澳的不拆分英文
+				if (SIMPLE_CHINESE.equals(langCode)) {
+					teilenEngName(conn,String.valueOf(nameGroupId), String.valueOf(nameId),roadType);
+				}
+				String updateSql = "update rd_name set U_FIELDS = to_char(sysdate,'YYYY-MM-DD HH24:MI:SS'),split_flag=2 where NAME_GROUPID = " +  nameGroupId;
+				pst=conn.prepareStatement(updateSql);
+				pst.execute(updateSql);
 			}
-			String updateSql = "update rd_name set U_FIELDS = to_char(sysdate,'YYYY-MM-DD HH24:MI:SS'),split_flag=2 where NAME_GROUPID = " +  nameGroupId;
-			pst=conn.prepareStatement(updateSql);
-			pst.execute(updateSql);
+			
 			
 		}catch (Exception e){
 			throw new Exception("调用拆分存储过程出错," + e.getMessage(), e);
 		}finally {
 			DbUtils.closeQuietly(pst);
 			DbUtils.closeQuietly(cstmt);
-			DbUtils.commitAndCloseQuietly(conn);
+			DbUtils.commitAndCloseQuietly(subconn);
 		}
 	}
 	

@@ -573,8 +573,8 @@ public class commonTest extends InitApplication {
 
 		String msg = t.run();
 	}
-	
-		@Test
+
+	@Test
 	public void run_1010_1() throws Exception {
 
 		String parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"dbId\":17,\"distance\":\"6.6\",\"data\":{\"linkPids\":[301000279,206000223]}}";
@@ -583,8 +583,16 @@ public class commonTest extends InitApplication {
 
 		String msg = t.run();
 	}
-	
-	
+
+	@Test
+	public void run_1010_2() throws Exception {
+
+		String parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"dbId\":17,\"distance\":\"6.6\",\"data\":{\"linkPids\":[203000281,303000278]}}";
+
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
 
 	
 }

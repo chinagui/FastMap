@@ -231,7 +231,7 @@ public class Operation implements IOperation {
 			}
 		}
 
-		for (RdSameNode sameNode : sameNodes) {
+		for (RdSameNode sameNode : delSameNodes) {
 
 			result.insertObject(sameNode, ObjStatus.DELETE, sameNode.getPid());
 		}

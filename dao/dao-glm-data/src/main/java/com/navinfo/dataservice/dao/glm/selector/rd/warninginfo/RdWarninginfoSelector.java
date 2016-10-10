@@ -229,7 +229,10 @@ public class RdWarninginfoSelector extends AbstractSelector {
      */
     public List<RdWarninginfo> loadByNodePids(List<Integer> nodePids, boolean isLock) throws Exception {
         List<RdWarninginfo> rows = new ArrayList<RdWarninginfo>();
-        String sql = "select a.* from rd_warninginfo a where a.u_record != :1 and a.node_pid in (:2)";
+        String ids = StringUtils.getInteStr(nodePids);
+        if (ids.length() == 0)
+            ids = "''";
+        String sql = "select a.* from rd_warninginfo a where a.u_record != :1 and a.node_pid in (" + ids +")";
         if (isLock) {
             sql += " for update nowait";
         }
@@ -238,15 +241,6 @@ public class RdWarninginfoSelector extends AbstractSelector {
         try {
             pstmt = this.conn.prepareStatement(sql);
             pstmt.setInt(1, 2);
-            Iterator<Integer> it = nodePids.iterator();
-            StringBuffer sb = new StringBuffer();
-            while (it.hasNext()) {
-                sb.append(it.next()).append(",");
-            }
-            if (sb.length() > 0)
-                pstmt.setString(2, sb.substring(0, sb.length() - 1));
-            else
-                pstmt.setString(2, "");
             resultSet = pstmt.executeQuery();
             while (resultSet.next()) {
                 RdWarninginfo obj = new RdWarninginfo();

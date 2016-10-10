@@ -106,6 +106,7 @@ public class Operation {
                 list.add(rdElectroniceye);
             } else {
                 list = new ArrayList<RdElectroniceye>();
+                list.add(rdElectroniceye);
                 rdElectroniceyeMap.put(rdElectroniceye.getLinkPid(), list);
             }
         }
@@ -115,14 +116,8 @@ public class Operation {
             if (rdElectroniceyeMap.containsKey(link.getPid())) {
                 List<RdElectroniceye> rdElectroniceyeList = rdElectroniceyeMap.get(link.getPid());
                 for (RdElectroniceye rdElectroniceye : rdElectroniceyeList) {
-                    int direct = rdElectroniceye.getDirect();
-                    // 电子眼为顺方向则关联link为左线
-                    if (direct == leftLink.getDirect()) {
-                        updateRdElectroniceye(leftLink, rdElectroniceye, result);
-                        // 电子眼为逆方向则关联link为右线
-                    } else if (direct == rightLink.getDirect()) {
-                        updateRdElectroniceye(rightLink, rdElectroniceye, result);
-                    }
+                    // 电子眼为逆方向则关联link为右线
+                    updateRdElectroniceye(rightLink, rdElectroniceye, result);
                 }
             }
         }

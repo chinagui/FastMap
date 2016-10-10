@@ -43,7 +43,7 @@ public class Operation {
             tmpNodePids.add(link.getsNodePid());
             tmpNodePids.add(link.geteNodePid());
         }
-        List<Integer> nodePids = Arrays.asList(tmpNodePids.toArray(new Integer[]{})).subList(1, tmpNodePids.size() - 1);
+        List<Integer> nodePids = new ArrayList<>(tmpNodePids).subList(1, tmpNodePids.size() - 1);
         rdSpeedbumps = selector.loadByNodePids(nodePids, true);
         for (RdSpeedbump speedbump : rdSpeedbumps) {
             if (!result.getDelObjects().contains(speedbump))

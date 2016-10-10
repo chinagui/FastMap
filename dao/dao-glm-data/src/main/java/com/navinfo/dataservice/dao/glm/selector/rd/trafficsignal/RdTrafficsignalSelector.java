@@ -35,7 +35,7 @@ public class RdTrafficsignalSelector extends AbstractSelector {
     /**
      * 根据nodePid查询交通信号等（1:1）
      *
-     * @param id
+     * @param ids
      * @param isLock
      * @return
      * @throws Exception
@@ -88,7 +88,7 @@ public class RdTrafficsignalSelector extends AbstractSelector {
     /**
      * 根据LinkPid查询交通信号灯（1:1）
      *
-     * @param id
+     * @param ids
      * @param isLock
      * @return
      * @throws Exception
@@ -141,7 +141,7 @@ public class RdTrafficsignalSelector extends AbstractSelector {
     /**
      * 根据一个信号灯pid查询路口处所有信号灯
      *
-     * @param id
+     * @param pid
      * @param isLock
      * @return
      * @throws Exception
@@ -195,9 +195,18 @@ public class RdTrafficsignalSelector extends AbstractSelector {
      */
     public List<RdTrafficsignal> loadByNodePids(Collection<Integer> nodePids, boolean isLock) throws Exception {
         List<RdTrafficsignal> rows = new ArrayList<RdTrafficsignal>();
-        StringBuilder idParameter = new StringBuilder();
+        if (nodePids.isEmpty())
+            return rows;
+        Iterator<Integer> it = nodePids.iterator();
+        StringBuffer buffer = new StringBuffer();
+        while (it.hasNext()) {
+            buffer.append(it.next()).append(",");
+        }
+        String inter = "''";
+        if (buffer.length() > 0)
+            inter = buffer.substring(1, buffer.length() - 1);
         StringBuilder sb = new StringBuilder(
-                "select * from rd_trafficsignal where node_pid in(:1) and u_record !=2");
+                "select * from rd_trafficsignal where node_pid in(" + inter + ") and u_record !=2");
         if (isLock) {
             sb.append(" for update nowait");
         }
@@ -205,15 +214,6 @@ public class RdTrafficsignalSelector extends AbstractSelector {
         ResultSet resultSet = null;
         try {
             pstmt = conn.prepareStatement(sb.toString());
-            Iterator<Integer> it = nodePids.iterator();
-            StringBuffer buffer = new StringBuffer();
-            while (it.hasNext()) {
-                buffer.append(it.next()).append(",");
-            }
-            if (buffer.length() > 0)
-                pstmt.setString(1, buffer.substring(1, buffer.length() - 1));
-            else
-                pstmt.setString(1, "");
             resultSet = pstmt.executeQuery();
             while (resultSet.next()) {
                 RdTrafficsignal rdTrafficsignal = new RdTrafficsignal();

@@ -41,8 +41,7 @@ public class Operation {
             tmpNodePids.add(link.geteNodePid());
         }
         Integer[] tmpArr = tmpNodePids.toArray(new Integer[]{});
-        Integer[] arr = Arrays.copyOfRange(tmpArr, 1, tmpNodePids.size() - 1);
-        List<Integer> nodePids = Arrays.asList(arr);
+        List<Integer> nodePids = new ArrayList<>(tmpNodePids).subList(1,tmpNodePids.size() - 1);
         List<RdTrafficsignal> trafficsignals = selector.loadByNodePids(nodePids, true);
         for (RdTrafficsignal trafficsignal : trafficsignals) {
             result.insertObject(trafficsignal, ObjStatus.DELETE, trafficsignal.pid());

@@ -178,7 +178,7 @@ public class RdSlopeSelector extends AbstractSelector {
      *
      * 通过接续link关联的接续link
      *
-     * @param linkPid
+     * @param slopePid
      * @param isLock
      * @return
      * @throws Exception
@@ -222,7 +222,7 @@ public class RdSlopeSelector extends AbstractSelector {
      *
      * 通过接续link关联的接续link
      *
-     * @param linkPid
+     * @param slopePid
      * @param isLock
      * @return
      * @throws Exception
@@ -272,23 +272,26 @@ public class RdSlopeSelector extends AbstractSelector {
     public List<RdSlope> loadByNodePids(Collection<Integer> nodePids, boolean isLock)
             throws Exception {
         List<RdSlope> rows = new ArrayList<RdSlope>();
+        if (nodePids.isEmpty())
+            return rows;
+
+        StringBuffer sb = new StringBuffer();
+        Iterator<Integer> it = nodePids.iterator();
+        while (it.hasNext()) {
+            sb.append(it.next()).append(",");
+        }
+        String inter = "''";
+        if (sb.length() > 0)
+            inter = sb.substring(0, sb.length() - 1);
+
         PreparedStatement pstmt = null;
         ResultSet resultSet = null;
         try {
-            String sql = "SELECT pid FROM rd_slope WHERE node_pid in (:1) and u_record !=2";
+            String sql = "SELECT pid FROM rd_slope WHERE node_pid in (" + inter + ") and u_record !=2";
             if (isLock) {
                 sql += " for update nowait";
             }
             pstmt = conn.prepareStatement(sql);
-            StringBuffer sb = new StringBuffer();
-            Iterator<Integer> it = nodePids.iterator();
-            while (it.hasNext()) {
-                sb.append(it.next()).append(",");
-            }
-            if (sb.length() > 0)
-                pstmt.setString(1, sb.substring(0, sb.length() - 1));
-            else
-                pstmt.setString(1, "");
             resultSet = pstmt.executeQuery();
             while (resultSet.next()) {
                 RdSlope rdSlope = new RdSlope();

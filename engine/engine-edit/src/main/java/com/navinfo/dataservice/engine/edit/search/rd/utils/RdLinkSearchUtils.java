@@ -208,9 +208,16 @@ public class RdLinkSearchUtils {
 			int cruuentNodePidDir) throws Exception {
 		RdLinkSelector linkSelector = new RdLinkSelector(conn);
 		List<RdLink> tracks = new ArrayList<RdLink>();
+		int fristNodePid =0;
 		// 添加当前选中的link
 		RdLink fristLink = (RdLink) linkSelector.loadByIdOnlyRdLink(
 				cuurentLinkPid, true);
+		if(fristLink.getsNodePid() ==cruuentNodePidDir){
+			fristNodePid =fristLink.geteNodePid();
+		}else{
+			fristNodePid =fristLink.getsNodePid();
+		}
+		
 		tracks.add(fristLink);
 		// 查找当前link联通的links
 		List<RdLink> nextLinks = linkSelector.loadTrackLink(cuurentLinkPid,
@@ -251,7 +258,7 @@ public class RdLinkSearchUtils {
 			cuurentLinkPid = link.getPid();
 			cruuentNodePidDir = (cruuentNodePidDir == link.getsNodePid()) ? link
 					.geteNodePid() : link.getsNodePid();
-			if(link.getsNodePid() ==fristLink.getsNodePid()||link.getsNodePid() ==fristLink.geteNodePid()||link.geteNodePid() ==fristLink.getsNodePid()||link.geteNodePid() ==fristLink.geteNodePid()){
+			if(link.getsNodePid() ==fristNodePid||link.geteNodePid() ==fristNodePid){
 				break;
 			}
 			if (tracks.size() >= 99 || tracks.contains(link)) {

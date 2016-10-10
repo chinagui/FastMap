@@ -888,13 +888,15 @@ public class TaskOperation {
 					map.put("taskName", rs.getString("TASK_NAME"));
 					if(rs.getInt("TASK_TYPE")==1){
 						map.put("cityId", rs.getString("CITY_ID"));
-						map.put("cityName", rs.getString("CITY_NAME"));}
+						map.put("cityName", rs.getString("CITY_NAME"));
+						map.put("cityPlanStatus", rs.getInt("PLAN_STATUS"));}
 					else if(rs.getInt("TASK_TYPE")==4){
 						map.put("inforId", rs.getString("INFOR_ID"));
-						map.put("inforName", rs.getString("INFOR_NAME"));}
+						map.put("inforName", rs.getString("INFOR_NAME"));
+						map.put("inforPlanStatus", rs.getInt("PLAN_STATUS"));}
 					map.put("taskType", rs.getInt("TASK_TYPE"));
 					map.put("taskStatus", rs.getInt("TASK_STATUS"));
-					map.put("planStatus", rs.getInt("PLAN_STATUS"));
+					
 					total=rs.getInt("TOTAL_RECORD_NUM");
 					list.add(map);
 				}

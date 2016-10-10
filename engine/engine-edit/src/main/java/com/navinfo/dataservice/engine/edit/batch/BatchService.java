@@ -76,7 +76,7 @@ public class BatchService {
 		List<String> ruleList=new ArrayList<String>();
 		
 		if (!batchRules.isEmpty()) {
-			String[] rules = batchRules.split(",");
+			String[] rules = batchRules.split(";");
 			for (String rule:rules) {
 				ruleList.add(rule);
 			}

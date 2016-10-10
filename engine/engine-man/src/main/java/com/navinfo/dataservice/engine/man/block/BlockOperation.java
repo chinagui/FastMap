@@ -440,7 +440,7 @@ public class BlockOperation {
 	 * @return
 	 * @throws Exception
 	 */
-	public static List<HashMap> QuerylistByInfoId(Connection conn, String selectSql, String selectSqlNotOpen)
+	/*public static List<HashMap> QuerylistByInfoId(Connection conn, String selectSql, String selectSqlNotOpen)
 			throws Exception {
 		try {
 			QueryRunner run = new QueryRunner();
@@ -497,7 +497,7 @@ public class BlockOperation {
 			log.error(e.getMessage(), e);
 			throw new Exception("查询失败，原因为:" + e.getMessage(), e);
 		}
-	}
+	}*/
 
 	/**
 	 * @param conn
@@ -695,5 +695,97 @@ public class BlockOperation {
 			throw new Exception("更新失败，原因为:" + e.getMessage(), e);
 		}
 	}
-	
+
+	public static Page getSnapshotQuery(Connection conn, String selectSql,final int currentPageNum,final int pageSize) throws Exception {
+		try {
+			QueryRunner run = new QueryRunner();
+			ResultSetHandler<Page> rsHandler = new ResultSetHandler<Page>() {
+				public Page handle(ResultSet rs) throws SQLException {
+					List<HashMap> list = new ArrayList<HashMap>();
+					Page page = new Page(currentPageNum);
+					page.setPageSize(pageSize);
+					int totalCount = 0;
+					while (rs.next()) {
+						HashMap map = new HashMap();
+						map.put("blockManId", rs.getInt("BLOCK_MAN_ID"));
+						map.put("blockManName", rs.getString("BLOCK_MAN_NAME"));
+						map.put("blockStatus", rs.getInt("BLOCK_STATUS"));
+						map.put("planStartDate", rs.getString("PLAN_START_DATE"));
+						map.put("planEndDate", rs.getString("PLAN_END_DATE"));
+						map.put("assignStatus", rs.getInt("ASSIGN_STATUS"));
+						map.put("groupId", rs.getInt("GROUP_ID"));
+						map.put("groupName", rs.getString("GROUP_NAME"));
+						map.put("diffDate", rs.getInt("DIFF_DATE"));
+						map.put("progress", rs.getInt("PROGRESS"));						
+						map.put("type", rs.getInt("TASK_TYPE"));
+						map.put("percent",rs.getInt("PERCENT"));
+						totalCount=rs.getInt("TOTAL_RECORD_NUM");
+						list.add(map);
+					}
+					page.setResult(list);
+					page.setTotalCount(totalCount);
+					return page;
+				}
+
+			};
+			return  run.query(conn, selectSql, rsHandler);
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:" + e.getMessage(), e);
+		}
+	}
+	public static Page getAllQuery(Connection conn, String selectSql,final int currentPageNum,final int pageSize) throws Exception {
+		try {
+			QueryRunner run = new QueryRunner();
+			ResultSetHandler<Page> rsHandler = new ResultSetHandler<Page>() {
+				public Page handle(ResultSet rs) throws SQLException {
+					List<HashMap> list = new ArrayList<HashMap>();
+					Page page = new Page(currentPageNum);
+					page.setPageSize(pageSize);
+					int totalCount = 0;
+					while (rs.next()) {
+						HashMap map = new HashMap();
+						map.put("blockManId", rs.getInt("BLOCK_MAN_ID"));
+						map.put("blockManName", rs.getString("BLOCK_MAN_NAME"));
+						map.put("blockStatus", rs.getInt("BLOCK_STATUS"));
+						map.put("blockPlanStatus", rs.getInt("BLOCK_PLAN_STATUS"));
+						map.put("collectPlanStartDate", rs.getString("COLLECT_PLAN_START_DATE"));
+						map.put("collectPlanEndDate", rs.getString("COLLECT_PLAN_END_DATE"));
+						map.put("collectAssignStatus", rs.getInt("COLLECT_ASSIGN_STATUS"));
+						map.put("collectGroupId", rs.getInt("COLLECT_GROUP_ID"));
+						map.put("collectGroupName", rs.getString("COLLECT_GROUP_NAME"));
+						map.put("collectDiffDate", rs.getInt("COLLECT_DIFF_DATE"));
+						map.put("collectProgress", rs.getInt("COLLECT_PROGRESS"));
+						map.put("collectPercent",rs.getInt("COLLECT_PERCENT"));
+						
+						map.put("dayEditPlanStartDate", rs.getString("DAY_EDIT_PLAN_START_DATE"));
+						map.put("dayEditPlanEndDate", rs.getString("DAY_EDIT_PLAN_END_DATE"));
+						map.put("dailyAssignStatus", rs.getInt("DAILY_ASSIGN_STATUS"));
+						map.put("dayEditGroupId", rs.getInt("DAY_EDIT_GROUP_ID"));
+						map.put("dayEditGroupName", rs.getString("DAY_EDIT_GROUP_NAME"));
+						map.put("dailyDiffDate", rs.getInt("DAILY_DIFF_DATE"));
+						map.put("dailyProgress", rs.getInt("DAILY_PROGRESS"));
+						map.put("dailyPercent",rs.getInt("DAILY_PERCENT"));
+						map.put("type", rs.getInt("TASK_TYPE"));
+						
+						map.put("createUserId", rs.getInt("CREATE_USER_ID"));
+						map.put("createUserName", rs.getString("CREATE_USER_NAME"));
+						
+						totalCount=rs.getInt("TOTAL_RECORD_NUM");
+						list.add(map);
+					}
+					page.setResult(list);
+					page.setTotalCount(totalCount);
+					return page;
+				}
+
+			};
+			return  run.query(conn, selectSql, rsHandler);
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:" + e.getMessage(), e);
+		}
+	}
 }

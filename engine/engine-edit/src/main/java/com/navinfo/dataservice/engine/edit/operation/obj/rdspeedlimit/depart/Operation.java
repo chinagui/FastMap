@@ -131,12 +131,10 @@ public class Operation {
     // 更新点限速信息
     private void updateRdSpeedlimit(RdLink link, RdSpeedlimit rdSpeedlimit, Result result) throws Exception {
         // 计算原点限速坐标到分离后link的垂足点
-        Coordinate targetPoint = GeometryUtils.GetNearestPointOnLine(rdSpeedlimit.getGeometry().getCoordinate(), link.getGeometry());
+        Coordinate targetPoint = GeometryUtils.GetNearestPointOnLine(GeoTranslator.transform(rdSpeedlimit.getGeometry(), 0.00001, 5).getCoordinate(), GeoTranslator.transform(link.getGeometry(), 0.00001, 5));
         JSONObject geoPoint = new JSONObject();
         geoPoint.put("type", "Point");
         geoPoint.put("coordinates", new double[]{targetPoint.x, targetPoint.y});
-        Geometry tmpGeo = GeoTranslator.geojson2Jts(geoPoint);
-        geoPoint = GeoTranslator.jts2Geojson(tmpGeo, 0.00001, 5);
         rdSpeedlimit.changedFields().put("geometry", geoPoint);
         rdSpeedlimit.changedFields().put("linkPid", link.getPid());
         // 更新点限速坐标以及挂接线

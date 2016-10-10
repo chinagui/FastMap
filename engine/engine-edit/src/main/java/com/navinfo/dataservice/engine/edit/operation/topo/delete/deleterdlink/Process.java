@@ -10,6 +10,7 @@ import org.apache.commons.collections.CollectionUtils;
 
 import com.navinfo.dataservice.dao.glm.iface.AlertObject;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdmin;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
@@ -468,8 +469,10 @@ public class Process extends AbstractProcess<Command> {
 
 		// 立交
 		com.navinfo.dataservice.engine.edit.operation.obj.rdgsc.delete.Operation rdGscOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdgsc.delete.Operation(
-				null, null);
-		List<AlertObject> delGscAlertDataList = rdGscOperation.getDeleteRdGscInfectData(linkPid, conn);
+				conn);
+		List<IRow> linkList = new ArrayList<>(); 
+		linkList.add(link);
+		List<AlertObject> delGscAlertDataList = rdGscOperation.getDeleteRdGscInfectData(linkList);
 		if (CollectionUtils.isNotEmpty(delGscAlertDataList)) {
 			infects.put("删除link维护立交", delGscAlertDataList);
 		}

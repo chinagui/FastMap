@@ -267,11 +267,59 @@ public class BlockController extends BaseController {
 	}
 	
 	/**
+	 *  根据采集组或者日编组，查询Block列表
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/block/list")
+	public ModelAndView list(HttpServletRequest request) {
+		try {
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			JSONObject condition = new JSONObject();	
+			if(dataJson.containsKey("condition")){
+				condition=dataJson.getJSONObject("condition");
+			}
+			JSONObject order = new JSONObject();	
+			if(dataJson.containsKey("order")){
+				order=dataJson.getJSONObject("order");
+			}			
+			int curPageNum= 1;//默认为第一页
+			if (dataJson.containsKey("pageNum")){
+				curPageNum = dataJson.getInt("pageNum");
+			}
+			int curPageSize= 20;//默认为20条记录/页
+			if (dataJson.containsKey("pageSize")){
+				curPageSize = dataJson.getInt("pageSize");
+			}
+			int snapshot = 0; 
+			if(dataJson.containsKey("snapshot")){
+				snapshot=dataJson.getInt("snapshot");
+			}
+			//0采集，1日编
+			int stage = 0;
+			if (dataJson.containsKey("stage")){
+				stage=dataJson.getInt("stage");
+			}
+			Map<String, Object> resultMap=new HashMap<String, Object>();
+			BlockOperation blockOperation= new BlockOperation();
+			Page page=service.list(stage,condition,order,curPageNum,curPageSize,snapshot);
+			resultMap.put("result", page.getResult());
+			resultMap.put("totalCount", page.getTotalCount());
+			return new ModelAndView("jsonView", success(resultMap));
+			
+		} catch (Exception e) {
+			log.error("获取列表失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+	
+	
+	/**
 	 * 根据情报id分组返回block信息
 	 * @param request
 	 * @return
 	 */
-	@RequestMapping(value = "/block/listByInfoId")
+	/*@RequestMapping(value = "/block/listByInfoId")
 	public ModelAndView listByInfoId(HttpServletRequest request) {
 		try {
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
@@ -287,7 +335,7 @@ public class BlockController extends BaseController {
 			log.error("获取block列表失败，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", exception(e));
 		}
-	}
+	}*/
 	
 	/**
 	 *  根据采集组或者日编组，查询Block列表

@@ -211,7 +211,10 @@ public class Operation implements IOperation {
 
 			alertObj.setStatus(ObjStatus.UPDATE);
 
-			alertList.add(alertObj);
+			if(!alertList.contains(alertObj))
+			{
+				alertList.add(alertObj);
+			}
 		}
 
 		return alertList;
@@ -247,7 +250,10 @@ public class Operation implements IOperation {
 
 			alertObj.setStatus(ObjStatus.DELETE);
 
-			alertList.add(alertObj);
+			if(!alertList.contains(alertObj))
+			{
+				alertList.add(alertObj);
+			}
 		}
 
 		return alertList;
@@ -273,7 +279,10 @@ public class Operation implements IOperation {
 
 			alertObj.setStatus(ObjStatus.DELETE);
 
-			alertList.add(alertObj);
+			if(!alertList.contains(alertObj))
+			{
+				alertList.add(alertObj);
+			}
 		}
 
 		return alertList;

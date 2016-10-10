@@ -169,8 +169,10 @@ public class RdElectroniceyeSelector extends AbstractSelector {
             for (Integer pid : linkPids) {
                 sb.append(pid).append(",");
             }
-
-            pstmt.setString(1, sb.substring(0, sb.length() - 1));
+            if (sb.length() > 0)
+                pstmt.setString(1, sb.substring(0, sb.length() - 1));
+            else
+                pstmt.setString(1, "");
 
             resultSet = pstmt.executeQuery();
 

@@ -26,7 +26,6 @@ import com.navinfo.navicommons.database.sql.DBUtils;
 public class RdVariableSpeedSelector extends AbstractSelector {
 
     /**
-     * @param cls
      * @param conn
      */
     public RdVariableSpeedSelector(Connection conn) {
@@ -273,7 +272,10 @@ public class RdVariableSpeedSelector extends AbstractSelector {
             while (it.hasNext()) {
                 buffer.append(it.next()).append(",");
             }
-            pstmt.setString(1, buffer.substring(0, buffer.length() - 1));
+            if (buffer.length() > 0)
+                pstmt.setString(1, buffer.substring(0, buffer.length() - 1));
+            else
+                pstmt.setString(1, "");
             resultSet = pstmt.executeQuery();
             while (resultSet.next()) {
                 RdVariableSpeed rdVariableSpeed = new RdVariableSpeed();

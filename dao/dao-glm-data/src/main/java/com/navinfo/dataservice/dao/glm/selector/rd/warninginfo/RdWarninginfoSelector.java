@@ -243,7 +243,10 @@ public class RdWarninginfoSelector extends AbstractSelector {
             while (it.hasNext()) {
                 sb.append(it.next()).append(",");
             }
-            pstmt.setString(2, sb.substring(0, sb.length() - 1));
+            if (sb.length() > 0)
+                pstmt.setString(2, sb.substring(0, sb.length() - 1));
+            else
+                pstmt.setString(2, "");
             resultSet = pstmt.executeQuery();
             while (resultSet.next()) {
                 RdWarninginfo obj = new RdWarninginfo();

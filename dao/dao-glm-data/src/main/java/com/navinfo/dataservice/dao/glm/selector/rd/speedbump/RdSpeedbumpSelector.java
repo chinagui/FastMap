@@ -73,7 +73,10 @@ public class RdSpeedbumpSelector extends AbstractSelector {
             while (it.hasNext()) {
                 sb.append(it.next()).append(",");
             }
-            pstmt.setString(1, sb.substring(0, sb.length() - 1));
+            if (sb.length() > 0)
+                pstmt.setString(1, sb.substring(0, sb.length() - 1));
+            else
+                pstmt.setString(1, "");
             resultSet = pstmt.executeQuery();
             while (resultSet.next()) {
                 RdSpeedbump speedbump = new RdSpeedbump();
@@ -104,7 +107,10 @@ public class RdSpeedbumpSelector extends AbstractSelector {
             while (it.hasNext()) {
                 sb.append(it.next()).append(",");
             }
-            pstmt.setString(1, sb.substring(0, sb.length() - 1));
+            if (sb.length() > 0)
+                pstmt.setString(1, sb.substring(0, sb.length() - 1));
+            else
+                pstmt.setString(1, "");
             resultSet = pstmt.executeQuery();
             while (resultSet.next()) {
                 RdSpeedbump speedbump = new RdSpeedbump();

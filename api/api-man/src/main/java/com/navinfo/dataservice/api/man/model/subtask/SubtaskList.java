@@ -24,11 +24,16 @@ public class SubtaskList extends SubtaskListByUser {
 	private String createDate;
 	private Integer groupId;
 
+	private String executer;
+	
 	private Integer blockId;
 	private String blockName;
 	
 	private Integer taskId ;
 	private String taskName;
+	
+	private int percent;
+	private int diffDate;
 	
 	public SubtaskList (Integer subtaskId ,
 			String name,
@@ -48,7 +53,7 @@ public class SubtaskList extends SubtaskListByUser {
 			Integer blockId,
 			String blockName,
 			Integer taskId,
-			String taskName
+			String taskName,String executer,int percent,int diffDate
 			){
 		super(subtaskId, name, stage, type, status, descp, dbId,gridIds,geometry,planStartDate,planEndDate);
 
@@ -62,6 +67,10 @@ public class SubtaskList extends SubtaskListByUser {
 		
 		this.taskId=taskId ;
 		this.taskName = taskName;
+		
+		this.executer = executer;
+		this.percent = percent;
+		this.diffDate = diffDate;
 
 	}
 	public int getGroupId(){
@@ -116,6 +125,42 @@ public class SubtaskList extends SubtaskListByUser {
 	}
 	public void setExeUserId(Integer exeUserId) {
 		this.exeUserId = exeUserId;
+	}
+	/**
+	 * @return the executer
+	 */
+	public String getExecuter() {
+		return executer;
+	}
+	/**
+	 * @param executer the executer to set
+	 */
+	public void setExecuter(String executer) {
+		this.executer = executer;
+	}
+	/**
+	 * @return the percent
+	 */
+	public int getPercent() {
+		return percent;
+	}
+	/**
+	 * @param percent the percent to set
+	 */
+	public void setPercent(int percent) {
+		this.percent = percent;
+	}
+	/**
+	 * @return the diffDate
+	 */
+	public int getDiffDate() {
+		return diffDate;
+	}
+	/**
+	 * @param diffDate the diffDate to set
+	 */
+	public void setDiffDate(int diffDate) {
+		this.diffDate = diffDate;
 	}
 
 }

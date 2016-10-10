@@ -166,61 +166,7 @@ public class SubtaskController extends BaseController {
 			return responseListByWkt;
 		}
 	}
-	
 
-	@ApiOperation(value = "获取subtask列表", notes = "获取subtask列表")  
-	@RequestMapping(value = { "/list" }, method = RequestMethod.GET)
-	public SubtaskListResponse list(@ApiParam(required =true, name = "access_token", value="接口调用凭证")@RequestParam( value = "access_token") String access_token
-			,@ApiParam(required =true, name = "parameter", value="{<br/>\"stage\":1\\\\作业阶段,<br/>\"condition\":1\\\\搜索条件（JSON），均可选，不支持组合。<br/>\t{\"subtaskId\"子任务Id<br/>\"subtaskName\"子任务名称<br/>\"ExeUserId\"作业员<br/>\"blockId\"所属blockId<br/>\"blockName\"所属block名称<br/>\"taskId\"所属任务id<br/>\"taskName\"所属任务名称},<br/>\"order\":\\\\排序条件（JSON），可选，按照时间查询,json中只有一个有效排序条件，不支持组合排序。<br/>\t{<br/>\"subtaskId\":\"desc\",<br/>\"status\":\"desc\",<br/>\"planStartDate\":\"desc\"//降序，asc升序,<br/>\"planEndDate\":\"desc\",<br/>\"blockId\":\"desc\"},<br/>\"pageNum\":1\\\\页码,<br/>\"pageSize\":1\\\\每页条数<br/>}")@RequestParam( value = "parameter") String postData			,HttpServletRequest request){
-		try{		
-			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
-			long userId = tokenObj.getUserId();
-			
-			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
-			if(dataJson==null){
-				throw new IllegalArgumentException("parameter参数不能为空。");
-			}
-			
-			int curPageNum= 1;//默认为第一页
-			if(dataJson.containsKey("pageNum")){
-				curPageNum = dataJson.getInt("pageNum");
-			}
-			
-			int pageSize = 30;//默认页容量为20
-			if(dataJson.containsKey("pageSize")){
-				pageSize = dataJson.getInt("pageSize");
-			}
-			
-			int snapshot = 0; 
-			if(dataJson.containsKey("snapshot")){
-				snapshot=dataJson.getInt("snapshot");
-			}
-			
-			JSONObject order =null; 
-			if(dataJson.containsKey("order")){
-				order=dataJson.getJSONObject("order");
-			}
-			
-			JSONObject condition =null; 
-			if(dataJson.containsKey("condition")){
-				condition=dataJson.getJSONObject("condition");
-			}
-			
-			//作业阶段
-			int stage = dataJson.getInt("stage");
-			
-			Page page = SubtaskService.getInstance().list(userId,stage,condition,order,pageSize,curPageNum,snapshot);
-
-			SubtaskListPage pageList = new SubtaskListPage(page.getPageSize(),page.thePageNum(),page.getStart(),page.getTotalCount(),(List<SubtaskList>)page.getResult());
-			SubtaskListResponse responseList = new SubtaskListResponse(0,"success",pageList);
-			return responseList;
-		
-		}catch(Exception e){
-			log.error("查询失败，原因："+e.getMessage(), e);
-			SubtaskListResponse responseList = new SubtaskListResponse(-1,e.getMessage(),null);
-			return responseList;
-		}
-	}
 	
 
 	@ApiOperation(value = "根据作业员获取子任务列表", notes = "根据作业员获取subtask列表")  
@@ -248,10 +194,17 @@ public class SubtaskController extends BaseController {
 			
 			int snapshot = dataJson.getInt("snapshot");
 			dataJson.remove("snapshot");
+			
+			//增加平台参数。0：采集端，1：编辑平台
+			int platForm = 0;//默认采集端
+			if(dataJson.containsKey("platForm")){
+				platForm = dataJson.getInt("platForm");
+				dataJson.remove("platForm");
+			}
 
             Subtask bean = (Subtask)JSONObject.toBean(dataJson, Subtask.class);
             
-            Page page = SubtaskService.getInstance().listByUserPage(bean,snapshot,pageSize,curPageNum);
+            Page page = SubtaskService.getInstance().listByUserPage(bean,snapshot,platForm,pageSize,curPageNum);
             
             SubtaskListByUserPage SubtaskListByUserPage = new SubtaskListByUserPage(page.getPageSize(),page.thePageNum(),page.getStart(),page.getTotalCount(),(List<SubtaskListByUser>)page.getResult());
 			SubtaskListByUserResponse responseList = new SubtaskListByUserResponse(0,"success",SubtaskListByUserPage);
@@ -297,7 +250,9 @@ public class SubtaskController extends BaseController {
 						, df.format(subtask.getPlanEndDate())
 						,subtask.getDbId()
 						,subtask.getBlockId()
-						,subtask.getBlockName()
+						,subtask.getBlockManId()
+						,subtask.getBlockManName()
+						,subtask.getCityId()
 						,subtask.getTaskId()
 						,subtask.getTaskName()
 						,subtask.getExecuter()
@@ -422,5 +377,160 @@ public class SubtaskController extends BaseController {
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}
+	
 
+	
+	
+//	@ApiOperation(value = "获取subtask列表", notes = "获取subtask列表")  
+//	@RequestMapping(value = { "/list" }, method = RequestMethod.GET)
+//	public SubtaskListResponse list(@ApiParam(required =true, name = "access_token", value="接口调用凭证")@RequestParam( value = "access_token") String access_token
+//			,@ApiParam(required =true, name = "parameter", value="{<br/>\"stage\":1\\\\作业阶段,<br/>\"condition\":1\\\\搜索条件（JSON），均可选，不支持组合。<br/>\t{\"subtaskId\"子任务Id<br/>\"subtaskName\"子任务名称<br/>\"ExeUserId\"作业员<br/>\"blockId\"所属blockId<br/>\"blockName\"所属block名称<br/>\"taskId\"所属任务id<br/>\"taskName\"所属任务名称},<br/>\"order\":\\\\排序条件（JSON），可选，按照时间查询,json中只有一个有效排序条件，不支持组合排序。<br/>\t{<br/>\"subtaskId\":\"desc\",<br/>\"status\":\"desc\",<br/>\"planStartDate\":\"desc\"//降序，asc升序,<br/>\"planEndDate\":\"desc\",<br/>\"blockId\":\"desc\"},<br/>\"pageNum\":1\\\\页码,<br/>\"pageSize\":1\\\\每页条数<br/>}")@RequestParam( value = "parameter") String postData			,HttpServletRequest request){
+//		try{		
+//			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
+//			long userId = tokenObj.getUserId();
+//			
+//			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+//			if(dataJson==null){
+//				throw new IllegalArgumentException("parameter参数不能为空。");
+//			}
+//			
+//			int curPageNum= 1;//默认为第一页
+//			if(dataJson.containsKey("pageNum")){
+//				curPageNum = dataJson.getInt("pageNum");
+//			}
+//			
+//			int pageSize = 30;//默认页容量为20
+//			if(dataJson.containsKey("pageSize")){
+//				pageSize = dataJson.getInt("pageSize");
+//			}
+//			
+//			int snapshot = 0; 
+//			if(dataJson.containsKey("snapshot")){
+//				snapshot=dataJson.getInt("snapshot");
+//			}
+//			
+//			JSONObject order =null; 
+//			if(dataJson.containsKey("order")){
+//				order=dataJson.getJSONObject("order");
+//			}
+//			
+//			JSONObject condition =null; 
+//			if(dataJson.containsKey("condition")){
+//				condition=dataJson.getJSONObject("condition");
+//			}
+//			
+//			//作业阶段
+//			int stage = dataJson.getInt("stage");
+//			
+//			Page page = SubtaskService.getInstance().list(userId,stage,condition,order,pageSize,curPageNum,snapshot);
+//
+//			SubtaskListPage pageList = new SubtaskListPage(page.getPageSize(),page.thePageNum(),page.getStart(),page.getTotalCount(),(List<SubtaskList>)page.getResult());
+//			SubtaskListResponse responseList = new SubtaskListResponse(0,"success",pageList);
+//			return responseList;
+//		
+//		}catch(Exception e){
+//			log.error("查询失败，原因："+e.getMessage(), e);
+//			SubtaskListResponse responseList = new SubtaskListResponse(-1,e.getMessage(),null);
+//			return responseList;
+//		}
+//	}
+	
+	
+	@ApiOperation(value = "获取subtask列表", notes = "获取subtask列表")  
+	@RequestMapping(value = { "/list" }, method = RequestMethod.GET)
+	public SubtaskListResponse list(HttpServletRequest request){
+		try{		
+			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
+			
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if(dataJson==null){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			
+			int curPageNum= 1;//默认为第一页
+			if(dataJson.containsKey("pageNum")){
+				curPageNum = dataJson.getInt("pageNum");
+			}
+			
+			int pageSize = 30;//默认页容量为20
+			if(dataJson.containsKey("pageSize")){
+				pageSize = dataJson.getInt("pageSize");
+			}
+			//查询条件
+			JSONObject condition = dataJson.getJSONObject("condition");
+			//block/task规划状态。2:"已发布",3:"已完成" 。状态不同，排序方式不同。
+			int planStatus = dataJson.getInt("planStatus");
+			//搜索筛选条件
+			JSONObject filter =null; 
+			if(dataJson.containsKey("filter")){
+				filter = dataJson.getJSONObject("filter");
+			}
+			
+			Page page = SubtaskService.getInstance().list(planStatus,condition,filter,pageSize,curPageNum);
+
+			SubtaskListPage pageList = new SubtaskListPage(page.getPageSize(),page.thePageNum(),page.getStart(),page.getTotalCount(),(List<SubtaskList>)page.getResult());
+			SubtaskListResponse responseList = new SubtaskListResponse(0,"success",pageList);
+			return responseList;
+		
+		}catch(Exception e){
+			log.error("查询失败，原因："+e.getMessage(), e);
+			SubtaskListResponse responseList = new SubtaskListResponse(-1,e.getMessage(),null);
+			return responseList;
+		}
+	}
+
+	
+
+	@ApiOperation(value = "获取subtask列表", notes = "获取subtask列表")  
+	@RequestMapping(value = { "/listByGroup" }, method = RequestMethod.GET)
+	public SubtaskListResponse listByGroup(@ApiParam(required =true, name = "access_token", value="接口调用凭证")@RequestParam( value = "access_token") String access_token
+			,@ApiParam(required =true, name = "parameter", value="{<br/>\"stage\":1\\\\作业阶段,<br/>\"condition\":1\\\\搜索条件（JSON），均可选，不支持组合。<br/>\t{\"subtaskId\"子任务Id<br/>\"subtaskName\"子任务名称<br/>\"ExeUserId\"作业员<br/>\"blockId\"所属blockId<br/>\"blockName\"所属block名称<br/>\"taskId\"所属任务id<br/>\"taskName\"所属任务名称},<br/>\"order\":\\\\排序条件（JSON），可选，按照时间查询,json中只有一个有效排序条件，不支持组合排序。<br/>\t{<br/>\"subtaskId\":\"desc\",<br/>\"status\":\"desc\",<br/>\"planStartDate\":\"desc\"//降序，asc升序,<br/>\"planEndDate\":\"desc\",<br/>\"blockId\":\"desc\"},<br/>\"pageNum\":1\\\\页码,<br/>\"pageSize\":1\\\\每页条数<br/>}")@RequestParam( value = "parameter") String postData			,HttpServletRequest request){
+		try{		
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if(dataJson==null){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			
+			int curPageNum= 1;//默认为第一页
+			if(dataJson.containsKey("pageNum")){
+				curPageNum = dataJson.getInt("pageNum");
+			}
+			
+			int pageSize = 30;//默认页容量为20
+			if(dataJson.containsKey("pageSize")){
+				pageSize = dataJson.getInt("pageSize");
+			}
+			
+			int snapshot = 0; 
+			if(dataJson.containsKey("snapshot")){
+				snapshot=dataJson.getInt("snapshot");
+			}
+			
+			JSONObject order =null; 
+			if(dataJson.containsKey("order")){
+				order=dataJson.getJSONObject("order");
+			}
+			
+			JSONObject condition =null; 
+			if(dataJson.containsKey("condition")){
+				condition=dataJson.getJSONObject("condition");
+			}
+			
+			//作业阶段
+			int stage = dataJson.getInt("stage");
+			//作业组
+			int groupId = dataJson.getInt("groupId");
+			
+			Page page = SubtaskService.getInstance().listByGroup(groupId,stage,condition,order,pageSize,curPageNum,snapshot);
+
+			SubtaskListPage pageList = new SubtaskListPage(page.getPageSize(),page.thePageNum(),page.getStart(),page.getTotalCount(),(List<SubtaskList>)page.getResult());
+			SubtaskListResponse responseList = new SubtaskListResponse(0,"success",pageList);
+			return responseList;
+		
+		}catch(Exception e){
+			log.error("查询失败，原因："+e.getMessage(), e);
+			SubtaskListResponse responseList = new SubtaskListResponse(-1,e.getMessage(),null);
+			return responseList;
+		}
+	}
 }

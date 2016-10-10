@@ -381,6 +381,7 @@ public class StaticsService {
 	 */
 	public SubtaskStatInfo getStatBySubtask(int subtaskId){
 		SubtaskStatInfo subtaskStatInfo = new SubtaskStatInfo();
+		subtaskStatInfo.setSubtaskId(subtaskId);
 		ManApi api=(ManApi) ApplicationContextUtil.getBean("manApi");
 	
 		Subtask subtask = null;
@@ -513,6 +514,48 @@ public class StaticsService {
 		List<Integer> taskIdList=StaticsOperation.getOpen100TaskIdList();
 		return taskIdList;
 	}
+
+	/**
+	 * 
+	 * 查询subtask完成情况
+	 * 
+	 * @param subtaskIdList
+	 * @return
+	 */
+	public Map<Integer, SubtaskStatInfo> getStatBySubtaskIdList(List<Integer> subtaskIdList) {
+		// TODO Auto-generated method stub
+		
+		Map<Integer, SubtaskStatInfo> SubtaskStatInfos = new HashMap<Integer, SubtaskStatInfo>(); 
+		Map<Integer,Integer> subtaskIdFlag = new HashMap<Integer,Integer>();
+		
+		MongoDao md = new MongoDao(StatMain.db_name);
+
+		int total = subtaskIdList.size();
+
+		MongoCursor<Document> iter = md
+				.find(StatMain.col_name_subtask, Filters.in("subtaskId", subtaskIdList))
+				.sort(Sorts.descending("stat_date")).batchSize(total)
+				.iterator();
+		
+		while (iter.hasNext()) {
+			JSONObject json = JSONObject.fromObject(iter.next());
+			
+			int subtaskId = json.getInt("subtaskId");
+			if(subtaskIdFlag.containsKey(subtaskId)){
+				continue;
+			}else{
+				SubtaskStatInfo subtaskStatInfo = new SubtaskStatInfo();
+				subtaskStatInfo.setSubtaskId(subtaskId);
+				subtaskStatInfo.setPercent(json.getInt("percent"));
+				subtaskStatInfo.setProgress(json.getInt("progress"));
+				subtaskStatInfo.setDiffDate(json.getInt("diffDate"));
+				SubtaskStatInfos.put(subtaskId, subtaskStatInfo);
+			}
+		}
+		return SubtaskStatInfos;
+
+	}
+	
 	
 	public static void main(String[] args) throws Exception {
 		
@@ -528,4 +571,6 @@ public class StaticsService {
 		
 //		StaticsService.getInstance().getChangeStatByGrids(grids, 0, 2, "20160620");
 	}
+
+
 }

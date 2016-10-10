@@ -286,7 +286,7 @@ public class Process extends AbstractProcess<Command> {
 		opRefSpeedlimit.run(this.getResult());
 
 		// 立交
-		IOperation opRefRdGsc = new OpRefRdGsc(this.getCommand());
+		IOperation opRefRdGsc = new OpRefRdGsc(this.getCommand(),this.getConn());
 		opRefRdGsc.run(this.getResult());
 
 		// 行政区划

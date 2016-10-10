@@ -41,7 +41,7 @@ public class ChainSelector {
 
 	/**
 	 * 根据kindCode获取chain值
-	 * 
+	 * 1)只返回外业品牌；2)充电站、充电桩品牌返回
 	 * @param kindCode
 	 * @return
 	 * @throws Exception
@@ -60,9 +60,9 @@ public class ChainSelector {
 			sb.append(" from sc_point_chain_code a, sc_point_kind_new b ");
 
 			if (kindCode == null || kindCode.length() <= 0) {
-				sb.append(" where a.chain_code = b.r_kind ");
+				sb.append(" where a.chain_code = b.r_kind and a.type=1 ");
 			} else {
-				sb.append(" where a.chain_code = b.r_kind and b.poikind = ? ");
+				sb.append(" where a.chain_code = b.r_kind and a.type=1 and b.poikind = ? ");
 			}
 
 			sb.append("order by b.poikind ");

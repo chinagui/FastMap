@@ -4,6 +4,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import org.apache.commons.dbutils.DbUtils;
 
@@ -257,8 +259,47 @@ public class RdSlopeSelector extends AbstractSelector {
 		}
 
 	}
-	
-	
+
+    /***
+     *
+     * 通过进入点查找坡度信息
+     *
+     * @param nodePids
+     * @param isLock
+     * @return
+     * @throws Exception
+     */
+    public List<RdSlope> loadByNodePids(Collection<Integer> nodePids, boolean isLock)
+            throws Exception {
+        List<RdSlope> rows = new ArrayList<RdSlope>();
+        PreparedStatement pstmt = null;
+        ResultSet resultSet = null;
+        try {
+            String sql = "SELECT pid FROM rd_slope WHERE node_pid in (:1) and u_record !=2";
+            if (isLock) {
+                sql += " for update nowait";
+            }
+            pstmt = conn.prepareStatement(sql);
+            StringBuffer sb = new StringBuffer();
+            Iterator<Integer> it = nodePids.iterator();
+            while (it.hasNext()) {
+                sb.append(it.next()).append(",");
+            }
+            pstmt.setString(1, sb.substring(0, sb.length() - 1));
+            resultSet = pstmt.executeQuery();
+            while (resultSet.next()) {
+                RdSlope rdSlope = new RdSlope();
+                ReflectionAttrUtils.executeResultSet(rdSlope, resultSet);
+                rows.add(rdSlope);
+            }
+            return rows;
+        } catch (Exception e) {
+            throw e;
+        } finally {
+            DbUtils.closeQuietly(resultSet);
+            DbUtils.closeQuietly(pstmt);
+        }
+    }
 	
 
 }

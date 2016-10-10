@@ -6,13 +6,17 @@ import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
+import com.navinfo.navicommons.geo.GeoUtils;
+import com.navinfo.navicommons.geo.computation.GeometryRelationUtils;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.Point;
 
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 用于维护节点分离对POI对象的影响
@@ -85,5 +89,49 @@ public class Operation {
                 }
             }
         }
+    }
+
+    /**
+     * 维护上下线分离对IxPoi的影响
+     *
+     * @param links      分离线
+     * @param leftLinks  分离后左线
+     * @param rightLinks 分离后右线
+     * @param result     结果集
+     * @return
+     * @throws Exception
+     */
+    public String updownDepart(List<RdLink> links, Map<Integer, RdLink> leftLinks, Map<Integer, RdLink> rightLinks, Result result) throws Exception {
+        IxPoiSelector selector = new IxPoiSelector(conn);
+        for (RdLink link : links) {
+            RdLink leftLink = leftLinks.get(link.pid());
+            RdLink rightLink = rightLinks.get(link.pid());
+
+            List<IxPoi> pois = selector.loadIxPoiByLinkPid(link.pid(), true);
+            // 判断每一个POI与分离后左右线的距离，更新距离近的线为进入线
+            for (IxPoi poi : pois) {
+                Coordinate coor = poi.getGeometry().getCoordinate();
+                Coordinate leftCoor = GeometryUtils.GetNearestPointOnLine(coor, leftLink.getGeometry());
+                double leftDistance = GeometryUtils.getDistance(coor, leftCoor);
+                Coordinate rightCoor = GeometryUtils.GetNearestPointOnLine(coor, rightLink.getGeometry());
+                double rightDistance = GeometryUtils.getDistance(coor, rightCoor);
+                int pid = 0;
+                double x = 0, y = 0;
+                if (leftDistance <= rightDistance) {
+                    pid = leftLink.pid();
+                    x = leftCoor.x;
+                    y = leftCoor.y;
+                } else {
+                    pid = rightLink.pid();
+                    x = rightCoor.x;
+                    y = rightCoor.y;
+                }
+                poi.changedFields().put("linkPid", pid);
+                poi.changedFields().put("xGuide", x);
+                poi.changedFields().put("yGuide", y);
+                result.insertObject(poi, ObjStatus.UPDATE, poi.pid());
+            }
+        }
+        return "";
     }
 }

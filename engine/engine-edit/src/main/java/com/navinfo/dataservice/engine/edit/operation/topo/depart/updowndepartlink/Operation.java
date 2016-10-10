@@ -630,13 +630,27 @@ public class Operation implements IOperation {
 	 */
 	private void updataRelationObj(Result result) throws Exception
 	{
-		OpRefRelationObj OpRefRelationObj = new OpRefRelationObj(this.conn);
+		OpRefRelationObj opRefRelationObj = new OpRefRelationObj(this.conn);
 
-		OpRefRelationObj.handlerdWarninginfo(this.command, result);
+		opRefRelationObj.handlerdWarninginfo(this.command, result);
 
-		OpRefRelationObj.handleSameLink(this.command, result);
-		
-		OpRefRelationObj.handlerdSpeedlimit(this.command, result);
+		opRefRelationObj.handleSameLink(this.command, result);
+
+		opRefRelationObj.handlerdSpeedlimit(this.command, result);
+
+		opRefRelationObj.handlerdRdElectroniceye(this.command, result);
+
+		opRefRelationObj.handlerRdLinkRtic(this.command, result);
+
+		opRefRelationObj.handlerIxPoi(this.command, result);
+
+		opRefRelationObj.handlerRdSpeedbump(this.command, result);
+
+		opRefRelationObj.handlerRdSlope(this.command, result);
+
+		opRefRelationObj.handlerRdVariableSpeed(this.command, result);
+
+		opRefRelationObj.handlerRdTrafficsignal(this.command, result);
 	}
 	/**
 	 * @param startLine

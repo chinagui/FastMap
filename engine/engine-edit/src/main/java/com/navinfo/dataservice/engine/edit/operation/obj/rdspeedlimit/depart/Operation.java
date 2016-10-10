@@ -115,8 +115,13 @@ public class Operation {
             if (rdSpeedlimitMap.containsKey(link.getPid())) {
                 List<RdSpeedlimit> rdSpeedlimitList = rdSpeedlimitMap.get(link.getPid());
                 for (RdSpeedlimit rdSpeedlimit : rdSpeedlimitList) {
-                    // 点限速为逆方向则关联link为右线
-                    updateRdSpeedlimit(rightLink, rdSpeedlimit, result);
+                    int direct = rdSpeedlimit.getDirect();
+                    if (2 == direct)
+                        // 点限速为顺方向则关联link为右线
+                        updateRdSpeedlimit(rightLink, rdSpeedlimit, result);
+                    else if (3 == direct)
+                        // 点限速为逆方向则关联link为左线
+                        updateRdSpeedlimit(leftLink, rdSpeedlimit, result);
                 }
             }
         }

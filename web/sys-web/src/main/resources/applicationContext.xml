@@ -36,28 +36,28 @@
 	
 	<websocket:handlers>
 		<websocket:mapping 	path="/sysMsg/webSocketServer" handler="sysMsgWebSocketHandler"/>
-		<!-- ����Э��ӿ� --> 
+		<!-- 握手协议接口 --> 
 		<websocket:handshake-interceptors>
 			<bean class="com.navinfo.dataservice.web.sys.websocket.WebSocketHandshakeInterceptor"></bean>
 		</websocket:handshake-interceptors>
 	</websocket:handlers>
 	
-	<!-- sockjsЭ�� -->
+	<!-- sockjs协议 -->
 	<websocket:handlers >
 		<websocket:mapping 	path="/sysMsg/sockjs/webSocketServer" handler="sysMsgWebSocketHandler"/>
-		<!-- ����Э��ӿ� --> 
+		<!-- 握手协议接口 --> 
 		<websocket:handshake-interceptors>
 			<bean class="com.navinfo.dataservice.web.sys.websocket.WebSocketHandshakeInterceptor"></bean>
 		</websocket:handshake-interceptors>
-		<!-- sockjs ���ñ�־-->
+		<!-- sockjs 启用标志-->
 		<websocket:sockjs/>
 	</websocket:handlers>
 	
 	<!-- stomp and message broker config start -->
-	<!-- /app Ϊcotroller �����ǰ׺-->
+	<!-- /app 为cotroller 处理的前缀-->
 	<websocket:message-broker application-destination-prefix="/app">
-		<!-- websocket �ײ����ӵ�ַ -->
-		<!-- websocket �ײ����ӵ�ַ ʹ��stomp��ʹ�ø�·��"/sysMsg"" -->
+		<!-- websocket 底层连接地址 -->
+		<!-- websocket 底层连接地址 使用stomp是使用该路径"/sysMsg"" -->
 		<websocket:stomp-endpoint path="/sysMsg">
 			<websocket:sockjs />
 		</websocket:stomp-endpoint>

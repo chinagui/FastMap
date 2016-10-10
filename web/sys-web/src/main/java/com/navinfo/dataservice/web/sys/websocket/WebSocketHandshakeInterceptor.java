@@ -12,7 +12,6 @@ import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.server.support.HttpSessionHandshakeInterceptor;
 
 import com.navinfo.dataservice.commons.token.AccessToken;
-import com.navinfo.dataservice.commons.util.StringUtils;
 
 
 

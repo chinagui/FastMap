@@ -55,7 +55,7 @@ public class Operation implements IOperation {
 	 * @param result
 	 * @throws Exception
 	 */
-	public void deleteByLinkPid(List<IRow> linkRow, Result result) throws Exception {
+	public void deleteByLinkPid(List<? extends IRow> linkRow, Result result) throws Exception {
 		List<RdGsc> allDelRdGscList = new ArrayList<>();
 
 		List<RdGscLink> allDelRdGscLinkList = new ArrayList<>();

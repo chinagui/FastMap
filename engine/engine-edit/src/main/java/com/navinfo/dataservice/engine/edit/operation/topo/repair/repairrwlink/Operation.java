@@ -7,10 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import net.sf.json.JSONObject;
-
-import org.apache.commons.collections.CollectionUtils;
-
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -26,6 +22,8 @@ import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
+
+import net.sf.json.JSONObject;
 
 public class Operation implements IOperation {
 
@@ -75,7 +73,7 @@ public class Operation implements IOperation {
 			content.put("length", length);
 			boolean isChanged = this.command.getUpdateLink().fillChangeFields(content);
 			if (isChanged) {
-				result.insertObject(this.command.getUpdateLink(), ObjStatus.UPDATE, this.command.getLinkPid());
+				result.insertObject(this.command.getUpdateLink(), ObjStatus.UPDATE, this.command.getUpdateLink().getPid());
 			}
 			//拷贝原link，set属性
 			RwLink link = new RwLink();
@@ -95,7 +93,7 @@ public class Operation implements IOperation {
 				links.addAll(RwLinkOperateUtils.getCreateRwLinksWithMesh(geomInter, maps, result));
 
 			}
-			result.insertObject(this.command.getUpdateLink(), ObjStatus.DELETE, this.command.getLinkPid());
+			result.insertObject(this.command.getUpdateLink(), ObjStatus.DELETE, this.command.getUpdateLink().getPid());
 		}
 //		// 处理对立交的影响
 //		if (CollectionUtils.isNotEmpty(this.command.getGscList())) {

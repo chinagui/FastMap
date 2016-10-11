@@ -111,7 +111,7 @@ public class Operation implements IOperation {
 
 			}
 			result.insertObject(this.command.getUpdateLink(), ObjStatus.DELETE,
-					this.command.getLinkPid());
+					this.command.getUpdateLink().getPid());
 		}
 		map.put(this.command.getLinkPid(), links);
 

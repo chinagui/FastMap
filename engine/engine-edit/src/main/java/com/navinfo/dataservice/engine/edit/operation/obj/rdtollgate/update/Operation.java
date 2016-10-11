@@ -117,11 +117,11 @@ public class Operation implements IOperation {
                     boolean isChange = name.fillChangeFields(jsonName);
                     if (isChange) {
                         result.insertObject(name, ObjStatus.UPDATE,
-                                name.getNameId());
+                                name.getPid());
                     }
                 } else if (ObjStatus.DELETE.toString().equals(objStatus)) {
                     result.insertObject(name, ObjStatus.DELETE,
-                            name.getNameId());
+                            name.getPid());
                 } else if (ObjStatus.INSERT.toString().equals(objStatus)) {
                     name = new RdTollgateName();
                     name.Unserialize(jsonName);
@@ -129,7 +129,7 @@ public class Operation implements IOperation {
                             .applyRdTollgateNamePid());
                     name.setPid(this.command.getTollgate().getPid());
                     result.insertObject(name, ObjStatus.INSERT,
-                            name.getNameId());
+                            name.getPid());
                 }
             }
         }

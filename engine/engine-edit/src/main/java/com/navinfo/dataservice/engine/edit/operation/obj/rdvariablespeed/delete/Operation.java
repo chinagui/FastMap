@@ -66,11 +66,11 @@ public class Operation implements IOperation {
 				if(speedVia.getLinkPid() == link.getPid())
 				{
 					selectSeqNum = viaSeqNum;
-					result.insertObject(speedVia, ObjStatus.DELETE, speedVia.getLinkPid());
+					result.insertObject(speedVia, ObjStatus.DELETE, speedVia.getVspeedPid());
 				}
 				else if(selectSeqNum != 0 && selectSeqNum<viaSeqNum)
 				{
-					result.insertObject(speedVia, ObjStatus.DELETE, speedVia.getLinkPid());
+					result.insertObject(speedVia, ObjStatus.DELETE, speedVia.getVspeedPid());
 				}
 			}
 			

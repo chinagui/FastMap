@@ -21,7 +21,7 @@ public class Operation implements IOperation {
 
 	@Override
 	public String run(Result result) throws Exception {
-		result.insertObject(command.getSamepoi(), ObjStatus.DELETE, command.getPid());
+		result.insertObject(command.getSamepoi(), ObjStatus.DELETE, command.getSamepoi().getPid());
 		return null;
 	}
 

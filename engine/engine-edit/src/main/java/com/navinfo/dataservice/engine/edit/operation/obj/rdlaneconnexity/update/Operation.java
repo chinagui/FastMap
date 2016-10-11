@@ -142,11 +142,11 @@ public class Operation implements IOperation {
 				}
 
 				if (json.containsKey("vias")) {
-					JSONArray vias = content.getJSONArray("vias");
+					JSONArray vias = json.getJSONArray("vias");
 
 					for (int j = 0; j < vias.size(); j++) {
 
-						JSONObject viajson = vias.getJSONObject(i);
+						JSONObject viajson = vias.getJSONObject(j);
 
 						if (viajson.containsKey("objStatus")) {
 
@@ -301,7 +301,7 @@ public class Operation implements IOperation {
 		for (RdLaneTopology delTopology : topologyDepart.values()) {
 
 			result.insertObject(delTopology, ObjStatus.DELETE,
-					delTopology.pid());
+					delTopology.parentPKValue());
 		}
 
 		for (RdLaneConnexity laneConnexity : connexityDepart.values()) {
@@ -339,7 +339,7 @@ public class Operation implements IOperation {
 				laneTopology.changedFields().put("outLinkPid", rdlink.getPid());
 
 				result.insertObject(laneTopology, ObjStatus.UPDATE,
-						laneTopology.pid());
+						laneTopology.parentPKValue());
 			}
 		}
 	}

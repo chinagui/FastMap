@@ -99,10 +99,10 @@ public class Operation implements IOperation {
 			RdObjectInter objectInter = (RdObjectInter) inter;
 			if (subObj == null) {
 				result.insertObject(objectInter, ObjStatus.DELETE,
-						objectInter.getInterPid());
+						objectInter.getPid());
 			} else if (!subObj.contains(objectInter.getInterPid())) {
 				result.insertObject(objectInter, ObjStatus.DELETE,
-						objectInter.getInterPid());
+						objectInter.getPid());
 			} else {
 				subObj.remove((Integer) objectInter.getInterPid());
 			}
@@ -122,7 +122,7 @@ public class Operation implements IOperation {
 				rdObjectInter.setPid(rdObject.getPid());
 
 				result.insertObject(rdObjectInter, ObjStatus.INSERT,
-						rdObjectInter.getInterPid());
+						rdObjectInter.getPid());
 
 				pidList.add(interPid);
 			}
@@ -146,10 +146,10 @@ public class Operation implements IOperation {
 
 			if (subObj == null) {
 				result.insertObject(objectRoad, ObjStatus.DELETE,
-						objectRoad.getRoadPid());
+						objectRoad.getPid());
 			} else if (!subObj.contains(objectRoad.getRoadPid())) {
 				result.insertObject(objectRoad, ObjStatus.DELETE,
-						objectRoad.getRoadPid());
+						objectRoad.getPid());
 			} else {
 				subObj.remove((Integer) objectRoad.getRoadPid());
 			}
@@ -169,7 +169,7 @@ public class Operation implements IOperation {
 				rdObjectRoad.setPid(rdObject.getPid());
 
 				result.insertObject(rdObjectRoad, ObjStatus.INSERT,
-						rdObjectRoad.getRoadPid());
+						rdObjectRoad.getPid());
 
 				pidList.add(roadPid);
 			}
@@ -199,7 +199,7 @@ public class Operation implements IOperation {
 
 			if (subObj == null || !subObj.contains(objLink.getLinkPid())) {
 				result.insertObject(objLink, ObjStatus.DELETE,
-						objLink.getLinkPid());
+						objLink.getPid());
 			} else {
 				subObj.remove((Integer) objLink.getLinkPid());
 			}
@@ -219,7 +219,7 @@ public class Operation implements IOperation {
 				objLink.setPid(rdObject.getPid());
 
 				result.insertObject(objLink, ObjStatus.INSERT,
-						objLink.getLinkPid());
+						objLink.getPid());
 
 				pidList.add(linkPid);
 			}
@@ -276,7 +276,7 @@ public class Operation implements IOperation {
 					name.setNameGroupid(rdObject.getNames().size() + 1);
 
 					result.insertObject(name, ObjStatus.INSERT,
-							name.getNameId());
+							name.getPid());
 
 				}
 			}
@@ -329,7 +329,7 @@ public class Operation implements IOperation {
 				for (Integer tmpPid : tmpPidList) {
 					if (objLink.getLinkPid() == tmpPid) {
 						result.insertObject(objLink, ObjStatus.DELETE,
-								objLink.getLinkPid());
+								objLink.getPid());
 						updateRdObject = true;
 					}
 				}
@@ -355,7 +355,7 @@ public class Operation implements IOperation {
 					objRoad.setRoadPid(road.getPid());
 
 					result.insertObject(objRoad, ObjStatus.INSERT,
-							objRoad.getRoadPid());
+							objRoad.getPid());
 				}
 			}
 		}
@@ -406,7 +406,7 @@ public class Operation implements IOperation {
 				for (Integer tmpPid : tmpPidList) {
 					if (objLink.getLinkPid() == tmpPid) {
 						result.insertObject(objLink, ObjStatus.DELETE,
-								objLink.getLinkPid());
+								objLink.getPid());
 						updateRdObject = true;
 					}
 				}
@@ -432,7 +432,7 @@ public class Operation implements IOperation {
 					objRoad.setRoadPid(inter.getPid());
 
 					result.insertObject(objRoad, ObjStatus.INSERT,
-							objRoad.getRoadPid());
+							objRoad.getPid());
 				}
 			}
 		}
@@ -469,7 +469,7 @@ public class Operation implements IOperation {
 
 				if (objLink.getLinkPid() == oldLink.getPid()) {
 					result.insertObject(objLink, ObjStatus.DELETE,
-							objLink.getLinkPid());
+							objLink.getPid());
 				}
 			}
 
@@ -481,7 +481,7 @@ public class Operation implements IOperation {
 				objLink.setPid(rdObject.getPid());
 
 				result.insertObject(objLink, ObjStatus.INSERT,
-						objLink.getLinkPid());
+						objLink.getPid());
 			}
 		}
 	}

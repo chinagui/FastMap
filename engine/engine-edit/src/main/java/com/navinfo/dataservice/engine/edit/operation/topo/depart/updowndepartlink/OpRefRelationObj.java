@@ -3,6 +3,8 @@ package com.navinfo.dataservice.engine.edit.operation.topo.depart.updowndepartli
 import java.sql.Connection;
 
 import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.engine.edit.operation.obj.rdcross.depart.*;
+import com.navinfo.dataservice.engine.edit.operation.obj.rdcross.depart.Operation;
 
 public class OpRefRelationObj {
 
@@ -15,15 +17,16 @@ public class OpRefRelationObj {
     // 同一线
     public String handleSameLink(Command command, Result result) throws Exception {
         com.navinfo.dataservice.engine.edit.operation.obj.rdsamelink.delete.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdsamelink.delete.Operation(conn);
-        operation.deleteByUpDownPartLink(command.getsNode().getPid(),command.geteNode().getPid(),command.getLinks(), result);
+        operation.deleteByUpDownPartLink(command.getsNode().getPid(), command.geteNode().getPid(), command.getLinks(), result);
         return "";
     }
+
     // 同一点
     public String handleSameNode(Command command, Result result) throws Exception {
         com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.delete.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.delete.Operation(conn);
-        operation.deleteByUpDownPartLink(command.getsNode().getPid(),command.geteNode().getPid(),command.getLinks(), result);
+        operation.deleteByUpDownPartLink(command.getsNode().getPid(), command.geteNode().getPid(), command.getLinks(), result);
         return "";
-    }    
+    }
 
     // 警示信息
     public String handlerdWarninginfo(Command command, Result result) throws Exception {
@@ -85,6 +88,12 @@ public class OpRefRelationObj {
     // 维护信号灯
     public String handlerRdTrafficsignal(Command command, Result result) throws Exception {
         com.navinfo.dataservice.engine.edit.operation.obj.trafficsignal.depart.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.trafficsignal.depart.Operation(conn);
+        return operation.updownDepart(command.getLinks(), command.getLeftLinkMapping(), command.getRightLinkMapping(), result);
+    }
+
+    // 维护路口
+    public String handlerRdCross(Command command, Result result) throws Exception {
+        com.navinfo.dataservice.engine.edit.operation.obj.rdcross.depart.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdcross.depart.Operation(conn);
         return operation.updownDepart(command.getLinks(), command.getLeftLinkMapping(), command.getRightLinkMapping(), result);
     }
 

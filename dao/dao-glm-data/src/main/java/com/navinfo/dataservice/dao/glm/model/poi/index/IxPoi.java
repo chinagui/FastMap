@@ -207,7 +207,7 @@ public class IxPoi implements IObj {
 	private int truckFlag = 0;
 	
 	//app修改标识
-	private String rawFields;
+	protected String rawFields;
 
 	public String getLevel() {
 		return level;

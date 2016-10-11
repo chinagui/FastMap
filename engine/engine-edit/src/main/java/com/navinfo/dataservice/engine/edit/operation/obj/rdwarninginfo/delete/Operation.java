@@ -40,7 +40,7 @@ public class Operation implements IOperation {
 	
 	private String delete(Result result)
 	{
-		result.insertObject(rdWarninginfo, ObjStatus.DELETE, command.getPid());
+		result.insertObject(rdWarninginfo, ObjStatus.DELETE, rdWarninginfo.getPid());
 
 		return null;
 	}

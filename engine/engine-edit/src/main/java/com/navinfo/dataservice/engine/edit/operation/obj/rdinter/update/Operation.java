@@ -168,7 +168,7 @@ public class Operation implements IOperation {
 
 					interNode.setNodePid(link.getsNodePid());
 
-					result.insertObject(interNode, ObjStatus.INSERT, interNode.getNodePid());
+					result.insertObject(interNode, ObjStatus.INSERT, interNode.getPid());
 					
 					hasAddNodePidList.add(interNode.getNodePid());
 				}
@@ -179,7 +179,7 @@ public class Operation implements IOperation {
 
 					interNode.setNodePid(link.geteNodePid());
 
-					result.insertObject(interNode, ObjStatus.INSERT, interNode.getNodePid());
+					result.insertObject(interNode, ObjStatus.INSERT, interNode.getPid());
 					
 					hasAddNodePidList.add(interNode.getNodePid());
 				}
@@ -190,7 +190,7 @@ public class Operation implements IOperation {
 
 				newInterLink.setLinkPid(link.getPid());
 
-				result.insertObject(newInterLink, ObjStatus.INSERT, interLink.getLinkPid());
+				result.insertObject(newInterLink, ObjStatus.INSERT, interLink.getPid());
 			}
 		}
 	}

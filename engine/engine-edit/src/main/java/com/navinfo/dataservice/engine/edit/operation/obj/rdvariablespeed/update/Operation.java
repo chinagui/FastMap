@@ -66,9 +66,9 @@ public class Operation implements IOperation {
 		for (IRow row : variableSpeed.getVias()) {
 			RdVariableSpeedVia via = (RdVariableSpeedVia) row;
 			if (subObj == null) {
-				result.insertObject(via, ObjStatus.DELETE, via.getLinkPid());
+				result.insertObject(via, ObjStatus.DELETE, via.getVspeedPid());
 			} else if (!subObj.contains(via.getLinkPid())) {
-				result.insertObject(via, ObjStatus.DELETE, via.getLinkPid());
+				result.insertObject(via, ObjStatus.DELETE, via.getVspeedPid());
 			} else {
 				subObj.remove((Integer) via.getLinkPid());
 			}
@@ -81,7 +81,7 @@ public class Operation implements IOperation {
 
 			via.setVspeedPid(variableSpeed.getPid());
 
-			result.insertObject(via, ObjStatus.INSERT, via.getLinkPid());
+			result.insertObject(via, ObjStatus.INSERT, via.getVspeedPid());
 		}
 	}
 
@@ -138,7 +138,7 @@ public class Operation implements IOperation {
 				if (via.getLinkPid() == oldLink.getPid()) {
 
 					// 删除原始线作为经过线的情况
-					result.insertObject(via, ObjStatus.DELETE, via.getLinkPid());
+					result.insertObject(via, ObjStatus.DELETE, via.getVspeedPid());
 
 					int oldSNodePid = oldLink.getsNodePid();
 
@@ -152,7 +152,7 @@ public class Operation implements IOperation {
 
 							rdVariableSpeedVia.setVspeedPid(rdVariableSpeed.getPid());
 
-							result.insertObject(rdVariableSpeedVia, ObjStatus.INSERT, via.getLinkPid());
+							result.insertObject(rdVariableSpeedVia, ObjStatus.INSERT, via.getVspeedPid());
 
 							hasFindStartLink = true;
 						} else {
@@ -164,7 +164,7 @@ public class Operation implements IOperation {
 
 							rdVariableSpeedVia2.setVspeedPid(rdVariableSpeed.getPid());
 
-							result.insertObject(rdVariableSpeedVia2, ObjStatus.INSERT, via.getLinkPid());
+							result.insertObject(rdVariableSpeedVia2, ObjStatus.INSERT, via.getVspeedPid());
 						}
 					}
 				} else if (hasFindStartLink) {
@@ -202,7 +202,7 @@ public class Operation implements IOperation {
 
 						rdVariableSpeedVia.setVspeedPid(rdVariableSpeed.getPid());
 
-						result.insertObject(rdVariableSpeedVia, ObjStatus.INSERT, rdVariableSpeedVia.getLinkPid());
+						result.insertObject(rdVariableSpeedVia, ObjStatus.INSERT, rdVariableSpeedVia.getVspeedPid());
 
 						// 更新其他接续link的序号
 						List<IRow> rdViaList = rdVariableSpeed.getVias();
@@ -212,7 +212,7 @@ public class Operation implements IOperation {
 
 							rdVia.changedFields().put("seqNum", i + 2);
 
-							result.insertObject(rdVia, ObjStatus.UPDATE, rdVia.getLinkPid());
+							result.insertObject(rdVia, ObjStatus.UPDATE, rdVia.getVspeedPid());
 						}
 					}
 				}

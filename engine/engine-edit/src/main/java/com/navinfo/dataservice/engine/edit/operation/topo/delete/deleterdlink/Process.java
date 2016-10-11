@@ -16,7 +16,6 @@ import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdmin;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
 import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdElectroniceye;
-import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.model.rd.speedlimit.RdSpeedlimit;
@@ -24,7 +23,6 @@ import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdAdminSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.eleceye.RdElectroniceyeSelector;
-import com.navinfo.dataservice.dao.glm.selector.rd.gsc.RdGscSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.speedlimit.RdSpeedlimitSelector;
@@ -103,15 +101,6 @@ public class Process extends AbstractProcess<Command> {
 		this.getCommand().setCrosses(crosses);
 	}
 
-	public void lockRdGsc() throws Exception {
-
-		RdGscSelector selector = new RdGscSelector(this.getConn());
-
-		List<RdGsc> rdGscList = selector.loadRdGscLinkByLinkPid(this.getCommand().getLinkPid(), "RD_LINK", true);
-
-		this.getCommand().setRdGscs(rdGscList);
-	}
-
 	public void lockRdSpeedlimits() throws Exception {
 
 		RdSpeedlimitSelector selector = new RdSpeedlimitSelector(this.getConn());
@@ -154,8 +143,6 @@ public class Process extends AbstractProcess<Command> {
 		lockRdCross();
 
 		lockRdSpeedlimits();
-
-		lockRdGsc();
 
 		lockAdAdmin();
 

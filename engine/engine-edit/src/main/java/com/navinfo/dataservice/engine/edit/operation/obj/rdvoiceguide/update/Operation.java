@@ -6,9 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -19,6 +16,9 @@ import com.navinfo.dataservice.dao.glm.model.rd.voiceguide.RdVoiceguideDetail;
 import com.navinfo.dataservice.dao.glm.model.rd.voiceguide.RdVoiceguideVia;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.voiceguide.RdVoiceguideSelector;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 public class Operation implements IOperation {
 
@@ -345,7 +345,7 @@ public class Operation implements IOperation {
 						newVia.setSeqNum(breakVia.getSeqNum() + i);
 
 						result.insertObject(newVia, ObjStatus.INSERT,
-								newVia.getDetailId());
+								detail.parentPKValue());
 					}
 
 				} else {
@@ -364,12 +364,12 @@ public class Operation implements IOperation {
 								- i);
 
 						result.insertObject(newVia, ObjStatus.INSERT,
-								newVia.getDetailId());
+								detail.parentPKValue());
 					}
 				}
 
 				result.insertObject(breakVia, ObjStatus.DELETE,
-						breakVia.getDetailId());
+						detail.parentPKValue());
 
 				// 维护后续经过线序号
 				for (RdVoiceguideVia via : viaGroup) {
@@ -380,7 +380,7 @@ public class Operation implements IOperation {
 								via.getSeqNum() + newLinks.size() - 1);
 
 						result.insertObject(via, ObjStatus.UPDATE,
-								via.getDetailId());
+								detail.parentPKValue());
 					}
 				}
 			}
@@ -459,7 +459,7 @@ public class Operation implements IOperation {
 		for (RdVoiceguideDetail delDetail : detailDepart.values()) {
 
 			result.insertObject(delDetail, ObjStatus.DELETE,
-					delDetail.pid());
+					delDetail.parentPKValue());
 		}
 
 		for (RdVoiceguide voiceguide : voiceguideDepart.values()) {
@@ -497,7 +497,7 @@ public class Operation implements IOperation {
 				detail.changedFields().put("outLinkPid", rdlink.getPid());
 
 				result.insertObject(detail, ObjStatus.UPDATE,
-						detail.pid());
+						detail.parentPKValue());
 			}
 		}
 	}

@@ -19,7 +19,6 @@ public class Process extends AbstractProcess<Command> {
 
 	public Process(AbstractCommand command) throws Exception {
 		super(command);
-		// TODO Auto-generated constructor stub
 	}
 
 	@Override

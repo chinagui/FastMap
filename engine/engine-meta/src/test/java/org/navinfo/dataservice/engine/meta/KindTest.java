@@ -26,9 +26,8 @@ public class KindTest {
     @Test
     public void testQueryKind() {
         try {
-            Connection conn = DBConnector.getInstance().getMetaConnection();
-            KindSelector selector = new KindSelector(conn);
-            JSONObject jsonObject = selector.getKinkMap();
+            KindCodeSelector selector = new KindCodeSelector();
+            JSONObject jsonObject = selector.searchkindLevel("150104");
             System.out.println(jsonObject);
         } catch (Exception e) {
             e.printStackTrace();

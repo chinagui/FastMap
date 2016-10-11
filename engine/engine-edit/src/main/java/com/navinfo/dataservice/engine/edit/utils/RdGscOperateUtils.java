@@ -4,10 +4,12 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
@@ -173,14 +175,15 @@ public class RdGscOperateUtils {
 	public static boolean checkIsSelfInter(List<IRow> gscLinkList) {
 		boolean flag = false;
 
-		if (gscLinkList.size() == 2) {
-			RdGscLink link1 = (RdGscLink) gscLinkList.get(0);
+		Set<Integer> selfGscLinkPid = new HashSet<>();
 
-			RdGscLink link2 = (RdGscLink) gscLinkList.get(1);
+		for (IRow row : gscLinkList) {
+			RdGscLink link = (RdGscLink) row;
 
-			if (link1.getLinkPid() == link2.getLinkPid()) {
-				flag = true;
-			}
+			selfGscLinkPid.add(link.getLinkPid());
+		}
+		if (selfGscLinkPid.size() == 1) {
+			flag = true;
 		}
 
 		return flag;
@@ -605,8 +608,9 @@ public class RdGscOperateUtils {
 		if (gscList.size() == 0) {
 			return false;
 		}
-
 		for (RdGsc rdGsc : gscList) {
+
+			boolean selfGsc = checkIsSelfInter(rdGsc.getLinks());
 
 			boolean flag = true;
 
@@ -614,15 +618,32 @@ public class RdGscOperateUtils {
 
 			Coordinate gscCoord = rdGsc.getGeometry().getCoordinate();
 
+			// 自相交立交形状点数目
+			int selfGscPointNum = 0;
+
 			for (Coordinate nodeCoord : coordinates) {
 
 				if (gscCoord.equals(nodeCoord)) {
-
-					flag = false;
+					if (selfGsc) {
+						// 自相交立交
+						selfGscPointNum++;
+					} else {
+						flag = false;
+					}
 				}
 			}
-
-			if (flag) {
+			if (selfGsc)
+			{
+				if(selfGscPointNum >= rdGsc.getLinks().size())
+				{
+					flag = false;
+				}
+				else
+				{
+					flag = true;
+				}
+			}
+			if(flag) {
 				return flag;
 			}
 

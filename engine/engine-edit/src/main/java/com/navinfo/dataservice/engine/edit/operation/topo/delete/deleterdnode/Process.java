@@ -386,9 +386,8 @@ public class Process extends AbstractProcess<Command> {
 		List<AlertObject> updateResAlertDataList = new ArrayList<>();
 		List<AlertObject> delResAlertDataList = new ArrayList<>();
 
-		updateResAlertDataList
-				.addAll(rdrestrictionOperation.getDeleteLinkResInfectData(this.getCommand().getLinkPids()));
-		delResAlertDataList.addAll(rdrestrictionOperation.getUpdateResInfectData(this.getCommand().getLinkPids()));
+		delResAlertDataList.addAll(rdrestrictionOperation.getDeleteLinkResInfectData(this.getCommand().getLinkPids()));
+		updateResAlertDataList.addAll(rdrestrictionOperation.getUpdateResInfectData(this.getCommand().getLinkPids()));
 		if (CollectionUtils.isNotEmpty(updateResAlertDataList)) {
 			infects.put("此link上存在交限关系信息，删除该Link会对应删除此组关系", updateResAlertDataList);
 		}

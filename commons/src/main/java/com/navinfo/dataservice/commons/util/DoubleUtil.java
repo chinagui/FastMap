@@ -15,6 +15,11 @@ public class DoubleUtil {
 		if(Math.round(num1*100000)==Math.round(num2*100000)) return true;
 		return false;
 	}
+	public static boolean doubleEquals(double num1,double num2){
+		if(Math.round(num1*1000000000)==Math.round(num2*1000000000)) return true;
+		return false;
+	}
+	
 	
 	public static void main(String[] args){
 		System.out.println(keepSpecDecimal(1.23456666));

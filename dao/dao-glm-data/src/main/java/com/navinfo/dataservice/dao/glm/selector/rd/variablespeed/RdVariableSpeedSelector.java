@@ -3,13 +3,6 @@
  */
 package com.navinfo.dataservice.dao.glm.selector.rd.variablespeed;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.variablespeed.RdVariableSpeed;
@@ -17,6 +10,12 @@ import com.navinfo.dataservice.dao.glm.model.rd.variablespeed.RdVariableSpeedVia
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
 import com.navinfo.navicommons.database.sql.DBUtils;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Zhang Xiaolong
@@ -288,5 +287,50 @@ public class RdVariableSpeedSelector extends AbstractSelector {
             DBUtils.closeStatement(pstmt);
         }
         return rdVariableSpeeds;
+    }
+
+    /**
+     * 根据NodePid查找接续线使用该NODE的可变限速
+     *
+     * @param nodePids 目标link经过点
+     * @param isLock   是否加锁
+     * @return
+     * @throws Exception
+     */
+    public List<RdVariableSpeed> loadRdVariableSpeedByVianodeIds(List<Integer> nodePids, boolean isLock) throws Exception {
+        List<RdVariableSpeed> result = new ArrayList<>();
+        if (nodePids.isEmpty())
+            return result;
+        StringBuffer sb = new StringBuffer();
+        String nodePidsStr = StringUtils.getInteStr(nodePids);
+        sb.append("with tmp as (select link_pid from rd_link where s_node_pid in(");
+        sb.append(nodePidsStr);
+        sb.append(") ");
+        sb.append("or e_node_pid in(");
+        sb.append(nodePidsStr);
+        sb.append(")) ");
+        sb.append("select * from rd_variable_speed rvs, rd_variable_speed_via rvsv, tmp rl ");
+        sb.append("where rvsv.link_pid = rl.link_pid ");
+        sb.append("and rvs.vspeed_pid = rvsv.vspeed_pid ");
+
+        PreparedStatement pstmt = null;
+        ResultSet resultSet = null;
+        try {
+            pstmt = getConn().prepareStatement(sb.toString());
+            resultSet = pstmt.executeQuery();
+            while (resultSet.next()) {
+                RdVariableSpeed rdVariableSpeed = new RdVariableSpeed();
+                ReflectionAttrUtils.executeResultSet(rdVariableSpeed, resultSet);
+                List<IRow> vias = this.loadRowsByClassParentId(RdVariableSpeedVia.class, rdVariableSpeed.getPid(), isLock, "seq_num");
+                rdVariableSpeed.setVias(vias);
+                result.add(rdVariableSpeed);
+            }
+        } catch (Exception e) {
+            throw e;
+        } finally {
+            DBUtils.closeResultSet(resultSet);
+            DBUtils.closeStatement(pstmt);
+        }
+        return result;
     }
 }

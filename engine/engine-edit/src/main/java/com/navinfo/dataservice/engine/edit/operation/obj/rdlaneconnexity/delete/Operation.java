@@ -66,7 +66,11 @@ public class Operation implements IOperation {
 		}
 
 		for (RdLaneTopology topo : deleteDetailLanesList) {
-			result.insertObject(topo, ObjStatus.DELETE, topo.getConnexityPid());
+			//可能通过经过线算出来某车信已经需要删除，该车信的组不需要单独处理
+			if(!deleteLanesMap.containsKey(topo.getConnexityPid()))
+			{
+				result.insertObject(topo, ObjStatus.DELETE, topo.getConnexityPid());
+			}
 		}
 	}
 
@@ -178,31 +182,34 @@ public class Operation implements IOperation {
 	 */
 	public List<AlertObject> getUpdateResInfectData(List<Integer> linkPidList) throws Exception {
 		
-		Map<Integer, RdLaneConnexity> deleteInLinkLanesMap = new HashMap<>();
+		Map<Integer, RdLaneConnexity> deleteLanesMap = new HashMap<>();
 		
 		List<RdLaneTopology> deleteDetailLanesList = new ArrayList<>();
 		//1.进入线的车信
-		getDeleteInLinkRdLane(linkPidList,deleteInLinkLanesMap);
+		getDeleteInLinkRdLane(linkPidList,deleteLanesMap);
 		// 2.link作为退出线，删除该Link会对应删除此组关系
-		getDeleteOutLinkLane(linkPidList, deleteDetailLanesList,deleteInLinkLanesMap);
+		getDeleteOutLinkLane(linkPidList, deleteDetailLanesList,deleteLanesMap);
 		// 3.link作为经过线，删除该link会对应删除次组关系
-		getDeleteViaLinkLane(linkPidList, deleteDetailLanesList,deleteInLinkLanesMap);
+		getDeleteViaLinkLane(linkPidList, deleteDetailLanesList,deleteLanesMap);
 
 		List<AlertObject> alertList = new ArrayList<>();
 
 		for (RdLaneTopology topo : deleteDetailLanesList) {
-
-			AlertObject alertObj = new AlertObject();
-
-			alertObj.setObjType(ObjType.RDLANECONNEXITY);
-
-			alertObj.setPid(topo.getConnexityPid());
-
-			alertObj.setStatus(ObjStatus.UPDATE);
-
-			if(!alertList.contains(alertObj))
+			
+			if(!deleteLanesMap.containsKey(topo.getConnexityPid()))
 			{
-				alertList.add(alertObj);
+				AlertObject alertObj = new AlertObject();
+
+				alertObj.setObjType(ObjType.RDLANECONNEXITY);
+
+				alertObj.setPid(topo.getConnexityPid());
+
+				alertObj.setStatus(ObjStatus.UPDATE);
+
+				if(!alertList.contains(alertObj))
+				{
+					alertList.add(alertObj);
+				}
 			}
 		}
 

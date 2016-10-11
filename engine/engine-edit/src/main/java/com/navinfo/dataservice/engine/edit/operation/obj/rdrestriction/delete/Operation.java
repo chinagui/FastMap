@@ -45,7 +45,7 @@ public class Operation implements IOperation {
 	}
 	
 	/**
-	 * 删除link维护车信
+	 * 删除link维护交限
 	 * 
 	 * @param linkPidList
 	 * @param result
@@ -56,7 +56,7 @@ public class Operation implements IOperation {
 
 		List<RdRestrictionDetail> deleteDetailLanesList = new ArrayList<>();
 
-		// 1.link作为进入线，删除link删除车信本身
+		// 1.link作为进入线，删除link删除交限本身
 		getDeleteInLinkRdRest(linkPidList,deleteLanesMap);
 		// 2.link作为退出线，删除该Link会对应删除此组关系
 		getDeleteOutLinkRest(linkPidList, deleteDetailLanesList,deleteLanesMap);
@@ -68,9 +68,13 @@ public class Operation implements IOperation {
 			result.insertObject(restriction, ObjStatus.DELETE, restriction.getPid());
 		}
 		
-		for(RdRestrictionDetail detial : deleteDetailLanesList)
+		for(RdRestrictionDetail detail : deleteDetailLanesList)
 		{
-			result.insertObject(detial, ObjStatus.DELETE, detial.getRestricPid());
+			//可能通过经过线算出来某交限已经需要删除，该交限的组不需要单独处理
+			if(!deleteLanesMap.containsKey(detail.getRestricPid()))
+			{
+				result.insertObject(detail, ObjStatus.DELETE, detail.getRestricPid());
+			}
 		}
 	}
 	
@@ -182,7 +186,7 @@ public class Operation implements IOperation {
 	public List<AlertObject> getUpdateResInfectData(List<Integer> linkPidList) throws Exception {
 		Map<Integer, RdRestriction> deleteLanesMap = new HashMap<>();
 		List<RdRestrictionDetail> deleteDetailLanesList = new ArrayList<>();
-		// 1.link作为进入线，删除link删除车信本身
+		// 1.link作为进入线，删除link删除交限本身
 		getDeleteInLinkRdRest(linkPidList,deleteLanesMap);
 		// 2.link作为退出线，删除该Link会对应删除此组关系
 		getDeleteOutLinkRest(linkPidList, deleteDetailLanesList,deleteLanesMap);
@@ -193,17 +197,20 @@ public class Operation implements IOperation {
 
 		for (RdRestrictionDetail detail : deleteDetailLanesList) {
 
-			AlertObject alertObj = new AlertObject();
-
-			alertObj.setObjType(ObjType.RDRESTRICTION);
-
-			alertObj.setPid(detail.getRestricPid());
-
-			alertObj.setStatus(ObjStatus.UPDATE);
-
-			if(!alertList.contains(alertObj))
+			if(!deleteLanesMap.containsKey(detail.getRestricPid()))
 			{
-				alertList.add(alertObj);
+				AlertObject alertObj = new AlertObject();
+
+				alertObj.setObjType(ObjType.RDRESTRICTION);
+
+				alertObj.setPid(detail.getRestricPid());
+
+				alertObj.setStatus(ObjStatus.UPDATE);
+				
+				if(!alertList.contains(alertObj))
+				{
+					alertList.add(alertObj);
+				}
 			}
 		}
 
@@ -221,7 +228,7 @@ public class Operation implements IOperation {
 
 		List<RdRestrictionDetail> deleteDetailLanesList = new ArrayList<>();
 
-		// 1.link作为进入线，删除link删除车信本身
+		// 1.link作为进入线，删除link删除交限本身
 		getDeleteInLinkRdRest(linkPidList,deleteLanesMap);
 		// 2.link作为退出线，删除该Link会对应删除此组关系
 		getDeleteOutLinkRest(linkPidList, deleteDetailLanesList,deleteLanesMap);

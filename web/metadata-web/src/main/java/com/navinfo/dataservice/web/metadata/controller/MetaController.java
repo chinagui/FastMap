@@ -41,6 +41,7 @@ import com.navinfo.dataservice.engine.meta.rdname.RdNameImportor;
 import com.navinfo.dataservice.engine.meta.rdname.RdNameOperation;
 import com.navinfo.dataservice.engine.meta.rdname.RdNameSelector;
 import com.navinfo.dataservice.engine.meta.rdname.ScRoadnameTypename;
+import com.navinfo.dataservice.engine.meta.truck.TruckSelector;
 import com.navinfo.dataservice.engine.meta.workitem.Workitem;
 
 import net.sf.json.JSONArray;
@@ -841,6 +842,33 @@ public class MetaController extends BaseController {
 	
 			logger.error(e.getMessage(), e);
 	
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
+	
+	@RequestMapping(value = "/queryTruck")
+	public ModelAndView queryTruck(HttpServletRequest request)
+			throws ServletException, IOException {
+
+		String parameter = request.getParameter("parameter");
+
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			String kind= jsonReq.getString("kindCode");
+			String chain= jsonReq.getString("chain");
+			String fuelType= jsonReq.getString("fuelType");
+
+			TruckSelector selector = new TruckSelector();
+
+			int truck = selector.getTruck(kind,chain,fuelType);
+
+			return new ModelAndView("jsonView", success(truck));
+
+		} catch (Exception e) {
+
+			logger.error(e.getMessage(), e);
+
 			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
 	}

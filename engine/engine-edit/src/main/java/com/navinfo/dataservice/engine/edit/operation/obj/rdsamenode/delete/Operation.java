@@ -96,7 +96,7 @@ public class Operation implements IOperation {
 		for (IRow row : parts) {
 			RdSameNodePart nodePart = (RdSameNodePart) row;
 			if (nodePart.getNodePid() == sNodePid || nodePart.getNodePid() == eNodePid) {
-				result.insertObject(nodePart, ObjStatus.DELETE, nodePart.getNodePid());
+				result.insertObject(nodePart, ObjStatus.DELETE, nodePart.getGroupId());
 			}
 		}
 	}

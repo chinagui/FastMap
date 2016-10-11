@@ -100,7 +100,7 @@ public class Operation implements IOperation {
 
 						for (int tmpPid : tmpPidList) {
 							if (objLink.getLinkPid() == tmpPid) {
-								result.insertObject(objLink, ObjStatus.DELETE, objLink.getLinkPid());
+								result.insertObject(objLink, ObjStatus.DELETE, objLink.getPid());
 							}
 						}
 					}
@@ -126,7 +126,7 @@ public class Operation implements IOperation {
 
 						for (int tmpPid : tmpPidList) {
 							if (objInter.getInterPid() == tmpPid) {
-								result.insertObject(objInter, ObjStatus.DELETE, objInter.getInterPid());
+								result.insertObject(objInter, ObjStatus.DELETE, objInter.getPid());
 							}
 						}
 					}
@@ -152,7 +152,7 @@ public class Operation implements IOperation {
 
 						for (int tmpPid : tmpPidList) {
 							if (objRoad.getRoadPid() == tmpPid) {
-								result.insertObject(objRoad, ObjStatus.DELETE, objRoad.getRoadPid());
+								result.insertObject(objRoad, ObjStatus.DELETE, objRoad.getPid());
 							}
 						}
 					}

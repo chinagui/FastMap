@@ -12,22 +12,11 @@ public class Process extends AbstractProcess<Command> {
 	private Check check = new Check(this.getCommand());
 
 	@Override
-	public String preCheck() throws Exception {
-		super.preCheck();
-		return null;
-	}
-
-	@Override
 	public boolean prepareData() throws Exception {
 		check.hasRdInter(getConn());
 		check.checkLinkByNode(getConn());
 		check.checkNodeDirect(getConn());
 		return true;
-	}
-
-	@Override
-	public void postCheck() throws Exception {
-		super.postCheck();
 	}
 
 	@Override

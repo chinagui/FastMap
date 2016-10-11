@@ -30,7 +30,8 @@ public class Process extends AbstractProcess<Command> {
         IxPoiSelector selector = new IxPoiSelector(this.getConn());
         IxPoi poi = (IxPoi) selector.loadById(command.getPidArray().getInt(0), false, false);
         IxPoi otherPoi = (IxPoi) selector.loadById(command.getPidArray().getInt(1), false, false);
-        return check.checkKindOfPOI(poi, otherPoi);
+        check.checkKindOfPOI(poi, otherPoi);
+        return super.preCheck();
         //return null;
     }
 

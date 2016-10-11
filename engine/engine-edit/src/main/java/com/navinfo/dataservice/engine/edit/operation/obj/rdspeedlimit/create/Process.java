@@ -14,10 +14,8 @@ public class Process extends AbstractProcess<Command> {
 
 	@Override
 	public String preCheck() throws Exception {
-		
 		check.checkGeometryNoOnMeshBoarder(this.getCommand().getLongitude(), this.getCommand().getLatitude());
-		
-		return null;
+		return super.preCheck();
 	}
 
 	@Override

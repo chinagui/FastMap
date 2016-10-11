@@ -70,11 +70,6 @@ public class Process extends AbstractProcess<Command> {
 	}
 
 	@Override
-	public void postCheck() throws Exception {
-		super.postCheck();
-	}
-
-	@Override
 	public String exeOperation() throws Exception {
 		// 创建铁路点有关行政区划线具体操作
 		OpTopo operation = new OpTopo(this.getCommand(), check, this.getConn());

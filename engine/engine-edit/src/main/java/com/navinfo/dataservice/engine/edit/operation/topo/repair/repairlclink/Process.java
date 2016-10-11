@@ -27,7 +27,7 @@ public class Process extends AbstractProcess<Command> {
 	@Override
 	public String preCheck() throws Exception {
 		check.checkShapePointDistance(this.getCommand().getLinkGeom());
-		return null;
+		return super.preCheck();
 	}
 
 	@Override

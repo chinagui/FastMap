@@ -42,16 +42,10 @@ public class Process extends AbstractProcess<Command> {
 
 	@Override
 	public String preCheck() throws Exception {
-		String preCheckMsg = super.preCheck();
-
-		if (!StringUtils.isEmpty(preCheckMsg)) {
-			return preCheckMsg;
-		}
 		// check.checkIsVia(this.getConn(), this.getCommand().getLinkPid());
 
 		check.checkShapePointDistance(this.getCommand().getLinkGeom());
-
-		return null;
+		return super.preCheck();
 	}
 
 	@Override

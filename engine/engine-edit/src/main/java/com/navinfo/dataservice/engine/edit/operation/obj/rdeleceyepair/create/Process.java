@@ -21,7 +21,7 @@ public class Process extends AbstractProcess<Command> {
     public String preCheck() throws Exception {
         check.checkRdEleceyePair(this.getCommand());
         check.isHasRdEleceyePair(this.getCommand());
-        return null;
+        return super.preCheck();
     }
 
     @Override

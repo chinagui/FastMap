@@ -90,7 +90,7 @@ public class Process extends AbstractProcess<Command> {
 
 	@Override
 	public String preCheck() throws Exception {
-		super.preCheck();
+
 		// check.checkIsCrossNode(this.getConn(),
 		// this.getCommand().getsNodePid());
 
@@ -98,8 +98,7 @@ public class Process extends AbstractProcess<Command> {
 		// this.getCommand().geteNodePid());
 
 		check.checkIsVia(this.getConn(), this.getCommand().getLinkPid());
-
-		return null;
+		return super.preCheck();
 	}
 
 	@Override

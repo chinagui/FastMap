@@ -13,20 +13,13 @@ public class Process extends AbstractProcess<Command> {
 
 	@Override
 	public String preCheck() throws Exception {
-		super.preCheck();
-		
 		check.checkDupilicateNode(this.getCommand().getGeometry());
 		
 		//TODO
 		//相邻形状点不可过近，不能小于2m
 		
 		//创建link，鼠标只点一个形状点就进行保存时，不能保存数据
-		return null;
-	}
-
-	@Override
-	public void postCheck() throws Exception {
-		super.postCheck();
+		return super.preCheck();
 	}
 
 	@Override

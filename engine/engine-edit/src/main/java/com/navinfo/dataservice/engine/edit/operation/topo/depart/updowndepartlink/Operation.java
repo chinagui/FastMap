@@ -644,7 +644,7 @@ public class Operation implements IOperation {
 
 		opRefRelationObj.handlerdRdElectroniceye(this.command, result);
 
-		opRefRelationObj.handlerRdLinkRtic(this.command, result);
+//		opRefRelationObj.handlerRdLinkRtic(this.command, result);
 
 		opRefRelationObj.handlerIxPoi(this.command, result);
 

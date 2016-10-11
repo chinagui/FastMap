@@ -55,11 +55,11 @@ public class Operation implements IOperation {
 		List<RdLaneTopology> deleteDetailLanesList = new ArrayList<>();
 
 		// 1.link作为进入线，删除link删除车信本身
-		deleteLanesMap.putAll(getDeleteInLinkRdLane(linkPidList));
+		getDeleteInLinkRdLane(linkPidList,deleteLanesMap);
 		// 2.link作为退出线，删除该Link会对应删除此组关系
-		deleteLanesMap.putAll(getDeleteOutLinkLane(linkPidList, deleteDetailLanesList));
+		getDeleteOutLinkLane(linkPidList, deleteDetailLanesList,deleteLanesMap);
 		// 3.link作为经过线，删除该link会对应删除次组关系
-		deleteLanesMap.putAll(getDeleteViaLinkLane(linkPidList, deleteDetailLanesList));
+		getDeleteViaLinkLane(linkPidList, deleteDetailLanesList,deleteLanesMap);
 
 		for (RdLaneConnexity rdLane : deleteLanesMap.values()) {
 			result.insertObject(rdLane, ObjStatus.DELETE, rdLane.getPid());
@@ -70,8 +70,7 @@ public class Operation implements IOperation {
 		}
 	}
 
-	private Map<Integer, RdLaneConnexity> getDeleteInLinkRdLane(List<Integer> linkPidList) throws Exception {
-		Map<Integer, RdLaneConnexity> deleteLanesMap = new HashMap<>();
+	private void getDeleteInLinkRdLane(List<Integer> linkPidList, Map<Integer, RdLaneConnexity> deleteLanesMap) throws Exception {
 		RdLaneConnexitySelector selector = new RdLaneConnexitySelector(conn);
 
 		for (Integer linkPid : linkPidList) {
@@ -81,21 +80,18 @@ public class Operation implements IOperation {
 				deleteLanesMap.put(lane.getPid(), lane);
 			}
 		}
-		return deleteLanesMap;
 	}
 
-	private Map<Integer, RdLaneConnexity> getDeleteOutLinkLane(List<Integer> linkPidList,
-			List<RdLaneTopology> deleteDetailLanesList) throws Exception {
+	private void getDeleteOutLinkLane(List<Integer> linkPidList,
+			List<RdLaneTopology> deleteDetailLanesList, Map<Integer, RdLaneConnexity> deleteInLinkLanesMap) throws Exception {
 
 		RdLaneConnexitySelector selector = new RdLaneConnexitySelector(conn);
-
-		Map<Integer, RdLaneConnexity> deleteLanesMap = new HashMap<>();
 
 		for (Integer linkPid : linkPidList) {
 			List<RdLaneConnexity> outLinkLanes = selector.loadByLink(linkPid, 2, true);
 
 			for (RdLaneConnexity lane : outLinkLanes) {
-				if (!deleteLanesMap.containsKey(lane.getPid())) {
+				if (!deleteInLinkLanesMap.containsKey(lane.getPid())) {
 					List<Integer> allTopoLinks = new ArrayList<>();
 					
 					List<Integer> delTopoLinks = new ArrayList<>();
@@ -109,13 +105,13 @@ public class Operation implements IOperation {
 						
 						allTopoLinks.add(topo.getOutLinkPid());
 						
-						if (topo.getOutLinkPid() == linkPid) {
+						if (linkPidList.contains(topo.getOutLinkPid())) {
 							delTopogy = topo;
 							delTopoLinks.add(topo.getOutLinkPid());
 						}
 					}
 					if (delTopoLinks.containsAll(allTopoLinks)) {
-						deleteLanesMap.put(lane.getPid(), lane);
+						deleteInLinkLanesMap.put(lane.getPid(), lane);
 					} else if (delTopogy != null) {
 						deleteDetailLanesList.add(delTopogy);
 					}
@@ -123,21 +119,17 @@ public class Operation implements IOperation {
 			}
 
 		}
-
-		return deleteLanesMap;
 	}
 
-	private Map<Integer, RdLaneConnexity> getDeleteViaLinkLane(List<Integer> linkPidList,
-			List<RdLaneTopology> deleteDetailLanesList) throws Exception {
+	private void getDeleteViaLinkLane(List<Integer> linkPidList,
+			List<RdLaneTopology> deleteDetailLanesList, Map<Integer, RdLaneConnexity> deleteInLinkLanesMap) throws Exception {
 		RdLaneConnexitySelector selector = new RdLaneConnexitySelector(conn);
-
-		Map<Integer, RdLaneConnexity> deleteLanesMap = new HashMap<>();
 
 		for (Integer linkPid : linkPidList) {
 			List<RdLaneConnexity> viaLinkLanes = selector.loadByLink(linkPid, 3, true);
 
 			for (RdLaneConnexity lane : viaLinkLanes) {
-				if (!deleteLanesMap.containsKey(lane.getPid())) {
+				if (!deleteInLinkLanesMap.containsKey(lane.getPid())) {
 					List<Integer> allTopoLinks = new ArrayList<>();
 
 					List<Integer> delTopoLinks = new ArrayList<>();
@@ -145,7 +137,7 @@ public class Operation implements IOperation {
 					List<IRow> rows = lane.getTopos();
 
 					if (rows.size() == 1) {
-						deleteLanesMap.put(lane.getPid(), lane);
+						deleteInLinkLanesMap.put(lane.getPid(), lane);
 					} else {
 						List<RdLaneTopology> updateLaneTopoList = new ArrayList<>();
 
@@ -168,7 +160,7 @@ public class Operation implements IOperation {
 							}
 						}
 						if (delTopoLinks.containsAll(allTopoLinks)) {
-							deleteLanesMap.put(lane.getPid(), lane);
+							deleteInLinkLanesMap.put(lane.getPid(), lane);
 						} else {
 							deleteDetailLanesList.addAll(updateLaneTopoList);
 						}
@@ -176,8 +168,6 @@ public class Operation implements IOperation {
 				}
 			}
 		}
-
-		return deleteLanesMap;
 	}
 
 	/**
@@ -187,12 +177,16 @@ public class Operation implements IOperation {
 	 * @throws Exception
 	 */
 	public List<AlertObject> getUpdateResInfectData(List<Integer> linkPidList) throws Exception {
-
+		
+		Map<Integer, RdLaneConnexity> deleteInLinkLanesMap = new HashMap<>();
+		
 		List<RdLaneTopology> deleteDetailLanesList = new ArrayList<>();
+		//1.进入线的车信
+		getDeleteInLinkRdLane(linkPidList,deleteInLinkLanesMap);
 		// 2.link作为退出线，删除该Link会对应删除此组关系
-		getDeleteOutLinkLane(linkPidList, deleteDetailLanesList);
+		getDeleteOutLinkLane(linkPidList, deleteDetailLanesList,deleteInLinkLanesMap);
 		// 3.link作为经过线，删除该link会对应删除次组关系
-		getDeleteViaLinkLane(linkPidList, deleteDetailLanesList);
+		getDeleteViaLinkLane(linkPidList, deleteDetailLanesList,deleteInLinkLanesMap);
 
 		List<AlertObject> alertList = new ArrayList<>();
 
@@ -228,11 +222,11 @@ public class Operation implements IOperation {
 		List<RdLaneTopology> deleteDetailLanesList = new ArrayList<>();
 
 		// 1.link作为进入线，删除link删除车信本身
-		deleteLanesMap.putAll(getDeleteInLinkRdLane(linkPidList));
+		getDeleteInLinkRdLane(linkPidList,deleteLanesMap);
 		// 2.link作为退出线，删除该Link会对应删除此组关系
-		deleteLanesMap.putAll(getDeleteOutLinkLane(linkPidList, deleteDetailLanesList));
+		getDeleteOutLinkLane(linkPidList, deleteDetailLanesList,deleteLanesMap);
 		// 3.link作为经过线，删除该link会对应删除次组关系
-		deleteLanesMap.putAll(getDeleteViaLinkLane(linkPidList, deleteDetailLanesList));
+		getDeleteViaLinkLane(linkPidList, deleteDetailLanesList,deleteLanesMap);
 
 		List<AlertObject> alertList = new ArrayList<>();
 

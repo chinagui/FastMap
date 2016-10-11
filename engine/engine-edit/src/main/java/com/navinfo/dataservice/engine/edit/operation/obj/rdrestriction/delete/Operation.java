@@ -57,11 +57,11 @@ public class Operation implements IOperation {
 		List<RdRestrictionDetail> deleteDetailLanesList = new ArrayList<>();
 
 		// 1.link作为进入线，删除link删除车信本身
-		deleteLanesMap.putAll(getDeleteInLinkRdRest(linkPidList));
+		getDeleteInLinkRdRest(linkPidList,deleteLanesMap);
 		// 2.link作为退出线，删除该Link会对应删除此组关系
-		deleteLanesMap.putAll(getDeleteOutLinkRest(linkPidList, deleteDetailLanesList));
+		getDeleteOutLinkRest(linkPidList, deleteDetailLanesList,deleteLanesMap);
 		// 3.link作为经过线，删除该link会对应删除次组关系
-		deleteLanesMap.putAll(getDeleteViaLinkRest(linkPidList, deleteDetailLanesList));
+		getDeleteViaLinkRest(linkPidList, deleteDetailLanesList,deleteLanesMap);
 		
 		for(RdRestriction restriction : deleteLanesMap.values())
 		{
@@ -74,8 +74,7 @@ public class Operation implements IOperation {
 		}
 	}
 	
-	private Map<Integer, RdRestriction> getDeleteInLinkRdRest(List<Integer> linkPidList) throws Exception {
-		Map<Integer, RdRestriction> deleteLanesMap = new HashMap<>();
+	private void getDeleteInLinkRdRest(List<Integer> linkPidList,Map<Integer, RdRestriction> deleteLanesMap) throws Exception {
 		RdRestrictionSelector selector = new RdRestrictionSelector(conn);
 
 		for (Integer linkPid : linkPidList) {
@@ -85,15 +84,12 @@ public class Operation implements IOperation {
 				deleteLanesMap.put(restriction.getPid(), restriction);
 			}
 		}
-		return deleteLanesMap;
 	}
 
-	private Map<Integer, RdRestriction> getDeleteOutLinkRest(List<Integer> linkPidList,
-			List<RdRestrictionDetail> deleteDetailList) throws Exception {
+	private void getDeleteOutLinkRest(List<Integer> linkPidList,
+			List<RdRestrictionDetail> deleteDetailList,Map<Integer, RdRestriction> deleteLanesMap) throws Exception {
 
 		RdRestrictionSelector selector = new RdRestrictionSelector(conn);
-
-		Map<Integer, RdRestriction> deleteLanesMap = new HashMap<>();
 
 		for (Integer linkPid : linkPidList) {
 			List<RdRestriction> outLinkLanes = selector.loadByLink(linkPid, 2, true);
@@ -113,7 +109,7 @@ public class Operation implements IOperation {
 						
 						allTopoLinks.add(topo.getOutLinkPid());
 						
-						if (topo.getOutLinkPid() == linkPid) {
+						if (linkPidList.contains(topo.getOutLinkPid())) {
 							detail = topo;
 							delTopoLinks.add(topo.getOutLinkPid());
 						}
@@ -127,15 +123,11 @@ public class Operation implements IOperation {
 			}
 
 		}
-
-		return deleteLanesMap;
 	}
 
-	private Map<Integer, RdRestriction> getDeleteViaLinkRest(List<Integer> linkPidList,
-			List<RdRestrictionDetail> deleteDetailList) throws Exception {
+	private void getDeleteViaLinkRest(List<Integer> linkPidList,
+			List<RdRestrictionDetail> deleteDetailList,Map<Integer, RdRestriction> deleteLanesMap) throws Exception {
 		RdRestrictionSelector selector = new RdRestrictionSelector(conn);
-
-		Map<Integer, RdRestriction> deleteLanesMap = new HashMap<>();
 
 		for (Integer linkPid : linkPidList) {
 			List<RdRestriction> viaLinkLanes = selector.loadByLink(linkPid, 3, true);
@@ -179,8 +171,6 @@ public class Operation implements IOperation {
 				}
 			}
 		}
-		
-		return deleteLanesMap;
 	}
 	
 	/**
@@ -191,13 +181,13 @@ public class Operation implements IOperation {
 	 */
 	public List<AlertObject> getUpdateResInfectData(List<Integer> linkPidList) throws Exception {
 		Map<Integer, RdRestriction> deleteLanesMap = new HashMap<>();
-
 		List<RdRestrictionDetail> deleteDetailLanesList = new ArrayList<>();
-
+		// 1.link作为进入线，删除link删除车信本身
+		getDeleteInLinkRdRest(linkPidList,deleteLanesMap);
 		// 2.link作为退出线，删除该Link会对应删除此组关系
-		deleteLanesMap.putAll(getDeleteOutLinkRest(linkPidList, deleteDetailLanesList));
+		getDeleteOutLinkRest(linkPidList, deleteDetailLanesList,deleteLanesMap);
 		// 3.link作为经过线，删除该link会对应删除次组关系
-		deleteLanesMap.putAll(getDeleteViaLinkRest(linkPidList, deleteDetailLanesList));
+		getDeleteViaLinkRest(linkPidList, deleteDetailLanesList,deleteLanesMap);
 
 		List<AlertObject> alertList = new ArrayList<>();
 
@@ -232,11 +222,11 @@ public class Operation implements IOperation {
 		List<RdRestrictionDetail> deleteDetailLanesList = new ArrayList<>();
 
 		// 1.link作为进入线，删除link删除车信本身
-		deleteLanesMap.putAll(getDeleteInLinkRdRest(linkPidList));
+		getDeleteInLinkRdRest(linkPidList,deleteLanesMap);
 		// 2.link作为退出线，删除该Link会对应删除此组关系
-		deleteLanesMap.putAll(getDeleteOutLinkRest(linkPidList, deleteDetailLanesList));
+		getDeleteOutLinkRest(linkPidList, deleteDetailLanesList,deleteLanesMap);
 		// 3.link作为经过线，删除该link会对应删除次组关系
-		deleteLanesMap.putAll(getDeleteViaLinkRest(linkPidList, deleteDetailLanesList));
+		getDeleteViaLinkRest(linkPidList, deleteDetailLanesList,deleteLanesMap);
 
 		List<AlertObject> alertList = new ArrayList<>();
 

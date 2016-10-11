@@ -81,7 +81,11 @@ public class Operation implements IOperation {
 		RdNode sNode = this.getStartAndEndNode(links, 0);
 		
 		command.setsNode(sNode);
+		
 		RdNode eNode = this.getStartAndEndNode(links, 1);
+		
+		command.seteNode(eNode);
+		
 		LineString[] lines = CompPolylineUtil.separate(sPoint, lineStrings,
 				command.getDistance());
 
@@ -335,12 +339,12 @@ public class Operation implements IOperation {
 					if (linkRtic.getUpdownFlag() == 0) {
 						linkRtics.add(linkRtic);
 					}
-					linkRtic.setRticDir(2);
+					//linkRtic.setRticDir(2);
 				} else {
 					if (linkRtic.getUpdownFlag() == 1) {
 						linkRtics.add(linkRtic);
 					}
-					linkRtic.setRticDir(3);
+					//linkRtic.setRticDir(3);
 
 				}
 			}
@@ -360,12 +364,12 @@ public class Operation implements IOperation {
 					if (linkRtic.getUpdownFlag() == 0) {
 						linkIntRtics.add(linkRtic);
 					}
-					linkRtic.setRticDir(2);
+					//linkRtic.setRticDir(2);
 				} else {
 					if (linkRtic.getUpdownFlag() == 1) {
 						linkIntRtics.add(linkRtic);
 					}
-					linkRtic.setRticDir(3);
+					//linkRtic.setRticDir(3);
 
 				}
 			}
@@ -639,6 +643,8 @@ public class Operation implements IOperation {
 		opRefRelationObj.handlerdWarninginfo(this.command, result);
 
 		opRefRelationObj.handleSameLink(this.command, result);
+		
+		opRefRelationObj.handleSameNode(this.command, result);
 
 		opRefRelationObj.handlerdSpeedlimit(this.command, result);
 

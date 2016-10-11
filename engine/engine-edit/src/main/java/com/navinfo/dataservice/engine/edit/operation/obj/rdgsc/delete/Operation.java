@@ -59,9 +59,11 @@ public class Operation implements IOperation {
 		List<RdGsc> allDelRdGscList = new ArrayList<>();
 
 		List<RdGscLink> allDelRdGscLinkList = new ArrayList<>();
+		
+		List<RdGscLink> updateLevelGscLinkList = new ArrayList<>();
 
 		// 计算需要删除主表和子表的立交数据
-		calcDelLinkOnGsc(linkRow, allDelRdGscList, allDelRdGscLinkList);
+		calcDelLinkOnGsc(linkRow, allDelRdGscList, allDelRdGscLinkList,updateLevelGscLinkList);
 
 		for (RdGsc gsc : allDelRdGscList) {
 			result.insertObject(gsc, ObjStatus.DELETE, gsc.getPid());
@@ -70,6 +72,14 @@ public class Operation implements IOperation {
 		for (RdGscLink gscLink : allDelRdGscLinkList) {
 			result.insertObject(gscLink, ObjStatus.DELETE, gscLink.getPid());
 		}
+		
+		for(RdGscLink gscLink : updateLevelGscLinkList)
+		{
+			gscLink.changedFields().put("zlevel", gscLink.getZlevel() - 1);
+			
+			result.insertObject(gscLink, ObjStatus.UPDATE, gscLink.getPid());
+		}
+		
 	}
 
 	/**
@@ -78,7 +88,7 @@ public class Operation implements IOperation {
 	 * @param allDelRdGscLinkList
 	 * @throws Exception
 	 */
-	private void calcDelLinkOnGsc(List<? extends IRow> linkRow, List<RdGsc> allDelRdGscList, List<RdGscLink> allDelRdGscLinkList)
+	private void calcDelLinkOnGsc(List<? extends IRow> linkRow, List<RdGsc> allDelRdGscList, List<RdGscLink> allDelRdGscLinkList,List<RdGscLink> updateLevelGscLinkList)
 			throws Exception {
 		RdGscSelector selector = new RdGscSelector(conn);
 
@@ -118,7 +128,7 @@ public class Operation implements IOperation {
 						}
 					}
 
-					boolean flag = checkRdGscHas2Del(linkRow, levelGscLinkMap);
+					boolean flag = checkRdGscHas2Del(linkRow, levelGscLinkMap,updateLevelGscLinkList);
 
 					if (flag) {
 						allDelRdGscList.add(gsc);
@@ -138,7 +148,7 @@ public class Operation implements IOperation {
 	 * @param levelGscLink
 	 * @return
 	 */
-	private boolean checkRdGscHas2Del(List<? extends IRow> linkRow, Map<Integer, List<RdGscLink>> levelGscLinkMap) {
+	private boolean checkRdGscHas2Del(List<? extends IRow> linkRow, Map<Integer, List<RdGscLink>> levelGscLinkMap,List<RdGscLink> updateLevelLink) {
 		boolean flag = false;
 
 		// 需要删除的level
@@ -173,6 +183,19 @@ public class Operation implements IOperation {
 		if (levelGscLinkMap.size() - delLevel.size() < 2) {
 			flag = true;
 		}
+		else if(levelGscLinkMap.size() >2 && delLevel.size() == 1)
+		{
+			int delLev = delLevel.get(0);
+			for (Map.Entry<Integer, List<RdGscLink>> entry : levelGscLinkMap.entrySet()) {
+				int level = entry.getKey();
+				if(!delLevel.contains(level) && level>delLev)
+				{
+					List<RdGscLink> gscLinkList = entry.getValue();
+					
+					updateLevelLink.addAll(gscLinkList);
+				}
+			}
+		}
 
 		return flag;
 	}
@@ -188,8 +211,10 @@ public class Operation implements IOperation {
 		List<RdGsc> allDelRdGscList = new ArrayList<>();
 
 		List<RdGscLink> allDelRdGscLinkList = new ArrayList<>();
+		
+		List<RdGscLink> updateGscLinkList = new ArrayList<>();
 
-		calcDelLinkOnGsc(linkRow, allDelRdGscList, allDelRdGscLinkList);
+		calcDelLinkOnGsc(linkRow, allDelRdGscList, allDelRdGscLinkList,updateGscLinkList);
 
 		List<AlertObject> alertList = new ArrayList<>();
 

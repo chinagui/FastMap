@@ -722,6 +722,7 @@ public class BlockOperation {
 						map.put("progress", rs.getInt("PROGRESS"));						
 						map.put("type", rs.getInt("TASK_TYPE"));
 						map.put("percent",rs.getInt("PERCENT"));
+						map.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
 						totalCount=rs.getInt("TOTAL_RECORD_NUM");
 						list.add(map);
 					}
@@ -751,6 +752,8 @@ public class BlockOperation {
 						HashMap map = new HashMap();
 						map.put("blockManId", rs.getInt("BLOCK_MAN_ID"));
 						map.put("blockManName", rs.getString("BLOCK_MAN_NAME"));
+						map.put("blockDescp", rs.getString("BLOCK_DESCP"));
+						
 						map.put("blockId", rs.getInt("BLOCK_ID"));
 						map.put("blockName", rs.getString("BLOCK_NAME"));
 						map.put("cityId", rs.getInt("CITY_ID"));
@@ -780,6 +783,8 @@ public class BlockOperation {
 						
 						map.put("createUserId", rs.getInt("CREATE_USER_ID"));
 						map.put("createUserName", rs.getString("CREATE_USER_NAME"));
+						
+						map.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
 						
 						totalCount=rs.getInt("TOTAL_RECORD_NUM");
 						list.add(map);

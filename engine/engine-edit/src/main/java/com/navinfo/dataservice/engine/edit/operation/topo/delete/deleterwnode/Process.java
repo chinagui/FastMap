@@ -6,10 +6,8 @@ import java.util.Iterator;
 import java.util.List;
 
 import com.navinfo.dataservice.dao.glm.iface.IRow;
-import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLink;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwNode;
-import com.navinfo.dataservice.dao.glm.selector.rd.gsc.RdGscSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.rw.RwLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.rw.RwNodeSelector;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
@@ -52,8 +50,6 @@ public class Process extends AbstractProcess<Command> {
 		lockRwLink();
 
 		lockRwNode(this.getCommand().getLinks());
-
-		lockRdGsc(this.getCommand().getLinks());
 	}
 
 	public void lockRwLink() throws Exception {
@@ -102,29 +98,4 @@ public class Process extends AbstractProcess<Command> {
 
 		this.getCommand().setNodes(nodes);
 	}
-
-	/**
-	 * 获取需要同时删除的rdGsc
-	 * 
-	 * @param links
-	 * @throws Exception
-	 */
-	public void lockRdGsc(List<RwLink> links) throws Exception {
-		if (links.size() < 1) {
-			return;
-		}
-
-		List<RdGsc> rdGscs = new ArrayList<RdGsc>();
-
-		RdGscSelector selector = new RdGscSelector(this.getConn());
-
-		for (RwLink link : links) {
-
-			List<RdGsc> rdGscList = selector.loadRdGscLinkByLinkPid(link.getPid(), "RW_LINK", true);
-			rdGscs.addAll(rdGscList);
-		}
-
-		this.getCommand().setRdGscs(rdGscs);
-	}
-
 }

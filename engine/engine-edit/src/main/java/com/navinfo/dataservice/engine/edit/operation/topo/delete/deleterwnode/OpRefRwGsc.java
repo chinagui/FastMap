@@ -1,7 +1,6 @@
-package com.navinfo.dataservice.engine.edit.operation.topo.delete.deleterwlink;
+package com.navinfo.dataservice.engine.edit.operation.topo.delete.deleterwnode;
 
 import java.sql.Connection;
-import java.util.ArrayList;
 import java.util.List;
 
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
@@ -24,13 +23,9 @@ public class OpRefRwGsc implements IOperation {
 
 		com.navinfo.dataservice.engine.edit.operation.obj.rdgsc.delete.Operation gscDelOption = new com.navinfo.dataservice.engine.edit.operation.obj.rdgsc.delete.Operation(
 				this.conn);
-
-		RwLink link = this.command.getLink();
-
-		List<RwLink> linkList = new ArrayList<>();
-
-		linkList.add(link);
-
+		
+		List<RwLink>  linkList = this.command.getLinks();
+		
 		gscDelOption.deleteByLinkPid(linkList, result);
 
 		return null;

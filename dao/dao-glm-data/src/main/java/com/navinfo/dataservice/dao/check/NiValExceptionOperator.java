@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
+
 import oracle.spatial.geometry.JGeometry;
 
 import com.navinfo.dataservice.bizcommons.glm.Glm;
@@ -40,7 +42,7 @@ public class NiValExceptionOperator {
 	private Map<String, Geometry> geometryMap=new HashMap<String, Geometry>();
 	private Map<String, Integer> meshMap=new HashMap<String, Integer>();
 	private CkObjectNodeLoader objectNodeLoader=CkObjectNodeLoader.getInstance();
-
+	private static Logger logg = Logger.getLogger(NiValExceptionOperator.class);
 	public NiValExceptionOperator() {
 
 	}
@@ -138,12 +140,13 @@ public class NiValExceptionOperator {
 
 	public void insertCheckLog(String ruleId, String loc, String targets,
 			int meshId, String worker) throws Exception {
+		logg.debug("start insert ni_val:1");
 		if(loc==null||loc.isEmpty()){
 			List<Object> list=calGeoAndMeshWithTarget(targets);
 			loc = GeoTranslator.jts2Wkt((Geometry) list.get(0), 0.00001, 5);
 			meshId = (int) list.get(1);
 		}
-
+		logg.debug("start insert ni_val:2");
 		String sql = "merge into ni_val_exception a using ( select * from ( select :1 as MD5_CODE from dual) where MD5_CODE not in ( select MD5_CODE          from ni_val_exception          where MD5_CODE is not null        union all        select RESERVED as MDS_CODE          from ck_exception          where RESERVED is not null          )) b on (a.MD5_CODE = b.MD5_CODE) when not matched then   insert     (MD5_CODE, ruleid, information, location, targets, mesh_id, worker, \"LEVEL\", created, updated )   values     (:2, :3, :4, sdo_geometry(:5, 8307), :6, :7, :8, :9, sysdate, sysdate)";
 		PreparedStatement pstmt = conn.prepareStatement(sql);
 
@@ -171,13 +174,17 @@ public class NiValExceptionOperator {
 
 			int res = pstmt.executeUpdate();
 
+			logg.debug("start insert ni_val:3");
+
 			if (res > 0) {
 
 				CkResultObjectOperator op = new CkResultObjectOperator(conn);
 
 				op.insertCkResultObject(md5, targets);
+				logg.debug("start insert ni_val:3-1");
 
 				this.insertCheckLogGrid(md5, loc);
+				logg.debug("start insert ni_val:3-2");
 			}
 
 		} catch (Exception e) {
@@ -193,13 +200,13 @@ public class NiValExceptionOperator {
 
 	public void insertCheckLog(String ruleId, String loc, String targets,
 			int meshId, String log, String worker) throws Exception {
-		
+		logg.debug("start insert ni_val:1");
 		if(loc==null||loc.isEmpty()){
 			List<Object> list=calGeoAndMeshWithTarget(targets);
 			loc = GeoTranslator.jts2Wkt((Geometry) list.get(0), 0.00001, 5);
 			meshId = (int) list.get(1);
 		}
-
+		logg.debug("start insert ni_val:2");
 		String sql = "merge into ni_val_exception a using (select :1 as MD5_CODE from dual) b on (a.MD5_CODE = b.MD5_CODE) when not matched then   insert (MD5_CODE, ruleid, information, location, targets, mesh_id, worker, \"LEVEL\", created, updated )   values     (:2, :3, :4, sdo_geometry(:5, 8307), :6, :7, :8, :9, sysdate, sysdate)";
 		PreparedStatement pstmt = conn.prepareStatement(sql);
 
@@ -225,14 +232,17 @@ public class NiValExceptionOperator {
 			pstmt.setInt(9, 1);
 
 			int res = pstmt.executeUpdate();
+			logg.debug("start insert ni_val:3");
 
 			if (res > 0) {
 
 				CkResultObjectOperator op = new CkResultObjectOperator(conn);
 
 				op.insertCkResultObject(md5, targets);
+				logg.debug("start insert ni_val:3-1");
 				
 				this.insertCheckLogGrid(md5, loc);
+				logg.debug("start insert ni_val:3-2");
 			}
 
 		} catch (Exception e) {

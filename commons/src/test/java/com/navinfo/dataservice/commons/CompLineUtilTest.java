@@ -21,8 +21,8 @@ import junit.framework.Assert;
 public class CompLineUtilTest {
 	@Test
 	public void LineExtIntersect_001(){
-		DoublePoint p = CompLineUtil.LineExtIntersect(new DoubleLine(new DoublePoint(131.0,42.01078),new DoublePoint(132.0,42.01078))
-				,new DoubleLine(new DoublePoint(131.98922,42.0),new DoublePoint(131.98922,43.0)));
+		DoublePoint p = CompLineUtil.LineExtIntersect(new DoubleLine(new DoublePoint(116.35709,40.03708),new DoublePoint(116.35709,40.03708))
+				,new DoubleLine(new DoublePoint(116.3571,40.03704),new DoublePoint(116.35708,40.03707)));
 		System.out.println(p);
 	}
 

@@ -53,7 +53,7 @@ import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
 
-public class ImportBlock {
+public class ImportBlockByGrid {
 	
 	private static int CityId = 0;
 	
@@ -104,21 +104,8 @@ public class ImportBlock {
 	
 	public static JSONObject execute(JSONObject request) throws Exception{
 		JSONObject response = new JSONObject();
-		BufferedReader bufferedReader = null;
 		Connection conn = null;
 		try {
-			String blockFile = (String) request.get("blockFile");
-			Assert.notNull(blockFile, "blockFile不能为空");
-
-			File f = new File(blockFile);
-
-			InputStreamReader read = new InputStreamReader(new FileInputStream(f));
-
-			bufferedReader = new BufferedReader(read);
-			String line = null;
-			
-			WKTReader reader=new WKTReader();
-			
 			Map<String,City> cityMap = new HashMap<String,City>();//key:name,value:city object
 			
 			Map<String,Set<String>> cityGrids = new HashMap<String,Set<String>>();
@@ -127,13 +114,12 @@ public class ImportBlock {
 			
 			Map<Integer,Set<String>> blockGrids = new HashMap<Integer,Set<String>>();	//key:blockId,value:grids
 			
-			Set<String> usedGrids = new HashSet<String>();
 
 			conn = DBConnector.getInstance().getManConnection();
-			
-			while ((line = bufferedReader.readLine()) != null) {
-				
-				JSONObject json = JSONObject.fromObject(line);
+			JSONArray ja = request.getJSONArray("blocks");
+			for (Object obj:ja) {
+
+				JSONObject json = (JSONObject)obj;
 				String province=json.getString("province");
 				String city=json.getString("city");
 				String name = json.getString("name");
@@ -143,22 +129,19 @@ public class ImportBlock {
 				String job2=json.getString("job2");
 				String code=json.getString("code");
 				String workProperty=json.getString("workProperty");
-				String geometry =json.getString("geometry");
+				//String geometry =json.getString("geometry");
 				
 				String comName = (StringUtils.isEmpty(province)?"":province)
 								+(StringUtils.isEmpty(city)?"":city)
-								+(StringUtils.isEmpty(county)?"":county);
+								+(StringUtils.isEmpty(county)?"":county)
+								+(StringUtils.isEmpty(job1)?"":job1)
+								+(StringUtils.isEmpty(area)?"":area);
 				
-				Geometry geo = reader.read(geometry);
-				Set<String> grids = CompGeometryUtil.polygon2GridsWithoutBreak((Polygon)geo);
-
-				if(grids.size()==0){
-					System.out.println("block lost:"+code);
-					continue;
+				Set<String> grids = new HashSet<String>();
+				for(Object g:json.getJSONArray("grids")){
+					grids.add((String)g);
 				}
-				
-				grids.removeAll(usedGrids);//去除已经分配的grid
-				usedGrids.addAll(grids);//
+
 				
 				//city
 				int cityId = 0;
@@ -182,7 +165,7 @@ public class ImportBlock {
 				int blockId = getBlockId(conn);
 				Block block  = new Block();
 				block.setBlockId(blockId);
-				block.setBlockName(name);
+				block.setBlockName(comName);
 				block.setCityId(cityId);
 				block.setGeometry(wkt);
 				blockList.add(block);
@@ -206,7 +189,6 @@ public class ImportBlock {
 			throw e;
 		}finally{
 			DbUtils.closeQuietly(conn);
-			if(bufferedReader!=null)bufferedReader.close();
 		}
 		return response;
 	}

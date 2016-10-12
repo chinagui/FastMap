@@ -21,7 +21,7 @@ public class CompLineUtil {
 	public static DoublePoint LineExtIntersect(DoubleLine line1,DoubleLine line2){
 		double k1 = line1.getSlope();
 		double k2 = line2.getSlope();
-		if(DoubleUtil.doubleEquals(k1,k2)){//斜率相同
+		if(DoubleUtil.equalsBigDecimal(k1,k2)){//斜率相同
 			if (line1.getEpoint().equals(line2.getSpoint())
 					||line1.getEpoint().equals(line2.getEpoint())){
 				return line1.getEpoint().clone();

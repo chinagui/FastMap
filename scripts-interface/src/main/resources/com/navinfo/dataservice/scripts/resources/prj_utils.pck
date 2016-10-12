@@ -358,7 +358,7 @@ create or replace package body package_utils is
         else
           --线线交限
           declare
-            v_via_path varchar2(250);
+            v_via_path varchar2(512);
           begin
           
             get_restrict_via(p_in_link_pid,

@@ -51,7 +51,7 @@ public class RELATING_CHECK_NOSAME_LINE_LINE_RELATION extends baseRule {
 				RdBranch rdBranch = (RdBranch)obj;
 				boolean result = checkRdBranch(rdBranch);
 				if(!result){
-					this.setCheckResult("", "", 0);
+					this.setCheckResult("", "", 0,"相同的进入线，进入点，经过线，退出线，不能创建两组相同类型分歧");
 					return;
 				}
 			}
@@ -60,7 +60,7 @@ public class RELATING_CHECK_NOSAME_LINE_LINE_RELATION extends baseRule {
 				RdGate rdGate = (RdGate)obj;
 				boolean result = checkRdGate(rdGate);
 				if(!result){
-					this.setCheckResult("", "", 0);
+					this.setCheckResult("", "", 0,"相同的进入线、进入点不能创建两组大门");
 					return;
 				}
 			}
@@ -69,7 +69,7 @@ public class RELATING_CHECK_NOSAME_LINE_LINE_RELATION extends baseRule {
 				RdRestriction rdRestriction = (RdRestriction)obj;
 				boolean result = checkRdRestriction(rdRestriction);
 				if(!result){
-					this.setCheckResult("", "", 0);
+					this.setCheckResult("", "", 0,"相同的进入线、进入点不能创建两组普通交限");
 					return;
 				}
 			}
@@ -78,7 +78,7 @@ public class RELATING_CHECK_NOSAME_LINE_LINE_RELATION extends baseRule {
 				RdDirectroute rdDirectroute = (RdDirectroute)obj;
 				boolean result = checkRdDirectroute(rdDirectroute);
 				if(!result){
-					this.setCheckResult("", "", 0);
+					this.setCheckResult("", "", 0,"相同的进入线、进入点不能创建两组顺行");
 					return;
 				}
 			}
@@ -87,7 +87,7 @@ public class RELATING_CHECK_NOSAME_LINE_LINE_RELATION extends baseRule {
 				RdSe rdSe = (RdSe)obj;
 				boolean result = checkRdSe(rdSe);
 				if(!result){
-					this.setCheckResult("", "", 0);
+					this.setCheckResult("", "", 0,"相同的进入线、进入点不能创建两组分叉口提示");
 					return;
 				}
 			}
@@ -96,7 +96,7 @@ public class RELATING_CHECK_NOSAME_LINE_LINE_RELATION extends baseRule {
 				RdTollgate rdTollgate = (RdTollgate)obj;
 				boolean result = checkRdTollgate(rdTollgate);
 				if(!result){
-					this.setCheckResult("", "", 0);
+					this.setCheckResult("", "", 0,"相同的进入线、进入点不能创建两组收费站");
 					return;
 				}
 			}
@@ -105,7 +105,7 @@ public class RELATING_CHECK_NOSAME_LINE_LINE_RELATION extends baseRule {
 				RdVoiceguide rdVoiceguide = (RdVoiceguide)obj;
 				boolean result = checkRdVoiceguide(rdVoiceguide);
 				if(!result){
-					this.setCheckResult("", "", 0);
+					this.setCheckResult("", "", 0,"相同的进入线、进入点不能创建两组语音引导");
 					return;
 				}
 			}
@@ -114,7 +114,7 @@ public class RELATING_CHECK_NOSAME_LINE_LINE_RELATION extends baseRule {
 				RdLaneConnexity rdLaneConnexity = (RdLaneConnexity)obj;
 				boolean result = checkRdLaneConnexity(rdLaneConnexity);
 				if(!result){
-					this.setCheckResult("", "", 0);
+					this.setCheckResult("", "", 0,"相同的进入线、进入点不能创建两组车信");
 					return;
 				}
 			}

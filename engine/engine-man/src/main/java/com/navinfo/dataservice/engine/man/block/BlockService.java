@@ -885,12 +885,7 @@ public class BlockService {
 				if("groupId".equals(key)){
 					conditionSql=conditionSql+" AND MAN_LIST.GROUP_ID ="+conditionJson.getInt(key);}
 				if("planStatus".equals(key)){
-					//未完成 即已发布列表
-					if(conditionJson.getInt(key)==2){
-						conditionSql=conditionSql+" AND MAN_LIST.STATUS =1 AND MAN_LIST.PERCENT<100";}
-					else if(conditionJson.getInt(key)==3){
-						conditionSql=conditionSql+" AND MAN_LIST.STATUS =1 AND MAN_LIST.PERCENT=100";}
-					}
+					conditionSql=conditionSql+" AND MAN_LIST.STATUS =1 AND MAN_LIST.PLAN_STATUS="+conditionJson.getInt(key);}
 				
 				if ("assignStatus".equals(key)) {
 					if(!statusSql.isEmpty()){statusSql+=" or ";}
@@ -955,6 +950,7 @@ public class BlockService {
 			stagePart="STAGE=1";
 		}
 		selectSql="WITH MAN_LIST AS"
+				//未分配子任务
 				+ " (SELECT DISTINCT T.BLOCK_MAN_ID,"
 				+ "                  T.BLOCK_MAN_NAME,"
 				+ "                  T.BLOCK_ID,"
@@ -962,6 +958,7 @@ public class BlockService {
 				+ "                  T.STATUS BLOCK_STATUS,"
 				+ "                  B.PLAN_STATUS BLOCK_PLAN_STATUS,"
 				+ "                  0 ASSIGN_STATUS,"
+				+ "                  2 PLAN_STATUS,"
 				+selectPart					
 				+ "                  TT.TASK_TYPE"
 				+ "    FROM BLOCK_MAN                 T,"
@@ -972,11 +969,12 @@ public class BlockService {
 				+ "   WHERE T.TASK_ID = TT.TASK_ID"
 				+ "     AND T.BLOCK_ID=B.BLOCK_ID"
 				+ "     AND T.LATEST = 1"
-				+ "     AND T.STATUS=1"
-				+ "     AND NOT EXISTS(SELECT 1 FROM SUBTASK ST WHERE ST.BLOCK_MAN_ID=T.BLOCK_MAN_ID AND ST."+stagePart+")"
+				//+ "     AND T.STATUS=1"
+				+ "     AND NOT EXISTS(SELECT 1 FROM SUBTASK STT WHERE STT.BLOCK_MAN_ID=T.BLOCK_MAN_ID AND STT."+stagePart+")"
 				+wherePart					
 				+ "     AND T.BLOCK_MAN_ID = S.BLOCK_MAN_ID(+)"
 				+ "  UNION ALL"
+				//分配子任务，且子任务都是关闭状态==〉已完成
 				+ " SELECT DISTINCT T.BLOCK_MAN_ID,"
 				+ "                  T.BLOCK_MAN_NAME,"
 				+ "                  T.BLOCK_ID,"
@@ -984,6 +982,7 @@ public class BlockService {
 				+ "                  T.STATUS BLOCK_STATUS,"
 				+ "                  B.PLAN_STATUS BLOCK_PLAN_STATUS,"
 				+ "                  1 ASSIGN_STATUS,"
+				+ "                  3 PLAN_STATUS,"
 				+selectPart					
 				+ "                  TT.TASK_TYPE"
 				+ "    FROM BLOCK_MAN                 T,"
@@ -997,17 +996,47 @@ public class BlockService {
 				+ "     AND T.LATEST = 1"
 				+ "     AND T.STATUS=1"
 				+ "     AND ST."+stagePart
-				+wherePart					
+				+wherePart		
+				+ "     AND NOT EXISTS(SELECT 1 FROM SUBTASK STT WHERE STT.BLOCK_MAN_ID=T.BLOCK_MAN_ID AND STT.STATUS<>0 AND STT."+stagePart+")"
+				+ "     AND T.BLOCK_MAN_ID = S.BLOCK_MAN_ID(+)"
+				+ "     AND T.BLOCK_MAN_ID = ST.BLOCK_MAN_ID"
+				+ "  UNION ALL"
+				//分配子任务，且存在非关子任务==〉作业中
+				+ " SELECT DISTINCT T.BLOCK_MAN_ID,"
+				+ "                  T.BLOCK_MAN_NAME,"
+				+ "                  T.BLOCK_ID,"
+				+ "                  B.BLOCK_NAME,"	
+				+ "                  T.STATUS BLOCK_STATUS,"
+				+ "                  B.PLAN_STATUS BLOCK_PLAN_STATUS,"
+				+ "                  1 ASSIGN_STATUS,"
+				+ "                  2 PLAN_STATUS,"
+				+selectPart					
+				+ "                  TT.TASK_TYPE"
+				+ "    FROM BLOCK_MAN                 T,"
+				+ "         TASK                      TT,"
+				+ "         USER_GROUP                G,"
+				+ "         FM_STAT_OVERVIEW_BLOCKMAN S,"
+				+ "         SUBTASK                   ST,"
+				+ "         BLOCK                   B"
+				+ "   WHERE T.TASK_ID = TT.TASK_ID"
+				+ "     AND T.BLOCK_ID=B.BLOCK_ID"
+				+ "     AND T.LATEST = 1"
+				+ "     AND T.STATUS=1"
+				+ "     AND ST."+stagePart
+				+wherePart		
+				+ "     AND EXISTS(SELECT 1 FROM SUBTASK STT WHERE STT.BLOCK_MAN_ID=T.BLOCK_MAN_ID AND STT.STATUS<>0 AND STT."+stagePart+")"
 				+ "     AND T.BLOCK_MAN_ID = S.BLOCK_MAN_ID(+)"
 				+ "     AND T.BLOCK_MAN_ID = ST.BLOCK_MAN_ID(+)"
 				+ "  UNION ALL"
+				//未规划block
 				+ "  SELECT DISTINCT 0,"
 				+ "                  '---',"
 				+ "                  B.BLOCK_ID,"
 				+ "                  B.BLOCK_NAME,"				
 				+ "                  0 STATUS,"
-				+ "                  B.PLAN_STATUS,"
+				+ "                  B.PLAN_STATUS BLOCK_PLAN_STATUS,"
 				+ "                  0 ASSIGN_STATUS,"
+				+ "                  1 PLAN_STATUS,"
 				+ "                  '---' PLAN_START_DATE,"
 				+ "                  '---' PLAN_END_DATE,"
 				+ "                  0 GROUP_ID,"

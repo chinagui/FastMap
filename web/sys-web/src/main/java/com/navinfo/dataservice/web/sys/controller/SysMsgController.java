@@ -12,6 +12,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
+import com.navinfo.dataservice.dao.mq.sys.SysMsgPublisher;
 import com.navinfo.dataservice.engine.sys.msg.SysMsg;
 import com.navinfo.dataservice.engine.sys.msg.SysMsgService;
 import com.navinfo.navicommons.database.Page;
@@ -27,7 +28,8 @@ import net.sf.json.JSONObject;
  */
 @Controller
 public class SysMsgController extends BaseController {
-protected Logger log = Logger.getLogger(this.getClass());
+	protected Logger log = Logger.getLogger(this.getClass());
+
 	/**
 	 * 查询所有的未读消息
 	 * @param request
@@ -122,5 +124,43 @@ protected Logger log = Logger.getLogger(this.getClass());
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}
-
+	
+	/**
+	 * 测试发消息的临时接口
+	 */
+	@RequestMapping(value = "/sysmsg/sendMessage")
+	public ModelAndView sendMessage(HttpServletRequest request){
+		try{
+			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			long userId = tokenObj.getUserId();
+			String parameter = request.getParameter("parameter");
+			if (StringUtils.isEmpty(parameter)) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			JSONObject paraJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if(!paraJson.containsKey("msgTitle")){
+				throw new IllegalArgumentException("msgTitle参数不能为空。");
+			}
+			String msgTitle = paraJson.getString("msgTitle");
+			if(!paraJson.containsKey("msgContent")){
+				throw new IllegalArgumentException("msgContent参数不能为空。");
+			}
+			String msgContent = paraJson.getString("msgContent");
+			if(!paraJson.containsKey("targetUserIds")){
+				throw new IllegalArgumentException("targetUserIds参数不能为空。");
+			}
+			String str = paraJson.getString("targetUserIds");
+			String[] split = str.split(",");
+			int count = split.length;
+			long[] targetUserIds = new long[count];
+			for (int i=0;i<count;i++) {
+				targetUserIds[i]=Long.valueOf(split[i]);
+			}
+			SysMsgPublisher.publishMsg(msgTitle, msgContent, userId, targetUserIds);
+			return new ModelAndView("jsonView", success("消息发送成功!"));
+		}catch(Exception e){
+			log.error("发送失败，原因："+e.getMessage(), e);
+			return new ModelAndView("jsonView",exception(e));
+		}
+	}
 }

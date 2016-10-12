@@ -83,7 +83,7 @@ public class SysMsgService {
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(sysConn);
 			log.error(e.getMessage(), e);
-			throw new ServiceException("更改失败，原因为:"+e.getMessage(),e);
+			throw new ServiceException("更改失败，原因为:该消息已读,不能重复更改消息状态!");
 		}finally{
 			DbUtils.commitAndCloseQuietly(sysConn);
 		}

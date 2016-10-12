@@ -34,7 +34,7 @@
     
     <bean id="sysMsgWebSocketHandler" class="com.navinfo.dataservice.engine.sys.msg.websocket.SysMsgWebSocketHandler"/>
 	
-	<websocket:handlers>
+	<websocket:handlers allowed-origins="*">
 		<websocket:mapping 	path="/sysMsg/webSocketServer" handler="sysMsgWebSocketHandler"/>
 		<!-- 握手协议接口 --> 
 		<websocket:handshake-interceptors>
@@ -43,7 +43,7 @@
 	</websocket:handlers>
 	
 	<!-- sockjs协议 -->
-	<websocket:handlers >
+	<websocket:handlers allowed-origins="*">
 		<websocket:mapping 	path="/sysMsg/sockjs/webSocketServer" handler="sysMsgWebSocketHandler"/>
 		<!-- 握手协议接口 --> 
 		<websocket:handshake-interceptors>
@@ -55,7 +55,7 @@
 	
 	<!-- stomp and message broker config start -->
 	<!-- /app 为cotroller 处理的前缀-->
-	<websocket:message-broker application-destination-prefix="/app">
+	<websocket:message-broker application-destination-prefix="/app" >
 		<!-- websocket 底层连接地址 -->
 		<!-- websocket 底层连接地址 使用stomp是使用该路径"/sysMsg"" -->
 		<websocket:stomp-endpoint path="/sysMsg">
@@ -64,6 +64,7 @@
 		<websocket:simple-broker prefix="/topic,/queue" />
 	</websocket:message-broker>
 	<!-- stomp and message broker config end -->
+	
 	<!-- test begin -->
 	<!-- 
 	<mvc:annotation-driven/>

@@ -9,7 +9,6 @@ import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
 import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdElectroniceye;
 import com.navinfo.dataservice.dao.glm.model.rd.gate.RdGate;
-import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
 import com.navinfo.dataservice.dao.glm.model.rd.inter.RdInter;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
@@ -44,8 +43,6 @@ public class Command extends AbstractCommand {
 	private List<RdCross> crosses;
 
 	private List<RdSpeedlimit> limits;
-
-	private List<RdGsc> rdGscs;
 
 	private List<AdAdmin> adAdmins;
 
@@ -178,14 +175,6 @@ public class Command extends AbstractCommand {
 	public String getRequester() {
 
 		return requester;
-	}
-
-	public List<RdGsc> getRdGscs() {
-		return rdGscs;
-	}
-
-	public void setRdGscs(List<RdGsc> rdGscs) {
-		this.rdGscs = rdGscs;
 	}
 
 	public List<RdElectroniceye> getElectroniceyes() {

@@ -269,9 +269,9 @@ public class TaskOperation {
 					if ("taskStatus".equals(key)) {
 						if(!statusSql.isEmpty()){statusSql+=" or ";}
 						statusSql+=" TASK_LIST.TASK_STATUS="+conditionJson.getInt(key);}
-					if ("planStatus".equals(key)) {
+					if ("cityPlanStatus".equals(key)) {
 						if(!statusSql.isEmpty()){statusSql+=" or ";}
-						statusSql+=" TASK_LIST.PLAN_STATUS="+conditionJson.getInt(key);}}
+						statusSql+=" TASK_LIST.CITY_PLAN_STATUS="+conditionJson.getInt(key);}}
 			}	
 			if(!statusSql.isEmpty()){//有非status
 				conditionSql+=" and ("+statusSql+")";}
@@ -282,7 +282,7 @@ public class TaskOperation {
 					+ "         T.NAME TASK_NAME,"
 					+ "         C.CITY_ID,"
 					+ "         C.CITY_NAME,"
-					+ "         C.PLAN_STATUS,"
+					+ "         C.PLAN_STATUS CITY_PLAN_STATUS,"
 					+ "         T.STATUS TASK_STATUS, "
 					+ "         1 TASK_TYPE"
 					+ "    FROM TASK T, CITY C"
@@ -370,11 +370,17 @@ public class TaskOperation {
 					+ "   AND C.CITY_ID NOT IN (100000, 100001, 100002)"
 					+ "   AND T.TASK_ID = S.TASK_ID(+)"
 					+ "   AND T.STATUS = 1"
-					+ "   AND T.LATEST = 1),"
+					+ "   AND T.LATEST = 1"
+					+ "   AND (EXISTS(SELECT 1"
+					+ "                    FROM BLOCK_MAN M"
+					+ "                   WHERE M.TASK_ID = T.TASK_ID"
+					+ "                     AND M.STATUS <> 0)"
+					+ "      OR NOT EXISTS(SELECT 1 FROM BLOCK_MAN M"
+					+ "                   WHERE M.TASK_ID = T.TASK_ID))),"
 					+ " FINAL_TABLE AS"
 					+ " (SELECT *"
 					+ "    FROM TASK_LIST"
-					+ "    WHERE TASK_LIST.PERCENT < 100"
+					+ "    WHERE 1=1"
 					+  conditionSql
 					+ "   ORDER BY TASK_LIST.DIFF_DATE ASC,TASK_LIST.PERCENT DESC)"
 					+ " SELECT /*+FIRST_ROWS ORDERED*/"
@@ -450,13 +456,19 @@ public class TaskOperation {
 					+ "       S.COLLECT_PERCENT,"
 					+ "       S.DAILY_PROGRESS,"
 					+ "       S.DAILY_PERCENT"
-					+ "  FROM TASK T, CITY C, FM_STAT_OVERVIEW_TASK S"
+					+ "  FROM TASK T, CITY C, FM_STAT_OVERVIEW_TASK S,BLOCK_MAN BM"
 					+ " WHERE T.CITY_ID = C.CITY_ID"
 					+ "   AND C.CITY_ID NOT IN (100000, 100001, 100002)"
 					+ "   AND T.TASK_ID = S.TASK_ID"
-					+ "   AND S.PERCENT = 100"
+					+ "   AND T.TASK_ID = BM.TASK_ID"
+					//+ "   AND S.PERCENT = 100"
 					+ "   AND T.STATUS = 1"
-					+ "   AND T.LATEST = 1),"
+					+ "   AND T.LATEST = 1"
+					+ "   AND NOT EXISTS(SELECT 1"
+					+ "                    FROM BLOCK_MAN M"
+					+ "                   WHERE M.TASK_ID = T.TASK_ID"
+					+ "                     AND M.LATEST = 1"
+					+ "                     AND M.STATUS <> 0)),"
 					+ " FINAL_TABLE AS"
 					+ " (SELECT *"
 					+ "    FROM TASK_LIST"
@@ -582,9 +594,9 @@ public class TaskOperation {
 					if ("taskStatus".equals(key)) {
 						if(!statusSql.isEmpty()){statusSql+=" or ";}
 						statusSql+=" TASK_LIST.TASK_STATUS="+conditionJson.getInt(key);}
-					if ("planStatus".equals(key)) {
+					if ("blockPlanStatus".equals(key)) {
 						if(!statusSql.isEmpty()){statusSql+=" or ";}
-						statusSql+=" TASK_LIST.PLAN_STATUS="+conditionJson.getInt(key);}}
+						statusSql+=" TASK_LIST.INFOR_PLAN_STATUS="+conditionJson.getInt(key);}}
 			}	
 			if(!statusSql.isEmpty()){//有非status
 				conditionSql+=" and ("+statusSql+")";}
@@ -595,7 +607,7 @@ public class TaskOperation {
 					+ "         T.NAME TASK_NAME,"
 					+ "         C.INFOR_ID,"
 					+ "         C.INFOR_NAME,"
-					+ "         C.PLAN_STATUS,"
+					+ "         C.PLAN_STATUS INFOR_PLAN_STATUS,"
 					+ "         T.STATUS TASK_STATUS, "
 					+ "         4 TASK_TYPE"
 					+ "    FROM TASK T, INFOR C"
@@ -680,11 +692,17 @@ public class TaskOperation {
 					+ " WHERE T.TASK_ID = C.TASK_ID"
 					+ "   AND T.TASK_ID = S.TASK_ID(+)"
 					+ "   AND T.STATUS = 1"
-					+ "   AND T.LATEST = 1),"
+					+ "   AND T.LATEST = 1"
+					+ "   AND (EXISTS(SELECT 1"
+					+ "                    FROM BLOCK_MAN M"
+					+ "                   WHERE M.TASK_ID = T.TASK_ID"
+					+ "                     AND M.STATUS <> 0)"
+					+ "      OR NOT EXISTS(SELECT 1 FROM BLOCK_MAN M"
+					+ "                   WHERE M.TASK_ID = T.TASK_ID))),"
 					+ " FINAL_TABLE AS"
 					+ " (SELECT *"
 					+ "    FROM TASK_LIST"
-					+ "    WHERE TASK_LIST.PERCENT < 100"
+					+ "    WHERE 1==1"
 					+  conditionSql
 					+ "   ORDER BY TASK_LIST.DIFF_DATE ASC,TASK_LIST.PERCENT DESC)"
 					+ " SELECT /*+FIRST_ROWS ORDERED*/"
@@ -760,12 +778,18 @@ public class TaskOperation {
 					+ "       S.COLLECT_PERCENT,"
 					+ "       S.DAILY_PROGRESS,"
 					+ "       S.DAILY_PERCENT"
-					+ "  FROM TASK T, INFOR C, FM_STAT_OVERVIEW_TASK S"
+					+ "  FROM TASK T, INFOR C, FM_STAT_OVERVIEW_TASK S,BLOCK_MAN BM"
 					+ " WHERE T.task_ID = C.TASK_ID"
 					+ "   AND T.TASK_ID = S.TASK_ID"
-					+ "   AND S.PERCENT = 100"
+					+ "   AND T.TASK_ID=BM.TASK_ID"
+					//+ "   AND S.PERCENT = 100"
 					+ "   AND T.STATUS = 1"
-					+ "   AND T.LATEST = 1),"
+					+ "   AND T.LATEST = 1"
+					+ "   AND NOT EXISTS(SELECT 1"
+					+ "                    FROM BLOCK_MAN M"
+					+ "                   WHERE M.TASK_ID = T.TASK_ID"
+					+ "                     AND M.LATEST = 1"
+					+ "                     AND M.STATUS <> 0)),"
 					+ " FINAL_TABLE AS"
 					+ " (SELECT *"
 					+ "    FROM TASK_LIST"
@@ -888,13 +912,15 @@ public class TaskOperation {
 					map.put("taskName", rs.getString("TASK_NAME"));
 					if(rs.getInt("TASK_TYPE")==1){
 						map.put("cityId", rs.getString("CITY_ID"));
-						map.put("cityName", rs.getString("CITY_NAME"));}
+						map.put("cityName", rs.getString("CITY_NAME"));
+						map.put("cityPlanStatus", rs.getInt("CITY_PLAN_STATUS"));}
 					else if(rs.getInt("TASK_TYPE")==4){
 						map.put("inforId", rs.getString("INFOR_ID"));
-						map.put("inforName", rs.getString("INFOR_NAME"));}
+						map.put("inforName", rs.getString("INFOR_NAME"));
+						map.put("inforPlanStatus", rs.getInt("INFOR_PLAN_STATUS"));}
 					map.put("taskType", rs.getInt("TASK_TYPE"));
 					map.put("taskStatus", rs.getInt("TASK_STATUS"));
-					map.put("planStatus", rs.getInt("PLAN_STATUS"));
+					
 					total=rs.getInt("TOTAL_RECORD_NUM");
 					list.add(map);
 				}
@@ -925,13 +951,14 @@ public class TaskOperation {
 					map.put("taskName", rs.getString("TASK_NAME"));
 					if(rs.getInt("TASK_TYPE")==1){
 						map.put("cityId", rs.getString("CITY_ID"));
-						map.put("cityName", rs.getString("CITY_NAME"));}
+						map.put("cityName", rs.getString("CITY_NAME"));
+						map.put("cityPlanStatus", rs.getInt("PLAN_STATUS"));}
 					else if(rs.getInt("TASK_TYPE")==4){
 						map.put("inforId", rs.getString("INFOR_ID"));
-						map.put("inforName", rs.getString("INFOR_NAME"));}
+						map.put("inforName", rs.getString("INFOR_NAME"));
+						map.put("inforPlanStatus", rs.getInt("PLAN_STATUS"));}
 					map.put("taskType", rs.getInt("TASK_TYPE"));
-					map.put("taskStatus", rs.getInt("TASK_STATUS"));
-					map.put("planStatus", rs.getInt("PLAN_STATUS"));					
+					map.put("taskStatus", rs.getInt("TASK_STATUS"));					
 					map.put("percent", rs.getInt("PERCENT"));
 					map.put("diffDate", rs.getInt("DIFF_DATE"));
 					map.put("progress", rs.getInt("PROGRESS"));
@@ -1301,7 +1328,7 @@ public class TaskOperation {
 					map.put("createUserName", rs.getString("CREATE_USER_NAME"));
 					map.put("monthEditGroupName", rs.getString("MONTH_EDIT_GROUP_NAME"));
 					map.put("taskStatus", rs.getInt("TASK_STATUS"));
-					map.put("planStatus", rs.getInt("PLAN_STATUS"));
+					map.put("upperPlanStatus", rs.getInt("PLAN_STATUS"));
 					map.put("percent", rs.getInt("PERCENT"));
 					map.put("version", version);
 					//map.put("ROWNUM_", rs.getInt("ROWNUM_"));

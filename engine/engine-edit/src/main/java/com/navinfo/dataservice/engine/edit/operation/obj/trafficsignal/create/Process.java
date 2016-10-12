@@ -16,12 +16,6 @@ public class Process extends AbstractProcess<Command> {
 	private Check check = new Check();
 
 	@Override
-	public String preCheck() throws Exception {
-		super.preCheck();
-		return null;
-	}
-
-	@Override
 	public boolean prepareData() throws Exception {
 
 		int nodePid = this.getCommand().getNodePid();
@@ -41,11 +35,6 @@ public class Process extends AbstractProcess<Command> {
 		this.getCommand().setCross(cross);
 
 		return true;
-	}
-
-	@Override
-	public void postCheck() throws Exception {
-		super.postCheck();
 	}
 
 	@Override

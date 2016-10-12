@@ -7,7 +7,6 @@ import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdmin;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
-import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
@@ -44,8 +43,6 @@ public class Command extends AbstractCommand {
 	private List<RdSpeedlimit> limits;
 	
 	private boolean isCheckInfect = false;
-	
-	private List<RdGsc> rdGscs;
 	
 	private List<AdAdmin> adAdmins;
 	
@@ -156,14 +153,6 @@ public class Command extends AbstractCommand {
 	public String getRequester() {
 		
 		return requester;
-	}
-	
-	public List<RdGsc> getRdGscs() {
-		return rdGscs;
-	}
-
-	public void setRdGscs(List<RdGsc> rdGscs) {
-		this.rdGscs = rdGscs;
 	}
 
 	public List<AdAdmin> getAdAdmins() {

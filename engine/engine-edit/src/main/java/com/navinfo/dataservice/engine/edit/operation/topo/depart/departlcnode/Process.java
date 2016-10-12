@@ -37,7 +37,7 @@ public class Process extends AbstractProcess<Command> {
 		check.checkIsCrossNode(this.getConn(), this.getCommand().getsNodePid());
 		check.checkIsCrossNode(this.getConn(), this.getCommand().geteNodePid());
 		check.checkIsVia(this.getConn(), this.getCommand().getLinkPid());
-		return null;
+		return super.preCheck();
 	}
 
 	@Override

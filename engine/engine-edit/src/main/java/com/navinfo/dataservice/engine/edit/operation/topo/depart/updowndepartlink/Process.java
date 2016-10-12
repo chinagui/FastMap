@@ -15,23 +15,13 @@ public class Process extends AbstractProcess<Command> {
 		super(command);
 		// TODO Auto-generated constructor stub
 	}
-	
-	public String preCheck() throws Exception {
-		return null;
 
-	}
-	
 	/*
 	 * 加载上下线分离线
 	 */
 	public void lockRdLinks() throws Exception {
 		RdLinkSelector linkSelector = new RdLinkSelector(this.getConn());
 		this.getCommand().setLinks(linkSelector.loadByPids(this.getCommand().getLinkPids(), true));
-	}
-	@Override
-	public void postCheck() {
-
-		// 对数据进行检查、检查结果存储在数据库，并存储在临时变量postCheckMsg中
 	}
 	@Override
 	public boolean prepareData() throws Exception {

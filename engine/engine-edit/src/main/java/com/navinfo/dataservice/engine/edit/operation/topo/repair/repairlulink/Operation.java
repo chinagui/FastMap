@@ -14,7 +14,6 @@ import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
-import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.lu.LuFace;
 import com.navinfo.dataservice.dao.glm.model.lu.LuFaceTopo;
 import com.navinfo.dataservice.dao.glm.model.lu.LuLink;
@@ -79,7 +78,7 @@ public class Operation implements IOperation {
 			luLink.copy(this.command.getUpdateLink());
 			if (isChanged) {
 				result.insertObject(this.command.getUpdateLink(),
-						ObjStatus.UPDATE, this.command.getLinkPid());
+						ObjStatus.UPDATE, this.command.getUpdateLink().getPid());
 				luLink.setGeometry(GeoTranslator.geojson2Jts(
 						command.getLinkGeom(), 100000, 0));
 			}
@@ -105,7 +104,7 @@ public class Operation implements IOperation {
 
 			}
 			result.insertObject(this.command.getUpdateLink(), ObjStatus.DELETE,
-					this.command.getLinkPid());
+					this.command.getUpdateLink().getPid());
 		}
 
 		updataRelationObj(links, result);

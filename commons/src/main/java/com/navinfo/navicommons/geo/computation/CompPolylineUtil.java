@@ -42,11 +42,20 @@ public class CompPolylineUtil {
 				//每条polyline有若干line组成，遍历lines
 				for(int j=0;j<lineLen;j++){
 					DoubleLine line = polyline.getLines()[j];
+					System.out.println("LINESTRING "+line+"\t"+(j*3+1));
 					DoubleLine[] offSets = CompLineUtil.offset(line,distance,true);
 					leftLines[j]=offSets[0];
 					rightLines[j]=offSets[1];
+					System.out.println("LINESTRING "+offSets[0]+"\t"+(j*3+1));
+					System.out.println("LINESTRING "+offSets[1]+"\t"+(j*3+1));
 					//从第二条line开始，计算与前一条line的交点
 					if(j>0){
+						if(leftLines[j-1]==null||leftLines[j-1].getSpoint()==null||leftLines[j-1].getEpoint()==null
+								||leftLines[j]==null||leftLines[j].getSpoint()==null||leftLines[j].getEpoint()==null
+								||rightLines[j-1]==null||rightLines[j-1].getSpoint()==null||rightLines[j-1].getEpoint()==null
+								||rightLines[j]==null||rightLines[j].getSpoint()==null||rightLines[j].getEpoint()==null){
+							System.out.println("***");
+						}
 						DoublePoint leftMidPoint = CompLineUtil.LineExtIntersect(leftLines[j-1],leftLines[j]);
 						leftLines[j-1].setEpoint(leftMidPoint);
 						leftLines[j].setSpoint(leftMidPoint);

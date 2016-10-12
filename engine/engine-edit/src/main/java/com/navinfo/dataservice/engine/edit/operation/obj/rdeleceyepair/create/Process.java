@@ -7,48 +7,47 @@ import com.navinfo.dataservice.engine.edit.operation.AbstractProcess;
 
 public class Process extends AbstractProcess<Command> {
 
-	public Process() {
-		super();
-	}
+    private Check check = new Check();
 
-	public Process(AbstractCommand command) throws Exception {
-		super(command);
-	}
+    public Process() {
+        super();
+    }
 
-	@Override
-	public String preCheck() throws Exception {
-		// check.checkRdEleceyePair(this.getCommand());
-		// check.isHasRdEleceyePair(this.getCommand());
-		return null;
-	}
+    public Process(AbstractCommand command) throws Exception {
+        super(command);
+    }
 
-	@Override
-	public boolean prepareData() throws Exception {
-		// 根据pid1和pid2加载配对电子眼
-		Command command = this.getCommand();
-		RdElectroniceyeSelector selector = new RdElectroniceyeSelector(
-				this.getConn());
+    @Override
+    public String preCheck() throws Exception {
+        check.checkRdEleceyePair(this.getCommand());
+        check.isHasRdEleceyePair(this.getCommand());
+        return super.preCheck();
+    }
 
-		RdElectroniceye eleceye = (RdElectroniceye) selector.loadById(
-				command.getEleceyePid1(), true);
-		if (Command.EXIT_KIND == eleceye.getKind()) {
-			command.setExitEleceye(eleceye);
-			eleceye = (RdElectroniceye) selector.loadById(
-					command.getEleceyePid2(), true);
-			command.setEntryEleceye(eleceye);
-		} else {
-			command.setEntryEleceye(eleceye);
-			eleceye = (RdElectroniceye) selector.loadById(
-					command.getEleceyePid2(), true);
-			command.setExitEleceye(eleceye);
-		}
+    @Override
+    public boolean prepareData() throws Exception {
+        // 根据pid1和pid2加载配对电子眼
+        Command command = this.getCommand();
+        RdElectroniceyeSelector selector = new RdElectroniceyeSelector(this.getConn());
 
-		return false;
-	}
+        RdElectroniceye eleceye = (RdElectroniceye) selector.loadById(
+                command.getEleceyePid1(), true);
+        if (Command.EXIT_KIND == eleceye.getKind()) {
+            command.setExitEleceye(eleceye);
+            eleceye = (RdElectroniceye) selector.loadById(command.getEleceyePid2(), true);
+            command.setEntryEleceye(eleceye);
+        } else {
+            command.setEntryEleceye(eleceye);
+            eleceye = (RdElectroniceye) selector.loadById(command.getEleceyePid2(), true);
+            command.setExitEleceye(eleceye);
+        }
 
-	@Override
-	public String exeOperation() throws Exception {
-		return new Operation(this.getCommand()).run(this.getResult());
-	}
+        return false;
+    }
+
+    @Override
+    public String exeOperation() throws Exception {
+        return new Operation(this.getCommand()).run(this.getResult());
+    }
 
 }

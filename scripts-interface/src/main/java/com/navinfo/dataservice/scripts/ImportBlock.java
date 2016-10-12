@@ -145,6 +145,10 @@ public class ImportBlock {
 				String workProperty=json.getString("workProperty");
 				String geometry =json.getString("geometry");
 				
+				String comName = (StringUtils.isEmpty(province)?"":province)
+								+(StringUtils.isEmpty(city)?"":city)
+								+(StringUtils.isEmpty(county)?"":county);
+				
 				Geometry geo = reader.read(geometry);
 				Set<String> grids = CompGeometryUtil.polygon2GridsWithoutBreak((Polygon)geo);
 

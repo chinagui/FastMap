@@ -4,12 +4,8 @@ import java.sql.Connection;
 import java.util.List;
 
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
-import com.navinfo.dataservice.dao.glm.iface.IRow;
-import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
-import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
-import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGscLink;
-import com.navinfo.dataservice.dao.glm.selector.rd.gsc.RdGscSelector;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 
 public class OpRefRdGsc implements IOperation {
 	
@@ -25,33 +21,13 @@ public class OpRefRdGsc implements IOperation {
 	@Override
 	public String run(Result result) throws Exception {
 
-		RdGscSelector selector = new RdGscSelector(conn);
+		com.navinfo.dataservice.engine.edit.operation.obj.rdgsc.delete.Operation gscDelOption = new com.navinfo.dataservice.engine.edit.operation.obj.rdgsc.delete.Operation(
+				this.conn);
 		
-		for(Integer linkPid : command.getLinkPids())
-		{
-			List<RdGsc> rdGscList = selector.loadRdGscLinkByLinkPid(linkPid, "RD_LINK", true);
-			
-			for(RdGsc gsc: rdGscList)
-			{
-				//两两立交删除整体
-				if(gsc.getLinks().size() <=2)
-				{
-					result.insertObject(gsc, ObjStatus.DELETE, gsc.getPid());
-				}
-				else
-				{
-					//多线立交删除立交组成线
-					for(IRow row : gsc.getLinks())
-					{
-						RdGscLink gscLink = (RdGscLink) row;
-						if(gscLink.getLinkPid() == linkPid)
-						{
-							result.insertObject(gscLink, ObjStatus.DELETE, gscLink.getPid());
-						}
-					}
-				}
-			}
-		}
+		List<RdLink>  linkList = this.command.getLinks();
+		
+		gscDelOption.deleteByLinkPid(linkList, result);
+		
 		return null;
 	}
 

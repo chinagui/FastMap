@@ -15,6 +15,10 @@ public class DoubleUtil {
 		if(Math.round(num1*100000)==Math.round(num2*100000)) return true;
 		return false;
 	}
+	public static boolean equalsBigDecimal(double num1,double num2){
+		if(Math.round(num1*10000000000L)==Math.round(num2*10000000000L)) return true;
+		return false;
+	}
 	
 	public static void main(String[] args){
 		System.out.println(keepSpecDecimal(1.23456666));

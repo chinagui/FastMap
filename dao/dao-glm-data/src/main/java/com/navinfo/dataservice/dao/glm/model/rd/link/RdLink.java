@@ -63,7 +63,7 @@ public class RdLink implements IObj {
 
 	private int laneWidthRight = 1;
 
-	private int laneClass = 2;
+	private int laneClass = 1;
 
 	private int width;
 

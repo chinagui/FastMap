@@ -132,7 +132,7 @@ public class OpRefRdGsc implements IOperation {
 				boolean changed = rdGscLink.fillChangeFields(updateContent);
 
 				if (changed) {
-					result.insertObject(rdGscLink, ObjStatus.UPDATE, rr.pid());
+					result.insertObject(rdGscLink, ObjStatus.UPDATE, rdGscLink.getPid());
 				}
 			}
 		}

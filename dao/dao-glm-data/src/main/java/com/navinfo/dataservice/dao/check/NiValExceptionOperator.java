@@ -200,7 +200,7 @@ public class NiValExceptionOperator {
 			meshId = (int) list.get(1);
 		}
 
-		String sql = "merge into ni_val_exception a using ( select * from ( select :1 as MD5_CODE from dual) where MD5_CODE not in ( select MD5_CODE          from ni_val_exception          where MD5_CODE is not null        union all        select reserved as MD5_CODE          from ck_exception          where reserved is not null          )) b on (a.MD5_CODE = b.MD5_CODE) when not matched then   insert     (MD5_CODE, ruleid, information, location, targets, mesh_id, worker, \"LEVEL\", created, updated )   values     (:2, :3, :4, sdo_geometry(:5, 8307), :6, :7, :8, :9, sysdate, sysdate)";
+		String sql = "merge into ni_val_exception a using (select :1 as MD5_CODE from dual) b on (a.MD5_CODE = b.MD5_CODE) when not matched then   insert (MD5_CODE, ruleid, information, location, targets, mesh_id, worker, \"LEVEL\", created, updated )   values     (:2, :3, :4, sdo_geometry(:5, 8307), :6, :7, :8, :9, sysdate, sysdate)";
 		PreparedStatement pstmt = conn.prepareStatement(sql);
 
 		try {

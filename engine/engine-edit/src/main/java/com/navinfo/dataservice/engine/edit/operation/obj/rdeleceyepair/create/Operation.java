@@ -46,7 +46,7 @@ public class Operation implements IOperation {
 		RdEleceyePart part = new RdEleceyePart();
 		part.setEleceyePid(eleceye.pid());
 		part.setGroupId(pairPid);
-		result.insertObject(part, ObjStatus.INSERT, pairPid);
+		result.insertObject(part, ObjStatus.INSERT, part.getGroupId());
 	}
 
 }

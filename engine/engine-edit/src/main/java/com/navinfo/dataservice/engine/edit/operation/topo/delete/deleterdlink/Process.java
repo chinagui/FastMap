@@ -10,12 +10,12 @@ import org.apache.commons.collections.CollectionUtils;
 
 import com.navinfo.dataservice.dao.glm.iface.AlertObject;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdmin;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
 import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdElectroniceye;
-import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.model.rd.speedlimit.RdSpeedlimit;
@@ -23,7 +23,6 @@ import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdAdminSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.eleceye.RdElectroniceyeSelector;
-import com.navinfo.dataservice.dao.glm.selector.rd.gsc.RdGscSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.speedlimit.RdSpeedlimitSelector;
@@ -102,15 +101,6 @@ public class Process extends AbstractProcess<Command> {
 		this.getCommand().setCrosses(crosses);
 	}
 
-	public void lockRdGsc() throws Exception {
-
-		RdGscSelector selector = new RdGscSelector(this.getConn());
-
-		List<RdGsc> rdGscList = selector.loadRdGscLinkByLinkPid(this.getCommand().getLinkPid(), "RD_LINK", true);
-
-		this.getCommand().setRdGscs(rdGscList);
-	}
-
 	public void lockRdSpeedlimits() throws Exception {
 
 		RdSpeedlimitSelector selector = new RdSpeedlimitSelector(this.getConn());
@@ -153,8 +143,6 @@ public class Process extends AbstractProcess<Command> {
 		lockRdCross();
 
 		lockRdSpeedlimits();
-
-		lockRdGsc();
 
 		lockAdAdmin();
 
@@ -285,7 +273,7 @@ public class Process extends AbstractProcess<Command> {
 		opRefSpeedlimit.run(this.getResult());
 
 		// 立交
-		IOperation opRefRdGsc = new OpRefRdGsc(this.getCommand());
+		IOperation opRefRdGsc = new OpRefRdGsc(this.getCommand(),this.getConn());
 		opRefRdGsc.run(this.getResult());
 
 		// 行政区划
@@ -468,8 +456,10 @@ public class Process extends AbstractProcess<Command> {
 
 		// 立交
 		com.navinfo.dataservice.engine.edit.operation.obj.rdgsc.delete.Operation rdGscOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdgsc.delete.Operation(
-				null, null);
-		List<AlertObject> delGscAlertDataList = rdGscOperation.getDeleteRdGscInfectData(linkPid, conn);
+				conn);
+		List<IRow> linkList = new ArrayList<>(); 
+		linkList.add(link);
+		List<AlertObject> delGscAlertDataList = rdGscOperation.getDeleteRdGscInfectData(linkList);
 		if (CollectionUtils.isNotEmpty(delGscAlertDataList)) {
 			infects.put("删除link维护立交", delGscAlertDataList);
 		}

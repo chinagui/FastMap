@@ -20,7 +20,7 @@ public class IxPoiTest extends InitApplication{
 
     @Test
     public void creat(){
-        String parameter = "{\"command\":\"CREATE\",\"dbId\":17,\"type\":\"IXSAMEPOI\",\"poiPids\":[307000011,308000014]}";
+        String parameter = "{\"command\":\"CREATE\",\"type\":\"IXPOI\",\"dbId\":17,\"data\":{\"longitude\":116.28255307674408,\"latitude\":40.56674714332346,\"x_guide\":116.28263146711828,\"y_guide\":40.56703051458468,\"linkPid\":303000476}}";
         TestUtil.run(parameter);
     }
 
@@ -32,5 +32,6 @@ public class IxPoiTest extends InitApplication{
         // JSONObject obj = JSONObject.fromObject("{'pid':1,'pids':2}");
         api.run(obj);
     }
+
 
 }

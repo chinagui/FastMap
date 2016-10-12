@@ -87,7 +87,17 @@ public class Operation {
         }
     }
 
-    // 用于维护上下线分离对电子眼的影响
+    /**
+     * 用于维护上下线分离对电子眼的影响
+     *
+     * @param sNode      起始点PID
+     * @param links      分离线
+     * @param leftLinks  分离后左线
+     * @param rightLinks 分离后右线
+     * @param result     结果集
+     * @return
+     * @throws Exception
+     */
     public String updownDepart(RdNode sNode, List<RdLink> links, Map<Integer, RdLink> leftLinks, Map<Integer, RdLink> rightLinks, Result result) throws Exception {
         // 查找上下线分离对影响到的电子眼
         List<Integer> linkPids = new ArrayList<Integer>();
@@ -132,12 +142,10 @@ public class Operation {
     // 更新电子眼信息
     private void updateRdElectroniceye(RdLink link, RdElectroniceye rdElectroniceye, Result result) throws Exception {
         // 计算原电子眼坐标到分离后link的垂足点
-        Coordinate targetPoint = GeometryUtils.GetNearestPointOnLine(rdElectroniceye.getGeometry().getCoordinate(), link.getGeometry());
+        Coordinate targetPoint = GeometryUtils.GetNearestPointOnLine(GeoTranslator.transform(rdElectroniceye.getGeometry(), 0.00001, 5).getCoordinate(), GeoTranslator.transform(link.getGeometry(), 0.00001, 5));
         JSONObject geoPoint = new JSONObject();
         geoPoint.put("type", "Point");
         geoPoint.put("coordinates", new double[]{targetPoint.x, targetPoint.y});
-        Geometry tmpGeo = GeoTranslator.geojson2Jts(geoPoint);
-        geoPoint = GeoTranslator.jts2Geojson(tmpGeo, 0.00001, 5);
         rdElectroniceye.changedFields().put("geometry", geoPoint);
         rdElectroniceye.changedFields().put("linkPid", link.getPid());
         // 更新电子眼坐标以及挂接线

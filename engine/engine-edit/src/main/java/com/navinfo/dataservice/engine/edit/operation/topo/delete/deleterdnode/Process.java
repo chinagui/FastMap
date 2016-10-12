@@ -386,9 +386,8 @@ public class Process extends AbstractProcess<Command> {
 		List<AlertObject> updateResAlertDataList = new ArrayList<>();
 		List<AlertObject> delResAlertDataList = new ArrayList<>();
 
-		updateResAlertDataList
-				.addAll(rdrestrictionOperation.getDeleteLinkResInfectData(this.getCommand().getLinkPids()));
-		delResAlertDataList.addAll(rdrestrictionOperation.getUpdateResInfectData(this.getCommand().getLinkPids()));
+		delResAlertDataList.addAll(rdrestrictionOperation.getDeleteLinkResInfectData(this.getCommand().getLinkPids()));
+		updateResAlertDataList.addAll(rdrestrictionOperation.getUpdateResInfectData(this.getCommand().getLinkPids()));
 		if (CollectionUtils.isNotEmpty(updateResAlertDataList)) {
 			infects.put("此link上存在交限关系信息，删除该Link会对应删除此组关系", updateResAlertDataList);
 		}
@@ -453,11 +452,8 @@ public class Process extends AbstractProcess<Command> {
 		// 立交
 		List<AlertObject> delGscAlertDataList = new ArrayList<>();
 		com.navinfo.dataservice.engine.edit.operation.obj.rdgsc.delete.Operation rdGscOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdgsc.delete.Operation(
-				null, null);
-		for (RdLink link : links) {
-			int linkPid = link.getPid();
-			delGscAlertDataList.addAll(rdGscOperation.getDeleteRdGscInfectData(linkPid, conn));
-		}
+				conn);
+		delGscAlertDataList.addAll(rdGscOperation.getDeleteRdGscInfectData(links));
 		if (CollectionUtils.isNotEmpty(delGscAlertDataList)) {
 			infects.put("删除link维护立交", delGscAlertDataList);
 		}

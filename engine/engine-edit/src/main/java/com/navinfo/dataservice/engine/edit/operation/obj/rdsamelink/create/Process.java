@@ -10,20 +10,9 @@ public class Process extends AbstractProcess<Command> {
 	}
 
 	@Override
-	public String preCheck() throws Exception {
-		super.preCheck();
-		return null;
-	}
-
-	@Override
 	public boolean prepareData() throws Exception {
 
 		return true;
-	}
-
-	@Override
-	public void postCheck() throws Exception {
-		super.postCheck();
 	}
 
 	@Override

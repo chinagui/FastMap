@@ -1,52 +1,38 @@
 package com.navinfo.dataservice.engine.edit.operation.topo.delete.deleterdlink;
 
+import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.List;
+
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
-import com.navinfo.dataservice.dao.glm.iface.IRow;
-import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
-import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
-import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGscLink;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 
 public class OpRefRdGsc implements IOperation {
 	
 	private Command command;
-
-	public OpRefRdGsc(Command command) {
+	
+	private Connection conn;
+	
+	public OpRefRdGsc(Command command,Connection conn) {
 		this.command = command;
-
+		
+		this.conn = conn;
 	}
 	
 	@Override
 	public String run(Result result) throws Exception {
 
-		for( RdGsc rdGsc : command.getRdGscs()){
-			if(rdGsc.getLinks().size() <=2)
-			{
-				result.insertObject(rdGsc, ObjStatus.DELETE, rdGsc.pid());
-			}
-			else
-			{
-				boolean hasFind = false;
-				
-				for(IRow row : rdGsc.getLinks())
-				{
-					RdGscLink gscLink = (RdGscLink) row;
-					
-					if(gscLink.getLinkPid() == command.getLinkPid())
-					{
-						result.insertObject(gscLink, ObjStatus.DELETE, gscLink.getPid());
-						hasFind = true;
-					}
-					if(hasFind && gscLink.getLinkPid() != command.getLinkPid())
-					{
-						gscLink.changedFields().put("zlevel", gscLink.getZlevel() -1);
-						
-						result.insertObject(gscLink, ObjStatus.UPDATE, gscLink.getPid());
-					}
-				}
-			}
-		}
+		com.navinfo.dataservice.engine.edit.operation.obj.rdgsc.delete.Operation gscDelOption = new com.navinfo.dataservice.engine.edit.operation.obj.rdgsc.delete.Operation(
+				this.conn);
 		
+		RdLink link = this.command.getLink();
+		
+		List<RdLink>  linkList = new ArrayList<>();
+		
+		linkList.add(link);
+		
+		gscDelOption.deleteByLinkPid(linkList, result);
 		return null;
 	}
 }

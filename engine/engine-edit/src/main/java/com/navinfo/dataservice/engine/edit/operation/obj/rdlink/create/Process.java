@@ -4,37 +4,32 @@ import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.operation.AbstractProcess;
 
 public class Process extends AbstractProcess<Command> {
-	
-	public Process(AbstractCommand command) throws Exception {
-		super(command);
-	}
 
-	private Check check = new Check();
+    public Process(AbstractCommand command) throws Exception {
+        super(command);
+    }
 
-	@Override
-	public String preCheck() throws Exception {
-		super.preCheck();
-		
-		check.checkDupilicateNode(this.getCommand().getGeometry());
-		
-		check.checkGLM04002(this.getConn(), this.getCommand().geteNodePid(), this.getCommand().getsNodePid());
-		
-		check.checkGLM13002(this.getConn(), this.getCommand().geteNodePid(), this.getCommand().getsNodePid());
-		
-		return null;
-	}
+    private Check check = new Check();
 
-	@Override
-	public void postCheck() throws Exception {
-		super.postCheck();
-		check.postCheck(this.getConn(), this.getResult(),this.getCommand().getDbId());
-	}
+    @Override
+    public String preCheck() throws Exception {
+        check.checkDupilicateNode(this.getCommand().getGeometry());
+        check.checkGLM04002(this.getConn(), this.getCommand().geteNodePid(), this.getCommand().getsNodePid());
+        check.checkGLM13002(this.getConn(), this.getCommand().geteNodePid(), this.getCommand().getsNodePid());
+        return super.preCheck();
+    }
 
-	@Override
-	public String exeOperation() throws Exception {
-		Operation operation = new Operation(this.getCommand(), check, this.getConn());
-		String msg = operation.run(this.getResult());
-		return msg;
-	}
-	
+    @Override
+    public void postCheck() throws Exception {
+        check.postCheck(this.getConn(), this.getResult(), this.getCommand().getDbId());
+        super.postCheck();
+    }
+
+    @Override
+    public String exeOperation() throws Exception {
+        Operation operation = new Operation(this.getCommand(), check, this.getConn());
+        String msg = operation.run(this.getResult());
+        return msg;
+    }
+
 }

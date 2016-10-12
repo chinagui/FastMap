@@ -133,9 +133,9 @@ public class Operation implements IOperation {
 
 		updataIxPoiCarrental(result, content);
 
-		updataIxPoiParent(result, content);
-
-		updataIxPoiChildren(result, content);
+//		updataIxPoiParent(result, content);
+//
+//		updataIxPoiChildren(result, content);
 
 		return null;
 	}

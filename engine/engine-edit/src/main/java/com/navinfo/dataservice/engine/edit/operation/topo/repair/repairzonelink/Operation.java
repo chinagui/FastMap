@@ -86,7 +86,7 @@ public class Operation implements IOperation {
 			ZoneLink link = new ZoneLink();
 			if (isChanged) {
 				result.insertObject(this.command.getUpdateLink(),
-						ObjStatus.UPDATE, this.command.getLinkPid());
+						ObjStatus.UPDATE, this.command.getUpdateLink().getPid());
 
 				link.copy(this.command.getUpdateLink());
 
@@ -115,7 +115,7 @@ public class Operation implements IOperation {
 
 			}
 			result.insertObject(this.command.getUpdateLink(), ObjStatus.DELETE,
-					this.command.getLinkPid());
+					this.command.getUpdateLink().getPid());
 		}
 
 		updataRelationObj(links, result);

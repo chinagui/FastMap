@@ -6,7 +6,7 @@ public class Check {
 
 	public void checkRdEleceyePair(Command command) throws Exception {
 		RdElectroniceye startEleceye = command.getEntryEleceye();
-		RdElectroniceye endEleceye = command.getEntryEleceye();
+		RdElectroniceye endEleceye = command.getExitEleceye();
 
 		if (null == startEleceye || null == endEleceye)
 			throw new Exception("匹配限速配对电子眼必须选择两个电子眼");
@@ -20,7 +20,7 @@ public class Check {
 	
 	public void isHasRdEleceyePair(Command command)throws Exception{
 		RdElectroniceye startEleceye = command.getEntryEleceye();
-		RdElectroniceye endEleceye = command.getEntryEleceye();
+		RdElectroniceye endEleceye = command.getExitEleceye();
 		
 		if(null == startEleceye.getPairs() || startEleceye.getPairs().isEmpty()){
 		}else{

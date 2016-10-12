@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.meta.rdname;
 
+import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -21,6 +22,16 @@ import net.sf.json.JSONObject;
  * @Description: 元数据库RDName操作类
  */
 public class RdNameOperation {
+	
+	private Connection conn;
+	
+	public RdNameOperation() {
+		
+	}
+	
+	public RdNameOperation(Connection conn) {
+		this.conn = conn;
+	}
 
 	/**
 	 * @Description:新增一条道路名
@@ -74,10 +85,14 @@ public class RdNameOperation {
 		}
 
 		PreparedStatement pstmt = null;
-		Connection conn = null;
+		Connection subconn = null;
 		try {
-			conn = DBConnector.getInstance().getMetaConnection();
-			pstmt = conn.prepareStatement(insertSql);
+			if (conn == null) {
+				subconn = DBConnector.getInstance().getMetaConnection();
+				pstmt = subconn.prepareStatement(insertSql);
+			} else {
+				pstmt = conn.prepareStatement(insertSql);
+			}
 
 			Integer nameId = rdName.getNameId();
 			Integer nameGroupid = rdName.getNameGroupid();
@@ -141,11 +156,16 @@ public class RdNameOperation {
 			return rdName;
 		} catch (SQLException e) {
 			e.printStackTrace();
-			DbUtils.rollback(conn);
+			if (subconn != null) {
+				DbUtils.rollback(subconn);
+			}
+			if (conn != null) {
+				DbUtils.rollback(conn);
+			}
 			throw new Exception("新增道路名出错：" + e.getMessage(), e);
 		} finally {
 			DbUtils.close(pstmt);
-			DbUtils.commitAndCloseQuietly(conn);
+			DbUtils.commitAndCloseQuietly(subconn);
 		}
 
 	}
@@ -205,12 +225,10 @@ public class RdNameOperation {
 		
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
-		Connection conn = null;
 		
 		String sql = "SELECT name_id FROM rd_name WHERE name_groupid=:1 AND lang_code in ('ENG','POR')";
 		
 		try {
-			conn = DBConnector.getInstance().getMetaConnection();
 			pstmt = conn.prepareStatement(sql);
 			
 			pstmt.setLong(1, nameGroupid);
@@ -227,7 +245,6 @@ public class RdNameOperation {
 		} finally {
 			DbUtils.closeQuietly(resultSet);
 			DbUtils.closeQuietly(pstmt);
-			DbUtils.closeQuietly(conn);
 		}
 		
 	}
@@ -274,9 +291,7 @@ public class RdNameOperation {
 		
 		PreparedStatement pstmt = null;
 		PreparedStatement subPstms = null;
-		Connection conn = null;
 		try {
-			conn = DBConnector.getInstance().getMetaConnection();
 			pstmt = conn.prepareStatement(sb.toString());
 			
 			pstmt.setString(1, rdName.getLangCode());
@@ -334,7 +349,6 @@ public class RdNameOperation {
 				
 				subPstms.execute();
 			}
-			
 			return rdName;
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -343,7 +357,6 @@ public class RdNameOperation {
 		} finally {
 			DbUtils.close(pstmt);
 			DbUtils.close(subPstms);
-			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
 	
@@ -354,7 +367,7 @@ public class RdNameOperation {
 	 * @throws Exception
 	 */
 	public void teilenRdName(JSONArray dataList) throws Exception {
-		RdNameTeilen teilen = new RdNameTeilen();
+		RdNameTeilen teilen = new RdNameTeilen(conn);
 		try {
 			for (int i=0;i<dataList.size();i++) {
 				JSONObject data = dataList.getJSONObject(i);
@@ -372,35 +385,44 @@ public class RdNameOperation {
 	 * @throws Exception
 	 */
 	public void teilenRdNameByTask(JSONArray tips) throws Exception {
-		RdNameTeilen teilen = new RdNameTeilen();
+		RdNameTeilen teilen = new RdNameTeilen(conn);
 		
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
 
-		Connection conn = null;
-		
 		try {
 			conn = DBConnector.getInstance().getMetaConnection();
 			StringBuilder sql = new StringBuilder();
+			String ids = "";
 			String tmep = "";
+			Clob pidClod = null;
 			if (tips.size()>0) {
 				sql.append("SELECT a.name_id,a.name_groupid,a.lang_code,a.road_type");
 				sql.append(" FROM rd_name a where a.split_flag!=1");
-				sql.append(" AND a.SRC_RESUME in (");
 				for (int i=0;i<tips.size();i++) {
 					JSONObject tipsObj = tips.getJSONObject(i);
-					sql.append(tmep);
+					ids += tmep;
 					tmep = ",";
-					sql.append("'");
-					sql.append(tipsObj.getString("id"));
-					sql.append("'");
+					ids += "'" + tipsObj.getString("id") + "'";
 				}
-				sql.append(")");
+				if (tips.size()>1000) {
+					pidClod = conn.createClob();
+					pidClod.setString(1, ids);
+					sql.append(" and a.SRC_RESUME in (select to_number(pid) from table(clob_to_table(:1)))");
+				} else {
+					sql.append(" and a.SRC_RESUME in (");
+					sql.append(ids);
+					sql.append(")");
+				}
 			}
 			
 			if (sql.length()>0) {
 				pstmt = conn.prepareStatement(sql.toString());
+				if(tips.size() > 1000)
+				{
+					pstmt.setClob(1, pidClod);
+				}
 				resultSet = pstmt.executeQuery();
 				while (resultSet.next()) {
 					teilen.teilenName(resultSet.getInt("name_id"), resultSet.getInt("name_groupid"), resultSet.getString("lang_code"), resultSet.getInt("road_type"));
@@ -411,7 +433,6 @@ public class RdNameOperation {
 		} finally {
 			DbUtils.closeQuietly(resultSet);
 			DbUtils.closeQuietly(pstmt);
-			DbUtils.closeQuietly(conn);
 		}
 	}
 	

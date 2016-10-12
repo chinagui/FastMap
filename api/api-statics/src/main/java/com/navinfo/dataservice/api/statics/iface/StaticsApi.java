@@ -4,8 +4,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import net.sf.json.JSONObject;
-
 import com.navinfo.dataservice.api.statics.model.BlockExpectStatInfo;
 import com.navinfo.dataservice.api.statics.model.GridChangeStatInfo;
 import com.navinfo.dataservice.api.statics.model.GridStatInfo;
@@ -27,7 +25,10 @@ public interface StaticsApi {
 
 	public List<GridStatInfo> getLatestMonthlyEditStatByGrids(List<String> grids)
 			throws Exception;
-
+	
+	public List<Integer> getOpen100TaskIdList()
+			throws Exception;
+	
 	/**
 	 * 
 	 * 获取变迁统计信息
@@ -49,5 +50,7 @@ public interface StaticsApi {
 	public List<BlockExpectStatInfo> getExpectStatByBlock(int blockId, int stage, int type);
 	
 	public SubtaskStatInfo getStatBySubtask(int subtaskId);
+	
+	public Map<Integer,SubtaskStatInfo> getStatBySubtaskIdList(List<Integer> subtaskIdList);
 
 }

@@ -40,8 +40,7 @@ public class Process extends AbstractProcess<Command> {
 		//check.checkIsVia(this.getConn(), this.getCommand().getLinkPid());
 		
 		check.checkShapePointDistance(this.getCommand().getLinkGeom());
-		
-		return null;
+		return super.preCheck();
 	}
 	
 	@Override

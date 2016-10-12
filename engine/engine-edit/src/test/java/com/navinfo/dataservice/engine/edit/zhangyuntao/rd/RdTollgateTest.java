@@ -52,11 +52,11 @@ public class RdTollgateTest extends InitApplication {
 	public void searchById() {
 		Connection conn;
 		try {
-			conn = DBConnector.getInstance().getConnectionById(42);
+			conn = DBConnector.getInstance().getConnectionById(19);
 
 			SearchProcess p = new SearchProcess(conn);
 
-			System.out.println(p.searchDataByPid(ObjType.IXPOI, 3583550).Serialize(ObjLevel.FULL));
+			System.out.println(p.searchDataByPid(ObjType.IXPOI, 82571962).Serialize(ObjLevel.FULL));
 
 			// RdTollgateSelector selector = new RdTollgateSelector(conn);
 			// RdTollgate tollgate = selector.loadById(1055, true);

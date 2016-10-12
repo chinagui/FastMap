@@ -205,6 +205,9 @@ public class IxPoi implements IObj {
 	
 	//卡车标识
 	private int truckFlag = 0;
+	
+	//app修改标识
+	protected String rawFields;
 
 	public String getLevel() {
 		return level;
@@ -221,6 +224,7 @@ public class IxPoi implements IObj {
 	public void setStatus(int status) {
 		this.status = status;
 	}
+	
 
 	public String getSportsVenue() {
 		return sportsVenue;
@@ -1797,6 +1801,14 @@ public class IxPoi implements IObj {
 
 	public void setTruckFlag(int truckFlag) {
 		this.truckFlag = truckFlag;
+	}
+
+	public String getRawFields() {
+		return rawFields;
+	}
+
+	public void setRawFields(String rawFields) {
+		this.rawFields = rawFields;
 	}
 
 }

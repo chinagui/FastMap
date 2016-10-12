@@ -51,7 +51,7 @@ public class Operation implements IOperation {
 
 		if (command.getCatchLinks().size() > 0) {
 
-			//this.caleCatchModifyLink();
+			this.caleCatchModifyRdLink();
 
 			map = RdLinkOperateUtils.splitRdLink(command.getGeometry(),
 					command.getsNodePid(), command.geteNodePid(),
@@ -236,7 +236,7 @@ public class Operation implements IOperation {
 	 * 
 	 * @throws Exception
 	 */
-	private void caleCatchModifyLink() throws Exception {
+	private void caleCatchModifyRdLink() throws Exception {
 		for (int i = 0; i < command.getCatchLinks().size(); i++) {
 			JSONObject modifyJson = command.getCatchLinks().getJSONObject(i);
 			if (modifyJson.containsKey("linkPid")) {
@@ -259,7 +259,7 @@ public class Operation implements IOperation {
 				if (geometry.getCoordinates()[geometry.getCoordinates().length - 1].x == modifyJson
 						.getDouble("lon")
 
-						&& geometry.getCoordinates()[geometry.getCoordinates().length - 1].x == modifyJson
+						&& geometry.getCoordinates()[geometry.getCoordinates().length - 1].y == modifyJson
 
 						.getDouble("lat")) {
 					modifyJson.remove("linkPid");

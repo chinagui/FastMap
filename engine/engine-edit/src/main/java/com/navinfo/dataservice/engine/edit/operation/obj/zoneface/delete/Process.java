@@ -17,8 +17,8 @@ public class Process extends AbstractProcess<Command> implements IProcess {
 	}
 	@Override
 	public void postCheck() throws Exception {
-		
 		check.postCheck(this.getConn(), this.getResult(), this.getCommand().getDbId());
+		super.postCheck();
 	}
 
 

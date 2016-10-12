@@ -13,7 +13,6 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionCondition;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionDetail;
-import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionVia;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
 import com.navinfo.navicommons.database.sql.DBUtils;

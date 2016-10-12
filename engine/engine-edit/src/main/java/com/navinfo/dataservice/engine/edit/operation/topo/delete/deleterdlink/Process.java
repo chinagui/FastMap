@@ -16,21 +16,15 @@ import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdmin;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
 import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdElectroniceye;
-import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
-import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
-import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.speedlimit.RdSpeedlimit;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdAdminSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.eleceye.RdElectroniceyeSelector;
-import com.navinfo.dataservice.dao.glm.selector.rd.gsc.RdGscSelector;
-import com.navinfo.dataservice.dao.glm.selector.rd.laneconnexity.RdLaneConnexitySelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeSelector;
-import com.navinfo.dataservice.dao.glm.selector.rd.restrict.RdRestrictionSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.speedlimit.RdSpeedlimitSelector;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.operation.AbstractProcess;
@@ -76,78 +70,19 @@ public class Process extends AbstractProcess<Command> {
 		this.getCommand().setNodePids(nodePids);
 	}
 
-	// 锁定进入线为该link的交限
-	public void lockRdRestriction() throws Exception {
-		// 获取进入线为该link的交限
-
-		RdRestrictionSelector restriction = new RdRestrictionSelector(this.getConn());
-
-		List<RdRestriction> restrictions = restriction.loadRdRestrictionByLinkPid(this.getCommand().getLinkPid(), true);
-		//经过link
-		List<RdRestriction> viaRestrictions = restriction.loadByLink(this.getCommand().getLinkPid(), 3,true);
-
-		// 获取退出线为该link，并且只有一根退出线的交限
-		List<RdRestriction> restrictions2 = restriction.loadRdRestrictionByOutLinkPid(this.getCommand().getLinkPid(),
-				true);
-		List<RdRestriction> outLinkDeleteResList = new ArrayList<>();
-
-		for (RdRestriction rdRestriction : restrictions2) {
-			List<IRow> details = rdRestriction.getDetails();
-
-			if (details.size() == 1) {
-				outLinkDeleteResList.add(rdRestriction);
-			}
-		}
-
-		restrictions.addAll(outLinkDeleteResList);
-		
-		restrictions.addAll(viaRestrictions);
-
-		this.getCommand().setRestrictions(restrictions);
-	}
-
-	public void lockRdLaneConnexity() throws Exception {
-
-		RdLaneConnexitySelector selector = new RdLaneConnexitySelector(this.getConn());
-
-		List<RdLaneConnexity> lanes = selector.loadRdLaneConnexityByLinkPid(this.getCommand().getLinkPid(), true);
-		
-		List<RdLaneConnexity> viaLanes = selector.loadByLink(this.getCommand().getLinkPid(),3,true);
-
-		// 获取退出线为该link
-
-		List<RdLaneConnexity> lanes2 = selector.loadRdLaneConnexityByOutLinkPid(this.getCommand().getLinkPid(), true);
-
-		List<RdLaneConnexity> outLinkDeleteLaneList = new ArrayList<>();
-
-		for (RdLaneConnexity rdLaneConnexity : lanes2) {
-			List<IRow> topos = rdLaneConnexity.getTopos();
-
-			if (topos.size() == 1) {
-				outLinkDeleteLaneList.add(rdLaneConnexity);
-			}
-		}
-
-		lanes.addAll(lanes2);
-		
-		lanes.addAll(viaLanes);
-
-		this.getCommand().setLanes(lanes);
-	}
-
 	public void lockRdBranch() throws Exception {
 
 		RdBranchSelector selector = new RdBranchSelector(this.getConn());
 
 		List<RdBranch> branches = selector.loadRdBranchByInLinkPid(this.getCommand().getLinkPid(), true);
-		
-		List<RdBranch> viaBranch = selector.loadByLinkPid(this.getCommand().getLinkPid(), 3,true);
+
+		List<RdBranch> viaBranch = selector.loadByLinkPid(this.getCommand().getLinkPid(), 3, true);
 
 		// 获取退出线为该link，并且只有一根退出线的车信
 		List<RdBranch> branches2 = selector.loadRdBranchByOutLinkPid(this.getCommand().getLinkPid(), true);
 
 		branches.addAll(branches2);
-		
+
 		branches.addAll(viaBranch);
 
 		this.getCommand().setBranches(branches);
@@ -164,15 +99,6 @@ public class Process extends AbstractProcess<Command> {
 		List<RdCross> crosses = selector.loadRdCrossByNodeOrLink(this.getCommand().getNodePids(), linkPids, true);
 
 		this.getCommand().setCrosses(crosses);
-	}
-
-	public void lockRdGsc() throws Exception {
-
-		RdGscSelector selector = new RdGscSelector(this.getConn());
-
-		List<RdGsc> rdGscList = selector.loadRdGscLinkByLinkPid(this.getCommand().getLinkPid(), "RD_LINK", true);
-
-		this.getCommand().setRdGscs(rdGscList);
 	}
 
 	public void lockRdSpeedlimits() throws Exception {
@@ -212,17 +138,11 @@ public class Process extends AbstractProcess<Command> {
 
 		lockRdNode();
 
-		lockRdRestriction();
-
-		lockRdLaneConnexity();
-
 		lockRdBranch();
 
 		lockRdCross();
 
 		lockRdSpeedlimits();
-
-		lockRdGsc();
 
 		lockAdAdmin();
 
@@ -271,7 +191,7 @@ public class Process extends AbstractProcess<Command> {
 			} else {
 
 				Map<String, List<AlertObject>> infects = confirmRelationObj();
-				
+
 				this.getConn().commit();
 
 				return JSONObject.fromObject(infects).toString();
@@ -333,8 +253,12 @@ public class Process extends AbstractProcess<Command> {
 	 */
 	private void updataRelationObj() throws Exception {
 		// 交限
-		IOperation opRefRestrict = new OpRefRestrict(this.getCommand());
+		IOperation opRefRestrict = new OpRefRestrict(this.getCommand(), this.getConn());
 		opRefRestrict.run(this.getResult());
+
+		// 车信
+		IOperation opRefLaneConnexity = new OpRefLaneConnexity(this.getCommand(), this.getConn());
+		opRefLaneConnexity.run(this.getResult());
 
 		// 分歧
 		IOperation opRefBranch = new OpRefBranch(this.getCommand());
@@ -344,16 +268,12 @@ public class Process extends AbstractProcess<Command> {
 		IOperation opRefCross = new OpRefCross(this.getCommand(), this.getConn());
 		opRefCross.run(this.getResult());
 
-		// 车信
-		IOperation opRefLaneConnexity = new OpRefLaneConnexity(this.getCommand());
-		opRefLaneConnexity.run(this.getResult());
-
 		// 限速
 		IOperation opRefSpeedlimit = new OpRefSpeedlimit(this.getCommand());
 		opRefSpeedlimit.run(this.getResult());
 
 		// 立交
-		IOperation opRefRdGsc = new OpRefRdGsc(this.getCommand());
+		IOperation opRefRdGsc = new OpRefRdGsc(this.getCommand(),this.getConn());
 		opRefRdGsc.run(this.getResult());
 
 		// 行政区划
@@ -435,7 +355,7 @@ public class Process extends AbstractProcess<Command> {
 	 */
 	private Map<String, List<AlertObject>> confirmRelationObj() throws Exception {
 		Map<String, List<AlertObject>> infects = new HashMap<String, List<AlertObject>>();
-		
+
 		// 检查link是否可以删除
 		String msg = preCheck();
 
@@ -447,12 +367,16 @@ public class Process extends AbstractProcess<Command> {
 		lockRdLink();
 
 		RdLink link = this.getCommand().getLink();
-		
+
 		if (link == null) {
 			throw new Exception("指定删除的LINK不存在！");
 		}
 
 		int linkPid = link.getPid();
+		
+		List<Integer> linkPidList = new ArrayList<>();
+		
+		linkPidList.add(linkPid);
 
 		Connection conn = getConn();
 
@@ -479,49 +403,27 @@ public class Process extends AbstractProcess<Command> {
 
 		// 交限
 		com.navinfo.dataservice.engine.edit.operation.obj.rdrestriction.delete.Operation rdrestrictionOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdrestriction.delete.Operation(
-				null, null);
-		List<AlertObject> updateResAlertDataList = rdrestrictionOperation.getUpdateResInfectData(linkPid, conn);
+				conn);
+		List<AlertObject> updateResAlertDataList = rdrestrictionOperation.getUpdateResInfectData(linkPidList);
 		if (CollectionUtils.isNotEmpty(updateResAlertDataList)) {
-			infects.put("维护link关联的交限信息", updateResAlertDataList);
+			infects.put("此link上存在交限关系信息，删除该Link会对应删除此组关系", updateResAlertDataList);
 		}
-		List<AlertObject> delInResAlertDataList = rdrestrictionOperation.getDeleteInLinkResInfectData(linkPid, conn);
-		if (CollectionUtils.isNotEmpty(delInResAlertDataList)) {
-			infects.put("删除link作为进入线的交限信息", delInResAlertDataList);
+		List<AlertObject> delResAlertDataList = rdrestrictionOperation.getDeleteLinkResInfectData(linkPidList);
+		if (CollectionUtils.isNotEmpty(delResAlertDataList)) {
+			infects.put("此link上存在交限关系信息，删除该Link会对应删除该交限", delResAlertDataList);
 		}
-		List<AlertObject> delOutResAlertDataList = rdrestrictionOperation.getDeleteOutLinkResInfectData(linkPid, conn);
-		if (CollectionUtils.isNotEmpty(delOutResAlertDataList)) {
-			infects.put("删除link作为退入线的交限信息", delOutResAlertDataList);
-		}
-		List<AlertObject> delViaResAlertDataList = rdrestrictionOperation.getDeleteViaLinkResInfectData(linkPid, conn);
-		if (CollectionUtils.isNotEmpty(delViaResAlertDataList)) {
-			infects.put("删除link作为经过线的交限信息", delViaResAlertDataList);
-		}
-
+		
 		// 车信
 		com.navinfo.dataservice.engine.edit.operation.obj.rdlaneconnexity.delete.Operation rdLaneConOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdlaneconnexity.delete.Operation(
-				null, null);
-		List<AlertObject> updateRdLaneConAlertDataList = rdLaneConOperation.getUpdateResInfectData(linkPid, conn);
+				conn);
+		List<AlertObject> updateRdLaneConAlertDataList = rdLaneConOperation.getUpdateResInfectData(linkPidList);
 		if (CollectionUtils.isNotEmpty(updateRdLaneConAlertDataList)) {
-			infects.put("维护link关联的车信信息", updateRdLaneConAlertDataList);
+			infects.put("此link上存在车信关系信息，删除该Link会对应删除此组关系", updateRdLaneConAlertDataList);
 		}
-		List<AlertObject> delInRdLaneConAlertDataList = rdLaneConOperation
-				.getDeleteInLinkRdLaneConnexityInfectData(linkPid, conn);
-		if (CollectionUtils.isNotEmpty(delInRdLaneConAlertDataList)) {
-			infects.put("删除link作为进入线的车信信息", delInRdLaneConAlertDataList);
+		List<AlertObject> delRdLaneConAlertDataList = rdLaneConOperation.getDeleteRdLaneConnexityInfectData(linkPidList);
+		if (CollectionUtils.isNotEmpty(delRdLaneConAlertDataList)) {
+			infects.put("此link上存在车信关系信息，删除该Link会对应删除该车信", delRdLaneConAlertDataList);
 		}
-		List<AlertObject> delOutRdLaneConAlertDataList = rdLaneConOperation
-				.getDeleteOutLinkRdLanConnexityInfectData(linkPid, conn);
-
-		if (CollectionUtils.isNotEmpty(delOutRdLaneConAlertDataList)) {
-			infects.put("删除link作为退出线的车信信息", delOutRdLaneConAlertDataList);
-		}
-		List<AlertObject> delViaRdLaneConAlertDataList = rdLaneConOperation
-				.getDeleteViaLinkRdLanConnexityInfectData(linkPid, conn);
-
-		if (CollectionUtils.isNotEmpty(delViaRdLaneConAlertDataList)) {
-			infects.put("删除link作为经过线的车信信息", delViaRdLaneConAlertDataList);
-		}
-
 		// 分歧
 		com.navinfo.dataservice.engine.edit.operation.obj.rdbranch.delete.Operation rdBranchOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdbranch.delete.Operation(
 				null, null, null);
@@ -554,8 +456,10 @@ public class Process extends AbstractProcess<Command> {
 
 		// 立交
 		com.navinfo.dataservice.engine.edit.operation.obj.rdgsc.delete.Operation rdGscOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdgsc.delete.Operation(
-				null, null);
-		List<AlertObject> delGscAlertDataList = rdGscOperation.getDeleteRdGscInfectData(linkPid, conn);
+				conn);
+		List<IRow> linkList = new ArrayList<>(); 
+		linkList.add(link);
+		List<AlertObject> delGscAlertDataList = rdGscOperation.getDeleteRdGscInfectData(linkList);
 		if (CollectionUtils.isNotEmpty(delGscAlertDataList)) {
 			infects.put("删除link维护立交", delGscAlertDataList);
 		}

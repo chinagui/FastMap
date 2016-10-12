@@ -369,7 +369,7 @@ public class Process extends AbstractProcess<Command> {
 			return "不能在端点进行打断";
 		}
 
-		return null;
+		return super.preCheck();
 	}
 
 	@Override

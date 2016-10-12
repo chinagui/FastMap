@@ -5,14 +5,18 @@ import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdElectroniceye;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.selector.rd.eleceye.RdElectroniceyeSelector;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
+import net.sf.json.JSONObject;
 
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 用于维护节点分离对电子眼的影响
@@ -81,5 +85,70 @@ public class Operation {
                 }
             }
         }
+    }
+
+    /**
+     * 用于维护上下线分离对电子眼的影响
+     *
+     * @param sNode      起始点PID
+     * @param links      分离线
+     * @param leftLinks  分离后左线
+     * @param rightLinks 分离后右线
+     * @param result     结果集
+     * @return
+     * @throws Exception
+     */
+    public String updownDepart(RdNode sNode, List<RdLink> links, Map<Integer, RdLink> leftLinks, Map<Integer, RdLink> rightLinks, Result result) throws Exception {
+        // 查找上下线分离对影响到的电子眼
+        List<Integer> linkPids = new ArrayList<Integer>();
+        linkPids.addAll(leftLinks.keySet());
+        RdElectroniceyeSelector rdElectroniceyeSelector = new RdElectroniceyeSelector(conn);
+        List<RdElectroniceye> rdElectroniceyes = rdElectroniceyeSelector.loadListByRdLinkIds(linkPids, true);
+        // 电子眼数量为零则不需要维护
+        if (rdElectroniceyes.size() == 0) {
+            return "";
+        }
+        // 构建RdLinkPid-电子眼的对应集合
+        Map<Integer, List<RdElectroniceye>> rdElectroniceyeMap = new HashMap<Integer, List<RdElectroniceye>>();
+        for (RdElectroniceye rdElectroniceye : rdElectroniceyes) {
+            List<RdElectroniceye> list = rdElectroniceyeMap.get(rdElectroniceye.getLinkPid());
+            if (null != list) {
+                list.add(rdElectroniceye);
+            } else {
+                list = new ArrayList<RdElectroniceye>();
+                list.add(rdElectroniceye);
+                rdElectroniceyeMap.put(rdElectroniceye.getLinkPid(), list);
+            }
+        }
+        for (RdLink link : links) {
+            RdLink leftLink = leftLinks.get(link.pid());
+            RdLink rightLink = rightLinks.get(link.pid());
+            if (rdElectroniceyeMap.containsKey(link.getPid())) {
+                List<RdElectroniceye> rdElectroniceyeList = rdElectroniceyeMap.get(link.getPid());
+                for (RdElectroniceye rdElectroniceye : rdElectroniceyeList) {
+                    int direct = rdElectroniceye.getDirect();
+                    if (2 == direct)
+                        // 电子眼为顺方向则关联link为右线
+                        updateRdElectroniceye(rightLink, rdElectroniceye, result);
+                    else if (3 == direct)
+                        // 电子眼为逆方向则关联link为左线
+                        updateRdElectroniceye(leftLink, rdElectroniceye, result);
+                }
+            }
+        }
+        return "";
+    }
+
+    // 更新电子眼信息
+    private void updateRdElectroniceye(RdLink link, RdElectroniceye rdElectroniceye, Result result) throws Exception {
+        // 计算原电子眼坐标到分离后link的垂足点
+        Coordinate targetPoint = GeometryUtils.GetNearestPointOnLine(GeoTranslator.transform(rdElectroniceye.getGeometry(), 0.00001, 5).getCoordinate(), GeoTranslator.transform(link.getGeometry(), 0.00001, 5));
+        JSONObject geoPoint = new JSONObject();
+        geoPoint.put("type", "Point");
+        geoPoint.put("coordinates", new double[]{targetPoint.x, targetPoint.y});
+        rdElectroniceye.changedFields().put("geometry", geoPoint);
+        rdElectroniceye.changedFields().put("linkPid", link.getPid());
+        // 更新电子眼坐标以及挂接线
+        result.insertObject(rdElectroniceye, ObjStatus.UPDATE, rdElectroniceye.pid());
     }
 }

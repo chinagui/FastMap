@@ -183,7 +183,9 @@ public class StaticsController extends BaseController {
 			if (dataJson == null) {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
-			JSONObject data = StaticsService.getInstance().queryTaskOverView();
+			//1常规 4情报
+			int taskType=dataJson.getInt("taskType");
+			JSONObject data = StaticsService.getInstance().queryTaskOverView(taskType);
 			return new ModelAndView("jsonView", success(data));
 		} catch (Exception e) {
 			log.error("创建失败，原因：" + e.getMessage(), e);

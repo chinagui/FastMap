@@ -8,6 +8,7 @@ package com.navinfo.dataservice.api.man.model;
 */
 public class BlockMan  {
 	private Integer blockManId ;
+	private String blockManName;
 	private Integer blockId ;
 	private Integer status ;
 	private Integer latest ;
@@ -31,8 +32,9 @@ public class BlockMan  {
 	public BlockMan (){
 	}
 	
-	public BlockMan (Integer blockManId ,Integer blockId,Integer status,Integer latest,String descp,Integer createUserId,Object createDate,Object collectPlanStartDate,Object collectPlanEndDate,Integer collectGroupId,Object dayEditPlanStartDate,Object dayEditPlanEndDate,Integer dayEditGroupId,Object monthEditPlanStartDate,Object monthEditPlanEndDate,Integer monthEditGroupId,Object dayProducePlanStartDate,Object dayProducePlanEndDate,Object monthProducePlanStartDate,Object monthProducePlanEndDate){
+	public BlockMan (Integer blockManId ,String blockManName,Integer blockId,Integer status,Integer latest,String descp,Integer createUserId,Object createDate,Object collectPlanStartDate,Object collectPlanEndDate,Integer collectGroupId,Object dayEditPlanStartDate,Object dayEditPlanEndDate,Integer dayEditGroupId,Object monthEditPlanStartDate,Object monthEditPlanEndDate,Integer monthEditGroupId,Object dayProducePlanStartDate,Object dayProducePlanEndDate,Object monthProducePlanStartDate,Object monthProducePlanEndDate){
 		this.blockManId=blockManId ;
+		this.blockManName=blockManName;
 		this.blockId=blockId ;
 		this.status=status ;
 		this.latest=latest ;
@@ -326,6 +328,14 @@ public class BlockMan  {
 		} else if (!monthProducePlanEndDate.equals(other.monthProducePlanEndDate))
 			return false;
 		return true;
+	}
+
+	public String getBlockManName() {
+		return blockManName;
+	}
+
+	public void setBlockManName(String blockManName) {
+		this.blockManName = blockManName;
 	}
 	
 	

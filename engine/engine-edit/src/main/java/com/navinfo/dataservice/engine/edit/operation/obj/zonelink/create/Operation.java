@@ -8,8 +8,13 @@ import java.util.Set;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneLink;
+import com.navinfo.dataservice.dao.glm.model.lu.LuLink;
+import com.navinfo.dataservice.dao.glm.selector.ad.zone.ZoneLinkSelector;
+import com.navinfo.dataservice.dao.glm.selector.lu.LuLinkSelector;
 import com.navinfo.dataservice.engine.edit.utils.ZoneLinkOperateUtils;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
@@ -44,6 +49,7 @@ public class Operation implements IOperation {
 		// 如果创ZONE线有对应的挂接ZONE_NODE和ZONE_FACE
 		// 执行挂接线处理逻辑
 		if (command.getCatchLinks().size() > 0) {
+			this.caleCatchModifyZoneLink();
 			map = ZoneLinkOperateUtils.splitLink(command.getGeometry(),
 					command.getsNodePid(), command.geteNodePid(),
 					command.getCatchLinks(),ObjType.ZONENODE, result);
@@ -64,6 +70,47 @@ public class Operation implements IOperation {
 		
 		return msg;
 	}
+	/***
+	 * 当前台未开启挂接功能是，如果传入的点正好是link的端点 应按照挂接node来传参数
+	 * 
+	 * @throws Exception
+	 */
+	private void caleCatchModifyZoneLink() throws Exception {
+		for (int i = 0; i < command.getCatchLinks().size(); i++) {
+			JSONObject modifyJson = command.getCatchLinks().getJSONObject(i);
+			if (modifyJson.containsKey("linkPid")) {
+				ZoneLinkSelector linkSelector = new ZoneLinkSelector(conn);
+				IRow row = linkSelector.loadById(modifyJson.getInt("linkPid"),
+						false, true);
+				ZoneLink link = (ZoneLink) row;
+				Geometry geometry = GeoTranslator.transform(link.getGeometry(),
+						0.00001, 5);
+				if (geometry.getCoordinates()[0].x == modifyJson
+						.getDouble("lon")
+
+				&& geometry.getCoordinates()[0].y == modifyJson
+
+				.getDouble("lat")) {
+					modifyJson.remove("linkPid");
+					modifyJson.put("nodePid", link.getsNodePid());
+
+				}
+				if (geometry.getCoordinates()[geometry.getCoordinates().length - 1].x == modifyJson
+						.getDouble("lon")
+
+						&& geometry.getCoordinates()[geometry.getCoordinates().length - 1].y == modifyJson
+
+						.getDouble("lat")) {
+					modifyJson.remove("linkPid");
+					modifyJson.put("nodePid", link.geteNodePid());
+
+				}
+			}
+		}
+		
+		
+	}
+
 	/*
 	 * 创建多条被分割的线
 	 *  1.按照线是否跨图幅逻辑走不同分支生成线

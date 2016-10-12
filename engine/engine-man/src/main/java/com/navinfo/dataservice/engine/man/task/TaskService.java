@@ -274,15 +274,55 @@ public class TaskService {
 		}
 		MessageOperation.batchInsert(conn,msgList);
 	}
+	
+	public Page commonList(Connection conn,int planStatus, JSONObject conditionJson,JSONObject orderJson,int currentPageNum,int pageSize)throws Exception{
+		//常规未发布
+		Page page = new Page();
+		if(planStatus==1){
+			page=TaskOperation.getCommonUnPushListSnapshot(conn,conditionJson,currentPageNum,pageSize);
+		}else if(planStatus==2){
+			//常规已发布
+			page=TaskOperation.getCommonPushListSnapshot(conn,conditionJson,currentPageNum,pageSize);
+		}else if(planStatus==3){
+			//常规已完成
+			page=TaskOperation.getCommonOverListSnapshot(conn,conditionJson,currentPageNum,pageSize);
+		}else if(planStatus==4){
+			//常规已关闭
+			page=TaskOperation.getCommonCloseListSnapshot(conn,conditionJson,currentPageNum,pageSize);
+		}
+		return page;
+	}
+	
+	public Page inforList(Connection conn,int planStatus, JSONObject conditionJson,JSONObject orderJson,int currentPageNum,int pageSize)throws Exception{
+		//情报未发布
+		Page page = new Page();
+		if(planStatus==1){
+			page=TaskOperation.getInforUnPushListSnapshot(conn,conditionJson,currentPageNum,pageSize);
+		}else if(planStatus==2){
+			//情报已发布
+			page=TaskOperation.getInforPushListSnapshot(conn,conditionJson,currentPageNum,pageSize);
+		}else if(planStatus==3){
+			//情报已完成
+			page=TaskOperation.getInforOverListSnapshot(conn,conditionJson,currentPageNum,pageSize);
+		}else if(planStatus==4){
+			//情报已关闭
+			page=TaskOperation.getInforCloseListSnapshot(conn,conditionJson,currentPageNum,pageSize);
+		}
+		return page;
+	}
 		
-	public Page list(JSONObject conditionJson,JSONObject orderJson,int currentPageNum,int pageSize,int snapshot)throws Exception{
+	public Page list(int taskType, int planStatus, JSONObject conditionJson,JSONObject orderJson,int currentPageNum,int pageSize,int snapshot)throws Exception{
 		Connection conn = null;
 		try{
 			conn = DBConnector.getInstance().getManConnection();
-			//返回简略信息
 			if (snapshot==1){
-				Page page = TaskOperation.getListSnapshot(conn,conditionJson,currentPageNum,pageSize);
-				return page;
+				if(taskType==4){
+					//情报任务查询列表
+					return this.inforList(conn,planStatus, conditionJson, orderJson, currentPageNum, pageSize);
+				}else{
+					//常规任务查询列表
+					return this.commonList(conn,planStatus, conditionJson, orderJson, currentPageNum, pageSize);
+				}
 			}else{
 				Page page = TaskOperation.getListIntegrate(conn,conditionJson,orderJson,currentPageNum,pageSize);
 				return page;

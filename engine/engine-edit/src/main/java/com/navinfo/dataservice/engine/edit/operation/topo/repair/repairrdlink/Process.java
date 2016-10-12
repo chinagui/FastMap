@@ -10,6 +10,7 @@ import com.navinfo.dataservice.dao.glm.selector.rd.gsc.RdGscSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.operation.AbstractProcess;
+import com.navinfo.dataservice.engine.edit.utils.RdGscOperateUtils;
 
 public class Process extends AbstractProcess<Command> {
 
@@ -41,22 +42,16 @@ public class Process extends AbstractProcess<Command> {
 
 	@Override
 	public String preCheck() throws Exception {
-		String preCheckMsg = super.preCheck();
-
-		if (!StringUtils.isEmpty(preCheckMsg)) {
-			return preCheckMsg;
-		}
 		// check.checkIsVia(this.getConn(), this.getCommand().getLinkPid());
 
 		check.checkShapePointDistance(this.getCommand().getLinkGeom());
-
-		return null;
+		return super.preCheck();
 	}
 
 	@Override
 	public String exeOperation() throws Exception {
-		check.checkIsMoveGscPoint(this.getCommand().getLinkGeom(),
-				this.getConn(), this.getCommand().getLinkPid());
+		RdGscOperateUtils.checkIsMoveGscPoint(this.getCommand().getLinkGeom(),
+				this.getConn(), this.getCommand().getLinkPid(),"RD_LINK");
 		return new Operation(this.getConn(), this.getCommand()).run(this
 				.getResult());
 	}

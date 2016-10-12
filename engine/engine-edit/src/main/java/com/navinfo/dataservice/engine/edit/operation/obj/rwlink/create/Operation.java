@@ -8,9 +8,13 @@ import java.util.Set;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLink;
+import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdLinkSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.rw.RwLinkSelector;
 import com.navinfo.dataservice.engine.edit.utils.RwLinkOperateUtils;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
@@ -47,9 +51,10 @@ public class Operation implements IOperation {
 		
 		//有挂接的线
 		if (command.getCatchLinks().size() > 0) {
+			this.caleCatchModifyRwLink();
 			map = RwLinkOperateUtils.splitRwLink(command.getGeometry(), command.getsNodePid(), command.geteNodePid(),
 					command.getCatchLinks(), result);
-
+			
 		}
 		
 		//没有挂接的线
@@ -68,6 +73,45 @@ public class Operation implements IOperation {
 		this.breakLine(result);
 		
 		return msg;
+	}
+	/***
+	 * 当前台未开启挂接功能是，如果传入的点正好是link的端点 应按照挂接node来传参数
+	 * 
+	 * @throws Exception
+	 */
+	private void caleCatchModifyRwLink() throws Exception {
+		for (int i = 0; i < command.getCatchLinks().size(); i++) {
+			JSONObject modifyJson = command.getCatchLinks().getJSONObject(i);
+			if (modifyJson.containsKey("linkPid")) {
+				RwLinkSelector linkSelector = new RwLinkSelector(conn);
+				IRow row = linkSelector.loadById(modifyJson.getInt("linkPid"),
+						false, true);
+				RwLink link = (RwLink) row;
+				Geometry geometry = GeoTranslator.transform(link.getGeometry(),
+						0.00001, 5);
+				if (geometry.getCoordinates()[0].x == modifyJson
+						.getDouble("lon")
+
+				&& geometry.getCoordinates()[0].y == modifyJson
+
+				.getDouble("lat")) {
+					modifyJson.remove("linkPid");
+					modifyJson.put("nodePid", link.getsNodePid());
+
+				}
+				if (geometry.getCoordinates()[geometry.getCoordinates().length - 1].x == modifyJson
+						.getDouble("lon")
+
+						&& geometry.getCoordinates()[geometry.getCoordinates().length - 1].y == modifyJson
+
+						.getDouble("lat")) {
+					modifyJson.remove("linkPid");
+					modifyJson.put("nodePid", link.geteNodePid());
+
+				}
+			}
+		}
+		
 	}
 
 	/*

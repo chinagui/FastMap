@@ -6,13 +6,11 @@ import java.util.List;
 import java.util.Map;
 
 import com.navinfo.dataservice.dao.glm.iface.IRow;
-import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGscLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLink;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwNode;
-import com.navinfo.dataservice.dao.glm.selector.rd.gsc.RdGscSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.rw.RwNodeSelector;
 import com.navinfo.dataservice.engine.edit.utils.RdGscOperateUtils;
@@ -24,31 +22,6 @@ public class Check {
 
 	public Check(Connection conn) {
 		this.conn = conn;
-	}
-
-	public boolean checkIsHasGsc(Geometry gscGeo, Map<Integer, RdGscLink> map) throws Exception {
-		boolean flag = false;
-
-		RdGscSelector selector = new RdGscSelector(conn);
-
-		List<Integer> linkPidList = new ArrayList<>();
-
-		for (RdGscLink rdGscLink : map.values()) {
-			if (!linkPidList.contains(rdGscLink.getLinkPid())) {
-				linkPidList.add(rdGscLink.getLinkPid());
-			}
-		}
-
-		List<RdGsc> rdGscList = selector.loadRdGscByInterLinkPids(linkPidList, false);
-
-		for (RdGsc gsc : rdGscList) {
-			if (gsc.getGeometry().equals(gscGeo)) {
-				flag = true;
-				break;
-			}
-		}
-
-		return flag;
 	}
 
 	/**
@@ -68,15 +41,7 @@ public class Check {
 		}
 
 		// 检查线上该点位是否存在立交
-		List<Integer> linkPidList = new ArrayList<>();
-
-		for (RdGscLink rdGscLink : map.values()) {
-			if (!linkPidList.contains(rdGscLink.getLinkPid())) {
-				linkPidList.add(rdGscLink.getLinkPid());
-			}
-		}
-
-		boolean flag = RdGscOperateUtils.checkIsHasGsc(gscGeo, linkPidList, conn);
+		boolean flag = RdGscOperateUtils.checkIsHasGsc(gscGeo, map.values(), conn);
 
 		if (flag) {
 			throw new Exception("同一点位不能重复创建立交");

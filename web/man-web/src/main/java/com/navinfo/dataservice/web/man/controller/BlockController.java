@@ -205,16 +205,16 @@ public class BlockController extends BaseController {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
 
-			if (!(dataJson.containsKey("blockIds"))) {
+			if (!(dataJson.containsKey("blockManIds"))) {
 				throw new IllegalArgumentException("blockIds参数是必须的。");
 			}
 
-			JSONArray blockIds = dataJson.getJSONArray("blockIds");
-			List<Integer> blockIdList = (List<Integer>) JSONArray.toCollection(blockIds, Integer.class);
+			JSONArray blockManIds = dataJson.getJSONArray("blockManIds");
+			List<Integer> blockManIdList = (List<Integer>) JSONArray.toCollection(blockManIds, Integer.class);
 
-			List<Integer> unClosedBlock = BlockService.getInstance().close(blockIdList);
+			List<Integer> unClosedBlock = BlockService.getInstance().close(blockManIdList);
 
-			String message = "批量关闭block：" + (blockIdList.size() - unClosedBlock.size()) + "个成功，" + unClosedBlock.size() + "个失败。";			
+			String message = "批量关闭block：" + (blockManIdList.size() - unClosedBlock.size()) + "个成功，" + unClosedBlock.size() + "个失败。";			
 			return new ModelAndView("jsonView", success(message));
 
 		} catch (Exception e) {
@@ -223,7 +223,7 @@ public class BlockController extends BaseController {
 		}
 	}
 
-	@RequestMapping(value = "/block/listAll")
+	/*@RequestMapping(value = "/block/listAll")
 	public ModelAndView listAll(HttpServletRequest request) {
 		try {
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
@@ -264,14 +264,62 @@ public class BlockController extends BaseController {
 			log.error("获取列表失败，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", exception(e));
 		}
+	}*/
+	
+	/**
+	 *  根据采集组或者日编组，查询Block列表
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/block/list")
+	public ModelAndView list(HttpServletRequest request) {
+		try {
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			JSONObject condition = new JSONObject();	
+			if(dataJson.containsKey("condition")){
+				condition=dataJson.getJSONObject("condition");
+			}
+			JSONObject order = new JSONObject();	
+			if(dataJson.containsKey("order")){
+				order=dataJson.getJSONObject("order");
+			}			
+			int curPageNum= 1;//默认为第一页
+			if (dataJson.containsKey("pageNum")){
+				curPageNum = dataJson.getInt("pageNum");
+			}
+			int curPageSize= 20;//默认为20条记录/页
+			if (dataJson.containsKey("pageSize")){
+				curPageSize = dataJson.getInt("pageSize");
+			}
+			int snapshot = 0; 
+			if(dataJson.containsKey("snapshot")){
+				snapshot=dataJson.getInt("snapshot");
+			}
+			//0采集，1日编
+			int stage = 0;
+			if (dataJson.containsKey("stage")){
+				stage=dataJson.getInt("stage");
+			}
+			Map<String, Object> resultMap=new HashMap<String, Object>();
+			BlockOperation blockOperation= new BlockOperation();
+			Page page=service.list(stage,condition,order,curPageNum,curPageSize,snapshot);
+			resultMap.put("result", page.getResult());
+			resultMap.put("totalCount", page.getTotalCount());
+			return new ModelAndView("jsonView", success(resultMap));
+			
+		} catch (Exception e) {
+			log.error("获取列表失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
 	}
+	
 	
 	/**
 	 * 根据情报id分组返回block信息
 	 * @param request
 	 * @return
 	 */
-	@RequestMapping(value = "/block/listByInfoId")
+	/*@RequestMapping(value = "/block/listByInfoId")
 	public ModelAndView listByInfoId(HttpServletRequest request) {
 		try {
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
@@ -287,14 +335,14 @@ public class BlockController extends BaseController {
 			log.error("获取block列表失败，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", exception(e));
 		}
-	}
+	}*/
 	
 	/**
 	 *  根据采集组或者日编组，查询Block列表
 	 * @param request
 	 * @return
 	 */
-	@RequestMapping(value = "/block/listByGroupId")
+	/*@RequestMapping(value = "/block/listByGroupId")
 	public ModelAndView listByGroupId(HttpServletRequest request) {
 		try {
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
@@ -325,7 +373,7 @@ public class BlockController extends BaseController {
 			log.error("获取列表失败，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", exception(e));
 		}
-	}
+	}*/
 	
 	/**
 	 * 发布对象：1.分配的采集作业组组长2.分配的日编作业组组长
@@ -335,7 +383,7 @@ public class BlockController extends BaseController {
 	@RequestMapping(value = "/block/pushMsg")
 	public ModelAndView pushMsg(HttpServletRequest request){
 		try{
-			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
+			//AccessToken tokenObj=(AccessToken) request.getAttribute("token");
 			String parameter = request.getParameter("parameter");
 			if (StringUtils.isEmpty(parameter)){
 				throw new IllegalArgumentException("parameter参数不能为空。");
@@ -344,9 +392,9 @@ public class BlockController extends BaseController {
 			if(dataJson==null){
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
-			JSONArray blockIds=dataJson.getJSONArray("blockIds");
-			long userId=tokenObj.getUserId();
-			String msg=service.blockPushMsg(userId,blockIds);
+			JSONArray blockManIds=dataJson.getJSONArray("blockManIds");
+			//long userId=tokenObj.getUserId();
+			String msg=service.blockPushMsg(blockManIds);
 			return new ModelAndView("jsonView", success(msg));
 		}catch(Exception e){
 			log.error("发布失败，原因："+e.getMessage(), e);

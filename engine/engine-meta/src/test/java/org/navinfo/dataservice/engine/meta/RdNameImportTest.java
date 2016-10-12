@@ -101,9 +101,9 @@ public class RdNameImportTest {
 
 			RdNameImportor importor = new RdNameImportor();
 			
-			JSONObject data = importor.importRdNameFromWeb(jsonReq);
+//			JSONObject data = importor.importRdNameFromWeb(jsonReq);
 			
-			System.out.println(data);
+//			System.out.println(data);
 
 		} catch (Exception e) {
 			e.printStackTrace();

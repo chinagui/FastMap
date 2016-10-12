@@ -151,6 +151,7 @@ public class Operation implements IOperation {
 					break;
 				}
 			}
+			slinks.add(preLink);
 			this.caleRelationRdLink(slinks, newLinks, preLink);
 			// 插入新的接续link信息
 			for (int i = 0; i < slinks.size(); i++) {

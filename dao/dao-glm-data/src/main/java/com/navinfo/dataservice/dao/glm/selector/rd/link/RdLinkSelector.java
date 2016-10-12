@@ -140,6 +140,99 @@ public class RdLinkSelector extends AbstractSelector {
 
 	}
 
+	
+	
+	/*
+	 * 仅加载主表RDLINK，其他子表若有需要，请单独加载
+	 */
+	public List<RdLink> loadByNodePids(List<Integer> nodePids, boolean isLock) throws Exception 
+	{
+		List<RdLink> links = new ArrayList<RdLink>();
+		
+		if (nodePids == null || nodePids.size() == 0) {
+			return links;
+		}
+
+		List<Integer> pidTemp = new ArrayList<Integer>();
+
+		pidTemp.addAll(nodePids);
+
+		int pointsDataLimit = 100;
+
+		while (pidTemp.size() >= pointsDataLimit) {
+
+			List<Integer> listPid = pidTemp.subList(0, pointsDataLimit);
+
+			links.addAll(loadByNodePid(listPid, isLock));
+
+			pidTemp.subList(0, pointsDataLimit).clear();
+		}
+
+		if (!pidTemp.isEmpty()) {
+			links.addAll(loadByNodePid(pidTemp, isLock));
+		}		
+		
+		return links;
+	}
+	/*
+	 * 仅加载主表RDLINK，其他子表若有需要，请单独加载
+	 */
+	private List<RdLink> loadByNodePid(List<Integer> nodePids, boolean isLock) throws Exception {		
+		
+		List<RdLink> links = new ArrayList<RdLink>();
+
+		if (nodePids == null || nodePids.isEmpty()) {
+
+			return links;
+		}
+
+		String ids = org.apache.commons.lang.StringUtils.join(nodePids, ",");
+
+		StringBuilder sb = new StringBuilder("SELECT * FROM RD_LINK WHERE");
+
+		sb.append("( ");
+
+		sb.append(" S_NODE_PID IN ( " + ids + ")" );
+		
+		sb.append("  OR  E_NODE_PID IN ( " + ids + ")");
+
+		sb.append(")");
+
+		sb.append(" AND U_RECORD != 2  ");
+		
+		if (isLock) {
+			sb.append(" for update nowait");
+		}
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sb.toString());		
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+				RdLink rdLink = new RdLink();
+
+				ReflectionAttrUtils.executeResultSet(rdLink, resultSet);
+
+				links.add(rdLink);
+			}
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+		}
+
+		return links;
+
+	}
+
 	/*
 	 * 仅加载rdlink表，其他子表若有需要，请单独加载
 	 */

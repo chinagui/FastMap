@@ -52,9 +52,9 @@ public class RdNameSelectorTest {
 			
 			JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(),1901,new JSONArray());
 			
-			JSONObject data = selector.searchForWeb(jsonReq,tips);
+//			JSONObject data = selector.searchForWeb(jsonReq,tips);
 			
-			System.out.println(data);
+//			System.out.println(data);
 
 		} catch (Exception e) {
 			e.printStackTrace();

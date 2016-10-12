@@ -544,7 +544,8 @@ public class commonTest extends InitApplication {
 	@Test
 	public void run_00929_3() throws Exception {
 
-		String parameter = "{\"command\":\"REPAIR\",\"dbId\":17,\"objId\":204000167,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.28252,40.55834],[116.2831,40.55813],[116.28333,40.55805],[116.28363,40.55793],[116.28385,40.55785]]},\"interLinks\":[],\"interNodes\":[]},\"type\":\"RDLINK\"}";
+		String parameter = "{\"command\":\"MOVE\",\"dbId\":17,\"objId\":209000166,\"data\":{\"longitude\":116.37475669384003,\"latitude\":40.479879546842724},\"type\":\"RDNODE\"}";
+		
 		
 		Transaction t = new Transaction(parameter);
 
@@ -552,5 +553,46 @@ public class commonTest extends InitApplication {
 	}
 	
 	
+	@Test
+	public void run_00930_1() throws Exception {
+
+		String parameter = "{\"command\":\"MOVE\",\"dbId\":17,\"objId\":209000166,\"data\":{\"longitude\":116.37585,\"latitude\":40.48021},\"type\":\"RDNODE\"}";
+		
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+	
+	@Test
+	public void run_1008_1() throws Exception {
+
+		String parameter = "{\"command\":\"MOVE\",\"dbId\":17,\"objId\":309000179,\"data\":{\"longitude\":116.2514340877533,\"latitude\":40.51831775506456},\"type\":\"RDNODE\"}";
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+
+	@Test
+	public void run_1010_1() throws Exception {
+
+		String parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"dbId\":17,\"distance\":\"6.6\",\"data\":{\"linkPids\":[301000279,206000223]}}";
+
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+
+	@Test
+	public void run_1010_2() throws Exception {
+
+		String parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"dbId\":17,\"distance\":\"6.6\",\"data\":{\"linkPids\":[203000281,303000278]}}";
+
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+
 	
 }

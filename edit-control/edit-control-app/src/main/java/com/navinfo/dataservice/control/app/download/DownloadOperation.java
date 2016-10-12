@@ -205,6 +205,9 @@ public class DownloadOperation {
 				jsonObj.put("vipFlag", poi.getVipFlag());
 			}
 			
+			// 增加卡车字段下载20161012
+			jsonObj.put("truck", poi.getTruckFlag());
+			
 			IxPoiParentForAndroid parent = (IxPoiParentForAndroid)poi.getParents().get(0);
 			if (parent.getPoiNum() == null) {
 				jsonObj.put("parentFid", "");

@@ -52,7 +52,7 @@ public class Operation implements IOperation {
 	 */
 	@Override
 	public String run(Result result) throws Exception {
-	
+
 		// 1.创建分离后生成links
 		this.createDepartLinks(result);
 		// 2.删除soucelinks
@@ -68,7 +68,7 @@ public class Operation implements IOperation {
 		List<RdLink> links = command.getLinks();
 		LineString[] lineStrings = new LineString[links.size()];
 		// 组装LineString
-		
+
 		for (int i = 0; i < links.size(); i++) {
 			lineStrings[i] = (JtsGeometryFactory.createLineString(GeoTranslator.transform(links
 					.get(i).getGeometry(),0.00001,5).getCoordinates()));
@@ -79,9 +79,13 @@ public class Operation implements IOperation {
 		Point sPoint = JtsGeometryFactory.createPoint(GeoTranslator.transform(this
 				.getStartAndEndNode(links, 0).getGeometry(),0.00001,5).getCoordinate());
 		RdNode sNode = this.getStartAndEndNode(links, 0);
-		
+
 		command.setsNode(sNode);
+
 		RdNode eNode = this.getStartAndEndNode(links, 1);
+
+		command.seteNode(eNode);
+
 		LineString[] lines = CompPolylineUtil.separate(sPoint, lineStrings,
 				command.getDistance());
 
@@ -92,7 +96,7 @@ public class Operation implements IOperation {
 		List<RdLink> upLists = new ArrayList<RdLink>();
 		List<RdLink> downLists = new ArrayList<RdLink>();
 		for (int i = 0; i < command.getLinkPids().size(); i++) {
-			RdLink departLink = new RdLink();		
+			RdLink departLink = new RdLink();
 			departLink.setGeometry(lines[i]);
 			RdLink currentLink = command.getLinks().get(i);
 			RdLink nextLink = null;
@@ -102,10 +106,10 @@ public class Operation implements IOperation {
 				nextLink = command.getLinks().get(i+1);
 			}
 			downLists.addAll(this.createDownRdLink(departLink, result,
-					currentLink, nextLink, map));		
-	
+					currentLink, nextLink, map));
+
 		this.command.getRightLinkMapping().put(currentLink.pid(), departLink);
-			
+
 		}// 生成分离后左线
 		for (int i = lines.length-1; i >= command.getLinkPids().size(); i--) {
 			RdLink departLink = new RdLink();
@@ -119,7 +123,7 @@ public class Operation implements IOperation {
 			}
 			upLists.addAll(this.createUpRdLink(departLink, result,
 					currentLink, nextLink, map));
-			
+
 			this.command.getLeftLinkMapping().put(currentLink.pid(), departLink);
 		}
 		//维护挂接线信息
@@ -133,7 +137,7 @@ public class Operation implements IOperation {
 
 	}
 	/**
-	 * 
+	 *
 	 * @param lines
 	 * @param map
 	 * @param result
@@ -161,15 +165,15 @@ public class Operation implements IOperation {
 			   this.createInnerLine(lines[i],lines[lines.length-i-1],map,result);
 		   }
 		}
-		
+
 	}
 	/***
-	 * 
+	 *
 	 * @param lineUpString
 	 * @param lineDownString
 	 * @param map
 	 * @param result
-	 * @throws Exception 
+	 * @throws Exception
 	 */
 
 	private void createInnerLine(LineString lineDownString, LineString lineUpString,
@@ -184,16 +188,20 @@ public class Operation implements IOperation {
 		RdLink innerLink =  new RdLink();
 		innerLink.setsNodePid(sNode.getPid());
 		innerLink.setsNodePid(eNode.getPid());
+		innerLink.setPid(1);
 		innerLink.setGeometry(JtsGeometryFactory.createLineString(coordinates));
-		RdLinkOperateUtils.addRdLink(sNode, eNode, innerLink,
+		List<RdLink> links = RdLinkOperateUtils.addRdLink(sNode, eNode, innerLink,
 				innerLink, result);
-		
+		for(RdLink link:links){
+			result.insertObject(link, ObjStatus.INSERT, link.getPid());
+		}
+
 	}
 
 	/**
 	 * 维护挂接的线
 	 * @param lines 上下线分离后的线
-	 * @param map   
+	 * @param map
 	 * @param result
 	 * @throws Exception
 	 */
@@ -201,7 +209,7 @@ public class Operation implements IOperation {
 		RdLinkSelector nodeSelector = new RdLinkSelector(conn);
 		Point currentPoint =null;
 		int currentPid = 0;
-		
+
 		for(int i = 0 ; i < command.getLinkPids().size()-1;i++){
 			RdLink currentLink = command.getLinks().get(i);
 			RdLink nextLink = command.getLinks().get(i+1);
@@ -212,20 +220,20 @@ public class Operation implements IOperation {
 					nextLink.getPid(), true);
 			for(RdLink link :links){
 				LineString targetLine=null;
-		
+
 				if(CompPolylineUtil.isRightSide(JtsGeometryFactory.createLineString(currentLink.getGeometry().getCoordinates()), JtsGeometryFactory.createLineString(nextLink.getGeometry().getCoordinates()), JtsGeometryFactory.createLineString(link.getGeometry().getCoordinates()))){
-					
+
 					targetLine = CompPolylineUtil.cut(lines[i], lines[i+1],JtsGeometryFactory.createLineString(GeoTranslator.transform(link.getGeometry(), 0.00001, 5).getCoordinates()),currentPoint,true );
 				}else{
 					targetLine =CompPolylineUtil.cut(lines[lines.length-i-1], lines[lines.length-i-2],JtsGeometryFactory.createLineString(GeoTranslator.transform(link.getGeometry(), 0.00001, 5).getCoordinates()),currentPoint,false );
 				}
 				if (targetLine.getCoordinate() != null){
-					
+
 					this.updateadjacentLine(targetLine,link,currentPid,map,result);
-					
+
 				}
 			}
-			
+
 		}
 	}
 
@@ -256,8 +264,8 @@ public class Operation implements IOperation {
 		}
 		link.fillChangeFields(updateContent);
 		result.insertObject(link, ObjStatus.UPDATE, link.getPid());
-		 
-		
+
+
 	}
 
 	// 上下线属性维护
@@ -288,7 +296,7 @@ public class Operation implements IOperation {
 			// 16 对点线关系的维护
 			// 17对线点线关系（车信，交限，分歧，语音引导，顺行）信息的维护
 			// 18.方向
-			link.setDirect(2);		
+			link.setDirect(2);
 			result.insertObject(link, ObjStatus.INSERT, link.getPid());
 		}
 	}
@@ -331,12 +339,12 @@ public class Operation implements IOperation {
 					if (linkRtic.getUpdownFlag() == 0) {
 						linkRtics.add(linkRtic);
 					}
-					linkRtic.setRticDir(2);
+					//linkRtic.setRticDir(2);
 				} else {
 					if (linkRtic.getUpdownFlag() == 1) {
 						linkRtics.add(linkRtic);
 					}
-					linkRtic.setRticDir(3);
+					//linkRtic.setRticDir(3);
 
 				}
 			}
@@ -356,12 +364,12 @@ public class Operation implements IOperation {
 					if (linkRtic.getUpdownFlag() == 0) {
 						linkIntRtics.add(linkRtic);
 					}
-					linkRtic.setRticDir(2);
+					//linkRtic.setRticDir(2);
 				} else {
 					if (linkRtic.getUpdownFlag() == 1) {
 						linkIntRtics.add(linkRtic);
 					}
-					linkRtic.setRticDir(3);
+					//linkRtic.setRticDir(3);
 
 				}
 			}
@@ -375,7 +383,7 @@ public class Operation implements IOperation {
 	}
 	/*
 	 * @param departLink 分离后生成的link
-	 * @param result    
+	 * @param result
 	 * @param sourceLink 分离前对应原始link
 	 * @param sourceNextLink 分离前对应原始link下一条link
 	 * @param map
@@ -412,7 +420,7 @@ public class Operation implements IOperation {
 	}
 	/*
 	 * @param departLink 分离后生成的link
-	 * @param result    
+	 * @param result
 	 * @param sourceLink 分离前对应原始link
 	 * @param sourceNextLink 分离前对应原始link下一条link
 	 * @param map
@@ -447,7 +455,7 @@ public class Operation implements IOperation {
 				sourceLink, result);
 	}
 	/**
-	 * 
+	 *
 	 * @param departLink
 	 * @param result
 	 * @param sourceLink
@@ -475,8 +483,8 @@ public class Operation implements IOperation {
 	 * @param sourceNextLink 分离前对应link的下一条link
 	 * @param flag 生成node按照线几何起始和终点node 1 起点  0 终点
 	 * @param flagUpDown 生成上(左)下(右)线标志 1上 0下
-	 * @param map   存放已经生成的adnode 
-	 * @param result 
+	 * @param map   存放已经生成的adnode
+	 * @param result
 	 * @return 返回新生成的AdNode
 	 * @throws Exception
 	 */
@@ -489,7 +497,7 @@ public class Operation implements IOperation {
 		}
 		if (flagBooleans.contains(true)){
 			if(flagUpDown == 1){
-				node =this.getNodeByDepartGeo(departLink, flag,map, result); 
+				node =this.getNodeByDepartGeo(departLink, flag,map, result);
 			}else{
 				node = this.updateAdNodeForTrack(departLink,
 						currentPid, map,result, flag);
@@ -622,10 +630,10 @@ public class Operation implements IOperation {
 			result.insertObject(link, ObjStatus.DELETE, link.pid());
 		}
 	}
-	
+
 	/**
 	 * 维护关联要素
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	private void updataRelationObj(Result result) throws Exception
@@ -636,11 +644,13 @@ public class Operation implements IOperation {
 
 		opRefRelationObj.handleSameLink(this.command, result);
 
+		opRefRelationObj.handleSameNode(this.command, result);
+
 		opRefRelationObj.handlerdSpeedlimit(this.command, result);
 
 		opRefRelationObj.handlerdRdElectroniceye(this.command, result);
 
-		opRefRelationObj.handlerRdLinkRtic(this.command, result);
+//		opRefRelationObj.handlerRdLinkRtic(this.command, result);
 
 		opRefRelationObj.handlerIxPoi(this.command, result);
 
@@ -651,6 +661,8 @@ public class Operation implements IOperation {
 		opRefRelationObj.handlerRdVariableSpeed(this.command, result);
 
 		opRefRelationObj.handlerRdTrafficsignal(this.command, result);
+
+		opRefRelationObj.handlerRdCross(this.command, result);
 	}
 	/**
 	 * @param startLine
@@ -661,7 +673,7 @@ public class Operation implements IOperation {
 	 */
 	private boolean isRightSide(RdLink startLine, RdLink endLine,
 			RdLink adjacentLine) throws Exception {
-		return CompPolylineUtil.isRightSide(JtsGeometryFactory.createLineString(startLine.getGeometry().getCoordinates()), JtsGeometryFactory.createLineString(endLine.getGeometry().getCoordinates()), 
+		return CompPolylineUtil.isRightSide(JtsGeometryFactory.createLineString(startLine.getGeometry().getCoordinates()), JtsGeometryFactory.createLineString(endLine.getGeometry().getCoordinates()),
 	JtsGeometryFactory.createLineString(startLine.getGeometry().getCoordinates()));
 	}
 	/**
@@ -676,7 +688,7 @@ public class Operation implements IOperation {
 		}else{
 			return fristLink.geteNodePid();
 		}
-		
+
 	}
 	/**
 	 * 获取两个link相交的Poit
@@ -690,8 +702,8 @@ public class Operation implements IOperation {
 		}else{
 			return JtsGeometryFactory.createPoint(GeoTranslator.transform(fristLink.getGeometry(), 0.00001, 5).getCoordinates()[GeoTranslator.transform(fristLink.getGeometry(), 0.00001, 5).getCoordinates().length-1]);
 		}
-		
+
 	}
-	
+
 
 }

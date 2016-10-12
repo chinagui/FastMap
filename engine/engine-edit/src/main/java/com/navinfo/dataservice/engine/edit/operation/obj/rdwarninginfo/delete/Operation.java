@@ -40,7 +40,7 @@ public class Operation implements IOperation {
 	
 	private String delete(Result result)
 	{
-		result.insertObject(rdWarninginfo, ObjStatus.DELETE, command.getPid());
+		result.insertObject(rdWarninginfo, ObjStatus.DELETE, rdWarninginfo.getPid());
 
 		return null;
 	}
@@ -158,7 +158,10 @@ public class Operation implements IOperation {
 
 			alertObj.setStatus(ObjStatus.DELETE);
 
-			alertList.add(alertObj);
+			if(!alertList.contains(alertObj))
+			{
+				alertList.add(alertObj);
+			}
 		}
 
 		return alertList;

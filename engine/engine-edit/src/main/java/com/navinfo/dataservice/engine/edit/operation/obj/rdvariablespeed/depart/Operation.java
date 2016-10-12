@@ -1,9 +1,11 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdvariablespeed.depart;
 
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.variablespeed.RdVariableSpeed;
+import com.navinfo.dataservice.dao.glm.model.rd.variablespeed.RdVariableSpeedVia;
 import com.navinfo.dataservice.dao.glm.selector.rd.variablespeed.RdVariableSpeedSelector;
 
 import java.sql.Connection;
@@ -33,9 +35,8 @@ public class Operation {
         RdVariableSpeedSelector selector = new RdVariableSpeedSelector(conn);
         for (RdLink link : links) {
             Set<RdVariableSpeed> variableSpeeds = new HashSet<>();
-            // 1.当已经参与可变限速制作的单线link变为上下线分离时，将整组可变限速信息删除
+            // 1.当已经参与可变限速制作的单线link变为上下线分离时，将整组可变限速信息删除(进入线或退出线)
             variableSpeeds.addAll(selector.loadRdVariableSpeedByLinkPid(link.pid(), true));
-            variableSpeeds.addAll(selector.loadRdVariableSpeedByViaLinkPid(link.pid(), true));
             if (!variableSpeeds.isEmpty()) {
                 for (RdVariableSpeed variableSpeed : variableSpeeds)
                     result.insertObject(variableSpeed, ObjStatus.DELETE, variableSpeed.pid());
@@ -53,6 +54,17 @@ public class Operation {
                         result.insertObject(variableSpeed, ObjStatus.DELETE, variableSpeed.pid());
                 }
                 variableSpeeds.clear();
+            }
+            // 3.经过线为目标link
+            variableSpeeds.addAll(selector.loadRdVariableSpeedByViaLinkPid(link.pid(), true));
+            // 4.经过线的起始点为目标link的经过点（未确认暂不放开）
+//            variableSpeeds.addAll(selector.loadRdVariableSpeedByVianodeIds(nodePids,true));
+            if (!variableSpeeds.isEmpty()) {
+                for (RdVariableSpeed variableSpeed : variableSpeeds) {
+                    for (IRow row : variableSpeed.getVias()) {
+                        result.insertObject(row, ObjStatus.DELETE, row.parentPKValue());
+                    }
+                }
             }
         }
         return "";

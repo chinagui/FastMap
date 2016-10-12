@@ -28,7 +28,7 @@ public class Operation implements IOperation {
 		if (content.containsKey("objStatus")) {
 
 			if (ObjStatus.DELETE.toString().equals(content.getString("objStatus"))) {
-				result.insertObject(this.command.getZoneNode(), ObjStatus.DELETE, this.command.getPid());
+				result.insertObject(this.command.getZoneNode(), ObjStatus.DELETE, this.command.getZoneNode().getPid());
 				
 				return null;
 			} else {
@@ -36,7 +36,7 @@ public class Operation implements IOperation {
 				boolean isChanged = this.command.getZoneNode().fillChangeFields(content);
 
 				if (isChanged) {
-					result.insertObject(this.command.getZoneNode(), ObjStatus.UPDATE, this.command.getPid());
+					result.insertObject(this.command.getZoneNode(), ObjStatus.UPDATE, this.command.getZoneNode().getPid());
 				}
 			}
 		}
@@ -62,7 +62,7 @@ public class Operation implements IOperation {
 
 						if (ObjStatus.DELETE.toString().equals(meshJson
 								.getString("objStatus"))) {
-							result.insertObject(mesh, ObjStatus.DELETE, this.command.getPid());
+							result.insertObject(mesh, ObjStatus.DELETE, mesh.parentPKValue());
 							
 							continue;
 						} else if (ObjStatus.UPDATE.toString().equals(meshJson
@@ -72,7 +72,7 @@ public class Operation implements IOperation {
 									.fillChangeFields(meshJson);
 
 							if (isChanged) {
-								result.insertObject(mesh, ObjStatus.UPDATE, this.command.getPid());
+								result.insertObject(mesh, ObjStatus.UPDATE, mesh.parentPKValue());
 							}
 						}
 					} else {
@@ -82,7 +82,7 @@ public class Operation implements IOperation {
 						
 						mesh.setNodePid(this.command.getPid());
 		
-						result.insertObject(mesh, ObjStatus.INSERT, this.command.getPid());
+						result.insertObject(mesh, ObjStatus.INSERT, mesh.parentPKValue());
 					}
 				}
 			}

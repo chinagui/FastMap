@@ -128,7 +128,6 @@ public class BlockService {
 	public int batchUpdate(JSONObject json, long userId) throws ServiceException {
 		Connection conn = null;
 		try {
-
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
 			JSONArray blockArray = json.getJSONArray("blocks");
@@ -294,7 +293,7 @@ public class BlockService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-
+/*
 	public Page listByGroupId(JSONObject json, int currentPageNum, int pageSize) throws ServiceException {
 		Connection conn = null;
 		try {
@@ -360,7 +359,7 @@ public class BlockService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-
+*/
 	public List<Integer> close(List<Integer> blockManIdList) throws ServiceException {
 		Connection conn = null;
 		try {
@@ -389,7 +388,7 @@ public class BlockService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-
+/*
 	public Page listAllBak(JSONObject enterParam, String listType, JSONObject conditionJson, JSONObject orderJson,
 			int currentPageNum, int pageSize) throws Exception {
 		Connection conn = null;
@@ -467,8 +466,8 @@ public class BlockService {
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
-	}
-
+	}*/
+	/*
 	public List listAll(JSONObject enterParam, String listType, JSONObject conditionJson, JSONObject orderJson)
 			throws Exception {
 		Connection conn = null;
@@ -606,9 +605,9 @@ public class BlockService {
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
-	}
+	}*/
 
-	public List<HashMap> listByInfoId(JSONObject json) throws ServiceException {
+	/*public List<HashMap> listByInfoId(JSONObject json) throws ServiceException {
 		Connection conn = null;
 		try {
 
@@ -634,21 +633,20 @@ public class BlockService {
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
-	}
-
-	public String blockPushMsg(List blockManIds) throws Exception {
-		Connection conn = null;
+	}*/
+	
+	private String blockPushMsgByConn(Connection conn,List blockManIds) throws Exception {
 		try {
 			if (blockManIds.size()==0){
 				return "";
 			}
-			conn = DBConnector.getInstance().getManConnection();
 			String BlockIds = "(";
 			BlockIds += StringUtils.join(blockManIds.toArray(), ",") + ")";
 			String selectSql = "select DISTINCT m.block_man_id,m.block_man_name,(SELECT u.leader_id FROM User_Group u "
 					+ "WHERE u.group_id=m.collect_group_id) collectGroupLeader,(SELECT u.leader_id FROM User_Group u "
 					+ "WHERE u.group_id=m.day_edit_group_id) dayEditGroupLeader from block_man m WHERE m.block_man_id in "
 					+ BlockIds;
+			//System.out.println(selectSql);
 			PreparedStatement stmt = null;
 			try {
 				stmt = conn.prepareStatement(selectSql);
@@ -683,11 +681,25 @@ public class BlockService {
 			}
 			
 			if(msgContentList.size()>0){
-				blockPushMsg(conn,msgContentList);
+				blockPushMsgByMsg(conn,msgContentList);
 			}
 
 			BlockOperation.updateMainBlock(conn, blockManIds);
 
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("发布失败，原因为:" + e.getMessage(), e);
+		}
+		return "发布成功";
+
+	}
+
+	public String blockPushMsg(List blockManIds) throws Exception {
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			this.blockPushMsgByConn(conn,blockManIds);
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -699,7 +711,7 @@ public class BlockService {
 
 	}
 
-	private void blockPushMsg(Connection conn,
+	private void blockPushMsgByMsg(Connection conn,
 			List<Object[]> msgContentList) throws Exception {
 		String userSql="SELECT DISTINCT M.USER_ID FROM ROLE_USER_MAPPING M WHERE M.ROLE_ID IN (4, 5)";
 		List<Integer> userIdList=UserInfoOperation.getUserListBySql(conn, userSql);
@@ -711,5 +723,343 @@ public class BlockService {
 		}
 		MessageOperation.batchInsert(conn,msgList);		
 	}
+
+	public Page list(int stage, JSONObject condition, JSONObject order, int currentPageNum,int pageSize, int snapshot) throws Exception {
+		// TODO Auto-generated method stub
+		
+		Connection conn = null;		
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			//返回部分字段
+			if(snapshot==1){
+				return this.listBySnapshot(conn,stage, condition, order, currentPageNum, pageSize);
+				}
+			else{
+				return this.listByAll(conn,condition, order, currentPageNum, pageSize);
+			}
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询列表失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	private Page listByAll(Connection conn, JSONObject conditionJson,
+			JSONObject order, int currentPageNum, int pageSize) throws Exception {
+		String conditionSql="";
+		String statusSql="";
+		if(null!=conditionJson && !conditionJson.isEmpty()){
+			Iterator keys = conditionJson.keys();
+			while (keys.hasNext()) {
+				String key = (String) keys.next();
+				if("blockManName".equals(key)){
+					conditionSql=conditionSql+" AND MAN_LIST.BLOCK_MAN_NAME LIKE '%"+conditionJson.getString(key)+"%'";}
+				if("taskId".equals(key)){
+					conditionSql=conditionSql+" AND MAN_LIST.TASK_ID ="+conditionJson.getInt(key);}
+				if("cityId".equals(key)){
+					conditionSql=conditionSql+" AND MAN_LIST.CITY_ID ="+conditionJson.getInt(key);}
+				if("blockManId".equals(key)){
+					conditionSql=conditionSql+" AND MAN_LIST.BLOCK_MAN_ID ="+conditionJson.getInt(key);}
+				if("createUserName".equals(key)){
+					conditionSql=conditionSql+" AND MAN_LIST.CREATE_USER_NAME LIKE '%"+conditionJson.getString(key)+"%'";}
+				if("taskName".equals(key)){
+					conditionSql=conditionSql+" AND MAN_LIST.TASK_NAME LIKE '%"+conditionJson.getString(key)+"%'";}
+				if("blockPlanStatus".equals(key)){
+					conditionSql=conditionSql+" AND MAN_LIST.BLOCK_PLAN_STATUS ="+conditionJson.getInt(key);}				
+			}
+		}	
+		if(!statusSql.isEmpty()){//有非status
+			conditionSql+=" and ("+statusSql+")";}
+		
+		long pageStartNum = (currentPageNum - 1) * pageSize + 1;
+		long pageEndNum = currentPageNum * pageSize;
+		String selectSql = "";
+		String selectPart="";
+		String wherePart="";
+		selectSql="WITH MAN_LIST AS"
+				+ " (SELECT DISTINCT T.BLOCK_MAN_ID,"
+				+ "                  T.BLOCK_MAN_NAME,"
+				+ "                  B.BLOCK_ID,"
+				+ "                  B.BLOCK_NAME,"
+				+ "                  TT.CITY_ID,"
+				+ "                  T.STATUS BLOCK_STATUS,"
+				+ "                  B.PLAN_STATUS BLOCK_PLAN_STATUS,"
+				+ "                  S.PERCENT,"
+				+ "                  S.DIFF_DATE,"
+				+ "                  TO_CHAR(T.COLLECT_PLAN_START_DATE, 'YYYYMMDD') COLLECT_PLAN_START_DATE,"
+				+ "                  TO_CHAR(T.COLLECT_PLAN_END_DATE, 'YYYYMMDD') COLLECT_PLAN_END_DATE,"
+				+ "                  T.COLLECT_GROUP_ID,"
+				+ "                  S.COLLECT_PERCENT,"
+				+ "                  S.COLLECT_DIFF_DATE,"
+				+ "                  S.COLLECT_PROGRESS,"
+				+ "                  CASE NVL(ST.STAGE, 999)"
+				+ "                    WHEN 0 THEN 1"
+				+ "                    ELSE 0 END COLLECT_ASSIGN_STATUS,"
+				+ "                  GC.GROUP_NAME COLLECT_GROUP_NAME,"
+				+ "                  TO_CHAR(T.DAY_EDIT_PLAN_START_DATE, 'YYYYMMDD') DAY_EDIT_PLAN_START_DATE,"
+				+ "                  TO_CHAR(T.DAY_EDIT_PLAN_END_DATE, 'YYYYMMDD') DAY_EDIT_PLAN_END_DATE,"
+				+ "                  T.DAY_EDIT_GROUP_ID,"
+				+ "                  S.DAILY_PERCENT,"
+				+ "                  S.DAILY_DIFF_DATE,"
+				+ "                  S.DAILY_PROGRESS,"
+				+ "                  CASE NVL(ST.STAGE, 999)"
+				+ "                    WHEN 1 THEN 1"
+				+ "                    ELSE 0 END DAILY_ASSIGN_STATUS,"
+				+ "                  GE.GROUP_NAME DAY_EDIT_GROUP_NAME,"
+				+ "                  TT.TASK_TYPE,"
+				+ "                  I.USER_REAL_NAME CREATE_USER_NAME,"
+				+ "                  T.CREATE_USER_ID"
+				+ "    FROM BLOCK                     B,"
+				+ "         BLOCK_MAN                 T,"
+				+ "         TASK                      TT,"
+				+ "         USER_GROUP                GC,"
+				+ "         USER_GROUP                GE,"
+				+ "         FM_STAT_OVERVIEW_BLOCKMAN S,"
+				+ "         SUBTASK                   ST,"
+				+ "         USER_INFO I"
+				+ "   WHERE T.TASK_ID = TT.TASK_ID"
+				+ "     AND T.CREATE_USER_ID=I.USER_ID"
+				+ "     AND T.LATEST = 1"
+				+ "     AND B.BLOCK_ID = T.BLOCK_ID"
+				+ "     AND T.COLLECT_GROUP_ID = GC.GROUP_ID(+)"
+				+ "     AND T.DAY_EDIT_GROUP_ID = GC.GROUP_ID(+)"
+				+ "     AND T.BLOCK_MAN_ID = S.BLOCK_MAN_ID(+)"
+				+ "     AND T.BLOCK_MAN_ID = ST.BLOCK_MAN_ID(+)"
+				+ "  UNION ALL"
+				+ "  SELECT DISTINCT 0,"
+				+ "                  '---',"
+				+ "                  B.BLOCK_ID,"
+				+ "                  B.BLOCK_NAME,"
+				+ "                  C.CITY_ID,"
+				+ "                  0 STATUS,"
+				+ "                  B.PLAN_STATUS,"
+				+ "                  0,"
+				+ "                  0,"
+				+ "                  '---' COLLECT_PLAN_START_DATE,"
+				+ "                  '---' COLLECT_PLAN_END_DATE,"
+				+ "                  0 COLLECT_GROUP_ID,"
+				+ "                  0 COLLECT_PERCENT,"
+				+ "                  0 COLLECT_DIFF_DATE,"
+				+ "                  0 COLLECT_PROGRESS,"
+				+ "                  0 COLLECT_ASSIGN_STATUS,"
+				+ "                  '---' COLLECT_GROUP_NAME,"
+				+ "                  '---' DAY_EDIT_PLAN_START_DATE,"
+				+ "                  '---' DAY_EDIT_PLAN_END_DATE,"
+				+ "                  0 DAY_EDIT_GROUP_ID,"
+				+ "                  0 DAILY_PERCENT,"
+				+ "                  0 DAILY_DIFF_DATE,"
+				+ "                  0 DAILY_PROGRESS,"
+				+ "                  0 DAILY_ASSIGN_STATUS,"
+				+ "                  '---' DAY_EDIT_GROUP_NAME,"
+				+ "                  1 TASK_TYPE,"
+				+ "                  '---',"
+				+ "                  0"
+				+ "    FROM BLOCK B, CITY C"
+				+ "   WHERE B.CITY_ID = C.CITY_ID"
+				+ "     AND B.PLAN_STATUS = 0"
+				+ "     AND C.CITY_ID<>100002),"
+				+ " FINAL_TABLE AS"
+				+ " (SELECT *"
+				+ "    FROM MAN_LIST"
+				+ "    WHERE 1=1"
+				+ conditionSql+")"
+				+ " SELECT /*+FIRST_ROWS ORDERED*/"
+				+ " TT.*, (SELECT COUNT(1) FROM FINAL_TABLE) AS TOTAL_RECORD_NUM"
+				+ "  FROM (SELECT FINAL_TABLE.*, ROWNUM AS ROWNUM_ FROM FINAL_TABLE  WHERE ROWNUM <= "+pageEndNum+") TT"
+				+ " WHERE TT.ROWNUM_ >= "+pageStartNum;
+		return BlockOperation.getAllQuery(conn, selectSql,currentPageNum,pageSize);
+	}
+
+	public Page listBySnapshot(Connection conn,int stage, JSONObject conditionJson, JSONObject order, int currentPageNum,int pageSize) throws Exception {
+		
+		String conditionSql="";
+		String statusSql="";
+		if(null!=conditionJson && !conditionJson.isEmpty()){
+			Iterator keys = conditionJson.keys();
+			while (keys.hasNext()) {
+				String key = (String) keys.next();
+				if("blockManName".equals(key)){
+					conditionSql=conditionSql+" AND MAN_LIST.BLOCK_MAN_NAME LIKE '%"+conditionJson.getString(key)+"%'";}
+				if("groupId".equals(key)){
+					conditionSql=conditionSql+" AND MAN_LIST.GROUP_ID ="+conditionJson.getInt(key);}
+				if("planStatus".equals(key)){
+					conditionSql=conditionSql+" AND MAN_LIST.STATUS =1 AND MAN_LIST.PLAN_STATUS="+conditionJson.getInt(key);}
+				
+				if ("assignStatus".equals(key)) {
+					if(!statusSql.isEmpty()){statusSql+=" or ";}
+					statusSql+=" MAN_LIST.ASSIGN_STATUS="+conditionJson.getInt(key);}
+				if ("progress".equals(key)) {
+					if(!statusSql.isEmpty()){statusSql+=" or ";}
+					statusSql+=" MAN_LIST.Progress IN ("+conditionJson.getJSONArray(key).join(",")+")";}
+				if ("diffDate".equals(key)) {
+					JSONArray diffDateArray=conditionJson.getJSONArray(key);
+					for(Object diffDate:diffDateArray){
+						if((int) diffDate==1){
+							if(!statusSql.isEmpty()){statusSql+=" or ";}
+							statusSql+=" MAN_LIST.diff_date>0";
+						}
+						if((int) diffDate==0){
+							if(!statusSql.isEmpty()){statusSql+=" or ";}
+							statusSql+=" MAN_LIST.diff_date=0";
+						}
+						if((int) diffDate==-1){
+							if(!statusSql.isEmpty()){statusSql+=" or ";}
+							statusSql+=" MAN_LIST.diff_date<0";
+						}
+						}
+					}
+			}
+		}	
+		if(!statusSql.isEmpty()){//有非status
+			conditionSql+=" and ("+statusSql+")";}
+		
+		long pageStartNum = (currentPageNum - 1) * pageSize + 1;
+		long pageEndNum = currentPageNum * pageSize;
+		String selectSql = "";
+		String selectPart="";
+		String wherePart="";
+		String stagePart="";
+		if(stage==0){
+			selectPart="                  TO_CHAR(T.COLLECT_PLAN_START_DATE, 'YYYYMMDD') PLAN_START_DATE,"
+					+ "                  TO_CHAR(T.COLLECT_PLAN_END_DATE, 'YYYYMMDD') PLAN_END_DATE,"
+					+ "                  T.COLLECT_GROUP_ID GROUP_ID,"
+					+ "                  S.COLLECT_PERCENT PERCENT,"
+					+ "                  S.COLLECT_DIFF_DATE DIFF_DATE,"
+					+ "                  S.COLLECT_PROGRESS progress,"
+					/*+ "                  CASE NVL(ST.STAGE, 999)"
+					+ "                    WHEN 0 THEN 1"
+					+ "                    ELSE 0 END ASSIGN_STATUS,"*/
+					+ "                  G.GROUP_NAME,";
+			wherePart="     AND T.COLLECT_GROUP_ID = G.GROUP_ID(+)";
+			stagePart="STAGE=0";
+		}
+		if(stage==1){
+			selectPart="                  TO_CHAR(T.DAY_EDIT_PLAN_START_DATE, 'YYYYMMDD') PLAN_START_DATE,"
+					+ "                  TO_CHAR(T.DAY_EDIT_PLAN_END_DATE, 'YYYYMMDD') PLAN_END_DATE,"
+					+ "                  T.DAY_EDIT_GROUP_ID GROUP_ID,"
+					+ "                  S.DAILY_PERCENT PERCENT,"
+					+ "                  S.DAILY_DIFF_DATE DIFF_DATE,"
+					+ "                  S.DAILY_PROGRESS progress,"
+					/*+ "                  CASE NVL(ST.STAGE, 999)"
+					+ "                    WHEN 1 THEN 1"
+					+ "                    ELSE 0 END ASSIGN_STATUS,"*/
+					+ "                  G.GROUP_NAME,";
+			wherePart="     AND T.DAY_EDIT_GROUP_ID = G.GROUP_ID(+)";
+			stagePart="STAGE=1";
+		}
+		selectSql="WITH MAN_LIST AS"
+				//未分配子任务
+				+ " (SELECT DISTINCT T.BLOCK_MAN_ID,"
+				+ "                  T.BLOCK_MAN_NAME,"
+				+ "                  T.BLOCK_ID,"
+				+ "                  B.BLOCK_NAME,"	
+				+ "                  T.STATUS BLOCK_STATUS,"
+				+ "                  B.PLAN_STATUS BLOCK_PLAN_STATUS,"
+				+ "                  0 ASSIGN_STATUS,"
+				+ "                  2 PLAN_STATUS,"
+				+selectPart					
+				+ "                  TT.TASK_TYPE"
+				+ "    FROM BLOCK_MAN                 T,"
+				+ "         TASK                      TT,"
+				+ "         USER_GROUP                G,"
+				+ "         FM_STAT_OVERVIEW_BLOCKMAN S,"
+				+ "         BLOCK                   B"
+				+ "   WHERE T.TASK_ID = TT.TASK_ID"
+				+ "     AND T.BLOCK_ID=B.BLOCK_ID"
+				+ "     AND T.LATEST = 1"
+				//+ "     AND T.STATUS=1"
+				+ "     AND NOT EXISTS(SELECT 1 FROM SUBTASK STT WHERE STT.BLOCK_MAN_ID=T.BLOCK_MAN_ID AND STT."+stagePart+")"
+				+wherePart					
+				+ "     AND T.BLOCK_MAN_ID = S.BLOCK_MAN_ID(+)"
+				+ "  UNION ALL"
+				//分配子任务，且子任务都是关闭状态==〉已完成
+				+ " SELECT DISTINCT T.BLOCK_MAN_ID,"
+				+ "                  T.BLOCK_MAN_NAME,"
+				+ "                  T.BLOCK_ID,"
+				+ "                  B.BLOCK_NAME,"	
+				+ "                  T.STATUS BLOCK_STATUS,"
+				+ "                  B.PLAN_STATUS BLOCK_PLAN_STATUS,"
+				+ "                  1 ASSIGN_STATUS,"
+				+ "                  3 PLAN_STATUS,"
+				+selectPart					
+				+ "                  TT.TASK_TYPE"
+				+ "    FROM BLOCK_MAN                 T,"
+				+ "         TASK                      TT,"
+				+ "         USER_GROUP                G,"
+				+ "         FM_STAT_OVERVIEW_BLOCKMAN S,"
+				+ "         SUBTASK                   ST,"
+				+ "         BLOCK                   B"
+				+ "   WHERE T.TASK_ID = TT.TASK_ID"
+				+ "     AND T.BLOCK_ID=B.BLOCK_ID"
+				+ "     AND T.LATEST = 1"
+				+ "     AND T.STATUS=1"
+				+ "     AND ST."+stagePart
+				+wherePart		
+				+ "     AND NOT EXISTS(SELECT 1 FROM SUBTASK STT WHERE STT.BLOCK_MAN_ID=T.BLOCK_MAN_ID AND STT.STATUS<>0 AND STT."+stagePart+")"
+				+ "     AND T.BLOCK_MAN_ID = S.BLOCK_MAN_ID(+)"
+				+ "     AND T.BLOCK_MAN_ID = ST.BLOCK_MAN_ID"
+				+ "  UNION ALL"
+				//分配子任务，且存在非关子任务==〉作业中
+				+ " SELECT DISTINCT T.BLOCK_MAN_ID,"
+				+ "                  T.BLOCK_MAN_NAME,"
+				+ "                  T.BLOCK_ID,"
+				+ "                  B.BLOCK_NAME,"	
+				+ "                  T.STATUS BLOCK_STATUS,"
+				+ "                  B.PLAN_STATUS BLOCK_PLAN_STATUS,"
+				+ "                  1 ASSIGN_STATUS,"
+				+ "                  2 PLAN_STATUS,"
+				+selectPart					
+				+ "                  TT.TASK_TYPE"
+				+ "    FROM BLOCK_MAN                 T,"
+				+ "         TASK                      TT,"
+				+ "         USER_GROUP                G,"
+				+ "         FM_STAT_OVERVIEW_BLOCKMAN S,"
+				+ "         SUBTASK                   ST,"
+				+ "         BLOCK                   B"
+				+ "   WHERE T.TASK_ID = TT.TASK_ID"
+				+ "     AND T.BLOCK_ID=B.BLOCK_ID"
+				+ "     AND T.LATEST = 1"
+				+ "     AND T.STATUS=1"
+				+ "     AND ST."+stagePart
+				+wherePart		
+				+ "     AND EXISTS(SELECT 1 FROM SUBTASK STT WHERE STT.BLOCK_MAN_ID=T.BLOCK_MAN_ID AND STT.STATUS<>0 AND STT."+stagePart+")"
+				+ "     AND T.BLOCK_MAN_ID = S.BLOCK_MAN_ID(+)"
+				+ "     AND T.BLOCK_MAN_ID = ST.BLOCK_MAN_ID(+)"
+				+ "  UNION ALL"
+				//未规划block
+				+ "  SELECT DISTINCT 0,"
+				+ "                  '---',"
+				+ "                  B.BLOCK_ID,"
+				+ "                  B.BLOCK_NAME,"				
+				+ "                  0 STATUS,"
+				+ "                  B.PLAN_STATUS BLOCK_PLAN_STATUS,"
+				+ "                  0 ASSIGN_STATUS,"
+				+ "                  1 PLAN_STATUS,"
+				+ "                  '---' PLAN_START_DATE,"
+				+ "                  '---' PLAN_END_DATE,"
+				+ "                  0 GROUP_ID,"
+				+ "                  0 PERCENT,"
+				+ "                  0 DIFF_DATE,"
+				+ "                  0 PROGRESS,"
+				+ "                  '---' GROUP_NAME,"
+				+ "                  1 TASK_TYPE"
+				+ "    FROM BLOCK B, CITY C"
+				+ "   WHERE B.CITY_ID = C.CITY_ID"
+				+ "     AND B.PLAN_STATUS = 0"
+				+ "     AND C.CITY_ID<>100002),"
+				+ " FINAL_TABLE AS"
+				+ " (SELECT *"
+				+ "    FROM MAN_LIST"
+				+ "    WHERE 1=1"
+				+ conditionSql+")"
+				+ " SELECT /*+FIRST_ROWS ORDERED*/"
+				+ " TT.*, (SELECT COUNT(1) FROM FINAL_TABLE) AS TOTAL_RECORD_NUM"
+				+ "  FROM (SELECT FINAL_TABLE.*, ROWNUM AS ROWNUM_ FROM FINAL_TABLE  WHERE ROWNUM <= "+pageEndNum+") TT"
+				+ " WHERE TT.ROWNUM_ >= "+pageStartNum;
+		return BlockOperation.getSnapshotQuery(conn, selectSql,currentPageNum,pageSize);
+	}
+	
 
 }

@@ -34,7 +34,7 @@ import net.sf.json.JSONObject;
  */
 public class InfoChangeMsgHandler implements MsgHandler {
 	protected Logger log = LoggerRepos.getLogger(this.getClass());
-	String sql = "INSERT INTO INFOR(INFOR_ID,INFOR_NAME,GEOMETRY,INFOR_LEVEL,INFOR_STATUS,INFO_CONTENT) "
+	String sql = "INSERT INTO INFOR(INFOR_ID,INFOR_NAME,GEOMETRY,INFOR_LEVEL,PLAN_STATUS,INFOR_CONTENT) "
 			+ "VALUES (?,?,?,?,0,?)";
 
 	@Override
@@ -74,12 +74,17 @@ public class InfoChangeMsgHandler implements MsgHandler {
 				Geometry inforTmp = GeoTranslator.wkt2Geometry(geoTmp);
 				Set<?> grids = (Set<?>) CompGeometryUtil.geo2GridsWithoutBreak(inforTmp);
 				Iterator<String> it = (Iterator<String>) grids.iterator();
-				List<Object> inforGridValues = new ArrayList<Object>();
+				Object[][] inforGridValues=new Object[grids.size()][2];
+				int num=0;
 				while (it.hasNext()) {
-					inforGridValues.add(inforId);
-					inforGridValues.add(Integer.parseInt(it.next()));
+					List<Object> tmpObjects = new ArrayList<Object>();
+					tmpObjects.add(inforId);
+					tmpObjects.add(Integer.parseInt(it.next()));
+					run.update(conn, insertSql, tmpObjects.toArray());
+					//inforGridValues[num]=tmpObjects;
+					num=num+1;
 				}
-				run.update(conn, insertSql, inforGridValues.toArray());
+				
 			}
 			conn.commit();
 		} catch (SQLException e) {

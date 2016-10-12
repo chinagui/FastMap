@@ -294,7 +294,7 @@ public class Operation implements IOperation {
 				detail.changedFields().put("outLinkPid", rdlink.getPid());
 
 				result.insertObject(detail, ObjStatus.UPDATE,
-						detail.pid());
+						detail.getRestricPid());
 			}
 		}
 	}

@@ -58,7 +58,7 @@ public class Operation implements IOperation {
 
 			RdRoadLink roadLink = (RdRoadLink) row;
 
-			result.insertObject(roadLink, ObjStatus.DELETE, roadPid);
+			result.insertObject(roadLink, ObjStatus.DELETE, roadLink.getPid());
 		}
 
 		int seqNum = 1;
@@ -73,7 +73,7 @@ public class Operation implements IOperation {
 
 			roadLink.setSeqNum(seqNum++);
 
-			result.insertObject(roadLink, ObjStatus.INSERT, roadPid);
+			result.insertObject(roadLink, ObjStatus.INSERT, roadLink.getPid());
 		}
 
 		com.navinfo.dataservice.engine.edit.operation.obj.rdobject.update.Operation rdObjectUpdateOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdobject.update.Operation(

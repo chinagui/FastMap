@@ -15,12 +15,6 @@ public class Process extends AbstractProcess<Command> {
 		
 		return false;
 	}
-	@Override
-	public String preCheck() throws Exception {
-		
-		return null;
-	}
-
 
 	@Override
 	public String exeOperation() throws Exception {

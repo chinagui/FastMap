@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdslope.depart;
 
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
@@ -34,9 +35,8 @@ public class Operation {
         RdSlopeSelector selector = new RdSlopeSelector(conn);
         for (RdLink link : links) {
             Set<RdSlope> slopes = new HashSet<>();
-            // 1.当已经参与坡度制作的单线link变为上下线分离时，将整组坡度信息删除
+            // 1.当已经参与坡度制作的单线link变为上下线分离时，将整组坡度信息删除(进入线或退出线)
             slopes.addAll(selector.loadByOutLink(link.pid(), true));
-            slopes.addAll(selector.loadByViaLink(link.pid(), true));
             if (!slopes.isEmpty()) {
                 for (RdSlope slope : slopes)
                     result.insertObject(slope, ObjStatus.DELETE, slope.pid());
@@ -54,6 +54,15 @@ public class Operation {
                         result.insertObject(slope, ObjStatus.DELETE, slope.pid());
                 }
                 slopes.clear();
+            }
+            // 3.经过线为目标link
+            slopes.addAll(selector.loadByViaLink(link.pid(), true));
+            if (!slopes.isEmpty()) {
+                for (RdSlope slope : slopes) {
+                    for (IRow row : slope.getSlopeVias()) {
+                        result.insertObject(row, ObjStatus.DELETE, row.parentPKValue());
+                    }
+                }
             }
         }
         return "";

@@ -1736,5 +1736,23 @@ public class SubtaskOperation {
 			throw new ServiceException("查询列表失败，原因为:" + e.getMessage(), e);
 		}
 	}
+
+
+	public static void closeBySubtaskId(int subtaskId) throws Exception {
+			// TODO Auto-generated method stub
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			ArrayList<Integer> closedSubtaskList = new ArrayList<Integer>();
+			closedSubtaskList.add(subtaskId);
+			closeBySubtaskList(conn, closedSubtaskList);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("关闭失败，原因为:"+e.getMessage(),e);
+		}finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
 		
 }

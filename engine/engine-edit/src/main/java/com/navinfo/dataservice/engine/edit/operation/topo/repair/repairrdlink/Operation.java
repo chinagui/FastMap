@@ -66,7 +66,7 @@ public class Operation implements IOperation {
 			content.put("length", length);
 			boolean isChanged = this.command.getUpdateLink().fillChangeFields(content);
 			if (isChanged) {
-				result.insertObject(this.command.getUpdateLink(), ObjStatus.UPDATE, this.command.getLinkPid());
+				result.insertObject(this.command.getUpdateLink(), ObjStatus.UPDATE, this.command.getUpdateLink().getPid());
 			}
 			// 拷贝原link，set属性
 			RdLink link = new RdLink();
@@ -118,7 +118,7 @@ public class Operation implements IOperation {
 	 * @throws Exception
 	 */
 	private void deleteRdLink(Result result) throws Exception {
-		result.insertObject(this.command.getUpdateLink(), ObjStatus.DELETE, this.command.getLinkPid());
+		result.insertObject(this.command.getUpdateLink(), ObjStatus.DELETE, this.command.getUpdateLink().getPid());
 	}
 
 	/**

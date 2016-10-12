@@ -33,13 +33,12 @@ public class Operation {
     public String updownDepart(List<RdLink> links, Map<Integer, RdLink> leftLinks, Map<Integer, RdLink> rightLinks, Result result) throws Exception {
         for (RdLink link : links) {
             int direct = link.getDirect();
-
             if (1 == direct) {
                 this.updateTwoDirection(link.getRtics(), leftLinks.get(link.pid()), rightLinks.get(link.pid()), result);
             } else if (2 == direct) {
-                this.updateSingleDirection(link.getRtics(), leftLinks.get(link.pid()), result);
-            } else if (3 == direct) {
                 this.updateSingleDirection(link.getRtics(), rightLinks.get(link.pid()), result);
+            } else if (3 == direct) {
+                this.updateSingleDirection(link.getRtics(), leftLinks.get(link.pid()), result);
             }
         }
         return "";
@@ -58,26 +57,14 @@ public class Operation {
     private void updateTwoDirection(List<IRow> rtics, RdLink leftLink, RdLink rightLink, Result result) {
         for (IRow row : rtics) {
             RdLinkRtic rtic = (RdLinkRtic) row;
-            if (0 == rtic.getUpdownFlag()) {
-                if (rtic.getRticDir() == leftLink.getDirect()) {
-                    rtic.setLinkPid(leftLink.pid());
-                    result.insertObject(rtic, ObjStatus.INSERT, leftLink.pid());
-                } else {
-                    rtic.setUpdownFlag(0);
-                    rtic.setLinkPid(rightLink.pid());
-                    result.insertObject(rtic, ObjStatus.INSERT, rightLink.pid());
-                }
-            } else {
-                if (rtic.getRticDir() == rightLink.getDirect()) {
-                    rtic.setUpdownFlag(0);
-                    rtic.setLinkPid(rightLink.pid());
-                    result.insertObject(rtic, ObjStatus.INSERT, rightLink.pid());
-                } else {
-                    rtic.setUpdownFlag(0);
-                    rtic.setLinkPid(leftLink.pid());
-                    result.insertObject(rtic, ObjStatus.INSERT, leftLink.pid());
-                }
+            int updownFlag = rtic.getUpdownFlag();
+            if (1 == updownFlag) {
+                rtic.setLinkPid(rightLink.pid());
+            } else if (2 == updownFlag) {
+                rtic.setUpdownFlag(1);
+                rtic.setLinkPid(leftLink.pid());
             }
+            result.insertObject(rtic, ObjStatus.INSERT, rtic.getLinkPid());
         }
     }
 }

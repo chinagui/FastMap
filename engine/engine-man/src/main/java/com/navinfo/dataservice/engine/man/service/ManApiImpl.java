@@ -98,5 +98,10 @@ public class ManApiImpl implements ManApi {
 		// TODO Auto-generated method stub
 		return SubtaskOperation.getGridIdsBySubtaskId(subtaskId);
 	}
+	@Override
+	public void close(int subtaskId) throws Exception {
+		// TODO Auto-generated method stub
+		SubtaskOperation.closeBySubtaskId(subtaskId);
+	}
 }
 

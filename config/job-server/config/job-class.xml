@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mapping>
+	<type name="createDb" 
+		class="com.navinfo.dataservice.job.datahub.CreateDbJob"
+	 	request="com.navinfo.dataservice.job.datahub.CreateDbJobRequest">
+	</type>
+	<type name="day2MonthRoadJob" 
+		class="com.navinfo.dataservice.impcore.commit.day.road.Day2MonthRoadJob"
+	 	request="com.navinfo.dataservice.impcore.commit.day.road.Day2MonthRoadJobRequest"
+	/>
+	<type name="day2MonthPoiJob" 
+		class="com.navinfo.dataservice.impcore.commit.day.poi.Day2MonthPoiJob"
+	 	request="com.navinfo.dataservice.impcore.commit.day.poi.Day2MonthPoiJobRequest"
+	/>
+	<type name="commitMonthlyJob" 
+		class="com.navinfo.dataservice.impcore.commit.mon.CommitMonthlyJob"
+	 	request="com.navinfo.dataservice.impcore.commit.mon.CommitMonthlyJobRequest"
+	/>
+	<type name="releaseFmIdbDailyJob" 
+		class="com.navinfo.dataservice.impcore.release.day.ReleaseFmIdbDailyJob"
+	 	request="com.navinfo.dataservice.impcore.release.day.ReleaseFmIdbDailyJobRequest"
+	/>
+	<type name="releaseFmIdbMonthlyJob" 
+		class="com.navinfo.dataservice.impcore.release.mon.ReleaseFmIdbMonthlyJob"
+	 	request="com.navinfo.dataservice.impcore.release.mon.ReleaseFmIdbMonthlyJobRequest"
+	/>
+	<type name="diff" 
+		class="com.navinfo.dataservice.diff.job.DiffJob"
+	 	request="com.navinfo.dataservice.diff.job.DiffJobRequest"
+	/>
+	<type name="gdbExport" 
+		class="com.navinfo.dataservice.expcore.job.GdbExportJob"
+	 	request="com.navinfo.dataservice.expcore.job.GdbExportJobRequest"
+	/>
+	<type name="gdbFullCopy" 
+		class="com.navinfo.dataservice.expcore.job.GdbFullCopyJob"
+	 	request="com.navinfo.dataservice.expcore.job.GdbFullCopyJobRequest"
+	/>
+	<type name="gdbBatch" 
+		class="com.navinfo.dataservice.cop.waistcoat.job.GdbBatchJob"
+	 	request="com.navinfo.dataservice.cop.waistcoat.job.GdbBatchJobRequest"
+	/>
+	<type name="batchCore" 
+		class="com.navinfo.dataservice.cop.waistcoat.job.BatchCoreJob"
+	 	request="com.navinfo.dataservice.cop.waistcoat.job.BatchCoreJobRequest"
+	/>
+	<type name="gdbValidation" 
+		class="com.navinfo.dataservice.cop.waistcoat.job.GdbValidationJob"
+	 	request="com.navinfo.dataservice.cop.waistcoat.job.GdbValidationJobRequest"
+	/>
+		<type name="checkCore" 
+		class="com.navinfo.dataservice.cop.waistcoat.job.CheckCoreJob"
+	 	request="com.navinfo.dataservice.cop.waistcoat.job.CheckCoreJobRequest"
+	/>
+	<type name="gdbImport" 
+		class="com.navinfo.dataservice.impcore.job.GdbImportJob"
+	 	request="com.navinfo.dataservice.impcore.job.GdbImportJobRequest"
+	/>
+	<type name="editPoiBaseRelease" 
+		class="com.navinfo.dataservice.edit.job.EditPoiBaseReleaseJob"
+	 	request="com.navinfo.dataservice.edit.job.EditPoiBaseReleaseJobRequest"
+	/>
+	<type name="columnSaveJob" 
+		class="com.navinfo.dataservice.column.job.ColumnSaveJob"
+	 	request="com.navinfo.dataservice.column.job.ColumnSaveJobRequest"
+	/>
+	<type name="columnSubmitJob" 
+		class="com.navinfo.dataservice.column.job.ColumnSubmitJob"
+	 	request="com.navinfo.dataservice.column.job.ColumnSubmitJobRequest"
+	/>
+	
+	<type name="niRobot" 
+		class="com.navinfo.nirobot.robot.RobotJob"
+	 	request="com.navinfo.nirobot.robot.RobotJobRequest"
+	/>
+	
+</mapping>

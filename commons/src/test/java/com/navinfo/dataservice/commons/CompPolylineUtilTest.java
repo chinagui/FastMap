@@ -90,14 +90,31 @@ public class CompPolylineUtilTest {
 	@Test
 	public void separate_01(){
 		try{
-			LineString ls1=(LineString)JtsGeometryFactory.read("LINESTRING(130.0 40.0,130.5 40.5,131.0 40.5)");
-			LineString ls2=(LineString)JtsGeometryFactory.read("LINESTRING(131.0 40.5,130.5 41.0,130.5 41.5,131.0 42.0)");
-			LineString ls3=(LineString)JtsGeometryFactory.read("LINESTRING(132.0 43.0,132.0 42.0,131.0 42.0)");
-			Point startPoint = (Point)JtsGeometryFactory.read("POINT(130.0 40.0)");
+			LineString ls1=(LineString)JtsGeometryFactory.read("LINESTRING (116.3563 40.03676, 116.35615 40.03672, 116.35601 40.03668, 116.35589 40.03665, 116.3558 40.03662, 116.35573 40.03659, 116.35568 40.03656, 116.35566 40.03652, 116.35565 40.03649, 116.35566 40.0364, 116.35568 40.03636, 116.35571 40.03629, 116.35572 40.03625, 116.35577 40.03617)");
+			LineString ls2=(LineString)JtsGeometryFactory.read("LINESTRING (116.3563 40.03676, 116.35651 40.03682, 116.35696 40.03695)");
+			LineString ls3=(LineString)JtsGeometryFactory.read("LINESTRING (116.35696 40.03695, 116.35715 40.03701, 116.35716 40.03704, 116.35716 40.03708, 116.35714 40.03711, 116.35711 40.03711, 116.3567 40.03701)");
+			Point startPoint = (Point)JtsGeometryFactory.read("POINT (116.35577 40.03617)");
 			LineString[] lines = new LineString[]{
 					ls1,ls2,ls3
 			};
-			LineString[] results = CompPolylineUtil.separate(startPoint, lines, 12000);
+			LineString[] results = CompPolylineUtil.separate(startPoint, lines, 7.7);
+			for(LineString l:results){
+				System.out.println(l.toText());
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		Assert.assertTrue(true);
+	}
+	@Test
+	public void separate_02(){
+		try{
+			LineString ls=(LineString)JtsGeometryFactory.read("LINESTRING (116.35696 40.03695, 116.35715 40.03701, 116.35716 40.03704, 116.35716 40.03708, 116.35714 40.03711, 116.35711 40.03711, 116.3567 40.03701)");
+			Point startPoint = (Point)JtsGeometryFactory.read("POINT (116.35696 40.03695)");
+			LineString[] lines = new LineString[]{
+					ls
+			};
+			LineString[] results = CompPolylineUtil.separate(startPoint, lines, 7.7);
 			for(LineString l:results){
 				System.out.println(l.toText());
 			}

@@ -38,7 +38,7 @@ public class RdBranchViaSelector extends AbstractSelector {
         PreparedStatement pstmt = null;
         ResultSet resultSet = null;
         try {
-            conn.prepareStatement(sql);
+        	pstmt = conn.prepareStatement(sql);
 
             pstmt.setInt(1, linkPid);
 

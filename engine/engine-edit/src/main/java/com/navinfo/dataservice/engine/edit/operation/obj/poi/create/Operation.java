@@ -111,6 +111,7 @@ public class Operation implements IOperation {
         ixPoiName.setPoiPid(poi.pid());
         ixPoiName.setName(name);
         ixPoiName.setNameType(2);
+        ixPoiName.setLangCode("CHI");
         result.insertObject(ixPoiName, ObjStatus.INSERT, poi.pid());
     }
 }

@@ -205,7 +205,7 @@ public class BlockController extends BaseController {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
 
-			if (!(dataJson.containsKey("blockIds"))) {
+			if (!(dataJson.containsKey("blockManIds"))) {
 				throw new IllegalArgumentException("blockIds参数是必须的。");
 			}
 
@@ -223,7 +223,7 @@ public class BlockController extends BaseController {
 		}
 	}
 
-	@RequestMapping(value = "/block/listAll")
+	/*@RequestMapping(value = "/block/listAll")
 	public ModelAndView listAll(HttpServletRequest request) {
 		try {
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
@@ -264,7 +264,7 @@ public class BlockController extends BaseController {
 			log.error("获取列表失败，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", exception(e));
 		}
-	}
+	}*/
 	
 	/**
 	 *  根据采集组或者日编组，查询Block列表
@@ -342,7 +342,7 @@ public class BlockController extends BaseController {
 	 * @param request
 	 * @return
 	 */
-	@RequestMapping(value = "/block/listByGroupId")
+	/*@RequestMapping(value = "/block/listByGroupId")
 	public ModelAndView listByGroupId(HttpServletRequest request) {
 		try {
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
@@ -373,7 +373,7 @@ public class BlockController extends BaseController {
 			log.error("获取列表失败，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", exception(e));
 		}
-	}
+	}*/
 	
 	/**
 	 * 发布对象：1.分配的采集作业组组长2.分配的日编作业组组长

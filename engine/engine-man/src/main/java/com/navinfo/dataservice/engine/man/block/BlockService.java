@@ -293,7 +293,7 @@ public class BlockService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-
+/*
 	public Page listByGroupId(JSONObject json, int currentPageNum, int pageSize) throws ServiceException {
 		Connection conn = null;
 		try {
@@ -359,7 +359,7 @@ public class BlockService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-
+*/
 	public List<Integer> close(List<Integer> blockManIdList) throws ServiceException {
 		Connection conn = null;
 		try {
@@ -388,7 +388,7 @@ public class BlockService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-
+/*
 	public Page listAllBak(JSONObject enterParam, String listType, JSONObject conditionJson, JSONObject orderJson,
 			int currentPageNum, int pageSize) throws Exception {
 		Connection conn = null;
@@ -466,8 +466,8 @@ public class BlockService {
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
-	}
-
+	}*/
+	/*
 	public List listAll(JSONObject enterParam, String listType, JSONObject conditionJson, JSONObject orderJson)
 			throws Exception {
 		Connection conn = null;
@@ -605,7 +605,7 @@ public class BlockService {
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
-	}
+	}*/
 
 	/*public List<HashMap> listByInfoId(JSONObject json) throws ServiceException {
 		Connection conn = null;
@@ -635,7 +635,7 @@ public class BlockService {
 		}
 	}*/
 	
-	public String blockPushMsgByConn(Connection conn,List blockManIds) throws Exception {
+	private String blockPushMsgByConn(Connection conn,List blockManIds) throws Exception {
 		try {
 			if (blockManIds.size()==0){
 				return "";
@@ -755,17 +755,19 @@ public class BlockService {
 			while (keys.hasNext()) {
 				String key = (String) keys.next();
 				if("blockManName".equals(key)){
-					conditionSql=conditionSql+" AND TASK_LIST.BLOCK_MAN_NAME LIKE '%"+conditionJson.getString(key)+"%'";}
+					conditionSql=conditionSql+" AND MAN_LIST.BLOCK_MAN_NAME LIKE '%"+conditionJson.getString(key)+"%'";}
 				if("taskId".equals(key)){
-					conditionSql=conditionSql+" AND TASK_LIST.TASK_ID ="+conditionJson.getInt(key);}
+					conditionSql=conditionSql+" AND MAN_LIST.TASK_ID ="+conditionJson.getInt(key);}
+				if("cityId".equals(key)){
+					conditionSql=conditionSql+" AND MAN_LIST.CITY_ID ="+conditionJson.getInt(key);}
 				if("blockManId".equals(key)){
-					conditionSql=conditionSql+" AND TASK_LIST.BLOCK_MAN_ID ="+conditionJson.getInt(key);}
+					conditionSql=conditionSql+" AND MAN_LIST.BLOCK_MAN_ID ="+conditionJson.getInt(key);}
 				if("createUserName".equals(key)){
-					conditionSql=conditionSql+" AND TASK_LIST.CREATE_USER_NAME LIKE '%"+conditionJson.getString(key)+"%'";}
+					conditionSql=conditionSql+" AND MAN_LIST.CREATE_USER_NAME LIKE '%"+conditionJson.getString(key)+"%'";}
 				if("taskName".equals(key)){
-					conditionSql=conditionSql+" AND TASK_LIST.TASK_NAME LIKE '%"+conditionJson.getString(key)+"%'";}
+					conditionSql=conditionSql+" AND MAN_LIST.TASK_NAME LIKE '%"+conditionJson.getString(key)+"%'";}
 				if("blockPlanStatus".equals(key)){
-					conditionSql=conditionSql+" AND TASK_LIST.BLOCK_PLAN_STATUS ="+conditionJson.getInt(key);}				
+					conditionSql=conditionSql+" AND MAN_LIST.BLOCK_PLAN_STATUS ="+conditionJson.getInt(key);}				
 			}
 		}	
 		if(!statusSql.isEmpty()){//有非status
@@ -779,8 +781,13 @@ public class BlockService {
 		selectSql="WITH MAN_LIST AS"
 				+ " (SELECT DISTINCT T.BLOCK_MAN_ID,"
 				+ "                  T.BLOCK_MAN_NAME,"
+				+ "                  B.BLOCK_ID,"
+				+ "                  B.BLOCK_NAME,"
+				+ "                  TT.CITY_ID,"
 				+ "                  T.STATUS BLOCK_STATUS,"
 				+ "                  B.PLAN_STATUS BLOCK_PLAN_STATUS,"
+				+ "                  S.PERCENT,"
+				+ "                  S.DIFF_DATE,"
 				+ "                  TO_CHAR(T.COLLECT_PLAN_START_DATE, 'YYYYMMDD') COLLECT_PLAN_START_DATE,"
 				+ "                  TO_CHAR(T.COLLECT_PLAN_END_DATE, 'YYYYMMDD') COLLECT_PLAN_END_DATE,"
 				+ "                  T.COLLECT_GROUP_ID,"
@@ -821,10 +828,15 @@ public class BlockService {
 				+ "     AND T.BLOCK_MAN_ID = S.BLOCK_MAN_ID(+)"
 				+ "     AND T.BLOCK_MAN_ID = ST.BLOCK_MAN_ID(+)"
 				+ "  UNION ALL"
-				+ "  SELECT DISTINCT B.BLOCK_ID,"
+				+ "  SELECT DISTINCT 0,"
+				+ "                  '---',"
+				+ "                  B.BLOCK_ID,"
 				+ "                  B.BLOCK_NAME,"
+				+ "                  C.CITY_ID,"
 				+ "                  0 STATUS,"
 				+ "                  B.PLAN_STATUS,"
+				+ "                  0,"
+				+ "                  0,"
 				+ "                  '---' COLLECT_PLAN_START_DATE,"
 				+ "                  '---' COLLECT_PLAN_END_DATE,"
 				+ "                  0 COLLECT_GROUP_ID,"
@@ -841,13 +853,13 @@ public class BlockService {
 				+ "                  0 DAILY_PROGRESS,"
 				+ "                  0 DAILY_ASSIGN_STATUS,"
 				+ "                  '---' DAY_EDIT_GROUP_NAME,"
-				+ "                  TT.TASK_TYPE,"
+				+ "                  1 TASK_TYPE,"
 				+ "                  '---',"
 				+ "                  0"
-				+ "    FROM BLOCK B, CITY C, TASK TT"
+				+ "    FROM BLOCK B, CITY C"
 				+ "   WHERE B.CITY_ID = C.CITY_ID"
-				+ "     AND C.CITY_ID = TT.CITY_ID"
-				+ "     AND B.PLAN_STATUS = 0),"
+				+ "     AND B.PLAN_STATUS = 0"
+				+ "     AND C.CITY_ID<>100002),"
 				+ " FINAL_TABLE AS"
 				+ " (SELECT *"
 				+ "    FROM MAN_LIST"
@@ -869,37 +881,37 @@ public class BlockService {
 			while (keys.hasNext()) {
 				String key = (String) keys.next();
 				if("blockManName".equals(key)){
-					conditionSql=conditionSql+" AND TASK_LIST.BLOCK_MAN_NAME LIKE '%"+conditionJson.getString(key)+"%'";}
+					conditionSql=conditionSql+" AND MAN_LIST.BLOCK_MAN_NAME LIKE '%"+conditionJson.getString(key)+"%'";}
 				if("groupId".equals(key)){
-					conditionSql=conditionSql+" AND TASK_LIST.GROUP_ID ="+conditionJson.getInt(key);}
+					conditionSql=conditionSql+" AND MAN_LIST.GROUP_ID ="+conditionJson.getInt(key);}
 				if("planStatus".equals(key)){
 					//未完成 即已发布列表
 					if(conditionJson.getInt(key)==2){
-						conditionSql=conditionSql+" AND TASK_LIST.STATUS =1 AND TASK_LIST.PERCENT<100";}
+						conditionSql=conditionSql+" AND MAN_LIST.STATUS =1 AND MAN_LIST.PERCENT<100";}
 					else if(conditionJson.getInt(key)==3){
-						conditionSql=conditionSql+" AND TASK_LIST.STATUS =1 AND TASK_LIST.PERCENT=100";}
+						conditionSql=conditionSql+" AND MAN_LIST.STATUS =1 AND MAN_LIST.PERCENT=100";}
 					}
 				
 				if ("assignStatus".equals(key)) {
 					if(!statusSql.isEmpty()){statusSql+=" or ";}
-					statusSql+=" TASK_LIST.ASSIGN_STATUS="+conditionJson.getInt(key);}
+					statusSql+=" MAN_LIST.ASSIGN_STATUS="+conditionJson.getInt(key);}
 				if ("progress".equals(key)) {
 					if(!statusSql.isEmpty()){statusSql+=" or ";}
-					statusSql+=" TASK_LIST.Progress IN ("+conditionJson.getJSONArray(key).join(",")+")";}
+					statusSql+=" MAN_LIST.Progress IN ("+conditionJson.getJSONArray(key).join(",")+")";}
 				if ("diffDate".equals(key)) {
 					JSONArray diffDateArray=conditionJson.getJSONArray(key);
 					for(Object diffDate:diffDateArray){
 						if((int) diffDate==1){
 							if(!statusSql.isEmpty()){statusSql+=" or ";}
-							statusSql+=" TASK_LIST.diff_date>0";
+							statusSql+=" MAN_LIST.diff_date>0";
 						}
 						if((int) diffDate==0){
 							if(!statusSql.isEmpty()){statusSql+=" or ";}
-							statusSql+=" TASK_LIST.diff_date=0";
+							statusSql+=" MAN_LIST.diff_date=0";
 						}
 						if((int) diffDate==-1){
 							if(!statusSql.isEmpty()){statusSql+=" or ";}
-							statusSql+=" TASK_LIST.diff_date<0";
+							statusSql+=" MAN_LIST.diff_date<0";
 						}
 						}
 					}
@@ -913,6 +925,7 @@ public class BlockService {
 		String selectSql = "";
 		String selectPart="";
 		String wherePart="";
+		String stagePart="";
 		if(stage==0){
 			selectPart="                  TO_CHAR(T.COLLECT_PLAN_START_DATE, 'YYYYMMDD') PLAN_START_DATE,"
 					+ "                  TO_CHAR(T.COLLECT_PLAN_END_DATE, 'YYYYMMDD') PLAN_END_DATE,"
@@ -920,11 +933,12 @@ public class BlockService {
 					+ "                  S.COLLECT_PERCENT PERCENT,"
 					+ "                  S.COLLECT_DIFF_DATE DIFF_DATE,"
 					+ "                  S.COLLECT_PROGRESS progress,"
-					+ "                  CASE NVL(ST.STAGE, 999)"
+					/*+ "                  CASE NVL(ST.STAGE, 999)"
 					+ "                    WHEN 0 THEN 1"
-					+ "                    ELSE 0 END ASSIGN_STATUS,"
+					+ "                    ELSE 0 END ASSIGN_STATUS,"*/
 					+ "                  G.GROUP_NAME,";
 			wherePart="     AND T.COLLECT_GROUP_ID = G.GROUP_ID(+)";
+			stagePart="STAGE=0";
 		}
 		if(stage==1){
 			selectPart="                  TO_CHAR(T.DAY_EDIT_PLAN_START_DATE, 'YYYYMMDD') PLAN_START_DATE,"
@@ -933,29 +947,79 @@ public class BlockService {
 					+ "                  S.DAILY_PERCENT PERCENT,"
 					+ "                  S.DAILY_DIFF_DATE DIFF_DATE,"
 					+ "                  S.DAILY_PROGRESS progress,"
-					+ "                  CASE NVL(ST.STAGE, 999)"
+					/*+ "                  CASE NVL(ST.STAGE, 999)"
 					+ "                    WHEN 1 THEN 1"
-					+ "                    ELSE 0 END ASSIGN_STATUS,"
+					+ "                    ELSE 0 END ASSIGN_STATUS,"*/
 					+ "                  G.GROUP_NAME,";
 			wherePart="     AND T.DAY_EDIT_GROUP_ID = G.GROUP_ID(+)";
+			stagePart="STAGE=1";
 		}
 		selectSql="WITH MAN_LIST AS"
 				+ " (SELECT DISTINCT T.BLOCK_MAN_ID,"
 				+ "                  T.BLOCK_MAN_NAME,"
+				+ "                  T.BLOCK_ID,"
+				+ "                  B.BLOCK_NAME,"	
 				+ "                  T.STATUS BLOCK_STATUS,"
+				+ "                  B.PLAN_STATUS BLOCK_PLAN_STATUS,"
+				+ "                  0 ASSIGN_STATUS,"
 				+selectPart					
 				+ "                  TT.TASK_TYPE"
 				+ "    FROM BLOCK_MAN                 T,"
 				+ "         TASK                      TT,"
 				+ "         USER_GROUP                G,"
 				+ "         FM_STAT_OVERVIEW_BLOCKMAN S,"
-				+ "         SUBTASK                   ST"
+				+ "         BLOCK                   B"
 				+ "   WHERE T.TASK_ID = TT.TASK_ID"
+				+ "     AND T.BLOCK_ID=B.BLOCK_ID"
 				+ "     AND T.LATEST = 1"
-				+ "		AND T.STATUS=1"
+				+ "     AND T.STATUS=1"
+				+ "     AND NOT EXISTS(SELECT 1 FROM SUBTASK ST WHERE ST.BLOCK_MAN_ID=T.BLOCK_MAN_ID AND ST."+stagePart+")"
 				+wherePart					
 				+ "     AND T.BLOCK_MAN_ID = S.BLOCK_MAN_ID(+)"
-				+ "     AND T.BLOCK_MAN_ID = ST.BLOCK_MAN_ID(+)),"
+				+ "  UNION ALL"
+				+ " SELECT DISTINCT T.BLOCK_MAN_ID,"
+				+ "                  T.BLOCK_MAN_NAME,"
+				+ "                  T.BLOCK_ID,"
+				+ "                  B.BLOCK_NAME,"	
+				+ "                  T.STATUS BLOCK_STATUS,"
+				+ "                  B.PLAN_STATUS BLOCK_PLAN_STATUS,"
+				+ "                  1 ASSIGN_STATUS,"
+				+selectPart					
+				+ "                  TT.TASK_TYPE"
+				+ "    FROM BLOCK_MAN                 T,"
+				+ "         TASK                      TT,"
+				+ "         USER_GROUP                G,"
+				+ "         FM_STAT_OVERVIEW_BLOCKMAN S,"
+				+ "         SUBTASK                   ST,"
+				+ "         BLOCK                   B"
+				+ "   WHERE T.TASK_ID = TT.TASK_ID"
+				+ "     AND T.BLOCK_ID=B.BLOCK_ID"
+				+ "     AND T.LATEST = 1"
+				+ "     AND T.STATUS=1"
+				+ "     AND ST."+stagePart
+				+wherePart					
+				+ "     AND T.BLOCK_MAN_ID = S.BLOCK_MAN_ID(+)"
+				+ "     AND T.BLOCK_MAN_ID = ST.BLOCK_MAN_ID(+)"
+				+ "  UNION ALL"
+				+ "  SELECT DISTINCT 0,"
+				+ "                  '---',"
+				+ "                  B.BLOCK_ID,"
+				+ "                  B.BLOCK_NAME,"				
+				+ "                  0 STATUS,"
+				+ "                  B.PLAN_STATUS,"
+				+ "                  0 ASSIGN_STATUS,"
+				+ "                  '---' PLAN_START_DATE,"
+				+ "                  '---' PLAN_END_DATE,"
+				+ "                  0 GROUP_ID,"
+				+ "                  0 PERCENT,"
+				+ "                  0 DIFF_DATE,"
+				+ "                  0 PROGRESS,"
+				+ "                  '---' GROUP_NAME,"
+				+ "                  1 TASK_TYPE"
+				+ "    FROM BLOCK B, CITY C"
+				+ "   WHERE B.CITY_ID = C.CITY_ID"
+				+ "     AND B.PLAN_STATUS = 0"
+				+ "     AND C.CITY_ID<>100002),"
 				+ " FINAL_TABLE AS"
 				+ " (SELECT *"
 				+ "    FROM MAN_LIST"

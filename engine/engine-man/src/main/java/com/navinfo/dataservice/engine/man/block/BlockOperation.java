@@ -764,7 +764,7 @@ public class BlockOperation {
 						
 						map.put("collectPlanStartDate", rs.getString("COLLECT_PLAN_START_DATE"));
 						map.put("collectPlanEndDate", rs.getString("COLLECT_PLAN_END_DATE"));
-						map.put("collectAssignStatus", rs.getInt("COLLECT_ASSIGN_STATUS"));
+						//map.put("collectAssignStatus", rs.getInt("COLLECT_ASSIGN_STATUS"));
 						map.put("collectGroupId", rs.getInt("COLLECT_GROUP_ID"));
 						map.put("collectGroupName", rs.getString("COLLECT_GROUP_NAME"));
 						map.put("collectDiffDate", rs.getInt("COLLECT_DIFF_DATE"));
@@ -773,7 +773,7 @@ public class BlockOperation {
 						
 						map.put("dayEditPlanStartDate", rs.getString("DAY_EDIT_PLAN_START_DATE"));
 						map.put("dayEditPlanEndDate", rs.getString("DAY_EDIT_PLAN_END_DATE"));
-						map.put("dailyAssignStatus", rs.getInt("DAILY_ASSIGN_STATUS"));
+						//map.put("dailyAssignStatus", rs.getInt("DAILY_ASSIGN_STATUS"));
 						map.put("dayEditGroupId", rs.getInt("DAY_EDIT_GROUP_ID"));
 						map.put("dayEditGroupName", rs.getString("DAY_EDIT_GROUP_NAME"));
 						map.put("dailyDiffDate", rs.getInt("DAILY_DIFF_DATE"));

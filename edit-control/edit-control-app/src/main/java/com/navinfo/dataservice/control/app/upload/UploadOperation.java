@@ -21,6 +21,7 @@ import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -254,13 +255,16 @@ public class UploadOperation {
 				Connection conn = DBConnector.getInstance().getConnectionById(Integer.parseInt(dbId));
 				try {
 					List<JSONObject> poiList = (List<JSONObject>) insertObj.get(dbId);
+					JSONObject relateParentChildren = new JSONObject();
 					for (int i = 0; i < poiList.size(); i++) {
 						JSONObject jo = poiList.get(i);
 						JSONObject perRetObj = obj2PoiForInsert(jo, version);
 						int flag = perRetObj.getInt("flag");
 						if (flag == 1) {
 							JSONObject poiObj = perRetObj.getJSONObject("ret");
-							
+							if (perRetObj.containsKey("relate")) {
+								relateParentChildren.put(poiObj.getString("pid"), perRetObj.getJSONArray("relate"));
+							}
 							JSONObject json = new JSONObject();
 							
 							json.put("dbId", dbId);
@@ -270,12 +274,6 @@ public class UploadOperation {
 							json.put("data", poiObj);
 							// 调用一次插入
 							apiService.run(json);
-							
-//							CommandForUpload poiCommand = new CommandForUpload(poiObj, null);
-//							ProcessForUpload poiProcess = new ProcessForUpload(poiCommand);
-							
-//							poiProcess.setResult(result);
-//							poiProcess.run();
 							count++;
 
 							// 鲜度验证，POI状态更新
@@ -286,6 +284,12 @@ public class UploadOperation {
 						}
 
 					}
+					
+					// 处理一个库中的父子关系20161011
+					if (relateParentChildren.size()>0) {
+						insetParent(conn,relateParentChildren);
+					}
+					
 				} catch (Exception e) {
 					throw e;
 				} finally {
@@ -312,12 +316,16 @@ public class UploadOperation {
 				Connection conn = DBConnector.getInstance().getConnectionById(Integer.parseInt(dbId));
 				try {
 					List<JSONObject> poiList = (List<JSONObject>) updateObj.get(dbId);
+					JSONObject relateParentChildren = new JSONObject();
 					for (int i = 0; i < poiList.size(); i++) {
 						JSONObject jo = poiList.get(i);
 						JSONObject perRetObj = obj2PoiForUpdate(jo, version, conn);
 						int flag = perRetObj.getInt("flag");
 						if (flag == 1) {
 							JSONObject poiJson = perRetObj.getJSONObject("ret");
+							if (perRetObj.getJSONObject("relate").size()>0) {
+								relateParentChildren.put(poiJson.getString("pid"), perRetObj.getJSONObject("relate"));
+							}
 							JSONObject commandJson = new JSONObject();
 							commandJson.put("dbId", Integer.parseInt(dbId));
 							commandJson.put("data", poiJson);
@@ -326,10 +334,6 @@ public class UploadOperation {
 							commandJson.put("type", "IXPOIUPLOAD");
 							// 调用一次更新
 							apiService.run(commandJson);
-							
-//							Command updateCommand = new Command(commandJson, null);
-//							Process updateProcess = new Process(updateCommand);
-//							updateProcess.run();
 							count++;
 
 							// 鲜度验证，POI状态更新
@@ -344,6 +348,12 @@ public class UploadOperation {
 							errList.add(perRetObj.getJSONObject("ret"));
 						}
 					}
+					
+					// 处理一个库中的父子关系20161011
+					if (relateParentChildren.size()>0) {
+						updateParent(conn,relateParentChildren);
+					}
+					
 				} catch (Exception e) {
 					throw e;
 				} finally {
@@ -382,12 +392,6 @@ public class UploadOperation {
 						try {
 							// 调用一次删除
 							apiService.run(poiObj);
-//							Result result = new Result();
-//							result.setOperStage(OperStage.Collect);
-//							CommandForDelete poiCommand = new CommandForDelete(poiObj, null);
-//							ProcessForDelete poiProcess = new ProcessForDelete(poiCommand);
-//							poiProcess.setResult(result);
-//							poiProcess.run();
 							count++;
 
 							// 鲜度验证，POI状态更新
@@ -642,27 +646,7 @@ public class UploadOperation {
 
 			// 父子关系
 			if (jo.getJSONArray("relateChildren").size() > 0) {
-				int groupId = PidUtil.getInstance().applyPoiGroupId();
-				IxPoiParent parent = new IxPoiParent();
-				List<IRow> parentList = new ArrayList<IRow>();
-				parent.setPid(groupId);
-				parent.setParentPoiPid(pid);
-				parent.setRowId(UuidUtils.genUuid());
-				parentList.add(parent);
-				poi.setParents(parentList);
-
-				JSONArray relateChildren = jo.getJSONArray("relateChildren");
-				List<IRow> childrenList = new ArrayList<IRow>();
-				for (int k = 0; k < relateChildren.size(); k++) {
-					JSONObject children = relateChildren.getJSONObject(k);
-					IxPoiChildren poiChildren = new IxPoiChildren();
-					poiChildren.setGroupId(groupId);
-					poiChildren.setChildPoiPid(children.getInt("childPid"));
-					poiChildren.setRelationType(children.getInt("type"));
-					poiChildren.setRowId(children.getString("rowId"));
-					childrenList.add(poiChildren);
-				}
-				poi.setChildren(childrenList);
+				retObj.put("relate", jo.getJSONArray("relateChildren"));
 			}
 
 			// 加油站
@@ -789,6 +773,14 @@ public class UploadOperation {
 			// 查出旧的POI
 			IxPoiSelector ixPoiSelector = new IxPoiSelector(conn);
 			IxPoi oldPoi = (IxPoi) ixPoiSelector.loadById(pid, false);
+			// parent子表信息需要单独查询20161011
+			List<IRow> oldParentArray = new ArrayList<IRow>();
+			IxPoiParent oldParentObj = getParentByPid(pid,conn);
+			if (oldParentObj != null) {
+				oldParentArray.add(oldParentObj);
+			}
+			oldPoi.setParents(oldParentArray);
+			
 			// POI主表
 			JSONObject poiJson = new JSONObject();
 			poiJson.put("pid", pid);
@@ -1123,6 +1115,7 @@ public class UploadOperation {
 				poiJson.put("contacts", newContactArray);
 			}
 
+			JSONObject relate = new JSONObject();
 			// 父
 			List<IRow> oldParentList = oldPoi.getParents();
 			int groupId = 0;
@@ -1136,29 +1129,25 @@ public class UploadOperation {
 				// 新增
 				if (jo.getJSONArray("relateChildren").size() > 0 && oldParentList.size() == 0) {
 					JSONObject parent = new JSONObject();
-					JSONArray parentList = new JSONArray();
 					groupId = PidUtil.getInstance().applyPoiGroupId();
 					parent.put("objStatus", ObjStatus.INSERT.toString());
 					parent.put("pid", groupId);
 					parent.put("parentPoiPid", pid);
 					parent.put("rowId", UuidUtils.genUuid());
-					parentList.add(parent);
-					poiJson.put("parent", parentList);
+					relate.put("parent", parent);
 					// 鲜度验证
 					freshFlag = false;
 				}
 				// 删除
 				if (jo.getJSONArray("relateChildren").size() == 0 && oldParentList.size() > 0) {
 					JSONObject parent = new JSONObject();
-					JSONArray parentList = new JSONArray();
 					IRow oldParentIRow = oldParentList.get(0);
 					IxPoiParent oldParent = (IxPoiParent) oldParentIRow;
 					parent.put("objStatus", ObjStatus.DELETE.toString());
 					parent.put("pid", oldParent.getPid());
 					parent.put("parentPoiPid", oldParent.getPid());
 					parent.put("rowId", oldParent.getRowId());
-					parentList.add(parent);
-					poiJson.put("parent", parentList);
+					relate.put("parent", parent);
 					// 鲜度验证
 					freshFlag = false;
 				}
@@ -1187,11 +1176,13 @@ public class UploadOperation {
 					// 差分,区分新增修改
 					int ret = getDifferent(oldArray, newChildren);
 					if (ret == 0) {
+						newChildren.put("childFid", children.getString("childFid"));
 						newChildren.put("objStatus", ObjStatus.INSERT.toString());
 						newChildrenArray.add(newChildren);
 						// 鲜度验证
 						freshFlag = false;
 					} else if (ret == 1) {
+						newChildren.put("childFid", children.getString("childFid"));
 						newChildren.put("objStatus", ObjStatus.UPDATE.toString());
 						newChildrenArray.add(newChildren);
 						// 鲜度验证
@@ -1209,8 +1200,9 @@ public class UploadOperation {
 
 				newChildrenArray.addAll(oldDelJson);
 
-				poiJson.put("children", newChildrenArray);
+				relate.put("children", newChildrenArray);
 			}
+			retObj.put("relate", relate);
 
 			// 加油站
 			if (jo.containsKey("gasStation")) {
@@ -1632,6 +1624,204 @@ public class UploadOperation {
 			throw e;
 		} finally {
 			DBUtils.closeConnection(conn);
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+		}
+	}
+	
+	// 处理新增时的父子关系
+	@SuppressWarnings("unchecked")
+	private void insetParent(Connection conn,JSONObject relate) throws Exception {
+		String sqlParent = "INSERT INTO ix_poi_parent (group_id,parent_poi_pid,tenant_flag,u_record,u_date,row_id) VALUES (?,?,?,?,?,?)";
+		
+		String sqlChildren = "INSERT INTO ix_poi_children (group_id,child_poi_pid,relation_type,u_record,u_date,row_id) VALUES (?,?,?,?,?,?)";
+		
+		PreparedStatement pstmtParent = null;
+		
+		PreparedStatement pstmtChildren = null;
+
+		try {
+			pstmtParent = conn.prepareStatement(sqlParent);
+			pstmtChildren = conn.prepareStatement(sqlChildren);
+			
+			Iterator<String> keys = relate.keys();
+			
+			while(keys.hasNext()) {
+				String pid = keys.next();
+				JSONArray relateChildren = relate.getJSONArray(pid);
+				
+				int groupId = PidUtil.getInstance().applyPoiGroupId();
+				
+				pstmtParent.setInt(1, groupId);
+				pstmtParent.setInt(2, Integer.parseInt(pid));
+				pstmtParent.setInt(3, 0);
+				pstmtParent.setInt(4, 1);
+				pstmtParent.setString(5, StringUtils.getCurrentTime());
+				pstmtParent.setString(6, UuidUtils.genUuid());
+				pstmtParent.execute();
+				
+				for (int i=0;i<relateChildren.size();i++) {
+					JSONObject children = relateChildren.getJSONObject(i);
+					pstmtChildren.setInt(1, groupId);
+					int childPid = getPoiNumByPid(children.getString("childFid"),conn);
+					pstmtChildren.setInt(2, childPid);
+					pstmtChildren.setInt(3, children.getInt("type"));
+					pstmtChildren.setInt(4, 1);
+					pstmtChildren.setString(5, StringUtils.getCurrentTime());
+					pstmtChildren.setString(6, children.getString("rowId"));
+					pstmtChildren.execute();
+				}
+			}
+			conn.commit();
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DBUtils.closeStatement(pstmtParent);
+			DBUtils.closeStatement(pstmtChildren);
+		}
+	}
+	
+	// 处理更新时的父子关系
+	@SuppressWarnings("unchecked")
+	private void updateParent(Connection conn,JSONObject relate) throws Exception {
+		PreparedStatement pstmtParent = null;
+		
+		PreparedStatement pstmtChildren = null;
+		try {
+			Iterator<String> keys = relate.keys();
+			
+			while(keys.hasNext()) {
+				String pid = keys.next();
+				JSONObject relateObj = relate.getJSONObject(pid);
+				if (relateObj.containsKey("parent")) {
+					JSONObject parent = new JSONObject();
+					parent = relateObj.getJSONObject("parent");
+					String objStatus = parent.getString("objStatus");
+					if (objStatus.equals("INSERT")) {
+						String sql = "INSERT INTO ix_poi_parent (group_id,parent_poi_pid,tenant_flag,u_record,u_date,row_id) VALUES (?,?,?,?,?,?)";
+						pstmtParent = conn.prepareStatement(sql);
+						pstmtParent.setInt(1, parent.getInt("pid"));
+						pstmtParent.setInt(2, Integer.parseInt(pid));
+						pstmtParent.setInt(3, 0);
+						pstmtParent.setInt(4, 1);
+						pstmtParent.setString(5, StringUtils.getCurrentTime());
+						pstmtParent.setString(6, parent.getString("rowId"));
+						pstmtParent.execute();
+					} else if (objStatus.equals("DELETE")) {
+						String sql = "UPDATE ix_poi_parent SET (u_record=2) WHERE row_id=:1";
+						pstmtParent = conn.prepareStatement(sql);
+						pstmtParent.setString(1, parent.getString("row_id"));
+						pstmtParent.executeUpdate();
+					}
+				}
+				JSONArray children = relateObj.getJSONArray("children");
+				for (int i=0;i<children.size();i++) {
+					JSONObject child = children.getJSONObject(i);
+					String objStatus = child.getString("objStatus");
+					if (objStatus.equals("INSERT")) {
+						String sql = "INSERT INTO ix_poi_children (group_id,child_poi_pid,relation_type,u_record,u_date,row_id) VALUES (?,?,?,?,?,?)";
+						pstmtChildren = conn.prepareStatement(sql);
+						pstmtChildren.setInt(1, child.getInt("groupId"));
+						int childPid = getPoiNumByPid(child.getString("childFid"),conn);
+						pstmtChildren.setInt(2, childPid);
+						pstmtChildren.setInt(3, child.getInt("relationType"));
+						pstmtChildren.setInt(4, 1);
+						pstmtChildren.setString(5, StringUtils.getCurrentTime());
+						pstmtChildren.setString(6, child.getString("rowId"));
+						pstmtChildren.execute();
+					} else if (objStatus.equals("UPDATE")) {
+						String sql = "UPDATE ix_poi_children (group_id,child_poi_pid,relation_type,u_record,u_date) SET (?,?,?,?,?,?) WHERE row_id=?";
+						pstmtChildren = conn.prepareStatement(sql);
+						pstmtChildren.setInt(1, child.getInt("groupId"));
+						int childPid = getPoiNumByPid(child.getString("childFid"),conn);
+						pstmtChildren.setInt(2, childPid);
+						pstmtChildren.setInt(3, child.getInt("relationType"));
+						pstmtChildren.setInt(4, 1);
+						pstmtChildren.setString(5, StringUtils.getCurrentTime());
+						pstmtChildren.setString(6, child.getString("rowId"));
+						pstmtParent.executeUpdate();
+					} else if (objStatus.equals("DELETE")) {
+						String sql = "UPDATE ix_poi_children SET (u_record=2) WHERE row_id=:1";
+						pstmtChildren = conn.prepareStatement(sql);
+						pstmtChildren.setString(1, child.getString("rowId"));
+						pstmtParent.executeUpdate();
+					}
+				}
+				
+			}
+			conn.commit();
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DBUtils.closeStatement(pstmtParent);
+			DBUtils.closeStatement(pstmtChildren);
+		}
+		
+		
+	}
+	
+	// 通过fid查询pid
+	private int getPoiNumByPid(String fid,Connection conn) throws Exception {
+		
+		String sql = "SELECT pid FROM ix_poi WHERE poi_num=:1";
+		
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+		
+		try {
+			pstmt = conn.prepareStatement(sql);
+			
+			pstmt.setString(1, fid);
+			
+			resultSet = pstmt.executeQuery();
+			
+			if (resultSet.next()) {
+				return resultSet.getInt("pid");
+			} else {
+				throw new Exception("未找到fid为"+fid+"的子poi");
+			}
+			
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+		}
+		
+	}
+	
+	private IxPoiParent getParentByPid(int pid,Connection conn) throws Exception {
+		String sql = "SELECT * FROM ix_poi_parent WHERE parent_poi_pid=:1";
+		
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+		
+		try {
+			pstmt = conn.prepareStatement(sql);
+			
+			pstmt.setInt(1, pid);
+			
+			resultSet = pstmt.executeQuery();
+			
+			if (resultSet.next()) {
+				IxPoiParent parent = new IxPoiParent();
+				parent.setPid(resultSet.getInt("group_id"));
+				parent.setParentPoiPid(resultSet.getInt("parent_poi_pid"));
+				parent.setTenantFlag(resultSet.getInt("tenant_flag"));
+				parent.setMemo(resultSet.getString("memo"));
+				parent.setuRecord(resultSet.getInt("u_record"));
+				parent.setuDate(resultSet.getString("u_date"));
+				parent.setRowId(resultSet.getString("row_id"));
+				return parent;
+			} else {
+				return null;
+			}
+			
+		} catch (Exception e) {
+			throw e;
+		} finally {
 			DBUtils.closeResultSet(resultSet);
 			DBUtils.closeStatement(pstmt);
 		}

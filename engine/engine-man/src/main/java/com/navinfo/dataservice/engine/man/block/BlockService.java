@@ -972,8 +972,8 @@ public class BlockService {
 				+ "   WHERE T.TASK_ID = TT.TASK_ID"
 				+ "     AND T.BLOCK_ID=B.BLOCK_ID"
 				+ "     AND T.LATEST = 1"
-				+ "     AND T.STATUS=1"
-				+ "     AND NOT EXISTS(SELECT 1 FROM SUBTASK ST WHERE ST.BLOCK_MAN_ID=T.BLOCK_MAN_ID AND ST."+stagePart+")"
+				//+ "     AND T.STATUS=1"
+				+ "     AND NOT EXISTS(SELECT 1 FROM SUBTASK STT WHERE STT.BLOCK_MAN_ID=T.BLOCK_MAN_ID AND STT."+stagePart+")"
 				+wherePart					
 				+ "     AND T.BLOCK_MAN_ID = S.BLOCK_MAN_ID(+)"
 				+ "  UNION ALL"

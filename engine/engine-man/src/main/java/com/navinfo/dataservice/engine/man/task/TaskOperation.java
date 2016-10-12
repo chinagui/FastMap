@@ -1304,7 +1304,7 @@ public class TaskOperation {
 					map.put("createUserName", rs.getString("CREATE_USER_NAME"));
 					map.put("monthEditGroupName", rs.getString("MONTH_EDIT_GROUP_NAME"));
 					map.put("taskStatus", rs.getInt("TASK_STATUS"));
-					map.put("cityPlanStatus", rs.getInt("PLAN_STATUS"));
+					map.put("upperPlanStatus", rs.getInt("PLAN_STATUS"));
 					map.put("percent", rs.getInt("PERCENT"));
 					map.put("version", version);
 					//map.put("ROWNUM_", rs.getInt("ROWNUM_"));

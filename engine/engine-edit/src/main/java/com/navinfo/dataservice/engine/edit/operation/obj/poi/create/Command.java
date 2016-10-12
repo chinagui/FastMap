@@ -129,8 +129,8 @@ public class Command extends AbstractCommand implements ICommand {
         } else {
             this.setYguide(0);
         }
-        if (data.containsKey("kind_code")) {
-            this.kindCode = data.getString("kind_code");
+        if (data.containsKey("kindCode")) {
+            this.kindCode = data.getString("kindCode");
         }
         if (data.containsKey("name")) {
             this.name = data.getString("name");

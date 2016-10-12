@@ -8,9 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -22,6 +19,9 @@ import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneVia;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.rd.laneconnexity.RdLaneConnexitySelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 public class Operation implements IOperation {
 
@@ -89,8 +89,10 @@ public class Operation implements IOperation {
 
 				JSONObject json = topos.getJSONObject(i);
 
+				int topoPid = 0;
+				
 				if (json.containsKey("objStatus")) {
-
+					
 					if (!ObjStatus.INSERT.toString().equals(
 							json.getString("objStatus"))) {
 
@@ -109,7 +111,6 @@ public class Operation implements IOperation {
 
 							result.insertObject(topo, ObjStatus.DELETE,
 									lane.pid());
-
 							continue;
 						} else if (ObjStatus.UPDATE.toString().equals(
 								json.getString("objStatus"))) {
@@ -132,12 +133,12 @@ public class Operation implements IOperation {
 						topo.setConnexityPid(lane.getPid());
 
 						topo.setMesh(lane.mesh());
+						
+						topoPid = topo.getPid();
 
 						result.insertObject(topo, ObjStatus.INSERT, lane.pid());
 
 						topoPids.add(topo.getPid());
-
-						continue;
 					}
 				}
 
@@ -182,9 +183,24 @@ public class Operation implements IOperation {
 							} else {
 								RdLaneVia via = new RdLaneVia();
 
-								via.Unserialize(viajson);
-
-								via.setTopologyId(json.getInt("pid"));
+								via.setSeqNum(viajson.getInt("seqNum"));
+								
+								via.setGroupId(viajson.getInt("groupId"));
+								
+								via.setLinkPid(viajson.getInt("linkPid"));
+								
+								if(viajson.containsKey("topologyId") && viajson.getInt("topologyId") !=0)
+								{
+									via.setTopologyId(viajson.getInt("topologyId"));
+								}
+								else if(json.containsKey("pid") && json.getInt("pid") !=0)
+								{
+									via.setTopologyId(json.getInt("pid"));
+								}
+								else
+								{
+									via.setTopologyId(topoPid);
+								}
 
 								via.setMesh(lane.mesh());
 

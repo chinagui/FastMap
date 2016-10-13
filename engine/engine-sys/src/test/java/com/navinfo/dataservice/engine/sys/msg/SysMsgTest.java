@@ -11,8 +11,8 @@ public class SysMsgTest {
 	@Test
 	public void sysMsgInsert(){
 		SysMsg sysMsg = new SysMsg();
-		sysMsg.setMsgTitle("测试26");
-		sysMsg.setMsgContent("测试26");
+		sysMsg.setMsgTitle("测试27");
+		sysMsg.setMsgContent("测试27");
 		sysMsg.setPushUserId(0L);
 		long[] targetUserIds = {2,1,1664};
 		try {

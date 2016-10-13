@@ -38,18 +38,16 @@ public class SysMsgWebSocketHandler extends TextWebSocketHandler {
 
 	@Override
 	public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-		System.out.println("===========================afterConnectionEstablished==================================");
 		log.info("connect to the websocket success......");
 		users.add(session);
 		String userId = (String) session.getAttributes().get("userId");
 		if (userId != null) {
 			// 查询未读消息
-			System.out.println("=============================查询未读消息=============================");
 			List<SysMsg> unreadMsg = SysMsgService.getInstance().getUnread(Long.parseLong(userId));
 			String sysMsg = JSONArray.fromObject(unreadMsg).toString();
 			session.sendMessage(new TextMessage(sysMsg));
-			System.out.println("================sendMessage==============sysMsg============================"+sysMsg);
 		}
+		
 	}
 
 	

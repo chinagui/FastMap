@@ -124,7 +124,6 @@ public class SysMsgService {
 	 * @throws ServiceException
 	 */
 	public void deleteMsg(long msgId,long userId)throws ServiceException{
-		System.out.println("msgId==================="+msgId);
 		Connection sysConn = null;
 		try{
 			QueryRunner queryRunner = new QueryRunner();
@@ -133,11 +132,9 @@ public class SysMsgService {
 			String sql = "SELECT COUNT(1) FROM SYS_MESSAGE_READ_LOG WHERE MSG_ID=? AND USER_ID=?";
 			Object[] params={msgId,userId};
 			long count = queryRunner.queryForLong(sysConn,sql,params);
-			System.out.println("count=========="+count);
 			//是否为已读
 			if(count > 0){
 				//已读消息
-				System.out.println("================已读消息");
 				//修改删除日志的状态为2
 				String updateDeleteLogSql = "UPDATE SYS_MESSAGE_READ_LOG SET MSG_STATUS= 2 WHERE MSG_ID=? AND USER_ID=?";
 				Object[] updateDeleteLogParams={msgId,userId};
@@ -145,7 +142,6 @@ public class SysMsgService {
 			}else{
 				//未读消息
 				//添加删除日志并且状态为2
-				System.out.println("==================添加删除日志并且状态为2");
 				String insertDeleteLogSql = "INSERT INTO SYS_MESSAGE_READ_LOG(MSG_ID,USER_ID,MSG_STATUS) VALUES(?,?,2)";
 				Object[] insertDeleteLogParams={msgId,userId};
 				queryRunner.update(sysConn, insertDeleteLogSql, insertDeleteLogParams);

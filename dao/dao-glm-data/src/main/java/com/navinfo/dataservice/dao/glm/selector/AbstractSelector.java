@@ -57,8 +57,13 @@ public class AbstractSelector implements ISelector {
 	@Override
 	public IRow loadById(int id, boolean isLock, boolean... noChild) throws Exception {
 		this.row = (IRow) cls.newInstance();
-		StringBuilder sb = new StringBuilder(
-				"select * from " + row.tableName() + " where " + ((IObj) row).primaryKey() + " = :1 and u_record !=2");
+		String sql=	null;
+		if ("IX_POI".equals(row.tableName())){
+			sql="select * from " + row.tableName() + " where " + ((IObj) row).primaryKey() + " = :1 ";
+		}else{
+			sql="select * from " + row.tableName() + " where " + ((IObj) row).primaryKey() + " = :1 and u_record !=2";
+		}
+		StringBuilder sb = new StringBuilder(sql);
 
 		if (isLock) {
 			sb.append(" for update nowait");

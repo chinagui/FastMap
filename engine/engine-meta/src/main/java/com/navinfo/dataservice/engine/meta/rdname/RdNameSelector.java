@@ -273,22 +273,25 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips,int dbId) throws
 				}
 			}
 			
-			sql.append(" ORDER BY a.NAME_GROUPID,a.NAME_ID");
+			
 			
 			// 添加排序条件
 			if (sortby.length()>0) {
 				int index = sortby.indexOf("-");
 				if (index != -1) {
+					sql.append(" ORDER BY a.NAME_GROUPID DESC,a.NAME_ID DESC");
 					String sortbyName = sUtils.toColumnName(sortby.substring(1));
 					sql.append(" , a.");
 					sql.append(sortbyName);
 					sql.append(" DESC");
 				} else {
+					sql.append(" ORDER BY a.NAME_GROUPID,a.NAME_ID");
 					String sortbyName = sUtils.toColumnName(sortby.substring(1));
 					sql.append(" , a.");
 					sql.append(sortbyName);
-					sql.append(" ASC");
 				}
+			} else {
+				sql.append(" ORDER BY a.NAME_GROUPID DESC,a.NAME_ID DESC");
 			}
 			
 			sql.append(" ) c");

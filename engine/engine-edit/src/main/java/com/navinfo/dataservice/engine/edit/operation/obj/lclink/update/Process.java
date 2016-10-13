@@ -17,14 +17,6 @@ public class Process extends AbstractProcess<Command> {
 		super(command);
 	}
 
-	public Process(Command command, Result result, Connection conn) throws Exception {
-		super(command);
-		this.setCommand(command);
-		this.setResult(result);
-		this.setConn(conn);
-
-	}
-
 	@Override
 	public String exeOperation() throws Exception {
 		return new Operation(this.getCommand(), this.updateLink).run(this.getResult());

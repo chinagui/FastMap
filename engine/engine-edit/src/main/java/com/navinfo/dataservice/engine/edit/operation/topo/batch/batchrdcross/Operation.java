@@ -34,8 +34,8 @@ public class Operation implements IOperation {
     @Override
     public String run(Result result) throws Exception {
         RdCross cross = command.getRdCross();
-        this.updateRdCrossNode(cross, result);
         this.updateRdCrossLink(cross, result);
+        this.updateRdCrossNode(cross, result);
         return null;
     }
 
@@ -57,7 +57,7 @@ public class Operation implements IOperation {
         for (IRow row : cross.getNodes()) {
             RdCrossNode node = (RdCrossNode) row;
             if (newPids.contains(node.getNodePid())) {
-                newPids.remove(node.getNodePid());
+                newPids.remove((Object) node.getNodePid());
             } else {
                 if (!isMain && 1 == node.getIsMain())
                     isMain = true;

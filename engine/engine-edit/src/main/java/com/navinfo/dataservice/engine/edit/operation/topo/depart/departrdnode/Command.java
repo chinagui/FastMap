@@ -76,8 +76,12 @@ public class Command extends AbstractCommand {
 		JSONObject data = json.getJSONObject("data");
 		this.catchNodePid = data.getInt("catchNodePid");
 		this.setLinkPid(data.getInt("linkPid"));
-		this.setPoint((Point) GeoTranslator.point2Jts(
-				data.getDouble("longitude"), data.getDouble("latitude")));
+		if(data.containsKey("longitude")&&data.containsKey("longitude")){
+			this.setPoint((Point) GeoTranslator.point2Jts(
+					data.getDouble("longitude"), data.getDouble("latitude")));
+		}
+		
+		
 
 	}
 

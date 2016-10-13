@@ -161,7 +161,7 @@ public class RegionService {
 		try{
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
-			String selectSql = "SELECT DAILY_DB_ID FROM REGION R, CITY C WHERE R.REGION_ID=C.REGION AND C.ADMIN_ID=?";
+			String selectSql = "SELECT DAILY_DB_ID FROM REGION R, CITY C WHERE R.REGION_ID=C.REGION_ID AND C.ADMIN_ID=?";
 			
 			ResultSetHandler<Integer> rsHandler = new ResultSetHandler<Integer>() {
 				public Integer handle(ResultSet rs) throws SQLException {

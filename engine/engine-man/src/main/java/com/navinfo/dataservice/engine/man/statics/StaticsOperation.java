@@ -576,6 +576,281 @@ public class StaticsOperation {
 		}
 	}
 
+	/**
+	 * @param conn
+	 * @param taskId
+	 * @return
+	 * @throws Exception 
+	 */
+	public static Map<String, Object> queryBlockOverViewByTask(Connection conn, int taskId) throws Exception {
+		// TODO Auto-generated method stub
+		try {
+			QueryRunner run = new QueryRunner();
+			
+			String selectSql = "SELECT BM.BLOCK_MAN_ID, BM.STATUS"
+					+ ", FSOB.DIFF_DATE, FSOB.PROGRESS, FSOB.PERCENT"
+					+ ", FSOB.COLLECT_PROGRESS, FSOB.COLLECT_PERCENT, FSOB.COLLECT_DIFF_DATE"
+					+ ", FSOB.DAILY_PROGRESS, FSOB.DAILY_PERCENT, FSOB.DAILY_DIFF_DATE"
+					+ ", listagg(S.SUBTASK_ID, ',') within GROUP(order by BM.BLOCK_MAN_ID) over(partition by BM.BLOCK_MAN_ID) SUBTASK_ID_LIST"
+					+ ", listagg(S.STATUS, ',') within GROUP(order by BM.BLOCK_MAN_ID) over(partition by BM.BLOCK_MAN_ID) SUBTASK_STATUS_LIST"
+					+ " FROM BLOCK_MAN BM, SUBTASK S, FM_STAT_OVERVIEW_BLOCKMAN FSOB"
+					+ " WHERE BM.LATEST = 1"
+					+ " AND S.BLOCK_MAN_ID(+) = BM.BLOCK_MAN_ID"
+					+ " AND FSOB.BLOCK_MAN_ID(+) = BM.BLOCK_MAN_ID"
+					+ " AND BM.TASK_ID = " + taskId;
+
+			ResultSetHandler<Map<String,Object>> rsHandler = new ResultSetHandler<Map<String,Object>>() {
+				public Map<String,Object> handle(ResultSet rs) throws SQLException {
+					Map<String,Object> result = new HashMap<String,Object>();
+					
+					int draft = 0;
+					int closed = 0;
+					int ongoing = 0;
+					int finished = 0;
+					
+					int finishedRegular = 0;
+					int finishedAdvanced = 0;
+					int finishedOverdue = 0;
+					
+					int finishedOverdueCollect = 0;
+					int finishedOverdueDaily = 0;
+
+					while (rs.next()) {
+						String subtaskIdList = rs.getString("SUBTASK_ID_LIST");
+						String subtaskStatusList = rs.getString("SUBTASK_STATUS_LIST");
+						
+						if(2 == rs.getInt("STATUS")){
+							draft += 1;
+						}else if(0 == rs.getInt("STATUS")){
+							closed += 1;
+							if(0 == rs.getInt("DIFF_DATE")){
+								finishedRegular += 1;
+							}else if(0 > rs.getInt("DIFF_DATE")){
+								finishedOverdue += 1;
+							}else if(0 < rs.getInt("DIFF_DATE")){
+								finishedAdvanced += 1;
+							}
+							
+							if(0 > rs.getInt("COLLECT_DIFF_DATE")){
+								finishedOverdueCollect += 1;
+							}
+							if(0 > rs.getInt("DAILY_DIFF_DATE")){
+								finishedOverdueDaily += 1;
+							}
+						}else{
+							if((null==subtaskIdList)||(0 < subtaskStatusList.indexOf("1"))||(0 < subtaskStatusList.indexOf("2"))){
+								ongoing += 1;
+							}else{
+								finished += 1;
+							}
+						}
+					}
+					
+					result.put("draft", draft);
+					result.put("ongoing", ongoing);
+					result.put("finished", finished);
+					result.put("closed", closed);
+					result.put("total", draft + ongoing + finished + closed);
+
+					result.put("finishedRegular", finishedRegular);
+					result.put("finishedAdvanced", finishedAdvanced);
+					result.put("finishedOverdue", finishedOverdue);
+					
+					result.put("finishedOverdueCollect", finishedOverdueCollect);
+					result.put("finishedOverdueDaily", finishedOverdueDaily);
+
+					return result;
+				}
+	
+			};
+
+			return run.query(conn, selectSql,rsHandler);
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询grid失败:" + e.getMessage(), e);
+		}
+	}
+
+	/**
+	 * @param conn
+	 * @param taskId
+	 * @return
+	 * @throws Exception 
+	 */
+	public static Map<String, Object> queryBlockOverViewByTaskCollect(Connection conn, int taskId) throws Exception {
+		// TODO Auto-generated method stub
+		try {
+			QueryRunner run = new QueryRunner();
+			
+			String selectSql = "SELECT BM.BLOCK_MAN_ID, BM.STATUS"
+					+ ", FSOB.DIFF_DATE, FSOB.PROGRESS, FSOB.PERCENT"
+					+ ", FSOB.COLLECT_PROGRESS, FSOB.COLLECT_PERCENT, FSOB.COLLECT_DIFF_DATE"
+					+ ", FSOB.DAILY_PROGRESS, FSOB.DAILY_PERCENT, FSOB.DAILY_DIFF_DATE"
+					+ ", listagg(S.SUBTASK_ID, ',') within GROUP(order by BM.BLOCK_MAN_ID) over(partition by BM.BLOCK_MAN_ID) SUBTASK_ID_LIST"
+					+ ", listagg(S.STATUS, ',') within GROUP(order by BM.BLOCK_MAN_ID) over(partition by BM.BLOCK_MAN_ID) SUBTASK_STATUS_LIST"
+					+ " FROM BLOCK_MAN BM, SUBTASK S, FM_STAT_OVERVIEW_BLOCKMAN FSOB"
+					+ " WHERE BM.LATEST = 1"
+					+ " AND S.STAGE = 0"
+					+ " AND BM.STATUS = 1"
+					+ " AND S.BLOCK_MAN_ID = BM.BLOCK_MAN_ID"
+					+ " AND FSOB.BLOCK_MAN_ID(+) = BM.BLOCK_MAN_ID"
+					+ " AND BM.TASK_ID = " + taskId;
+
+			ResultSetHandler<Map<String,Object>> rsHandler = new ResultSetHandler<Map<String,Object>>() {
+				public Map<String,Object> handle(ResultSet rs) throws SQLException {
+					Map<String,Object> result = new HashMap<String,Object>();
+
+					int ongoing = 0;
+					int finished = 0;
+					
+					int ongoingUnexpected = 0;
+					int ongoingRegular = 0;
+
+					while (rs.next()) {
+						String subtaskIdList = rs.getString("SUBTASK_ID_LIST");
+						String subtaskStatusList = rs.getString("SUBTASK_STATUS_LIST");
+						
+						if(null!=subtaskIdList){
+							if(0 < subtaskStatusList.indexOf("1")){
+								ongoing += 1;
+								if(2 == rs.getInt("COLLECT_PROGRESS")){
+									ongoingUnexpected += 1;
+								}else{
+									ongoingRegular += 1;
+								}
+							}else if((-1==subtaskStatusList.indexOf("1")) && (-1==subtaskStatusList.indexOf("1"))){
+								finished += 1;
+							}
+								
+						}
+					}
+					
+					result.put("ongoing", ongoing);
+					result.put("finished", finished);
+					result.put("ongoingUnexpected", ongoingUnexpected);
+					result.put("ongoingRegular", ongoingRegular);
+					
+					return result;
+				}
+	
+			};
+
+			return run.query(conn, selectSql,rsHandler);
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询grid失败:" + e.getMessage(), e);
+		}
+	}
+
+	/**
+	 * @param conn
+	 * @param taskId
+	 * @return
+	 * @throws Exception 
+	 */
+	public static Map<String, Object> queryBlockOverViewByTaskDaily(Connection conn, int taskId) throws Exception {
+		// TODO Auto-generated method stub
+		try {
+			QueryRunner run = new QueryRunner();
+			
+			String selectSql = "SELECT BM.BLOCK_MAN_ID, BM.STATUS"
+					+ ", FSOB.DIFF_DATE, FSOB.PROGRESS, FSOB.PERCENT"
+					+ ", FSOB.COLLECT_PROGRESS, FSOB.COLLECT_PERCENT, FSOB.COLLECT_DIFF_DATE"
+					+ ", FSOB.DAILY_PROGRESS, FSOB.DAILY_PERCENT, FSOB.DAILY_DIFF_DATE"
+					+ ", listagg(S.SUBTASK_ID, ',') within GROUP(order by BM.BLOCK_MAN_ID) over(partition by BM.BLOCK_MAN_ID) SUBTASK_ID_LIST"
+					+ ", listagg(S.STATUS, ',') within GROUP(order by BM.BLOCK_MAN_ID) over(partition by BM.BLOCK_MAN_ID) SUBTASK_STATUS_LIST"
+					+ " FROM BLOCK_MAN BM, SUBTASK S, FM_STAT_OVERVIEW_BLOCKMAN FSOB"
+					+ " WHERE BM.LATEST = 1"
+					+ " AND S.STAGE = 1"
+					+ " AND BM.STATUS = 1"
+					+ " AND S.BLOCK_MAN_ID = BM.BLOCK_MAN_ID"
+					+ " AND FSOB.BLOCK_MAN_ID(+) = BM.BLOCK_MAN_ID"
+					+ " AND BM.TASK_ID = " + taskId;
+
+			ResultSetHandler<Map<String,Object>> rsHandler = new ResultSetHandler<Map<String,Object>>() {
+				public Map<String,Object> handle(ResultSet rs) throws SQLException {
+					Map<String,Object> result = new HashMap<String,Object>();
+
+					int ongoing = 0;
+					int finished = 0;
+					
+					int ongoingUnexpected = 0;
+					int ongoingRegular = 0;
+
+					while (rs.next()) {
+						String subtaskIdList = rs.getString("SUBTASK_ID_LIST");
+						String subtaskStatusList = rs.getString("SUBTASK_STATUS_LIST");
+						
+						if(null!=subtaskIdList){
+							if(0 < subtaskStatusList.indexOf("1")){
+								ongoing += 1;
+								if(2 == rs.getInt("DAILY_PROGRESS")){
+									ongoingUnexpected += 1;
+								}else{
+									ongoingRegular += 1;
+								}
+							}else if((-1==subtaskStatusList.indexOf("1")) && (-1==subtaskStatusList.indexOf("1"))){
+								finished += 1;
+							}
+								
+						}
+					}
+					
+					result.put("ongoing", ongoing);
+					result.put("finished", finished);
+					result.put("ongoingUnexpected", ongoingUnexpected);
+					result.put("ongoingRegular", ongoingRegular);
+					
+					return result;
+				}
+	
+			};
+
+			return run.query(conn, selectSql,rsHandler);
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询grid失败:" + e.getMessage(), e);
+		}
+	}
+
+	/**
+	 * @param conn
+	 * @param taskId
+	 * @return
+	 * @throws Exception 
+	 */
+	public static int queryBlockOverViewByTaskUnplanned(Connection conn, int taskId) throws Exception {
+		// TODO Auto-generated method stub
+		try {
+			QueryRunner run = new QueryRunner();
+			
+			String selectSql = "SELECT COUNT(1) AS NUM FROM TASK T ,BLOCK B"
+					+ " WHERE T.CITY_ID = B.CITY_ID"
+					+ " AND B.PLAN_STATUS = 0"
+					+ " AND T.TASK_ID = " + taskId;;
+
+			ResultSetHandler<Integer> rsHandler = new ResultSetHandler<Integer>() {
+				public Integer handle(ResultSet rs) throws SQLException {
+					int num = 0;
+					if (rs.next()) {
+						num = rs.getInt("NUM");
+					}
+					return num;
+				}
+	
+			};
+
+			return run.query(conn, selectSql,rsHandler);
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询grid失败:" + e.getMessage(), e);
+		}
+	}
+
 
 	
 }

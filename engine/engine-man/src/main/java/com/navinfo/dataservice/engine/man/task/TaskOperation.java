@@ -702,7 +702,7 @@ public class TaskOperation {
 					+ " FINAL_TABLE AS"
 					+ " (SELECT *"
 					+ "    FROM TASK_LIST"
-					+ "    WHERE 1==1"
+					+ "    WHERE 1=1"
 					+  conditionSql
 					+ "   ORDER BY TASK_LIST.DIFF_DATE ASC,TASK_LIST.PERCENT DESC)"
 					+ " SELECT /*+FIRST_ROWS ORDERED*/"
@@ -911,7 +911,7 @@ public class TaskOperation {
 					map.put("taskId", rs.getInt("TASK_ID"));
 					map.put("taskName", rs.getString("TASK_NAME"));
 					if(rs.getInt("TASK_TYPE")==1){
-						map.put("cityId", rs.getString("CITY_ID"));
+						map.put("cityId", rs.getInt("CITY_ID"));
 						map.put("cityName", rs.getString("CITY_NAME"));
 						map.put("cityPlanStatus", rs.getInt("CITY_PLAN_STATUS"));}
 					else if(rs.getInt("TASK_TYPE")==4){
@@ -950,7 +950,7 @@ public class TaskOperation {
 					map.put("taskId", rs.getInt("TASK_ID"));
 					map.put("taskName", rs.getString("TASK_NAME"));
 					if(rs.getInt("TASK_TYPE")==1){
-						map.put("cityId", rs.getString("CITY_ID"));
+						map.put("cityId", rs.getInt("CITY_ID"));
 						map.put("cityName", rs.getString("CITY_NAME"));
 						map.put("cityPlanStatus", rs.getInt("PLAN_STATUS"));}
 					else if(rs.getInt("TASK_TYPE")==4){

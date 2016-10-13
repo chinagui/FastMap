@@ -178,7 +178,7 @@ public class KindCodeSelector {
 
 		sb.append(" WHERE t.class_code=? AND t.sub_class_code=? ");
 		
-		sb.append(" AND t.kg_des<>'GD' ");
+		sb.append(" AND t.kg_des<>'GD' AND t.kind_use<>2 ");
 
 		if (region == 0) {
 			sb.append(" and (t.mhm_des='DHM' or t.mhm_des='D') ");
@@ -248,7 +248,7 @@ public class KindCodeSelector {
 
 		sb.append(" from SC_POINT_POICODE_NEW t  ");
 		
-		sb.append(" where t.kg_des<>'GD'  and type<>2 ");
+		sb.append(" where t.kg_des<>'GD'  and t.kind_use<>2 ");
 		
 		if (region == 0) {
 			sb.append(" and (t.mhm_des='DHM' or t.mhm_des='D') ");
@@ -357,9 +357,9 @@ public class KindCodeSelector {
 	
 	public JSONObject getKindCodeMap() throws Exception {
 		
-		String sql = "select distinct kind_code,kind_name from SC_POINT_POICODE_NEW ";
+		String sql = "select distinct t.kind_code,t.kind_name from SC_POINT_POICODE_NEW t";
 		
-		sql +=" where  t.kg_des<>'GD' ";
+		sql +=" where  t.kg_des<>'GD' and t.kind_use<>2 ";
 		
 		ResultSet resultSet = null;
 		

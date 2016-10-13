@@ -36,6 +36,7 @@ public class IxSamepoiPartSelector extends AbstractSelector {
         PreparedStatement pstmt = null;
         ResultSet resultSet = null;
         try {
+            pstmt = getConn().prepareStatement(sql);
             pstmt.setInt(1, poiPid);
             resultSet = pstmt.executeQuery();
             while (resultSet.next()) {

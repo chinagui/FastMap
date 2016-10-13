@@ -924,7 +924,7 @@ public class TaskOperation {
 					map.put("taskDescp", rs.getString("TASK_DESCP"));
 					
 					if(rs.getInt("TASK_TYPE")==1){
-						map.put("cityId", rs.getString("CITY_ID"));
+						map.put("cityId", rs.getInt("CITY_ID"));
 						map.put("cityName", rs.getString("CITY_NAME"));
 						map.put("cityPlanStatus", rs.getInt("CITY_PLAN_STATUS"));}
 					else if(rs.getInt("TASK_TYPE")==4){
@@ -964,7 +964,7 @@ public class TaskOperation {
 					map.put("taskId", rs.getInt("TASK_ID"));
 					map.put("taskName", rs.getString("TASK_NAME"));
 					if(rs.getInt("TASK_TYPE")==1){
-						map.put("cityId", rs.getString("CITY_ID"));
+						map.put("cityId", rs.getInt("CITY_ID"));
 						map.put("cityName", rs.getString("CITY_NAME"));
 						map.put("cityPlanStatus", rs.getInt("PLAN_STATUS"));}
 					else if(rs.getInt("TASK_TYPE")==4){

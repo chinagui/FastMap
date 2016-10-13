@@ -828,7 +828,7 @@ public class BlockService {
 				+ "                  T.COLLECT_GROUP_ID,"
 				+ "                  S.COLLECT_PERCENT,"
 				+ "                  S.COLLECT_DIFF_DATE,"
-				+ "                  S.COLLECT_PROGRESS,"				
+				+ "                  S.COLLECT_PROGRESS,"
 				/*+ "                  CASE NVL(ST.STAGE, 999)"
 				+ "                    WHEN 0 THEN 1"
 				+ "                    ELSE 0 END COLLECT_ASSIGN_STATUS,"*/
@@ -864,6 +864,7 @@ public class BlockService {
 				+ "     AND T.BLOCK_MAN_ID = S.BLOCK_MAN_ID(+)"
 				+ "     AND T.TASK_ID = TP.TASK_ID(+)"
 				//+ "     AND T.BLOCK_MAN_ID = ST.BLOCK_MAN_ID(+)"
+				+ "     AND TT.LATEST = 1"
 				+ "  UNION ALL"
 				+ "  SELECT DISTINCT 0,"
 				+ "                  '---',"

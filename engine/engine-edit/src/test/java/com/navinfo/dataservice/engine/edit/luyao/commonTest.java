@@ -594,5 +594,14 @@ public class commonTest extends InitApplication {
 		String msg = t.run();
 	}
 
+	@Test
+	public void run_1013_1() throws Exception {
+
+		String parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"dbId\":17,\"distance\":\"6.6\",\"data\":{\"linkPids\":[301000549,309000554]}}";
+
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
 	
 }

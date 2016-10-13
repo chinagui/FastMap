@@ -149,6 +149,9 @@ public class Operation implements IOperation {
 		int currentPid = 0;
 		Set<Boolean> flagBooleans =new HashSet<Boolean>();
 		for(int i =0;i < command.getLinkPids().size() -1 ;i++){
+			if(flagBooleans.size() > 0){
+				flagBooleans.clear();
+			}
 			RdLink currentLink = command.getLinks().get(i);
 			RdLink nextLink = command.getLinks().get(i+1);
 			currentPid = this.getIntersectPid(currentLink, nextLink);

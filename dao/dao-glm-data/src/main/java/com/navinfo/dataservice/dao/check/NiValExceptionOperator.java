@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
+
 import oracle.spatial.geometry.JGeometry;
 
 import com.navinfo.dataservice.bizcommons.glm.Glm;
@@ -28,6 +30,7 @@ import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeSelector;
 import com.navinfo.dataservice.dao.log.LogWriter;
 import com.navinfo.dataservice.dao.pool.OracleAddress;
+import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.geo.computation.CompGridUtil;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
@@ -40,7 +43,7 @@ public class NiValExceptionOperator {
 	private Map<String, Geometry> geometryMap=new HashMap<String, Geometry>();
 	private Map<String, Integer> meshMap=new HashMap<String, Integer>();
 	private CkObjectNodeLoader objectNodeLoader=CkObjectNodeLoader.getInstance();
-
+	private static Logger logg = Logger.getLogger(NiValExceptionOperator.class);
 	public NiValExceptionOperator() {
 
 	}
@@ -138,12 +141,13 @@ public class NiValExceptionOperator {
 
 	public void insertCheckLog(String ruleId, String loc, String targets,
 			int meshId, String worker) throws Exception {
+		logg.debug("start insert ni_val:1");
 		if(loc==null||loc.isEmpty()){
 			List<Object> list=calGeoAndMeshWithTarget(targets);
 			loc = GeoTranslator.jts2Wkt((Geometry) list.get(0), 0.00001, 5);
 			meshId = (int) list.get(1);
 		}
-
+		logg.debug("start insert ni_val:2");
 		String sql = "merge into ni_val_exception a using ( select * from ( select :1 as MD5_CODE from dual) where MD5_CODE not in ( select MD5_CODE          from ni_val_exception          where MD5_CODE is not null        union all        select RESERVED as MDS_CODE          from ck_exception          where RESERVED is not null          )) b on (a.MD5_CODE = b.MD5_CODE) when not matched then   insert     (MD5_CODE, ruleid, information, location, targets, mesh_id, worker, \"LEVEL\", created, updated )   values     (:2, :3, :4, sdo_geometry(:5, 8307), :6, :7, :8, :9, sysdate, sysdate)";
 		PreparedStatement pstmt = conn.prepareStatement(sql);
 
@@ -171,13 +175,17 @@ public class NiValExceptionOperator {
 
 			int res = pstmt.executeUpdate();
 
+			logg.debug("start insert ni_val:3");
+
 			if (res > 0) {
 
 				CkResultObjectOperator op = new CkResultObjectOperator(conn);
 
 				op.insertCkResultObject(md5, targets);
+				logg.debug("start insert ni_val:3-1");
 
 				this.insertCheckLogGrid(md5, loc);
+				logg.debug("start insert ni_val:3-2");
 			}
 
 		} catch (Exception e) {
@@ -193,46 +201,57 @@ public class NiValExceptionOperator {
 
 	public void insertCheckLog(String ruleId, String loc, String targets,
 			int meshId, String log, String worker) throws Exception {
-		
+		logg.debug("start insert ni_val:1");
 		if(loc==null||loc.isEmpty()){
 			List<Object> list=calGeoAndMeshWithTarget(targets);
 			loc = GeoTranslator.jts2Wkt((Geometry) list.get(0), 0.00001, 5);
 			meshId = (int) list.get(1);
 		}
-
-		String sql = "merge into ni_val_exception a using ( select * from ( select :1 as MD5_CODE from dual) where MD5_CODE not in ( select MD5_CODE          from ni_val_exception          where MD5_CODE is not null        union all        select reserved as MD5_CODE          from ck_exception          where reserved is not null          )) b on (a.MD5_CODE = b.MD5_CODE) when not matched then   insert     (MD5_CODE, ruleid, information, location, targets, mesh_id, worker, \"LEVEL\", created, updated )   values     (:2, :3, :4, sdo_geometry(:5, 8307), :6, :7, :8, :9, sysdate, sysdate)";
+		logg.debug("start insert ni_val:2");
+		String md5Sql = "WITH A AS (SELECT LOWER(UTL_RAW.CAST_TO_RAW(DBMS_OBFUSCATION_TOOLKIT.MD5(INPUT_STRING =>?||?||?||?))) AS MD5_CODE FROM DUAL)"
+		+"SELECT N.MD5_CODE FROM NI_VAL_EXCEPTION N,A WHERE N.MD5_CODE=A.MD5_CODE UNION SELECT C.Md5_Code FROM CK_EXCEPTION C,A WHERE C.MD5_CODE=A.MD5_CODE";
+//		String md5 = this.generateMd5(ruleId, log, targets, null);
+//		String sql = "merge into ni_val_exception a using (select :1 as MD5_CODE from dual) b on (a.MD5_CODE = b.MD5_CODE) when not matched then   insert (MD5_CODE, ruleid, information, location, targets, mesh_id, worker, \"LEVEL\", created, updated )   values     (:2, :3, :4, sdo_geometry(:5, 8307), :6, :7, :8, :9, sysdate, sysdate)";
+		logg.debug("start insert ni_val:2-1");
+//		String cSql = "SELECT 1 FROM NI_VAL_EXCEPTION WHERE MD5_CODE=? UNION SELECT 1 FROM CK_EXCEPTION WHERE MD5_CODE=?";
+		String md5 = new QueryRunner().queryForString(conn, md5Sql, ruleId,log,targets,"null");
+		
+		if(StringUtils.isEmpty(md5))return;
+		logg.debug("start insert ni_val:2-2");
+		String sql = "insert into ni_val_exception(MD5_CODE, ruleid, information, location, targets, mesh_id, worker, \"LEVEL\", created, updated )   values     (:2, :3, :4, sdo_geometry(:5, 8307), :6, :7, :8, :9, sysdate, sysdate)";
 		PreparedStatement pstmt = conn.prepareStatement(sql);
-
+		logg.debug("start insert ni_val:2-3");
 		try {
-			String md5 = this.generateMd5(ruleId, log, targets, null);
-
+			logg.debug("start insert ni_val:2-4");
 			pstmt.setString(1, md5);
+			logg.debug("start insert ni_val:2-5");
+			pstmt.setString(2, ruleId);
+			logg.debug("start insert ni_val:2-6");
+			pstmt.setString(3, log);
+			logg.debug("start insert ni_val:2-7");
 
-			pstmt.setString(2, md5);
-
-			pstmt.setString(3, ruleId);
-
-			pstmt.setString(4, log);
-
-			pstmt.setString(5, loc);
-
-			pstmt.setString(6, targets);
-
-			pstmt.setInt(7, meshId);
-
-			pstmt.setString(8, worker);
-
-			pstmt.setInt(9, 1);
-
+			pstmt.setString(4, loc);
+			logg.debug("start insert ni_val:2-8");
+			pstmt.setString(5, targets);
+			logg.debug("start insert ni_val:2-9");
+			pstmt.setInt(6, meshId);
+			logg.debug("start insert ni_val:2-10");
+			pstmt.setString(7, worker);
+			logg.debug("start insert ni_val:2-11");
+			pstmt.setInt(8, 1);
+			logg.debug("start insert ni_val:2-12");
 			int res = pstmt.executeUpdate();
+			logg.debug("start insert ni_val:3");
 
 			if (res > 0) {
 
 				CkResultObjectOperator op = new CkResultObjectOperator(conn);
 
 				op.insertCkResultObject(md5, targets);
+				logg.debug("start insert ni_val:3-1");
 				
 				this.insertCheckLogGrid(md5, loc);
+				logg.debug("start insert ni_val:3-2");
 			}
 
 		} catch (Exception e) {

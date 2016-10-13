@@ -1,8 +1,11 @@
 package com.navinfo.dataservice.engine.edit.operation.topo.depart.updowndepartlink;
 
 import java.sql.Connection;
+import java.util.List;
+import java.util.Map;
 
 import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.engine.edit.operation.obj.rdcross.depart.*;
 import com.navinfo.dataservice.engine.edit.operation.obj.rdcross.depart.Operation;
 
@@ -25,6 +28,22 @@ public class OpRefRelationObj {
     public String handleSameNode(Command command, Result result) throws Exception {
         com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.delete.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.delete.Operation(conn);
         operation.deleteByUpDownPartLink(command.getsNode().getPid(), command.geteNode().getPid(), command.getLinks(), result);
+        return "";
+    }
+    
+	// 车信
+	public String handleLaneConnexity(Command command, Result result) throws Exception {
+
+		int preNodePid = command.getsNode().getPid();
+
+		int lastNodePid = command.geteNode().getPid();
+
+		com.navinfo.dataservice.engine.edit.operation.obj.rdlaneconnexity.depart.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdlaneconnexity.depart.Operation(
+				conn, preNodePid, lastNodePid, command.getNoTargetLinks(),
+				command.getLinks());
+
+		operation.upDownPart(command.getLeftLinkMapping(),
+				command.getRightLinkMapping(), result);
         return "";
     }
 

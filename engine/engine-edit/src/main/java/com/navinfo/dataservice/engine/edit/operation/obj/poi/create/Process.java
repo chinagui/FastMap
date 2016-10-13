@@ -15,15 +15,6 @@ public class Process extends  AbstractProcess<Command> implements IProcess {
 	public Process(AbstractCommand command) throws Exception {
 		super(command);
 	}
-	
-	/**
-	 * @param command
-	 * @throws Exception
-	 */
-	public Process(AbstractCommand command,Connection conn) throws Exception {
-		super(command);
-		this.setConn(conn);
-	}
 
 	@Override
 	public String exeOperation() throws Exception {

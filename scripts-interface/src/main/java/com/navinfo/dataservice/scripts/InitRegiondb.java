@@ -245,7 +245,7 @@ public class InitRegiondb {
 	}
 	private static void maintainInfoBlock(Connection conn,int regionId)throws Exception{
 		QueryRunner run = new QueryRunner();
-		String sql = "INSERT INTO BLOCK (BLOCK_ID,CITY_ID,GEOMETRY,PLAN_STATUS,REGION_ID) VALUES (BLOCK_SEQ.NEXTVAL,100002,NULL,?)";
+		String sql = "INSERT INTO BLOCK (BLOCK_ID,CITY_ID,GEOMETRY,PLAN_STATUS,REGION_ID) VALUES (BLOCK_SEQ.NEXTVAL,100002,NULL,0,?)";
 		run.update(conn, sql, regionId);
 		String sql2 = "INSERT INTO BLOCK_GRID_MAPPING (GRID_ID,BLOCK_ID) SELECT G.GRID_ID,B.BLOCK_ID FROM BLOCK B,GRID G WHERE B.REGION_ID=G.REGION_ID AND B.CITY_ID=100002 AND B.REGION_ID=?";
 		run.update(conn, sql2,regionId);

@@ -19,11 +19,7 @@ public class Process extends AbstractProcess<Command> {
 	}
 
 	public Process(Command command, Result result, Connection conn) throws Exception {
-		super();
-		this.setCommand(command);
-		this.setResult(result);
-		this.setConn(conn);
-		this.initCheckCommand();
+		super(command,result,conn);
 	}
 	
 	@Override

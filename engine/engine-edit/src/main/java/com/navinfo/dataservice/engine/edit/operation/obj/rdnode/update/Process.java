@@ -15,13 +15,8 @@ public class Process extends AbstractProcess<Command> {
 		super(command);
 	}
 
-	public Process(Command command, Result result, Connection conn)
-			throws Exception {
-		super(command);
-		// this.setCommand(command);
-		this.setResult(result);
-		this.setConn(conn);
-
+	public Process(Command command, Result result, Connection conn) throws Exception {
+		super(command, result, conn);
 	}
 
 	private RdNode rdnode;
@@ -35,8 +30,7 @@ public class Process extends AbstractProcess<Command> {
 
 		RdNodeSelector selector = new RdNodeSelector(this.getConn());
 
-		this.rdnode = (RdNode) selector.loadById(this.getCommand().getPid(),
-				true);
+		this.rdnode = (RdNode) selector.loadById(this.getCommand().getPid(), true);
 
 		return true;
 	}
@@ -70,8 +64,7 @@ public class Process extends AbstractProcess<Command> {
 
 	@Override
 	public String exeOperation() throws Exception {
-		return new Operation(this.getCommand(), this.rdnode).run(this
-				.getResult());
+		return new Operation(this.getCommand(), this.rdnode).run(this.getResult());
 	}
 
 }

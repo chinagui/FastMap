@@ -54,7 +54,25 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 	public AbstractProcess() {
 		this.log = LoggerRepos.getLogger(this.log);
 	}
-
+	
+	public AbstractProcess(AbstractCommand command,Result result,Connection conn) throws Exception {
+		this.command = (T) command;
+		if(conn != null)
+		{
+			this.conn = conn;
+		}
+		if(result != null)
+		{
+			this.result =result;
+		}
+		else
+		{
+			result = new Result();
+		}
+		// 初始化检查参数
+		this.initCheckCommand();
+	}
+	
 	public AbstractProcess(AbstractCommand command) throws Exception {
 		this.command = (T) command;
 		this.result = new Result();

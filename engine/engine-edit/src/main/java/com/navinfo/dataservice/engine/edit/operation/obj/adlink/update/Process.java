@@ -37,14 +37,6 @@ public class Process extends AbstractProcess<Command> {
 //				.getProjectId());
 
 	}
-	public Process(Command command,Result result,Connection conn) throws Exception {
-		super(command);
-		this.setCommand(command);
-		this.setResult(result);
-		this.setConn(conn);
-
-	}
-
 	
 	@Override
 	public String exeOperation() throws Exception {

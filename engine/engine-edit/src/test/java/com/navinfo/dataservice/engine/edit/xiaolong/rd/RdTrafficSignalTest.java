@@ -5,6 +5,7 @@ package com.navinfo.dataservice.engine.edit.xiaolong.rd;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.web.servlet.ModelAndView;
 
 import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.operation.Transaction;
@@ -55,11 +56,29 @@ public class RdTrafficSignalTest extends InitApplication{
 	@Test
 	public void testUpdateTrafficSignal()
 	{
-		String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDTRAFFICSIGNAL\",\"dbId\":42,\"data\":{\"type\":2,\"rowId\":\"78D984F13079444FB6DDBA25A52FAF69\",\"pid\":100000089,\"objStatus\":\"UPDATE\",\"location\":\"10\"}}";
+		String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDTRAFFICSIGNAL\",\"dbId\":17,\"data\":{\"location\":2,\"rowId\":\"55E1B4E8DF16406AB12C350E872E0C76\",\"pid\":204000011,\"objStatus\":\"UPDATE\"}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
-			System.out.println(msg);
+
+			String log = t.getLogs();
+
+			JSONObject json = new JSONObject();
+
+			json.put("result", msg);
+
+			json.put("log", log);
+
+			json.put("check", t.getCheckLog());
+
+			json.put("pid", t.getPid());
+			if(parameter.contains("\"infect\":1"))
+			{
+			}
+			else
+			{
+				System.out.println(json);
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

@@ -20,9 +20,7 @@ public class Process extends AbstractProcess<Command> {
 		super(command);
 	}
 	public Process(Command command,Result result,Connection conn) throws Exception {
-		super(command);
-		this.setConn(conn);
-		this.setResult(result);
+		super(command,result,conn);
 	}
 	public boolean prepareData() throws Exception {
 		// 获取此ZONELINK上行政取区划面拓扑关系

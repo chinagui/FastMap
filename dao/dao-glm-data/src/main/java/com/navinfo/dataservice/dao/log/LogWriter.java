@@ -509,6 +509,8 @@ public class LogWriter {
 
 		// 处理修改的对象
 		List<IRow> list = result.getUpdateObjects();
+		
+		List<Integer> listObPid = result.getListUpdateIRowObPid();
 
 		for (IRow r : list) {
 			LogDetail ld = new LogDetail();

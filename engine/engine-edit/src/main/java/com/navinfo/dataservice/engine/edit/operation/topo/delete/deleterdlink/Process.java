@@ -9,8 +9,8 @@ import java.util.Map;
 import org.apache.commons.collections.CollectionUtils;
 
 import com.navinfo.dataservice.dao.glm.iface.AlertObject;
+import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
-import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdmin;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
@@ -450,7 +450,7 @@ public class Process extends AbstractProcess<Command> {
 		// 立交
 		com.navinfo.dataservice.engine.edit.operation.obj.rdgsc.delete.Operation rdGscOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdgsc.delete.Operation(
 				conn);
-		List<IRow> linkList = new ArrayList<>(); 
+		List<IObj> linkList = new ArrayList<>(); 
 		linkList.add(link);
 		List<AlertObject> delGscAlertDataList = rdGscOperation.getDeleteRdGscInfectData(linkList);
 		if (CollectionUtils.isNotEmpty(delGscAlertDataList)) {

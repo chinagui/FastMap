@@ -196,13 +196,19 @@ public class BlockService {
 			String planningStatus = ((json.getJSONArray("planningStatus").toString()).replace('[', '(')).replace(']',
 					')');
 
-			String selectSql = "select t.BLOCK_ID,t.BLOCK_NAME,t.GEOMETRY,t.PLAN_STATUS,t.CITY_ID from BLOCK t where t.PLAN_STATUS in "
-					+ planningStatus;
+			String selectSql = "select t.BLOCK_ID,t.BLOCK_NAME,t.GEOMETRY,t.PLAN_STATUS,t.CITY_ID,TMP.PERCENT"
+					+ " from BLOCK t "
+					+ ", (SELECT BM.BLOCK_ID,FSOB.PERCENT FROM BLOCK_MAN BM, FM_STAT_OVERVIEW_BLOCKMAN FSOB WHERE BM.BLOCK_MAN_ID = FSOB.BLOCK_MAN_ID(+)) TMP"
+					+ " where t.PLAN_STATUS in "+ planningStatus
+					+ " AND T.BLOCK_ID = TMP.BLOCK_ID";
 
 			if (StringUtils.isNotEmpty(json.getString("snapshot"))) {
 				if ("1".equals(json.getString("snapshot"))) {
-					selectSql = "select t.BLOCK_ID,t.BLOCK_NAME,t.PLAN_STATUS,t.CITY_ID from BLOCK t where t.PLAN_STATUS in "
-							+ planningStatus;
+					selectSql = "select t.BLOCK_ID,t.BLOCK_NAME,t.PLAN_STATUS,t.CITY_ID,TMP.PERCENT"
+							+ " from BLOCK t"
+							+ ", (SELECT BM.BLOCK_ID,FSOB.PERCENT FROM BLOCK_MAN BM, FM_STAT_OVERVIEW_BLOCKMAN FSOB WHERE BM.BLOCK_MAN_ID = FSOB.BLOCK_MAN_ID(+)) TMP"
+							+ " where t.PLAN_STATUS in " + planningStatus
+							+ " AND T.BLOCK_ID = TMP.BLOCK_ID";
 				}
 			}
 			;

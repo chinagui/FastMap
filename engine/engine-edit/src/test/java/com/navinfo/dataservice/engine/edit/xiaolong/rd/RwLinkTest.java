@@ -9,6 +9,7 @@ import org.junit.Test;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
+import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLink;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLinkName;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwNode;
@@ -33,11 +34,11 @@ public class RwLinkTest extends InitApplication {
 	{
 		Connection conn;
 		try {
-			conn = DBConnector.getInstance().getConnectionById(42);
+			conn = DBConnector.getInstance().getConnectionById(17);
 
 			SearchProcess p = new SearchProcess(conn);
 			
-			RwNode obj = (RwNode) p.searchDataByPid(ObjType.RWNODE, 100007634);
+			RdCross obj = (RdCross) p.searchDataByPid(ObjType.RDCROSS, 233537);
 
 			System.out.println(obj.Serialize(ObjLevel.BRIEF));
 			

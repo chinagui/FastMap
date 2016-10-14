@@ -117,7 +117,12 @@ public class BasicOperator extends AbstractOperator {
 
 				} else if (StringUtils.toColumnName(name).equals(M_ROW_ID)) {
 					key.append(M_ROW_ID + ",");
-					row.setRowId(UuidUtils.genUuid());
+					if(StringUtils.isEmpty(row.rowId()))
+					{
+						row.setRowId(UuidUtils.genUuid());
+					}
+					logger.info("rowid:"+row.rowId());
+					System.out.println("poi rowid:"+row.rowId());
 					value.append("'" + row.rowId() + "',");
 				} else if(row instanceof IxPoiPhoto && name.equals("fccPid"))
 				{

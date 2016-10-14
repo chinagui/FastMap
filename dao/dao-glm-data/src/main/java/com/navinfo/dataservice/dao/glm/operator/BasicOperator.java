@@ -119,7 +119,14 @@ public class BasicOperator extends AbstractOperator {
 				} else if (StringUtils.toColumnName(name).equals(M_ROW_ID)) {
 					key.append(M_ROW_ID + ",");
 					String tableName = SelectorUtils.getObjTableName(row);
-					if(!tableName.equals("IX_POI"))
+					if(row.rowId() != null)
+					{
+						if(!tableName.equals("IX_POI"))
+						{
+							row.setRowId(UuidUtils.genUuid());
+						}
+					}
+					else
 					{
 						row.setRowId(UuidUtils.genUuid());
 					}

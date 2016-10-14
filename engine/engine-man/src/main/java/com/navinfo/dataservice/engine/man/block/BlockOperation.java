@@ -758,6 +758,7 @@ public class BlockOperation {
 						
 						map.put("blockId", rs.getInt("BLOCK_ID"));
 						map.put("blockName", rs.getString("BLOCK_NAME"));
+						map.put("workProperty", rs.getString("WORK_PROPERTY"));
 						map.put("cityId", rs.getInt("CITY_ID"));
 						map.put("blockStatus", rs.getInt("BLOCK_STATUS"));
 						map.put("blockPlanStatus", rs.getInt("BLOCK_PLAN_STATUS"));

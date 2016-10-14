@@ -86,11 +86,13 @@ public class RdNameOperation {
 
 		PreparedStatement pstmt = null;
 		Connection subconn = null;
+		boolean isMetaConn=true;
 		try {
 			if (conn == null) {
 				subconn = DBConnector.getInstance().getMetaConnection();
 				pstmt = subconn.prepareStatement(insertSql);
 			} else {
+				isMetaConn=false;
 				pstmt = conn.prepareStatement(insertSql);
 			}
 
@@ -165,7 +167,10 @@ public class RdNameOperation {
 			throw new Exception("新增道路名出错：" + e.getMessage(), e);
 		} finally {
 			DbUtils.close(pstmt);
-			DbUtils.commitAndCloseQuietly(subconn);
+			if(isMetaConn){
+				DbUtils.commitAndCloseQuietly(subconn);
+			}
+			
 		}
 
 	}

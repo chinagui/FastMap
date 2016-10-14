@@ -597,8 +597,8 @@ public class commonTest extends InitApplication {
 	@Test
 	public void run_1013_1() throws Exception {
 
-		String parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"dbId\":17,\"distance\":\"6.6\",\"data\":{\"linkPids\":[203000721,204000645,306000707,200000728]}}";
-
+		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDTOLLGATE\",\"dbId\":17,\"data\":{\"inLinkPid\":207000710,\"outLinkPid\":220000776,\"nodePid\":206000534}}";
+		
 		Transaction t = new Transaction(parameter);
 
 		String msg = t.run();
@@ -607,8 +607,7 @@ public class commonTest extends InitApplication {
 	@Test
 	public void run_1013_2() throws Exception {
 
-		String parameter = "{\"command\":\"DELETE\",\"dbId\":17,\"type\":\"RDLINK\",\"objId\":206000555}";
-		
+		String parameter = "";
 		
 		Transaction t = new Transaction(parameter);
 

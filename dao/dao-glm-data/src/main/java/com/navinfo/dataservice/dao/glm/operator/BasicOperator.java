@@ -163,6 +163,11 @@ public class BasicOperator extends AbstractOperator {
 	@Override
 	public void updateRow2Sql(Statement stmt) throws Exception {
 		StringBuilder sb = new StringBuilder("update " + row.tableName() + " set u_record=3 ");
+		String tableName = SelectorUtils.getObjTableName(row);
+		if (tableName.equals("IX_POI")) {
+			sb.append(" ,u_date='"+StringUtils.getCurrentTime()+"'");
+		}
+		
 		this.addConditionForPoi(sb);
 		Set<Entry<String, Object>> set = row.changedFields().entrySet();
 

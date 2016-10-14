@@ -65,7 +65,6 @@ public class SysMsgWebSocketHandler extends TextWebSocketHandler {
 			String sysMsg = JSONArray.fromObject(unreadMsg).toString();
 			session.sendMessage(new TextMessage(sysMsg));
 		}
-		log.info("===================================================="+users.toString());
 	}
 
 	

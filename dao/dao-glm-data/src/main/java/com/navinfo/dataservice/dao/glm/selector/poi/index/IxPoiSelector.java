@@ -106,15 +106,15 @@ public class IxPoiSelector extends AbstractSelector {
 				if (total == 0) {
 					total = resultSet.getInt("total");
 				}
-				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
-				Geometry geometry = GeoTranslator.struct2Jts(struct, 1, 0);
+				//STRUCT struct = (STRUCT) resultSet.getObject("geometry");
+				//Geometry geometry = GeoTranslator.struct2Jts(struct, 1, 0);
 				JSONObject json = new JSONObject();
 				json.put("pid", resultSet.getInt("pid"));
 				json.put("kindCode", resultSet.getString("kind_code"));
 				json.put("freshnessVefication",
 						resultSet.getInt("freshness_vefication"));
 				json.put("name", resultSet.getString("name"));
-				json.put("geometry", GeoTranslator.jts2Geojson(geometry));
+				//json.put("geometry", GeoTranslator.jts2Geojson(geometry));
 				json.put("uRecord", resultSet.getInt("u_record"));
 				json.put("status", resultSet.getInt("status"));
 				json.put("collectTime", resultSet.getString("collect_time"));

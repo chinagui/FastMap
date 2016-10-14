@@ -756,6 +756,9 @@ public class BlockService {
 				String key = (String) keys.next();
 				if("blockManName".equals(key)){
 					conditionSql=conditionSql+" AND MAN_LIST.BLOCK_MAN_NAME LIKE '%"+conditionJson.getString(key)+"%'";}
+				if("name".equals(key)){
+					conditionSql=conditionSql+" AND (MAN_LIST.BLOCK_MAN_NAME LIKE '%"+conditionJson.getString(key)+"%'"
+							+ " or MAN_LIST.BLOCK_NAME LIKE '%"+conditionJson.getString(key)+"%')";}
 				if("taskId".equals(key)){
 					conditionSql=conditionSql+" AND MAN_LIST.TASK_ID ="+conditionJson.getInt(key);}
 				if("cityId".equals(key)){
@@ -930,6 +933,9 @@ public class BlockService {
 				String key = (String) keys.next();
 				if("blockManName".equals(key)){
 					conditionSql=conditionSql+" AND MAN_LIST.BLOCK_MAN_NAME LIKE '%"+conditionJson.getString(key)+"%'";}
+				if("name".equals(key)){
+					conditionSql=conditionSql+" AND (MAN_LIST.BLOCK_MAN_NAME LIKE '%"+conditionJson.getString(key)+"%' "
+							+ "or MAN_LIST.BLOCK_NAME LIKE '%"+conditionJson.getString(key)+"%')";}
 				if("groupId".equals(key)){
 					conditionSql=conditionSql+" AND MAN_LIST.GROUP_ID ="+conditionJson.getInt(key);}
 				if("planStatus".equals(key)){

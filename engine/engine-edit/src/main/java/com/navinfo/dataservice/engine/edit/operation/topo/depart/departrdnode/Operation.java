@@ -57,15 +57,18 @@ public class Operation implements IOperation {
 			}
 
 		} else {
-            RdNodeSelector nodeSelector = new RdNodeSelector(conn);
-            IRow row = nodeSelector.loadById(this.command.getCatchNodePid(), true, true);
-            RdNode node = (RdNode)row;
-            Geometry geom = GeoTranslator.transform(node.getGeometry(), 0.00001, 5);
-            this.command.setPoint(((Point) GeoTranslator.point2Jts(
-            		geom.getCoordinate().x, geom.getCoordinate().y)));
-            
-			result.insertObject(this.command.getNode(), ObjStatus.DELETE,
-					this.command.getNodePid());
+			RdNodeSelector nodeSelector = new RdNodeSelector(conn);
+			IRow row = nodeSelector.loadById(this.command.getCatchNodePid(),
+					true, true);
+			RdNode node = (RdNode) row;
+			Geometry geom = GeoTranslator.transform(node.getGeometry(),
+					0.00001, 5);
+			this.command.setPoint(((Point) GeoTranslator.point2Jts(
+					geom.getCoordinate().x, geom.getCoordinate().y)));
+			if (this.command.getLinks().size() <= 1) {
+				result.insertObject(this.command.getNode(), ObjStatus.DELETE,
+						this.command.getNodePid());
+			}
 			this.updateLinkGeomtry(result, this.command.getCatchNodePid());
 
 		}

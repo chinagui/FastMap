@@ -29,13 +29,15 @@ public class RdRestrictionSelector extends AbstractSelector {
 		this.conn = conn;
 		this.setCls(RdRestriction.class);
 	}
-	
+
 	@Override
-	public IRow loadById(int id, boolean isLock,boolean ... loadChild) throws Exception {
+	public IRow loadById(int id, boolean isLock, boolean... loadChild)
+			throws Exception {
 
 		RdRestriction restrict = new RdRestriction();
 
-		String sql = "select * from " + restrict.tableName() + " where pid=:1 and u_record!=2";
+		String sql = "select * from " + restrict.tableName()
+				+ " where pid=:1 and u_record!=2";
 
 		if (isLock) {
 			sql += " for update nowait";
@@ -65,31 +67,33 @@ public class RdRestrictionSelector extends AbstractSelector {
 				restrict.setKgFlag(resultSet.getInt("kg_flag"));
 
 				restrict.setRowId(resultSet.getString("row_id"));
-				
+
 				RdRestrictionDetailSelector detailSelector = new RdRestrictionDetailSelector(
 						conn);
 
-				restrict.setDetails(detailSelector.loadRowsByParentId(id, isLock));
-				
-				for(IRow row : restrict.getDetails()){
-					
-					RdRestrictionDetail detail = (RdRestrictionDetail)row;
-					
+				restrict.setDetails(detailSelector.loadRowsByParentId(id,
+						isLock));
+
+				for (IRow row : restrict.getDetails()) {
+
+					RdRestrictionDetail detail = (RdRestrictionDetail) row;
+
 					restrict.detailMap.put(detail.getPid(), detail);
-					
-					for(IRow row2 : detail.getConditions()){
-						
-						RdRestrictionCondition condition = (RdRestrictionCondition)row2;
-						
-						restrict.conditionMap.put(condition.getRowId(), condition);
+
+					for (IRow row2 : detail.getConditions()) {
+
+						RdRestrictionCondition condition = (RdRestrictionCondition) row2;
+
+						restrict.conditionMap.put(condition.getRowId(),
+								condition);
 					}
 				}
 			} else {
-				
+
 				throw new DataNotFoundException("数据不存在");
 			}
 		} catch (Exception e) {
-			
+
 			throw e;
 
 		} finally {
@@ -98,7 +102,7 @@ public class RdRestrictionSelector extends AbstractSelector {
 					resultSet.close();
 				}
 			} catch (Exception e) {
-				
+
 			}
 
 			try {
@@ -106,14 +110,14 @@ public class RdRestrictionSelector extends AbstractSelector {
 					pstmt.close();
 				}
 			} catch (Exception e) {
-				
+
 			}
 
 		}
 
 		return restrict;
 	}
-	
+
 	public List<RdRestriction> loadRdRestrictionByLinkPid(int linkPid,
 			boolean isLock) throws Exception {
 		List<RdRestriction> reses = new ArrayList<RdRestriction>();
@@ -340,37 +344,36 @@ public class RdRestrictionSelector extends AbstractSelector {
 		return result;
 
 	}
-	
+
 	/**
 	 * 根据link类型获取RdRestriction
+	 * 
 	 * @param linkPid
-	 * @param linkType 1：进入线；2：退出线，3：经过线
+	 * @param linkType
+	 *            1：进入线；2：退出线，3：经过线
 	 * @param isLock
 	 * @return
 	 * @throws Exception
 	 */
 	public List<RdRestriction> loadByLink(int linkPid, int linkType,
 			boolean isLock) throws Exception {
-		
+
 		List<RdRestriction> restrictions = new ArrayList<RdRestriction>();
 
 		String sql = "";
-		
+
 		if (linkType == 1) {
 			sql = "SELECT A.* FROM RD_RESTRICTION A WHERE A.IN_LINK_PID = :1 AND A.U_RECORD != 2 ";
 
-		}
-		else if (linkType == 2) {
-			
+		} else if (linkType == 2) {
+
 			sql = "SELECT * FROM RD_RESTRICTION WHERE U_RECORD != 2  AND PID IN (SELECT DISTINCT (RESTRIC_PID)  FROM RD_RESTRICTION_DETAIL WHERE U_RECORD != 2  AND OUT_LINK_PID = :1)";
 		}
-		
+
 		else if (linkType == 3) {
-			
+
 			sql = "SELECT * FROM RD_RESTRICTION WHERE U_RECORD != 2 AND PID IN (SELECT DISTINCT (RESTRIC_PID) FROM RD_RESTRICTION_DETAIL WHERE U_RECORD != 2 AND DETAIL_ID IN (SELECT DISTINCT (DETAIL_ID) FROM RD_RESTRICTION_VIA WHERE U_RECORD != 2 AND LINK_PID = :1))";
-		}
-		else 
-		{
+		} else {
 			return restrictions;
 		}
 
@@ -388,14 +391,14 @@ public class RdRestrictionSelector extends AbstractSelector {
 			pstmt.setInt(1, linkPid);
 
 			resultSet = pstmt.executeQuery();
-			
+
 			while (resultSet.next()) {
-				
+
 				RdRestriction restriction = new RdRestriction();
 
 				ReflectionAttrUtils.executeResultSet(restriction, resultSet);
-				
-				setChildData( restriction,  isLock);				
+
+				setChildData(restriction, isLock);
 
 				restrictions.add(restriction);
 			}
@@ -408,48 +411,21 @@ public class RdRestrictionSelector extends AbstractSelector {
 		}
 		return restrictions;
 	}
+
 	
-	
 
-	private void setChildData(RdRestriction restrict, boolean isLock)
-			throws Exception {
-
-		RdRestrictionDetailSelector detailSelector = new RdRestrictionDetailSelector(
-				conn);
-		
-		restrict.setDetails(detailSelector.loadRowsByParentId(restrict.getPid(), isLock));
-		
-		RdRestrictionViaSelector viaSelector=new RdRestrictionViaSelector(conn);
-		
-		AbstractSelector conditionSelector =new AbstractSelector(RdRestrictionCondition.class,conn);
-		
-		for (IRow row : restrict.getDetails()) {
-
-			RdRestrictionDetail detail = (RdRestrictionDetail) row;
-
-			detail.setVias(viaSelector.loadRowsByParentId(detail.getPid(), isLock));
-			
-			detail.setConditions(conditionSelector.loadRowsByParentId(detail.getPid(), isLock));
-
-			for (IRow row2 : detail.getConditions()) {
-
-				RdRestrictionCondition condition = (RdRestrictionCondition) row2;
-				
-				detail.conditionMap.put(condition.getRowId(), condition);
-			}
-			
-			restrict.detailMap.put(detail.getPid(), detail);
-		}
-	}
-	
 	/**
 	 * 根据路口pid查询路口关系的交限
-	 * @param crossPid 路口pid
-	 * @param isLock 是否加锁
+	 * 
+	 * @param crossPid
+	 *            路口pid
+	 * @param isLock
+	 *            是否加锁
 	 * @return 交限集合
 	 * @throws Exception
 	 */
-	public List<RdRestriction> getRestrictionByCrossPid(int crossPid,boolean isLock) throws Exception {
+	public List<RdRestriction> getRestrictionByCrossPid(int crossPid,
+			boolean isLock) throws Exception {
 
 		List<RdRestriction> result = new ArrayList<RdRestriction>();
 
@@ -483,9 +459,11 @@ public class RdRestrictionSelector extends AbstractSelector {
 
 				restrict.setRowId(resultSet.getString("row_id"));
 
-				RdRestrictionDetailSelector detail = new RdRestrictionDetailSelector(getConn());
+				RdRestrictionDetailSelector detail = new RdRestrictionDetailSelector(
+						getConn());
 
-				restrict.setDetails(detail.loadRowsByParentId(restrict.getPid(), true));
+				restrict.setDetails(detail.loadRowsByParentId(
+						restrict.getPid(), true));
 
 				result.add(restrict);
 			}
@@ -497,5 +475,159 @@ public class RdRestrictionSelector extends AbstractSelector {
 			DBUtils.closeStatement(pstmt);
 		}
 		return result;
+	}
+
+	/**
+	 * 根据link类型获取交限
+	 * 
+	 * @param linkPids
+	 * @param linkType
+	 *            1：进入线；2：退出线，3：经过线
+	 * @param isLock
+	 * @return
+	 * @throws Exception
+	 */
+	public List<RdRestriction> loadByLinks(List<Integer> linkPids,
+			int linkType, boolean isLock) throws Exception {
+
+		List<RdRestriction> rows = new ArrayList<RdRestriction>();
+
+		if (linkPids == null || linkPids.size() == 0) {
+			return rows;
+		}
+
+		List<Integer> pidTemp = new ArrayList<Integer>();
+
+		pidTemp.addAll(linkPids);
+
+		int dataLimit = 100;
+
+		while (pidTemp.size() >= dataLimit) {
+
+			List<Integer> listPid = pidTemp.subList(0, dataLimit);
+
+			rows.addAll(loadByLinkPids(listPid, linkType, isLock));
+
+			pidTemp.subList(0, dataLimit).clear();
+		}
+
+		if (!pidTemp.isEmpty()) {
+			rows.addAll(loadByLinkPids(pidTemp, linkType, isLock));
+		}
+
+		return rows;
+	}
+
+	/**
+	 * 根据link类型获取RdRestriction
+	 * 
+	 * @param linkPid
+	 * @param linkType
+	 *            1：进入线；2：退出线，3：经过线
+	 * @param isLock
+	 * @return
+	 * @throws Exception
+	 */
+	public List<RdRestriction> loadByLinkPids(List<Integer> linkPids,
+			int linkType, boolean isLock) throws Exception {
+
+		List<RdRestriction> restrictions = new ArrayList<RdRestriction>();
+
+		if (linkPids == null || linkPids.isEmpty()) {
+
+			return restrictions;
+		}
+
+		String pids = org.apache.commons.lang.StringUtils.join(linkPids, ",");
+
+		String sql = "";
+
+		if (linkType == 1) {
+			sql = "SELECT * FROM RD_RESTRICTION  WHERE U_RECORD !=2 AND IN_LINK_PID IN ("
+					+ pids + ")  ";
+
+		} else if (linkType == 2) {
+
+			sql = "SELECT * FROM RD_RESTRICTION WHERE U_RECORD != 2  AND PID IN (SELECT DISTINCT (RESTRIC_PID)  FROM RD_RESTRICTION_DETAIL WHERE U_RECORD != 2  AND OUT_LINK_PID IN ("
+					+ pids + "))";
+		}
+
+		else if (linkType == 3) {
+
+			sql = "SELECT * FROM RD_RESTRICTION WHERE U_RECORD != 2 AND PID IN (SELECT DISTINCT (RESTRIC_PID) FROM RD_RESTRICTION_DETAIL WHERE U_RECORD != 2 AND DETAIL_ID IN (SELECT DISTINCT (DETAIL_ID) FROM RD_RESTRICTION_VIA WHERE U_RECORD != 2 AND LINK_PID IN ("
+					+ pids + ")))";
+
+		} else {
+			return restrictions;
+		}
+
+		if (isLock) {
+			sql += " FOR UPDATE NOWAIT";
+		}
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sql);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+
+				RdRestriction restriction = new RdRestriction();
+
+				ReflectionAttrUtils.executeResultSet(restriction, resultSet);
+
+				setChildData(restriction, isLock);
+
+				restrictions.add(restriction);
+			}
+		} catch (Exception e) {
+
+			throw e;
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+		}
+		return restrictions;
+	}
+	
+	
+	private void setChildData(RdRestriction restrict, boolean isLock)
+			throws Exception {
+
+		RdRestrictionDetailSelector detailSelector = new RdRestrictionDetailSelector(
+				conn);
+
+		restrict.setDetails(detailSelector.loadRowsByParentId(
+				restrict.getPid(), isLock));
+
+		RdRestrictionViaSelector viaSelector = new RdRestrictionViaSelector(
+				conn);
+
+		AbstractSelector conditionSelector = new AbstractSelector(
+				RdRestrictionCondition.class, conn);
+
+		for (IRow row : restrict.getDetails()) {
+
+			RdRestrictionDetail detail = (RdRestrictionDetail) row;
+
+			detail.setVias(viaSelector.loadRowsByParentId(detail.getPid(),
+					isLock));
+
+			detail.setConditions(conditionSelector.loadRowsByParentId(
+					detail.getPid(), isLock));
+
+			for (IRow row2 : detail.getConditions()) {
+
+				RdRestrictionCondition condition = (RdRestrictionCondition) row2;
+
+				detail.conditionMap.put(condition.getRowId(), condition);
+			}
+
+			restrict.detailMap.put(detail.getPid(), detail);
+		}
 	}
 }

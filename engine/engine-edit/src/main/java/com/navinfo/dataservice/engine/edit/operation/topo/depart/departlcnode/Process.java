@@ -18,13 +18,6 @@ public class Process extends AbstractProcess<Command> {
 
 	}
 
-	public Process(Command command, Connection conn) throws Exception {
-		super(command);
-		this.setCommand(command);
-		this.setResult(new Result());
-		this.setConn(conn);
-	}
-
 	@Override
 	public boolean prepareData() throws Exception {
 		LcLinkSelector linkSelector = new LcLinkSelector(this.getConn());

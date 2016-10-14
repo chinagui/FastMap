@@ -39,6 +39,7 @@ import net.sf.json.JSONObject;
 
 public class TaskService {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
+	private JSONArray newTask;
 	private TaskService(){}
 	private static class SingletonHolder{
 		private static final TaskService INSTANCE =new TaskService();
@@ -385,14 +386,22 @@ public class TaskService {
 		}
 	}	
 	
-	public HashMap<String,String> close(List<Integer> taskidList)throws Exception{
+	public List<Integer> close(List<Integer> taskidList)throws Exception{
 		Connection conn = null;
 		try{
 			conn = DBConnector.getInstance().getManConnection();	
 			
 			String taskIdStr=taskidList.toString().replace("[", "").replace("]", "").replace("\"", "");
 			//判断任务是否可关闭
-			String checkSql="SELECT T.TASK_ID, '有未关闭的BLOCK，任务无法关闭'"
+			String checkSql="SELECT T.TASK_ID"
+					+ "    FROM TASK T, BLOCK_MAN BM"
+					+ "   WHERE T.TASK_ID = BM.TASK_ID"
+					+ "     AND NOT EXISTS (SELECT 1"
+					+ "            FROM BLOCK_MAN BMM"
+					+ "           WHERE BMM.TASK_ID = T.TASK_ID"
+					+ "             AND BMM.STATUS <> 0)";
+					
+					/*"SELECT T.TASK_ID, '有未关闭的BLOCK，任务无法关闭'"
 					+ "  FROM TASK T, BLOCK B"
 					+ " WHERE T.TASK_ID IN ("+taskIdStr+")"
 					+ "   AND T.CITY_ID = B.CITY_ID"
@@ -402,13 +411,21 @@ public class TaskService {
 					+ "  FROM SUBTASK ST"
 					+ " WHERE ST.TASK_ID IN ("+taskIdStr+")"
 					+ "   AND ST.STAGE = 2"
-					+ "   AND ST.STATUS <> 0";
+					+ "   AND ST.STATUS <> 0";*/
 			List<List<String>> checkResult=DbOperation.exeSelectBySql(conn, checkSql, null);
 			JSONArray closeTask=new JSONArray();
 			List<Integer> newTask=new ArrayList<Integer>();
-			newTask.addAll(taskidList);
+			//newTask.addAll(taskidList);
 			HashMap<String,String> checkMap=new HashMap<String,String>();
+			
 			if(checkResult.size()>0){
+				for(int i=0;i<checkResult.size();i++){
+					String taskIdTmp=checkResult.get(i).get(0);
+					newTask.add(Integer.valueOf(taskIdTmp));
+				}		
+			}
+			
+			/*if(checkResult.size()>0){
 				List<Integer> errorTask=new ArrayList<Integer>();
 				for(int i=0;i<checkResult.size();i++){
 					String taskIdTmp=checkResult.get(i).get(0);
@@ -417,7 +434,7 @@ public class TaskService {
 					checkMap.put(taskIdTmp, checkMap.get(taskIdTmp)+checkResult.get(i).get(1));
 				}
 				newTask.removeAll(errorTask);				
-			}
+			}*/
 			if(newTask.size()>0){
 				String updateSql="UPDATE TASK SET STATUS=0 "
 						+ "WHERE TASK_ID IN ("+newTask.toString().replace("[", "").
@@ -447,7 +464,7 @@ public class TaskService {
 					taskPushMsg(conn,msgTitle,msgContentList);
 				}
 			}
-	    	return checkMap;
+	    	return newTask;
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

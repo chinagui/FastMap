@@ -1,7 +1,5 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdlanetopo.update;
 
-import java.sql.Connection;
-import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.lane.RdLaneTopoDetail;
 import com.navinfo.dataservice.dao.glm.selector.rd.lane.RdLaneTopoDetailSelector;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
@@ -11,14 +9,6 @@ public class Process extends AbstractProcess<Command> {
 
 	public Process(AbstractCommand command) throws Exception {
 		super(command);
-
-	}
-
-	public Process(Command command, Result result, Connection conn)
-			throws Exception {
-		super(command);
-		this.setResult(result);
-		this.setConn(conn);
 
 	}
 

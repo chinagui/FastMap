@@ -81,7 +81,7 @@ public class RdLinkTest extends InitApplication {
 
 	@Test
 	public void testDelete() {
-		String parameter = "{\"command\":\"DELETE\",\"dbId\":19,\"type\":\"RDNODE\",\"objId\":210000266,\"infect\":1}";
+		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDTOLLGATE\",\"dbId\":249,\"data\":{\"inLinkPid\":206000529,\"outLinkPid\":210000565,\"nodePid\":210000381}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

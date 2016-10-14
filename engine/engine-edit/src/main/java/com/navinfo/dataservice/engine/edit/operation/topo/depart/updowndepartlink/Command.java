@@ -27,6 +27,8 @@ public class Command extends AbstractCommand {
 	
 	private RdNode sNode;
 	private RdNode eNode;
+	
+	private Map<Integer, RdLink> noTargetLinks = new HashMap<Integer, RdLink>();
 
 	// 右侧link映射。Integer：原linkpid RdLink；新生成link
 	private Map<Integer, RdLink> leftLinkMapping = new HashMap<Integer, RdLink>();
@@ -96,6 +98,14 @@ public class Command extends AbstractCommand {
 
 	public void setRightLinkMapping(Map<Integer, RdLink> rightLinkMapping) {
 		this.rightLinkMapping = rightLinkMapping;
+	}
+
+	public Map<Integer, RdLink> getNoTargetLinks() {
+		return noTargetLinks;
+	}
+
+	public void setNoTargetLinks(Map<Integer, RdLink> noTargetLinks) {
+		this.noTargetLinks = noTargetLinks;
 	}
 
 	@Override

@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.navinfo.dataservice.dao.glm.iface.AlertObject;
+import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -55,7 +56,7 @@ public class Operation implements IOperation {
 	 * @param result
 	 * @throws Exception
 	 */
-	public void deleteByLinkPid(List<? extends IRow> linkRow, Result result) throws Exception {
+	public void deleteByLinkPid(List<? extends IObj> linkRow, Result result) throws Exception {
 		List<RdGsc> allDelRdGscList = new ArrayList<>();
 
 		List<RdGscLink> allDelRdGscLinkList = new ArrayList<>();
@@ -88,12 +89,12 @@ public class Operation implements IOperation {
 	 * @param allDelRdGscLinkList
 	 * @throws Exception
 	 */
-	private void calcDelLinkOnGsc(List<? extends IRow> linkRow, List<RdGsc> allDelRdGscList, List<RdGscLink> allDelRdGscLinkList,List<RdGscLink> updateLevelGscLinkList)
+	private void calcDelLinkOnGsc(List<? extends IObj> linkRow, List<RdGsc> allDelRdGscList, List<RdGscLink> allDelRdGscLinkList,List<RdGscLink> updateLevelGscLinkList)
 			throws Exception {
 		RdGscSelector selector = new RdGscSelector(conn);
 
-		for (IRow link : linkRow) {
-			int linkPid = link.parentPKValue();
+		for (IObj link : linkRow) {
+			int linkPid = link.pid();
 
 			String tableName = link.tableName().toUpperCase();
 
@@ -148,7 +149,7 @@ public class Operation implements IOperation {
 	 * @param levelGscLink
 	 * @return
 	 */
-	private boolean checkRdGscHas2Del(List<? extends IRow> linkRow, Map<Integer, List<RdGscLink>> levelGscLinkMap,List<RdGscLink> updateLevelLink) {
+	private boolean checkRdGscHas2Del(List<? extends IObj> linkRow, Map<Integer, List<RdGscLink>> levelGscLinkMap,List<RdGscLink> updateLevelLink) {
 		boolean flag = false;
 
 		// 需要删除的level
@@ -161,10 +162,10 @@ public class Operation implements IOperation {
 			List<RdGscLink> delRdgscList = new ArrayList<>();
 
 			List<RdGscLink> gscLinkList = entry.getValue();
-			for (IRow row : linkRow) {
-				int linkPid = row.parentPKValue();
+			for (IObj obj : linkRow) {
+				int linkPid = obj.pid();
 
-				String tableName = row.tableName().toUpperCase();
+				String tableName = obj.tableName().toUpperCase();
 
 				for (RdGscLink gscLink : gscLinkList) {
 					if (gscLink.getLinkPid() == linkPid && gscLink.getTableName().equals(tableName)
@@ -206,7 +207,7 @@ public class Operation implements IOperation {
 	 * @return
 	 * @throws Exception
 	 */
-	public List<AlertObject> getDeleteRdGscInfectData(List<? extends IRow> linkRow) throws Exception {
+	public List<AlertObject> getDeleteRdGscInfectData(List<? extends IObj> linkRow) throws Exception {
 
 		List<RdGsc> allDelRdGscList = new ArrayList<>();
 

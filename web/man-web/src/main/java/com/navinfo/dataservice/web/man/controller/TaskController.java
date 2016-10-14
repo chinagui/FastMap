@@ -135,8 +135,8 @@ public class TaskController extends BaseController {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
 			JSONArray taskIds=dataJson.getJSONArray("taskIds");
-			HashMap<String,String> errorTask=TaskService.getInstance().close(JSONArray.toList(taskIds));			
-			String msg="任务批量关闭"+(taskIds.size()-errorTask.size())+"个成功，"+errorTask.size()+"个失败";
+			List<Integer> closeTask=TaskService.getInstance().close(JSONArray.toList(taskIds));			
+			String msg="任务批量关闭"+closeTask.size()+"个成功，"+(taskIds.size()-closeTask.size())+"个失败";
 			return new ModelAndView("jsonView", success(msg));
 		}catch(Exception e){
 			log.error("任务批量关闭失败，原因："+e.getMessage(), e);

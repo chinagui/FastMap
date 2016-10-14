@@ -172,27 +172,6 @@ public class StaticsController extends BaseController {
 		}
 	}
 	
-	@RequestMapping(value = "/statics/task/overview")
-	public ModelAndView queryTaskOverView(HttpServletRequest request) {
-		try {
-			String parameter = request.getParameter("parameter");
-			if (StringUtils.isEmpty(parameter)) {
-				throw new IllegalArgumentException("parameter参数不能为空。");
-			}
-			JSONObject dataJson = JSONObject.fromObject(URLDecode(parameter));
-			if (dataJson == null) {
-				throw new IllegalArgumentException("parameter参数不能为空。");
-			}
-			//1常规 4情报
-			int taskType=dataJson.getInt("taskType");
-			JSONObject data = StaticsService.getInstance().queryTaskOverView(taskType);
-			return new ModelAndView("jsonView", success(data));
-		} catch (Exception e) {
-			log.error("创建失败，原因：" + e.getMessage(), e);
-			return new ModelAndView("jsonView", exception(e));
-		}
-	}
-	
 	@RequestMapping(value = "/statics/monthTask/overview")
 	public ModelAndView querymonthTaskOverView(HttpServletRequest request) {
 		try {
@@ -236,6 +215,103 @@ public class StaticsController extends BaseController {
 			}
 			int groupId=dataJson.getInt("groupId");
 			JSONObject data = StaticsService.getInstance().queryDayEidtOverView(groupId);
+			return new ModelAndView("jsonView", success(data));
+		} catch (Exception e) {
+			log.error("创建失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+	
+	//根据groupId获取block详情
+	@RequestMapping(value = "/statics/block/overviewByGroup")
+	public ModelAndView queryBlockOverViewByGroup(HttpServletRequest request) {
+		try {
+			String parameter = request.getParameter("parameter");
+			if (StringUtils.isEmpty(parameter)) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(parameter));
+			if (dataJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			//groupId
+			int groupId = dataJson.getInt("groupId");
+			int stage = dataJson.getInt("stage");
+			Map<String,Object> data = StaticsService.getInstance().queryBlockOverViewByGroup(groupId,stage);
+			return new ModelAndView("jsonView", success(data));
+		} catch (Exception e) {
+			log.error("创建失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+	
+	//根据taskId获取block详情
+	@RequestMapping(value = "/statics/block/overviewByTask")
+	public ModelAndView queryBlockOverViewByTask(HttpServletRequest request) {
+		try {
+			String parameter = request.getParameter("parameter");
+			if (StringUtils.isEmpty(parameter)) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(parameter));
+			if (dataJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			//taskId
+			int taskId = dataJson.getInt("taskId");
+			int type = dataJson.getInt("type");
+			Map<String, Object> data = StaticsService.getInstance().queryBlockOverViewByTask(taskId,type);
+			return new ModelAndView("jsonView", success(data));
+		} catch (Exception e) {
+			log.error("创建失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+	
+	//根据blockId获取subtask统计概览
+	@RequestMapping(value = "/statics/subtask/overview")
+	public ModelAndView querySubtaskOverView(HttpServletRequest request) {
+		try {
+			String parameter = request.getParameter("parameter");
+			if (StringUtils.isEmpty(parameter)) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(parameter));
+			if (dataJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			//blockManId
+			int blockManId = 0;
+			int taskId = 0;
+			//月编
+			if(dataJson.containsKey("taskId")){
+				taskId = dataJson.getInt("taskId");
+			}else{
+				blockManId = dataJson.getInt("blockManId");
+			}
+			Map<String, Object> data = StaticsService.getInstance().querySubtaskOverView(blockManId,taskId);
+			return new ModelAndView("jsonView", success(data));
+		} catch (Exception e) {
+			log.error("创建失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+	
+	//全国task统计概览
+	@RequestMapping(value = "/statics/task/overview")
+	public ModelAndView queryTaskOverView(HttpServletRequest request) {
+		try {
+			String parameter = request.getParameter("parameter");
+			if (StringUtils.isEmpty(parameter)) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(parameter));
+			if (dataJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			//1常规，2多源，3代理店，4情报
+			int taskType=dataJson.getInt("taskType");
+			Map<String, Object> data = StaticsService.getInstance().queryTaskOverView(taskType);
 			return new ModelAndView("jsonView", success(data));
 		} catch (Exception e) {
 			log.error("创建失败，原因：" + e.getMessage(), e);

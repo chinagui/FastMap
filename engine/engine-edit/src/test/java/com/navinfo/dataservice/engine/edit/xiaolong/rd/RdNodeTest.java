@@ -17,7 +17,7 @@ public class RdNodeTest extends InitApplication{
 	@Test
 	public void testCreate()
 	{
-		String parameter = "{\"command\":\"CREATE\",\"dbId\":1003,\"objId\":719859,\"data\":{\"longitude\":116.40170216560364,\"latitude\":40.024541793542724},\"type\":\"RDNODE\"}";
+		String parameter = "{\"command\":\"MOVE\",\"dbId\":17,\"objId\":320000330,\"data\":{\"longitude\":116.30456328392027,\"latitude\":40.06810453436403},\"type\":\"RDNODE\"}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
@@ -29,7 +29,7 @@ public class RdNodeTest extends InitApplication{
 	
 	@Test
 	public void testMove() {
-		String parameter = "{\"command\":\"MOVE\",\"dbId\":17,\"objId\":556848,\"data\":{\"longitude\":116.3122022151947,\"latitude\":39.86766379526712},\"type\":\"RDNODE\"}";
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"RDNODE\",\"objId\":11738273,\"data\":{\"digitalLevel\":2,\"pid\":11738273,\"objStatus\":\"UPDATE\"}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

@@ -543,7 +543,7 @@ public class RdGscOperateUtils {
 	 * @param nodeTableName
 	 * @throws Exception
 	 */
-	public static void checkIsMoveGscNodePoint(List<IRow> rows, Connection conn, IObj nodeObj) throws Exception {
+	public static void checkIsMoveGscNodePoint(List<? extends IObj> objs, Connection conn, IObj nodeObj) throws Exception {
 		RdGscSelector selector = new RdGscSelector(conn);
 
 		Geometry nodeGeo = null;
@@ -559,10 +559,10 @@ public class RdGscOperateUtils {
 			break;
 		}
 
-		for (IRow row : rows) {
-			int linkPid = row.parentPKValue();
+		for (IObj obj : objs) {
+			int linkPid = obj.pid();
 
-			String tableName = row.tableName().toUpperCase();
+			String tableName = obj.tableName().toUpperCase();
 
 			List<RdGsc> rdGscList = selector.onlyLoadRdGscLinkByLinkPid(linkPid, tableName, true);
 

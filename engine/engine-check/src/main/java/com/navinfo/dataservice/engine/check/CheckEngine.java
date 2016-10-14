@@ -63,11 +63,13 @@ public class CheckEngine {
 	 * 对后检查需要保存检查结果，调用此方法将检查结果插入到Ni_val_exception中
 	 */
 	public void saveCheckResult(List<NiValException> checkResultList) throws Exception{
+		log.debug("start call insert ni_val");
 		if (checkResultList==null || checkResultList.size()==0) {return;}		
-		NiValExceptionOperator check = new NiValExceptionOperator(this.conn);		
+		NiValExceptionOperator check = new NiValExceptionOperator(this.conn);
 		for(int i=0;i<checkResultList.size();i++){			
 			check.insertCheckLog(checkResultList.get(i).getRuleId(), checkResultList.get(i).getLoc(), checkResultList.get(i).getTargets(), checkResultList.get(i).getMeshId(),checkResultList.get(i).getInformation(), "TEST");
 		}
+		log.debug("end call insert ni_val");
 	}
 	
 	/*

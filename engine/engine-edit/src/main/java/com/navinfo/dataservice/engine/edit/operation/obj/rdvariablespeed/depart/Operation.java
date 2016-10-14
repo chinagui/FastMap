@@ -1,15 +1,18 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdvariablespeed.depart;
 
+import java.sql.Connection;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.variablespeed.RdVariableSpeed;
-import com.navinfo.dataservice.dao.glm.model.rd.variablespeed.RdVariableSpeedVia;
 import com.navinfo.dataservice.dao.glm.selector.rd.variablespeed.RdVariableSpeedSelector;
-
-import java.sql.Connection;
-import java.util.*;
 
 /**
  * Created by chaixin on 2016/10/9 0009.

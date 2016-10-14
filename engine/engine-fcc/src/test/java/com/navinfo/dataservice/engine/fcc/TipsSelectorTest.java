@@ -1,10 +1,7 @@
 package com.navinfo.dataservice.engine.fcc;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -18,11 +15,8 @@ import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Table;
 import org.junit.Test;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import com.google.gson.JsonObject;
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
-import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.ExcelReader;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
@@ -30,7 +24,6 @@ import com.navinfo.dataservice.dao.fcc.SolrController;
 import com.navinfo.dataservice.engine.fcc.tips.TipsSelector;
 import com.navinfo.navicommons.geo.computation.GridUtils;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
-import com.vividsolutions.jts.io.ParseException;
 
 public class TipsSelectorTest {
 
@@ -39,35 +32,40 @@ public class TipsSelectorTest {
 	
 	private SolrController conn = new SolrController();
 	
+	
+	/*	
+	 * 这段就不需要
+	 * ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(
+	    new String[] { "dubbo-consumer-datahub-test.xml"});
+		context.start();
+		new ApplicationContextUtil().setApplicationContext(context);*/
 
 	//根据网格、类型、作业状态获取tips的snapshot列表（rowkey，点位，类型）
-	//@Test
+	@Test
 	public void testGetSnapshot() {
-		ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(
-				new String[] { "dubbo-consumer-datahub.xml"});
-		context.start();
-		new ApplicationContextUtil().setApplicationContext(context);
 		
 		
-	/*	JSONArray grid = JSONArray
-				.fromObject("[60560301,60560302,60560303,60560311,60560312,60560313,60560322,60560323,60560331,60560332,60560333,60560320,60560330,60560300,60560321,60560310]");
-	    */
-		JSONArray grid = JSONArray
-			.fromObject("[59567232,59567233]");
+	JSONArray grid = JSONArray
+				.fromObject("[60560303,60560313,60560312,60560311,60560302,60560410,60560400]");
+	    
+/*		JSONArray grid = JSONArray
+			.fromObject("[59567232,59567233]");*/
 
 	
 		System.out.println(grid.toString());
 		JSONArray stage = new JSONArray();
-		stage.add(3);
 		stage.add(1);
+		stage.add(2);
 		
 		//红绿灯、红绿灯方位、大门、坡度、条件限速、车道限速、车道数、匝道、停车场出入口link、禁止穿行、禁止驶入、提左提右、一般道路方面、路面覆盖、测线
 		//1102、1103 、1104、1106、1111、1113、1202
-		int type = 1507;
-		int dbId = 25;
+		int type = 1104;
+		int dbId = 10;
+		
+		
 		try {
 			System.out.println(solrSelector.getSnapshot(grid, stage, type,
-					dbId,"m"));
+					dbId,"d"));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -389,7 +387,7 @@ public class TipsSelectorTest {
 			}
 		}
 		
-		public static void main(String[] args) {
+	/*	public static void main(String[] args) {
 			
 			TipsSelectorTest test=new TipsSelectorTest();
 			try {
@@ -397,7 +395,7 @@ public class TipsSelectorTest {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-		}
+		}*/
 		
 
 

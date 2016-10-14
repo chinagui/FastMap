@@ -15,6 +15,7 @@ import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 import org.hbase.async.KeyValue;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
@@ -32,7 +33,12 @@ import com.navinfo.navicommons.geo.computation.GridUtils;
  */
 public class TipsSelector {
 
+	
+	private static final Logger logger = Logger.getLogger(TipsSelector.class);
+	
 	private SolrController conn = new SolrController();
+	
+	
 
 	public TipsSelector() {
 	}
@@ -559,55 +565,63 @@ public class TipsSelector {
 		for (JSONObject json : tips) {
 			
 			JSONObject deep = JSONObject.fromObject(json.getString("deep"));
+			
+			try{
+				if (type == 1201 || type == 1203 || type == 1101 || type == 1109 
+						|| type == 1111 || type == 1113 || type == 1202 || type == 1207
+						 || type == 1208 || type == 1304 || type == 1305 || type == 1308
+						 || type == 1311) {
+					JSONObject f = deep.getJSONObject("f");
 
-			if (type == 1201 || type == 1203 || type == 1101 || type == 1109 
-					|| type == 1111 || type == 1113 || type == 1202 || type == 1207
-					 || type == 1208 || type == 1304 || type == 1305 || type == 1308
-					 || type == 1311) {
-				JSONObject f = deep.getJSONObject("f");
-
-				if (f.getInt("type") == 1) {
-					linkPids.add(Integer.valueOf(f.getString("id")));
-				}
-			}
-
-			else if (type == 1301 || type == 1407 || type == 1302
-					|| type == 1403|| type == 1401 || type == 1402
-					|| type == 1405|| type == 1406 || type == 1409 
-					|| type == 1105 || type == 1107 || type == 1703
-					|| type == 1404 || type == 1804 || type == 1108 
-					|| type == 1112 || type == 1303 || type == 1306 
-					|| type == 1410 ) {
-				JSONObject f = deep.getJSONObject("in");
-
-				if (f.getInt("type") == 1) {
-					linkPids.add(Integer.valueOf(f.getString("id")));
-				}
-			}else if (type == 1110 ||type == 1106 ||type == 1104) {
-				JSONObject f = deep.getJSONObject("out");
-
-				if (f.getInt("type") == 1) {
-					linkPids.add(Integer.valueOf(f.getString("id")));
-				}
-			} else if (type == 1604 || type == 1514 || type== 1515 || type==1502  
-					|| type==1503  || type==1504  || type==1505  || type==1506  
-					|| type==1508  || type==1513  || type==1512  || type==1516
-					|| type==1517  || type==1605  || type==1606  || type==1310
-					|| type==1204
-					) {
-				JSONArray a = deep.getJSONArray("f_array");
-
-				for (int i = 0; i < a.size(); i++) {
-					JSONObject f = a.getJSONObject(i);
 					if (f.getInt("type") == 1) {
 						linkPids.add(Integer.valueOf(f.getString("id")));
 					}
 				}
+
+				else if (type == 1301 || type == 1407 || type == 1302
+						|| type == 1403|| type == 1401 || type == 1402
+						|| type == 1405|| type == 1406 || type == 1409 
+						|| type == 1105 || type == 1107 || type == 1703
+						|| type == 1404 || type == 1804 || type == 1108 
+						|| type == 1112 || type == 1303 || type == 1306 
+						|| type == 1410 ) {
+					JSONObject f = deep.getJSONObject("in");
+
+					if (f.getInt("type") == 1) {
+						linkPids.add(Integer.valueOf(f.getString("id")));
+					}
+				}else if (type == 1110 ||type == 1106 ||type == 1104) {
+					JSONObject f = deep.getJSONObject("out");
+
+					if (f.getInt("type") == 1) {
+						linkPids.add(Integer.valueOf(f.getString("id")));
+					}
+				} else if (type == 1604 || type == 1514 || type== 1515 || type==1502  
+						|| type==1503  || type==1504  || type==1505  || type==1506  
+						|| type==1508  || type==1513  || type==1512  || type==1516
+						|| type==1517  || type==1605  || type==1606  || type==1310
+						|| type==1204
+						) {
+					JSONArray a = deep.getJSONArray("f_array");
+
+					for (int i = 0; i < a.size(); i++) {
+						JSONObject f = a.getJSONObject(i);
+						if (f.getInt("type") == 1) {
+							linkPids.add(Integer.valueOf(f.getString("id")));
+						}
+					}
+				}
+				//删除记录
+				else if(type == 2101){
+					linkPids.add(Integer.valueOf(Integer.valueOf(deep.getString("rId"))));
+				}
+			}catch(Exception e){
+				e.printStackTrace();
+				logger.error("data error："+json.get("id")+":"+ e.getMessage(),e.getCause());
+				throw new Exception("data error："+json.get("id")+":"+ e.getMessage(),e.getCause());
+				
 			}
-			//删除记录
-			else if(type == 2101){
-				linkPids.add(Integer.valueOf(Integer.valueOf(deep.getString("rId"))));
-			}
+			
 		}
 
 		Connection oraConn = null;
@@ -633,6 +647,8 @@ public class TipsSelector {
 		}
 
 		for (JSONObject json : tips) {
+			
+			try{
 
 			SearchSnapshot snapshot = new SearchSnapshot();
 
@@ -926,6 +942,10 @@ public class TipsSelector {
 			else if(type == 1707){
 				m.put("e", deep.getString("rdNm")+"("+deep.getString("num")+")");
 			}
+			//路口名称
+			else if(type == 1704){
+				m.put("c", deep.getString("name"));
+			}
 			else if (type == 1501){
 				m.put("e", "上下线分离");
 			} else if (type == 1801){
@@ -957,8 +977,14 @@ public class TipsSelector {
 			snapshot.setM(m);
 
 			jsonData.add(snapshot.Serialize(null));
+			
+			}catch(Exception e){
+				logger.error("data convert error：rowkey:"+json.get("id")+e.getMessage(),e.getCause());
+				throw new Exception("data convert error：rowkey:"+json.get("id")+e.getMessage(),e.getCause());
+			}
 
 		}
+			
 
 		return jsonData;
 	}

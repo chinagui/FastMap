@@ -5,6 +5,9 @@ import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossSelector;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.operation.AbstractProcess;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by chaixin on 2016/10/12 0012.
  */
@@ -15,6 +18,15 @@ public class Process extends AbstractProcess<Command> {
     public Process(AbstractCommand command) throws Exception {
         super(command);
     }
+
+//    @Override
+//    public String preCheck() throws Exception {
+//        RdCrossSelector selector = new RdCrossSelector(super.getConn());
+//        List<RdCross> crossList = selector.loadRdCrossByNodeOrLink(super.getCommand().getNodePids(), new ArrayList<Integer>(), true);
+//        Check check = new Check();
+//        check.isHasRdCross(super.getCommand().getRdCross(), crossList, super.getCommand().getNodePids());
+//        return super.preCheck();
+//    }
 
     @Override
     public boolean prepareData() throws Exception {

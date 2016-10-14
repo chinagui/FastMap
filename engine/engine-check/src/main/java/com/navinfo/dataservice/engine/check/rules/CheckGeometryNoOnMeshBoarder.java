@@ -21,7 +21,7 @@ public class CheckGeometryNoOnMeshBoarder extends baseRule {
 			if (obj instanceof RdSpeedlimit){
 				RdSpeedlimit rdSpeedlimit = (RdSpeedlimit)obj;	
 				
-				if(MeshUtils.isPointAtMeshBorder(rdSpeedlimit.getGeometry().getCoordinate().x,rdSpeedlimit.getGeometry().getCoordinate().y)){
+				if(MeshUtils.isPointAtMeshBorderWith100000(rdSpeedlimit.getGeometry().getCoordinate().x,rdSpeedlimit.getGeometry().getCoordinate().y)){
 					this.setCheckResult("", "", 0);
 					}
 				}

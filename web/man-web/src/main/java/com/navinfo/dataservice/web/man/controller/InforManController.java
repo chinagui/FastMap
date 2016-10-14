@@ -153,7 +153,7 @@ public class InforManController extends BaseController {
 			HashMap<String,Object> data = service.query(dataJson.getString("inforId"));
 			
 			if(data!=null){
-				return new ModelAndView("jsonView", success(JsonOperation.beanToJson(data)));
+				return new ModelAndView("jsonView", success(data));
 			}
 			else{
 				return new ModelAndView("jsonView", success(null));

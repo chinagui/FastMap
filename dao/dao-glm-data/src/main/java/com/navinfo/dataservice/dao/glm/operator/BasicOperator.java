@@ -163,10 +163,6 @@ public class BasicOperator extends AbstractOperator {
 	@Override
 	public void updateRow2Sql(Statement stmt) throws Exception {
 		StringBuilder sb = new StringBuilder("update " + row.tableName() + " set u_record=3 ");
-		String tableName = SelectorUtils.getObjTableName(row);
-		if (tableName.equals("IX_POI")) {
-			sb.append(" ,u_date='"+StringUtils.getCurrentTime()+"'");
-		}
 		
 		this.addConditionForPoi(sb);
 		Set<Entry<String, Object>> set = row.changedFields().entrySet();
@@ -333,7 +329,8 @@ public class BasicOperator extends AbstractOperator {
 	}
 
 	private void addConditionForPoi(StringBuilder sb) {
-		if (row instanceof IxPoi || row instanceof IxPoiChildren || row instanceof IxPoiParent) {
+		String tableName = SelectorUtils.getObjTableName(row);
+		if (tableName.equals("IX_POI") || row instanceof IxPoi || row instanceof IxPoiChildren || row instanceof IxPoiParent) {
 			sb.append(",u_date = " + StringUtils.getCurrentTime() + ",");
 		} else {
 			sb.append(",");

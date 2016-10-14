@@ -247,7 +247,8 @@ public class BlockService {
 					+ " to_char(b.month_edit_plan_end_date, 'yyyymmdd') month_edit_plan_end_date,to_char(b.day_produce_plan_start_date, 'yyyymmdd') day_produce_plan_start_date,"
 					+ " to_char(b.day_produce_plan_end_date, 'yyyymmdd') day_produce_plan_end_date,"
 					+ " to_char(b.month_produce_plan_start_date, 'yyyymmdd') month_produce_plan_start_date,"
-					+ " to_char(b.month_produce_plan_end_date, 'yyyymmdd') month_produce_plan_end_date"
+					+ " to_char(b.month_produce_plan_end_date, 'yyyymmdd') month_produce_plan_end_date,"
+					+ " T.work_property,B.road_plan_total,B.POI_plan_total"
 					+ " from BLOCK t, BLOCK_MAN b, TASK k,USER_INFO u where B.BLOCK_MAN_ID = ?"
 					+ " and t.block_id = b.block_id and t.city_id = k.city_id and k.latest = 1 and b.latest=1 and b.create_user_id=u.user_id ";
 			ResultSetHandler<HashMap> rsHandler = new ResultSetHandler<HashMap>() {
@@ -257,6 +258,10 @@ public class BlockService {
 						map.put("blockManId", rs.getInt("BLOCK_MAN_ID"));
 						map.put("cityId", rs.getInt("CITY_ID"));
 						map.put("blockManName", rs.getString("BLOCK_MAN_NAME"));
+						map.put("workProperty", rs.getString("WORK_PROPERTY"));
+						map.put("roadPlanTotal", rs.getInt("ROAD_PLAN_TOTAL"));
+						map.put("poiPlanTotal", rs.getInt("POI_PLAN_TOTAL"));
+						
 						STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
 						try {
 							String clobStr = GeoTranslator.struct2Wkt(struct);
@@ -815,6 +820,7 @@ public class BlockService {
 				+ "                  T.TASK_ID,"
 				+ "                  B.BLOCK_ID,"
 				+ "                  B.BLOCK_NAME,"
+				+ "                  B.work_property,"
 				+ "                  TT.CITY_ID,"
 				+ "                  T.STATUS BLOCK_STATUS,"
 				+ "                  B.PLAN_STATUS BLOCK_PLAN_STATUS,"
@@ -886,6 +892,7 @@ public class BlockService {
 				+ "                  0,"
 				+ "                  B.BLOCK_ID,"
 				+ "                  B.BLOCK_NAME,"
+				+ "                  B.work_property,"
 				+ "                  C.CITY_ID,"
 				+ "                  0 STATUS,"
 				+ "                  B.PLAN_STATUS block_plan_status,"

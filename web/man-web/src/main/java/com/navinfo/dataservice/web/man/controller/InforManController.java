@@ -163,6 +163,33 @@ public class InforManController extends BaseController {
 			return new ModelAndView("jsonView", exception(e));
 		}
 	}
+	
+	/**
+	 * 情报管理--查看及编辑情报信息
+	 * 
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/inforMan/queryByTaskId")
+	public ModelAndView queryByTaskId(HttpServletRequest request) {
+		try {
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if (dataJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			HashMap<String,Object> data = service.queryByTaskId(dataJson.getInt("taskId"));
+			
+			if(data!=null){
+				return new ModelAndView("jsonView", success(data));
+			}
+			else{
+				return new ModelAndView("jsonView", success(null));
+			}
+		} catch (Exception e) {
+			log.error("获取明细失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
 
 	/**
 	 * 情报管理--查看及编辑情报信息

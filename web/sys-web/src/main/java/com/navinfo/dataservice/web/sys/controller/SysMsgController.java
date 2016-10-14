@@ -77,7 +77,7 @@ public class SysMsgController extends BaseController {
 	}
 	
 	/**
-	 * 查看消息详情
+	 * 查看未读消息详情
 	 * @param request
 	 * @return
 	 */
@@ -96,13 +96,44 @@ public class SysMsgController extends BaseController {
 			}
 			long msgId = paraJson.getLong("msgId");
 			SysMsgService.getInstance().updateMsgStatusToRead(msgId, userId);
-			return new ModelAndView("jsonView", success("消息查看成功!"));
+			List<SysMsg> sysMsgDetail = SysMsgService.getInstance().selectSysMsgDetail(msgId);
+			return new ModelAndView("jsonView", success(sysMsgDetail));
 		}catch(Exception e){
 			log.error("更改消息状态失败，原因："+e.getMessage(), e);
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}
 	
+	/**
+	 * 查看已读消息详情
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/sysmsg/readDetail/check")
+	public ModelAndView checkReadMsgDetail(HttpServletRequest request){
+		try{
+			String parameter = request.getParameter("parameter");
+			if (StringUtils.isEmpty(parameter)) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			JSONObject paraJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if(!paraJson.containsKey("msgId")){
+				throw new IllegalArgumentException("msgId参数不能为空。");
+			}
+			long msgId = paraJson.getLong("msgId");
+			List<SysMsg> sysMsgDetail = SysMsgService.getInstance().selectSysMsgDetail(msgId);
+			return new ModelAndView("jsonView", success(sysMsgDetail));
+		}catch(Exception e){
+			log.error("查询已读消息详情失败，原因："+e.getMessage(), e);
+			return new ModelAndView("jsonView",exception(e));
+		}
+	}
+	
+	/**
+	 * 删除消息
+	 * @param request
+	 * @return
+	 */
 	@RequestMapping(value = "/sysmsg/message/delete")
 	public ModelAndView deleteMsg(HttpServletRequest request){
 		try{

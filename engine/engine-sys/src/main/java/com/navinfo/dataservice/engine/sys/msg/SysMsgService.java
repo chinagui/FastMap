@@ -9,7 +9,6 @@ import java.util.List;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.log4j.Logger;
-
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.navicommons.database.Page;
@@ -152,6 +151,32 @@ public class SysMsgService {
 			throw new ServiceException("删除失败，原因为:"+e.getMessage(),e);
 		}finally{
 			DbUtils.commitAndCloseQuietly(sysConn);
+		}
+	}
+	
+	/**
+	 * 查询消息详情
+	 * @param msgId
+	 * @return
+	 * @throws ServiceException 
+	 */
+	public List<SysMsg> selectSysMsgDetail(long msgId) throws ServiceException{
+		Connection conn = null;
+		QueryRunner queryRunner = null;
+		try {
+			//查询消息
+			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
+			queryRunner = new QueryRunner();
+			String userSql = "SELECT * FROM SYS_MESSAGE WHERE MSG_ID=?";
+			Object[] userParams = {msgId};
+			List<SysMsg> sysMsg = queryRunner.query(conn, userSql, userParams, new MultiRowHandler());
+			return sysMsg;
+		} catch (SQLException e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询消息详情失败，原因为:"+e.getMessage(),e);
+		} finally{
+			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
 	

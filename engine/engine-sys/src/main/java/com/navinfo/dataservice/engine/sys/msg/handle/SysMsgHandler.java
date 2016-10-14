@@ -57,6 +57,7 @@ public class SysMsgHandler implements MsgHandler {
 			queryRunner.update(conn, sql, params);
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
+			e.printStackTrace();
 			log.error(e.getMessage(),e);
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
@@ -89,7 +90,7 @@ public class SysMsgHandler implements MsgHandler {
 				}
 			}
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
+			DbUtils.rollbackAndCloseQuietly(conn);
 			e.printStackTrace();
 			log.error(e.getMessage(), e);
 		} finally{

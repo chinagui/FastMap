@@ -54,7 +54,25 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 	public AbstractProcess() {
 		this.log = LoggerRepos.getLogger(this.log);
 	}
-
+	
+	public AbstractProcess(AbstractCommand command,Result result,Connection conn) throws Exception {
+		this.command = (T) command;
+		if(conn != null)
+		{
+			this.conn = conn;
+		}
+		if(result != null)
+		{
+			this.result =result;
+		}
+		else
+		{
+			result = new Result();
+		}
+		// 初始化检查参数
+		this.initCheckCommand();
+	}
+	
 	public AbstractProcess(AbstractCommand command) throws Exception {
 		this.command = (T) command;
 		this.result = new Result();
@@ -305,10 +323,15 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 	public void handleResult(ObjType objType, OperType operType, Result result) {
 		switch (operType) {
 		case CREATE:
-			for (IRow row : result.getAddObjects()) {
+			List<Integer> addObjPidList = result.getListAddIRowObPid();
+			for (int i=0;i<result.getAddObjects().size();i++) {
+				IRow row = result.getAddObjects().get(i);
 				if (objType.equals(row.objType())) {
-					result.setPrimaryPid(row.parentPKValue());
-					break;
+					if(addObjPidList.get(i) != null)
+					{
+						result.setPrimaryPid(addObjPidList.get(i));
+						break;
+					}
 				}
 			}
 			break;

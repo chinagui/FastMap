@@ -135,8 +135,8 @@ public class RELATING_CHECK_NOSAME_LINE_LINE_RELATION extends baseRule {
 
 		StringBuilder sb = new StringBuilder();
 
-		sb.append("SELECT RLC.PID FROM RD_LANE_CONNEXITY RLC ");
-		sb.append(" WHERE RLC.IN_LINK_PID = ");
+		sb.append("SELECT RLC.PID FROM RD_LANE_CONNEXITY RLC WHERE RLC.u_record !=2");
+		sb.append(" AND RLC.IN_LINK_PID = ");
 		sb.append(inLinkPid);
 		sb.append(" AND RLC.NODE_PID = ");
 		sb.append(nodePid);
@@ -165,8 +165,8 @@ public class RELATING_CHECK_NOSAME_LINE_LINE_RELATION extends baseRule {
 
 		StringBuilder sb = new StringBuilder();
 
-		sb.append("SELECT RV.PID FROM RD_VOICEGUIDE RV ");
-		sb.append(" WHERE RV.IN_LINK_PID = ");
+		sb.append("SELECT RV.PID FROM RD_VOICEGUIDE RV WHERE RV.u_record !=2");
+		sb.append(" AND RV.IN_LINK_PID = ");
 		sb.append(inLinkPid);
 		sb.append(" AND RV.NODE_PID = ");
 		sb.append(nodePid);
@@ -195,8 +195,8 @@ public class RELATING_CHECK_NOSAME_LINE_LINE_RELATION extends baseRule {
 
 		StringBuilder sb = new StringBuilder();
 
-		sb.append("SELECT RT.PID FROM RD_TOLLGATE RT ");
-		sb.append(" WHERE RT.IN_LINK_PID = ");
+		sb.append("SELECT RT.PID FROM RD_TOLLGATE RT WHERE RT.u_record !=2");
+		sb.append(" AND RT.IN_LINK_PID = ");
 		sb.append(inLinkPid);
 		sb.append(" AND RT.NODE_PID = ");
 		sb.append(nodePid);
@@ -225,8 +225,8 @@ public class RELATING_CHECK_NOSAME_LINE_LINE_RELATION extends baseRule {
 
 		StringBuilder sb = new StringBuilder();
 
-		sb.append("SELECT RS.PID FROM RD_SE RS ");
-		sb.append(" WHERE RS.IN_LINK_PID = ");
+		sb.append("SELECT RS.PID FROM RD_SE RS WHERE RS.u_record !=2");
+		sb.append(" AND RS.IN_LINK_PID = ");
 		sb.append(inLinkPid);
 		sb.append(" AND RS.NODE_PID = ");
 		sb.append(nodePid);
@@ -255,8 +255,8 @@ public class RELATING_CHECK_NOSAME_LINE_LINE_RELATION extends baseRule {
 
 		StringBuilder sb = new StringBuilder();
 
-		sb.append("SELECT RD.PID FROM RD_DIRECTROUTE RD ");
-		sb.append(" WHERE RD.IN_LINK_PID = ");
+		sb.append("SELECT RD.PID FROM RD_DIRECTROUTE RD WHERE RD.u_record !=2");
+		sb.append(" AND RD.IN_LINK_PID = ");
 		sb.append(inLinkPid);
 		sb.append(" AND RD.NODE_PID = ");
 		sb.append(nodePid);
@@ -285,8 +285,8 @@ public class RELATING_CHECK_NOSAME_LINE_LINE_RELATION extends baseRule {
 
 		StringBuilder sb = new StringBuilder();
 
-		sb.append("SELECT RR.PID FROM RD_RESTRICTION RR ");
-		sb.append(" WHERE RR.IN_LINK_PID = ");
+		sb.append("SELECT RR.PID FROM RD_RESTRICTION RR WHERE RR.u_record !=2");
+		sb.append(" AND RR.IN_LINK_PID = ");
 		sb.append(inLinkPid);
 		sb.append(" AND RR.NODE_PID = ");
 		sb.append(nodePid);
@@ -316,7 +316,8 @@ public class RELATING_CHECK_NOSAME_LINE_LINE_RELATION extends baseRule {
 		}
 		StringBuilder sb = new StringBuilder();
 		sb.append("select distinct LISTAGG(rbv.link_pid, ',') WITHIN GROUP(order by rbv.group_id) over(partition by rb.branch_pid) link_pids,rb.branch_pid"
-				+ ",rbv.group_id from rd_branch rb, rd_branch_via rbv where rb.branch_pid = rbv.branch_pid");
+				+ ",rbv.group_id from rd_branch rb, rd_branch_via rbv where rb.branch_pid = rbv.branch_pid"
+				+ " AND RB.u_record !=2 AND RBV.u_record !=2");
 		sb.append(" and rb.in_link_pid = ");
 		sb.append(inLinkPid);
 		sb.append(" and rb.out_link_pid = ");
@@ -359,8 +360,8 @@ public class RELATING_CHECK_NOSAME_LINE_LINE_RELATION extends baseRule {
 
 		StringBuilder sb = new StringBuilder();
 
-		sb.append("SELECT RG.PID FROM RD_GATE RG ");
-		sb.append(" WHERE RG.IN_LINK_PID = ");
+		sb.append("SELECT RG.PID FROM RD_GATE RG WHERE RG.u_record !=2");
+		sb.append(" AND RG.IN_LINK_PID = ");
 		sb.append(inLinkPid);
 		sb.append(" AND RG.NODE_PID = ");
 		sb.append(nodePid);

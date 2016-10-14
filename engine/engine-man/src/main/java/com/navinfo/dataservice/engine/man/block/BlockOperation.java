@@ -51,6 +51,8 @@ public class BlockOperation {
 						map.put("blockName", rs.getString("BLOCK_NAME"));
 						map.put("planningStatus", rs.getInt("PLAN_STATUS"));
 						map.put("cityId", rs.getInt("CITY_ID"));
+						//完成度
+						map.put("percent", rs.getInt("PERCENT"));
 						map.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
 						try {
 							STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
@@ -711,8 +713,10 @@ public class BlockOperation {
 						map.put("blockManName", rs.getString("BLOCK_MAN_NAME"));
 						map.put("blockId", rs.getInt("BLOCK_ID"));
 						map.put("blockName", rs.getString("BLOCK_NAME"));
+						map.put("taskId", rs.getString("TASK_ID"));
 						map.put("blockStatus", rs.getInt("BLOCK_STATUS"));
 						map.put("blockPlanStatus", rs.getInt("BLOCK_PLAN_STATUS"));
+						map.put("planStatus", rs.getInt("PLAN_STATUS"));
 						map.put("planStartDate", rs.getString("PLAN_START_DATE"));
 						map.put("planEndDate", rs.getString("PLAN_END_DATE"));
 						map.put("assignStatus", rs.getInt("ASSIGN_STATUS"));
@@ -722,6 +726,7 @@ public class BlockOperation {
 						map.put("progress", rs.getInt("PROGRESS"));						
 						map.put("type", rs.getInt("TASK_TYPE"));
 						map.put("percent",rs.getInt("PERCENT"));
+						map.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
 						totalCount=rs.getInt("TOTAL_RECORD_NUM");
 						list.add(map);
 					}
@@ -751,17 +756,21 @@ public class BlockOperation {
 						HashMap map = new HashMap();
 						map.put("blockManId", rs.getInt("BLOCK_MAN_ID"));
 						map.put("blockManName", rs.getString("BLOCK_MAN_NAME"));
+						map.put("blockDescp", rs.getString("BLOCK_DESCP"));
+						
 						map.put("blockId", rs.getInt("BLOCK_ID"));
 						map.put("blockName", rs.getString("BLOCK_NAME"));
+						map.put("workProperty", rs.getString("WORK_PROPERTY"));
 						map.put("cityId", rs.getInt("CITY_ID"));
 						map.put("blockStatus", rs.getInt("BLOCK_STATUS"));
 						map.put("blockPlanStatus", rs.getInt("BLOCK_PLAN_STATUS"));
+						map.put("planStatus", rs.getInt("PLAN_STATUS"));
 						map.put("diffDate", rs.getInt("DIFF_DATE"));
 						map.put("percent",rs.getInt("PERCENT"));
 						
 						map.put("collectPlanStartDate", rs.getString("COLLECT_PLAN_START_DATE"));
 						map.put("collectPlanEndDate", rs.getString("COLLECT_PLAN_END_DATE"));
-						map.put("collectAssignStatus", rs.getInt("COLLECT_ASSIGN_STATUS"));
+						//map.put("collectAssignStatus", rs.getInt("COLLECT_ASSIGN_STATUS"));
 						map.put("collectGroupId", rs.getInt("COLLECT_GROUP_ID"));
 						map.put("collectGroupName", rs.getString("COLLECT_GROUP_NAME"));
 						map.put("collectDiffDate", rs.getInt("COLLECT_DIFF_DATE"));
@@ -770,7 +779,7 @@ public class BlockOperation {
 						
 						map.put("dayEditPlanStartDate", rs.getString("DAY_EDIT_PLAN_START_DATE"));
 						map.put("dayEditPlanEndDate", rs.getString("DAY_EDIT_PLAN_END_DATE"));
-						map.put("dailyAssignStatus", rs.getInt("DAILY_ASSIGN_STATUS"));
+						//map.put("dailyAssignStatus", rs.getInt("DAILY_ASSIGN_STATUS"));
 						map.put("dayEditGroupId", rs.getInt("DAY_EDIT_GROUP_ID"));
 						map.put("dayEditGroupName", rs.getString("DAY_EDIT_GROUP_NAME"));
 						map.put("dailyDiffDate", rs.getInt("DAILY_DIFF_DATE"));
@@ -780,6 +789,8 @@ public class BlockOperation {
 						
 						map.put("createUserId", rs.getInt("CREATE_USER_ID"));
 						map.put("createUserName", rs.getString("CREATE_USER_NAME"));
+						
+						map.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
 						
 						totalCount=rs.getInt("TOTAL_RECORD_NUM");
 						list.add(map);

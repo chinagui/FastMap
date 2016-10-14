@@ -1,9 +1,6 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdlink.update;
 
-import java.sql.Connection;
-
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
-import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
@@ -14,14 +11,6 @@ public class Process extends AbstractProcess<Command> {
     public Process(AbstractCommand command) throws Exception {
         super(command);
         // TODO Auto-generated constructor stub
-    }
-
-    public Process(Command command, Result result, Connection conn) throws Exception {
-        super(command);
-        // this.setCommand(command);
-        this.setResult(result);
-        this.setConn(conn);
-
     }
 
     private RdLink updateLink;

@@ -149,6 +149,9 @@ public class Operation implements IOperation {
 		int currentPid = 0;
 		Set<Boolean> flagBooleans =new HashSet<Boolean>();
 		for(int i =0;i < command.getLinkPids().size() -1 ;i++){
+			if(flagBooleans.size() > 0){
+				flagBooleans.clear();
+			}
 			RdLink currentLink = command.getLinks().get(i);
 			RdLink nextLink = command.getLinks().get(i+1);
 			currentPid = this.getIntersectPid(currentLink, nextLink);
@@ -266,6 +269,19 @@ public class Operation implements IOperation {
 		result.insertObject(link, ObjStatus.UPDATE, link.getPid());
 
 
+		if (currentPid == link.getsNodePid()) {
+			if (link.getsNodePid() != map.get(point).getPid()) {
+				updateContent.put("sNodePid", map.get(point).getPid());
+			}
+		} else {
+			if (link.geteNodePid() != map.get(point).getPid()) {
+				updateContent.put("eNodePid", map.get(point).getPid());
+			}
+		}
+		link.fillChangeFields(updateContent);
+		result.insertObject(link, ObjStatus.UPDATE, link.getPid());
+		command.getNoTargetLinks().put(link.getPid(), link);
+		
 	}
 
 	// 上下线属性维护
@@ -663,6 +679,16 @@ public class Operation implements IOperation {
 		opRefRelationObj.handlerRdTrafficsignal(this.command, result);
 
 		opRefRelationObj.handlerRdCross(this.command, result);
+		
+		opRefRelationObj.handleLaneConnexity(this.command, result);
+		
+		opRefRelationObj.handleRestriction(this.command, result);
+		
+		opRefRelationObj.handleVoiceguide(this.command, result);
+		
+		opRefRelationObj.handleBranch(this.command, result);
+		
+		opRefRelationObj.handleDirectroute(this.command, result);
 	}
 	/**
 	 * @param startLine

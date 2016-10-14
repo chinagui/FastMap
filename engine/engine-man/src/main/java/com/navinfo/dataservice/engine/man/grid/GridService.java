@@ -24,6 +24,7 @@ import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.statics.iface.StaticsApi;
 import com.navinfo.dataservice.api.statics.model.GridStatInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskOperation;
@@ -282,7 +283,8 @@ public class GridService {
 			String InClause = null;
 			Clob clobGrids=null;
 			if (size>1000){
-				clobGrids=conn.createClob();
+//				clobGrids=conn.createClob();
+				clobGrids=ConnectionUtil.createClob(conn);
 				clobGrids.setString(1, StringUtils.join(gridList, ","));
 				InClause = " and g.grid_id IN (select to_number(column_value) from table(clob_to_table(?)))";
 			}else{
@@ -295,12 +297,12 @@ public class GridService {
 			//获取已分配的grid
 			List<HashMap<String, Object>> alreadyAssignGrids=new ArrayList<HashMap<String, Object>>();
 			if (size>1000){
-				waitAssignGrids=GridOperation.queryGirdBySql(conn, waitAssignSql+InClause,clobGrids);
-				alreadyAssignGrids=GridOperation.queryGirdBySql(conn, alreadyAssignSql+InClause,clobGrids);
+				waitAssignGrids=GridOperation.queryGirdBySql(conn, waitAssignSql+InClause,clobGrids,1);
+				alreadyAssignGrids=GridOperation.queryGirdBySql(conn, alreadyAssignSql+InClause,clobGrids,2);
 //				alreadyAssignGrids=GridOperation.queryGirdBySql(conn, alreadyAssignSql+InClause,json.getInt("stage"),clobGrids);			
 			}else{
-				waitAssignGrids=GridOperation.queryGirdBySql(conn, waitAssignSql+InClause,null);
-				alreadyAssignGrids=GridOperation.queryGirdBySql(conn, alreadyAssignSql+InClause,null);
+				waitAssignGrids=GridOperation.queryGirdBySql(conn, waitAssignSql+InClause,null,1);
+				alreadyAssignGrids=GridOperation.queryGirdBySql(conn, alreadyAssignSql+InClause,null,2);
 //				alreadyAssignGrids=GridOperation.queryGirdBySql(conn, alreadyAssignSql+InClause,json.getInt("stage"),null);
 			}
 			
@@ -464,14 +466,15 @@ public class GridService {
 			conn = DBConnector.getInstance().getManConnection();
 			QueryRunner run = new QueryRunner();
 
-			String selectSql = "SELECT I.INFOR_ID,IGM.GRID_ID"
+			String selectSql = "SELECT DISTINCT I.INFOR_ID,IGM.GRID_ID"
 					+ " FROM BLOCK_MAN BM, TASK T, INFOR I,INFOR_GRID_MAPPING IGM,BLOCK_GRID_MAPPING BGM"
 					+ " WHERE BM.LATEST = 1"
 					+ " AND BM.TASK_ID = T.TASK_ID"
 					+ " AND T.TASK_TYPE = 4"
 					+ " AND T.TASK_ID = I.TASK_ID"
+					+ " AND I.INFOR_ID = IGM.INFOR_ID"
 					+ " AND BGM.GRID_ID = IGM.GRID_ID"
-					+ " AND BM.BLOCK_ID = " + blockId;		
+					+ " AND BM.BLOCK_ID = " + blockId;	
 
 			ResultSetHandler<List<Integer>> rsHandler = new ResultSetHandler<List<Integer>>() {
 				public List<Integer> handle(ResultSet rs) throws SQLException {

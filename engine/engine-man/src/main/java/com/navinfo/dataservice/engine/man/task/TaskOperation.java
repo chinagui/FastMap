@@ -284,6 +284,7 @@ public class TaskOperation {
 					+ "         C.CITY_NAME,"
 					+ "         C.PLAN_STATUS CITY_PLAN_STATUS,"
 					+ "         T.STATUS TASK_STATUS, "
+					+ "         T.DESCP TASK_DESCP, "
 					+ "         1 TASK_TYPE"
 					+ "    FROM TASK T, CITY C"
 					+ "   WHERE T.CITY_ID=C.CITY_ID"
@@ -297,12 +298,13 @@ public class TaskOperation {
 					+ "         C.CITY_NAME,"
 					+ "         C.PLAN_STATUS,"
 					+ "         0,"
+					+ "         '---' TASK_DESCP, "
 					+ "         1 TASK_TYPE"
 					+ "    FROM CITY C"
 					+ "   WHERE C.CITY_ID NOT IN (100000,100001,100002)"
 					+ "   AND C.PLAN_STATUS=0),"
 					+ " FINAL_TABLE AS"
-					+ " (SELECT *"
+					+ " (SELECT DISTINCT *"
 					+ "    FROM TASK_LIST"
 					+ "    WHERE 1=1"
 					+  conditionSql
@@ -357,6 +359,7 @@ public class TaskOperation {
 					+ "       C.CITY_NAME,"
 					+ "       C.PLAN_STATUS,"
 					+ "       T.STATUS      TASK_STATUS, "
+					+ "       T.DESCP TASK_DESCP, "
 					+ "       1 TASK_TYPE,"
 					+ "       NVL(S.PERCENT,0) PERCENT,"
 					+ "       NVL(S.DIFF_DATE,0) DIFF_DATE,"
@@ -378,7 +381,7 @@ public class TaskOperation {
 					+ "      OR NOT EXISTS(SELECT 1 FROM BLOCK_MAN M"
 					+ "                   WHERE M.TASK_ID = T.TASK_ID))),"
 					+ " FINAL_TABLE AS"
-					+ " (SELECT *"
+					+ " (SELECT DISTINCT *"
 					+ "    FROM TASK_LIST"
 					+ "    WHERE 1=1"
 					+  conditionSql
@@ -448,6 +451,7 @@ public class TaskOperation {
 					+ "       C.CITY_NAME,"
 					+ "       C.PLAN_STATUS,"
 					+ "       T.STATUS      TASK_STATUS, "
+					+ "       T.DESCP TASK_DESCP, "
 					+ "       1 TASK_TYPE,"
 					+ "       S.PERCENT,"
 					+ "       S.DIFF_DATE,"
@@ -459,7 +463,7 @@ public class TaskOperation {
 					+ "  FROM TASK T, CITY C, FM_STAT_OVERVIEW_TASK S,BLOCK_MAN BM"
 					+ " WHERE T.CITY_ID = C.CITY_ID"
 					+ "   AND C.CITY_ID NOT IN (100000, 100001, 100002)"
-					+ "   AND T.TASK_ID = S.TASK_ID"
+					+ "   AND T.TASK_ID = S.TASK_ID(+)"
 					+ "   AND T.TASK_ID = BM.TASK_ID"
 					//+ "   AND S.PERCENT = 100"
 					+ "   AND T.STATUS = 1"
@@ -470,7 +474,7 @@ public class TaskOperation {
 					+ "                     AND M.LATEST = 1"
 					+ "                     AND M.STATUS <> 0)),"
 					+ " FINAL_TABLE AS"
-					+ " (SELECT *"
+					+ " (SELECT DISTINCT *"
 					+ "    FROM TASK_LIST"
 					+ "    WHERE 1=1"
 					+  conditionSql
@@ -540,6 +544,7 @@ public class TaskOperation {
 					+ "       C.CITY_NAME,"
 					+ "       C.PLAN_STATUS,"
 					+ "       T.STATUS      TASK_STATUS, "
+					+ "       T.DESCP TASK_DESCP, "
 					+ "       1 TASK_TYPE,"
 					+ "       S.PERCENT,"
 					+ "       S.DIFF_DATE,"
@@ -551,11 +556,11 @@ public class TaskOperation {
 					+ "  FROM TASK T, CITY C, FM_STAT_OVERVIEW_TASK S"
 					+ " WHERE T.CITY_ID = C.CITY_ID"
 					+ "   AND C.CITY_ID NOT IN (100000, 100001, 100002)"
-					+ "   AND T.TASK_ID = S.TASK_ID"
+					+ "   AND T.TASK_ID = S.TASK_ID(+)"
 					+ "   AND T.STATUS = 0"
 					+ "   AND T.LATEST = 1),"
 					+ " FINAL_TABLE AS"
-					+ " (SELECT *"
+					+ " (SELECT DISTINCT *"
 					+ "    FROM TASK_LIST"
 					+ "    WHERE 1=1"
 					+  conditionSql
@@ -609,6 +614,7 @@ public class TaskOperation {
 					+ "         C.INFOR_NAME,"
 					+ "         C.PLAN_STATUS INFOR_PLAN_STATUS,"
 					+ "         T.STATUS TASK_STATUS, "
+					+ "         T.DESCP TASK_DESCP, "
 					+ "         4 TASK_TYPE"
 					+ "    FROM TASK T, INFOR C"
 					+ "   WHERE T.TASK_ID=C.TASK_ID"
@@ -621,11 +627,12 @@ public class TaskOperation {
 					+ "         C.INFOR_NAME,"
 					+ "         C.PLAN_STATUS,"
 					+ "         0,"
+					+ "         '---' TASK_DESCP, "
 					+ "         4 TASK_TYPE"
 					+ "    FROM INFOR C"
 					+ "   WHERE C.PLAN_STATUS=0),"
 					+ " FINAL_TABLE AS"
-					+ " (SELECT *"
+					+ " (SELECT DISTINCT *"
 					+ "    FROM TASK_LIST"
 					+ "    WHERE 1=1"
 					+  conditionSql
@@ -680,6 +687,7 @@ public class TaskOperation {
 					+ "       C.INFOR_NAME,"
 					+ "       C.PLAN_STATUS,"
 					+ "       T.STATUS      TASK_STATUS, "
+					+ "       T.DESCP TASK_DESCP, "
 					+ "       4 TASK_TYPE,"
 					+ "       NVL(S.PERCENT,0) PERCENT,"
 					+ "       NVL(S.DIFF_DATE,0) DIFF_DATE,"
@@ -700,9 +708,9 @@ public class TaskOperation {
 					+ "      OR NOT EXISTS(SELECT 1 FROM BLOCK_MAN M"
 					+ "                   WHERE M.TASK_ID = T.TASK_ID))),"
 					+ " FINAL_TABLE AS"
-					+ " (SELECT *"
+					+ " (SELECT DISTINCT *"
 					+ "    FROM TASK_LIST"
-					+ "    WHERE 1==1"
+					+ "    WHERE 1=1"
 					+  conditionSql
 					+ "   ORDER BY TASK_LIST.DIFF_DATE ASC,TASK_LIST.PERCENT DESC)"
 					+ " SELECT /*+FIRST_ROWS ORDERED*/"
@@ -770,6 +778,7 @@ public class TaskOperation {
 					+ "       C.INFOR_NAME,"
 					+ "       C.PLAN_STATUS,"
 					+ "       T.STATUS      TASK_STATUS, "
+					+ "       T.DESCP TASK_DESCP, "
 					+ "       4 TASK_TYPE,"
 					+ "       S.PERCENT,"
 					+ "       S.DIFF_DATE,"
@@ -780,7 +789,7 @@ public class TaskOperation {
 					+ "       S.DAILY_PERCENT"
 					+ "  FROM TASK T, INFOR C, FM_STAT_OVERVIEW_TASK S,BLOCK_MAN BM"
 					+ " WHERE T.task_ID = C.TASK_ID"
-					+ "   AND T.TASK_ID = S.TASK_ID"
+					+ "   AND T.TASK_ID = S.TASK_ID(+)"
 					+ "   AND T.TASK_ID=BM.TASK_ID"
 					//+ "   AND S.PERCENT = 100"
 					+ "   AND T.STATUS = 1"
@@ -791,7 +800,7 @@ public class TaskOperation {
 					+ "                     AND M.LATEST = 1"
 					+ "                     AND M.STATUS <> 0)),"
 					+ " FINAL_TABLE AS"
-					+ " (SELECT *"
+					+ " (SELECT DISTINCT *"
 					+ "    FROM TASK_LIST"
 					+ "    WHERE 1=1"
 					+  conditionSql
@@ -861,6 +870,7 @@ public class TaskOperation {
 					+ "       C.INFOR_NAME,"
 					+ "       C.PLAN_STATUS,"
 					+ "       T.STATUS      TASK_STATUS, "
+					+ "       T.DESCP TASK_DESCP, "
 					+ "       4 TASK_TYPE,"
 					+ "       S.PERCENT,"
 					+ "       S.DIFF_DATE,"
@@ -871,11 +881,11 @@ public class TaskOperation {
 					+ "       S.DAILY_PERCENT"
 					+ "  FROM TASK T, INFOR C, FM_STAT_OVERVIEW_TASK S"
 					+ " WHERE T.task_ID = C.TASK_ID"
-					+ "   AND T.TASK_ID = S.TASK_ID"
+					+ "   AND T.TASK_ID = S.TASK_ID(+)"
 					+ "   AND T.STATUS = 0"
 					+ "   AND T.LATEST = 1),"
 					+ " FINAL_TABLE AS"
-					+ " (SELECT *"
+					+ " (SELECT DISTINCT *"
 					+ "    FROM TASK_LIST"
 					+ "    WHERE 1=1"
 					+  conditionSql
@@ -900,6 +910,7 @@ public class TaskOperation {
 	 * @return
 	 */
 	private static ResultSetHandler<Page> getUnPushSnapshotQuery(final int currentPageNum,final int pageSize){
+		final String version=SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion);
 		ResultSetHandler<Page> rsHandler = new ResultSetHandler<Page>(){
 			public Page handle(ResultSet rs) throws SQLException {
 				List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
@@ -910,8 +921,10 @@ public class TaskOperation {
 					Map<String, Object> map = new HashMap<String, Object>();
 					map.put("taskId", rs.getInt("TASK_ID"));
 					map.put("taskName", rs.getString("TASK_NAME"));
+					map.put("taskDescp", rs.getString("TASK_DESCP"));
+					
 					if(rs.getInt("TASK_TYPE")==1){
-						map.put("cityId", rs.getString("CITY_ID"));
+						map.put("cityId", rs.getInt("CITY_ID"));
 						map.put("cityName", rs.getString("CITY_NAME"));
 						map.put("cityPlanStatus", rs.getInt("CITY_PLAN_STATUS"));}
 					else if(rs.getInt("TASK_TYPE")==4){
@@ -920,7 +933,7 @@ public class TaskOperation {
 						map.put("inforPlanStatus", rs.getInt("INFOR_PLAN_STATUS"));}
 					map.put("taskType", rs.getInt("TASK_TYPE"));
 					map.put("taskStatus", rs.getInt("TASK_STATUS"));
-					
+					map.put("version", version);
 					total=rs.getInt("TOTAL_RECORD_NUM");
 					list.add(map);
 				}
@@ -939,6 +952,7 @@ public class TaskOperation {
 	 * @return
 	 */
 	private static ResultSetHandler<Page> getOtherSnapshotQuery(final int currentPageNum,final int pageSize){
+		final String version=SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion);
 		ResultSetHandler<Page> rsHandler = new ResultSetHandler<Page>(){
 			public Page handle(ResultSet rs) throws SQLException {
 				List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
@@ -950,7 +964,7 @@ public class TaskOperation {
 					map.put("taskId", rs.getInt("TASK_ID"));
 					map.put("taskName", rs.getString("TASK_NAME"));
 					if(rs.getInt("TASK_TYPE")==1){
-						map.put("cityId", rs.getString("CITY_ID"));
+						map.put("cityId", rs.getInt("CITY_ID"));
 						map.put("cityName", rs.getString("CITY_NAME"));
 						map.put("cityPlanStatus", rs.getInt("PLAN_STATUS"));}
 					else if(rs.getInt("TASK_TYPE")==4){
@@ -966,6 +980,7 @@ public class TaskOperation {
 					map.put("collectPercent", rs.getInt("COLLECT_PERCENT"));
 					map.put("dailyProgress", rs.getInt("DAILY_PROGRESS"));
 					map.put("dailyPercent", rs.getInt("DAILY_PERCENT"));
+					map.put("version", version);
 					total=rs.getInt("TOTAL_RECORD_NUM");
 					list.add(map);
 				}
@@ -1082,7 +1097,7 @@ public class TaskOperation {
 					+ "  FROM T, INFOR I"
 					+ " WHERE T.TASK_ID(+) = I.TASK_ID),"
 					+ " FINAL_TABLE AS"
-					+ " (SELECT *"
+					+ " (SELECT DISTINCT *"
 					+ "    FROM TASK_LIST"
 					+ conditionSql
 					+ "   ORDER BY TASK_LIST.TASK_STATUS DESC, TASK_LIST.FINISH_PERCENT ASC)"
@@ -1109,6 +1124,7 @@ public class TaskOperation {
 		//NVL(T.TASK_ID, 0) TASK_ID,NVL(T.NAME, '---') TASK_NAME, TO_CHAR(C.CITY_ID) UPPER_LEVEL_ID,
 		//C.CITY_NAME UPPER_LEVEL_NAME,1 TASK_TYPE,NVL(T.STATUS, 0) TASK_STATUS,C.PLAN_STATUS,
 		//NVL(T.FINISH_PERCENT, 0) FINISH_PERCENT,ROWNUM_,TOTAL_RECORD_NUM
+		final String version=SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion);
 		ResultSetHandler<Page> rsHandler = new ResultSetHandler<Page>(){
 			public Page handle(ResultSet rs) throws SQLException {
 				List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
@@ -1125,6 +1141,7 @@ public class TaskOperation {
 					map.put("taskStatus", rs.getInt("TASK_STATUS"));
 					map.put("planStatus", rs.getInt("PLAN_STATUS"));
 					map.put("finishPercent", rs.getInt("FINISH_PERCENT"));
+					map.put("version", version);
 					//map.put("ROWNUM_", rs.getInt("ROWNUM_"));
 					//map.put("TOTAL_RECORD_NUM", rs.getInt("TOTAL_RECORD_NUM"));
 					total=rs.getInt("TOTAL_RECORD_NUM");
@@ -1270,7 +1287,7 @@ public class TaskOperation {
 					+ "    FROM T, INFOR I"
 					+ "   WHERE T.TASK_ID(+) = I.TASK_ID),"
 					+ " QUERY AS"
-					+ " (SELECT *"
+					+ " (SELECT DISTINCT *"
 					+ "    FROM TASK_LIST"
 					+conditionSql
 					+orderSql

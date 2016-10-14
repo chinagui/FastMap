@@ -28,15 +28,6 @@ public class Process extends AbstractProcess<Command> {
 	public Process(AbstractCommand command) throws Exception {
 		super(command);
 	}
-	
-	/**
-	 * @param command
-	 * @throws Exception
-	 */
-	public Process(AbstractCommand command,Connection conn) throws Exception {
-		super(command);
-		this.setConn(conn);
-	}
 
 	public boolean prepareData() throws Exception {
 

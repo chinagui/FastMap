@@ -22,6 +22,7 @@ import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiChildren;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiParent;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiPhoto;
+import com.navinfo.dataservice.dao.glm.selector.SelectorUtils;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -117,7 +118,20 @@ public class BasicOperator extends AbstractOperator {
 
 				} else if (StringUtils.toColumnName(name).equals(M_ROW_ID)) {
 					key.append(M_ROW_ID + ",");
-					row.setRowId(UuidUtils.genUuid());
+					String tableName = SelectorUtils.getObjTableName(row);
+					if(StringUtils.isNotEmpty(row.rowId()))
+					{
+						if(!tableName.equals("IX_POI"))
+						{
+							row.setRowId(UuidUtils.genUuid());
+						}
+					}
+					else
+					{
+						row.setRowId(UuidUtils.genUuid());
+					}
+					logger.info("rowid:"+row.rowId());
+					System.out.println("poi rowid:"+row.rowId());
 					value.append("'" + row.rowId() + "',");
 				} else if(row instanceof IxPoiPhoto && name.equals("fccPid"))
 				{
@@ -149,6 +163,7 @@ public class BasicOperator extends AbstractOperator {
 	@Override
 	public void updateRow2Sql(Statement stmt) throws Exception {
 		StringBuilder sb = new StringBuilder("update " + row.tableName() + " set u_record=3 ");
+		
 		this.addConditionForPoi(sb);
 		Set<Entry<String, Object>> set = row.changedFields().entrySet();
 
@@ -314,7 +329,8 @@ public class BasicOperator extends AbstractOperator {
 	}
 
 	private void addConditionForPoi(StringBuilder sb) {
-		if (row instanceof IxPoi || row instanceof IxPoiChildren || row instanceof IxPoiParent) {
+		String tableName = SelectorUtils.getObjTableName(row);
+		if (tableName.equals("IX_POI") || row instanceof IxPoi || row instanceof IxPoiChildren || row instanceof IxPoiParent) {
 			sb.append(",u_date = " + StringUtils.getCurrentTime() + ",");
 		} else {
 			sb.append(",");

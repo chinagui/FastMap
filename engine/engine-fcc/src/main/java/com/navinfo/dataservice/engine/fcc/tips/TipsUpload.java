@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.fcc.tips;
 
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -21,6 +22,7 @@ import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Table;
+import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
@@ -61,6 +63,9 @@ public class TipsUpload {
 	private Map<String, JSONObject> oldTips = new HashMap<String, JSONObject>();
 	
 	private Map<String, JSONObject> roadNameTips = new HashMap<String, JSONObject>(); //道路名tips，用户道路名入元数据库
+	
+	private static final Logger logger = Logger.getLogger(TipsUpload.class);
+
 	
 	private String currentDate;
 
@@ -171,7 +176,7 @@ public class TipsUpload {
 						metaApi.nameImport(name.toString(), longitude, latitude, rowkey);
 					} catch (Exception e) {
 						//reasons.add(newReasonObject(rowkey, ErrorType.InvalidData));
-						e.printStackTrace();
+						logger.error(e.getMessage(), e.getCause());
 					}
 				}
 			}
@@ -358,7 +363,7 @@ public class TipsUpload {
 
 				oldTips.put(rowkey, jo);
 			} catch (Exception e) {
-				e.printStackTrace();
+				logger.error(e.getMessage(),e.getCause());
 			}
 		}
 	}
@@ -846,9 +851,16 @@ public class TipsUpload {
 
 	public static void main(String[] args) throws Exception {
 
-		TipsUpload a = new TipsUpload();
+		/*TipsUpload a = new TipsUpload();
 
 		a.run("D:/4.txt");
-		System.out.println("成功");
+		System.out.println("成功")*/;
+		
+			try {
+				HBaseConnector.getInstance().getConnection();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 	}
 }

@@ -594,5 +594,23 @@ public class commonTest extends InitApplication {
 		String msg = t.run();
 	}
 
+	@Test
+	public void run_1013_1() throws Exception {
+
+		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDTOLLGATE\",\"dbId\":17,\"data\":{\"inLinkPid\":207000710,\"outLinkPid\":220000776,\"nodePid\":206000534}}";
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
 	
+	@Test
+	public void run_1013_2() throws Exception {
+
+		String parameter = "";
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
 }

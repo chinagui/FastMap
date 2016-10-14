@@ -18,4 +18,10 @@ public class RdBranchTest extends InitApplication{
         String parameter = "{\"command\":\"DELETE\",\"dbId\":2025,\"type\":\"RDBRANCH\",\"detailId\":304000013,\"rowId\":\"\",\"branchType\":0}";
         TestUtil.run(parameter);
     }
+
+    @Test
+    public void update(){
+        String parameter = "{\"type\":\"RDBRANCH\",\"command\":\"UPDATE\",\"dbId\":19,\"data\":{\"relationshipType\":2,\"pid\":23415,\"objStatus\":\"UPDATE\"}}";
+        TestUtil.run(parameter);
+    }
 }

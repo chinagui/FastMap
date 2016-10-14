@@ -1,12 +1,7 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.zonelink.update;
 
-import java.sql.Connection;
-
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
-import com.navinfo.dataservice.dao.glm.iface.Result;
-import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneLink;
-import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.ad.zone.ZoneLinkSelector;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.operation.AbstractProcess;
@@ -23,14 +18,6 @@ public class Process extends AbstractProcess<Command> {
 		super(command);
 
 	}
-	public Process(Command command,Result result,Connection conn) throws Exception {
-		super(command);
-		this.setCommand(command);
-		this.setResult(result);
-		this.setConn(conn);
-
-	}
-
 	
 	@Override
 	public String exeOperation() throws Exception {

@@ -10,14 +10,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
 import org.apache.commons.dbutils.DbUtils;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.engine.meta.area.ScPointAdminArea;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 public class RdNameSelector {
 	
@@ -135,7 +136,7 @@ public class RdNameSelector {
 	}
 
 	/**
-	 * @Description:判断名称是否存在
+	 * @Description:判断名称是否存在--查询大区库
 	 * @param name
 	 * @param adminId
 	 * @return 所在行政区划
@@ -159,7 +160,19 @@ public class RdNameSelector {
 
 		try {
 
-			conn = DBConnector.getInstance().getMetaConnection();
+			//***********************以下代码是路演环境临时使用*begin***********************
+			String dbId= SystemConfigFactory.getSystemConfig().getValue("region_db_id");
+			
+			if(StringUtils.isEmpty(dbId)){
+				throw new Exception("未配置region_db_id系统参数。");
+			}
+
+			//路演环境临时使用
+			conn = DBConnector.getInstance().getConnectionById(Integer.parseInt(dbId));
+			
+			//***********************end ***********************
+			
+			//conn = DBConnector.getInstance().getMetaConnection();
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setString(1, name);
 			pstmt.setInt(2, adminId);
@@ -273,22 +286,25 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips,int dbId) throws
 				}
 			}
 			
-			sql.append(" ORDER BY a.NAME_GROUPID,a.NAME_ID");
+			
 			
 			// 添加排序条件
 			if (sortby.length()>0) {
 				int index = sortby.indexOf("-");
 				if (index != -1) {
+					sql.append(" ORDER BY a.NAME_GROUPID DESC,a.NAME_ID DESC");
 					String sortbyName = sUtils.toColumnName(sortby.substring(1));
 					sql.append(" , a.");
 					sql.append(sortbyName);
 					sql.append(" DESC");
 				} else {
+					sql.append(" ORDER BY a.NAME_GROUPID,a.NAME_ID");
 					String sortbyName = sUtils.toColumnName(sortby.substring(1));
 					sql.append(" , a.");
 					sql.append(sortbyName);
-					sql.append(" ASC");
 				}
+			} else {
+				sql.append(" ORDER BY a.NAME_GROUPID DESC,a.NAME_ID DESC");
 			}
 			
 			sql.append(" ) c");

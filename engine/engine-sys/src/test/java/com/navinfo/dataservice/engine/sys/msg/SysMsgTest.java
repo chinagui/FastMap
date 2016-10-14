@@ -11,10 +11,10 @@ public class SysMsgTest {
 	@Test
 	public void sysMsgInsert(){
 		SysMsg sysMsg = new SysMsg();
-		sysMsg.setMsgTitle("测试21");
-		sysMsg.setMsgContent("测试21");
-		sysMsg.setPushUserId(1L);
-		long[] targetUserIds = {1664,4};
+		sysMsg.setMsgTitle("测试27");
+		sysMsg.setMsgContent("测试27");
+		sysMsg.setPushUserId(0L);
+		long[] targetUserIds = {2,1,1664};
 		try {
 			SysMsgPublisher.publishMsg(sysMsg.getMsgTitle(), sysMsg.getMsgContent(), sysMsg.getPushUserId(), targetUserIds);
 		} catch (Exception e) {

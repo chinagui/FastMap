@@ -196,13 +196,19 @@ public class BlockService {
 			String planningStatus = ((json.getJSONArray("planningStatus").toString()).replace('[', '(')).replace(']',
 					')');
 
-			String selectSql = "select t.BLOCK_ID,t.BLOCK_NAME,t.GEOMETRY,t.PLAN_STATUS,t.CITY_ID from BLOCK t where t.PLAN_STATUS in "
-					+ planningStatus;
+			String selectSql = "select t.BLOCK_ID,t.BLOCK_NAME,t.GEOMETRY,t.PLAN_STATUS,t.CITY_ID,TMP.PERCENT"
+					+ " from BLOCK t "
+					+ ", (SELECT BM.BLOCK_ID,FSOB.PERCENT FROM BLOCK_MAN BM, FM_STAT_OVERVIEW_BLOCKMAN FSOB WHERE BM.BLOCK_MAN_ID = FSOB.BLOCK_MAN_ID(+)) TMP"
+					+ " where t.PLAN_STATUS in "+ planningStatus
+					+ " AND T.BLOCK_ID = TMP.BLOCK_ID";
 
 			if (StringUtils.isNotEmpty(json.getString("snapshot"))) {
 				if ("1".equals(json.getString("snapshot"))) {
-					selectSql = "select t.BLOCK_ID,t.BLOCK_NAME,t.PLAN_STATUS,t.CITY_ID from BLOCK t where t.PLAN_STATUS in "
-							+ planningStatus;
+					selectSql = "select t.BLOCK_ID,t.BLOCK_NAME,t.PLAN_STATUS,t.CITY_ID,TMP.PERCENT"
+							+ " from BLOCK t"
+							+ ", (SELECT BM.BLOCK_ID,FSOB.PERCENT FROM BLOCK_MAN BM, FM_STAT_OVERVIEW_BLOCKMAN FSOB WHERE BM.BLOCK_MAN_ID = FSOB.BLOCK_MAN_ID(+)) TMP"
+							+ " where t.PLAN_STATUS in " + planningStatus
+							+ " AND T.BLOCK_ID = TMP.BLOCK_ID";
 				}
 			}
 			;
@@ -224,8 +230,77 @@ public class BlockService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+	
+	public HashMap<?, ?> queryByBlockId(JSONObject json) throws ServiceException {
+		Connection conn = null;
+		try {
+			// 鎸佷箙鍖�
+			QueryRunner run = new QueryRunner();
+			conn = DBConnector.getInstance().getManConnection();
+			JSONObject obj = JSONObject.fromObject(json);
+			BlockMan bean = (BlockMan) JSONObject.toBean(obj, BlockMan.class);
+
+			String selectSql = "select t.CITY_ID, t.BLOCK_MAN, t.GEOMETRY,"
+					+ " t.PLAN_STATUS, T.work_property,tt.task_type"
+					+ " from BLOCK t,task tt where t.BLOCK_ID = ? and t.city_id=tt.city_id";
+			ResultSetHandler<HashMap> rsHandler = new ResultSetHandler<HashMap>() {
+				public HashMap<String, Object> handle(ResultSet rs) throws SQLException {
+					while (rs.next()) {
+						HashMap<String, Object> map = new HashMap<String, Object>();
+						map.put("blockManId", 0);
+						map.put("cityId", rs.getInt("CITY_ID"));
+						map.put("blockManName", rs.getString("BLOCK_NAME"));
+						map.put("workProperty", rs.getString("WORK_PROPERTY"));
+						map.put("roadPlanTotal", 0);
+						map.put("poiPlanTotal", 0);
+						
+						STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
+						try {
+							String clobStr = GeoTranslator.struct2Wkt(struct);
+							map.put("geometry", Geojson.wkt2Geojson(clobStr));
+						} catch (Exception e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+						map.put("planStatus", rs.getInt("PLAN_STATUS"));
+						map.put("taskName", "---");
+						map.put("collectGroupId", 0);
+						map.put("dayEditGroupId", 0);
+						map.put("monthEditGroupId", 0);
+						map.put("collectPlanStartDate", "---");
+						map.put("collectPlanEndDate", "---");
+						map.put("dayEditPlanStartDate", "---");
+						map.put("dayEditPlanEndDate", "---");
+						map.put("monthEditPlanStartDate", "---");
+						map.put("monthEditPlanEndDate", "---");
+						map.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
+						map.put("dayProducePlanStartDate", "---");
+						map.put("dayProducePlanEndDate", "---");
+						map.put("monthProducePlanStartDate", "---");
+						map.put("monthProducePlanEndDate", "---");
+						map.put("taskType", rs.getInt("task_type"));
+						map.put("blockDescp", "---");
+						map.put("createUserName","---");
+						return map;
+					}
+					return null;
+				}
+
+			};
+			return run.query(conn, selectSql, rsHandler, bean.getBlockId());
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询失败:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}	
 
 	public HashMap<?, ?> query(JSONObject json) throws ServiceException {
+		JSONObject objTmp = JSONObject.fromObject(json);
+		BlockMan beanTmp = (BlockMan) JSONObject.toBean(objTmp, BlockMan.class);
+		if(beanTmp.getBlockManId()==0){return queryByBlockId(json);}
 		Connection conn = null;
 		try {
 			// 鎸佷箙鍖�
@@ -241,7 +316,8 @@ public class BlockService {
 					+ " to_char(b.month_edit_plan_end_date, 'yyyymmdd') month_edit_plan_end_date,to_char(b.day_produce_plan_start_date, 'yyyymmdd') day_produce_plan_start_date,"
 					+ " to_char(b.day_produce_plan_end_date, 'yyyymmdd') day_produce_plan_end_date,"
 					+ " to_char(b.month_produce_plan_start_date, 'yyyymmdd') month_produce_plan_start_date,"
-					+ " to_char(b.month_produce_plan_end_date, 'yyyymmdd') month_produce_plan_end_date"
+					+ " to_char(b.month_produce_plan_end_date, 'yyyymmdd') month_produce_plan_end_date,"
+					+ " T.work_property,B.road_plan_total,B.POI_plan_total"
 					+ " from BLOCK t, BLOCK_MAN b, TASK k,USER_INFO u where B.BLOCK_MAN_ID = ?"
 					+ " and t.block_id = b.block_id and t.city_id = k.city_id and k.latest = 1 and b.latest=1 and b.create_user_id=u.user_id ";
 			ResultSetHandler<HashMap> rsHandler = new ResultSetHandler<HashMap>() {
@@ -251,6 +327,10 @@ public class BlockService {
 						map.put("blockManId", rs.getInt("BLOCK_MAN_ID"));
 						map.put("cityId", rs.getInt("CITY_ID"));
 						map.put("blockManName", rs.getString("BLOCK_MAN_NAME"));
+						map.put("workProperty", rs.getString("WORK_PROPERTY"));
+						map.put("roadPlanTotal", rs.getInt("ROAD_PLAN_TOTAL"));
+						map.put("poiPlanTotal", rs.getInt("POI_PLAN_TOTAL"));
+						
 						STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
 						try {
 							String clobStr = GeoTranslator.struct2Wkt(struct);
@@ -756,6 +836,9 @@ public class BlockService {
 				String key = (String) keys.next();
 				if("blockManName".equals(key)){
 					conditionSql=conditionSql+" AND MAN_LIST.BLOCK_MAN_NAME LIKE '%"+conditionJson.getString(key)+"%'";}
+				if("name".equals(key)){
+					conditionSql=conditionSql+" AND (MAN_LIST.BLOCK_MAN_NAME LIKE '%"+conditionJson.getString(key)+"%'"
+							+ " or MAN_LIST.BLOCK_NAME LIKE '%"+conditionJson.getString(key)+"%')";}
 				if("taskId".equals(key)){
 					conditionSql=conditionSql+" AND MAN_LIST.TASK_ID ="+conditionJson.getInt(key);}
 				if("cityId".equals(key)){
@@ -778,14 +861,55 @@ public class BlockService {
 		String selectSql = "";
 		String selectPart="";
 		String wherePart="";
-		selectSql="WITH MAN_LIST AS"
+		selectSql="WITH TASK_PLAN AS"
+				+ " (SELECT T.TASK_ID, 3 PLAN_STATUS"
+				+ "    FROM TASK T, BLOCK_MAN BM"
+				+ "   WHERE T.TASK_ID = BM.TASK_ID"
+				+ "     AND NOT EXISTS (SELECT 1"
+				+ "            FROM BLOCK_MAN BMM"
+				+ "           WHERE BMM.TASK_ID = T.TASK_ID"
+				+ "             AND BMM.STATUS <> 0)"
+				+ "  UNION ALL"
+				+ "  SELECT T.TASK_ID, 2 PLAN_STATUS"
+				+ "    FROM TASK T"
+				+ "   WHERE NOT EXISTS"
+				+ "   (SELECT 1 FROM BLOCK_MAN BMM WHERE BMM.TASK_ID = T.TASK_ID)"
+				+ "  UNION ALL"
+				+ "  SELECT T.TASK_ID, 2 PLAN_STATUS"
+				+ "    FROM TASK T, BLOCK_MAN BM"
+				+ "   WHERE T.TASK_ID = BM.TASK_ID"
+				+ "     AND EXISTS (SELECT 1"
+				+ "            FROM BLOCK_MAN BMM"
+				+ "           WHERE BMM.TASK_ID = T.TASK_ID"
+				+ "             AND BMM.STATUS <> 0)),"
+				+ " MAN_LIST AS"
 				+ " (SELECT DISTINCT T.BLOCK_MAN_ID,"
 				+ "                  T.BLOCK_MAN_NAME,"
+				+ "                  T.DESCP BLOCK_DESCP,"
+				+ "                  T.TASK_ID,"
 				+ "                  B.BLOCK_ID,"
 				+ "                  B.BLOCK_NAME,"
+				+ "                  B.work_property,"
 				+ "                  TT.CITY_ID,"
 				+ "                  T.STATUS BLOCK_STATUS,"
 				+ "                  B.PLAN_STATUS BLOCK_PLAN_STATUS,"
+				/*
+				 * 记录默认排序原则：
+				 * ①根据状态排序：开启>草稿>未规划>100%(已完成)>已关闭 
+				 *    用order_status来表示这个排序的先后顺序。分别是开启0>草稿1>未规划2>100%(已完成)3>已关闭4
+				 * ②相同状态中根据剩余工期排序，逾期>0天>剩余/提前
+				 * ③开启状态相同剩余工期，根据完成度排序，完成度高>完成度低；其它状态，根据名称
+				 */
+				+ "                  CASE TT.STATUS"
+				+ "                      WHEN 1 THEN CASE TP.PLAN_STATUS WHEN 2 THEN 0"
+                + "                       when 3 then 3 end "
+                + "                         when 2 then 1"
+                + "                           when 0 then 4 end order_status,"
+                + "                  CASE TT.STATUS"
+				+ "                      WHEN 1 THEN CASE TP.PLAN_STATUS WHEN 2 THEN 2"
+                + "                       when 3 then 3 end "
+                + "                         when 2 then 1"
+                + "                           when 0 then 4 end plan_status,"
 				+ "                  S.PERCENT,"
 				+ "                  S.DIFF_DATE,"
 				+ "                  TO_CHAR(T.COLLECT_PLAN_START_DATE, 'YYYYMMDD') COLLECT_PLAN_START_DATE,"
@@ -794,9 +918,9 @@ public class BlockService {
 				+ "                  S.COLLECT_PERCENT,"
 				+ "                  S.COLLECT_DIFF_DATE,"
 				+ "                  S.COLLECT_PROGRESS,"
-				+ "                  CASE NVL(ST.STAGE, 999)"
+				/*+ "                  CASE NVL(ST.STAGE, 999)"
 				+ "                    WHEN 0 THEN 1"
-				+ "                    ELSE 0 END COLLECT_ASSIGN_STATUS,"
+				+ "                    ELSE 0 END COLLECT_ASSIGN_STATUS,"*/
 				+ "                  GC.GROUP_NAME COLLECT_GROUP_NAME,"
 				+ "                  TO_CHAR(T.DAY_EDIT_PLAN_START_DATE, 'YYYYMMDD') DAY_EDIT_PLAN_START_DATE,"
 				+ "                  TO_CHAR(T.DAY_EDIT_PLAN_END_DATE, 'YYYYMMDD') DAY_EDIT_PLAN_END_DATE,"
@@ -804,9 +928,9 @@ public class BlockService {
 				+ "                  S.DAILY_PERCENT,"
 				+ "                  S.DAILY_DIFF_DATE,"
 				+ "                  S.DAILY_PROGRESS,"
-				+ "                  CASE NVL(ST.STAGE, 999)"
+				/*+ "                  CASE NVL(ST.STAGE, 999)"
 				+ "                    WHEN 1 THEN 1"
-				+ "                    ELSE 0 END DAILY_ASSIGN_STATUS,"
+				+ "                    ELSE 0 END DAILY_ASSIGN_STATUS,"*/
 				+ "                  GE.GROUP_NAME DAY_EDIT_GROUP_NAME,"
 				+ "                  TT.TASK_TYPE,"
 				+ "                  I.USER_REAL_NAME CREATE_USER_NAME,"
@@ -817,24 +941,32 @@ public class BlockService {
 				+ "         USER_GROUP                GC,"
 				+ "         USER_GROUP                GE,"
 				+ "         FM_STAT_OVERVIEW_BLOCKMAN S,"
-				+ "         SUBTASK                   ST,"
-				+ "         USER_INFO I"
+				//+ "         SUBTASK                   ST,"
+				+ "         USER_INFO I,"
+				+ "         TASK_PLAN                 TP"
 				+ "   WHERE T.TASK_ID = TT.TASK_ID"
 				+ "     AND T.CREATE_USER_ID=I.USER_ID"
 				+ "     AND T.LATEST = 1"
 				+ "     AND B.BLOCK_ID = T.BLOCK_ID"
 				+ "     AND T.COLLECT_GROUP_ID = GC.GROUP_ID(+)"
-				+ "     AND T.DAY_EDIT_GROUP_ID = GC.GROUP_ID(+)"
+				+ "     AND T.DAY_EDIT_GROUP_ID = GE.GROUP_ID(+)"
 				+ "     AND T.BLOCK_MAN_ID = S.BLOCK_MAN_ID(+)"
-				+ "     AND T.BLOCK_MAN_ID = ST.BLOCK_MAN_ID(+)"
+				+ "     AND T.TASK_ID = TP.TASK_ID(+)"
+				//+ "     AND T.BLOCK_MAN_ID = ST.BLOCK_MAN_ID(+)"
+				+ "     AND TT.LATEST = 1"
 				+ "  UNION ALL"
 				+ "  SELECT DISTINCT 0,"
 				+ "                  '---',"
+				+ "                  '---',"
+				+ "                  0,"
 				+ "                  B.BLOCK_ID,"
 				+ "                  B.BLOCK_NAME,"
+				+ "                  B.work_property,"
 				+ "                  C.CITY_ID,"
 				+ "                  0 STATUS,"
-				+ "                  B.PLAN_STATUS,"
+				+ "                  B.PLAN_STATUS block_plan_status,"
+				+ "                  2 order_status,"
+				+ "                  1 plan_status,"
 				+ "                  0,"
 				+ "                  0,"
 				+ "                  '---' COLLECT_PLAN_START_DATE,"
@@ -843,7 +975,7 @@ public class BlockService {
 				+ "                  0 COLLECT_PERCENT,"
 				+ "                  0 COLLECT_DIFF_DATE,"
 				+ "                  0 COLLECT_PROGRESS,"
-				+ "                  0 COLLECT_ASSIGN_STATUS,"
+				//+ "                  0 COLLECT_ASSIGN_STATUS,"
 				+ "                  '---' COLLECT_GROUP_NAME,"
 				+ "                  '---' DAY_EDIT_PLAN_START_DATE,"
 				+ "                  '---' DAY_EDIT_PLAN_END_DATE,"
@@ -851,7 +983,7 @@ public class BlockService {
 				+ "                  0 DAILY_PERCENT,"
 				+ "                  0 DAILY_DIFF_DATE,"
 				+ "                  0 DAILY_PROGRESS,"
-				+ "                  0 DAILY_ASSIGN_STATUS,"
+				//+ "                  0 DAILY_ASSIGN_STATUS,"
 				+ "                  '---' DAY_EDIT_GROUP_NAME,"
 				+ "                  1 TASK_TYPE,"
 				+ "                  '---',"
@@ -864,7 +996,8 @@ public class BlockService {
 				+ " (SELECT *"
 				+ "    FROM MAN_LIST"
 				+ "    WHERE 1=1"
-				+ conditionSql+")"
+				+ conditionSql+""
+				+ " order by man_list.order_status asc,man_list.diff_date desc,man_list.percent desc,man_list.block_man_name,man_list.block_name)"
 				+ " SELECT /*+FIRST_ROWS ORDERED*/"
 				+ " TT.*, (SELECT COUNT(1) FROM FINAL_TABLE) AS TOTAL_RECORD_NUM"
 				+ "  FROM (SELECT FINAL_TABLE.*, ROWNUM AS ROWNUM_ FROM FINAL_TABLE  WHERE ROWNUM <= "+pageEndNum+") TT"
@@ -882,10 +1015,13 @@ public class BlockService {
 				String key = (String) keys.next();
 				if("blockManName".equals(key)){
 					conditionSql=conditionSql+" AND MAN_LIST.BLOCK_MAN_NAME LIKE '%"+conditionJson.getString(key)+"%'";}
+				if("name".equals(key)){
+					conditionSql=conditionSql+" AND (MAN_LIST.BLOCK_MAN_NAME LIKE '%"+conditionJson.getString(key)+"%' "
+							+ "or MAN_LIST.BLOCK_NAME LIKE '%"+conditionJson.getString(key)+"%')";}
 				if("groupId".equals(key)){
 					conditionSql=conditionSql+" AND MAN_LIST.GROUP_ID ="+conditionJson.getInt(key);}
 				if("planStatus".equals(key)){
-					conditionSql=conditionSql+" AND MAN_LIST.STATUS =1 AND MAN_LIST.PLAN_STATUS="+conditionJson.getInt(key);}
+					conditionSql=conditionSql+" AND MAN_LIST.BLOCK_STATUS =1 AND MAN_LIST.PLAN_STATUS="+conditionJson.getInt(key);}
 				
 				if ("assignStatus".equals(key)) {
 					if(!statusSql.isEmpty()){statusSql+=" or ";}
@@ -955,6 +1091,7 @@ public class BlockService {
 				+ "                  T.BLOCK_MAN_NAME,"
 				+ "                  T.BLOCK_ID,"
 				+ "                  B.BLOCK_NAME,"	
+				+ "                  T.TASK_ID,"
 				+ "                  T.STATUS BLOCK_STATUS,"
 				+ "                  B.PLAN_STATUS BLOCK_PLAN_STATUS,"
 				+ "                  0 ASSIGN_STATUS,"
@@ -970,7 +1107,9 @@ public class BlockService {
 				+ "     AND T.BLOCK_ID=B.BLOCK_ID"
 				+ "     AND T.LATEST = 1"
 				//+ "     AND T.STATUS=1"
-				+ "     AND NOT EXISTS(SELECT 1 FROM SUBTASK STT WHERE STT.BLOCK_MAN_ID=T.BLOCK_MAN_ID AND STT."+stagePart+")"
+				+ "     AND (EXISTS(SELECT 1 FROM SUBTASK STT WHERE STT.BLOCK_MAN_ID=T.BLOCK_MAN_ID AND STT."+stagePart
+						+ " GROUP BY STT.BLOCK_MAN_ID HAVING COUNT(DISTINCT STT.STATUS)=2)"
+						+ " OR NOT EXISTS(SELECT 1 FROM SUBTASK STT WHERE STT.BLOCK_MAN_ID=T.BLOCK_MAN_ID AND STT."+stagePart+"))"
 				+wherePart					
 				+ "     AND T.BLOCK_MAN_ID = S.BLOCK_MAN_ID(+)"
 				+ "  UNION ALL"
@@ -978,7 +1117,8 @@ public class BlockService {
 				+ " SELECT DISTINCT T.BLOCK_MAN_ID,"
 				+ "                  T.BLOCK_MAN_NAME,"
 				+ "                  T.BLOCK_ID,"
-				+ "                  B.BLOCK_NAME,"	
+				+ "                  B.BLOCK_NAME,"
+				+ "                  T.TASK_ID,"
 				+ "                  T.STATUS BLOCK_STATUS,"
 				+ "                  B.PLAN_STATUS BLOCK_PLAN_STATUS,"
 				+ "                  1 ASSIGN_STATUS,"
@@ -997,7 +1137,7 @@ public class BlockService {
 				+ "     AND T.STATUS=1"
 				+ "     AND ST."+stagePart
 				+wherePart		
-				+ "     AND NOT EXISTS(SELECT 1 FROM SUBTASK STT WHERE STT.BLOCK_MAN_ID=T.BLOCK_MAN_ID AND STT.STATUS<>0 AND STT."+stagePart+")"
+				+ "     AND NOT EXISTS(SELECT 1 FROM SUBTASK STT WHERE STT.BLOCK_MAN_ID=T.BLOCK_MAN_ID AND STT.STATUS=1 AND STT."+stagePart+")"
 				+ "     AND T.BLOCK_MAN_ID = S.BLOCK_MAN_ID(+)"
 				+ "     AND T.BLOCK_MAN_ID = ST.BLOCK_MAN_ID"
 				+ "  UNION ALL"
@@ -1006,6 +1146,7 @@ public class BlockService {
 				+ "                  T.BLOCK_MAN_NAME,"
 				+ "                  T.BLOCK_ID,"
 				+ "                  B.BLOCK_NAME,"	
+				+ "                  T.TASK_ID,"
 				+ "                  T.STATUS BLOCK_STATUS,"
 				+ "                  B.PLAN_STATUS BLOCK_PLAN_STATUS,"
 				+ "                  1 ASSIGN_STATUS,"
@@ -1032,7 +1173,8 @@ public class BlockService {
 				+ "  SELECT DISTINCT 0,"
 				+ "                  '---',"
 				+ "                  B.BLOCK_ID,"
-				+ "                  B.BLOCK_NAME,"				
+				+ "                  B.BLOCK_NAME,"		
+				+ "                  0,"
 				+ "                  0 STATUS,"
 				+ "                  B.PLAN_STATUS BLOCK_PLAN_STATUS,"
 				+ "                  0 ASSIGN_STATUS,"

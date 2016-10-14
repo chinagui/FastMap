@@ -22,10 +22,30 @@ public class LogDetail {
 	private int isCk;
 
 	private String tbRowId;
+	
+	private String obNm;
+	
+	private int obPid;
 
 	private List<LogDetailGrid> grids = new ArrayList<LogDetailGrid>();
 	
 	public LogDetail() {
+	}
+	
+	public String getObNm() {
+		return obNm;
+	}
+
+	public void setObNm(String obNm) {
+		this.obNm = obNm;
+	}
+
+	public int getObPid() {
+		return obPid;
+	}
+
+	public void setObPid(int obPid) {
+		this.obPid = obPid;
 	}
 
 	public String getTbRowId() {

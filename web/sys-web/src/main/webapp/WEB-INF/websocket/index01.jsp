@@ -5,7 +5,7 @@
     <meta name="viewport"
           content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no"/>
     <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-    <style type="text/css">
+    <style type="text/css"> 
         #connect-container {
             width: 100%;
         }
@@ -50,14 +50,19 @@
         }
 
         function connect() {
-            alert("url:" + url);
+        	 
+            url = 'http://192.168.4.188:8094/sys/sysMsg/sockjs/webSocketServer?access_token=00000002IU6824TL9E8CB2FF03679795FE7EFE8F0A25BD35';
+             alert(url)
+            //alert("url:" + url);
             if (!url) {
                 alert('Select whether to use W3C WebSocket or SockJS');
                 return;
             }
             if (url.indexOf("sockjs")!=-1){
             	alert("sockjs01")
-                ws = new SockJS(url);
+                //ws = new SockJS(url);
+			var sock = new SockJS(url);
+			alert(sock)
             }else {
                 if ('WebSocket' in window) {
                 	alert("WebSocket");
@@ -67,8 +72,23 @@
                     ws = new SockJS(url);
                 }
             }
+            
+			sock.onopen = function() {
+				alert("onopen")
+				console.log('open');
+			};
+			sock.onmessage = function(e) {
+				alert("onmessage")
+				alert(e.data);
+				console.log('message', e.data);
+			};
+			sock.onclose = function() {
+				alert("onclose")
+				console.log('close');
+			};
 
 
+ 
             ws.onopen = function () {
             	alert("onopen")
                 setConnected(true);
@@ -82,7 +102,7 @@
                 setConnected(false);
                 log('Info: connection closed.');
                 log(JSON.stringify(event));
-            };
+            }; 
         }
 
         function disconnect() {
@@ -109,12 +129,15 @@
         function updateUrl(urlPath) {
         	userId = document.getElementById('pairMsg').value;
             if (urlPath.indexOf("/sockjs")!=-1){
-                url = 'http://'+ window.location.host + urlPath+ "?userId="+userId;
+                //url = 'http://'+ window.location.host + urlPath+ "?userId="+userId;
+            	url = 'http://'+window.location.host+'/sys'+urlPath+'?access_token=00000002IU6824TL9E8CB2FF03679795FE7EFE8F0A25BD35';
             }else{
                 if (window.location.protocol == 'http:') {
-                    url = 'ws://' + window.location.host + urlPath+ "?userId="+userId;
+                    //url = 'ws://' + window.location.host + urlPath+ "?userId="+userId;
+                	url = 'ws://'+window.location.host+'/sys'+urlPath+'?access_token=00000002IU6824TL9E8CB2FF03679795FE7EFE8F0A25BD35';
                 } else {
-                    url = 'wss://' + window.location.host + urlPath+ "?userId="+userId;
+                    //url = 'wss://' + window.location.host + urlPath+ "?userId="+userId;
+                	url = 'wss://' + window.location.host + urlPath+ "?access_token=00000002IU6824TL9E8CB2FF03679795FE7EFE8F0A25BD35";
                 }
             }
         }

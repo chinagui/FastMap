@@ -261,7 +261,7 @@ public class RdLinkSearchUtils {
 			if(nodes.contains(cruuentNodePidDir)){
 				break;
 			}
-			if (tracks.size() >= 99 || tracks.contains(link)) {
+			if (tracks.size() >= 11 || tracks.contains(link)) {
 				break;
 			}
 			nodes.add(cruuentNodePidDir);

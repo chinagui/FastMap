@@ -61,99 +61,99 @@ public class Operation implements IOperation {
 			}
 		}
 
-		if (content.containsKey("nodes")) {
-			JSONArray nodes = content.getJSONArray("nodes");
-
-			for (int i = 0; i < nodes.size(); i++) {
-
-				JSONObject nodeJson = nodes.getJSONObject(i);
-
-				if (nodeJson.containsKey("objStatus")) {
-
-					if (!ObjStatus.INSERT.toString().equals(nodeJson.getString("objStatus"))) {
-
-						RdCrossNode node = cross.nodeMap.get(nodeJson.getString("rowId"));
-
-						if (node == null) {
-							throw new Exception("rowId=" + nodeJson.getString("rowId") + "的rd_cross_node不存在");
-						}
-
-						if (ObjStatus.DELETE.toString().equals(nodeJson.getString("objStatus"))) {
-							result.insertObject(node, ObjStatus.DELETE, cross.pid());
-
-							continue;
-						} else if (ObjStatus.UPDATE.toString().equals(nodeJson.getString("objStatus"))) {
-
-							boolean isChanged = node.fillChangeFields(nodeJson);
-
-							if (isChanged) {
-								result.insertObject(node, ObjStatus.UPDATE, cross.pid());
-							}
-						}
-					} else {
-						RdCrossNode node = new RdCrossNode();
-
-						node.Unserialize(nodeJson);
-
-						node.setPid(cross.getPid());
-
-						node.setMesh(cross.mesh());
-
-						result.insertObject(node, ObjStatus.INSERT, cross.pid());
-
-						continue;
-					}
-				}
-
-			}
-		}
-
-		if (content.containsKey("links")) {
-			JSONArray links = content.getJSONArray("links");
-
-			for (int i = 0; i < links.size(); i++) {
-
-				JSONObject json = links.getJSONObject(i);
-
-				if (json.containsKey("objStatus")) {
-
-					if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
-
-						RdCrossLink node = cross.linkMap.get(json.getString("rowId"));
-
-						if (node == null) {
-							throw new Exception("rowId=" + json.getString("rowId") + "的rd_cross_link不存在");
-						}
-
-						if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
-							result.insertObject(node, ObjStatus.DELETE, cross.pid());
-
-							continue;
-						} else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
-
-							boolean isChanged = node.fillChangeFields(json);
-
-							if (isChanged) {
-								result.insertObject(node, ObjStatus.UPDATE, cross.pid());
-							}
-						}
-					} else {
-						RdCrossLink link = new RdCrossLink();
-
-						link.Unserialize(json);
-
-						link.setPid(cross.getPid());
-
-						link.setMesh(cross.mesh());
-
-						result.insertObject(link, ObjStatus.INSERT, cross.pid());
-
-						continue;
-					}
-				}
-
-			}
-		}
+//		if (content.containsKey("nodes")) {
+//			JSONArray nodes = content.getJSONArray("nodes");
+//
+//			for (int i = 0; i < nodes.size(); i++) {
+//
+//				JSONObject nodeJson = nodes.getJSONObject(i);
+//
+//				if (nodeJson.containsKey("objStatus")) {
+//
+//					if (!ObjStatus.INSERT.toString().equals(nodeJson.getString("objStatus"))) {
+//
+//						RdCrossNode node = cross.nodeMap.get(nodeJson.getString("rowId"));
+//
+//						if (node == null) {
+//							throw new Exception("rowId=" + nodeJson.getString("rowId") + "的rd_cross_node不存在");
+//						}
+//
+//						if (ObjStatus.DELETE.toString().equals(nodeJson.getString("objStatus"))) {
+//							result.insertObject(node, ObjStatus.DELETE, cross.pid());
+//
+//							continue;
+//						} else if (ObjStatus.UPDATE.toString().equals(nodeJson.getString("objStatus"))) {
+//
+//							boolean isChanged = node.fillChangeFields(nodeJson);
+//
+//							if (isChanged) {
+//								result.insertObject(node, ObjStatus.UPDATE, cross.pid());
+//							}
+//						}
+//					} else {
+//						RdCrossNode node = new RdCrossNode();
+//
+//						node.Unserialize(nodeJson);
+//
+//						node.setPid(cross.getPid());
+//
+//						node.setMesh(cross.mesh());
+//
+//						result.insertObject(node, ObjStatus.INSERT, cross.pid());
+//
+//						continue;
+//					}
+//				}
+//
+//			}
+//		}
+//
+//		if (content.containsKey("links")) {
+//			JSONArray links = content.getJSONArray("links");
+//
+//			for (int i = 0; i < links.size(); i++) {
+//
+//				JSONObject json = links.getJSONObject(i);
+//
+//				if (json.containsKey("objStatus")) {
+//
+//					if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
+//
+//						RdCrossLink node = cross.linkMap.get(json.getString("rowId"));
+//
+//						if (node == null) {
+//							throw new Exception("rowId=" + json.getString("rowId") + "的rd_cross_link不存在");
+//						}
+//
+//						if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
+//							result.insertObject(node, ObjStatus.DELETE, cross.pid());
+//
+//							continue;
+//						} else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
+//
+//							boolean isChanged = node.fillChangeFields(json);
+//
+//							if (isChanged) {
+//								result.insertObject(node, ObjStatus.UPDATE, cross.pid());
+//							}
+//						}
+//					} else {
+//						RdCrossLink link = new RdCrossLink();
+//
+//						link.Unserialize(json);
+//
+//						link.setPid(cross.getPid());
+//
+//						link.setMesh(cross.mesh());
+//
+//						result.insertObject(link, ObjStatus.INSERT, cross.pid());
+//
+//						continue;
+//					}
+//				}
+//
+//			}
+//		}
 
 		if (content.containsKey("names")) {
 			JSONArray array = content.getJSONArray("names");
@@ -353,11 +353,11 @@ public class Operation implements IOperation {
 
 		JSONObject content = command.getContent();
 
-		if (content.containsKey("nodePids") || content.containsKey("linkPids")) {
-			return updateNodeLink(result);
-		} else {
+//		if (content.containsKey("nodePids") || content.containsKey("linkPids")) {
+//			return updateNodeLink(result);
+//		} else {
 			return updateProperty(result);
-		}
+//		}
 
 	}
 }

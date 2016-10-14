@@ -35,6 +35,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameLink;
 import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameLinkPart;
 import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameNode;
 import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameNodePart;
+import com.navinfo.dataservice.dao.glm.selector.SelectorUtils;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -509,13 +510,21 @@ public class LogWriter {
 
 		// 处理修改的对象
 		List<IRow> list = result.getUpdateObjects();
+		
+		List<Integer> listObPid = result.getListUpdateIRowObPid();
 
-		for (IRow r : list) {
+		for (int i=0;i<list.size();i++) {
+			IRow r = list.get(i);
 			LogDetail ld = new LogDetail();
 
 			ld.setOpTp(Status.UPDATE);
 
 			ld.setTbNm(r.tableName());
+			
+			//设置对象id和tbName
+//			ld.setObPid(listObPid.get(i));
+//			
+//			ld.setObNm(SelectorUtils.getObjTableName(r));
 
 			ld.setIsCk(0);
 
@@ -604,9 +613,16 @@ public class LogWriter {
 
 		list = result.getDelObjects();
 
-		for (IRow r : list) {
+		for (int i=0;i<list.size();i++) {
+			IRow r = list.get(i);
+			
 			LogDetail ld = new LogDetail();
-
+			
+			//设置对象id和tbName
+//			ld.setObPid(listObPid.get(i));
+//			
+//			ld.setObNm(SelectorUtils.getObjTableName(r));
+			
 			ld.setOpTp(Status.DELETE);
 
 			ld.setTbNm(r.tableName());

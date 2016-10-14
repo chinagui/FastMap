@@ -212,9 +212,11 @@ public class SearchProcess {
 					RdCrossSelector selector = new RdCrossSelector(this.conn);
 
 					RdCross cross = selector.loadCrossByNodePid(nodePid, false);
-
-					array.add(cross.Serialize(ObjLevel.FULL));
-
+					
+					if(cross != null)
+					{
+						array.add(cross.Serialize(ObjLevel.FULL));
+					}
 				}
 				break;
 

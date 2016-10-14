@@ -29,7 +29,7 @@ public class PingConverterTest {
 	public void testQueryPingYin() throws Exception {
 		PinyinConverter py = new PinyinConverter();
 
-		String[] res = py.convert("北京市");
+		String[] res = py.convert("京承高速收费站1");
 
 		System.out.println(res);
 

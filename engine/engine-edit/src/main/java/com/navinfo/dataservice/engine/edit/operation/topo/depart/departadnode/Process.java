@@ -17,14 +17,6 @@ public class Process extends AbstractProcess<Command> {
 		super(command);
 
 	}
-	
-	public Process(Command command, Connection conn) throws Exception  {
-		super(command);
-		this.setCommand(command);
-		this.setResult(new Result());
-		this.setConn(conn);
-	}
-
 
 	@Override
 	public boolean prepareData() throws Exception {

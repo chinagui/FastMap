@@ -36,7 +36,7 @@ public class BatchSelector {
 		StringBuilder sb = new StringBuilder(
 				"SELECT A.* FROM IX_POI A, AD_FACE B WHERE B.FACE_PID = :1 AND A.U_RECORD != 2 ");
 
-		sb.append(" AND B.BREGION_ID!= A.REGION_ID AND B.U_RECORD != 2 AND SDO_RELATE(A.GEOMETRY, B.GEOMETRY, 'MASK=ANYINTERACT') = 'TRUE'");
+		sb.append(" AND B.REGION_ID!= A.REGION_ID AND B.U_RECORD != 2 AND SDO_RELATE(A.GEOMETRY, B.GEOMETRY, 'MASK=ANYINTERACT') = 'TRUE'");
 
 		if (isLock) {
 

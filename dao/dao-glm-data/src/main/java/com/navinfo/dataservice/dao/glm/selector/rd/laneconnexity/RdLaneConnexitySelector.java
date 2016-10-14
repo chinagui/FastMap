@@ -19,7 +19,8 @@ import com.navinfo.navicommons.database.sql.DBUtils;
 
 public class RdLaneConnexitySelector extends AbstractSelector {
 
-	private static Logger logger = Logger.getLogger(RdLaneConnexitySelector.class);
+	private static Logger logger = Logger
+			.getLogger(RdLaneConnexitySelector.class);
 
 	private Connection conn;
 
@@ -30,11 +31,13 @@ public class RdLaneConnexitySelector extends AbstractSelector {
 	}
 
 	@Override
-	public IRow loadById(int id, boolean isLock,boolean ... loadChild) throws Exception {
+	public IRow loadById(int id, boolean isLock, boolean... loadChild)
+			throws Exception {
 
 		RdLaneConnexity connexity = new RdLaneConnexity();
 
-		String sql = "select * from " + connexity.tableName() + " where pid=:1 and u_record!=2";
+		String sql = "select * from " + connexity.tableName()
+				+ " where pid=:1 and u_record!=2";
 
 		if (isLock) {
 			sql += " for update nowait";
@@ -55,7 +58,8 @@ public class RdLaneConnexitySelector extends AbstractSelector {
 
 				ReflectionAttrUtils.executeResultSet(connexity, resultSet);
 
-				RdLaneTopologySelector topoSelector = new RdLaneTopologySelector(conn);
+				RdLaneTopologySelector topoSelector = new RdLaneTopologySelector(
+						conn);
 
 				connexity.setTopos(topoSelector.loadRowsByParentId(id, isLock));
 
@@ -88,7 +92,8 @@ public class RdLaneConnexitySelector extends AbstractSelector {
 		return connexity;
 	}
 
-	public List<RdLaneConnexity> loadRdLaneConnexityByLinkPid(int linkPid, boolean isLock) throws Exception {
+	public List<RdLaneConnexity> loadRdLaneConnexityByLinkPid(int linkPid,
+			boolean isLock) throws Exception {
 		List<RdLaneConnexity> laneConns = new ArrayList<RdLaneConnexity>();
 
 		String sql = "select * from rd_lane_connexity where in_link_pid = :1 and u_record!=2 ";
@@ -113,9 +118,11 @@ public class RdLaneConnexitySelector extends AbstractSelector {
 
 				ReflectionAttrUtils.executeResultSet(laneConn, resultSet);
 
-				RdLaneTopologySelector topoSelector = new RdLaneTopologySelector(conn);
+				RdLaneTopologySelector topoSelector = new RdLaneTopologySelector(
+						conn);
 
-				laneConn.setTopos(topoSelector.loadRowsByParentId(laneConn.pid(), isLock));
+				laneConn.setTopos(topoSelector.loadRowsByParentId(
+						laneConn.pid(), isLock));
 
 				for (IRow row : laneConn.getTopos()) {
 
@@ -143,7 +150,8 @@ public class RdLaneConnexitySelector extends AbstractSelector {
 		return laneConns;
 	}
 
-	public List<RdLaneConnexity> loadRdLaneConnexityByOutLinkPid(int linkPid, boolean isLock) throws Exception {
+	public List<RdLaneConnexity> loadRdLaneConnexityByOutLinkPid(int linkPid,
+			boolean isLock) throws Exception {
 		List<RdLaneConnexity> laneConns = new ArrayList<RdLaneConnexity>();
 
 		String sql = "select * from rd_lane_connexity  where pid in (  select b.CONNEXITY_PID from rd_lane_topology b where b.CONNEXITY_PID in (    select CONNEXITY_PID from rd_lane_topology where u_record!=2 and out_link_pid=:1 )     group by b.CONNEXITY_PID) and  u_record != 2";
@@ -168,9 +176,11 @@ public class RdLaneConnexitySelector extends AbstractSelector {
 
 				ReflectionAttrUtils.executeResultSet(laneConn, resultSet);
 
-				RdLaneTopologySelector topoSelector = new RdLaneTopologySelector(conn);
+				RdLaneTopologySelector topoSelector = new RdLaneTopologySelector(
+						conn);
 
-				laneConn.setTopos(topoSelector.loadRowsByParentId(laneConn.pid(), isLock));
+				laneConn.setTopos(topoSelector.loadRowsByParentId(
+						laneConn.pid(), isLock));
 
 				for (IRow row : laneConn.getTopos()) {
 
@@ -199,10 +209,11 @@ public class RdLaneConnexitySelector extends AbstractSelector {
 		return laneConns;
 	}
 
-	public List<RdLaneConnexity> loadRdLaneConnexityByNodePid(int nodePid, boolean isLock) throws Exception {
+	public List<RdLaneConnexity> loadRdLaneConnexityByNodePid(int nodePid,
+			boolean isLock) throws Exception {
 		List<RdLaneConnexity> laneConns = new ArrayList<RdLaneConnexity>();
 
-		 String sql = "select * from rd_lane_connexity where node_pid = :1 and u_record!=2 ";
+		String sql = "select * from rd_lane_connexity where node_pid = :1 and u_record!=2 ";
 
 		if (isLock) {
 			sql += " for update nowait";
@@ -236,8 +247,8 @@ public class RdLaneConnexitySelector extends AbstractSelector {
 		return laneConns;
 	}
 
-	public List<RdLaneConnexity> loadRdLaneConnexityByLinkNode(int linkPid, int nodePid1, int nodePid2, boolean isLock)
-			throws Exception {
+	public List<RdLaneConnexity> loadRdLaneConnexityByLinkNode(int linkPid,
+			int nodePid1, int nodePid2, boolean isLock) throws Exception {
 		List<RdLaneConnexity> laneConns = new ArrayList<RdLaneConnexity>();
 
 		String sql = "select * from rd_lane_connexity where a.node_pid in (:1,:2) and a.in_link_pid=:3 and a.u_record!=2 ";
@@ -277,36 +288,35 @@ public class RdLaneConnexitySelector extends AbstractSelector {
 		}
 		return laneConns;
 	}
-	
+
 	/**
 	 * 根据link类型获取车信
+	 * 
 	 * @param linkPid
-	 * @param linkType 1：进入线；2：退出线，3：经过线
+	 * @param linkType
+	 *            1：进入线；2：退出线，3：经过线
 	 * @param isLock
 	 * @return
 	 * @throws Exception
 	 */
 	public List<RdLaneConnexity> loadByLink(int linkPid, int linkType,
 			boolean isLock) throws Exception {
-		
+
 		List<RdLaneConnexity> laneConns = new ArrayList<RdLaneConnexity>();
 
 		String sql = "";
-		
+
 		if (linkType == 1) {
-			sql = "SELECT * FROM RD_LANE_CONNEXITY WHERE IN_LINK_PID = :1 AND U_RECORD!=2 ";
-		}
-		else if (linkType == 2) {
-			
+			sql = "SELECT * FROM RD_LANE_CONNEXITY WHERE IN_LINK_PID = :1 AND U_RECORD !=2 ";
+		} else if (linkType == 2) {
+
 			sql = "SELECT * FROM RD_LANE_CONNEXITY WHERE U_RECORD != 2  AND PID IN (SELECT DISTINCT (CONNEXITY_PID) FROM RD_LANE_TOPOLOGY WHERE U_RECORD != 2  AND OUT_LINK_PID = :1)";
 		}
-		
+
 		else if (linkType == 3) {
-			
+
 			sql = "SELECT * FROM RD_LANE_CONNEXITY WHERE U_RECORD != 2 AND PID IN (SELECT DISTINCT (CONNEXITY_PID) FROM RD_LANE_TOPOLOGY WHERE U_RECORD != 2 AND TOPOLOGY_ID IN (SELECT DISTINCT (TOPOLOGY_ID) FROM RD_LANE_VIA WHERE U_RECORD != 2 AND LINK_PID = :1))";
-		}
-		else 
-		{
+		} else {
 			return laneConns;
 		}
 
@@ -325,24 +335,27 @@ public class RdLaneConnexitySelector extends AbstractSelector {
 
 			resultSet = pstmt.executeQuery();
 
-			RdLaneTopologySelector topoSelector = new RdLaneTopologySelector(conn);
-			
-			RdLaneViaSelector viaSelector =new RdLaneViaSelector(conn);
-			
+			RdLaneTopologySelector topoSelector = new RdLaneTopologySelector(
+					conn);
+
+			RdLaneViaSelector viaSelector = new RdLaneViaSelector(conn);
+
 			while (resultSet.next()) {
-				
+
 				RdLaneConnexity laneConn = new RdLaneConnexity();
 
-				ReflectionAttrUtils.executeResultSet(laneConn, resultSet);				
+				ReflectionAttrUtils.executeResultSet(laneConn, resultSet);
 
-				laneConn.setTopos(topoSelector.loadRowsByParentId(laneConn.pid(), isLock));
+				laneConn.setTopos(topoSelector.loadRowsByParentId(
+						laneConn.pid(), isLock));
 
 				for (IRow row : laneConn.getTopos()) {
 
 					RdLaneTopology topo = (RdLaneTopology) row;
 
-					topo.setVias(viaSelector.loadRowsByParentId(topo.getPid(), isLock));
-					
+					topo.setVias(viaSelector.loadRowsByParentId(topo.getPid(),
+							isLock));
+
 					laneConn.topologyMap.put(topo.getPid(), topo);
 
 					for (IRow row2 : topo.getVias()) {
@@ -350,7 +363,7 @@ public class RdLaneConnexitySelector extends AbstractSelector {
 						RdLaneVia via = (RdLaneVia) row2;
 
 						laneConn.viaMap.put(via.getRowId(), via);
-						
+
 						topo.viaMap.put(via.getRowId(), via);
 					}
 				}
@@ -366,20 +379,23 @@ public class RdLaneConnexitySelector extends AbstractSelector {
 		}
 		return laneConns;
 	}
-	
+
 	/**
 	 * 根据路口pid查询车信信息
-	 * @param crossPid 路口pid
-	 * @param isLock 是否加锁
+	 * 
+	 * @param crossPid
+	 *            路口pid
+	 * @param isLock
+	 *            是否加锁
 	 * @return 车信对象集合
 	 * @throws Exception
 	 */
-	public List<RdLaneConnexity> getRdLaneConnexityByCrossPid(int crossPid,boolean isLock) throws Exception {
+	public List<RdLaneConnexity> getRdLaneConnexityByCrossPid(int crossPid,
+			boolean isLock) throws Exception {
 		List<RdLaneConnexity> result = new ArrayList<RdLaneConnexity>();
 
 		String sql = "select * from rd_lane_connexity a where exists (select null from rd_cross_node b where b.pid=:1 and a.node_pid=b.node_pid) and u_record!=2";
-		if(isLock)
-		{
+		if (isLock) {
 			sql = sql + " for update nowait";
 		}
 
@@ -417,9 +433,11 @@ public class RdLaneConnexitySelector extends AbstractSelector {
 
 				laneConn.setRightExtend(resultSet.getInt("right_extend"));
 
-				RdLaneTopologySelector topoSelector = new RdLaneTopologySelector(getConn());
+				RdLaneTopologySelector topoSelector = new RdLaneTopologySelector(
+						getConn());
 
-				laneConn.setTopos(topoSelector.loadRowsByParentId(laneConn.getPid(), true));
+				laneConn.setTopos(topoSelector.loadRowsByParentId(
+						laneConn.getPid(), true));
 
 				result.add(laneConn);
 			}
@@ -432,6 +450,136 @@ public class RdLaneConnexitySelector extends AbstractSelector {
 		}
 		return result;
 	}
-	
-	
+
+	/**
+	 * 根据link类型获取车信
+	 * 
+	 * @param linkPids
+	 * @param linkType
+	 *            1：进入线；2：退出线，3：经过线
+	 * @param isLock
+	 * @return
+	 * @throws Exception
+	 */
+	public List<RdLaneConnexity> loadByLinks(List<Integer> linkPids,
+			int linkType, boolean isLock) throws Exception {
+
+		List<RdLaneConnexity> rows = new ArrayList<RdLaneConnexity>();
+
+		if (linkPids == null || linkPids.size() == 0) {
+			return rows;
+		}
+
+		List<Integer> linkPidTemp = new ArrayList<Integer>();
+
+		linkPidTemp.addAll(linkPids);
+
+		int dataLimit = 100;
+
+		while (linkPidTemp.size() >= dataLimit) {
+
+			List<Integer> listPid = linkPidTemp.subList(0, dataLimit);
+
+			rows.addAll(loadByLinkPids(listPid, linkType, isLock));
+
+			linkPidTemp.subList(0, dataLimit).clear();
+		}
+
+		if (!linkPidTemp.isEmpty()) {
+			rows.addAll(loadByLinkPids(linkPidTemp, linkType, isLock));
+		}
+
+		return rows;
+	}
+
+	private List<RdLaneConnexity> loadByLinkPids(List<Integer> linkPids,
+			int linkType, boolean isLock) throws Exception {
+
+		List<RdLaneConnexity> laneConns = new ArrayList<RdLaneConnexity>();
+
+		if (linkPids == null || linkPids.isEmpty()) {
+
+			return laneConns;
+		}
+
+		String pids = org.apache.commons.lang.StringUtils.join(linkPids, ",");
+
+		String sql = "";
+
+		if (linkType == 1) {
+			sql = "SELECT * FROM RD_LANE_CONNEXITY WHERE U_RECORD !=2 AND IN_LINK_PID IN ("
+					+ pids + ")  ";
+
+		} else if (linkType == 2) {
+
+			sql = "SELECT * FROM RD_LANE_CONNEXITY WHERE U_RECORD != 2  AND PID IN (SELECT DISTINCT (CONNEXITY_PID) FROM RD_LANE_TOPOLOGY WHERE U_RECORD != 2  AND OUT_LINK_PID  IN ("
+					+ pids + "))";
+		}
+
+		else if (linkType == 3) {
+
+			sql = "SELECT * FROM RD_LANE_CONNEXITY WHERE U_RECORD != 2 AND PID IN (SELECT DISTINCT (CONNEXITY_PID) FROM RD_LANE_TOPOLOGY WHERE U_RECORD != 2 AND TOPOLOGY_ID IN (SELECT DISTINCT (TOPOLOGY_ID) FROM RD_LANE_VIA WHERE U_RECORD != 2 AND LINK_PID  IN ("
+					+ pids + ")))";
+		} else {
+			return laneConns;
+		}
+
+		if (isLock) {
+			sql += " for update nowait";
+		}
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sql);
+
+			resultSet = pstmt.executeQuery();
+
+			RdLaneTopologySelector topoSelector = new RdLaneTopologySelector(
+					conn);
+
+			RdLaneViaSelector viaSelector = new RdLaneViaSelector(conn);
+
+			while (resultSet.next()) {
+
+				RdLaneConnexity laneConn = new RdLaneConnexity();
+
+				ReflectionAttrUtils.executeResultSet(laneConn, resultSet);
+
+				laneConn.setTopos(topoSelector.loadRowsByParentId(
+						laneConn.pid(), isLock));
+
+				for (IRow row : laneConn.getTopos()) {
+
+					RdLaneTopology topo = (RdLaneTopology) row;
+
+					topo.setVias(viaSelector.loadRowsByParentId(topo.getPid(),
+							isLock));
+
+					laneConn.topologyMap.put(topo.getPid(), topo);
+
+					for (IRow row2 : topo.getVias()) {
+
+						RdLaneVia via = (RdLaneVia) row2;
+
+						laneConn.viaMap.put(via.getRowId(), via);
+
+						topo.viaMap.put(via.getRowId(), via);
+					}
+				}
+
+				laneConns.add(laneConn);
+			}
+		} catch (Exception e) {
+
+			throw e;
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+		}
+		return laneConns;
+	}
+
 }

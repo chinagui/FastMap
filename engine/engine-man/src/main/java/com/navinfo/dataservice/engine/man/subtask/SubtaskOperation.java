@@ -556,6 +556,8 @@ public class SubtaskOperation {
 						subtask.put("planStartDate", df.format(rs.getTimestamp("PLAN_START_DATE")));
 						subtask.put("planEndDate", df.format(rs.getTimestamp("PLAN_END_DATE")));
 						subtask.put("status", rs.getInt("STATUS"));
+						//版本信息
+						subtask.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
 						
 						if (1 == rs.getInt("STAGE")) {
 							subtask.put("dbId", rs.getInt("DAILY_DB_ID"));
@@ -694,6 +696,9 @@ public class SubtaskOperation {
 						subtask.put("planStartDate", df.format(rs.getTimestamp("PLAN_START_DATE")));
 						subtask.put("planEndDate", df.format(rs.getTimestamp("PLAN_END_DATE")));
 						subtask.put("status", rs.getInt("STATUS"));
+						
+						//版本信息
+						subtask.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
 						
 						STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
 						try {
@@ -1454,17 +1459,17 @@ public class SubtaskOperation {
 							+ " WHERE T.SUBTASK_ID = FSOS.SUBTASK_ID(+) ";
 
 			String filterSql = "";
-			Iterator<?> filterKeys = condition.keys();
+			Iterator<?> filterKeys = filter.keys();
 			while (filterKeys.hasNext()) {
 				String key = (String) filterKeys.next();
 				//模糊查询
 				if ("subtaskName".equals(key)) {	
-					conditionSql+=" AND S.NAME like '%" + condition.getString(key) +"%'";
+					filterSql+=" AND T.NAME like '%" + filter.getString(key) +"%'";
 				}
 				//筛选条件
 				//"progress" //进度。1正常，2异常，3关闭，4完成,5草稿
 				if ("progress".equals(key)){
-					int progress = condition.getInt(key);
+					int progress = filter.getInt(key);
 					if(1==progress&&2==progress){
 						filterSql += " AND FSOS.PROGRESS = " + progress;
 					}else if(3==progress){
@@ -1477,7 +1482,7 @@ public class SubtaskOperation {
 				}
 				//"completionStatus"//完成状态。0逾期，1按时，2提前
 				if ("completionStatus".equals(key)){
-					int completionStatus = condition.getInt(key);
+					int completionStatus = filter.getInt(key);
 					if(0==completionStatus){
 						filterSql += " AND FSOS.DIFF_DATE < 0";
 					}else if(1==completionStatus){

@@ -1,9 +1,6 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdgsc.delete;
 
-import java.sql.Connection;
-
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
-import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
 import com.navinfo.dataservice.dao.glm.selector.rd.gsc.RdGscSelector;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
@@ -15,14 +12,6 @@ public class Process extends AbstractProcess<Command> {
 
 	public Process(AbstractCommand command) throws Exception {
 		super(command);
-	}
-
-	public Process(Command command, Result result, Connection conn) throws Exception {
-		super(command);
-
-		this.setResult(result);
-
-		this.setConn(conn);
 	}
 
 	@Override

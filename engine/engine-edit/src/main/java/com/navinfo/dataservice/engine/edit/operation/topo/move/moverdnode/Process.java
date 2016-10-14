@@ -1,13 +1,11 @@
 package com.navinfo.dataservice.engine.edit.operation.topo.move.moverdnode;
 
 import java.sql.Connection;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
 
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
-import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
@@ -40,15 +38,7 @@ public class Process extends AbstractProcess<Command> {
 
 		List<RdLink> links = selector.loadByNodePid(this.getCommand().getNodePid(), true);
 
-		List<IRow> rows = new ArrayList<>();
-
-		for (RdLink link : links) {
-			rows.add(link);
-		}
-
 		this.getCommand().setLinks(links);
-
-		this.getCommand().setRows(rows);
 	}
 
 	@Override
@@ -71,7 +61,7 @@ public class Process extends AbstractProcess<Command> {
 	@Override
 	public String exeOperation() throws Exception {
 
-		RdGscOperateUtils.checkIsMoveGscNodePoint(this.getCommand().getRows(), this.getConn(),
+		RdGscOperateUtils.checkIsMoveGscNodePoint(this.getCommand().getLinks(), this.getConn(),
 				updateNode);
 		return new Operation(this.getCommand(), updateNode, this.getConn()).run(this.getResult());
 	}

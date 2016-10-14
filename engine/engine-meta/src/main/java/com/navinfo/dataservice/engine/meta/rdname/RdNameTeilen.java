@@ -51,6 +51,7 @@ public class RdNameTeilen {
 		CallableStatement cstmt = null;
 		PreparedStatement pst=null;
 		Connection subconn = null;
+		boolean isMetaConn=true;
 		try {
 			if (conn == null) {
 				subconn = DBConnector.getInstance().getMetaConnection();
@@ -67,7 +68,6 @@ public class RdNameTeilen {
 				pst=subconn.prepareStatement(updateSql);
 				pst.execute(updateSql);
 			} else {
-				conn = DBConnector.getInstance().getMetaConnection();
 				String spName = "{call NAVI_RD_NAME_SPLITE.RD_NAME_SPLIT_UPDATE(?)}";
 				cstmt = conn.prepareCall(spName);
 				cstmt.setString(1, String.valueOf(nameId));
@@ -88,7 +88,10 @@ public class RdNameTeilen {
 		}finally {
 			DbUtils.closeQuietly(pst);
 			DbUtils.closeQuietly(cstmt);
-			DbUtils.commitAndCloseQuietly(subconn);
+			if(isMetaConn){
+				DbUtils.commitAndCloseQuietly(subconn);
+			}
+			
 		}
 	}
 	

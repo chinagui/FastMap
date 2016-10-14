@@ -230,8 +230,77 @@ public class BlockService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+	
+	public HashMap<?, ?> queryByBlockId(JSONObject json) throws ServiceException {
+		Connection conn = null;
+		try {
+			// 鎸佷箙鍖�
+			QueryRunner run = new QueryRunner();
+			conn = DBConnector.getInstance().getManConnection();
+			JSONObject obj = JSONObject.fromObject(json);
+			BlockMan bean = (BlockMan) JSONObject.toBean(obj, BlockMan.class);
+
+			String selectSql = "select t.CITY_ID, t.BLOCK_MAN, t.GEOMETRY,"
+					+ " t.PLAN_STATUS, T.work_property,tt.task_type"
+					+ " from BLOCK t,task tt where t.BLOCK_ID = ? and t.city_id=tt.city_id";
+			ResultSetHandler<HashMap> rsHandler = new ResultSetHandler<HashMap>() {
+				public HashMap<String, Object> handle(ResultSet rs) throws SQLException {
+					while (rs.next()) {
+						HashMap<String, Object> map = new HashMap<String, Object>();
+						map.put("blockManId", 0);
+						map.put("cityId", rs.getInt("CITY_ID"));
+						map.put("blockManName", rs.getString("BLOCK_NAME"));
+						map.put("workProperty", rs.getString("WORK_PROPERTY"));
+						map.put("roadPlanTotal", 0);
+						map.put("poiPlanTotal", 0);
+						
+						STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
+						try {
+							String clobStr = GeoTranslator.struct2Wkt(struct);
+							map.put("geometry", Geojson.wkt2Geojson(clobStr));
+						} catch (Exception e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+						map.put("planStatus", rs.getInt("PLAN_STATUS"));
+						map.put("taskName", "---");
+						map.put("collectGroupId", 0);
+						map.put("dayEditGroupId", 0);
+						map.put("monthEditGroupId", 0);
+						map.put("collectPlanStartDate", "---");
+						map.put("collectPlanEndDate", "---");
+						map.put("dayEditPlanStartDate", "---");
+						map.put("dayEditPlanEndDate", "---");
+						map.put("monthEditPlanStartDate", "---");
+						map.put("monthEditPlanEndDate", "---");
+						map.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
+						map.put("dayProducePlanStartDate", "---");
+						map.put("dayProducePlanEndDate", "---");
+						map.put("monthProducePlanStartDate", "---");
+						map.put("monthProducePlanEndDate", "---");
+						map.put("taskType", rs.getInt("task_type"));
+						map.put("blockDescp", "---");
+						map.put("createUserName","---");
+						return map;
+					}
+					return null;
+				}
+
+			};
+			return run.query(conn, selectSql, rsHandler, bean.getBlockId());
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询失败:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}	
 
 	public HashMap<?, ?> query(JSONObject json) throws ServiceException {
+		JSONObject objTmp = JSONObject.fromObject(json);
+		BlockMan beanTmp = (BlockMan) JSONObject.toBean(objTmp, BlockMan.class);
+		if(beanTmp.getBlockManId()==0){return queryByBlockId(json);}
 		Connection conn = null;
 		try {
 			// 鎸佷箙鍖�

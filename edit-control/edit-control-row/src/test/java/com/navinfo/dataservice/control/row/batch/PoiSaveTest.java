@@ -49,7 +49,7 @@ public class PoiSaveTest {
 	}
 	@Test
 	public void testUpdatePoi() throws SQLException {
-		String parameter = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"IXPOI\",\"objId\":300000009,\"data\":{\"level\":\"B2\",\"rowId\":\"8DC2C408647D44DC929364A6B508287B\",\"objStatus\":\"UPDATE\",\"names\":[{\"pid\":0,\"poiPid\":0,\"nameGroupid\":1,\"langCode\":\"CHI\",\"nameClass\":1,\"nameType\":2,\"name\":\"中种种\",\"namePhonetic\":\"\",\"keywords\":\"\",\"nidbPid\":\"\",\"rowId\":\"\",\"objStatus\":\"INSERT\"}],\"gasstations\":[{\"pid\":0,\"fuelType\":\"\",\"oilType\":\"\",\"egType\":\"\",\"mgType\":\"\",\"payment\":\"\",\"service\":\"\",\"objStatus\":\"INSERT\"}],\"hotels\":[{\"pid\":0,\"poiPid\":0,\"rating\":0,\"checkinTime\":\"14:00\",\"checkoutTime\":\"12:00\",\"roomCount\":0,\"breakfast\":0,\"parking\":0,\"travelguideFlag\":0,\"objStatus\":\"INSERT\"}],\"restaurants\":[{\"pid\":0,\"poiPid\":0,\"foodType\":\"\",\"creditCard\":\"\",\"avgCost\":0,\"parking\":0,\"travelguideFlag\":0,\"objStatus\":\"INSERT\"}],\"parkings\":[{\"pid\":0,\"tollStd\":\"\",\"tollWay\":\"\",\"payment\":\"\",\"remark\":\"\",\"resHigh\":0,\"resWidth\":0,\"resWeigh\":0,\"certificate\":0,\"vehicle\":0,\"rowId\":\"\",\"objStatus\":\"INSERT\"}],\"pid\":300000009}}";
+		String parameter = "{\"dbId\":2008,\"command\":\"UPDATE\",\"objId\":304000023,\"parentPid\":48519956,\"type\":\"IXPOIPARENT\"}";
 		Connection conn = null;
 		JSONObject result = null;
 		try {

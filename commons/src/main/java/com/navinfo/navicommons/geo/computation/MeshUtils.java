@@ -694,6 +694,24 @@ public abstract class MeshUtils {
 		}
 		return false;
 	}
+	
+	/**
+	 * 点是否在图框线上
+	 * 编辑过程中，刚开始的时候把坐标都乘以100000，然后我们空间计算的那些类里头，大多数都是使用原始坐标的 ，
+	 * 这期间要调用的话，要注意一下精度转换
+	 * 
+	 * @param dLongitude
+	 * @param dLatitude
+	 * @return
+	 */
+	public static boolean isPointAtMeshBorderWith100000(double dLongitude,
+			double dLatitude) {
+		String[] meshes = point2Meshes(dLongitude*0.00001,dLatitude*0.00001);
+		if(meshes.length>1){
+			return true;
+		}
+		return false;
+	}
 
 	/***
      * @author zhaokk

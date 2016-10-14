@@ -18,6 +18,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSeriesbranch;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSignasreal;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSignboard;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSignboardName;
+import com.navinfo.dataservice.dao.glm.model.rd.voiceguide.RdVoiceguide;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
 import com.navinfo.navicommons.database.sql.DBUtils;
@@ -449,14 +450,14 @@ public class RdBranchSelector extends AbstractSelector {
 				RdSignboardName.class, conn);
 
 		for (IRow row : branch.getSignboards()) {
-			
+
 			RdSignboard obj = (RdSignboard) row;
 
 			obj.setNames(signboardNameSelector.loadRowsByParentId(obj.getPid(),
 					isLock));
 
 			for (IRow nameRow : obj.getNames()) {
-				
+
 				RdSignboardName name = (RdSignboardName) nameRow;
 
 				obj.nameMap.put(name.pid(), name);
@@ -614,22 +615,25 @@ public class RdBranchSelector extends AbstractSelector {
 		}
 		return branchs;
 	}
-	
+
 	/**
 	 * 根据路口pid查询分歧
-	 * @param crossPid 路口pid
-	 * @param isLock 是否加锁
+	 * 
+	 * @param crossPid
+	 *            路口pid
+	 * @param isLock
+	 *            是否加锁
 	 * @return 分歧集合
 	 * @throws Exception
 	 */
-	public List<RdBranch> getRdBranchByCrossPid(int crossPid,boolean isLock) throws Exception {
+	public List<RdBranch> getRdBranchByCrossPid(int crossPid, boolean isLock)
+			throws Exception {
 
 		List<RdBranch> result = new ArrayList<RdBranch>();
 
 		String sql = "select * from rd_branch a where exists (select null from rd_cross_node b where b.pid=:1 and a.node_pid=b.node_pid) and u_record!=2";
-		
-		if(isLock)
-		{
+
+		if (isLock) {
 			sql = sql + " for update nowait";
 		}
 
@@ -656,26 +660,38 @@ public class RdBranchSelector extends AbstractSelector {
 
 				branch.setOutLinkPid(resultSet.getInt("out_link_pid"));
 
-				branch.setRelationshipType(resultSet.getInt("relationship_type"));
+				branch.setRelationshipType(resultSet
+						.getInt("relationship_type"));
 
 				branch.setRowId(resultSet.getString("row_id"));
 
-				branch.setDetails(new AbstractSelector(RdBranchDetail.class, getConn()).loadRowsByParentId(branch.getPid(), true));
+				branch.setDetails(new AbstractSelector(RdBranchDetail.class,
+						getConn()).loadRowsByParentId(branch.getPid(), true));
 
-				branch.setSignboards(new AbstractSelector(RdSignboard.class, getConn()).loadRowsByParentId(branch.getPid(), true));
+				branch.setSignboards(new AbstractSelector(RdSignboard.class,
+						getConn()).loadRowsByParentId(branch.getPid(), true));
 
-				branch.setSignasreals(new AbstractSelector(RdSignasreal.class, getConn()).loadRowsByParentId(branch.getPid(), true));
+				branch.setSignasreals(new AbstractSelector(RdSignasreal.class,
+						getConn()).loadRowsByParentId(branch.getPid(), true));
 
-				branch.setSeriesbranches(new AbstractSelector(RdSeriesbranch.class, getConn()).loadRowsByParentId(branch.getPid(), true));
+				branch.setSeriesbranches(new AbstractSelector(
+						RdSeriesbranch.class, getConn()).loadRowsByParentId(
+						branch.getPid(), true));
 
-				branch.setRealimages(new AbstractSelector(RdBranchRealimage.class, getConn()).loadRowsByParentId(branch.getPid(), true));
+				branch.setRealimages(new AbstractSelector(
+						RdBranchRealimage.class, getConn()).loadRowsByParentId(
+						branch.getPid(), true));
 
-				branch.setSchematics(new AbstractSelector(RdBranchSchematic.class, getConn()).loadRowsByParentId(branch.getPid(), true));
+				branch.setSchematics(new AbstractSelector(
+						RdBranchSchematic.class, getConn()).loadRowsByParentId(
+						branch.getPid(), true));
 
-				RdBranchViaSelector viaSelector = new RdBranchViaSelector(getConn());
+				RdBranchViaSelector viaSelector = new RdBranchViaSelector(
+						getConn());
 
-				branch.setVias(viaSelector.loadRowsByParentId(branch.getPid(), true));
-				
+				branch.setVias(viaSelector.loadRowsByParentId(branch.getPid(),
+						true));
+
 				result.add(branch);
 			}
 		} catch (Exception e) {
@@ -687,4 +703,110 @@ public class RdBranchSelector extends AbstractSelector {
 		}
 		return result;
 	}
+
+	/**
+	 * 根据link类型获取分歧
+	 * 
+	 * @param linkPids
+	 * @param linkType
+	 *            1：进入线；2：退出线，3：经过线
+	 * @param isLock
+	 * @return
+	 * @throws Exception
+	 */
+	public List<RdBranch> loadByLinks(List<Integer> linkPids, int linkType,
+			boolean isLock) throws Exception {
+
+		List<RdBranch> rows = new ArrayList<RdBranch>();
+
+		if (linkPids == null || linkPids.size() == 0) {
+			return rows;
+		}
+
+		List<Integer> pidTemp = new ArrayList<Integer>();
+
+		pidTemp.addAll(linkPids);
+
+		int dataLimit = 100;
+
+		while (pidTemp.size() >= dataLimit) {
+
+			List<Integer> listPid = pidTemp.subList(0, dataLimit);
+
+			rows.addAll(loadByLinkPids(listPid, linkType, isLock));
+
+			pidTemp.subList(0, dataLimit).clear();
+		}
+
+		if (!pidTemp.isEmpty()) {
+			rows.addAll(loadByLinkPids(pidTemp, linkType, isLock));
+		}
+
+		return rows;
+	}
+
+	public List<RdBranch> loadByLinkPids(List<Integer> linkPids, int linkType,
+			boolean isLock) throws Exception {
+		List<RdBranch> branchs = new ArrayList<RdBranch>();
+
+		if (linkPids == null || linkPids.isEmpty()) {
+
+			return branchs;
+		}
+
+		String pids = org.apache.commons.lang.StringUtils.join(linkPids, ",");
+
+		String sql = "";
+
+		if (linkType == 1) {
+
+			sql = "SELECT * FROM RD_BRANCH  WHERE U_RECORD !=2 AND IN_LINK_PID IN ("
+					+ pids + ")  ";
+
+		} else if (linkType == 2) {
+
+			sql = "SELECT * FROM RD_BRANCH WHERE U_RECORD !=2 AND OUT_LINK_PID IN ("
+					+ pids + ")  ";
+			
+		} else if (linkType == 3) {
+
+			sql = "SELECT * FROM RD_BRANCH WHERE U_RECORD != 2 AND BRANCH_PID IN (SELECT DISTINCT (BRANCH_PID) FROM RD_BRANCH_VIA WHERE U_RECORD != 2 AND LINK_PID IN ("
+					+ pids + "))";
+		} else {
+			return branchs;
+		}
+
+		if (isLock) {
+			sql += " for update nowait";
+		}
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sql);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+
+				RdBranch branch = new RdBranch();
+
+				ReflectionAttrUtils.executeResultSet(branch, resultSet);
+
+				setChild(branch, isLock);
+
+				branchs.add(branch);
+			}
+		} catch (Exception e) {
+
+			throw e;
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+		}
+		return branchs;
+	}
+
 }

@@ -20,7 +20,7 @@ public class IxPoiTest extends InitApplication{
 
     @Test
     public void creat(){
-        String parameter = "{\"command\":\"CREATE\",\"type\":\"IXPOI\",\"dbId\":17,\"data\":{\"longitude\":116.28255307674408,\"latitude\":40.56674714332346,\"x_guide\":116.28263146711828,\"y_guide\":40.56703051458468,\"linkPid\":303000476}}";
+        String parameter = "{\"command\":\"CREATE\",\"type\":\"IXPOI\",\"dbId\":19,\"data\":{\"longitude\":116.47318840026855,\"latitude\":40.01432055968962,\"x_guide\":116.47318840026855,\"y_guide\":40.01422195512273,\"linkPid\":204000506,\"name\":\"测试\",\"kindCode\":\"230227\"}}";
         TestUtil.run(parameter);
     }
 

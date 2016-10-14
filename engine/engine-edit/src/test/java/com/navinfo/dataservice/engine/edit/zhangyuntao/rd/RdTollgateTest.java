@@ -30,7 +30,7 @@ public class RdTollgateTest extends InitApplication {
 	@Test
 	public void insert() {
 		String parameter = "{'command':'CREATE',` 'dbId':42, 'type':'RDTOLLGATE', 'data':{'inLinkPid':123, 'nodePid':213, 'outLinkPid':321}}";
-		parameter = "{\"command\":\"CREATE\",\"type\":\"IXPOI\",\"dbId\":42,\"data\":{\"longitude\":116.43301963806152,\"latitude\":40.027877331076056,\"x_guide\":116.4328129589824,\"y_guide\":40.027881798111885,\"linkPid\":15341035}}";
+		parameter = "{\"command\":\"CREATE\",\"type\":\"RDTOLLGATE\",\"dbId\":17,\"data\":{\"inLinkPid\":205000255,\"outLinkPid\":307000241,\"nodePid\":200000232}}";
 		TestUtil.run(parameter);
 	}
 

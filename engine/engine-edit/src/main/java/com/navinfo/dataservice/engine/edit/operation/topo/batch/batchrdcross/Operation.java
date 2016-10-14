@@ -36,6 +36,7 @@ public class Operation implements IOperation {
         RdCross cross = command.getRdCross();
         this.updateRdCrossLink(cross, result);
         this.updateRdCrossNode(cross, result);
+        this.updateRdCross(cross, result);
         result.setPrimaryPid(cross.pid());
         return null;
     }
@@ -138,6 +139,20 @@ public class Operation implements IOperation {
 
             // 维护link的linkForm信息
             this.updateLinkForm(cross, linkPid, result);
+        }
+    }
+
+    private void updateRdCross(RdCross cross, Result result) {
+        if (command.getNodePids().size() > 1) {
+            if (cross.getType() == 0) {
+                cross.changedFields().put("type", 1);
+                result.insertObject(cross, ObjStatus.UPDATE, cross.pid());
+            }
+        } else {
+            if (cross.getType() == 1) {
+                cross.changedFields().put("type", 0);
+                result.insertObject(cross, ObjStatus.UPDATE, cross.pid());
+            }
         }
     }
 

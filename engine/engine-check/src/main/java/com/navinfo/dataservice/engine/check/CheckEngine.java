@@ -83,7 +83,7 @@ public class CheckEngine {
 		List<NiValException> result=exePreCheck();
 		if(result!=null && result.size()>0){
 			log.info("end preCheck");
-			return result.get(0).getInformation();
+			return result.get(0).getRuleId()+result.get(0).getInformation();
 			}
 		return null;
 	}

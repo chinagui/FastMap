@@ -1,5 +1,11 @@
 package com.navinfo.dataservice.engine.check.rules;
 
+import java.util.Map;
+
+
+import net.sf.json.JSONObject;
+
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
@@ -14,11 +20,18 @@ import com.vividsolutions.jts.geom.Geometry;
  */
 public class GLM01026 extends baseRule {
 	
-	public void preCheck(CheckCommand checkCommand){
+	public void preCheck(CheckCommand checkCommand) throws Exception{
 		for(IRow obj : checkCommand.getGlmList()){
 			if (obj instanceof RdLink){
 				RdLink rdLink = (RdLink)obj;
-				if(this.hasBorderNode(rdLink.getGeometry())){
+				
+				Geometry geo = rdLink.getGeometry();
+				Map<String, Object> changedFields = rdLink.changedFields();
+				if(changedFields!=null && changedFields.containsKey("geometry")){
+					JSONObject geojson=(JSONObject) changedFields.get("geometry");
+					geo=GeoTranslator.geojson2Jts(geojson);}
+
+				if(this.hasBorderNode(geo)){
 					this.setCheckResult("", "", 0);
 					return;
 					}
@@ -34,7 +47,7 @@ public class GLM01026 extends baseRule {
 		Coordinate[] coords = geo.getCoordinates();				
 		for(int j=1;j<coords.length-1;j++){
 			Coordinate current = coords[j];
-			if (MeshUtils.isPointAtMeshBorder(current.x,current.y)==true){
+			if (MeshUtils.isPointAtMeshBorderWith100000(current.x,current.y)==true){
 				return true;
 			}
 		}

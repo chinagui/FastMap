@@ -39,15 +39,33 @@ public class SysMsgWebSocketHandler extends TextWebSocketHandler {
 	@Override
 	public void afterConnectionEstablished(WebSocketSession session) throws Exception {
 		log.info("connect to the websocket success......");
-		users.add(session);
 		String userId = (String) session.getAttributes().get("userId");
+		if(users.size() == 0){
+			users.add(session);
+		}else{
+			//删除同一用户之前登录时的webSocketSession
+			if(users.size() > 0){
+				for (int i = 0;i < users.size(); i++) {
+					if (users.get(i).getAttributes().get("userId").equals(userId)) {
+						try {
+							users.remove(i);
+						} catch (Exception e) {
+							e.printStackTrace();
+							log.error("移除失败,原因:"+e.getMessage(), e);
+						}
+						break;
+					}
+				}
+				users.add(session);
+			}
+		}
 		if (userId != null) {
 			// 查询未读消息
 			List<SysMsg> unreadMsg = SysMsgService.getInstance().getUnread(Long.parseLong(userId));
 			String sysMsg = JSONArray.fromObject(unreadMsg).toString();
 			session.sendMessage(new TextMessage(sysMsg));
 		}
-		
+		log.info("===================================================="+users.toString());
 	}
 
 	

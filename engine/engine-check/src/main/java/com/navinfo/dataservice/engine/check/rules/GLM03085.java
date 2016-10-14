@@ -36,7 +36,7 @@ public class GLM03085 extends baseRule {
 				double rdNodeX = rdNode.getGeometry().getCoordinate().x;
 				double rdNodeY = rdNode.getGeometry().getCoordinate().y;
 				//判断点是不是在图廓线上
-				if (MeshUtils.isPointAtMeshBorder(rdNodeX, rdNodeY)){
+				if (MeshUtils.isPointAtMeshBorderWith100000(rdNodeX, rdNodeY)){
 					List<IRow> fromList = rdNode.getForms();
 					for (IRow form: fromList){
 						RdNodeForm rdNodeForm = (RdNodeForm) form;

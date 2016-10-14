@@ -304,7 +304,7 @@ public class TaskOperation {
 					+ "   WHERE C.CITY_ID NOT IN (100000,100001,100002)"
 					+ "   AND C.PLAN_STATUS=0),"
 					+ " FINAL_TABLE AS"
-					+ " (SELECT *"
+					+ " (SELECT DISTINCT *"
 					+ "    FROM TASK_LIST"
 					+ "    WHERE 1=1"
 					+  conditionSql
@@ -381,7 +381,7 @@ public class TaskOperation {
 					+ "      OR NOT EXISTS(SELECT 1 FROM BLOCK_MAN M"
 					+ "                   WHERE M.TASK_ID = T.TASK_ID))),"
 					+ " FINAL_TABLE AS"
-					+ " (SELECT *"
+					+ " (SELECT DISTINCT *"
 					+ "    FROM TASK_LIST"
 					+ "    WHERE 1=1"
 					+  conditionSql
@@ -474,7 +474,7 @@ public class TaskOperation {
 					+ "                     AND M.LATEST = 1"
 					+ "                     AND M.STATUS <> 0)),"
 					+ " FINAL_TABLE AS"
-					+ " (SELECT *"
+					+ " (SELECT DISTINCT *"
 					+ "    FROM TASK_LIST"
 					+ "    WHERE 1=1"
 					+  conditionSql
@@ -560,7 +560,7 @@ public class TaskOperation {
 					+ "   AND T.STATUS = 0"
 					+ "   AND T.LATEST = 1),"
 					+ " FINAL_TABLE AS"
-					+ " (SELECT *"
+					+ " (SELECT DISTINCT *"
 					+ "    FROM TASK_LIST"
 					+ "    WHERE 1=1"
 					+  conditionSql
@@ -632,7 +632,7 @@ public class TaskOperation {
 					+ "    FROM INFOR C"
 					+ "   WHERE C.PLAN_STATUS=0),"
 					+ " FINAL_TABLE AS"
-					+ " (SELECT *"
+					+ " (SELECT DISTINCT *"
 					+ "    FROM TASK_LIST"
 					+ "    WHERE 1=1"
 					+  conditionSql
@@ -708,7 +708,7 @@ public class TaskOperation {
 					+ "      OR NOT EXISTS(SELECT 1 FROM BLOCK_MAN M"
 					+ "                   WHERE M.TASK_ID = T.TASK_ID))),"
 					+ " FINAL_TABLE AS"
-					+ " (SELECT *"
+					+ " (SELECT DISTINCT *"
 					+ "    FROM TASK_LIST"
 					+ "    WHERE 1=1"
 					+  conditionSql
@@ -800,7 +800,7 @@ public class TaskOperation {
 					+ "                     AND M.LATEST = 1"
 					+ "                     AND M.STATUS <> 0)),"
 					+ " FINAL_TABLE AS"
-					+ " (SELECT *"
+					+ " (SELECT DISTINCT *"
 					+ "    FROM TASK_LIST"
 					+ "    WHERE 1=1"
 					+  conditionSql
@@ -885,7 +885,7 @@ public class TaskOperation {
 					+ "   AND T.STATUS = 0"
 					+ "   AND T.LATEST = 1),"
 					+ " FINAL_TABLE AS"
-					+ " (SELECT *"
+					+ " (SELECT DISTINCT *"
 					+ "    FROM TASK_LIST"
 					+ "    WHERE 1=1"
 					+  conditionSql
@@ -1097,7 +1097,7 @@ public class TaskOperation {
 					+ "  FROM T, INFOR I"
 					+ " WHERE T.TASK_ID(+) = I.TASK_ID),"
 					+ " FINAL_TABLE AS"
-					+ " (SELECT *"
+					+ " (SELECT DISTINCT *"
 					+ "    FROM TASK_LIST"
 					+ conditionSql
 					+ "   ORDER BY TASK_LIST.TASK_STATUS DESC, TASK_LIST.FINISH_PERCENT ASC)"
@@ -1287,7 +1287,7 @@ public class TaskOperation {
 					+ "    FROM T, INFOR I"
 					+ "   WHERE T.TASK_ID(+) = I.TASK_ID),"
 					+ " QUERY AS"
-					+ " (SELECT *"
+					+ " (SELECT DISTINCT *"
 					+ "    FROM TASK_LIST"
 					+conditionSql
 					+orderSql

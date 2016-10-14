@@ -821,6 +821,11 @@ public class BlockService {
                 + "                       when 3 then 3 end "
                 + "                         when 2 then 1"
                 + "                           when 0 then 4 end order_status,"
+                + "                  CASE TT.STATUS"
+				+ "                      WHEN 1 THEN CASE TP.PLAN_STATUS WHEN 2 THEN 2"
+                + "                       when 3 then 3 end "
+                + "                         when 2 then 1"
+                + "                           when 0 then 4 end plan_status,"
 				+ "                  S.PERCENT,"
 				+ "                  S.DIFF_DATE,"
 				+ "                  TO_CHAR(T.COLLECT_PLAN_START_DATE, 'YYYYMMDD') COLLECT_PLAN_START_DATE,"
@@ -876,6 +881,7 @@ public class BlockService {
 				+ "                  0 STATUS,"
 				+ "                  B.PLAN_STATUS block_plan_status,"
 				+ "                  2 order_status,"
+				+ "                  1 plan_status,"
 				+ "                  0,"
 				+ "                  0,"
 				+ "                  '---' COLLECT_PLAN_START_DATE,"
@@ -927,7 +933,7 @@ public class BlockService {
 				if("groupId".equals(key)){
 					conditionSql=conditionSql+" AND MAN_LIST.GROUP_ID ="+conditionJson.getInt(key);}
 				if("planStatus".equals(key)){
-					conditionSql=conditionSql+" AND MAN_LIST.STATUS =1 AND MAN_LIST.PLAN_STATUS="+conditionJson.getInt(key);}
+					conditionSql=conditionSql+" AND MAN_LIST.BLOCK_STATUS =1 AND MAN_LIST.PLAN_STATUS="+conditionJson.getInt(key);}
 				
 				if ("assignStatus".equals(key)) {
 					if(!statusSql.isEmpty()){statusSql+=" or ";}

@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
+import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLink;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwNode;
@@ -21,7 +22,19 @@ public class Process extends AbstractProcess<Command> {
 
 	@Override
 	public String exeOperation() throws Exception {
-		return new Operation(this.getCommand()).run(this.getResult());
+		Operation option = new Operation(this.getCommand(), getConn());
+		option.run(this.getResult());
+		updataRelationObj();
+		return null;
+	}
+
+	/**
+	 * 影响分析
+	 * @throws Exception
+	 */
+	private void updataRelationObj() throws Exception {
+		IOperation opRefRdGsc = new OpRefRwGsc(this.getCommand(), this.getConn());
+		opRefRdGsc.run(this.getResult());
 	}
 
 	@Override

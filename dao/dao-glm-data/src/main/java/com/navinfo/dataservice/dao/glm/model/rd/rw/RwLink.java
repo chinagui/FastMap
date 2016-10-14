@@ -254,17 +254,17 @@ public class RwLink implements IObj {
 
 	@Override
 	public String parentPKName() {
-		return "link_pid";
+		return "FEATURE_PID";
 	}
 
 	@Override
 	public int parentPKValue() {
-		return this.pid;
+		return this.featurePid;
 	}
 
 	@Override
 	public String parentTableName() {
-		return this.tableName();
+		return "RW_FEATURE";
 	}
 
 	@Override

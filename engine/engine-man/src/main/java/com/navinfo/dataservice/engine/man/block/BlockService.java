@@ -234,7 +234,7 @@ public class BlockService {
 			JSONObject obj = JSONObject.fromObject(json);
 			BlockMan bean = (BlockMan) JSONObject.toBean(obj, BlockMan.class);
 
-			String selectSql = "select t.CITY_ID, t.BLOCK_MAN, t.GEOMETRY,"
+			String selectSql = "select t.CITY_ID, t.BLOCK_NAME, t.GEOMETRY,"
 					+ " t.PLAN_STATUS, T.work_property,tt.task_type"
 					+ " from BLOCK t,task tt where t.BLOCK_ID = ? and t.city_id=tt.city_id";
 			ResultSetHandler<HashMap> rsHandler = new ResultSetHandler<HashMap>() {
@@ -883,7 +883,7 @@ public class BlockService {
 				+ "                  T.TASK_ID,"
 				+ "                  B.BLOCK_ID,"
 				+ "                  B.BLOCK_NAME,"
-				+ "                  B.work_property,"
+				+ "                  nvl(B.work_property,'---') work_property,"
 				+ "                  TT.CITY_ID,"
 				+ "                  T.STATUS BLOCK_STATUS,"
 				+ "                  B.PLAN_STATUS BLOCK_PLAN_STATUS,"
@@ -955,7 +955,7 @@ public class BlockService {
 				+ "                  0,"
 				+ "                  B.BLOCK_ID,"
 				+ "                  B.BLOCK_NAME,"
-				+ "                  B.work_property,"
+				+ "                  nvl(B.work_property,'---') work_property,"
 				+ "                  C.CITY_ID,"
 				+ "                  0 STATUS,"
 				+ "                  B.PLAN_STATUS block_plan_status,"

@@ -7,7 +7,7 @@ xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
 
 	<dubbo:application name="datahub-api-consumer" />
 	<dubbo:registry address="zookeeper://192.168.4.188:2681?backup=192.168.4.188:2682,192.168.4.188:2683" />
-	
+	<!-- <dubbo:registry address="zookeeper://192.168.4.188:4181?backup=192.168.4.188:4182,192.168.4.188:4183" /> -->
 	<dubbo:reference id="datahubApi" interface="com.navinfo.dataservice.api.datahub.iface.DatahubApi" timeout="5000"/>
 	<dubbo:reference id="manApi" interface="com.navinfo.dataservice.api.man.iface.ManApi" timeout="5000"/>
 	<dubbo:reference id="metadataApi" interface="com.navinfo.dataservice.api.metadata.iface.MetadataApi" timeout="5000"/>

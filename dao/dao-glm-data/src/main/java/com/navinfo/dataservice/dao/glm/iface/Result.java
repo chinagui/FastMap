@@ -45,6 +45,12 @@ public class Result implements ISerializable {
 	 * 修改对象列表
 	 */
 	private List<IRow> listUpdateIRow = new ArrayList<IRow>();
+	
+	private List<Integer> listAddIRowObPid = new ArrayList<>();
+	
+	private List<Integer> listUpdateIRowObPid = new ArrayList<>();
+	
+	private List<Integer> listDelIRowObPid = new ArrayList<>();
 
 	private JSONArray checkResults = new JSONArray();
 
@@ -106,14 +112,17 @@ public class Result implements ISerializable {
 		switch (os) {
 		case INSERT:
 			listAddIRow.add(row);
+			listAddIRowObPid.add(topParentPid);
 			json.put("op", "新增");
 			break;
 		case DELETE:
 			listDelIRow.add(row);
+			listDelIRowObPid.add(topParentPid);
 			json.put("op", "删除");
 			break;
 		case UPDATE:
 			listUpdateIRow.add(row);
+			listUpdateIRowObPid.add(topParentPid);
 			json.put("op", "修改");
 			break;
 		default:
@@ -142,6 +151,18 @@ public class Result implements ISerializable {
 	 */
 	public List<IRow> getUpdateObjects() {
 		return listUpdateIRow;
+	}
+	
+	public List<Integer> getListAddIRowObPid() {
+		return listAddIRowObPid;
+	}
+
+	public List<Integer> getListUpdateIRowObPid() {
+		return listUpdateIRowObPid;
+	}
+
+	public List<Integer> getListDelIRowObPid() {
+		return listDelIRowObPid;
 	}
 
 	@Override

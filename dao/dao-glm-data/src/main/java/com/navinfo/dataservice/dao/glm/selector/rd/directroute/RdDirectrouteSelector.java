@@ -8,6 +8,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
 import com.navinfo.dataservice.dao.glm.model.rd.directroute.RdDirectroute;
 import com.navinfo.dataservice.dao.glm.model.rd.directroute.RdDirectrouteVia;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
@@ -252,5 +253,183 @@ public class RdDirectrouteSelector extends AbstractSelector {
 			DBUtils.closeStatement(pstmt);
 		}
 		return result;
+	}
+	
+	
+	
+	public List<RdDirectroute> loadByLinkPid(int linkPid, int linkType,
+			boolean isLock) throws Exception {
+		
+		List<RdDirectroute> rows = new ArrayList<RdDirectroute>();
+
+		String sql = "";
+
+		if (linkType == 1) {
+
+			sql = "SELECT * FROM RD_DIRECTROUTE WHERE U_RECORD!=2  AND IN_LINK_PID  = :1";
+
+		} else if (linkType == 2) {
+
+			sql = "SELECT * FROM RD_DIRECTROUTE WHERE U_RECORD!=2  AND OUT_LINK_PID = :1";
+			
+		} else if (linkType == 3) {
+
+			sql = "SELECT * FROM RD_DIRECTROUTE WHERE U_RECORD != 2 AND PID IN (SELECT DISTINCT (PID) FROM RD_DIRECTROUTE_VIA WHERE U_RECORD != 2 AND LINK_PID = :1)";
+		
+		} else {
+			return rows;
+		}
+
+		if (isLock) {
+			sql += " for update nowait";
+		}
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = getConn().prepareStatement(sql);
+
+			pstmt.setInt(1, linkPid);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+
+				RdDirectroute directroute = new RdDirectroute();
+
+				ReflectionAttrUtils.executeResultSet(directroute, resultSet);
+
+				directroute.setVias(new AbstractSelector(
+						RdDirectrouteVia.class, getConn()).loadRowsByParentId(
+						directroute.getPid(), isLock));
+
+				rows.add(directroute);
+			}
+
+		} catch (Exception e) {
+
+			throw e;
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+		}
+		return rows;
+
+	}
+
+	
+	/**
+	 * 根据link类型获取顺行
+	 * 
+	 * @param linkPids
+	 * @param linkType
+	 *            1：进入线；2：退出线，3：经过线
+	 * @param isLock
+	 * @return
+	 * @throws Exception
+	 */
+	public List<RdDirectroute> loadByLinks(List<Integer> linkPids, int linkType,
+			boolean isLock) throws Exception {
+
+		List<RdDirectroute> rows = new ArrayList<RdDirectroute>();
+
+		if (linkPids == null || linkPids.size() == 0) {
+			return rows;
+		}
+
+		List<Integer> pidTemp = new ArrayList<Integer>();
+
+		pidTemp.addAll(linkPids);
+
+		int dataLimit = 100;
+
+		while (pidTemp.size() >= dataLimit) {
+
+			List<Integer> listPid = pidTemp.subList(0, dataLimit);
+
+			rows.addAll(loadByLinkPids(listPid, linkType, isLock));
+
+			pidTemp.subList(0, dataLimit).clear();
+		}
+
+		if (!pidTemp.isEmpty()) {
+			rows.addAll(loadByLinkPids(pidTemp, linkType, isLock));
+		}
+
+		return rows;
+	}
+	
+	
+	public List<RdDirectroute> loadByLinkPids(List<Integer> linkPids, int linkType,
+			boolean isLock) throws Exception {
+		
+		List<RdDirectroute> rows = new ArrayList<RdDirectroute>();
+
+		if (linkPids == null || linkPids.isEmpty()) {
+
+			return rows;
+		}
+
+		String pids = org.apache.commons.lang.StringUtils.join(linkPids, ",");
+
+		String sql = "";
+
+
+		if (linkType == 1) {
+
+			sql = "SELECT * FROM RD_DIRECTROUTE WHERE U_RECORD!=2  AND IN_LINK_PID  IN ("
+					+ pids + ")  ";
+
+		} else if (linkType == 2) {
+
+			sql = "SELECT * FROM RD_DIRECTROUTE WHERE U_RECORD!=2  AND OUT_LINK_PID  IN ("
+					+ pids + ")  ";
+			
+		} else if (linkType == 3) {
+
+			sql = "SELECT * FROM RD_DIRECTROUTE WHERE U_RECORD != 2 AND PID IN (SELECT DISTINCT (PID) FROM RD_DIRECTROUTE_VIA WHERE U_RECORD != 2 AND LINK_PID IN ("
+					+ pids + "))";
+		
+		} else {
+			return rows;
+		}
+
+		if (isLock) {
+			sql += " for update nowait";
+		}
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = getConn().prepareStatement(sql);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+
+				RdDirectroute directroute = new RdDirectroute();
+
+				ReflectionAttrUtils.executeResultSet(directroute, resultSet);
+
+				directroute.setVias(new AbstractSelector(
+						RdDirectrouteVia.class, getConn()).loadRowsByParentId(
+						directroute.getPid(), isLock));
+
+				rows.add(directroute);
+			}
+
+		} catch (Exception e) {
+
+			throw e;
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+		}
+		return rows;
+
 	}
 }

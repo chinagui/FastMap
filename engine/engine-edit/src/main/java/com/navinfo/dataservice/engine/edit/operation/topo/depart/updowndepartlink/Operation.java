@@ -681,6 +681,14 @@ public class Operation implements IOperation {
 		opRefRelationObj.handlerRdCross(this.command, result);
 		
 		opRefRelationObj.handleLaneConnexity(this.command, result);
+		
+		opRefRelationObj.handleRestriction(this.command, result);
+		
+		opRefRelationObj.handleVoiceguide(this.command, result);
+		
+		opRefRelationObj.handleBranch(this.command, result);
+		
+		opRefRelationObj.handleDirectroute(this.command, result);
 	}
 	/**
 	 * @param startLine

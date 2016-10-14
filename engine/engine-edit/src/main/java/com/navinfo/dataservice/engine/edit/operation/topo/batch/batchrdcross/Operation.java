@@ -36,6 +36,7 @@ public class Operation implements IOperation {
         RdCross cross = command.getRdCross();
         this.updateRdCrossLink(cross, result);
         this.updateRdCrossNode(cross, result);
+        result.setPrimaryPid(cross.pid());
         return null;
     }
 

@@ -272,4 +272,24 @@ public class InforManService {
 		}
 	}
 
+	public HashMap<String, Object> queryByTaskId(int taskId) throws Exception {
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			String selectSql = "select * from infor where task_id='" + taskId + "'";
+			List<HashMap<String,Object>> list = InforManOperation.selectTaskBySql2(conn, selectSql, null);
+			if (list.size() > 0) {
+				return list.get(0);
+			} else {
+				return null;
+			}
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询明细失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+
 }

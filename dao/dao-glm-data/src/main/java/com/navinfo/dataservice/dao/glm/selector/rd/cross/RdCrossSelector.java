@@ -9,7 +9,6 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossLink;
@@ -105,7 +104,7 @@ public class RdCrossSelector extends AbstractSelector {
 
 	public RdCross loadCrossByNodePid(int nodePid, boolean isLock) throws Exception {
 
-		RdCross cross = new RdCross();
+		RdCross cross = null;
 
 		String sql = "select a.*, c.mesh_id   from rd_cross a, rd_node_mesh c  where  exists (select null           from rd_cross_node d          where a.pid = d.pid            and d.node_pid =:1      and d.u_record != 2            and c.node_pid = d.node_pid            )    and a.u_record != 2";
 
@@ -121,15 +120,14 @@ public class RdCrossSelector extends AbstractSelector {
 			resultSet = pstmt.executeQuery();
 
 			if (resultSet.next()) {
-
+				
+				cross = new RdCross();
+				
 				ReflectionAttrUtils.executeResultSet(cross, resultSet);
 				
 				setChildData(cross,isLock);
 
-			} else {
-				
-				throw new DataNotFoundException("NodePid:"+nodePid+" 对应的路口不存在");
-			}
+			} 
 		} catch (Exception e) {
 			
 			throw e;

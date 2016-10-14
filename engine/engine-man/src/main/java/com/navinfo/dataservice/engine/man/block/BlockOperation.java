@@ -711,8 +711,10 @@ public class BlockOperation {
 						map.put("blockManName", rs.getString("BLOCK_MAN_NAME"));
 						map.put("blockId", rs.getInt("BLOCK_ID"));
 						map.put("blockName", rs.getString("BLOCK_NAME"));
+						map.put("taskId", rs.getString("TASK_ID"));
 						map.put("blockStatus", rs.getInt("BLOCK_STATUS"));
 						map.put("blockPlanStatus", rs.getInt("BLOCK_PLAN_STATUS"));
+						map.put("planStatus", rs.getInt("PLAN_STATUS"));
 						map.put("planStartDate", rs.getString("PLAN_START_DATE"));
 						map.put("planEndDate", rs.getString("PLAN_END_DATE"));
 						map.put("assignStatus", rs.getInt("ASSIGN_STATUS"));
@@ -759,6 +761,7 @@ public class BlockOperation {
 						map.put("cityId", rs.getInt("CITY_ID"));
 						map.put("blockStatus", rs.getInt("BLOCK_STATUS"));
 						map.put("blockPlanStatus", rs.getInt("BLOCK_PLAN_STATUS"));
+						map.put("planStatus", rs.getInt("PLAN_STATUS"));
 						map.put("diffDate", rs.getInt("DIFF_DATE"));
 						map.put("percent",rs.getInt("PERCENT"));
 						

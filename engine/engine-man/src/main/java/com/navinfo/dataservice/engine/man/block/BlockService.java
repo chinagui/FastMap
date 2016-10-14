@@ -756,6 +756,9 @@ public class BlockService {
 				String key = (String) keys.next();
 				if("blockManName".equals(key)){
 					conditionSql=conditionSql+" AND MAN_LIST.BLOCK_MAN_NAME LIKE '%"+conditionJson.getString(key)+"%'";}
+				if("name".equals(key)){
+					conditionSql=conditionSql+" AND (MAN_LIST.BLOCK_MAN_NAME LIKE '%"+conditionJson.getString(key)+"%'"
+							+ " or MAN_LIST.BLOCK_NAME LIKE '%"+conditionJson.getString(key)+"%')";}
 				if("taskId".equals(key)){
 					conditionSql=conditionSql+" AND MAN_LIST.TASK_ID ="+conditionJson.getInt(key);}
 				if("cityId".equals(key)){
@@ -821,6 +824,11 @@ public class BlockService {
                 + "                       when 3 then 3 end "
                 + "                         when 2 then 1"
                 + "                           when 0 then 4 end order_status,"
+                + "                  CASE TT.STATUS"
+				+ "                      WHEN 1 THEN CASE TP.PLAN_STATUS WHEN 2 THEN 2"
+                + "                       when 3 then 3 end "
+                + "                         when 2 then 1"
+                + "                           when 0 then 4 end plan_status,"
 				+ "                  S.PERCENT,"
 				+ "                  S.DIFF_DATE,"
 				+ "                  TO_CHAR(T.COLLECT_PLAN_START_DATE, 'YYYYMMDD') COLLECT_PLAN_START_DATE,"
@@ -876,6 +884,7 @@ public class BlockService {
 				+ "                  0 STATUS,"
 				+ "                  B.PLAN_STATUS block_plan_status,"
 				+ "                  2 order_status,"
+				+ "                  1 plan_status,"
 				+ "                  0,"
 				+ "                  0,"
 				+ "                  '---' COLLECT_PLAN_START_DATE,"
@@ -924,10 +933,13 @@ public class BlockService {
 				String key = (String) keys.next();
 				if("blockManName".equals(key)){
 					conditionSql=conditionSql+" AND MAN_LIST.BLOCK_MAN_NAME LIKE '%"+conditionJson.getString(key)+"%'";}
+				if("name".equals(key)){
+					conditionSql=conditionSql+" AND (MAN_LIST.BLOCK_MAN_NAME LIKE '%"+conditionJson.getString(key)+"%' "
+							+ "or MAN_LIST.BLOCK_NAME LIKE '%"+conditionJson.getString(key)+"%')";}
 				if("groupId".equals(key)){
 					conditionSql=conditionSql+" AND MAN_LIST.GROUP_ID ="+conditionJson.getInt(key);}
 				if("planStatus".equals(key)){
-					conditionSql=conditionSql+" AND MAN_LIST.STATUS =1 AND MAN_LIST.PLAN_STATUS="+conditionJson.getInt(key);}
+					conditionSql=conditionSql+" AND MAN_LIST.BLOCK_STATUS =1 AND MAN_LIST.PLAN_STATUS="+conditionJson.getInt(key);}
 				
 				if ("assignStatus".equals(key)) {
 					if(!statusSql.isEmpty()){statusSql+=" or ";}
@@ -997,6 +1009,7 @@ public class BlockService {
 				+ "                  T.BLOCK_MAN_NAME,"
 				+ "                  T.BLOCK_ID,"
 				+ "                  B.BLOCK_NAME,"	
+				+ "                  T.TASK_ID,"
 				+ "                  T.STATUS BLOCK_STATUS,"
 				+ "                  B.PLAN_STATUS BLOCK_PLAN_STATUS,"
 				+ "                  0 ASSIGN_STATUS,"
@@ -1022,7 +1035,8 @@ public class BlockService {
 				+ " SELECT DISTINCT T.BLOCK_MAN_ID,"
 				+ "                  T.BLOCK_MAN_NAME,"
 				+ "                  T.BLOCK_ID,"
-				+ "                  B.BLOCK_NAME,"	
+				+ "                  B.BLOCK_NAME,"
+				+ "                  T.TASK_ID,"
 				+ "                  T.STATUS BLOCK_STATUS,"
 				+ "                  B.PLAN_STATUS BLOCK_PLAN_STATUS,"
 				+ "                  1 ASSIGN_STATUS,"
@@ -1050,6 +1064,7 @@ public class BlockService {
 				+ "                  T.BLOCK_MAN_NAME,"
 				+ "                  T.BLOCK_ID,"
 				+ "                  B.BLOCK_NAME,"	
+				+ "                  T.TASK_ID,"
 				+ "                  T.STATUS BLOCK_STATUS,"
 				+ "                  B.PLAN_STATUS BLOCK_PLAN_STATUS,"
 				+ "                  1 ASSIGN_STATUS,"
@@ -1076,7 +1091,8 @@ public class BlockService {
 				+ "  SELECT DISTINCT 0,"
 				+ "                  '---',"
 				+ "                  B.BLOCK_ID,"
-				+ "                  B.BLOCK_NAME,"				
+				+ "                  B.BLOCK_NAME,"		
+				+ "                  0,"
 				+ "                  0 STATUS,"
 				+ "                  B.PLAN_STATUS BLOCK_PLAN_STATUS,"
 				+ "                  0 ASSIGN_STATUS,"

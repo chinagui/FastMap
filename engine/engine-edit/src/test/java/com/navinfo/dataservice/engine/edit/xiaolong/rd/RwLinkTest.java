@@ -13,6 +13,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLink;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLinkName;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwNode;
 import com.navinfo.dataservice.dao.glm.search.RwLinkSearch;
+import com.navinfo.dataservice.dao.glm.selector.rd.rdname.RdNameSelector;
 import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.operation.Transaction;
 import com.navinfo.dataservice.engine.edit.search.SearchProcess;
@@ -71,13 +72,11 @@ public class RwLinkTest extends InitApplication {
 		try {
 			conn = DBConnector.getInstance().getConnectionById(19);
 
-			String parameter = "{\"inLinkPid\":86035302,\"nodePid\":468393,\"outLinkPid\":19613243}";
+			String parameter = "{\"name\":\"\",\"pageSize\":5,\"pageNum\":0,\"dbId\":17}";
 
-			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			RdNameSelector selector = new RdNameSelector();
 
-			SearchProcess p = new SearchProcess(conn);
-
-			System.out.println(p.searchDataByCondition(ObjType.RDLANEVIA, jsonReq));
+			System.out.println(selector.searchByName("", 5, 0, 17));
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -87,7 +86,7 @@ public class RwLinkTest extends InitApplication {
 	@Test//不跨图幅
 	public void testAddRwLink()
 	{
-		String parameter = "{\"command\":\"CREATE\",\"dbId\":17,\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.49462997913359,40.00015291028798],[116.49539172649382,40.00005428525468],[116.49646461009979,40.000157019661266]]},\"catchLinks\":[]},\"type\":\"RWLINK\"}";
+		String parameter = "{\"command\":\"DELETE\",\"dbId\":17,\"type\":\"RWNODE\",\"objId\":306000014}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
@@ -126,7 +125,7 @@ public class RwLinkTest extends InitApplication {
 	@Test//删除rw_link_name 自测问题：rw_node的点在图幅上的时候删除有问题，图幅计算的老问题
 	public void testDeleteRwLink()
 	{
-		String parameter = "{\"command\":\"DELETE\",\"dbId\":25,\"type\":\"RWLINK\",\"objId\":100007122}";
+		String parameter = "{\"command\":\"DELETE\",\"dbId\":52,\"type\":\"RDTOLLGATE\",\"objId\":-1285967295}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

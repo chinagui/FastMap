@@ -5,16 +5,15 @@ import java.util.List;
 
 import org.json.JSONException;
 
-import net.sf.json.JSONObject;
-
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import com.vividsolutions.jts.geom.Geometry;
+
+import net.sf.json.JSONObject;
 
 public class Command extends AbstractCommand {
 
@@ -28,8 +27,6 @@ public class Command extends AbstractCommand {
 
 	private List<RdLink> links;
 	
-	private List<IRow> rows;
-
 	private JSONObject json;
 	
 	private RdNode node;
@@ -48,14 +45,6 @@ public class Command extends AbstractCommand {
 
 	public void setLinks(List<RdLink> links) {
 		this.links = links;
-	}
-
-	public List<IRow> getRows() {
-		return rows;
-	}
-
-	public void setRows(List<IRow> rows) {
-		this.rows = rows;
 	}
 
 	public Command(JSONObject json, String requester) throws JSONException {

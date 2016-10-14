@@ -9,7 +9,6 @@ import java.util.List;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.log4j.Logger;
-
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.navicommons.database.Page;
@@ -83,7 +82,7 @@ public class SysMsgService {
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(sysConn);
 			log.error(e.getMessage(), e);
-			throw new ServiceException("更改失败，原因为:"+e.getMessage(),e);
+			throw new ServiceException("更改失败，原因为:该消息已读,不能重复更改消息状态!");
 		}finally{
 			DbUtils.commitAndCloseQuietly(sysConn);
 		}
@@ -124,7 +123,6 @@ public class SysMsgService {
 	 * @throws ServiceException
 	 */
 	public void deleteMsg(long msgId,long userId)throws ServiceException{
-		System.out.println("msgId==================="+msgId);
 		Connection sysConn = null;
 		try{
 			QueryRunner queryRunner = new QueryRunner();
@@ -133,11 +131,9 @@ public class SysMsgService {
 			String sql = "SELECT COUNT(1) FROM SYS_MESSAGE_READ_LOG WHERE MSG_ID=? AND USER_ID=?";
 			Object[] params={msgId,userId};
 			long count = queryRunner.queryForLong(sysConn,sql,params);
-			System.out.println("count=========="+count);
 			//是否为已读
 			if(count > 0){
 				//已读消息
-				System.out.println("================已读消息");
 				//修改删除日志的状态为2
 				String updateDeleteLogSql = "UPDATE SYS_MESSAGE_READ_LOG SET MSG_STATUS= 2 WHERE MSG_ID=? AND USER_ID=?";
 				Object[] updateDeleteLogParams={msgId,userId};
@@ -145,7 +141,6 @@ public class SysMsgService {
 			}else{
 				//未读消息
 				//添加删除日志并且状态为2
-				System.out.println("==================添加删除日志并且状态为2");
 				String insertDeleteLogSql = "INSERT INTO SYS_MESSAGE_READ_LOG(MSG_ID,USER_ID,MSG_STATUS) VALUES(?,?,2)";
 				Object[] insertDeleteLogParams={msgId,userId};
 				queryRunner.update(sysConn, insertDeleteLogSql, insertDeleteLogParams);
@@ -156,6 +151,32 @@ public class SysMsgService {
 			throw new ServiceException("删除失败，原因为:"+e.getMessage(),e);
 		}finally{
 			DbUtils.commitAndCloseQuietly(sysConn);
+		}
+	}
+	
+	/**
+	 * 查询消息详情
+	 * @param msgId
+	 * @return
+	 * @throws ServiceException 
+	 */
+	public List<SysMsg> selectSysMsgDetail(long msgId) throws ServiceException{
+		Connection conn = null;
+		QueryRunner queryRunner = null;
+		try {
+			//查询消息
+			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
+			queryRunner = new QueryRunner();
+			String userSql = "SELECT * FROM SYS_MESSAGE WHERE MSG_ID=?";
+			Object[] userParams = {msgId};
+			List<SysMsg> sysMsg = queryRunner.query(conn, userSql, userParams, new MultiRowHandler());
+			return sysMsg;
+		} catch (SQLException e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询消息详情失败，原因为:"+e.getMessage(),e);
+		} finally{
+			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
 	

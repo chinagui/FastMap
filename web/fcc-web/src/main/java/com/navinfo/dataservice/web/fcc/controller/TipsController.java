@@ -157,13 +157,22 @@ public class TipsController extends BaseController {
 			UploadService upload = UploadService.getInstance();
 
 			String filePath = upload.unzipByJobId(jobId);
+			
+			
+			logger.info("---importTips:"+filePath);
 
 			TipsUpload tipsUploader = new TipsUpload();
+			
+			logger.info("---start tipsUploader:"+tipsUploader);
 
 			Map<String, Photo> map = tipsUploader.run(filePath + "/"
 					+ "tips.txt");
 
+			logger.info("---start tipsUploader.run end:");
+			
 			CollectorImport.importPhoto(map, filePath + "/photo");
+			
+			logger.debug("---importPhoto.run end:");
 
 			JSONObject result = new JSONObject();
 
@@ -415,5 +424,51 @@ public class TipsController extends BaseController {
 
 			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
+	}
+	
+	public static void main(String[] args) {
+		
+		String parameter="{\"jobId\":38}";
+		JSONObject json = JSONObject.fromObject(parameter);
+
+		int jobId = json.getInt("jobId");
+
+		UploadService upload = UploadService.getInstance();
+
+		String filePath;
+		try {
+			filePath ="E:\\Tips_10402_20161014163449";
+			
+			
+			logger.info("---importTips:"+filePath);
+
+			TipsUpload tipsUploader = new TipsUpload();
+			
+			logger.info("---start tipsUploader:"+tipsUploader);
+
+			Map<String, Photo> map = tipsUploader.run(filePath + "/"
+					+ "tips.txt");
+
+			logger.info("---start tipsUploader.run end:");
+			
+			CollectorImport.importPhoto(map, filePath + "/photo");
+			
+			logger.debug("---importPhoto.run end:");
+
+			JSONObject result = new JSONObject();
+
+			result.put("total", tipsUploader.getTotal());
+
+			result.put("failed", tipsUploader.getFailed());
+
+			result.put("reasons", tipsUploader.getReasons());
+			
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+		
 	}
 }

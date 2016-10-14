@@ -8,11 +8,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.dbutils.DbUtils;
+import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.ExcelReader;
 import com.navinfo.dataservice.commons.util.RomanUtils;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.engine.meta.mesh.MeshSelector;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 
@@ -32,6 +35,8 @@ public class RdNameImportor {
 			"无道路名", "无" };
 
 	private static final String DEFAULT_LANG_CODE = "CHI";
+	
+	private Logger log = Logger.getLogger(RdNameImportor.class);
 
 	/**
 	 * @Description:道路名导入
@@ -60,6 +65,7 @@ public class RdNameImportor {
 		nameObj.put("name", name);
 		// 判断RD_name中是否已存在,不存在则新增并拆分；存在则不处理
 		String meshes[] = MeshUtils.point2Meshes(longitude, latitude);
+		//从元数据库查询adminId
 		int adminId = new MeshSelector().getAdminIdByLocation(longitude,
 				latitude);
 		if (!exitsInMeshAdmin(meshes, name)) {
@@ -67,7 +73,7 @@ public class RdNameImportor {
 					+ DateUtils.dateToString(new Date(), "yyyy-MM-dd");
 			insertNameAndTeilen(name, DEFAULT_LANG_CODE, adminId, srcResume);
 		}else{
-			System.out.println(name+"已存在");
+			log.warn(name+"已存在");
 		}
 
 	}
@@ -84,7 +90,28 @@ public class RdNameImportor {
 	 */
 	private void insertNameAndTeilen(String name, String langCode, int adminId,
 			String srcResume) throws Exception {
-		RdNameOperation operation = new RdNameOperation();
+		
+		//***********************以下代码是路演环境临时使用*begin***********************
+		Connection conn=null;
+		
+		try{
+			
+		
+		String dbId= SystemConfigFactory.getSystemConfig().getValue("region_db_id");
+		
+		if(StringUtils.isEmpty(dbId)){
+			throw new Exception("未配置region_db_id系统参数。");
+		}
+
+		//路演环境临时使用
+		conn = DBConnector.getInstance().getConnectionById(Integer.parseInt(dbId));
+		
+		RdNameOperation operation = new RdNameOperation(conn);
+		
+		//***********************end ***********************
+		
+		//RdNameOperation operation = new RdNameOperation();
+		
 		RdName rdName = new RdName();
 
 		rdName.setName(name);
@@ -108,9 +135,16 @@ public class RdNameImportor {
 		// 新增一条道路名
 		RdName rdNameNew = operation.saveName(rdName);
 		// 对道路名拆分
-		RdNameTeilen teilen = new RdNameTeilen();
+		RdNameTeilen teilen = new RdNameTeilen(conn);
 		teilen.teilenName(rdNameNew.getNameId(), rdNameNew.getNameGroupid(),
 				rdNameNew.getLangCode(), rdNameNew.getRoadType());
+		
+		}catch (Exception e) {
+			throw e;
+		}
+		finally{
+			DbUtils.closeQuietly(conn);
+		}
 
 	}
 

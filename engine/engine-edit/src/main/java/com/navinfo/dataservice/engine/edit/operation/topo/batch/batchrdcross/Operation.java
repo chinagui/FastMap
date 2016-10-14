@@ -143,9 +143,16 @@ public class Operation implements IOperation {
     }
 
     private void updateRdCross(RdCross cross, Result result) {
-        if (command.getNodePids().size() == 1) {
-            cross.setType(0);
-            result.insertObject(cross, ObjStatus.UPDATE, cross.pid());
+        if (command.getNodePids().size() > 1) {
+            if (cross.getType() == 0) {
+                cross.changedFields().put("type", 1);
+                result.insertObject(cross, ObjStatus.UPDATE, cross.pid());
+            }
+        } else {
+            if (cross.getType() == 1) {
+                cross.changedFields().put("type", 0);
+                result.insertObject(cross, ObjStatus.UPDATE, cross.pid());
+            }
         }
     }
 

@@ -22,6 +22,7 @@ import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiChildren;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiParent;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiPhoto;
+import com.navinfo.dataservice.dao.glm.selector.SelectorUtils;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -117,7 +118,8 @@ public class BasicOperator extends AbstractOperator {
 
 				} else if (StringUtils.toColumnName(name).equals(M_ROW_ID)) {
 					key.append(M_ROW_ID + ",");
-					if(StringUtils.isEmpty(row.rowId()))
+					String tableName = SelectorUtils.getObjTableName(row);
+					if(!tableName.equals("IX_POI"))
 					{
 						row.setRowId(UuidUtils.genUuid());
 					}

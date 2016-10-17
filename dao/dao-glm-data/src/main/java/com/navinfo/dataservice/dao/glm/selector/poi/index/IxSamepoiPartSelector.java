@@ -53,5 +53,34 @@ public class IxSamepoiPartSelector extends AbstractSelector {
 
         return list;
     }
+    
+    public List<IRow> loadPoiByPid(int poiPid, boolean isLock) throws Exception {
+        List<IRow> list = new ArrayList<IRow>();
+        String sql = "SELECT * FROM IX_SAMEPOI_PART WHERE GROUP_ID IN (SELECT GROUP_ID FROM IX_SAMEPOI_PART WHERE POI_PID = :1)";
+
+        if (isLock) {
+            sql += " for update nowait";
+        }
+
+        PreparedStatement pstmt = null;
+        ResultSet resultSet = null;
+        try {
+            pstmt = getConn().prepareStatement(sql);
+            pstmt.setInt(1, poiPid);
+            resultSet = pstmt.executeQuery();
+            while (resultSet.next()) {
+                IxSamepoiPart part = new IxSamepoiPart();
+                ReflectionAttrUtils.executeResultSet(part, resultSet);
+                list.add(part);
+            }
+        } catch (Exception e) {
+            throw e;
+        } finally {
+            DbUtils.closeQuietly(resultSet);
+            DbUtils.closeQuietly(pstmt);
+        }
+
+        return list;
+    }
 
 }

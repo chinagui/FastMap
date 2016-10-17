@@ -44,16 +44,19 @@ public class IxPoiParentSelector extends AbstractSelector {
 	 * @throws Exception
 	 */
 	@Override
-	public List<IRow> loadRowsByParentId(int id, boolean isLock) throws Exception {
+	public List<IRow> loadRowsByParentId(int id, boolean isLock,boolean...delFlag) throws Exception {
 		List<IRow> rows = new ArrayList<IRow>();
 
 		StringBuilder sb = new StringBuilder();
-
-		sb.append(" SELECT * FROM ix_poi_parent WHERE parent_poi_pid=:1 AND u_record!=:2");
+		if (delFlag == null || delFlag.length == 0 || !delFlag[0]) {
+			sb.append(" SELECT * FROM ix_poi_parent WHERE parent_poi_pid=:1 AND u_record!=2");
+		}else{
+			sb.append(" SELECT * FROM ix_poi_parent WHERE parent_poi_pid=:1 ");
+		}
 
 		sb.append(" AND EXISTS (SELECT null FROM ix_poi_children c WHERE c.group_id IN ");
 
-		sb.append(" (SELECT group_id FROM ix_poi_parent where Parent_Poi_Pid =:3))");
+		sb.append(" (SELECT group_id FROM ix_poi_parent where Parent_Poi_Pid =:2))");
 
 		if (isLock) {
 			sb.append(" for update nowait");
@@ -68,9 +71,7 @@ public class IxPoiParentSelector extends AbstractSelector {
 
 			pstmt.setInt(1, id);
 
-			pstmt.setInt(2, 2);
-
-			pstmt.setInt(3, id);
+			pstmt.setInt(2, id);
 
 			resultSet = pstmt.executeQuery();
 
@@ -93,7 +94,7 @@ public class IxPoiParentSelector extends AbstractSelector {
 				// 获取IX_POI_PARENT对应的关联数据
 				// ix_poi_children
 				List<IRow> poiChildrens = new IxPoiChildrenSelector(conn).loadRowsByParentId(poiParent.getPid(),
-						isLock);
+						isLock,delFlag);
 
 				poiParent.setPoiChildrens(poiChildrens);
 
@@ -205,11 +206,14 @@ public class IxPoiParentSelector extends AbstractSelector {
 	 * @return
 	 * @throws Exception
 	 */
-	public List<IRow> loadParentRowsByPoiId(int id, boolean isLock) throws Exception {
+	public List<IRow> loadParentRowsByPoiId(int id, boolean isLock,boolean ...delFlag) throws Exception {
 		List<IRow> rows = new ArrayList<IRow>();
-
-		String sql = "SELECT * FROM IX_POI_PARENT WHERE group_id IN (SELECT group_id FROM IX_POI_CHILDREN WHERE CHILD_POI_PID = :1 AND U_RECORD != :2)";
-
+		String sql =null;
+		if (delFlag == null || delFlag.length == 0 || !delFlag[0]) {
+			sql = "SELECT * FROM IX_POI_PARENT WHERE group_id IN (SELECT group_id FROM IX_POI_CHILDREN WHERE CHILD_POI_PID = :1 AND U_RECORD != 2)";
+		}else{
+			sql = "SELECT * FROM IX_POI_PARENT WHERE group_id IN (SELECT group_id FROM IX_POI_CHILDREN WHERE CHILD_POI_PID = :1)";
+		}
 		if (isLock) {
 			sql += " for update nowait";
 		}
@@ -222,8 +226,6 @@ public class IxPoiParentSelector extends AbstractSelector {
 			pstmt = this.conn.prepareStatement(sql);
 
 			pstmt.setInt(1, id);
-
-			pstmt.setInt(2, 2);
 
 			resultSet = pstmt.executeQuery();
 

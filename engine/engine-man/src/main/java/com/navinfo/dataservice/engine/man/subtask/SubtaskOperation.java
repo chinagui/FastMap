@@ -1390,31 +1390,26 @@ public class SubtaskOperation {
 
 			
 			String selectSqlCollect = "SELECT S.SUBTASK_ID, S.STAGE, S.NAME, S.TYPE, S.STATUS,U.USER_REAL_NAME AS EXECUTER"
-					+ " FROM SUBTASK S ,BLOCK_MAN BM,USER_INFO U"
+					+ " FROM SUBTASK S ,USER_INFO U"
 					+ " WHERE S.STAGE = 0"
-					+ " AND S.BLOCK_MAN_ID = BM.BLOCK_MAN_ID"
 					+ " AND U.USER_ID = S.EXE_USER_ID";
 
 			String selectSqlDailyUser = "SELECT S.SUBTASK_ID, S.STAGE, S.NAME, S.TYPE, S.STATUS,U.USER_REAL_NAME AS EXECUTER"
-					+ " FROM SUBTASK S ,BLOCK_MAN BM,USER_INFO U"
+					+ " FROM SUBTASK S ,USER_INFO U"
 					+ " WHERE S.STAGE = 1"
-					+ " AND S.BLOCK_MAN_ID = BM.BLOCK_MAN_ID"
 					+ " AND U.USER_ID = S.EXE_USER_ID";
 			String selectSqlDailyGroup = "SELECT S.SUBTASK_ID, S.STAGE, S.NAME, S.TYPE, S.STATUS, UG.GROUP_NAME AS EXECUTER"
-					+ " FROM SUBTASK S ,BLOCK_MAN BM, USER_GROUP UG"
+					+ " FROM SUBTASK S , USER_GROUP UG"
 					+ " WHERE S.STAGE = 1"
-					+ " AND S.BLOCK_MAN_ID = BM.BLOCK_MAN_ID"
 					+ " AND UG.GROUP_ID = S.EXE_GROUP_ID";
 
 			String selectSqlMonthlyUser = "SELECT S.SUBTASK_ID, S.STAGE, S.NAME, S.TYPE, S.STATUS,U.USER_REAL_NAME AS EXECUTER"
-					+ " FROM SUBTASK S ,TASK T,USER_INFO U"
+					+ " FROM SUBTASK S,USER_INFO U"
 					+ " WHERE S.STAGE = 2"
-					+ " AND S.TASK_ID = T.TASK_ID"
 					+ " AND U.USER_ID = S.EXE_USER_ID";
 			String selectSqlMonthlyGroup = "SELECT S.SUBTASK_ID, S.STAGE, S.NAME, S.TYPE, S.STATUS, UG.GROUP_NAME AS EXECUTER"
-					+ " FROM SUBTASK S ,TASK T, USER_GROUP UG"
+					+ " FROM SUBTASK S ,USER_GROUP UG"
 					+ " WHERE S.STAGE = 2"
-					+ " AND S.TASK_ID = T.TASK_ID"
 					+ " AND UG.GROUP_ID = S.EXE_GROUP_ID";
 
 
@@ -1459,39 +1454,40 @@ public class SubtaskOperation {
 							+ " WHERE T.SUBTASK_ID = FSOS.SUBTASK_ID(+) ";
 
 			String filterSql = "";
-			Iterator<?> filterKeys = filter.keys();
-			while (filterKeys.hasNext()) {
-				String key = (String) filterKeys.next();
-				//模糊查询
-				if ("subtaskName".equals(key)) {	
-					filterSql+=" AND T.NAME like '%" + filter.getString(key) +"%'";
-				}
-				//筛选条件
-				//"progress" //进度。1正常，2异常，3关闭，4完成,5草稿
-				if ("progress".equals(key)){
-					int progress = filter.getInt(key);
-					if(1==progress&&2==progress){
-						filterSql += " AND FSOS.PROGRESS = " + progress;
-					}else if(3==progress){
-						filterSql += " AND T.STATUS = 0" ;
-					}else if(4==progress){
-						filterSql += " AND T.STATUS = 1 AND FSOS.PERCENT = 100";
-					}else if(5==progress){
-						filterSql += " AND T.STATUS = 2";
+			if(null != filter){
+				Iterator<?> filterKeys = filter.keys();
+				while (filterKeys.hasNext()) {
+					String key = (String) filterKeys.next();
+					//模糊查询
+					if ("subtaskName".equals(key)) {	
+						filterSql+=" AND T.NAME like '%" + filter.getString(key) +"%'";
+					}
+					//筛选条件
+					//"progress" //进度。1正常，2异常，3关闭，4完成,5草稿
+					if ("progress".equals(key)){
+						int progress = filter.getInt(key);
+						if(1==progress&&2==progress){
+							filterSql += " AND FSOS.PROGRESS = " + progress;
+						}else if(3==progress){
+							filterSql += " AND T.STATUS = 0" ;
+						}else if(4==progress){
+							filterSql += " AND T.STATUS = 1 AND FSOS.PERCENT = 100";
+						}else if(5==progress){
+							filterSql += " AND T.STATUS = 2";
+						}
+					}
+					//"completionStatus"//完成状态。0逾期，1按时，2提前
+					if ("completionStatus".equals(key)){
+						int completionStatus = filter.getInt(key);
+						if(0==completionStatus){
+							filterSql += " AND FSOS.DIFF_DATE < 0";
+						}else if(1==completionStatus){
+							filterSql += " AND FSOS.DIFF_DATE = 0" ;
+						}else if(2==completionStatus){
+							filterSql += " AND FSOS.DIFF_DATE > 0";
+						}
 					}
 				}
-				//"completionStatus"//完成状态。0逾期，1按时，2提前
-				if ("completionStatus".equals(key)){
-					int completionStatus = filter.getInt(key);
-					if(0==completionStatus){
-						filterSql += " AND FSOS.DIFF_DATE < 0";
-					}else if(1==completionStatus){
-						filterSql += " AND FSOS.DIFF_DATE = 0" ;
-					}else if(2==completionStatus){
-						filterSql += " AND FSOS.DIFF_DATE > 0";
-					}
-				}
-
 			}
 			
 			sql += filterSql;

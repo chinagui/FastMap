@@ -237,8 +237,8 @@ public class BlockService {
 			JSONObject obj = JSONObject.fromObject(json);
 			BlockMan bean = (BlockMan) JSONObject.toBean(obj, BlockMan.class);
 
-			String selectSql = "select t.CITY_ID, t.BLOCK_NAME, t.GEOMETRY,tt.name"
-					+ " t.PLAN_STATUS, T.work_property,tt.task_type,"
+			String selectSql = "select t.CITY_ID, t.BLOCK_NAME, t.GEOMETRY,tt.name,"
+					+ " t.PLAN_STATUS, T.work_property,tt.task_type"
 					+ " from BLOCK t,task tt where t.BLOCK_ID = ? and t.city_id=tt.city_id";
 			ResultSetHandler<HashMap> rsHandler = new ResultSetHandler<HashMap>() {
 				public HashMap<String, Object> handle(ResultSet rs) throws SQLException {

@@ -31,7 +31,7 @@ public class SelectorUtils {
 		StringBuilder bufferCondition = new StringBuilder();
 		if (tableName.equals(ObjType.RDLINK.toString())) {
 			if (object.containsKey("name")) {
-				bufferCondition.append("with tmp1 as ( select lang_code,name_groupid,name from rd_name where name like '%路%' ) ,tmp2 AS (	SELECT /*+ leading(iln,tmp1) use_hash(iln,tmp1)*/ rln.link_pid pid,tmp1.name FROM rd_link_name rln,tmp1 WHERE rln.name_class=1 AND tmp1.name_groupid = rln.name_groupId ) ,tmp3 AS (	SELECT count(*) over () total,tmp2.*, ROWNUM rn FROM tmp2 ) ,tmp4 as ( select * from tmp3 where ROWNUM <=:1 ) SELECT * FROM tmp4 WHERE rn >=:2");
+				bufferCondition.append("with tmp1 as ( select lang_code,name_groupid,name from rd_name where name like '%" + object.getString("name") + "%' ) ,tmp2 AS (	SELECT /*+ leading(iln,tmp1) use_hash(iln,tmp1)*/ rln.link_pid pid,tmp1.name FROM rd_link_name rln,tmp1 WHERE rln.name_class=1 AND tmp1.name_groupid = rln.name_groupId ) ,tmp3 AS (	SELECT count(*) over () total,tmp2.*, ROWNUM rn FROM tmp2 ) ,tmp4 as ( select * from tmp3 where ROWNUM <=:1 ) SELECT * FROM tmp4 WHERE rn >=:2");
 				sql = bufferCondition.toString();
 			} else {
 				bufferCondition

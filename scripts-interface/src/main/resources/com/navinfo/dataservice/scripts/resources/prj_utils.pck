@@ -1,3 +1,13 @@
+begin
+  execute immediate 'create global temporary table TMP_RESTRICT
+  (link_pid   INTEGER,s_node_pid INTEGER,e_node_pid INTEGER,direct     INTEGER)
+  on commit delete rows';
+
+  execute immediate 'create global temporary table TMP_RESTRICT2(link_pid   INTEGER,s_node_pid INTEGER,e_node_pid INTEGER,direct     INTEGER,via_path   VARCHAR2(250))on commit delete rows';
+end;
+/
+  
+
 create or replace package package_utils is
 
   type record_restrict is record(

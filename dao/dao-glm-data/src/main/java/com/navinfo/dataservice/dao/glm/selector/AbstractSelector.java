@@ -57,12 +57,7 @@ public class AbstractSelector implements ISelector {
 	@Override
 	public IRow loadById(int id, boolean isLock, boolean... noChild) throws Exception {
 		this.row = (IRow) cls.newInstance();
-		String sql=	null;
-		if ("IX_POI".equals(row.tableName())){
-			sql="select * from " + row.tableName() + " where " + ((IObj) row).primaryKey() + " = :1 ";
-		}else{
-			sql="select * from " + row.tableName() + " where " + ((IObj) row).primaryKey() + " = :1 and u_record !=2";
-		}
+		String sql=	"select * from " + row.tableName() + " where " + ((IObj) row).primaryKey() + " = :1 and u_record !=2";
 		StringBuilder sb = new StringBuilder(sql);
 
 		if (isLock) {
@@ -111,6 +106,59 @@ public class AbstractSelector implements ISelector {
 		return row;
 	}
 
+	
+	@Override
+	public IRow loadAllById(int id, boolean isLock, boolean... noChild) throws Exception {
+		this.row = (IRow) cls.newInstance();
+		String sql=	"select * from " + row.tableName() + " where " + ((IObj) row).primaryKey() + " = :1";
+		StringBuilder sb = new StringBuilder(sql);
+
+		if (isLock) {
+			sb.append(" for update nowait");
+		}
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+
+			pstmt.setInt(1, id);
+
+			resultSet = pstmt.executeQuery();
+
+			if (resultSet.next()) {
+				// 设置主表信息
+				ReflectionAttrUtils.executeResultSet(row, resultSet);
+				if (noChild == null || noChild.length == 0 || !noChild[0]) {
+					if (row instanceof IObj) {
+						IObj obj = (IObj) row;
+						// 子表list map
+						Map<Class<? extends IRow>, List<IRow>> childList = obj.childList();
+
+						// 子表map
+						Map<Class<? extends IRow>, Map<String, ?>> childMap = obj.childMap();
+						if (childList != null) {
+							setChildValue(obj, childList, childMap, isLock);
+						}
+					}
+				}
+			} else {
+				throw new Exception("查询的PID为：" + id + "的" + row.tableName().toUpperCase() + "不存在");
+			}
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+
+		return row;
+	}
+	
 	@SuppressWarnings("unchecked")
 	@Override
 	public IRow loadByIdAndChildClass(int id, boolean isLock, Class<? extends IRow>... childClass) throws Exception {

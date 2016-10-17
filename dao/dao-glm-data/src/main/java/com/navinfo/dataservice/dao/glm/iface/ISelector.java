@@ -64,5 +64,21 @@ public interface ISelector {
 	 */
 	public List<IRow> loadRowsByParentId(int id, boolean isLock)
 			throws Exception;
+	
+	
+	/**
+	 * 根据主键id获取一行记录,不过滤删除的记录
+	 * 
+	 * @param id
+	 *            主键id
+	 * @param isLock
+	 *            是否加锁
+	 * @param loadChild 
+	 * 			是否加载子表 （不传：加载子表；传true，不加载子表;传false,加载子表
+	 * @return IRow
+	 * @throws Exception
+	 */
+	public IRow loadAllById(int id, boolean isLock,boolean ... noChild) throws Exception;
+
 
 }

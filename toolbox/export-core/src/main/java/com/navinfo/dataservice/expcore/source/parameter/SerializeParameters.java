@@ -91,11 +91,11 @@ public class SerializeParameters {
             procedureBase.callProcedure(sql3);
             
             if(needCreateSpatialIndex){
-				String mergePkg = "/com/navinfo/dataservice/expcore/resources/" + versionCode + "/scripts/DMS_UTILS.pck";
+				String mergePkg = "/com/navinfo/dataservice/expcore/resources/" + versionCode + "/scripts/create_spatial_utils.pck";
 				PackageExec mergePkgExec = new PackageExec(conn);
 				mergePkgExec.execute(mergePkg);
-				procedureBase.callProcedure("{call DMS_UTILS.DROP_SPATIAL_INDEX(?)}",tableName);
-				procedureBase.callProcedure("{call DMS_UTILS.CREATE_SPATIAL_INDEX(?,?)}",tableName,"AREA");
+				procedureBase.callProcedure("{call SPATIAL_UTILS.DROP_SPATIAL_INDEX(?)}",tableName);
+				procedureBase.callProcedure("{call SPATIAL_UTILS.CREATE_SPATIAL_INDEX(?,?)}",tableName,"AREA");
             }
 		} catch (Exception e) {
 			conn.rollback();

@@ -150,7 +150,7 @@ create or replace package body package_utils is
         select link_pid, s_node_pid, e_node_pid, direct
           from rd_link a
          where sdo_within_distance(geometry, buffer_box, 'distance=0') =
-               'TRUE';
+               'TRUE' and u_record !=2;
                
                
       insert into tmp_restrict a

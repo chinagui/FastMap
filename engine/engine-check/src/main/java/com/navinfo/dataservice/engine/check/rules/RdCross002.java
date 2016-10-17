@@ -2,6 +2,7 @@ package com.navinfo.dataservice.engine.check.rules;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -23,16 +24,25 @@ public class RdCross002 extends baseRule {
 
 	@Override
 	public void preCheck(CheckCommand checkCommand) throws Exception {
+		List<Integer> crossNodeList=new ArrayList<Integer>();
+		if(!checkCommand.getListStatus().equals("ADD")){return;}
 		for(IRow obj : checkCommand.getGlmList()){
 			if (obj instanceof RdCross){
 				RdCross crossObj=(RdCross) obj;
-				List<Integer> crossNodeList=new ArrayList<Integer>();
+				
+				List<Integer> crossNodeListTmp=new ArrayList<Integer>();
 				for(IRow crossNode:crossObj.getNodes()){
-					crossNodeList.add(((RdCrossNode) crossNode).getNodePid());
+					int node=((RdCrossNode) crossNode).getNodePid();
+					if(!crossNodeList.contains(node)){
+						crossNodeList.add(node);
+						crossNodeListTmp.add(node);}
 				}
+				if(crossNodeListTmp.size()==0){continue;}
 				String sql="select 1 from rd_cross c,rd_cross_node cn "
 						+ "where c.pid=cn.pid "
 						+ "and c.kg_flag=0 "
+						+ "AND C.u_record！=2 "
+						+ "AND CN.u_record！=2 "
 						+ "and cn.node_pid in ("+crossNodeList.toString().replace("[", "").replace("]", "")+")";
 				DatabaseOperator operator=new DatabaseOperator();
 				List<Object> resutlList=operator.exeSelect(getConn(), sql);
@@ -40,7 +50,27 @@ public class RdCross002 extends baseRule {
 					this.setCheckResult("", "", 0);
 					break;
 				}
-			}}
+			}else if (obj instanceof RdCrossNode){
+				RdCrossNode crossNodeObj=(RdCrossNode) obj;
+				int node=crossNodeObj.getNodePid();
+				if(!crossNodeList.contains(node)){
+					crossNodeList.add(node);}
+				else{continue;}
+				
+				String sql="select 1 from rd_cross c,rd_cross_node cn "
+						+ "where c.pid=cn.pid "
+						+ "and c.kg_flag=0 "
+						+ "AND C.u_record！=2"
+						+ "AND CN.u_record！=2"
+						+ "and cn.node_pid in ("+node+")";
+				DatabaseOperator operator=new DatabaseOperator();
+				List<Object> resutlList=operator.exeSelect(getConn(), sql);
+				if(resutlList!=null && resutlList.size()>0){
+					this.setCheckResult("", "", 0);
+					break;
+				}
+			}	
+		}
 	}
 
 	@Override

@@ -371,12 +371,12 @@ public class IxPoiSelector extends AbstractSelector {
 	}
 
 	public IRow loadByIdAndChildren(int id, boolean isLock) throws Exception {
-		IxPoi poi = (IxPoi) super.loadById(id, isLock);
+		IxPoi poi = (IxPoi) super.loadAllById(id, isLock);
 
 		IxSamepoiPartSelector samepoiPartsSelector = new IxSamepoiPartSelector(
 				conn);
-
-		List<IRow> parts = samepoiPartsSelector.loadByPoiPid(poi.pid(), isLock);
+		
+		List<IRow> parts = samepoiPartsSelector.loadPoiByPid(poi.pid(), isLock);
 
 		poi.setSamepoiParts(parts);
 		

@@ -39,7 +39,9 @@ public class SysMsgWebSocketHandler extends TextWebSocketHandler {
 	@Override
 	public void afterConnectionEstablished(WebSocketSession session) throws Exception {
 		log.info("connect to the websocket success......");
+		users.add(session);
 		String userId = (String) session.getAttributes().get("userId");
+		/*
 		if(users.size() == 0){
 			users.add(session);
 		}else{
@@ -59,6 +61,7 @@ public class SysMsgWebSocketHandler extends TextWebSocketHandler {
 				users.add(session);
 			}
 		}
+		*/
 		if (userId != null) {
 			// 查询未读消息
 			List<SysMsg> unreadMsg = SysMsgService.getInstance().getUnread(Long.parseLong(userId));
@@ -128,7 +131,6 @@ public class SysMsgWebSocketHandler extends TextWebSocketHandler {
 					e.printStackTrace();
 					log.error("发送失败,原因:"+e.getMessage(), e);
 				}
-				break;
 			}
 		}
 	}

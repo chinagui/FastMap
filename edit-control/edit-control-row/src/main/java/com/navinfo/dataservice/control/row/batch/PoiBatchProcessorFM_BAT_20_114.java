@@ -26,7 +26,7 @@ public class PoiBatchProcessorFM_BAT_20_114 implements IBatch {
 				return result;
 			}
 			
-			if (poi.getuRecord() != 1 && poi.getuRecord() != 3) {
+			if (poi.getuRecord() == 2) {
 				return result;
 			}
 			

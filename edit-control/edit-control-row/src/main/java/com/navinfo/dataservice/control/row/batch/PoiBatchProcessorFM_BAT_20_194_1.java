@@ -81,7 +81,7 @@ public class PoiBatchProcessorFM_BAT_20_194_1 implements IBatch {
 				
 				int gasURecord = ixPoiGasstation.getuRecord();
 				
-				if (gasURecord != 1 && gasURecord != 3) {
+				if (gasURecord == 2) {
 					continue;
 				}
 				

@@ -2,6 +2,7 @@ package com.navinfo.dataservice.engine.check.rules;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -24,9 +25,11 @@ public class RdCross002 extends baseRule {
 	@Override
 	public void preCheck(CheckCommand checkCommand) throws Exception {
 		List<Integer> crossNodeList=new ArrayList<Integer>();
+		if(!checkCommand.getListStatus().equals("ADD")){return;}
 		for(IRow obj : checkCommand.getGlmList()){
 			if (obj instanceof RdCross){
 				RdCross crossObj=(RdCross) obj;
+				
 				List<Integer> crossNodeListTmp=new ArrayList<Integer>();
 				for(IRow crossNode:crossObj.getNodes()){
 					int node=((RdCrossNode) crossNode).getNodePid();

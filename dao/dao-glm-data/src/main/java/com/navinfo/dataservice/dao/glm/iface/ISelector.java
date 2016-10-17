@@ -62,7 +62,7 @@ public interface ISelector {
 	 * @return 子表的列表
 	 * @throws Exception
 	 */
-	public List<IRow> loadRowsByParentId(int id, boolean isLock)
+	public List<IRow> loadRowsByParentId(int id, boolean isLock,boolean ... delFlag)
 			throws Exception;
 	
 	
@@ -79,6 +79,10 @@ public interface ISelector {
 	 * @throws Exception
 	 */
 	public IRow loadAllById(int id, boolean isLock,boolean ... noChild) throws Exception;
+
+
+	
+
 
 
 }

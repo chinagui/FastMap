@@ -273,7 +273,7 @@ public class NiValExceptionSelector {
 
 		ResultSet rs = null;
 
-		StringBuilder sql = new StringBuilder("select * from (select b.*,rownum rn from (select a.md5_code,ruleid,situation,\"LEVEL\" level_,targets,information,a.location.sdo_point.x x,a.location.sdo_point.y y,created,worker from ni_val_exception a,ni_val_exception_grid b where a.md5_code=b.md5_code and b.grid_id in(");
+		StringBuilder sql = new StringBuilder("select * from (select tmp.*,rownum rn from (select a.md5_code,ruleid,situation,\"LEVEL\" level_,targets,information,a.location.sdo_point.x x,a.location.sdo_point.y y,created,worker from ni_val_exception a where exists(select 1 from ni_val_exception_grid b where a.md5_code=b.md5_code and b.grid_id in(");
 
 		for (int i = 0; i < grids.size(); i++) {
 			if (i > 0) {
@@ -285,7 +285,7 @@ public class NiValExceptionSelector {
 			}
 		}
 
-		sql.append(") order by created desc ) b where rownum<=");
+		sql.append(")) order by created desc,md5_code desc ) tmp where rownum<=");
 
 		sql.append(pageSize * page);
 

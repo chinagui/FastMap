@@ -136,31 +136,28 @@ public class BlockService {
 			String createSql = "update block_man set COLLECT_GROUP_ID=?, COLLECT_PLAN_START_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),"
 					+ "COLLECT_PLAN_END_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),DAY_EDIT_GROUP_ID=?,DAY_EDIT_PLAN_START_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),DAY_EDIT_PLAN_END_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),MONTH_EDIT_GROUP_ID=?,"
 					+ "MONTH_EDIT_PLAN_START_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),MONTH_EDIT_PLAN_END_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),DAY_PRODUCE_PLAN_START_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),DAY_PRODUCE_PLAN_END_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),"
-					+ "MONTH_PRODUCE_PLAN_START_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),MONTH_PRODUCE_PLAN_END_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'), DESCP=?,STATUS=? where BLOCK_MAN_ID=?";
+					+ "MONTH_PRODUCE_PLAN_START_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),MONTH_PRODUCE_PLAN_END_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'), DESCP=? where BLOCK_MAN_ID=?";
 
 			Object[][] param = new Object[blockArray.size()][];
-			List<Integer> updateBlockList = BlockOperation.queryOperationBlocks(conn, blockArray);
+			List<Integer> updateBlockList = BlockOperation.queryOpenOperationBlocks(conn, blockArray);
 			for (int i = 0; i < blockArray.size(); i++) {
 				JSONObject block = blockArray.getJSONObject(i);
 				BlockMan bean = (BlockMan) JSONObject.toBean(block, BlockMan.class);
-				if (updateBlockList.contains(bean.getBlockId())) {
-					Object[] obj = new Object[] { bean.getCollectGroupId(), bean.getCollectPlanStartDate(),
-							bean.getCollectPlanEndDate(), bean.getDayEditGroupId(), bean.getDayEditPlanStartDate(),
-							bean.getDayEditPlanEndDate(), bean.getMonthEditGroupId(), bean.getMonthEditPlanStartDate(),
-							bean.getMonthEditPlanEndDate(), bean.getDayProducePlanStartDate(),
-							bean.getDayProducePlanEndDate(), bean.getMonthProducePlanStartDate(),
-							bean.getMonthProducePlanStartDate(), bean.getDescp(), bean.getStatus(), bean.getBlockManId() };
-					param[i] = obj;
-					if (1 == bean.getStatus()) {
-						blockIdList.add(bean.getBlockManId());
-					}
-				}
+				//if (updateBlockList.contains(bean.getBlockManId())) {
+				Object[] obj = new Object[] { bean.getCollectGroupId(), bean.getCollectPlanStartDate(),
+						bean.getCollectPlanEndDate(), bean.getDayEditGroupId(), bean.getDayEditPlanStartDate(),
+						bean.getDayEditPlanEndDate(), bean.getMonthEditGroupId(), bean.getMonthEditPlanStartDate(),
+						bean.getMonthEditPlanEndDate(), bean.getDayProducePlanStartDate(),
+						bean.getDayProducePlanEndDate(), bean.getMonthProducePlanStartDate(),
+						bean.getMonthProducePlanStartDate(), bean.getDescp(),  bean.getBlockManId() };
+				param[i] = obj;
+				//}
 			}
 			if (param[0]!=null){
 				int[] rows = run.batch(conn, createSql, param);
 				updateCount = rows.length;
 			}
-			blockPushMsg(blockIdList);
+			blockPushMsg(updateBlockList);
 			return updateCount;
 
 		} catch (Exception e) {
@@ -234,8 +231,8 @@ public class BlockService {
 			JSONObject obj = JSONObject.fromObject(json);
 			BlockMan bean = (BlockMan) JSONObject.toBean(obj, BlockMan.class);
 
-			String selectSql = "select t.CITY_ID, t.BLOCK_NAME, t.GEOMETRY,"
-					+ " t.PLAN_STATUS, T.work_property,tt.task_type"
+			String selectSql = "select t.CITY_ID, t.BLOCK_NAME, t.GEOMETRY,tt.name"
+					+ " t.PLAN_STATUS, T.work_property,tt.task_type,"
 					+ " from BLOCK t,task tt where t.BLOCK_ID = ? and t.city_id=tt.city_id";
 			ResultSetHandler<HashMap> rsHandler = new ResultSetHandler<HashMap>() {
 				public HashMap<String, Object> handle(ResultSet rs) throws SQLException {
@@ -245,8 +242,8 @@ public class BlockService {
 						map.put("cityId", rs.getInt("CITY_ID"));
 						map.put("blockManName", rs.getString("BLOCK_NAME"));
 						map.put("workProperty", rs.getString("WORK_PROPERTY"));
-						map.put("roadPlanTotal", 0);
-						map.put("poiPlanTotal", 0);
+						map.put("roadPlanTotal", -1);
+						map.put("poiPlanTotal", -1);
 						
 						STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
 						try {
@@ -257,7 +254,7 @@ public class BlockService {
 							e1.printStackTrace();
 						}
 						map.put("planStatus", rs.getInt("PLAN_STATUS"));
-						map.put("taskName", "---");
+						map.put("taskName", rs.getString("NAME"));
 						map.put("collectGroupId", 0);
 						map.put("dayEditGroupId", 0);
 						map.put("monthEditGroupId", 0);
@@ -273,7 +270,7 @@ public class BlockService {
 						map.put("monthProducePlanStartDate", "---");
 						map.put("monthProducePlanEndDate", "---");
 						map.put("taskType", rs.getInt("task_type"));
-						map.put("blockDescp", "---");
+						map.put("blockDescp", "");
 						map.put("createUserName","---");
 						return map;
 					}
@@ -756,9 +753,8 @@ public class BlockService {
 			
 			if(msgContentList.size()>0){
 				blockPushMsgByMsg(conn,msgContentList);
-			}
-
-			BlockOperation.updateMainBlock(conn, blockManIds);
+				BlockOperation.updateMainBlock(conn, blockManIds);
+			}	
 
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);

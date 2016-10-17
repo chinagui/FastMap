@@ -98,7 +98,7 @@ public class BlockService {
 						block.getInt("dayEditGroupId"), block.getString("dayEditPlanStartDate"),
 						block.getString("dayEditPlanEndDate"), 
 						block.getString("dayProducePlanStartDate"), block.getString("dayProducePlanEndDate"),
-						block.getString("descp"), 2, block.getInt("blockId"),block.getInt("roadPlanTotal"),block.getInt("poiPlanTotal ") };
+						block.getString("descp"), 2, block.getInt("blockId"),block.getInt("roadPlanTotal"),block.getInt("poiPlanTotal") };
 				param[i] = obj;
 				blockIdList.add(block.getInt("blockId"));
 			}

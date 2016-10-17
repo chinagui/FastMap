@@ -22,6 +22,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkIntRtic;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkLimit;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkRtic;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkSpeedlimit;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeSelector;
@@ -295,7 +296,8 @@ public class Operation implements IOperation {
 			this.relationLimitForLink(link);
 			// 3.限速信息
 			// 上下线分离后的新link都清空原先link的速度限制值
-			link.getSpeedlimits().clear();
+			//link.getSpeedlimits().clear();
+			this.relationSpeedlimits(link);
 			// 4同一线关系维护
 			// 5同一点关系维护
 			// 6 对RTIC信息的维护
@@ -316,6 +318,27 @@ public class Operation implements IOperation {
 			result.insertObject(link, ObjStatus.INSERT, link.getPid());
 		}
 	}
+	
+	/***
+	 * 
+	 * @param link
+	 */
+	private  void relationSpeedlimits(RdLink link){
+		List<RdLinkSpeedlimit> speedlimits = new ArrayList<RdLinkSpeedlimit>();
+		for(IRow row:link.getSpeedlimits()){
+			RdLinkSpeedlimit speedlimit = (RdLinkSpeedlimit)row;
+			if(speedlimit.getSpeedType() == 0){
+				speedlimit.setFromSpeedLimit(0);
+				speedlimit.setToSpeedLimit(0);
+			}else{
+				speedlimits.add(speedlimit);
+			}
+			
+		}
+		link.getSpeedlimits().removeAll(speedlimits);
+		
+	}
+	
 
 	// 速度限制值、行政区划值、人行便道、阶梯、总车道数，左车道数、右车道数、车道等级初始化，上下线分离属性
 	private void relationNatureForlink(RdLink link) {

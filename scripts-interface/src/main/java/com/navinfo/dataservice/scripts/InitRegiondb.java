@@ -173,6 +173,8 @@ public class InitRegiondb {
 		return response;
 	}
 	
+	private static void createMetaDbLink()
+	
 	private static void installPckUtils(int dbId)throws Exception{
 		Connection conn = null;
 		try{

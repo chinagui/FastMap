@@ -108,7 +108,7 @@ public class BatchCoreJob extends AbstractJob {
 			batchParams.setKdbSid(kdbDBInfo.getDbServer().getServiceName());
 
 			//解析DMS(PID)库参数
-			String[] pidManDBInfos = req.getPidDbInfo().split(",");
+			String[] pidManDBInfos = req.getPidDbInfo().split(";");
 			batchParams.setDmsUserName(pidManDBInfos[4]);
 			batchParams.setDmsPasswd(pidManDBInfos[5]);
 			batchParams.setDmsHost(pidManDBInfos[1]);

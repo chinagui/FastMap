@@ -29,12 +29,14 @@ public class EndJobHandler implements MsgHandler {
 	 */
 	@Override
 	public void handle(String message) {
+		log.debug("Handle end job message:"+message);
+		persMsg(message);
 		sendMsg(message);
 	}
 	
 	public void sendMsg(String message){
 		try{
-			log.debug("Handle end job message:"+message);
+			log.debug("sending msg to system message chanle");
 			JSONObject jobMsg = JSONObject.fromObject(message);
 			long userId = jobMsg.getLong("userId");
 			long jobId = jobMsg.getLong("jobId");
@@ -50,12 +52,12 @@ public class EndJobHandler implements MsgHandler {
 	public void persMsg(String message){
 		Connection conn = null;
 		try{
+			log.debug("persXing message.");
 			//持久化
 			QueryRunner runner = new QueryRunner();
 			conn = MultiDataSourceFactory.getInstance().getSysDataSource()
 					.getConnection();
 			//解析message生成jobInfo
-			log.debug("Handle end job message:"+message);
 			JSONObject jobMsg = JSONObject.fromObject(message);
 			long jobId = jobMsg.getLong("jobId");
 			int status = jobMsg.getInt("status");

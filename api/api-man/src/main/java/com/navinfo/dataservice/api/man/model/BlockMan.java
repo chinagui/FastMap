@@ -28,6 +28,8 @@ public class BlockMan  {
 	private Object dayProducePlanEndDate ;
 	private Object monthProducePlanStartDate ;
 	private Object monthProducePlanEndDate ;
+	private Integer roadPlanTotal;
+	private Integer poiPlanTotal; 
 	
 	public BlockMan (){
 	}
@@ -336,6 +338,22 @@ public class BlockMan  {
 
 	public void setBlockManName(String blockManName) {
 		this.blockManName = blockManName;
+	}
+
+	public Integer getRoadPlanTotal() {
+		return roadPlanTotal;
+	}
+
+	public void setRoadPlanTotal(Integer roadPlanTotal) {
+		this.roadPlanTotal = roadPlanTotal;
+	}
+
+	public Integer getPoiPlanTotal() {
+		return poiPlanTotal;
+	}
+
+	public void setPoiPlanTotal(Integer poiPlanTotal) {
+		this.poiPlanTotal = poiPlanTotal;
 	}
 	
 	

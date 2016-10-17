@@ -74,13 +74,13 @@ public class BlockService {
 			int updateCount = 0;
 			List<Integer> blockIdList = new ArrayList<Integer>();
 			String createSql = "insert into block_man (BLOCK_MAN_ID, BLOCK_MAN_NAME,CREATE_USER_ID,BLOCK_ID,COLLECT_GROUP_ID, COLLECT_PLAN_START_DATE,"
-					+ "COLLECT_PLAN_END_DATE,DAY_EDIT_GROUP_ID,DAY_EDIT_PLAN_START_DATE,DAY_EDIT_PLAN_END_DATE,MONTH_EDIT_GROUP_ID,"
-					+ "MONTH_EDIT_PLAN_START_DATE,MONTH_EDIT_PLAN_END_DATE,DAY_PRODUCE_PLAN_START_DATE,DAY_PRODUCE_PLAN_END_DATE,"
-					+ "MONTH_PRODUCE_PLAN_START_DATE,MONTH_PRODUCE_PLAN_END_DATE,DESCP,STATUS,TASK_ID) "
+					+ "COLLECT_PLAN_END_DATE,DAY_EDIT_GROUP_ID,DAY_EDIT_PLAN_START_DATE,DAY_EDIT_PLAN_END_DATE,"
+					+ "DAY_PRODUCE_PLAN_START_DATE,DAY_PRODUCE_PLAN_END_DATE,"
+					+ "DESCP,STATUS,TASK_ID,road_Plan_Total,poi_Plan_Total ) "
 					+ "values(BLOCK_MAN_SEQ.NEXTVAL,?,?,?,?,to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),?,"
-					+ "to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),?,to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),"
-					+ "to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),"
-					+ "to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),?,?,(SELECT DISTINCT TASK_ID FROM BLOCK T,TASK K WHERE T.CITY_ID=K.CITY_ID AND K.LATEST=1 AND T.BLOCK_ID=?))";
+					+ "to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),"
+					+ "to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),"
+					+ "?,?,(SELECT DISTINCT TASK_ID FROM BLOCK T,TASK K WHERE T.CITY_ID=K.CITY_ID AND K.LATEST=1 AND T.BLOCK_ID=?),?,?)";
 
 			Object[][] param = new Object[blockArray.size()][];
 			
@@ -96,11 +96,9 @@ public class BlockService {
 				Object[] obj = new Object[] { blockNameMap.get(block.getInt("blockId")),userId, block.getInt("blockId"), block.getInt("collectGroupId"),
 						block.getString("collectPlanStartDate"), block.getString("collectPlanEndDate"),
 						block.getInt("dayEditGroupId"), block.getString("dayEditPlanStartDate"),
-						block.getString("dayEditPlanEndDate"), block.getInt("monthEditGroupId"),
-						block.getString("monthEditPlanStartDate"), block.getString("monthEditPlanEndDate"),
+						block.getString("dayEditPlanEndDate"), 
 						block.getString("dayProducePlanStartDate"), block.getString("dayProducePlanEndDate"),
-						block.getString("monthProducePlanStartDate"), block.getString("monthProducePlanEndDate"),
-						block.getString("descp"), 2, block.getInt("blockId") };
+						block.getString("descp"), 2, block.getInt("blockId"),block.getInt("roadPlanTotal"),block.getInt("poiPlanTotal ") };
 				param[i] = obj;
 				blockIdList.add(block.getInt("blockId"));
 			}
@@ -134,9 +132,9 @@ public class BlockService {
 			List blockIdList = new ArrayList();
 			int updateCount = 0;
 			String createSql = "update block_man set COLLECT_GROUP_ID=?, COLLECT_PLAN_START_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),"
-					+ "COLLECT_PLAN_END_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),DAY_EDIT_GROUP_ID=?,DAY_EDIT_PLAN_START_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),DAY_EDIT_PLAN_END_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),MONTH_EDIT_GROUP_ID=?,"
-					+ "MONTH_EDIT_PLAN_START_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),MONTH_EDIT_PLAN_END_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),DAY_PRODUCE_PLAN_START_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),DAY_PRODUCE_PLAN_END_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),"
-					+ "MONTH_PRODUCE_PLAN_START_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),MONTH_PRODUCE_PLAN_END_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'), DESCP=? where BLOCK_MAN_ID=?";
+					+ "COLLECT_PLAN_END_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),DAY_EDIT_GROUP_ID=?,DAY_EDIT_PLAN_START_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),DAY_EDIT_PLAN_END_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),"
+					+ "DAY_PRODUCE_PLAN_START_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),DAY_PRODUCE_PLAN_END_DATE=to_timestamp(?,'yyyy-mm-dd hh24:mi:ss.ff'),"
+					+ " DESCP=?,road_Plan_Total=?,poi_Plan_Total=?   where BLOCK_MAN_ID=?";
 
 			Object[][] param = new Object[blockArray.size()][];
 			List<Integer> updateBlockList = BlockOperation.queryOpenOperationBlocks(conn, blockArray);
@@ -146,10 +144,8 @@ public class BlockService {
 				//if (updateBlockList.contains(bean.getBlockManId())) {
 				Object[] obj = new Object[] { bean.getCollectGroupId(), bean.getCollectPlanStartDate(),
 						bean.getCollectPlanEndDate(), bean.getDayEditGroupId(), bean.getDayEditPlanStartDate(),
-						bean.getDayEditPlanEndDate(), bean.getMonthEditGroupId(), bean.getMonthEditPlanStartDate(),
-						bean.getMonthEditPlanEndDate(), bean.getDayProducePlanStartDate(),
-						bean.getDayProducePlanEndDate(), bean.getMonthProducePlanStartDate(),
-						bean.getMonthProducePlanStartDate(), bean.getDescp(),  bean.getBlockManId() };
+						bean.getDayEditPlanEndDate(),bean.getDayProducePlanStartDate(),
+						bean.getDayProducePlanEndDate(), bean.getDescp(),bean.getRoadPlanTotal(),bean.getPoiPlanTotal(),  bean.getBlockManId() };
 				param[i] = obj;
 				//}
 			}
@@ -157,7 +153,7 @@ public class BlockService {
 				int[] rows = run.batch(conn, createSql, param);
 				updateCount = rows.length;
 			}
-			blockPushMsg(updateBlockList);
+			blockPushMsgByConn(conn,updateBlockList);
 			return updateCount;
 
 		} catch (Exception e) {

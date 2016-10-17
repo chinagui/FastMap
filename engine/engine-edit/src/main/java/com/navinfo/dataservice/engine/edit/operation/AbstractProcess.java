@@ -134,8 +134,22 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 	@Override
 	public String preCheck() throws Exception {
 		// TODO Auto-generated method stub
-		createPreCheckGlmList();
-		return checkEngine.preCheck();
+		//createPreCheckGlmList();
+		this.checkCommand.setGlmList(this.getResult().getAddObjects());
+		this.checkCommand.setListStatus("ADD");
+		String msg=checkEngine.preCheck();
+		
+		if(msg!=null && !msg.isEmpty()){return msg;}
+		
+		this.checkCommand.setGlmList(this.getResult().getUpdateObjects());
+		this.checkCommand.setListStatus("UPDATE");
+		msg=checkEngine.preCheck();
+		if(msg!=null && !msg.isEmpty()){return msg;}
+		
+		this.checkCommand.setGlmList(this.getResult().getDelObjects());
+		this.checkCommand.setListStatus("DEL");
+		msg=checkEngine.preCheck();
+		return msg;
 	}
 
 	// 构造前检查参数。前检查，如果command中的构造不满足前检查参数需求，则需重写该方法，具体可参考createPostCheckGlmList
@@ -277,7 +291,13 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 	@Override
 	public void postCheck() throws Exception {
 		// TODO Auto-generated method stub
-		this.createPostCheckGlmList();
+		//this.createPostCheckGlmList();
+		this.checkCommand.setGlmList(this.getResult().getAddObjects());
+		this.checkCommand.setListStatus("ADD");
+		this.checkEngine.postCheck();
+		
+		this.checkCommand.setGlmList(this.getResult().getUpdateObjects());
+		this.checkCommand.setListStatus("UPDATE");
 		this.checkEngine.postCheck();
 
 	}

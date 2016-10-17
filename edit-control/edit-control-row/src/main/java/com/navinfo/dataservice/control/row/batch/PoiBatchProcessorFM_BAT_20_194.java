@@ -31,7 +31,7 @@ public class PoiBatchProcessorFM_BAT_20_194 implements IBatch {
 			String kindcode = poi.getKindCode();
 			int uRecord = poi.getuRecord();
 			List<IRow> children = poi.getChildren();
-			if (!kindcode.equals("230215") || uRecord != 1 || uRecord != 3 || children.size() == 0) {
+			if (!kindcode.equals("230215") || uRecord ==2 || children.size() == 0) {
 				return result;
 			}
 
@@ -52,7 +52,7 @@ public class PoiBatchProcessorFM_BAT_20_194 implements IBatch {
 				
 				int gasURecord = ixPoiGasstation.getuRecord();
 				
-				if (gasURecord != 1 && gasURecord != 3) {
+				if (gasURecord == 2) {
 					continue;
 				}
 				

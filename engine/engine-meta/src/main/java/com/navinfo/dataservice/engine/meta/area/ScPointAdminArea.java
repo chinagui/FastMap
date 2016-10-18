@@ -163,7 +163,7 @@ public class ScPointAdminArea {
 		
 		JSONObject result = new JSONObject();
 		
-		String sql = "SELECT * FROM (SELECT c.*, rownum rn FROM (SELECT COUNT (1) OVER (PARTITION BY 1) total,adminareacode,whole from SC_POINT_ADMINAREA where type='省'";
+		String sql = "SELECT * FROM (SELECT c.*, rownum rn FROM (SELECT COUNT (1) OVER (PARTITION BY 1) total,adminareacode,whole from SC_POINT_ADMINAREA where type in ('省','直辖市')";
 		if (!name.isEmpty()) {
 			sql +=  " and whole like '%"+name+"%'";
 		}

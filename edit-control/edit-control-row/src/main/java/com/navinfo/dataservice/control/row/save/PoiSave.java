@@ -112,7 +112,6 @@ public class PoiSave {
                     }
                 }
                 sb.append(childPoiPid).append(",").append(parentPoiPid);
-                logger.info("JSON参数：" + json.toString());
                 result = editApiImpl.runPoi(json);
                 // 其他
             } else {
@@ -131,7 +130,6 @@ public class PoiSave {
                 BatchProcess batchProcess = new BatchProcess();
                 batchProcess.execute(json, conn, editApiImpl);
             }
-            logger.info("待更新状态POI:" + sb.toString());
             upatePoiStatus(sb.toString(), conn, true);
 
             return result;

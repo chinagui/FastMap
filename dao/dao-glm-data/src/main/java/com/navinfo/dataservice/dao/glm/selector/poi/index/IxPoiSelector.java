@@ -383,7 +383,7 @@ public class IxPoiSelector extends AbstractSelector {
 		IxSamepoiPartSelector samepoiPartsSelector = new IxSamepoiPartSelector(
 				conn);
 
-		List<IRow> parts = samepoiPartsSelector.loadPoiByPid(poi.pid(), isLock);
+		List<IRow> parts = samepoiPartsSelector.loadByPoiPid(poi.pid(), isLock);
 
 		poi.setSamepoiParts(parts);
 

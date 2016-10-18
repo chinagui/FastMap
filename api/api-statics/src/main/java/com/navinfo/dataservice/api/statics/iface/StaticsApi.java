@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.api.statics.iface;
 
+import java.sql.Connection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -52,5 +53,7 @@ public interface StaticsApi {
 	public SubtaskStatInfo getStatBySubtask(int subtaskId);
 	
 	public Map<Integer,SubtaskStatInfo> getStatBySubtaskIdList(List<Integer> subtaskIdList);
+
+	public int getObjectState(int objPid, String objTable, Connection conn) throws Exception;
 
 }

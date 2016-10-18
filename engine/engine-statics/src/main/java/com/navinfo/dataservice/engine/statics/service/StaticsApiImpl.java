@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.statics.service;
 
+import java.sql.Connection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -84,6 +85,11 @@ public class StaticsApiImpl implements StaticsApi {
 	public Map<Integer, SubtaskStatInfo> getStatBySubtaskIdList(List<Integer> subtaskIdList) {
 		// TODO Auto-generated method stub
 		return StaticsService.getInstance().getStatBySubtaskIdList(subtaskIdList);
+	}
+	
+	@Override
+	public int getObjectState(int objPid, String objTable, Connection conn) throws Exception {
+		return StaticsService.getInstance().getObjectState(objPid, objTable, conn);
 	}
 
 }

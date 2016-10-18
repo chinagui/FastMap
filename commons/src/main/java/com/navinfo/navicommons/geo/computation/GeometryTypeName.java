@@ -7,5 +7,6 @@ public class GeometryTypeName {
 	public static final String POLYGON = "Polygon";
 	
 	public static final String  MULTILINESTRING= "MultiLineString";
+	public static final String GEOMETRYCOLLECTION = "GeometryCollection";
 	
 }

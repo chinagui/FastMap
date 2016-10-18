@@ -83,26 +83,26 @@ public class PoiSave {
             StringBuffer sb = new StringBuffer();
             int pid = 0;
             // POI同一关系
-            if (ObjType.IXSAMEPOI.equals(objType)) {
-                if (OperType.CREATE.equals(operType)) {
+            if (ObjType.IXSAMEPOI == objType) {
+                if (OperType.CREATE == operType) {
                     String poiPids = JsonUtils.getStringValueFromJSONArray(json.getJSONArray("poiPids"));
                     sb.append(poiPids);
-                } else if (OperType.UPDATE.equals(operType)) {
+                } else if (OperType.UPDATE == operType) {
                     JSONObject data = json.getJSONObject("data");
                     Integer samePid = data.getInt("pid");
                     this.generatePoiPid(sb, samePid, conn);
-                } else if (OperType.DELETE.equals(operType)) {
+                } else if (OperType.DELETE == operType) {
                     Integer samePid = json.getInt("objId");
                     this.generatePoiPid(sb, samePid, conn);
                 }
                 result = editApiImpl.runPoi(json);
-            // POI父子关系
-            } else if (ObjType.IXPOIPARENT.equals(objType)) {
+                // POI父子关系
+            } else if (ObjType.IXPOIPARENT == objType) {
                 Integer childPoiPid = json.getInt("objId");
                 Integer parentPoiPid = 0;
-                if (OperType.CREATE.equals(operType) || OperType.UPDATE.equals(operType)) {
-                        parentPoiPid = json.getInt("parentPid");
-                } else if (OperType.DELETE.equals(operType)) {
+                if (OperType.CREATE == operType || OperType.UPDATE == operType) {
+                    parentPoiPid = json.getInt("parentPid");
+                } else if (OperType.DELETE == operType) {
                     IxPoiParentSelector selector = new IxPoiParentSelector(conn);
                     List<IRow> parents = selector.loadParentRowsByChildrenId(childPoiPid, true);
                     for (IRow row : parents) {
@@ -112,11 +112,12 @@ public class PoiSave {
                     }
                 }
                 sb.append(childPoiPid).append(",").append(parentPoiPid);
+                logger.info("JSON参数：" + json.toString());
                 result = editApiImpl.runPoi(json);
-            // 其他
+                // 其他
             } else {
                 result = editApiImpl.runPoi(json);
-                if (!OperType.CREATE.equals(operType)) {
+                if (OperType.CREATE != operType) {
                     pid = json.getInt("objId");
                     sb.append(String.valueOf(pid));
                 } else {
@@ -125,16 +126,12 @@ public class PoiSave {
                 }
             }
 
-
-
-
-
-            if (operType == OperType.UPDATE) {
+            if (operType == OperType.UPDATE && ObjType.IXSAMEPOI != objType && ObjType.IXPOIPARENT != objType) {
                 json.put("objId", pid);
                 BatchProcess batchProcess = new BatchProcess();
                 batchProcess.execute(json, conn, editApiImpl);
             }
-
+            logger.info("待更新状态POI:" + sb.toString());
             upatePoiStatus(sb.toString(), conn, true);
 
             return result;

@@ -397,7 +397,6 @@ public class RdNameOperation {
 		ResultSet resultSet = null;
 
 		try {
-			conn = DBConnector.getInstance().getMetaConnection();
 			StringBuilder sql = new StringBuilder();
 			String ids = "";
 			String tmep = "";

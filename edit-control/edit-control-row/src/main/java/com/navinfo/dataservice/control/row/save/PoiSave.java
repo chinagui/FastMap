@@ -78,6 +78,8 @@ public class PoiSave {
 //                pid = result.getInt("pid");
 //                buf.append(String.valueOf(pid));
 //            }
+            EditApiImpl editApiImpl = new EditApiImpl(conn);
+            editApiImpl.setToken(userId);
             StringBuffer sb = new StringBuffer();
             int pid = 0;
             // POI同一关系
@@ -93,6 +95,7 @@ public class PoiSave {
                     Integer samePid = json.getInt("objId");
                     this.generatePoiPid(sb, samePid, conn);
                 }
+                result = editApiImpl.runPoi(json);
             // POI父子关系
             } else if (ObjType.IXPOIPARENT.equals(objType)) {
                 Integer childPoiPid = json.getInt("objId");
@@ -109,8 +112,10 @@ public class PoiSave {
                     }
                 }
                 sb.append(childPoiPid).append(",").append(parentPoiPid);
+                result = editApiImpl.runPoi(json);
             // 其他
             } else {
+                result = editApiImpl.runPoi(json);
                 if (!OperType.CREATE.equals(operType)) {
                     pid = json.getInt("objId");
                     sb.append(String.valueOf(pid));
@@ -121,9 +126,8 @@ public class PoiSave {
             }
 
 
-            EditApiImpl editApiImpl = new EditApiImpl(conn);
-            editApiImpl.setToken(userId);
-            result = editApiImpl.runPoi(json);
+
+
 
             if (operType == OperType.UPDATE) {
                 json.put("objId", pid);

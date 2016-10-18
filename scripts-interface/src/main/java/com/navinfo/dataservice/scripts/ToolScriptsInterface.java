@@ -72,8 +72,7 @@ public class ToolScriptsInterface {
 			}
 			JSONObject request=null;
 			JSONObject response = null;
-//			String dir = SystemConfigFactory.getSystemConfig().getValue("scripts.dir");
-			String dir = "F:\\Fm_Projects_Doc\\scripts\\";
+			String dir = SystemConfigFactory.getSystemConfig().getValue("scripts.dir");
 			//初始化context
 			JobScriptsInterface.initContext();
 			//

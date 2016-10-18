@@ -60,12 +60,6 @@ public class PoiSave {
                 return result;
             }
 
-            EditApiImpl editApiImpl = new EditApiImpl(conn);
-
-            editApiImpl.setToken(userId);
-
-            result = editApiImpl.runPoi(json);
-
 //            StringBuffer buf = new StringBuffer();
 //
 //            int pid = 0;
@@ -104,7 +98,7 @@ public class PoiSave {
                 Integer childPoiPid = json.getInt("objId");
                 Integer parentPoiPid = 0;
                 if (OperType.CREATE.equals(operType) || OperType.UPDATE.equals(operType)) {
-                    parentPoiPid = json.getInt("parentPid");
+                        parentPoiPid = json.getInt("parentPid");
                 } else if (OperType.DELETE.equals(operType)) {
                     IxPoiParentSelector selector = new IxPoiParentSelector(conn);
                     List<IRow> parents = selector.loadParentRowsByChildrenId(childPoiPid, true);
@@ -125,6 +119,11 @@ public class PoiSave {
                     sb.append(String.valueOf(pid));
                 }
             }
+
+
+            EditApiImpl editApiImpl = new EditApiImpl(conn);
+            editApiImpl.setToken(userId);
+            result = editApiImpl.runPoi(json);
 
             if (operType == OperType.UPDATE) {
                 json.put("objId", pid);

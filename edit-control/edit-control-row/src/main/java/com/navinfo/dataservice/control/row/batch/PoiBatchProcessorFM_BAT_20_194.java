@@ -136,6 +136,7 @@ public class PoiBatchProcessorFM_BAT_20_194 implements IBatch {
 				if (changeFlag) {
 					ixPoiGasstation.setService(service);
 					JSONObject changeFields = ixPoiGasstation.Serialize(null);
+					changeFields.remove("uDate");
 					changeFields.put("objStatus", ObjStatus.UPDATE.toString());
 					dataArray.add(changeFields);
 				}

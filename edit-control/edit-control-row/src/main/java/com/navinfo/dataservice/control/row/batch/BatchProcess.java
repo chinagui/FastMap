@@ -34,7 +34,7 @@ public class BatchProcess {
 			
 			IxPoiSelector ixPoiSelector = new IxPoiSelector(conn);
 
-			IxPoi poi = (IxPoi) ixPoiSelector.loadById(json.getInt("objId"), false, true);
+			IxPoi poi = (IxPoi) ixPoiSelector.loadById(json.getInt("objId"), false);
 			
 			List<String> batchList = getRowRules();
 			

@@ -2,6 +2,7 @@ package com.navinfo.dataservice.engine.check.rules;
 
 import java.util.List;
 
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
@@ -23,8 +24,10 @@ public class CheckDupilicateNode extends baseRule {
 			if (obj instanceof RdLink){
 				RdLink rdLink = (RdLink)obj;
 				Geometry geo =rdLink.getGeometry();
+
+				Geometry geo2=GeoTranslator.transform(geo, 0.00001, 5);
 				
-				Coordinate[] coords = geo.getCoordinates();
+				Coordinate[] coords = geo2.getCoordinates();
 				
 				for(int j=0;j<coords.length;j++){
 					if(j+2<coords.length){

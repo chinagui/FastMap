@@ -4,10 +4,12 @@ import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.database.oracle.MyDriverManagerDataSource;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import java.sql.CallableStatement;
 import java.sql.Connection;
@@ -106,7 +108,7 @@ public class BatchCoreJob extends AbstractJob {
 			batchParams.setKdbSid(kdbDBInfo.getDbServer().getServiceName());
 
 			//解析DMS(PID)库参数
-			String[] pidManDBInfos = req.getPidDbInfo().split(",");
+			String[] pidManDBInfos = req.getPidDbInfo().split(";");
 			batchParams.setDmsUserName(pidManDBInfos[4]);
 			batchParams.setDmsPasswd(pidManDBInfos[5]);
 			batchParams.setDmsHost(pidManDBInfos[1]);
@@ -132,6 +134,24 @@ public class BatchCoreJob extends AbstractJob {
 		String sql = "{call A_NAVI_BATCH.PREPARE_BATCH(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)}";
 		try {
 			if (conn != null) {
+				log.info("DMSUserName:" +  batchParams.getDmsUserName());
+				log.info("DMSPassWord:" +  batchParams.getDmsPasswd());
+				log.info("DMSHost:" +  batchParams.getDmsHost());
+				log.info("DMSPort:" +  batchParams.getDmsPort());
+				log.info("DMSSid:" +  batchParams.getDmsSid());
+				log.info("KdbUserName:" +  batchParams.getKdbUserName());
+				log.info("KdbPasswd:" +  batchParams.getKdbPasswd());
+				log.info("KdbHost:" +  batchParams.getKdbHost());
+				log.info("KdbPort:" +  batchParams.getKdbPort());
+				log.info("KdbSid:" +  batchParams.getKdbSid());
+				log.info("BackupUserName:" +  batchParams.getBackupUserName());
+				log.info("BackupPasswd:" +  batchParams.getBackupPasswd());
+				log.info("BackupHost:" +  batchParams.getBackupHost());
+				log.info("BackupPort:" +  batchParams.getBackupPort());
+				log.info("BackupSid:" +  batchParams.getBackupSid());
+				
+				
+				
 				statement = conn.prepareCall(sql);
 				statement.setString(1, batchParams.getDmsUserName());
 				statement.setString(2, batchParams.getDmsPasswd());
@@ -228,6 +248,28 @@ public class BatchCoreJob extends AbstractJob {
 		}
 		return batchResult;
 	}
+	
+
+	public static void main(String args[]) {
+		Connection conn = null;
+		try{
+			DriverManagerDataSource dataSource = new MyDriverManagerDataSource();
+			String driveClassName = "oracle.jdbc.driver.OracleDriver";
+			String url = "jdbc:oracle:thin:@192.168.3.105:1521";
+			String username = "HUB_ZnryJURnZY";
+			String pwd = "HUB_ZnryJURnZY";
+			dataSource.setDriverClassName(driveClassName);
+			dataSource.setUrl(url);
+			dataSource.setUsername(username);
+			dataSource.setPassword(pwd);
+			conn = dataSource.getConnection();
+			BatchCoreJob job = new BatchCoreJob(null);
+			
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+	}
+
 
 	class BatchCoreParams {
 

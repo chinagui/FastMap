@@ -67,11 +67,12 @@ public class JobMsgPublisher {
 	 * @param jobResponse
 	 * @throws Exception
 	 */
-	public static void endJob(long jobId,int status,String resultMsg,JSONObject jobResponse)throws Exception{
+	public static void endJob(long userId,long jobId,int status,String resultMsg,JSONObject jobResponse)throws Exception{
 		if(jobResponse==null){
 			throw new Exception("step不能为空");
 		}
 		JSONObject jobMsg = new JSONObject();
+		jobMsg.put("userId", userId);
 		jobMsg.put("jobId", jobId);
 		jobMsg.put("status", status);
 		jobMsg.put("resultMsg", StringUtils.isEmpty(resultMsg)?"":resultMsg);

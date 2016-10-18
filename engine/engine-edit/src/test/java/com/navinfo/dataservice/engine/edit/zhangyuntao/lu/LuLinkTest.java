@@ -82,17 +82,8 @@ public class LuLinkTest extends InitApplication {
 
 	@Test
 	public void tesRepairtLuLink() {
-		String parameter = "{\"command\":\"REPAIR\",\"dbId\":43,\"projectId\":11,\"objId\":100034528,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.62528,39.25022],[116.62528,39.25006],[116.62535838820631,39.25011395094421],[116.62544,39.25017],[116.62528,39.25022]]},\"interLinks\":[],\"interNodes\":[]},\"type\":\"LULINK\"}";
-
-		log.info(parameter);
-		System.out.println(parameter + "-------------------");
-		Transaction t = new Transaction(parameter);
-		try {
-			String msg = t.run();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
+		String requester = "{\"command\":\"REPAIR\",\"dbId\":17,\"objId\":320000009,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[115.625,39.41894],[115.62467,39.41878],[115.62544405460356,39.41844578116937],[115.62462,39.41816],[115.6246,39.4178],[115.62463,39.4175],[115.62467,39.41736],[115.62469,39.41728]]},\"interLinks\":[],\"interNodes\":[]},\"type\":\"LULINK\"}";
+		TestUtil.run(requester);
 	}
 
 	@Test

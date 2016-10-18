@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.sql.DataSource;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -21,6 +23,7 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.util.Assert;
 
 import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
+import com.navinfo.dataservice.api.datahub.model.BizType;
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
@@ -37,6 +40,7 @@ import com.navinfo.dataservice.expcore.ExportConfig;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
 import com.navinfo.dataservice.jobframework.runjob.JobCreateStrategy;
 import com.navinfo.navicommons.database.QueryRunner;
+import com.navinfo.navicommons.database.sql.DbLinkCreator;
 import com.navinfo.navicommons.database.sql.PackageExec;
 import com.navinfo.navicommons.database.sql.SqlExec;
 import com.navinfo.navicommons.geo.computation.CompGridUtil;
@@ -173,23 +177,36 @@ public class InitRegiondb {
 		return response;
 	}
 	
+	private static void createMetaDbLink(DataSource dataSource)throws Exception{
+		DbLinkCreator cr = new DbLinkCreator();
+		DbInfo metaDb = DbService.getInstance().getOnlyDbByBizType(BizType.DB_META_ROAD);
+		cr.create("DBLINK_RMS", false, dataSource,metaDb.getDbUserName(),metaDb.getDbUserPasswd(),metaDb.getDbServer().getIp(),String.valueOf(metaDb.getDbServer().getPort()),metaDb.getDbServer().getServiceName());
+	}
+
 	private static void installPckUtils(int dbId)throws Exception{
 		Connection conn = null;
 		try{
 			DbInfo db = DbService.getInstance()
 					.getDbById(dbId);
 			DbConnectConfig connConfig = DbConnectConfig.createConnectConfig(db.getConnectParam());
+			//创建元数据库dblink
+			createMetaDbLink(MultiDataSourceFactory.getInstance().getDataSource(connConfig));
 			conn = MultiDataSourceFactory.getInstance().getDataSource(connConfig).getConnection();
 			SqlExec sqlExec = new SqlExec(conn);
 			String sqlFile = "/com/navinfo/dataservice/scripts/resources/init_edit_tables.sql";
 			sqlExec.executeIgnoreError(sqlFile);
-			String sqlFile2 = "/com/navinfo/dataservice/scripts/resources/prj_utils.sql";
-			sqlExec.execute(sqlFile2);
+			String metaFile = "/com/navinfo/dataservice/scripts/resources/mv_rel_rdname_meta.sql";
+			sqlExec.execute(metaFile);
+			
 			PackageExec packageExec = new PackageExec(conn);
+			String spatialIndexSql = "/com/navinfo/dataservice/scripts/resources/create_spatial_utils_and_rebuild.sql";
+			packageExec.execute(spatialIndexSql);
 			String pckFile = "/com/navinfo/dataservice/scripts/resources/prj_utils.pck";
 			packageExec.execute(pckFile);
 			String pckFile2 = "/com/navinfo/dataservice/scripts/resources/create_type_function.sql";
 			packageExec.execute(pckFile2);
+			String pyutils = "/com/navinfo/dataservice/scripts/resources/pyutils.pck";
+			packageExec.execute(pyutils);
 			conn.commit();
 		}finally{
 			DbUtils.closeQuietly(conn);
@@ -256,12 +273,14 @@ public class InitRegiondb {
 		try{
 			JobScriptsInterface.initContext();
 			DatahubApi datahub = (DatahubApi)ApplicationContextUtil.getBean("datahubApi");
-			DbInfo db = datahub.getDbById(45);
+			DbInfo db = datahub.getDbById(19);
 			OracleSchema schema = new OracleSchema(DbConnectConfig.createConnectConfig(db.getConnectParam()));
 			conn = schema.getDriverManagerDataSource().getConnection();
 //			SqlExec sqlExec = new SqlExec(conn);
 			PackageExec packageExec = new PackageExec(conn);
-			String sqlFile = "/com/navinfo/dataservice/scripts/resources/create_type_function.sql";
+//			String sqlFile = "/com/navinfo/dataservice/scripts/resources/create_type_function.sql";
+
+			String sqlFile = "/com/navinfo/dataservice/scripts/resources/prj_utils.pck";
 //			sqlExec.executeIgnoreError(sqlFile);
 			packageExec.execute(sqlFile);
 			conn.commit();

@@ -371,7 +371,7 @@ public class IxPoiSearch implements ISearch {
 			
 			for (String rowId:rowIds) {
 				IxPoi poi = (IxPoi) poiSelector.loadByRowId(rowId, isLock);
-				List<IRow> nameList = nameSelector.loadRowsByParentId(poi.getPid(), false);
+				List<IRow> nameList = nameSelector.loadRowsByParentId(poi.getPid(),isLock);
 				poi.setNames(nameList);
 				List<IRow> addressList = addressSelector.loadRowsByParentId(poi.getPid(), isLock);
 				poi.setAddresses(addressList);
@@ -523,7 +523,7 @@ public class IxPoiSearch implements ISearch {
 			
 			for (String rowId:rowIds) {
 				IxPoi poi = (IxPoi) poiSelector.loadByRowId(rowId, isLock);
-				List<IRow> nameList = nameSelector.loadRowsByParentId(poi.getPid(), false);
+				List<IRow> nameList = nameSelector.loadRowsByParentId(poi.getPid(), isLock);
 				poi.setNames(nameList);
 				List<IRow> addressList = addressSelector.loadRowsByParentId(poi.getPid(), isLock);
 				poi.setAddresses(addressList);

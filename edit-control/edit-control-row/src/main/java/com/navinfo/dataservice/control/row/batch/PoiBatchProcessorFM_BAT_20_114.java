@@ -1,7 +1,11 @@
 package com.navinfo.dataservice.control.row.batch;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.List;
+
+import org.apache.commons.dbutils.DbUtils;
 
 import com.navinfo.dataservice.control.row.batch.util.IBatch;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -19,6 +23,10 @@ public class PoiBatchProcessorFM_BAT_20_114 implements IBatch {
 	public JSONObject run(IxPoi poi,Connection conn,JSONObject json,EditApiImpl editApiImpl) throws Exception {
 		JSONObject result = new JSONObject();
 		
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+		
 		try {
 			JSONObject poiData = json.getJSONObject("data");
 			
@@ -26,11 +34,20 @@ public class PoiBatchProcessorFM_BAT_20_114 implements IBatch {
 				return result;
 			}
 			
-			if (poi.getuRecord() != 1 && poi.getuRecord() != 3) {
+			if (poi.getuRecord() == 2) {
 				return result;
 			}
 			
-			String adminId = String.valueOf(poi.getAdminReal());
+			String adminId = "";
+			String regionId = String.valueOf(poi.getRegionId());
+			String sql = "SELECT admin_id FROM ad_admin WHERE region_id=" + regionId;
+			pstmt = conn.prepareStatement(sql);
+			resultSet = pstmt.executeQuery();
+			if (resultSet.next()) {
+				adminId = resultSet.getString("admin_id");
+			} else {
+				throw new Exception("未知的行政区划,regionId:"+regionId);
+			}
 
 			if (adminId.startsWith("44") || adminId.startsWith("110") || adminId.startsWith("310")
 					|| adminId.startsWith("3201") || adminId.startsWith("3202") || adminId.startsWith("3204")
@@ -45,22 +62,22 @@ public class PoiBatchProcessorFM_BAT_20_114 implements IBatch {
 					
 					int gasURecord = ixPoiGasstation.getuRecord();
 					
-					if (gasURecord != 1 && gasURecord != 3) {
+					if (gasURecord == 2) {
 						continue;
 					}
 					
 					String oilType = ixPoiGasstation.getOilType();
 					boolean changeFlag = false;
 					if (oilType.indexOf("90")>-1) {
-						oilType.replace("90", "89");
+						oilType = oilType.replace("90", "89");
 						changeFlag = true;
 					}
 					if (oilType.indexOf("93")>-1) {
-						oilType.replace("93", "92");
+						oilType = oilType.replace("93", "92");
 						changeFlag = true;
 					}
 					if (oilType.indexOf("97")>-1) {
-						oilType.replace("97", "95");
+						oilType = oilType.replace("97", "95");
 						changeFlag = true;
 					}
 					if (changeFlag) {
@@ -80,6 +97,9 @@ public class PoiBatchProcessorFM_BAT_20_114 implements IBatch {
 			return result;
 		} catch (Exception e) {
 			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
 		}
 	}
 

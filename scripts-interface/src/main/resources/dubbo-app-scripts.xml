@@ -6,5 +6,5 @@ xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
 	http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
 
 	<dubbo:application name="dubbo-app-scripts" />
-	<dubbo:registry address="zookeeper://192.168.4.156:2681?backup=192.168.4.61:2681,192.168.4.65:2681" />
+	<dubbo:registry address="zookeeper://192.168.4.188:2681?backup=192.168.4.188:2682,192.168.4.188:2683" />
 </beans>

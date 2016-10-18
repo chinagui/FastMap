@@ -7,16 +7,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
-import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchDetail;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 /**
  * POI名称表
@@ -347,7 +346,7 @@ public class IxPoiName implements IObj {
 					for (int i = 0; i < ja.size(); i++) {
 						JSONObject jo = ja.getJSONObject(i);
 
-						RdBranchDetail row = new RdBranchDetail();
+						IxPoiNameTone row = new IxPoiNameTone();
 
 						row.Unserialize(jo);
 
@@ -363,7 +362,7 @@ public class IxPoiName implements IObj {
 					for (int i = 0; i < ja.size(); i++) {
 						JSONObject jo = ja.getJSONObject(i);
 
-						RdBranchDetail row = new RdBranchDetail();
+						IxPoiNameFlag row = new IxPoiNameFlag();
 
 						row.Unserialize(jo);
 

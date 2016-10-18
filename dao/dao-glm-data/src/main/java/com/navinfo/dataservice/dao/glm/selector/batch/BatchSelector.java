@@ -160,11 +160,11 @@ public class BatchSelector {
 
 		if (batchType == 0) {
 
-			sb.append(" A.URBAN==1 AND ");
+			sb.append(" A.URBAN = 1 AND ");
 
 		} else if (batchType == 1) {
 
-			sb.append(" A.URBAN==0 AND ");
+			sb.append(" A.URBAN = 0 AND ");
 		}
 
 		sb.append(" B.FACE_PID = :1 AND A.U_RECORD != 2 AND B.U_RECORD != 2 AND SDO_RELATE(A.GEOMETRY, B.GEOMETRY, 'mask=anyinteract') = 'TRUE'");

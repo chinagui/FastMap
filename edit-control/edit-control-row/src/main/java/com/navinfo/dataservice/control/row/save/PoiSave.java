@@ -55,7 +55,7 @@ public class PoiSave {
 
             JSONObject poiData = json.getJSONObject("data");
 
-            if (poiData.size() == 0 && operType == OperType.UPDATE && objType != ObjType.IXSAMEPOI) {
+            if (poiData.size() == 0 && operType == OperType.UPDATE && objType != ObjType.IXSAMEPOI && objType != ObjType.IXPOIPARENT) {
                 upatePoiStatus(json.getString("objId"), conn, false);
                 return result;
             }

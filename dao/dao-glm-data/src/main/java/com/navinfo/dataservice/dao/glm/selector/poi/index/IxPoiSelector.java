@@ -40,8 +40,7 @@ public class IxPoiSelector extends AbstractSelector {
 	}
 
 	/**
-	 * @zhaokk 查询poi列表值
-	 * 20161010修改 by jch,1）去掉官方原始查询条件；2）删除poi可见
+	 * @zhaokk 查询poi列表值 20161010修改 by jch,1）去掉官方原始查询条件；2）删除poi可见
 	 * @param isLock
 	 * @param pid
 	 * @param pidName
@@ -70,11 +69,11 @@ public class IxPoiSelector extends AbstractSelector {
 		buffer.append(" ip.pid,ip.kind_code,ps.status, 0 as freshness_vefication,ipn.name,ip.geometry,ip.collect_time,ip.u_record ");
 		buffer.append(" FROM ix_poi ip, ix_poi_name ipn, poi_edit_status ps ");
 		buffer.append(" WHERE  ip.pid = ipn.poi_pid(+) and ip.row_id = ps.row_id ");
-		
+
 		buffer.append(" AND ipn.lang_code = 'CHI'");
 		buffer.append(" AND ipn.name_type = 2 ");
 		buffer.append(" AND ipn.name_class = 1");
-		
+
 		buffer.append(" AND ps.status = " + type + "");
 		buffer.append(" AND sdo_within_distance(ip.geometry, sdo_geometry(    '"
 				+ g + "'  , 8307), 'mask=anyinteract') = 'TRUE' ");
@@ -106,15 +105,15 @@ public class IxPoiSelector extends AbstractSelector {
 				if (total == 0) {
 					total = resultSet.getInt("total");
 				}
-				//STRUCT struct = (STRUCT) resultSet.getObject("geometry");
-				//Geometry geometry = GeoTranslator.struct2Jts(struct, 1, 0);
+				// STRUCT struct = (STRUCT) resultSet.getObject("geometry");
+				// Geometry geometry = GeoTranslator.struct2Jts(struct, 1, 0);
 				JSONObject json = new JSONObject();
 				json.put("pid", resultSet.getInt("pid"));
 				json.put("kindCode", resultSet.getString("kind_code"));
 				json.put("freshnessVefication",
 						resultSet.getInt("freshness_vefication"));
 				json.put("name", resultSet.getString("name"));
-				//json.put("geometry", GeoTranslator.jts2Geojson(geometry));
+				// json.put("geometry", GeoTranslator.jts2Geojson(geometry));
 				json.put("uRecord", resultSet.getInt("u_record"));
 				json.put("status", resultSet.getInt("status"));
 				json.put("collectTime", resultSet.getString("collect_time"));
@@ -371,39 +370,49 @@ public class IxPoiSelector extends AbstractSelector {
 	}
 
 	public IRow loadByIdAndChildren(int id, boolean isLock) throws Exception {
-		IxPoi poi = (IxPoi) super.loadAllById(id, isLock);
 
+		IxPoi poi = null;
+		List<Integer> ids = new ArrayList<Integer>();
+		ids.add(id);
+		List<IRow> iRows = loadByIds(ids, isLock, false);
+		if (iRows.size() == 0 || iRows == null) {
+			poi = (IxPoi) loadAllById(id, isLock);
+		} else {
+			poi = (IxPoi) loadById(id, isLock);
+		}
 		IxSamepoiPartSelector samepoiPartsSelector = new IxSamepoiPartSelector(
 				conn);
-		
-		List<IRow> parts = samepoiPartsSelector.loadPoiByPid(poi.pid(), isLock);
+
+		List<IRow> parts = samepoiPartsSelector.loadByPoiPid(poi.pid(), isLock);
 
 		poi.setSamepoiParts(parts);
-		
+
 		poi.setRawFields(loadRawByRowId(poi.getRowId()));
 
 		return poi;
 	}
-	
+
 	/**
 	 * 查询最新RAW_FIELDS
+	 * 
 	 * @param rowId
 	 * @return
 	 * @throws Exception
 	 */
 	public String loadRawByRowId(String rowId) throws Exception {
 
-		String sql="SELECT RAW_FIELDS FROM POI_EDIT_STATUS WHERE ROW_ID=HEXTORAW('"+rowId+"') ORDER BY UPLOAD_DATE DESC";
-	
+		String sql = "SELECT RAW_FIELDS FROM POI_EDIT_STATUS WHERE ROW_ID=HEXTORAW('"
+				+ rowId + "') ORDER BY UPLOAD_DATE DESC";
+
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
 		try {
 			pstmt = conn.prepareStatement(sql);
 			resultSet = pstmt.executeQuery();
-			String rawFields=null;
+			String rawFields = null;
 			while (resultSet.next()) {
-				rawFields=resultSet.getString("RAW_FIELDS");
+				rawFields = resultSet.getString("RAW_FIELDS");
 				break;
 			}
 			return rawFields;

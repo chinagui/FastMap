@@ -315,6 +315,7 @@ create or replace package body package_utils is
         v_out_lat1     number;
         v_out_lng2     number;
         v_out_lat2     number;
+		v_via_path varchar2(512);
       begin
         select count(*)
           into v_cnt_cross
@@ -327,7 +328,14 @@ create or replace package body package_utils is
                  where a.pid = c.pid
                    and d.link_pid = out_link.pid
                    and c.node_pid in (d.s_node_pid, d.e_node_pid));
-      
+            get_restrict_via(p_in_link_pid,
+                             p_in_node_pid,
+                             out_link.pid,
+                             v_out_lng1,
+                             v_out_lat1,
+                             v_out_lng2,
+                             v_out_lat2,
+                             v_via_path);
         if v_cnt_cross > 0 then
           --路口交限
           select *
@@ -359,6 +367,7 @@ create or replace package body package_utils is
               v_record_row.out_node1     := v_out_lng1 || ',' || v_out_lat1;
               v_record_row.out_node2     := v_out_lng2 || ',' || v_out_lat2;
               v_record_row.relation_type := 1;
+			  v_record_row.via_path      := v_via_path;
             
               pipe row(v_record_row);
             end if;
@@ -366,20 +375,6 @@ create or replace package body package_utils is
           end loop;
         
         else
-          --线线交限
-          declare
-            v_via_path varchar2(512);
-          begin
-          
-            get_restrict_via(p_in_link_pid,
-                             p_in_node_pid,
-                             out_link.pid,
-                             v_out_lng1,
-                             v_out_lat1,
-                             v_out_lng2,
-                             v_out_lat2,
-                             v_via_path);
-          
             v_record_row.link_pid := out_link.pid;
           
             v_record_row.in_node1      := v_in_lng1 || ',' || v_in_lat1;
@@ -389,8 +384,6 @@ create or replace package body package_utils is
             v_record_row.relation_type := 2;
             v_record_row.via_path      := v_via_path;
             pipe row(v_record_row);
-          
-          end;
         end if;
       
       end;

@@ -244,6 +244,7 @@ public class Operation implements IOperation {
         for (Integer pid : newNodePids) {
             List<RdLink> links = linkSelector.loadInLinkByNodePid(pid, 50, true);
             for (RdLink link : links) {
+                if (nodes.contains(link.getsNodePid()) && nodes.contains(link.geteNodePid())) continue;
                 RdTrafficsignal t = new RdTrafficsignal();
                 t.setPid(PidUtil.getInstance().applyRdTrafficsignalPid());
                 t.setNodePid(pid);

@@ -221,10 +221,18 @@ public class RdNameTeilen {
 		//5)	在对中文记录进行拆分时，根据道路名组对英文进行同步拆分。注意：对英文中名称来源字段为“未定义”、“按规则翻译”的数据进行维护，其他类型不维护。
 		if (engRdName.getNameId() != null && engRdName.getNameId() != 0
 				&& (engRdName.getSrcFlag() == 1||engRdName.getSrcFlag() == 0)) {
-			new RdNameOperation().saveName(engRdName);
+			if (listEngName.size() == 1) {
+				new RdNameOperation(conn).updateName(engRdName);
+			} else {
+				new RdNameOperation(conn).saveName(engRdName);
+			}
 		} else if ((engRdName.getNameId() == null || engRdName.getNameId() == 0)) {
 			engRdName.setSrcFlag(1);
-			 new RdNameOperation().saveName(engRdName);
+			if (listEngName.size() == 1) {
+				new RdNameOperation(conn).updateName(engRdName);
+			} else {
+				new RdNameOperation(conn).saveName(engRdName);
+			}
 		}	
 		return returnMap;
 	}

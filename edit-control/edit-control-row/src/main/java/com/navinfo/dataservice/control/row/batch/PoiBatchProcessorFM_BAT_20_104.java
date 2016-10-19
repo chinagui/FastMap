@@ -36,7 +36,6 @@ public class PoiBatchProcessorFM_BAT_20_104 implements IBatch {
 			String standardName = "";
 			int nameGroupid = 0;
 			String langCode = "";
-			IxPoiName standardPoiName = new IxPoiName();
 			IxPoiName originalPoiName = new IxPoiName();
 			for (IRow temp:names) {
 				IxPoiName name = (IxPoiName) temp;
@@ -49,7 +48,6 @@ public class PoiBatchProcessorFM_BAT_20_104 implements IBatch {
 				if (name.getNameClass()==1 && (name.getLangCode().equals("CHI") || name.getLangCode().equals("CHT"))) {
 					if (name.getNameType() == 1) {
 						standardName = name.getName();
-						standardPoiName = name;
 					} else if (name.getNameType() == 2) {
 						originalName = name.getName();
 						langCode = name.getLangCode();
@@ -81,40 +79,17 @@ public class PoiBatchProcessorFM_BAT_20_104 implements IBatch {
 				newStandardName.setNamePhonetic(pyStr[1]);
 				JSONObject nameStandardJson = newStandardName.Serialize(null);
 				nameStandardJson.put("objStatus", ObjStatus.INSERT.toString());
-				nameStandardJson.remove("uDate");
 				
 				JSONObject nameOriginalJson = originalPoiName.Serialize(null);
 				nameOriginalJson.put("objStatus", ObjStatus.UPDATE.toString());
-				nameOriginalJson.remove("uDate");
 				
 				resultArray.add(nameStandardJson);
 				resultArray.add(nameOriginalJson);
 				result.put("names", resultArray);
 			} else {
-				if (!standardName.equals(originalName)) {
-					
-					// 标准，原始转全角
-					originalName = ExcelReader.h2f(originalName);
-					standardPoiName.setName(originalName);
-					originalPoiName.setName(originalName);
-					
-					// 转拼音
-					MetadataApi apiService=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
-					String[] pyStr = apiService.pyConvert(standardName);
-					standardPoiName.setNamePhonetic(pyStr[1]);
-					
-					JSONObject nameStandardJson = standardPoiName.Serialize(null);
-					nameStandardJson.put("objStatus", ObjStatus.UPDATE.toString());
-					nameStandardJson.remove("uDate");
-					
-					JSONObject nameOriginalJson = originalPoiName.Serialize(null);
-					nameOriginalJson.put("objStatus", ObjStatus.UPDATE.toString());
-					nameOriginalJson.remove("uDate");
-					
-					resultArray.add(nameStandardJson);
-					resultArray.add(nameOriginalJson);
-					result.put("names", resultArray);
-				} 
+				if (standardName.equals(originalName)) {
+					return result;
+				}
 			}
 			
 			return result;

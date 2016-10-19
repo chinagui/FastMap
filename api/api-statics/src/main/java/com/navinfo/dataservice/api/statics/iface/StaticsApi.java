@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.api.statics.iface;
 
+import java.sql.Connection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;

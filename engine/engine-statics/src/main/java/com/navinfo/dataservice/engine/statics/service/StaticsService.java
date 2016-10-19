@@ -1,12 +1,14 @@
 package com.navinfo.dataservice.engine.statics.service;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import net.sf.json.JSONObject;
 
 import org.bson.Document;
 
@@ -15,7 +17,6 @@ import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Sorts;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
-import com.navinfo.dataservice.api.statics.iface.StaticsApi;
 import com.navinfo.dataservice.api.statics.model.BlockExpectStatInfo;
 import com.navinfo.dataservice.api.statics.model.GridChangeStatInfo;
 import com.navinfo.dataservice.api.statics.model.GridStatInfo;
@@ -29,7 +30,6 @@ import com.navinfo.dataservice.engine.statics.expect.PoiMonthlyExpectMain;
 import com.navinfo.dataservice.engine.statics.expect.RoadCollectExpectMain;
 import com.navinfo.dataservice.engine.statics.expect.RoadDailyExpectMain;
 import com.navinfo.dataservice.engine.statics.expect.RoadMonthlyExpectMain;
-import com.navinfo.dataservice.engine.statics.overview.OverviewMain;
 import com.navinfo.dataservice.engine.statics.poicollect.PoiCollectMain;
 import com.navinfo.dataservice.engine.statics.poidaily.PoiDailyMain;
 import com.navinfo.dataservice.engine.statics.poimonthly.PoiMonthlyMain;
@@ -37,6 +37,9 @@ import com.navinfo.dataservice.engine.statics.roadcollect.RoadCollectMain;
 import com.navinfo.dataservice.engine.statics.roaddaily.RoadDailyMain;
 import com.navinfo.dataservice.engine.statics.roadmonthly.RoadMonthlyMain;
 import com.navinfo.dataservice.engine.statics.tools.MongoDao;
+import com.navinfo.navicommons.database.sql.DBUtils;
+
+import net.sf.json.JSONObject;
 
 public class StaticsService {
 	private StaticsService() {
@@ -58,8 +61,7 @@ public class StaticsService {
 	 * @param roadColName
 	 * @return
 	 */
-	public List<GridStatInfo> getLatestStatByGrids(List<String> grids,
-			String poiColName, String roadColName) {
+	public List<GridStatInfo> getLatestStatByGrids(List<String> grids, String poiColName, String roadColName) {
 
 		MongoDao md = new MongoDao(StatMain.db_name);
 
@@ -77,10 +79,8 @@ public class StaticsService {
 
 		int total = grids.size();
 
-		MongoCursor<Document> iter = md
-				.find(poiColName, Filters.in("grid_id", grids))
-				.sort(Sorts.descending("stat_date")).batchSize(total)
-				.iterator();
+		MongoCursor<Document> iter = md.find(poiColName, Filters.in("grid_id", grids))
+				.sort(Sorts.descending("stat_date")).batchSize(total).iterator();
 
 		int count = 0;
 		while (iter.hasNext()) {
@@ -101,7 +101,7 @@ public class StaticsService {
 
 			info.setFinishPoi(poi.getInt("finish"));
 
-			info.setPercentPoi((int)poi.getDouble("percent"));
+			info.setPercentPoi((int) poi.getDouble("percent"));
 
 			info.setTotalPoi(poi.getInt("total"));
 
@@ -114,9 +114,8 @@ public class StaticsService {
 			}
 		}
 
-		iter = md.find(roadColName, Filters.in("grid_id", grids))
-				.sort(Sorts.descending("stat_date")).batchSize(grids.size())
-				.iterator();
+		iter = md.find(roadColName, Filters.in("grid_id", grids)).sort(Sorts.descending("stat_date"))
+				.batchSize(grids.size()).iterator();
 
 		count = 0;
 		while (iter.hasNext()) {
@@ -136,7 +135,7 @@ public class StaticsService {
 
 			info.setFinishRoad(road.getDouble("finish"));
 
-			info.setPercentRoad((int)road.getDouble("all_percent"));
+			info.setPercentRoad((int) road.getDouble("all_percent"));
 
 			info.setTotalRoad(road.getDouble("total"));
 
@@ -166,8 +165,7 @@ public class StaticsService {
 	 * @param date
 	 * @return
 	 */
-	public List<GridChangeStatInfo> getChangeStatByGrids(Set<String> grids,
-			int stage, int type, String date) {
+	public List<GridChangeStatInfo> getChangeStatByGrids(Set<String> grids, int stage, int type, String date) {
 
 		String colName;
 		if (stage == 0) {// 采集
@@ -206,9 +204,7 @@ public class StaticsService {
 		int total = grids.size();
 
 		MongoCursor<Document> iter = md
-				.find(colName,
-						Filters.and(Filters.in("grid_id", grids),
-								Filters.eq("stat_date", date)))
+				.find(colName, Filters.and(Filters.in("grid_id", grids), Filters.eq("stat_date", date)))
 				.batchSize(total).iterator();
 
 		int count = 0;
@@ -233,10 +229,9 @@ public class StaticsService {
 			} else {
 				JSONObject road = json.getJSONObject("road");
 
-				if(stage==0){
+				if (stage == 0) {
 					info.setPercent((int) road.getDouble("percent"));
-				}
-				else{
+				} else {
 					info.setPercent((int) road.getDouble("all_percent"));
 				}
 			}
@@ -259,41 +254,41 @@ public class StaticsService {
 
 	/**
 	 * 查询Block是否达到预期的状态，0未达到，1已达到
+	 * 
 	 * @param blocks
 	 * @return
 	 */
 	public Map<Integer, Integer> getExpectStatusByBlocks(Set<Integer> blocks) {
 
 		Map<Integer, Integer> map = new HashMap<Integer, Integer>();
-		
-		for(Integer block : blocks){
+
+		for (Integer block : blocks) {
 			map.put(block, 0);
 		}
 
 		MongoDao md = new MongoDao(StatMain.db_name);
 
-		MongoCursor<Document> iter = md
-				.find(ExpectStatusMain.col_name_block,Filters.in("block_id", blocks)
-								)
+		MongoCursor<Document> iter = md.find(ExpectStatusMain.col_name_block, Filters.in("block_id", blocks))
 				.batchSize(blocks.size()).iterator();
 
 		while (iter.hasNext()) {
-			
+
 			Document doc = iter.next();
-			
+
 			int status = doc.getInteger("status");
-			
+
 			int blockId = doc.getInteger("block_id");
-			
+
 			map.put(blockId, status);
-			
+
 		}
-		
+
 		return map;
 	}
-	
+
 	/**
 	 * 查询城市的是否达到预期的状态， 0未达到，1达到
+	 * 
 	 * @param citys
 	 * @return
 	 */
@@ -302,7 +297,7 @@ public class StaticsService {
 		Map<Integer, Integer> map = new HashMap<Integer, Integer>();
 
 		for (Integer city : citys) {
-			map.put(city, city%2);
+			map.put(city, city % 2);
 		}
 
 		return map;
@@ -317,8 +312,7 @@ public class StaticsService {
 	 * @param type
 	 * @return
 	 */
-	public List<BlockExpectStatInfo> getExpectStatByBlock(int blockId,
-			int stage, int type) {
+	public List<BlockExpectStatInfo> getExpectStatByBlock(int blockId, int stage, int type) {
 
 		String colName;
 
@@ -346,8 +340,7 @@ public class StaticsService {
 
 		MongoDao md = new MongoDao(StatMain.db_name);
 
-		MongoCursor<Document> iter = md
-				.find(colName, Filters.eq("block_id", blockId))
+		MongoCursor<Document> iter = md.find(colName, Filters.eq("block_id", blockId))
 				.sort(Sorts.ascending("stat_date")).iterator();
 
 		while (iter.hasNext()) {
@@ -370,20 +363,20 @@ public class StaticsService {
 		return list;
 
 	}
-	
+
 	/**
 	 * 
 	 * 查询subtask数量及完成情况
 	 * 
 	 * @param subtaskId
 	 * @return
-	 * @throws Exception 
+	 * @throws Exception
 	 */
-	public SubtaskStatInfo getStatBySubtask(int subtaskId){
+	public SubtaskStatInfo getStatBySubtask(int subtaskId) {
 		SubtaskStatInfo subtaskStatInfo = new SubtaskStatInfo();
 		subtaskStatInfo.setSubtaskId(subtaskId);
-		ManApi api=(ManApi) ApplicationContextUtil.getBean("manApi");
-	
+		ManApi api = (ManApi) ApplicationContextUtil.getBean("manApi");
+
 		Subtask subtask = null;
 		try {
 			subtask = api.queryBySubtaskId(subtaskId);
@@ -392,10 +385,9 @@ public class StaticsService {
 			e1.printStackTrace();
 		}
 
-		//POI采集,道路采集，一体化采集
-		if((subtask.getType()==0&&subtask.getStage()==0)
-				||(subtask.getType()==1&&subtask.getStage()==0)
-				||(subtask.getType()==2&&subtask.getStage()==0)){
+		// POI采集,道路采集，一体化采集
+		if ((subtask.getType() == 0 && subtask.getStage() == 0) || (subtask.getType() == 1 && subtask.getStage() == 0)
+				|| (subtask.getType() == 2 && subtask.getStage() == 0)) {
 			String poiColName = PoiCollectMain.col_name_grid;
 			String roadColName = RoadCollectMain.col_name_grid;
 			List<Integer> gridIds = null;
@@ -405,24 +397,24 @@ public class StaticsService {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			
-			SubtaskStatInfo result = StaticsOperation.getSubtaskStatByGrids(gridIds,poiColName,roadColName);
-			//POI采集
-			if(subtask.getType()==0){
-				subtaskStatInfo = StaticsOperation.assembleResult(subtaskId,"poi",result);
+
+			SubtaskStatInfo result = StaticsOperation.getSubtaskStatByGrids(gridIds, poiColName, roadColName);
+			// POI采集
+			if (subtask.getType() == 0) {
+				subtaskStatInfo = StaticsOperation.assembleResult(subtaskId, "poi", result);
 			}
-			//道路采集
-			else if(subtask.getType()==1){
-				subtaskStatInfo = StaticsOperation.assembleResult(subtaskId,"road",result);
+			// 道路采集
+			else if (subtask.getType() == 1) {
+				subtaskStatInfo = StaticsOperation.assembleResult(subtaskId, "road", result);
 			}
-			//一体化采集
-			else if(subtask.getType()==2){
-				subtaskStatInfo = StaticsOperation.assembleResult(subtaskId,"unity",result);
+			// 一体化采集
+			else if (subtask.getType() == 2) {
+				subtaskStatInfo = StaticsOperation.assembleResult(subtaskId, "unity", result);
 			}
 		}
-		//POI日编，一体化GRID粗编
-		else if((subtask.getType()==0&&subtask.getStage()==1)
-				||(subtask.getType()==3&&subtask.getStage()==1)){
+		// POI日编，一体化GRID粗编
+		else if ((subtask.getType() == 0 && subtask.getStage() == 1)
+				|| (subtask.getType() == 3 && subtask.getStage() == 1)) {
 			String poiColName = PoiDailyMain.col_name_grid;
 			String roadColName = RoadDailyMain.col_name_grid;
 			List<Integer> gridIds = null;
@@ -432,20 +424,20 @@ public class StaticsService {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-					
-			SubtaskStatInfo result = StaticsOperation.getSubtaskStatByGrids(gridIds,poiColName,roadColName);
-			//POI日编
-			if(subtask.getType()==0){
-				subtaskStatInfo = StaticsOperation.assembleResult(subtaskId,"poi",result);
+
+			SubtaskStatInfo result = StaticsOperation.getSubtaskStatByGrids(gridIds, poiColName, roadColName);
+			// POI日编
+			if (subtask.getType() == 0) {
+				subtaskStatInfo = StaticsOperation.assembleResult(subtaskId, "poi", result);
 			}
-			//一体化GRID粗编
-			else if(subtask.getType()==3){
-				subtaskStatInfo = StaticsOperation.assembleResult(subtaskId,"unity",result);
+			// 一体化GRID粗编
+			else if (subtask.getType() == 3) {
+				subtaskStatInfo = StaticsOperation.assembleResult(subtaskId, "unity", result);
 			}
 		}
-		//道路grid精编，道路grid粗编
-		else if((subtask.getType()==8&&subtask.getStage()==2)
-				||(subtask.getType()==9&&subtask.getStage()==2)){
+		// 道路grid精编，道路grid粗编
+		else if ((subtask.getType() == 8 && subtask.getStage() == 2)
+				|| (subtask.getType() == 9 && subtask.getStage() == 2)) {
 			String poiColName = PoiMonthlyMain.col_name_grid;
 			String roadColName = RoadMonthlyMain.col_name_grid;
 			List<Integer> gridIds = null;
@@ -455,34 +447,34 @@ public class StaticsService {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-					
-			SubtaskStatInfo result = StaticsOperation.getSubtaskStatByGrids(gridIds,poiColName,roadColName);
 
-			subtaskStatInfo = StaticsOperation.assembleResult(subtaskId,"road",result);
+			SubtaskStatInfo result = StaticsOperation.getSubtaskStatByGrids(gridIds, poiColName, roadColName);
+
+			subtaskStatInfo = StaticsOperation.assembleResult(subtaskId, "road", result);
 		}
-		//多源POI，一体化区域粗编
-		//根据block
-		else if((subtask.getType()==4&&subtask.getStage()==1)
-				||(subtask.getType()==5&&subtask.getStage()==1)){
+		// 多源POI，一体化区域粗编
+		// 根据block
+		else if ((subtask.getType() == 4 && subtask.getStage() == 1)
+				|| (subtask.getType() == 5 && subtask.getStage() == 1)) {
 			String poiColName = PoiDailyMain.col_name_block;
 			String roadColName = RoadDailyMain.col_name_block;
 			int blockId = subtask.getBlockId();
-					
-			SubtaskStatInfo result = StaticsOperation.getSubtaskStatByBlock(blockId,poiColName,roadColName);
-			//一体化区域粗编
-			if(subtask.getType()==4){
-				subtaskStatInfo = StaticsOperation.assembleResult(subtaskId,"unity",result);
+
+			SubtaskStatInfo result = StaticsOperation.getSubtaskStatByBlock(blockId, poiColName, roadColName);
+			// 一体化区域粗编
+			if (subtask.getType() == 4) {
+				subtaskStatInfo = StaticsOperation.assembleResult(subtaskId, "unity", result);
 			}
-			//多源POI
-			else if(subtask.getType()==5){
-				subtaskStatInfo = StaticsOperation.assembleResult(subtaskId,"poi",result);
+			// 多源POI
+			else if (subtask.getType() == 5) {
+				subtaskStatInfo = StaticsOperation.assembleResult(subtaskId, "poi", result);
 			}
 		}
-		//代理店，POI专项，道路区域专项
-		//根据city
-		else if((subtask.getType()==6&&subtask.getStage()==2)
-				||(subtask.getType()==7&&subtask.getStage()==2)
-				||(subtask.getType()==10&&subtask.getStage()==2)){
+		// 代理店，POI专项，道路区域专项
+		// 根据city
+		else if ((subtask.getType() == 6 && subtask.getStage() == 2)
+				|| (subtask.getType() == 7 && subtask.getStage() == 2)
+				|| (subtask.getType() == 10 && subtask.getStage() == 2)) {
 			String poiColName = PoiMonthlyMain.col_name_city;
 			String roadColName = RoadMonthlyMain.col_name_city;
 			int taskId = subtask.getTaskId();
@@ -493,25 +485,25 @@ public class StaticsService {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-					
-			SubtaskStatInfo result = StaticsOperation.getSubtaskStatByCity(cityId,poiColName,roadColName);
-			//代理店,POI专项
-			if(subtask.getType()==6||subtask.getType()==7){
-				subtaskStatInfo = StaticsOperation.assembleResult(subtaskId,"poi",result);
+
+			SubtaskStatInfo result = StaticsOperation.getSubtaskStatByCity(cityId, poiColName, roadColName);
+			// 代理店,POI专项
+			if (subtask.getType() == 6 || subtask.getType() == 7) {
+				subtaskStatInfo = StaticsOperation.assembleResult(subtaskId, "poi", result);
 			}
-			//道路区域专项
-			else if(subtask.getType()==10){
-				subtaskStatInfo = StaticsOperation.assembleResult(subtaskId,"road",result);
+			// 道路区域专项
+			else if (subtask.getType() == 10) {
+				subtaskStatInfo = StaticsOperation.assembleResult(subtaskId, "road", result);
 			}
 		}
-	
+
 		return subtaskStatInfo;
 	}
-	
+
 	public List<Integer> getOpen100TaskIdList() {
 		// TODO Auto-generated method stub
-		
-		List<Integer> taskIdList=StaticsOperation.getOpen100TaskIdList();
+
+		List<Integer> taskIdList = StaticsOperation.getOpen100TaskIdList();
 		return taskIdList;
 	}
 
@@ -524,26 +516,24 @@ public class StaticsService {
 	 */
 	public Map<Integer, SubtaskStatInfo> getStatBySubtaskIdList(List<Integer> subtaskIdList) {
 		// TODO Auto-generated method stub
-		
-		Map<Integer, SubtaskStatInfo> SubtaskStatInfos = new HashMap<Integer, SubtaskStatInfo>(); 
-		Map<Integer,Integer> subtaskIdFlag = new HashMap<Integer,Integer>();
-		
+
+		Map<Integer, SubtaskStatInfo> SubtaskStatInfos = new HashMap<Integer, SubtaskStatInfo>();
+		Map<Integer, Integer> subtaskIdFlag = new HashMap<Integer, Integer>();
+
 		MongoDao md = new MongoDao(StatMain.db_name);
 
 		int total = subtaskIdList.size();
 
-		MongoCursor<Document> iter = md
-				.find(StatMain.col_name_subtask, Filters.in("subtaskId", subtaskIdList))
-				.sort(Sorts.descending("stat_date")).batchSize(total)
-				.iterator();
-		
+		MongoCursor<Document> iter = md.find(StatMain.col_name_subtask, Filters.in("subtaskId", subtaskIdList))
+				.sort(Sorts.descending("stat_date")).batchSize(total).iterator();
+
 		while (iter.hasNext()) {
 			JSONObject json = JSONObject.fromObject(iter.next());
-			
+
 			int subtaskId = json.getInt("subtaskId");
-			if(subtaskIdFlag.containsKey(subtaskId)){
+			if (subtaskIdFlag.containsKey(subtaskId)) {
 				continue;
-			}else{
+			} else {
 				SubtaskStatInfo subtaskStatInfo = new SubtaskStatInfo();
 				subtaskStatInfo.setSubtaskId(subtaskId);
 				subtaskStatInfo.setPercent(json.getInt("percent"));
@@ -555,22 +545,25 @@ public class StaticsService {
 		return SubtaskStatInfos;
 
 	}
-	
-	
-	public static void main(String[] args) throws Exception {
-		
-//		String wkt = "POLYGON ((116.55736132939865 40.37309069499443, 116.88314510913636 40.37309069499443, 116.88314510913636 40.25788148053289, 116.55736132939865 40.25788148053289, 116.55736132939865 40.37309069499443))";
-//		
-//		WKTReader r = new WKTReader();
-//		Geometry geo = r.read(wkt);
-//		Set<String> grids = CompGeometryUtil.geo2GridsWithoutBreak(geo);
-		
-//		List<String> grids = new ArrayList<String>();
-//		grids.add("60563600");
-//		StaticsService.getInstance().getLatestStatByGrids(grids, PoiDailyMain.col_name_grid, RoadDailyMain.col_name_grid);
-		
-//		StaticsService.getInstance().getChangeStatByGrids(grids, 0, 2, "20160620");
-	}
 
+	public static void main(String[] args) throws Exception {
+
+		// String wkt = "POLYGON ((116.55736132939865 40.37309069499443,
+		// 116.88314510913636 40.37309069499443, 116.88314510913636
+		// 40.25788148053289, 116.55736132939865 40.25788148053289,
+		// 116.55736132939865 40.37309069499443))";
+		//
+		// WKTReader r = new WKTReader();
+		// Geometry geo = r.read(wkt);
+		// Set<String> grids = CompGeometryUtil.geo2GridsWithoutBreak(geo);
+
+		// List<String> grids = new ArrayList<String>();
+		// grids.add("60563600");
+		// StaticsService.getInstance().getLatestStatByGrids(grids,
+		// PoiDailyMain.col_name_grid, RoadDailyMain.col_name_grid);
+
+		// StaticsService.getInstance().getChangeStatByGrids(grids, 0, 2,
+		// "20160620");
+	}
 
 }

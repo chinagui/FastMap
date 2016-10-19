@@ -37,6 +37,7 @@ import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiName;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiParent;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiPhoto;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
+import com.navinfo.dataservice.dao.log.LogReader;
 import com.navinfo.dataservice.engine.edit.service.EditApiImpl;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.DBUtils;
@@ -345,7 +346,7 @@ public class UploadOperation {
 								upatePoiStatusForAndroid(conn, poiJson.getString("rowId"), 1, rawFields,2);
 							} else {
 								upatePoiStatusForAndroid(conn, poiJson.getString("rowId"), 0, rawFields,1);
-					            editApiImpl.updatePoifreshVerified(poiJson.getInt("pid"));
+					            updatePoifreshVerified(poiJson.getInt("pid"),conn);
 							}
 						} else if (flag == 0) {
 							errList.add(perRetObj.getJSONObject("ret"));
@@ -1829,5 +1830,33 @@ public class UploadOperation {
 			DBUtils.closeStatement(pstmt);
 		}
 	}
+	
+	/**
+	 * 修改的数据，若只有照片和备注的履历，则为鲜度验证,更新为待作业
+	 * @param pid
+	 * @param conn
+	 * @throws Exception
+	 */
+	public void updatePoifreshVerified(int pid,Connection conn) throws Exception {
+			LogReader lr=new LogReader(conn);
+			int freshVerified=0;
+			if(lr.isExistObjHis(pid) || lr.isOnlyPhotoAndMetoHis(pid)){
+				freshVerified=1;
+			}
+			String sql="UPDATE poi_edit_status T1 SET T1.fresh_verified = :1,T.status=:2 where T1.row_id =(SELECT row_id as a FROM ix_poi where pid = " + pid + ")";
+			
+			PreparedStatement pstmt = null;
+			try {
+				pstmt = conn.prepareStatement(sql);
+				pstmt.setInt(1, freshVerified);
+				pstmt.setInt(2, 1);
+				pstmt.executeUpdate();
+			} catch (Exception e) {
+				throw e;
+
+			} finally {
+				DBUtils.closeStatement(pstmt);
+			}
+		}
 
 }

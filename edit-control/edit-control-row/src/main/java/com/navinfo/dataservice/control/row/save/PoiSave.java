@@ -4,17 +4,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.util.List;
 
-<<<<<<< HEAD
-=======
-import com.navinfo.dataservice.commons.util.StringUtils;
-import com.navinfo.dataservice.dao.glm.iface.IRow;
-import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiParent;
-import com.navinfo.dataservice.dao.glm.model.poi.index.IxSamepoi;
-import com.navinfo.dataservice.dao.glm.model.poi.index.IxSamepoiPart;
-import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiParentSelector;
-import com.navinfo.dataservice.dao.glm.selector.poi.index.IxSamepoiPartSelector;
-import com.navinfo.dataservice.dao.glm.selector.poi.index.IxSamepoiSelector;
->>>>>>> parent of 105ecde... Merge branch 'master' of https://github.com/FastmapSDK/DataService
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 

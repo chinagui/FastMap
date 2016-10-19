@@ -13,6 +13,7 @@ import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.exception.LockException;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -50,6 +51,7 @@ public abstract class AbstractJob implements Runnable {
 	@Override
 	public void run() {
 		try{
+			jobInfo.setBeginTime(new Date());
 			initLogger();
 			jobInfo.setResponse(new JSONObject());
 			volidateRequest();
@@ -134,6 +136,7 @@ public abstract class AbstractJob implements Runnable {
 		if(parent==null){//独立job
 			try{
 				log.debug("job主体执行完成，发送end_job消息(status:"+status+",resultMsg:"+resultMsg+")");
+				long durationSeconds = (jobInfo.getEndTime().getTime()-jobInfo.getBeginTime().getTime())/60000;
 				JobMsgPublisher.endJob(jobInfo.getUserId(),jobInfo.getId(), status,resultMsg,jobInfo.getResponse());
 			}catch(Exception e){
 				log.warn("******注意：job执行主体已经完毕，发送end_job消息过程出现错误。该错误已忽略，需手工对应。******");

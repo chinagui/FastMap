@@ -242,17 +242,15 @@ public class Operation implements IOperation {
 
         RdLinkSelector linkSelector = new RdLinkSelector(conn);
         for (Integer pid : newNodePids) {
-            RdTrafficsignal t = new RdTrafficsignal();
-            t.setPid(PidUtil.getInstance().applyRdTrafficsignalPid());
-            t.setNodePid(pid);
-            List<RdLink> links = linkSelector.loadByNodePid(pid, true);
+            List<RdLink> links = linkSelector.loadInLinkByNodePid(pid, 50, true);
             for (RdLink link : links) {
-                if (link.geteNodePid() == pid) {
-                    t.setLinkPid(link.pid());
-                }
+                RdTrafficsignal t = new RdTrafficsignal();
+                t.setPid(PidUtil.getInstance().applyRdTrafficsignalPid());
+                t.setNodePid(pid);
+                t.setLinkPid(link.pid());
+                t.setFlag(1);
+                result.insertObject(t, ObjStatus.INSERT, t.pid());
             }
-            t.setFlag(1);
-            result.insertObject(t, ObjStatus.INSERT, t.pid());
         }
     }
 }

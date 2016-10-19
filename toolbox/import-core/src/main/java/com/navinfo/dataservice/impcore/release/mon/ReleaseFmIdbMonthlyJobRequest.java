@@ -40,6 +40,11 @@ public class ReleaseFmIdbMonthlyJobRequest extends AbstractJobRequest {
 	public String getJobType() {
 		return "releaseFmIdbMonthlyJob";
 	}
+
+	@Override
+	public String getJobTypeName(){
+		return "月库提交";
+	}
 	@Override
 	public void defineSubJobRequests() throws JobCreateException {
 		// TODO Auto-generated method stub

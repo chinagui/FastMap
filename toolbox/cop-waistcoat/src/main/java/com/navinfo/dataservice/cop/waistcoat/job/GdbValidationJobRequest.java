@@ -31,6 +31,11 @@ public class GdbValidationJobRequest extends AbstractJobRequest {
 	}
 
 	@Override
+	public String getJobTypeName(){
+		return "检查";
+	}
+
+	@Override
 	public void validate() throws JobException {
 		if(valDbId<1&&(this.getSubJobRequest("createValDb")==null||this.getSubJobRequest("expValDb")==null)){
 			throw new JobException("检查的子版本库未指定，且未指定新创建方式。");

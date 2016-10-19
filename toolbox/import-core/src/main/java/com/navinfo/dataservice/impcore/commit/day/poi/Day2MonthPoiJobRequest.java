@@ -20,6 +20,10 @@ public class Day2MonthPoiJobRequest extends AbstractJobRequest {
 		return "day2MonthPoiJob";
 	}
 	@Override
+	public String getJobTypeName(){
+		return "POI日落月";
+	}
+	@Override
 	public void defineSubJobRequests() throws JobCreateException {
 		
 	}

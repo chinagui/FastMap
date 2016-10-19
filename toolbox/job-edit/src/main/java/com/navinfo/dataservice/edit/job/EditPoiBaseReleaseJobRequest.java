@@ -23,6 +23,10 @@ public class EditPoiBaseReleaseJobRequest extends AbstractJobRequest {
 	public String getJobType() {
 		return "editPoiBaseRelease";
 	}
+	@Override
+	public String getJobTypeName(){
+		return "POI行编提交";
+	}
 
 	@Override
 	public void validate() throws JobException {

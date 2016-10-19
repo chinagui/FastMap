@@ -37,6 +37,7 @@ import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiName;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiParent;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiPhoto;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
+import com.navinfo.dataservice.engine.edit.service.EditApiImpl;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.DBUtils;
 import com.navinfo.navicommons.geo.computation.CompGridUtil;
@@ -278,7 +279,7 @@ public class UploadOperation {
 
 							// 鲜度验证，POI状态更新
 							String rawFields = jo.getString("rawFields");
-							upatePoiStatusForAndroid(conn, poiObj.getString("rowId"), 0, rawFields);
+							upatePoiStatusForAndroid(conn, poiObj.getString("rowId"), 0, rawFields,1);
 						} else if (flag == 0) {
 							errList.add(perRetObj.getJSONObject("ret"));
 						}
@@ -314,6 +315,7 @@ public class UploadOperation {
 			for (Iterator<String> iter = updateObj.keySet().iterator(); iter.hasNext();) {
 				String dbId = iter.next();
 				Connection conn = DBConnector.getInstance().getConnectionById(Integer.parseInt(dbId));
+				EditApiImpl editApiImpl = new EditApiImpl(conn);
 				try {
 					List<JSONObject> poiList = (List<JSONObject>) updateObj.get(dbId);
 					JSONObject relateParentChildren = new JSONObject();
@@ -340,9 +342,10 @@ public class UploadOperation {
 							boolean freshFlag = perRetObj.getBoolean("freshFlag");
 							String rawFields = jo.getString("rawFields");
 							if (freshFlag) {
-								upatePoiStatusForAndroid(conn, poiJson.getString("rowId"), 1, rawFields);
+								upatePoiStatusForAndroid(conn, poiJson.getString("rowId"), 1, rawFields,2);
 							} else {
-								upatePoiStatusForAndroid(conn, poiJson.getString("rowId"), 0, rawFields);
+								upatePoiStatusForAndroid(conn, poiJson.getString("rowId"), 0, rawFields,1);
+					            editApiImpl.updatePoifreshVerified(poiJson.getInt("pid"));
 							}
 						} else if (flag == 0) {
 							errList.add(perRetObj.getJSONObject("ret"));
@@ -398,7 +401,7 @@ public class UploadOperation {
 							String rawFields = jo.getString("rawFields");
 							IxPoiSelector ixPoiSelector = new IxPoiSelector(conn);
 							JSONObject poiRowId = ixPoiSelector.getRowIdById(pid);
-							upatePoiStatusForAndroid(conn, poiRowId.getString("rowId"), 0, rawFields);
+							upatePoiStatusForAndroid(conn, poiRowId.getString("rowId"), 0, rawFields,1);
 						} catch (Exception e) {
 							JSONObject errObj = new JSONObject();
 							errObj.put("fid", fid);
@@ -1555,10 +1558,10 @@ public class UploadOperation {
 	 * @param row
 	 * @throws Exception
 	 */
-	public void upatePoiStatusForAndroid(Connection conn, String rowId, int freshFlag, String rawFields)
+	public void upatePoiStatusForAndroid(Connection conn, String rowId, int freshFlag, String rawFields,int status)
 			throws Exception {
 		StringBuilder sb = new StringBuilder(" MERGE INTO poi_edit_status T1 ");
-		sb.append(" USING (SELECT '" + rowId + "' as a, 1 as b," + freshFlag + " as c,'" + rawFields
+		sb.append(" USING (SELECT '" + rowId + "' as a, status as b," + freshFlag + " as c,'" + rawFields
 				+ "' as d," + "sysdate as e" + "  FROM dual) T2 ");
 		sb.append(" ON ( T1.row_id=T2.a) ");
 		sb.append(" WHEN MATCHED THEN ");

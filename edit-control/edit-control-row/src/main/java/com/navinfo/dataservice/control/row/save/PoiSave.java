@@ -12,6 +12,8 @@ import com.navinfo.dataservice.dao.glm.model.poi.index.IxSamepoiPart;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiParentSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxSamepoiPartSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxSamepoiSelector;
+import com.navinfo.dataservice.dao.log.LogReader;
+
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
@@ -195,5 +197,26 @@ public class PoiSave {
         }
 
     }
+public void updatePoifreshVerified(int pid,Connection conn) throws Exception {
+		LogReader lr=new LogReader(conn);
+		int freshVerified=0;
+		if(!lr.isExistObjHis(pid) || lr.isOnlyPhotoAndMetoHis(pid)){
+			freshVerified=1;
+		}
+		String sql="UPDATE poi_edit_status T1 SET T1.fresh_verified = :1 where T1.row_id =(SELECT row_id as a FROM ix_poi where pid = " + pid + ")";
+		
+		PreparedStatement pstmt = null;
+		try {
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, freshVerified);
+			pstmt.executeUpdate();
+		} catch (Exception e) {
+			throw e;
+
+		} finally {
+			DBUtils.closeStatement(pstmt);
+		}
+	}
+
 
 }

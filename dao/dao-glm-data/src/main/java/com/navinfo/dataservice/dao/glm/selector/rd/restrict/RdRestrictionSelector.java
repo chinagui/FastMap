@@ -88,8 +88,6 @@ public class RdRestrictionSelector extends AbstractSelector {
 						
 						if(!hasSelectedOutLinkPid.contains(detail.getOutLinkPid()))
 						{
-							hasSelectedOutLinkPid.add(detail.getOutLinkPid());
-							
 							if(tmpRes.contains("["))
 							{
 								int resInfo = Integer.parseInt(tmpRes.substring(1, 2));
@@ -97,6 +95,7 @@ public class RdRestrictionSelector extends AbstractSelector {
 								if(detail.getFlag() != 1 && detail.getRestricInfo() == resInfo)
 								{
 									details.add(detail);
+									hasSelectedOutLinkPid.add(detail.getOutLinkPid());
 									break;
 								}
 							}
@@ -107,6 +106,7 @@ public class RdRestrictionSelector extends AbstractSelector {
 								if(detail.getFlag() == 1 && detail.getRestricInfo() == resInfo)
 								{
 									details.add(detail);
+									hasSelectedOutLinkPid.add(detail.getOutLinkPid());
 									break;
 								}
 							}
@@ -128,6 +128,7 @@ public class RdRestrictionSelector extends AbstractSelector {
 								condition);
 					}
 				}
+				restrict.setDetails(details);
 			} else {
 
 				throw new DataNotFoundException("数据不存在");

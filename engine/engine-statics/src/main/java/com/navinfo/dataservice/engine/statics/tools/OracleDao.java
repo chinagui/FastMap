@@ -11,9 +11,12 @@ import java.util.Map;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 
+import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.BlockMan;
+import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.TimestampUtils;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
@@ -212,6 +215,67 @@ public class OracleDao {
 						man.setMonthProducePlanEndDate(rs.getTimestamp("MONTH_PRODUCE_PLAN_END_DATE"));
 
 						list.add(man);
+						
+					}
+					return list;
+				}
+			});
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			throw new ServiceException("创建失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * 根据 subtask_id 表返回 hashmap： key（subtask_id）=value（grid_id list）
+	 */
+	public static List<Subtask> getSubtaskList() throws ServiceException {
+		Connection conn = null;
+		try {
+			QueryRunner run = new QueryRunner();
+
+			conn = DBConnector.getInstance().getManConnection();
+			//目前只统计采集（POI，道路，一体化）日编（POI,一体化GRID粗编）子任务
+			//如果FM_STAT_OVERVIEW_SUBTASK中该子任务记录为已完成，则不再统计
+			String sql = "SELECT DISTINCT S.SUBTASK_ID, S.STAGE,S.TYPE,S.STATUS,S.PLAN_START_DATE,S.PLAN_END_DATE,S.BLOCK_MAN_ID"
+					+ " FROM SUBTASK S, FM_STAT_OVERVIEW_SUBTASK FSOS"
+					+ " WHERE S.STAGE IN (0, 1)"
+					+ " AND S.TYPE IN (0, 1, 2, 3)"
+					+ " AND NOT EXISTS (SELECT 1"
+					+ " FROM FM_STAT_OVERVIEW_SUBTASK FSOS"
+					+ " WHERE S.SUBTASK_ID = FSOS.SUBTASK_ID"
+					+ " AND FSOS.STATUS <> 0)"
+					+ " ORDER BY SUBTASK_ID";
+			
+			return run.query(conn, sql, new ResultSetHandler<List<Subtask>>() {
+
+				@Override
+				public List<Subtask> handle(ResultSet rs) throws SQLException {
+					List<Subtask> list = new ArrayList<Subtask>();
+					ManApi api=(ManApi) ApplicationContextUtil.getBean("manApi");
+					while (rs.next()) {
+						Subtask subtask = new Subtask();
+
+						subtask.setSubtaskId(rs.getInt("SUBTASK_ID"));
+						subtask.setStage(rs.getInt("STAGE"));
+						subtask.setType(rs.getInt("TYPE"));
+						subtask.setStatus(rs.getInt("STATUS"));
+						subtask.setPlanStartDate(rs.getTimestamp("PLAN_START_DATE"));
+						subtask.setPlanEndDate(rs.getTimestamp("PLAN_END_DATE"));
+						subtask.setBlockManId(rs.getInt("BLOCK_MAN_ID"));
+						
+//						List<Integer> gridIds = null;
+//						try {
+//							gridIds = api.getGridIdsBySubtaskId(rs.getInt("SUBTASK_ID"));
+//						} catch (Exception e) {
+//							// TODO Auto-generated catch block
+//							e.printStackTrace();
+//						}
+//						subtask.setGridIds(gridIds);
+						
+						list.add(subtask);
 						
 					}
 					return list;

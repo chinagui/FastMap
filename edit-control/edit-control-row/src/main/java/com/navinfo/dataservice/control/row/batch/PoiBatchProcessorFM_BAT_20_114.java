@@ -7,12 +7,14 @@ import java.util.List;
 
 import org.apache.commons.dbutils.DbUtils;
 
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.control.row.batch.util.IBatch;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiGasstation;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.engine.edit.service.EditApiImpl;
+import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -40,8 +42,17 @@ public class PoiBatchProcessorFM_BAT_20_114 implements IBatch {
 			
 			String adminId = "";
 			String regionId = String.valueOf(poi.getRegionId());
-			String sql = "SELECT admin_id FROM ad_admin WHERE region_id=" + regionId;
-			pstmt = conn.prepareStatement(sql);
+			StringBuilder sql = new StringBuilder();
+			sql.append("SELECT A.admin_id");
+			sql.append(" FROM AD_ADMIN A, AD_FACE F");
+			sql.append(" WHERE F.REGION_ID = A.REGION_ID");
+			sql.append(" AND sdo_Geom.Relate(F.GEOMETRY,'Anyinteract',sdo_geometry(2001,8307,:1,null,null),0.005) = 'TRUE'");
+			sql.append(" and rownum=1");
+			Geometry geometry = poi.getGeometry();
+			String wkt = GeoTranslator.jts2Wkt(geometry);
+			
+			pstmt = conn.prepareStatement(sql.toString());
+			pstmt.setString(1, wkt);
 			resultSet = pstmt.executeQuery();
 			if (resultSet.next()) {
 				adminId = resultSet.getString("admin_id");

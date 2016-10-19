@@ -968,7 +968,7 @@ public class UploadOperation {
 					poiJson.put("names", nameList);
 					// 鲜度验证
 					freshFlag = false;
-				} else if (!oldNameStr.equals(poiJson.getString("oldName"))) {
+				} else if (!oldNameStr.equals(poiJson.getString("oldName")) && !StringUtils.isEmpty(poiJson.getString("oldName"))) {
 					JSONArray nameList = new JSONArray();
 					JSONObject poiName = new JSONObject();
 					poiName.put("objStatus", ObjStatus.UPDATE.toString());
@@ -979,6 +979,17 @@ public class UploadOperation {
 					poiName.put("nameClass", oldNameObjChi.getNameClass());
 					poiName.put("nameType", oldNameObjChi.getNameType());
 					poiName.put("name", poiJson.getString("oldName"));
+					poiName.put("rowId", oldNameObjChi.getRowId());
+					nameList.add(poiName);
+					poiJson.put("names", nameList);
+					// 鲜度验证
+					freshFlag = false;
+				} else if (StringUtils.isEmpty(poiJson.getString("oldName")) && !StringUtils.isEmpty(oldNameStr)) {
+					JSONArray nameList = new JSONArray();
+					JSONObject poiName = new JSONObject();
+					poiName.put("objStatus", ObjStatus.DELETE.toString());
+					poiName.put("pid", oldNameObjChi.getPid());
+					poiName.put("poiPid", oldNameObjChi.getPoiPid());
 					poiName.put("rowId", oldNameObjChi.getRowId());
 					nameList.add(poiName);
 					poiJson.put("names", nameList);
@@ -1015,7 +1026,7 @@ public class UploadOperation {
 					poiJson.put("addresses", addressList);
 					// 鲜度验证
 					freshFlag = false;
-				} else if (!oldAddressStr.equals(poiJson.getString("oldAddress"))) {
+				} else if (!oldAddressStr.equals(poiJson.getString("oldAddress")) && !StringUtils.isEmpty(poiJson.getString("oldAddress"))) {
 					JSONArray addressList = new JSONArray();
 					JSONObject poiAddress = new JSONObject();
 					poiAddress.put("objStatus", ObjStatus.UPDATE.toString());
@@ -1024,6 +1035,17 @@ public class UploadOperation {
 					poiAddress.put("nameGroupid", oldAddressObjChi.getNameGroupid());
 					poiAddress.put("langCode", oldAddressObjChi.getLangCode());
 					poiAddress.put("fullname", poiJson.getString("oldAddress"));
+					poiAddress.put("rowId", oldAddressObjChi.getRowId());
+					addressList.add(poiAddress);
+					poiJson.put("addresses", addressList);
+					// 鲜度验证
+					freshFlag = false;
+				} else if (StringUtils.isEmpty(poiJson.getString("oldAddress")) && !StringUtils.isEmpty(oldAddressStr)) {
+					JSONArray addressList = new JSONArray();
+					JSONObject poiAddress = new JSONObject();
+					poiAddress.put("objStatus", ObjStatus.DELETE.toString());
+					poiAddress.put("pid", oldAddressObjChi.getPid());
+					poiAddress.put("poiPid", oldAddressObjChi.getPoiPid());
 					poiAddress.put("rowId", oldAddressObjChi.getRowId());
 					addressList.add(poiAddress);
 					poiJson.put("addresses", addressList);

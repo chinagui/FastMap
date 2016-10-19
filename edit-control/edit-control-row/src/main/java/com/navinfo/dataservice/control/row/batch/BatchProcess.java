@@ -48,8 +48,7 @@ public class BatchProcess {
 			if (result.size()>0) {
 				result.put("pid", poi.getPid());
 				result.put("rowId", poi.getRowId());
-				poi.fillChangeFields(result);
-				poiObj.put("poi", poi.Serialize(null));
+				poiObj.put("change", result);
 				poiObj.put("pid", poi.getPid());
 				poiObj.put("type", "IXPOI");
 				poiObj.put("command", "BATCH");

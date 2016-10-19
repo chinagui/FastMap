@@ -184,6 +184,11 @@ public class GdbExportJobRequest extends AbstractJobRequest {
 	}
 
 	@Override
+	public String getJobTypeName(){
+		return "GDB导出";
+	}
+
+	@Override
 	public void defineSubJobRequests() throws JobCreateException {
 		
 	}

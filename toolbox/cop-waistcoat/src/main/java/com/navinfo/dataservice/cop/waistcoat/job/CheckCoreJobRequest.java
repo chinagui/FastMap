@@ -33,6 +33,11 @@ public class CheckCoreJobRequest extends AbstractJobRequest {
     public String getJobType() {
 		return "checkCore";
 	}
+	
+	@Override
+	public String getJobTypeName(){
+		return "检查（核心）";
+	}
 
     @Override
     public void validate() throws JobException {

@@ -69,9 +69,5 @@
 	 	request="com.navinfo.dataservice.column.job.ColumnSubmitJobRequest"
 	/>
 	
-	<type name="niRobot" 
-		class="com.navinfo.nirobot.robot.RobotJob"
-	 	request="com.navinfo.nirobot.robot.RobotJobRequest"
-	/>
 	
 </mapping>

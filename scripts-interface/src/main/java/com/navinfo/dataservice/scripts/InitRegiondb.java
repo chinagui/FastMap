@@ -205,8 +205,8 @@ public class InitRegiondb {
 			packageExec.execute(pckFile);
 			String pckFile2 = "/com/navinfo/dataservice/scripts/resources/create_type_function.sql";
 			packageExec.execute(pckFile2);
-			String pyutils = "/com/navinfo/dataservice/scripts/resources/pyutils.pck";
-			packageExec.execute(pyutils);
+//			String pyutils = "/com/navinfo/dataservice/scripts/resources/pyutils.pck";
+//			packageExec.execute(pyutils,"UTF-8");
 			conn.commit();
 		}finally{
 			DbUtils.closeQuietly(conn);
@@ -269,6 +269,10 @@ public class InitRegiondb {
 	}
 	
 	public static void main(String[] args){
+//		testExeSqlOrPck();
+		testInstallPcks();
+	}
+	private static void testExeSqlOrPck(){
 		Connection conn = null;
 		try{
 			JobScriptsInterface.initContext();
@@ -282,13 +286,22 @@ public class InitRegiondb {
 
 			String sqlFile = "/com/navinfo/dataservice/scripts/resources/prj_utils.pck";
 //			sqlExec.executeIgnoreError(sqlFile);
-			packageExec.execute(sqlFile);
+			packageExec.execute(sqlFile,"UTF-8");
 			conn.commit();
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			e.printStackTrace();
 		}finally{
 			DbUtils.closeQuietly(conn);
+		}
+	}
+	
+	
+	private static void testInstallPcks(){
+		try{
+			installPckUtils(500);
+		}catch(Exception e){
+			e.printStackTrace();
 		}
 	}
 

@@ -21,6 +21,11 @@ public class BorrowDataJobRequest extends AbstractJobRequest {
 	public String getJobType() {
 		return "borrowData";
 	}
+	
+	@Override
+	public String getJobTypeName(){
+		return "借图幅";
+	}
 
 	@Override
 	public void validate() throws JobException {

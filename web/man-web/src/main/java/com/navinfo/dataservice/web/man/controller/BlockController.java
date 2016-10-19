@@ -188,6 +188,29 @@ public class BlockController extends BaseController {
 			return new ModelAndView("jsonView", exception(e));
 		}
 	}
+	
+	/**
+	 * 查询Block详细信息
+	 * 
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/block/wktByBlockId")
+	public ModelAndView queryWktByBlockId(HttpServletRequest request) {
+		try {
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if(dataJson==null){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			
+			int blockId = dataJson.getInt("blockId");
+			HashMap<String,String> data = service.queryWktByBlockId(blockId);
+			return new ModelAndView("jsonView", success(data));
+		} catch (Exception e) {
+			log.error("获取明细失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
 
 
 	/**

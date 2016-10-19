@@ -96,9 +96,9 @@ public class EditApiImpl implements EditApi {
 	public void updatePoifreshVerified(int pid) throws Exception {
 			LogReader lr=new LogReader(conn);
 			int freshVerified=0;
-			if(!lr.isExistObjHis(pid) || lr.isOnlyPhotoAndMetoHis(pid)){
-				freshVerified=1;
-			}
+//			if(!lr.isExistObjHis(pid) || lr.isOnlyPhotoAndMetoHis(pid)){
+//				freshVerified=1;
+//			}
 			String sql="UPDATE poi_edit_status T1 SET T1.fresh_verified = :1 where T1.row_id =(SELECT row_id as a FROM ix_poi where pid = " + pid + ")";
 			
 			PreparedStatement pstmt = null;

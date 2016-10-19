@@ -44,7 +44,7 @@ public class OverviewSubtaskStat {
 	 * 
 	 */
 	private static Logger log = null;
-	public static final String col_name_subtask = "fm_stat_collect_poi_grid";
+	public static final String col_name_subtask = "fm_stat_overview_subtask";
 	private String db_name;
 	private static String stat_date;
 	private static String stat_time;
@@ -109,16 +109,22 @@ public class OverviewSubtaskStat {
 		stat.put("planDate", StatUtil.daysOfTwo(subtask.getPlanStartDate(), subtask.getPlanEndDate()));
 		stat.put("actualStartDate", df.format(subtask.getPlanStartDate()));
 		stat.put("actualEndDate", df.format(subtask.getPlanEndDate()));
-		stat.put("diffDate", StatUtil.daysOfTwo(subtask.getPlanStartDate(), df.parse(stat_date)));
+		stat.put("diffDate", StatUtil.daysOfTwo(df.parse(stat_date),subtask.getPlanStartDate()));
 		stat.put("statDate", stat_date);
 		stat.put("statTime", stat_time);
 
 		
 		List<Integer> gridIds = subtask.getGridIds();
 		List<String> gridIdList = new ArrayList<String>();
+		//grid进度详情
+		Map<Integer,Integer> gridPercentDetailPOI = new HashMap<Integer,Integer>();
+		Map<Integer,Integer> gridPercentDetailROAD = new HashMap<Integer,Integer>();
+		
 		for(int i = 0;i<gridIds.size();i++){
 			String s = String.valueOf(gridIds.get(i));
 			gridIdList.add(i, s);
+			gridPercentDetailPOI.put(gridIds.get(i), 0);
+			gridPercentDetailROAD.put(gridIds.get(i), 0);
 		}
 		
 		int type = subtask.getType();
@@ -127,11 +133,7 @@ public class OverviewSubtaskStat {
 		int finishPOI = 0;
 		int totalROAD = 0;
 		int finishROAD = 0;
-		
-		Map<Integer,Integer> gridPercentDetailPOI = new HashMap<Integer,Integer>();
-		Map<Integer,Integer> gridPercentDetailROAD = new HashMap<Integer,Integer>();
-		
-		
+
 		MongoDao md = new MongoDao(StatMain.db_name);
 
 		int total = gridIdList.size();
@@ -183,10 +185,11 @@ public class OverviewSubtaskStat {
 				break;
 			}
 		}
-		
+		//详细信息
 		Map<String,Integer> detailsPOI = new HashMap<String,Integer>();
 		Map<String,Integer> detailsROAD = new HashMap<String,Integer>();
 		Map<String,Map<String,Integer>> details = new HashMap<String,Map<String,Integer>>();
+		
 		detailsPOI.put("total", totalPOI);
 		detailsPOI.put("finish", finishPOI);
 		if(totalPOI > 0){
@@ -206,7 +209,7 @@ public class OverviewSubtaskStat {
 		details.put("poi", detailsPOI);
 		details.put("road", detailsROAD);
 		
-		
+		//grid进度详情
 		if(type == 0){
 			//POI
 			stat.put("gridPercentDetail", gridPercentDetailPOI);
@@ -216,15 +219,35 @@ public class OverviewSubtaskStat {
 			stat.put("gridPercentDetail", gridPercentDetailROAD);
 			stat.put("percent", detailsROAD.get("percent"));
 		}else{
-			stat.put("gridPercentDetail", gridPercentDetailROAD);
+			//一体化
+			Map<Integer,Integer> gridPercentDetail = new HashMap<Integer,Integer>();
+			for(Map.Entry<Integer, Integer> entry : gridPercentDetailPOI.entrySet()){
+				int gridId = entry.getKey();
+				int percent = (int) (gridPercentDetailPOI.get(gridId)*0.5 + gridPercentDetailROAD.get(gridId)*0.5);
+				gridPercentDetail.put(gridId, percent);
+			}
+			stat.put("gridPercentDetail", gridPercentDetail);
 			stat.put("percent", detailsPOI.get("percent")*0.5 + detailsROAD.get("percent")*0.5);
 		}
 		
-		int percentSchecul = 100 - (int)stat.get("diffDate")*100/(int)stat.get("planDate");
-		if((int)stat.get("percent") >= percentSchecul){
-			stat.put("progress", 1);
-		}else{
+		if((int)stat.get("diffDate") < 0){
 			stat.put("progress", 2);
+		}else{
+			if((int)stat.get("planDate") == 0){
+				if((int)stat.get("percent") == 100){
+					stat.put("progress", 1);
+				}else{
+					stat.put("progress", 2);
+				}
+			}else{
+				int percentSchedule = 100 - (int)stat.get("diffDate")*100/(int)stat.get("planDate");
+				if((int)stat.get("percent") >= percentSchedule){
+					stat.put("progress", 1);
+				}else{
+					stat.put("progress", 2);
+				}
+			}
+
 		}
 		
 		return stat;

@@ -1,12 +1,15 @@
 package com.navinfo.dataservice.engine.edit.service;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 
 import org.springframework.stereotype.Service;
 
 import com.navinfo.dataservice.api.edit.iface.EditApi;
 import com.navinfo.dataservice.bizcommons.service.PidService;
+import com.navinfo.dataservice.dao.log.LogReader;
 import com.navinfo.dataservice.engine.edit.operation.Transaction;
+import com.navinfo.navicommons.database.sql.DBUtils;
 
 import net.sf.json.JSONObject;
 
@@ -84,6 +87,32 @@ public class EditApiImpl implements EditApi {
 		return json;
 	}
 
+	/**
+	 * 修改的数据，若没有履历或者只有照片和备注的履历，则为鲜度验证
+	 * @param pid
+	 * @param conn
+	 * @throws Exception
+	 */
+	public void updatePoifreshVerified(int pid) throws Exception {
+			LogReader lr=new LogReader(conn);
+			int freshVerified=0;
+			if(!lr.isExistObjHis(pid) || lr.isOnlyPhotoAndMetoHis(pid)){
+				freshVerified=1;
+			}
+			String sql="UPDATE poi_edit_status T1 SET T1.fresh_verified = :1 where T1.row_id =(SELECT row_id as a FROM ix_poi where pid = " + pid + ")";
+			
+			PreparedStatement pstmt = null;
+			try {
+				pstmt = conn.prepareStatement(sql);
+				pstmt.setInt(1, freshVerified);
+				pstmt.executeUpdate();
+			} catch (Exception e) {
+				throw e;
+
+			} finally {
+				DBUtils.closeStatement(pstmt);
+			}
+		}
 
 	@Override
 	public long applyPid(String tableName, int count) throws Exception {

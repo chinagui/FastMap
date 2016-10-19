@@ -96,7 +96,9 @@ public class RdCrossSearch implements ISearch {
 				for (int i = 1; i < splits.length; i++) {
 					b += "," + splits[i];
 				}
-
+				
+				jsonM.put("b", b);
+				
 				String nodePids = resultSet.getString("node_pids");
 
 				String a = "";
@@ -105,14 +107,12 @@ public class RdCrossSearch implements ISearch {
 
 				a += splits[0];
 
-				for (int i = 0; i < splits.length; i++) {
+				for (int i = 1; i < splits.length; i++) {
 					a += "," + splits[i];
 				}
 
 				jsonM.put("a", a);
 				
-				jsonM.put("b", b);
-
 				String wktPoints = resultSet.getString("wkts");
 
 				JSONArray gArray = new JSONArray();

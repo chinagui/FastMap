@@ -572,7 +572,7 @@ public class RdLinkSelector extends AbstractSelector {
 	public List<RdLink> loadInLinkByNodePid(int nodePid, int form, boolean isLock) throws Exception {
 		List<RdLink> list = new ArrayList<RdLink>();
 
-		String sql = "SELECT a.* FROM rd_link a  WHERE a.u_record !=2 and a.link_pid not in(select link_pid from rd_link_form b where a.link_pid = b.link_pid and b.FORM_OF_WAY = :1) and((a.s_node_pid = :2 AND a.direct = 3) OR (a.e_node_pid = :3 AND a.direct = 2) OR (a.direct = 1 AND (a.s_node_pid =:4 OR a.e_node_pid = :5)))";
+		String sql = "SELECT a.* FROM rd_link a  WHERE a.u_record !=2 and a.link_pid not in(select link_pid from rd_link_form b where a.link_pid = b.link_pid and b.FORM_OF_WAY = :1 and b.u_record !=2) and((a.s_node_pid = :2 AND a.direct = 3) OR (a.e_node_pid = :3 AND a.direct = 2) OR (a.direct = 1 AND (a.s_node_pid =:4 OR a.e_node_pid = :5)))";
 
 		PreparedStatement pstmt = null;
 

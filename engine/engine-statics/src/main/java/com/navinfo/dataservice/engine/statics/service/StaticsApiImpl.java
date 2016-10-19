@@ -86,10 +86,5 @@ public class StaticsApiImpl implements StaticsApi {
 		// TODO Auto-generated method stub
 		return StaticsService.getInstance().getStatBySubtaskIdList(subtaskIdList);
 	}
-	
-	@Override
-	public int getObjectState(int objPid, String objTable, Connection conn) throws Exception {
-		return StaticsService.getInstance().getObjectState(objPid, objTable, conn);
-	}
 
 }

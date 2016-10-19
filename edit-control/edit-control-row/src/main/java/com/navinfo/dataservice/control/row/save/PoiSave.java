@@ -10,6 +10,7 @@ import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.control.row.batch.BatchProcess;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
+import com.navinfo.dataservice.dao.log.LogReader;
 import com.navinfo.dataservice.engine.edit.service.EditApiImpl;
 import com.navinfo.navicommons.database.sql.DBUtils;
 
@@ -83,6 +84,10 @@ public class PoiSave {
 
 			upatePoiStatus(buf.toString(), conn, true);
 			
+			if (operType == OperType.UPDATE){
+				updatePoifreshVerified(pid,conn);
+			}
+			
 			return result;
 		} catch (DataNotChangeException e) {
 			DbUtils.rollback(conn);
@@ -131,6 +136,27 @@ public class PoiSave {
 			DBUtils.closeStatement(pstmt);
 		}
 
+	}
+	
+	public void updatePoifreshVerified(int pid,Connection conn) throws Exception {
+		LogReader lr=new LogReader(conn);
+		int freshVerified=0;
+		if(!lr.isExistObjHis(pid) || lr.isOnlyPhotoAndMetoHis(pid)){
+			freshVerified=1;
+		}
+		String sql="UPDATE poi_edit_status T1 SET T1.fresh_verified = :1 where T1.row_id =(SELECT row_id as a FROM ix_poi where pid = " + pid + ")";
+		
+		PreparedStatement pstmt = null;
+		try {
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, freshVerified);
+			pstmt.executeUpdate();
+		} catch (Exception e) {
+			throw e;
+
+		} finally {
+			DBUtils.closeStatement(pstmt);
+		}
 	}
 
 }

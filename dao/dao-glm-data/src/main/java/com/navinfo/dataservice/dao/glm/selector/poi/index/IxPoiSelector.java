@@ -8,13 +8,14 @@ import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 
-import com.navinfo.dataservice.api.statics.iface.StaticsApi;
+
 import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
+import com.navinfo.dataservice.dao.log.LogReader;
 import com.navinfo.navicommons.database.sql.DBUtils;
 import com.navinfo.navicommons.geo.computation.GridUtils;
 
@@ -381,10 +382,9 @@ public class IxPoiSelector extends AbstractSelector {
 		
 		poi.setRawFields(loadRawByRowId(poi.getRowId()));
 		
-		StaticsApi statics = (StaticsApi) ApplicationContextUtil
-				.getBean("staticsApi");
+		LogReader logRead=new LogReader(conn);
 		
-		poi.setState(statics.getObjectState(poi.pid(), "ix_poi", conn));
+		poi.setState(logRead.getObjectState(poi.pid(), "ix_poi"));
 
 		return poi;
 	}

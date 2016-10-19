@@ -238,7 +238,10 @@ public class Operation implements IOperation {
             trafficsignals = selector.loadByNodeId(true, node.getNodePid());
             for (RdTrafficsignal t : trafficsignals)
                 result.insertObject(t, ObjStatus.DELETE, t.pid());
+
+            nodes.remove((Object) node.getNodePid());
         }
+        nodes.addAll(newNodePids);
 
         RdLinkSelector linkSelector = new RdLinkSelector(conn);
         for (Integer pid : newNodePids) {

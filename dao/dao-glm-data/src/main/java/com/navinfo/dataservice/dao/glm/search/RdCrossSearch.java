@@ -90,17 +90,8 @@ public class RdCrossSearch implements ISearch {
 				String[] splits = isMains.split(",");
 
 				String b = "";
-<<<<<<< HEAD
 
 				b += splits[0];
-
-				for (int i = 1; i < splits.length; i++) {
-					b += "," + splits[i];
-				}
-=======
-
-				b += splits[0];
->>>>>>> parent of 105ecde... Merge branch 'master' of https://github.com/FastmapSDK/DataService
 
 				for (int i = 1; i < splits.length; i++) {
 					b += "," + splits[i];
@@ -116,21 +107,12 @@ public class RdCrossSearch implements ISearch {
 
 				a += splits[0];
 
-<<<<<<< HEAD
-				for (int i = 0; i < splits.length; i++) {
-=======
 				for (int i = 1; i < splits.length; i++) {
->>>>>>> parent of 105ecde... Merge branch 'master' of https://github.com/FastmapSDK/DataService
 					a += "," + splits[i];
 				}
 
 				jsonM.put("a", a);
 				
-<<<<<<< HEAD
-				jsonM.put("b", b);
-
-=======
->>>>>>> parent of 105ecde... Merge branch 'master' of https://github.com/FastmapSDK/DataService
 				String wktPoints = resultSet.getString("wkts");
 
 				JSONArray gArray = new JSONArray();

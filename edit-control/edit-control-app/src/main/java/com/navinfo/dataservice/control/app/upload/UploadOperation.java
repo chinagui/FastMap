@@ -1739,12 +1739,12 @@ public class UploadOperation {
 						pstmtChildren.setInt(4, 1);
 						pstmtChildren.setString(5, StringUtils.getCurrentTime());
 						pstmtChildren.setString(6, child.getString("rowId"));
-						pstmtChildren.executeUpdate();
+						pstmtParent.executeUpdate();
 					} else if (objStatus.equals("DELETE")) {
-						String sql = "UPDATE ix_poi_children SET u_record=2 WHERE row_id=:1";
+						String sql = "UPDATE ix_poi_children SET (u_record=2) WHERE row_id=:1";
 						pstmtChildren = conn.prepareStatement(sql);
 						pstmtChildren.setString(1, child.getString("rowId"));
-						pstmtChildren.executeUpdate();
+						pstmtParent.executeUpdate();
 					}
 				}
 				

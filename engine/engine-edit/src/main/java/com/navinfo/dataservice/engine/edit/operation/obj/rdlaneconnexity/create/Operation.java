@@ -82,16 +82,7 @@ public class Operation implements IOperation {
 
 		Map<Integer, Set<Integer>> busdirs = new HashMap<Integer, Set<Integer>>();
 
-		//1:车道总数；2：左附加车道数；3：有附加车道数
-		int[] laneNunInfo = new int[3];
-
-		this.splitLaneInfo(command.getLaneInfo(), dirs, busdirs, laneNunInfo);
-		
-		lane.setLaneNum(laneNunInfo[0]);
-		
-		lane.setLeftExtend(laneNunInfo[1]);
-		
-		lane.setRightExtend(laneNunInfo[2]);
+		this.splitLaneInfo(command.getLaneInfo(), dirs, busdirs);
 
 		List<IRow> topos = new ArrayList<IRow>();
 
@@ -227,12 +218,8 @@ public class Operation implements IOperation {
 	 * @return
 	 */
 	private void splitLaneInfo(String laneInfo, List<Set<Integer>> dirs,
-			Map<Integer, Set<Integer>> busdirs, int[] laneNunInfo) {
+			Map<Integer, Set<Integer>> busdirs) {
 
-		int leftAddCount = 0;
-
-		int rightAddCount = 0;
-		
 		String[] splits = laneInfo.split(",");
 
 		for (int i = 0; i < splits.length; i++) {
@@ -240,20 +227,12 @@ public class Operation implements IOperation {
 			String split = splits[i];
 
 			if (split.startsWith("[")) {
-				
 				split = split.substring(1, split.length() - 1);
-				
-				if (i == 0) {
-					leftAddCount = 1;
-				} else {
-					rightAddCount = 1;
-				}
 			}
 
 			if (split.contains("<")) {
 
 				String first = split.substring(0, 1);
-				
 				String second = split.substring(2, 3);
 
 				Set<Integer> set = splitDir(first);
@@ -270,12 +249,7 @@ public class Operation implements IOperation {
 				dirs.add(set);
 			}
 		}
-		
-		laneNunInfo[0] = splits.length;
-		
-		laneNunInfo[1] = leftAddCount;
-		
-		laneNunInfo[2] = rightAddCount;
+
 	}
 
 	private Set<Integer> splitDir(String lane) {

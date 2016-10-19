@@ -175,7 +175,8 @@ public class PoiBatchProcessorFM_BAT_20_194_1 implements IBatch {
 				changeFields.put("gasstations", dataArray);
 				changeFields.put("pid", parentPoi.getPid());
 				changeFields.put("rowId", parentPoi.getRowId());
-				poiObj.put("change", changeFields);
+				parentPoi.fillChangeFields(changeFields);
+				poiObj.put("poi", parentPoi.Serialize(null));
 				poiObj.put("pid", parentPoi.getPid());
 				poiObj.put("type", "IXPOI");
 				poiObj.put("command", "BATCH");

@@ -37,6 +37,11 @@ public class SampleaJobRequest extends AbstractJobRequest{
 	}
 
 	@Override
+	public String getJobTypeName(){
+		return "示例A";
+	}
+
+	@Override
 	public void defineSubJobRequests() throws JobCreateException {
 		
 	}

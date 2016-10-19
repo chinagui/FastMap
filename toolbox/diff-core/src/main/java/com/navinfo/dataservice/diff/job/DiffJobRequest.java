@@ -41,6 +41,10 @@ public class DiffJobRequest extends AbstractJobRequest
 	public String getJobType() {
 		return "diff";
 	}
+	@Override
+	public String getJobTypeName(){
+		return "GDB差分";
+	}
 
 	@Override
 	public void validate() throws JobException {

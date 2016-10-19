@@ -45,6 +45,11 @@ public class ReleaseFmIdbDailyJobRequest extends AbstractJobRequest {
 	public String getJobType() {
 		return "releaseFmIdbDailyJob";
 	}
+
+	@Override
+	public String getJobTypeName(){
+		return "日出品提交";
+	}
 	@Override
 	public void defineSubJobRequests() throws JobCreateException {
 		// TODO Auto-generated method stub

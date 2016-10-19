@@ -144,4 +144,9 @@ public class GdbBatchJobRequest extends AbstractJobRequest {
 		return "gdbBatch";
 	}
 
+	@Override
+	public String getJobTypeName(){
+		return "批处理";
+	}
+
 }

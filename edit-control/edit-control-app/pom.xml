@@ -153,6 +153,10 @@
 		<artifactId>api-metadata</artifactId>
 	</dependency>
 	<dependency>
+		<groupId>com.navinfo.dataservice</groupId>
+		<artifactId>engine-edit</artifactId>
+	</dependency>
+	<dependency>
 		   <groupId>org.apache.zookeeper</groupId>
 		   <artifactId>zookeeper</artifactId>
 		   <type>pom</type>

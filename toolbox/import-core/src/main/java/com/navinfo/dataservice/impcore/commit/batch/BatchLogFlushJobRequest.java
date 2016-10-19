@@ -32,6 +32,11 @@ public class BatchLogFlushJobRequest extends AbstractJobRequest {
 		// TODO Auto-generated method stub
 		return null;
 	}
+	
+	@Override
+	public String getJobTypeName(){
+		return "履历刷库";
+	}
 
 	@Override
 	public void validate() throws JobException {

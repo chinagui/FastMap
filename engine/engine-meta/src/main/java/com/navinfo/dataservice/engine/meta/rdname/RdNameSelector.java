@@ -240,17 +240,15 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips,int dbId) throws
 			StringUtils sUtils = new StringUtils();
 			
 			StringBuilder sql = new StringBuilder();
+			sql.append("SELECT * ");
+			sql.append(" FROM (SELECT c.*, rownum rn");
+			sql.append(" FROM (select COUNT (1) OVER (PARTITION BY 1) total,a.* ");
+			sql.append(" from rd_name a where 1=1");
 			
 			String ids = "";
 			String tmep = "";
 			Clob pidClod = null;
 			if (tips.size()>0) {
-				
-				sql.append("SELECT * ");
-				sql.append(" FROM (SELECT c.*, rownum rn");
-				sql.append(" FROM (select COUNT (1) OVER (PARTITION BY 1) total,a.* ");
-				sql.append(" from rd_name a where 1=1");
-				
 				for (int i=0;i<tips.size();i++) {
 					JSONObject tipsObj = tips.getJSONObject(i);
 					ids += tmep;
@@ -266,10 +264,6 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips,int dbId) throws
 					sql.append(ids);
 					sql.append(")");
 				}
-			} else {
-				result.put("total", 0);
-				result.put("data", new JSONArray());
-				return result;
 			}
 			
 			// 添加过滤器条件

@@ -40,6 +40,7 @@ public abstract class AbstractJobRequest {
 	public abstract void defineSubJobRequests()throws JobCreateException;
 	
 	public abstract String getJobType();
+	public abstract String getJobTypeName();
 	
 	public int getStepCount()throws JobException{
 		int count = myStepCount()+1;

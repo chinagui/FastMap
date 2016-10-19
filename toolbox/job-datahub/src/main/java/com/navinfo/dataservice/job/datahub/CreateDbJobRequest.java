@@ -95,6 +95,10 @@ public class CreateDbJobRequest extends AbstractJobRequest {
 	public String getJobType() {
 		return "createDb";
 	}
+	@Override
+	public String getJobTypeName(){
+		return "创建库";
+	}
 
 	@Override
 	public void defineSubJobRequests() throws JobCreateException {

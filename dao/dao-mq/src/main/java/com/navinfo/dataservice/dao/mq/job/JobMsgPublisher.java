@@ -65,9 +65,11 @@ public class JobMsgPublisher {
 	 * 用于job Server 在执行完一个job时发送end_job消息
 	 * @param jobId
 	 * @param jobResponse
+	 * @param durationSeconds 
+	 * @param jobTypeName 
 	 * @throws Exception
 	 */
-	public static void endJob(long userId,long jobId,int status,String resultMsg,JSONObject jobResponse)throws Exception{
+	public static void endJob(long userId,long jobId,int status,String resultMsg,JSONObject jobResponse, String jobTypeName, long durationSeconds)throws Exception{
 		if(jobResponse==null){
 			throw new Exception("step不能为空");
 		}
@@ -77,6 +79,8 @@ public class JobMsgPublisher {
 		jobMsg.put("status", status);
 		jobMsg.put("resultMsg", StringUtils.isEmpty(resultMsg)?"":resultMsg);
 		jobMsg.put("response", jobResponse);
+		jobMsg.put("jobTypeName", jobTypeName);
+		jobMsg.put("durationSeconds", durationSeconds);
 		MsgPublisher.publish2WorkQueue("end_job", jobMsg.toString());
 	}
 }

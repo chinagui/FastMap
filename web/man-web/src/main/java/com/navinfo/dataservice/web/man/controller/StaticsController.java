@@ -144,28 +144,26 @@ public class StaticsController extends BaseController {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
 			int subtaskId = dataJson.getInt("subtaskId");
-			SubtaskStatInfo data = StaticsService.getInstance()
-					.subtaskStatQuery(subtaskId);
-			
-			//拼结果
-
-			Map<String,Object> poi = new HashMap<String,Object>();
-			poi.put("total", data.getTotalPoi());
-			poi.put("finish", data.getFinishPoi());
-			poi.put("working", data.getWorkingPoi());
-			
-			Map<String,Object> road = new HashMap<String,Object>();
-			road.put("total", data.getTotalRoad());
-			road.put("finish", data.getFinishRoad());
-			road.put("working", data.getWorkingRoad());
-			
-			Map<String,Object> result = new HashMap<String,Object>();
-			result.put("subtaskId", data.getSubtaskId());
-			result.put("percent", data.getPercent());
-			result.put("poi", poi);
-			result.put("road", road);
-
-			return new ModelAndView("jsonView", success(result));
+//			SubtaskStatInfo data = StaticsService.getInstance()
+//					.subtaskStatQuery(subtaskId);		
+//			//拼结果
+//			Map<String,Object> poi = new HashMap<String,Object>();
+//			poi.put("total", data.getTotalPoi());
+//			poi.put("finish", data.getFinishPoi());
+//			poi.put("working", data.getWorkingPoi());
+//			
+//			Map<String,Object> road = new HashMap<String,Object>();
+//			road.put("total", data.getTotalRoad());
+//			road.put("finish", data.getFinishRoad());
+//			road.put("working", data.getWorkingRoad());
+//			
+//			Map<String,Object> result = new HashMap<String,Object>();
+//			result.put("subtaskId", data.getSubtaskId());
+//			result.put("percent", data.getPercent());
+//			result.put("poi", poi);
+//			result.put("road", road);
+			Map<String,Object> data = StaticsService.getInstance().subtaskStatQuery(subtaskId);
+			return new ModelAndView("jsonView", success(data));
 		} catch (Exception e) {
 			log.error("创建失败，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", exception(e));

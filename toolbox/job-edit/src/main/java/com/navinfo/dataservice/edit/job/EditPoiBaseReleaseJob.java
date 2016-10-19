@@ -161,7 +161,7 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 		try{
 			String wkt = GridUtils.grids2Wkt((JSONArray) grids);
 			String sql="UPDATE POI_EDIT_STATUS E"
-					+ " SET E.STATUS = 3"
+					+ " SET E.STATUS = 3,FRESH_VERIFIED=0 "
 					+ " WHERE E.STATUS = 2"
 					+ "   AND EXISTS (SELECT 1"
 					+ "          FROM IX_POI P"

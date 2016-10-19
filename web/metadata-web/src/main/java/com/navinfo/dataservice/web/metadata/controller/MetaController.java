@@ -851,15 +851,16 @@ public class MetaController extends BaseController {
 			throws ServletException, IOException {
 
 		String parameter = request.getParameter("parameter");
-
+		Connection conn = null;
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
 			String kind= jsonReq.getString("kindCode");
 			String chain= jsonReq.getString("chain");
 			String fuelType= jsonReq.getString("fuelType");
-
-			TruckSelector selector = new TruckSelector();
+			
+			conn = DBConnector.getInstance().getMetaConnection();
+			TruckSelector selector = new TruckSelector(conn);
 
 			int truck = selector.getTruck(kind,chain,fuelType);
 
@@ -870,6 +871,8 @@ public class MetaController extends BaseController {
 			logger.error(e.getMessage(), e);
 
 			return new ModelAndView("jsonView", fail(e.getMessage()));
+		} finally {
+			DbUtils.closeQuietly(conn);
 		}
 	}
 }

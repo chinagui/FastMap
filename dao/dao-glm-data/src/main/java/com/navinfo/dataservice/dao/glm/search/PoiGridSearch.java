@@ -82,7 +82,7 @@ public class PoiGridSearch {
 		List<IRow> retList = new ArrayList<IRow>();
 		
 		StringBuffer sb = new StringBuffer();
-		sb.append("SELECT poi_num,pid,mesh_id,kind_code,link_pid,x_guide,y_guide,post_code,open_24h,chain,u_record,geometry,\"LEVEL\",sports_venue,indoor,vip_flag,truck_flag  ");
+		sb.append("SELECT poi_num,pid,mesh_id,kind_code,link_pid,x_guide,y_guide,post_code,open_24h,chain,u_record,geometry,\"LEVEL\",sports_venue,indoor,vip_flag  ");
 		sb.append(" FROM ix_poi");
 		sb.append(" WHERE sdo_within_distance(geometry, sdo_geometry(    :1  , 8307), 'mask=anyinteract') = 'TRUE' ");
 		// 不下载已删除的点20161013
@@ -220,8 +220,6 @@ public class PoiGridSearch {
 		ixPoi.setIndoor(resultSet.getInt("indoor"));
 		
 		ixPoi.setVipFlag(resultSet.getString("vip_flag"));
-		
-		ixPoi.setTruckFlag(resultSet.getInt("truck_flag"));
 		
 	}
 }

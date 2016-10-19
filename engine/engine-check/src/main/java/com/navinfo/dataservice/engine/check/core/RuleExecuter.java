@@ -230,8 +230,6 @@ public class RuleExecuter {
 		List<String> sqlList=new ArrayList<String>();
 		List<String> sqlListTmp=new ArrayList<String>();
 		sqlList.add(sql);
-		List<NiValException> niValExceptionList=new ArrayList<NiValException>();
-		if(null==variableList||variableList.size()==0){return niValExceptionList;}
 		String firstVariable=variableList.get(0).toString();
 		//将sql语句中的参数进行替换，形成可执行的sql语句
 		if(variableList.size()==1 
@@ -268,6 +266,7 @@ public class RuleExecuter {
 			}}
 		if(sqlListTmp.size()!=0){sqlList=sqlListTmp;}
 		//执行sql语句
+		List<NiValException> niValExceptionList=new ArrayList<NiValException>();
 		checkResultDatabaseOperator getObj=new checkResultDatabaseOperator();
 		getObj.setRule(rule);
 		for(int i=0;i<sqlList.size();i++){

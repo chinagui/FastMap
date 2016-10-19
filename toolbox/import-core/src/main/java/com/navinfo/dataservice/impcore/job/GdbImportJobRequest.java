@@ -29,6 +29,11 @@ public class GdbImportJobRequest extends AbstractJobRequest {
 	}
 
 	@Override
+	public String getJobTypeName(){
+		return "履历回库";
+	}
+
+	@Override
 	public void validate() throws JobException {
 		// TODO Auto-generated method stub
 

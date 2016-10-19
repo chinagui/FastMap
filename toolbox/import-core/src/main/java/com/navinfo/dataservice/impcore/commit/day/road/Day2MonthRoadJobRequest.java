@@ -45,6 +45,10 @@ public class Day2MonthRoadJobRequest extends AbstractJobRequest {
 		return "day2MonthRoadJob";
 	}
 	@Override
+	public String getJobTypeName(){
+		return "道路日落月";
+	}
+	@Override
 	public void defineSubJobRequests() throws JobCreateException {
 		// TODO Auto-generated method stub
 		

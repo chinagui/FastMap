@@ -136,6 +136,11 @@ public class GdbFullCopyJobRequest extends AbstractJobRequest {
 		return "gdbFullCopy";
 	}
 
+	@Override
+	public String getJobTypeName(){
+		return "GDB复制";
+	}
+
 
 	@Override
 	public void defineSubJobRequests() throws JobCreateException {

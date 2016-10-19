@@ -40,6 +40,11 @@ public class BatchCoreJobRequest extends AbstractJobRequest {
 	public String getJobType() {
 		return "batchCore";
 	}
+	
+	@Override
+	public String getJobTypeName(){
+		return "批处理（核心）";
+	}
 
 	@Override
 	public void validate() throws JobException {

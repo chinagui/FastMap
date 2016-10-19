@@ -12,6 +12,8 @@ import com.navinfo.dataservice.dao.glm.model.poi.index.IxSamepoiPart;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiParentSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxSamepoiPartSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxSamepoiSelector;
+import com.navinfo.dataservice.dao.log.LogReader;
+
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;

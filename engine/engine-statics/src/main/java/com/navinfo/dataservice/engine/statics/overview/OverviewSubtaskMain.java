@@ -38,7 +38,7 @@ import net.sf.json.JSONObject;
  * @date 2016年10月18日
  * @Description: OverviewSubtaskStat.java
  */
-public class OverviewSubtaskStat {
+public class OverviewSubtaskMain {
 
 	/**
 	 * 
@@ -49,7 +49,7 @@ public class OverviewSubtaskStat {
 	private static String stat_date;
 	private static String stat_time;
 
-	public OverviewSubtaskStat(String dbn, String stat_time) {
+	public OverviewSubtaskMain(String dbn, String stat_time) {
 		this.db_name = dbn;
 		this.stat_date = stat_time.substring(0, 8);
 		this.stat_time = stat_time;
@@ -328,7 +328,7 @@ public class OverviewSubtaskStat {
 				new String[] { "dubbo-consumer-datahub-test.xml"});
 		context.start();
 		new ApplicationContextUtil().setApplicationContext(context);
-		OverviewSubtaskStat overviewSubtaskStat = new OverviewSubtaskStat("fm_stat", "201610191340");
+		OverviewSubtaskMain overviewSubtaskStat = new OverviewSubtaskMain("fm_stat", "201610191340");
 		overviewSubtaskStat.runStat();
 	}
 }

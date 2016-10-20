@@ -1,13 +1,8 @@
 package com.navinfo.dataservice.engine.edit.operation.topo.depart.updowndepartlink;
 
 import java.sql.Connection;
-import java.util.List;
-import java.util.Map;
 
 import com.navinfo.dataservice.dao.glm.iface.Result;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
-import com.navinfo.dataservice.engine.edit.operation.obj.rdcross.depart.*;
-import com.navinfo.dataservice.engine.edit.operation.obj.rdcross.depart.Operation;
 
 public class OpRefRelationObj {
 

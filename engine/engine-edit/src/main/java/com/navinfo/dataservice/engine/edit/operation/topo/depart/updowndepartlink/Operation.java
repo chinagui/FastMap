@@ -19,6 +19,7 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkIntRtic;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkLimit;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkRtic;
@@ -189,14 +190,22 @@ public class Operation implements IOperation {
 		coordinates[1]= eCoordinate;
 		RdNode sNode = map.get(JtsGeometryFactory.createPoint(sCoordinate));
 		RdNode eNode = map.get(JtsGeometryFactory.createPoint(eCoordinate));
-		RdLink innerLink =  new RdLink();
-		innerLink.setsNodePid(sNode.getPid());
-		innerLink.setsNodePid(eNode.getPid());
-		innerLink.setPid(1);
+//		RdLink innerLink =  new RdLink();
+//		innerLink.setsNodePid(sNode.getPid());
+//		innerLink.setsNodePid(eNode.getPid());
+//		innerLink.setPid(1);
+
+		
+		// 创建link同时要创建形态和普通线限速子表
+		RdLink innerLink = RdLinkOperateUtils.addLinkNoPid(sNode.getPid(),
+				eNode.getPid());
+
 		innerLink.setGeometry(JtsGeometryFactory.createLineString(coordinates));
+		
 		List<RdLink> links = RdLinkOperateUtils.addRdLink(sNode, eNode, innerLink,
 				innerLink, result);
 		for(RdLink link:links){
+
 			result.insertObject(link, ObjStatus.INSERT, link.getPid());
 		}
 

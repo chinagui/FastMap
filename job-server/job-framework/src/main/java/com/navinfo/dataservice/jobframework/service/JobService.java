@@ -52,7 +52,7 @@ public class JobService {
 					+ " VALUES (?,?,SYSDATE,?,?,?,?,?)";
 			run.update(conn, jobInfoSql, jobId,jobType,JobStatus.STATUS_CREATE,request.toString(),jobGuid,userId,descp);
 			//发送run_job消息
-			JobMsgPublisher.runJob(jobId,jobGuid,jobType,request);
+			JobMsgPublisher.runJob(jobId,jobGuid,jobType,request,userId);
 			return jobId;
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);

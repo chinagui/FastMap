@@ -514,7 +514,7 @@ public abstract class MeshUtils {
 				.format(x / 3600));
 	}
 	
-	public static String getNeighborMesh(String meshId,MeshLocation meshLoc){
+	public static String getNeighborMesh(String meshId,TopoLocation meshLoc){
 		meshId = StringUtils.leftPad(meshId, 6, '0');
 		int m12 = Integer.valueOf(meshId.substring(0, 2));
 		int m34 = Integer.valueOf(meshId.substring(2, 4));
@@ -564,14 +564,14 @@ public abstract class MeshUtils {
 	public static String[] get9NeighborMeshes(String meshId) {
 		String allMesh[] = new String[9];
 		allMesh[0] = meshId;
-		allMesh[1] = getNeighborMesh(meshId,MeshLocation.LeftBottom);
-		allMesh[2] = getNeighborMesh(meshId,MeshLocation.Bottom);
-		allMesh[3] = getNeighborMesh(meshId,MeshLocation.RightBottom);
-		allMesh[4] = getNeighborMesh(meshId,MeshLocation.Right);
-		allMesh[5] = getNeighborMesh(meshId,MeshLocation.RightTop);
-		allMesh[6] = getNeighborMesh(meshId,MeshLocation.Top);
-		allMesh[7] = getNeighborMesh(meshId,MeshLocation.LeftTop);
-		allMesh[8] = getNeighborMesh(meshId,MeshLocation.Left);
+		allMesh[1] = getNeighborMesh(meshId,TopoLocation.LeftBottom);
+		allMesh[2] = getNeighborMesh(meshId,TopoLocation.Bottom);
+		allMesh[3] = getNeighborMesh(meshId,TopoLocation.RightBottom);
+		allMesh[4] = getNeighborMesh(meshId,TopoLocation.Right);
+		allMesh[5] = getNeighborMesh(meshId,TopoLocation.RightTop);
+		allMesh[6] = getNeighborMesh(meshId,TopoLocation.Top);
+		allMesh[7] = getNeighborMesh(meshId,TopoLocation.LeftTop);
+		allMesh[8] = getNeighborMesh(meshId,TopoLocation.Left);
 		return allMesh;
 
 	}
@@ -733,35 +733,35 @@ public abstract class MeshUtils {
 		return false;
 	}
 	public static boolean locateMeshBorder(double x,double y,String mesh){
-		MeshLocation loc = meshLocate(x,y,mesh);
-		if(loc==MeshLocation.Inside||loc==MeshLocation.Outside){
+		TopoLocation loc = meshLocate(x,y,mesh);
+		if(loc==TopoLocation.Inside||loc==TopoLocation.Outside){
 			return false;
 		}
 		return true;
 	}
-	public static MeshLocation meshLocate(double x,double y,String mesh){
+	public static TopoLocation meshLocate(double x,double y,String mesh){
 		double[] rect = mesh2Rect(mesh);
 		if(x<rect[0]||x>rect[2]||y<rect[1]||y>rect[2]){
-			return MeshLocation.Outside;
+			return TopoLocation.Outside;
 		}
 		if(x==rect[0]&&y==rect[1]){
-			return MeshLocation.LeftBottom;
+			return TopoLocation.LeftBottom;
 		}else if(x==rect[2]&&y==rect[1]){
-			return MeshLocation.RightBottom;
+			return TopoLocation.RightBottom;
 		}else if(x==rect[2]&&y==rect[3]){
-			return MeshLocation.RightTop;
+			return TopoLocation.RightTop;
 		}else if(x==rect[0]&&y==rect[3]){
-			return MeshLocation.LeftTop;
+			return TopoLocation.LeftTop;
 		}else if(x==rect[0]){
-			return MeshLocation.Left;
+			return TopoLocation.Left;
 		}else if(y==rect[1]){
-			return MeshLocation.Bottom;
+			return TopoLocation.Bottom;
 		}else if(x==rect[2]){
-			return MeshLocation.Right;
+			return TopoLocation.Right;
 		}else if(y==rect[3]){
-			return MeshLocation.Top;
+			return TopoLocation.Top;
 		}else{
-			return MeshLocation.Inside;
+			return TopoLocation.Inside;
 		}
 	}
 	

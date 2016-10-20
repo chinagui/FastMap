@@ -402,6 +402,27 @@ public class RdLinkOperateUtils {
 
         return link;
     }
+    
+    /*
+     * 创建生成一条无pid的RDLINK
+     */
+    public static RdLink addLinkNoPid(int sNodePid, int eNodePid) throws Exception {
+        RdLink link = new RdLink();
+        
+        link.setPid(1);
+
+        link.setOriginLinkPid(link.getPid());
+
+        link.setWidth(55);
+
+        link.setsNodePid(sNodePid);
+
+        link.seteNodePid(eNodePid);
+
+        setLinkChildren(link);
+
+        return link;
+    }
 
     /**
      * 维护link的子表

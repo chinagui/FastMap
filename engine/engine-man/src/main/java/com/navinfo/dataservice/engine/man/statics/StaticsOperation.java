@@ -3,7 +3,9 @@ package com.navinfo.dataservice.engine.man.statics;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -576,6 +578,70 @@ public class StaticsOperation {
 		}
 	}
 
+	
+	/**
+	 * @Title: queryGroupOverView
+	 * @Description: 查询统计数据,处理查询结果
+	 * @param conn
+	 * @param selectSql
+	 * @return
+	 * @throws Exception  Map<String,Object>
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2016年10月19日 上午11:04:45 
+	 */
+	public static Map<String, Object> queryGroupOverView(Connection conn, String selectSql) throws Exception {
+		try {
+			QueryRunner run = new QueryRunner();
+
+			ResultSetHandler<Map<String,Object>> rsHandler = new ResultSetHandler<Map<String,Object>>() {
+				public Map<String,Object> handle(ResultSet rs) throws SQLException {
+					Map<String,Object> result = new HashMap<String,Object>();
+					int percent = 0;
+					int planDate = 0;
+					int diffDate = 0;
+					String planStartDate = null;
+					String planEndDate = null;
+					String actualStartDate = null;
+					String actualEndDate = null;
+					int poiPlanTotal = 0;
+					int roadPlanTotal = 0;
+					SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
+					while (rs.next()) {
+						percent = rs.getInt("percent");
+						planDate = rs.getInt("planDate");
+						diffDate = rs.getInt("diffDate");
+						planStartDate = df.format(rs.getTimestamp("planStartDate"));
+						planEndDate = df.format(rs.getTimestamp("planEndDate"));
+						actualStartDate = df.format(rs.getTimestamp("actualStartDate"));
+						actualEndDate = df.format(rs.getTimestamp("actualEndDate"));
+						poiPlanTotal = rs.getInt("poiPlanTotal");
+						roadPlanTotal = rs.getInt("roadPlanTotal");
+						
+					}
+				
+					result.put("percent", percent);
+					result.put("planDate", planDate);
+					result.put("diffDate", diffDate);
+					result.put("planStartDate", planStartDate);
+					result.put("planEndDate", planEndDate);
+					result.put("actualStartDate", actualStartDate);
+					result.put("actualEndDate", actualEndDate);
+					result.put("poiPlanTotal", poiPlanTotal);
+					result.put("roadPlanTotal", roadPlanTotal);
+					return result;
+				}
+	
+			};
+
+			return run.query(conn, selectSql,rsHandler);
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询group失败:" + e.getMessage(), e);
+		}
+	}
+	
 	/**
 	 * @param conn
 	 * @param taskId

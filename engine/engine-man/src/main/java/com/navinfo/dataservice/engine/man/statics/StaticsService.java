@@ -627,8 +627,42 @@ public class StaticsService {
 						+ " AND S.STAGE = " + stage
 						+ " ORDER BY BLOCK_MAN_ID";
 			}
-			
+			System.out.println("selectSql: "+selectSql);
 			Map<String,Object> result = StaticsOperation.queryBlockOverViewByGroup(conn,selectSql);
+			return result;
+
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询明细失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * @Title: queryGroupOverView
+	 * @Description: 查询数据库获取统计详情
+	 * @param groupId
+	 * @param stage
+	 * @return
+	 * @throws ServiceException  Map<String,Object>
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2016年10月19日 上午10:57:59 
+	 */
+	public Map<String,Object> queryGroupOverView(int groupId, int stage) throws ServiceException {
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+
+			String selectSql = "";
+			
+			selectSql = " select t.percent percent,t.plan_date planDate,t.diff_date diffDate,"
+						+"t.plan_start_date planStartDate,t.plan_end_date planEndDate,t.actual_start_date actualStartDate,"
+						+"t.actual_end_date actualEndDate,t.poi_plan_total poiPlanTotal,t.road_plan_total roadPlanTotal  "
+						+" from FM_STAT_OVERVIEW_GROUP t where t.group_id = "+groupId
+						+" and t.stage = "+stage ;
+			Map<String,Object> result = StaticsOperation.queryGroupOverView(conn,selectSql);
 			return result;
 
 		} catch (Exception e) {

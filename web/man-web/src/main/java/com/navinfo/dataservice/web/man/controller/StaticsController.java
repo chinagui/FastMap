@@ -244,6 +244,40 @@ public class StaticsController extends BaseController {
 			return new ModelAndView("jsonView", exception(e));
 		}
 	}
+
+
+		/**
+		 * @Title: queryGroupOverView
+		 * @Description: 根据groupid获取block及group详情
+		 * @param request
+		 * @return  ModelAndView
+		 * @throws 
+		 * @author zl zhangli5174@navinfo.com
+		 * @date 2016年10月19日 上午10:54:15 
+		 */
+		@RequestMapping(value = "/statics/groupOverview")
+		public ModelAndView queryGroupOverView(HttpServletRequest request) {
+			try {
+				String parameter = request.getParameter("parameter");
+				if (StringUtils.isEmpty(parameter)) {
+					throw new IllegalArgumentException("parameter参数不能为空。");
+				}
+				JSONObject dataJson = JSONObject.fromObject(URLDecode(parameter));
+				if (dataJson == null) {
+					throw new IllegalArgumentException("parameter参数不能为空。");
+				}
+				//groupId
+				int groupId = dataJson.getInt("groupId");
+				int stage = dataJson.getInt("stage");
+				//查询group详情
+				Map<String,Object> data = StaticsService.getInstance().queryGroupOverView(groupId,stage);
+				return new ModelAndView("jsonView", success(data));
+			} catch (Exception e) {
+				log.error("创建失败，原因：" + e.getMessage(), e);
+				return new ModelAndView("jsonView", exception(e));
+			}
+		}
+	
 	
 	//根据taskId获取block详情
 	@RequestMapping(value = "/statics/block/overviewByTask")

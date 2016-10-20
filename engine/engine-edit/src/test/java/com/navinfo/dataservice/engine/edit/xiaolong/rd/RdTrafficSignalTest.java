@@ -29,7 +29,7 @@ public class RdTrafficSignalTest extends InitApplication{
 	
 	@Test
 	public void testAddTrafficSignal() {
-		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDLANECONNEXITY\",\"dbId\":17,\"data\":{\"inLinkPid\":405586,\"nodePid\":275267,\"outLinkPids\":[16594392],\"laneInfo\":\"b\"}}";
+		String parameter = "{\"command\":\"CREATE\",\"dbId\":17,\"type\":\"RDTRAFFICSIGNAL\",\"data\":{\"nodePid\":\"203000658\"}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

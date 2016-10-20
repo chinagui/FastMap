@@ -37,7 +37,7 @@ public class RdTollgateSearch implements ISearch {
 	@Override
 	public IObj searchDataByPid(int pid) throws Exception {
 		RdTollgateSelector selector = new RdTollgateSelector(this.conn);
-		IObj obj = (IObj) selector.loadById(pid, true);
+		IObj obj = (IObj) selector.loadByIdOrderBySeqnum(pid, true);
 		return obj;
 	}
 

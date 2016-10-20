@@ -86,7 +86,7 @@ public class POITest extends InitApplication {
 
 	@Test
 	public void addPoi() {
-		String parameter = "{\"command\":\"UPDATE\",\"dbId\":2005,\"type\":\"IXPOI\",\"objId\":207000010,\"data\":{\"kindCode\":\"110101\",\"rowId\":\"BEC2B67CA9D04E178C26BE142D4F3235\",\"pid\":207000010,\"objStatus\":\"UPDATE\",\"chain\":\"3032\",\"postCode\":\"123456\",\"level\":\"B2\",\"names\":[{\"pid\":0,\"poiPid\":0,\"nameGroupid\":1,\"langCode\":\"CHI\",\"nameClass\":1,\"nameType\":2,\"name\":\"测线新增\",\"namePhonetic\":\"\",\"keywords\":\"\",\"nidbPid\":\"\",\"rowId\":\"\",\"objStatus\":\"INSERT\"}],\"addresses\":[{\"nameGroupid\":1,\"poiPid\":0,\"langCode\":\"CHI\",\"fullname\":\"测线新增\",\"objStatus\":\"INSERT\"}],\"contacts\":[{\"contactType\":1,\"contact\":\"010-89098765\",\"contactDepart\":0,\"priority\":1,\"objStatus\":\"INSERT\"}],\"photos\":[{\"pid\":\"054f687df3ac44a5a6fb432c320c29dc\",\"tag\":1,\"photoId\":0,\"status\":\"\",\"memo\":\"\",\"objStatus\":\"INSERT\"}],\"restaurants\":[{\"pid\":0,\"poiPid\":0,\"foodType\":\"3000|2007\",\"creditCard\":\"1|2|3|4|5|6\",\"avgCost\":80,\"parking\":2,\"openHour\":\"24小时\",\"travelguideFlag\":0,\"objStatus\":\"INSERT\"}]}}";
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"IXPOI\",\"objId\":206000036,\"data\":{\"contacts\":[{\"contact\":\"010-11111113\",\"rowId\":\"6DC41F3FBEC1445491360F6BDA3198A9\",\"objStatus\":\"UPDATE\"}],\"rowId\":\"79C41F7CCF224EFD90DD1A7475D4C269\",\"pid\":206000036}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

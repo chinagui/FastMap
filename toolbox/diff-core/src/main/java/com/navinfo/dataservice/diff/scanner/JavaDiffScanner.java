@@ -68,9 +68,13 @@ public class JavaDiffScanner implements DiffScanner
         try
         {
         	StringBuilder sb = new StringBuilder();
-        	sb.append("INSERT INTO LOG_DETAIL(ROW_ID,OP_ID, TB_NM, OP_TP, TB_ROW_ID)\n SELECT S.S_GUID,S.S_GUID,'");
+        	sb.append("INSERT INTO LOG_DETAIL(ROW_ID,OP_ID, TB_NM, OP_TP, TB_ROW_ID,OBJ_NM,OBJ_PID)\n SELECT S.S_GUID,S.S_GUID,'");
         	sb.append(table.getName());
-        	sb.append("',1,ROW_ID FROM ");
+        	sb.append("',1,ROW_ID,'");
+        	sb.append(table.getObjName());
+        	sb.append("',");
+        	sb.append(StringUtils.isEmpty(table.getObjPidCol())?"0":table.getObjPidCol());
+        	sb.append(" FROM ");
         	sb.append(leftTableFullName);
         	sb.append(" L,(SELECT SYS_GUID() S_GUID FROM DUAL) S WHERE NOT EXISTS \n (SELECT 1 FROM ");
         	sb.append(rightTableFullName);
@@ -96,9 +100,13 @@ public class JavaDiffScanner implements DiffScanner
         try
         {
         	StringBuilder sb = new StringBuilder();
-        	sb.append("INSERT INTO LOG_DETAIL(ROW_ID,OP_ID, TB_NM, OP_TP, TB_ROW_ID)\n SELECT S.S_GUID,S.S_GUID,'");
+        	sb.append("INSERT INTO LOG_DETAIL(ROW_ID,OP_ID, TB_NM, OP_TP, TB_ROW_ID,OBJ_NM,OBJ_PID)\n SELECT S.S_GUID,S.S_GUID,'");
         	sb.append(table.getName());
-        	sb.append("',2,ROW_ID FROM ");
+        	sb.append("',2,ROW_ID,'");
+        	sb.append(table.getObjName());
+        	sb.append("',");
+        	sb.append(StringUtils.isEmpty(table.getObjPidCol())?"0":table.getObjPidCol());
+        	sb.append(" FROM ");
         	sb.append(rightTableFullName);
         	sb.append(" R,(SELECT SYS_GUID() S_GUID FROM DUAL) S WHERE NOT EXISTS \n (SELECT 1 FROM ");
         	sb.append(leftTableFullName);
@@ -133,9 +141,13 @@ public class JavaDiffScanner implements DiffScanner
         		}
         	}
         	StringBuilder sb = new StringBuilder();
-        	sb.append("INSERT INTO LOG_DETAIL(ROW_ID,OP_ID, TB_NM, OP_TP, TB_ROW_ID)\n SELECT S.S_GUID,S.S_GUID,'");
+        	sb.append("INSERT INTO LOG_DETAIL(ROW_ID,OP_ID, TB_NM, OP_TP, TB_ROW_ID,OBJ_NM,OBJ_PID)\n SELECT S.S_GUID,S.S_GUID,'");
         	sb.append(table.getName());
-        	sb.append("',3,L.ROW_ID FROM ");
+        	sb.append("',3,L.ROW_ID,'");
+        	sb.append(table.getObjName());
+        	sb.append("',");
+        	sb.append((StringUtils.isEmpty(table.getObjPidCol()))?"0":("L."+table.getObjPidCol()));
+        	sb.append(" FROM ");
         	sb.append(leftTableFullName);
         	sb.append(" L, ");
         	sb.append(rightTableFullName);

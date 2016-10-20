@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
-import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
@@ -80,28 +79,22 @@ public class IxPoiSearch implements ISearch {
 	public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z,
 			int gap) throws Exception {
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
-
-		//String sql = "with tmp1 as  (select pid, kind_code,x_guide, y_guide, geometry, row_id     from ix_poi    where sdo_relate(geometry, sdo_geometry(    :1    , 8307), 'mask=anyinteract') =          'TRUE'      and u_record != 2),  tmp2 as  (SELECT COUNT(1) PARENTCOUNT     FROM IX_POI_PARENT P, tmp1 a    WHERE p.parent_poi_pid = a.PID      and p.u_record != 2),  tmp3 as  (SELECT COUNT(1) CHILDCOUNT     FROM IX_POI_CHILDREN P, tmp1 a    WHERE p.child_poi_pid = a.PID      and p.u_record != 2) select  a.*,  b.status,  c.PARENTCOUNT,  d.CHILDCOUNT,  (SELECT NAME     FROM ix_poi_name p    WHERE p.POI_PID = a.PID      AND p.LANG_CODE = 'CHI'      AND p.NAME_CLASS = 1      AND p.NAME_TYPE = 2      AND p.u_record != 2) NAME   from tmp1 a, poi_edit_status b, tmp2 c, tmp3 d  where a.row_id = b.row_id";
 		
 		StringBuilder sb=new StringBuilder();
 		
-//		sb.append("WITH TMP1 AS (SELECT PID, KIND_CODE, X_GUIDE, Y_GUIDE, GEOMETRY, ROW_ID FROM IX_POI WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'MASK=ANYINTERACT') = 'TRUE' AND U_RECORD != 2), TMP2 AS (SELECT PN.NAME, PN.POI_PID FROM IX_POI_NAME PN, TMP1 A WHERE PN.POI_PID = A.PID AND PN.LANG_CODE = 'CHI' AND PN.NAME_CLASS = 1 AND PN.NAME_TYPE = 2 AND PN.U_RECORD != 2) SELECT tmp.*,T.name FROM (SELECT A.*, B.STATUS, (SELECT COUNT(1) FROM IX_POI_PARENT P WHERE P.PARENT_POI_PID = A.PID AND P.U_RECORD != 2) PARENTCOUNT, (SELECT COUNT(1) FROM IX_POI_CHILDREN C WHERE C.CHILD_POI_PID = A.PID AND C.U_RECORD != 2) CHILDCOUNT FROM TMP1 A, POI_EDIT_STATUS B WHERE A.ROW_ID = B.ROW_ID)tmp LEFT JOIN TMP2 T ON T.POI_PID = tmp.PID  ");
-		sb.append("WITH TMP1 AS ( SELECT PID, KIND_CODE,INDOOR, X_GUIDE, Y_GUIDE, GEOMETRY, ROW_ID FROM IX_POI WHERE SDO_RELATE ( GEOMETRY, SDO_GEOMETRY (: 1, 8307), 'MASK=ANYINTERACT' ) = 'TRUE' AND U_RECORD != 2 ), TMP2 AS ( SELECT PN. NAME, PN.POI_PID FROM IX_POI_NAME PN, TMP1 A WHERE PN.POI_PID = A .PID AND PN.LANG_CODE = 'CHI' AND PN.NAME_CLASS = 1 AND PN.NAME_TYPE = 2 AND PN.U_RECORD != 2 ) SELECT tmp.*, T . NAME FROM ( SELECT A .*, B.STATUS, ( SELECT COUNT (1) FROM IX_POI_PARENT P WHERE P .PARENT_POI_PID = A .PID AND P .U_RECORD != 2 ) PARENTCOUNT, ( SELECT COUNT (1) FROM IX_POI_CHILDREN C WHERE C.CHILD_POI_PID = A .PID AND C.U_RECORD != 2 ) CHILDCOUNT, ( SELECT COUNT (1) FROM IX_SAMEPOI_PART ISP WHERE ISP.POI_PID = A .PID AND ISP.U_RECORD != 2 ) SAMEPOICOUNT FROM TMP1 A, POI_EDIT_STATUS B WHERE A .ROW_ID = B.ROW_ID ) tmp LEFT JOIN TMP2 T ON T .POI_PID = tmp.PID");
+		sb.append("WITH TMP1 AS (SELECT PID, KIND_CODE, INDOOR, X_GUIDE, Y_GUIDE, GEOMETRY, ROW_ID FROM IX_POI WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'MASK=ANYINTERACT') = 'TRUE' AND U_RECORD != 2), TMP2 AS (SELECT PN.NAME, PN.POI_PID FROM TMP1 A LEFT JOIN IX_POI_NAME PN ON PN.POI_PID = A.PID WHERE PN.POI_PID = A.PID AND PN.LANG_CODE = 'CHI' AND PN.NAME_CLASS = 1 AND PN.NAME_TYPE = 2 AND PN.U_RECORD != 2) SELECT TMP.*, T . NAME FROM (SELECT A.*, B.STATUS FROM TMP1 A LEFT JOIN POI_EDIT_STATUS B ON A.ROW_ID = B.ROW_ID) TMP LEFT JOIN TMP2 T ON T.POI_PID = TMP.PID ");
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
 
 		try {
-			//pstmt = conn.prepareStatement(sql);
-
-			//System.out.println(sql);
 			
 			pstmt = conn.prepareStatement(sb.toString());
 
 			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
 
 			pstmt.setString(1, wkt);
-
+			
 			resultSet = pstmt.executeQuery();
 
 			double px = MercatorProjection.tileXToPixelX(x);
@@ -111,23 +104,15 @@ public class IxPoiSearch implements ISearch {
 			while (resultSet.next()) {
 				SearchSnapshot snapshot = new SearchSnapshot();
 
-				int parentCount = resultSet.getInt("parentCount");
-
-				int childCount = resultSet.getInt("childCount");
-
-				String haveParentOrChild = GetParentOrChild(parentCount,
-						childCount);
 				int status = resultSet.getInt("status");
 
 				JSONObject m = new JSONObject();
 
-				m.put("a", haveParentOrChild);
 				m.put("b", status);
 				m.put("d", resultSet.getString("kind_code"));
 
 				m.put("e", resultSet.getString("name"));
 				
-				m.put("f", resultSet.getInt("samepoiCount") == 0 ? 0 : 1);
 				m.put("g", resultSet.getInt("indoor") == 0 ? 0 : 1);
 
 				Double xGuide = resultSet.getDouble("x_guide");

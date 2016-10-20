@@ -110,4 +110,11 @@ public class taskTest extends InitApplication{
 	public void init() {
 		initContext();
 	}
+	
+	public void testQueryAdmin() throws ServiceException
+	{
+		SubtaskService subService = SubtaskService.getInstance(); 
+		
+		subService.queryAdminIdBySubtask(162);
+	}
 }

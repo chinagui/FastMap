@@ -77,7 +77,8 @@ public class PoiBatchProcessorFM_BAT_20_104 implements IBatch {
 				
 				// 转拼音
 				MetadataApi apiService=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
-				String[] pyStr = apiService.pyConvert(standardName);
+				String[] pyStr = apiService.pyConvert(originalName);
+				originalPoiName.setNamePhonetic(pyStr[1]);
 				newStandardName.setNamePhonetic(pyStr[1]);
 				JSONObject nameStandardJson = newStandardName.Serialize(null);
 				nameStandardJson.put("objStatus", ObjStatus.INSERT.toString());
@@ -100,7 +101,8 @@ public class PoiBatchProcessorFM_BAT_20_104 implements IBatch {
 					
 					// 转拼音
 					MetadataApi apiService=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
-					String[] pyStr = apiService.pyConvert(standardName);
+					String[] pyStr = apiService.pyConvert(originalName);
+					originalPoiName.setNamePhonetic(pyStr[1]);
 					standardPoiName.setNamePhonetic(pyStr[1]);
 					
 					JSONObject nameStandardJson = standardPoiName.Serialize(null);

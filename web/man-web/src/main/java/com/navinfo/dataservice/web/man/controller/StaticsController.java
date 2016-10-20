@@ -316,4 +316,21 @@ public class StaticsController extends BaseController {
 			return new ModelAndView("jsonView", exception(e));
 		}
 	}
+	
+	/**
+	 * 各城市生产情况概览
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value="/statics/overview")
+	public ModelAndView queryCityOverview(HttpServletRequest request){
+		try {
+			//查询数据
+			Map<String, Object> data = StaticsService.getInstance().queryCityOverview();
+			return new ModelAndView("jsonView", success(data));
+		} catch (Exception e) {
+			log.error("创建失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
 }

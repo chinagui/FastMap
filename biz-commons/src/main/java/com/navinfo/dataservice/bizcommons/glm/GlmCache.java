@@ -65,7 +65,7 @@ public class GlmCache {
 			//1. 先确定加载哪些表
 			String ignore = SystemConfigFactory.getSystemConfig().getValue("glm.ignore.table.prefix");
 			StringBuilder loadSql = new StringBuilder();
-			loadSql.append("SELECT TABLE_NAME,FEATURE_TYPE,EDITABLE FROM GLM_TABLE WHERE GDB_VERSION=?");
+			loadSql.append("SELECT TABLE_NAME,FEATURE_TYPE,OBJ_NAME,OBJ_PID_COL,EDITABLE FROM GLM_TABLES WHERE GDB_VERSION=?");
 			if(StringUtils.isNotEmpty(ignore)){
 				Set<String> ignoreSqlSet = new HashSet<String>();
 				for(String prefix:ignore.split(",")){
@@ -74,14 +74,14 @@ public class GlmCache {
 				loadSql.append(" AND ");
 				loadSql.append(StringUtils.join(ignoreSqlSet," AND "));
 			}
-			Map<String,int[]> names = runner.query(manConn, loadSql.toString(), new ResultSetHandler<Map<String,int[]>>(){
+			Map<String,String> names = runner.query(manConn, loadSql.toString(), new ResultSetHandler<Map<String,String>>(){
 				@Override
-				public Map<String,int[]> handle(ResultSet rs)throws SQLException{
-					Map<String,int[]> set = new HashMap<String,int[]>();;
+				public Map<String,String> handle(ResultSet rs)throws SQLException{
+					Map<String,String> set = new HashMap<String,String>();;
 					while(rs.next()){
 						String tableName = rs.getString("TABLE_NAME");
 					
-						set.put(rs.getString("TABLE_NAME"),new int[]{rs.getInt("FEATURE_TYPE"),rs.getInt("EDITABLE")});
+						set.put(rs.getString("TABLE_NAME"),rs.getInt("FEATURE_TYPE")+","+rs.getInt("EDITABLE")+","+rs.getString("OBJ_NAME")+","+rs.getString("OBJ_PID_COL"));
 					}
 					return set;
 				}
@@ -119,12 +119,14 @@ public class GlmCache {
 						return map;
 					}
 				});
-				//赋可编辑状态
+				//赋TABLE属性
 				for(String key:tables.keySet()){
 					GlmTable table = tables.get(key);
-					int[] v = names.get(key);
-					table.setFeatureType(v[0]==1?GlmTable.FEATURE_TYPE_POI:GlmTable.FEATURE_TYPE_ROAD);
-					table.setEditable(v[1]==1?true:false);
+					String[] vs = names.get(key).split(",");
+					table.setFeatureType(Integer.parseInt(vs[0])==1?GlmTable.FEATURE_TYPE_POI:GlmTable.FEATURE_TYPE_ROAD);
+					table.setEditable(Integer.parseInt(vs[1])==1?true:false);
+					table.setObjName(vs[2]);
+					table.setObjPidCol("UNKNOWN".equals(vs[3])?null:vs[3]);
 				}
 				//load pks
 				StringBuilder pkSql = new StringBuilder();

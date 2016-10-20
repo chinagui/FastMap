@@ -106,7 +106,7 @@ public class SubtaskController extends BaseController {
 			
 			long userId = tokenObj.getUserId();
 			//根据参数生成subtask bean
-			Subtask bean = SubtaskService.getInstance().createSubtaskBean(userId,dataJson);
+			Subtask<?> bean = SubtaskService.getInstance().createSubtaskBean(userId,dataJson);
 			//创建subtask	
 			SubtaskService.getInstance().create(bean);	
 
@@ -202,7 +202,7 @@ public class SubtaskController extends BaseController {
 				dataJson.remove("platForm");
 			}
 
-            Subtask bean = (Subtask)JSONObject.toBean(dataJson, Subtask.class);
+            Subtask<?> bean = (Subtask<?>)JSONObject.toBean(dataJson, Subtask.class);
             
             Page page = SubtaskService.getInstance().listByUserPage(bean,snapshot,platForm,pageSize,curPageNum);
             
@@ -233,12 +233,12 @@ public class SubtaskController extends BaseController {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
 			
-			Subtask bean = (Subtask)JSONObject.toBean(dataJson, Subtask.class);
+			Subtask<?> bean = (Subtask<?>)JSONObject.toBean(dataJson, Subtask.class);
 			
-			Subtask subtask = SubtaskService.getInstance().query(bean);	
+			Subtask<?> subtask = SubtaskService.getInstance().query(bean);	
 			if(subtask!=null&&subtask.getSubtaskId()!=null){
 				SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
-				SubtaskQuery subtaskQuery = new SubtaskQuery(subtask.getSubtaskId()
+				SubtaskQuery<?> subtaskQuery = new SubtaskQuery<Object>(subtask.getSubtaskId()
 						,subtask.getName()
 						,subtask.getStatus()
 						,subtask.getDescp()
@@ -259,6 +259,7 @@ public class SubtaskController extends BaseController {
 						,subtask.getExecuterId()
 						,subtask.getPercent()
 						,subtask.getVersion()
+						,subtask.getGeometryJSON()
 						);
 				SubtaskQueryResponse response = new SubtaskQueryResponse(0,"success",subtaskQuery);
 				return response;
@@ -296,7 +297,7 @@ public class SubtaskController extends BaseController {
 			JSONArray subtaskArray=dataJson.getJSONArray("subtasks");
 			List<Subtask> subtaskList = new ArrayList<Subtask>();
 			for(int i = 0;i<subtaskArray.size();i++){
-				Subtask subtask = (Subtask)JsonOperation.jsonToBean(subtaskArray.getJSONObject(i),Subtask.class);
+				Subtask<?> subtask = (Subtask<?>)JsonOperation.jsonToBean(subtaskArray.getJSONObject(i),Subtask.class);
 				subtaskList.add(subtask);
 			}
 			

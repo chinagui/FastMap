@@ -163,12 +163,12 @@ public class Operation implements IOperation {
 			delDetailMap.put(detail.getPid(), detail);
 		}
 
-		RdRestrictionSelector selector = new RdRestrictionSelector(conn);
+		RdRestrictionSelector selector = new RdRestrictionSelector(conn);	
 
-		List<IRow> restrictionRows = selector.loadByIds(pids, true, true);
+		for (Integer restricPid : pids) {
 
-		for (IRow restrictionRow : restrictionRows) {
-
+			IRow restrictionRow= selector.loadById(restricPid, true);
+			
 			RdRestriction restriction = (RdRestriction) restrictionRow;
 
 			String restricInfo = "";
@@ -201,7 +201,7 @@ public class Operation implements IOperation {
 
 			restriction.changedFields().put("restricInfo", restricInfo);
 
-			result.insertObject(restriction, ObjStatus.UPDATE, restrict.pid());
+			result.insertObject(restriction, ObjStatus.UPDATE, restriction.pid());
 		}
 	}
 

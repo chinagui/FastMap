@@ -641,8 +641,7 @@ public class commonTest extends InitApplication {
 	@Test
 	public void run_1020_2() throws Exception {
 
-		String parameter = "{\"type\":\"RDBRANCH\",\"command\":\"UPDATE\",\"dbId\":17,\"data\":{\"details\":[{\"branchType\":3,\"rowId\":\"80DB219480D34600BDFFCF1A0A0DEB8C\",\"pid\":202000024,\"objStatus\":\"UPDATE\",\"estabType\":9,\"nameKind\":9}],\"pid\":304000033}}";
-		
+		String parameter = "{\"command\":\"DELETE\",\"dbId\":17,\"type\":\"RDLINK\",\"objId\":306001082}";
 		
 		
 		Transaction t = new Transaction(parameter);

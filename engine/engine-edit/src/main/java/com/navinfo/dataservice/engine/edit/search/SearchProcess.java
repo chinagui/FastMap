@@ -237,12 +237,22 @@ public class SearchProcess {
 
 						RdLinkSearchUtils searchUtils = new RdLinkSearchUtils(
 								conn);
+						
 						List<Integer> nextLinkPids = searchUtils
 								.getConnectLinks(linkPid, direct, queryType);
 
+						JSONArray linkPidsArray=new JSONArray();
+
 						for (int pid : nextLinkPids) {
-							array.add(pid);
+							linkPidsArray.add(pid);
 						}
+
+						array.add(linkPidsArray);
+
+						JSONArray speedlimitArray = searchUtils
+								.getRdLinkSpeedlimit(nextLinkPids);
+
+						array.add(speedlimitArray);
 					}
 
 					return array;

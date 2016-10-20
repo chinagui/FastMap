@@ -76,6 +76,8 @@ public class Operation implements IOperation {
 				result.insertObject(detail, ObjStatus.DELETE, detail.getRestricPid());
 			}
 		}
+		
+		setRestricInfo(deleteDetailLanesList,  result);
 	}
 	
 	private void getDeleteInLinkRdRest(List<Integer> linkPidList,Map<Integer, RdRestriction> deleteLanesMap) throws Exception {
@@ -126,6 +128,80 @@ public class Operation implements IOperation {
 				}
 			}
 
+		}
+	}
+	
+	/**
+	 * 维护删除退出线后的交限RestricInfo字段
+	 * 
+	 * @param restriction
+	 *            交限
+	 * @param detail
+	 *            被删详细信息
+	 */
+	private void setRestricInfo(
+			List<RdRestrictionDetail> deleteDetailLanesList, Result result)
+			throws Exception {
+
+		if (deleteDetailLanesList == null || deleteDetailLanesList.size() == 0) {
+
+			return;
+		}
+
+		Map<Integer, RdRestrictionDetail> delDetailMap = new HashMap<Integer, RdRestrictionDetail>();
+
+		//被维护的交限pid组
+		List<Integer> pids = new ArrayList<Integer>();
+
+		for (RdRestrictionDetail detail : deleteDetailLanesList) {
+
+			if (!pids.contains((Integer) detail.getRestricPid())) {
+
+				pids.add(detail.getRestricPid());
+			}
+
+			delDetailMap.put(detail.getPid(), detail);
+		}
+
+		RdRestrictionSelector selector = new RdRestrictionSelector(conn);
+
+		List<IRow> restrictionRows = selector.loadByIds(pids, true, true);
+
+		for (IRow restrictionRow : restrictionRows) {
+
+			RdRestriction restriction = (RdRestriction) restrictionRow;
+
+			String restricInfo = "";
+
+			for (IRow row : restriction.getDetails()) {
+
+				RdRestrictionDetail detail = (RdRestrictionDetail) row;
+
+				if (delDetailMap.containsKey(detail.getPid())) {
+
+					continue;
+				}
+
+				String info = String.valueOf(detail.getRestricInfo());
+
+				if (detail.getFlag() == 0 || detail.getFlag() == 2) {
+
+					info = "[" + info + "]";
+				}
+
+				if (restricInfo.isEmpty()) {
+
+					restricInfo += info;
+
+				} else {
+
+					restricInfo += "," + info;
+				}
+			}
+
+			restriction.changedFields().put("restricInfo", restricInfo);
+
+			result.insertObject(restriction, ObjStatus.UPDATE, restrict.pid());
 		}
 	}
 

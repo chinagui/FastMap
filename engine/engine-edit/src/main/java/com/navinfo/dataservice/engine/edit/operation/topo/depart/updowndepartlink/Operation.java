@@ -343,13 +343,47 @@ public class Operation implements IOperation {
 	// 速度限制值、行政区划值、人行便道、阶梯、总车道数，左车道数、右车道数、车道等级初始化，上下线分离属性
 	private void relationNatureForlink(RdLink link) {
 		link.setMultiDigitized(1);
-		link.setLaneNum(2);
-		link.setLaneLeft(0);
-		link.setLaneRight(0);
-		link.setLaneClass(2);
+		// link.setLaneNum(2);
+		// link.setLaneLeft(0);
+		// link.setLaneRight(0);
+		// link.setLaneClass(2);
 		link.setWalkstairFlag(0);
 		link.setSidewalkFlag(0);
+		
+		link.setLaneLeft(0);
+		link.setLaneRight(0);
+		
+		if (link.getLaneLeft() != 0 || link.getLaneRight() != 0) {
+			
+			link.setLaneNum(0);
+		}
+		
+		int laneClass = getLaneClass(link.getLaneNum());
+		
+		link.setLaneClass(laneClass);
+		
 	}
+	
+	private int getLaneClass(int laneNum)
+	{
+		int laneClass = 0;
+		
+		if (laneNum == 1) {
+			laneClass = 1;
+			
+		} else if (laneNum == 2 || laneNum == 3) {
+			
+			laneClass = 2;
+			
+		} else if (laneNum >= 4) {
+			
+			laneClass = 3;
+		}
+
+		return laneClass;	
+	}
+	
+	
 
 	// link的限制类型为单行限制、穿行限制、车辆限制时，上下线分离后新link自动删除对应限制类型下的道路限制信息子表
 	private void relationLimitForLink(RdLink link) {

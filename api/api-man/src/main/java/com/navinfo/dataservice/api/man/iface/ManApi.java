@@ -49,5 +49,7 @@ public interface ManApi{
 	public List<Integer> getGridIdsBySubtaskId(int subtaskId) throws Exception;
 	
 	public void close(int subtaskId) throws Exception;
+	
+	public void updateProduceStatus(int produceId,int status) throws Exception;
 }
 

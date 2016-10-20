@@ -42,11 +42,15 @@ public class ReleaseFmIdbDailyJob extends AbstractJob {
 	public void execute() throws JobException  {
 		LogSelector logSelector =null;
 		boolean commitStatus=false;
+		ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
 		try{
+			ReleaseFmIdbDailyJobRequest releaseFmIdbDailyRequest = (ReleaseFmIdbDailyJobRequest )this.request;
+			int produceId=releaseFmIdbDailyRequest.getProduceId();
+			//日出品状态修改为 进行中
+			manApi.updateProduceStatus(produceId, 1);
 			List<Region> regionsWithGrids= queryRegionGridsMapping();
 			HashMap<String,FlushResult> jobResponse = new HashMap<String,FlushResult> ();
 			DatahubApi databhubApi = (DatahubApi) ApplicationContextUtil.getBean("datahubApi");
-			ReleaseFmIdbDailyJobRequest releaseFmIdbDailyRequest = (ReleaseFmIdbDailyJobRequest )this.request;
 			String featureType = releaseFmIdbDailyRequest.getFeatureType();
 			for (Region regionInfo:regionsWithGrids){
 				this.log.info("regionInfo:"+regionInfo);
@@ -79,6 +83,8 @@ public class ReleaseFmIdbDailyJob extends AbstractJob {
 					jobResponse.put(regionInfo.getRegionId().toString(), result);
 					commitStatus=true;
 				}catch(Exception e){
+					//日出品状态修改为 失败
+					manApi.updateProduceStatus(produceId, 3);
 					throw new JobException(e);
 				}
 				finally{
@@ -90,6 +96,8 @@ public class ReleaseFmIdbDailyJob extends AbstractJob {
 			this.log.info("调用出品转换api");
 			callReleaseTransApi();
 			this.response("日出品执行完毕", jobResponse);
+			//日出品状态修改为 完成
+			manApi.updateProduceStatus(produceId, 2);
 			
 		}catch(Exception e){
 			throw new JobException(e);
@@ -114,8 +122,7 @@ public class ReleaseFmIdbDailyJob extends AbstractJob {
 			}catch(Exception e){
 				log.warn("履历重置状态时发生错误，请手工对应。"+e.getMessage(),e);
 			}
-		}
-		
+		}	
 	}
 
 	private int lockGrid(int regionId,String featureType,List<Integer> gridListOfRegion)throws Exception{

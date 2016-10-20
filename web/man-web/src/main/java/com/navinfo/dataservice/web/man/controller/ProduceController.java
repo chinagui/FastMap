@@ -4,7 +4,9 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -24,6 +26,8 @@ import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
+import com.navinfo.dataservice.engine.man.produce.ProduceService;
+import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 
 /** 
@@ -36,6 +40,37 @@ import com.navinfo.navicommons.database.QueryRunner;
 public class ProduceController extends BaseController {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
 
+	/**
+	 * 日出品管理--列表
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/produce/list")
+	public ModelAndView list(HttpServletRequest request){
+		try{
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+
+			int curPageNum = 1;// 默认为第一页
+			String curPage = dataJson.getString("pageNum");
+			if (StringUtils.isNotEmpty(curPage)) {
+				curPageNum = Integer.parseInt(curPage);
+			}
+			int curPageSize = 20;// 默认为20条记录/页
+			String curSize = dataJson.getString("pageSize");
+			if (StringUtils.isNotEmpty(curSize)) {
+				curPageSize = Integer.parseInt(curSize);
+			}
+			Page data=ProduceService.getInstance().list(curPageNum, curPageSize);
+			Map<String, Object> resultMap = new HashMap<String, Object>();
+			resultMap.put("result", data.getResult());
+			resultMap.put("totalCount", data.getTotalCount());
+			return new ModelAndView("jsonView", success(resultMap));
+		}catch(Exception e){
+			log.error("日出品失败，原因："+e.getMessage(), e);
+			return new ModelAndView("jsonView",exception(e));
+		}
+	}
+	
 	/**
 	 * 日出品管理--生成POI&Road日出品包,生成POI日出品包
 	 * 判断类型，如果是POI，将grid范围内的POI数据刷到出品库；否则将grid范围内的全部数据刷到出品库。再调用出品转换脚本生成出品包。
@@ -55,17 +90,9 @@ public class ProduceController extends BaseController {
 			}
 			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
 			long userId=tokenObj.getUserId();
+			long jobId=ProduceService.getInstance().generateDaily(userId,dataJson);
 			//long userId=2;
-			JobApi jobApi=(JobApi) ApplicationContextUtil.getBean("jobApi");
-			/*
-			 * {"gridIds":[213424,343434,23423432],"stopTime":"yyyymmddhh24miss","dataType":"POI"//POI,ALL}
-			 * jobType:releaseFmIdbDailyJob/releaseFmIdbMonthlyJob
-			 */
-			//TODO
-			JSONObject jobDataJson=new JSONObject();
-			jobDataJson.put("gridList", dataJson.get("gridIds"));
-			jobDataJson.put("featureType", dataJson.get("dataType"));
-			long jobId=jobApi.createJob("releaseFmIdbDailyJob", jobDataJson, userId, "日出品");
+			
 			return new ModelAndView("jsonView", success(jobId));
 		}catch(Exception e){
 			log.error("日出品失败，原因："+e.getMessage(), e);

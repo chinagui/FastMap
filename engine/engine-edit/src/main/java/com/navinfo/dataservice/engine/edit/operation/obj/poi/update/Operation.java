@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
@@ -25,7 +26,6 @@ import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiRestaurant;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiAddress;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiAudio;
-import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiChildren;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiContact;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiEntryimage;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiFlag;
@@ -33,18 +33,16 @@ import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiIcon;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiName;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiNameFlag;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiNameTone;
-import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiParent;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiPhoto;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiVideo;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
-import com.navinfo.dataservice.dao.glm.operator.BasicOperator;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
+import net.sf.json.JSONObject;	
 
 public class Operation implements IOperation {
 
@@ -82,6 +80,12 @@ public class Operation implements IOperation {
 				boolean isChanged = ixPoi.fillChangeFields(content);
 
 				if (isChanged) {
+					result.insertObject(ixPoi, ObjStatus.UPDATE, ixPoi.pid());
+				}
+				else
+				{
+					//修改子表默认修改主表时间
+					ixPoi.changedFields().put("uDate", StringUtils.getCurrentTime());
 					result.insertObject(ixPoi, ObjStatus.UPDATE, ixPoi.pid());
 				}
 			}
@@ -1396,106 +1400,6 @@ public class Operation implements IOperation {
 					row.Unserialize(json);
 
 					row.setPoiPid(ixPoi.getPid());
-
-					row.setMesh(ixPoi.mesh());
-
-					result.insertObject(row, ObjStatus.INSERT, ixPoi.pid());
-				}
-			}
-		}
-
-	}
-
-	private void updataIxPoiParent(Result result, JSONObject content) throws Exception {
-		if (!content.containsKey("parent")) {
-			return;
-		}
-		JSONArray subObj = content.getJSONArray("parent");
-
-		for (int i = 0; i < subObj.size(); i++) {
-
-			JSONObject json = subObj.getJSONObject(i);
-
-			if (json.containsKey("objStatus")) {
-
-				if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
-
-					IxPoiParent row = ixPoi.parentMap.get(json.getString("rowId"));
-
-					if (row == null) {
-						throw new Exception("rowId=" + json.getString("rowId") + "的IxPoiParent不存在");
-					}
-
-					if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
-						result.insertObject(row, ObjStatus.DELETE, ixPoi.pid());
-
-						continue;
-					} else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
-
-						boolean isChanged = row.fillChangeFields(json);
-
-						if (isChanged) {
-							result.insertObject(row, ObjStatus.UPDATE, ixPoi.pid());
-						}
-					}
-				} else {
-					IxPoiParent row = new IxPoiParent();
-
-					row.Unserialize(json);
-
-					row.setPid(json.getInt("pid"));
-
-					row.setParentPoiPid(ixPoi.getPid());
-
-					row.setMesh(ixPoi.mesh());
-
-					result.insertObject(row, ObjStatus.INSERT, ixPoi.pid());
-				}
-			}
-		}
-
-	}
-
-	private void updataIxPoiChildren(Result result, JSONObject content) throws Exception {
-		if (!content.containsKey("children")) {
-			return;
-		}
-		JSONArray subObj = content.getJSONArray("children");
-
-		for (int i = 0; i < subObj.size(); i++) {
-
-			JSONObject json = subObj.getJSONObject(i);
-
-			if (json.containsKey("objStatus")) {
-
-				if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
-
-					IxPoiChildren row = ixPoi.childrenMap.get(json.getString("rowId"));
-
-					if (row == null) {
-						throw new Exception("rowId=" + json.getString("rowId") + "的IxPoiParent不存在");
-					}
-
-					if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
-						result.insertObject(row, ObjStatus.DELETE, ixPoi.pid());
-
-						continue;
-					} else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
-
-						boolean isChanged = row.fillChangeFields(json);
-
-						if (isChanged) {
-							result.insertObject(row, ObjStatus.UPDATE, ixPoi.pid());
-						}
-					}
-				} else {
-					IxPoiChildren row = new IxPoiChildren();
-
-					row.Unserialize(json);
-
-					row.setGroupId(json.getInt("groupId"));
-
-					row.setChildPoiPid(ixPoi.getPid());
 
 					row.setMesh(ixPoi.mesh());
 

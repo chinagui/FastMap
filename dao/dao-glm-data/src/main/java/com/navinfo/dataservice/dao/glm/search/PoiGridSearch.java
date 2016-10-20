@@ -19,6 +19,7 @@ import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiChildrenSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiContactSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiNameSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiParentSelector;
+import com.navinfo.dataservice.dao.log.LogReader;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.DBUtils;
 import com.navinfo.navicommons.geo.computation.CompGridUtil;
@@ -96,6 +97,8 @@ public class PoiGridSearch {
 		try {
 			pstmt = conn.prepareStatement(sb.toString());
 			
+			LogReader lr = new LogReader(conn);
+			
 			GridUtils gu = new GridUtils();
 			String grid = gridDate.getString("grid");
 			String wkt = gu.grid2Wkt(grid);
@@ -165,6 +168,10 @@ public class PoiGridSearch {
 				IxPoiGasstationSelector ixPoiGasstationSelector = new IxPoiGasstationSelector(conn);
 				
 				ixPoi.setGasstations(ixPoiGasstationSelector.loadByIdForAndroid(id));
+				
+				int uRecord = lr.getObjectState(id, "ix_poi");
+				
+				ixPoi.setuRecord(uRecord);
 				
 				retList.add(ixPoi);
 			}

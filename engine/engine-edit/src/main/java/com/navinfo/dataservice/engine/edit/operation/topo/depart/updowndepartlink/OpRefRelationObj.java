@@ -36,6 +36,16 @@ public class OpRefRelationObj {
 				.geteNode().getPid(), command.getLinks(), result);
 		return "";
 	}
+	
+	// 道路点
+	public String handleRdNode(Command command, Result result) throws Exception {
+		com.navinfo.dataservice.engine.edit.operation.obj.rdnode.depart.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdnode.depart.Operation(
+				conn);
+		operation.updownDepart(command.getsNode().getPid(), command.geteNode()
+				.getPid(), command.getLinks(), result);
+		return "";
+	}
+	
 
 	// 车信
 	public String handleLaneConnexity(Command command, Result result)

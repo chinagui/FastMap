@@ -59,10 +59,10 @@ public class CHECK_RDSLOPE_DIRECTION extends baseRule {
 				RdLinkSelector rdLinkSelector=new RdLinkSelector(this.getConn());
 				RdLink outLink = (RdLink) rdLinkSelector.loadByIdOnlyRdLink(outLinkPid, false);
 				//退出线是否沿通行方向
-				if(outLink.getDirect()==2 && outLink.geteNodePid() == startNode){
+				if(outLink.getDirect()==2 && outLink.getsNodePid() == startNode){
 					this.setCheckResult("", "", 0);
 					return;
-				}else if(outLink.getDirect()==3 && outLink.getsNodePid() == startNode){
+				}else if(outLink.getDirect()==3 && outLink.geteNodePid() == startNode){
 					this.setCheckResult("", "", 0);
 					return;
 				}

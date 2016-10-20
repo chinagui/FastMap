@@ -137,6 +137,7 @@ public class Operation {
         geoPoint.put("coordinates", new double[]{targetPoint.x, targetPoint.y});
         rdSpeedlimit.changedFields().put("geometry", geoPoint);
         rdSpeedlimit.changedFields().put("linkPid", link.getPid());
+        rdSpeedlimit.changedFields().put("direct", link.getDirect());
         // 更新点限速坐标以及挂接线
         result.insertObject(rdSpeedlimit, ObjStatus.UPDATE, rdSpeedlimit.pid());
     }

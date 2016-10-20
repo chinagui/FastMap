@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdslope.update;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import net.sf.json.JSONArray;
@@ -20,7 +21,7 @@ public class Command extends AbstractCommand {
 	
 	private int outLinkPid;
 	
-	private List<Integer> seriesLinkPids;// 持续links
+	private List<Integer> seriesLinkPids = new ArrayList<>();// 持续links
 	
 	private RdSlope slope;
 	

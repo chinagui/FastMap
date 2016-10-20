@@ -19,6 +19,7 @@ import com.navinfo.dataservice.dao.mq.MsgHandler;
 import com.navinfo.dataservice.dao.mq.MsgSubscriber;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
+import com.navinfo.navicommons.geo.computation.GridUtils;
 import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONObject;
@@ -75,6 +76,10 @@ public class InfoChangeMsgHandler implements MsgHandler {
 				Set<?> grids = (Set<?>) CompGeometryUtil.geo2GridsWithoutBreak(inforTmp);
 				Iterator<String> it = (Iterator<String>) grids.iterator();
 				Object[][] inforGridValues=new Object[grids.size()][2];
+				
+				//grid扩圈
+				GridUtils.get9NeighborGrids();
+				
 				int num=0;
 				while (it.hasNext()) {
 					List<Object> tmpObjects = new ArrayList<Object>();

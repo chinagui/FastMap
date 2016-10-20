@@ -2,13 +2,18 @@ package com.navinfo.dataservice.engine.man.mqmsg;
 
 import java.sql.Clob;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.dbutils.DbUtils;
+import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
@@ -17,6 +22,8 @@ import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.dao.mq.MsgHandler;
 import com.navinfo.dataservice.dao.mq.MsgSubscriber;
+import com.navinfo.dataservice.engine.man.InitApplication;
+import com.navinfo.dataservice.engine.man.grid.GridOperation;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.navinfo.navicommons.geo.computation.GridUtils;
@@ -49,6 +56,37 @@ public class InfoChangeMsgHandler implements MsgHandler {
 
 		}
 	}
+	
+	private List<String> gridsFilter(Connection conn,String gridId,String[] gridIds) throws Exception{
+		try {
+			QueryRunner run = new QueryRunner();
+			
+			String gridIdsStr = StringUtils.join(gridIds, ",");
+			
+			String selectSql = "SELECT BGM2.GRID_ID"
+					+ " FROM BLOCK_GRID_MAPPING BGM2"
+					+ " WHERE BGM2.GRID_ID IN (" + gridIdsStr + ")"
+					+ " AND BGM2.BLOCK_ID <> (SELECT * FROM BLOCK_GRID_MAPPING BGM WHERE BGM.GRID_ID = " + gridId +")";
+			
+			ResultSetHandler<List<String>> rsHandler = new ResultSetHandler<List<String>>() {
+				public List<String> handle(ResultSet rs) throws SQLException {
+					List<String> gridIdlist = new ArrayList<String>();
+					while (rs.next()) {
+						gridIdlist.add(rs.getString("GRID_ID"));
+					}
+					return gridIdlist;
+				}
+
+			};
+
+			return run.query(conn, selectSql, rsHandler);
+			
+		}catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询grid失败:" + e.getMessage(), e);
+		}
+	}
 
 	public void save(String message) throws Exception {
 		Connection conn = null;
@@ -74,12 +112,22 @@ public class InfoChangeMsgHandler implements MsgHandler {
 			for (String geoTmp : inforGeoList) {
 				Geometry inforTmp = GeoTranslator.wkt2Geometry(geoTmp);
 				Set<?> grids = (Set<?>) CompGeometryUtil.geo2GridsWithoutBreak(inforTmp);
-				Iterator<String> it = (Iterator<String>) grids.iterator();
-				Object[][] inforGridValues=new Object[grids.size()][2];
-				
+
 				//grid扩圈
-				GridUtils.get9NeighborGrids();
+				Set<String> gridsAfter = new HashSet<String>(); 
+				for(Iterator<String> gridsItr = (Iterator<String>)grids.iterator();gridsItr.hasNext();)  
+		        {              
+					String gridId = gridsItr.next();
+					String[] gridAfter = GridUtils.get9NeighborGrids(gridId);
+					List<String> gridIdlist = gridsFilter(conn,gridId,gridAfter);					
+					for(int i=0;i<gridIdlist.size();i++){
+						gridsAfter.add(gridIdlist.get(i));
+					}           
+		        } 
 				
+//				Iterator<String> it = (Iterator<String>) grids.iterator();
+//				Object[][] inforGridValues=new Object[grids.size()][2];
+				Iterator<String> it = (Iterator<String>) gridsAfter.iterator();
 				int num=0;
 				while (it.hasNext()) {
 					List<Object> tmpObjects = new ArrayList<Object>();
@@ -103,7 +151,6 @@ public class InfoChangeMsgHandler implements MsgHandler {
 
 	public static void main(String[] args) {
 		try {
-
 			final InfoChangeMsgHandler sub = new InfoChangeMsgHandler();
 			String message = "{\"geometry\":\"POINT (120.712884 31.363296);POINT (123.712884 32.363296);\",\"rowkey\":\"5f2086de-23a4-4c02-8c08-995bfe4c6f0b\",\"i_level\":2,\"b_sourceCode\":1,\"b_sourceId\":\"sfoiuojkw89234jkjsfjksf\",\"b_reliability\":3,\"INFO_NAME\":\"道路通车\",\"INFO_CONTENT\":\"广泽路通过广泽桥到来广营东路路段已经通车，需要更新道路要素\"}";
 			sub.save(message);

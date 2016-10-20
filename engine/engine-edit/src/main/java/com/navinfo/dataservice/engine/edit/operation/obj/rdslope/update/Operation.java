@@ -88,7 +88,7 @@ public class Operation implements IOperation {
 				int currentSize = this.command.getSeriesLinkPids().size();
 
 				if (sourceSize > currentSize) {
-					for (int i = currentSize; i <= sourceSize; i++) {
+					for (int i = currentSize; i < sourceSize; i++) {
 						result.insertObject(this.command.getSlope()
 								.getSlopeVias().get(i), ObjStatus.DELETE,
 								this.command.getPid());

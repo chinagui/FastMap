@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.man.block;
 
+import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -8,8 +9,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -27,9 +31,14 @@ import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
+import com.navinfo.navicommons.database.sql.StringUtil;
+import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
+import com.navinfo.navicommons.geo.computation.GridUtils;
+import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import oracle.sql.CLOB;
 import oracle.sql.STRUCT;
 
 public class BlockOperation {
@@ -844,5 +853,86 @@ public class BlockOperation {
 			log.error(e.getMessage(), e);
 			throw new Exception("查询失败，原因为:" + e.getMessage(), e);
 		}
+	}
+
+	/**
+	 * @param conn
+	 * @param blockId
+	 * @return 
+	 * @throws Exception 
+	 */
+	public static List queryWktByBlockIdNormal(Connection conn, int blockId) throws Exception {
+		// TODO Auto-generated method stub
+		try {
+			QueryRunner run = new QueryRunner();
+			
+			String selectSql = "SELECT B.BLOCK_ID,B.GEOMETRY FROM BLOCK B WHERE B.BLOCK_ID = " + blockId;
+			
+			ResultSetHandler<List> rsHandler = new ResultSetHandler<List>() {
+				public List handle(ResultSet rs) throws SQLException {
+					List json = new ArrayList(); 				
+					if (rs.next()) {
+						STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
+						try {
+//							result.put("geometry",GeoTranslator.struct2Wkt(struct));
+							String clobStr = GeoTranslator.struct2Wkt(struct);
+							json.add(Geojson.wkt2Geojson(clobStr));
+						} catch (Exception e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+					}
+					return json;
+				}
+			};
+			return run.query(conn, selectSql,rsHandler);
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:" + e.getMessage(), e);
+		}
+
+		
+	}
+
+	/**
+	 * @param conn
+	 * @param blockId
+	 * @return 
+	 * @throws Exception 
+	 */
+	public static List queryWktByBlockIdInfor(Connection conn, int blockManId) throws Exception {
+		// TODO Auto-generated method stub
+		try {
+			QueryRunner run = new QueryRunner();
+			
+			String selectSql = "select i.geometry from block_man bm,infor i where bm.task_id = i.task_id and bm.block_man_id = " + blockManId;
+			
+			ResultSetHandler<List> rsHandler = new ResultSetHandler<List>() {
+				public List handle(ResultSet rs) throws SQLException {
+					List json = new ArrayList(); 
+					if (rs.next()) {
+						CLOB inforGeo = (CLOB) rs.getClob("geometry");
+						String inforGeo1 = StringUtil.ClobToString(inforGeo);
+						String[] inforGeoList = inforGeo1.split(";");
+						for(String geoTmp : inforGeoList){
+							try {
+								json.add(Geojson.wkt2Geojson(geoTmp));
+							} catch (Exception e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+						}
+					}
+					return json;
+				}
+			};
+			return run.query(conn, selectSql,rsHandler);
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:" + e.getMessage(), e);
+		}
+
 	}
 }

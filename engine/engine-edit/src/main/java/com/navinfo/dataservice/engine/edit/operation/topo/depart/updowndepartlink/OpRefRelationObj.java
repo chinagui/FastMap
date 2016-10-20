@@ -149,7 +149,7 @@ public class OpRefRelationObj {
 		com.navinfo.dataservice.engine.edit.operation.obj.rdwarninginfo.depart.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdwarninginfo.depart.Operation(
 				conn);
 		return operation.updownDepart(command.getLinks(),
-				command.getLeftLinkMapping(), command.getRightLinkMapping(),
+				command.getLeftLinkMapping(), command.getRightLinkMapping(),command.getNoTargetLinks(),
 				result);
 	}
 

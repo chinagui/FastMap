@@ -203,8 +203,15 @@ public class BlockController extends BaseController {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
 			
-			int blockId = dataJson.getInt("blockId");
-			HashMap<String,String> data = service.queryWktByBlockId(blockId);
+			int blockId = 0;
+			int blockManId = 0;
+			int type = dataJson.getInt("type");
+			if(1==type){
+				blockId = dataJson.getInt("blockId");
+			}else if(4==type){
+				blockManId = dataJson.getInt("blockManId");
+			}
+			List data = service.queryWktByBlockId(blockId,blockManId,type);
 			return new ModelAndView("jsonView", success(data));
 		} catch (Exception e) {
 			log.error("获取明细失败，原因：" + e.getMessage(), e);

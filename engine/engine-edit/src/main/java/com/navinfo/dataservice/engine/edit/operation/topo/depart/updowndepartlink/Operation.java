@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.navinfo.dataservice.engine.edit.utils.batch.AdminIDBatchUtils;
+import com.navinfo.dataservice.engine.edit.utils.batch.ZoneIDBatchUtils;
 import net.sf.json.JSONObject;
 
 import org.apache.log4j.Logger;
@@ -319,6 +321,8 @@ public class Operation implements IOperation {
             // 17对线点线关系（车信，交限，分歧，语音引导，顺行）信息的维护
             // 18.方向
             link.setDirect(2);
+            // 19. 维护AdmindId，ZoneId
+            this.updateAdminZoneId(link, result);
             result.insertObject(link, ObjStatus.INSERT, link.getPid());
         }
     }
@@ -415,21 +419,14 @@ public class Operation implements IOperation {
                     if (linkRtic.getUpdownFlag() == 0) {
                         linkRtics.add(linkRtic);
                     } else {
-                        linkRtic.setUpdownFlag(1);
+                        linkRtic.setUpdownFlag(0);
                     }
-                    //linkRtic.setRticDir(2);
                 } else {
                     if (linkRtic.getUpdownFlag() == 1) {
                         linkRtics.add(linkRtic);
                     }
-                    //linkRtic.setRticDir(3);
                 }
             }
-//			if (upDownFlag == 0) {
-//				if (link.getDirect() == 2 || link.getDirect() == 3) {
-//					linkRtics.add(linkRtic);
-//				}
-//			}
             if (link.getDirect() == 2) {
                 if (upDownFlag == 0) {
                     linkRtics.add(linkRtic);
@@ -817,5 +814,12 @@ public class Operation implements IOperation {
 
     }
 
-
+    private void updateAdminZoneId(RdLink link, Result result) {
+        try {
+            AdminIDBatchUtils.updateAdminID(link, null, conn);
+            ZoneIDBatchUtils.updateZoneID(link, null, conn, result);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

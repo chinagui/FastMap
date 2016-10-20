@@ -57,7 +57,7 @@ public class POITest extends InitApplication {
 	public void getTitleWithGap() {
 		Connection conn = null;
 		try {
-			conn = DBConnector.getInstance().getConnectionById(42);
+			conn = DBConnector.getInstance().getConnectionById(19);
 
 			SearchProcess p = new SearchProcess(conn);
 
@@ -65,7 +65,7 @@ public class POITest extends InitApplication {
 
 			objType.add(ObjType.IXPOI);
 
-			System.out.println(p.searchDataByTileWithGap(objType, 107937, 49616, 17, 80));
+			System.out.println(p.searchDataByTileWithGap(objType, 107916, 49606, 17, 80));
 
 		} catch (Exception e) {
 			e.printStackTrace();

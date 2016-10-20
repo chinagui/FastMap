@@ -13,6 +13,6 @@ package com.navinfo.navicommons.geo.computation;
 * @Description: TODO
 *  
 */
-public enum MeshLocation {
+public enum TopoLocation {
 	Top, Bottom, Left, Right, LeftTop, LeftBottom, RightTop, RightBottom, Inside,Outside,
 }

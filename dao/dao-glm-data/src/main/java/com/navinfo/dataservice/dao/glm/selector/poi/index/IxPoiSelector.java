@@ -14,6 +14,7 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
+import com.navinfo.dataservice.dao.log.LogReader;
 import com.navinfo.navicommons.database.sql.DBUtils;
 import com.navinfo.navicommons.geo.computation.GridUtils;
 import com.vividsolutions.jts.geom.Geometry;
@@ -388,6 +389,10 @@ public class IxPoiSelector extends AbstractSelector {
 		poi.setSamepoiParts(parts);
 
 		poi.setRawFields(loadRawByRowId(poi.getRowId()));
+		
+		LogReader logRead=new LogReader(conn);
+		
+		poi.setState(logRead.getObjectState(poi.pid(), "ix_poi"));
 
 		return poi;
 	}

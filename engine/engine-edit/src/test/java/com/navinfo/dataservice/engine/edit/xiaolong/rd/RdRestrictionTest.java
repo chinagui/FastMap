@@ -16,7 +16,7 @@ public class RdRestrictionTest extends InitApplication{
 	
 	@Test
 	public void testAddRestriction() {
-		String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDLANECONNEXITY\",\"dbId\":17,\"data\":{\"topos\":[{\"vias\":[{\"rowId\":\"\",\"groupId\":1,\"linkPid\":28017067,\"seqNum\":1,\"topologyId\":97102,\"objStatus\":\"INSERT\"},{\"rowId\":\"\",\"groupId\":1,\"linkPid\":28017066,\"seqNum\":2,\"topologyId\":97102,\"objStatus\":\"INSERT\"},{\"rowId\":\"\",\"groupId\":1,\"linkPid\":28017061,\"seqNum\":3,\"topologyId\":97102,\"objStatus\":\"INSERT\"},{\"rowId\":\"\",\"groupId\":1,\"linkPid\":28017056,\"seqNum\":4,\"topologyId\":97102,\"objStatus\":\"INSERT\"},{\"rowId\":\"\",\"groupId\":1,\"linkPid\":28016955,\"seqNum\":5,\"topologyId\":97102,\"objStatus\":\"INSERT\"},{\"rowId\":\"\",\"groupId\":1,\"linkPid\":28017069,\"seqNum\":6,\"topologyId\":97102,\"objStatus\":\"INSERT\"},{\"rowId\":\"\",\"groupId\":1,\"linkPid\":28017071,\"seqNum\":7,\"topologyId\":97102,\"objStatus\":\"INSERT\"},{\"rowId\":\"\",\"groupId\":1,\"linkPid\":28017073,\"seqNum\":8,\"topologyId\":97102,\"objStatus\":\"INSERT\"},{\"rowId\":\"3AE1F52ED52792F7E050A8C08304EE4C\",\"objStatus\":\"UPDATE\",\"linkPid\":794607,\"seqNum\":9}],\"pid\":97102}],\"pid\":45519}}";
+		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDLANECONNEXITY\",\"dbId\":17,\"data\":{\"inLinkPid\":55133571,\"nodePid\":19640814,\"outLinkPids\":[55133575],\"laneInfo\":\"b\"}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

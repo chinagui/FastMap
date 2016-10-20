@@ -36,7 +36,7 @@ public class RdVariableSpeed implements IObj {
 
 	private int outLinkPid;
 
-	private int location;
+	private int location = 2;
 
 	private int speedValue;
 

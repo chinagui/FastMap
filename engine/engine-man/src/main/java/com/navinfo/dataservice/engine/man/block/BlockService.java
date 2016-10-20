@@ -45,6 +45,7 @@ import com.navinfo.navicommons.exception.ServiceException;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import oracle.net.aso.k;
 import oracle.sql.CLOB;
 import oracle.sql.STRUCT;
 
@@ -846,8 +847,24 @@ public class BlockService {
 					conditionSql=conditionSql+" AND MAN_LIST.CREATE_USER_NAME LIKE '%"+conditionJson.getString(key)+"%'";}
 				if("taskName".equals(key)){
 					conditionSql=conditionSql+" AND MAN_LIST.TASK_NAME LIKE '%"+conditionJson.getString(key)+"%'";}
+				/*if("blockPlanStatus".equals(key)){
+					conditionSql=conditionSql+" AND MAN_LIST.BLOCK_PLAN_STATUS ="+conditionJson.getInt(key);}
+				*/
+				if("collectProgress".equals(key)){
+					if(!statusSql.isEmpty()){statusSql+=" or ";}
+					statusSql+=" MAN_LIST.collect_Progress IN ("+conditionJson.getJSONArray(key).join(",")+")";}
+				if("dailyProgress".equals(key)){
+					if(!statusSql.isEmpty()){statusSql+=" or ";}
+					statusSql+=" MAN_LIST.daily_Progress IN ("+conditionJson.getJSONArray(key).join(",")+")";}
+				if("blockStatus".equals(key)){
+					if(!statusSql.isEmpty()){statusSql+=" or ";}
+					statusSql+=" MAN_LIST.BLOCK_STATUS ="+conditionJson.getInt(key);}
 				if("blockPlanStatus".equals(key)){
-					conditionSql=conditionSql+" AND MAN_LIST.BLOCK_PLAN_STATUS ="+conditionJson.getInt(key);}				
+					if(!statusSql.isEmpty()){statusSql+=" or ";}
+					statusSql+=" MAN_LIST.BLOCK_PLAN_STATUS ="+conditionJson.getInt(key);}
+				if("planStatus".equals(key)){
+					if(!statusSql.isEmpty()){statusSql+=" or ";}
+					statusSql+=" MAN_LIST.PLAN_STATUS IN ("+conditionJson.getJSONArray(key).join(",")+")";}
 			}
 		}	
 		if(!statusSql.isEmpty()){//有非status
@@ -858,26 +875,29 @@ public class BlockService {
 		String selectSql = "";
 		String selectPart="";
 		String wherePart="";
-		selectSql="WITH TASK_PLAN AS"
-				+ " (SELECT T.TASK_ID, 3 PLAN_STATUS"
-				+ "    FROM TASK T, BLOCK_MAN BM"
-				+ "   WHERE T.TASK_ID = BM.TASK_ID"
+		selectSql="WITH BLOCK_PLAN AS"
+				//block已完成
+				+ " (SELECT BM.BLOCK_MAN_ID, 3 PLAN_STATUS"
+				+ "    FROM SUBTASK T, BLOCK_MAN BM"
+				+ "   WHERE T.BLOCK_MAN_ID = BM.BLOCK_MAN_ID"
 				+ "     AND NOT EXISTS (SELECT 1"
-				+ "            FROM BLOCK_MAN BMM"
-				+ "           WHERE BMM.TASK_ID = T.TASK_ID"
+				+ "            FROM SUBTASK BMM"
+				+ "           WHERE BMM.BLOCK_MAN_ID = BM.BLOCK_MAN_ID"
 				+ "             AND BMM.STATUS <> 0)"
 				+ "  UNION ALL"
-				+ "  SELECT T.TASK_ID, 2 PLAN_STATUS"
-				+ "    FROM TASK T"
+				//block作业中
+				+ "  SELECT T.BLOCK_MAN_ID, 2 PLAN_STATUS"
+				+ "    FROM BLOCK_MAN T"
 				+ "   WHERE NOT EXISTS"
-				+ "   (SELECT 1 FROM BLOCK_MAN BMM WHERE BMM.TASK_ID = T.TASK_ID)"
+				+ "   (SELECT 1 FROM SUBTASK BMM WHERE BMM.BLOCK_MAN_ID = T.BLOCK_MAN_ID)"
 				+ "  UNION ALL"
-				+ "  SELECT T.TASK_ID, 2 PLAN_STATUS"
-				+ "    FROM TASK T, BLOCK_MAN BM"
-				+ "   WHERE T.TASK_ID = BM.TASK_ID"
+				//block作业中
+				+ "  SELECT T.BLOCK_MAN_ID, 2 PLAN_STATUS"
+				+ "    FROM BLOCK_MAN T, SUBTASK BM"
+				+ "   WHERE T.BLOCK_MAN_ID = BM.BLOCK_MAN_ID"
 				+ "     AND EXISTS (SELECT 1"
-				+ "            FROM BLOCK_MAN BMM"
-				+ "           WHERE BMM.TASK_ID = T.TASK_ID"
+				+ "            FROM SUBTASK BMM"
+				+ "           WHERE BMM.BLOCK_MAN_ID = T.BLOCK_MAN_ID"
 				+ "             AND BMM.STATUS <> 0)),"
 				+ " MAN_LIST AS"
 				+ " (SELECT DISTINCT T.BLOCK_MAN_ID,"
@@ -897,12 +917,12 @@ public class BlockService {
 				 * ②相同状态中根据剩余工期排序，逾期>0天>剩余/提前
 				 * ③开启状态相同剩余工期，根据完成度排序，完成度高>完成度低；其它状态，根据名称
 				 */
-				+ "                  CASE TT.STATUS"
+				+ "                  CASE T.STATUS"
 				+ "                      WHEN 1 THEN CASE TP.PLAN_STATUS WHEN 2 THEN 0"
                 + "                       when 3 then 3 end "
                 + "                         when 2 then 1"
                 + "                           when 0 then 4 end order_status,"
-                + "                  CASE TT.STATUS"
+                + "                  CASE T.STATUS"
 				+ "                      WHEN 1 THEN CASE TP.PLAN_STATUS WHEN 2 THEN 2"
                 + "                       when 3 then 3 end "
                 + "                         when 2 then 1"
@@ -940,7 +960,7 @@ public class BlockService {
 				+ "         FM_STAT_OVERVIEW_BLOCKMAN S,"
 				//+ "         SUBTASK                   ST,"
 				+ "         USER_INFO I,"
-				+ "         TASK_PLAN                 TP"
+				+ "         BLOCK_PLAN                 TP"
 				+ "   WHERE T.TASK_ID = TT.TASK_ID"
 				+ "     AND T.CREATE_USER_ID=I.USER_ID"
 				+ "     AND T.LATEST = 1"
@@ -948,7 +968,7 @@ public class BlockService {
 				+ "     AND T.COLLECT_GROUP_ID = GC.GROUP_ID(+)"
 				+ "     AND T.DAY_EDIT_GROUP_ID = GE.GROUP_ID(+)"
 				+ "     AND T.BLOCK_MAN_ID = S.BLOCK_MAN_ID(+)"
-				+ "     AND T.TASK_ID = TP.TASK_ID(+)"
+				+ "     AND T.BLOCK_MAN_ID = TP.BLOCK_MAN_ID(+)"
 				//+ "     AND T.BLOCK_MAN_ID = ST.BLOCK_MAN_ID(+)"
 				+ "     AND TT.LATEST = 1"
 				+ "  UNION ALL"

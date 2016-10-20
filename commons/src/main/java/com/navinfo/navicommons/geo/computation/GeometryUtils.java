@@ -210,26 +210,22 @@ public class GeometryUtils {
 
 		StringBuilder sb = new StringBuilder("MULTIPOINT (");
 
-		for (int i = 0; i < geometryList.size()-1; i++) {
+		for (int i = 0; i < geometryList.size() - 1; i++) {
 
 			Geometry tmp1 = geometryList.get(i);
-			
-			for (int j = i; j < geometryList.size()-1; j++) {
-				
-				Geometry tmp2 = geometryList.get(j+1);
 
-				if (tmp1.intersects(tmp2)) {
+			for (int j = i; j < geometryList.size() - 1; j++) {
 
+				Geometry tmp2 = geometryList.get(j + 1);
+
+				if (!tmp1.touches(tmp2) && tmp1.intersects(tmp2)) {
 					Geometry interGeo = tmp1.intersection(tmp2);
 
-					// if (tmp1.getBoundary().contains(interGeo)
-					// && !tmp2.getBoundary().contains(interGeo)) {
 					Coordinate coor = interGeo.getCoordinate();
 
 					sb.append(coor.x + " ");
 
 					sb.append(coor.y + ",");
-					// }
 				}
 			}
 		}

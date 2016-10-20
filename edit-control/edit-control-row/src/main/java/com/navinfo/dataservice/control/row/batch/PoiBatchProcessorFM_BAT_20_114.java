@@ -46,7 +46,7 @@ public class PoiBatchProcessorFM_BAT_20_114 implements IBatch {
 			sql.append("SELECT A.admin_id");
 			sql.append(" FROM AD_ADMIN A, AD_FACE F");
 			sql.append(" WHERE F.REGION_ID = A.REGION_ID");
-			sql.append(" AND sdo_Geom.Relate(F.GEOMETRY,'Anyinteract',sdo_geometry(2001,8307,:1,null,null),0.005) = 'TRUE'");
+			sql.append(" AND sdo_Geom.Relate(F.GEOMETRY,'Anyinteract',sdo_geometry(:1,8307),0.005) = 'TRUE'");
 			sql.append(" and rownum=1");
 			Geometry geometry = poi.getGeometry();
 			String wkt = GeoTranslator.jts2Wkt(geometry);

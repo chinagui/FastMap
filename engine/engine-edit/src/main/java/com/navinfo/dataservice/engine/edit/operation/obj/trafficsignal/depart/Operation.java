@@ -41,7 +41,7 @@ public class Operation {
             tmpNodePids.add(link.geteNodePid());
         }
         Integer[] tmpArr = tmpNodePids.toArray(new Integer[]{});
-        List<Integer> nodePids = new ArrayList<>(tmpNodePids).subList(1,tmpNodePids.size() - 1);
+        List<Integer> nodePids = new ArrayList<>(tmpNodePids).subList(1, tmpNodePids.size() - 1);
         List<RdTrafficsignal> trafficsignals = selector.loadByNodePids(nodePids, true);
         for (RdTrafficsignal trafficsignal : trafficsignals) {
             result.insertObject(trafficsignal, ObjStatus.DELETE, trafficsignal.pid());
@@ -50,27 +50,27 @@ public class Operation {
         // 2.信号灯进入点为分离线的起点时更新信号灯进入线
         trafficsignals = selector.loadByNodeId(true, tmpArr[0]);
         if (!trafficsignals.isEmpty()) {
-            if (2 == leftLinks.get(linkPids[0]).getDirect()) {
-                link = rightLinks.get(linkPids[length - 1]);
-            } else if (3 == leftLinks.get(linkPids[0]).getDirect()) {
-                link = leftLinks.get(linkPids[0]);
-            }
             for (RdTrafficsignal trafficsignal : trafficsignals) {
-                trafficsignal.changedFields().put("linkPid", link.pid());
-                result.insertObject(trafficsignal, ObjStatus.UPDATE, trafficsignal.pid());
+                for (int i = 0; i < links.size(); i++) {
+                    if (trafficsignal.getLinkPid() == links.get(i).pid()) {
+                        trafficsignal.changedFields().put("linkPid", leftLinks.get(i).pid());
+                        result.insertObject(trafficsignal, ObjStatus.UPDATE, trafficsignal.pid());
+                        break;
+                    }
+                }
             }
         }
         // 3.信号灯进入点为分离线的终点时更新信号灯进入线
         trafficsignals = selector.loadByNodeId(true, tmpArr[tmpArr.length - 1]);
         if (!trafficsignals.isEmpty()) {
-            if (2 == leftLinks.get(linkPids[length - 1]).getDirect()) {
-                link = leftLinks.get(linkPids[length - 1]);
-            } else if (3 == leftLinks.get(linkPids[length - 1]).getDirect()) {
-                link = rightLinks.get(linkPids[0]);
-            }
             for (RdTrafficsignal trafficsignal : trafficsignals) {
-                trafficsignal.changedFields().put("linkPid", link.pid());
-                result.insertObject(trafficsignal, ObjStatus.UPDATE, trafficsignal.pid());
+                for (int i = 0; i < links.size(); i++) {
+                    if (trafficsignal.getLinkPid() == links.get(i).pid()) {
+                        trafficsignal.changedFields().put("linkPid", rightLinks.get(i).pid());
+                        result.insertObject(trafficsignal, ObjStatus.UPDATE, trafficsignal.pid());
+                        break;
+                    }
+                }
             }
         }
         return "";

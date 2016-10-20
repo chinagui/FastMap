@@ -202,7 +202,7 @@ public class RdTrafficsignalSelector extends AbstractSelector {
 		}
 		String inter = "''";
 		if (buffer.length() > 0)
-			inter = buffer.substring(1, buffer.length() - 1);
+			inter = buffer.substring(0, buffer.length() - 1);
 		StringBuilder sb = new StringBuilder(
 				"select * from rd_trafficsignal where node_pid in(" + inter + ") and u_record !=2");
 		if (isLock) {

@@ -42,6 +42,11 @@ public class SamplebJobRequest extends AbstractJobRequest{
 	}
 
 	@Override
+	public String getJobTypeName(){
+		return "示例B";
+	}
+
+	@Override
 	public void defineSubJobRequests() throws JobCreateException {
 		subJobRequests = new HashMap<String,AbstractJobRequest>();
 		AbstractJobRequest samplea1 = JobCreateStrategy.createJobRequest("samplea", null);

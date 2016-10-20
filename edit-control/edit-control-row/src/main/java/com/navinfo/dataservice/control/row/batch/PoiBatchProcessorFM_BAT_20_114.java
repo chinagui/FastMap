@@ -83,6 +83,7 @@ public class PoiBatchProcessorFM_BAT_20_114 implements IBatch {
 					if (changeFlag) {
 						ixPoiGasstation.setOilType(oilType);
 						JSONObject changeFields = ixPoiGasstation.Serialize(null);
+						changeFields.remove("uDate");
 						changeFields.put("objStatus", ObjStatus.UPDATE.toString());
 						dataArray.add(changeFields);
 					}

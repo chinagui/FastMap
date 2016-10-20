@@ -3,7 +3,6 @@ package com.navinfo.dataservice.engine.edit.operation.batch.poi;
 import com.navinfo.dataservice.dao.glm.iface.ICommand;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
-import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 
 import net.sf.json.JSONObject;
@@ -12,7 +11,8 @@ public class Command extends AbstractCommand implements ICommand {
 
 	private String requester;
 	private int pid;
-	private IxPoi poi;
+	private JSONObject content;
+	private boolean isLock = true;
 
 	@Override
 	public OperType getOperType() {
@@ -30,15 +30,13 @@ public class Command extends AbstractCommand implements ICommand {
 	}
 
 	public Command(JSONObject json, String requester) throws Exception {
-		try {
-			this.requester = requester;
-			this.setPid(json.getInt("pid"));
-			this.setDbId(json.getInt("dbId"));
-			IxPoi poi = new IxPoi();
-			poi.Unserialize(json.getJSONObject("poi"));
-			this.setPoi(poi);
-		} catch (Exception e) {
-			throw e;
+		this.requester = requester;
+		this.pid = json.getInt("pid");
+		this.setDbId(json.getInt("dbId"));
+		this.content = json.getJSONObject("change");
+		if(json.containsKey("isLock"))
+		{
+			isLock = json.getBoolean("isLock");
 		}
 		
 	}
@@ -50,13 +48,21 @@ public class Command extends AbstractCommand implements ICommand {
 	public void setPid(int pid) {
 		this.pid = pid;
 	}
-
-	public IxPoi getPoi() {
-		return poi;
+	
+	public JSONObject getContent() {
+		return content;
 	}
 
-	public void setPoi(IxPoi poi) {
-		this.poi = poi;
+	public void setContent(JSONObject content) {
+		this.content = content;
+	}
+	
+	public boolean isLock() {
+		return isLock;
+	}
+
+	public void setLock(boolean isLock) {
+		this.isLock = isLock;
 	}
 
 }

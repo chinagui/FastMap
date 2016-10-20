@@ -19,16 +19,21 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.man.model.Block;
 import com.navinfo.dataservice.api.man.model.BlockMan;
+import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.man.model.UserInfo;
+import com.navinfo.dataservice.api.statics.iface.StaticsApi;
+import com.navinfo.dataservice.api.statics.model.SubtaskStatInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DateUtilsEx;
 import com.navinfo.dataservice.commons.xinge.XingeUtil;
 import com.navinfo.dataservice.engine.man.message.MessageOperation;
+import com.navinfo.dataservice.engine.man.subtask.SubtaskOperation;
 import com.navinfo.dataservice.engine.man.task.TaskOperation;
 import com.navinfo.dataservice.engine.man.userDevice.UserDeviceService;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoOperation;
@@ -1213,6 +1218,49 @@ public class BlockService {
 				+ "  FROM (SELECT FINAL_TABLE.*, ROWNUM AS ROWNUM_ FROM FINAL_TABLE  WHERE ROWNUM <= "+pageEndNum+") TT"
 				+ " WHERE TT.ROWNUM_ >= "+pageStartNum;
 		return BlockOperation.getSnapshotQuery(conn, selectSql,currentPageNum,pageSize);
+	}
+
+	/**
+	 * @param blockId
+	 * @return
+	 * @throws ServiceException 
+	 */
+	public HashMap<String,String> queryWktByBlockId(int blockId) throws ServiceException {
+		// TODO Auto-generated method stub
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+			
+			String selectSql = "SELECT B.BLOCK_ID,B.GEOMETRY FROM BLOCK B WHERE B.BLOCK_ID = " + blockId;
+			
+			ResultSetHandler<HashMap<String,String>> rsHandler = new ResultSetHandler<HashMap<String,String>>() {
+				public HashMap<String,String> handle(ResultSet rs) throws SQLException {
+					HashMap<String,String> result = new HashMap<String,String>();
+					result.put("geometry", null);
+					if (rs.next()) {
+						STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
+						try {
+							result.put("geometry",GeoTranslator.struct2Wkt(struct));
+						} catch (Exception e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+					}
+					return result;
+				}
+	
+			};
+
+			return run.query(conn, selectSql,rsHandler);
+			
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询wkt失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
 	}
 	
 

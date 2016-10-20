@@ -59,6 +59,11 @@ public class ColumnSubmitJobRequest extends AbstractJobRequest {
 	public String getJobType() {
 		return "columnSaveJob";
 	}
+	
+	@Override
+	public String getJobTypeName(){
+		return "列编提交";
+	}
 
 	@Override
 	protected int myStepCount() throws JobException {

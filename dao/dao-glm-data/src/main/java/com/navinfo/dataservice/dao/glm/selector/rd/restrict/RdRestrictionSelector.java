@@ -71,13 +71,53 @@ public class RdRestrictionSelector extends AbstractSelector {
 				RdRestrictionDetailSelector detailSelector = new RdRestrictionDetailSelector(
 						conn);
 
-				restrict.setDetails(detailSelector.loadRowsByParentId(id,
-						isLock));
+				List<IRow> rows = detailSelector.loadRowsByParentId(id,
+						isLock);
 
-				for (IRow row : restrict.getDetails()) {
-
+				List<IRow> details = new ArrayList<>();
+				
+				String restrics = restrict.getRestricInfo();
+				
+				List<Integer> hasSelectedOutLinkPid = new ArrayList<>();
+				
+				for(String tmpRes : restrics.split(","))
+				{
+					for (IRow row : rows) {
+						
+						RdRestrictionDetail detail = (RdRestrictionDetail) row;
+						
+						if(!hasSelectedOutLinkPid.contains(detail.getOutLinkPid()))
+						{
+							if(tmpRes.contains("["))
+							{
+								int resInfo = Integer.parseInt(tmpRes.substring(1, 2));
+								
+								if(detail.getFlag() != 1 && detail.getRestricInfo() == resInfo)
+								{
+									details.add(detail);
+									hasSelectedOutLinkPid.add(detail.getOutLinkPid());
+									break;
+								}
+							}
+							else
+							{
+								int resInfo = Integer.parseInt(tmpRes);
+								
+								if(detail.getFlag() == 1 && detail.getRestricInfo() == resInfo)
+								{
+									details.add(detail);
+									hasSelectedOutLinkPid.add(detail.getOutLinkPid());
+									break;
+								}
+							}
+						}
+					}
+				}
+				
+				for(IRow row : details)
+				{
 					RdRestrictionDetail detail = (RdRestrictionDetail) row;
-
+					
 					restrict.detailMap.put(detail.getPid(), detail);
 
 					for (IRow row2 : detail.getConditions()) {
@@ -88,6 +128,7 @@ public class RdRestrictionSelector extends AbstractSelector {
 								condition);
 					}
 				}
+				restrict.setDetails(details);
 			} else {
 
 				throw new DataNotFoundException("数据不存在");

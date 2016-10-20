@@ -201,6 +201,7 @@ public class JobInfo implements Serializable{
 	public void endJob(int status,String resultMsg) {
 		this.status=status;
 		this.resultMsg=resultMsg;
+		this.setEndTime(new Date());
 	}
 	public static void main(String[] args){
 		List<String> list = new ArrayList<String>();

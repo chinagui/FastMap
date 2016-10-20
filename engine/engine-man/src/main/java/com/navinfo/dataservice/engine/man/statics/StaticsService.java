@@ -21,6 +21,7 @@ import org.apache.log4j.Logger;
 import org.json.JSONException;
 import org.springframework.stereotype.Service;
 
+import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.statics.iface.StaticsApi;
 import com.navinfo.dataservice.api.statics.model.BlockExpectStatInfo;
@@ -172,11 +173,68 @@ public class StaticsService {
 		return data;
 	}
 	
-	public SubtaskStatInfo subtaskStatQuery(int subtaskId) throws JSONException, Exception{
+//	public SubtaskStatInfo subtaskStatQuery(int subtaskId) throws JSONException, Exception{
+//		
+//		StaticsApi api=(StaticsApi) ApplicationContextUtil.getBean("staticsApi");
+//		
+//		return api.getStatBySubtask(subtaskId);
+//
+//	}
+	
+	public Map<String,Object> subtaskStatQuery(final int subtaskId) throws JSONException, Exception{
 		
-		StaticsApi api=(StaticsApi) ApplicationContextUtil.getBean("staticsApi");
-		
-		return api.getStatBySubtask(subtaskId);
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+
+			String selectSql = "SELECT FSOS.SUBTASK_ID, FSOS.PERCENT, FSOS.TOTAL_POI, FSOS.FINISHED_POI, FSOS.TOTAL_ROAD, FSOS.FINISHED_ROAD"
+						+ " FROM FM_STAT_OVERVIEW_SUBTASK FSOS"
+						+ " WHERE FSOS.SUBTASK_ID = " + subtaskId;
+			
+			return run.query(conn, selectSql, new ResultSetHandler<Map<String,Object>>() {
+
+				@Override
+				public Map<String,Object> handle(ResultSet rs) throws SQLException {
+					Map<String,Object> poi = new HashMap<String,Object>();
+					poi.put("total", 0);
+					poi.put("finish", 0);
+					poi.put("working", 0);
+					
+					Map<String,Object> road = new HashMap<String,Object>();
+					road.put("total", 0);
+					road.put("finish", 0);
+					road.put("working", 0);
+					
+					Map<String,Object> result = new HashMap<String,Object>();
+					result.put("subtaskId", subtaskId);
+					result.put("percent", 0);
+					result.put("poi", poi);
+					result.put("road", road);
+					if(rs.next()) {
+						poi.put("total", rs.getInt("TOTAL_POI"));
+						poi.put("finish", rs.getInt("FINISHED_POI"));
+						poi.put("working", rs.getInt("TOTAL_POI") - rs.getInt("FINISHED_POI"));
+						
+						road.put("total", rs.getInt("TOTAL_ROAD"));
+						road.put("finish", rs.getInt("FINISHED_ROAD"));
+						road.put("working", rs.getInt("TOTAL_ROAD") - rs.getInt("FINISHED_ROAD"));
+						
+						result.put("percent", rs.getInt("PERCENT"));
+						result.put("poi", poi);
+						result.put("road", road);	
+					}
+					return result;
+				}
+			});
+			
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询明细失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
 
 	}
 	

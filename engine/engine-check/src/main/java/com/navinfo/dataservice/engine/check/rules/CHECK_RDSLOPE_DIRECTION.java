@@ -59,10 +59,10 @@ public class CHECK_RDSLOPE_DIRECTION extends baseRule {
 				RdLinkSelector rdLinkSelector=new RdLinkSelector(this.getConn());
 				RdLink outLink = (RdLink) rdLinkSelector.loadByIdOnlyRdLink(outLinkPid, false);
 				//退出线是否沿通行方向
-				if(outLink.getDirect()==2 && outLink.getsNodePid() == startNode){
+				if(outLink.getDirect()==2 && outLink.geteNodePid() == startNode){
 					this.setCheckResult("", "", 0);
 					return;
-				}else if(outLink.getDirect()==3 && outLink.geteNodePid() == startNode){
+				}else if(outLink.getDirect()==3 && outLink.getsNodePid() == startNode){
 					this.setCheckResult("", "", 0);
 					return;
 				}
@@ -107,10 +107,10 @@ public class CHECK_RDSLOPE_DIRECTION extends baseRule {
 		}
 		//接续link是否沿通行方向
 		for(int i = 0;i<rdLinkMap.size();i++){
-			if(!rdLinkMap.containsKey(i+1)){
+			if(!rdLinkMap.containsKey(i)){
 				return false;
 			}
-			RdLink rdLink = (RdLink) rdLinkMap.get(i+1);
+			RdLink rdLink = (RdLink) rdLinkMap.get(i);
 			if(rdLink.getsNodePid()==startNode){
 				startNode = rdLink.geteNodePid();
 				if(rdLink.getDirect() == 3){

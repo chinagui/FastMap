@@ -850,6 +850,61 @@ public class BlockService {
 				/*if("blockPlanStatus".equals(key)){
 					conditionSql=conditionSql+" AND MAN_LIST.BLOCK_PLAN_STATUS ="+conditionJson.getInt(key);}
 				*/
+				//1-10采集正常,采集异常,采集完成,日编正常,日编异常,日编完成,未规划,草稿,已完成,已关闭
+				if("selectParam1".equals(key)){
+					JSONArray selectParam1=conditionJson.getJSONArray(key);
+					JSONArray collectProgress=new JSONArray();
+					JSONArray dailyProgress=new JSONArray();
+					JSONArray planStatus=new JSONArray();
+					for(Object i:selectParam1){
+						int tmp=(int) i;
+						if(tmp==1||tmp==2||tmp==3){collectProgress.add(tmp);}
+						if(tmp==4||tmp==5||tmp==6){dailyProgress.add(tmp-3);}
+						if(tmp==7){
+							if(!statusSql.isEmpty()){statusSql+=" or ";}
+							statusSql+=" MAN_LIST.BLOCK_PLAN_STATUS =0";}
+						if(tmp==8){
+							if(!statusSql.isEmpty()){statusSql+=" or ";}
+							statusSql+=" MAN_LIST.BLOCK_STATUS =2";}
+						if(tmp==9||tmp==10){planStatus.add(tmp-6);}
+					}
+					if(!collectProgress.isEmpty()){
+						if(!statusSql.isEmpty()){statusSql+=" or ";}
+						statusSql+=" MAN_LIST.collect_Progress IN ("+collectProgress.join(",")+")";}
+					if(!dailyProgress.isEmpty()){
+						if(!statusSql.isEmpty()){statusSql+=" or ";}
+						statusSql+=" MAN_LIST.daily_Progress IN ("+dailyProgress.join(",")+")";}
+					if(!planStatus.isEmpty()){
+						if(!statusSql.isEmpty()){statusSql+=" or ";}
+						statusSql+=" MAN_LIST.PLAN_STATUS IN ("+planStatus.join(",")+")";}
+				}
+				//1-5按时完成,提前完成,逾期完成,采集逾期,日编逾期
+				if("selectParam2".equals(key)){
+					JSONArray selectParam1=conditionJson.getJSONArray(key);
+					for(Object i:selectParam1){
+						int tmp=(int) i;
+						if(tmp==2){
+							if(!statusSql.isEmpty()){statusSql+=" or ";}
+							statusSql+=" MAN_LIST.diff_date>0";
+						}
+						if(tmp==1){
+							if(!statusSql.isEmpty()){statusSql+=" or ";}
+							statusSql+=" MAN_LIST.diff_date=0";
+						}
+						if(tmp==3){
+							if(!statusSql.isEmpty()){statusSql+=" or ";}
+							statusSql+=" MAN_LIST.diff_date<0";
+						}
+						if(tmp==4){
+							if(!statusSql.isEmpty()){statusSql+=" or ";}
+							statusSql+=" MAN_LIST.COLLECT_DIFF_DATE<0";
+						}
+						if(tmp==5){
+							if(!statusSql.isEmpty()){statusSql+=" or ";}
+							statusSql+=" MAN_LIST.daily_DIFF_DATE<0";
+						}
+					}
+				}
 				if("collectProgress".equals(key)){
 					if(!statusSql.isEmpty()){statusSql+=" or ";}
 					statusSql+=" MAN_LIST.collect_Progress IN ("+conditionJson.getJSONArray(key).join(",")+")";}

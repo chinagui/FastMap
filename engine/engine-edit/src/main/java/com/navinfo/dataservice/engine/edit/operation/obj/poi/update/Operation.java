@@ -3,6 +3,8 @@ package com.navinfo.dataservice.engine.edit.operation.obj.poi.update;
 import java.sql.Connection;
 import java.util.List;
 
+import org.apache.commons.collections.CollectionUtils;
+
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.StringUtils;
@@ -68,6 +70,8 @@ public class Operation implements IOperation {
 	public String run(Result result) throws Exception {
 
 		JSONObject content = command.getContent();
+		
+		boolean isChanged = ixPoi.fillChangeFields(content);
 
 		if (content.containsKey("objStatus")) {
 
@@ -77,15 +81,7 @@ public class Operation implements IOperation {
 				return null;
 			} else {
 
-				boolean isChanged = ixPoi.fillChangeFields(content);
-
 				if (isChanged) {
-					result.insertObject(ixPoi, ObjStatus.UPDATE, ixPoi.pid());
-				}
-				else
-				{
-					//修改子表默认修改主表时间
-					ixPoi.changedFields().put("uDate", StringUtils.getCurrentTime());
 					result.insertObject(ixPoi, ObjStatus.UPDATE, ixPoi.pid());
 				}
 			}
@@ -136,11 +132,17 @@ public class Operation implements IOperation {
 		updataIxPoiRestaurant(result, content);
 
 		updataIxPoiCarrental(result, content);
-
-//		updataIxPoiParent(result, content);
-//
-//		updataIxPoiChildren(result, content);
-
+		
+		if(CollectionUtils.isNotEmpty(result.getAddObjects()) || CollectionUtils.isNotEmpty(result.getUpdateObjects()) || CollectionUtils.isNotEmpty(result.getDelObjects()))
+		{
+			if(!isChanged)
+			{
+				//修改poi主表时间
+				ixPoi.changedFields().put("uDate", StringUtils.getCurrentTime());
+				
+				result.insertObject(ixPoi, ObjStatus.UPDATE, ixPoi.pid());
+			}
+		}
 		return null;
 	}
 

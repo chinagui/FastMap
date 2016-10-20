@@ -718,6 +718,8 @@ public class Operation implements IOperation {
 		opRefRelationObj.handleSameLink(this.command, result);
 
 		opRefRelationObj.handleSameNode(this.command, result);
+		
+		opRefRelationObj.handleRdNode(this.command, result);	
 
 		opRefRelationObj.handlerdSpeedlimit(this.command, result);
 

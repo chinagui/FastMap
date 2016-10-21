@@ -90,8 +90,6 @@ public class ZoneLink implements IObj {
 	public void copy(IRow row) {
 		ZoneLink zoneLink = (ZoneLink) row;
 
-		this.pid = zoneLink.getPid();
-
 		this.editFlag = zoneLink.getEditFlag();
 
 		this.eNodePid = zoneLink.geteNodePid();

@@ -33,9 +33,20 @@ public class RwLinkOperateUtils {
     /*
      * 创建生成一条RwLink,未赋值图幅号
      * */
-    public static RwLink addLink(Geometry geo, int sNodePid, int eNodePid, Result result) throws Exception {
+    public static RwLink addLink(Geometry geo, int sNodePid, int eNodePid, Result result,RwLink sourceLink) throws Exception {
         RwLink link = new RwLink();
-
+        
+        int linkPid = PidUtil.getInstance().applyRwLinkPid();
+        
+        link.setPid(linkPid);
+        
+        if(sourceLink != null)
+        {
+        	link.copy(sourceLink);
+        }
+        
+        link.setPid(linkPid);
+        
         Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(geo);
 
         if (meshes.size() > 1) {
@@ -43,8 +54,6 @@ public class RwLinkOperateUtils {
         } else {
             link.setMesh(Integer.parseInt(meshes.iterator().next()));
         }
-
-        link.setPid(PidUtil.getInstance().applyRwLinkPid());
 
         result.setPrimaryPid(link.getPid());
 
@@ -220,9 +229,9 @@ public class RwLinkOperateUtils {
      * */
     public static IRow addLinkBySourceLink(Geometry g, int sNodePid, int eNodePid, RwLink sourcelink, Result result) throws Exception {
         RwLink link = new RwLink();
+        link.setPid(PidUtil.getInstance().applyRwLinkPid());
         link.copy(sourcelink);
         Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(g);
-        link.setPid(PidUtil.getInstance().applyRwLinkPid());
         if (meshes.size() > 1) {
             throw new Exception("打断生成新RwLink失败：对应多个图幅");
         } else {
@@ -246,15 +255,15 @@ public class RwLinkOperateUtils {
 	 */
 
     public static void createRwLinkWithMesh(Geometry g,
-                                            Map<Coordinate, Integer> maps, Result result) throws Exception {
+                                            Map<Coordinate, Integer> maps, Result result,RwLink sourceLink) throws Exception {
         if (g != null) {
 
             if (g.getGeometryType() == GeometryTypeName.LINESTRING) {
-                RwLinkOperateUtils.calLinkWithMesh(g, maps, result);
+                RwLinkOperateUtils.calLinkWithMesh(g, maps, result,sourceLink);
             }
             if (g.getGeometryType() == GeometryTypeName.MULTILINESTRING) {
                 for (int i = 0; i < g.getNumGeometries(); i++) {
-                    RwLinkOperateUtils.calLinkWithMesh(g.getGeometryN(i), maps, result);
+                    RwLinkOperateUtils.calLinkWithMesh(g.getGeometryN(i), maps, result,sourceLink);
                 }
 
             }
@@ -265,7 +274,7 @@ public class RwLinkOperateUtils {
      * 创建线 针对跨图幅创建图廓点不能重复
      */
     public static void calLinkWithMesh(Geometry g, Map<Coordinate, Integer> maps,
-                                       Result result) throws Exception {
+                                       Result result,RwLink sourceLink) throws Exception {
         //定义创建线的起始Pid 默认为0
         int sNodePid = 0;
         int eNodePid = 0;
@@ -288,7 +297,7 @@ public class RwLinkOperateUtils {
         }
         //创建线
         RwLink link = RwLinkOperateUtils.addLink(g, (int) node.get("s"),
-                (int) node.get("e"), result);
+                (int) node.get("e"), result,sourceLink);
 
         result.insertObject(link, ObjStatus.INSERT, link.pid());
     }
@@ -347,22 +356,22 @@ public class RwLinkOperateUtils {
     }
 
     public static List<RwLink> getCreateRwLinksWithMesh(Geometry g,
-                                                        Map<Coordinate, Integer> maps, Result result) throws Exception {
+                                                        Map<Coordinate, Integer> maps, Result result,RwLink sourceLink) throws Exception {
         List<RwLink> links = new ArrayList<RwLink>();
         if (g != null) {
             if (g.getGeometryType() == GeometryTypeName.LINESTRING) {
-                links.add(getCalRwLinkWithMesh(g, maps, result));
+                links.add(getCalRwLinkWithMesh(g, maps, result,sourceLink));
             }
             if (g.getGeometryType() == GeometryTypeName.MULTILINESTRING) {
                 for (int i = 0; i < g.getNumGeometries(); i++) {
-                    links.add(getCalRwLinkWithMesh(g.getGeometryN(i), maps, result));
+                    links.add(getCalRwLinkWithMesh(g.getGeometryN(i), maps, result,sourceLink));
                 }
             }
             if (GeometryTypeName.GEOMETRYCOLLECTION.equals(g.getGeometryType())) {
                 for (int i = 0; i < g.getNumGeometries(); i++) {
                     Geometry geometry = g.getGeometryN(i);
                     if (GeometryTypeName.LINESTRING.equals(geometry.getGeometryType())) {
-                        links.add(getCalRwLinkWithMesh(geometry, maps, result));
+                        links.add(getCalRwLinkWithMesh(geometry, maps, result,sourceLink));
                     }
                 }
             }
@@ -373,40 +382,8 @@ public class RwLinkOperateUtils {
     /*
      * 创建铁路线 针对跨图幅创建图廓点不能重复
      */
-    public static void calRwLinkWithMesh(Geometry g, Map<Coordinate, Integer> maps,
-                                         Result result) throws Exception {
-        //定义创建铁路线的起始Pid 默认为0
-        int sNodePid = 0;
-        int eNodePid = 0;
-        //判断新创建的线起点对应的pid是否存在，如果存在取出赋值
-        if (maps.containsKey(g.getCoordinates()[0])) {
-            sNodePid = maps.get(g.getCoordinates()[0]);
-        }
-        //判断新创建的线终始点对应的pid是否存在，如果存在取出赋值
-        if (maps.containsKey(g.getCoordinates()[g.getCoordinates().length - 1])) {
-            eNodePid = maps.get(g.getCoordinates()[g.getCoordinates().length - 1]);
-        }
-        //创建线对应的点
-        JSONObject node = RwLinkOperateUtils.createNodeForLink(
-                g, sNodePid, eNodePid, result);
-        if (!maps.containsValue(node.get("s"))) {
-            maps.put(g.getCoordinates()[0], (int) node.get("s"));
-        }
-        if (!maps.containsValue(node.get("e"))) {
-            maps.put(g.getCoordinates()[g.getCoordinates().length - 1], (int) node.get("e"));
-        }
-        //创建线
-        RwLink link = RwLinkOperateUtils.addLink(g, (int) node.get("s"),
-                (int) node.get("e"), result);
-
-        result.insertObject(link, ObjStatus.INSERT, link.pid());
-    }
-
-    /*
-     * 创建铁路线 针对跨图幅创建图廓点不能重复
-     */
     public static RwLink getCalRwLinkWithMesh(Geometry g, Map<Coordinate, Integer> maps,
-                                              Result result) throws Exception {
+                                              Result result,RwLink sourceLink) throws Exception {
         //定义创建铁路线的起始Pid 默认为0
         int sNodePid = 0;
         int eNodePid = 0;
@@ -429,7 +406,7 @@ public class RwLinkOperateUtils {
         }
         //创建线
         RwLink link = RwLinkOperateUtils.addLink(g, (int) node.get("s"),
-                (int) node.get("e"), result);
+                (int) node.get("e"), result,sourceLink);
 
         result.insertObject(link, ObjStatus.INSERT, link.pid());
 

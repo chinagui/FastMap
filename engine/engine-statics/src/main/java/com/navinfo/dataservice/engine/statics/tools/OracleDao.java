@@ -288,4 +288,91 @@ public class OracleDao {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+	
+
+	/**
+	 * @Title: getBlockManListWithStat
+	 * @Description: 获取BlockMan集合  根据 status latest
+	 * @return
+	 * @throws ServiceException  List<Subtask>
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2016年10月20日 下午4:17:58 
+	 */
+	public static List<Map<String,Object>> getBlockManListWithStat() throws ServiceException {
+		Connection conn = null;
+		try {
+			QueryRunner run = new QueryRunner();
+
+			conn = DBConnector.getInstance().getManConnection();
+			//目前只统计采集（POI，道路，一体化）日编（POI,一体化GRID粗编）BLOCKMAN
+			//如果FM_STAT_OVERVIEW_BLOCKMAN中该记录为已完成，则将其实际结束时间存入Mongo 和 oracle ,
+			//重:保持 mongo 库 和 oracle 库的统计数据一致
+			
+			/*String sql = "SELECT DISTINCT B.BLOCK_MAN_ID, B.STATUS,B.COLLECT_PLAN_START_DATE,"
+					+ "B.COLLECT_PLAN_END_DATE,B.DAY_EDIT_PLAN_START_DATE,B.DAY_EDIT_PLAN_END_DATE,"
+					+ "B.TASK_ID,B.ROAD_PLAN_TOTAL,B.POI_PLAN_TOTAL,"
+					+ "FSOB.STATUS F_STATUS,FSOB.COLLECT_ACTUAL_END_DATE F_COLLECT_ACTUAL_END_DATE,FSOB.DAILY_ACTUAL_END_DATE F_DAILY_ACTUAL_END_DATE "
+					+ " FROM BLOCK_MAN B, FM_STAT_OVERVIEW_BLOCKMAN FSOB"
+					+ " WHERE B.STATUS IN (0, 1)"
+					+ " AND B.LATEST =1 "
+					+ " ORDER BY BLOCK_MAN_ID";*/
+			String sql = "select  "
+					+ "DISTINCT "
+					+ "B.BLOCK_MAN_ID, B.STATUS,B.COLLECT_PLAN_START_DATE,B.COLLECT_PLAN_END_DATE, "
+					+ "B.DAY_EDIT_PLAN_START_DATE,B.DAY_EDIT_PLAN_END_DATE,B.TASK_ID, "
+					+ " B.ROAD_PLAN_TOTAL,B.POI_PLAN_TOTAL,FSOB.STATUS F_STATUS, "
+					+ " FSOB.COLLECT_ACTUAL_END_DATE F_COLLECT_ACTUAL_END_DATE, "
+					+ " FSOB.DAILY_ACTUAL_END_DATE F_DAILY_ACTUAL_END_DATE  "
+					+ "from   "
+					+ "BLOCK_MAN B left join FM_STAT_OVERVIEW_BLOCKMAN FSOB  on B.BLOCK_MAN_ID = FSOB.BLOCK_MAN_ID  "
+					+ "WHERE  "
+					+ "B.STATUS IN (0, 1) AND B.LATEST =1   "
+					+ "ORDER BY BLOCK_MAN_ID";
+			System.out.println("sql :   "+sql);
+			return run.query(conn, sql, new ResultSetHandler<List<Map<String,Object>>>() {
+
+				@Override
+				public List<Map<String,Object>> handle(ResultSet rs) throws SQLException {
+					List<Map<String,Object>> list = new ArrayList<Map<String,Object>>();
+					//ManApi api=(ManApi) ApplicationContextUtil.getBean("manApi");
+					while (rs.next()) {
+						Map<String,Object> blockManMap = new HashMap<String,Object>();
+
+						blockManMap.put("blockManId",rs.getInt("BLOCK_MAN_ID"));
+						blockManMap.put("status",rs.getInt("STATUS"));
+						blockManMap.put("collectPlanStartDate",rs.getTimestamp("COLLECT_PLAN_START_DATE"));
+						blockManMap.put("collectPlanEndDate",rs.getTimestamp("COLLECT_PLAN_END_DATE"));
+						
+						blockManMap.put("dailyPlanStartDate",rs.getTimestamp("DAY_EDIT_PLAN_START_DATE"));
+						blockManMap.put("dailyPlanEndDate",rs.getTimestamp("DAY_EDIT_PLAN_END_DATE"));
+						blockManMap.put("taskId",rs.getInt("TASK_ID"));
+						blockManMap.put("roadPlanTotal",rs.getInt("ROAD_PLAN_TOTAL"));
+						blockManMap.put("poiPlanTotal",rs.getInt("POI_PLAN_TOTAL"));
+						
+						blockManMap.put("fStatus",rs.getInt("F_STATUS"));
+						blockManMap.put("fCollectActualEndDate",rs.getTimestamp("F_COLLECT_ACTUAL_END_DATE"));
+						blockManMap.put("fDailyActualEndDate",rs.getTimestamp("F_DAILY_ACTUAL_END_DATE"));
+//						List<Integer> gridIds = null;
+//						try {
+//							gridIds = api.getGridIdsBySubtaskId(rs.getInt("SUBTASK_ID"));
+//						} catch (Exception e) {
+//							// TODO Auto-generated catch block
+//							e.printStackTrace();
+//						}
+//						subtask.setGridIds(gridIds);
+						
+						list.add(blockManMap);
+						
+					}
+					return list;
+				}
+			});
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			throw new ServiceException("创建失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
 }

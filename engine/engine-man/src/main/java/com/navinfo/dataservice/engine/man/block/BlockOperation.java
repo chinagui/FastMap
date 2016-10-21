@@ -16,6 +16,7 @@ import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.statics.iface.StaticsApi;
 import com.navinfo.dataservice.api.statics.model.GridStatInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
@@ -843,6 +844,53 @@ public class BlockOperation {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new Exception("查询失败，原因为:" + e.getMessage(), e);
+		}
+	}
+
+	/**
+	 * @Title: getSubtaskPercentByBlockManId
+	 * @Description: 根据blockmanid 查询出所有相关的子任务
+	 * @param blockManId
+	 * @return  List<Subtask>
+	 * @throws Exception 
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2016年10月21日 上午10:51:44 
+	 */
+	public static List<Map<String,Object>> getSubtaskPercentByBlockManId(int blockManId) throws Exception {
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+			//子任务统计表:进度 ,进度是否异常,任务状态,任务的计划开始时间,任务计划的结束时间  ; 子任务表:作业阶段,作业类型
+			String selectSql = "select fsos.PERCENT,fsos.PROGRESS,fsos.STATUS,fsos.PLAN_START_DATE,fsos.PLAN_END_DATE,s.STAGE,s.TYPE from SUBTASK s,FM_STAT_OVERVIEW_SUBTASK fsos where s.SUBTASK_ID=fsos.SUBTASK_ID AND fsos.BLOCK_MAN_ID = " + blockManId;
+			System.out.println("selectSql"+selectSql);
+			ResultSetHandler<List<Map<String,Object>>> rsHandler = new ResultSetHandler<List<Map<String,Object>>>() {
+				public List<Map<String,Object>> handle(ResultSet rs) throws SQLException {
+					List<Map<String,Object>> subTasks= new ArrayList<Map<String,Object>>(); 
+					
+					while (rs.next()) {
+						Map<String,Object> subTaskMap = new HashMap<String,Object>();
+						subTaskMap.put("percent",rs.getInt("PERCENT"));
+						subTaskMap.put("progress",rs.getInt("PROGRESS"));
+						subTaskMap.put("status", rs.getString("STATUS"));
+						subTaskMap.put("planStartDate", rs.getString("PLAN_START_DATE"));
+						subTaskMap.put("planEndDate", rs.getString("PLAN_END_DATE"));
+						subTaskMap.put("stage", rs.getString("STAGE"));
+						subTaskMap.put("type", rs.getString("TYPE"));
+						subTasks.add(subTaskMap);
+					}
+					return subTasks;
+				}
+			};
+
+			return run.query(conn, selectSql, rsHandler);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("关闭失败，原因为:"+e.getMessage(),e);
+		}finally {
+			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
 }

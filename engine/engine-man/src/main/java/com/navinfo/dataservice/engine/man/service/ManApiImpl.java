@@ -11,6 +11,7 @@ import com.navinfo.dataservice.api.man.model.Grid;
 import com.navinfo.dataservice.api.man.model.Message;
 import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.api.man.model.Subtask;
+import com.navinfo.dataservice.engine.man.block.BlockOperation;
 import com.navinfo.dataservice.engine.man.city.CityService;
 import com.navinfo.dataservice.engine.man.grid.GridService;
 import com.navinfo.dataservice.engine.man.message.MessageService;
@@ -102,6 +103,14 @@ public class ManApiImpl implements ManApi {
 	public void close(int subtaskId) throws Exception {
 		// TODO Auto-generated method stub
 		SubtaskOperation.closeBySubtaskId(subtaskId);
+	}
+	/* 
+	 * 根据blockmanid 查询出所有相关的子任务
+	 */
+	@Override
+	public List<Map<String,Object>> getSubtaskPercentByBlockManId(int blockManId) throws Exception {
+		
+		return BlockOperation.getSubtaskPercentByBlockManId(blockManId);
 	}
 }
 

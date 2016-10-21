@@ -81,7 +81,7 @@ public class RdLinkTest extends InitApplication {
 
 	@Test
 	public void testDelete() {
-		String parameter = "{\"command\":\"DELETE\",\"dbId\":17,\"type\":\"RDLINK\",\"objId\":203001145}";
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"RDLINK\",\"objId\":320001103,\"data\":{\"direct\":3,\"pid\":320001103,\"objStatus\":\"UPDATE\",\"laneClass\":1},\"infect\":1}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
@@ -93,7 +93,7 @@ public class RdLinkTest extends InitApplication {
 
 	@Test
 	public void testAddRdLink() {
-		String parameter = "{\"command\":\"DELETE\",\"type\":\"RDSLOPE\",\"dbId\":17,\"objId\":203000000}";
+		String parameter = "{\"type\":\"RDLINK\",\"command\":\"UPDATE\",\"dbId\":8,\"data\":{\"objStatus\":\"UPDATE\",\"pid\":500000003,\"direct\":3}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

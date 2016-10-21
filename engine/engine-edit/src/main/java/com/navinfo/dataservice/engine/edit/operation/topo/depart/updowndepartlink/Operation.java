@@ -331,7 +331,7 @@ public class Operation implements IOperation {
             // 18.方向
             link.setDirect(2);
             // 19. 维护AdminId、ZoneId
-
+            this.updateAdminIdAndZoneId(link, result);
             result.insertObject(link, ObjStatus.INSERT, link.getPid());
         }
     }
@@ -770,6 +770,8 @@ public class Operation implements IOperation {
         opRefRelationObj.handleBranch(this.command, result);
 
         opRefRelationObj.handleDirectroute(this.command, result);
+
+        opRefRelationObj.handlerAdadmin(this.command, result);
     }
 
     /**
@@ -818,6 +820,9 @@ public class Operation implements IOperation {
     }
 
     private void updateAdminIdAndZoneId(RdLink link, Result result) {
+        for (IRow row : link.getZones()) {
+            result.insertObject(row, ObjStatus.DELETE, row.parentPKValue());
+        }
         try {
             AdminIDBatchUtils.updateAdminID(link, null, conn);
             ZoneIDBatchUtils.updateZoneID(link, null, conn, result);

@@ -687,8 +687,10 @@ public class Operation implements IOperation {
         if (changeFields.containsKey("direct")) {
             com.navinfo.dataservice.engine.edit.operation.obj.trafficsignal.update.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.trafficsignal.update.Operation(
                     conn);
+            operation.updateRdCrossByModifyLinkDirect(updateLink, result);
 
-            return operation.updateRdCrossByModifyLinkDirect(updateLink, result);
+            com.navinfo.dataservice.engine.edit.operation.obj.rdeleceye.update.Operation eleceye = new com.navinfo.dataservice.engine.edit.operation.obj.rdeleceye.update.Operation(conn);
+            eleceye.updateRdElectroniceyeWithDirect(updateLink, result);
         }
         return "";
     }

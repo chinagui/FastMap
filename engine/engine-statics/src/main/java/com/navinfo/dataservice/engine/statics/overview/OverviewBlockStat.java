@@ -142,9 +142,11 @@ public class OverviewBlockStat {
 		SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
 		SimpleDateFormat dft = new SimpleDateFormat("yyyyMMddHHmmss");
 		Date d = df.parse(stat_date);
+		if(blockManMap.get("blockManId") != null){
+			
 		
 		//根据blockManId 去查询所有子任务,计算子任务的完成度(采集/日编)
-		Map<String,Object> subtaskPercentMap =getSubtaskPercentThroughBlockManId((int) blockManMap.get("blockManId"));
+		Map<String,Object> subtaskPercentMap =getSubtaskPercentThroughBlockManId(Integer.parseInt(blockManMap.get("blockManId").toString()));
 		//ManApi api=(ManApi) ApplicationContextUtil.getBean("manApi");
 		doc.put("blockManId", blockManMap.get("blockManId"));
 		doc.put("taskId", blockManMap.get("taskId"));
@@ -193,6 +195,7 @@ public class OverviewBlockStat {
 			doc.put("dailytActualEndDate", null);
 		}
 		
+		}
 		return doc;
 	}
 

@@ -952,11 +952,11 @@ public class BlockOperation {
 						Map<String,Object> subTaskMap = new HashMap<String,Object>();
 						subTaskMap.put("percent",rs.getInt("PERCENT"));
 						subTaskMap.put("progress",rs.getInt("PROGRESS"));
-						subTaskMap.put("status", rs.getString("STATUS"));
-						subTaskMap.put("planStartDate", rs.getString("PLAN_START_DATE"));
-						subTaskMap.put("planEndDate", rs.getString("PLAN_END_DATE"));
-						subTaskMap.put("stage", rs.getString("STAGE"));
-						subTaskMap.put("type", rs.getString("TYPE"));
+						subTaskMap.put("status", rs.getInt("STATUS"));
+						subTaskMap.put("planStartDate", rs.getTimestamp("PLAN_START_DATE"));
+						subTaskMap.put("planEndDate", rs.getTimestamp("PLAN_END_DATE"));
+						subTaskMap.put("stage", rs.getInt("STAGE"));
+						subTaskMap.put("type", rs.getInt("TYPE"));
 						subTasks.add(subTaskMap);
 					}
 					return subTasks;

@@ -86,8 +86,6 @@ public class AdLink implements IObj {
 	public void copy(IRow row) {
 		AdLink sourceAdLink = (AdLink) row;
 
-		this.pid = sourceAdLink.getPid();
-
 		this.editFlag = sourceAdLink.getEditFlag();
 
 		this.eNodePid = sourceAdLink.geteNodePid();

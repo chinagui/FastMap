@@ -306,6 +306,17 @@ public class OverviewStatTask {
 						
 						taskStatList.add(doc);
 					}
+					if(taskStat == null){
+						Document doc = getTaskStat(task);
+						//根据taskId查询block数据
+						Map<String, Object> blockStatList = getBlockStatByTaskId(task.getTaskId());
+						String systemDate = new SimpleDateFormat("yyyyMMdd").format(new Date());
+						doc.put("actualEndDate", systemDate);
+						doc.put("collectActualEndDate", blockStatList.get("collectActualEndDate"));
+						doc.put("dailyActualEndDate", blockStatList.get("dailyActualEndDate"));
+						
+						taskStatList.add(doc);
+					}
 				}
 			}
 		} catch (Exception e) {

@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.api.man.model;
 
+import java.io.Serializable;
 import java.sql.Timestamp;
 
 
@@ -9,7 +10,7 @@ import java.sql.Timestamp;
 * @date 2016-06-06 06:12:30 
 * @Description: TODO
 */
-public class Task{
+public class Task implements Serializable{
 	private Integer taskId ;
 	private String taskName;
 	private Integer cityId ;

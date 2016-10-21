@@ -5,7 +5,6 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -15,17 +14,12 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
-import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.mq.MsgHandler;
-import com.navinfo.dataservice.dao.mq.MsgSubscriber;
-import com.navinfo.dataservice.engine.man.InitApplication;
-import com.navinfo.dataservice.engine.man.grid.GridOperation;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.navinfo.navicommons.geo.computation.GridUtils;
@@ -153,10 +147,10 @@ public class InfoChangeMsgHandler implements MsgHandler {
 
 	public static void main(String[] args) {
 		try {
-			ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(
-					new String[] { "dubbo-consumer.xml"});
-			context.start();
-			new ApplicationContextUtil().setApplicationContext(context);
+//			ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(
+//					new String[] { "dubbo-consumer.xml"});
+//			context.start();
+//			new ApplicationContextUtil().setApplicationContext(context);
 			final InfoChangeMsgHandler sub = new InfoChangeMsgHandler();
 			String message = "{\"geometry\":\"POINT (120.712884 31.363296);POINT (123.712884 32.363296);\",\"rowkey\":\"5f2086de-23a4-4c02-8c08-995bfe4c6f0b\",\"i_level\":2,\"b_sourceCode\":1,\"b_sourceId\":\"sfoiuojkw89234jkjsfjksf\",\"b_reliability\":3,\"INFO_NAME\":\"道路通车\",\"INFO_CONTENT\":\"广泽路通过广泽桥到来广营东路路段已经通车，需要更新道路要素\"}";
 			sub.save(message);

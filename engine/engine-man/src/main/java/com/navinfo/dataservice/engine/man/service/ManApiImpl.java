@@ -11,6 +11,7 @@ import com.navinfo.dataservice.api.man.model.Grid;
 import com.navinfo.dataservice.api.man.model.Message;
 import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.api.man.model.Subtask;
+import com.navinfo.dataservice.engine.man.block.BlockOperation;
 import com.navinfo.dataservice.engine.man.city.CityService;
 import com.navinfo.dataservice.engine.man.grid.GridService;
 import com.navinfo.dataservice.engine.man.message.MessageService;
@@ -79,9 +80,6 @@ public class ManApiImpl implements ManApi {
 		
 		return service.query(type);
 	}
-	
-	
-	
 	@Override
 	public List<Region> queryRegionWithGrids(List<Integer> grids) throws Exception {
 		return RegionService.getInstance().queryRegionWithGrids(grids);
@@ -112,6 +110,14 @@ public class ManApiImpl implements ManApi {
 	public void updateProduceStatus(int produceId,int status) throws Exception {
 		// TODO Auto-generated method stub
 		ProduceService.getInstance().updateProduceStatus(produceId,status);
+	}
+	/* 
+	 * 根据blockmanid 查询出所有相关的子任务
+	 */
+	@Override
+	public List<Map<String,Object>> getSubtaskPercentByBlockManId(int blockManId) throws Exception {
+		
+		return BlockOperation.getSubtaskPercentByBlockManId(blockManId);
 	}
 }
 

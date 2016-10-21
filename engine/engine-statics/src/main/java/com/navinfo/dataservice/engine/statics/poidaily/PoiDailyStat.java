@@ -56,6 +56,45 @@ public class PoiDailyStat implements Runnable {
 			e.printStackTrace();
 		}
 	}
+	
+	public Map<String, Integer> getUploadPois() throws ServiceException {
+		try {
+			QueryRunner run = new QueryRunner();
+
+			String sql = "select ip.geometry from ix_poi ip, poi_edit_status pes where ip.row_id = pes.row_id and pes.is_upload=1";
+			return run.query(conn, sql, new ResultSetHandler<Map<String, Integer>>() {
+
+				@Override
+				public Map<String, Integer> handle(ResultSet rs) throws SQLException {
+
+					Map<String, Integer> map = new HashMap<String, Integer>();
+					while (rs.next()) {
+						try {
+
+							STRUCT struct = (STRUCT) rs.getObject("geometry");
+							Geometry geo = GeoTranslator.struct2Jts(struct);
+							String grid_id = CompGridUtil.point2Grids(geo.getCoordinate().x, geo.getCoordinate().y)[0];
+							if (map.containsKey(grid_id)) {
+								map.put(grid_id, map.get(grid_id) + 1);
+							} else {
+								map.put(grid_id, 1);
+							}
+						} catch (Exception e1) {
+							e1.printStackTrace();
+						}
+					}
+					return map;
+				}
+			}
+
+			);
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			throw new ServiceException("创建失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
 
 	public Map<String, JSONObject> getPois() throws ServiceException {
 		try {
@@ -110,12 +149,13 @@ public class PoiDailyStat implements Runnable {
 		}
 	}
 
-	public List<Document> doStatPoi(Map<String, JSONObject> map) {
+	public List<Document> doStatPoi(Map<String, JSONObject> map) throws ServiceException {
 		List<Document> backList = new ArrayList<Document>();
 
-		Map<String, Integer> mapSeason = StatInit.getPoiSeasonStat(db_name, col_name_seasion_grid, "grid_id");
+//		Map<String, Integer> mapSeason = StatInit.getPoiSeasonStat(db_name, col_name_seasion_grid, "grid_id");
+		Map<String, Integer> uploadPois = getUploadPois();
 
-		for (Entry<String, Integer> entry : mapSeason.entrySet()) {
+		for (Entry<String, Integer> entry : uploadPois.entrySet()) {
 
 			String grid_id = entry.getKey();
 			int total = entry.getValue();

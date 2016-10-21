@@ -455,26 +455,30 @@ public class GridService {
 	}
 
 	/**
-	 * @param blockId
+	 * @param blockManId
 	 * @return
 	 * @throws ServiceException 
 	 */
-	public List<Integer> listByInforBlockId(int blockId) throws ServiceException {
+	public List<Integer> listByInforBlockManId(int blockManId) throws ServiceException {
 		// TODO Auto-generated method stub
 		Connection conn = null;
 		try {
 			conn = DBConnector.getInstance().getManConnection();
 			QueryRunner run = new QueryRunner();
 
-			String selectSql = "SELECT DISTINCT I.INFOR_ID,IGM.GRID_ID"
-					+ " FROM BLOCK_MAN BM, TASK T, INFOR I,INFOR_GRID_MAPPING IGM,BLOCK_GRID_MAPPING BGM"
-					+ " WHERE BM.LATEST = 1"
-					+ " AND BM.TASK_ID = T.TASK_ID"
+			String selectSql = "SELECT DISTINCT I.INFOR_ID, IGM.GRID_ID,BM.BLOCK_ID"
+					+ " FROM BLOCK_MAN          BM,"
+					+ " TASK               T,"
+					+ " INFOR              I,"
+					+ " INFOR_GRID_MAPPING IGM,"
+					+ " BLOCK_GRID_MAPPING BGM"
+					+ " WHERE BM.TASK_ID = T.TASK_ID"
 					+ " AND T.TASK_TYPE = 4"
 					+ " AND T.TASK_ID = I.TASK_ID"
 					+ " AND I.INFOR_ID = IGM.INFOR_ID"
 					+ " AND BGM.GRID_ID = IGM.GRID_ID"
-					+ " AND BM.BLOCK_ID = " + blockId;	
+					+ " AND BGM.BLOCK_ID = BM.BLOCK_ID"
+					+ " AND BM.BLOCK_MAN_ID = " + blockManId;	
 
 			ResultSetHandler<List<Integer>> rsHandler = new ResultSetHandler<List<Integer>>() {
 				public List<Integer> handle(ResultSet rs) throws SQLException {

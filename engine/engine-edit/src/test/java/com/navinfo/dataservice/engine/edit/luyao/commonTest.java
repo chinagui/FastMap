@@ -116,6 +116,46 @@ public class commonTest extends InitApplication {
 			e.printStackTrace();
 		}
 	}
+	
+	@Test
+	public void getTitleWithGap2() {
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getConnectionById(17);
+
+			SearchProcess p = new SearchProcess(conn);
+
+			List<ObjType> objType = new ArrayList<>();
+
+			objType.add(ObjType.RDRESTRICTION);
+
+			System.out.println(p.searchDataByTileWithGap(objType, 862722,
+					394896, 20, 80));
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void getTitleWithGap1() {
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getConnectionById(17);
+
+			SearchProcess p = new SearchProcess(conn);
+
+			List<ObjType> objType = new ArrayList<>();
+
+			objType.add(ObjType.RDLANECONNEXITY);
+
+			System.out.println(p.searchDataByTileWithGap(objType, 431360,
+					197448, 19, 80));
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 
 	@Test
 	public void createRdNode0801() throws Exception {
@@ -296,7 +336,7 @@ public class commonTest extends InitApplication {
 	@Test
 	public void createTest_1() throws Exception {
 
-		String parameter = "{\"command\":\"BATCH\",\"dbId\":42,\"type\":\"RDLINKSPEEDLIMIT\",\"data\":{\"direct\":2,\"linkPids\":[100008842,100008844,100008845],\"linkSpeedLimit\":{\"speedType\":0,\"fromSpeedLimit\":100,\"fromLimitSrc\":2,\"toSpeedLimit\":100,\"toLimitSrc\":3,\"speedClassWork\":1}}}";
+		String parameter = "{\"command\":\"BATCH\",\"dbId\":17,\"type\":\"RDLINKSPEEDLIMIT\",\"data\":{\"direct\":3,\"linkPids\":[201001108,201001109,309001117],\"linkSpeedLimit\":{\"speedType\":0,\"fromSpeedLimit\":500,\"fromLimitSrc\":2,\"toSpeedLimit\":800,\"toLimitSrc\":3,\"speedClassWork\":1}}}";
 
 		Transaction t = new Transaction(parameter);
 
@@ -306,7 +346,7 @@ public class commonTest extends InitApplication {
 	@Test
 	public void createTest_0822() throws Exception {
 
-		String parameter = "{\"command\":\"BATCH\",\"type\":\"RDLINKSPEEDLIMIT\",\"dbId\":42,\"data\":{\"linkPids\":[88026339,732545,735601],\"direct\":2,\"linkSpeedLimit\":{\"speedType\":0,\"fromSpeedLimit\":60,\"toSpeedLimit\":0,\"speedClassWork\":1}}}";
+		String parameter = "{\"command\":\"BATCH\",\"type\":\"RDLINKSPEEDLIMIT\",\"dbId\":17,\"data\":{\"linkPids\":[201001108,201001109,201001110],\"direct\":2,\"linkSpeedLimit\":{\"speedType\":0,\"fromSpeedLimit\":60,\"toSpeedLimit\":0,\"speedClassWork\":1}}}";
 		Transaction t = new Transaction(parameter);
 
 		String msg = t.run();

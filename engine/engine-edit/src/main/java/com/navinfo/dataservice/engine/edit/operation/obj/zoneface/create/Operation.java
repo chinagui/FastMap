@@ -232,7 +232,7 @@ public class Operation implements IOperation {
 			this.createFace();
 			List<ZoneLink> links = new ArrayList<ZoneLink>();
 			links.add(ZoneLinkOperateUtils.getAddLink(geom, Node.getPid(),
-					Node.getPid(), result));
+					Node.getPid(), result,null));
 			this.reCaleFaceGeometry(links);
 		}// 如果跨图幅
 		else {
@@ -262,7 +262,7 @@ public class Operation implements IOperation {
 					(int) node.get("e"));
 		}
 		return ZoneLinkOperateUtils.getAddLink(g, (int) node.get("s"),
-				(int) node.get("e"), result);
+				(int) node.get("e"), result,null);
 	}
 
 	/*

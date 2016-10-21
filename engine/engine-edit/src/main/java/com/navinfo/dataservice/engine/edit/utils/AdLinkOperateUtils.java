@@ -88,10 +88,14 @@ public class AdLinkOperateUtils {
     /*
      * 创建生成一条ADLINK返回
      * */
-    public static AdLink getAddLink(Geometry g, int sNodePid, int eNodePid, Result result) throws Exception {
+    public static AdLink getAddLink(Geometry g, int sNodePid, int eNodePid, Result result,AdLink sourceLink) throws Exception {
         AdLink link = new AdLink();
-        Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(g);
         link.setPid(PidUtil.getInstance().applyAdLinkPid());
+        if(sourceLink != null)
+        {
+        	link.copy(sourceLink);
+        }
+        Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(g);
         //判断是否假象线
         if (MeshUtils.isMeshLine(g)) {
             link.setKind(0);
@@ -118,9 +122,12 @@ public class AdLinkOperateUtils {
      * */
     public static IRow addLinkBySourceLink(Geometry g, int sNodePid, int eNodePid, AdLink sourcelink, Result result) throws Exception {
         AdLink link = new AdLink();
-        link.copy(sourcelink);
-        Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(g);
         link.setPid(PidUtil.getInstance().applyAdLinkPid());
+        if(sourcelink != null)
+        {
+        	  link.copy(sourcelink);
+        }
+        Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(g);
         if (meshes.size() == 2) {
             link.setKind(0);
         }
@@ -357,15 +364,15 @@ public class AdLinkOperateUtils {
     }
 
     public static List<AdLink> getCreateAdLinksWithMesh(Geometry g,
-                                                        Map<Coordinate, Integer> maps, Result result) throws Exception {
+                                                        Map<Coordinate, Integer> maps, Result result,AdLink sourceLink) throws Exception {
         List<AdLink> links = new ArrayList<AdLink>();
         if (g != null) {
             if (g.getGeometryType() == GeometryTypeName.LINESTRING) {
-                links.add(AdLinkOperateUtils.getCalAdLinkWithMesh(g, maps, result));
+                links.add(AdLinkOperateUtils.getCalAdLinkWithMesh(g, maps, result,sourceLink));
             }
             if (g.getGeometryType() == GeometryTypeName.MULTILINESTRING) {
                 for (int i = 0; i < g.getNumGeometries(); i++) {
-                    links.add(AdLinkOperateUtils.getCalAdLinkWithMesh(g.getGeometryN(i), maps, result));
+                    links.add(AdLinkOperateUtils.getCalAdLinkWithMesh(g.getGeometryN(i), maps, result,sourceLink));
                 }
 
             }
@@ -373,7 +380,7 @@ public class AdLinkOperateUtils {
                 for (int i = 0; i < g.getNumGeometries(); i++) {
                     Geometry geometry = g.getGeometryN(i);
                     if (GeometryTypeName.LINESTRING.equals(geometry.getGeometryType())) {
-                        links.add(AdLinkOperateUtils.getCalAdLinkWithMesh(geometry, maps, result));
+                        links.add(AdLinkOperateUtils.getCalAdLinkWithMesh(geometry, maps, result,sourceLink));
                     }
                 }
             }
@@ -415,7 +422,7 @@ public class AdLinkOperateUtils {
      * 创建行政区划线 针对跨图幅创建图廓点不能重复
      */
     public static AdLink getCalAdLinkWithMesh(Geometry g, Map<Coordinate, Integer> maps,
-                                              Result result) throws Exception {
+                                              Result result,AdLink sourceLink) throws Exception {
         //定义创建行政区划线的起始Pid 默认为0
         int sNodePid = 0;
         int eNodePid = 0;
@@ -438,7 +445,7 @@ public class AdLinkOperateUtils {
         }
         //创建线
         return AdLinkOperateUtils.getAddLink(g, (int) node.get("s"),
-                (int) node.get("e"), result);
+                (int) node.get("e"), result,sourceLink);
     }
 
 }

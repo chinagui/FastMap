@@ -8,6 +8,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.exception.DataChangedAlertException;
 import com.navinfo.dataservice.commons.exception.DataNotChangeException;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.dao.check.CheckCommand;
@@ -54,30 +55,25 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 	public AbstractProcess() {
 		this.log = LoggerRepos.getLogger(this.log);
 	}
-	
-	public AbstractProcess(AbstractCommand command,Result result,Connection conn) throws Exception {
+
+	public AbstractProcess(AbstractCommand command, Result result, Connection conn) throws Exception {
 		this.command = (T) command;
-		if(conn != null)
-		{
+		if (conn != null) {
 			this.conn = conn;
 		}
-		if(result != null)
-		{
-			this.result =result;
-		}
-		else
-		{
+		if (result != null) {
+			this.result = result;
+		} else {
 			result = new Result();
 		}
 		// 初始化检查参数
 		this.initCheckCommand();
 	}
-	
+
 	public AbstractProcess(AbstractCommand command) throws Exception {
 		this.command = (T) command;
 		this.result = new Result();
-		if(!command.isHasConn())
-		{
+		if (!command.isHasConn()) {
 			this.conn = DBConnector.getInstance().getConnectionById(this.command.getDbId());
 		}
 		// 初始化检查参数
@@ -134,21 +130,25 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 	@Override
 	public String preCheck() throws Exception {
 		// TODO Auto-generated method stub
-		//createPreCheckGlmList();
+		// createPreCheckGlmList();
 		this.checkCommand.setGlmList(this.getResult().getAddObjects());
 		this.checkCommand.setListStatus("ADD");
-		String msg=checkEngine.preCheck();
-		
-		if(msg!=null && !msg.isEmpty()){return msg;}
-		
+		String msg = checkEngine.preCheck();
+
+		if (msg != null && !msg.isEmpty()) {
+			return msg;
+		}
+
 		this.checkCommand.setGlmList(this.getResult().getUpdateObjects());
 		this.checkCommand.setListStatus("UPDATE");
-		msg=checkEngine.preCheck();
-		if(msg!=null && !msg.isEmpty()){return msg;}
-		
+		msg = checkEngine.preCheck();
+		if (msg != null && !msg.isEmpty()) {
+			return msg;
+		}
+
 		this.checkCommand.setGlmList(this.getResult().getDelObjects());
 		this.checkCommand.setListStatus("DEL");
-		msg=checkEngine.preCheck();
+		msg = checkEngine.preCheck();
 		return msg;
 	}
 
@@ -201,12 +201,12 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 				throw new Exception(preCheckMsg);
 			}
 			this.recordData();
-			long startPostCheckTime=System.currentTimeMillis();
+			long startPostCheckTime = System.currentTimeMillis();
 			log.info("BEGIN  POSTCHECK ");
 			this.postCheck();
-			long endPostCheckTime=System.currentTimeMillis();
+			long endPostCheckTime = System.currentTimeMillis();
 			log.info("BEGIN  POSTCHECK ");
-			log.info("post check use time   " + String.valueOf(endPostCheckTime-startPostCheckTime));
+			log.info("post check use time   " + String.valueOf(endPostCheckTime - startPostCheckTime));
 			conn.commit();
 
 			System.out.print("操作成功\r\n");
@@ -228,7 +228,7 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 
 		return msg;
 	}
-	
+
 	public String innerRun() throws Exception {
 		String msg;
 		try {
@@ -291,11 +291,11 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 	@Override
 	public void postCheck() throws Exception {
 		// TODO Auto-generated method stub
-		//this.createPostCheckGlmList();
+		// this.createPostCheckGlmList();
 		this.checkCommand.setGlmList(this.getResult().getAddObjects());
 		this.checkCommand.setListStatus("ADD");
 		this.checkEngine.postCheck();
-		
+
 		this.checkCommand.setGlmList(this.getResult().getUpdateObjects());
 		this.checkCommand.setListStatus("UPDATE");
 		this.checkEngine.postCheck();
@@ -314,6 +314,7 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 		}
 		this.checkCommand.setGlmList(resultList);
 	}
+
 	@Override
 	public String getPostCheck() throws Exception {
 		return postCheckMsg;
@@ -344,11 +345,10 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 		switch (operType) {
 		case CREATE:
 			List<Integer> addObjPidList = result.getListAddIRowObPid();
-			for (int i=0;i<result.getAddObjects().size();i++) {
+			for (int i = 0; i < result.getAddObjects().size(); i++) {
 				IRow row = result.getAddObjects().get(i);
 				if (objType.equals(row.objType())) {
-					if(addObjPidList.get(i) != null)
-					{
+					if (addObjPidList.get(i) != null) {
 						result.setPrimaryPid(addObjPidList.get(i));
 						break;
 					}

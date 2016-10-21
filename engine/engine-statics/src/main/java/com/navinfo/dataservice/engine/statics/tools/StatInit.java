@@ -159,4 +159,31 @@ public class StatInit {
 		return map;
 	}
 
+	/**
+	 * @param db_name
+	 * @param col_name
+	 * @param key
+	 * @param stat_date
+	 * @return
+	 */
+	public static Map<String, Map<String,Integer>> getTipsTotalAndFinishOfDaily(String db_name, String col_name,
+			String key, String stat_date) {
+		// TODO Auto-generated method stub
+		Map<String, Map<String,Integer>> result = new HashMap<String, Map<String,Integer>>();
+
+		Pattern pattern = Pattern.compile("^" + stat_date + ".*$", Pattern.CASE_INSENSITIVE);
+		BasicDBObject query = new BasicDBObject();
+		query.put("stat_date", pattern);
+
+		MongoCursor<Document> iter = new MongoDao(db_name).find(col_name, query).iterator();
+		while (iter.hasNext()) {
+			Map<String, Integer> map = new HashMap<String, Integer>();
+			JSONObject json = JSONObject.fromObject(iter.next());
+			map.put("finish", json.getInt("daily_count"));
+			map.put("total", json.getInt("collect_count"));
+			result.put(json.getString(key), map);
+		}
+		return result;
+	}
+
 }

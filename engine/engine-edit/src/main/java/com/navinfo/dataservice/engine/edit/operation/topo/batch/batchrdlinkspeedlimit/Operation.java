@@ -206,8 +206,7 @@ public class Operation implements IOperation {
 
 			limit.setSpeedClassWork(info[2]);
 			
-			int speedClass = getspeedClass(limit.getToSpeedLimit(),
-					limit.getFromSpeedLimit());
+			int speedClass = getspeedClass(limit);
 
 			if (limit.getSpeedClass() != speedClass) {
 				limit.changedFields().put("speedClass", speedClass);
@@ -237,8 +236,7 @@ public class Operation implements IOperation {
 				limit.changedFields().put("speedClassWork", info[2]);
 			}
 
-			int speedClass = getspeedClass(limit.getToSpeedLimit(),
-					limit.getFromSpeedLimit());
+			int speedClass = getspeedClass(limit);
 
 			if (limit.getSpeedClass() != speedClass) {
 				limit.changedFields().put("speedClass", speedClass);
@@ -247,7 +245,17 @@ public class Operation implements IOperation {
 		}
 	}
 	
-	private int getspeedClass(int toSpeedValue,int  fromSpeedValue) {
+	private int getspeedClass(RdLinkSpeedlimit limit) {
+		int toSpeedValue = limit.getToSpeedLimit();
+		int fromSpeedValue = limit.getFromSpeedLimit();
+
+		if (limit.changedFields().containsKey("toSpeedLimit")) {
+			toSpeedValue = (Integer) limit.changedFields().get("toSpeedLimit");
+		}
+		if (limit.changedFields().containsKey("fromSpeedLimit")) {
+			fromSpeedValue = (Integer) limit.changedFields().get(
+					"fromSpeedLimit");
+		}
 		
 		int speedValue = 0;
 		

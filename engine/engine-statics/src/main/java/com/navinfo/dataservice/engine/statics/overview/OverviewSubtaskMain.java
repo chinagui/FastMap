@@ -75,15 +75,15 @@ public class OverviewSubtaskMain {
 
 		if (flag_subtask) {
 			md.createCollection(col_name_subtask);
-			md.getCollection(col_name_subtask).createIndex(new BasicDBObject("subtask_id", 1));
-			md.getCollection(col_name_subtask).createIndex(new BasicDBObject("stat_date", 1));
+			md.getCollection(col_name_subtask).createIndex(new BasicDBObject("subtaskId", 1));
+			md.getCollection(col_name_subtask).createIndex(new BasicDBObject("statDate", 1));
 			log.info("-- -- create mongo collection " + col_name_subtask + " ok");
-			log.info("-- -- create mongo index on " + col_name_subtask + "(subtask_id，stat_date) ok");
+			log.info("-- -- create mongo index on " + col_name_subtask + "(subtaskId，statDe) ok");
 		}
 
 		// 删除当天重复统计数据
 		BasicDBObject query = new BasicDBObject();
-		query.put("stat_date", stat_date);
+		query.put("statDate", stat_date);
 		mdao.deleteMany(col_name_subtask, query);
 
 	}
@@ -212,11 +212,11 @@ public class OverviewSubtaskMain {
 		//grid进度详情
 		if(type == 0){
 			//POI
-			stat.put("gridPercentDetail", gridPercentDetailPOI);
+			stat.put("gridPercentDetails", gridPercentDetailPOI);
 			stat.put("percent", detailsPOI.get("percent"));
 		}else if (type == 1){
 			//道路
-			stat.put("gridPercentDetail", gridPercentDetailROAD);
+			stat.put("gridPercentDetails", gridPercentDetailROAD);
 			stat.put("percent", detailsROAD.get("percent"));
 		}else{
 			//一体化
@@ -226,7 +226,7 @@ public class OverviewSubtaskMain {
 				int percent = (int) (gridPercentDetailPOI.get(gridId)*0.5 + gridPercentDetailROAD.get(gridId)*0.5);
 				gridPercentDetail.put(gridId, percent);
 			}
-			stat.put("gridPercentDetail", gridPercentDetail);
+			stat.put("gridPercentDetails", gridPercentDetail);
 			stat.put("percent", detailsPOI.get("percent")*0.5 + detailsROAD.get("percent")*0.5);
 		}
 		
@@ -303,16 +303,16 @@ public class OverviewSubtaskMain {
 			initMongoDb();
 
 			//执行统计
-			List<Subtask> subtaskList = OracleDao.getSubtaskList();
-			
+			List<Subtask> subtaskListNeedStatistics = OracleDao.getSubtaskListNeedStatistics();
+			List<Document> subtaskListWithStatistics = OracleDao.getSubtaskListWithStatistics();
+
 			MongoDao md = new MongoDao(db_name);
-			List<Document> subtaskStatList = new ArrayList<Document>();
-			Iterator<Subtask> subtaskItr = subtaskList.iterator();
+			Iterator<Subtask> subtaskItr = subtaskListNeedStatistics.iterator();
 			while(subtaskItr.hasNext()){
 				Document subtask = getSubtaskStat(subtaskItr.next());
-				subtaskStatList.add(subtask);
+				subtaskListWithStatistics.add(subtask);
 			}
-			md.insertMany(col_name_subtask, subtaskStatList);
+			md.insertMany(col_name_subtask, subtaskListWithStatistics);
 			
 			log.info("-- end stat:" + col_name_subtask);
 			System.exit(0);

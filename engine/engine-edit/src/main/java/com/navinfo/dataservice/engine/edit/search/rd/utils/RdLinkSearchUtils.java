@@ -10,16 +10,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import net.sf.json.JSONObject;
+import net.sf.json.JSONArray;
+
 import oracle.sql.STRUCT;
 
-import com.google.common.collect.Sets;
 import com.navinfo.dataservice.commons.geom.AngleCalculator;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.commons.geom.Geojson;
-import com.navinfo.dataservice.commons.mercator.MercatorProjection;
-import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkSpeedlimit;
+import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.navicommons.database.sql.DBUtils;
 import com.vividsolutions.jts.geom.Geometry;
@@ -78,6 +79,29 @@ public class RdLinkSearchUtils {
 		getConnectLink(targetLink, nodePid, nextLinkPids, queryType);
 
 		return nextLinkPids;
+	}
+	 
+	public JSONArray getRdLinkSpeedlimit(List<Integer> linkPids)
+			throws Exception {
+		AbstractSelector speedlimitSelector = new AbstractSelector(
+				RdLinkSpeedlimit.class, conn);
+
+		List<IRow> rows = speedlimitSelector
+				.loadRowsByParentIds(linkPids, true);
+
+		JSONArray array = new JSONArray();
+
+		for (IRow row : rows) {
+			
+			RdLinkSpeedlimit speedlimit =( RdLinkSpeedlimit)row;
+			
+			if (speedlimit.getSpeedType() == 0) {
+
+				array.add(speedlimit.Serialize(ObjLevel.FULL));
+			}
+		}
+		
+		return array;
 	}
 
 	private void getConnectLink(RdLink targetLink, int connectNodePid,

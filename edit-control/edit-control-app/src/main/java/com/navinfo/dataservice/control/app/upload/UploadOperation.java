@@ -38,7 +38,6 @@ import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiParent;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiPhoto;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 import com.navinfo.dataservice.dao.log.LogReader;
-import com.navinfo.dataservice.engine.edit.service.EditApiImpl;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.DBUtils;
 import com.navinfo.navicommons.geo.computation.CompGridUtil;
@@ -60,7 +59,6 @@ public class UploadOperation {
 	
 	/**
 	 * 读取txt，解析，入库
-	 * 
 	 * @param fileName
 	 * @return
 	 * @throws Exception
@@ -85,7 +83,6 @@ public class UploadOperation {
 
 	/**
 	 * 数据解析分类
-	 * 
 	 * @param line
 	 * @return
 	 */
@@ -316,7 +313,6 @@ public class UploadOperation {
 			for (Iterator<String> iter = updateObj.keySet().iterator(); iter.hasNext();) {
 				String dbId = iter.next();
 				Connection conn = DBConnector.getInstance().getConnectionById(Integer.parseInt(dbId));
-				EditApiImpl editApiImpl = new EditApiImpl(conn);
 				try {
 					List<JSONObject> poiList = (List<JSONObject>) updateObj.get(dbId);
 					JSONObject relateParentChildren = new JSONObject();
@@ -911,7 +907,7 @@ public class UploadOperation {
 	
 				int type = photo.getInt("type");
 				if (type == 1) {
-					String photoId = photo.getString("id");
+					String photoId = photo.getString("id").toUpperCase();
 					if (!photoIdList.contains(photoId)) {
 						JSONObject photoObj = new JSONObject();
 						photoIdList.add(photoId);
@@ -1070,7 +1066,7 @@ public class UploadOperation {
 				List<String> newRowIdList = new ArrayList<String>();
 				for (int k = 0; k < contactsList.size(); k++) {
 					JSONObject contactObj = contactsList.getJSONObject(k);
-					newRowIdList.add(contactObj.getString("rowId"));
+					newRowIdList.add(contactObj.getString("rowId").toUpperCase());
 
 					JSONObject newContact = new JSONObject();
 					newContact.put("poiPid", pid);
@@ -1111,7 +1107,7 @@ public class UploadOperation {
 					int contactInt = Integer.parseInt(linkmanNum, 2);
 					newContact.put("contactDepart", contactInt);
 					newContact.put("priority", contactObj.getInt("priority"));
-					newContact.put("rowId", contactObj.getString("rowId"));
+					newContact.put("rowId", contactObj.getString("rowId").toUpperCase());
 
 					// 差分,区分新增修改
 					int ret = getDifferent(oldArray, newContact);
@@ -1193,11 +1189,11 @@ public class UploadOperation {
 				for (int k = 0; k < childrenArry.size(); k++) {
 					JSONObject children = childrenArry.getJSONObject(k);
 					JSONObject newChildren = new JSONObject();
-					newRowIdList.add(children.getString("rowId"));
+					newRowIdList.add(children.getString("rowId").toUpperCase());
 					newChildren.put("groupId", groupId);
 					newChildren.put("childPoiPid", children.getInt("childPid"));
 					newChildren.put("relationType", children.getInt("type"));
-					newChildren.put("rowId", children.getString("rowId"));
+					newChildren.put("rowId", children.getString("rowId").toUpperCase());
 
 					// 差分,区分新增修改
 					int ret = getDifferent(oldArray, newChildren);
@@ -1243,7 +1239,7 @@ public class UploadOperation {
 						oldArray.add(oldPoiGasObj);
 					}
 					List<String> newRowIdList = new ArrayList<String>();
-					newRowIdList.add(gasObj.getString("rowId"));
+					newRowIdList.add(gasObj.getString("rowId").toUpperCase());
 					JSONObject newGasStation = new JSONObject();
 					newGasStation.put("poiPid", pid);
 					newGasStation.put("serviceProv", gasObj.getString("servicePro"));
@@ -1254,7 +1250,7 @@ public class UploadOperation {
 					newGasStation.put("payment", gasObj.getString("payment"));
 					newGasStation.put("service", gasObj.getString("service"));
 					newGasStation.put("openHour", gasObj.getString("openHour"));
-					newGasStation.put("rowId", gasObj.getString("rowId"));
+					newGasStation.put("rowId", gasObj.getString("rowId").toUpperCase());
 					// 差分,区分新增修改
 					int ret = getDifferent(oldArray, newGasStation);
 					if (ret == 0) {
@@ -1267,7 +1263,7 @@ public class UploadOperation {
 						int oldPid = 0;
 						for (IRow oldGas : gasList) {
 							IxPoiGasstation oldPoiGas = (IxPoiGasstation) oldGas;
-							if (oldPoiGas.getRowId().equals(gasObj.getString("rowId"))) {
+							if (oldPoiGas.getRowId().equals(gasObj.getString("rowId").toUpperCase())) {
 								oldPid = oldPoiGas.getPid();
 								break;
 							}
@@ -1305,7 +1301,7 @@ public class UploadOperation {
 						oldArray.add(oldPoiParkingsObj);
 					}
 					List<String> newRowIdList = new ArrayList<String>();
-					newRowIdList.add(parkingsObj.getString("rowId"));
+					newRowIdList.add(parkingsObj.getString("rowId").toUpperCase());
 					JSONObject newParkings = new JSONObject();
 					newParkings.put("poiPid", pid);
 					newParkings.put("parkingType", parkingsObj.getString("buildingType"));
@@ -1326,7 +1322,7 @@ public class UploadOperation {
 					newParkings.put("handicapNum", parkingsObj.getInt("handicapNum"));
 					newParkings.put("miniNum", parkingsObj.getInt("miniNum"));
 					newParkings.put("vipNum", parkingsObj.getInt("vipNum"));
-					newParkings.put("rowId", parkingsObj.getString("rowId"));
+					newParkings.put("rowId", parkingsObj.getString("rowId").toUpperCase());
 					// 差分,区分新增修改
 					int ret = getDifferent(oldArray, newParkings);
 					if (ret == 0) {
@@ -1339,7 +1335,7 @@ public class UploadOperation {
 						int oldPid = 0;
 						for (IRow oldParkings : parkingsList) {
 							IxPoiParking oldPoiParkings = (IxPoiParking) oldParkings;
-							if (oldPoiParkings.getRowId().equals(parkingsObj.getString("rowId"))) {
+							if (oldPoiParkings.getRowId().equals(parkingsObj.getString("rowId").toUpperCase())) {
 								oldPid = oldPoiParkings.getPid();
 								break;
 							}
@@ -1377,7 +1373,7 @@ public class UploadOperation {
 						oldArray.add(oldPoiHotelObj);
 					}
 					List<String> newRowIdList = new ArrayList<String>();
-					newRowIdList.add(hotelObj.getString("rowId"));
+					newRowIdList.add(hotelObj.getString("rowId").toUpperCase());
 					JSONObject newHotel = new JSONObject();
 					newHotel.put("poiPid", pid);
 					newHotel.put("creditCard", hotelObj.getString("creditCards"));
@@ -1392,7 +1388,7 @@ public class UploadOperation {
 					newHotel.put("parking", hotelObj.getInt("parking"));
 					newHotel.put("longDescription", hotelObj.getString("description"));
 					newHotel.put("openHour", hotelObj.getString("openHour"));
-					newHotel.put("rowId", hotelObj.getString("rowId"));
+					newHotel.put("rowId", hotelObj.getString("rowId").toUpperCase());
 					// 差分,区分新增修改
 					int ret = getDifferent(oldArray, newHotel);
 					if (ret == 0) {
@@ -1405,7 +1401,7 @@ public class UploadOperation {
 						int oldPid = 0;
 						for (IRow oldHotel : hotelList) {
 							IxPoiHotel oldPoiHotel = (IxPoiHotel) oldHotel;
-							if (oldPoiHotel.getRowId().equals(hotelObj.getString("rowId"))) {
+							if (oldPoiHotel.getRowId().equals(hotelObj.getString("rowId").toUpperCase())) {
 								oldPid = oldPoiHotel.getPid();
 								break;
 							}
@@ -1443,7 +1439,7 @@ public class UploadOperation {
 						oldArray.add(oldPoiFoodtypeObj);
 					}
 					List<String> newRowIdList = new ArrayList<String>();
-					newRowIdList.add(foodtypesObj.getString("rowId"));
+					newRowIdList.add(foodtypesObj.getString("rowId").toUpperCase());
 					JSONObject newFoodtype = new JSONObject();
 					newFoodtype.put("poiPid", pid);
 					newFoodtype.put("foodType", foodtypesObj.getString("foodtype"));
@@ -1451,7 +1447,7 @@ public class UploadOperation {
 					newFoodtype.put("avgCost", foodtypesObj.getInt("avgCost"));
 					newFoodtype.put("parking", foodtypesObj.getInt("parking"));
 					newFoodtype.put("openHour", foodtypesObj.getString("openHour"));
-					newFoodtype.put("rowId", foodtypesObj.getString("rowId"));
+					newFoodtype.put("rowId", foodtypesObj.getString("rowId").toUpperCase());
 					// 差分,区分新增修改
 					int ret = getDifferent(oldArray, newFoodtype);
 					if (ret == 0) {
@@ -1464,7 +1460,7 @@ public class UploadOperation {
 						int oldPid = 0;
 						for (IRow oldFoodtype : foodtypeList) {
 							IxPoiRestaurant oldPoiFoodtype = (IxPoiRestaurant) oldFoodtype;
-							if (oldPoiFoodtype.getRowId().equals(foodtypesObj.getString("rowId"))) {
+							if (oldPoiFoodtype.getRowId().equals(foodtypesObj.getString("rowId").toUpperCase())) {
 								oldPid = oldPoiFoodtype.getPid();
 								break;
 							}
@@ -1516,7 +1512,7 @@ public class UploadOperation {
 			boolean theSame = false;
 			boolean change = false;
 			for (int i = 0; i < oldArray.size(); i++) {
-				String newRowid = newObj.getString("rowId");
+				String newRowid = newObj.getString("rowId").toUpperCase();
 				JSONObject old = oldArray.getJSONObject(i);
 				if (old.getString("rowId").equals(newRowid)) {
 					theSame = true;
@@ -1558,6 +1554,7 @@ public class UploadOperation {
 				boolean flag = true;
 				JSONObject jsonObj = oldArray.getJSONObject(i);
 				for (String rowid : newRowIdList) {
+					rowid = rowid.toUpperCase();
 					if (rowid.equals(jsonObj.getString("rowId"))) {
 						flag = false;
 						break;
@@ -1865,7 +1862,7 @@ public class UploadOperation {
 			if(lr.isExistObjHis(pid) || lr.isOnlyPhotoAndMetoHis(pid)){
 				freshVerified=1;
 			}
-			String sql="UPDATE poi_edit_status T1 SET T1.fresh_verified = :1,T.status=:2 where T1.row_id =(SELECT row_id as a FROM ix_poi where pid = " + pid + ")";
+			String sql="UPDATE poi_edit_status T1 SET T1.fresh_verified = :1,T1.status=:2 where T1.row_id =(SELECT row_id as a FROM ix_poi where pid = " + pid + ")";
 			
 			PreparedStatement pstmt = null;
 			try {

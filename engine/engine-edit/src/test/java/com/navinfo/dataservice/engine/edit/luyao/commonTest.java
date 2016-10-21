@@ -42,7 +42,7 @@ public class commonTest extends InitApplication {
 
 			SearchProcess p = new SearchProcess(conn);
 
-			IObj obj=p.searchDataByPid(ObjType.RDWARNINGINFO, 204000003);
+			IObj obj=p.searchDataByPid(ObjType.IXPOI, 303000023);
 			System.out.println(obj.Serialize(ObjLevel.BRIEF));
 			System.out.println(obj.Serialize(ObjLevel.FULL));
 			System.out.println(obj.Serialize(ObjLevel.HISTORY));
@@ -98,19 +98,19 @@ public class commonTest extends InitApplication {
 	}
 
 	@Test
-	public void getTitleWithGap_IXPOI() {
+	public void getTitleWithGap() {
 		Connection conn = null;
 		try {
-			conn = DBConnector.getInstance().getConnectionById(8);
+			conn = DBConnector.getInstance().getConnectionById(17);
 
 			SearchProcess p = new SearchProcess(conn);
 
 			List<ObjType> objType = new ArrayList<>();
 
-			objType.add(ObjType.IXPOI);
+			objType.add(ObjType.RDLANECONNEXITY);
 
-			System.out.println(p.searchDataByTileWithGap(objType, 107937,
-					49616, 17, 80));
+			System.out.println(p.searchDataByTileWithGap(objType, 862722,
+					394896, 20, 80));
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -597,7 +597,9 @@ public class commonTest extends InitApplication {
 	@Test
 	public void run_1013_1() throws Exception {
 
-		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDTOLLGATE\",\"dbId\":17,\"data\":{\"inLinkPid\":207000710,\"outLinkPid\":220000776,\"nodePid\":206000534}}";
+		String parameter = "{\"command\":\"CREATE\",\"type\":\"ADFACE\",\"dbId\":17,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.1938738822937,40.5403843741422],[116.19474291801451,40.54014384965778],[116.19376659393309,40.53978102295414],[116.19336962699889,40.54031099388258],[116.1938738822937,40.5403843741422]]}}}";
+		
+		
 		
 		Transaction t = new Transaction(parameter);
 
@@ -607,10 +609,76 @@ public class commonTest extends InitApplication {
 	@Test
 	public void run_1013_2() throws Exception {
 
-		String parameter = "";
+		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDLANECONNEXITY\",\"dbId\":17,\"data\":{\"inLinkPid\":308000970,\"nodePid\":200000659,\"outLinkPids\":[308000969],\"laneInfo\":\"b,[a]\"}}";
+		
 		
 		Transaction t = new Transaction(parameter);
 
 		String msg = t.run();
+	}
+	
+	
+	@Test
+	public void run_1018_1() throws Exception {
+
+		String parameter = "{\"command\":\"DELETE\",\"dbId\":17,\"type\":\"IXPOIPARENT\",\"objId\":303000023}";
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+	
+	@Test
+	public void run_1018_2() throws Exception {
+
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"IXPOIPARENT\",\"objId\":220000037,\"parentPid\":320000035}";
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+	
+	@Test
+	public void run_1020_2() throws Exception {
+
+		String parameter = "{\"command\":\"DELETE\",\"dbId\":17,\"type\":\"RDLINK\",\"objId\":306001082}";
+		
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+	
+	@Test
+	public void josnArrayTest()
+	{
+		JSONArray array = new JSONArray();
+		
+		array.add("123");
+		array.add(123);
+		array.add("a");
+		array.add(1.2);
+		
+		JSONArray array2 = new JSONArray();
+		array2.add( array);
+		array2.add("1");
+		array2.add(1);
+	}
+	
+	
+	@Test
+	public void ListTest()
+	{
+		List<Integer>pids=new ArrayList<Integer>();
+		pids.add(1);
+		pids.add(1);
+		pids.add(1);
+		pids.add(1);
+		pids.add(1);
+		pids.add(1);
+		pids.add(1);
+		pids.add(1);
+		pids.add(1);
+		
 	}
 }

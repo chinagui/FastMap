@@ -80,9 +80,9 @@ public class Operation implements IOperation {
             RdCrossNode node = new RdCrossNode();
             node.setPid(cross.pid());
             node.setNodePid(nodePid);
+            // 维护路口主点信息
             if (isMain) {
-                node.setIsMain(1);
-                isMain = false;
+                isMain = this.updateIsMain(node);
             }
             result.insertObject(node, ObjStatus.INSERT, node.getPid());
         }
@@ -256,5 +256,32 @@ public class Operation implements IOperation {
                 result.insertObject(t, ObjStatus.INSERT, t.pid());
             }
         }
+    }
+
+    /**
+     * 判断路口点挂接线是否有辅路属性，无则设置为路口主点
+     *
+     * @param node 路口点
+     * @return
+     * @throws Exception
+     */
+    private boolean updateIsMain(RdCrossNode node) throws Exception {
+        boolean flag = true;
+        RdLinkSelector selector = new RdLinkSelector(conn);
+        List<RdLink> links = selector.loadByNodePid(node.getNodePid(), true);
+        for (RdLink link : links) {
+            for (IRow row : link.getForms()) {
+                RdLinkForm form = (RdLinkForm) row;
+                if (form.getFormOfWay() == 34) {
+                    flag = false;
+                    break;
+                }
+            }
+        }
+        if (flag) {
+            node.setIsMain(1);
+            return false;
+        }
+        return true;
     }
 }

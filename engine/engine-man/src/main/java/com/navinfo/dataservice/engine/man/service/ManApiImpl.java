@@ -15,6 +15,8 @@ import com.navinfo.dataservice.engine.man.block.BlockOperation;
 import com.navinfo.dataservice.engine.man.city.CityService;
 import com.navinfo.dataservice.engine.man.grid.GridService;
 import com.navinfo.dataservice.engine.man.message.MessageService;
+import com.navinfo.dataservice.engine.man.produce.ProduceOperation;
+import com.navinfo.dataservice.engine.man.produce.ProduceService;
 import com.navinfo.dataservice.engine.man.region.RegionService;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskOperation;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskService;
@@ -103,6 +105,11 @@ public class ManApiImpl implements ManApi {
 	public void close(int subtaskId) throws Exception {
 		// TODO Auto-generated method stub
 		SubtaskOperation.closeBySubtaskId(subtaskId);
+	}
+	@Override
+	public void updateProduceStatus(int produceId,int status) throws Exception {
+		// TODO Auto-generated method stub
+		ProduceService.getInstance().updateProduceStatus(produceId,status);
 	}
 	/* 
 	 * 根据blockmanid 查询出所有相关的子任务

@@ -82,11 +82,9 @@ public class LuLink implements IObj {
 	@Override
 	public void copy(IRow row) {
 		LuLink sourceLink = (LuLink) row;
-
 		this.eNodePid = sourceLink.eNodePid;
 		this.geometry = sourceLink.geometry;
 		this.length = sourceLink.length;
-		this.pid = sourceLink.pid;
 		this.rowId = sourceLink.rowId;
 		this.sNodePid = sourceLink.sNodePid;
 		this.meshes = new ArrayList<IRow>();

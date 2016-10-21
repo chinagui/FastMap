@@ -7,7 +7,6 @@ import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.ExcelReader;
 import com.navinfo.dataservice.control.row.batch.util.IBatch;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
-import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.engine.edit.service.EditApiImpl;
 
@@ -35,7 +34,7 @@ public class PoiBatchProcessorFM_BAT_20_103 implements IBatch {
 				
 				String objStatus = address.getString("objStatus");
 				
-				if (objStatus.equals(OperType.CREATE) || objStatus.equals(OperType.UPDATE)) {
+				if (objStatus.equals(ObjStatus.INSERT.toString()) || objStatus.equals(ObjStatus.UPDATE.toString())) {
 					// 半角转全角
 					String fullName = address.getString("fullname");
 					fullName = ExcelReader.h2f(fullName);
@@ -47,6 +46,7 @@ public class PoiBatchProcessorFM_BAT_20_103 implements IBatch {
 					JSONObject data = new JSONObject();
 					data.put("fullname", fullName);
 					data.put("fullnamePhonetic", pyStr[1]);
+					data.put("rowId", address.getString("rowId"));
 					data.put("objStatus", ObjStatus.UPDATE.toString());
 					resultArray.add(data);
 				} else {

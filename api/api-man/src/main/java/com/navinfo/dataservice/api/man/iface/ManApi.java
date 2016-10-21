@@ -51,5 +51,7 @@ public interface ManApi{
 	public List<Map<String,Object>> getSubtaskPercentByBlockManId(int blockManId) throws Exception;
 	
 	public void close(int subtaskId) throws Exception;
+	
+	public void updateProduceStatus(int produceId,int status) throws Exception;
 }
 

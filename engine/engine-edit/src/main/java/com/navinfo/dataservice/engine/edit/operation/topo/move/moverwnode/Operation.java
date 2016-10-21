@@ -95,7 +95,7 @@ public class Operation implements IOperation {
 
 					geomInter = GeoTranslator.geojson2Jts(GeoTranslator.jts2Geojson(geomInter), 1, 5);
 
-					RwLinkOperateUtils.createRwLinkWithMesh(geomInter, maps, result);
+					RwLinkOperateUtils.createRwLinkWithMesh(geomInter, maps, result,link);
 				}
 
 				handleRdGsc(link, result);

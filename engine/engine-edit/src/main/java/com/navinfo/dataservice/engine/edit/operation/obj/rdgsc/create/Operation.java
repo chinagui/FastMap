@@ -13,6 +13,7 @@ import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.model.lc.LcLink;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGscLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
@@ -169,6 +170,31 @@ public class Operation implements IOperation {
 
 			// 立交组成线和矩形框交点
 			gscGeo = interGeo.intersection(spatial);
+			
+			Geometry gscPoint = command.getGscPoint();
+					
+			if(gscPoint != null && gscGeo.getNumGeometries() >=1)
+			{
+				Geometry minDistinceGeo  = gscGeo.getGeometryN(0);
+				
+				double minDistince = gscPoint.distance(minDistinceGeo);
+				
+				for(int i = 1;i<gscGeo.getNumGeometries();i++)
+				{
+					Geometry pointTmp = gscGeo.getGeometryN(i);
+					
+					double distince = gscPoint.distance(pointTmp);
+					
+					if(distince < minDistince)
+					{
+						minDistince = distince;
+						
+						minDistinceGeo = pointTmp;
+					}
+				}
+				
+				gscGeo = minDistinceGeo;
+			}
 
 			// 立交检查：1.点位是否重复 2.是否和矩形框有交点
 			check.checkGsc(gscGeo, command.getLinkMap());
@@ -241,6 +267,25 @@ public class Operation implements IOperation {
 		}
 		if (row instanceof RwLink) {
 			RwLink linkObj = (RwLink) row;
+
+			JSONObject jsonObj = calcLinkGeo(gscLink, linkObj.getGeometry(), gscGeo);
+
+			JSONObject updateContent = new JSONObject();
+
+			updateContent.put("geometry", jsonObj);
+
+			boolean changed = linkObj.fillChangeFields(updateContent);
+
+			if (changed) {
+				result.insertObject(linkObj, ObjStatus.UPDATE, linkObj.pid());
+			}
+
+			linkCoor = GeoTranslator.geojson2Jts(jsonObj, 100000, 0).getCoordinates();
+
+		}
+		
+		if (row instanceof LcLink) {
+			LcLink linkObj = (LcLink) row;
 
 			JSONObject jsonObj = calcLinkGeo(gscLink, linkObj.getGeometry(), gscGeo);
 

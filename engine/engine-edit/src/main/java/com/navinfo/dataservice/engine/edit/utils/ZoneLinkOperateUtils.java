@@ -86,10 +86,14 @@ public class ZoneLinkOperateUtils {
 	/*
 	 * 创建生成一条ZONELINK返回
 	 * */
-	public static ZoneLink getAddLink(Geometry g,int sNodePid, int eNodePid,Result result) throws Exception{
+	public static ZoneLink getAddLink(Geometry g,int sNodePid, int eNodePid,Result result,ZoneLink sourceLink) throws Exception{
 		ZoneLink link = new ZoneLink();
+		link.setPid(PidUtil.getInstance().applyZoneLinkPid());
+		if(sourceLink != null)
+        {
+        	link.copy(sourceLink);
+        }
 		Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(g);
-		link.setPid(PidUtil.getInstance().applyAdLinkPid());
 		Iterator<String> it = meshes.iterator();
 		while(it.hasNext()){
 			setLinkChildrenMesh(link,Integer.parseInt(it.next()));
@@ -360,15 +364,15 @@ public class ZoneLinkOperateUtils {
 		}
 	}
 	public static List<ZoneLink> getCreateZoneLinksWithMesh(Geometry g,
-			Map<Coordinate, Integer> maps, Result result) throws Exception {
+			Map<Coordinate, Integer> maps, Result result,ZoneLink sourceLink) throws Exception {
 		List<ZoneLink> links = new ArrayList<ZoneLink>();
 		if (g != null) {
 			if (g.getGeometryType() == GeometryTypeName.LINESTRING) {
-				links.add(ZoneLinkOperateUtils.getCalZoneLinkWithMesh(g, maps,result));
+				links.add(ZoneLinkOperateUtils.getCalZoneLinkWithMesh(g, maps,result,sourceLink));
 			}
 			if (g.getGeometryType() == GeometryTypeName.MULTILINESTRING) {
 				for (int i = 0; i < g.getNumGeometries(); i++) {
-					links.add(ZoneLinkOperateUtils.getCalZoneLinkWithMesh(g.getGeometryN(i), maps,result));
+					links.add(ZoneLinkOperateUtils.getCalZoneLinkWithMesh(g.getGeometryN(i), maps,result,sourceLink));
 				}
 
 			}
@@ -410,7 +414,7 @@ public class ZoneLinkOperateUtils {
 	 * 创建行政区划线 针对跨图幅创建图廓点不能重复
 	 */
 	public static ZoneLink getCalZoneLinkWithMesh(Geometry g,Map<Coordinate, Integer> maps,
-			Result result) throws Exception {
+			Result result,ZoneLink sourceLink) throws Exception {
 		//定义创建行政区划线的起始Pid 默认为0
 		int sNodePid = 0;
 		int eNodePid = 0;
@@ -433,7 +437,7 @@ public class ZoneLinkOperateUtils {
 		}
 		//创建线
 		return ZoneLinkOperateUtils.getAddLink(g, (int) node.get("s"),
-				(int) node.get("e"), result);
+				(int) node.get("e"), result,sourceLink);
 	}
 
 }

@@ -7,14 +7,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import net.sf.json.JSONObject;
+
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
-import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneFace;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneFaceTopo;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneLink;
@@ -25,6 +24,8 @@ import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
+
+import net.sf.json.JSONObject;
 
 public class Operation implements IOperation {
 
@@ -111,7 +112,7 @@ public class Operation implements IOperation {
 								.geojson2Jts(command.getLinkGeom()), MeshUtils
 								.mesh2Jts(meshIdStr)), 1, 5);
 				links.addAll(ZoneLinkOperateUtils.getCreateZoneLinksWithMesh(
-						geomInter, maps, result));
+						geomInter, maps, result,this.command.getUpdateLink()));
 
 			}
 			result.insertObject(this.command.getUpdateLink(), ObjStatus.DELETE,

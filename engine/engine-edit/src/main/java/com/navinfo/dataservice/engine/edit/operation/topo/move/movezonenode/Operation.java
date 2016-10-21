@@ -116,7 +116,7 @@ public class Operation implements IOperation {
 					String meshIdStr = it.next();
 					Geometry geomInter = MeshUtils.linkInterMeshPolygon(geo, MeshUtils.mesh2Jts(meshIdStr));
 					geomInter = GeoTranslator.geojson2Jts(GeoTranslator.jts2Geojson(geomInter), 1, 5);
-					links.addAll(ZoneLinkOperateUtils.getCreateZoneLinksWithMesh(geomInter, maps, result));
+					links.addAll(ZoneLinkOperateUtils.getCreateZoneLinksWithMesh(geomInter, maps, result,link));
 
 				}
 				map.put(link.getPid(), links);

@@ -3,6 +3,8 @@ package com.navinfo.navicommons.geo.computation;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
+
 import net.sf.json.JSONArray;
 import ch.hsr.geohash.GeoHash;
 import ch.hsr.geohash.WGS84Point;
@@ -19,9 +21,10 @@ public class GridUtils {
 	
 	public static void main(String[] args) {
 		try{
-			JSONArray grids = JSONArray.fromObject(new Integer[]{60560303,60560302});
-			String wkt = GridUtils.grids2Wkt(grids);
-			System.out.println(wkt);
+//			JSONArray grids = JSONArray.fromObject(new Integer[]{60560303,60560302});
+//			String wkt = GridUtils.grids2Wkt(grids);
+			String[] grids = get9NeighborGrids("59567100");
+			System.out.println(StringUtils.join(grids, ","));
 		}catch(Exception e){
 			e.printStackTrace();
 		}
@@ -230,6 +233,106 @@ public class GridUtils {
 		lonlat[1] = lat;
 
 		return lonlat;
+	}
+	
+	public static String getNeighborGrid(String gridId,TopoLocation loc){
+		gridId = StringUtils.leftPad(gridId, 8, '0');
+		int m12 = Integer.valueOf(gridId.substring(0, 2));
+		int m34 = Integer.valueOf(gridId.substring(2, 4));
+		int m5 = Integer.valueOf(gridId.substring(4, 5));
+		int m6 = Integer.valueOf(gridId.substring(5, 6));
+		int m7 = Integer.valueOf(gridId.substring(6, 7));
+		int m8 = Integer.valueOf(gridId.substring(7, 8));
+		switch(loc){
+		case Top:
+			if((++m7)>3){
+				m7=0;
+				if((++m5)>7){m12++;m5=0;}
+			}
+			break;
+		case Bottom:
+			if((--m7)<0){
+				m7=3;
+				if((--m5)<0){m12--;m5=7;}
+			}
+			break;
+		case Left:
+			if((--m8)<0){
+				m8=3;
+				if((--m6)<0){m34--;m6=7;}
+			}
+			break;
+		case Right:
+			if((++m8)>3){
+				m8=0;
+				if((++m6)>7){m34++;m6=0;}
+			}
+			break;
+		case LeftTop:
+			if((++m7)>3){
+				m7=0;
+				if((++m5)>7){m12++;m5=0;}
+			}
+			if((--m8)<0){
+				m8=3;
+				if((--m6)<0){m34--;m6=7;}
+			}
+			break;
+		case LeftBottom:
+			if((--m7)<0){
+				m7=3;
+				if((--m5)<0){m12--;m5=7;}
+			}
+			if((--m8)<0){
+				m8=3;
+				if((--m6)<0){m34--;m6=7;}
+			}
+			break;
+		case RightTop:
+			if((++m7)>3){
+				m7=0;
+				if((++m5)>7){m12++;m5=0;}
+			}
+			if((++m8)>3){
+				m8=0;
+				if((++m6)>7){m34++;m6=0;}
+			}
+			break;
+		case RightBottom:
+			if((--m7)<0){
+				m7=3;
+				if((--m5)<0){m12--;m5=7;}
+			}
+			if((++m8)>3){
+				m8=0;
+				if((++m6)>7){m34++;m6=0;}
+			}
+			break;
+		default:
+			break;
+		}
+		return String.format("%02d%02d%d%d%d%d", m12, m34, m5, m6,m7,m8);
+	}
+
+	/**
+	 * 计算grid周边的9个grid
+	 * [0]为本身，从1-8的顺序为左下开始逆时针方向
+	 * @param meshId
+	 * @return
+	 */
+	public static String[] get9NeighborGrids(String gridId) {
+		String allGrids[] = new String[9];
+		allGrids[0] = gridId;
+		allGrids[1] = getNeighborGrid(gridId,TopoLocation.LeftBottom);
+		allGrids[2] = getNeighborGrid(gridId,TopoLocation.Bottom);
+		allGrids[3] = getNeighborGrid(gridId,TopoLocation.RightBottom);
+		allGrids[4] = getNeighborGrid(gridId,TopoLocation.Right);
+		allGrids[5] = getNeighborGrid(gridId,TopoLocation.RightTop);
+		allGrids[6] = getNeighborGrid(gridId,TopoLocation.Top);
+		allGrids[7] = getNeighborGrid(gridId,TopoLocation.LeftTop);
+		allGrids[8] = getNeighborGrid(gridId,TopoLocation.Left);
+		return allGrids;
+
 	}
 
 }

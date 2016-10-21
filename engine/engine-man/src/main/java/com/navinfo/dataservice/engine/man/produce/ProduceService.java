@@ -163,6 +163,7 @@ public class ProduceService {
 	}
 	public Map<String,Object> query(int produceId) throws Exception {
 		Connection conn=null;
+		
 		try{
 			conn = DBConnector.getInstance().getManConnection();
 			String sql="SELECT P.PRODUCE_ID,"
@@ -171,7 +172,7 @@ public class ProduceService {
 					+ "       P.PRODUCE_STATUS,"
 					+ "       P.CREATE_USER_ID,"
 					+ "       I.USER_REAL_NAME CREATE_USER_NAME,"
-					+ "       P.CREATE_DATE"
+					+ "       P.CREATE_DATE,P.parameter PAR"
 					+ "  FROM PRODUCE P, USER_INFO I"
 					+ " WHERE P.CREATE_USER_ID = I.USER_ID"
 					+ "  and p.produce_id="+produceId;
@@ -189,7 +190,7 @@ public class ProduceService {
 						map.put("createDate", DateUtils.dateToString(rs.getTimestamp("CREATE_DATE")));
 						CLOB inforGeo = (CLOB) rs.getClob("PAR");
 						String inforGeo1 = StringUtil.ClobToString(inforGeo);
-						map.put("parameter",inforGeo1);
+						map.put("parameter",JSONObject.fromObject(inforGeo1));
 						//map.put("parameter",rs.getString("PAR"));
 						return map;
 					}

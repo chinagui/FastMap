@@ -3,10 +3,12 @@ package com.navinfo.dataservice.engine.statics.overview;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.log4j.LogManager;
@@ -16,6 +18,7 @@ import org.bson.Document;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Projections;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.engine.statics.StatMain;
 import com.navinfo.dataservice.engine.statics.tools.MongoDao;
 
@@ -35,6 +38,18 @@ public class OverviewMain {
 				+ "\"collectPlanDate\":0,"
 				+ "\"collectActualStartDate\":\"\","
 				+ "\"collectActualEndDate\":\"\","
+				+ "\"collectDiffDate\":0,"
+				+ "\"dailyPercent\":0,"
+				+ "\"dailyPlanStartDate\":\"\","
+				+ "\"dailyPlanEndDate\":\"\","
+				+ "\"dailyPlanDate\":0,"
+				+ "\"dailyActualStartDate\":\"\","
+				+ "\"dailytActualEndDate\":\"\","
+				+ "\"dailyDiffDate\":0,"
+				+ "\"poiPlanTotal\":0," //block_man记录的poi计划量汇总
+				+ "\"roadPlanTotal\":0,"//block_man记录的road计划量汇总
+				+ "\"statDate\":\"\","//统计日期
+				+ "\"statTime\":\"\","//统计详细时间
 				+ "}");
 		String curDate = f.format(new Date());
 		calCollectPercent(statInfo,StatMain.db_name,curDate);
@@ -47,43 +62,103 @@ public class OverviewMain {
 		FindIterable<Document> result = mdao.find(col_name_blockman, Filters.eq("statDate", date))
 				.projection(Projections.include("collectPercent","collectPlanStartDate","collectPlanEndDate"));
 		
-		int sum = 0;
-		int blockCount = 0;
+		List<Integer> dailyPercentSet = new ArrayList<Integer>();
+		List<Integer> colPercentSet = new ArrayList<Integer>();
 		Set<String> collectStartDateSet=new HashSet<String>();
 		Set<String> collectEndDateSet = new HashSet<String>();
 		Set<String> collectActualStartDateSet = new HashSet<String>();
 		Set<String> collectActualEndDateSet = new HashSet<String>();
+		Set<String> dailyPlanStartDateSet = new HashSet<String>();
+		Set<String> dailyPlanEndDateSet = new HashSet<String>();
+		Set<String> dailyActualStartDateSet = new HashSet<String>();
 		for (Document doc: result){
 			//计算 collectPercent
 			log.info("calCollectPercent");
-			int val = 0;
 			Object collectPercent = doc.get("collectPercent");
 			if (collectPercent !=null){
-				val=Integer.parseInt(collectPercent.toString());
+				colPercentSet.add(Integer.parseInt(collectPercent.toString()));
 			}
-			sum+=val;
-			blockCount++;
 			//计算 collectPlanStartDate
 			collectStartDateSet.add(doc.getString("collectPlanStartDate"));
 			//计算 collectPlanEndDate
 			collectEndDateSet.add(doc.getString("collectPlanEndDate"));
 			//计算collectActualStartDate
-			collectActualStartDateSet.add(doc.getString("collectActualStartDate"));
+			String colActStartDate = doc.getString("collectActualStartDate");
+			if (StringUtils.isNotEmpty(colActStartDate)){
+				collectActualStartDateSet.add(colActStartDate);
+			}
 			//计算collectActualEndDate
-			collectActualEndDateSet.add(doc.getString("collectActualEndDate"));
-			//
+			String colActEndDate = doc.getString("collectActualEndDate");
+			if (StringUtils.isNotEmpty(colActEndDate)){
+				collectActualEndDateSet.add(colActEndDate);
+			}
+			//计算dailyPercent
+			log.info("cal dailyPercent");
+			Object dailyPercent = doc.get("dailyPercent");
+			if (dailyPercent !=null){
+				dailyPercentSet.add(Integer.parseInt(dailyPercent.toString()));
+			}
+			//计算dailyPlanStartDateSet
+			String dailyPlanStartDate = doc.getString("dailyPlanStartDate");
+			if (StringUtils.isNotEmpty(dailyPlanStartDate)){
+				dailyPlanStartDateSet.add(dailyPlanStartDate);
+			}
+			//计算dailyPlanEndDateSet
+			String dailyPlanEndDate = doc.getString("dailyPlanEndDate");
+			if (StringUtils.isNotEmpty(dailyPlanEndDate)){
+				dailyPlanEndDateSet.add(dailyPlanEndDate);
+			}
+			//计算dailyActualStartDateSet
+			
 		}
-		BigDecimal collectPercent = new BigDecimal(sum).divide(new BigDecimal(blockCount));
-		statResult.put("collectPercent", collectPercent) ;
+		statResult.put("collectPercent", avg(colPercentSet)) ;
 		String minStartDate = Collections.min(collectStartDateSet);
-		String minEndDate = Collections.max(collectStartDateSet);
+		String maxEndDate = Collections.max(collectStartDateSet);
 		statResult.put("collectPlanStartDate", minStartDate) ;
-		statResult.put("collectPlanEndDate", minEndDate) ;
-		statResult.put("collectPlanDate", daysBetween(minStartDate,minEndDate)) ;
-		Collections.max(collectStartDateSet);
-//		statResult.put("collectActualStartDate", collectActualStartDate) ;
+		statResult.put("collectPlanEndDate", maxEndDate) ;
+		statResult.put("collectPlanDate", daysBetween(minStartDate,maxEndDate)) ;
+		String collectActualStartDate = Collections.min(collectActualStartDateSet);
+		statResult.put("collectActualStartDate", collectActualStartDate) ;
+		String  collectActualEndDate= Collections.max(collectActualEndDateSet);
+		statResult.put("collectActualStartDate", collectActualEndDate) ;
+		statResult.put("collectDiffDate", daysBetween(collectActualEndDate,maxEndDate));
+		statResult.put("dailyPercent", avg(dailyPercentSet));
+		String dailyPlanStartDate = Collections.min(dailyPlanStartDateSet);
+		statResult.put("dailyPlanStartDate", dailyPlanStartDate);
+		String dailyPlanEndDate = Collections.max(dailyPlanEndDateSet);
+		statResult.put("dailyPlanEndDate", dailyPlanEndDate);
+		//dailyPlanDate
+		statResult.put("dailyPlanDate", daysBetween(dailyPlanStartDate,dailyPlanEndDate));
+		//dailyActualStartDate
+		String dailyActualStartDate = Collections.min(dailyActualStartDateSet);
+		statResult.put("dailyActualStartDate", dailyActualStartDate);
 	}
-	private static int daysBetween(String smdate,String bdate) throws ParseException{  
+	/**
+	 * @param dailyPercentSet
+	 * @return int 数组的平均值BigDecimal
+	 */
+	private static BigDecimal avg(List<Integer> dailyPercentSet){
+		int sum = 0;
+		int size=dailyPercentSet.size();
+		if(size==0) return new BigDecimal(0);
+		for(Integer pct:dailyPercentSet){
+			sum+=pct.intValue();
+		}	
+		BigDecimal collectPercent = new BigDecimal(sum).divide(new BigDecimal(size));
+		return collectPercent;
+		
+	}
+	
+	/**
+	 * @param smdate开始日期
+	 * @param bdate结束日期
+	 * @return 两个日期之间的天数
+	 * @throws ParseException
+	 */
+	private static int daysBetween(String smdate,String bdate) throws ParseException{
+		if (StringUtils.isEmpty(smdate)||StringUtils.isEmpty(bdate)){
+			return 0;
+		}
         SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd");  
         Calendar cal = Calendar.getInstance();    
         cal.setTime(sdf.parse(smdate));    

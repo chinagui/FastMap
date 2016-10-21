@@ -245,7 +245,7 @@ public class OracleDao {
 			//目前只统计采集（POI，道路，一体化）日编（POI,一体化GRID粗编,一体化区域粗编）子任务
 			//如果FM_STAT_OVERVIEW_SUBTASK中该子任务记录为已完成，则不再统计
 			String sql = "SELECT DISTINCT S.SUBTASK_ID, S.STAGE,S.TYPE,S.STATUS,S.PLAN_START_DATE,S.PLAN_END_DATE,S.BLOCK_MAN_ID"
-					+ " FROM SUBTASK S, FM_STAT_OVERVIEW_SUBTASK FSOS"
+					+ " FROM SUBTASK S"
 					+ " WHERE S.STAGE IN (0, 1)"
 					+ " AND S.TYPE IN (0, 1, 2, 3, 4)"
 					+ " AND NOT EXISTS (SELECT 1"
@@ -320,30 +320,20 @@ public class OracleDao {
 						subtask.put("actualStartDate", rs.getString("ACTUAL_START_DATE"));
 						subtask.put("actualEndDate", rs.getString("ACTUAL_END_DATE"));
 						
-						Map<String,Integer> detailsPOI = new HashMap<String,Integer>();
-						Map<String,Integer> detailsROAD = new HashMap<String,Integer>();
-						Map<String,Map<String,Integer>> details = new HashMap<String,Map<String,Integer>>();
+						subtask.put("totalPoi", rs.getInt("TOTAL_POI"));
+						subtask.put("finishedPoi", rs.getInt("FINISHED_POI"));
+						subtask.put("percentPoi", rs.getInt("PERCENT_POI"));
 						
-						detailsPOI.put("total", rs.getInt("TOTAL_POI"));
-						detailsPOI.put("finish", rs.getInt("FINISHED_POI"));
-						detailsPOI.put("percent", rs.getInt("PERCENT_POI"));
-						
-						detailsROAD.put("total", rs.getInt("TOTAL_ROAD"));
-						detailsROAD.put("finish", rs.getInt("FINISHED_ROAD"));
-						detailsROAD.put("percent", rs.getInt("PERCENT_ROAD"));
-						
-						details.put("poi", detailsPOI);
-						details.put("road", detailsROAD);
-						
-						subtask.put("details", details);
-						
-						subtask.put("subtaskId", rs.getInt("SUBTASK_ID"));
-						subtask.put("subtaskId", rs.getInt("SUBTASK_ID"));
-						subtask.put("subtaskId", rs.getInt("SUBTASK_ID"));
-						
+						subtask.put("totalRoad", rs.getInt("TOTAL_ROAD"));
+						subtask.put("finishedRoad", rs.getInt("FINISHED_ROAD"));
+						subtask.put("percentRoad", rs.getInt("PERCENT_ROAD"));
+
 						CLOB gridPercentDetails = (CLOB) rs.getClob("GRID_PERCENT_DETAILS");
 						String gridPercentDetails1 = StringUtil.ClobToString(gridPercentDetails);
-						JSONObject dataJson = JSONObject.fromObject(gridPercentDetails1);
+						JSONObject dataJson = null;
+						if(!gridPercentDetails1.isEmpty()){
+							dataJson = JSONObject.fromObject(gridPercentDetails1);
+						}
 						subtask.put("gridPercentDetails", dataJson);
 
 						list.add(subtask);

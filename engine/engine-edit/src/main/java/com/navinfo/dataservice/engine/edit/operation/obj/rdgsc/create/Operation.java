@@ -13,6 +13,7 @@ import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.model.lc.LcLink;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGscLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
@@ -241,6 +242,25 @@ public class Operation implements IOperation {
 		}
 		if (row instanceof RwLink) {
 			RwLink linkObj = (RwLink) row;
+
+			JSONObject jsonObj = calcLinkGeo(gscLink, linkObj.getGeometry(), gscGeo);
+
+			JSONObject updateContent = new JSONObject();
+
+			updateContent.put("geometry", jsonObj);
+
+			boolean changed = linkObj.fillChangeFields(updateContent);
+
+			if (changed) {
+				result.insertObject(linkObj, ObjStatus.UPDATE, linkObj.pid());
+			}
+
+			linkCoor = GeoTranslator.geojson2Jts(jsonObj, 100000, 0).getCoordinates();
+
+		}
+		
+		if (row instanceof LcLink) {
+			LcLink linkObj = (LcLink) row;
 
 			JSONObject jsonObj = calcLinkGeo(gscLink, linkObj.getGeometry(), gscGeo);
 

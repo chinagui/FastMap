@@ -239,9 +239,9 @@ public class BlockService {
 			JSONObject obj = JSONObject.fromObject(json);
 			BlockMan bean = (BlockMan) JSONObject.toBean(obj, BlockMan.class);
 
-			String selectSql = "select t.CITY_ID, t.BLOCK_NAME, t.GEOMETRY,tt.name,"
-					+ " t.PLAN_STATUS, T.work_property,tt.task_type"
-					+ " from BLOCK t,task tt where t.BLOCK_ID = ? and t.city_id=tt.city_id";
+			String selectSql = "select t.CITY_ID, t.BLOCK_NAME, t.GEOMETRY,NVL(TT.NAME,'---') NAME,"
+					+ " t.PLAN_STATUS, T.work_property, CASE T.CITY_ID  WHEN 100002 THEN 4 ELSE 1 END TASK_TYPE"
+					+ " from BLOCK t,task tt where t.BLOCK_ID = ? and t.city_id=tt.city_id(+)";
 			ResultSetHandler<HashMap> rsHandler = new ResultSetHandler<HashMap>() {
 				public HashMap<String, Object> handle(ResultSet rs) throws SQLException {
 					while (rs.next()) {

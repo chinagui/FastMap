@@ -770,6 +770,8 @@ public class Operation implements IOperation {
         opRefRelationObj.handleBranch(this.command, result);
 
         opRefRelationObj.handleDirectroute(this.command, result);
+
+        opRefRelationObj.handlerAdadmin(this.command, result);
     }
 
     /**

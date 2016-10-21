@@ -399,19 +399,36 @@ public class Operation implements IOperation {
         return laneClass;
     }
 
+	/**
+	 * 限制信息维护 
+	 * 1、如果上下线分离之前，link的限制类型为 1 单行限制、3 穿行限制、2 车辆限制、7 超车限制、5 季节性关闭道路、6
+	 * Usage fee required，上下线分离后新link自动删除对应限制类型下的道路限制信息子表；
+	 * 当限制信息是“道路维修中、施工中不开放、外地车限行、尾号限行”时，限制信息继承；
+	 * 2、如果上下线分离之前，link有卡车限制信息时，上下线分离后新link自动删除对应的卡车限制信息
+	 * 
+	 * @param link
+	 */
+	private void relationLimitForLink(RdLink link) {
+		// 限制信息
+		List<RdLinkLimit> limits = new ArrayList<RdLinkLimit>();
 
-    // link的限制类型为单行限制、穿行限制、车辆限制时，上下线分离后新link自动删除对应限制类型下的道路限制信息子表
-    private void relationLimitForLink(RdLink link) {
-        List<RdLinkLimit> limits = new ArrayList<RdLinkLimit>();
-        for (IRow row : link.getLimits()) {
-            RdLinkLimit limit = (RdLinkLimit) row;
-            if (limit.getType() == 1 || limit.getType() == 2
-                    || limit.getType() == 3) {
-                limits.add(limit);
-            }
-        }
-        link.getLimits().removeAll(limits);
-    }
+		for (IRow row : link.getLimits()) {
+
+			RdLinkLimit limit = (RdLinkLimit) row;
+
+			if (limit.getType() == 1 || limit.getType() == 2
+					|| limit.getType() == 3 || limit.getType() == 5
+					|| limit.getType() == 6 || limit.getType() == 7) {
+
+				limits.add(limit);
+			}
+		}
+
+		link.getLimits().removeAll(limits);
+
+		// 卡车限制信息
+		link.getLimitTrucks().clear();
+	}
 
     // 如果双方向道路变上下线分离，则将上行方向的RTIC信息作为“上行”赋到分离后通行方向与上行方向相同的link上；
     // 将下行方向的RTIC信息作为“上行”的RTIC信息赋到分离后通行方向与原RTIC上行方向相反的link上；
@@ -770,6 +787,8 @@ public class Operation implements IOperation {
         opRefRelationObj.handleBranch(this.command, result);
 
         opRefRelationObj.handleDirectroute(this.command, result);
+
+        opRefRelationObj.handlerAdadmin(this.command, result);
     }
 
     /**

@@ -153,7 +153,6 @@ public class LcLink implements IObj {
 	@Override
 	public void copy(IRow row) {
 		LcLink source = (LcLink) row;
-		this.pid = source.pid;
 		this.rowId = source.rowId;
 		this.sNodePid = source.sNodePid;
 		this.eNodePid = source.eNodePid;
@@ -164,12 +163,14 @@ public class LcLink implements IObj {
 		for (IRow r : source.kinds) {
 			LcLinkKind kind = new LcLinkKind();
 			kind.copy(r);
+			kind.setLinkPid(this.pid);
 			this.kinds.add(kind);
 		}
 		this.meshes = new ArrayList<IRow>();
 		for (IRow r : source.meshes) {
 			LcLinkMesh mesh = new LcLinkMesh();
 			mesh.copy(r);
+			mesh.setLinkPid(this.pid);
 			this.meshes.add(mesh);
 		}
 	}

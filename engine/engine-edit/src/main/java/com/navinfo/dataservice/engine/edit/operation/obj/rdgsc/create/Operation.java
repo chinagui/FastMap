@@ -170,6 +170,31 @@ public class Operation implements IOperation {
 
 			// 立交组成线和矩形框交点
 			gscGeo = interGeo.intersection(spatial);
+			
+			Geometry gscPoint = command.getGscPoint();
+					
+			if(gscPoint != null && gscGeo.getNumGeometries() >=1)
+			{
+				Geometry minDistinceGeo  = gscGeo.getGeometryN(0);
+				
+				double minDistince = gscPoint.distance(minDistinceGeo);
+				
+				for(int i = 1;i<gscGeo.getNumGeometries();i++)
+				{
+					Geometry pointTmp = gscGeo.getGeometryN(i);
+					
+					double distince = gscPoint.distance(pointTmp);
+					
+					if(distince < minDistince)
+					{
+						minDistince = distince;
+						
+						minDistinceGeo = pointTmp;
+					}
+				}
+				
+				gscGeo = minDistinceGeo;
+			}
 
 			// 立交检查：1.点位是否重复 2.是否和矩形框有交点
 			check.checkGsc(gscGeo, command.getLinkMap());

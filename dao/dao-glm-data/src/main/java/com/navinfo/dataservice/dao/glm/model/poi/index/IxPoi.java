@@ -1810,5 +1810,4 @@ public class IxPoi implements IObj {
 	public void setRawFields(String rawFields) {
 		this.rawFields = rawFields;
 	}
-
 }

@@ -9,7 +9,6 @@ import java.util.List;
 import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.commons.exception.DataNotFoundException;
-import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
@@ -17,11 +16,9 @@ import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
 import com.navinfo.dataservice.dao.log.LogReader;
 import com.navinfo.navicommons.database.sql.DBUtils;
 import com.navinfo.navicommons.geo.computation.GridUtils;
-import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import oracle.sql.STRUCT;
 
 /**
  * POI基础信息表 selector
@@ -373,11 +370,15 @@ public class IxPoiSelector extends AbstractSelector {
 	public IRow loadByIdAndChildren(int id, boolean isLock) throws Exception {
 
 		IxPoi poi = null;
+		LogReader logRead=new LogReader(conn);
 		List<Integer> ids = new ArrayList<Integer>();
 		ids.add(id);
 		List<IRow> iRows = loadByIds(ids, isLock, false);
+		//查询删除poi的信息
 		if (iRows.size() == 0 || iRows == null) {
 			poi = (IxPoi) loadAllById(id, isLock);
+			//根据履历过滤掉子表单独删除的记录，只留最后一次和主表同时删除的子表记录
+			logRead.filterValidRowId(poi);
 		} else {
 			poi = (IxPoi) loadById(id, isLock);
 		}
@@ -389,8 +390,6 @@ public class IxPoiSelector extends AbstractSelector {
 		poi.setSamepoiParts(parts);
 
 		poi.setRawFields(loadRawByRowId(poi.getRowId()));
-		
-		LogReader logRead=new LogReader(conn);
 		
 		poi.setState(logRead.getObjectState(poi.pid(), "ix_poi"));
 

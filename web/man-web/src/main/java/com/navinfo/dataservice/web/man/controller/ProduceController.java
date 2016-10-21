@@ -72,6 +72,25 @@ public class ProduceController extends BaseController {
 	}
 	
 	/**
+	 * 日出品管理--列表
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/produce/query")
+	public ModelAndView query(HttpServletRequest request){
+		try{
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+
+			int produceId = dataJson.getInt("produceId");
+			Map<String, Object> data=ProduceService.getInstance().query(produceId);
+			return new ModelAndView("jsonView", success(data));
+		}catch(Exception e){
+			log.error("日出品失败，原因："+e.getMessage(), e);
+			return new ModelAndView("jsonView",exception(e));
+		}
+	}
+	
+	/**
 	 * 日出品管理--生成POI&Road日出品包,生成POI日出品包
 	 * 判断类型，如果是POI，将grid范围内的POI数据刷到出品库；否则将grid范围内的全部数据刷到出品库。再调用出品转换脚本生成出品包。
 	 * @param request

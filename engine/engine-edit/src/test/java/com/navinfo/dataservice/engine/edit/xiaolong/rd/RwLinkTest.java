@@ -10,9 +10,11 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
+import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLink;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLinkName;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwNode;
+import com.navinfo.dataservice.dao.glm.search.RdCrossSearch;
 import com.navinfo.dataservice.dao.glm.search.RwLinkSearch;
 import com.navinfo.dataservice.dao.glm.selector.rd.rdname.RdNameSelector;
 import com.navinfo.dataservice.engine.edit.InitApplication;
@@ -38,7 +40,7 @@ public class RwLinkTest extends InitApplication {
 
 			SearchProcess p = new SearchProcess(conn);
 			
-			RdCross obj = (RdCross) p.searchDataByPid(ObjType.RDCROSS, 233537);
+			RdRestriction obj = (RdRestriction) p.searchDataByPid(ObjType.RDRESTRICTION, 47547438);
 
 			System.out.println(obj.Serialize(ObjLevel.BRIEF));
 			
@@ -56,7 +58,7 @@ public class RwLinkTest extends InitApplication {
 
 			String parameter = "{\"type\":\"RWLINK\",\"dbId\":42,\"objId\":100007138}";
 
-			RwLinkSearch search = new RwLinkSearch(conn);
+			RdCrossSearch search = new RdCrossSearch(conn);
 			
 			search.searchDataByTileWithGap(107951, 49621, 17, 20);
 

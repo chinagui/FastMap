@@ -3,6 +3,7 @@ package com.navinfo.dataservice.dao.glm.operator;
 import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Iterator;
 import java.util.List;
@@ -119,26 +120,20 @@ public class BasicOperator extends AbstractOperator {
 				} else if (StringUtils.toColumnName(name).equals(M_ROW_ID)) {
 					key.append(M_ROW_ID + ",");
 					String tableName = SelectorUtils.getObjTableName(row);
-					if(StringUtils.isNotEmpty(row.rowId()))
-					{
-						if(!tableName.equals("IX_POI"))
-						{
+					if (StringUtils.isNotEmpty(row.rowId())) {
+						if (!tableName.equals("IX_POI")) {
 							row.setRowId(UuidUtils.genUuid());
 						}
-					}
-					else
-					{
+					} else {
 						row.setRowId(UuidUtils.genUuid());
 					}
-					logger.info("rowid:"+row.rowId());
-					System.out.println("poi rowid:"+row.rowId());
+					logger.info("rowid:" + row.rowId());
+					System.out.println("poi rowid:" + row.rowId());
 					value.append("'" + row.rowId() + "',");
-				} else if(row instanceof IxPoiPhoto && name.equals("fccPid"))
-				{
+				} else if (row instanceof IxPoiPhoto && name.equals("fccPid")) {
 					key.append("pid,");
 					value.append(oj + ",");
-				}
-				else {
+				} else {
 					key.append(StringUtils.toColumnName(name) + ",");
 					value.append(oj + ",");
 				}
@@ -162,8 +157,8 @@ public class BasicOperator extends AbstractOperator {
 
 	@Override
 	public void updateRow2Sql(Statement stmt) throws Exception {
-		StringBuilder sb = new StringBuilder("update " + row.tableName() + " set u_record=3 ");
-		
+		StringBuilder sb = new StringBuilder("update " + row.tableName() + " set u_record=3");
+
 		this.addConditionForPoi(sb);
 		Set<Entry<String, Object>> set = row.changedFields().entrySet();
 
@@ -183,12 +178,11 @@ public class BasicOperator extends AbstractOperator {
 			Object value = field.get(row);
 
 			column = StringUtils.toColumnName(column);
-			
+
 			if (value instanceof String || value == null) {
-				
+
 				if (!StringUtils.isStringSame(String.valueOf(value), String.valueOf(columnValue))) {
-					if(row instanceof IxPoiPhoto && column.equals("fcc_pid"))
-					{
+					if (row instanceof IxPoiPhoto && column.equals("fcc_pid")) {
 						column = "pid";
 					}
 					if (columnValue == null) {
@@ -328,12 +322,16 @@ public class BasicOperator extends AbstractOperator {
 		return false;
 	}
 
-	private void addConditionForPoi(StringBuilder sb) {
+	private void addConditionForPoi(StringBuilder sb) throws SQLException {
 		String tableName = SelectorUtils.getObjTableName(row);
-		if (tableName.equals("IX_POI") || row instanceof IxPoi || row instanceof IxPoiChildren || row instanceof IxPoiParent) {
-			sb.append(",u_date = " + StringUtils.getCurrentTime() + ",");
+		if (tableName.equals("IX_POI") && !(row instanceof IxPoi)) {
+			if (sb != null) {
+				sb.append(",u_date = " + StringUtils.getCurrentTime() + ",");
+			}
 		} else {
-			sb.append(",");
+			if (sb != null) {
+				sb.append(",");
+			}
 		}
 
 	}

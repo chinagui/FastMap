@@ -850,6 +850,61 @@ public class BlockService {
 				/*if("blockPlanStatus".equals(key)){
 					conditionSql=conditionSql+" AND MAN_LIST.BLOCK_PLAN_STATUS ="+conditionJson.getInt(key);}
 				*/
+				//1-10采集正常,采集异常,采集完成,日编正常,日编异常,日编完成,未规划,草稿,已完成,已关闭
+				if("selectParam1".equals(key)){
+					JSONArray selectParam1=conditionJson.getJSONArray(key);
+					JSONArray collectProgress=new JSONArray();
+					JSONArray dailyProgress=new JSONArray();
+					JSONArray planStatus=new JSONArray();
+					for(Object i:selectParam1){
+						int tmp=(int) i;
+						if(tmp==1||tmp==2||tmp==3){collectProgress.add(tmp);}
+						if(tmp==4||tmp==5||tmp==6){dailyProgress.add(tmp-3);}
+						if(tmp==7){
+							if(!statusSql.isEmpty()){statusSql+=" or ";}
+							statusSql+=" MAN_LIST.BLOCK_PLAN_STATUS =0";}
+						if(tmp==8){
+							if(!statusSql.isEmpty()){statusSql+=" or ";}
+							statusSql+=" MAN_LIST.BLOCK_STATUS =2";}
+						if(tmp==9||tmp==10){planStatus.add(tmp-6);}
+					}
+					if(!collectProgress.isEmpty()){
+						if(!statusSql.isEmpty()){statusSql+=" or ";}
+						statusSql+=" MAN_LIST.collect_Progress IN ("+collectProgress.join(",")+")";}
+					if(!dailyProgress.isEmpty()){
+						if(!statusSql.isEmpty()){statusSql+=" or ";}
+						statusSql+=" MAN_LIST.daily_Progress IN ("+dailyProgress.join(",")+")";}
+					if(!planStatus.isEmpty()){
+						if(!statusSql.isEmpty()){statusSql+=" or ";}
+						statusSql+=" MAN_LIST.PLAN_STATUS IN ("+planStatus.join(",")+")";}
+				}
+				//1-5按时完成,提前完成,逾期完成,采集逾期,日编逾期
+				if("selectParam2".equals(key)){
+					JSONArray selectParam1=conditionJson.getJSONArray(key);
+					for(Object i:selectParam1){
+						int tmp=(int) i;
+						if(tmp==2){
+							if(!statusSql.isEmpty()){statusSql+=" or ";}
+							statusSql+=" MAN_LIST.diff_date>0";
+						}
+						if(tmp==1){
+							if(!statusSql.isEmpty()){statusSql+=" or ";}
+							statusSql+=" MAN_LIST.diff_date=0";
+						}
+						if(tmp==3){
+							if(!statusSql.isEmpty()){statusSql+=" or ";}
+							statusSql+=" MAN_LIST.diff_date<0";
+						}
+						if(tmp==4){
+							if(!statusSql.isEmpty()){statusSql+=" or ";}
+							statusSql+=" MAN_LIST.COLLECT_DIFF_DATE<0";
+						}
+						if(tmp==5){
+							if(!statusSql.isEmpty()){statusSql+=" or ";}
+							statusSql+=" MAN_LIST.daily_DIFF_DATE<0";
+						}
+					}
+				}
 				if("collectProgress".equals(key)){
 					if(!statusSql.isEmpty()){statusSql+=" or ";}
 					statusSql+=" MAN_LIST.collect_Progress IN ("+conditionJson.getJSONArray(key).join(",")+")";}
@@ -1222,37 +1277,25 @@ public class BlockService {
 
 	/**
 	 * @param blockId
+	 * @param blockManId 
+	 * @param type
 	 * @return
 	 * @throws ServiceException 
 	 */
-	public HashMap<String,String> queryWktByBlockId(int blockId) throws ServiceException {
+	public List queryWktByBlockId(int blockId, int blockManId,int type) throws ServiceException {
 		// TODO Auto-generated method stub
 		Connection conn = null;
 		try {
 			conn = DBConnector.getInstance().getManConnection();
-			QueryRunner run = new QueryRunner();
-			
-			String selectSql = "SELECT B.BLOCK_ID,B.GEOMETRY FROM BLOCK B WHERE B.BLOCK_ID = " + blockId;
-			
-			ResultSetHandler<HashMap<String,String>> rsHandler = new ResultSetHandler<HashMap<String,String>>() {
-				public HashMap<String,String> handle(ResultSet rs) throws SQLException {
-					HashMap<String,String> result = new HashMap<String,String>();
-					result.put("geometry", null);
-					if (rs.next()) {
-						STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
-						try {
-							result.put("geometry",GeoTranslator.struct2Wkt(struct));
-						} catch (Exception e1) {
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
-						}
-					}
-					return result;
-				}
-	
-			};
-
-			return run.query(conn, selectSql,rsHandler);
+			List result = new ArrayList();
+			if(1==type){
+				//常规
+				result = BlockOperation.queryWktByBlockIdNormal(conn, blockId);
+			}else if(4==type){
+				//情报
+				result = BlockOperation.queryWktByBlockIdInfor(conn, blockManId);
+			}
+			return result;
 			
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);

@@ -22,7 +22,6 @@ public class Process extends AbstractProcess<Command> implements IProcess {
 
 	public Process(AbstractCommand command) throws Exception {
 		super(command);
-		// TODO Auto-generated constructor stub
 	}
 
 	@Override
@@ -42,7 +41,7 @@ public class Process extends AbstractProcess<Command> implements IProcess {
 	@Override
 	public String exeOperation() throws Exception {
 		return new Operation(this.getCommand(), this.parentsByParent,
-				this.parentsByChildren).run(this.getResult());
+				this.parentsByChildren,this.getConn()).run(this.getResult());
 
 	}
 

@@ -92,7 +92,7 @@ public class LogReader {
 
 			DBUtils.closeResultSet(resultSet);
 			DBUtils.closeStatement(pstmt);
-			DBUtils.closeConnection(conn);
+//			DBUtils.closeConnection(conn);
 
 		}
 	}

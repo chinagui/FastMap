@@ -14,6 +14,7 @@ public class UploadTest {
 				new String[] { "dubbo-consumer-datahub-test.xml" });
 		context.start();
 		new ApplicationContextUtil().setApplicationContext(context);
+		
 	}
 	
 	@Test
@@ -21,6 +22,7 @@ public class UploadTest {
 		UploadOperation operation = new UploadOperation();
 		try {
 			operation.importPoi("F://poi.txt");
+//			System.out.println(UuidUtils.genUuid());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

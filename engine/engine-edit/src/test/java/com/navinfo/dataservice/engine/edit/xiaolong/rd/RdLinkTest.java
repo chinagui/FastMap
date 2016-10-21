@@ -81,7 +81,7 @@ public class RdLinkTest extends InitApplication {
 
 	@Test
 	public void testDelete() {
-		String parameter = "{\"command\":\"DELETE\",\"dbId\":17,\"type\":\"RDLINK\",\"objId\":467471}";
+		String parameter = "{\"command\":\"DELETE\",\"dbId\":17,\"type\":\"RDLINK\",\"objId\":203001145}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
@@ -93,7 +93,7 @@ public class RdLinkTest extends InitApplication {
 
 	@Test
 	public void testAddRdLink() {
-		String parameter = "{\"command\":\"CREATE\",\"dbId\":17,\"objId\":203000861,\"data\":{\"longitude\":116.2952602316798,\"latitude\":40.062760786326},\"type\":\"RDNODE\"}";
+		String parameter = "{\"command\":\"DELETE\",\"type\":\"RDSLOPE\",\"dbId\":17,\"objId\":203000000}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
@@ -105,7 +105,7 @@ public class RdLinkTest extends InitApplication {
 
 	@Test
 	public void testRepairLink() {
-		String parameter = "{\"command\":\"REPAIR\",\"dbId\":19,\"objId\":202000333,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.35089,40.04414],[116.35108,40.04395],[116.35117,40.04386],[116.35137,40.04407],[116.35173,40.0438],[116.35143,40.04356],[116.35095,40.04346],[116.35099,40.04368],[116.35108,40.04395],[116.3511,40.04401],[116.35113883064562,40.044085142783416],[116.3512,40.0442],[116.35151,40.0442],[116.35168,40.04428]]},\"interLinks\":[],\"interNodes\":[]},\"type\":\"RDLINK\"}";
+		String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDSLOPE\",\"dbId\":17,\"data\":{\"objStatus\":\"UPDATE\",\"pid\":203000000,\"linkPids\":[301000097,304000077,205000088]}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
@@ -130,7 +130,7 @@ public class RdLinkTest extends InitApplication {
 	@Test
 	public void testGetByElementCondition()
 	{
-		String parameter = "{\"dbId\":42,\"pageNum\":1,\"pageSize\":5,\"data\":{\"linkPid\":\"11111\"},\"type\":\"RDLINK\"}";
+		String parameter = "{\"dbId\":17,\"pageNum\":1,\"pageSize\":5,\"data\":{\"name\":\"名\"},\"type\":\"IXPOI\"}";
 
 		Connection conn = null;
 

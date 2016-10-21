@@ -215,7 +215,7 @@ public class Operation implements IOperation {
 			result.insertObject(Node, ObjStatus.INSERT, Node.pid());
 			this.createFace();
 			List<LcLink> links = new ArrayList<LcLink>();
-			links.add(LcLinkOperateUtils.getAddLink(geom, Node.getPid(), Node.getPid(), result));
+			links.add(LcLinkOperateUtils.getAddLink(geom, Node.getPid(), Node.getPid(), result,null));
 			this.reCaleFaceGeometry(links);
 		} // 如果跨图幅
 		else {
@@ -240,7 +240,7 @@ public class Operation implements IOperation {
 		if (!maps.containsValue(node.get("e"))) {
 			maps.put(g.getCoordinates()[g.getCoordinates().length - 1], (int) node.get("e"));
 		}
-		return LcLinkOperateUtils.getAddLink(g, (int) node.get("s"), (int) node.get("e"), result);
+		return LcLinkOperateUtils.getAddLink(g, (int) node.get("s"), (int) node.get("e"), result,null);
 	}
 
 	/*

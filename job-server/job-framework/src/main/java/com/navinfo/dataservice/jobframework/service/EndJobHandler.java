@@ -43,7 +43,32 @@ public class EndJobHandler implements MsgHandler {
 			int status = jobMsg.getInt("status");
 			String resultMsg = jobMsg.getString("resultMsg");
 			JSONObject resp = jobMsg.getJSONObject("response");
-			SysMsgPublisher.publishMsg("job("+jobId+")执行完成", resultMsg, 0, new long[]{userId});
+			String jobTypeName = jobMsg.getString("jobTypeName");
+			long durationSeconds = jobMsg.getLong("durationSeconds");
+			//计算完成时间
+			long nd = 24*60*60;//一天的毫秒数
+			long nh = 60*60;//一小时的毫秒数
+			long nm = 60;//一分钟的毫秒数
+			long day = durationSeconds/nd;//计算差多少天
+			long hour = durationSeconds%nd/nh;//计算差多少小时
+			long min = durationSeconds%nd%nh/nm;//计算差多少分钟
+			long sec = durationSeconds%nd%nh%nm/1;//计算差多少秒
+			StringBuilder diffTime = new StringBuilder();
+			diffTime.append("用时");
+			if(day != 0){
+				diffTime.append(day+"天");
+			}
+			if(hour != 0){
+				diffTime.append(hour+"小时");
+			}
+			if(min != 0){
+				diffTime.append(min+"分钟");
+			}
+			if(sec != 0){
+				diffTime.append(sec+"秒");
+			}
+			diffTime.append("!");
+			SysMsgPublisher.publishMsg(jobTypeName+"任务(ID:"+jobId+")执行成功,"+diffTime.toString(), resultMsg, 0, new long[]{userId});
 		}catch(Exception e){
 			log.warn("接收到end_job消息,但处理过程中出错，消息已消费。message："+message);
 			log.error(e.getMessage(),e);

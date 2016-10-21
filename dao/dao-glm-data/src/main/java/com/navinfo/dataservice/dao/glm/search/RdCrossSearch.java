@@ -38,22 +38,19 @@ public class RdCrossSearch implements ISearch {
 	}
 
 	@Override
-	public List<SearchSnapshot> searchDataBySpatial(String wkt)
-			throws Exception {
+	public List<SearchSnapshot> searchDataBySpatial(String wkt) throws Exception {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public List<SearchSnapshot> searchDataByCondition(String condition)
-			throws Exception {
+	public List<SearchSnapshot> searchDataByCondition(String condition) throws Exception {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z,
-			int gap) throws Exception {
+	public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z, int gap) throws Exception {
 
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
@@ -92,53 +89,42 @@ public class RdCrossSearch implements ISearch {
 
 				String[] splits = isMains.split(",");
 
-				int mainIndex = 0;
-				for (int i = 0; i < splits.length; i++) {
+				String b = "";
 
-					if (splits[i].equals("1")) {
-						mainIndex = i;
-						break;
-					}
+				b += splits[0];
+
+				for (int i = 1; i < splits.length; i++) {
+					b += "," + splits[i];
 				}
-
+				
+				jsonM.put("b", b);
+				
 				String nodePids = resultSet.getString("node_pids");
 
 				String a = "";
 
 				splits = nodePids.split(",");
 
-				a += splits[mainIndex];
+				a += splits[0];
 
-				for (int i = 0; i < splits.length; i++) {
-					if (i != mainIndex) {
-						a += "," + splits[i];
-					}
+				for (int i = 1; i < splits.length; i++) {
+					a += "," + splits[i];
 				}
 
 				jsonM.put("a", a);
-
+				
 				String wktPoints = resultSet.getString("wkts");
 
 				JSONArray gArray = new JSONArray();
 
 				splits = wktPoints.split(",");
 
-				Geometry gNode = wktReader.read(splits[mainIndex]);
-
-				gArray.add(Geojson.lonlat2Pixel(gNode.getCoordinate().x,
-						gNode.getCoordinate().y, z, px, py));
-
 				for (int i = 0; i < splits.length; i++) {
 
-					if (i != mainIndex) {
+					Geometry gNode = wktReader.read(splits[i]);
 
-						gNode = wktReader.read(splits[i]);
+					gArray.add(Geojson.lonlat2Pixel(gNode.getCoordinate().x, gNode.getCoordinate().y, z, px, py));
 
-						gArray.add(Geojson.lonlat2Pixel(
-								gNode.getCoordinate().x,
-								gNode.getCoordinate().y, z, px, py));
-
-					}
 				}
 
 				snapshot.setG(gArray);

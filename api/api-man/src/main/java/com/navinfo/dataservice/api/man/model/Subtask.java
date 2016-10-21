@@ -8,10 +8,11 @@ import java.util.List;
 /** 
 * @ClassName:  Subtask 
 * @author code generator
+ * @param <JSONObject>
 * @date 2016-06-06 07:40:15 
 * @Description: TODO
 */
-public class Subtask implements Serializable  {
+public class Subtask<JSONObject> implements Serializable  {
 	private Integer subtaskId ;
 	private String name ;
 	private Integer blockId;
@@ -38,6 +39,8 @@ public class Subtask implements Serializable  {
 	private Integer executerId;
 	private String executer;
 	private int percent;
+	private JSONObject geometryJSON;
+	
 
 	public Subtask (){
 	}
@@ -63,7 +66,8 @@ public class Subtask implements Serializable  {
 			String taskName,	
 			List<Integer> gridIds,
 			Integer dbId,
-			Integer groupId){
+			Integer groupId,
+			JSONObject geometryJSON){
 		this.subtaskId=subtaskId ;
 		this.name = name;
 		this.blockId=blockId ;
@@ -86,6 +90,7 @@ public class Subtask implements Serializable  {
 		this.gridIds = gridIds;
 		this.dbId = dbId;
 		this.groupId = groupId;
+		this.geometryJSON = geometryJSON;
 	}
 	public int getGroupId(){
 		return groupId;
@@ -456,6 +461,20 @@ public class Subtask implements Serializable  {
 	 */
 	public void setCityId(Integer cityId) {
 		this.cityId = cityId;
+	}
+
+	/**
+	 * @return the geometryJSON
+	 */
+	public JSONObject getGeometryJSON() {
+		return geometryJSON;
+	}
+
+	/**
+	 * @param geometryJSON the geometryJSON to set
+	 */
+	public void setGeometryJSON(JSONObject geometryJSON) {
+		this.geometryJSON = geometryJSON;
 	}
 }
 

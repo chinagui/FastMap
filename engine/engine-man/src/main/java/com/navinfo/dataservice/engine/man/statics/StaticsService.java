@@ -4,11 +4,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -21,22 +16,19 @@ import org.apache.log4j.Logger;
 import org.json.JSONException;
 import org.springframework.stereotype.Service;
 
+import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.statics.iface.StaticsApi;
 import com.navinfo.dataservice.api.statics.model.BlockExpectStatInfo;
 import com.navinfo.dataservice.api.statics.model.GridChangeStatInfo;
-import com.navinfo.dataservice.api.statics.model.GridStatInfo;
 import com.navinfo.dataservice.api.statics.model.SubtaskStatInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
-import com.navinfo.dataservice.commons.config.SystemConfigFactory;
-import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.engine.man.block.BlockService;
 import com.navinfo.dataservice.engine.man.city.CityService;
-import com.navinfo.dataservice.engine.man.subtask.SubtaskOperation;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
@@ -44,7 +36,6 @@ import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import oracle.sql.STRUCT;
 
 @Service
 public class StaticsService {
@@ -172,11 +163,68 @@ public class StaticsService {
 		return data;
 	}
 	
-	public SubtaskStatInfo subtaskStatQuery(int subtaskId) throws JSONException, Exception{
+//	public SubtaskStatInfo subtaskStatQuery(int subtaskId) throws JSONException, Exception{
+//		
+//		StaticsApi api=(StaticsApi) ApplicationContextUtil.getBean("staticsApi");
+//		
+//		return api.getStatBySubtask(subtaskId);
+//
+//	}
+	
+	public Map<String,Object> subtaskStatQuery(final int subtaskId) throws JSONException, Exception{
 		
-		StaticsApi api=(StaticsApi) ApplicationContextUtil.getBean("staticsApi");
-		
-		return api.getStatBySubtask(subtaskId);
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+
+			String selectSql = "SELECT FSOS.SUBTASK_ID, FSOS.PERCENT, FSOS.TOTAL_POI, FSOS.FINISHED_POI, FSOS.TOTAL_ROAD, FSOS.FINISHED_ROAD"
+						+ " FROM FM_STAT_OVERVIEW_SUBTASK FSOS"
+						+ " WHERE FSOS.SUBTASK_ID = " + subtaskId;
+			
+			return run.query(conn, selectSql, new ResultSetHandler<Map<String,Object>>() {
+
+				@Override
+				public Map<String,Object> handle(ResultSet rs) throws SQLException {
+					Map<String,Object> poi = new HashMap<String,Object>();
+					poi.put("total", 0);
+					poi.put("finish", 0);
+					poi.put("working", 0);
+					
+					Map<String,Object> road = new HashMap<String,Object>();
+					road.put("total", 0);
+					road.put("finish", 0);
+					road.put("working", 0);
+					
+					Map<String,Object> result = new HashMap<String,Object>();
+					result.put("subtaskId", subtaskId);
+					result.put("percent", 0);
+					result.put("poi", poi);
+					result.put("road", road);
+					if(rs.next()) {
+						poi.put("total", rs.getInt("TOTAL_POI"));
+						poi.put("finish", rs.getInt("FINISHED_POI"));
+						poi.put("working", rs.getInt("TOTAL_POI") - rs.getInt("FINISHED_POI"));
+						
+						road.put("total", rs.getInt("TOTAL_ROAD"));
+						road.put("finish", rs.getInt("FINISHED_ROAD"));
+						road.put("working", rs.getInt("TOTAL_ROAD") - rs.getInt("FINISHED_ROAD"));
+						
+						result.put("percent", rs.getInt("PERCENT"));
+						result.put("poi", poi);
+						result.put("road", road);	
+					}
+					return result;
+				}
+			});
+			
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询明细失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
 
 	}
 	
@@ -627,8 +675,42 @@ public class StaticsService {
 						+ " AND S.STAGE = " + stage
 						+ " ORDER BY BLOCK_MAN_ID";
 			}
-			
+			System.out.println("selectSql: "+selectSql);
 			Map<String,Object> result = StaticsOperation.queryBlockOverViewByGroup(conn,selectSql);
+			return result;
+
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询明细失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * @Title: queryGroupOverView
+	 * @Description: 查询数据库获取统计详情
+	 * @param groupId
+	 * @param stage
+	 * @return
+	 * @throws ServiceException  Map<String,Object>
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2016年10月19日 上午10:57:59 
+	 */
+	public Map<String,Object> queryGroupOverView(int groupId, int stage) throws ServiceException {
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+
+			String selectSql = "";
+			
+			selectSql = " select t.percent percent,t.plan_date planDate,t.diff_date diffDate,"
+						+"t.plan_start_date planStartDate,t.plan_end_date planEndDate,t.actual_start_date actualStartDate,"
+						+"t.actual_end_date actualEndDate,t.poi_plan_total poiPlanTotal,t.road_plan_total roadPlanTotal  "
+						+" from FM_STAT_OVERVIEW_GROUP t where t.group_id = "+groupId
+						+" and t.stage = "+stage ;
+			Map<String,Object> result = StaticsOperation.queryGroupOverView(conn,selectSql);
 			return result;
 
 		} catch (Exception e) {
@@ -983,6 +1065,61 @@ public class StaticsService {
 			Map<String,Object> result = StaticsOperation.queryTaskOverView(conn,selectSql);
 			return result;
 			
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询明细失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+
+	/**
+	 * 各城市生产情况概览
+	 * @return
+	 * @throws ServiceException 
+	 */
+	public Map<String, Object> queryCityOverview() throws ServiceException {
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner queryRunner = new QueryRunner();
+		//查询数据
+		String sql = "SELECT * FROM FM_STAT_OVERVIEW";
+		Object[] params = {};
+		//处理结果集
+		ResultSetHandler<Map<String, Object>> rsh = new ResultSetHandler<Map<String,Object>>() {
+			
+			@Override
+			public Map<String, Object> handle(ResultSet rs) throws SQLException {
+				Map<String, Object> map = new HashMap<String, Object>();
+				//处理数据
+				while(rs.next()){
+					map.put("collectPercent", rs.getLong("COLLECT_PERCENT"));
+					map.put("collectPlanStartDate", rs.getTimestamp("COLLECT_PLAN_START_DATE"));
+					map.put("collectPlanEndDate", rs.getTimestamp("COLLECT_PLAN_END_DATE"));
+					map.put("collectPlanDate", rs.getLong("COLLECT_PLAN_DATE"));
+					map.put("collectActualStartDate", rs.getTimestamp("COLLECT_ACTUAL_START_DATE"));
+					map.put("collectActualEndDate", rs.getTimestamp("COLLECT_ACTUAL_END_DATE"));
+					map.put("collectDiffDate", rs.getLong("COLLECT_DIFF_DATE"));
+					map.put("dailyPercent", rs.getLong("DAILY_PERCENT"));
+					map.put("dailyPlanStartDate", rs.getTimestamp("DAILY_PLAN_START_DATE"));
+					map.put("dailyPlanEndDate", rs.getTimestamp("DAILY_PLAN_END_DATE"));
+					map.put("dailyPlanDate", rs.getLong("DAILY_PLAN_DATE"));
+					map.put("dailyActualStartDate", rs.getTimestamp("DAILY_ACTUAL_START_DATE"));
+					map.put("dailyActualEndDate", rs.getTimestamp("DAILY_ACTUAL_END_DATE"));
+					map.put("dailyDiffDate", rs.getLong("DAILY_DIFF_DATE"));
+					map.put("poiPlanTotal", rs.getLong("POI_PLAN_TOTAL"));
+					map.put("roadPlanTotal", rs.getLong("ROAD_PLAN_TOTAL"));
+					map.put("stateDate", rs.getTimestamp("STATE_DATE"));
+					map.put("stateTime", rs.getTimestamp("STATE_TIME"));
+				}
+				return map;
+			}
+		};
+		Map<String, Object> result = queryRunner.query(conn, sql, rsh, params);
+		//返回数据
+		return result;
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

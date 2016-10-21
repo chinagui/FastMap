@@ -116,7 +116,12 @@ public class RdNameOperation {
 			pstmt.setString(8, rdName.getInfix());
 			pstmt.setString(9, rdName.getSuffix());
 			// 名称发音，通过名称生成
-			pstmt.setString(10, rdName.getName());
+			if (rdName.getLangCode().equals("CHI")) {
+				pstmt.setString(10, rdName.getName());
+			} else {
+				pstmt.setString(10, rdName.getNamePhonetic());
+			}
+			
 			pstmt.setString(11, rdName.getTypePhonetic());
 			pstmt.setString(12, rdName.getBasePhonetic());
 			pstmt.setString(13, rdName.getPrefixPhonetic());
@@ -272,7 +277,7 @@ public class RdNameOperation {
 		sb.append("PREFIX = ?,");
 		sb.append("INFIX = ?,");
 		sb.append("SUFFIX = ?,");
-		sb.append("NAME_PHONETIC = ?,");
+		sb.append("NAME_PHONETIC = ( SELECT PY_UTILS_WORD.CONVERT_HZ_TONE(?, NULL, NULL) PHONETIC FROM DUAL),");
 		sb.append("TYPE_PHONETIC = ?,");
 		sb.append("BASE_PHONETIC = ?,");
 		sb.append("PREFIX_PHONETIC = ?,");
@@ -306,7 +311,11 @@ public class RdNameOperation {
 			pstmt.setString(5, rdName.getPrefix());
 			pstmt.setString(6, rdName.getInfix());
 			pstmt.setString(7, rdName.getSuffix());
-			pstmt.setString(8, rdName.getName());
+			if (rdName.getLangCode().equals("CHI")) {
+				pstmt.setString(8, rdName.getName());
+			} else {
+				pstmt.setString(8, rdName.getNamePhonetic());
+			}
 			pstmt.setString(9, rdName.getTypePhonetic());
 			pstmt.setString(10, rdName.getBasePhonetic());
 			pstmt.setString(11, rdName.getPrefixPhonetic());
@@ -342,7 +351,7 @@ public class RdNameOperation {
 			pstmt.execute();
 			
 			// 查询是否存在英文/葡文名
-			if (checkEngName(rdName.getNameGroupid())) {
+			if (rdName.getLangCode().equals("CHI") && checkEngName(rdName.getNameGroupid())) {
 				// 存在，则更新“道路类型（ROAD_TYPE）”、“国家编号(CODE_TYPE)”、“行政区划(ADMIN_ID)”
 				String sql = "UPDATE rd_name SET road_type=?,code_type=?,admin_id=? WHERE name_groupid=? and lang_code in ('ENG','POR')";
 				subPstms = conn.prepareStatement(sql);
@@ -397,7 +406,6 @@ public class RdNameOperation {
 		ResultSet resultSet = null;
 
 		try {
-			conn = DBConnector.getInstance().getMetaConnection();
 			StringBuilder sql = new StringBuilder();
 			String ids = "";
 			String tmep = "";

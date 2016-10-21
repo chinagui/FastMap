@@ -45,6 +45,30 @@ public class StringUtil
         }
         return propertyToDB(name);
     }
+    
+  //首字母转大写
+    public static String toUpperCaseFirstOne(String s)
+    {
+        if(Character.isUpperCase(s.charAt(0)))
+            return s;
+        else
+            return (new StringBuilder()).append(Character.toUpperCase(s.charAt(0))).append(s.substring(1)).toString();
+    }
+    
+    /**
+     * 
+     * @param tableName =task_id
+     * @return taskId
+     */
+    public static String getObjectName(String tableName) {
+    	StringBuilder result = new StringBuilder();
+    	String[] tableList=tableName.split("_");
+    	result.append(tableList[0].toLowerCase());
+        for (int i=1;i<tableList.length;i++) {
+        	result.append(toUpperCaseFirstOne(tableList[i].toLowerCase()));
+        }
+        return result.toString();
+    }
 
     public static String null2blank(Object o)
     {

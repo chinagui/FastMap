@@ -20,6 +20,7 @@ import com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest;
 public class ReleaseFmIdbDailyJobRequest extends AbstractJobRequest {
 	private List<Integer> gridList;
 	private String featureType;//参考LogFlusher.FEATURE_POI
+	private int produceId;
 	
 	/**要素类型：ALL：全要素(POI+ROAD);POI:只POI;ROAD:只ROAD
 	 * @return 参考LogFlusher.FEATURE_POI FEATURE_ALL  FEATURE_ROAD
@@ -45,6 +46,11 @@ public class ReleaseFmIdbDailyJobRequest extends AbstractJobRequest {
 	public String getJobType() {
 		return "releaseFmIdbDailyJob";
 	}
+
+	@Override
+	public String getJobTypeName(){
+		return "日出品提交";
+	}
 	@Override
 	public void defineSubJobRequests() throws JobCreateException {
 		// TODO Auto-generated method stub
@@ -54,6 +60,12 @@ public class ReleaseFmIdbDailyJobRequest extends AbstractJobRequest {
 	protected int myStepCount() throws JobException {
 		// TODO Auto-generated method stub
 		return 1;
+	}
+	public int getProduceId() {
+		return produceId;
+	}
+	public void setProduceId(int produceId) {
+		this.produceId = produceId;
 	}
 
 	

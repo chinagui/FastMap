@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdcross;
 
+import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -10,9 +11,11 @@ import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossNode;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
+import com.navinfo.dataservice.dao.glm.model.rd.trafficsignal.RdTrafficsignal;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.trafficsignal.RdTrafficsignalSelector;
 
 import java.sql.Connection;
 import java.util.*;
@@ -47,7 +50,7 @@ public class Operation implements IOperation {
      * @param cross  目标RdCross
      * @param result 结果集
      */
-    private void updateRdCrossNode(RdCross cross, Result result) {
+    private void updateRdCrossNode(RdCross cross, Result result) throws Exception {
         // 组成node点集合
         List<Integer> newPids = this.command.getNodePids();
         // 待删除RdCrossNode集合
@@ -77,13 +80,15 @@ public class Operation implements IOperation {
             RdCrossNode node = new RdCrossNode();
             node.setPid(cross.pid());
             node.setNodePid(nodePid);
+            // 维护路口主点信息
             if (isMain) {
-                node.setIsMain(1);
-                isMain = false;
+                isMain = this.updateIsMain(node);
             }
             result.insertObject(node, ObjStatus.INSERT, node.getPid());
         }
 
+        // 维护信号灯信息
+        this.updateRdTrafficsignal(cross, delNodes, newPids, result);
     }
 
     /**
@@ -127,6 +132,9 @@ public class Operation implements IOperation {
         // 删除RdCrossLink
         for (RdCrossLink crossLink : delLinks) {
             result.insertObject(crossLink, ObjStatus.DELETE, cross.pid());
+
+            // 维护删除link的linkForm信息
+            this.deleteLinkForm(crossLink, result);
         }
 
         // 创建RdCrossLink
@@ -188,5 +196,92 @@ public class Operation implements IOperation {
                 result.insertObject(form, ObjStatus.INSERT, cross.pid());
             }
         }
+    }
+
+    /**
+     * 删除路口组成线时维护对应link的形态
+     *
+     * @param crossLink 待删除线
+     * @param result    结果集
+     * @throws Exception
+     */
+    private void deleteLinkForm(RdCrossLink crossLink, Result result) throws Exception {
+        //维护道路形态
+        List<IRow> forms = new AbstractSelector(RdLinkForm.class, conn).loadRowsByParentId(crossLink.getLinkPid(), true);
+        for (IRow row : forms) {
+            RdLinkForm form = (RdLinkForm) row;
+            if (form.getFormOfWay() == 50) {
+                result.insertObject(form, ObjStatus.DELETE, crossLink.getPid());
+            }
+        }
+    }
+
+    /**
+     * 修改点位时维护路口上的信号灯信息
+     *
+     * @param cross       路口信息
+     * @param delNodes    待删除路口点
+     * @param newNodePids 新增路口点
+     * @param result      结果集
+     * @throws Exception
+     */
+    private void updateRdTrafficsignal(RdCross cross, List<RdCrossNode> delNodes, List<Integer> newNodePids, Result result) throws Exception {
+        List<Integer> nodes = new ArrayList<>();
+        for (IRow row : cross.getNodes()) {
+            nodes.add(((RdCrossNode) row).getNodePid());
+        }
+        RdTrafficsignalSelector selector = new RdTrafficsignalSelector(conn);
+        List<RdTrafficsignal> trafficsignals = selector.loadByNodePids(nodes, true);
+        if (trafficsignals.isEmpty()) return;
+
+        for (RdCrossNode node : delNodes) {
+            trafficsignals = selector.loadByNodeId(true, node.getNodePid());
+            for (RdTrafficsignal t : trafficsignals)
+                result.insertObject(t, ObjStatus.DELETE, t.pid());
+
+            nodes.remove((Object) node.getNodePid());
+        }
+        nodes.addAll(newNodePids);
+
+        RdLinkSelector linkSelector = new RdLinkSelector(conn);
+        for (Integer pid : newNodePids) {
+            List<RdLink> links = linkSelector.loadInLinkByNodePid(pid, 50, true);
+            for (RdLink link : links) {
+                if (nodes.contains(link.getsNodePid()) && nodes.contains(link.geteNodePid())) continue;
+                RdTrafficsignal t = new RdTrafficsignal();
+                t.setPid(PidUtil.getInstance().applyRdTrafficsignalPid());
+                t.setNodePid(pid);
+                t.setLinkPid(link.pid());
+                t.setFlag(1);
+                result.insertObject(t, ObjStatus.INSERT, t.pid());
+            }
+        }
+    }
+
+    /**
+     * 判断路口点挂接线是否有辅路属性，无则设置为路口主点
+     *
+     * @param node 路口点
+     * @return
+     * @throws Exception
+     */
+    private boolean updateIsMain(RdCrossNode node) throws Exception {
+        boolean flag = true;
+        RdLinkSelector selector = new RdLinkSelector(conn);
+        List<RdLink> links = selector.loadByNodePid(node.getNodePid(), true);
+        for (RdLink link : links) {
+            for (IRow row : link.getForms()) {
+                RdLinkForm form = (RdLinkForm) row;
+                if (form.getFormOfWay() == 34) {
+                    flag = false;
+                    break;
+                }
+            }
+        }
+        if (flag) {
+            node.setIsMain(1);
+            return false;
+        }
+        return true;
     }
 }

@@ -19,6 +19,7 @@ import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiChildrenSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiContactSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiNameSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiParentSelector;
+import com.navinfo.dataservice.dao.log.LogReader;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.DBUtils;
 import com.navinfo.navicommons.geo.computation.CompGridUtil;
@@ -82,7 +83,7 @@ public class PoiGridSearch {
 		List<IRow> retList = new ArrayList<IRow>();
 		
 		StringBuffer sb = new StringBuffer();
-		sb.append("SELECT poi_num,pid,mesh_id,kind_code,link_pid,x_guide,y_guide,post_code,open_24h,chain,u_record,geometry,\"LEVEL\",sports_venue,indoor,vip_flag  ");
+		sb.append("SELECT poi_num,pid,mesh_id,kind_code,link_pid,x_guide,y_guide,post_code,open_24h,chain,u_record,geometry,\"LEVEL\",sports_venue,indoor,vip_flag,truck_flag  ");
 		sb.append(" FROM ix_poi");
 		sb.append(" WHERE sdo_within_distance(geometry, sdo_geometry(    :1  , 8307), 'mask=anyinteract') = 'TRUE' ");
 		// 不下载已删除的点20161013
@@ -95,6 +96,8 @@ public class PoiGridSearch {
 		
 		try {
 			pstmt = conn.prepareStatement(sb.toString());
+			
+			LogReader lr = new LogReader(conn);
 			
 			GridUtils gu = new GridUtils();
 			String grid = gridDate.getString("grid");
@@ -166,6 +169,10 @@ public class PoiGridSearch {
 				
 				ixPoi.setGasstations(ixPoiGasstationSelector.loadByIdForAndroid(id));
 				
+				int uRecord = lr.getObjectState(id, "ix_poi");
+				
+				ixPoi.setuRecord(uRecord);
+				
 				retList.add(ixPoi);
 			}
 			return retList;
@@ -220,6 +227,8 @@ public class PoiGridSearch {
 		ixPoi.setIndoor(resultSet.getInt("indoor"));
 		
 		ixPoi.setVipFlag(resultSet.getString("vip_flag"));
+		
+		ixPoi.setTruckFlag(resultSet.getInt("truck_flag"));
 		
 	}
 }

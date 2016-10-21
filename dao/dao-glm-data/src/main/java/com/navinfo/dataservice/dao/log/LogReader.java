@@ -1,11 +1,13 @@
 package com.navinfo.dataservice.dao.log;
 
+import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Date;
 import java.util.List;
 
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.navicommons.database.sql.DBUtils;
 
 import net.sf.json.JSONObject;
@@ -23,13 +25,14 @@ public class LogReader {
 
 	/**
 	 * 根据条件查询
+	 * 
 	 * @param jsonCondition
 	 * @return
 	 */
 	public List<LogOperation> queryLog(JSONObject jsonCondition) {
 		return null;
 	}
-	
+
 	/**
 	 * 查询对象状态：1新增，2删除，3修改
 	 * 
@@ -89,13 +92,13 @@ public class LogReader {
 
 			DBUtils.closeResultSet(resultSet);
 			DBUtils.closeStatement(pstmt);
-			DBUtils.closeConnection(conn);
+//			DBUtils.closeConnection(conn);
 
 		}
 	}
 
 	/**
-	 * 查询对象状态：1新增，2删除，3修改
+	 * 查询是否存在某次履历时间之前的新增履历
 	 * 
 	 * @param objPid
 	 * @param objTable
@@ -135,9 +138,10 @@ public class LogReader {
 
 		}
 	}
-	
+
 	/**
 	 * 查询对象某字段是否修改
+	 * 
 	 * @param objPid
 	 * @param objTable
 	 * @param tbNm
@@ -145,7 +149,7 @@ public class LogReader {
 	 * @return
 	 * @throws Exception
 	 */
-	public boolean isUpdateforObjFeild(int objPid, String objTable, String tbNm,String Feild) throws Exception {
+	public boolean isUpdateforObjFeild(int objPid, String objTable, String tbNm, String Feild) throws Exception {
 
 		String sql = "SELECT de.row_id,de.op_id,de.tb_nm,de.old,de.new,de.fd_lst,de.op_tp,de.tb_row_id,op.op_dt FROM LOG_DETAIL de,LOG_OPERATION op "
 				+ "WHERE de.OP_ID=op.OP_ID AND de.OB_PID= :1 AND de.OB_NM= :2 AND de.TB_NM=:3 AND de.FD_LST=:4 ";
@@ -177,9 +181,10 @@ public class LogReader {
 
 		}
 	}
-	
+
 	/**
 	 * 查询poi是否仅有照片或者备注的履历
+	 * 
 	 * @param objPid
 	 * @param objTable
 	 * @param tbNm
@@ -216,9 +221,10 @@ public class LogReader {
 
 		}
 	}
-	
+
 	/**
 	 * 查询对象是否存在履历
+	 * 
 	 * @param objPid
 	 * @return
 	 * @throws Exception

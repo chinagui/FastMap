@@ -21,7 +21,7 @@ public class Command extends AbstractCommand {
 	
 	private int outLinkPid;
 	
-	private List<Integer> seriesLinkPids;// 持续links
+	private List<Integer> seriesLinkPids = new ArrayList<>();// 持续links
 	
 	private RdSlope slope;
 	

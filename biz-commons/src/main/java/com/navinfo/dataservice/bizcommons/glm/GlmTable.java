@@ -4,6 +4,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
+
 
 /** 
  * @ClassName: Table 
@@ -14,6 +16,8 @@ import java.util.Set;
 public class GlmTable {
     protected String name;
     protected String featureType;
+    protected String objName;
+    protected String objPidCol;//三级表为空
     protected boolean editable;
 	//主键字段无顺序
 	protected Set<GlmColumn> pks;
@@ -38,6 +42,18 @@ public class GlmTable {
 	}
 	public void setFeatureType(String featureType) {
 		this.featureType = featureType;
+	}
+	public String getObjName() {
+		return objName;
+	}
+	public void setObjName(String objName) {
+		this.objName = objName;
+	}
+	public String getObjPidCol() {
+		return objPidCol;
+	}
+	public void setObjPidCol(String objPidCol) {
+		this.objPidCol = objPidCol;
 	}
 	public boolean isEditable() {
 		return editable;

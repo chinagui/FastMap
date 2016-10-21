@@ -124,10 +124,6 @@ public class OpTopo implements IOperation {
 					ja2.add(new double[] { lon, lat });
 					hasFound = true;
 				} else {
-					if (i > 0) {
-						ja1.add(jaPS);
-					}
-
 					ja1.add(jaPE);
 				}
 

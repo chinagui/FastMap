@@ -73,6 +73,12 @@ public class GLM10003 extends baseRule {
 					continue;
 				}
 				
+				if(outLink.getsNodePid() == startNode){
+					startNode = outLink.geteNodePid();
+				}else{
+					startNode = outLink.getsNodePid();
+				}
+				
 				if(!rdSlopViasConnectedInOneDirection(startNode,viaLinks)){
 					this.setCheckResult("", "", 0);
 					return;
@@ -102,10 +108,10 @@ public class GLM10003 extends baseRule {
 		}
 		//接续link是否沿通行方向
 		for(int i = 0;i<rdLinkMap.size();i++){
-			if(!rdLinkMap.containsKey(i+1)){
+			if(!rdLinkMap.containsKey(i)){
 				return false;
 			}
-			RdLink rdLink = (RdLink) rdLinkMap.get(i+1);
+			RdLink rdLink = (RdLink) rdLinkMap.get(i);
 			if(rdLink.getsNodePid()==startNode){
 				startNode = rdLink.geteNodePid();
 				if(rdLink.getDirect() == 3){

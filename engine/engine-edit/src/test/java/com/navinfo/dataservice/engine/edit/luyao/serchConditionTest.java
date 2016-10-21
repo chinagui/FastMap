@@ -37,7 +37,7 @@ public class serchConditionTest extends InitApplication {
 
 		try {
 
-			String parameter = "{\"dbId\":42,\"type\":\"RDLINK\",\"data\":{\"queryType\":\"RDSPEEDLIMIT\",\"linkPid\":732235,\"direct\":3}}";
+			String parameter = "{\"dbId\":17,\"type\":\"RDLINK\",\"data\":{\"queryType\":\"RDLINKSPEEDLIMIT\",\"linkPid\":220000997,\"direct\":2}}";
 
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 

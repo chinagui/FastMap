@@ -19,16 +19,21 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.man.model.Block;
 import com.navinfo.dataservice.api.man.model.BlockMan;
+import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.man.model.UserInfo;
+import com.navinfo.dataservice.api.statics.iface.StaticsApi;
+import com.navinfo.dataservice.api.statics.model.SubtaskStatInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DateUtilsEx;
 import com.navinfo.dataservice.commons.xinge.XingeUtil;
 import com.navinfo.dataservice.engine.man.message.MessageOperation;
+import com.navinfo.dataservice.engine.man.subtask.SubtaskOperation;
 import com.navinfo.dataservice.engine.man.task.TaskOperation;
 import com.navinfo.dataservice.engine.man.userDevice.UserDeviceService;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoOperation;
@@ -40,6 +45,7 @@ import com.navinfo.navicommons.exception.ServiceException;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import oracle.net.aso.k;
 import oracle.sql.CLOB;
 import oracle.sql.STRUCT;
 
@@ -233,9 +239,9 @@ public class BlockService {
 			JSONObject obj = JSONObject.fromObject(json);
 			BlockMan bean = (BlockMan) JSONObject.toBean(obj, BlockMan.class);
 
-			String selectSql = "select t.CITY_ID, t.BLOCK_NAME, t.GEOMETRY,tt.name,"
-					+ " t.PLAN_STATUS, T.work_property,tt.task_type"
-					+ " from BLOCK t,task tt where t.BLOCK_ID = ? and t.city_id=tt.city_id";
+			String selectSql = "select t.CITY_ID, t.BLOCK_NAME, t.GEOMETRY,NVL(TT.NAME,'---') NAME,"
+					+ " t.PLAN_STATUS, T.work_property, CASE T.CITY_ID  WHEN 100002 THEN 4 ELSE 1 END TASK_TYPE"
+					+ " from BLOCK t,task tt where t.BLOCK_ID = ? and t.city_id=tt.city_id(+)";
 			ResultSetHandler<HashMap> rsHandler = new ResultSetHandler<HashMap>() {
 				public HashMap<String, Object> handle(ResultSet rs) throws SQLException {
 					while (rs.next()) {
@@ -841,8 +847,79 @@ public class BlockService {
 					conditionSql=conditionSql+" AND MAN_LIST.CREATE_USER_NAME LIKE '%"+conditionJson.getString(key)+"%'";}
 				if("taskName".equals(key)){
 					conditionSql=conditionSql+" AND MAN_LIST.TASK_NAME LIKE '%"+conditionJson.getString(key)+"%'";}
+				/*if("blockPlanStatus".equals(key)){
+					conditionSql=conditionSql+" AND MAN_LIST.BLOCK_PLAN_STATUS ="+conditionJson.getInt(key);}
+				*/
+				//1-10采集正常,采集异常,采集完成,日编正常,日编异常,日编完成,未规划,草稿,已完成,已关闭
+				if("selectParam1".equals(key)){
+					JSONArray selectParam1=conditionJson.getJSONArray(key);
+					JSONArray collectProgress=new JSONArray();
+					JSONArray dailyProgress=new JSONArray();
+					JSONArray planStatus=new JSONArray();
+					for(Object i:selectParam1){
+						int tmp=(int) i;
+						if(tmp==1||tmp==2||tmp==3){collectProgress.add(tmp);}
+						if(tmp==4||tmp==5||tmp==6){dailyProgress.add(tmp-3);}
+						if(tmp==7){
+							if(!statusSql.isEmpty()){statusSql+=" or ";}
+							statusSql+=" MAN_LIST.BLOCK_PLAN_STATUS =0";}
+						if(tmp==8){
+							if(!statusSql.isEmpty()){statusSql+=" or ";}
+							statusSql+=" MAN_LIST.BLOCK_STATUS =2";}
+						if(tmp==9||tmp==10){planStatus.add(tmp-6);}
+					}
+					if(!collectProgress.isEmpty()){
+						if(!statusSql.isEmpty()){statusSql+=" or ";}
+						statusSql+=" MAN_LIST.collect_Progress IN ("+collectProgress.join(",")+")";}
+					if(!dailyProgress.isEmpty()){
+						if(!statusSql.isEmpty()){statusSql+=" or ";}
+						statusSql+=" MAN_LIST.daily_Progress IN ("+dailyProgress.join(",")+")";}
+					if(!planStatus.isEmpty()){
+						if(!statusSql.isEmpty()){statusSql+=" or ";}
+						statusSql+=" MAN_LIST.PLAN_STATUS IN ("+planStatus.join(",")+")";}
+				}
+				//1-5按时完成,提前完成,逾期完成,采集逾期,日编逾期
+				if("selectParam2".equals(key)){
+					JSONArray selectParam1=conditionJson.getJSONArray(key);
+					for(Object i:selectParam1){
+						int tmp=(int) i;
+						if(tmp==2){
+							if(!statusSql.isEmpty()){statusSql+=" or ";}
+							statusSql+=" MAN_LIST.diff_date>0";
+						}
+						if(tmp==1){
+							if(!statusSql.isEmpty()){statusSql+=" or ";}
+							statusSql+=" MAN_LIST.diff_date=0";
+						}
+						if(tmp==3){
+							if(!statusSql.isEmpty()){statusSql+=" or ";}
+							statusSql+=" MAN_LIST.diff_date<0";
+						}
+						if(tmp==4){
+							if(!statusSql.isEmpty()){statusSql+=" or ";}
+							statusSql+=" MAN_LIST.COLLECT_DIFF_DATE<0";
+						}
+						if(tmp==5){
+							if(!statusSql.isEmpty()){statusSql+=" or ";}
+							statusSql+=" MAN_LIST.daily_DIFF_DATE<0";
+						}
+					}
+				}
+				if("collectProgress".equals(key)){
+					if(!statusSql.isEmpty()){statusSql+=" or ";}
+					statusSql+=" MAN_LIST.collect_Progress IN ("+conditionJson.getJSONArray(key).join(",")+")";}
+				if("dailyProgress".equals(key)){
+					if(!statusSql.isEmpty()){statusSql+=" or ";}
+					statusSql+=" MAN_LIST.daily_Progress IN ("+conditionJson.getJSONArray(key).join(",")+")";}
+				if("blockStatus".equals(key)){
+					if(!statusSql.isEmpty()){statusSql+=" or ";}
+					statusSql+=" MAN_LIST.BLOCK_STATUS ="+conditionJson.getInt(key);}
 				if("blockPlanStatus".equals(key)){
-					conditionSql=conditionSql+" AND MAN_LIST.BLOCK_PLAN_STATUS ="+conditionJson.getInt(key);}				
+					if(!statusSql.isEmpty()){statusSql+=" or ";}
+					statusSql+=" MAN_LIST.BLOCK_PLAN_STATUS ="+conditionJson.getInt(key);}
+				if("planStatus".equals(key)){
+					if(!statusSql.isEmpty()){statusSql+=" or ";}
+					statusSql+=" MAN_LIST.PLAN_STATUS IN ("+conditionJson.getJSONArray(key).join(",")+")";}
 			}
 		}	
 		if(!statusSql.isEmpty()){//有非status
@@ -853,26 +930,29 @@ public class BlockService {
 		String selectSql = "";
 		String selectPart="";
 		String wherePart="";
-		selectSql="WITH TASK_PLAN AS"
-				+ " (SELECT T.TASK_ID, 3 PLAN_STATUS"
-				+ "    FROM TASK T, BLOCK_MAN BM"
-				+ "   WHERE T.TASK_ID = BM.TASK_ID"
+		selectSql="WITH BLOCK_PLAN AS"
+				//block已完成
+				+ " (SELECT BM.BLOCK_MAN_ID, 3 PLAN_STATUS"
+				+ "    FROM SUBTASK T, BLOCK_MAN BM"
+				+ "   WHERE T.BLOCK_MAN_ID = BM.BLOCK_MAN_ID"
 				+ "     AND NOT EXISTS (SELECT 1"
-				+ "            FROM BLOCK_MAN BMM"
-				+ "           WHERE BMM.TASK_ID = T.TASK_ID"
+				+ "            FROM SUBTASK BMM"
+				+ "           WHERE BMM.BLOCK_MAN_ID = BM.BLOCK_MAN_ID"
 				+ "             AND BMM.STATUS <> 0)"
 				+ "  UNION ALL"
-				+ "  SELECT T.TASK_ID, 2 PLAN_STATUS"
-				+ "    FROM TASK T"
+				//block作业中
+				+ "  SELECT T.BLOCK_MAN_ID, 2 PLAN_STATUS"
+				+ "    FROM BLOCK_MAN T"
 				+ "   WHERE NOT EXISTS"
-				+ "   (SELECT 1 FROM BLOCK_MAN BMM WHERE BMM.TASK_ID = T.TASK_ID)"
+				+ "   (SELECT 1 FROM SUBTASK BMM WHERE BMM.BLOCK_MAN_ID = T.BLOCK_MAN_ID)"
 				+ "  UNION ALL"
-				+ "  SELECT T.TASK_ID, 2 PLAN_STATUS"
-				+ "    FROM TASK T, BLOCK_MAN BM"
-				+ "   WHERE T.TASK_ID = BM.TASK_ID"
+				//block作业中
+				+ "  SELECT T.BLOCK_MAN_ID, 2 PLAN_STATUS"
+				+ "    FROM BLOCK_MAN T, SUBTASK BM"
+				+ "   WHERE T.BLOCK_MAN_ID = BM.BLOCK_MAN_ID"
 				+ "     AND EXISTS (SELECT 1"
-				+ "            FROM BLOCK_MAN BMM"
-				+ "           WHERE BMM.TASK_ID = T.TASK_ID"
+				+ "            FROM SUBTASK BMM"
+				+ "           WHERE BMM.BLOCK_MAN_ID = T.BLOCK_MAN_ID"
 				+ "             AND BMM.STATUS <> 0)),"
 				+ " MAN_LIST AS"
 				+ " (SELECT DISTINCT T.BLOCK_MAN_ID,"
@@ -892,12 +972,12 @@ public class BlockService {
 				 * ②相同状态中根据剩余工期排序，逾期>0天>剩余/提前
 				 * ③开启状态相同剩余工期，根据完成度排序，完成度高>完成度低；其它状态，根据名称
 				 */
-				+ "                  CASE TT.STATUS"
+				+ "                  CASE T.STATUS"
 				+ "                      WHEN 1 THEN CASE TP.PLAN_STATUS WHEN 2 THEN 0"
                 + "                       when 3 then 3 end "
                 + "                         when 2 then 1"
                 + "                           when 0 then 4 end order_status,"
-                + "                  CASE TT.STATUS"
+                + "                  CASE T.STATUS"
 				+ "                      WHEN 1 THEN CASE TP.PLAN_STATUS WHEN 2 THEN 2"
                 + "                       when 3 then 3 end "
                 + "                         when 2 then 1"
@@ -935,7 +1015,7 @@ public class BlockService {
 				+ "         FM_STAT_OVERVIEW_BLOCKMAN S,"
 				//+ "         SUBTASK                   ST,"
 				+ "         USER_INFO I,"
-				+ "         TASK_PLAN                 TP"
+				+ "         BLOCK_PLAN                 TP"
 				+ "   WHERE T.TASK_ID = TT.TASK_ID"
 				+ "     AND T.CREATE_USER_ID=I.USER_ID"
 				+ "     AND T.LATEST = 1"
@@ -943,7 +1023,7 @@ public class BlockService {
 				+ "     AND T.COLLECT_GROUP_ID = GC.GROUP_ID(+)"
 				+ "     AND T.DAY_EDIT_GROUP_ID = GE.GROUP_ID(+)"
 				+ "     AND T.BLOCK_MAN_ID = S.BLOCK_MAN_ID(+)"
-				+ "     AND T.TASK_ID = TP.TASK_ID(+)"
+				+ "     AND T.BLOCK_MAN_ID = TP.BLOCK_MAN_ID(+)"
 				//+ "     AND T.BLOCK_MAN_ID = ST.BLOCK_MAN_ID(+)"
 				+ "     AND TT.LATEST = 1"
 				+ "  UNION ALL"
@@ -1193,6 +1273,37 @@ public class BlockService {
 				+ "  FROM (SELECT FINAL_TABLE.*, ROWNUM AS ROWNUM_ FROM FINAL_TABLE  WHERE ROWNUM <= "+pageEndNum+") TT"
 				+ " WHERE TT.ROWNUM_ >= "+pageStartNum;
 		return BlockOperation.getSnapshotQuery(conn, selectSql,currentPageNum,pageSize);
+	}
+
+	/**
+	 * @param blockId
+	 * @param blockManId 
+	 * @param type
+	 * @return
+	 * @throws ServiceException 
+	 */
+	public List queryWktByBlockId(int blockId, int blockManId,int type) throws ServiceException {
+		// TODO Auto-generated method stub
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			List result = new ArrayList();
+			if(1==type){
+				//常规
+				result = BlockOperation.queryWktByBlockIdNormal(conn, blockId);
+			}else if(4==type){
+				//情报
+				result = BlockOperation.queryWktByBlockIdInfor(conn, blockManId);
+			}
+			return result;
+			
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询wkt失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
 	}
 	
 

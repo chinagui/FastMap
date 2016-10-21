@@ -148,6 +148,7 @@ public class Operation {
         geoPoint.put("coordinates", new double[]{targetPoint.x, targetPoint.y});
         rdElectroniceye.changedFields().put("geometry", geoPoint);
         rdElectroniceye.changedFields().put("linkPid", link.getPid());
+        rdElectroniceye.changedFields().put("direct", link.getDirect());
         // 更新电子眼坐标以及挂接线
         result.insertObject(rdElectroniceye, ObjStatus.UPDATE, rdElectroniceye.pid());
     }

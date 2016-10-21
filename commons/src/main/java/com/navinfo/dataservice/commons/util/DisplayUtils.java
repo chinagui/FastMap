@@ -43,7 +43,38 @@ public class DisplayUtils {
 
 		double len1_4 = linkLength / 4;
 
-		double[] point = lookFor1_4Point(linkPoints, len1_4);
+		double[] point = lookForRatioPoint(linkPoints, len1_4);
+
+		return point;
+
+	}
+
+	/**
+	 * 按比例获取道路通行方向的点位坐标。n为小数，小于等于0按0.1处理，大于1按1处理。
+	 * 
+	 * @param geom
+	 * @param direct
+	 * @param nValue
+	 * @return
+	 */
+	public static double[] getRatioPointForLink(JGeometry geom, int direct, double ratioValue) {
+
+		if (ratioValue <=0) {
+			
+			ratioValue = 0.1;
+		}
+		if (ratioValue > 1) {
+			
+			ratioValue = 1;
+		}
+		
+		double linkPoints[][] = getLinkPoints(geom, direct);
+
+		double linkLength = getLinkLength(linkPoints);
+
+		double lenRefer = linkLength * ratioValue;
+
+		double[] point = lookForRatioPoint(linkPoints, lenRefer);
 
 		return point;
 
@@ -89,7 +120,7 @@ public class DisplayUtils {
 
 	}
 
-	private static double[] lookFor1_4Point(double[][] points, double len1_4) {
+	private static double[] lookForRatioPoint(double[][] points, double lenRefer) {
 		double point[] = new double[2];
 
 		for (int i = 1; i < points.length; i++) {
@@ -100,18 +131,18 @@ public class DisplayUtils {
 			double len = Math.sqrt(Math.pow(currentPoint[0] - prePoint[0], 2)
 					+ Math.pow(currentPoint[1] - prePoint[1], 2));
 
-			if (len >= len1_4) {
+			if (len >= lenRefer) {
 
-				point[0] = prePoint[0] + len1_4 / len
+				point[0] = prePoint[0] + lenRefer / len
 						* (currentPoint[0] - prePoint[0]);
 
-				point[1] = prePoint[1] + len1_4 / len
+				point[1] = prePoint[1] + lenRefer / len
 						* (currentPoint[1] - prePoint[1]);
 
 				break;
 			}
 
-			len1_4 -= len;
+			lenRefer -= len;
 		}
 
 		point[0] = MercatorProjection.metersXToLongitude(point[0]);

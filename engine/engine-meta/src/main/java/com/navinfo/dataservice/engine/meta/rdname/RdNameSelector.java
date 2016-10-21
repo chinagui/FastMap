@@ -236,57 +236,68 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips,int dbId) throws
 			String sortby = params.getString("sortby");
 			int pageSize = params.getInt("pageSize");
 			int pageNum = params.getInt("pageNum");
+			int flag = params.getInt("flag");
 			
 			StringUtils sUtils = new StringUtils();
 			
 			StringBuilder sql = new StringBuilder();
-			sql.append("SELECT * ");
-			sql.append(" FROM (SELECT c.*, rownum rn");
-			sql.append(" FROM (select COUNT (1) OVER (PARTITION BY 1) total,a.* ");
-			sql.append(" from rd_name a where 1=1");
 			
 			String ids = "";
 			String tmep = "";
 			Clob pidClod = null;
-			if (tips.size()>0) {
-				for (int i=0;i<tips.size();i++) {
-					JSONObject tipsObj = tips.getJSONObject(i);
-					ids += tmep;
-					tmep = ",";
-					ids += "'" + tipsObj.getString("id") + "'";
-				}
-				if (tips.size()>1000) {
-					pidClod = subconn.createClob();
-					pidClod.setString(1, ids);
-					sql.append(" and a.SRC_RESUME in (select to_number(pid) from table(clob_to_table(:3)))");
+			if (flag>0) {
+				if (tips.size()>0) {
+					
+					sql.append("SELECT * ");
+					sql.append(" FROM (SELECT c.*, rownum rn");
+					sql.append(" FROM (select COUNT (1) OVER (PARTITION BY 1) total,a.* ");
+					sql.append(" from rd_name a where 1=1");
+					
+					for (int i=0;i<tips.size();i++) {
+						JSONObject tipsObj = tips.getJSONObject(i);
+						ids += tmep;
+						tmep = ",";
+						ids += "'" + tipsObj.getString("id") + "'";
+					}
+					if (tips.size()>1000) {
+						pidClod = subconn.createClob();
+						pidClod.setString(1, ids);
+						sql.append(" and a.SRC_RESUME in (select to_number(pid) from table(clob_to_table(:3)))");
+					} else {
+						sql.append(" and a.SRC_RESUME in (");
+						sql.append(ids);
+						sql.append(")");
+					}
 				} else {
-					sql.append(" and a.SRC_RESUME in (");
-					sql.append(ids);
-					sql.append(")");
+					result.put("total", 0);
+					result.put("data", new JSONArray());
+					return result;
 				}
-			}
-			
-			// 添加过滤器条件
-			Iterator<String> keys = param.keys();
-			while (keys.hasNext()) {
-				String key = keys.next();
-				if (key.equals("name") && (!param.getString(key).isEmpty())) {
-					sql.append(" and a.name like '%");
-					sql.append(param.getString(key));
-					sql.append("%'");
-				} else {
-					String columnName = sUtils.toColumnName(key);
-					if (!param.getString(key).isEmpty()) {
-						sql.append(" and a.");
-						sql.append(columnName);
-						sql.append("='");
+			} else {
+				sql.append("SELECT * ");
+				sql.append(" FROM (SELECT c.*, rownum rn");
+				sql.append(" FROM (select COUNT (1) OVER (PARTITION BY 1) total,a.* ");
+				sql.append(" from rd_name a where 1=1");
+				// 添加过滤器条件
+				Iterator<String> keys = param.keys();
+				while (keys.hasNext()) {
+					String key = keys.next();
+					if (key.equals("name") && (!param.getString(key).isEmpty())) {
+						sql.append(" and a.name like '%");
 						sql.append(param.getString(key));
-						sql.append("'");
+						sql.append("%'");
+					} else {
+						String columnName = sUtils.toColumnName(key);
+						if (!param.getString(key).isEmpty()) {
+							sql.append(" and a.");
+							sql.append(columnName);
+							sql.append("='");
+							sql.append(param.getString(key));
+							sql.append("'");
+						}
 					}
 				}
 			}
-			
-			
 			
 			// 添加排序条件
 			if (sortby.length()>0) {

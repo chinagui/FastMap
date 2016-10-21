@@ -59,10 +59,14 @@ public class LuLinkOperateUtils {
     /**
      * 根据线段几何以及起始点创建LuLink
      */
-    public static LuLink getLuLink(Geometry g, int sNodePid, int eNodePid, Result result) throws Exception {
+    public static LuLink getLuLink(Geometry g, int sNodePid, int eNodePid, Result result,LuLink sourceLink) throws Exception {
         LuLink link = new LuLink();
-        Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(g);
         link.setPid(PidUtil.getInstance().applyLuLinkPid());
+        if(sourceLink != null)
+        {
+        	link.copy(sourceLink);
+        }
+        Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(g);
         Iterator<String> it = meshes.iterator();
         while (it.hasNext()) {
             setLinkChildren(link, Integer.parseInt(it.next()));
@@ -313,23 +317,23 @@ public class LuLinkOperateUtils {
         }
     }
 
-    public static List<LuLink> getCreateLuLinksWithMesh(Geometry g, Map<Coordinate, Integer> maps, Result result)
+    public static List<LuLink> getCreateLuLinksWithMesh(Geometry g, Map<Coordinate, Integer> maps, Result result,LuLink sourceLink)
             throws Exception {
         List<LuLink> links = new ArrayList<LuLink>();
         if (g != null) {
             String geometryType = g.getGeometryType();
             if (GeometryTypeName.LINESTRING.equals(geometryType)) {
-                links.add(LuLinkOperateUtils.getCalLuLinkWithMesh(g, maps, result));
+                links.add(LuLinkOperateUtils.getCalLuLinkWithMesh(g, maps, result,sourceLink));
             } else if (GeometryTypeName.MULTILINESTRING.equals(geometryType)) {
                 for (int i = 0; i < g.getNumGeometries(); i++) {
-                    links.add(LuLinkOperateUtils.getCalLuLinkWithMesh(g.getGeometryN(i), maps, result));
+                    links.add(LuLinkOperateUtils.getCalLuLinkWithMesh(g.getGeometryN(i), maps, result,sourceLink));
                 }
 
             } else if (GeometryTypeName.GEOMETRYCOLLECTION.equals(geometryType)) {
                 for (int i = 0; i < g.getNumGeometries(); i++) {
                     Geometry geo = g.getGeometryN(i);
                     if (GeometryTypeName.LINESTRING.equals(geo.getGeometryType())) {
-                        links.add(LuLinkOperateUtils.getCalLuLinkWithMesh(geo, maps, result));
+                        links.add(LuLinkOperateUtils.getCalLuLinkWithMesh(geo, maps, result,sourceLink));
                     }
                 }
             }
@@ -361,13 +365,13 @@ public class LuLinkOperateUtils {
             maps.put(g.getCoordinates()[g.getCoordinates().length - 1], (int) node.get("e"));
         }
         // 创建线
-        LuLinkOperateUtils.getLuLink(g, (int) node.get("s"), (int) node.get("e"), result);
+        LuLinkOperateUtils.getLuLink(g, (int) node.get("s"), (int) node.get("e"), result,null);
     }
 
     /*
      * 创建土地利用线并返回
      */
-    public static LuLink getCalLuLinkWithMesh(Geometry g, Map<Coordinate, Integer> maps, Result result)
+    public static LuLink getCalLuLinkWithMesh(Geometry g, Map<Coordinate, Integer> maps, Result result,LuLink sourceLink)
             throws Exception {
         // 定义创建行政区划线的起始Pid 默认为0
         int sNodePid = 0;
@@ -389,7 +393,7 @@ public class LuLinkOperateUtils {
             maps.put(g.getCoordinates()[g.getCoordinates().length - 1], (int) node.get("e"));
         }
         // 创建线
-        return LuLinkOperateUtils.getLuLink(g, (int) node.get("s"), (int) node.get("e"), result);
+        return LuLinkOperateUtils.getLuLink(g, (int) node.get("s"), (int) node.get("e"), result,sourceLink);
     }
 
     /*

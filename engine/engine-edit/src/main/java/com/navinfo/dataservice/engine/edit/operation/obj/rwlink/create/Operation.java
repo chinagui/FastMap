@@ -11,9 +11,7 @@ import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
-import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLink;
-import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.rw.RwLinkSelector;
 import com.navinfo.dataservice.engine.edit.utils.RwLinkOperateUtils;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
@@ -120,7 +118,7 @@ public class Operation implements IOperation {
 	private void createRwLinkWithNoMesh(Geometry g, int sNodePid, int eNodePid, Result result) throws Exception {
 		if (g != null) {
 			JSONObject node = RwLinkOperateUtils.createRwNodeForLink(g, sNodePid, eNodePid, result);
-			RwLink link = RwLinkOperateUtils.addLink(g, (int) node.get("s"), (int) node.get("e"), result);
+			RwLink link = RwLinkOperateUtils.addLink(g, (int) node.get("s"), (int) node.get("e"), result,null);
 
 			link.setKind(command.getKind());
 
@@ -152,7 +150,7 @@ public class Operation implements IOperation {
 					String meshIdStr = it.next();
 					Geometry geomInter = MeshUtils.linkInterMeshPolygon(g, MeshUtils.mesh2Jts(meshIdStr));
 					geomInter = GeoTranslator.geojson2Jts(GeoTranslator.jts2Geojson(geomInter), 1, 5);
-					RwLinkOperateUtils.getCreateRwLinksWithMesh(geomInter, maps, result);
+					RwLinkOperateUtils.getCreateRwLinksWithMesh(geomInter, maps, result,null);
 				}
 			}
 

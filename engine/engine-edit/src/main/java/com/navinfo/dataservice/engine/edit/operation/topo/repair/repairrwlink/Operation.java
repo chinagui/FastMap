@@ -78,6 +78,7 @@ public class Operation implements IOperation {
 			//拷贝原link，set属性
 			RwLink link = new RwLink();
 			link.copy(this.command.getUpdateLink());
+			link.setPid(this.command.getUpdateLink().getPid());
 			link.setGeometry(GeoTranslator.geojson2Jts(this.command.getLinkGeom(),100000,0));
 			links.add(link);
 		} else {
@@ -90,15 +91,11 @@ public class Operation implements IOperation {
 				String meshIdStr = it.next();
 				Geometry geomInter = GeoTranslator.transform(MeshUtils.linkInterMeshPolygon(
 						GeoTranslator.geojson2Jts(command.getLinkGeom()), MeshUtils.mesh2Jts(meshIdStr)), 1, 5);
-				links.addAll(RwLinkOperateUtils.getCreateRwLinksWithMesh(geomInter, maps, result));
+				links.addAll(RwLinkOperateUtils.getCreateRwLinksWithMesh(geomInter, maps, result,this.command.getUpdateLink()));
 
 			}
 			result.insertObject(this.command.getUpdateLink(), ObjStatus.DELETE, this.command.getUpdateLink().getPid());
 		}
-//		// 处理对立交的影响
-//		if (CollectionUtils.isNotEmpty(this.command.getGscList())) {
-//			handleEffectOnRdGsc(this.command.getGscList(), links, result);
-//		}
 		
 		updataRelationObj(this.command.getUpdateLink(), links, result);
 		

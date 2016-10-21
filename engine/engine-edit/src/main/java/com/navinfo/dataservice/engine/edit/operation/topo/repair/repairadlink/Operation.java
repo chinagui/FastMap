@@ -83,6 +83,7 @@ public class Operation implements IOperation {
 			boolean isChanged = this.command.getUpdateLink().fillChangeFields(
 					content);
 			AdLink adLink = new AdLink();
+			adLink.setPid(this.command.getUpdateLink().getPid());
 			adLink.copy(this.command.getUpdateLink());
 			if (isChanged) {
 				result.insertObject(this.command.getUpdateLink(),
@@ -107,7 +108,7 @@ public class Operation implements IOperation {
 								.geojson2Jts(command.getLinkGeom()), MeshUtils
 								.mesh2Jts(meshIdStr)), 1, 5);
 				links.addAll(AdLinkOperateUtils.getCreateAdLinksWithMesh(
-						geomInter, maps, result));
+						geomInter, maps, result,this.command.getUpdateLink()));
 
 			}
 			result.insertObject(this.command.getUpdateLink(), ObjStatus.DELETE,

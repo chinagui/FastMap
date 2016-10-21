@@ -243,7 +243,7 @@ public class Operation implements IOperation {
 			this.createFace();
 			List<AdLink> links = new ArrayList<AdLink>();
 			links.add(AdLinkOperateUtils.getAddLink(geom, Node.getPid(),
-					Node.getPid(), result));
+					Node.getPid(), result,null));
 			this.reCaleFaceGeometry(links);
 		}// 如果跨图幅
 		else {
@@ -273,7 +273,7 @@ public class Operation implements IOperation {
 					(int) node.get("e"));
 		}
 		return AdLinkOperateUtils.getAddLink(g, (int) node.get("s"),
-				(int) node.get("e"), result);
+				(int) node.get("e"), result,null);
 	}
 
 	/*

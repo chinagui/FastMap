@@ -24,7 +24,6 @@ import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 
-import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 public class Operation implements IOperation {
@@ -84,7 +83,7 @@ public class Operation implements IOperation {
 			JSONObject node = RdLinkOperateUtils.createRdNodeForLink(g,
 					sNodePid, eNodePid, result);
 			RdLink link = RdLinkOperateUtils.addLink(g, (int) node.get("s"),
-					(int) node.get("e"), result);
+					(int) node.get("e"), result,null);
 
 			link.setKind(command.getKind());
 
@@ -153,7 +152,7 @@ public class Operation implements IOperation {
 		}
 		// 创建线
 		RdLink link = RdLinkOperateUtils.addLink(g, (int) node.get("s"),
-				(int) node.get("e"), result);
+				(int) node.get("e"), result,null);
 
 		link.setKind(command.getKind());
 

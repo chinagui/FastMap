@@ -151,7 +151,7 @@ public class GridController extends BaseController {
 	 * @param request
 	 * @return
 	 */
-	@RequestMapping(value = "/grid/listByInforBlockId")
+	@RequestMapping(value = "/grid/listByInforBlockManId")
 	public ModelAndView listByInforBlockId(HttpServletRequest request) {
 		try {
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
@@ -159,9 +159,9 @@ public class GridController extends BaseController {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
 			
-			int blockId = dataJson.getInt("blockId");
+			int blockManId = dataJson.getInt("blockManId");
 			
-			List<Integer> data = GridService.getInstance().listByInforBlockId(blockId);
+			List<Integer> data = GridService.getInstance().listByInforBlockManId(blockManId);
 			return new ModelAndView("jsonView", success(data));
 		} catch (Exception e) {
 			log.error("获取grid列表失败，原因：" + e.getMessage(), e);

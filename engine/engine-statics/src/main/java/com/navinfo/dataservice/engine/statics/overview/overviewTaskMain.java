@@ -35,7 +35,7 @@ import net.sf.json.JSONObject;
  * @date 2016年10月20日 上午11:17:54
  * @Description TODO
  */
-public class OverviewStatTask {
+public class overviewTaskMain {
 	
 	private static Logger log = null;
 	public static final String col_name_task = "fm_stat_overview_task";
@@ -44,7 +44,7 @@ public class OverviewStatTask {
 	private String statDate;
 	private String statTime;
 
-	public OverviewStatTask(String dbn, String statTime) {
+	public overviewTaskMain(String dbn, String statTime) {
 		this.db_name = dbn;
 		this.statDate = statTime.substring(0, 8);
 		this.statTime = statTime;
@@ -414,7 +414,7 @@ public class OverviewStatTask {
 	}
 	
 	public void runStat() {
-		log = LogManager.getLogger(OverviewStatTask.class);
+		log = LogManager.getLogger(overviewTaskMain.class);
 
 		log.info("-- begin stat:" + col_name_task);
 
@@ -512,7 +512,7 @@ public class OverviewStatTask {
 				new String[] { "dubbo-consumer-datahub-test.xml"});
 		context.start();
 		new ApplicationContextUtil().setApplicationContext(context);
-		OverviewStatTask overviewSubtaskStat = new OverviewStatTask("fm_stat", "20161021180412");
+		overviewTaskMain overviewSubtaskStat = new overviewTaskMain("fm_stat", "20161021180412");
 		overviewSubtaskStat.runStat();
 	}
 

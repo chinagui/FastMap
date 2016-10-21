@@ -111,7 +111,7 @@ public class Operation implements IOperation {
 			limitInfo[1] = limitContent.getInt("toLimitSrc");
 		}
 
-		limitInfo[3] = limitContent.getInt("speedClassWork");
+		limitInfo[2] = limitContent.getInt("speedClassWork");
 
 		return limitInfo;
 	}

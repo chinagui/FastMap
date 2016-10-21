@@ -56,7 +56,7 @@ public class Process extends AbstractProcess<Command> implements IProcess {
 
 	@Override
 	public String exeOperation() throws Exception {
-		return new Operation(this.getCommand(), this.ixPoiParent, this.ixPoiChildren).run(this.getResult());
+		return new Operation(this.getCommand(), this.ixPoiParent, this.ixPoiChildren,this.getConn()).run(this.getResult());
 	}
 
 }

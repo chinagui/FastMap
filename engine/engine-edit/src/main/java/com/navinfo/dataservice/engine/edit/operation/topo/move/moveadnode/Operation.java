@@ -104,6 +104,7 @@ public class Operation implements IOperation {
 				updateContent.put("length", GeometryUtils.getLinkLength(geo));
 				link.fillChangeFields(updateContent);
 				AdLink adLink = new AdLink();
+				adLink.setPid(link.getPid());
 				adLink.copy(link);
 				adLink.setGeometry(GeoTranslator.geojson2Jts(geojson, 100000, 5));
 				links.add(adLink);
@@ -119,7 +120,7 @@ public class Operation implements IOperation {
 					String meshIdStr = it.next();
 					Geometry geomInter = MeshUtils.linkInterMeshPolygon(geo, MeshUtils.mesh2Jts(meshIdStr));
 					geomInter = GeoTranslator.geojson2Jts(GeoTranslator.jts2Geojson(geomInter), 1, 5);
-					links.addAll(AdLinkOperateUtils.getCreateAdLinksWithMesh(geomInter, maps, result));
+					links.addAll(AdLinkOperateUtils.getCreateAdLinksWithMesh(geomInter, maps, result,link));
 
 				}
 				map.put(link.getPid(), links);

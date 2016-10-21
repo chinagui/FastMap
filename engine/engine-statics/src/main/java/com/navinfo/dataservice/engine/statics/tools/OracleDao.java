@@ -10,6 +10,7 @@ import java.util.Map;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
+import org.bson.Document;
 
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.BlockMan;
@@ -19,7 +20,11 @@ import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.TimestampUtils;
 import com.navinfo.navicommons.database.QueryRunner;
+import com.navinfo.navicommons.database.sql.StringUtil;
 import com.navinfo.navicommons.exception.ServiceException;
+
+import net.sf.json.JSONObject;
+import oracle.sql.CLOB;
 
 public class OracleDao {
 	/**
@@ -229,20 +234,20 @@ public class OracleDao {
 	}
 	
 	/**
-	 * 根据 subtask_id 表返回 hashmap： key（subtask_id）=value（grid_id list）
+	 * 获取所有需要被统计的子任务列表
 	 */
-	public static List<Subtask> getSubtaskList() throws ServiceException {
+	public static List<Subtask> getSubtaskListNeedStatistics() throws ServiceException {
 		Connection conn = null;
 		try {
 			QueryRunner run = new QueryRunner();
 
 			conn = DBConnector.getInstance().getManConnection();
-			//目前只统计采集（POI，道路，一体化）日编（POI,一体化GRID粗编）子任务
+			//目前只统计采集（POI，道路，一体化）日编（POI,一体化GRID粗编,一体化区域粗编）子任务
 			//如果FM_STAT_OVERVIEW_SUBTASK中该子任务记录为已完成，则不再统计
 			String sql = "SELECT DISTINCT S.SUBTASK_ID, S.STAGE,S.TYPE,S.STATUS,S.PLAN_START_DATE,S.PLAN_END_DATE,S.BLOCK_MAN_ID"
-					+ " FROM SUBTASK S, FM_STAT_OVERVIEW_SUBTASK FSOS"
+					+ " FROM SUBTASK S"
 					+ " WHERE S.STAGE IN (0, 1)"
-					+ " AND S.TYPE IN (0, 1, 2, 3)"
+					+ " AND S.TYPE IN (0, 1, 2, 3, 4)"
 					+ " AND NOT EXISTS (SELECT 1"
 					+ " FROM FM_STAT_OVERVIEW_SUBTASK FSOS"
 					+ " WHERE S.SUBTASK_ID = FSOS.SUBTASK_ID"
@@ -266,17 +271,7 @@ public class OracleDao {
 						subtask.setPlanEndDate(rs.getTimestamp("PLAN_END_DATE"));
 						subtask.setBlockManId(rs.getInt("BLOCK_MAN_ID"));
 						
-//						List<Integer> gridIds = null;
-//						try {
-//							gridIds = api.getGridIdsBySubtaskId(rs.getInt("SUBTASK_ID"));
-//						} catch (Exception e) {
-//							// TODO Auto-generated catch block
-//							e.printStackTrace();
-//						}
-//						subtask.setGridIds(gridIds);
-						
-						list.add(subtask);
-						
+						list.add(subtask);		
 					}
 					return list;
 				}
@@ -288,4 +283,73 @@ public class OracleDao {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+	
+	/**
+	 * 获取所有不需要被统计的子任务列表
+	 */
+	public static List<Document> getSubtaskListWithStatistics() throws ServiceException {
+		Connection conn = null;
+		try {
+			QueryRunner run = new QueryRunner();
+
+			conn = DBConnector.getInstance().getManConnection();
+			//如果FM_STAT_OVERVIEW_SUBTASK中该子任务记录为已完成，则不再统计，读取结果
+			String sql = "SELECT FSOS.SUBTASK_ID,FSOS.PERCENT,FSOS.DIFF_DATE,FSOS.PROGRESS,FSOS.STAT_DATE,FSOS.STATUS"
+					+ ",FSOS.TOTAL_POI,FSOS.FINISHED_POI,FSOS.TOTAL_ROAD,FSOS.FINISHED_ROAD,FSOS.PERCENT_POI,FSOS.PERCENT_ROAD"
+					+ ",FSOS.PLAN_START_DATE,FSOS.PLAN_END_DATE,FSOS.ACTUAL_START_DATE,FSOS.ACTUAL_END_DATE"
+					+ ",FSOS.STAT_TIME,FSOS.GRID_PERCENT_DETAILS,FSOS.BLOCK_MAN_ID"
+					+ " FROM FM_STAT_OVERVIEW_SUBTASK FSOS"
+					+ " WHERE FSOS.STATUS = 0";
+			
+			ResultSetHandler<List<Document>> rsHandler = new ResultSetHandler<List<Document>>(){
+				public List<Document> handle(ResultSet rs) throws SQLException {
+					List<Document> list = new ArrayList<Document>();
+					while(rs.next()){
+						Document subtask = new Document();
+						subtask.put("subtaskId", rs.getInt("SUBTASK_ID"));
+						subtask.put("blockManId", rs.getInt("BLOCK_MAN_ID"));
+						subtask.put("percent", rs.getInt("PERCENT"));
+						subtask.put("diffDate", rs.getInt("DIFF_DATE"));
+						subtask.put("progress", rs.getInt("PROGRESS"));
+						subtask.put("statDate", rs.getString("STAT_DATE"));
+						subtask.put("statTime", rs.getString("STAT_TIME"));
+						subtask.put("status", rs.getInt("STATUS"));
+						
+						subtask.put("planStartDate", rs.getString("PLAN_START_DATE"));
+						subtask.put("planEndDate", rs.getString("PLAN_END_DATE"));
+						subtask.put("actualStartDate", rs.getString("ACTUAL_START_DATE"));
+						subtask.put("actualEndDate", rs.getString("ACTUAL_END_DATE"));
+						
+						subtask.put("totalPoi", rs.getInt("TOTAL_POI"));
+						subtask.put("finishedPoi", rs.getInt("FINISHED_POI"));
+						subtask.put("percentPoi", rs.getInt("PERCENT_POI"));
+						
+						subtask.put("totalRoad", rs.getInt("TOTAL_ROAD"));
+						subtask.put("finishedRoad", rs.getInt("FINISHED_ROAD"));
+						subtask.put("percentRoad", rs.getInt("PERCENT_ROAD"));
+
+						CLOB gridPercentDetails = (CLOB) rs.getClob("GRID_PERCENT_DETAILS");
+						String gridPercentDetails1 = StringUtil.ClobToString(gridPercentDetails);
+						JSONObject dataJson = null;
+						if(!gridPercentDetails1.isEmpty()){
+							dataJson = JSONObject.fromObject(gridPercentDetails1);
+						}
+						subtask.put("gridPercentDetails", dataJson);
+
+						list.add(subtask);
+					}
+					return list;
+				}
+	    	};
+			
+			return run.query(conn, sql, rsHandler);
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			throw new ServiceException("创建失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	
 }

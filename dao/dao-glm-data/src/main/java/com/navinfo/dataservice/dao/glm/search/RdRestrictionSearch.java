@@ -23,6 +23,7 @@ import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.selector.rd.restrict.RdRestrictionSelector;
+import com.navinfo.navicommons.geo.computation.GeometryUtils;
 
 public class RdRestrictionSearch implements ISearch {
 
@@ -203,10 +204,29 @@ public class RdRestrictionSearch implements ISearch {
 
 				jsonM.put("c", String.valueOf((int)angle));
 
-				double[][] point = DisplayUtils
-						.getGdbPointPos(linkWkt, pointWkt, 0);
+				double linkLength = GeometryUtils.getLinkLength(linkWkt);
 
-				snapshot.setG(Geojson.lonlat2Pixel(point[1][0],point[1][1],z,px,py));
+				if (linkLength < 5) {
+					
+					double[] point = DisplayUtils.getRatioPointForLink(geom1, direct, 0.4);
+
+					JSONObject geojson = new JSONObject();
+
+					geojson.put("type", "Point");
+
+					geojson.put("coordinates", point);
+
+					Geojson.point2Pixel(geojson, z, px, py);
+
+					snapshot.setG(geojson.getJSONArray("coordinates"));
+					
+				} else {
+					double[][] point = DisplayUtils.getGdbPointPos(linkWkt,
+							pointWkt, 0);
+
+					snapshot.setG(Geojson.lonlat2Pixel(point[1][0],
+							point[1][1], z, px, py));
+				}
 				
 				snapshot.setM(jsonM);
 

@@ -67,4 +67,18 @@ public class Check {
         }
         return result;
     }
+
+    /**
+     * 检查Poi是否已存在同一关系
+     *
+     * @param poi
+     * @param otherPoi
+     * @throws Exception
+     */
+    public void checkIsSamePoi(IxPoi poi, IxPoi otherPoi) throws Exception {
+        if (!poi.getSamepoiParts().isEmpty())
+            throw new Exception(poi.pid() + "已存在同一关系，请重新选择.");
+        if (!otherPoi.getSamepoiParts().isEmpty())
+            throw new Exception(otherPoi.pid() + "已存在同一关系，请重新选择.");
+    }
 }

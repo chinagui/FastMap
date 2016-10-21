@@ -209,31 +209,50 @@ public class GeometryUtils {
 	public static Geometry getIntersectGeoBySingleLine(List<Geometry> geometryList) throws Exception {
 
 		StringBuilder sb = new StringBuilder("MULTIPOINT (");
+		
+		List<Coordinate> coors = new ArrayList<>();
+		
+		List<Geometry> geoList = new ArrayList<>();
 
-		for (int i = 0; i < geometryList.size()-1; i++) {
+		for (int i = 0; i < geometryList.size() - 1; i++) {
 
 			Geometry tmp1 = geometryList.get(i);
-			
-			for (int j = i; j < geometryList.size()-1; j++) {
-				
-				Geometry tmp2 = geometryList.get(j+1);
+
+			for (int j = i; j < geometryList.size() - 1; j++) {
+
+				Geometry tmp2 = geometryList.get(j + 1);
 
 				if (tmp1.intersects(tmp2)) {
-
 					Geometry interGeo = tmp1.intersection(tmp2);
-
-					// if (tmp1.getBoundary().contains(interGeo)
-					// && !tmp2.getBoundary().contains(interGeo)) {
+					
 					Coordinate coor = interGeo.getCoordinate();
-
-					sb.append(coor.x + " ");
-
-					sb.append(coor.y + ",");
-					// }
+					
+					if(!tmp1.touches(tmp2))
+					{
+						coors.add(coor);
+					}
+					else
+					{
+						if(geoList.contains(interGeo) && !coors.contains(coor))
+						{
+							coors.add(coor);
+						}
+						else
+						{
+							geoList.add(interGeo);
+						}
+					}
 				}
 			}
 		}
+		
+		for(Coordinate coor : coors)
+		{
+			sb.append(coor.x + " ");
 
+			sb.append(coor.y + ",");
+		}
+		
 		if (sb.toString().contains(",")) {
 			sb.deleteCharAt(sb.lastIndexOf(","));
 		}

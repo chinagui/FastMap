@@ -75,6 +75,7 @@ public class Operation implements IOperation {
 					content);
 
 			LuLink luLink = new LuLink();
+			luLink.setPid(this.command.getUpdateLink().getPid());
 			luLink.copy(this.command.getUpdateLink());
 			if (isChanged) {
 				result.insertObject(this.command.getUpdateLink(),
@@ -100,7 +101,7 @@ public class Operation implements IOperation {
 								.geojson2Jts(command.getLinkGeom()), MeshUtils
 								.mesh2Jts(meshIdStr)), 1, 5);
 				links.addAll(LuLinkOperateUtils.getCreateLuLinksWithMesh(
-						geomInter, maps, result));
+						geomInter, maps, result,this.command.getUpdateLink()));
 
 			}
 			result.insertObject(this.command.getUpdateLink(), ObjStatus.DELETE,

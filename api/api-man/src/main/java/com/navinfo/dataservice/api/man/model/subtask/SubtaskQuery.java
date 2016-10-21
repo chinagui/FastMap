@@ -7,10 +7,11 @@ import java.util.List;
 /** 
  * @ClassName: SubtaskList
  * @author songdongyan
+ * @param <JSONObject>
  * @date 2016年8月3日
  * @Description: SubtaskList.java
  */
-public class SubtaskQuery extends SubtaskListByUser {
+public class SubtaskQuery<JSONObject> extends SubtaskListByUser {
 
 	/**
 	 * 
@@ -32,6 +33,8 @@ public class SubtaskQuery extends SubtaskListByUser {
 	private String version;
 	private int percent;
 	
+	private JSONObject geometryJSON;
+	
 	public SubtaskQuery (Integer subtaskId ,
 			String name,
 			Integer status,
@@ -52,7 +55,8 @@ public class SubtaskQuery extends SubtaskListByUser {
 			String executer,
 			Integer executerId,
 			Integer percent,
-			String version
+			String version,
+			JSONObject geometryJSON
 			){
 		super(subtaskId, name, stage, type, status, descp, dbId,gridIds,geometry,planStartDate,planEndDate);
 
@@ -69,6 +73,8 @@ public class SubtaskQuery extends SubtaskListByUser {
 
 		this.percent=percent ;
 		this.version = version;
+		
+		this.geometryJSON = geometryJSON;
 	}
 	public String getTaskName(){
 		return taskName;
@@ -168,6 +174,18 @@ public class SubtaskQuery extends SubtaskListByUser {
 	 */
 	public void setCityId(Integer cityId) {
 		this.cityId = cityId;
+	}
+	/**
+	 * @return the geometryJSON
+	 */
+	public JSONObject getGeometryJSON() {
+		return geometryJSON;
+	}
+	/**
+	 * @param geometryJSON the geometryJSON to set
+	 */
+	public void setGeometryJSON(JSONObject geometryJSON) {
+		this.geometryJSON = geometryJSON;
 	}
 
 

@@ -15,6 +15,8 @@ import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.engine.man.city.CityService;
 import com.navinfo.dataservice.engine.man.grid.GridService;
 import com.navinfo.dataservice.engine.man.message.MessageService;
+import com.navinfo.dataservice.engine.man.produce.ProduceOperation;
+import com.navinfo.dataservice.engine.man.produce.ProduceService;
 import com.navinfo.dataservice.engine.man.region.RegionService;
 import com.navinfo.dataservice.engine.man.statics.StaticsService;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskOperation;
@@ -81,6 +83,9 @@ public class ManApiImpl implements ManApi {
 		
 		return service.query(type);
 	}
+	
+	
+	
 	@Override
 	public List<Region> queryRegionWithGrids(List<Integer> grids) throws Exception {
 		return RegionService.getInstance().queryRegionWithGrids(grids);
@@ -106,6 +111,11 @@ public class ManApiImpl implements ManApi {
 	public void close(int subtaskId) throws Exception {
 		// TODO Auto-generated method stub
 		SubtaskOperation.closeBySubtaskId(subtaskId);
+	}
+	@Override
+	public void updateProduceStatus(int produceId,int status) throws Exception {
+		// TODO Auto-generated method stub
+		ProduceService.getInstance().updateProduceStatus(produceId,status);
 	}
 	@Override
 	public List<Task> queryTaskAll() throws Exception {

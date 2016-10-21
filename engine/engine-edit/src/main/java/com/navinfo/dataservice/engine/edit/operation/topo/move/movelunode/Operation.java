@@ -105,6 +105,7 @@ public class Operation implements IOperation {
 				link.fillChangeFields(updateContent);
 				link.setGeometry(geo);
 				LuLink luLink = new LuLink();
+				luLink.setPid(link.getPid());
 				luLink.copy(link);
 				luLink.setGeometry(GeoTranslator.geojson2Jts(geojson, 100000, 5));
 				links.add(luLink);
@@ -120,7 +121,7 @@ public class Operation implements IOperation {
 					String meshIdStr = it.next();
 					Geometry geomInter = MeshUtils.linkInterMeshPolygon(geo, MeshUtils.mesh2Jts(meshIdStr));
 					geomInter = GeoTranslator.geojson2Jts(GeoTranslator.jts2Geojson(geomInter), 1, 5);
-					links.addAll(LuLinkOperateUtils.getCreateLuLinksWithMesh(geomInter, maps, result));
+					links.addAll(LuLinkOperateUtils.getCreateLuLinksWithMesh(geomInter, maps, result,link));
 
 				}
 				map.put(link.getPid(), links);

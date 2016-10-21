@@ -98,19 +98,19 @@ public class commonTest extends InitApplication {
 	}
 
 	@Test
-	public void getTitleWithGap_IXPOI() {
+	public void getTitleWithGap() {
 		Connection conn = null;
 		try {
-			conn = DBConnector.getInstance().getConnectionById(8);
+			conn = DBConnector.getInstance().getConnectionById(17);
 
 			SearchProcess p = new SearchProcess(conn);
 
 			List<ObjType> objType = new ArrayList<>();
 
-			objType.add(ObjType.IXPOI);
+			objType.add(ObjType.RDLANECONNEXITY);
 
-			System.out.println(p.searchDataByTileWithGap(objType, 107937,
-					49616, 17, 80));
+			System.out.println(p.searchDataByTileWithGap(objType, 862722,
+					394896, 20, 80));
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -637,6 +637,18 @@ public class commonTest extends InitApplication {
 
 		String msg = t.run();
 	}
+	
+	@Test
+	public void run_1020_2() throws Exception {
+
+		String parameter = "{\"command\":\"DELETE\",\"dbId\":17,\"type\":\"RDLINK\",\"objId\":306001082}";
+		
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+	
 	@Test
 	public void josnArrayTest()
 	{
@@ -651,5 +663,22 @@ public class commonTest extends InitApplication {
 		array2.add( array);
 		array2.add("1");
 		array2.add(1);
+	}
+	
+	
+	@Test
+	public void ListTest()
+	{
+		List<Integer>pids=new ArrayList<Integer>();
+		pids.add(1);
+		pids.add(1);
+		pids.add(1);
+		pids.add(1);
+		pids.add(1);
+		pids.add(1);
+		pids.add(1);
+		pids.add(1);
+		pids.add(1);
+		
 	}
 }

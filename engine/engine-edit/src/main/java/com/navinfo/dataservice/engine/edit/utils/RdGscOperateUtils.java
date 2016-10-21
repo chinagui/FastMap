@@ -17,12 +17,14 @@ import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.model.lc.LcLink;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGscLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLink;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwNode;
+import com.navinfo.dataservice.dao.glm.selector.lc.LcLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.gsc.RdGscSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.rw.RwLinkSelector;
@@ -324,6 +326,8 @@ public class RdGscOperateUtils {
 		RdLinkSelector linkSelector = new RdLinkSelector(conn);
 
 		RwLinkSelector rwLinkSelector = new RwLinkSelector(conn);
+		
+		LcLinkSelector lcLinkSelector = new LcLinkSelector(conn);
 
 		for (Entry<Integer, RdGscLink> rdGscLinkEntry : gscLinkMap.entrySet()) {
 
@@ -364,7 +368,20 @@ public class RdGscOperateUtils {
 
 				linkMap.put(level, rwLink);
 				break;
+			case "LCLINK":
 
+				LcLink lcLink = (LcLink) lcLinkSelector.loadById(linkPid, true);
+
+				Geometry lcGeo = lcLink.getGeometry();
+
+				lcGeo.setUserData(linkPid);
+
+				linksGeometryList.add(lcGeo);
+
+				rdGscLink.setTableName("LC_LINK");
+
+				linkMap.put(level, lcLink);
+				break;
 			default:
 				break;
 			}

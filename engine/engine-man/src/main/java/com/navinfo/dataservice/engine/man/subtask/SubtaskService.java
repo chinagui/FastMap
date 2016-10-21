@@ -39,6 +39,7 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.json.JsonOperation;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
@@ -424,6 +425,8 @@ public class SubtaskService {
 						STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
 						try {
 							subtask.setGeometry(GeoTranslator.struct2Wkt(struct));
+							String clobStr = GeoTranslator.struct2Wkt(struct);
+							subtask.setGeometryJSON(Geojson.wkt2Geojson(clobStr));
 						} catch (Exception e1) {
 							// TODO Auto-generated catch block
 							e1.printStackTrace();

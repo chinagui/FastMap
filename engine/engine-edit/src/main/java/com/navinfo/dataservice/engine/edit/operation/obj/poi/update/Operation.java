@@ -3,6 +3,8 @@ package com.navinfo.dataservice.engine.edit.operation.obj.poi.update;
 import java.sql.Connection;
 import java.util.List;
 
+import org.apache.commons.collections.CollectionUtils;
+
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.StringUtils;
@@ -42,7 +44,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;	
+import net.sf.json.JSONObject;
 
 public class Operation implements IOperation {
 
@@ -69,6 +71,8 @@ public class Operation implements IOperation {
 
 		JSONObject content = command.getContent();
 
+		boolean isChanged = ixPoi.fillChangeFields(content);
+
 		if (content.containsKey("objStatus")) {
 
 			if (ObjStatus.DELETE.toString().equals(content.getString("objStatus"))) {
@@ -77,15 +81,7 @@ public class Operation implements IOperation {
 				return null;
 			} else {
 
-				boolean isChanged = ixPoi.fillChangeFields(content);
-
 				if (isChanged) {
-					result.insertObject(ixPoi, ObjStatus.UPDATE, ixPoi.pid());
-				}
-				else
-				{
-					//修改子表默认修改主表时间
-					ixPoi.changedFields().put("uDate", StringUtils.getCurrentTime());
 					result.insertObject(ixPoi, ObjStatus.UPDATE, ixPoi.pid());
 				}
 			}
@@ -137,10 +133,13 @@ public class Operation implements IOperation {
 
 		updataIxPoiCarrental(result, content);
 
-//		updataIxPoiParent(result, content);
-//
-//		updataIxPoiChildren(result, content);
+		if (CollectionUtils.isNotEmpty(result.getAddObjects()) || CollectionUtils.isNotEmpty(result.getUpdateObjects())
+				|| CollectionUtils.isNotEmpty(result.getDelObjects())) {
+			// 修改poi主表时间
+			ixPoi.changedFields().put("uDate", StringUtils.getCurrentTime());
 
+			result.insertObject(ixPoi, ObjStatus.UPDATE, ixPoi.pid());
+		}
 		return null;
 	}
 
@@ -1491,15 +1490,14 @@ public class Operation implements IOperation {
 		Geometry nearestPointGeo = GeoTranslator.geojson2Jts(geojson, 1, 0);
 
 		int side = GeometryUtils.calulatPointSideOflink(poiGeo, linkGeo, nearestPointGeo);
-		
-		if(side != 0)
-		{
+
+		if (side != 0) {
 			Geometry guidePoint = GeoTranslator.transform(nearestPointGeo, 0.00001, 5);
 
 			ixPoi.changedFields().put("xGuide", guidePoint.getCoordinate().x);
 
 			ixPoi.changedFields().put("yGuide", guidePoint.getCoordinate().y);
-			
+
 			ixPoi.changedFields().put("side", side);
 		}
 	}

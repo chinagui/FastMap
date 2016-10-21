@@ -1,10 +1,7 @@
 package com.navinfo.dataservice.engine.edit.operation.topo.move.movelcnode;
 
-import java.sql.Connection;
 import java.util.List;
 
-import com.navinfo.dataservice.dao.glm.iface.IOperation;
-import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.lc.LcFace;
 import com.navinfo.dataservice.dao.glm.model.lc.LcLink;
 import com.navinfo.dataservice.dao.glm.model.lc.LcNode;

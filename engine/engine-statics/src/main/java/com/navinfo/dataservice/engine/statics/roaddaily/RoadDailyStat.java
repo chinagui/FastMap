@@ -31,8 +31,9 @@ public class RoadDailyStat implements Runnable {
 	private String col_name;
 	private String stat_date;
 	private String stat_time;
-	private String col_name_seasion_grid = "tips_season_grid_stat";
-	private String col_name_tips_grid = "fm_stat_daily_tips_grid";
+//	private String col_name_seasion_grid = "tips_season_grid_stat";
+//	private String col_name_tips_grid = "fm_stat_daily_tips_grid";
+	private String col_name_tips_grid = "fm_stat_tips_grid";
 	
 	public RoadDailyStat(CountDownLatch cdl, int db_id, String db_name, String col_name, String stat_date, String stat_time) {
 		this.latch = cdl;
@@ -84,14 +85,18 @@ public class RoadDailyStat implements Runnable {
 	public List<Document> build_grid() throws ServiceException {
 		List<Document> json_list = new ArrayList<Document>();
 		// 存储 从mongo提取的tips统计结果
-		Map<String, Integer> mapSeason  = StatInit.getTipsFinishOfSeason(db_name, col_name_seasion_grid, "grid_id");
-		Map<String, Integer> mapTips = StatInit.getTipsFinishOfDaily(db_name, col_name_tips_grid, "grid_id", stat_date);
+		Map<String, Map<String,Integer>> mapTips = StatInit.getTipsTotalAndFinishOfDaily(db_name, col_name_tips_grid, "grid_id", stat_date);
+//		Map<String, Integer> mapSeason  = StatInit.getTipsFinishOfSeason(db_name, col_name_seasion_grid, "grid_id");
+//		Map<String, Integer> mapTips = StatInit.getTipsFinishOfDaily(db_name, col_name_tips_grid, "grid_id", stat_date);
 		Map<String, Integer> mapCheck = getGridCheckResult();
-		for (Entry<String, Integer> entry : mapSeason.entrySet()) {
+		for (Entry<String, Map<String,Integer>> entry : mapTips.entrySet()) {
 			Document json = new Document();
 			String grid_id = entry.getKey();
-			Integer total = entry.getValue();
-			Integer finish = (mapTips.get(grid_id) == null ? 0 : mapTips.get(grid_id));
+			Map<String, Integer> map = entry.getValue();
+			Integer total = map.get("total");
+			Integer finish = map.get("finish");	
+//			Integer total = entry.getValue();
+//			Integer finish = (mapTips.get(grid_id) == null ? 0 : mapTips.get(grid_id));
 
 			// ------------------------------
 			json.put("grid_id", grid_id);
@@ -136,5 +141,7 @@ public class RoadDailyStat implements Runnable {
 		latch.countDown();
 
 	}
+	
+	
 
 }

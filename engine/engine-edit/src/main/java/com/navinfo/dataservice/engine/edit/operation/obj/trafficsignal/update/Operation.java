@@ -115,36 +115,40 @@ public class Operation implements IOperation {
 				int nodePid = rdTrafficsignal.getNodePid();
 				// 道路由双方向修改为单方向（且修改的方向为路口的退出方向）时，该link上的信号灯应删除。
 				if (updateLink.getDirect() == 1 && direct == 2 && updateLink.getsNodePid() == nodePid) {
-					return "请注意，修改道路方向，可能需要对下列路口维护信号灯信息：" + rdTrafficsignal.getPid();
+					//return "请注意，修改道路方向，可能需要对下列路口维护信号灯信息：" + rdTrafficsignal.getPid();
+					result.insertObject(rdTrafficsignal, ObjStatus.DELETE, rdTrafficsignal.pid());
 				}
 				// 关联道路的方向为路口的进入方向，修改为路口的退出方向时，应删除该link上的信号灯。
 				else if (updateLink.getDirect() == 2 && direct == 3) {
-					return "请注意，修改道路方向，可能需要对下列路口维护信号灯信息：" + rdTrafficsignal.getPid();
+					//return "请注意，修改道路方向，可能需要对下列路口维护信号灯信息：" + rdTrafficsignal.getPid();
+					result.insertObject(rdTrafficsignal, ObjStatus.DELETE, rdTrafficsignal.pid());
 				}
 			}
-		} else {
-			int sNodePid = updateLink.getsNodePid();
-
-			// 关联道路的方向为路口的退出方向，修改为路口的进入方向时，应创建该link上的信号灯。
-			List<RdTrafficsignal> rdTrafficsignals = selector.loadByNodeId(true, sNodePid);
-
-			if (CollectionUtils.isNotEmpty(rdTrafficsignals)) {
-				if (updateLink.getDirect() == 2 && (direct == 3 || direct == 1)) {
-					return "请注意，修改道路方向，可能需要对下列路口LINK维护信号灯信息（LINK_PID）：" + updateLink.getPid();
-				}
-			}
-
-			int eNodePid = updateLink.getsNodePid();
-
-			// 关联道路的方向为路口的退出方向，修改为路口的进入方向时，应创建该link上的信号灯。
-			List<RdTrafficsignal> rdTrafficsignals2 = selector.loadByNodeId(true, eNodePid);
-
-			if (CollectionUtils.isNotEmpty(rdTrafficsignals2)) {
-				if (updateLink.getDirect() == 2 && (direct == 3 || direct == 1)) {
-					return "请注意，修改道路方向，可能需要对下列路口LINK维护信号灯信息（LINK_PID）：" + updateLink.getPid();
-				}
-			}
-		}
-		return "";
+		} 
+//			else {
+//			int sNodePid = updateLink.getsNodePid();
+//
+//			// 关联道路的方向为路口的退出方向，修改为路口的进入方向时，应创建该link上的信号灯。
+//			List<RdTrafficsignal> rdTrafficsignals = selector.loadByNodeId(true, sNodePid);
+//
+//			if (CollectionUtils.isNotEmpty(rdTrafficsignals)) {
+//				if (updateLink.getDirect() == 2 && (direct == 3 || direct == 1)) {
+//					//return "请注意，修改道路方向，可能需要对下列路口LINK维护信号灯信息（LINK_PID）：" + updateLink.getPid();
+//					result.insertObject(rdTrafficsignal, ObjStatus.DELETE, rdTrafficsignal.pid());
+//				}
+//			}
+//
+//			int eNodePid = updateLink.getsNodePid();
+//
+//			// 关联道路的方向为路口的退出方向，修改为路口的进入方向时，应创建该link上的信号灯。
+//			List<RdTrafficsignal> rdTrafficsignals2 = selector.loadByNodeId(true, eNodePid);
+//
+//			if (CollectionUtils.isNotEmpty(rdTrafficsignals2)) {
+//				if (updateLink.getDirect() == 2 && (direct == 3 || direct == 1)) {
+//					//return "请注意，修改道路方向，可能需要对下列路口LINK维护信号灯信息（LINK_PID）：" + updateLink.getPid();
+//				}
+//			}
+//		}
+		return "请注意，修改道路方向，可能需要对下列路口LINK维护信号灯信息（LINK_PID）："+ updateLink.getPid();
 	}
 }

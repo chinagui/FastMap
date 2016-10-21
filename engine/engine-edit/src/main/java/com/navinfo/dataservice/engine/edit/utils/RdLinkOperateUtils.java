@@ -365,9 +365,15 @@ public class RdLinkOperateUtils {
     /*
      * 创建生成一条RDLINK
      */
-    public static RdLink addLink(Geometry geo, int sNodePid, int eNodePid, Result result) throws Exception {
+    public static RdLink addLink(Geometry geo, int sNodePid, int eNodePid, Result result,RdLink sourceLink) throws Exception {
         RdLink link = new RdLink();
 
+        link.setPid(PidUtil.getInstance().applyLinkPid());
+        
+        if(sourceLink != null)
+        {
+        	link.copy(sourceLink);
+        }
         Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(geo);
 
         if (meshes.size() > 1) {
@@ -375,8 +381,6 @@ public class RdLinkOperateUtils {
         } else {
             link.setMeshId(Integer.parseInt(meshes.iterator().next()));
         }
-
-        link.setPid(PidUtil.getInstance().applyLinkPid());
 
         result.setPrimaryPid(link.getPid());
 
@@ -389,6 +393,30 @@ public class RdLinkOperateUtils {
         link.setLength(linkLength);
 
         link.setGeometry(GeoTranslator.transform(geo, 100000, 0));
+
+        link.setOriginLinkPid(link.getPid());
+
+        link.setWidth(55);
+
+        link.setsNodePid(sNodePid);
+
+        link.seteNodePid(eNodePid);
+        
+        if(sourceLink == null)
+        {
+        	setLinkChildren(link);
+        }
+
+        return link;
+    }
+    
+    /*
+     * 创建生成一条无pid的RDLINK
+     */
+    public static RdLink addLinkNoPid(int sNodePid, int eNodePid) throws Exception {
+        RdLink link = new RdLink();
+        
+        link.setPid(1);
 
         link.setOriginLinkPid(link.getPid());
 
@@ -446,22 +474,22 @@ public class RdLinkOperateUtils {
      * @throws Exception
      */
     public static List<RdLink> getCreateRdLinksWithMesh(Geometry g,
-                                                        Map<Coordinate, Integer> maps, Result result) throws Exception {
+                                                        Map<Coordinate, Integer> maps, Result result,RdLink sourceLink) throws Exception {
         List<RdLink> links = new ArrayList<RdLink>();
         if (g != null) {
             if (g.getGeometryType() == GeometryTypeName.LINESTRING) {
-                links.add(getCalRdLinkWithMesh(g, maps, result));
+                links.add(getCalRdLinkWithMesh(g, maps, result,sourceLink));
             }
             if (g.getGeometryType() == GeometryTypeName.MULTILINESTRING) {
                 for (int i = 0; i < g.getNumGeometries(); i++) {
-                    links.add(getCalRdLinkWithMesh(g.getGeometryN(i), maps, result));
+                    links.add(getCalRdLinkWithMesh(g.getGeometryN(i), maps, result,sourceLink));
                 }
             }
             if (GeometryTypeName.GEOMETRYCOLLECTION.equals(g.getGeometryType())) {
                 for (int i = 0; i < g.getNumGeometries(); i++) {
                     Geometry geometry = g.getGeometryN(i);
                     if (GeometryTypeName.LINESTRING.equals(geometry.getGeometryType())) {
-                        links.add(getCalRdLinkWithMesh(geometry, maps, result));
+                        links.add(getCalRdLinkWithMesh(geometry, maps, result,sourceLink));
                     }
                 }
             }
@@ -473,7 +501,7 @@ public class RdLinkOperateUtils {
      * 创建道路线 针对跨图幅创建图廓点不能重复
      */
     public static RdLink getCalRdLinkWithMesh(Geometry g, Map<Coordinate, Integer> maps,
-                                              Result result) throws Exception {
+                                              Result result,RdLink sourceLink) throws Exception {
         //定义创建道路线的起始Pid 默认为0
         int sNodePid = 0;
         int eNodePid = 0;
@@ -496,7 +524,7 @@ public class RdLinkOperateUtils {
         }
         //创建线
         RdLink link = RdLinkOperateUtils.addLink(g, (int) node.get("s"),
-                (int) node.get("e"), result);
+                (int) node.get("e"), result,sourceLink);
 
         result.insertObject(link, ObjStatus.INSERT, link.pid());
 

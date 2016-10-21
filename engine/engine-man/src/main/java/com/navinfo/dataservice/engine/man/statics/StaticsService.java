@@ -1111,8 +1111,74 @@ public class StaticsService {
 					map.put("dailyDiffDate", rs.getLong("DAILY_DIFF_DATE"));
 					map.put("poiPlanTotal", rs.getLong("POI_PLAN_TOTAL"));
 					map.put("roadPlanTotal", rs.getLong("ROAD_PLAN_TOTAL"));
-					map.put("stateDate", rs.getTimestamp("STATE_DATE"));
-					map.put("stateTime", rs.getTimestamp("STATE_TIME"));
+					map.put("statDate", rs.getTimestamp("STAT_DATE"));
+					map.put("statTime", rs.getTimestamp("STAT_TIME"));
+				}
+				return map;
+			}
+		};
+		Map<String, Object> result = queryRunner.query(conn, sql, rsh, params);
+		//返回数据
+		return result;
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询明细失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * 查询任务统计表
+	 * @return
+	 * @throws ServiceException 
+	 */
+	public Map<String, Object> queryTaskStatByTaskId(long taskId) throws ServiceException {
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner queryRunner = new QueryRunner();
+		//查询数据
+		String sql = "SELECT * FROM FM_STAT_OVERVIEW_TASK WHERE TASK_ID = ?";
+		Object[] params = {taskId};
+		//处理结果集
+		ResultSetHandler<Map<String, Object>> rsh = new ResultSetHandler<Map<String,Object>>() {
+			
+			@Override
+			public Map<String, Object> handle(ResultSet rs) throws SQLException {
+				Map<String, Object> map = new HashMap<String, Object>();
+				//处理数据
+				while(rs.next()){
+					map.put("taskId", rs.getLong("TASK_ID"));
+					map.put("progress", rs.getLong("PROGRESS"));
+					map.put("percent", rs.getLong("PERCENT"));
+					map.put("poiPlanTotal", rs.getLong("POI_PLAN_TOTAL"));
+					map.put("roadPlanTotal", rs.getLong("ROAD_PLAN_TOTAL"));
+					map.put("planStartDate", rs.getTimestamp("PLAN_START_DATE"));
+					map.put("planEndDate", rs.getTimestamp("PLAN_END_DATE"));
+					map.put("planDate", rs.getLong("PLAN_DATE"));
+					map.put("actualStartDate", rs.getTimestamp("ACTUAL_START_DATE"));
+					map.put("actualEndDate", rs.getTimestamp("ACTUAL_END_DATE"));
+					map.put("diffDate", rs.getLong("DIFF_DATE"));
+					map.put("collectProgress", rs.getLong("COLLECT_PROGRESS"));
+					map.put("collectPercent", rs.getLong("COLLECT_PERCENT"));
+					map.put("collectPlanStartDate", rs.getTimestamp("COLLECT_PLAN_START_DATE"));
+					map.put("collectPlanEndDate", rs.getTimestamp("COLLECT_PLAN_END_DATE"));
+					map.put("collectPlanDate", rs.getLong("COLLECT_PLAN_DATE"));
+					map.put("collectActualStartDate", rs.getTimestamp("COLLECT_ACTUAL_START_DATE"));
+					map.put("collectActualEndDate", rs.getTimestamp("COLLECT_ACTUAL_END_DATE"));
+					map.put("collectDiffDate", rs.getLong("COLLECT_DIFF_DATE"));
+					map.put("dailyProgress", rs.getLong("DAILY_PROGRESS"));
+					map.put("dailyPercent", rs.getLong("DAILY_PERCENT"));
+					map.put("dailyPlanStartDate", rs.getTimestamp("DAILY_PLAN_START_DATE"));
+					map.put("dailyPlanEndDate", rs.getTimestamp("DAILY_PLAN_END_DATE"));
+					map.put("dailyPlanDate", rs.getLong("DAILY_PLAN_DATE"));
+					map.put("dailyActualStartDate", rs.getTimestamp("DAILY_ACTUAL_START_DATE"));
+					map.put("dailyActualEndDate", rs.getTimestamp("DAILY_ACTUAL_END_DATE"));
+					map.put("dailyDiffDate", rs.getLong("DAILY_DIFF_DATE"));
+					map.put("statDate", rs.getTimestamp("STAT_DATE"));
+					map.put("statTime", rs.getTimestamp("STAT_TIME"));
 				}
 				return map;
 			}

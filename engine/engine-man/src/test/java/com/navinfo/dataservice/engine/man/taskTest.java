@@ -2,14 +2,19 @@ package com.navinfo.dataservice.engine.man;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
+import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.commons.json.JsonOperation;
 import com.navinfo.dataservice.engine.man.grid.GridService;
+import com.navinfo.dataservice.engine.man.service.ManApiImpl;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskService;
 import com.navinfo.navicommons.exception.ServiceException;
 import com.navinfo.navicommons.geo.computation.GridUtils;
@@ -117,4 +122,5 @@ public class taskTest extends InitApplication{
 		
 		subService.queryAdminIdBySubtask(162);
 	}
+	
 }

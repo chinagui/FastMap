@@ -193,21 +193,24 @@ public class TaskOperation {
 					while(rs.next()){
 						Task map = new Task();
 						map.setTaskId(rs.getInt("TASK_ID"));
-						map.setCityName(rs.getString("CITY_NAME"));
-						map.setTaskName(rs.getString("NAME"));
 						map.setCityId(rs.getInt("CITY_ID"));
 						map.setCreateUserId(rs.getInt("CREATE_USER_ID"));
-						map.setCreateUserName(rs.getString("USER_REAL_NAME"));
 						map.setCreateDate(rs.getTimestamp("CREATE_DATE"));
 						map.setTaskStatus(rs.getInt("STATUS"));
+						map.setTaskName(rs.getString("NAME"));
 						map.setTaskDescp(rs.getString("DESCP"));
 						map.setPlanStartDate(rs.getTimestamp("PLAN_START_DATE"));
 						map.setPlanEndDate(rs.getTimestamp("PLAN_END_DATE"));
 						map.setMonthEditPlanStartDate(rs.getTimestamp("MONTH_EDIT_PLAN_START_DATE"));
 						map.setMonthEditPlanEndDate(rs.getTimestamp("MONTH_EDIT_PLAN_END_DATE"));
-						map.setMonthEditGroupId(rs.getInt("MONTH_EDIT_GROUP_ID"));
-						map.setMonthEditGroupName(rs.getString("GROUP_NAME"));
 						map.setLatest(rs.getInt("LATEST"));
+						map.setMonthProducePlanStartDate(rs.getTimestamp("MONTH_PRODUCE_PLAN_START_DATE"));
+						map.setMonthProducePlanEndDate(rs.getTimestamp("MONTH_PRODUCE_PLAN_END_DATE"));
+						map.setTaskType(rs.getInt("TASK_TYPE"));
+						//map.setMonthEditGroupId(rs.getInt("MONTH_EDIT_GROUP_ID"));
+						//map.setCityName(rs.getString("CITY_NAME"));
+						//map.setCreateUserName(rs.getString("USER_REAL_NAME"));
+						//map.setMonthEditGroupName(rs.getString("GROUP_NAME"));
 						list.add(map);
 					}
 					return list;

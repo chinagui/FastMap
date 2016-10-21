@@ -53,8 +53,8 @@ public class RdLink006 extends baseRule {
 				JSONObject geojson=(JSONObject) changedFields.get("geometry");
 				Geometry geoNew=GeoTranslator.geojson2Jts(geojson);
 				//先取5位精度
-				Geometry geo2=GeoTranslator.transform(geoNew, 0.00001, 5);
-				Coordinate[] coords = geo2.getCoordinates();	
+				//Geometry geo2=GeoTranslator.transform(geoNew, 0.00001, 5);
+				Coordinate[] coords = geoNew.getCoordinates();	
 				if(isBorderNode && !MeshUtils.isPointAtMeshBorder(coords[0].x,coords[0].y)){
 					this.setCheckResult("", "", 0);
 					break;

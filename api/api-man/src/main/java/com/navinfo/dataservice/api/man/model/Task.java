@@ -11,6 +11,9 @@ import java.sql.Timestamp;
 * @Description: TODO
 */
 public class Task implements Serializable{
+	
+	private static final long serialVersionUID = 1L;
+	
 	private Integer taskId ;
 	private String taskName;
 	private Integer cityId ;

@@ -25,6 +25,7 @@ import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.engine.man.inforMan.InforManOperation;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
+import com.navinfo.navicommons.database.sql.StringUtil;
 
 public class ProduceService {
 
@@ -110,7 +111,8 @@ public class ProduceService {
 					+ "       P.PRODUCE_STATUS,"
 					+ "       P.CREATE_USER_ID,"
 					+ "       I.USER_REAL_NAME CREATE_USER_NAME,"
-					+ "       P.CREATE_DATE"
+					+ "       P.CREATE_DATE,"
+					+ "       P.PARAMETER"
 					+ "  FROM PRODUCE P, USER_INFO I"
 					+ " WHERE P.CREATE_USER_ID = I.USER_ID"
 					+ "  ORDER BY P.PRODUCE_NAME";
@@ -129,6 +131,7 @@ public class ProduceService {
 						map.put("createUserId", rs.getInt("CREATE_USER_ID"));
 						map.put("createUserName", rs.getString("CREATE_USER_NAME"));
 						map.put("createDate", DateUtils.dateToString(rs.getTimestamp("CREATE_DATE")));
+						map.put("parameter", rs.getClob("PARAMETER").toString());
 						if(totalCount==0){totalCount=rs.getInt("TOTAL_RECORD_NUM_");}
 						result.add(map);
 					}

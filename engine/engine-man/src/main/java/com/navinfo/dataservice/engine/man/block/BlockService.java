@@ -239,9 +239,9 @@ public class BlockService {
 			JSONObject obj = JSONObject.fromObject(json);
 			BlockMan bean = (BlockMan) JSONObject.toBean(obj, BlockMan.class);
 
-			String selectSql = "select t.CITY_ID, t.BLOCK_NAME, t.GEOMETRY,tt.name,"
-					+ " t.PLAN_STATUS, T.work_property,tt.task_type"
-					+ " from BLOCK t,task tt where t.BLOCK_ID = ? and t.city_id=tt.city_id";
+			String selectSql = "select t.CITY_ID, t.BLOCK_NAME, t.GEOMETRY,NVL(TT.NAME,'---') NAME,"
+					+ " t.PLAN_STATUS, T.work_property, CASE T.CITY_ID  WHEN 100002 THEN 4 ELSE 1 END TASK_TYPE"
+					+ " from BLOCK t,task tt where t.BLOCK_ID = ? and t.city_id=tt.city_id(+)";
 			ResultSetHandler<HashMap> rsHandler = new ResultSetHandler<HashMap>() {
 				public HashMap<String, Object> handle(ResultSet rs) throws SQLException {
 					while (rs.next()) {
@@ -1277,37 +1277,25 @@ public class BlockService {
 
 	/**
 	 * @param blockId
+	 * @param blockManId 
+	 * @param type
 	 * @return
 	 * @throws ServiceException 
 	 */
-	public HashMap<String,String> queryWktByBlockId(int blockId) throws ServiceException {
+	public List queryWktByBlockId(int blockId, int blockManId,int type) throws ServiceException {
 		// TODO Auto-generated method stub
 		Connection conn = null;
 		try {
 			conn = DBConnector.getInstance().getManConnection();
-			QueryRunner run = new QueryRunner();
-			
-			String selectSql = "SELECT B.BLOCK_ID,B.GEOMETRY FROM BLOCK B WHERE B.BLOCK_ID = " + blockId;
-			
-			ResultSetHandler<HashMap<String,String>> rsHandler = new ResultSetHandler<HashMap<String,String>>() {
-				public HashMap<String,String> handle(ResultSet rs) throws SQLException {
-					HashMap<String,String> result = new HashMap<String,String>();
-					result.put("geometry", null);
-					if (rs.next()) {
-						STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
-						try {
-							result.put("geometry",GeoTranslator.struct2Wkt(struct));
-						} catch (Exception e1) {
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
-						}
-					}
-					return result;
-				}
-	
-			};
-
-			return run.query(conn, selectSql,rsHandler);
+			List result = new ArrayList();
+			if(1==type){
+				//常规
+				result = BlockOperation.queryWktByBlockIdNormal(conn, blockId);
+			}else if(4==type){
+				//情报
+				result = BlockOperation.queryWktByBlockIdInfor(conn, blockManId);
+			}
+			return result;
 			
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);

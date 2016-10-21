@@ -204,7 +204,6 @@ public class LogWriter {
 
 		//String sql = "insert into log_detail (op_id, tb_nm, old, new, fd_lst, op_tp, row_id, is_ck,tb_row_id) values (?,?,?,?,?,?,?,?,?)";
 		
-		System.out.println(detail.toString());
 		try {
 			pstmt = this.conn.prepareStatement(sql);
 

@@ -98,19 +98,19 @@ public class commonTest extends InitApplication {
 	}
 
 	@Test
-	public void getTitleWithGap_IXPOI() {
+	public void getTitleWithGap() {
 		Connection conn = null;
 		try {
-			conn = DBConnector.getInstance().getConnectionById(8);
+			conn = DBConnector.getInstance().getConnectionById(17);
 
 			SearchProcess p = new SearchProcess(conn);
 
 			List<ObjType> objType = new ArrayList<>();
 
-			objType.add(ObjType.IXPOI);
+			objType.add(ObjType.RDLANECONNEXITY);
 
-			System.out.println(p.searchDataByTileWithGap(objType, 107937,
-					49616, 17, 80));
+			System.out.println(p.searchDataByTileWithGap(objType, 862722,
+					394896, 20, 80));
 
 		} catch (Exception e) {
 			e.printStackTrace();

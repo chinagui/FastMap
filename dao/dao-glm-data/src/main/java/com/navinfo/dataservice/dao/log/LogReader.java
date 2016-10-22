@@ -62,7 +62,7 @@ public class LogReader {
 			int opStatus = 0;
 			while (resultSet.next()) {
 				if (objTable.equals(resultSet.getString("TB_NM")) && opStatus == 0) {
-					lastObjOpDate = resultSet.getTimestamp("op_dt");
+					lastObjOpDate = resultSet.getDate("op_dt");
 					opStatus = resultSet.getInt("op_tp");
 					if (1 == opStatus || 2 == opStatus) {
 						return opStatus;
@@ -76,7 +76,7 @@ public class LogReader {
 				}
 
 				if (!objTable.equals(resultSet.getString("TB_NM")) && opStatus == 0) {
-					lastObjOpDate = resultSet.getTimestamp("op_dt");
+					lastObjOpDate = resultSet.getDate("op_dt");
 					opStatus = 3;
 					if (isExistsAddHis(objPid, objTable, lastObjOpDate)) {
 						return 1;
@@ -198,7 +198,7 @@ public class LogReader {
 	public boolean isOnlyPhotoAndMetoHis(int objPid) throws Exception {
 
 		String sql = "SELECT de.row_id,de.op_id,de.tb_nm,de.old,de.new,de.fd_lst,de.op_tp,de.tb_row_id,op.op_dt FROM LOG_DETAIL de,LOG_OPERATION op "
-				+ "WHERE de.OP_ID=op.OP_ID AND de.OB_PID= :1 AND (de.TB_NM not in ('ix_poi','ix_poi_photo') or (de.TB_NM='ix_poi' AND instr(de.FD_LST,'poi_meto')=0)) ";
+				+ "WHERE de.OP_ID=op.OP_ID AND de.OB_PID= :1 AND (de.TB_NM not in ('IX_POI','IX_POI_PHOTO') or (de.TB_NM='IX_POI' AND instr(de.FD_LST,'POI_METO')=0)) ";
 
 		PreparedStatement pstmt = null;
 
@@ -284,12 +284,12 @@ public class LogReader {
 		try {
 			pstmt = this.conn.prepareStatement(sql);
 			pstmt.setInt(1, ixPoi.getPid());
-			pstmt.setString(2, "ix_poi");
-			pstmt.setString(3, "ix_poi");
+			pstmt.setString(2, "IX_POI");
+			pstmt.setString(3, "IX_POI");
 			pstmt.setInt(4, 2);
 			pstmt.setInt(5, ixPoi.getPid());
-			pstmt.setString(6, "ix_poi");
-			pstmt.setString(7, "ix_poi");
+			pstmt.setString(6, "IX_POI");
+			pstmt.setString(7, "IX_POI");
 			resultSet = pstmt.executeQuery();
 			List<String> rowIdList=new ArrayList<String>();
 			while (resultSet.next()) {

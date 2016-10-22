@@ -41,7 +41,7 @@ public class BatchCoreJob extends AbstractJob {
 			response("批处理准备步骤完成",null);
 			log.debug(batchPrepareResult);
 			if(batchPrepareResult.equals("批处理准备成功")) {
-				String batchRuleIds = StringUtils.join(req.getRuleIds(), ",");
+				String batchRuleIds = StringUtils.join(req.getRuleIds(), ";");
 				String batchExecuteResult = executeBatch(conn, batchRuleIds);
 				response("批处理执行步骤完成",null);
 				if(!batchExecuteResult.equals("批处理执行成功")) {
@@ -108,7 +108,7 @@ public class BatchCoreJob extends AbstractJob {
 			batchParams.setKdbSid(kdbDBInfo.getDbServer().getServiceName());
 
 			//解析DMS(PID)库参数
-			String[] pidManDBInfos = req.getPidDbInfo().split(";");
+			String[] pidManDBInfos = req.getPidDbInfo().split(",");
 			batchParams.setDmsUserName(pidManDBInfos[4]);
 			batchParams.setDmsPasswd(pidManDBInfos[5]);
 			batchParams.setDmsHost(pidManDBInfos[1]);

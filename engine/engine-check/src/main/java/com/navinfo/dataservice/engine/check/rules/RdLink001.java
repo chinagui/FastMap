@@ -43,6 +43,7 @@ public class RdLink001 extends baseRule {
 						+ " FROM RD_LINK L"
 						+ " WHERE L.S_NODE_PID IN ("+rdLink.getsNodePid()+","+rdLink.geteNodePid()+") "
 						+ " AND L.E_NODE_PID IN ("+rdLink.getsNodePid()+","+rdLink.geteNodePid()+")"
+								+ " AND L.U_RECORD != 2 "
 						+ " AND L.LINK_PID <> "+rdLink.getPid();
 				DatabaseOperator getObj=new DatabaseOperator();
 				List<Object> resultList=getObj.exeSelect(this.getConn(), sql);

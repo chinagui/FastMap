@@ -52,14 +52,14 @@ public class RdLink005 extends baseRule {
 				if(coordsNew[0].compareTo(coordsOld[0])!=0 && !changedFields.containsKey("sNodePid")){
 					sql="SELECT 1"
 						+ "  FROM RD_SAMENODE_PART S"
-						+ " WHERE S.TABLE_NAME = 'RD_NODE'"
+						+ " WHERE S.TABLE_NAME = 'RD_NODE' AND S.U_RECORD != 2 "
 						+ "   AND S.NODE_PID ="+rdLink.getsNodePid();
 				}
 				//移动了终点
 				if(coordsNew[coordsNew.length-1].compareTo(coordsOld[coordsOld.length-1])!=0 && !changedFields.containsKey("eNodePid")){
 					sql="SELECT 1"
 						+ "  FROM RD_SAMENODE_PART S"
-						+ " WHERE S.TABLE_NAME = 'RD_NODE'"
+						+ " WHERE S.TABLE_NAME = 'RD_NODE' AND S.U_RECORD != 2 "
 						+ "   AND S.NODE_PID ="+rdLink.geteNodePid();
 				}
 				if(!sql.isEmpty()){

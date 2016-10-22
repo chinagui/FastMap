@@ -37,8 +37,8 @@ public class RdGscExporter {
 				+ "?, ?, GeomFromText(?, 4326), ?, ?, ?, ?)";
 
 		PreparedStatement prep = sqliteConn.prepareStatement(insertSql);
-
-		String sql = "with tmp1 as  (select pid     from rd_gsc_link a    where a.u_record in (0,1,3) and a.table_name in ('RD_LINK', 'RW_LINK')    group by pid   having count(1) > 1), tmp2 as  (select a.*, b.geometry, b.mesh_id     from rd_gsc_link a, rd_link b, tmp1 c    where a.link_pid = b.link_pid      and a.pid = c.pid      and a.table_name = 'RD_LINK'), tmp3 as  (select a.*, b.geometry, b.mesh_id     from rd_gsc_link a, rw_link b, tmp1 c    where a.link_pid = b.link_pid      and a.pid = c.pid      and a.table_name = 'RW_LINK') select * from (select *   from tmp2 union all select * from tmp3) where mesh_id in (select to_number(column_value) from table(clob_to_table(?)))";
+		
+		String sql = "with tmp1 as  (select pid from (select pid from rd_gsc_link a where a.u_record in (0, 1, 3) and a.table_name in ('RD_LINK') union all select pid from rd_gsc_link r, rw_link w where r.link_pid = w.link_pid and r.u_record in (0, 1, 3) and r.table_name = 'RW_LINK' and (w.kind in (1, 2) or w.form in (0, 1))) group by pid having count(1) > 1), tmp2 as  (select a.*, b.geometry, b.mesh_id     from rd_gsc_link a, rd_link b, tmp1 c    where a.link_pid = b.link_pid      and a.pid = c.pid      and a.table_name = 'RD_LINK'), tmp3 as  (select a.*, b.geometry, b.mesh_id     from rd_gsc_link a, rw_link b, tmp1 c    where a.link_pid = b.link_pid and a.pid = c.pid  and (b.kind in (1, 2) or b.form in (0, 1)) and a.table_name = 'RW_LINK') select * from (select *   from tmp2 union all select * from tmp3) where mesh_id in (select to_number(column_value) from table(clob_to_table(?)))";
 
 		Clob clob = conn.createClob();
 		clob.setString(1, StringUtils.join(meshes, ","));

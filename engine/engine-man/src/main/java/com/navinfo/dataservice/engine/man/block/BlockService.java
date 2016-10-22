@@ -318,7 +318,7 @@ public class BlockService {
 					+ " to_char(b.month_produce_plan_end_date, 'yyyymmdd') month_produce_plan_end_date,"
 					+ " T.work_property,B.road_plan_total,B.POI_plan_total"
 					+ " from BLOCK t, BLOCK_MAN b, TASK k,USER_INFO u where B.BLOCK_MAN_ID = ?"
-					+ " and t.block_id = b.block_id and t.city_id = k.city_id and k.latest = 1 and b.latest=1 and b.create_user_id=u.user_id ";
+					+ " and t.block_id = b.block_id and b.task_id = k.task_id and k.latest = 1 and b.latest=1 and b.create_user_id=u.user_id ";
 			ResultSetHandler<HashMap> rsHandler = new ResultSetHandler<HashMap>() {
 				public HashMap<String, Object> handle(ResultSet rs) throws SQLException {
 					while (rs.next()) {
@@ -850,7 +850,7 @@ public class BlockService {
 				/*if("blockPlanStatus".equals(key)){
 					conditionSql=conditionSql+" AND MAN_LIST.BLOCK_PLAN_STATUS ="+conditionJson.getInt(key);}
 				*/
-				//1-10采集正常,采集异常,采集完成,日编正常,日编异常,日编完成,未规划,草稿,已完成,已关闭
+				//1-15采集正常,采集异常,采集完成,日编正常,日编异常,日编完成,未规划,草稿,已完成,已关闭,按时完成,提前完成,逾期完成,采集逾期,日编逾期
 				if("selectParam1".equals(key)){
 					JSONArray selectParam1=conditionJson.getJSONArray(key);
 					JSONArray collectProgress=new JSONArray();
@@ -867,6 +867,27 @@ public class BlockService {
 							if(!statusSql.isEmpty()){statusSql+=" or ";}
 							statusSql+=" MAN_LIST.BLOCK_STATUS =2";}
 						if(tmp==9||tmp==10){planStatus.add(tmp-6);}
+												
+						if(tmp==11){
+							if(!statusSql.isEmpty()){statusSql+=" or ";}
+							statusSql+=" MAN_LIST.diff_date=0";
+						}
+						if(tmp==12){
+							if(!statusSql.isEmpty()){statusSql+=" or ";}
+							statusSql+=" MAN_LIST.diff_date>0";
+						}
+						if(tmp==13){
+							if(!statusSql.isEmpty()){statusSql+=" or ";}
+							statusSql+=" MAN_LIST.diff_date<0";
+						}
+						if(tmp==14){
+							if(!statusSql.isEmpty()){statusSql+=" or ";}
+							statusSql+=" MAN_LIST.COLLECT_DIFF_DATE<0";
+						}
+						if(tmp==15){
+							if(!statusSql.isEmpty()){statusSql+=" or ";}
+							statusSql+=" MAN_LIST.daily_DIFF_DATE<0";
+						}
 					}
 					if(!collectProgress.isEmpty()){
 						if(!statusSql.isEmpty()){statusSql+=" or ";}
@@ -877,33 +898,6 @@ public class BlockService {
 					if(!planStatus.isEmpty()){
 						if(!statusSql.isEmpty()){statusSql+=" or ";}
 						statusSql+=" MAN_LIST.PLAN_STATUS IN ("+planStatus.join(",")+")";}
-				}
-				//1-5按时完成,提前完成,逾期完成,采集逾期,日编逾期
-				if("selectParam2".equals(key)){
-					JSONArray selectParam1=conditionJson.getJSONArray(key);
-					for(Object i:selectParam1){
-						int tmp=(int) i;
-						if(tmp==2){
-							if(!statusSql.isEmpty()){statusSql+=" or ";}
-							statusSql+=" MAN_LIST.diff_date>0";
-						}
-						if(tmp==1){
-							if(!statusSql.isEmpty()){statusSql+=" or ";}
-							statusSql+=" MAN_LIST.diff_date=0";
-						}
-						if(tmp==3){
-							if(!statusSql.isEmpty()){statusSql+=" or ";}
-							statusSql+=" MAN_LIST.diff_date<0";
-						}
-						if(tmp==4){
-							if(!statusSql.isEmpty()){statusSql+=" or ";}
-							statusSql+=" MAN_LIST.COLLECT_DIFF_DATE<0";
-						}
-						if(tmp==5){
-							if(!statusSql.isEmpty()){statusSql+=" or ";}
-							statusSql+=" MAN_LIST.daily_DIFF_DATE<0";
-						}
-					}
 				}
 				if("collectProgress".equals(key)){
 					if(!statusSql.isEmpty()){statusSql+=" or ";}

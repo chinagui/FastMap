@@ -1,10 +1,13 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdcross.depart;
 
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 
 import java.sql.Connection;
 import java.util.*;
@@ -44,6 +47,36 @@ public class Operation {
         for (RdCross cross : crosses) {
             result.insertObject(cross, ObjStatus.DELETE, cross.pid());
         }
+        // 2.维护分离link的交叉口道路形态
+        RdLinkSelector linkSelector = new RdLinkSelector(conn);
+        List<RdLink> allDelLinks = linkSelector.loadByNodePids(new ArrayList<>(tmpNodePids).subList(1, tmpNodePids.size() - 1), true);
+        for (RdLink link : allDelLinks) {
+            RdLink leftLink = leftLinks.get(link.pid());
+            RdLink rightLink = rightLinks.get(link.pid());
+            if (null != leftLink) {
+                this.updateLinkForm(leftLink, result);
+                continue;
+            }
+            if (null != rightLink) {
+                this.updateLinkForm(rightLink, result);
+                continue;
+            }
+            this.updateLinkForm(link, result);
+        }
         return "";
+    }
+
+    private void updateLinkForm(RdLink link, Result result) {
+        for (IRow row : link.getForms()) {
+            RdLinkForm form = (RdLinkForm) row;
+            if (form.getFormOfWay() == 50) {
+                if (link.getForms().size() == 1) {
+                    form.changedFields().put("formOfWay", 1);
+                    result.insertObject(form, ObjStatus.UPDATE, form.parentPKValue());
+                } else {
+                    result.insertObject(form, ObjStatus.DELETE, form.parentPKValue());
+                }
+            }
+        }
     }
 }

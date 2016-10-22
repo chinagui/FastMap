@@ -55,7 +55,7 @@ public class RELATING_CHECK_CROSSNODE_PASSLINK extends baseRule {
 					StringBuilder sb = new StringBuilder();
 
 					sb.append("SELECT RCN.NODE_PID FROM RD_CROSS_NODE RCN ");
-					sb.append(" WHERE RCN.NODE_PID = ");
+					sb.append(" WHERE RCN.U_RECORD != 2 AND RCN.NODE_PID = ");
 					sb.append(node);
 
 					String sql = sb.toString();

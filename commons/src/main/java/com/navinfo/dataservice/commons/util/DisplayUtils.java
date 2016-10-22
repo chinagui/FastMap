@@ -216,9 +216,24 @@ public class DisplayUtils {
 		// 6、找出seqNum * 3米（或者新比例值）位置，作为引导坐标位置
 		double[] guidePosition = new double[2];
 
+		
+		double guidePointDistance= base + unit * seqNum;
+
+		if (guidePointDistance > linkLength) {
+
+			guidePointDistance = unit * seqNum;
+		}
+		
+		if (guidePointDistance > linkLength) {
+
+			guidePointDistance = linkLength;
+		}
+		
 		// 返回值为引导坐标所处的LINK形状段上的第几段，从0开始
-		int guideSeqNum = getGuidePosition(linkMerArray, base + unit * seqNum,
+		int guideSeqNum = getGuidePosition(linkMerArray, guidePointDistance,
 				guidePosition);
+		
+	
 
 		// 按照引导坐标位置和线通行方向向右找6米位置作为显示坐标位置
 		double[] displayPosition = getDisplayPosition(linkMerArray,
@@ -1297,11 +1312,11 @@ public class DisplayUtils {
 
 		if (startEnd == 0) {
 
-			double dist = 0;
+			double distBack = 0;
 
 			int current = seqNum;
 
-			while (dist < 20) {
+			while (distBack < 1) {
 
 				if (current - 1 < 0) {
 					break;
@@ -1311,22 +1326,23 @@ public class DisplayUtils {
 
 				Coordinate next = coords[current - 1];
 
+				double dist = GeometryUtils.getDistance(coord, next);
+				
+				
 				coordList.add(next);
-
-				dist += GeometryUtils.getDistance(coord, next);
 
 				current--;
 			}
 
 			Collections.reverse(coordList);
 
-			dist = 0;
+			distBack = 0;
 
 			current = seqNum;
 
 			coordList.add(coords[seqNum]);
 
-			while (dist < 20) {
+			while (distBack < 20) {
 
 				if ((current + 1) >= coords.length) {
 					break;
@@ -1338,7 +1354,7 @@ public class DisplayUtils {
 
 				coordList.add(next);
 
-				dist += GeometryUtils.getDistance(coord, next);
+				distBack += GeometryUtils.getDistance(coord, next);
 
 				current++;
 			}

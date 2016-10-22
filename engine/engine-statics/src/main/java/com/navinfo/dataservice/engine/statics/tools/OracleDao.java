@@ -3,6 +3,7 @@ package com.navinfo.dataservice.engine.statics.tools;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -303,6 +304,7 @@ public class OracleDao {
 			ResultSetHandler<List<Document>> rsHandler = new ResultSetHandler<List<Document>>(){
 				public List<Document> handle(ResultSet rs) throws SQLException {
 					List<Document> list = new ArrayList<Document>();
+					SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
 					while(rs.next()){
 						Document subtask = new Document();
 						subtask.put("subtaskId", rs.getInt("SUBTASK_ID"));
@@ -314,10 +316,10 @@ public class OracleDao {
 						subtask.put("statTime", rs.getString("STAT_TIME"));
 						subtask.put("status", rs.getInt("STATUS"));
 						
-						subtask.put("planStartDate", rs.getString("PLAN_START_DATE"));
-						subtask.put("planEndDate", rs.getString("PLAN_END_DATE"));
-						subtask.put("actualStartDate", rs.getString("ACTUAL_START_DATE"));
-						subtask.put("actualEndDate", rs.getString("ACTUAL_END_DATE"));
+						subtask.put("planStartDate", df.format(rs.getTimestamp("PLAN_START_DATE")));
+						subtask.put("planEndDate", df.format(rs.getTimestamp("PLAN_END_DATE")));
+						subtask.put("actualStartDate", df.format(rs.getTimestamp("ACTUAL_START_DATE")));
+						subtask.put("actualEndDate", df.format(rs.getTimestamp("ACTUAL_END_DATE")));
 						
 						subtask.put("totalPoi", rs.getInt("TOTAL_POI"));
 						subtask.put("finishedPoi", rs.getInt("FINISHED_POI"));

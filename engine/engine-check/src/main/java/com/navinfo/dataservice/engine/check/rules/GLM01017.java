@@ -46,7 +46,8 @@ public class GLM01017 extends baseRule{
 			}
 					
 		}
-		String sql = "select link_pid from rd_link where kind in (11,13) and link_pid in ("+StringUtils.join(linkPids, ",")+") and rownum=1";
+		String sql = "select link_pid from rd_link where kind in (11,13) AND U_RECORD != 2"
+				+ "and link_pid in ("+StringUtils.join(linkPids, ",")+") and rownum=1";
 		
 		PreparedStatement pstmt = getConn().prepareStatement(sql);
 

@@ -6,6 +6,8 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -32,7 +34,7 @@ import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
 
 public class PoiGridSearch {
-	
+	private static final Logger logger = Logger.getLogger(PoiGridSearch.class);
 	/**
 	 * 
 	 * @param gridDateList
@@ -49,17 +51,19 @@ public class PoiGridSearch {
 			int regionId = 0;
 			List<IRow> retList = new ArrayList<IRow>();
 			for (int i=0;i<gridDateList.size();i++ ){
-				JSONObject gridDate = gridDateList.getJSONObject(i);
+				JSONObject gridData = gridDateList.getJSONObject(i);
 				QueryRunner qRunner = new QueryRunner();
-				regionId = qRunner.queryForInt(manConn, manQuery, gridDate.getString("grid"));
+				regionId = qRunner.queryForInt(manConn, manQuery, gridData.getString("grid"));
 				if (regionId != oldRegionId){
 					//关闭之前的连接，创建新连接
 					DBUtils.closeConnection(conn);
 					oldRegionId = regionId;
 					conn = DBConnector.getInstance().getConnectionById(regionId);
 				}
-				List<IRow> data = getPoiData(gridDate,conn);
+				logger.info("begin getPoiData from regionId:"+regionId+",gridData:"+gridData);
+				List<IRow> data = getPoiData(gridData,conn);
 				retList.addAll(data);
+				logger.info("getPoiData ok");
 			}
 			return retList;
 		} catch (Exception e) {
@@ -91,6 +95,7 @@ public class PoiGridSearch {
 		if (!gridDate.getString("date").isEmpty()){
 			sb.append(" AND u_date>'"+gridDate.getString("date")+"'");
 		}
+		logger.info("poi query sql:"+sb);
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
 		

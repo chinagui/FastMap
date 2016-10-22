@@ -10,6 +10,10 @@ import com.navinfo.dataservice.engine.statics.expect.PoiCollectExpectMain;
 import com.navinfo.dataservice.engine.statics.expect.PoiDailyExpectMain;
 import com.navinfo.dataservice.engine.statics.expect.RoadCollectExpectMain;
 import com.navinfo.dataservice.engine.statics.expect.RoadDailyExpectMain;
+import com.navinfo.dataservice.engine.statics.overview.OverviewBlockMain;
+import com.navinfo.dataservice.engine.statics.overview.OverviewMain;
+import com.navinfo.dataservice.engine.statics.overview.OverviewSubtaskMain;
+import com.navinfo.dataservice.engine.statics.overview.OverviewTaskMain;
 import com.navinfo.dataservice.engine.statics.poicollect.PoiCollectMain;
 import com.navinfo.dataservice.engine.statics.poidaily.PoiDailyMain;
 import com.navinfo.dataservice.engine.statics.roadcollect.RoadCollectMain;
@@ -30,14 +34,24 @@ public class StatMain {
 	// 统计 daily
 	private static final String flag_daily_poi = "dp";
 	private static final String flag_daily_road = "dr";
+	//统计子任务
+	private static final String flag_subtask = "subtask";
+	//统计blockman
+	private static final String flag_blockman = "blockman";
+	//统计任务
+	private static final String flag_task = "task";
+	//统计总概览
+	private static final String flag_overview = "overview";
+	//统计group概览
+	private static final String flag_group_overview = "group";
 	// 统计 month
-	private static final String flag_month_poi = "mp";
-	private static final String flag_month_road = "mr";
+	//private static final String flag_month_poi = "mp";
+	//private static final String flag_month_road = "mr";
 	// 统计 seasion
-	private static final String flag_season_poi = "sp";
-	private static final String flag_season_road = "sr";
+	//private static final String flag_season_poi = "sp";
+	//private static final String flag_season_road = "sr";
 	// 统计预期图
-	private static final String flag_expect_stat="es";
+	//private static final String flag_expect_stat="es";
 	//统计结果库
 	public static final String col_name_subtask = "fm_stat_collect_overview_subtask";
 	public static final String col_name_blockman = "fm_stat_collect_overview_blockman";
@@ -59,7 +73,16 @@ public class StatMain {
 				new PoiDailyMain(db_name, stat_time).runStat();
 			} else if (flag.equalsIgnoreCase(flag_daily_road)) {
 				new RoadDailyMain(db_name, stat_time).runStat();
-			} else if (flag.equalsIgnoreCase(flag_season_poi)) {
+			} else if (flag.equalsIgnoreCase(flag_subtask)) {
+				new OverviewSubtaskMain(db_name, stat_time).runStat();
+			}else if (flag.equalsIgnoreCase(flag_blockman)) {
+				new OverviewBlockMain(db_name, stat_time).runStat();
+			}else if (flag.equalsIgnoreCase(flag_task)) {
+				new OverviewTaskMain(db_name, stat_time).runStat();
+			}//else if (flag.equalsIgnoreCase(flag_overview)) {
+				//new OverviewMain(db_name, stat_time).runStat();
+			//}
+			/*else if (flag.equalsIgnoreCase(flag_season_poi)) {
 				new PoiSeasonMain(db_name, stat_time).runStat();
 			} else if (flag.equalsIgnoreCase(flag_season_road)) {
 				new RoadSeasonMain(db_name, stat_time).runStat();
@@ -69,7 +92,7 @@ public class StatMain {
 				new PoiDailyExpectMain(db_name, stat_time).runStat();
 				new RoadDailyExpectMain(db_name, stat_time).runStat();
 				new ExpectStatusMain(db_name, stat_time).runStat();
-			}
+			}*/
 		}
 		System.exit(0);
 	}

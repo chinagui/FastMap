@@ -73,11 +73,11 @@ public class OverviewTaskMain {
 			md.getCollection(col_name_task).createIndex(new BasicDBObject("statDate", 1));
 			log.info("-- -- create mongo collection " + col_name_task + " ok");
 			log.info("-- -- create mongo index on " + col_name_task + "(taskId，statDate) ok");
-			// 删除当天重复统计数据
-			BasicDBObject query = new BasicDBObject();
-			query.put("stat_date", statDate);
-			mongoDao.deleteMany(col_name_task, query);
 		}
+		// 删除当天重复统计数据
+		BasicDBObject query = new BasicDBObject();
+		query.put("statDate", statDate);
+		mongoDao.deleteMany(col_name_task, query);
 		
 	}
 	
@@ -199,8 +199,12 @@ public class OverviewTaskMain {
 		dailyPlanEndDate = endTime(dailyPlanEndDateList);
 		//计划天数
 		try {
-			collectPlanDate = StatUtil.daysOfTwo(new SimpleDateFormat("yyyyMMdd").parse(collectPlanStartDate), new SimpleDateFormat("yyyyMMdd").parse(collectPlanEndDate));
-			dailyPlanDate = StatUtil.daysOfTwo(new SimpleDateFormat("yyyyMMdd").parse(dailyPlanStartDate), new SimpleDateFormat("yyyyMMdd").parse(dailyPlanEndDate));
+			if(collectPlanStartDate !=null && collectPlanEndDate != null){
+				collectPlanDate = StatUtil.daysOfTwo(new SimpleDateFormat("yyyyMMdd").parse(collectPlanStartDate), new SimpleDateFormat("yyyyMMdd").parse(collectPlanEndDate));
+			}
+			if(dailyPlanStartDate !=null && dailyPlanEndDate != null){
+				dailyPlanDate = StatUtil.daysOfTwo(new SimpleDateFormat("yyyyMMdd").parse(dailyPlanStartDate), new SimpleDateFormat("yyyyMMdd").parse(dailyPlanEndDate));
+			}
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -215,8 +219,12 @@ public class OverviewTaskMain {
 		//距离计划结束时间天数
 		String systemDate = new SimpleDateFormat("yyyyMMdd").format(new Date());
 		try {
-			collectDiffDate = StatUtil.daysOfTwo(new SimpleDateFormat("yyyyMMdd").parse(systemDate), new SimpleDateFormat("yyyyMMdd").parse(collectPlanEndDate));
-			dailyDiffDate = StatUtil.daysOfTwo(new SimpleDateFormat("yyyyMMdd").parse(systemDate), new SimpleDateFormat("yyyyMMdd").parse(collectPlanEndDate));
+			if(systemDate !=null && collectPlanEndDate != null){
+				collectDiffDate = StatUtil.daysOfTwo(new SimpleDateFormat("yyyyMMdd").parse(systemDate), new SimpleDateFormat("yyyyMMdd").parse(collectPlanEndDate));
+			}
+			if(systemDate !=null && collectPlanEndDate != null){
+				dailyDiffDate = StatUtil.daysOfTwo(new SimpleDateFormat("yyyyMMdd").parse(systemDate), new SimpleDateFormat("yyyyMMdd").parse(collectPlanEndDate));
+			}
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -327,7 +335,7 @@ public class OverviewTaskMain {
 			e.printStackTrace();
 			log.error("查询失败，原因为:" + e.getMessage(), e);
 		}
-		return null;
+		return taskStatList;
 	}
 	
 	/**
@@ -357,9 +365,13 @@ public class OverviewTaskMain {
 			//计划结束时间
 			planEndDate = new SimpleDateFormat("yyyyMMdd").format(task.getPlanEndDate());
 			//计划天数
-			planDate = StatUtil.daysOfTwo(task.getPlanStartDate(), task.getPlanEndDate());
+			if(task.getPlanStartDate() != null && task.getPlanEndDate() != null){
+				planDate = StatUtil.daysOfTwo(task.getPlanStartDate(), task.getPlanEndDate());
+			}
 			//实际开始时间
-			actualStartDate = new SimpleDateFormat("yyyyMMdd").format(task.getPlanStartDate());
+			if(task.getPlanStartDate() != null){
+				actualStartDate = new SimpleDateFormat("yyyyMMdd").format(task.getPlanStartDate());
+			}
 			//实际结束时
 			//距离计划结束时间天数
 			
@@ -367,10 +379,13 @@ public class OverviewTaskMain {
 			percent = ((long)blockStatList.get("collectPercent") + (long)blockStatList.get("dailyPercent"))/2;
 			//进度
 			String systemDate = new SimpleDateFormat("yyyyMMdd").format(new Date());
-			int diff = StatUtil.daysOfTwo(new SimpleDateFormat("yyyyMMdd").parse(actualStartDate),new SimpleDateFormat("yyyyMMdd").parse(systemDate));
-			long actualPercent = diff/planDate*100;
-			if(actualPercent < percent){
-				progress = 0;
+			int diff = 0;
+			if(actualStartDate != null && systemDate != null){
+				diff = StatUtil.daysOfTwo(new SimpleDateFormat("yyyyMMdd").parse(actualStartDate),new SimpleDateFormat("yyyyMMdd").parse(systemDate));
+			}
+			long planDiff = planDate*percent;
+			if(diff > planDiff){
+				progress = 2;
 			}
 			//处理统计数据
 			doc.put("taskId", taskId);

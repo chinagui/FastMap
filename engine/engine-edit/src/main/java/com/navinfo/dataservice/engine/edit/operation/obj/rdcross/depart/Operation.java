@@ -7,6 +7,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 
 import java.sql.Connection;
 import java.util.*;
@@ -47,11 +48,18 @@ public class Operation {
             result.insertObject(cross, ObjStatus.DELETE, cross.pid());
         }
         // 2.维护分离link的交叉口道路形态
-        for (RdLink link : links) {
+        RdLinkSelector linkSelector = new RdLinkSelector(conn);
+        List<RdLink> allDelLinks = linkSelector.loadByNodePids(new ArrayList<>(tmpNodePids).subList(1, tmpNodePids.size() - 1), true);
+        for (RdLink link : allDelLinks) {
             for (IRow row : link.getForms()) {
                 RdLinkForm form = (RdLinkForm) row;
                 if (form.getFormOfWay() == 50) {
-                    result.insertObject(form, ObjStatus.DELETE, form.parentPKValue());
+                    if (link.getForms().size() == 1) {
+                        form.changedFields().put("formOfWay", 1);
+                        result.insertObject(form, ObjStatus.UPDATE, form.parentPKValue());
+                    } else {
+                        result.insertObject(form, ObjStatus.DELETE, form.parentPKValue());
+                    }
                 }
             }
         }

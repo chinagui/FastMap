@@ -216,9 +216,24 @@ public class DisplayUtils {
 		// 6、找出seqNum * 3米（或者新比例值）位置，作为引导坐标位置
 		double[] guidePosition = new double[2];
 
+		
+		double guidePointDistance= base + unit * seqNum;
+
+		if (guidePointDistance > linkLength) {
+
+			guidePointDistance = unit * seqNum;
+		}
+		
+		if (guidePointDistance > linkLength) {
+
+			guidePointDistance = linkLength;
+		}
+		
 		// 返回值为引导坐标所处的LINK形状段上的第几段，从0开始
-		int guideSeqNum = getGuidePosition(linkMerArray, base + unit * seqNum,
+		int guideSeqNum = getGuidePosition(linkMerArray, guidePointDistance,
 				guidePosition);
+		
+	
 
 		// 按照引导坐标位置和线通行方向向右找6米位置作为显示坐标位置
 		double[] displayPosition = getDisplayPosition(linkMerArray,

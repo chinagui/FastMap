@@ -98,7 +98,7 @@ public class IxPoiSelector extends AbstractSelector {
 
 			pstmt.setInt(2, startRow);
 			resultSet = pstmt.executeQuery();
-
+			LogReader logRead=new LogReader(conn);
 			while (resultSet.next()) {
 				if (total == 0) {
 					total = resultSet.getInt("total");
@@ -115,6 +115,7 @@ public class IxPoiSelector extends AbstractSelector {
 				json.put("uRecord", resultSet.getInt("u_record"));
 				json.put("status", resultSet.getInt("status"));
 				json.put("collectTime", resultSet.getString("collect_time"));
+				json.put("state", logRead.getObjectState(resultSet.getInt("pid"), "IX_POI"));
 				array.add(json);
 			}
 			result.put("total", total);

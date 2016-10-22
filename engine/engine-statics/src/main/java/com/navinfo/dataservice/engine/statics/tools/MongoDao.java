@@ -21,7 +21,13 @@ public class MongoDao {
 		return md;
 
 	}
-
+	public void insertOne(String col_name, Document doc) {
+		try {
+			md.getCollection(col_name).insertOne(doc);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 	public void insertMany(String col_name, List<Document> docs) {
 		try {
 			md.getCollection(col_name).insertMany(docs);

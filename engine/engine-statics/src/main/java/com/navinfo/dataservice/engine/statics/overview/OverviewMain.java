@@ -5,6 +5,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
@@ -14,6 +15,7 @@ import java.util.Set;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.bson.Document;
+import org.bson.types.ObjectId;
 
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.model.Filters;
@@ -26,41 +28,57 @@ import net.sf.json.JSONObject;
 
 public class OverviewMain {	
 	private static Logger log = LogManager.getLogger(OverviewMain.class);
-	public static final String col_name_task = "fm_stat_overview_task";
+	public static final String col_name_overview_main = "fm_stat_overview";
 	public static final String col_name_blockman = "fm_stat_overview_blockman";
-	public static final String col_name_subtask = "fm_stat_overview_subtask";
-	static final SimpleDateFormat f = new SimpleDateFormat("yyyy-mm-dd");
-	
+	public static final String col_name_task="fm_stat_overview_task";
+	static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-mm-dd");
+	static final SimpleDateFormat dateTimeFormat = new SimpleDateFormat("yyyymmddhhMMss");
+	private static final String stateInfoTemplate = "{\"collectPercent\":0,"
+			+ "\"collectPlanStartDate\":\"\","
+			+ "\"collectPlanEndDate\":\"\","
+			+ "\"collectPlanDate\":0,"
+			+ "\"collectActualStartDate\":\"\","
+			+ "\"collectActualEndDate\":\"\","
+			+ "\"collectDiffDate\":0,"
+			+ "\"dailyPercent\":0,"
+			+ "\"dailyPlanStartDate\":\"\","
+			+ "\"dailyPlanEndDate\":\"\","
+			+ "\"dailyPlanDate\":0,"
+			+ "\"dailyActualStartDate\":\"\","
+			+ "\"dailytActualEndDate\":\"\","
+			+ "\"dailyDiffDate\":0,"
+			+ "\"poiPlanTotal\":0," //block_man记录的poi计划量汇总
+			+ "\"roadPlanTotal\":0,"//block_man记录的road计划量汇总
+			+ "\"statDate\":\"\","//统计日期
+			+ "\"statTime\":\"\","//统计详细时间
+			+ "}";
 	public static void main(String[] args) throws ParseException{
-		JSONObject statInfo = JSONObject.fromObject("{\"collectPercent\":0,"
-				+ "\"collectPlanStartDate\":\"\","
-				+ "\"collectPlanEndDate\":\"\","
-				+ "\"collectPlanDate\":0,"
-				+ "\"collectActualStartDate\":\"\","
-				+ "\"collectActualEndDate\":\"\","
-				+ "\"collectDiffDate\":0,"
-				+ "\"dailyPercent\":0,"
-				+ "\"dailyPlanStartDate\":\"\","
-				+ "\"dailyPlanEndDate\":\"\","
-				+ "\"dailyPlanDate\":0,"
-				+ "\"dailyActualStartDate\":\"\","
-				+ "\"dailytActualEndDate\":\"\","
-				+ "\"dailyDiffDate\":0,"
-				+ "\"poiPlanTotal\":0," //block_man记录的poi计划量汇总
-				+ "\"roadPlanTotal\":0,"//block_man记录的road计划量汇总
-				+ "\"statDate\":\"\","//统计日期
-				+ "\"statTime\":\"\","//统计详细时间
-				+ "}");
-		String curDate = f.format(new Date());
-		calCollectPercent(statInfo,StatMain.db_name,curDate);
-		System.out.println(statInfo.get("collectPercent"));
+		
+		MongoDao mdao = new MongoDao(StatMain.db_name);
+		log.info("db_name:"+StatMain.db_name);
+		Document statInfo = calCollectPercent(mdao);
+		log.debug(statInfo);
+		mdao.insertOne(col_name_overview_main,statInfo);
 	}
 
-	private static void calCollectPercent(JSONObject statResult,String db_name,String date) throws ParseException {
-		MongoDao mdao = new MongoDao(db_name);
-		log.info("cal OverviewMain from "+db_name+"."+col_name_blockman);
-		FindIterable<Document> result = mdao.find(col_name_blockman, Filters.eq("statDate", date))
-				.projection(Projections.include("collectPercent","collectPlanStartDate","collectPlanEndDate"));
+	private static Document calCollectPercent(MongoDao mdao) throws ParseException {
+		log.info("cal from "+col_name_blockman);
+		Date now = new Date();
+		String curDate = dateFormat.format(now);
+		FindIterable<Document> result = mdao.find(col_name_blockman, Filters.eq("statDate", curDate))
+				.projection(Projections.include(
+						"collectPercent",
+						"collectPlanStartDate",
+						"collectPlanEndDate",
+						"workDetail",
+						"collectActualStartDate",
+						"collectActualEndDate",
+						"dailyPercent",
+						"dailyPlanStartDate",
+						"dailyPlanEndDate",
+						"dailyActualStartDate", 
+						"dailytActualEndDate"
+						));
 		
 		List<Integer> dailyPercentSet = new ArrayList<Integer>();
 		List<Integer> colPercentSet = new ArrayList<Integer>();
@@ -71,6 +89,9 @@ public class OverviewMain {
 		Set<String> dailyPlanStartDateSet = new HashSet<String>();
 		Set<String> dailyPlanEndDateSet = new HashSet<String>();
 		Set<String> dailyActualStartDateSet = new HashSet<String>();
+		Set<String> dailytActualEndDateSet = new HashSet<String>();
+		int poiPlanTotalSum = 0;
+		int roadPlanTotalSum = 0;
 		for (Document doc: result){
 			//计算 collectPercent
 			log.info("calCollectPercent");
@@ -109,43 +130,86 @@ public class OverviewMain {
 				dailyPlanEndDateSet.add(dailyPlanEndDate);
 			}
 			//计算dailyActualStartDateSet
+			String dailyActualStartDate = doc.getString("dailyActualStartDate");
+			if (StringUtils.isNotEmpty(dailyActualStartDate)){
+				dailyActualStartDateSet.add(dailyActualStartDate);
+			}
+			//计算dailytActualEndDate
+			String dailytActualEndDate = doc.getString("dailytActualEndDate");
+			if (StringUtils.isNotEmpty(dailytActualEndDate)){
+				dailytActualEndDateSet.add(dailytActualEndDate);
+			}
+			//poiPlanTotal
+			Object workDetailJson = doc.get("workDetail");
+			if(workDetailJson!=null){
+				Document workDetailDoc = (Document)workDetailJson;
+				Object poiPlanTotal = workDetailDoc.get("poiPlanTotal");
+				if(poiPlanTotal!=null){
+					poiPlanTotalSum+=Integer.parseInt(poiPlanTotal.toString());
+				}
+				Object roadPlanTotal = workDetailDoc.get("roadPlanTotal");
+				if(roadPlanTotal!=null){
+					roadPlanTotalSum+=Integer.parseInt(roadPlanTotal.toString());
+				}
+			}
 			
 		}
+		Document statResult = Document.parse(stateInfoTemplate);
 		statResult.put("collectPercent", avg(colPercentSet)) ;
-		String minStartDate = Collections.min(collectStartDateSet);
-		String maxEndDate = Collections.max(collectStartDateSet);
+		String minStartDate = calMin(collectStartDateSet);
+		String maxEndDate = calMax(collectStartDateSet);
 		statResult.put("collectPlanStartDate", minStartDate) ;
 		statResult.put("collectPlanEndDate", maxEndDate) ;
 		statResult.put("collectPlanDate", daysBetween(minStartDate,maxEndDate)) ;
-		String collectActualStartDate = Collections.min(collectActualStartDateSet);
+		String collectActualStartDate = calMin(collectActualStartDateSet);
 		statResult.put("collectActualStartDate", collectActualStartDate) ;
-		String  collectActualEndDate= Collections.max(collectActualEndDateSet);
+		String  collectActualEndDate= calMax(collectActualEndDateSet);
 		statResult.put("collectActualStartDate", collectActualEndDate) ;
 		statResult.put("collectDiffDate", daysBetween(collectActualEndDate,maxEndDate));
 		statResult.put("dailyPercent", avg(dailyPercentSet));
-		String dailyPlanStartDate = Collections.min(dailyPlanStartDateSet);
+		String dailyPlanStartDate = calMin(dailyPlanStartDateSet);
 		statResult.put("dailyPlanStartDate", dailyPlanStartDate);
-		String dailyPlanEndDate = Collections.max(dailyPlanEndDateSet);
+		String dailyPlanEndDate = calMax(dailyPlanEndDateSet);
 		statResult.put("dailyPlanEndDate", dailyPlanEndDate);
 		//dailyPlanDate
 		statResult.put("dailyPlanDate", daysBetween(dailyPlanStartDate,dailyPlanEndDate));
 		//dailyActualStartDate
-		String dailyActualStartDate = Collections.min(dailyActualStartDateSet);
+		String dailyActualStartDate = calMin(dailyActualStartDateSet);
 		statResult.put("dailyActualStartDate", dailyActualStartDate);
+		//dailytActualEndDate
+		String dailytActualEndDate = calMax(dailytActualEndDateSet);
+		statResult.put("dailytActualEndDate", dailytActualEndDate);
+		statResult.put("dailyDiffDate", daysBetween(curDate,dailytActualEndDate));
+		statResult.put("poiPlanTotal", poiPlanTotalSum);
+		statResult.put("roadPlanTotal", roadPlanTotalSum);
+		statResult.put("statDate", curDate);
+		statResult.put("statTime", dateTimeFormat.format(now));
+		
+		return statResult;
+	}
+
+	private static String calMax(Collection<String> collection) {
+		if(collection.isEmpty())return "";
+		return Collections.max(collection);
+	}
+
+	private static String calMin(Collection<String> collection) {
+		if(collection.isEmpty())return "";
+		return Collections.min(collection);
 	}
 	/**
 	 * @param dailyPercentSet
 	 * @return int 数组的平均值BigDecimal
 	 */
-	private static BigDecimal avg(List<Integer> dailyPercentSet){
+	private static double avg(List<Integer> dailyPercentSet){
 		int sum = 0;
 		int size=dailyPercentSet.size();
-		if(size==0) return new BigDecimal(0);
+		if(size==0) return 0;
 		for(Integer pct:dailyPercentSet){
 			sum+=pct.intValue();
 		}	
 		BigDecimal collectPercent = new BigDecimal(sum).divide(new BigDecimal(size));
-		return collectPercent;
+		return collectPercent.doubleValue();
 		
 	}
 	

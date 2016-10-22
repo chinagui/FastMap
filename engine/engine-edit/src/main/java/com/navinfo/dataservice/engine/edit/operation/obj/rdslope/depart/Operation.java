@@ -34,7 +34,7 @@ public class Operation {
     public String updownDepart(List<RdLink> links, Map<Integer, RdLink> leftLinks, Map<Integer, RdLink> rightLinks, Result result) throws Exception {
         RdSlopeSelector selector = new RdSlopeSelector(conn);
         for (RdLink link : links) {
-            Set<RdSlope> slopes = new HashSet<>();
+            Set<RdSlope> slopes = new LinkedHashSet<>();
             // 1.当已经参与坡度制作的单线link变为上下线分离时，将整组坡度信息删除(进入线或退出线)
             slopes.addAll(selector.loadByOutLink(link.pid(), true));
             if (!slopes.isEmpty()) {
@@ -43,7 +43,7 @@ public class Operation {
                 slopes.clear();
             }
             // 2.当目标link上的点已经参与制作坡度
-            Set<Integer> tmpNodePids = new HashSet<Integer>();
+            Set<Integer> tmpNodePids = new LinkedHashSet<>();
             tmpNodePids.add(link.getsNodePid());
             tmpNodePids.add(link.geteNodePid());
             List<Integer> nodePids = new ArrayList<>(tmpNodePids).subList(1, tmpNodePids.size() - 1);

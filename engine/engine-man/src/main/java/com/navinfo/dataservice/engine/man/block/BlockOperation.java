@@ -4,6 +4,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -938,23 +940,34 @@ public class BlockOperation {
 	 */
 	public static List<Map<String,Object>> getSubtaskPercentByBlockManId(int blockManId) throws Exception {
 		Connection conn = null;
+		
 		try{
+			
 			conn = DBConnector.getInstance().getManConnection();
 			QueryRunner run = new QueryRunner();
 			//子任务统计表:进度 ,进度是否异常,任务状态,任务的计划开始时间,任务计划的结束时间  ; 子任务表:作业阶段,作业类型
 			String selectSql = "select fsos.PERCENT,fsos.PROGRESS,fsos.STATUS,fsos.PLAN_START_DATE,fsos.PLAN_END_DATE,s.STAGE,s.TYPE from SUBTASK s,FM_STAT_OVERVIEW_SUBTASK fsos where s.SUBTASK_ID=fsos.SUBTASK_ID AND fsos.BLOCK_MAN_ID = " + blockManId;
-			System.out.println("selectSql"+selectSql);
+			//System.out.println("当前selectSql"+selectSql);
 			ResultSetHandler<List<Map<String,Object>>> rsHandler = new ResultSetHandler<List<Map<String,Object>>>() {
 				public List<Map<String,Object>> handle(ResultSet rs) throws SQLException {
 					List<Map<String,Object>> subTasks= new ArrayList<Map<String,Object>>(); 
-					
+					SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
 					while (rs.next()) {
 						Map<String,Object> subTaskMap = new HashMap<String,Object>();
 						subTaskMap.put("percent",rs.getInt("PERCENT"));
 						subTaskMap.put("progress",rs.getInt("PROGRESS"));
 						subTaskMap.put("status", rs.getInt("STATUS"));
-						subTaskMap.put("planStartDate", rs.getTimestamp("PLAN_START_DATE"));
-						subTaskMap.put("planEndDate", rs.getTimestamp("PLAN_END_DATE"));
+						/*subTaskMap.put("planStartDate", rs.getTimestamp("PLAN_START_DATE"));
+						subTaskMap.put("planEndDate", rs.getTimestamp("PLAN_END_DATE"));*/
+						
+						try {
+							subTaskMap.put("planStartDate", df.parse(rs.getString("PLAN_START_DATE")));
+							subTaskMap.put("planEndDate", df.parse(rs.getString("PLAN_END_DATE")));
+						} catch (ParseException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						
 						subTaskMap.put("stage", rs.getInt("STAGE"));
 						subTaskMap.put("type", rs.getInt("TYPE"));
 						subTasks.add(subTaskMap);

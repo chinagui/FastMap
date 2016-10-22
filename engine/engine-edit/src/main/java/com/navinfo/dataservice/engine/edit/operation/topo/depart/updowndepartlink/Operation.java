@@ -789,6 +789,8 @@ public class Operation implements IOperation {
         opRefRelationObj.handleDirectroute(this.command, result);
 
         opRefRelationObj.handlerAdadmin(this.command, result);
+        opRefRelationObj.handlerRdGate(this.command, result);
+        
     }
 
     /**

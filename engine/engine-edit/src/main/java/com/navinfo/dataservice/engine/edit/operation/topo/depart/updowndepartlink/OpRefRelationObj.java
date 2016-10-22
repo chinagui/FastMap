@@ -244,4 +244,10 @@ public class OpRefRelationObj {
         com.navinfo.dataservice.engine.edit.operation.obj.adadmin.depart.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.adadmin.depart.Operation(conn);
         return operation.updownDepart(command.getLinks(), command.getLeftLinkMapping(), command.getRightLinkMapping(), result);
     }
+    // 维护大门信息
+	public String handlerRdGate(Command command, Result result) throws Exception {
+		  com.navinfo.dataservice.engine.edit.operation.obj.rdgate.delete.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdgate.delete.Operation(conn);
+		  return operation.updownDepart(command.getLinkPids(), result);
+		 
+	}
 }

@@ -169,7 +169,7 @@ public class PoiGridSearch {
 				
 				ixPoi.setGasstations(ixPoiGasstationSelector.loadByIdForAndroid(id));
 				
-				int uRecord = lr.getObjectState(id, "ix_poi");
+				int uRecord = lr.getObjectState(id, "IX_POI");
 				
 				ixPoi.setuRecord(uRecord);
 				

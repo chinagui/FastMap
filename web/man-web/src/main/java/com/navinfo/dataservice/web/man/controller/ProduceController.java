@@ -60,7 +60,11 @@ public class ProduceController extends BaseController {
 			if (StringUtils.isNotEmpty(curSize)) {
 				curPageSize = Integer.parseInt(curSize);
 			}
-			Page data=ProduceService.getInstance().list(curPageNum, curPageSize);
+			JSONObject condition = new JSONObject();	
+			if(dataJson.containsKey("condition")){
+				condition=dataJson.getJSONObject("condition");
+			}
+			Page data=ProduceService.getInstance().list(condition, curPageNum, curPageSize);
 			Map<String, Object> resultMap = new HashMap<String, Object>();
 			resultMap.put("result", data.getResult());
 			resultMap.put("totalCount", data.getTotalCount());
@@ -109,10 +113,10 @@ public class ProduceController extends BaseController {
 			}
 			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
 			long userId=tokenObj.getUserId();
-			long jobId=ProduceService.getInstance().generateDaily(userId,dataJson);
+			ProduceService.getInstance().generateDaily(userId,dataJson);
 			//long userId=2;
 			
-			return new ModelAndView("jsonView", success(jobId));
+			return new ModelAndView("jsonView", success("日出品创建成功"));
 		}catch(Exception e){
 			log.error("日出品失败，原因："+e.getMessage(), e);
 			return new ModelAndView("jsonView",exception(e));

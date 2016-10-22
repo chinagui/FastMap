@@ -69,6 +69,7 @@ public class GLM01195 extends baseRule {
 		String sql="SELECT L.SPEED_TYPE"
 				+ "  FROM RD_LINK_SPEEDLIMIT L"
 				+ " WHERE L.LINK_PID IN ("+pidStr+")"
+						+ " AND L.U_RECORD != 2 "
 				+ " GROUP BY L.SPEED_TYPE"
 				+ " HAVING COUNT(DISTINCT L.SPEED_CLASS)>1";
 		DatabaseOperator getObj=new DatabaseOperator();

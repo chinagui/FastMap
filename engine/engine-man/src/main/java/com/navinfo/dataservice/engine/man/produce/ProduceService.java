@@ -5,6 +5,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -14,6 +15,7 @@ import oracle.sql.CLOB;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.alibaba.druid.proxy.jdbc.ClobProxyImpl;
@@ -103,9 +105,18 @@ public class ProduceService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-	public Page list(final int currentPageNum,int pageSize) throws Exception {
+	public Page list(JSONObject conditionJson,final int currentPageNum,int pageSize) throws Exception {
 		Connection conn=null;
 		try{
+			String conditionStr="";
+			if(null!=conditionJson && !conditionJson.isEmpty()){
+				Iterator keys = conditionJson.keys();
+				while (keys.hasNext()) {
+					String key = (String) keys.next();
+					if ("produceName".equals(key)) {conditionStr+=" and P.PRODUCE_NAME="+conditionJson.getString(key);}
+					}
+				}
+			
 			long pageStartNum = (currentPageNum - 1) * pageSize + 1;
 			long pageEndNum = currentPageNum * pageSize;
 			conn = DBConnector.getInstance().getManConnection();
@@ -118,7 +129,7 @@ public class ProduceService {
 					+ "       I.USER_REAL_NAME CREATE_USER_NAME,"
 					+ "       P.CREATE_DATE"
 					+ "  FROM PRODUCE P, USER_INFO I"
-					+ " WHERE P.CREATE_USER_ID = I.USER_ID"
+					+ " WHERE P.CREATE_USER_ID = I.USER_ID "+conditionStr
 					+ "  ORDER BY P.PRODUCE_NAME)"
 				+ " SELECT /*+FIRST_ROWS ORDERED*/"
 				+ " T.*, (SELECT COUNT(1) FROM QUERY) AS TOTAL_RECORD_NUM"

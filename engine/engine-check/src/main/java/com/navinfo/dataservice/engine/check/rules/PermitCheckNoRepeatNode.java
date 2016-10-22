@@ -46,7 +46,7 @@ public class PermitCheckNoRepeatNode extends baseRule {
 				String sql="SELECT B.*"
 						+ "  FROM RD_LINK A, RD_LINK B"
 						+ " WHERE A.LINK_PID = "+rdLink.getPid()
-						+ "   AND B.LINK_PID <> A.LINK_PID"
+						+ "   AND B.LINK_PID <> A.LINK_PID AND A.U_RECORD != 2 AND B.U_RECORD != 2 "
 						+ "   AND SDO_RELATE(B.GEOMETRY, A.GEOMETRY, 'MASK=TOUCH') = 'TRUE'";
 				RdLinkSelector linkSelector=new RdLinkSelector(getConn());				
 				List<RdLink> rdList=linkSelector.loadBySql(sql, false);
@@ -74,6 +74,9 @@ public class PermitCheckNoRepeatNode extends baseRule {
 							+ "  FROM RD_GSC_LINK L1, RD_GSC_LINK L2, RD_GSC G"
 							+ " WHERE L1.TABLE_NAME = 'RD_LINK'"
 							+ "   AND L2.TABLE_NAME = 'RD_LINK'"
+							+ "   AND L1.U_RECORD != 2 "
+							+ "   AND L2.U_RECORD != 2 "
+							+ "   AND G.U_RECORD != 2 "
 							+ "   AND L1.LINK_PID = "+rdLink.getPid()
 							+ "   AND L1.PID = L2.PID"
 							+ "   AND L2.LINK_PID = "+linkB.getPid()

@@ -53,6 +53,7 @@ public class BRANCH_CHECK_SAME_LANGCODE extends baseRule {
 				String selectSql="SELECT N.NAME_GROUPID "
 						+ "FROM RD_BRANCH B, RD_BRANCH_DETAIL D, RD_BRANCH_NAME N "
 						+ "WHERE B.BRANCH_PID = D.BRANCH_PID AND D.DETAIL_ID = N.DETAIL_ID "
+						+ "AND B.U_RECORD != 2 AND D.U_RECORD != 2 AND N.U_RECORD != 2 "
 						+ "AND B.BRANCH_PID="+rdBranch.getPid()
 						+ " GROUP BY N.NAME_GROUPID HAVING COUNT(N.LANG_CODE) > 1";
 				DatabaseOperator getObj=new DatabaseOperator();

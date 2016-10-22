@@ -57,7 +57,7 @@ public class GLM03069 extends baseRule{
 					if (resultList.size() == 2){
 						//挂接2根link
 						StringBuilder sb1 = new StringBuilder();
-						sb1.append("select distinct rn.MESH_ID from RD_LINK rn where rn.LINK_PID IN ( ");
+						sb1.append("select distinct rn.MESH_ID from RD_LINK rn where RN.U_RECORD != 2 AND rn.LINK_PID IN ( ");
 						sb1.append(Integer.parseInt(resultList.get(0).toString()));
 						sb1.append(" , ");
 						sb1.append(Integer.parseInt(resultList.get(1).toString()));

@@ -37,7 +37,7 @@ public class RdTollgate001 extends baseRule {
 			if(obj instanceof RdTollgate ){
 				RdTollgate rdTollgate = (RdTollgate)obj;
 				int outLinkPid=rdTollgate.getOutLinkPid();
-				String sql="SELECT 1 FROM RD_LANE_CONNEXITY WHERE IN_LINK_PID = "+outLinkPid;
+				String sql="SELECT 1 FROM RD_LANE_CONNEXITY WHERE U_RECORD != 2 AND IN_LINK_PID = "+outLinkPid;
 				DatabaseOperator getObj=new DatabaseOperator();
 				List<Object> resultList=new ArrayList<Object>();
 				resultList=getObj.exeSelect(this.getConn(), sql);

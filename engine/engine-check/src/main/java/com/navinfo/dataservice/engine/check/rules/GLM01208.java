@@ -85,14 +85,18 @@ public class GLM01208 extends baseRule {
 				+ " (SELECT E_NODE_PID AS NODE_ID"
 				+ "    FROM RD_LINK"
 				+ "   WHERE LINK_PID IN ( "+huandaoChain.getRdLinkPidSet().toString().replace("[", "").replace("]", "")+")"
+						+ " AND U_RECORD != 2"
 				+ "  UNION"
-				+ "  SELECT S_NODE_PID AS NODE_ID FROM RD_LINK WHERE LINK_PID IN ( "+huandaoChain.getRdLinkPidSet().toString().replace("[", "").replace("]", "")+"))"
+				+ "  SELECT S_NODE_PID AS NODE_ID FROM RD_LINK WHERE LINK_PID IN ( "+huandaoChain.getRdLinkPidSet().toString().replace("[", "").replace("]", "")+")"
+						+ " AND U_RECORD != 2)"
 				+ " SELECT DISTINCT 1"
 				+ "  FROM T, RD_LINK L"
-				+ " WHERE NOT EXISTS (SELECT 1"
+				+ " WHERE L.U_RECORD != 2"
+				+ " AND NOT EXISTS (SELECT 1"
 				+ "          FROM RD_LINK_FORM F"
 				+ "         WHERE L.LINK_PID = F.LINK_PID"
-				+ "           AND F.FORM_OF_WAY = 33)";
+				+ "           AND F.FORM_OF_WAY = 33"
+				+ "           AND F.U_RECORD != 2)";
 		
 		DatabaseOperator getObj=new DatabaseOperator();
 		List<Object> resultList=new ArrayList<Object>();

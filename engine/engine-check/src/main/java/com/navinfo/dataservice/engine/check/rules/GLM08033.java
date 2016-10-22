@@ -52,7 +52,8 @@ public class GLM08033 extends baseRule {
 		}
 		//为0说明没有符合条件的路口交限，不进行后续查询
 		if(linkPids.size()==0){return;}
-		String sql = "select link_pid from rd_link_form where FORM_OF_WAY = 50 and link_pid in ("+StringUtils.join(linkPids, ",")+")";
+		String sql = "select link_pid from rd_link_form "
+				+ "where FORM_OF_WAY = 50 AND U_RECORD != 2 and link_pid in ("+StringUtils.join(linkPids, ",")+")";
 				
 		PreparedStatement pstmt = getConn().prepareStatement(sql);
 

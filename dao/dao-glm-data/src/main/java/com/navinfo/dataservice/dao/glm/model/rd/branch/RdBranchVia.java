@@ -151,8 +151,6 @@ public class RdBranchVia implements IRow {
 	@Override
 	public void copy(IRow row) {
 		RdBranchVia via = (RdBranchVia) row;
-
-		this.branchPid = via.branchPid;
 		
 		this.rowId = via.rowId;
 		

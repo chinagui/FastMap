@@ -61,8 +61,7 @@ public class StatMain {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		//String flag = String.valueOf(args[0]);
-		String flag="overview";
+		String flag = String.valueOf(args[0]);
 		if (flag == null) {
 			System.exit(0);
 		} else {

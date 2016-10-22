@@ -371,27 +371,19 @@ public class OracleDao {
 			//如果FM_STAT_OVERVIEW_BLOCKMAN中该记录为已完成，则将其实际结束时间存入Mongo 和 oracle ,
 			//重:保持 mongo 库 和 oracle 库的统计数据一致
 			
-			/*String sql = "SELECT DISTINCT B.BLOCK_MAN_ID, B.STATUS,B.COLLECT_PLAN_START_DATE,"
-					+ "B.COLLECT_PLAN_END_DATE,B.DAY_EDIT_PLAN_START_DATE,B.DAY_EDIT_PLAN_END_DATE,"
-					+ "B.TASK_ID,B.ROAD_PLAN_TOTAL,B.POI_PLAN_TOTAL,"
-					+ "FSOB.STATUS F_STATUS,FSOB.COLLECT_ACTUAL_END_DATE F_COLLECT_ACTUAL_END_DATE,FSOB.DAILY_ACTUAL_END_DATE F_DAILY_ACTUAL_END_DATE "
-					+ " FROM BLOCK_MAN B, FM_STAT_OVERVIEW_BLOCKMAN FSOB"
-					+ " WHERE B.STATUS IN (0, 1)"
-					+ " AND B.LATEST =1 "
-					+ " ORDER BY BLOCK_MAN_ID";*/
 			String sql = "select  "
 					+ "DISTINCT "
 					+ "B.BLOCK_MAN_ID, B.STATUS,B.COLLECT_PLAN_START_DATE,B.COLLECT_PLAN_END_DATE, "
 					+ "B.DAY_EDIT_PLAN_START_DATE,B.DAY_EDIT_PLAN_END_DATE,B.TASK_ID, "
-					+ " B.ROAD_PLAN_TOTAL,B.POI_PLAN_TOTAL,FSOB.STATUS F_STATUS, "
-					+ " FSOB.COLLECT_ACTUAL_END_DATE F_COLLECT_ACTUAL_END_DATE, "
+					+ " B.ROAD_PLAN_TOTAL,B.POI_PLAN_TOTAL,"
+					+ " B.COLLECT_GROUP_ID ,B.DAY_EDIT_GROUP_ID, "
+					+ " FSOB.STATUS F_STATUS,FSOB.COLLECT_ACTUAL_END_DATE F_COLLECT_ACTUAL_END_DATE, "
 					+ " FSOB.DAILY_ACTUAL_END_DATE F_DAILY_ACTUAL_END_DATE  "
 					+ "from   "
 					+ "BLOCK_MAN B left join FM_STAT_OVERVIEW_BLOCKMAN FSOB  on B.BLOCK_MAN_ID = FSOB.BLOCK_MAN_ID  "
 					+ "WHERE  "
 					+ "B.STATUS IN (0, 1) AND B.LATEST =1   "
 					+ "ORDER BY BLOCK_MAN_ID";
-			System.out.println("sql :   "+sql);
 			return run.query(conn, sql, new ResultSetHandler<List<Map<String,Object>>>() {
 
 				@Override
@@ -403,6 +395,9 @@ public class OracleDao {
 
 						blockManMap.put("blockManId",rs.getInt("BLOCK_MAN_ID"));
 						blockManMap.put("status",rs.getInt("STATUS"));
+						blockManMap.put("collectGroupId",rs.getInt("COLLECT_GROUP_ID"));
+						blockManMap.put("dailyGroupId",rs.getInt("DAY_EDIT_GROUP_ID"));
+						
 						blockManMap.put("collectPlanStartDate",rs.getTimestamp("COLLECT_PLAN_START_DATE"));
 						blockManMap.put("collectPlanEndDate",rs.getTimestamp("COLLECT_PLAN_END_DATE"));
 						
@@ -437,4 +432,5 @@ public class OracleDao {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+	
 }

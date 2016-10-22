@@ -51,9 +51,9 @@ public class Operation {
         trafficsignals = selector.loadByNodeId(true, tmpArr[0]);
         if (!trafficsignals.isEmpty()) {
             for (RdTrafficsignal trafficsignal : trafficsignals) {
-                for (int i = 0; i < links.size(); i++) {
-                    if (trafficsignal.getLinkPid() == links.get(i).pid()) {
-                        trafficsignal.changedFields().put("linkPid", leftLinks.get(i).pid());
+                for (RdLink l : links) {
+                    if (trafficsignal.getLinkPid() == l.pid()) {
+                        trafficsignal.changedFields().put("linkPid", leftLinks.get(l.pid()).pid());
                         result.insertObject(trafficsignal, ObjStatus.UPDATE, trafficsignal.pid());
                         break;
                     }
@@ -64,9 +64,9 @@ public class Operation {
         trafficsignals = selector.loadByNodeId(true, tmpArr[tmpArr.length - 1]);
         if (!trafficsignals.isEmpty()) {
             for (RdTrafficsignal trafficsignal : trafficsignals) {
-                for (int i = 0; i < links.size(); i++) {
-                    if (trafficsignal.getLinkPid() == links.get(i).pid()) {
-                        trafficsignal.changedFields().put("linkPid", rightLinks.get(i).pid());
+                for (RdLink l : links) {
+                    if (trafficsignal.getLinkPid() == l.pid()) {
+                        trafficsignal.changedFields().put("linkPid", rightLinks.get(l.pid()).pid());
                         result.insertObject(trafficsignal, ObjStatus.UPDATE, trafficsignal.pid());
                         break;
                     }

@@ -331,7 +331,6 @@ public class UploadOperation {
 				Connection conn = DBConnector.getInstance().getConnectionById(Integer.parseInt(dbId));
 				try {
 					List<JSONObject> poiList = (List<JSONObject>) updateObj.get(dbId);
-					JSONObject relateParentChildren = new JSONObject();
 					for (int i = 0; i < poiList.size(); i++) {
 						JSONObject jo = poiList.get(i);
 						JSONObject perRetObj = obj2PoiForUpdate(jo, version, conn);
@@ -339,6 +338,7 @@ public class UploadOperation {
 						if (flag == 1) {
 							try{
 								JSONObject poiJson = perRetObj.getJSONObject("ret");
+								JSONObject relateParentChildren = new JSONObject();
 								if (perRetObj.getJSONObject("relate").size()>0) {
 									relateParentChildren.put(poiJson.getString("pid"), perRetObj.getJSONObject("relate"));
 								}
@@ -350,6 +350,11 @@ public class UploadOperation {
 								commandJson.put("type", "IXPOIUPLOAD");
 								// 调用一次更新
 								apiService.run(commandJson);
+								
+								// 处理一个库中的父子关系20161011
+								if (relateParentChildren.size()>0) {
+									updateParent(conn,relateParentChildren);
+								}
 
 								// 鲜度验证，POI状态更新
 								boolean freshFlag = perRetObj.getBoolean("freshFlag");
@@ -377,10 +382,6 @@ public class UploadOperation {
 						}
 					}
 					
-					// 处理一个库中的父子关系20161011
-					if (relateParentChildren.size()>0) {
-						updateParent(conn,relateParentChildren);
-					}
 					
 				} catch (Exception e) {
 					throw e;
@@ -420,13 +421,15 @@ public class UploadOperation {
 						try {
 							// 调用一次删除
 							apiService.run(poiObj);
-							count++;
 
 							// 鲜度验证，POI状态更新
 							String rawFields = jo.getString("rawFields");
 							IxPoiSelector ixPoiSelector = new IxPoiSelector(conn);
 							JSONObject poiRowId = ixPoiSelector.getRowIdById(pid);
 							upatePoiStatusForAndroid(conn, poiRowId.getString("rowId"), 0, rawFields,1);
+
+							conn.commit();
+							count++;
 						} catch (Exception e) {
 							JSONObject errObj = new JSONObject();
 							errObj.put("fid", fid);
@@ -1798,7 +1801,6 @@ public class UploadOperation {
 				}
 				
 			}
-			conn.commit();
 		} catch (Exception e) {
 			throw e;
 		} finally {

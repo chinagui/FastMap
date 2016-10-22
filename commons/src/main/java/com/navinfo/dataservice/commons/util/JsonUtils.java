@@ -56,6 +56,13 @@ public class JsonUtils {
 
 	}
 
+	public static int getInt(JSONObject json, String key) {
+		if (json.containsKey(key)) {
+			return json.getInt(key);
+		}
+		return 0;
+	}
+
 	public static String getStringValueFromJSONArray(JSONArray array) {
 		if (array != null) {
 			return array.toString().replace("[", "").replace("]", "");

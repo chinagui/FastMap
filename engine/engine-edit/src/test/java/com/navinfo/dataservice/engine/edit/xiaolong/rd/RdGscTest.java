@@ -27,7 +27,7 @@ public class RdGscTest extends InitApplication{
 	
 	@Test
 	public void testCreate() {
-		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDGSC\",\"dbId\":17,\"data\":{\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[116.53359174728392,40.120147810277366],[116.53359174728392,40.12065647408714],[116.53429985046387,40.12065647408714],[116.53429985046387,40.120147810277366],[116.53359174728392,40.120147810277366]]]},\"linkObjs\":[{\"pid\":\"310000704\",\"type\":\"RDLINK\",\"zlevel\":0},{\"pid\":\"220000028\",\"type\":\"LCLINK\",\"zlevel\":1}]}}";
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"RDGATE\",\"objId\":220000005,\"data\":{\"condition\":[{\"pid\":220000005,\"validObj\":1,\"timeDomain\":\"\",\"rowId\":\"2C81DB4337E44CE2BFBAEB44B799E7EE\",\"objStatus\":\"DELETE\"},{\"pid\":220000005,\"validObj\":1,\"timeDomain\":\"\",\"rowId\":\"DF6C8BF2E45C4D67B7BC634C01C2F75D\",\"objStatus\":\"DELETE\"}],\"rowId\":\"D364A27DB691496483BB7BDB9A04285C\",\"pid\":220000005}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

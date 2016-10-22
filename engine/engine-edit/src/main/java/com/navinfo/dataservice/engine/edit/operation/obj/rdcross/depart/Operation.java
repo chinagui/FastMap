@@ -51,18 +51,32 @@ public class Operation {
         RdLinkSelector linkSelector = new RdLinkSelector(conn);
         List<RdLink> allDelLinks = linkSelector.loadByNodePids(new ArrayList<>(tmpNodePids).subList(1, tmpNodePids.size() - 1), true);
         for (RdLink link : allDelLinks) {
-            for (IRow row : link.getForms()) {
-                RdLinkForm form = (RdLinkForm) row;
-                if (form.getFormOfWay() == 50) {
-                    if (link.getForms().size() == 1) {
-                        form.changedFields().put("formOfWay", 1);
-                        result.insertObject(form, ObjStatus.UPDATE, form.parentPKValue());
-                    } else {
-                        result.insertObject(form, ObjStatus.DELETE, form.parentPKValue());
-                    }
+            RdLink leftLink = leftLinks.get(link.pid());
+            RdLink rightLink = rightLinks.get(link.pid());
+            if (null != leftLink) {
+                this.updateLinkForm(leftLink, result);
+                continue;
+            }
+            if (null != rightLink) {
+                this.updateLinkForm(rightLink, result);
+                continue;
+            }
+            this.updateLinkForm(link, result);
+        }
+        return "";
+    }
+
+    private void updateLinkForm(RdLink link, Result result) {
+        for (IRow row : link.getForms()) {
+            RdLinkForm form = (RdLinkForm) row;
+            if (form.getFormOfWay() == 50) {
+                if (link.getForms().size() == 1) {
+                    form.changedFields().put("formOfWay", 1);
+                    result.insertObject(form, ObjStatus.UPDATE, form.parentPKValue());
+                } else {
+                    result.insertObject(form, ObjStatus.DELETE, form.parentPKValue());
                 }
             }
         }
-        return "";
     }
 }

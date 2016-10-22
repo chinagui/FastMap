@@ -1,9 +1,11 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdcross.depart;
 
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossSelector;
 
 import java.sql.Connection;
@@ -43,6 +45,15 @@ public class Operation {
         List<RdCross> crosses = selector.loadRdCrossByNodeOrLink(nodePids, new ArrayList<Integer>(), true);
         for (RdCross cross : crosses) {
             result.insertObject(cross, ObjStatus.DELETE, cross.pid());
+        }
+        // 2.维护分离link的交叉口道路形态
+        for (RdLink link : links) {
+            for (IRow row : link.getForms()) {
+                RdLinkForm form = (RdLinkForm) row;
+                if (form.getFormOfWay() == 50) {
+                    result.insertObject(form, ObjStatus.DELETE, form.parentPKValue());
+                }
+            }
         }
         return "";
     }

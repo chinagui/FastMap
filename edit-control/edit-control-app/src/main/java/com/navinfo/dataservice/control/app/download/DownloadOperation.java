@@ -5,6 +5,8 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
@@ -29,7 +31,7 @@ import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
 
 public class DownloadOperation {
-	
+	private static final Logger logger = Logger.getLogger(DownloadOperation.class);
 	/**
 	 * 
 	 * @param gridDateList
@@ -54,8 +56,9 @@ public class DownloadOperation {
 			if (!file.exists()) {
 				file.mkdirs();
 			}
-			
+			logger.info("export ix_poi to poi.txt--->start");
 			export(gridDateList, filePath, "poi.txt");
+			logger.info("export ix_poi to poi.txt--->end");
 			
 			String zipFileName = uuid + ".zip";
 
@@ -80,12 +83,12 @@ public class DownloadOperation {
 	
 	/**
 	 * 
-	 * @param gridDateList
+	 * @param grids
 	 * @param folderName
 	 * @param fileName
 	 * @throws Exception
 	 */
-	public void export(JSONArray gridDateList,  String folderName,
+	public void export(JSONArray grids,  String folderName,
 			String fileName) throws Exception {
 		if (!folderName.endsWith("/")) {
 			folderName += "/";
@@ -95,14 +98,15 @@ public class DownloadOperation {
 
 		PrintWriter pw = new PrintWriter(fileName);
 		try {
-			
-			List<IRow> data = new PoiGridSearch().getPoiByGrids(gridDateList);
-
+			logger.info("search ix_poi from db by grid:"+grids);
+			List<IRow> data = new PoiGridSearch().getPoiByGrids(grids);
+			logger.info("begin convert ix_poi glm model to collector json model");
 			JSONArray ja = changeData(data);
-
+			logger.info("begin write json to file");
 			for (int j = 0; j < ja.size(); j++) {
 				pw.println(ja.getJSONObject(j).toString());
 			}
+			logger.info("file write ok");
 		} catch (Exception e) {
 			throw e;
 		} finally {

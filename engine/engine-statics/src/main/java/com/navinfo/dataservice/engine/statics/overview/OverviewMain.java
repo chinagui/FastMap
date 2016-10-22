@@ -10,19 +10,27 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.bson.Document;
 
+import com.mongodb.BasicDBObject;
 import com.mongodb.client.FindIterable;
+import com.mongodb.client.MongoCursor;
+import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Projections;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.engine.statics.StatMain;
+import com.navinfo.dataservice.engine.statics.poicollect.PoiCollectMain;
 import com.navinfo.dataservice.engine.statics.tools.MongoDao;
+import com.navinfo.dataservice.engine.statics.tools.OracleDao;
+import com.navinfo.dataservice.engine.statics.tools.StatInit;
 
 public class OverviewMain {	
 	private static Logger log = LogManager.getLogger(OverviewMain.class);
@@ -32,21 +40,63 @@ public class OverviewMain {
 	public static final String col_name_subtask = "fm_stat_overview_subtask";
 	static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
 	static final SimpleDateFormat dateTimeFormat = new SimpleDateFormat("yyyyMMddhhmmss");
+	private String db_name;
+	private static String stat_date;
+	private static String stat_time;
+
+	public OverviewMain(String dbn, String stat_time) {
+		StatInit.initDatahubDb();
+		this.db_name = dbn;
+		this.stat_date = stat_time.substring(0, 8);
+		this.stat_time = stat_time;
+	}
+		
 	/**
-	 * @param args 第一个参数是统计日期(yyyyMMdd),第二个参数是统计的目标数据库名字，比如fm_stat
-	 * @throws ParseException
+	 * @Title: runStat
+	 * @Description: 运行脚本的方法
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2016年10月21日 下午2:55:50 
 	 */
-	public static void main(String[] args) throws ParseException{
-		String statDate = dateFormat.format(new Date());
-		if(args!=null&&args.length>1){
-			statDate = args[1];//外部传入的统计时间
+	public void runStat() {
+		try {
+			initMongoDb();
+			exeCalculate(stat_date, db_name);
+			System.exit(0);
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
-		String dbName = StatMain.db_name;
-		if(args!=null&&args.length>2){
-			dbName = args[2];//外部传入的dbname
+	}
+	
+	
+	/**
+	 * 初始化mongo结果库
+	 */
+	public void initMongoDb(){
+		//查询mongo库中所有的collection集合名称
+		MongoDao mongoDao = new MongoDao(db_name);
+		MongoDatabase md = mongoDao.getDatabase();
+		MongoCursor<String> iterator = md.listCollectionNames().iterator();
+		Boolean flag_task = true;
+		//判断是否存在当天记录
+		while(iterator.hasNext()){
+			if(iterator.next().equalsIgnoreCase(col_name_overview_main)){
+				flag_task = false;
+				break;
+			}
 		}
-		log.info("参数 statDate:"+statDate+",dbName:"+dbName);
-		exeCalculate(statDate, dbName);
+		if(flag_task){
+			//创建collection集合
+			md.createCollection(col_name_overview_main);
+			md.getCollection(col_name_overview_main).createIndex(new BasicDBObject("statDate", 1));
+			log.info("-- -- create mongo collection " + col_name_overview_main + " ok");
+			log.info("-- -- create mongo index on " + col_name_overview_main + "(statDate) ok");
+		}
+			// 删除当天重复统计数据
+		BasicDBObject query = new BasicDBObject();
+		query.put("statDate", stat_date);
+		mongoDao.deleteMany(col_name_overview_main, query);
+		
 	}
 
 	private static void exeCalculate(String statDate, String dbName) throws ParseException {
@@ -54,8 +104,6 @@ public class OverviewMain {
 		log.info("db_name:"+dbName);
 		Document statInfo = calCollectPercent(mdao,statDate);
 		log.info(statInfo.toJson().toString());
-		mdao.createIndex(col_name_overview_main,new Document("statDate", 1));
-		log.info("index created");
 		mdao.updateOne(col_name_overview_main,
 				Filters.eq("statDate", statInfo.getString("stateInfo")),
 				statInfo,
@@ -81,7 +129,7 @@ public class OverviewMain {
 						"dailyPlanStartDate",
 						"dailyPlanEndDate",
 						"dailyActualStartDate", 
-						"dailytActualEndDate"
+						"dailyActualEndDate"
 						));
 		
 		List<Integer> dailyPercentSet = new ArrayList<Integer>();
@@ -139,8 +187,8 @@ public class OverviewMain {
 			if (StringUtils.isNotEmpty(dailyActualStartDate)){
 				dailyActualStartDateSet.add(dailyActualStartDate);
 			}
-			log.info("计算dailytActualEndDate");
-			String dailytActualEndDate = doc.getString("dailytActualEndDate");
+			log.info("计算dailyActualEndDate");
+			String dailytActualEndDate = doc.getString("dailyActualEndDate");
 			if (StringUtils.isNotEmpty(dailytActualEndDate)){
 				dailytActualEndDateSet.add(dailytActualEndDate);
 			}
@@ -169,7 +217,7 @@ public class OverviewMain {
 		String collectActualStartDate = calMin(collectActualStartDateSet);
 		statResult.put("collectActualStartDate", collectActualStartDate) ;
 		String  collectActualEndDate= calMax(collectActualEndDateSet);
-		statResult.put("collectActualStartDate", collectActualEndDate) ;
+		statResult.put("collectActualEndDate", collectActualEndDate) ;
 		statResult.put("collectDiffDate", daysBetween(collectActualEndDate,maxEndDate));
 		statResult.put("dailyPercent", avg(dailyPercentSet));
 		String dailyPlanStartDate = calMin(dailyPlanStartDateSet);
@@ -183,7 +231,7 @@ public class OverviewMain {
 		statResult.put("dailyActualStartDate", dailyActualStartDate);
 		//dailytActualEndDate
 		String dailytActualEndDate = calMax(dailytActualEndDateSet);
-		statResult.put("dailytActualEndDate", dailytActualEndDate);
+		statResult.put("dailyActualEndDate", dailytActualEndDate);
 		statResult.put("dailyDiffDate", daysBetween(statDate,dailytActualEndDate));
 		statResult.put("poiPlanTotal", poiPlanTotalSum);
 		statResult.put("roadPlanTotal", roadPlanTotalSum);

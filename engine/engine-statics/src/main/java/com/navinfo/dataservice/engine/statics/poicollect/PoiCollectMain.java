@@ -267,10 +267,10 @@ public class PoiCollectMain {
 			countDownLatch.await();
 			executorService.shutdown();
 			log.info("all sub task finish");
-			// 所有大区进程统计完成后，开始汇总 block维度数据。
-			buildBlockStat();
-			// 所有大区进程统计完成后，开始汇总city维度数据。
-			buildCityStat();
+//			// 所有大区进程统计完成后，开始汇总 block维度数据。
+//			buildBlockStat();
+//			// 所有大区进程统计完成后，开始汇总city维度数据。
+//			buildCityStat();
 			log.info("-- end stat:" + col_name_grid);
 			System.exit(0);
 		} catch (Exception e) {

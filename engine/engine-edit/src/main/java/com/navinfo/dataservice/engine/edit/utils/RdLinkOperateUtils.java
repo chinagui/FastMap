@@ -222,7 +222,7 @@ public class RdLinkOperateUtils {
             Iterator<String> it = meshes.iterator();
             while (it.hasNext()) {
                 String meshIdStr = it.next();
-                Geometry geomInter = MeshUtils.linkInterMeshPolygon(link.getGeometry(), MeshUtils.mesh2Jts(meshIdStr));
+                Geometry geomInter = MeshUtils.linkInterMeshPolygon(link.getGeometry(), GeoTranslator.transform(MeshUtils.mesh2Jts(meshIdStr),1,5));
                 geomInter = GeoTranslator.geojson2Jts(GeoTranslator.jts2Geojson(geomInter), 1, 5);
                 createRdLinkWithMeshNoResult(geomInter, maps, sourceLink, result, links);
 

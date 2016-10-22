@@ -154,7 +154,7 @@ public class OverviewBlockStat {
 		doc.put("dailyGroupId", blockManMap.get("dailyGroupId"));
 		doc.put("progress", subtaskPercentMap.get("progress"));//进度
 		
-		doc.put("percent ", ((int)subtaskPercentMap.get("collectPercent")+(int)subtaskPercentMap.get("dailyPercent"))/2);//完成度
+		doc.put("percent", ((int)subtaskPercentMap.get("collectPercent")+(int)subtaskPercentMap.get("dailyPercent"))/2);//完成度
 		doc.put("status", blockManMap.get("status"));
 		doc.put("planStartDate", df.format(blockManMap.get("collectPlanStartDate")));
 		doc.put("planEndDate",  df.format(blockManMap.get("dailyPlanEndDate")));
@@ -276,7 +276,7 @@ public class OverviewBlockStat {
 				new String[] { "dubbo-consumer-datahub-test.xml"});
 		context.start();
 		new ApplicationContextUtil().setApplicationContext(context);
-		OverviewBlockStat overviewSubtaskStat = new OverviewBlockStat("fm_stat", "201610221415");
+		OverviewBlockStat overviewSubtaskStat = new OverviewBlockStat("fm_stat", "201610221933");
 		overviewSubtaskStat.runStat();
 		
 	}

@@ -194,7 +194,7 @@ public class Operation implements IOperation {
 				while (it.hasNext()) {
 					String meshIdStr = it.next();
 					Geometry geomInter = MeshUtils.linkInterMeshPolygon(g,
-							MeshUtils.mesh2Jts(meshIdStr));
+							GeoTranslator.transform(MeshUtils.mesh2Jts(meshIdStr),1,5));
 					geomInter = GeoTranslator.geojson2Jts(
 							GeoTranslator.jts2Geojson(geomInter), 1, 5);
 					this.createRdLinkWithMesh(geomInter, maps, result,

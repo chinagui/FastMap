@@ -194,10 +194,14 @@ public class BlockService {
 			String wkt = json.getString("wkt");
 			String planningStatus = ((json.getJSONArray("planningStatus").toString()).replace('[', '(')).replace(']',
 					')');
+			int type = 1;
+			if(json.containsKey("type")){
+				type = json.getInt("type");
+			}
 
 			String selectSql = "select t.BLOCK_ID,t.BLOCK_NAME,t.GEOMETRY,t.PLAN_STATUS,t.CITY_ID,TMP.PERCENT"
 					+ " from BLOCK t "
-					+ ", (SELECT BM.BLOCK_ID,FSOB.PERCENT FROM BLOCK_MAN BM, FM_STAT_OVERVIEW_BLOCKMAN FSOB WHERE BM.BLOCK_MAN_ID = FSOB.BLOCK_MAN_ID(+) AND BM.LATEST = 1) TMP"
+					+ ", (SELECT DISTINCT BM.BLOCK_ID,FSOB.PERCENT FROM BLOCK_MAN BM, FM_STAT_OVERVIEW_BLOCKMAN FSOB WHERE BM.BLOCK_MAN_ID = FSOB.BLOCK_MAN_ID(+) AND BM.LATEST = 1) TMP"
 					+ " where t.PLAN_STATUS in "+ planningStatus
 					+ " AND T.BLOCK_ID = TMP.BLOCK_ID";
 
@@ -205,7 +209,7 @@ public class BlockService {
 				if ("1".equals(json.getString("snapshot"))) {
 					selectSql = "select t.BLOCK_ID,t.BLOCK_NAME,t.PLAN_STATUS,t.CITY_ID,TMP.PERCENT"
 							+ " from BLOCK t"
-							+ ", (SELECT BM.BLOCK_ID,FSOB.PERCENT FROM BLOCK_MAN BM, FM_STAT_OVERVIEW_BLOCKMAN FSOB WHERE BM.BLOCK_MAN_ID = FSOB.BLOCK_MAN_ID(+) AND BM.LATEST = 1) TMP"
+							+ ", (SELECT DISTINCT BM.BLOCK_ID,FSOB.PERCENT FROM BLOCK_MAN BM, FM_STAT_OVERVIEW_BLOCKMAN FSOB WHERE BM.BLOCK_MAN_ID = FSOB.BLOCK_MAN_ID(+) AND BM.LATEST = 1) TMP"
 							+ " where t.PLAN_STATUS in " + planningStatus
 							+ " AND T.BLOCK_ID = TMP.BLOCK_ID";
 				}
@@ -218,6 +222,12 @@ public class BlockService {
 					selectSql += " and sdo_within_distance(t.geometry,  sdo_geom.sdo_mbr(sdo_geometry('" + wkt
 							+ "', 8307)), 'DISTANCE=0') = 'TRUE'";
 				}
+			}
+			
+			if(4==type){
+				selectSql += " AND t.CITY_ID = 100002";
+			}else if(1==type){
+				selectSql += " AND t.CITY_ID < 100000";
 			}
 
 			return BlockOperation.queryBlockBySql(conn, selectSql);

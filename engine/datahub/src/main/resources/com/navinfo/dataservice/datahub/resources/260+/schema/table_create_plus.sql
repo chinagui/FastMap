@@ -68,15 +68,15 @@ create table POI_DEEP_WORKITEM_CONF
 );
 -- Add comments to the columns 
 comment on column POI_DEEP_WORKITEM_CONF.ID
-  is 'ï¿½ï¿½ï¿½ï¿½';
+  is 'Ö÷¼ü';
 comment on column POI_DEEP_WORKITEM_CONF.FIRST_WORK_ITEM
-  is 'Ò»ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½:poi_name-ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,poi_address-ï¿½ï¿½ï¿½Äµï¿½Ö·,poi_englishname-Ó¢ï¿½ï¿½ï¿½ï¿½ï¿½,poi_englishaddress-Ó¢ï¿½Äµï¿½Ö·';
+  is 'Ò»¼¶×÷ÒµÏî:poi_name-ÖÐÎÄÃû³Æ,poi_address-ÖÐÎÄµØÖ·,poi_englishname-Ó¢ÎÄÃû³Æ,poi_englishaddress-Ó¢ÎÄµØÖ·';
 comment on column POI_DEEP_WORKITEM_CONF.SECOND_WORK_ITEM
-  is 'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½:nameUnify-ï¿½ï¿½ï¿½Í³Ò»,shortName-ï¿½ï¿½ï¿½ï¿½ï¿½Òµ,namePinyin-ï¿½ï¿½ï¿½Æ´ï¿½ï¿½ï¿½ï¿½Òµ,addrSplit-ï¿½ï¿½Ö·ï¿½ï¿½ï¿½ï¿½ï¿½Òµ,addrPinyin-ï¿½ï¿½Ö·Æ´ï¿½ï¿½ï¿½ï¿½Òµ,photoEngName-ï¿½ï¿½Æ¬Â¼ï¿½ï¿½Ó¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµ,chiEngName-ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½Ó¢ï¿½ï¿½ï¿½ï¿½Òµ,confirmEngName-ï¿½Ë¹ï¿½È·ï¿½ï¿½Ó¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµ,officalStandardEngName-ï¿½Ù·ï¿½ï¿½ï¿½×¼ï¿½ï¿½Ó¢ï¿½ï¿½ï¿½ï¿½Òµ,nonImportantLongEngName-ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½ï¿½ï¿½Ó¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµ,engMapAddress-Ó¢ï¿½Ä°ï¿½ï¿½Í¼ï¿½ï¿½Òµ,nonImportantLongEngAddress-ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Äµï¿½Ö·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµ,engNameInvalidChar-Ó¢ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½Ö·ï¿½ï¿½ï¿½,portuNameInvalidChar-ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½Ö·ï¿½ï¿½ï¿½,macaoEngName-ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµ,officalStandardPortuName-ï¿½Ù·ï¿½ï¿½ï¿½×¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµ,engAddrInvalidChar-Ó¢ï¿½Äµï¿½Ö·ï¿½Ç·ï¿½ï¿½Ö·ï¿½ï¿½ï¿½,portuAddrInvalidChar-ï¿½ï¿½ï¿½Äµï¿½Ö·ï¿½Ç·ï¿½ï¿½Ö·ï¿½ï¿½ï¿½,longEngAddress-Ó¢ï¿½Äµï¿½Ö·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµ,longPortuAddress-ï¿½ï¿½ï¿½Äµï¿½Ö·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµ,';
+  is '¶þ¼¶×÷ÒµÏî:nameUnify-Ãû³ÆÍ³Ò»,shortName-¼ò³Æ×÷Òµ,namePinyin-Ãû³ÆÆ´Òô×÷Òµ,addrSplit-µØÖ·²ð·Ö×÷Òµ,addrPinyin-µØÖ·Æ´Òô×÷Òµ,photoEngName-ÕÕÆ¬Â¼ÈëÓ¢ÎÄÃû×÷Òµ,chiEngName-ÖÐÎÄ¼ÈÊÇÓ¢ÎÄ×÷Òµ,confirmEngName-ÈË¹¤È·ÈÏÓ¢ÎÄÃû×÷Òµ,officalStandardEngName-¹Ù·½±ê×¼»¯Ó¢ÎÄ×÷Òµ,nonImportantLongEngName-·ÇÖØÒª·ÖÀàÓ¢ÎÄÃû³¬³¤×÷Òµ,engMapAddress-Ó¢ÎÄ°æµØÍ¼×÷Òµ,nonImportantLongEngAddress-·ÇÖØÒª·ÖÀàÓ¢ÎÄµØÖ·³¬³¤×÷Òµ,engNameInvalidChar-Ó¢ÎÄÃû·Ç·¨×Ö·û¼ì²é,portuNameInvalidChar-ÆÏÎÄÃû·Ç·¨×Ö·û¼ì²é,macaoEngName-°ÄÃÅÓ¢ÎÄÃû×÷Òµ,officalStandardPortuName-¹Ù·½±ê×¼»¯ÆÏÎÄ×÷Òµ,engAddrInvalidChar-Ó¢ÎÄµØÖ··Ç·¨×Ö·û¼ì²é,portuAddrInvalidChar-ÆÏÎÄµØÖ··Ç·¨×Ö·û¼ì²é,longEngAddress-Ó¢ÎÄµØÖ·³¬³¤×÷Òµ,longPortuAddress-ÆÏÎÄµØÖ·³¬³¤×÷Òµ,';
 comment on column POI_DEEP_WORKITEM_CONF.WORK_ITEM_ID
-  is 'ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
+  is '×÷ÒµÏî¹æÔòºÅ';
 comment on column POI_DEEP_WORKITEM_CONF.TYPE
-  is '1ï¿½ï¿½ï¿½ï¿½ï¿½Â½,2ï¿½ï¿½ï¿½ï¿½Û°ï¿½';
+  is '1³£¹æ´óÂ½,2³£¹æ¸Û°Ä';
 
 create table POI_DEEP_OP_CONF
 (
@@ -99,37 +99,37 @@ create table POI_DEEP_OP_CONF
 );
 -- Add comments to the columns 
 comment on column POI_DEEP_OP_CONF.ID
-  is 'ï¿½ï¿½ï¿½ï¿½';
+  is 'Ö÷¼ü';
 comment on column POI_DEEP_OP_CONF.FIRST_WORK_ITEM
-  is 'Ò»ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½:poi_name-ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,poi_address-ï¿½ï¿½ï¿½Äµï¿½Ö·,poi_englishname-Ó¢ï¿½ï¿½ï¿½ï¿½ï¿½,poi_englishaddress-Ó¢ï¿½Äµï¿½Ö·';
+  is 'Ò»¼¶×÷ÒµÏî:poi_name-ÖÐÎÄÃû³Æ,poi_address-ÖÐÎÄµØÖ·,poi_englishname-Ó¢ÎÄÃû³Æ,poi_englishaddress-Ó¢ÎÄµØÖ·';
 comment on column POI_DEEP_OP_CONF.SECOND_WORK_ITEM
-  is 'nameUnify-ï¿½ï¿½ï¿½Í³Ò»,shortName-ï¿½ï¿½ï¿½ï¿½ï¿½Òµ,namePinyin-ï¿½ï¿½ï¿½Æ´ï¿½ï¿½ï¿½ï¿½Òµ,addrSplit-ï¿½ï¿½Ö·ï¿½ï¿½ï¿½ï¿½ï¿½Òµ,addrPinyin-ï¿½ï¿½Ö·Æ´ï¿½ï¿½ï¿½ï¿½Òµ,photoEngName-ï¿½ï¿½Æ¬Â¼ï¿½ï¿½Ó¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµ,chiEngName-ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½Ó¢ï¿½ï¿½ï¿½ï¿½Òµ,confirmEngName-ï¿½Ë¹ï¿½È·ï¿½ï¿½Ó¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµ,officalStandardEngName-ï¿½Ù·ï¿½ï¿½ï¿½×¼ï¿½ï¿½Ó¢ï¿½ï¿½ï¿½ï¿½Òµ,nonImportantLongEngName-ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½ï¿½ï¿½Ó¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµ,engMapAddress-Ó¢ï¿½Ä°ï¿½ï¿½Í¼ï¿½ï¿½Òµ,nonImportantLongEngAddress-ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Äµï¿½Ö·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµ,engNameInvalidChar-Ó¢ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½Ö·ï¿½ï¿½ï¿½,portuNameInvalidChar-ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½Ö·ï¿½ï¿½ï¿½,macaoEngName-ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµ,officalStandardPortuName-ï¿½Ù·ï¿½ï¿½ï¿½×¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµ,engAddrInvalidChar-Ó¢ï¿½Äµï¿½Ö·ï¿½Ç·ï¿½ï¿½Ö·ï¿½ï¿½ï¿½,portuAddrInvalidChar-ï¿½ï¿½ï¿½Äµï¿½Ö·ï¿½Ç·ï¿½ï¿½Ö·ï¿½ï¿½ï¿½,longEngAddress-Ó¢ï¿½Äµï¿½Ö·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµ,longPortuAddress-ï¿½ï¿½ï¿½Äµï¿½Ö·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµ';
+  is 'nameUnify-Ãû³ÆÍ³Ò»,shortName-¼ò³Æ×÷Òµ,namePinyin-Ãû³ÆÆ´Òô×÷Òµ,addrSplit-µØÖ·²ð·Ö×÷Òµ,addrPinyin-µØÖ·Æ´Òô×÷Òµ,photoEngName-ÕÕÆ¬Â¼ÈëÓ¢ÎÄÃû×÷Òµ,chiEngName-ÖÐÎÄ¼ÈÊÇÓ¢ÎÄ×÷Òµ,confirmEngName-ÈË¹¤È·ÈÏÓ¢ÎÄÃû×÷Òµ,officalStandardEngName-¹Ù·½±ê×¼»¯Ó¢ÎÄ×÷Òµ,nonImportantLongEngName-·ÇÖØÒª·ÖÀàÓ¢ÎÄÃû³¬³¤×÷Òµ,engMapAddress-Ó¢ÎÄ°æµØÍ¼×÷Òµ,nonImportantLongEngAddress-·ÇÖØÒª·ÖÀàÓ¢ÎÄµØÖ·³¬³¤×÷Òµ,engNameInvalidChar-Ó¢ÎÄÃû·Ç·¨×Ö·û¼ì²é,portuNameInvalidChar-ÆÏÎÄÃû·Ç·¨×Ö·û¼ì²é,macaoEngName-°ÄÃÅÓ¢ÎÄÃû×÷Òµ,officalStandardPortuName-¹Ù·½±ê×¼»¯ÆÏÎÄ×÷Òµ,engAddrInvalidChar-Ó¢ÎÄµØÖ··Ç·¨×Ö·û¼ì²é,portuAddrInvalidChar-ÆÏÎÄµØÖ··Ç·¨×Ö·û¼ì²é,longEngAddress-Ó¢ÎÄµØÖ·³¬³¤×÷Òµ,longPortuAddress-ÆÏÎÄµØÖ·³¬³¤×÷Òµ';
 comment on column POI_DEEP_OP_CONF.SAVE_EXEBATCH
-  is 'ï¿½ï¿½ï¿½ï¿½Ê±ï¿½Ç·ï¿½Ö´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,0ï¿½ï¿½  1ï¿½ï¿½';
+  is '±£´æÊ±ÊÇ·ñÖ´ÐÐÅú´¦Àí,0·ñ  1ÊÇ';
 comment on column POI_DEEP_OP_CONF.SAVE_BATCHRULES
-  is 'ï¿½ï¿½ï¿½ï¿½Ê±ÒªÖ´ï¿½Ðµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,[]';
+  is '±£´æÊ±ÒªÖ´ÐÐµÄÅú´¦Àí¹æÔòÊý×é,[]';
 comment on column POI_DEEP_OP_CONF.SAVE_EXECHECK
-  is 'ï¿½ï¿½ï¿½ï¿½Ê±ï¿½Ç·ï¿½Ö´ï¿½Ð¼ï¿½ï¿½,0ï¿½ï¿½ 1ï¿½ï¿½';
+  is '±£´æÊ±ÊÇ·ñÖ´ÐÐ¼ì²é,0·ñ 1ÊÇ';
 comment on column POI_DEEP_OP_CONF.SAVE_CKRULES
-  is 'ï¿½ï¿½ï¿½ï¿½Ê±ÒªÖ´ï¿½ÐµÄ¼ï¿½ï¿½ï¿½ï¿½ï¿½';
+  is '±£´æÊ±ÒªÖ´ÐÐµÄ¼ì²é¹æÔò';
 comment on column POI_DEEP_OP_CONF.SAVE_EXECLASSIFY
-  is 'ï¿½ï¿½ï¿½ï¿½Ê±ï¿½Ç·ï¿½Ö´ï¿½ï¿½ï¿½Ø·ï¿½ï¿½ï¿½,0ï¿½ï¿½   1ï¿½ï¿½';
+  is '±£´æÊ±ÊÇ·ñÖ´ÐÐÖØ·ÖÀà,0·ñ   1ÊÇ';
 comment on column POI_DEEP_OP_CONF.SAVE_CLASSIFYRULES
-  is 'ï¿½ï¿½ï¿½ï¿½Ê±ÒªÖ´ï¿½Ðµï¿½ï¿½Ø·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ []';
+  is '±£´æÊ±ÒªÖ´ÐÐµÄÖØ·ÖÀà¹æÔò []';
 comment on column POI_DEEP_OP_CONF.SUBMIT_EXEBATCH
-  is 'ï¿½á½»Ê±ï¿½Ç·ï¿½Ö´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 0ï¿½ï¿½   1ï¿½ï¿½';
+  is 'Ìá½»Ê±ÊÇ·ñÖ´ÐÐÅú´¦Àí 0·ñ   1ÊÇ';
 comment on column POI_DEEP_OP_CONF.SUBMIT_BATCHRULES
-  is '  ï¿½á½»Ê±ÒªÖ´ï¿½Ðµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,[]';
+  is '  Ìá½»Ê±ÒªÖ´ÐÐµÄÅú´¦Àí¹æÔòÊý×é,[]';
 comment on column POI_DEEP_OP_CONF.SUBMIT_EXECHECK
-  is 'ï¿½á½»Ê±ï¿½Ç·ï¿½Ö´ï¿½Ð¼ï¿½ï¿½,0ï¿½ï¿½   1ï¿½ï¿½';
+  is 'Ìá½»Ê±ÊÇ·ñÖ´ÐÐ¼ì²é,0·ñ   1ÊÇ';
 comment on column POI_DEEP_OP_CONF.SUBMIT_CKRULES
-  is 'ï¿½á½»Ê±ÒªÖ´ï¿½ÐµÄ¼ï¿½ï¿½ï¿½ï¿½ï¿½[]';
+  is 'Ìá½»Ê±ÒªÖ´ÐÐµÄ¼ì²é¹æÔò[]';
 comment on column POI_DEEP_OP_CONF.SUBMIT_EXECLASSIFY
-  is 'ï¿½á½»Ê±ï¿½Ç·ï¿½Ö´ï¿½ï¿½ï¿½Ø·ï¿½ï¿½ï¿½ 0ï¿½ï¿½   1ï¿½ï¿½';
+  is 'Ìá½»Ê±ÊÇ·ñÖ´ÐÐÖØ·ÖÀà 0·ñ   1ÊÇ';
 comment on column POI_DEEP_OP_CONF.SUBMIT_CLASSIFYRULES
-  is 'ï¿½á½»Ê±ÒªÖ´ï¿½Ðµï¿½ï¿½Ø·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½[]';
+  is 'Ìá½»Ê±ÒªÖ´ÐÐµÄÖØ·ÖÀà¹æÔò[]';
 comment on column POI_DEEP_OP_CONF.TYPE
-  is '1ï¿½ï¿½ï¿½ï¿½ï¿½Â½,2ï¿½ï¿½ï¿½ï¿½Û°ï¿½';
+  is '1³£¹æ´óÂ½,2³£¹æ¸Û°Ä';
 
 /* GDB+ log part */
 create table LOG_OPERATION (
@@ -191,21 +191,21 @@ CREATE TABLE LOG_DAY_RELEASE
   CONSTRAINT PK_LOG_RELEASE PRIMARY KEY(OP_ID)
 );
 -- Add comments to the columns 
-COMMENT ON TABLE LOG_DAY_RELEASE IS 'ï¿½ï¿½ï¿½ï¿½ï¿½Õ³ï¿½Æ·×´Ì¬ï¿½ï¿½';
+COMMENT ON TABLE LOG_DAY_RELEASE IS 'ÂÄÀúÈÕ³öÆ·×´Ì¬±í';
 COMMENT ON COLUMN LOG_DAY_RELEASE.OP_ID
-  IS 'ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ó¦ log_operation.op_id';
+  IS 'Ö÷¼ü ¶ÔÓ¦ log_operation.op_id';
 COMMENT ON COLUMN LOG_DAY_RELEASE.REL_POI_STA
-  IS 'POI ï¿½ï¿½Æ·×´Ì¬ï¿½ï¿½0 ï¿½ï¿½ï¿½ï¿½ 1ï¿½ï¿½ï¿½ï¿½';
+  IS 'POI ³öÆ·×´Ì¬£¬0 £º·ñ 1£ºÊÇ';
 COMMENT ON COLUMN LOG_DAY_RELEASE.REL_POI_DT
-  IS 'POIï¿½ï¿½Æ·Ê±ï¿½ï¿½';
+  IS 'POI³öÆ·Ê±¼ä';
 COMMENT ON COLUMN LOG_DAY_RELEASE.REL_ALL_STA
-  IS 'POI+ROAD ï¿½ï¿½Æ·×´Ì¬ï¿½ï¿½0 ï¿½ï¿½ï¿½ï¿½ 1ï¿½ï¿½ï¿½ï¿½';
+  IS 'POI+ROAD ³öÆ·×´Ì¬£¬0 £º·ñ 1£ºÊÇ';
 COMMENT ON COLUMN LOG_DAY_RELEASE.REL_ALL_DT
-  IS 'POI+ROAD ï¿½ï¿½Æ·Ê±ï¿½ï¿½';
+  IS 'POI+ROAD ³öÆ·Ê±¼ä';
 COMMENT ON COLUMN LOG_DAY_RELEASE.REL_POI_LOCK
-  IS 'POI ï¿½ï¿½Æ·ï¿½ï¿½ 0 ï¿½ï¿½ï¿½ï¿½ 1ï¿½ï¿½ï¿½ï¿½';
+  IS 'POI ³öÆ·Ëø 0 £º·ñ 1£ºÊÇ';
 COMMENT ON COLUMN LOG_DAY_RELEASE.REL_ALL_LOCK
-  IS 'POI+ROAD ï¿½ï¿½Æ·ï¿½ï¿½0 ï¿½ï¿½ï¿½ï¿½ 1ï¿½ï¿½ï¿½ï¿½';
+  IS 'POI+ROAD ³öÆ·Ëø0 £º·ñ 1£ºÊÇ';
 --ADD INDEXES
 create bitmap index IDX_LOG_DAY_REL_1 on LOG_DAY_RELEASE (rel_poi_sta);
 create bitmap index IDX_LOG_DAY_REL_2 on LOG_DAY_RELEASE (rel_all_sta);

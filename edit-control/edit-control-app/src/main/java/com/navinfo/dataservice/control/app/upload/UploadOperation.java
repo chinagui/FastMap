@@ -86,6 +86,7 @@ public class UploadOperation {
 	 * @param line
 	 * @return
 	 */
+	//FIXME:这里通过u_record来判断POI的状态，需要修改。
 	@SuppressWarnings("static-access")
 	private JSONObject changeData(JSONArray ja) throws Exception {
 		JSONObject retObj = new JSONObject();

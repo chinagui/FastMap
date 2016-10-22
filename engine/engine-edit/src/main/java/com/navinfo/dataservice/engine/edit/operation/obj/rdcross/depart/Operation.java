@@ -1,10 +1,13 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdcross.depart;
 
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 
 import java.sql.Connection;
 import java.util.*;
@@ -43,6 +46,22 @@ public class Operation {
         List<RdCross> crosses = selector.loadRdCrossByNodeOrLink(nodePids, new ArrayList<Integer>(), true);
         for (RdCross cross : crosses) {
             result.insertObject(cross, ObjStatus.DELETE, cross.pid());
+        }
+        // 2.维护分离link的交叉口道路形态
+        RdLinkSelector linkSelector = new RdLinkSelector(conn);
+        List<RdLink> allDelLinks = linkSelector.loadByNodePids(new ArrayList<>(tmpNodePids).subList(1, tmpNodePids.size() - 1), true);
+        for (RdLink link : allDelLinks) {
+            for (IRow row : link.getForms()) {
+                RdLinkForm form = (RdLinkForm) row;
+                if (form.getFormOfWay() == 50) {
+                    if (link.getForms().size() == 1) {
+                        form.changedFields().put("formOfWay", 1);
+                        result.insertObject(form, ObjStatus.UPDATE, form.parentPKValue());
+                    } else {
+                        result.insertObject(form, ObjStatus.DELETE, form.parentPKValue());
+                    }
+                }
+            }
         }
         return "";
     }

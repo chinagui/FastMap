@@ -48,7 +48,7 @@ public class PoiSaveTest {
 	}
 	@Test
 	public void testUpdatePoi() throws SQLException {
-		String parameter = "{\"command\":\"UPDATE\",\"dbId\":52,\"type\":\"IXPOI\",\"objId\":8166639,\"data\":{\"addresses\":[{\"nameGroupid\":1,\"poiPid\":0,\"langCode\":\"CHI\",\"fullname\":\"１１１１\",\"objStatus\":\"INSERT\"}],\"rowId\":\"3E44753A75AF7097E050A8C083041F3F\",\"pid\":8166639}}";
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"IXPOI\",\"objId\":80070981,\"data\":{\"addresses\":[{\"nameGroupid\":1,\"poiPid\":0,\"langCode\":\"CHI\",\"fullname\":\"１１１１\",\"objStatus\":\"INSERT\"}],\"rowId\":\"3AE1FB8B133A92F7E050A8C08304EE4C\",\"pid\":80070981}}";
 		Connection conn = null;
 		JSONObject result = null;
 		try {

@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.statics.overview;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -211,7 +212,8 @@ public class OverviewMain {
 		for(Integer pct:dailyPercentSet){
 			sum+=pct.intValue();
 		}	
-		BigDecimal collectPercent = new BigDecimal(sum).divide(new BigDecimal(size));
+		MathContext mc = new MathContext(3);
+		BigDecimal collectPercent = new BigDecimal(sum,mc).divide(new BigDecimal(size,mc),3);
 		return collectPercent.doubleValue();
 		
 	}

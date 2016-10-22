@@ -35,16 +35,16 @@ import net.sf.json.JSONObject;
  * @date 2016年10月20日 上午11:17:54
  * @Description TODO
  */
-public class OverviewStatTask {
+public class OverviewTaskMain {
 	
 	private static Logger log = null;
 	public static final String col_name_task = "fm_stat_overview_task";
-	public static final String col_name_block = "fm_stat_overview_blockMan";
+	public static final String col_name_block = "fm_stat_overview_blockman";
 	private String db_name;
 	private String statDate;
 	private String statTime;
 
-	public OverviewStatTask(String dbn, String statTime) {
+	public OverviewTaskMain(String dbn, String statTime) {
 		this.db_name = dbn;
 		this.statDate = statTime.substring(0, 8);
 		this.statTime = statTime;
@@ -73,11 +73,11 @@ public class OverviewStatTask {
 			md.getCollection(col_name_task).createIndex(new BasicDBObject("statDate", 1));
 			log.info("-- -- create mongo collection " + col_name_task + " ok");
 			log.info("-- -- create mongo index on " + col_name_task + "(taskId，statDate) ok");
+		}
 			// 删除当天重复统计数据
 			BasicDBObject query = new BasicDBObject();
-			query.put("stat_date", statDate);
+		query.put("statDate", statDate);
 			mongoDao.deleteMany(col_name_task, query);
-		}
 		
 	}
 	
@@ -88,6 +88,7 @@ public class OverviewStatTask {
 	public Map<String,Object> getBlockStatByTaskId(long TaskId) throws ServiceException{
 		MongoDao mongoDao = new MongoDao(db_name);
 		BasicDBObject filter = new BasicDBObject("taskId", TaskId);
+		filter.put("statDate", statDate);
 		FindIterable<Document> findIterable = mongoDao.find(col_name_block, filter);
 		MongoCursor<Document> iterator = findIterable.iterator();
 		Map<String,Object> blockStat = new HashMap<String,Object>();
@@ -144,29 +145,29 @@ public class OverviewStatTask {
 				collectProgressList.add(json.getLong("collectProgress"));
 				dailyProgressList.add(json.getLong("dailyProgress"));
 				//采集
-				if(json.getString("collectPlanStartDate") != null){
+				if(!"null".equalsIgnoreCase(json.getString("collectPlanStartDate"))){
 					collectPlanStartDateList.add(json.getString("collectPlanStartDate"));
 				}
-				if(json.getString("collectPlanEndDate") != null){
+				if(!"null".equalsIgnoreCase(json.getString("collectPlanEndDate"))){
 					collectPlanEndDateList.add(json.getString("collectPlanEndDate"));
 				}
-				if(json.getString("collectActualStartDate") != null){
+				if(!"null".equalsIgnoreCase(json.getString("collectActualStartDate"))){
 					collectActualStartDateList.add(json.getString("collectActualStartDate"));
 				}
-				if(json.getString("collectActualEndDate") != null){
+				if(!"null".equalsIgnoreCase(json.getString("collectActualEndDate"))){
 					collectActualEndDateList.add(json.getString("collectActualEndDate"));
 				}
 				//日编
-				if(json.getString("dailyPlanStartDate") != null){
+				if(!"null".equalsIgnoreCase(json.getString("dailyPlanStartDate"))){
 					dailyPlanStartDateList.add(json.getString("dailyPlanStartDate"));
 				}
-				if(json.getString("dailyPlanEndDate") != null){
+				if(!"null".equalsIgnoreCase(json.getString("dailyPlanEndDate"))){
 					dailyPlanEndDateList.add(json.getString("dailyPlanEndDate"));
 				}
-				if(json.getString("dailyActualStartDate") != null){
+				if(!"null".equalsIgnoreCase(json.getString("dailyActualStartDate"))){
 					dailyActualStartDateList.add(json.getString("dailyActualStartDate"));
 				}
-				if(json.getString("dailyActualEndDate") != null){
+				if(!"null".equalsIgnoreCase(json.getString("dailyActualEndDate"))){
 					dailyActualEndDateList.add(json.getString("dailyActualEndDate"));
 				}
 			}
@@ -186,6 +187,9 @@ public class OverviewStatTask {
 		}
 		
 		//进度百分比 , 所有block采集完成度取平均值
+		if(count == 0){
+			count = 1;
+		}
 		collectPercent = collectPercent/count;
 		dailyPercent = dailyPercent/count;
 		//计划开始时间
@@ -196,8 +200,12 @@ public class OverviewStatTask {
 		dailyPlanEndDate = endTime(dailyPlanEndDateList);
 		//计划天数
 		try {
+			if(collectPlanStartDate !=null && collectPlanEndDate != null){
 			collectPlanDate = StatUtil.daysOfTwo(new SimpleDateFormat("yyyyMMdd").parse(collectPlanStartDate), new SimpleDateFormat("yyyyMMdd").parse(collectPlanEndDate));
+			}
+			if(dailyPlanStartDate !=null && dailyPlanEndDate != null){
 			dailyPlanDate = StatUtil.daysOfTwo(new SimpleDateFormat("yyyyMMdd").parse(dailyPlanStartDate), new SimpleDateFormat("yyyyMMdd").parse(dailyPlanEndDate));
+			}
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -212,8 +220,12 @@ public class OverviewStatTask {
 		//距离计划结束时间天数
 		String systemDate = new SimpleDateFormat("yyyyMMdd").format(new Date());
 		try {
+			if(systemDate !=null && collectPlanEndDate != null){
 			collectDiffDate = StatUtil.daysOfTwo(new SimpleDateFormat("yyyyMMdd").parse(systemDate), new SimpleDateFormat("yyyyMMdd").parse(collectPlanEndDate));
+			}
+			if(systemDate !=null && collectPlanEndDate != null){
 			dailyDiffDate = StatUtil.daysOfTwo(new SimpleDateFormat("yyyyMMdd").parse(systemDate), new SimpleDateFormat("yyyyMMdd").parse(collectPlanEndDate));
+			}
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -261,7 +273,7 @@ public class OverviewStatTask {
 				if(task.getTaskStatus() == 0){
 					//查询task统计表
 					Map<String, Object> taskStat = manApi.queryTaskStatByTaskId(task.getTaskId());
-					if(taskStat != null && StringUtils.isNotEmpty((String) taskStat.get("actualEndDate"))){
+					if(taskStat != null && taskStat.size() > 0 && StringUtils.isNotEmpty((String) taskStat.get("actualEndDate"))){
 						Document document = new Document();
 						document.put("taskId", taskStat.get("taskId"));
 						document.put("progress", taskStat.get("progress"));
@@ -295,7 +307,7 @@ public class OverviewStatTask {
 						
 						taskStatList.add(document);
 					}
-					if(taskStat != null && StringUtils.isEmpty((String) taskStat.get("actualEndDate"))){
+					if(taskStat != null && taskStat.size() > 0 && StringUtils.isEmpty((String) taskStat.get("actualEndDate"))){
 						Document doc = getTaskStat(task);
 						//根据taskId查询block数据
 						Map<String, Object> blockStatList = getBlockStatByTaskId(task.getTaskId());
@@ -324,7 +336,7 @@ public class OverviewStatTask {
 			e.printStackTrace();
 			log.error("查询失败，原因为:" + e.getMessage(), e);
 		}
-		return null;
+		return taskStatList;
 	}
 	
 	/**
@@ -354,20 +366,29 @@ public class OverviewStatTask {
 			//计划结束时间
 			planEndDate = new SimpleDateFormat("yyyyMMdd").format(task.getPlanEndDate());
 			//计划天数
+			if(task.getPlanStartDate() != null && task.getPlanEndDate() != null){
 			planDate = StatUtil.daysOfTwo(task.getPlanStartDate(), task.getPlanEndDate());
+			}
 			//实际开始时间
+			if(task.getPlanStartDate() != null){
 			actualStartDate = new SimpleDateFormat("yyyyMMdd").format(task.getPlanStartDate());
+			}
 			//实际结束时
 			//距离计划结束时间天数
-			
+			String systemDate = new SimpleDateFormat("yyyyMMdd").format(new Date());
+			if(systemDate !=null && planStartDate != null){
+				diffDate = StatUtil.daysOfTwo(new SimpleDateFormat("yyyyMMdd").parse(systemDate), new SimpleDateFormat("yyyyMMdd").parse(planStartDate));
+			}
 			//任务完成度
 			percent = ((long)blockStatList.get("collectPercent") + (long)blockStatList.get("dailyPercent"))/2;
 			//进度
-			String systemDate = new SimpleDateFormat("yyyyMMdd").format(new Date());
-			int diff = StatUtil.daysOfTwo(new SimpleDateFormat("yyyyMMdd").parse(actualStartDate),new SimpleDateFormat("yyyyMMdd").parse(systemDate));
-			long actualPercent = diff/planDate*100;
-			if(actualPercent < percent){
-				progress = 0;
+			int diff = 0;
+			if(actualStartDate != null && systemDate != null){
+				diff = StatUtil.daysOfTwo(new SimpleDateFormat("yyyyMMdd").parse(actualStartDate),new SimpleDateFormat("yyyyMMdd").parse(systemDate));
+			}
+			long planDiff = planDate*percent;
+			if(diff > planDiff){
+				progress = 2;
 			}
 			//处理统计数据
 			doc.put("taskId", taskId);
@@ -414,7 +435,7 @@ public class OverviewStatTask {
 	}
 	
 	public void runStat() {
-		log = LogManager.getLogger(OverviewStatTask.class);
+		log = LogManager.getLogger(OverviewTaskMain.class);
 
 		log.info("-- begin stat:" + col_name_task);
 
@@ -445,10 +466,10 @@ public class OverviewStatTask {
 			SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
 			Calendar c1=Calendar.getInstance();     
 			Calendar c2=Calendar.getInstance();     
-			if(startTimeList.size() == 1){
+			if(startTimeList !=null && startTimeList.size() == 1){
 				startTime = startTimeList.get(0);
 			}
-			if(startTimeList.size() > 1){
+			if(startTimeList !=null && startTimeList.size() > 1){
 				startTime = startTimeList.get(0);
 				for(int i=1;i<startTimeList.size();i++){
 					//取最小时间
@@ -479,10 +500,10 @@ public class OverviewStatTask {
 			SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
 			Calendar c1=Calendar.getInstance();     
 			Calendar c2=Calendar.getInstance();     
-			if(endTimeList.size() == 1){
+			if(endTimeList !=null && endTimeList.size() == 1){
 				endTime = endTimeList.get(0);
 			}
-			if(endTimeList.size() > 1){
+			if(endTimeList !=null && endTimeList.size() > 1){
 				endTime = endTimeList.get(0);
 				for(int i=1;i<endTimeList.size();i++){
 					//取最大时间
@@ -512,7 +533,7 @@ public class OverviewStatTask {
 				new String[] { "dubbo-consumer-datahub-test.xml"});
 		context.start();
 		new ApplicationContextUtil().setApplicationContext(context);
-		OverviewStatTask overviewSubtaskStat = new OverviewStatTask("fm_stat", "20161022180412");
+		OverviewTaskMain overviewSubtaskStat = new OverviewTaskMain("fm_stat", new SimpleDateFormat("yyyyMMddHHmmss").format(new Date()));
 		overviewSubtaskStat.runStat();
 	}
 

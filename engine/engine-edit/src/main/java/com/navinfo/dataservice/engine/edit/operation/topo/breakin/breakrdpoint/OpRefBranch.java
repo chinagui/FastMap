@@ -105,6 +105,10 @@ public class OpRefBranch implements IOperation {
 					via1.copy(v);
 
 					via2.copy(v);
+					
+					via1.setBranchPid(v.getBranchPid());
+					
+					via2.setBranchPid(v.getBranchPid());
 
 					if (v.igetsNodePid() == command.getLink1().getsNodePid()
 							|| v.igetsNodePid() == command.getLink1()

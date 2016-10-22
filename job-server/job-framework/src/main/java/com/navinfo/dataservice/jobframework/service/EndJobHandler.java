@@ -64,11 +64,16 @@ public class EndJobHandler implements MsgHandler {
 			if(min != 0){
 				diffTime.append(min+"分钟");
 			}
-			if(sec != 0){
-				diffTime.append(sec+"秒");
+			diffTime.append(sec+"秒!");
+			String runStatus = null;
+			if(status == 3){
+				runStatus = "执行成功";
+			}else if(status == 4){
+				runStatus = "执行失败";
+			}else{
+				runStatus = "执行完成";
 			}
-			diffTime.append("!");
-			SysMsgPublisher.publishMsg(jobTypeName+"任务(ID:"+jobId+")执行完成,"+diffTime.toString(), resultMsg, 0, new long[]{userId});
+			SysMsgPublisher.publishMsg(jobTypeName+"任务(ID:"+jobId+")"+runStatus+","+diffTime.toString(), resultMsg, 0, new long[]{userId});
 		}catch(Exception e){
 			log.warn("接收到end_job消息,但处理过程中出错，消息已消费。message："+message);
 			log.error(e.getMessage(),e);

@@ -105,8 +105,7 @@ public class Operation implements IOperation {
 				String meshIdStr = it.next();
 				Geometry geomInter = GeoTranslator.transform(
 						MeshUtils.linkInterMeshPolygon(GeoTranslator
-								.geojson2Jts(command.getLinkGeom()), MeshUtils
-								.mesh2Jts(meshIdStr)), 1, 5);
+								.geojson2Jts(command.getLinkGeom()), GeoTranslator.transform(MeshUtils.mesh2Jts(meshIdStr),1,5)), 1, 5);
 				links.addAll(AdLinkOperateUtils.getCreateAdLinksWithMesh(
 						geomInter, maps, result,this.command.getUpdateLink()));
 

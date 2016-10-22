@@ -11,6 +11,7 @@ import com.navinfo.dataservice.api.man.model.Grid;
 import com.navinfo.dataservice.api.man.model.Message;
 import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.api.man.model.Subtask;
+import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.engine.man.block.BlockOperation;
 import com.navinfo.dataservice.engine.man.city.CityService;
 import com.navinfo.dataservice.engine.man.grid.GridService;
@@ -18,9 +19,18 @@ import com.navinfo.dataservice.engine.man.message.MessageService;
 import com.navinfo.dataservice.engine.man.produce.ProduceOperation;
 import com.navinfo.dataservice.engine.man.produce.ProduceService;
 import com.navinfo.dataservice.engine.man.region.RegionService;
+import com.navinfo.dataservice.engine.man.city.CityService;
+import com.navinfo.dataservice.engine.man.grid.GridService;
+import com.navinfo.dataservice.engine.man.message.MessageService;
+import com.navinfo.dataservice.engine.man.produce.ProduceOperation;
+import com.navinfo.dataservice.engine.man.produce.ProduceService;
+import com.navinfo.dataservice.engine.man.region.RegionService;
+import com.navinfo.dataservice.engine.man.statics.StaticsService;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskOperation;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskService;
+import com.navinfo.dataservice.engine.man.task.TaskService;
 import com.navinfo.dataservice.engine.man.version.VersionService;
+import com.navinfo.navicommons.exception.ServiceException;
 /*
  * @author mayunfei
  * 2016年6月7日
@@ -118,6 +128,16 @@ public class ManApiImpl implements ManApi {
 	public List<Map<String,Object>> getSubtaskPercentByBlockManId(int blockManId) throws Exception {
 		
 		return BlockOperation.getSubtaskPercentByBlockManId(blockManId);
+	}
+	@Override
+	public List<Task> queryTaskAll() throws Exception {
+		// TODO Auto-generated method stub
+		return TaskService.getInstance().queryTaskAll();
+	}
+	@Override
+	public Map<String, Object> queryTaskStatByTaskId(long taskId) throws Exception {
+		// TODO Auto-generated method stub
+		return StaticsService.getInstance().queryTaskStatByTaskId(taskId);
 	}
 }
 

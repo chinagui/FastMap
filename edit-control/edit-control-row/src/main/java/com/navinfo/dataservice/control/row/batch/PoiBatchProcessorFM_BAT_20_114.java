@@ -18,9 +18,10 @@ import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-
+import org.apache.log4j.Logger;
+import org.springframework.util.StringUtils;
 public class PoiBatchProcessorFM_BAT_20_114 implements IBatch {
-
+	private static final Logger logger = Logger.getLogger(PoiBatchProcessorFM_BAT_20_114.class);
 	@Override
 	public JSONObject run(IxPoi poi,Connection conn,JSONObject json,EditApiImpl editApiImpl) throws Exception {
 		JSONObject result = new JSONObject();
@@ -49,17 +50,18 @@ public class PoiBatchProcessorFM_BAT_20_114 implements IBatch {
 			sql.append(" AND sdo_Geom.Relate(F.GEOMETRY,'Anyinteract',sdo_geometry(:1,8307),0.005) = 'TRUE'");
 			sql.append(" and rownum=1");
 			Geometry geometry = poi.getGeometry();
-			String wkt = GeoTranslator.jts2Wkt(geometry);
-			
+			String wkt = GeoTranslator.jts2Wkt(geometry,0.00001,5);
+			logger.info("wkt："+wkt);
 			pstmt = conn.prepareStatement(sql.toString());
 			pstmt.setString(1, wkt);
 			resultSet = pstmt.executeQuery();
 			if (resultSet.next()) {
 				adminId = resultSet.getString("admin_id");
 			} else {
-				throw new Exception("未知的行政区划,regionId:"+regionId);
+				logger.error("未知的行政区划,regionId:"+regionId);
+				return result;
 			}
-
+			logger.info("adminId："+adminId);
 			if (adminId.startsWith("44") || adminId.startsWith("110") || adminId.startsWith("310")
 					|| adminId.startsWith("3201") || adminId.startsWith("3202") || adminId.startsWith("3204")
 					|| adminId.startsWith("3205") || adminId.startsWith("3206") || adminId.startsWith("3210")
@@ -78,6 +80,10 @@ public class PoiBatchProcessorFM_BAT_20_114 implements IBatch {
 					}
 					
 					String oilType = ixPoiGasstation.getOilType();
+					logger.info("oilType："+oilType);
+					if (StringUtils.isEmpty(oilType)){
+						continue;
+					}
 					boolean changeFlag = false;
 					if (oilType.indexOf("90")>-1) {
 						oilType = oilType.replace("90", "89");

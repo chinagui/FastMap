@@ -35,7 +35,7 @@ public class Operation {
     public String updownDepart(List<RdLink> links, Map<Integer, RdLink> leftLinks, Map<Integer, RdLink> rightLinks, Result result) throws Exception {
         RdCrossSelector selector = new RdCrossSelector(conn);
         // 1.路口点为目标link的经过点
-        Set<Integer> tmpNodePids = new HashSet<Integer>();
+        Set<Integer> tmpNodePids = new LinkedHashSet<>();
         for (RdLink link : links) {
             tmpNodePids.add(link.getsNodePid());
             tmpNodePids.add(link.geteNodePid());
@@ -49,24 +49,26 @@ public class Operation {
         }
         // 2.维护分离link的交叉口道路形态
         RdLinkSelector linkSelector = new RdLinkSelector(conn);
-        List<RdLink> allDelLinks = linkSelector.loadByNodePids(new ArrayList<>(tmpNodePids).subList(1, tmpNodePids.size() - 1), true);
+        List<RdLink> allDelLinks = linkSelector.loadByNodePids(new ArrayList<>(tmpNodePids).subList(1, tmpNodePids.size() - 1), false);
         for (RdLink link : allDelLinks) {
             RdLink leftLink = leftLinks.get(link.pid());
             RdLink rightLink = rightLinks.get(link.pid());
             if (null != leftLink) {
                 this.updateLinkForm(leftLink, result);
-                continue;
             }
             if (null != rightLink) {
                 this.updateLinkForm(rightLink, result);
-                continue;
             }
-            this.updateLinkForm(link, result);
+            if (null == leftLink && null == rightLink) {
+                link = (RdLink) linkSelector.loadById(link.pid(), true);
+                this.updateLinkForm(link, result);
+            }
         }
         return "";
     }
 
     private void updateLinkForm(RdLink link, Result result) {
+
         for (IRow row : link.getForms()) {
             RdLinkForm form = (RdLinkForm) row;
             if (form.getFormOfWay() == 50) {

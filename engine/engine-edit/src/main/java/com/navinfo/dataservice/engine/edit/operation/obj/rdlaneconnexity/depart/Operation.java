@@ -16,6 +16,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneTopology;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneVia;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.rd.laneconnexity.RdLaneConnexitySelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 
 public class Operation {
 
@@ -55,6 +56,8 @@ public class Operation {
 	private Set<Integer> updateLaneConnexity = new HashSet<Integer>();
 
 	RdLaneConnexitySelector laneConnexitySelector = null;
+	
+	RdLinkSelector linkSelector = null;
 
 	public Operation(Connection conn, int preNodePid, int lastNodePid,
 			Map<Integer, RdLink> noTargetLinks, List<RdLink> targetLinks) {
@@ -68,6 +71,8 @@ public class Operation {
 		init(noTargetLinks, targetLinks);
 
 		laneConnexitySelector = new RdLaneConnexitySelector(this.conn);
+		
+		linkSelector = new RdLinkSelector(this.conn);
 	}
 
 	private void init(Map<Integer, RdLink> noTargetLinks,
@@ -550,14 +555,18 @@ public class Operation {
 
 				RdLaneTopology topology = (RdLaneTopology) rowTopology;
 
-				if (topology.getOutLinkPid() == linkPid) {
+				if (topology.getOutLinkPid() == linkPid) {					
 
-					updateTopology = topology;
+					boolean isOutLinkInNode = isOutLinkInNode(laneConnexity,
+							topology, nodePid);
+
+					if (isOutLinkInNode) {
+
+						updateTopology = topology;
+					}
 
 				} else {
 					connectLinkPids.add(topology.getOutLinkPid());
-
-					
 				}
 
 				for (IRow rowVia : topology.getVias()) {
@@ -580,14 +589,65 @@ public class Operation {
 				
 				continue;
 			}
-
-			handleMap.put(updateTopology.getPid(), updateTopology);
+			if (updateTopology != null) {
+				handleMap.put(updateTopology.getPid(), updateTopology);
+			}
 		}
 
 		if (!handleMap.isEmpty()) {
 
 			updateTopology(handleMap, nodePid);
 		}
+	}
+	
+	/**
+	 * 判断node是不是 进入退出线的点。
+	 * 
+	 * @param restriction
+	 * @param detail
+	 * @param nodePid
+	 * @return
+	 * @throws Exception
+	 */
+	private boolean isOutLinkInNode(RdLaneConnexity laneConnexity,
+			RdLaneTopology topology, int nodePid) throws Exception {
+		
+		if (topology.getVias().size() == 0) {
+
+			if (laneConnexity.getNodePid() != nodePid) {
+
+				return false;
+			} else {
+				return true;
+			}
+		}
+
+		List<Integer> viaPids = new ArrayList<Integer>();
+
+		for (IRow rowVia : topology.getVias()) {
+
+			RdLaneVia via = (RdLaneVia) rowVia;
+
+			if (!viaPids.contains(via.getLinkPid())) {
+
+				viaPids.add(via.getLinkPid());
+			}
+		}		
+
+		List<IRow> linkRows = linkSelector.loadByIds(viaPids, true,
+				false);
+
+		for (IRow linkRow : linkRows) {
+			
+			RdLink link = (RdLink) linkRow;
+
+			if (link.getsNodePid() == nodePid || link.geteNodePid() == nodePid) {
+
+				return true;
+			}			
+		}
+		
+		return false;
 	}
 
 	private void updateTopology(Map<Integer, RdLaneTopology> handleLastMap,

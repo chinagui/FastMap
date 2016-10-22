@@ -21,7 +21,6 @@ import com.mongodb.client.MongoDatabase;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
-import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.engine.statics.tools.MongoDao;
 import com.navinfo.dataservice.engine.statics.tools.StatUtil;
 import com.navinfo.navicommons.exception.ServiceException;
@@ -74,10 +73,10 @@ public class OverviewTaskMain {
 			log.info("-- -- create mongo collection " + col_name_task + " ok");
 			log.info("-- -- create mongo index on " + col_name_task + "(taskId，statDate) ok");
 		}
-		// 删除当天重复统计数据
-		BasicDBObject query = new BasicDBObject();
+			// 删除当天重复统计数据
+			BasicDBObject query = new BasicDBObject();
 		query.put("statDate", statDate);
-		mongoDao.deleteMany(col_name_task, query);
+			mongoDao.deleteMany(col_name_task, query);
 		
 	}
 	
@@ -201,10 +200,10 @@ public class OverviewTaskMain {
 		//计划天数
 		try {
 			if(collectPlanStartDate !=null && collectPlanEndDate != null){
-				collectPlanDate = StatUtil.daysOfTwo(new SimpleDateFormat("yyyyMMdd").parse(collectPlanStartDate), new SimpleDateFormat("yyyyMMdd").parse(collectPlanEndDate));
+			collectPlanDate = StatUtil.daysOfTwo(new SimpleDateFormat("yyyyMMdd").parse(collectPlanStartDate), new SimpleDateFormat("yyyyMMdd").parse(collectPlanEndDate));
 			}
 			if(dailyPlanStartDate !=null && dailyPlanEndDate != null){
-				dailyPlanDate = StatUtil.daysOfTwo(new SimpleDateFormat("yyyyMMdd").parse(dailyPlanStartDate), new SimpleDateFormat("yyyyMMdd").parse(dailyPlanEndDate));
+			dailyPlanDate = StatUtil.daysOfTwo(new SimpleDateFormat("yyyyMMdd").parse(dailyPlanStartDate), new SimpleDateFormat("yyyyMMdd").parse(dailyPlanEndDate));
 			}
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block
@@ -221,10 +220,10 @@ public class OverviewTaskMain {
 		String systemDate = new SimpleDateFormat("yyyyMMdd").format(new Date());
 		try {
 			if(systemDate !=null && collectPlanEndDate != null){
-				collectDiffDate = StatUtil.daysOfTwo(new SimpleDateFormat("yyyyMMdd").parse(systemDate), new SimpleDateFormat("yyyyMMdd").parse(collectPlanEndDate));
+			collectDiffDate = StatUtil.daysOfTwo(new SimpleDateFormat("yyyyMMdd").parse(systemDate), new SimpleDateFormat("yyyyMMdd").parse(collectPlanEndDate));
 			}
 			if(systemDate !=null && collectPlanEndDate != null){
-				dailyDiffDate = StatUtil.daysOfTwo(new SimpleDateFormat("yyyyMMdd").parse(systemDate), new SimpleDateFormat("yyyyMMdd").parse(collectPlanEndDate));
+			dailyDiffDate = StatUtil.daysOfTwo(new SimpleDateFormat("yyyyMMdd").parse(systemDate), new SimpleDateFormat("yyyyMMdd").parse(collectPlanEndDate));
 			}
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block
@@ -273,41 +272,41 @@ public class OverviewTaskMain {
 				if(task.getTaskStatus() == 0){
 					//查询task统计表
 					Map<String, Object> taskStat = manApi.queryTaskStatByTaskId(task.getTaskId());
-					if(taskStat != null && taskStat.size() > 0 && StringUtils.isNotEmpty((String) taskStat.get("actualEndDate"))){
+					if(taskStat != null && taskStat.size() > 0 && taskStat.get("actualEndDate") != null){
 						Document document = new Document();
-						document.put("taskId", taskStat.get("taskId"));
+						document.put("taskId", taskStat.get("taskId")); 
 						document.put("progress", taskStat.get("progress"));
 						document.put("percent", taskStat.get("percent"));
 						document.put("poiPlanTotal", taskStat.get("poiPlanTotal"));
 						document.put("roadPlanTotal", taskStat.get("roadPlanTotal"));
-						document.put("planStartDate", taskStat.get("planStartDate"));
-						document.put("planEndDate", taskStat.get("planEndDate"));
+						document.put("planStartDate", new SimpleDateFormat("yyyyMMdd").format(taskStat.get("planStartDate")));
+						document.put("planEndDate", new SimpleDateFormat("yyyyMMdd").format(taskStat.get("planEndDate")));
 						document.put("planDate", taskStat.get("planDate"));
-						document.put("actualStartDate", taskStat.get("actualStartDate"));
-						document.put("actualEndDate", taskStat.get("actualEndDate"));
+						document.put("actualStartDate", new SimpleDateFormat("yyyyMMdd").format(taskStat.get("actualStartDate")));
+						document.put("actualEndDate", new SimpleDateFormat("yyyyMMdd").format(taskStat.get("actualEndDate")));
 						document.put("diffDate", taskStat.get("diffDate"));
 						document.put("collectProgress", taskStat.get("collectProgress"));
 						document.put("collectPercent", taskStat.get("collectPercent"));
-						document.put("collectPlanStartDate", taskStat.get("collectPlanStartDate"));
-						document.put("collectPlanEndDate", taskStat.get("collectPlanEndDate"));
+						document.put("collectPlanStartDate", new SimpleDateFormat("yyyyMMdd").format(taskStat.get("collectPlanStartDate")));
+						document.put("collectPlanEndDate", new SimpleDateFormat("yyyyMMdd").format(taskStat.get("collectPlanEndDate")));
 						document.put("collectPlanDate", taskStat.get("collectPlanDate"));
-						document.put("collectActualStartDate", taskStat.get("collectActualStartDate"));
-						document.put("collectActualEndDate", taskStat.get("collectActualEndDate"));
+						document.put("collectActualStartDate", new SimpleDateFormat("yyyyMMdd").format(taskStat.get("collectActualStartDate")));
+						document.put("collectActualEndDate", new SimpleDateFormat("yyyyMMdd").format(taskStat.get("collectActualEndDate")));
 						document.put("collectDiffDate", taskStat.get("collectDiffDate"));
 						document.put("dailyProgress", taskStat.get("dailyProgress"));
 						document.put("dailyPercent", taskStat.get("dailyPercent"));
-						document.put("dailyPlanStartDate", taskStat.get("dailyPlanStartDate"));
-						document.put("dailyPlanEndDate", taskStat.get("dailyPlanEndDate"));
+						document.put("dailyPlanStartDate", new SimpleDateFormat("yyyyMMdd").format(taskStat.get("dailyPlanStartDate")));
+						document.put("dailyPlanEndDate", new SimpleDateFormat("yyyyMMdd").format(taskStat.get("dailyPlanEndDate")));
 						document.put("dailyPlanDate", taskStat.get("dailyPlanDate"));
-						document.put("dailyActualStartDate", taskStat.get("dailyActualStartDate"));
-						document.put("dailyActualEndDate", taskStat.get("dailyActualEndDate"));
+						document.put("dailyActualStartDate", new SimpleDateFormat("yyyyMMdd").format(taskStat.get("dailyActualStartDate")));
+						document.put("dailyActualEndDate", new SimpleDateFormat("yyyyMMdd").format(taskStat.get("dailyActualEndDate")));
 						document.put("dailyDiffDate", taskStat.get("dailyDiffDate"));
 						document.put("statDate", statDate);
 						document.put("statTime", statTime);
 						
 						taskStatList.add(document);
 					}
-					if(taskStat != null && taskStat.size() > 0 && StringUtils.isEmpty((String) taskStat.get("actualEndDate"))){
+					if(taskStat != null && taskStat.size() > 0 && taskStat.get("actualEndDate") == null){
 						Document doc = getTaskStat(task);
 						//根据taskId查询block数据
 						Map<String, Object> blockStatList = getBlockStatByTaskId(task.getTaskId());
@@ -318,7 +317,7 @@ public class OverviewTaskMain {
 						
 						taskStatList.add(doc);
 					}
-					if(taskStat == null){
+					if(taskStat == null || taskStat.size() == 0){
 						Document doc = getTaskStat(task);
 						//根据taskId查询block数据
 						Map<String, Object> blockStatList = getBlockStatByTaskId(task.getTaskId());
@@ -367,11 +366,11 @@ public class OverviewTaskMain {
 			planEndDate = new SimpleDateFormat("yyyyMMdd").format(task.getPlanEndDate());
 			//计划天数
 			if(task.getPlanStartDate() != null && task.getPlanEndDate() != null){
-				planDate = StatUtil.daysOfTwo(task.getPlanStartDate(), task.getPlanEndDate());
+			planDate = StatUtil.daysOfTwo(task.getPlanStartDate(), task.getPlanEndDate());
 			}
 			//实际开始时间
 			if(task.getPlanStartDate() != null){
-				actualStartDate = new SimpleDateFormat("yyyyMMdd").format(task.getPlanStartDate());
+			actualStartDate = new SimpleDateFormat("yyyyMMdd").format(task.getPlanStartDate());
 			}
 			//实际结束时
 			//距离计划结束时间天数

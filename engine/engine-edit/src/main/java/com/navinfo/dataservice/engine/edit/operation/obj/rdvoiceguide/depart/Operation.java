@@ -12,9 +12,13 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
+import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionDetail;
+import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionVia;
 import com.navinfo.dataservice.dao.glm.model.rd.voiceguide.RdVoiceguide;
 import com.navinfo.dataservice.dao.glm.model.rd.voiceguide.RdVoiceguideDetail;
 import com.navinfo.dataservice.dao.glm.model.rd.voiceguide.RdVoiceguideVia;
+import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.voiceguide.RdVoiceguideSelector;
 
 public class Operation {
@@ -55,6 +59,8 @@ public class Operation {
 	private Set<Integer> updateVoiceguide = new HashSet<Integer>();
 
 	RdVoiceguideSelector voiceguideSelector = null;
+	
+	RdLinkSelector linkSelector = null;
 
 	public Operation(Connection conn, int preNodePid, int lastNodePid,
 			Map<Integer, RdLink> noTargetLinks, List<RdLink> targetLinks) {
@@ -68,6 +74,8 @@ public class Operation {
 		init(noTargetLinks, targetLinks);
 
 		voiceguideSelector = new RdVoiceguideSelector(this.conn);
+
+		linkSelector = new RdLinkSelector(this.conn);
 	}
 
 	private void init(Map<Integer, RdLink> noTargetLinks,
@@ -552,11 +560,17 @@ public class Operation {
 
 				if (detail.getOutLinkPid() == linkPid) {
 
-					updateDetail = detail;
+				
+					boolean isOutLinkInNode = isOutLinkInNode(voiceguide,
+							detail, nodePid);
+
+					if (isOutLinkInNode) {
+
+						updateDetail = detail;
+					}
 
 				} else {
 					connectLinkPids.add(detail.getOutLinkPid());
-
 					
 				}
 
@@ -581,7 +595,9 @@ public class Operation {
 				continue;
 			}
 
-			handleMap.put(updateDetail.getPid(), updateDetail);
+			if (updateDetail != null) {
+				handleMap.put(updateDetail.getPid(), updateDetail);
+			}
 		}
 
 		if (!handleMap.isEmpty()) {
@@ -589,6 +605,58 @@ public class Operation {
 			updateDetail(handleMap, nodePid);
 		}
 	}
+	
+	/**
+	 * 判断node是不是 进入退出线的点。
+	 * 
+	 * @param restriction
+	 * @param detail
+	 * @param nodePid
+	 * @return
+	 * @throws Exception
+	 */
+	private boolean isOutLinkInNode(RdVoiceguide voiceguide,
+			RdVoiceguideDetail detail, int nodePid) throws Exception {
+		
+		if (detail.getVias().size() == 0) {
+
+			if (voiceguide.getNodePid() != nodePid) {
+
+				return false;
+			} else {
+				return true;
+			}
+		}
+
+		List<Integer> viaPids = new ArrayList<Integer>();
+
+		for (IRow rowVia : detail.getVias()) {
+
+			RdVoiceguideVia via = (RdVoiceguideVia) rowVia;
+
+			if (!viaPids.contains(via.getLinkPid())) {
+
+				viaPids.add(via.getLinkPid());
+			}
+		}		
+
+		List<IRow> linkRows = linkSelector.loadByIds(viaPids, true,
+				false);
+
+		for (IRow linkRow : linkRows) {
+			
+			RdLink link = (RdLink) linkRow;
+
+			if (link.getsNodePid() == nodePid || link.geteNodePid() == nodePid) {
+
+				return true;
+			}
+			
+		}
+		
+		return false;
+	}
+
 
 	private void updateDetail(Map<Integer, RdVoiceguideDetail> handleLastMap,
 			int nodePid) {

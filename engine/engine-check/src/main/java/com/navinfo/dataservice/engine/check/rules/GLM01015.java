@@ -28,9 +28,12 @@ public class GLM01015 extends baseRule {
 			if (obj instanceof RdLink){
 				RdLink rdLink = (RdLink)obj;				
 				StringBuilder sb = new StringBuilder();
-		        sb.append("select a.link_pid from rd_link a where a.link_pid = ");
+		        sb.append("select a.link_pid from rd_link a where A.U_RECORD != 2 AND a.link_pid = ");
 		        sb.append(rdLink.getPid());
-		        sb.append(" and  exists (select 1 from rd_link b where a.link_pid != b.link_pid and a.s_node_pid in (b.s_node_pid,b.e_node_pid) and a.e_node_pid in (b.s_node_pid,b.e_node_pid))");
+		        sb.append(" and  exists (select 1 from rd_link b "
+		        		+ "where a.link_pid != b.link_pid AND B.U_RECORD != 2"
+		        		+ "and a.s_node_pid in (b.s_node_pid,b.e_node_pid) "
+		        		+ "and a.e_node_pid in (b.s_node_pid,b.e_node_pid))");
 				String sql = sb.toString();
 				
 		        DatabaseOperator getObj=new DatabaseOperator();

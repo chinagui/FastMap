@@ -204,30 +204,12 @@ public class RdRestrictionSearch implements ISearch {
 
 				jsonM.put("c", String.valueOf((int)angle));
 
-				double linkLength = GeometryUtils.getLinkLength(linkWkt);
+				double[][] point = DisplayUtils.getGdbPointPos(linkWkt,
+						pointWkt, 0);
 
-				if (linkLength < 5) {
-					
-					double[] point = DisplayUtils.getRatioPointForLink(geom1, direct, 0.4);
+				snapshot.setG(Geojson.lonlat2Pixel(point[1][0], point[1][1], z,
+						px, py));
 
-					JSONObject geojson = new JSONObject();
-
-					geojson.put("type", "Point");
-
-					geojson.put("coordinates", point);
-
-					Geojson.point2Pixel(geojson, z, px, py);
-
-					snapshot.setG(geojson.getJSONArray("coordinates"));
-					
-				} else {
-					double[][] point = DisplayUtils.getGdbPointPos(linkWkt,
-							pointWkt, 0);
-
-					snapshot.setG(Geojson.lonlat2Pixel(point[1][0],
-							point[1][1], z, px, py));
-				}
-				
 				snapshot.setM(jsonM);
 
 				list.add(snapshot);

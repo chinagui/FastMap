@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
@@ -14,6 +15,7 @@ import org.bson.Document;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.mongodb.BasicDBObject;
+import com.mongodb.QueryOperators;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
@@ -138,14 +140,14 @@ public class OverviewSubtaskMain {
 
 		MongoDao md = new MongoDao(StatMain.db_name);
 
-		int total = gridIdList.size();
+		Pattern pattern = Pattern.compile("^" + stat_date + ".*$", Pattern.CASE_INSENSITIVE);
+		BasicDBObject query = new BasicDBObject();
+		query.put("stat_date", pattern);
+		query.put("grid_id",new BasicDBObject(QueryOperators.IN, gridIdList));
+		
 		//POI
-		MongoCursor<Document> iter = md
-				.find(poiColName, Filters.in("grid_id", gridIdList))
-				.sort(Sorts.descending("stat_date")).batchSize(total)
-				.iterator();
+		MongoCursor<Document> iter = md.find(poiColName, query).iterator();
 
-		int count = 0;
 		while (iter.hasNext()) {
 
 			JSONObject json = JSONObject.fromObject(iter.next());
@@ -159,18 +161,10 @@ public class OverviewSubtaskMain {
 			
 			totalPoi += poi.getInt("total");
 			finishedPoi += poi.getInt("finish");
-			
-			count++;
-			if (count >= total) {
-				break;
-			}
 		}
 		//ROAD
-		iter = md.find(roadColName, Filters.in("grid_id", gridIdList))
-				.sort(Sorts.descending("stat_date")).batchSize(gridIdList.size())
-				.iterator();
+		iter = md.find(roadColName, query).iterator();
 
-		count = 0;
 		while (iter.hasNext()) {
 			JSONObject json = JSONObject.fromObject(iter.next());
 			
@@ -181,11 +175,6 @@ public class OverviewSubtaskMain {
 
 			totalRoad += road.getInt("total");
 			finishedRoad += road.getInt("finish");
-
-			count++;
-			if (count >= total) {
-				break;
-			}
 		}
 		
 		if(totalPoi > 0){

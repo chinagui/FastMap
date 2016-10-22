@@ -73,10 +73,10 @@ public class OverviewTaskMain {
 			log.info("-- -- create mongo collection " + col_name_task + " ok");
 			log.info("-- -- create mongo index on " + col_name_task + "(taskId，statDate) ok");
 		}
-		// 删除当天重复统计数据
-		BasicDBObject query = new BasicDBObject();
+			// 删除当天重复统计数据
+			BasicDBObject query = new BasicDBObject();
 		query.put("statDate", statDate);
-		mongoDao.deleteMany(col_name_task, query);
+			mongoDao.deleteMany(col_name_task, query);
 		
 	}
 	
@@ -200,10 +200,10 @@ public class OverviewTaskMain {
 		//计划天数
 		try {
 			if(collectPlanStartDate !=null && collectPlanEndDate != null){
-				collectPlanDate = StatUtil.daysOfTwo(new SimpleDateFormat("yyyyMMdd").parse(collectPlanStartDate), new SimpleDateFormat("yyyyMMdd").parse(collectPlanEndDate));
+			collectPlanDate = StatUtil.daysOfTwo(new SimpleDateFormat("yyyyMMdd").parse(collectPlanStartDate), new SimpleDateFormat("yyyyMMdd").parse(collectPlanEndDate));
 			}
 			if(dailyPlanStartDate !=null && dailyPlanEndDate != null){
-				dailyPlanDate = StatUtil.daysOfTwo(new SimpleDateFormat("yyyyMMdd").parse(dailyPlanStartDate), new SimpleDateFormat("yyyyMMdd").parse(dailyPlanEndDate));
+			dailyPlanDate = StatUtil.daysOfTwo(new SimpleDateFormat("yyyyMMdd").parse(dailyPlanStartDate), new SimpleDateFormat("yyyyMMdd").parse(dailyPlanEndDate));
 			}
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block
@@ -220,10 +220,10 @@ public class OverviewTaskMain {
 		String systemDate = new SimpleDateFormat("yyyyMMdd").format(new Date());
 		try {
 			if(systemDate !=null && collectPlanEndDate != null){
-				collectDiffDate = StatUtil.daysOfTwo(new SimpleDateFormat("yyyyMMdd").parse(systemDate), new SimpleDateFormat("yyyyMMdd").parse(collectPlanEndDate));
+			collectDiffDate = StatUtil.daysOfTwo(new SimpleDateFormat("yyyyMMdd").parse(systemDate), new SimpleDateFormat("yyyyMMdd").parse(collectPlanEndDate));
 			}
 			if(systemDate !=null && collectPlanEndDate != null){
-				dailyDiffDate = StatUtil.daysOfTwo(new SimpleDateFormat("yyyyMMdd").parse(systemDate), new SimpleDateFormat("yyyyMMdd").parse(collectPlanEndDate));
+			dailyDiffDate = StatUtil.daysOfTwo(new SimpleDateFormat("yyyyMMdd").parse(systemDate), new SimpleDateFormat("yyyyMMdd").parse(collectPlanEndDate));
 			}
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block
@@ -366,11 +366,11 @@ public class OverviewTaskMain {
 			planEndDate = new SimpleDateFormat("yyyyMMdd").format(task.getPlanEndDate());
 			//计划天数
 			if(task.getPlanStartDate() != null && task.getPlanEndDate() != null){
-				planDate = StatUtil.daysOfTwo(task.getPlanStartDate(), task.getPlanEndDate());
+			planDate = StatUtil.daysOfTwo(task.getPlanStartDate(), task.getPlanEndDate());
 			}
 			//实际开始时间
 			if(task.getPlanStartDate() != null){
-				actualStartDate = new SimpleDateFormat("yyyyMMdd").format(task.getPlanStartDate());
+			actualStartDate = new SimpleDateFormat("yyyyMMdd").format(task.getPlanStartDate());
 			}
 			//实际结束时
 			//距离计划结束时间天数

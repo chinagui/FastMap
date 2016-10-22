@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -33,6 +34,7 @@ import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
+import com.navinfo.navicommons.geo.computation.GridUtils;
 import com.vividsolutions.jts.geom.Polygon;
 
 import net.sf.json.JSONObject;
@@ -456,10 +458,11 @@ public class GridService {
 
 	/**
 	 * @param blockManId
+	 * @param neighbor 
 	 * @return
 	 * @throws ServiceException 
 	 */
-	public List<Integer> listByInforBlockManId(int blockManId) throws ServiceException {
+	public List<Integer> listByInforBlockManId(int blockManId, int neighbor) throws ServiceException {
 		// TODO Auto-generated method stub
 		Connection conn = null;
 		try {
@@ -489,8 +492,25 @@ public class GridService {
 					return list;
 				}
 			};
-
-			return run.query(conn, selectSql,rsHandler);
+			
+			List<Integer> grids = run.query(conn, selectSql,rsHandler);
+			Set<Integer> gridsWithNeighbor = new HashSet<Integer>();
+			//grid扩圈
+			if(1==neighbor){
+				for(int j=0;j<grids.size();j++)  
+			        {              
+						String gridId = String.valueOf(grids.get(j));
+						String[] gridAfter = GridUtils.get9NeighborGrids(gridId);
+						List<String> gridIdlist = gridsFilter(conn,gridId,gridAfter);					
+						for(int i=0;i<gridIdlist.size();i++){
+							gridsWithNeighbor.add(Integer.valueOf(gridIdlist.get(i)));
+						}           
+			        } 
+				grids.clear();
+				grids.addAll(gridsWithNeighbor);
+			}
+			return grids;
+//			return run.query(conn, selectSql,rsHandler);
 			
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -498,6 +518,37 @@ public class GridService {
 			throw new ServiceException("查询大区BLOCK下grid:" + e.getMessage(), e);
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	private List<String> gridsFilter(Connection conn,String gridId,String[] gridIds) throws Exception{
+		try {
+			QueryRunner run = new QueryRunner();
+			
+			String gridIdsStr = StringUtils.join(gridIds, ",");
+			
+			String selectSql = "SELECT BGM2.GRID_ID"
+					+ " FROM BLOCK_GRID_MAPPING BGM2"
+					+ " WHERE BGM2.GRID_ID IN (" + gridIdsStr + ")"
+					+ " AND BGM2.BLOCK_ID = (SELECT BGM.BLOCK_ID FROM BLOCK_GRID_MAPPING BGM,BLOCK B WHERE BGM.BLOCK_ID = B.BLOCK_ID AND B.CITY_ID = 100002 AND BGM.GRID_ID = " + gridId +")";
+			
+			ResultSetHandler<List<String>> rsHandler = new ResultSetHandler<List<String>>() {
+				public List<String> handle(ResultSet rs) throws SQLException {
+					List<String> gridIdlist = new ArrayList<String>();
+					while (rs.next()) {
+						gridIdlist.add(rs.getString("GRID_ID"));
+					}
+					return gridIdlist;
+				}
+
+			};
+
+			return run.query(conn, selectSql, rsHandler);
+			
+		}catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询grid失败:" + e.getMessage(), e);
 		}
 	}
 }

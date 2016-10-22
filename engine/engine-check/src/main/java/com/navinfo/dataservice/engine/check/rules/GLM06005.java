@@ -41,7 +41,7 @@ public class GLM06005 extends baseRule {
 				StringBuilder sb = new StringBuilder();
 
 				sb.append("SELECT 1 FROM RD_LINK RL");
-				sb.append(" WHERE (RL.DIRECT != 3 AND RL.S_NODE_PID = ");
+				sb.append(" WHERE RL.U_RECORD != 2 AND (RL.DIRECT != 3 AND RL.S_NODE_PID = ");
 				sb.append(node);
 				sb.append(")");
 				sb.append(" OR (RL.DIRECT != 2 AND RL.E_NODE_PID = ");

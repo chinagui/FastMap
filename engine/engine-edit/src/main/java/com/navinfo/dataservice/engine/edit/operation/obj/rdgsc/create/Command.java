@@ -3,10 +3,14 @@ package com.navinfo.dataservice.engine.edit.operation.obj.rdgsc.create;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.json.JSONException;
+
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGscLink;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
+import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -25,6 +29,8 @@ public class Command extends AbstractCommand {
 	private Map<Integer,RdGscLink> linkMap = new HashMap<Integer,RdGscLink>();
 	
 	private JSONObject geoObject;
+	
+	private Geometry gscPoint;
 
 	@Override
 	public OperType getOperType() {
@@ -56,11 +62,15 @@ public class Command extends AbstractCommand {
 	public void setGeoObject(JSONObject geoObject) {
 		this.geoObject = geoObject;
 	}
+	
+	public Geometry getGscPoint() {
+		return gscPoint;
+	}
 
 	public void createGlmList() throws Exception {
 	}
 
-	public Command(JSONObject json, String requester) {
+	public Command(JSONObject json, String requester) throws JSONException {
 		this.requester = requester;
 
 		this.setDbId(json.getInt("dbId"));
@@ -94,6 +104,22 @@ public class Command extends AbstractCommand {
 				
 			}
 			
+		}
+		
+		if(data.containsKey("gscPoint"))
+		{
+			double longitude = data.getDouble("longitude");
+
+			double latitude = data.getDouble("latitude");
+			
+			// 构造几何对象
+			JSONObject geoPoint = new JSONObject();
+
+			geoPoint.put("type", "Point");
+
+			geoPoint.put("coordinates", new double[] { longitude, latitude });
+			
+			this.gscPoint = GeoTranslator.geojson2Jts(geoPoint, 100000, 0);
 		}
 		
 	}

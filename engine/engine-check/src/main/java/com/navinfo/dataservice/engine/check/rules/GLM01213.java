@@ -114,7 +114,7 @@ public class GLM01213 extends baseRule {
 		String pidStr=chainPidSet.toString().replace("[", "").replace("]", "");
 		String sql="SELECT L.SPEED_TYPE"
 				+ "  FROM RD_LINK_SPEEDLIMIT L"
-				+ " WHERE L.LINK_PID IN ("+pidStr+")"
+				+ " WHERE L.LINK_PID IN ("+pidStr+") AND L.U_RECORD != 2"
 				+ " GROUP BY L.SPEED_TYPE"
 				+ " HAVING COUNT(DISTINCT DECODE(L.FROM_LIMIT_SRC,0,L.TO_LIMIT_SRC,L.FROM_LIMIT_SRC)) > 1";
 		DatabaseOperator getObj=new DatabaseOperator();

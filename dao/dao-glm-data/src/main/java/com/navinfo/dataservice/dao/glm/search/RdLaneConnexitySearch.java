@@ -20,6 +20,7 @@ import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.selector.rd.laneconnexity.RdLaneConnexitySelector;
+import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.io.WKTReader;
 
 public class RdLaneConnexitySearch implements ISearch {
@@ -110,12 +111,13 @@ public class RdLaneConnexitySearch implements ISearch {
 				double angle = DisplayUtils.calIncloudedAngle(linkWkt, direct);
 
 				jsonM.put("c", String.valueOf((int)angle));
+		
+				double[][] point = DisplayUtils.getGdbPointPos(linkWkt,
+						pointWkt, 1);
 
-				double[][] point = DisplayUtils
-						.getGdbPointPos(linkWkt, pointWkt, 1);
+				snapshot.setG(Geojson.lonlat2Pixel(point[1][0], point[1][1], z,
+						px, py));
 
-				snapshot.setG(Geojson.lonlat2Pixel(point[1][0],point[1][1],z,px,py));
-				
 				snapshot.setM(jsonM);
 
 				list.add(snapshot);

@@ -77,7 +77,7 @@ public class RdLane001 extends baseRule {
 	 * @throws Exception
 	 */
 	private boolean isCrossNode(int nodePid) throws Exception{
-		String sql="SELECT 1 FROM RD_CROSS_NODE CN WHERE CN.NODE_PID = "+nodePid;
+		String sql="SELECT 1 FROM RD_CROSS_NODE CN WHERE CN.U_RECORD != 2 AND CN.NODE_PID = "+nodePid;
 		DatabaseOperator operator=new DatabaseOperator();
 		List<Object> result=operator.exeSelect(getConn(), sql);
 		if(result!=null && result.size()>0){return true;}

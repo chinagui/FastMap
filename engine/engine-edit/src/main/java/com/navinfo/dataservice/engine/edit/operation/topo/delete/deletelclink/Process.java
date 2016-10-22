@@ -67,6 +67,9 @@ public class Process extends AbstractProcess<Command> {
 		// 删除土地覆盖线有关土地覆盖点、线具体操作
 		IOperation op = new OpTopo(this.getCommand());
 		op.run(this.getResult());
+		// 立交
+		IOperation opRefRdGsc = new OpRefRdGsc(this.getCommand(), this.getConn());
+		opRefRdGsc.run(this.getResult());
 		// 删除土地覆盖线有关土地覆盖面具体操作
 		IOperation opLcFace = new OpRefLcFace(this.getCommand());
 		return opLcFace.run(this.getResult());

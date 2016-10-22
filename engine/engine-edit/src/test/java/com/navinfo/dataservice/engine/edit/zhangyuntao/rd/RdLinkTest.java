@@ -55,23 +55,14 @@ public class RdLinkTest extends InitApplication {
     @Test
     public void repair() {
         String parameter = "{\"command\":\"REPAIR\",\"dbId\":42,\"objId\":100008849,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.46721,40.083],[116.46730363368988,40.082890151613405],[116.46738,40.08272]]},\"interLinks\":[],\"interNodes\":[]},\"type\":\"RDLINK\"}";
-        // parameter =
-        // "{\"command\":\"REPAIR\",\"dbId\":42,\"objId\":100008881,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.46375,40.08197],[116.46422982215881,40.08203232873719],[116.46456,40.08214]]},\"interLinks\":[],\"interNodes\":[]},\"type\":\"RDLINK\"}";
-        parameter = "{\"command\":\"REPAIR\",\"dbId\":42,\"objId\":100008888,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.46471,40.08145],[116.46497547626494,40.081500801483934],[116.46513,40.0816]]},\"interLinks\":[],\"interNodes\":[]},\"type\":\"RDLINK\"}";
+        parameter = "{\"command\":\"REPAIR\",\"dbId\":17,\"objId\":310001119,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.13905,40.56138],[116.13936066627502,40.56129039667495],[116.13975,40.56118]]},\"interLinks\":[],\"interNodes\":[]},\"type\":\"RDLINK\"}";
         TestUtil.run(parameter);
     }
 
     @Test
     public void create() {
         String parameter = "{\"command\":\"CREATE\",\"dbId\":42,\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.46699,40.08309],[116.46714,40.08249]]},\"catchLinks\":[]},\"type\":\"RDLINK\"}";
-        parameter = "{\"command\":\"CREATE\",\"dbId\":42,\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.46726,40.08326],[116.46621,40.0831]]},\"catchLinks\":[]},\"type\":\"RDLINK\"}";
-        parameter = "{\"command\":\"CREATE\",\"dbId\":42,\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.46726,40.08326],[116.46661,40.083]]},\"catchLinks\":[]},\"type\":\"RDLINK\"}";
-        parameter = "{\"command\":\"CREATE\",\"dbId\":42,\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.46377652883528,40.08195639652649],[116.46438270807268,40.082114417518376]]},\"catchLinks\":[]},\"type\":\"RDLINK\"}";
-        parameter = "{\"command\":\"CREATE\",\"dbId\":42,\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.46462410688399,40.08142281644134],[116.4649111032486,40.08155210738431]]},\"catchLinks\":[]},\"type\":\"RDLINK\"}";
-        parameter = "{\"command\":\"CREATE\",\"dbId\":42,\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.46958351135254,40.0753458651827],[116.47236227989198,40.07571530019432]]},\"catchLinks\":[]},\"type\":\"RDLINK\"}";
-        parameter = "{\"type\":\"RDBRANCH\",\"command\":\"UPDATE\",\"dbId\":42,\"data\":{\"details\":[{\"estabType\":2,\"pid\":100000438,\"objStatus\":\"UPDATE\"}],\"pid\":23037}}";
-        parameter = "{\"command\":\"CREATE\",\"dbId\":17,\"type\":\"RDLINK\",\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"kind\":7,\"laneNum\":1,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.36877,40.04402],[116.36601,40.0505],[116.36493,40.05416]]}}}";
-        parameter = "{\"command\":\"CREATE\",\"dbId\":17,\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.56435132026672,40.352218653591116],[116.5644371509552,40.350133686360806],[116.5659713745117,40.34962674341031]]},\"catchLinks\":[{\"nodePid\":200000175,\"lon\":116.5644371509552,\"lat\":40.350133686360806}]},\"type\":\"RDLINK\"}";
+        parameter = "{\"command\":\"CREATE\",\"dbId\":17,\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.138636469841,40.56079727069237],[116.13931775093079,40.560866553074554]]},\"catchLinks\":[]},\"type\":\"RDLINK\"}";
         TestUtil.run(parameter);
     }
 
@@ -95,7 +86,7 @@ public class RdLinkTest extends InitApplication {
     public void updownDepart(){
         String parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"dbId\":17,\"distance\":\"6.6\",\"data\":{\"linkPids\":[209000217]}}";
         parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"dbId\":17,\"distance\":\"30.4\",\"data\":{\"linkPids\":[209000217]}}";
-        parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"dbId\":17,\"distance\":\"6.6\",\"data\":{\"linkPids\":[303001100,308001096]}}";
+        parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"dbId\":17,\"distance\":\"13.4\",\"data\":{\"linkPids\":[306001141]}}";
         TestUtil.run(parameter);
     }
 }

@@ -77,6 +77,7 @@ public class Operation implements IOperation {
 			content.put("length", length);
 			boolean isChanged = this.command.getUpdateLink().fillChangeFields(content);
 			LcLink adLink = new LcLink();
+			adLink.setPid(this.command.getUpdateLink().getPid());
 			adLink.copy(this.command.getUpdateLink());
 			if (isChanged) {
 				result.insertObject(this.command.getUpdateLink(), ObjStatus.UPDATE, this.command.getLinkPid());
@@ -93,7 +94,7 @@ public class Operation implements IOperation {
 				String meshIdStr = it.next();
 				Geometry geomInter = GeoTranslator.transform(MeshUtils.linkInterMeshPolygon(
 						GeoTranslator.geojson2Jts(command.getLinkGeom()), MeshUtils.mesh2Jts(meshIdStr)), 1, 5);
-				links.addAll(LcLinkOperateUtils.getCreateLcLinksWithMesh(geomInter, maps, result));
+				links.addAll(LcLinkOperateUtils.getCreateLcLinksWithMesh(geomInter, maps, result,this.command.getUpdateLink()));
 			}
 			result.insertObject(this.command.getUpdateLink(), ObjStatus.DELETE, this.command.getLinkPid());
 		}

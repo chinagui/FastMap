@@ -24,7 +24,7 @@ public class LcFaceTest extends InitApplication {
 
 	@Test
 	public void createTest() {
-		String requester = "{\"command\":\"CREATE\",\"type\":\"LCFACE\",\"dbId\":43,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.34715676307678,40.05199350679047],[116.34680271148682,40.05118867667575],[116.34814381599425,40.05112297583864],[116.34851932525636,40.05154181759012],[116.34810090065002,40.05223988145623],[116.34760737419128,40.05228915628253],[116.34715676307678,40.05199350679047]]}}}";
+		String requester = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"LCFACE\",\"objId\":207000003,\"data\":{\"names\":[{\"pid\":303000000,\"nameGroupid\":1,\"langCode\":\"CHI\",\"name\":\"土地覆盖面名\",\"phonetic\":\"Tu+Di+Fu+Gai+Mian+Ming\",\"srcFlag\":0,\"rowId\":\"7D027C09644745A0A0718B609A9F40CB\",\"objStatus\":\"INSERT\"},{\"pid\":303000001,\"nameGroupid\":1,\"langCode\":\"CHI\",\"name\":\"土地覆盖面名\",\"phonetic\":\"Tu+Di+Fu+Gai+Mian+Ming\",\"srcFlag\":0,\"rowId\":\"41ABFB8EE38647749A5C9EA62A729205\",\"objStatus\":\"INSERT\"},{\"pid\":303000001,\"rowId\":\"41ABFB8EE38647749A5C9EA62A729205\",\"objStatus\":\"UPDATE\",\"nameGroupid\":3},{\"pid\":303000000,\"rowId\":\"7D027C09644745A0A0718B609A9F40CB\",\"objStatus\":\"UPDATE\",\"nameGroupid\":2}],\"pid\":207000003}}";
 		TestUtil.run(requester);
 	}
 

@@ -18,6 +18,7 @@ import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.model.rd.variablespeed.RdVariableSpeed;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
+import com.navinfo.navicommons.geo.computation.GeometryUtils;
 
 import net.sf.json.JSONObject;
 import oracle.spatial.geometry.JGeometry;
@@ -106,9 +107,11 @@ public class RdVariableSpeedSearch implements ISearch {
 
 				jsonM.put("c", String.valueOf((int) angle));
 
-				double[][] point = DisplayUtils.getGdbPointPos(linkWkt, pointWkt, 1);
+				double[][] point = DisplayUtils.getGdbPointPos(linkWkt,
+						pointWkt, 1);
 
-				snapshot.setG(Geojson.lonlat2Pixel(point[1][0], point[1][1], z, px, py));
+				snapshot.setG(Geojson.lonlat2Pixel(point[1][0], point[1][1], z,
+						px, py));
 
 				snapshot.setM(jsonM);
 

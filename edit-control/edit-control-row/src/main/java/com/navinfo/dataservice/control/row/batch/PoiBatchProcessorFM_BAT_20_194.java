@@ -58,7 +58,9 @@ public class PoiBatchProcessorFM_BAT_20_194 implements IBatch {
 					for (IRow temp : childPois) {
 						IxPoi childPoi = (IxPoi) temp;
 						JSONObject ret = getService(childPoi,changeFlag,service);
-						service = ret.getString("service");
+						if(ret.containsKey("service")){
+							service = ret.getString("service");
+						}
 						changeFlag = ret.getBoolean("flag");
 					}
 
@@ -78,7 +80,9 @@ public class PoiBatchProcessorFM_BAT_20_194 implements IBatch {
 				for (IRow temp : childPois) {
 					IxPoi childPoi = (IxPoi) temp;
 					JSONObject ret = getService(childPoi,true,service);
-					service = ret.getString("service");
+					if(ret.containsKey("service")){
+						service = ret.getString("service");
+					}
 				}
 				ixPoiGasstation.setService(service);
 				ixPoiGasstation.setRowId(UuidUtils.genUuid());

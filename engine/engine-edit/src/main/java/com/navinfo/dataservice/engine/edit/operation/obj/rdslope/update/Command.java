@@ -75,6 +75,7 @@ public class Command extends AbstractCommand {
 			this.setOutLinkPid(this.content.getInt("linkPid"));
 		}
 		if(this.content.containsKey("linkPids")){
+			seriesLinkPids = new ArrayList<Integer>();
 			JSONArray array = this.content.getJSONArray("linkPids");
 			for (int i = 0; i < array.size(); i++) {
 				int pid = array.getInt(i);

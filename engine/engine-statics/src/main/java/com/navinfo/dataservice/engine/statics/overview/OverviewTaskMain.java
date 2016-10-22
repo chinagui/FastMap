@@ -22,6 +22,7 @@ import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.engine.statics.tools.MongoDao;
+import com.navinfo.dataservice.engine.statics.tools.StatInit;
 import com.navinfo.dataservice.engine.statics.tools.StatUtil;
 import com.navinfo.navicommons.exception.ServiceException;
 
@@ -44,6 +45,7 @@ public class OverviewTaskMain {
 	private String statTime;
 
 	public OverviewTaskMain(String dbn, String statTime) {
+		StatInit.initDatahubDb();
 		this.db_name = dbn;
 		this.statDate = statTime.substring(0, 8);
 		this.statTime = statTime;

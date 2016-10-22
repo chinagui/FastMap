@@ -30,6 +30,7 @@ import com.navinfo.dataservice.engine.statics.roadcollect.RoadCollectMain;
 import com.navinfo.dataservice.engine.statics.roaddaily.RoadDailyMain;
 import com.navinfo.dataservice.engine.statics.tools.MongoDao;
 import com.navinfo.dataservice.engine.statics.tools.OracleDao;
+import com.navinfo.dataservice.engine.statics.tools.StatInit;
 import com.navinfo.dataservice.engine.statics.tools.StatUtil;
 
 import net.sf.json.JSONObject;
@@ -40,7 +41,7 @@ import net.sf.json.JSONObject;
  * @date 2016年10月20日
  * @Description: OverviewBlockStat.java
  */
-public class OverviewBlockStat {
+public class OverviewBlockMain {
 
 	/**
 	 * 
@@ -51,7 +52,8 @@ public class OverviewBlockStat {
 	private static String stat_date;
 	private static String stat_time;
 
-	public OverviewBlockStat(String dbn, String stat_time) {
+	public OverviewBlockMain(String dbn, String stat_time) {
+		StatInit.initDatahubDb();
 		this.db_name = dbn;
 		this.stat_date = stat_time.substring(0, 8);
 		this.stat_time = stat_time;
@@ -276,7 +278,7 @@ public class OverviewBlockStat {
 				new String[] { "dubbo-consumer-datahub-test.xml"});
 		context.start();
 		new ApplicationContextUtil().setApplicationContext(context);
-		OverviewBlockStat overviewSubtaskStat = new OverviewBlockStat("fm_stat", "201610221933");
+		OverviewBlockMain overviewSubtaskStat = new OverviewBlockMain("fm_stat", "201610221933");
 		overviewSubtaskStat.runStat();
 		
 	}

@@ -318,7 +318,7 @@ public class BlockService {
 					+ " to_char(b.month_produce_plan_end_date, 'yyyymmdd') month_produce_plan_end_date,"
 					+ " T.work_property,B.road_plan_total,B.POI_plan_total"
 					+ " from BLOCK t, BLOCK_MAN b, TASK k,USER_INFO u where B.BLOCK_MAN_ID = ?"
-					+ " and t.block_id = b.block_id and t.city_id = k.city_id and k.latest = 1 and b.latest=1 and b.create_user_id=u.user_id ";
+					+ " and t.block_id = b.block_id and b.task_id = k.task_id and k.latest = 1 and b.latest=1 and b.create_user_id=u.user_id ";
 			ResultSetHandler<HashMap> rsHandler = new ResultSetHandler<HashMap>() {
 				public HashMap<String, Object> handle(ResultSet rs) throws SQLException {
 					while (rs.next()) {

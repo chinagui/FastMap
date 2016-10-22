@@ -20,7 +20,7 @@ public class HuanDaoSearchFilter extends SearchFilter {
 			RdLink linkTmp=elementIterator.next();
 			String nodePids=linkTmp.geteNodePid()+","+linkTmp.getsNodePid();
 			String Sql="select * from rd_link r where (s_node_pid in ("+nodePids+") or e_node_pid in ("+nodePids+")) and u_record!=2"
-					+ " and exists(select 1 from rd_link_form f where r.link_pid=f.link_pid and f.form_of_way=33)";
+					+ " and exists(select 1 from rd_link_form f where r.link_pid=f.link_pid and f.form_of_way=33 AND F.U_RECORD != 2)";
 			//获取终点挂接link，且挂接link是环岛
 			HashSetRdLinkAndPid ajointLinkSet=this.getRdLinksBySql(Sql);
 			Iterator<RdLink> ajointLinkIterator=ajointLinkSet.iterator();

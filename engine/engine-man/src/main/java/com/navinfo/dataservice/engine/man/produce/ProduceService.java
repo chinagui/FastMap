@@ -22,6 +22,7 @@ import com.alibaba.druid.proxy.jdbc.ClobProxyImpl;
 import com.navinfo.dataservice.api.job.iface.JobApi;
 import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.json.JsonOperation;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
@@ -42,7 +43,7 @@ public class ProduceService {
 	public static ProduceService getInstance(){
 		return SingletonHolder.INSTANCE;
 	}
-	public long generateDaily(long userId, JSONObject dataJson) throws Exception {
+	public void generateDaily(long userId, JSONObject dataJson) throws Exception {
 		//创建日出品任务
 		String produceName=dataJson.getString("produceName");
 		String produceType=dataJson.getString("produceType");
@@ -63,7 +64,7 @@ public class ProduceService {
 		jobDataJson.put("gridList", gridIds);
 		jobDataJson.put("featureType", produceType);
 		long jobId=jobApi.createJob("releaseFmIdbDailyJob", jobDataJson, userId, "日出品");
-		return jobId;
+		
 	}
 	
 	/**
@@ -81,6 +82,7 @@ public class ProduceService {
 			QueryRunner run = new QueryRunner();
 			String createSql = "insert into produce (produce_id,produce_name,produce_type,create_user_id,create_date,produce_status,parameter) "
 					+ "values("+produceId+",'"+produceName+"','"+produceType+"',"+userId+",sysdate,0,'"+paraJson+"')";			
+			//ClobProxyImpl impl=(ClobProxyImpl)ConnectionUtil.createClob(conn);
 			run.update(conn,createSql);		
 			return produceId;
 		}catch(Exception e){
@@ -105,6 +107,7 @@ public class ProduceService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+	
 	public Page list(JSONObject conditionJson,final int currentPageNum,int pageSize) throws Exception {
 		Connection conn=null;
 		try{

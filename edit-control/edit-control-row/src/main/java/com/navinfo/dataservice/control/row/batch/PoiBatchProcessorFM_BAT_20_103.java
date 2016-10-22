@@ -1,13 +1,16 @@
 package com.navinfo.dataservice.control.row.batch;
 
 import java.sql.Connection;
+import java.util.List;
 
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.ExcelReader;
 import com.navinfo.dataservice.control.row.batch.util.IBatch;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiAddress;
 import com.navinfo.dataservice.engine.edit.service.EditApiImpl;
 
 import net.sf.json.JSONArray;
@@ -46,7 +49,25 @@ public class PoiBatchProcessorFM_BAT_20_103 implements IBatch {
 					JSONObject data = new JSONObject();
 					data.put("fullname", fullName);
 					data.put("fullnamePhonetic", pyStr[1]);
-					data.put("rowId", address.getString("rowId"));
+					if(address.containsKey("rowId") && objStatus.equals(ObjStatus.UPDATE.toString()))
+					{
+						data.put("rowId", address.getString("rowId"));
+					}
+					else
+					{
+						List<IRow> rows = poi.getAddresses();
+						
+						for(IRow row : rows)
+						{
+							IxPoiAddress poiAddr = (IxPoiAddress) row;
+							
+							if(poiAddr.getuRecord() ==1 && fullName.equals(poiAddr.getFullname()) && "CHI".equals(poiAddr.getLangCode()))
+							{
+								data.put("rowId", poiAddr.rowId());
+								break;
+							}
+						}
+					}
 					data.put("objStatus", ObjStatus.UPDATE.toString());
 					resultArray.add(data);
 				} else {

@@ -52,7 +52,7 @@ public class MultiSpeedbump extends baseRule {
 		StringBuilder sb = new StringBuilder();
 
 		sb.append("SELECT 1 FROM RD_SPEEDBUMP RLC ");
-		sb.append(" WHERE RLC.LINK_PID = ");
+		sb.append(" WHERE RLC.U_RECORD != 2 AND RLC.LINK_PID = ");
 		sb.append(linkPid);
 		sb.append(" AND RLC.NODE_PID = ");
 		sb.append(nodePid);

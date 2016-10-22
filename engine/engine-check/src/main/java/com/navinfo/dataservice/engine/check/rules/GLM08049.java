@@ -53,7 +53,7 @@ public class GLM08049 extends baseRule {
 						RdCrossSelector selector=new RdCrossSelector(getConn());
 						String sql="SELECT DISTINCT C.*"
 								+ "  FROM RD_CROSS C, RD_CROSS_NODE CN"
-								+ " WHERE C.PID = CN.PID"
+								+ " WHERE C.PID = CN.PID AND C.U_RECORD != 2 AND CN.U_RECORD != 2 "
 								+ "   AND CN.NODE_PID = "+nodePid;
 						List<RdCross> crossList=selector.loadCrossBySql(sql, false);
 						if(crossList==null || crossList.size()!=1){

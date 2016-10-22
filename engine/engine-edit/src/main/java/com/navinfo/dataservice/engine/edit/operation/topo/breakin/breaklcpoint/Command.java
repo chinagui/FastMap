@@ -6,6 +6,7 @@ import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.lc.LcFace;
 import com.navinfo.dataservice.dao.glm.model.lc.LcLink;
+import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -20,6 +21,15 @@ public class Command extends AbstractCommand {
 	private LcLink  eLcLink;
 	private List<LcFace> faces;
 	private int breakNodePid = 0;
+	private List<RdGsc> rdGscs;
+	public List<RdGsc> getRdGscs() {
+		return rdGscs;
+	}
+
+	public void setRdGscs(List<RdGsc> rdGscs) {
+		this.rdGscs = rdGscs;
+	}
+
 	public int getBreakNodePid() {
 		return breakNodePid;
 	}

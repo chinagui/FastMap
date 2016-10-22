@@ -1,15 +1,19 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.trafficsignal.update;
 
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
 
+import com.navinfo.dataservice.dao.glm.iface.AlertObject;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.trafficsignal.RdTrafficsignal;
+import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.trafficsignal.RdTrafficsignalSelector;
 
 import net.sf.json.JSONObject;
@@ -102,7 +106,9 @@ public class Operation implements IOperation {
 	 * @param result
 	 * @throws Exception
 	 */
-	public String updateRdCrossByModifyLinkDirect(RdLink updateLink, Result result) throws Exception {
+	public List<RdTrafficsignal> updateRdCrossByModifyLinkDirect(RdLink updateLink) throws Exception {
+
+		List<RdTrafficsignal> deleteTrafficList = new ArrayList<>();
 
 		RdTrafficsignalSelector selector = new RdTrafficsignalSelector(conn);
 
@@ -115,40 +121,139 @@ public class Operation implements IOperation {
 				int nodePid = rdTrafficsignal.getNodePid();
 				// 道路由双方向修改为单方向（且修改的方向为路口的退出方向）时，该link上的信号灯应删除。
 				if (updateLink.getDirect() == 1 && direct == 2 && updateLink.getsNodePid() == nodePid) {
-					//return "请注意，修改道路方向，可能需要对下列路口维护信号灯信息：" + rdTrafficsignal.getPid();
-					result.insertObject(rdTrafficsignal, ObjStatus.DELETE, rdTrafficsignal.pid());
+					// return "请注意，修改道路方向，可能需要对下列路口维护信号灯信息：" +
+					// rdTrafficsignal.getPid();
+					deleteTrafficList.add(rdTrafficsignal);
+				} else if (updateLink.getDirect() == 1 && direct == 3 && updateLink.geteNodePid() == nodePid) {
+					deleteTrafficList.add(rdTrafficsignal);
 				}
 				// 关联道路的方向为路口的进入方向，修改为路口的退出方向时，应删除该link上的信号灯。
 				else if (updateLink.getDirect() == 2 && direct == 3) {
-					//return "请注意，修改道路方向，可能需要对下列路口维护信号灯信息：" + rdTrafficsignal.getPid();
-					result.insertObject(rdTrafficsignal, ObjStatus.DELETE, rdTrafficsignal.pid());
+					// return "请注意，修改道路方向，可能需要对下列路口维护信号灯信息：" +
+					// rdTrafficsignal.getPid();
+					deleteTrafficList.add(rdTrafficsignal);
 				}
 			}
-		} 
-//			else {
-//			int sNodePid = updateLink.getsNodePid();
-//
-//			// 关联道路的方向为路口的退出方向，修改为路口的进入方向时，应创建该link上的信号灯。
-//			List<RdTrafficsignal> rdTrafficsignals = selector.loadByNodeId(true, sNodePid);
-//
-//			if (CollectionUtils.isNotEmpty(rdTrafficsignals)) {
-//				if (updateLink.getDirect() == 2 && (direct == 3 || direct == 1)) {
-//					//return "请注意，修改道路方向，可能需要对下列路口LINK维护信号灯信息（LINK_PID）：" + updateLink.getPid();
-//					result.insertObject(rdTrafficsignal, ObjStatus.DELETE, rdTrafficsignal.pid());
-//				}
-//			}
-//
-//			int eNodePid = updateLink.getsNodePid();
-//
-//			// 关联道路的方向为路口的退出方向，修改为路口的进入方向时，应创建该link上的信号灯。
-//			List<RdTrafficsignal> rdTrafficsignals2 = selector.loadByNodeId(true, eNodePid);
-//
-//			if (CollectionUtils.isNotEmpty(rdTrafficsignals2)) {
-//				if (updateLink.getDirect() == 2 && (direct == 3 || direct == 1)) {
-//					//return "请注意，修改道路方向，可能需要对下列路口LINK维护信号灯信息（LINK_PID）：" + updateLink.getPid();
-//				}
-//			}
-//		}
-		return "请注意，修改道路方向，可能需要对下列路口LINK维护信号灯信息（LINK_PID）："+ updateLink.getPid();
+		}
+		return deleteTrafficList;
+	}
+
+	/**
+	 * 更新link方向需要添加信号灯的路口
+	 * 
+	 * @param updateLink
+	 * @return
+	 * @throws Exception
+	 */
+	public List<RdCross> getUpdateCross(RdLink updateLink) throws Exception {
+		List<RdCross> crossList = new ArrayList<>();
+
+		int direct = (int) updateLink.changedFields().get("direct");
+
+		RdTrafficsignalSelector selector = new RdTrafficsignalSelector(conn);
+
+		RdCrossSelector crossSelector = new RdCrossSelector(conn);
+
+		int sNodePid = updateLink.getsNodePid();
+
+		// 关联道路的方向为路口的退出方向，修改为路口的进入方向时，应创建该link上的信号灯。
+		List<RdTrafficsignal> rdTrafficsignals = selector.loadByNodeId(true, sNodePid);
+
+		if (CollectionUtils.isNotEmpty(rdTrafficsignals)) {
+			if (updateLink.getDirect() == 2 && (direct == 3 || direct == 1)) {
+				// return "请注意，修改道路方向，可能需要对下列路口LINK维护信号灯信息（LINK_PID）：" +
+				// updateLink.getPid();
+
+				RdCross cross = crossSelector.loadCrossByNodePid(sNodePid, false);
+
+				crossList.add(cross);
+			}
+		}
+
+		int eNodePid = updateLink.geteNodePid();
+
+		// 关联道路的方向为路口的退出方向，修改为路口的进入方向时，应创建该link上的信号灯。
+		List<RdTrafficsignal> rdTrafficsignals2 = selector.loadByNodeId(true, eNodePid);
+
+		if (CollectionUtils.isNotEmpty(rdTrafficsignals2)) {
+			if (updateLink.getDirect() == 2 && (direct == 3 || direct == 1)) {
+				// return "请注意，修改道路方向，可能需要对下列路口LINK维护信号灯信息（LINK_PID）：" +
+				// updateLink.getPid();
+				RdCross cross = crossSelector.loadCrossByNodePid(eNodePid, false);
+
+				crossList.add(cross);
+			}
+		}
+
+		return crossList;
+	}
+
+	/**
+	 * 修改link方向对信号灯影响
+	 * 
+	 * @return
+	 * @throws Exception
+	 */
+	public List<AlertObject> getUpdateLinkDirectInfectData(RdLink updateLink, JSONObject jsonObj) throws Exception {
+
+		boolean flag = updateLink.fillChangeFields(jsonObj);
+
+		List<AlertObject> alertList = new ArrayList<>();
+
+		if (flag) {
+			List<RdTrafficsignal> trafficSignalList = updateRdCrossByModifyLinkDirect(updateLink);
+
+			for (RdTrafficsignal rdTrafficsignal : trafficSignalList) {
+
+				AlertObject alertObj = new AlertObject();
+
+				alertObj.setObjType(rdTrafficsignal.objType());
+
+				alertObj.setPid(rdTrafficsignal.getPid());
+
+				alertObj.setStatus(ObjStatus.DELETE);
+
+				if (!alertList.contains(alertObj)) {
+					alertList.add(alertObj);
+				}
+			}
+		}
+
+		return alertList;
+	}
+
+	/**
+	 * 修改link方向对信号灯影响，提示需要在路口创建信号灯
+	 * 
+	 * @return
+	 * @throws Exception
+	 */
+	public List<AlertObject> getUpdateLinkDirectInfectCross(RdLink updateLink, JSONObject jsonObj) throws Exception {
+
+		boolean flag = updateLink.fillChangeFields(jsonObj);
+
+		List<AlertObject> alertList = new ArrayList<>();
+
+		if (flag) {
+
+			List<RdCross> crossList = getUpdateCross(updateLink);
+
+			for (RdCross cross : crossList) {
+
+				AlertObject alertObj = new AlertObject();
+
+				alertObj.setObjType(cross.objType());
+
+				alertObj.setPid(cross.getPid());
+
+				alertObj.setStatus(ObjStatus.UPDATE);
+
+				if (!alertList.contains(alertObj)) {
+					alertList.add(alertObj);
+				}
+			}
+		}
+
+		return alertList;
 	}
 }

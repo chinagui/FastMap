@@ -41,7 +41,14 @@ public class GLM01025 extends baseRule {
 	@Override
 	public void postCheck(CheckCommand checkCommand) throws Exception {
 		
-		String sql = "select a.node_pid from rd_node a where a.node_pid = :1 and a.geometry.sdo_point.x = :2 and a.geometry.sdo_point.y = :3 union all select a.node_pid from rd_node a where a.node_pid = :4 and a.geometry.sdo_point.x = :5 and a.geometry.sdo_point.y = :6 ";
+		String sql = "select a.node_pid from rd_node a where a.node_pid = :1 "
+				+ "and a.geometry.sdo_point.x = :2 "
+				+ "and a.geometry.sdo_point.y = :3 "
+				+ "AND A.U_RECORD != 2 "
+				+ "union all "
+				+ "select a.node_pid from rd_node a where a.node_pid = :4 "
+				+ "and a.geometry.sdo_point.x = :5 and a.geometry.sdo_point.y = :6 "
+				+ "AND A.U_RECORD != 2";
 
 		List<IRow> objList = checkCommand.getGlmList();
 		

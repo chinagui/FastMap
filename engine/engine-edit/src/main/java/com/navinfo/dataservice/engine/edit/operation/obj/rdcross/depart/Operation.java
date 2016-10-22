@@ -35,7 +35,7 @@ public class Operation {
     public String updownDepart(List<RdLink> links, Map<Integer, RdLink> leftLinks, Map<Integer, RdLink> rightLinks, Result result) throws Exception {
         RdCrossSelector selector = new RdCrossSelector(conn);
         // 1.路口点为目标link的经过点
-        Set<Integer> tmpNodePids = new HashSet<Integer>();
+        Set<Integer> tmpNodePids = new LinkedHashSet<>();
         for (RdLink link : links) {
             tmpNodePids.add(link.getsNodePid());
             tmpNodePids.add(link.geteNodePid());
@@ -55,13 +55,12 @@ public class Operation {
             RdLink rightLink = rightLinks.get(link.pid());
             if (null != leftLink) {
                 this.updateLinkForm(leftLink, result);
-                continue;
             }
             if (null != rightLink) {
                 this.updateLinkForm(rightLink, result);
-                continue;
             }
-            this.updateLinkForm(link, result);
+            if (null == leftLink && null == rightLink)
+                this.updateLinkForm(link, result);
         }
         return "";
     }

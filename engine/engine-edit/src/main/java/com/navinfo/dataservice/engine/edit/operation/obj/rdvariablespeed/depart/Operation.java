@@ -1,11 +1,7 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdvariablespeed.depart;
 
 import java.sql.Connection;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -37,7 +33,7 @@ public class Operation {
     public String updownDepart(List<RdLink> links, Map<Integer, RdLink> leftLinks, Map<Integer, RdLink> rightLinks, Result result) throws Exception {
         RdVariableSpeedSelector selector = new RdVariableSpeedSelector(conn);
         for (RdLink link : links) {
-            Set<RdVariableSpeed> variableSpeeds = new HashSet<>();
+            Set<RdVariableSpeed> variableSpeeds = new LinkedHashSet<>();
             // 1.当已经参与可变限速制作的单线link变为上下线分离时，将整组可变限速信息删除(进入线或退出线)
             variableSpeeds.addAll(selector.loadRdVariableSpeedByLinkPid(link.pid(), true));
             if (!variableSpeeds.isEmpty()) {
@@ -46,7 +42,7 @@ public class Operation {
                 variableSpeeds.clear();
             }
             // 2.当目标link上的点已经参与制作可变限速
-            Set<Integer> tmpNodePids = new HashSet<Integer>();
+            Set<Integer> tmpNodePids = new LinkedHashSet<Integer>();
             tmpNodePids.add(link.getsNodePid());
             tmpNodePids.add(link.geteNodePid());
             List<Integer> nodePids = Arrays.asList(tmpNodePids.toArray(new Integer[]{})).subList(1, tmpNodePids.size() - 1);

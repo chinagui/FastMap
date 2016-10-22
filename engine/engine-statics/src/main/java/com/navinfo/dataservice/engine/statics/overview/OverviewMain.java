@@ -45,6 +45,10 @@ public class OverviewMain {
 			dbName = args[2];//外部传入的dbname
 		}
 		log.info("参数 statDate:"+statDate+",dbName:"+dbName);
+		exeCalculate(statDate, dbName);
+	}
+
+	private static void exeCalculate(String statDate, String dbName) throws ParseException {
 		MongoDao mdao = new MongoDao(dbName);
 		log.info("db_name:"+dbName);
 		Document statInfo = calCollectPercent(mdao,statDate);

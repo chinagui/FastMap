@@ -9,7 +9,10 @@ import java.util.Set;
 import oracle.spatial.geometry.JGeometry;
 
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
+import com.navinfo.navicommons.geo.computation.DoubleLine;
+import com.navinfo.navicommons.geo.computation.DoublePoint;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
+import com.navinfo.navicommons.geo.computation.JtsGeometryConvertor;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -1298,6 +1301,7 @@ public class DisplayUtils {
 		return line;
 	}
 	
+	
 	/**
 	 * 计算立交的线几何
 	 * @param linkGeo
@@ -1309,104 +1313,108 @@ public class DisplayUtils {
 		Coordinate[] coords = linkGeo.getCoordinates();
 
 		List<Coordinate> coordList = new ArrayList<Coordinate>();
+		
+		double degree = GeometryUtils.convert2Degree(2);//2 meter
 
 		if (startEnd == 0) {
-
+			//back
+			List<Coordinate> coorsBack = new ArrayList<Coordinate>();
 			double distBack = 0;
 
 			int current = seqNum;
-
-			while (distBack < 1) {
-
-				if (current - 1 < 0) {
+			Coordinate coord = coords[current];
+			DoublePoint curPoint = JtsGeometryConvertor.convert(coord);
+			coorsBack.add(coord);
+			
+			while (current - 1 > -1) {
+				Coordinate next = coords[current - 1];
+				DoublePoint nextPoint = JtsGeometryConvertor.convert(next);
+				DoubleLine li = new DoubleLine(curPoint,nextPoint);
+				DoublePoint op = li.split(degree-distBack);
+				if(op==null){
+					coorsBack.add(next);
+					distBack+=li.getEncLength();
+				}else{
+					coorsBack.add(JtsGeometryConvertor.convert(op));
 					break;
 				}
-
-				Coordinate coord = coords[current];
-
-				Coordinate next = coords[current - 1];
-
-				double dist = GeometryUtils.getDistance(coord, next);
-				
-				
-				coordList.add(next);
-
+				curPoint = nextPoint;
 				current--;
 			}
+			//fore
+			List<Coordinate> coorsFore = new ArrayList<Coordinate>();
+			double distFore = 0;
 
-			Collections.reverse(coordList);
-
-			distBack = 0;
-
-			current = seqNum;
-
-			coordList.add(coords[seqNum]);
-
-			while (distBack < 20) {
-
-				if ((current + 1) >= coords.length) {
+			int currentFore = seqNum;
+			Coordinate coordFore = coords[currentFore];
+			DoublePoint curPointFore = JtsGeometryConvertor.convert(coordFore);
+			coorsFore.add(coordFore);
+			
+			while (currentFore + 1 < coords.length) {
+				Coordinate nextFore = coords[currentFore + 1];
+				DoublePoint nextPointFore = JtsGeometryConvertor.convert(nextFore);
+				DoubleLine li = new DoubleLine(curPointFore,nextPointFore);
+				DoublePoint op = li.split(degree-distFore);
+				if(op==null){
+					coorsFore.add(nextFore);
+					distFore+=li.getEncLength();
+				}else{
+					coorsFore.add(JtsGeometryConvertor.convert(op));
 					break;
 				}
-
-				Coordinate coord = coords[current];
-
-				Coordinate next = coords[current + 1];
-
-				coordList.add(next);
-
-				distBack += GeometryUtils.getDistance(coord, next);
-
-				current++;
+				curPointFore = nextPointFore;
+				currentFore++;
 			}
+			Collections.reverse(coorsBack);
+			coordList.addAll(coorsBack);
+			coordList.addAll(coorsFore);
 		} else if (startEnd == 1) {
-			double dist = 0;
+			double distFore = 0;
 
-			int current = 0;
-
-			coordList.add(coords[0]);
-
-			while (dist < 20) {
-
-				if ((current + 1) >= coords.length) {
+			int currentFore = 0;
+			Coordinate coordFore = coords[currentFore];
+			DoublePoint curPointFore = JtsGeometryConvertor.convert(coordFore);
+			coordList.add(coordFore);
+			
+			while (currentFore + 1 < coords.length) {
+				Coordinate nextFore = coords[currentFore + 1];
+				DoublePoint nextPointFore = JtsGeometryConvertor.convert(nextFore);
+				DoubleLine li = new DoubleLine(curPointFore,nextPointFore);
+				DoublePoint op = li.split(degree-distFore);
+				if(op==null){
+					coordList.add(nextFore);
+					distFore+=li.getEncLength();
+				}else{
+					coordList.add(JtsGeometryConvertor.convert(op));
 					break;
 				}
-
-				Coordinate coord = coords[current];
-
-				Coordinate next = coords[current + 1];
-
-				coordList.add(next);
-
-				dist += GeometryUtils.getDistance(coord, next);
-
-				current++;
+				curPointFore = nextPointFore;
+				currentFore++;
 			}
 		} else {
-			double dist = 0;
+			double distBack = 0;
 
-			int current = coords.length - 1;
-
-			coordList.add(coords[current]);
-
-			while (dist < 20) {
-
-				if (current - 1 < 0) {
+			int current = coords.length-1;
+			Coordinate coord = coords[current];
+			DoublePoint curPoint = JtsGeometryConvertor.convert(coord);
+			coordList.add(coord);
+			
+			while (current - 1 > -1) {
+				Coordinate next = coords[current - 1];
+				DoublePoint nextPoint = JtsGeometryConvertor.convert(next);
+				DoubleLine li = new DoubleLine(curPoint,nextPoint);
+				DoublePoint op = li.split(degree-distBack);
+				if(op==null){
+					coordList.add(next);
+					distBack+=li.getEncLength();
+				}else{
+					coordList.add(JtsGeometryConvertor.convert(op));
 					break;
 				}
-
-				Coordinate coord = coords[current];
-
-				Coordinate next = coords[current - 1];
-
-				coordList.add(next);
-
-				dist += GeometryUtils.getDistance(coord, next);
-
+				curPoint = nextPoint;
 				current--;
 			}
-
 			Collections.reverse(coordList);
-
 		}
 
 		Coordinate[] newCoords = new Coordinate[coordList.size()];
@@ -1421,8 +1429,8 @@ public class DisplayUtils {
 	}
 
 	public static void main(String[] args) throws Exception {
-		String wkt = "LINESTRING(116.48686 40.01237, 116.48676 40.01244)";
-
-		System.out.println(calIncloudedAngle(wkt, 2));
+		String wkt = "LINESTRING(116.48686 40.01237, 116.48676 40.01244,116.48661 40.01244)";
+		LineString ls = getGscLine(JtsGeometryFactory.read(wkt),0,1);
+		System.out.println(ls.toText());
 	}
 }

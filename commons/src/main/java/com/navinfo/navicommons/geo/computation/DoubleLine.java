@@ -38,6 +38,21 @@ public class DoubleLine {
 			return (epoint.getY()-spoint.getY())/(epoint.getX()-spoint.getX());
 		}
 	}
+	
+	public double getEncLength(){
+		return CompLineUtil.getEucLength(spoint, epoint);
+	}
+	
+	public DoublePoint split(double distance){
+		double len = getEncLength();
+		if(len>distance){
+			double rate = distance/len;
+			double x = spoint.getX()+getDeltaX()*rate;
+			double y = spoint.getY()+getDeltaY()*rate;
+			return new DoublePoint(DoubleUtil.keepSpecDecimal(x),DoubleUtil.keepSpecDecimal(y));
+		}
+		return null;
+	}
 	public void reverse(){
 		DoublePoint temp = epoint;
 		epoint=spoint;

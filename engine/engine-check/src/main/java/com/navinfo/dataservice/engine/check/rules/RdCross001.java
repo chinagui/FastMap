@@ -31,7 +31,7 @@ public class RdCross001 extends baseRule {
 					crossNodeList.add(((RdCrossNode) crossNode).getNodePid());
 				}
 				String sql="select 1 from rd_node_form n"
-						+ " where n.form_of_way=15"
+						+ " where n.form_of_way=15 AND N.U_RECORD != 2 "
 						+ " and n.node_pid in ("+crossNodeList.toString().replace("[", "").replace("]", "")+")";
 				DatabaseOperator operator=new DatabaseOperator();
 				List<Object> resutlList=operator.exeSelect(getConn(), sql);

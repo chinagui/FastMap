@@ -94,7 +94,7 @@ public class GLM26050_1 extends baseRule{
 			rdLinkPid = rdLink.getPid();
 		}
 		StringBuilder sb = new StringBuilder();
-        sb.append("select rcl.LINK_PID from RD_CROSS_LINK rcl where (rcl.LINK_PID= ");
+        sb.append("select rcl.LINK_PID from RD_CROSS_LINK rcl where RCL.U_RECORD != 2 AND (rcl.LINK_PID= ");
         sb.append(rdLinkPid);
         sb.append(" )");
 		String sql = sb.toString();

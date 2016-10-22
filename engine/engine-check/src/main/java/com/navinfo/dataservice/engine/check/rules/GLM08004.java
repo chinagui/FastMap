@@ -44,7 +44,9 @@ public class GLM08004 extends baseRule {
 			
 		}
 		
-		String sql = "select form_of_way from rd_link_form where link_pid in ("+StringUtils.join(linkPids,",")+") and form_of_way in (20,22)";
+		String sql = "select form_of_way from rd_link_form "
+				+ "where link_pid in ("+StringUtils.join(linkPids,",")+") "
+						+ "and form_of_way in (20,22) AND U_RECORD != 2 ";
 		
 		PreparedStatement pstmt = getConn().prepareStatement(sql);
 

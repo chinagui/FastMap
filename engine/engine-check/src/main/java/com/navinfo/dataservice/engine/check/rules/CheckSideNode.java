@@ -36,7 +36,7 @@ public class CheckSideNode extends baseRule {
 					
 		}
 		
-		String sql = "select count(1) count from rd_link where e_node_pid=:1 or s_node_pid=:2";
+		String sql = "select count(1) count from rd_link where (e_node_pid=:1 or s_node_pid=:2) AND U_RECORD != 2";
 
 		PreparedStatement pstmt = getConn().prepareStatement(sql);
 		

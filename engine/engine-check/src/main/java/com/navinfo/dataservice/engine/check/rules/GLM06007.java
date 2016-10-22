@@ -42,7 +42,7 @@ public class GLM06007 extends baseRule {
 				StringBuilder sb = new StringBuilder();
 
 				sb.append("SELECT 1 FROM RD_SE RS");
-				sb.append(" WHERE RS.NODE_PID = ");
+				sb.append(" WHERE RS.U_RECORD != 2 AND RS.NODE_PID = ");
 				sb.append(node);
 				sb.append(" AND RS.IN_LINK_PID = ");
 				sb.append(inLinkPid); 

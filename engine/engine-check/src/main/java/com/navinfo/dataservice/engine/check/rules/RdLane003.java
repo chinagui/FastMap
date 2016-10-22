@@ -108,7 +108,7 @@ public class RdLane003 extends baseRule {
 				+ "  FROM RD_CROSS_NODE N1, RD_CROSS_NODE N2"
 				+ " WHERE N1.NODE_PID = "+inLinkExitNode
 				+ "   AND N2.NODE_PID = "+outLinkEnterNode
-				+ "   AND N1.PID = N2.PID";
+				+ "   AND N1.PID = N2.PID AND N1.U_RECORD != 2 AND N2.U_RECORD != 2 ";
 		DatabaseOperator operator=new DatabaseOperator();
 		List<Object> result=operator.exeSelect(getConn(), sql);
 		if(result!=null&&result.size()==1){return true;}

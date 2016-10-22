@@ -43,7 +43,7 @@ public class CheckNodeForm extends baseRule {
 		}
 		
 
-		String sql = "select count(1) count from rd_node_form where node_pid in ("+StringUtils.join(nodePids,",")+") and form_of_way=15";
+		String sql = "select count(1) count from rd_node_form where U_RECORD != 2 AND node_pid in ("+StringUtils.join(nodePids,",")+") and form_of_way=15";
 		
 		PreparedStatement pstmt = getConn().prepareStatement(sql);
 

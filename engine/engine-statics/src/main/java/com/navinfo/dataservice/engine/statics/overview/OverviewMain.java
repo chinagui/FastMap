@@ -15,7 +15,6 @@ import java.util.Set;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.bson.Document;
-import org.bson.types.ObjectId;
 
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.model.Filters;
@@ -24,49 +23,49 @@ import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.engine.statics.StatMain;
 import com.navinfo.dataservice.engine.statics.tools.MongoDao;
 
-import net.sf.json.JSONObject;
-
 public class OverviewMain {	
 	private static Logger log = LogManager.getLogger(OverviewMain.class);
 	public static final String col_name_overview_main = "fm_stat_overview";
 	public static final String col_name_blockman = "fm_stat_overview_blockman";
 	public static final String col_name_task="fm_stat_overview_task";
-	static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-mm-dd");
-	static final SimpleDateFormat dateTimeFormat = new SimpleDateFormat("yyyymmddhhMMss");
-	private static final String stateInfoTemplate = "{\"collectPercent\":0,"
-			+ "\"collectPlanStartDate\":\"\","
-			+ "\"collectPlanEndDate\":\"\","
-			+ "\"collectPlanDate\":0,"
-			+ "\"collectActualStartDate\":\"\","
-			+ "\"collectActualEndDate\":\"\","
-			+ "\"collectDiffDate\":0,"
-			+ "\"dailyPercent\":0,"
-			+ "\"dailyPlanStartDate\":\"\","
-			+ "\"dailyPlanEndDate\":\"\","
-			+ "\"dailyPlanDate\":0,"
-			+ "\"dailyActualStartDate\":\"\","
-			+ "\"dailytActualEndDate\":\"\","
-			+ "\"dailyDiffDate\":0,"
-			+ "\"poiPlanTotal\":0," //block_man记录的poi计划量汇总
-			+ "\"roadPlanTotal\":0,"//block_man记录的road计划量汇总
-			+ "\"statDate\":\"\","//统计日期
-			+ "\"statTime\":\"\","//统计详细时间
-			+ "}";
+	public static final String col_name_subtask = "fm_stat_overview_subtask";
+	static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
+	static final SimpleDateFormat dateTimeFormat = new SimpleDateFormat("yyyyMMddhhmmss");
+	/**
+	 * @param args 第一个参数是统计日期(yyyyMMdd),第二个参数是统计的目标数据库名字，比如fm_stat
+	 * @throws ParseException
+	 */
 	public static void main(String[] args) throws ParseException{
-		
-		MongoDao mdao = new MongoDao(StatMain.db_name);
-		log.info("db_name:"+StatMain.db_name);
-		Document statInfo = calCollectPercent(mdao);
-		log.debug(statInfo);
-		mdao.insertOne(col_name_overview_main,statInfo);
+		String statDate = dateFormat.format(new Date());
+		if(args!=null&&args.length>1){
+			statDate = args[1];//外部传入的统计时间
+		}
+		String dbName = StatMain.db_name;
+		if(args!=null&&args.length>2){
+			dbName = args[2];//外部传入的dbname
+		}
+		log.info("参数 statDate:"+statDate+",dbName:"+dbName);
+		MongoDao mdao = new MongoDao(dbName);
+		log.info("db_name:"+dbName);
+		Document statInfo = calCollectPercent(mdao,statDate);
+		log.info(statInfo.toJson().toString());
+		mdao.createIndex(col_name_overview_main,new Document("statDate", 1));
+		log.info("index created");
+		mdao.updateOne(col_name_overview_main,
+				Filters.eq("statDate", statInfo.getString("stateInfo")),
+				statInfo,
+				true
+				);
+		log.info("new stat info upsert into db");
 	}
 
-	private static Document calCollectPercent(MongoDao mdao) throws ParseException {
+	private static Document calCollectPercent(MongoDao mdao, String statDate) throws ParseException {
 		log.info("cal from "+col_name_blockman);
-		Date now = new Date();
-		String curDate = dateFormat.format(now);
-		FindIterable<Document> result = mdao.find(col_name_blockman, Filters.eq("statDate", curDate))
+		
+		log.info("根据当前日期取block的统计信息");
+		FindIterable<Document> result = mdao.find(col_name_blockman, Filters.eq("statDate", statDate))
 				.projection(Projections.include(
+						"blockManId",
 						"collectPercent",
 						"collectPlanStartDate",
 						"collectPlanEndDate",
@@ -92,54 +91,55 @@ public class OverviewMain {
 		Set<String> dailytActualEndDateSet = new HashSet<String>();
 		int poiPlanTotalSum = 0;
 		int roadPlanTotalSum = 0;
+		log.info("根据mongo查询结果进行计算");
 		for (Document doc: result){
+			log.info("blockManId:"+doc.getInteger("blockManId"));
 			//计算 collectPercent
 			log.info("calCollectPercent");
 			Object collectPercent = doc.get("collectPercent");
 			if (collectPercent !=null){
 				colPercentSet.add(Integer.parseInt(collectPercent.toString()));
 			}
-			//计算 collectPlanStartDate
+			log.info("计算 collectPlanStartDate");
 			collectStartDateSet.add(doc.getString("collectPlanStartDate"));
-			//计算 collectPlanEndDate
+			log.info("计算 collectPlanEndDate");
 			collectEndDateSet.add(doc.getString("collectPlanEndDate"));
-			//计算collectActualStartDate
+			log.info("计算collectActualStartDate");
 			String colActStartDate = doc.getString("collectActualStartDate");
 			if (StringUtils.isNotEmpty(colActStartDate)){
 				collectActualStartDateSet.add(colActStartDate);
 			}
-			//计算collectActualEndDate
+			log.info("计算collectActualEndDate");
 			String colActEndDate = doc.getString("collectActualEndDate");
 			if (StringUtils.isNotEmpty(colActEndDate)){
 				collectActualEndDateSet.add(colActEndDate);
 			}
-			//计算dailyPercent
-			log.info("cal dailyPercent");
+			log.info("计算dailyPercent");
 			Object dailyPercent = doc.get("dailyPercent");
 			if (dailyPercent !=null){
 				dailyPercentSet.add(Integer.parseInt(dailyPercent.toString()));
 			}
-			//计算dailyPlanStartDateSet
+			log.info("计算dailyPlanStartDateSet");
 			String dailyPlanStartDate = doc.getString("dailyPlanStartDate");
 			if (StringUtils.isNotEmpty(dailyPlanStartDate)){
 				dailyPlanStartDateSet.add(dailyPlanStartDate);
 			}
-			//计算dailyPlanEndDateSet
+			log.info("计算dailyPlanEndDateSet");
 			String dailyPlanEndDate = doc.getString("dailyPlanEndDate");
 			if (StringUtils.isNotEmpty(dailyPlanEndDate)){
 				dailyPlanEndDateSet.add(dailyPlanEndDate);
 			}
-			//计算dailyActualStartDateSet
+			log.info("计算dailyActualStartDateSet");
 			String dailyActualStartDate = doc.getString("dailyActualStartDate");
 			if (StringUtils.isNotEmpty(dailyActualStartDate)){
 				dailyActualStartDateSet.add(dailyActualStartDate);
 			}
-			//计算dailytActualEndDate
+			log.info("计算dailytActualEndDate");
 			String dailytActualEndDate = doc.getString("dailytActualEndDate");
 			if (StringUtils.isNotEmpty(dailytActualEndDate)){
 				dailytActualEndDateSet.add(dailytActualEndDate);
 			}
-			//poiPlanTotal
+			log.info("计算poiPlanTotal,roadPlanTotal");
 			Object workDetailJson = doc.get("workDetail");
 			if(workDetailJson!=null){
 				Document workDetailDoc = (Document)workDetailJson;
@@ -154,7 +154,7 @@ public class OverviewMain {
 			}
 			
 		}
-		Document statResult = Document.parse(stateInfoTemplate);
+		Document statResult = new Document();
 		statResult.put("collectPercent", avg(colPercentSet)) ;
 		String minStartDate = calMin(collectStartDateSet);
 		String maxEndDate = calMax(collectStartDateSet);
@@ -179,12 +179,11 @@ public class OverviewMain {
 		//dailytActualEndDate
 		String dailytActualEndDate = calMax(dailytActualEndDateSet);
 		statResult.put("dailytActualEndDate", dailytActualEndDate);
-		statResult.put("dailyDiffDate", daysBetween(curDate,dailytActualEndDate));
+		statResult.put("dailyDiffDate", daysBetween(statDate,dailytActualEndDate));
 		statResult.put("poiPlanTotal", poiPlanTotalSum);
 		statResult.put("roadPlanTotal", roadPlanTotalSum);
-		statResult.put("statDate", curDate);
-		statResult.put("statTime", dateTimeFormat.format(now));
-		
+		statResult.put("statDate", statDate);
+		statResult.put("statTime", dateTimeFormat.format(new Date()));
 		return statResult;
 	}
 
@@ -223,7 +222,7 @@ public class OverviewMain {
 		if (StringUtils.isEmpty(smdate)||StringUtils.isEmpty(bdate)){
 			return 0;
 		}
-        SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd");  
+        SimpleDateFormat sdf=new SimpleDateFormat("yyyyMMdd");  
         Calendar cal = Calendar.getInstance();    
         cal.setTime(sdf.parse(smdate));    
         long time1 = cal.getTimeInMillis();                 

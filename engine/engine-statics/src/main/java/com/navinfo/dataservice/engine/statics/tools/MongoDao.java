@@ -5,8 +5,10 @@ import java.util.List;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 
+import com.mongodb.BasicDBObject;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.UpdateOptions;
 
 public class MongoDao {
 	private MongoDatabase md;
@@ -20,6 +22,16 @@ public class MongoDao {
 
 		return md;
 
+	}
+	public void updateOne(String col_name, Bson filter,Bson doc,boolean upsert){
+		try {
+			UpdateOptions updateOpt = new UpdateOptions();
+			updateOpt.upsert(upsert);
+			BasicDBObject update = new BasicDBObject("$set",doc);  
+			md.getCollection(col_name).updateOne(filter, update,updateOpt);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 	public void insertOne(String col_name, Document doc) {
 		try {
@@ -56,6 +68,15 @@ public class MongoDao {
 			e.printStackTrace();
 		}
 		return null;
+	}
+
+	public void createIndex(String col_name, Document keys) {
+		try {
+			md.getCollection(col_name).createIndex(keys);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
 	}
 
 }

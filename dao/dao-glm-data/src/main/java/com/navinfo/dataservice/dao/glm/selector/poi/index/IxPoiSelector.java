@@ -391,7 +391,7 @@ public class IxPoiSelector extends AbstractSelector {
 
 		poi.setRawFields(loadRawByRowId(poi.getRowId()));
 		
-		poi.setState(logRead.getObjectState(poi.pid(), "ix_poi"));
+		poi.setState(logRead.getObjectState(poi.pid(), "IX_POI"));
 
 		return poi;
 	}

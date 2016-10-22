@@ -1,13 +1,10 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdwarninginfo.depart;
 
-import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.warninginfo.RdWarninginfo;
 import com.navinfo.dataservice.dao.glm.selector.rd.warninginfo.RdWarninginfoSelector;
-import com.navinfo.navicommons.geo.GeoUtils;
-import com.navinfo.navicommons.geo.computation.GeometryUtils;
 
 import java.sql.Connection;
 import java.util.*;
@@ -32,7 +29,7 @@ public class Operation {
             result.insertObject(warninginfo, ObjStatus.DELETE, warninginfo.pid());
         }
         // 2.警示信息进入点为目标link的经过点
-        Set<Integer> tmpNodePids = new HashSet<>();
+        Set<Integer> tmpNodePids = new LinkedHashSet<>();
         for (RdLink link : links) {
             tmpNodePids.add(link.getsNodePid());
             tmpNodePids.add(link.geteNodePid());

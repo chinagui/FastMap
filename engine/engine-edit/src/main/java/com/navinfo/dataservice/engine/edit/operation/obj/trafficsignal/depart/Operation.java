@@ -35,7 +35,7 @@ public class Operation {
         Integer[] linkPids = leftLinks.keySet().toArray(new Integer[]{});
         int length = linkPids.length;
         // 1.信号灯进入点为分离线的经过点时删除信号灯
-        Set<Integer> tmpNodePids = new HashSet<>();
+        Set<Integer> tmpNodePids = new LinkedHashSet<>();
         for (RdLink link : links) {
             tmpNodePids.add(link.getsNodePid());
             tmpNodePids.add(link.geteNodePid());

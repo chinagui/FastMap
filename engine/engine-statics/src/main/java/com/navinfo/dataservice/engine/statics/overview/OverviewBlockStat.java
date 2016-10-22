@@ -111,13 +111,13 @@ public class OverviewBlockStat {
 			List<Map<String,Object>> blockManMapList = OracleDao.getBlockManListWithStat();
 			
 			MongoDao md = new MongoDao(db_name);
-			List<Document> subtaskStatList = new ArrayList<Document>();
+			List<Document> blockManStatList = new ArrayList<Document>();
 			Iterator<Map<String,Object>> blockManMapItr = blockManMapList.iterator();
 			while(blockManMapItr.hasNext()){
-				Document subtask = getBlockManStat(blockManMapItr.next());
-				subtaskStatList.add(subtask);
+				Document blockMan = getBlockManStat(blockManMapItr.next());
+				blockManStatList.add(blockMan);
 			}
-			md.insertMany(col_name_blockman, subtaskStatList);
+			md.insertMany(col_name_blockman, blockManStatList);
 			
 			log.info("-- end stat:" + col_name_blockman);
 			System.exit(0);
@@ -140,59 +140,62 @@ public class OverviewBlockStat {
 		Document doc = new Document();
 		
 		SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
-		SimpleDateFormat dft = new SimpleDateFormat("yyyyMMddHHmmss");
+		//SimpleDateFormat dft = new SimpleDateFormat("yyyymmddhhmmss");
 		Date d = df.parse(stat_date);
 		if(blockManMap.get("blockManId") != null){
 			
-		
+		//System.out.println("blockManId :  "+blockManMap.get("blockManId"));
 		//根据blockManId 去查询所有子任务,计算子任务的完成度(采集/日编)
 		Map<String,Object> subtaskPercentMap =getSubtaskPercentThroughBlockManId(Integer.parseInt(blockManMap.get("blockManId").toString()));
 		//ManApi api=(ManApi) ApplicationContextUtil.getBean("manApi");
 		doc.put("blockManId", blockManMap.get("blockManId"));
 		doc.put("taskId", blockManMap.get("taskId"));
+		doc.put("collectGroupId", blockManMap.get("collectGroupId"));
+		doc.put("dailyGroupId", blockManMap.get("dailyGroupId"));
 		doc.put("progress", subtaskPercentMap.get("progress"));//进度
+		
 		doc.put("percent ", ((int)subtaskPercentMap.get("collectPercent")+(int)subtaskPercentMap.get("dailyPercent"))/2);//完成度
 		doc.put("status", blockManMap.get("status"));
-		doc.put("planStartDate", blockManMap.get("collectPlanStartDate"));
-		doc.put("planEndDate", blockManMap.get("dailyPlanEndDate"));
+		doc.put("planStartDate", df.format(blockManMap.get("collectPlanStartDate")));
+		doc.put("planEndDate",  df.format(blockManMap.get("dailyPlanEndDate")));
 		doc.put("diffDate", StatUtil.daysOfTwo(d,(Date)blockManMap.get("dailyPlanEndDate")));
 		doc.put("poiPlanTotal", blockManMap.get("poiPlanTotal"));
 		doc.put("roadPlanTotal", blockManMap.get("roadPlanTotal"));
 		//采集部分
 		doc.put("collectProgress", subtaskPercentMap.get("collectProgress"));
-		doc.put("collectPercent ", subtaskPercentMap.get("collectPercent"));
-		doc.put("collectPlanStartDate", blockManMap.get("collectPlanStartDate"));
-		doc.put("collectPlanEndDate", blockManMap.get("collectPlanEndDate"));
+		doc.put("collectPercent", subtaskPercentMap.get("collectPercent"));
+		doc.put("collectPlanStartDate", df.format(blockManMap.get("collectPlanStartDate")));
+		doc.put("collectPlanEndDate", df.format(blockManMap.get("collectPlanEndDate")));
 		doc.put("collectPlanDate", StatUtil.daysOfTwo((Date)blockManMap.get("collectPlanStartDate"),(Date)blockManMap.get("collectPlanEndDate")));
-		doc.put("collectActualStartDate", blockManMap.get("collectPlanStartDate"));		
+		doc.put("collectActualStartDate", df.format(blockManMap.get("collectPlanStartDate")));		
 		doc.put("collectDiffDate", StatUtil.daysOfTwo(d,(Date)blockManMap.get("collectPlanEndDate")));
 		//日编部分
 		doc.put("dailyProgress", subtaskPercentMap.get("dailyProgress"));
 		doc.put("dailyPercent", subtaskPercentMap.get("dailyPercent"));
-		doc.put("dailyPlanStartDate", blockManMap.get("dailyPlanStartDate"));
-		doc.put("dailyPlanEndDate", blockManMap.get("dailyPlanEndDate"));
+		doc.put("dailyPlanStartDate", df.format(blockManMap.get("dailyPlanStartDate")));
+		doc.put("dailyPlanEndDate", df.format(blockManMap.get("dailyPlanEndDate")));
 		doc.put("dailyPlanDate", StatUtil.daysOfTwo((Date)blockManMap.get("dailyPlanStartDate"),(Date)blockManMap.get("dailyPlanEndDate")));
-		doc.put("dailyActualStartDate", blockManMap.get("dailyPlanStartDate"));
+		doc.put("dailyActualStartDate", df.format(blockManMap.get("dailyPlanStartDate")));
 		doc.put("dailyDiffDate", StatUtil.daysOfTwo(d,(Date)blockManMap.get("dailyPlanEndDate")));
 		
 		doc.put("statDate",stat_date);
 		doc.put("statTime",stat_time);
 		
 		//如果 oracle BLOCK_MAN 表里的status =0 说明blockman已经关闭
-		if(blockManMap.get("status") != null && StringUtils.isNotEmpty((String) blockManMap.get("status")) 
+		if(blockManMap.get("status") != null && StringUtils.isNotEmpty(blockManMap.get("status").toString()) 
 				&& blockManMap.get("status").equals("0")){
 			//如果 oracle  FM_STAT_OVERVIEW_BLOCKMAN 表里的status存在且 等于0 
 			if(blockManMap.get("fStatus") != null && StringUtils.isNotEmpty((String) blockManMap.get("fStatus")) 
 					&& blockManMap.get("fStatus").equals("0")){
-				doc.put("collectActualEndDate", blockManMap.get("fCollectActualEndDate"));
-				doc.put("dailytActualEndDate", blockManMap.get("fDailyActualEndDate"));
+				doc.put("collectActualEndDate", df.format(blockManMap.get("fCollectActualEndDate")));
+				doc.put("dailyActualEndDate", df.format(blockManMap.get("fDailyActualEndDate")));
 			}else{
-				doc.put("collectActualEndDate", df.format(d));
-				doc.put("dailytActualEndDate", dft.format(d));
+				doc.put("collectActualEndDate", stat_date);
+				doc.put("dailyActualEndDate", stat_time);
 			}
 		}else{
 			doc.put("collectActualEndDate", null);
-			doc.put("dailytActualEndDate", null);
+			doc.put("dailyActualEndDate", null);
 		}
 		
 		}
@@ -273,7 +276,7 @@ public class OverviewBlockStat {
 				new String[] { "dubbo-consumer-datahub-test.xml"});
 		context.start();
 		new ApplicationContextUtil().setApplicationContext(context);
-		OverviewBlockStat overviewSubtaskStat = new OverviewBlockStat("fm_stat", "201610211518");
+		OverviewBlockStat overviewSubtaskStat = new OverviewBlockStat("fm_stat", "201610221415");
 		overviewSubtaskStat.runStat();
 		
 	}

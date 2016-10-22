@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Scanner;
 
 import org.apache.commons.dbutils.DbUtils;
+import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.edit.iface.EditApi;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
@@ -52,9 +53,13 @@ import net.sf.json.JSONObject;
 public class UploadOperation {
 	
 	private EditApi apiService;
+	private QueryRunner runn;
+	
+	protected Logger log = Logger.getLogger(UploadOperation.class);
 	
 	public UploadOperation() {
 		this.apiService=(EditApi) ApplicationContextUtil.getBean("editApi");
+		runn = new QueryRunner();
 	}
 	
 	/**
@@ -86,6 +91,7 @@ public class UploadOperation {
 	 * @param line
 	 * @return
 	 */
+	//FIXME:这里通过u_record来判断POI的状态，需要修改。
 	@SuppressWarnings("static-access")
 	private JSONObject changeData(JSONArray ja) throws Exception {
 		JSONObject retObj = new JSONObject();
@@ -254,41 +260,52 @@ public class UploadOperation {
 				Connection conn = DBConnector.getInstance().getConnectionById(Integer.parseInt(dbId));
 				try {
 					List<JSONObject> poiList = (List<JSONObject>) insertObj.get(dbId);
-					JSONObject relateParentChildren = new JSONObject();
 					for (int i = 0; i < poiList.size(); i++) {
 						JSONObject jo = poiList.get(i);
 						JSONObject perRetObj = obj2PoiForInsert(jo, version);
 						int flag = perRetObj.getInt("flag");
 						if (flag == 1) {
-							JSONObject poiObj = perRetObj.getJSONObject("ret");
-							if (perRetObj.containsKey("relate")) {
-								relateParentChildren.put(poiObj.getString("pid"), perRetObj.getJSONArray("relate"));
-							}
-							JSONObject json = new JSONObject();
-							
-							json.put("dbId", dbId);
-							json.put("objId", poiObj.getInt("pid"));
-							json.put("command", "CREATE");
-							json.put("type", "IXPOIUPLOAD");
-							json.put("data", poiObj);
-							// 调用一次插入
-							apiService.run(json);
-							count++;
+							try{
+								JSONObject poiObj = perRetObj.getJSONObject("ret");
+								JSONObject relateParentChildren = new JSONObject();
+								if (perRetObj.containsKey("relate")) {
+									relateParentChildren.put(poiObj.getString("pid"), perRetObj.getJSONArray("relate"));
+								}
+								JSONObject json = new JSONObject();
+								
+								json.put("dbId", dbId);
+								json.put("objId", poiObj.getInt("pid"));
+								json.put("command", "CREATE");
+								json.put("type", "IXPOIUPLOAD");
+								json.put("data", poiObj);
+								// 调用一次插入
+								apiService.run(json);
 
-							// 鲜度验证，POI状态更新
-							String rawFields = jo.getString("rawFields");
-							upatePoiStatusForAndroid(conn, poiObj.getString("rowId"), 0, rawFields,1);
+								// 处理一个库中的父子关系20161011
+								if (relateParentChildren.size()>0) {
+									insetParent(conn,relateParentChildren);
+								}
+								
+								// 鲜度验证，POI状态更新
+								String rawFields = jo.getString("rawFields");
+								upatePoiStatusForAndroid(conn, poiObj.getString("rowId"), 0, rawFields,1);
+
+								conn.commit();
+								count++;
+							}catch(Exception e){
+								DbUtils.rollback(conn);
+								log.warn("POI入库错误："+jo.toString());
+								log.error(e.getMessage(),e);
+								JSONObject errObj = new JSONObject();
+								errObj.put("fid", jo.getString("fid"));
+								errObj.put("reason", e.getMessage());
+								errList.add(errObj);
+							}
 						} else if (flag == 0) {
 							errList.add(perRetObj.getJSONObject("ret"));
 						}
 
 					}
-					
-					// 处理一个库中的父子关系20161011
-					if (relateParentChildren.size()>0) {
-						insetParent(conn,relateParentChildren);
-					}
-					
 				} catch (Exception e) {
 					throw e;
 				} finally {
@@ -321,28 +338,40 @@ public class UploadOperation {
 						JSONObject perRetObj = obj2PoiForUpdate(jo, version, conn);
 						int flag = perRetObj.getInt("flag");
 						if (flag == 1) {
-							JSONObject poiJson = perRetObj.getJSONObject("ret");
-							if (perRetObj.getJSONObject("relate").size()>0) {
-								relateParentChildren.put(poiJson.getString("pid"), perRetObj.getJSONObject("relate"));
-							}
-							JSONObject commandJson = new JSONObject();
-							commandJson.put("dbId", Integer.parseInt(dbId));
-							commandJson.put("data", poiJson);
-							commandJson.put("objId", poiJson.getInt("pid"));
-							commandJson.put("command", "UPDATE");
-							commandJson.put("type", "IXPOIUPLOAD");
-							// 调用一次更新
-							apiService.run(commandJson);
-							count++;
+							try{
+								JSONObject poiJson = perRetObj.getJSONObject("ret");
+								if (perRetObj.getJSONObject("relate").size()>0) {
+									relateParentChildren.put(poiJson.getString("pid"), perRetObj.getJSONObject("relate"));
+								}
+								JSONObject commandJson = new JSONObject();
+								commandJson.put("dbId", Integer.parseInt(dbId));
+								commandJson.put("data", poiJson);
+								commandJson.put("objId", poiJson.getInt("pid"));
+								commandJson.put("command", "UPDATE");
+								commandJson.put("type", "IXPOIUPLOAD");
+								// 调用一次更新
+								apiService.run(commandJson);
 
-							// 鲜度验证，POI状态更新
-							boolean freshFlag = perRetObj.getBoolean("freshFlag");
-							String rawFields = jo.getString("rawFields");
-							if (freshFlag) {
-								upatePoiStatusForAndroid(conn, poiJson.getString("rowId"), 1, rawFields,2);
-							} else {
-								upatePoiStatusForAndroid(conn, poiJson.getString("rowId"), 0, rawFields,1);
-					            updatePoifreshVerified(poiJson.getInt("pid"),conn);
+								// 鲜度验证，POI状态更新
+								boolean freshFlag = perRetObj.getBoolean("freshFlag");
+								String rawFields = jo.getString("rawFields");
+								if (freshFlag) {
+									upatePoiStatusForAndroid(conn, poiJson.getString("rowId"), 1, rawFields,2);
+								} else {
+									upatePoiStatusForAndroid(conn, poiJson.getString("rowId"), 0, rawFields,1);
+						            updatePoifreshVerified(poiJson.getInt("pid"),conn);
+								}
+								
+								conn.commit();
+								count++;
+							}catch(Exception e){
+								DbUtils.rollback(conn);
+								log.warn("POI入库错误："+jo.toString());
+								log.error(e.getMessage(),e);
+								JSONObject errObj = new JSONObject();
+								errObj.put("fid", jo.getString("fid"));
+								errObj.put("reason", e.getMessage());
+								errList.add(errObj);
 							}
 						} else if (flag == 0) {
 							errList.add(perRetObj.getJSONObject("ret"));
@@ -1594,7 +1623,6 @@ public class UploadOperation {
 		try {
 			pstmt = conn.prepareStatement(sb.toString());
 			pstmt.executeUpdate();
-			conn.commit();
 		} catch (Exception e) {
 			throw e;
 
@@ -1695,7 +1723,6 @@ public class UploadOperation {
 					pstmtChildren.execute();
 				}
 			}
-			conn.commit();
 		} catch (Exception e) {
 			throw e;
 		} finally {
@@ -1877,5 +1904,8 @@ public class UploadOperation {
 				DBUtils.closeStatement(pstmt);
 			}
 		}
+	
+
+	
 
 }

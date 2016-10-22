@@ -12,6 +12,7 @@ import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.lc.LcFace;
 import com.navinfo.dataservice.dao.glm.model.lc.LcLink;
+import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 
 public class Command extends AbstractCommand {
@@ -29,6 +30,8 @@ public class Command extends AbstractCommand {
 	private JSONArray interNodes;
 	
 	private List<LcFace> faces;
+	
+	private List<RdGsc> gscList;
 
 	public int getLinkPid() {
 		return linkPid;
@@ -52,6 +55,15 @@ public class Command extends AbstractCommand {
 
 	public void setInterLines(JSONArray interLines) {
 		this.interLines = interLines;
+	}
+	
+	
+	public List<RdGsc> getGscList() {
+		return gscList;
+	}
+
+	public void setGscList(List<RdGsc> gscList) {
+		this.gscList = gscList;
 	}
 
 	public LcLink getUpdateLink() {

@@ -14,7 +14,11 @@ import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchVia;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
+import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionDetail;
+import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionVia;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 
 public class Operation {
 
@@ -54,6 +58,8 @@ public class Operation {
 	private Set<Integer> updateBranch = new HashSet<Integer>();
 
 	RdBranchSelector branchSelector = null;
+	
+	RdLinkSelector linkSelector = null;
 
 	public Operation(Connection conn, int preNodePid, int lastNodePid,
 			Map<Integer, RdLink> noTargetLinks, List<RdLink> targetLinks) {
@@ -67,6 +73,8 @@ public class Operation {
 		init(noTargetLinks, targetLinks);
 
 		branchSelector = new RdBranchSelector(this.conn);
+
+		linkSelector = new RdLinkSelector(this.conn);
 	}
 
 	private void init(Map<Integer, RdLink> noTargetLinks,
@@ -501,15 +509,26 @@ public class Operation {
 		for (RdBranch branch : branchs) {
 
 			List<Integer> connectLinkPids = new ArrayList<Integer>();
-
-			connectLinkPids.add(branch.getInLinkPid());
-
+			
 			for (IRow rowVia : branch.getVias()) {
 
 				RdBranchVia via = (RdBranchVia) rowVia;
 
-				connectLinkPids.add(via.getLinkPid());
+				if (!connectLinkPids.contains(via.getLinkPid())) {
+					connectLinkPids.add(via.getLinkPid());
+				}
 			}
+
+			boolean isOutLinkInNode = isOutLinkInNode(branch, connectLinkPids,
+					nodePid);
+
+			if (!isOutLinkInNode) {
+				
+				continue;
+			}
+
+			connectLinkPids.add(branch.getInLinkPid());
+			
 
 			if (containNoTargetLink(connectLinkPids)
 					|| containTargetLink(connectLinkPids)) {
@@ -524,6 +543,45 @@ public class Operation {
 
 			updateBranch(handleMap, nodePid);
 		}
+	}
+	
+	/**
+	 * 判断node是不是 进入退出线的点。
+	 * 
+	 * @param restriction
+	 * @param detail
+	 * @param nodePid
+	 * @return
+	 * @throws Exception
+	 */
+	private boolean isOutLinkInNode(RdBranch branch,List<Integer> viaPids,
+			 int nodePid) throws Exception {
+		
+		if (viaPids.size() == 0) {
+
+			if (branch.getNodePid() != nodePid) {
+
+				return false;
+			} else {
+				return true;
+			}
+		}
+
+		List<IRow> linkRows = linkSelector.loadByIds(viaPids, true,
+				false);
+
+		for (IRow linkRow : linkRows) {
+			
+			RdLink link = (RdLink) linkRow;
+
+			if (link.getsNodePid() == nodePid || link.geteNodePid() == nodePid) {
+
+				return true;
+			}
+			
+		}
+		
+		return false;
 	}
 
 	private void updateBranch(Map<Integer, RdBranch> handleLastMap,

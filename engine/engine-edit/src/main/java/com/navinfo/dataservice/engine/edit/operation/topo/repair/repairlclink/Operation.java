@@ -98,10 +98,31 @@ public class Operation implements IOperation {
 			}
 			result.insertObject(this.command.getUpdateLink(), ObjStatus.DELETE, this.command.getLinkPid());
 		}
+		updataRelationObj(this.command.getUpdateLink(), links, result);
 		map.put(this.command.getLinkPid(), links);
 		this.map = map;
 	}
+	
+	 /**
+     * 维护关联要素
+     *
+     * @throws Exception
+     */
+    private void updataRelationObj(LcLink oldLink, List<LcLink> newLinks, Result result) throws Exception 
+    {
+		// 立交
+		com.navinfo.dataservice.engine.edit.operation.obj.rdgsc.update.Operation gscOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdgsc.update.Operation();
 
+		Map<Integer, Geometry> newLinkMap = new HashMap<Integer, Geometry>();
+
+		for (LcLink link : newLinks) {
+			newLinkMap.put(link.getPid(), link.getGeometry());
+		}
+
+		gscOperation.repairLink(this.command.getGscList(), newLinkMap, oldLink,
+				result);
+    }
+    
 	/**
 	 * 修改面的信息
 	 * 

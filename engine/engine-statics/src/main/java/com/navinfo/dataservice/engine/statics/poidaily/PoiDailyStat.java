@@ -91,9 +91,10 @@ public class PoiDailyStat implements Runnable {
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			throw new ServiceException("创建失败，原因为:" + e.getMessage(), e);
-		} finally {
-			DbUtils.commitAndCloseQuietly(conn);
-		}
+		} 
+//		finally {
+//			DbUtils.commitAndCloseQuietly(conn);
+//		}
 	}
 
 	public Map<String, JSONObject> getPois() throws ServiceException {
@@ -144,59 +145,107 @@ public class PoiDailyStat implements Runnable {
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			throw new ServiceException("创建失败，原因为:" + e.getMessage(), e);
+		} 
+//		finally {
+//			DbUtils.commitAndCloseQuietly(conn);
+//		}
+	}
+
+//	public List<Document> doStatPoi(Map<String, JSONObject> map) throws ServiceException {
+//		List<Document> backList = new ArrayList<Document>();
+//
+////		Map<String, Integer> mapSeason = StatInit.getPoiSeasonStat(db_name, col_name_seasion_grid, "grid_id");
+//		Map<String, Integer> uploadPois = getUploadPois();
+//
+//		for (Entry<String, Integer> entry : uploadPois.entrySet()) {
+//
+//			String grid_id = entry.getKey();
+//			int total = entry.getValue();
+//			JSONObject obj = map.get(grid_id);
+//			JSONArray finish_pids = new JSONArray();
+//			int finish = 0;
+//			if (obj != null) {
+//				finish_pids = obj.getJSONArray("finish_pids");
+//				finish = (Integer) obj.get("finish");
+//			}
+//
+//			Document json = new Document();
+//			// ------------------------------
+//			json.put("grid_id", grid_id);
+//			json.put("stat_date", stat_date);
+//			json.put("stat_time", stat_time);
+//			// ------------------------------
+//			Document road = new Document();
+//			road.put("total", total);
+//			road.put("finish", finish);
+//			road.put("finish_pids", finish_pids);
+//			if (finish == 0 || total == 0) {
+//				road.put("percent", 0);
+//			} else {
+//				road.put("percent", StatUtil.formatDouble((double) finish / total * 100));
+//			}
+//
+//			// ------------------------------
+//			json.put("poi", road);
+//			backList.add(json);
+//		}
+//		return backList;
+//	}
+
+	public List<Document> doStatPoi() throws ServiceException {
+		try{
+			List<Document> backList = new ArrayList<Document>();
+	
+			Map<String, JSONObject> map = getPois();
+			Map<String, Integer> uploadPois = getUploadPois();
+	
+			for (Entry<String, Integer> entry : uploadPois.entrySet()) {
+	
+				String grid_id = entry.getKey();
+				int total = entry.getValue();
+				JSONObject obj = map.get(grid_id);
+				JSONArray finish_pids = new JSONArray();
+				int finish = 0;
+				if (obj != null) {
+					finish_pids = obj.getJSONArray("finish_pids");
+					finish = (Integer) obj.get("finish");
+				}
+	
+				Document json = new Document();
+				// ------------------------------
+				json.put("grid_id", grid_id);
+				json.put("stat_date", stat_date);
+				json.put("stat_time", stat_time);
+				// ------------------------------
+				Document road = new Document();
+				road.put("total", total);
+				road.put("finish", finish);
+				road.put("finish_pids", finish_pids);
+				if (finish == 0 || total == 0) {
+					road.put("percent", 0);
+				} else {
+					road.put("percent", StatUtil.formatDouble((double) finish / total * 100));
+				}
+	
+				// ------------------------------
+				json.put("poi", road);
+				backList.add(json);
+			}
+			return backList;
+		}catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			throw new ServiceException("查询失败，原因为:" + e.getMessage(), e);
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-
-	public List<Document> doStatPoi(Map<String, JSONObject> map) throws ServiceException {
-		List<Document> backList = new ArrayList<Document>();
-
-//		Map<String, Integer> mapSeason = StatInit.getPoiSeasonStat(db_name, col_name_seasion_grid, "grid_id");
-		Map<String, Integer> uploadPois = getUploadPois();
-
-		for (Entry<String, Integer> entry : uploadPois.entrySet()) {
-
-			String grid_id = entry.getKey();
-			int total = entry.getValue();
-			JSONObject obj = map.get(grid_id);
-			JSONArray finish_pids = new JSONArray();
-			int finish = 0;
-			if (obj != null) {
-				finish_pids = obj.getJSONArray("finish_pids");
-				finish = (Integer) obj.get("finish");
-			}
-
-			Document json = new Document();
-			// ------------------------------
-			json.put("grid_id", grid_id);
-			json.put("stat_date", stat_date);
-			json.put("stat_time", stat_time);
-			// ------------------------------
-			Document road = new Document();
-			road.put("total", total);
-			road.put("finish", finish);
-			road.put("finish_pids", finish_pids);
-			if (finish == 0 || total == 0) {
-				road.put("percent", 0);
-			} else {
-				road.put("percent", StatUtil.formatDouble((double) finish / total * 100));
-			}
-
-			// ------------------------------
-			json.put("poi", road);
-			backList.add(json);
-		}
-		return backList;
-	}
-
 	public void run() {
 		log.info("-- begin do sub_task");
 		try {
 			log.info("-- begin do sub_task" + conn);
-			Map<String, JSONObject> ja = getPois();
-			new MongoDao(db_name).insertMany(col_name, doStatPoi(ja));
-
+//			Map<String, JSONObject> ja = getPois();
+//			new MongoDao(db_name).insertMany(col_name, doStatPoi(ja));
+			new MongoDao(db_name).insertMany(col_name, doStatPoi());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

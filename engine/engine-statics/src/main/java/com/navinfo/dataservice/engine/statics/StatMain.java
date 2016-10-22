@@ -61,7 +61,8 @@ public class StatMain {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		String flag = String.valueOf(args[0]);
+		//String flag = String.valueOf(args[0]);
+		String flag="overview";
 		if (flag == null) {
 			System.exit(0);
 		} else {
@@ -79,9 +80,9 @@ public class StatMain {
 				new OverviewBlockMain(db_name, stat_time).runStat();
 			}else if (flag.equalsIgnoreCase(flag_task)) {
 				new OverviewTaskMain(db_name, stat_time).runStat();
-			}//else if (flag.equalsIgnoreCase(flag_overview)) {
-				//new OverviewMain(db_name, stat_time).runStat();
-			//}
+			}else if (flag.equalsIgnoreCase(flag_overview)) {
+				new OverviewMain(db_name, stat_time).runStat();
+			}
 			/*else if (flag.equalsIgnoreCase(flag_season_poi)) {
 				new PoiSeasonMain(db_name, stat_time).runStat();
 			} else if (flag.equalsIgnoreCase(flag_season_road)) {

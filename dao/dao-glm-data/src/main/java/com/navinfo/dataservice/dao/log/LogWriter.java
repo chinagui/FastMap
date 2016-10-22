@@ -531,12 +531,12 @@ public class LogWriter {
 
 			ld.setOpTp(Status.UPDATE);
 
-			ld.setTbNm(r.tableName());
+			ld.setTbNm(r.tableName().toUpperCase());
 			
 			//设置对象id和tbName
 			ld.setObPid(listObPidList.get(i));
 			
-			ld.setObNm(SelectorUtils.getObjTableName(r));
+			ld.setObNm(SelectorUtils.getObjTableName(r).toUpperCase());
 
 			ld.setIsCk(0);
 
@@ -565,7 +565,7 @@ public class LogWriter {
 
 				field.setAccessible(true);
 
-				column = StringUtils.toColumnName(column);
+				column = StringUtils.toColumnName(column).toUpperCase();
 
 				Object value = field.get(r);
 
@@ -635,11 +635,11 @@ public class LogWriter {
 			//设置对象id和tbName
 			ld.setObPid(listObPidList.get(i));
 			
-			ld.setObNm(SelectorUtils.getObjTableName(r));
+			ld.setObNm(SelectorUtils.getObjTableName(r).toUpperCase());
 			
 			ld.setOpTp(Status.DELETE);
 
-			ld.setTbNm(r.tableName());
+			ld.setTbNm(r.tableName().toUpperCase());
 
 			ld.setIsCk(0);
 
@@ -682,11 +682,11 @@ public class LogWriter {
 			//设置对象id和tbName
 			ld.setObPid(listAddObjPidList.get(i));
 			
-			ld.setObNm(SelectorUtils.getObjTableName(r));
+			ld.setObNm(SelectorUtils.getObjTableName(r).toUpperCase());
 
 			ld.setOpTp(Status.INSERT);
 
-			ld.setTbNm(r.tableName());
+			ld.setTbNm(r.tableName().toUpperCase());
 
 			ld.setIsCk(0);
 
@@ -787,22 +787,22 @@ public class LogWriter {
 				if ("pid".equals(key)) {
 					if (row instanceof IObj) {
 						if (row instanceof RdCrossName) {
-							json.put(key, rowJson.get(key));
+							json.put(key.toUpperCase(), rowJson.get(key));
 						} else {
-							json.put(((IObj) row).primaryKey(),
+							json.put(((IObj) row).primaryKey().toUpperCase(),
 									rowJson.get(key));
 						}
 					} else {
-						json.put(key, rowJson.get(key));
+						json.put(key.toUpperCase(), rowJson.get(key));
 					}
 
 				} else if ("geometry".equals(key)) {
 
 					if (row.objType() == ObjType.CKEXCEPTION) {
-						json.put(StringUtils.toColumnName(key),
+						json.put(StringUtils.toColumnName(key).toUpperCase(),
 								rowJson.get(key));
 					} else {
-						json.put("geometry", Geojson.geojson2Wkt(rowJson
+						json.put("geometry".toUpperCase(), Geojson.geojson2Wkt(rowJson
 								.getString("geometry")));
 					}
 				} else {
@@ -810,17 +810,17 @@ public class LogWriter {
 					Object value = rowJson.get(key);
 
 					if (value instanceof String) {
-						json.put(StringUtils.toColumnName(key),
+						json.put(StringUtils.toColumnName(key).toUpperCase(),
 								((String) value).replace("'", "''"));
 					} else {
-						json.put(StringUtils.toColumnName(key), value);
+						json.put(StringUtils.toColumnName(key).toUpperCase(), value);
 					}
 
 				}
 			}
 		}
 
-		json.put("row_id", row.rowId());
+		json.put("row_id".toUpperCase(), row.rowId());
 
 		return json;
 	}
@@ -843,7 +843,7 @@ public class LogWriter {
 
 					ldC.setOpTp(Status.INSERT);
 
-					ldC.setTbNm(row.tableName());
+					ldC.setTbNm(row.tableName().toUpperCase());
 
 					ldC.setIsCk(0);
 

@@ -512,7 +512,7 @@ public class OverviewStatTask {
 				new String[] { "dubbo-consumer-datahub-test.xml"});
 		context.start();
 		new ApplicationContextUtil().setApplicationContext(context);
-		OverviewStatTask overviewSubtaskStat = new OverviewStatTask("fm_stat", "20161021180412");
+		OverviewStatTask overviewSubtaskStat = new OverviewStatTask("fm_stat", "20161022180412");
 		overviewSubtaskStat.runStat();
 	}
 

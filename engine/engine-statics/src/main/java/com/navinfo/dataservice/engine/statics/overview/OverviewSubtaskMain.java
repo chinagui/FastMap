@@ -317,6 +317,7 @@ public class OverviewSubtaskMain {
 		
 		stat.put("gridPercentDetails", new HashMap<String,Integer>());
 		stat.put("percent", 100);
+		stat.put("progress", 1);
 		
 		return stat;
 	}
@@ -358,7 +359,7 @@ public class OverviewSubtaskMain {
 				new String[] { "dubbo-consumer-datahub-test.xml"});
 		context.start();
 		new ApplicationContextUtil().setApplicationContext(context);
-		OverviewSubtaskMain overviewSubtaskStat = new OverviewSubtaskMain("fm_stat", "201610191340");
+		OverviewSubtaskMain overviewSubtaskStat = new OverviewSubtaskMain("fm_stat", "201610221340");
 		overviewSubtaskStat.runStat();
 	}
 }

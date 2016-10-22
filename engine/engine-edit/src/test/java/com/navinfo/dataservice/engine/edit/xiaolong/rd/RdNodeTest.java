@@ -29,7 +29,7 @@ public class RdNodeTest extends InitApplication{
 	
 	@Test
 	public void testMove() {
-		String parameter = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"RDNODE\",\"objId\":11738273,\"data\":{\"digitalLevel\":2,\"pid\":11738273,\"objStatus\":\"UPDATE\"}}";
+		String parameter = "{\"command\":\"MOVE\",\"dbId\":17,\"objId\":15430054,\"data\":{\"longitude\":116.62668853998183,\"latitude\":40.333333333333336},\"type\":\"RDNODE\"}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

@@ -44,7 +44,7 @@ public class GLM13034 extends baseRule {
 				String sql="SELECT 1"
 						+ "  FROM RD_TOLLGATE T"
 						+ " WHERE T.NODE_PID <> "+nodePid
-						+ "   AND (T.IN_LINK_PID = "+outLinkPid+" OR T.OUT_LINK_PID = "+inLinkPid+")";
+						+ "  AND T.U_RECORD != 2 AND (T.IN_LINK_PID = "+outLinkPid+" OR T.OUT_LINK_PID = "+inLinkPid+")";
 				DatabaseOperator getObj=new DatabaseOperator();
 				List<Object> resultList=new ArrayList<Object>();
 				resultList=getObj.exeSelect(this.getConn(), sql);

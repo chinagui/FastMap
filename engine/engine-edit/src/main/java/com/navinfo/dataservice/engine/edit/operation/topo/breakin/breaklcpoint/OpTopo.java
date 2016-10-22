@@ -23,13 +23,10 @@ public class OpTopo implements IOperation {
 	protected Logger log = Logger.getLogger(this.getClass());
 	private Command command;
 
-	private Check check;
-
 	private Connection conn;
 
 	public OpTopo(Command command, Check check, Connection conn) {
 		this.command = command;
-		this.check = check;
 		this.conn = conn;
 	}
 

@@ -48,7 +48,8 @@ public class PermitEraseGscNode extends baseRule {
 				boolean isError=false;	
 				String sqltmp="SELECT G.*"
 						+ "  FROM RD_GSC_LINK L1, RD_GSC G"
-						+ " WHERE L1.TABLE_NAME = 'RD_LINK'"
+						+ " WHERE L1.TABLE_NAME = 'RD_LINK' AND L1.U_RECORD != 2 "
+						+ "  AND G.U_RECORD != 2 "
 						+ "   AND L1.LINK_PID = "+rdLink.getPid()
 						+ "   AND L1.PID = G.PID";
 				List<RdGsc> gscList=gscSelector.loadBySql(sqltmp, false);

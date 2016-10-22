@@ -26,7 +26,7 @@ public class CheckNoSameRelation extends baseRule {
 	 */
 	@Override
 	public void preCheck(CheckCommand checkCommand) throws Exception {
-		String sql = "select pid from rd_restriction where in_link_pid=:1 and node_pid=:2";
+		String sql = "select pid from rd_restriction where in_link_pid=:1 and node_pid=:2 and U_RECORD != 2";
 		
 		PreparedStatement pstmt = getConn().prepareStatement(sql);
 		for(IRow obj:checkCommand.getGlmList()){

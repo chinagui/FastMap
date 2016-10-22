@@ -8,6 +8,7 @@ import com.navinfo.dataservice.api.man.model.Grid;
 import com.navinfo.dataservice.api.man.model.Message;
 import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.api.man.model.Subtask;
+import com.navinfo.dataservice.api.man.model.Task;
 
 
 /*
@@ -53,5 +54,9 @@ public interface ManApi{
 	public void close(int subtaskId) throws Exception;
 	
 	public void updateProduceStatus(int produceId,int status) throws Exception;
+	
+	public List<Task> queryTaskAll() throws Exception;
+	
+	public Map<String, Object> queryTaskStatByTaskId(long taskId) throws Exception;
 }
 

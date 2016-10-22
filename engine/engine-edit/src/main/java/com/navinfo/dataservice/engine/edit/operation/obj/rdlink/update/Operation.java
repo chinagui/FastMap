@@ -1,8 +1,11 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdlink.update;
 
 import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
+import com.navinfo.dataservice.dao.glm.iface.AlertObject;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
@@ -17,6 +20,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkSidewalk;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkSpeedlimit;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkWalkstair;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkZone;
+import com.navinfo.dataservice.dao.glm.model.rd.trafficsignal.RdTrafficsignal;
 import com.navinfo.dataservice.engine.edit.utils.batch.SpeedLimitUtils;
 
 import net.sf.json.JSONArray;
@@ -28,7 +32,9 @@ public class Operation implements IOperation {
 
     private RdLink updateLink;
     private Connection conn;
-
+    
+    public Operation() {
+    }
     public Operation(Command command, RdLink updateLink) {
         this.command = command;
 
@@ -687,11 +693,45 @@ public class Operation implements IOperation {
         if (changeFields.containsKey("direct")) {
             com.navinfo.dataservice.engine.edit.operation.obj.trafficsignal.update.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.trafficsignal.update.Operation(
                     conn);
-            operation.updateRdCrossByModifyLinkDirect(updateLink, result);
+            List<RdTrafficsignal> trafficsignalList = operation.updateRdCrossByModifyLinkDirect(updateLink);
+            
+            for(RdTrafficsignal signal : trafficsignalList)
+            {
+            	result.insertObject(signal, ObjStatus.DELETE, signal.pid());
+            }
 
             com.navinfo.dataservice.engine.edit.operation.obj.rdeleceye.update.Operation eleceye = new com.navinfo.dataservice.engine.edit.operation.obj.rdeleceye.update.Operation(conn);
             eleceye.updateRdElectroniceyeWithDirect(updateLink, result);
         }
         return "";
     }
+	
+	/**
+	 * 获取更新link
+	 * @param updateLink 需要更新的link
+	 * @return 跟新link提示
+	 * @throws Exception
+	 */
+	public List<AlertObject> getUpdateRdLinkAlertData(RdLink updateLink,JSONObject jsonObj) throws Exception {
+		
+		boolean flag = updateLink.fillChangeFields(jsonObj);
+		
+		List<AlertObject> alertList = new ArrayList<>();
+		
+		if (flag) {
+			AlertObject alertObj = new AlertObject();
+
+			alertObj.setObjType(updateLink.objType());
+
+			alertObj.setPid(updateLink.getPid());
+
+			alertObj.setStatus(ObjStatus.UPDATE);
+
+			if (!alertList.contains(alertObj)) {
+				alertList.add(alertObj);
+			}
+		}
+		
+		return alertList;
+	}
 }

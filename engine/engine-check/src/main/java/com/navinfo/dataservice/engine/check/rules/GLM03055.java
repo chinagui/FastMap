@@ -42,7 +42,8 @@ public class GLM03055 extends baseRule {
 				if (isObstacleNode){
 					int nodePid = rdNode.getPid();
 					StringBuilder sb = new StringBuilder();
-			        sb.append("select distinct F.FORM_OF_WAY from RD_LINK R,RD_LINK_FORM F where R.LINK_PID=F.LINK_PID and ( R.E_NODE_PID= ");
+			        sb.append("select distinct F.FORM_OF_WAY from RD_LINK R,RD_LINK_FORM F where R.LINK_PID=F.LINK_PID "
+			        		+ "AND R.U_RECORD != 2 AND F.U_RECORD != 2 and ( R.E_NODE_PID= ");
 			        sb.append(nodePid);
 			        sb.append(" or R.S_NODE_PID= ");
 			        sb.append(nodePid);
@@ -71,7 +72,8 @@ public class GLM03055 extends baseRule {
 				if (isObstacleNode){
 					int nodePid = rdNodeForm.getNodePid();
 					StringBuilder sb = new StringBuilder();
-			        sb.append("select distinct F.FORM_OF_WAY from RD_LINK R,RD_LINK_FORM F where R.LINK_PID=F.LINK_PID and ( R.E_NODE_PID= ");
+			        sb.append("select distinct F.FORM_OF_WAY from RD_LINK R,RD_LINK_FORM F "
+			        		+ "where R.LINK_PID=F.LINK_PID AND R.U_RECORD != 2 AND F.U_RECORD != 2 and ( R.E_NODE_PID= ");
 			        sb.append(nodePid);
 			        sb.append(" or R.S_NODE_PID= ");
 			        sb.append(nodePid);
@@ -151,7 +153,7 @@ public class GLM03055 extends baseRule {
 	
 	public void exeRdLinkCheck(int rdLinkPid, int sNodePid, int eNodePid) throws Exception{
 		StringBuilder sb1 = new StringBuilder();
-        sb1.append("select distinct f.FORM_OF_WAY from RD_NODE_FORM f where f.NODE_PID IN (");
+        sb1.append("select distinct f.FORM_OF_WAY from RD_NODE_FORM f where F.U_RECORD != 2 AND f.NODE_PID IN (");
         sb1.append(sNodePid);
         sb1.append(",");
         sb1.append(eNodePid);

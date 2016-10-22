@@ -43,7 +43,7 @@ public class GLM56004 extends baseRule {
 				String sql="SELECT G.*"
 						+ "  FROM RD_GSC G, RD_GSC_LINK L"
 						+ " WHERE G.PID = L.PID"
-						+ "   AND L.TABLE_NAME = 'RD_LINK'"
+						+ "   AND L.TABLE_NAME = 'RD_LINK' AND G.U_RECORD != 2 AND L.U_RECORD != 2 "
 						+ "   AND L.LINK_PID="+rdLink.getPid();
 				RdGscSelector gscSelector=new RdGscSelector(getConn());
 				List<RdGsc> gscList=gscSelector.loadBySql(sql, false);

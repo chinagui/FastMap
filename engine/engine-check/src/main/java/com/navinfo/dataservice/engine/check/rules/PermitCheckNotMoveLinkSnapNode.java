@@ -48,7 +48,7 @@ public class PermitCheckNotMoveLinkSnapNode extends baseRule {
 				if(nodeIds.isEmpty()){continue;}
 				String sql="SELECT 1"
 						+ "  FROM RD_SAMENODE_PART S"
-						+ " WHERE S.TABLE_NAME = 'RD_NODE'"
+						+ " WHERE S.TABLE_NAME = 'RD_NODE' AND S.U_RECORD != 2 "
 						+ "   AND S.NODE_PID IN ("+nodeIds+")";
 				DatabaseOperator getObj=new DatabaseOperator();
 				List<Object> resultList=getObj.exeSelect(this.getConn(), sql);

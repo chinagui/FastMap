@@ -49,7 +49,7 @@ public class RdLink004 extends baseRule {
 				
 				String sql="SELECT 1"
 						+ "  FROM RD_CROSS_NODE S"
-						+ " WHERE S.NODE_PID IN ("+nodeIds+")";
+						+ " WHERE S.NODE_PID IN ("+nodeIds+") AND S.U_RECORD != 2 ";
 				DatabaseOperator getObj=new DatabaseOperator();
 				List<Object> resultList=getObj.exeSelect(this.getConn(), sql);
 				if(resultList!=null && resultList.size()>0){

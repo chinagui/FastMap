@@ -116,7 +116,7 @@ public class GLM01211 extends baseRule {
 		String sql="SELECT COUNT(DISTINCT L.SPEED_CLASS)"
 				+ "  FROM RD_LINK_SPEEDLIMIT L"
 				+ " WHERE L.LINK_PID IN ("+pidStr+")"
-				+ " AND L.SPEED_TYPE = 0";
+				+ " AND L.SPEED_TYPE = 0 AND L.U_RECORD != 2";
 		DatabaseOperator getObj=new DatabaseOperator();
 		List<Object> resultList=new ArrayList<Object>();
 		resultList=getObj.exeSelect(getConn(), sql);

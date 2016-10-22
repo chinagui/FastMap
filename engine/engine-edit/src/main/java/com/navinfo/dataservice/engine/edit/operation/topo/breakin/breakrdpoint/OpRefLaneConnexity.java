@@ -118,6 +118,10 @@ public class OpRefLaneConnexity implements IOperation {
 
 					via2.setSeqNum(via2.getSeqNum() + 1);
 
+					via1.setTopologyId(v.getTopologyId());
+
+					via2.setTopologyId(v.getTopologyId());
+
 					result.insertObject(v, ObjStatus.DELETE, entry.getKey());
 
 					result.insertObject(via1, ObjStatus.INSERT, entry.getKey());

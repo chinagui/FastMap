@@ -35,7 +35,7 @@ import net.sf.json.JSONObject;
  * @date 2016年10月20日 上午11:17:54
  * @Description TODO
  */
-public class overviewTaskMain {
+public class OverviewTaskMain {
 	
 	private static Logger log = null;
 	public static final String col_name_task = "fm_stat_overview_task";
@@ -44,7 +44,7 @@ public class overviewTaskMain {
 	private String statDate;
 	private String statTime;
 
-	public overviewTaskMain(String dbn, String statTime) {
+	public OverviewTaskMain(String dbn, String statTime) {
 		this.db_name = dbn;
 		this.statDate = statTime.substring(0, 8);
 		this.statTime = statTime;
@@ -186,6 +186,9 @@ public class overviewTaskMain {
 		}
 		
 		//进度百分比 , 所有block采集完成度取平均值
+		if(count == 0){
+			count = 1;
+		}
 		collectPercent = collectPercent/count;
 		dailyPercent = dailyPercent/count;
 		//计划开始时间
@@ -414,7 +417,7 @@ public class overviewTaskMain {
 	}
 	
 	public void runStat() {
-		log = LogManager.getLogger(overviewTaskMain.class);
+		log = LogManager.getLogger(OverviewTaskMain.class);
 
 		log.info("-- begin stat:" + col_name_task);
 
@@ -512,7 +515,7 @@ public class overviewTaskMain {
 				new String[] { "dubbo-consumer-datahub-test.xml"});
 		context.start();
 		new ApplicationContextUtil().setApplicationContext(context);
-		overviewTaskMain overviewSubtaskStat = new overviewTaskMain("fm_stat", "20161021180412");
+		OverviewTaskMain overviewSubtaskStat = new OverviewTaskMain("fm_stat", "20161021180412");
 		overviewSubtaskStat.runStat();
 	}
 

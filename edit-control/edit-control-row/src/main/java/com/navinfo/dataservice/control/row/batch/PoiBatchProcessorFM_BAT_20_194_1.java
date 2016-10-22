@@ -4,6 +4,9 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+import org.springframework.util.StringUtils;
+
 import com.navinfo.dataservice.control.row.batch.util.IBatch;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -17,7 +20,7 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 public class PoiBatchProcessorFM_BAT_20_194_1 implements IBatch {
-	
+	private static final Logger logger = Logger.getLogger(PoiBatchProcessorFM_BAT_20_194_1.class);
 	private List<String> kindCodeList = new ArrayList<String>();
 	
 	public PoiBatchProcessorFM_BAT_20_194_1() {
@@ -46,19 +49,25 @@ public class PoiBatchProcessorFM_BAT_20_194_1 implements IBatch {
 		JSONObject result = new JSONObject();
 		try {
 			JSONObject poiData = json.getJSONObject("data");
-			
-			if (!poiData.containsKey("kindCode")) {
+			logger.info("poi.kindCode"+poi.getKindCode());
+			if (!poiData.containsKey("kindCode")&&poi.getKindCode().isEmpty()) {
+				logger.info(poi.getPid()+" 没有kindCode，返回");
 				return result;
 			}
-			String kindCode = poiData.getString("kindCode");
+			String kindCode = poi.getKindCode();
+			if(poiData.containsKey("kindCode")){
+				kindCode=poiData.getString("kindCode");
+			}
 			
 			if (!kindCodeList.contains(kindCode)) {
+				logger.info(poi.getPid()+"kindcode"+kindCode+" 没有在110101,110102,110103,110200,110301,110302,110303,110304，返回");
 				return result;
 			}
 			
 			List<IRow> parents = poi.getParents();
 			
 			if (parents.size()==0) {
+				logger.info(poi.getPid()+" 没有父，返回");
 				return result;
 			}
 			
@@ -69,13 +78,18 @@ public class PoiBatchProcessorFM_BAT_20_194_1 implements IBatch {
 			IxPoi parentPoi = (IxPoi) ixPoiSelector.loadById(parentPid, false, false);
 			
 			if (!parentPoi.getKindCode().equals("230215")) {
+				logger.info("父kindcode为"+parentPoi.getKindCode()+"!=230215");
 				return result;
 			}
 			
 			List<IRow> gasstationList = parentPoi.getGasstations();
 			
 			JSONArray dataArray = new JSONArray();
-			
+			if(gasstationList==null||gasstationList.size()==0){
+				logger.info("父没有gasstations，返回");
+				return result;
+			}
+			logger.info("开始批父的gas");
 			for (IRow gasstation : gasstationList) {
 				IxPoiGasstation ixPoiGasstation = (IxPoiGasstation) gasstation;
 				
@@ -168,7 +182,7 @@ public class PoiBatchProcessorFM_BAT_20_194_1 implements IBatch {
 				}
 				
 			}
-			
+			logger.info("变化的poi数量:"+dataArray.size());
 			if (dataArray.size() > 0) {
 				JSONObject poiObj = new JSONObject();
 				JSONObject changeFields = new JSONObject();

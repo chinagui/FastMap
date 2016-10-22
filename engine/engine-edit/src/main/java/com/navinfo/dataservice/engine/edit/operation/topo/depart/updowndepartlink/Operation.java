@@ -1,41 +1,29 @@
 package com.navinfo.dataservice.engine.edit.operation.topo.depart.updowndepartlink;
 
-import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import com.navinfo.dataservice.engine.edit.utils.batch.AdminIDBatchUtils;
-import com.navinfo.dataservice.engine.edit.utils.batch.ZoneIDBatchUtils;
-import net.sf.json.JSONObject;
-
-import org.apache.log4j.Logger;
-
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.JtsGeometryFactory;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkIntRtic;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkLimit;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkRtic;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkSpeedlimit;
+import com.navinfo.dataservice.dao.glm.model.rd.link.*;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeSelector;
 import com.navinfo.dataservice.engine.edit.utils.NodeOperateUtils;
 import com.navinfo.dataservice.engine.edit.utils.RdLinkOperateUtils;
+import com.navinfo.dataservice.engine.edit.utils.batch.AdminIDBatchUtils;
+import com.navinfo.dataservice.engine.edit.utils.batch.ZoneIDBatchUtils;
 import com.navinfo.navicommons.geo.computation.CompPolylineUtil;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Point;
+import net.sf.json.JSONObject;
+import org.apache.log4j.Logger;
+
+import java.sql.Connection;
+import java.util.*;
 
 /**
  * @author zhaokk 上下线分离具体实现操作类
@@ -399,36 +387,36 @@ public class Operation implements IOperation {
         return laneClass;
     }
 
-	/**
-	 * 限制信息维护 
-	 * 1、如果上下线分离之前，link的限制类型为 1 单行限制、3 穿行限制、2 车辆限制、7 超车限制、5 季节性关闭道路、6
-	 * Usage fee required，上下线分离后新link自动删除对应限制类型下的道路限制信息子表；
-	 * 当限制信息是“道路维修中、施工中不开放、外地车限行、尾号限行”时，限制信息继承；
-	 * 2、如果上下线分离之前，link有卡车限制信息时，上下线分离后新link自动删除对应的卡车限制信息
-	 * 
-	 * @param link
-	 */
-	private void relationLimitForLink(RdLink link) {
-		// 限制信息
-		List<RdLinkLimit> limits = new ArrayList<RdLinkLimit>();
+    /**
+     * 限制信息维护
+     * 1、如果上下线分离之前，link的限制类型为 1 单行限制、3 穿行限制、2 车辆限制、7 超车限制、5 季节性关闭道路、6
+     * Usage fee required，上下线分离后新link自动删除对应限制类型下的道路限制信息子表；
+     * 当限制信息是“道路维修中、施工中不开放、外地车限行、尾号限行”时，限制信息继承；
+     * 2、如果上下线分离之前，link有卡车限制信息时，上下线分离后新link自动删除对应的卡车限制信息
+     *
+     * @param link
+     */
+    private void relationLimitForLink(RdLink link) {
+        // 限制信息
+        List<RdLinkLimit> limits = new ArrayList<RdLinkLimit>();
 
-		for (IRow row : link.getLimits()) {
+        for (IRow row : link.getLimits()) {
 
-			RdLinkLimit limit = (RdLinkLimit) row;
+            RdLinkLimit limit = (RdLinkLimit) row;
 
-			if (limit.getType() == 1 || limit.getType() == 2
-					|| limit.getType() == 3 || limit.getType() == 5
-					|| limit.getType() == 6 || limit.getType() == 7) {
+            if (limit.getType() == 1 || limit.getType() == 2
+                    || limit.getType() == 3 || limit.getType() == 5
+                    || limit.getType() == 6 || limit.getType() == 7) {
 
-				limits.add(limit);
-			}
-		}
+                limits.add(limit);
+            }
+        }
 
-		link.getLimits().removeAll(limits);
+        link.getLimits().removeAll(limits);
 
-		// 卡车限制信息
-		link.getLimitTrucks().clear();
-	}
+        // 卡车限制信息
+        link.getLimitTrucks().clear();
+    }
 
     // 如果双方向道路变上下线分离，则将上行方向的RTIC信息作为“上行”赋到分离后通行方向与上行方向相同的link上；
     // 将下行方向的RTIC信息作为“上行”的RTIC信息赋到分离后通行方向与原RTIC上行方向相反的link上；
@@ -790,7 +778,7 @@ public class Operation implements IOperation {
 
         opRefRelationObj.handlerAdadmin(this.command, result);
         opRefRelationObj.handlerRdGate(this.command, result);
-        
+
     }
 
     /**
@@ -839,9 +827,7 @@ public class Operation implements IOperation {
     }
 
     private void updateAdminIdAndZoneId(RdLink link, Result result) {
-        for (IRow row : link.getZones()) {
-            result.insertObject(row, ObjStatus.DELETE, row.parentPKValue());
-        }
+        link.getZones().clear();
         try {
             AdminIDBatchUtils.updateAdminID(link, null, conn);
             ZoneIDBatchUtils.updateZoneID(link, null, conn, result);

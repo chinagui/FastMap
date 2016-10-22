@@ -68,7 +68,7 @@ public class JavaDiffScanner implements DiffScanner
         try
         {
         	StringBuilder sb = new StringBuilder();
-        	sb.append("INSERT INTO LOG_DETAIL(ROW_ID,OP_ID, TB_NM, OP_TP, TB_ROW_ID,OBJ_NM,OBJ_PID)\n SELECT S.S_GUID,S.S_GUID,'");
+        	sb.append("INSERT INTO LOG_DETAIL(ROW_ID,OP_ID, TB_NM, OP_TP, TB_ROW_ID,OB_NM,OB_PID)\n SELECT S.S_GUID,S.S_GUID,'");
         	sb.append(table.getName());
         	sb.append("',1,ROW_ID,'");
         	sb.append(table.getObjName());
@@ -100,7 +100,7 @@ public class JavaDiffScanner implements DiffScanner
         try
         {
         	StringBuilder sb = new StringBuilder();
-        	sb.append("INSERT INTO LOG_DETAIL(ROW_ID,OP_ID, TB_NM, OP_TP, TB_ROW_ID,OBJ_NM,OBJ_PID)\n SELECT S.S_GUID,S.S_GUID,'");
+        	sb.append("INSERT INTO LOG_DETAIL(ROW_ID,OP_ID, TB_NM, OP_TP, TB_ROW_ID,OB_NM,OB_PID)\n SELECT S.S_GUID,S.S_GUID,'");
         	sb.append(table.getName());
         	sb.append("',2,ROW_ID,'");
         	sb.append(table.getObjName());
@@ -141,7 +141,7 @@ public class JavaDiffScanner implements DiffScanner
         		}
         	}
         	StringBuilder sb = new StringBuilder();
-        	sb.append("INSERT INTO LOG_DETAIL(ROW_ID,OP_ID, TB_NM, OP_TP, TB_ROW_ID,OBJ_NM,OBJ_PID)\n SELECT S.S_GUID,S.S_GUID,'");
+        	sb.append("INSERT INTO LOG_DETAIL(ROW_ID,OP_ID, TB_NM, OP_TP, TB_ROW_ID,OB_NM,OB_PID)\n SELECT S.S_GUID,S.S_GUID,'");
         	sb.append(table.getName());
         	sb.append("',3,L.ROW_ID,'");
         	sb.append(table.getObjName());

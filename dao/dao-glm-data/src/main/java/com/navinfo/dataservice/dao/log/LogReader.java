@@ -2,8 +2,11 @@ package com.navinfo.dataservice.dao.log;
 
 import java.lang.reflect.Field;
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -62,7 +65,7 @@ public class LogReader {
 			int opStatus = 0;
 			while (resultSet.next()) {
 				if (objTable.equals(resultSet.getString("TB_NM")) && opStatus == 0) {
-					lastObjOpDate = resultSet.getTimestamp("op_dt");
+					lastObjOpDate = resultSet.getDate("op_dt");
 					opStatus = resultSet.getInt("op_tp");
 					if (1 == opStatus || 2 == opStatus) {
 						return opStatus;
@@ -76,7 +79,7 @@ public class LogReader {
 				}
 
 				if (!objTable.equals(resultSet.getString("TB_NM")) && opStatus == 0) {
-					lastObjOpDate = resultSet.getTimestamp("op_dt");
+					lastObjOpDate = resultSet.getDate("op_dt");
 					opStatus = 3;
 					if (isExistsAddHis(objPid, objTable, lastObjOpDate)) {
 						return 1;
@@ -122,7 +125,13 @@ public class LogReader {
 			pstmt.setInt(1, objPid);
 			pstmt.setString(2, objTable);
 			pstmt.setInt(3, 1);
-			pstmt.setDate(4, (java.sql.Date) lastObjOpDate);
+			if(lastObjOpDate instanceof java.sql.Timestamp){
+				pstmt.setTimestamp(4, (Timestamp) lastObjOpDate);
+			}else{
+				pstmt.setDate(4, (java.sql.Date) lastObjOpDate);
+			}
+			
+			
 			resultSet = pstmt.executeQuery();
 			if (resultSet.getRow() == 0) {
 				return false;
@@ -328,40 +337,11 @@ public class LogReader {
 		}
 	}
 	
-	 public static void main( String[] args )
-	    {
-		 IxPoi ixPoi=new IxPoi();
-		 IxPoiName poiName1=new IxPoiName();
-		 poiName1.setName("1");
-		 IxPoiName poiName2=new IxPoiName();
-		 poiName2.setName("2");
-		 List<IRow> names=new ArrayList<IRow>();
-		 names.add(poiName1);
-		 names.add(poiName2);
-		 ixPoi.setNames(names);
-		 Class<?> clz = ixPoi.getClass();
-		 ObjHandlerUtils objHandler=new ObjHandlerUtils();
-		   // 获取实体类的所有属性，返回Field数组
-		   Field[] fields = clz.getDeclaredFields();
-		   for (Field field : fields) {
-				 if("java.util.List".equals(field.getType().getName())){
-					 List<IRow> fieldValueList=(List<IRow>) objHandler.getFieldValueByName(field.getName(), ixPoi);
-					 if (fieldValueList==null ||fieldValueList.isEmpty()){
-						 continue;
-					 }else{
-						 List<IRow> newValueList=new ArrayList<IRow>();
-						 for(IRow fieldValue:fieldValueList){
-							 System.out.println(fieldValue.tableName());
-							 newValueList.add(fieldValue);
-						 }
-						 objHandler.setFieldValueByName(field, ixPoi, newValueList);
-						 
-						 
-					 }
-				 }
-					
-			   
-		    }
-		   System.out.println(ixPoi.getNames());//打印该类的所有属性类型
-	    }
+	 public static void main( String[] args ) throws Exception
+	{
+		Connection con = DriverManager.getConnection("jdbc:oracle:thin:@192.168.4.61:1521/orcl",
+				"fm_regiondb_test_d_306", "fm_regiondb_test_d_306");
+		int state = new LogReader(con).getObjectState(78710230, "IX_POI");
+		System.out.println(state);
+	}
 }

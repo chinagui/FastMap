@@ -252,7 +252,7 @@ public class RdLinkSelector extends AbstractSelector {
 
 		try {
 			pstmt = conn.prepareStatement(sb.toString());
-
+			
 			resultSet = pstmt.executeQuery();
 
 			while (resultSet.next()) {

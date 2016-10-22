@@ -134,6 +134,7 @@ public class RdLinkZone implements IRow {
 		this.setType(source.getType());		
 
 		this.setSide(source.getSide());
+		this.setRowId(source.getRowId());
 		
 		this.setMesh(source.mesh());
 	}

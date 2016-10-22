@@ -617,7 +617,7 @@ public class commonTest extends InitApplication {
 	@Test
 	public void run_1010_1() throws Exception {
 
-		String parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"dbId\":17,\"distance\":\"6.6\",\"data\":{\"linkPids\":[301000279,206000223]}}";
+		String parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"dbId\":17,\"distance\":\"6.6\",\"data\":{\"linkPids\":[204001243,203001353]}}";
 
 		Transaction t = new Transaction(parameter);
 
@@ -627,7 +627,7 @@ public class commonTest extends InitApplication {
 	@Test
 	public void run_1010_2() throws Exception {
 
-		String parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"dbId\":17,\"distance\":\"6.6\",\"data\":{\"linkPids\":[203000281,303000278]}}";
+		String parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"dbId\":17,\"distance\":\"6.6\",\"data\":{\"linkPids\":[208001315]}}";
 
 		Transaction t = new Transaction(parameter);
 

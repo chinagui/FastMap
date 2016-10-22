@@ -1,9 +1,11 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdlink.update;
 
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import com.navinfo.dataservice.dao.glm.iface.AlertObject;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
@@ -30,7 +32,9 @@ public class Operation implements IOperation {
 
     private RdLink updateLink;
     private Connection conn;
-
+    
+    public Operation() {
+    }
     public Operation(Command command, RdLink updateLink) {
         this.command = command;
 
@@ -701,4 +705,33 @@ public class Operation implements IOperation {
         }
         return "";
     }
+	
+	/**
+	 * 获取更新link
+	 * @param updateLink 需要更新的link
+	 * @return 跟新link提示
+	 * @throws Exception
+	 */
+	public List<AlertObject> getUpdateRdLinkAlertData(RdLink updateLink,JSONObject jsonObj) throws Exception {
+		
+		boolean flag = updateLink.fillChangeFields(jsonObj);
+		
+		List<AlertObject> alertList = new ArrayList<>();
+		
+		if (flag) {
+			AlertObject alertObj = new AlertObject();
+
+			alertObj.setObjType(updateLink.objType());
+
+			alertObj.setPid(updateLink.getPid());
+
+			alertObj.setStatus(ObjStatus.UPDATE);
+
+			if (!alertList.contains(alertObj)) {
+				alertList.add(alertObj);
+			}
+		}
+		
+		return alertList;
+	}
 }

@@ -106,6 +106,9 @@ public class Process extends AbstractProcess<Command> {
 		// 删除行政区划点有关行政区划点、线具体操作
 		IOperation op = new OpTopo(this.getCommand());
 		op.run(this.getResult());
+		// 立交
+		IOperation opRefRdGsc = new OpRefRdGsc(this.getCommand(), this.getConn());
+		opRefRdGsc.run(this.getResult());
 		// 删除行政区划点有关行政区划面具体操作
 		IOperation opLcFace = new OpRefLcFace(this.getCommand());
 		return opLcFace.run(this.getResult());

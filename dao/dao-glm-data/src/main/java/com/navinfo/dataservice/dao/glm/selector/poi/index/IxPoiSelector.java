@@ -65,12 +65,12 @@ public class IxPoiSelector extends AbstractSelector {
 		buffer.append(" FROM (SELECT c.*, ROWNUM rn ");
 		buffer.append(" FROM (SELECT /*+ leading(ip,ipn,ps) use_hash(ip,ipn,ps)*/  COUNT (1) OVER (PARTITION BY 1) total,");
 		buffer.append(" ip.pid,ip.kind_code,ps.status, 0 as freshness_vefication,ipn.name,ip.geometry,ip.collect_time,ip.u_record ");
-		buffer.append(" FROM ix_poi ip, ix_poi_name ipn, poi_edit_status ps ");
+		buffer.append(" FROM ix_poi ip, (SELECT * FROM ix_poi_name WHERE lang_code = 'CHI' AND name_type = 2 AND name_class = 1) ipn, poi_edit_status ps ");
 		buffer.append(" WHERE  ip.pid = ipn.poi_pid(+) and ip.row_id = ps.row_id ");
 
-		buffer.append(" AND ipn.lang_code = 'CHI'");
-		buffer.append(" AND ipn.name_type = 2 ");
-		buffer.append(" AND ipn.name_class = 1");
+//		buffer.append(" AND ipn.lang_code = 'CHI'");
+//		buffer.append(" AND ipn.name_type = 2 ");
+//		buffer.append(" AND ipn.name_class = 1");
 
 		buffer.append(" AND ps.status = " + type + "");
 		buffer.append(" AND sdo_within_distance(ip.geometry, sdo_geometry(    '"
@@ -391,7 +391,7 @@ public class IxPoiSelector extends AbstractSelector {
 
 		poi.setRawFields(loadRawByRowId(poi.getRowId()));
 		
-		poi.setState(logRead.getObjectState(poi.pid(), "ix_poi"));
+		poi.setState(logRead.getObjectState(poi.pid(), "IX_POI"));
 
 		return poi;
 	}

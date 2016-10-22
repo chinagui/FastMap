@@ -62,6 +62,12 @@ public class Process extends AbstractProcess<Command> {
 				}
 				prepareData();
 				Map<String, List<AlertObject>> infects = new HashMap<String, List<AlertObject>>();
+				//修改link方向
+				Operation operation = new Operation();
+				List<AlertObject> updateLinkDataList = operation.getUpdateRdLinkAlertData(updateLink,this.getCommand().getUpdateContent());
+				if (CollectionUtils.isNotEmpty(updateLinkDataList)) {
+	    			infects.put("修改link方向", updateLinkDataList);
+	    		}
 	        	com.navinfo.dataservice.engine.edit.operation.obj.trafficsignal.update.Operation trafficOperation = new com.navinfo.dataservice.engine.edit.operation.obj.trafficsignal.update.Operation(
 	    				this.getConn());
 	    		List<AlertObject> deleteTrafficAlertDataList = trafficOperation.getUpdateLinkDirectInfectData(updateLink,this.getCommand().getUpdateContent());

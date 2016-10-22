@@ -1312,11 +1312,11 @@ public class DisplayUtils {
 
 		if (startEnd == 0) {
 
-			double dist = 0;
+			double distBack = 0;
 
 			int current = seqNum;
 
-			while (dist < 20) {
+			while (distBack < 1) {
 
 				if (current - 1 < 0) {
 					break;
@@ -1326,22 +1326,23 @@ public class DisplayUtils {
 
 				Coordinate next = coords[current - 1];
 
+				double dist = GeometryUtils.getDistance(coord, next);
+				
+				
 				coordList.add(next);
-
-				dist += GeometryUtils.getDistance(coord, next);
 
 				current--;
 			}
 
 			Collections.reverse(coordList);
 
-			dist = 0;
+			distBack = 0;
 
 			current = seqNum;
 
 			coordList.add(coords[seqNum]);
 
-			while (dist < 20) {
+			while (distBack < 20) {
 
 				if ((current + 1) >= coords.length) {
 					break;
@@ -1353,7 +1354,7 @@ public class DisplayUtils {
 
 				coordList.add(next);
 
-				dist += GeometryUtils.getDistance(coord, next);
+				distBack += GeometryUtils.getDistance(coord, next);
 
 				current++;
 			}

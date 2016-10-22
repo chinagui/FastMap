@@ -14,6 +14,7 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
+import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionVia;
 
 public class RdLaneVia implements IRow {
 
@@ -134,7 +135,13 @@ public class RdLaneVia implements IRow {
 
 	@Override
 	public void copy(IRow row) {
+		
+		RdLaneVia via = (RdLaneVia) row;
 
+		this.linkPid = via.linkPid;
+
+		this.groupId = via.groupId;
+		
 	}
 
 	@Override

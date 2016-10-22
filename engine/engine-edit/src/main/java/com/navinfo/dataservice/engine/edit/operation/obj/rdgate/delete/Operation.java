@@ -61,6 +61,27 @@ public class Operation implements IOperation {
 			throw e;
 		}
 	}
+	
+	/**
+	 * 分离link维护大门
+	 * @param linkPid
+	 * @param conn
+	 * @param result
+	 * @throws Exception
+	 */
+	public String updownDepart(List<Integer> linkPids, Result result) throws Exception {
+
+		RdGateSelector rdSelector = new RdGateSelector(conn);
+		try {
+			List<RdGate> rdGateList = rdSelector.loadByLinks(linkPids,true);
+			for (RdGate rdGate:rdGateList) {
+				result.insertObject(rdGate, ObjStatus.DELETE, rdGate.parentPKValue());
+			}
+		} catch (Exception e) {
+			throw e;
+		}
+		return "";
+	}
 		
 	/**
 	 * 删除link对大门的删除影响

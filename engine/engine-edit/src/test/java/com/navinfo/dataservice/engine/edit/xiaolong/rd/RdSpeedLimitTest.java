@@ -98,7 +98,7 @@ public class RdSpeedLimitTest extends InitApplication{
 	@Test
 	public void testUpdate()
 	{
-		String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDSPEEDLIMIT\",\"dbId\":42,\"data\":{\"objStatus\":\"UPDATE\",\"pid\":19824,\"direct\":3,\"longitude\":116.47722244262695,\"latitude\":40.11502311310502}}";
+		String parameter = "{\"type\":\"RDBRANCH\",\"command\":\"UPDATE\",\"dbId\":17,\"data\":{\"relationshipType\":1,\"pid\":5645128,\"objStatus\":\"UPDATE\"}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

@@ -107,7 +107,7 @@ public class PoiGridSearch {
 			GridUtils gu = new GridUtils();
 			String grid = gridDate.getString("grid");
 			String wkt = gu.grid2Wkt(grid);
-
+			logger.info("grid wkt:"+wkt);
 			pstmt.setString(1, wkt);
 			resultSet = pstmt.executeQuery();
 			
@@ -129,57 +129,59 @@ public class PoiGridSearch {
 				
 				int id = ixPoi.getPid();
 				
-				// 设置子表IX_POI_NAME
+				logger.info("设置子表IX_POI_NAME");
 				IxPoiNameSelector poiNameSelector = new IxPoiNameSelector(conn);
 
 				ixPoi.setNames(poiNameSelector.loadByIdForAndroid(id));
 
-				// 设置子表IX_POI_ADDRESS
+				logger.info("设置子表IX_POI_ADDRESS");
 				IxPoiAddressSelector ixPoiAddressSelector = new IxPoiAddressSelector(conn);
 
 				ixPoi.setAddresses(ixPoiAddressSelector.loadByIdForAndroid(id));
 
-				// 设置子表IX_POI_PARENT
+				logger.info("设置子表IX_POI_PARENT");
 				IxPoiParentSelector ixPoiParentSelector = new IxPoiParentSelector(conn);
 				
 				ixPoi.setParents(ixPoiParentSelector.loadByIdForAndroid(id));
 				
-				// 设置子表IX_POI_CHILDREN
+				logger.info("设置子表IX_POI_CHILDREN");
 				IxPoiChildrenSelector ixPoiChildrenSelector = new IxPoiChildrenSelector(conn);
 				
 				ixPoi.setChildren(ixPoiChildrenSelector.loadByIdForAndroid(id));
 				
-				// 设置子表IX_POI_CONTACT
+				logger.info("设置子表IX_POI_CONTACT");
 				IxPoiContactSelector ixPoiContactSelector = new IxPoiContactSelector(conn);
 				
 				ixPoi.setContacts(ixPoiContactSelector.loadByIdForAndroid(id));
 				
-				// 设置子表IX_POI_RESTAURANT
+				logger.info("设置子表IX_POI_RESTAURANT");
 				IxPoiRestaurantSelector ixPoiRestaurantSelector = new IxPoiRestaurantSelector(conn);
 				
 				ixPoi.setRestaurants(ixPoiRestaurantSelector.loadByIdForAndroid(id));
 				
-				// 设置子表IX_POI_PARKING
+				logger.info("设置子表IX_POI_PARKING");
 				IxPoiParkingSelector ixPoiParkingSelector = new IxPoiParkingSelector(conn);
 				
 				ixPoi.setParkings(ixPoiParkingSelector.loadByIdForAndroid(id));
 				
-				// 设置子表IX_POI_HOTEL
+				logger.info("设置子表IX_POI_HOTEL");
 				IxPoiHotelSelector ixPoiHotelSelector = new IxPoiHotelSelector(conn);
 				
 				ixPoi.setHotels(ixPoiHotelSelector.loadByIdForAndroid(id));
 				
-				// 设置子表IX_POI_GASSTATION
+				logger.info("设置子表IX_POI_GASSTATION");
 				IxPoiGasstationSelector ixPoiGasstationSelector = new IxPoiGasstationSelector(conn);
 				
 				ixPoi.setGasstations(ixPoiGasstationSelector.loadByIdForAndroid(id));
 				
+				logger.info("getObjectState,pid="+id);
 				int uRecord = lr.getObjectState(id, "IX_POI");
 				
 				ixPoi.setuRecord(uRecord);
 				
 				retList.add(ixPoi);
 			}
+			logger.info("poi count="+retList.size());
 			return retList;
 		} catch (Exception e) {
 			throw e;

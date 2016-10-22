@@ -65,7 +65,7 @@ public class LogReader {
 			int opStatus = 0;
 			while (resultSet.next()) {
 				if (objTable.equals(resultSet.getString("TB_NM")) && opStatus == 0) {
-					lastObjOpDate = resultSet.getTimestamp("op_dt");
+					lastObjOpDate = resultSet.getDate("op_dt");
 					opStatus = resultSet.getInt("op_tp");
 					if (1 == opStatus || 2 == opStatus) {
 						return opStatus;
@@ -79,7 +79,7 @@ public class LogReader {
 				}
 
 				if (!objTable.equals(resultSet.getString("TB_NM")) && opStatus == 0) {
-					lastObjOpDate = resultSet.getTimestamp("op_dt");
+					lastObjOpDate = resultSet.getDate("op_dt");
 					opStatus = 3;
 					if (isExistsAddHis(objPid, objTable, lastObjOpDate)) {
 						return 1;

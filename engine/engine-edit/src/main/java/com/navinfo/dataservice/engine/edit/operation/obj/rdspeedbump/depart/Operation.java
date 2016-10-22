@@ -38,7 +38,7 @@ public class Operation {
             result.insertObject(speedbump, ObjStatus.DELETE, speedbump.pid());
         rdSpeedbumps.clear();
         // 2.当目标link上的点已经参与制作减速带
-        Set<Integer> tmpNodePids = new HashSet<Integer>();
+        Set<Integer> tmpNodePids = new LinkedHashSet<>();
         for (RdLink link : links) {
             tmpNodePids.add(link.getsNodePid());
             tmpNodePids.add(link.geteNodePid());

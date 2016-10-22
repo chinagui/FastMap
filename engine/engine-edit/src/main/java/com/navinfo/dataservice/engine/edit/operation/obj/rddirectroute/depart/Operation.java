@@ -11,10 +11,12 @@ import java.util.Set;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
 import com.navinfo.dataservice.dao.glm.model.rd.directroute.RdDirectroute;
 import com.navinfo.dataservice.dao.glm.model.rd.directroute.RdDirectrouteVia;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.rd.directroute.RdDirectrouteSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 
 public class Operation {
 
@@ -54,6 +56,8 @@ public class Operation {
 	private Set<Integer> updateBranch = new HashSet<Integer>();
 
 	RdDirectrouteSelector directrouteSelector = null;
+	
+	RdLinkSelector linkSelector = null;
 
 	public Operation(Connection conn, int preNodePid, int lastNodePid,
 			Map<Integer, RdLink> noTargetLinks, List<RdLink> targetLinks) {
@@ -67,6 +71,8 @@ public class Operation {
 		init(noTargetLinks, targetLinks);
 
 		directrouteSelector = new RdDirectrouteSelector(this.conn);
+		
+		linkSelector = new RdLinkSelector(this.conn);
 	}
 
 	private void init(Map<Integer, RdLink> noTargetLinks,
@@ -500,9 +506,7 @@ public class Operation {
 
 		for (RdDirectroute directroute : directroutes) {
 
-			List<Integer> connectLinkPids = new ArrayList<Integer>();
-
-			connectLinkPids.add(directroute.getInLinkPid());
+			List<Integer> connectLinkPids = new ArrayList<Integer>();	
 
 			for (IRow rowVia : directroute.getVias()) {
 
@@ -510,6 +514,16 @@ public class Operation {
 
 				connectLinkPids.add(via.getLinkPid());
 			}
+			
+			boolean isOutLinkInNode = isOutLinkInNode(directroute, connectLinkPids,
+					nodePid);
+
+			if (!isOutLinkInNode) {
+				
+				continue;
+			}
+			
+			connectLinkPids.add(directroute.getInLinkPid());
 
 			if (containNoTargetLink(connectLinkPids)
 					|| containTargetLink(connectLinkPids)) {
@@ -525,6 +539,46 @@ public class Operation {
 			updateBranch(handleMap, nodePid);
 		}
 	}
+	
+	/**
+	 * 判断node是不是 进入退出线的点。
+	 * 
+	 * @param restriction
+	 * @param detail
+	 * @param nodePid
+	 * @return
+	 * @throws Exception
+	 */
+	private boolean isOutLinkInNode(RdDirectroute directroute ,List<Integer> viaPids,
+			 int nodePid) throws Exception {
+		
+		if (viaPids.size() == 0) {
+
+			if (directroute.getNodePid() != nodePid) {
+
+				return false;
+			} else {
+				return true;
+			}
+		}
+
+		List<IRow> linkRows = linkSelector.loadByIds(viaPids, true,
+				false);
+
+		for (IRow linkRow : linkRows) {
+			
+			RdLink link = (RdLink) linkRow;
+
+			if (link.getsNodePid() == nodePid || link.geteNodePid() == nodePid) {
+
+				return true;
+			}
+			
+		}
+		
+		return false;
+	}
+
 
 	private void updateBranch(Map<Integer, RdDirectroute> handleLastMap,
 			int nodePid) {

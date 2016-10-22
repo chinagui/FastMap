@@ -152,7 +152,7 @@ public class GridController extends BaseController {
 	 * @return
 	 */
 	@RequestMapping(value = "/grid/listByInforBlockManId")
-	public ModelAndView listByInforBlockId(HttpServletRequest request) {
+	public ModelAndView listByInforBlockManId(HttpServletRequest request) {
 		try {
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
 			if(dataJson==null){
@@ -160,8 +160,12 @@ public class GridController extends BaseController {
 			}
 			
 			int blockManId = dataJson.getInt("blockManId");
+			int neighbor = 0;
+			if(dataJson.containsKey("neighbor")){
+				neighbor = dataJson.getInt("neighbor");
+			}
 			
-			List<Integer> data = GridService.getInstance().listByInforBlockManId(blockManId);
+			List<Integer> data = GridService.getInstance().listByInforBlockManId(blockManId,neighbor);
 			return new ModelAndView("jsonView", success(data));
 		} catch (Exception e) {
 			log.error("获取grid列表失败，原因：" + e.getMessage(), e);

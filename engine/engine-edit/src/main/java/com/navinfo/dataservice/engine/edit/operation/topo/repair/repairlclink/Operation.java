@@ -93,15 +93,36 @@ public class Operation implements IOperation {
 			while (it.hasNext()) {
 				String meshIdStr = it.next();
 				Geometry geomInter = GeoTranslator.transform(MeshUtils.linkInterMeshPolygon(
-						GeoTranslator.geojson2Jts(command.getLinkGeom()), MeshUtils.mesh2Jts(meshIdStr)), 1, 5);
+						GeoTranslator.geojson2Jts(command.getLinkGeom()), GeoTranslator.transform(MeshUtils.mesh2Jts(meshIdStr),1,5)), 1, 5);
 				links.addAll(LcLinkOperateUtils.getCreateLcLinksWithMesh(geomInter, maps, result,this.command.getUpdateLink()));
 			}
 			result.insertObject(this.command.getUpdateLink(), ObjStatus.DELETE, this.command.getLinkPid());
 		}
+		updataRelationObj(this.command.getUpdateLink(), links, result);
 		map.put(this.command.getLinkPid(), links);
 		this.map = map;
 	}
+	
+	 /**
+     * 维护关联要素
+     *
+     * @throws Exception
+     */
+    private void updataRelationObj(LcLink oldLink, List<LcLink> newLinks, Result result) throws Exception 
+    {
+		// 立交
+		com.navinfo.dataservice.engine.edit.operation.obj.rdgsc.update.Operation gscOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdgsc.update.Operation();
 
+		Map<Integer, Geometry> newLinkMap = new HashMap<Integer, Geometry>();
+
+		for (LcLink link : newLinks) {
+			newLinkMap.put(link.getPid(), link.getGeometry());
+		}
+
+		gscOperation.repairLink(this.command.getGscList(), newLinkMap, oldLink,
+				result);
+    }
+    
 	/**
 	 * 修改面的信息
 	 * 

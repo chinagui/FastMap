@@ -11,10 +11,11 @@ import java.util.Set;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionDetail;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionVia;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.restrict.RdRestrictionSelector;
 
 public class Operation {
@@ -54,7 +55,10 @@ public class Operation {
 	private Set<Integer> updateRestriction = new HashSet<Integer>();
 
 	RdRestrictionSelector restrictionSelector = null;
-
+	
+	
+	RdLinkSelector linkSelector = null;
+	
 	public Operation(Connection conn, int preNodePid, int lastNodePid,
 			Map<Integer, RdLink> noTargetLinks, List<RdLink> targetLinks) {
 
@@ -67,6 +71,8 @@ public class Operation {
 		init(noTargetLinks, targetLinks);
 
 		restrictionSelector = new RdRestrictionSelector(this.conn);
+		
+		linkSelector = new RdLinkSelector(this.conn);
 	}
 
 	private void init(Map<Integer, RdLink> noTargetLinks,
@@ -549,11 +555,16 @@ public class Operation {
 
 				if (detail.getOutLinkPid() == linkPid) {
 
-					updateDetail = detail;
+					boolean isOutLinkInNode = isOutLinkInNode(restriction,
+							detail, nodePid);
+
+					if (isOutLinkInNode) {
+
+						updateDetail = detail;
+					}
 
 				} else {
 					connectLinkPids.add(detail.getOutLinkPid());
-
 				}
 
 				for (IRow rowVia : detail.getVias()) {
@@ -576,14 +587,65 @@ public class Operation {
 
 				continue;
 			}
-
-			handleMap.put(updateDetail.getPid(), updateDetail);
+			if (updateDetail != null) {
+				handleMap.put(updateDetail.getPid(), updateDetail);
+			}
 		}
 
 		if (!handleMap.isEmpty()) {
 
 			updateDetail(handleMap, nodePid);
 		}
+	}
+	
+	/**
+	 * 判断node是不是 进入退出线的点。
+	 * 
+	 * @param restriction
+	 * @param detail
+	 * @param nodePid
+	 * @return
+	 * @throws Exception
+	 */
+	private boolean isOutLinkInNode(RdRestriction restriction,
+			RdRestrictionDetail detail, int nodePid) throws Exception {
+		if (detail.getVias().size() == 0) {
+
+			if (restriction.getNodePid() != nodePid) {
+
+				return false;
+			} else {
+				return true;
+			}
+		}
+
+		List<Integer> viaPids = new ArrayList<Integer>();
+
+		for (IRow rowVia : detail.getVias()) {
+
+			RdRestrictionVia via = (RdRestrictionVia) rowVia;
+
+			if (!viaPids.contains(via.getLinkPid())) {
+
+				viaPids.add(via.getLinkPid());
+			}
+		}		
+
+		List<IRow> linkRows = linkSelector.loadByIds(viaPids, true,
+				false);
+
+		for (IRow linkRow : linkRows) {
+			
+			RdLink link = (RdLink) linkRow;
+
+			if (link.getsNodePid() == nodePid || link.geteNodePid() == nodePid) {
+
+				return true;
+			}
+			
+		}
+		
+		return false;
 	}
 
 	private void updateDetail(Map<Integer, RdRestrictionDetail> handleLastMap,

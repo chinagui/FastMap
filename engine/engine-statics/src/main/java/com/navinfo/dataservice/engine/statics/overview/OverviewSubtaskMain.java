@@ -30,6 +30,7 @@ import com.navinfo.dataservice.engine.statics.roadcollect.RoadCollectMain;
 import com.navinfo.dataservice.engine.statics.roaddaily.RoadDailyMain;
 import com.navinfo.dataservice.engine.statics.tools.MongoDao;
 import com.navinfo.dataservice.engine.statics.tools.OracleDao;
+import com.navinfo.dataservice.engine.statics.tools.StatInit;
 import com.navinfo.dataservice.engine.statics.tools.StatUtil;
 
 import net.sf.json.JSONObject;
@@ -52,6 +53,7 @@ public class OverviewSubtaskMain {
 	private static String stat_time;
 
 	public OverviewSubtaskMain(String dbn, String stat_time) {
+		StatInit.initDatahubDb();
 		this.db_name = dbn;
 		this.stat_date = stat_time.substring(0, 8);
 		this.stat_time = stat_time;

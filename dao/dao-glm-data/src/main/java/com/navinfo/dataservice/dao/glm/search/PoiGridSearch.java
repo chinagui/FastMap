@@ -128,7 +128,7 @@ public class PoiGridSearch {
 				}
 				
 				int id = ixPoi.getPid();
-				
+				logger.info("getObjectState,pid="+id);
 				logger.info("设置子表IX_POI_NAME");
 				IxPoiNameSelector poiNameSelector = new IxPoiNameSelector(conn);
 
@@ -174,7 +174,6 @@ public class PoiGridSearch {
 				
 				ixPoi.setGasstations(ixPoiGasstationSelector.loadByIdForAndroid(id));
 				
-				logger.info("getObjectState,pid="+id);
 				int uRecord = lr.getObjectState(id, "IX_POI");
 				
 				ixPoi.setuRecord(uRecord);

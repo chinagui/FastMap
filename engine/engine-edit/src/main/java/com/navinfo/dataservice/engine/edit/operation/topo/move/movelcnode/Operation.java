@@ -15,13 +15,17 @@ import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
+import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.lc.LcFace;
 import com.navinfo.dataservice.dao.glm.model.lc.LcFaceTopo;
 import com.navinfo.dataservice.dao.glm.model.lc.LcLink;
 import com.navinfo.dataservice.dao.glm.model.lc.LcNode;
 import com.navinfo.dataservice.dao.glm.model.lc.LcNodeMesh;
+import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
+import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGscLink;
 import com.navinfo.dataservice.dao.glm.selector.lc.LcLinkSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.gsc.RdGscSelector;
 import com.navinfo.dataservice.engine.edit.utils.LcLinkOperateUtils;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
@@ -107,6 +111,7 @@ public class Operation implements IOperation {
 					links.addAll(LcLinkOperateUtils.getCreateLcLinksWithMesh(geomInter, maps, result,link));
 
 				}
+				handleRdGsc(link, result);
 				map.put(link.getPid(), links);
 				result.insertObject(link, ObjStatus.DELETE, link.pid());
 			}
@@ -115,6 +120,62 @@ public class Operation implements IOperation {
 		this.map = map;
 	}
 
+	
+	/**
+	 * 处理立交关系
+	 * 
+	 * @param link
+	 * @throws Exception
+	 */
+	private void handleRdGsc(LcLink deleteLink, Result result) throws Exception {
+
+		int newLinkPid = 0;
+
+		// 获取 使用未移动的node做端点的新生成的link，该link继承原link的所有立交关系
+		for (IRow row : result.getAddObjects()) {
+
+			if (row.objType() != ObjType.LCLINK) {
+				continue;
+			}
+
+			LcLink lcLink = (LcLink) row;
+
+			if (lcLink.geteNodePid() == this.command.getNodePid()
+					|| lcLink.getsNodePid() == this.command.getNodePid()) {
+
+				newLinkPid = lcLink.pid();
+
+				break;
+			}
+		}
+
+		if (newLinkPid == 0) {
+			return;
+		}
+
+		RdGscSelector selector = new RdGscSelector(this.conn);
+
+		List<RdGsc> rdGscs = selector.loadRdGscLinkByLinkPid(deleteLink.getPid(), "LC_LINK", true);
+
+		// 将降立交关系link的pid更新为新生成link的pid
+		for (RdGsc gsc : rdGscs) {
+
+			for (RdGscLink gscLink : gsc.rdGscLinkMap.values()) {
+
+				if (gscLink.getLinkPid() == deleteLink.pid() && gscLink.getTableName().equals("LC_LINK")) {
+
+					JSONObject updateContent = new JSONObject();
+
+					updateContent.put("linkPid", newLinkPid);
+
+					gscLink.fillChangeFields(updateContent);
+
+					result.insertObject(gscLink, ObjStatus.UPDATE, gsc.pid());
+				}
+			}
+		}
+	}
+	
 	private void updateNodeGeometry(Result result) throws Exception {
 		String meshes[] = MeshUtils.point2Meshes(command.getLongitude(), command.getLatitude());
 

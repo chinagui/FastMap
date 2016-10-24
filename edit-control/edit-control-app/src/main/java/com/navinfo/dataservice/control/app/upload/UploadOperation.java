@@ -1223,7 +1223,6 @@ public class UploadOperation {
 					JSONObject newChildren = new JSONObject();
 					newRowIdList.add(children.getString("rowId").toUpperCase());
 					newChildren.put("groupId", groupId);
-					newChildren.put("childPoiPid", children.getInt("childPid"));
 					newChildren.put("relationType", children.getInt("type"));
 					newChildren.put("rowId", children.getString("rowId").toUpperCase());
 
@@ -1783,7 +1782,7 @@ public class UploadOperation {
 						pstmtChildren.setString(6, child.getString("rowId"));
 						pstmtChildren.execute();
 					} else if (objStatus.equals("UPDATE")) {
-						String sql = "UPDATE ix_poi_children (group_id,child_poi_pid,relation_type,u_record,u_date) SET (?,?,?,?,?,?) WHERE row_id=?";
+						String sql = "UPDATE ix_poi_children (group_id,child_poi_pid,relation_type,u_record,u_date) SET (?,?,?,?,?) WHERE row_id=?";
 						pstmtChildren = conn.prepareStatement(sql);
 						pstmtChildren.setInt(1, child.getInt("groupId"));
 						int childPid = getPoiNumByPid(child.getString("childFid"),conn);

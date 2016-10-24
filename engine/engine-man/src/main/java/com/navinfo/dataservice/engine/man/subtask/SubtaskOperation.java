@@ -564,9 +564,12 @@ public class SubtaskOperation {
 						} else if (2 == rs.getInt("STAGE")) {
 							subtask.put("dbId",rs.getInt("MONTHLY_DB_ID"));
 						} else {
-							subtask.put("dbId", rs.getInt("MONTHLY_DB_ID"));
+							subtask.put("dbId", rs.getInt("DAILY_DB_ID"));
 						}
 
+						//完成度，任务量信息
+						
+						
 						list.add(subtask);
 
 					}
@@ -1463,7 +1466,7 @@ public class SubtaskOperation {
 						filterSql+=" AND T.NAME like '%" + filter.getString(key) +"%'";
 					}
 					//筛选条件
-					//"progress" //进度。1正常，2异常，3关闭，4完成,5草稿
+					//"progress" //进度。1正常，2异常，3关闭，4完成,5草稿,6完成状态逾期，7完成状态按时，8完成状态提前
 					if ("progress".equals(key)){
 						int progress = filter.getInt(key);
 						if(1==progress&&2==progress){
@@ -1475,18 +1478,26 @@ public class SubtaskOperation {
 						}else if(5==progress){
 							filterSql += " AND T.STATUS = 2";
 						}
-					}
-					//"completionStatus"//完成状态。0逾期，1按时，2提前
-					if ("completionStatus".equals(key)){
-						int completionStatus = filter.getInt(key);
-						if(0==completionStatus){
+						////"progress" //进度。6完成状态逾期，7完成状态按时，8完成状态提前
+						else if(6==progress){
 							filterSql += " AND FSOS.DIFF_DATE < 0";
-						}else if(1==completionStatus){
+						}else if(7==progress){
 							filterSql += " AND FSOS.DIFF_DATE = 0" ;
-						}else if(2==completionStatus){
+						}else if(8==progress){
 							filterSql += " AND FSOS.DIFF_DATE > 0";
 						}
 					}
+//					//"completionStatus"//完成状态。0逾期，1按时，2提前
+//					if ("completionStatus".equals(key)){
+//						int completionStatus = filter.getInt(key);
+//						if(0==completionStatus){
+//							filterSql += " AND FSOS.DIFF_DATE < 0";
+//						}else if(1==completionStatus){
+//							filterSql += " AND FSOS.DIFF_DATE = 0" ;
+//						}else if(2==completionStatus){
+//							filterSql += " AND FSOS.DIFF_DATE > 0";
+//						}
+//					}
 				}
 			}
 			

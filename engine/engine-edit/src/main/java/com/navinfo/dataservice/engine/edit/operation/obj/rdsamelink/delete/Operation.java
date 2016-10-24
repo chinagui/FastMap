@@ -91,26 +91,26 @@ public class Operation implements IOperation {
 		
 		//关联linkPid
 		List<Integer> relationLinkPids = new ArrayList<Integer>();
-	
-		//目标link之间的挂接node
-		List<Integer> nodePids= new ArrayList<Integer>();
-		
-		for (RdLink link : targetLinks) {
-			
-			if (!relationLinkPids.contains(link.getPid())) {
-				
-				relationLinkPids.add(link.getPid());
-			}
 
-			if (!nodePids.contains(link.getsNodePid())) {
+			//目标link之间的挂接node
+			List<Integer> nodePids= new ArrayList<Integer>();
 
-				nodePids.add(link.getsNodePid());
-			}
+			for (RdLink link : targetLinks) {
 
-			if (!nodePids.contains(link.geteNodePid())) {
+				if (!relationLinkPids.contains(link.getPid())) {
 
-				nodePids.add(link.geteNodePid());
-			}
+					relationLinkPids.add(link.getPid());
+				}
+
+				if (!nodePids.contains(link.getsNodePid())) {
+
+					nodePids.add(link.getsNodePid());
+				}
+
+				if (!nodePids.contains(link.geteNodePid())) {
+
+					nodePids.add(link.geteNodePid());
+				}
 
 			// 过滤端点
 			if (nodePids.contains(sNodePid)) {

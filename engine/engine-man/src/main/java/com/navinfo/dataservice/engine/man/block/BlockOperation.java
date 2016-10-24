@@ -24,6 +24,7 @@ import com.navinfo.dataservice.api.statics.model.GridStatInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
+import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
@@ -907,13 +908,15 @@ public class BlockOperation {
 				public List handle(ResultSet rs) throws SQLException {
 					List json = new ArrayList(); 
 					if (rs.next()) {
-						CLOB inforGeo;
-						if(conn instanceof DruidPooledConnection){
-							ClobProxyImpl clobProxyImpl = (ClobProxyImpl) rs.getClob("geometry");
-							inforGeo = (CLOB)clobProxyImpl.getRawClob();
-						}else{
-							inforGeo = (CLOB) rs.getClob("geometry");
-						}
+//						CLOB inforGeo;
+//						if(conn instanceof DruidPooledConnection){
+//							ClobProxyImpl clobProxyImpl = (ClobProxyImpl) rs.getClob("geometry");
+//							inforGeo = (CLOB)clobProxyImpl.getRawClob();
+//						}else{
+//							inforGeo = (CLOB) rs.getClob("geometry");
+//						}
+						
+						CLOB inforGeo = ConnectionUtil.getClob(conn, rs,"geometry");
 						String inforGeo1 = StringUtil.ClobToString(inforGeo);
 						String[] inforGeoList = inforGeo1.split(";");
 						for(String geoTmp : inforGeoList){

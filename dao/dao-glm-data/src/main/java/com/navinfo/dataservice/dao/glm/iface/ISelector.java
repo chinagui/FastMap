@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.dao.glm.iface;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -29,6 +30,17 @@ public interface ISelector {
 	 */
 	@SuppressWarnings("unchecked")
 	public IRow loadByIdAndChildClass(int id,boolean isLock,Class<? extends IRow> ... childClass) throws Exception;
+	
+	/**
+	 * 
+	 * @param idList
+	 * @param isLock
+	 * @param loadChild
+	 * @param fileters:可以过滤一些子表不加载
+	 * @return
+	 * @throws Exception
+	 */
+	public List<IRow> loadByIds(List<Integer> idList, boolean isLock, boolean loadChild,Collection<String> specChildTables,Collection<String> filtChildTables) throws Exception; 
 	
 	/**
 	 * 查询多个pid的数据

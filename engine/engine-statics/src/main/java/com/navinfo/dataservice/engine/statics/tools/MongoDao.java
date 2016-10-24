@@ -9,6 +9,7 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.UpdateOptions;
+import com.mongodb.client.result.DeleteResult;
 
 public class MongoDao {
 	private MongoDatabase md;
@@ -50,7 +51,7 @@ public class MongoDao {
 
 	public void deleteMany(String col_name, Bson filter) {
 		try {
-			md.getCollection(col_name).deleteMany(filter);
+			DeleteResult dr =md.getCollection(col_name).deleteMany(filter);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

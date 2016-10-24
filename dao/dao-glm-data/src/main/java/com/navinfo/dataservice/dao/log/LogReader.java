@@ -7,7 +7,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
@@ -325,6 +327,11 @@ public class LogReader {
 			DBUtils.closeStatement(pstmt);
 
 		}
+	}
+	
+	public static Map<Integer,Integer> getUpdatedObj(String objName,String grid,String date){
+		
+		return null;
 	}
 
 	public static void main(String[] args) throws Exception {

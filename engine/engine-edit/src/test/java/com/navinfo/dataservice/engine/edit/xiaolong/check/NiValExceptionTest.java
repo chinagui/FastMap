@@ -1,13 +1,17 @@
 package com.navinfo.dataservice.engine.edit.xiaolong.check;
 
 import java.sql.Connection;
+import java.util.HashSet;
+import java.util.Set;
 
+import org.apache.commons.dbutils.DbUtils;
 import org.junit.Test;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.dao.check.NiValExceptionOperator;
 import com.navinfo.dataservice.dao.check.NiValExceptionSelector;
 import com.navinfo.dataservice.engine.edit.InitApplication;
+import com.navinfo.navicommons.database.Page;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -64,5 +68,24 @@ public class NiValExceptionTest extends InitApplication {
 		NiValExceptionOperator selector = new NiValExceptionOperator(conn);
 
 		selector.updateCheckLogStatus(id, type);
+	}
+
+	@Test
+	public void testList() throws Exception
+	{
+		Connection conn = null;
+		try{
+			Set<String> grids = new HashSet<String>();
+			grids.add("60560303");
+
+			conn = DBConnector.getInstance().getConnectionById(17);
+
+			NiValExceptionSelector selector = new NiValExceptionSelector(conn);
+
+			Page page = selector.list(0, grids,20,1);
+			System.out.println(page.getResult());
+		}finally{
+			DbUtils.closeQuietly(conn);
+		}
 	}
 }

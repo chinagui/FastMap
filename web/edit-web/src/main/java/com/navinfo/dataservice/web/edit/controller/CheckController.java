@@ -3,8 +3,10 @@ package com.navinfo.dataservice.web.edit.controller;
 import java.io.IOException;
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -26,6 +28,7 @@ import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.engine.check.CheckEngine;
 import com.navinfo.dataservice.engine.check.core.NiValException;
 import com.navinfo.dataservice.engine.edit.check.CheckService;
+import com.navinfo.navicommons.database.Page;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -34,6 +37,57 @@ import net.sf.json.JSONObject;
 public class CheckController extends BaseController {
 	private static final Logger logger = Logger
 			.getLogger(CheckController.class);
+
+	@RequestMapping(value = "/check/list")
+	public ModelAndView listCheck(HttpServletRequest request)
+			throws ServletException, IOException {
+
+		String parameter = request.getParameter("parameter");
+
+		Connection conn = null;
+
+		try {
+
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			int dbId = jsonReq.getInt("dbId");
+			
+			int subtaskType = jsonReq.getInt("subtaskType");
+
+			JSONArray gridJas = jsonReq.getJSONArray("grids");
+
+			int pageSize = jsonReq.getInt("pageSize");
+
+			int pageNum = jsonReq.getInt("pageNum");
+
+			conn = DBConnector.getInstance().getConnectionById(dbId);
+
+			NiValExceptionSelector selector = new NiValExceptionSelector(conn);
+			
+			Set<String> grids = new HashSet<String>();
+			for(Object obj:gridJas){
+				grids.add(obj.toString());
+			}
+
+			Page page = selector.list(subtaskType,grids, pageSize, pageNum);
+
+			return new ModelAndView("jsonView", success(page));
+
+		} catch (Exception e) {
+
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
 	
 	@RequestMapping(value = "/check/get")
 	public ModelAndView getCheck(HttpServletRequest request)

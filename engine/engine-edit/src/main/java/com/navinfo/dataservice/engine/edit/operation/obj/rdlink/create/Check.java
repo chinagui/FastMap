@@ -38,7 +38,7 @@ public class Check {
 	
 	public void checkGLM04002(Connection conn, int eNodePid, int sNodePid) throws Exception {
 
-		String sql = "select count(a.link_pid) count,b.node_pid from rd_link a,rd_gate b where (a.e_node_pid=b.node_pid or a.s_node_pid=b.node_pid) and b.node_pid in (:1,:2) group by b.node_pid";
+		String sql = "select count(a.link_pid) count,b.node_pid from rd_link a,rd_gate b where (a.e_node_pid=b.node_pid or a.s_node_pid=b.node_pid) and b.node_pid in (:1,:2) and a.u_record !=2 and b.u_record !=2 group by b.node_pid ";
 		
 		PreparedStatement pstmt = conn.prepareStatement(sql);
 		
@@ -71,7 +71,7 @@ public class Check {
 	
 	public void checkGLM13002(Connection conn, int eNodePid, int sNodePid) throws Exception {
 
-		String sql = "select count(a.link_pid) count,b.node_pid from rd_link a,rd_tollgate b where (a.e_node_pid=b.node_pid or a.s_node_pid=b.node_pid) and b.node_pid in (:1,:2) group by b.node_pid";
+		String sql = "select count(a.link_pid) count,b.node_pid from rd_link a,rd_tollgate b where (a.e_node_pid=b.node_pid or a.s_node_pid=b.node_pid) and b.node_pid in (:1,:2) and a.u_record !=2 and b.u_record !=2 group by b.node_pid";
 		
 		PreparedStatement pstmt = conn.prepareStatement(sql);
 		

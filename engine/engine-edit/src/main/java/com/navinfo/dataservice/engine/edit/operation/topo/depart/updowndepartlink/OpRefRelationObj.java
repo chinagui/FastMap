@@ -134,12 +134,6 @@ public class OpRefRelationObj {
     // 警示信息
     public String handlerdWarninginfo(Command command, Result result)
             throws Exception {
-
-        // com.navinfo.dataservice.engine.edit.operation.obj.rdwarninginfo.delete.Operation
-        // warninginfoOperation = new
-        // com.navinfo.dataservice.engine.edit.operation.obj.rdwarninginfo.delete.Operation(conn);
-        // warninginfoOperation.batchDeleteByLink(command.getLinks(), result);
-        // return null;
         // 维护警示信息
         com.navinfo.dataservice.engine.edit.operation.obj.rdwarninginfo.depart.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdwarninginfo.depart.Operation(
                 conn);
@@ -151,13 +145,6 @@ public class OpRefRelationObj {
     // 点限速
     public String handlerdSpeedlimit(Command command, Result result)
             throws Exception {
-        // com.navinfo.dataservice.engine.edit.operation.obj.rdspeedlimit.update.Operation
-        // warninginfoOperation = new
-        // com.navinfo.dataservice.engine.edit.operation.obj.rdspeedlimit.update.Operation(conn);
-        // warninginfoOperation.upDownLink(command.getsNode(),
-        // command.getLinks(), command.getLeftLinkMapping(),
-        // command.getRightLinkMapping(), result);
-        // return null;
         // 维护点限速
         com.navinfo.dataservice.engine.edit.operation.obj.rdspeedlimit.depart.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdspeedlimit.depart.Operation(
                 conn);
@@ -229,7 +216,7 @@ public class OpRefRelationObj {
     public String handlerRdTrafficsignal(Command command, Result result)
             throws Exception {
         com.navinfo.dataservice.engine.edit.operation.obj.trafficsignal.depart.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.trafficsignal.depart.Operation(conn);
-        return operation.updownDepart(command.getLinks(), command.getLeftLinkMapping(), command.getRightLinkMapping(), result);
+        return operation.updownDepart(command.getLinks(), command.getLeftLinkMapping(), command.getRightLinkMapping(), command.getsNode(), command.geteNode(), result);
     }
 
     // 维护路口
@@ -244,10 +231,11 @@ public class OpRefRelationObj {
         com.navinfo.dataservice.engine.edit.operation.obj.adadmin.depart.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.adadmin.depart.Operation(conn);
         return operation.updownDepart(command.getLinks(), command.getLeftLinkMapping(), command.getRightLinkMapping(), result);
     }
+
     // 维护大门信息
-	public String handlerRdGate(Command command, Result result) throws Exception {
-		  com.navinfo.dataservice.engine.edit.operation.obj.rdgate.delete.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdgate.delete.Operation(conn);
-		  return operation.updownDepart(command.getLinkPids(), result);
-		 
-	}
+    public String handlerRdGate(Command command, Result result) throws Exception {
+        com.navinfo.dataservice.engine.edit.operation.obj.rdgate.delete.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdgate.delete.Operation(conn);
+        return operation.updownDepart(command.getLinkPids(), result);
+
+    }
 }

@@ -67,17 +67,8 @@ public class LuLinkTest extends InitApplication {
 	// 打断一条LINK
 	@Test
 	public void breakLuLinkTest() {
-		String parameter = "{\"command\":\"CREATE\",\"dbId\":43,\"objId\":100034525,\"data\":{\"longitude\":116.48408486591549,\"latitude\":40.30854271853128},\"type\":\"LUNODE\"}";
-
-		log.info(parameter);
-		System.out.println(parameter + "-------------------");
-		Transaction t = new Transaction(parameter);
-		try {
-			String msg = t.run();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
+		String parameter = "{\"command\":\"BREAK\",\"dbId\":17,\"objId\":202000020,\"data\":{\"longitude\":116.46865242657762,\"latitude\":39.87563511890222},\"type\":\"LULINK\"}";
+		TestUtil.run(parameter);
 	}
 
 	@Test

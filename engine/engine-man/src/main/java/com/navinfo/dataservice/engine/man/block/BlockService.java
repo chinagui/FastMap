@@ -1184,7 +1184,7 @@ public class BlockService {
 				+ "     AND T.LATEST = 1"
 				//+ "     AND T.STATUS=1"
 				+ "     AND (EXISTS(SELECT 1 FROM SUBTASK STT WHERE STT.BLOCK_MAN_ID=T.BLOCK_MAN_ID AND STT."+stagePart
-						+ " GROUP BY STT.BLOCK_MAN_ID HAVING COUNT(DISTINCT STT.STATUS)=2)"
+						+ " GROUP BY STT.BLOCK_MAN_ID HAVING SUM(DISTINCT STT.STATUS)=2)"
 						+ " OR NOT EXISTS(SELECT 1 FROM SUBTASK STT WHERE STT.BLOCK_MAN_ID=T.BLOCK_MAN_ID AND STT."+stagePart+"))"
 				+wherePart					
 				+ "     AND T.BLOCK_MAN_ID = S.BLOCK_MAN_ID(+)"
@@ -1211,6 +1211,7 @@ public class BlockService {
 				+ "     AND T.BLOCK_ID=B.BLOCK_ID"
 				+ "     AND T.LATEST = 1"
 				+ "     AND T.STATUS=1"
+				+ "     AND ST.STATUS IN (0,1)"
 				+ "     AND ST."+stagePart
 				+wherePart		
 				+ "     AND NOT EXISTS(SELECT 1 FROM SUBTASK STT WHERE STT.BLOCK_MAN_ID=T.BLOCK_MAN_ID AND STT.STATUS=1 AND STT."+stagePart+")"
@@ -1239,6 +1240,7 @@ public class BlockService {
 				+ "     AND T.BLOCK_ID=B.BLOCK_ID"
 				+ "     AND T.LATEST = 1"
 				+ "     AND T.STATUS=1"
+				+ "     AND ST.STATUS IN (0,1)"
 				+ "     AND ST."+stagePart
 				+wherePart		
 				+ "     AND EXISTS(SELECT 1 FROM SUBTASK STT WHERE STT.BLOCK_MAN_ID=T.BLOCK_MAN_ID AND STT.STATUS<>0 AND STT."+stagePart+")"

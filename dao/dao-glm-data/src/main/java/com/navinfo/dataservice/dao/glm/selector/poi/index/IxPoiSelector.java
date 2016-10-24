@@ -204,7 +204,7 @@ public class IxPoiSelector extends AbstractSelector {
 		ResultSet resultSet = null;
 
 		StringBuffer sb = new StringBuffer();
-		sb.append("SELECT name,kind_code");
+		sb.append("SELECT old_name,kind_code");
 		sb.append(" FROM ix_poi");
 		sb.append(" WHERE row_id=:1");
 
@@ -216,7 +216,7 @@ public class IxPoiSelector extends AbstractSelector {
 
 			JSONObject ret = new JSONObject();
 			if (resultSet.next()) {
-				ret.put("name", resultSet.getString("name"));
+				ret.put("name", resultSet.getString("old_name"));
 				ret.put("kindCode", resultSet.getString("kind_code"));
 			}
 

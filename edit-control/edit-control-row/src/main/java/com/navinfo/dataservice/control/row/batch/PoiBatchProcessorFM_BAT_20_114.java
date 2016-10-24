@@ -33,7 +33,7 @@ public class PoiBatchProcessorFM_BAT_20_114 implements IBatch {
 		try {
 			JSONObject poiData = json.getJSONObject("data");
 			
-			if (!poiData.containsKey("gasstations")) {
+			if (poi.getGasstations().size()==0) {
 				return result;
 			}
 			

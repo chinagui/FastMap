@@ -74,7 +74,7 @@ public class RdLinkTest extends InitApplication {
 
     @Test
     public void search(){
-        String parameter = "http://192.168.4.188:8000/service/render/obj/getByTileWithGap?parameter={\"dbId\":108,\"gap\":80,\"types\":[\"RDLINK\"],\"z\":16,\"x\":53949,\"y\":24796}";
+        String parameter = "http://192.168.4.188:8000/service/render/obj/getByTileWithGap?parameter={\"dbId\":17,\"gap\":10,\"types\":[\"LCLINK\"],\"z\":20,\"x\":863411,\"y\":397214}";
         try {
             TestSearch.testSearchGap(parameter);
         } catch (Exception e) {

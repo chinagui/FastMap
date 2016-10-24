@@ -349,7 +349,7 @@ public class NiValExceptionSelector {
 		ResultSet rs = null;
 
 		StringBuilder sql = new StringBuilder(
-				"select count(distinct(md5_code)) count from ni_val_exception_grid a where grid_id in (");
+				"select count(distinct(v.md5_code)) count from ni_val_exception v, ni_val_exception_grid g where v.md5_code=g.md5_code and g.grid_id in (");
 
 		for (int i = 0; i < grids.size(); i++) {
 			if (i > 0) {

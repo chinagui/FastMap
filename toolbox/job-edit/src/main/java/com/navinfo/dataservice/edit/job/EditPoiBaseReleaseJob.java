@@ -187,12 +187,13 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 	public List<Integer> hasException(EditPoiBaseReleaseJobRequest releaseJobRequest) throws Exception{
 		Connection conn = null;
 		try{
-			String sql="SELECT DISTINCT G.GRID_ID FROM NI_VAL_EXCEPTION_GRID G "
-					+ "WHERE G.GRID_ID IN ("+org.apache.commons.lang.StringUtils.join(releaseJobRequest.getGridIds(),",")+")"
-							+ " AND EXISTS ("
-							+ " SELECT 1 FROM CK_RESULT_OBJECT O "
-							+ " WHERE (O.table_name like 'IX_POI\\_%' ESCAPE '\\' OR O.table_name ='IX_POI')"
-							+ "   AND O.MD5_CODE=G.MD5_CODE)";
+			String sql="select DISTINCT G.GRID_ID from ni_val_exception v, ni_val_exception_grid g "
+					+ " where v.md5_code=g.md5_code "
+					+ " and G.GRID_ID IN ("+org.apache.commons.lang.StringUtils.join(releaseJobRequest.getGridIds(),",")+")"
+					+ " AND EXISTS ("
+					+ " SELECT 1 FROM CK_RESULT_OBJECT O "
+					+ " WHERE (O.table_name like 'IX_POI\\_%' ESCAPE '\\' OR O.table_name ='IX_POI')"
+					+ "   AND O.MD5_CODE=G.MD5_CODE)";
 			conn = DBConnector.getInstance().getConnectionById(releaseJobRequest.getTargetDbId());
 			ResultSetHandler<List<Integer>> rsHandler = new ResultSetHandler<List<Integer>>(){
 				public List<Integer> handle(ResultSet rs) throws SQLException {

@@ -244,7 +244,6 @@ public class RwLink implements IObj {
 		this.setForm(link.getForm());
 		this.setGeometry(link.getGeometry());
 		this.setKind(link.getKind());
-		this.setPid(link.getPid());
 	}
 
 	@Override

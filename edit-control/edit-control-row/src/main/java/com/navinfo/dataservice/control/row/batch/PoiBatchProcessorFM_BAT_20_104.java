@@ -24,7 +24,7 @@ public class PoiBatchProcessorFM_BAT_20_104 implements IBatch {
 		try {
 			JSONObject poiData = json.getJSONObject("data");
 			
-			if (!poiData.containsKey("names")) {
+			if (!poiData.containsKey("names")&&!poiData.containsKey("name")) {
 				return result;
 			}
 			

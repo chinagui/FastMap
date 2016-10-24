@@ -19,6 +19,7 @@ import org.apache.log4j.Logger;
 import org.hbase.async.KeyValue;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.commons.util.DateUtils;
@@ -27,6 +28,7 @@ import com.navinfo.dataservice.dao.fcc.SolrController;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.navicommons.geo.computation.GridUtils;
+import com.vividsolutions.jts.geom.Geometry;
 
 /**
  * Tips查询
@@ -574,7 +576,7 @@ public class TipsSelector {
 						|| type == 1311) {
 					JSONObject f = deep.getJSONObject("f");
 
-					if (f != null) {
+					if (f != null && ! f.isNullObject()) {
 						if (f.getInt("type") == 1) {
 							linkPids.add(Integer.valueOf(f.getString("id")));
 						}
@@ -587,16 +589,16 @@ public class TipsSelector {
 						|| type == 1105 || type == 1107 || type == 1703
 						|| type == 1404 || type == 1804 || type == 1108
 						|| type == 1112 || type == 1303 || type == 1306
-						|| type == 1410) {
+						|| type == 1410 ) {
 					JSONObject f = deep.getJSONObject("in");
-					if (f != null) {
+					if (f != null && ! f.isNullObject()) {
 						if (f.getInt("type") == 1) {
 							linkPids.add(Integer.valueOf(f.getString("id")));
 						}
 					}
 				} else if (type == 1110 || type == 1106 || type == 1104) {
 					JSONObject f = deep.getJSONObject("out");
-					if (f != null) {
+					if (f != null && ! f.isNullObject()) {
 						if (f.getInt("type") == 1) {
 							linkPids.add(Integer.valueOf(f.getString("id")));
 						}
@@ -710,7 +712,7 @@ public class TipsSelector {
 						|| type == 1207 || type == 1208 || type == 1304
 						|| type == 1305 || type == 1308 || type == 1311) {
 					JSONObject f = deep.getJSONObject("f");
-					if (f != null) {
+					if (f != null && ! f.isNullObject()) {
 						// type=1 :道路LINK，有名称，则显示道路名称，如果没有，则显示“无名路”
 						String name = "无名路";
 
@@ -795,10 +797,10 @@ public class TipsSelector {
 						|| type == 1105 || type == 1107 || type == 1703
 						|| type == 1404 || type == 1804 || type == 1108
 						|| type == 1112 || type == 1303 || type == 1306
-						|| type == 1410) {
+						|| type == 1410 || type == 1104) {
 					JSONObject f = deep.getJSONObject("in");
 
-					if (f != null) {
+					if (f != null && ! f.isNullObject()) {
 						if (f.getInt("type") == 1) {
 							int linkPid = Integer.valueOf(f.getString("id"));
 
@@ -817,9 +819,9 @@ public class TipsSelector {
 
 				}
 				// out
-				else if (type == 1110 || type == 1106 || type == 1104) {
+				else if (type == 1110 || type == 1106) {
 					JSONObject f = deep.getJSONObject("out");
-					if (f != null) {
+					if (f != null && ! f.isNullObject()) {
 						String name = "无名路";
 						// type=1 :道路LINK，有名称，则显示道路名称，如果没有，则显示“无名路”
 						if (f.getInt("type") == 1) {
@@ -1059,9 +1061,25 @@ public class TipsSelector {
 		// 17,
 		// 20, types));
 
-		String wkt = GridUtils.grid2Wkt("59567201");
+		JSONArray grids = new JSONArray();
+		grids.add(60560302);
+		grids.add(59567332);
+		grids.add(59567322);
+		String wkt = GridUtils.grids2Wkt(grids);
 
 		System.out.println("0000000000----" + wkt);
+		//POLYGON ((116.4375 40, 116.4375 40.02083, 116.46875 40.02083, 116.46875 40, 116.46875 39.97917, 116.46875 39.95833, 116.4375 39.95833, 116.4375 39.97917, 116.4375 40))
+		//POLYGON ((116.4375 40, 116.4375 40.02083, 116.46875 40.02083, 116.46875 40, 116.46875 39.97917, 116.46875 39.95833, 116.4375 39.95833, 116.4375 39.97917, 116.4375 40))
+		JSONObject b=new JSONObject();
+		
+		
+		
+		b.put("g_location", JSONObject.fromObject("{\"type\":\"Point\",\"coordinates\":[116.45815,40.00135]}"));
+		
+		Geometry g = GeoTranslator.geojson2Jts(JSONObject.fromObject("{\"type\":\"Point\",\"coordinates\":[116.45815,40.00135]}"));
+		
+		System.out.println(g);
+		
 	}
 
 	/**

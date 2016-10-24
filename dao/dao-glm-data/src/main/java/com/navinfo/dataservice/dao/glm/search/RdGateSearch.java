@@ -52,7 +52,7 @@ public class RdGateSearch implements ISearch {
 			int gap) throws Exception {
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "WITH tmp1 AS (	SELECT a.geometry,a.node_pid FROM rd_node a,rd_gate b WHERE sdo_relate(a.geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') = 'TRUE' AND a.NODE_PID = b.NODE_PID and a.u_record != 2) select a.pid,a.type,a.dir,a.node_pid,tmp1.geometry as geometry  from rd_gate a,tmp1 WHERE a.node_pid = tmp1.node_pid AND a.u_record != 2";
+		String sql = "WITH TMP1 AS (SELECT A.GEOMETRY, A.NODE_PID FROM RD_NODE A, RD_GATE B WHERE SDO_RELATE(A.GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND A.NODE_PID = B.NODE_PID AND A.U_RECORD != 2 AND b.u_record !=2) SELECT A.PID, A.TYPE, A.DIR, A.NODE_PID, TMP1.GEOMETRY AS GEOMETRY FROM RD_GATE A, TMP1 WHERE A.NODE_PID = TMP1.NODE_PID AND A.U_RECORD != 2";
 
 		PreparedStatement pstmt = null;
 

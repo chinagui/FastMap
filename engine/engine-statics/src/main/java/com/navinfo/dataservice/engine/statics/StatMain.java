@@ -11,6 +11,7 @@ import com.navinfo.dataservice.engine.statics.expect.PoiDailyExpectMain;
 import com.navinfo.dataservice.engine.statics.expect.RoadCollectExpectMain;
 import com.navinfo.dataservice.engine.statics.expect.RoadDailyExpectMain;
 import com.navinfo.dataservice.engine.statics.overview.OverviewBlockMain;
+import com.navinfo.dataservice.engine.statics.overview.OverviewGroupMain;
 import com.navinfo.dataservice.engine.statics.overview.OverviewMain;
 import com.navinfo.dataservice.engine.statics.overview.OverviewSubtaskMain;
 import com.navinfo.dataservice.engine.statics.overview.OverviewTaskMain;
@@ -81,6 +82,8 @@ public class StatMain {
 				new OverviewTaskMain(db_name, stat_time).runStat();
 			}else if (flag.equalsIgnoreCase(flag_overview)) {
 				new OverviewMain(db_name, stat_time).runStat();
+			}else if (flag.equalsIgnoreCase(flag_group_overview)) {
+				new OverviewGroupMain(db_name, stat_time).runStat();
 			}
 			/*else if (flag.equalsIgnoreCase(flag_season_poi)) {
 				new PoiSeasonMain(db_name, stat_time).runStat();

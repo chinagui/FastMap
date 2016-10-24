@@ -324,16 +324,11 @@ public class BasicOperator extends AbstractOperator {
 
 	private void addConditionForPoi(StringBuilder sb) throws SQLException {
 		String tableName = SelectorUtils.getObjTableName(row);
-		if (tableName.equals("IX_POI") && !(row instanceof IxPoi)) {
-			if (sb != null) {
-				sb.append(",u_date = " + StringUtils.getCurrentTime() + ",");
-			}
+		if (tableName.equals("IX_POI") || row instanceof IxPoi || row instanceof IxPoiChildren || row instanceof IxPoiParent) {
+			sb.append(",u_date = " + StringUtils.getCurrentTime() + ",");
 		} else {
-			if (sb != null) {
-				sb.append(",");
-			}
+			sb.append(",");
 		}
-
 	}
 
 	private void modifyPoiStatus() throws Exception {

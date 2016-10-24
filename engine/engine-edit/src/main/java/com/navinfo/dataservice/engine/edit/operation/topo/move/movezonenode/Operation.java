@@ -102,6 +102,7 @@ public class Operation implements IOperation {
 				link.fillChangeFields(updateContent);
 				ZoneLink zoneLink = new ZoneLink();
 				zoneLink.copy(link);
+				zoneLink.setPid(link.getPid());
 				zoneLink.setGeometry(GeoTranslator.geojson2Jts(geojson, 100000, 5));
 				links.add(zoneLink);
 				map.put(link.getPid(), links);

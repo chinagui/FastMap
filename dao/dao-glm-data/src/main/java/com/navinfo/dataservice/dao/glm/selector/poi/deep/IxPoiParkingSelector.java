@@ -29,12 +29,12 @@ public class IxPoiParkingSelector extends AbstractSelector {
 
 	public List<IRow> loadByIdForAndroid(int id) throws Exception {
 		List<IRow> rows = new ArrayList<IRow>();
-		IxPoiParking ixPoiParking = new IxPoiParking();
+		
 
 		StringBuilder sb = new StringBuilder(
 				"select toll_std,toll_des,toll_way,open_tiime,total_num,payment,remark,parking_type,res_high,res_width,res_weigh,certificate,vehicle,have_specialplace,women_num,handicap_num,");
 		sb.append("mini_num,vip_num,row_id ");
-		sb.append(" from " + ixPoiParking.tableName() + " WHERE poi_pid  = :1 and  u_record !=2");
+		sb.append(" from ix_poi_parking WHERE poi_pid  = :1 and  u_record !=2");
 
 		PreparedStatement pstmt = null;
 
@@ -48,6 +48,7 @@ public class IxPoiParkingSelector extends AbstractSelector {
 			resultSet = pstmt.executeQuery();
 
 			while (resultSet.next()) {
+				IxPoiParking ixPoiParking = new IxPoiParking();
 				ixPoiParking.setParkingType(resultSet.getString("parking_type"));
 				ixPoiParking.setTollStd(resultSet.getString("toll_std"));
 				ixPoiParking.setTollWay(resultSet.getString("toll_way"));

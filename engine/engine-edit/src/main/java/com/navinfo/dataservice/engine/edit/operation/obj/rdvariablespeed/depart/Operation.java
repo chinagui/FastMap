@@ -9,6 +9,7 @@ import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.variablespeed.RdVariableSpeed;
 import com.navinfo.dataservice.dao.glm.selector.rd.variablespeed.RdVariableSpeedSelector;
+import com.navinfo.dataservice.engine.edit.utils.CalLinkOperateUtils;
 
 /**
  * Created by chaixin on 2016/10/9 0009.
@@ -42,17 +43,16 @@ public class Operation {
                 variableSpeeds.clear();
             }
             // 2.当目标link上的点已经参与制作可变限速
-            Set<Integer> tmpNodePids = new LinkedHashSet<Integer>();
-            tmpNodePids.add(link.getsNodePid());
-            tmpNodePids.add(link.geteNodePid());
-            List<Integer> nodePids = Arrays.asList(tmpNodePids.toArray(new Integer[]{})).subList(1, tmpNodePids.size() - 1);
-            variableSpeeds.addAll(selector.loadRdVariableSpeedByNodePids(nodePids, true));
-            if (!variableSpeeds.isEmpty()) {
-                for (RdVariableSpeed variableSpeed : variableSpeeds) {
-                    if (!result.getDelObjects().contains(variableSpeeds))
-                        result.insertObject(variableSpeed, ObjStatus.DELETE, variableSpeed.pid());
+            List<Integer> nodePids = CalLinkOperateUtils.calNodePids(links);
+            if (!nodePids.isEmpty()) {
+                variableSpeeds.addAll(selector.loadRdVariableSpeedByNodePids(nodePids, true));
+                if (!variableSpeeds.isEmpty()) {
+                    for (RdVariableSpeed variableSpeed : variableSpeeds) {
+                        if (!result.getDelObjects().contains(variableSpeeds))
+                            result.insertObject(variableSpeed, ObjStatus.DELETE, variableSpeed.pid());
+                    }
+                    variableSpeeds.clear();
                 }
-                variableSpeeds.clear();
             }
             // 3.经过线为目标link
             variableSpeeds.addAll(selector.loadRdVariableSpeedByViaLinkPid(link.pid(), true));

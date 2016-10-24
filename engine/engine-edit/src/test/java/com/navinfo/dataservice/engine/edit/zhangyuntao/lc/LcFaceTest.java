@@ -35,4 +35,10 @@ public class LcFaceTest extends InitApplication {
 		TestUtil.run(requester);
 	}
 
+	@Test
+	public void move(){
+		String paramaeter = "{\"command\":\"MOVE\",\"dbId\":17,\"objId\":309000048,\"data\":{\"longitude\":116.17247,\"latitude\":40.56653},\"type\":\"LCNODE\"}";
+		TestUtil.run(paramaeter);
+	}
+
 }

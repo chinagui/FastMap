@@ -652,11 +652,23 @@ public class StaticsService {
 						+ " FROM BLOCK B, BLOCK_MAN BM, SUBTASK S,FM_STAT_OVERVIEW_BLOCKMAN FSOB"
 						+ " WHERE BM.COLLECT_GROUP_ID = " + groupId
 						+ " AND BM.LATEST = 1"
+						+ " AND BM.STATUS = 1"
 						+ " AND BM.BLOCK_ID = B.BLOCK_ID"
 						+ " AND B.PLAN_STATUS IN (1, 2)"
 						+ " AND S.BLOCK_MAN_ID(+) = BM.BLOCK_MAN_ID"
 						+ " AND FSOB.BLOCK_MAN_ID(+) = BM.BLOCK_MAN_ID"
 						+ " AND S.STAGE = " + stage
+						+ " UNION ALL"
+						+ " SELECT DISTINCT BM.BLOCK_MAN_ID,"
+						+ " '','',FSOB.DAILY_PROGRESS PROGRESS,FSOB.DAILY_DIFF_DATE DIFF_DATE"
+						+ " FROM BLOCK B, BLOCK_MAN BM, SUBTASK S, FM_STAT_OVERVIEW_BLOCKMAN FSOB"
+						+ " WHERE BM.COLLECT_GROUP_ID = " + groupId
+						+ " AND BM.LATEST = 1"
+						+ " AND BM.STATUS = 1"
+						+ " AND BM.BLOCK_ID = B.BLOCK_ID"
+						+ " AND B.PLAN_STATUS IN (1, 2)"
+						+ " AND FSOB.BLOCK_MAN_ID(+) = BM.BLOCK_MAN_ID"
+						+ " AND NOT EXISTS (SELECT 1 FROM SUBTASK S WHERE S.BLOCK_MAN_ID = BM.BLOCK_MAN_ID AND S.STAGE = " + stage + ")"
 						+ " ORDER BY BLOCK_MAN_ID";
 			}else if(1==stage){
 				//日编
@@ -668,11 +680,23 @@ public class StaticsService {
 						+ " FROM BLOCK B, BLOCK_MAN BM, SUBTASK S,FM_STAT_OVERVIEW_BLOCKMAN FSOB"
 						+ " WHERE BM.DAY_EDIT_GROUP_ID = " + groupId
 						+ " AND BM.LATEST = 1"
+						+ " AND BM.STATUS = 1"
 						+ " AND BM.BLOCK_ID = B.BLOCK_ID"
 						+ " AND B.PLAN_STATUS IN (1, 2)"
 						+ " AND S.BLOCK_MAN_ID(+) = BM.BLOCK_MAN_ID"
 						+ " AND FSOB.BLOCK_MAN_ID(+) = BM.BLOCK_MAN_ID"
 						+ " AND S.STAGE = " + stage
+						+ " UNION ALL"
+						+ " SELECT DISTINCT BM.BLOCK_MAN_ID,"
+						+ " '','',FSOB.DAILY_PROGRESS PROGRESS,FSOB.DAILY_DIFF_DATE DIFF_DATE"
+						+ " FROM BLOCK B, BLOCK_MAN BM, SUBTASK S, FM_STAT_OVERVIEW_BLOCKMAN FSOB"
+						+ " WHERE BM.DAY_EDIT_GROUP_ID = " + groupId
+						+ " AND BM.LATEST = 1"
+						+ " AND BM.STATUS = 1"
+						+ " AND BM.BLOCK_ID = B.BLOCK_ID"
+						+ " AND B.PLAN_STATUS IN (1, 2)"
+						+ " AND FSOB.BLOCK_MAN_ID(+) = BM.BLOCK_MAN_ID"
+						+ " AND NOT EXISTS (SELECT 1 FROM SUBTASK S WHERE S.BLOCK_MAN_ID = BM.BLOCK_MAN_ID AND S.STAGE = " + stage + ")"
 						+ " ORDER BY BLOCK_MAN_ID";
 			}
 			System.out.println("selectSql: "+selectSql);

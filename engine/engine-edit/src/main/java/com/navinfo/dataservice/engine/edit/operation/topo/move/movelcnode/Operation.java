@@ -92,10 +92,11 @@ public class Operation implements IOperation {
 				updateContent.put("geometry", geojson);
 				updateContent.put("length", GeometryUtils.getLinkLength(geo));
 				link.fillChangeFields(updateContent);
-				LcLink adLink = new LcLink();
-				adLink.copy(link);
-				adLink.setGeometry(GeoTranslator.geojson2Jts(geojson, 100000, 5));
-				links.add(adLink);
+				LcLink lcLink = new LcLink();
+				lcLink.copy(link);
+				lcLink.setPid(link.getPid());
+				lcLink.setGeometry(GeoTranslator.geojson2Jts(geojson, 100000, 5));
+				links.add(lcLink);
 				map.put(link.getPid(), links);
 				result.insertObject(link, ObjStatus.UPDATE, link.pid());
 				// 如果跨图幅就需要打断生成新的link
@@ -124,7 +125,7 @@ public class Operation implements IOperation {
 	/**
 	 * 处理立交关系
 	 * 
-	 * @param link
+	 * @param deleteLink
 	 * @throws Exception
 	 */
 	private void handleRdGsc(LcLink deleteLink, Result result) throws Exception {

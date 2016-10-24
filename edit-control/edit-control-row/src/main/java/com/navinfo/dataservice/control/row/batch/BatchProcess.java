@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.dbutils.DbUtils;
+import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.control.row.batch.util.IBatch;
@@ -17,7 +18,7 @@ import com.navinfo.dataservice.engine.edit.service.EditApiImpl;
 import net.sf.json.JSONObject;
 
 public class BatchProcess {
-
+	private static final Logger logger = Logger.getLogger(BatchProcess.class);
 	public BatchProcess() {
 		
 	}
@@ -41,6 +42,7 @@ public class BatchProcess {
 			JSONObject result = new JSONObject();
 			for (String batch:batchList) {
 				IBatch obj = (IBatch) Class.forName(batch).newInstance();
+				logger.info("开始执行批处理："+obj.getClass().getName());
 				JSONObject data = obj.run(poi,conn,json,editApiImpl);
 				result.putAll(data);
 			}

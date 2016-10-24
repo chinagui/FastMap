@@ -438,7 +438,7 @@ public class GeometryUtils {
 
 	public static void main(String[] args) throws Exception {
 
-		System.out.println(metersPerDegree);
+		System.out.println(convert2Degree(1));
 
 		// WKTReader r = new WKTReader();
 		//

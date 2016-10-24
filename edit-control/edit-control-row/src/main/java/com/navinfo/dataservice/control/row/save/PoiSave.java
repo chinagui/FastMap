@@ -124,7 +124,7 @@ public class PoiSave {
                 }
             }
 
-            if (operType == OperType.UPDATE && ObjType.IXSAMEPOI != objType && ObjType.IXPOIPARENT != objType) {
+            if (operType != OperType.DELETE && ObjType.IXSAMEPOI != objType && ObjType.IXPOIPARENT != objType) {
                 json.put("objId", pid);
                 BatchProcess batchProcess = new BatchProcess();
                 batchProcess.execute(json, conn, editApiImpl);

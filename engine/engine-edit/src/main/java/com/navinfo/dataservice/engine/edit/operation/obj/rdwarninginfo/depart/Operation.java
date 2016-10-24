@@ -5,6 +5,7 @@ import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.warninginfo.RdWarninginfo;
 import com.navinfo.dataservice.dao.glm.selector.rd.warninginfo.RdWarninginfoSelector;
+import net.sf.json.JSONObject;
 
 import java.sql.Connection;
 import java.util.*;
@@ -36,7 +37,7 @@ public class Operation {
         }
         List<Integer> nodePids = Arrays.asList(tmpNodePids.toArray(new Integer[]{})).subList(1, tmpNodePids.size() - 1);
         List<RdWarninginfo> list = selector.loadByNodePids(nodePids, true);
-        list.removeAll(warninginfos);
+        this.removeRepeat(list, warninginfos);
         for (RdWarninginfo info : list) {
             Integer linkPid = info.getLinkPid();
             RdLink link = notargetLinkMap.get(linkPid);
@@ -53,5 +54,24 @@ public class Operation {
         }
 
         return "";
+    }
+
+    /**
+     * 去除已删除警示信息
+     *
+     * @param list         待去重警示信息
+     * @param warninginfos 已删除警示信息
+     */
+    private void removeRepeat(List<RdWarninginfo> list, List<RdWarninginfo> warninginfos) {
+        Iterator<RdWarninginfo> it = list.iterator();
+        while (it.hasNext()) {
+            RdWarninginfo warninginfo = it.next();
+            for (RdWarninginfo warn : warninginfos) {
+                if (warn.pid() == warninginfo.pid()) {
+                    it.remove();
+                    break;
+                }
+            }
+        }
     }
 }

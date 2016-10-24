@@ -249,10 +249,10 @@ public class RoadDailyMain {
 			log.info("-- -- finish all Thread stat of grid");
 			// 根据 grid 结果 汇总 block 和 city
 			MongoDao md = new MongoDao(db_name);
-			log.info("-- begin stat:" + col_name_block);
-			md.insertMany(col_name_block, build_block());
-			log.info("-- begin stat:" + col_name_city);
-			md.insertMany(col_name_city, build_city());
+//			log.info("-- begin stat:" + col_name_block);
+//			md.insertMany(col_name_block, build_block());
+//			log.info("-- begin stat:" + col_name_city);
+//			md.insertMany(col_name_city, build_city());
 
 			log.info("-- end stat --");
 			System.exit(0);

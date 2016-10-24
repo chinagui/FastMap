@@ -18,7 +18,6 @@ import org.apache.commons.dbutils.handlers.MapHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
-import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
@@ -274,7 +273,21 @@ public class TaskOperation {
 						statusSql+=" TASK_LIST.TASK_STATUS="+conditionJson.getInt(key);}
 					if ("cityPlanStatus".equals(key)) {
 						if(!statusSql.isEmpty()){statusSql+=" or ";}
-						statusSql+=" TASK_LIST.CITY_PLAN_STATUS="+conditionJson.getInt(key);}}
+						statusSql+=" TASK_LIST.CITY_PLAN_STATUS="+conditionJson.getInt(key);}
+					//1-11未规划,草稿,采集正常,采集异常,采集完成,日编正常,日编异常,日编完成,按时完成,提前完成,逾期完成
+					if("selectParam1".equals(key)){
+						JSONArray selectParam1=conditionJson.getJSONArray(key);
+						for(Object i:selectParam1){
+							int tmp=(int) i;
+							if(tmp==1){
+								if(!statusSql.isEmpty()){statusSql+=" or ";}
+								statusSql+=" TASK_LIST.CITY_PLAN_STATUS =0";}
+							if(tmp==2){
+								if(!statusSql.isEmpty()){statusSql+=" or ";}
+								statusSql+=" TASK_LIST.TASK_STATUS =2";}
+						}
+					}
+				}
 			}	
 			if(!statusSql.isEmpty()){//有非status
 				conditionSql+=" and ("+statusSql+")";}
@@ -349,7 +362,25 @@ public class TaskOperation {
 						statusSql+=" TASK_LIST.collect_Progress IN ("+conditionJson.getJSONArray(key).join(",")+")";}
 					if ("dailyProgress".equals(key)) {
 						if(!statusSql.isEmpty()){statusSql+=" or ";}
-						statusSql+=" TASK_LIST.daily_Progress IN ("+conditionJson.getJSONArray(key).join(",")+")";}}
+						statusSql+=" TASK_LIST.daily_Progress IN ("+conditionJson.getJSONArray(key).join(",")+")";}
+					//1-11未规划,草稿,采集正常,采集异常,采集完成,日编正常,日编异常,日编完成,按时完成,提前完成,逾期完成
+					if("selectParam1".equals(key)){
+						JSONArray selectParam1=conditionJson.getJSONArray(key);
+						JSONArray collectProgress=new JSONArray();
+						JSONArray dailyProgress=new JSONArray();
+						for(Object i:selectParam1){
+							int tmp=(int) i;
+							if(tmp==3||tmp==4||tmp==5){collectProgress.add(tmp-2);}
+							if(tmp==6||tmp==7||tmp==8){dailyProgress.add(tmp-5);}
+						}
+						if(!collectProgress.isEmpty()){
+							if(!statusSql.isEmpty()){statusSql+=" or ";}
+							statusSql+=" TASK_LIST.collect_Progress IN ("+collectProgress.join(",")+")";}
+						if(!dailyProgress.isEmpty()){
+							if(!statusSql.isEmpty()){statusSql+=" or ";}
+							statusSql+=" TASK_LIST.daily_Progress IN ("+dailyProgress.join(",")+")";}
+					}
+				}
 			}	
 			if(!statusSql.isEmpty()){//有非status
 				conditionSql+=" and ("+statusSql+")";}
@@ -441,6 +472,25 @@ public class TaskOperation {
 							}
 							}
 						}
+					//1-11未规划,草稿,采集正常,采集异常,采集完成,日编正常,日编异常,日编完成,按时完成,提前完成,逾期完成
+					if("selectParam1".equals(key)){
+						JSONArray selectParam1=conditionJson.getJSONArray(key);
+						for(Object i:selectParam1){
+							int tmp=(int) i;												
+							if(tmp==9){
+								if(!statusSql.isEmpty()){statusSql+=" or ";}
+								statusSql+=" TASK_LIST.diff_date=0";
+							}
+							if(tmp==10){
+								if(!statusSql.isEmpty()){statusSql+=" or ";}
+								statusSql+=" TASK_LIST.diff_date>0";
+							}
+							if(tmp==11){
+								if(!statusSql.isEmpty()){statusSql+=" or ";}
+								statusSql+=" TASK_LIST.diff_date<0";
+							}
+						}
+					}
 				}	
 				if(!statusSql.isEmpty()){//有非status
 					conditionSql+=" and ("+statusSql+")";}	
@@ -534,6 +584,25 @@ public class TaskOperation {
 							}
 							}
 						}
+					//1-11未规划,草稿,采集正常,采集异常,采集完成,日编正常,日编异常,日编完成,按时完成,提前完成,逾期完成
+					if("selectParam1".equals(key)){
+						JSONArray selectParam1=conditionJson.getJSONArray(key);
+						for(Object i:selectParam1){
+							int tmp=(int) i;												
+							if(tmp==9){
+								if(!statusSql.isEmpty()){statusSql+=" or ";}
+								statusSql+=" TASK_LIST.diff_date=0";
+							}
+							if(tmp==10){
+								if(!statusSql.isEmpty()){statusSql+=" or ";}
+								statusSql+=" TASK_LIST.diff_date>0";
+							}
+							if(tmp==11){
+								if(!statusSql.isEmpty()){statusSql+=" or ";}
+								statusSql+=" TASK_LIST.diff_date<0";
+							}
+						}
+					}
 				}	
 				if(!statusSql.isEmpty()){//有非status
 					conditionSql+=" and ("+statusSql+")";}	
@@ -604,7 +673,23 @@ public class TaskOperation {
 						statusSql+=" TASK_LIST.TASK_STATUS="+conditionJson.getInt(key);}
 					if ("blockPlanStatus".equals(key)) {
 						if(!statusSql.isEmpty()){statusSql+=" or ";}
-						statusSql+=" TASK_LIST.INFOR_PLAN_STATUS="+conditionJson.getInt(key);}}
+						statusSql+=" TASK_LIST.INFOR_PLAN_STATUS="+conditionJson.getInt(key);}
+					//1-11未规划,草稿,采集正常,采集异常,采集完成,日编正常,日编异常,日编完成,按时完成,提前完成,逾期完成
+					if("selectParam1".equals(key)){
+						JSONArray selectParam1=conditionJson.getJSONArray(key);
+						for(Object i:selectParam1){
+							int tmp=(int) i;
+							if(tmp==1){
+								if(!statusSql.isEmpty()){statusSql+=" or ";}
+								statusSql+=" TASK_LIST.INFOR_PLAN_STATUS =0";}
+							if(tmp==2){
+								if(!statusSql.isEmpty()){statusSql+=" or ";}
+								statusSql+=" TASK_LIST.TASK_STATUS =2";}	
+						}
+					}
+					
+				}
+				
 			}	
 			if(!statusSql.isEmpty()){//有非status
 				conditionSql+=" and ("+statusSql+")";}
@@ -677,7 +762,25 @@ public class TaskOperation {
 						statusSql+=" TASK_LIST.collect_Progress IN ("+conditionJson.getJSONArray(key).join(",")+")";}
 					if ("dailyProgress".equals(key)) {
 						if(!statusSql.isEmpty()){statusSql+=" or ";}
-						statusSql+=" TASK_LIST.daily_Progress IN ("+conditionJson.getJSONArray(key).join(",")+")";}}
+						statusSql+=" TASK_LIST.daily_Progress IN ("+conditionJson.getJSONArray(key).join(",")+")";}
+					//1-11未规划,草稿,采集正常,采集异常,采集完成,日编正常,日编异常,日编完成,按时完成,提前完成,逾期完成
+					if("selectParam1".equals(key)){
+						JSONArray selectParam1=conditionJson.getJSONArray(key);
+						JSONArray collectProgress=new JSONArray();
+						JSONArray dailyProgress=new JSONArray();
+						for(Object i:selectParam1){
+							int tmp=(int) i;
+							if(tmp==3||tmp==4||tmp==5){collectProgress.add(tmp-2);}
+							if(tmp==6||tmp==7||tmp==8){dailyProgress.add(tmp-5);}												
+						}
+						if(!collectProgress.isEmpty()){
+							if(!statusSql.isEmpty()){statusSql+=" or ";}
+							statusSql+=" TASK_LIST.collect_Progress IN ("+collectProgress.join(",")+")";}
+						if(!dailyProgress.isEmpty()){
+							if(!statusSql.isEmpty()){statusSql+=" or ";}
+							statusSql+=" TASK_LIST.daily_Progress IN ("+dailyProgress.join(",")+")";}
+					}
+				}
 			}	
 			if(!statusSql.isEmpty()){//有非status
 				conditionSql+=" and ("+statusSql+")";}
@@ -751,6 +854,27 @@ public class TaskOperation {
 					String key = (String) keys.next();
 					if("name".equals(key)){
 						conditionSql=conditionSql+" AND (TASK_LIST.INFOR_NAME LIKE '%"+conditionJson.getString(key)+"%' OR TASK_LIST.TASK_NAME LIKE '%"+conditionJson.getString(key)+"%')";}
+					
+					//1-11未规划,草稿,采集正常,采集异常,采集完成,日编正常,日编异常,日编完成,按时完成,提前完成,逾期完成
+					if("selectParam1".equals(key)){
+						JSONArray selectParam1=conditionJson.getJSONArray(key);
+						for(Object i:selectParam1){
+							int tmp=(int) i;													
+							if(tmp==9){
+								if(!statusSql.isEmpty()){statusSql+=" or ";}
+								statusSql+=" TASK_LIST.diff_date=0";
+							}
+							if(tmp==10){
+								if(!statusSql.isEmpty()){statusSql+=" or ";}
+								statusSql+=" TASK_LIST.diff_date>0";
+							}
+							if(tmp==11){
+								if(!statusSql.isEmpty()){statusSql+=" or ";}
+								statusSql+=" TASK_LIST.diff_date<0";
+							}
+						}
+					}
+					
 					if ("diffDate".equals(key)) {
 						JSONArray diffDateArray=conditionJson.getJSONArray(key);
 						for(Object diffDate:diffDateArray){
@@ -860,6 +984,25 @@ public class TaskOperation {
 							}
 							}
 						}
+					//1-11未规划,草稿,采集正常,采集异常,采集完成,日编正常,日编异常,日编完成,按时完成,提前完成,逾期完成
+					if("selectParam1".equals(key)){
+						JSONArray selectParam1=conditionJson.getJSONArray(key);
+						for(Object i:selectParam1){
+							int tmp=(int) i;													
+							if(tmp==9){
+								if(!statusSql.isEmpty()){statusSql+=" or ";}
+								statusSql+=" TASK_LIST.diff_date=0";
+							}
+							if(tmp==10){
+								if(!statusSql.isEmpty()){statusSql+=" or ";}
+								statusSql+=" TASK_LIST.diff_date>0";
+							}
+							if(tmp==11){
+								if(!statusSql.isEmpty()){statusSql+=" or ";}
+								statusSql+=" TASK_LIST.diff_date<0";
+							}
+						}
+					}
 				}	
 				if(!statusSql.isEmpty()){//有非status
 					conditionSql+=" and ("+statusSql+")";}	
@@ -1188,6 +1331,42 @@ public class TaskOperation {
 					if ("taskName".equals(key)) {conditionSql+=" TASK_LIST.TASK_NAME like '%"+conditionJson.getString(key)+"%'";}
 					if ("createUserName".equals(key)) {conditionSql+=" TASK_LIST.create_User_Name like '%"+conditionJson.getString(key)+"%'";}
 					
+					//1-11未规划,草稿,采集正常,采集异常,采集完成,日编正常,日编异常,日编完成,按时完成,提前完成,逾期完成
+					if("selectParam1".equals(key)){
+						JSONArray selectParam1=conditionJson.getJSONArray(key);
+						JSONArray collectProgress=new JSONArray();
+						JSONArray dailyProgress=new JSONArray();
+						for(Object i:selectParam1){
+							int tmp=(int) i;
+							if(tmp==3||tmp==4||tmp==5){collectProgress.add(tmp-2);}
+							if(tmp==6||tmp==7||tmp==8){dailyProgress.add(tmp-5);}
+							if(tmp==1){
+								if(!statusSql.isEmpty()){statusSql+=" or ";}
+								statusSql+=" TASK_LIST.PLAN_STATUS =0";}
+							if(tmp==2){
+								if(!statusSql.isEmpty()){statusSql+=" or ";}
+								statusSql+=" TASK_LIST.TASK_STATUS =2";}													
+							if(tmp==9){
+								if(!statusSql.isEmpty()){statusSql+=" or ";}
+								statusSql+=" TASK_LIST.diff_date=0";
+							}
+							if(tmp==10){
+								if(!statusSql.isEmpty()){statusSql+=" or ";}
+								statusSql+=" TASK_LIST.diff_date>0";
+							}
+							if(tmp==11){
+								if(!statusSql.isEmpty()){statusSql+=" or ";}
+								statusSql+=" TASK_LIST.diff_date<0";
+							}
+						}
+						if(!collectProgress.isEmpty()){
+							if(!statusSql.isEmpty()){statusSql+=" or ";}
+							statusSql+=" TASK_LIST.collect_Progress IN ("+collectProgress.join(",")+")";}
+						if(!dailyProgress.isEmpty()){
+							if(!statusSql.isEmpty()){statusSql+=" or ";}
+							statusSql+=" TASK_LIST.daily_Progress IN ("+dailyProgress.join(",")+")";}
+					}
+					
 					if ("taskStatus".equals(key)) {statusSql+=" (TASK_LIST.TASK_STATUS IN ("+conditionJson.getJSONArray(key).join(",")+")"
 							+ " AND TASK_LIST.PLAN_STATUS!=0)";}
 					if ("planStatus".equals(key)) {statusSql+=" TASK_LIST.PLAN_STATUS="+conditionJson.getInt(key);}
@@ -1235,7 +1414,7 @@ public class TaskOperation {
 					+ "         NVL(T.CREATE_USER_ID, 0) CREATE_USER_ID,"
 					+ "         NVL(U.USER_REAL_NAME, '---') CREATE_USER_NAME,"
 					+ "         NVL(G.GROUP_NAME, '---') MONTH_EDIT_GROUP_NAME,"
-					+ "         S.PERCENT"
+					+ "         S.PERCENT,S.collect_Progress,S.DAILY_Progress,S.DIFF_DATE"
 					+ "    FROM TASK T, FM_STAT_OVERVIEW_TASK S, USER_INFO U, USER_GROUP G"
 					+ "   WHERE S.TASK_ID(+) = T.TASK_ID"
 					+ "     AND T.LATEST = 1"
@@ -1263,7 +1442,9 @@ public class TaskOperation {
 					+ "         NVL(T.MONTH_EDIT_GROUP_NAME, '---') MONTH_EDIT_GROUP_NAME,"
 					+ "         NVL(T.STATUS, 0) TASK_STATUS,"
 					+ "         C.PLAN_STATUS,"
-					+ "         NVL(T.PERCENT, 0) PERCENT"
+					+ "         NVL(T.PERCENT, 0) PERCENT,"
+					+ " NVL(T.collect_Progress, 0) collect_Progress,NVL(T.DAILY_Progress, 0) DAILY_Progress,"
+					+ "NVL(T.DIFF_DATE, 0) DIFF_DATE "
 					+ "    FROM T, CITY C"
 					+ "   WHERE T.CITY_ID(+) = C.CITY_ID"
 					+ "     AND C.CITY_ID <> 100002"
@@ -1287,6 +1468,8 @@ public class TaskOperation {
 					+ "         NVL(T.STATUS, 0) TASK_STATUS,"
 					+ "         I.PLAN_STATUS,"
 					+ "         NVL(T.PERCENT, 0) PERCENT"
+					+ " NVL(T.collect_Progress, 0) collect_Progress,NVL(T.DAILY_Progress, 0) DAILY_Progress,"
+					+ "NVL(T.DIFF_DATE, 0) DIFF_DATE "
 					+ "    FROM T, INFOR I"
 					+ "   WHERE T.TASK_ID(+) = I.TASK_ID),"
 					+ " QUERY AS"

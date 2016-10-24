@@ -2,15 +2,15 @@ package com.navinfo.dataservice.dao.log;
 
 import java.lang.reflect.Field;
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
-import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiName;
 import com.navinfo.navicommons.database.sql.DBUtils;
 
 import net.sf.json.JSONObject;
@@ -58,11 +58,11 @@ public class LogReader {
 			pstmt.setInt(1, objPid);
 			pstmt.setString(2, objTable);
 			resultSet = pstmt.executeQuery();
-			Date lastObjOpDate = null;
+			Timestamp lastObjOpDate = null;
 			int opStatus = 0;
 			while (resultSet.next()) {
 				if (objTable.equals(resultSet.getString("TB_NM")) && opStatus == 0) {
-					lastObjOpDate = resultSet.getDate("op_dt");
+					lastObjOpDate = resultSet.getTimestamp("op_dt");
 					opStatus = resultSet.getInt("op_tp");
 					if (1 == opStatus || 2 == opStatus) {
 						return opStatus;
@@ -76,7 +76,7 @@ public class LogReader {
 				}
 
 				if (!objTable.equals(resultSet.getString("TB_NM")) && opStatus == 0) {
-					lastObjOpDate = resultSet.getDate("op_dt");
+					lastObjOpDate = resultSet.getTimestamp("op_dt");
 					opStatus = 3;
 					if (isExistsAddHis(objPid, objTable, lastObjOpDate)) {
 						return 1;
@@ -95,7 +95,6 @@ public class LogReader {
 
 			DBUtils.closeResultSet(resultSet);
 			DBUtils.closeStatement(pstmt);
-//			DBUtils.closeConnection(conn);
 
 		}
 	}
@@ -109,10 +108,10 @@ public class LogReader {
 	 * @return
 	 * @throws Exception
 	 */
-	public boolean isExistsAddHis(int objPid, String objTable, Date lastObjOpDate) throws Exception {
+	public boolean isExistsAddHis(int objPid, String objTable, Timestamp lastObjOpDate) throws Exception {
 
 		String sql = "SELECT de.row_id,de.op_id,de.tb_nm,de.old,de.new,de.fd_lst,de.op_tp,de.tb_row_id,op.op_dt FROM LOG_DETAIL de,LOG_OPERATION op "
-				+ "WHERE de.OP_ID=op.OP_ID AND de.OB_PID= :1 AND de.OB_NM= :2 AND de.OP_TP=:3 AND op.op_dt<:4 ";
+				+ "WHERE de.OP_ID=op.OP_ID AND de.OB_PID= :1 AND de.TB_NM= :2 AND de.OP_TP=:3 AND op.op_dt<:4 ";
 
 		PreparedStatement pstmt = null;
 
@@ -122,13 +121,13 @@ public class LogReader {
 			pstmt.setInt(1, objPid);
 			pstmt.setString(2, objTable);
 			pstmt.setInt(3, 1);
-			pstmt.setDate(4, (java.sql.Date) lastObjOpDate);
+			pstmt.setTimestamp(4, lastObjOpDate);
+
 			resultSet = pstmt.executeQuery();
-			if (resultSet.getRow() == 0) {
-				return false;
-			} else {
+			while (resultSet.next()) {
 				return true;
 			}
+			return false;
 		} catch (Exception e) {
 
 			throw e;
@@ -261,7 +260,7 @@ public class LogReader {
 
 		}
 	}
-	
+
 	/**
 	 * 根据履历过滤掉子表单独删除的记录，只留最后一次和主表同时删除的子表记录
 	 * 
@@ -280,7 +279,7 @@ public class LogReader {
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
-		ObjHandlerUtils objHandler=new ObjHandlerUtils();
+		ObjHandlerUtils objHandler = new ObjHandlerUtils();
 		try {
 			pstmt = this.conn.prepareStatement(sql);
 			pstmt.setInt(1, ixPoi.getPid());
@@ -291,30 +290,30 @@ public class LogReader {
 			pstmt.setString(6, "IX_POI");
 			pstmt.setString(7, "IX_POI");
 			resultSet = pstmt.executeQuery();
-			List<String> rowIdList=new ArrayList<String>();
+			List<String> rowIdList = new ArrayList<String>();
 			while (resultSet.next()) {
 				rowIdList.add(resultSet.getString("ROW_ID"));
 			}
-			 Class<?> clz = ixPoi.getClass();
-			   // 获取实体类的所有属性，返回Field数组
-			   Field[] fields = clz.getDeclaredFields();
-			   for (Field field : fields) {
-				 if("java.util.List".equals(field.getType().getName())){
-					 @SuppressWarnings("unchecked")
-					List<IRow> fieldValueList=(List<IRow>) objHandler.getFieldValueByName(field.getName(), ixPoi);
-					 if (fieldValueList==null ||fieldValueList.isEmpty()){
-						 continue;
-					 }else{
-						 List<IRow> newValueList=new ArrayList<IRow>();
-						 for(IRow fieldValue:fieldValueList){
-							 if (!rowIdList.contains(fieldValue.rowId())){
-								 newValueList.add(fieldValue);
-							 }
-						 }
-						 objHandler.setFieldValueByName(field, ixPoi, newValueList);
-					 }
-				 }
-		    }
+			Class<?> clz = ixPoi.getClass();
+			// 获取实体类的所有属性，返回Field数组
+			Field[] fields = clz.getDeclaredFields();
+			for (Field field : fields) {
+				if ("java.util.List".equals(field.getType().getName())) {
+					@SuppressWarnings("unchecked")
+					List<IRow> fieldValueList = (List<IRow>) objHandler.getFieldValueByName(field.getName(), ixPoi);
+					if (fieldValueList == null || fieldValueList.isEmpty()) {
+						continue;
+					} else {
+						List<IRow> newValueList = new ArrayList<IRow>();
+						for (IRow fieldValue : fieldValueList) {
+							if (!rowIdList.contains(fieldValue.rowId())) {
+								newValueList.add(fieldValue);
+							}
+						}
+						objHandler.setFieldValueByName(field, ixPoi, newValueList);
+					}
+				}
+			}
 		} catch (Exception e) {
 
 			throw e;
@@ -327,41 +326,11 @@ public class LogReader {
 
 		}
 	}
-	
-	 public static void main( String[] args )
-	    {
-		 IxPoi ixPoi=new IxPoi();
-		 IxPoiName poiName1=new IxPoiName();
-		 poiName1.setName("1");
-		 IxPoiName poiName2=new IxPoiName();
-		 poiName2.setName("2");
-		 List<IRow> names=new ArrayList<IRow>();
-		 names.add(poiName1);
-		 names.add(poiName2);
-		 ixPoi.setNames(names);
-		 Class<?> clz = ixPoi.getClass();
-		 ObjHandlerUtils objHandler=new ObjHandlerUtils();
-		   // 获取实体类的所有属性，返回Field数组
-		   Field[] fields = clz.getDeclaredFields();
-		   for (Field field : fields) {
-				 if("java.util.List".equals(field.getType().getName())){
-					 List<IRow> fieldValueList=(List<IRow>) objHandler.getFieldValueByName(field.getName(), ixPoi);
-					 if (fieldValueList==null ||fieldValueList.isEmpty()){
-						 continue;
-					 }else{
-						 List<IRow> newValueList=new ArrayList<IRow>();
-						 for(IRow fieldValue:fieldValueList){
-							 System.out.println(fieldValue.tableName());
-							 newValueList.add(fieldValue);
-						 }
-						 objHandler.setFieldValueByName(field, ixPoi, newValueList);
-						 
-						 
-					 }
-				 }
-					
-			   
-		    }
-		   System.out.println(ixPoi.getNames());//打印该类的所有属性类型
-	    }
+
+	public static void main(String[] args) throws Exception {
+		Connection con = DriverManager.getConnection("jdbc:oracle:thin:@192.168.4.61:1521/orcl",
+				"fm_regiondb_test_d_306", "fm_regiondb_test_d_306");
+		int state = new LogReader(con).getObjectState(78710230, "IX_POI");
+		System.out.println(state);
+	}
 }

@@ -11,7 +11,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import net.sf.json.JSONObject;
 
@@ -93,6 +95,7 @@ public class DeepInfoImporter {
 		int notfound = 0;
 
 		int cache = 0;
+		
 
 		while ((line = reader.readLine()) != null) {
 
@@ -119,30 +122,24 @@ public class DeepInfoImporter {
 
 			rs.close();
 
-			String kindCode = poi.getString("kindCode");
 
 			try {
+				//gas
+				int res = GasStationImporter.run(result, conn, stmt, poi);
 
-				if (kindCode.equals("230215") || kindCode.equals("230216")
-						|| kindCode.equals("230217")) {
-
-					int res = GasStationImporter.run(result, conn, stmt, poi);
-
-					if (res > 0) {
-						cache++;
-						gasCount++;
-					}
-				} else if (kindCode.equals("230210")
-						|| kindCode.equals("230213")
-						|| kindCode.equals("230214")) {
-
-					int res = ParkingImporter.run(result, conn, stmt, poi);
-
-					if (res > 0) {
-						cache++;
-						parkingCount++;
-					}
+				if (res > 0) {
+					cache++;
+					gasCount++;
 				}
+				//parking
+				res = ParkingImporter.run(result, conn, stmt, poi);
+
+				if (res > 0) {
+					cache++;
+					parkingCount++;
+				}
+				//
+
 			} catch (DataErrorException ex) {
 				logger.error("pid " + pid + ":" + ex.getMessage());
 			}

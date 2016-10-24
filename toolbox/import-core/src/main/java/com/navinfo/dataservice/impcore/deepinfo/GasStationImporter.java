@@ -2,6 +2,12 @@ package com.navinfo.dataservice.impcore.deepinfo;
 
 import java.sql.Connection;
 import java.sql.Statement;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.apache.commons.collections.CollectionUtils;
 
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.util.JsonUtils;
@@ -15,12 +21,21 @@ import net.sf.json.JSONObject;
 import net.sf.json.util.JSONUtils;
 
 public class GasStationImporter {
+	public static String[] kcs = new String[]{"230215","230216","230217"}; 
+	
+	
 	public static int run(Result result, Connection conn,
 			Statement stmt, JSONObject poi) throws Exception {
 
 		JSONObject gasStation = poi.getJSONObject("gasStation");
 
 		if (JSONUtils.isNull(gasStation)) {
+			return 0;
+		}
+		Set<String> kcSets = new HashSet<String>();
+		CollectionUtils.addAll(kcSets, kcs);
+		String kindCode = poi.getString("kindCode");
+		if(!kcSets.contains(kindCode)){
 			return 0;
 		}
 

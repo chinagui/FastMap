@@ -97,9 +97,13 @@ public class RwFeature implements IObj {
 
 		for (IRow fs : rwLinkSources) {
 
+			RwLink sourceRw = (RwLink) fs;
+			
 			RwLink f = new RwLink();
 
 			f.copy(fs);
+			
+			f.setPid(sourceRw.getPid());
 
 			rwLinks.add(f);
 		}

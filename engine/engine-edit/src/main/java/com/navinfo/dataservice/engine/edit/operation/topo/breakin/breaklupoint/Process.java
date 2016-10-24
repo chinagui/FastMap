@@ -57,7 +57,6 @@ public class Process extends AbstractProcess<Command> {
 			// 创建土地利用点有关土地利用面的具体操作类
 			OpRefLuFace opRefLuFace = new OpRefLuFace(this.getCommand(),this.getConn());
 			opRefLuFace.run(this.getResult());
-			this.recordData();
 		} catch (Exception e) {
 			
 			this.getConn().rollback();

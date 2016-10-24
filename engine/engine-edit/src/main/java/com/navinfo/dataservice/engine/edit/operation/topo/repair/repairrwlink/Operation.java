@@ -77,8 +77,8 @@ public class Operation implements IOperation {
 			}
 			//拷贝原link，set属性
 			RwLink link = new RwLink();
-			link.copy(this.command.getUpdateLink());
 			link.setPid(this.command.getUpdateLink().getPid());
+			link.copy(this.command.getUpdateLink());
 			link.setGeometry(GeoTranslator.geojson2Jts(this.command.getLinkGeom(),100000,0));
 			links.add(link);
 		} else {

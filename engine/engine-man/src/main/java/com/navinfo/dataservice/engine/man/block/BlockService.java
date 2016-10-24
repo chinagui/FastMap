@@ -1099,6 +1099,35 @@ public class BlockService {
 				if("planStatus".equals(key)){
 					conditionSql=conditionSql+" AND MAN_LIST.BLOCK_STATUS =1 AND MAN_LIST.PLAN_STATUS="+conditionJson.getInt(key);}
 				
+				//1-6采集/日编正常,采集/日编异常,待分配,正常完成,逾期完成,提前完成
+				if("selectParam1".equals(key)){
+					JSONArray selectParam1=conditionJson.getJSONArray(key);
+					JSONArray progress=new JSONArray();
+					for(Object i:selectParam1){
+						int tmp=(int) i;
+						if(tmp==1||tmp==2){progress.add(tmp);}		
+						if(tmp==3){
+							if(!statusSql.isEmpty()){statusSql+=" or ";}
+							statusSql+=" MAN_LIST.ASSIGN_STATUS=0";
+						}
+						if(tmp==4){
+							if(!statusSql.isEmpty()){statusSql+=" or ";}
+							statusSql+=" MAN_LIST.diff_date=0";
+						}
+						if(tmp==6){
+							if(!statusSql.isEmpty()){statusSql+=" or ";}
+							statusSql+=" MAN_LIST.diff_date>0";
+						}
+						if(tmp==5){
+							if(!statusSql.isEmpty()){statusSql+=" or ";}
+							statusSql+=" MAN_LIST.diff_date<0";
+						}
+					}
+					if(!progress.isEmpty()){
+						if(!statusSql.isEmpty()){statusSql+=" or ";}
+						statusSql+=" MAN_LIST.Progress IN ("+progress.join(",")+")";}
+				}
+				
 				if ("assignStatus".equals(key)) {
 					if(!statusSql.isEmpty()){statusSql+=" or ";}
 					statusSql+=" MAN_LIST.ASSIGN_STATUS="+conditionJson.getInt(key);}

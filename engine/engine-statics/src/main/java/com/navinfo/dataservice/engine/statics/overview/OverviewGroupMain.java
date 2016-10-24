@@ -22,12 +22,12 @@ import com.navinfo.dataservice.engine.statics.tools.MongoDao;
 import com.navinfo.dataservice.engine.statics.tools.StatUtil;
 
 /** 
- * @ClassName: OverviewGroupStat
+ * @ClassName: OverviewGroupMain
  * @author zl
  * @date 2016年10月22日
  * @Description: OverviewGroupStat.java
  */
-public class OverviewGroupStat {
+public class OverviewGroupMain {
 
 	/**
 	 * 
@@ -39,7 +39,7 @@ public class OverviewGroupStat {
 	private static String stat_date;
 	private static String stat_time;
 
-	public OverviewGroupStat(String dbn, String stat_time) {
+	public OverviewGroupMain(String dbn, String stat_time) {
 		this.db_name = dbn;
 		this.stat_date = stat_time.substring(0, 8);
 		this.stat_time = stat_time;
@@ -275,7 +275,7 @@ public class OverviewGroupStat {
 				new String[] { "dubbo-consumer-datahub-test.xml"});
 		context.start();
 		new ApplicationContextUtil().setApplicationContext(context);
-		OverviewGroupStat overviewSubtaskStat = new OverviewGroupStat("fm_stat", "201610240956");
+		OverviewGroupMain overviewSubtaskStat = new OverviewGroupMain("fm_stat", "201610240956");
 		overviewSubtaskStat.runStat();
 		
 	}

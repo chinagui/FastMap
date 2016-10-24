@@ -598,6 +598,10 @@ public class MetaController extends BaseController {
 			
 			Subtask subtask = apiService.queryBySubtaskId(subtaskId);
 			
+			if (subtask == null) {
+				throw new Exception("subtaskid未找到数据");
+			}
+			
 			int dbId = subtask.getDbId();
 			
 			FccApi apiFcc=(FccApi) ApplicationContextUtil.getBean("fccApi");

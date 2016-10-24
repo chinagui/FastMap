@@ -4,6 +4,7 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
+import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossNode;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossSelector;
@@ -41,8 +42,12 @@ public class Operation {
             List<RdCross> crosses = selector.loadRdCrossByNodeOrLink(nodePids, new ArrayList<Integer>(), true);
             for (RdCross cross : crosses) {
                 result.insertObject(cross, ObjStatus.DELETE, cross.pid());
+                for (IRow row : cross.getNodes()) {
+                    nodePids.add(((RdCrossNode) row).getNodePid());
+                }
             }
         }
+
         // 2.维护分离link的交叉口道路形态
         RdLinkSelector linkSelector = new RdLinkSelector(conn);
         List<RdLink> allDelLinks = linkSelector.loadByNodePids(nodePids, false);
@@ -57,6 +62,7 @@ public class Operation {
             }
             if (null == leftLink && null == rightLink) {
                 link = (RdLink) linkSelector.loadById(link.pid(), true);
+                if (isTargetLink(link, links)) continue;
                 this.updateLinkForm(link, result);
             }
         }
@@ -64,7 +70,6 @@ public class Operation {
     }
 
     private void updateLinkForm(RdLink link, Result result) {
-
         for (IRow row : link.getForms()) {
             RdLinkForm form = (RdLinkForm) row;
             if (form.getFormOfWay() == 50) {
@@ -76,5 +81,14 @@ public class Operation {
                 }
             }
         }
+    }
+
+    private boolean isTargetLink(RdLink link, List<RdLink> links) {
+        boolean result = false;
+        for (RdLink l : links) {
+            if (link.pid() == l.pid())
+                return true;
+        }
+        return result;
     }
 }

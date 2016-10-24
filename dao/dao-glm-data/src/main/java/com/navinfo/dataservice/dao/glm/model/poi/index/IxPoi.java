@@ -1189,6 +1189,22 @@ public class IxPoi implements IObj {
 					}
 
 					break;
+				case "contacts":
+					contacts.clear();
+
+					ja = json.getJSONArray(key);
+
+					for (int i = 0; i < ja.size(); i++) {
+						JSONObject jo = ja.getJSONObject(i);
+
+						IxPoiContact row = new IxPoiContact();
+
+						row.Unserialize(jo);
+
+						contacts.add(row);
+					}
+
+					break;
 				case "audioes":
 
 					audioes.clear();

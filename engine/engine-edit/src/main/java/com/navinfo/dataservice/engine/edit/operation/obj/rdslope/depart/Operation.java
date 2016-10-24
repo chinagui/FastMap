@@ -6,6 +6,7 @@ import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.slope.RdSlope;
 import com.navinfo.dataservice.dao.glm.selector.rd.slope.RdSlopeSelector;
+import com.navinfo.dataservice.engine.edit.utils.CalLinkOperateUtils;
 
 import java.sql.Connection;
 import java.util.*;
@@ -43,17 +44,16 @@ public class Operation {
                 slopes.clear();
             }
             // 2.当目标link上的点已经参与制作坡度
-            Set<Integer> tmpNodePids = new LinkedHashSet<>();
-            tmpNodePids.add(link.getsNodePid());
-            tmpNodePids.add(link.geteNodePid());
-            List<Integer> nodePids = new ArrayList<>(tmpNodePids).subList(1, tmpNodePids.size() - 1);
-            slopes.addAll(selector.loadByNodePids(nodePids, true));
-            if (!slopes.isEmpty()) {
-                for (RdSlope slope : slopes) {
-                    if (!result.getDelObjects().contains(slope))
-                        result.insertObject(slope, ObjStatus.DELETE, slope.pid());
+            List<Integer> nodePids = CalLinkOperateUtils.calNodePids(links);
+            if (!nodePids.isEmpty()) {
+                slopes.addAll(selector.loadByNodePids(nodePids, true));
+                if (!slopes.isEmpty()) {
+                    for (RdSlope slope : slopes) {
+                        if (!result.getDelObjects().contains(slope))
+                            result.insertObject(slope, ObjStatus.DELETE, slope.pid());
+                    }
+                    slopes.clear();
                 }
-                slopes.clear();
             }
             // 3.经过线为目标link
             slopes.addAll(selector.loadByViaLink(link.pid(), true));

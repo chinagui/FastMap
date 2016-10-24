@@ -1467,7 +1467,7 @@ public class TaskOperation {
 					+ "         NVL(T.MONTH_EDIT_GROUP_NAME, '---') MONTH_EDIT_GROUP_NAME,"
 					+ "         NVL(T.STATUS, 0) TASK_STATUS,"
 					+ "         I.PLAN_STATUS,"
-					+ "         NVL(T.PERCENT, 0) PERCENT"
+					+ "         NVL(T.PERCENT, 0) PERCENT,"
 					+ " NVL(T.collect_Progress, 0) collect_Progress,NVL(T.DAILY_Progress, 0) DAILY_Progress,"
 					+ "NVL(T.DIFF_DATE, 0) DIFF_DATE "
 					+ "    FROM T, INFOR I"

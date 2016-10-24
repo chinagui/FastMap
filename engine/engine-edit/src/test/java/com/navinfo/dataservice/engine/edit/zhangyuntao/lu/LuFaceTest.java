@@ -22,9 +22,7 @@ public class LuFaceTest extends InitApplication {
 
 	@Test
 	public void createFaceByGeometryTest() {
-//		String parameter = "{\"command\":\"CREATE\",\"type\":\"LUFACE\",\"dbId\":43,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.46976590156555,40.09303544721415],[116.47152543067932,40.093027239657374],[116.47086024284361,40.09217364834912],[116.46976590156555,40.09303544721415]]}}}";
-//		String parameter = "{\"command\":\"CREATE\",\"type\":\"LUFACE\",\"dbId\":43,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.24781847000122,40.918117629692105],[116.2487518787384,40.91345582170584],[116.25728130340576,40.91704746980017],[116.24781847000122,40.918117629692105]]}}}";
-		String parameter = "{\"command\":\"CREATE\",\"type\":\"LUFACE\",\"dbId\":43,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.5012764930725,40.500314951988074],[116.5032935142517,40.50040469248713],[116.50247812271118,40.50141630435382],[116.5012764930725,40.500314951988074]]}}}";
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"LUFACE\",\"objId\":305000002,\"data\":{\"faceNames\":[{\"pid\":305000002,\"nameGroupid\":1,\"langCode\":\"CHI\",\"name\":\"\",\"phonetic\":\"\",\"srcFlag\":0,\"objStatus\":\"INSERT\"}],\"pid\":305000002}}";
 		TestUtil.run(parameter);
 	}
 

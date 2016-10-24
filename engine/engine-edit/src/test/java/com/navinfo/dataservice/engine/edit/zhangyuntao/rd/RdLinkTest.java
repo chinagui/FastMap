@@ -74,7 +74,7 @@ public class RdLinkTest extends InitApplication {
 
     @Test
     public void search(){
-        String parameter = "http://192.168.4.188:8000/service/render/obj/getByTileWithGap?parameter={\"dbId\":108,\"gap\":80,\"types\":[\"RDLINK\"],\"z\":16,\"x\":53949,\"y\":24796}";
+        String parameter = "http://192.168.4.188:8000/service/render/obj/getByTileWithGap?parameter={\"dbId\":17,\"gap\":10,\"types\":[\"LCLINK\"],\"z\":20,\"x\":863411,\"y\":397214}";
         try {
             TestSearch.testSearchGap(parameter);
         } catch (Exception e) {
@@ -86,7 +86,7 @@ public class RdLinkTest extends InitApplication {
     public void updownDepart(){
         String parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"dbId\":17,\"distance\":\"6.6\",\"data\":{\"linkPids\":[209000217]}}";
         parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"dbId\":17,\"distance\":\"30.4\",\"data\":{\"linkPids\":[209000217]}}";
-        parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"dbId\":17,\"distance\":\"13.4\",\"data\":{\"linkPids\":[306001313,310001349]}}";
+        parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"dbId\":17,\"distance\":\"13.4\",\"data\":{\"linkPids\":[323048,323046,319664,319663,319467,319466,319465]}}";
         TestUtil.run(parameter);
     }
 }

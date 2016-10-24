@@ -278,7 +278,7 @@ public class NiValExceptionSelector {
 
 		sql.append(StringUtils.join(grids, ","));
 		
-		sql.append(")");
+		sql.append("))");
 		
 		if(subtaskType==0||subtaskType==5||subtaskType==6||subtaskType==7){
 			sql.append(" and EXISTS ("

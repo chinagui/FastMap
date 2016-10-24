@@ -3,8 +3,10 @@ package com.navinfo.dataservice.web.edit.controller;
 import java.io.IOException;
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -52,7 +54,7 @@ public class CheckController extends BaseController {
 			
 			int subtaskType = jsonReq.getInt("subtaskType");
 
-			JSONArray grids = jsonReq.getJSONArray("grids");
+			JSONArray gridJas = jsonReq.getJSONArray("grids");
 
 			int pageSize = jsonReq.getInt("pageSize");
 
@@ -61,6 +63,11 @@ public class CheckController extends BaseController {
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 
 			NiValExceptionSelector selector = new NiValExceptionSelector(conn);
+			
+			Set<String> grids = new HashSet<String>();
+			for(Object obj:gridJas){
+				grids.add(obj.toString());
+			}
 
 			Page page = selector.list(subtaskType,grids, pageSize, pageNum);
 

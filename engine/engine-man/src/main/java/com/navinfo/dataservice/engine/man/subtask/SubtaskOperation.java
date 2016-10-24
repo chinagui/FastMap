@@ -1374,6 +1374,235 @@ public class SubtaskOperation {
 	}
 
 
+//	/**
+//	 * @param conn
+//	 * @param planStatus 
+//	 * @param condition
+//	 * @param filter 
+//	 * @param pageSize
+//	 * @param curPageNum
+//	 * @return
+//	 * @throws ServiceException 
+//	 */
+//	public static Page getList(Connection conn, int planStatus, JSONObject condition, JSONObject filter, final int pageSize, final int curPageNum) throws ServiceException {
+//		// TODO Auto-generated method stub
+//		try{
+//			QueryRunner run = new QueryRunner();
+//			
+//			String sql = "";
+//
+//			
+//			String selectSqlCollect = "SELECT S.SUBTASK_ID, S.STAGE, S.NAME, S.TYPE, S.STATUS,U.USER_REAL_NAME AS EXECUTER"
+//					+ " FROM SUBTASK S ,USER_INFO U"
+//					+ " WHERE S.STAGE = 0"
+//					+ " AND U.USER_ID = S.EXE_USER_ID";
+//
+//			String selectSqlDailyUser = "SELECT S.SUBTASK_ID, S.STAGE, S.NAME, S.TYPE, S.STATUS,U.USER_REAL_NAME AS EXECUTER"
+//					+ " FROM SUBTASK S ,USER_INFO U"
+//					+ " WHERE S.STAGE = 1"
+//					+ " AND U.USER_ID = S.EXE_USER_ID";
+//			String selectSqlDailyGroup = "SELECT S.SUBTASK_ID, S.STAGE, S.NAME, S.TYPE, S.STATUS, UG.GROUP_NAME AS EXECUTER"
+//					+ " FROM SUBTASK S , USER_GROUP UG"
+//					+ " WHERE S.STAGE = 1"
+//					+ " AND UG.GROUP_ID = S.EXE_GROUP_ID";
+//
+//			String selectSqlMonthlyUser = "SELECT S.SUBTASK_ID, S.STAGE, S.NAME, S.TYPE, S.STATUS,U.USER_REAL_NAME AS EXECUTER"
+//					+ " FROM SUBTASK S,USER_INFO U"
+//					+ " WHERE S.STAGE = 2"
+//					+ " AND U.USER_ID = S.EXE_USER_ID";
+//			String selectSqlMonthlyGroup = "SELECT S.SUBTASK_ID, S.STAGE, S.NAME, S.TYPE, S.STATUS, UG.GROUP_NAME AS EXECUTER"
+//					+ " FROM SUBTASK S ,USER_GROUP UG"
+//					+ " WHERE S.STAGE = 2"
+//					+ " AND UG.GROUP_ID = S.EXE_GROUP_ID";
+//
+//
+//			//查询条件
+//			String conditionSql = "";
+//			int taskFlg = 0;
+//			int stage = -1;
+//			Iterator<?> conditionKeys = condition.keys();
+//			while (conditionKeys.hasNext()) {
+//				String key = (String) conditionKeys.next();
+//				//查询条件
+//				if ("blockManId".equals(key)) {conditionSql+=" AND S.BLOCK_MAN_ID="+condition.getInt(key);}
+//				if ("taskId".equals(key)) {
+//					conditionSql+=" AND S.TASK_ID="+condition.getInt(key);
+//					taskFlg = 1;
+//				}
+//				if ("stage".equals(key)) {stage = condition.getInt(key);}
+//			}
+//			
+//			
+//			String sql_T = "";
+//			if(stage==0){
+//				//采集
+//				sql_T = selectSqlCollect + conditionSql;
+//			}else if(stage==1){
+//				//日编
+//				sql_T = selectSqlDailyUser + conditionSql + " UNION ALL " + selectSqlDailyGroup + conditionSql;
+//			}else if(stage==2){
+//				//月编
+//				sql_T = selectSqlMonthlyUser + conditionSql + " UNION ALL " + selectSqlMonthlyGroup + conditionSql;
+//			}else{
+//				if(0 == taskFlg){
+//					//采集/日编
+//					sql_T = selectSqlCollect + conditionSql + " UNION ALL " + selectSqlDailyUser + conditionSql + " UNION ALL " + selectSqlDailyGroup + conditionSql;
+//				}else{
+//					//月编
+//					sql_T = selectSqlMonthlyUser + conditionSql + " UNION ALL " + selectSqlMonthlyGroup + conditionSql;
+//				}
+//			}
+//
+//			sql = "SELECT T.SUBTASK_ID, T.STAGE, T.NAME, T.TYPE, T.STATUS,T.EXECUTER,FSOS.PERCENT,FSOS.DIFF_DATE,FSOS.PROGRESS"
+//					+ " FROM (" + sql_T + ") T,FM_STAT_OVERVIEW_SUBTASK FSOS"
+//							+ " WHERE T.SUBTASK_ID = FSOS.SUBTASK_ID(+) ";
+//
+//			String filterSql = "";
+//			if(null != filter){
+//				Iterator<?> filterKeys = filter.keys();
+//				while (filterKeys.hasNext()) {
+//					String key = (String) filterKeys.next();
+//					//模糊查询
+//					if ("subtaskName".equals(key)) {	
+//						filterSql+=" AND T.NAME like '%" + filter.getString(key) +"%'";
+//					}
+//					//筛选条件
+//					//"progress" //进度。1正常，2异常，3关闭，4完成,5草稿,6完成状态逾期，7完成状态按时，8完成状态提前
+//					if ("progress".equals(key)){
+//						JSONArray progress = filter.getJSONArray(key);
+//						if(progress.isEmpty()){
+//							continue;
+//						}
+//						
+//						List<String> progressList = new ArrayList<String>();
+//
+//						if(progress.contains(1)){
+//							progressList.add("FSOS.PROGRESS = 1");
+//						}
+//						if(progress.contains(2)){
+//							progressList.add("FSOS.PROGRESS = 2");
+//						}
+//						if(progress.contains(3)){
+//							progressList.add("T.STATUS = 0");
+//						}
+//						if(progress.contains(4)){
+//							progressList.add("T.STATUS = 1 AND FSOS.PERCENT = 100");
+//						}
+//						if(progress.contains(5)){
+//							progressList.add("T.STATUS = 2");
+//						}
+//						if(progress.contains(6)){
+//							progressList.add("FSOS.DIFF_DATE < 0");
+//						}
+//						if(progress.contains(7)){
+//							progressList.add("FSOS.DIFF_DATE = 0");
+//						}
+//						if(progress.contains(8)){
+//							progressList.add("FSOS.DIFF_DATE > 0");
+//						}
+//						
+//						if(!progressList.isEmpty()){
+//							String tempSql = StringUtils.join(progressList," or ");
+//							filterSql += " AND (" + tempSql + ")";
+//						}
+////						int progress = filter.getInt(key);
+////						if(1==progress&&2==progress){
+////							filterSql += " AND FSOS.PROGRESS = " + progress;
+////						}else if(3==progress){
+////							filterSql += " AND T.STATUS = 0" ;
+////						}else if(4==progress){
+////							filterSql += " AND T.STATUS = 1 AND FSOS.PERCENT = 100";
+////						}else if(5==progress){
+////							filterSql += " AND T.STATUS = 2";
+////						}
+////						////"progress" //进度。6完成状态逾期，7完成状态按时，8完成状态提前
+////						else if(6==progress){
+////							filterSql += " AND FSOS.DIFF_DATE < 0";
+////						}else if(7==progress){
+////							filterSql += " AND FSOS.DIFF_DATE = 0" ;
+////						}else if(8==progress){
+////							filterSql += " AND FSOS.DIFF_DATE > 0";
+////						}
+//					}
+////					//"completionStatus"//完成状态。0逾期，1按时，2提前
+////					if ("completionStatus".equals(key)){
+////						int completionStatus = filter.getInt(key);
+////						if(0==completionStatus){
+////							filterSql += " AND FSOS.DIFF_DATE < 0";
+////						}else if(1==completionStatus){
+////							filterSql += " AND FSOS.DIFF_DATE = 0" ;
+////						}else if(2==completionStatus){
+////							filterSql += " AND FSOS.DIFF_DATE > 0";
+////						}
+////					}
+//				}
+//			}
+//			
+//			sql += filterSql;
+//			String sqlFinal = "";
+//			//排序
+////			"planStatus"//block/task规划状态。2:"已发布",3:"已完成" 。状态不同，排序方式不同。
+//			if(3 == planStatus){
+//				//已完成
+//				String orderSql = " ORDER BY DIFF_DATE ASC ";
+//				sqlFinal = sql + orderSql;
+//			}else if(2 == planStatus){
+//				//已发布
+////				String orderSql = "ORDER BY DIFF_DATE ASC, PERCENT DESC";
+////				String Sql2Close = sql + " AND T.STATUS = 0 ";
+////				String Sql2Draft = sql + " AND T.STATUS = 2 ";
+////				String Sql2OpenFinish = sql  + " AND T.STATUS = 1 AND FSOS.PERCENT = 100 ";
+////				String Sql2OpenUnfinish = sql + " AND T.STATUS = 1 AND (FSOS.PERCENT < 100 OR FSOS.PERCENT IS NULL)";
+//				String orderSql = "ORDER BY PRI ASC,DIFF_DATE ASC, PERCENT DESC";
+//				String Sql2Close = "SELECT SUBTASK_ID, STAGE, NAME, TYPE, STATUS,EXECUTER,PERCENT,DIFF_DATE,PROGRESS ,4 AS PRI FROM (" + sql + " AND T.STATUS = 0 " + ")";
+//				String Sql2Draft = "SELECT SUBTASK_ID, STAGE, NAME, TYPE, STATUS,EXECUTER,PERCENT,DIFF_DATE,PROGRESS ,2 AS PRI FROM (" + sql + " AND T.STATUS = 2 " + ")";
+//				String Sql2OpenFinish = "SELECT SUBTASK_ID, STAGE, NAME, TYPE, STATUS,EXECUTER,PERCENT,DIFF_DATE,PROGRESS ,3 AS PRI FROM (" + sql  + " AND T.STATUS = 1 AND FSOS.PERCENT = 100 " + ")";
+//				String Sql2OpenUnfinish = "SELECT SUBTASK_ID, STAGE, NAME, TYPE, STATUS,EXECUTER,PERCENT,DIFF_DATE,PROGRESS ,1 AS PRI FROM (" + sql + " AND T.STATUS = 1 AND (FSOS.PERCENT < 100 OR FSOS.PERCENT IS NULL) " + ")";
+//				
+//				sqlFinal = Sql2OpenUnfinish + " UNION ALL " + Sql2Draft + " UNION ALL " + Sql2OpenFinish + " UNION ALL "  + Sql2Close  + orderSql;
+//			}
+//			
+//			
+//			ResultSetHandler<Page> rsHandler = new ResultSetHandler<Page>() {
+//				public Page handle(ResultSet rs) throws SQLException {
+//					List<HashMap<Object,Object>> list = new ArrayList<HashMap<Object,Object>>();
+//					Page page = new Page(curPageNum);
+//				    page.setPageSize(pageSize);
+//				    int total = 0;
+//					while (rs.next()) {
+//						if(total==0){
+//							total=rs.getInt("TOTAL_RECORD_NUM_");
+//						}
+//						HashMap<Object,Object> subtask = new HashMap<Object,Object>();
+//						subtask.put("subtaskId", rs.getInt("SUBTASK_ID"));
+//						subtask.put("subtaskName", rs.getString("NAME"));
+//						subtask.put("status", rs.getInt("STATUS"));
+//						subtask.put("stage", rs.getInt("STAGE"));
+//						subtask.put("type", rs.getInt("TYPE"));
+//						
+//						subtask.put("executer", rs.getString("EXECUTER"));
+//
+//						subtask.put("percent", rs.getInt("percent"));
+//						subtask.put("diffDate", rs.getInt("DIFF_DATE"));
+//	
+//						list.add(subtask);
+//					}
+//					
+//					page.setTotalCount(total);
+//					page.setResult(list);
+//					return page;
+//				}
+//	
+//			};
+//			return run.query(curPageNum, pageSize, conn, sqlFinal, rsHandler);
+//		} catch (Exception e) {
+//			DbUtils.rollbackAndCloseQuietly(conn);
+//			log.error(e.getMessage(), e);
+//			throw new ServiceException("查询列表失败，原因为:" + e.getMessage(), e);
+//		}
+//	}
+
+	
 	/**
 	 * @param conn
 	 * @param planStatus 
@@ -1388,34 +1617,35 @@ public class SubtaskOperation {
 		// TODO Auto-generated method stub
 		try{
 			QueryRunner run = new QueryRunner();
-			
-			String sql = "";
 
-			
-			String selectSqlCollect = "SELECT S.SUBTASK_ID, S.STAGE, S.NAME, S.TYPE, S.STATUS,U.USER_REAL_NAME AS EXECUTER"
-					+ " FROM SUBTASK S ,USER_INFO U"
+			String selectSqlCollect = "SELECT S.SUBTASK_ID, S.STAGE, S.NAME, S.TYPE, S.STATUS,U.USER_REAL_NAME AS EXECUTER,FSOS.PERCENT,FSOS.DIFF_DATE,FSOS.PROGRESS"
+					+ " FROM SUBTASK S ,USER_INFO U,FM_STAT_OVERVIEW_SUBTASK FSOS"
 					+ " WHERE S.STAGE = 0"
-					+ " AND U.USER_ID = S.EXE_USER_ID";
+					+ " AND U.USER_ID = S.EXE_USER_ID"
+					+ " AND S.SUBTASK_ID = FSOS.SUBTASK_ID(+)";
 
-			String selectSqlDailyUser = "SELECT S.SUBTASK_ID, S.STAGE, S.NAME, S.TYPE, S.STATUS,U.USER_REAL_NAME AS EXECUTER"
-					+ " FROM SUBTASK S ,USER_INFO U"
+			String selectSqlDailyUser = "SELECT S.SUBTASK_ID, S.STAGE, S.NAME, S.TYPE, S.STATUS,U.USER_REAL_NAME AS EXECUTER,FSOS.PERCENT,FSOS.DIFF_DATE,FSOS.PROGRESS"
+					+ " FROM SUBTASK S ,USER_INFO U,FM_STAT_OVERVIEW_SUBTASK FSOS"
 					+ " WHERE S.STAGE = 1"
-					+ " AND U.USER_ID = S.EXE_USER_ID";
-			String selectSqlDailyGroup = "SELECT S.SUBTASK_ID, S.STAGE, S.NAME, S.TYPE, S.STATUS, UG.GROUP_NAME AS EXECUTER"
-					+ " FROM SUBTASK S , USER_GROUP UG"
+					+ " AND U.USER_ID = S.EXE_USER_ID"
+					+ " AND S.SUBTASK_ID = FSOS.SUBTASK_ID(+)";
+			String selectSqlDailyGroup = "SELECT S.SUBTASK_ID, S.STAGE, S.NAME, S.TYPE, S.STATUS, UG.GROUP_NAME AS EXECUTER,FSOS.PERCENT,FSOS.DIFF_DATE,FSOS.PROGRESS"
+					+ " FROM SUBTASK S , USER_GROUP UG,FM_STAT_OVERVIEW_SUBTASK FSOS"
 					+ " WHERE S.STAGE = 1"
-					+ " AND UG.GROUP_ID = S.EXE_GROUP_ID";
+					+ " AND UG.GROUP_ID = S.EXE_GROUP_ID"
+					+ " AND S.SUBTASK_ID = FSOS.SUBTASK_ID(+)";
 
-			String selectSqlMonthlyUser = "SELECT S.SUBTASK_ID, S.STAGE, S.NAME, S.TYPE, S.STATUS,U.USER_REAL_NAME AS EXECUTER"
-					+ " FROM SUBTASK S,USER_INFO U"
+			String selectSqlMonthlyUser = "SELECT S.SUBTASK_ID, S.STAGE, S.NAME, S.TYPE, S.STATUS,U.USER_REAL_NAME AS EXECUTER,FSOS.PERCENT,FSOS.DIFF_DATE,FSOS.PROGRESS"
+					+ " FROM SUBTASK S,USER_INFO U,FM_STAT_OVERVIEW_SUBTASK FSOS"
 					+ " WHERE S.STAGE = 2"
-					+ " AND U.USER_ID = S.EXE_USER_ID";
-			String selectSqlMonthlyGroup = "SELECT S.SUBTASK_ID, S.STAGE, S.NAME, S.TYPE, S.STATUS, UG.GROUP_NAME AS EXECUTER"
-					+ " FROM SUBTASK S ,USER_GROUP UG"
+					+ " AND U.USER_ID = S.EXE_USER_ID"
+					+ " AND S.SUBTASK_ID = FSOS.SUBTASK_ID(+)";
+			String selectSqlMonthlyGroup = "SELECT S.SUBTASK_ID, S.STAGE, S.NAME, S.TYPE, S.STATUS, UG.GROUP_NAME AS EXECUTER,FSOS.PERCENT,FSOS.DIFF_DATE,FSOS.PROGRESS"
+					+ " FROM SUBTASK S ,USER_GROUP UG,FM_STAT_OVERVIEW_SUBTASK FSOS"
 					+ " WHERE S.STAGE = 2"
-					+ " AND UG.GROUP_ID = S.EXE_GROUP_ID";
-
-
+					+ " AND UG.GROUP_ID = S.EXE_GROUP_ID"
+					+ " AND S.SUBTASK_ID = FSOS.SUBTASK_ID(+)";
+			
 			//查询条件
 			String conditionSql = "";
 			int taskFlg = 0;
@@ -1432,76 +1662,122 @@ public class SubtaskOperation {
 				if ("stage".equals(key)) {stage = condition.getInt(key);}
 			}
 			
-			String sql_T = "";
-			if(stage==0){
-				//采集
-				sql_T = selectSqlCollect + conditionSql;
-			}else if(stage==1){
-				//日编
-				sql_T = selectSqlDailyUser + conditionSql + " UNION ALL " + selectSqlDailyGroup + conditionSql;
-			}else if(stage==2){
-				//月编
-				sql_T = selectSqlMonthlyUser + conditionSql + " UNION ALL " + selectSqlMonthlyGroup + conditionSql;
-			}else{
-				if(0 == taskFlg){
-					//采集/日编
-					sql_T = selectSqlCollect + conditionSql + " UNION ALL " + selectSqlDailyUser + conditionSql + " UNION ALL " + selectSqlDailyGroup + conditionSql;
-				}else{
-					//月编
-					sql_T = selectSqlMonthlyUser + conditionSql + " UNION ALL " + selectSqlMonthlyGroup + conditionSql;
-				}
-			}
+			selectSqlCollect = selectSqlCollect + conditionSql;
+			String selectSqlDaily = selectSqlDailyUser + conditionSql + " UNION ALL " + selectSqlDailyGroup + conditionSql;
+			String selectSqlMonthly = selectSqlMonthlyUser + conditionSql + " UNION ALL " + selectSqlMonthlyGroup + conditionSql;
+			
 
-			sql = "SELECT T.SUBTASK_ID, T.STAGE, T.NAME, T.TYPE, T.STATUS,T.EXECUTER,FSOS.PERCENT,FSOS.DIFF_DATE,FSOS.PROGRESS"
-					+ " FROM (" + sql_T + ") T,FM_STAT_OVERVIEW_SUBTASK FSOS"
-							+ " WHERE T.SUBTASK_ID = FSOS.SUBTASK_ID(+) ";
-
-			String filterSql = "";
+			String filterSqlCollect = "";
+			String filterSqlDaily = "";
 			if(null != filter){
 				Iterator<?> filterKeys = filter.keys();
 				while (filterKeys.hasNext()) {
 					String key = (String) filterKeys.next();
 					//模糊查询
 					if ("subtaskName".equals(key)) {	
-						filterSql+=" AND T.NAME like '%" + filter.getString(key) +"%'";
+						filterSqlCollect+=" AND T.NAME like '%" + filter.getString(key) +"%'";
+						filterSqlDaily+=" AND T.NAME like '%" + filter.getString(key) +"%'";
 					}
 					//筛选条件
-					//"progress" //进度。1正常，2异常，3关闭，4完成,5草稿,6完成状态逾期，7完成状态按时，8完成状态提前
+					//"progress" //进度。1采集正常，2异常，3关闭，4完成,5草稿,6完成状态逾期，7完成状态按时，8完成状态提前
+					//"progress" //进度。1采集正常，2采集异常，3采集关闭，4采集完成,5采集草稿,6日编正常，7日编异常，8日编关闭，9日编完成,10日编草稿,11逾期完成，12按时完成，13提前完成
 					if ("progress".equals(key)){
-						int progress = filter.getInt(key);
-						if(1==progress&&2==progress){
-							filterSql += " AND FSOS.PROGRESS = " + progress;
-						}else if(3==progress){
-							filterSql += " AND T.STATUS = 0" ;
-						}else if(4==progress){
-							filterSql += " AND T.STATUS = 1 AND FSOS.PERCENT = 100";
-						}else if(5==progress){
-							filterSql += " AND T.STATUS = 2";
+						JSONArray progress = filter.getJSONArray(key);
+						if(progress.isEmpty()){
+							continue;
 						}
-						////"progress" //进度。6完成状态逾期，7完成状态按时，8完成状态提前
-						else if(6==progress){
-							filterSql += " AND FSOS.DIFF_DATE < 0";
-						}else if(7==progress){
-							filterSql += " AND FSOS.DIFF_DATE = 0" ;
-						}else if(8==progress){
-							filterSql += " AND FSOS.DIFF_DATE > 0";
+
+						List<String> progressCollectList = new ArrayList<String>();
+						List<String> progressDailyList = new ArrayList<String>();
+
+						if(progress.contains(1)){
+							progressCollectList.add("T.PROGRESS = 1 OR T.PROGRESS IS NULL");
+						}
+						if(progress.contains(2)){
+							progressCollectList.add("T.PROGRESS = 2");
+						}
+						if(progress.contains(3)){
+							progressCollectList.add("T.STATUS = 0");
+						}
+						if(progress.contains(4)){
+							progressCollectList.add("T.STATUS = 1 AND T.PERCENT = 100");
+						}
+						if(progress.contains(5)){
+							progressCollectList.add("T.STATUS = 2");
+						}
+						
+						if(progress.contains(6)){
+							progressDailyList.add("T.PROGRESS = 1 OR T.PROGRESS IS NULL");
+						}
+						if(progress.contains(7)){
+							progressDailyList.add("T.PROGRESS = 2");
+						}
+						if(progress.contains(8)){
+							progressDailyList.add("T.STATUS = 0");
+						}
+						if(progress.contains(9)){
+							progressDailyList.add("T.STATUS = 1 AND T.PERCENT = 100");
+						}
+						if(progress.contains(10)){
+							progressDailyList.add("T.STATUS = 2");
+						}
+						
+						if(progress.contains(11)){
+							progressCollectList.add("T.DIFF_DATE < 0");
+							progressDailyList.add("T.DIFF_DATE < 0");
+						}
+						if(progress.contains(12)){
+							progressCollectList.add("T.DIFF_DATE = 0 OR T.DIFF_DATE IS NULL");
+							progressDailyList.add("T.DIFF_DATE = 0 OR T.DIFF_DATE IS NULL");
+						}
+						if(progress.contains(13)){
+							progressCollectList.add("T.DIFF_DATE > 0");
+							progressDailyList.add("T.DIFF_DATE > 0");
+						}
+						
+						if(!progressCollectList.isEmpty()){
+							String tempSqlCollect = StringUtils.join(progressCollectList," OR ");
+							filterSqlCollect += " AND (" + tempSqlCollect + ")";
+						}
+						
+						if(!progressDailyList.isEmpty()){
+							String tempSqlDaily = StringUtils.join(progressDailyList," OR ");
+							filterSqlDaily += " AND (" + tempSqlDaily + ")";
 						}
 					}
-//					//"completionStatus"//完成状态。0逾期，1按时，2提前
-//					if ("completionStatus".equals(key)){
-//						int completionStatus = filter.getInt(key);
-//						if(0==completionStatus){
-//							filterSql += " AND FSOS.DIFF_DATE < 0";
-//						}else if(1==completionStatus){
-//							filterSql += " AND FSOS.DIFF_DATE = 0" ;
-//						}else if(2==completionStatus){
-//							filterSql += " AND FSOS.DIFF_DATE > 0";
-//						}
-//					}
 				}
 			}
-			
-			sql += filterSql;
+				
+			selectSqlCollect = "SELECT T.SUBTASK_ID, T.STAGE, T.NAME, T.TYPE, T.STATUS,T.EXECUTER,T.PERCENT,T.DIFF_DATE,T.PROGRESS FROM (" + selectSqlCollect + ")T WHERE 1=1";
+			if(!filterSqlCollect.isEmpty()){
+				selectSqlCollect = selectSqlCollect +  filterSqlCollect;
+			}
+			selectSqlDaily = "SELECT T.SUBTASK_ID, T.STAGE, T.NAME, T.TYPE, T.STATUS,T.EXECUTER,T.PERCENT,T.DIFF_DATE,T.PROGRESS FROM (" + selectSqlDaily + ")T WHERE 1=1";
+			if(!filterSqlDaily.isEmpty()){
+				selectSqlDaily = selectSqlDaily + filterSqlDaily;
+			}
+			selectSqlMonthly = selectSqlMonthly;
+				
+			String sql = "";
+			if(stage==0){
+				//采集
+				sql = selectSqlCollect;
+			}else if(stage==1){
+				//日编
+				sql = selectSqlDaily;
+			}else if(stage==2){
+				//月编
+				sql = selectSqlMonthly;
+			}else{
+				if(0 == taskFlg){
+					//采集/日编
+					sql = selectSqlCollect + " UNION ALL " + selectSqlDaily;
+				}else{
+					//月编
+					sql = selectSqlMonthly;
+				}
+			}
+
 			String sqlFinal = "";
 			//排序
 //			"planStatus"//block/task规划状态。2:"已发布",3:"已完成" 。状态不同，排序方式不同。
@@ -1511,16 +1787,11 @@ public class SubtaskOperation {
 				sqlFinal = sql + orderSql;
 			}else if(2 == planStatus){
 				//已发布
-//				String orderSql = "ORDER BY DIFF_DATE ASC, PERCENT DESC";
-//				String Sql2Close = sql + " AND T.STATUS = 0 ";
-//				String Sql2Draft = sql + " AND T.STATUS = 2 ";
-//				String Sql2OpenFinish = sql  + " AND T.STATUS = 1 AND FSOS.PERCENT = 100 ";
-//				String Sql2OpenUnfinish = sql + " AND T.STATUS = 1 AND (FSOS.PERCENT < 100 OR FSOS.PERCENT IS NULL)";
 				String orderSql = "ORDER BY PRI ASC,DIFF_DATE ASC, PERCENT DESC";
-				String Sql2Close = "SELECT SUBTASK_ID, STAGE, NAME, TYPE, STATUS,EXECUTER,PERCENT,DIFF_DATE,PROGRESS ,4 AS PRI FROM (" + sql + " AND T.STATUS = 0 " + ")";
-				String Sql2Draft = "SELECT SUBTASK_ID, STAGE, NAME, TYPE, STATUS,EXECUTER,PERCENT,DIFF_DATE,PROGRESS ,2 AS PRI FROM (" + sql + " AND T.STATUS = 2 " + ")";
-				String Sql2OpenFinish = "SELECT SUBTASK_ID, STAGE, NAME, TYPE, STATUS,EXECUTER,PERCENT,DIFF_DATE,PROGRESS ,3 AS PRI FROM (" + sql  + " AND T.STATUS = 1 AND FSOS.PERCENT = 100 " + ")";
-				String Sql2OpenUnfinish = "SELECT SUBTASK_ID, STAGE, NAME, TYPE, STATUS,EXECUTER,PERCENT,DIFF_DATE,PROGRESS ,1 AS PRI FROM (" + sql + " AND T.STATUS = 1 AND (FSOS.PERCENT < 100 OR FSOS.PERCENT IS NULL) " + ")";
+				String Sql2Close = "SELECT SUBTASK_ID, STAGE, NAME, TYPE, STATUS,EXECUTER,PERCENT,DIFF_DATE,PROGRESS ,4 AS PRI FROM (" + sql + ")TEMP WHERE TEMP.STATUS = 0 ";
+				String Sql2Draft = "SELECT SUBTASK_ID, STAGE, NAME, TYPE, STATUS,EXECUTER,PERCENT,DIFF_DATE,PROGRESS ,2 AS PRI FROM (" + sql + ")TEMP WHERE TEMP.STATUS = 2 ";
+				String Sql2OpenFinish = "SELECT SUBTASK_ID, STAGE, NAME, TYPE, STATUS,EXECUTER,PERCENT,DIFF_DATE,PROGRESS ,3 AS PRI FROM (" + sql  + ")TEMP WHERE TEMP.STATUS = 1 AND TEMP.PERCENT = 100 ";
+				String Sql2OpenUnfinish = "SELECT SUBTASK_ID, STAGE, NAME, TYPE, STATUS,EXECUTER,PERCENT,DIFF_DATE,PROGRESS ,1 AS PRI FROM (" + sql + ")TEMP WHERE TEMP.STATUS = 1 AND (TEMP.PERCENT < 100 OR TEMP.PERCENT IS NULL) ";
 				
 				sqlFinal = Sql2OpenUnfinish + " UNION ALL " + Sql2Draft + " UNION ALL " + Sql2OpenFinish + " UNION ALL "  + Sql2Close  + orderSql;
 			}
@@ -1558,7 +1829,7 @@ public class SubtaskOperation {
 	
 			};
 			return run.query(curPageNum, pageSize, conn, sqlFinal, rsHandler);
-		} catch (Exception e) {
+		}catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new ServiceException("查询列表失败，原因为:" + e.getMessage(), e);

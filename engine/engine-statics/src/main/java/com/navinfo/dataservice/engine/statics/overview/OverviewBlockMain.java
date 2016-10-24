@@ -75,7 +75,7 @@ public class OverviewBlockMain {
 
 		// 删除当天重复统计数据
 		BasicDBObject query = new BasicDBObject();
-		query.put("stat_date", stat_date);
+		query.put("statDate", stat_date);
 		mdao.deleteMany(col_name_blockman, query);
 
 	}

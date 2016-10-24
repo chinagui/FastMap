@@ -3,11 +3,8 @@ package com.navinfo.dataservice.engine.edit.operation.obj.poi.update;
 import java.sql.Connection;
 import java.util.List;
 
-import org.apache.commons.collections.CollectionUtils;
-
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
@@ -133,13 +130,6 @@ public class Operation implements IOperation {
 
 		updataIxPoiCarrental(result, content);
 
-		if (CollectionUtils.isNotEmpty(result.getAddObjects()) || CollectionUtils.isNotEmpty(result.getUpdateObjects())
-				|| CollectionUtils.isNotEmpty(result.getDelObjects())) {
-			// 修改poi主表时间
-			ixPoi.changedFields().put("uDate", StringUtils.getCurrentTime());
-
-			result.insertObject(ixPoi, ObjStatus.UPDATE, ixPoi.pid());
-		}
 		return null;
 	}
 

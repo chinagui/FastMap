@@ -73,7 +73,7 @@ public class OverviewGroupMain {
 
 		// 删除当天重复统计数据
 		BasicDBObject query = new BasicDBObject();
-		query.put("stat_date", stat_date);
+		query.put("statDate", stat_date);
 		mdao.deleteMany(col_name_group, query);
 
 	}
@@ -186,9 +186,9 @@ public class OverviewGroupMain {
 						groupDoc.append("actualEndDate", doc.get("statDate").toString());
 						groupDoc.append("diffDate", StatUtil.daysOfTwo(planStartDate_flag, df.parse(doc.get("statDate").toString())));
 						
-					}else{ //只要有一个未关闭
+					}else{ //只要有一个未关闭  //
 						groupDoc.append("actualEndDate", null);
-						groupDoc.append("diffDate", null);
+						groupDoc.append("diffDate", StatUtil.daysOfTwo(planStartDate_flag, df.parse(stat_date)));
 					}
 				}else{  //不存在重复的groupId
 					groupId_flag = Integer.parseInt(doc.get("collectGroupId").toString());
@@ -203,7 +203,7 @@ public class OverviewGroupMain {
 						groupDoc.append("diffDate", StatUtil.daysOfTwo(planStartDate_flag, df.parse(doc.get("statDate").toString())));
 					}else{
 						groupDoc.append("actualEndDate", doc.get("statDate").toString());
-						groupDoc.append("diffDate", StatUtil.daysOfTwo(planStartDate_flag, df.parse(doc.get("statDate").toString())));
+						groupDoc.append("diffDate", StatUtil.daysOfTwo(planStartDate_flag, df.parse(stat_date)));
 					}
 				}
 			}else{ //日编
@@ -229,7 +229,7 @@ public class OverviewGroupMain {
 						
 					}else{ //只要有一个未关闭
 						groupDoc.append("actualEndDate", null);
-						groupDoc.append("diffDate", null);
+						groupDoc.append("diffDate", StatUtil.daysOfTwo(planStartDate_flag, df.parse(stat_date)));
 					}
 					
 				}else{//不存在重复的 groupId
@@ -245,7 +245,8 @@ public class OverviewGroupMain {
 						groupDoc.append("diffDate", StatUtil.daysOfTwo(df.parse(doc.get("dailyPlanStartDate").toString()), df.parse(doc.get("statDate").toString())));
 					}else{
 						groupDoc.append("actualEndDate", null);
-						groupDoc.append("diffDate", null);
+						//groupDoc.append("diffDate", null);
+						groupDoc.append("diffDate", StatUtil.daysOfTwo(planStartDate_flag, df.parse(stat_date)));
 					}
 				}
 			}

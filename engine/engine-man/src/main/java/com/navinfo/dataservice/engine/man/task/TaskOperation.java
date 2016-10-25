@@ -1762,8 +1762,10 @@ public class TaskOperation {
 				+ " (SELECT NVL(T.TASK_ID, 0) TASK_ID,"
 				+ "         NVL(T.NAME, '---') TASK_NAME,"
 				+ "         NVL(T.DESCP,'---') TASK_DESCP,"
-				+ "         TO_CHAR(C.CITY_ID) UPPER_LEVEL_ID,"
-				+ "         C.CITY_NAME UPPER_LEVEL_NAME,"
+				+ "         C.CITY_ID,"
+				+ "         C.CITY_NAME,"
+				+ "         '' infor_id,"
+				+ "         '' infor_name,"
 				+ "         T.TASK_TYPE,"
 				+ "         T.PLAN_START_DATE,"
 				+ "         T.PLAN_END_DATE,"
@@ -1776,7 +1778,8 @@ public class TaskOperation {
 				+ "         NVL(T.CREATE_USER_NAME, '---') CREATE_USER_NAME,"
 				+ "         NVL(T.MONTH_EDIT_GROUP_NAME, '---') MONTH_EDIT_GROUP_NAME,"
 				+ "         NVL(T.STATUS, 0) TASK_STATUS,"
-				+ "         C.PLAN_STATUS,"
+				+ "         C.PLAN_STATUS city_plan_status,"
+				+ "         0 infor_plan_status,"
 				+ "         NVL(T.FINISH_PERCENT, 0) FINISH_PERCENT"
 				+ "    FROM T, CITY C"
 				+ "   WHERE T.CITY_ID = C.CITY_ID"
@@ -1785,6 +1788,8 @@ public class TaskOperation {
 				+ "  SELECT NVL(T.TASK_ID, 0) TASK_ID,"
 				+ "         NVL(T.NAME, '---') NAME,"
 				+ "         NVL(T.DESCP,'---') DESCP,"
+				+ "         0 city_ID,"
+				+ "         '' city_NAME,"
 				+ "         I.INFOR_ID,"
 				+ "         I.INFOR_NAME,"
 				+ "         4 TASK_TYPE,"
@@ -1799,13 +1804,14 @@ public class TaskOperation {
 				+ "         NVL(T.CREATE_USER_NAME, '---') CREATE_USER_NAME,"
 				+ "         NVL(T.MONTH_EDIT_GROUP_NAME, '---') MONTH_EDIT_GROUP_NAME,"
 				+ "         NVL(T.STATUS, 0) TASK_STATUS,"
+				+ "         0,"
 				+ "         I.PLAN_STATUS,"
 				+ "         NVL(T.FINISH_PERCENT, 0) FINISH_PERCENT"
 				+ "    FROM T, INFOR I"
 				+ "   WHERE T.TASK_ID = I.TASK_ID)"
 				+ " SELECT * FROM TASK_LIST WHERE TASK_ID = "+taskId;
 		QueryRunner run=new QueryRunner();
-		return run.query(conn, selectSql, getAllIntegrateQuery());	
+		return run.query(conn, selectSql, getIntegrateQuery());	
 	}
 	
 	/**
@@ -1814,15 +1820,8 @@ public class TaskOperation {
 	 * @param pageSize
 	 * @return
 	 */
-	private static ResultSetHandler<List<Map<String, Object>>> getAllIntegrateQuery(){
-		/*NVL(T.TASK_ID, 0) TASK_ID,NVL(T.NAME, '---') TASK_NAME,TO_CHAR(C.CITY_ID) UPPER_LEVEL_ID,
-          C.CITY_NAME UPPER_LEVEL_NAME,1 TASK_TYPE,T.PLAN_START_DATE,T.PLAN_END_DATE,
-          T.MONTH_EDIT_PLAN_START_DATE,T.MONTH_EDIT_PLAN_END_DATE,
-          NVL(T.MONTH_EDIT_GROUP_ID, 0) MONTH_EDIT_GROUP_ID,T.MONTH_PRODUCE_PLAN_START_DATE,
-          T.MONTH_PRODUCE_PLAN_END_DATE,NVL(T.CREATE_USER_ID, 0) CREATE_USER_ID,
-          NVL(T.CREATE_USER_NAME, '---') CREATE_USER_NAME,NVL(T.MONTH_EDIT_GROUP_NAME, '---') MONTH_EDIT_GROUP_NAME,
-          NVL(T.STATUS, 0) TASK_STATUS,C.PLAN_STATUS,NVL(T.FINISH_PERCENT, 0) FINISH_PERCENT,
-          ROWNUM_,TOTAL_RECORD_NUM*/
+	/*private static ResultSetHandler<List<Map<String, Object>>> getAllIntegrateQuery(){
+
 		final String version=SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion);
 		ResultSetHandler<List<Map<String, Object>>> rsHandler = new ResultSetHandler<List<Map<String, Object>>>(){
 			public List<Map<String, Object>> handle(ResultSet rs) throws SQLException {
@@ -1847,6 +1846,60 @@ public class TaskOperation {
 					map.put("monthEditGroupName", rs.getString("MONTH_EDIT_GROUP_NAME"));
 					map.put("taskStatus", rs.getInt("TASK_STATUS"));
 					map.put("planStatus", rs.getInt("PLAN_STATUS"));
+					map.put("finishPercent", rs.getInt("FINISH_PERCENT"));
+					map.put("version", version);
+					//map.put("ROWNUM_", rs.getInt("ROWNUM_"));
+					//map.put("TOTAL_RECORD_NUM", rs.getInt("TOTAL_RECORD_NUM"));
+					list.add(map);
+				}
+				return list;
+			}
+    	};
+    	return rsHandler;
+	}*/
+	
+	/**
+	 * TASK_STATUS:1常规，2多源，3代理店，4情报
+	 * @param currentPageNum
+	 * @param pageSize
+	 * @return
+	 */
+	private static ResultSetHandler<List<Map<String, Object>>> getIntegrateQuery(){
+		/*NVL(T.TASK_ID, 0) TASK_ID,NVL(T.NAME, '---') TASK_NAME,TO_CHAR(C.CITY_ID) UPPER_LEVEL_ID,
+          C.CITY_NAME UPPER_LEVEL_NAME,1 TASK_TYPE,T.PLAN_START_DATE,T.PLAN_END_DATE,
+          T.MONTH_EDIT_PLAN_START_DATE,T.MONTH_EDIT_PLAN_END_DATE,
+          NVL(T.MONTH_EDIT_GROUP_ID, 0) MONTH_EDIT_GROUP_ID,T.MONTH_PRODUCE_PLAN_START_DATE,
+          T.MONTH_PRODUCE_PLAN_END_DATE,NVL(T.CREATE_USER_ID, 0) CREATE_USER_ID,
+          NVL(T.CREATE_USER_NAME, '---') CREATE_USER_NAME,NVL(T.MONTH_EDIT_GROUP_NAME, '---') MONTH_EDIT_GROUP_NAME,
+          NVL(T.STATUS, 0) TASK_STATUS,C.PLAN_STATUS,NVL(T.FINISH_PERCENT, 0) FINISH_PERCENT,
+          ROWNUM_,TOTAL_RECORD_NUM*/
+		final String version=SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion);
+		ResultSetHandler<List<Map<String, Object>>> rsHandler = new ResultSetHandler<List<Map<String, Object>>>(){
+			public List<Map<String, Object>> handle(ResultSet rs) throws SQLException {
+				List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
+				while(rs.next()){
+					Map<String, Object> map = new HashMap<String, Object>();
+					map.put("taskId", rs.getInt("TASK_ID"));
+					map.put("taskName", rs.getString("TASK_NAME"));
+					map.put("taskDescp", rs.getString("TASK_DESCP"));
+					map.put("cityId", rs.getInt("CITY_ID"));
+					map.put("cityName", rs.getString("CITY_NAME"));
+					map.put("inforId", rs.getString("INFOR_ID"));
+					map.put("inforName", rs.getString("INFOR_NAME"));
+					map.put("taskType", rs.getInt("TASK_TYPE"));
+					map.put("planStartDate", DateUtils.dateToString(rs.getTimestamp("PLAN_START_DATE")));
+					map.put("planEndDate", DateUtils.dateToString(rs.getTimestamp("PLAN_END_DATE")));
+					map.put("monthEditPlanStartDate", DateUtils.dateToString(rs.getTimestamp("MONTH_EDIT_PLAN_START_DATE")));
+					map.put("monthEditPlanEndDate", DateUtils.dateToString(rs.getTimestamp("MONTH_EDIT_PLAN_END_DATE")));
+					map.put("monthEditGroupId", rs.getInt("MONTH_EDIT_GROUP_ID"));
+					map.put("monthProducePlanStartDate", DateUtils.dateToString(rs.getTimestamp("MONTH_PRODUCE_PLAN_START_DATE")));
+					map.put("monthProducePlanEndDate", DateUtils.dateToString(rs.getTimestamp("MONTH_PRODUCE_PLAN_END_DATE")));
+					map.put("createUserId", rs.getInt("CREATE_USER_ID"));
+					map.put("createUserName", rs.getString("CREATE_USER_NAME"));
+					map.put("monthEditGroupName", rs.getString("MONTH_EDIT_GROUP_NAME"));
+					map.put("taskStatus", rs.getInt("TASK_STATUS"));
+					map.put("cityPlanStatus", rs.getInt("CITY_PLAN_STATUS"));
+					map.put("inforPlanStatus", rs.getInt("INFOR_PLAN_STATUS"));
 					map.put("finishPercent", rs.getInt("FINISH_PERCENT"));
 					map.put("version", version);
 					//map.put("ROWNUM_", rs.getInt("ROWNUM_"));

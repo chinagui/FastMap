@@ -117,7 +117,7 @@ public class RdLinkTest extends InitApplication {
 
 	@Test
 	public void testBreakRdLink() {
-		String parameter = "{\"command\":\"BREAK\",\"dbId\":42,\"objId\":238325,\"data\":{\"longitude\":116.26407872120386,\"latitude\":40.311790167274594},\"type\":\"RDLINK\"}";
+		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDSPEEDLIMIT\",\"dbId\":22,\"data\":{\"direct\":1,\"linkPid\":674496,\"longitude\":116.41199415646103,\"latitude\":39.94683319664748}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
@@ -163,7 +163,7 @@ public class RdLinkTest extends InitApplication {
 	@Test
 	public void testBatch()
 	{
-		String parameter = "{\"command\":\"ONLINEBATCH\",\"type\":\"FACE\",\"dbId\":17,\"pid\":210000001,\"ruleId\":\"BATCHDELZONEID\"}";
+		String parameter = "{\"command\":\"DELETE\",\"dbId\":17,\"type\":\"RDSAMENODE\",\"objId\":320000004}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

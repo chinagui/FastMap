@@ -137,32 +137,33 @@ public class PoiController extends BaseController{
 	 * @throws ServletException
 	 * @throws IOException
 	 */
-	@RequestMapping(value = "/poi/base/getByRowId")
-	public ModelAndView getByRowId(HttpServletRequest request,
-			HttpServletResponse response) throws ServletException, IOException {
-		String parameter = request.getParameter("parameter");
-		try{
-			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
-			JSONObject jsonReq = JSONObject.fromObject(parameter);
-
-			String rowId = jsonReq.getString("rowId");
-			double x = jsonReq.getDouble("x");
-			double y = jsonReq.getDouble("y");
-			
-			Operation operation = new Operation();
-			
-			JSONObject ret = operation.getByRowId(rowId, x, y);
-			
-			return new ModelAndView("jsonView", success(ret));
-		} catch (Exception e) {
-			String logid = Log4jUtils.genLogid();
-
-			Log4jUtils.error(logger, logid, parameter, e);
-
-			return new ModelAndView("jsonView", fail(e.getMessage()));
-		}
-	}
-	
+	// 此接口采集端不需要，已跟刘妍希确认 20161025
+//	@RequestMapping(value = "/poi/base/getByRowId")
+//	public ModelAndView getByRowId(HttpServletRequest request,
+//			HttpServletResponse response) throws ServletException, IOException {
+//		String parameter = request.getParameter("parameter");
+//		try{
+//			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+//			JSONObject jsonReq = JSONObject.fromObject(parameter);
+//
+//			String rowId = jsonReq.getString("rowId");
+//			double x = jsonReq.getDouble("x");
+//			double y = jsonReq.getDouble("y");
+//			
+//			Operation operation = new Operation();
+//			
+//			JSONObject ret = operation.getByRowId(rowId, x, y);
+//			
+//			return new ModelAndView("jsonView", success(ret));
+//		} catch (Exception e) {
+//			String logid = Log4jUtils.genLogid();
+//
+//			Log4jUtils.error(logger, logid, parameter, e);
+//
+//			return new ModelAndView("jsonView", fail(e.getMessage()));
+//		}
+//	}
+//	
 	
 	
 	private String unzipByJobId(int jobId) throws Exception{

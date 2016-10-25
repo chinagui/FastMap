@@ -116,7 +116,7 @@ public class ProduceService {
 				Iterator keys = conditionJson.keys();
 				while (keys.hasNext()) {
 					String key = (String) keys.next();
-					if ("produceName".equals(key)) {conditionStr+=" and P.PRODUCE_NAME="+conditionJson.getString(key);}
+					if ("produceName".equals(key)) {conditionStr+=" and P.PRODUCE_NAME like '%"+conditionJson.getString(key)+"%'";}
 					}
 				}
 			
@@ -176,10 +176,8 @@ public class ProduceService {
 		}
 	}
 	public Map<String,Object> query(int produceId) throws Exception {
-		Connection conn=null;
-		
+		final Connection conn=DBConnector.getInstance().getManConnection();
 		try{
-			conn = DBConnector.getInstance().getManConnection();
 			String sql="SELECT P.PRODUCE_ID,"
 					+ "       P.PRODUCE_NAME,"
 					+ "       P.PRODUCE_TYPE,"
@@ -202,7 +200,7 @@ public class ProduceService {
 						map.put("createUserId", rs.getInt("CREATE_USER_ID"));
 						map.put("createUserName", rs.getString("CREATE_USER_NAME"));
 						map.put("createDate", DateUtils.dateToString(rs.getTimestamp("CREATE_DATE")));
-						CLOB inforGeo = (CLOB) rs.getClob("PAR");
+						CLOB inforGeo = ConnectionUtil.getClob(conn, rs,"PAR");
 						String inforGeo1 = StringUtil.ClobToString(inforGeo);
 						map.put("parameter",JSONObject.fromObject(inforGeo1));
 						//map.put("parameter",rs.getString("PAR"));

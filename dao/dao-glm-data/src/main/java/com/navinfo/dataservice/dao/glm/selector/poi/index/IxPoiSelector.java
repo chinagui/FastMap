@@ -38,7 +38,7 @@ public class IxPoiSelector extends AbstractSelector {
 	}
 
 	/**
-	 * @zhaokk 查询poi列表值 20161010修改 by jch,1）去掉官方原始查询条件；2）删除poi可见
+	 * @zhaokk 查询poi列表值 20161010修改 by jch,1）修复无名称的poi查不出bug；2）删除poi可见
 	 * @param isLock
 	 * @param pid
 	 * @param pidName

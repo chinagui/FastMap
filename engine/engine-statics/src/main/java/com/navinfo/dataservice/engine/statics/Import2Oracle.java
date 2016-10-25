@@ -32,6 +32,7 @@ import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.engine.statics.overview.OverviewBlockMain;
+import com.navinfo.dataservice.engine.statics.overview.OverviewGroupMain;
 import com.navinfo.dataservice.engine.statics.overview.OverviewMain;
 import com.navinfo.dataservice.engine.statics.overview.OverviewSubtaskMain;
 import com.navinfo.dataservice.engine.statics.overview.OverviewTaskMain;
@@ -60,6 +61,8 @@ public class Import2Oracle {
 		importObj.import2OracleByTableName(OverviewBlockMain.col_name_blockman);	
 		System.out.println("start import2Oracle task");
 		importObj.import2OracleByTableName(OverviewTaskMain.col_name_task);
+		System.out.println("start import2Oracle overview_group");
+		importObj.import2OracleByTableName(OverviewGroupMain.col_name_group);
 		System.out.println("start import2Oracle overview");
 		importObj.import2OracleByTableName(OverviewMain.col_name_overview_main);
 		System.out.println("end import2Oracle");

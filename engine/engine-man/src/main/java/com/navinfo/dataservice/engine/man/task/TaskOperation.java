@@ -234,12 +234,10 @@ public class TaskOperation {
 				taskIdStr=bean.getTaskId().toString();
 			}
 			String createSql = "insert into task (TASK_ID,NAME,CITY_ID, CREATE_USER_ID, CREATE_DATE, STATUS, DESCP, "
-					+ "PLAN_START_DATE, PLAN_END_DATE, MONTH_EDIT_PLAN_START_DATE, MONTH_EDIT_PLAN_END_DATE, "
-					+ "MONTH_EDIT_GROUP_ID,TASK_TYPE,LATEST) "
+					+ "PLAN_START_DATE, PLAN_END_DATE,TASK_TYPE,LATEST) "
 					+ "values("+taskIdStr+",'"+bean.getTaskName()+"',"+bean.getCityId()+","+bean.getCreateUserId()+",sysdate,2,'"
 					+  bean.getTaskDescp()+"',to_timestamp('"+ bean.getPlanStartDate()
-					+"','yyyy-mm-dd hh24:mi:ss.ff'),to_timestamp('"+ bean.getPlanEndDate()+"','yyyy-mm-dd hh24:mi:ss.ff'),to_timestamp('"+  bean.getMonthEditPlanStartDate()
-					+"','yyyy-mm-dd hh24:mi:ss.ff'),to_timestamp('"+ bean.getMonthEditPlanEndDate()+"','yyyy-mm-dd hh24:mi:ss.ff'),"+  bean.getMonthEditGroupId()
+					+"','yyyy-mm-dd hh24:mi:ss.ff'),to_timestamp('"+ bean.getPlanEndDate()+"','yyyy-mm-dd hh24:mi:ss.ff')"
 					+","+bean.getTaskType()+",1)";
 			
 			run.update(conn,createSql);			

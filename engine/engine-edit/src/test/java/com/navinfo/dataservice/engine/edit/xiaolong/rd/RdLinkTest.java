@@ -81,7 +81,7 @@ public class RdLinkTest extends InitApplication {
 
 	@Test
 	public void testDelete() {
-		String parameter = "{\"command\":\"REPAIR\",\"dbId\":17,\"objId\":209000009,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.2587,40.08333],[116.25884234905244,40.0834073027664],[116.25885,40.08329],[116.25895,40.08333]]},\"interLinks\":[],\"interNodes\":[]},\"type\":\"RWLINK\"}";
+		String parameter = "{\"command\":\"CREATE\",\"dbId\":17,\"objId\":710477,\"data\":{\"longitude\":116.34295609894995,\"latitude\":40.05905068540283},\"type\":\"RDNODE\"}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
@@ -130,7 +130,7 @@ public class RdLinkTest extends InitApplication {
 	@Test
 	public void testGetByElementCondition()
 	{
-		String parameter = "{\"dbId\":17,\"pageNum\":1,\"pageSize\":5,\"data\":{\"name\":\"名\"},\"type\":\"IXPOI\"}";
+		String parameter = "{\"dbId\":17,\"pageNum\":1,\"pageSize\":5,\"data\":{\"linkPid\":\"323024\"},\"type\":\"RDLINK\"}";
 
 		Connection conn = null;
 

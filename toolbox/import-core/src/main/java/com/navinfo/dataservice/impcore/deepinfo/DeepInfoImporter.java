@@ -41,15 +41,12 @@ public class DeepInfoImporter {
 
 	private void resetUrecord(Connection conn) throws SQLException {
 
-		String parkingSql = "update ix_poi_parking set u_record=0";
-
-		String gasstationSql = "update ix_poi_gasstation set u_record=0";
-
 		Statement stmt = conn.createStatement();
+		
+		for(String table:tables){
 
-		stmt.executeUpdate(parkingSql);
-
-		stmt.executeUpdate(gasstationSql);
+			stmt.executeUpdate("UPDATE "+table+" SET U_RECORD=0");
+		}
 
 		stmt.close();
 	}

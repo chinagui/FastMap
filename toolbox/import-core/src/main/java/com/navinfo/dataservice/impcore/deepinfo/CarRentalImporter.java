@@ -34,14 +34,14 @@ public class CarRentalImporter {
 
 		cr.setOpenHour(JsonUtils.getString(crObj, "openHour"));
 		
-		cr.setAdress(JsonUtils.getString(crObj, "adressDes"));
+		cr.setAddress(JsonUtils.getString(crObj, "adressDes"));
 		
 		cr.setHowToGo(JsonUtils.getString(crObj, "howToGo"));
 		
 		String kindCode = poi.getString("kindCode");
 
 		if("200201".equals(kindCode)){
-			cr.setWebsite(JsonUtils.getString(poi, "website"));
+			cr.setWebSite(JsonUtils.getString(poi, "website"));
 		}
 
 		BasicOperator operator = new BasicOperator(conn,

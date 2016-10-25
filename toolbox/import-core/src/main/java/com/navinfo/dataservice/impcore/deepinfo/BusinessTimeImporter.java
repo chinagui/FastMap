@@ -43,17 +43,18 @@ public class BusinessTimeImporter {
 			bt.setWeekInMonthSrt(JsonUtils.getString(btObj, "weekStartMonth"));
 			bt.setWeekInMonthEnd(JsonUtils.getString(btObj, "weekEndMonth"));
 			
-			bt.setVaildWeek(JsonUtils.getString(btObj, "validWeek"));
+			bt.setValidWeek(JsonUtils.getString(btObj, "validWeek"));
 			bt.setDaySrt(JsonUtils.getString(btObj, "dayStart"));
 			bt.setDayEnd(JsonUtils.getString(btObj, "dayEnd"));
 			bt.setTimeSrt(JsonUtils.getString(btObj, "timeStart"));
-			bt.setTimeDue(JsonUtils.getString(btObj, "timeDuration"));
+			bt.setTimeDur(JsonUtils.getString(btObj, "timeDuration"));
 			
 
 			BasicOperator operator = new BasicOperator(conn,
 					bt);
 
 			operator.insertRow2Sql(stmt);
+
 		}
 
 		return 1;

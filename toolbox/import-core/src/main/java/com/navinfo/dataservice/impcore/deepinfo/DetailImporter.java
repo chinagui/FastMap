@@ -47,7 +47,7 @@ public class DetailImporter {
 		det.setPoiPid(poi.getInt("pid"));
 		
 		if(!"200201".equals(kindCode)){
-			det.setWebsite(JsonUtils.getString(poi, "website"));
+			det.setWebSite(JsonUtils.getString(poi, "website"));
 		}
 		if(!JSONUtils.isNull(poi.get("contacts"))){
 			Set<String> contSet = new HashSet<String>();
@@ -69,7 +69,7 @@ public class DetailImporter {
 				}
 			}
 		}
-		det.setHwEntryExit(JsonUtils.getInt(poi, "hwEntryExit"));
+		det.setHwEntryexit(JsonUtils.getInt(poi, "hwEntryExit"));
 		
 		if("170100".equals(kindCode)
 			||"170101".equals(kindCode)

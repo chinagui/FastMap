@@ -242,6 +242,66 @@ public class SolrController {
 
 		return snapshots;
 	}
+	
+	
+	
+	/**
+	 * @Description:查询满足条件的tips
+	 * @param wkt
+	 * @param stage
+	 * @param t_dStatus
+	 * @return
+	 * @throws SolrServerException
+	 * @throws IOException
+	 * @author: y
+	 * @time:2016-10-25 下午3:17:22
+	 */
+	public List<JSONObject> queryTips(String wkt, int stage, int t_dStatus)
+			throws SolrServerException, IOException {
+		List<JSONObject> snapshots = new ArrayList<JSONObject>();
+
+		StringBuilder builder = new StringBuilder();
+
+		builder.append("wkt:\"intersects(");
+
+		builder.append(wkt);
+
+		builder.append(")\" ");
+
+		builder.append(" AND stage:"+stage);
+		
+		builder.append(" AND t_dStatus:"+t_dStatus);
+
+
+		SolrQuery query = new SolrQuery();
+
+		query.set("q", builder.toString());
+
+		query.set("start", 0);
+
+		query.set("rows", fetchNum);
+
+		QueryResponse response = client.query(query);
+
+		SolrDocumentList sdList = response.getResults();
+
+		long totalNum = sdList.getNumFound();
+
+		if (totalNum <= fetchNum) {
+			for (int i = 0; i < totalNum; i++) {
+				SolrDocument doc = sdList.get(i);
+
+				JSONObject snapshot = JSONObject.fromObject(doc);
+
+				snapshots.add(snapshot);
+			}
+		} else {
+			// 暂先不处理
+		}
+
+		return snapshots;
+	}
+
 
 	public List<JSONObject> queryTipsWeb(String wkt, JSONArray stages)
 			throws SolrServerException, IOException {
@@ -251,13 +311,15 @@ public class SolrController {
 
 		String fq = "";
 
-		for (int i = 0; i < stages.size(); i++) {
-			int stage = stages.getInt(i);
+		if(stages!=null){
+			for (int i = 0; i < stages.size(); i++) {
+				int stage = stages.getInt(i);
 
-			fq += "stage:" + stage;
+				fq += "stage:" + stage;
 
-			if (i != stages.size() - 1) {
-				fq += " OR ";
+				if (i != stages.size() - 1) {
+					fq += " OR ";
+				}
 			}
 		}
 

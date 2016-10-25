@@ -65,35 +65,6 @@ public class Check {
 
 	}
 
-	public void checkNoSameRelation(Connection conn, int linkPid, int nodePid) throws Exception {
-
-		String sql = "select pid from rd_restriction where in_link_pid=:1 and node_pid=:2 and u_record != 2";
-
-		PreparedStatement pstmt = conn.prepareStatement(sql);
-
-		pstmt.setInt(1, linkPid);
-
-		pstmt.setInt(2, nodePid);
-
-		ResultSet resultSet = pstmt.executeQuery();
-
-		boolean flag = false;
-
-		if (resultSet.next()) {
-			flag = true;
-		}
-
-		resultSet.close();
-
-		pstmt.close();
-
-		if (flag) {
-
-			throwException("相同的进入线、进入点不能创建两组车信");
-		}
-
-	}
-
 	public void checkGLM08033(Connection conn, int inLinkPid, int outLinkPid) throws Exception {
 
 		String sql = "select link_pid from rd_cross_link where link_pid in (:1,:2)";

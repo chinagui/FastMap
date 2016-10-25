@@ -13,9 +13,8 @@ public class Process extends AbstractProcess<Command> {
 
 	@Override
 	public String preCheck() throws Exception {
-		check.checkNoSameRelation(this.getConn(), this.getCommand().getInLinkPid(), this.getCommand().getNodePid());
-		check.checkGLM08004(this.getConn(), this.getCommand().getInLinkPid(), this.getCommand().getOutLinkPids());
-		check.checkSameInAndOutLink(this.getCommand().getInLinkPid(), this.getCommand().getOutLinkPids());
+//		check.checkGLM08004(this.getConn(), this.getCommand().getInLinkPid(), this.getCommand().getOutLinkPids());
+//		check.checkSameInAndOutLink(this.getCommand().getInLinkPid(), this.getCommand().getOutLinkPids());
 		return super.preCheck();
 	}
 

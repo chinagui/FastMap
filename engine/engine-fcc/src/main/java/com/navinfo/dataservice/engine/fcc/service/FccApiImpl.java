@@ -33,9 +33,11 @@ public class FccApiImpl implements FccApi{
         }
 
 		TipsSelector selector = new TipsSelector();
-
+		
+		//统计日编总量 stage=1
 		int total=selector.getTipsCountByStage(grids, 1);
 		
+		//统计日编已完成量stage=2 and t_dStatus=1
 		int finished=selector.getTipsCountByStageAndTdStatus(grids,2,1);
 		
 		result.put("total", total);

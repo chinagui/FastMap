@@ -657,7 +657,7 @@ public class StaticsOperation {
 		try {
 			QueryRunner run = new QueryRunner();
 			
-			String selectSql = "SELECT BM.BLOCK_MAN_ID, BM.STATUS"
+			String selectSql = "SELECT DISTINCT BM.BLOCK_MAN_ID, BM.STATUS"
 					+ ", FSOB.DIFF_DATE, FSOB.PROGRESS, FSOB.PERCENT"
 					+ ", FSOB.COLLECT_PROGRESS, FSOB.COLLECT_PERCENT, FSOB.COLLECT_DIFF_DATE"
 					+ ", FSOB.DAILY_PROGRESS, FSOB.DAILY_PERCENT, FSOB.DAILY_DIFF_DATE"
@@ -753,7 +753,7 @@ public class StaticsOperation {
 		try {
 			QueryRunner run = new QueryRunner();
 			
-			String selectSql = "SELECT BM.BLOCK_MAN_ID, BM.STATUS"
+			String selectSql = "SELECT DISTINCT BM.BLOCK_MAN_ID, BM.STATUS"
 					+ ", FSOB.DIFF_DATE, FSOB.PROGRESS, FSOB.PERCENT"
 					+ ", FSOB.COLLECT_PROGRESS, FSOB.COLLECT_PERCENT, FSOB.COLLECT_DIFF_DATE"
 					+ ", FSOB.DAILY_PROGRESS, FSOB.DAILY_PERCENT, FSOB.DAILY_DIFF_DATE"
@@ -825,7 +825,7 @@ public class StaticsOperation {
 		try {
 			QueryRunner run = new QueryRunner();
 			
-			String selectSql = "SELECT BM.BLOCK_MAN_ID, BM.STATUS"
+			String selectSql = "SELECT DISTINCT BM.BLOCK_MAN_ID, BM.STATUS"
 					+ ", FSOB.DIFF_DATE, FSOB.PROGRESS, FSOB.PERCENT"
 					+ ", FSOB.COLLECT_PROGRESS, FSOB.COLLECT_PERCENT, FSOB.COLLECT_DIFF_DATE"
 					+ ", FSOB.DAILY_PROGRESS, FSOB.DAILY_PERCENT, FSOB.DAILY_DIFF_DATE"

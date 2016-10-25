@@ -192,48 +192,6 @@ public class IxPoiSelector extends AbstractSelector {
 	}
 
 	/**
-	 * 根据rowId获取POI（返回名称和分类）
-	 * 
-	 * @param rowId
-	 * @return
-	 * @throws Exception
-	 */
-	public JSONObject getByRowIdForAndroid(String rowId) throws Exception {
-
-		PreparedStatement pstmt = null;
-		ResultSet resultSet = null;
-
-		StringBuffer sb = new StringBuffer();
-		sb.append("SELECT old_name,kind_code");
-		sb.append(" FROM ix_poi");
-		sb.append(" WHERE row_id=:1");
-
-		try {
-			pstmt = conn.prepareStatement(sb.toString());
-
-			pstmt.setString(1, rowId);
-			resultSet = pstmt.executeQuery();
-
-			JSONObject ret = new JSONObject();
-			if (resultSet.next()) {
-				ret.put("name", resultSet.getString("old_name"));
-				ret.put("kindCode", resultSet.getString("kind_code"));
-			}
-
-			return ret;
-		} catch (Exception e) {
-
-			throw e;
-
-		} finally {
-
-			DBUtils.closeResultSet(resultSet);
-
-			DBUtils.closeStatement(pstmt);
-		}
-	}
-
-	/**
 	 * 根据pid获取POI的rowId
 	 * 
 	 * @param

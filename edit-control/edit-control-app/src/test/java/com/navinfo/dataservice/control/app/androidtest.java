@@ -6,6 +6,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.control.app.download.DownloadOperation;
+import com.navinfo.dataservice.control.app.search.Operation;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -25,7 +26,7 @@ public class androidtest {
 		DownloadOperation download = new DownloadOperation();
 		JSONArray gridList = new JSONArray();
 		JSONObject grid = new JSONObject();
-		grid.put("grid", "59567233");
+		grid.put("grid", "60560303");
 		grid.put("date", "");
 		gridList.add(grid);
 		try {

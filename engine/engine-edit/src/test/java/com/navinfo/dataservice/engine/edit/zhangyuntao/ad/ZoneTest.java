@@ -18,4 +18,10 @@ public class ZoneTest extends InitApplication {
         String paramenter = "{\"command\":\"MOVE\",\"dbId\":17,\"objId\":207000002,\"data\":{\"longitude\":116.12569212913512,\"latitude\":40.58962069905525},\"type\":\"ZONENODE\"}";
         TestUtil.run(paramenter);
     }
+
+    @Test
+    public void remove(){
+        String parameter = "{\"command\":\"DELETE\",\"type\":\"ZONENODE\",\"dbId\":17,\"objId\":304000015}";
+        TestUtil.run(parameter);
+    }
 }

@@ -38,7 +38,7 @@ public class Operation {
                 if (rdGscLink.getStartEnd() != 0) throw new Exception("有立交不允许删除,移动,修行操作,请先解除立交");
                 // 重新计算形状点号并更新
                 Coordinate coor = oldLink.getGeometry().getCoordinates()[rdGscLink.getShpSeqNum()];
-                Geometry gscGeo = GeoTranslator.point2Jts(coor.x, coor.y);
+                Geometry gscGeo = GeoTranslator.transform(GeoTranslator.point2Jts(coor.x, coor.y), 0.00001, 5);
                 RdGscOperateUtils.calShpSeqNum(rdGscLink, gscGeo, linkGeo);
                 result.insertObject(rdGscLink, ObjStatus.UPDATE, rdGscLink.getPid());
             }

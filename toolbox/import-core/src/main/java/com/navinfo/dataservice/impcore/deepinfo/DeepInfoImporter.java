@@ -11,9 +11,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import net.sf.json.JSONObject;
 
@@ -21,24 +19,22 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
-import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.impcore.exception.DataErrorException;
 
 public class DeepInfoImporter {
 
 	private Logger logger = LoggerRepos.getLogger(this.getClass());
+	
+	private String[] tables = new String[]{"IX_POI_PARKING","IX_POI_GASSTATION","IX_POI_BUSINESSTIME","IX_POI_CARRENTAL","IX_POI_HOTEL","IX_POI_DETAIL","IX_POI_RESTAURANT"};
 
 	private void clearDeepInfoTables(Connection conn) throws SQLException {
 
-		String parkingSql = "truncate table ix_poi_parking";
-
-		String gasstationSql = "truncate table ix_poi_gasstation";
-
 		Statement stmt = conn.createStatement();
+		
+		for(String table:tables){
 
-		stmt.executeUpdate(parkingSql);
-
-		stmt.executeUpdate(gasstationSql);
+			stmt.executeUpdate("TRUNCATE TABLE "+table);
+		}
 
 		stmt.close();
 	}
@@ -82,13 +78,17 @@ public class DeepInfoImporter {
 
 		ResultSet rs = null;
 
-		Result result = new Result();
-
 		List<Integer> pids = new ArrayList<Integer>();
 
 		int parkingCount = 0;
 
 		int gasCount = 0;
+		
+		int businessTimeCount = 0;
+		int carRentalCount=0;
+		int hotelCount=0;
+		int detailCount=0;
+		int restaurantCount=0;
 
 		int total = 0;
 
@@ -125,20 +125,54 @@ public class DeepInfoImporter {
 
 			try {
 				//gas
-				int res = GasStationImporter.run(result, conn, stmt, poi);
+				int res = GasStationImporter.run(conn, stmt, poi);
 
 				if (res > 0) {
 					cache++;
 					gasCount++;
 				}
 				//parking
-				res = ParkingImporter.run(result, conn, stmt, poi);
+				res = ParkingImporter.run(conn, stmt, poi);
 
 				if (res > 0) {
 					cache++;
 					parkingCount++;
 				}
-				//
+				
+				//business time
+				res = BusinessTimeImporter.run(conn,stmt,poi);
+				if(res>0){
+					cache++;
+					businessTimeCount++;
+				}
+				
+				//car rental
+				res = CarRentalImporter.run(conn,stmt,poi);
+				if(res>0){
+					cache++;
+					carRentalCount++;
+				}
+				
+				//hotel
+				res = HotelImporter.run(conn,stmt,poi);
+				if(res>0){
+					cache++;
+					hotelCount++;
+				}
+				
+				//detail
+				res = DetailImporter.run(conn,stmt,poi);
+				if(res>0){
+					cache++;
+					detailCount++;
+				}
+				
+				//restaurant
+				res = RestaurantImporter.run(conn,stmt,poi);
+				if(res>0){
+					cache++;
+					restaurantCount++;
+				}
 
 			} catch (DataErrorException ex) {
 				logger.error("pid " + pid + ":" + ex.getMessage());
@@ -174,12 +208,24 @@ public class DeepInfoImporter {
 
 		pw.close();
 
-		logger.info("not found pid count:" + notfound);
+		logger.info("total:" + total + ",not found:" + notfound);
 
-		logger.info("IX_POI_Parking count:" + parkingCount);
+		logger.info("IX_POI_PARKING count:" + parkingCount);
 
 		logger.info("IX_POI_GASSTATION count:" + gasCount);
 
+		logger.info("IX_POI_BUSINESSTIME count:" + businessTimeCount);
+
+		logger.info("IX_POI_CARRENTAL count:" + carRentalCount);
+
+		logger.info("IX_POI_HOTEL count:" + hotelCount);
+
+		logger.info("IX_POI_DETAIL count:" + detailCount);
+
+		logger.info("IX_POI_RESTAURANT count:" + restaurantCount);
+
 		logger.info("DONE.");
+		
+		reader.close();
 	}
 }

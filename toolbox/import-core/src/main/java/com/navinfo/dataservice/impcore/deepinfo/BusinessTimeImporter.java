@@ -17,7 +17,7 @@ import net.sf.json.JSONObject;
 import net.sf.json.util.JSONUtils;
 
 public class BusinessTimeImporter {
-	public static int run(Result result, Connection conn,
+	public static int run(Connection conn,
 			Statement stmt, JSONObject poi) throws Exception {
 
 		JSONArray btObjs = poi.getJSONArray("businessTime");

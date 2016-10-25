@@ -5,16 +5,21 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
+import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.DBUtils;
 
 import net.sf.json.JSONObject;
@@ -331,6 +336,12 @@ public class LogReader {
 		}
 	}
 	
+	public  Map<Integer,Collection<Long>> getUpdatedObj(String objName,String mainTabName,String grid,String date)throws SQLException{
+		Collection<String> grids = new HashSet<String>();
+		grids.add(grid);
+		return getUpdatedObj(objName,mainTabName,grids,date);
+	}
+	
 	/**
 	 * 
 	 * @param objName
@@ -338,13 +349,63 @@ public class LogReader {
 	 * @param date
 	 * @return:key:status,value:pids
 	 */
-	public static Map<Integer,Collection<Integer>> getUpdatedObj(String objName,String grid,String date){
-		if(StringUtils.isEmpty(date)){
-			String sql = "SELECT ";
-		}else{
-			
+	public Map<Integer,Collection<Long>> getUpdatedObj(String objName,String mainTabName,Collection<String> grids,String date)throws SQLException{
+		StringBuilder sb = new StringBuilder();
+		sb.append("WITH A AS\n");
+		sb.append(" (SELECT T.OB_PID, MAX(P.OP_DT) DT FROM LOG_DETAIL T, LOG_DETAIL_GRID G, LOG_OPERATION P\n");
+		sb.append("   WHERE T.OP_ID = P.OP_ID AND T.ROW_ID = G.LOG_ROW_ID AND T.OB_NM = '"+objName+"'\n");
+		if(grids!=null&&grids.size()>0){
+			sb.append("     AND G.GRID_ID IN ("+StringUtils.join(grids, ",")+") AND G.GRID_TYPE = 1\n");
 		}
-		return null;
+		if(StringUtils.isNotEmpty(date)){
+			sb.append("     AND P.OP_DT > TO_DATE('"+date+"', 'yyyymmddhh24miss')\n");
+		}
+		sb.append("   GROUP BY OB_PID),\n");
+		sb.append("B AS\n");
+		sb.append(" (SELECT L.OB_PID, L.OP_TP FROM LOG_DETAIL L, LOG_OPERATION OP, A\n");
+		sb.append("   WHERE L.OP_ID = OP.OP_ID AND L.OB_PID = A.OB_PID AND OP.OP_DT = A.DT AND L.TB_NM = ?),\n");
+		sb.append("C AS\n");
+		sb.append(" (SELECT A.OB_PID, 1 OP_TP FROM A\n");
+		sb.append("   WHERE NOT EXISTS (SELECT 1 FROM B WHERE A.OB_PID = B.OB_PID)\n");
+		sb.append("     AND EXISTS (SELECT 1 FROM LOG_DETAIL D\n");
+		sb.append("           WHERE D.OB_PID = A.OB_PID AND D.TB_NM = ? AND D.OP_TP = 1)),\n");
+		sb.append("D AS\n");
+		sb.append(" (SELECT B.* FROM B UNION ALL SELECT C.* FROM C)\n");
+		sb.append("SELECT * FROM D \n");
+		sb.append("UNION ALL \n");
+		sb.append("SELECT A.OB_PID, 3 OP_TP FROM A WHERE NOT EXISTS (SELECT 1 FROM D WHERE A.OB_PID = D.OB_PID)");
+		return new QueryRunner().query(conn, sb.toString(), new ObjStatusHandler(),objName,mainTabName,mainTabName);
+	}
+	
+	class ObjStatusHandler implements ResultSetHandler<Map<Integer,Collection<Long>>>{
+		@Override
+		public Map<Integer, Collection<Long>> handle(ResultSet rs) throws SQLException {
+			Map<Integer, Collection<Long>> results = new HashMap<Integer,Collection<Long>>();
+			Collection<Long> addPids = new HashSet<Long>();
+			Collection<Long> delPids = new HashSet<Long>();
+			Collection<Long> modPids = new HashSet<Long>();
+			while(rs.next()){
+				int status = rs.getInt("OP_TP");
+				if(status==1){
+					addPids.add(rs.getLong("OB_PID"));
+				}else if(status==2){
+					delPids.add(rs.getLong("OB_PID"));
+				}else if(status==3){
+					modPids.add(rs.getLong("OB_PID"));
+				}
+			}
+			if(addPids.size()>0){
+				results.put(1,addPids);
+			}
+			if(delPids.size()>0){
+				results.put(2, delPids);
+			}
+			if(modPids.size()>0){
+				results.put(3, modPids);
+			}
+			return results;
+		}
+		
 	}
 
 	public static void main(String[] args) throws Exception {

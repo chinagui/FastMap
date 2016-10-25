@@ -50,7 +50,7 @@ public class PoiBatchProcessorFM_BAT_20_114 implements IBatch {
 			sql.append(" AND sdo_Geom.Relate(F.GEOMETRY,'Anyinteract',sdo_geometry(:1,8307),0.005) = 'TRUE'");
 			sql.append(" and rownum=1");
 			Geometry geometry = poi.getGeometry();
-			String wkt = GeoTranslator.jts2Wkt(geometry);
+			String wkt = GeoTranslator.jts2Wkt(geometry,0.00001,5);
 			logger.info("wkt："+wkt);
 			pstmt = conn.prepareStatement(sql.toString());
 			pstmt.setString(1, wkt);

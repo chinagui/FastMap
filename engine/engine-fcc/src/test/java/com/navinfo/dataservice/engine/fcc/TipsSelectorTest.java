@@ -21,6 +21,7 @@ import com.navinfo.dataservice.commons.util.ExcelReader;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
 import com.navinfo.dataservice.dao.fcc.SolrController;
+import com.navinfo.dataservice.engine.fcc.service.FccApiImpl;
 import com.navinfo.dataservice.engine.fcc.tips.TipsSelector;
 import com.navinfo.navicommons.geo.computation.GridUtils;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
@@ -396,6 +397,25 @@ public class TipsSelectorTest {
 				e.printStackTrace();
 			}
 		}*/
+		
+		
+		@Test
+		public void testSubTaskCount(){
+			FccApiImpl imp=new  FccApiImpl();
+			JSONArray grids=new JSONArray();
+			grids.add(60560302);
+			grids.add(59567332);
+			grids.add(59567322);
+			JSONObject result;
+			try {
+				result = imp.getSubTaskStats(grids);
+				System.out.println(result);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		
+		}
 		
 
 

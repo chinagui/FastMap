@@ -5,6 +5,7 @@ import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.speedbump.RdSpeedbump;
 import com.navinfo.dataservice.dao.glm.selector.rd.speedbump.RdSpeedbumpSelector;
+import com.navinfo.dataservice.engine.edit.utils.CalLinkOperateUtils;
 
 import java.sql.Connection;
 import java.util.*;
@@ -38,19 +39,15 @@ public class Operation {
             result.insertObject(speedbump, ObjStatus.DELETE, speedbump.pid());
         rdSpeedbumps.clear();
         // 2.当目标link上的点已经参与制作减速带
-        Set<Integer> tmpNodePids = new LinkedHashSet<>();
-        for (RdLink link : links) {
-            tmpNodePids.add(link.getsNodePid());
-            tmpNodePids.add(link.geteNodePid());
+        List<Integer> nodePids = CalLinkOperateUtils.calNodePids(links);
+        if (!nodePids.isEmpty()) {
+            rdSpeedbumps = selector.loadByNodePids(nodePids, true);
+            for (RdSpeedbump speedbump : rdSpeedbumps) {
+                if (!result.getDelObjects().contains(speedbump))
+                    result.insertObject(speedbump, ObjStatus.DELETE, speedbump.pid());
+            }
+            rdSpeedbumps.clear();
         }
-        List<Integer> nodePids = new ArrayList<>(tmpNodePids).subList(1, tmpNodePids.size() - 1);
-        rdSpeedbumps = selector.loadByNodePids(nodePids, true);
-        for (RdSpeedbump speedbump : rdSpeedbumps) {
-            if (!result.getDelObjects().contains(speedbump))
-                result.insertObject(speedbump, ObjStatus.DELETE, speedbump.pid());
-        }
-        rdSpeedbumps.clear();
-
         return "";
     }
 

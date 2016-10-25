@@ -7,7 +7,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
@@ -166,11 +170,11 @@ public class LogReader {
 			pstmt.setString(3, tbNm);
 			pstmt.setString(4, Feild);
 			resultSet = pstmt.executeQuery();
-			if (resultSet.getRow() == 0) {
-				return false;
-			} else {
+			while (resultSet.next()) {
 				return true;
-			}
+			} 
+			return false;
+			
 		} catch (Exception e) {
 
 			throw e;
@@ -206,11 +210,10 @@ public class LogReader {
 			pstmt = this.conn.prepareStatement(sql);
 			pstmt.setInt(1, objPid);
 			resultSet = pstmt.executeQuery();
-			if (resultSet.getRow() == 0) {
-				return true;
-			} else {
+			while (resultSet.next()) {
 				return false;
-			}
+			} 
+			return true;
 		} catch (Exception e) {
 
 			throw e;
@@ -243,11 +246,10 @@ public class LogReader {
 			pstmt = this.conn.prepareStatement(sql);
 			pstmt.setInt(1, objPid);
 			resultSet = pstmt.executeQuery();
-			if (resultSet.getRow() == 0) {
-				return false;
-			} else {
+			while (resultSet.next()) {
 				return true;
-			}
+			} 
+			return false;
 		} catch (Exception e) {
 
 			throw e;
@@ -326,11 +328,27 @@ public class LogReader {
 
 		}
 	}
+	
+	/**
+	 * 
+	 * @param objName
+	 * @param grid
+	 * @param date
+	 * @return:key:status,value:pids
+	 */
+	public static Map<Integer,Collection<Integer>> getUpdatedObj(String objName,String grid,String date){
+		if(StringUtils.isEmpty(date)){
+			String sql = "SELECT ";
+		}else{
+			
+		}
+		return null;
+	}
 
 	public static void main(String[] args) throws Exception {
 		Connection con = DriverManager.getConnection("jdbc:oracle:thin:@192.168.4.61:1521/orcl",
-				"fm_regiondb_test_d_306", "fm_regiondb_test_d_306");
-		int state = new LogReader(con).getObjectState(78710230, "IX_POI");
-		System.out.println(state);
+				"fm_regiondb_test_d_1", "fm_regiondb_test_d_1");
+		boolean flag = new LogReader(con).isOnlyPhotoAndMetoHis(89410598);
+		System.out.println(flag);
 	}
 }

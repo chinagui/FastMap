@@ -40,81 +40,11 @@ public class Check {
 		}
 	}
 	
-	public void checkGLM04002(Connection conn, int eNodePid, int sNodePid) throws Exception {
-
-		String sql = "select count(a.link_pid) count,b.node_pid from rd_link a,rd_gate b where (a.e_node_pid=b.node_pid or a.s_node_pid=b.node_pid) and b.node_pid in (:1,:2) group by b.node_pid";
-		
-		PreparedStatement pstmt = conn.prepareStatement(sql);
-		
-		pstmt.setInt(1, eNodePid);
-		
-		pstmt.setInt(2, sNodePid);
-
-		ResultSet resultSet = pstmt.executeQuery();
-
-		boolean flag = false;
-
-		while (resultSet.next()) {
-
-			int count = resultSet.getInt("count");
-
-			if (count!=2) {
-				flag = true;
-			}
-		}
-
-		resultSet.close();
-
-		pstmt.close();
-
-		if (flag) {
-			throwException("大门点的挂接link数必须是2");
-		}
-
-	}
-	
-	public void checkGLM13002(Connection conn, int eNodePid, int sNodePid) throws Exception {
-
-		String sql = "select count(a.link_pid) count,b.node_pid from rd_link a,rd_tollgate b where (a.e_node_pid=b.node_pid or a.s_node_pid=b.node_pid) and b.node_pid in (:1,:2) group by b.node_pid";
-		
-		PreparedStatement pstmt = conn.prepareStatement(sql);
-		
-		pstmt.setInt(1, eNodePid);
-		
-		pstmt.setInt(2, sNodePid);
-
-		ResultSet resultSet = pstmt.executeQuery();
-
-		boolean flag = false;
-
-		while (resultSet.next()) {
-
-			int count = resultSet.getInt("count");
-
-			if (count!=2) {
-				flag = true;
-			}
-		}
-
-		resultSet.close();
-
-		pstmt.close();
-
-		if (flag) {
-			throwException("关系型收费站主点的挂接link数必须是2");
-		}
-
-	}
-	
 	public void checkLinkLength(double length) throws Exception{
 		
 		if(length<=2){
 			throw new Exception("道路link长度应大于2米");
 		}
-	}
-	
-	private void throwException(String msg) throws Exception {
-		throw new Exception(msg);
 	}
 	
 	public void postCheck(Connection conn,Result result, int projectId) throws Exception

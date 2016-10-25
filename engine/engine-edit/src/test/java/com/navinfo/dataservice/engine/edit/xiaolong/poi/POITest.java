@@ -75,7 +75,7 @@ public class POITest extends InitApplication {
 
 	@Test
 	public void testDeletePoi() {
-		String parameter = "{\"command\":\"UPDATE\",\"dbId\":52,\"type\":\"IXPOI\",\"objId\":8166639,\"data\":{\"addresses\":[{\"nameGroupid\":1,\"poiPid\":0,\"langCode\":\"CHI\",\"fullname\":\"１１１１\",\"objStatus\":\"INSERT\"}],\"rowId\":\"3E44753A75AF7097E050A8C083041F3F\",\"pid\":8166639}}";
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":8,\"type\":\"IXPOI\",\"objId\":5788597,\"data\":{\"level\":\"A\",\"rowId\":\"3F1ED96214CE20E9E0536803A8C0508C\",\"pid\":5788597,\"objStatus\":\"UPDATE\",\"addresses\":[{\"nameGroupid\":1,\"poiPid\":0,\"langCode\":\"CHI\",\"fullname\":\"ｃｅｓ\",\"objStatus\":\"INSERT\"}]}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

@@ -87,7 +87,7 @@ public class LcLinkTest extends InitApplication {
 	@Test
 	public void breakLcLink() {
 		String parameter = "{\"command\":\"BREAK\",\"dbId\":42,\"objId\":100035081,\"data\":{\"longitude\":116.47200963815628,\"latitude\":40.07116277263092},\"type\":\"LCLINK\"}";
-		parameter = "{\"command\":\"BREAK\",\"dbId\":42,\"objId\":100035116,\"data\":{\"longitude\":116.47133282255058,\"latitude\":40.074483115728164},\"type\":\"LCLINK\"}";
+		parameter = "{\"command\":\"BREAK\",\"dbId\":17,\"objId\":204000032,\"data\":{\"longitude\":116.4714851975441,\"latitude\":39.875605676514986},\"type\":\"LCLINK\"}";
 		TestUtil.run(parameter);
 	}
 

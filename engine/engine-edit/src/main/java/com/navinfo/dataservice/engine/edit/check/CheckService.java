@@ -44,6 +44,10 @@ public class CheckService {
 		
 		ManApi manApi=(ManApi) ApplicationContextUtil.getBean("manApi");
 		Subtask subtaskObj=manApi.queryBySubtaskId(subtaskId);
+		if (subtaskObj == null) {
+			throw new Exception("subtaskid未找到数据");
+		}
+		
 		int dbId=subtaskObj.getDbId();
 		List<Integer> grids= subtaskObj.getGridIds();
 		

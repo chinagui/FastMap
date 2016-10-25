@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.dao.glm.iface;
 
+import java.util.Collection;
 import java.util.List;
 
 /**

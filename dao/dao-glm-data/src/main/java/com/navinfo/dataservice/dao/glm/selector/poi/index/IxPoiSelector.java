@@ -38,7 +38,7 @@ public class IxPoiSelector extends AbstractSelector {
 	}
 
 	/**
-	 * @zhaokk 查询poi列表值 20161010修改 by jch,1）去掉官方原始查询条件；2）删除poi可见
+	 * @zhaokk 查询poi列表值 20161010修改 by jch,1）修复无名称的poi查不出bug；2）删除poi可见
 	 * @param isLock
 	 * @param pid
 	 * @param pidName
@@ -64,7 +64,7 @@ public class IxPoiSelector extends AbstractSelector {
 		buffer.append(" SELECT * ");
 		buffer.append(" FROM (SELECT c.*, ROWNUM rn ");
 		buffer.append(" FROM (SELECT /*+ leading(ip,ipn,ps) use_hash(ip,ipn,ps)*/  COUNT (1) OVER (PARTITION BY 1) total,");
-		buffer.append(" ip.pid,ip.kind_code,ps.status, 0 as freshness_vefication,ipn.name,ip.geometry,ip.collect_time,ip.u_record ");
+		buffer.append(" ip.pid,ip.kind_code,ps.status, ps.fresh_verified as freshness_vefication,ipn.name,ip.geometry,ip.collect_time,ip.u_record ");
 		buffer.append(" FROM ix_poi ip, (SELECT * FROM ix_poi_name WHERE lang_code = 'CHI' AND name_type = 2 AND name_class = 1) ipn, poi_edit_status ps ");
 		buffer.append(" WHERE  ip.pid = ipn.poi_pid(+) and ip.row_id = ps.row_id ");
 
@@ -176,48 +176,6 @@ public class IxPoiSelector extends AbstractSelector {
 				ret.put("flag", 1);
 			} else {
 				ret.put("flag", 0);
-			}
-
-			return ret;
-		} catch (Exception e) {
-
-			throw e;
-
-		} finally {
-
-			DBUtils.closeResultSet(resultSet);
-
-			DBUtils.closeStatement(pstmt);
-		}
-	}
-
-	/**
-	 * 根据rowId获取POI（返回名称和分类）
-	 * 
-	 * @param rowId
-	 * @return
-	 * @throws Exception
-	 */
-	public JSONObject getByRowIdForAndroid(String rowId) throws Exception {
-
-		PreparedStatement pstmt = null;
-		ResultSet resultSet = null;
-
-		StringBuffer sb = new StringBuffer();
-		sb.append("SELECT old_name,kind_code");
-		sb.append(" FROM ix_poi");
-		sb.append(" WHERE row_id=:1");
-
-		try {
-			pstmt = conn.prepareStatement(sb.toString());
-
-			pstmt.setString(1, rowId);
-			resultSet = pstmt.executeQuery();
-
-			JSONObject ret = new JSONObject();
-			if (resultSet.next()) {
-				ret.put("name", resultSet.getString("old_name"));
-				ret.put("kindCode", resultSet.getString("kind_code"));
 			}
 
 			return ret;

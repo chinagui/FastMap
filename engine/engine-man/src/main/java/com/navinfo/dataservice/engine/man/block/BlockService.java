@@ -1099,6 +1099,35 @@ public class BlockService {
 				if("planStatus".equals(key)){
 					conditionSql=conditionSql+" AND MAN_LIST.BLOCK_STATUS =1 AND MAN_LIST.PLAN_STATUS="+conditionJson.getInt(key);}
 				
+				//1-6采集/日编正常,采集/日编异常,待分配,正常完成,逾期完成,提前完成
+				if("selectParam1".equals(key)){
+					JSONArray selectParam1=conditionJson.getJSONArray(key);
+					JSONArray progress=new JSONArray();
+					for(Object i:selectParam1){
+						int tmp=(int) i;
+						if(tmp==1||tmp==2){progress.add(tmp);}		
+						if(tmp==3){
+							if(!statusSql.isEmpty()){statusSql+=" or ";}
+							statusSql+=" MAN_LIST.ASSIGN_STATUS=0";
+						}
+						if(tmp==4){
+							if(!statusSql.isEmpty()){statusSql+=" or ";}
+							statusSql+=" MAN_LIST.diff_date=0";
+						}
+						if(tmp==6){
+							if(!statusSql.isEmpty()){statusSql+=" or ";}
+							statusSql+=" MAN_LIST.diff_date>0";
+						}
+						if(tmp==5){
+							if(!statusSql.isEmpty()){statusSql+=" or ";}
+							statusSql+=" MAN_LIST.diff_date<0";
+						}
+					}
+					if(!progress.isEmpty()){
+						if(!statusSql.isEmpty()){statusSql+=" or ";}
+						statusSql+=" MAN_LIST.Progress IN ("+progress.join(",")+")";}
+				}
+				
 				if ("assignStatus".equals(key)) {
 					if(!statusSql.isEmpty()){statusSql+=" or ";}
 					statusSql+=" MAN_LIST.ASSIGN_STATUS="+conditionJson.getInt(key);}
@@ -1184,7 +1213,7 @@ public class BlockService {
 				+ "     AND T.LATEST = 1"
 				//+ "     AND T.STATUS=1"
 				+ "     AND (EXISTS(SELECT 1 FROM SUBTASK STT WHERE STT.BLOCK_MAN_ID=T.BLOCK_MAN_ID AND STT."+stagePart
-						+ " GROUP BY STT.BLOCK_MAN_ID HAVING COUNT(DISTINCT STT.STATUS)=2)"
+						+ " GROUP BY STT.BLOCK_MAN_ID HAVING SUM(DISTINCT STT.STATUS)=2)"
 						+ " OR NOT EXISTS(SELECT 1 FROM SUBTASK STT WHERE STT.BLOCK_MAN_ID=T.BLOCK_MAN_ID AND STT."+stagePart+"))"
 				+wherePart					
 				+ "     AND T.BLOCK_MAN_ID = S.BLOCK_MAN_ID(+)"
@@ -1211,6 +1240,7 @@ public class BlockService {
 				+ "     AND T.BLOCK_ID=B.BLOCK_ID"
 				+ "     AND T.LATEST = 1"
 				+ "     AND T.STATUS=1"
+				+ "     AND ST.STATUS IN (0,1)"
 				+ "     AND ST."+stagePart
 				+wherePart		
 				+ "     AND NOT EXISTS(SELECT 1 FROM SUBTASK STT WHERE STT.BLOCK_MAN_ID=T.BLOCK_MAN_ID AND STT.STATUS=1 AND STT."+stagePart+")"
@@ -1239,6 +1269,7 @@ public class BlockService {
 				+ "     AND T.BLOCK_ID=B.BLOCK_ID"
 				+ "     AND T.LATEST = 1"
 				+ "     AND T.STATUS=1"
+				+ "     AND ST.STATUS IN (0,1)"
 				+ "     AND ST."+stagePart
 				+wherePart		
 				+ "     AND EXISTS(SELECT 1 FROM SUBTASK STT WHERE STT.BLOCK_MAN_ID=T.BLOCK_MAN_ID AND STT.STATUS<>0 AND STT."+stagePart+")"

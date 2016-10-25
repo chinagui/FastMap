@@ -125,10 +125,6 @@ public class Process extends AbstractProcess<Command> {
 		if (null != msg) {
 			throw new Exception(msg);
 		}
-		if (this.getCommand().getNode() == null) {
-
-			throw new Exception("指定删除的ZONENODE不存在！");
-		}
 		this.lockZoneNode();
 		this.lockZoneLink();
 		this.lockEndZoneNode();

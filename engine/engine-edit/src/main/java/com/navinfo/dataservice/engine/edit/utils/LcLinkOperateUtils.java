@@ -84,12 +84,11 @@ public class LcLinkOperateUtils {
     /*
      * 创建生成一条LCLINK返回
      */
-    public static LcLink getAddLink(Geometry g, int sNodePid, int eNodePid, Result result,LcLink sourceLink) throws Exception {
+    public static LcLink getAddLink(Geometry g, int sNodePid, int eNodePid, Result result, LcLink sourceLink) throws Exception {
         LcLink link = new LcLink();
         link.setPid(PidUtil.getInstance().applyLcLinkPid());
-        if(sourceLink != null)
-        {
-        	link.copy(sourceLink);
+        if (sourceLink != null) {
+            link.copy(sourceLink);
         }
         Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(g);
         Iterator<String> it = meshes.iterator();
@@ -105,11 +104,6 @@ public class LcLinkOperateUtils {
         link.seteNodePid(eNodePid);
         result.setPrimaryPid(link.pid());
         result.insertObject(link, ObjStatus.INSERT, link.pid());
-
-        // 创建LcLinkKind
-        LcLinkKind kind = new LcLinkKind();
-        kind.setLinkPid(link.pid());
-        result.insertObject(kind, ObjStatus.INSERT, kind.getLinkPid());
         return link;
     }
 
@@ -134,14 +128,14 @@ public class LcLinkOperateUtils {
         link.setsNodePid(sNodePid);
         link.seteNodePid(eNodePid);
         result.insertObject(link, ObjStatus.INSERT, link.pid());
-        for (IRow row : sourcelink.getKinds()) {
-            LcLinkKind sourceKind = (LcLinkKind) row;
-            LcLinkKind kind = new LcLinkKind();
-            kind.setLinkPid(link.getPid());
-            kind.setKind(sourceKind.getKind());
-            kind.setForm(sourceKind.getForm());
-            result.insertObject(kind, ObjStatus.INSERT, kind.getLinkPid());
-        }
+//        for (IRow row : sourcelink.getKinds()) {
+//            LcLinkKind sourceKind = (LcLinkKind) row;
+//            LcLinkKind kind = new LcLinkKind();
+//            kind.setLinkPid(link.getPid());
+//            kind.setKind(sourceKind.getKind());
+//            kind.setForm(sourceKind.getForm());
+//            result.insertObject(kind, ObjStatus.INSERT, kind.getLinkPid());
+//        }
         return link;
     }
 
@@ -352,16 +346,16 @@ public class LcLinkOperateUtils {
         }
     }
 
-    public static List<LcLink> getCreateLcLinksWithMesh(Geometry g, Map<Coordinate, Integer> maps, Result result,LcLink sourceLink)
+    public static List<LcLink> getCreateLcLinksWithMesh(Geometry g, Map<Coordinate, Integer> maps, Result result, LcLink sourceLink)
             throws Exception {
         List<LcLink> links = new ArrayList<LcLink>();
         if (g != null) {
             if (g.getGeometryType() == GeometryTypeName.LINESTRING) {
-                links.add(LcLinkOperateUtils.getCalLcLinkWithMesh(g, maps, result,sourceLink));
+                links.add(LcLinkOperateUtils.getCalLcLinkWithMesh(g, maps, result, sourceLink));
             }
             if (g.getGeometryType() == GeometryTypeName.MULTILINESTRING) {
                 for (int i = 0; i < g.getNumGeometries(); i++) {
-                    links.add(LcLinkOperateUtils.getCalLcLinkWithMesh(g.getGeometryN(i), maps, result,sourceLink));
+                    links.add(LcLinkOperateUtils.getCalLcLinkWithMesh(g.getGeometryN(i), maps, result, sourceLink));
                 }
 
             }
@@ -369,7 +363,7 @@ public class LcLinkOperateUtils {
                 for (int i = 0; i < g.getNumGeometries(); i++) {
                     Geometry geometry = g.getGeometryN(i);
                     if (GeometryTypeName.LINESTRING.equals(geometry.getGeometryType())) {
-                        links.add(LcLinkOperateUtils.getCalLcLinkWithMesh(geometry, maps, result,sourceLink));
+                        links.add(LcLinkOperateUtils.getCalLcLinkWithMesh(geometry, maps, result, sourceLink));
                     }
                 }
             }
@@ -407,7 +401,7 @@ public class LcLinkOperateUtils {
     /*
      * 创建土地覆盖线 针对跨图幅创建图廓点不能重复
      */
-    public static LcLink getCalLcLinkWithMesh(Geometry g, Map<Coordinate, Integer> maps, Result result,LcLink sourceLink)
+    public static LcLink getCalLcLinkWithMesh(Geometry g, Map<Coordinate, Integer> maps, Result result, LcLink sourceLink)
             throws Exception {
         // 定义创建行政区划线的起始Pid 默认为0
         int sNodePid = 0;
@@ -429,7 +423,7 @@ public class LcLinkOperateUtils {
             maps.put(g.getCoordinates()[g.getCoordinates().length - 1], (int) node.get("e"));
         }
         // 创建线
-        return LcLinkOperateUtils.getAddLink(g, (int) node.get("s"), (int) node.get("e"), result,sourceLink);
+        return LcLinkOperateUtils.getAddLink(g, (int) node.get("s"), (int) node.get("e"), result, sourceLink);
     }
 
 }

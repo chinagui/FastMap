@@ -386,11 +386,9 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips,int dbId) throws
 			sb.append(" AND name_groupid=:4");
 		}
 		if (rdName.getNameId() != null) {
-			sb.append(" AND name_id !='"+rdName.getNameId()+"'");
+			sb.append(" AND name_id !="+rdName.getNameId());
 		}
 		try {
-			
-			conn = DBConnector.getInstance().getMetaConnection();
 			
 			pstmt = conn.prepareStatement(sb.toString());
 

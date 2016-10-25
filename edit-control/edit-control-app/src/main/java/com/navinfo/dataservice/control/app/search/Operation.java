@@ -63,32 +63,5 @@ public class Operation {
 		}
 		
 	}
-	
-	/**
-	 * 根据rowId获取POI（返回名称和分类）
-	 * @param rowId
-	 * @param x
-	 * @param y
-	 * @return
-	 * @throws Exception
-	 */
-	public JSONObject getByRowId(String rowId,double x,double y) throws Exception {
-		MetadataApi metaApi = (MetadataApi)ApplicationContextUtil.getBean("metadataApi");
-		ManApi manApi = (ManApi)ApplicationContextUtil.getBean("manApi");
-		Connection conn = null;
-		try {
-			int adminId = metaApi.queryAdminIdByLocation(x, y);
-			int dbId = manApi.queryDbIdByAdminId(adminId);
-			conn = DBConnector.getInstance().getConnectionById(dbId);
-			IxPoiSelector poiSelector = new IxPoiSelector(conn);
-			JSONObject ret = poiSelector.getByRowIdForAndroid(rowId);
-			return ret;
-		} catch (Exception e) {
-			throw e;
-		} finally {
-			DBUtils.closeConnection(conn);
-		}
-	}
-	
 
 }

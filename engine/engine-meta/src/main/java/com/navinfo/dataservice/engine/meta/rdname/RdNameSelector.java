@@ -266,7 +266,7 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips,int dbId) throws
 					
 					pidClod = subconn.createClob();
 					pidClod.setString(1, ids);
-					sql.append(" and a.tipid in (select to_number(pid) from table(clob_to_table(:3)))");
+					sql.append(" and a.tipid in (select to_char(tipid) from table(clob_to_table(:1)))");
 					
 				} else {
 					result.put("total", 0);
@@ -319,7 +319,7 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips,int dbId) throws
 			}
 			
 			sql.append(" ) c");
-			sql.append(" WHERE rownum <= :1)  WHERE rn >= :2");
+			sql.append(" WHERE rownum <= :2)  WHERE rn >= :3");
 			
 			int startRow = (pageNum-1) * pageSize + 1;
 
@@ -327,12 +327,12 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips,int dbId) throws
 			
 			pstmt = subconn.prepareStatement(sql.toString());
 			
-			pstmt.setInt(1, endRow);
-
-			pstmt.setInt(2, startRow);
+			pstmt.setClob(1, pidClod);
 			
-			pstmt.setClob(3, pidClod);
+			pstmt.setInt(2, endRow);
 
+			pstmt.setInt(3, startRow);
+			
 			resultSet = pstmt.executeQuery();
 			
 			int total = 0;

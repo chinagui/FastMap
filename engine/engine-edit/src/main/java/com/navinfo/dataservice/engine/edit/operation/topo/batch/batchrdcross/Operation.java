@@ -195,6 +195,10 @@ public class Operation implements IOperation {
                 form.setLinkPid(linkPid);
                 result.insertObject(form, ObjStatus.INSERT, cross.pid());
             }
+            // 增加交叉口内道路属性则删除该线路上红绿灯
+            List<RdTrafficsignal> trafficsignals = new RdTrafficsignalSelector(conn).loadByLinkPid(true, linkPid);
+            for (RdTrafficsignal t : trafficsignals)
+                result.insertObject(t, ObjStatus.DELETE, t.pid());
         }
     }
 
@@ -211,7 +215,12 @@ public class Operation implements IOperation {
         for (IRow row : forms) {
             RdLinkForm form = (RdLinkForm) row;
             if (form.getFormOfWay() == 50) {
-                result.insertObject(form, ObjStatus.DELETE, crossLink.getPid());
+                if (forms.size() > 1) {
+                    result.insertObject(form, ObjStatus.DELETE, crossLink.getPid());
+                } else {
+                    form.changedFields().put("formOfWay", 1);
+                    result.insertObject(form, ObjStatus.UPDATE, crossLink.getPid());
+                }
             }
         }
     }

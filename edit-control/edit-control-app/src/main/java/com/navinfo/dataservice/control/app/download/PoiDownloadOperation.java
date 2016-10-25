@@ -103,7 +103,7 @@ public class PoiDownloadOperation {
 		PrintWriter pw = new PrintWriter(fileName);
 		try {
 			logger.info("starting load data...");
-			List<IxPoi> data = new PoiGridIncreSearch().getPoiByGrids(gridDateMap);
+			Collection<IxPoi> data = new PoiGridIncreSearch().getPoiByGrids(gridDateMap);
 			logger.info("starting convert data...");
 			JSONArray ja = changeData(data);
 			logger.info("begin write json to file");
@@ -126,7 +126,7 @@ public class PoiDownloadOperation {
 	 * @throws Exception
 	 */
 	@SuppressWarnings("static-access")
-	public JSONArray changeData(List<IxPoi> data) throws Exception{
+	public JSONArray changeData(Collection<IxPoi> data) throws Exception{
 		JSONArray retList = new JSONArray();
 		JSONObject jsonObj = new JSONObject();
 		for (IxPoi poi:data){

@@ -1,20 +1,14 @@
 package com.navinfo.dataservice.engine.edit.operation.topo.breakin.breaklupoint;
 
 import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.List;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
-import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.lu.LuLink;
 import com.navinfo.dataservice.dao.glm.model.lu.LuNode;
 import com.navinfo.dataservice.dao.glm.selector.lu.LuLinkSelector;
@@ -22,6 +16,9 @@ import com.navinfo.dataservice.engine.edit.utils.LuLinkOperateUtils;
 import com.navinfo.dataservice.engine.edit.utils.NodeOperateUtils;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 public class OpTopo implements IOperation {
 	protected Logger log = Logger.getLogger(this.getClass());
@@ -143,8 +140,23 @@ public class OpTopo implements IOperation {
 			result.insertObject(node, ObjStatus.INSERT, node.pid());
 			breakNodePid = node.pid();
 			this.command.setBreakNode(node);
-		} else {
+		}else
+		{
 			breakNodePid = this.command.getBreakNodePid();
+			for (IRow row : result.getAddObjects()) {
+				
+				if (row instanceof LuNode) {
+
+					LuNode node = (LuNode) row;
+					
+					if(node.getPid()==command.getBreakNodePid())
+					{
+						command.setBreakNode(node);
+						
+						break;
+					}
+				}
+			}
 		}
 
 		log.debug("3.1 打断点的pid = " + breakNodePid);

@@ -86,11 +86,15 @@ public class StaticsOperation {
 							if(2 == rs.getInt("STATUS")){
 								draft += 1;
 							}else if(1 == rs.getInt("STATUS")){
-								if((blockManIdList==null) 
-										||((blockManStatusList!=null)
+//								if((blockManIdList==null) 
+//										||((blockManStatusList!=null)
+//												&& (-1==blockManStatusList.indexOf("1")) 
+//												&& (-1==blockManStatusList.indexOf("2"))
+//												)
+//										){
+								if((blockManStatusList!=null)
 												&& (-1==blockManStatusList.indexOf("1")) 
 												&& (-1==blockManStatusList.indexOf("2"))
-												)
 										){
 									finished += 1;
 									//完成情况

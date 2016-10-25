@@ -252,11 +252,25 @@ public class Operation implements IOperation {
         }
         nodes.addAll(newNodePids);
 
-        RdLinkSelector linkSelector = new RdLinkSelector(conn);
-        for (Integer pid : newNodePids) {
-            List<RdLink> links = linkSelector.loadInLinkByNodePid(pid, 50, true);
+//        RdLinkSelector linkSelector = new RdLinkSelector(conn);
+//        for (Integer pid : newNodePids) {
+//            List<RdLink> links = linkSelector.loadInLinkByNodePid(pid, 50, true);
+//            for (RdLink link : links) {
+//                if (nodes.contains(link.getsNodePid()) && nodes.contains(link.geteNodePid())) continue;
+//                RdTrafficsignal t = new RdTrafficsignal();
+//                t.setPid(PidUtil.getInstance().applyRdTrafficsignalPid());
+//                t.setNodePid(pid);
+//                t.setLinkPid(link.pid());
+//                t.setFlag(1);
+//                result.insertObject(t, ObjStatus.INSERT, t.pid());
+//            }
+//        }
+        for (Integer pid : nodes) {
+            List<RdLink> links = new RdLinkSelector(conn).loadInLinkByNodePid(pid, 99, true);
             for (RdLink link : links) {
                 if (nodes.contains(link.getsNodePid()) && nodes.contains(link.geteNodePid())) continue;
+                RdTrafficsignal trafficsignal = new RdTrafficsignalSelector(conn).loadByNodeAndLinkPid(pid, link.pid(), false);
+                if (trafficsignal != null) continue;
                 RdTrafficsignal t = new RdTrafficsignal();
                 t.setPid(PidUtil.getInstance().applyRdTrafficsignalPid());
                 t.setNodePid(pid);

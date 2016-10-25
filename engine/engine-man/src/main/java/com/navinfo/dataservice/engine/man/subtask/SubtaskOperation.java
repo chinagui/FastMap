@@ -46,6 +46,9 @@ import com.navinfo.dataservice.engine.man.userInfo.UserInfoService;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
+import com.navinfo.navicommons.geo.computation.CompGridUtil;
+import com.navinfo.navicommons.geo.computation.GridUtils;
+import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -566,9 +569,26 @@ public class SubtaskOperation {
 						} else {
 							subtask.put("dbId", rs.getInt("DAILY_DB_ID"));
 						}
-
-						//完成度，任务量信息
 						
+						List<Integer> gridIds = null;
+						try {
+							gridIds = getGridIdsBySubtaskId(rs.getInt("SUBTASK_ID"));
+							subtask.put("gridIds", gridIds);
+						} catch (Exception e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+
+//						//完成度，任务量信息
+//						try {
+//							Map<String,Integer> subtaskStat = subtaskStatRealtime((int)subtask.get("dbId"),rs.getInt("STAGE"),gridIds);
+//							if(!subtaskStat.isEmpty()){
+//								
+//							}
+//						} catch (ServiceException e) {
+//							// TODO Auto-generated catch block
+//							e.printStackTrace();
+//						}
 						
 						list.add(subtask);
 
@@ -586,6 +606,63 @@ public class SubtaskOperation {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}
+	}
+
+
+	/**
+	 * @param dbId
+	 * @param stage 
+	 * @param gridIds
+	 * @return
+	 * @throws ServiceException 
+	 */
+	protected static Map<String, Integer> subtaskStatRealtime(Integer dbId, int stage, List<Integer> gridIds) throws ServiceException {
+		// TODO Auto-generated method stub
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getConnectionById(dbId);
+			Map<String, Integer> stat = new HashMap<String, Integer>();
+			
+			JSONArray gridIdsJsonArray = JSONArray.fromObject(gridIds);
+			
+			String wkt = GridUtils.grids2Wkt(gridIdsJsonArray);
+			//查询POI总量
+			QueryRunner run = new QueryRunner();
+			String sql = "select ip.row_id, pes.status, pes.is_upload"
+					+ " from ix_poi ip, poi_edit_status pes"
+					+ " where ip.row_id = pes.row_id"
+					+ " and pes.is_upload = 1"
+					+ " and SDO_ANYINTERACT(ip.geometry,sdo_geometry('" + wkt + "',8307))='TRUE'";
+			
+			Map<String, Integer> resultPOI = run.query(conn, sql, new ResultSetHandler<Map<String, Integer>>() {
+				@Override
+				public Map<String, Integer> handle(ResultSet rs) throws SQLException {
+					Map<String, Integer> map = new HashMap<String, Integer>();
+					int total = 0;
+					int finish = 0;
+					while (rs.next()) {
+						total += 1;
+						if(3 == rs.getInt("status")){
+							finish += 1;
+						}
+					}
+					map.put("total", total);
+					map.put("finish", finish);
+					return map;
+				}
+			}
+			);
+			
+			stat.put("poi", resultPOI.get("total"));
+			
+			return stat;
+		}catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询列表失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
 
@@ -2037,5 +2114,5 @@ public class SubtaskOperation {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-		
+	
 }

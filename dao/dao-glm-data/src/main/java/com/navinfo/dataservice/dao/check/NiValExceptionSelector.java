@@ -3,9 +3,14 @@ package com.navinfo.dataservice.dao.check;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+
+import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.commons.lang.StringUtils;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -14,6 +19,8 @@ import oracle.sql.STRUCT;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.navicommons.database.Page;
+import com.navinfo.navicommons.database.QueryRunner;
 
 public class NiValExceptionSelector {
 
@@ -264,6 +271,68 @@ public class NiValExceptionSelector {
 		return 0;
 	}
 
+	public Page list(int subtaskType,Collection<String> grids, final int pageSize, final int pageNum)
+			throws Exception {
+		
+		StringBuilder sql = new StringBuilder("select a.md5_code,ruleid,situation,\"LEVEL\" level_,targets,information,a.location.sdo_point.x x,a.location.sdo_point.y y,created,worker from ni_val_exception a where exists(select 1 from ni_val_exception_grid b where a.md5_code=b.md5_code and b.grid_id in(");
+
+		sql.append(StringUtils.join(grids, ","));
+		
+		sql.append("))");
+		
+		if(subtaskType==0||subtaskType==5||subtaskType==6||subtaskType==7){
+			sql.append(" and EXISTS ("
+					+ " SELECT 1 FROM CK_RESULT_OBJECT O "
+					+ " WHERE (O.table_name like 'IX_POI\\_%' ESCAPE '\\' OR O.table_name ='IX_POI')"
+					+ "   AND O.MD5_CODE=a.MD5_CODE)");
+		}
+
+		sql.append(" order by created desc,md5_code desc");
+		
+		return new QueryRunner().query(pageNum,pageSize,conn, sql.toString(), new ResultSetHandler<Page>(){
+
+			@Override
+			public Page handle(ResultSet rs) throws SQLException {
+				Page page =new Page(pageNum);
+				page.setPageSize(pageSize);
+				int total = 0;
+				JSONArray results = new JSONArray();
+				while(rs.next()){
+					
+					if(total ==0){total=rs.getInt("TOTAL_RECORD_NUM_");}
+					
+					JSONObject json = new JSONObject();
+					
+					json.put("id",  rs.getString("md5_code"));
+
+					json.put("ruleid", rs.getString("ruleid"));
+
+					json.put("situation", rs.getString("situation"));
+
+					json.put("rank", rs.getInt("level_"));
+
+					json.put("targets", rs.getString("targets"));
+
+					json.put("information", rs.getString("information"));
+
+					json.put("geometry",
+							"(" + rs.getDouble("x") + "," + rs.getDouble("y") + ")");
+
+					json.put("create_date", rs.getString("created"));
+
+					json.put("worker", rs.getString("worker"));
+
+					results.add(json);
+				}
+				page.setTotalCount(total);
+				page.setResult(results);
+				return page;
+			}
+			
+		});
+	}
+	
+
 	public JSONArray loadByGrid(JSONArray grids, int pageSize, int page)
 			throws Exception {
 
@@ -438,9 +507,12 @@ public class NiValExceptionSelector {
 		JSONArray grids = new JSONArray();
 
 		grids.add(60560303);
-
-		System.out.println(selector.loadCountByGrid(grids));
+//
+//		System.out.println(selector.loadCountByGrid(grids));
+//		
+//		System.out.println(selector.loadByGrid(grids, 10, 1));
 		
-		System.out.println(selector.loadByGrid(grids, 10, 1));
+		Page page = selector.list(0, grids, 20, 1);
+		System.out.println(page.getResult());
 	}
 }

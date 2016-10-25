@@ -251,7 +251,11 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips,int dbId) throws
 					sql.append("SELECT * ");
 					sql.append(" FROM (SELECT c.*, rownum rn");
 					sql.append(" FROM (select COUNT (1) OVER (PARTITION BY 1) total,a.* ");
-					sql.append(" from rd_name a where 1=1");
+					sql.append(" from (select substr(src_resume, 0, instr(src_resume, ',') - 1) as tipid,t.*");
+					sql.append(" from rd_name t");
+					sql.append(" where src_resume is not null");
+					sql.append(" and instr(src_resume, ',') > 0) a ");
+					sql.append(" where 1=1");
 					
 					for (int i=0;i<tips.size();i++) {
 						JSONObject tipsObj = tips.getJSONObject(i);
@@ -262,9 +266,9 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips,int dbId) throws
 					if (tips.size()>1000) {
 						pidClod = subconn.createClob();
 						pidClod.setString(1, ids);
-						sql.append(" and a.SRC_RESUME in (select to_number(pid) from table(clob_to_table(:3)))");
+						sql.append(" and a.tipid in (select to_number(pid) from table(clob_to_table(:3)))");
 					} else {
-						sql.append(" and a.SRC_RESUME in (");
+						sql.append(" and a.tipid in (");
 						sql.append(ids);
 						sql.append(")");
 					}

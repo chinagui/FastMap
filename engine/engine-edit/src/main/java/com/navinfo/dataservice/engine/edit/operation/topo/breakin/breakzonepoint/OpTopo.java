@@ -9,11 +9,13 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneLink;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneNode;
+import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.selector.ad.zone.ZoneLinkSelector;
 import com.navinfo.dataservice.engine.edit.utils.NodeOperateUtils;
 import com.navinfo.dataservice.engine.edit.utils.ZoneLinkOperateUtils;
@@ -135,8 +137,24 @@ public class OpTopo implements IOperation {
 			result.insertObject(node, ObjStatus.INSERT, node.pid());
 			breakNodePid = node.pid();
 			this.command.setBreakNode(node);
-		} else {
+		}
+		else
+		{
 			breakNodePid = this.command.getBreakNodePid();
+			for (IRow row : result.getAddObjects()) {
+				
+				if (row instanceof ZoneNode) {
+
+					ZoneNode node = (ZoneNode) row;
+					
+					if(node.getPid()==command.getBreakNodePid())
+					{
+						command.setBreakNode(node);
+						
+						break;
+					}
+				}
+			}
 		}
 		log.debug("3.1 打断点的pid = " + breakNodePid);
 		JSONObject sGeojson = new JSONObject();

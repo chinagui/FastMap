@@ -51,10 +51,10 @@ public class Operation implements IOperation {
 
 	@Override
 	public String run(Result result) throws Exception {
-		result.setPrimaryPid(updateNode.getPid());
 		this.updateNodeGeometry(result);
 		this.updateLinkGeomtry(result);
 		this.updateFaceGeomtry(result);
+		result.setPrimaryPid(updateNode.getPid());
 		return null;
 	}
 

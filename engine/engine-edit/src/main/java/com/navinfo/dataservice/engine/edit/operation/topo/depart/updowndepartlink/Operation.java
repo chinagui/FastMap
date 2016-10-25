@@ -432,19 +432,27 @@ public class Operation implements IOperation {
                 if (upDownFlag == 0) {
                     if (linkRtic.getUpdownFlag() == 0) {
                         linkRtics.add(linkRtic);
+                    } else {
+                        linkRtic.setRticDir(1);
+                        linkRtic.setUpdownFlag(0);
                     }
-                    //linkRtic.setRticDir(2);
                 } else {
                     if (linkRtic.getUpdownFlag() == 1) {
                         linkRtics.add(linkRtic);
+                    } else {
+                        linkRtic.setRticDir(1);
                     }
-                    //linkRtic.setRticDir(3);
-
                 }
             }
             if (upDownFlag == 0) {
-                if (link.getDirect() == 2 || link.getDirect() == 3) {
-                    linkRtics.add(linkRtic);
+                if (link.getDirect() == 2) {
+                    if (linkRtic.getRticDir() == 2) {
+                        linkRtics.add(linkRtic);
+                    }
+                } else if (link.getDirect() == 3) {
+                    if (linkRtic.getRticDir() == 1) {
+                        linkRtics.add(linkRtic);
+                    }
                 }
             }
         }
@@ -457,19 +465,27 @@ public class Operation implements IOperation {
                 if (upDownFlag == 0) {
                     if (linkRtic.getUpdownFlag() == 0) {
                         linkIntRtics.add(linkRtic);
+                    } else {
+                        linkRtic.setRticDir(1);
+                        linkRtic.setUpdownFlag(0);
                     }
-                    //linkRtic.setRticDir(2);
                 } else {
                     if (linkRtic.getUpdownFlag() == 1) {
                         linkIntRtics.add(linkRtic);
+                    } else {
+                        linkRtic.setRticDir(1);
                     }
-                    //linkRtic.setRticDir(3);
-
                 }
             }
             if (upDownFlag == 0) {
-                if (link.getDirect() == 2 || link.getDirect() == 3) {
-                    linkIntRtics.add(linkRtic);
+                if (link.getDirect() == 2) {
+                    if (linkRtic.getRticDir() == 2) {
+                        linkIntRtics.add(linkRtic);
+                    }
+                } else if (link.getDirect() == 3) {
+                    if (linkRtic.getRticDir() == 1) {
+                        linkIntRtics.add(linkRtic);
+                    }
                 }
             }
         }

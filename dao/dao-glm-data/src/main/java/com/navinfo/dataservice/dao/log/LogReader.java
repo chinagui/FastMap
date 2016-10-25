@@ -175,11 +175,11 @@ public class LogReader {
 			pstmt.setString(3, tbNm);
 			pstmt.setString(4, Feild);
 			resultSet = pstmt.executeQuery();
-			if (resultSet.getRow() == 0) {
-				return false;
-			} else {
+			while (resultSet.next()) {
 				return true;
-			}
+			} 
+			return false;
+			
 		} catch (Exception e) {
 
 			throw e;
@@ -215,11 +215,10 @@ public class LogReader {
 			pstmt = this.conn.prepareStatement(sql);
 			pstmt.setInt(1, objPid);
 			resultSet = pstmt.executeQuery();
-			if (resultSet.getRow() == 0) {
-				return true;
-			} else {
+			while (resultSet.next()) {
 				return false;
-			}
+			} 
+			return true;
 		} catch (Exception e) {
 
 			throw e;
@@ -252,11 +251,10 @@ public class LogReader {
 			pstmt = this.conn.prepareStatement(sql);
 			pstmt.setInt(1, objPid);
 			resultSet = pstmt.executeQuery();
-			if (resultSet.getRow() == 0) {
-				return false;
-			} else {
+			while (resultSet.next()) {
 				return true;
-			}
+			} 
+			return false;
 		} catch (Exception e) {
 
 			throw e;
@@ -410,8 +408,8 @@ public class LogReader {
 
 	public static void main(String[] args) throws Exception {
 		Connection con = DriverManager.getConnection("jdbc:oracle:thin:@192.168.4.61:1521/orcl",
-				"fm_regiondb_test_d_306", "fm_regiondb_test_d_306");
-		int state = new LogReader(con).getObjectState(78710230, "IX_POI");
-		System.out.println(state);
+				"fm_regiondb_test_d_1", "fm_regiondb_test_d_1");
+		boolean flag = new LogReader(con).isOnlyPhotoAndMetoHis(89410598);
+		System.out.println(flag);
 	}
 }

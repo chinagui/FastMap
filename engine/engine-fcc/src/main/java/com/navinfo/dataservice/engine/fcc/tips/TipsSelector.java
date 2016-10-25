@@ -13,6 +13,7 @@ import java.util.Set;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
+import net.sf.json.test.JSONAssert;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -538,6 +539,51 @@ public class TipsSelector {
 		jsonData.put("rows", data);
 
 		return jsonData;
+	}
+	
+	
+	/**
+	 * 统计子任务的tips总作业量,grid范围内滿足stage的数据条数
+	 * 
+	 * @param grids
+	 * @param stages
+	 * @return
+	 * @throws Exception
+	 */
+	public int getTipsCountByStage(JSONArray grids, int stages)
+			throws Exception {
+
+		String wkt = GridUtils.grids2Wkt(grids);
+		
+		JSONArray stageJsonArr=new JSONArray();
+		
+		stageJsonArr.add(stages);
+		
+		List<JSONObject> tips = conn.queryTipsWeb(wkt, stageJsonArr);
+
+		int total=tips.size();
+
+		return total;
+	}
+	
+	/**
+	 * 统计子任务的tips总作业量,grid范围内滿足stage、tdStatus的数据条数
+	 * 
+	 * @param grids
+	 * @param stages
+	 * @return
+	 * @throws Exception
+	 */
+	public int getTipsCountByStageAndTdStatus(JSONArray grids, int stages, int tdStatus)
+			throws Exception {
+
+		String wkt = GridUtils.grids2Wkt(grids);
+
+		List<JSONObject> tips = conn.queryTips(wkt, stages,tdStatus);
+
+		int total=tips.size();
+
+		return total;
 	}
 
 	/**

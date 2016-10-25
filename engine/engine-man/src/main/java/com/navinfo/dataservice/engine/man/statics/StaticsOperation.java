@@ -86,11 +86,15 @@ public class StaticsOperation {
 							if(2 == rs.getInt("STATUS")){
 								draft += 1;
 							}else if(1 == rs.getInt("STATUS")){
-								if((blockManIdList==null) 
-										||((blockManStatusList!=null)
+//								if((blockManIdList==null) 
+//										||((blockManStatusList!=null)
+//												&& (-1==blockManStatusList.indexOf("1")) 
+//												&& (-1==blockManStatusList.indexOf("2"))
+//												)
+//										){
+								if((blockManStatusList!=null)
 												&& (-1==blockManStatusList.indexOf("1")) 
 												&& (-1==blockManStatusList.indexOf("2"))
-												)
 										){
 									finished += 1;
 									//完成情况
@@ -653,7 +657,7 @@ public class StaticsOperation {
 		try {
 			QueryRunner run = new QueryRunner();
 			
-			String selectSql = "SELECT BM.BLOCK_MAN_ID, BM.STATUS"
+			String selectSql = "SELECT DISTINCT BM.BLOCK_MAN_ID, BM.STATUS"
 					+ ", FSOB.DIFF_DATE, FSOB.PROGRESS, FSOB.PERCENT"
 					+ ", FSOB.COLLECT_PROGRESS, FSOB.COLLECT_PERCENT, FSOB.COLLECT_DIFF_DATE"
 					+ ", FSOB.DAILY_PROGRESS, FSOB.DAILY_PERCENT, FSOB.DAILY_DIFF_DATE"
@@ -749,7 +753,7 @@ public class StaticsOperation {
 		try {
 			QueryRunner run = new QueryRunner();
 			
-			String selectSql = "SELECT BM.BLOCK_MAN_ID, BM.STATUS"
+			String selectSql = "SELECT DISTINCT BM.BLOCK_MAN_ID, BM.STATUS"
 					+ ", FSOB.DIFF_DATE, FSOB.PROGRESS, FSOB.PERCENT"
 					+ ", FSOB.COLLECT_PROGRESS, FSOB.COLLECT_PERCENT, FSOB.COLLECT_DIFF_DATE"
 					+ ", FSOB.DAILY_PROGRESS, FSOB.DAILY_PERCENT, FSOB.DAILY_DIFF_DATE"
@@ -821,7 +825,7 @@ public class StaticsOperation {
 		try {
 			QueryRunner run = new QueryRunner();
 			
-			String selectSql = "SELECT BM.BLOCK_MAN_ID, BM.STATUS"
+			String selectSql = "SELECT DISTINCT BM.BLOCK_MAN_ID, BM.STATUS"
 					+ ", FSOB.DIFF_DATE, FSOB.PROGRESS, FSOB.PERCENT"
 					+ ", FSOB.COLLECT_PROGRESS, FSOB.COLLECT_PERCENT, FSOB.COLLECT_DIFF_DATE"
 					+ ", FSOB.DAILY_PROGRESS, FSOB.DAILY_PERCENT, FSOB.DAILY_DIFF_DATE"

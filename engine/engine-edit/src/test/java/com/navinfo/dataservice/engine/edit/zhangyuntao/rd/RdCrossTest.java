@@ -15,7 +15,7 @@ public class RdCrossTest extends InitApplication {
 
     @Test
     public void edit() {
-        String parameter = "{\"command\":\"BATCH\",\"type\":\"RDCROSS\",\"dbId\":17,\"data\":{\"pid\":204000016,\"nodePids\":[208000663]}}";
+        String parameter = "{\"command\":\"BATCH\",\"type\":\"RDCROSS\",\"dbId\":17,\"data\":{\"pid\":204000024,\"nodePids\":[203000894,305000893]}}";
         TestUtil.run(parameter);
     }
 }

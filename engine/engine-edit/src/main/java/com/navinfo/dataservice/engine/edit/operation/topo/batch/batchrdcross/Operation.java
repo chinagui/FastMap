@@ -37,9 +37,9 @@ public class Operation implements IOperation {
     @Override
     public String run(Result result) throws Exception {
         RdCross cross = command.getRdCross();
+        this.updateRdCross(cross, result);
         this.updateRdCrossLink(cross, result);
         this.updateRdCrossNode(cross, result);
-        this.updateRdCross(cross, result);
         result.setPrimaryPid(cross.pid());
         return null;
     }
@@ -195,6 +195,10 @@ public class Operation implements IOperation {
                 form.setLinkPid(linkPid);
                 result.insertObject(form, ObjStatus.INSERT, cross.pid());
             }
+            // 增加交叉口内道路属性则删除该线路上红绿灯
+            List<RdTrafficsignal> trafficsignals = new RdTrafficsignalSelector(conn).loadByLinkPid(true, linkPid);
+            for (RdTrafficsignal t : trafficsignals)
+                result.insertObject(t, ObjStatus.DELETE, t.pid());
         }
     }
 
@@ -211,7 +215,12 @@ public class Operation implements IOperation {
         for (IRow row : forms) {
             RdLinkForm form = (RdLinkForm) row;
             if (form.getFormOfWay() == 50) {
-                result.insertObject(form, ObjStatus.DELETE, crossLink.getPid());
+                if (forms.size() > 1) {
+                    result.insertObject(form, ObjStatus.DELETE, crossLink.getPid());
+                } else {
+                    form.changedFields().put("formOfWay", 1);
+                    result.insertObject(form, ObjStatus.UPDATE, crossLink.getPid());
+                }
             }
         }
     }
@@ -243,11 +252,25 @@ public class Operation implements IOperation {
         }
         nodes.addAll(newNodePids);
 
-        RdLinkSelector linkSelector = new RdLinkSelector(conn);
-        for (Integer pid : newNodePids) {
-            List<RdLink> links = linkSelector.loadInLinkByNodePid(pid, 50, true);
+//        RdLinkSelector linkSelector = new RdLinkSelector(conn);
+//        for (Integer pid : newNodePids) {
+//            List<RdLink> links = linkSelector.loadInLinkByNodePid(pid, 50, true);
+//            for (RdLink link : links) {
+//                if (nodes.contains(link.getsNodePid()) && nodes.contains(link.geteNodePid())) continue;
+//                RdTrafficsignal t = new RdTrafficsignal();
+//                t.setPid(PidUtil.getInstance().applyRdTrafficsignalPid());
+//                t.setNodePid(pid);
+//                t.setLinkPid(link.pid());
+//                t.setFlag(1);
+//                result.insertObject(t, ObjStatus.INSERT, t.pid());
+//            }
+//        }
+        for (Integer pid : nodes) {
+            List<RdLink> links = new RdLinkSelector(conn).loadInLinkByNodePid(pid, 99, true);
             for (RdLink link : links) {
                 if (nodes.contains(link.getsNodePid()) && nodes.contains(link.geteNodePid())) continue;
+                RdTrafficsignal trafficsignal = new RdTrafficsignalSelector(conn).loadByNodeAndLinkPid(pid, link.pid(), false);
+                if (trafficsignal != null) continue;
                 RdTrafficsignal t = new RdTrafficsignal();
                 t.setPid(PidUtil.getInstance().applyRdTrafficsignalPid());
                 t.setNodePid(pid);

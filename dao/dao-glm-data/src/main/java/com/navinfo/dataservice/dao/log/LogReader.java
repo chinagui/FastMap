@@ -11,6 +11,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.navicommons.database.sql.DBUtils;
@@ -329,8 +331,19 @@ public class LogReader {
 		}
 	}
 	
-	public static Map<Integer,Integer> getUpdatedObj(String objName,String grid,String date){
-		
+	/**
+	 * 
+	 * @param objName
+	 * @param grid
+	 * @param date
+	 * @return:key:status,value:pids
+	 */
+	public static Map<Integer,Collection<Integer>> getUpdatedObj(String objName,String grid,String date){
+		if(StringUtils.isEmpty(date)){
+			String sql = "SELECT ";
+		}else{
+			
+		}
 		return null;
 	}
 

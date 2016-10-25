@@ -1,15 +1,11 @@
 package com.navinfo.dataservice.dao.glm.search;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -18,7 +14,6 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiGasstationSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiHotelSelector;
@@ -32,13 +27,8 @@ import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiParentSelector;
 import com.navinfo.dataservice.dao.log.LogReader;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.DBUtils;
-import com.navinfo.navicommons.geo.computation.CompGridUtil;
-import com.navinfo.navicommons.geo.computation.GridUtils;
-import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
 
 public class PoiGridIncreSearch {
@@ -49,8 +39,8 @@ public class PoiGridIncreSearch {
 	 * @return data
 	 * @throws Exception
 	 */
-	public List<IxPoi> getPoiByGrids(Map<String,String> gridDateMap) throws Exception{
-		List<IxPoi> results = new ArrayList<IxPoi>();
+	public Collection<IxPoi> getPoiByGrids(Map<String,String> gridDateMap) throws Exception{
+		Map<Integer,IxPoi> results = new HashMap<Integer,IxPoi>();//key:pid,value:obj
 		Connection manConn = null;
 		try {
 			manConn = DBConnector.getInstance().getManConnection();
@@ -75,9 +65,9 @@ public class PoiGridIncreSearch {
 						subMap.put(g, gridDateMap.get(g));
 					}
 				}
-				results.addAll(loadDateSingleDb(dbId,subMap));
+				results.putAll(loadDateSingleDb(dbId,subMap));
 			}
-			return results;
+			return results.values();
 		} catch (Exception e) {
 			logger.error(e.getMessage(),e);
 			throw e;
@@ -85,19 +75,20 @@ public class PoiGridIncreSearch {
 			DBUtils.closeConnection(manConn);
 		}
 	}
-	private List<IxPoi> loadDateSingleDb(int dbId,Map<String,String> gridDateMap)throws Exception{
+	private Map<Integer,IxPoi> loadDateSingleDb(int dbId,Map<String,String> gridDateMap)throws Exception{
 		Connection conn = null;
 		try{
 			conn =  DBConnector.getInstance().getConnectionById(dbId);
-			List<IxPoi> retList = null;
+			Map<Integer,IxPoi> pois = null;
 			for(String grid:gridDateMap.keySet()){
-				if(retList==null){
-					retList = loadDataSingleDbGrid(conn,grid,gridDateMap.get(grid));
+				logger.debug("starting load grid:"+grid+"from dbId:"+dbId);
+				if(pois==null){
+					pois = loadDataSingleDbGrid(conn,grid,gridDateMap.get(grid));
 				}else{
-					retList.addAll(loadDataSingleDbGrid(conn,grid,gridDateMap.get(grid)));
+					pois.putAll(loadDataSingleDbGrid(conn,grid,gridDateMap.get(grid)));
 				}
 			}
-			return retList;
+			return pois;
 		}catch (Exception e) {
 			logger.error(e.getMessage(),e);
 			throw e;
@@ -112,36 +103,42 @@ public class PoiGridIncreSearch {
 	 * @return
 	 * @throws Exception
 	 */
-	private List<IxPoi> loadDataSingleDbGrid(Connection conn,String grid,String date) throws Exception{
+	private Map<Integer,IxPoi> loadDataSingleDbGrid(Connection conn,String grid,String date) throws Exception{
 		
-		List<IxPoi> retList = new ArrayList<IxPoi>();
-		
+		Map<Integer,IxPoi> pois = null;
 		if(StringUtils.isEmpty(date)){
-			Map<Integer,Integer> poiStatus = LogReader.getUpdatedObj("IX_POI", grid, null);
 			//load all poi，初始化u_record应为0
-			List<IxPoi> pois = loadIxPoi(grid);
+			pois = loadIxPoi(grid);
+			//load status
+			Map<Integer,Collection<Integer>> poiStatus = LogReader.getUpdatedObj("IX_POI", grid, null);
+			
 			//load 变更poi的状态，设置u_record
-			Set<Integer> updatedPois=poiStatus.keySet();
-			if(updatedPois!=null&&updatedPois.size()>0){
-				for(IxPoi p:pois){
-					if(updatedPois.contains(p.getPid())){
-						p.setuRecord(poiStatus.get(p.getPid()));
+			if(poiStatus!=null&&poiStatus.size()>0){
+				for(Integer status:poiStatus.keySet()){
+					for(Integer pid:poiStatus.get(status)){
+						if(pois.containsKey(pid)){
+							pois.get(pid).setuRecord(status);
+						}
 					}
 				}
 			}
 		}else{
-			Map<Integer,Integer> poiStatus = LogReader.getUpdatedObj("IX_POI", grid, date);
+			Map<Integer,Collection<Integer>> poiStatus = LogReader.getUpdatedObj("IX_POI", grid, date);
 			//load 
-			List<IxPoi> pois = loadIxPoi(poiStatus);
+			pois = new HashMap<Integer,IxPoi>();
+			for(Integer status:poiStatus.keySet()){
+				Map<Integer,IxPoi> result = loadIxPoi(status,poiStatus.get(status));
+				if(status!=null) pois.putAll(result);
+			}
 		}
-		return retList;
+		return pois;
 	}
 	/**
 	 * 全量下载
 	 * @return
 	 * @throws Exception
 	 */
-	private List<IxPoi> loadIxPoi(String grid)throws Exception{
+	private Map<Integer,IxPoi> loadIxPoi(String grid)throws Exception{
 		return null;
 	}
 	
@@ -151,7 +148,7 @@ public class PoiGridIncreSearch {
 	 * @return
 	 * @throws Exception
 	 */
-	private List<IxPoi> loadIxPoi(Map<Integer,Integer> pois)throws Exception{
+	private Map<Integer,IxPoi> loadIxPoi(int status,Collection<Integer> pois)throws Exception{
 		return null;
 	}
 	

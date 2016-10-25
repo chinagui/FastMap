@@ -34,13 +34,13 @@ public class SelectorUtils {
 				bufferCondition
 						.append("with tmp1 as ( select lang_code,name_groupid,name from rd_name where name like '%"
 								+ object.getString("name")
-								+ "%' ) ,tmp2 AS (	SELECT /*+ leading(iln,tmp1) use_hash(iln,tmp1)*/ rln.link_pid pid,tmp1.name FROM rd_link_name rln,tmp1 WHERE rln.name_class=1 AND tmp1.name_groupid = rln.name_groupId ) ,tmp3 AS (	SELECT count(*) over () total,tmp2.*, ROWNUM rn FROM tmp2 ) ,tmp4 as ( select * from tmp3 where ROWNUM <=:1 ) SELECT * FROM tmp4 WHERE rn >=:2");
+								+ "%' and u_record !=2) ,tmp2 AS (	SELECT /*+ leading(iln,tmp1) use_hash(iln,tmp1)*/ rln.link_pid pid,tmp1.name FROM rd_link_name rln,tmp1 WHERE rln.name_class=1 AND tmp1.name_groupid = rln.name_groupId and rln.u_record !=2 ) ,tmp3 AS (	SELECT count(*) over () total,tmp2.*, ROWNUM rn FROM tmp2 ) ,tmp4 as ( select * from tmp3 where ROWNUM <=:1 ) SELECT * FROM tmp4 WHERE rn >=:2");
 				sql = bufferCondition.toString();
 			} else {
 				bufferCondition
-						.append("SELECT  COUNT(1) OVER(PARTITION BY 1) TOTAL, tmp.pid,rn.name FROM( SELECT /*index(tmpLink)*/ tmpLink.LINK_PID PID ,rln.name_groupid  FROM rd_link tmpLink LEFT JOIN RD_LINK_NAME RLN ON tmpLink.Link_Pid = rln.link_pid AND RLN.NAME_CLASS = 1 where tmpLink.LINK_PID = "
+						.append("SELECT  COUNT(1) OVER(PARTITION BY 1) TOTAL, tmp.pid,rn.name FROM( SELECT /*index(tmpLink)*/ tmpLink.LINK_PID PID ,rln.name_groupid  FROM rd_link tmpLink LEFT JOIN RD_LINK_NAME RLN ON tmpLink.Link_Pid = rln.link_pid AND RLN.NAME_CLASS = 1 and RLN.u_record !=2 where tmpLink.LINK_PID = "
 								+ object.getString("linkPid")
-								+ " GROUP BY tmpLink.LINK_PID,rln.name_groupid )tmp LEFT JOIN RD_NAME rn ON tmp.name_groupid = rn.name_groupid AND  RN.LANG_CODE = 'CHI'");
+								+ " and tmpLink.u_record !=2 GROUP BY tmpLink.LINK_PID,rln.name_groupid )tmp LEFT JOIN RD_NAME rn ON tmp.name_groupid = rn.name_groupid AND  RN.LANG_CODE = 'CHI' and rn.u_record !=2");
 
 				sql = getSqlFromBufferCondition(bufferCondition, isLock);
 			}
@@ -53,8 +53,7 @@ public class SelectorUtils {
 				sql = getSqlFromBufferCondition(bufferCondition, isLock);
 			} else {
 				bufferCondition
-						.append("SELECT COUNT (1) OVER (PARTITION BY 1) total,tmp.pid,tmp.name from( select ix.pid,ipn.name from ix_poi ix left join ix_poi_name ipn on ix.pid = ipn.poi_pid and ipn.name_class=1 AND ipn.name_type =2 AND ipn.lang_code = 'CHI' where ix.pid = "
-								+ object.getString("pid") + " )tmp");
+						.append("SELECT COUNT (1) OVER (PARTITION BY 1) total,tmp.pid,tmp.name FROM(select poi.pid,ipn.name from( SELECT ix.pid FROM ix_poi ix where ix.pid ="+object.getInt("pid")+" and ix.U_RECORD !=2 union all select ix.pid from ix_poi ix,poi_edit_status ps where ix.PID = "+object.getInt("pid")+" and ix.U_RECORD = 2 and ix.ROW_ID = ps.ROW_ID and ps.STATUS <3)poi LEFT JOIN ix_poi_name ipn ON poi.pid = ipn.poi_pid AND ipn.name_class=1 AND ipn.name_type =2 AND ipn.lang_code = 'CHI' "+")tmp");
 				sql = getSqlFromBufferCondition(bufferCondition, isLock);
 
 			}
@@ -65,6 +64,8 @@ public class SelectorUtils {
 		ResultSet resultSet = null;
 		try {
 			pstmt = conn.prepareStatement(sql);
+			System.out.println(sql);
+			
 			pstmt.setInt(1, endRow);
 			pstmt.setInt(2, startRow);
 			resultSet = pstmt.executeQuery();

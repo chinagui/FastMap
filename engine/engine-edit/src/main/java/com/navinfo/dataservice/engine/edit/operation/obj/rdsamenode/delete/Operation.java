@@ -13,6 +13,7 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameLink;
 import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameLinkPart;
 import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameNode;
 import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameNodePart;
@@ -32,8 +33,10 @@ public class Operation implements IOperation {
 
 	private Connection conn;
 
-	public Operation(Command command) {
+	public Operation(Command command,Connection conn) {
 		this.command = command;
+		
+		this.conn = conn;
 	}
 
 	public Operation(Connection conn) {
@@ -43,56 +46,96 @@ public class Operation implements IOperation {
 	@Override
 	public String run(Result result) throws Exception {
 
+		RdSameNode sameNode = this.command.getRdSameNode();
+
 		result.insertObject(command.getRdSameNode(), ObjStatus.DELETE, command.getPid());
 
 		// 删除存在同一线关系的同一点，则同时删除同一线关系
-		// TODO
+		RdSameNodePart nodePart = (RdSameNodePart) sameNode.getParts().get(0);
+
+		int nodePid = nodePart.getNodePid();
+
+		String tableName = nodePart.getTableName();
+		
+		String linkTableName = null;
+		
+		switch (tableName) {
+		case "RD_NODE":
+			linkTableName = "RD_LINK";
+			break;
+		case "AD_NODE":
+			linkTableName = "AD_LINK";
+			break;
+		case "LU_NODE":
+			linkTableName = "LU_LINK";
+			break;
+		case "ZONE_NODE":
+			linkTableName = "ZONE_LINK";
+			break;
+		default:
+			throw new Exception("不支持的同一点要素类型");
+		}
+		
+		RdSameLinkSelector sameLinkSelector = new RdSameLinkSelector(conn);
+		
+		List<RdSameLink> sameLinkList = sameLinkSelector.loadSameLinkByNodeAndTableName(nodePid, linkTableName, true);
+		
+		for(RdSameLink sameLink : sameLinkList)
+		{
+			result.insertObject(sameLink, ObjStatus.DELETE, sameLink.getPid());
+		}
+		
 		return null;
 	}
 
 	/**
-	 *  删除线维护同一关系
-	 * @param sNodePid 删除link的起点
-	 * @param eNodePid 删除link的终点
-	 * @param tableName 表名称
+	 * 删除线维护同一关系
+	 * 
+	 * @param sNodePid
+	 *            删除link的起点
+	 * @param eNodePid
+	 *            删除link的终点
+	 * @param tableName
+	 *            表名称
 	 * @param result
 	 * @throws Exception
 	 */
-	public void deleteByLink(int sNodePid,int eNodePid, String tableName, Result result) throws Exception {
+	public void deleteByLink(int sNodePid, int eNodePid, String tableName, Result result) throws Exception {
 		if (conn == null) {
 			return;
 		}
 		RdSameNodeSelector sameNodeSelector = new RdSameNodeSelector(conn);
 
-		List<RdSameNode> sameNodes = sameNodeSelector.loadSameNodeByNodePids(sNodePid+","+eNodePid, tableName, true);
-		
-		if(CollectionUtils.isNotEmpty(sameNodes))
-		{
-			for(RdSameNode sameNode : sameNodes)
-			{
+		List<RdSameNode> sameNodes = sameNodeSelector.loadSameNodeByNodePids(sNodePid + "," + eNodePid, tableName,
+				true);
+
+		if (CollectionUtils.isNotEmpty(sameNodes)) {
+			for (RdSameNode sameNode : sameNodes) {
 				// 删除线后对应删除点，如果同一关系组成点只剩一个点，需要删除主表对象以及所有子表数据
 				List<IRow> parts = sameNode.getParts();
-				
-				if(parts.size() == 2)
-				{
+
+				if (parts.size() == 2) {
 					result.insertObject(sameNode, ObjStatus.DELETE, sameNode.getPid());
-				}
-				else if(parts.size()>2)
-				{
-					deleteSameNodePart(sNodePid,eNodePid,parts,result);
+				} else if (parts.size() > 2) {
+					deleteSameNodePart(sNodePid, eNodePid, parts, result);
 				}
 			}
 		}
 	}
-	
+
 	/**
 	 * 删除子表数据
-	 * @param sNodePid link的起点
-	 * @param eNodePid link的终点
-	 * @param parts 子表
-	 * @param result 结果集
+	 * 
+	 * @param sNodePid
+	 *            link的起点
+	 * @param eNodePid
+	 *            link的终点
+	 * @param parts
+	 *            子表
+	 * @param result
+	 *            结果集
 	 */
-	private void deleteSameNodePart(int sNodePid,int eNodePid, List<IRow> parts, Result result) {
+	private void deleteSameNodePart(int sNodePid, int eNodePid, List<IRow> parts, Result result) {
 		for (IRow row : parts) {
 			RdSameNodePart nodePart = (RdSameNodePart) row;
 			if (nodePart.getNodePid() == sNodePid || nodePart.getNodePid() == eNodePid) {
@@ -100,29 +143,29 @@ public class Operation implements IOperation {
 			}
 		}
 	}
-	
+
 	/**
 	 * 删除link对同一点的影响
+	 * 
 	 * @return
-	 * @throws Exception 
+	 * @throws Exception
 	 */
-	public List<AlertObject> getDeleteLinkSameNodeInfectData(int sNodePid,int eNodePid,String tableName,Connection conn) throws Exception {
-		
+	public List<AlertObject> getDeleteLinkSameNodeInfectData(int sNodePid, int eNodePid, String tableName,
+			Connection conn) throws Exception {
+
 		RdSameNodeSelector sameNodeSelector = new RdSameNodeSelector(conn);
-		
+
 		List<AlertObject> alertList = new ArrayList<>();
 
-		List<RdSameNode> sameNodes = sameNodeSelector.loadSameNodeByNodePids(sNodePid+","+eNodePid, tableName, true);
-		
-		if(CollectionUtils.isNotEmpty(sameNodes))
-		{
-			for(RdSameNode sameNode : sameNodes)
-			{
+		List<RdSameNode> sameNodes = sameNodeSelector.loadSameNodeByNodePids(sNodePid + "," + eNodePid, tableName,
+				true);
+
+		if (CollectionUtils.isNotEmpty(sameNodes)) {
+			for (RdSameNode sameNode : sameNodes) {
 				// 删除线后对应删除点，如果同一关系组成点只剩一个点，需要删除主表对象以及所有子表数据
 				List<IRow> parts = sameNode.getParts();
-				
-				if(parts.size() == 2)
-				{
+
+				if (parts.size() == 2) {
 					AlertObject alertObj = new AlertObject();
 
 					alertObj.setObjType(sameNode.objType());
@@ -131,13 +174,10 @@ public class Operation implements IOperation {
 
 					alertObj.setStatus(ObjStatus.DELETE);
 
-					if(!alertList.contains(alertObj))
-					{
+					if (!alertList.contains(alertObj)) {
 						alertList.add(alertObj);
 					}
-				}
-				else if(parts.size()>2)
-				{
+				} else if (parts.size() > 2) {
 					AlertObject alertObj = new AlertObject();
 
 					alertObj.setObjType(sameNode.objType());
@@ -146,8 +186,7 @@ public class Operation implements IOperation {
 
 					alertObj.setStatus(ObjStatus.UPDATE);
 
-					if(!alertList.contains(alertObj))
-					{
+					if (!alertList.contains(alertObj)) {
 						alertList.add(alertObj);
 					}
 				}
@@ -156,9 +195,9 @@ public class Operation implements IOperation {
 
 		return alertList;
 	}
-	
-	public void deleteByUpDownPartLink(int sNodePid, int eNodePid,
-			List<RdLink> targetLinks, Result result) throws Exception {
+
+	public void deleteByUpDownPartLink(int sNodePid, int eNodePid, List<RdLink> targetLinks, Result result)
+			throws Exception {
 		// 目标link之间的挂接node
 		List<Integer> nodePids = new ArrayList<Integer>();
 
@@ -192,23 +231,21 @@ public class Operation implements IOperation {
 				nodePids.remove((Integer) eNodePid);
 			}
 		}
-		
-		List<RdSameNode> delSameNodes =new  ArrayList<RdSameNode>();
-		
+
+		List<RdSameNode> delSameNodes = new ArrayList<RdSameNode>();
+
 		RdSameNodeSelector sameNodeSelector = new RdSameNodeSelector(conn);
-		
+
 		if (nodePids.size() > 0) {
-			
-			String ids = StringUtils.getInteStr(nodePids);			
+
+			String ids = StringUtils.getInteStr(nodePids);
 
 			// 目标link串中间点上的同一点关系全部删除；
-			delSameNodes = sameNodeSelector.loadSameNodeByNodePids(ids,
-					"RD_NODE", true);
+			delSameNodes = sameNodeSelector.loadSameNodeByNodePids(ids, "RD_NODE", true);
 		}
 
 		// 目标link串的两个端点如果有同一点关系，若该点参与的同一node关系组中的所有node挂接的link中均不参与另一同一线关系，则删除该同一点；
-		List<RdSameNode> sameNodes = sameNodeSelector.loadSameNodeByNodePids(
-				String.valueOf(sNodePid), "RD_NODE", true);
+		List<RdSameNode> sameNodes = sameNodeSelector.loadSameNodeByNodePids(String.valueOf(sNodePid), "RD_NODE", true);
 
 		if (sameNodes.size() > 0) {
 
@@ -219,8 +256,7 @@ public class Operation implements IOperation {
 			}
 		}
 
-		sameNodes = sameNodeSelector.loadSameNodeByNodePids(
-				String.valueOf(eNodePid), "RD_NODE", true);
+		sameNodes = sameNodeSelector.loadSameNodeByNodePids(String.valueOf(eNodePid), "RD_NODE", true);
 
 		if (sameNodes.size() > 0) {
 
@@ -237,15 +273,13 @@ public class Operation implements IOperation {
 		}
 	}
 
-	private boolean haveSamelink(int nodePid, List<Integer> targetLinkPids)
-			throws Exception {
-		
+	private boolean haveSamelink(int nodePid, List<Integer> targetLinkPids) throws Exception {
+
 		RdLinkSelector linkSelector = new RdLinkSelector(this.conn);
 
 		RdSameLinkSelector sameLinkSelector = new RdSameLinkSelector(this.conn);
 
-		List<Integer> linkPids = linkSelector.loadLinkPidByNodePid(nodePid,
-				true);
+		List<Integer> linkPids = linkSelector.loadLinkPidByNodePid(nodePid, true);
 
 		for (int linkPid : linkPids) {
 
@@ -254,8 +288,7 @@ public class Operation implements IOperation {
 				continue;
 			}
 
-			RdSameLinkPart sameLinkPart = sameLinkSelector.loadLinkPartByLink(
-					linkPid, "RD_LINK", true);
+			RdSameLinkPart sameLinkPart = sameLinkSelector.loadLinkPartByLink(linkPid, "RD_LINK", true);
 
 			if (sameLinkPart != null) {
 				return true;

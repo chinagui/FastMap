@@ -260,6 +260,7 @@ public class UploadOperation {
 				Connection conn = DBConnector.getInstance().getConnectionById(Integer.parseInt(dbId));
 				try {
 					List<JSONObject> poiList = (List<JSONObject>) insertObj.get(dbId);
+					JSONObject relateParentChildren = new JSONObject();
 					for (int i = 0; i < poiList.size(); i++) {
 						JSONObject jo = poiList.get(i);
 						JSONObject perRetObj = obj2PoiForInsert(jo, version);
@@ -267,7 +268,6 @@ public class UploadOperation {
 						if (flag == 1) {
 							try{
 								JSONObject poiObj = perRetObj.getJSONObject("ret");
-								JSONObject relateParentChildren = new JSONObject();
 								if (perRetObj.containsKey("relate")) {
 									relateParentChildren.put(poiObj.getString("pid"), perRetObj.getJSONArray("relate"));
 								}
@@ -280,11 +280,6 @@ public class UploadOperation {
 								json.put("data", poiObj);
 								// 调用一次插入
 								apiService.run(json);
-
-								// 处理一个库中的父子关系20161011
-								if (relateParentChildren.size()>0) {
-									insetParent(conn,relateParentChildren);
-								}
 								
 								// 鲜度验证，POI状态更新
 								String rawFields = jo.getString("rawFields");
@@ -305,6 +300,11 @@ public class UploadOperation {
 							errList.add(perRetObj.getJSONObject("ret"));
 						}
 
+					}
+
+					// 最后统一处理父子关系20161011
+					if (relateParentChildren.size()>0) {
+						insetParent(conn,relateParentChildren);
 					}
 				} catch (Exception e) {
 					throw e;
@@ -468,6 +468,7 @@ public class UploadOperation {
 		try {
 			// POI主表
 			int pid = PidUtil.getInstance().applyPoiPid();
+			log.debug("apply pid:"+pid+" for to be inserted fid:"+fid);
 			poi.setPid(pid);
 			poi.setKindCode(jo.getString("kindCode"));
 			// geometry按SDO_GEOMETRY格式原值转出
@@ -1701,28 +1702,39 @@ public class UploadOperation {
 			
 			while(keys.hasNext()) {
 				String pid = keys.next();
-				JSONArray relateChildren = relate.getJSONArray(pid);
-				
-				int groupId = PidUtil.getInstance().applyPoiGroupId();
-				
-				pstmtParent.setInt(1, groupId);
-				pstmtParent.setInt(2, Integer.parseInt(pid));
-				pstmtParent.setInt(3, 0);
-				pstmtParent.setInt(4, 1);
-				pstmtParent.setString(5, StringUtils.getCurrentTime());
-				pstmtParent.setString(6, UuidUtils.genUuid());
-				pstmtParent.execute();
-				
-				for (int i=0;i<relateChildren.size();i++) {
-					JSONObject children = relateChildren.getJSONObject(i);
-					pstmtChildren.setInt(1, groupId);
-					int childPid = getPoiNumByPid(children.getString("childFid"),conn);
-					pstmtChildren.setInt(2, childPid);
-					pstmtChildren.setInt(3, children.getInt("type"));
-					pstmtChildren.setInt(4, 1);
-					pstmtChildren.setString(5, StringUtils.getCurrentTime());
-					pstmtChildren.setString(6, children.getString("rowId"));
-					pstmtChildren.execute();
+				try{
+					if(checkPoiExists(Long.parseLong(pid),conn)<0){
+						log.debug("新增 poi:"+pid+" 没有被正确写入，该父子关系忽略。");
+						continue;
+					}
+					JSONArray relateChildren = relate.getJSONArray(pid);
+					
+					int groupId = PidUtil.getInstance().applyPoiGroupId();
+					
+					pstmtParent.setInt(1, groupId);
+					pstmtParent.setInt(2, Integer.parseInt(pid));
+					pstmtParent.setInt(3, 0);
+					pstmtParent.setInt(4, 1);
+					pstmtParent.setString(5, StringUtils.getCurrentTime());
+					pstmtParent.setString(6, UuidUtils.genUuid());
+					pstmtParent.execute();
+					
+					for (int i=0;i<relateChildren.size();i++) {
+						JSONObject children = relateChildren.getJSONObject(i);
+						pstmtChildren.setInt(1, groupId);
+						int childPid = getPoiNumByPid(children.getString("childFid"),conn);
+						pstmtChildren.setInt(2, childPid);
+						pstmtChildren.setInt(3, children.getInt("type"));
+						pstmtChildren.setInt(4, 1);
+						pstmtChildren.setString(5, StringUtils.getCurrentTime());
+						pstmtChildren.setString(6, children.getString("rowId"));
+						pstmtChildren.execute();
+					}
+					conn.commit();
+				}catch(Exception e){
+					DbUtils.rollback(conn);
+					log.warn("POI父子关系(pid:"+pid+")入库错误。");
+					log.error(e.getMessage(),e);
 				}
 			}
 		} catch (Exception e) {
@@ -1809,6 +1821,11 @@ public class UploadOperation {
 		}
 		
 		
+	}
+	
+	private int checkPoiExists(long pid,Connection conn)throws Exception{
+		String sql="SELECT 1 FROM IX_POI WHERE PID=?";
+		return new QueryRunner().queryForInt(conn, sql, pid);
 	}
 	
 	// 通过fid查询pid

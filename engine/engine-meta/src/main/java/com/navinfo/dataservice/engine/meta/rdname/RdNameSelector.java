@@ -263,15 +263,11 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips,int dbId) throws
 						tmep = ",";
 						ids += "'" + tipsObj.getString("id") + "'";
 					}
-					if (tips.size()>1000) {
-						pidClod = subconn.createClob();
-						pidClod.setString(1, ids);
-						sql.append(" and a.tipid in (select to_number(pid) from table(clob_to_table(:3)))");
-					} else {
-						sql.append(" and a.tipid in (");
-						sql.append(ids);
-						sql.append(")");
-					}
+					
+					pidClod = subconn.createClob();
+					pidClod.setString(1, ids);
+					sql.append(" and a.tipid in (select to_number(pid) from table(clob_to_table(:3)))");
+					
 				} else {
 					result.put("total", 0);
 					result.put("data", new JSONArray());
@@ -331,14 +327,11 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips,int dbId) throws
 			
 			pstmt = subconn.prepareStatement(sql.toString());
 			
-			if(tips.size() > 1000)
-			{
-				pstmt.setClob(3, pidClod);
-			}
-
 			pstmt.setInt(1, endRow);
 
 			pstmt.setInt(2, startRow);
+			
+			pstmt.setClob(3, pidClod);
 
 			resultSet = pstmt.executeQuery();
 			

@@ -37,9 +37,9 @@ public class Operation implements IOperation {
     @Override
     public String run(Result result) throws Exception {
         RdCross cross = command.getRdCross();
+        this.updateRdCross(cross, result);
         this.updateRdCrossLink(cross, result);
         this.updateRdCrossNode(cross, result);
-        this.updateRdCross(cross, result);
         result.setPrimaryPid(cross.pid());
         return null;
     }

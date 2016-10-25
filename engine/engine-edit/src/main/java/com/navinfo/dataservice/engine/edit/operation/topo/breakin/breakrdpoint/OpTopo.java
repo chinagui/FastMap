@@ -5,6 +5,7 @@ import java.sql.Connection;
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
@@ -58,7 +59,24 @@ public class OpTopo implements IOperation {
 
 			command.setBreakNode(node);
 		}
-		
+		else
+		{
+			for (IRow row : result.getAddObjects()) {
+				
+				if (row instanceof RdNode) {
+
+					RdNode node = (RdNode) row;
+					
+					if(node.getPid()==command.getBreakNodePid())
+					{
+						command.setBreakNode(node);
+						
+						break;
+					}
+				}
+			}
+		}
+
 
 		result.setPrimaryPid(command.getBreakNodePid());
 

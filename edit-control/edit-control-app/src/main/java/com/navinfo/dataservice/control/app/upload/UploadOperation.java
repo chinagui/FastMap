@@ -1760,9 +1760,9 @@ public class UploadOperation {
 						pstmtParent.setString(6, parent.getString("rowId"));
 						pstmtParent.execute();
 					} else if (objStatus.equals("DELETE")) {
-						String sql = "UPDATE ix_poi_parent SET (u_record=2) WHERE row_id=:1";
+						String sql = "UPDATE ix_poi_parent SET u_record=2 WHERE row_id=:1";
 						pstmtParent = conn.prepareStatement(sql);
-						pstmtParent.setString(1, parent.getString("row_id"));
+						pstmtParent.setString(1, parent.getString("rowId"));
 						pstmtParent.executeUpdate();
 					}
 				}

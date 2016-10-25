@@ -1123,9 +1123,10 @@ public class BlockService {
 							statusSql+=" MAN_LIST.diff_date<0";
 						}
 					}
+					//进展正常/异常 必须是已分配的（ASSIGN_STATUS=1）
 					if(!progress.isEmpty()){
 						if(!statusSql.isEmpty()){statusSql+=" or ";}
-						statusSql+=" MAN_LIST.Progress IN ("+progress.join(",")+")";}
+						statusSql+=" (MAN_LIST.Progress IN ("+progress.join(",")+") AND MAN_LIST.ASSIGN_STATUS=1)";}
 				}
 				
 				if ("assignStatus".equals(key)) {
@@ -1166,9 +1167,9 @@ public class BlockService {
 			selectPart="                  TO_CHAR(T.COLLECT_PLAN_START_DATE, 'YYYYMMDD') PLAN_START_DATE,"
 					+ "                  TO_CHAR(T.COLLECT_PLAN_END_DATE, 'YYYYMMDD') PLAN_END_DATE,"
 					+ "                  T.COLLECT_GROUP_ID GROUP_ID,"
-					+ "                  S.COLLECT_PERCENT PERCENT,"
-					+ "                  S.COLLECT_DIFF_DATE DIFF_DATE,"
-					+ "                  S.COLLECT_PROGRESS progress,"
+					+ "                  NVL(S.COLLECT_PERCENT,0) PERCENT,"
+					+ "                  NVL(S.COLLECT_DIFF_DATE,0) DIFF_DATE,"
+					+ "                  NVL(S.COLLECT_PROGRESS,1) progress,"
 					/*+ "                  CASE NVL(ST.STAGE, 999)"
 					+ "                    WHEN 0 THEN 1"
 					+ "                    ELSE 0 END ASSIGN_STATUS,"*/
@@ -1180,9 +1181,9 @@ public class BlockService {
 			selectPart="                  TO_CHAR(T.DAY_EDIT_PLAN_START_DATE, 'YYYYMMDD') PLAN_START_DATE,"
 					+ "                  TO_CHAR(T.DAY_EDIT_PLAN_END_DATE, 'YYYYMMDD') PLAN_END_DATE,"
 					+ "                  T.DAY_EDIT_GROUP_ID GROUP_ID,"
-					+ "                  S.DAILY_PERCENT PERCENT,"
-					+ "                  S.DAILY_DIFF_DATE DIFF_DATE,"
-					+ "                  S.DAILY_PROGRESS progress,"
+					+ "                  NVL(S.DAILY_PERCENT,0) PERCENT,"
+					+ "                  NVL(S.DAILY_DIFF_DATE,0) DIFF_DATE,"
+					+ "                  NVL(S.DAILY_PROGRESS,1) progress,"
 					/*+ "                  CASE NVL(ST.STAGE, 999)"
 					+ "                    WHEN 1 THEN 1"
 					+ "                    ELSE 0 END ASSIGN_STATUS,"*/

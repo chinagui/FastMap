@@ -41,6 +41,9 @@ public class StringUtils {
 		if (fieldName.equals("level")) {
 			return "\"LEVEL\"";
 		}
+		if(fieldName.equals("phone400")){
+			return "phone_400";
+		}
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < fieldName.length(); i++) {
 			char c = fieldName.charAt(i);

@@ -95,6 +95,12 @@ public class RuleExecuter {
 			{variablevalue=VariablesFactory.getRdSpeedbumpPid(data);break;}
 			case RDCROSSWALK_PID:
 			{variablevalue=VariablesFactory.getRdCrosswalkPid(data);break;}
+			case RDCROSS_PID:
+			{variablevalue=VariablesFactory.getRdCrossPid(data);break;}
+			case RDSPEEDLIMIT_PID:
+			{variablevalue=VariablesFactory.getRdSpeedlimitPid(data);break;}
+			case RDBRANCHDETAIL_PID:
+			{variablevalue=VariablesFactory.getRdBranchDetailPid(data);break;}
 		}
 		if(!variablesValueMap.containsKey(variable)){
 			variablesValueMap.put(variable, new HashSet<String>());}

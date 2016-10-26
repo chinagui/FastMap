@@ -12,6 +12,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSeriesbranch;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSignasreal;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSignboard;
 import com.navinfo.dataservice.dao.glm.model.rd.crosswalk.RdCrosswalk;
+import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
 import com.navinfo.dataservice.dao.glm.model.rd.directroute.RdDirectroute;
 import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdEleceyePart;
 import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdElectroniceye;
@@ -27,6 +28,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionDetail;
 import com.navinfo.dataservice.dao.glm.model.rd.se.RdSe;
 import com.navinfo.dataservice.dao.glm.model.rd.slope.RdSlope;
 import com.navinfo.dataservice.dao.glm.model.rd.speedbump.RdSpeedbump;
+import com.navinfo.dataservice.dao.glm.model.rd.speedlimit.RdSpeedlimit;
 import com.navinfo.dataservice.dao.glm.model.rd.tollgate.RdTollgate;
 import com.navinfo.dataservice.dao.glm.model.rd.tollgate.RdTollgateName;
 import com.navinfo.dataservice.dao.glm.model.rd.trafficsignal.RdTrafficsignal;
@@ -291,6 +293,27 @@ public class VariablesFactory {
 		return rdLinkSet;
 	}
 	
+	public static Set<String> getRdCrossPid(IRow data) {
+		Set<String> rdLinkSet=new HashSet<String>();
+		if(data instanceof RdCross){
+			rdLinkSet.add(String.valueOf(((RdCross)data).getPid()));
+		}		
+		return rdLinkSet;
+	}
 	
-	
+	public static Set<String> getRdSpeedlimitPid(IRow data) {
+		Set<String> rdLinkSet=new HashSet<String>();
+		if(data instanceof RdSpeedlimit){
+			rdLinkSet.add(String.valueOf(((RdSpeedlimit)data).getPid()));
+		}		
+		return rdLinkSet;
+	}
+
+	public static Set<String> getRdBranchDetailPid(IRow data) {
+		Set<String> rdLinkSet=new HashSet<String>();
+		if(data instanceof RdBranchDetail){
+			rdLinkSet.add(String.valueOf(((RdBranchDetail)data).getPid()));
+		}		
+		return rdLinkSet;
+	}
 }

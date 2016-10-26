@@ -26,7 +26,7 @@ import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiChildrenForAndroid;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiContact;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiName;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiParentForAndroid;
-import com.navinfo.dataservice.dao.glm.search.PoiGridIncreSearch;
+import com.navinfo.dataservice.dao.glm.search.batch.PoiGridIncreSearch;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONNull;

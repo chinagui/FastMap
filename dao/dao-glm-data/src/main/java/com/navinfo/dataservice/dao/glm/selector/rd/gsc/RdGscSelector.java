@@ -130,58 +130,6 @@ public class RdGscSelector extends AbstractSelector {
 		}
 		return rdgscs;
 	}
-
-	/**
-	 * 根据立交组成线返回立交，返回的立交中的组成线只有传入的立交组成线
-	 * @param linkPid
-	 * @param tableName
-	 * @param isLock
-	 * @return
-	 * @throws Exception
-	 */
-	public List<RdGsc> onlyLoadRdGscLinkByLinkPid(int linkPid, String tableName,boolean isLock) throws Exception {
-		List<RdGsc> rdGscList = new ArrayList<RdGsc>();
-
-		String sql = "SELECT a.* FROM rd_gsc a,rd_gsc_link b WHERE a.pid = b.pid AND b.link_pid = :1 and a.u_record!=2 and b.table_name = :2";
-
-		if (isLock) {
-			sql += " for update nowait";
-		}
-
-		PreparedStatement pstmt = null;
-
-		ResultSet resultSet = null;
-
-		try {
-			pstmt = conn.prepareStatement(sql);
-
-			pstmt.setInt(1, linkPid);
-			
-			pstmt.setString(2, tableName);
-
-			resultSet = pstmt.executeQuery();
-
-			while (resultSet.next()) {
-
-				RdGsc rdGsc = new RdGsc();
-
-				ReflectionAttrUtils.executeResultSet(rdGsc, resultSet);
-
-				setChild(rdGsc, isLock);
-
-				rdGscList.add(rdGsc);
-			}
-
-		} catch (Exception e) {
-
-			throw e;
-		} finally {
-			DBUtils.closeResultSet(resultSet);
-			DBUtils.closeStatement(pstmt);
-		}
-		return rdGscList;
-	}
-	
 	
 	
 	/**
@@ -260,6 +208,62 @@ public class RdGscSelector extends AbstractSelector {
 			while (resultSet.next()) {
 				RdGsc rdGsc = new RdGsc();
 				ReflectionAttrUtils.executeResultSet(rdGsc, resultSet);
+				rdGscList.add(rdGsc);
+			}
+
+		} catch (Exception e) {
+
+			throw e;
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+		}
+		return rdGscList;
+	}
+	
+	/**
+	 * 根据立交组成线返回立交，返回的立交中的组成线只有传入的立交组成线
+	 * @param linkPid
+	 * @param tableName
+	 * @param isLock
+	 * @return
+	 * @throws Exception
+	 */
+	public List<RdGsc> onlyLoadTargetRdGscLink(int linkPid, String tableName,boolean isLock) throws Exception {
+		List<RdGsc> rdGscList = new ArrayList<RdGsc>();
+
+		String sql = "SELECT a.* FROM rd_gsc a,rd_gsc_link b WHERE a.pid = b.pid AND b.link_pid = :1 and a.u_record!=2 and b.table_name = :2";
+
+		if (isLock) {
+			sql += " for update nowait";
+		}
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+		
+		RdGscLinkSelector linkSelector = new RdGscLinkSelector(conn);
+
+		try {
+			pstmt = conn.prepareStatement(sql);
+
+			pstmt.setInt(1, linkPid);
+			
+			pstmt.setString(2, tableName);
+
+			resultSet = pstmt.executeQuery();
+			
+			while (resultSet.next()) {
+
+				RdGsc rdGsc = new RdGsc();
+
+				ReflectionAttrUtils.executeResultSet(rdGsc, resultSet);
+				
+				//只返回传入的link子表数据
+				List<IRow> rows = linkSelector.loadRowsByParentIdAndLinkId(rdGsc.getPid(), linkPid, true);
+				
+				rdGsc.setLinks(rows);
+
 				rdGscList.add(rdGsc);
 			}
 

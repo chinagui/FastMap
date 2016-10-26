@@ -542,7 +542,7 @@ public class RdGscOperateUtils {
 		for (RdGscLink gscLink : collection) {
 			List<RdGsc> rdGscList = selector.loadRdGscLinkByLinkPid(gscLink.getLinkPid(), gscLink.getTableName(), true);
 			for (RdGsc gsc : rdGscList) {
-				if (gsc.getGeometry().equals(gscGeo)) {
+				if (gsc.getGeometry().distance(GeoTranslator.transform(gscGeo, 1, 0))<1) {
 					return true;
 				}
 			}
@@ -581,7 +581,7 @@ public class RdGscOperateUtils {
 
 			String tableName = obj.tableName().toUpperCase();
 
-			List<RdGsc> rdGscList = selector.onlyLoadRdGscLinkByLinkPid(linkPid, tableName, true);
+			List<RdGsc> rdGscList = selector.loadRdGscLinkByLinkPid(linkPid, tableName, true);
 
 			for (RdGsc gsc : rdGscList) {
 				if (gsc.getGeometry().distance(nodeGeo) < 1) {
@@ -602,7 +602,7 @@ public class RdGscOperateUtils {
 
 		RdGscSelector selector = new RdGscSelector(conn);
 
-		List<RdGsc> rdGscList = selector.onlyLoadRdGscLinkByLinkPid(linkPid, tableName, true);
+		List<RdGsc> rdGscList = selector.loadRdGscLinkByLinkPid(linkPid, tableName, true);
 
 		boolean flag = isMoveGscLink(geo, rdGscList);
 

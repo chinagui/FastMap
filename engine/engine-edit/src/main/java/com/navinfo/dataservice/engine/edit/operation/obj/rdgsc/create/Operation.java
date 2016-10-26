@@ -221,15 +221,15 @@ public class Operation implements IOperation {
 	private void handleOtherGscLink(RdGscLink gscLink, Result result, Coordinate[] linkCoor) throws Exception {
 
 		RdGscSelector selector = new RdGscSelector(conn);
-
-		List<RdGsc> rdGscList = selector.onlyLoadRdGscLinkByLinkPid(gscLink.getLinkPid(), gscLink.getTableName(), true);
+		
+		List<RdGsc> rdGscList = selector.onlyLoadTargetRdGscLink(gscLink.getLinkPid(), gscLink.getTableName(), true);
 
 		for (RdGsc gsc : rdGscList) {
 
 			List<IRow> gscLinkList = gsc.getLinks();
 
 			boolean flag = RdGscOperateUtils.checkIsSelfInter(gscLinkList);
-
+			
 			// 处理对于立交的影响
 			RdGscOperateUtils.handleInterEffect(flag, gsc, linkCoor, result);
 		}

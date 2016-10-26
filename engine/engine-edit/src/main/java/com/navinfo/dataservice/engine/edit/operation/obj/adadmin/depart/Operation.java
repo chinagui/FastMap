@@ -13,6 +13,7 @@ import com.navinfo.navicommons.geo.computation.GeometryRelationUtils;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
+import net.sf.json.JSONObject;
 
 import java.sql.Connection;
 import java.util.ArrayList;
@@ -65,25 +66,18 @@ public class Operation {
                 if (admin.getGeometry().intersects(link.getGeometry())) {
                     admin.changedFields().put("side", 3);
                 } else {
-                    if (isInLeft(admin, link)) {
-                        admin.changedFields().put("side", 1);
-                    } else {
-                        admin.changedFields().put("side", 2);
-                    }
+                    Coordinate c = GeometryUtils.GetNearestPointOnLine(admin.getGeometry().getCoordinate(), link.getGeometry());
+                    JSONObject geojson = new JSONObject();
+                    geojson.put("type", "Point");
+                    geojson.put("coordinates", new double[]{c.x, c.y});
+                    Geometry nearestPointGeo = GeoTranslator.geojson2Jts(geojson, 1, 0);
+                    int side = GeometryUtils.calulatPointSideOflink(admin.getGeometry(), link.getGeometry(), nearestPointGeo);
+                    admin.changedFields().put("side", side);
                 }
                 result.insertObject(admin, ObjStatus.UPDATE, admin.pid());
             }
         }
         return "";
-    }
-
-    private boolean isInLeft(AdAdmin admin, RdLink link) throws Exception {
-        List<Coordinate> coordinates = new ArrayList<>();
-        for (Coordinate coor : link.getGeometry().getCoordinates()) {
-            coordinates.add(coor);
-        }
-        coordinates.add(admin.getGeometry().getCoordinate());
-        return GeometryUtils.IsCCW((Coordinate[]) coordinates.toArray());
     }
 
 }

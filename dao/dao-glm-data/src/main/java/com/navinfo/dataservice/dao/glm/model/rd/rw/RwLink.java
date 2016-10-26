@@ -248,7 +248,7 @@ public class RwLink implements IObj {
 			RwLinkName linkName = new RwLinkName();
 			linkName.copy(name);
 			linkName.setLinkPid(this.pid);
-			this.names.add(name);
+			this.names.add(linkName);
 		}
 	}
 

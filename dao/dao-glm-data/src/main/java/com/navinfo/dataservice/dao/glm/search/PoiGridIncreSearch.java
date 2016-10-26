@@ -1,8 +1,11 @@
 package com.navinfo.dataservice.dao.glm.search;
 
+import java.sql.Clob;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -14,22 +17,16 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
-import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiName;
-import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiGasstationSelector;
-import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiHotelSelector;
-import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiParkingSelector;
-import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiRestaurantSelector;
-import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiAddressSelector;
-import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiChildrenSelector;
-import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiContactSelector;
-import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiNameSelector;
-import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiParentSelector;
 import com.navinfo.dataservice.dao.log.LogReader;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.DBUtils;
+import com.navinfo.navicommons.geo.computation.CompGridUtil;
+import com.navinfo.navicommons.geo.computation.GridUtils;
+import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 
 import oracle.sql.STRUCT;
@@ -53,7 +50,15 @@ public class PoiGridIncreSearch {
 				@Override
 				public Map<Integer, Collection<String>> handle(ResultSet rs) throws SQLException {
 					Map<Integer,Collection<String>> map = new HashMap<Integer,Collection<String>>();
-					//...
+					while (rs.next()) {
+						int dbId = rs.getInt("daily_db_id");
+						List<String> gridList = new ArrayList<String>();
+						if (map.containsKey(dbId)) {
+							gridList = (List<String>) map.get(dbId);
+						}
+						gridList.add(rs.getString("grid_id"));
+						map.put(dbId, gridList);
+					}
 					return map;
 				}
 				
@@ -112,7 +117,7 @@ public class PoiGridIncreSearch {
 		LogReader logReader = new LogReader(conn);
 		if(StringUtils.isEmpty(date)){
 			//load all poi，初始化u_record应为0
-			pois = loadIxPoi(grid);
+			pois = loadIxPoi(grid,conn);
 			//load status
 			Map<Integer,Collection<Long>> poiStatus = logReader.getUpdatedObj("IX_POI","IX_POI", grid, null);
 			
@@ -131,7 +136,7 @@ public class PoiGridIncreSearch {
 			//load 
 			pois = new HashMap<Long,IxPoi>();
 			for(Integer status:poiStatus.keySet()){
-				Map<Long,IxPoi> result = loadIxPoi(status,poiStatus.get(status));
+				Map<Long,IxPoi> result = loadIxPoi(status,poiStatus.get(status),conn);
 				if(status!=null) pois.putAll(result);
 			}
 		}
@@ -142,8 +147,52 @@ public class PoiGridIncreSearch {
 	 * @return
 	 * @throws Exception
 	 */
-	private Map<Long,IxPoi> loadIxPoi(String grid)throws Exception{
-		return null;
+	private Map<Long,IxPoi> loadIxPoi(String grid,Connection conn)throws Exception{
+		Map<Long,IxPoi> pois = new HashMap<Long,IxPoi>();
+		StringBuffer sb = new StringBuffer();
+		sb.append("SELECT poi_num,pid,mesh_id,kind_code,link_pid,x_guide,y_guide,post_code,open_24h,chain,u_record,geometry,\"LEVEL\",sports_venue,indoor,vip_flag,truck_flag  ");
+		sb.append(" FROM ix_poi");
+		sb.append(" WHERE sdo_within_distance(geometry, sdo_geometry(    :1  , 8307), 'mask=anyinteract') = 'TRUE' ");
+		// 不下载已删除的点20161013
+		sb.append(" AND u_record!=2");
+		logger.info("poi query sql:"+sb);
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+			
+			GridUtils gu = new GridUtils();
+			String wkt = gu.grid2Wkt(grid);
+			logger.info("grid wkt:"+wkt);
+			pstmt.setString(1, wkt);
+			resultSet = pstmt.executeQuery();
+			while(resultSet.next()){
+				IxPoi ixPoi = new IxPoi();
+				fillMainTable(ixPoi,resultSet);
+				
+				Coordinate coord = ixPoi.getGeometry().getCoordinate();
+				String[] grids = CompGridUtil.point2Grids(coord.x,coord.y);
+				boolean inside=false;
+				for(String gridId : grids){
+					if(gridId.equals(grid)){
+						inside=true;
+					}
+				}
+				if(!inside){
+					continue;
+				}
+				Long pid = (long) ixPoi.getPid();
+				pois.put(pid, ixPoi);
+			}
+			loadChildTables(conn,pois);
+			return pois;
+		} catch(Exception e) {
+			throw e;
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+		}
 	}
 	
 	/**
@@ -152,8 +201,43 @@ public class PoiGridIncreSearch {
 	 * @return
 	 * @throws Exception
 	 */
-	private Map<Long,IxPoi> loadIxPoi(int status,Collection<Long> pois)throws Exception{
-		return null;
+	private Map<Long,IxPoi> loadIxPoi(int status,Collection<Long> pois,Connection conn)throws Exception{
+		
+		if (status == 2) {
+			return new HashMap<Long,IxPoi>();
+		}
+		Clob pidClod = null;
+		Map<Long,IxPoi> poisMap = new HashMap<Long,IxPoi>();
+		StringBuffer sb = new StringBuffer();
+		sb.append("SELECT poi_num,pid,mesh_id,kind_code,link_pid,x_guide,y_guide,post_code,open_24h,chain,u_record,geometry,\"LEVEL\",sports_venue,indoor,vip_flag,truck_flag  ");
+		sb.append(" FROM ix_poi");
+		pidClod = ConnectionUtil.createClob(conn);
+		pidClod.setString(1, StringUtils.join(pois, ","));
+		sb.append(" WHERE a.pid in (select to_char(pid) from table(clob_to_table(?)))");
+		logger.info("poi query sql:"+sb);
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+			pstmt.setClob(1, pidClod);
+			resultSet = pstmt.executeQuery();
+			
+			while(resultSet.next()){
+				IxPoi ixPoi = new IxPoi();
+				fillMainTable(ixPoi,resultSet);
+				
+				Long pid = (long) ixPoi.getPid();
+				poisMap.put(pid, ixPoi);
+			}
+			
+			loadChildTables(conn,poisMap);
+			return poisMap;
+		}catch (Exception e) {
+			throw e;
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+		}
 	}
 	
 	/**

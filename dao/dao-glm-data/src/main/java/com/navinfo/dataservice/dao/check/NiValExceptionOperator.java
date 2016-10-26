@@ -11,6 +11,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 import oracle.spatial.geometry.JGeometry;
+import oracle.sql.STRUCT;
 
 import com.navinfo.dataservice.bizcommons.glm.Glm;
 import com.navinfo.dataservice.bizcommons.glm.GlmCache;
@@ -107,17 +108,17 @@ public class NiValExceptionOperator {
 				String sql=objectNode.getMeshSql();
 				sql=sql.replace("!OBJECT_PID!", pid);
 				RdLink link=linkSelector.loadBySql(sql, false).get(0);
-				geometryMap.put(key, GeometryUtils.getPointFromGeo(link.getGeometry()));
+				geometryMap.put(key, GeometryUtils.getPointFromGeo(GeoTranslator.transform(link.getGeometry(), 0.000001, 0)));
 				meshMap.put(key, link.mesh());
 			}
 			if(objectNode.getMeshTable().equals("RD_NODE")){
 				RdNodeSelector nodeSelector=new RdNodeSelector(conn);
 				String sql=objectNode.getMeshSql();
-				sql.replace("!OBJECT_PID!", pid);
+				sql=sql.replace("!OBJECT_PID!", pid);
 				RdNode node=nodeSelector.loadBySql(sql, false).get(0);
 				Geometry geo=node.getGeometry();
 				geometryMap.put(key, node.getGeometry());
-				meshMap.put(key, Integer.valueOf(MeshUtils.point2Meshes(geo.getCoordinate().x, geo.getCoordinate().y)[0]));
+				meshMap.put(key, Integer.valueOf(MeshUtils.point2Meshes(geo.getCoordinate().x*0.00001, geo.getCoordinate().y*0.00001)[0]));
 			}
 			list.add(geometryMap.get(key));
 			list.add(meshMap.get(key));

@@ -24,16 +24,16 @@ import com.navinfo.dataservice.dao.glm.iface.ObjType;
 public class IxPoiDetail implements IRow {
 
 	private int poiPid = 0;
-	private String website;// 记录网址信息
+	private String webSite;// 记录网址信息
 	private String fax;// 传真号码
 	private String starHotel;// 宾馆星级当 POI 的 KIND_CODE =120101 时赋值,其它为空
 	private String briefDesc;// 简介信息
 	private int adverFlag = 0; // 付费广告点
 	private String photoName;// 照片名称
 	private String reserved;// 预留信息
-	private int hwEntryExit = 0;
-	private int payCard = 0;// 是 否 支 持 信用卡支付
-	private String cardType;// 支 持 信用卡类型
+	private int hwEntryexit = 0;
+	private int paycard = 0;// 是 否 支 持 信用卡支付
+	private String cardtype;// 支 持 信用卡类型
 	private int hospitalClass = 0;// 医院等级
 	private String memo;
 	private String rowId;
@@ -48,12 +48,12 @@ public class IxPoiDetail implements IRow {
 		this.uDate = uDate;
 	}
 
-	public String getWebsite() {
-		return website;
+	public String getWebSite() {
+		return webSite;
 	}
 
-	public void setWebsite(String website) {
-		this.website = website;
+	public void setWebSite(String webSite) {
+		this.webSite = webSite;
 	}
 
 	public String getFax() {
@@ -104,28 +104,28 @@ public class IxPoiDetail implements IRow {
 		this.reserved = reserved;
 	}
 
-	public int getHwEntryExit() {
-		return hwEntryExit;
+	public int getHwEntryexit() {
+		return hwEntryexit;
 	}
 
-	public void setHwEntryExit(int hwEntryExit) {
-		this.hwEntryExit = hwEntryExit;
+	public void setHwEntryexit(int hwEntryexit) {
+		this.hwEntryexit = hwEntryexit;
 	}
 
-	public int getPayCard() {
-		return payCard;
+	public int getPaycard() {
+		return paycard;
 	}
 
-	public void setPayCard(int payCard) {
-		this.payCard = payCard;
+	public void setPaycard(int paycard) {
+		this.paycard = paycard;
 	}
 
-	public String getCardType() {
-		return cardType;
+	public String getCardtype() {
+		return cardtype;
 	}
 
-	public void setCardType(String cardType) {
-		this.cardType = cardType;
+	public void setCardtype(String cardtype) {
+		this.cardtype = cardtype;
 	}
 
 	public int getHospitalClass() {

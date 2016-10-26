@@ -9,16 +9,18 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
+import java.util.Set;
 
 import org.apache.commons.dbutils.DbUtils;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
+import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.engine.meta.area.ScPointAdminArea;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 public class RdNameSelector {
 	
@@ -251,7 +253,11 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips,int dbId) throws
 					sql.append("SELECT * ");
 					sql.append(" FROM (SELECT c.*, rownum rn");
 					sql.append(" FROM (select COUNT (1) OVER (PARTITION BY 1) total,a.* ");
-					sql.append(" from rd_name a where 1=1");
+					sql.append(" from (select substr(src_resume, 0, instr(src_resume, ',') - 1) as tipid,t.*");
+					sql.append(" from rd_name t");
+					sql.append(" where src_resume is not null");
+					sql.append(" and instr(src_resume, ',') > 0) a ");
+					sql.append(" where 1=1");
 					
 					for (int i=0;i<tips.size();i++) {
 						JSONObject tipsObj = tips.getJSONObject(i);
@@ -259,15 +265,11 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips,int dbId) throws
 						tmep = ",";
 						ids += "'" + tipsObj.getString("id") + "'";
 					}
-					if (tips.size()>1000) {
-						pidClod = subconn.createClob();
-						pidClod.setString(1, ids);
-						sql.append(" and a.SRC_RESUME in (select to_number(pid) from table(clob_to_table(:3)))");
-					} else {
-						sql.append(" and a.SRC_RESUME in (");
-						sql.append(ids);
-						sql.append(")");
-					}
+					
+					pidClod = ConnectionUtil.createClob(subconn);
+					pidClod.setString(1, ids);
+					sql.append(" and a.tipid in (select to_char(tipid) from table(clob_to_table(?)))");
+					
 				} else {
 					result.put("total", 0);
 					result.put("data", new JSONArray());
@@ -319,7 +321,7 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips,int dbId) throws
 			}
 			
 			sql.append(" ) c");
-			sql.append(" WHERE rownum <= :1)  WHERE rn >= :2");
+			sql.append(" WHERE rownum <= ?)  WHERE rn >= ?");
 			
 			int startRow = (pageNum-1) * pageSize + 1;
 
@@ -327,15 +329,18 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips,int dbId) throws
 			
 			pstmt = subconn.prepareStatement(sql.toString());
 			
-			if(tips.size() > 1000)
-			{
-				pstmt.setClob(3, pidClod);
+			if (flag>0) {
+				pstmt.setClob(1, pidClod);
+				pstmt.setInt(2, endRow);
+				pstmt.setInt(3, startRow);
+			} else {
+				pstmt.setInt(1, endRow);
+
+				pstmt.setInt(2, startRow);
 			}
-
-			pstmt.setInt(1, endRow);
-
-			pstmt.setInt(2, startRow);
-
+			
+			
+			
 			resultSet = pstmt.executeQuery();
 			
 			int total = 0;

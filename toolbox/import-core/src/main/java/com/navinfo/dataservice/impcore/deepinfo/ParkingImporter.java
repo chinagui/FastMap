@@ -20,7 +20,7 @@ import net.sf.json.util.JSONUtils;
 public class ParkingImporter {
 	public static String[] kcs = new String[]{"230210","230213","230214"}; 
 	
-	public static int run(Result result, Connection conn, Statement stmt,
+	public static int run(Connection conn, Statement stmt,
 			JSONObject poi) throws Exception {
 
 		JSONObject parkings = poi.getJSONObject("parkings");

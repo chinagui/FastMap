@@ -68,7 +68,9 @@ public class FileUtils {
 		File[] files = file.listFiles();
 
 		for (File f : files) {
-			map.put(f.getName(), makeSmallImage(f));
+			if(f.isFile() && f.getName().endsWith(".jpg")){
+				map.put(f.getName(), makeSmallImage(f));
+			}
 		}
 
 		return map;

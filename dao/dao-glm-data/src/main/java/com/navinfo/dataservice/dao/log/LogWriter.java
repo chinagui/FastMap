@@ -12,9 +12,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
+import org.apache.commons.lang.ArrayUtils;
 
 import com.navinfo.dataservice.bizcommons.glm.GlmGridCalculator;
 import com.navinfo.dataservice.bizcommons.glm.GlmGridCalculatorFactory;
@@ -40,7 +38,9 @@ import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameNodePart;
 import com.navinfo.dataservice.dao.glm.selector.SelectorUtils;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.util.CollectionUtil;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 class Status {
 	public static int INSERT = 1;
@@ -49,7 +49,19 @@ class Status {
 }
 
 public class LogWriter {
-
+	private static final String[] poiExcludeColumns =new String[]{"EDIT_FLAG",
+			"DIF_GROUPID",
+			"RESERVED",
+			"FIELD_STATE",
+			"STATE",
+			"EDITION_FLAG",
+			"TASK_ID",
+			"COLLECT_TIME",
+			"DATA_VERSION",
+			"LOG",
+			"U_RECORD",
+			"U_DATE",
+			"U_FIELDS"};
 	private Connection conn;
 
 	private LogOperation geoLogOperation;// 修改拓扑相关的履历记一个operation
@@ -514,7 +526,6 @@ public class LogWriter {
 
 		return flag;
 	}
-
 	public void generateLog(ICommand command, Result result) throws Exception {
 
 		geoLogOperation = new LogOperation(UuidUtils.genUuid(), command
@@ -531,7 +542,8 @@ public class LogWriter {
 
 			ld.setOpTp(Status.UPDATE);
 
-			ld.setTbNm(r.tableName().toUpperCase());
+			String upperCaseTbName = r.tableName().toUpperCase();
+			ld.setTbNm(upperCaseTbName);
 			
 			//设置对象id和tbName
 			ld.setObPid(listObPidList.get(i));
@@ -558,18 +570,25 @@ public class LogWriter {
 				Entry<String, Object> en = it.next();
 
 				String column = en.getKey();
-
+				
+				String tableColumn = StringUtils.toColumnName(column).toUpperCase();
+				
+				//如果是IX_POI，并且不是作业字段，那么不写入fd_list
+				if("IX_POI".equals(upperCaseTbName)
+						&&ArrayUtils.contains(poiExcludeColumns,tableColumn)){
+					continue;
+				}
 				Object columnValue = en.getValue();
 
 				Field field = r.getClass().getDeclaredField(column);
 
 				field.setAccessible(true);
 
-				column = StringUtils.toColumnName(column).toUpperCase();
-
+				
+				
 				Object value = field.get(r);
-
-				fieldList.add(column);
+				
+				fieldList.add(tableColumn);
 
 				if (value instanceof Geometry) {
 					// 先降级转WKT
@@ -579,24 +598,25 @@ public class LogWriter {
 
 					String newWkt = Geojson.geojson2Wkt(columnValue.toString());
 
-					oldValue.put(column, oldWkt);
+					oldValue.put(tableColumn, oldWkt);
 
-					newValue.put(column, newWkt);
+					newValue.put(tableColumn, newWkt);
 
 				}
 
 				else {
 					if (value instanceof String) {
-						oldValue.put(column,
+						oldValue.put(tableColumn,
 								(String.valueOf(value)).replace("'", "''"));
 					} else {
-						oldValue.put(column, value);
+						oldValue.put(tableColumn, value);
 					}
 
-					newValue.put(column, columnValue);
+					newValue.put(tableColumn, columnValue);
 				}
 			}
-
+			if (CollectionUtils.isEmpty(fieldList)) continue;//修改但是没有变更字段，不写履历
+			
 			ld.setFdLst(fieldList.toString());
 
 			ld.setOldValue(oldValue.toString());
@@ -880,5 +900,9 @@ public class LogWriter {
 				}
 			}
 		}
+	}
+	public  static void main(String[] args){
+		boolean contains = ArrayUtils.contains(poiExcludeColumns,"LOG");
+		System.out.println(contains);
 	}
 }

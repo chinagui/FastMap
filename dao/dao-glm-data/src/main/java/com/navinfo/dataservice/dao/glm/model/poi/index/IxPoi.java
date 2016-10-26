@@ -1837,5 +1837,6 @@ public class IxPoi implements IObj {
 		System.out.println(isEqualsString(null,""));
 		System.out.println(isEqualsString(null,"1"));
 		System.out.println(null instanceof String);
+
 	}
 }

@@ -1,7 +1,11 @@
 package com.navinfo.dataservice.engine.fcc.tips;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -61,12 +65,12 @@ public class TipsImportUtils {
 
 		return sourcejson.toString();
 	}
-	
+
 	public static String generateFeedback() {
 		JSONObject json = new JSONObject();
 
 		json.put("f_array", new JSONArray());
-		
+
 		return json.toString();
 	}
 
@@ -129,7 +133,7 @@ public class TipsImportUtils {
 		json.put("deep", deep);
 
 		json.put("feedback", feedback);
-		
+
 		json.put("s_reliability", 100);
 
 		return json;
@@ -137,13 +141,14 @@ public class TipsImportUtils {
 
 	public static JSONObject connectLinks(List<Geometry> geoms)
 			throws ParseException, JSONException {
-		
+
 		GeometryFactory factory = new GeometryFactory();
-		
-		MultiLineString multiline = factory.createMultiLineString(geoms.toArray(new LineString[0]));
-		
+
+		MultiLineString multiline = factory.createMultiLineString(geoms
+				.toArray(new LineString[0]));
+
 		JSONObject json = GeoTranslator.jts2Geojson(multiline);
-		
+
 		return json;
 	}
 
@@ -203,15 +208,44 @@ public class TipsImportUtils {
 		if (geos.size() == 1) {
 			return GeoTranslator.jts2Wkt(geos.get(0));
 		} else {
-			Geometry[] gArray = new Geometry[geos.size()];
-
+			/**
+			 * 20161026修改，如果复杂几何中存在相同的坐标，则保留一个，否则solr计算wkt相交有问题（
+			 * 和王磊确认目前采集端不限制多线几何重复或者自相交的情况）
+			 **/
+			Geometry[] gArray = null;
+			// 去重处理
+			Set<Geometry> gSet = new TreeSet<Geometry>();
 			for (int i = 0; i < geos.size(); i++) {
-				gArray[i] = geos.get(i);
+				gSet.add(geos.get(i));
 			}
 
+			gArray = new Geometry[gSet.size()];
+
+			Iterator<Geometry> it = gSet.iterator();// 先迭代出来
+			int i = 0;
+			while (it.hasNext()) {// 遍历
+				gArray[i] = it.next();
+				i++;
+			}
 			Geometry g = factory.createGeometryCollection(gArray);
 
 			return GeoTranslator.jts2Wkt(g);
+		}
+
+	}
+
+	public static void main(String[] args) {
+		String wkt = "LINESTRING (116.47573 40.01949, 116.47576 40.01948, 116.4758 40.01946, 116.47583 40.01945, 116.47585 40.01943)";
+		try {
+			Set<Geometry> gList = new TreeSet<Geometry>();
+			Geometry m = GeoTranslator.wkt2Geometry(wkt);
+			Geometry m2 = GeoTranslator.wkt2Geometry(wkt);
+			gList.add(m);
+			gList.add(m2);
+			System.out.println(gList.size());
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 
 	}

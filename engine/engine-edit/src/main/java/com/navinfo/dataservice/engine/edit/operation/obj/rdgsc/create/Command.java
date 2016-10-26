@@ -108,9 +108,11 @@ public class Command extends AbstractCommand {
 		
 		if(data.containsKey("gscPoint"))
 		{
-			double longitude = data.getDouble("longitude");
+			JSONObject gscPointObj = data.getJSONObject("gscPoint");
+					
+			double longitude = gscPointObj.getDouble("longitude");
 
-			double latitude = data.getDouble("latitude");
+			double latitude = gscPointObj.getDouble("latitude");
 			
 			// 构造几何对象
 			JSONObject geoPoint = new JSONObject();

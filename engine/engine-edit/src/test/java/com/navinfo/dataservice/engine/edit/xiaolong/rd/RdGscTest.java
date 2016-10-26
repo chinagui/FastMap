@@ -27,7 +27,7 @@ public class RdGscTest extends InitApplication{
 	
 	@Test
 	public void testCreate() {
-		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDGSC\",\"dbId\":17,\"data\":{\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[116.29407584667206,40.05608731693118],[116.29407584667206,40.05624129195225],[116.29422336816788,40.05624129195225],[116.29422336816788,40.05608731693118],[116.29407584667206,40.05608731693118]]]},\"linkObjs\":[{\"pid\":\"320001893\",\"type\":\"RDLINK\",\"zlevel\":0},{\"pid\":\"320001759\",\"type\":\"RDLINK\",\"zlevel\":1}]}}";
+		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDGSC\",\"dbId\":17,\"data\":{\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[116.37107133865355,40.0736135987318],[116.37107133865355,40.074401744381085],[116.3723587989807,40.074401744381085],[116.3723587989807,40.0736135987318],[116.37107133865355,40.0736135987318]]]},\"linkObjs\":[{\"pid\":\"308001963\",\"type\":\"RDLINK\",\"zlevel\":0},{\"pid\":\"206001954\",\"type\":\"RDLINK\",\"zlevel\":1}],\"gscPoint\":{\"latitude\":116.37214,\"longitude\":40.07376}}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

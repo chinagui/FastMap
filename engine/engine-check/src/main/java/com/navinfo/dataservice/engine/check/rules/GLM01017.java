@@ -43,33 +43,32 @@ public class GLM01017 extends baseRule{
 						linkPids.add(rdRestrictionDetail.getOutLinkPid());
 					}
 				}
+
+
+				String sql = "select link_pid from rd_link where kind in (11,13) AND U_RECORD != 2 "
+						+ "and link_pid in ("+StringUtils.join(linkPids, ",")+") and rownum=1";
+				
+				PreparedStatement pstmt = getConn().prepareStatement(sql);
+
+				ResultSet resultSet = pstmt.executeQuery();
+
+				boolean flag = false;
+
+				if (resultSet.next()) {
+					flag = true;
+				}
+
+				resultSet.close();
+
+				pstmt.close();
+				
+				if (flag) {
+
+					this.setCheckResult("", "", 0);
+					return;
+				}
 			}
-					
-		}
-		String sql = "select link_pid from rd_link where kind in (11,13) AND U_RECORD != 2"
-				+ "and link_pid in ("+StringUtils.join(linkPids, ",")+") and rownum=1";
-		
-		PreparedStatement pstmt = getConn().prepareStatement(sql);
-
-		ResultSet resultSet = pstmt.executeQuery();
-
-		boolean flag = false;
-
-		if (resultSet.next()) {
-			flag = true;
-		}
-
-		resultSet.close();
-
-		pstmt.close();
-		
-		if (flag) {
-
-			this.setCheckResult("", "", 0);
-			return;
-		}
-
-		
+		}		
 	}
 	
 	public void postCheck(CheckCommand checkCommand) throws Exception{

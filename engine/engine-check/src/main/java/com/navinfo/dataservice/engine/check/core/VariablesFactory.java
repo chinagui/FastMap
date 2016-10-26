@@ -11,6 +11,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchSchematic;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSeriesbranch;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSignasreal;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSignboard;
+import com.navinfo.dataservice.dao.glm.model.rd.crosswalk.RdCrosswalk;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
 import com.navinfo.dataservice.dao.glm.model.rd.directroute.RdDirectroute;
 import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdEleceyePart;
@@ -138,6 +139,20 @@ public class VariablesFactory {
 			rdLinkSet.add(String.valueOf(rdWarninginfo.getPid()));}
 		return rdLinkSet;
 	}
+	
+	/**
+	 * @param data
+	 * @return
+	 */
+	public static Set<String> getRdCrosswalkPid(IRow data) {
+		// TODO Auto-generated method stub
+		Set<String> rdLinkSet=new HashSet<String>();
+		if(data instanceof RdCrosswalk){
+			RdCrosswalk rdCrosswalk=(RdCrosswalk) data;
+			rdLinkSet.add(String.valueOf(rdCrosswalk.getPid()));}
+		return rdLinkSet;
+	}
+	
 	/**
 	 * @param data
 	 * @return

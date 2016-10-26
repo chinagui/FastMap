@@ -161,7 +161,7 @@ public class Operation implements IOperation {
 		AdminOperateUtils.SetAdminInfo4Link(link, conn);
 
 		// 设置Link的urban属性
-		UrbanBatchUtils.updateUrban(link, null, this.conn);
+		//UrbanBatchUtils.updateUrban(link, null, this.conn);
 		// 设置link的adminId属性
 		AdminIDBatchUtils.updateAdminID(link, null, conn);
 		// 设置link的zoneId属性

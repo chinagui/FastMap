@@ -93,6 +93,8 @@ public class RuleExecuter {
 			{variablevalue=VariablesFactory.getRdTrafficsignalPid(data);break;}
 			case RDSPEEDBUMP_PID:
 			{variablevalue=VariablesFactory.getRdSpeedbumpPid(data);break;}
+			case RDCROSSWALK_PID:
+			{variablevalue=VariablesFactory.getRdCrosswalkPid(data);break;}
 			case RDCROSS_PID:
 			{variablevalue=VariablesFactory.getRdCrossPid(data);break;}
 			case RDSPEEDLIMIT_PID:

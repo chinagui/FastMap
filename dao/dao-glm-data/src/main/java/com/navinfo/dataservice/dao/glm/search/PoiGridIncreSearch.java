@@ -5,6 +5,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.dbutils.DbUtils;
@@ -14,7 +15,9 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiName;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiGasstationSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiHotelSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiParkingSelector;
@@ -40,7 +43,7 @@ public class PoiGridIncreSearch {
 	 * @throws Exception
 	 */
 	public Collection<IxPoi> getPoiByGrids(Map<String,String> gridDateMap) throws Exception{
-		Map<Integer,IxPoi> results = new HashMap<Integer,IxPoi>();//key:pid,value:obj
+		Map<Long,IxPoi> results = new HashMap<Long,IxPoi>();//key:pid,value:obj
 		Connection manConn = null;
 		try {
 			manConn = DBConnector.getInstance().getManConnection();
@@ -75,11 +78,11 @@ public class PoiGridIncreSearch {
 			DBUtils.closeConnection(manConn);
 		}
 	}
-	private Map<Integer,IxPoi> loadDateSingleDb(int dbId,Map<String,String> gridDateMap)throws Exception{
+	private Map<Long,IxPoi> loadDateSingleDb(int dbId,Map<String,String> gridDateMap)throws Exception{
 		Connection conn = null;
 		try{
 			conn =  DBConnector.getInstance().getConnectionById(dbId);
-			Map<Integer,IxPoi> pois = null;
+			Map<Long,IxPoi> pois = null;
 			for(String grid:gridDateMap.keySet()){
 				logger.debug("starting load grid:"+grid+"from dbId:"+dbId);
 				if(pois==null){
@@ -103,19 +106,20 @@ public class PoiGridIncreSearch {
 	 * @return
 	 * @throws Exception
 	 */
-	private Map<Integer,IxPoi> loadDataSingleDbGrid(Connection conn,String grid,String date) throws Exception{
+	private Map<Long,IxPoi> loadDataSingleDbGrid(Connection conn,String grid,String date) throws Exception{
 		
-		Map<Integer,IxPoi> pois = null;
+		Map<Long,IxPoi> pois = null;
+		LogReader logReader = new LogReader(conn);
 		if(StringUtils.isEmpty(date)){
 			//load all poi，初始化u_record应为0
 			pois = loadIxPoi(grid);
 			//load status
-			Map<Integer,Collection<Integer>> poiStatus = LogReader.getUpdatedObj("IX_POI", grid, null);
+			Map<Integer,Collection<Long>> poiStatus = logReader.getUpdatedObj("IX_POI","IX_POI", grid, null);
 			
 			//load 变更poi的状态，设置u_record
 			if(poiStatus!=null&&poiStatus.size()>0){
 				for(Integer status:poiStatus.keySet()){
-					for(Integer pid:poiStatus.get(status)){
+					for(Long pid:poiStatus.get(status)){
 						if(pois.containsKey(pid)){
 							pois.get(pid).setuRecord(status);
 						}
@@ -123,11 +127,11 @@ public class PoiGridIncreSearch {
 				}
 			}
 		}else{
-			Map<Integer,Collection<Integer>> poiStatus = LogReader.getUpdatedObj("IX_POI", grid, date);
+			Map<Integer,Collection<Long>> poiStatus = logReader.getUpdatedObj("IX_POI","IX_POI", grid, date);
 			//load 
-			pois = new HashMap<Integer,IxPoi>();
+			pois = new HashMap<Long,IxPoi>();
 			for(Integer status:poiStatus.keySet()){
-				Map<Integer,IxPoi> result = loadIxPoi(status,poiStatus.get(status));
+				Map<Long,IxPoi> result = loadIxPoi(status,poiStatus.get(status));
 				if(status!=null) pois.putAll(result);
 			}
 		}
@@ -138,7 +142,7 @@ public class PoiGridIncreSearch {
 	 * @return
 	 * @throws Exception
 	 */
-	private Map<Integer,IxPoi> loadIxPoi(String grid)throws Exception{
+	private Map<Long,IxPoi> loadIxPoi(String grid)throws Exception{
 		return null;
 	}
 	
@@ -148,7 +152,7 @@ public class PoiGridIncreSearch {
 	 * @return
 	 * @throws Exception
 	 */
-	private Map<Integer,IxPoi> loadIxPoi(int status,Collection<Integer> pois)throws Exception{
+	private Map<Long,IxPoi> loadIxPoi(int status,Collection<Long> pois)throws Exception{
 		return null;
 	}
 	
@@ -200,53 +204,32 @@ public class PoiGridIncreSearch {
 		
 	}
 	
-	private void loadChildTables(Connection conn,IxPoi ixPoi)throws Exception{
+	private void loadChildTables(Connection conn,Map<Long,IxPoi> pois)throws Exception{
 		
-		int id = ixPoi.getPid();
+		Collection<Long> pids = pois.keySet();
+		
+		QueryRunner run = new QueryRunner();
+		
+
 		
 		logger.info("设置子表IX_POI_NAME");
-		IxPoiNameSelector poiNameSelector = new IxPoiNameSelector(conn);
+		
+		String sql="select * from ix_poi_name where poi_pid in (select to_number(column_value) from table(clob_to_table(?)))";
+		
+		Map<Long,List<IRow>> names = run.query(conn, sql, new IxPoiNameHandler(),StringUtils.join(pids, ","));
 
-		ixPoi.setNames(poiNameSelector.loadByIdForAndroid(id));
+		for(Long pid:names.keySet()){
+			pois.get(pid).setNames(names.get(pid));
+		}
+		//...
+	}
+	class IxPoiNameHandler implements ResultSetHandler<Map<Long,List<IRow>>>{
 
-		logger.info("设置子表IX_POI_ADDRESS");
-		IxPoiAddressSelector ixPoiAddressSelector = new IxPoiAddressSelector(conn);
-
-		ixPoi.setAddresses(ixPoiAddressSelector.loadByIdForAndroid(id));
-
-		logger.info("设置子表IX_POI_PARENT");
-		IxPoiParentSelector ixPoiParentSelector = new IxPoiParentSelector(conn);
+		@Override
+		public Map<Long, List<IRow>> handle(ResultSet rs) throws SQLException {
+			// TODO Auto-generated method stub
+			return null;
+		}
 		
-		ixPoi.setParents(ixPoiParentSelector.loadByIdForAndroid(id));
-		
-		logger.info("设置子表IX_POI_CHILDREN");
-		IxPoiChildrenSelector ixPoiChildrenSelector = new IxPoiChildrenSelector(conn);
-		
-		ixPoi.setChildren(ixPoiChildrenSelector.loadByIdForAndroid(id));
-		
-		logger.info("设置子表IX_POI_CONTACT");
-		IxPoiContactSelector ixPoiContactSelector = new IxPoiContactSelector(conn);
-		
-		ixPoi.setContacts(ixPoiContactSelector.loadByIdForAndroid(id));
-		
-		logger.info("设置子表IX_POI_RESTAURANT");
-		IxPoiRestaurantSelector ixPoiRestaurantSelector = new IxPoiRestaurantSelector(conn);
-		
-		ixPoi.setRestaurants(ixPoiRestaurantSelector.loadByIdForAndroid(id));
-		
-		logger.info("设置子表IX_POI_PARKING");
-		IxPoiParkingSelector ixPoiParkingSelector = new IxPoiParkingSelector(conn);
-		
-		ixPoi.setParkings(ixPoiParkingSelector.loadByIdForAndroid(id));
-		
-		logger.info("设置子表IX_POI_HOTEL");
-		IxPoiHotelSelector ixPoiHotelSelector = new IxPoiHotelSelector(conn);
-		
-		ixPoi.setHotels(ixPoiHotelSelector.loadByIdForAndroid(id));
-		
-		logger.info("设置子表IX_POI_GASSTATION");
-		IxPoiGasstationSelector ixPoiGasstationSelector = new IxPoiGasstationSelector(conn);
-		
-		ixPoi.setGasstations(ixPoiGasstationSelector.loadByIdForAndroid(id));
 	}
 }

@@ -30,11 +30,11 @@ public class IxPoiBusinessTime implements IRow {
 	private String weekInYearEnd;// 一年中的结束周
 	private String weekInMonthSrt;// 指定月份的营业起始周
 	private String weekInMonthEnd;// 指定月份的营业结束周
-	private String vaildWeek;// 周营业日
+	private String validWeek;// 周营业日
 	private String daySrt;// 月营业起始日
 	private String dayEnd;// 月营业结束日
 	private String timeSrt;// 营业开始日期
-	private String timeDue;// 营业时长
+	private String timeDur;// 营业时长
 	private String reserved;// 预留字段
 	// 更新时间
 	private String uDate;
@@ -95,12 +95,12 @@ public class IxPoiBusinessTime implements IRow {
 		this.weekInMonthEnd = weekInMonthEnd;
 	}
 
-	public String getVaildWeek() {
-		return vaildWeek;
+	public String getValidWeek() {
+		return validWeek;
 	}
 
-	public void setVaildWeek(String vaildWeek) {
-		this.vaildWeek = vaildWeek;
+	public void setValidWeek(String validWeek) {
+		this.validWeek = validWeek;
 	}
 
 	public String getDaySrt() {
@@ -127,12 +127,12 @@ public class IxPoiBusinessTime implements IRow {
 		this.timeSrt = timeSrt;
 	}
 
-	public String getTimeDue() {
-		return timeDue;
+	public String getTimeDur() {
+		return timeDur;
 	}
 
-	public void setTimeDue(String timeDue) {
-		this.timeDue = timeDue;
+	public void setTimeDur(String timeDur) {
+		this.timeDur = timeDur;
 	}
 
 	public String getReserved() {

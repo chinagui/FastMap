@@ -16,7 +16,7 @@ import net.sf.json.JSONObject;
 import net.sf.json.util.JSONUtils;
 
 public class RestaurantImporter {
-	public static int run(Result result, Connection conn,
+	public static int run(Connection conn,
 			Statement stmt, JSONObject poi) throws Exception {
 
 		JSONObject resObj = poi.getJSONObject("foodtypes");

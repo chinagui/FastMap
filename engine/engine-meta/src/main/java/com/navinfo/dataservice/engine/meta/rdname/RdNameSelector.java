@@ -9,16 +9,18 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
+import java.util.Set;
 
 import org.apache.commons.dbutils.DbUtils;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
+import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.engine.meta.area.ScPointAdminArea;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 public class RdNameSelector {
 	
@@ -264,9 +266,9 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips,int dbId) throws
 						ids += "'" + tipsObj.getString("id") + "'";
 					}
 					
-					pidClod = subconn.createClob();
+					pidClod = ConnectionUtil.createClob(subconn);
 					pidClod.setString(1, ids);
-					sql.append(" and a.tipid in (select to_char(tipid) from table(clob_to_table(:1)))");
+					sql.append(" and a.tipid in (select to_char(tipid) from table(clob_to_table(?)))");
 					
 				} else {
 					result.put("total", 0);
@@ -319,7 +321,7 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips,int dbId) throws
 			}
 			
 			sql.append(" ) c");
-			sql.append(" WHERE rownum <= :2)  WHERE rn >= :3");
+			sql.append(" WHERE rownum <= ?)  WHERE rn >= ?");
 			
 			int startRow = (pageNum-1) * pageSize + 1;
 
@@ -327,11 +329,17 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips,int dbId) throws
 			
 			pstmt = subconn.prepareStatement(sql.toString());
 			
-			pstmt.setClob(1, pidClod);
-			
-			pstmt.setInt(2, endRow);
+			if (flag>0) {
+				pstmt.setClob(1, pidClod);
+				pstmt.setInt(2, endRow);
+				pstmt.setInt(3, startRow);
+			} else {
+				pstmt.setInt(1, endRow);
 
-			pstmt.setInt(3, startRow);
+				pstmt.setInt(2, startRow);
+			}
+			
+			
 			
 			resultSet = pstmt.executeQuery();
 			

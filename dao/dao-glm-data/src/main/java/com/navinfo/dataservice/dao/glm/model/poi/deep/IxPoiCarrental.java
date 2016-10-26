@@ -25,10 +25,10 @@ public class IxPoiCarrental implements IRow {
 
 	private int poiPid = 0;
 	private String openHour;// 租车点的营业时间
-	private String adress;// 租车点的详细地址描述
+	private String address;// 租车点的详细地址描述
 	private String howToGo;// 周边交通路线
 	private String phone400;// 400 电话
-	private String website;// 主页网址
+	private String webSite;// 主页网址
 	private String rowId;
 	// 更新时间
 	private String uDate;
@@ -53,7 +53,6 @@ public class IxPoiCarrental implements IRow {
 		return rowId;
 	}
 
-	private String memo;
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 
 	@Override
@@ -118,12 +117,12 @@ public class IxPoiCarrental implements IRow {
 		this.openHour = openHour;
 	}
 
-	public String getAdress() {
-		return adress;
+	public String getAddress() {
+		return address;
 	}
 
-	public void setAdress(String adress) {
-		this.adress = adress;
+	public void setAddress(String address) {
+		this.address = address;
 	}
 
 	public String getHowToGo() {
@@ -142,25 +141,17 @@ public class IxPoiCarrental implements IRow {
 		this.phone400 = phone400;
 	}
 
-	public String getWebsite() {
-		return website;
+	public String getWebSite() {
+		return webSite;
 	}
 
-	public void setWebsite(String website) {
-		this.website = website;
+	public void setWebSite(String webSite) {
+		this.webSite = webSite;
 	}
 
 	@Override
 	public String parentTableName() {
 		return "ix_poi";
-	}
-
-	public String getMemo() {
-		return memo;
-	}
-
-	public void setMemo(String memo) {
-		this.memo = memo;
 	}
 
 	@Override

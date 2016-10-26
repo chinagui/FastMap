@@ -158,22 +158,20 @@ public class TipsController extends BaseController {
 
 			String filePath = upload.unzipByJobId(jobId);
 			
+			logger.info("filePath:"+filePath);
 			
-			logger.info("---importTips:"+filePath);
-
 			TipsUpload tipsUploader = new TipsUpload();
 			
-			logger.info("---start tipsUploader:"+tipsUploader);
-
+			logger.info("tipsFilePath:"+filePath + "/"
+					+ "tips.txt");
+			
 			Map<String, Photo> map = tipsUploader.run(filePath + "/"
 					+ "tips.txt");
-
-			logger.info("---start tipsUploader.run end:");
 			
-			CollectorImport.importPhoto(map, filePath + "/photo");
+			//CollectorImport.importPhoto(map, filePath + "/photo");
 			
-			logger.debug("---importPhoto.run end:");
-
+			CollectorImport.importPhoto(map, filePath );
+			
 			JSONObject result = new JSONObject();
 
 			result.put("total", tipsUploader.getTotal());
@@ -428,7 +426,7 @@ public class TipsController extends BaseController {
 	
 	public static void main(String[] args) {
 		
-		String parameter="{\"jobId\":38}";
+		String parameter="{\"jobId\":88}";
 		JSONObject json = JSONObject.fromObject(parameter);
 
 		int jobId = json.getInt("jobId");
@@ -437,8 +435,13 @@ public class TipsController extends BaseController {
 
 		String filePath;
 		try {
-			filePath ="E:\\Tips_10402_20161014163449";
 			
+			//int jobId = json.getInt("jobId");
+
+			//UploadService upload = UploadService.getInstance();
+
+			filePath = upload.unzipByJobId(jobId);
+		    //filePath="E:/88";
 			
 			logger.info("---importTips:"+filePath);
 
@@ -451,9 +454,9 @@ public class TipsController extends BaseController {
 
 			logger.info("---start tipsUploader.run end:");
 			
-			CollectorImport.importPhoto(map, filePath + "/photo");
+			CollectorImport.importPhoto(map, filePath );
 			
-			logger.debug("---importPhoto.run end:");
+			logger.info("---importPhoto.run end:");
 
 			JSONObject result = new JSONObject();
 

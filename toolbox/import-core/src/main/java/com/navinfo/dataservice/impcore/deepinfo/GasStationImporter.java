@@ -2,16 +2,13 @@ package com.navinfo.dataservice.impcore.deepinfo;
 
 import java.sql.Connection;
 import java.sql.Statement;
-import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
 
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.util.JsonUtils;
-import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiGasstation;
 import com.navinfo.dataservice.dao.glm.operator.BasicOperator;
 
@@ -24,7 +21,7 @@ public class GasStationImporter {
 	public static String[] kcs = new String[]{"230215","230216","230217"}; 
 	
 	
-	public static int run(Result result, Connection conn,
+	public static int run(Connection conn,
 			Statement stmt, JSONObject poi) throws Exception {
 
 		JSONObject gasStation = poi.getJSONObject("gasStation");

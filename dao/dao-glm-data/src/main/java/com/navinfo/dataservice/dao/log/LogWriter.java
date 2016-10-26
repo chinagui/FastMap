@@ -13,6 +13,7 @@ import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.bizcommons.glm.GlmGridCalculator;
 import com.navinfo.dataservice.bizcommons.glm.GlmGridCalculatorFactory;
@@ -41,6 +42,7 @@ import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import net.sf.json.JSONNull;
 
 class Status {
 	public static int INSERT = 1;
@@ -49,6 +51,7 @@ class Status {
 }
 
 public class LogWriter {
+	Logger logger = Logger.getLogger(LogWriter.class);
 	private static final String[] poiExcludeColumns =new String[]{"EDIT_FLAG",
 			"DIF_GROUPID",
 			"RESERVED",
@@ -532,6 +535,7 @@ public class LogWriter {
 
 		return flag;
 	}
+	
 	public void generateLog(ICommand command, Result result) throws Exception {
 
 		geoLogOperation = new LogOperation(UuidUtils.genUuid(), command
@@ -576,7 +580,7 @@ public class LogWriter {
 				Entry<String, Object> en = it.next();
 
 				String column = en.getKey();
-				
+				logger.info("column:"+column);
 				String tableColumn = StringUtils.toColumnName(column).toUpperCase();
 				
 				//如果是IX_POI，并且不是作业字段，那么不写入fd_list
@@ -615,7 +619,11 @@ public class LogWriter {
 						oldValue.put(tableColumn,
 								(String.valueOf(value)).replace("'", "''"));
 					} else {
-						oldValue.put(tableColumn, value);
+						if (oldValue==null){
+							oldValue.put(tableColumn,  "");
+						}else{
+							oldValue.put(tableColumn, value);
+						}
 					}
 
 					newValue.put(tableColumn, columnValue);
@@ -624,7 +632,7 @@ public class LogWriter {
 			if (CollectionUtils.isEmpty(fieldList)) continue;//修改但是没有变更字段，不写履历
 			
 			ld.setFdLst(fieldList.toString());
-
+			logger.info("oldValue:"+oldValue);
 			ld.setOldValue(oldValue.toString());
 
 			ld.setNewValue(newValue.toString());

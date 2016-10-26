@@ -3,6 +3,7 @@ package com.navinfo.dataservice.engine.edit.utils.batch;
 import java.sql.Connection;
 import java.util.List;
 
+import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.lu.LuFace;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.lu.LuFaceSelector;
@@ -32,7 +33,7 @@ public class UrbanBatchUtils extends BaseBatchUtils {
      * @throws Exception
      */
     // 目前仅处理RdLink新增时的urban属性
-    public static void updateUrban(RdLink link, Geometry geometry, Connection conn) throws Exception {
+    public static void updateUrban(RdLink link, Geometry geometry, Connection conn, Result result) throws Exception {
         // 将link几何缩小100000倍，根据link几何查找与之相关的BUA面
         Geometry linkGeometry = null == geometry ? shrink(link.getGeometry()) : shrink(geometry);
         List<LuFace> faces = new LuFaceSelector(conn).loadRelateFaceByGeometry(linkGeometry);
@@ -51,11 +52,11 @@ public class UrbanBatchUtils extends BaseBatchUtils {
             // 判断link是否包含于面内并有一个端点处于面组成线上
         } else if (GeoRelationUtils.InteriorAnd1Intersection(linkGeometry, faceGeometry)) {
             // 判断是否起点处于ring组成线上
-            if (isInBoundary(conn, link.getsNodePid(), faceGeometry)) {
+            if (isInBoundary(conn, link.getsNodePid(), faceGeometry, result)) {
                 if (isSameNode(conn, link.getsNodePid()))
                     link.changedFields().put("urban", IS_URBAN);
                 // 判断是否终点处于ring组成线上
-            } else if (isInBoundary(conn, link.geteNodePid(), faceGeometry))
+            } else if (isInBoundary(conn, link.geteNodePid(), faceGeometry, result))
                 if (isSameNode(conn, link.geteNodePid()))
                     link.changedFields().put("urban", IS_URBAN);
 

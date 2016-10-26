@@ -22,6 +22,8 @@ import org.apache.commons.dbutils.handlers.MapHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.api.fcc.iface.FccApi;
+import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Message;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.man.model.UserInfo;
@@ -569,29 +571,30 @@ public class SubtaskOperation {
 						} else {
 							subtask.put("dbId", rs.getInt("DAILY_DB_ID"));
 						}
-						
-						List<Integer> gridIds = null;
-						try {
-							gridIds = getGridIdsBySubtaskId(rs.getInt("SUBTASK_ID"));
-							subtask.put("gridIds", gridIds);
-						} catch (Exception e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
 
-//						//完成度，任务量信息
-//						try {
-//							Map<String,Integer> subtaskStat = subtaskStatRealtime((int)subtask.get("dbId"),rs.getInt("STAGE"),gridIds);
-//							if(!subtaskStat.isEmpty()){
-//								
-//							}
-//						} catch (ServiceException e) {
-//							// TODO Auto-generated catch block
-//							e.printStackTrace();
-//						}
+						//日编POI,日编一体化GRID粗编完成度，任务量信息
+						if((1==rs.getInt("STAGE")&&0==rs.getInt("TYPE"))||(1==rs.getInt("STAGE")&&3==rs.getInt("TYPE"))){
+							try {
+								List<Integer> gridIds = getGridIdsBySubtaskId(rs.getInt("SUBTASK_ID"));
+								Map<String,Integer> subtaskStat = subtaskStatRealtime((int)subtask.get("dbId"),rs.getInt("TYPE"),gridIds);
+								if(!subtaskStat.isEmpty()){
+									if(subtaskStat.containsKey("poi")){
+										subtask.put("poi",subtaskStat.get("poi"));
+									}
+									if(subtaskStat.containsKey("tips")){
+										subtask.put("tips",subtaskStat.get("tips"));
+									}
+									if(subtaskStat.containsKey("percent")){
+										subtask.put("percent",subtaskStat.get("percent"));
+									}
+								}
+							} catch (Exception e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+						}
 						
 						list.add(subtask);
-
 					}
 					page.setTotalCount(total);
 					page.setResult(list);
@@ -611,16 +614,20 @@ public class SubtaskOperation {
 
 
 	/**
+	 * @param <FccApi>
 	 * @param dbId
-	 * @param stage 
+	 * @param type 
 	 * @param gridIds
 	 * @return
 	 * @throws ServiceException 
 	 */
-	protected static Map<String, Integer> subtaskStatRealtime(Integer dbId, int stage, List<Integer> gridIds) throws ServiceException {
+	protected static Map<String, Integer> subtaskStatRealtime(Integer dbId, int type, List<Integer> gridIds) throws ServiceException {
 		// TODO Auto-generated method stub
 		Connection conn = null;
 		try {
+			if(gridIds.isEmpty()){
+				return null;
+			}
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 			Map<String, Integer> stat = new HashMap<String, Integer>();
 			
@@ -654,8 +661,25 @@ public class SubtaskOperation {
 			}
 			);
 			
+			int percent = 0;
+			int percentPOI = 0;
+			int percentRoad = 0; 
+			//poi数量及完成度
 			stat.put("poi", resultPOI.get("total"));
-			
+			if(0 != resultPOI.get("total")){
+				percentPOI = resultPOI.get("finish")*100/resultPOI.get("total");
+			}
+			//type=3,一体化grid粗编子任务。增加道路数量及完成度
+			if(3 == type){
+				FccApi api=(FccApi) ApplicationContextUtil.getBean("fccApi");
+				JSONObject resultRoad = api.getSubTaskStats(gridIdsJsonArray);
+				stat.put("tips", resultRoad.getInt("total"));				
+				if(0 != resultRoad.getInt("total")){
+					percentRoad = resultRoad.getInt("finished")*100/resultRoad.getInt("total");
+				}
+			}
+			percent = (int) (percentPOI*0.5 + percentRoad*0.5);
+			stat.put("percent", percent);
 			return stat;
 		}catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -788,21 +812,46 @@ public class SubtaskOperation {
 							e1.printStackTrace();
 						}
 						
+						List<Integer> gridIds = null;
 						try {
-							List<Integer> gridIds = getGridIdsBySubtaskId(rs.getInt("SUBTASK_ID"));
-							subtask.put("gridIds", gridIds);
-						} catch (Exception e) {
+							gridIds = getGridIdsBySubtaskId(rs.getInt("SUBTASK_ID"));
+						} catch (Exception e1) {
 							// TODO Auto-generated catch block
-							e.printStackTrace();
+							e1.printStackTrace();
 						}
-												
-						
+						subtask.put("gridIds", gridIds);
+
 						if (1 == rs.getInt("STAGE")) {
 							subtask.put("dbId", rs.getInt("DAILY_DB_ID"));
 						} else if (2 == rs.getInt("STAGE")) {
 							subtask.put("dbId",rs.getInt("MONTHLY_DB_ID"));
 						} else {
-							subtask.put("dbId", rs.getInt("MONTHLY_DB_ID"));
+							subtask.put("dbId", rs.getInt("DAILY_DB_ID"));
+						}
+						
+						//日编POI,日编一体化GRID粗编完成度，任务量信息
+						if((1==rs.getInt("STAGE")&&0==rs.getInt("TYPE"))||(1==rs.getInt("STAGE")&&3==rs.getInt("TYPE"))){
+							try {
+								Map<String,Integer> subtaskStat = subtaskStatRealtime((int)subtask.get("dbId"),rs.getInt("TYPE"),gridIds);
+								if(subtaskStat != null){
+									if(subtaskStat.containsKey("poi")){
+										subtask.put("poi",subtaskStat.get("poi"));
+									}
+									if(subtaskStat.containsKey("tips")){
+										subtask.put("tips",subtaskStat.get("tips"));
+									}
+									if(subtaskStat.containsKey("percent")){
+										subtask.put("percent",subtaskStat.get("percent"));
+									}
+								}else{
+									subtask.put("poi",0);
+									subtask.put("tips",0);
+									subtask.put("percent",0);
+								}
+							} catch (Exception e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
 						}
 						
 						list.add(subtask);

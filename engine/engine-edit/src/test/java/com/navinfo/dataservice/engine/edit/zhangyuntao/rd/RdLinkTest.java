@@ -55,20 +55,21 @@ public class RdLinkTest extends InitApplication {
     @Test
     public void repair() {
         String parameter = "{\"command\":\"REPAIR\",\"dbId\":42,\"objId\":100008849,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.46721,40.083],[116.46730363368988,40.082890151613405],[116.46738,40.08272]]},\"interLinks\":[],\"interNodes\":[]},\"type\":\"RDLINK\"}";
-        parameter = "{\"command\":\"REPAIR\",\"dbId\":17,\"objId\":310001119,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.13905,40.56138],[116.13936066627502,40.56129039667495],[116.13975,40.56118]]},\"interLinks\":[],\"interNodes\":[]},\"type\":\"RDLINK\"}";
+        parameter = "{\"command\":\"CREATE\",\"dbId\":17,\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.44574403762817,39.91689151500802],[116.44597470760347,39.91648007577787]]},\"catchLinks\":[]},\"type\":\"RDLINK\"}";
         TestUtil.run(parameter);
     }
 
     @Test
     public void create() {
         String parameter = "{\"command\":\"CREATE\",\"dbId\":42,\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.46699,40.08309],[116.46714,40.08249]]},\"catchLinks\":[]},\"type\":\"RDLINK\"}";
-        parameter = "{\"command\":\"CREATE\",\"dbId\":17,\"type\":\"RDSAMELINK\",\"data\":{\"links\":[{\"linkPid\":\"302001381\",\"type\":\"RDLINK\",\"isMain\":1},{\"linkPid\":\"204000036\",\"type\":\"ZONELINK\",\"isMain\":0}]}}";
+        parameter = "{\"command\":\"CREATE\",\"dbId\":17,\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.44574403762817,39.91689151500802],[116.44597470760347,39.91648007577787]]},\"catchLinks\":[]},\"type\":\"RDLINK\"}";
         TestUtil.run(parameter);
     }
 
     @Test
     public void depart() {
-        String parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"dbId\":17,\"distance\":\"10\",\"data\":{\"linkPids\":[615366]}}\n";
+        String parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"dbId\":17,\"distance\":\"13.4\",\"data\":{\"linkPids\":[575024,567326,567327,665041]}}";
+        parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"dbId\":17,\"distance\":\"8.3\",\"data\":{\"linkPids\":[86366612,87757818,87757819,86366614,663904,663906,663908,677530,87758006,87758007,87729181]}}";
         TestUtil.run(parameter);
     }
 

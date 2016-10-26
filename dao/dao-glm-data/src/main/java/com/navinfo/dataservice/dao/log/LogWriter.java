@@ -61,7 +61,13 @@ public class LogWriter {
 			"LOG",
 			"U_RECORD",
 			"U_DATE",
-			"U_FIELDS"};
+			"U_FIELDS",
+			"OLD_ADDRESS",
+			"OLD_BLOCKCODE",
+			"OLD_NAME",
+			"OLD_KIND",
+			"POI_NUM"
+			};
 	private Connection conn;
 
 	private LogOperation geoLogOperation;// 修改拓扑相关的履历记一个operation

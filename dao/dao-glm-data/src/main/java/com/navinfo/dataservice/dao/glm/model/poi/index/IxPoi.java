@@ -7,6 +7,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.springframework.util.StringUtils;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
@@ -46,7 +47,7 @@ import net.sf.json.JsonConfig;
  * 
  */
 public class IxPoi implements IObj {
-
+	private Logger logger = Logger.getLogger(IxPoi.class);
 	// POI号码
 	private int pid;
 
@@ -1082,7 +1083,8 @@ public class IxPoi implements IObj {
 	public boolean fillChangeFields(JSONObject json) throws Exception {
 		@SuppressWarnings("rawtypes")
 		Iterator keys = json.keys();
-
+		logger.info("newJson:"+json);
+		logger.info("oldpoi:"+this.Serialize(null));
 		while (keys.hasNext()) {
 			String key = (String) keys.next();
 
@@ -1106,7 +1108,7 @@ public class IxPoi implements IObj {
 				}
 			} else {
 				if (!"objStatus".equals(key)) {
-
+					logger.info("key:"+key);
 					Field field = this.getClass().getDeclaredField(key);
 
 					field.setAccessible(true);
@@ -1114,7 +1116,10 @@ public class IxPoi implements IObj {
 					Object objValue = field.get(this);
 					String newValue = json.getString(key);
 					if("null".equalsIgnoreCase(newValue))newValue=null;
+					logger.info("objValue:"+objValue);
+					logger.info("newValue:"+newValue);
 					if (!isEqualsString(objValue,newValue)) {
+						logger.info("isEqualsString:false");
 						Object value = json.get(key);
 
 						if (value instanceof String) {
@@ -1145,7 +1150,7 @@ public class IxPoi implements IObj {
 		if(oldValue!=null&&newValue==null){
 			return false;
 		}
-		return oldValue.equals(newValue);
+		return oldValue.toString().equals(newValue.toString());
 	}
 	
 	@Override

@@ -108,7 +108,7 @@ public class NiValExceptionOperator {
 				String sql=objectNode.getMeshSql();
 				sql=sql.replace("!OBJECT_PID!", pid);
 				RdLink link=linkSelector.loadBySql(sql, false).get(0);
-				geometryMap.put(key, GeometryUtils.getPointFromGeo(GeoTranslator.transform(link.getGeometry(), 0.000001, 0)));
+				geometryMap.put(key, GeometryUtils.getPointFromGeo(GeoTranslator.transform(link.getGeometry(), 0.00001,5)));
 				meshMap.put(key, link.mesh());
 			}
 			if(objectNode.getMeshTable().equals("RD_NODE")){

@@ -23,6 +23,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionDetail;
+import com.navinfo.dataservice.dao.glm.model.rd.se.RdSe;
 import com.navinfo.dataservice.dao.glm.model.rd.slope.RdSlope;
 import com.navinfo.dataservice.dao.glm.model.rd.speedbump.RdSpeedbump;
 import com.navinfo.dataservice.dao.glm.model.rd.tollgate.RdTollgate;
@@ -49,6 +50,7 @@ public class VariablesFactory {
 			rdLinkSet.add(String.valueOf(((RdGate) data).getInLinkPid()));
 			rdLinkSet.add(String.valueOf(((RdGate) data).getOutLinkPid()));
 		}
+		if(data instanceof RdSe){rdLinkSet.add(String.valueOf(((RdSe) data).getInLinkPid()));}
 		return rdLinkSet;
 	}
 	public static Set<String> getRdNodePid(IRow data){
@@ -69,6 +71,8 @@ public class VariablesFactory {
 			rdNodeSet.add(String.valueOf(((RdDirectroute) data).getNodePid()));}
 		if(data instanceof RdTrafficsignal){
 			rdNodeSet.add(String.valueOf(((RdTrafficsignal) data).getNodePid()));}
+		if(data instanceof RdSe){
+			rdNodeSet.add(String.valueOf(((RdSe) data).getNodePid()));}
 		return rdNodeSet;
 	}
 	/**

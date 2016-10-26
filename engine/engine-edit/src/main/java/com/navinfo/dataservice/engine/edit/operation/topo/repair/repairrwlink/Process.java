@@ -28,7 +28,7 @@ public class Process extends AbstractProcess<Command> {
 		// 查询需要修行的线上是否存在立交
 		RdGscSelector gscSelector = new RdGscSelector(this.getConn());
 
-		List<RdGsc> gscList = gscSelector.onlyLoadRdGscLinkByLinkPid(linkPid, "RW_LINK", true);
+		List<RdGsc> gscList = gscSelector.loadRdGscLinkByLinkPid(linkPid, "RW_LINK", true);
 
 		this.getCommand().setGscList(gscList);
 

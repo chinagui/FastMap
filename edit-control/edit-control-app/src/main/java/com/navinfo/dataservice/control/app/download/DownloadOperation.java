@@ -520,7 +520,6 @@ public class DownloadOperation {
 			}
 			
 			jsonObj.put("rawFields", "");
-			//FIXME:这里需要通过计算履历来获取对应的状态
 			switch (poi.getuRecord()) {
 			case 0:
 				jsonObj.put("t_lifecycle", 0);

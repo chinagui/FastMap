@@ -120,6 +120,10 @@ public class RwLinkName implements IRow {
 
 	@Override
 	public void copy(IRow row) {
+		RwLinkName rwLinkName = (RwLinkName)row;
+		this.setRowId(rwLinkName.getRowId());
+		this.setName(rwLinkName.getName());
+		this.setNameGroupid(rwLinkName.getNameGroupid());
 	}
 
 	@Override

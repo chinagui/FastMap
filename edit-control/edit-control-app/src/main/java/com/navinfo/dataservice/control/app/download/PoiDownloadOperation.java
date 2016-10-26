@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -28,7 +27,6 @@ import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiContact;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiName;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiParentForAndroid;
 import com.navinfo.dataservice.dao.glm.search.PoiGridIncreSearch;
-import com.navinfo.dataservice.dao.glm.search.PoiGridSearch;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONNull;
@@ -523,7 +521,6 @@ public class PoiDownloadOperation {
 			}
 			
 			jsonObj.put("rawFields", "");
-			//FIXME:这里需要通过计算履历来获取对应的状态
 			switch (poi.getuRecord()) {
 			case 0:
 				jsonObj.put("t_lifecycle", 0);

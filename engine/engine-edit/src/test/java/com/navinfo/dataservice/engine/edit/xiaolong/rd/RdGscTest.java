@@ -27,7 +27,7 @@ public class RdGscTest extends InitApplication{
 	
 	@Test
 	public void testCreate() {
-		String parameter = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"RDGATE\",\"objId\":220000005,\"data\":{\"condition\":[{\"pid\":220000005,\"validObj\":1,\"timeDomain\":\"\",\"rowId\":\"2C81DB4337E44CE2BFBAEB44B799E7EE\",\"objStatus\":\"DELETE\"},{\"pid\":220000005,\"validObj\":1,\"timeDomain\":\"\",\"rowId\":\"DF6C8BF2E45C4D67B7BC634C01C2F75D\",\"objStatus\":\"DELETE\"}],\"rowId\":\"D364A27DB691496483BB7BDB9A04285C\",\"pid\":220000005}}";
+		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDGSC\",\"dbId\":17,\"data\":{\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[116.29407584667206,40.05608731693118],[116.29407584667206,40.05624129195225],[116.29422336816788,40.05624129195225],[116.29422336816788,40.05608731693118],[116.29407584667206,40.05608731693118]]]},\"linkObjs\":[{\"pid\":\"320001893\",\"type\":\"RDLINK\",\"zlevel\":0},{\"pid\":\"320001759\",\"type\":\"RDLINK\",\"zlevel\":1}]}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

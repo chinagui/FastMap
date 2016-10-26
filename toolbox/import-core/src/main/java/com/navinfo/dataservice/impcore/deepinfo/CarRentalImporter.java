@@ -18,7 +18,7 @@ import net.sf.json.JSONObject;
 import net.sf.json.util.JSONUtils;
 
 public class CarRentalImporter {
-	public static int run(Result result, Connection conn,
+	public static int run(Connection conn,
 			Statement stmt, JSONObject poi) throws Exception {
 
 		JSONObject crObj = poi.getJSONObject("rental");
@@ -34,14 +34,14 @@ public class CarRentalImporter {
 
 		cr.setOpenHour(JsonUtils.getString(crObj, "openHour"));
 		
-		cr.setAdress(JsonUtils.getString(crObj, "adressDes"));
+		cr.setAddress(JsonUtils.getString(crObj, "adressDes"));
 		
 		cr.setHowToGo(JsonUtils.getString(crObj, "howToGo"));
 		
 		String kindCode = poi.getString("kindCode");
 
 		if("200201".equals(kindCode)){
-			cr.setWebsite(JsonUtils.getString(poi, "website"));
+			cr.setWebSite(JsonUtils.getString(poi, "website"));
 		}
 
 		BasicOperator operator = new BasicOperator(conn,

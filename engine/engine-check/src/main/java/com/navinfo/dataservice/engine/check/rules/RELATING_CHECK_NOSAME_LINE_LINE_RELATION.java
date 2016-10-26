@@ -27,7 +27,8 @@ import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
  * @author songdongyan
  * @date 2016年8月18日
  * @Description: 相同的进入线，进入点，经过线，退出线，不能创建两组相同类型分歧
- * 相同的进入线、进入点不能创建两组（车信、普通交限、顺行、分叉口提示、分歧、语音引导、收费站、大门、自然语音引导）
+ * 相同的进入线、进入点不能创建两组（车信、普通交限、顺行、分歧、语音引导、收费站、大门、自然语音引导）
+ * 相同的进入线、进入点、退出线不能创建两组分叉口提示
  */
 public class RELATING_CHECK_NOSAME_LINE_LINE_RELATION extends baseRule {
 
@@ -87,7 +88,7 @@ public class RELATING_CHECK_NOSAME_LINE_LINE_RELATION extends baseRule {
 				RdSe rdSe = (RdSe)obj;
 				boolean result = checkRdSe(rdSe);
 				if(!result){
-					this.setCheckResult("", "", 0,"相同的进入线、进入点不能创建两组分叉口提示");
+					this.setCheckResult("", "", 0,"相同的进入线、进入点、退出线不能创建两组分叉口提示");
 					return;
 				}
 			}
@@ -222,12 +223,15 @@ public class RELATING_CHECK_NOSAME_LINE_LINE_RELATION extends baseRule {
 		// TODO Auto-generated method stub
 		int inLinkPid = rdSe.getInLinkPid();
 		int nodePid = rdSe.getNodePid();
+		int outLinkPid = rdSe.getOutLinkPid();
 
 		StringBuilder sb = new StringBuilder();
 
 		sb.append("SELECT RS.PID FROM RD_SE RS WHERE RS.u_record !=2");
 		sb.append(" AND RS.IN_LINK_PID = ");
 		sb.append(inLinkPid);
+		sb.append(" AND RS.OUT_LINK_PID = ");
+		sb.append(outLinkPid);
 		sb.append(" AND RS.NODE_PID = ");
 		sb.append(nodePid);
 

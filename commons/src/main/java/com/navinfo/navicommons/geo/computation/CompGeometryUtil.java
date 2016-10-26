@@ -402,7 +402,7 @@ public class CompGeometryUtil {
 	
 	public static void main(String[] args) {
 		try{
-			Geometry g = JtsGeometryFactory.read("POLYGON ((116.46875 40.04167, 116.5 40.04167, 116.5 40.02083, 116.53125 40.02083, 116.53125 40.0, 116.53125 39.97917, 116.5 39.97917, 116.5 39.95833, 116.46875 39.95833, 116.4375 39.95833, 116.40625 39.95833, 116.40625 39.97917, 116.40625 40.0, 116.375 40.0, 116.375 40.02083, 116.375 40.04167, 116.40625 40.04167, 116.40625 40.0625, 116.4375 40.0625, 116.4375 40.04167, 116.46875 40.04167))");
+			Geometry g = JtsGeometryFactory.read("POINT(116.31919 40.04534)");
 			Set<String> results = geo2GridsWithoutBreak(g);
 			System.out.println(StringUtils.join(results,","));
 		}catch(Exception e){

@@ -364,8 +364,8 @@ public class UploadOperation {
 									upatePoiStatusForAndroid(conn, poiJson.getString("rowId"), 1, rawFields,2);
 								} else {
 									upatePoiStatusForAndroid(conn, poiJson.getString("rowId"), 0, rawFields,1);
-						            updatePoifreshVerified(poiJson.getInt("pid"),conn);
 								}
+								updatePoifreshVerified(poiJson.getInt("pid"),conn);
 								
 								conn.commit();
 								count++;
@@ -1904,8 +1904,13 @@ public class UploadOperation {
 	public void updatePoifreshVerified(int pid,Connection conn) throws Exception {
 			LogReader lr=new LogReader(conn);
 			int freshVerified=0;
-			if(lr.isExistObjHis(pid) || lr.isOnlyPhotoAndMetoHis(pid)){
+			int status=2;
+			if(!lr.isExistObjHis(pid)){
 				freshVerified=1;
+			}
+			if(lr.isExistObjHis(pid) && lr.isOnlyPhotoAndMetoHis(pid)){
+				freshVerified=1;
+				status=1;
 			}
 			String sql="UPDATE poi_edit_status T1 SET T1.fresh_verified = :1,T1.status=:2 where T1.row_id =(SELECT row_id as a FROM ix_poi where pid = " + pid + ")";
 			
@@ -1913,7 +1918,7 @@ public class UploadOperation {
 			try {
 				pstmt = conn.prepareStatement(sql);
 				pstmt.setInt(1, freshVerified);
-				pstmt.setInt(2, 1);
+				pstmt.setInt(2, status);
 				pstmt.executeUpdate();
 			} catch (Exception e) {
 				throw e;

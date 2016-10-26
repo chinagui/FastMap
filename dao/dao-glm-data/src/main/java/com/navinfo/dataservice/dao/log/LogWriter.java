@@ -615,15 +615,17 @@ public class LogWriter {
 				}
 
 				else {
+					logger.info("value:"+value);
 					if (value instanceof String) {
 						oldValue.put(tableColumn,
 								(String.valueOf(value)).replace("'", "''"));
 					} else {
-						if (oldValue==null){
+						if (value==null){
 							oldValue.put(tableColumn,  "");
 						}else{
 							oldValue.put(tableColumn, value);
 						}
+						logger.info("oldValue:"+oldValue);
 					}
 
 					newValue.put(tableColumn, columnValue);
@@ -632,7 +634,6 @@ public class LogWriter {
 			if (CollectionUtils.isEmpty(fieldList)) continue;//修改但是没有变更字段，不写履历
 			
 			ld.setFdLst(fieldList.toString());
-			logger.info("oldValue:"+oldValue);
 			ld.setOldValue(oldValue.toString());
 
 			ld.setNewValue(newValue.toString());

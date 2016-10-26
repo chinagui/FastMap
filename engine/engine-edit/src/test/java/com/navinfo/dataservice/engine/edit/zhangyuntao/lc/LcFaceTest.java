@@ -24,7 +24,7 @@ public class LcFaceTest extends InitApplication {
 
 	@Test
 	public void createTest() {
-		String requester = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"LCFACE\",\"objId\":207000003,\"data\":{\"names\":[{\"pid\":303000000,\"nameGroupid\":1,\"langCode\":\"CHI\",\"name\":\"土地覆盖面名\",\"phonetic\":\"Tu+Di+Fu+Gai+Mian+Ming\",\"srcFlag\":0,\"rowId\":\"7D027C09644745A0A0718B609A9F40CB\",\"objStatus\":\"INSERT\"},{\"pid\":303000001,\"nameGroupid\":1,\"langCode\":\"CHI\",\"name\":\"土地覆盖面名\",\"phonetic\":\"Tu+Di+Fu+Gai+Mian+Ming\",\"srcFlag\":0,\"rowId\":\"41ABFB8EE38647749A5C9EA62A729205\",\"objStatus\":\"INSERT\"},{\"pid\":303000001,\"rowId\":\"41ABFB8EE38647749A5C9EA62A729205\",\"objStatus\":\"UPDATE\",\"nameGroupid\":3},{\"pid\":303000000,\"rowId\":\"7D027C09644745A0A0718B609A9F40CB\",\"objStatus\":\"UPDATE\",\"nameGroupid\":2}],\"pid\":207000003}}";
+		String requester = "{\"command\":\"CREATE\",\"type\":\"LCFACE\",\"dbId\":17,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.37449383735655,40.06743126494544],[116.3755989074707,40.06735736911618],[116.37539505958557,40.066799042482025],[116.37449383735655,40.06743126494544]]}}}";
 		TestUtil.run(requester);
 	}
 

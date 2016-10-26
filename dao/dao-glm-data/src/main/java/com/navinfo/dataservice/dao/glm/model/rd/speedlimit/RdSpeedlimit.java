@@ -49,7 +49,7 @@ public class RdSpeedlimit implements IObj {
 
 	private int status = 7;
 
-	private int ckStatus;
+	private int ckStatus = 6;
 
 	private int adjaFlag;
 

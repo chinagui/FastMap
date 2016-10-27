@@ -1,6 +1,8 @@
 package com.navinfo.dataservice.web.edit.controller;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -15,9 +17,9 @@ import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.commons.util.Log4jUtils;
 import com.navinfo.dataservice.commons.util.ZipUtils;
-import com.navinfo.dataservice.control.app.download.DownloadOperation;
-import com.navinfo.dataservice.control.app.upload.UploadOperation;
+import com.navinfo.dataservice.control.app.download.PoiDownloadOperation;
 import com.navinfo.dataservice.control.app.search.Operation;
+import com.navinfo.dataservice.control.app.upload.UploadOperation;
 import com.navinfo.dataservice.engine.photo.CollectorImport;
 
 import net.sf.json.JSONArray;
@@ -46,8 +48,15 @@ public class PoiController extends BaseController{
 			JSONArray gridDateList = new JSONArray();
 			gridDateList = jsonReq.getJSONArray("grid");
 			
-			DownloadOperation operation = new DownloadOperation();
-			String url = operation.getPoiUrl(gridDateList);
+			Map<String,String> gridDateMap = new HashMap<String,String>();
+			
+			for (int i=0;i<gridDateList.size();i++) {
+				JSONObject gridDate = gridDateList.getJSONObject(i);
+				gridDateMap.put(gridDate.getString("grid"), gridDate.getString("date"));
+			}
+			
+			PoiDownloadOperation operation = new PoiDownloadOperation();
+			String url = operation.generateZip(gridDateMap);
 			
 			return new ModelAndView("jsonView", success(url));
 		}catch(Exception e){

@@ -16,7 +16,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
+import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.dao.check.CheckCommand;
@@ -29,6 +32,7 @@ import com.navinfo.dataservice.engine.check.CheckEngine;
 import com.navinfo.dataservice.engine.check.core.NiValException;
 import com.navinfo.dataservice.engine.edit.check.CheckService;
 import com.navinfo.navicommons.database.Page;
+import com.sun.source.tree.IfTree;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -47,12 +51,17 @@ public class CheckController extends BaseController {
 		Connection conn = null;
 
 		try {
+			logger.info("start check/list");
 
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
 			int dbId = jsonReq.getInt("dbId");
 			
 			int subtaskType = jsonReq.getInt("subtaskType");
+			int subtaskId =0;
+			if(jsonReq.containsKey("subtaskId")){
+				subtaskId=jsonReq.getInt("subtaskId");
+			}
 
 			JSONArray gridJas = jsonReq.getJSONArray("grids");
 
@@ -68,8 +77,17 @@ public class CheckController extends BaseController {
 			for(Object obj:gridJas){
 				grids.add(obj.toString());
 			}
-
+			if(grids.size()<1){
+				logger.info("start check/list manApi");
+				ManApi manApi=(ManApi) ApplicationContextUtil.getBean("manApi");
+				List<Integer> gridList = manApi.getGridIdsBySubtaskId(subtaskId);
+				for(Integer obj:gridList){
+					grids.add(obj.toString());
+				}
+				logger.info("end check/list manApi");
+			}			
 			Page page = selector.list(subtaskType,grids, pageSize, pageNum);
+			logger.info("end check/list");
 
 			return new ModelAndView("jsonView", success(page));
 

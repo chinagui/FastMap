@@ -1,5 +1,6 @@
 package com.navinfo.navicommons.geo.computation;
 
+import com.navinfo.dataservice.commons.util.DoubleUtil;
 import com.navinfo.dataservice.commons.util.JtsGeometryFactory;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.LineString;
@@ -17,6 +18,12 @@ public class JtsGeometryConvertor {
 	public static Coordinate convert(DoublePoint point){
 		if(point!=null){
 			return new Coordinate(point.getX(),point.getY());
+		}
+		return null;
+	}
+	public static Coordinate convertWithSpecDecimal(DoublePoint point){
+		if(point!=null){
+			return new Coordinate(DoubleUtil.keepSpecDecimal(point.getX()),DoubleUtil.keepSpecDecimal(point.getY()));
 		}
 		return null;
 	}
@@ -46,6 +53,18 @@ public class JtsGeometryConvertor {
 			coArr[0]=convert(polyline.getSpoint());
 			for(int i=0;i<polyline.getLineSize();i++){
 				coArr[i+1]=convert(polyline.getLines()[i].getEpoint());
+			}
+			return JtsGeometryFactory.createLineString(coArr);
+		}
+		return null;
+	}
+
+	public static LineString convertWithSpecDecimal(DoublePolyline polyline){
+		if(polyline!=null&&polyline.getLineSize()>0){
+			Coordinate[] coArr = new Coordinate[polyline.getLineSize()+1];
+			coArr[0]=convertWithSpecDecimal(polyline.getSpoint());
+			for(int i=0;i<polyline.getLineSize();i++){
+				coArr[i+1]=convertWithSpecDecimal(polyline.getLines()[i].getEpoint());
 			}
 			return JtsGeometryFactory.createLineString(coArr);
 		}

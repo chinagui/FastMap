@@ -26,7 +26,7 @@ import com.navinfo.dataservice.engine.edit.search.SearchProcess;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.LineSegment;
 
-public class commonTest extends InitApplication {
+public class runTest extends InitApplication {
 
 	@Override
 	@Before
@@ -637,7 +637,17 @@ public class commonTest extends InitApplication {
 	@Test
 	public void run_1010_1() throws Exception {
 
-		String parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"dbId\":17,\"distance\":\"6.6\",\"data\":{\"linkPids\":[664703,673017,673015]}}";
+		String parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"dbId\":17,\"distance\":\"6.6\",\"data\":{\"linkPids\":[671762,687278,687277]}}";
+
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+	
+	@Test
+	public void run_1010_11() throws Exception {
+
+		String parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"dbId\":17,\"distance\":\"6.6\",\"data\":{\"linkPids\":[300001407,309001379,320001335]}}";
 
 		Transaction t = new Transaction(parameter);
 
@@ -713,47 +723,20 @@ public class commonTest extends InitApplication {
 	@Test
 	public void run_1025_1() throws Exception {
 
-		String parameter = "{\"command\":\"DEPART\",\"dbId\":17,\"objId\":566066,\"data\":{\"catchNodePid\":\"19640603\",\"linkPid\":\"709382\"},\"type\":\"RDLINK\"}";
-		
+		String parameter = "{\"command\":\"CREATE\",\"dbId\":17,\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.40500664710999,39.979117898234875],[116.40540361404423,39.978484856884535]]},\"catchLinks\":[{\"linkPid\":220001464,\"lon\":116.40540361404423,\"lat\":39.978484856884535}]},\"type\":\"RDLINK\"}";
 		
 		Transaction t = new Transaction(parameter);
 
 		String msg = t.run();
 	}
 	
-	
 	@Test
-	public void josnArrayTest()
-	{
-		JSONArray array = new JSONArray();
-		
-		array.add("123");
-		array.add(123);
-		array.add("a");
-		array.add(1.2);
-		
-		JSONArray array2 = new JSONArray();
-		array2.add( array);
-		array2.add("1");
-		array2.add(1);
+	public void run_1026_1() throws Exception {
+
+		String parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"dbId\":17,\"distance\":\"8.3\",\"data\":{\"linkPids\":[207002103,205002148,200002127,210002134,302002122,305002165,305002166,205002149,309002087,209002126,309002088]}}";
+
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
 	}
-	
-	
-	@Test
-	public void ListTest()
-	{
-		List<Integer>pids=new ArrayList<Integer>();
-		pids.add(1);
-		pids.add(1);
-		pids.add(1);
-		pids.add(1);
-		pids.add(1);
-		pids.add(1);
-		pids.add(1);
-		pids.add(1);
-		pids.add(1);
-		
-	}
-	
-	
 }

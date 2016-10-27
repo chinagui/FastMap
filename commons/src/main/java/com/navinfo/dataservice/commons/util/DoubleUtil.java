@@ -8,6 +8,7 @@ package com.navinfo.dataservice.commons.util;
 */
 public class DoubleUtil {
 	public static double INFINITY = 9999999999999999.0;
+	public static double MIN_ANGLE4LINE_INT=Math.PI/12;//用于上下线分离计算两条线相交的交点时，最小的夹角，小于此设置不计算
 	public static double keepSpecDecimal(Double num){
 		return (double)(Math.round(num*100000)/100000.0);
 	} 

@@ -1065,6 +1065,7 @@ public class StaticsService {
 						+ " '' BLOCK_MAN_STATUS_LIST"
 						+ " FROM CITY C"
 						+ " WHERE C.PLAN_STATUS = 0"
+						+ " AND C.CITY_ID < 100000"
 						+ " UNION ALL"
 						+ " SELECT DISTINCT C.CITY_ID"
 						+ ", C.PLAN_STATUS"

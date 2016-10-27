@@ -46,11 +46,11 @@ public class StatMain {
 	//统计group概览
 	private static final String flag_group_overview = "group";
 	// 统计 month
-	//private static final String flag_month_poi = "mp";
-	//private static final String flag_month_road = "mr";
+//	private static final String flag_month_poi = "mp";
+//	private static final String flag_month_road = "mr";
 	// 统计 seasion
-	//private static final String flag_season_poi = "sp";
-	//private static final String flag_season_road = "sr";
+	private static final String flag_season_poi = "sp";
+	private static final String flag_season_road = "sr";
 	// 统计预期图
 	//private static final String flag_expect_stat="es";
 	//统计结果库
@@ -84,18 +84,18 @@ public class StatMain {
 				new OverviewMain(db_name, stat_time).runStat();
 			}else if (flag.equalsIgnoreCase(flag_group_overview)) {
 				new OverviewGroupMain(db_name, stat_time).runStat();
-			}
-			/*else if (flag.equalsIgnoreCase(flag_season_poi)) {
+			}else if (flag.equalsIgnoreCase(flag_season_poi)) {
 				new PoiSeasonMain(db_name, stat_time).runStat();
 			} else if (flag.equalsIgnoreCase(flag_season_road)) {
 				new RoadSeasonMain(db_name, stat_time).runStat();
-			} else if (flag.equalsIgnoreCase(flag_expect_stat)) {
-				new PoiCollectExpectMain(db_name, stat_time).runStat();
-				new RoadCollectExpectMain(db_name, stat_time).runStat();
-				new PoiDailyExpectMain(db_name, stat_time).runStat();
-				new RoadDailyExpectMain(db_name, stat_time).runStat();
-				new ExpectStatusMain(db_name, stat_time).runStat();
-			}*/
+			}
+//			else if (flag.equalsIgnoreCase(flag_expect_stat)) {
+//				new PoiCollectExpectMain(db_name, stat_time).runStat();
+//				new RoadCollectExpectMain(db_name, stat_time).runStat();
+//				new PoiDailyExpectMain(db_name, stat_time).runStat();
+//				new RoadDailyExpectMain(db_name, stat_time).runStat();
+//				new ExpectStatusMain(db_name, stat_time).runStat();
+//			}
 		}
 		System.exit(0);
 	}

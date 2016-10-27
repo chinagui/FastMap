@@ -32,6 +32,13 @@ public class CompLineUtilTest {
 				,new DoubleLine(new DoublePoint(130.48922,41.0),new DoublePoint(130.48922,41.5)));
 		System.out.println(p);
 	}
+
+	@Test
+	public void LineExtIntersect_003(){
+		DoublePoint p = CompLineUtil.LineExtIntersect(new DoubleLine(new DoublePoint(116.19432,40.53886),new DoublePoint(116.19438,40.53887))
+				,new DoubleLine(new DoublePoint(116.19438,40.53887),new DoublePoint(116.19438,40.53887)));
+		System.out.println(p);
+	}
 	
 	@Test
 	public void isRightSide_001(){

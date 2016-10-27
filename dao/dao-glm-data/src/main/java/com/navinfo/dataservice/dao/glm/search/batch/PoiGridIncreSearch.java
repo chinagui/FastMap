@@ -146,7 +146,7 @@ public class PoiGridIncreSearch {
 			pois = new HashMap<Long,IxPoi>();
 			for(Integer status:poiStatus.keySet()){
 				Map<Long,IxPoi> result = loadIxPoi(status,poiStatus.get(status),conn);
-				if(status!=null) pois.putAll(result);
+				if(result!=null) pois.putAll(result);
 			}
 		}
 		return pois;
@@ -304,13 +304,14 @@ public class PoiGridIncreSearch {
 		
 		QueryRunner run = new QueryRunner();
 		
-
+		Clob pidsClob = ConnectionUtil.createClob(conn);
+		pidsClob.setString(1, StringUtils.join(pids, ","));
 		
 		logger.info("设置子表IX_POI_NAME");
 		
 		String sql="select * from ix_poi_name where u_record !=2 and name_class=1 and name_type=2 and lang_code='CHI' and poi_pid in (select to_number(column_value) from table(clob_to_table(?)))";
 		
-		Map<Long,List<IRow>> names = run.query(conn, sql, new IxPoiNameHandler(),StringUtils.join(pids, ","));
+		Map<Long,List<IRow>> names = run.query(conn, sql, new IxPoiNameHandler(),pidsClob);
 
 		for(Long pid:names.keySet()){
 			pois.get(pid).setNames(names.get(pid));

@@ -123,6 +123,34 @@ public class CompPolylineUtilTest {
 		}
 		Assert.assertTrue(true);
 	}
+
+	@Test
+	public void separate_03(){
+		try{
+			LineString ls1=(LineString)JtsGeometryFactory.read("LINESTRING (116.19394 40.53876, 116.19402 40.53878)");
+			LineString ls2=(LineString)JtsGeometryFactory.read("LINESTRING (116.19402 40.53878, 116.19408 40.5388)");
+			LineString ls3=(LineString)JtsGeometryFactory.read("LINESTRING (116.19408 40.5388, 116.19411 40.53881)");
+			LineString ls4=(LineString)JtsGeometryFactory.read("LINESTRING (116.19411 40.53881, 116.19418 40.53883)");
+			LineString ls5=(LineString)JtsGeometryFactory.read("LINESTRING (116.19418 40.53883, 116.19426 40.53885)");
+			LineString ls6=(LineString)JtsGeometryFactory.read("LINESTRING (116.19426 40.53885, 116.19432 40.53886)");
+			LineString ls7=(LineString)JtsGeometryFactory.read("LINESTRING (116.19432 40.53886, 116.19438 40.53887)");
+			LineString ls8=(LineString)JtsGeometryFactory.read("LINESTRING (116.19438 40.53887, 116.19444 40.53888)");
+			LineString ls9=(LineString)JtsGeometryFactory.read("LINESTRING (116.19444 40.53888, 116.19448 40.53888)");
+			LineString ls10=(LineString)JtsGeometryFactory.read("LINESTRING (116.19448 40.53888, 116.19455 40.53889)");
+			LineString ls11=(LineString)JtsGeometryFactory.read("LINESTRING (116.19455 40.53889, 116.19464 40.5389)");
+			Point startPoint = (Point)JtsGeometryFactory.read("POINT (116.19394 40.53876)");
+			LineString[] lines = new LineString[]{
+					ls1,ls2,ls3,ls4,ls5,ls6,ls7,ls8,ls9,ls10,ls11
+			};
+			LineString[] results = CompPolylineUtil.separate(startPoint, lines, 8.3);
+			for(LineString l:results){
+				System.out.println(l.toText());
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		Assert.assertTrue(true);
+	}
 	/**
 	 * 情景：
 	 * 右侧切割

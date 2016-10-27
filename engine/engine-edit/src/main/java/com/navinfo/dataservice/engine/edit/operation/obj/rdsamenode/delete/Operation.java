@@ -100,13 +100,18 @@ public class Operation implements IOperation {
 	 * @param result
 	 * @throws Exception
 	 */
-	public void deleteByLink(int sNodePid, int eNodePid, String tableName, Result result) throws Exception {
+	public void deleteByLink(List<Integer> nodePids, String tableName, Result result) throws Exception {
 		if (conn == null) {
 			return;
 		}
 		RdSameNodeSelector sameNodeSelector = new RdSameNodeSelector(conn);
+		
+		if(CollectionUtils.isEmpty(nodePids))
+		{
+			return;
+		}
 
-		List<RdSameNode> sameNodes = sameNodeSelector.loadSameNodeByNodePids(sNodePid + "," + eNodePid, tableName,
+		List<RdSameNode> sameNodes = sameNodeSelector.loadSameNodeByNodePids(org.apache.commons.lang.StringUtils.join(nodePids, ","), tableName,
 				true);
 
 		if (CollectionUtils.isNotEmpty(sameNodes)) {
@@ -117,7 +122,7 @@ public class Operation implements IOperation {
 				if (parts.size() == 2) {
 					result.insertObject(sameNode, ObjStatus.DELETE, sameNode.getPid());
 				} else if (parts.size() > 2) {
-					deleteSameNodePart(sNodePid, eNodePid, parts, result);
+					deleteSameNodePart(nodePids, parts, result);
 				}
 			}
 		}
@@ -135,10 +140,10 @@ public class Operation implements IOperation {
 	 * @param result
 	 *            结果集
 	 */
-	private void deleteSameNodePart(int sNodePid, int eNodePid, List<IRow> parts, Result result) {
+	private void deleteSameNodePart(List<Integer> nodePids, List<IRow> parts, Result result) {
 		for (IRow row : parts) {
 			RdSameNodePart nodePart = (RdSameNodePart) row;
-			if (nodePart.getNodePid() == sNodePid || nodePart.getNodePid() == eNodePid) {
+			if (nodePids.contains(nodePart.getNodePid())) {
 				result.insertObject(nodePart, ObjStatus.DELETE, nodePart.getGroupId());
 			}
 		}
@@ -150,14 +155,18 @@ public class Operation implements IOperation {
 	 * @return
 	 * @throws Exception
 	 */
-	public List<AlertObject> getDeleteLinkSameNodeInfectData(int sNodePid, int eNodePid, String tableName,
+	public List<AlertObject> getDeleteLinkSameNodeInfectData(List<Integer> nodePids, String tableName,
 			Connection conn) throws Exception {
 
 		RdSameNodeSelector sameNodeSelector = new RdSameNodeSelector(conn);
 
 		List<AlertObject> alertList = new ArrayList<>();
 
-		List<RdSameNode> sameNodes = sameNodeSelector.loadSameNodeByNodePids(sNodePid + "," + eNodePid, tableName,
+		if(CollectionUtils.isEmpty(nodePids))
+		{
+			return alertList;
+		}
+		List<RdSameNode> sameNodes = sameNodeSelector.loadSameNodeByNodePids(org.apache.commons.lang.StringUtils.join(nodePids, ","), tableName,
 				true);
 
 		if (CollectionUtils.isNotEmpty(sameNodes)) {

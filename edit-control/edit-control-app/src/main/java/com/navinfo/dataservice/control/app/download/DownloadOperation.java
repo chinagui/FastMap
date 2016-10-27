@@ -3,6 +3,7 @@ package com.navinfo.dataservice.control.app.download;
 import java.io.File;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -40,6 +41,8 @@ public class DownloadOperation {
 	 */
 	public String getPoiUrl(JSONArray gridDateList) throws Exception{
 		try{
+			Date startTime = new Date();
+			
 			String day = StringUtils.getCurrentDay();
 
 			String uuid = UuidUtils.genUuid();
@@ -75,6 +78,9 @@ public class DownloadOperation {
 			String url = serverUrl + downloadUrlPath +File.separator+ day + "/"
 					+ zipFileName;
 			
+			Date endTime = new Date();
+			logger.info("total time:"+ (endTime.getTime() - startTime.getTime())+"ms");
+			
 			return url;
 		} catch (Exception e){
 			throw e;
@@ -100,6 +106,7 @@ public class DownloadOperation {
 		try {
 			logger.info("search ix_poi from db by grid:"+grids);
 			List<IRow> data = new PoiGridSearch().getPoiByGrids(grids);
+			logger.info("data total:"+data.size());
 			logger.info("begin convert ix_poi glm model to collector json model");
 			JSONArray ja = changeData(data);
 			logger.info("begin write json to file");

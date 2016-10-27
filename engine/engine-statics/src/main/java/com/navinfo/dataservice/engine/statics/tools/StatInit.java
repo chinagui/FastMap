@@ -19,15 +19,6 @@ import com.navinfo.navicommons.exception.ServiceException;
 public class StatInit {
 
 	/**
-	 * 初始化datahub 连接环境
-	 */
-	public static void initDatahubDb() {
-		ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(new String[] { "dubbo-consumer-datahub-test.xml" });
-		context.start();
-		new ApplicationContextUtil().setApplicationContext(context);
-	}
-
-	/**
 	 * 获取 tips库中 track轨迹统计结果，并封装成map返回 支持 根据参数key返回 grid，block，city三种
 	 */
 	public static Map<String, Double> getTrackTipsStat(String db_name, String col_name, String key, String stat_date) {

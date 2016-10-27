@@ -23,7 +23,7 @@ import net.sf.json.JSONObject;
  * 
  * @ClassName SysMsgController
  * @author Han Shaoming
- * @date 2016年9月22日 上午8:08:24
+ * @date 2016年10月27日 下午6:25:06
  * @Description TODO
  */
 @Controller

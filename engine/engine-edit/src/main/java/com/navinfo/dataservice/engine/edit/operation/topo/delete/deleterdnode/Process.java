@@ -534,10 +534,8 @@ public class Process extends AbstractProcess<Command> {
 		List<AlertObject> sameNodeAlertDataList = new ArrayList<>();
 		com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.delete.Operation sameNodeOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.delete.Operation(
 				conn);
-		for (RdLink link : links) {
-			sameNodeAlertDataList.addAll(sameNodeOperation.getDeleteLinkSameNodeInfectData(link.getsNodePid(),
-					link.geteNodePid(), "RD_NODE", conn));
-		}
+		sameNodeAlertDataList.addAll(
+				sameNodeOperation.getDeleteLinkSameNodeInfectData(this.getCommand().getNodePids(), "RD_NODE", conn));
 		if (CollectionUtils.isNotEmpty(sameNodeAlertDataList)) {
 			infects.put("删除link影响的同一点", sameNodeAlertDataList);
 		}

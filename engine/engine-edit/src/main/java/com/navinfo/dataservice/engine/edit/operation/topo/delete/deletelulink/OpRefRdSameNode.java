@@ -4,9 +4,9 @@
 package com.navinfo.dataservice.engine.edit.operation.topo.delete.deletelulink;
 
 import java.sql.Connection;
+import java.util.List;
 
 import com.navinfo.dataservice.dao.glm.iface.Result;
-import com.navinfo.dataservice.dao.glm.model.lu.LuLink;
 
 /** 
 * @ClassName: OpRefTrafficsignal 
@@ -17,16 +17,17 @@ import com.navinfo.dataservice.dao.glm.model.lu.LuLink;
 public class OpRefRdSameNode{
 	
 	private Connection conn;
-
+	
 	public OpRefRdSameNode(Connection conn) {
 		this.conn = conn;
 	}
 	
-	public String run(Result result,LuLink link) throws Exception {
+	public String run(Result result,List<Integer> nodePids) throws Exception {
 		
 		com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.delete.Operation rdinterOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.delete.Operation(
 				this.conn);
-		rdinterOperation.deleteByLink(link.getsNodePid(),link.geteNodePid(),"LU_NODE", result);
+		
+		rdinterOperation.deleteByLink(nodePids,"LU_NODE", result);
 		
 		return null;
 	}

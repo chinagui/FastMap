@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -42,6 +43,7 @@ public class PoiDownloadOperation {
 	 */
 	public String generateZip(Map<String,String> gridDateMap) throws Exception{
 		try{
+			Date startTime = new Date();
 			String day = StringUtils.getCurrentDay();
 
 			String uuid = UuidUtils.genUuid();
@@ -77,6 +79,8 @@ public class PoiDownloadOperation {
 			String url = serverUrl + downloadUrlPath +File.separator+ day + "/"
 					+ zipFileName;
 			
+			Date endTime = new Date();
+			logger.info("total time:"+ (endTime.getTime() - startTime.getTime())+"ms");
 			return url;
 		} catch (Exception e){
 			throw e;
@@ -102,6 +106,7 @@ public class PoiDownloadOperation {
 		try {
 			logger.info("starting load data...");
 			Collection<IxPoi> data = new PoiGridIncreSearch().getPoiByGrids(gridDateMap);
+			logger.info("data total:"+data.size());
 			logger.info("starting convert data...");
 			JSONArray ja = changeData(data);
 			logger.info("begin write json to file");

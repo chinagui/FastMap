@@ -3,6 +3,13 @@ package com.navinfo.dataservice.commons.geom;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import oracle.spatial.geometry.JGeometry;
+import oracle.spatial.util.GeometryExceptionWithContext;
+import oracle.spatial.util.WKT;
+import oracle.sql.STRUCT;
+
 import org.apache.commons.lang.ArrayUtils;
 import org.json.JSONException;
 import org.json.JSONStringer;
@@ -28,13 +35,6 @@ import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
 import com.vividsolutions.jts.io.WKTWriter;
 import com.vividsolutions.jts.precision.GeometryPrecisionReducer;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-import oracle.spatial.geometry.JGeometry;
-import oracle.spatial.util.GeometryExceptionWithContext;
-import oracle.spatial.util.WKT;
-import oracle.sql.STRUCT;
 
 /**
  * 几何的转换类
@@ -434,6 +434,30 @@ public class GeoTranslator {
 	 */
 	public static Geometry transform(Geometry geom, double scale, int precision) {
 
+		//防止开发人员在同一级别对Geometry重复缩放，捕获catch后按代码修改前逻辑缩放Geometry。
+		try {
+			Coordinate flagCoordinate = geom.getCoordinate();
+
+			if (flagCoordinate == null && geom.getCoordinates().length > 0) {
+
+				flagCoordinate = geom.getCoordinates()[0];
+			}
+			if (flagCoordinate != null) {
+
+				if (scale > 1) {
+					if (flagCoordinate.x > 180 || flagCoordinate.y > 90) {
+						return geom;
+					}
+				} else if (scale < 1) {
+					if (flagCoordinate.x < 180 || flagCoordinate.y < 90) {
+						return geom;
+					}
+				}
+			}
+		} catch (Exception e) {
+			// 不处理异常 继续向下执行
+		}
+		
 		AffineTransformation aff = new AffineTransformation();
 
 		aff = aff.scale(scale, scale);

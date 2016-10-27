@@ -68,7 +68,8 @@ public class CompLineUtil {
 				y=(k1*b2-k2*b1)/(k1-k2);
 			}
 			
-			return new DoublePoint(DoubleUtil.keepSpecDecimal(x),DoubleUtil.keepSpecDecimal(y));
+//			return new DoublePoint(DoubleUtil.keepSpecDecimal(x),DoubleUtil.keepSpecDecimal(y));
+			return new DoublePoint(x,y);
 
 		}
 	}

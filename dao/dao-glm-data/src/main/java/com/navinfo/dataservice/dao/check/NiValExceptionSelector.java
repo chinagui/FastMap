@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.dao.check;
 
+import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -17,6 +18,7 @@ import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.navicommons.database.Page;
@@ -274,11 +276,13 @@ public class NiValExceptionSelector {
 	public Page list(int subtaskType,Collection<String> grids, final int pageSize, final int pageNum)
 			throws Exception {
 		
-		StringBuilder sql = new StringBuilder("select a.md5_code,ruleid,situation,\"LEVEL\" level_,targets,information,a.location.sdo_point.x x,a.location.sdo_point.y y,created,worker from ni_val_exception a where exists(select 1 from ni_val_exception_grid b where a.md5_code=b.md5_code and b.grid_id in(");
-
-		sql.append(StringUtils.join(grids, ","));
-		
-		sql.append("))");
+		Clob pidsClob = ConnectionUtil.createClob(conn);
+		pidsClob.setString(1, StringUtils.join(grids, ","));		
+		StringBuilder sql = new StringBuilder("select a.md5_code,ruleid,situation,\"LEVEL\" level_,"
+				+ "targets,information,a.location.sdo_point.x x,a.location.sdo_point.y y,created,"
+				+ "worker from ni_val_exception a where exists(select 1 from ni_val_exception_grid b,"
+				+ "(select to_number(COLUMN_VALUE) COLUMN_VALUE from table(clob_to_table(?))) grid_table "
+				+ "where a.md5_code=b.md5_code and b.grid_id =grid_table.COLUMN_VALUE)");
 		
 		if(subtaskType==0||subtaskType==5||subtaskType==6||subtaskType==7){
 			sql.append(" and EXISTS ("
@@ -329,7 +333,7 @@ public class NiValExceptionSelector {
 				return page;
 			}
 			
-		});
+		},pidsClob);
 	}
 	
 

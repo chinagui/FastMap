@@ -166,8 +166,6 @@ public class RoadSeasonMain {
 		try {
 			// 初始化mongodb数据库
 			initMongoDb(db_name);
-			// 初始化 datahub环境
-			StatInit.initDatahubDb();
 			// 获得 大区库的db_id
 			List<Integer> ListDbId = OracleDao.getDbIdMonth();
 

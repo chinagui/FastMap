@@ -105,6 +105,7 @@ public class PoiGridIncreSearch {
 					pois.putAll(loadDataSingleDbGrid(conn,grid,gridDateMap.get(grid)));
 				}
 			}
+			loadChildTables(conn,pois);
 			return pois;
 		}catch (Exception e) {
 			logger.error(e.getMessage(),e);
@@ -146,7 +147,7 @@ public class PoiGridIncreSearch {
 			pois = new HashMap<Long,IxPoi>();
 			for(Integer status:poiStatus.keySet()){
 				Map<Long,IxPoi> result = loadIxPoi(status,poiStatus.get(status),conn);
-				if(status!=null) pois.putAll(result);
+				if(result!=null) pois.putAll(result);
 			}
 		}
 		return pois;
@@ -195,7 +196,7 @@ public class PoiGridIncreSearch {
 				Long pid = (long) ixPoi.getPid();
 				pois.put(pid, ixPoi);
 			}
-			loadChildTables(conn,pois);
+			
 			return pois;
 		} catch(Exception e) {
 			throw e;
@@ -240,7 +241,7 @@ public class PoiGridIncreSearch {
 				poisMap.put(pid, ixPoi);
 			}
 			
-			loadChildTables(conn,poisMap);
+			
 			return poisMap;
 		}catch (Exception e) {
 			throw e;

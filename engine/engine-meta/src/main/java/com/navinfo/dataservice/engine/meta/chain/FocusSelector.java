@@ -27,9 +27,10 @@ public class FocusSelector {
 	
 	public JSONArray getPoiNum() throws Exception {
 
-		Connection conn = DBConnector.getInstance().getMetaConnection();
+		Connection conn = null;
 
 		try {
+			conn = DBConnector.getInstance().getMetaConnection();
 			String sql = "select distinct poi_num from sc_point_focus where type=2";
 
 			QueryRunner run = new QueryRunner();
@@ -42,7 +43,7 @@ public class FocusSelector {
 					JSONArray array = new JSONArray();
 
 					while (rs.next()) {
-						int poiNum = rs.getInt("POI_NUM");
+						String poiNum = rs.getString("POI_NUM");
 
 						array.add(poiNum);
 					}
@@ -56,7 +57,7 @@ public class FocusSelector {
 			log.error(e.getMessage(), e);
 			throw new ServiceException("查询明细失败，原因为:" + e.getMessage(), e);
 		} finally {
-			DbUtils.commitAndCloseQuietly(conn);
+			DbUtils.closeQuietly(conn);
 		}
 	}
 }

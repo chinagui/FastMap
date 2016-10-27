@@ -40,7 +40,7 @@ public class IxPoiAddressSelector extends AbstractSelector {
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
 		try {
-			String sql = "SELECT fullname FROM "
+			String sql = "SELECT fullname,floor FROM "
 					+ ixPoiAddress.tableName()
 					+ " where poi_pid=:1 AND name_groupid=1 AND lang_code='CHI' AND u_record!=2";
 			pstmt = conn.prepareStatement(sql);
@@ -48,6 +48,7 @@ public class IxPoiAddressSelector extends AbstractSelector {
 			resultSet = pstmt.executeQuery();
 			if (resultSet.next()) {
 				ixPoiAddress.setFullname(resultSet.getString("fullname"));
+				ixPoiAddress.setFloor(resultSet.getString("floor"));
 			}
 			rows.add(ixPoiAddress);
 			return rows;

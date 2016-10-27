@@ -35,7 +35,7 @@ public class RdLane003 extends baseRule {
 				RdLaneConnexity laneObj=(RdLaneConnexity) obj;
 				Map<String, Object> changedFields=laneObj.changedFields();
 				//新增执行该检查
-				if(changedFields!=null){continue;}
+				if(changedFields!=null && changedFields.size()>0){continue;}
 				RdLinkSelector rdLinkSelector=new RdLinkSelector(this.getConn());
 				RdLink inLink = (RdLink) rdLinkSelector.loadByIdOnlyRdLink(laneObj.getInLinkPid(), false);
 				//进入link非单向
@@ -87,6 +87,7 @@ public class RdLane003 extends baseRule {
 			RdLaneTopoVia rdBranchVia = (RdLaneTopoVia)deObj;
 			vialinkPids.add(rdBranchVia.getViaLinkPid());
 		}
+		if(vialinkPids.size()==0){return false;}
 		//经过线信息
 		List<RdLink> viaRdLinks = rdLinkSelector.loadByPids(vialinkPids,false);
 		//经过线是否沿通行方向联通

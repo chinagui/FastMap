@@ -137,7 +137,7 @@ public class CompPolylineUtilTest {
 			LineString ls8=(LineString)JtsGeometryFactory.read("LINESTRING (116.19438 40.53887, 116.19444 40.53888)");
 			LineString ls9=(LineString)JtsGeometryFactory.read("LINESTRING (116.19444 40.53888, 116.19448 40.53888)");
 			LineString ls10=(LineString)JtsGeometryFactory.read("LINESTRING (116.19448 40.53888, 116.19455 40.53889)");
-			LineString ls11=(LineString)JtsGeometryFactory.read("LINESTRING (116.19455 40.53889, 116.19464 40.5389)");
+			LineString ls11=(LineString)JtsGeometryFactory.read("LINESTRING (116.19455 40.53889, 116.19464 40.53897)");
 			Point startPoint = (Point)JtsGeometryFactory.read("POINT (116.19394 40.53876)");
 			LineString[] lines = new LineString[]{
 					ls1,ls2,ls3,ls4,ls5,ls6,ls7,ls8,ls9,ls10,ls11

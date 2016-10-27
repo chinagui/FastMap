@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import com.navinfo.dataservice.commons.util.DoubleUtil;
 import com.navinfo.dataservice.commons.util.JtsGeometryFactory;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.LineString;
@@ -17,6 +18,7 @@ import com.vividsolutions.jts.geom.Point;
 * @Description: TODO
 */
 public class CompPolylineUtil {
+	
 
 	public static DoublePolyline offset(DoublePolyline polyline,double distance){
 		
@@ -56,12 +58,20 @@ public class CompPolylineUtil {
 								||rightLines[j]==null||rightLines[j].getSpoint()==null||rightLines[j].getEpoint()==null){
 							System.out.println("***");
 						}
-						DoublePoint leftMidPoint = CompLineUtil.LineExtIntersect(leftLines[j-1],leftLines[j]);
-						leftLines[j-1].setEpoint(leftMidPoint);
-						leftLines[j].setSpoint(leftMidPoint);
-						DoublePoint rightMidPoint = CompLineUtil.LineExtIntersect(rightLines[j-1],rightLines[j]);
-						rightLines[j-1].setEpoint(rightMidPoint);
-						rightLines[j].setSpoint(rightMidPoint);
+						if(CompLineUtil.angleNoDirection(leftLines[j-1], leftLines[j])<DoubleUtil.MIN_ANGLE4LINE_INT){
+							leftLines[j].setSpoint(leftLines[j-1].getEpoint());
+						}else{
+							DoublePoint leftMidPoint = CompLineUtil.LineExtIntersect(leftLines[j-1],leftLines[j]);
+							leftLines[j-1].setEpoint(leftMidPoint);
+							leftLines[j].setSpoint(leftMidPoint);
+						}
+						if(CompLineUtil.angleNoDirection(rightLines[j-1], rightLines[j])<DoubleUtil.MIN_ANGLE4LINE_INT){
+							rightLines[j].setSpoint(rightLines[j-1].getEpoint());
+						}else{
+							DoublePoint rightMidPoint = CompLineUtil.LineExtIntersect(rightLines[j-1],rightLines[j]);
+							rightLines[j-1].setEpoint(rightMidPoint);
+							rightLines[j].setSpoint(rightMidPoint);
+						}
 					}
 				}
 				leftResults[i]=new DoublePolyline(leftLines);
@@ -70,16 +80,23 @@ public class CompPolylineUtil {
 				if(i>0){
 					DoubleLine leftPreLastLine = leftResults[i-1].getLastLine();
 					DoubleLine leftCurFirstLine = leftResults[i].getFirstLine();
-					DoublePoint leftMidNode = CompLineUtil.LineExtIntersect(leftPreLastLine,leftCurFirstLine);
-					leftPreLastLine.setEpoint(leftMidNode);
-					leftCurFirstLine.setSpoint(leftMidNode);
+					if(CompLineUtil.angleNoDirection(leftPreLastLine, leftCurFirstLine)<DoubleUtil.MIN_ANGLE4LINE_INT){
+						leftCurFirstLine.setSpoint(leftPreLastLine.getEpoint());
+					}else{
+						DoublePoint leftMidNode = CompLineUtil.LineExtIntersect(leftPreLastLine,leftCurFirstLine);
+						leftPreLastLine.setEpoint(leftMidNode);
+						leftCurFirstLine.setSpoint(leftMidNode);
+					}
+					
 					DoubleLine rightPreLastLine = rightResults[i-1].getLastLine();
 					DoubleLine rightCurFirstLine = rightResults[i].getFirstLine();
-					System.out.println(rightPreLastLine);
-					System.out.println(rightCurFirstLine);
-					DoublePoint rightMidNode = CompLineUtil.LineExtIntersect(rightPreLastLine,rightCurFirstLine);
-					rightPreLastLine.setEpoint(rightMidNode);
-					rightCurFirstLine.setSpoint(rightMidNode);
+					if(CompLineUtil.angleNoDirection(rightPreLastLine, rightCurFirstLine)<DoubleUtil.MIN_ANGLE4LINE_INT){
+						rightCurFirstLine.setSpoint(rightPreLastLine.getEpoint());
+					}else{
+						DoublePoint rightMidNode = CompLineUtil.LineExtIntersect(rightPreLastLine,rightCurFirstLine);
+						rightPreLastLine.setEpoint(rightMidNode);
+						rightCurFirstLine.setSpoint(rightMidNode);
+					}
 				}
 			}
 			//reverse left polylines
@@ -120,7 +137,8 @@ public class CompPolylineUtil {
 			//转换
 			LineString[] results = new LineString[rawResults.length];
 			for(int j=0;j<rawResults.length;j++){
-				results[j]=JtsGeometryConvertor.convert(rawResults[j]);
+				//舍弃多余小数位数
+				results[j]=JtsGeometryConvertor.convertWithSpecDecimal(rawResults[j]);
 			}
 			return results;
 		}

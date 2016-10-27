@@ -39,6 +39,7 @@ import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiParent;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiPhoto;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 import com.navinfo.dataservice.dao.log.LogReader;
+import com.navinfo.dataservice.engine.edit.service.EditApiImpl;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.DBUtils;
 import com.navinfo.navicommons.geo.computation.CompGridUtil;
@@ -362,10 +363,12 @@ public class UploadOperation {
 								String rawFields = jo.getString("rawFields");
 								if (freshFlag) {
 									upatePoiStatusForAndroid(conn, poiJson.getString("rowId"), 1, rawFields,2);
+									
 								} else {
 									upatePoiStatusForAndroid(conn, poiJson.getString("rowId"), 0, rawFields,1);
 								}
-								updatePoifreshVerified(poiJson.getInt("pid"),conn);
+								EditApiImpl editApiImpl = new EditApiImpl(conn);
+								editApiImpl.updatePoifreshVerified(poiJson.getInt("pid"));
 								
 								conn.commit();
 								count++;
@@ -1860,7 +1863,7 @@ public class UploadOperation {
 	}
 	
 	private IxPoiParent getParentByPid(int pid,Connection conn) throws Exception {
-		String sql = "SELECT * FROM ix_poi_parent WHERE parent_poi_pid=:1";
+		String sql = "SELECT * FROM ix_poi_parent WHERE parent_poi_pid=:1 and u_record !=2";
 		
 		PreparedStatement pstmt = null;
 
@@ -1895,40 +1898,4 @@ public class UploadOperation {
 		}
 	}
 	
-	/**
-	 * 修改的数据，若只有照片和备注的履历，则为鲜度验证,更新为待作业
-	 * @param pid
-	 * @param conn
-	 * @throws Exception
-	 */
-	public void updatePoifreshVerified(int pid,Connection conn) throws Exception {
-			LogReader lr=new LogReader(conn);
-			int freshVerified=0;
-			int status=2;
-			if(!lr.isExistObjHis(pid)){
-				freshVerified=1;
-			}
-			if(lr.isExistObjHis(pid) && lr.isOnlyPhotoAndMetoHis(pid)){
-				freshVerified=1;
-				status=1;
-			}
-			String sql="UPDATE poi_edit_status T1 SET T1.fresh_verified = :1,T1.status=:2 where T1.row_id =(SELECT row_id as a FROM ix_poi where pid = " + pid + ")";
-			
-			PreparedStatement pstmt = null;
-			try {
-				pstmt = conn.prepareStatement(sql);
-				pstmt.setInt(1, freshVerified);
-				pstmt.setInt(2, status);
-				pstmt.executeUpdate();
-			} catch (Exception e) {
-				throw e;
-
-			} finally {
-				DBUtils.closeStatement(pstmt);
-			}
-		}
-	
-
-	
-
 }

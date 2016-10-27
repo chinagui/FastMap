@@ -49,7 +49,7 @@ public class Process extends AbstractProcess<Command> implements IProcess {
 				ixPoiParent.setPoiChildrens(childrens);
 			}
 		} else {
-			throw new Exception("poi:" + this.getCommand().getObjId() + "的父不唯一");
+			throw new Exception("poi:" + this.getCommand().getObjId() + "的父数据不正确");
 		}
 		return true;
 	}

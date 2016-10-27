@@ -4,9 +4,9 @@
 package com.navinfo.dataservice.engine.edit.operation.topo.delete.deletezonelink;
 
 import java.sql.Connection;
+import java.util.List;
 
 import com.navinfo.dataservice.dao.glm.iface.Result;
-import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneLink;
 
 /** 
 * @ClassName: OpRefTrafficsignal 
@@ -22,11 +22,11 @@ public class OpRefRdSameNode{
 		this.conn = conn;
 	}
 	
-	public String run(Result result,ZoneLink link) throws Exception {
+	public String run(Result result,List<Integer> nodePids) throws Exception {
 		
 		com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.delete.Operation rdinterOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.delete.Operation(
 				this.conn);
-		rdinterOperation.deleteByLink(link.getsNodePid(),link.geteNodePid(),"ZONE_NODE", result);
+		rdinterOperation.deleteByLink(nodePids,"ZONE_NODE", result);
 		
 		return null;
 	}

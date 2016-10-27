@@ -163,7 +163,7 @@ public class RdLinkTest extends InitApplication {
 	@Test
 	public void testBatch()
 	{
-		String parameter = "{\"command\":\"CREATE\",\"dbId\":17,\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.18122458457947,40.59320544227775],[116.18182621579412,40.59275119042267],[116.18244767189024,40.592948813638124]]},\"catchLinks\":[{\"linkPid\":210001397,\"lon\":116.18182621579412,\"lat\":40.59275119042267}]},\"type\":\"RDLINK\"}";
+		String parameter = "{\"command\":\"CREATE\",\"type\":\"IXPOI\",\"dbId\":17,\"data\":{\"longitude\":116.20599746704102,\"latitude\":40.580030566358204,\"x_guide\":116.20599746704102,\"y_guide\":40.580030566358204,\"linkPid\":0,\"name\":\"asdas\",\"kindCode\":\"210105\"}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

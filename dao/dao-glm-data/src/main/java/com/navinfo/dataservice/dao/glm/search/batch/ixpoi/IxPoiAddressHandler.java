@@ -22,6 +22,7 @@ public class IxPoiAddressHandler implements ResultSetHandler<Map<Long,List<IRow>
 				List<IRow> addressList = new ArrayList<IRow>();
 				IxPoiAddress ixPoiAddress = new IxPoiAddress();
 				ixPoiAddress.setFullname(rs.getString("fullname"));
+				ixPoiAddress.setFloor(rs.getString("floor"));
 				addressList.add(ixPoiAddress);
 				addressMap.put(rs.getLong("poi_pid"), addressList);
 			}

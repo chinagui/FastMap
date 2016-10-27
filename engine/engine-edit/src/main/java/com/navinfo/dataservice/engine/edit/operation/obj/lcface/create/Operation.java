@@ -63,7 +63,7 @@ public class Operation implements IOperation {
 
         // 既有线构成面
         if (command.getLinkPids() != null) {
-            this.createFaceByLcLink(command.getLinks());
+            this.createFaceByLcLink(command.getLinks(), null);
         }
 
         // 创建
@@ -80,7 +80,7 @@ public class Operation implements IOperation {
      * @param objList 传入要创建面的几何
      * @throws Exception
      */
-    public void createFaceByLcLink(List<IObj> objList) throws Exception {
+    public void createFaceByLcLink(List<IObj> objList, LcFace face) throws Exception {
         Set<String> meshes = new HashSet<String>();
         List<LcLink> lcLinks = new ArrayList<LcLink>();
         for (IObj obj : objList) {
@@ -95,14 +95,14 @@ public class Operation implements IOperation {
         }
         if (meshes.size() == 1) {
             int meshId = Integer.parseInt(meshes.iterator().next());
-            this.createFace();
+            this.createFace(face);
             this.face.setMeshId(meshId);
             this.face.setMesh(meshId);
             this.reCaleFaceGeometry(lcLinks);
         } else {
             this.updateFlag = false;
             Geometry geom = GeoTranslator.transform(this.getPolygonGeometry(lcLinks), 0.00001, 5);
-            this.createFaceWithMesh(meshes, geom, objList, 1);
+            this.createFaceWithMesh(meshes, geom, objList, 1, face);
         }
     }
 
@@ -112,7 +112,7 @@ public class Operation implements IOperation {
      * @param flag   创建面表示 0 根据几何，1 根据既有线
      * @throws Exception
      */
-    private void createFaceWithMesh(Set<String> meshes, Geometry geom, List<IObj> objList, int flag) throws Exception {
+    private void createFaceWithMesh(Set<String> meshes, Geometry geom, List<IObj> objList, int flag, LcFace face) throws Exception {
         Iterator<String> it = meshes.iterator();
         Map<Coordinate, Integer> mapNode = new HashMap<Coordinate, Integer>();
         Map<Geometry, LcLink> mapLink = new HashMap<Geometry, LcLink>();
@@ -180,7 +180,7 @@ public class Operation implements IOperation {
 
                 }
                 // 创建线
-                this.createFace();
+                this.createFace(face);
                 this.reCaleFaceGeometry(links);
             }
 
@@ -205,7 +205,7 @@ public class Operation implements IOperation {
             // 生成起始node
             LcNode Node = NodeOperateUtils.createLcNode(sPoint.x, sPoint.y);
             result.insertObject(Node, ObjStatus.INSERT, Node.pid());
-            this.createFace();
+            this.createFace(null);
             List<LcLink> links = new ArrayList<LcLink>();
             LcLink lcLink = LcLinkOperateUtils.getAddLink(geom, Node.getPid(), Node.getPid(), result, null);
             links.add(lcLink);
@@ -215,7 +215,7 @@ public class Operation implements IOperation {
             this.reCaleFaceGeometry(links);
         } // 如果跨图幅
         else {
-            this.createFaceWithMesh(meshes, geom, null, 0);
+            this.createFaceWithMesh(meshes, geom, null, 0, null);
         }
 
     }
@@ -406,10 +406,18 @@ public class Operation implements IOperation {
     /*
      * 更新面的几何属性
      */
-    private void createFace() throws Exception {
+    private void createFace(LcFace f) throws Exception {
         LcFace face = new LcFace();
         face.setPid(PidUtil.getInstance().applyAdFacePid());
         result.setPrimaryPid(face.getPid());
+        if (null != f) {
+            face.setFeaturePid(f.getFeaturePid());
+            face.setKind(f.getKind());
+            face.setForm(f.getForm());
+            face.setDisplayClass(f.getDisplayClass());
+            face.setDetailFlag(f.getDetailFlag());
+            face.setScale(f.getScale());
+        }
         this.face = face;
     }
 

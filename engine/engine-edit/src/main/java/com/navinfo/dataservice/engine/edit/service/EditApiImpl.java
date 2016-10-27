@@ -88,7 +88,7 @@ public class EditApiImpl implements EditApi {
 	}
 
 	/**
-	 * 修改的数据，若没有履历或者只有照片和备注的履历，则为鲜度验证
+	 * 修改的数据，若只有照片和备注的履历，则为鲜度验证,更新为待作业
 	 * @param pid
 	 * @param conn
 	 * @throws Exception
@@ -96,15 +96,21 @@ public class EditApiImpl implements EditApi {
 	public void updatePoifreshVerified(int pid) throws Exception {
 			LogReader lr=new LogReader(conn);
 			int freshVerified=0;
-			if(!lr.isExistObjHis(pid) || lr.isOnlyPhotoAndMetoHis(pid)){
+			int status=2;
+			if(!lr.isExistObjHis(pid)){
 				freshVerified=1;
 			}
-			String sql="UPDATE poi_edit_status T1 SET T1.fresh_verified = :1 where T1.row_id =(SELECT row_id as a FROM ix_poi where pid = " + pid + ")";
+			if(lr.isExistObjHis(pid) && lr.isOnlyPhotoAndMetoHis(pid)){
+				freshVerified=1;
+				status=1;
+			}
+			String sql="UPDATE poi_edit_status T1 SET T1.fresh_verified = :1,T1.status=:2 where T1.row_id =(SELECT row_id as a FROM ix_poi where pid = " + pid + ")";
 			
 			PreparedStatement pstmt = null;
 			try {
 				pstmt = conn.prepareStatement(sql);
 				pstmt.setInt(1, freshVerified);
+				pstmt.setInt(2, status);
 				pstmt.executeUpdate();
 			} catch (Exception e) {
 				throw e;

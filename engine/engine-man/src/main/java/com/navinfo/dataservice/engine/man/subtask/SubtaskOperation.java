@@ -896,6 +896,7 @@ public class SubtaskOperation {
 					+ " from subtask s, subtask_grid_mapping sgm, block_man bm, task t"
 					+ " where s.block_man_id = bm.block_man_id"
 					+ " and bm.task_id = t.task_id"
+					+ " and sgm.subtask_id = s.subtask_id"
 					+ " and t.task_type = 4"
 					+ " and s.type = 4"
 					+ " and s.subtask_id = " + subtaskId

@@ -6,8 +6,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
+import org.apache.log4j.Logger;
+import org.springframework.util.StringUtils;
 
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
@@ -15,12 +15,17 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 /**
  * 索引:POI 深度信息(餐饮类)
  * @author zhaokk
  *
  */
 public class IxPoiRestaurant implements IObj {
+	
+	private Logger logger = Logger.getLogger(IxPoiRestaurant.class);
 
 	private int pid;
 	private int poiPid =0;
@@ -260,18 +265,12 @@ public class IxPoiRestaurant implements IObj {
 					field.setAccessible(true);
 					
 					Object objValue = field.get(this);
-					
-					String oldValue = null;
-					
-					if (objValue == null){
-						oldValue = "null";
-					}else{
-						oldValue = String.valueOf(objValue);
-					}
-					
 					String newValue = json.getString(key);
-					
-					if (!newValue.equals(oldValue)){
+					if("null".equalsIgnoreCase(newValue))newValue=null;
+					logger.info("objValue:"+objValue);
+					logger.info("newValue:"+newValue);
+					if (!isEqualsString(objValue,newValue)) {
+						logger.info("isEqualsString:false");
 						Object value = json.get(key);
 						
 						if(value instanceof String){
@@ -294,6 +293,21 @@ public class IxPoiRestaurant implements IObj {
 			return false;
 		}
 
+	}
+	
+	private static boolean isEqualsString(Object oldValue,Object newValue){
+		if(null==oldValue&&null==newValue)
+			return true;
+		if(StringUtils.isEmpty(oldValue)&&StringUtils.isEmpty(newValue)){
+			return true;
+		}
+		if(oldValue==null&&newValue!=null){
+			return false;
+		}
+		if(oldValue!=null&&newValue==null){
+			return false;
+		}
+		return oldValue.toString().equals(newValue.toString());
 	}
 
 	@Override

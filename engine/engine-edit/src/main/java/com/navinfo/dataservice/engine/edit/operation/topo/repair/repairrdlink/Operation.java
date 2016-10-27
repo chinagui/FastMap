@@ -76,7 +76,7 @@ public class Operation implements IOperation {
 			link.setGeometry(GeoTranslator.geojson2Jts(this.command.getLinkGeom(), 100000, 0));
 			links.add(link);
 			// 设置Link的urban属性
-			UrbanBatchUtils.updateUrban(this.command.getUpdateLink(), link.getGeometry(), conn);
+			UrbanBatchUtils.updateUrban(this.command.getUpdateLink(), link.getGeometry(), conn, result);
 			// 设置link的AdminId
 			AdminIDBatchUtils.updateAdminID(this.command.getUpdateLink(), link.getGeometry(), conn);
 			// 设置link的ZoneId
@@ -96,7 +96,7 @@ public class Operation implements IOperation {
 
 				for (RdLink link : rdLinkds) {
 					// 设置Link的urban属性
-					UrbanBatchUtils.updateUrban(link, null, conn);
+					UrbanBatchUtils.updateUrban(link, null, conn, result);
 					// 设置link的区划号码
 					AdminIDBatchUtils.updateAdminID(this.command.getUpdateLink(), link.getGeometry(), conn);
 					// 设置link的ZoneId

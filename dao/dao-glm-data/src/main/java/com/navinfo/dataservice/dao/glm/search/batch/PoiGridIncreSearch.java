@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.dao.glm.search;
+package com.navinfo.dataservice.dao.glm.search.batch;
 
 import java.sql.Clob;
 import java.sql.Connection;
@@ -21,6 +21,15 @@ import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
+import com.navinfo.dataservice.dao.glm.search.batch.ixpoi.IxGasstationHandler;
+import com.navinfo.dataservice.dao.glm.search.batch.ixpoi.IxHotelHandler;
+import com.navinfo.dataservice.dao.glm.search.batch.ixpoi.IxParkingHandler;
+import com.navinfo.dataservice.dao.glm.search.batch.ixpoi.IxPoiAddressHandler;
+import com.navinfo.dataservice.dao.glm.search.batch.ixpoi.IxPoiChildrenHandler;
+import com.navinfo.dataservice.dao.glm.search.batch.ixpoi.IxPoiNameHandler;
+import com.navinfo.dataservice.dao.glm.search.batch.ixpoi.IxPoiParentHandler;
+import com.navinfo.dataservice.dao.glm.search.batch.ixpoi.IxPoiContactHandler;
+import com.navinfo.dataservice.dao.glm.search.batch.ixpoi.IxRestaurantHandler;
 import com.navinfo.dataservice.dao.log.LogReader;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.DBUtils;
@@ -96,6 +105,7 @@ public class PoiGridIncreSearch {
 					pois.putAll(loadDataSingleDbGrid(conn,grid,gridDateMap.get(grid)));
 				}
 			}
+			loadChildTables(conn,pois);
 			return pois;
 		}catch (Exception e) {
 			logger.error(e.getMessage(),e);
@@ -137,7 +147,7 @@ public class PoiGridIncreSearch {
 			pois = new HashMap<Long,IxPoi>();
 			for(Integer status:poiStatus.keySet()){
 				Map<Long,IxPoi> result = loadIxPoi(status,poiStatus.get(status),conn);
-				if(status!=null) pois.putAll(result);
+				if(result!=null) pois.putAll(result);
 			}
 		}
 		return pois;
@@ -147,6 +157,7 @@ public class PoiGridIncreSearch {
 	 * @return
 	 * @throws Exception
 	 */
+	@SuppressWarnings("static-access")
 	private Map<Long,IxPoi> loadIxPoi(String grid,Connection conn)throws Exception{
 		Map<Long,IxPoi> pois = new HashMap<Long,IxPoi>();
 		StringBuffer sb = new StringBuffer();
@@ -185,7 +196,7 @@ public class PoiGridIncreSearch {
 				Long pid = (long) ixPoi.getPid();
 				pois.put(pid, ixPoi);
 			}
-			loadChildTables(conn,pois);
+			
 			return pois;
 		} catch(Exception e) {
 			throw e;
@@ -230,7 +241,7 @@ public class PoiGridIncreSearch {
 				poisMap.put(pid, ixPoi);
 			}
 			
-			loadChildTables(conn,poisMap);
+			
 			return poisMap;
 		}catch (Exception e) {
 			throw e;
@@ -294,26 +305,118 @@ public class PoiGridIncreSearch {
 		
 		QueryRunner run = new QueryRunner();
 		
-
+		Clob pidsClob = ConnectionUtil.createClob(conn);
+		pidsClob.setString(1, StringUtils.join(pids, ","));
 		
 		logger.info("设置子表IX_POI_NAME");
 		
-		String sql="select * from ix_poi_name where poi_pid in (select to_number(column_value) from table(clob_to_table(?)))";
+		String sql="select * from ix_poi_name where u_record !=2 and name_class=1 and name_type=2 and lang_code='CHI' and poi_pid in (select to_number(column_value) from table(clob_to_table(?)))";
 		
-		Map<Long,List<IRow>> names = run.query(conn, sql, new IxPoiNameHandler(),StringUtils.join(pids, ","));
+		Map<Long,List<IRow>> names = run.query(conn, sql, new IxPoiNameHandler(),pidsClob);
 
 		for(Long pid:names.keySet()){
 			pois.get(pid).setNames(names.get(pid));
 		}
-		//...
-	}
-	class IxPoiNameHandler implements ResultSetHandler<Map<Long,List<IRow>>>{
+		
+		logger.info("设置子表IX_POI_ADDRESS");
+		
+		sql="select * from ix_poi_address where u_record !=2 and name_groupid=1 and lang_code='CHI' and poi_pid in (select to_number(column_value) from table(clob_to_table(?)))";
+		
+		Map<Long,List<IRow>> addresses = run.query(conn, sql, new IxPoiAddressHandler(),pidsClob);
 
-		@Override
-		public Map<Long, List<IRow>> handle(ResultSet rs) throws SQLException {
-			// TODO Auto-generated method stub
-			return null;
+		for(Long pid:addresses.keySet()){
+			pois.get(pid).setAddresses(addresses.get(pid));
+		}
+		
+		logger.info("设置子表IX_POI_PARENT");
+		
+		StringBuilder sbParent = new StringBuilder();
+		sbParent.append("WITH A AS(");
+		sbParent.append(" SELECT CH.GROUP_ID,CH.CHILD_POI_PID,CH.RELATION_TYPE,P.PARENT_POI_PID FROM IX_POI_CHILDREN CH,IX_POI_PARENT P WHERE CH.GROUP_ID=P.GROUP_ID AND CH.CHILD_POI_PID IN (select to_number(column_value) PID from table(clob_to_table(?)))");
+		sbParent.append(" ),");
+		sbParent.append(" B AS(");
+		sbParent.append(" SELECT CHILD_POI_PID,MIN(PARENT_POI_PID) P_PID FROM A WHERE RELATION_TYPE=2 GROUP BY CHILD_POI_PID");
+		sbParent.append(" ),");
+		sbParent.append(" C AS(");
+		sbParent.append(" SELECT CHILD_POI_PID,MIN(PARENT_POI_PID) P_PID FROM A WHERE NOT EXISTS(SELECT 1 FROM B WHERE A.CHILD_POI_PID=B.CHILD_POI_PID) GROUP BY CHILD_POI_PID");
+		sbParent.append(" )");
+		sbParent.append(" SELECT B.CHILD_POI_PID,P.POI_NUM FROM B,IX_POI P WHERE B.P_PID=P.PID");
+		sbParent.append(" UNION ALL");
+		sbParent.append(" SELECT C.CHILD_POI_PID,P.POI_NUM FROM C,IX_POI P WHERE C.P_PID=P.PID");
+		
+		Map<Long,List<IRow>> parent = run.query(conn, sbParent.toString(), new IxPoiParentHandler(),pidsClob);
+
+		for(Long pid:parent.keySet()){
+			pois.get(pid).setParents(parent.get(pid));
+		}
+		
+		logger.info("设置子表IX_POI_CHILDREN");
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("SELECT p.parent_poi_pid,c.child_poi_pid,c.relation_type,c.row_id,");
+		sb.append("(select poi_num from ix_poi where pid=c.child_poi_pid) poi_num");
+		sb.append(" FROM ix_poi_parent p");
+		sb.append(" ,ix_poi_children c");
+		sb.append(" WHERE p.group_id=c.group_id");
+		sb.append(" AND p.parent_poi_pid in (select to_number(column_value) from table(clob_to_table(?)))");
+		sb.append(" AND c.u_record !=2");
+		
+		Map<Long,List<IRow>> children = run.query(conn, sb.toString(), new IxPoiChildrenHandler(),pidsClob);
+
+		for(Long pid:children.keySet()){
+			pois.get(pid).setChildren(children.get(pid));
+		}
+		
+		logger.info("设置子表IX_POI_CONTACT");
+		
+		sql="select * from ix_poi_contact where u_record!=2 and poi_pid in (select to_number(column_value) from table(clob_to_table(?)))";
+		
+		Map<Long,List<IRow>> contact = run.query(conn, sql, new IxPoiContactHandler(),pidsClob);
+
+		for(Long pid:contact.keySet()){
+			pois.get(pid).setContacts(contact.get(pid));
+		}
+		
+		logger.info("设置子表IX_POI_RESTAURANT");
+		
+		sql="select * from ix_poi_restaurant WHERE u_record !=2 and poi_pid in (select to_number(column_value) from table(clob_to_table(?)))";
+		
+		Map<Long,List<IRow>> restaurant = run.query(conn, sql, new IxRestaurantHandler(),pidsClob);
+
+		for(Long pid:restaurant.keySet()){
+			pois.get(pid).setRestaurants(restaurant.get(pid));
+		}
+		
+		logger.info("设置子表IX_POI_PARKING");
+		
+		sql="select * from ix_poi_parking WHERE u_record !=2 and poi_pid in (select to_number(column_value) from table(clob_to_table(?)))";
+		
+		Map<Long,List<IRow>> parking = run.query(conn, sql, new IxParkingHandler(),pidsClob);
+
+		for(Long pid:parking.keySet()){
+			pois.get(pid).setParkings(parking.get(pid));
+		}
+		
+		logger.info("设置子表IX_POI_HOTEL");
+		
+		sql="select * from ix_poi_hotel WHERE u_record !=2 and poi_pid in (select to_number(column_value) from table(clob_to_table(?)))";
+		
+		Map<Long,List<IRow>> hotel = run.query(conn, sql, new IxHotelHandler(),pidsClob);
+
+		for(Long pid:hotel.keySet()){
+			pois.get(pid).setHotels(hotel.get(pid));
+		}
+		
+		logger.info("设置子表IX_POI_GASSTATION");
+		
+		sql="select * from ix_poi_gasstation WHERE u_record !=2 and poi_pid in (select to_number(column_value) from table(clob_to_table(?)))";
+		
+		Map<Long,List<IRow>> gasstation = run.query(conn, sql, new IxGasstationHandler(),pidsClob);
+
+		for(Long pid:gasstation.keySet()){
+			pois.get(pid).setGasstations(gasstation.get(pid));
 		}
 		
 	}
+	
 }

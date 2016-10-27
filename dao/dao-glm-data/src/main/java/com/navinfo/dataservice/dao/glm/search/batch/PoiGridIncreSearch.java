@@ -320,6 +320,7 @@ public class PoiGridIncreSearch {
 		QueryRunner run = new QueryRunner();
 		
 		Clob pidsClob = ConnectionUtil.createClob(conn);
+		
 		pidsClob.setString(1, StringUtils.join(pids, ","));
 		
 		logger.info("设置子表IX_POI_NAME");

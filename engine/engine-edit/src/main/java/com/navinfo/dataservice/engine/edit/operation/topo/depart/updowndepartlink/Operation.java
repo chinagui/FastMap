@@ -53,6 +53,42 @@ public class Operation implements IOperation {
         this.updataRelationObj(result);
         return null;
     }
+    
+    private boolean checkLineConnect(LineString[] lineStrings) throws Exception 
+    {
+		if (lineStrings.length == 0) {
+			return false;
+		}
+
+		if (lineStrings.length < 2) {
+			return true;
+		}
+    	
+		for (int i = 0; i < lineStrings.length - 1; i++) {
+
+			Coordinate[] preCoordinate = lineStrings[i].getCoordinates();
+
+			Coordinate[] nextCoordinate = lineStrings[i+1].getCoordinates();
+
+			Coordinate preS = preCoordinate[0];
+
+			Coordinate preN = preCoordinate[preCoordinate.length - 1];
+
+			Coordinate nextS = nextCoordinate[0];
+
+			Coordinate nextN = nextCoordinate[nextCoordinate.length - 1];
+
+			if (!(preS.equals(nextS) || preS.equals(nextN)
+					|| preN.equals(nextS) || preN.equals(nextN))) {
+				
+				String errInfo="所选第 "+String.valueOf(i+1) +"条link与第 "+String.valueOf(i+2)+ "条link在几何坐标上不连续，请先修复数据或联系技术人员";
+				
+				throw new Exception(errInfo);
+			}
+		}
+		
+		return true;
+    }
 
     /*
      * 创建上下分离RDLINk
@@ -66,6 +102,11 @@ public class Operation implements IOperation {
             lineStrings[i] = (JtsGeometryFactory.createLineString(GeoTranslator.transform(links
                     .get(i).getGeometry(), 0.00001, 5).getCoordinates()));
         }
+
+		if (!checkLineConnect(lineStrings)) {
+			return;
+		}
+
         // 调用分离后生成的上下线
         // 生成的线按照顺序存放在List<LineString> 前一半是右线 后一半是左线
         // 传入起点和终点Point
@@ -264,14 +305,6 @@ public class Operation implements IOperation {
         } else {
             point = JtsGeometryFactory.createPoint(targetLine.getCoordinates()[targetLine.getCoordinates().length - 1]);
         }
-        if (currentPid == link.getsNodePid()) {
-            updateContent.put("sNodePid", map.get(point).getPid());
-        } else {
-            updateContent.put("eNodePid", map.get(point).getPid());
-        }
-        link.fillChangeFields(updateContent);
-        result.insertObject(link, ObjStatus.UPDATE, link.getPid());
-
 
         if (currentPid == link.getsNodePid()) {
             if (link.getsNodePid() != map.get(point).getPid()) {
@@ -282,8 +315,11 @@ public class Operation implements IOperation {
                 updateContent.put("eNodePid", map.get(point).getPid());
             }
         }
+        
         link.fillChangeFields(updateContent);
+        
         result.insertObject(link, ObjStatus.UPDATE, link.getPid());
+        
         command.getNoTargetLinks().put(link.getPid(), link);
 
     }
@@ -512,8 +548,11 @@ public class Operation implements IOperation {
         if (sourceLink.getPid() == sourceNextLink.getPid()) {
             return this.createEndRdLink(departLink, result, sourceLink, sourceNextLink, map);
         }
+        
+        int intersectPid= this.getIntersectPid(sourceLink, sourceNextLink);
+        
         List<RdLink> links = linkSelector.loadByDepartNodePid
-                (this.getIntersectPid(sourceLink, sourceNextLink), sourceLink.getPid(), sourceNextLink.getPid(), true);
+                (intersectPid, sourceLink.getPid(), sourceNextLink.getPid(), true);
         // 如果对应起点没有挂接的link
         //对于上(左)线需要生成新的node
         if (links.size() <= 0) {
@@ -551,14 +590,26 @@ public class Operation implements IOperation {
         if (sourceLink.getPid() == sourceNextLink.getPid()) {
             return this.createEndRdLink(departLink, result, sourceLink, sourceNextLink, map);
         }
-        List<RdLink> links = linkSelector.loadByDepartNodePid
-                (this.getIntersectPid(sourceLink, sourceNextLink), sourceLink.getPid(), sourceNextLink.getPid(), true);
+        
+        int intersectPid= this.getIntersectPid(sourceLink, sourceNextLink);
+        
+		List<RdLink> links = linkSelector.loadByDepartNodePid(intersectPid,
+				sourceLink.getPid(), sourceNextLink.getPid(), true);
         // 如果对应起点上
         if (links.size() <= 0) {
-            sNode = this.updateAdNodeForTrack(departLink,
-                    sourceLink.getsNodePid(), map, result, 1);
-            eNode = this.updateAdNodeForTrack(departLink,
-                    sourceLink.geteNodePid(), map, result, 0);
+        	
+			if (sourceLink.getsNodePid() == intersectPid) {
+
+				sNode = this.updateAdNodeForTrack(departLink,
+						sourceLink.geteNodePid(), map, result, 1);
+				eNode = this.updateAdNodeForTrack(departLink,
+						sourceLink.getsNodePid(), map, result, 0);
+			} else {
+				sNode = this.updateAdNodeForTrack(departLink,
+						sourceLink.getsNodePid(), map, result, 1);
+				eNode = this.updateAdNodeForTrack(departLink,
+						sourceLink.geteNodePid(), map, result, 0);
+			}
 
         } else {
             sNode = this.getDepartRdlinkNode(links, departLink, sourceLink, sourceNextLink, 1, 0, map, result);
@@ -604,24 +655,100 @@ public class Operation implements IOperation {
      */
     private RdNode getDepartRdlinkNode(List<RdLink> links, RdLink departLink, RdLink sourceLink, RdLink sourceNextLink, int flag, int flagUpDown, Map<Geometry, RdNode> map, Result result) throws Exception {
         List<Boolean> flagBooleans = new ArrayList<Boolean>();
-        RdNode node = null;
-        int currentPid = this.getIntersectPid(sourceLink, sourceNextLink);
+        RdNode node = null;     
+        
+        //处理两端link对应link的的起点
+		if (flag == 1)
+		{
+			if (flagUpDown == 0) {
+				if (sourceLink.getsNodePid() == command.getsNode().getPid()
+						|| sourceLink.geteNodePid() == command.getsNode()
+								.getPid()) {
+					return command.getsNode();
+				}
+			}
+			if (flagUpDown == 1) {
+				if (sourceLink.getsNodePid() == command.geteNode().getPid()
+						|| sourceLink.geteNodePid() == command.geteNode()
+								.getPid()) {
+					return command.geteNode();
+				}
+			}			
+		}
+		// 处理两端link对应link的终点
+		if (flag == 0) {
+			if (flagUpDown == 0) {
+				if (sourceLink.getsNodePid() == command.geteNode().getPid()
+						|| sourceLink.geteNodePid() == command.geteNode()
+								.getPid()) {
+					return command.geteNode();
+				}
+			}	
+			if (flagUpDown == 1) {
+				if (sourceLink.getsNodePid() == command.getsNode().getPid()
+						|| sourceLink.geteNodePid() == command.getsNode()
+								.getPid()) {
+					return command.getsNode();
+				}
+			}	
+		}
+		
+		int currentPid = this.getIntersectPid(sourceLink, sourceNextLink); 
+		
         for (RdLink link : links) {
             flagBooleans.add(this.isRightSide(sourceLink, sourceNextLink, link));
         }
+        
         if (flagBooleans.contains(true)) {
             if (flagUpDown == 1) {
                 node = this.getNodeByDepartGeo(departLink, flag, map, result);
             } else {
-                node = this.updateAdNodeForTrack(departLink,
-                        currentPid, map, result, flag);
+                
+				if (sourceLink.getsNodePid() == currentPid) {
+					if (flag == 1) {
+						node = this.updateAdNodeForTrack(departLink,
+								sourceLink.geteNodePid(), map, result, flag);
+					}
+					if (flag == 0) {
+						node = this.updateAdNodeForTrack(departLink,
+								sourceLink.getsNodePid(), map, result, flag);
+					}
+				}
+				else if (sourceLink.geteNodePid() == currentPid){
+					if (flag == 1) {
+					node = this.updateAdNodeForTrack(departLink,
+							sourceLink.getsNodePid(), map, result, flag);
+					}
+					if (flag == 0) {
+					node = this.updateAdNodeForTrack(departLink,
+							sourceLink.geteNodePid(), map, result, flag);
+					}
+				}
             }
 
         }
         if (!flagBooleans.contains(true)) {
             if (flagUpDown == 1) {
-                node = this.updateAdNodeForTrack(departLink,
-                        currentPid, map, result, flag);
+                if (sourceLink.getsNodePid() == currentPid) {
+					if (flag == 1) {
+						node = this.updateAdNodeForTrack(departLink,
+								sourceLink.getsNodePid(), map, result, flag);
+					}
+					if (flag == 0) {
+						node = this.updateAdNodeForTrack(departLink,
+								sourceLink.geteNodePid(), map, result, flag);
+					}
+				}
+				else if (sourceLink.geteNodePid() == currentPid){
+					if (flag == 1) {
+					node = this.updateAdNodeForTrack(departLink,
+							sourceLink.geteNodePid(), map, result, flag);
+					}
+					if (flag == 0) {
+					node = this.updateAdNodeForTrack(departLink,
+							sourceLink.getsNodePid(), map, result, flag);
+					}
+				} 
             } else {
                 node = this.getNodeByDepartGeo(departLink, flag, map, result);
             }

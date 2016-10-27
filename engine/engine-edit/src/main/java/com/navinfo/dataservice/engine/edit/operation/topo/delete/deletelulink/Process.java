@@ -75,7 +75,7 @@ public class Process extends AbstractProcess<Command> {
 		// 同一点关系
 		OpRefRdSameNode opRefRdSameNode = new OpRefRdSameNode(getConn());
 
-		opRefRdSameNode.run(getResult(), this.getCommand().getLink());
+		opRefRdSameNode.run(getResult(), this.getCommand().getNodePids());
 
 		updataRelationObj();
 

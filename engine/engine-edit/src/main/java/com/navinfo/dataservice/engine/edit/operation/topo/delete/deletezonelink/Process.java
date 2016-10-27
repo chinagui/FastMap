@@ -91,7 +91,7 @@ public class Process extends AbstractProcess<Command> {
 		op.run(this.getResult());
 		// 同一点关系
 		OpRefRdSameNode opRefRdSameNode = new OpRefRdSameNode(getConn());
-		opRefRdSameNode.run(getResult(), this.getCommand().getLink());
+		opRefRdSameNode.run(getResult(), this.getCommand().getNodePids());
 
 		updataRelationObj();
 		// 删除行政区划线有关行政区划面具体操作

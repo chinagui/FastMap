@@ -45,7 +45,6 @@ public class OverviewTaskMain {
 	private String statTime;
 
 	public OverviewTaskMain(String dbn, String statTime) {
-		StatInit.initDatahubDb();
 		this.db_name = dbn;
 		this.statDate = statTime.substring(0, 8);
 		this.statTime = statTime;

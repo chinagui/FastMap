@@ -5,8 +5,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,9 +28,9 @@ import com.navinfo.dataservice.dao.glm.search.batch.ixpoi.IxHotelHandler;
 import com.navinfo.dataservice.dao.glm.search.batch.ixpoi.IxParkingHandler;
 import com.navinfo.dataservice.dao.glm.search.batch.ixpoi.IxPoiAddressHandler;
 import com.navinfo.dataservice.dao.glm.search.batch.ixpoi.IxPoiChildrenHandler;
+import com.navinfo.dataservice.dao.glm.search.batch.ixpoi.IxPoiContactHandler;
 import com.navinfo.dataservice.dao.glm.search.batch.ixpoi.IxPoiNameHandler;
 import com.navinfo.dataservice.dao.glm.search.batch.ixpoi.IxPoiParentHandler;
-import com.navinfo.dataservice.dao.glm.search.batch.ixpoi.IxPoiContactHandler;
 import com.navinfo.dataservice.dao.glm.search.batch.ixpoi.IxRestaurantHandler;
 import com.navinfo.dataservice.dao.log.LogReader;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -125,6 +127,18 @@ public class PoiGridIncreSearch {
 		
 		Map<Long,IxPoi> pois = null;
 		LogReader logReader = new LogReader(conn);
+		
+		if (!StringUtils.isEmpty(date)) {
+			try {
+				SimpleDateFormat formatter = new SimpleDateFormat ("yyyyMMddHHmmss");
+				formatter.parse(date);
+			} catch (Exception e) {
+				logger.error("grid:"+grid+"对应的date错误:"+e.getMessage());
+				date = "";
+			}
+			
+		}
+		
 		if(StringUtils.isEmpty(date)){
 			//load all poi，初始化u_record应为0
 			pois = loadIxPoi(grid,conn);
@@ -306,6 +320,7 @@ public class PoiGridIncreSearch {
 		QueryRunner run = new QueryRunner();
 		
 		Clob pidsClob = ConnectionUtil.createClob(conn);
+		
 		pidsClob.setString(1, StringUtils.join(pids, ","));
 		
 		logger.info("设置子表IX_POI_NAME");

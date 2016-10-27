@@ -63,13 +63,22 @@ public class Operation implements IOperation {
 
             node.setNodePid(nodePid);
 
-            if (flag) {
-                flag = this.updateIsMain(node);
+            if (nodePids.size() == 1) {
+                node.setIsMain(1);
+            } else {
+                if (flag) {
+                    flag = this.updateIsMain(node);
+                }
             }
 
             node.setMesh(meshId);
 
             nodes.add(node);
+        }
+
+        if (!nodes.isEmpty() && flag) {
+            RdCrossNode node = (RdCrossNode) nodes.get(0);
+            node.setIsMain(1);
         }
 
         cross.setNodes(nodes);

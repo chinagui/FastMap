@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -42,6 +43,7 @@ public class PoiDownloadOperation {
 	 */
 	public String generateZip(Map<String,String> gridDateMap) throws Exception{
 		try{
+			Date startTime = new Date();
 			String day = StringUtils.getCurrentDay();
 
 			String uuid = UuidUtils.genUuid();
@@ -77,6 +79,8 @@ public class PoiDownloadOperation {
 			String url = serverUrl + downloadUrlPath +File.separator+ day + "/"
 					+ zipFileName;
 			
+			Date endTime = new Date();
+			logger.info("total time:"+ (endTime.getTime() - startTime.getTime())+"ms");
 			return url;
 		} catch (Exception e){
 			throw e;
@@ -102,6 +106,7 @@ public class PoiDownloadOperation {
 		try {
 			logger.info("starting load data...");
 			Collection<IxPoi> data = new PoiGridIncreSearch().getPoiByGrids(gridDateMap);
+			logger.info("data total:"+data.size());
 			logger.info("starting convert data...");
 			JSONArray ja = changeData(data);
 			logger.info("begin write json to file");
@@ -130,7 +135,12 @@ public class PoiDownloadOperation {
 		for (IxPoi poi:data){
 			
 			jsonObj.put("fid", poi.getPoiNum());
-			IxPoiName poiName = (IxPoiName)poi.getNames().get(0);
+			
+			IxPoiName poiName = new IxPoiName();
+			List<IRow> poiNameList = poi.getNames();
+			if (poiNameList.size()>0) {
+				poiName = (IxPoiName)poi.getNames().get(0);
+			}
 			if (poiName.getName() == null) {
 				jsonObj.put("name", "");
 			} else {
@@ -157,8 +167,11 @@ public class PoiDownloadOperation {
 				jsonObj.put("guide", guide);
 			}
 			
-			
-			IxPoiAddress address = (IxPoiAddress)poi.getAddresses().get(0);
+			IxPoiAddress address = new IxPoiAddress();
+			List<IRow> addressList = poi.getAddresses();
+			if (addressList.size()>0) {
+				address = (IxPoiAddress)poi.getAddresses().get(0);
+			}
 			if (address.getFullname() == null) {
 				jsonObj.put("address", "");
 			} else {
@@ -213,7 +226,11 @@ public class PoiDownloadOperation {
 			// 增加卡车字段下载20161012
 			jsonObj.put("truck", poi.getTruckFlag());
 			
-			IxPoiParentForAndroid parent = (IxPoiParentForAndroid)poi.getParents().get(0);
+			IxPoiParentForAndroid parent = new IxPoiParentForAndroid();
+			List<IRow> parentList = poi.getParents();
+			if (parentList.size()>0) {
+				parent = (IxPoiParentForAndroid)poi.getParents().get(0);
+			}
 			if (parent.getPoiNum() == null) {
 				jsonObj.put("parentFid", "");
 			} else {

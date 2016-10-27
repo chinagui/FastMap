@@ -40,10 +40,10 @@ public class RdLink004 extends baseRule {
 				if(changedFields==null){continue;}
 				String nodeIds="";
 				if(changedFields.containsKey("sNodePid")){
-					nodeIds=nodeIds+changedFields.get("sNodePid")+","+rdLink.getsNodePid();					
+					nodeIds=nodeIds+rdLink.getsNodePid();//changedFields.get("sNodePid")+","+rdLink.getsNodePid();					
 				}
 				if(changedFields.containsKey("eNodePid")){
-					nodeIds=nodeIds+changedFields.get("eNodePid")+","+rdLink.geteNodePid();					
+					nodeIds=nodeIds+rdLink.geteNodePid();//changedFields.get("eNodePid")+","+rdLink.geteNodePid();					
 				}
 				if(nodeIds.isEmpty()){continue;}
 				

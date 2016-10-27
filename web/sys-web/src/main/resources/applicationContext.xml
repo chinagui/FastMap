@@ -65,7 +65,7 @@
 	</websocket:message-broker>
 	<!-- stomp and message broker config end -->
 	
-	<mvc:annotation-driven/>
+	<!-- <mvc:annotation-driven/>  -->
 	
 	<!-- test begin -->
 	<!-- 

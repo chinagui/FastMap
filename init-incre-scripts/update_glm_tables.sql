@@ -1,7 +1,0 @@
--- XXX
-CREATE TABLE ...;
--- XXX
-UPDATE ...;
-COMMIT;
-
-EXIT;

@@ -268,7 +268,7 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips,int dbId) throws
 					
 					pidClod = ConnectionUtil.createClob(subconn);
 					pidClod.setString(1, ids);
-					sql.append(" and a.tipid in (select to_char(tipid) from table(clob_to_table(?)))");
+					sql.append(" and a.tipid in (select column_value from table(clob_to_table(?)))");
 					
 				} else {
 					result.put("total", 0);

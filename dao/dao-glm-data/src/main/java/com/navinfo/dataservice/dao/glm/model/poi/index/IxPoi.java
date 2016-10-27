@@ -7,6 +7,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
+import org.springframework.util.StringUtils;
+
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.util.SerializeUtils;
@@ -44,7 +47,7 @@ import net.sf.json.JsonConfig;
  * 
  */
 public class IxPoi implements IObj {
-
+	private Logger logger = Logger.getLogger(IxPoi.class);
 	// POI号码
 	private int pid;
 
@@ -1080,7 +1083,8 @@ public class IxPoi implements IObj {
 	public boolean fillChangeFields(JSONObject json) throws Exception {
 		@SuppressWarnings("rawtypes")
 		Iterator keys = json.keys();
-
+		logger.info("newJson:"+json);
+		logger.info("oldpoi:"+this.Serialize(null));
 		while (keys.hasNext()) {
 			String key = (String) keys.next();
 
@@ -1104,24 +1108,18 @@ public class IxPoi implements IObj {
 				}
 			} else {
 				if (!"objStatus".equals(key)) {
-
+					logger.info("key:"+key);
 					Field field = this.getClass().getDeclaredField(key);
 
 					field.setAccessible(true);
 
 					Object objValue = field.get(this);
-
-					String oldValue = null;
-
-					if (objValue == null) {
-						oldValue = "null";
-					} else {
-						oldValue = String.valueOf(objValue);
-					}
-
 					String newValue = json.getString(key);
-
-					if (!newValue.equals(oldValue)) {
+					if("null".equalsIgnoreCase(newValue))newValue=null;
+					logger.info("objValue:"+objValue);
+					logger.info("newValue:"+newValue);
+					if (!isEqualsString(objValue,newValue)) {
+						logger.info("isEqualsString:false");
 						Object value = json.get(key);
 
 						if (value instanceof String) {
@@ -1140,7 +1138,21 @@ public class IxPoi implements IObj {
 			return false;
 		}
 	}
-
+	private static boolean isEqualsString(Object oldValue,Object newValue){
+		if(null==oldValue&&null==newValue)
+			return true;
+		if(StringUtils.isEmpty(oldValue)&&StringUtils.isEmpty(newValue)){
+			return true;
+		}
+		if(oldValue==null&&newValue!=null){
+			return false;
+		}
+		if(oldValue!=null&&newValue==null){
+			return false;
+		}
+		return oldValue.toString().equals(newValue.toString());
+	}
+	
 	@Override
 	public int mesh() {
 		return this.meshId;
@@ -1825,5 +1837,11 @@ public class IxPoi implements IObj {
 
 	public void setRawFields(String rawFields) {
 		this.rawFields = rawFields;
+	}
+	public static void main(String[] args){
+		System.out.println(isEqualsString(null,""));
+		System.out.println(isEqualsString(null,"1"));
+		System.out.println(null instanceof String);
+
 	}
 }

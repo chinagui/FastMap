@@ -1,11 +1,15 @@
 package com.navinfo.dataservice.control.app;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.control.app.download.DownloadOperation;
+import com.navinfo.dataservice.control.app.download.PoiDownloadOperation;
 import com.navinfo.dataservice.control.app.search.Operation;
 
 import net.sf.json.JSONArray;
@@ -24,13 +28,22 @@ public class androidtest {
 	@Test
 	public void test() {
 		DownloadOperation download = new DownloadOperation();
-		JSONArray gridList = new JSONArray();
+		JSONArray gridDateList = new JSONArray();
 		JSONObject grid = new JSONObject();
 		grid.put("grid", "60560303");
 		grid.put("date", "");
-		gridList.add(grid);
+		gridDateList.add(grid);
 		try {
-			download.export(gridList, "f://poidownload", "poi.txt");
+			Map<String,String> gridDateMap = new HashMap<String,String>();
+			
+			for (int i=0;i<gridDateList.size();i++) {
+				JSONObject gridDate = gridDateList.getJSONObject(i);
+				gridDateMap.put(gridDate.getString("grid"), gridDate.getString("date"));
+			}
+			
+			PoiDownloadOperation operation = new PoiDownloadOperation();
+			operation.export2Txt(gridDateMap, "f://poidownload", "poi.txt");
+//			download.export(gridList, "f://poidownload", "poi.txt");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

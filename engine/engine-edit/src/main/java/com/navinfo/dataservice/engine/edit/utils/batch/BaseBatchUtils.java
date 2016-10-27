@@ -3,6 +3,7 @@ package com.navinfo.dataservice.engine.edit.utils.batch;
 import java.lang.reflect.Method;
 import java.sql.Connection;
 
+import com.navinfo.dataservice.dao.glm.iface.Result;
 import org.json.JSONException;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
@@ -61,8 +62,22 @@ public class BaseBatchUtils {
      * @return
      * @throws Exception
      */
-    protected static boolean isInBoundary(Connection conn, Integer nodePid, Geometry faceGeometry) throws Exception {
-        RdNode node = (RdNode) new RdNodeSelector(conn).loadById(nodePid, false);
+    protected static boolean isInBoundary(Connection conn, Integer nodePid, Geometry faceGeometry, Result result) throws Exception {
+        RdNode node = null;
+        try {
+            node = (RdNode) new RdNodeSelector(conn).loadById(nodePid, false);
+        } catch (Exception e) {
+            for (IRow row : result.getAddObjects()) {
+                if (row instanceof RdNode) {
+                    RdNode n = (RdNode) row;
+                    if (nodePid == n.pid()) {
+                        node = n;
+                    }
+                }
+            }
+        }
+        if (null == node)
+            return false;
         // 获取边界线几何
         Geometry faceBoundary = faceGeometry.getBoundary();
         return faceBoundary.distance(node.getGeometry()) <= 1;

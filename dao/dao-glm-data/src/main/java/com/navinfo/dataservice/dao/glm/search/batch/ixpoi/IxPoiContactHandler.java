@@ -12,7 +12,7 @@ import org.apache.commons.dbutils.ResultSetHandler;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiContact;
 
-public class IxPoicontactHandler implements ResultSetHandler<Map<Long,List<IRow>>>{
+public class IxPoiContactHandler implements ResultSetHandler<Map<Long,List<IRow>>>{
 	
 	@Override
 	public Map<Long, List<IRow>> handle(ResultSet rs) throws SQLException {

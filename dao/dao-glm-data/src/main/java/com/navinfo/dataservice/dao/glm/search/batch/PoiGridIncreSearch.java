@@ -28,7 +28,7 @@ import com.navinfo.dataservice.dao.glm.search.batch.ixpoi.IxPoiAddressHandler;
 import com.navinfo.dataservice.dao.glm.search.batch.ixpoi.IxPoiChildrenHandler;
 import com.navinfo.dataservice.dao.glm.search.batch.ixpoi.IxPoiNameHandler;
 import com.navinfo.dataservice.dao.glm.search.batch.ixpoi.IxPoiParentHandler;
-import com.navinfo.dataservice.dao.glm.search.batch.ixpoi.IxPoicontactHandler;
+import com.navinfo.dataservice.dao.glm.search.batch.ixpoi.IxPoiContactHandler;
 import com.navinfo.dataservice.dao.glm.search.batch.ixpoi.IxRestaurantHandler;
 import com.navinfo.dataservice.dao.log.LogReader;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -310,7 +310,7 @@ public class PoiGridIncreSearch {
 		
 		logger.info("设置子表IX_POI_NAME");
 		
-		String sql="select * from ix_poi_name where u_record !=2 and name_class=1 and name_type=2 and lang_code='CHI' and poi_pid in (select to_number(poi_pid) from table(clob_to_table(?)))";
+		String sql="select * from ix_poi_name where u_record !=2 and name_class=1 and name_type=2 and lang_code='CHI' and poi_pid in (select to_number(column_value) from table(clob_to_table(?)))";
 		
 		Map<Long,List<IRow>> names = run.query(conn, sql, new IxPoiNameHandler(),pidsClob);
 
@@ -369,9 +369,9 @@ public class PoiGridIncreSearch {
 		
 		logger.info("设置子表IX_POI_CONTACT");
 		
-		sql="select * from ix_poi_contact where u_record!=:2 and poi_pid in (select to_number(column_value) from table(clob_to_table(?)))";
+		sql="select * from ix_poi_contact where u_record!=2 and poi_pid in (select to_number(column_value) from table(clob_to_table(?)))";
 		
-		Map<Long,List<IRow>> contact = run.query(conn, sql, new IxPoicontactHandler(),pidsClob);
+		Map<Long,List<IRow>> contact = run.query(conn, sql, new IxPoiContactHandler(),pidsClob);
 
 		for(Long pid:contact.keySet()){
 			pois.get(pid).setContacts(contact.get(pid));
@@ -384,7 +384,7 @@ public class PoiGridIncreSearch {
 		Map<Long,List<IRow>> restaurant = run.query(conn, sql, new IxRestaurantHandler(),pidsClob);
 
 		for(Long pid:restaurant.keySet()){
-			pois.get(pid).setContacts(restaurant.get(pid));
+			pois.get(pid).setRestaurants(restaurant.get(pid));
 		}
 		
 		logger.info("设置子表IX_POI_PARKING");
@@ -394,7 +394,7 @@ public class PoiGridIncreSearch {
 		Map<Long,List<IRow>> parking = run.query(conn, sql, new IxParkingHandler(),pidsClob);
 
 		for(Long pid:parking.keySet()){
-			pois.get(pid).setContacts(parking.get(pid));
+			pois.get(pid).setParkings(parking.get(pid));
 		}
 		
 		logger.info("设置子表IX_POI_HOTEL");
@@ -404,7 +404,7 @@ public class PoiGridIncreSearch {
 		Map<Long,List<IRow>> hotel = run.query(conn, sql, new IxHotelHandler(),pidsClob);
 
 		for(Long pid:hotel.keySet()){
-			pois.get(pid).setContacts(hotel.get(pid));
+			pois.get(pid).setHotels(hotel.get(pid));
 		}
 		
 		logger.info("设置子表IX_POI_GASSTATION");
@@ -414,7 +414,7 @@ public class PoiGridIncreSearch {
 		Map<Long,List<IRow>> gasstation = run.query(conn, sql, new IxGasstationHandler(),pidsClob);
 
 		for(Long pid:gasstation.keySet()){
-			pois.get(pid).setContacts(gasstation.get(pid));
+			pois.get(pid).setGasstations(gasstation.get(pid));
 		}
 		
 	}

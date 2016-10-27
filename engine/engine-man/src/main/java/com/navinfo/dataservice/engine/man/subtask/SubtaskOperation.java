@@ -885,8 +885,39 @@ public class SubtaskOperation {
 		try{
 			conn = DBConnector.getInstance().getManConnection();
 			QueryRunner run = new QueryRunner();
-			String selectSql = "select sgm.grid_id from subtask_grid_mapping sgm where sgm.subtask_id = " + subtaskId;
-			
+//			String selectSql = "select sgm.grid_id from subtask_grid_mapping sgm where sgm.subtask_id = " + subtaskId;
+			String selectSql = "select sgm.grid_id"
+					+ " from subtask s, subtask_grid_mapping sgm"
+					+ " where sgm.subtask_id = s.subtask_id"
+					+ " and s.type in (0, 1, 2, 3, 8, 9)"
+					+ " and s.subtask_id = " + subtaskId
+					+ " union all "
+					+ " select sgm.grid_id "
+					+ " from subtask s, subtask_grid_mapping sgm, block_man bm, task t"
+					+ " where s.block_man_id = bm.block_man_id"
+					+ " and bm.task_id = t.task_id"
+					+ " and t.task_type = 4"
+					+ " and s.type = 4"
+					+ " and s.subtask_id = " + subtaskId
+					+ " union all "
+					+ " select bgm.grid_id"
+					+ " from subtask s, block b, block_man bm, task t, block_grid_mapping bgm"
+					+ " where s.block_man_id = bm.block_man_id"
+					+ " and bm.block_id = b.block_id"
+					+ " and bm.task_id = t.task_id"
+					+ " and t.task_type = 1"
+					+ " and b.block_id = bgm.block_id"
+					+ " and s.type in (4, 5)"
+					+ " and s.subtask_id = " + subtaskId
+					+ " union all "
+					+ " select bgm.grid_id"
+					+ " from subtask s, task t, block b, block_grid_mapping bgm"
+					+ " where s.task_id = t.task_id"
+					+ " and t.city_id = b.city_id"
+					+ " and bgm.block_id = b.block_id"
+					+ " and s.type in (6, 7, 10)"
+					+ " and s.subtask_id = " + subtaskId;
+
 			ResultSetHandler<List<Integer>> rsHandler = new ResultSetHandler<List<Integer>>() {
 				public List<Integer> handle(ResultSet rs) throws SQLException {
 					List<Integer> gridIds= new ArrayList<Integer>(); 

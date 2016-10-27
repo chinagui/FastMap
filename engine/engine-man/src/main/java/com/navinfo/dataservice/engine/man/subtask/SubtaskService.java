@@ -372,8 +372,8 @@ public class SubtaskService {
 					+ ",st.GEOMETRY";
 			String userSql = ",u.user_id as executer_id,u.user_real_name as executer";
 			String groupSql = ",ug.group_id as executer_id,ug.group_name as executer";
-			String taskSql = ",T.CITY_ID AS BLOCK_ID,T.TASK_ID AS BLOCK_MAN_ID,T.NAME AS BLOCK_MAN_NAME";
-			String blockSql = ",B.BLOCK_ID,BM.BLOCK_MAN_ID, BM.BLOCK_MAN_NAME";
+			String taskSql = ",T.CITY_ID AS BLOCK_ID,T.TASK_ID AS BLOCK_MAN_ID,T.NAME AS BLOCK_MAN_NAME,T.TASK_TYPE AS TASK_TYPE";
+			String blockSql = ",B.BLOCK_ID,BM.BLOCK_MAN_ID, BM.BLOCK_MAN_NAME,T.TASK_TYPE AS TASK_TYPE";
 
 			String fromSql_task = " from subtask st"
 					+ ",task t"
@@ -382,7 +382,7 @@ public class SubtaskService {
 
 			String fromSql_block = " from subtask st"
 					+ ",block b,block_man bm"
-					+ ",region r";
+					+ ",region r,task t";
 			
 			String fromSql_user = "  ,user_info u";
 
@@ -395,7 +395,8 @@ public class SubtaskService {
 
 			String conditionSql_block = " where st.block_man_id = bm.block_man_id "
 					+ "and b.region_id = r.region_id "
-					+ "and bm.block_id = b.block_id"
+					+ "and bm.block_id = b.block_id "
+					+ "and bm.task_id = t.task_id "
 					+ " and st.SUBTASK_ID=" + subtaskId;
 			
 			String conditionSql_user = " and st.exe_user_id = u.user_id";
@@ -432,15 +433,23 @@ public class SubtaskService {
 							e1.printStackTrace();
 						}
 						
-						try {
-							List<Integer> gridIds = SubtaskOperation.getGridIdsBySubtaskId(rs.getInt("SUBTASK_ID"));
-							subtask.setGridIds(gridIds);
-						} catch (Exception e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
+						
+						if(rs.getInt("TYPE")== 0
+								||rs.getInt("TYPE")== 1
+								||rs.getInt("TYPE")== 2
+								||rs.getInt("TYPE")== 3
+								||rs.getInt("TYPE")== 8
+								||rs.getInt("TYPE")== 9
+								||(rs.getInt("TYPE")==4&&rs.getInt("TASK_TYPE")==4)){
+							try {
+								List<Integer> gridIds = SubtaskOperation.getGridIdsBySubtaskId(rs.getInt("SUBTASK_ID"));
+								subtask.setGridIds(gridIds);
+							} catch (Exception e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
 						}
 
-	
 						if (1 == rs.getInt("STAGE")) {
 							subtask.setDbId(rs.getInt("DAILY_DB_ID"));
 							subtask.setBlockId(rs.getInt("BLOCK_ID"));

@@ -1860,7 +1860,7 @@ public class UploadOperation {
 	}
 	
 	private IxPoiParent getParentByPid(int pid,Connection conn) throws Exception {
-		String sql = "SELECT * FROM ix_poi_parent WHERE parent_poi_pid=:1";
+		String sql = "SELECT * FROM ix_poi_parent WHERE parent_poi_pid=:1 and u_record !=2";
 		
 		PreparedStatement pstmt = null;
 

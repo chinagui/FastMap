@@ -306,7 +306,7 @@ public class Process extends AbstractProcess<Command> {
 
 		// 同一点关系
 		OpRefRdSameNode opRefRdSameNode = new OpRefRdSameNode(getConn());
-		opRefRdSameNode.run(getResult(), this.getCommand().getLink());
+		opRefRdSameNode.run(getResult(), this.getCommand().getNodePids());
 
 		// 收费站
 		OpRefRdTollgate opRefRdTollgate = new OpRefRdTollgate(this.getCommand(), this.getConn());
@@ -509,8 +509,7 @@ public class Process extends AbstractProcess<Command> {
 		// 同一点
 		com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.delete.Operation sameNodeOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.delete.Operation(
 				conn);
-		List<AlertObject> sameNodeAlertDataList = sameNodeOperation.getDeleteLinkSameNodeInfectData(link.getsNodePid(),
-				link.geteNodePid(), "RD_NODE", conn);
+		List<AlertObject> sameNodeAlertDataList = sameNodeOperation.getDeleteLinkSameNodeInfectData(this.getCommand().getNodePids(), "RD_NODE", conn);
 		if (CollectionUtils.isNotEmpty(sameNodeAlertDataList)) {
 			infects.put("删除link影响的同一点", sameNodeAlertDataList);
 		}

@@ -919,5 +919,7 @@ public class LogWriter {
 	public  static void main(String[] args){
 		boolean contains = ArrayUtils.contains(poiExcludeColumns,"LOG");
 		System.out.println(contains);
+		double a =0;
+		System.out.println(String.valueOf(a));
 	}
 }

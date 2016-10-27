@@ -76,9 +76,6 @@ public class PoiDailyExpectMain {
 		try {
 			// 初始化mongodb数据库
 			initMongoDb(db_name);
-			// 初始化 datahub环境
-			StatInit.initDatahubDb();
-
 			List<BlockMan> list = OracleDao.getBlockManList();
 			ExecutorService executorService = Executors.newCachedThreadPool();
 			// 计数器，线程数

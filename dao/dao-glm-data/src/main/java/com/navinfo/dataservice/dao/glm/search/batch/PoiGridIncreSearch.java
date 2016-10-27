@@ -238,7 +238,7 @@ public class PoiGridIncreSearch {
 		sb.append(" FROM ix_poi");
 		pidClod = ConnectionUtil.createClob(conn);
 		pidClod.setString(1, StringUtils.join(pois, ","));
-		sb.append(" WHERE a.pid in (select to_char(pid) from table(clob_to_table(?)))");
+		sb.append(" WHERE pid in (select to_char(pid) from table(clob_to_table(?)))");
 		logger.info("poi query sql:"+sb);
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;

@@ -343,6 +343,7 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 	public void handleResult(ObjType objType, OperType operType, Result result) {
 		switch (operType) {
 		case CREATE:
+		case BREAK:
 			List<Integer> addObjPidList = result.getListAddIRowObPid();
 			for (int i = 0; i < result.getAddObjects().size(); i++) {
 				IRow row = result.getAddObjects().get(i);

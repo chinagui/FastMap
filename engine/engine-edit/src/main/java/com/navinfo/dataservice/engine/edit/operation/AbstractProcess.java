@@ -343,6 +343,7 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 	public void handleResult(ObjType objType, OperType operType, Result result) {
 		switch (operType) {
 		case CREATE:
+		case BREAK:
 			List<Integer> addObjPidList = result.getListAddIRowObPid();
 			for (int i = 0; i < result.getAddObjects().size(); i++) {
 				IRow row = result.getAddObjects().get(i);
@@ -366,6 +367,18 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 			for (IRow row : result.getDelObjects()) {
 				result.setPrimaryPid(row.parentPKValue());
 				return;
+			}
+			break;
+		case REPAIR:
+			List<Integer> uppdateObjPidList = result.getListUpdateIRowObPid();
+			for (int i = 0; i < result.getUpdateObjects().size(); i++) {
+				IRow row = result.getUpdateObjects().get(i);
+				if (objType.equals(row.objType())) {
+					if (uppdateObjPidList.get(i) != null) {
+						result.setPrimaryPid(uppdateObjPidList.get(i));
+						break;
+					}
+				}
 			}
 			break;
 		default:

@@ -117,7 +117,7 @@ public class RdLinkTest extends InitApplication {
 
 	@Test
 	public void testBreakRdLink() {
-		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDSPEEDLIMIT\",\"dbId\":22,\"data\":{\"direct\":1,\"linkPid\":674496,\"longitude\":116.41199415646103,\"latitude\":39.94683319664748}}";
+		String parameter = "{\"command\":\"CREATE\",\"dbId\":17,\"type\":\"RDSAMENODE\",\"data\":{\"nodes\":[{\"nodePid\":\"210001823\",\"type\":\"RDNODE\",\"isMain\":1},{\"nodePid\":\"309000026\",\"type\":\"LUNODE\",\"isMain\":0}]}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
@@ -163,7 +163,7 @@ public class RdLinkTest extends InitApplication {
 	@Test
 	public void testBatch()
 	{
-		String parameter = "{\"command\":\"CREATE\",\"dbId\":17,\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.18122458457947,40.59320544227775],[116.18182621579412,40.59275119042267],[116.18244767189024,40.592948813638124]]},\"catchLinks\":[{\"linkPid\":210001397,\"lon\":116.18182621579412,\"lat\":40.59275119042267}]},\"type\":\"RDLINK\"}";
+		String parameter = "{\"command\":\"CREATE\",\"type\":\"IXPOI\",\"dbId\":17,\"data\":{\"longitude\":116.20599746704102,\"latitude\":40.580030566358204,\"x_guide\":116.20599746704102,\"y_guide\":40.580030566358204,\"linkPid\":0,\"name\":\"asdas\",\"kindCode\":\"210105\"}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

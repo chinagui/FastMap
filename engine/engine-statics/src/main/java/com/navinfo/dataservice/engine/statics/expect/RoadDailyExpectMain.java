@@ -76,8 +76,6 @@ public class RoadDailyExpectMain {
 		try {
 			// 初始化mongodb数据库
 			initMongoDb(db_name);
-			// 初始化 datahub环境
-			StatInit.initDatahubDb();
 
 			List<BlockMan> list = OracleDao.getBlockManList();
 

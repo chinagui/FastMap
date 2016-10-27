@@ -41,7 +41,6 @@ public class OverviewBlockMain {
 	private static String stat_time;
 
 	public OverviewBlockMain(String dbn, String stat_time) {
-		StatInit.initDatahubDb();
 		this.db_name = dbn;
 		this.stat_date = stat_time.substring(0, 8);
 		this.stat_time = stat_time;

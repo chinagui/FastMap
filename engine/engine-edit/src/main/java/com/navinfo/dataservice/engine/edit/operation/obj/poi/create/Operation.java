@@ -2,7 +2,6 @@ package com.navinfo.dataservice.engine.edit.operation.obj.poi.create;
 
 import java.sql.Connection;
 
-import com.navinfo.dataservice.bizcommons.service.PidService;
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.StringUtils;
@@ -70,22 +69,25 @@ public class Operation implements IOperation {
         ixPoi.setLinkPid(command.getLinkPid());
 
         ixPoi.setKindCode(command.getKindCode());
+        
+        if(command.getLinkPid() != 0 )
+        {
+        	 //计算poi在link的位置信息（side）
+            RdLinkSelector selector = new RdLinkSelector(conn);
+            RdLink link = (RdLink) selector.loadById(command.getLinkPid(), true, true);
 
-        //计算poi在link的位置信息（side）
-        RdLinkSelector selector = new RdLinkSelector(conn);
-        RdLink link = (RdLink) selector.loadById(command.getLinkPid(), true, true);
+            JSONObject geojson = new JSONObject();
 
-        JSONObject geojson = new JSONObject();
+            geojson.put("type", "Point");
 
-        geojson.put("type", "Point");
+            geojson.put("coordinates", new double[]{command.getXguide(), command.getYguide()});
 
-        geojson.put("coordinates", new double[]{command.getXguide(), command.getYguide()});
+            Geometry nearestPointGeo = GeoTranslator.geojson2Jts(geojson, 100000, 0);
 
-        Geometry nearestPointGeo = GeoTranslator.geojson2Jts(geojson, 100000, 0);
+            int side = GeometryUtils.calulatPointSideOflink(ixPoi.getGeometry(), link.getGeometry(), nearestPointGeo);
 
-        int side = GeometryUtils.calulatPointSideOflink(ixPoi.getGeometry(), link.getGeometry(), nearestPointGeo);
-
-        ixPoi.setSide(side);
+            ixPoi.setSide(side);
+        }
 
         result.insertObject(ixPoi, ObjStatus.INSERT, ixPoi.getPid());
 

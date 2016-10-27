@@ -31,8 +31,6 @@ public class PoiBatchProcessorFM_BAT_20_114 implements IBatch {
 		ResultSet resultSet = null;
 		
 		try {
-			JSONObject poiData = json.getJSONObject("data");
-			
 			if (poi.getGasstations().size()==0) {
 				return result;
 			}
@@ -86,15 +84,45 @@ public class PoiBatchProcessorFM_BAT_20_114 implements IBatch {
 					}
 					boolean changeFlag = false;
 					if (oilType.indexOf("90")>-1) {
-						oilType = oilType.replace("90", "89");
+						if (oilType.indexOf("89")>-1) {
+							if (oilType.indexOf("|90")>-1) {
+								oilType = oilType.replace("|90", "");
+							} else if (oilType.indexOf("90|")>-1) {
+								oilType = oilType.replace("90|", "");
+							} else {
+								oilType = oilType.replace("90", "");
+							}
+						} else {
+							oilType = oilType.replace("90", "89");
+						}
 						changeFlag = true;
 					}
 					if (oilType.indexOf("93")>-1) {
-						oilType = oilType.replace("93", "92");
+						if (oilType.indexOf("92")>-1) {
+							if (oilType.indexOf("|93")>-1) {
+								oilType = oilType.replace("|93", "");
+							} else if (oilType.indexOf("93|")>-1){
+								oilType = oilType.replace("93|", "");
+							} else {
+								oilType = oilType.replace("93", "");
+							}
+						} else {
+							oilType = oilType.replace("93", "92");
+						}
 						changeFlag = true;
 					}
 					if (oilType.indexOf("97")>-1) {
-						oilType = oilType.replace("97", "95");
+						if (oilType.indexOf("95")>-1) {
+							if (oilType.indexOf("|97")>-1) {
+								oilType = oilType.replace("|97", "");
+							} else if (oilType.indexOf("97|")>-1){
+								oilType = oilType.replace("97|", "");
+							} else {
+								oilType = oilType.replace("97", "");
+							}
+						} else {
+							oilType = oilType.replace("97", "95");
+						}
 						changeFlag = true;
 					}
 					if (changeFlag) {

@@ -372,7 +372,7 @@ public class LogReader {
 		sb.append("SELECT * FROM D \n");
 		sb.append("UNION ALL \n");
 		sb.append("SELECT A.OB_PID, 3 OP_TP FROM A WHERE NOT EXISTS (SELECT 1 FROM D WHERE A.OB_PID = D.OB_PID)");
-		return new QueryRunner().query(conn, sb.toString(), new ObjStatusHandler(),objName,mainTabName,mainTabName);
+		return new QueryRunner().query(conn, sb.toString(), new ObjStatusHandler(),mainTabName,mainTabName);
 	}
 	
 	class ObjStatusHandler implements ResultSetHandler<Map<Integer,Collection<Long>>>{

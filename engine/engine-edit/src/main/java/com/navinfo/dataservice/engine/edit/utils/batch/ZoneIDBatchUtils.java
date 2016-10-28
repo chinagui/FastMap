@@ -51,16 +51,24 @@ public class ZoneIDBatchUtils extends BaseBatchUtils {
         if (isContainOrCover(linkGeometry, faceGeometry)) {
             // 新增或原link没有linkZone子数据时直接添加新的linkZone
             if (null == geometry || link.getZones().isEmpty()) {
+                linkZone = createLinkZone(link, faceRegionId, 0);
+                result.insertObject(linkZone, ObjStatus.INSERT, link.pid());
                 linkZone = createLinkZone(link, faceRegionId, 1);
-                result.insertObject(linkZone, ObjStatus.INSERT, linkZone.parentPKValue());
+                result.insertObject(linkZone, ObjStatus.INSERT, link.pid());
             } else {
+                int side = 0;
                 // 修行时如果原有linkZone数据将原有regionId更新
                 for (IRow row : link.getZones()) {
                     linkZone = (RdLinkZone) row;
+                    side = linkZone.getSide();
                     if (faceRegionId != linkZone.getRegionId()) {
                         linkZone.changedFields().put("regionId", faceRegionId);
                         result.insertObject(linkZone, ObjStatus.UPDATE, linkZone.parentPKValue());
                     }
+                }
+                if (link.getZones().size() == 1) {
+                    linkZone = createLinkZone(link, faceRegionId, 1 - side);
+                    result.insertObject(linkZone, ObjStatus.INSERT, link.pid());
                 }
             }
             // link在zoneFace组成线上

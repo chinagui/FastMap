@@ -132,7 +132,7 @@ public class PoiSave {
             upatePoiStatus(sb.toString(), conn, true);
             
             if(operType == OperType.UPDATE){
-	            editApiImpl.updatePoifreshVerified(pid);
+	            editApiImpl.updatePoifreshVerified(pid,"web");
             }
 
             return result;

@@ -263,7 +263,7 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips,int dbId) throws
 						JSONObject tipsObj = tips.getJSONObject(i);
 						ids += tmep;
 						tmep = ",";
-						ids += "'" + tipsObj.getString("id") + "'";
+						ids +=tipsObj.getString("id");
 					}
 					
 					pidClod = ConnectionUtil.createClob(subconn);

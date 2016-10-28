@@ -60,13 +60,17 @@ public class Operation implements IOperation {
         boolean delMain = false;
         // 是否存在主点
         boolean hasMain = false;
+        // 主点Node
+        RdCrossNode mainNode = null;
         // 生成待删除集合并将已存在node点从node点集合中去除
         for (IRow row : cross.getNodes()) {
             RdCrossNode node = (RdCrossNode) row;
             if (newPids.contains(node.getNodePid())) {
                 newPids.remove((Object) node.getNodePid());
-                if (node.getIsMain() == 1)
+                if (node.getIsMain() == 1) {
+                    mainNode = node;
                     hasMain = true;
+                }
             } else {
                 if (!delMain && 1 == node.getIsMain())
                     delMain = true;
@@ -79,6 +83,15 @@ public class Operation implements IOperation {
             result.insertObject(node, ObjStatus.DELETE, node.getPid());
         }
 
+        // 原主点在辅路上则删除主点重新赋值
+        if (null != mainNode) {
+            boolean isMainRoad = this.isMainRoad(mainNode.getNodePid());
+            if (!isMainRoad) {
+                mainNode.changedFields().put("isMain", 0);
+                result.insertObject(mainNode, ObjStatus.UPDATE, mainNode.getPid());
+                hasMain = false;
+            }
+        }
 
         // 生成新的RdCrossNode
         for (Integer nodePid : newPids) {
@@ -92,11 +105,9 @@ public class Operation implements IOperation {
                 delMain = flag;
                 hasMain = !flag;
             }
-
             result.insertObject(node, ObjStatus.INSERT, node.getPid());
         }
 
-        RdLinkSelector selector = new RdLinkSelector(conn);
         // 没有主点
         if (!hasMain) {
             for (IRow row : cross.getNodes()) {
@@ -108,29 +119,34 @@ public class Operation implements IOperation {
                     }
                 }
                 if (isDel) continue;
-                List<RdLink> links = selector.loadByNodePid(node.getNodePid(), true);
-                boolean isMainRoad = true;
-                for (RdLink link : links) {
-                    for (IRow r : link.getForms()) {
-                        RdLinkForm form = (RdLinkForm) r;
-                        if (form.getFormOfWay() == 34) {
-                            isMainRoad = false;
-                            break;
-                        }
-                    }
-                    if (!isMainRoad) break;
-                }
+                boolean isMainRoad = this.isMainRoad(node.getNodePid());
                 if (isMainRoad) {
-                    hasMain = true;
                     node.changedFields().put("isMain", 1);
                     result.insertObject(node, ObjStatus.UPDATE, node.getPid());
+                    hasMain = true;
                     break;
                 }
-                if (hasMain) break;
             }
         }
+        // 全是辅路设置主点失败，则在辅路设置主点
+        if (!hasMain) {
+            for (IRow row : cross.getNodes()) {
+                RdCrossNode node = (RdCrossNode) row;
+                boolean isDel = false;
+                for (RdCrossNode delNode : delNodes) {
+                    if (node.getNodePid() == delNode.getNodePid()) {
+                        isDel = true;
+                    }
+                }
+                if (isDel) continue;
+                node.changedFields().put("isMain", 1);
+                result.insertObject(node, ObjStatus.UPDATE, node.getPid());
+            }
+        }
+
         // 维护信号灯信息
         this.updateRdTrafficsignal(cross, delNodes, newPids, result);
+
     }
 
     /**
@@ -348,5 +364,22 @@ public class Operation implements IOperation {
             return false;
         }
         return true;
+    }
+
+    private boolean isMainRoad(Integer nodePid) throws Exception {
+        RdLinkSelector selector = new RdLinkSelector(conn);
+        List<RdLink> links = selector.loadByNodePid(nodePid, true);
+        boolean isMainRoad = true;
+        for (RdLink link : links) {
+            for (IRow r : link.getForms()) {
+                RdLinkForm form = (RdLinkForm) r;
+                if (form.getFormOfWay() == 34) {
+                    isMainRoad = false;
+                    break;
+                }
+            }
+            if (!isMainRoad) break;
+        }
+        return isMainRoad;
     }
 }

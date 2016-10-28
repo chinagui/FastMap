@@ -199,7 +199,7 @@ public class GridLockManager{
 				}
 			}
 			if(updateCount!=gridModSize){
-				throw new LockException("锁定GRID失败，能够被锁定的GRID数和传入GRID数不相等。");
+				throw new LockException("当前存在grid范围被其他正在执行的job锁定，请稍后再试。");
 			}
 			return lockSeq;
 		}catch (Exception e) {

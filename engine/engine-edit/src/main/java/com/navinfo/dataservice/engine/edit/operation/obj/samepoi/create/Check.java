@@ -77,8 +77,8 @@ public class Check {
      */
     public void checkIsSamePoi(IxPoi poi, IxPoi otherPoi) throws Exception {
         if (!poi.getSamepoiParts().isEmpty())
-            throw new Exception(poi.pid() + "已存在同一关系，请重新选择.");
+            throw new Exception(poi.pid() + "已存在同一关系，若想创建，请先解除，再创建。");
         if (!otherPoi.getSamepoiParts().isEmpty())
-            throw new Exception(otherPoi.pid() + "已存在同一关系，请重新选择.");
+            throw new Exception(otherPoi.pid() + "已存在同一关系，若想创建，请先解除，再创建。");
     }
 }

@@ -7,12 +7,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-import oracle.spatial.geometry.JGeometry;
-import oracle.spatial.util.WKT;
-import oracle.sql.STRUCT;
-
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.AngleCalculator;
 import com.navinfo.dataservice.commons.geom.Geojson;
@@ -23,7 +17,12 @@ import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.selector.rd.restrict.RdRestrictionSelector;
-import com.navinfo.navicommons.geo.computation.GeometryUtils;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import oracle.spatial.geometry.JGeometry;
+import oracle.spatial.util.WKT;
+import oracle.sql.STRUCT;
 
 public class RdRestrictionSearch implements ISearch {
 
@@ -147,7 +146,7 @@ public class RdRestrictionSearch implements ISearch {
 
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "with tmp1 as  (select link_pid, geometry     from rd_link    where sdo_relate(geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') =          'TRUE'      and u_record != 2), tmp2 as  (select a.node_pid, a.in_link_pid, a.pid, a.restric_info     from rd_restriction a    where exists (select null from tmp1 b where a.in_link_pid = b.link_pid)      and a.u_record != 2), tmp3 as  (select listagg(vehicle, ',') within group(order by 1) vehicles     from rd_restriction_detail a, rd_restriction_condition b    where exists (select null from tmp2 c where a.restric_pid = c.pid)      and a.detail_id = b.detail_id      and a.u_record != 2      and b.u_record != 2) select /*+ index(d) */        a.pid,        a.restric_info,        b.vehicles,        c.geometry     link_geom,        d.geometry     point_geom   from tmp2 a, tmp3 b, tmp1 c, rd_node d  where a.in_link_pid = c.link_pid    and a.node_pid = d.node_pid    and d.u_record != 2";
+		String sql = "WITH TMP1 AS (SELECT LINK_PID, GEOMETRY FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2), TMP2 AS (SELECT A.NODE_PID, A.IN_LINK_PID, A.PID, A.RESTRIC_INFO FROM RD_RESTRICTION A WHERE EXISTS (SELECT NULL FROM TMP1 B WHERE A.IN_LINK_PID = B.LINK_PID) AND A.U_RECORD != 2), TMP3 AS (SELECT A.RESTRIC_PID,LISTAGG(B.VEHICLE, ',') WITHIN GROUP(ORDER BY A.RESTRIC_PID) VEHICLES FROM RD_RESTRICTION_DETAIL A, RD_RESTRICTION_CONDITION B WHERE EXISTS (SELECT NULL FROM TMP2 C WHERE A.RESTRIC_PID = C.PID) AND A.DETAIL_ID = B.DETAIL_ID AND A.U_RECORD != 2 AND B.U_RECORD != 2 group by A.RESTRIC_PID) select tmp.*,tmp3.VEHICLES from ( SELECT /*+ index(d) */ A.PID, A.RESTRIC_INFO, C.GEOMETRY     LINK_GEOM, D.GEOMETRY     POINT_GEOM FROM TMP2 A, TMP1 C, RD_NODE D WHERE A.IN_LINK_PID = C.LINK_PID AND A.NODE_PID = D.NODE_PID AND D.U_RECORD != 2) tmp left join tmp3 on tmp.pid = tmp3.RESTRIC_PID ";
 		
 		PreparedStatement pstmt = null;
 
@@ -158,6 +157,8 @@ public class RdRestrictionSearch implements ISearch {
 			
 			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
 
+			System.out.println(wkt);
+			
 			pstmt.setString(1, wkt);
 
 			resultSet = pstmt.executeQuery();
@@ -183,8 +184,35 @@ public class RdRestrictionSearch implements ISearch {
 				}
 
 				jsonM.put("b",b);
-
+				
+				String type = resultSet.getString("VEHICLES");
+				
 				jsonM.put("a", "0");
+				
+				if(type != null)
+				{
+					String typeArray[] = type.split(",");
+					
+					for(String tp : typeArray)
+					{
+						String typ = Integer.toBinaryString(Integer.valueOf(tp));
+						
+						if(typ.length()<=3 && (Integer.parseInt(tp) !=6 || Integer.parseInt(tp) !=7))
+						{
+							jsonM.put("a", "1");
+							break;
+						}
+						else
+						{
+							
+							if(typ.charAt(typ.length() - 2) == '0' || typ.charAt(typ.length() - 3) == '0')
+							{
+								jsonM.put("a", "1");
+								break;
+							}
+						}
+					}
+				}
 
 				STRUCT struct1 = (STRUCT) resultSet.getObject("link_geom");
 

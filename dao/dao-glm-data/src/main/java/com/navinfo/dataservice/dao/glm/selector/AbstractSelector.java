@@ -717,7 +717,7 @@ public class AbstractSelector implements ISelector {
 			int size = parent.size();
 
 			if (size != 1) {
-				throw new Exception("poi作为父数据不唯一");
+				throw new Exception("poi作为父数据不正确");
 			} else {
 				IxPoiParent poiParent = (IxPoiParent) parent.get(0);
 

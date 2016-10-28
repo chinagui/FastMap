@@ -9,6 +9,7 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.lane.RdLaneTopoVia;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneTopology;
+import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneVia;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.check.core.baseRule;
@@ -62,8 +63,8 @@ public class RdLane003 extends baseRule {
 					}
 					//退出link的进入点
 					int outLinkEnterNode=0;
-					if(outLink.getDirect()==2){inLinkExitNode=inLink.getsNodePid();}
-					if(outLink.getDirect()==3){inLinkExitNode=inLink.geteNodePid();}
+					if(outLink.getDirect()==2){outLinkEnterNode=outLink.getsNodePid();}
+					if(outLink.getDirect()==3){outLinkEnterNode=outLink.geteNodePid();}
 					boolean isRight=false;
 					//线线关系
 					if(topoObj.getRelationshipType()==2){
@@ -84,8 +85,8 @@ public class RdLane003 extends baseRule {
 		//经过线Pid
 		List<Integer> vialinkPids = new ArrayList<Integer>();
 		for(IRow deObj:topoObj.getVias()){
-			RdLaneTopoVia rdBranchVia = (RdLaneTopoVia)deObj;
-			vialinkPids.add(rdBranchVia.getViaLinkPid());
+			RdLaneVia rdBranchVia = (RdLaneVia)deObj;
+			vialinkPids.add(rdBranchVia.getLinkPid());
 		}
 		if(vialinkPids.size()==0){return false;}
 		//经过线信息

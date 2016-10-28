@@ -86,14 +86,15 @@ public class EditApiImpl implements EditApi {
 
 		return json;
 	}
-
 	/**
-	 * 修改的数据，若只有照片和备注的履历，则为鲜度验证,更新为待作业
+	 * 修改的数据，安卓上传：1)若只有照片和备注的履历，则为鲜度验证,更新为待作业;2)若没任何修改履历，也为鲜度验证，更新为已作业
+	 * web:不修改状态，只做鲜度验证字段的判断修改，web保存的数据总在已作业
 	 * @param pid
+	 * @param platform: web,andriod
 	 * @param conn
 	 * @throws Exception
 	 */
-	public void updatePoifreshVerified(int pid) throws Exception {
+	public void updatePoifreshVerified(int pid,String platform) throws Exception {
 			LogReader lr=new LogReader(conn);
 			int freshVerified=0;
 			int status=2;
@@ -104,13 +105,16 @@ public class EditApiImpl implements EditApi {
 				freshVerified=1;
 				status=1;
 			}
-			String sql="UPDATE poi_edit_status T1 SET T1.fresh_verified = :1,T1.status=:2 where T1.row_id =(SELECT row_id as a FROM ix_poi where pid = " + pid + ")";
-			
+			String sql=null;
+			if ("web".endsWith(platform)){
+				sql="UPDATE poi_edit_status T1 SET T1.fresh_verified = :1 where T1.row_id =(SELECT row_id as a FROM ix_poi where pid = " + pid + ")";
+			}else{
+				sql="UPDATE poi_edit_status T1 SET T1.fresh_verified = :1,T1.status="+status+" where T1.row_id =(SELECT row_id as a FROM ix_poi where pid = " + pid + ")";
+			}
 			PreparedStatement pstmt = null;
 			try {
 				pstmt = conn.prepareStatement(sql);
 				pstmt.setInt(1, freshVerified);
-				pstmt.setInt(2, status);
 				pstmt.executeUpdate();
 			} catch (Exception e) {
 				throw e;
@@ -119,7 +123,6 @@ public class EditApiImpl implements EditApi {
 				DBUtils.closeStatement(pstmt);
 			}
 		}
-
 	@Override
 	public long applyPid(String tableName, int count) throws Exception {
 		return PidService.getInstance().applyPid(tableName, count);

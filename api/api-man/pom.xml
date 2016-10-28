@@ -29,7 +29,11 @@
          <groupId>commons-collections</groupId>
          <artifactId>commons-collections</artifactId>
      </dependency>
-     
+     <dependency>
+		<groupId>net.sf.json-lib</groupId>
+		<artifactId>json-lib</artifactId>
+		<classifier>jdk15</classifier> 
+	</dependency>
      
      <!-- swagger-springmvc -->
     <dependency>

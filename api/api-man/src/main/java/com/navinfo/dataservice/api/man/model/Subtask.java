@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.List;
 
+import net.sf.json.JSONObject;
+
 
 /** 
 * @ClassName:  Subtask 
@@ -12,7 +14,7 @@ import java.util.List;
 * @date 2016-06-06 07:40:15 
 * @Description: TODO
 */
-public class Subtask<JSONObject> implements Serializable  {
+public class Subtask implements Serializable  {
 	private Integer subtaskId ;
 	private String name ;
 	private Integer blockId;

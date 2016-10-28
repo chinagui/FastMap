@@ -433,22 +433,28 @@ public class SubtaskService {
 							e1.printStackTrace();
 						}
 						
-						
-						if(rs.getInt("TYPE")== 0
-								||rs.getInt("TYPE")== 1
-								||rs.getInt("TYPE")== 2
-								||rs.getInt("TYPE")== 3
-								||rs.getInt("TYPE")== 8
-								||rs.getInt("TYPE")== 9
-								||(rs.getInt("TYPE")==4&&rs.getInt("TASK_TYPE")==4)){
-							try {
-								List<Integer> gridIds = SubtaskOperation.getGridIdsBySubtaskId(rs.getInt("SUBTASK_ID"));
-								subtask.setGridIds(gridIds);
-							} catch (Exception e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
+						try {
+							List<Integer> gridIds = SubtaskOperation.getGridIdsBySubtaskId(rs.getInt("SUBTASK_ID"));
+							subtask.setGridIds(gridIds);
+						} catch (Exception e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
 						}
+//						if(rs.getInt("TYPE")== 0
+//								||rs.getInt("TYPE")== 1
+//								||rs.getInt("TYPE")== 2
+//								||rs.getInt("TYPE")== 3
+//								||rs.getInt("TYPE")== 8
+//								||rs.getInt("TYPE")== 9
+//								||(rs.getInt("TYPE")==4&&rs.getInt("TASK_TYPE")==4)){
+//							try {
+//								List<Integer> gridIds = SubtaskOperation.getGridIdsBySubtaskId(rs.getInt("SUBTASK_ID"));
+//								subtask.setGridIds(gridIds);
+//							} catch (Exception e) {
+//								// TODO Auto-generated catch block
+//								e.printStackTrace();
+//							}
+//						}
 
 						if (1 == rs.getInt("STAGE")) {
 							subtask.setDbId(rs.getInt("DAILY_DB_ID"));

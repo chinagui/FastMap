@@ -754,9 +754,10 @@ public class TipsSelector {
 				// e字段的返回结果，不同类型不同
 				// f
 				if (type == 1201 || type == 1203 || type == 1101
-						|| type == 1111 || type == 1113 || type == 1202
-						|| type == 1207 || type == 1208 || type == 1304
-						|| type == 1305 || type == 1308 || type == 1311) {
+						|| type == 1109 || type == 1111 || type == 1113 
+						|| type == 1202 || type == 1207 || type == 1208 
+						|| type == 1304 || type == 1305 || type == 1308 
+						|| type == 1311) {
 					JSONObject f = deep.getJSONObject("f");
 					if (f != null && ! f.isNullObject()) {
 						// type=1 :道路LINK，有名称，则显示道路名称，如果没有，则显示“无名路”

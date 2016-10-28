@@ -350,7 +350,7 @@ public class PoiGridIncreSearch {
 		
 		StringBuilder sbParent = new StringBuilder();
 		sbParent.append("WITH A AS(");
-		sbParent.append(" SELECT CH.GROUP_ID,CH.CHILD_POI_PID,CH.RELATION_TYPE,P.PARENT_POI_PID FROM IX_POI_CHILDREN CH,IX_POI_PARENT P WHERE CH.GROUP_ID=P.GROUP_ID AND CH.CHILD_POI_PID IN (select to_number(column_value) PID from table(clob_to_table(?)))");
+		sbParent.append(" SELECT CH.GROUP_ID,CH.CHILD_POI_PID,CH.RELATION_TYPE,P.PARENT_POI_PID FROM IX_POI_CHILDREN CH,IX_POI_PARENT P WHERE CH.GROUP_ID=P.GROUP_ID AND CH.CHILD_POI_PID IN (select to_number(column_value) PID from table(clob_to_table(?))) AND CH.U_RECORD!=2 ");
 		sbParent.append(" ),");
 		sbParent.append(" B AS(");
 		sbParent.append(" SELECT CHILD_POI_PID,MIN(PARENT_POI_PID) P_PID FROM A WHERE RELATION_TYPE=2 GROUP BY CHILD_POI_PID");

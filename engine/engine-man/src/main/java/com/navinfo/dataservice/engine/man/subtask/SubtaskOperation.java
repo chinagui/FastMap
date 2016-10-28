@@ -636,27 +636,42 @@ public class SubtaskOperation {
 			String wkt = GridUtils.grids2Wkt(gridIdsJsonArray);
 			//查询POI总量
 			QueryRunner run = new QueryRunner();
-			String sql = "select ip.row_id, pes.status, pes.is_upload"
+//			String sql = "select ip.row_id, pes.status, pes.is_upload"
+//					+ " from ix_poi ip, poi_edit_status pes"
+//					+ " where ip.row_id = pes.row_id"
+//					+ " and pes.status = 1"
+//					+ " AND sdo_within_distance(ip.geometry, sdo_geometry('"+ wkt + "', 8307), 'mask=anyinteract') = 'TRUE' ";
+			String sql_unfinish = "select count(1) unfinish"
 					+ " from ix_poi ip, poi_edit_status pes"
 					+ " where ip.row_id = pes.row_id"
-					+ " and pes.is_upload = 1"
-					+ " and SDO_ANYINTERACT(ip.geometry,sdo_geometry('" + wkt + "',8307))='TRUE'";
-			
-			Map<String, Integer> resultPOI = run.query(conn, sql, new ResultSetHandler<Map<String, Integer>>() {
+					+ " and pes.status = 1"
+					+ " AND sdo_within_distance(ip.geometry, sdo_geometry('"+ wkt + "', 8307), 'mask=anyinteract') = 'TRUE' ";			
+			//POI待作业
+			Integer unfinishPOI = run.query(conn, sql_unfinish, new ResultSetHandler<Integer>() {
 				@Override
-				public Map<String, Integer> handle(ResultSet rs) throws SQLException {
-					Map<String, Integer> map = new HashMap<String, Integer>();
-					int total = 0;
-					int finish = 0;
-					while (rs.next()) {
-						total += 1;
-						if(3 == rs.getInt("status")){
-							finish += 1;
-						}
+				public Integer handle(ResultSet rs) throws SQLException {
+					int unfinish = 0;
+					if(rs.next()){
+						unfinish = rs.getInt("unfinish");
 					}
-					map.put("total", total);
-					map.put("finish", finish);
-					return map;
+					return unfinish;
+				}
+			}
+			);
+			
+			String sql_total = "select count(1) toal"
+					+ " from ix_poi ip, poi_edit_status pes"
+					+ " where ip.row_id = pes.row_id"
+					+ " AND sdo_within_distance(ip.geometry, sdo_geometry('"+ wkt + "', 8307), 'mask=anyinteract') = 'TRUE' ";			
+			//poi总量
+			Integer totalPOI = run.query(conn, sql_total, new ResultSetHandler<Integer>() {
+				@Override
+				public Integer handle(ResultSet rs) throws SQLException {
+					int toal = 0;
+					if(rs.next()){
+						toal = rs.getInt("toal");
+					}
+					return toal;
 				}
 			}
 			);
@@ -665,17 +680,22 @@ public class SubtaskOperation {
 			int percentPOI = 0;
 			int percentRoad = 0; 
 			//poi数量及完成度
-			stat.put("poi", resultPOI.get("total"));
-			if(0 != resultPOI.get("total")){
-				percentPOI = resultPOI.get("finish")*100/resultPOI.get("total");
+			stat.put("poi", unfinishPOI);
+			if(0 != unfinishPOI){
+				percentPOI = (totalPOI-unfinishPOI)*100/totalPOI;
+			}else{
+				percentPOI = 100;
 			}
 			//type=3,一体化grid粗编子任务。增加道路数量及完成度
 			if(3 == type){
 				FccApi api=(FccApi) ApplicationContextUtil.getBean("fccApi");
 				JSONObject resultRoad = api.getSubTaskStats(gridIdsJsonArray);
-				stat.put("tips", resultRoad.getInt("total"));				
-				if(0 != resultRoad.getInt("total")){
-					percentRoad = resultRoad.getInt("finished")*100/resultRoad.getInt("total");
+				int tips = resultRoad.getInt("total") + resultRoad.getInt("finished");
+				stat.put("tips", tips);				
+				if(0 != tips){
+					percentRoad = resultRoad.getInt("finished")*100/tips;
+				}else{
+					percentRoad = 100;
 				}
 			}
 			percent = (int) (percentPOI*0.5 + percentRoad*0.5);

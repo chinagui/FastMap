@@ -156,8 +156,8 @@ public class RdLaneConnexity implements IObj {
 
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) {
-		
-		return JSONObject.fromObject(this,JsonUtils.getStrConfig());
+		return JSONObject.fromObject(this);	
+//		return JSONObject.fromObject(this,JsonUtils.getStrConfig());
 	}
 
 	@Override

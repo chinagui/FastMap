@@ -362,13 +362,13 @@ public class UploadOperation {
 								boolean freshFlag = perRetObj.getBoolean("freshFlag");
 								String rawFields = jo.getString("rawFields");
 								if (freshFlag) {
-									upatePoiStatusForAndroid(conn, poiJson.getString("rowId"), 1, rawFields,2);
+									upatePoiStatusForAndroid(conn, poiJson.getString("rowId"), 1, rawFields,1);
 									
 								} else {
 									upatePoiStatusForAndroid(conn, poiJson.getString("rowId"), 0, rawFields,1);
 								}
 								EditApiImpl editApiImpl = new EditApiImpl(conn);
-								editApiImpl.updatePoifreshVerified(poiJson.getInt("pid"));
+								editApiImpl.updatePoifreshVerified(poiJson.getInt("pid"),"andriod");
 								
 								conn.commit();
 								count++;

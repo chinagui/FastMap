@@ -36,8 +36,8 @@ public class Process extends AbstractProcess<Command> {
         check.checkKindOfPOI(poi, otherPoi);
         // 检查所选POI是否已存在同一关系
         IxSamepoiPartSelector samepoiSelector = new IxSamepoiPartSelector(this.getConn());
-        poi.setParents(samepoiSelector.loadByPoiPid(poi.pid(), true));
-        otherPoi.setParents(samepoiSelector.loadByPoiPid(otherPoi.pid(), true));
+        poi.setSamepoiParts(samepoiSelector.loadByPoiPid(poi.pid(), true));
+        otherPoi.setSamepoiParts(samepoiSelector.loadByPoiPid(otherPoi.pid(), true));
         check.checkIsSamePoi(poi, otherPoi);
         return super.preCheck();
         //return null;

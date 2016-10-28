@@ -237,6 +237,11 @@ public class IxPoiContact implements IRow {
 	}
 	
 	private static boolean isEqualsString(Object oldValue,Object newValue){
+		
+		if (oldValue instanceof Double) {
+			newValue = Double.parseDouble(newValue.toString());
+		}
+		
 		if(null==oldValue&&null==newValue)
 			return true;
 		if(StringUtils.isEmpty(oldValue)&&StringUtils.isEmpty(newValue)){

@@ -1,8 +1,10 @@
 package org.navinfo.dataservice.engine.meta;
 
+import java.sql.Connection;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.dbutils.DbUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -10,8 +12,10 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import com.navinfo.dataservice.api.fcc.iface.FccApi;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.engine.meta.rdname.RdNameImportor;
+import com.navinfo.dataservice.engine.meta.rdname.RdNameOperation;
 import com.navinfo.dataservice.engine.meta.rdname.RdNameSelector;
 
 import net.sf.json.JSONArray;
@@ -94,19 +98,75 @@ public class RdNameImportTest {
 	@Test
 	public void testGetRdName()
 	{
-		String parameter = "{\"subtaskId\":43,\"pageNum\":1,\"pageSize\":20,\"sortby\":\"\",\"params\":{\"name\":\"\",\"adminId\":\"\"}}";
+		String parameter = "{\"subtaskId\":27,\"pageNum\":1,\"pageSize\":20,\"sortby\":\"\",\"flag\":1,\"params\":{\"name\":\"\",\"nameGroupid\":\"\",\"adminId\":\"\"}}";
 
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
-			RdNameImportor importor = new RdNameImportor();
+			RdNameSelector selector = new RdNameSelector();
 			
-//			JSONObject data = importor.importRdNameFromWeb(jsonReq);
+			int subtaskId = jsonReq.getInt("subtaskId");
 			
-//			System.out.println(data);
-
+			ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
+			
+			Subtask subtask = apiService.queryBySubtaskId(subtaskId);
+			
+			if (subtask == null) {
+				throw new Exception("subtaskid未找到数据");
+			}
+			
+			int dbId = subtask.getDbId();
+			
+			FccApi apiFcc=(FccApi) ApplicationContextUtil.getBean("fccApi");
+			
+			JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(),1901,new JSONArray());
+			
+			JSONObject data = selector.searchForWeb(jsonReq,tips,dbId);
+			
+			System.out.println(data);
+					
 		} catch (Exception e) {
 			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void teilenName () {
+		String parameter = "{\"dbId\":2008,\"data\":[{\"nameId\":1251840566,\"nameGroupid\":1251840566,\"langCode\":\"CHI\",\"roadType\":1}],\"flag\":1,\"subtaskId\":208}";
+		
+		Connection conn = null;
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			
+			int flag = jsonReq.getInt("flag");
+			
+			int dbId = jsonReq.getInt("dbId");
+			
+			conn = DBConnector.getInstance().getConnectionById(dbId);
+			
+			RdNameOperation operation = new RdNameOperation(conn);
+			
+			if (flag>0) {
+				JSONArray dataList = jsonReq.getJSONArray("data");
+				
+				operation.teilenRdName(dataList);
+			} else {
+				int subtaskId = jsonReq.getInt("subtaskId");
+				
+				ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
+				
+				Subtask subtask = apiService.queryBySubtaskId(subtaskId);
+				
+				FccApi apiFcc=(FccApi) ApplicationContextUtil.getBean("fccApi");
+				
+				JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(),1901,new JSONArray());
+				
+				operation.teilenRdNameByTask(tips);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
 

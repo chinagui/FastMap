@@ -51,7 +51,7 @@ public class RdInterTest extends InitApplication {
 
 	@Test
 	public void testAddRdInter() {
-		String parameter = "{\"command\":\"REPAIR\",\"dbId\":17,\"objId\":206002134,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.3128,40.05162],[116.31289363786793,40.05155976150625],[116.31297,40.05151],[116.31301,40.05156]]},\"interLinks\":[],\"interNodes\":[]},\"type\":\"RDLINK\"}";
+		String parameter = "{\"command\":\"REPAIR\",\"dbId\":17,\"objId\":305002387,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.31291,40.05155],[116.31293043494225,40.051637288511486],[116.31301,40.05156]]},\"interLinks\":[],\"interNodes\":[]},\"type\":\"RDLINK\"}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

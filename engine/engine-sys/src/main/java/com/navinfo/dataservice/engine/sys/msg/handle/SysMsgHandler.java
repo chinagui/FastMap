@@ -78,7 +78,7 @@ public class SysMsgHandler implements MsgHandler {
 			String userSql = "SELECT * FROM SYS_MESSAGE WHERE MSG_ID=?";
 			Object[] userParams = {id};
 			List<SysMsg> sysMsg = queryRunner.query(conn, userSql, userParams, new MultiRowHandler());
-			if(sysMsg != null){
+			if(sysMsg != null&&sysMsg.size()>0){
 				String jsonSysMsg = JSONArray.fromObject(sysMsg).toString();
 				if(sysMsg.get(0).getTargetUserId()==0){
 					//发给所有人

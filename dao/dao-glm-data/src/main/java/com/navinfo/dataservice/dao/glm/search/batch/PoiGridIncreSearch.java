@@ -231,14 +231,17 @@ public class PoiGridIncreSearch {
 		if (status == 2) {
 			return new HashMap<Long,IxPoi>();
 		}
+		
 		Clob pidClod = null;
 		Map<Long,IxPoi> poisMap = new HashMap<Long,IxPoi>();
 		StringBuffer sb = new StringBuffer();
 		sb.append("SELECT poi_num,pid,mesh_id,kind_code,link_pid,x_guide,y_guide,post_code,open_24h,chain,u_record,geometry,\"LEVEL\",sports_venue,indoor,vip_flag,truck_flag  ");
 		sb.append(" FROM ix_poi");
 		pidClod = ConnectionUtil.createClob(conn);
-		pidClod.setString(1, StringUtils.join(pois, ","));
-		sb.append(" WHERE a.pid in (select to_char(pid) from table(clob_to_table(?)))");
+		String pids = StringUtils.join(pois, ",");
+		logger.info("pids"+pids);
+		pidClod.setString(1, pids);
+		sb.append(" WHERE pid in (select column_value from table(clob_to_table(?)))");
 		logger.info("poi query sql:"+sb);
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;

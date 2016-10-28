@@ -76,7 +76,7 @@ public class OverviewTaskMain {
 		}
 			// 删除当天重复统计数据
 			BasicDBObject query = new BasicDBObject();
-		query.put("statDate", statDate);
+			query.put("statDate", statDate);
 			mongoDao.deleteMany(col_name_task, query);
 		
 	}
@@ -534,6 +534,7 @@ public class OverviewTaskMain {
 		context.start();
 		new ApplicationContextUtil().setApplicationContext(context);
 		OverviewTaskMain overviewSubtaskStat = new OverviewTaskMain("fm_stat", new SimpleDateFormat("yyyyMMddHHmmss").format(new Date()));
+		//OverviewTaskMain overviewSubtaskStat = new OverviewTaskMain("fm_stat", "20161024144950");
 		overviewSubtaskStat.runStat();
 	}
 

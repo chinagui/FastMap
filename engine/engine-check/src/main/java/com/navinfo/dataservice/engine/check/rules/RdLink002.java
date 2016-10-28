@@ -36,23 +36,40 @@ public class RdLink002 extends baseRule {
 				Map<String, Object> changedFields = rdLink.changedFields();
 				if(changedFields==null || !changedFields.containsKey("geometry")){continue;}
 				if(changedFields.containsKey("eNodePid") || changedFields.containsKey("sNodePid")){continue;}
-				//Geometry geo=rdLink.getGeometry();
-
+				Geometry geo=GeoTranslator.transform(rdLink.getGeometry(), 0.00001, 5);
+				Coordinate[] coordOlds = geo.getCoordinates();	
 				JSONObject geojson=(JSONObject) changedFields.get("geometry");
 				Geometry geoNew=GeoTranslator.geojson2Jts(geojson);
 				Coordinate[] coords = geoNew.getCoordinates();	
+				//是否移动端点
+				if(coords[0].equals(coordOlds[0])){
+					if(isCorner(coords[0].x,coords[0].y)){
+						this.setCheckResult("", "", 0);
+						break;
+					}
+				}else if(coords[coords.length-1].equals(coordOlds[coordOlds.length-1])){
+					if(isCorner(coords[coords.length-1].x,coords[coords.length-1].y)){
+						this.setCheckResult("", "", 0);
+						break;
+					}
+				}
 				//仅有端点，没有形状点
 				if(coords.length<=2){continue;}
 				//形状点不能到角点处
 				for(int j=1;j<coords.length-1;j++){
-					String[] meshes = MeshUtils.point2Meshes(coords[j].x,coords[j].y);
-					if(meshes.length==4){
+					if(isCorner(coords[j].x,coords[j].y)){
 						this.setCheckResult("", "", 0);
 						break;
 						}
 					}
-				}
 			}
+			}
+	}
+	
+	private boolean isCorner(double x,double y){
+		String[] meshes = MeshUtils.point2Meshes(x,y);
+		if(meshes.length==4){return true;}
+		else{return false;}
 	}
 
 	@Override

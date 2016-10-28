@@ -103,7 +103,6 @@ public class Operation implements IOperation {
 				updateContent.put("geometry", geojson);
 				updateContent.put("length", GeometryUtils.getLinkLength(geo));
 				link.fillChangeFields(updateContent);
-				link.setGeometry(geo);
 				LuLink luLink = new LuLink();
 				luLink.setPid(link.getPid());
 				luLink.copy(link);

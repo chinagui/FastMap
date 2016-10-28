@@ -240,6 +240,14 @@ public class Operation implements IOperation {
         for (RdLink link : links) {
 
             result.insertObject(link, ObjStatus.INSERT, link.getPid());
+            AdminIDBatchUtils.updateAdminID(link, null, conn);
+            ZoneIDBatchUtils.updateZoneID(link, null, conn, result);
+            if (link.changedFields().containsKey("leftRegionId")) {
+                link.setLeftRegionId(Integer.valueOf(link.changedFields().get("leftRegionId").toString()));
+            }
+            if (link.changedFields().containsKey("rightRegionId")) {
+                link.setRightRegionId(Integer.valueOf(link.changedFields().get("rightRegionId").toString()));
+            }
         }
 
     }

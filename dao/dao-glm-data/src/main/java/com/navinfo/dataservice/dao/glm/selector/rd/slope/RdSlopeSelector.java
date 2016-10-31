@@ -50,7 +50,7 @@ public class RdSlopeSelector extends AbstractSelector {
         ResultSet resultSet = null;
 
         try {
-            String sql = "SELECT pid FROM rd_slope WHERE link_pid =:1 and u_record !=2";
+            String sql = "SELECT pid, row_id FROM rd_slope WHERE link_pid =:1 and u_record !=2";
 
             if (isLock) {
                 sql += " for update nowait";
@@ -98,7 +98,7 @@ public class RdSlopeSelector extends AbstractSelector {
         ResultSet resultSet = null;
 
         try {
-            String sql = "SELECT pid FROM RD_SLOPE WHERE U_RECORD != 2 AND PID IN (SELECT DISTINCT (SLOPE_PID) FROM RD_SLOPE_VIA WHERE U_RECORD != 2 AND LINK_PID = :1)";
+            String sql = "SELECT pid, row_id FROM RD_SLOPE WHERE U_RECORD != 2 AND PID IN (SELECT DISTINCT (SLOPE_PID) FROM RD_SLOPE_VIA WHERE U_RECORD != 2 AND LINK_PID = :1)";
 
             if (isLock) {
                 sql += " for update nowait";
@@ -287,7 +287,7 @@ public class RdSlopeSelector extends AbstractSelector {
         PreparedStatement pstmt = null;
         ResultSet resultSet = null;
         try {
-            String sql = "SELECT pid FROM rd_slope WHERE node_pid in (" + inter + ") and u_record !=2";
+            String sql = "SELECT pid,row_id FROM rd_slope WHERE node_pid in (" + inter + ") and u_record !=2";
             if (isLock) {
                 sql += " for update nowait";
             }

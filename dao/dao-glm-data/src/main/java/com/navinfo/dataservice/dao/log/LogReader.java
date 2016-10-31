@@ -206,7 +206,7 @@ public class LogReader {
 	public boolean isOnlyPhotoAndMetoHis(int objPid) throws Exception {
 
 		String sql = "SELECT de.row_id,de.op_id,de.tb_nm,de.old,de.new,de.fd_lst,de.op_tp,de.tb_row_id,op.op_dt FROM LOG_DETAIL de,LOG_OPERATION op "
-				+ "WHERE de.OP_ID=op.OP_ID AND de.OB_PID= :1 AND (de.TB_NM not in ('IX_POI','IX_POI_PHOTO') or (de.TB_NM='IX_POI' AND instr(de.FD_LST,'POI_METO')=0)) ";
+				+ "WHERE de.OP_ID=op.OP_ID AND de.OB_PID= :1 AND (de.TB_NM not in ('IX_POI','IX_POI_PHOTO') or (de.TB_NM='IX_POI' AND instr(de.FD_LST,'POI_MEMO')=0)) ";
 
 		PreparedStatement pstmt = null;
 
@@ -408,8 +408,8 @@ public class LogReader {
 
 	public static void main(String[] args) throws Exception {
 		Connection con = DriverManager.getConnection("jdbc:oracle:thin:@192.168.4.61:1521/orcl",
-				"fm_regiondb_sp6_d_1", "fm_regiondb_sp6_d_1");
-		int state = new LogReader(con).getObjectState(46332, "IX_POI");
-		System.out.println(state);
+				"fm_regiondb_test_d_1", "fm_regiondb_test_d_1");
+		boolean flag = new LogReader(con).isOnlyPhotoAndMetoHis(1376);
+		System.out.println(flag);
 	}
 }

@@ -48,7 +48,7 @@ public class CkResultTool {
 		try{
 			log.debug("开始计算并更新NI_VAL_EXCEPTION表的MD5值");
 			conn = schema.getPoolDataSource().getConnection();
-			String sql = "UPDATE NI_VAL_EXCEPTION A SET A.MD5_CODE = LOWER(UTL_RAW.CAST_TO_RAW(DBMS_OBFUSCATION_TOOLKIT.MD5(INPUT_STRING =>RULEID||INFORMATION||TARGETS||NVL(ADDITION_INFO,'null'))))";
+			String sql = "UPDATE NI_VAL_EXCEPTION A SET A.MD5_CODE = LOWER(DBMS_CRYPTO.HASH(RULEID||INFORMATION||TARGETS||NVL(ADDITION_INFO,'null'),2))";
 			QueryRunner runner = new QueryRunner();
 			int count = runner.update(conn, sql);
 			log.debug("计算并更新NI_VAL_EXCEPTION表的MD5值完毕，共更新了"+count+"条记录");

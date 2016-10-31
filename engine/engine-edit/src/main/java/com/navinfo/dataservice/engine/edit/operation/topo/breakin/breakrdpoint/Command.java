@@ -55,6 +55,8 @@ public class Command extends AbstractCommand {
 	private RdNode breakNode;
 
 	private String operationType = "";
+	
+	private RdLink breakLink;
 
 	public String getOperationType() {
 		return operationType;
@@ -62,6 +64,14 @@ public class Command extends AbstractCommand {
 
 	public void setOperationType(String operationType) {
 		this.operationType = operationType;
+	}
+	
+	public RdLink getBreakLink() {
+		return breakLink;
+	}
+
+	public void setBreakLink(RdLink breakLink) {
+		this.breakLink = breakLink;
 	}
 
 	private List<RdRestriction> restrictions;
@@ -320,7 +330,7 @@ public class Command extends AbstractCommand {
 
 	@Override
 	public ObjType getObjType() {
-		return ObjType.RDLINK;
+		return ObjType.RDNODE;
 	}
 
 	@Override

@@ -408,8 +408,8 @@ public class LogReader {
 
 	public static void main(String[] args) throws Exception {
 		Connection con = DriverManager.getConnection("jdbc:oracle:thin:@192.168.4.61:1521/orcl",
-				"fm_regiondb_test_d_1", "fm_regiondb_test_d_1");
-		boolean flag = new LogReader(con).isOnlyPhotoAndMetoHis(1376);
-		System.out.println(flag);
+				"fm_regiondb_sp6_d_1", "fm_regiondb_sp6_d_1");
+		int state = new LogReader(con).getObjectState(46332, "IX_POI");
+		System.out.println(state);
 	}
 }

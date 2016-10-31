@@ -30,6 +30,7 @@ public class GLM08031 extends baseRule {
 					if(detailObj.getRelationshipType()==1){
 						List<IRow> vias=detailObj.getVias();
 						if(vias!=null&&vias.size()>0){
+							//if(true){return;}
 							this.setCheckResult("", "", 0);
 							return;
 						}

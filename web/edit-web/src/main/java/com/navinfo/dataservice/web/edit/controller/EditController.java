@@ -357,7 +357,7 @@ public class EditController extends BaseController {
 	 * @throws IOException
 	 */
 	@RequestMapping(value = "/road/base/release")
-	public ModelAndView getPoiBaseRelease(HttpServletRequest request)
+	public ModelAndView getRoadBaseRelease(HttpServletRequest request)
 			throws ServletException, IOException {
 
 		String parameter = request.getParameter("parameter");

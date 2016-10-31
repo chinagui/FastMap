@@ -98,6 +98,9 @@ public class OracleSchemaPhysicalCreator implements DbPhysicalCreator{
 			runner
 					.execute(conn, "grant debug connect session to   "
 							+ dbUserName);
+			//md5
+			runner.execute(conn, "grant execute on dbms_crypto to "+ dbUserName);
+			
 			//跨用户访问
 			runner.execute(conn, "GRANT SELECT ANY TABLE TO "+dbUserName);
 		}catch (SQLException e) {

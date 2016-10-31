@@ -12,6 +12,8 @@ import org.apache.commons.collections.CollectionUtils;
 
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
+import com.navinfo.dataservice.dao.glm.iface.ObjType;
+import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdmin;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
@@ -97,6 +99,8 @@ public class Process extends AbstractProcess<Command> {
 
 			this.rdLinkBreakpoint = (RdLink) linkSelector.loadById(this
 					.getCommand().getLinkPid(), true);
+			
+			this.getCommand().setBreakLink(rdLinkBreakpoint);
 
 			this.getResult().insertObject(rdLinkBreakpoint, ObjStatus.DELETE,
 					rdLinkBreakpoint.pid());
@@ -314,6 +318,14 @@ public class Process extends AbstractProcess<Command> {
 				log.info("MAIN ATTRRELATION USE TIME  " + String.valueOf(attrrelationTime-mainRDLinkTime));
 				
 				log.info("START RECORD  ");
+				//设置主pid值（primary key），用于web显示对应的node的属性面板
+				if (!this.getCommand().getOperType().equals(OperType.DELETE)
+						&& !this.getCommand().getObjType().equals(ObjType.RDBRANCH)
+						&& !this.getCommand().getObjType().equals(ObjType.RDELECEYEPAIR)
+						&& !this.getCommand().getObjType().equals(ObjType.LUFACE)
+						&& !this.getCommand().getObjType().equals(ObjType.LCFACE)) {
+					handleResult(this.getCommand().getObjType(), this.getCommand().getOperType(), this.getResult());
+				}
 				this.recordData();
 				long recordTime=System.currentTimeMillis();
 				log.info("END RECORD  ");

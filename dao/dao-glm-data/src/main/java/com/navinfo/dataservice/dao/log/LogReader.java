@@ -206,7 +206,7 @@ public class LogReader {
 	public boolean isOnlyPhotoAndMetoHis(int objPid) throws Exception {
 
 		String sql = "SELECT de.row_id,de.op_id,de.tb_nm,de.old,de.new,de.fd_lst,de.op_tp,de.tb_row_id,op.op_dt FROM LOG_DETAIL de,LOG_OPERATION op "
-				+ "WHERE de.OP_ID=op.OP_ID AND de.OB_PID= :1 AND (de.TB_NM not in ('IX_POI','IX_POI_PHOTO') or (de.TB_NM='IX_POI' AND instr(de.FD_LST,'POI_METO')=0)) ";
+				+ "WHERE de.OP_ID=op.OP_ID AND de.OB_PID= :1 AND (de.TB_NM not in ('IX_POI','IX_POI_PHOTO') or (de.TB_NM='IX_POI' AND instr(de.FD_LST,'POI_MEMO')=0)) ";
 
 		PreparedStatement pstmt = null;
 

@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.web.edit.row.controller;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.control.row.query.PoiQuery;
 import com.navinfo.dataservice.control.row.release.PoiRelease;
 import com.navinfo.dataservice.control.row.save.PoiSave;
@@ -44,8 +46,18 @@ public class RowEditController extends BaseController {
 			throws ServletException, IOException {
 
 		String parameter = request.getParameter("parameter");
-
+		JSONObject jsonReq = JSONObject.fromObject(parameter);
 		try {
+			if (StringUtils.isEmpty(parameter)||jsonReq == null|| jsonReq.isNullObject()){
+				return new ModelAndView("jsonView", fail("parameter参数不能为空"));
+			}
+			if(jsonReq.has("type")){
+				int type = jsonReq.getInt("type");
+				Integer[] typeArray = {1,2,3};
+				if (!(Arrays.asList(typeArray).contains(type))){
+					return new ModelAndView("jsonView", fail("type参数值域不在[1,2,3]内"));
+				}
+			}
 			PoiQuery poiQuery = new PoiQuery();
 			JSONObject result = poiQuery.getPoiList(parameter);
 			return new ModelAndView("jsonView", success(result));

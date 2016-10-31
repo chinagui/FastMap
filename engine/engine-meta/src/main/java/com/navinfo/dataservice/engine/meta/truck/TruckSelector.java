@@ -48,13 +48,13 @@ public class TruckSelector {
         String sqlChain = "SELECT truck FROM sc_point_truck t WHERE t.type=2 and t.chain=:1";
         ResultSet resultSet = null;
         PreparedStatement pstmt = null;
-        int truck=0;
+        int truck=-1;
         try {
             pstmt = conn.prepareStatement(sql);
             pstmt.setString(1, kind);
             resultSet = pstmt.executeQuery();
-            if (resultSet.getRow()>0){
-            	while (resultSet.next()) {
+            
+            if(resultSet.next()){
                     String chainCode = resultSet.getString("chain");
                     int type = resultSet.getInt("type");
                     if (1==type){
@@ -62,11 +62,9 @@ public class TruckSelector {
                     }else if (3==type&&chain.equals(chainCode)){
                     	return resultSet.getInt("truck");
                     }else if (4==type&&fuelType.contains("0")){
-                    	return resultSet.getInt("truck");
-                    }     
+                    	return resultSet.getInt("truck");    
                 }
-            }
-            else{
+            }else{
             	 pstmt = conn.prepareStatement(sqlChain);
             	 pstmt.setString(1, chain);
                  resultSet = pstmt.executeQuery();

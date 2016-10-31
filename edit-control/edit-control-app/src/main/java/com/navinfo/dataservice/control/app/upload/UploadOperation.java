@@ -250,7 +250,7 @@ public class UploadOperation {
 			stmt = conn.prepareStatement("SELECT poi_num,u_record,pid FROM ix_poi WHERE poi_num in( select column_value from table(clob_to_table(?)))");
 			stmt.setClob(1, fidClod);
 			rs = stmt.executeQuery();
-			if (rs.next()) {
+			while (rs.next()) {
 				int uRecord = rs.getInt("u_record");
 				int pid = rs.getInt("pid");
 				String fid = rs.getString("poi_num");

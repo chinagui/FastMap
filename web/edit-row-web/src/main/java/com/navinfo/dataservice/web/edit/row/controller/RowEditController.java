@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.web.edit.row.controller;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -49,6 +50,13 @@ public class RowEditController extends BaseController {
 		try {
 			if (StringUtils.isEmpty(parameter)||jsonReq == null|| jsonReq.isNullObject()){
 				return new ModelAndView("jsonView", fail("parameter参数不能为空"));
+			}
+			if(jsonReq.has("type")){
+				int type = jsonReq.getInt("type");
+				Integer[] typeArray = {1,2,3};
+				if (!(Arrays.asList(typeArray).contains(type))){
+					return new ModelAndView("jsonView", fail("type参数值域不在[1,2,3]内"));
+				}
 			}
 			PoiQuery poiQuery = new PoiQuery();
 			JSONObject result = poiQuery.getPoiList(parameter);

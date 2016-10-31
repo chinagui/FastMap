@@ -7,6 +7,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.exception.DataNotFoundException;
@@ -53,42 +54,42 @@ public class RdCrossSelector extends AbstractSelector {
 
 				ReflectionAttrUtils.executeResultSet(cross, resultSet);
 
-				List<IRow> links = loadRowsByClassParentId(RdCrossLink.class,id, isLock,"");
-				
-				for(IRow row : links){
+				List<IRow> links = loadRowsByClassParentId(RdCrossLink.class, id, isLock, "");
+
+				for (IRow row : links) {
 					row.setMesh(cross.mesh());
 				}
 
 				cross.setLinks(links);
-				
+
 				for (IRow row : cross.getLinks()) {
 					RdCrossLink obj = (RdCrossLink) row;
 
 					cross.linkMap.put(obj.rowId(), obj);
 				}
 
-				List<IRow> nodes = loadRowsByClassParentId(RdCrossNode.class,id, isLock,"");
-				
-				for(IRow row : nodes){
+				List<IRow> nodes = loadRowsByClassParentId(RdCrossNode.class, id, isLock, "");
+
+				for (IRow row : nodes) {
 					row.setMesh(cross.mesh());
 				}
 
 				cross.setNodes(nodes);
-				
+
 				for (IRow row : cross.getNodes()) {
 					RdCrossNode obj = (RdCrossNode) row;
 
 					cross.nodeMap.put(obj.rowId(), obj);
 				}
 
-				List<IRow> names = loadRowsByClassParentId(RdCrossName.class,id, isLock,"");
-				
-				for(IRow row : names){
+				List<IRow> names = loadRowsByClassParentId(RdCrossName.class, id, isLock, "");
+
+				for (IRow row : names) {
 					row.setMesh(cross.mesh());
 				}
 
 				cross.setNames(names);
-				
+
 				for (IRow row : cross.getNames()) {
 					RdCrossName obj = (RdCrossName) row;
 
@@ -101,7 +102,7 @@ public class RdCrossSelector extends AbstractSelector {
 				throw new DataNotFoundException("该点未创建路口！");
 			}
 		} catch (Exception e) {
-			
+
 			throw e;
 
 		} finally {
@@ -110,7 +111,7 @@ public class RdCrossSelector extends AbstractSelector {
 					resultSet.close();
 				}
 			} catch (Exception e) {
-				
+
 			}
 
 			try {
@@ -118,7 +119,7 @@ public class RdCrossSelector extends AbstractSelector {
 					pstmt.close();
 				}
 			} catch (Exception e) {
-				
+
 			}
 
 		}
@@ -139,30 +140,43 @@ public class RdCrossSelector extends AbstractSelector {
 			throws Exception {
 
 		List<RdCross> result = new ArrayList<RdCross>();
+		
+		boolean nodePidEmptyFlag = CollectionUtils.isEmpty(nodePids);
 
-		String nodeStr = nodePids.toString();
+		boolean linkPidEmptyFlag = CollectionUtils.isEmpty(linkPids);
 
-		nodeStr = nodeStr.replace("[", "(");
-
-		nodeStr = nodeStr.replace("]", ")");
-
-		String linkStr = linkPids.toString();
-
-		linkStr = linkStr.replace("[", "(");
-
-		linkStr = linkStr.replace("]", ")");
-
-		if (nodePids.size() == 0 && linkPids.size() == 0) {
+		if (nodePidEmptyFlag && linkPidEmptyFlag) {
 			return result;
+		}
+
+		String nodeStr = "";
+		
+		String linkStr= "";
+		
+		if(!nodePidEmptyFlag)
+		{
+			nodeStr = nodePids.toString();
+
+			nodeStr = nodeStr.replace("[", "(");
+
+			nodeStr = nodeStr.replace("]", ")");
+		}
+		if(!linkPidEmptyFlag)
+		{
+			linkStr = linkPids.toString();
+
+			linkStr = linkStr.replace("[", "(");
+
+			linkStr = linkStr.replace("]", ")");
 		}
 
 		String sql = "";
 
-		if (nodePids.size() == 0) {
+		if (nodePidEmptyFlag) {
 			sql = "select a.*, c.mesh_id   from rd_cross a, RD_LINK c  where   exists (select null           from rd_cross_link d          where a.pid = d.pid            and d.link_pid in "
 					+ linkStr
 					+ "          AND D.LINK_PID = C.LINK_PID            and d.u_record != 2)    and a.u_record != 2";
-		} else if (linkPids.size() == 0) {
+		} else if (linkPidEmptyFlag) {
 			sql = "select a.*, c.mesh_id   from rd_cross a, rd_node_mesh c  where  exists (select null           from rd_cross_node d          where a.pid = d.pid            and d.node_pid in "
 					+ nodeStr
 					+ "          and d.u_record != 2            and c.node_pid = d.node_pid            )    and a.u_record != 2";

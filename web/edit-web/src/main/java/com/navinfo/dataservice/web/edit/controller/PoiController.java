@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.web.edit.controller;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -82,6 +83,7 @@ public class PoiController extends BaseController{
 		String parameter = request.getParameter("parameter");
 		
 		try{
+			Date startTime = new Date();
 			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
 			JSONObject json = JSONObject.fromObject(parameter);
 
@@ -91,9 +93,12 @@ public class PoiController extends BaseController{
 
 			UploadOperation operation = new UploadOperation();
 			JSONObject retArray = operation.importPoi(filePath + "/poi.txt");
-			
+			Date endTime = new Date();
+			logger.info("poi import total time:"+ (endTime.getTime() - startTime.getTime())+"ms");
+			startTime = new Date();
 			CollectorImport.importPhoto(filePath);
-			
+			endTime = new Date();
+			logger.info("photo import total time:"+ (endTime.getTime() - startTime.getTime())+"ms");
 			return new ModelAndView("jsonView", success(retArray));
 		}catch(Exception e){
 			String logid = Log4jUtils.genLogid();

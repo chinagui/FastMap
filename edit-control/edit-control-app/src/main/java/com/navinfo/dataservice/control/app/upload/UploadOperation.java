@@ -7,6 +7,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -98,6 +99,7 @@ public class UploadOperation {
 	 */
 	@SuppressWarnings("static-access")
 	private JSONObject changeData(JSONArray ja) throws Exception {
+		Date startTime = new Date();
 		JSONObject retObj = new JSONObject();
 		List<String> errList = new ArrayList<String>();
 		Connection manConn = null;
@@ -231,6 +233,8 @@ public class UploadOperation {
 		} finally {
 			DBUtils.closeConnection(conn);
 			DBUtils.closeConnection(manConn);
+			Date endTime = new Date();
+			log.info("total time:"+ (endTime.getTime() - startTime.getTime())+"ms");
 		}
 	}
 

@@ -103,7 +103,47 @@ public class Operation implements IOperation {
 		RdTrafficsignalSelector selector = new RdTrafficsignalSelector(conn);
 
 		List<RdTrafficsignal> trafficsignals = selector.loadByLinkPid(true, linkPids);
-
+		
+//		//信号灯map（key：路口点pid，路口点信号灯的进入linkPid集合）
+//		Map<Integer,List<Integer>> trafficMap = new HashMap<>();
+//		
+//		for(RdTrafficsignal signal : trafficsignals)
+//		{
+//			int nodePid = signal.getNodePid();
+//			
+//			int linkPid = signal.getLinkPid();
+//			
+//			if(trafficMap.get(nodePid) != null)
+//			{
+//				List<Integer> signalListPids = trafficMap.get(nodePid);
+//				
+//				signalListPids.add(linkPid);
+//			}
+//			else
+//			{
+//				List<Integer> signalListPids = new ArrayList<>();
+//				
+//				signalListPids.add(linkPid);
+//				
+//				trafficMap.put(nodePid, signalListPids);
+//			}
+//		}
+//		
+//		for(Map.Entry<Integer, List<Integer>> entry : trafficMap.entrySet())
+//		{
+//			int nodePid = entry.getKey();
+//			
+//			List<Integer> linkPidList = entry.getValue();
+//			
+//			List<Integer> paramLinkList = Arrays.asList(linkPids);
+//			
+//			//如果删除的link包含了路口点位所有进入link的红绿灯，则维护路口信号灯属性为无
+//			if(paramLinkList.containsAll(linkPidList))
+//			{
+//				//TODO是否维护路口
+//			}
+//		}
+		
 		for (RdTrafficsignal trafficsignal : trafficsignals) {
 
 			result.insertObject(trafficsignal, ObjStatus.DELETE, trafficsignal.getPid());

@@ -157,8 +157,6 @@ public class RdRestrictionSearch implements ISearch {
 			
 			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
 
-			System.out.println(wkt);
-			
 			pstmt.setString(1, wkt);
 
 			resultSet = pstmt.executeQuery();

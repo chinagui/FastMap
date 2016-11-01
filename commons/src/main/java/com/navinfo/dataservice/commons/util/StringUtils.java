@@ -44,6 +44,12 @@ public class StringUtils {
 		if(fieldName.equals("phone400")){
 			return "phone_400";
 		}
+		if(fieldName.equals("current")){
+			return "\"CURRENT\"";
+		}
+		if(fieldName.equals("mode")){
+			return "\"MODE\"";
+		}
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < fieldName.length(); i++) {
 			char c = fieldName.charAt(i);

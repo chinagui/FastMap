@@ -19,6 +19,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneVia;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.rd.laneconnexity.RdLaneConnexitySelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
+import com.navinfo.dataservice.engine.edit.utils.CalLinkOperateUtils;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -116,6 +117,20 @@ public class Operation implements IOperation {
 								json.getString("objStatus"))) {
 
 							boolean isChanged = topo.fillChangeFields(json);
+							
+							if(topo.changedFields().containsKey("outLinkPid"))
+							{
+								int inNodePid = lane.getInLinkPid();
+										
+								int outLinkPid = json.getInt("outLinkPid");
+								
+								CalLinkOperateUtils calLinkOperateUtils = new CalLinkOperateUtils();
+
+								int relationShipType = calLinkOperateUtils.getRelationShipType(conn,
+										inNodePid, outLinkPid);
+								
+								topo.changedFields().put("relationshipType", relationShipType);
+							}
 
 							if (isChanged) {
 								result.insertObject(topo, ObjStatus.UPDATE,
@@ -135,7 +150,18 @@ public class Operation implements IOperation {
 						topo.setMesh(lane.mesh());
 						
 						topoPid = topo.getPid();
+						
+						int inNodePid = lane.getInLinkPid();
+						
+						int outLinkPid = topo.getOutLinkPid();
+						
+						CalLinkOperateUtils calLinkOperateUtils = new CalLinkOperateUtils();
 
+						int relationShipType = calLinkOperateUtils.getRelationShipType(conn,
+								inNodePid, outLinkPid);
+						
+						topo.setRelationshipType(relationShipType);
+						
 						result.insertObject(topo, ObjStatus.INSERT, lane.pid());
 
 						topoPids.add(topo.getPid());

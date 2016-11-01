@@ -45,7 +45,7 @@ public class POITest extends InitApplication {
 
 			IxPoiSearch search = new IxPoiSearch(conn);
 
-			IRow jsonObject = search.searchDataByPid(309000042);
+			IRow jsonObject = search.searchDataByPid(38898);
 
 			System.out.println(jsonObject.Serialize(ObjLevel.FULL));
 		} catch (Exception e) {
@@ -58,15 +58,15 @@ public class POITest extends InitApplication {
 	public void getTitleWithGap() {
 		Connection conn = null;
 		try {
-			conn = DBConnector.getInstance().getConnectionById(19);
+			conn = DBConnector.getInstance().getConnectionById(17);
 
 			SearchProcess p = new SearchProcess(conn);
 
 			List<ObjType> objType = new ArrayList<>();
 
-			objType.add(ObjType.IXPOI);
+			objType.add(ObjType.RDRESTRICTION);
 
-			System.out.println(p.searchDataByTileWithGap(objType, 107916, 49606, 17, 80));
+			System.out.println(p.searchDataByTileWithGap(objType, 215723, 99038, 18, 80));
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -75,7 +75,7 @@ public class POITest extends InitApplication {
 
 	@Test
 	public void testDeletePoi() {
-		String parameter = "{\"command\":\"UPDATE\",\"dbId\":8,\"type\":\"IXPOI\",\"objId\":5788597,\"data\":{\"level\":\"A\",\"rowId\":\"3F1ED96214CE20E9E0536803A8C0508C\",\"pid\":5788597,\"objStatus\":\"UPDATE\",\"addresses\":[{\"nameGroupid\":1,\"poiPid\":0,\"langCode\":\"CHI\",\"fullname\":\"ｃｅｓ\",\"objStatus\":\"INSERT\"}]}}";
+		String parameter = "{\"command\":\"CREATE\",\"dbId\":19,\"objId\":301002481,\"data\":{\"longitude\":116.40946411365194,\"latitude\":40.033081975491484},\"type\":\"RDNODE\"}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
@@ -87,7 +87,7 @@ public class POITest extends InitApplication {
 
 	@Test
 	public void addPoi() {
-		String parameter = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"IXPOI\",\"objId\":206000036,\"data\":{\"contacts\":[{\"contact\":\"010-11111113\",\"rowId\":\"6DC41F3FBEC1445491360F6BDA3198A9\",\"objStatus\":\"UPDATE\"}],\"rowId\":\"79C41F7CCF224EFD90DD1A7475D4C269\",\"pid\":206000036}}";
+		String parameter = "{\"command\":\"CREATE\",\"dbId\":17,\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.6463477909565,40.29807140893668],[116.64626118564605,40.29807051210431],[116.6461295525165,40.298060967516875],[116.64598435163497,40.29800083244776]]},\"catchLinks\":[{\"linkPid\":202002441,\"lon\":116.64626118564605,\"lat\":40.29807051210431},{\"linkPid\":208002501,\"lon\":116.6461295525165,\"lat\":40.298060967516875}]},\"type\":\"RDLINK\"}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

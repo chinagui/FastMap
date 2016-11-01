@@ -19,6 +19,9 @@ import com.navinfo.dataservice.api.man.model.UserDevice;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.engine.man.task.TaskOperation;
 import com.navinfo.navicommons.database.QueryRunner;
+
+import net.sf.json.JSONArray;
+
 import com.navinfo.dataservice.api.man.model.UserInfo;
 
 /** 
@@ -521,7 +524,6 @@ public class UserInfoOperation {
 					}
 					return group;
 				}
-
 			};
 
 			Map<Object, Object> group = run.query(conn, querySql, rsHandler);
@@ -532,4 +534,87 @@ public class UserInfoOperation {
 			throw new Exception("插入userDevice，原因为:"+e.getMessage(),e);
 		}
 	}
+	
+	/**
+	 * 查询分配的月编组组长id
+	 * @author Han Shaoming
+	 * @param conn
+	 * @param userId
+	 * @param groupType
+	 * @return
+	 * @throws Exception
+	 */
+	public static List<Long> getLeaderIdByGroupId(Connection conn, List<Long> groupIdList) throws Exception {
+		// TODO Auto-generated method stub
+		try{
+			QueryRunner run = new QueryRunner();
+			// 查询用户所在组组长id
+			String querySql = "SELECT DISTINCT U.LEADER_ID FROM USER_GROUP U WHERE 1=1 ";
+			JSONArray json = new JSONArray();
+			if(groupIdList !=null && groupIdList.size()>0){
+				for (int i=0;i<groupIdList.size();i++) {
+					if(groupIdList.get(i) !=null){
+						json.add(groupIdList.get(i));
+					}
+				}
+			}
+			String condition = "AND U.GROUP_ID IN("+json.join(",")+")";
+			String sql = querySql + condition;
+			
+			ResultSetHandler<List<Long>> rsh = new ResultSetHandler<List<Long>>() {
+				@Override
+				public List<Long> handle(ResultSet rs) throws SQLException {
+					// TODO Auto-generated method stub
+					List<Long> leaderIdList = new ArrayList<Long>();
+					while(rs.next()){
+						leaderIdList.add(rs.getLong("LEADER_ID"));
+					}
+					return leaderIdList;
+				}
+			};
+			List<Long> leaderIdList = run.query(conn, sql, rsh);
+			return leaderIdList;
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}
+	}
+	
+	/**
+	 * 查询用户信息
+	 * @author Han Shaoming
+	 * @param conn
+	 * @param userId
+	 * @return
+	 * @throws Exception
+	 */
+	public static Map<String,Object> getUserInfoByUserId(Connection conn, long userId) throws Exception {
+		// TODO Auto-generated method stub
+		try{
+			QueryRunner run = new QueryRunner();
+			// 查询用户所在组组长id
+			String querySql = "SELECT U.USER_ID USER_ID,U.USER_REAL_NAME USER_REAL_NAME,U.USER_EMAIL USER_EMAIL "
+					+ "FROM USER_INFO U WHERE USER_ID = ?";
+			Object[] params = {userId};		
+			ResultSetHandler<Map<String,Object>> rsh = new ResultSetHandler<Map<String,Object>>() {
+				@Override
+				public Map<String,Object> handle(ResultSet rs) throws SQLException {
+					// TODO Auto-generated method stub
+					Map<String,Object> map = new HashMap<String, Object>();
+					while(rs.next()){
+						map.put("userId", rs.getLong("USER_ID"));
+						map.put("userRealName", rs.getString("USER_REAL_NAME"));
+						map.put("userEmail", rs.getLong("USER_EMAIL"));
+					}
+					return map;
+				}
+			};
+			Map<String, Object> userInfo = run.query(conn, querySql, params, rsh);
+			return userInfo;
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}
+	}
+	
 }

@@ -1602,7 +1602,7 @@ public class TaskOperation {
 	 * 
 	 * @param conn
 	 * @param condition 搜索条件{"taskIds":[1,2,3],"taskStatus":[1,2]}
-	 * @return [{"taskId":12,"taskStatus":1,"taskName":"123"}]
+	 * @return [{"taskId":12,"taskStatus":1,"taskName":"123","monthEditGroupId":2}]
 	 */
 	public static List<Map<String, Object>> queryTaskTable(Connection conn,JSONObject condition) throws Exception{
 		
@@ -1617,7 +1617,7 @@ public class TaskOperation {
 			}
 		}
 		
-		String selectSql="select t.task_id,t.status task_status,t.NAME task_name from task t where 1=1 "+conditionSql;
+		String selectSql="select t.task_id,t.status task_status,t.NAME task_name ,t.MONTH_EDIT_GROUP_ID MONTH_EDIT_GROUP_ID from task t where 1=1 "+conditionSql;
 		
 		ResultSetHandler<List<Map<String, Object>>> rsHandler = new ResultSetHandler<List<Map<String, Object>>>(){
 			public List<Map<String, Object>> handle(ResultSet rs) throws SQLException {
@@ -1627,6 +1627,7 @@ public class TaskOperation {
 					map.put("taskId", rs.getInt("TASK_ID"));
 					map.put("taskStatus", rs.getInt("TASK_STATUS"));
 					map.put("taskName", rs.getString("TASK_NAME"));
+					map.put("monthEditGroupId", rs.getInt("MONTH_EDIT_GROUP_ID"));
 					list.add(map);
 				}
 				return list;

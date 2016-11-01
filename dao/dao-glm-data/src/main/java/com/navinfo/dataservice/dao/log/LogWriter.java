@@ -42,7 +42,6 @@ import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import net.sf.json.JSONNull;
 
 class Status {
 	public static int INSERT = 1;
@@ -699,7 +698,7 @@ public class LogWriter {
 				ld.getGrids().add(grid);
 			}
 			//循环子表处理子表履历
-			handleChildren(command, r, ld);
+			handleChildren(command, r, ld,Status.DELETE);
 		}
 	}
 
@@ -764,7 +763,7 @@ public class LogWriter {
 			}
 
 			//循环子表处理子表履历
-			handleChildren(command, r, ld);
+			handleChildren(command, r, ld,Status.INSERT);
 		}
 
 		if (geoLogOperation.getDetails().size() > 0) {
@@ -860,7 +859,7 @@ public class LogWriter {
 		return json;
 	}
 	
-	private void handleChildren(ICommand command,IRow r,LogDetail ld) throws Exception
+	private void handleChildren(ICommand command,IRow r,LogDetail ld,int status) throws Exception
 	{
 		addToOperation(command, r, ld);
 
@@ -876,13 +875,16 @@ public class LogWriter {
 					
 					ldC.setObNm(ld.getObNm());
 
-					ldC.setOpTp(Status.INSERT);
+					ldC.setOpTp(status);
 
 					ldC.setTbNm(row.tableName().toUpperCase());
 
 					ldC.setIsCk(0);
-
-					ldC.setNewValue(convertObj2NewValue(row).toString());
+					
+					if(status != Status.DELETE)
+					{
+						ldC.setNewValue(convertObj2NewValue(row).toString());
+					}
 
 					ldC.setRowId(UuidUtils.genUuid());
 
@@ -899,14 +901,21 @@ public class LogWriter {
 						grid.setGridId(Integer.valueOf(gridId));
 
 						grid.setLogRowId(ldC.getRowId());
-
-						grid.setGridType(1);
+						
+						if(status != Status.DELETE)
+						{
+							grid.setGridType(1);
+						}
+						else
+						{
+							grid.setGridType(0);
+						}
 
 						ldC.getGrids().add(grid);
 					}
 					if(CollectionUtils.isNotEmpty(row.children()))
 					{
-						handleChildren(command,row,ldC);
+						handleChildren(command,row,ldC,status);
 					}
 					else
 					{

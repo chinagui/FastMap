@@ -274,7 +274,7 @@ public class Operation implements IOperation {
 			maps.put(g.getCoordinates()[0], (int) node.get("s"));
 		}
 		if (!maps.containsValue(node.get("e"))) {
-			maps.put(g.getCoordinates()[0], (int) node.get("e"));
+			maps.put(g.getCoordinates()[g.getCoordinates().length-1], (int) node.get("e"));
 		}
 		// 创建线
 		RdLink link = RdLinkOperateUtils.addLink(g, (int) node.get("s"),
@@ -321,6 +321,7 @@ public class Operation implements IOperation {
 					String meshIdStr = it.next();
 					Geometry geomInter = MeshUtils.linkInterMeshPolygon(g,
 							GeoTranslator.transform(MeshUtils.mesh2Jts(meshIdStr),1,5));
+					System.out.print("");
 					geomInter = GeoTranslator.geojson2Jts(
 							GeoTranslator.jts2Geojson(geomInter), 1, 5);
 					this.createRdLinkWithMesh(geomInter, maps, result,

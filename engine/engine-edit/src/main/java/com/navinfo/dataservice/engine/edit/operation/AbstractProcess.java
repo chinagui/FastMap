@@ -370,12 +370,20 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 			}
 			break;
 		case REPAIR:
-			List<Integer> uppdateObjPidList = result.getListUpdateIRowObPid();
-			for (int i = 0; i < result.getUpdateObjects().size(); i++) {
-				IRow row = result.getUpdateObjects().get(i);
+			List<Integer> allObjPidList = new ArrayList<>();
+			List<IRow> allIRows = new ArrayList<>();
+			allIRows.addAll(result.getUpdateObjects());
+			allObjPidList.addAll(result.getListUpdateIRowObPid());
+			if(CollectionUtils.isEmpty(allObjPidList))
+			{
+				allIRows.addAll(result.getAddObjects());
+				allObjPidList.addAll(result.getListAddIRowObPid());
+			}
+			for (int i = 0; i < allIRows.size(); i++) {
+				IRow row = allIRows.get(i);
 				if (objType.equals(row.objType())) {
-					if (uppdateObjPidList.get(i) != null) {
-						result.setPrimaryPid(uppdateObjPidList.get(i));
+					if (allObjPidList.get(i) != null) {
+						result.setPrimaryPid(allObjPidList.get(i));
 						break;
 					}
 				}

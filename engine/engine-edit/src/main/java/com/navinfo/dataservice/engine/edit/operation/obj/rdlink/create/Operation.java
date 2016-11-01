@@ -1,17 +1,25 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdlink.create;
 
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
+import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossNode;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
+import com.navinfo.dataservice.dao.glm.model.rd.trafficsignal.RdTrafficsignal;
+import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.edit.utils.AdminOperateUtils;
 import com.navinfo.dataservice.engine.edit.utils.RdLinkOperateUtils;
@@ -68,10 +76,128 @@ public class Operation implements IOperation {
 
 		// 创建线信息
 		this.createRdLinks(map, result);
+		List<RdLink> links = getLinksFromResult(result);
 		// 挂接的线被打断的操作
 		this.breakLine(result);
+		// 处理挂机交叉口内link的形态
+		this.handleCrossLink(result,links);
 
 		return msg;
+	}
+
+	/**
+	 * @param result
+	 * @return
+	 */
+	private List<RdLink> getLinksFromResult(Result result) {
+		
+		List<RdLink> links = new ArrayList<>();
+		
+		for(IRow row : result.getAddObjects())
+		{
+			if(row instanceof RdLink)
+			{
+				RdLink link = (RdLink) row;
+				
+				links.add(link);
+			}
+		}
+		
+		return links;
+	}
+
+	/**
+	 * @param result
+	 * @param links 
+	 * @throws Exception 
+	 */
+	private void handleCrossLink(Result result, List<RdLink> links) throws Exception {
+		List<IRow> addRows = result.getAddObjects();
+		
+		Map<Integer,List<Integer>> crossNodeMap = new HashMap<>();
+		
+		for(IRow row : addRows)
+		{
+			if(row instanceof RdCrossNode)
+			{
+				RdCrossNode crossNode = (RdCrossNode) row;
+				
+				if(crossNodeMap.containsKey(crossNode.getPid()))
+				{
+					crossNodeMap.get(crossNode.getPid()).add(crossNode.getNodePid());
+				}
+				else
+				{
+					List<Integer> crossNodeList = new ArrayList<>();
+					
+					crossNodeList.add(crossNode.getNodePid());
+					
+					crossNodeMap.put(crossNode.getPid(), crossNodeList);
+				}
+			}
+		}
+		
+		RdCrossSelector selector = new RdCrossSelector(conn);
+		
+		List<RdTrafficsignal> insertTraffsignals = new ArrayList<>();
+		
+		for(Map.Entry<Integer, List<Integer>> entry : crossNodeMap.entrySet())
+		{
+			int crossPid = entry.getKey();
+			
+			RdCross cross = (RdCross) selector.loadById(crossPid, true);
+			
+			List<Integer> crossNodePidList = entry.getValue();
+			
+			List<Integer> allCrossNodePidList = new ArrayList<>();
+			
+			allCrossNodePidList.addAll(crossNodePidList);
+			
+			for(IRow row : cross.getNodes())
+			{
+				RdCrossNode crossNode = (RdCrossNode) row;
+				
+				allCrossNodePidList.add(crossNode.getNodePid());
+			}
+			
+			for(RdLink link : links)
+			{
+				//交叉口内link
+				if(allCrossNodePidList.contains(link.getsNodePid()) && allCrossNodePidList.contains(link.geteNodePid()))
+				{
+					RdLinkForm form = (RdLinkForm) link.getForms().get(0);
+					
+					form.setFormOfWay(50);
+				}
+				else if(cross.getSignal() == 1)
+				{
+					//有红绿灯信号维护红绿灯
+					for(Integer crossNodePid : crossNodePidList)
+					{
+						//link的起点活终点都需要建立红绿灯（交叉口内link除外）
+						if (link.getsNodePid() == crossNodePid
+								|| link.geteNodePid() == crossNodePid) {
+							RdTrafficsignal signal = new RdTrafficsignal();
+
+							signal.setPid(PidUtil.getInstance().applyRdTrafficsignalPid());
+
+							signal.setLinkPid(link.getPid());
+
+							// 默认为受控制
+							signal.setFlag(1);
+
+							signal.setNodePid(crossNodePid);
+
+							insertTraffsignals.add(signal);
+						}
+					}
+				}
+			}
+		}
+		
+		for (RdTrafficsignal signal : insertTraffsignals) {
+			result.insertObject(signal, ObjStatus.INSERT, signal.getPid());
+		}
 	}
 
 	/*
@@ -148,7 +274,7 @@ public class Operation implements IOperation {
 			maps.put(g.getCoordinates()[0], (int) node.get("s"));
 		}
 		if (!maps.containsValue(node.get("e"))) {
-			maps.put(g.getCoordinates()[0], (int) node.get("e"));
+			maps.put(g.getCoordinates()[g.getCoordinates().length-1], (int) node.get("e"));
 		}
 		// 创建线
 		RdLink link = RdLinkOperateUtils.addLink(g, (int) node.get("s"),
@@ -195,6 +321,7 @@ public class Operation implements IOperation {
 					String meshIdStr = it.next();
 					Geometry geomInter = MeshUtils.linkInterMeshPolygon(g,
 							GeoTranslator.transform(MeshUtils.mesh2Jts(meshIdStr),1,5));
+					System.out.print("");
 					geomInter = GeoTranslator.geojson2Jts(
 							GeoTranslator.jts2Geojson(geomInter), 1, 5);
 					this.createRdLinkWithMesh(geomInter, maps, result,

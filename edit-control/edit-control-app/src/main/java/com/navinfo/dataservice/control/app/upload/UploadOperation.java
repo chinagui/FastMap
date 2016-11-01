@@ -1,9 +1,11 @@
 package com.navinfo.dataservice.control.app.upload;
 
 import java.io.FileInputStream;
+import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -11,6 +13,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
+import org.apache.commons.collections.MultiMap;
+import org.apache.commons.collections.map.MultiValueMap;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 
@@ -19,6 +23,7 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
+import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
@@ -38,7 +43,6 @@ import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiName;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiParent;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiPhoto;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
-import com.navinfo.dataservice.dao.log.LogReader;
 import com.navinfo.dataservice.engine.edit.service.EditApiImpl;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.DBUtils;
@@ -92,7 +96,6 @@ public class UploadOperation {
 	 * @param line
 	 * @return
 	 */
-	//FIXME:这里通过u_record来判断POI的状态，需要修改。
 	@SuppressWarnings("static-access")
 	private JSONObject changeData(JSONArray ja) throws Exception {
 		JSONObject retObj = new JSONObject();
@@ -101,10 +104,10 @@ public class UploadOperation {
 		Connection conn = null;
 		// 获取当前做业季
 		String version = SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion);
-		QueryRunner qRunner = new QueryRunner();
 		try {
-			Map<String, List<JSONObject>> data = new HashMap<String, List<JSONObject>>();
+			
 			manConn = DBConnector.getInstance().getManConnection();
+			MultiMap gridDataMapping = new MultiValueMap();
 			for (int i = 0; i < ja.size(); i++) {
 				JSONObject jo = ja.getJSONObject(i);
 
@@ -114,74 +117,55 @@ public class UploadOperation {
 				Coordinate[] coordinate = point.getCoordinates();
 				CompGridUtil gridUtil = new CompGridUtil();
 				String grid = gridUtil.point2Grids(coordinate[0].x, coordinate[0].y)[0];
-				String manQuery = "SELECT daily_db_id FROM grid g,region r WHERE g.region_id=r.region_id and grid_id=:1";
-				String dbId = qRunner.queryForString(manConn, manQuery, grid);
+				gridDataMapping.put(grid, jo);
+				
+			}
+			log.info("计算dbid和上传数据的对应关系");
+			MultiMap dbDataMapping = new MultiValueMap();//dbid--jsonlist 对应map
+			for (Object grid :gridDataMapping.keySet()){
+				String  dbId = calDbDataMapping( manConn, grid.toString());
+				log.info("gridId:"+grid+",dbId:"+dbId);
 				if (dbId.isEmpty()) {
 					JSONObject errObj = new JSONObject();
-					errObj.put("fid", jo.getString("fid"));
-					String errStr = "不在已知grid内";
-					errObj.put("reason", errStr);
+					errObj.put("reason", "通过poi坐标计算出来的grid："+grid+",无法查询得到对应的大区库");
+					errObj.put("pois", gridDataMapping.get(grid));
 					errList.add(errObj.toString());
 					continue;
 				}
-
-				if (!data.containsKey(dbId)) {
-					List<JSONObject> dataList = new ArrayList<JSONObject>();
-					dataList.add(jo);
-					data.put(dbId, dataList);
-				} else {
-					List<JSONObject> dataList = data.get(dbId);
-					dataList.add(jo);
-					data.put(dbId, dataList);
+				for (Object data: (List)gridDataMapping.get(grid)) {
+					dbDataMapping.put(dbId,data);
 				}
+				
 			}
-
-			// 确认每个点属于新增、修改还是删除
-			// fid在IX_POI.POI_NUM中查找不到，并且待上传数据lifecycle不为1，为新增
-			// fid能找到，并且待上传数据lifecycle不为1且对应的IX_POI.U_RECORD不为2（删除），即为修改
-			// fid能找到，并且待上传数据lifecycle为1，即为删除
-			String subQuery = "SELECT u_record,pid FROM ix_poi WHERE poi_num=:1";
 			JSONObject insertObj = new JSONObject();
 			JSONObject updateObj = new JSONObject();
 			JSONObject deleteObj = new JSONObject();
-			for (Iterator<String> iter = data.keySet().iterator(); iter.hasNext();) {
-				// 创建连接，查找FID是否存在
+			//每个db中计算出上传poi对应的fid，lifecycle，urecord，pid
+			for(Iterator<String> iter = dbDataMapping.keySet().iterator(); iter.hasNext();){
 				String dbId = iter.next();
-				if (conn != null) {
-					DBUtils.closeConnection(conn);
+				List<JSONObject>pois = (List<JSONObject>) dbDataMapping.get(dbId);
+				Map<String,PoiWrap> fidPoiMap = new HashMap<String,PoiWrap>();
+				for(JSONObject poiJson:pois){
+					String fid = poiJson.getString("fid");
+					int lifecycle = poiJson.getInt("t_lifecycle");
+					PoiWrap poiWrap = new PoiWrap(fid,lifecycle,poiJson);
+					fidPoiMap.put(fid, poiWrap);
 				}
-				conn = DBConnector.getInstance().getConnectionById(Integer.parseInt(dbId));
-				List<JSONObject> dataList = data.get(dbId);
+				log.info("开始计算dbid:"+dbId+",中的数据record和pid");
+				calPoiFromDbByFids(conn, dbId,fidPoiMap);
+				log.info("把db中的数据，分为增删改");
 				List<JSONObject> insertList = new ArrayList<JSONObject>();
 				List<JSONObject> updateList = new ArrayList<JSONObject>();
 				List<JSONObject> deleteList = new ArrayList<JSONObject>();
-				for (int i = 0; i < dataList.size(); i++) {
-					JSONObject poi = dataList.get(i);
-					String fid = poi.getString("fid");
-					int lifecycle = poi.getInt("t_lifecycle");
-					PreparedStatement stmt = null;
-					ResultSet rs = null;
-					int uRecord = -1;
-					int pid = 0;
-					try {
-						stmt = conn.prepareStatement(subQuery);
-						stmt.setString(1, fid);
-						rs = stmt.executeQuery();
-						if (rs.next()) {
-							uRecord = rs.getInt("u_record");
-							pid = rs.getInt("pid");
-						}
-					} catch (Exception e) {
-						throw e;
-					} finally {
-						DbUtils.closeQuietly(rs);
-						DbUtils.closeQuietly(stmt);
-					}
-
+				for(String fid:fidPoiMap.keySet()){
 					// 判断每一条数据是新增、修改还是删除
+					PoiWrap poiWrap = fidPoiMap.get(fid);
+					JSONObject poi = poiWrap.getPoiJson();
+					int uRecord = poiWrap.getuRecord();
+					int lifecycle = poiWrap.getLifecycle();
 					if (uRecord != -1) {
 						// 能找到，判断lifecycle和u_record
-						poi.put("pid", pid);
+						poi.put("pid", poiWrap.getPid());
 						if (lifecycle == 1) {
 							deleteList.add(poi);
 						} else {
@@ -208,17 +192,17 @@ public class UploadOperation {
 						}
 					}
 				}
-
 				// 将数据分为新增、修改和删除三组，key值为区库ID
 				insertObj.put(dbId, insertList);
 				updateObj.put(dbId, updateList);
 				deleteObj.put(dbId, deleteList);
-
+				
 			}
-
-			// 数据入库处理
+			log.info("增数据入库处理"); 
 			JSONObject insertRet = insertData(insertObj, version);
+			log.info("改数据入库处理"); 
 			JSONObject updateRet = updateData(updateObj, version);
+			log.info("删数据入库处理"); 
 			JSONObject deleteRet = deleteData(deleteObj);
 
 			int insertCount = insertRet.getInt("success");
@@ -226,6 +210,7 @@ public class UploadOperation {
 			int deleteCount = deleteRet.getInt("success");
 
 			int total = insertCount + updateCount + deleteCount;
+			log.info("处理结果:total"+total+",insert:"+insertCount+",update:"+updateCount+",delete:"+deleteCount); 
 
 			@SuppressWarnings("unchecked")
 			List<String> insertFail = (List<String>) insertRet.get("fail");
@@ -247,6 +232,46 @@ public class UploadOperation {
 			DBUtils.closeConnection(conn);
 			DBUtils.closeConnection(manConn);
 		}
+	}
+
+	private void calPoiFromDbByFids(Connection conn, String dbId,Map<String,PoiWrap>fidPoiMap) throws Exception {
+		if (conn != null) {
+			DBUtils.closeConnection(conn);
+		}
+		conn = DBConnector.getInstance().getConnectionById(Integer.parseInt(dbId));
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+		Clob fidClod = null;
+		try {
+			fidClod = ConnectionUtil.createClob(conn);
+			String fidSeq = org.apache.commons.lang.StringUtils.join(fidPoiMap.keySet(), ",");
+			log.info("fidSeq"+fidSeq);
+			fidClod.setString(1, fidSeq);
+			stmt = conn.prepareStatement("SELECT poi_num,u_record,pid FROM ix_poi WHERE poi_num in( select column_value from table(clob_to_table(?)))");
+			stmt.setClob(1, fidClod);
+			rs = stmt.executeQuery();
+			while (rs.next()) {
+				int uRecord = rs.getInt("u_record");
+				int pid = rs.getInt("pid");
+				String fid = rs.getString("poi_num");
+				PoiWrap poiWrap = fidPoiMap.get(fid);
+				poiWrap.setPid(pid);
+				poiWrap.setuRecord(uRecord);
+			}
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(stmt);
+		}
+	}
+	
+	private String calDbDataMapping( Connection manConn,String grid) throws SQLException {
+		String manQuery = "SELECT daily_db_id FROM grid g,region r WHERE g.region_id=r.region_id and grid_id=:1";
+		QueryRunner qRunner = new QueryRunner();
+		String dbId = qRunner.queryForString(manConn, manQuery, grid);
+		return dbId;
+		
 	}
 
 	// 处理新增数据
@@ -430,7 +455,7 @@ public class UploadOperation {
 							String rawFields = jo.getString("rawFields");
 							IxPoiSelector ixPoiSelector = new IxPoiSelector(conn);
 							JSONObject poiRowId = ixPoiSelector.getRowIdById(pid);
-							upatePoiStatusForAndroid(conn, poiRowId.getString("rowId"), 0, rawFields,1);
+							upatePoiStatusForAndroid(conn, poiRowId.getString("rowId"), 0, rawFields,2);
 
 							conn.commit();
 							count++;
@@ -1896,6 +1921,50 @@ public class UploadOperation {
 			DBUtils.closeResultSet(resultSet);
 			DBUtils.closeStatement(pstmt);
 		}
+	}
+	private class PoiWrap{
+
+		private String fid;
+		private int lifecycle;
+		private JSONObject poiJson;
+		private int pid=0;
+		private int uRecord=-1;
+
+		public PoiWrap(String fid, int lifecycle, JSONObject poiJson) {
+			this.fid = fid;
+			this.lifecycle =lifecycle;
+			this.poiJson = poiJson;
+		}
+
+		public int getPid() {
+			return pid;
+		}
+
+		public void setPid(int pid) {
+			this.pid = pid;
+		}
+
+		public int getuRecord() {
+			return uRecord;
+		}
+
+		public void setuRecord(int uRecord) {
+			this.uRecord = uRecord;
+		}
+
+		public String getFid() {
+			return fid;
+		}
+
+		public int getLifecycle() {
+			return lifecycle;
+		}
+
+		public JSONObject getPoiJson() {
+			return poiJson;
+		}
+		
+		
 	}
 	
 }

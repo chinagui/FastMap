@@ -1646,10 +1646,10 @@ public class UploadOperation {
 		sb.append(" ON ( T1.row_id=T2.a) ");
 		sb.append(" WHEN MATCHED THEN ");
 		sb.append(
-				" UPDATE SET T1.status = T2.b,T1.fresh_verified= T2.c,T1.is_upload = T2.b,T1.raw_fields = T2.d,T1.upload_date = T2.e ");
+				" UPDATE SET T1.status = T2.b,T1.fresh_verified= T2.c,T1.is_upload = 1,T1.raw_fields = T2.d,T1.upload_date = T2.e ");
 		sb.append(" WHEN NOT MATCHED THEN ");
 		sb.append(
-				" INSERT (T1.row_id,T1.status,T1.fresh_verified,T1.is_upload,T1.raw_fields,T1.upload_date) VALUES(T2.a,T2.b,T2.c,T2.b,T2.d,T2.e)");
+				" INSERT (T1.row_id,T1.status,T1.fresh_verified,T1.is_upload,T1.raw_fields,T1.upload_date) VALUES(T2.a,T2.b,T2.c,1,T2.d,T2.e)");
 		PreparedStatement pstmt = null;
 		try {
 			pstmt = conn.prepareStatement(sb.toString());

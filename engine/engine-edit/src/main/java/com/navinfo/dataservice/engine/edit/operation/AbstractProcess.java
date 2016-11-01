@@ -370,6 +370,7 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 			}
 			break;
 		case REPAIR:
+		case MOVE:
 			List<Integer> allObjPidList = new ArrayList<>();
 			List<IRow> allIRows = new ArrayList<>();
 			allIRows.addAll(result.getUpdateObjects());

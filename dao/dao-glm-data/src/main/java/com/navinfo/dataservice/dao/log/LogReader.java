@@ -55,56 +55,44 @@ public class LogReader {
 	 * @throws Exception
 	 */
 	public int getObjectState(int objPid, String objTable) throws Exception {
-
-		String sql = "SELECT de.row_id,de.op_id,de.tb_nm,de.old,de.new,de.fd_lst,de.op_tp,de.tb_row_id,op.op_dt FROM LOG_DETAIL de,LOG_OPERATION op "
-				+ "WHERE de.OP_ID=op.OP_ID AND de.OB_PID= :1 AND de.OB_NM= :2 ORDER BY op.OP_DT DESC";
+		StringBuilder sb = new StringBuilder();
+		sb.append(" WITH A AS\n");
+		sb.append(" (SELECT T.OB_PID, MAX(P.OP_DT) DT FROM LOG_DETAIL T, LOG_OPERATION P\n ");
+		sb.append(" WHERE T.OP_ID = P.OP_ID  AND T.OB_NM ='"+objTable+"' AND T.OB_PID="+objPid+"\n" );
+		sb.append(" GROUP BY OB_PID),\n");
+		sb.append(" B AS \n");
+		sb.append(" (SELECT L.OB_PID, L.OP_TP FROM LOG_DETAIL L, LOG_OPERATION OP, A \n");
+		sb.append(" WHERE L.OP_ID = OP.OP_ID AND L.OB_PID = A.OB_PID AND OP.OP_DT = A.DT AND L.TB_NM ='"+ objTable+"'), \n");
+		sb.append(" C AS \n"); 
+		sb.append(" (SELECT A.OB_PID, 1 OP_TP FROM A \n");
+		sb.append(" WHERE NOT EXISTS (SELECT 1 FROM B WHERE A.OB_PID = B.OB_PID) \n");
+		sb.append(" AND EXISTS (SELECT 1 FROM LOG_DETAIL D \n");
+		sb.append(" WHERE D.OB_PID = A.OB_PID AND D.TB_NM = '"+objTable+"' AND D.OP_TP = 1)),\n ");   
+		sb.append(" D AS (SELECT B.* FROM B WHERE B.OP_TP!=3), \n");          
+		sb.append(" E AS (SELECT B.OB_PID,1 FROM B WHERE B.OP_TP=3 AND EXISTS (SELECT 1 FROM LOG_DETAIL D \n"); 
+		sb.append(" WHERE D.OB_PID = B.OB_PID AND D.TB_NM = '"+objTable+"' AND D.OP_TP = 1)), \n");
+		sb.append(" F AS \n");
+		sb.append(" (SELECT C.* FROM C UNION ALL SELECT D.* FROM D UNION ALL  SELECT E.* FROM E)\n ");
+		sb.append(" SELECT * FROM F \n");        
+		sb.append(" UNION ALL \n");  
+		sb.append(" SELECT A.OB_PID, 3 OP_TP FROM A WHERE NOT EXISTS (SELECT 1 FROM F WHERE A.OB_PID = F.OB_PID) ");  
 
 		PreparedStatement pstmt = null;
-
 		ResultSet resultSet = null;
+		
 		try {
-			pstmt = this.conn.prepareStatement(sql);
-			pstmt.setInt(1, objPid);
-			pstmt.setString(2, objTable);
+			pstmt = this.conn.prepareStatement(sb.toString());
 			resultSet = pstmt.executeQuery();
-			Timestamp lastObjOpDate = null;
 			int opStatus = 0;
 			while (resultSet.next()) {
-				if (objTable.equals(resultSet.getString("TB_NM")) && opStatus == 0) {
-					lastObjOpDate = resultSet.getTimestamp("op_dt");
-					opStatus = resultSet.getInt("op_tp");
-					if (1 == opStatus || 2 == opStatus) {
-						return opStatus;
-					} else {
-						if (isExistsAddHis(objPid, objTable, lastObjOpDate)) {
-							return 1;
-						} else {
-							return opStatus;
-						}
-					}
+				opStatus=resultSet.getInt("OP_TP");
 				}
-
-				if (!objTable.equals(resultSet.getString("TB_NM")) && opStatus == 0) {
-					lastObjOpDate = resultSet.getTimestamp("op_dt");
-					opStatus = 3;
-					if (isExistsAddHis(objPid, objTable, lastObjOpDate)) {
-						return 1;
-					} else {
-						return opStatus;
-					}
-				}
-			}
-
 			return opStatus;
 		} catch (Exception e) {
-
 			throw e;
-
 		} finally {
-
 			DBUtils.closeResultSet(resultSet);
 			DBUtils.closeStatement(pstmt);
-
 		}
 	}
 
@@ -368,11 +356,16 @@ public class LogReader {
 		sb.append("     AND EXISTS (SELECT 1 FROM LOG_DETAIL D\n");
 		sb.append("           WHERE D.OB_PID = A.OB_PID AND D.TB_NM = ? AND D.OP_TP = 1)),\n");
 		sb.append("D AS\n");
-		sb.append(" (SELECT B.* FROM B UNION ALL SELECT C.* FROM C)\n");
-		sb.append("SELECT * FROM D \n");
+		sb.append("(SELECT B.* FROM B WHERE B.OP_TP!=3),\n");
+		sb.append("E AS\n");
+		sb.append("(SELECT B.OB_PID,1 FROM B WHERE B.OP_TP=3 AND EXISTS (SELECT 1 FROM LOG_DETAIL D \n");
+		sb.append("WHERE D.OB_PID = B.OB_PID AND D.TB_NM = ? AND D.OP_TP = 1)), \n");       
+		sb.append("F AS\n");
+		sb.append(" (SELECT C.* FROM C UNION ALL SELECT D.* FROM D UNION ALL SELECT E.* FROM E)\n");
+		sb.append("SELECT * FROM F \n");
 		sb.append("UNION ALL \n");
-		sb.append("SELECT A.OB_PID, 3 OP_TP FROM A WHERE NOT EXISTS (SELECT 1 FROM D WHERE A.OB_PID = D.OB_PID)");
-		return new QueryRunner().query(conn, sb.toString(), new ObjStatusHandler(),mainTabName,mainTabName);
+		sb.append("SELECT A.OB_PID, 3 OP_TP FROM A WHERE NOT EXISTS (SELECT 1 FROM F WHERE A.OB_PID = F.OB_PID)");
+		return new QueryRunner().query(conn, sb.toString(), new ObjStatusHandler(),mainTabName,mainTabName,mainTabName);
 	}
 	
 	class ObjStatusHandler implements ResultSetHandler<Map<Integer,Collection<Long>>>{
@@ -407,9 +400,9 @@ public class LogReader {
 	}
 
 	public static void main(String[] args) throws Exception {
-		Connection con = DriverManager.getConnection("jdbc:oracle:thin:@192.168.4.61:1521/orcl",
-				"fm_regiondb_sp6_d_1", "fm_regiondb_sp6_d_1");
-		int state = new LogReader(con).getObjectState(46332, "IX_POI");
+		Connection con = DriverManager.getConnection("jdbc:oracle:thin:@192.168.3.103:1521/orcl",
+				"fm260_region_16win_d_1", "fm260_region_16win_d_1");
+		int state = new LogReader(con).getObjectState(18165475, "IX_POI");
 		System.out.println(state);
 	}
 }

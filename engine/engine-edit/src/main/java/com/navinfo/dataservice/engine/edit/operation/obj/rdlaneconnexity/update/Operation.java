@@ -116,11 +116,11 @@ public class Operation implements IOperation {
 						} else if (ObjStatus.UPDATE.toString().equals(
 								json.getString("objStatus"))) {
 
-							boolean isChanged = topo.fillChangeFields(json);
+							topo.fillChangeFields(json);
 							
 							if(topo.changedFields().containsKey("outLinkPid"))
 							{
-								int inNodePid = lane.getInLinkPid();
+								int inNodePid = lane.getNodePid();
 										
 								int outLinkPid = json.getInt("outLinkPid");
 								
@@ -132,7 +132,7 @@ public class Operation implements IOperation {
 								topo.changedFields().put("relationshipType", relationShipType);
 							}
 
-							if (isChanged) {
+							if (!topo.changedFields().isEmpty()) {
 								result.insertObject(topo, ObjStatus.UPDATE,
 										lane.pid());
 							}
@@ -151,7 +151,7 @@ public class Operation implements IOperation {
 						
 						topoPid = topo.getPid();
 						
-						int inNodePid = lane.getInLinkPid();
+						int inNodePid = lane.getNodePid();
 						
 						int outLinkPid = topo.getOutLinkPid();
 						

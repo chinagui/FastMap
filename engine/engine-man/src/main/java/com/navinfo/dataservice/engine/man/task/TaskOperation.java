@@ -2025,5 +2025,42 @@ public class TaskOperation {
     	};
     	return rsHandler;
 	}
-
+	
+	/**
+	 * 通过taskId查询blockMan数据
+	 * @author Han Shaoming
+	 * @param conn
+	 * @param taskId
+	 * @return
+	 * @throws Exception
+	 */
+	public static Map<String, Object> getBlockManByTaskId(Connection conn,int taskId) throws Exception{
+		try{
+			QueryRunner run = new QueryRunner();
+			String querySql="SELECT B.BLOCK_MAN_ID BLOCK_MAN_ID,B.TASK_ID TASK_ID,B.COLLECT_GROUP_ID COLLECT_GROUP_ID,B.DAY_EDIT_GROUP_ID DAY_EDIT_GROUP_ID "
+					+ "FROM BLOCK_MAN B WHERE B.STATUS= 1 AND B.TASK_ID = ?";
+			Object[] params = {taskId};		
+			ResultSetHandler<Map<String,Object>> rsh = new ResultSetHandler<Map<String,Object>>() {
+				@Override
+				public Map<String,Object> handle(ResultSet rs) throws SQLException {
+					// TODO Auto-generated method stub
+					Map<String,Object> map = new HashMap<String, Object>();
+					while(rs.next()){
+						map.put("blockManId", rs.getLong("BLOCK_MAN_ID"));
+						map.put("taskId", rs.getLong("TASK_ID"));
+						map.put("collectGroupId", rs.getLong("COLLECT_GROUP_ID"));
+						map.put("dayEditGroupId", rs.getLong("DAY_EDIT_GROUP_ID"));
+					}
+					return map;
+				}
+			};
+			Map<String, Object> userInfo = run.query(conn, querySql, params, rsh);
+			return userInfo;			
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}
+	}
+	
+	
 }

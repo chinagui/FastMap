@@ -15,6 +15,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.engine.man.message.MessageOperation;
+import com.navinfo.dataservice.engine.man.message.SendEmail;
 import com.navinfo.dataservice.engine.man.block.BlockOperation;
 import com.navinfo.dataservice.engine.man.city.CityOperation;
 import com.navinfo.dataservice.engine.man.common.DbOperation;
@@ -168,7 +169,7 @@ public class TaskService {
 			 * 1.所有生管角色
 			 * 2.分配的月编作业组组长
 			 * 任务:XXX(任务名称)内容发生变更，请关注*/			
-			String msgTitle="任务开启";
+			String msgTitle="新增任务";
 			List<String> msgContentList=new ArrayList<String>();
 			List<Long> groupIdList = new ArrayList<Long>();
 			for(Map<String, Object> task:openTasks){
@@ -237,16 +238,28 @@ public class TaskService {
 			condition.put("taskIds",taskIds);
 			List<Map<String, Object>> openTasks = TaskOperation.queryTaskTable(conn, condition);
 			/*任务创建/编辑/关闭
-			 * 1.所有生管角色
-			 * 2.分配的月编作业组组长
+			 *1.所有生管角色
+			 *2.任务包含的block分配的采集作业组组长
+			 *3.任务包含的block分配的日编作业组组长
+			 *4.分配的月编作业组组长
 			 * 任务:XXX(任务名称)内容发生变更，请关注*/			
-			String msgTitle="任务修改";
+			String msgTitle="任务变更";
 			List<String> msgContentList=new ArrayList<String>();
+			List<Long> groupIdList = new ArrayList<Long>();
 			for(Map<String, Object> task:openTasks){
-				msgContentList.add("任务:"+task.get("taskName")+"内容发生变更，请关注");
+				msgContentList.add("任务变更:"+task.get("taskName")+"内容发生变更,请关注");
+				groupIdList.add((Long) task.get("monthEditGroupId"));
+				//查询block分配的采集和日编作业组组长id
+				if(task.get("taskId") != null){
+					Map<String, Object> blockMan = TaskOperation.getBlockManByTaskId(conn, (int) task.get("taskId"));
+					if(blockMan != null){
+						groupIdList.add((Long) task.get("collectGroupId"));
+						groupIdList.add((Long) task.get("dayEditGroupId"));
+					}
+				}
 			}
 			if(msgContentList.size()>0){
-				taskPushMsg(conn,msgTitle,msgContentList);
+				taskPushMsg(conn,msgTitle,msgContentList, groupIdList, userId);
 			}
 			return "任务批量修改"+total+"个成功，0个失败";
 		}catch(Exception e){
@@ -262,7 +275,7 @@ public class TaskService {
 	 * 1.所有生管角色
 	 * 2.分配的月编作业组组长
 	 * 任务:XXX(任务名称)内容发生变更，请关注*/
-	public void taskPushMsg(Connection conn,String msgTile,List<String> msgContentList, List<Long> groupIdList, long pushUser) throws Exception{
+	public void taskPushMsg(Connection conn,String msgTitle,List<String> msgContentList, List<Long> groupIdList, long pushUser) throws Exception{
 		String userSql="SELECT DISTINCT M.USER_ID FROM ROLE_USER_MAPPING M WHERE M.ROLE_ID =3";
 		List<Integer> userIdList=UserInfoOperation.getUserListBySql(conn, userSql);
 		//查询分配的月编作业组组长
@@ -275,18 +288,28 @@ public class TaskService {
 		for(int userId:userIdList){
 			for(String msgContent:msgContentList){
 				msgList[num][0]=userId;
-				msgList[num][1]=msgTile;
+				msgList[num][1]=msgTitle;
 				msgList[num][2]=msgContent;
 				num+=1;
 			}
 		}
 		MessageOperation.batchInsert(conn,msgList,pushUser);
 		//发送邮件
+		String toMail = null;
+		String mailTitle = null;
+		String mailContent = null;
 		//查询用户详情
-		List<Map<String, Object>> userInfoList = new ArrayList<Map<String,Object>>();
 		for (int userId : userIdList) {
 			Map<String, Object> userInfo = UserInfoOperation.getUserInfoByUserId(conn, userId);
-			userInfoList.add(userInfo);
+			if(userInfo != null && userInfo.get("userEmail") != null){
+				for (String msgContent : msgContentList) {
+					toMail = (String) userInfo.get("userEmail");
+					mailTitle = msgTitle;
+					mailContent = msgContent;
+					//发送邮件
+					SendEmail.sendEmail(toMail, mailTitle, mailContent);
+				}
+			}
 		}
 	}
 	
@@ -400,7 +423,7 @@ public class TaskService {
 		}
 	}	
 	
-	public List<Integer> close(List<Integer> taskidList)throws Exception{
+	public List<Integer> close(List<Integer> taskidList, long userId)throws Exception{
 		Connection conn = null;
 		try{
 			conn = DBConnector.getInstance().getManConnection();	
@@ -466,16 +489,28 @@ public class TaskService {
 				condition.put("taskIds",JSONArray.fromObject(newTask));
 				List<Map<String, Object>> openTasks = TaskOperation.queryTaskTable(conn, condition);
 				/*任务创建/编辑/关闭
-				 * 1.所有生管角色
-				 * 2.分配的月编作业组组长
+				 *1.所有生管角色
+				 *2.任务包含的block分配的采集作业组组长
+				 *3.任务包含的block分配的日编作业组组长
+				 *4.分配的月编作业组组长
 				 * 任务:XXX(任务名称)内容发生变更，请关注*/			
-				String msgTitle="任务关闭";
+				String msgTitle="任务变更";
 				List<String> msgContentList=new ArrayList<String>();
+				List<Long> groupIdList = new ArrayList<Long>();
 				for(Map<String, Object> task:openTasks){
-					msgContentList.add("任务:"+task.get("taskName")+"内容发生变更，请关注");
+					msgContentList.add("任务变更:"+task.get("taskName")+"内容发生变更,请关注");
+					groupIdList.add((Long) task.get("monthEditGroupId"));
+					//查询block分配的采集和日编作业组组长id
+					if(task.get("taskId") != null){
+						Map<String, Object> blockMan = TaskOperation.getBlockManByTaskId(conn, (int) task.get("taskId"));
+						if(blockMan != null){
+							groupIdList.add((Long) task.get("collectGroupId"));
+							groupIdList.add((Long) task.get("dayEditGroupId"));
+						}
+					}
 				}
 				if(msgContentList.size()>0){
-					taskPushMsg(conn,msgTitle,msgContentList);
+					taskPushMsg(conn,msgTitle,msgContentList, groupIdList, userId);
 				}
 			}
 	    	return newTask;

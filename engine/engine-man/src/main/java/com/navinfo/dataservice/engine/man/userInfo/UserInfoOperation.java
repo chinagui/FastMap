@@ -604,7 +604,7 @@ public class UserInfoOperation {
 					while(rs.next()){
 						map.put("userId", rs.getLong("USER_ID"));
 						map.put("userRealName", rs.getString("USER_REAL_NAME"));
-						map.put("userEmail", rs.getLong("USER_EMAIL"));
+						map.put("userEmail", rs.getString("USER_EMAIL"));
 					}
 					return map;
 				}

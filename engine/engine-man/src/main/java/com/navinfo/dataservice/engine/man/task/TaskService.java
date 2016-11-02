@@ -242,12 +242,12 @@ public class TaskService {
 			 *2.任务包含的block分配的采集作业组组长
 			 *3.任务包含的block分配的日编作业组组长
 			 *4.分配的月编作业组组长
-			 * 任务:XXX(任务名称)内容发生变更，请关注*/			
+			 *任务变更:XXX(任务名称)信息发生变更，请关注*/			
 			String msgTitle="任务变更";
 			List<String> msgContentList=new ArrayList<String>();
 			List<Long> groupIdList = new ArrayList<Long>();
 			for(Map<String, Object> task:openTasks){
-				msgContentList.add("任务变更:"+task.get("taskName")+"内容发生变更,请关注");
+				msgContentList.add("任务变更:"+task.get("taskName")+"信息发生变更,请关注");
 				groupIdList.add((Long) task.get("monthEditGroupId"));
 				//查询block分配的采集和日编作业组组长id
 				if(task.get("taskId") != null){
@@ -278,7 +278,7 @@ public class TaskService {
 	public void taskPushMsg(Connection conn,String msgTitle,List<String> msgContentList, List<Long> groupIdList, long pushUser) throws Exception{
 		String userSql="SELECT DISTINCT M.USER_ID FROM ROLE_USER_MAPPING M WHERE M.ROLE_ID =3";
 		List<Integer> userIdList=UserInfoOperation.getUserListBySql(conn, userSql);
-		//查询分配的月编作业组组长
+		//查询分配的作业组组长
 		List<Long> leaderIdByGroupId = UserInfoOperation.getLeaderIdByGroupId(conn, groupIdList);
 		for (Long leaderId : leaderIdByGroupId) {
 			userIdList.add(leaderId.intValue());
@@ -293,7 +293,7 @@ public class TaskService {
 				num+=1;
 			}
 		}
-		MessageOperation.batchInsert(conn,msgList,pushUser);
+		MessageOperation.batchInsert(conn,msgList,pushUser,"MAN");
 		//发送邮件
 		String toMail = null;
 		String mailTitle = null;
@@ -493,12 +493,12 @@ public class TaskService {
 				 *2.任务包含的block分配的采集作业组组长
 				 *3.任务包含的block分配的日编作业组组长
 				 *4.分配的月编作业组组长
-				 * 任务:XXX(任务名称)内容发生变更，请关注*/			
-				String msgTitle="任务变更";
+				 *任务关闭:XXX(任务名称)已关闭，请关注*/			
+				String msgTitle="任务关闭";
 				List<String> msgContentList=new ArrayList<String>();
 				List<Long> groupIdList = new ArrayList<Long>();
 				for(Map<String, Object> task:openTasks){
-					msgContentList.add("任务变更:"+task.get("taskName")+"内容发生变更,请关注");
+					msgContentList.add("任务关闭:"+task.get("taskName")+"已关闭,请关注");
 					groupIdList.add((Long) task.get("monthEditGroupId"));
 					//查询block分配的采集和日编作业组组长id
 					if(task.get("taskId") != null){

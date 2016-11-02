@@ -102,9 +102,9 @@ public class MessageOperation {
 	 * @param pushUser 
 	 * @throws Exception
 	 */
-	public static void batchInsert(Connection conn,Object[][] msgList, long pushUser) throws Exception{
-		String insertSql="INSERT INTO MESSAGE  (MSG_ID, PUSH_USER, MSG_RECERVER, MSG_TITLE, MSG_CONTENT, MSG_STATUS)"
-				+ " VALUES  (MESSAGE_SEQ.NEXTVAL,"+pushUser+", ?, ?, ?, 0)";
+	public static void batchInsert(Connection conn,Object[][] msgList, long pushUser,String msgApp) throws Exception{
+		String insertSql="INSERT INTO MESSAGE  (MSG_ID, PUSH_USER, MSG_RECERVER, MSG_TITLE, MSG_CONTENT, MSG_STATUS,MSG_APP)"
+				+ " VALUES  (MESSAGE_SEQ.NEXTVAL,"+pushUser+", ?, ?, ?, 0,"+msgApp+")";
 		QueryRunner run = new QueryRunner();
 		run.batch(conn,insertSql, msgList);
 	}

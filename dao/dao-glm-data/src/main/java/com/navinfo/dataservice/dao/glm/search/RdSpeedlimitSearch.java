@@ -113,7 +113,7 @@ public class RdSpeedlimitSearch implements ISearch {
 					sb.append(speedValue / 10);
 
 				} else if (speedType == 3) {
-					sb.append(captureFlag);
+					sb.append(speedFlag);
 
 					sb.append("|");
 

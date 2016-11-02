@@ -451,7 +451,7 @@ public class Operation implements IOperation {
 
 				List<IRow> vias = new ArrayList<IRow>();
 
-				if (CollectionUtils.isNotEmpty(viaLinkPids)) {
+				if (CollectionUtils.isNotEmpty(viaLinkPids) && detail.getRelationshipType() !=1) {
 					for (Integer viaLinkPid : viaLinkPids) {
 
 						RdRestrictionVia via = new RdRestrictionVia();
@@ -505,7 +505,7 @@ public class Operation implements IOperation {
 
 					List<IRow> vias = new ArrayList<IRow>();
 
-					if (CollectionUtils.isNotEmpty(viaLinkPids)) {
+					if (CollectionUtils.isNotEmpty(viaLinkPids) && detail.getRelationshipType() !=1) {
 						for (Integer viaLinkPid : viaLinkPids) {
 
 							RdRestrictionVia via = new RdRestrictionVia();

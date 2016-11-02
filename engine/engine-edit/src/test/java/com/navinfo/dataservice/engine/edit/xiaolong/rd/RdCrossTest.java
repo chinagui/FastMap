@@ -16,7 +16,7 @@ public class RdCrossTest extends InitApplication{
 	
 	@Test
 	public void testAddCross() {
-		String parameter = "{\"command\":\"REPAIR\",\"dbId\":22,\"objId\":403000020,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.25,40.09628],[116.2501,40.09628],[116.24987840652466,40.09616553200543],[116.25057,40.09628],[116.25047,40.0966],[116.25017,40.0967]]},\"interLinks\":[],\"interNodes\":[]},\"type\":\"LCLINK\"}";
+		String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDRESTRICTION\",\"dbId\":17,\"data\":{\"restricInfo\":\"[1],1\",\"pid\":303000022,\"objStatus\":\"UPDATE\",\"details\":[{\"pid\":0,\"restricPid\":0,\"outLinkPid\":200002496,\"flag\":2,\"restricInfo\":1,\"type\":1,\"relationshipType\":1,\"conditions\":[],\"objStatus\":\"INSERT\"}]}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

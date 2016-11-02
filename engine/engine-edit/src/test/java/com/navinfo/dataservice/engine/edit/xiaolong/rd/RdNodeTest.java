@@ -17,7 +17,7 @@ public class RdNodeTest extends InitApplication{
 	@Test
 	public void testCreate()
 	{
-		String parameter = "{\"command\":\"MOVE\",\"dbId\":17,\"objId\":320000330,\"data\":{\"longitude\":116.30456328392027,\"latitude\":40.06810453436403},\"type\":\"RDNODE\"}";
+		String parameter = "{\"command\":\"MOVE\",\"dbId\":17,\"objId\":304000030,\"data\":{\"longitude\":116.75055027008057,\"latitude\":40.26248230403315},\"type\":\"RWNODE\"}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

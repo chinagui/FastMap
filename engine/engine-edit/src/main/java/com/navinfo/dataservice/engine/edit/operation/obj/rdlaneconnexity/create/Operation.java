@@ -35,17 +35,17 @@ public class Operation implements IOperation {
 	/**
 	 * key为退出线pid，value为退出线线段
 	 */
-	private Map<Integer, LineSegment> outLinkSegmentMap;
+	private Map<Integer, LineSegment> outLinkSegmentMap = new HashMap<Integer, LineSegment>();;
 
 	/**
 	 * key为退出线pid， value为经过线pid列表
 	 */
-	private Map<Integer, List<Integer>> viaLinkPidMap;
+	private Map<Integer, List<Integer>> viaLinkPidMap = new HashMap<Integer, List<Integer>>();;
 
 	/**
 	 * key为退出线pid，value为交限类型
 	 */
-	private Map<Integer, Integer> relationTypeMap;
+	private Map<Integer, Integer> relationTypeMap = new HashMap<Integer, Integer>();
 
 	public Operation(Command command, Connection conn) {
 		this.command = command;
@@ -74,9 +74,16 @@ public class Operation implements IOperation {
 		lane.setLaneInfo(command.getLaneInfo());
 
 		List<Integer> outLinkPids = command.getOutLinkPids();
-
-		this.calViaLinks(conn, command.getInLinkPid(), command.getNodePid(),
-				outLinkPids);
+		
+		for(Integer outLink : outLinkPids)
+		{
+			List<Integer> outLinkList = new ArrayList<>();
+			
+			outLinkList.add(outLink);
+			
+			this.calViaLinks(conn, command.getInLinkPid(), command.getNodePid(),
+					outLinkList);
+		}
 
 		List<Set<Integer>> dirs = new ArrayList<Set<Integer>>();
 
@@ -422,12 +429,6 @@ public class Operation implements IOperation {
 	 */
 	private void calViaLinks(Connection conn, int inLinkPid, int nodePid,
 			List<Integer> outLinkPids) throws Exception {
-
-		outLinkSegmentMap = new HashMap<Integer, LineSegment>();
-
-		viaLinkPidMap = new HashMap<Integer, List<Integer>>();
-
-		relationTypeMap = new HashMap<Integer, Integer>();
 
 		String sql = "select * from table(package_utils.get_restrict_points(:1,:2,:3))";
 

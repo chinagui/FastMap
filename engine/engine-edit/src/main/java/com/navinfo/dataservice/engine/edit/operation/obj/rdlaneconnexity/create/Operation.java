@@ -177,12 +177,9 @@ public class Operation implements IOperation {
 			if (set.contains(reachDir)) {
 
 				inLaneInfo += Math.pow(2, size - 1 - i);
-
-				inLaneInfo = inLaneInfo << (16 - size); // 向 左补位至16位
-				
 			}
 		}
-
+		inLaneInfo = inLaneInfo << (16 - size); // 向 左补位至16位
 		return inLaneInfo;
 	}
 
@@ -204,7 +201,8 @@ public class Operation implements IOperation {
 			busLaneInfo += Math.pow(2, size - 1 - index);
 
 		}
-
+		busLaneInfo = busLaneInfo << (16 - size); // 向 左补位至16位
+		
 		return busLaneInfo;
 	}
 

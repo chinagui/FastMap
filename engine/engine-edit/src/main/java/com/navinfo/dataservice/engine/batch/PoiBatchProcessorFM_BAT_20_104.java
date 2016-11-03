@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.control.row.batch;
+package com.navinfo.dataservice.engine.batch;
 
 import java.sql.Connection;
 import java.util.List;
@@ -6,11 +6,11 @@ import java.util.List;
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.ExcelReader;
-import com.navinfo.dataservice.control.row.batch.util.IBatch;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiName;
+import com.navinfo.dataservice.engine.batch.util.IBatch;
 import com.navinfo.dataservice.engine.edit.service.EditApiImpl;
 
 import net.sf.json.JSONArray;

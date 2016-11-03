@@ -160,36 +160,43 @@ public class BlockService {
 				int[] rows = run.batch(conn, createSql, param);
 				updateCount = rows.length;
 			}
-			//查询blockMan数据
-			List<Map<String, Object>> blockManList = this.getBlockManByBlockManId(conn, updateBlockList);
-			/*block创建/编辑/关闭
-			1.分配的采集作业组组长
-			2.分配的日编作业组组长
-			block变更：XXX(block名称)消息发生变更，请关注*/
-			List<Object[]> msgContentList=new ArrayList<Object[]>();
-			String msgTitle="block变更";
-			for (Map<String, Object> blockMan : blockManList) {
-				String collectGroupLeader=(String) blockMan.get("collectGroupLeader");
-				String dayEditGroupLeader=(String) blockMan.get("dayEditGroupLeader");
-				if(collectGroupLeader!=null && !collectGroupLeader.isEmpty()){
-					Object[] msgTmp=new Object[3];
-					msgTmp[0]=collectGroupLeader;
-					msgTmp[1]=msgTitle;
-					msgTmp[2]="block变更:"+blockMan.get("blockManName")+"消息发生变更,请关注";
-					msgContentList.add(msgTmp);
+			try {
+				//查询blockMan数据
+				List<Map<String, Object>> blockManList = this.getBlockManByBlockManId(conn, updateBlockList);
+				/*block创建/编辑/关闭
+				1.分配的采集作业组组长
+				2.分配的日编作业组组长
+				block变更：XXX(block名称)消息发生变更，请关注*/
+				List<Object[]> msgContentList=new ArrayList<Object[]>();
+				String msgTitle="block编辑";
+				for (Map<String, Object> blockMan : blockManList) {
+					String collectGroupLeader=(String) blockMan.get("collectGroupLeader");
+					String dayEditGroupLeader=(String) blockMan.get("dayEditGroupLeader");
+					if(collectGroupLeader!=null && !collectGroupLeader.isEmpty()){
+						Object[] msgTmp=new Object[3];
+						msgTmp[0]=collectGroupLeader;
+						msgTmp[1]=msgTitle;
+						msgTmp[2]="block变更:"+blockMan.get("blockManName")+"消息发生变更,请关注";
+						msgContentList.add(msgTmp);
+					}
+					if(dayEditGroupLeader!=null && !dayEditGroupLeader.isEmpty()){
+						Object[] msgTmp=new Object[3];
+						msgTmp[0]=dayEditGroupLeader;
+						msgTmp[1]=msgTitle;
+						msgTmp[2]="block变更:"+blockMan.get("blockManName")+"消息发生变更,请关注";
+						msgContentList.add(msgTmp);
+					}
+					
 				}
-				if(dayEditGroupLeader!=null && !dayEditGroupLeader.isEmpty()){
-					Object[] msgTmp=new Object[3];
-					msgTmp[0]=dayEditGroupLeader;
-					msgTmp[1]=msgTitle;
-					msgTmp[2]="block变更:"+blockMan.get("blockManName")+"消息发生变更,请关注";
-					msgContentList.add(msgTmp);
+				if(msgContentList.size()>0){
+					blockPushMsgByMsg(conn,msgContentList,userId);
 				}
-				
+			} catch (Exception e) {
+				// TODO: handle exception
+				e.printStackTrace();
+				log.error("发送失败,原因:"+e.getMessage(), e);
 			}
-			if(msgContentList.size()>0){
-				blockPushMsgByMsg(conn,msgContentList,userId);
-			}
+			
 			return updateCount;
 
 		} catch (Exception e) {
@@ -498,36 +505,42 @@ public class BlockService {
 					unClosedBlocks.add(blockManIdList.get(i));
 				}
 			}
-			//发送消息
-			//查询blockMan数据
-			List<Map<String, Object>> blockManList = this.getBlockManByBlockManId(conn, blockReadyToClose);
-			/*block创建/编辑/关闭
-			1.分配的采集作业组组长
-			2.分配的日编作业组组长
-			block关闭：XXX(block名称)已关闭，请关注*/
-			List<Object[]> msgContentList=new ArrayList<Object[]>();
-			String msgTitle="block关闭";
-			for (Map<String, Object> blockMan : blockManList) {
-				String collectGroupLeader=(String) blockMan.get("collectGroupLeader");
-				String dayEditGroupLeader=(String) blockMan.get("dayEditGroupLeader");
-				if(collectGroupLeader!=null && !collectGroupLeader.isEmpty()){
-					Object[] msgTmp=new Object[3];
-					msgTmp[0]=collectGroupLeader;
-					msgTmp[1]=msgTitle;
-					msgTmp[2]="block关闭:"+blockMan.get("blockManName")+"已关闭,请关注";
-					msgContentList.add(msgTmp);
+			try {
+				//发送消息
+				//查询blockMan数据
+				List<Map<String, Object>> blockManList = this.getBlockManByBlockManId(conn, blockReadyToClose);
+				/*block创建/编辑/关闭
+				1.分配的采集作业组组长
+				2.分配的日编作业组组长
+				block关闭：XXX(block名称)已关闭，请关注*/
+				List<Object[]> msgContentList=new ArrayList<Object[]>();
+				String msgTitle="block关闭";
+				for (Map<String, Object> blockMan : blockManList) {
+					String collectGroupLeader=(String) blockMan.get("collectGroupLeader");
+					String dayEditGroupLeader=(String) blockMan.get("dayEditGroupLeader");
+					if(collectGroupLeader!=null && !collectGroupLeader.isEmpty()){
+						Object[] msgTmp=new Object[3];
+						msgTmp[0]=collectGroupLeader;
+						msgTmp[1]=msgTitle;
+						msgTmp[2]="block关闭:"+blockMan.get("blockManName")+"已关闭,请关注";
+						msgContentList.add(msgTmp);
+					}
+					if(dayEditGroupLeader!=null && !dayEditGroupLeader.isEmpty()){
+						Object[] msgTmp=new Object[3];
+						msgTmp[0]=dayEditGroupLeader;
+						msgTmp[1]=msgTitle;
+						msgTmp[2]="block关闭:"+blockMan.get("blockManName")+"已关闭,请关注";
+						msgContentList.add(msgTmp);
+					}
+					
 				}
-				if(dayEditGroupLeader!=null && !dayEditGroupLeader.isEmpty()){
-					Object[] msgTmp=new Object[3];
-					msgTmp[0]=dayEditGroupLeader;
-					msgTmp[1]=msgTitle;
-					msgTmp[2]="block关闭:"+blockMan.get("blockManName")+"已关闭,请关注";
-					msgContentList.add(msgTmp);
+				if(msgContentList.size()>0){
+					blockPushMsgByMsg(conn,msgContentList,userId);
 				}
-				
-			}
-			if(msgContentList.size()>0){
-				blockPushMsgByMsg(conn,msgContentList,userId);
+			} catch (Exception e) {
+				// TODO: handle exception
+				e.printStackTrace();
+				log.error("发送失败,原因:"+e.getMessage(), e);
 			}
 			
 			return unClosedBlocks;
@@ -904,7 +917,7 @@ public class BlockService {
 			2.分配的日编作业组组长
 			block:XXX(block名称)，请关注*/
 			List<Object[]> msgContentList=new ArrayList<Object[]>();
-			String msgTitle="新增block";
+			String msgTitle="block发布";
 			for (Map<String, Object> blockMan : blockManList) {
 				String collectGroupLeader=(String) blockMan.get("collectGroupLeader");
 				String dayEditGroupLeader=(String) blockMan.get("dayEditGroupLeader");

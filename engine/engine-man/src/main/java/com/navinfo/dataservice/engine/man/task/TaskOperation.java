@@ -1624,10 +1624,10 @@ public class TaskOperation {
 				List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
 				while(rs.next()){
 					Map<String, Object> map = new HashMap<String, Object>();
-					map.put("taskId", rs.getInt("TASK_ID"));
-					map.put("taskStatus", rs.getInt("TASK_STATUS"));
+					map.put("taskId", rs.getLong("TASK_ID"));
+					map.put("taskStatus", rs.getLong("TASK_STATUS"));
 					map.put("taskName", rs.getString("TASK_NAME"));
-					map.put("monthEditGroupId", rs.getInt("MONTH_EDIT_GROUP_ID"));
+					map.put("monthEditGroupId", rs.getLong("MONTH_EDIT_GROUP_ID"));
 					list.add(map);
 				}
 				return list;
@@ -2034,7 +2034,7 @@ public class TaskOperation {
 	 * @return
 	 * @throws Exception
 	 */
-	public static Map<String, Object> getBlockManByTaskId(Connection conn,int taskId) throws Exception{
+	public static Map<String, Object> getBlockManByTaskId(Connection conn,long taskId) throws Exception{
 		try{
 			QueryRunner run = new QueryRunner();
 			String querySql="SELECT B.BLOCK_MAN_ID BLOCK_MAN_ID,B.TASK_ID TASK_ID,B.COLLECT_GROUP_ID COLLECT_GROUP_ID,B.DAY_EDIT_GROUP_ID DAY_EDIT_GROUP_ID "

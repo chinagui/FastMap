@@ -13,10 +13,12 @@ public class SendEmail {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
 	
 		// 设置服务器
-		private static  String VALUE_SMTP = "smtp.163.com"; //这里用的163 邮箱的,也可以换别的邮箱的
+		private static  String VALUE_SMTP = "smtp.qq.com"; //这里用的163 邮箱的,也可以换别的邮箱的
 		// 发件人用户名、密码
-		private static String SEND_EMAil = "xxxxxxx@163.com";//必填项 
-		private static String SEND_PWD = "*****";//必填项
+		//private static String SEND_EMAil = "xxxxxxx@163.com";//必填项 
+		//private static String SEND_PWD = "*****";//必填项
+		private static String SEND_EMAil = "531476471@qq.com";//必填项 
+		private static String SEND_PWD = "hhm712643hsm";//必填项
 	
 	/**
 	 * @Title: sendEmail
@@ -33,6 +35,7 @@ public class SendEmail {
 	}
 	
 	public static void main(String[] args) {
-		sendEmail("zhangli5174@navinfo.com","邮件主题","邮件内容3333333333");
+		//sendEmail("zhangli5174@navinfo.com","邮件主题","邮件内容3333333333");
+		sendEmail("hhmhsm@163.com","邮件主题","邮件内容3333333333");
 	}
 }

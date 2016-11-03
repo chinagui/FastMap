@@ -43,6 +43,9 @@ import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiName;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiParent;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiPhoto;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
+import com.navinfo.dataservice.dao.log.LogWriter;
+import com.navinfo.dataservice.engine.edit.operation.OperatorFactory;
+import com.navinfo.dataservice.engine.edit.operation.PoiMsgPublisher;
 import com.navinfo.dataservice.engine.edit.service.EditApiImpl;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.DBUtils;
@@ -59,12 +62,14 @@ public class UploadOperation {
 	
 	private EditApi apiService;
 	private QueryRunner runn;
+	private Long userId;
 	
 	protected Logger log = Logger.getLogger(UploadOperation.class);
 	
-	public UploadOperation() {
+	public UploadOperation(Long userId) {
 		this.apiService=(EditApi) ApplicationContextUtil.getBean("editApi");
 		runn = new QueryRunner();
+		this.userId = userId;
 	}
 	
 	/**
@@ -306,6 +311,7 @@ public class UploadOperation {
 								json.put("data", poiObj);
 								// 调用一次插入
 								apiService.run(json);
+								apiService.runBatch(json);
 								
 								// 鲜度验证，POI状态更新
 								String rawFields = jo.getString("rawFields");
@@ -377,6 +383,7 @@ public class UploadOperation {
 								commandJson.put("type", "IXPOIUPLOAD");
 								// 调用一次更新
 								apiService.run(commandJson);
+								apiService.runBatch(commandJson);
 								
 								// 处理一个库中的父子关系20161011
 								if (relateParentChildren.size()>0) {
@@ -1758,6 +1765,7 @@ public class UploadOperation {
 						pstmtChildren.setString(6, children.getString("rowId"));
 						pstmtChildren.execute();
 					}
+					
 					conn.commit();
 				}catch(Exception e){
 					DbUtils.rollback(conn);

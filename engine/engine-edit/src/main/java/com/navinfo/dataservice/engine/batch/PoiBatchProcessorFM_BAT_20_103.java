@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.control.row.batch;
+package com.navinfo.dataservice.engine.batch;
 
 import java.sql.Connection;
 import java.util.List;
@@ -6,11 +6,12 @@ import java.util.List;
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.ExcelReader;
-import com.navinfo.dataservice.control.row.batch.util.IBatch;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
+import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiAddress;
+import com.navinfo.dataservice.engine.batch.util.IBatch;
 import com.navinfo.dataservice.engine.edit.service.EditApiImpl;
 
 import net.sf.json.JSONArray;
@@ -28,6 +29,9 @@ public class PoiBatchProcessorFM_BAT_20_103 implements IBatch {
 				return result;
 			}
 			
+			OperType operType = Enum.valueOf(OperType.class,
+                    json.getString("command"));
+			
 			JSONArray addresses = poiData.getJSONArray("addresses");
 			
 			JSONArray resultArray = new JSONArray();
@@ -35,9 +39,12 @@ public class PoiBatchProcessorFM_BAT_20_103 implements IBatch {
 			for (int i=0;i<addresses.size();i++) {
 				JSONObject address = addresses.getJSONObject(i);
 				
-				String objStatus = address.getString("objStatus");
+				String objStatus = "";
+				if (address.containsKey("objStatus")) {
+					objStatus = address.getString("objStatus");
+				} 
 				
-				if (objStatus.equals(ObjStatus.INSERT.toString()) || objStatus.equals(ObjStatus.UPDATE.toString())) {
+				if (objStatus.equals(ObjStatus.INSERT.toString()) || objStatus.equals(ObjStatus.UPDATE.toString()) || operType.equals(OperType.CREATE)) {
 					// 半角转全角
 					String fullName = address.getString("fullname");
 					fullName = ExcelReader.h2f(fullName);

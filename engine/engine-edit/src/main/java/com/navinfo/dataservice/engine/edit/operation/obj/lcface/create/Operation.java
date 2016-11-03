@@ -417,6 +417,16 @@ public class Operation implements IOperation {
             face.setDisplayClass(f.getDisplayClass());
             face.setDetailFlag(f.getDetailFlag());
             face.setScale(f.getScale());
+            List<IRow> names = new ArrayList<>();
+            for (IRow row : f.getNames()) {
+                LcFaceName name = new LcFaceName();
+                LcFaceName target = (LcFaceName) row;
+                name.copy(target);
+                name.setPid(PidUtil.getInstance().applyLcFaceNamePid());
+                name.setFacePid(face.pid());
+                names.add(name);
+            }
+            face.setNames(names);
         }
         this.face = face;
     }

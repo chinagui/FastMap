@@ -246,7 +246,7 @@ public class Operation implements IOperation {
 							result);
 					List<IObj> objs = new ArrayList<IObj>();
 					objs.addAll(links);
-					opFace.createFaceByLuLink(objs);
+					opFace.createFaceByLuLink(objs, face);
 					result.insertObject(face, ObjStatus.DELETE, face.getPid());
 				} else {
 					// 如果不跨图幅只需要维护面的行政几何

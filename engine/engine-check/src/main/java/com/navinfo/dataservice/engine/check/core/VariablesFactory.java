@@ -122,6 +122,16 @@ public class VariablesFactory {
 		return rdLinkSet;
 	}
 	
+	public static Set<String> getRdSeOutLinkPid(IRow data) {
+		// TODO Auto-generated method stub
+		Set<String> rdLinkSet=new HashSet<String>();
+		if(data instanceof RdSe){
+			RdSe rdSe=(RdSe) data;
+			rdLinkSet.add(String.valueOf(rdSe.getOutLinkPid()));
+		}
+		return rdLinkSet;
+	}
+	
 	/**
 	 * @param data
 	 * @return

@@ -257,8 +257,8 @@ public class TaskService {
 					if(task.get("taskId") != null){
 						Map<String, Object> blockMan = TaskOperation.getBlockManByTaskId(conn, (long) task.get("taskId"));
 						if(blockMan != null){
-							groupIdList.add((Long) task.get("collectGroupId"));
-							groupIdList.add((Long) task.get("dayEditGroupId"));
+							groupIdList.add((Long) blockMan.get("collectGroupId"));
+							groupIdList.add((Long) blockMan.get("dayEditGroupId"));
 						}
 					}
 				}

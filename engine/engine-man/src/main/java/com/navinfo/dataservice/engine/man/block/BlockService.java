@@ -952,8 +952,7 @@ public class BlockService {
 
 	}
 
-	private void blockPushMsgByMsg(Connection conn,
-			List<Object[]> msgContentList, long userId) throws Exception {
+	private void blockPushMsgByMsg(Connection conn,	List<Object[]> msgContentList, long userId) throws Exception {
 		//String userSql="SELECT DISTINCT M.USER_ID FROM ROLE_USER_MAPPING M WHERE M.ROLE_ID IN (4, 5)";
 		//List<Integer> userIdList=UserInfoOperation.getUserListBySql(conn, userSql);
 		Object[][] msgList=new Object[msgContentList.size()][3];

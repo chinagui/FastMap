@@ -88,6 +88,17 @@ public class SubtaskController extends BaseController {
 	/*
 	 * 创建一个子任务。
 	 */
+	/**
+	 * @Title: create
+	 * @Description: (修改)创建子任务(第七迭代)
+	 * @param access_token
+	 * @param parameter (增加参数:qualityExeUserId, qualityPlanStartDate, qualityPlanEndDate)
+	 * @param request
+	 * @return  NullResponse
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2016年11月3日 下午5:06:43 
+	 */
 	@ApiOperation(value = "创建subtask", notes = "创建subtask")  
     @ResponseBody 
 	@RequestMapping(value = { "/create" }, method = {RequestMethod.POST,RequestMethod.GET})
@@ -103,12 +114,37 @@ public class SubtaskController extends BaseController {
 			if(dataJson==null){
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
-			
+			Integer qualityExeUserId = dataJson.getInt("qualityExeUserId");
+			String qualityPlanStartDate = dataJson.getString("qualityPlanStartDate");
+			String qualityPlanEndDate = dataJson.getString("qualityPlanEndDate");
+			SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
 			long userId = tokenObj.getUserId();
-			//根据参数生成subtask bean
-			Subtask bean = SubtaskService.getInstance().createSubtaskBean(userId,dataJson);
-			//创建subtask	
-			SubtaskService.getInstance().create(bean);	
+			if(qualityExeUserId != 0 ){//表示要创建质检子任务
+				//根据参数生成质检子任务 subtask qualityBean
+				Subtask qualityBean = SubtaskService.getInstance().createSubtaskBean(userId,dataJson);
+				qualityBean.setIsQuality(1);
+				qualityBean.setExeUserId(qualityExeUserId);
+				qualityBean.setPlanStartDate((Timestamp) df.parse(qualityPlanStartDate));
+				qualityBean.setPlanEndDate((Timestamp) df.parse(qualityPlanEndDate));
+				//创建质检子任务 subtask	
+				Integer qualitySubtaskId = SubtaskService.getInstance().createQualitySubtask(qualityBean);	
+				
+				//根据参数生成subtask bean
+				Subtask bean = SubtaskService.getInstance().createSubtaskBean(userId,dataJson);
+				bean.setIsQuality(0);
+				bean.setQualitySubtaskId(qualitySubtaskId);
+				//创建subtask	
+				SubtaskService.getInstance().create(bean);
+			}else{
+				//根据参数生成subtask bean
+				Subtask bean = SubtaskService.getInstance().createSubtaskBean(userId,dataJson);
+				bean.setIsQuality(0);
+				//创建subtask	
+				SubtaskService.getInstance().create(bean);	
+			}
+			
+			
+			
 
 			NullResponse result = new NullResponse(0,"创建成功",null);
 			return result;
@@ -218,8 +254,16 @@ public class SubtaskController extends BaseController {
 	}
 	
 
-	/*
-	 * 根据subtaskId查询一个任务的详细信息。
+	/**
+	 * @Title: query
+	 * @Description: 根据subtaskId查询一个任务的详细信息。(修改)(第七迭代)
+	 * @param access_token
+	 * @param postData
+	 * @param request
+	 * @return  SubtaskQueryResponse(增加返回值qualitySubtaskId,qualityExeUserId, qualityPlanStartDate, qualityPlanEndDate)
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2016年11月4日 下午4:06:13 
 	 */
 	@ApiOperation(value = "查询subtask信息", notes = "查询subtask信息")  
 	@RequestMapping(value = { "/query" }, method = RequestMethod.GET)
@@ -260,6 +304,13 @@ public class SubtaskController extends BaseController {
 						,subtask.getPercent()
 						,subtask.getVersion()
 						,subtask.getGeometryJSON()
+						//***************zl 2016.11.04********************
+						,subtask.getQualitySubtaskId()
+						,subtask.getIsQuality()
+						, subtask.getQualityExeUserId()
+						, df.format(subtask.getQualityPlanStartDate())
+						, df.format(subtask.getQualityPlanEndDate())
+						
 						);
 				SubtaskQueryResponse response = new SubtaskQueryResponse(0,"success",subtaskQuery);
 				return response;
@@ -274,8 +325,17 @@ public class SubtaskController extends BaseController {
 		}
 	}
 	
-	/*
-	 * 批量修改子任务详细信息。
+
+	/**
+	 * @Title: update
+	 * @Description: (修改)批量修改子任务详细信息。(第七迭代)
+	 * @param access_token
+	 * @param postData
+	 * @param request(增加参数:qualitySubtaskId,qualityExeUserId, qualityPlanStartDate, qualityPlanEndDate)
+	 * @return  NullResponse
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2016年11月4日 上午10:23:20 
 	 */
 	@ApiOperation(value = "批量修改子任务详细信息", notes = "批量修改子任务详细信息")  
 	@RequestMapping(value = { "/update" }, method = RequestMethod.GET)
@@ -296,8 +356,44 @@ public class SubtaskController extends BaseController {
 			
 			JSONArray subtaskArray=dataJson.getJSONArray("subtasks");
 			List<Subtask> subtaskList = new ArrayList<Subtask>();
+			SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
 			for(int i = 0;i<subtaskArray.size();i++){
+				//***************zl 2016.11.4 ******************
+				Integer qualitySubtaskId = subtaskArray.getJSONObject(i).getInt("qualitySubtaskId");//质检子任务id
+				Integer qualityExeUserId = subtaskArray.getJSONObject(i).getInt("qualityExeUserId");//是否新建质检子任务标识
+				String qualityPlanStartDate = subtaskArray.getJSONObject(i).getString("qualityPlanStartDate");
+				String qualityPlanEndDate =subtaskArray.getJSONObject(i).getString("qualityPlanEndDate");
+				
+				subtaskArray.getJSONObject(i).discard("qualityExeUserId");//删除 是否新建质检子任务标识 ,因为Subtask实体类里灭幼这个字段
+				subtaskArray.getJSONObject(i).discard("qualityPlanStartDate");//删除 质检子任务计划开始时间 ,因为Subtask实体类里灭幼这个字段
+				subtaskArray.getJSONObject(i).discard("qualityPlanEndDate");//删除 质检子任务计划结束时间 ,因为Subtask实体类里灭幼这个字段
+				
+				//正常修改子任务
 				Subtask subtask = (Subtask)JsonOperation.jsonToBean(subtaskArray.getJSONObject(i),Subtask.class);
+				
+				if(qualitySubtaskId != 0){//非0的时候，表示要修改质检子任务
+					Subtask qualitySubtask = (Subtask)JsonOperation.jsonToBean(subtaskArray.getJSONObject(i),Subtask.class);//生成质检子任务的bean
+					qualitySubtask.setSubtaskId(qualitySubtaskId);
+					qualitySubtask.setExeUserId(qualityExeUserId);
+					qualitySubtask.setPlanStartDate((Timestamp) df.parse(qualityPlanStartDate));
+					qualitySubtask.setPlanEndDate((Timestamp)df.parse(qualityPlanEndDate));
+					subtaskList.add(qualitySubtask);//将质检子任务也加入修改列表
+				}else{
+					if(qualityExeUserId != 0){//qualitySubtaskId=0，且qualityExeUserId非0的时候，表示要创建质检子任务
+						subtaskArray.getJSONObject(i).discard("subtaskId");//删除subtaskId ,新建质检子任务
+						Subtask qualitySubtask = (Subtask)JsonOperation.jsonToBean(subtaskArray.getJSONObject(i),Subtask.class);//生成质检子任务的bean
+						qualitySubtask.setPlanStartDate((Timestamp) df.parse(qualityPlanStartDate));
+						qualitySubtask.setPlanEndDate((Timestamp)df.parse(qualityPlanEndDate));
+						qualitySubtask.setIsQuality(1);//表示此bean是质检子任务
+						qualitySubtask.setExeUserId(qualityExeUserId);
+						//创建质检子任务 subtask	
+						Integer newQualitySubtaskId = SubtaskService.getInstance().createQualitySubtask(qualitySubtask);	
+						subtask.setIsQuality(0);
+						subtask.setQualitySubtaskId(newQualitySubtaskId);
+					}
+				}
+				//正常修改子任务
+				//Subtask subtask = (Subtask)JsonOperation.jsonToBean(subtaskArray.getJSONObject(i),Subtask.class);
 				subtaskList.add(subtask);
 			}
 			
@@ -437,6 +533,15 @@ public class SubtaskController extends BaseController {
 //	}
 	
 	
+	/**
+	 * @Title: list
+	 * @Description: 获取subtask列表,只返回作业子任务(修改)(第七迭代)
+	 * @param request
+	 * @return  SubtaskListResponse
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2016年11月4日 下午3:59:29 
+	 */
 	@ApiOperation(value = "获取subtask列表", notes = "获取subtask列表")  
 	@RequestMapping(value = { "/list" }, method = RequestMethod.GET)
 	public SubtaskListResponse list(HttpServletRequest request){
@@ -482,6 +587,17 @@ public class SubtaskController extends BaseController {
 
 	
 
+	/**
+	 * @Title: listByGroup
+	 * @Description: 根据作业组获取子任务列表（修改）(第七迭代)
+	 * @param access_token
+	 * @param postData
+	 * @param request 
+	 * @return  SubtaskListResponse (增加返回值:qualitySubtaskId,qualityExeUserId, qualityPlanStartDate, qualityPlanEndDate)
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2016年11月4日 上午11:30:18 
+	 */
 	@ApiOperation(value = "获取subtask列表", notes = "获取subtask列表")  
 	@RequestMapping(value = { "/listByGroup" }, method = RequestMethod.GET)
 	public SubtaskListResponse listByGroup(@ApiParam(required =true, name = "access_token", value="接口调用凭证")@RequestParam( value = "access_token") String access_token

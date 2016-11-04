@@ -1782,14 +1782,19 @@ public class SubtaskOperation {
 
 	
 	/**
+	 * @Title: getList
+	 * @Description: 获取subtask列表,只返回作业子任务(修改)(第七迭代)
 	 * @param conn
-	 * @param planStatus 
+	 * @param planStatus
 	 * @param condition
-	 * @param filter 
+	 * @param filter
 	 * @param pageSize
 	 * @param curPageNum
 	 * @return
-	 * @throws ServiceException 
+	 * @throws ServiceException  Page
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2016年11月4日 下午4:00:59 
 	 */
 	public static Page getList(Connection conn, int planStatus, JSONObject condition, JSONObject filter, final int pageSize, final int curPageNum) throws ServiceException {
 		// TODO Auto-generated method stub
@@ -1799,28 +1804,33 @@ public class SubtaskOperation {
 			String selectSqlCollect = "SELECT S.SUBTASK_ID, S.STAGE, S.NAME, S.TYPE, S.STATUS,U.USER_REAL_NAME AS EXECUTER,FSOS.PERCENT,FSOS.DIFF_DATE,FSOS.PROGRESS"
 					+ " FROM SUBTASK S ,USER_INFO U,FM_STAT_OVERVIEW_SUBTASK FSOS"
 					+ " WHERE S.STAGE = 0"
+					+ " AND S.is_quality = 0" //排除 Subtask 表中的质检子任务
 					+ " AND U.USER_ID = S.EXE_USER_ID"
 					+ " AND S.SUBTASK_ID = FSOS.SUBTASK_ID(+)";
 
 			String selectSqlDailyUser = "SELECT S.SUBTASK_ID, S.STAGE, S.NAME, S.TYPE, S.STATUS,U.USER_REAL_NAME AS EXECUTER,FSOS.PERCENT,FSOS.DIFF_DATE,FSOS.PROGRESS"
 					+ " FROM SUBTASK S ,USER_INFO U,FM_STAT_OVERVIEW_SUBTASK FSOS"
 					+ " WHERE S.STAGE = 1"
+					+ " AND S.is_quality = 0" //排除 Subtask 表中的质检子任务
 					+ " AND U.USER_ID = S.EXE_USER_ID"
 					+ " AND S.SUBTASK_ID = FSOS.SUBTASK_ID(+)";
 			String selectSqlDailyGroup = "SELECT S.SUBTASK_ID, S.STAGE, S.NAME, S.TYPE, S.STATUS, UG.GROUP_NAME AS EXECUTER,FSOS.PERCENT,FSOS.DIFF_DATE,FSOS.PROGRESS"
 					+ " FROM SUBTASK S , USER_GROUP UG,FM_STAT_OVERVIEW_SUBTASK FSOS"
 					+ " WHERE S.STAGE = 1"
+					+ " AND S.is_quality = 0" //排除 Subtask 表中的质检子任务
 					+ " AND UG.GROUP_ID = S.EXE_GROUP_ID"
 					+ " AND S.SUBTASK_ID = FSOS.SUBTASK_ID(+)";
 
 			String selectSqlMonthlyUser = "SELECT S.SUBTASK_ID, S.STAGE, S.NAME, S.TYPE, S.STATUS,U.USER_REAL_NAME AS EXECUTER,FSOS.PERCENT,FSOS.DIFF_DATE,FSOS.PROGRESS"
 					+ " FROM SUBTASK S,USER_INFO U,FM_STAT_OVERVIEW_SUBTASK FSOS"
 					+ " WHERE S.STAGE = 2"
+					+ " AND S.is_quality = 0" //排除 Subtask 表中的质检子任务
 					+ " AND U.USER_ID = S.EXE_USER_ID"
 					+ " AND S.SUBTASK_ID = FSOS.SUBTASK_ID(+)";
 			String selectSqlMonthlyGroup = "SELECT S.SUBTASK_ID, S.STAGE, S.NAME, S.TYPE, S.STATUS, UG.GROUP_NAME AS EXECUTER,FSOS.PERCENT,FSOS.DIFF_DATE,FSOS.PROGRESS"
 					+ " FROM SUBTASK S ,USER_GROUP UG,FM_STAT_OVERVIEW_SUBTASK FSOS"
 					+ " WHERE S.STAGE = 2"
+					+ " AND S.is_quality = 0" //排除 Subtask 表中的质检子任务
 					+ " AND UG.GROUP_ID = S.EXE_GROUP_ID"
 					+ " AND S.SUBTASK_ID = FSOS.SUBTASK_ID(+)";
 			
@@ -2016,6 +2026,8 @@ public class SubtaskOperation {
 
 
 	/**
+	 * @Title: getListByGroup
+	 * @Description: 根据作业组获取子任务列表（修改）(第七迭代)
 	 * @param conn
 	 * @param groupId
 	 * @param stage
@@ -2023,8 +2035,11 @@ public class SubtaskOperation {
 	 * @param orderJson
 	 * @param pageSize
 	 * @param curPageNum
-	 * @return
-	 * @throws ServiceException 
+	 * @return  (增加返回值:qualitySubtaskId,qualityExeUserId, qualityPlanStartDate, qualityPlanEndDate)
+	 * @throws ServiceException  Page
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2016年11月4日 下午1:58:11 
 	 */
 	public static Page getListByGroup(Connection conn, long groupId, int stage, JSONObject conditionJson,
 			JSONObject orderJson, final int pageSize, final int curPageNum) throws ServiceException {
@@ -2039,43 +2054,83 @@ public class SubtaskOperation {
 			
 			// 0采集，1日编，2月编，
 			if (0 == stage) {
-				selectUserSql = "SELECT S.SUBTASK_ID, S.NAME, S.STAGE, S.TYPE, S.DESCP, S.STATUS, S.PLAN_START_DATE, S.PLAN_END_DATE, S.GEOMETRY, B.BLOCK_ID, BM.BLOCK_MAN_ID,BM.BLOCK_MAN_NAME, U.USER_REAL_NAME AS EXECUTER"
+				/*selectUserSql = "SELECT S.SUBTASK_ID, S.NAME, S.STAGE, S.TYPE, S.DESCP, S.STATUS, S.PLAN_START_DATE, S.PLAN_END_DATE, S.GEOMETRY, B.BLOCK_ID, BM.BLOCK_MAN_ID,BM.BLOCK_MAN_NAME, U.USER_REAL_NAME AS EXECUTER"
 						+ " FROM SUBTASK S, BLOCK B, USER_INFO U, BLOCK_MAN BM"
 						+ " WHERE S.BLOCK_MAN_ID = BM.BLOCK_MAN_ID"
 						+ " AND U.USER_ID = S.EXE_USER_ID"
 						+ " AND B.BLOCK_ID = BM.BLOCK_ID"
 						+ " AND BM.LATEST = 1"
 						+ " AND BM.COLLECT_GROUP_ID = " + groupId
+						+ " AND S.STAGE = " + stage;*/
+				selectUserSql = "SELECT "
+						+ " S.SUBTASK_ID, S.NAME, S.STAGE, S.TYPE, S.DESCP, S.STATUS, S.PLAN_START_DATE, S.PLAN_END_DATE, S.GEOMETRY,"
+						+ "	NVL(S.quality_Subtask_Id,0) qualitySubtaskId,NVL(Q.qualityPlanStartDate,NULL) qualityPlanStartDate ,NVL(Q.qualityPlanEndDate,NULL) qualityPlanEndDate ,NVL(Q.qualityExeUserId,0) qualityExeUserId, " //新增加返回值
+						+ " B.BLOCK_ID, BM.BLOCK_MAN_ID,BM.BLOCK_MAN_NAME, U.USER_REAL_NAME AS EXECUTER"
+						+ " FROM SUBTASK S "
+						//左外关联 质检子任务表
+						+ " left join (select st.SUBTASK_ID ,st.EXE_USER_ID qualityExeUserId,st.PLAN_START_DATE as qualityPlanStartDate,st.PLAN_END_DATE as qualityPlanEndDate from subtask st where st.is_quality = 1 ) Q  on S.quality_subtask_id = Q.subtask_id,"
+						+ "	BLOCK B, USER_INFO U, BLOCK_MAN BM"
+						+ " WHERE "
+						+ " S.is_quality = 0" //排除 Subtask 表中的质检子任务
+						+ " AND S.BLOCK_MAN_ID = BM.BLOCK_MAN_ID"
+						+ " AND U.USER_ID = S.EXE_USER_ID"
+						+ " AND B.BLOCK_ID = BM.BLOCK_ID"
+						+ " AND BM.LATEST = 1"
+						+ " AND BM.COLLECT_GROUP_ID = " + groupId
 						+ " AND S.STAGE = " + stage;
 			} else if (1 == stage) {
-				selectUserSql = "SELECT S.SUBTASK_ID, S.NAME, S.STAGE, S.TYPE, S.DESCP, S.STATUS, S.PLAN_START_DATE, S.PLAN_END_DATE, S.GEOMETRY, B.BLOCK_ID, BM.BLOCK_MAN_ID,BM.BLOCK_MAN_NAME, U.USER_REAL_NAME AS EXECUTER"
-						+ " FROM SUBTASK S, BLOCK B, USER_INFO U, BLOCK_MAN BM"
-						+ " WHERE S.BLOCK_MAN_ID = BM.BLOCK_MAN_ID"
+				selectUserSql = "SELECT S.SUBTASK_ID, S.NAME, S.STAGE, S.TYPE, S.DESCP, S.STATUS, S.PLAN_START_DATE, S.PLAN_END_DATE, S.GEOMETRY,"
+						+ "	NVL(S.quality_Subtask_Id,0) qualitySubtaskId,NVL(Q.qualityPlanStartDate,NULL) qualityPlanStartDate ,NVL(Q.qualityPlanEndDate,NULL) qualityPlanEndDate ,NVL(Q.qualityExeUserId,0) qualityExeUserId, " //新增加返回值
+						+ " B.BLOCK_ID, BM.BLOCK_MAN_ID,BM.BLOCK_MAN_NAME, U.USER_REAL_NAME AS EXECUTER"
+						+ " FROM SUBTASK S "
+						+ " left join (select st.SUBTASK_ID ,st.EXE_USER_ID qualityExeUserId,st.PLAN_START_DATE as qualityPlanStartDate,st.PLAN_END_DATE as qualityPlanEndDate from subtask st where st.is_quality = 1 ) Q  on S.quality_subtask_id = Q.subtask_id,"
+						+ " BLOCK B, USER_INFO U, BLOCK_MAN BM"
+						+ " WHERE "
+						+ " S.is_quality = 0" 
+						+ " AND S.BLOCK_MAN_ID = BM.BLOCK_MAN_ID"
 						+ " AND U.USER_ID = S.EXE_USER_ID"
 						+ " AND B.BLOCK_ID = BM.BLOCK_ID"
 						+ " AND BM.LATEST = 1"
 						+ " AND BM.DAY_EDIT_GROUP_ID = " + groupId
 						+ " AND S.STAGE = " + stage;
-				selectGroupSql = "SELECT S.SUBTASK_ID, S.NAME, S.STAGE, S.TYPE, S.DESCP, S.STATUS, S.PLAN_START_DATE, S.PLAN_END_DATE, S.GEOMETRY, B.BLOCK_ID, BM.BLOCK_MAN_ID,BM.BLOCK_MAN_NAME ,UG1.GROUP_NAME AS EXECUTER"
-						+ " FROM SUBTASK S, BLOCK B, BLOCK_MAN BM, USER_GROUP UG1"
-						+ " WHERE S.BLOCK_MAN_ID = BM.BLOCK_MAN_ID"
+				selectGroupSql = "SELECT S.SUBTASK_ID, S.NAME, S.STAGE, S.TYPE, S.DESCP, S.STATUS, S.PLAN_START_DATE, S.PLAN_END_DATE, S.GEOMETRY,"
+						+ "	NVL(S.quality_Subtask_Id,0) qualitySubtaskId,NVL(Q.qualityPlanStartDate,NULL) qualityPlanStartDate ,NVL(Q.qualityPlanEndDate,NULL) qualityPlanEndDate ,NVL(Q.qualityExeUserId,0) qualityExeUserId, " //新增加返回值
+						+ " B.BLOCK_ID, BM.BLOCK_MAN_ID,BM.BLOCK_MAN_NAME ,UG1.GROUP_NAME AS EXECUTER"
+						+ " FROM SUBTASK S "
+						+ " left join (select st.SUBTASK_ID ,st.EXE_USER_ID qualityExeUserId,st.PLAN_START_DATE as qualityPlanStartDate,st.PLAN_END_DATE as qualityPlanEndDate from subtask st where st.is_quality = 1 ) Q  on S.quality_subtask_id = Q.subtask_id,"
+						+ " BLOCK B, BLOCK_MAN BM, USER_GROUP UG1"
+						+ " WHERE "
+						+ " S.is_quality = 0" 
+						+ " AND S.BLOCK_MAN_ID = BM.BLOCK_MAN_ID"
 						+ " AND UG1.GROUP_ID = S.EXE_GROUP_ID"
 						+ " AND B.BLOCK_ID = BM.BLOCK_ID"
 						+ " AND BM.LATEST = 1"
 						+ " AND BM.DAY_EDIT_GROUP_ID = " + groupId
 						+ " AND S.STAGE = " + stage;
 			} else if (2 == stage) {
-				selectUserSql = "SELECT S.SUBTASK_ID,S.NAME,S.STAGE,S.TYPE,S.DESCP,S.STATUS,S.PLAN_START_DATE,S.PLAN_END_DATE,S.GEOMETRY,T.TASK_ID,T.NAME AS TASK_NAME,T.TASK_TYPE,U.USER_REAL_NAME AS EXECUTER"
-						+ " FROM SUBTASK S, USER_INFO U, TASK T"
-						+ " WHERE S.TASK_ID = T.TASK_ID"
+				selectUserSql = "SELECT S.SUBTASK_ID,S.NAME,S.STAGE,S.TYPE,S.DESCP,S.STATUS,S.PLAN_START_DATE,S.PLAN_END_DATE,S.GEOMETRY,"
+						+ "	NVL(S.quality_Subtask_Id,0) qualitySubtaskId,NVL(Q.qualityPlanStartDate,NULL) qualityPlanStartDate ,NVL(Q.qualityPlanEndDate,NULL) qualityPlanEndDate ,NVL(Q.qualityExeUserId,0) qualityExeUserId, " //新增加返回值
+						+ " T.TASK_ID,T.NAME AS TASK_NAME,T.TASK_TYPE,U.USER_REAL_NAME AS EXECUTER"
+						+ " FROM SUBTASK S "
+						+ " left join (select st.SUBTASK_ID ,st.EXE_USER_ID qualityExeUserId,st.PLAN_START_DATE as qualityPlanStartDate,st.PLAN_END_DATE as qualityPlanEndDate from subtask st where st.is_quality = 1 ) Q  on S.quality_subtask_id = Q.subtask_id,"
+						+ " USER_INFO U, TASK T"
+						+ " WHERE "
+						+ " S.is_quality = 0" 
+						+ " AND S.TASK_ID = T.TASK_ID"
 						+ " AND U.USER_ID = S.EXE_USER_ID"
 						+ " AND T.LATEST = 1"
 						+ " AND T.MONTH_EDIT_GROUP_ID = " + groupId
 						+ " AND S.STAGE = " + stage;
 				
-				selectGroupSql = "SELECT S.SUBTASK_ID,S.NAME,S.STAGE,S.TYPE,S.DESCP,S.STATUS,S.PLAN_START_DATE,S.PLAN_END_DATE,S.GEOMETRY,T.TASK_ID,T.NAME AS TASK_NAME,T.TASK_TYPE,UG1.GROUP_NAME AS EXECUTER"
-						+ " FROM SUBTASK S, TASK T, USER_GROUP UG1"
-						+ " WHERE S.TASK_ID = T.TASK_ID"
+				selectGroupSql = "SELECT S.SUBTASK_ID,S.NAME,S.STAGE,S.TYPE,S.DESCP,S.STATUS,S.PLAN_START_DATE,S.PLAN_END_DATE,S.GEOMETRY,"
+						+ "	NVL(S.quality_Subtask_Id,0) qualitySubtaskId,NVL(Q.qualityPlanStartDate,NULL) qualityPlanStartDate ,NVL(Q.qualityPlanEndDate,NULL) qualityPlanEndDate ,NVL(Q.qualityExeUserId,0) qualityExeUserId, " //新增加返回值
+						+ " T.TASK_ID,T.NAME AS TASK_NAME,T.TASK_TYPE,UG1.GROUP_NAME AS EXECUTER"
+						+ " FROM SUBTASK S "
+						+ " left join (select st.SUBTASK_ID ,st.EXE_USER_ID qualityExeUserId,st.PLAN_START_DATE as qualityPlanStartDate,st.PLAN_END_DATE as qualityPlanEndDate from subtask st where st.is_quality = 1 ) Q  on S.quality_subtask_id = Q.subtask_id,"
+						+ " TASK T, USER_GROUP UG1"
+						+ " WHERE "
+						+ " S.is_quality = 0" 
+						+ " AND S.TASK_ID = T.TASK_ID"
 						+ " AND UG1.GROUP_ID = S.EXE_GROUP_ID"
 						+ " AND T.LATEST = 1"
 						+ " AND T.MONTH_EDIT_GROUP_ID = " + groupId
@@ -2150,7 +2205,13 @@ public class SubtaskOperation {
 						subtask.put("status", rs.getInt("STATUS"));
 						
 						subtask.put("executer", rs.getString("EXECUTER"));
-	
+						//**************zl 2016.11.04 ******************
+						subtask.put("qualitySubtaskId", rs.getInt("qualitySubtaskId"));
+						subtask.put("qualityExeUserId", rs.getInt("qualityExeUserId"));
+						subtask.put("qualityPlanStartDate", df.format(rs.getTimestamp("qualityPlanStartDate")));
+						subtask.put("qualityPlanEndDate", df.format(rs.getTimestamp("qualityPlanEndDate")));
+						
+						
 						STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
 						try {
 							subtask.put("geometry", GeoTranslator.struct2Wkt(struct));

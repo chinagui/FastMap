@@ -35,6 +35,10 @@ public class SendEmail {
 	}
 	
 	public static void main(String[] args) {
-		sendEmail("zhangli5174@navinfo.com","邮件主题","邮件内容3333333333");
+		//sendEmail("zhangli5174@navinfo.com","邮件主题","邮件内容3333333333");
+		for(int i=0;i<1;i++){
+			sendEmail("hanshaoming@chinasoftinc.com","邮件主题","邮件内容3333333333");
+			
+		}
 	}
 }

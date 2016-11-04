@@ -2034,12 +2034,12 @@ public class TaskOperation {
 	 * @return
 	 * @throws Exception
 	 */
-	public static Map<String, Object> getBlockManByTaskId(Connection conn,long taskId) throws Exception{
+	public static Map<String, Object> getBlockManByTaskId(Connection conn,long taskId,long blockManStatus) throws Exception{
 		try{
 			QueryRunner run = new QueryRunner();
 			String querySql="SELECT B.BLOCK_MAN_ID BLOCK_MAN_ID,B.TASK_ID TASK_ID,B.COLLECT_GROUP_ID COLLECT_GROUP_ID,B.DAY_EDIT_GROUP_ID DAY_EDIT_GROUP_ID "
-					+ "FROM BLOCK_MAN B WHERE B.STATUS= 1 AND B.TASK_ID = ?";
-			Object[] params = {taskId};		
+					+ "FROM BLOCK_MAN B WHERE B.STATUS= ? AND B.TASK_ID = ?";
+			Object[] params = {blockManStatus,taskId};		
 			ResultSetHandler<Map<String,Object>> rsh = new ResultSetHandler<Map<String,Object>>() {
 				@Override
 				public Map<String,Object> handle(ResultSet rs) throws SQLException {

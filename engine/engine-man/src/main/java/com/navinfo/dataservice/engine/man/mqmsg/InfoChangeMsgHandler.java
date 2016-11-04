@@ -10,6 +10,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -23,6 +25,7 @@ import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.mq.MsgHandler;
+import com.navinfo.dataservice.dao.mq.email.EmailPublisher;
 import com.navinfo.dataservice.engine.man.message.MessageOperation;
 import com.navinfo.dataservice.engine.man.message.SendEmail;
 import com.navinfo.dataservice.engine.man.task.TaskOperation;
@@ -97,9 +100,10 @@ public class InfoChangeMsgHandler implements MsgHandler {
 				}
 				
 			}
-			conn.commit();
 			//发送消息
-			taskPushMsg(conn, dataJson.getString("INFO_NAME"), 0);			
+			taskPushMsg(conn, dataJson.getString("INFO_NAME"), 0);	
+			
+			conn.commit();
 			
 		} catch (SQLException e) {
 			log.error(e.getMessage(), e);
@@ -148,11 +152,18 @@ public class InfoChangeMsgHandler implements MsgHandler {
 					Map<String, Object> userInfo = UserInfoOperation.getUserInfoByUserId(conn, userId);
 					if(userInfo != null && userInfo.get("userEmail") != null){
 						for (String msgContent : msgContentList) {
-							toMail = (String) userInfo.get("userEmail");
-							mailTitle = msgTitle;
-							mailContent = msgContent;
-							//发送邮件
-							SendEmail.sendEmail(toMail, mailTitle, mailContent);
+							//判断邮箱格式
+							String check = "^([a-z0-9A-Z]+[-|_|\\.]?)+[a-z0-9A-Z]@([a-z0-9A-Z]+(-[a-z0-9A-Z]+)?\\.)+[a-zA-Z]{2,}$";
+			                Pattern regex = Pattern.compile(check);
+			                Matcher matcher = regex.matcher((CharSequence) userInfo.get("userEmail"));
+			                if(matcher.matches()){
+			                	toMail = (String) userInfo.get("userEmail");
+			                	mailTitle = msgTitle;
+			                	mailContent = msgContent;
+			                	//发送邮件到消息队列
+			                	//SendEmail.sendEmail(toMail, mailTitle, mailContent);
+			                	EmailPublisher.publishMsg(toMail, mailTitle, mailContent);
+			                }
 						}
 					}
 				}

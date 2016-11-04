@@ -238,9 +238,11 @@ public class TaskService {
 				TaskOperation.updateTask(conn, bean);		
 				total+=1;
 			}
-			condition.put("taskIds",taskIds);
-			List<Map<String, Object>> openTasks = TaskOperation.queryTaskTable(conn, condition);
+			
 			try {
+				//发送消息
+				condition.put("taskIds",taskIds);
+				List<Map<String, Object>> openTasks = TaskOperation.queryTaskTable(conn, condition);
 				/*任务创建/编辑/关闭
 				 *1.所有生管角色
 				 *2.任务包含的block分配的采集作业组组长
@@ -255,7 +257,7 @@ public class TaskService {
 					groupIdList.add((Long) task.get("monthEditGroupId"));
 					//查询block分配的采集和日编作业组组长id
 					if(task.get("taskId") != null){
-						Map<String, Object> blockMan = TaskOperation.getBlockManByTaskId(conn, (long) task.get("taskId"));
+						Map<String, Object> blockMan = TaskOperation.getBlockManByTaskId(conn, (long) task.get("taskId"), 1);
 						if(blockMan != null){
 							groupIdList.add((Long) blockMan.get("collectGroupId"));
 							groupIdList.add((Long) blockMan.get("dayEditGroupId"));
@@ -500,11 +502,11 @@ public class TaskService {
 				//关闭对应的infor
 				InforManOperation.closeByTasks(conn,newTask);
 			
-				//发送消息
-				JSONObject condition=new JSONObject();
-				condition.put("taskIds",JSONArray.fromObject(newTask));
-				List<Map<String, Object>> openTasks = TaskOperation.queryTaskTable(conn, condition);
 				try {
+					//发送消息
+					JSONObject condition=new JSONObject();
+					condition.put("taskIds",JSONArray.fromObject(newTask));
+					List<Map<String, Object>> openTasks = TaskOperation.queryTaskTable(conn, condition);
 					/*任务创建/编辑/关闭
 					 *1.所有生管角色
 					 *2.任务包含的block分配的采集作业组组长
@@ -519,10 +521,10 @@ public class TaskService {
 						groupIdList.add((Long) task.get("monthEditGroupId"));
 						//查询block分配的采集和日编作业组组长id
 						if(task.get("taskId") != null){
-							Map<String, Object> blockMan = TaskOperation.getBlockManByTaskId(conn, (long) task.get("taskId"));
+							Map<String, Object> blockMan = TaskOperation.getBlockManByTaskId(conn, (long) task.get("taskId"),0);
 							if(blockMan != null){
-								groupIdList.add((Long) task.get("collectGroupId"));
-								groupIdList.add((Long) task.get("dayEditGroupId"));
+								groupIdList.add((Long) blockMan.get("collectGroupId"));
+								groupIdList.add((Long) blockMan.get("dayEditGroupId"));
 							}
 						}
 					}

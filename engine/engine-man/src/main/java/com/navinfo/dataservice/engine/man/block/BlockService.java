@@ -11,6 +11,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -32,6 +34,7 @@ import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DateUtilsEx;
 import com.navinfo.dataservice.commons.xinge.XingeUtil;
+import com.navinfo.dataservice.dao.mq.email.EmailPublisher;
 import com.navinfo.dataservice.engine.man.message.MessageOperation;
 import com.navinfo.dataservice.engine.man.message.SendEmail;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskOperation;
@@ -160,6 +163,7 @@ public class BlockService {
 				int[] rows = run.batch(conn, createSql, param);
 				updateCount = rows.length;
 			}
+			//发送消息
 			try {
 				//查询blockMan数据
 				List<Map<String, Object>> blockManList = this.getBlockManByBlockManId(conn, updateBlockList);
@@ -505,8 +509,8 @@ public class BlockService {
 					unClosedBlocks.add(blockManIdList.get(i));
 				}
 			}
+			//发送消息
 			try {
-				//发送消息
 				//查询blockMan数据
 				List<Map<String, Object>> blockManList = this.getBlockManByBlockManId(conn, blockReadyToClose);
 				/*block创建/编辑/关闭
@@ -837,7 +841,7 @@ public class BlockService {
 				map.put("dayEditGroupLeader", rs.getString("DAYEDITGROUPLEADER"));
 				blockManList.add(map);
 			}
-			return blockIdList;
+			return blockManList;
 		}catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -965,13 +969,20 @@ public class BlockService {
 			String mailTitle = null;
 			String mailContent = null;
 			//查询用户详情
-			Map<String, Object> userInfo = UserInfoOperation.getUserInfoByUserId(conn, (long) msgContent[0]);
+			Map<String, Object> userInfo = UserInfoOperation.getUserInfoByUserId(conn, Long.parseLong((String) msgContent[0]));
 			if(userInfo != null && userInfo.get("userEmail") != null){
-				toMail = (String) userInfo.get("userEmail");
-				mailTitle = (String) msgContent[1];
-				mailContent = (String) msgContent[2];
-				//发送邮件
-				SendEmail.sendEmail(toMail, mailTitle, mailContent);
+				//判断邮箱格式
+				String check = "^([a-z0-9A-Z]+[-|_|\\.]?)+[a-z0-9A-Z]@([a-z0-9A-Z]+(-[a-z0-9A-Z]+)?\\.)+[a-zA-Z]{2,}$";
+                Pattern regex = Pattern.compile(check);
+                Matcher matcher = regex.matcher((CharSequence) userInfo.get("userEmail"));
+                if(matcher.matches()){
+                	toMail = (String) userInfo.get("userEmail");
+                	mailTitle = (String) msgContent[1];
+                	mailContent = (String) msgContent[2];
+                	//发送邮件到消息队列
+                	//SendEmail.sendEmail(toMail, mailTitle, mailContent);
+                	EmailPublisher.publishMsg(toMail, mailTitle, mailContent);
+                }
 			}
 		}
 		MessageOperation.batchInsert(conn,msgList, userId,"MAN");

@@ -18,6 +18,8 @@ import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryCollection;
+import com.vividsolutions.jts.geom.LineString;
 
 import net.sf.json.JSONObject;
 
@@ -149,8 +151,24 @@ public class Operation implements IOperation {
 				while (it.hasNext()) {
 					String meshIdStr = it.next();
 					Geometry geomInter = MeshUtils.linkInterMeshPolygon(g, GeoTranslator.transform(MeshUtils.mesh2Jts(meshIdStr),1,5));
-					geomInter = GeoTranslator.geojson2Jts(GeoTranslator.jts2Geojson(geomInter), 1, 5);
-					RwLinkOperateUtils.getCreateRwLinksWithMesh(geomInter, maps, result,null);
+					if(geomInter instanceof GeometryCollection)
+					{
+						int geoNum = geomInter.getNumGeometries();
+						for (int i = 0; i < geoNum; i++) {
+							Geometry subGeo = geomInter.getGeometryN(i);
+							if (subGeo instanceof LineString) {
+								subGeo = GeoTranslator.geojson2Jts(GeoTranslator.jts2Geojson(subGeo), 1, 5);
+
+								RwLinkOperateUtils.getCreateRwLinksWithMesh(subGeo, maps, result,null);
+							}
+						}
+					}
+					else
+					{
+						geomInter = GeoTranslator.geojson2Jts(GeoTranslator.jts2Geojson(geomInter), 1, 5);
+
+						RwLinkOperateUtils.getCreateRwLinksWithMesh(geomInter, maps, result,null);
+					}
 				}
 			}
 

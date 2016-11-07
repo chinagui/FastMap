@@ -8,7 +8,10 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -22,6 +25,11 @@ import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.mq.MsgHandler;
+import com.navinfo.dataservice.dao.mq.email.EmailPublisher;
+import com.navinfo.dataservice.engine.man.message.MessageOperation;
+import com.navinfo.dataservice.engine.man.message.SendEmail;
+import com.navinfo.dataservice.engine.man.task.TaskOperation;
+import com.navinfo.dataservice.engine.man.userInfo.UserInfoOperation;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.navinfo.navicommons.geo.computation.GridUtils;
@@ -92,7 +100,11 @@ public class InfoChangeMsgHandler implements MsgHandler {
 				}
 				
 			}
+			//发送消息
+			taskPushMsg(conn, dataJson.getString("INFO_NAME"), 0);	
+			
 			conn.commit();
+			
 		} catch (SQLException e) {
 			log.error(e.getMessage(), e);
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -101,6 +113,68 @@ public class InfoChangeMsgHandler implements MsgHandler {
 			DbUtils.closeQuietly(conn);
 		}
 	}
+	
+	/*新增一级情报
+	 *1.所有生管角色
+	 *2.分配的采集作业组组长(暂无)
+	 * 有新的一级情报，情报名称：XXX，请关注*/
+	public void taskPushMsg(Connection conn,String infoName, long pushUser) {
+		try {
+			String msgTitle="新增一级情报";
+			List<String> msgContentList=new ArrayList<String>();
+			//List<Long> groupIdList = new ArrayList<Long>();
+			msgContentList.add("有新的一级情报，情报名称:"+infoName+",请关注");
+			if(msgContentList.size()>0){
+				String userSql="SELECT DISTINCT M.USER_ID FROM ROLE_USER_MAPPING M WHERE M.ROLE_ID =3";
+				List<Integer> userIdList = UserInfoOperation.getUserListBySql(conn, userSql);
+				//查询分配的作业组组长
+				//List<Long> leaderIdByGroupId = UserInfoOperation.getLeaderIdByGroupId(conn, groupIdList);
+				//for (Long leaderId : leaderIdByGroupId) {
+				//userIdList.add(leaderId.intValue());
+				//}
+				Object[][] msgList=new Object[userIdList.size()*msgContentList.size()][3];
+				int num=0;
+				for(int userId:userIdList){
+					for(String msgContent:msgContentList){
+						msgList[num][0]=userId;
+						msgList[num][1]=msgTitle;
+						msgList[num][2]=msgContent;
+						num+=1;
+					}
+				}
+				MessageOperation.batchInsert(conn,msgList,pushUser,"MAN");
+				//发送邮件
+				String toMail = null;
+				String mailTitle = null;
+				String mailContent = null;
+				//查询用户详情
+				for (int userId : userIdList) {
+					Map<String, Object> userInfo = UserInfoOperation.getUserInfoByUserId(conn, userId);
+					if(userInfo != null && userInfo.get("userEmail") != null){
+						for (String msgContent : msgContentList) {
+							//判断邮箱格式
+							String check = "^([a-z0-9A-Z]+[-|_|\\.]?)+[a-z0-9A-Z]@([a-z0-9A-Z]+(-[a-z0-9A-Z]+)?\\.)+[a-zA-Z]{2,}$";
+			                Pattern regex = Pattern.compile(check);
+			                Matcher matcher = regex.matcher((CharSequence) userInfo.get("userEmail"));
+			                if(matcher.matches()){
+			                	toMail = (String) userInfo.get("userEmail");
+			                	mailTitle = msgTitle;
+			                	mailContent = msgContent;
+			                	//发送邮件到消息队列
+			                	//SendEmail.sendEmail(toMail, mailTitle, mailContent);
+			                	EmailPublisher.publishMsg(toMail, mailTitle, mailContent);
+			                }
+						}
+					}
+				}
+			}
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			log.error("发送失败,原因:"+e.getMessage(), e);
+		}
+	}
+	
 //	public void save(String message) throws Exception {
 //		Connection conn = null;
 //		try {

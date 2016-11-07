@@ -1602,7 +1602,7 @@ public class TaskOperation {
 	 * 
 	 * @param conn
 	 * @param condition 搜索条件{"taskIds":[1,2,3],"taskStatus":[1,2]}
-	 * @return [{"taskId":12,"taskStatus":1,"taskName":"123"}]
+	 * @return [{"taskId":12,"taskStatus":1,"taskName":"123","monthEditGroupId":2}]
 	 */
 	public static List<Map<String, Object>> queryTaskTable(Connection conn,JSONObject condition) throws Exception{
 		
@@ -1617,16 +1617,17 @@ public class TaskOperation {
 			}
 		}
 		
-		String selectSql="select t.task_id,t.status task_status,t.NAME task_name from task t where 1=1 "+conditionSql;
+		String selectSql="select t.task_id,t.status task_status,t.NAME task_name ,t.MONTH_EDIT_GROUP_ID MONTH_EDIT_GROUP_ID from task t where 1=1 "+conditionSql;
 		
 		ResultSetHandler<List<Map<String, Object>>> rsHandler = new ResultSetHandler<List<Map<String, Object>>>(){
 			public List<Map<String, Object>> handle(ResultSet rs) throws SQLException {
 				List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
 				while(rs.next()){
 					Map<String, Object> map = new HashMap<String, Object>();
-					map.put("taskId", rs.getInt("TASK_ID"));
-					map.put("taskStatus", rs.getInt("TASK_STATUS"));
+					map.put("taskId", rs.getLong("TASK_ID"));
+					map.put("taskStatus", rs.getLong("TASK_STATUS"));
 					map.put("taskName", rs.getString("TASK_NAME"));
+					map.put("monthEditGroupId", rs.getLong("MONTH_EDIT_GROUP_ID"));
 					list.add(map);
 				}
 				return list;
@@ -2024,5 +2025,42 @@ public class TaskOperation {
     	};
     	return rsHandler;
 	}
-
+	
+	/**
+	 * 通过taskId查询blockMan数据
+	 * @author Han Shaoming
+	 * @param conn
+	 * @param taskId
+	 * @return
+	 * @throws Exception
+	 */
+	public static Map<String, Object> getBlockManByTaskId(Connection conn,long taskId,long blockManStatus) throws Exception{
+		try{
+			QueryRunner run = new QueryRunner();
+			String querySql="SELECT B.BLOCK_MAN_ID BLOCK_MAN_ID,B.TASK_ID TASK_ID,B.COLLECT_GROUP_ID COLLECT_GROUP_ID,B.DAY_EDIT_GROUP_ID DAY_EDIT_GROUP_ID "
+					+ "FROM BLOCK_MAN B WHERE B.STATUS= ? AND B.TASK_ID = ?";
+			Object[] params = {blockManStatus,taskId};		
+			ResultSetHandler<Map<String,Object>> rsh = new ResultSetHandler<Map<String,Object>>() {
+				@Override
+				public Map<String,Object> handle(ResultSet rs) throws SQLException {
+					// TODO Auto-generated method stub
+					Map<String,Object> map = new HashMap<String, Object>();
+					while(rs.next()){
+						map.put("blockManId", rs.getLong("BLOCK_MAN_ID"));
+						map.put("taskId", rs.getLong("TASK_ID"));
+						map.put("collectGroupId", rs.getLong("COLLECT_GROUP_ID"));
+						map.put("dayEditGroupId", rs.getLong("DAY_EDIT_GROUP_ID"));
+					}
+					return map;
+				}
+			};
+			Map<String, Object> userInfo = run.query(conn, querySql, params, rsh);
+			return userInfo;			
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}
+	}
+	
+	
 }

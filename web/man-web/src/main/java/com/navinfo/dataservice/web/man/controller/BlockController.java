@@ -241,8 +241,9 @@ public class BlockController extends BaseController {
 
 			JSONArray blockManIds = dataJson.getJSONArray("blockManIds");
 			List<Integer> blockManIdList = (List<Integer>) JSONArray.toCollection(blockManIds, Integer.class);
-
-			List<Integer> unClosedBlock = BlockService.getInstance().close(blockManIdList);
+			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			long userId = tokenObj.getUserId();
+			List<Integer> unClosedBlock = BlockService.getInstance().close(blockManIdList,userId);
 
 			String message = "批量关闭block：" + (blockManIdList.size() - unClosedBlock.size()) + "个成功，" + unClosedBlock.size() + "个失败。";			
 			return new ModelAndView("jsonView", success(message));
@@ -413,7 +414,7 @@ public class BlockController extends BaseController {
 	@RequestMapping(value = "/block/pushMsg")
 	public ModelAndView pushMsg(HttpServletRequest request){
 		try{
-			//AccessToken tokenObj=(AccessToken) request.getAttribute("token");
+			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
 			String parameter = request.getParameter("parameter");
 			if (StringUtils.isEmpty(parameter)){
 				throw new IllegalArgumentException("parameter参数不能为空。");
@@ -423,8 +424,8 @@ public class BlockController extends BaseController {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
 			JSONArray blockManIds=dataJson.getJSONArray("blockManIds");
-			//long userId=tokenObj.getUserId();
-			String msg=service.blockPushMsg(blockManIds);
+			long userId=tokenObj.getUserId();
+			String msg=service.blockPushMsg(blockManIds,userId);
 			return new ModelAndView("jsonView", success(msg));
 		}catch(Exception e){
 			log.error("发布失败，原因："+e.getMessage(), e);

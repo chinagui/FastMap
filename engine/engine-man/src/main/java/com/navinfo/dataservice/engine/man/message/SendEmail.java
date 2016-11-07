@@ -17,8 +17,8 @@ public class SendEmail {
 		// 发件人用户名、密码
 		//private static String SEND_EMAil = "xxxxxxx@163.com";//必填项 
 		//private static String SEND_PWD = "*****";//必填项
-		private static String SEND_EMAil = "hhmhsm@163.com";//必填项 
-		private static String SEND_PWD = "hhm5678291hsm";//必填项
+		private static String SEND_EMAil = "swtxtest@163.com";//必填项 
+		private static String SEND_PWD = "swtx123456";//必填项
 	
 	/**
 	 * @Title: sendEmail
@@ -35,10 +35,6 @@ public class SendEmail {
 	}
 	
 	public static void main(String[] args) {
-		//sendEmail("zhangli5174@navinfo.com","邮件主题","邮件内容3333333333");
-		for(int i=0;i<1;i++){
-			sendEmail("hanshaoming@chinasoftinc.com","邮件主题","邮件内容3333333333");
-			
-		}
+		sendEmail("zhangli5174@navinfo.com","邮件主题","邮件内容3333333333");
 	}
 }

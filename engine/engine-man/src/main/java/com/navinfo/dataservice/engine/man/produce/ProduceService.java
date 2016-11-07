@@ -28,6 +28,7 @@ import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.engine.man.inforMan.InforManOperation;
+import com.navinfo.dataservice.engine.man.subtask.SubtaskOperation;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.StringUtil;
@@ -43,14 +44,27 @@ public class ProduceService {
 	public static ProduceService getInstance(){
 		return SingletonHolder.INSTANCE;
 	}
+	/**
+	 * @Title: generateDaily
+	 * @Description: (修改)创建出品包(第七迭代)
+	 * @param userId
+	 * @param dataJson
+	 * @throws Exception  void
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2016年11月3日 下午1:49:24 
+	 */
 	public void generateDaily(long userId, JSONObject dataJson) throws Exception {
 		//创建日出品任务
-		String produceName=dataJson.getString("produceName");
+		int subtaskId=dataJson.getInt("subtaskId");
 		String produceType=dataJson.getString("produceType");
-		JSONArray gridIds = dataJson.getJSONArray("gridIds");
+		//通过subtaskId 查询 gridIds 
+		List<Integer> gridIds =SubtaskOperation.getGridIdsBySubtaskId(subtaskId);
+		
+		//JSONArray gridIds = dataJson.getJSONArray("gridIds");
 		JSONObject paraJson=new JSONObject();
 		paraJson.put("gridIds", gridIds);
-		int produceId=this.create(userId,produceName,produceType,paraJson);
+		int produceId=this.create(userId,produceType,paraJson);
 		//创建日出品job
 		// TODO Auto-generated method stub
 		JobApi jobApi=(JobApi) ApplicationContextUtil.getBean("jobApi");
@@ -67,22 +81,29 @@ public class ProduceService {
 		
 	}
 	
+
 	/**
-	 * 创建日出品任务
+	 * @Title: create
+	 * @Description: (修改)创建日出品任务(第七迭代)
 	 * @param userId
-	 * @param gridIds 
-	 * @param json
-	 * @throws Exception
+	 * @param produceType
+	 * @param paraJson
+	 * @return
+	 * @throws Exception  int
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2016年11月3日 下午1:48:02 
 	 */
-	public int create(long userId,String produceName,String produceType, JSONObject paraJson) throws Exception{
+	public int create(long userId,String produceType, JSONObject paraJson) throws Exception{
 		Connection conn = null;
 		try{
 			conn = DBConnector.getInstance().getManConnection();
 			int produceId=ProduceOperation.getNewProduceId(conn);
 			QueryRunner run = new QueryRunner();
-			String createSql = "insert into produce (produce_id,produce_name,produce_type,create_user_id,create_date,produce_status,parameter) "
-					+ "values("+produceId+",'"+produceName+"','"+produceType+"',"+userId+",sysdate,0,'"+paraJson+"')";			
+			String createSql = "insert into produce (produce_id,produce_type,create_user_id,create_date,produce_status,parameter) "
+					+ "values("+produceId+",'"+produceType+"',"+userId+",sysdate,0,'"+paraJson+"')";			
 			//ClobProxyImpl impl=(ClobProxyImpl)ConnectionUtil.createClob(conn);
+			log.debug("创建日出品sql:"+createSql);
 			run.update(conn,createSql);		
 			return produceId;
 		}catch(Exception e){
@@ -108,65 +129,147 @@ public class ProduceService {
 		}
 	}
 	
+	/**
+	 * @Title: list
+	 * @Description: (修改)查询日出品列表(第七迭代)
+	 * @param conditionJson
+	 * @param currentPageNum
+	 * @param pageSize
+	 * @return
+	 * @throws Exception  Page
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2016年11月3日 下午2:02:41 
+	 */
 	public Page list(JSONObject conditionJson,final int currentPageNum,int pageSize) throws Exception {
 		Connection conn=null;
-		try{
+		try{			
 			String conditionStr="";
 			if(null!=conditionJson && !conditionJson.isEmpty()){
-				Iterator keys = conditionJson.keys();
-				while (keys.hasNext()) {
-					String key = (String) keys.next();
-					if ("produceName".equals(key)) {conditionStr+=" and P.PRODUCE_NAME like '%"+conditionJson.getString(key)+"%'";}
+					Iterator keys = conditionJson.keys();
+					while (keys.hasNext()) {
+						String key = (String) keys.next();
+						if ("blockManName".equals(key)) {
+							conditionStr+=" and s.BLOCK_MAN_NAME like '%"+conditionJson.getString(key)+"%'";
+						}
+						else if("selectParam".equals(key)){
+							JSONArray selectParamArr=conditionJson.getJSONArray(key);
+							String statuss = selectParamArr.toString();
+							if(statuss != null && StringUtils.isNotEmpty(statuss)){
+								conditionStr+=" and p.PRODUCE_STATUS in "
+											+statuss.replace("[", "(").replace("]", ")");
+							}
+							//JSONArray progress=new JSONArray();
+							/*List<Integer> selectParamList = new ArrayList<Integer>();
+							for(Object i:selectParamArr){
+								int tmp=(int) i;
+								selectParamList.add(tmp);
+							}
+							if(selectParamList != null && selectParamList.size() > 0){
+								conditionStr+=" and p.PRODUCE_STATUS in "
+											+selectParamList.toString().replace("[", "(").replace("]", ")");
+							}*/
+								
+						}
 					}
-				}
-			
-			long pageStartNum = (currentPageNum - 1) * pageSize + 1;
-			long pageEndNum = currentPageNum * pageSize;
-			conn = DBConnector.getInstance().getManConnection();
-			String sql="WITH QUERY AS"
-					+ " (SELECT P.PRODUCE_ID,"
-					+ "       P.PRODUCE_NAME,"
-					+ "       P.PRODUCE_TYPE,"
-					+ "       P.PRODUCE_STATUS,"
-					+ "       P.CREATE_USER_ID,"
-					+ "       I.USER_REAL_NAME CREATE_USER_NAME,"
-					+ "       P.CREATE_DATE"
-					+ "  FROM PRODUCE P, USER_INFO I"
-					+ " WHERE P.CREATE_USER_ID = I.USER_ID "+conditionStr
-					+ "  ORDER BY P.PRODUCE_NAME)"
-				+ " SELECT /*+FIRST_ROWS ORDERED*/"
-				+ " T.*, (SELECT COUNT(1) FROM QUERY) AS TOTAL_RECORD_NUM"
-				+ "  FROM (SELECT T.*, ROWNUM AS ROWNUM_ FROM QUERY T WHERE ROWNUM <= "+pageEndNum+") T"
-				+ " WHERE T.ROWNUM_ >= "+pageStartNum;;
-			QueryRunner run=new QueryRunner();
-			ResultSetHandler<Page> rsHandler=new ResultSetHandler<Page>() {
-				public Page handle(ResultSet rs) throws SQLException{
-					Page page = new Page(currentPageNum);
-					int totalCount=0;
-					List<Map<String,Object>> result=new ArrayList<Map<String,Object>>();
-					while(rs.next()){
-						Map<String,Object> map=new HashMap<String, Object>();
-						map.put("produceId", rs.getInt("PRODUCE_ID"));
-						map.put("produceName", rs.getString("PRODUCE_NAME"));
-						map.put("produceType", rs.getString("PRODUCE_TYPE"));
-						map.put("produceStatus", rs.getInt("PRODUCE_STATUS"));
-						map.put("createUserId", rs.getInt("CREATE_USER_ID"));
-						map.put("createUserName", rs.getString("CREATE_USER_NAME"));
-						map.put("createDate", DateUtils.dateToString(rs.getTimestamp("CREATE_DATE")));
-						//CLOB inforGeo = (CLOB) rs.getClob("PAR");
-						//String inforGeo1 = StringUtil.ClobToString(inforGeo);
-						//map.put("parameter",inforGeo1);
-						//map.put("parameter",rs.getString("PAR"));
-						if(totalCount==0){totalCount=rs.getInt("TOTAL_RECORD_NUM");}
-						result.add(map);
+			}
+				long pageStartNum = (currentPageNum - 1) * pageSize + 1;
+				long pageEndNum = currentPageNum * pageSize;
+				conn = DBConnector.getInstance().getManConnection();
+				String sql=
+					  "WITH "
+					+ " q1 AS "//所有状态为开启的子任务及grid
+					+ " ("        
+						+ " SELECT s.subtask_id,m.grid_id "
+						+ " FROM "
+						+ " subtask s,block_grid_mapping m,block_man b "
+						+ " WHERE "
+						+ " s.block_man_id = b.block_man_id and  b.block_id = m.block_id and s.status = 1 "
+						+ " UNION ALL "
+						+ " SELECT ss.subtask_id,mm.grid_id "
+						+ " FROM "
+						+ " subtask ss,subtask_grid_mapping mm "
+						+ " WHERE "
+						+ " ss.subtask_id = mm.subtask_id and ss.status = 1"
+					+ " ) ,"
+					+ " q2 AS"//区域子任务
+					+ " ("
+						+ " SELECT s.*,b.block_man_name,b.DAY_PRODUCE_PLAN_START_DATE,b.DAY_PRODUCE_PLAN_END_DATE "
+						+ " FROM subtask s ,block_man b "
+						+ " WHERE "
+							+ " s.block_man_id = b.block_man_id  and  s.type = 4 and s.status = 0 "
+					+ " ),"
+					+ " q3 AS "//produce产品列表(成功或失败)
+					+ " ("
+						+ " SELECT p.PRODUCE_ID,p.PRODUCE_TYPE,p.PRODUCE_STATUS, "
+								  + "  p.CREATE_DATE,p.SUBTASK_ID, "
+								  + "  i.USER_REAL_NAME CREATE_USER_NAME,i.USER_ID "
+						+ " FROM PRODUCE p ,USER_INFO i "
+						+ " WHERE "
+								+ " p.CREATE_USER_ID = i.USER_ID "
+
+					+ " ), "
+					+ " q4 AS "//可出品的子任务列表
+					+ " ("
+						+ " SELECT * FROM q2 a"
+						+ " WHERE not exists ( "
+								 + " SELECT 1 FROM q2 b,block_grid_mapping c,block_man d,q1 e "
+								 + " WHERE "
+								 	+ " b.block_man_id = d.block_man_id and d.block_id = c.block_id and c.grid_id = e.grid_id "
+								 	+ " and a.subtask_id = b.subtask_id "
+								 + " ) "
+					+ "),"
+					+ " q5 AS "//产品表(成功或失败)右关联可出品的子任务列表
+					+ " ("
+						+ "	SELECT "
+							+ " NVL(p.PRODUCE_ID,0) PRODUCE_ID,p.CREATE_DATE,NVL(p.PRODUCE_STATUS,4) PRODUCE_STATUS,s.SUBTASK_ID,NVL(p.USER_ID,0) CREATEUSER_ID,"
+							+ "	s.BLOCK_MAN_ID,s.BLOCK_MAN_NAME,s.TYPE TASK_TYPE,s.DAY_PRODUCE_PLAN_START_DATE,s.DAY_PRODUCE_PLAN_END_DATE"
+						+ "	FROM q3 p "
+						+ " RIGHT JOIN "
+							 + " q4 s "
+						+ " ON "
+							 + " p.SUBTASK_ID = s.SUBTASK_ID "
+						+ " WHERE 1=1 "
+						+ conditionStr  //查询条件
+						+ " ORDER BY PRODUCE_STATUS,DAY_PRODUCE_PLAN_START_DATE,CREATE_DATE DESC"
+					+ " )"
+					+ " SELECT /*+FIRST_ROWS ORDERED*/"
+					+ " T.*, (SELECT COUNT(1) FROM q5) AS TOTAL_RECORD_NUM"
+					+ "  FROM (SELECT T.*, ROWNUM AS ROWNUM_ FROM q5 T WHERE ROWNUM <= "+pageEndNum+") T"
+					+ " WHERE T.ROWNUM_ >= "+pageStartNum;
+				log.debug("查询日初评列表sql: "+sql);
+				QueryRunner run=new QueryRunner();
+				ResultSetHandler<Page> rsHandler=new ResultSetHandler<Page>() {
+					public Page handle(ResultSet rs) throws SQLException{
+						Page page = new Page(currentPageNum);
+						int totalCount=0;
+						List<Map<String,Object>> result=new ArrayList<Map<String,Object>>();
+						while(rs.next()){
+							Map<String,Object> map=new HashMap<String, Object>();
+							map.put("blockManId", rs.getInt("BLOCK_MAN_ID"));
+							map.put("blockManName", rs.getString("BLOCK_MAN_NAME"));
+							map.put("taskType", rs.getInt("TYPE"));
+							map.put("dayProducePlanStartDate", DateUtils.dateToString(rs.getTimestamp("DAY_PRODUCE_PLAN_START_DATE"), "yyyyMMdd"));
+							map.put("dayProducePlanEndDate", DateUtils.dateToString(rs.getTimestamp("DAY_PRODUCE_PLAN_END_DATE"), "yyyyMMdd"));
+							map.put("createDate", DateUtils.dateToString(rs.getTimestamp("CREATE_DATE")));
+							map.put("produceId", rs.getInt("PRODUCE_ID"));
+							map.put("produceStatus", rs.getInt("PRODUCE_STATUS"));
+							map.put("createUserId", rs.getInt("CREATE_USER_ID"));
+							map.put("subtaskId", rs.getInt("SUBTASK_ID"));
+							
+							//CLOB inforGeo = (CLOB) rs.getClob("PAR");
+							//String inforGeo1 = StringUtil.ClobToString(inforGeo);
+							//map.put("parameter",inforGeo1);
+							//map.put("parameter",rs.getString("PAR"));
+							if(totalCount==0){totalCount=rs.getInt("TOTAL_RECORD_NUM");}
+							result.add(map);
+						}
+						page.setTotalCount(totalCount);
+						page.setResult(result);
+						return page;
 					}
-					page.setTotalCount(totalCount);
-					page.setResult(result);
-					return page;
-				}
-			};		
-			
-			return run.query(conn, sql,rsHandler);
+				};
+				return run.query(conn, sql,rsHandler);
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -220,4 +323,13 @@ public class ProduceService {
 		}
 	}
 
+	public static void main(String[] args) {
+		List selectParamList = new ArrayList<Integer>();
+		selectParamList.add(1);
+		selectParamList.add(2);
+		selectParamList.add(3);
+		
+		String a = selectParamList.toString();
+		System.out.println(a);
+	}
 }

@@ -1,6 +1,7 @@
 
 package com.navinfo.dataservice.api.man.model.subtask;
 
+import java.sql.Timestamp;
 import java.util.List;
 
 
@@ -34,7 +35,91 @@ public class SubtaskQuery<JSONObject> extends SubtaskListByUser {
 	private int percent;
 	
 	private JSONObject geometryJSON;
+	//***************zl 2016.11.04*****************
+		private Integer qualitySubtaskId ;
+		private Integer isQuality;
+		
+		private Integer qualityExeUserId ;
+		private String qualityPlanStartDate ;
+		private String qualityPlanEndDate;
 	
+		public Integer getQualitySubtaskId() {
+			return qualitySubtaskId;
+		}
+		public void setQualitySubtaskId(Integer qualitySubtaskId) {
+			this.qualitySubtaskId = qualitySubtaskId;
+		}
+		public Integer getIsQuality() {
+			return isQuality;
+		}
+		public void setIsQuality(Integer isQuality) {
+			this.isQuality = isQuality;
+		}
+		public Integer getQualityExeUserId() {
+			return qualityExeUserId;
+		}
+		public void setQualityExeUserId(Integer qualityExeUserId) {
+			this.qualityExeUserId = qualityExeUserId;
+		}
+		public String getQualityPlanStartDate() {
+			return qualityPlanStartDate;
+		}
+		public void setQualityPlanStartDate(String qualityPlanStartDate) {
+			this.qualityPlanStartDate = qualityPlanStartDate;
+		}
+		public String getQualityPlanEndDate() {
+			return qualityPlanEndDate;
+		}
+		public void setQualityPlanEndDate(String qualityPlanEndDate) {
+			this.qualityPlanEndDate = qualityPlanEndDate;
+		}
+	public SubtaskQuery (Integer subtaskId ,
+			String name,
+			Integer status,
+			String descp,
+			Integer stage,
+			Integer type,
+			List<Integer> gridIds,
+			String geometry,
+			String planStartDate,
+			String planEndDate,
+			Integer dbId,
+			Integer blockId,
+			Integer blockManId,
+			String blockManName,
+			Integer cityId,
+			Integer taskId,
+			String taskName,
+			String executer,
+			Integer executerId,
+			Integer percent,
+			String version,
+			JSONObject geometryJSON
+			, Integer qualitySubtaskId, Integer isQuality, Integer qualityExeUserId,
+			String qualityPlanStartDate, String qualityPlanEndDate
+			){
+		super(subtaskId, name, stage, type, status, descp, dbId,gridIds,geometry,planStartDate,planEndDate);
+		this.setExecuterId(executerId);
+		this.executer = executer;
+
+		this.blockId=blockId ;
+		this.blockManId=blockManId ;
+		this.blockManName = blockManName;
+		
+		this.cityId=cityId ;
+		this.taskId=taskId ;
+		this.taskName = taskName;
+
+		this.percent=percent ;
+		this.version = version;
+		
+		this.geometryJSON = geometryJSON;
+		this.qualitySubtaskId = qualitySubtaskId;
+		this.isQuality = isQuality;
+		this.qualityExeUserId = qualityExeUserId;
+		this.qualityPlanStartDate = qualityPlanStartDate;
+		this.qualityPlanEndDate = qualityPlanEndDate;
+	}
 	public SubtaskQuery (Integer subtaskId ,
 			String name,
 			Integer status,

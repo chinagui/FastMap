@@ -35,17 +35,17 @@ public class Operation implements IOperation {
 	/**
 	 * key为退出线pid，value为退出线线段
 	 */
-	private Map<Integer, LineSegment> outLinkSegmentMap;
+	private Map<Integer, LineSegment> outLinkSegmentMap = new HashMap<Integer, LineSegment>();;
 
 	/**
 	 * key为退出线pid， value为经过线pid列表
 	 */
-	private Map<Integer, List<Integer>> viaLinkPidMap;
+	private Map<Integer, List<Integer>> viaLinkPidMap = new HashMap<Integer, List<Integer>>();;
 
 	/**
 	 * key为退出线pid，value为交限类型
 	 */
-	private Map<Integer, Integer> relationTypeMap;
+	private Map<Integer, Integer> relationTypeMap = new HashMap<Integer, Integer>();
 
 	public Operation(Command command, Connection conn) {
 		this.command = command;
@@ -74,9 +74,16 @@ public class Operation implements IOperation {
 		lane.setLaneInfo(command.getLaneInfo());
 
 		List<Integer> outLinkPids = command.getOutLinkPids();
-
-		this.calViaLinks(conn, command.getInLinkPid(), command.getNodePid(),
-				outLinkPids);
+		
+		for(Integer outLink : outLinkPids)
+		{
+			List<Integer> outLinkList = new ArrayList<>();
+			
+			outLinkList.add(outLink);
+			
+			this.calViaLinks(conn, command.getInLinkPid(), command.getNodePid(),
+					outLinkList);
+		}
 
 		List<Set<Integer>> dirs = new ArrayList<Set<Integer>>();
 
@@ -177,12 +184,9 @@ public class Operation implements IOperation {
 			if (set.contains(reachDir)) {
 
 				inLaneInfo += Math.pow(2, size - 1 - i);
-
-				inLaneInfo = inLaneInfo << (16 - size); // 向 左补位至16位
-				
 			}
 		}
-
+		inLaneInfo = inLaneInfo << (16 - size); // 向 左补位至16位
 		return inLaneInfo;
 	}
 
@@ -204,7 +208,8 @@ public class Operation implements IOperation {
 			busLaneInfo += Math.pow(2, size - 1 - index);
 
 		}
-
+		busLaneInfo = busLaneInfo << (16 - size); // 向 左补位至16位
+		
 		return busLaneInfo;
 	}
 
@@ -233,22 +238,57 @@ public class Operation implements IOperation {
 
 		int rightAddCount = 0;
 		
-		String[] splits = laneInfo.split(",");
-
+		String[] splits = laneInfo.split(",");		
+	
+		//计算左附加车道数
 		for (int i = 0; i < splits.length; i++) {
 
 			String split = splits[i];
 
 			if (split.startsWith("[")) {
-				
-				split = split.substring(1, split.length() - 1);
-				
-				if (i == 0) {
-					leftAddCount = 1;
-				} else {
-					rightAddCount = 1;
-				}
+
+				leftAddCount += 1;
+
+			} else {
+				//不是附加车道
+				break;
 			}
+		}
+
+		//计算右附加车道数
+		for (int i = splits.length - 1; i >= 0; i--) {
+
+			String split = splits[i];
+
+			if (split.startsWith("[")) {
+
+				rightAddCount += 1;
+
+			} else {
+				//不是附加车道
+				break;
+			}
+		}
+
+		if (leftAddCount == splits.length && leftAddCount != 0) {
+
+			if (splits.length % 2 == 1) {
+
+				leftAddCount = (splits.length - 1) / 2 + 1;
+
+				rightAddCount = (splits.length - 1) / 2;
+
+			} else {
+
+				leftAddCount = splits.length / 2;
+
+				rightAddCount = splits.length / 2;
+			}
+		}
+
+		for (int i = 0; i < splits.length; i++) {
+
+			String split = splits[i];	
 
 			if (split.contains("<")) {
 
@@ -424,12 +464,6 @@ public class Operation implements IOperation {
 	 */
 	private void calViaLinks(Connection conn, int inLinkPid, int nodePid,
 			List<Integer> outLinkPids) throws Exception {
-
-		outLinkSegmentMap = new HashMap<Integer, LineSegment>();
-
-		viaLinkPidMap = new HashMap<Integer, List<Integer>>();
-
-		relationTypeMap = new HashMap<Integer, Integer>();
 
 		String sql = "select * from table(package_utils.get_restrict_points(:1,:2,:3))";
 

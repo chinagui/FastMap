@@ -1,13 +1,17 @@
 package org.navinfo.dataservice.engine.meta;
 
-import net.sf.json.JSONArray;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.util.ResponseUtils;
+import com.navinfo.dataservice.engine.meta.area.ScPointAdminArea;
 import com.navinfo.dataservice.engine.meta.kindcode.KindCodeSelector;
+import com.navinfo.dataservice.engine.meta.patternimage.PatternImageSelector;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 public class KindCodeTest {
 	
@@ -23,13 +27,18 @@ public class KindCodeTest {
 	public void testQueryTopKindInfo() {
 		try {
 			
-			KindCodeSelector selector = new KindCodeSelector();
+			PatternImageSelector selector = new PatternImageSelector();
 
-			JSONArray jsonObject = selector.queryTopKindInfo();
+			byte[] data = selector.getById("ddd");
 
 
-			System.out.println(jsonObject);
+			if (data.length == 0) {
+				throw new Exception("id值不存在");
+			}
+			
+			System.out.println(data);
 		} catch (Exception e) {
+			System.out.println(ResponseUtils.assembleFailResult(e.getMessage()));
 			e.printStackTrace();
 		}
 
@@ -84,6 +93,18 @@ public class KindCodeTest {
 
 			System.out.println(data);
 		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void testAdmin() {
+		ScPointAdminArea admin = new ScPointAdminArea();
+		try {
+			JSONObject ret = admin.getAdminArea(100, 1, "", "");
+			System.out.println(ret);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}

@@ -39,7 +39,7 @@ public class RdLane001 extends baseRule {
 				RdLaneConnexity laneObj=(RdLaneConnexity) obj;
 				Map<String, Object> changedFields=laneObj.changedFields();
 				//新增执行该检查
-				if(changedFields!=null){continue;}
+				if(changedFields!=null && changedFields.size()>0){continue;}
 				List<Integer> outLinkPidList=new ArrayList<Integer>();
 				for(IRow topo:laneObj.getTopos()){
 					outLinkPidList.add(((RdLaneTopology) topo).getOutLinkPid());

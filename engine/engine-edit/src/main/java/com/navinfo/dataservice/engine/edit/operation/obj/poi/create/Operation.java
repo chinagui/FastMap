@@ -1,9 +1,12 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.poi.create;
 
 import java.sql.Connection;
+import java.text.DecimalFormat;
+
 
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -22,7 +25,7 @@ import net.sf.json.JSONObject;
  * @author 赵凯凯
  * @version V1.0
  * @Title: Operation.java
- * @Description: 新增行政区划代表点操作类
+ * @Description: 新增POI
  * @date 2016年6月15日 下午2:31:50
  */
 public class Operation implements IOperation {
@@ -88,7 +91,7 @@ public class Operation implements IOperation {
 
             ixPoi.setSide(side);
         }
-
+        ixPoi.setPoiNum(this.getFid());//对应fid
         result.insertObject(ixPoi, ObjStatus.INSERT, ixPoi.getPid());
 
         generationIxPoiName(ixPoi, result);
@@ -115,5 +118,12 @@ public class Operation implements IOperation {
         ixPoiName.setNameType(2);
         ixPoiName.setLangCode("CHI");
         result.insertObject(ixPoiName, ObjStatus.INSERT, poi.pid());
+    }
+    //获取FID
+    private String getFid(){
+    	String date = StringUtils.getCurrentTime() ;
+    	String userId = String.valueOf(this.command.getUserId());
+    	return org.apache.commons.lang.StringUtils.leftPad(userId.concat(date), 20, "0");
+    	
     }
 }

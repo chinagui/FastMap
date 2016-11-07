@@ -26,6 +26,8 @@ import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryCollection;
+import com.vividsolutions.jts.geom.LineString;
 
 import net.sf.json.JSONObject;
 
@@ -122,8 +124,24 @@ public class Operation implements IOperation {
 				while (it.hasNext()) {
 					String meshIdStr = it.next();
 					Geometry geomInter = MeshUtils.linkInterMeshPolygon(geo, GeoTranslator.transform(MeshUtils.mesh2Jts(meshIdStr),1,5));
-					geomInter = GeoTranslator.geojson2Jts(GeoTranslator.jts2Geojson(geomInter), 1, 5);
-					RdLinkOperateUtils.createRdLinkWithMesh(geomInter, maps, link, result, links);
+					if(geomInter instanceof GeometryCollection)
+					{
+						int geoNum = geomInter.getNumGeometries();
+						for (int i = 0; i < geoNum; i++) {
+							Geometry subGeo = geomInter.getGeometryN(i);
+							if (subGeo instanceof LineString) {
+								subGeo = GeoTranslator.geojson2Jts(GeoTranslator.jts2Geojson(subGeo), 1, 5);
+
+								RdLinkOperateUtils.createRdLinkWithMesh(subGeo, maps, link, result, links);
+							}
+						}
+					}
+					else
+					{
+						geomInter = GeoTranslator.geojson2Jts(GeoTranslator.jts2Geojson(geomInter), 1, 5);
+
+						RdLinkOperateUtils.createRdLinkWithMesh(geomInter, maps, link, result, links);
+					}
 
 				}
 				// 添加新生成的RDLINK的集合，该集合用于修改关联要素

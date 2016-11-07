@@ -19,6 +19,7 @@ import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.control.row.query.PoiQuery;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
+import com.navinfo.dataservice.engine.batch.BatchProcess;
 import com.navinfo.dataservice.engine.edit.service.EditApiImpl;
 import com.navinfo.navicommons.database.sql.DBUtils;
 

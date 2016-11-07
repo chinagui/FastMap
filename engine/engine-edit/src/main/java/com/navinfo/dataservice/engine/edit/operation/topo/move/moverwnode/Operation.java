@@ -27,6 +27,8 @@ import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryCollection;
+import com.vividsolutions.jts.geom.LineString;
 
 import net.sf.json.JSONObject;
 
@@ -91,11 +93,27 @@ public class Operation implements IOperation {
 
 					String meshIdStr = it.next();
 
-					Geometry geomInter = MeshUtils.linkInterMeshPolygon(geo, GeoTranslator.transform(MeshUtils.mesh2Jts(meshIdStr),1,5));
+					Geometry geomInter = MeshUtils.linkInterMeshPolygon(geo,
+							GeoTranslator.transform(MeshUtils.mesh2Jts(meshIdStr), 1, 5));
+					
+					if(geomInter instanceof GeometryCollection)
+					{
+						int geoNum = geomInter.getNumGeometries();
+						for (int i = 0; i < geoNum; i++) {
+							Geometry subGeo = geomInter.getGeometryN(i);
+							if (subGeo instanceof LineString) {
+								subGeo = GeoTranslator.geojson2Jts(GeoTranslator.jts2Geojson(subGeo), 1, 5);
 
-					geomInter = GeoTranslator.geojson2Jts(GeoTranslator.jts2Geojson(geomInter), 1, 5);
+								RwLinkOperateUtils.createRwLinkWithMesh(subGeo, maps, result, link);
+							}
+						}
+					}
+					else
+					{
+						geomInter = GeoTranslator.geojson2Jts(GeoTranslator.jts2Geojson(geomInter), 1, 5);
 
-					RwLinkOperateUtils.createRwLinkWithMesh(geomInter, maps, result,link);
+						RwLinkOperateUtils.createRwLinkWithMesh(geomInter, maps, result, link);
+					}
 				}
 
 				handleRdGsc(link, result);
@@ -146,7 +164,7 @@ public class Operation implements IOperation {
 				break;
 			}
 		}
-		//图幅号发生改变后更新图幅号：先删除，后新增
+		// 图幅号发生改变后更新图幅号：先删除，后新增
 		if (isChangeMesh) {
 			for (IRow row : rwNode.getMeshes()) {
 				RwNodeMesh nodeMesh = (RwNodeMesh) row;

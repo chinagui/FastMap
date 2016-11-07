@@ -238,22 +238,57 @@ public class Operation implements IOperation {
 
 		int rightAddCount = 0;
 		
-		String[] splits = laneInfo.split(",");
-
+		String[] splits = laneInfo.split(",");		
+	
+		//计算左附加车道数
 		for (int i = 0; i < splits.length; i++) {
 
 			String split = splits[i];
 
 			if (split.startsWith("[")) {
-				
-				split = split.substring(1, split.length() - 1);
-				
-				if (i == 0) {
-					leftAddCount = 1;
-				} else {
-					rightAddCount = 1;
-				}
+
+				leftAddCount += 1;
+
+			} else {
+				//不是附加车道
+				break;
 			}
+		}
+
+		//计算右附加车道数
+		for (int i = splits.length - 1; i >= 0; i--) {
+
+			String split = splits[i];
+
+			if (split.startsWith("[")) {
+
+				rightAddCount += 1;
+
+			} else {
+				//不是附加车道
+				break;
+			}
+		}
+
+		if (leftAddCount == splits.length && leftAddCount != 0) {
+
+			if (splits.length % 2 == 1) {
+
+				leftAddCount = (splits.length - 1) / 2 + 1;
+
+				rightAddCount = (splits.length - 1) / 2;
+
+			} else {
+
+				leftAddCount = splits.length / 2;
+
+				rightAddCount = splits.length / 2;
+			}
+		}
+
+		for (int i = 0; i < splits.length; i++) {
+
+			String split = splits[i];	
 
 			if (split.contains("<")) {
 

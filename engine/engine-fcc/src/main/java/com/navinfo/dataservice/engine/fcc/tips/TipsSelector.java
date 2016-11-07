@@ -302,7 +302,10 @@ public class TipsSelector {
 					m.put("e", deep.getString("src"));
 				} else if (type == 1209) {
 					m.put("c", deep.getString("name"));
-				} else if (type == 1510 || type == 1514 || type == 1501
+				} else if (type == 1202) {
+					m.put("c", String.valueOf(deep.getInt("num")));
+				}
+				else if (type == 1510 || type == 1514 || type == 1501
 						|| type == 1515 || type == 1502 || type == 1503
 						|| type == 1504 || type == 1505 || type == 1506
 						|| type == 1508 || type == 1513 || type == 1512
@@ -1109,9 +1112,10 @@ public class TipsSelector {
 		// 20, types));
 
 		JSONArray grids = new JSONArray();
-		grids.add(60560302);
-		grids.add(59567332);
-		grids.add(59567322);
+		grids.add(59567513);
+		grids.add(59567513);
+		grids.add(59567503);
+		
 		String wkt = GridUtils.grids2Wkt(grids);
 
 		System.out.println("0000000000----" + wkt);

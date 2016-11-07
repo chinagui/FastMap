@@ -1,56 +1,31 @@
 
 package com.navinfo.dataservice.web.man.controller;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-
 import javax.servlet.http.HttpServletRequest;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-
-import org.apache.commons.dbutils.ResultSetHandler;
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.ModelMap;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
-
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.man.model.subtask.SubtaskList;
 import com.navinfo.dataservice.api.man.model.subtask.SubtaskListByUser;
 import com.navinfo.dataservice.api.man.model.subtask.SubtaskListByWkt;
 import com.navinfo.dataservice.api.man.model.subtask.SubtaskQuery;
-import com.navinfo.dataservice.commons.config.SystemConfigFactory;
-import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.json.JsonOperation;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
-import com.navinfo.dataservice.commons.util.DateUtils;
-import com.navinfo.dataservice.engine.man.grid.GridService;
-import com.navinfo.dataservice.engine.man.subtask.SubtaskOperation;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskService;
-import com.navinfo.dataservice.engine.man.task.TaskService;
 import com.navinfo.dataservice.web.man.page.SubtaskListByUserPage;
 import com.navinfo.dataservice.web.man.page.SubtaskListPage;
 import com.navinfo.dataservice.web.man.response.NullResponse;
@@ -59,16 +34,9 @@ import com.navinfo.dataservice.web.man.response.SubtaskListByWktResponse;
 import com.navinfo.dataservice.web.man.response.SubtaskListResponse;
 import com.navinfo.dataservice.web.man.response.SubtaskQueryResponse;
 import com.navinfo.navicommons.database.Page;
-import com.navinfo.navicommons.geo.computation.GridUtils;
 import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiImplicitParam;
-import com.wordnik.swagger.annotations.ApiImplicitParams;
-import com.wordnik.swagger.annotations.ApiModel;
-import com.wordnik.swagger.annotations.ApiModelProperty;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
-import com.wordnik.swagger.annotations.ApiResponses;
-import com.wordnik.swagger.annotations.ApiResponse;
 
 
 /** 
@@ -117,6 +85,10 @@ public class SubtaskController extends BaseController {
 			Integer qualityExeUserId = dataJson.getInt("qualityExeUserId");
 			String qualityPlanStartDate = dataJson.getString("qualityPlanStartDate");
 			String qualityPlanEndDate = dataJson.getString("qualityPlanEndDate");
+			//删除传入参数的对应键值对,因为bean中没有这些字段
+			dataJson.discard("qualityExeUserId");
+			dataJson.discard("qualityPlanStartDate");
+			dataJson.discard("qualityPlanEndDate");
 			SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
 			long userId = tokenObj.getUserId();
 			if(qualityExeUserId != 0 ){//表示要创建质检子任务
@@ -124,8 +96,8 @@ public class SubtaskController extends BaseController {
 				Subtask qualityBean = SubtaskService.getInstance().createSubtaskBean(userId,dataJson);
 				qualityBean.setIsQuality(1);
 				qualityBean.setExeUserId(qualityExeUserId);
-				qualityBean.setPlanStartDate((Timestamp) df.parse(qualityPlanStartDate));
-				qualityBean.setPlanEndDate((Timestamp) df.parse(qualityPlanEndDate));
+				qualityBean.setPlanStartDate(new Timestamp(df.parse(qualityPlanStartDate).getTime()));
+				qualityBean.setPlanEndDate(new Timestamp(df.parse(qualityPlanEndDate).getTime()));
 				//创建质检子任务 subtask	
 				Integer qualitySubtaskId = SubtaskService.getInstance().createQualitySubtask(qualityBean);	
 				
@@ -371,19 +343,23 @@ public class SubtaskController extends BaseController {
 				//正常修改子任务
 				Subtask subtask = (Subtask)JsonOperation.jsonToBean(subtaskArray.getJSONObject(i),Subtask.class);
 				
+				//删除 质检子任务id ,因为质检子任务Subtask实体类里不应该有这个字段
+				subtaskArray.getJSONObject(i).discard("qualitySubtaskId");
 				if(qualitySubtaskId != 0){//非0的时候，表示要修改质检子任务
 					Subtask qualitySubtask = (Subtask)JsonOperation.jsonToBean(subtaskArray.getJSONObject(i),Subtask.class);//生成质检子任务的bean
 					qualitySubtask.setSubtaskId(qualitySubtaskId);
 					qualitySubtask.setExeUserId(qualityExeUserId);
-					qualitySubtask.setPlanStartDate((Timestamp) df.parse(qualityPlanStartDate));
-					qualitySubtask.setPlanEndDate((Timestamp)df.parse(qualityPlanEndDate));
+					qualitySubtask.setPlanStartDate(new Timestamp(df.parse(qualityPlanStartDate).getTime()));
+					qualitySubtask.setPlanEndDate(new Timestamp(df.parse(qualityPlanEndDate).getTime()));
 					subtaskList.add(qualitySubtask);//将质检子任务也加入修改列表
 				}else{
 					if(qualityExeUserId != 0){//qualitySubtaskId=0，且qualityExeUserId非0的时候，表示要创建质检子任务
-						subtaskArray.getJSONObject(i).discard("subtaskId");//删除subtaskId ,新建质检子任务
-						Subtask qualitySubtask = (Subtask)JsonOperation.jsonToBean(subtaskArray.getJSONObject(i),Subtask.class);//生成质检子任务的bean
-						qualitySubtask.setPlanStartDate((Timestamp) df.parse(qualityPlanStartDate));
-						qualitySubtask.setPlanEndDate((Timestamp)df.parse(qualityPlanEndDate));
+						//subtaskArray.getJSONObject(i).discard("subtaskId");//删除subtaskId ,新建质检子任务
+						//Subtask qualitySubtask = (Subtask)JsonOperation.jsonToBean(subtaskArray.getJSONObject(i),Subtask.class);//生成质检子任务的bean
+						Subtask qualitySubtask = SubtaskService.getInstance().queryBySubtaskIdS(subtaskArray.getJSONObject(i).getInt("subtaskId"));
+						qualitySubtask.setSubtaskId(null);
+						qualitySubtask.setPlanStartDate(new Timestamp(df.parse(qualityPlanStartDate).getTime()));
+						qualitySubtask.setPlanEndDate(new Timestamp(df.parse(qualityPlanEndDate).getTime()));
 						qualitySubtask.setIsQuality(1);//表示此bean是质检子任务
 						qualitySubtask.setExeUserId(qualityExeUserId);
 						//创建质检子任务 subtask	

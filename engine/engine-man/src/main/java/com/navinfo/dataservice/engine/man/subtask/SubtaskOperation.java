@@ -70,6 +70,16 @@ public class SubtaskOperation {
 	}
 	
 	
+	/**
+	 * @Title: updateSubtask
+	 * @Description: 修改子任务(修)(第七迭代)
+	 * @param conn
+	 * @param bean
+	 * @throws Exception  void
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2016年11月7日 下午2:21:21 
+	 */
 	public static void updateSubtask(Connection conn,Subtask bean) throws Exception{
 		try{
 			String baseSql = "update SUBTASK set ";
@@ -104,6 +114,17 @@ public class SubtaskOperation {
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql += " STATUS= " + bean.getStatus();
 			};
+			//修改新增的两个字段
+			if (bean!=null&&bean.getQualitySubtaskId()!=null && StringUtils.isNotEmpty(bean.getQualitySubtaskId().toString())){
+				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
+				updateSql += " QUALITY_SUBTASK_ID= " + bean.getQualitySubtaskId();
+			};
+			if (bean!=null&&bean.getIsQuality()!=null && StringUtils.isNotEmpty(bean.getIsQuality().toString())){
+				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
+				updateSql += " IS_QUALITY= " + bean.getIsQuality();
+			};
+			
+			
 
 			if (bean!=null&&bean.getSubtaskId()!=null && StringUtils.isNotEmpty(bean.getSubtaskId().toString())){
 				updateSql += " where SUBTASK_ID= " + bean.getSubtaskId();
@@ -411,6 +432,23 @@ public class SubtaskOperation {
 			}else{
 				column += ", TASK_ID";
 				value.add(bean.getTaskId());
+				values += ",?";
+			}
+			
+			//判断是否有QUALITY_SUBTASK_ID,IS_QUALITY
+			if(bean.getQualitySubtaskId() != null && 0!=bean.getQualitySubtaskId()){
+				column += ", QUALITY_SUBTASK_ID";
+				value.add(bean.getQualitySubtaskId());
+				values += ",?)";
+
+			}
+			if(bean.getIsQuality() != null ){
+				column += ", IS_QUALITY";
+				value.add(bean.getIsQuality());
+				values += ",?";
+			}else{
+				column += ", IS_QUALITY";
+				value.add(0);
 				values += ",?";
 			}
 			

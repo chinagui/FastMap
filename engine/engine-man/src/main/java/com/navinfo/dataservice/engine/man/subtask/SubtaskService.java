@@ -103,7 +103,7 @@ public class SubtaskService {
 			if(bean.getStatus()==1){
 				SubtaskOperation.pushMessage(conn,bean);
 			}	
-
+			log.debug("子任务创建成功!");
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -273,6 +273,7 @@ public class SubtaskService {
 	/*
 	 * 根据subtaskId查询一个任务的详细信息。 参数为Subtask对象
 	 */
+	
 	public Subtask queryBySubtaskIdS(Integer subtaskId) throws ServiceException {
 		Connection conn = null;
 		try {
@@ -309,15 +310,13 @@ public class SubtaskService {
 			String fromSql_group = " , user_group ug";
 
 			String conditionSql_task = " where st.task_id = t.task_id "
-					+ " AND .is_quality = 0" //排除 Subtask 表中的质检子任务
-					+ " and t.city_id = c.city_id "
-					+ " and c.region_id = r.region_id "
+					+ "and t.city_id = c.city_id "
+					+ "and c.region_id = r.region_id "
 					+ " and st.SUBTASK_ID=" + subtaskId;
 
 			String conditionSql_block = " where st.block_man_id = bm.block_man_id "
-					+ " AND .is_quality = 0" //排除 Subtask 表中的质检子任务
-					+ " and b.region_id = r.region_id "
-					+ " and bm.block_id = b.block_id"
+					+ "and b.region_id = r.region_id "
+					+ "and bm.block_id = b.block_id"
 					+ " and st.SUBTASK_ID=" + subtaskId;
 			
 			String conditionSql_user = " and st.exe_user_id = u.user_id";
@@ -343,12 +342,6 @@ public class SubtaskService {
 						subtask.setPlanEndDate(rs.getTimestamp("PLAN_END_DATE"));
 						subtask.setDescp(rs.getString("DESCP"));
 						subtask.setStatus(rs.getInt("STATUS"));
-						
-						//**************zl 2016.11.04 ******************
-						subtask.setQualitySubtaskId(rs.getInt("qualitySubtaskId"));
-						subtask.setQualityExeUserId(rs.getInt("qualityExeUserId"));
-						subtask.setQualityPlanStartDate(rs.getTimestamp("qualityPlanStartDate"));
-						subtask.setQualityPlanEndDate(rs.getTimestamp("qualityPlanEndDate"));
 						
 						STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
 						try {
@@ -438,14 +431,14 @@ public class SubtaskService {
 
 			String fromSql_task = " from subtask st "
 					//左外关联质检子任务表
-					+ " left join (select s.SUBTASK_ID ,s.EXE_USER_ID qualityExeUserId,s.PLAN_START_DATE as qualityPlanStartDate,s.PLAN_END_DATE as qualityPlanEndDate from subtask s where s.is_quality = 1 ) Q  on st.quality_subtask_id = Q.subtask_id,"
+					+ " left join (select s.SUBTASK_ID ,s.EXE_USER_ID qualityExeUserId,s.PLAN_START_DATE as qualityPlanStartDate,s.PLAN_END_DATE as qualityPlanEndDate from subtask s where s.is_quality = 1 ) Q  on st.quality_subtask_id = Q.subtask_id "
 					+ ",task t"
 					+ ",city c"
 					+ ",region r";
 
 			String fromSql_block = " from subtask st"
 					//左外关联质检子任务表
-					+ " left join (select s.SUBTASK_ID ,s.EXE_USER_ID qualityExeUserId,s.PLAN_START_DATE as qualityPlanStartDate,s.PLAN_END_DATE as qualityPlanEndDate from subtask s where s.is_quality = 1 ) Q  on st.quality_subtask_id = Q.subtask_id,"
+					+ " left join (select s.SUBTASK_ID ,s.EXE_USER_ID qualityExeUserId,s.PLAN_START_DATE as qualityPlanStartDate,s.PLAN_END_DATE as qualityPlanEndDate from subtask s where s.is_quality = 1 ) Q  on st.quality_subtask_id = Q.subtask_id"
 					+ ",block b,block_man bm"
 					+ ",region r,task t";
 			
@@ -560,7 +553,7 @@ public class SubtaskService {
 				}
 	
 			};
-
+			log.debug("queryBySubtaskId: "+selectSql);
 			return run.query(conn, selectSql,rsHandler);
 			
 		} catch (Exception e) {

@@ -98,7 +98,7 @@ public class SubtaskQuery<JSONObject> extends SubtaskListByUser {
 			, Integer qualitySubtaskId, Integer isQuality, Integer qualityExeUserId,
 			String qualityPlanStartDate, String qualityPlanEndDate
 			){
-		super();
+		super(subtaskId, name, stage, type, status, descp, dbId,gridIds,geometry,planStartDate,planEndDate);
 		this.setExecuterId(executerId);
 		this.executer = executer;
 

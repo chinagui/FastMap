@@ -114,14 +114,19 @@ public class CompGeometryUtil {
 															// 可能是polygon，也可能是multipolygon
 		int geoNum = sub.getNumGeometries();
 		for (int i = 0; i < geoNum; i++) {
-			Polygon p = (Polygon) sub.getGeometryN(i);
+			Geometry geo = sub.getGeometryN(i);
+			if(geo instanceof Polygon)
+			{
+				Polygon p = (Polygon) sub.getGeometryN(i);
+				result.add(parseLine(p, mesh));
+			}
+			
 			// 不需要再四舍五入，和图幅多边形intersection，不会产生超过5位精度的形状点
 			// //保留指定精度
 			// for(Coordinate co:p.getCoordinates()){
 			// co.x=DoubleUtil.keepSpecDecimal(co.x);
 			// co.y = DoubleUtil.keepSpecDecimal(co.y);
 			// }
-			result.add(parseLine(p, mesh));
 		}
 		return result;
 	}

@@ -129,13 +129,15 @@ public class TaskController extends BaseController {
 	 */
 	@RequestMapping(value = "/task/close")
 	public ModelAndView close(HttpServletRequest request){
-		try{			
+		try{
+			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));			
 			if(dataJson==null){
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
+			long userId=tokenObj.getUserId();
 			JSONArray taskIds=dataJson.getJSONArray("taskIds");
-			List<Integer> closeTask=TaskService.getInstance().close(JSONArray.toList(taskIds));			
+			List<Integer> closeTask=TaskService.getInstance().close(JSONArray.toList(taskIds),userId);			
 			String msg="任务批量关闭"+closeTask.size()+"个成功，"+(taskIds.size()-closeTask.size())+"个失败";
 			return new ModelAndView("jsonView", success(msg));
 		}catch(Exception e){

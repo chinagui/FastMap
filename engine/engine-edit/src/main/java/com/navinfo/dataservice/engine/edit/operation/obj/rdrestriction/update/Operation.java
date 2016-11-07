@@ -6,8 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
+import org.apache.commons.collections.CollectionUtils;
 
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
@@ -19,8 +18,13 @@ import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionCondition;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionDetail;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionVia;
+import com.navinfo.dataservice.dao.glm.selector.rd.laneconnexity.RdLaneViaSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.restrict.RdRestrictionSelector;
+import com.navinfo.dataservice.engine.edit.utils.CalLinkOperateUtils;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 public class Operation implements IOperation {
 
@@ -35,9 +39,11 @@ public class Operation implements IOperation {
 		this.conn = conn;
 	}
 
-	public Operation(Command command, RdRestriction restrict) {
+	public Operation(Command command, Connection conn, RdRestriction restrict) {
 		this.command = command;
 
+		this.conn = conn;
+		
 		this.restrict = restrict;
 
 	}
@@ -112,6 +118,40 @@ public class Operation implements IOperation {
 								.applyRestrictionDetailPid());
 
 						detail.setRestricPid(restrict.getPid());
+						
+						CalLinkOperateUtils calLinkOperateUtils = new CalLinkOperateUtils();
+
+						int relationShipType = calLinkOperateUtils.getRelationShipType(conn,
+								restrict.getNodePid(), detail.getOutLinkPid());
+						
+						if(relationShipType == 2)
+						{
+							RdLaneViaSelector selector = new RdLaneViaSelector(conn);
+							
+							List<IRow> vias = new ArrayList<IRow>();
+							
+							List<Integer> viaLinkPids = selector.calViaLinks(restrict.getInLinkPid(), restrict.getNodePid(), detail.getOutLinkPid());
+							
+							if(CollectionUtils.isNotEmpty(viaLinkPids))
+							{
+								for(int j=0;j<viaLinkPids.size();j++)
+								{
+									RdRestrictionVia via = new RdRestrictionVia();
+
+									via.setDetailId(detail.getPid());
+
+									via.setSeqNum(j+1);
+
+									via.setLinkPid(viaLinkPids.get(j));
+
+									vias.add(via);
+								}
+							}
+							
+							detail.setVias(vias);
+						}
+						
+						detail.setRelationshipType(relationShipType);
 
 						detail.setMesh(restrict.mesh());
 

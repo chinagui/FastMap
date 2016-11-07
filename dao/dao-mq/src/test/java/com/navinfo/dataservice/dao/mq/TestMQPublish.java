@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.dao.mq;
 
 import org.apache.log4j.Logger;
+import org.junit.Test;
 
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 
@@ -47,7 +48,8 @@ public class TestMQPublish {
 	public static void sendInfoChange(){
 		try{
 			try{
-				MsgPublisher.publish2WorkQueue("Info_Change","{\"Test\":\"Test\"}");
+				MsgPublisher.publish2WorkQueue("Info_Change","{\"geometry\":\"POINT (126.471866 29.836927)\",\"rowkey\":\"1112122121\""
+						+ ",\"INFO_NAME\":\"TEST01\",\"i_level\":1,\"INFO_CONTENT\":\"TEST01\"}");
 			}catch(Exception e){
 				e.printStackTrace();
 			}

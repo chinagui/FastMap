@@ -3,14 +3,16 @@ package com.navinfo.dataservice.control.row.batch;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import org.apache.commons.dbutils.DbUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
-import com.navinfo.dataservice.engine.edit.service.EditApiImpl;
+import com.navinfo.dataservice.commons.util.ExcelReader;
+import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiParking;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
+import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 
 import net.sf.json.JSONObject;
 
@@ -25,25 +27,34 @@ public class BatchProcessTest {
 	
 	@Test
 	public void testGetRdName() {
-		String param = "{\"command\":\"UPDATE\",\"dbId\":46,\"type\":\"IXPOI\",\"objId\":8509,\"data\":{\"names\":[{\"name\":\"大青鱼垂钓园名称批处理\",\"rowId\":\"3E4477FEB8B67097E050A8C083045F3F\",\"pid\":125593674,\"objStatus\":\"UPDATE\"}],\"rowId\":\"3E447527DADC7097E050A8C083041F3F\",\"pid\":8509}}";
-		JSONObject json = JSONObject.fromObject(param);
-		json.put("objId", 8509);
+
 		Connection conn=null;
 		try {
-			conn = DBConnector.getInstance().getConnectionById(46);
-			EditApiImpl editApiImpl = new EditApiImpl(conn);
-			BatchProcess batchProcess = new BatchProcess();
-			batchProcess.execute(json,conn,editApiImpl);
+			conn = DBConnector.getInstance().getConnectionById(17);
+			IxPoiSelector selector = new IxPoiSelector(conn);
+			IxPoi poi = (IxPoi) selector.loadById(4696166, false);
+			JSONObject test = new JSONObject();
+			IxPoiParking parking = (IxPoiParking) poi.getParkings().get(0);
+			test.put("resHigh", 0);
+			parking.fillChangeFields(test);
+			System.out.println(test);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} finally {
 			try {
-				DbUtils.commitAndClose(conn);
+				conn.close();
 			} catch (SQLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
+	}
+	
+	
+	@Test
+	public void stringTest() {
+		String test = "京晟大酒店－会议室";
+		System.out.println(ExcelReader.h2f(test));
 	}
 }

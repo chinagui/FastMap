@@ -11,6 +11,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -32,7 +34,9 @@ import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DateUtilsEx;
 import com.navinfo.dataservice.commons.xinge.XingeUtil;
+import com.navinfo.dataservice.dao.mq.email.EmailPublisher;
 import com.navinfo.dataservice.engine.man.message.MessageOperation;
+import com.navinfo.dataservice.engine.man.message.SendEmail;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskOperation;
 import com.navinfo.dataservice.engine.man.task.TaskOperation;
 import com.navinfo.dataservice.engine.man.userDevice.UserDeviceService;
@@ -159,7 +163,44 @@ public class BlockService {
 				int[] rows = run.batch(conn, createSql, param);
 				updateCount = rows.length;
 			}
-			blockPushMsgByConn(conn,updateBlockList);
+			//发送消息
+			try {
+				//查询blockMan数据
+				List<Map<String, Object>> blockManList = this.getBlockManByBlockManId(conn, updateBlockList);
+				/*block创建/编辑/关闭
+				1.分配的采集作业组组长
+				2.分配的日编作业组组长
+				block变更：XXX(block名称)消息发生变更，请关注*/
+				List<Object[]> msgContentList=new ArrayList<Object[]>();
+				String msgTitle="block编辑";
+				for (Map<String, Object> blockMan : blockManList) {
+					String collectGroupLeader=(String) blockMan.get("collectGroupLeader");
+					String dayEditGroupLeader=(String) blockMan.get("dayEditGroupLeader");
+					if(collectGroupLeader!=null && !collectGroupLeader.isEmpty()){
+						Object[] msgTmp=new Object[3];
+						msgTmp[0]=collectGroupLeader;
+						msgTmp[1]=msgTitle;
+						msgTmp[2]="block变更:"+blockMan.get("blockManName")+"消息发生变更,请关注";
+						msgContentList.add(msgTmp);
+					}
+					if(dayEditGroupLeader!=null && !dayEditGroupLeader.isEmpty()){
+						Object[] msgTmp=new Object[3];
+						msgTmp[0]=dayEditGroupLeader;
+						msgTmp[1]=msgTitle;
+						msgTmp[2]="block变更:"+blockMan.get("blockManName")+"消息发生变更,请关注";
+						msgContentList.add(msgTmp);
+					}
+					
+				}
+				if(msgContentList.size()>0){
+					blockPushMsgByMsg(conn,msgContentList,userId);
+				}
+			} catch (Exception e) {
+				// TODO: handle exception
+				e.printStackTrace();
+				log.error("发送失败,原因:"+e.getMessage(), e);
+			}
+			
 			return updateCount;
 
 		} catch (Exception e) {
@@ -449,7 +490,7 @@ public class BlockService {
 		}
 	}
 */
-	public List<Integer> close(List<Integer> blockManIdList) throws ServiceException {
+	public List<Integer> close(List<Integer> blockManIdList, long userId) throws ServiceException {
 		Connection conn = null;
 		try {
 
@@ -468,6 +509,44 @@ public class BlockService {
 					unClosedBlocks.add(blockManIdList.get(i));
 				}
 			}
+			//发送消息
+			try {
+				//查询blockMan数据
+				List<Map<String, Object>> blockManList = this.getBlockManByBlockManId(conn, blockReadyToClose);
+				/*block创建/编辑/关闭
+				1.分配的采集作业组组长
+				2.分配的日编作业组组长
+				block关闭：XXX(block名称)已关闭，请关注*/
+				List<Object[]> msgContentList=new ArrayList<Object[]>();
+				String msgTitle="block关闭";
+				for (Map<String, Object> blockMan : blockManList) {
+					String collectGroupLeader=(String) blockMan.get("collectGroupLeader");
+					String dayEditGroupLeader=(String) blockMan.get("dayEditGroupLeader");
+					if(collectGroupLeader!=null && !collectGroupLeader.isEmpty()){
+						Object[] msgTmp=new Object[3];
+						msgTmp[0]=collectGroupLeader;
+						msgTmp[1]=msgTitle;
+						msgTmp[2]="block关闭:"+blockMan.get("blockManName")+"已关闭,请关注";
+						msgContentList.add(msgTmp);
+					}
+					if(dayEditGroupLeader!=null && !dayEditGroupLeader.isEmpty()){
+						Object[] msgTmp=new Object[3];
+						msgTmp[0]=dayEditGroupLeader;
+						msgTmp[1]=msgTitle;
+						msgTmp[2]="block关闭:"+blockMan.get("blockManName")+"已关闭,请关注";
+						msgContentList.add(msgTmp);
+					}
+					
+				}
+				if(msgContentList.size()>0){
+					blockPushMsgByMsg(conn,msgContentList,userId);
+				}
+			} catch (Exception e) {
+				// TODO: handle exception
+				e.printStackTrace();
+				log.error("发送失败,原因:"+e.getMessage(), e);
+			}
+			
 			return unClosedBlocks;
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -724,7 +803,54 @@ public class BlockService {
 		}
 	}*/
 	
-	private String blockPushMsgByConn(Connection conn,List blockManIds) throws Exception {
+	/**
+	 * 查询blockMan数据
+	 * @author Han Shaoming
+	 * @param conn
+	 * @param blockManIds
+	 * @return
+	 * @throws Exception
+	 */
+	private List<Map<String,Object>> getBlockManByBlockManId(Connection conn,List blockManIds) throws Exception{
+		try {
+			if (blockManIds.size()==0){
+				return null;
+			}
+			String BlockIds = "(";
+			BlockIds += StringUtils.join(blockManIds.toArray(), ",") + ")";
+			String selectSql = "select DISTINCT m.block_man_id,m.block_man_name,(SELECT u.leader_id FROM User_Group u "
+					+ "WHERE u.group_id=m.collect_group_id) collectGroupLeader,(SELECT u.leader_id FROM User_Group u "
+					+ "WHERE u.group_id=m.day_edit_group_id) dayEditGroupLeader from block_man m WHERE m.block_man_id in "
+					+ BlockIds;
+			//System.out.println(selectSql);
+			PreparedStatement stmt = null;
+			try {
+				stmt = conn.prepareStatement(selectSql);
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				log.error(e.getMessage(), e);
+			}
+			ResultSet rs = stmt.executeQuery();
+			List<Map<String,Object>> blockManList = new ArrayList<Map<String,Object>>();
+			while(rs.next()){
+				Map<String,Object> map = new HashMap<String, Object>();
+				map.put("blockManId", rs.getLong("BLOCK_MAN_ID"));
+				map.put("blockManName", rs.getString("BLOCK_MAN_NAME"));
+				map.put("collectGroupLeader", rs.getString("COLLECTGROUPLEADER"));
+				map.put("dayEditGroupLeader", rs.getString("DAYEDITGROUPLEADER"));
+				blockManList.add(map);
+			}
+			return blockManList;
+		}catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:" + e.getMessage(), e);
+		}
+	}
+	
+	/*
+	private String blockPushMsgByConn(Connection conn,List blockManIds, long userId) throws Exception {
 		try {
 			if (blockManIds.size()==0){
 				return "";
@@ -742,14 +868,15 @@ public class BlockService {
 			} catch (SQLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+				log.error(e.getMessage(), e);
 			}
 			ResultSet rs = stmt.executeQuery();
-			List<Object[]> msgContentList=new ArrayList<Object[]>();
-			/*block创建/编辑/关闭
+			block创建/编辑/关闭
 			1.分配的采集作业组组长
 			2.分配的日编作业组组长
-			block:XXX(block名称)内容发生变更，请关注*/
-			String msgTitle="block发布";
+			block:XXX(block名称)内容发生变更，请关注
+			List<Object[]> msgContentList=new ArrayList<Object[]>();
+			String msgTitle="新增block";
 			while (rs.next()) {
 				String collectGroupLeader=rs.getString("COLLECTGROUPLEADER");
 				String dayEditGroupLeader=rs.getString("DAYEDITGROUPLEADER");
@@ -757,20 +884,19 @@ public class BlockService {
 					Object[] msgTmp=new Object[3];
 					msgTmp[0]=collectGroupLeader;
 					msgTmp[1]=msgTitle;
-					msgTmp[2]="block:"+rs.getString("BLOCK_MAN_NAME")+"内容发生变更，请关注";
+					msgTmp[2]="新增block:"+rs.getString("BLOCK_MAN_NAME")+",请关注";
 					msgContentList.add(msgTmp);
 				}
 				if(dayEditGroupLeader!=null && !dayEditGroupLeader.isEmpty()){
 					Object[] msgTmp=new Object[3];
 					msgTmp[0]=dayEditGroupLeader;
 					msgTmp[1]=msgTitle;
-					msgTmp[2]="block:"+rs.getString("BLOCK_MAN_NAME")+"内容发生变更，请关注";
+					msgTmp[2]="新增block:"+rs.getString("BLOCK_MAN_NAME")+",请关注";
 					msgContentList.add(msgTmp);
 				}
 			}
-			
 			if(msgContentList.size()>0){
-				blockPushMsgByMsg(conn,msgContentList);
+				blockPushMsgByMsg(conn,msgContentList,userId);
 				BlockOperation.updateMainBlock(conn, blockManIds);
 			}	
 
@@ -782,12 +908,43 @@ public class BlockService {
 		return "发布成功";
 
 	}
-
-	public String blockPushMsg(List blockManIds) throws Exception {
+	*/
+	
+	public String blockPushMsg(List blockManIds, long userId) throws Exception {
 		Connection conn = null;
 		try {
 			conn = DBConnector.getInstance().getManConnection();
-			this.blockPushMsgByConn(conn,blockManIds);
+			//查询blockMan数据
+			List<Map<String, Object>> blockManList = this.getBlockManByBlockManId(conn, blockManIds);
+			/*block创建/编辑/关闭
+			1.分配的采集作业组组长
+			2.分配的日编作业组组长
+			block:XXX(block名称)，请关注*/
+			List<Object[]> msgContentList=new ArrayList<Object[]>();
+			String msgTitle="block发布";
+			for (Map<String, Object> blockMan : blockManList) {
+				String collectGroupLeader=(String) blockMan.get("collectGroupLeader");
+				String dayEditGroupLeader=(String) blockMan.get("dayEditGroupLeader");
+				if(collectGroupLeader!=null && !collectGroupLeader.isEmpty()){
+					Object[] msgTmp=new Object[3];
+					msgTmp[0]=collectGroupLeader;
+					msgTmp[1]=msgTitle;
+					msgTmp[2]="新增block:"+blockMan.get("blockManName")+",请关注";
+					msgContentList.add(msgTmp);
+				}
+				if(dayEditGroupLeader!=null && !dayEditGroupLeader.isEmpty()){
+					Object[] msgTmp=new Object[3];
+					msgTmp[0]=dayEditGroupLeader;
+					msgTmp[1]=msgTitle;
+					msgTmp[2]="新增block:"+blockMan.get("blockManName")+",请关注";
+					msgContentList.add(msgTmp);
+				}
+				
+			}
+			if(msgContentList.size()>0){
+				blockPushMsgByMsg(conn,msgContentList,userId);
+				BlockOperation.updateMainBlock(conn, blockManIds);
+			}
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -799,17 +956,36 @@ public class BlockService {
 
 	}
 
-	private void blockPushMsgByMsg(Connection conn,
-			List<Object[]> msgContentList) throws Exception {
-		String userSql="SELECT DISTINCT M.USER_ID FROM ROLE_USER_MAPPING M WHERE M.ROLE_ID IN (4, 5)";
-		List<Integer> userIdList=UserInfoOperation.getUserListBySql(conn, userSql);
+	private void blockPushMsgByMsg(Connection conn,	List<Object[]> msgContentList, long userId) throws Exception {
+		//String userSql="SELECT DISTINCT M.USER_ID FROM ROLE_USER_MAPPING M WHERE M.ROLE_ID IN (4, 5)";
+		//List<Integer> userIdList=UserInfoOperation.getUserListBySql(conn, userSql);
 		Object[][] msgList=new Object[msgContentList.size()][3];
 		int num=0;
 		for(Object[] msgContent:msgContentList){
 			msgList[num]=msgContent;
 			num+=1;
+			//发送邮件
+			String toMail = null;
+			String mailTitle = null;
+			String mailContent = null;
+			//查询用户详情
+			Map<String, Object> userInfo = UserInfoOperation.getUserInfoByUserId(conn, Long.parseLong((String) msgContent[0]));
+			if(userInfo != null && userInfo.get("userEmail") != null){
+				//判断邮箱格式
+				String check = "^([a-z0-9A-Z]+[-|_|\\.]?)+[a-z0-9A-Z]@([a-z0-9A-Z]+(-[a-z0-9A-Z]+)?\\.)+[a-zA-Z]{2,}$";
+                Pattern regex = Pattern.compile(check);
+                Matcher matcher = regex.matcher((CharSequence) userInfo.get("userEmail"));
+                if(matcher.matches()){
+                	toMail = (String) userInfo.get("userEmail");
+                	mailTitle = (String) msgContent[1];
+                	mailContent = (String) msgContent[2];
+                	//发送邮件到消息队列
+                	//SendEmail.sendEmail(toMail, mailTitle, mailContent);
+                	EmailPublisher.publishMsg(toMail, mailTitle, mailContent);
+                }
+			}
 		}
-		MessageOperation.batchInsert(conn,msgList);		
+		MessageOperation.batchInsert(conn,msgList, userId,"MAN");
 	}
 
 	public Page list(int stage, JSONObject condition, JSONObject order, int currentPageNum,int pageSize, int snapshot) throws Exception {

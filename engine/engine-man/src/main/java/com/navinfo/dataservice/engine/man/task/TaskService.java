@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -15,6 +17,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.engine.man.message.MessageOperation;
+import com.navinfo.dataservice.engine.man.message.SendEmail;
 import com.navinfo.dataservice.engine.man.block.BlockOperation;
 import com.navinfo.dataservice.engine.man.city.CityOperation;
 import com.navinfo.dataservice.engine.man.common.DbOperation;
@@ -24,6 +27,7 @@ import com.navinfo.dataservice.commons.json.JsonOperation;
 import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.dao.mq.email.EmailPublisher;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 
@@ -168,19 +172,21 @@ public class TaskService {
 			 * 1.所有生管角色
 			 * 2.分配的月编作业组组长
 			 * 任务:XXX(任务名称)内容发生变更，请关注*/			
-			String msgTitle="任务开启";
+			String msgTitle="任务发布";
 			List<String> msgContentList=new ArrayList<String>();
+			List<Long> groupIdList = new ArrayList<Long>();
 			for(Map<String, Object> task:openTasks){
-				msgContentList.add("任务:"+task.get("taskName")+"内容发生变更，请关注");
+				msgContentList.add("新增任务:"+task.get("taskName")+",请关注");
+				groupIdList.add((Long) task.get("monthEditGroupId"));
 			}
 			if(msgContentList.size()>0){
-				taskPushMsg(conn,msgTitle,msgContentList);
+				taskPushMsg(conn,msgTitle,msgContentList,groupIdList,userId);
 			}		
 			TaskOperation.updateStatus(conn,taskIds);
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
-			throw new Exception("修改失败，原因为:"+e.getMessage(),e);
+			throw new Exception("发布失败，原因为:"+e.getMessage(),e);
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
 		}
@@ -232,19 +238,39 @@ public class TaskService {
 				TaskOperation.updateTask(conn, bean);		
 				total+=1;
 			}
-			condition.put("taskIds",taskIds);
-			List<Map<String, Object>> openTasks = TaskOperation.queryTaskTable(conn, condition);
-			/*任务创建/编辑/关闭
-			 * 1.所有生管角色
-			 * 2.分配的月编作业组组长
-			 * 任务:XXX(任务名称)内容发生变更，请关注*/			
-			String msgTitle="任务修改";
-			List<String> msgContentList=new ArrayList<String>();
-			for(Map<String, Object> task:openTasks){
-				msgContentList.add("任务:"+task.get("taskName")+"内容发生变更，请关注");
-			}
-			if(msgContentList.size()>0){
-				taskPushMsg(conn,msgTitle,msgContentList);
+			
+			try {
+				//发送消息
+				condition.put("taskIds",taskIds);
+				List<Map<String, Object>> openTasks = TaskOperation.queryTaskTable(conn, condition);
+				/*任务创建/编辑/关闭
+				 *1.所有生管角色
+				 *2.任务包含的block分配的采集作业组组长
+				 *3.任务包含的block分配的日编作业组组长
+				 *4.分配的月编作业组组长
+				 *任务变更:XXX(任务名称)信息发生变更，请关注*/			
+				String msgTitle="任务编辑";
+				List<String> msgContentList=new ArrayList<String>();
+				List<Long> groupIdList = new ArrayList<Long>();
+				for(Map<String, Object> task:openTasks){
+					msgContentList.add("任务变更:"+task.get("taskName")+"信息发生变更,请关注");
+					groupIdList.add((Long) task.get("monthEditGroupId"));
+					//查询block分配的采集和日编作业组组长id
+					if(task.get("taskId") != null){
+						Map<String, Object> blockMan = TaskOperation.getBlockManByTaskId(conn, (long) task.get("taskId"), 1);
+						if(blockMan != null){
+							groupIdList.add((Long) blockMan.get("collectGroupId"));
+							groupIdList.add((Long) blockMan.get("dayEditGroupId"));
+						}
+					}
+				}
+				if(msgContentList.size()>0){
+					taskPushMsg(conn,msgTitle,msgContentList, groupIdList, userId);
+				}
+			} catch (Exception e) {
+				// TODO: handle exception
+				e.printStackTrace();
+				log.error("发送失败,原因:"+e.getMessage(), e);
 			}
 			return "任务批量修改"+total+"个成功，0个失败";
 		}catch(Exception e){
@@ -260,20 +286,49 @@ public class TaskService {
 	 * 1.所有生管角色
 	 * 2.分配的月编作业组组长
 	 * 任务:XXX(任务名称)内容发生变更，请关注*/
-	public void taskPushMsg(Connection conn,String msgTile,List<String> msgContentList) throws Exception{
-		String userSql="SELECT DISTINCT M.USER_ID FROM ROLE_USER_MAPPING M WHERE M.ROLE_ID IN (3, 6)";
+	public void taskPushMsg(Connection conn,String msgTitle,List<String> msgContentList, List<Long> groupIdList, long pushUser) throws Exception {
+		String userSql="SELECT DISTINCT M.USER_ID FROM ROLE_USER_MAPPING M WHERE M.ROLE_ID =3";
 		List<Integer> userIdList=UserInfoOperation.getUserListBySql(conn, userSql);
+		//查询分配的作业组组长
+		List<Long> leaderIdByGroupId = UserInfoOperation.getLeaderIdByGroupId(conn, groupIdList);
+		for (Long leaderId : leaderIdByGroupId) {
+			userIdList.add(leaderId.intValue());
+		}
 		Object[][] msgList=new Object[userIdList.size()*msgContentList.size()][3];
 		int num=0;
 		for(int userId:userIdList){
 			for(String msgContent:msgContentList){
 				msgList[num][0]=userId;
-				msgList[num][1]=msgTile;
+				msgList[num][1]=msgTitle;
 				msgList[num][2]=msgContent;
 				num+=1;
 			}
 		}
-		MessageOperation.batchInsert(conn,msgList);
+		MessageOperation.batchInsert(conn,msgList,pushUser,"MAN");
+		//发送邮件
+		String toMail = null;
+		String mailTitle = null;
+		String mailContent = null;
+		//查询用户详情
+		for (int userId : userIdList) {
+			Map<String, Object> userInfo = UserInfoOperation.getUserInfoByUserId(conn, userId);
+			if(userInfo != null && userInfo.get("userEmail") != null){
+				for (String msgContent : msgContentList) {
+					//判断邮箱格式
+					String check = "^([a-z0-9A-Z]+[-|_|\\.]?)+[a-z0-9A-Z]@([a-z0-9A-Z]+(-[a-z0-9A-Z]+)?\\.)+[a-zA-Z]{2,}$";
+	                Pattern regex = Pattern.compile(check);
+	                Matcher matcher = regex.matcher((CharSequence) userInfo.get("userEmail"));
+	                if(matcher.matches()){
+	                	toMail = (String) userInfo.get("userEmail");
+	                	mailTitle = msgTitle;
+	                	mailContent = msgContent;
+	                	//发送邮件到消息队列
+	                	//SendEmail.sendEmail(toMail, mailTitle, mailContent);
+	                	EmailPublisher.publishMsg(toMail, mailTitle, mailContent);
+	                }
+				}
+			}
+		}
 	}
 	
 	public Page commonList(Connection conn,int planStatus, JSONObject conditionJson,JSONObject orderJson,int currentPageNum,int pageSize)throws Exception{
@@ -386,7 +441,7 @@ public class TaskService {
 		}
 	}	
 	
-	public List<Integer> close(List<Integer> taskidList)throws Exception{
+	public List<Integer> close(List<Integer> taskidList, long userId)throws Exception{
 		Connection conn = null;
 		try{
 			conn = DBConnector.getInstance().getManConnection();	
@@ -447,21 +502,39 @@ public class TaskService {
 				//关闭对应的infor
 				InforManOperation.closeByTasks(conn,newTask);
 			
-				//发送消息
-				JSONObject condition=new JSONObject();
-				condition.put("taskIds",JSONArray.fromObject(newTask));
-				List<Map<String, Object>> openTasks = TaskOperation.queryTaskTable(conn, condition);
-				/*任务创建/编辑/关闭
-				 * 1.所有生管角色
-				 * 2.分配的月编作业组组长
-				 * 任务:XXX(任务名称)内容发生变更，请关注*/			
-				String msgTitle="任务关闭";
-				List<String> msgContentList=new ArrayList<String>();
-				for(Map<String, Object> task:openTasks){
-					msgContentList.add("任务:"+task.get("taskName")+"内容发生变更，请关注");
-				}
-				if(msgContentList.size()>0){
-					taskPushMsg(conn,msgTitle,msgContentList);
+				try {
+					//发送消息
+					JSONObject condition=new JSONObject();
+					condition.put("taskIds",JSONArray.fromObject(newTask));
+					List<Map<String, Object>> openTasks = TaskOperation.queryTaskTable(conn, condition);
+					/*任务创建/编辑/关闭
+					 *1.所有生管角色
+					 *2.任务包含的block分配的采集作业组组长
+					 *3.任务包含的block分配的日编作业组组长
+					 *4.分配的月编作业组组长
+					 *任务关闭:XXX(任务名称)已关闭，请关注*/			
+					String msgTitle="任务关闭";
+					List<String> msgContentList=new ArrayList<String>();
+					List<Long> groupIdList = new ArrayList<Long>();
+					for(Map<String, Object> task:openTasks){
+						msgContentList.add("任务关闭:"+task.get("taskName")+"已关闭,请关注");
+						groupIdList.add((Long) task.get("monthEditGroupId"));
+						//查询block分配的采集和日编作业组组长id
+						if(task.get("taskId") != null){
+							Map<String, Object> blockMan = TaskOperation.getBlockManByTaskId(conn, (long) task.get("taskId"),0);
+							if(blockMan != null){
+								groupIdList.add((Long) blockMan.get("collectGroupId"));
+								groupIdList.add((Long) blockMan.get("dayEditGroupId"));
+							}
+						}
+					}
+					if(msgContentList.size()>0){
+						taskPushMsg(conn,msgTitle,msgContentList, groupIdList, userId);
+					}
+				} catch (Exception e) {
+					// TODO: handle exception
+					e.printStackTrace();
+					log.error("发送失败,原因:"+e.getMessage(), e);
 				}
 			}
 	    	return newTask;

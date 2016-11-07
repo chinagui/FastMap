@@ -253,7 +253,7 @@ public class PoiGridIncreSearch {
 			while(resultSet.next()){
 				IxPoi ixPoi = new IxPoi();
 				fillMainTable(ixPoi,resultSet);
-				
+				ixPoi.setuRecord(status);
 				Long pid = (long) ixPoi.getPid();
 				poisMap.put(pid, ixPoi);
 			}

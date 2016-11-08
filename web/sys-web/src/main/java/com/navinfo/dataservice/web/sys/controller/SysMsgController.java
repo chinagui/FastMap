@@ -17,6 +17,7 @@ import com.navinfo.dataservice.engine.sys.msg.SysMsg;
 import com.navinfo.dataservice.engine.sys.msg.SysMsgService;
 import com.navinfo.navicommons.database.Page;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 /**
@@ -157,6 +158,99 @@ public class SysMsgController extends BaseController {
 	}
 	
 	/**
+	 * 查询man管理消息的title
+	 * @author Han Shaoming
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/sysmsg/message/TitleList")
+	public ModelAndView getManMsgTitleList(HttpServletRequest request){
+		try{
+			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			long userId = tokenObj.getUserId();
+			List<String> titleList = SysMsgService.getInstance().getManMsgTitleList(userId);
+			return new ModelAndView("jsonView", success(titleList));
+		}catch(Exception e){
+			log.error("发送失败，原因："+e.getMessage(), e);
+			return new ModelAndView("jsonView",exception(e));
+		}
+	}
+	
+	/**
+	 * 获取man管理消息列表
+	 * @author Han Shaoming
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/sysmsg/message/list")
+	public ModelAndView getManMsgList(HttpServletRequest request){
+		try{
+			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			long userId = tokenObj.getUserId();
+			String parameter = request.getParameter("parameter");
+			if (StringUtils.isEmpty(parameter)) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			JSONObject paraJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if (paraJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			if(!paraJson.containsKey("pageNum")){
+				throw new IllegalArgumentException("parameter参数中pageNum不能为空。");
+			}
+			if(!paraJson.containsKey("pageSize")){
+				throw new IllegalArgumentException("parameter参数中pageSize不能为空。");
+			}
+			if(!paraJson.containsKey("condition")){
+				throw new IllegalArgumentException("parameter参数中condition不能为空。");
+			}
+			int pageNum = paraJson.getInt("pageNum");
+			int pageSize = paraJson.getInt("pageSize");
+			String condition = paraJson.getString("condition");
+			Page page = SysMsgService.getInstance().getManMsgList(userId,pageNum,pageSize,condition);
+			return new ModelAndView("jsonView", success(page));
+		}catch(Exception e){
+			log.error("发送失败，原因："+e.getMessage(), e);
+			return new ModelAndView("jsonView",exception(e));
+		}
+	}
+	
+	/**
+	 * 批量修改管理信息状态
+	 * @author Han Shaoming
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/sysmsg/message/update")
+	public ModelAndView updateManMsg(HttpServletRequest request){
+		try{
+			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			long userId = tokenObj.getUserId();
+			String parameter = request.getParameter("parameter");
+			if (StringUtils.isEmpty(parameter)) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			JSONObject paraJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if (paraJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			if(!paraJson.containsKey("msgId")){
+				throw new IllegalArgumentException("parameter参数中msgId不能为空。");
+			}
+			if(!paraJson.containsKey("msgStatus")){
+				throw new IllegalArgumentException("parameter参数中msgStatus不能为空。");
+			}
+			JSONArray msgIds = paraJson.getJSONArray("msgId");
+			int msgStatus = paraJson.getInt("msgStatus");
+			String msg = SysMsgService.getInstance().updateManMsg(userId,msgStatus,msgIds);
+			return new ModelAndView("jsonView", success(msg));
+		}catch(Exception e){
+			log.error("编辑失败，原因："+e.getMessage(), e);
+			return new ModelAndView("jsonView",exception(e));
+		}
+	}
+	
+	/**
 	 * 测试发消息的临时接口
 	 */
 	@RequestMapping(value = "/sysmsg/sendMessage")
@@ -194,4 +288,6 @@ public class SysMsgController extends BaseController {
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}
+	
+	
 }

@@ -1503,7 +1503,11 @@ public class SubtaskOperation {
 		// TODO Auto-generated method stub
 		try{
 			QueryRunner run = new QueryRunner();
-			String updateSql="UPDATE SUBTASK SET STATUS=1 WHERE SUBTASK_ID =" + subtaskId;
+			String updateSql="UPDATE SUBTASK T SET T.STATUS=1 WHERE T.SUBTASK_ID =" + subtaskId 
+					+ " OR EXISTS (SELECT 1"
+					+ "          FROM SUBTASK T2"
+					+ "         WHERE T2.SUBTASK_ID = " + subtaskId
+					+ "           AND T.SUBTASK_ID = T2.QUALITY_SUBTASK_ID)";
 			run.update(conn,updateSql);			
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);

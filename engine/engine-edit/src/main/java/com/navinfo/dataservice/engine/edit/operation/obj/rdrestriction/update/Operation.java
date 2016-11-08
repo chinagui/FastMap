@@ -18,7 +18,6 @@ import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionCondition;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionDetail;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionVia;
-import com.navinfo.dataservice.dao.glm.selector.rd.laneconnexity.RdLaneViaSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.restrict.RdRestrictionSelector;
 import com.navinfo.dataservice.engine.edit.utils.CalLinkOperateUtils;
@@ -126,11 +125,10 @@ public class Operation implements IOperation {
 						
 						if(relationShipType == 2)
 						{
-							RdLaneViaSelector selector = new RdLaneViaSelector(conn);
 							
 							List<IRow> vias = new ArrayList<IRow>();
 							
-							List<Integer> viaLinkPids = selector.calViaLinks(restrict.getInLinkPid(), restrict.getNodePid(), detail.getOutLinkPid());
+							List<Integer> viaLinkPids = calLinkOperateUtils.calViaLinks(conn,restrict.getInLinkPid(), restrict.getNodePid(), detail.getOutLinkPid());
 							
 							if(CollectionUtils.isNotEmpty(viaLinkPids))
 							{

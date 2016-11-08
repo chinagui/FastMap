@@ -8,6 +8,8 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -94,7 +96,9 @@ public class SubtaskController extends BaseController {
 			if(qualityExeUserId != 0 ){//表示要创建质检子任务
 				//根据参数生成质检子任务 subtask qualityBean
 				Subtask qualityBean = SubtaskService.getInstance().createSubtaskBean(userId,dataJson);
+				qualityBean.setName(qualityBean.getName()+"_质检");
 				qualityBean.setIsQuality(1);
+				qualityBean.setStatus(2);
 				qualityBean.setExeUserId(qualityExeUserId);
 				qualityBean.setPlanStartDate(new Timestamp(df.parse(qualityPlanStartDate).getTime()));
 				qualityBean.setPlanEndDate(new Timestamp(df.parse(qualityPlanEndDate).getTime()));
@@ -254,6 +258,14 @@ public class SubtaskController extends BaseController {
 			Subtask subtask = SubtaskService.getInstance().query(bean);	
 			if(subtask!=null&&subtask.getSubtaskId()!=null){
 				SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
+				String qualityPlanStartDate = null;
+				String qualityPlanEndDate = null;
+				if(subtask.getQualityPlanStartDate() != null && StringUtils.isNotEmpty(subtask.getQualityPlanStartDate().toString())){
+					qualityPlanStartDate = df.format(subtask.getQualityPlanStartDate());
+				}
+				if(subtask.getQualityPlanEndDate() != null && StringUtils.isNotEmpty(subtask.getQualityPlanEndDate().toString())){
+					qualityPlanEndDate = df.format(subtask.getQualityPlanEndDate());
+				}
 				SubtaskQuery<?> subtaskQuery = new SubtaskQuery<Object>(subtask.getSubtaskId()
 						,subtask.getName()
 						,subtask.getStatus()
@@ -280,8 +292,8 @@ public class SubtaskController extends BaseController {
 						,subtask.getQualitySubtaskId()
 						,subtask.getIsQuality()
 						, subtask.getQualityExeUserId()
-						, df.format(subtask.getQualityPlanStartDate())
-						, df.format(subtask.getQualityPlanEndDate())
+						, qualityPlanStartDate
+						, qualityPlanEndDate
 						
 						);
 				SubtaskQueryResponse response = new SubtaskQueryResponse(0,"success",subtaskQuery);
@@ -357,6 +369,7 @@ public class SubtaskController extends BaseController {
 						//subtaskArray.getJSONObject(i).discard("subtaskId");//删除subtaskId ,新建质检子任务
 						//Subtask qualitySubtask = (Subtask)JsonOperation.jsonToBean(subtaskArray.getJSONObject(i),Subtask.class);//生成质检子任务的bean
 						Subtask qualitySubtask = SubtaskService.getInstance().queryBySubtaskIdS(subtaskArray.getJSONObject(i).getInt("subtaskId"));
+						qualitySubtask.setName(qualitySubtask.getName()+"_质检");
 						qualitySubtask.setSubtaskId(null);
 						qualitySubtask.setPlanStartDate(new Timestamp(df.parse(qualityPlanStartDate).getTime()));
 						qualitySubtask.setPlanEndDate(new Timestamp(df.parse(qualityPlanEndDate).getTime()));

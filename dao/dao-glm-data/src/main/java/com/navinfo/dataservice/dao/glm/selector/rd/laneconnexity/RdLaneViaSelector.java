@@ -8,11 +8,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 
+import org.apache.commons.dbutils.DbUtils;
+
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneVia;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
 import com.navinfo.navicommons.database.sql.DBUtils;
-import org.apache.commons.dbutils.DbUtils;
 
 public class RdLaneViaSelector extends AbstractSelector {
 
@@ -160,71 +161,5 @@ public class RdLaneViaSelector extends AbstractSelector {
         }
 
         return newVias;
-    }
-
-    /**
-     * 计算经过线
-     *
-     * @param inLinkPid  进入线
-     * @param nodePid    进入点
-     * @param outLinkPid 退出线
-     * @throws Exception
-     */
-    public List<Integer> calViaLinks(int inLinkPid, int nodePid, int outLinkPid) throws Exception {
-
-        String sql = "select * from table(package_utils.get_restrict_points(:1,:2,:3))";
-
-        PreparedStatement pstmt = null;
-
-        ResultSet resultSet = null;
-
-        List<Integer> viaLinks = new ArrayList<Integer>();
-
-        try {
-            pstmt = conn.prepareStatement(sql);
-
-            pstmt.setInt(1, inLinkPid);
-
-            pstmt.setInt(2, nodePid);
-
-            pstmt.setInt(3, outLinkPid);
-
-            resultSet = pstmt.executeQuery();
-
-            while (resultSet.next()) {
-
-                String viaPath = resultSet.getString("via_path");
-
-                if (viaPath != null) {
-
-                    String splits[] = viaPath.split(",");
-
-                    for (String s : splits) {
-                        if (!s.equals("")) {
-
-                            int viaPid = Integer.valueOf(s);
-
-                            if (viaPid == inLinkPid || viaPid == outLinkPid) {
-                                continue;
-                            }
-
-                            viaLinks.add(viaPid);
-                        }
-                    }
-
-                }
-            }
-        } catch (Exception e) {
-            return viaLinks;
-        } finally {
-            try {
-                if (pstmt != null) {
-                    pstmt.close();
-                }
-            } catch (Exception e) {
-            }
-
-        }
-        return viaLinks;
     }
 }

@@ -8,26 +8,19 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import oracle.sql.CLOB;
-
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-
-import com.alibaba.druid.proxy.jdbc.ClobProxyImpl;
 import com.navinfo.dataservice.api.job.iface.JobApi;
-import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
-import com.navinfo.dataservice.commons.json.JsonOperation;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
-import com.navinfo.dataservice.engine.man.inforMan.InforManOperation;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskOperation;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -235,7 +228,6 @@ public class ProduceService {
 					+ conditionStr 
 					+ " ORDER BY T.PRODUCE_STATUS DESC,T.DAY_PRODUCE_PLAN_START_DATE DESC,T.CREATE_DATE DESC";
 				log.debug("查询日初评列表sql: "+sql);
-				System.out.println(sql);
 				QueryRunner run=new QueryRunner();
 				ResultSetHandler<Page> rsHandler=new ResultSetHandler<Page>() {
 					public Page handle(ResultSet rs) throws SQLException{
@@ -335,12 +327,6 @@ public class ProduceService {
 	}
 
 	public static void main(String[] args) {
-		List selectParamList = new ArrayList<Integer>();
-		selectParamList.add(1);
-		selectParamList.add(2);
-		selectParamList.add(3);
 		
-		String a = selectParamList.toString();
-		System.out.println(a);
 	}
 }

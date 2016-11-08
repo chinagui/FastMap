@@ -96,6 +96,7 @@ public class SubtaskController extends BaseController {
 			if(qualityExeUserId != 0 ){//表示要创建质检子任务
 				//根据参数生成质检子任务 subtask qualityBean
 				Subtask qualityBean = SubtaskService.getInstance().createSubtaskBean(userId,dataJson);
+				qualityBean.setName(qualityBean.getName()+"_质检");
 				qualityBean.setIsQuality(1);
 				qualityBean.setStatus(2);
 				qualityBean.setExeUserId(qualityExeUserId);
@@ -368,6 +369,7 @@ public class SubtaskController extends BaseController {
 						//subtaskArray.getJSONObject(i).discard("subtaskId");//删除subtaskId ,新建质检子任务
 						//Subtask qualitySubtask = (Subtask)JsonOperation.jsonToBean(subtaskArray.getJSONObject(i),Subtask.class);//生成质检子任务的bean
 						Subtask qualitySubtask = SubtaskService.getInstance().queryBySubtaskIdS(subtaskArray.getJSONObject(i).getInt("subtaskId"));
+						qualitySubtask.setName(qualitySubtask.getName()+"_质检");
 						qualitySubtask.setSubtaskId(null);
 						qualitySubtask.setPlanStartDate(new Timestamp(df.parse(qualityPlanStartDate).getTime()));
 						qualitySubtask.setPlanEndDate(new Timestamp(df.parse(qualityPlanEndDate).getTime()));

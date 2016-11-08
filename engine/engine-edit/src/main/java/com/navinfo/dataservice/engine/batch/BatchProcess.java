@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.control.row.batch;
+package com.navinfo.dataservice.engine.batch;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -10,9 +10,9 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
-import com.navinfo.dataservice.control.row.batch.util.IBatch;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
+import com.navinfo.dataservice.engine.batch.util.IBatch;
 import com.navinfo.dataservice.engine.edit.service.EditApiImpl;
 
 import net.sf.json.JSONObject;
@@ -58,6 +58,7 @@ public class BatchProcess {
 				poiObj.put("isLock", false);
 				
 				editApiImpl.runPoi(poiObj);
+				conn.commit();
 			}
 			
 		} catch (Exception e) {

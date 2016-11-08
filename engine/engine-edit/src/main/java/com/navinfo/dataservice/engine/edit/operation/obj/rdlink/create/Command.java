@@ -93,6 +93,7 @@ public class Command extends AbstractCommand {
 		return catchLinks;
 	}
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public Command(JSONObject json, String requester) throws Exception {
 		this.requester = requester;
 

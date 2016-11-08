@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.control.app;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -8,9 +9,7 @@ import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
-import com.navinfo.dataservice.control.app.download.DownloadOperation;
 import com.navinfo.dataservice.control.app.download.PoiDownloadOperation;
-import com.navinfo.dataservice.control.app.search.Operation;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -27,11 +26,11 @@ public class androidtest {
 	
 	@Test
 	public void test() {
-		DownloadOperation download = new DownloadOperation();
+		Date startTime = new Date();
 		JSONArray gridDateList = new JSONArray();
 		JSONObject grid = new JSONObject();
-		grid.put("grid", "60560303");
-		grid.put("date", "");
+		grid.put("grid", "60562422");
+		grid.put("date", "20161102190708");
 		gridDateList.add(grid);
 		try {
 			Map<String,String> gridDateMap = new HashMap<String,String>();
@@ -43,6 +42,8 @@ public class androidtest {
 			
 			PoiDownloadOperation operation = new PoiDownloadOperation();
 			operation.export2Txt(gridDateMap, "f://poidownload", "poi.txt");
+			Date endTime = new Date();
+			System.out.println("total time:"+ (endTime.getTime() - startTime.getTime()));
 //			download.export(gridList, "f://poidownload", "poi.txt");
 		} catch (Exception e) {
 			e.printStackTrace();

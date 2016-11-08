@@ -14,6 +14,11 @@ import net.sf.json.JSONObject;
 * @date 2016-06-06 07:40:15 
 * @Description: TODO
 */
+/**
+ * (修改)增加质检子任务字段(第七迭代)
+ * @author zhangli5174
+ *
+ */
 public class Subtask implements Serializable  {
 	private Integer subtaskId ;
 	private String name ;
@@ -42,11 +47,62 @@ public class Subtask implements Serializable  {
 	private String executer;
 	private int percent;
 	private JSONObject geometryJSON;
+	//***************zl 2016.11.03*****************
+	private Integer qualitySubtaskId ;
+	private Integer isQuality;
+	
+	private Integer qualityExeUserId ;
+	private Timestamp qualityPlanStartDate ;
+	private Timestamp qualityPlanEndDate;
+	private Integer qualityTaskStatus;
 	
 
 	public Subtask (){
 	}
-	
+	//***************zl 2016.11.03*****************
+	public Subtask(Integer subtaskId, String name, Integer blockId, Integer blockManId, Integer cityId, Integer taskId,
+			String geometry, Integer stage, Integer type, Integer createUserId, Timestamp createDate, Integer exeUserId,
+			Integer exeGroupId, Integer status, Timestamp planStartDate, Timestamp planEndDate, String descp,
+			List<Integer> gridIds, Integer dbId, Integer groupId, String blockManName, String taskName, String version,
+			Integer executerId, String executer, int percent, JSONObject geometryJSON, Integer qualitySubtaskId,
+			Integer isQuality, Integer qualityExeUserId, Timestamp qualityPlanStartDate, Timestamp qualityPlanEndDate,Integer qualityTaskStatus) {
+		super();
+		this.subtaskId = subtaskId;
+		this.name = name;
+		this.blockId = blockId;
+		this.blockManId = blockManId;
+		this.cityId = cityId;
+		this.taskId = taskId;
+		this.geometry = geometry;
+		this.stage = stage;
+		this.type = type;
+		this.createUserId = createUserId;
+		this.createDate = createDate;
+		this.exeUserId = exeUserId;
+		this.exeGroupId = exeGroupId;
+		this.status = status;
+		this.planStartDate = planStartDate;
+		this.planEndDate = planEndDate;
+		this.descp = descp;
+		this.gridIds = gridIds;
+		this.dbId = dbId;
+		this.groupId = groupId;
+		this.blockManName = blockManName;
+		this.taskName = taskName;
+		this.version = version;
+		this.executerId = executerId;
+		this.executer = executer;
+		this.percent = percent;
+		this.geometryJSON = geometryJSON;
+		this.qualitySubtaskId = qualitySubtaskId;
+		this.isQuality = isQuality;
+		this.qualityExeUserId = qualityExeUserId;
+		this.qualityPlanStartDate = qualityPlanStartDate;
+		this.qualityPlanEndDate = qualityPlanEndDate;
+		this.qualityTaskStatus = qualityTaskStatus;
+	}
+
+
 	public Subtask (Integer subtaskId ,
 			String name,
 			Integer blockId,
@@ -216,6 +272,52 @@ public class Subtask implements Serializable  {
 	public void setDescp(String descp) {
 		this.descp = descp;
 	}
+	//***************zl 2016.11.03*****************
+	//新增质检子任务字段
+	public Integer getQualitySubtaskId() {
+		return qualitySubtaskId;
+	}
+
+	public void setQualitySubtaskId(Integer qualitySubtaskId) {
+		this.qualitySubtaskId = qualitySubtaskId;
+	}
+	//是否是质检子任务
+	public Integer getIsQuality() {
+		return isQuality;
+	}
+
+	public void setIsQuality(Integer isQuality) {
+		this.isQuality = isQuality;
+	}
+	//增质检子任务执行人字段(只在实体中使用,数据库表中无此字段)
+	public Integer getQualityExeUserId() {
+		return qualityExeUserId;
+	}
+	public void setQualityExeUserId(Integer qualityExeUserId) {
+		this.qualityExeUserId = qualityExeUserId;
+	}
+	//增质检子任务计划开始时间字段(只在实体中使用,数据库表中无此字段)
+	public Timestamp getQualityPlanStartDate() {
+		return qualityPlanStartDate;
+	}
+	public void setQualityPlanStartDate(Timestamp qualityPlanStartDate) {
+		this.qualityPlanStartDate = qualityPlanStartDate;
+	}
+	//增质检子任务计划结束时间字段(只在实体中使用,数据库表中无此字段)
+	public Timestamp getQualityPlanEndDate() {
+		return qualityPlanEndDate;
+	}
+	public void setQualityPlanEndDate(Timestamp qualityPlanEndDate) {
+		this.qualityPlanEndDate = qualityPlanEndDate;
+	}
+	//增加质检子任务任务状态
+	public Integer getQualityTaskStatus() {
+		return qualityTaskStatus;
+	}
+	public void setQualityTaskStatus(Integer qualityTaskStatus) {
+		this.qualityTaskStatus = qualityTaskStatus;
+	}
+
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */

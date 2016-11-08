@@ -66,6 +66,7 @@ public class LuLinkOperateUtils {
         if(sourceLink != null)
         {
         	link.copy(sourceLink);
+            link.getMeshes().clear();
         }
         Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(g);
         Iterator<String> it = meshes.iterator();

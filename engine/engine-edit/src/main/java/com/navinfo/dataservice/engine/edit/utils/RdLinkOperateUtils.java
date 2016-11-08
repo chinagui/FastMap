@@ -214,12 +214,46 @@ public class RdLinkOperateUtils {
                 links.add(((RdLink) addLinkByNoResult(sNode, eNode, link, sourceLink)));
             }
         }
-        // 跨图幅
-        else {
-            Map<Coordinate, Integer> maps = new HashMap<Coordinate, Integer>();
-            maps.put(sNode.getGeometry().getCoordinate(), sNode.getPid());
-            maps.put(eNode.getGeometry().getCoordinate(), eNode.getPid());
+		// 跨图幅
+		else {
+			Map<Coordinate, Integer> maps = new HashMap<Coordinate, Integer>();
+
+			if (sNode.changedFields().containsKey("geometry")) {
+				
+				JSONObject jsonGeo = (JSONObject) sNode.changedFields().get(
+						"geometry");
+
+				Geometry sGeo = GeoTranslator.geojson2Jts(jsonGeo, 0.00001, 5);
+
+				maps.put(sGeo.getCoordinate(), sNode.getPid());
+				
+			} else {
+				
+				Geometry sGeo = GeoTranslator.transform(sNode.getGeometry(),
+						0.00001, 5);
+
+				maps.put(sGeo.getCoordinate(), sNode.getPid());
+			}
+
+			if (eNode.changedFields().containsKey("geometry")) {
+				
+				JSONObject jsonGeo = (JSONObject) eNode.changedFields().get(
+						"geometry");
+
+				Geometry eGeo = GeoTranslator.geojson2Jts(jsonGeo, 0.00001, 5);
+
+				maps.put(eGeo.getCoordinate(), eNode.getPid());
+
+			} else {
+
+				Geometry eGeo = GeoTranslator.transform(eNode.getGeometry(),
+						0.00001, 5);
+
+				maps.put(eGeo.getCoordinate(), eNode.getPid());
+			}
+
             Iterator<String> it = meshes.iterator();
+            
             while (it.hasNext()) {
                 String meshIdStr = it.next();
                 Geometry geomInter = MeshUtils.linkInterMeshPolygon(link.getGeometry(), GeoTranslator.transform(MeshUtils.mesh2Jts(meshIdStr),1,5));

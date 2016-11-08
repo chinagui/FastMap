@@ -19,6 +19,7 @@ import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.control.row.query.PoiQuery;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
+import com.navinfo.dataservice.engine.batch.BatchProcess;
 import com.navinfo.dataservice.engine.edit.service.EditApiImpl;
 import com.navinfo.navicommons.database.sql.DBUtils;
 
@@ -48,7 +49,7 @@ public class PoiSaveTest {
 	}
 	@Test
 	public void testUpdatePoi() throws SQLException {
-		String parameter = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"IXPOI\",\"objId\":80070981,\"data\":{\"addresses\":[{\"nameGroupid\":1,\"poiPid\":0,\"langCode\":\"CHI\",\"fullname\":\"１１１１\",\"objStatus\":\"INSERT\"}],\"rowId\":\"3AE1FB8B133A92F7E050A8C08304EE4C\",\"pid\":80070981}}";
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":22,\"type\":\"IXPOI\",\"objId\":4602392,\"data\":{\"addresses\":[{\"nameGroupid\":1,\"poiPid\":0,\"langCode\":\"CHI\",\"fullname\":\"\",\"objStatus\":\"INSERT\"}],\"rowId\":\"3F836D0B49AA4604E050A8C083041544\",\"pid\":4602392}}";
 		Connection conn = null;
 		JSONObject result = null;
 		try {

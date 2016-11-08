@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.control.row.batch.util;
+package com.navinfo.dataservice.engine.batch.util;
 
 import java.sql.Connection;
 

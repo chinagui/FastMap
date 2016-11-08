@@ -39,17 +39,17 @@ public class Operation implements IOperation {
 	/**
 	 * key为退出线pid，value为退出线线段
 	 */
-	private Map<Integer, LineSegment> outLinkSegmentMap;
+	private Map<Integer, LineSegment> outLinkSegmentMap = new HashMap<Integer, LineSegment>();;
 
 	/**
 	 * key为退出线pid， value为经过线pid列表
 	 */
-	private Map<Integer, List<Integer>> viaLinkPidMap;
+	private Map<Integer, List<Integer>> viaLinkPidMap = new HashMap<Integer, List<Integer>>();;
 
 	/**
 	 * key为退出线pid，value为交限类型
 	 */
-	private Map<Integer, Integer> relationTypeMap;
+	private Map<Integer, Integer> relationTypeMap = new HashMap<Integer, Integer>();
 
 	public Operation(Command command, Connection conn, Check check) {
 		this.command = command;
@@ -96,9 +96,17 @@ public class Operation implements IOperation {
 		if (CollectionUtils.isEmpty(outLinkPids)) {
 			throw new Exception("未计算出退出线，请手动指定退出线");
 		}
-		// 计算经过线
-		this.calViaLinks(inLinkPid, inNodePid, outLinkPids);
-
+		
+		for(Integer outLinkPid : outLinkPids)
+		{
+			List<Integer> outLinkIdList = new ArrayList<>();
+			
+			outLinkIdList.add(outLinkPid);
+			
+			// 计算经过线
+			this.calViaLinks(inLinkPid, inNodePid, outLinkIdList);
+		}
+		
 		// 检查
 		Set<Integer> pids = new HashSet<Integer>();
 		pids.add(command.getInLinkPid());
@@ -249,12 +257,6 @@ public class Operation implements IOperation {
 	 */
 	private void calViaLinks(int inLinkPid, int nodePid,
 			List<Integer> outLinkPids) throws Exception {
-
-		outLinkSegmentMap = new HashMap<Integer, LineSegment>();
-
-		viaLinkPidMap = new HashMap<Integer, List<Integer>>();
-
-		relationTypeMap = new HashMap<Integer, Integer>();
 
 		String sql = "select * from table(package_utils.get_restrict_points(:1,:2,:3))";
 

@@ -102,7 +102,7 @@ public class Operation implements IOperation {
 						for (int i = 0; i < geoNum; i++) {
 							Geometry subGeo = geomInter.getGeometryN(i);
 							if (subGeo instanceof LineString) {
-								geomInter = GeoTranslator.geojson2Jts(GeoTranslator.jts2Geojson(subGeo), 1, 5);
+								subGeo = GeoTranslator.geojson2Jts(GeoTranslator.jts2Geojson(subGeo), 1, 5);
 
 								RwLinkOperateUtils.createRwLinkWithMesh(subGeo, maps, result, link);
 							}

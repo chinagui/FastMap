@@ -11,14 +11,14 @@ import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.lc.LcLink;
-import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLink;
 import com.navinfo.dataservice.dao.glm.selector.lc.LcLinkSelector;
-import com.navinfo.dataservice.dao.glm.selector.rd.rw.RwLinkSelector;
 import com.navinfo.dataservice.engine.edit.utils.LcLinkOperateUtils;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryCollection;
+import com.vividsolutions.jts.geom.LineString;
 
 import net.sf.json.JSONObject;
 
@@ -121,8 +121,22 @@ public class Operation implements IOperation {
 				while (it.hasNext()) {
 					String meshIdStr = it.next();
 					Geometry geomInter = MeshUtils.linkInterMeshPolygon(g, GeoTranslator.transform(MeshUtils.mesh2Jts(meshIdStr),1,5));
-					geomInter = GeoTranslator.geojson2Jts(GeoTranslator.jts2Geojson(geomInter), 1, 5);
-					LcLinkOperateUtils.createLcLinkWithMesh(geomInter, maps, result);
+					if(geomInter instanceof GeometryCollection)
+					{
+						int geoNum = geomInter.getNumGeometries();
+						for (int i = 0; i < geoNum; i++) {
+							Geometry subGeo = geomInter.getGeometryN(i);
+							if (subGeo instanceof LineString) {
+								subGeo = GeoTranslator.geojson2Jts(GeoTranslator.jts2Geojson(subGeo), 1, 5);
+								LcLinkOperateUtils.createLcLinkWithMesh(subGeo, maps, result);
+							}
+						}
+					}
+					else
+					{
+						geomInter = GeoTranslator.geojson2Jts(GeoTranslator.jts2Geojson(geomInter), 1, 5);
+						LcLinkOperateUtils.createLcLinkWithMesh(geomInter, maps, result);
+					}
 				}
 			}
 		}

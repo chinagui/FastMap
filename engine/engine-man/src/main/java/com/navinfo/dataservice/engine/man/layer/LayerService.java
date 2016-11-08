@@ -91,7 +91,7 @@ public class LayerService {
 				num+=1;
 			}
 		}
-		MessageOperation.batchInsert(conn,msgList);
+		MessageOperation.batchInsert(conn,msgList, 0,"MAN");
 	}
 	
 	public void update(String layerId,String wkt,String layerName)throws Exception{

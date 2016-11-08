@@ -28,7 +28,7 @@ public class LuFaceTest extends InitApplication {
 
 	@Test
 	public void createFaceByLuLInkTest() {
-		String parameter = "{\"command\":\"CREATE\",\"type\":\"ADFACE\",\"linkType\":\"ADLINK\",\"dbId\":43,\"data\":{\"linkPids\":[\"100035661\",\"100035663\",\"100035666\"]}}";
+		String parameter = "{\"command\":\"CREATE\",\"type\":\"LUFACE\",\"dbId\":17,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.37564182281494,40.59147827180602],[116.37549161911011,40.590916117076524],[116.37657523155212,40.59088352825164],[116.37564182281494,40.59147827180602]]}}}";
 		TestUtil.run(parameter);
 	}
 	

@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.inter.RdInter;
 import com.navinfo.dataservice.dao.glm.model.rd.inter.RdInterLink;
@@ -165,10 +166,10 @@ public class RdInterSelector extends AbstractSelector {
 		return rdInterLink;
 	}
 	
-	public List<RdInter> loadRdInterByOutLinkPid(int linkPid, boolean isLock) throws Exception {
+	public List<RdInter> loadRdInterByOutLinkPid(List<Integer> linkPidList, boolean isLock) throws Exception {
 		List<RdInter> interList = new ArrayList<RdInter>();
 
-		String sql = "select * from rd_inter where pid in(select b.pid from rd_inter_link b where b.pid in(select pid from rd_inter_link where u_record !=2 and link_pid = :1) group by b.pid) and u_record !=2";
+		String sql = "SELECT * FROM RD_INTER WHERE PID IN (SELECT B.PID FROM RD_INTER_LINK B WHERE U_RECORD != 2 AND LINK_PID in ("+StringUtils.getInteStr(linkPidList)+") GROUP BY B.PID) AND U_RECORD != 2";
 
 		if (isLock) {
 			sql += " for update nowait";
@@ -181,8 +182,6 @@ public class RdInterSelector extends AbstractSelector {
 		try {
 			pstmt = conn.prepareStatement(sql);
 
-			pstmt.setInt(1, linkPid);
-
 			resultSet = pstmt.executeQuery();
 
 			while (resultSet.next()) {
@@ -193,6 +192,10 @@ public class RdInterSelector extends AbstractSelector {
 				List<IRow> interLinks = new AbstractSelector(RdInterLink.class, conn).loadRowsByParentId(inter.getPid(),true);
 				
 				inter.setLinks(interLinks);
+				
+				List<IRow> interNodeList = new AbstractSelector(RdInterNode.class,conn).loadRowsByParentId(inter.getPid(), isLock);
+				
+				inter.setNodes(interNodeList);
 				
 				interList.add(inter);
 			}

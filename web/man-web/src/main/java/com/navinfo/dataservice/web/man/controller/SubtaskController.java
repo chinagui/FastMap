@@ -185,7 +185,7 @@ public class SubtaskController extends BaseController {
 	public SubtaskListByUserResponse listByUser(@ApiParam(required =true, name = "access_token", value="接口调用凭证")@RequestParam( value = "access_token") String access_token
 			,@ApiParam(required =true, name = "parameter", value="{<br/>\"exeUserId\":1\\\\作业员ID,<br/>\"stage\":1\\\\0采集、1日编、2月编,<br/>\"type\":1\\\\0 POI、1道路、2一体化、3专项,<br/>\"status\":1\\\\2进行中、3已完成,<br/>\"snapshot\":1\\\\0 返回全部字段/1 不返回geometry和gridIds,<br/>\"pageNum\":1\\\\页码（默认1，返回首页）,<br/>\"pageSize\":1\\\\每页条数，默认20<br/>}")@RequestParam( value = "parameter") String postData			,HttpServletRequest request){
 		try{	
-
+			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
 			if(dataJson==null){
 				throw new IllegalArgumentException("parameter参数不能为空。");
@@ -214,7 +214,7 @@ public class SubtaskController extends BaseController {
 			}
 
             Subtask bean = (Subtask)JSONObject.toBean(dataJson, Subtask.class);
-            
+            if(bean.getExeUserId()==null ||bean.getExeUserId()==0){bean.setExeUserId((int)tokenObj.getUserId());}
             Page page = SubtaskService.getInstance().listByUserPage(bean,snapshot,platForm,pageSize,curPageNum);
             
             SubtaskListByUserPage SubtaskListByUserPage = new SubtaskListByUserPage(page.getPageSize(),page.thePageNum(),page.getStart(),page.getTotalCount(),(List<SubtaskListByUser>)page.getResult());

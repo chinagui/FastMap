@@ -42,6 +42,7 @@ public class SubtaskQuery<JSONObject> extends SubtaskListByUser {
 		private Integer qualityExeUserId ;
 		private String qualityPlanStartDate ;
 		private String qualityPlanEndDate;
+		private Integer qualityTaskStatus;
 	
 		public Integer getQualitySubtaskId() {
 			return qualitySubtaskId;
@@ -73,6 +74,13 @@ public class SubtaskQuery<JSONObject> extends SubtaskListByUser {
 		public void setQualityPlanEndDate(String qualityPlanEndDate) {
 			this.qualityPlanEndDate = qualityPlanEndDate;
 		}
+		
+		public Integer getQualityTaskStatus() {
+			return qualityTaskStatus;
+		}
+		public void setQualityTaskStatus(Integer qualityTaskStatus) {
+			this.qualityTaskStatus = qualityTaskStatus;
+		}
 	public SubtaskQuery (Integer subtaskId ,
 			String name,
 			Integer status,
@@ -96,7 +104,7 @@ public class SubtaskQuery<JSONObject> extends SubtaskListByUser {
 			String version,
 			JSONObject geometryJSON
 			, Integer qualitySubtaskId, Integer isQuality, Integer qualityExeUserId,
-			String qualityPlanStartDate, String qualityPlanEndDate
+			String qualityPlanStartDate, String qualityPlanEndDate,Integer qualityTaskStatus
 			){
 		super(subtaskId, name, stage, type, status, descp, dbId,gridIds,geometry,planStartDate,planEndDate);
 		this.setExecuterId(executerId);
@@ -119,6 +127,7 @@ public class SubtaskQuery<JSONObject> extends SubtaskListByUser {
 		this.qualityExeUserId = qualityExeUserId;
 		this.qualityPlanStartDate = qualityPlanStartDate;
 		this.qualityPlanEndDate = qualityPlanEndDate;
+		this.qualityTaskStatus = qualityTaskStatus;
 	}
 	public SubtaskQuery (Integer subtaskId ,
 			String name,

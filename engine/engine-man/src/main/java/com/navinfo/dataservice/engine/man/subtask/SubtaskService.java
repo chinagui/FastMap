@@ -423,7 +423,7 @@ public class SubtaskService {
 					+ ",r.MONTHLY_DB_ID"
 					+ ",st.GEOMETRY"
 					//新增返回字段
-					+ "	,st.quality_Subtask_Id qualitySubtaskId,Q.qualityPlanStartDate ,Q.qualityPlanEndDate ,Q.qualityExeUserId ";
+					+ "	,st.quality_Subtask_Id qualitySubtaskId,Q.qualityPlanStartDate ,Q.qualityPlanEndDate ,Q.qualityExeUserId ,Q.qualityTaskStatus";
 			String userSql = ",u.user_id as executer_id,u.user_real_name as executer";
 			String groupSql = ",ug.group_id as executer_id,ug.group_name as executer";
 			String taskSql = ",T.CITY_ID AS BLOCK_ID,T.TASK_ID AS BLOCK_MAN_ID,T.NAME AS BLOCK_MAN_NAME,T.TASK_TYPE AS TASK_TYPE";
@@ -431,14 +431,14 @@ public class SubtaskService {
 
 			String fromSql_task = " from subtask st "
 					//左外关联质检子任务表
-					+ " left join (select s.SUBTASK_ID ,s.EXE_USER_ID qualityExeUserId,s.PLAN_START_DATE as qualityPlanStartDate,s.PLAN_END_DATE as qualityPlanEndDate from subtask s where s.is_quality = 1 ) Q  on st.quality_subtask_id = Q.subtask_id "
+					+ " left join (select s.SUBTASK_ID ,s.EXE_USER_ID qualityExeUserId,s.PLAN_START_DATE as qualityPlanStartDate,s.PLAN_END_DATE as qualityPlanEndDate,s.STATUS qualityTaskStatus from subtask s where s.is_quality = 1 ) Q  on st.quality_subtask_id = Q.subtask_id "
 					+ ",task t"
 					+ ",city c"
 					+ ",region r";
 
 			String fromSql_block = " from subtask st"
 					//左外关联质检子任务表
-					+ " left join (select s.SUBTASK_ID ,s.EXE_USER_ID qualityExeUserId,s.PLAN_START_DATE as qualityPlanStartDate,s.PLAN_END_DATE as qualityPlanEndDate from subtask s where s.is_quality = 1 ) Q  on st.quality_subtask_id = Q.subtask_id"
+					+ " left join (select s.SUBTASK_ID ,s.EXE_USER_ID qualityExeUserId,s.PLAN_START_DATE as qualityPlanStartDate,s.PLAN_END_DATE as qualityPlanEndDate,s.STATUS qualityTaskStatus from subtask s where s.is_quality = 1 ) Q  on st.quality_subtask_id = Q.subtask_id"
 					+ ",block b,block_man bm"
 					+ ",region r,task t";
 			
@@ -486,7 +486,7 @@ public class SubtaskService {
 						subtask.setQualityExeUserId(rs.getInt("qualityExeUserId"));
 						subtask.setQualityPlanStartDate(rs.getTimestamp("qualityPlanStartDate"));
 						subtask.setQualityPlanEndDate(rs.getTimestamp("qualityPlanEndDate"));
-						
+						subtask.setQualityTaskStatus(rs.getInt("qualityTaskStatus"));
 						
 						STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
 						try {

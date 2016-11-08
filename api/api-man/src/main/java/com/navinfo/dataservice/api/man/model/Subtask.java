@@ -54,6 +54,7 @@ public class Subtask implements Serializable  {
 	private Integer qualityExeUserId ;
 	private Timestamp qualityPlanStartDate ;
 	private Timestamp qualityPlanEndDate;
+	private Integer qualityTaskStatus;
 	
 
 	public Subtask (){
@@ -64,7 +65,7 @@ public class Subtask implements Serializable  {
 			Integer exeGroupId, Integer status, Timestamp planStartDate, Timestamp planEndDate, String descp,
 			List<Integer> gridIds, Integer dbId, Integer groupId, String blockManName, String taskName, String version,
 			Integer executerId, String executer, int percent, JSONObject geometryJSON, Integer qualitySubtaskId,
-			Integer isQuality, Integer qualityExeUserId, Timestamp qualityPlanStartDate, Timestamp qualityPlanEndDate) {
+			Integer isQuality, Integer qualityExeUserId, Timestamp qualityPlanStartDate, Timestamp qualityPlanEndDate,Integer qualityTaskStatus) {
 		super();
 		this.subtaskId = subtaskId;
 		this.name = name;
@@ -98,7 +99,9 @@ public class Subtask implements Serializable  {
 		this.qualityExeUserId = qualityExeUserId;
 		this.qualityPlanStartDate = qualityPlanStartDate;
 		this.qualityPlanEndDate = qualityPlanEndDate;
+		this.qualityTaskStatus = qualityTaskStatus;
 	}
+
 
 	public Subtask (Integer subtaskId ,
 			String name,
@@ -306,6 +309,13 @@ public class Subtask implements Serializable  {
 	}
 	public void setQualityPlanEndDate(Timestamp qualityPlanEndDate) {
 		this.qualityPlanEndDate = qualityPlanEndDate;
+	}
+	//增加质检子任务任务状态
+	public Integer getQualityTaskStatus() {
+		return qualityTaskStatus;
+	}
+	public void setQualityTaskStatus(Integer qualityTaskStatus) {
+		this.qualityTaskStatus = qualityTaskStatus;
 	}
 
 	/* (non-Javadoc)

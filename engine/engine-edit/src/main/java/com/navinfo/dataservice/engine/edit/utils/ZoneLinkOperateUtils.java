@@ -67,7 +67,7 @@ public class ZoneLinkOperateUtils {
 	public static void addLink(Geometry g,int sNodePid, int eNodePid,Result result) throws Exception{
 		ZoneLink link = new ZoneLink();
 		Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(g);
-		link.setPid(PidUtil.getInstance().applyAdLinkPid());
+		link.setPid(PidUtil.getInstance().applyZoneLinkPid());
 		Iterator<String> it = meshes.iterator();
 		while(it.hasNext()){
 			setLinkChildrenMesh(link,Integer.parseInt(it.next()));
@@ -116,7 +116,7 @@ public class ZoneLinkOperateUtils {
 		ZoneLink link = new ZoneLink();
 		link.copy(sourcelink);
 		Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(g);
-		link.setPid(PidUtil.getInstance().applyAdLinkPid());
+		link.setPid(PidUtil.getInstance().applyZoneLinkPid());
 		Iterator<String> it = meshes.iterator();
 		while(it.hasNext()){
 			setLinkChildrenMesh(link,Integer.parseInt(it.next()));

@@ -2,10 +2,9 @@ package com.navinfo.dataservice.engine.man.mqmsg;
 
 import java.sql.Clob;
 import java.sql.Connection;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -14,8 +13,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.dbutils.DbUtils;
-import org.apache.commons.dbutils.ResultSetHandler;
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -26,13 +23,10 @@ import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.mq.MsgHandler;
 import com.navinfo.dataservice.dao.mq.email.EmailPublisher;
-import com.navinfo.dataservice.engine.man.message.MessageOperation;
-import com.navinfo.dataservice.engine.man.message.SendEmail;
-import com.navinfo.dataservice.engine.man.task.TaskOperation;
+import com.navinfo.dataservice.dao.mq.sys.SysMsgPublisher;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoOperation;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
-import com.navinfo.navicommons.geo.computation.GridUtils;
 import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONObject;
@@ -101,7 +95,7 @@ public class InfoChangeMsgHandler implements MsgHandler {
 				
 			}
 			//发送消息
-			taskPushMsg(conn, dataJson.getString("INFO_NAME"), 0);	
+			taskPushMsg(conn, dataJson.getString("INFO_NAME"), 0,inforId);	
 			
 			conn.commit();
 			
@@ -118,12 +112,19 @@ public class InfoChangeMsgHandler implements MsgHandler {
 	 *1.所有生管角色
 	 *2.分配的采集作业组组长(暂无)
 	 * 有新的一级情报，情报名称：XXX，请关注*/
-	public void taskPushMsg(Connection conn,String infoName, long pushUser) {
+	public void taskPushMsg(Connection conn,String infoName, long pushUser, String inforId) {
 		try {
 			String msgTitle="新增一级情报";
-			List<String> msgContentList=new ArrayList<String>();
+			List<Map<String,Object>> msgContentList=new ArrayList<Map<String,Object>>();
 			//List<Long> groupIdList = new ArrayList<Long>();
-			msgContentList.add("有新的一级情报，情报名称:"+infoName+",请关注");
+			Map<String,Object> map = new HashMap<String, Object>();
+			String msgContent = "有新的一级情报，情报名称:"+infoName+",请关注";
+			map.put("msgContent", msgContent);
+			//关联要素
+			JSONObject msgParam = new JSONObject();
+			msgParam.put("relateObject", "INFOR");
+			msgParam.put("relateObjectId", inforId);
+			map.put("msgParam", msgParam.toString());
 			if(msgContentList.size()>0){
 				String userSql="SELECT DISTINCT M.USER_ID FROM ROLE_USER_MAPPING M WHERE M.ROLE_ID =3";
 				List<Integer> userIdList = UserInfoOperation.getUserListBySql(conn, userSql);
@@ -132,17 +133,20 @@ public class InfoChangeMsgHandler implements MsgHandler {
 				//for (Long leaderId : leaderIdByGroupId) {
 				//userIdList.add(leaderId.intValue());
 				//}
-				Object[][] msgList=new Object[userIdList.size()*msgContentList.size()][3];
-				int num=0;
 				for(int userId:userIdList){
-					for(String msgContent:msgContentList){
-						msgList[num][0]=userId;
-						msgList[num][1]=msgTitle;
-						msgList[num][2]=msgContent;
-						num+=1;
+					for(Map<String, Object> msg:msgContentList){
+						//查询用户名称
+						Map<String, Object> userInfo = UserInfoOperation.getUserInfoByUserId(conn, userId);
+						String pushUserName = null;
+						if(userInfo != null && userInfo.size() > 0){
+							pushUserName = (String) userInfo.get("userRealName");
+						}
+						//发送消息到消息队列
+						String manMsgContent = (String) msg.get("msgContent");
+						String manMsgParam = (String) msg.get("msgParam");
+						SysMsgPublisher.publishMsg(msgTitle, manMsgContent, pushUser, new long[]{userId}, 2, manMsgParam, pushUserName);
 					}
 				}
-				MessageOperation.batchInsert(conn,msgList,pushUser,"MAN");
 				//发送邮件
 				String toMail = null;
 				String mailTitle = null;
@@ -151,7 +155,7 @@ public class InfoChangeMsgHandler implements MsgHandler {
 				for (int userId : userIdList) {
 					Map<String, Object> userInfo = UserInfoOperation.getUserInfoByUserId(conn, userId);
 					if(userInfo != null && userInfo.get("userEmail") != null){
-						for (String msgContent : msgContentList) {
+						for (Map<String, Object> msg : msgContentList) {
 							//判断邮箱格式
 							String check = "^([a-z0-9A-Z]+[-|_|\\.]?)+[a-z0-9A-Z]@([a-z0-9A-Z]+(-[a-z0-9A-Z]+)?\\.)+[a-zA-Z]{2,}$";
 			                Pattern regex = Pattern.compile(check);
@@ -159,7 +163,7 @@ public class InfoChangeMsgHandler implements MsgHandler {
 			                if(matcher.matches()){
 			                	toMail = (String) userInfo.get("userEmail");
 			                	mailTitle = msgTitle;
-			                	mailContent = msgContent;
+			                	mailContent = (String) msg.get("msgContent");
 			                	//发送邮件到消息队列
 			                	//SendEmail.sendEmail(toMail, mailTitle, mailContent);
 			                	EmailPublisher.publishMsg(toMail, mailTitle, mailContent);

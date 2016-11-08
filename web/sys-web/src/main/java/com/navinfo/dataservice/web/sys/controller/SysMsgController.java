@@ -187,7 +187,7 @@ public class SysMsgController extends BaseController {
 			for (int i=0;i<count;i++) {
 				targetUserIds[i]=Long.valueOf(split[i]);
 			}
-			SysMsgPublisher.publishMsg(msgTitle, msgContent, userId, targetUserIds);
+			SysMsgPublisher.publishMsg(msgTitle, msgContent, userId, targetUserIds, 1, null, null);
 			return new ModelAndView("jsonView", success("消息发送成功!"));
 		}catch(Exception e){
 			log.error("发送失败，原因："+e.getMessage(), e);

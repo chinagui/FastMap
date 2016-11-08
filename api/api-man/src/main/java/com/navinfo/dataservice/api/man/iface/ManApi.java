@@ -58,5 +58,7 @@ public interface ManApi{
 	public List<Task> queryTaskAll() throws Exception;
 	
 	public Map<String, Object> queryTaskStatByTaskId(long taskId) throws Exception;
+	
+	public Map<String, Object> getUserInfoByUserId(long userId) throws Exception;
 }
 

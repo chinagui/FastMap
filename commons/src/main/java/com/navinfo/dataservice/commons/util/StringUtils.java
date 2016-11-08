@@ -2,7 +2,6 @@ package com.navinfo.dataservice.commons.util;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -180,6 +179,11 @@ public class StringUtils {
 		return expandVariables(source, pro, "${", "}");
 	}
 
+	/**
+	 * int list 转string
+	 * @param integers 
+	 * @return
+	 */
 	public static String getInteStr(List<Integer> integers) {
 		if (integers != null && integers.size() > 0) {
 			return integers.toString().replace("[", "").replace("]", "");

@@ -15,6 +15,8 @@ import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiName;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
+import com.navinfo.dataservice.engine.edit.utils.batch.AdminIDBatchUtils;
+import com.navinfo.dataservice.engine.edit.utils.batch.ZoneIDBatchUtils;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Geometry;
@@ -72,10 +74,9 @@ public class Operation implements IOperation {
         ixPoi.setLinkPid(command.getLinkPid());
 
         ixPoi.setKindCode(command.getKindCode());
-        
-        if(command.getLinkPid() != 0 )
-        {
-        	 //计算poi在link的位置信息（side）
+
+        if (command.getLinkPid() != 0) {
+            //计算poi在link的位置信息（side）
             RdLinkSelector selector = new RdLinkSelector(conn);
             RdLink link = (RdLink) selector.loadById(command.getLinkPid(), true, true);
 
@@ -95,6 +96,7 @@ public class Operation implements IOperation {
         result.insertObject(ixPoi, ObjStatus.INSERT, ixPoi.getPid());
 
         generationIxPoiName(ixPoi, result);
+        AdminIDBatchUtils.updateAdminID(ixPoi, null, conn);
 
         return msg;
     }
@@ -119,11 +121,12 @@ public class Operation implements IOperation {
         ixPoiName.setLangCode("CHI");
         result.insertObject(ixPoiName, ObjStatus.INSERT, poi.pid());
     }
+
     //获取FID
-    private String getFid(){
-    	String date = StringUtils.getCurrentTime() ;
-    	String userId = String.valueOf(this.command.getUserId());
-    	return org.apache.commons.lang.StringUtils.leftPad(userId.concat(date), 20, "0");
-    	
+    private String getFid() {
+        String date = StringUtils.getCurrentTime();
+        String userId = String.valueOf(this.command.getUserId());
+        return org.apache.commons.lang.StringUtils.leftPad(userId.concat(date), 20, "0");
+
     }
 }

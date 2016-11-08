@@ -142,4 +142,5 @@ public class PidSequenceName {
 	
 	public static final String samePoiPidName = "SEQ_IX_SAMEPOI";
 
+	public static final String hgwgLimitPidName = "SEQ_RD_HGWG_LIMIT";
 }

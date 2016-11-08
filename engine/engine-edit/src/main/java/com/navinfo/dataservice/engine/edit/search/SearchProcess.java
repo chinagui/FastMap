@@ -420,7 +420,7 @@ public class SearchProcess {
 						}
 						//路口关系交限不记经过link
 						if (StringUtils.isNotEmpty(objType) && ObjType.valueOf(objType) == ObjType.RDRESTRICTION) {
-							if (relationShipType == 2) {
+							if (relationShipType == 1) {
 								return array;
 							}
 							else

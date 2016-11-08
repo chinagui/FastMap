@@ -77,8 +77,8 @@ public class Command extends AbstractCommand {
 		this.catchNodePid = data.getInt("catchNodePid");
 		this.setLinkPid(data.getInt("linkPid"));
 		if(data.containsKey("longitude")&&data.containsKey("longitude")){
-			this.setPoint((Point) GeoTranslator.point2Jts(
-					data.getDouble("longitude"), data.getDouble("latitude")));
+			this.setPoint((Point)GeoTranslator.transform(GeoTranslator.point2Jts(
+					data.getDouble("longitude"), data.getDouble("latitude")),1,5));
 		}
 		
 		

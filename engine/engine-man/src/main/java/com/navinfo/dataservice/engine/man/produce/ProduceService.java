@@ -222,7 +222,7 @@ public class ProduceService {
 					+ " q5 AS "//产品表(成功或失败)右关联可出品的子任务列表
 					+ " ("
 						+ "	SELECT "
-							+ " NVL(p.PRODUCE_ID,0) PRODUCE_ID,p.CREATE_DATE,NVL(p.PRODUCE_STATUS,4) PRODUCE_STATUS,s.SUBTASK_ID,NVL(p.USER_ID,0) CREATEUSER_ID,"
+							+ " NVL(p.PRODUCE_ID,0) PRODUCE_ID,p.CREATE_DATE,NVL(p.PRODUCE_STATUS,4) PRODUCE_STATUS,s.SUBTASK_ID,NVL(p.USER_ID,0) CREATEUSER_ID,p.CREATE_USER_NAME, "
 							+ "	s.BLOCK_MAN_ID,s.BLOCK_MAN_NAME,s.TYPE TASK_TYPE,s.DAY_PRODUCE_PLAN_START_DATE,s.DAY_PRODUCE_PLAN_END_DATE"
 						+ "	FROM q3 p "
 						+ " RIGHT JOIN "
@@ -238,6 +238,7 @@ public class ProduceService {
 					+ "  FROM (SELECT T.*, ROWNUM AS ROWNUM_ FROM q5 T WHERE ROWNUM <= "+pageEndNum+") T"
 					+ " WHERE T.ROWNUM_ >= "+pageStartNum;
 				log.debug("查询日初评列表sql: "+sql);
+				System.out.println(sql);
 				QueryRunner run=new QueryRunner();
 				ResultSetHandler<Page> rsHandler=new ResultSetHandler<Page>() {
 					public Page handle(ResultSet rs) throws SQLException{
@@ -255,6 +256,7 @@ public class ProduceService {
 							map.put("produceId", rs.getInt("PRODUCE_ID"));
 							map.put("produceStatus", rs.getInt("PRODUCE_STATUS"));
 							map.put("createUserId", rs.getInt("CREATE_USER_ID"));
+							map.put("createUserName", rs.getString("CREATE_USER_NAME"));
 							map.put("subtaskId", rs.getInt("SUBTASK_ID"));
 							
 							//CLOB inforGeo = (CLOB) rs.getClob("PAR");

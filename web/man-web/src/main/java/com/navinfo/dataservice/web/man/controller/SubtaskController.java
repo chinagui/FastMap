@@ -294,6 +294,7 @@ public class SubtaskController extends BaseController {
 						, subtask.getQualityExeUserId()
 						, qualityPlanStartDate
 						, qualityPlanEndDate
+						, subtask.getQualityTaskStatus()
 						
 						);
 				SubtaskQueryResponse response = new SubtaskQueryResponse(0,"success",subtaskQuery);

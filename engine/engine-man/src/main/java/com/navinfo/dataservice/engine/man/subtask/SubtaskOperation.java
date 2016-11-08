@@ -439,7 +439,7 @@ public class SubtaskOperation {
 			if(bean.getQualitySubtaskId() != null && 0!=bean.getQualitySubtaskId()){
 				column += ", QUALITY_SUBTASK_ID";
 				value.add(bean.getQualitySubtaskId());
-				values += ",?)";
+				values += ",?";
 
 			}
 			if(bean.getIsQuality() != null ){

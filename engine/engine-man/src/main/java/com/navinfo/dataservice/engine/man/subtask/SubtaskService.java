@@ -676,13 +676,15 @@ public class SubtaskService {
 			while(iter.hasNext()){
 				Subtask subtask = (Subtask) iter.next();
 				//作业组
-				List<Integer> userIdList = new ArrayList<Integer>();
-				if(subtask.getExeGroupId()!=0){
-					userIdList = SubtaskOperation.getUserListByGroupId(conn,subtask.getExeGroupId());
-				}else{
-					userIdList.add(subtask.getExeUserId());
-				}
-				
+//				List<Integer> userIdList = new ArrayList<Integer>();
+//				if(subtask.getExeGroupId()!=0){
+//					userIdList = SubtaskOperation.getUserListByGroupId(conn,subtask.getExeGroupId());
+//				}else{
+//					userIdList.add(subtask.getExeUserId());
+//				}
+				/*采集/日编/月编子任务发布
+				 * 分配的作业员
+				 * 新增采集/日编/月编子任务：XXX(子任务名称)，请关注*/
 				String msgTitle = "子任务开启";
 				String msgContent = "";
 				int push = 0;

@@ -4,7 +4,9 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -286,7 +288,7 @@ public class SysMsgService {
 			Object[] params = {};
 			//日志
 			log.info("查询man管理消息的sql:"+sql.toString());
-			Page page = queryRunner.query(pageNum,pageSize,conn, querySql, new MultiRowWithPageHandler(pageNum,pageSize), params);
+			Page page = queryRunner.query(pageNum,pageSize,conn, querySql, new MsgWithPageHandler(pageNum, pageSize), params);
 			return page;
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -351,14 +353,14 @@ public class SysMsgService {
 			Object[] params={msgId,userId};
 			long count = queryRunner.queryForLong(sysConn,sql,params);
 			//判断是否为系统消息
-			String msgTypeSql = "SELECT TARGET_USER_ID FROM SYS_MESSAGE WHERE MSG_ID=?";
+			String msgTypeSql = "SELECT MSG_TYPE FROM SYS_MESSAGE WHERE MSG_ID=?";
 			Object[] msgTypeParams={msgId};
-			long targetUserId = queryRunner.queryForLong(sysConn,msgTypeSql,msgTypeParams);
+			long msgType = queryRunner.queryForLong(sysConn,msgTypeSql,msgTypeParams);
 			//是否为已读
 			if(count > 0){
 				//已读消息
 				//是否为系统消息
-				if(targetUserId >0){
+				if(msgType >0){
 					//非系统消息
 					//永久删除日志
 					String deleteLogSql = "DELETE FROM SYS_MESSAGE_READ_LOG WHERE MSG_ID=? AND USER_ID=?";
@@ -373,7 +375,7 @@ public class SysMsgService {
 				}
 			}else{
 				//是否为系统消息
-				if(targetUserId >0){
+				if(msgType >0){
 					//非系统消息
 					//永久删除消息
 					String deleteSql = "DELETE FROM SYS_MESSAGE WHERE MSG_ID=? AND TARGET_USER_ID=?";
@@ -492,8 +494,53 @@ public class SysMsgService {
 		}
 		
 	}
-	
-	
+	/**
+	 * 
+	 * @ClassName MsgWithPageHandler
+	 * @author Han Shaoming
+	 * @date 2016年11月9日 上午10:35:38
+	 * @Description TODO
+	 */
+	class MsgWithPageHandler implements ResultSetHandler<Page>{
+		private int pageNum;
+		private int pageSize;
+		MsgWithPageHandler(int pageNum,int pageSize){
+			this.pageNum=pageNum;
+			this.pageSize=pageSize;
+		}
+		public Page handle(ResultSet rs) throws SQLException {
+			Page page = new Page(pageNum);
+			page.setPageSize(pageSize);
+			int total = 0;
+			List<Map<String,Object>> msgs = new ArrayList<Map<String,Object>>();
+			while(rs.next()){
+				Map<String,Object> msg = new HashMap<String, Object>();
+				msg.put("msgId",rs.getLong("MSG_ID"));
+				msg.put("msgType",rs.getInt("MSG_TYPE"));
+				msg.put("msgContent",rs.getString("MSG_CONTENT"));
+				msg.put("createTime",rs.getTimestamp("CREATE_TIME"));
+				msg.put("targetUserId",rs.getLong("TARGET_USER_ID"));
+				msg.put("msgTitle",rs.getString("MSG_TITLE"));
+				msg.put("pushUserId",rs.getLong("PUSH_USER_ID"));
+				//处理关联要素
+				String msgParam = rs.getString("MSG_PARAM");
+				JSONObject jsn = JSONObject.fromObject(msgParam);
+				String relateObject = (String) jsn.get("relateObject");
+				long relateObjectId = (Integer) jsn.get("relateObjectId");
+				msg.put("relateObject",relateObject);
+				msg.put("relateObjectId",relateObjectId);
+				msg.put("pushUserName",rs.getString("PUSH_USER_NAME"));
+				msgs.add(msg);
+				if(total==0){
+					total=rs.getInt("TOTAL_RECORD_NUM_");
+				}
+			}
+			page.setResult(msgs);
+			page.setTotalCount(total);
+			return page;
+		}
+		
+	}
 	
 	
 }

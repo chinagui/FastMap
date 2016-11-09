@@ -10,7 +10,6 @@ import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
-import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeSelector;
 
 public class OpTopo implements IOperation {
 
@@ -52,18 +51,15 @@ public class OpTopo implements IOperation {
 
 		List<AlertObject> alertList = new ArrayList<>();
 
-		if(!alertList.contains(alertObj))
-		{
+		if (!alertList.contains(alertObj)) {
 			alertList.add(alertObj);
 		}
 
 		return alertList;
 	}
 
-	public List<AlertObject> getDeleteNodeInfectData(int linkPid, Connection conn) throws Exception {
-		RdNodeSelector selector = new RdNodeSelector(conn);
-
-		List<RdNode> nodeList = selector.loadEndRdNodeByLinkPid(linkPid, false);
+	public List<AlertObject> getDeleteNodeInfectData(int linkPid, Connection conn, List<RdNode> nodeList)
+			throws Exception {
 
 		List<AlertObject> alertList = new ArrayList<>();
 
@@ -76,8 +72,7 @@ public class OpTopo implements IOperation {
 
 			alertObj.setStatus(ObjStatus.DELETE);
 
-			if(!alertList.contains(alertObj))
-			{
+			if (!alertList.contains(alertObj)) {
 				alertList.add(alertObj);
 			}
 		}

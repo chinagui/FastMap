@@ -266,7 +266,7 @@ public class Process extends AbstractProcess<Command> {
 		opRefSpeedlimit.run(this.getResult());
 
 		// 立交
-		IOperation opRefRdGsc = new OpRefRdGsc(this.getCommand(),this.getConn());
+		IOperation opRefRdGsc = new OpRefRdGsc(this.getCommand(), this.getConn());
 		opRefRdGsc.run(this.getResult());
 
 		// 行政区划
@@ -298,7 +298,7 @@ public class Process extends AbstractProcess<Command> {
 
 		// CRF交叉点
 		OpRefRdInter opRefRdInter = new OpRefRdInter(this.getConn());
-		opRefRdInter.run(this.getResult(), this.getCommand().getLink());
+		opRefRdInter.run(this.getResult(), this.getCommand().getLink(), this.getCommand().getNodePids());
 
 		// CRF对象
 		OpRefRdObject opRefRdObject = new OpRefRdObject(this.getConn());
@@ -359,6 +359,9 @@ public class Process extends AbstractProcess<Command> {
 		// 获取该link对象
 		lockRdLink();
 
+		// 获取删除的盲端node
+		lockRdNode();
+
 		RdLink link = this.getCommand().getLink();
 
 		if (link == null) {
@@ -366,9 +369,9 @@ public class Process extends AbstractProcess<Command> {
 		}
 
 		int linkPid = link.getPid();
-		
+
 		List<Integer> linkPidList = new ArrayList<>();
-		
+
 		linkPidList.add(linkPid);
 
 		Connection conn = getConn();
@@ -389,7 +392,8 @@ public class Process extends AbstractProcess<Command> {
 		}
 
 		// node
-		List<AlertObject> nodeAlertDataList = opTopo.getDeleteNodeInfectData(linkPid, conn);
+		List<AlertObject> nodeAlertDataList = opTopo.getDeleteNodeInfectData(linkPid, conn,
+				this.getCommand().getNodes());
 		if (CollectionUtils.isNotEmpty(nodeAlertDataList)) {
 			infects.put("删除Node", nodeAlertDataList);
 		}
@@ -405,7 +409,7 @@ public class Process extends AbstractProcess<Command> {
 		if (CollectionUtils.isNotEmpty(delResAlertDataList)) {
 			infects.put("此link上存在交限关系信息，删除该Link会对应删除该交限", delResAlertDataList);
 		}
-		
+
 		// 车信
 		com.navinfo.dataservice.engine.edit.operation.obj.rdlaneconnexity.delete.Operation rdLaneConOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdlaneconnexity.delete.Operation(
 				conn);
@@ -413,7 +417,8 @@ public class Process extends AbstractProcess<Command> {
 		if (CollectionUtils.isNotEmpty(updateRdLaneConAlertDataList)) {
 			infects.put("此link上存在车信关系信息，删除该Link会对应删除此组关系", updateRdLaneConAlertDataList);
 		}
-		List<AlertObject> delRdLaneConAlertDataList = rdLaneConOperation.getDeleteRdLaneConnexityInfectData(linkPidList);
+		List<AlertObject> delRdLaneConAlertDataList = rdLaneConOperation
+				.getDeleteRdLaneConnexityInfectData(linkPidList);
 		if (CollectionUtils.isNotEmpty(delRdLaneConAlertDataList)) {
 			infects.put("此link上存在车信关系信息，删除该Link会对应删除该车信", delRdLaneConAlertDataList);
 		}
@@ -450,7 +455,7 @@ public class Process extends AbstractProcess<Command> {
 		// 立交
 		com.navinfo.dataservice.engine.edit.operation.obj.rdgsc.delete.Operation rdGscOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdgsc.delete.Operation(
 				conn);
-		List<IObj> linkList = new ArrayList<>(); 
+		List<IObj> linkList = new ArrayList<>();
 		linkList.add(link);
 		List<AlertObject> delGscAlertDataList = rdGscOperation.getDeleteRdGscInfectData(linkList);
 		if (CollectionUtils.isNotEmpty(delGscAlertDataList)) {
@@ -481,11 +486,13 @@ public class Process extends AbstractProcess<Command> {
 		// CRF交叉点
 		com.navinfo.dataservice.engine.edit.operation.obj.rdinter.delete.Operation rdInterOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdinter.delete.Operation(
 				conn);
-		List<AlertObject> updateRdInterAlertDataList = rdInterOperation.getUpdateRdInterInfectData(linkPid, conn);
+		List<AlertObject> updateRdInterAlertDataList = rdInterOperation.getUpdateRdInterInfectData(linkPidList,
+				this.getCommand().getNodePids(), conn);
 		if (CollectionUtils.isNotEmpty(updateRdInterAlertDataList)) {
 			infects.put("删除link维护CRF交叉点", updateRdInterAlertDataList);
 		}
-		List<AlertObject> delRdInterAlertDataList = rdInterOperation.getDeleteRdInterInfectData(linkPid, conn);
+		List<AlertObject> delRdInterAlertDataList = rdInterOperation.getDeleteRdInterInfectData(linkPidList,
+				this.getCommand().getNodePids(), conn);
 		if (CollectionUtils.isNotEmpty(delRdInterAlertDataList)) {
 			infects.put("删除link删除CRF交叉点", delRdInterAlertDataList);
 		}
@@ -509,7 +516,8 @@ public class Process extends AbstractProcess<Command> {
 		// 同一点
 		com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.delete.Operation sameNodeOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.delete.Operation(
 				conn);
-		List<AlertObject> sameNodeAlertDataList = sameNodeOperation.getDeleteLinkSameNodeInfectData(this.getCommand().getNodePids(), "RD_NODE", conn);
+		List<AlertObject> sameNodeAlertDataList = sameNodeOperation
+				.getDeleteLinkSameNodeInfectData(this.getCommand().getNodePids(), "RD_NODE", conn);
 		if (CollectionUtils.isNotEmpty(sameNodeAlertDataList)) {
 			infects.put("删除link影响的同一点", sameNodeAlertDataList);
 		}

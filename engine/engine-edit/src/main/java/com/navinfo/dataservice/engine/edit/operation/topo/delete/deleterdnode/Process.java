@@ -291,7 +291,7 @@ public class Process extends AbstractProcess<Command> {
 
 		// CRF交叉点
 		OpRefRdInter opRefRdInter = new OpRefRdInter(this.getConn());
-		opRefRdInter.run(this.getResult(), this.getCommand());
+		opRefRdInter.run(this.getResult(), this.getCommand(), this.getCommand().getNodePids());
 
 		// 同一点关系
 		OpRefRdSameNode opRefRdSameNode = new OpRefRdSameNode(getConn());
@@ -495,11 +495,10 @@ public class Process extends AbstractProcess<Command> {
 		List<AlertObject> delRdInterAlertDataList = new ArrayList<>();
 		com.navinfo.dataservice.engine.edit.operation.obj.rdinter.delete.Operation rdInterOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdinter.delete.Operation(
 				conn);
-		for (RdLink link : links) {
-			int linkPid = link.getPid();
-			updateRdInterAlertDataList.addAll(rdInterOperation.getUpdateRdInterInfectData(linkPid, conn));
-			delRdInterAlertDataList.addAll(rdInterOperation.getDeleteRdInterInfectData(linkPid, conn));
-		}
+		updateRdInterAlertDataList
+				.addAll(rdInterOperation.getUpdateRdInterInfectData(this.getCommand().getLinkPids(), this.getCommand().getNodePids(), conn));
+		delRdInterAlertDataList
+				.addAll(rdInterOperation.getDeleteRdInterInfectData(this.getCommand().getLinkPids(), this.getCommand().getNodePids(), conn));
 		if (CollectionUtils.isNotEmpty(updateRdInterAlertDataList)) {
 			infects.put("删除link维护CRF交叉点", updateRdInterAlertDataList);
 		}

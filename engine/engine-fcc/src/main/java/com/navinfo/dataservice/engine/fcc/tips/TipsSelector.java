@@ -414,7 +414,10 @@ public class TipsSelector {
 					}
 
 				}
-
+				// 路口名称
+				else if (type == 1704) {
+					m.put("c", deep.getString("name"));
+				}
 				snapshot.setM(m);
 
 				array.add(snapshot.Serialize(null));
@@ -1012,10 +1015,7 @@ public class TipsSelector {
 							deep.getString("rdNm") + "("
 									+ deep.getString("num") + ")");
 				}
-				// 路口名称
-				else if (type == 1704) {
-					m.put("c", deep.getString("name"));
-				} else if (type == 1501) {
+				 else if (type == 1501) {
 					m.put("e", "上下线分离");
 				} else if (type == 1801) {
 					m.put("e", "立交");

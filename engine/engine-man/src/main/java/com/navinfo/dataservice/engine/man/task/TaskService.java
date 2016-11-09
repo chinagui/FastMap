@@ -593,11 +593,11 @@ public class TaskService {
 		}
 	}
 
-	public Page queryMonthTask(int monthEditGroupId, JSONObject condition, int curPageNum, int curPageSize) throws Exception {
+	public Page queryMonthTask(JSONObject condition, int curPageNum, int curPageSize) throws Exception {
 		Connection conn = null;
 		try{
 			conn = DBConnector.getInstance().getManConnection();	
-			return TaskOperation.queryMonthTask(conn,monthEditGroupId,condition,curPageNum,curPageSize);
+			return TaskOperation.queryMonthTask(conn,condition,curPageNum,curPageSize);
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

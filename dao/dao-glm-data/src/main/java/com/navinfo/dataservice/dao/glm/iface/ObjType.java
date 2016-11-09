@@ -53,6 +53,7 @@ public enum ObjType {
     RDCROSSWALKINFO,
     RDCROSSWALKNODE,
     RDHGWGLIMIT,
+    RDMILEAGEPILE,
 
     ADFACE,
     ADADMIN,

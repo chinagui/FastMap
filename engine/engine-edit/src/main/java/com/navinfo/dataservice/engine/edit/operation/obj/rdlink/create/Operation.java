@@ -19,6 +19,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossNode;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.dao.glm.model.rd.trafficsignal.RdTrafficsignal;
+import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossNodeSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.edit.utils.AdminOperateUtils;
@@ -114,6 +115,11 @@ public class Operation implements IOperation {
 		List<IRow> addRows = result.getAddObjects();
 
 		Map<Integer, List<Integer>> crossNodeMap = new HashMap<>();
+		
+		RdCrossSelector selector = new RdCrossSelector(conn);
+		
+		//针对挂接两个node点为都是路口点位的要维护link形态为交叉口内link
+		List<Integer> hasHandledLinks = handleLinksForCorss(links);
 
 		for (IRow row : addRows) {
 			if (row instanceof RdCrossNode) {
@@ -131,10 +137,8 @@ public class Operation implements IOperation {
 			}
 		}
 
-		RdCrossSelector selector = new RdCrossSelector(conn);
-
 		List<RdTrafficsignal> insertTraffsignals = new ArrayList<>();
-
+		
 		for (Map.Entry<Integer, List<Integer>> entry : crossNodeMap.entrySet()) {
 			int crossPid = entry.getKey();
 
@@ -153,8 +157,8 @@ public class Operation implements IOperation {
 			}
 
 			for (RdLink link : links) {
-				// 交叉口内link
-				if (allCrossNodePidList.contains(link.getsNodePid())
+				// 交叉口内link。已经处理过的不再处理
+				if (!hasHandledLinks.contains(link.getPid()) && allCrossNodePidList.contains(link.getsNodePid())
 						&& allCrossNodePidList.contains(link.geteNodePid())) {
 					RdLinkForm form = (RdLinkForm) link.getForms().get(0);
 
@@ -185,6 +189,41 @@ public class Operation implements IOperation {
 		for (RdTrafficsignal signal : insertTraffsignals) {
 			result.insertObject(signal, ObjStatus.INSERT, signal.getPid());
 		}
+	}
+
+	/**
+	 * 针对新增的link处理挂接两个node点都是同一个路口点的形态问题
+	 * @param links
+	 * @param selector 
+	 * @throws Exception 
+	 */
+	private List<Integer> handleLinksForCorss(List<RdLink> links) throws Exception {
+		List<Integer> hasHandledLink = new ArrayList<>();
+		
+		RdCrossNodeSelector nodeSelector = new RdCrossNodeSelector(conn);
+		
+		for(RdLink link : links)
+		{
+			int sNodePid = link.getsNodePid();
+			
+			RdCrossNode sCrossNode = (RdCrossNode) nodeSelector.loadByNodeId(sNodePid, true);
+			
+			int eNodePid = link.geteNodePid();
+			
+			RdCrossNode eCrossNode = (RdCrossNode) nodeSelector.loadByNodeId(eNodePid, true);
+			
+			//如果起点和终点是同一路口点，则link形态为交叉口内link
+			if(!hasHandledLink.contains(link.getPid()) && sCrossNode != null && eCrossNode != null && sCrossNode.getPid() == eCrossNode.getPid())
+			{
+				RdLinkForm form = (RdLinkForm) link.getForms().get(0);
+
+				form.setFormOfWay(50);
+				
+				hasHandledLink.add(link.getPid());
+			}
+		}
+		
+		return hasHandledLink;
 	}
 
 	/*

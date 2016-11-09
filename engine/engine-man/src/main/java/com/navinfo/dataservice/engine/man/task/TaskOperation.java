@@ -235,17 +235,72 @@ public class TaskOperation {
 			if(bean.getTaskId()!=null && bean.getTaskId()!=0){
 				taskIdStr=bean.getTaskId().toString();
 			}
-			String createSql = "insert into task (TASK_ID,NAME,CITY_ID, CREATE_USER_ID, CREATE_DATE, STATUS, DESCP, "
-					+ "PLAN_START_DATE, PLAN_END_DATE,TASK_TYPE,LATEST,month_Edit_Plan_Start_Date,"
-					+ "month_Edit_Plan_End_Date,month_Edit_Group_Id,month_Produce_Plan_Start_Date,"
-					+ "month_Produce_Plan_End_Date) "
-					+ "values("+taskIdStr+",'"+bean.getTaskName()+"',"+bean.getCityId()+","+bean.getCreateUserId()+",sysdate,2,'"
-					+  bean.getTaskDescp()+"',to_timestamp('"+ bean.getPlanStartDate()
-					+"','yyyy-mm-dd hh24:mi:ss.ff'),to_timestamp('"+ bean.getPlanEndDate()+"','yyyy-mm-dd hh24:mi:ss.ff')"
-					+","+bean.getTaskType()+",1,to_timestamp('"+bean.getMonthEditPlanStartDate()+"','yyyy-mm-dd hh24:mi:ss.ff'),"
-					+ "to_timestamp('"+bean.getMonthEditPlanEndDate()+"','yyyy-mm-dd hh24:mi:ss.ff'),"
-					+ bean.getMonthEditGroupId()+",to_timestamp('"+bean.getMonthProducePlanStartDate()+"','yyyy-mm-dd hh24:mi:ss.ff'),"
-					+ "to_timestamp('"+bean.getMonthProducePlanEndDate()+"','yyyy-mm-dd hh24:mi:ss.ff'))";
+			
+			String insertPart="";
+			String valuePart="";
+			if (bean!=null&&bean.getTaskId()!=null && bean.getTaskId()!=0 && StringUtils.isNotEmpty(bean.getTaskId().toString())){
+				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+				insertPart+=" TASK_ID ";
+				valuePart+=bean.getTaskId();
+			};
+			if (bean!=null&&bean.getTaskName()!=null && StringUtils.isNotEmpty(bean.getTaskName().toString())){
+				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+				insertPart+=" NAME ";
+				valuePart+=bean.getTaskName();
+			};
+			if (bean!=null&&bean.getCityId()!=null && bean.getCityId()!=0 && StringUtils.isNotEmpty(bean.getCityId().toString())){
+				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+				insertPart+=" CITY_ID ";
+				valuePart+=bean.getCityId();
+			};
+			insertPart+=" CREATE_USER_ID,CREATE_DATE,STATUS,LATEST ";
+			valuePart+=bean.getCreateUserId()+"sysdate,2,1";
+			if (bean!=null&&bean.getTaskDescp()!=null && StringUtils.isNotEmpty(bean.getTaskDescp().toString())){
+				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+				insertPart+=" DESCP ";
+				valuePart+=bean.getTaskDescp();
+			};
+			if (bean!=null&&bean.getPlanStartDate()!=null && StringUtils.isNotEmpty(bean.getPlanStartDate().toString())){
+				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+				insertPart+=" PLAN_START_DATE ";
+				valuePart+="to_timestamp('"+ bean.getPlanStartDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
+			};
+			if (bean!=null&&bean.getPlanEndDate()!=null && StringUtils.isNotEmpty(bean.getPlanEndDate().toString())){
+				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+				insertPart+=" PLAN_END_DATE ";
+				valuePart+="to_timestamp('"+ bean.getPlanEndDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
+			};
+			if (bean!=null&&bean.getTaskType()!=null && bean.getTaskType()!=0 && StringUtils.isNotEmpty(bean.getTaskType().toString())){
+				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+				insertPart+=" TASK_TYPE ";
+				valuePart+=bean.getTaskType();
+			};
+			if (bean!=null&&bean.getMonthEditPlanStartDate()!=null && StringUtils.isNotEmpty(bean.getMonthEditPlanStartDate().toString())){
+				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+				insertPart+=" MONTH_EDIT_PLAN_START_DATE ";
+				valuePart+="to_timestamp('"+ bean.getMonthEditPlanStartDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
+			};
+			if (bean!=null&&bean.getMonthEditPlanEndDate()!=null && StringUtils.isNotEmpty(bean.getMonthEditPlanEndDate().toString())){
+				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+				insertPart+=" MONTH_EDIT_PLAN_END_DATE";
+				valuePart+="to_timestamp('"+ bean.getMonthEditPlanEndDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
+			};
+			if (bean!=null&&bean.getMonthEditGroupId()!=null && bean.getMonthEditGroupId()!=0 && StringUtils.isNotEmpty(bean.getMonthEditGroupId().toString())){
+				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+				insertPart+=" MONTH_EDIT_GROUP_ID ";
+				valuePart+=bean.getMonthEditGroupId();
+			};
+			if (bean!=null&&bean.getMonthProducePlanStartDate()!=null && StringUtils.isNotEmpty(bean.getMonthProducePlanStartDate().toString())){
+				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+				insertPart+=" month_Produce_Plan_Start_Date ";
+				valuePart+="to_timestamp('"+ bean.getMonthProducePlanStartDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
+			};
+			if (bean!=null&&bean.getMonthProducePlanEndDate()!=null && StringUtils.isNotEmpty(bean.getMonthProducePlanEndDate().toString())){
+				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+				insertPart+=" month_Produce_Plan_End_Date";
+				valuePart+="to_timestamp('"+ bean.getMonthProducePlanEndDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
+			};
+			String createSql = "insert into task ("+insertPart+") values("+valuePart+")";
 			
 			run.update(conn,createSql);			
 		}catch(Exception e){

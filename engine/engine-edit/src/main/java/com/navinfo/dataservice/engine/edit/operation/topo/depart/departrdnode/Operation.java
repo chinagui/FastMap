@@ -81,8 +81,6 @@ public class Operation implements IOperation {
 
 			if (this.command.getCatchLinkPid() != 0) {
 
-
-
 				this.caleCatchBreakLink(result);
 			}
 
@@ -103,9 +101,15 @@ public class Operation implements IOperation {
 		// 如果没有挂接的link node需要继承 如果有node需要新生成
 		int breakNodePid = this.command.getNodePid();
 		if (this.command.getLinks().size() > 1) {
-			breakNodePid = NodeOperateUtils.createRdNode(
-					this.command.getPoint().getX(),
-					this.command.getPoint().getY()).getPid();
+			RdNode node = NodeOperateUtils.createRdNode(this.command.getPoint()
+					.getX(), this.command.getPoint().getY());
+			result.insertObject(node, ObjStatus.INSERT, node.getPid());
+			breakNodePid = node.getPid();
+
+		}
+		// node继承需要修改node的几何
+		else {
+			this.updateNodeGeo(result);
 
 		}
 
@@ -127,6 +131,39 @@ public class Operation implements IOperation {
 		// 维护修行link的几何
 		this.updateLinkGeomtry(result, breakNodePid);
 
+	}
+
+	/**
+	 * 修改node的几何
+	 * 
+	 * */
+
+	private void updateNodeGeo(Result result) throws Exception {
+		JSONObject geojson = new JSONObject();
+		geojson.put("type", "Point");
+
+		geojson.put("coordinates",
+				new double[] { this.command.getPoint().getX(),
+						this.command.getPoint().getY() });
+
+		JSONObject updateContent = new JSONObject();
+
+		// 要移动点的dbId
+		updateContent.put("dbId", command.getDbId());
+		JSONObject data = new JSONObject();
+		// 移动点的新几何
+		data.put("geometry", geojson);
+		data.put("pid", this.command.getNodePid());
+		data.put("objStatus", ObjStatus.UPDATE);
+		updateContent.put("data", data);
+
+		// 组装更新线的参数
+		// 保证是同一个连接
+		com.navinfo.dataservice.engine.edit.operation.obj.rdnode.update.Command updatecommand = new com.navinfo.dataservice.engine.edit.operation.obj.rdnode.update.Command(
+				updateContent, command.getRequester(), this.command.getNode());
+		com.navinfo.dataservice.engine.edit.operation.obj.rdnode.update.Process process = new com.navinfo.dataservice.engine.edit.operation.obj.rdnode.update.Process(
+				updatecommand, result, conn);
+		process.innerRun();
 
 	}
 

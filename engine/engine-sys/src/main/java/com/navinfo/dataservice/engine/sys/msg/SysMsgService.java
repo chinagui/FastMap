@@ -55,7 +55,7 @@ public class SysMsgService {
 		try{
 			QueryRunner queryRunner = new QueryRunner();
 			sysConn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
-			String sql = "SELECT T.* FROM SYS_MESSAGE T WHERE NOT EXISTS(SELECT 1 FROM SYS_MESSAGE_READ_LOG L WHERE T.MSG_ID=L.MSG_ID AND L.USER_ID=?) AND T.TARGET_USER_ID IN (0,?) ORDER BY CREATE_TIME DESC";
+			String sql = "SELECT T.* FROM SYS_MESSAGE T WHERE NOT EXISTS(SELECT 1 FROM SYS_MESSAGE_READ_LOG L WHERE T.MSG_ID=L.MSG_ID AND L.USER_ID=?) AND T.TARGET_USER_ID IN (0,?) AND T.MSG_TYPE IN (0,1,3) ORDER BY CREATE_TIME DESC";
 			msgs = queryRunner.query(sysConn, sql, new MultiRowHandler(), userId,userId);
 			//设置为已读
 			//sql = "INSERT INTO SYS_MESSAGE_READ_LOG (MSG_ID,USER_ID) SELECT T.MSG_ID,? USER_ID FROM SYS_MESSAGE T WHERE NOT EXISTS(SELECT 1 FROM SYS_MESSAGE_READ_LOG L WHERE T.MSG_ID=L.MSG_ID AND L.USER_ID=?) AND T.TARGET_USER_ID IN (0,?)";
@@ -117,7 +117,7 @@ public class SysMsgService {
 		try{
 			QueryRunner queryRunner = new QueryRunner();
 			sysConn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
-			String sql = "SELECT T.* FROM SYS_MESSAGE T WHERE EXISTS(SELECT 1 FROM SYS_MESSAGE_READ_LOG L WHERE T.MSG_ID=L.MSG_ID AND L.USER_ID=? AND L.MSG_STATUS=1) ORDER BY CREATE_TIME DESC";
+			String sql = "SELECT T.* FROM SYS_MESSAGE T WHERE EXISTS(SELECT 1 FROM SYS_MESSAGE_READ_LOG L WHERE T.MSG_ID=L.MSG_ID AND L.USER_ID=? AND L.MSG_STATUS=1) AND T.MSG_TYPE IN (0,1,3) ORDER BY CREATE_TIME DESC";
 			Object[] params = {userId};
 			Page page = queryRunner.query(pageNum,pageSize,sysConn, sql, new MultiRowWithPageHandler(pageNum,pageSize), params);
 			return page;
@@ -209,7 +209,7 @@ public class SysMsgService {
 			//查询消息
 			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
 			queryRunner = new QueryRunner();
-			String sql = "SELECT DISTINCT M.MSG_TITLE FROM SYS_MESSAGE M WHERE M.TARGET_USER_ID=?";
+			String sql = "SELECT DISTINCT M.MSG_TITLE FROM SYS_MESSAGE T WHERE T.MSG_TYPE=2 AND T.TARGET_USER_ID=?";
 			Object[] params = {userId};
 			ResultSetHandler<List<String>> rsh = new ResultSetHandler<List<String>>() {
 

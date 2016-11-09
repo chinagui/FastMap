@@ -78,7 +78,11 @@ public class Operation implements IOperation {
 				this.caleCatchNode(result);
 			}
 			// 打断功能
+
 			if (this.command.getCatchLinkPid() != 0) {
+
+
+
 				this.caleCatchBreakLink(result);
 			}
 
@@ -108,14 +112,21 @@ public class Operation implements IOperation {
 		data.put("longitude", this.command.getPoint().getX());
 		data.put("latitude", this.command.getPoint().getY());
 		data.put("breakNodePid", breakNodePid);
+		if (this.command.getLinks().size() == 1) {
+			data.put("breakNodePid", this.command.getNodePid());
+		}
+		data.put("longitude", this.command.getPoint().getX());
+		data.put("latitude", this.command.getPoint().getY());
 		breakJson.put("data", data);
 		com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrdpoint.Command breakCommand = new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrdpoint.Command(
 				breakJson, breakJson.toString());
 		com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrdpoint.Process breakProcess = new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrdpoint.Process(
 				breakCommand, conn, result);
 		breakProcess.innerRun();
+
 		// 维护修行link的几何
 		this.updateLinkGeomtry(result, breakNodePid);
+
 
 	}
 

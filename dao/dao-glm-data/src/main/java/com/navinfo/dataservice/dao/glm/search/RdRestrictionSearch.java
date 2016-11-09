@@ -266,20 +266,10 @@ public class RdRestrictionSearch implements ISearch {
 	}
 	
 	public static void main(String[] args) throws Exception {
+		//"z":20,"x":864106,"y":397405
 
-		Connection conn = DBConnector.getInstance().getConnectionById(11);
-
-		RdRestrictionSearch a = new RdRestrictionSearch(conn);
-		
-		List<SearchSnapshot> res = a.searchDataByTileWithGap(
-				107914, 49663, 17, 20);
-
-		List<String> array = new ArrayList<String>();
-		int i=0;
-		for(SearchSnapshot s : res){
-			System.out.println(s.Serialize(null));
-			array.add(s.Serialize(null).toString());
-		}
+		String wkt = MercatorProjection.getWktWithGap(864106, 397405, 20, 80);
+	System.out.println(wkt);
 		
 	}
 

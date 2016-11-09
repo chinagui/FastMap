@@ -1843,35 +1843,70 @@ public class SubtaskOperation {
 		try{
 			QueryRunner run = new QueryRunner();
 
-			String selectSqlCollect = "SELECT S.SUBTASK_ID, S.STAGE, S.NAME, S.TYPE, S.STATUS,U.USER_REAL_NAME AS EXECUTER,FSOS.PERCENT,FSOS.DIFF_DATE,FSOS.PROGRESS"
-					+ " FROM SUBTASK S ,USER_INFO U,FM_STAT_OVERVIEW_SUBTASK FSOS"
+			String selectSqlCollect = "SELECT S.SUBTASK_ID, S.STAGE, S.NAME, S.TYPE, S.STATUS,"
+					+ " U.USER_REAL_NAME AS EXECUTER,FSOS.PERCENT,FSOS.DIFF_DATE,FSOS.PROGRESS,"
+					+ "	NVL(S.quality_Subtask_Id,0) qualitySubtaskId,NVL(Q.qualityPlanStartDate,NULL) qualityPlanStartDate ,NVL(Q.qualityPlanEndDate,NULL) qualityPlanEndDate ,NVL(Q.qualityExeUserId,0) qualityExeUserId " //新增加返回值
+					+ " FROM SUBTASK S ,"
+					//左外关联 质检子任务表
+					+ " (select st.SUBTASK_ID ,st.EXE_USER_ID qualityExeUserId,st.PLAN_START_DATE as qualityPlanStartDate,st.PLAN_END_DATE as qualityPlanEndDate from subtask st where st.is_quality = 1 ) Q  ,"
+					//+ " left join (select st.SUBTASK_ID ,st.EXE_USER_ID qualityExeUserId,st.PLAN_START_DATE as qualityPlanStartDate,st.PLAN_END_DATE as qualityPlanEndDate from subtask st where st.is_quality = 1 ) Q  on S.quality_subtask_id = Q.subtask_id,"
+					+ " USER_INFO U,FM_STAT_OVERVIEW_SUBTASK FSOS"
 					+ " WHERE S.STAGE = 0"
+					+ " AND S.quality_subtask_id = Q.subtask_id(+) "//左外关联 质检子任务表
 					+ " AND S.is_quality = 0" //排除 Subtask 表中的质检子任务
 					+ " AND U.USER_ID = S.EXE_USER_ID"
 					+ " AND S.SUBTASK_ID = FSOS.SUBTASK_ID(+)";
 
-			String selectSqlDailyUser = "SELECT S.SUBTASK_ID, S.STAGE, S.NAME, S.TYPE, S.STATUS,U.USER_REAL_NAME AS EXECUTER,FSOS.PERCENT,FSOS.DIFF_DATE,FSOS.PROGRESS"
-					+ " FROM SUBTASK S ,USER_INFO U,FM_STAT_OVERVIEW_SUBTASK FSOS"
+			String selectSqlDailyUser = "SELECT S.SUBTASK_ID, S.STAGE, S.NAME, S.TYPE, S.STATUS,"
+					+ "	NVL(S.quality_Subtask_Id,0) qualitySubtaskId,NVL(Q.qualityPlanStartDate,NULL) qualityPlanStartDate ,NVL(Q.qualityPlanEndDate,NULL) qualityPlanEndDate ,NVL(Q.qualityExeUserId,0) qualityExeUserId, " //新增加返回值
+					+ " U.USER_REAL_NAME AS EXECUTER,FSOS.PERCENT,FSOS.DIFF_DATE,FSOS.PROGRESS"
+					+ " FROM SUBTASK S ,"
+					//左外关联 质检子任务表
+					+ " (select st.SUBTASK_ID ,st.EXE_USER_ID qualityExeUserId,st.PLAN_START_DATE as qualityPlanStartDate,st.PLAN_END_DATE as qualityPlanEndDate from subtask st where st.is_quality = 1 ) Q  ,"
+					//+ " left join (select st.SUBTASK_ID ,st.EXE_USER_ID qualityExeUserId,st.PLAN_START_DATE as qualityPlanStartDate,st.PLAN_END_DATE as qualityPlanEndDate from subtask st where st.is_quality = 1 ) Q  on S.quality_subtask_id = Q.subtask_id,"
+					+ " USER_INFO U,FM_STAT_OVERVIEW_SUBTASK FSOS"
 					+ " WHERE S.STAGE = 1"
+					+ " AND S.quality_subtask_id = Q.subtask_id(+) "//左外关联 质检子任务表
 					+ " AND S.is_quality = 0" //排除 Subtask 表中的质检子任务
 					+ " AND U.USER_ID = S.EXE_USER_ID"
 					+ " AND S.SUBTASK_ID = FSOS.SUBTASK_ID(+)";
-			String selectSqlDailyGroup = "SELECT S.SUBTASK_ID, S.STAGE, S.NAME, S.TYPE, S.STATUS, UG.GROUP_NAME AS EXECUTER,FSOS.PERCENT,FSOS.DIFF_DATE,FSOS.PROGRESS"
-					+ " FROM SUBTASK S , USER_GROUP UG,FM_STAT_OVERVIEW_SUBTASK FSOS"
+			String selectSqlDailyGroup = "SELECT S.SUBTASK_ID, S.STAGE, S.NAME, S.TYPE, S.STATUS,"
+					+ "	NVL(S.quality_Subtask_Id,0) qualitySubtaskId,NVL(Q.qualityPlanStartDate,NULL) qualityPlanStartDate ,NVL(Q.qualityPlanEndDate,NULL) qualityPlanEndDate ,NVL(Q.qualityExeUserId,0) qualityExeUserId, " //新增加返回值
+					+ " UG.GROUP_NAME AS EXECUTER,FSOS.PERCENT,FSOS.DIFF_DATE,FSOS.PROGRESS"
+					+ " FROM SUBTASK S ,"
+					//左外关联 质检子任务表
+					+ " (select st.SUBTASK_ID ,st.EXE_USER_ID qualityExeUserId,st.PLAN_START_DATE as qualityPlanStartDate,st.PLAN_END_DATE as qualityPlanEndDate from subtask st where st.is_quality = 1 ) Q  ,"
+					//+ " left join (select st.SUBTASK_ID ,st.EXE_USER_ID qualityExeUserId,st.PLAN_START_DATE as qualityPlanStartDate,st.PLAN_END_DATE as qualityPlanEndDate from subtask st where st.is_quality = 1 ) Q  on S.quality_subtask_id = Q.subtask_id,"
+					+ " USER_GROUP UG,FM_STAT_OVERVIEW_SUBTASK FSOS"
 					+ " WHERE S.STAGE = 1"
+					+ " AND S.quality_subtask_id = Q.subtask_id(+) "//左外关联 质检子任务表
 					+ " AND S.is_quality = 0" //排除 Subtask 表中的质检子任务
 					+ " AND UG.GROUP_ID = S.EXE_GROUP_ID"
 					+ " AND S.SUBTASK_ID = FSOS.SUBTASK_ID(+)";
 
-			String selectSqlMonthlyUser = "SELECT S.SUBTASK_ID, S.STAGE, S.NAME, S.TYPE, S.STATUS,U.USER_REAL_NAME AS EXECUTER,FSOS.PERCENT,FSOS.DIFF_DATE,FSOS.PROGRESS"
-					+ " FROM SUBTASK S,USER_INFO U,FM_STAT_OVERVIEW_SUBTASK FSOS"
+			String selectSqlMonthlyUser = "SELECT S.SUBTASK_ID, S.STAGE, S.NAME, S.TYPE, S.STATUS,"
+					+ "	NVL(S.quality_Subtask_Id,0) qualitySubtaskId,NVL(Q.qualityPlanStartDate,NULL) qualityPlanStartDate ,NVL(Q.qualityPlanEndDate,NULL) qualityPlanEndDate ,NVL(Q.qualityExeUserId,0) qualityExeUserId, " //新增加返回值
+					+ " U.USER_REAL_NAME AS EXECUTER,FSOS.PERCENT,FSOS.DIFF_DATE,FSOS.PROGRESS"
+					+ " FROM SUBTASK S ,"
+					//左外关联 质检子任务表
+					+ " (select st.SUBTASK_ID ,st.EXE_USER_ID qualityExeUserId,st.PLAN_START_DATE as qualityPlanStartDate,st.PLAN_END_DATE as qualityPlanEndDate from subtask st where st.is_quality = 1 ) Q  ,"
+					//+ " left join (select st.SUBTASK_ID ,st.EXE_USER_ID qualityExeUserId,st.PLAN_START_DATE as qualityPlanStartDate,st.PLAN_END_DATE as qualityPlanEndDate from subtask st where st.is_quality = 1 ) Q  on S.quality_subtask_id = Q.subtask_id,"
+					+ " USER_INFO U,FM_STAT_OVERVIEW_SUBTASK FSOS"
 					+ " WHERE S.STAGE = 2"
+					+ " AND S.quality_subtask_id = Q.subtask_id(+) "//左外关联 质检子任务表
 					+ " AND S.is_quality = 0" //排除 Subtask 表中的质检子任务
 					+ " AND U.USER_ID = S.EXE_USER_ID"
 					+ " AND S.SUBTASK_ID = FSOS.SUBTASK_ID(+)";
-			String selectSqlMonthlyGroup = "SELECT S.SUBTASK_ID, S.STAGE, S.NAME, S.TYPE, S.STATUS, UG.GROUP_NAME AS EXECUTER,FSOS.PERCENT,FSOS.DIFF_DATE,FSOS.PROGRESS"
-					+ " FROM SUBTASK S ,USER_GROUP UG,FM_STAT_OVERVIEW_SUBTASK FSOS"
+			String selectSqlMonthlyGroup = "SELECT S.SUBTASK_ID, S.STAGE, S.NAME, S.TYPE, S.STATUS, "
+					+ "	NVL(S.quality_Subtask_Id,0) qualitySubtaskId,NVL(Q.qualityPlanStartDate,NULL) qualityPlanStartDate ,NVL(Q.qualityPlanEndDate,NULL) qualityPlanEndDate ,NVL(Q.qualityExeUserId,0) qualityExeUserId, " //新增加返回值
+					+ " UG.GROUP_NAME AS EXECUTER,FSOS.PERCENT,FSOS.DIFF_DATE,FSOS.PROGRESS"
+					+ " FROM SUBTASK S  ,"
+					//左外关联 质检子任务表
+					+ " (select st.SUBTASK_ID ,st.EXE_USER_ID qualityExeUserId,st.PLAN_START_DATE as qualityPlanStartDate,st.PLAN_END_DATE as qualityPlanEndDate from subtask st where st.is_quality = 1 ) Q  ,"
+					
+					+ " USER_GROUP UG,FM_STAT_OVERVIEW_SUBTASK FSOS"
 					+ " WHERE S.STAGE = 2"
+					+ " AND S.quality_subtask_id = Q.subtask_id(+) "//左外关联 质检子任务表
 					+ " AND S.is_quality = 0" //排除 Subtask 表中的质检子任务
 					+ " AND UG.GROUP_ID = S.EXE_GROUP_ID"
 					+ " AND S.SUBTASK_ID = FSOS.SUBTASK_ID(+)";
@@ -1978,11 +2013,15 @@ public class SubtaskOperation {
 				}
 			}
 				
-			selectSqlCollect = "SELECT T.SUBTASK_ID, T.STAGE, T.NAME, T.TYPE, T.STATUS,T.EXECUTER,T.PERCENT,T.DIFF_DATE,T.PROGRESS FROM (" + selectSqlCollect + ")T WHERE 1=1";
+			selectSqlCollect = "SELECT T.SUBTASK_ID, T.STAGE, T.NAME, T.TYPE, T.STATUS,T.EXECUTER,T.PERCENT,T.DIFF_DATE,T.PROGRESS,"
+					+ "T.qualitySubtaskId,T.qualityPlanStartDate,T.qualityPlanEndDate,T.qualityExeUserId "
+					+ " FROM (" + selectSqlCollect + ")T WHERE 1=1";
 			if(!filterSqlCollect.isEmpty()){
 				selectSqlCollect = selectSqlCollect +  filterSqlCollect;
 			}
-			selectSqlDaily = "SELECT T.SUBTASK_ID, T.STAGE, T.NAME, T.TYPE, T.STATUS,T.EXECUTER,T.PERCENT,T.DIFF_DATE,T.PROGRESS FROM (" + selectSqlDaily + ")T WHERE 1=1";
+			selectSqlDaily = "SELECT T.SUBTASK_ID, T.STAGE, T.NAME, T.TYPE, T.STATUS,T.EXECUTER,T.PERCENT,T.DIFF_DATE,T.PROGRESS,"
+					+ "T.qualitySubtaskId,T.qualityPlanStartDate,T.qualityPlanEndDate,T.qualityExeUserId "
+					+ " FROM (" + selectSqlDaily + ")T WHERE 1=1";
 			if(!filterSqlDaily.isEmpty()){
 				selectSqlDaily = selectSqlDaily + filterSqlDaily;
 			}
@@ -2018,10 +2057,18 @@ public class SubtaskOperation {
 			}else if(2 == planStatus){
 				//已发布
 				String orderSql = "ORDER BY PRI ASC,DIFF_DATE ASC, PERCENT DESC";
-				String Sql2Close = "SELECT SUBTASK_ID, STAGE, NAME, TYPE, STATUS,EXECUTER,PERCENT,DIFF_DATE,PROGRESS ,4 AS PRI FROM (" + sql + ")TEMP WHERE TEMP.STATUS = 0 ";
-				String Sql2Draft = "SELECT SUBTASK_ID, STAGE, NAME, TYPE, STATUS,EXECUTER,PERCENT,DIFF_DATE,PROGRESS ,2 AS PRI FROM (" + sql + ")TEMP WHERE TEMP.STATUS = 2 ";
-				String Sql2OpenFinish = "SELECT SUBTASK_ID, STAGE, NAME, TYPE, STATUS,EXECUTER,PERCENT,DIFF_DATE,PROGRESS ,3 AS PRI FROM (" + sql  + ")TEMP WHERE TEMP.STATUS = 1 AND TEMP.PERCENT = 100 ";
-				String Sql2OpenUnfinish = "SELECT SUBTASK_ID, STAGE, NAME, TYPE, STATUS,EXECUTER,PERCENT,DIFF_DATE,PROGRESS ,1 AS PRI FROM (" + sql + ")TEMP WHERE TEMP.STATUS = 1 AND (TEMP.PERCENT < 100 OR TEMP.PERCENT IS NULL) ";
+				String Sql2Close = "SELECT SUBTASK_ID, STAGE, NAME, TYPE, STATUS,EXECUTER,PERCENT,DIFF_DATE,PROGRESS ,4 AS PRI"
+						+ ",qualitySubtaskId,qualityPlanStartDate,qualityPlanEndDate,qualityExeUserId "
+						+ " FROM (" + sql + ")TEMP WHERE TEMP.STATUS = 0 ";
+				String Sql2Draft = "SELECT SUBTASK_ID, STAGE, NAME, TYPE, STATUS,EXECUTER,PERCENT,DIFF_DATE,PROGRESS ,2 AS PRI"
+						+ ",qualitySubtaskId,qualityPlanStartDate,qualityPlanEndDate,qualityExeUserId "
+						+ " FROM (" + sql + ")TEMP WHERE TEMP.STATUS = 2 ";
+				String Sql2OpenFinish = "SELECT SUBTASK_ID, STAGE, NAME, TYPE, STATUS,EXECUTER,PERCENT,DIFF_DATE,PROGRESS ,3 AS PRI"
+						+ ",qualitySubtaskId,qualityPlanStartDate,qualityPlanEndDate,qualityExeUserId "
+						+ " FROM (" + sql  + ")TEMP WHERE TEMP.STATUS = 1 AND TEMP.PERCENT = 100 ";
+				String Sql2OpenUnfinish = "SELECT SUBTASK_ID, STAGE, NAME, TYPE, STATUS,EXECUTER,PERCENT,DIFF_DATE,PROGRESS ,1 AS PRI"
+						+ ",qualitySubtaskId,qualityPlanStartDate,qualityPlanEndDate,qualityExeUserId "
+						+ " FROM (" + sql + ")TEMP WHERE TEMP.STATUS = 1 AND (TEMP.PERCENT < 100 OR TEMP.PERCENT IS NULL) ";
 				
 				sqlFinal = Sql2OpenUnfinish + " UNION ALL " + Sql2Draft + " UNION ALL " + Sql2OpenFinish + " UNION ALL "  + Sql2Close  + orderSql;
 			}
@@ -2037,6 +2084,15 @@ public class SubtaskOperation {
 						if(total==0){
 							total=rs.getInt("TOTAL_RECORD_NUM_");
 						}
+						SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
+						String qualityPlanStartDate = null;
+						String qualityPlanEndDate = null;
+						if(rs.getTimestamp("qualityPlanStartDate") != null && StringUtils.isNotEmpty(rs.getTimestamp("qualityPlanStartDate").toString())){
+							qualityPlanStartDate = df.format(rs.getTimestamp("qualityPlanStartDate"));
+						}
+						if(rs.getTimestamp("qualityPlanEndDate") != null && StringUtils.isNotEmpty(rs.getTimestamp("qualityPlanEndDate").toString())){
+							qualityPlanEndDate = df.format(rs.getTimestamp("qualityPlanEndDate"));
+						}
 						HashMap<Object,Object> subtask = new HashMap<Object,Object>();
 						subtask.put("subtaskId", rs.getInt("SUBTASK_ID"));
 						subtask.put("subtaskName", rs.getString("NAME"));
@@ -2048,7 +2104,13 @@ public class SubtaskOperation {
 
 						subtask.put("percent", rs.getInt("percent"));
 						subtask.put("diffDate", rs.getInt("DIFF_DATE"));
-	
+						//*********** zl 新增返回值 2016.11.09****************
+						subtask.put("qualitySubtaskId", rs.getInt("percent"));
+						subtask.put("qualityPlanStartDate", qualityPlanStartDate);
+						subtask.put("qualityPlanEndDate", qualityPlanEndDate);
+						subtask.put("qualityExeUserId", rs.getInt("qualityExeUserId"));
+						
+						
 						list.add(subtask);
 					}
 					

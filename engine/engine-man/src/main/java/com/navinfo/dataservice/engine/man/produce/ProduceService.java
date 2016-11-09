@@ -177,21 +177,26 @@ public class ProduceService {
 						+ " FROM "
 						+ " subtask s,block_grid_mapping m,block_man b "
 						+ " WHERE "
-						+ " s.block_man_id = b.block_man_id and  b.block_id = m.block_id and s.status = 1 "
+						+ " s.block_man_id = b.block_man_id and  b.block_id = m.block_id and s.status = 1 and s.type in (0,1,2,3,4) and s.stage in (0,1)"
 						+ " UNION ALL "
 						+ " SELECT ss.subtask_id,mm.grid_id "
 						+ " FROM "
 						+ " subtask ss,subtask_grid_mapping mm "
 						+ " WHERE "
-						+ " ss.subtask_id = mm.subtask_id and ss.status = 1"
+						+ " ss.subtask_id = mm.subtask_id and ss.status = 1 and ss.type in (0,1,2,3,4) and ss.stage in (0,1)"
 					+ " ) ,"
-					+ " q2 AS"//区域子任务
+						
+					
+					
+					+ " q2 AS"//排除product 表中的subtaskid 的区域子任务
 					+ " ("
 						+ " SELECT s.*,b.block_man_name,b.DAY_PRODUCE_PLAN_START_DATE,b.DAY_PRODUCE_PLAN_END_DATE "
 						+ " FROM subtask s ,block_man b "
 						+ " WHERE "
 							+ " s.block_man_id = b.block_man_id  and  s.type = 4 and s.status = 0 "
+							//+ "  and  s.SUBTASK_ID not in ( select listagg(p.SUBTASK_ID, ',') within GROUP(order by p.SUBTASK_ID) over(partition by p.SUBTASK_ID) SUBTASK_IDS from q3 p)"
 					+ " ),"
+					
 					+ " q3 AS "//produce产品列表(成功或失败)
 					+ " ("
 						+ " SELECT "
@@ -203,19 +208,21 @@ public class ProduceService {
 								+ " and p.SUBTASK_ID = s.SUBTASK_ID "
 								+ " and s.block_man_id = b.block_man_id"
 					+ " ), "
+					
 					+ " q4 AS "//可出品的子任务列表
 					+ " ("
 						+ " SELECT "
 						+ " a.block_man_id,a.block_man_name,a.type ,a.DAY_PRODUCE_PLAN_START_DATE,a.DAY_PRODUCE_PLAN_END_DATE,"
 						+ " null CREATE_DATE,0 PRODUCE_ID,4 PRODUCE_STATUS,0 CREATE_USER_ID,null CREATE_USER_NAME,a.SUBTASK_ID "
-						+ " FROM q2 a,q3 p"
+						+ " FROM q2 a "
 						+ " WHERE not exists ( "
 								 + " SELECT 1 FROM q2 b,block_grid_mapping c,block_man d,q1 e "
 								 + " WHERE "
 								 	+ " b.block_man_id = d.block_man_id and d.block_id = c.block_id and c.grid_id = e.grid_id "
 								 	+ " and a.subtask_id = b.subtask_id "
 								 + " ) "
-						+ " and a.SUBTASK_ID != p.SUBTASK_ID"
+								 + "  and  a.SUBTASK_ID not in ( select listagg(p.SUBTASK_ID, ',') within GROUP(order by p.SUBTASK_ID) over(partition by p.SUBTASK_ID) SUBTASK_IDS from q3 p)"
+						
 					+ "),"
 					+ " q5 AS "//产品表(成功或失败)右关联可出品的子任务列表
 					+ " ("

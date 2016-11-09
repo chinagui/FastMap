@@ -1869,7 +1869,7 @@ public class SubtaskOperation {
 					+ "						NVL(Q.quality_Task_Status,0) quality_Task_Status,Q.quality_Exe_User_Name"
 					+ " FROM SUBTASK S ,USER_INFO U,FM_STAT_OVERVIEW_SUBTASK FSOS,("+qualitySql+") Q"
 					+ " WHERE S.STAGE = 0"
-					+ " AND Q.quality_subtask_id(+) = S.subtask_id"
+					+ " AND Q.quality_subtask_id(+) = S.quality_subtask_id"
 					+ " AND S.is_quality = 0" //排除 Subtask 表中的质检子任务
 					+ " AND U.USER_ID = S.EXE_USER_ID"
 					+ " AND S.SUBTASK_ID = FSOS.SUBTASK_ID(+)";
@@ -1880,7 +1880,7 @@ public class SubtaskOperation {
 					+ "						NVL(Q.quality_Task_Status,0) quality_Task_Status,Q.quality_Exe_User_Name"
 					+ " FROM SUBTASK S ,USER_INFO U,FM_STAT_OVERVIEW_SUBTASK FSOS,("+qualitySql+") Q"
 					+ " WHERE S.STAGE = 1"
-					+ " AND Q.quality_subtask_id(+) = S.subtask_id"
+					+ " AND Q.quality_subtask_id(+) = S.quality_subtask_id"
 					+ " AND S.is_quality = 0" //排除 Subtask 表中的质检子任务
 					+ " AND U.USER_ID = S.EXE_USER_ID"
 					+ " AND S.SUBTASK_ID = FSOS.SUBTASK_ID(+)";
@@ -1890,7 +1890,7 @@ public class SubtaskOperation {
 					+ "						NVL(Q.quality_Task_Status,0) quality_Task_Status,Q.quality_Exe_User_Name"
 					+ " FROM SUBTASK S , USER_GROUP UG,FM_STAT_OVERVIEW_SUBTASK FSOS,("+qualitySql+") Q"
 					+ " WHERE S.STAGE = 1"
-					+ " AND Q.quality_subtask_id(+) = S.subtask_id"
+					+ " AND Q.quality_subtask_id(+) = S.quality_subtask_id"
 					+ " AND S.is_quality = 0" //排除 Subtask 表中的质检子任务
 					+ " AND UG.GROUP_ID = S.EXE_GROUP_ID"
 					+ " AND S.SUBTASK_ID = FSOS.SUBTASK_ID(+)";
@@ -1901,7 +1901,7 @@ public class SubtaskOperation {
 					+ "						NVL(Q.quality_Task_Status,0) quality_Task_Status,Q.quality_Exe_User_Name"
 					+ " FROM SUBTASK S,USER_INFO U,FM_STAT_OVERVIEW_SUBTASK FSOS,("+qualitySql+") Q"
 					+ " WHERE S.STAGE = 2"
-					+ " AND Q.quality_subtask_id(+) = S.subtask_id"
+					+ " AND Q.quality_subtask_id(+) = S.quality_subtask_id"
 					+ " AND S.is_quality = 0" //排除 Subtask 表中的质检子任务
 					+ " AND U.USER_ID = S.EXE_USER_ID"
 					+ " AND S.SUBTASK_ID = FSOS.SUBTASK_ID(+)";
@@ -1911,7 +1911,7 @@ public class SubtaskOperation {
 					+ "						NVL(Q.quality_Task_Status,0) quality_Task_Status,Q.quality_Exe_User_Name"
 					+ " FROM SUBTASK S ,USER_GROUP UG,FM_STAT_OVERVIEW_SUBTASK FSOS,("+qualitySql+") Q"
 					+ " WHERE S.STAGE = 2"
-					+ " AND Q.quality_subtask_id(+) = S.subtask_id"
+					+ " AND Q.quality_subtask_id(+) = S.quality_subtask_id"
 					+ " AND S.is_quality = 0" //排除 Subtask 表中的质检子任务
 					+ " AND UG.GROUP_ID = S.EXE_GROUP_ID"
 					+ " AND S.SUBTASK_ID = FSOS.SUBTASK_ID(+)";

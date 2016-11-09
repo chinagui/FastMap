@@ -90,7 +90,7 @@ public class PoiSaveTest {
 
 			if (operType == OperType.UPDATE) {
 				json.put("objId", pid);
-				BatchProcess batchProcess = new BatchProcess();
+				BatchProcess batchProcess = new BatchProcess("row","save");
 				batchProcess.execute(json, conn, editApiImpl);
 			}
 

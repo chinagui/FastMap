@@ -132,7 +132,7 @@ public class EditApiImpl implements EditApi {
 
 	@Override
 	public void runBatch(JSONObject dataObj) throws Exception {
-		BatchProcess batchProcess = new BatchProcess();
+		BatchProcess batchProcess = new BatchProcess("row","save");
 		Connection subConn = null;
 		int dbId = dataObj.getInt("dbId");
 		try {

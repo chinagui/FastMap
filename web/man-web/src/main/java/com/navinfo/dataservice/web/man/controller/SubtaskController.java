@@ -349,14 +349,21 @@ public class SubtaskController extends BaseController {
 			SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
 			for(int i = 0;i<subtaskArray.size();i++){
 				//***************zl 2016.11.4 ******************
-				Integer qualitySubtaskId = subtaskArray.getJSONObject(i).getInt("qualitySubtaskId");//质检子任务id
-				Integer qualityExeUserId = subtaskArray.getJSONObject(i).getInt("qualityExeUserId");//是否新建质检子任务标识
-				String qualityPlanStartDate = subtaskArray.getJSONObject(i).getString("qualityPlanStartDate");
-				String qualityPlanEndDate =subtaskArray.getJSONObject(i).getString("qualityPlanEndDate");
-				
-				subtaskArray.getJSONObject(i).discard("qualityExeUserId");//删除 是否新建质检子任务标识 ,因为Subtask实体类里灭幼这个字段
-				subtaskArray.getJSONObject(i).discard("qualityPlanStartDate");//删除 质检子任务计划开始时间 ,因为Subtask实体类里灭幼这个字段
-				subtaskArray.getJSONObject(i).discard("qualityPlanEndDate");//删除 质检子任务计划结束时间 ,因为Subtask实体类里灭幼这个字段
+				Integer qualitySubtaskId = 0;//质检子任务id
+				Integer qualityExeUserId = 0;//是否新建质检子任务标识
+				String qualityPlanStartDate = "";
+				String qualityPlanEndDate ="";
+				if(subtaskArray.getJSONObject(i).containsKey("qualitySubtaskId")){
+					qualitySubtaskId = subtaskArray.getJSONObject(i).getInt("qualitySubtaskId");
+				}
+				if(subtaskArray.getJSONObject(i).containsKey("qualityExeUserId")){
+					qualityExeUserId = subtaskArray.getJSONObject(i).getInt("qualityExeUserId");
+					qualityPlanStartDate = subtaskArray.getJSONObject(i).getString("qualityPlanStartDate");
+					qualityPlanEndDate =subtaskArray.getJSONObject(i).getString("qualityPlanEndDate");
+					subtaskArray.getJSONObject(i).discard("qualityExeUserId");//删除 是否新建质检子任务标识 ,因为Subtask实体类里灭幼这个字段
+					subtaskArray.getJSONObject(i).discard("qualityPlanStartDate");//删除 质检子任务计划开始时间 ,因为Subtask实体类里灭幼这个字段
+					subtaskArray.getJSONObject(i).discard("qualityPlanEndDate");//删除 质检子任务计划结束时间 ,因为Subtask实体类里灭幼这个字段
+				}				
 				
 				//正常修改子任务
 				Subtask subtask = (Subtask)JsonOperation.jsonToBean(subtaskArray.getJSONObject(i),Subtask.class);

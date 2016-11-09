@@ -221,8 +221,6 @@ public class TaskController extends BaseController {
 	public ModelAndView queryMonthTask(HttpServletRequest request){
 		try{	
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
-			//taskId,taskType
-			int monthEditGroupId= dataJson.getInt("monthEditGroupId");
 			int curPageNum= 1;//默认为第一页
 			if (dataJson.containsKey("pageNum")){
 				curPageNum = dataJson.getInt("pageNum");
@@ -236,7 +234,7 @@ public class TaskController extends BaseController {
 				condition=dataJson.getJSONObject("condition");
 			}
 			
-			Page data = TaskService.getInstance().queryMonthTask(monthEditGroupId,condition,curPageNum,curPageSize);
+			Page data = TaskService.getInstance().queryMonthTask(condition,curPageNum,curPageSize);
 			Map<String, Object> returnMap=new HashMap<String, Object>();
 			returnMap.put("result", (List)data.getResult());
 			returnMap.put("totalCount", data.getTotalCount());

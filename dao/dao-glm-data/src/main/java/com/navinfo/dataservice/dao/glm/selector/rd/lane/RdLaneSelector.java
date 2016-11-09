@@ -170,7 +170,6 @@ public class RdLaneSelector extends AbstractSelector {
 			if (isLock) {
 				sql += " for update nowait";
 			}
-			System.out.println(sql);
 			pstmt = conn.prepareStatement(sql,
 					ResultSet.TYPE_SCROLL_INSENSITIVE,
 					ResultSet.CONCUR_UPDATABLE);
@@ -209,6 +208,7 @@ public class RdLaneSelector extends AbstractSelector {
 					jsonObject = new JSONObject();
 					STRUCT struct = (STRUCT) resultSet.getObject("geometry");
 					jsonObject.put("linkPid", resultSet.getInt("link_pid"));
+					
 					jsonObject.put("geometry", Geojson.spatial2Geojson(struct));
 					jsonObject.put("sNodePid", resultSet.getInt("s_node_pid"));
 					jsonObject.put("eNodePid", resultSet.getInt("e_node_pid"));

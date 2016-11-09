@@ -11,16 +11,30 @@ import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import com.vividsolutions.jts.geom.Point;
-
+/***
+ *
+ * @author zhaokk
+ * 节点分离参数设置类
+ *
+ */
 public class Command extends AbstractCommand {
 
 	private int linkPid;
 
 	private String requester;
-	private int nodePid;
-	private RdLink rdLink;
-	private List<RdLink> links;
+	private int nodePid;//分离点的nodePid
+	private RdLink rdLink;//分离线的pid
+	private List<RdLink> links;//分离点挂接的link
 	private RdNode node;
+	private int catchLinkPid;//分离挂接的link
+
+	public int getCatchLinkPid() {
+		return catchLinkPid;
+	}
+
+	public void setCatchLinkPid(int catchLinkPid) {
+		this.catchLinkPid = catchLinkPid;
+	}
 
 	public RdNode getNode() {
 		return node;
@@ -38,7 +52,7 @@ public class Command extends AbstractCommand {
 		this.links = links;
 	}
 
-	private int catchNodePid;
+	private int catchNodePid;//分离挂接的node
 	private Point point;
 
 	public RdLink getRdLink() {
@@ -74,7 +88,8 @@ public class Command extends AbstractCommand {
 		this.setDbId(json.getInt("dbId"));
 		this.nodePid = json.getInt("objId");
 		JSONObject data = json.getJSONObject("data");
-		this.catchNodePid = data.getInt("catchNodePid");
+		this.catchNodePid = data.getInt("catchNodePid");//挂接的nodePid
+		this.catchLinkPid = data.getInt("catchLinkPid");//挂接的linkPid
 		this.setLinkPid(data.getInt("linkPid"));
 		if(data.containsKey("longitude")&&data.containsKey("longitude")){
 			this.setPoint((Point)GeoTranslator.transform(GeoTranslator.point2Jts(

@@ -564,4 +564,27 @@ public class UserInfoService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+	
+	/**
+	 * 查询user数据
+	 * @author Han Shaoming
+	 * @param userId
+	 * @return
+	 * @throws ServiceException 
+	 */
+	public Map<String,Object> getUserInfoByUserId(long userId) throws ServiceException{
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			Map<String, Object> userInfo = UserInfoOperation.getUserInfoByUserId(conn, userId);
+			return userInfo;
+		} catch (Exception e) {
+			// TODO: handle exception
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询列表失败，原因为:" + e.getMessage(), e);
+		}finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
 }

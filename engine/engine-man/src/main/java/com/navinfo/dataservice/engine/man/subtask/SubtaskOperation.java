@@ -45,6 +45,7 @@ import com.navinfo.dataservice.commons.xinge.XingeUtil;
 import com.navinfo.dataservice.engine.man.message.MessageService;
 import com.navinfo.dataservice.engine.man.task.TaskOperation;
 import com.navinfo.dataservice.engine.man.userDevice.UserDeviceService;
+import com.navinfo.dataservice.engine.man.userInfo.UserInfoOperation;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoService;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -1529,42 +1530,58 @@ public class SubtaskOperation {
 
 	/**
 	 * @param conn 
+	 * @param userId 
 	 * @param bean
 	 * @throws Exception 
 	 */
-	public static void pushMessage(Connection conn, Subtask subtask) throws Exception {
+	public static void pushMessage(Connection conn, Subtask subtask, long userId) throws Exception {
 		// TODO Auto-generated method stub
 		try{
-			List<Integer> userIdList = new ArrayList<Integer>();
+			//List<Integer> userIdList = new ArrayList<Integer>();
 			//作业组
+			/*
 			if(subtask.getExeGroupId()!=0){
 				userIdList = SubtaskOperation.getUserListByGroupId(conn,subtask.getExeGroupId());
 			}else{
 				userIdList.add(subtask.getExeUserId());
 			}
-
+			*/
 			//构造消息
-			String msgTitle = "子任务开启";
+			/*采集/日编/月编子任务编辑
+			 * 分配的作业员
+			 * 采集/日编/月编子任务变更：XXX(子任务名称)信息发生变更，请关注*/
+			String msgTitle = "";
 			String msgContent = "";
-			int push = 0;
 			if((int)subtask.getStage()== 0){
-				msgContent = "采集子任务:" + subtask.getName() + "内容发生变更，请关注";
-				push = 1;
+				msgTitle = "采集子任务编辑";
+				msgContent = "采集子任务变更:" + subtask.getName() + "内容发生变更,请关注";
 			}else if((int)subtask.getStage()== 1){
-				msgContent = "日编子任务:" + subtask.getName() + "内容发生变更，请关注";
+				msgTitle = "日编子任务编辑";
+				msgContent = "日编子任务变更:" + subtask.getName() + "内容发生变更,请关注";
 			}else{
-				msgContent = "月编子任务:" + subtask.getName() + "内容发生变更，请关注";
+				msgTitle = "月编子任务编辑";
+				msgContent = "月编子任务变更:" + subtask.getName() + "内容发生变更,请关注";
 			}
-
-			for(int i=0;i<userIdList.size();i++){
-				Message message = new Message();
-				message.setMsgTitle(msgTitle);
-				message.setMsgContent(msgContent);
-				message.setPushUserId((int)subtask.getExeUserId());
-				message.setReceiverId(userIdList.get(i));
-
-				MessageService.getInstance().push(message, push);
+			//关联要素
+			JSONObject msgParam = new JSONObject();
+			msgParam.put("relateObject", "SUBTASK");
+			msgParam.put("relateObjectId", subtask.getSubtaskId());
+			//查询用户名称
+			Map<String, Object> userInfo = UserInfoOperation.getUserInfoByUserId(conn, subtask.getExeUserId());
+			String pushUserName = null;
+			if(userInfo != null && userInfo.size() > 0){
+				pushUserName = (String) userInfo.get("userRealName");
 			}
+			
+			Message message = new Message();
+			message.setMsgTitle(msgTitle);
+			message.setMsgContent(msgContent);
+			message.setPushUserId((int)userId);
+			message.setReceiverId(subtask.getExeUserId());
+			message.setMsgParam(msgParam.toString());
+			message.setPushUser(pushUserName);
+			
+			MessageService.getInstance().push(message, 1);
 		}catch(Exception e){
 			log.error(e.getMessage(), e);
 			throw new Exception("推送消息失败，原因为:"+e.getMessage(),e);

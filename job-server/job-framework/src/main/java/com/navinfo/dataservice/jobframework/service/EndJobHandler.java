@@ -1,14 +1,17 @@
 package com.navinfo.dataservice.jobframework.service;
 
 import java.sql.Connection;
+import java.util.Map;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 import org.springframework.util.StringUtils;
 
 import com.navinfo.dataservice.api.job.model.JobInfo;
+import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.mq.MsgHandler;
 import com.navinfo.dataservice.dao.mq.sys.SysMsgPublisher;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -35,6 +38,7 @@ public class EndJobHandler implements MsgHandler {
 	}
 	
 	public void sendMsg(String message){
+		String pushUserName = null;
 		try{
 			log.debug("sending msg to system message chanle");
 			JSONObject jobMsg = JSONObject.fromObject(message);
@@ -73,7 +77,14 @@ public class EndJobHandler implements MsgHandler {
 			}else{
 				runStatus = "执行完成";
 			}
-			SysMsgPublisher.publishMsg(jobTypeName+"任务(ID:"+jobId+")"+runStatus+","+diffTime.toString(), resultMsg, 0, new long[]{userId});
+			//查询user数据
+			ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
+			Map<String, Object> userInfo = manApi.getUserInfoByUserId(userId);
+			log.info("userInfo:"+userInfo.toString());
+			if(userInfo != null && userInfo.size() > 0){
+				pushUserName = (String) userInfo.get("userRealName");
+			}
+			SysMsgPublisher.publishMsg(jobTypeName+"任务(ID:"+jobId+")"+runStatus+","+diffTime.toString(), resultMsg, 0, new long[]{userId}, 1, null, pushUserName);
 		}catch(Exception e){
 			log.warn("接收到end_job消息,但处理过程中出错，消息已消费。message："+message);
 			log.error(e.getMessage(),e);

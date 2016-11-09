@@ -551,4 +551,14 @@ public class PidUtil {
         return applyPid("RD_HGWG_LIMIT");
     }
 
+    /**
+     * 申请RD_MILEAGEPILE
+     *
+     * @return
+     * @throws Exception
+     */
+    public int applyRdMileagepilePid() throws Exception {
+        return applyPid("RD_MILEAGEPILE");
+    }
+
 }

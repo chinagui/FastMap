@@ -4,8 +4,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.Format;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -19,12 +17,7 @@ import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
-import com.navinfo.dataservice.api.man.model.Block;
 import com.navinfo.dataservice.api.man.model.BlockMan;
-import com.navinfo.dataservice.api.man.model.Subtask;
-import com.navinfo.dataservice.api.man.model.UserInfo;
-import com.navinfo.dataservice.api.statics.iface.StaticsApi;
-import com.navinfo.dataservice.api.statics.model.SubtaskStatInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
@@ -35,6 +28,7 @@ import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DateUtilsEx;
 import com.navinfo.dataservice.commons.xinge.XingeUtil;
 import com.navinfo.dataservice.dao.mq.email.EmailPublisher;
+import com.navinfo.dataservice.dao.mq.sys.SysMsgPublisher;
 import com.navinfo.dataservice.engine.man.message.MessageOperation;
 import com.navinfo.dataservice.engine.man.message.SendEmail;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskOperation;
@@ -177,17 +171,27 @@ public class BlockService {
 					String collectGroupLeader=(String) blockMan.get("collectGroupLeader");
 					String dayEditGroupLeader=(String) blockMan.get("dayEditGroupLeader");
 					if(collectGroupLeader!=null && !collectGroupLeader.isEmpty()){
-						Object[] msgTmp=new Object[3];
+						Object[] msgTmp=new Object[4];
 						msgTmp[0]=collectGroupLeader;
 						msgTmp[1]=msgTitle;
 						msgTmp[2]="block变更:"+blockMan.get("blockManName")+"消息发生变更,请关注";
+						//关联要素
+						JSONObject msgParam = new JSONObject();
+						msgParam.put("relateObject", "BLOCK_MAN");
+						msgParam.put("relateObjectId", blockMan.get("blockManId"));
+						msgTmp[3]=msgParam.toString();
 						msgContentList.add(msgTmp);
 					}
 					if(dayEditGroupLeader!=null && !dayEditGroupLeader.isEmpty()){
-						Object[] msgTmp=new Object[3];
+						Object[] msgTmp=new Object[4];
 						msgTmp[0]=dayEditGroupLeader;
 						msgTmp[1]=msgTitle;
 						msgTmp[2]="block变更:"+blockMan.get("blockManName")+"消息发生变更,请关注";
+						//关联要素
+						JSONObject msgParam = new JSONObject();
+						msgParam.put("relateObject", "BLOCK_MAN");
+						msgParam.put("relateObjectId", blockMan.get("blockManId"));
+						msgTmp[3]=msgParam.toString();
 						msgContentList.add(msgTmp);
 					}
 					
@@ -523,17 +527,27 @@ public class BlockService {
 					String collectGroupLeader=(String) blockMan.get("collectGroupLeader");
 					String dayEditGroupLeader=(String) blockMan.get("dayEditGroupLeader");
 					if(collectGroupLeader!=null && !collectGroupLeader.isEmpty()){
-						Object[] msgTmp=new Object[3];
+						Object[] msgTmp=new Object[4];
 						msgTmp[0]=collectGroupLeader;
 						msgTmp[1]=msgTitle;
 						msgTmp[2]="block关闭:"+blockMan.get("blockManName")+"已关闭,请关注";
+						//关联要素
+						JSONObject msgParam = new JSONObject();
+						msgParam.put("relateObject", "BLOCK_MAN");
+						msgParam.put("relateObjectId", blockMan.get("blockManId"));
+						msgTmp[3]=msgParam.toString();
 						msgContentList.add(msgTmp);
 					}
 					if(dayEditGroupLeader!=null && !dayEditGroupLeader.isEmpty()){
-						Object[] msgTmp=new Object[3];
+						Object[] msgTmp=new Object[4];
 						msgTmp[0]=dayEditGroupLeader;
 						msgTmp[1]=msgTitle;
 						msgTmp[2]="block关闭:"+blockMan.get("blockManName")+"已关闭,请关注";
+						//关联要素
+						JSONObject msgParam = new JSONObject();
+						msgParam.put("relateObject", "BLOCK_MAN");
+						msgParam.put("relateObjectId", blockMan.get("blockManId"));
+						msgTmp[3]=msgParam.toString();
 						msgContentList.add(msgTmp);
 					}
 					
@@ -926,17 +940,27 @@ public class BlockService {
 				String collectGroupLeader=(String) blockMan.get("collectGroupLeader");
 				String dayEditGroupLeader=(String) blockMan.get("dayEditGroupLeader");
 				if(collectGroupLeader!=null && !collectGroupLeader.isEmpty()){
-					Object[] msgTmp=new Object[3];
+					Object[] msgTmp=new Object[4];
 					msgTmp[0]=collectGroupLeader;
 					msgTmp[1]=msgTitle;
 					msgTmp[2]="新增block:"+blockMan.get("blockManName")+",请关注";
+					//关联要素
+					JSONObject msgParam = new JSONObject();
+					msgParam.put("relateObject", "BLOCK_MAN");
+					msgParam.put("relateObjectId", blockMan.get("blockManId"));
+					msgTmp[3]=msgParam.toString();
 					msgContentList.add(msgTmp);
 				}
 				if(dayEditGroupLeader!=null && !dayEditGroupLeader.isEmpty()){
-					Object[] msgTmp=new Object[3];
+					Object[] msgTmp=new Object[4];
 					msgTmp[0]=dayEditGroupLeader;
 					msgTmp[1]=msgTitle;
 					msgTmp[2]="新增block:"+blockMan.get("blockManName")+",请关注";
+					//关联要素
+					JSONObject msgParam = new JSONObject();
+					msgParam.put("relateObject", "BLOCK_MAN");
+					msgParam.put("relateObjectId", blockMan.get("blockManId"));
+					msgTmp[3]=msgParam.toString();
 					msgContentList.add(msgTmp);
 				}
 				
@@ -984,8 +1008,14 @@ public class BlockService {
                 	EmailPublisher.publishMsg(toMail, mailTitle, mailContent);
                 }
 			}
+			//查询用户名称
+			String pushUserName = null;
+			if(userInfo != null && userInfo.size() > 0){
+				pushUserName = (String) userInfo.get("userRealName");
+			}
+			//发送消息到消息队列
+			SysMsgPublisher.publishMsg((String)msgContent[1], (String)msgContent[2], userId, new long[]{(long) msgContent[0]}, 2, (String)msgContent[3], pushUserName);
 		}
-		MessageOperation.batchInsert(conn,msgList, userId,"MAN");
 	}
 
 	public Page list(int stage, JSONObject condition, JSONObject order, int currentPageNum,int pageSize, int snapshot) throws Exception {

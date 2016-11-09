@@ -27,10 +27,10 @@ public class Operation implements IOperation {
         hgwgLimit.setPid(PidUtil.getInstance().applyRdHgwgLimitPid());
         hgwgLimit.setLinkPid(content.getInt("linkPid"));
         hgwgLimit.setDirect(content.getInt("direct"));
-        hgwgLimit.setResHigh(content.getDouble("resHigh"));
-        hgwgLimit.setResWeigh(content.getDouble("resWeigh"));
-        hgwgLimit.setResAxleLoad(content.getDouble("resAxleLoad"));
-        hgwgLimit.setResWidth(content.getDouble("resWidth"));
+//        hgwgLimit.setResHigh(content.getDouble("resHigh"));
+//        hgwgLimit.setResWeigh(content.getDouble("resWeigh"));
+//        hgwgLimit.setResAxleLoad(content.getDouble("resAxleLoad"));
+//        hgwgLimit.setResWidth(content.getDouble("resWidth"));
         JSONObject geoPoint = new JSONObject();
         geoPoint.put("type", "Point");
         geoPoint.put("coordinates", new double[]{content.getDouble("longitude"), content.getDouble("latitude")});

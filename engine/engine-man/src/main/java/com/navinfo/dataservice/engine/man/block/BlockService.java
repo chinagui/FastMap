@@ -1014,7 +1014,7 @@ public class BlockService {
 				pushUserName = (String) userInfo.get("userRealName");
 			}
 			//发送消息到消息队列
-			SysMsgPublisher.publishMsg((String)msgContent[1], (String)msgContent[2], userId, new long[]{(long) msgContent[0]}, 2, (String)msgContent[3], pushUserName);
+			SysMsgPublisher.publishMsg((String)msgContent[1], (String)msgContent[2], userId, new long[]{Long.parseLong((String) msgContent[0])}, 2, (String)msgContent[3], pushUserName);
 		}
 	}
 

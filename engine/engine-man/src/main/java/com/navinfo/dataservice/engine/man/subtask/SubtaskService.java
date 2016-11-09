@@ -243,14 +243,29 @@ public class SubtaskService {
 				SubtaskOperation.updateSubtask(conn, subtaskList.get(i));
 				updatedSubtaskIdList.add(subtaskList.get(i).getSubtaskId());
 				
-				//消息发布
-				if(subtaskList.get(i)!=null&&subtaskList.get(i).getStatus()!=null &&subtaskList.get(i).getStatus()==1){
-					List<Integer> subtaskIdList = new ArrayList<Integer>();
-					subtaskIdList.add(subtaskList.get(i).getSubtaskId());
-					Subtask subtask = SubtaskOperation.getSubtaskListBySubtaskIdList(conn,subtaskIdList).get(0);
-					SubtaskOperation.pushMessage(conn,subtask,userId);
-				}
 			}
+			//发送消息
+			try {
+				List<Integer> subtaskIdList = new ArrayList<Integer>();
+				for (Subtask subtask : subtaskList) {
+					//消息发布
+					if(subtask!=null&&subtask.getStatus()!=null &&subtask.getStatus()==1){
+						subtaskIdList.add(subtask.getSubtaskId());
+					}
+				}
+				//查询子任务
+				List<Subtask> list = SubtaskOperation.getSubtaskListBySubtaskIdList(conn,subtaskIdList);
+				if(list != null && list.size()>0){
+					for (Subtask subtask : list) {
+						SubtaskOperation.pushMessage(conn,subtask,userId);
+					}
+				}
+			} catch (Exception e) {
+				// TODO: handle exception
+				e.printStackTrace();
+				log.error("发送失败,原因:"+e.getMessage(), e);
+			}
+			
 			return updatedSubtaskIdList;
 
 		} catch (Exception e) {

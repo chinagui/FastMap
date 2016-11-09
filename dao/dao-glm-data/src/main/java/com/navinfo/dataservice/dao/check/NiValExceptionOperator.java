@@ -351,15 +351,23 @@ public class NiValExceptionOperator {
 			String sql = "";
 
 			if (type == 3) {
-				sql = "insert into ni_val_exception_history select * from ni_val_exception a where a.MD5_CODE=:1";
-
+				sql = "delete from ni_val_exception a where a.MD5_CODE=:1";
 				pstmt = conn.prepareStatement(sql);
-
 				pstmt.setString(1, md5);
-
 				pstmt.executeUpdate();
-
 				pstmt.close();
+				
+				sql = "delete from ni_val_exception_grid a where a.MD5_CODE=:1";
+				pstmt = conn.prepareStatement(sql);
+				pstmt.setString(1, md5);
+				pstmt.executeUpdate();
+				pstmt.close();
+				
+				sql = "delete from ck_result_object a where a.MD5_CODE=:1";
+				pstmt = conn.prepareStatement(sql);
+				pstmt.setString(1, md5);
+				pstmt.executeUpdate();
+				pstmt.close();				
 			} else {
 
 				NiValExceptionSelector selector = new NiValExceptionSelector(

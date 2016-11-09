@@ -84,13 +84,17 @@ public class SubtaskController extends BaseController {
 			if(dataJson==null){
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
-			Integer qualityExeUserId = dataJson.getInt("qualityExeUserId");
-			String qualityPlanStartDate = dataJson.getString("qualityPlanStartDate");
-			String qualityPlanEndDate = dataJson.getString("qualityPlanEndDate");
-			//删除传入参数的对应键值对,因为bean中没有这些字段
-			dataJson.discard("qualityExeUserId");
-			dataJson.discard("qualityPlanStartDate");
-			dataJson.discard("qualityPlanEndDate");
+			Integer qualityExeUserId = 0;
+			String qualityPlanStartDate = "";
+			String qualityPlanEndDate = "";
+			if(dataJson.containsKey("qualityExeUserId")){
+				qualityExeUserId = dataJson.getInt("qualityExeUserId");
+				qualityPlanStartDate = dataJson.getString("qualityPlanStartDate");
+				qualityPlanEndDate = dataJson.getString("qualityPlanEndDate");
+				//删除传入参数的对应键值对,因为bean中没有这些字段
+				dataJson.discard("qualityExeUserId");
+				dataJson.discard("qualityPlanStartDate");
+				dataJson.discard("qualityPlanEndDate");}
 			SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
 			long userId = tokenObj.getUserId();
 			if(qualityExeUserId != 0 ){//表示要创建质检子任务

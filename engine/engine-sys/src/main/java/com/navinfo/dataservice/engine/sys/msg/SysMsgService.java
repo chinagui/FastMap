@@ -4,7 +4,9 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -14,6 +16,9 @@ import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 /**
  * 
@@ -75,14 +80,24 @@ public class SysMsgService {
 		try{
 			QueryRunner queryRunner = new QueryRunner();
 			sysConn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
-			//设置为已读
-			String sql = "INSERT INTO SYS_MESSAGE_READ_LOG (MSG_ID,USER_ID) VALUES(?,?)";
+			//判断消息是否已读
+			String sql = "SELECT COUNT(1) FROM SYS_MESSAGE_READ_LOG WHERE MSG_ID=? AND USER_ID=?";
 			Object[] params={msgId,userId};
-			queryRunner.update(sysConn, sql, params);
+			long count = queryRunner.queryForLong(sysConn,sql,params);
+			//是否为已读
+			if(count > 0){
+				//已读消息
+			}else{
+				//未读消息
+				//设置为已读
+				String updateSql = "INSERT INTO SYS_MESSAGE_READ_LOG (MSG_ID,USER_ID,MSG_STATUS,READ_TYPE) VALUES(?,?,1,1)";
+				Object[] updateParams={msgId,userId};
+				queryRunner.update(sysConn, updateSql, updateParams);
+			}
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(sysConn);
 			log.error(e.getMessage(), e);
-			throw new ServiceException("更改失败，原因为:该消息已读,不能重复更改消息状态!");
+			throw new ServiceException("更改失败，原因为:"+e.getMessage());
 		}finally{
 			DbUtils.commitAndCloseQuietly(sysConn);
 		}
@@ -117,8 +132,6 @@ public class SysMsgService {
 	/**
 	 * 删除消息
 	 * @param userId
-	 * @param pageNum
-	 * @param pageSize
 	 * @return
 	 * @throws ServiceException
 	 */
@@ -141,7 +154,7 @@ public class SysMsgService {
 			}else{
 				//未读消息
 				//添加删除日志并且状态为2
-				String insertDeleteLogSql = "INSERT INTO SYS_MESSAGE_READ_LOG(MSG_ID,USER_ID,MSG_STATUS) VALUES(?,?,2)";
+				String insertDeleteLogSql = "INSERT INTO SYS_MESSAGE_READ_LOG(MSG_ID,USER_ID,MSG_STATUS,,READ_TYPE) VALUES(?,?,2,1)";
 				Object[] insertDeleteLogParams={msgId,userId};
 				queryRunner.update(sysConn, insertDeleteLogSql, insertDeleteLogParams);
 			}
@@ -180,6 +193,250 @@ public class SysMsgService {
 		}
 	}
 	
+	/**
+	 * 查询man管理消息的title
+	 * @author Han Shaoming
+	 * @param userId
+	 * @return
+	 * @throws ServiceException
+	 */
+	public List<String> getManMsgTitleList(long userId) throws ServiceException {
+		// TODO Auto-generated method stub
+		Connection conn = null;
+		QueryRunner queryRunner = null;
+		try {
+			//查询消息
+			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
+			queryRunner = new QueryRunner();
+			String sql = "SELECT DISTINCT M.MSG_TITLE FROM SYS_MESSAGE M WHERE M.TARGET_USER_ID=?";
+			Object[] params = {userId};
+			ResultSetHandler<List<String>> rsh = new ResultSetHandler<List<String>>() {
+
+				@Override
+				public List<String> handle(ResultSet rs) throws SQLException {
+					// TODO Auto-generated method stub
+					List<String> titleList = new ArrayList<String>();
+					while(rs.next()){
+						titleList.add(rs.getString("MSG_TITLE"));
+					}
+					return null;
+				}
+			};
+			List<String> list = queryRunner.query(conn, sql, rsh, params);
+			return list;
+		} catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * 获取man管理消息列表
+	 * @author Han Shaoming
+	 * @param userId
+	 * @param pageNum
+	 * @param pageSize
+	 * @param condition
+	 * @return
+	 * @throws ServiceException 
+	 */
+	public Page getManMsgList(long userId, int pageNum, int pageSize, String condition) throws ServiceException {
+		Connection conn = null;
+		QueryRunner queryRunner = null;
+		try{
+			//查询消息
+			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
+			queryRunner = new QueryRunner();
+			//拼接sql语句
+			JSONObject jo = JSONObject.fromObject(condition);
+			StringBuilder sql = new StringBuilder();
+			sql.append("SELECT T.* FROM SYS_MESSAGE T ");
+			//添加筛选条件
+			if(jo.get("msgStatus") != null){
+				if((long)jo.get("msgStatus") == 0){
+					//筛选未读消息
+					sql.append(" WHERE NOT EXISTS(SELECT 1 FROM SYS_MESSAGE_READ_LOG L WHERE 1=1 ");
+				}else if((long)jo.get("msgStatus") == 1){
+					//筛选已读消息
+					sql.append(" WHERE EXISTS(SELECT 1 FROM SYS_MESSAGE_READ_LOG L WHERE L.MSG_STATUS IN (1)");
+				}else if((long)jo.get("msgStatus") == 2){
+					//筛选删除消息
+					sql.append(" WHERE EXISTS(SELECT 1 FROM SYS_MESSAGE_READ_LOG L WHERE L.MSG_STATUS IN (2)");
+				}
+			}else{
+				sql.append(" WHERE NOT EXISTS(SELECT 1 FROM SYS_MESSAGE_READ_LOG L WHERE L.MSG_STATUS IN (2)");
+			}
+			sql.append(" AND T.MSG_ID=L.MSG_ID AND L.USER_ID="+userId+") ");
+			//添加搜索条件
+			if(jo.get("pushUserName") != null){
+				//模糊搜索处理人
+				sql.append(" AND T.PUSH_USER_NAME LIKE '%"+jo.get("pushUserName")+"%'");
+			}
+			if(jo.get("msgContent") != null){
+				//模糊搜索标题内容
+				sql.append(" AND T.MSG_CONTENT LIKE '%"+jo.get("msgContent")+"%'");
+			}
+			if(jo.get("msgTitle") != null){
+				//精确搜索事件
+				sql.append(" AND T.MSG_TITLE='"+jo.get("msgTitle")+"'");
+			}
+			sql.append(" AND T.TARGET_USER_ID IN (0,"+userId+") AND T.MSG_TYPE=2 ");
+			String querySql = sql.append(" ORDER BY CREATE_TIME DESC").toString();
+			Object[] params = {};
+			//日志
+			log.info("查询man管理消息的sql:"+sql.toString());
+			Page page = queryRunner.query(pageNum,pageSize,conn, querySql, new MsgWithPageHandler(pageNum, pageSize), params);
+			return page;
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * 批量修改管理信息状态
+	 * @author Han Shaoming
+	 * @param userId
+	 * @param msgStatus 
+	 * @param msgIds
+	 * @return
+	 * @throws ServiceException 
+	 */
+	public String updateManMsg(long userId, long msgStatus, JSONArray msgIds) throws ServiceException {
+		// TODO Auto-generated method stub
+		int total = 0;
+		try{
+			//编辑消息状态
+			for(int i=0;i<msgIds.size();i++){
+				long msgId = msgIds.getLong(i);
+				if(msgStatus == 1){
+					//已查看
+					this.updateMsgStatusToRead(msgId, userId);
+				}else if(msgStatus == 2){
+					//删除
+					this.deleteMsg(msgId, userId);
+				}else if(msgStatus == 3){
+					//永久删除
+					this.deleteForeverMsg(msgId, userId);
+				}else if(msgStatus == 4){
+					//恢复到已读
+					this.updateDeleteMsgToRead(msgId, userId);
+				}
+				total+=1;
+			}
+		return "批量修改消息状态："+total+"个成功,"+(msgIds.size()-total)+"个失败!";
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new ServiceException("编辑失败，原因为:"+e.getMessage(),e);
+		}
+	}
+	
+	/**
+	 * 永久删除消息
+	 * @param userId
+	 * @return
+	 * @throws ServiceException
+	 */
+	public void deleteForeverMsg(long msgId,long userId)throws ServiceException{
+		Connection sysConn = null;
+		try{
+			QueryRunner queryRunner = new QueryRunner();
+			sysConn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
+			//判断消息是否已读
+			String sql = "SELECT COUNT(1) FROM SYS_MESSAGE_READ_LOG WHERE MSG_ID=? AND USER_ID=?";
+			Object[] params={msgId,userId};
+			long count = queryRunner.queryForLong(sysConn,sql,params);
+			//判断是否为系统消息
+			String msgTypeSql = "SELECT MSG_TYPE FROM SYS_MESSAGE WHERE MSG_ID=?";
+			Object[] msgTypeParams={msgId};
+			long msgType = queryRunner.queryForLong(sysConn,msgTypeSql,msgTypeParams);
+			//是否为已读
+			if(count > 0){
+				//已读消息
+				//是否为系统消息
+				if(msgType >0){
+					//非系统消息
+					//永久删除日志
+					String deleteLogSql = "DELETE FROM SYS_MESSAGE_READ_LOG WHERE MSG_ID=? AND USER_ID=?";
+					Object[] updateDeleteLogParams={msgId,userId};
+					queryRunner.update(sysConn, deleteLogSql, updateDeleteLogParams);
+				}else{
+					//系统消息
+					//修改删除日志的状态为3
+					String updateDeleteLogSql = "UPDATE SYS_MESSAGE_READ_LOG SET MSG_STATUS= 3 WHERE MSG_ID=? AND USER_ID=?";
+					Object[] updateDeleteLogParams={msgId,userId};
+					queryRunner.update(sysConn, updateDeleteLogSql, updateDeleteLogParams);
+				}
+			}else{
+				//是否为系统消息
+				if(msgType >0){
+					//非系统消息
+					//永久删除消息
+					String deleteSql = "DELETE FROM SYS_MESSAGE WHERE MSG_ID=? AND TARGET_USER_ID=?";
+					Object[] updateDeleteLogParams={msgId,userId};
+					queryRunner.update(sysConn, deleteSql, updateDeleteLogParams);
+				}else{
+					//系统消息
+					//修改删除日志的状态为3
+					String updateDeleteLogSql = "UPDATE SYS_MESSAGE_READ_LOG SET MSG_STATUS= 3 WHERE MSG_ID=? AND USER_ID=?";
+					Object[] updateDeleteLogParams={msgId,userId};
+					queryRunner.update(sysConn, updateDeleteLogSql, updateDeleteLogParams);
+				}
+			}
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(sysConn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("永久删除失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(sysConn);
+		}
+	}
+	
+	/**
+	 * 恢复删除消息
+	 * @param userId
+	 * @return
+	 * @throws ServiceException
+	 */
+	public void updateDeleteMsgToRead(long msgId,long userId)throws ServiceException{
+		Connection sysConn = null;
+		try{
+			QueryRunner queryRunner = new QueryRunner();
+			sysConn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
+			//判断消息是否已读
+			String sql = "SELECT COUNT(1) FROM SYS_MESSAGE_READ_LOG WHERE MSG_ID=? AND USER_ID=?";
+			Object[] params={msgId,userId};
+			long count = queryRunner.queryForLong(sysConn,sql,params);
+			//是否为已读
+			if(count > 0){
+				//已读消息
+				//修改日志的状态为1
+				String updateDeleteLogSql = "UPDATE SYS_MESSAGE_READ_LOG SET MSG_STATUS= 1 WHERE MSG_ID=? AND USER_ID=?";
+				Object[] updateDeleteLogParams={msgId,userId};
+				queryRunner.update(sysConn, updateDeleteLogSql, updateDeleteLogParams);
+			}else{
+				//未读消息
+				//添加日志并且状态为1
+				String insertDeleteLogSql = "INSERT INTO SYS_MESSAGE_READ_LOG(MSG_ID,USER_ID,MSG_STATUS,READ_TYPE) VALUES(?,?,1,1)";
+				Object[] insertDeleteLogParams={msgId,userId};
+				queryRunner.update(sysConn, insertDeleteLogSql, insertDeleteLogParams);
+			}
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(sysConn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("删除失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(sysConn);
+		}
+	}
+	
+	
 	/* resultset handler */
 	class MultiRowHandler implements ResultSetHandler<List<SysMsg>>{
 		
@@ -194,6 +451,8 @@ public class SysMsgService {
 				msg.setTargetUserId(rs.getLong("TARGET_USER_ID"));
 				msg.setMsgTitle(rs.getString("MSG_TITLE"));
 				msg.setPushUserId(rs.getLong("PUSH_USER_ID"));
+				msg.setMsgParam(rs.getString("MSG_PARAM"));
+				msg.setPushUserName(rs.getString("PUSH_USER_NAME"));
 				msgs.add(msg);
 			}
 			return msgs;
@@ -222,6 +481,8 @@ public class SysMsgService {
 				msg.setTargetUserId(rs.getLong("TARGET_USER_ID"));
 				msg.setMsgTitle(rs.getString("MSG_TITLE"));
 				msg.setPushUserId(rs.getLong("PUSH_USER_ID"));
+				msg.setMsgParam(rs.getString("MSG_PARAM"));
+				msg.setPushUserName(rs.getString("PUSH_USER_NAME"));
 				msgs.add(msg);
 				if(total==0){
 					total=rs.getInt("TOTAL_RECORD_NUM_");
@@ -233,4 +494,53 @@ public class SysMsgService {
 		}
 		
 	}
+	/**
+	 * 
+	 * @ClassName MsgWithPageHandler
+	 * @author Han Shaoming
+	 * @date 2016年11月9日 上午10:35:38
+	 * @Description TODO
+	 */
+	class MsgWithPageHandler implements ResultSetHandler<Page>{
+		private int pageNum;
+		private int pageSize;
+		MsgWithPageHandler(int pageNum,int pageSize){
+			this.pageNum=pageNum;
+			this.pageSize=pageSize;
+		}
+		public Page handle(ResultSet rs) throws SQLException {
+			Page page = new Page(pageNum);
+			page.setPageSize(pageSize);
+			int total = 0;
+			List<Map<String,Object>> msgs = new ArrayList<Map<String,Object>>();
+			while(rs.next()){
+				Map<String,Object> msg = new HashMap<String, Object>();
+				msg.put("msgId",rs.getLong("MSG_ID"));
+				msg.put("msgType",rs.getInt("MSG_TYPE"));
+				msg.put("msgContent",rs.getString("MSG_CONTENT"));
+				msg.put("createTime",rs.getTimestamp("CREATE_TIME"));
+				msg.put("targetUserId",rs.getLong("TARGET_USER_ID"));
+				msg.put("msgTitle",rs.getString("MSG_TITLE"));
+				msg.put("pushUserId",rs.getLong("PUSH_USER_ID"));
+				//处理关联要素
+				String msgParam = rs.getString("MSG_PARAM");
+				JSONObject jsn = JSONObject.fromObject(msgParam);
+				String relateObject = (String) jsn.get("relateObject");
+				long relateObjectId = (Integer) jsn.get("relateObjectId");
+				msg.put("relateObject",relateObject);
+				msg.put("relateObjectId",relateObjectId);
+				msg.put("pushUserName",rs.getString("PUSH_USER_NAME"));
+				msgs.add(msg);
+				if(total==0){
+					total=rs.getInt("TOTAL_RECORD_NUM_");
+				}
+			}
+			page.setResult(msgs);
+			page.setTotalCount(total);
+			return page;
+		}
+		
+	}
+	
+	
 }

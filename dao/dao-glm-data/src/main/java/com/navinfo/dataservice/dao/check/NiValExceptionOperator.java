@@ -209,11 +209,11 @@ public class NiValExceptionOperator {
 			meshId = (int) list.get(1);
 		}
 		logg.debug("start insert ni_val:2");
-		String md5Sql = "SELECT LOWER(UTL_RAW.CAST_TO_RAW(DBMS_OBFUSCATION_TOOLKIT.MD5(INPUT_STRING =>?||?||?||?))) "
-				+ "AS MD5_CODE FROM DUAL "
-				+ "minus "
-		+"(SELECT N.MD5_CODE FROM NI_VAL_EXCEPTION N "
-		+ "UNION SELECT C.Md5_Code FROM CK_EXCEPTION C)";
+		String md5Sql = "with t as(SELECT LOWER(UTL_RAW.CAST_TO_RAW(DBMS_OBFUSCATION_TOOLKIT.MD5(INPUT_STRING =>?||?||?||?))) "
+				+ "AS MD5_CODE FROM DUAL) "
+				+ "select md5_code from t minus "
+		+"(SELECT N.MD5_CODE FROM NI_VAL_EXCEPTION N,t WHERE t.MD5_CODE=N.MD5_CODE "
+		+ "union all SELECT C.MD5_CODE FROM CK_EXCEPTION C,t WHERE t.MD5_CODE=C.MD5_CODE )";
 //		String md5 = this.generateMd5(ruleId, log, targets, null);
 //		String sql = "merge into ni_val_exception a using (select :1 as MD5_CODE from dual) b on (a.MD5_CODE = b.MD5_CODE) when not matched then   insert (MD5_CODE, ruleid, information, location, targets, mesh_id, worker, \"LEVEL\", created, updated )   values     (:2, :3, :4, sdo_geometry(:5, 8307), :6, :7, :8, :9, sysdate, sysdate)";
 		logg.debug("start insert ni_val:2-1");
@@ -351,15 +351,23 @@ public class NiValExceptionOperator {
 			String sql = "";
 
 			if (type == 3) {
-				sql = "insert into ni_val_exception_history select * from ni_val_exception a where a.MD5_CODE=:1";
-
+				sql = "delete from ni_val_exception a where a.MD5_CODE=:1";
 				pstmt = conn.prepareStatement(sql);
-
 				pstmt.setString(1, md5);
-
 				pstmt.executeUpdate();
-
 				pstmt.close();
+				
+				sql = "delete from ni_val_exception_grid a where a.MD5_CODE=:1";
+				pstmt = conn.prepareStatement(sql);
+				pstmt.setString(1, md5);
+				pstmt.executeUpdate();
+				pstmt.close();
+				
+				sql = "delete from ck_result_object a where a.MD5_CODE=:1";
+				pstmt = conn.prepareStatement(sql);
+				pstmt.setString(1, md5);
+				pstmt.executeUpdate();
+				pstmt.close();				
 			} else {
 
 				NiValExceptionSelector selector = new NiValExceptionSelector(

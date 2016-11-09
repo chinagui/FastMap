@@ -38,6 +38,7 @@ public class SysMsgHandler implements MsgHandler {
 	public void handle(String message) {
 		Connection conn = null;
 		QueryRunner queryRunner = null;
+		Integer msgType = null;
 		try{
 			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
 			queryRunner = new QueryRunner();
@@ -45,15 +46,22 @@ public class SysMsgHandler implements MsgHandler {
 			String idSql = "SELECT SYS_MSG_SEQ.NEXTVAL FROM DUAL";
 			Object[] idParams = {};
 			id = queryRunner.queryForLong(conn, idSql, idParams);
+			log.info("sysMsg消息队列接受消息:"+message);
 			//解析message
 			JSONObject jo = JSONObject.fromObject(message);
-			String msgTitle = jo.getString("msgTitle");
-			String msgContent = jo.getString("msgContent");
-			long pushUserId = jo.getLong("pushUserId");
-			long targetUserId = jo.getLong("targetUserId");
-			String sql = "INSERT INTO SYS_MESSAGE(MSG_ID,MSG_TITLE,MSG_CONTENT,PUSH_USER_ID,TARGET_USER_ID,CREATE_TIME) "
-					+ "VALUES(?,?,?,?,?,SYSDATE)";
-			Object[] params = {id,msgTitle,msgContent,pushUserId,targetUserId};
+			String msgTitle = (String) jo.get("msgTitle");
+			String msgContent = (String) jo.get("msgContent");
+			long pushUserId = (Integer) jo.get("pushUserId");
+			long targetUserId = (Integer) jo.get("targetUserId");
+			msgType = (Integer) jo.get("msgType");
+			String msgParam = (String) jo.get("msgParam");
+			String pushUserName = (String) jo.get("pushUserName");
+			//日志
+			log.info("参数----msgType:"+msgType+",targetUserId:"+targetUserId);
+			
+			String sql = "INSERT INTO SYS_MESSAGE(MSG_ID,MSG_TYPE,MSG_TITLE,MSG_CONTENT,PUSH_USER_ID,TARGET_USER_ID,CREATE_TIME,MSG_PARAM,PUSH_USER_NAME) "
+					+ "VALUES(?,?,?,?,?,?,SYSDATE,?,?)";
+			Object[] params = {id,msgType,msgTitle,msgContent,pushUserId,targetUserId,msgParam,pushUserName};
 			queryRunner.update(conn, sql, params);
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -61,12 +69,29 @@ public class SysMsgHandler implements MsgHandler {
 			log.error(e.getMessage(),e);
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
-			sendMessage(id);
+			}
+		//实时推送消息
+		try {
+			if(msgType != null){
+				//判断消息类型
+				if(msgType==0){
+					//系统消息
+					sendMessage(id);
+				}else if(msgType==1){
+					//job消息
+					sendMessage(id);
+				}else if(msgType==2){
+					//管理消息
+				}
+			}
+		} catch (Exception e2) {
+			// TODO: handle exception
+			log.error(e2.getMessage(),e2);
 		}
 	}
 	
 	/**
-	 * 发送消息
+	 * 发送系统及job消息
 	 */
 	private void sendMessage(long id){
 		Connection conn = null;
@@ -106,12 +131,14 @@ public class SysMsgHandler implements MsgHandler {
 			while(rs.next()){
 				SysMsg msg = new SysMsg();
 				msg.setMsgId(rs.getLong("MSG_ID"));
-				msg.setMsgType(rs.getInt("MSG_TYPE"));
+				msg.setMsgType(rs.getLong("MSG_TYPE"));
 				msg.setMsgContent(rs.getString("MSG_CONTENT"));
 				msg.setCreateTime(rs.getTimestamp("CREATE_TIME"));
 				msg.setTargetUserId(rs.getLong("TARGET_USER_ID"));
 				msg.setMsgTitle(rs.getString("MSG_TITLE"));
 				msg.setPushUserId(rs.getLong("PUSH_USER_ID"));
+				msg.setMsgParam(rs.getString("MSG_PARAM"));
+				msg.setPushUserName(rs.getString("PUSH_USER_NAME"));
 				msgs.add(msg);
 			}
 			return msgs;

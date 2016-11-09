@@ -184,6 +184,7 @@ public class TaskService {
 				msgParam.put("relateObject", "TASK");
 				msgParam.put("relateObjectId", task.get("taskId"));
 				map.put("msgParam", msgParam.toString());
+				msgContentList.add(map);
 			}
 			if(msgContentList.size()>0){
 				taskPushMsg(conn,msgTitle,msgContentList,groupIdList,userId);
@@ -267,6 +268,7 @@ public class TaskService {
 					msgParam.put("relateObject", "TASK");
 					msgParam.put("relateObjectId", task.get("taskId"));
 					map.put("msgParam", msgParam.toString());
+					msgContentList.add(map);
 					
 					groupIdList.add((Long) task.get("monthEditGroupId"));
 					//查询block分配的采集和日编作业组组长id
@@ -542,6 +544,7 @@ public class TaskService {
 						msgParam.put("relateObject", "TASK");
 						msgParam.put("relateObjectId", task.get("taskId"));
 						map.put("msgParam", msgParam.toString());
+						msgContentList.add(map);
 						
 						groupIdList.add((Long) task.get("monthEditGroupId"));
 						//查询block分配的采集和日编作业组组长id

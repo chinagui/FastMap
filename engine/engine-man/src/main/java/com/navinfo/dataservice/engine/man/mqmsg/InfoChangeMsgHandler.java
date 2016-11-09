@@ -123,8 +123,10 @@ public class InfoChangeMsgHandler implements MsgHandler {
 			//关联要素
 			JSONObject msgParam = new JSONObject();
 			msgParam.put("relateObject", "INFOR");
-			msgParam.put("relateObjectId", inforId);
+			msgParam.put("relateObjectId", Long.parseLong(inforId));
 			map.put("msgParam", msgParam.toString());
+			msgContentList.add(map);
+			
 			if(msgContentList.size()>0){
 				String userSql="SELECT DISTINCT M.USER_ID FROM ROLE_USER_MAPPING M WHERE M.ROLE_ID =3";
 				List<Integer> userIdList = UserInfoOperation.getUserListBySql(conn, userSql);

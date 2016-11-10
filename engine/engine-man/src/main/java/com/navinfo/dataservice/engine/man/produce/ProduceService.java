@@ -57,7 +57,7 @@ public class ProduceService {
 		//JSONArray gridIds = dataJson.getJSONArray("gridIds");
 		JSONObject paraJson=new JSONObject();
 		paraJson.put("gridIds", gridIds);
-		int produceId=this.create(userId,produceType,paraJson);
+		int produceId=this.create(userId,produceType,paraJson,subtaskId);
 		//创建日出品job
 		// TODO Auto-generated method stub
 		JobApi jobApi=(JobApi) ApplicationContextUtil.getBean("jobApi");
@@ -87,14 +87,14 @@ public class ProduceService {
 	 * @author zl zhangli5174@navinfo.com
 	 * @date 2016年11月3日 下午1:48:02 
 	 */
-	public int create(long userId,String produceType, JSONObject paraJson) throws Exception{
+	public int create(long userId,String produceType, JSONObject paraJson,int subtaskId) throws Exception{
 		Connection conn = null;
 		try{
 			conn = DBConnector.getInstance().getManConnection();
 			int produceId=ProduceOperation.getNewProduceId(conn);
 			QueryRunner run = new QueryRunner();
-			String createSql = "insert into produce (produce_id,produce_type,create_user_id,create_date,produce_status,parameter) "
-					+ "values("+produceId+",'"+produceType+"',"+userId+",sysdate,0,'"+paraJson+"')";			
+			String createSql = "insert into produce (produce_id,produce_type,create_user_id,create_date,produce_status,parameter,subtask_id) "
+					+ "values("+produceId+",'"+produceType+"',"+userId+",sysdate,0,'"+paraJson+"',"+subtaskId+")";			
 			//ClobProxyImpl impl=(ClobProxyImpl)ConnectionUtil.createClob(conn);
 			log.debug("创建日出品sql:"+createSql);
 			run.update(conn,createSql);		

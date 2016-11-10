@@ -17,13 +17,18 @@ import org.springframework.stereotype.Service;
 import com.navinfo.dataservice.api.man.model.Message;
 import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.xinge.XingeUtil;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskOperation;
 import com.navinfo.dataservice.engine.man.userDevice.UserDeviceService;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoService;
+import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
+
+import net.sf.json.JSONObject;
 
 @Service
 public class MessageService {
@@ -166,6 +171,203 @@ public class MessageService {
 			throw new ServiceException("查询明细失败，原因为:" + e.getMessage(), e);
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * 根据申请人查询业务申请列表
+	 * @author Han Shaoming
+	 * @param userId
+	 * @param pageNum
+	 * @param pageSize
+	 * @param condition
+	 * @return
+	 * @throws ServiceException 
+	 */
+	public Page getApplyListByApplyUserId(long userId, int pageNum, int pageSize, String condition) throws ServiceException {
+		Connection conn = null;
+		QueryRunner queryRunner = null;
+		try{
+			//查询消息
+			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
+			queryRunner = new QueryRunner();
+			//拼接sql语句
+			JSONObject jo = JSONObject.fromObject(condition);
+			StringBuilder sql = new StringBuilder();
+			sql.append("SELECT A.*,U.USER_REAL_NAME FROM APPLICATION A,USER_INFO U WHERE A.OPERATOR=U.USER_ID");
+			//添加筛选条件
+			if(jo.get("deleteFlag") != null){
+				//筛选消息
+				sql.append(" AND A.DELETE_FLAG="+jo.get("deleteFlag"));
+			}else{
+				sql.append(" AND A.DELETE_FLAG=0");
+			}
+			//添加搜索条件
+			if(StringUtils.isNotEmpty((String) jo.get("operatorUserName"))){
+				//模糊搜索处理人
+				sql.append(" AND U.USER_REAL_NAME LIKE '%"+jo.get("operatorUserName")+"%'");
+			}
+			if(StringUtils.isNotEmpty((String)jo.get("applyTitle") )){
+				//模糊搜索标题内容
+				sql.append(" AND A.APPLY_TITLE LIKE '%"+jo.get("applyTitle")+"%'");
+			}
+			if(jo.get("applyType") !=null){
+				//精确搜索申请类型
+				sql.append(" AND A.APPLY_TYPE="+jo.get("applyType"));
+			}
+			if(jo.get("applyStatus") !=null){
+				//精确搜索申请状态
+				sql.append(" AND A.APPLY_STATUS="+jo.get("applyStatus"));
+			}
+			sql.append(" AND A.APPLY_USER_ID="+userId+" ORDER BY A.OPERATE_TIME");
+			String querySql = sql.toString();
+			Object[] params = {};
+			//日志
+			log.info("根据申请人查询业务申请列表的sql:"+sql.toString());
+			Page page = queryRunner.query(pageNum,pageSize,conn, querySql, new ApplyMsgWithPageHandler(pageNum, pageSize), params);
+			return page;
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * 根据审核人查询业务申请列表
+	 * @author Han Shaoming
+	 * @param userId
+	 * @param pageNum
+	 * @param pageSize
+	 * @param condition
+	 * @return
+	 * @throws ServiceException
+	 */
+	public Page getApplyListByByAuditor(long userId, int pageNum, int pageSize, String condition) throws ServiceException {
+		Connection conn = null;
+		QueryRunner queryRunner = null;
+		try{
+			//查询消息
+			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
+			queryRunner = new QueryRunner();
+			//拼接sql语句
+			JSONObject jo = JSONObject.fromObject(condition);
+			StringBuilder sql = new StringBuilder();
+			sql.append("SELECT A.*,U.USER_REAL_NAME FROM APPLICATION A,USER_INFO U WHERE A.AUDITOR=U.USER_ID AND A.DELETE_FLAG=0 ");
+			//添加搜索条件
+			if(StringUtils.isNotEmpty((String) jo.get("auditorName"))){
+				//模糊搜索处理人
+				sql.append(" AND U.USER_REAL_NAME LIKE '%"+jo.get("auditorName")+"%'");
+			}
+			if(StringUtils.isNotEmpty((String)jo.get("applyTitle") )){
+				//模糊搜索标题内容
+				sql.append(" AND A.APPLY_TITLE LIKE '%"+jo.get("applyTitle")+"%'");
+			}
+			if(jo.get("applyType") !=null){
+				//精确搜索申请类型
+				sql.append(" AND A.APPLY_TYPE="+jo.get("applyType"));
+			}
+			if(jo.get("applyStatus") !=null){
+				//精确搜索申请状态
+				sql.append(" AND A.APPLY_STATUS="+jo.get("applyStatus"));
+			}else{
+				sql.append(" AND A.APPLY_STATUS= IN (2,3,4) ");
+			}
+			sql.append(" AND A.AUDITOR="+userId+" ORDER BY A.OPERATE_TIME");
+			String querySql = sql.toString();
+			Object[] params = {};
+			//日志
+			log.info("根据审核人查询业务申请列表的sql:"+sql.toString());
+			Page page = queryRunner.query(pageNum,pageSize,conn, querySql, new AuditorMsgWithPageHandler(pageNum, pageSize), params);
+			return page;
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	
+	
+	/**
+	 * 
+	 * @ClassName ApplyMsgWithPageHandler
+	 * @author Han Shaoming
+	 * @date 2016年11月9日 上午10:35:38
+	 * @Description TODO
+	 */
+	class ApplyMsgWithPageHandler implements ResultSetHandler<Page>{
+		private int pageNum;
+		private int pageSize;
+		ApplyMsgWithPageHandler(int pageNum,int pageSize){
+			this.pageNum=pageNum;
+			this.pageSize=pageSize;
+		}
+		public Page handle(ResultSet rs) throws SQLException {
+			Page page = new Page(pageNum);
+			page.setPageSize(pageSize);
+			int total = 0;
+			List<Map<String,Object>> msgs = new ArrayList<Map<String,Object>>();
+			while(rs.next()){
+				Map<String,Object> msg = new HashMap<String, Object>();
+				msg.put("applyId",rs.getLong("APPLY_ID"));
+				msg.put("applyTitle",rs.getString("APPLY_TITLE"));
+				msg.put("applyType",rs.getLong("APPLY_TYPE"));
+				msg.put("applyStatus",rs.getLong("APPLY_STATUS"));
+				msg.put("operateTime",rs.getTimestamp("OPERATE_TIME"));
+				msg.put("operator",rs.getLong("OPERATOR"));
+				msg.put("operatorUserName",rs.getString("USER_REAL_NAME"));
+				msgs.add(msg);
+				if(total==0){
+					total=rs.getInt("TOTAL_RECORD_NUM_");
+				}
+			}
+			page.setResult(msgs);
+			page.setTotalCount(total);
+			return page;
+		}
+	}
+	
+	/**
+	 * 
+	 * @ClassName ApplyMsgWithPageHandler
+	 * @author Han Shaoming
+	 * @date 2016年11月9日 上午10:35:38
+	 * @Description TODO
+	 */
+	class AuditorMsgWithPageHandler implements ResultSetHandler<Page>{
+		private int pageNum;
+		private int pageSize;
+		AuditorMsgWithPageHandler(int pageNum,int pageSize){
+			this.pageNum=pageNum;
+			this.pageSize=pageSize;
+		}
+		public Page handle(ResultSet rs) throws SQLException {
+			Page page = new Page(pageNum);
+			page.setPageSize(pageSize);
+			int total = 0;
+			List<Map<String,Object>> msgs = new ArrayList<Map<String,Object>>();
+			while(rs.next()){
+				Map<String,Object> msg = new HashMap<String, Object>();
+				msg.put("applyId",rs.getLong("APPLY_ID"));
+				msg.put("applyTitle",rs.getString("APPLY_TITLE"));
+				msg.put("applyType",rs.getLong("APPLY_TYPE"));
+				msg.put("applyStatus",rs.getLong("APPLY_STATUS"));
+				msg.put("operateTime",rs.getTimestamp("OPERATE_TIME"));
+				msg.put("auditor",rs.getLong("AUDITOR"));
+				msg.put("auditorName",rs.getString("USER_REAL_NAME"));
+				msgs.add(msg);
+				if(total==0){
+					total=rs.getInt("TOTAL_RECORD_NUM_");
+				}
+			}
+			page.setResult(msgs);
+			page.setTotalCount(total);
+			return page;
 		}
 	}
 }

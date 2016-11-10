@@ -13,6 +13,7 @@ import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.log4j.Logger;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
@@ -154,7 +155,7 @@ public class SysMsgService {
 			}else{
 				//未读消息
 				//添加删除日志并且状态为2
-				String insertDeleteLogSql = "INSERT INTO SYS_MESSAGE_READ_LOG(MSG_ID,USER_ID,MSG_STATUS,,READ_TYPE) VALUES(?,?,2,1)";
+				String insertDeleteLogSql = "INSERT INTO SYS_MESSAGE_READ_LOG(MSG_ID,USER_ID,MSG_STATUS,READ_TYPE) VALUES(?,?,2,1)";
 				Object[] insertDeleteLogParams={msgId,userId};
 				queryRunner.update(sysConn, insertDeleteLogSql, insertDeleteLogParams);
 			}
@@ -256,13 +257,13 @@ public class SysMsgService {
 			sql.append("SELECT T.* FROM SYS_MESSAGE T ");
 			//添加筛选条件
 			if(jo.get("msgStatus") != null){
-				if((long)jo.get("msgStatus") == 0){
+				if((Integer)jo.get("msgStatus") == 0){
 					//筛选未读消息
 					sql.append(" WHERE NOT EXISTS(SELECT 1 FROM SYS_MESSAGE_READ_LOG L WHERE 1=1 ");
-				}else if((long)jo.get("msgStatus") == 1){
+				}else if((Integer)jo.get("msgStatus") == 1){
 					//筛选已读消息
 					sql.append(" WHERE EXISTS(SELECT 1 FROM SYS_MESSAGE_READ_LOG L WHERE L.MSG_STATUS IN (1)");
-				}else if((long)jo.get("msgStatus") == 2){
+				}else if((Integer)jo.get("msgStatus") == 2){
 					//筛选删除消息
 					sql.append(" WHERE EXISTS(SELECT 1 FROM SYS_MESSAGE_READ_LOG L WHERE L.MSG_STATUS IN (2)");
 				}
@@ -271,15 +272,15 @@ public class SysMsgService {
 			}
 			sql.append(" AND T.MSG_ID=L.MSG_ID AND L.USER_ID="+userId+") ");
 			//添加搜索条件
-			if(jo.get("pushUserName") != null){
+			if(StringUtils.isNotEmpty((String) jo.get("pushUserName"))){
 				//模糊搜索处理人
 				sql.append(" AND T.PUSH_USER_NAME LIKE '%"+jo.get("pushUserName")+"%'");
 			}
-			if(jo.get("msgContent") != null){
+			if(StringUtils.isNotEmpty((String)jo.get("msgContent") )){
 				//模糊搜索标题内容
 				sql.append(" AND T.MSG_CONTENT LIKE '%"+jo.get("msgContent")+"%'");
 			}
-			if(jo.get("msgTitle") != null){
+			if(StringUtils.isNotEmpty((String)jo.get("msgTitle") )){
 				//精确搜索事件
 				sql.append(" AND T.MSG_TITLE='"+jo.get("msgTitle")+"'");
 			}
@@ -366,6 +367,10 @@ public class SysMsgService {
 					String deleteLogSql = "DELETE FROM SYS_MESSAGE_READ_LOG WHERE MSG_ID=? AND USER_ID=?";
 					Object[] updateDeleteLogParams={msgId,userId};
 					queryRunner.update(sysConn, deleteLogSql, updateDeleteLogParams);
+					//永久删除消息
+					String deleteSql = "DELETE FROM SYS_MESSAGE WHERE MSG_ID=? AND TARGET_USER_ID=?";
+					Object[] deleteParams={msgId,userId};
+					queryRunner.update(sysConn, deleteSql, deleteParams);
 				}else{
 					//系统消息
 					//修改删除日志的状态为3

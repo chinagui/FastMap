@@ -163,7 +163,7 @@ public class SysMsgController extends BaseController {
 	 * @param request
 	 * @return
 	 */
-	@RequestMapping(value = "/sysmsg/message/TitleList")
+	@RequestMapping(value = "/message/TitleList")
 	public ModelAndView getManMsgTitleList(HttpServletRequest request){
 		try{
 			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
@@ -182,7 +182,7 @@ public class SysMsgController extends BaseController {
 	 * @param request
 	 * @return
 	 */
-	@RequestMapping(value = "/sysmsg/message/list")
+	@RequestMapping(value = "/message/list")
 	public ModelAndView getManMsgList(HttpServletRequest request){
 		try{
 			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
@@ -221,7 +221,7 @@ public class SysMsgController extends BaseController {
 	 * @param request
 	 * @return
 	 */
-	@RequestMapping(value = "/sysmsg/message/update")
+	@RequestMapping(value = "/message/update")
 	public ModelAndView updateManMsg(HttpServletRequest request){
 		try{
 			AccessToken tokenObj = (AccessToken) request.getAttribute("token");

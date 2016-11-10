@@ -54,7 +54,7 @@ public class SysMsgHandler implements MsgHandler {
 			long pushUserId = (Integer) jo.get("pushUserId");
 			long targetUserId = (Integer) jo.get("targetUserId");
 			msgType = (Integer) jo.get("msgType");
-			String msgParam = (String) jo.get("msgParam");
+			String msgParam = jo.get("msgParam").toString();
 			String pushUserName = (String) jo.get("pushUserName");
 			//日志
 			log.info("参数----msgType:"+msgType+",targetUserId:"+targetUserId);

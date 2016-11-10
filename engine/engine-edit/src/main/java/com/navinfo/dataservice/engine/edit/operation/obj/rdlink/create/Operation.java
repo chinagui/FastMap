@@ -122,7 +122,7 @@ public class Operation implements IOperation {
 		List<Integer> hasHandledLinks = handleLinksForCorss(links);
 
 		for (IRow row : addRows) {
-			if (row instanceof RdCrossNode) {
+			if (row instanceof RdCrossNode) {	
 				RdCrossNode crossNode = (RdCrossNode) row;
 
 				if (crossNodeMap.containsKey(crossNode.getPid())) {

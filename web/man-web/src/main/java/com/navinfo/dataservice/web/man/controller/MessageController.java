@@ -81,7 +81,7 @@ public class MessageController extends BaseController {
 	 * @param request
 	 * @return
 	 */
-	@RequestMapping(value = "/apply/listByApplyUserId")
+	/*@RequestMapping(value = "/apply/listByApplyUserId")
 	public ModelAndView getApplyListByApplyUserId(HttpServletRequest request){
 		try{
 			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
@@ -112,5 +112,5 @@ public class MessageController extends BaseController {
 			log.error("发送失败，原因："+e.getMessage(), e);
 			return new ModelAndView("jsonView",exception(e));
 		}
-	}
+	}*/
 }

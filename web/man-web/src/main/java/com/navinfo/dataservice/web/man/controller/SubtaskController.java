@@ -5,7 +5,9 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.servlet.http.HttpServletRequest;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
+
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.man.model.subtask.SubtaskList;
 import com.navinfo.dataservice.api.man.model.subtask.SubtaskListByUser;
@@ -27,6 +30,7 @@ import com.navinfo.dataservice.commons.json.JsonOperation;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
+import com.navinfo.dataservice.engine.man.subtask.SubtaskOperation;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskService;
 import com.navinfo.dataservice.web.man.page.SubtaskListByUserPage;
 import com.navinfo.dataservice.web.man.page.SubtaskListPage;
@@ -345,64 +349,8 @@ public class SubtaskController extends BaseController {
 			}
 			
 			JSONArray subtaskArray=dataJson.getJSONArray("subtasks");
-			List<Subtask> subtaskList = new ArrayList<Subtask>();
-			SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
-			for(int i = 0;i<subtaskArray.size();i++){
-				//***************zl 2016.11.4 ******************
-				Integer qualitySubtaskId = 0;//质检子任务id
-				Integer qualityExeUserId = 0;//是否新建质检子任务标识
-				String qualityPlanStartDate = "";
-				String qualityPlanEndDate ="";
-				if(subtaskArray.getJSONObject(i).containsKey("qualitySubtaskId")){
-					qualitySubtaskId = subtaskArray.getJSONObject(i).getInt("qualitySubtaskId");
-					//删除 质检子任务id ,因为质检子任务Subtask实体类里不应该有这个字段
-					subtaskArray.getJSONObject(i).discard("qualitySubtaskId");
-				}
-				if(subtaskArray.getJSONObject(i).containsKey("qualityExeUserId")){
-					qualityExeUserId = subtaskArray.getJSONObject(i).getInt("qualityExeUserId");
-					qualityPlanStartDate = subtaskArray.getJSONObject(i).getString("qualityPlanStartDate");
-					qualityPlanEndDate =subtaskArray.getJSONObject(i).getString("qualityPlanEndDate");
-					subtaskArray.getJSONObject(i).discard("qualityExeUserId");//删除 是否新建质检子任务标识 ,因为Subtask实体类里灭幼这个字段
-					subtaskArray.getJSONObject(i).discard("qualityPlanStartDate");//删除 质检子任务计划开始时间 ,因为Subtask实体类里灭幼这个字段
-					subtaskArray.getJSONObject(i).discard("qualityPlanEndDate");//删除 质检子任务计划结束时间 ,因为Subtask实体类里灭幼这个字段
-				}				
-				
-				//正常修改子任务
-				Subtask subtask = (Subtask)JsonOperation.jsonToBean(subtaskArray.getJSONObject(i),Subtask.class);
-				
-				if(qualitySubtaskId != 0){//非0的时候，表示要修改质检子任务
-					Subtask qualitySubtask = (Subtask)JsonOperation.jsonToBean(subtaskArray.getJSONObject(i),Subtask.class);//生成质检子任务的bean
-					qualitySubtask.setSubtaskId(qualitySubtaskId);
-					qualitySubtask.setExeUserId(qualityExeUserId);
-					qualitySubtask.setPlanStartDate(new Timestamp(df.parse(qualityPlanStartDate).getTime()));
-					qualitySubtask.setPlanEndDate(new Timestamp(df.parse(qualityPlanEndDate).getTime()));
-					subtaskList.add(qualitySubtask);//将质检子任务也加入修改列表
-				}else{
-					if(qualityExeUserId != 0){//qualitySubtaskId=0，且qualityExeUserId非0的时候，表示要创建质检子任务
-						//subtaskArray.getJSONObject(i).discard("subtaskId");//删除subtaskId ,新建质检子任务
-						//Subtask qualitySubtask = (Subtask)JsonOperation.jsonToBean(subtaskArray.getJSONObject(i),Subtask.class);//生成质检子任务的bean
-						Subtask qualitySubtask = SubtaskService.getInstance().queryBySubtaskIdS(subtaskArray.getJSONObject(i).getInt("subtaskId"));
-						qualitySubtask.setName(qualitySubtask.getName()+"_质检");
-						qualitySubtask.setSubtaskId(null);
-						qualitySubtask.setPlanStartDate(new Timestamp(df.parse(qualityPlanStartDate).getTime()));
-						qualitySubtask.setPlanEndDate(new Timestamp(df.parse(qualityPlanEndDate).getTime()));
-						qualitySubtask.setIsQuality(1);//表示此bean是质检子任务
-						qualitySubtask.setExeUserId(qualityExeUserId);
-						//创建质检子任务 subtask	
-						Integer newQualitySubtaskId = SubtaskService.getInstance().createQualitySubtask(qualitySubtask);	
-						subtask.setIsQuality(0);
-						subtask.setQualitySubtaskId(newQualitySubtaskId);
-					}
-				}
-				//正常修改子任务
-				//Subtask subtask = (Subtask)JsonOperation.jsonToBean(subtaskArray.getJSONObject(i),Subtask.class);
-				subtaskList.add(subtask);
-			}
 			
-			List<Integer> updatedSubtaskIdList = SubtaskService.getInstance().update(subtaskList,userId);
-			
-			String message = "批量修改子任务：" + updatedSubtaskIdList.size() + "个成功，" + (subtaskList.size() - updatedSubtaskIdList.size()) + "个失败。";
-			
+			String message=SubtaskService.getInstance().update(subtaskArray,userId);
 			NullResponse result = new NullResponse(0,"success",message);
 			return result;
 			

@@ -355,6 +355,8 @@ public class SubtaskController extends BaseController {
 				String qualityPlanEndDate ="";
 				if(subtaskArray.getJSONObject(i).containsKey("qualitySubtaskId")){
 					qualitySubtaskId = subtaskArray.getJSONObject(i).getInt("qualitySubtaskId");
+					//删除 质检子任务id ,因为质检子任务Subtask实体类里不应该有这个字段
+					subtaskArray.getJSONObject(i).discard("qualitySubtaskId");
 				}
 				if(subtaskArray.getJSONObject(i).containsKey("qualityExeUserId")){
 					qualityExeUserId = subtaskArray.getJSONObject(i).getInt("qualityExeUserId");
@@ -368,8 +370,6 @@ public class SubtaskController extends BaseController {
 				//正常修改子任务
 				Subtask subtask = (Subtask)JsonOperation.jsonToBean(subtaskArray.getJSONObject(i),Subtask.class);
 				
-				//删除 质检子任务id ,因为质检子任务Subtask实体类里不应该有这个字段
-				subtaskArray.getJSONObject(i).discard("qualitySubtaskId");
 				if(qualitySubtaskId != 0){//非0的时候，表示要修改质检子任务
 					Subtask qualitySubtask = (Subtask)JsonOperation.jsonToBean(subtaskArray.getJSONObject(i),Subtask.class);//生成质检子任务的bean
 					qualitySubtask.setSubtaskId(qualitySubtaskId);

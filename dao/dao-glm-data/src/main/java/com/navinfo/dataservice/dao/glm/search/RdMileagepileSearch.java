@@ -1,21 +1,22 @@
 package com.navinfo.dataservice.dao.glm.search;
 
-import com.navinfo.dataservice.commons.geom.Geojson;
-import com.navinfo.dataservice.commons.mercator.MercatorProjection;
-import com.navinfo.dataservice.dao.glm.iface.IObj;
-import com.navinfo.dataservice.dao.glm.iface.ISearch;
-import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
-import com.navinfo.dataservice.dao.glm.selector.rd.hgwg.RdHgwgLimitSelector;
-import com.navinfo.dataservice.dao.glm.selector.rd.mileagepile.RdMileagepileSelector;
-import net.sf.json.JSONObject;
-import oracle.sql.STRUCT;
-import org.apache.commons.dbutils.DbUtils;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.apache.commons.dbutils.DbUtils;
+
+import com.navinfo.dataservice.commons.geom.Geojson;
+import com.navinfo.dataservice.commons.mercator.MercatorProjection;
+import com.navinfo.dataservice.dao.glm.iface.IObj;
+import com.navinfo.dataservice.dao.glm.iface.ISearch;
+import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
+import com.navinfo.dataservice.dao.glm.selector.rd.mileagepile.RdMileagepileSelector;
+
+import net.sf.json.JSONObject;
+import oracle.sql.STRUCT;
 
 public class RdMileagepileSearch implements ISearch {
 
@@ -30,7 +31,12 @@ public class RdMileagepileSearch implements ISearch {
         RdMileagepileSelector selector = new RdMileagepileSelector(conn);
         return (IObj) selector.loadById(pid, false);
     }
-
+    
+    @Override
+	public IObj searchDataByPids(List<Integer> pidList) throws Exception {
+		return null;
+	}
+    
     @Override
     public List<SearchSnapshot> searchDataBySpatial(String wkt) throws Exception {
         return null;

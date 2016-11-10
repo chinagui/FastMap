@@ -424,6 +424,10 @@ public class SearchProcess {
 							if (relationShipType != 1) {
 								obj.put("links", viaArray);
 							} 
+							else
+							{
+								obj.put("links", new JSONArray());
+							}
 						}
 						else {
 							obj.put("links", viaArray);

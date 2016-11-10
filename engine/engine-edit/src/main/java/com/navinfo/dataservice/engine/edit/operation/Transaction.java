@@ -783,6 +783,19 @@ public class Transaction {
                     default:
                         break;
                 }
+            case RDMILEAGEPILE:
+                switch (operType) {
+                    case CREATE:
+                        return new com.navinfo.dataservice.engine.edit.operation.obj.mileagepile.create.Command(json, requester);
+                    case UPDATE:
+                        return new com.navinfo.dataservice.engine.edit.operation.obj.mileagepile.update.Command(json, requester);
+                    case MOVE:
+                        return new com.navinfo.dataservice.engine.edit.operation.obj.mileagepile.move.Command(json, requester);
+                    case DELETE:
+                        return new com.navinfo.dataservice.engine.edit.operation.obj.mileagepile.delete.Command(json, requester);
+                    default:
+                        break;
+                }
         }
 
         throw new Exception("不支持的操作类型");
@@ -1494,6 +1507,19 @@ public class Transaction {
                         return new com.navinfo.dataservice.engine.edit.operation.obj.hgwg.move.Process(command);
                     case DELETE:
                         return new com.navinfo.dataservice.engine.edit.operation.obj.hgwg.delete.Process(command);
+                    default:
+                        break;
+                }
+            case RDMILEAGEPILE:
+                switch (operType) {
+                    case CREATE:
+                        return new com.navinfo.dataservice.engine.edit.operation.obj.mileagepile.create.Process(command);
+                    case UPDATE:
+                        return new com.navinfo.dataservice.engine.edit.operation.obj.mileagepile.update.Process(command);
+                    case MOVE:
+                        return new com.navinfo.dataservice.engine.edit.operation.obj.mileagepile.move.Process(command);
+                    case DELETE:
+                        return new com.navinfo.dataservice.engine.edit.operation.obj.mileagepile.delete.Process(command);
                     default:
                         break;
                 }

@@ -369,7 +369,6 @@ public class RdGscOperateUtils {
 				linkMap.put(level, rwLink);
 				break;
 			case "LCLINK":
-
 				LcLink lcLink = (LcLink) lcLinkSelector.loadById(linkPid, true);
 
 				Geometry lcGeo = lcLink.getGeometry();
@@ -383,7 +382,7 @@ public class RdGscOperateUtils {
 				linkMap.put(level, lcLink);
 				break;
 			default:
-				break;
+				throw new Exception(type+"不支持创建立交");
 			}
 		}
 

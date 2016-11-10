@@ -15,6 +15,7 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
+import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossLink;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossNode;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
@@ -112,17 +113,18 @@ public class Operation implements IOperation {
 	 * @throws Exception
 	 */
 	private void handleCrossLink(Result result, List<RdLink> links) throws Exception {
+		
+		//针对挂接两个node点为都是路口点位的要维护link形态为交叉口内link
+		List<Integer> hasHandledLinks = handleLinksForCorss(links,result);
+		
 		List<IRow> addRows = result.getAddObjects();
 
 		Map<Integer, List<Integer>> crossNodeMap = new HashMap<>();
 		
 		RdCrossSelector selector = new RdCrossSelector(conn);
 		
-		//针对挂接两个node点为都是路口点位的要维护link形态为交叉口内link
-		List<Integer> hasHandledLinks = handleLinksForCorss(links);
-
 		for (IRow row : addRows) {
-			if (row instanceof RdCrossNode) {
+			if (row instanceof RdCrossNode) {	
 				RdCrossNode crossNode = (RdCrossNode) row;
 
 				if (crossNodeMap.containsKey(crossNode.getPid())) {
@@ -163,6 +165,15 @@ public class Operation implements IOperation {
 					RdLinkForm form = (RdLinkForm) link.getForms().get(0);
 
 					form.setFormOfWay(50);
+					
+					//将link记录到路口的组成link中
+					RdCrossLink crossLink = new RdCrossLink();
+					
+					crossLink.setPid(cross.getPid());
+					
+					crossLink.setLinkPid(link.getPid());
+					
+					result.insertObject(crossLink, ObjStatus.INSERT, crossLink.getPid());
 				} else if (cross.getSignal() == 1) {
 					// 有红绿灯信号维护红绿灯
 					for (Integer crossNodePid : crossNodePidList) {
@@ -194,10 +205,11 @@ public class Operation implements IOperation {
 	/**
 	 * 针对新增的link处理挂接两个node点都是同一个路口点的形态问题
 	 * @param links
+	 * @param result 
 	 * @param selector 
 	 * @throws Exception 
 	 */
-	private List<Integer> handleLinksForCorss(List<RdLink> links) throws Exception {
+	private List<Integer> handleLinksForCorss(List<RdLink> links, Result result) throws Exception {
 		List<Integer> hasHandledLink = new ArrayList<>();
 		
 		RdCrossNodeSelector nodeSelector = new RdCrossNodeSelector(conn);
@@ -220,6 +232,14 @@ public class Operation implements IOperation {
 				form.setFormOfWay(50);
 				
 				hasHandledLink.add(link.getPid());
+				//将link记录到路口的组成link中
+				RdCrossLink crossLink = new RdCrossLink();
+				
+				crossLink.setPid(sCrossNode.getPid());
+				
+				crossLink.setLinkPid(link.getPid());
+				
+				result.insertObject(crossLink, ObjStatus.INSERT, crossLink.getPid());
 			}
 		}
 		

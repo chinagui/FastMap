@@ -7,18 +7,16 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.sf.json.JSONObject;
-import oracle.spatial.geometry.JGeometry;
-import oracle.sql.STRUCT;
-
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
-import com.navinfo.dataservice.commons.util.DisplayUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.selector.rd.directroute.RdDirectrouteSelector;
 import com.navinfo.navicommons.database.sql.DBUtils;
+
+import net.sf.json.JSONObject;
+import oracle.sql.STRUCT;
 
 public class RdDirectrouteSearch implements ISearch {
 
@@ -37,7 +35,13 @@ public class RdDirectrouteSearch implements ISearch {
 
 		return obj;
 	}
-
+	
+	@Override
+	public IObj searchDataByPids(List<Integer> pidList) throws Exception {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
 	@Override
 	public List<SearchSnapshot> searchDataBySpatial(String wkt)
 			throws Exception {

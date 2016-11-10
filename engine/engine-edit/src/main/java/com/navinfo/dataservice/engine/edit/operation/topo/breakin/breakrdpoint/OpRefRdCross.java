@@ -63,9 +63,9 @@ public class OpRefRdCross implements IOperation {
 			linkPid.add(breakLink.getPid());
 
 			List<RdCross> crossList = crossSelector.loadRdCrossByNodeOrLink(null, linkPid, true);
-
+			//是路口内link的，需要新增路口点和路口组成link，删除原路口组成link
 			if (CollectionUtils.isNotEmpty(crossList)) {
-				// rd_cross_node
+				// 新增路口点 rd_cross_node
 				RdCross cross = crossList.get(0);
 
 				RdCrossNode crossNode = new RdCrossNode();
@@ -76,7 +76,7 @@ public class OpRefRdCross implements IOperation {
 
 				result.insertObject(crossNode, ObjStatus.INSERT, crossNode.getPid());
 
-				// rd_cross_link
+				// 新增路口组成link rd_cross_link
 				RdCrossLink crossLink1 = new RdCrossLink();
 
 				crossLink1.setPid(cross.getPid());
@@ -93,6 +93,22 @@ public class OpRefRdCross implements IOperation {
 
 				result.insertObject(crossLink2, ObjStatus.INSERT, crossLink2.getPid());
 				
+				//删除原路口组成link
+				
+				for(RdCross crs : crossList)
+				{
+					List<IRow> links = crs.getLinks();
+					
+					for(IRow row : links)
+					{
+						RdCrossLink crosLink = (RdCrossLink) row;
+						
+						if(crosLink.getLinkPid() == breakLink.getPid())
+						{
+							result.insertObject(crosLink, ObjStatus.DELETE, crosLink.getPid());
+						}
+					}
+				}
 			}
 		}
 

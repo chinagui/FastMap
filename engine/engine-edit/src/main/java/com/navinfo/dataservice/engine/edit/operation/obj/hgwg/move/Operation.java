@@ -26,9 +26,11 @@ public class Operation implements IOperation {
         JSONObject geoPoint = new JSONObject();
         geoPoint.put("type", "Point");
         geoPoint.put("coordinates", new double[]{content.getDouble("longitude"), content.getDouble("latitude")});
-        hgwgLimit.setGeometry(GeoTranslator.geojson2Jts(geoPoint, 100000, 0));
+        hgwgLimit.changedFields.put("geometry", GeoTranslator.geojson2Jts(geoPoint, 100000, 0));
         String[] meshes = MeshUtils.point2Meshes(content.getDouble("longitude"), content.getDouble("latitude"));
-        hgwgLimit.setMesh(Integer.valueOf(meshes[0]));
+        hgwgLimit.changedFields.put("meshId", Integer.valueOf(meshes[0]));
+        hgwgLimit.changedFields.put("linkPid", content.getInt("linkPid"));
+
         result.insertObject(hgwgLimit, ObjStatus.UPDATE, hgwgLimit.pid());
         return null;
     }

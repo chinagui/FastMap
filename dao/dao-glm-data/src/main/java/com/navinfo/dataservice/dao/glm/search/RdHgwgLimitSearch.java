@@ -62,7 +62,7 @@ public class RdHgwgLimitSearch implements ISearch {
             double py = MercatorProjection.tileYToPixelY(y);
             while (resultSet.next()) {
                 SearchSnapshot snapshot = new SearchSnapshot();
-                snapshot.setT(36);
+                snapshot.setT(47);
                 snapshot.setI(resultSet.getString("pid"));
                 STRUCT struct = (STRUCT) resultSet.getObject("point_geom");
                 JSONObject geojson = Geojson.spatial2Geojson(struct);

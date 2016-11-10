@@ -40,7 +40,7 @@ public class RdHgwgLimit implements IObj {
 
     private Geometry geometry;
 
-    private Map<String, Object> changedFields = new HashedMap();
+    public Map<String, Object> changedFields = new HashedMap();
 
     @Override
     public List<IRow> relatedRows() {

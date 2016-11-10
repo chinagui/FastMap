@@ -166,6 +166,7 @@ public class Operation implements IOperation {
 
 					form.setFormOfWay(50);
 					
+					//将link记录到路口的组成link中
 					RdCrossLink crossLink = new RdCrossLink();
 					
 					crossLink.setPid(cross.getPid());
@@ -231,7 +232,7 @@ public class Operation implements IOperation {
 				form.setFormOfWay(50);
 				
 				hasHandledLink.add(link.getPid());
-				
+				//将link记录到路口的组成link中
 				RdCrossLink crossLink = new RdCrossLink();
 				
 				crossLink.setPid(sCrossNode.getPid());

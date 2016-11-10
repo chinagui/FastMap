@@ -6,7 +6,6 @@ import java.sql.ResultSet;
 
 import org.apache.log4j.Logger;
 
-import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossNode;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
@@ -34,9 +33,9 @@ public class RdCrossNodeSelector extends AbstractSelector {
 	 */
 	public IRow loadByNodeId(int nodePid,boolean isLock) throws Exception
 	{
-		RdCrossNode node = new RdCrossNode();
+		RdCrossNode node = null;
 
-		String sql = "select * from " + node.tableName() + " where node_pid=(:1) and u_record !=2 ";
+		String sql = "select * from rd_cross_node where node_pid=(:1) and u_record !=2 ";
 
 		if (isLock) {
 			sql += " for update nowait";
@@ -54,9 +53,9 @@ public class RdCrossNodeSelector extends AbstractSelector {
 			resultSet = pstmt.executeQuery();
 
 			if (resultSet.next()) {
+				node = new RdCrossNode();
+				
 				ReflectionAttrUtils.executeResultSet(node, resultSet);
-			} else {
-				throw new DataNotFoundException("Node:"+nodePid+" 不是路口组成点");
 			}
 		} catch (Exception e) {
 			logger.error("根据nodePid："+nodePid+" 查询路口出错");

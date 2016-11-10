@@ -5,6 +5,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,6 +16,8 @@ import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.engine.man.message.MessageService;
+import com.navinfo.dataservice.engine.sys.msg.SysMsgService;
+import com.navinfo.navicommons.database.Page;
 
 import net.sf.json.JSONObject;
 
@@ -69,6 +72,45 @@ public class MessageController extends BaseController {
 		} catch (Exception e) {
 			log.error("获取城市列表失败，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+	
+	/**
+	 * 根据申请人查询业务申请列表
+	 * @author Han Shaoming
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/apply/listByApplyUserId")
+	public ModelAndView getApplyListByApplyUserId(HttpServletRequest request){
+		try{
+			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			long userId = tokenObj.getUserId();
+			String parameter = request.getParameter("parameter");
+			if (StringUtils.isEmpty(parameter)) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			JSONObject paraJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if (paraJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			if(!paraJson.containsKey("pageNum")){
+				throw new IllegalArgumentException("parameter参数中pageNum不能为空。");
+			}
+			if(!paraJson.containsKey("pageSize")){
+				throw new IllegalArgumentException("parameter参数中pageSize不能为空。");
+			}
+			if(!paraJson.containsKey("condition")){
+				throw new IllegalArgumentException("parameter参数中condition不能为空。");
+			}
+			int pageNum = paraJson.getInt("pageNum");
+			int pageSize = paraJson.getInt("pageSize");
+			String condition = paraJson.getString("condition");
+			Page page = MessageService.getInstance().getApplyListByApplyUserId(userId,pageNum,pageSize,condition);
+			return new ModelAndView("jsonView", success(page));
+		}catch(Exception e){
+			log.error("发送失败，原因："+e.getMessage(), e);
+			return new ModelAndView("jsonView",exception(e));
 		}
 	}
 }

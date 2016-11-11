@@ -42,13 +42,13 @@ public class OpRefBranch implements IOperation {
 			Map<String, Object> changedFields = branch.changedFields();
 
 			int inLinkPid = 0;
-			if (branch.getNodePid() == command.getLink1().getsNodePid()) {
-
-				inLinkPid = command.getLink1().getPid();
-
-			} else {
-				inLinkPid = command.getLink2().getPid();
-			}
+//			if (branch.getNodePid() == command.getLink1().getsNodePid()) {
+//
+//				inLinkPid = command.getLink1().getPid();
+//
+//			} else {
+//				inLinkPid = command.getLink2().getPid();
+//			}
 
 			changedFields.put("inLinkPid", inLinkPid);
 
@@ -65,17 +65,17 @@ public class OpRefBranch implements IOperation {
 
 			Map<String, Object> changedFields = branch.changedFields();
 
-			if (branch.igetOutNodePid() == command.getLink1().getsNodePid()
-					|| branch.igetOutNodePid() == command.getLink1()
-							.geteNodePid()) {
-
-				changedFields
-						.put("outLinkPid", command.getLink1().getPid());
-
-			} else {
-				changedFields
-						.put("outLinkPid", command.getLink2().getPid());
-			}
+//			if (branch.igetOutNodePid() == command.getLink1().getsNodePid()
+//					|| branch.igetOutNodePid() == command.getLink1()
+//							.geteNodePid()) {
+//
+//				changedFields
+//						.put("outLinkPid", command.getLink1().getPid());
+//
+//			} else {
+//				changedFields
+//						.put("outLinkPid", command.getLink2().getPid());
+//			}
 
 			result.insertObject(branch, ObjStatus.UPDATE, branch.pid());
 		}
@@ -110,16 +110,16 @@ public class OpRefBranch implements IOperation {
 					
 					via2.setBranchPid(v.getBranchPid());
 
-					if (v.igetsNodePid() == command.getLink1().getsNodePid()
-							|| v.igetsNodePid() == command.getLink1()
-									.geteNodePid()) {
-						via1.setLinkPid(command.getLink1().getPid());
-						via2.setLinkPid(command.getLink2().getPid());
-
-					} else {
-						via1.setLinkPid(command.getLink2().getPid());
-						via2.setLinkPid(command.getLink1().getPid());
-					}
+//					if (v.igetsNodePid() == command.getLink1().getsNodePid()
+//							|| v.igetsNodePid() == command.getLink1()
+//									.geteNodePid()) {
+//						via1.setLinkPid(command.getLink1().getPid());
+//						via2.setLinkPid(command.getLink2().getPid());
+//
+//					} else {
+//						via1.setLinkPid(command.getLink2().getPid());
+//						via2.setLinkPid(command.getLink1().getPid());
+//					}
 
 					via2.setSeqNum(via2.getSeqNum() + 1);
 

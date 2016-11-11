@@ -254,10 +254,12 @@ public class SubtaskService {
 					}
 				}
 				//查询子任务
-				List<Subtask> list = SubtaskOperation.getSubtaskListBySubtaskIdList(conn,subtaskIdList);
-				if(list != null && list.size()>0){
-					for (Subtask subtask : list) {
-						SubtaskOperation.pushMessage(conn,subtask,userId);
+				if(!subtaskIdList.isEmpty()){
+					List<Subtask> list = SubtaskOperation.getSubtaskListBySubtaskIdList(conn,subtaskIdList);
+					if(list != null && list.size()>0){
+						for (Subtask subtask : list) {
+							SubtaskOperation.pushMessage(conn,subtask,userId);
+						}
 					}
 				}
 			} catch (Exception e) {

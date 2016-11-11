@@ -118,6 +118,14 @@ public class LogWriter {
 		includeFiledsSet.addAll(Arrays.asList(includeFiledsArr));
 	}
 	
+	private boolean isFieldInIncludeFiledsSet(String field){
+		if(includeFiledsSet.contains(field.toUpperCase()) || includeFiledsSet.contains(field.toLowerCase())){
+			return true;
+		}else{
+			return false;
+		}
+	}
+	
 	private int insertData(EditLog editLog) {
 
 		StringBuilder sb = new StringBuilder("insert into ");
@@ -144,9 +152,13 @@ public class LogWriter {
 			
 			while (it.hasNext()) {
 				String filed = it.next();
-				if("IX_POI".equalsIgnoreCase(tableName)&& !includeFiledsSet.contains(filed) ){
+//				if("IX_POI".equalsIgnoreCase(tableName)&& !includeFiledsSet.contains(filed) ){
+//					continue;
+//				}
+				if("IX_POI".equalsIgnoreCase(tableName)&& !isFieldInIncludeFiledsSet(filed)){
 					continue;
 				}
+				
 				if (isExcludeField(filed,tableName)){
 					continue;
 				}
@@ -171,14 +183,22 @@ public class LogWriter {
 				
 			}
 			boolean hasUrecord = false;
-			if(sb.indexOf(",u_record")!=-1){
+			if(sb.indexOf(",U_RECORD")!=-1){
 				hasUrecord=true;
 			}
 			if (hasUrecord){
 				sb.append(") ");
 			}else{
-				sb.append(",u_record) ");
+				sb.append(",U_RECORD) ");
 			}
+//			if(sb.indexOf(",u_record")!=-1){
+//				hasUrecord=true;
+//			}
+//			if (hasUrecord){
+//				sb.append(") ");
+//			}else{
+//				sb.append(",u_record) ");
+//			}
 
 			sb.append("values(");
 			this.log.debug("json"+json);
@@ -188,7 +208,10 @@ public class LogWriter {
 			this.log.debug(json.keys());
 			int i =0;
 			for (Object key : json.keySet()){
-				if("IX_POI".equalsIgnoreCase(tableName)&& !includeFiledsSet.contains(key.toString()) ){
+//				if("IX_POI".equalsIgnoreCase(tableName)&& !includeFiledsSet.contains(key.toString()) ){
+//					continue;
+//				}
+				if("IX_POI".equalsIgnoreCase(tableName)&& !isFieldInIncludeFiledsSet(key.toString())){
 					continue;
 				}
 				if (isExcludeField(key.toString(),tableName)){
@@ -216,7 +239,10 @@ public class LogWriter {
 
 			while (it.hasNext()) {
 				String keyName = it.next();
-				if("IX_POI".equalsIgnoreCase(tableName)&& !includeFiledsSet.contains(keyName) ){
+//				if("IX_POI".equalsIgnoreCase(tableName)&& !includeFiledsSet.contains(keyName) ){
+//					continue;
+//				}
+				if("IX_POI".equalsIgnoreCase(tableName)&& !isFieldInIncludeFiledsSet(keyName)){
 					continue;
 				}
 				if (isExcludeField(keyName.toString(),tableName)){

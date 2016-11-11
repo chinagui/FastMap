@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.impcore.release.day.poi;
+package com.navinfo.dataservice.scripts;
 
 import com.navinfo.dataservice.api.job.iface.JobApi;
 import com.navinfo.dataservice.api.man.iface.ManApi;
@@ -23,6 +23,7 @@ public class ReleaseFmIdbDailyPoi {
 	}
 
 	public static void main(String[] args){
+		JobScriptsInterface.initContext();
 		try{
 			JSONObject paraJson = null;
 			ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
@@ -30,10 +31,6 @@ public class ReleaseFmIdbDailyPoi {
 			//创建日出品job
 			// TODO Auto-generated method stub
 			JobApi jobApi=(JobApi) ApplicationContextUtil.getBean("jobApi");
-			/*
-			 * {"gridIds":[213424,343434,23423432],"stopTime":"yyyymmddhh24miss","dataType":"POI"//POI,ALL}
-			 * jobType:releaseFmIdbDailyJob/releaseFmIdbMonthlyJob
-			 */
 			//TODO
 			JSONObject jobDataJson=new JSONObject();
 			jobDataJson.put("produceId", produceId);

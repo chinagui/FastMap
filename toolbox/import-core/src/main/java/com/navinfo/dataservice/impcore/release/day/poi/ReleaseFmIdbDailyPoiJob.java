@@ -143,9 +143,7 @@ public class ReleaseFmIdbDailyPoiJob extends AbstractJob {
 		if ("POI".equals(featureType)){
 			return new PoiDailyReleaseLogSelector(logSchema,grids);
 		}
-		return new DeafultDailyReleaseLogSelector(logSchema,grids);
-		
-		
+		return new DeafultDailyReleaseLogSelector(logSchema,grids);	
 	}
 	
 	private LogStatusModifier createLogStatusModifier(String featureType,

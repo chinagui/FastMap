@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrdpoint;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 
@@ -30,32 +31,37 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Point;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 public class Command extends AbstractCommand {
 
 	private GeometryFactory geometryFactory = new GeometryFactory();
-
 	private String requester;
-
+	private List<RdLink> newLinks = new ArrayList<RdLink>();
 	private int linkPid;
 
 	private Point point;
 
-	private RdLink link1;
+	public List<RdLink> getNewLinks() {
+		return newLinks;
+	}
 
-	private RdLink link2;
+	public void setNewLinks(List<RdLink> newLinks) {
+		this.newLinks = newLinks;
+	}
 
 	private RdNode sNode;
 
 	private RdNode eNode;
 
 	private int breakNodePid;// 在以已存在的node通过移动位置来打断LINK的记录
+	private JSONArray breakNodes;
 
 	private RdNode breakNode;
 
 	private String operationType = "";
-	
+
 	private RdLink breakLink;
 
 	public String getOperationType() {
@@ -65,7 +71,7 @@ public class Command extends AbstractCommand {
 	public void setOperationType(String operationType) {
 		this.operationType = operationType;
 	}
-	
+
 	public RdLink getBreakLink() {
 		return breakLink;
 	}
@@ -170,14 +176,6 @@ public class Command extends AbstractCommand {
 		this.laneVias = laneVias;
 	}
 
-	public void setLink1(RdLink link1) {
-		this.link1 = link1;
-	}
-
-	public void setLink2(RdLink link2) {
-		this.link2 = link2;
-	}
-
 	public List<RdRestriction> getRestrictions() {
 		return restrictions;
 	}
@@ -202,14 +200,6 @@ public class Command extends AbstractCommand {
 	public void setRestrictListVias(
 			List<List<Entry<Integer, RdRestrictionVia>>> listVias) {
 		this.listRestrictionVias = listVias;
-	}
-
-	public RdLink getLink1() {
-		return link1;
-	}
-
-	public RdLink getLink2() {
-		return link2;
 	}
 
 	public RdNode getsNode() {
@@ -294,16 +284,24 @@ public class Command extends AbstractCommand {
 		if (data.containsKey("breakNodePid")) {
 			this.breakNodePid = data.getInt("breakNodePid");
 		}
+		if (data.containsKey("breakNodes")) {
+			this.breakNodes = JSONArray.fromObject(data
+					.getJSONArray("breakNodes"));
+
+		}
 
 		this.point = geometryFactory.createPoint(coord);
-
-		this.link1 = new RdLink();
-
-		this.link2 = new RdLink();
-
 		if (json.containsKey("infect") && json.getInt("infect") == 1) {
 			this.isCheckInfect = true;
 		}
+	}
+
+	public JSONArray getBreakNodes() {
+		return breakNodes;
+	}
+
+	public void setBreakNodes(JSONArray breakNodes) {
+		this.breakNodes = breakNodes;
 	}
 
 	public int getLinkPid() {

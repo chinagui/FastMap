@@ -84,13 +84,17 @@ public class SubtaskController extends BaseController {
 			if(dataJson==null){
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
-			Integer qualityExeUserId = dataJson.getInt("qualityExeUserId");
-			String qualityPlanStartDate = dataJson.getString("qualityPlanStartDate");
-			String qualityPlanEndDate = dataJson.getString("qualityPlanEndDate");
-			//删除传入参数的对应键值对,因为bean中没有这些字段
-			dataJson.discard("qualityExeUserId");
-			dataJson.discard("qualityPlanStartDate");
-			dataJson.discard("qualityPlanEndDate");
+			Integer qualityExeUserId = 0;
+			String qualityPlanStartDate = "";
+			String qualityPlanEndDate = "";
+			if(dataJson.containsKey("qualityExeUserId")){
+				qualityExeUserId = dataJson.getInt("qualityExeUserId");
+				qualityPlanStartDate = dataJson.getString("qualityPlanStartDate");
+				qualityPlanEndDate = dataJson.getString("qualityPlanEndDate");
+				//删除传入参数的对应键值对,因为bean中没有这些字段
+				dataJson.discard("qualityExeUserId");
+				dataJson.discard("qualityPlanStartDate");
+				dataJson.discard("qualityPlanEndDate");}
 			SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
 			long userId = tokenObj.getUserId();
 			if(qualityExeUserId != 0 ){//表示要创建质检子任务
@@ -328,7 +332,8 @@ public class SubtaskController extends BaseController {
 			,@ApiParam(required =true, name = "parameter", value="{<br/>\"subtasks\":<br/>[<br/>{<br/>\"subtaskId\":32,<br/>\"descp\":\"testtest\",<br/>\"planStartDate\":\"20160430\",<br/>\"planEndDate\":\"20160630\",<br/>\"exeUserId\":21<br/>}<br/>]<br/>} ")@RequestParam( value = "parameter") String postData
 			,HttpServletRequest request){
 		try{
-
+			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
+			long userId=tokenObj.getUserId();
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
 			if(dataJson==null){
 				throw new IllegalArgumentException("parameter参数不能为空。");
@@ -387,7 +392,7 @@ public class SubtaskController extends BaseController {
 				subtaskList.add(subtask);
 			}
 			
-			List<Integer> updatedSubtaskIdList = SubtaskService.getInstance().update(subtaskList);
+			List<Integer> updatedSubtaskIdList = SubtaskService.getInstance().update(subtaskList,userId);
 			
 			String message = "批量修改子任务：" + updatedSubtaskIdList.size() + "个成功，" + (subtaskList.size() - updatedSubtaskIdList.size()) + "个失败。";
 			
@@ -410,7 +415,8 @@ public class SubtaskController extends BaseController {
 			,@ApiParam(required =true, name = "parameter", value="{<br/>\"subtaskIds\":[12]#子任务列表<br/>	}")@RequestParam( value = "parameter") String parameter
 			,HttpServletRequest request){
 		try{		
-			
+			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
+			long userId=tokenObj.getUserId();
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
 			if(dataJson==null){
 				throw new IllegalArgumentException("parameter参数不能为空。");
@@ -423,7 +429,7 @@ public class SubtaskController extends BaseController {
 			JSONArray subtaskIds = dataJson.getJSONArray("subtaskIds");
 			
 			List<Integer> subtaskIdList = (List<Integer>)JSONArray.toCollection(subtaskIds,Integer.class);
-			List<Integer> unClosedSubtaskList = SubtaskService.getInstance().close(subtaskIdList);
+			List<Integer> unClosedSubtaskList = SubtaskService.getInstance().close(subtaskIdList,userId);
 			
 			String message = "批量关闭子任务：" + (subtaskIdList.size() - unClosedSubtaskList.size()) + "个成功，" + unClosedSubtaskList.size() + "个失败。";
 

@@ -391,54 +391,54 @@ public class SearchProcess {
 
 					int inLinkPid = condition.getInt("inLinkPid");
 
-					//要素类型
+					// 要素类型
 					String objType = null;
-					if(condition.containsKey("type"))
-					{
+					if (condition.containsKey("type")) {
 						objType = condition.getString("type");
 					}
-					
+
 					int nodePid = condition.getInt("nodePid");
 
 					int outLinkPid = condition.getInt("outLinkPid");
 
 					CalLinkOperateUtils calLinkOperateUtils = new CalLinkOperateUtils();
 
-					//计算经过线
+					// 计算经过线
 					List<Integer> viaList = calLinkOperateUtils.calViaLinks(this.conn, inLinkPid, nodePid, outLinkPid);
 
-					//计算关系类型
+					// 计算关系类型
 					int relationShipType = calLinkOperateUtils.getRelationShipType(conn, nodePid, outLinkPid);
 
 					JSONObject obj = new JSONObject();
 
+					obj.put("relationshipType", relationShipType);
+
+					JSONArray viaArray = new JSONArray();
+
 					if (CollectionUtils.isNotEmpty(viaList)) {
-						JSONArray viaArray = new JSONArray();
-						for(Integer via : viaList)
-						{
+						for (Integer via : viaList) {
 							viaArray.add(via);
 						}
-						//路口关系交限不记经过link
+						// 路口关系交限不记经过link
 						if (StringUtils.isNotEmpty(objType) && ObjType.valueOf(objType) == ObjType.RDRESTRICTION) {
-							if (relationShipType == 1) {
-								return array;
-							}
+							if (relationShipType != 1) {
+								obj.put("links", viaArray);
+							} 
 							else
 							{
-								obj.put("relationshipType", relationShipType);
-
-								obj.put("links", viaArray);
-
-								array.add(obj);
+								obj.put("links", new JSONArray());
 							}
-						} else {
-							obj.put("relationshipType", relationShipType);
-
+						}
+						else {
 							obj.put("links", viaArray);
-
-							array.add(obj);
 						}
 					}
+					else
+					{
+						obj.put("links", new JSONArray());
+					}
+					array.add(obj);
+
 					return array;
 				}
 				break;

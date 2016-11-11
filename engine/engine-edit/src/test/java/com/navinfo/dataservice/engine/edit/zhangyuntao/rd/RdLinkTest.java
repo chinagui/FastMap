@@ -76,7 +76,7 @@ public class RdLinkTest extends InitApplication {
     }
 
     @Test
-    public void search(){
+    public void search() {
         String parameter = "http://192.168.4.188:8000/service/render/obj/getByTileWithGap?parameter={\"dbId\":17,\"gap\":10,\"types\":[\"LCLINK\"],\"z\":20,\"x\":863411,\"y\":397214}";
         try {
             TestSearch.testSearchGap(parameter);
@@ -86,10 +86,16 @@ public class RdLinkTest extends InitApplication {
     }
 
     @Test
-    public void updownDepart(){
+    public void updownDepart() {
         String parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"dbId\":17,\"distance\":\"6.6\",\"data\":{\"linkPids\":[209000217]}}";
         parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"dbId\":17,\"distance\":\"30.4\",\"data\":{\"linkPids\":[209000217]}}";
         parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"dbId\":17,\"distance\":\"13.4\",\"data\":{\"linkPids\":[323048,323046,319664,319663,319467,319466,319465]}}";
+        TestUtil.run(parameter);
+    }
+
+    @Test
+    public void move() {
+        String parameter = "{\"command\":\"MOVE\",\"dbId\":17,\"objId\":304000034,\"data\":{\"longitude\":116.37564,\"latitude\":38.51548},\"type\":\"ZONENODE\"}";
         TestUtil.run(parameter);
     }
 }

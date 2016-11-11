@@ -12,22 +12,25 @@ import java.util.Date;
 public class SysMsg implements Serializable{
 	
 	private long msgId;
-	private int msgType;
+	private long msgType;
 	private String msgContent;
 	private Date createTime;
 	private long targetUserId;
 	private String msgTitle;
 	private long pushUserId;
+	private String msgParam;
+	private String pushUserName;
+	
 	public long getMsgId() {
 		return msgId;
 	}
 	public void setMsgId(long msgId) {
 		this.msgId = msgId;
 	}
-	public int getMsgType() {
+	public long getMsgType() {
 		return msgType;
 	}
-	public void setMsgType(int msgType) {
+	public void setMsgType(long msgType) {
 		this.msgType = msgType;
 	}
 	public String getMsgContent() {
@@ -59,6 +62,18 @@ public class SysMsg implements Serializable{
 	}
 	public void setPushUserId(Long pushUserId) {
 		this.pushUserId = pushUserId;
+	}
+	public String getMsgParam() {
+		return msgParam;
+	}
+	public void setMsgParam(String msgParam) {
+		this.msgParam = msgParam;
+	}
+	public String getPushUserName() {
+		return pushUserName;
+	}
+	public void setPushUserName(String pushUserName) {
+		this.pushUserName = pushUserName;
 	}
 	
 }

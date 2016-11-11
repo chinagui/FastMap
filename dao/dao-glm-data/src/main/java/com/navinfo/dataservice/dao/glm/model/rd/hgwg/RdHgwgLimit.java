@@ -40,7 +40,7 @@ public class RdHgwgLimit implements IObj {
 
     private Geometry geometry;
 
-    private Map<String, Object> changedFields = new HashedMap();
+    public Map<String, Object> changedFields = new HashedMap();
 
     @Override
     public List<IRow> relatedRows() {
@@ -204,5 +204,81 @@ public class RdHgwgLimit implements IObj {
             }
         }
         return true;
+    }
+
+    public int getPid() {
+        return pid;
+    }
+
+    public void setPid(int pid) {
+        this.pid = pid;
+    }
+
+    public String getRowId() {
+        return rowId;
+    }
+
+    public int getLinkPid() {
+        return linkPid;
+    }
+
+    public void setLinkPid(int linkPid) {
+        this.linkPid = linkPid;
+    }
+
+    public int getDirect() {
+        return direct;
+    }
+
+    public void setDirect(int direct) {
+        this.direct = direct;
+    }
+
+    public double getResHigh() {
+        return resHigh;
+    }
+
+    public void setResHigh(double resHigh) {
+        this.resHigh = resHigh;
+    }
+
+    public double getResWeigh() {
+        return resWeigh;
+    }
+
+    public void setResWeigh(double resWeigh) {
+        this.resWeigh = resWeigh;
+    }
+
+    public double getResAxleLoad() {
+        return resAxleLoad;
+    }
+
+    public void setResAxleLoad(double resAxleLoad) {
+        this.resAxleLoad = resAxleLoad;
+    }
+
+    public double getResWidth() {
+        return resWidth;
+    }
+
+    public void setResWidth(double resWidth) {
+        this.resWidth = resWidth;
+    }
+
+    public int getMeshId() {
+        return meshId;
+    }
+
+    public void setMeshId(int meshId) {
+        this.meshId = meshId;
+    }
+
+    public Geometry getGeometry() {
+        return geometry;
+    }
+
+    public void setGeometry(Geometry geometry) {
+        this.geometry = geometry;
     }
 }

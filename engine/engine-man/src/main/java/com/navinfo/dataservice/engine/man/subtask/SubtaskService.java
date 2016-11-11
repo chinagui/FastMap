@@ -100,9 +100,9 @@ public class SubtaskService {
 			}
 			
 			//消息发布
-			if(bean.getStatus()==1){
+			/*if(bean.getStatus()==1){
 				SubtaskOperation.pushMessage(conn,bean);
-			}	
+			}*/	
 			log.debug("子任务创建成功!");
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -144,9 +144,9 @@ public class SubtaskService {
 			}
 			
 			//消息发布
-			if(bean.getStatus()==1){
+			/*if(bean.getStatus()==1){
 				SubtaskOperation.pushMessage(conn,bean);
-			}	
+			}*/	
 			return subtaskId;
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -232,7 +232,7 @@ public class SubtaskService {
 	/*
 	 * 批量修改子任务详细信息。 参数：Subtask对象列表
 	 */
-	public List<Integer> update(List<Subtask> subtaskList) throws ServiceException {
+	public List<Integer> update(List<Subtask> subtaskList, long userId) throws ServiceException {
 		Connection conn = null;
 		try {
 			// 持久化
@@ -243,14 +243,29 @@ public class SubtaskService {
 				SubtaskOperation.updateSubtask(conn, subtaskList.get(i));
 				updatedSubtaskIdList.add(subtaskList.get(i).getSubtaskId());
 				
-				//消息发布
-				if(subtaskList.get(i)!=null&&subtaskList.get(i).getStatus()!=null &&subtaskList.get(i).getStatus()==1){
-					List<Integer> subtaskIdList = new ArrayList<Integer>();
-					subtaskIdList.add(subtaskList.get(i).getSubtaskId());
-					Subtask subtask = SubtaskOperation.getSubtaskListBySubtaskIdList(conn,subtaskIdList).get(0);
-					SubtaskOperation.pushMessage(conn,subtask);
-				}
 			}
+			//发送消息
+			try {
+				List<Integer> subtaskIdList = new ArrayList<Integer>();
+				for (Subtask subtask : subtaskList) {
+					//消息发布
+					if(subtask!=null&&subtask.getStatus()!=null &&subtask.getStatus()==1){
+						subtaskIdList.add(subtask.getSubtaskId());
+					}
+				}
+				//查询子任务
+				List<Subtask> list = SubtaskOperation.getSubtaskListBySubtaskIdList(conn,subtaskIdList);
+				if(list != null && list.size()>0){
+					for (Subtask subtask : list) {
+						SubtaskOperation.pushMessage(conn,subtask,userId);
+					}
+				}
+			} catch (Exception e) {
+				// TODO: handle exception
+				e.printStackTrace();
+				log.error("发送失败,原因:"+e.getMessage(), e);
+			}
+			
 			return updatedSubtaskIdList;
 
 		} catch (Exception e) {
@@ -568,7 +583,7 @@ public class SubtaskService {
 	/*
 	 * 关闭多个子任务。 参数：Subtask对象列表，List<Subtask>
 	 */
-	public List<Integer> close(List<Integer> subtaskIdList)
+	public List<Integer> close(List<Integer> subtaskIdList, long userId)
 			throws ServiceException {
 		Connection conn = null;
 		try {
@@ -593,6 +608,63 @@ public class SubtaskService {
 			if (!closedSubtaskList.isEmpty()) {
 				SubtaskOperation.closeBySubtaskList(conn, closedSubtaskList);
 			}
+			//发送消息
+			try {
+				//查询子任务
+				List<Subtask> subtaskList = SubtaskOperation.getSubtaskListBySubtaskIdList(conn, closedSubtaskList);
+				Iterator<Subtask> iter = subtaskList.iterator();
+				while(iter.hasNext()){
+					Subtask subtask = (Subtask) iter.next();
+					//查询分配的作业组组长
+					List<Long> groupIdList = new ArrayList<Long>();
+					groupIdList.add((long)subtask.getExeGroupId());
+					List<Long> leaderIdByGroupId = UserInfoOperation.getLeaderIdByGroupId(conn, groupIdList);
+					/*采集/日编/月编子任务关闭
+					 * 分配的作业员
+					 * 采集/日编/月编子任务关闭：XXX(子任务名称)已关闭，请关注*/
+					String msgTitle = "";
+					String msgContent = "";
+					if(subtask.getStage()== 0){
+						msgTitle = "采集子任务关闭";
+						msgContent = "采集子任务关闭:" + subtask.getName() + "已关闭,请关注";
+					}else if(subtask.getStage()== 1){
+						msgTitle = "日编子任务关闭";
+						msgContent = "日编子任务关闭:" + subtask.getName() + "已关闭,请关注";
+					}else{
+						msgTitle = "月编子任务关闭";
+						msgContent = "月编子任务关闭:" + subtask.getName() + "已关闭,请关注";
+					}
+					//关联要素
+					JSONObject msgParam = new JSONObject();
+					msgParam.put("relateObject", "SUBTASK");
+					msgParam.put("relateObjectId", subtask.getSubtaskId());
+					//查询用户名称
+					Map<String, Object> userInfo = UserInfoOperation.getUserInfoByUserId(conn, subtask.getExeUserId());
+					String pushUserName = null;
+					if(userInfo != null && userInfo.size() > 0){
+						pushUserName = (String) userInfo.get("userRealName");
+					}
+					
+					if(leaderIdByGroupId !=null && leaderIdByGroupId.size()>0){
+						for(int i=0;i<leaderIdByGroupId.size();i++){
+							Message message = new Message();
+							message.setMsgTitle(msgTitle);
+							message.setMsgContent(msgContent);
+							message.setPushUserId((int)userId);
+							message.setReceiverId(leaderIdByGroupId.get(i).intValue());
+							message.setMsgParam(msgParam.toString());
+							message.setPushUser(pushUserName);
+							
+							MessageService.getInstance().push(message, 0);
+							
+						}
+					}
+				}
+			} catch (Exception e) {
+				// TODO: handle exception
+				e.printStackTrace();
+				log.error("发送失败,原因:"+e.getMessage(), e);
+			}
 
 			return unClosedSubtaskList;
 
@@ -611,7 +683,7 @@ public class SubtaskService {
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
 
-			String selectSql = "select c.admin_id from block b, city c, subtask s where s.block_id=b.block_id and b.city_id=c.city_id and s.subtask_id=:1";
+			String selectSql = "select c.admin_id from block_man bm,block b, city c, subtask s where s.block_man_id=bm.block_man_id and b.block_id = bm.block_id and b.city_id=c.city_id and s.subtask_id=:1";
 
 			selectSql += " union all";
 
@@ -746,37 +818,58 @@ public class SubtaskService {
 			while(iter.hasNext()){
 				Subtask subtask = (Subtask) iter.next();
 				//作业组
+				/*
 				List<Integer> userIdList = new ArrayList<Integer>();
 				if(subtask.getExeGroupId()!=0){
 					userIdList = SubtaskOperation.getUserListByGroupId(conn,subtask.getExeGroupId());
 				}else{
 					userIdList.add(subtask.getExeUserId());
 				}
-				
-				String msgTitle = "子任务开启";
-				String msgContent = "";
-				int push = 0;
-				if(subtask.getStage()== 0){
-					msgContent = "采集子任务:" + subtask.getName() + "内容发生变更，请关注";
-					push = 1;
-				}else if(subtask.getStage()== 1){
-					msgContent = "日编子任务:" + subtask.getName() + "内容发生变更，请关注";
-				}else{
-					msgContent = "月编子任务:" + subtask.getName() + "内容发生变更，请关注";
-				}
-
-				for(int i=0;i<userIdList.size();i++){
+				*/
+				try {
+					/*采集/日编/月编子任务发布
+					 * 分配的作业员
+					 * 新增采集/日编/月编子任务：XXX(子任务名称)，请关注*/
+					String msgTitle = "";
+					String msgContent = "";
+					if(subtask.getStage()== 0){
+						msgTitle = "采集子任务发布";
+						msgContent = "新增采集子任务:" + subtask.getName() + ",请关注";
+					}else if(subtask.getStage()== 1){
+						msgTitle = "日编子任务发布";
+						msgContent = "新增日编子任务:" + subtask.getName() + ",请关注";
+					}else{
+						msgTitle = "月编子任务发布";
+						msgContent = "新增月编子任务:" + subtask.getName() + ",请关注";
+					}
+					//关联要素
+					JSONObject msgParam = new JSONObject();
+					msgParam.put("relateObject", "SUBTASK");
+					msgParam.put("relateObjectId", subtask.getSubtaskId());
+					//查询用户名称
+					Map<String, Object> userInfo = UserInfoOperation.getUserInfoByUserId(conn, subtask.getExeUserId());
+					String pushUserName = null;
+					if(userInfo != null && userInfo.size() > 0){
+						pushUserName = (String) userInfo.get("userRealName");
+					}
+					
 					Message message = new Message();
 					message.setMsgTitle(msgTitle);
 					message.setMsgContent(msgContent);
 					message.setPushUserId((int)userId);
-					message.setReceiverId(userIdList.get(i));
-
-					MessageService.getInstance().push(message, push);
+					message.setReceiverId(subtask.getExeUserId());
+					message.setMsgParam(msgParam.toString());
+					message.setPushUser(pushUserName);
 					
-					if( (int)subtask.getStatus()== 2){
-						SubtaskOperation.updateStatus(conn,subtask.getSubtaskId());
-					}
+					MessageService.getInstance().push(message, 1);
+				} catch (Exception e) {
+					// TODO: handle exception
+					e.printStackTrace();
+					log.error("发送失败,原因:"+e.getMessage(), e);
+				}
+				
+				if( (int)subtask.getStatus()== 2){
+					SubtaskOperation.updateStatus(conn,subtask.getSubtaskId());
 				}
 			}
 			return "发布成功";

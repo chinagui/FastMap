@@ -22,6 +22,7 @@ import org.apache.commons.dbutils.handlers.MapHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
+import com.alibaba.druid.sql.visitor.functions.If;
 import com.navinfo.dataservice.api.fcc.iface.FccApi;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Message;
@@ -44,6 +45,7 @@ import com.navinfo.dataservice.commons.xinge.XingeUtil;
 import com.navinfo.dataservice.engine.man.message.MessageService;
 import com.navinfo.dataservice.engine.man.task.TaskOperation;
 import com.navinfo.dataservice.engine.man.userDevice.UserDeviceService;
+import com.navinfo.dataservice.engine.man.userInfo.UserInfoOperation;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoService;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -146,7 +148,7 @@ public class SubtaskOperation {
 			String subtaskIds = "(" + StringUtils.join(subtaskIdList.toArray(),",") + ")";
 			
 			
-			String selectSql = "SELECT S.SUBTASK_ID,S.NAME,S.STAGE,S.TYPE,S.EXE_USER_ID,S.EXE_GROUP_ID,S.STATUS,S.BLOCK_ID,S.TASK_ID"
+			String selectSql = "SELECT S.SUBTASK_ID,S.NAME,S.STAGE,S.TYPE,S.EXE_USER_ID,S.EXE_GROUP_ID,S.STATUS,S.TASK_ID"
 					+ " FROM SUBTASK S"
 					+ " WHERE S.SUBTASK_ID IN " + subtaskIds;
 			
@@ -162,7 +164,6 @@ public class SubtaskOperation {
 						subtask.setExeUserId(rs.getInt("EXE_USER_ID"));
 						subtask.setExeGroupId(rs.getInt("EXE_GROUP_ID"));
 						subtask.setStatus(rs.getInt("STATUS"));
-						subtask.setBlockId(rs.getInt("BLOCK_ID"));
 						subtask.setTaskId(rs.getInt("TASK_ID"));
 						list.add(subtask);
 					}
@@ -347,13 +348,22 @@ public class SubtaskOperation {
 			String closedSubtaskStr = "(";
 			
 			closedSubtaskStr += StringUtils.join(closedSubtaskList.toArray(),",") + ")";
-						
-			String updateSql = "update SUBTASK "
-					+ "set STATUS=0 "
-					+ "where SUBTASK_ID in "
-					+ closedSubtaskStr;	
-			
-
+			//TYPE!=4 非区域子任务，直接关闭；type=4区域子任务，判断这个区域子任务范围内的所有一体化_grid粗编子任务均关闭		
+			String updateSql = "update SUBTASK S "
+					+ "set S.STATUS=0 "
+					+ "where S.SUBTASK_ID in "
+					+ closedSubtaskStr 
+					+ " AND (S.TYPE!=4 OR (S.TYPE=4 AND NOT EXISTS (SELECT 1"
+					+ "          FROM SUBTASK              SS,"
+					+ "               SUBTASK_GRID_MAPPING MM,"
+					+ "               BLOCK_GRID_MAPPING   M,"
+					+ "               BLOCK_MAN            B"
+					+ "         WHERE SS.SUBTASK_ID = MM.SUBTASK_ID"
+					+ "           AND MM.GRID_ID = M.GRID_ID"
+					+ "           AND S.BLOCK_MAN_ID = B.BLOCK_MAN_ID"
+					+ "           AND B.BLOCK_ID = M.BLOCK_ID"
+					+ "           AND SS.STATUS != 0"
+					+ "           AND SS.TYPE = 3)))";	
 			run.update(conn,updateSql);
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -1519,42 +1529,58 @@ public class SubtaskOperation {
 
 	/**
 	 * @param conn 
+	 * @param userId 
 	 * @param bean
 	 * @throws Exception 
 	 */
-	public static void pushMessage(Connection conn, Subtask subtask) throws Exception {
+	public static void pushMessage(Connection conn, Subtask subtask, long userId) throws Exception {
 		// TODO Auto-generated method stub
 		try{
-			List<Integer> userIdList = new ArrayList<Integer>();
+			//List<Integer> userIdList = new ArrayList<Integer>();
 			//作业组
+			/*
 			if(subtask.getExeGroupId()!=0){
 				userIdList = SubtaskOperation.getUserListByGroupId(conn,subtask.getExeGroupId());
 			}else{
 				userIdList.add(subtask.getExeUserId());
 			}
-
+			*/
 			//构造消息
-			String msgTitle = "子任务开启";
+			/*采集/日编/月编子任务编辑
+			 * 分配的作业员
+			 * 采集/日编/月编子任务变更：XXX(子任务名称)信息发生变更，请关注*/
+			String msgTitle = "";
 			String msgContent = "";
-			int push = 0;
 			if((int)subtask.getStage()== 0){
-				msgContent = "采集子任务:" + subtask.getName() + "内容发生变更，请关注";
-				push = 1;
+				msgTitle = "采集子任务编辑";
+				msgContent = "采集子任务变更:" + subtask.getName() + "内容发生变更,请关注";
 			}else if((int)subtask.getStage()== 1){
-				msgContent = "日编子任务:" + subtask.getName() + "内容发生变更，请关注";
+				msgTitle = "日编子任务编辑";
+				msgContent = "日编子任务变更:" + subtask.getName() + "内容发生变更,请关注";
 			}else{
-				msgContent = "月编子任务:" + subtask.getName() + "内容发生变更，请关注";
+				msgTitle = "月编子任务编辑";
+				msgContent = "月编子任务变更:" + subtask.getName() + "内容发生变更,请关注";
 			}
-
-			for(int i=0;i<userIdList.size();i++){
-				Message message = new Message();
-				message.setMsgTitle(msgTitle);
-				message.setMsgContent(msgContent);
-				message.setPushUserId((int)subtask.getExeUserId());
-				message.setReceiverId(userIdList.get(i));
-
-				MessageService.getInstance().push(message, push);
+			//关联要素
+			JSONObject msgParam = new JSONObject();
+			msgParam.put("relateObject", "SUBTASK");
+			msgParam.put("relateObjectId", subtask.getSubtaskId());
+			//查询用户名称
+			Map<String, Object> userInfo = UserInfoOperation.getUserInfoByUserId(conn, subtask.getExeUserId());
+			String pushUserName = null;
+			if(userInfo != null && userInfo.size() > 0){
+				pushUserName = (String) userInfo.get("userRealName");
 			}
+			
+			Message message = new Message();
+			message.setMsgTitle(msgTitle);
+			message.setMsgContent(msgContent);
+			message.setPushUserId((int)userId);
+			message.setReceiverId(subtask.getExeUserId());
+			message.setMsgParam(msgParam.toString());
+			message.setPushUser(pushUserName);
+			
+			MessageService.getInstance().push(message, 1);
 		}catch(Exception e){
 			log.error(e.getMessage(), e);
 			throw new Exception("推送消息失败，原因为:"+e.getMessage(),e);
@@ -1842,36 +1868,66 @@ public class SubtaskOperation {
 		// TODO Auto-generated method stub
 		try{
 			QueryRunner run = new QueryRunner();
+			//质检子任务语句
+			String qualitySql="select Ss.SUBTASK_ID quality_subtask_id,"
+					+ "                                     Ss.EXE_USER_ID     quality_Exe_User_Id,"
+					+ "                                     Ss.PLAN_START_DATE as quality_Plan_Start_Date,"
+					+ "                                     Ss.PLAN_END_DATE   as quality_Plan_End_Date,"
+					+ "                                     Ss.STATUS          quality_Task_Status,"
+					+ "                                     UU.USER_REAL_NAME  AS quality_Exe_User_Name"
+					+ "                                from subtask Ss, USER_INFO UU"
+					+ "                               where Ss.is_quality = 1"
+					+ "                                 AND SS.EXE_USER_ID = UU.USER_ID";
 
-			String selectSqlCollect = "SELECT S.SUBTASK_ID, S.STAGE, S.NAME, S.TYPE, S.STATUS,U.USER_REAL_NAME AS EXECUTER,FSOS.PERCENT,FSOS.DIFF_DATE,FSOS.PROGRESS"
-					+ " FROM SUBTASK S ,USER_INFO U,FM_STAT_OVERVIEW_SUBTASK FSOS"
+			String selectSqlCollect = "SELECT S.SUBTASK_ID, S.STAGE, S.NAME, S.TYPE, S.STATUS,U.USER_REAL_NAME AS EXECUTER,FSOS.PERCENT,FSOS.DIFF_DATE,FSOS.PROGRESS,"
+					+ "						NVL(Q.quality_subtask_id,0) quality_subtask_id ,NVL(Q.quality_Exe_User_Id,0) quality_Exe_User_Id,"
+					+ "						Q.quality_Plan_Start_Date,Q.quality_Plan_End_Date,"
+					+ "						NVL(Q.quality_Task_Status,0) quality_Task_Status,Q.quality_Exe_User_Name"
+					+ " FROM SUBTASK S ,USER_INFO U,FM_STAT_OVERVIEW_SUBTASK FSOS,("+qualitySql+") Q"
 					+ " WHERE S.STAGE = 0"
+					+ " AND Q.quality_subtask_id(+) = S.quality_subtask_id"
 					+ " AND S.is_quality = 0" //排除 Subtask 表中的质检子任务
 					+ " AND U.USER_ID = S.EXE_USER_ID"
 					+ " AND S.SUBTASK_ID = FSOS.SUBTASK_ID(+)";
 
-			String selectSqlDailyUser = "SELECT S.SUBTASK_ID, S.STAGE, S.NAME, S.TYPE, S.STATUS,U.USER_REAL_NAME AS EXECUTER,FSOS.PERCENT,FSOS.DIFF_DATE,FSOS.PROGRESS"
-					+ " FROM SUBTASK S ,USER_INFO U,FM_STAT_OVERVIEW_SUBTASK FSOS"
+			String selectSqlDailyUser = "SELECT S.SUBTASK_ID, S.STAGE, S.NAME, S.TYPE, S.STATUS,U.USER_REAL_NAME AS EXECUTER,FSOS.PERCENT,FSOS.DIFF_DATE,FSOS.PROGRESS,"
+					+ "						NVL(Q.quality_subtask_id,0) quality_subtask_id ,NVL(Q.quality_Exe_User_Id,0) quality_Exe_User_Id,"
+					+ "						Q.quality_Plan_Start_Date,Q.quality_Plan_End_Date,"
+					+ "						NVL(Q.quality_Task_Status,0) quality_Task_Status,Q.quality_Exe_User_Name"
+					+ " FROM SUBTASK S ,USER_INFO U,FM_STAT_OVERVIEW_SUBTASK FSOS,("+qualitySql+") Q"
 					+ " WHERE S.STAGE = 1"
+					+ " AND Q.quality_subtask_id(+) = S.quality_subtask_id"
 					+ " AND S.is_quality = 0" //排除 Subtask 表中的质检子任务
 					+ " AND U.USER_ID = S.EXE_USER_ID"
 					+ " AND S.SUBTASK_ID = FSOS.SUBTASK_ID(+)";
-			String selectSqlDailyGroup = "SELECT S.SUBTASK_ID, S.STAGE, S.NAME, S.TYPE, S.STATUS, UG.GROUP_NAME AS EXECUTER,FSOS.PERCENT,FSOS.DIFF_DATE,FSOS.PROGRESS"
-					+ " FROM SUBTASK S , USER_GROUP UG,FM_STAT_OVERVIEW_SUBTASK FSOS"
+			String selectSqlDailyGroup = "SELECT S.SUBTASK_ID, S.STAGE, S.NAME, S.TYPE, S.STATUS, UG.GROUP_NAME AS EXECUTER,FSOS.PERCENT,FSOS.DIFF_DATE,FSOS.PROGRESS,"
+					+ "						NVL(Q.quality_subtask_id,0) quality_subtask_id ,NVL(Q.quality_Exe_User_Id,0) quality_Exe_User_Id,"
+					+ "						Q.quality_Plan_Start_Date,Q.quality_Plan_End_Date,"
+					+ "						NVL(Q.quality_Task_Status,0) quality_Task_Status,Q.quality_Exe_User_Name"
+					+ " FROM SUBTASK S , USER_GROUP UG,FM_STAT_OVERVIEW_SUBTASK FSOS,("+qualitySql+") Q"
 					+ " WHERE S.STAGE = 1"
+					+ " AND Q.quality_subtask_id(+) = S.quality_subtask_id"
 					+ " AND S.is_quality = 0" //排除 Subtask 表中的质检子任务
 					+ " AND UG.GROUP_ID = S.EXE_GROUP_ID"
 					+ " AND S.SUBTASK_ID = FSOS.SUBTASK_ID(+)";
 
-			String selectSqlMonthlyUser = "SELECT S.SUBTASK_ID, S.STAGE, S.NAME, S.TYPE, S.STATUS,U.USER_REAL_NAME AS EXECUTER,FSOS.PERCENT,FSOS.DIFF_DATE,FSOS.PROGRESS"
-					+ " FROM SUBTASK S,USER_INFO U,FM_STAT_OVERVIEW_SUBTASK FSOS"
+			String selectSqlMonthlyUser = "SELECT S.SUBTASK_ID, S.STAGE, S.NAME, S.TYPE, S.STATUS,U.USER_REAL_NAME AS EXECUTER,FSOS.PERCENT,FSOS.DIFF_DATE,FSOS.PROGRESS,"
+					+ "						NVL(Q.quality_subtask_id,0) quality_subtask_id ,NVL(Q.quality_Exe_User_Id,0) quality_Exe_User_Id,"
+					+ "						Q.quality_Plan_Start_Date,Q.quality_Plan_End_Date,"
+					+ "						NVL(Q.quality_Task_Status,0) quality_Task_Status,Q.quality_Exe_User_Name"
+					+ " FROM SUBTASK S,USER_INFO U,FM_STAT_OVERVIEW_SUBTASK FSOS,("+qualitySql+") Q"
 					+ " WHERE S.STAGE = 2"
+					+ " AND Q.quality_subtask_id(+) = S.quality_subtask_id"
 					+ " AND S.is_quality = 0" //排除 Subtask 表中的质检子任务
 					+ " AND U.USER_ID = S.EXE_USER_ID"
 					+ " AND S.SUBTASK_ID = FSOS.SUBTASK_ID(+)";
-			String selectSqlMonthlyGroup = "SELECT S.SUBTASK_ID, S.STAGE, S.NAME, S.TYPE, S.STATUS, UG.GROUP_NAME AS EXECUTER,FSOS.PERCENT,FSOS.DIFF_DATE,FSOS.PROGRESS"
-					+ " FROM SUBTASK S ,USER_GROUP UG,FM_STAT_OVERVIEW_SUBTASK FSOS"
+			String selectSqlMonthlyGroup = "SELECT S.SUBTASK_ID, S.STAGE, S.NAME, S.TYPE, S.STATUS, UG.GROUP_NAME AS EXECUTER,FSOS.PERCENT,FSOS.DIFF_DATE,FSOS.PROGRESS,"
+					+ "						NVL(Q.quality_subtask_id,0) quality_subtask_id ,NVL(Q.quality_Exe_User_Id,0) quality_Exe_User_Id,"
+					+ "						Q.quality_Plan_Start_Date,Q.quality_Plan_End_Date,"
+					+ "						NVL(Q.quality_Task_Status,0) quality_Task_Status,Q.quality_Exe_User_Name"
+					+ " FROM SUBTASK S ,USER_GROUP UG,FM_STAT_OVERVIEW_SUBTASK FSOS,("+qualitySql+") Q"
 					+ " WHERE S.STAGE = 2"
+					+ " AND Q.quality_subtask_id(+) = S.quality_subtask_id"
 					+ " AND S.is_quality = 0" //排除 Subtask 表中的质检子任务
 					+ " AND UG.GROUP_ID = S.EXE_GROUP_ID"
 					+ " AND S.SUBTASK_ID = FSOS.SUBTASK_ID(+)";
@@ -1899,6 +1955,7 @@ public class SubtaskOperation {
 
 			String filterSqlCollect = "";
 			String filterSqlDaily = "";
+			String filterSqlMonthly="";
 			if(null != filter){
 				Iterator<?> filterKeys = filter.keys();
 				while (filterKeys.hasNext()) {
@@ -1910,7 +1967,10 @@ public class SubtaskOperation {
 					}
 					//筛选条件
 					//"progress" //进度。1采集正常，2异常，3关闭，4完成,5草稿,6完成状态逾期，7完成状态按时，8完成状态提前
-					//"progress" //进度。1采集正常，2采集异常，3采集关闭，4采集完成,5采集草稿,6日编正常，7日编异常，8日编关闭，9日编完成,10日编草稿,11逾期完成，12按时完成，13提前完成
+					//"progress" //进度。1采集正常，2采集异常，3采集关闭，4采集完成,5采集草稿,6日编正常，7日编异常，8日编关闭，
+					//9日编完成,10日编草稿,11逾期完成，12按时完成，13提前完成,
+					//14月编正常15月编异常16月编关闭，17月编完成,18月编草稿
+
 					if ("progress".equals(key)){
 						JSONArray progress = filter.getJSONArray(key);
 						if(progress.isEmpty()){
@@ -1919,6 +1979,7 @@ public class SubtaskOperation {
 
 						List<String> progressCollectList = new ArrayList<String>();
 						List<String> progressDailyList = new ArrayList<String>();
+						List<String> progressMonthlyList = new ArrayList<String>();
 
 						if(progress.contains(1)){
 							progressCollectList.add("T.PROGRESS = 1 OR T.PROGRESS IS NULL");
@@ -1965,6 +2026,22 @@ public class SubtaskOperation {
 							progressDailyList.add("T.DIFF_DATE > 0");
 						}
 						
+						if(progress.contains(14)){
+							progressMonthlyList.add("T.PROGRESS = 1 OR T.PROGRESS IS NULL");
+						}
+						if(progress.contains(15)){
+							progressMonthlyList.add("T.PROGRESS = 2");
+						}
+						if(progress.contains(16)){
+							progressMonthlyList.add("T.STATUS = 0");
+						}
+						if(progress.contains(17)){
+							progressMonthlyList.add("T.STATUS = 1 AND T.PERCENT = 100");
+						}
+						if(progress.contains(18)){
+							progressMonthlyList.add("T.STATUS = 2");
+						}
+						
 						if(!progressCollectList.isEmpty()){
 							String tempSqlCollect = StringUtils.join(progressCollectList," OR ");
 							filterSqlCollect += " AND (" + tempSqlCollect + ")";
@@ -1974,19 +2051,35 @@ public class SubtaskOperation {
 							String tempSqlDaily = StringUtils.join(progressDailyList," OR ");
 							filterSqlDaily += " AND (" + tempSqlDaily + ")";
 						}
+						if(!progressMonthlyList.isEmpty()){
+							String tempSqlMonthly = StringUtils.join(progressMonthlyList," OR ");
+							filterSqlMonthly += " AND (" + tempSqlMonthly + ")";
+						}
 					}
 				}
 			}
 				
-			selectSqlCollect = "SELECT T.SUBTASK_ID, T.STAGE, T.NAME, T.TYPE, T.STATUS,T.EXECUTER,T.PERCENT,T.DIFF_DATE,T.PROGRESS FROM (" + selectSqlCollect + ")T WHERE 1=1";
+			selectSqlCollect = "SELECT T.SUBTASK_ID, T.STAGE, T.NAME, T.TYPE, T.STATUS,T.EXECUTER,T.PERCENT,"
+					+ "T.DIFF_DATE,T.PROGRESS,T.quality_subtask_id ,T.quality_Exe_User_Id,"
+					+ "T.quality_Plan_Start_Date,T.quality_Plan_End_Date,T.quality_Task_Status,T.quality_Exe_User_Name"
+					+ " FROM (" + selectSqlCollect + ")T WHERE 1=1";
 			if(!filterSqlCollect.isEmpty()){
 				selectSqlCollect = selectSqlCollect +  filterSqlCollect;
 			}
-			selectSqlDaily = "SELECT T.SUBTASK_ID, T.STAGE, T.NAME, T.TYPE, T.STATUS,T.EXECUTER,T.PERCENT,T.DIFF_DATE,T.PROGRESS FROM (" + selectSqlDaily + ")T WHERE 1=1";
+			selectSqlDaily = "SELECT T.SUBTASK_ID, T.STAGE, T.NAME, T.TYPE, T.STATUS,T.EXECUTER,T.PERCENT,"
+					+ "T.DIFF_DATE,T.PROGRESS,T.quality_subtask_id ,T.quality_Exe_User_Id,"
+					+ "T.quality_Plan_Start_Date,T.quality_Plan_End_Date,T.quality_Task_Status,T.quality_Exe_User_Name"
+					+ " FROM (" + selectSqlDaily + ")T WHERE 1=1";
 			if(!filterSqlDaily.isEmpty()){
 				selectSqlDaily = selectSqlDaily + filterSqlDaily;
 			}
-			selectSqlMonthly = selectSqlMonthly;
+			selectSqlMonthly = "SELECT T.SUBTASK_ID, T.STAGE, T.NAME, T.TYPE, T.STATUS,T.EXECUTER,T.PERCENT,"
+					+ "T.DIFF_DATE,T.PROGRESS,T.quality_subtask_id ,T.quality_Exe_User_Id,"
+					+ "T.quality_Plan_Start_Date,T.quality_Plan_End_Date,T.quality_Task_Status,T.quality_Exe_User_Name"
+					+ " FROM (" + selectSqlMonthly + ")T WHERE 1=1";
+			if(!filterSqlDaily.isEmpty()){
+				selectSqlMonthly = selectSqlMonthly + filterSqlMonthly;
+			}
 				
 			String sql = "";
 			if(stage==0){
@@ -2018,10 +2111,14 @@ public class SubtaskOperation {
 			}else if(2 == planStatus){
 				//已发布
 				String orderSql = "ORDER BY PRI ASC,DIFF_DATE ASC, PERCENT DESC";
-				String Sql2Close = "SELECT SUBTASK_ID, STAGE, NAME, TYPE, STATUS,EXECUTER,PERCENT,DIFF_DATE,PROGRESS ,4 AS PRI FROM (" + sql + ")TEMP WHERE TEMP.STATUS = 0 ";
-				String Sql2Draft = "SELECT SUBTASK_ID, STAGE, NAME, TYPE, STATUS,EXECUTER,PERCENT,DIFF_DATE,PROGRESS ,2 AS PRI FROM (" + sql + ")TEMP WHERE TEMP.STATUS = 2 ";
-				String Sql2OpenFinish = "SELECT SUBTASK_ID, STAGE, NAME, TYPE, STATUS,EXECUTER,PERCENT,DIFF_DATE,PROGRESS ,3 AS PRI FROM (" + sql  + ")TEMP WHERE TEMP.STATUS = 1 AND TEMP.PERCENT = 100 ";
-				String Sql2OpenUnfinish = "SELECT SUBTASK_ID, STAGE, NAME, TYPE, STATUS,EXECUTER,PERCENT,DIFF_DATE,PROGRESS ,1 AS PRI FROM (" + sql + ")TEMP WHERE TEMP.STATUS = 1 AND (TEMP.PERCENT < 100 OR TEMP.PERCENT IS NULL) ";
+				String Sql2Close = "SELECT SUBTASK_ID, STAGE, NAME, TYPE, STATUS,EXECUTER,PERCENT,DIFF_DATE,PROGRESS ,4 AS PRI,quality_subtask_id ,quality_Exe_User_Id,"
+					+ "quality_Plan_Start_Date,quality_Plan_End_Date,quality_Task_Status,quality_Exe_User_Name FROM (" + sql + ")TEMP WHERE TEMP.STATUS = 0 ";
+				String Sql2Draft = "SELECT SUBTASK_ID, STAGE, NAME, TYPE, STATUS,EXECUTER,PERCENT,DIFF_DATE,PROGRESS ,2 AS PRI,quality_subtask_id ,quality_Exe_User_Id,"
+					+ "quality_Plan_Start_Date,quality_Plan_End_Date,quality_Task_Status,quality_Exe_User_Name FROM (" + sql + ")TEMP WHERE TEMP.STATUS = 2 ";
+				String Sql2OpenFinish = "SELECT SUBTASK_ID, STAGE, NAME, TYPE, STATUS,EXECUTER,PERCENT,DIFF_DATE,PROGRESS ,3 AS PRI,quality_subtask_id ,quality_Exe_User_Id,"
+					+ "quality_Plan_Start_Date,quality_Plan_End_Date,quality_Task_Status,quality_Exe_User_Name FROM (" + sql  + ")TEMP WHERE TEMP.STATUS = 1 AND TEMP.PERCENT = 100 ";
+				String Sql2OpenUnfinish = "SELECT SUBTASK_ID, STAGE, NAME, TYPE, STATUS,EXECUTER,PERCENT,DIFF_DATE,PROGRESS ,1 AS PRI,quality_subtask_id ,quality_Exe_User_Id,"
+					+ "quality_Plan_Start_Date,quality_Plan_End_Date,quality_Task_Status,quality_Exe_User_Name FROM (" + sql + ")TEMP WHERE TEMP.STATUS = 1 AND (TEMP.PERCENT < 100 OR TEMP.PERCENT IS NULL) ";
 				
 				sqlFinal = Sql2OpenUnfinish + " UNION ALL " + Sql2Draft + " UNION ALL " + Sql2OpenFinish + " UNION ALL "  + Sql2Close  + orderSql;
 			}
@@ -2033,6 +2130,7 @@ public class SubtaskOperation {
 					Page page = new Page(curPageNum);
 				    page.setPageSize(pageSize);
 				    int total = 0;
+				    SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
 					while (rs.next()) {
 						if(total==0){
 							total=rs.getInt("TOTAL_RECORD_NUM_");
@@ -2048,6 +2146,20 @@ public class SubtaskOperation {
 
 						subtask.put("percent", rs.getInt("percent"));
 						subtask.put("diffDate", rs.getInt("DIFF_DATE"));
+						
+						subtask.put("qualitySubtaskId", rs.getInt("quality_subtask_id"));
+						subtask.put("qualityExeUserId", rs.getInt("quality_Exe_User_Id"));
+						Timestamp qualityPlanStartDate = rs.getTimestamp("quality_Plan_Start_Date");
+						Timestamp qualityPlanEndDate = rs.getTimestamp("quality_Plan_End_Date");
+						if(qualityPlanStartDate != null){
+							subtask.put("qualityPlanStartDate", df.format(qualityPlanStartDate));
+						}else {subtask.put("qualityPlanStartDate", null);}
+						if(qualityPlanEndDate != null){
+							subtask.put("qualityPlanStartDate",df.format(qualityPlanEndDate));
+						}else{subtask.put("qualityPlanEndDate", null);}
+						
+						subtask.put("qualityTaskStatus", rs.getInt("quality_Task_Status"));
+						subtask.put("qualityExeUserName", rs.getString("quality_Exe_User_Name"));
 	
 						list.add(subtask);
 					}

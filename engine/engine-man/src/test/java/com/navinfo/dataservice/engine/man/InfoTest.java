@@ -10,8 +10,8 @@ public class InfoTest extends InitApplication {
 	@Test
 	public void msgTest(){
 		InfoChangeMsgHandler info = new InfoChangeMsgHandler();
-		String message = "{\"geometry\":\"POINT (186.471866 59.836927)\",\"rowkey\":\"1112122121\""
-				+ ",\"INFO_NAME\":\"TEST01\",\"i_level\":1,\"INFO_CONTENT\":\"TEST01\"}";
+		String message = "{\"geometry\":\"POINT (196.471866 39.836927)\",\"rowkey\":\"1112122121\""
+				+ ",\"INFO_NAME\":\"TEST00AAA\",\"i_level\":1,\"INFO_CONTENT\":\"TEST00AAA\"}";
 		info.handle(message);
 	}
 

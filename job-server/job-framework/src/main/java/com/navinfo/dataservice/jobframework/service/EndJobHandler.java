@@ -86,7 +86,7 @@ public class EndJobHandler implements MsgHandler {
 			}
 			//关联要素
 			JSONObject msgParam = new JSONObject();
-			msgParam.put("relateObject", "TASK");
+			msgParam.put("relateObject", "JOB");
 			msgParam.put("relateObjectId", jobId);
 			SysMsgPublisher.publishMsg(jobTypeName+"任务(ID:"+jobId+")"+runStatus+","+diffTime.toString(), resultMsg, 0, new long[]{userId}, 1, msgParam.toString(), pushUserName);
 		}catch(Exception e){

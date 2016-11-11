@@ -49,7 +49,7 @@ public class PoiSaveTest {
 	}
 	@Test
 	public void testUpdatePoi() throws SQLException {
-		String parameter = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"IXPOI\",\"objId\":80070981,\"data\":{\"addresses\":[{\"nameGroupid\":1,\"poiPid\":0,\"langCode\":\"CHI\",\"fullname\":\"１１１１\",\"objStatus\":\"INSERT\"}],\"rowId\":\"3AE1FB8B133A92F7E050A8C08304EE4C\",\"pid\":80070981}}";
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":22,\"type\":\"IXPOI\",\"objId\":4602392,\"data\":{\"addresses\":[{\"nameGroupid\":1,\"poiPid\":0,\"langCode\":\"CHI\",\"fullname\":\"\",\"objStatus\":\"INSERT\"}],\"rowId\":\"3F836D0B49AA4604E050A8C083041544\",\"pid\":4602392}}";
 		Connection conn = null;
 		JSONObject result = null;
 		try {
@@ -90,7 +90,7 @@ public class PoiSaveTest {
 
 			if (operType == OperType.UPDATE) {
 				json.put("objId", pid);
-				BatchProcess batchProcess = new BatchProcess();
+				BatchProcess batchProcess = new BatchProcess("row","save");
 				batchProcess.execute(json, conn, editApiImpl);
 			}
 

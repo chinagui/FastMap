@@ -32,7 +32,13 @@ public class IxSamepoiSearch implements ISearch {
 		IObj ixSamepoi = (IObj) selector.loadById(pid, false);
 		return ixSamepoi;
 	}
-
+	
+	@Override
+	public IObj searchDataByPids(List<Integer> pidList) throws Exception {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
 	@Override
 	public List<SearchSnapshot> searchDataBySpatial(String wkt) throws Exception {
 		return null;

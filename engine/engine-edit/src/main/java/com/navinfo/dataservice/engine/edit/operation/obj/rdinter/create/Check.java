@@ -68,7 +68,7 @@ public class Check {
 				}
 			}
 		}
-		else
+		if(CollectionUtils.isNotEmpty(linkList) && ((command.getLinkArray() == null)||(command.getLinkArray().size() == 0)))
 		{
 			throw new Exception("传递的link参数不正确：缺失link参数");
 		}

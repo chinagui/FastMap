@@ -6,15 +6,15 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.sf.json.JSONObject;
-import oracle.sql.STRUCT;
-
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdNodeSelector;
+
+import net.sf.json.JSONObject;
+import oracle.sql.STRUCT;
 
 public class AdNodeSearch implements ISearch {
 
@@ -33,7 +33,13 @@ public class AdNodeSearch implements ISearch {
 
 		return adNode;
 	}
-
+	
+	@Override
+	public IObj searchDataByPids(List<Integer> pidList) throws Exception {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
 	@Override
 	public List<SearchSnapshot> searchDataBySpatial(String wkt) throws Exception {
 		// TODO Auto-generated method stub

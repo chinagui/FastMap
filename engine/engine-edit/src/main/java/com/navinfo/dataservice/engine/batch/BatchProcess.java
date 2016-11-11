@@ -19,8 +19,13 @@ import net.sf.json.JSONObject;
 
 public class BatchProcess {
 	private static final Logger logger = Logger.getLogger(BatchProcess.class);
-	public BatchProcess() {
-		
+	
+	private String batchType;
+	private String batchStep;
+	
+	public BatchProcess(String batchType,String batchStep) {
+		this.batchType = batchType;
+		this.batchStep = batchStep;
 	}
 	
 	/**
@@ -80,7 +85,7 @@ public class BatchProcess {
 		
 		Connection conn = null;
 		try {
-			String sql = "select process_path from batch_rule where kind='row' and steps='save' and rule_status=1";
+			String sql = "select process_path from batch_rule where kind='"+batchType+"' and steps='"+batchStep+"' and rule_status=1";
 			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
 			pstmt = conn.prepareStatement(sql);
 			resultSet = pstmt.executeQuery();

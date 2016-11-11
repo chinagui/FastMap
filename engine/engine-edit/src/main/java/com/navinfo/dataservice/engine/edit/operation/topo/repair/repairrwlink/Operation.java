@@ -9,19 +9,17 @@ import java.util.Set;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
-import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
-import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
-import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGscLink;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLink;
-import com.navinfo.dataservice.engine.edit.utils.RdGscOperateUtils;
 import com.navinfo.dataservice.engine.edit.utils.RwLinkOperateUtils;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryCollection;
+import com.vividsolutions.jts.geom.LineString;
 
 import net.sf.json.JSONObject;
 
@@ -89,9 +87,26 @@ public class Operation implements IOperation {
 			maps.put(g.getCoordinates()[g.getCoordinates().length - 1], this.command.getUpdateLink().geteNodePid());
 			while (it.hasNext()) {
 				String meshIdStr = it.next();
-				Geometry geomInter = GeoTranslator.transform(MeshUtils.linkInterMeshPolygon(
-						GeoTranslator.geojson2Jts(command.getLinkGeom()), GeoTranslator.transform(MeshUtils.mesh2Jts(meshIdStr),1,5)), 1, 5);
-				links.addAll(RwLinkOperateUtils.getCreateRwLinksWithMesh(geomInter, maps, result,this.command.getUpdateLink()));
+				Geometry geomInter = MeshUtils.linkInterMeshPolygon(
+						GeoTranslator.geojson2Jts(command.getLinkGeom()), GeoTranslator.transform(MeshUtils.mesh2Jts(meshIdStr),1,5));
+				if(geomInter instanceof GeometryCollection)
+				{
+					int geoNum = geomInter.getNumGeometries();
+					for (int i = 0; i < geoNum; i++) {
+						Geometry subGeo = geomInter.getGeometryN(i);
+						if (subGeo instanceof LineString) {
+							subGeo = GeoTranslator.geojson2Jts(GeoTranslator.jts2Geojson(subGeo), 1, 5);
+
+							links.addAll(RwLinkOperateUtils.getCreateRwLinksWithMesh(geomInter, maps, result,this.command.getUpdateLink()));
+						}
+					}
+				}
+				else
+				{
+					geomInter = GeoTranslator.geojson2Jts(GeoTranslator.jts2Geojson(geomInter), 1, 5);
+
+					links.addAll(RwLinkOperateUtils.getCreateRwLinksWithMesh(geomInter, maps, result,this.command.getUpdateLink()));
+				}
 
 			}
 			result.insertObject(this.command.getUpdateLink(), ObjStatus.DELETE, this.command.getUpdateLink().getPid());
@@ -104,40 +119,6 @@ public class Operation implements IOperation {
 		this.map = map;
 	}
 
-	/**
-	 * 处理对立交的影响
-	 * @param gscList
-	 * @param linkList
-	 * @param result
-	 * @throws Exception
-	 */
-	private void handleEffectOnRdGsc(List<RdGsc> gscList, List<RwLink> linkList, Result result) throws Exception {
-		for (RdGsc gsc : gscList) {
-			Geometry gscGeo = gsc.getGeometry();
-
-			for (RwLink link : linkList) {
-				Geometry linkGeo = link.getGeometry();
-
-				if (gscGeo.distance(linkGeo) < 1) {
-					List<IRow> gscLinkList = gsc.getLinks();
-
-					if (gscLinkList.size() == 1) {
-						RdGscLink gscLink = (RdGscLink) gscLinkList.get(0);
-						
-						gscLink.changedFields().put("linkPid", link.getPid());
-
-						// 计算立交点序号和起终点标识
-						RdGscOperateUtils.calShpSeqNum(gscLink, gscGeo, linkGeo.getCoordinates());
-						
-						if (!gscLink.changedFields().isEmpty()) {
-							result.insertObject(gscLink, ObjStatus.UPDATE, gsc.getPid());
-						}
-					}
-				}
-			}
-		}
-	}
-	
 	 /**
      * 维护关联要素
      *

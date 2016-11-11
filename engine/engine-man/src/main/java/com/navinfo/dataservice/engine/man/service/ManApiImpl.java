@@ -29,8 +29,11 @@ import com.navinfo.dataservice.engine.man.statics.StaticsService;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskOperation;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskService;
 import com.navinfo.dataservice.engine.man.task.TaskService;
+import com.navinfo.dataservice.engine.man.userInfo.UserInfoService;
 import com.navinfo.dataservice.engine.man.version.VersionService;
 import com.navinfo.navicommons.exception.ServiceException;
+
+import net.sf.json.JSONObject;
 /*
  * @author mayunfei
  * 2016年6月7日
@@ -138,6 +141,19 @@ public class ManApiImpl implements ManApi {
 	public Map<String, Object> queryTaskStatByTaskId(long taskId) throws Exception {
 		// TODO Auto-generated method stub
 		return StaticsService.getInstance().queryTaskStatByTaskId(taskId);
+	}
+	@Override
+	public Map<String, Object> getUserInfoByUserId(long userId) throws Exception {
+		// TODO Auto-generated method stub
+		return UserInfoService.getInstance().getUserInfoByUserId(userId);
+	}
+	/* (non-Javadoc)
+	 * @see com.navinfo.dataservice.api.man.iface.ManApi#createJob(long, java.lang.String, net.sf.json.JSONObject)
+	 */
+	@Override
+	public int createJob(long userId, String produceType, JSONObject paraJson) throws Exception {
+		// TODO Auto-generated method stub
+		return ProduceService.getInstance().create(userId,produceType,paraJson);
 	}
 }
 

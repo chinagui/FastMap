@@ -16,7 +16,6 @@ import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.selector.rd.gsc.RdGscSelector;
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -25,8 +24,6 @@ import oracle.sql.STRUCT;
 public class RdGscSearch implements ISearch {
 
 	private Connection conn;
-
-	private final GeometryFactory geometryFactory = new GeometryFactory();
 	
 	public RdGscSearch(Connection conn) {
 		this.conn = conn;
@@ -41,7 +38,11 @@ public class RdGscSearch implements ISearch {
 		return obj;
 	}
 
-
+	@Override
+	public IObj searchDataByPids(List<Integer> pidList) throws Exception {
+		return null;
+	}
+	
 	@Override
 	public List<SearchSnapshot> searchDataBySpatial(String wkt)
 			throws Exception {

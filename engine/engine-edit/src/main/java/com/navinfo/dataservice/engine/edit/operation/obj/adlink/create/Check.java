@@ -47,10 +47,6 @@ public class Check {
 		}
 	}
 	
-	private void throwException(String msg) throws Exception {
-		throw new Exception(msg);
-	}
-	
 	public void postCheck(Connection conn,Result result,int projectId) throws Exception
 	{
 		

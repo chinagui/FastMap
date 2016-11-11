@@ -144,8 +144,9 @@ public class RdLaneSelector extends AbstractSelector {
 
 	/***
 	 * 
-	 * 通过Link查找车道信息 0是查询link上所有车道信息
-	 * 
+	 * 通过Link查找车道信息
+	 * zhaokk
+	 * 组装LINK对应的车道信息 
 	 * @param linkPid
 	 * @param isLock
 	 * @return
@@ -163,14 +164,13 @@ public class RdLaneSelector extends AbstractSelector {
 		try {
 			String ids = org.apache.commons.lang.StringUtils
 					.join(linkPids, ",");
-			String sql = "SELECT ra.link_pid, ra.lane_pid,rl.geometry,rl.s_node_pid,rl.e_node_pid,rl.direct FROM rd_lane ra,rd_link rl WHERE ra.link_pid = rl.link_pid and ra.link_pid in ("
+			String sql = "SELECT ra.link_pid, ra.lane_pid,rl.geometry,rl.s_node_pid,rl.e_node_pid,rl.direct, rl.length FROM rd_lane ra,rd_link rl WHERE ra.link_pid = rl.link_pid and ra.link_pid in ("
 					+ ids + ") and  rl.u_record !=2 and  ra.u_record !=2 ";
 
 			sql += " order by ra.link_pid";
 			if (isLock) {
 				sql += " for update nowait";
 			}
-			System.out.println(sql);
 			pstmt = conn.prepareStatement(sql,
 					ResultSet.TYPE_SCROLL_INSENSITIVE,
 					ResultSet.CONCUR_UPDATABLE);
@@ -186,6 +186,8 @@ public class RdLaneSelector extends AbstractSelector {
 					jsonObject.put("linkPid", resultSet.getInt("link_pid"));
 					jsonObject.put("geometry", Geojson.spatial2Geojson(struct));
 					jsonObject.put("sNodePid", resultSet.getInt("s_node_pid"));
+					jsonObject.put("direct", resultSet.getInt("direct"));
+					jsonObject.put("length", resultSet.getInt("length"));
 					jsonObject.put("eNodePid", resultSet.getInt("e_node_pid"));
 					pids.add(resultSet.getInt("link_pid"));
 				}
@@ -209,6 +211,8 @@ public class RdLaneSelector extends AbstractSelector {
 					jsonObject = new JSONObject();
 					STRUCT struct = (STRUCT) resultSet.getObject("geometry");
 					jsonObject.put("linkPid", resultSet.getInt("link_pid"));
+					jsonObject.put("direct", resultSet.getInt("direct"));
+					jsonObject.put("length", resultSet.getInt("length"));
 					jsonObject.put("geometry", Geojson.spatial2Geojson(struct));
 					jsonObject.put("sNodePid", resultSet.getInt("s_node_pid"));
 					jsonObject.put("eNodePid", resultSet.getInt("e_node_pid"));

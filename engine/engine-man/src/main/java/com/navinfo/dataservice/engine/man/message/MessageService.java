@@ -92,13 +92,14 @@ public class MessageService {
 		try {
 			conn = DBConnector.getInstance().getManConnection();
 			
+			/*
 			int msgId = MessageOperation.getMessageId(conn);
 			
 			message.setMsgId(msgId);
-			
 			if(message.getMsgStatus()== null){
 				message.setMsgStatus(0);
 			}
+			*/
 			//推送消息
 			if(1 == push){
 				UserDeviceService userDeviceService=new UserDeviceService();
@@ -107,7 +108,7 @@ public class MessageService {
 			}
 			// 插入message
 			else{
-				message.setMsgId(MessageOperation.getMessageId(conn));
+				//message.setMsgId(MessageOperation.getMessageId(conn));
 				MessageOperation.insertMessage(conn, message);
 			}
 
@@ -115,7 +116,7 @@ public class MessageService {
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
-			throw new ServiceException("查询明细失败，原因为:" + e.getMessage(), e);
+			throw new ServiceException("插入消息失败，原因为:" + e.getMessage(), e);
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}

@@ -23,6 +23,8 @@ import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryCollection;
+import com.vividsolutions.jts.geom.LineString;
 
 import net.sf.json.JSONObject;
 
@@ -89,12 +91,31 @@ public class Operation implements IOperation {
 			maps.put(g.getCoordinates()[g.getCoordinates().length - 1], this.command.getUpdateLink().geteNodePid());
 			while (it.hasNext()) {
 				String meshIdStr = it.next();
-				Geometry geomInter = GeoTranslator.transform(MeshUtils.linkInterMeshPolygon(
-						GeoTranslator.geojson2Jts(command.getLinkGeom()), GeoTranslator.transform(MeshUtils.mesh2Jts(meshIdStr),1,5)), 1, 5);
-				List<RdLink> rdLinkds = RdLinkOperateUtils.getCreateRdLinksWithMesh(geomInter, maps, result,this.command.getUpdateLink());
-				links.addAll(rdLinkds);
+				Geometry geomInter = MeshUtils.linkInterMeshPolygon(
+						GeoTranslator.geojson2Jts(command.getLinkGeom()), GeoTranslator.transform(MeshUtils.mesh2Jts(meshIdStr),1,5));
+				if(geomInter instanceof GeometryCollection)
+				{
+					int geoNum = geomInter.getNumGeometries();
+					for (int i = 0; i < geoNum; i++) {
+						Geometry subGeo = geomInter.getGeometryN(i);
+						if (subGeo instanceof LineString) {
+							subGeo = GeoTranslator.geojson2Jts(GeoTranslator.jts2Geojson(subGeo), 1, 5);
 
-				for (RdLink link : rdLinkds) {
+							List<RdLink> rdLinkds = RdLinkOperateUtils.getCreateRdLinksWithMesh(geomInter, maps, result,this.command.getUpdateLink());
+							links.addAll(rdLinkds);
+						}
+					}
+				}
+				else
+				{
+					geomInter = GeoTranslator.geojson2Jts(GeoTranslator.jts2Geojson(geomInter), 1, 5);
+
+					List<RdLink> rdLinkds = RdLinkOperateUtils.getCreateRdLinksWithMesh(geomInter, maps, result,this.command.getUpdateLink());
+					
+					links.addAll(rdLinkds);
+				}
+
+				for (RdLink link : links) {
 					// 设置Link的urban属性
 					UrbanBatchUtils.updateUrban(link, null, conn, result);
 					// 设置link的区划号码

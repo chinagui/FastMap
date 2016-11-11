@@ -39,8 +39,6 @@ public class RdLink implements IObj {
 
 	private int laneRight;
 
-	private int multiDigitized;
-
 	private int functionClass = 5;
 
 	private int appInfo = 1;
@@ -48,6 +46,8 @@ public class RdLink implements IObj {
 	private int tollInfo = 2;
 
 	private int routeAdopt = 2;
+	
+	private int multiDigitized =0;
 
 	private int developState;
 
@@ -92,6 +92,39 @@ public class RdLink implements IObj {
 	private int diciType;
 
 	private int walkFlag;
+	private int adasMemo;
+
+	public int getAdasMemo() {
+		return adasMemo;
+	}
+
+	public void setAdasMemo(int adasMemo) {
+		this.adasMemo = adasMemo;
+	}
+
+	public int getFeeStd() {
+		return feeStd;
+	}
+
+	public void setFeeStd(int feeStd) {
+		this.feeStd = feeStd;
+	}
+
+	public int getFeeFlag() {
+		return feeFlag;
+	}
+
+	public void setFeeFlag(int feeFlag) {
+		this.feeFlag = feeFlag;
+	}
+
+	public int getSystemId() {
+		return systemId;
+	}
+
+	public void setSystemId(int systemId) {
+		this.systemId = systemId;
+	}
 
 	private String difGroupid;
 
@@ -102,7 +135,10 @@ public class RdLink implements IObj {
 	private int editFlag = 1;
 
 	private int truckFlag;
-
+	
+	private int feeStd;
+	private int feeFlag;
+	private int systemId;
 	private int originLinkPid;
 
 	private int centerDivider;

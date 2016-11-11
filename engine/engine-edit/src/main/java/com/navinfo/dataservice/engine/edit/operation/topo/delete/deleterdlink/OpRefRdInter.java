@@ -4,6 +4,8 @@
 package com.navinfo.dataservice.engine.edit.operation.topo.delete.deleterdlink;
 
 import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
@@ -22,11 +24,13 @@ public class OpRefRdInter {
 		this.conn = conn;
 	}
 
-	public String run(Result result, RdLink link) throws Exception {
+	public String run(Result result, RdLink link,List<Integer> nodePids) throws Exception {
 
 		com.navinfo.dataservice.engine.edit.operation.obj.rdinter.delete.Operation rdinterOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdinter.delete.Operation(
 				this.conn);
-		rdinterOperation.deleteByLink(link, result);
+		List<Integer> linkPidList = new ArrayList<>();
+		linkPidList.add(link.getPid());
+		rdinterOperation.deleteByLink(linkPidList, nodePids,result);
 
 		return null;
 	}

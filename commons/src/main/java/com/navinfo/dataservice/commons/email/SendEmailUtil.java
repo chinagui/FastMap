@@ -19,7 +19,7 @@ import com.navinfo.dataservice.commons.log.LoggerRepos;
  * 功能描述:邮件发送公共方法
  */
 public class SendEmailUtil {
-	private Logger log = LoggerRepos.getLogger(this.getClass());
+	private  Logger log = LoggerRepos.getLogger(this.getClass());
 	
 	/**
 	 * @Title: sendEmail
@@ -70,7 +70,8 @@ public class SendEmailUtil {
 			transport.close();
 			System.out.println("send success!");
 		} catch (AddressException e) {
-			// TODO Auto-generated catch block
+			System.out.println("send fail!");
+			//log.error("邮件发送失败:"+e.getMessage(), e);
 			e.printStackTrace();
 		} catch (MessagingException e) {
 			e.printStackTrace();

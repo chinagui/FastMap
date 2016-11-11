@@ -40,14 +40,21 @@ public class Process extends AbstractProcess<Command> implements IProcess {
 			RdCrossNodeSelector crossNodeSelector = new RdCrossNodeSelector(this.getConn());
 
 			IRow crossNode = crossNodeSelector.loadByNodeId(trafficsignalList.get(0).getNodePid(), true);
-
-			RdCrossSelector crossSelector = new RdCrossSelector(this.getConn());
-
-			RdCross cross = (RdCross) crossSelector.loadById(crossNode.parentPKValue(), true);
 			
-			if(cross.getSignal() != 0)
+			if(crossNode != null)
 			{
-				this.getCommand().setRdCross(cross);
+				RdCrossSelector crossSelector = new RdCrossSelector(this.getConn());
+
+				RdCross cross = (RdCross) crossSelector.loadById(crossNode.parentPKValue(), true);
+				
+				if(cross.getSignal() != 0)
+				{
+					this.getCommand().setRdCross(cross);
+				}
+			}
+			else
+			{
+				throw new Exception("红绿灯点位非路口点位");
 			}
 		}
 

@@ -89,9 +89,11 @@ public class PoiController extends BaseController{
 
 			int jobId = json.getInt("jobId");
 			
-			String filePath = unzipByJobId(jobId);
+			Long userId = tokenObj.getUserId();
+			
+			String filePath = unzipByJobId(jobId,userId);
 
-			UploadOperation operation = new UploadOperation();
+			UploadOperation operation = new UploadOperation(userId);
 			JSONObject retArray = operation.importPoi(filePath + "/poi.txt");
 			Date endTime = new Date();
 			logger.info("poi import total time:"+ (endTime.getTime() - startTime.getTime())+"ms");
@@ -180,9 +182,9 @@ public class PoiController extends BaseController{
 //	
 	
 	
-	private String unzipByJobId(int jobId) throws Exception{
+	private String unzipByJobId(int jobId,Long userId) throws Exception{
 		
-		UploadOperation operation = new UploadOperation();
+		UploadOperation operation = new UploadOperation(userId);
 		
 		JSONObject uploadInfo = operation.getUploadInfo(jobId);
 

@@ -8,6 +8,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +18,7 @@ import org.apache.commons.collections.CollectionUtils;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
@@ -48,7 +50,12 @@ public class RdObjectSearch implements ISearch {
 	public IObj searchDataByPid(int pid) throws Exception {
 		return (IObj) new AbstractSelector(RdObject.class, conn).loadById(pid, false);
 	}
-
+	
+	@Override
+	public IObj searchDataByPids(List<Integer> pidList) throws Exception {
+		return null;
+	}
+	
 	@Override
 	public List<SearchSnapshot> searchDataBySpatial(String wkt) throws Exception {
 		return null;
@@ -72,6 +79,8 @@ public class RdObjectSearch implements ISearch {
 		ResultSet resultSet = null;
 
 		WKTReader wktReader = new WKTReader();
+		
+		System.out.println("1："+DateUtils.dateToString(new Date()));
 
 		try {
 			pstmt = conn.prepareStatement(sql);
@@ -83,7 +92,11 @@ public class RdObjectSearch implements ISearch {
 
 			pstmt.setString(2, wkt);
 			
+			System.out.println(wkt);
+			
 			resultSet = pstmt.executeQuery();
+			
+			System.out.println("2："+DateUtils.dateToString(new Date()));
 
 			double px = MercatorProjection.tileXToPixelX(x);
 
@@ -202,7 +215,9 @@ public class RdObjectSearch implements ISearch {
 					}
 				}
 			}
-
+			
+			System.out.println("3："+DateUtils.dateToString(new Date()));
+			
 			for (Map.Entry<Integer, Map<String, List<JSONObject>>> entry : values.entrySet()) {
 				int pid = entry.getKey();
 
@@ -239,8 +254,12 @@ public class RdObjectSearch implements ISearch {
 				JSONObject jsonM = new JSONObject();
 
 				Coordinate[] coordinates = getLineFromMuitPoint(gLinkArray,gNodeArray);
+				
+				System.out.println("4："+DateUtils.dateToString(new Date()));
 
 				Geometry metry = JGeometryUtil.getPolygonFromPoint(coordinates);
+				
+				System.out.println("5："+DateUtils.dateToString(new Date()));
 				
 				Geometry boundary = metry.getBoundary();
 				
@@ -272,6 +291,8 @@ public class RdObjectSearch implements ISearch {
 
 				snapshot.setM(jsonM);
 
+				System.out.println("6："+DateUtils.dateToString(new Date()));
+				
 				list.add(snapshot);
 
 			}

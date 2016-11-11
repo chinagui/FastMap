@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.control.row.batch;
+package com.navinfo.dataservice.engine.batch;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -8,11 +8,11 @@ import java.util.List;
 import org.apache.commons.dbutils.DbUtils;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.control.row.batch.util.IBatch;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiGasstation;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
+import com.navinfo.dataservice.engine.batch.util.IBatch;
 import com.navinfo.dataservice.engine.edit.service.EditApiImpl;
 import com.vividsolutions.jts.geom.Geometry;
 

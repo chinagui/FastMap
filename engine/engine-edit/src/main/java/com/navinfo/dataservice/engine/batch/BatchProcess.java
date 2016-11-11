@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.control.row.batch;
+package com.navinfo.dataservice.engine.batch;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -10,17 +10,22 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
-import com.navinfo.dataservice.control.row.batch.util.IBatch;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
+import com.navinfo.dataservice.engine.batch.util.IBatch;
 import com.navinfo.dataservice.engine.edit.service.EditApiImpl;
 
 import net.sf.json.JSONObject;
 
 public class BatchProcess {
 	private static final Logger logger = Logger.getLogger(BatchProcess.class);
-	public BatchProcess() {
-		
+	
+	private String batchType;
+	private String batchStep;
+	
+	public BatchProcess(String batchType,String batchStep) {
+		this.batchType = batchType;
+		this.batchStep = batchStep;
 	}
 	
 	/**
@@ -58,6 +63,7 @@ public class BatchProcess {
 				poiObj.put("isLock", false);
 				
 				editApiImpl.runPoi(poiObj);
+				conn.commit();
 			}
 			
 		} catch (Exception e) {
@@ -79,7 +85,7 @@ public class BatchProcess {
 		
 		Connection conn = null;
 		try {
-			String sql = "select process_path from batch_rule where kind='row' and steps='save' and rule_status=1";
+			String sql = "select process_path from batch_rule where kind='"+batchType+"' and steps='"+batchStep+"' and rule_status=1";
 			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
 			pstmt = conn.prepareStatement(sql);
 			resultSet = pstmt.executeQuery();

@@ -18,4 +18,11 @@ public interface EditApi {
 	 * @throws Exception
 	 */
 	public JSONObject run(JSONObject dataObj) throws Exception; 
+	
+	/**
+	 * 采集端批处理
+	 * @param dataObj
+	 * @throws Exception
+	 */
+	public void runBatch(JSONObject dataObj) throws Exception;
 }

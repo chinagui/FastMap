@@ -15,8 +15,10 @@ public class SendEmail {
 		// 设置服务器
 		private static  String VALUE_SMTP = "smtp.163.com"; //这里用的163 邮箱的,也可以换别的邮箱的
 		// 发件人用户名、密码
-		private static String SEND_EMAil = "xxxxxxx@163.com";//必填项 
-		private static String SEND_PWD = "*****";//必填项
+		//private static String SEND_EMAil = "xxxxxxx@163.com";//必填项 
+		//private static String SEND_PWD = "*****";//必填项
+		private static String SEND_EMAil = "swtxtest@163.com";//必填项 
+		private static String SEND_PWD = "swtx123456";//必填项
 	
 	/**
 	 * @Title: sendEmail

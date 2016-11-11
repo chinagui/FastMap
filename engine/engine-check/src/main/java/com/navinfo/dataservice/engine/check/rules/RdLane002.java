@@ -28,7 +28,7 @@ public class RdLane002 extends baseRule {
 				RdLaneConnexity laneObj=(RdLaneConnexity) obj;
 				Map<String, Object> changedFields=laneObj.changedFields();
 				//新增执行该检查
-				if(changedFields!=null){continue;}
+				if(changedFields!=null && !changedFields.isEmpty()){continue;}
 				for(IRow topo:laneObj.getTopos()){
 					RdLaneTopology topoObj=(RdLaneTopology) topo;
 					if(topoObj.getRelationshipType()==2){

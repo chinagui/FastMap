@@ -20,7 +20,7 @@ public class TestAdFace extends InitApplication {
 
 	@Test
 	public void create() {
-		String paramter = "{\"command\":\"CREATE\",\"type\":\"ADFACE\",\"dbId\":42,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.47447049617767,40.01370427880928],[116.47439539432526,40.013544044868844],[116.47468239068984,40.01353582773357],[116.47466629743576,40.01368989885563],[116.47447049617767,40.01370427880928]]}}}";
+		String paramter = "{\"command\":\"CREATE\",\"type\":\"ADADMIN\",\"dbId\":17,\"data\":{\"longitude\":116.42069220542908,\"latitude\":40.04956256234405,\"linkPid\":54013167}}";
 		TestUtil.run(paramter);
 	}
 

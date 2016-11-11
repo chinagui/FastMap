@@ -24,6 +24,8 @@ import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryCollection;
+import com.vividsolutions.jts.geom.LineString;
 
 import net.sf.json.JSONObject;
 
@@ -96,12 +98,27 @@ public class Operation implements IOperation {
 					this.command.getUpdateLink().geteNodePid());
 			while (it.hasNext()) {
 				String meshIdStr = it.next();
-				Geometry geomInter = GeoTranslator.transform(
-						MeshUtils.linkInterMeshPolygon(GeoTranslator
-								.geojson2Jts(command.getLinkGeom()), GeoTranslator.transform(MeshUtils.mesh2Jts(meshIdStr),1,5)), 1, 5);
-				links.addAll(LuLinkOperateUtils.getCreateLuLinksWithMesh(
-						geomInter, maps, result,this.command.getUpdateLink()));
+				Geometry geomInter = MeshUtils.linkInterMeshPolygon(GeoTranslator
+						.geojson2Jts(command.getLinkGeom()), GeoTranslator.transform(MeshUtils.mesh2Jts(meshIdStr),1,5));
+				
+				if(geomInter instanceof GeometryCollection)
+				{
+					int geoNum = geomInter.getNumGeometries();
+					for (int i = 0; i < geoNum; i++) {
+						Geometry subGeo = geomInter.getGeometryN(i);
+						if (subGeo instanceof LineString) {
+							subGeo = GeoTranslator.geojson2Jts(GeoTranslator.jts2Geojson(subGeo), 1, 5);
 
+							links.addAll(LuLinkOperateUtils.getCreateLuLinksWithMesh(subGeo, maps, result, this.command.getUpdateLink()));
+						}
+					}
+				}
+				else
+				{
+					geomInter = GeoTranslator.geojson2Jts(GeoTranslator.jts2Geojson(geomInter), 1, 5);
+
+					links.addAll(LuLinkOperateUtils.getCreateLuLinksWithMesh(geomInter, maps, result,this.command.getUpdateLink()));
+				}
 			}
 			result.insertObject(this.command.getUpdateLink(), ObjStatus.DELETE,
 					this.command.getUpdateLink().getPid());
@@ -146,7 +163,7 @@ public class Operation implements IOperation {
 							result);
 					List<IObj> objs = new ArrayList<IObj>();
 					objs.addAll(links);
-					opFace.createFaceByLuLink(objs);
+					opFace.createFaceByLuLink(objs, face);
 					result.insertObject(face, ObjStatus.DELETE, face.getPid());
 				} else {
 					// 如果不跨图幅只需要维护面的行政几何

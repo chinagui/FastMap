@@ -101,6 +101,14 @@ public class RuleExecuter {
 			{variablevalue=VariablesFactory.getRdSpeedlimitPid(data);break;}
 			case RDBRANCHDETAIL_PID:
 			{variablevalue=VariablesFactory.getRdBranchDetailPid(data);break;}
+			case RDSE_PID:
+			{variablevalue=VariablesFactory.getRdSePid(data);break;}
+			case RDSE_NODEPID:
+			{variablevalue=VariablesFactory.getRdSeNodePid(data);break;}
+			case RDSE_INLINKPID:
+			{variablevalue=VariablesFactory.getRdSeInLinkPid(data);break;}
+			case RDSE_OUTLINKPID:
+			{variablevalue=VariablesFactory.getRdSeOutLinkPid(data);break;}
 		}
 		if(!variablesValueMap.containsKey(variable)){
 			variablesValueMap.put(variable, new HashSet<String>());}

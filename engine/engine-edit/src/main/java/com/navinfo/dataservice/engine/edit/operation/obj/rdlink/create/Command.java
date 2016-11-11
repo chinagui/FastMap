@@ -9,8 +9,11 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
+import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
+import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeSelector;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -31,8 +34,8 @@ public class Command extends AbstractCommand {
 	private int laneNum = 2;
 
 	private JSONArray catchLinks;
-	
-	private List<Map<String,Object>> mapListJson;
+
+	private List<Map<String, Object>> mapListJson;
 
 	public int getKind() {
 		return kind;
@@ -93,6 +96,7 @@ public class Command extends AbstractCommand {
 		return catchLinks;
 	}
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public Command(JSONObject json, String requester) throws Exception {
 		this.requester = requester;
 
@@ -105,7 +109,8 @@ public class Command extends AbstractCommand {
 		this.sNodePid = data.getInt("sNodePid");
 
 		try {
-			this.geometry = GeoTranslator.geojson2Jts(data.getJSONObject("geometry"),1, 5);
+			this.geometry = GeoTranslator.geojson2Jts(
+					data.getJSONObject("geometry"), 1, 5);
 		} catch (Exception e) {
 			String msg = e.getLocalizedMessage();
 
@@ -127,32 +132,14 @@ public class Command extends AbstractCommand {
 		}
 
 		if (data.containsKey("catchLinks")) {
-			
-			JSONArray jsonArray = JSONArray.fromObject(data.getJSONArray("catchLinks"));  
-			  
-	         mapListJson = (List)jsonArray;
-			
-			this.catchLinks = new JSONArray();
 
-			JSONArray array = data.getJSONArray("catchLinks");
+			JSONArray jsonArray = JSONArray.fromObject(data
+					.getJSONArray("catchLinks"));
 
-			for (int i = 0; i < array.size(); i++) {
-				JSONObject jo = array.getJSONObject(i);
+			mapListJson = (List) jsonArray;
 
-				JSONObject geoPoint = new JSONObject();
+			this.catchLinks = jsonArray;
 
-				geoPoint.put("type", "Point");
-
-				geoPoint.put("coordinates", new double[] { jo.getDouble("lon"), jo.getDouble("lat") });
-
-				Geometry geometry = GeoTranslator.geojson2Jts(geoPoint, 1, 5);
-
-				jo.put("lon", geometry.getCoordinate().x);
-
-				jo.put("lat", geometry.getCoordinate().y);
-
-				this.catchLinks.add(jo);
-			}
 		} else {
 			this.catchLinks = new JSONArray();
 		}
@@ -165,4 +152,38 @@ public class Command extends AbstractCommand {
 	public void setMapListJson(List<Map<String, Object>> mapListJson) {
 		this.mapListJson = mapListJson;
 	}
+
+	public static void main(String[] args) {
+		JSONObject json = new JSONObject();
+		JSONArray array = new JSONArray();
+		JSONObject jsonObject = new JSONObject();
+		JSONArray array2 = new JSONArray();
+		JSONObject jsonObject2 = new JSONObject();
+		jsonObject2.put("A", 1);
+		jsonObject2.put("B", 2);
+		array2.add(jsonObject2);
+		jsonObject.put("linkPid", array2);
+		array.add(jsonObject);
+		json.put("catchLinks", array);
+		System.out.println(json);
+
+		JSONArray catchLinks = new JSONArray();
+
+		JSONArray array1 = json.getJSONArray("catchLinks");
+
+		for (int i = 0; i < array1.size(); i++) {
+			JSONObject jo = array1.getJSONObject(i);
+			if (jo.containsKey("linkPid")) {
+				JSONArray linkArray = jo.getJSONArray("linkPid");
+				for (int j = 0; j < linkArray.size(); j++) {
+					JSONObject geoPoint = linkArray.getJSONObject(i);
+					geoPoint.put("A", 3);
+					geoPoint.put("B", 4);
+				}
+			}
+			catchLinks.add(jo);
+		}
+		System.out.println(catchLinks);
+	}
+
 }

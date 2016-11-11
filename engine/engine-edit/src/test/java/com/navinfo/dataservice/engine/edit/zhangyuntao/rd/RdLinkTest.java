@@ -71,12 +71,12 @@ public class RdLinkTest extends InitApplication {
     public void depart() {
         String parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"dbId\":17,\"distance\":\"13.4\",\"data\":{\"linkPids\":[575024,567326,567327,665041]}}";
         parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"dbId\":17,\"distance\":\"8.3\",\"data\":{\"linkPids\":[86366612,87757818,87757819,86366614,663904,663906,663908,677530,87758006,87758007,87729181]}}";
-        parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"dbId\":17,\"distance\":\"6.6\",\"data\":{\"linkPids\":[13527575,13527574,673881,673880,580902,583394,580934,580933,12634814,12634813,87757888]}}";
+        parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"dbId\":17,\"distance\":\"6.6\",\"data\":{\"linkPids\":[520000327,403000339]}}";
         TestUtil.run(parameter);
     }
 
     @Test
-    public void search(){
+    public void search() {
         String parameter = "http://192.168.4.188:8000/service/render/obj/getByTileWithGap?parameter={\"dbId\":17,\"gap\":10,\"types\":[\"LCLINK\"],\"z\":20,\"x\":863411,\"y\":397214}";
         try {
             TestSearch.testSearchGap(parameter);
@@ -86,10 +86,16 @@ public class RdLinkTest extends InitApplication {
     }
 
     @Test
-    public void updownDepart(){
+    public void updownDepart() {
         String parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"dbId\":17,\"distance\":\"6.6\",\"data\":{\"linkPids\":[209000217]}}";
         parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"dbId\":17,\"distance\":\"30.4\",\"data\":{\"linkPids\":[209000217]}}";
         parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"dbId\":17,\"distance\":\"13.4\",\"data\":{\"linkPids\":[323048,323046,319664,319663,319467,319466,319465]}}";
+        TestUtil.run(parameter);
+    }
+
+    @Test
+    public void move() {
+        String parameter = "{\"command\":\"MOVE\",\"dbId\":17,\"objId\":304000034,\"data\":{\"longitude\":116.37564,\"latitude\":38.51548},\"type\":\"ZONENODE\"}";
         TestUtil.run(parameter);
     }
 }

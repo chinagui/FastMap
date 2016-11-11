@@ -8,7 +8,6 @@ import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +22,8 @@ import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
+import com.navinfo.dataservice.dao.glm.search.batch.ixpoi.IxChargingplotHandler;
+import com.navinfo.dataservice.dao.glm.search.batch.ixpoi.IxChargingstationHandler;
 import com.navinfo.dataservice.dao.glm.search.batch.ixpoi.IxGasstationHandler;
 import com.navinfo.dataservice.dao.glm.search.batch.ixpoi.IxHotelHandler;
 import com.navinfo.dataservice.dao.glm.search.batch.ixpoi.IxParkingHandler;
@@ -253,7 +254,7 @@ public class PoiGridIncreSearch {
 			while(resultSet.next()){
 				IxPoi ixPoi = new IxPoi();
 				fillMainTable(ixPoi,resultSet);
-				
+				ixPoi.setuRecord(status);
 				Long pid = (long) ixPoi.getPid();
 				poisMap.put(pid, ixPoi);
 			}
@@ -435,6 +436,26 @@ public class PoiGridIncreSearch {
 			pois.get(pid).setGasstations(gasstation.get(pid));
 		}
 		
+		logger.info("设置子表IX_POI_CHARGINGSTATION");
+		
+		 sql = "select * from ix_poi_chargingstation WHERE u_record !=2 and poi_pid in (select to_number(column_value) from table(clob_to_table(?)))";
+		
+		 Map<Long,List<IRow>> chargingstation = run.query(conn, sql, new IxChargingstationHandler(),pidsClob);
+
+		for(Long pid:chargingstation.keySet()){
+			pois.get(pid).setChargingstations(chargingstation.get(pid));
+		}
+		
+		logger.info("设置子表IX_POI_CHARGINGPLOT");
+		
+		 sql = "select * from ix_poi_chargingplot WHERE u_record !=2 and poi_pid in (select to_number(column_value) from table(clob_to_table(?)))";
+		
+		 Map<Long,List<IRow>> chargingplot = run.query(conn, sql, new IxChargingplotHandler(),pidsClob);
+
+		for(Long pid:chargingplot.keySet()){
+			pois.get(pid).setChargingplots(chargingplot.get(pid));
+		}
+			
 	}
 	
 }

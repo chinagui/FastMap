@@ -6,8 +6,10 @@ import java.sql.PreparedStatement;
 import org.springframework.stereotype.Service;
 
 import com.navinfo.dataservice.api.edit.iface.EditApi;
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.bizcommons.service.PidService;
 import com.navinfo.dataservice.dao.log.LogReader;
+import com.navinfo.dataservice.engine.batch.BatchProcess;
 import com.navinfo.dataservice.engine.edit.operation.Transaction;
 import com.navinfo.navicommons.database.sql.DBUtils;
 
@@ -126,5 +128,20 @@ public class EditApiImpl implements EditApi {
 	@Override
 	public long applyPid(String tableName, int count) throws Exception {
 		return PidService.getInstance().applyPid(tableName, count);
+	}
+
+	@Override
+	public void runBatch(JSONObject dataObj) throws Exception {
+		BatchProcess batchProcess = new BatchProcess("row","save");
+		Connection subConn = null;
+		int dbId = dataObj.getInt("dbId");
+		try {
+			subConn = DBConnector.getInstance().getConnectionById(dbId);
+			batchProcess.execute(dataObj, subConn, new EditApiImpl(subConn));
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DBUtils.closeConnection(subConn);
+		}
 	}
 }

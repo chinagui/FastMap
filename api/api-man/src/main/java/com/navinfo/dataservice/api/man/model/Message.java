@@ -25,6 +25,8 @@ public class Message {
 	private Timestamp pushTime;
 	private Integer msgStatus;
 	private String pushUser;
+	private String msgParam;
+	
 	
 	
 	public Message(Integer msgId
@@ -139,6 +141,12 @@ public class Message {
 	 */
 	public void setPushUser(String pushUser) {
 		this.pushUser = pushUser;
+	}
+	public String getMsgParam() {
+		return msgParam;
+	}
+	public void setMsgParam(String msgParam) {
+		this.msgParam = msgParam;
 	}
 	
 	

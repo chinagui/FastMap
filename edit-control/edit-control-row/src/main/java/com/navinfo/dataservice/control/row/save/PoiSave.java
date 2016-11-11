@@ -10,7 +10,6 @@ import org.apache.log4j.Logger;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.exception.DataNotChangeException;
 import com.navinfo.dataservice.commons.util.JsonUtils;
-import com.navinfo.dataservice.control.row.batch.BatchProcess;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
@@ -19,6 +18,7 @@ import com.navinfo.dataservice.dao.glm.model.poi.index.IxSamepoi;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxSamepoiPart;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiParentSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxSamepoiSelector;
+import com.navinfo.dataservice.engine.batch.BatchProcess;
 import com.navinfo.dataservice.engine.edit.service.EditApiImpl;
 import com.navinfo.navicommons.database.sql.DBUtils;
 
@@ -126,7 +126,7 @@ public class PoiSave {
 
             if (operType != OperType.DELETE && ObjType.IXSAMEPOI != objType && ObjType.IXPOIPARENT != objType) {
                 json.put("objId", pid);
-                BatchProcess batchProcess = new BatchProcess();
+                BatchProcess batchProcess = new BatchProcess("row","save");
                 batchProcess.execute(json, conn, editApiImpl);
             }
             upatePoiStatus(sb.toString(), conn, true);

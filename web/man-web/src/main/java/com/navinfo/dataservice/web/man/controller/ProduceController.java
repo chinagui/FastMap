@@ -40,10 +40,15 @@ import com.navinfo.navicommons.database.QueryRunner;
 public class ProduceController extends BaseController {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
 
+
 	/**
-	 * 日出品管理--列表
+	 * @Title: list
+	 * @Description: (修改)日出品管理--列表(第七迭代)
 	 * @param request
-	 * @return
+	 * @return  ModelAndView
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2016年11月3日 下午2:25:47 
 	 */
 	@RequestMapping(value = "/produce/list")
 	public ModelAndView list(HttpServletRequest request){
@@ -99,6 +104,15 @@ public class ProduceController extends BaseController {
 	 * 判断类型，如果是POI，将grid范围内的POI数据刷到出品库；否则将grid范围内的全部数据刷到出品库。再调用出品转换脚本生成出品包。
 	 * @param request
 	 * @return
+	 */
+	/**
+	 * @Title: generateDaily
+	 * @Description: (修改)(第七迭代)
+	 * @param request
+	 * @return  ModelAndView
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2016年11月3日 下午2:01:16 
 	 */
 	@RequestMapping(value = "/produce/generateDaily")
 	public ModelAndView generateDaily(HttpServletRequest request){

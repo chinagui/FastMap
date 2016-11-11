@@ -20,6 +20,7 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
+import com.navinfo.dataservice.dao.glm.search.specialMap.SpecialMapUtils;
 import com.navinfo.dataservice.engine.edit.search.SearchProcess;
 import com.navinfo.dataservice.engine.fcc.tile.TileSelector;
 import com.navinfo.dataservice.engine.fcc.tips.TipsSelector;
@@ -119,6 +120,65 @@ public class RenderController extends BaseController {
 
 			response.getWriter().println(
 					ResponseUtils.assembleRegularResult(data));
+		} catch (Exception e) {
+
+			logger.error(e.getMessage(), e);
+
+			response.getWriter().println(
+					ResponseUtils.assembleFailResult(e.getMessage()));
+
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+	
+	
+	@RequestMapping(value = "/specia/getByTileWithGap")
+	public void getSpeciaByTile(HttpServletRequest request,
+			HttpServletResponse response) throws ServletException, IOException {
+
+		String parameter = request.getParameter("parameter");
+
+		Connection conn = null;
+
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			String type = jsonReq.getString("type");
+
+			int dbId = jsonReq.getInt("dbId");
+
+			int x = jsonReq.getInt("x");
+
+			int y = jsonReq.getInt("y");
+
+			int z = jsonReq.getInt("z");
+
+			int gap = 0;
+
+			if (jsonReq.containsKey("gap")) {
+				gap = jsonReq.getInt("gap");
+			}
+
+			JSONObject data = null;
+
+			if (z > 9) {
+
+				conn = DBConnector.getInstance().getConnectionById(dbId);
+
+				SpecialMapUtils specialMap = new SpecialMapUtils(conn);
+
+				data = specialMap.searchDataByTileWithGap(type, x, y, z, gap);
+
+				response.getWriter().println(
+						ResponseUtils.assembleRegularResult(data));
+			}
 		} catch (Exception e) {
 
 			logger.error(e.getMessage(), e);

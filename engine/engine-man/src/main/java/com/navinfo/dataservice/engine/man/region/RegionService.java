@@ -44,8 +44,38 @@ public class RegionService {
 	}
 
 	public List<Region> list() throws Exception{
-		return list(null);
+		Connection conn = null;
+		try {
+			QueryRunner run = new QueryRunner();
+			conn = DBConnector.getInstance().getManConnection();
+
+			String selectSql = "select * from Region where 1=1 ";
+			
+			ResultSetHandler<List<Region>> rsHandler = new ResultSetHandler<List<Region>>() {
+				public List<Region> handle(ResultSet rs) throws SQLException {
+					List<Region> list = new ArrayList<Region>();
+					while (rs.next()) {
+						Region region = new Region();
+						region.setRegionId(rs.getInt("REGION_ID"));
+						region.setRegionName(rs.getString("REGION_NAME"));
+						region.setDailyDbId(rs.getInt("DAILY_DB_ID"));
+						region.setMonthlyDbId(rs.getInt("MONTHLY_DB_ID"));
+						list.add(region);
+					}
+					return list;
+				}
+
+			};
+			return run.query(conn, selectSql, rsHandler);
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询列表失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
 	}
+	
 	public List<Region> list(Region bean) throws ServiceException {
 		Connection conn = null;
 		try {

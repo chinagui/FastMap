@@ -1,10 +1,12 @@
 package com.navinfo.dataservice.dao.glm.model.rd.mileagepile;
 
+import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.*;
 import com.vividsolutions.jts.geom.Geometry;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import net.sf.json.JsonConfig;
 import org.apache.commons.collections.map.HashedMap;
 
 import java.lang.reflect.Field;
@@ -187,7 +189,9 @@ public class RdMileagepile implements IObj {
 
     @Override
     public JSONObject Serialize(ObjLevel objLevel) throws Exception {
-        return JSONObject.fromObject(this, JsonUtils.getStrConfig());
+        JsonConfig jsonConfig = Geojson.geoJsonConfig(0.00001, 5);
+        JSONObject json = JSONObject.fromObject(this, jsonConfig);
+        return json;
     }
 
     @Override

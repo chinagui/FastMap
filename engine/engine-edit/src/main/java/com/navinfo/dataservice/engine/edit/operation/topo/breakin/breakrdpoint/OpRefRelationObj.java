@@ -22,9 +22,7 @@ public class OpRefRelationObj {
 
 		List<IObj> newLinks = new ArrayList<IObj>();
 
-		newLinks.add(command.getLink1());
-
-		newLinks.add(command.getLink2());
+		newLinks.addAll(command.getNewLinks());
 
 		// 打断link维护同一线
 		com.navinfo.dataservice.engine.edit.operation.obj.rdsamelink.update.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdsamelink.update.Operation(

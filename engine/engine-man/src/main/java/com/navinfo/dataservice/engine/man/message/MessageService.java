@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 
 import com.navinfo.dataservice.api.man.model.Message;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
-import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.xinge.XingeUtil;
@@ -270,7 +269,7 @@ public class MessageService {
 				//精确搜索申请状态
 				sql.append(" AND A.APPLY_STATUS="+jo.get("applyStatus"));
 			}else{
-				sql.append(" AND A.APPLY_STATUS= IN (2,3,4) ");
+				sql.append(" AND A.APPLY_STATUS IN (2,3,4) ");
 			}
 			sql.append(" AND A.AUDITOR="+userId+" ORDER BY A.OPERATE_TIME");
 			String querySql = sql.toString();
@@ -302,13 +301,14 @@ public class MessageService {
 		try{
 			conn = DBConnector.getInstance().getManConnection();
 			queryRunner = new QueryRunner();
-			
+			//日志
+			log.info("业务申请创建:"+paraJson.toString());
 			//获取插入数据的id
 			String idSql = "SELECT APPLICATION_SEQ.NEXTVAL FROM DUAL";
 			Object[] idParams = {};
 			long applyId = queryRunner.queryForLong(conn, idSql, idParams);
 			//获取数据
-			String applytitle = paraJson.getString("applytitle");
+			String applytitle = paraJson.getString("applyTitle");
 			long applyType = paraJson.getLong("applyType");
 			long severity = paraJson.getLong("severity");
 			long auditRoleId = paraJson.getLong("auditRoleId");
@@ -360,7 +360,7 @@ public class MessageService {
 			queryRunner.update(conn, applySql, applyParams);
 			//保存数据到application_detail表
 			String applyDetailSql = "INSERT INTO APPLICATION_DETAIL (APPLY_ID, RELATE_OBJECT, RELATE_OBJECT_ID,"
-					+ " APPLY_CONTENT) VALUES (?,?,?,?,?);";
+					+ " APPLY_CONTENT) VALUES (?,?,?,?)";
 			Object[] applyDetailParams = {applyId,relateObject,relateObjectId,applyContent};
 			queryRunner.update(conn, applyDetailSql, applyDetailParams);
 			//保存数据到application_timeLine表
@@ -391,11 +391,12 @@ public class MessageService {
 		try{
 			conn = DBConnector.getInstance().getManConnection();
 			queryRunner = new QueryRunner();
-			
+			//日志
+			log.info("业务申请修改:"+paraJson.toString());
 			//获取修改数据的id
 			long applyId = paraJson.getLong("applyId");
 			//获取数据
-			String applytitle = paraJson.getString("applytitle");
+			String applytitle = paraJson.getString("applyTitle");
 			long applyType = paraJson.getLong("applyType");
 			long severity = paraJson.getLong("severity");
 			long auditRoleId = paraJson.getLong("auditRoleId");
@@ -576,7 +577,7 @@ public class MessageService {
 				}
 				total+=1;
 			}
-			return "批量修改消息状态："+total+"个成功,"+(applyIds.size()-total)+"个失败!";
+			return "批量修改消息删除状态："+total+"个成功,"+(applyIds.size()-total)+"个失败!";
 		}catch(Exception e){
 			log.error(e.getMessage(), e);
 			throw new ServiceException("编辑失败，原因为:"+e.getMessage(),e);
@@ -598,14 +599,15 @@ public class MessageService {
 		try{
 			conn = DBConnector.getInstance().getManConnection();
 			queryRunner = new QueryRunner();
-			
+			//日志
+			log.info("修改申请状态:"+paraJson.toString());
 			long applyId = paraJson.getLong("applyId");
 			long applyStatus = paraJson.getLong("applyStatus");
 			//编辑申请消息状态
+			String auditReason = null;
 			if(applyStatus == 4){
 				//审核不通过
 				//添加审核不通过原因
-				String auditReason = null;
 				if(paraJson.containsKey("auditReason")){
 					auditReason = paraJson.getString("auditReason");
 				}
@@ -615,7 +617,20 @@ public class MessageService {
 			}
 			//更改状态
 			this.updateStatus(applyId, applyStatus);
-			return "修改成功";
+			//保存数据到application_timeLine表
+			String content = null;
+			if(applyStatus == 2){
+				//提交
+				content = "提交审核";
+			}else if(applyStatus == 3){
+				//通过
+				content = "审核通过";
+			}else if(applyStatus == 4){
+				//不通过
+				content = "审核不通过,原因为:"+auditReason;
+			}
+			this.createApplyTimeLine(userId,applyId,content);
+			return "修改申请状态成功";
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -819,9 +834,9 @@ public class MessageService {
 					List<Map<String,Object>> list = new ArrayList<Map<String,Object>>();
 					while(rs.next()){
 						Map<String,Object> map = new HashMap<String,Object>();
-						map.put("operateTime",rs.getString("OPERATE_TIME"));
-						map.put("operatorName",rs.getLong("USER_REAL_NAME"));
-						map.put("content",rs.getLong("CONTENT"));
+						map.put("operateTime",rs.getTimestamp("OPERATE_TIME"));
+						map.put("operatorName",rs.getString("USER_REAL_NAME"));
+						map.put("content",rs.getString("CONTENT"));
 						list.add(map);
 					}
 					return list;

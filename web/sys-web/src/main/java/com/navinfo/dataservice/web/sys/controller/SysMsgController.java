@@ -171,7 +171,7 @@ public class SysMsgController extends BaseController {
 			List<String> titleList = SysMsgService.getInstance().getManMsgTitleList(userId);
 			return new ModelAndView("jsonView", success(titleList));
 		}catch(Exception e){
-			log.error("发送失败，原因："+e.getMessage(), e);
+			log.error("查询失败，原因："+e.getMessage(), e);
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}
@@ -210,7 +210,7 @@ public class SysMsgController extends BaseController {
 			Page page = SysMsgService.getInstance().getManMsgList(userId,pageNum,pageSize,condition);
 			return new ModelAndView("jsonView", success(page));
 		}catch(Exception e){
-			log.error("发送失败，原因："+e.getMessage(), e);
+			log.error("查询失败，原因："+e.getMessage(), e);
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}

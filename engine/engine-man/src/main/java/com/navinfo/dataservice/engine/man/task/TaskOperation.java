@@ -1743,7 +1743,8 @@ public class TaskOperation {
 					conditionSql=conditionSql+" AND MAN_LIST.GROUP_ID ="+conditionJson.getInt(key);}
 				if("planStatus".equals(key)){
 					conditionSql=conditionSql+" AND MAN_LIST.TASK_STATUS =1 AND MAN_LIST.PLAN_STATUS="+conditionJson.getInt(key);}
-				
+				if("taskName".equals(key)){
+					conditionSql=conditionSql+" AND MAN_LIST.TASK_NAME LIKE '%" +conditionJson.getString(key) + "%'";}
 				//1-6月编正常,月编异常,待分配,正常完成,逾期完成,提前完成
 				if("selectParam1".equals(key)){
 					JSONArray selectParam1=conditionJson.getJSONArray(key);
@@ -1833,7 +1834,8 @@ public class TaskOperation {
 				+ "             FROM SUBTASK STT"
 				+ "            WHERE STT.TASK_ID = TT.TASK_ID"
 				+ "              AND STT.STAGE = 2))"
-				+ "     AND TT.MONTH_EDIT_GROUP_ID = G.GROUP_ID(+)"
+//				+ "     AND TT.MONTH_EDIT_GROUP_ID = G.GROUP_ID(+)"
+				+ "     AND TT.MONTH_EDIT_GROUP_ID = G.GROUP_ID"
 				+ "     AND TT.TASK_ID = S.TASK_ID(+)"
 				+ "  UNION ALL"
 				//分配子任务，且子任务都是关闭状态==〉已完成
@@ -1856,7 +1858,8 @@ public class TaskOperation {
 				+ "     AND TT.STATUS = 1"
 				+ "     AND ST.STATUS IN (0, 1)"
 				+ "     AND ST.STAGE = 2"
-				+ "     AND TT.MONTH_EDIT_GROUP_ID = G.GROUP_ID(+)"
+//				+ "     AND TT.MONTH_EDIT_GROUP_ID = G.GROUP_ID(+)"
+				+ "     AND TT.MONTH_EDIT_GROUP_ID = G.GROUP_ID"
 				+ "     AND NOT EXISTS (SELECT 1"
 				+ "            FROM SUBTASK STT"
 				+ "           WHERE STT.TASK_ID = TT.TASK_ID"
@@ -1885,7 +1888,8 @@ public class TaskOperation {
 				+ "     AND TT.STATUS = 1"
 				+ "     AND ST.STATUS IN (0, 1)"
 				+ "     AND ST.STAGE = 2"
-				+ "     AND TT.MONTH_EDIT_GROUP_ID = G.GROUP_ID(+)"
+//				+ "     AND TT.MONTH_EDIT_GROUP_ID = G.GROUP_ID(+)"
+				+ "     AND TT.MONTH_EDIT_GROUP_ID = G.GROUP_ID"
 				+ "     AND EXISTS (SELECT 1"
 				+ "            FROM SUBTASK STT"
 				+ "           WHERE STT.TASK_ID = TT.TASK_ID"

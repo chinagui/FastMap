@@ -68,6 +68,10 @@
 		class="com.navinfo.dataservice.column.job.ColumnSubmitJob"
 	 	request="com.navinfo.dataservice.column.job.ColumnSubmitJobRequest"
 	/>
+	<type name="releaseFmIdbDailyPoiJob" 
+		class="com.navinfo.dataservice.impcore.release.day.poi.ReleaseFmIdbDailyPoiJob"
+	 	request="com.navinfo.dataservice.impcore.release.day.poi.ReleaseFmIdbDailyPoiJobRequest"
+	/>
 	
 	
 </mapping>

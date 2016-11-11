@@ -202,7 +202,7 @@ public class RdObjectTest extends InitApplication {
 		Connection conn;
 		try {
 			
-			String parameter = "{\"type\":\"RDOBJECTNAME\",\"dbId\":42,\"data\":{\"pid\":5011367}}";
+			String parameter = "{\"dbId\":17,\"type\":\"RDLANEVIA\",\"data\":{\"inLinkPid\":390487,\"nodePid\":282934,\"outLinkPid\":391661,\"type\":\"RDRESTRICTION\"}}";
 			
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 

@@ -18,7 +18,6 @@ import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.model.rd.variablespeed.RdVariableSpeed;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
-import com.navinfo.navicommons.geo.computation.GeometryUtils;
 
 import net.sf.json.JSONObject;
 import oracle.spatial.geometry.JGeometry;
@@ -45,7 +44,12 @@ public class RdVariableSpeedSearch implements ISearch {
 	public IObj searchDataByPid(int pid) throws Exception {
 		return (IObj) new AbstractSelector(RdVariableSpeed.class, conn).loadById(pid, false);
 	}
-
+	
+	@Override
+	public IObj searchDataByPids(List<Integer> pidList) throws Exception {
+		return null;
+	}
+	
 	@Override
 	public List<SearchSnapshot> searchDataBySpatial(String wkt) throws Exception {
 		return null;

@@ -231,6 +231,71 @@ public class EditController extends BaseController {
 			}
 		}
 	}
+	
+	@RequestMapping(value = "/getByPids")
+	public ModelAndView getByPids(HttpServletRequest request)
+			throws ServletException, IOException {
+
+		String parameter = request.getParameter("parameter");
+
+		Connection conn = null;
+
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			String objType = jsonReq.getString("type");
+
+			int dbId = jsonReq.getInt("dbId");
+
+			conn = DBConnector.getInstance().getConnectionById(dbId);
+
+			if (jsonReq.containsKey("detailId")) {
+				int detailId = jsonReq.getInt("detailId");
+				int branchType = jsonReq.getInt("branchType");
+				String rowId =jsonReq.getString("rowId");
+				RdBranchSelector selector = new RdBranchSelector(conn);
+				IRow row = selector.loadByDetailId(detailId,branchType,rowId, false);
+
+				if (row != null) {
+
+					return new ModelAndView("jsonView",
+							success(row.Serialize(ObjLevel.FULL)));
+
+				} else {
+					return new ModelAndView("jsonView", success());
+				}
+
+			} else {
+				int pid = jsonReq.getInt("pid");
+
+				SearchProcess p = new SearchProcess(conn);
+
+				IObj obj = p.searchDataByPid(ObjType.valueOf(objType), pid);
+
+				if (obj != null) {
+
+					return new ModelAndView("jsonView",
+							success(obj.Serialize(ObjLevel.FULL)));
+
+				} else {
+					return new ModelAndView("jsonView", success());
+				}
+			}
+		} catch (Exception e) {
+
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
 
 	@RequestMapping(value = "/getBySpatial")
 	public ModelAndView getBySpatial(HttpServletRequest request)

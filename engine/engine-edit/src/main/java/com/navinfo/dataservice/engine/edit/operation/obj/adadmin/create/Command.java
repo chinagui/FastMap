@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.adadmin.create;
 
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.dao.glm.iface.ICommand;
@@ -34,6 +35,8 @@ public class Command extends AbstractCommand implements ICommand {
 	 */
 	private double latitude;
 
+	private RdLink link;
+
 	public Integer getLinkPid() {
 		return linkPid;
 	}
@@ -56,6 +59,14 @@ public class Command extends AbstractCommand implements ICommand {
 
 	public void setLatitude(double latitude) {
 		this.latitude = latitude;
+	}
+
+	public RdLink getLink() {
+		return link;
+	}
+
+	public void setLink(RdLink link) {
+		this.link = link;
 	}
 
 	@Override

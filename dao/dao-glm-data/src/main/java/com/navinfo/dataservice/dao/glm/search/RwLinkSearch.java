@@ -28,7 +28,12 @@ public class RwLinkSearch extends AbstractSearch implements ISearch {
 	public IObj searchDataByPid(int pid) throws Exception {
 		return searchDataByPid(RwLink.class, pid, conn);
 	}
-
+	
+	@Override
+	public IObj searchDataByPids(List<Integer> pidList) throws Exception {
+		return null;
+	}
+	
 	@Override
 	public List<SearchSnapshot> searchDataBySpatial(String wkt) throws Exception {
 
@@ -49,8 +54,6 @@ public class RwLinkSearch extends AbstractSearch implements ISearch {
 
 			while (resultSet.next()) {
 				SearchSnapshot snapshot = new SearchSnapshot();
-
-				int kind = resultSet.getInt("kind");
 
 				JSONObject m = new JSONObject();
 

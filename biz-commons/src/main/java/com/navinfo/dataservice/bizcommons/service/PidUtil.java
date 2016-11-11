@@ -313,6 +313,13 @@ public class PidUtil {
 		return applyPid("IX_POI_RESTAURANT");
 
 	}
+	
+	/**
+	 * 申请PoiChargingstation
+	 */
+	public int applyPoiChargingstationId() throws Exception {
+		return applyPid("IX_POI_CHARGINGSTATION");
+	}
 
 	/**
 	 * 申请zone_node_pid

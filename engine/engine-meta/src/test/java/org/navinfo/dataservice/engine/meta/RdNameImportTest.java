@@ -132,7 +132,7 @@ public class RdNameImportTest {
 	
 	@Test
 	public void teilenName () {
-		String parameter = "{\"dbId\":2008,\"data\":[{\"nameId\":1251840566,\"nameGroupid\":1251840566,\"langCode\":\"CHI\",\"roadType\":1}],\"flag\":1,\"subtaskId\":208}";
+		String parameter = "{\"dbId\":9,\"data\":[{\"nameId\":420000001,\"nameGroupid\":503000002,\"langCode\":\"CHI\",\"roadType\":0}],\"flag\":1,\"subtaskId\":208}";
 		
 		Connection conn = null;
 		try {

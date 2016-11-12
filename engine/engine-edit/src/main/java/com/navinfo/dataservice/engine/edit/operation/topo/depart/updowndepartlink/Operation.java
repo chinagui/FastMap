@@ -930,6 +930,8 @@ public class Operation implements IOperation {
         opRefRelationObj.handlerAdadmin(this.command, result);
         opRefRelationObj.handlerRdGate(this.command, result);
 
+        opRefRelationObj.handlerRdHgwgLimit(this.command, result);
+
     }
 
     /**

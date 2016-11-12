@@ -2155,7 +2155,7 @@ public class SubtaskOperation {
 							subtask.put("qualityPlanStartDate", df.format(qualityPlanStartDate));
 						}else {subtask.put("qualityPlanStartDate", null);}
 						if(qualityPlanEndDate != null){
-							subtask.put("qualityPlanStartDate",df.format(qualityPlanEndDate));
+							subtask.put("qualityPlanEndDate",df.format(qualityPlanEndDate));
 						}else{subtask.put("qualityPlanEndDate", null);}
 						
 						subtask.put("qualityTaskStatus", rs.getInt("quality_Task_Status"));

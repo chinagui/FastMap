@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 
+import com.navinfo.dataservice.dao.glm.model.rd.hgwg.RdHgwgLimit;
 import org.json.JSONException;
 
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
@@ -114,6 +115,8 @@ public class Command extends AbstractCommand {
 
 	private List<RdTollgate> rdTollgates;
 
+	private List<RdHgwgLimit> rdHgwgLimits;
+
 	private boolean isCheckInfect = false;
 
 	public boolean isCheckInfect() {
@@ -200,6 +203,14 @@ public class Command extends AbstractCommand {
 	public void setRestrictListVias(
 			List<List<Entry<Integer, RdRestrictionVia>>> listVias) {
 		this.listRestrictionVias = listVias;
+	}
+
+	public List<RdHgwgLimit> getRdHgwgLimits() {
+		return rdHgwgLimits;
+	}
+
+	public void setRdHgwgLimits(List<RdHgwgLimit> rdHgwgLimits) {
+		this.rdHgwgLimits = rdHgwgLimits;
 	}
 
 	public RdNode getsNode() {

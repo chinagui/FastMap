@@ -269,10 +269,13 @@ public class OpTopo implements IOperation {
 			JSONObject jsonObj = (JSONObject) obj;
 			double lon = jsonObj.getDouble("longitude");
 			double lat = jsonObj.getDouble("latitude");
+			int nodePid = jsonObj.getInt("breakNodePid");
 			jsonObj.put("lon", lon);
 			jsonObj.put("lat", lat);
+			jsonObj.put("nodePid", nodePid);
 			jsonObj.remove("longitude");
 			jsonObj.remove("latitude");
+			jsonObj.remove("breakNodePid");
 
 		}
 		return breakArr;

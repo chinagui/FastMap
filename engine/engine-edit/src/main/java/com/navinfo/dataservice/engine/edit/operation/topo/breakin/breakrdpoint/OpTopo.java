@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.joni.exception.JOniException;
+
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.JtsGeometryFactory;
@@ -210,11 +212,11 @@ public class OpTopo implements IOperation {
 		int sNodePid = this.breakLink.getsNodePid();// 分割线的起点
 		int eNodePid = this.breakLink.geteNodePid();// 分割线的终点
 		Set<Point> points = new HashSet<Point>();// 连续打断的点
-		//返回多次打断的点插入几何
+		// 返回多次打断的点插入几何
 		LineString line = this.getReformGeometry(points);
-		//返回连续打断的点在几何上有序的集合
+		// 返回连续打断的点在几何上有序的集合
 		List<Point> orderPoints = GeoTranslator.getOrderPoints(line, points);
-		//返回分割时有序的参数几何
+		// 返回分割时有序的参数几何
 		JSONArray breakArr = this.getSplitOrderPara(orderPoints);
 		Map<Geometry, JSONObject> map = RdLinkOperateUtils.splitRdLink(line,
 				sNodePid, eNodePid, breakArr, result);
@@ -232,35 +234,50 @@ public class OpTopo implements IOperation {
 		Geometry geometry = GeoTranslator.transform(
 				this.breakLink.getGeometry(), 0.00001, 5);// 分割线的几何
 		// 组装Point点信息 ，前端传入的Point是无序的
-		
+
 		for (int i = 0; i < this.command.getBreakNodes().size(); i++) {
 			JSONObject obj = this.command.getBreakNodes().getJSONObject(i);
-			double lon = obj.getDouble("lon");
-			double lat = obj.getDouble("lat");
+			double lon = obj.getDouble("longitude");
+			double lat = obj.getDouble("latitude");
 			points.add(JtsGeometryFactory.createPoint(new Coordinate(lon, lat)));
 		}
 		return GeoTranslator.getReformLineString((LineString) geometry, points);
 	}
+
 	/***
 	 * 创建多次打断方法 有序的分割参数集合
+	 * 
 	 * @param points
 	 * @return
 	 */
-	private JSONArray getSplitOrderPara( List<Point> points ){
+	private JSONArray getSplitOrderPara(List<Point> points) {
 		JSONArray breakArr = new JSONArray();
 		for (Point point : points) {
 			for (int i = 0; i < this.command.getBreakNodes().size(); i++) {
 				JSONObject obj = this.command.getBreakNodes().getJSONObject(i);
-				double lon = obj.getDouble("lon");
-				double lat = obj.getDouble("lat");
+				double lon = obj.getDouble("longitude");
+				double lat = obj.getDouble("latitude");
 				if (point.getX() == lon && point.getY() == lat) {
+					// 匹配打断参数，加以区分
 					breakArr.add(obj);
 					break;
 				}
 			}
 		}
+		//组件分割参数用以区分
+		for (Object obj : breakArr) {
+			JSONObject jsonObj = (JSONObject) obj;
+			double lon = jsonObj.getDouble("longitude");
+			double lat = jsonObj.getDouble("latitude");
+			jsonObj.put("lon", lon);
+			jsonObj.put("lat", lat);
+			jsonObj.remove("longitude");
+			jsonObj.remove("latitude");
+
+		}
 		return breakArr;
 	}
+
 	/***
 	 * 创建多次打断后的rdlink
 	 * 

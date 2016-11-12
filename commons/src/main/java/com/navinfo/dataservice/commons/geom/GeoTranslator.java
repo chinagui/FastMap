@@ -675,14 +675,19 @@ public class GeoTranslator {
 		List<Coordinate> coordinates = new ArrayList<Coordinate>();
 		Geometry geometry = GeoTranslator.transform(lineString, 100000, 5);
 		for (Point point : points) {
+			point = (Point) GeoTranslator.transform(point, 100000, 5);
 			// 扩大100000倍保持精度
-			double lon = point.getX() * 100000;
-			double lat = point.getY() * 100000;
-			for (int i = 0; i < geometry.getCoordinates().length; i++) {
+			double lon = point.getX();
+			double lat = point.getY();
+
+			for (int i = 0; i < geometry.getCoordinates().length - 1; i++) {
 
 				Coordinate cs = geometry.getCoordinates()[i];
 				Coordinate ce = geometry.getCoordinates()[i + 1];
-				coordinates.add(cs);
+				if(!coordinates.contains(cs)){
+					coordinates.add(cs);
+				}
+				
 				// 是否在形状点上
 				if (Math.abs(lon - ce.x) < 0.0000001
 						&& Math.abs(lat - ce.y) < 0.0000001) {
@@ -690,17 +695,17 @@ public class GeoTranslator {
 
 				}
 				// 是否在线段上
-				else if (GeoTranslator.isIntersection(
-						new double[] { cs.x, cs.y },
+				if (GeoTranslator.isIntersection(new double[] { cs.x, cs.y },
 						new double[] { ce.x, ce.y }, new double[] { lon, lat })) {
 					coordinates.add(point.getCoordinate());
+					break;
 
-				} else {
-					throw new Exception("打断的点不在打断LINK上");
 				}
 			}
 
 		}
+		coordinates
+				.add(geometry.getCoordinates()[geometry.getCoordinates().length - 1]);
 		// 返回linestring
 		Coordinate[] c = (Coordinate[]) coordinates
 				.toArray(new Coordinate[coordinates.size()]);
@@ -708,9 +713,10 @@ public class GeoTranslator {
 				geoFactory.createLineString(c), 0.00001, 5);
 
 	}
+
 	/***
-	 * 按顺序返回线上对应的形状点
-	 * zhaokk
+	 * 按顺序返回线上对应的形状点 zhaokk
+	 * 
 	 * @param lineString
 	 * @param points
 	 * @return
@@ -724,7 +730,7 @@ public class GeoTranslator {
 		for (Point point : points) {
 			for (int i = 0; i < line.getCoordinates().length; i++) {
 				Coordinate c = line.getCoordinates()[i];
-				if(point.getX() == c.x && point.getY() == c.y){
+				if (point.getX() == c.x && point.getY() == c.y) {
 					map.put(i, point);
 					break;
 				}
@@ -736,4 +742,30 @@ public class GeoTranslator {
 
 	}
 
+	public static void main(String[] args) {
+		List<String> list = new ArrayList<String>();
+		list.add("A");
+		list.add("B");
+		list.add("C");
+		List<String> list1 = new ArrayList<String>();
+		list1.add("1");
+		list1.add("2");
+		list1.add("3");
+		list1.add("A");
+		list1.add("B");
+		list1.add("C");
+
+		for (String s : list) {
+			System.out.println(list1);
+			for (int i = 0; i < list1.size(); i++) {
+				if (s == list1.get(i)) {
+					list1.add("111" + i);
+					break;
+				}
+			}
+		}
+
+		System.out.println(list1);
+
+	}
 }

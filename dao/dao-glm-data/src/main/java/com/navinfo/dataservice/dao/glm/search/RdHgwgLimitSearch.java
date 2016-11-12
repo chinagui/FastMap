@@ -52,7 +52,7 @@ public class RdHgwgLimitSearch implements ISearch {
     @Override
     public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z, int gap) throws Exception {
         List<SearchSnapshot> list = new ArrayList<>();
-        String sql = "select a.pid, a.geometry point_geom, b.geometry link_geom from rd_hgwg_limit a, rd_link b where sdo_relate(geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') = 'TRUE' and a.u_record != 2 and a.link_pid = b.link_pid";
+        String sql = "select a.pid, a.geometry point_geom, b.geometry link_geom, a.direct from rd_hgwg_limit a, rd_link b where sdo_relate(a.geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') = 'TRUE' and a.u_record != 2 and a.link_pid = b.link_pid";
         PreparedStatement pstmt = null;
         ResultSet resultSet = null;
         try {

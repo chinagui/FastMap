@@ -722,10 +722,10 @@ public class GeoTranslator {
 	 * @return
 	 * @throws Exception
 	 */
-	public static List<Point> getOrderPoints(LineString lineString,
+	public static List<Point> getOrderPoints(LineString line,
 			Set<Point> points) throws Exception {
 		List<Point> list = new ArrayList<Point>();
-		LineString line = getReformLineString(lineString, points);
+		//LineString line = getReformLineString(lineString, points);
 		Map<Integer, Point> map = new TreeMap<Integer, Point>();
 		for (Point point : points) {
 			for (int i = 0; i < line.getCoordinates().length; i++) {
@@ -743,29 +743,14 @@ public class GeoTranslator {
 	}
 
 	public static void main(String[] args) {
-		List<String> list = new ArrayList<String>();
-		list.add("A");
-		list.add("B");
-		list.add("C");
-		List<String> list1 = new ArrayList<String>();
-		list1.add("1");
-		list1.add("2");
-		list1.add("3");
-		list1.add("A");
-		list1.add("B");
-		list1.add("C");
-
-		for (String s : list) {
-			System.out.println(list1);
-			for (int i = 0; i < list1.size(); i++) {
-				if (s == list1.get(i)) {
-					list1.add("111" + i);
-					break;
-				}
-			}
-		}
-
-		System.out.println(list1);
-
+		Map<Integer, String> map = new TreeMap<Integer, String>();
+		List<String> str= new ArrayList<String>();
+		map.put(103, "CCCC");
+		map.put(12, "AAAA");
+		map.put(1, "bbbb");
+		map.put(45, "DDDD");
+		map.put(66, "DDDD");
+		str.addAll(map.values());
+		System.out.println(str);
 	}
 }

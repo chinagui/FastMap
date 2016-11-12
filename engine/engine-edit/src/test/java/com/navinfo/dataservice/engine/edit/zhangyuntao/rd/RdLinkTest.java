@@ -30,7 +30,7 @@ public class RdLinkTest extends InitApplication {
 
     @Test
     public void testDelete() {
-        String parameter = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"RDLINK\",\"objId\":308002568,\"data\":{\"feeStd\":999.99,\"pid\":308002568,\"objStatus\":\"UPDATE\"}}";
+        String parameter = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"RDLINK\",\"objId\":308002568,\"data\":{\"feeStd\":66.99,\"pid\":308002568,\"objStatus\":\"UPDATE\"}}";
         TestUtil.run(parameter);
     }
 

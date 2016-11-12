@@ -419,6 +419,7 @@ public class SubtaskOperation {
 //			SqlClause inClause = SqlClause.genGeoClauseWithGeoString(conn,bean.getGeometry());
 //			if (inClause!=null)
 //				value.add(inClause.getValues().get(0));
+			//referGeometry
 			
 			value.add(bean.getStage());
 			value.add(bean.getType());
@@ -460,6 +461,14 @@ public class SubtaskOperation {
 				column += ", IS_QUALITY";
 				value.add(0);
 				values += ",?";
+			}
+			//外业参考任务圈
+			if(bean.getReferGeometry() != null){
+				Clob cc = ConnectionUtil.createClob(conn);
+				cc.setString(1, bean.getReferGeometry());
+				value.add(cc);
+				column += ", REFER_GEOMETRY";
+				values += ",sdo_geometry(?,8307)";
 			}
 			
 			if(0!=bean.getExeGroupId()){

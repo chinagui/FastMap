@@ -88,6 +88,7 @@ public class SubtaskController extends BaseController {
 			if(dataJson==null){
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
+			//质检子任务信息
 			Integer qualityExeUserId = 0;
 			String qualityPlanStartDate = "";
 			String qualityPlanEndDate = "";
@@ -99,8 +100,25 @@ public class SubtaskController extends BaseController {
 				dataJson.discard("qualityExeUserId");
 				dataJson.discard("qualityPlanStartDate");
 				dataJson.discard("qualityPlanEndDate");}
+			
+			//自采自录子任务
+			Integer isSelfRecord = 0;//是否进行自采自录，0否1是
+			Integer selfRecordType = 0;//自采自录日编子任务作业类型
+			String selfRecordName = "";//自采自录日编子任务名称
+			if(dataJson.containsKey("isSelfRecord") && 1==dataJson.getInt("isSelfRecord")){
+				isSelfRecord = dataJson.getInt("isSelfRecord");
+				selfRecordType = dataJson.getInt("selfRecordType");
+				selfRecordName = dataJson.getString("selfRecordName");
+				//删除传入参数的对应键值对,因为bean中没有这些字段
+				dataJson.discard("isSelfRecord");
+				dataJson.discard("selfRecordType");
+				dataJson.discard("selfRecordName");}
+			
 			SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
 			long userId = tokenObj.getUserId();
+			
+			Integer qualitySubtaskId = 0;
+			Integer selfRecordSubtaskId = 0;
 			if(qualityExeUserId != 0 ){//表示要创建质检子任务
 				//根据参数生成质检子任务 subtask qualityBean
 				Subtask qualityBean = SubtaskService.getInstance().createSubtaskBean(userId,dataJson);
@@ -111,25 +129,54 @@ public class SubtaskController extends BaseController {
 				qualityBean.setPlanStartDate(new Timestamp(df.parse(qualityPlanStartDate).getTime()));
 				qualityBean.setPlanEndDate(new Timestamp(df.parse(qualityPlanEndDate).getTime()));
 				//创建质检子任务 subtask	
-				Integer qualitySubtaskId = SubtaskService.getInstance().createQualitySubtask(qualityBean);	
-				
-				//根据参数生成subtask bean
-				Subtask bean = SubtaskService.getInstance().createSubtaskBean(userId,dataJson);
-				bean.setIsQuality(0);
-				bean.setQualitySubtaskId(qualitySubtaskId);
-				//创建subtask	
-				SubtaskService.getInstance().create(bean);
-			}else{
-				//根据参数生成subtask bean
-				Subtask bean = SubtaskService.getInstance().createSubtaskBean(userId,dataJson);
-				bean.setIsQuality(0);
-				//创建subtask	
-				SubtaskService.getInstance().create(bean);	
+				qualitySubtaskId = SubtaskService.getInstance().create(qualityBean);	
+			}
+			if(isSelfRecord != 0 ){//表示要创建自采自录日编子任务
+				//根据参数生成日编子任务 subtask dailyBean
+				Subtask dailyBean = SubtaskService.getInstance().createSubtaskBean(userId,dataJson);
+				dailyBean.setName(selfRecordName);
+//				dailyBean.setIsQuality(0);
+				dailyBean.setStatus(2);
+				dailyBean.setStage(1);
+				//创建质检子任务 subtask	
+				selfRecordSubtaskId = SubtaskService.getInstance().create(dailyBean);	
 			}
 			
+			//根据参数生成subtask bean
+			Subtask bean = SubtaskService.getInstance().createSubtaskBean(userId,dataJson);
+			bean.setIsQuality(0);
+			if(qualitySubtaskId!=0){
+				bean.setQualitySubtaskId(qualitySubtaskId);
+			}
+			//创建subtask	
+			SubtaskService.getInstance().create(bean);
 			
 			
-
+//			if(qualityExeUserId != 0 ){//表示要创建质检子任务
+//				//根据参数生成质检子任务 subtask qualityBean
+//				Subtask qualityBean = SubtaskService.getInstance().createSubtaskBean(userId,dataJson);
+//				qualityBean.setName(qualityBean.getName()+"_质检");
+//				qualityBean.setIsQuality(1);
+//				qualityBean.setStatus(2);
+//				qualityBean.setExeUserId(qualityExeUserId);
+//				qualityBean.setPlanStartDate(new Timestamp(df.parse(qualityPlanStartDate).getTime()));
+//				qualityBean.setPlanEndDate(new Timestamp(df.parse(qualityPlanEndDate).getTime()));
+//				//创建质检子任务 subtask	
+//				Integer qualitySubtaskId = SubtaskService.getInstance().createQualitySubtask(qualityBean);	
+//				
+//				//根据参数生成subtask bean
+//				Subtask bean = SubtaskService.getInstance().createSubtaskBean(userId,dataJson);
+//				bean.setIsQuality(0);
+//				bean.setQualitySubtaskId(qualitySubtaskId);
+//				//创建subtask	
+//				SubtaskService.getInstance().create(bean);
+//			}else{
+//				//根据参数生成subtask bean
+//				Subtask bean = SubtaskService.getInstance().createSubtaskBean(userId,dataJson);
+//				bean.setIsQuality(0);
+//				//创建subtask	
+//				SubtaskService.getInstance().create(bean);	
+//			}
 			NullResponse result = new NullResponse(0,"创建成功",null);
 			return result;
 		}catch(Exception e){

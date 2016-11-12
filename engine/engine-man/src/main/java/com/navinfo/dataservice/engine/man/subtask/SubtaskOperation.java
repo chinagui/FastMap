@@ -1964,6 +1964,7 @@ public class SubtaskOperation {
 					if ("subtaskName".equals(key)) {	
 						filterSqlCollect+=" AND T.NAME like '%" + filter.getString(key) +"%'";
 						filterSqlDaily+=" AND T.NAME like '%" + filter.getString(key) +"%'";
+						filterSqlMonthly+=" AND T.NAME like '%" + filter.getString(key) +"%'";
 					}
 					//筛选条件
 					//"progress" //进度。1采集正常，2异常，3关闭，4完成,5草稿,6完成状态逾期，7完成状态按时，8完成状态提前

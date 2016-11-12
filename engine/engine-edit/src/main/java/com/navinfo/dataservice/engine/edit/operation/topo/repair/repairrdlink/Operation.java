@@ -192,6 +192,10 @@ public class Operation implements IOperation {
 
 		gscOperation.repairLink(this.command.getGscList(), newLinkMap, oldLink, result);
 
+		// 维护限高限重
+		com.navinfo.dataservice.engine.edit.operation.obj.hgwg.move.Operation hgwgOperation = new com.navinfo.dataservice.engine.edit.operation.obj.hgwg.move.Operation(conn);
+		hgwgOperation.moveHgwgLimit(oldLink, newLinks, result);
+
 		/*
 		 * 条件以下为仅打断情况下需要处理的元素 (size < 2说明没有进行打断操作)
 		 */

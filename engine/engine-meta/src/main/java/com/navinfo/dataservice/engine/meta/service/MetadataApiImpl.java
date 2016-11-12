@@ -124,7 +124,7 @@ public class MetadataApiImpl implements MetadataApi {
 
 			conn = DBConnector.getInstance().getMetaConnection();
 
-			TmcSelector selector = new TmcSelector();
+			TmcSelector selector = new TmcSelector(conn);
 
 			List<SearchSnapshot> list = selector.queryTmcPoint(x, y, z, gap);
 

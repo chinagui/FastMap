@@ -791,5 +791,26 @@ public class runTest extends InitApplication {
 		String msg = t.run();
 	}
 	
+	@Test
+	public void run_1110_1() throws Exception {
+
+		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDLANECONNEXITY\",\"dbId\":17,\"data\":{\"inLinkPid\":209002563,\"nodePid\":303001955,\"outLinkPids\":[301002648],\"laneInfo\":\"[a]\"}}";
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+	
+	@Test
+	public void run_1111_1() throws Exception {
+
+		String parameter = "{\"command\":\"CREATE\",\"dbId\":17,\"objId\":200002625,\"data\":{\"longitude\":116.45005,\"latitude\":40.04905},\"type\":\"RDNODE\"}";
+		
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+	
 	
 }

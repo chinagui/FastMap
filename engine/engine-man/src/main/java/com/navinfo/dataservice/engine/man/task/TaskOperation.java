@@ -246,15 +246,16 @@ public class TaskOperation {
 			if (bean!=null&&bean.getTaskName()!=null && StringUtils.isNotEmpty(bean.getTaskName().toString())){
 				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
 				insertPart+=" NAME ";
-				valuePart+=bean.getTaskName();
+				valuePart+= "'" + bean.getTaskName() + "'";
 			};
 			if (bean!=null&&bean.getCityId()!=null && bean.getCityId()!=0 && StringUtils.isNotEmpty(bean.getCityId().toString())){
 				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
 				insertPart+=" CITY_ID ";
 				valuePart+=bean.getCityId();
 			};
+			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
 			insertPart+=" CREATE_USER_ID,CREATE_DATE,STATUS,LATEST ";
-			valuePart+=bean.getCreateUserId()+"sysdate,2,1";
+			valuePart+=bean.getCreateUserId()+",sysdate,2,1";
 			if (bean!=null&&bean.getTaskDescp()!=null && StringUtils.isNotEmpty(bean.getTaskDescp().toString())){
 				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
 				insertPart+=" DESCP ";

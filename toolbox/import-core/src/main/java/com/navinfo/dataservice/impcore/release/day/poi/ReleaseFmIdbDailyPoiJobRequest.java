@@ -14,6 +14,7 @@ public class ReleaseFmIdbDailyPoiJobRequest extends AbstractJobRequest {
 
 	private String featureType;//参考LogFlusher.FEATURE_POI
 	private int produceId;
+	private int regionId;
 	/* (non-Javadoc)
 	 * @see com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest#defineSubJobRequests()
 	 */
@@ -85,6 +86,20 @@ public class ReleaseFmIdbDailyPoiJobRequest extends AbstractJobRequest {
 	 */
 	public void setProduceId(int produceId) {
 		this.produceId = produceId;
+	}
+
+	/**
+	 * @return the regionId
+	 */
+	public int getRegionId() {
+		return regionId;
+	}
+
+	/**
+	 * @param regionId the regionId to set
+	 */
+	public void setRegionId(int regionId) {
+		this.regionId = regionId;
 	}
 
 }

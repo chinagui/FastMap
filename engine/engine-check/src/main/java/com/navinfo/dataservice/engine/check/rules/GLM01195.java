@@ -40,7 +40,7 @@ public class GLM01195 extends baseRule {
 				//非特殊交通类型link不查此规则
 				Map<String, Object> changedFields=rdLink.changedFields();
 				//新增执行该检查
-				if(changedFields==null){continue;}
+				if(changedFields==null || !changedFields.containsKey("specialTraffic") ){continue;}
 				if((Integer) changedFields.get("specialTraffic")==0){linkPidList.add(rdLink.getPid());continue;}
 				checkWithRdLink(rdLink,linkPidList);
 			}else if (obj instanceof RdLinkSpeedlimit){

@@ -49,57 +49,94 @@ public class ReleaseFmIdbDailyPoiJob extends AbstractJob {
 		LogSelector logSelector =null;
 		boolean commitStatus=false;
 		ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
+		DatahubApi databhubApi = (DatahubApi) ApplicationContextUtil.getBean("datahubApi");
 		try{
 			ReleaseFmIdbDailyPoiJobRequest releaseFmIdbDailyPoiRequest = (ReleaseFmIdbDailyPoiJobRequest )this.request;
 			int produceId=releaseFmIdbDailyPoiRequest.getProduceId();
 			//日出品状态修改为 进行中
 			manApi.updateProduceStatus(produceId, 1);
-			//获取所有大区库信息
-			List<Region> regionList = queryRegionList();
+//			//获取所有大区库信息
+//			List<Region> regionList = queryRegionList();
+			int regionId = releaseFmIdbDailyPoiRequest.getRegionId();
+			Region regionInfo = manApi.queryByRegionId(regionId);
 			
 			HashMap<String,FlushResult> jobResponse = new HashMap<String,FlushResult> ();
-			
-			DatahubApi databhubApi = (DatahubApi) ApplicationContextUtil.getBean("datahubApi");
-			
+
 			String featureType = releaseFmIdbDailyPoiRequest.getFeatureType();
-			for (Region regionInfo:regionList){
-				this.log.info("regionInfo:"+regionInfo);
-				try{
-					//履历删选
-					DbInfo dailyDb = databhubApi.getDbById(regionInfo.getDailyDbId());
-					OracleSchema srcDbSchema = new OracleSchema(
-							DbConnectConfig.createConnectConfig(dailyDb.getConnectParam()));
-					logSelector = createLogSelector(featureType,srcDbSchema,null);
-					String tempTable = logSelector.select();
-					this.log.info("履历选择完成,srcDb:"+dailyDb);
-					//履历刷库；
-					DbInfo releaseDb = getReleaseDbConn(databhubApi, featureType);
-					OracleSchema targetDbSchema = new OracleSchema(
-							DbConnectConfig.createConnectConfig(releaseDb.getConnectParam()));
-					LogFlusher logFlusher = new DefaultLogFlusher(srcDbSchema, targetDbSchema, false, tempTable);
-					FlushResult result = logFlusher.flush();
-					response("",null);
-					this.log.info("履历刷库完成,targetDb:"+releaseDb);
-					//履历搬迁
-					LogMover logMover = new DefaultLogMover(srcDbSchema, targetDbSchema, tempTable, null);
-					logMover.move();
-					this.log.info("履历搬迁完成,targetDb:"+releaseDb);
-					//更新状态	
-					LogStatusModifier logStatusModifier = createLogStatusModifier(featureType,srcDbSchema,tempTable);//new PoiReleaseDailyLogStatusModifier(srcDbSchema,tempTable);
-					logStatusModifier.execute();
-					this.log.info("完成出品状态更新");
-					jobResponse.put(regionInfo.getRegionId().toString(), result);
-					commitStatus=true;
-				}catch(Exception e){
-					//日出品状态修改为 失败
-					manApi.updateProduceStatus(produceId, 3);
-					throw new JobException(e);
-				}
-				finally{
-					unselectLog(logSelector,commitStatus);
-				}
-				
+			this.log.info("regionInfo:"+regionInfo);
+			try{
+				//履历删选
+				DbInfo dailyDb = databhubApi.getDbById(regionInfo.getDailyDbId());
+				OracleSchema srcDbSchema = new OracleSchema(
+						DbConnectConfig.createConnectConfig(dailyDb.getConnectParam()));
+				logSelector = createLogSelector(featureType,srcDbSchema,null);
+				String tempTable = logSelector.select();
+				this.log.info("履历选择完成,srcDb:"+dailyDb);
+				//履历刷库；
+				DbInfo releaseDb = getReleaseDbConn(databhubApi, featureType);
+				OracleSchema targetDbSchema = new OracleSchema(
+						DbConnectConfig.createConnectConfig(releaseDb.getConnectParam()));
+				LogFlusher logFlusher = new DefaultLogFlusher(srcDbSchema, targetDbSchema, false, tempTable);
+				FlushResult result = logFlusher.flush();
+				response("",null);
+				this.log.info("履历刷库完成,targetDb:"+releaseDb);
+				//履历搬迁
+				LogMover logMover = new DefaultLogMover(srcDbSchema, targetDbSchema, tempTable, null);
+				logMover.move();
+				this.log.info("履历搬迁完成,targetDb:"+releaseDb);
+				//更新状态	
+				LogStatusModifier logStatusModifier = createLogStatusModifier(featureType,srcDbSchema,tempTable);//new PoiReleaseDailyLogStatusModifier(srcDbSchema,tempTable);
+				logStatusModifier.execute();
+				this.log.info("完成出品状态更新");
+				jobResponse.put(regionInfo.getRegionId().toString(), result);
+				commitStatus=true;
+			}catch(Exception e){
+				//日出品状态修改为 失败
+				manApi.updateProduceStatus(produceId, 3);
+				throw new JobException(e);
 			}
+			finally{
+				unselectLog(logSelector,commitStatus);
+			}
+
+//			for (Region regionInfo:regionList){
+//				this.log.info("regionInfo:"+regionInfo);
+//				try{
+//					//履历删选
+//					DbInfo dailyDb = databhubApi.getDbById(regionInfo.getDailyDbId());
+//					OracleSchema srcDbSchema = new OracleSchema(
+//							DbConnectConfig.createConnectConfig(dailyDb.getConnectParam()));
+//					logSelector = createLogSelector(featureType,srcDbSchema,null);
+//					String tempTable = logSelector.select();
+//					this.log.info("履历选择完成,srcDb:"+dailyDb);
+//					//履历刷库；
+//					DbInfo releaseDb = getReleaseDbConn(databhubApi, featureType);
+//					OracleSchema targetDbSchema = new OracleSchema(
+//							DbConnectConfig.createConnectConfig(releaseDb.getConnectParam()));
+//					LogFlusher logFlusher = new DefaultLogFlusher(srcDbSchema, targetDbSchema, false, tempTable);
+//					FlushResult result = logFlusher.flush();
+//					response("",null);
+//					this.log.info("履历刷库完成,targetDb:"+releaseDb);
+//					//履历搬迁
+//					LogMover logMover = new DefaultLogMover(srcDbSchema, targetDbSchema, tempTable, null);
+//					logMover.move();
+//					this.log.info("履历搬迁完成,targetDb:"+releaseDb);
+//					//更新状态	
+//					LogStatusModifier logStatusModifier = createLogStatusModifier(featureType,srcDbSchema,tempTable);//new PoiReleaseDailyLogStatusModifier(srcDbSchema,tempTable);
+//					logStatusModifier.execute();
+//					this.log.info("完成出品状态更新");
+//					jobResponse.put(regionInfo.getRegionId().toString(), result);
+//					commitStatus=true;
+//				}catch(Exception e){
+//					//日出品状态修改为 失败
+//					manApi.updateProduceStatus(produceId, 3);
+//					throw new JobException(e);
+//				}
+//				finally{
+//					unselectLog(logSelector,commitStatus);
+//				}
+//				
+//			}
 			this.log.info("调用出品转换api");
 			callReleaseTransApi();
 			this.response("日出品执行完毕", jobResponse);

@@ -103,10 +103,6 @@ public class OpTopo implements IOperation {
 				}
 			}
 		}
-
-		// 维护交叉口类link打断(小龙移走 不要放这里维护)
-		OpRefRdCross rdOpRefRdCross = new OpRefRdCross(command, conn);
-		rdOpRefRdCross.run(result);
 		// 组装新生成两条link
 		result.setPrimaryPid(command.getBreakNodePid());
 		this.command.getNewLinks().get(0)

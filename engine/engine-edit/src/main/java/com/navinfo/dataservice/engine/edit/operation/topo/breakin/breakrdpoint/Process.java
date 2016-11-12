@@ -417,6 +417,7 @@ public class Process extends AbstractProcess<Command> {
 
         OpRefRelationObj opRefRelationObj = new OpRefRelationObj(
                 this.getConn());
+        
         // 交限
         opRefRelationObj.handleRdRestriction(this.getResult(), this.rdLinkBreakpoint,
                 this.getCommand().getNewLinks());
@@ -576,6 +577,10 @@ public class Process extends AbstractProcess<Command> {
         refRdHgwgLimit.run(getResult(), getCommand().getLinkPid(), getCommand().getNewLinks());
         long refHgwgTime = System.currentTimeMillis();
         log.info("限高限重USE TIME  " + String.valueOf(refHgwgTime - refSameTime));
+        
+        // 维护交叉口类link打断
+        OpRefRdCross rdOpRefRdCross = new OpRefRdCross(getCommand(), getConn());
+		rdOpRefRdCross.run(getResult());
     }
 
     /**

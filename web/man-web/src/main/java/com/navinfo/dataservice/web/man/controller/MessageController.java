@@ -76,6 +76,8 @@ public class MessageController extends BaseController {
 	
 	/**
 	 * 根据申请人查询业务申请列表
+	 * 消息中心-业务申请(全部角色)
+	 * 根据access_token的用户返回该用户的所有申请，即apply_user_id=该用户 的记录
 	 * @author Han Shaoming
 	 * @param request
 	 * @return
@@ -115,6 +117,8 @@ public class MessageController extends BaseController {
 	
 	/**
 	 * 根据审核人查询业务申请列表
+	 * 消息中心-业务申请（生管角色）
+	 * 根据access_token的用户返回该用户的所有申请，即auditor =该用户 的记录
 	 * @author Han Shaoming
 	 * @param request
 	 * @return
@@ -154,6 +158,7 @@ public class MessageController extends BaseController {
 	
 	/**
 	 * 业务申请创建
+	 * 消息中心-业务申请(全部角色)-新的申请
 	 * @author Han Shaoming
 	 * @param request
 	 * @return
@@ -187,6 +192,7 @@ public class MessageController extends BaseController {
 	
 	/**
 	 * 业务申请修改
+	 * 消息中心-业务申请(全部角色)-查看申请
 	 * @author Han Shaoming
 	 * @param request
 	 * @return
@@ -220,6 +226,7 @@ public class MessageController extends BaseController {
 	
 	/**
 	 * 业务申请详细信息查看
+	 * 消息中心-业务申请(全部角色)-查看申请
 	 * @author Han Shaoming
 	 * @param request
 	 * @return
@@ -251,6 +258,7 @@ public class MessageController extends BaseController {
 	
 	/**
 	 * 批量修改申请删除状态
+	 * 消息中心-服务消息(全部角色)
 	 * @author Han Shaoming
 	 * @param request
 	 * @return
@@ -286,6 +294,7 @@ public class MessageController extends BaseController {
 	}
 	/**
 	 * 批量修改申请状态
+	 * 消息中心-业务申请(全部角色)/业务审核(生管角色)
 	 * @author Han Shaoming
 	 * @param request
 	 * @return
@@ -317,97 +326,5 @@ public class MessageController extends BaseController {
 		}
 	}
 	
-	/**
-	 * 查询任务名称列表
-	 * @author Han Shaoming
-	 * @param request
-	 * @return
-	 */
-	@RequestMapping(value = "/task/nameList")
-	public ModelAndView queryTaskNameList(HttpServletRequest request){
-		try{
-			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
-			long userId = tokenObj.getUserId();
-			String parameter = request.getParameter("parameter");
-			if (StringUtils.isEmpty(parameter)) {
-				throw new IllegalArgumentException("parameter参数不能为空。");
-			}
-			JSONObject paraJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
-			if (paraJson == null) {
-				throw new IllegalArgumentException("parameter参数不能为空。");
-			}
-			if(!paraJson.containsKey("taskName")){
-				throw new IllegalArgumentException("parameter参数中taskName不能为空。");
-			}
-			String taskName = paraJson.getString("taskName");
-			List<Map<String,Object>> taskNameList = service.queryTaskNameList(userId,taskName);
-			return new ModelAndView("jsonView", success(taskNameList));
-		}catch(Exception e){
-			log.error("查询失败，原因："+e.getMessage(), e);
-			return new ModelAndView("jsonView",exception(e));
-		}
-	}
-	
-	/**
-	 * 查询block名称列表
-	 * @author Han Shaoming
-	 * @param request
-	 * @return
-	 */
-	@RequestMapping(value = "/block/nameList")
-	public ModelAndView queryBlockManNameList(HttpServletRequest request){
-		try{
-			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
-			long userId = tokenObj.getUserId();
-			String parameter = request.getParameter("parameter");
-			if (StringUtils.isEmpty(parameter)) {
-				throw new IllegalArgumentException("parameter参数不能为空。");
-			}
-			JSONObject paraJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
-			if (paraJson == null) {
-				throw new IllegalArgumentException("parameter参数不能为空。");
-			}
-			if(!paraJson.containsKey("blockManName")){
-				throw new IllegalArgumentException("parameter参数中blockManName不能为空。");
-			}
-			String blockManName = paraJson.getString("blockManName");
-			List<Map<String,Object>> blockManNameList = service.queryBlockManNameList(userId,blockManName);
-			return new ModelAndView("jsonView", success(blockManNameList));
-		}catch(Exception e){
-			log.error("查询失败，原因："+e.getMessage(), e);
-			return new ModelAndView("jsonView",exception(e));
-		}
-	}
-	
-	/**
-	 * 根据角色查询用户列表
-	 * @author Han Shaoming
-	 * @param request
-	 * @return
-	 */
-	@RequestMapping(value = "/role/list")
-	public ModelAndView queryUserNameByRoleId(HttpServletRequest request){
-		try{
-			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
-			long userId = tokenObj.getUserId();
-			String parameter = request.getParameter("parameter");
-			if (StringUtils.isEmpty(parameter)) {
-				throw new IllegalArgumentException("parameter参数不能为空。");
-			}
-			JSONObject paraJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
-			if (paraJson == null) {
-				throw new IllegalArgumentException("parameter参数不能为空。");
-			}
-			if(!paraJson.containsKey("roleId")){
-				throw new IllegalArgumentException("parameter参数中roleId不能为空。");
-			}
-			long roleId = paraJson.getLong("roleId");
-			List<Map<String,Object>> userNameList = service.queryUserNameByRoleId(userId,roleId);
-			return new ModelAndView("jsonView", success(userNameList));
-		}catch(Exception e){
-			log.error("查询失败，原因："+e.getMessage(), e);
-			return new ModelAndView("jsonView",exception(e));
-		}
-	}
 	
 }

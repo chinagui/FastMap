@@ -70,9 +70,6 @@ public class Process extends AbstractProcess<Command> {
 	private RdLink rdLinkBreakpoint;
 
 	private JSONArray jaDisplayLink;
-
-	private Check check = new Check();
-
 	public Process(AbstractCommand command) throws Exception {
 		super(command);
 
@@ -99,7 +96,7 @@ public class Process extends AbstractProcess<Command> {
 
 			this.rdLinkBreakpoint = (RdLink) linkSelector.loadById(this
 					.getCommand().getLinkPid(), true);
-			
+
 			this.getCommand().setBreakLink(rdLinkBreakpoint);
 
 			this.getResult().insertObject(rdLinkBreakpoint, ObjStatus.DELETE,
@@ -281,7 +278,7 @@ public class Process extends AbstractProcess<Command> {
 	@Override
 	public String run() throws Exception {
 		log.info("START BEGIN BREAK RDLINK");
-		long startTime=System.currentTimeMillis();
+		long startTime = System.currentTimeMillis();
 
 		String msg;
 		try {
@@ -289,15 +286,17 @@ public class Process extends AbstractProcess<Command> {
 				this.getConn().setAutoCommit(false);
 				log.info("PREPARE DATA BEGIN");
 				this.prepareData();
-				long preDataTime=System.currentTimeMillis();
+				long preDataTime = System.currentTimeMillis();
 				log.info("PREPARE DATA END");
-				log.info("PREPARE DATA USE TIME   " + String.valueOf(preDataTime-startTime));
+				log.info("PREPARE DATA USE TIME   "
+						+ String.valueOf(preDataTime - startTime));
 
 				log.info("PREPARE CHECK BEGIN");
 				String preCheckMsg = this.preCheck();
-				long prCheckTime=System.currentTimeMillis();
+				long prCheckTime = System.currentTimeMillis();
 				log.info("PREPARE CHECK END");
-				log.info("PREPARE CHECK USE TIME   " + String.valueOf(prCheckTime-preDataTime));
+				log.info("PREPARE CHECK USE TIME   "
+						+ String.valueOf(prCheckTime - preDataTime));
 				if (preCheckMsg != null) {
 					throw new Exception(preCheckMsg);
 				}
@@ -308,34 +307,43 @@ public class Process extends AbstractProcess<Command> {
 						this.rdLinkBreakpoint, jaDisplayLink);
 
 				msg = operation.run(this.getResult());
-				long mainRDLinkTime=System.currentTimeMillis();
+				long mainRDLinkTime = System.currentTimeMillis();
 				log.info("END MAIN RDLINK BREAK");
-				log.info("MAIN RDLINK BREAK USE TIME  " + String.valueOf(mainRDLinkTime-prCheckTime));
+				log.info("MAIN RDLINK BREAK USE TIME  "
+						+ String.valueOf(mainRDLinkTime - prCheckTime));
 				log.info("START ATTRRELATION ");
 				updataRelationObj();
-				long attrrelationTime=System.currentTimeMillis();
+				long attrrelationTime = System.currentTimeMillis();
 				log.info("END  ATTRRELATION ");
-				log.info("MAIN ATTRRELATION USE TIME  " + String.valueOf(attrrelationTime-mainRDLinkTime));
-				
+				log.info("MAIN ATTRRELATION USE TIME  "
+						+ String.valueOf(attrrelationTime - mainRDLinkTime));
+
 				log.info("START RECORD  ");
-				//设置主pid值（primary key），用于web显示对应的node的属性面板
+				// 设置主pid值（primary key），用于web显示对应的node的属性面板
 				if (!this.getCommand().getOperType().equals(OperType.DELETE)
-						&& !this.getCommand().getObjType().equals(ObjType.RDBRANCH)
-						&& !this.getCommand().getObjType().equals(ObjType.RDELECEYEPAIR)
-						&& !this.getCommand().getObjType().equals(ObjType.LUFACE)
-						&& !this.getCommand().getObjType().equals(ObjType.LCFACE)) {
-					handleResult(this.getCommand().getObjType(), this.getCommand().getOperType(), this.getResult());
+						&& !this.getCommand().getObjType()
+								.equals(ObjType.RDBRANCH)
+						&& !this.getCommand().getObjType()
+								.equals(ObjType.RDELECEYEPAIR)
+						&& !this.getCommand().getObjType()
+								.equals(ObjType.LUFACE)
+						&& !this.getCommand().getObjType()
+								.equals(ObjType.LCFACE)) {
+					handleResult(this.getCommand().getObjType(), this
+							.getCommand().getOperType(), this.getResult());
 				}
 				this.recordData();
-				long recordTime=System.currentTimeMillis();
+				long recordTime = System.currentTimeMillis();
 				log.info("END RECORD  ");
-				log.info("RECODE USE TIME  " + String.valueOf(recordTime-attrrelationTime));
+				log.info("RECODE USE TIME  "
+						+ String.valueOf(recordTime - attrrelationTime));
 				log.info("POST CHECK BEGIN");
 				this.postCheck();
 				log.info("POST CHECK BEGIN");
 				this.getConn().commit();
 				log.info("END BEGIN BREAK RDLINK");
-				log.info("BREAK RDLINK TOTAL USE TIME   " + String.valueOf(System.currentTimeMillis()-startTime));
+				log.info("BREAK RDLINK TOTAL USE TIME   "
+						+ String.valueOf(System.currentTimeMillis() - startTime));
 			} else {
 
 				this.prepareData();
@@ -395,142 +403,156 @@ public class Process extends AbstractProcess<Command> {
 	 * @throws Exception
 	 */
 	private void updataRelationObj() throws Exception {
-		
-		long startRelationObjTime=System.currentTimeMillis();
-		long star=System.currentTimeMillis();
-		List<RdLink> newLinks = new ArrayList<RdLink>();
 
-		newLinks.add(this.getCommand().getLink1());
-
-		newLinks.add(this.getCommand().getLink2());
-
+		long startRelationObjTime = System.currentTimeMillis();
 		int oldLink = this.getCommand().getLinkPid();
-
 		// 交限
-		
+
 		OpRefRestrict opRefRestrict = new OpRefRestrict(this.getCommand());
 		opRefRestrict.run(this.getResult());
-		long refRestrictTime=System.currentTimeMillis();
-		log.info(" 交限 USE TIME  " + String.valueOf(refRestrictTime-startRelationObjTime));
+		long refRestrictTime = System.currentTimeMillis();
+		log.info(" 交限 USE TIME  "
+				+ String.valueOf(refRestrictTime - startRelationObjTime));
 		// 分歧
 		OpRefBranch opRefBranch = new OpRefBranch(this.getCommand());
 		opRefBranch.run(this.getResult());
-		long refBranchTime=System.currentTimeMillis();
-		log.info(" 分歧 USE TIME  " + String.valueOf(refBranchTime-refRestrictTime));
+		long refBranchTime = System.currentTimeMillis();
+		log.info(" 分歧 USE TIME  "
+				+ String.valueOf(refBranchTime - refRestrictTime));
 		// 车信
 		OpRefLaneConnexity opRefLaneConnexity = new OpRefLaneConnexity(
 				this.getCommand());
 		opRefLaneConnexity.run(this.getResult());
-		long refLaneConnexityTime=System.currentTimeMillis();
-		log.info("车信USE TIME  " + String.valueOf(refLaneConnexityTime-refBranchTime));
+		long refLaneConnexityTime = System.currentTimeMillis();
+		log.info("车信USE TIME  "
+				+ String.valueOf(refLaneConnexityTime - refBranchTime));
 		// 限速
 		OpRefSpeedlimit opRefSpeedlimit = new OpRefSpeedlimit(this.getCommand());
 		opRefSpeedlimit.run(this.getResult());
-		long refSpeedlimitTime=System.currentTimeMillis();
-		log.info("限速USE TIME  " + String.valueOf(refSpeedlimitTime-refLaneConnexityTime));
+		long refSpeedlimitTime = System.currentTimeMillis();
+		log.info("限速USE TIME  "
+				+ String.valueOf(refSpeedlimitTime - refLaneConnexityTime));
 		// 立交
 		OpRefRdGsc opRefRdGsc = new OpRefRdGsc(this.getCommand(),
 				this.getConn());
 		opRefRdGsc.run(this.getResult());
-		long refRdGscTime=System.currentTimeMillis();
-		log.info("立交 USE TIME  " + String.valueOf(refRdGscTime-refSpeedlimitTime));
-	
+		long refRdGscTime = System.currentTimeMillis();
+		log.info("立交 USE TIME  "
+				+ String.valueOf(refRdGscTime - refSpeedlimitTime));
+
 		// 行政区划
 		OpRefAdAdmin opRefAdAdmin = new OpRefAdAdmin(this.getCommand());
 		opRefAdAdmin.run(this.getResult());
-		long refAdAdminTime=System.currentTimeMillis();
-		log.info("立行政区划 USE TIME  " + String.valueOf(refAdAdminTime-refRdGscTime));
+		long refAdAdminTime = System.currentTimeMillis();
+		log.info("立行政区划 USE TIME  "
+				+ String.valueOf(refAdAdminTime - refRdGscTime));
 		// 警示信息
 		OpRefRdWarninginfo opRefRdWarninginfo = new OpRefRdWarninginfo(
 				this.getConn());
-		opRefRdWarninginfo.run(this.getResult(), oldLink, newLinks);
-		long refRdWarninginfoTime=System.currentTimeMillis();
-		log.info("警示信息 USE TIME  " + String.valueOf(refRdWarninginfoTime-refAdAdminTime));
+		opRefRdWarninginfo.run(this.getResult(), oldLink, this.getCommand().getNewLinks());
+		long refRdWarninginfoTime = System.currentTimeMillis();
+		log.info("警示信息 USE TIME  "
+				+ String.valueOf(refRdWarninginfoTime - refAdAdminTime));
 		// 信号灯
 		OpRefRdTrafficsignal ofOpRefRdTrafficsignal = new OpRefRdTrafficsignal(
 				this.getConn());
-		ofOpRefRdTrafficsignal.run(this.getResult(), oldLink, newLinks);
-		long refRdTrafficsignalTime=System.currentTimeMillis();
-		log.info("信号灯USE TIME  " + String.valueOf(refRdTrafficsignalTime-refRdWarninginfoTime));
-	
+		ofOpRefRdTrafficsignal.run(this.getResult(), oldLink, this.getCommand().getNewLinks());
+		long refRdTrafficsignalTime = System.currentTimeMillis();
+		log.info("信号灯USE TIME  "
+				+ String.valueOf(refRdTrafficsignalTime - refRdWarninginfoTime));
+
 		// 电子眼
 		OpRefRdElectroniceye opRefRdElectroniceye = new OpRefRdElectroniceye(
 				this.getConn());
-		opRefRdElectroniceye.run(this.getResult(), oldLink, newLinks);
-		long refRdElectroniceyeTime=System.currentTimeMillis();
-		log.info("电子眼 USE TIME  " + String.valueOf(refRdElectroniceyeTime-refRdTrafficsignalTime));	
+		opRefRdElectroniceye.run(this.getResult(), oldLink, this.getCommand().getNewLinks());
+		long refRdElectroniceyeTime = System.currentTimeMillis();
+		log.info("电子眼 USE TIME  "
+				+ String.valueOf(refRdElectroniceyeTime
+						- refRdTrafficsignalTime));
 		// 大门
 		OpRefRdGate opRefRdGate = new OpRefRdGate(this.getConn());
-		opRefRdGate.run(this.getResult(), oldLink, newLinks);
-		long refRdGateTime=System.currentTimeMillis();
-		log.info("大门 USE TIME  " + String.valueOf(refRdGateTime-refRdElectroniceyeTime));	
-	
+		opRefRdGate.run(this.getResult(), oldLink, this.getCommand().getNewLinks());
+		long refRdGateTime = System.currentTimeMillis();
+		log.info("大门 USE TIME  "
+				+ String.valueOf(refRdGateTime - refRdElectroniceyeTime));
+
 		// 分岔路提示
 		OpRefRdSe opRefRdSe = new OpRefRdSe(this.getConn());
-		opRefRdSe.run(this.getResult(), oldLink, newLinks);
-		
-		long refRdSeTime=System.currentTimeMillis();
-		log.info("分岔路提示USE TIME  " + String.valueOf(refRdSeTime-refRdGateTime));
+		opRefRdSe.run(this.getResult(), oldLink, this.getCommand().getNewLinks());
+
+		long refRdSeTime = System.currentTimeMillis();
+		log.info("分岔路提示USE TIME  "
+				+ String.valueOf(refRdSeTime - refRdGateTime));
 		// 减速带
 		OpRefRdSpeedbum opRefRdSpeedbum = new OpRefRdSpeedbum(this.getConn());
-		opRefRdSpeedbum.run(this.getResult(), oldLink, newLinks);
-		long refRdSpeedbumTime=System.currentTimeMillis();
-		log.info("减速带USE TIME  " + String.valueOf(refRdSpeedbumTime-refRdSeTime));
+		opRefRdSpeedbum.run(this.getResult(), oldLink, this.getCommand().getNewLinks());
+		long refRdSpeedbumTime = System.currentTimeMillis();
+		log.info("减速带USE TIME  "
+				+ String.valueOf(refRdSpeedbumTime - refRdSeTime));
 		// 坡度
 		OpRefRdSlope opRefRdSlope = new OpRefRdSlope(this.getConn());
-		opRefRdSlope.run(this.getResult(), oldLink, newLinks);
-		long refRdSlopeTime=System.currentTimeMillis();
-		log.info("坡度USE TIME  " + String.valueOf(refRdSlopeTime-refRdSpeedbumTime));
+		opRefRdSlope.run(this.getResult(), oldLink,this.getCommand().getNewLinks());
+		long refRdSlopeTime = System.currentTimeMillis();
+		log.info("坡度USE TIME  "
+				+ String.valueOf(refRdSlopeTime - refRdSpeedbumTime));
 		// 顺行
 		OpRefRdDirectroute opRefRdDirectroute = new OpRefRdDirectroute(
 				this.getConn());
 		opRefRdDirectroute.run(this.getResult(), this.rdLinkBreakpoint,
-				newLinks);
-		long refRdDirectrouteTime=System.currentTimeMillis();
-		log.info("顺行USE TIME  " + String.valueOf(refRdDirectrouteTime-refRdSlopeTime));
+				this.getCommand().getNewLinks());
+		long refRdDirectrouteTime = System.currentTimeMillis();
+		log.info("顺行USE TIME  "
+				+ String.valueOf(refRdDirectrouteTime - refRdSlopeTime));
 		// CRF交叉点
 		OpRefRdInter opRefRdInter = new OpRefRdInter(this.getConn());
-		opRefRdInter.run(this.getResult(), this.rdLinkBreakpoint, newLinks);
-		
-		long refRdInterTime=System.currentTimeMillis();
-		log.info("CRF交叉点USE TIME  " + String.valueOf(refRdInterTime-refRdDirectrouteTime));
+		opRefRdInter.run(this.getResult(), this.rdLinkBreakpoint, this.getCommand().getNewLinks());
+
+		long refRdInterTime = System.currentTimeMillis();
+		log.info("CRF交叉点USE TIME  "
+				+ String.valueOf(refRdInterTime - refRdDirectrouteTime));
 		// CRF道路
 		OpRefRdRoad opRefRdRoad = new OpRefRdRoad(this.getConn());
-		opRefRdRoad.run(this.getResult(), this.rdLinkBreakpoint, newLinks);
-		long refRdRoadTime=System.currentTimeMillis();
-		log.info("CRF道路USE TIME  " + String.valueOf(refRdRoadTime-refRdInterTime));
+		opRefRdRoad.run(this.getResult(), this.rdLinkBreakpoint, this.getCommand().getNewLinks());
+		long refRdRoadTime = System.currentTimeMillis();
+		log.info("CRF道路USE TIME  "
+				+ String.valueOf(refRdRoadTime - refRdInterTime));
 		// CRF对象
 		OpRefRdObject opRefRdObject = new OpRefRdObject(this.getConn());
-		opRefRdObject.run(this.getResult(), this.rdLinkBreakpoint, newLinks);
-		
-		long refRdObjectTime=System.currentTimeMillis();
-		log.info("CRF对象USE TIME  " + String.valueOf(refRdObjectTime-refRdRoadTime));
+		opRefRdObject.run(this.getResult(), this.rdLinkBreakpoint, this.getCommand().getNewLinks());
+
+		long refRdObjectTime = System.currentTimeMillis();
+		log.info("CRF对象USE TIME  "
+				+ String.valueOf(refRdObjectTime - refRdRoadTime));
 		// 收费站
 		OpRefRdTollgate opRefRdTollgate = new OpRefRdTollgate(this.getConn());
-		opRefRdTollgate.run(this.getResult(), oldLink, newLinks);
-		long refRdTollgateTime=System.currentTimeMillis();
-		log.info("收费站USE TIME  " + String.valueOf(refRdTollgateTime-refRdObjectTime));
+		opRefRdTollgate.run(this.getResult(), oldLink, this.getCommand().getNewLinks());
+		long refRdTollgateTime = System.currentTimeMillis();
+		log.info("收费站USE TIME  "
+				+ String.valueOf(refRdTollgateTime - refRdObjectTime));
 		// 语音引导
 		OpRefRdVoiceguide opRefRdVoiceguide = new OpRefRdVoiceguide(
 				this.getConn());
 		opRefRdVoiceguide
-				.run(this.getResult(), this.rdLinkBreakpoint, newLinks);
-		long refRdVoiceguideTime=System.currentTimeMillis();
-		log.info("语音引导USE TIME  " + String.valueOf(refRdVoiceguideTime-refRdTollgateTime));
+				.run(this.getResult(), this.rdLinkBreakpoint, this.getCommand().getNewLinks());
+		long refRdVoiceguideTime = System.currentTimeMillis();
+		log.info("语音引导USE TIME  "
+				+ String.valueOf(refRdVoiceguideTime - refRdTollgateTime));
 		// 可变限速
-		
+
 		OpRefRdVariableSpeed opRefRdVariableSpeed = new OpRefRdVariableSpeed(
 				this.getConn());
 		opRefRdVariableSpeed.run(this.getResult(), this.rdLinkBreakpoint,
-				newLinks);
-		long refRdVariableSpeedTime=System.currentTimeMillis();
-		log.info("可变限速USE TIME  " + String.valueOf(refRdVariableSpeedTime-refRdVoiceguideTime));
+				this.getCommand().getNewLinks());
+		long refRdVariableSpeedTime = System.currentTimeMillis();
+		log.info("可变限速USE TIME  "
+				+ String.valueOf(refRdVariableSpeedTime - refRdVoiceguideTime));
 		// POI被动维护
 		OpRefPoi opRefPoi = new OpRefPoi(this.getConn());
-		opRefPoi.run(this.getResult(), this.rdLinkBreakpoint, newLinks);
-		long refPoiTime=System.currentTimeMillis();
-		log.info("POI被动维护USE TIME  " + String.valueOf(refPoiTime-refRdVariableSpeedTime));
-		//同一点同一线维护
+		opRefPoi.run(this.getResult(), this.rdLinkBreakpoint, this.getCommand().getNewLinks());
+		long refPoiTime = System.currentTimeMillis();
+		log.info("POI被动维护USE TIME  "
+				+ String.valueOf(refPoiTime - refRdVariableSpeedTime));
+		// 同一点同一线维护
 		if (!this.getCommand().getOperationType().equals("innerRun")) {
 			OpRefRelationObj opRefRelationObj = new OpRefRelationObj(
 					this.getConn());
@@ -538,9 +560,10 @@ public class Process extends AbstractProcess<Command> {
 			opRefRelationObj.handleSameLink(this.rdLinkBreakpoint,
 					this.getCommand(), this.getResult());
 		}
-		long refSameTime=System.currentTimeMillis();
-		log.info("同一点同一线维护USE TIME  " + String.valueOf(refSameTime-refPoiTime));
-		
+		long refSameTime = System.currentTimeMillis();
+		log.info("同一点同一线维护USE TIME  "
+				+ String.valueOf(refSameTime - refPoiTime));
+
 	}
 
 	/**
@@ -741,9 +764,10 @@ public class Process extends AbstractProcess<Command> {
 		return infects;
 
 	}
+
 	public static void main(String[] args) {
-		long l1= System.currentTimeMillis();
+		long l1 = System.currentTimeMillis();
 		System.out.println(l1);
-		
+
 	}
 }

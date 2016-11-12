@@ -10,6 +10,8 @@ import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.man.model.Task;
 
+import net.sf.json.JSONObject;
+
 
 /*
  * @author mayunfei
@@ -60,5 +62,7 @@ public interface ManApi{
 	public Map<String, Object> queryTaskStatByTaskId(long taskId) throws Exception;
 	
 	public Map<String, Object> getUserInfoByUserId(long userId) throws Exception;
+	
+	public int createJob(long userId,String produceType, JSONObject paraJson) throws Exception;
 }
 

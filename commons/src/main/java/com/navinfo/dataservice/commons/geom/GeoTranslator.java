@@ -1,7 +1,11 @@
 package com.navinfo.dataservice.commons.geom;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -40,7 +44,7 @@ import com.vividsolutions.jts.precision.GeometryPrecisionReducer;
  * 几何的转换类
  */
 public class GeoTranslator {
-	
+
 	private static final GeometryFactory geoFactory = new GeometryFactory();
 
 	private static final MfGeoFactory mfFactory = new MfGeoFactory() {
@@ -82,8 +86,7 @@ public class GeoTranslator {
 
 	private static final MfGeoJSONReader mfreader = new MfGeoJSONReader(
 			mfFactory);
-	
-	
+
 	/**
 	 * 点p0是否在点p1和p2的线上
 	 * 
@@ -106,17 +109,17 @@ public class GeoTranslator {
 
 		sb2.append(")");
 
-		Geometry line = GeometryUtils.getLineFromPoint(p1,p2);
+		Geometry line = GeometryUtils.getLineFromPoint(p1, p2);
 
 		Geometry point = new WKTReader().read(sb2.toString());
-		
+
 		if (line.distance(point) <= 1) {
 			flag = true;
 		}
 
 		return flag;
 	}
-	
+
 	/**
 	 * 点p0是否在点p1和p2的线上，不包含端点
 	 * 
@@ -129,32 +132,31 @@ public class GeoTranslator {
 	 * @return True 在线上； False 不在线上
 	 * @throws Exception
 	 */
-	public static boolean isIntersectionInLine(double[] p1, double[] p2, double[] p0)
-			throws Exception {
+	public static boolean isIntersectionInLine(double[] p1, double[] p2,
+			double[] p0) throws Exception {
 		boolean flag = false;
-		
-		if(p1 == p0 || p2 == p0)
-		{
+
+		if (p1 == p0 || p2 == p0) {
 			return flag;
 		}
-		
+
 		StringBuilder sb2 = new StringBuilder("Point (" + p0[0]);
 
 		sb2.append(" " + p0[1]);
 
 		sb2.append(")");
 
-		Geometry line = GeometryUtils.getLineFromPoint(p1,p2);
+		Geometry line = GeometryUtils.getLineFromPoint(p1, p2);
 
 		Geometry point = new WKTReader().read(sb2.toString());
-		
+
 		if (line.distance(point) <= 1) {
 			flag = true;
 		}
 
 		return flag;
 	}
-	
+
 	/**
 	 * 点p0是否在点p1和p2的线上(墨卡托坐标)
 	 * 
@@ -222,7 +224,7 @@ public class GeoTranslator {
 
 		return g;
 	}
-	
+
 	/**
 	 * Oracle几何体转wkt几何
 	 * 
@@ -261,35 +263,37 @@ public class GeoTranslator {
 
 		return g;
 	}
-	
-	public static JGeometry wkt2JGrometry(String wktStr) throws GeometryExceptionWithContext{
-		
-		WKT wkt = new WKT();  
-		
-		JGeometry geom = wkt.toJGeometry(wktStr.getBytes());  
-		
+
+	public static JGeometry wkt2JGrometry(String wktStr)
+			throws GeometryExceptionWithContext {
+
+		WKT wkt = new WKT();
+
+		JGeometry geom = wkt.toJGeometry(wktStr.getBytes());
+
 		geom.setSRID(8307);
-		
+
 		return geom;
 	}
-	
-	public static Geometry wkt2Geometry(String wkt) throws Exception{
-		GeometryFactory geometryFactory = new GeometryFactory();  
-		WKTReader reader = new WKTReader( geometryFactory );  
-		Geometry geometry=reader.read(wkt);  
+
+	public static Geometry wkt2Geometry(String wkt) throws Exception {
+		GeometryFactory geometryFactory = new GeometryFactory();
+		WKTReader reader = new WKTReader(geometryFactory);
+		Geometry geometry = reader.read(wkt);
 		return geometry;
 	}
-	
-	public static JGeometry Jts2JGeometry(Geometry jts, double scale, int precision) throws GeometryExceptionWithContext{
-		
-		WKT wkt = new WKT();  
-		
+
+	public static JGeometry Jts2JGeometry(Geometry jts, double scale,
+			int precision) throws GeometryExceptionWithContext {
+
+		WKT wkt = new WKT();
+
 		String str = GeoTranslator.jts2Wkt(jts, scale, precision);
-		
-		JGeometry geom = wkt.toJGeometry(str.getBytes());  
-		
+
+		JGeometry geom = wkt.toJGeometry(str.getBytes());
+
 		geom.setSRID(8307);
-		
+
 		return geom;
 	}
 
@@ -434,7 +438,7 @@ public class GeoTranslator {
 	 */
 	public static Geometry transform(Geometry geom, double scale, int precision) {
 
-		//防止开发人员在同一级别对Geometry重复缩放，捕获catch后按代码修改前逻辑缩放Geometry。
+		// 防止开发人员在同一级别对Geometry重复缩放，捕获catch后按代码修改前逻辑缩放Geometry。
 		try {
 			Coordinate flagCoordinate = geom.getCoordinate();
 
@@ -457,7 +461,7 @@ public class GeoTranslator {
 		} catch (Exception e) {
 			// 不处理异常 继续向下执行
 		}
-		
+
 		AffineTransformation aff = new AffineTransformation();
 
 		aff = aff.scale(scale, scale);
@@ -553,101 +557,183 @@ public class GeoTranslator {
 		return mbr;
 
 	}
-	
+
 	public static Geometry point2Jts(double x, double y) throws JSONException {
-		
+
 		Coordinate coordinate = new Coordinate(x, y);
-		
+
 		Point point = geoFactory.createPoint(coordinate);
-		
+
 		return point;
 	}
-	
-	public static double calAngle(double x11,double y11,double x12,double y12,double x21,double y21,double x22,double y22){
-//		double k1 = (y11-y12)/(x11-x12);
-//		double k2 = (y21-y22)/(x21-x22);
-//		double angle1 = Math.abs(Math.atan(k1)/(Math.PI/180));
-//		double angle2 = Math.abs(Math.atan(k2)/(Math.PI/180));
-//		
-//		return Math.round(Math.abs(angle1-angle2));
-		
-		double a = Math.atan2(y11-y12, x11-x12);
-		
-		double b =  Math.atan2(y21-y22, x21-x22);
-		
+
+	public static double calAngle(double x11, double y11, double x12,
+			double y12, double x21, double y21, double x22, double y22) {
+		// double k1 = (y11-y12)/(x11-x12);
+		// double k2 = (y21-y22)/(x21-x22);
+		// double angle1 = Math.abs(Math.atan(k1)/(Math.PI/180));
+		// double angle2 = Math.abs(Math.atan(k2)/(Math.PI/180));
+		//
+		// return Math.round(Math.abs(angle1-angle2));
+
+		double a = Math.atan2(y11 - y12, x11 - x12);
+
+		double b = Math.atan2(y21 - y22, x21 - x22);
+
 		return Math.round(Angle.toDegrees(b - a));
 	}
+
 	/**
 	 * 线几何组成面的几何
 	 * 
-	 * @param List<Geometry> 
-	 *            线几何
+	 * @param List
+	 *            <Geometry> 线几何
 	 * @return 面几何
 	 */
-	 public  static Geometry getCalLineToPython(List<Geometry>  gList) throws Exception{
-		  Coordinate[] c = null;
-		  List<Coordinate> list = new ArrayList<Coordinate>();
-		  for(Geometry g : gList){
-			  c = (Coordinate[])ArrayUtils.addAll(c,g.getCoordinates());
-		  }   
-		  for(int i = 0 ; i < c.length;i++){
-	        	
-	        	 if(!list.contains(c[i])){
-	        		 list.add(c[i]);
-	        	 }
-	        }
-		  list = getOrderCoordinate(list, gList);
-	      list.add(c[0]);
-	      Coordinate[] c1 = new Coordinate[list.size()];
-	      for(int i = 0  ; i < list.size();  i++){
-	        	c1[i] = list.get(i);
-	       }
-	      
-	      return geoFactory.createPolygon(c1);
-	  
-	 }
-	 
-	 /**
-		 * 线几何按逆序组成面的几何
-		 * 
-		 * @param List<Geometry> 
-		 *            线几何
-		 * @return 面几何
-		 */
-		 public  static Geometry getPolygonToPoints(Coordinate[] c) throws Exception{
-			 return geoFactory.createPolygon(c);
-		  
-		 }
-		 public static List<Coordinate> getOrderCoordinate(List<Coordinate> coordinates,List<Geometry> gList) throws JSONException {
-
-			 List<Coordinate> rlist = new ArrayList<Coordinate>();
-			 Coordinate currentCoordinate =coordinates.get(0);
-			 rlist.add(currentCoordinate);
-			 int size = coordinates.size();
-			 while(rlist.size() !=size){
-				 coordinates.removeAll(rlist);
-				 for(Coordinate coordinate:coordinates){
-					 if(isGoordinateToLine(currentCoordinate,coordinate,gList)){
-						 rlist.add(coordinate);
-						 currentCoordinate = coordinate;
-						 break;
-					 }
-				 }
-				 
-			 }
-			 return rlist;
+	public static Geometry getCalLineToPython(List<Geometry> gList)
+			throws Exception {
+		Coordinate[] c = null;
+		List<Coordinate> list = new ArrayList<Coordinate>();
+		for (Geometry g : gList) {
+			c = (Coordinate[]) ArrayUtils.addAll(c, g.getCoordinates());
 		}
-		 
-		public static boolean isGoordinateToLine(Coordinate c1,Coordinate c2,List<Geometry> gList){
-			Coordinate[] coordinates = new Coordinate[2];
-			coordinates[0]=c1;
-			coordinates[1]=c2;
-			 for(Geometry g:gList){
-				LineString line=geoFactory.createLineString(g.getCoordinates());
-				if(line.contains(geoFactory.createLineString(coordinates))||line.contains(geoFactory.createLineString(coordinates).reverse())){
-					return true;
+		for (int i = 0; i < c.length; i++) {
+
+			if (!list.contains(c[i])) {
+				list.add(c[i]);
+			}
+		}
+		list = getOrderCoordinate(list, gList);
+		list.add(c[0]);
+		Coordinate[] c1 = new Coordinate[list.size()];
+		for (int i = 0; i < list.size(); i++) {
+			c1[i] = list.get(i);
+		}
+
+		return geoFactory.createPolygon(c1);
+
+	}
+
+	/**
+	 * 线几何按逆序组成面的几何
+	 * 
+	 * @param List
+	 *            <Geometry> 线几何
+	 * @return 面几何
+	 */
+	public static Geometry getPolygonToPoints(Coordinate[] c) throws Exception {
+		return geoFactory.createPolygon(c);
+
+	}
+
+	public static List<Coordinate> getOrderCoordinate(
+			List<Coordinate> coordinates, List<Geometry> gList)
+			throws JSONException {
+
+		List<Coordinate> rlist = new ArrayList<Coordinate>();
+		Coordinate currentCoordinate = coordinates.get(0);
+		rlist.add(currentCoordinate);
+		int size = coordinates.size();
+		while (rlist.size() != size) {
+			coordinates.removeAll(rlist);
+			for (Coordinate coordinate : coordinates) {
+				if (isGoordinateToLine(currentCoordinate, coordinate, gList)) {
+					rlist.add(coordinate);
+					currentCoordinate = coordinate;
+					break;
 				}
-			 }
-			 return false;
-		 }
+			}
+
+		}
+		return rlist;
+	}
+
+	public static boolean isGoordinateToLine(Coordinate c1, Coordinate c2,
+			List<Geometry> gList) {
+		Coordinate[] coordinates = new Coordinate[2];
+		coordinates[0] = c1;
+		coordinates[1] = c2;
+		for (Geometry g : gList) {
+			LineString line = geoFactory.createLineString(g.getCoordinates());
+			if (line.contains(geoFactory.createLineString(coordinates))
+					|| line.contains(geoFactory.createLineString(coordinates)
+							.reverse())) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/***
+	 * zhaokk LineString 加入形状点 组成一个新的link
+	 * 
+	 * @throws Exception
+	 */
+	public static LineString getReformLineString(LineString lineString,
+			Set<Point> points) throws Exception {
+
+		List<Coordinate> coordinates = new ArrayList<Coordinate>();
+		Geometry geometry = GeoTranslator.transform(lineString, 100000, 5);
+		for (Point point : points) {
+			// 扩大100000倍保持精度
+			double lon = point.getX() * 100000;
+			double lat = point.getY() * 100000;
+			for (int i = 0; i < geometry.getCoordinates().length; i++) {
+
+				Coordinate cs = geometry.getCoordinates()[i];
+				Coordinate ce = geometry.getCoordinates()[i + 1];
+				coordinates.add(cs);
+				// 是否在形状点上
+				if (Math.abs(lon - ce.x) < 0.0000001
+						&& Math.abs(lat - ce.y) < 0.0000001) {
+					continue;
+
+				}
+				// 是否在线段上
+				else if (GeoTranslator.isIntersection(
+						new double[] { cs.x, cs.y },
+						new double[] { ce.x, ce.y }, new double[] { lon, lat })) {
+					coordinates.add(point.getCoordinate());
+
+				} else {
+					throw new Exception("打断的点不在打断LINK上");
+				}
+			}
+
+		}
+		// 返回linestring
+		Coordinate[] c = (Coordinate[]) coordinates
+				.toArray(new Coordinate[coordinates.size()]);
+		return (LineString) GeoTranslator.transform(
+				geoFactory.createLineString(c), 0.00001, 5);
+
+	}
+	/***
+	 * 按顺序返回线上对应的形状点
+	 * zhaokk
+	 * @param lineString
+	 * @param points
+	 * @return
+	 * @throws Exception
+	 */
+	public static List<Point> getOrderPoints(LineString lineString,
+			Set<Point> points) throws Exception {
+		List<Point> list = new ArrayList<Point>();
+		LineString line = getReformLineString(lineString, points);
+		Map<Integer, Point> map = new TreeMap<Integer, Point>();
+		for (Point point : points) {
+			for (int i = 0; i < line.getCoordinates().length; i++) {
+				Coordinate c = line.getCoordinates()[i];
+				if(point.getX() == c.x && point.getY() == c.y){
+					map.put(i, point);
+					break;
+				}
+			}
+		}
+		list.addAll(map.values());
+
+		return list;
+
+	}
+
 }

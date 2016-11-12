@@ -38,7 +38,12 @@ public class RdSpeedbumpSearch implements ISearch {
 		RdSpeedbumpSelector selector = new RdSpeedbumpSelector(this.conn);
 		return (IObj) selector.loadById(pid, false);
 	}
-
+	
+	@Override
+	public IObj searchDataByPids(List<Integer> pidList) throws Exception {
+		return null;
+	}
+	
 	@Override
 	public List<SearchSnapshot> searchDataBySpatial(String wkt) throws Exception {
 		return null;

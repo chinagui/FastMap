@@ -28,10 +28,11 @@ public class JobTest {
 			//初始化context
 			JobScriptsInterface.initContext();
 			//执行job
-			int jobId=54;
+			int jobId=777;
 			JobInfo jobInfo = JobService.getInstance().getJobById(jobId);
 			AbstractJob job = JobCreateStrategy.createAsMethod(jobInfo);
-			job.run();
+//			job.run();
+			job.execute();
 			job.getJobInfo().getResponse();
 			
 			System.out.println("Over.");

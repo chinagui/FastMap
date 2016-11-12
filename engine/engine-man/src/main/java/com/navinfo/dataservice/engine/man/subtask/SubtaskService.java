@@ -322,10 +322,12 @@ public class SubtaskService {
 				}
 				if(subtaskIdList.size()==0){return updatedSubtaskIdList;}
 				//查询子任务
-				List<Subtask> list = SubtaskOperation.getSubtaskListBySubtaskIdList(conn,subtaskIdList);
-				if(list != null && list.size()>0){
-					for (Subtask subtask : list) {
-						SubtaskOperation.pushMessage(conn,subtask,userId);
+				if(!subtaskIdList.isEmpty()){
+					List<Subtask> list = SubtaskOperation.getSubtaskListBySubtaskIdList(conn,subtaskIdList);
+					if(list != null && list.size()>0){
+						for (Subtask subtask : list) {
+							SubtaskOperation.pushMessage(conn,subtask,userId);
+						}
 					}
 				}
 			} catch (Exception e) {
@@ -751,7 +753,7 @@ public class SubtaskService {
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
 
-			String selectSql = "select c.admin_id from block b, city c, subtask s where s.block_id=b.block_id and b.city_id=c.city_id and s.subtask_id=:1";
+			String selectSql = "select c.admin_id from block_man bm,block b, city c, subtask s where s.block_man_id=bm.block_man_id and b.block_id = bm.block_id and b.city_id=c.city_id and s.subtask_id=:1";
 
 			selectSql += " union all";
 

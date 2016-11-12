@@ -17,6 +17,8 @@ import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.commons.util.ZipUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiChargingPlot;
+import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiChargingStation;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiGasstation;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiHotel;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiParking;
@@ -469,8 +471,58 @@ public class PoiDownloadOperation {
 				jsonObj.put("hotel", JSONNull.getInstance());
 			}
 			
-			jsonObj.put("chargingStation", JSONNull.getInstance());
-			jsonObj.put("chargingPole", new ArrayList<Object>());
+			List<IRow> chargingStationList = poi.getChargingstations();
+			if (chargingStationList.size()>0) {
+				IxPoiChargingStation chargingStation = (IxPoiChargingStation) chargingStationList.get(0);
+				JSONObject chargingStationObj = new JSONObject();
+				chargingStationObj.put("type", chargingStation.getChargingType());
+				chargingStationObj.put("changeBrands", chargingStation.getChangeBrands());
+				chargingStationObj.put("changeOpenType", chargingStation.getChangeOpenType());
+				chargingStationObj.put("servicePro", chargingStation.getServiceProv());
+				chargingStationObj.put("chargingNum", chargingStation.getChargingNum());
+				chargingStationObj.put("openHour", chargingStation.getOpenHour());
+				chargingStationObj.put("parkingFees", chargingStation.getParkingFees());
+				chargingStationObj.put("parkingInfo", chargingStation.getParkingInfo());
+				chargingStationObj.put("availableState", chargingStation.getAvailableState());
+				chargingStationObj.put("rowId", chargingStation.getRowId());
+				jsonObj.put("chargingStation", chargingStationObj);
+			} else {
+				jsonObj.put("chargingStation", JSONNull.getInstance());
+			}
+			
+			List<IRow> chargingPole = poi.getChargingplots();
+			if (chargingPole.size()>0) {
+				JSONArray chargingPoleArray = new JSONArray();
+				for (IRow charging:chargingPole) {
+					IxPoiChargingPlot ixPoiChargingplot = (IxPoiChargingPlot) charging;
+					JSONObject chargingPoleObj = new JSONObject();
+					chargingPoleObj.put("groupId", ixPoiChargingplot.getGroupId());
+					chargingPoleObj.put("acdc", ixPoiChargingplot.getAcdc());
+					chargingPoleObj.put("plugType", ixPoiChargingplot.getPlugType());
+					chargingPoleObj.put("power", ixPoiChargingplot.getPower());
+					chargingPoleObj.put("voltage", ixPoiChargingplot.getVoltage());
+					chargingPoleObj.put("current", ixPoiChargingplot.getCurrent());
+					chargingPoleObj.put("mode", ixPoiChargingplot.getMode());
+					chargingPoleObj.put("count", ixPoiChargingplot.getCount());
+					chargingPoleObj.put("plugNum", ixPoiChargingplot.getPlugNum());
+					chargingPoleObj.put("prices", ixPoiChargingplot.getPrices());
+					chargingPoleObj.put("openType", ixPoiChargingplot.getOpenType());
+					chargingPoleObj.put("availableState", ixPoiChargingplot.getAvailableState());
+					chargingPoleObj.put("manufacturer", ixPoiChargingplot.getManufacturer());
+					chargingPoleObj.put("factoryNum", ixPoiChargingplot.getFactoryNum());
+					chargingPoleObj.put("plotNum", ixPoiChargingplot.getPlotNum());
+					chargingPoleObj.put("productNum", ixPoiChargingplot.getProductNum());
+					chargingPoleObj.put("parkingNum", ixPoiChargingplot.getParkingNum());
+					chargingPoleObj.put("floor", ixPoiChargingplot.getFloor());
+					chargingPoleObj.put("locationType", ixPoiChargingplot.getLocationType());
+					chargingPoleObj.put("payment", ixPoiChargingplot.getRowId());
+					chargingPoleObj.put("rowId", ixPoiChargingplot.getRowId());
+					chargingPoleArray.add(chargingPoleObj);
+				}
+				jsonObj.put("chargingPole", chargingPoleArray);
+			} else {
+				jsonObj.put("chargingPole", new ArrayList<Object>());
+			}
 			
 			List<IRow> gasStationList = poi.getGasstations();
 			if (gasStationList.size()>0) {

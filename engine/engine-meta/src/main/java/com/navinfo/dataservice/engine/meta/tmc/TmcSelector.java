@@ -24,16 +24,16 @@ import oracle.sql.STRUCT;
  * @Description: TODO
  */
 public class TmcSelector {
-	
+
 	private Connection conn;
 
-    public TmcSelector() {
-    }
+	public TmcSelector() {
+	}
 
-    public TmcSelector(Connection conn) {
-        this.conn = conn;
-    }
-    
+	public TmcSelector(Connection conn) {
+		this.conn = conn;
+	}
+
 	public List<SearchSnapshot> queryTmcPoint(int x, int y, int z, int gap) throws Exception {
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
@@ -46,32 +46,32 @@ public class TmcSelector {
 		try {
 
 			pstmt = conn.prepareStatement(sql);
-			
+
 			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
 
 			pstmt.setString(1, wkt);
-			
+
 			resultSet = pstmt.executeQuery();
 
 			double px = MercatorProjection.tileXToPixelX(x);
 
 			double py = MercatorProjection.tileYToPixelY(y);
-			
+
 			while (resultSet.next()) {
 				SearchSnapshot snapshot = new SearchSnapshot();
 
 				snapshot.setI(resultSet.getString("TMC_ID"));
-				
+
 				JSONObject m = new JSONObject();
 
 				m.put("a", resultSet.getInt("LOC_CODE"));
-				
+
 				m.put("b", resultSet.getString("TRANSLATE_NAME"));
 
 				snapshot.setM(m);
 
 				snapshot.setT(48);
-				
+
 				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
 
 				JSONObject geojson = Geojson.spatial2Geojson(struct);
@@ -84,10 +84,9 @@ public class TmcSelector {
 			}
 		} catch (Exception e) {
 			throw e;
-		}
-		finally {
+		} finally {
 			DBUtils.closeResultSet(resultSet);
-            DBUtils.closeStatement(pstmt);
+			DBUtils.closeStatement(pstmt);
 		}
 		return list;
 	}

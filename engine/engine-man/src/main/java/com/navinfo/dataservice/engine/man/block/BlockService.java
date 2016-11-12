@@ -1584,6 +1584,7 @@ public class BlockService {
 			//获取数据
 			List<Map<String, Object>> list = queryRunner.query(conn, sql, rsh, params);
 			//日志
+			log.info("查询的blockMan数据的sql"+sql);
 			log.info("查询的blockMan数据"+list.toString());
 			return list;
 		}catch(Exception e){

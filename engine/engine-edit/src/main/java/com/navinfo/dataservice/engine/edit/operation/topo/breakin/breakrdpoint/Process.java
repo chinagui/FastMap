@@ -406,23 +406,25 @@ public class Process extends AbstractProcess<Command> {
 
 		long startRelationObjTime = System.currentTimeMillis();
 		int oldLink = this.getCommand().getLinkPid();
+		
+		OpRefRelationObj opRefRelationObj = new OpRefRelationObj(
+				this.getConn());
 		// 交限
-
-		OpRefRestrict opRefRestrict = new OpRefRestrict(this.getCommand());
-		opRefRestrict.run(this.getResult());
+		opRefRelationObj.handleRdRestriction(this.getResult(), this.rdLinkBreakpoint,
+				this.getCommand().getNewLinks());
+		
 		long refRestrictTime = System.currentTimeMillis();
 		log.info(" 交限 USE TIME  "
 				+ String.valueOf(refRestrictTime - startRelationObjTime));
 		// 分歧
-		OpRefBranch opRefBranch = new OpRefBranch(this.getCommand());
-		opRefBranch.run(this.getResult());
+		opRefRelationObj.handleRdBranch(this.getResult(), this.rdLinkBreakpoint,
+				this.getCommand().getNewLinks());
 		long refBranchTime = System.currentTimeMillis();
 		log.info(" 分歧 USE TIME  "
 				+ String.valueOf(refBranchTime - refRestrictTime));
 		// 车信
-		OpRefLaneConnexity opRefLaneConnexity = new OpRefLaneConnexity(
-				this.getCommand());
-		opRefLaneConnexity.run(this.getResult());
+		opRefRelationObj.handleRdLaneconnexity(this.getResult(), this.rdLinkBreakpoint,
+				this.getCommand().getNewLinks());
 		long refLaneConnexityTime = System.currentTimeMillis();
 		log.info("车信USE TIME  "
 				+ String.valueOf(refLaneConnexityTime - refBranchTime));
@@ -494,11 +496,10 @@ public class Process extends AbstractProcess<Command> {
 		opRefRdSlope.run(this.getResult(), oldLink,this.getCommand().getNewLinks());
 		long refRdSlopeTime = System.currentTimeMillis();
 		log.info("坡度USE TIME  "
-				+ String.valueOf(refRdSlopeTime - refRdSpeedbumTime));
-		// 顺行
-		OpRefRdDirectroute opRefRdDirectroute = new OpRefRdDirectroute(
-				this.getConn());
-		opRefRdDirectroute.run(this.getResult(), this.rdLinkBreakpoint,
+				+ String.valueOf(refRdSlopeTime - refRdSpeedbumTime));		
+		
+		// 顺行	
+		opRefRelationObj.handleRdDirectroute(this.getResult(), this.rdLinkBreakpoint,
 				this.getCommand().getNewLinks());
 		long refRdDirectrouteTime = System.currentTimeMillis();
 		log.info("顺行USE TIME  "
@@ -529,11 +530,8 @@ public class Process extends AbstractProcess<Command> {
 		long refRdTollgateTime = System.currentTimeMillis();
 		log.info("收费站USE TIME  "
 				+ String.valueOf(refRdTollgateTime - refRdObjectTime));
-		// 语音引导
-		OpRefRdVoiceguide opRefRdVoiceguide = new OpRefRdVoiceguide(
-				this.getConn());
-		opRefRdVoiceguide
-				.run(this.getResult(), this.rdLinkBreakpoint, this.getCommand().getNewLinks());
+		// 语音引导			
+		opRefRelationObj.handleRdVoiceguide(this.getResult(), this.rdLinkBreakpoint, this.getCommand().getNewLinks());
 		long refRdVoiceguideTime = System.currentTimeMillis();
 		log.info("语音引导USE TIME  "
 				+ String.valueOf(refRdVoiceguideTime - refRdTollgateTime));
@@ -552,10 +550,11 @@ public class Process extends AbstractProcess<Command> {
 		long refPoiTime = System.currentTimeMillis();
 		log.info("POI被动维护USE TIME  "
 				+ String.valueOf(refPoiTime - refRdVariableSpeedTime));
+		
+		
 		// 同一点同一线维护
 		if (!this.getCommand().getOperationType().equals("innerRun")) {
-			OpRefRelationObj opRefRelationObj = new OpRefRelationObj(
-					this.getConn());
+			
 
 			opRefRelationObj.handleSameLink(this.rdLinkBreakpoint,
 					this.getCommand(), this.getResult());
@@ -563,6 +562,8 @@ public class Process extends AbstractProcess<Command> {
 		long refSameTime = System.currentTimeMillis();
 		log.info("同一点同一线维护USE TIME  "
 				+ String.valueOf(refSameTime - refPoiTime));
+		
+		
 
 	}
 

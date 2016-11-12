@@ -834,4 +834,285 @@ public class Operation implements IOperation {
 
 		return isConnect;
 	}
+
+	/**
+	 * 打断link维护
+	 * 
+	 * @param oldLinkPid
+	 *            被打断的link
+	 * @param newLinks
+	 *            新生成的link组
+	 * @param result
+	 * @param conn
+	 * @throws Exception
+	 */
+	public void breakRdLink(RdLink oldLink, List<RdLink> newLinks, Result result)
+			throws Exception {
+
+		if (conn == null) {
+			return;
+		}
+
+		RdBranchSelector selector = new RdBranchSelector(conn);
+
+		List<RdBranch> branchs = selector.loadByLinkPid(oldLink.getPid(), 1,
+				true);
+
+		for (RdBranch branch : branchs) {
+
+			if (branch.getInLinkPid() == oldLink.getPid()) {
+
+				breakInLink(branch, newLinks, result);
+			}
+		}
+
+		branchs = selector.loadByLinkPid(oldLink.getPid(), 2, true);
+
+		for (RdBranch branch : branchs) {
+
+			if (branch.getInLinkPid() == oldLink.getPid()) {
+
+				breakInLink(branch, newLinks, result);
+			}
+
+			if (branch.getOutLinkPid() == oldLink.getPid()) {
+
+				breakOutLink(branch, oldLink, newLinks, result);
+			}
+		}
+
+		branchs = selector.loadByLinkPid(oldLink.getPid(), 3, true);
+
+		for (RdBranch branch : branchs) {
+
+			breakPassLink(branch, oldLink, newLinks, result);
+		}
+
+	}
+
+	/**
+	 * 处理link为进入线
+	 * 
+	 * @param branch
+	 * @param newLinks
+	 * @param result
+	 */
+	private void breakInLink(RdBranch branch, List<RdLink> newLinks,
+			Result result) {
+
+		for (RdLink link : newLinks) {
+
+			if (branch.getNodePid() == link.getsNodePid()
+					|| branch.getNodePid() == link.geteNodePid()) {
+
+				branch.changedFields().put("inLinkPid", link.getPid());
+
+				result.insertObject(branch, ObjStatus.UPDATE, branch.pid());
+			}
+		}
+	}
+
+	/**
+	 * 处理link为退出线
+	 * 
+	 * @param branch
+	 * @param oldLink
+	 * @param newLinks
+	 * @param result
+	 * @throws Exception
+	 */
+	private void breakOutLink(RdBranch branch, RdLink oldLink,
+			List<RdLink> newLinks, Result result) throws Exception {
+
+		int connectionNodePid = 0;
+
+		// 无经过线进入点为连接点；有经过线最后一个经过线与退出线的连接点为连接点
+		if (branch.getVias().size() == 0) {
+
+			connectionNodePid = branch.getNodePid();
+
+		} else {
+
+			// 任意经过线组的最后一个经过线
+			RdBranchVia lastVia = (RdBranchVia) branch.getVias().get(0);
+
+			for (IRow rowVia : branch.getVias()) {
+
+				RdBranchVia via = (RdBranchVia) rowVia;
+
+				if (lastVia.getGroupId() == via.getGroupId()
+						&& lastVia.getSeqNum() < via.getSeqNum()) {
+
+					lastVia = via;
+				}
+			}
+
+			RdLinkSelector rdLinkSelector = new RdLinkSelector(this.conn);
+
+			List<Integer> linkPids = rdLinkSelector.loadLinkPidByNodePid(
+					oldLink.getsNodePid(), false);
+
+			if (linkPids.contains(lastVia.getLinkPid())) {
+
+				connectionNodePid = oldLink.getsNodePid();
+
+			} else {
+
+				connectionNodePid = oldLink.geteNodePid();
+			}
+		}
+
+		if (connectionNodePid == 0) {
+			return;
+		}
+
+		for (RdLink link : newLinks) {
+			if (connectionNodePid == link.getsNodePid()
+					|| connectionNodePid == link.geteNodePid()) {
+
+				branch.changedFields().put("outLinkPid", link.getPid());
+
+				result.insertObject(branch, ObjStatus.UPDATE, branch.pid());
+				break;
+			}
+		}
+
+	}
+
+	/**
+	 * 处理link为经过线
+	 * 
+	 * @param branch
+	 * @param oldLink
+	 * @param newLinks
+	 * @param result
+	 * @throws Exception
+	 */
+	private void breakPassLink(RdBranch branch, RdLink oldLink,
+			List<RdLink> newLinks, Result result) throws Exception {
+
+		if (branch.getVias().size() == 0) {
+			return;
+		}
+
+		// 对经过线分组
+		Map<Integer, List<RdBranchVia>> viaGroupId = new HashMap<Integer, List<RdBranchVia>>();
+
+		for (IRow row : branch.getVias()) {
+			RdBranchVia via = (RdBranchVia) row;
+
+			if (viaGroupId.get(via.getGroupId()) == null) {
+				viaGroupId.put(via.getGroupId(), new ArrayList<RdBranchVia>());
+			}
+
+			viaGroupId.get(via.getGroupId()).add(via);
+		}
+
+		// 分组处理经过线
+		for (int key : viaGroupId.keySet()) {
+
+			// 经过线组
+			List<RdBranchVia> viaGroup = viaGroupId.get(key);
+
+			RdBranchVia oldVia = null;
+
+			for (RdBranchVia via : viaGroup) {
+
+				if (via.getLinkPid() == oldLink.getPid()) {
+					oldVia = via;
+
+					break;
+				}
+			}
+
+			// 经过线组的link未被打断，不处理
+			if (oldVia == null) {
+				continue;
+			}
+
+			// 与进入线或前一个经过线的连接点
+			int connectionNodePid = 0;
+
+			// 打断的是第一个经过线link
+			if (oldVia.getSeqNum() == 1) {
+
+				connectionNodePid = branch.getNodePid();
+
+			} else {
+
+				int preLinkPid = 0;
+
+				for (RdBranchVia via : viaGroup) {
+
+					if (via.getSeqNum() == oldVia.getSeqNum() - 1) {
+
+						preLinkPid = via.getLinkPid();
+
+						break;
+					}
+				}
+
+				RdLinkSelector rdLinkSelector = new RdLinkSelector(this.conn);
+
+				List<Integer> linkPids = rdLinkSelector.loadLinkPidByNodePid(
+						oldLink.getsNodePid(), false);
+
+				connectionNodePid = linkPids.contains(preLinkPid) ? oldLink
+						.getsNodePid() : oldLink.geteNodePid();
+			}
+
+			if (newLinks.get(0).getsNodePid() == connectionNodePid
+					|| newLinks.get(0).geteNodePid() == connectionNodePid) {
+
+				for (int i = 0; i < newLinks.size(); i++) {
+
+					RdBranchVia newVia = new RdBranchVia();
+
+					newVia.setBranchPid(oldVia.getBranchPid());
+
+					newVia.setGroupId(oldVia.getGroupId());
+
+					newVia.setLinkPid(newLinks.get(i).getPid());
+
+					newVia.setSeqNum(oldVia.getSeqNum() + i);
+
+					result.insertObject(newVia, ObjStatus.INSERT,
+							newVia.getBranchPid());
+				}
+
+			} else {
+
+				for (int i = newLinks.size(); i > 0; i--) {
+					RdBranchVia newVia = new RdBranchVia();
+
+					newVia.setBranchPid(oldVia.getBranchPid());
+
+					newVia.setGroupId(oldVia.getGroupId());
+
+					newVia.setLinkPid(newLinks.get(i - 1).getPid());
+
+					newVia.setSeqNum(oldVia.getSeqNum() + newLinks.size() - i);
+
+					result.insertObject(newVia, ObjStatus.INSERT,
+							newVia.getBranchPid());
+				}
+			}
+
+			result.insertObject(oldVia, ObjStatus.DELETE, oldVia.getBranchPid());
+
+			// 处理后续经过线序号
+			for (RdBranchVia via : viaGroup) {
+
+				if (via.getSeqNum() > oldVia.getSeqNum()) {
+
+					via.changedFields().put("seqNum",
+							via.getSeqNum() + newLinks.size() - 1);
+
+					result.insertObject(via, ObjStatus.UPDATE,
+							via.getBranchPid());
+				}
+			}
+		}
+	}
+
 }

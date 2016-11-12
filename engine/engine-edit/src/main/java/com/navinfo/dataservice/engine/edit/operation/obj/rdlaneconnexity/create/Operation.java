@@ -289,6 +289,11 @@ public class Operation implements IOperation {
 		for (int i = 0; i < splits.length; i++) {
 
 			String split = splits[i];	
+			
+			if (split.startsWith("[")) {
+
+				split = split.substring(1, split.length() - 1);
+			}
 
 			if (split.contains("<")) {
 

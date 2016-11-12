@@ -68,8 +68,6 @@ public class RdTmcLocationSearch implements ISearch {
 			pstmt = conn.prepareStatement(sql);
 			
 			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
-			
-			System.out.println(wkt);
 
 			pstmt.setString(1, wkt);
 

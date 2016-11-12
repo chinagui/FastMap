@@ -122,6 +122,8 @@ public class SearchFactory {
                 return new RdMileagepileSearch(conn);
             case TMCPOINT:
             	 return new TmcPointSearch(conn);
+            case RDTMCLOCATION:
+           	 return new RdTmcLocationSearch(conn);
             default:
                 return null;
         }

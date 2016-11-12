@@ -17,6 +17,7 @@ import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.search.RdCrossSearch;
 import com.navinfo.dataservice.dao.glm.search.RdLinkSearch;
 import com.navinfo.dataservice.dao.glm.search.RdObjectSearch;
+import com.navinfo.dataservice.dao.glm.search.RdTmcLocationSearch;
 import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.operation.Transaction;
 import com.navinfo.dataservice.engine.edit.search.SearchProcess;
@@ -184,9 +185,9 @@ public class RdObjectTest extends InitApplication {
 		try {
 			conn = DBConnector.getInstance().getConnectionById(17);
 
-			RdObjectSearch search = new RdObjectSearch(conn);
+			RdTmcLocationSearch search = new RdTmcLocationSearch(conn);
 			
-			List<SearchSnapshot> data = search.searchDataByTileWithGap(108004, 49481, 17, 80);
+			List<SearchSnapshot> data = search.searchDataByTileWithGap(107829, 49685, 17, 80);
 			
 			System.out.println("data:"+ResponseUtils.assembleRegularResult(data));
 

@@ -80,7 +80,7 @@ public class SubtaskService {
 	/*
 	 * 创建一个子任务。 参数1：Subtask对象
 	 */
-	public void create(Subtask bean)throws ServiceException {
+	public int create(Subtask bean)throws ServiceException {
 		Connection conn = null;
 		try {
 			conn = DBConnector.getInstance().getManConnection();
@@ -105,6 +105,7 @@ public class SubtaskService {
 				SubtaskOperation.pushMessage(conn,bean);
 			}*/	
 			log.debug("子任务创建成功!");
+			return subtaskId;
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

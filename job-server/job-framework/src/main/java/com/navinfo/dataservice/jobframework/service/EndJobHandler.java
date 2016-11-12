@@ -38,7 +38,6 @@ public class EndJobHandler implements MsgHandler {
 	}
 	
 	public void sendMsg(String message){
-		String pushUserName = null;
 		try{
 			log.debug("sending msg to system message chanle");
 			JSONObject jobMsg = JSONObject.fromObject(message);
@@ -77,14 +76,12 @@ public class EndJobHandler implements MsgHandler {
 			}else{
 				runStatus = "执行完成";
 			}
-			//查询user数据
-			ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
-			Map<String, Object> userInfo = manApi.getUserInfoByUserId(userId);
-			log.info("userInfo:"+userInfo.toString());
-			if(userInfo != null && userInfo.size() > 0){
-				pushUserName = (String) userInfo.get("userRealName");
-			}
-			SysMsgPublisher.publishMsg(jobTypeName+"任务(ID:"+jobId+")"+runStatus+","+diffTime.toString(), resultMsg, 0, new long[]{userId}, 1, null, pushUserName);
+			
+			//关联要素
+			JSONObject msgParam = new JSONObject();
+			msgParam.put("relateObject", "JOB");
+			msgParam.put("relateObjectId", jobId);
+			SysMsgPublisher.publishMsg(jobTypeName+"任务(ID:"+jobId+")"+runStatus+","+diffTime.toString(), resultMsg, 0, new long[]{userId}, 1, msgParam.toString(), null);
 		}catch(Exception e){
 			log.warn("接收到end_job消息,但处理过程中出错，消息已消费。message："+message);
 			log.error(e.getMessage(),e);

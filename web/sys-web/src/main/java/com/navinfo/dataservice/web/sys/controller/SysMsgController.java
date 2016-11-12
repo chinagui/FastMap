@@ -178,6 +178,7 @@ public class SysMsgController extends BaseController {
 	
 	/**
 	 * 获取man管理消息列表
+	 * 消息中心-服务消息（全部角色）
 	 * @author Han Shaoming
 	 * @param request
 	 * @return
@@ -217,6 +218,7 @@ public class SysMsgController extends BaseController {
 	
 	/**
 	 * 批量修改管理信息状态
+	 * 消息中心-服务消息（全部角色）
 	 * @author Han Shaoming
 	 * @param request
 	 * @return

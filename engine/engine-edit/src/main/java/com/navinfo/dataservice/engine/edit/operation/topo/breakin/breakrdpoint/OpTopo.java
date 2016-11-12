@@ -2,10 +2,14 @@ package com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrdpoint;
 
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.util.JtsGeometryFactory;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
@@ -16,7 +20,9 @@ import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.engine.edit.utils.NodeOperateUtils;
 import com.navinfo.dataservice.engine.edit.utils.RdLinkOperateUtils;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
+import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Point;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -205,18 +211,60 @@ public class OpTopo implements IOperation {
 	 */
 	private void seriesBreak(Result result) throws Exception {
 		// 如果连续打断点不为空，且有值
-
 		int sNodePid = this.breakLink.getsNodePid();// 分割线的起点
 		int eNodePid = this.breakLink.geteNodePid();// 分割线的终点
-		Geometry geometry = GeoTranslator.transform(
-				this.breakLink.getGeometry(), 0.00001, 5);// 分割线的几何
-		Map<Geometry, JSONObject> map = RdLinkOperateUtils.splitRdLink(
-				geometry, sNodePid, eNodePid, this.command.getBreakNodes(),
-				result);
+		Set<Point> points = new HashSet<Point>();// 连续打断的点
+		//返回多次打断的点插入几何
+		LineString line = this.getReformGeometry(points);
+		//返回连续打断的点在几何上有序的集合
+		List<Point> orderPoints = GeoTranslator.getOrderPoints(line, points);
+		//返回分割时有序的参数几何
+		JSONArray breakArr = this.getSplitOrderPara(orderPoints);
+		Map<Geometry, JSONObject> map = RdLinkOperateUtils.splitRdLink(line,
+				sNodePid, eNodePid, breakArr, result);
 		this.createLinks(map, result);
 
 	}
 
+	/***
+	 * 获取形状点组成完整的几何（多次打断的点插入几何）
+	 * 
+	 * @return
+	 * @throws Exception
+	 */
+	private LineString getReformGeometry(Set<Point> points) throws Exception {
+		Geometry geometry = GeoTranslator.transform(
+				this.breakLink.getGeometry(), 0.00001, 5);// 分割线的几何
+		// 组装Point点信息 ，前端传入的Point是无序的
+		
+		for (int i = 0; i < this.command.getBreakNodes().size(); i++) {
+			JSONObject obj = this.command.getBreakNodes().getJSONObject(i);
+			double lon = obj.getDouble("lon");
+			double lat = obj.getDouble("lat");
+			points.add(JtsGeometryFactory.createPoint(new Coordinate(lon, lat)));
+		}
+		return GeoTranslator.getReformLineString((LineString) geometry, points);
+	}
+	/***
+	 * 创建多次打断方法 有序的分割参数集合
+	 * @param points
+	 * @return
+	 */
+	private JSONArray getSplitOrderPara( List<Point> points ){
+		JSONArray breakArr = new JSONArray();
+		for (Point point : points) {
+			for (int i = 0; i < this.command.getBreakNodes().size(); i++) {
+				JSONObject obj = this.command.getBreakNodes().getJSONObject(i);
+				double lon = obj.getDouble("lon");
+				double lat = obj.getDouble("lat");
+				if (point.getX() == lon && point.getY() == lat) {
+					breakArr.add(obj);
+					break;
+				}
+			}
+		}
+		return breakArr;
+	}
 	/***
 	 * 创建多次打断后的rdlink
 	 * 

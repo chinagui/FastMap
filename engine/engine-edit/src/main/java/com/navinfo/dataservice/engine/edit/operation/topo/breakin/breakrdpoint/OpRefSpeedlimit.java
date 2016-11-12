@@ -36,14 +36,14 @@ public class OpRefSpeedlimit implements IOperation {
 		
 			int inLinkPid = 0;
 
-			if (limit.getGeometry().distance(command.getLink1().getGeometry()) < limit
-					.getGeometry().distance(command.getLink2().getGeometry())) {
-
-				inLinkPid = command.getLink1().getPid();
-			} else {
-				
-				inLinkPid = command.getLink2().getPid();
-			}
+//			if (limit.getGeometry().distance(command.getLink1().getGeometry()) < limit
+//					.getGeometry().distance(command.getLink2().getGeometry())) {
+//
+//				inLinkPid = command.getLink1().getPid();
+//			} else {
+//				
+//				inLinkPid = command.getLink2().getPid();
+//			}
 
 			limit.changedFields().put("linkPid", inLinkPid);
 

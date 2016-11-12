@@ -153,37 +153,5 @@ public class Command extends AbstractCommand {
 		this.mapListJson = mapListJson;
 	}
 
-	public static void main(String[] args) {
-		JSONObject json = new JSONObject();
-		JSONArray array = new JSONArray();
-		JSONObject jsonObject = new JSONObject();
-		JSONArray array2 = new JSONArray();
-		JSONObject jsonObject2 = new JSONObject();
-		jsonObject2.put("A", 1);
-		jsonObject2.put("B", 2);
-		array2.add(jsonObject2);
-		jsonObject.put("linkPid", array2);
-		array.add(jsonObject);
-		json.put("catchLinks", array);
-		System.out.println(json);
-
-		JSONArray catchLinks = new JSONArray();
-
-		JSONArray array1 = json.getJSONArray("catchLinks");
-
-		for (int i = 0; i < array1.size(); i++) {
-			JSONObject jo = array1.getJSONObject(i);
-			if (jo.containsKey("linkPid")) {
-				JSONArray linkArray = jo.getJSONArray("linkPid");
-				for (int j = 0; j < linkArray.size(); j++) {
-					JSONObject geoPoint = linkArray.getJSONObject(i);
-					geoPoint.put("A", 3);
-					geoPoint.put("B", 4);
-				}
-			}
-			catchLinks.add(jo);
-		}
-		System.out.println(catchLinks);
-	}
-
+	
 }

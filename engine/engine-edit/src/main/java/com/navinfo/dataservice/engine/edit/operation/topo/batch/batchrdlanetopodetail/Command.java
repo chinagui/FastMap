@@ -97,7 +97,7 @@ public class Command extends AbstractCommand {
 			if(jsonObject.containsKey("laneTopoVias")){
 				List<IRow> topoVias = new ArrayList<IRow>();
 				for(int j =0 ;j < jsonObject.getJSONArray("laneTopoVias").size();j++){
-					JSONObject via = jsonObject.getJSONArray("laneTopoVias").getJSONObject(i);
+					JSONObject via = jsonObject.getJSONArray("laneTopoVias").getJSONObject(j);
 					RdLaneTopoVia topoVia = new RdLaneTopoVia();
 					topoVia.setLanePid(via.getInt("lanePid"));
 					topoVia.setSeqNum(via.getInt("seqNum"));

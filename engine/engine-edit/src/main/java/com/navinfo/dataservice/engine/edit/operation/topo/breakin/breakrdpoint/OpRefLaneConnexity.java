@@ -45,13 +45,13 @@ public class OpRefLaneConnexity implements IOperation {
 			Map<String, Object> changedFields = rr.changedFields();
 
 			int inLinkPid = 0;
-			if (rr.getNodePid() == command.getLink1().getsNodePid()) {
-
-				inLinkPid = command.getLink1().getPid();
-
-			} else {
-				inLinkPid = command.getLink2().getPid();
-			}
+//			if (rr.getNodePid() == command.getLink1().getsNodePid()) {
+//
+//				inLinkPid = command.getLink1().getPid();
+//
+//			} else {
+//				inLinkPid = command.getLink2().getPid();
+//			}
 
 			changedFields.put("inLinkPid", inLinkPid);
 
@@ -67,14 +67,14 @@ public class OpRefLaneConnexity implements IOperation {
 
 			Map<String, Object> changedFields = topo.changedFields();
 
-			if (topo.igetOutNodePid() == command.getLink1().getsNodePid()
-					|| topo.igetOutNodePid() == command.getLink1().geteNodePid()) {
-
-				changedFields.put("outLinkPid", command.getLink1().getPid());
-
-			} else {
-				changedFields.put("outLinkPid", command.getLink2().getPid());
-			}
+//			if (topo.igetOutNodePid() == command.getLink1().getsNodePid()
+//					|| topo.igetOutNodePid() == command.getLink1().geteNodePid()) {
+//
+//				changedFields.put("outLinkPid", command.getLink1().getPid());
+//
+//			} else {
+//				changedFields.put("outLinkPid", command.getLink2().getPid());
+//			}
 
 			result.insertObject(topo, ObjStatus.UPDATE, topo.parentPKValue());
 		}
@@ -106,15 +106,15 @@ public class OpRefLaneConnexity implements IOperation {
 
 					via2.copy(v);
 
-					if (v.igetsNodePid() == command.getLink1().getsNodePid()
-							|| v.igetsNodePid() == command.getLink1().geteNodePid()) {
-						via1.setLinkPid(command.getLink1().getPid());
-						via2.setLinkPid(command.getLink2().getPid());
-
-					} else {
-						via1.setLinkPid(command.getLink2().getPid());
-						via2.setLinkPid(command.getLink1().getPid());
-					}
+//					if (v.igetsNodePid() == command.getLink1().getsNodePid()
+//							|| v.igetsNodePid() == command.getLink1().geteNodePid()) {
+//						via1.setLinkPid(command.getLink1().getPid());
+//						via2.setLinkPid(command.getLink2().getPid());
+//
+//					} else {
+//						via1.setLinkPid(command.getLink2().getPid());
+//						via2.setLinkPid(command.getLink1().getPid());
+//					}
 
 					via2.setSeqNum(via2.getSeqNum() + 1);
 

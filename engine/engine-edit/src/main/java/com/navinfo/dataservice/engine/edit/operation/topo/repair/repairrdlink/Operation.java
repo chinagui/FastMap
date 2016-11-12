@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.json.JSONException;
+
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -25,6 +27,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryCollection;
 import com.vividsolutions.jts.geom.LineString;
+import com.vividsolutions.jts.io.ParseException;
 
 import net.sf.json.JSONObject;
 
@@ -56,82 +59,134 @@ public class Operation implements IOperation {
 
 		Map<Integer, List<RdLink>> map = new HashMap<Integer, List<RdLink>>();
 		List<RdLink> links = new ArrayList<RdLink>();
-		Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(GeoTranslator.geojson2Jts(command.getLinkGeom()));
+		Set<String> meshes = CompGeometryUtil
+				.geoToMeshesWithoutBreak(GeoTranslator.geojson2Jts(command
+						.getLinkGeom()));
+		//不跨图幅
 		if (meshes.size() == 1) {
-			JSONObject content = new JSONObject();
-			result.setPrimaryPid(this.command.getUpdateLink().getPid());
-			content.put("geometry", command.getLinkGeom());
-			Geometry geo = GeoTranslator.geojson2Jts(command.getLinkGeom());
-			double length = 0;
-			if (null != geo)
-				length = GeometryUtils.getLinkLength(geo);
-			content.put("length", length);
-			boolean isChanged = this.command.getUpdateLink().fillChangeFields(content);
-			if (isChanged) {
-				result.insertObject(this.command.getUpdateLink(), ObjStatus.UPDATE, this.command.getUpdateLink().getPid());
-			}
-			// 拷贝原link，set属性
-			RdLink link = new RdLink();
-			link.setPid(this.command.getUpdateLink().pid());
-			link.copy(this.command.getUpdateLink());
-
-			link.setGeometry(GeoTranslator.geojson2Jts(this.command.getLinkGeom(), 100000, 0));
-			links.add(link);
-			// 设置Link的urban属性
-			UrbanBatchUtils.updateUrban(this.command.getUpdateLink(), link.getGeometry(), conn, result);
-			// 设置link的AdminId
-			AdminIDBatchUtils.updateAdminID(this.command.getUpdateLink(), link.getGeometry(), conn);
-			// 设置link的ZoneId
-			ZoneIDBatchUtils.updateZoneID(this.command.getUpdateLink(), link.getGeometry(), conn, result);
-		} else {
-			Iterator<String> it = meshes.iterator();
-			Map<Coordinate, Integer> maps = new HashMap<Coordinate, Integer>();
-			Geometry g = GeoTranslator.transform(this.command.getUpdateLink().getGeometry(), 0.00001, 5);
-			maps.put(g.getCoordinates()[0], this.command.getUpdateLink().getsNodePid());
-			maps.put(g.getCoordinates()[g.getCoordinates().length - 1], this.command.getUpdateLink().geteNodePid());
-			while (it.hasNext()) {
-				String meshIdStr = it.next();
-				Geometry geomInter = MeshUtils.linkInterMeshPolygon(
-						GeoTranslator.geojson2Jts(command.getLinkGeom()), GeoTranslator.transform(MeshUtils.mesh2Jts(meshIdStr),1,5));
-				if(geomInter instanceof GeometryCollection)
-				{
-					int geoNum = geomInter.getNumGeometries();
-					for (int i = 0; i < geoNum; i++) {
-						Geometry subGeo = geomInter.getGeometryN(i);
-						if (subGeo instanceof LineString) {
-							subGeo = GeoTranslator.geojson2Jts(GeoTranslator.jts2Geojson(subGeo), 1, 5);
-
-							List<RdLink> rdLinkds = RdLinkOperateUtils.getCreateRdLinksWithMesh(geomInter, maps, result,this.command.getUpdateLink());
-							links.addAll(rdLinkds);
-						}
-					}
-				}
-				else
-				{
-					geomInter = GeoTranslator.geojson2Jts(GeoTranslator.jts2Geojson(geomInter), 1, 5);
-
-					List<RdLink> rdLinkds = RdLinkOperateUtils.getCreateRdLinksWithMesh(geomInter, maps, result,this.command.getUpdateLink());
-					
-					links.addAll(rdLinkds);
-				}
-
-				for (RdLink link : links) {
-					// 设置Link的urban属性
-					UrbanBatchUtils.updateUrban(link, null, conn, result);
-					// 设置link的区划号码
-					AdminIDBatchUtils.updateAdminID(this.command.getUpdateLink(), link.getGeometry(), conn);
-					// 设置link的ZoneId
-					ZoneIDBatchUtils.updateZoneID(this.command.getUpdateLink(), link.getGeometry(), conn, result);
-				}
-			}
-			deleteRdLink(result);
+			this.caleNoMeshForLink(links, result);
+		}//跨图幅
+		else {
+			this.caleMeshForLinks(links, meshes, result);
 		}
-
+		// 属性关联维护
 		updataRelationObj(this.command.getUpdateLink(), links, result);
-
 		map.put(this.command.getLinkPid(), links);
 		this.map = map;
 		return null;
+	}
+
+	private void caleNoMeshForLink(List<RdLink> links, Result result)
+			throws Exception {
+
+		JSONObject content = new JSONObject();
+		result.setPrimaryPid(this.command.getUpdateLink().getPid());
+		content.put("geometry", command.getLinkGeom());
+		Geometry geo = GeoTranslator.geojson2Jts(command.getLinkGeom());
+		//获取修行后link长度的变化
+		double length = 0;
+		if (null != geo)
+			length = GeometryUtils.getLinkLength(geo);
+		content.put("length", length);
+		//差分获取变化的值
+		boolean isChanged = this.command.getUpdateLink().fillChangeFields(
+				content);
+		//修改link的值
+		if (isChanged) {
+			result.insertObject(this.command.getUpdateLink(), ObjStatus.UPDATE,
+					this.command.getUpdateLink().getPid());
+		}
+		// 拷贝原link，set属性
+		RdLink link = new RdLink();
+		link.setPid(this.command.getUpdateLink().pid());
+		link.copy(this.command.getUpdateLink());
+
+		link.setGeometry(GeoTranslator.geojson2Jts(this.command.getLinkGeom(),
+				100000, 0));
+		links.add(link);
+		// 设置Link的urban属性
+		UrbanBatchUtils.updateUrban(this.command.getUpdateLink(),
+				link.getGeometry(), conn, result);
+		this.caleBatchForLink(link, result);
+
+	}
+
+	/***
+	 * 处理跨图幅修行
+	 * 
+	 * @param links
+	 * @param meshes
+	 * @param result
+	 * @throws Exception
+	 */
+	private void caleMeshForLinks(List<RdLink> links, Set<String> meshes,
+			Result result) throws Exception {
+        //计算Link图幅范围
+		Iterator<String> it = meshes.iterator();
+		Map<Coordinate, Integer> maps = new HashMap<Coordinate, Integer>();
+		Geometry g = GeoTranslator.transform(this.command.getUpdateLink()
+				.getGeometry(), 0.00001, 5);
+		//容器中加入原有link的起始点信息
+		maps.put(g.getCoordinates()[0], this.command.getUpdateLink()
+				.getsNodePid());
+		maps.put(g.getCoordinates()[g.getCoordinates().length - 1],
+				this.command.getUpdateLink().geteNodePid());
+		while (it.hasNext()) {
+			String meshIdStr = it.next();
+			Geometry geomInter = MeshUtils.linkInterMeshPolygon(GeoTranslator
+					.geojson2Jts(command.getLinkGeom()), GeoTranslator
+					.transform(MeshUtils.mesh2Jts(meshIdStr), 1, 5));
+			//判断link和图幅相交线的形状
+			if (geomInter instanceof GeometryCollection) {
+				int geoNum = geomInter.getNumGeometries();
+				for (int i = 0; i < geoNum; i++) {
+					Geometry subGeo = geomInter.getGeometryN(i);
+					if (subGeo instanceof LineString) {
+						subGeo = GeoTranslator.geojson2Jts(
+								GeoTranslator.jts2Geojson(subGeo), 1, 5);
+
+						List<RdLink> rdLinkds = RdLinkOperateUtils
+								.getCreateRdLinksWithMesh(geomInter, maps,
+										result, this.command.getUpdateLink());
+						links.addAll(rdLinkds);
+					}
+				}
+			} else {
+				geomInter = GeoTranslator.geojson2Jts(
+						GeoTranslator.jts2Geojson(geomInter), 1, 5);
+
+				List<RdLink> rdLinkds = RdLinkOperateUtils
+						.getCreateRdLinksWithMesh(geomInter, maps, result,
+								this.command.getUpdateLink());
+
+				links.addAll(rdLinkds);
+			}
+			// 重新批处理设置Link的urban属性 设置link的区划号码 设置link的ZoneId
+			for (RdLink link : links) {
+				UrbanBatchUtils.updateUrban(link, null, conn, result);
+				this.caleBatchForLink(link, result);
+			}
+		}
+		// 删除原有的link
+		deleteRdLink(result);
+
+	}
+
+	/***
+	 * 批处理 设置link的区划号码 设置link的ZoneId
+	 * 
+	 * @param link
+	 * @param result
+	 * @throws Exception
+	 */
+	private void caleBatchForLink(RdLink link, Result result) throws Exception {
+
+		// 设置link的区划号码
+		AdminIDBatchUtils.updateAdminID(this.command.getUpdateLink(),
+				link.getGeometry(), conn);
+		// 设置link的ZoneId
+		ZoneIDBatchUtils.updateZoneID(this.command.getUpdateLink(),
+				link.getGeometry(), conn, result);
 	}
 
 	/**
@@ -139,15 +194,17 @@ public class Operation implements IOperation {
 	 * @throws Exception
 	 */
 	private void deleteRdLink(Result result) throws Exception {
-		result.insertObject(this.command.getUpdateLink(), ObjStatus.DELETE, this.command.getUpdateLink().getPid());
+		result.insertObject(this.command.getUpdateLink(), ObjStatus.DELETE,
+				this.command.getUpdateLink().getPid());
 	}
 
 	/**
 	 * 维护关联要素
-	 *
+	 * 
 	 * @throws Exception
 	 */
-	private void updataRelationObj(RdLink oldLink, List<RdLink> newLinks, Result result) throws Exception {
+	private void updataRelationObj(RdLink oldLink, List<RdLink> newLinks,
+			Result result) throws Exception {
 
 		CalLinkOperateUtils calLinkOperateUtils = new CalLinkOperateUtils();
 
@@ -159,9 +216,14 @@ public class Operation implements IOperation {
 				com.navinfo.dataservice.engine.edit.operation.obj.rdsamelink.update.Operation samelinkOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdsamelink.update.Operation(
 						this.conn);
 
-				samelinkOperation.repairLink(newLinks.get(0), this.command.getRequester(), result);
+				samelinkOperation.repairLink(newLinks.get(0),
+						this.command.getRequester(), result);
 			}
 		}
+		
+		// 维护限高限重
+		com.navinfo.dataservice.engine.edit.operation.obj.hgwg.move.Operation hgwgOperation = new com.navinfo.dataservice.engine.edit.operation.obj.hgwg.move.Operation(conn);
+		hgwgOperation.moveHgwgLimit(oldLink, newLinks, result);
 
 		/*
 		 * 任何情况均需要处理的元素
@@ -190,11 +252,8 @@ public class Operation implements IOperation {
 			newLinkMap.put(link.getPid(), link.getGeometry());
 		}
 
-		gscOperation.repairLink(this.command.getGscList(), newLinkMap, oldLink, result);
-
-		// 维护限高限重
-		com.navinfo.dataservice.engine.edit.operation.obj.hgwg.move.Operation hgwgOperation = new com.navinfo.dataservice.engine.edit.operation.obj.hgwg.move.Operation(conn);
-		hgwgOperation.moveHgwgLimit(oldLink, newLinks, result);
+		gscOperation.repairLink(this.command.getGscList(), newLinkMap, oldLink,
+				result);
 
 		/*
 		 * 条件以下为仅打断情况下需要处理的元素 (size < 2说明没有进行打断操作)

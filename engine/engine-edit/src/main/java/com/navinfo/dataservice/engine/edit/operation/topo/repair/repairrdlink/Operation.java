@@ -220,6 +220,10 @@ public class Operation implements IOperation {
 						this.command.getRequester(), result);
 			}
 		}
+		
+		// 维护限高限重
+		com.navinfo.dataservice.engine.edit.operation.obj.hgwg.move.Operation hgwgOperation = new com.navinfo.dataservice.engine.edit.operation.obj.hgwg.move.Operation(conn);
+		hgwgOperation.moveHgwgLimit(oldLink, newLinks, result);
 
 		/*
 		 * 任何情况均需要处理的元素

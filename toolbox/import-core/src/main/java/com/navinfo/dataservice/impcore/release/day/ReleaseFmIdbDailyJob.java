@@ -39,13 +39,14 @@ public class ReleaseFmIdbDailyJob extends AbstractJob {
 	}
 
 	@Override
-	public void execute() throws JobException  {
+	public void execute() throws JobException {
 		LogSelector logSelector =null;
+		int produceId=0;
 		boolean commitStatus=false;
 		ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
 		try{
 			ReleaseFmIdbDailyJobRequest releaseFmIdbDailyRequest = (ReleaseFmIdbDailyJobRequest )this.request;
-			int produceId=releaseFmIdbDailyRequest.getProduceId();
+			produceId=releaseFmIdbDailyRequest.getProduceId();
 			//日出品状态修改为 进行中
 			manApi.updateProduceStatus(produceId, 1);
 			List<Region> regionsWithGrids= queryRegionGridsMapping();
@@ -100,6 +101,14 @@ public class ReleaseFmIdbDailyJob extends AbstractJob {
 			manApi.updateProduceStatus(produceId, 2);
 			
 		}catch(Exception e){
+			//日出品状态修改为 失败
+			try {
+				manApi.updateProduceStatus(produceId, 3);
+			} catch (Exception e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+				throw new JobException(e1);
+			}
 			throw new JobException(e);
 		}finally{
 			

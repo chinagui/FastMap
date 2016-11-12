@@ -265,13 +265,13 @@ public class RdNameImportor {
 	 * @return
 	 * @throws Exception
 	 */
-	public JSONObject importRdNameFromWeb(JSONObject params,int dbId) throws Exception {
+	public JSONObject importRdNameFromWeb(JSONObject params) throws Exception {
 		JSONObject result = new JSONObject();
 		
 		Connection conn = null;
 		
 		try {
-			conn = DBConnector.getInstance().getConnectionById(dbId);
+			conn = DBConnector.getInstance().getMetaConnection();
 			
 			RdNameSelector selector = new RdNameSelector(conn);
 			

@@ -602,13 +602,13 @@ public class MetaController extends BaseController {
 				throw new Exception("subtaskid未找到数据");
 			}
 			
-			int dbId = subtask.getDbId();
+//			int dbId = subtask.getDbId();
 			
 			FccApi apiFcc=(FccApi) ApplicationContextUtil.getBean("fccApi");
 			
 			JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(),1901,new JSONArray());
 			
-			JSONObject data = selector.searchForWeb(jsonReq,tips,dbId);
+			JSONObject data = selector.searchForWeb(jsonReq,tips);
 
 			return new ModelAndView("jsonView", success(data));
 
@@ -637,11 +637,11 @@ public class MetaController extends BaseController {
 			
 			JSONObject data = jsonReq.getJSONObject("data");
 			
-			int dbId = jsonReq.getInt("dbId");
+//			int dbId = jsonReq.getInt("dbId");
 			
 			RdNameImportor importor = new RdNameImportor();
 			
-			JSONObject result = importor.importRdNameFromWeb(data,dbId);
+			JSONObject result = importor.importRdNameFromWeb(data);
 			
 			return new ModelAndView("jsonView", success(result));
 		} catch (Exception e) {
@@ -672,9 +672,9 @@ public class MetaController extends BaseController {
 			
 			int flag = jsonReq.getInt("flag");
 			
-			int dbId = jsonReq.getInt("dbId");
+//			int dbId = jsonReq.getInt("dbId");
 			
-			conn = DBConnector.getInstance().getConnectionById(dbId);
+			conn = DBConnector.getInstance().getMetaConnection();
 			
 			RdNameOperation operation = new RdNameOperation(conn);
 			
@@ -805,9 +805,9 @@ public class MetaController extends BaseController {
 			
 			int nameGroupid = jsonReq.getInt("nameGroupid");
 			
-			int dbId = jsonReq.getInt("dbId");
+//			int dbId = jsonReq.getInt("dbId");
 			
-			conn = DBConnector.getInstance().getConnectionById(dbId);
+			conn = DBConnector.getInstance().getMetaConnection();
 			
 			RdNameOperation operation = new RdNameOperation(conn);
 			

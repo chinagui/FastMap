@@ -9,7 +9,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.commons.dbutils.DbUtils;
 
@@ -213,7 +212,7 @@ public class RdNameSelector {
 	 * @throws Exception
 	 */
 	@SuppressWarnings({ "static-access", "unchecked" })
-public JSONObject searchForWeb(JSONObject params,JSONArray tips,int dbId) throws Exception {
+public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exception {
 		
 		PreparedStatement pstmt = null;
 
@@ -221,14 +220,10 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips,int dbId) throws
 
 		Connection conn = null;
 		
-		Connection subconn = null;
-		
 		try {
 			JSONObject result = new JSONObject();
 			
 			conn = DBConnector.getInstance().getMetaConnection();
-			
-			subconn = DBConnector.getInstance().getConnectionById(dbId);
 			
 			ScPointAdminArea scPointAdminArea = new ScPointAdminArea(conn);
 					
@@ -266,7 +261,7 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips,int dbId) throws
 						ids +=tipsObj.getString("id");
 					}
 					
-					pidClod = ConnectionUtil.createClob(subconn);
+					pidClod = ConnectionUtil.createClob(conn);
 					pidClod.setString(1, ids);
 					sql.append(" and a.tipid in (select column_value from table(clob_to_table(?)))");
 					
@@ -327,7 +322,7 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips,int dbId) throws
 
 			int endRow = pageNum * pageSize;
 			
-			pstmt = subconn.prepareStatement(sql.toString());
+			pstmt = conn.prepareStatement(sql.toString());
 			
 			if (flag>0) {
 				pstmt.setClob(1, pidClod);
@@ -362,7 +357,6 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips,int dbId) throws
 			DbUtils.closeQuietly(resultSet);
 			DbUtils.closeQuietly(pstmt);
 			DbUtils.closeQuietly(conn);
-			DbUtils.closeQuietly(subconn);
 		}
 	}
 	

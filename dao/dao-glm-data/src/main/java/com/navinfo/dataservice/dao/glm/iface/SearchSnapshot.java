@@ -36,7 +36,6 @@ public class SearchSnapshot implements ISerializable {
 
 	
 	public SearchSnapshot() {
-
 	}
 
 	@Override
@@ -47,7 +46,10 @@ public class SearchSnapshot implements ISerializable {
 
 	@Override
 	public boolean Unserialize(JSONObject json) throws Exception {
-
+		this.setI(json.getString("i"));
+		this.setG(json.getJSONArray("g"));
+		this.setT(json.getInt("t"));
+		this.setM(json.getJSONObject("m"));
 		return false;
 	}
 

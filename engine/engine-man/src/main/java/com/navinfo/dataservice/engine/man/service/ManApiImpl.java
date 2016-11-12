@@ -153,7 +153,7 @@ public class ManApiImpl implements ManApi {
 	@Override
 	public int createJob(long userId, String produceType, JSONObject paraJson) throws Exception {
 		// TODO Auto-generated method stub
-		return ProduceService.getInstance().create(userId,produceType,paraJson);
+		return ProduceService.getInstance().create(userId,produceType,paraJson,0);
 	}
 }
 

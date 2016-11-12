@@ -30,7 +30,7 @@ public class RdLinkTest extends InitApplication {
 
     @Test
     public void testDelete() {
-        String parameter = "{\"command\":\"DELETE\",\"dbId\":42,\"type\":\"RDLINK\",\"objId\":100008436}";
+        String parameter = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"RDLINK\",\"objId\":308002568,\"data\":{\"feeStd\":66.99,\"pid\":308002568,\"objStatus\":\"UPDATE\"}}";
         TestUtil.run(parameter);
     }
 
@@ -77,7 +77,7 @@ public class RdLinkTest extends InitApplication {
 
     @Test
     public void search() {
-        String parameter = "http://192.168.4.188:8000/service/render/obj/getByTileWithGap?parameter={\"dbId\":17,\"gap\":10,\"types\":[\"LCLINK\"],\"z\":20,\"x\":863411,\"y\":397214}";
+        String parameter = "http://192.168.4.188:8000/service/render/obj/getByTileWithGap?parameter={\"dbId\":17,\"gap\":80,\"types\":[\"RDHGWGLIMIT\"],\"z\":18,\"x\":215889,\"y\":99231}";
         try {
             TestSearch.testSearchGap(parameter);
         } catch (Exception e) {

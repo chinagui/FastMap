@@ -238,4 +238,10 @@ public class OpRefRelationObj {
         return operation.updownDepart(command.getLinkPids(), result);
 
     }
+
+    // 维护限高限重信息
+    public String handlerRdHgwgLimit(Command command, Result result) throws Exception {
+        com.navinfo.dataservice.engine.edit.operation.obj.hgwg.depart.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.hgwg.depart.Operation(conn);
+        return operation.updownDepart(command.getsNode(), command.getLinks(), command.getLeftLinkMapping(), command.getRightLinkMapping(), result);
+    }
 }

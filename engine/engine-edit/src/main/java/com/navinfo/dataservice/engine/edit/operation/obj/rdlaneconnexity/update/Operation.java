@@ -511,5 +511,266 @@ public class Operation implements IOperation {
 			}
 		}
 	}
+	
+
+	public void breakRdLink(RdLink deleteLink, List<RdLink> newLinks,
+			Result result) throws Exception {
+		if (this.command != null || conn == null) {
+
+			return;
+		}
+
+		RdLaneConnexitySelector selector = new RdLaneConnexitySelector(conn);
+
+		// link为进入线
+		List<RdLaneConnexity> laneConnexitys = selector.loadByLink(
+				deleteLink.getPid(), 1, true);
+
+		for (RdLaneConnexity laneConnexity : laneConnexitys) {
+
+			breakInLink(laneConnexity, newLinks, result);
+		}
+
+		// link为退出线
+		laneConnexitys = selector.loadByLink(deleteLink.getPid(),
+				2, true);
+
+		for (RdLaneConnexity laneConnexity : laneConnexitys) {
+
+			breakOutLink(deleteLink, laneConnexity, newLinks, result);
+		}
+
+		// link为经过线
+		laneConnexitys = selector.loadByLink(deleteLink.getPid(),
+				3, true);
+
+		for (RdLaneConnexity laneConnexity : laneConnexitys) {
+
+			breakPassLink(deleteLink, laneConnexity, newLinks, result);
+		}
+
+	}
+
+	private void breakInLink(RdLaneConnexity laneConnexity, List<RdLink> newLinks,
+			Result result) {
+
+		for (RdLink link : newLinks) {
+
+			if (link.getsNodePid() == laneConnexity.getNodePid()
+					|| link.geteNodePid() == laneConnexity.getNodePid()) {
+
+				laneConnexity.changedFields().put("inLinkPid", link.getPid());
+
+				result.insertObject(laneConnexity, ObjStatus.UPDATE,
+						laneConnexity.pid());
+
+				break;
+			}
+
+		}
+	}
+
+	private void breakOutLink(RdLink deleteLink, RdLaneConnexity laneConnexity,
+			List<RdLink> newLinks, Result result) throws Exception {
+
+		for (IRow rowTopo : laneConnexity.getTopos()) {
+
+			RdLaneTopology topo = (RdLaneTopology) rowTopo;
+
+			// 排除其他详细信息
+			if (topo.getOutLinkPid() != deleteLink.getPid()) {
+
+				continue;
+			}
+
+			int connectionNodePid = 0;
+
+			if (topo.getVias().size() == 0) {
+
+				connectionNodePid = laneConnexity.getNodePid();
+
+			} else {
+
+				RdLaneVia lastVia = (RdLaneVia) topo.getVias()
+						.get(0);
+
+				for (IRow rowVia : topo.getVias()) {
+
+					RdLaneVia via = (RdLaneVia) rowVia;
+
+					if (lastVia.getGroupId() == via.getGroupId()
+							&& lastVia.getSeqNum() < via.getSeqNum()) {
+
+						lastVia = via;
+					}
+				}
+
+				RdLinkSelector rdLinkSelector = new RdLinkSelector(this.conn);
+
+				List<Integer> linkPids = rdLinkSelector.loadLinkPidByNodePid(
+						deleteLink.getsNodePid(), false);
+
+				connectionNodePid = linkPids.contains(lastVia.getLinkPid()) ? deleteLink
+						.getsNodePid() : deleteLink.geteNodePid();
+			}
+
+			if (connectionNodePid == 0) {
+
+				continue;
+			}
+
+			for (RdLink link : newLinks) {
+
+				if (link.getsNodePid() == connectionNodePid
+						|| link.geteNodePid() == connectionNodePid) {
+
+					topo.changedFields().put("outLinkPid", link.getPid());
+
+					result.insertObject(topo, ObjStatus.UPDATE,
+							laneConnexity.pid());
+
+					break;
+				}
+			}
+
+		}
+	}
+
+	private void breakPassLink(RdLink deleteLink, RdLaneConnexity laneConnexity,
+			List<RdLink> newLinks, Result result) throws Exception {
+
+		for (IRow rowTopo : laneConnexity.getTopos()) {
+
+			RdLaneTopology topo = (RdLaneTopology) rowTopo;
+
+			// 对经过线分组
+			Map<Integer, List<RdLaneVia>> viaGroupId = new HashMap<Integer, List<RdLaneVia>>();
+
+			for (IRow row : topo.getVias()) {
+
+				RdLaneVia via = (RdLaneVia) row;
+
+				if (viaGroupId.get(via.getGroupId()) == null) {
+					viaGroupId.put(via.getGroupId(),
+							new ArrayList<RdLaneVia>());
+				}
+
+				viaGroupId.get(via.getGroupId()).add(via);
+			}
+
+			// 分组处理经过线
+			for (int key : viaGroupId.keySet()) {
+
+				// 经过线组
+				List<RdLaneVia> viaGroup = viaGroupId.get(key);
+
+				RdLaneVia breakVia = null;
+
+				for (RdLaneVia via : viaGroup) {
+
+					if (via.getLinkPid() == deleteLink.getPid()) {
+
+						breakVia = via;
+
+						break;
+					}
+				}
+
+				// 经过线组的link未被打断，不处理
+				if (breakVia == null) {
+
+					continue;
+				}
+
+				// 与进入线或前一个经过线的连接点
+				int connectionNodePid = 0;
+
+				// 打断的是第一个经过线link
+				if (breakVia.getSeqNum() == 1) {
+
+					connectionNodePid = laneConnexity.getNodePid();
+
+				} else {
+
+					int preLinkPid = 0;
+
+					for (RdLaneVia via : viaGroup) {
+
+						if (via.getSeqNum() == breakVia.getSeqNum() - 1) {
+
+							preLinkPid = via.getLinkPid();
+
+							break;
+						}
+					}
+
+					RdLinkSelector rdLinkSelector = new RdLinkSelector(
+							this.conn);
+
+					List<Integer> linkPids = rdLinkSelector
+							.loadLinkPidByNodePid(deleteLink.getsNodePid(),
+									false);
+
+					connectionNodePid = linkPids.contains(preLinkPid) ? deleteLink
+							.getsNodePid() : deleteLink.geteNodePid();
+				}
+
+				if (newLinks.get(0).getsNodePid() == connectionNodePid
+						|| newLinks.get(0).geteNodePid() == connectionNodePid) {
+
+					for (int i = 0; i < newLinks.size(); i++) {
+
+						RdLaneVia newVia = new RdLaneVia();
+
+						newVia.setTopologyId(breakVia.getTopologyId());
+
+						newVia.setGroupId(breakVia.getGroupId());
+
+						newVia.setLinkPid(newLinks.get(i).getPid());
+
+						newVia.setSeqNum(breakVia.getSeqNum() + i);
+
+						result.insertObject(newVia, ObjStatus.INSERT,
+								topo.parentPKValue());
+					}
+
+				} else {
+
+					for (int i = newLinks.size(); i > 0; i--) {
+
+						RdLaneVia newVia = new RdLaneVia();
+
+						newVia.setTopologyId(breakVia.getTopologyId());
+
+						newVia.setGroupId(breakVia.getGroupId());
+
+						newVia.setLinkPid(newLinks.get(i - 1).getPid());
+
+						newVia.setSeqNum(breakVia.getSeqNum() + newLinks.size()
+								- i);
+
+						result.insertObject(newVia, ObjStatus.INSERT,
+								topo.parentPKValue());
+					}
+				}
+
+				result.insertObject(breakVia, ObjStatus.DELETE,
+						topo.parentPKValue());
+
+				// 维护后续经过线序号
+				for (RdLaneVia via : viaGroup) {
+
+					if (via.getSeqNum() > breakVia.getSeqNum()) {
+
+						via.changedFields().put("seqNum",
+								via.getSeqNum() + newLinks.size() - 1);
+
+						result.insertObject(via, ObjStatus.UPDATE,
+								topo.parentPKValue());
+					}
+				}
+			}
+		}
+	}
 
 }

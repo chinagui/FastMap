@@ -115,13 +115,13 @@ public class RdNameImportTest {
 				throw new Exception("subtaskid未找到数据");
 			}
 			
-			int dbId = subtask.getDbId();
+//			int dbId = subtask.getDbId();
 			
 			FccApi apiFcc=(FccApi) ApplicationContextUtil.getBean("fccApi");
 			
 			JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(),1901,new JSONArray());
 			
-			JSONObject data = selector.searchForWeb(jsonReq,tips,dbId);
+			JSONObject data = selector.searchForWeb(jsonReq,tips);
 			
 			System.out.println(data);
 					

@@ -6,6 +6,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
 import org.apache.commons.collections.CollectionUtils;
 
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
@@ -21,9 +24,6 @@ import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionVia;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.restrict.RdRestrictionSelector;
 import com.navinfo.dataservice.engine.edit.utils.CalLinkOperateUtils;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 public class Operation implements IOperation {
 
@@ -490,4 +490,267 @@ public class Operation implements IOperation {
 		}
 	}
 
+
+
+	public void breakRdLink(RdLink deleteLink, List<RdLink> newLinks,
+			Result result) throws Exception {
+		if (this.command != null || conn == null) {
+
+			return;
+		}
+
+		RdRestrictionSelector selector = new RdRestrictionSelector(conn);
+
+		// link为进入线
+		List<RdRestriction> restrictions = selector.loadByLink(
+				deleteLink.getPid(), 1, true);
+
+		for (RdRestriction restriction : restrictions) {
+
+			breakInLink(restriction, newLinks, result);
+		}
+
+		// link为退出线
+		restrictions = selector.loadByLink(deleteLink.getPid(),
+				2, true);
+
+		for (RdRestriction restriction : restrictions) {
+
+			breakOutLink(deleteLink, restriction, newLinks, result);
+		}
+
+		// link为经过线
+		restrictions = selector.loadByLink(deleteLink.getPid(),
+				3, true);
+
+		for (RdRestriction restriction : restrictions) {
+
+			breakPassLink(deleteLink, restriction, newLinks, result);
+		}
+
+	}
+
+	private void breakInLink(RdRestriction restriction, List<RdLink> newLinks,
+			Result result) {
+
+		for (RdLink link : newLinks) {
+
+			if (link.getsNodePid() == restriction.getNodePid()
+					|| link.geteNodePid() == restriction.getNodePid()) {
+
+				restriction.changedFields().put("inLinkPid", link.getPid());
+
+				result.insertObject(restriction, ObjStatus.UPDATE,
+						restriction.pid());
+
+				break;
+			}
+
+		}
+	}
+
+	private void breakOutLink(RdLink deleteLink, RdRestriction restriction,
+			List<RdLink> newLinks, Result result) throws Exception {
+
+		for (IRow rowDetail : restriction.getDetails()) {
+
+			RdRestrictionDetail detail = (RdRestrictionDetail) rowDetail;
+
+			// 排除其他详细信息
+			if (detail.getOutLinkPid() != deleteLink.getPid()) {
+
+				continue;
+			}
+
+			int connectionNodePid = 0;
+
+			if (detail.getVias().size() == 0) {
+
+				connectionNodePid = restriction.getNodePid();
+
+			} else {
+
+				RdRestrictionVia lastVia = (RdRestrictionVia) detail.getVias()
+						.get(0);
+
+				for (IRow rowVia : detail.getVias()) {
+
+					RdRestrictionVia via = (RdRestrictionVia) rowVia;
+
+					if (lastVia.getGroupId() == via.getGroupId()
+							&& lastVia.getSeqNum() < via.getSeqNum()) {
+
+						lastVia = via;
+					}
+				}
+
+				RdLinkSelector rdLinkSelector = new RdLinkSelector(this.conn);
+
+				List<Integer> linkPids = rdLinkSelector.loadLinkPidByNodePid(
+						deleteLink.getsNodePid(), false);
+
+				connectionNodePid = linkPids.contains(lastVia.getLinkPid()) ? deleteLink
+						.getsNodePid() : deleteLink.geteNodePid();
+			}
+
+			if (connectionNodePid == 0) {
+
+				continue;
+			}
+
+			for (RdLink link : newLinks) {
+
+				if (link.getsNodePid() == connectionNodePid
+						|| link.geteNodePid() == connectionNodePid) {
+
+					detail.changedFields().put("outLinkPid", link.getPid());
+
+					result.insertObject(detail, ObjStatus.UPDATE,
+							restriction.pid());
+
+					break;
+				}
+			}
+
+		}
+	}
+
+	private void breakPassLink(RdLink deleteLink, RdRestriction restriction,
+			List<RdLink> newLinks, Result result) throws Exception {
+
+		for (IRow rowDetail : restriction.getDetails()) {
+
+			RdRestrictionDetail detail = (RdRestrictionDetail) rowDetail;
+
+			// 对经过线分组
+			Map<Integer, List<RdRestrictionVia>> viaGroupId = new HashMap<Integer, List<RdRestrictionVia>>();
+
+			for (IRow row : detail.getVias()) {
+
+				RdRestrictionVia via = (RdRestrictionVia) row;
+
+				if (viaGroupId.get(via.getGroupId()) == null) {
+					viaGroupId.put(via.getGroupId(),
+							new ArrayList<RdRestrictionVia>());
+				}
+
+				viaGroupId.get(via.getGroupId()).add(via);
+			}
+
+			// 分组处理经过线
+			for (int key : viaGroupId.keySet()) {
+
+				// 经过线组
+				List<RdRestrictionVia> viaGroup = viaGroupId.get(key);
+
+				RdRestrictionVia breakVia = null;
+
+				for (RdRestrictionVia via : viaGroup) {
+
+					if (via.getLinkPid() == deleteLink.getPid()) {
+
+						breakVia = via;
+
+						break;
+					}
+				}
+
+				// 经过线组的link未被打断，不处理
+				if (breakVia == null) {
+
+					continue;
+				}
+
+				// 与进入线或前一个经过线的连接点
+				int connectionNodePid = 0;
+
+				// 打断的是第一个经过线link
+				if (breakVia.getSeqNum() == 1) {
+
+					connectionNodePid = restriction.getNodePid();
+
+				} else {
+
+					int preLinkPid = 0;
+
+					for (RdRestrictionVia via : viaGroup) {
+
+						if (via.getSeqNum() == breakVia.getSeqNum() - 1) {
+
+							preLinkPid = via.getLinkPid();
+
+							break;
+						}
+					}
+
+					RdLinkSelector rdLinkSelector = new RdLinkSelector(
+							this.conn);
+
+					List<Integer> linkPids = rdLinkSelector
+							.loadLinkPidByNodePid(deleteLink.getsNodePid(),
+									false);
+
+					connectionNodePid = linkPids.contains(preLinkPid) ? deleteLink
+							.getsNodePid() : deleteLink.geteNodePid();
+				}
+
+				if (newLinks.get(0).getsNodePid() == connectionNodePid
+						|| newLinks.get(0).geteNodePid() == connectionNodePid) {
+
+					for (int i = 0; i < newLinks.size(); i++) {
+
+						RdRestrictionVia newVia = new RdRestrictionVia();
+
+						newVia.setDetailId(breakVia.getDetailId());
+
+						newVia.setGroupId(breakVia.getGroupId());
+
+						newVia.setLinkPid(newLinks.get(i).getPid());
+
+						newVia.setSeqNum(breakVia.getSeqNum() + i);
+
+						result.insertObject(newVia, ObjStatus.INSERT,
+								detail.parentPKValue());
+					}
+
+				} else {
+
+					for (int i = newLinks.size(); i > 0; i--) {
+
+						RdRestrictionVia newVia = new RdRestrictionVia();
+
+						newVia.setDetailId(breakVia.getDetailId());
+
+						newVia.setGroupId(breakVia.getGroupId());
+
+						newVia.setLinkPid(newLinks.get(i - 1).getPid());
+
+						newVia.setSeqNum(breakVia.getSeqNum() + newLinks.size()
+								- i);
+
+						result.insertObject(newVia, ObjStatus.INSERT,
+								detail.parentPKValue());
+					}
+				}
+
+				result.insertObject(breakVia, ObjStatus.DELETE,
+						detail.parentPKValue());
+
+				// 维护后续经过线序号
+				for (RdRestrictionVia via : viaGroup) {
+
+					if (via.getSeqNum() > breakVia.getSeqNum()) {
+
+						via.changedFields().put("seqNum",
+								via.getSeqNum() + newLinks.size() - 1);
+
+						result.insertObject(via, ObjStatus.UPDATE,
+								detail.parentPKValue());
+					}
+				}
+			}
+		}
+	}
+	
+	
 }

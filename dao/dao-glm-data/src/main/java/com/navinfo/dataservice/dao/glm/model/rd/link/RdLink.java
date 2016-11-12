@@ -102,11 +102,11 @@ public class RdLink implements IObj {
 		this.adasMemo = adasMemo;
 	}
 
-	public int getFeeStd() {
+	public double getFeeStd() {
 		return feeStd;
 	}
 
-	public void setFeeStd(int feeStd) {
+	public void setFeeStd(double feeStd) {
 		this.feeStd = feeStd;
 	}
 
@@ -136,7 +136,7 @@ public class RdLink implements IObj {
 
 	private int truckFlag;
 	
-	private int feeStd;
+	private double feeStd;
 	private int feeFlag;
 	private int systemId;
 	private int originLinkPid;

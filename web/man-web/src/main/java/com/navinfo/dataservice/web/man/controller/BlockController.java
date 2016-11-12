@@ -432,4 +432,38 @@ public class BlockController extends BaseController {
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}
+	
+	/**
+	 * 查询block名称列表
+	 * 消息中心-业务申请(全部角色)-新的申请/查看申请
+	 * @author Han Shaoming
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/block/nameList")
+	public ModelAndView queryBlockManNameList(HttpServletRequest request){
+		try{
+			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			long userId = tokenObj.getUserId();
+			String parameter = request.getParameter("parameter");
+			if (StringUtils.isEmpty(parameter)) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			JSONObject paraJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if (paraJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			if(!paraJson.containsKey("blockManName")){
+				throw new IllegalArgumentException("parameter参数中blockManName不能为空。");
+			}
+			String blockManName = paraJson.getString("blockManName");
+			List<Map<String,Object>> blockManNameList = service.queryBlockManNameList(userId,blockManName);
+			return new ModelAndView("jsonView", success(blockManNameList));
+		}catch(Exception e){
+			log.error("查询失败，原因："+e.getMessage(), e);
+			return new ModelAndView("jsonView",exception(e));
+		}
+	}
+	
+	
 }

@@ -30,6 +30,7 @@ import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.navicommons.database.DataBaseUtils;
+import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 
 /** 
@@ -223,36 +224,102 @@ public class LayerService {
 		return run.query(conn,selectSql,rsHandler);
 	}
 	
-	public List<HashMap> listAll(JSONObject conditionJson,JSONObject orderJson)throws Exception{
+	/**
+	 * 查询layer列表
+	 * 规划管理页面--重点区块图层--搜索(修改)
+	 * @author Han Shaoming
+	 * @param conditionJson
+	 * @param orderJson
+	 * @param pageNum
+	 * @param pageSize
+	 * @return
+	 * @throws Exception
+	 */
+	public Page listAll(JSONObject conditionJson,JSONObject orderJson, int pageNum, int pageSize)throws Exception{
 		Connection conn = null;
 		try{
 			conn = DBConnector.getInstance().getManConnection();
-			
-			String selectSql = "SELECT LAYER_ID,LAYER_NAME,T.GEOMETRY,CREATE_USER_ID,CREATE_DATE FROM CUSTOMISED_LAYER t where T.STATUS=1";
+			QueryRunner queryRunner = new QueryRunner();
+			String selectSql = "SELECT T.LAYER_ID,T.LAYER_NAME,T.GEOMETRY,T.CREATE_USER_ID,T.CREATE_DATE,U.USER_REAL_NAME "
+					+ "FROM CUSTOMISED_LAYER T,USER_INFO U where T.CREATE_USER_ID=U.USER_ID AND T.STATUS=1";
 			if(null!=conditionJson && !conditionJson.isEmpty()){
 				Iterator keys = conditionJson.keys();
 				while (keys.hasNext()) {
 					String key = (String) keys.next();
-					if ("layerName".equals(key)) {selectSql+=" and T.LAYER_NAME like '%"+conditionJson.getString(key)+"%'";}
+					if ("layerName".equals(key)) {selectSql+=" AND T.LAYER_NAME like '%"+conditionJson.getString(key)+"%'";}
 					}
 				}
 			if(null!=orderJson && !orderJson.isEmpty()){
 				Iterator keys = orderJson.keys();
 				while (keys.hasNext()) {
 					String key = (String) keys.next();
-					if ("layerId".equals(key)) {selectSql+=" order by T.LAYER_ID "+orderJson.getString(key);break;}
-					if ("createDate".equals(key)) {selectSql+=" order by T.CREATE_DATE "+orderJson.getString(key);break;}
+					if ("layerId".equals(key)) {selectSql+=" ORDER BY T.LAYER_ID "+orderJson.getString(key);break;}
+					if ("createDate".equals(key)) {selectSql+=" ORDER BY T.CREATE_DATE "+orderJson.getString(key);break;}
 					}
 			}else{
-				selectSql+=" order by T.LAYER_ID";
+				selectSql+=" ORDER BY T.LAYER_ID";
 			}
-			return this.query(selectSql, conn);
+			//日志
+			log.info("查询layer列表的sql:"+selectSql);
+			Object[] params = {};
+			Page page = queryRunner.query(pageNum, pageSize, conn, selectSql, new LayerWithPageHandler(pageNum, pageSize),params);
+			return page;
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new Exception("查询列表失败，原因为:"+e.getMessage(),e);
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * 
+	 * @ClassName LayerWithPageHandler
+	 * @author Han Shaoming
+	 * @date 2016年11月12日 下午3:32:26
+	 * @Description TODO
+	 */
+	class LayerWithPageHandler implements ResultSetHandler<Page>{
+		private int pageNum;
+		private int pageSize;
+		LayerWithPageHandler(int pageNum,int pageSize){
+			this.pageNum=pageNum;
+			this.pageSize=pageSize;
+		}
+		public Page handle(ResultSet rs) throws SQLException {
+			Page page = new Page(pageNum);
+			page.setPageSize(pageSize);
+			int total = 0;
+			List<Map<String,Object>> list = new ArrayList<Map<String,Object>>();
+			while(rs.next()){
+				try {
+					Map<String,Object> map = new HashMap<String,Object>();
+					map.put("layerId", rs.getInt("LAYER_ID"));
+					map.put("layerName", rs.getString("LAYER_NAME"));
+					STRUCT struct=(STRUCT)rs.getObject("GEOMETRY");
+					try {
+						String clobStr = GeoTranslator.struct2Wkt(struct);
+						map.put("geometry", Geojson.wkt2Geojson(clobStr));
+					} catch (Exception e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+					map.put("createUserId", rs.getInt("CREATE_USER_ID"));
+					map.put("createDate", DateUtils.dateToString(rs.getTimestamp("CREATE_DATE")));
+					map.put("createUserName", rs.getString("USER_REAL_NAME"));
+					list.add(map);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				if(total==0){
+					total=rs.getInt("TOTAL_RECORD_NUM_");
+				}
+			}
+			page.setResult(list);
+			page.setTotalCount(total);
+			return page;
 		}
 	}
 }

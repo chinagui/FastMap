@@ -145,7 +145,9 @@ public class CheckEngine {
 	public List<NiValException> checkByRules(JSONArray ruleCodeArray,String checkType) throws Exception{
 		getCheckByRules(ruleCodeArray,checkType);		
 		if("POST".equals(checkType)){
-			return exePostCheck();}
+			List<NiValException> result=exePostCheck();
+			saveCheckResult(result);
+			return result;}
 		if("PRE".equals(checkType)){
 			return exePreCheck();
 		}

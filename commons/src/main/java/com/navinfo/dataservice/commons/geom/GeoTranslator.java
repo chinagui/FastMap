@@ -2,7 +2,6 @@ package com.navinfo.dataservice.commons.geom;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -741,6 +740,7 @@ public class GeoTranslator {
 		return list;
 
 	}
+
 
 	public static void main(String[] args) throws Exception {
 		Point point = (Point)wkt2Geometry("POINT (116.38636 40.00512)");

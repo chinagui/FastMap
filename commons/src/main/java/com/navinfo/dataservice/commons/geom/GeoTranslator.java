@@ -46,6 +46,8 @@ import com.vividsolutions.jts.precision.GeometryPrecisionReducer;
  */
 public class GeoTranslator {
 
+	public static final double dPrecisionGeo = 1.0;
+	
 	private static final GeometryFactory geoFactory = new GeometryFactory();
 
 	private static final MfGeoFactory mfFactory = new MfGeoFactory() {
@@ -740,6 +742,73 @@ public class GeoTranslator {
 		return list;
 
 	}
+
+	
+	/**
+	 * 点p0是否在点p1和p2的线上
+	 * 
+	 * @param p1
+	 *            线起点
+	 * @param p2
+	 *            线终点
+	 * @param p0
+	 *            点
+	 * @return True 在线上； False 不在线上
+	 * @throws Exception
+	 */
+	public static boolean isIntersection(Coordinate p1, Coordinate p2,
+			Coordinate p0) throws Exception {
+		
+		boolean flag = false;
+
+		Coordinate[] coordinates = new Coordinate[2];
+
+		coordinates[0] = p1;
+
+		coordinates[1] = p2;
+
+		LineString line = geoFactory.createLineString(coordinates);
+
+		Point point = geoFactory.createPoint(p0);
+
+		if (line.distance(point) <= 1) {
+			flag = true;
+		}
+
+		return flag;
+	}
+	
+	
+	public static long round(double d) {
+		return d < 0 ? (long) d : (long) (d + 0.5);
+	}
+
+	public static boolean isPointEquals(Point point1, Point point2) {
+		return isPointEquals(point1.getX(), point1.getY(), point2.getX(),
+				point2.getY());
+	}
+
+	public static boolean isPointEquals(Coordinate c1, Coordinate c2) {
+		return isPointEquals(c1.x, c1.y, c2.x, c2.y);
+	}
+
+	public static boolean isPointEquals(double x1, double y1, double x2,
+			double y2) {
+		x1 = round(x1);
+		y1 = round(y1);
+		x2 = round(x2);
+		y2 = round(y2);
+
+		if (Math.abs(x1 - x2) >= dPrecisionGeo)
+			return false;
+
+		if (Math.abs(y1 - y2) >= dPrecisionGeo)
+			return false;
+
+		return true;
+	}
+	
+	
 
 
 	public static void main(String[] args) throws Exception {

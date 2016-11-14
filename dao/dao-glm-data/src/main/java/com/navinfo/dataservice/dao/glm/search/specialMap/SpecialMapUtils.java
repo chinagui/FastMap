@@ -72,14 +72,48 @@ public class SpecialMapUtils {
 	 * @return 查询结果
 	 * @throws Exception
 	 */
-	public JSONObject searchDataByTileWithGap(String type, int x, int y, int z,
-			int gap) throws Exception {
+	public JSONObject searchDataByTileWithGap(List<String> types, int x, int y,
+			int z, int gap) throws Exception {
 
 		JSONObject json = new JSONObject();
 
 		try {
 
-			List<SearchSnapshot> list = null;
+			for (String type : types) {
+
+				List<SearchSnapshot> list = getSearchSnapshot(type, x, y, z,
+						gap);
+
+				JSONArray array = new JSONArray();
+
+				for (SearchSnapshot snap : list) {
+
+					array.add(snap.Serialize(ObjLevel.BRIEF), getJsonConfig());
+				}
+
+				json.accumulate(type, array, getJsonConfig());
+			}
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+		}
+		return json;
+	}
+
+	/**
+	 * 根据瓦片空间查询
+	 * 
+	 * @return 查询结果
+	 * @throws Exception
+	 */
+	private List<SearchSnapshot> getSearchSnapshot(String type, int x, int y,
+			int z, int gap) throws Exception {
+
+		List<SearchSnapshot> list = null;
+
+		try {
 
 			SpecialMapType specialMapType = SpecialMapType.valueOf(type);
 
@@ -121,15 +155,6 @@ public class SpecialMapUtils {
 				list = new ArrayList<SearchSnapshot>();
 			}
 
-			JSONArray array = new JSONArray();
-
-			for (SearchSnapshot snap : list) {
-
-				array.add(snap.Serialize(ObjLevel.BRIEF), getJsonConfig());
-			}
-
-			json.accumulate(type.toString(), array, getJsonConfig());
-
 		} catch (Exception e) {
 
 			throw e;
@@ -137,7 +162,7 @@ public class SpecialMapUtils {
 		} finally {
 		}
 
-		return json;
+		return list;
 	}
 
 	/**

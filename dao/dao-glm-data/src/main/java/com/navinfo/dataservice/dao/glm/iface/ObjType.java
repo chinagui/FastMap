@@ -183,5 +183,6 @@ public enum ObjType {
     //在线批处理类型
     FACE,
 	TMCPOINT,
-	RDTMCLOCATION;
+	RDTMCLOCATION,
+	RDTMCLOCATIONLINK;
 }

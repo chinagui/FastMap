@@ -488,7 +488,7 @@ public class Operation implements IOperation {
 			} else {
 				JSONArray array = new JSONArray();
 				for (int j = 0; j < modifyJson.getJSONArray("breakNodePids")
-						.size(); i++) {
+						.size(); j++) {
 					JSONObject jsonBreak = modifyJson.getJSONArray(
 							"breakNodePids").getJSONObject(j);
 					JSONObject obj = new JSONObject();

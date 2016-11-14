@@ -281,7 +281,7 @@ public class SubtaskService {
 					qualitySubtask.setIsQuality(1);//表示此bean是质检子任务
 					qualitySubtask.setExeUserId(qualityExeUserId);
 					//创建质检子任务 subtask	
-					Integer newQualitySubtaskId = SubtaskService.getInstance().createQualitySubtask(qualitySubtask);	
+					Integer newQualitySubtaskId = SubtaskService.getInstance().create(qualitySubtask);	
 					subtask.setIsQuality(0);
 					subtask.setQualitySubtaskId(newQualitySubtaskId);
 				}
@@ -376,7 +376,8 @@ public class SubtaskService {
 					+ ",st.STATUS"
 					+ ",r.DAILY_DB_ID"
 					+ ",r.MONTHLY_DB_ID"
-					+ ",st.GEOMETRY";
+					+ ",st.GEOMETRY"
+					+ ",st.REFER_GEOMETRY";
 			String userSql = ",u.user_real_name as executer";
 			String groupSql = ",ug.group_name as executer";
 			String taskSql = ",T.CITY_ID AS BLOCK_ID,T.TASK_ID AS BLOCK_MAN_ID,T.NAME AS BLOCK_MAN_NAME";
@@ -428,10 +429,23 @@ public class SubtaskService {
 						subtask.setPlanEndDate(rs.getTimestamp("PLAN_END_DATE"));
 						subtask.setDescp(rs.getString("DESCP"));
 						subtask.setStatus(rs.getInt("STATUS"));
-						
+						//GEOMETRY
 						STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
 						try {
 							subtask.setGeometry(GeoTranslator.struct2Wkt(struct));
+						} catch (Exception e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+						//REFER_GEOMETRY
+						STRUCT struct1 = (STRUCT) rs.getObject("REFER_GEOMETRY");
+						try {
+							if(struct1!=null){
+								String clobStr = GeoTranslator.struct2Wkt(struct1);
+								subtask.setReferGeometryJSON(Geojson.wkt2Geojson(clobStr));
+							}else{
+								subtask.setReferGeometryJSON(null);
+							}	
 						} catch (Exception e1) {
 							// TODO Auto-generated catch block
 							e1.printStackTrace();
@@ -508,6 +522,7 @@ public class SubtaskService {
 					+ ",r.DAILY_DB_ID"
 					+ ",r.MONTHLY_DB_ID"
 					+ ",st.GEOMETRY"
+					+ ",st.REFER_GEOMETRY"
 					//新增返回字段
 					+ "	,st.quality_Subtask_Id qualitySubtaskId,Q.qualityPlanStartDate ,Q.qualityPlanEndDate ,Q.qualityExeUserId ,Q.qualityTaskStatus";
 			String userSql = ",u.user_id as executer_id,u.user_real_name as executer";
@@ -583,6 +598,19 @@ public class SubtaskService {
 							// TODO Auto-generated catch block
 							e1.printStackTrace();
 						}
+						//REFER_GEOMETRY
+						STRUCT struct1 = (STRUCT) rs.getObject("REFER_GEOMETRY");
+						try {
+							if(struct1!=null){
+								String clobStr = GeoTranslator.struct2Wkt(struct1);
+								subtask.setReferGeometryJSON(Geojson.wkt2Geojson(clobStr));
+							}else{
+								subtask.setReferGeometryJSON(null);
+							}	
+						} catch (Exception e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
 						
 						try {
 							List<Integer> gridIds = SubtaskOperation.getGridIdsBySubtaskId(rs.getInt("SUBTASK_ID"));
@@ -591,6 +619,7 @@ public class SubtaskService {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
+
 //						if(rs.getInt("TYPE")== 0
 //								||rs.getInt("TYPE")== 1
 //								||rs.getInt("TYPE")== 2

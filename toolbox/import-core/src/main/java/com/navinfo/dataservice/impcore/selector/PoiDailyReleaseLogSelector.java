@@ -31,7 +31,8 @@ public class PoiDailyReleaseLogSelector extends DeafultDailyReleaseLogSelector {
 				"  FROM LOG_OPERATION P, LOG_DETAIL L, LOG_DETAIL_GRID T,LOG_DAY_RELEASE R\r\n" + 
 				" WHERE P.OP_ID = L.OP_ID\r\n" + 
 				"   AND L.ROW_ID = T.LOG_ROW_ID\r\n" + 
-				"   AND P.OP_ID = R.OP_ID\r\n") ; 
+				"   AND P.OP_ID = R.OP_ID\r\n" +
+				"	AND EXISTS (SELECT 1 FROM POI_EDIT_STATUS E WHERE E.PID=L.OB_PID AND E.STATUS = 3)\r\n"); 
 		sb.append(" AND R.REL_POI_STA=0");
 		if(this.getGrids()!=null&&this.getGrids().size()>0){
 			SqlClause inClause = SqlClause.genInClauseWithMulInt(conn,this.getGrids()," T.GRID_ID ");

@@ -56,8 +56,6 @@ public class ReleaseFmIdbDailyJob extends AbstractJob {
 			for (Region regionInfo:regionsWithGrids){
 				this.log.info("regionInfo:"+regionInfo);
 				List<Integer> gridListOfRegion = regionInfo.getGrids();
-				int lockHookId = lockGrid(regionInfo.getRegionId(),featureType,gridListOfRegion);
-				this.log.info("锁定源库的grid,lockHookId="+lockHookId);
 				try{
 					DbInfo dailyDb = databhubApi.getDbById(regionInfo.getDailyDbId());
 					OracleSchema srcDbSchema = new OracleSchema(
@@ -90,7 +88,6 @@ public class ReleaseFmIdbDailyJob extends AbstractJob {
 				}
 				finally{
 					unselectLog(logSelector,commitStatus);
-					unlockSourceDbGrid(lockHookId);
 				}
 				
 			}
@@ -134,20 +131,8 @@ public class ReleaseFmIdbDailyJob extends AbstractJob {
 		}	
 	}
 
-	private int lockGrid(int regionId,String featureType,List<Integer> gridListOfRegion)throws Exception{
-		DatalockApi datalockApi = (DatalockApi) ApplicationContextUtil.getBean("datalockApi");
-		return datalockApi.lockGrid(regionId , FmEditLock.LOCK_OBJ_POI, gridListOfRegion, FmEditLock.TYPE_RELEASE,FmEditLock.DB_TYPE_DAY ,this.jobInfo.getId());
-	}
-	private void unlockSourceDbGrid(int lockHookId) {
-		if (0==lockHookId) return ;//没有进行grid加锁，直接返回；
-		try{
-			DatalockApi datalockApi = (DatalockApi) ApplicationContextUtil.getBean("datalockApi");
-			datalockApi.unlockGrid(lockHookId,FmEditLock.DB_TYPE_DAY);
-		}catch(Exception e){
-			this.log.warn("grid解锁时，出现异常", e);
-		}
-		
-	}
+	
+	
 
 	private void callReleaseTransApi() {
 		// TODO 待实现；

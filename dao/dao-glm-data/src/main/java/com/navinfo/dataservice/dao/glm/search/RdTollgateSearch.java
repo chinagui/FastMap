@@ -40,7 +40,12 @@ public class RdTollgateSearch implements ISearch {
 		IObj obj = (IObj) selector.loadByIdOrderBySeqnum(pid, true);
 		return obj;
 	}
-
+	
+	@Override
+	public List<IObj> searchDataByPids(List<Integer> pidList) throws Exception {
+		return null;
+	}
+	
 	@Override
 	public List<SearchSnapshot> searchDataBySpatial(String wkt) throws Exception {
 		return null;

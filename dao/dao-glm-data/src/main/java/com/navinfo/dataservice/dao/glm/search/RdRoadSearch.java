@@ -8,10 +8,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-import oracle.sql.STRUCT;
-
 import org.apache.commons.dbutils.DbUtils;
 
 import com.navinfo.dataservice.commons.geom.Geojson;
@@ -21,6 +17,10 @@ import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.model.rd.road.RdRoad;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import oracle.sql.STRUCT;
 
 public class RdRoadSearch implements ISearch {
 
@@ -36,7 +36,12 @@ public class RdRoadSearch implements ISearch {
 		return (IObj) new AbstractSelector(RdRoad.class, conn).loadById(pid,
 				false);
 	}
-
+	
+	@Override
+	public List<IObj> searchDataByPids(List<Integer> pidList) throws Exception {
+		return null;
+	}
+	
 	@Override
 	public List<SearchSnapshot> searchDataBySpatial(String wkt)
 			throws Exception {

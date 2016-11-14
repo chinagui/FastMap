@@ -42,7 +42,7 @@ public class commonTest extends InitApplication {
 
 			SearchProcess p = new SearchProcess(conn);
 
-			IObj obj=p.searchDataByPid(ObjType.IXPOI, 303000023);
+			IObj obj=p.searchDataByPid(ObjType.RDLANECONNEXITY, 6579808);
 			System.out.println(obj.Serialize(ObjLevel.BRIEF));
 			System.out.println(obj.Serialize(ObjLevel.FULL));
 			System.out.println(obj.Serialize(ObjLevel.HISTORY));

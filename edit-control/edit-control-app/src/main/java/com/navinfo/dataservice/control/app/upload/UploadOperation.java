@@ -31,6 +31,8 @@ import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
+import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiChargingPlot;
+import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiChargingStation;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiGasstation;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiHotel;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiParking;
@@ -43,9 +45,6 @@ import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiName;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiParent;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiPhoto;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
-import com.navinfo.dataservice.dao.log.LogWriter;
-import com.navinfo.dataservice.engine.edit.operation.OperatorFactory;
-import com.navinfo.dataservice.engine.edit.operation.PoiMsgPublisher;
 import com.navinfo.dataservice.engine.edit.service.EditApiImpl;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.DBUtils;
@@ -315,7 +314,7 @@ public class UploadOperation {
 								
 								// 鲜度验证，POI状态更新
 								String rawFields = jo.getString("rawFields");
-								upatePoiStatusForAndroid(conn, poiObj.getString("rowId"), 0, rawFields,1);
+								upatePoiStatusForAndroid(conn, poiObj.getString("rowId"), 0, rawFields,1,poiObj.getInt("pid"));
 
 								conn.commit();
 								count++;
@@ -394,10 +393,10 @@ public class UploadOperation {
 								boolean freshFlag = perRetObj.getBoolean("freshFlag");
 								String rawFields = jo.getString("rawFields");
 								if (freshFlag) {
-									upatePoiStatusForAndroid(conn, poiJson.getString("rowId"), 1, rawFields,1);
+									upatePoiStatusForAndroid(conn, poiJson.getString("rowId"), 1, rawFields,1,poiJson.getInt("pid"));
 									
 								} else {
-									upatePoiStatusForAndroid(conn, poiJson.getString("rowId"), 0, rawFields,1);
+									upatePoiStatusForAndroid(conn, poiJson.getString("rowId"), 0, rawFields,1,poiJson.getInt("pid"));
 								}
 								EditApiImpl editApiImpl = new EditApiImpl(conn);
 								editApiImpl.updatePoifreshVerified(poiJson.getInt("pid"),"andriod");
@@ -462,7 +461,7 @@ public class UploadOperation {
 							String rawFields = jo.getString("rawFields");
 							IxPoiSelector ixPoiSelector = new IxPoiSelector(conn);
 							JSONObject poiRowId = ixPoiSelector.getRowIdById(pid);
-							upatePoiStatusForAndroid(conn, poiRowId.getString("rowId"), 0, rawFields,2);
+							upatePoiStatusForAndroid(conn, poiRowId.getString("rowId"), 0, rawFields,2,pid);
 
 							conn.commit();
 							count++;
@@ -807,6 +806,62 @@ public class UploadOperation {
 				foodtypesList.add(foodtypes);
 				poi.setRestaurants(foodtypesList);
 			}
+			
+			// 充电站
+			if (jo.getJSONObject("chargingStation").size() > 0) {
+				JSONObject chargingStationObj = jo.getJSONObject("chargingStation");
+				IxPoiChargingStation chargingStation = new IxPoiChargingStation();
+				List<IRow> chargingStationList = new ArrayList<IRow>();
+				chargingStation.setPid(PidUtil.getInstance().applyPoiChargingstationId());
+				chargingStation.setPoiPid(pid);
+				chargingStation.setChargingType(chargingStationObj.getInt("type"));
+				chargingStation.setChangeBrands(chargingStationObj.getString("changeBrands"));
+				chargingStation.setChangeOpenType(chargingStationObj.getString("changeOpenType"));
+				chargingStation.setChargingNum(chargingStationObj.getInt("chargingNum"));
+				chargingStation.setServiceProv(chargingStationObj.getString("servicePro"));
+				chargingStation.setOpenHour(chargingStationObj.getString("openHour"));
+				chargingStation.setParkingFees(chargingStationObj.getInt("parkingFees"));
+				chargingStation.setParkingInfo(chargingStationObj.getString("parkingInfo"));
+				chargingStation.setAvailableState(chargingStationObj.getInt("availableState"));
+				chargingStation.setRowId(chargingStationObj.getString("rowId"));
+				chargingStationList.add(chargingStation);
+				poi.setChargingstations(chargingStationList);
+			}
+			
+			// 充电桩
+			if (jo.getJSONArray("chargingPole").size() > 0) {
+				JSONArray chargingPoleArray = jo.getJSONArray("chargingPole");
+				List<IRow> chargingPoleList = new ArrayList<IRow>();
+				for (int i=0;i<chargingPoleArray.size();i++) {
+					JSONObject chargingPoleObj = chargingPoleArray.getJSONObject(i);
+					IxPoiChargingPlot chargingPole = new IxPoiChargingPlot();
+					chargingPole.setPoiPid(pid);
+					chargingPole.setGroupId(chargingPoleObj.getInt("groupId"));
+					chargingPole.setCount(chargingPoleObj.getInt("count"));
+					chargingPole.setAcdc(chargingPoleObj.getInt("acdc"));
+					chargingPole.setPlugType(chargingPoleObj.getString("plugType"));
+					chargingPole.setPower(chargingPoleObj.getString("power"));
+					chargingPole.setVoltage(chargingPoleObj.getString("voltage"));
+					chargingPole.setCurrent(chargingPoleObj.getString("current"));
+					chargingPole.setMode(chargingPoleObj.getInt("mode"));
+					chargingPole.setPlugNum(chargingPoleObj.getInt("plugNum"));
+					chargingPole.setPrices(chargingPoleObj.getString("prices"));
+					chargingPole.setOpenType(chargingPoleObj.getString("openType"));
+					chargingPole.setAvailableState(chargingPoleObj.getInt("availableState"));
+					chargingPole.setManufacturer(chargingPoleObj.getString("manufacturer"));
+					chargingPole.setFactoryNum(chargingPoleObj.getString("factoryNum"));
+					chargingPole.setPlotNum(chargingPoleObj.getString("plotNum"));
+					chargingPole.setProductNum(chargingPoleObj.getString("productNum"));
+					chargingPole.setParkingNum(chargingPoleObj.getString("parkingNum"));
+					chargingPole.setFloor(chargingPoleObj.getInt("floor"));
+					chargingPole.setLocationType(chargingPoleObj.getInt("locationType"));
+					chargingPole.setPayment(chargingPoleObj.getString("payment"));
+					chargingPole.setRowId(chargingPoleObj.getString("rowId"));
+					chargingPoleList.add(chargingPole);
+				}
+				poi.setChargingplots(chargingPoleList);
+			}
+			
 
 			retObj.put("flag", 1);
 			retObj.put("ret", poi.Serialize(null));
@@ -1215,7 +1270,6 @@ public class UploadOperation {
 				groupId = oldParent.getPid();
 			}
 			if (!(jo.getJSONArray("relateChildren").size() > 0) || !(oldParentList.size() > 0)) {
-
 				// 新增
 				if (jo.getJSONArray("relateChildren").size() > 0 && oldParentList.size() == 0) {
 					JSONObject parent = new JSONObject();
@@ -1305,8 +1359,6 @@ public class UploadOperation {
 						JSONObject oldPoiGasObj = oldPoiGas.Serialize(null);
 						oldArray.add(oldPoiGasObj);
 					}
-					List<String> newRowIdList = new ArrayList<String>();
-					newRowIdList.add(gasObj.getString("rowId").toUpperCase());
 					JSONObject newGasStation = new JSONObject();
 					newGasStation.put("poiPid", pid);
 					newGasStation.put("serviceProv", gasObj.getString("servicePro"));
@@ -1367,8 +1419,6 @@ public class UploadOperation {
 						JSONObject oldPoiParkingsObj = oldPoiParkings.Serialize(null);
 						oldArray.add(oldPoiParkingsObj);
 					}
-					List<String> newRowIdList = new ArrayList<String>();
-					newRowIdList.add(parkingsObj.getString("rowId").toUpperCase());
 					JSONObject newParkings = new JSONObject();
 					newParkings.put("poiPid", pid);
 					newParkings.put("parkingType", parkingsObj.getString("buildingType"));
@@ -1439,8 +1489,6 @@ public class UploadOperation {
 						JSONObject oldPoiHotelObj = oldPoiHotel.Serialize(null);
 						oldArray.add(oldPoiHotelObj);
 					}
-					List<String> newRowIdList = new ArrayList<String>();
-					newRowIdList.add(hotelObj.getString("rowId").toUpperCase());
 					JSONObject newHotel = new JSONObject();
 					newHotel.put("poiPid", pid);
 					newHotel.put("creditCard", hotelObj.getString("creditCards"));
@@ -1494,7 +1542,7 @@ public class UploadOperation {
 			}
 
 			// 餐馆
-			if (jo.getJSONObject("foodtypes").size() > 0) {
+			if (jo.containsKey("foodtypes")) {
 				List<IRow> foodtypeList = oldPoi.getRestaurants();
 				JSONObject foodtypesObj = jo.getJSONObject("foodtypes");
 				JSONArray oldArray = new JSONArray();
@@ -1505,8 +1553,6 @@ public class UploadOperation {
 						JSONObject oldPoiFoodtypeObj = oldPoiFoodtype.Serialize(null);
 						oldArray.add(oldPoiFoodtypeObj);
 					}
-					List<String> newRowIdList = new ArrayList<String>();
-					newRowIdList.add(foodtypesObj.getString("rowId").toUpperCase());
 					JSONObject newFoodtype = new JSONObject();
 					newFoodtype.put("poiPid", pid);
 					newFoodtype.put("foodType", foodtypesObj.getString("foodtype"));
@@ -1552,6 +1598,134 @@ public class UploadOperation {
 				poiJson.put("restaurants", newFoodtypeArray);
 
 			}
+			
+			// 充电站
+			if (jo.containsKey("chargingStation")) {
+				List<IRow> chargingStationList = oldPoi.getChargingstations();
+				JSONObject chargingStationObj = jo.getJSONObject("chargingStation");
+				JSONArray oldArray = new JSONArray();
+				JSONArray newChargingStationArray = new JSONArray();
+				if (!chargingStationObj.isEmpty()) {
+					for (IRow oldChargingStation : chargingStationList) {
+						IxPoiChargingStation oldPoiChargingStation = (IxPoiChargingStation) oldChargingStation;
+						JSONObject oldPoiChargingStationObj = oldPoiChargingStation.Serialize(null);
+						oldArray.add(oldPoiChargingStationObj);
+					}
+					JSONObject newChargingStation = new JSONObject();
+					newChargingStation.put("poiPid", pid);
+					newChargingStation.put("chargingType", chargingStationObj.getInt("type"));
+					newChargingStation.put("changeBrands", chargingStationObj.getString("changeBrands"));
+					newChargingStation.put("changeOpenType", chargingStationObj.getString("changeOpenType"));
+					newChargingStation.put("chargingNum", chargingStationObj.getInt("chargingNum"));
+					newChargingStation.put("serviceProv", chargingStationObj.getString("servicePro"));
+					newChargingStation.put("openHour", chargingStationObj.getString("openHour"));
+					newChargingStation.put("parkingFees", chargingStationObj.getInt("parkingFees"));
+					newChargingStation.put("parkingInfo", chargingStationObj.getString("parkingInfo"));
+					newChargingStation.put("availableState", chargingStationObj.getInt("availableState"));
+					newChargingStation.put("rowId", chargingStationObj.getString("rowId").toUpperCase());
+					// 差分,区分新增修改
+					int ret = getDifferent(oldArray, newChargingStation);
+					if (ret == 0) {
+						newChargingStation.put("pid", PidUtil.getInstance().applyPoiChargingstationId());
+						newChargingStation.put("objStatus", ObjStatus.INSERT.toString());
+						newChargingStationArray.add(newChargingStation);
+						// 鲜度验证
+						freshFlag = false;
+					} else if (ret == 1) {
+						int oldPid = 0;
+						for (IRow oldChargingStation : chargingStationList) {
+							IxPoiChargingStation oldPoiChargingStation = (IxPoiChargingStation) oldChargingStation;
+							if (oldPoiChargingStation.getRowId().equals(chargingStationObj.getString("rowId").toUpperCase())) {
+								oldPid = oldPoiChargingStation.getPid();
+								break;
+							}
+						}
+						newChargingStation.put("pid", oldPid);
+						newChargingStation.put("objStatus", ObjStatus.UPDATE.toString());
+						newChargingStationArray.add(newChargingStation);
+						// 鲜度验证
+						freshFlag = false;
+					}
+				} else if (chargingStationList.size() > 0) {
+					// 删除的数据
+					IxPoiChargingStation oldPoiChargingStation = (IxPoiChargingStation) chargingStationList.get(0);
+					JSONObject oldDelJson = oldPoiChargingStation.Serialize(null);
+					oldDelJson.put("objStatus", ObjStatus.DELETE.toString());
+					newChargingStationArray.add(oldDelJson);
+					// 鲜度验证
+					freshFlag = false;
+				}
+				poiJson.put("chargingstations", newChargingStationArray);
+			}
+			
+			
+			// 充电桩
+			if (jo.containsKey("chargingPole")) {
+				JSONArray chargingPoleList = jo.getJSONArray("chargingPole");
+				List<IRow> oldChargingPoleList = oldPoi.getChargingplots();
+
+				JSONArray oldArray = new JSONArray();
+				for (IRow irow : oldChargingPoleList) {
+					IxPoiChargingPlot temp = (IxPoiChargingPlot) irow;
+					oldArray.add(temp.Serialize(null));
+				}
+
+				JSONArray newChargingPoleArray = new JSONArray();
+
+				List<String> newRowIdList = new ArrayList<String>();
+				for (int k = 0; k < chargingPoleList.size(); k++) {
+					JSONObject chargingPoleObj = chargingPoleList.getJSONObject(k);
+					newRowIdList.add(chargingPoleObj.getString("rowId").toUpperCase());
+
+					JSONObject newChargingPole = new JSONObject();
+					newChargingPole.put("poiPid", pid);
+					newChargingPole.put("groupId", chargingPoleObj.getInt("groupId"));
+					newChargingPole.put("count", chargingPoleObj.getInt("count"));
+					newChargingPole.put("acdc", chargingPoleObj.getInt("acdc"));
+					newChargingPole.put("plugType", chargingPoleObj.getString("plugType"));
+					newChargingPole.put("power", chargingPoleObj.getString("power"));
+					newChargingPole.put("voltage", chargingPoleObj.getString("voltage"));
+					newChargingPole.put("current", chargingPoleObj.getString("current"));
+					newChargingPole.put("mode", chargingPoleObj.getInt("mode"));
+					newChargingPole.put("plugNum", chargingPoleObj.getInt("plugNum"));
+					newChargingPole.put("prices", chargingPoleObj.getString("prices"));
+					newChargingPole.put("openType", chargingPoleObj.getString("openType"));
+					newChargingPole.put("availableState", chargingPoleObj.getInt("availableState"));
+					newChargingPole.put("manufacturer", chargingPoleObj.getString("manufacturer"));
+					newChargingPole.put("factoryNum", chargingPoleObj.getString("factoryNum"));
+					newChargingPole.put("plotNum", chargingPoleObj.getString("plotNum"));
+					newChargingPole.put("productNum", chargingPoleObj.getString("productNum"));
+					newChargingPole.put("parkingNum", chargingPoleObj.getString("parkingNum"));
+					newChargingPole.put("floor", chargingPoleObj.getInt("floor"));
+					newChargingPole.put("locationType", chargingPoleObj.getInt("locationType"));
+					newChargingPole.put("payment", chargingPoleObj.getString("payment"));
+					newChargingPole.put("rowId", chargingPoleObj.getString("rowId").toUpperCase());
+
+					// 差分,区分新增修改
+					int ret = getDifferent(oldArray, newChargingPole);
+					if (ret == 0) {
+						newChargingPole.put("objStatus", ObjStatus.INSERT.toString());
+						newChargingPoleArray.add(newChargingPole);
+						// 鲜度验证
+						freshFlag = false;
+					} else if (ret == 1) {
+						newChargingPole.put("objStatus", ObjStatus.UPDATE.toString());
+						newChargingPoleArray.add(newChargingPole);
+						// 鲜度验证
+						freshFlag = false;
+					}
+				}
+
+				// 差分，区分删除的数据
+				JSONArray oldDelJson = getOldDel(oldArray, newRowIdList);
+				if (oldDelJson.size() > 0) {
+					// 鲜度验证
+					freshFlag = false;
+				}
+				newChargingPoleArray.addAll(oldDelJson);
+				poiJson.put("chargingplots", newChargingPoleArray);
+			}
+			
 
 			retObj.put("flag", 1);
 			retObj.put("ret", poiJson);
@@ -1645,18 +1819,18 @@ public class UploadOperation {
 	 * @param row
 	 * @throws Exception
 	 */
-	public void upatePoiStatusForAndroid(Connection conn, String rowId, int freshFlag, String rawFields,int status)
+	public void upatePoiStatusForAndroid(Connection conn, String rowId, int freshFlag, String rawFields,int status,int pid)
 			throws Exception {
 		StringBuilder sb = new StringBuilder(" MERGE INTO poi_edit_status T1 ");
 		sb.append(" USING (SELECT '" + rowId + "' as a, "+status+" as b," + freshFlag + " as c,'" + rawFields
-				+ "' as d," + "sysdate as e" + "  FROM dual) T2 ");
+				+ "' as d," + "sysdate as e,"+ pid + " as f " + "  FROM dual) T2 ");
 		sb.append(" ON ( T1.row_id=T2.a) ");
 		sb.append(" WHEN MATCHED THEN ");
 		sb.append(
-				" UPDATE SET T1.status = T2.b,T1.fresh_verified= T2.c,T1.is_upload = 1,T1.raw_fields = T2.d,T1.upload_date = T2.e ");
+				" UPDATE SET T1.status = T2.b,T1.fresh_verified= T2.c,T1.is_upload = 1,T1.raw_fields = T2.d,T1.upload_date = T2.e,T1.pid=T2.f ");
 		sb.append(" WHEN NOT MATCHED THEN ");
 		sb.append(
-				" INSERT (T1.row_id,T1.status,T1.fresh_verified,T1.is_upload,T1.raw_fields,T1.upload_date) VALUES(T2.a,T2.b,T2.c,1,T2.d,T2.e)");
+				" INSERT (T1.row_id,T1.status,T1.fresh_verified,T1.is_upload,T1.raw_fields,T1.upload_date,T1.pid) VALUES(T2.a,T2.b,T2.c,1,T2.d,T2.e,T2.f)");
 		PreparedStatement pstmt = null;
 		try {
 			pstmt = conn.prepareStatement(sb.toString());

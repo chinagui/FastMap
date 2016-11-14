@@ -39,13 +39,14 @@ public class ReleaseFmIdbDailyJob extends AbstractJob {
 	}
 
 	@Override
-	public void execute() throws JobException  {
+	public void execute() throws JobException {
 		LogSelector logSelector =null;
+		int produceId=0;
 		boolean commitStatus=false;
 		ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
 		try{
 			ReleaseFmIdbDailyJobRequest releaseFmIdbDailyRequest = (ReleaseFmIdbDailyJobRequest )this.request;
-			int produceId=releaseFmIdbDailyRequest.getProduceId();
+			produceId=releaseFmIdbDailyRequest.getProduceId();
 			//日出品状态修改为 进行中
 			manApi.updateProduceStatus(produceId, 1);
 			List<Region> regionsWithGrids= queryRegionGridsMapping();
@@ -55,8 +56,6 @@ public class ReleaseFmIdbDailyJob extends AbstractJob {
 			for (Region regionInfo:regionsWithGrids){
 				this.log.info("regionInfo:"+regionInfo);
 				List<Integer> gridListOfRegion = regionInfo.getGrids();
-				int lockHookId = lockGrid(regionInfo.getRegionId(),featureType,gridListOfRegion);
-				this.log.info("锁定源库的grid,lockHookId="+lockHookId);
 				try{
 					DbInfo dailyDb = databhubApi.getDbById(regionInfo.getDailyDbId());
 					OracleSchema srcDbSchema = new OracleSchema(
@@ -89,7 +88,6 @@ public class ReleaseFmIdbDailyJob extends AbstractJob {
 				}
 				finally{
 					unselectLog(logSelector,commitStatus);
-					unlockSourceDbGrid(lockHookId);
 				}
 				
 			}
@@ -100,6 +98,14 @@ public class ReleaseFmIdbDailyJob extends AbstractJob {
 			manApi.updateProduceStatus(produceId, 2);
 			
 		}catch(Exception e){
+			//日出品状态修改为 失败
+			try {
+				manApi.updateProduceStatus(produceId, 3);
+			} catch (Exception e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+				throw new JobException(e1);
+			}
 			throw new JobException(e);
 		}finally{
 			
@@ -125,20 +131,8 @@ public class ReleaseFmIdbDailyJob extends AbstractJob {
 		}	
 	}
 
-	private int lockGrid(int regionId,String featureType,List<Integer> gridListOfRegion)throws Exception{
-		DatalockApi datalockApi = (DatalockApi) ApplicationContextUtil.getBean("datalockApi");
-		return datalockApi.lockGrid(regionId , FmEditLock.LOCK_OBJ_POI, gridListOfRegion, FmEditLock.TYPE_RELEASE,FmEditLock.DB_TYPE_DAY ,this.jobInfo.getId());
-	}
-	private void unlockSourceDbGrid(int lockHookId) {
-		if (0==lockHookId) return ;//没有进行grid加锁，直接返回；
-		try{
-			DatalockApi datalockApi = (DatalockApi) ApplicationContextUtil.getBean("datalockApi");
-			datalockApi.unlockGrid(lockHookId,FmEditLock.DB_TYPE_DAY);
-		}catch(Exception e){
-			this.log.warn("grid解锁时，出现异常", e);
-		}
-		
-	}
+	
+	
 
 	private void callReleaseTransApi() {
 		// TODO 待实现；

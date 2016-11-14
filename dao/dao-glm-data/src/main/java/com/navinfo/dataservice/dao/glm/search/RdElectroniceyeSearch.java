@@ -32,7 +32,13 @@ public class RdElectroniceyeSearch implements ISearch {
 		IObj obj = (IObj) selector.loadById(pid, false);
 		return obj;
 	}
-
+	
+	@Override
+	public List<IObj> searchDataByPids(List<Integer> pidList) throws Exception {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
 	@Override
 	public List<SearchSnapshot> searchDataBySpatial(String wkt) {
 		return null;

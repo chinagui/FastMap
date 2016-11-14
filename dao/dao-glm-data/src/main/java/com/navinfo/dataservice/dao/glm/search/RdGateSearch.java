@@ -32,7 +32,13 @@ public class RdGateSearch implements ISearch {
 		IObj obj = (IObj) abSelector.loadById(pid, true);
 		return obj;
 	}
-
+	
+	@Override
+	public List<IObj> searchDataByPids(List<Integer> pidList) throws Exception {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
 	@Override
 	public List<SearchSnapshot> searchDataBySpatial(String wkt)
 			throws Exception {

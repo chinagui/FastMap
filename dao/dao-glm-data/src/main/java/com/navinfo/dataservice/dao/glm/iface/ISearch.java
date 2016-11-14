@@ -14,6 +14,14 @@ public interface ISearch {
 	 * @throws Exception
 	 */
 	public IObj searchDataByPid(int pid) throws Exception;
+	
+	/**
+	 * 通过pids获取数据(框选功能)
+	 * @param pids
+	 * @return
+	 * @throws Exception
+	 */
+	public List<? extends IObj> searchDataByPids(List<Integer> pidList) throws Exception;
 
 	/**
 	 * 通过范围获取数据

@@ -1,11 +1,11 @@
 package com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrdpoint;
 
 import java.util.List;
-import java.util.Map;
 
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.speedlimit.RdSpeedlimit;
 
 public class OpRefSpeedlimit implements IOperation {
@@ -23,7 +23,7 @@ public class OpRefSpeedlimit implements IOperation {
 	public String run(Result result) throws Exception {
 
 		this.result = result;
-		
+
 		this.handleSpeedlimit(command.getSpeedlimits());
 
 		return null;
@@ -33,16 +33,22 @@ public class OpRefSpeedlimit implements IOperation {
 	private void handleSpeedlimit(List<RdSpeedlimit> list) throws Exception {
 
 		for (RdSpeedlimit limit : list) {
-		
+
 			int inLinkPid = 0;
 
-			if (limit.getGeometry().distance(command.getLink1().getGeometry()) < limit
-					.getGeometry().distance(command.getLink2().getGeometry())) {
+			double distanceFlag = Double.MAX_VALUE;
 
-				inLinkPid = command.getLink1().getPid();
-			} else {
-				
-				inLinkPid = command.getLink2().getPid();
+			for (RdLink link : command.getNewLinks()) {
+
+				double distance = limit.getGeometry().distance(
+						link.getGeometry());
+
+				if (distance < distanceFlag) {
+
+					distanceFlag = distance;
+
+					inLinkPid = link.getPid();
+				}
 			}
 
 			limit.changedFields().put("linkPid", inLinkPid);

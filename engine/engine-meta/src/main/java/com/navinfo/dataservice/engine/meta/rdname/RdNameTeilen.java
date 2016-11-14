@@ -50,24 +50,24 @@ public class RdNameTeilen {
 
 		CallableStatement cstmt = null;
 		PreparedStatement pst=null;
-		Connection subconn = null;
+//		Connection subconn = null;
 		boolean isMetaConn=true;
 		try {
-			if (conn == null) {
-				subconn = DBConnector.getInstance().getMetaConnection();
-				String spName = "{call NAVI_RD_NAME_SPLITE.RD_NAME_SPLIT_UPDATE(?)}";
-				cstmt = subconn.prepareCall(spName);
-				cstmt.setString(1, String.valueOf(nameId));
-				cstmt.executeUpdate();
-				
-				// 拆分时处理英文名称：拆分完简体中文后，根据组号，来拆分英文名,大陆的拆分英文，港澳的不拆分英文
-				if (SIMPLE_CHINESE.equals(langCode)) {
-					teilenEngName(subconn,String.valueOf(nameGroupId), String.valueOf(nameId),roadType);
-				}
-				String updateSql = "update rd_name set U_FIELDS = to_char(sysdate,'YYYY-MM-DD HH24:MI:SS'),split_flag=2 where NAME_GROUPID = " +  nameGroupId;
-				pst=subconn.prepareStatement(updateSql);
-				pst.execute(updateSql);
-			} else {
+//			if (conn == null) {
+//				subconn = DBConnector.getInstance().getMetaConnection();
+//				String spName = "{call NAVI_RD_NAME_SPLITE.RD_NAME_SPLIT_UPDATE(?)}";
+//				cstmt = subconn.prepareCall(spName);
+//				cstmt.setString(1, String.valueOf(nameId));
+//				cstmt.executeUpdate();
+//				
+//				// 拆分时处理英文名称：拆分完简体中文后，根据组号，来拆分英文名,大陆的拆分英文，港澳的不拆分英文
+//				if (SIMPLE_CHINESE.equals(langCode)) {
+//					teilenEngName(subconn,String.valueOf(nameGroupId), String.valueOf(nameId),roadType);
+//				}
+//				String updateSql = "update rd_name set U_FIELDS = to_char(sysdate,'YYYY-MM-DD HH24:MI:SS'),split_flag=2 where NAME_GROUPID = " +  nameGroupId;
+//				pst=subconn.prepareStatement(updateSql);
+//				pst.execute(updateSql);
+//			} else {
 				String spName = "{call NAVI_RD_NAME_SPLITE.RD_NAME_SPLIT_UPDATE(?)}";
 				cstmt = conn.prepareCall(spName);
 				cstmt.setString(1, String.valueOf(nameId));
@@ -80,7 +80,7 @@ public class RdNameTeilen {
 				String updateSql = "update rd_name set U_FIELDS = to_char(sysdate,'YYYY-MM-DD HH24:MI:SS'),split_flag=2 where NAME_GROUPID = " +  nameGroupId;
 				pst=conn.prepareStatement(updateSql);
 				pst.execute(updateSql);
-			}
+//			}
 			
 			
 		}catch (Exception e){
@@ -88,9 +88,9 @@ public class RdNameTeilen {
 		}finally {
 			DbUtils.closeQuietly(pst);
 			DbUtils.closeQuietly(cstmt);
-			if(isMetaConn){
-				DbUtils.commitAndCloseQuietly(subconn);
-			}
+//			if(isMetaConn){
+//				DbUtils.commitAndCloseQuietly(subconn);
+//			}
 			
 		}
 	}

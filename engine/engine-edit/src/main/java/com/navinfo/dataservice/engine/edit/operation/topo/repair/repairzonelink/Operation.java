@@ -90,7 +90,7 @@ public class Operation implements IOperation {
 			if (isChanged) {
 				result.insertObject(this.command.getUpdateLink(),
 						ObjStatus.UPDATE, this.command.getUpdateLink().getPid());
-
+				link.setPid(this.command.getUpdateLink().getPid());
 				link.copy(this.command.getUpdateLink());
 
 				link.setGeometry(GeoTranslator.geojson2Jts(

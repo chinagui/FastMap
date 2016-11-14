@@ -20,6 +20,7 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
+import com.navinfo.dataservice.dao.glm.search.specialMap.SpecialMapUtils;
 import com.navinfo.dataservice.engine.edit.search.SearchProcess;
 import com.navinfo.dataservice.engine.fcc.tile.TileSelector;
 import com.navinfo.dataservice.engine.fcc.tips.TipsSelector;
@@ -137,6 +138,75 @@ public class RenderController extends BaseController {
 		}
 	}
 
+	@RequestMapping(value = "/specia/getByTileWithGap")
+	public void getSpeciaByTile(HttpServletRequest request,
+			HttpServletResponse response) throws ServletException, IOException {
+
+		String parameter = request.getParameter("parameter");
+
+		Connection conn = null;
+
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			List<String> types = new ArrayList<String>();
+
+			if (jsonReq.containsKey("type")) {
+				types.add(jsonReq.getString("type"));
+			}
+			if (jsonReq.containsKey("types")) {
+				JSONArray typeArray = jsonReq.getJSONArray("types");
+
+				for (int i = 0; i < typeArray.size(); i++) {
+					types.add(typeArray.getString(i));
+				}
+			}
+
+			int dbId = jsonReq.getInt("dbId");
+
+			int x = jsonReq.getInt("x");
+
+			int y = jsonReq.getInt("y");
+
+			int z = jsonReq.getInt("z");
+
+			int gap = 0;
+
+			if (jsonReq.containsKey("gap")) {
+				gap = jsonReq.getInt("gap");
+			}
+
+			JSONObject data = null;
+
+			if (z > 9) {
+
+				conn = DBConnector.getInstance().getConnectionById(dbId);
+
+				SpecialMapUtils specialMap = new SpecialMapUtils(conn);
+
+				data = specialMap.searchDataByTileWithGap(types, x, y, z, gap);
+
+				response.getWriter().println(
+						ResponseUtils.assembleRegularResult(data));
+			}
+		} catch (Exception e) {
+
+			logger.error(e.getMessage(), e);
+
+			response.getWriter().println(
+					ResponseUtils.assembleFailResult(e.getMessage()));
+
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+
 	@RequestMapping(value = "/tip/getByTileWithGap")
 	public void getTipsByTile(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
@@ -153,8 +223,8 @@ public class RenderController extends BaseController {
 			int z = jsonReq.getInt("z");
 
 			int gap = jsonReq.getInt("gap");
-			
-			String mdFlag=jsonReq.getString("mdFlag");
+
+			String mdFlag = jsonReq.getString("mdFlag");
 
 			JSONArray types = new JSONArray();
 
@@ -163,10 +233,9 @@ public class RenderController extends BaseController {
 			}
 
 			TipsSelector selector = new TipsSelector();
-			
-			
+
 			JSONArray array = selector.searchDataByTileWithGap(x, y, z, gap,
-					types,mdFlag);
+					types, mdFlag);
 
 			response.getWriter().println(
 					ResponseUtils.assembleRegularResult(array));

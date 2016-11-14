@@ -162,6 +162,11 @@
 	</dependency>
 	
 	<dependency>
+		<groupId>com.navinfo.dataservice</groupId>
+		<artifactId>engine-meta</artifactId>
+	</dependency>
+	
+	<dependency>
 		   <groupId>org.apache.zookeeper</groupId>
 		   <artifactId>zookeeper</artifactId>
 		   <type>pom</type>

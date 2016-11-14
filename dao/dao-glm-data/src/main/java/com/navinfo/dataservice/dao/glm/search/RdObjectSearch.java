@@ -50,7 +50,12 @@ public class RdObjectSearch implements ISearch {
 	public IObj searchDataByPid(int pid) throws Exception {
 		return (IObj) new AbstractSelector(RdObject.class, conn).loadById(pid, false);
 	}
-
+	
+	@Override
+	public List<IObj> searchDataByPids(List<Integer> pidList) throws Exception {
+		return null;
+	}
+	
 	@Override
 	public List<SearchSnapshot> searchDataBySpatial(String wkt) throws Exception {
 		return null;

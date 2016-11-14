@@ -153,7 +153,7 @@ public class PidService {
 
 	/**
 	 * 申请 顺行pid
-	 * 
+	 *
 	 * @return
 	 * @throws Exception
 	 */
@@ -225,7 +225,7 @@ public class PidService {
 
 	/**
 	 * 申请rtic代码
-	 * 
+	 *
 	 * @return
 	 * @throws Exception
 	 */
@@ -438,7 +438,7 @@ public class PidService {
 	public synchronized int applyLuFacePid() throws Exception {
 		return this.applyPid(PidSequenceName.luFacePidName);
 	}
-	
+
 	/**
 	 * 申请lu_face_name_pid
 	 */
@@ -475,7 +475,7 @@ public class PidService {
 	}
 
 	/**
-	 * 
+	 *
 	 * 申请applyRdGate
 	 */
 	public synchronized int applyRdGate() throws Exception {
@@ -502,7 +502,7 @@ public class PidService {
 	public synchronized int applyLcFacePid() throws Exception {
 		return this.applyPid(PidSequenceName.lcFacePidName);
 	}
-	
+
 	/**
 	 * 申请lc_face_name_pid
 	 */
@@ -568,7 +568,7 @@ public class PidService {
 
 	/**
 	 * 申请rd_voiceguide
-	 * 
+	 *
 	 * @return
 	 * @throws Exception
 	 */
@@ -578,7 +578,7 @@ public class PidService {
 
 	/**
 	 * 申请rd_voiceguide_detail
-	 * 
+	 *
 	 * @return
 	 * @throws Exception
 	 */
@@ -588,7 +588,7 @@ public class PidService {
 
 	/**
 	 * 申请IX_SAMEPOI
-	 * 
+	 *
 	 * @return
 	 * @throws Exception
 	 */

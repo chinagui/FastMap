@@ -6,6 +6,8 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.dbutils.DbUtils;
+
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
@@ -14,11 +16,9 @@ import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.selector.lc.LcLinkSelector;
 
-import com.navinfo.dataservice.datahub.api.Db;
 import net.sf.json.JSONObject;
 import oracle.spatial.geometry.JGeometry;
 import oracle.sql.STRUCT;
-import org.apache.commons.dbutils.DbUtils;
 
 public class LcLinkSearch implements ISearch {
 
@@ -36,7 +36,13 @@ public class LcLinkSearch implements ISearch {
 
         return lcLink;
     }
-
+    
+    @Override
+	public List<IObj> searchDataByPids(List<Integer> pidList) throws Exception {
+		// TODO Auto-generated method stub
+		return null;
+	}
+    
     @Override
     public List<SearchSnapshot> searchDataBySpatial(String wkt)
             throws Exception {

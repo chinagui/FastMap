@@ -33,7 +33,13 @@ public class LcNodeSearch implements ISearch {
 
 		return lcNode;
 	}
-
+	
+	@Override
+	public List<IObj> searchDataByPids(List<Integer> pidList) throws Exception {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
 	@Override
 	public List<SearchSnapshot> searchDataBySpatial(String wkt) throws Exception {
 		// TODO Auto-generated method stub

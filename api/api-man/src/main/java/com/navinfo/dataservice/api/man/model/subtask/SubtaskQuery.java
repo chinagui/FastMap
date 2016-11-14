@@ -4,6 +4,7 @@ package com.navinfo.dataservice.api.man.model.subtask;
 import java.sql.Timestamp;
 import java.util.List;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 
@@ -45,7 +46,9 @@ public class SubtaskQuery extends SubtaskListByUser {
 		private String qualityPlanStartDate ;
 		private String qualityPlanEndDate;
 		private Integer qualityTaskStatus;
+		
 		private JSONObject referGeometryJSON;
+		private JSONArray referSubtasks;
 	
 		public Integer getQualitySubtaskId() {
 			return qualitySubtaskId;
@@ -108,7 +111,7 @@ public class SubtaskQuery extends SubtaskListByUser {
 			JSONObject geometryJSON
 			, Integer qualitySubtaskId, Integer isQuality, Integer qualityExeUserId,
 			String qualityPlanStartDate, String qualityPlanEndDate,Integer qualityTaskStatus,
-			JSONObject referGeometryJSON
+			JSONObject referGeometryJSON,JSONArray referSubtasks
 			){
 		super(subtaskId, name, stage, type, status, descp, dbId,gridIds,geometry,planStartDate,planEndDate);
 		this.setExecuterId(executerId);
@@ -133,6 +136,7 @@ public class SubtaskQuery extends SubtaskListByUser {
 		this.qualityPlanEndDate = qualityPlanEndDate;
 		this.qualityTaskStatus = qualityTaskStatus;
 		this.referGeometryJSON = referGeometryJSON;
+		this.referSubtasks = referSubtasks;
 	}
 	public SubtaskQuery (Integer subtaskId ,
 			String name,
@@ -297,6 +301,18 @@ public class SubtaskQuery extends SubtaskListByUser {
 	 */
 	public void setReferGeometryJSON(JSONObject referGeometryJSON) {
 		this.referGeometryJSON = referGeometryJSON;
+	}
+	/**
+	 * @return the referSubtasks
+	 */
+	public JSONArray getReferSubtasks() {
+		return referSubtasks;
+	}
+	/**
+	 * @param referSubtasks the referSubtasks to set
+	 */
+	public void setReferSubtasks(JSONArray referSubtasks) {
+		this.referSubtasks = referSubtasks;
 	}
 
 

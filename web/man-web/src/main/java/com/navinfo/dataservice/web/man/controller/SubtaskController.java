@@ -308,9 +308,14 @@ public class SubtaskController extends BaseController {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
 			
-			Subtask bean = (Subtask)JSONObject.toBean(dataJson, Subtask.class);
-			
-			Subtask subtask = SubtaskService.getInstance().query(bean);	
+			int subtaskId = dataJson.getInt("subtaskId");
+			int platForm = 1;
+			if(dataJson.containsKey("platForm")){
+				platForm = dataJson.getInt("platForm");
+			}
+//			Subtask bean = (Subtask)JSONObject.toBean(dataJson, Subtask.class);			
+//			Subtask subtask = SubtaskService.getInstance().query(bean);	
+			Subtask subtask = SubtaskService.getInstance().queryBySubtaskId(subtaskId,platForm);	
 			if(subtask!=null&&subtask.getSubtaskId()!=null){
 				SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
 				String qualityPlanStartDate = null;
@@ -351,6 +356,7 @@ public class SubtaskController extends BaseController {
 						, qualityPlanEndDate
 						, subtask.getQualityTaskStatus()
 						, subtask.getReferGeometryJSON()
+						, subtask.getReferSubtasks()
 						);
 				SubtaskQueryResponse response = new SubtaskQueryResponse(0,"success",subtaskQuery);
 				return response;

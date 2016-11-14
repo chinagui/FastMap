@@ -39,7 +39,7 @@ public class RdGscSearch implements ISearch {
 	}
 
 	@Override
-	public IObj searchDataByPids(List<Integer> pidList) throws Exception {
+	public List<IObj> searchDataByPids(List<Integer> pidList) throws Exception {
 		return null;
 	}
 	

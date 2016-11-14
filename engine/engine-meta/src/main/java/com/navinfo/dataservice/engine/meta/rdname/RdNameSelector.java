@@ -161,7 +161,7 @@ public class RdNameSelector {
 
 		try {
 
-			//***********************以下代码是路演环境临时使用*begin***********************
+		/*	//***********************以下代码是路演环境临时使用*begin***********************
 			String dbId= SystemConfigFactory.getSystemConfig().getValue("region_db_id");
 			
 			if(StringUtils.isEmpty(dbId)){
@@ -169,11 +169,11 @@ public class RdNameSelector {
 			}
 
 			//路演环境临时使用
-			conn = DBConnector.getInstance().getConnectionById(Integer.parseInt(dbId));
+			conn = DBConnector.getInstance().getConnectionById(Integer.parseInt(dbId));*/
 			
 			//***********************end ***********************
 			
-			//conn = DBConnector.getInstance().getMetaConnection();
+			conn = DBConnector.getInstance().getMetaConnection();
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setString(1, name);
 			pstmt.setInt(2, adminId);

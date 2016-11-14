@@ -22,11 +22,11 @@ import net.sf.json.JSONObject;
  * @date 2016年11月11日 下午6:06:29
  * @Description: TODO
  */
-public class TmcPointSearch implements ISearch {
+public class TmcLineSearch implements ISearch {
 	
 	private Connection conn;
 	
-	public TmcPointSearch(Connection conn) {
+	public TmcLineSearch(Connection conn) {
         this.conn = conn;
     }
 	
@@ -57,7 +57,7 @@ public class TmcPointSearch implements ISearch {
 		
 		MetadataApi metaApi = (MetadataApi) ApplicationContextUtil.getBean("metaApi");
 
-		JSONArray array = metaApi.queryTmcPoint(x, y, z, gap);
+		JSONArray array = metaApi.queryTmcLine(x, y, z, gap);
 		
 		for(int i = 0;i<array.size();i++)
 		{

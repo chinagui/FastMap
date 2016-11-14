@@ -57,7 +57,7 @@ public class TmcLineSearch implements ISearch {
 		
 		MetadataApi metaApi = (MetadataApi) ApplicationContextUtil.getBean("metaApi");
 
-		JSONArray array = metaApi.queryTmcPoint(x, y, z, gap);
+		JSONArray array = metaApi.queryTmcLine(x, y, z, gap);
 		
 		for(int i = 0;i<array.size();i++)
 		{

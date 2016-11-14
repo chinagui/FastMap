@@ -349,12 +349,12 @@ public class SubtaskService {
 	}
 	
 
-//	/*
-//	 * 根据subtaskId查询一个任务的详细信息。 参数为Subtask对象
-//	 */
-//	public Subtask query(Subtask bean) throws ServiceException {
-//		return queryBySubtaskId(bean.getSubtaskId());
-//	}
+	/*
+	 * 根据subtaskId查询一个任务的详细信息。 参数为Subtask对象
+	 */
+	public Subtask query(Subtask bean) throws ServiceException {
+		return queryBySubtaskId(bean.getSubtaskId(),0);
+	}
 
 	/*
 	 * 根据subtaskId查询一个任务的详细信息。 参数为Subtask对象

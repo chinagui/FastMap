@@ -28,7 +28,7 @@ public class IxPoiChargingStation implements IObj {
 	private int poiPid = 0;
 	private int chargingType = 3;// 充电站类型
 	private String changeBrands;// CHANGE_BRANDS
-	private int changeOpenType = 1;// CHANGE_OPEN_TYPE
+	private String changeOpenType;// CHANGE_OPEN_TYPE
 	private int chargingNum = 0;// 充电桩总数
 	private String serviceProv;// 服务提供商
 	private String memo;// 备注信息
@@ -142,11 +142,11 @@ public class IxPoiChargingStation implements IObj {
 		this.changeBrands = changeBrands;
 	}
 
-	public int getChangeOpenType() {
+	public String getChangeOpenType() {
 		return changeOpenType;
 	}
 
-	public void setChangeOpenType(int changeOpenType) {
+	public void setChangeOpenType(String changeOpenType) {
 		this.changeOpenType = changeOpenType;
 	}
 

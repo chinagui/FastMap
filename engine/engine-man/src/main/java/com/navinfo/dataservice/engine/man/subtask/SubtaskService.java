@@ -6,6 +6,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -79,7 +80,7 @@ public class SubtaskService {
 	/*
 	 * 创建一个子任务。 参数1：Subtask对象
 	 */
-	public void create(Subtask bean)throws ServiceException {
+	public int create(Subtask bean)throws ServiceException {
 		Connection conn = null;
 		try {
 			conn = DBConnector.getInstance().getManConnection();
@@ -104,6 +105,7 @@ public class SubtaskService {
 				SubtaskOperation.pushMessage(conn,bean);
 			}*/	
 			log.debug("子任务创建成功!");
+			return subtaskId;
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -228,11 +230,77 @@ public class SubtaskService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+	
+	/*
+	 * 批量修改子任务详细信息。 参数：Subtask对象列表
+	 */
+	public String update(JSONArray subtaskArray, long userId) throws ServiceException, ParseException {
+		List<Subtask> subtaskList = new ArrayList<Subtask>();
+		SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
+		
+		for(int i = 0;i<subtaskArray.size();i++){
+			//***************zl 2016.11.4 ******************
+			Integer qualitySubtaskId = 0;//质检子任务id
+			Integer qualityExeUserId = 0;//是否新建质检子任务标识
+			String qualityPlanStartDate = "";
+			String qualityPlanEndDate ="";
+			
+			if(subtaskArray.getJSONObject(i).containsKey("qualitySubtaskId")){
+				qualitySubtaskId = subtaskArray.getJSONObject(i).getInt("qualitySubtaskId");
+				//删除 质检子任务id ,因为质检子任务Subtask实体类里不应该有这个字段
+				subtaskArray.getJSONObject(i).discard("qualitySubtaskId");
+			}
+			if(subtaskArray.getJSONObject(i).containsKey("qualityExeUserId")){
+				qualityExeUserId = subtaskArray.getJSONObject(i).getInt("qualityExeUserId");
+				qualityPlanStartDate = subtaskArray.getJSONObject(i).getString("qualityPlanStartDate");
+				qualityPlanEndDate =subtaskArray.getJSONObject(i).getString("qualityPlanEndDate");
+				subtaskArray.getJSONObject(i).discard("qualityExeUserId");//删除 是否新建质检子任务标识 ,因为Subtask实体类里灭幼这个字段
+				subtaskArray.getJSONObject(i).discard("qualityPlanStartDate");//删除 质检子任务计划开始时间 ,因为Subtask实体类里灭幼这个字段
+				subtaskArray.getJSONObject(i).discard("qualityPlanEndDate");//删除 质检子任务计划结束时间 ,因为Subtask实体类里灭幼这个字段
+			}				
+			
+			//正常修改子任务
+			Subtask subtask = (Subtask)JsonOperation.jsonToBean(subtaskArray.getJSONObject(i),Subtask.class);	
+			
+			if(qualitySubtaskId != 0){//非0的时候，表示要修改质检子任务
+				Subtask qualitySubtask = (Subtask)JsonOperation.jsonToBean(subtaskArray.getJSONObject(i),Subtask.class);//生成质检子任务的bean
+				qualitySubtask.setSubtaskId(qualitySubtaskId);
+				qualitySubtask.setExeUserId(qualityExeUserId);
+				qualitySubtask.setPlanStartDate(new Timestamp(df.parse(qualityPlanStartDate).getTime()));
+				qualitySubtask.setPlanEndDate(new Timestamp(df.parse(qualityPlanEndDate).getTime()));
+				subtaskList.add(qualitySubtask);//将质检子任务也加入修改列表
+			}else{
+				if(qualityExeUserId != 0){//qualitySubtaskId=0，且qualityExeUserId非0的时候，表示要创建质检子任务
+					//subtaskArray.getJSONObject(i).discard("subtaskId");//删除subtaskId ,新建质检子任务
+					//Subtask qualitySubtask = (Subtask)JsonOperation.jsonToBean(subtaskArray.getJSONObject(i),Subtask.class);//生成质检子任务的bean
+					Subtask qualitySubtask = SubtaskService.getInstance().queryBySubtaskIdS(subtaskArray.getJSONObject(i).getInt("subtaskId"));
+					qualitySubtask.setName(qualitySubtask.getName()+"_质检");
+					qualitySubtask.setSubtaskId(null);
+					qualitySubtask.setPlanStartDate(new Timestamp(df.parse(qualityPlanStartDate).getTime()));
+					qualitySubtask.setPlanEndDate(new Timestamp(df.parse(qualityPlanEndDate).getTime()));
+					qualitySubtask.setIsQuality(1);//表示此bean是质检子任务
+					qualitySubtask.setExeUserId(qualityExeUserId);
+					//创建质检子任务 subtask	
+					Integer newQualitySubtaskId = SubtaskService.getInstance().createQualitySubtask(qualitySubtask);	
+					subtask.setIsQuality(0);
+					subtask.setQualitySubtaskId(newQualitySubtaskId);
+				}
+			}
+			subtaskList.add(subtask);
+			//正常修改子任务
+			//Subtask subtask = (Subtask)JsonOperation.jsonToBean(subtaskArray.getJSONObject(i),Subtask.class);
+		}
+		
+		List<Integer> updatedSubtaskIdList = SubtaskService.getInstance().updateSubtask(subtaskList,userId);
+		
+		String message = "批量修改子任务：" + updatedSubtaskIdList.size() + "个成功，" + (subtaskList.size() - updatedSubtaskIdList.size()) + "个失败。";
+		return message;
+	}
 
 	/*
 	 * 批量修改子任务详细信息。 参数：Subtask对象列表
 	 */
-	public List<Integer> update(List<Subtask> subtaskList, long userId) throws ServiceException {
+	public List<Integer> updateSubtask(List<Subtask> subtaskList, long userId) throws ServiceException {
 		Connection conn = null;
 		try {
 			// 持久化
@@ -243,14 +311,32 @@ public class SubtaskService {
 				SubtaskOperation.updateSubtask(conn, subtaskList.get(i));
 				updatedSubtaskIdList.add(subtaskList.get(i).getSubtaskId());
 				
-				//消息发布
-				if(subtaskList.get(i)!=null&&subtaskList.get(i).getStatus()!=null &&subtaskList.get(i).getStatus()==1){
-					List<Integer> subtaskIdList = new ArrayList<Integer>();
-					subtaskIdList.add(subtaskList.get(i).getSubtaskId());
-					Subtask subtask = SubtaskOperation.getSubtaskListBySubtaskIdList(conn,subtaskIdList).get(0);
-					SubtaskOperation.pushMessage(conn,subtask,userId);
-				}
 			}
+			//发送消息
+			try {
+				List<Integer> subtaskIdList = new ArrayList<Integer>();
+				for (Subtask subtask : subtaskList) {
+					//消息发布
+					if(subtask!=null&&subtask.getStatus()!=null &&subtask.getStatus()==1){
+						subtaskIdList.add(subtask.getSubtaskId());
+					}
+				}
+				if(subtaskIdList.size()==0){return updatedSubtaskIdList;}
+				//查询子任务
+				if(!subtaskIdList.isEmpty()){
+					List<Subtask> list = SubtaskOperation.getSubtaskListBySubtaskIdList(conn,subtaskIdList);
+					if(list != null && list.size()>0){
+						for (Subtask subtask : list) {
+							SubtaskOperation.pushMessage(conn,subtask,userId);
+						}
+					}
+				}
+			} catch (Exception e) {
+				// TODO: handle exception
+				e.printStackTrace();
+				log.error("发送失败,原因:"+e.getMessage(), e);
+			}
+			
 			return updatedSubtaskIdList;
 
 		} catch (Exception e) {
@@ -668,7 +754,7 @@ public class SubtaskService {
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
 
-			String selectSql = "select c.admin_id from block b, city c, subtask s where s.block_id=b.block_id and b.city_id=c.city_id and s.subtask_id=:1";
+			String selectSql = "select c.admin_id from block_man bm,block b, city c, subtask s where s.block_man_id=bm.block_man_id and b.block_id = bm.block_id and b.city_id=c.city_id and s.subtask_id=:1";
 
 			selectSql += " union all";
 

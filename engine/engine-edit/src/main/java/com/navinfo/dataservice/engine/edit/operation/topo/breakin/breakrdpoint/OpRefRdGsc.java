@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrdpoint;
 
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -13,7 +14,6 @@ import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGscLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
-import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.edit.utils.RdGscOperateUtils;
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -74,69 +74,55 @@ public class OpRefRdGsc implements IOperation {
 	private void handleSelfGscOnBreak(RdGsc rr) throws Exception {
 		
 		Geometry gscGeo = rr.getGeometry();
-
-		RdGscLink gscLink = (RdGscLink) rr.getLinks().get(0);
-
-		RdLinkSelector linkSelector = new RdLinkSelector(connection);
-
-		RdLink link = (RdLink) linkSelector.loadById(gscLink.getLinkPid(), true);
-
-		JSONObject geojson = GeoTranslator.jts2Geojson(link.getGeometry());
 		
-		Geometry point = GeoTranslator.transform(command.getPoint(), 100000, 0);
-
-		int type = RdGscOperateUtils.calCoordinateBySelfInter(geojson, gscGeo,point);
-
-		// 每个立交至少由两条线组成，循环遍历每条link
-		for (int i = 0; i < rr.getLinks().size(); i++) {
-			RdGscLink rdGscLink = (RdGscLink) rr.getLinks().get(i);
-
-			// 找到打断的那条link
-			if (rdGscLink.getLinkPid() == command.getLinkPid()) {
-				// 打断后，立交的link和link序号需要重新计算
-
-				List<Integer> shpSeqNum = null;
-
-				JSONObject updateContent = new JSONObject();
-
-				RdLink tmpLink = null;
-
-				switch (type) {
-				case 1:
-					tmpLink = command.getLink2();
-					break;
-				case 2:
-					if (i == 0) {
-						tmpLink = command.getLink1();
-					} else {
-						tmpLink = command.getLink2();
-					}
-					break;
-				case 3:
-					tmpLink = command.getLink1();
-					break;
-
-				default:
-					throw new Exception("打断LINK失败：自相交LINK的立交关系维护失败");
-				}
-				
-				//截取精度，防止位置序号计算错误
-				Geometry tmpLinkGeo = GeoTranslator.transform(tmpLink.getGeometry(), 1, 0);
-				
-				shpSeqNum = RdGscOperateUtils.calcShpSeqNum(gscGeo, tmpLinkGeo.getCoordinates());
-				
-				updateContent.put("shpSeqNum", shpSeqNum.get(0));
-
-				updateContent.put("linkPid", tmpLink.getPid());
-
-				boolean changed = rdGscLink.fillChangeFields(updateContent);
-
-				if (changed) {
-					result.insertObject(rdGscLink, ObjStatus.UPDATE, rdGscLink.getPid());
-				}
+		List<RdLink> newGscLink = new ArrayList<>();
+		
+		for(RdLink link : command.getNewLinks())
+		{
+			if(link.getGeometry().distance(gscGeo) < 1)
+			{
+				newGscLink.add(link);
 			}
 		}
-
+		
+		//打断link后还是自相交立交
+		if(newGscLink.size() == 1)
+		{
+			for (int i = 0; i < rr.getLinks().size(); i++) {
+				RdGscLink rdGscLink = (RdGscLink) rr.getLinks().get(i);
+				
+				rdGscLink.changedFields().put("linkPid", newGscLink.get(0).getPid());
+				
+				result.insertObject(rdGscLink, ObjStatus.UPDATE, rdGscLink.getPid());
+			}
+		}
+		else
+		{
+			//打断后生成多线（双线）立交
+			for(int i = 0;i<newGscLink.size();i++)
+			{
+				RdLink  newLink = newGscLink.get(i);
+				
+				RdGscLink gscLink = new RdGscLink();
+				
+				//截取精度，防止位置序号计算错误
+				Geometry tmpLinkGeo = GeoTranslator.transform(newLink.getGeometry(), 1, 0);
+				
+				List<Integer> shpSeqNumList = RdGscOperateUtils.calcShpSeqNum(gscGeo, tmpLinkGeo.getCoordinates());
+				
+				gscLink.setPid(rr.getPid());
+				
+				gscLink.setLinkPid(newLink.getPid());
+				
+				gscLink.setTableName("RD_LINK");
+				
+				gscLink.setZlevel(i);
+				
+				gscLink.setShpSeqNum(shpSeqNumList.get(0));
+				
+				result.insertObject(gscLink, ObjStatus.UPDATE, gscLink.getPid());
+			}
+		}
 	}
 
 	/**
@@ -152,19 +138,21 @@ public class OpRefRdGsc implements IOperation {
 
 			// 找到打断的那条link
 			if (rdGscLink.getLinkPid() == command.getLinkPid()) {
-
-				Geometry link1Geo = command.getLink1().getGeometry();
-
-				Geometry link2Geo = command.getLink2().getGeometry();
-
+				
 				RdLink link = null;
-
-				// 当立交和新生成的link距离为0，代表该新生成的link为立交的组成link
-				if (rdGsc.getGeometry().distance(link1Geo) == 0) {
-					link = command.getLink1();
-				}
-				if (rdGsc.getGeometry().distance(link2Geo) == 0) {
-					link = command.getLink2();
+				
+				List<RdLink> linkList = command.getNewLinks();
+				
+				for(RdLink newLink : linkList)
+				{
+					double distance = rdGsc.getGeometry().distance(linkList.get(0).getGeometry());
+					
+					// 计算代表点和生成的线最近的link
+					if(distance == 0)
+					{
+						link = newLink;
+						break;
+					}
 				}
 
 				if (link != null) {

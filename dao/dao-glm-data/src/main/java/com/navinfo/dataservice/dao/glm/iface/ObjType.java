@@ -181,5 +181,8 @@ public enum ObjType {
     RDVARIABLESPEED,
     RDVARIABLESPEEDVIA,
     //在线批处理类型
-    FACE;
+    FACE,
+	TMCPOINT,
+	RDTMCLOCATION,
+	RDTMCLOCATIONLINK;
 }

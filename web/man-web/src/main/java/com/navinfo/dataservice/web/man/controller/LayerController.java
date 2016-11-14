@@ -8,18 +8,18 @@ import javax.servlet.http.HttpServletRequest;
 
 import net.sf.json.JSONObject;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
-import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.commons.json.JsonOperation;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.engine.man.layer.LayerService;
-import com.navinfo.dataservice.engine.man.task.TaskService;
+import com.navinfo.navicommons.database.Page;
 
 /**
  * @ClassName: CustomisedLayerController
@@ -153,17 +153,38 @@ public class LayerController extends BaseController {
 	}
 	
 	/*
-	 * 规划管理页面--重点区块图层--搜索
+	 * 查询layer列表
+	 * 管理及监控_生管角色--更多工具--重点区块管理--搜索
+	 * 增加参数：pageNum	是	页码  pageSize	  是	每页条数
+	 * 增加返回值：createUserName 逻辑修改：分页显示
 	 */
 	@RequestMapping(value = "/layer/listAll")
 	public ModelAndView listAll(HttpServletRequest request){
-		try{	
-			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));			
-			JSONObject condition = dataJson.getJSONObject("condition");			
-			JSONObject order = dataJson.getJSONObject("order");
+		try{
+			String parameter = request.getParameter("parameter");
+			if (StringUtils.isEmpty(parameter)) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			JSONObject paraJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if (paraJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			if(!paraJson.containsKey("pageNum")){
+				throw new IllegalArgumentException("parameter参数中pageNum不能为空。");
+			}
+			if(!paraJson.containsKey("pageSize")){
+				throw new IllegalArgumentException("parameter参数中pageSize不能为空。");
+			}
+			if(!paraJson.containsKey("condition")){
+				throw new IllegalArgumentException("parameter参数中condition不能为空。");
+			}
+			int pageNum = paraJson.getInt("pageNum");
+			int pageSize = paraJson.getInt("pageSize");
+			JSONObject condition = paraJson.getJSONObject("condition");			
+			JSONObject order = paraJson.getJSONObject("order");
 			
-			List<HashMap> data = LayerService.getInstance().listAll(condition,order);			
-			return new ModelAndView("jsonView", success(JsonOperation.beanToJsonList(data)));
+			Page page = LayerService.getInstance().listAll(condition,order,pageNum,pageSize);			
+			return new ModelAndView("jsonView", success(page));
 			//return new ModelAndView("jsonView", success(data.getResult()));
 		}catch(Exception e){
 			log.error("获取全部列表失败，原因："+e.getMessage(), e);

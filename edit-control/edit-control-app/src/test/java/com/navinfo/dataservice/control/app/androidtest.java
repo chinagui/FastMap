@@ -30,7 +30,7 @@ public class androidtest {
 		JSONArray gridDateList = new JSONArray();
 		JSONObject grid = new JSONObject();
 		grid.put("grid", "60562422");
-		grid.put("date", "20161102190708");
+		grid.put("date", "");
 		gridDateList.add(grid);
 		try {
 			Map<String,String> gridDateMap = new HashMap<String,String>();

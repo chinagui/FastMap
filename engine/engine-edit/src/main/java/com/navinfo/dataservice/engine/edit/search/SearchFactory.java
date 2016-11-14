@@ -118,6 +118,12 @@ public class SearchFactory {
                 return new IxSamepoiSearch(conn);
             case RDHGWGLIMIT:
                 return new RdHgwgLimitSearch(conn);
+            case RDMILEAGEPILE:
+                return new RdMileagepileSearch(conn);
+            case TMCPOINT:
+            	 return new TmcPointSearch(conn);
+            case RDTMCLOCATION:
+           	 return new RdTmcLocationSearch(conn);
             default:
                 return null;
         }

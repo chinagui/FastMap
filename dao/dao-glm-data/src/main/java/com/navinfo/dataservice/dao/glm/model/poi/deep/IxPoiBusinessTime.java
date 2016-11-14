@@ -36,6 +36,16 @@ public class IxPoiBusinessTime implements IRow {
 	private String timeSrt;// 营业开始日期
 	private String timeDur;// 营业时长
 	private String reserved;// 预留字段
+	private int uRecord=0;
+	
+	public int getuRecord(){
+		return uRecord;
+	}
+	
+	public void setuRecord(int uRecord){
+		this.uRecord = uRecord;
+	}
+	
 	// 更新时间
 	private String uDate;
 

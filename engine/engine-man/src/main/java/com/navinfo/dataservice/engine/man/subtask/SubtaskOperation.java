@@ -148,7 +148,7 @@ public class SubtaskOperation {
 			String subtaskIds = "(" + StringUtils.join(subtaskIdList.toArray(),",") + ")";
 			
 			
-			String selectSql = "SELECT S.SUBTASK_ID,S.NAME,S.STAGE,S.TYPE,S.EXE_USER_ID,S.EXE_GROUP_ID,S.STATUS,S.BLOCK_ID,S.TASK_ID"
+			String selectSql = "SELECT S.SUBTASK_ID,S.NAME,S.STAGE,S.TYPE,S.EXE_USER_ID,S.EXE_GROUP_ID,S.STATUS,S.TASK_ID"
 					+ " FROM SUBTASK S"
 					+ " WHERE S.SUBTASK_ID IN " + subtaskIds;
 			
@@ -164,7 +164,6 @@ public class SubtaskOperation {
 						subtask.setExeUserId(rs.getInt("EXE_USER_ID"));
 						subtask.setExeGroupId(rs.getInt("EXE_GROUP_ID"));
 						subtask.setStatus(rs.getInt("STATUS"));
-						subtask.setBlockId(rs.getInt("BLOCK_ID"));
 						subtask.setTaskId(rs.getInt("TASK_ID"));
 						list.add(subtask);
 					}
@@ -420,6 +419,7 @@ public class SubtaskOperation {
 //			SqlClause inClause = SqlClause.genGeoClauseWithGeoString(conn,bean.getGeometry());
 //			if (inClause!=null)
 //				value.add(inClause.getValues().get(0));
+			//referGeometry
 			
 			value.add(bean.getStage());
 			value.add(bean.getType());
@@ -461,6 +461,14 @@ public class SubtaskOperation {
 				column += ", IS_QUALITY";
 				value.add(0);
 				values += ",?";
+			}
+			//外业参考任务圈
+			if(bean.getReferGeometry() != null){
+				Clob cc = ConnectionUtil.createClob(conn);
+				cc.setString(1, bean.getReferGeometry());
+				value.add(cc);
+				column += ", REFER_GEOMETRY";
+				values += ",sdo_geometry(?,8307)";
 			}
 			
 			if(0!=bean.getExeGroupId()){
@@ -1965,6 +1973,7 @@ public class SubtaskOperation {
 					if ("subtaskName".equals(key)) {	
 						filterSqlCollect+=" AND T.NAME like '%" + filter.getString(key) +"%'";
 						filterSqlDaily+=" AND T.NAME like '%" + filter.getString(key) +"%'";
+						filterSqlMonthly+=" AND T.NAME like '%" + filter.getString(key) +"%'";
 					}
 					//筛选条件
 					//"progress" //进度。1采集正常，2异常，3关闭，4完成,5草稿,6完成状态逾期，7完成状态按时，8完成状态提前
@@ -2156,7 +2165,7 @@ public class SubtaskOperation {
 							subtask.put("qualityPlanStartDate", df.format(qualityPlanStartDate));
 						}else {subtask.put("qualityPlanStartDate", null);}
 						if(qualityPlanEndDate != null){
-							subtask.put("qualityPlanStartDate",df.format(qualityPlanEndDate));
+							subtask.put("qualityPlanEndDate",df.format(qualityPlanEndDate));
 						}else{subtask.put("qualityPlanEndDate", null);}
 						
 						subtask.put("qualityTaskStatus", rs.getInt("quality_Task_Status"));

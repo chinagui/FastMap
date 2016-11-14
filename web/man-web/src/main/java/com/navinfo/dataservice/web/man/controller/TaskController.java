@@ -221,8 +221,6 @@ public class TaskController extends BaseController {
 	public ModelAndView queryMonthTask(HttpServletRequest request){
 		try{	
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
-			//taskId,taskType
-			int monthEditGroupId= dataJson.getInt("monthEditGroupId");
 			int curPageNum= 1;//默认为第一页
 			if (dataJson.containsKey("pageNum")){
 				curPageNum = dataJson.getInt("pageNum");
@@ -236,7 +234,7 @@ public class TaskController extends BaseController {
 				condition=dataJson.getJSONObject("condition");
 			}
 			
-			Page data = TaskService.getInstance().queryMonthTask(monthEditGroupId,condition,curPageNum,curPageSize);
+			Page data = TaskService.getInstance().queryMonthTask(condition,curPageNum,curPageSize);
 			Map<String, Object> returnMap=new HashMap<String, Object>();
 			returnMap.put("result", (List)data.getResult());
 			returnMap.put("totalCount", data.getTotalCount());
@@ -263,6 +261,38 @@ public class TaskController extends BaseController {
 			//return new ModelAndView("jsonView", success(data.getResult()));
 		}catch(Exception e){
 			log.error("获取全部列表失败，原因："+e.getMessage(), e);
+			return new ModelAndView("jsonView",exception(e));
+		}
+	}
+	
+	/**
+	 * 查询任务名称列表
+	 * 消息中心-业务申请(全部角色)-新的申请/查看申请
+	 * @author Han Shaoming
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/task/nameList")
+	public ModelAndView queryTaskNameList(HttpServletRequest request){
+		try{
+			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			long userId = tokenObj.getUserId();
+			String parameter = request.getParameter("parameter");
+			if (StringUtils.isEmpty(parameter)) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			JSONObject paraJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if (paraJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			if(!paraJson.containsKey("taskName")){
+				throw new IllegalArgumentException("parameter参数中taskName不能为空。");
+			}
+			String taskName = paraJson.getString("taskName");
+			List<Map<String,Object>> taskNameList = TaskService.getInstance().queryTaskNameList(userId,taskName);
+			return new ModelAndView("jsonView", success(taskNameList));
+		}catch(Exception e){
+			log.error("查询失败，原因："+e.getMessage(), e);
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}

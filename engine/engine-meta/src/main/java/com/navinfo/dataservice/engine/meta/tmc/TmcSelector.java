@@ -91,7 +91,7 @@ public class TmcSelector {
 
 				JSONObject geojson = Geojson.spatial2Geojson(struct);
 
-				//Geojson.point2Pixel(geojson, z, px, py);
+				Geojson.point2Pixel(geojson, z, px, py);
 				
 				JSONArray pointGeo = geojson.getJSONArray("coordinates");
 				
@@ -115,7 +115,7 @@ public class TmcSelector {
 
 			snapshot.setI(tmcLineId);
 			
-			snapshot.setT(48);
+			snapshot.setT(50);
 			
 			List<JSONObject> pointArrayList = entry.getValue();
 			

@@ -142,4 +142,29 @@ public class MetadataApiImpl implements MetadataApi {
 		}
 	}
 
+	@Override
+	public JSONArray queryTmcLine(int x, int y, int z, int gap) throws Exception {
+		Connection conn = null;
+		try {
+
+			conn = DBConnector.getInstance().getMetaConnection();
+
+			TmcSelector selector = new TmcSelector(conn);
+
+			List<SearchSnapshot> list = selector.queryTmcLine(x, y, z, gap);
+
+			if (CollectionUtils.isNotEmpty(list)) {
+				JSONArray array = JSONArray.fromObject(list, JsonUtils.getJsonConfig());
+
+				return array;
+			} else {
+				return new JSONArray();
+			}
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(conn);
+		}
+	}
+
 }

@@ -321,7 +321,7 @@ public class SubtaskController extends BaseController {
 				if(subtask.getQualityPlanEndDate() != null && StringUtils.isNotEmpty(subtask.getQualityPlanEndDate().toString())){
 					qualityPlanEndDate = df.format(subtask.getQualityPlanEndDate());
 				}
-				SubtaskQuery<?> subtaskQuery = new SubtaskQuery<Object>(subtask.getSubtaskId()
+				SubtaskQuery subtaskQuery = new SubtaskQuery(subtask.getSubtaskId()
 						,subtask.getName()
 						,subtask.getStatus()
 						,subtask.getDescp()
@@ -350,7 +350,7 @@ public class SubtaskController extends BaseController {
 						, qualityPlanStartDate
 						, qualityPlanEndDate
 						, subtask.getQualityTaskStatus()
-						
+						, subtask.getReferGeometryJSON()
 						);
 				SubtaskQueryResponse response = new SubtaskQueryResponse(0,"success",subtaskQuery);
 				return response;

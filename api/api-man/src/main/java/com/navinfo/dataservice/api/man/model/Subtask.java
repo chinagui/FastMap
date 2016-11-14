@@ -57,6 +57,7 @@ public class Subtask implements Serializable  {
 	private Integer qualityTaskStatus;
 	//外业不规则子任务圈
 	private String referGeometry;
+	private JSONObject referGeometryJSON;
 
 	public Subtask (){
 	}
@@ -594,6 +595,18 @@ public class Subtask implements Serializable  {
 	 */
 	public void setReferGeometry(String referGeometry) {
 		this.referGeometry = referGeometry;
+	}
+	/**
+	 * @return the referGeometryJSON
+	 */
+	public JSONObject getReferGeometryJSON() {
+		return referGeometryJSON;
+	}
+	/**
+	 * @param referGeometryJSON the referGeometryJSON to set
+	 */
+	public void setReferGeometryJSON(JSONObject referGeometryJSON) {
+		this.referGeometryJSON = referGeometryJSON;
 	}
 }
 

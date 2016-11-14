@@ -63,4 +63,33 @@ public class TmcPointTest {
 		}
 
 	}
+	
+	@Test
+	public void testQueryTmcLine() throws Exception {
+
+		try {
+			
+			MetadataApiImpl impl = new  MetadataApiImpl();
+			
+			JSONArray array = impl.queryTmcLine(107829, 49685, 17, 80);
+			
+			List<SearchSnapshot> snapshotList = new ArrayList<>();
+			
+			for(int i = 0;i<array.size();i++)
+			{
+				JSONObject obj = array.getJSONObject(i);
+				
+				SearchSnapshot snapshot = new SearchSnapshot();
+				
+				snapshot.Unserialize(obj);
+				
+				snapshotList.add(snapshot);
+			}
+			System.out.println(array.toString());
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+	}
 }

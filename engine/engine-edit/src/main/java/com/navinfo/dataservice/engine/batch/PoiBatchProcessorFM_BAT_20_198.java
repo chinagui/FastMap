@@ -43,8 +43,9 @@ public class PoiBatchProcessorFM_BAT_20_198 implements IBatch {
 					resultArray.add(data);
 				}	
 			}
-			
-			result.put("parkings", resultArray);
+			if (resultArray.size()>0){
+				result.put("parkings", resultArray);
+			}			
 			return result;
 		} catch (Exception e) {
 			throw e;

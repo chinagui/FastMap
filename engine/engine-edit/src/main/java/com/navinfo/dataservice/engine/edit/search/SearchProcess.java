@@ -190,6 +190,35 @@ public class SearchProcess {
 		}
 
 	}
+	
+	/**
+	 * 根据pids查询
+	 * 
+	 * @return 查询结果
+	 * @throws Exception
+	 */
+	public List<? extends IObj> searchDataByPids(ObjType type, JSONArray pids) throws Exception {
+
+		try {
+			SearchFactory factory = new SearchFactory(conn);
+
+			ISearch search = factory.createSearch(type);
+			
+			@SuppressWarnings("unchecked")
+			List<Integer> pidList = JSONArray.toList(pids, Integer.class, JsonUtils.getJsonConfig());
+
+			List<? extends IObj> objList = search.searchDataByPids(pidList);
+
+			return objList;
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+
+		}
+
+	}
 
 	public JSONArray searchDataByCondition(ObjType type, JSONObject condition) throws Exception {
 

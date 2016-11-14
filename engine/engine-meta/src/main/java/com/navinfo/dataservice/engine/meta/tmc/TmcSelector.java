@@ -59,8 +59,6 @@ public class TmcSelector {
 			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
 
 			pstmt.setString(1, wkt);
-			
-			System.out.println(wkt);
 
 			resultSet = pstmt.executeQuery();
 
@@ -93,7 +91,7 @@ public class TmcSelector {
 
 				JSONObject geojson = Geojson.spatial2Geojson(struct);
 
-				Geojson.point2Pixel(geojson, z, px, py);
+				//Geojson.point2Pixel(geojson, z, px, py);
 				
 				JSONArray pointGeo = geojson.getJSONArray("coordinates");
 				
@@ -117,7 +115,7 @@ public class TmcSelector {
 
 			snapshot.setI(tmcLineId);
 			
-			snapshot.setT(50);
+			snapshot.setT(48);
 			
 			List<JSONObject> pointArrayList = entry.getValue();
 			

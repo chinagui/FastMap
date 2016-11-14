@@ -7,6 +7,11 @@ package com.navinfo.dataservice.engine.editplus.model;
  * @Description: AbstractLinkMesh.java
  */
 public abstract class AbstractLinkMesh extends BasicRow{
+
+	public AbstractLinkMesh(long objPid) {
+		super(objPid);
+	}
+
 	protected long linkPid;
 	protected int meshId;
 	public long getLinkPid() {
@@ -21,4 +26,5 @@ public abstract class AbstractLinkMesh extends BasicRow{
 	public void setMeshId(int meshId) {
 		this.meshId = meshId;
 	}
+
 }

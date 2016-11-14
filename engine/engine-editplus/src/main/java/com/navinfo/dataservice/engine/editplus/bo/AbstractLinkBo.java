@@ -145,7 +145,7 @@ public abstract class AbstractLinkBo extends AbstractBo {
 		breakNodeBo.getObj().setOpType(OperationType.INSERT);
 		result.putObj(breakNodeBo.getObj());
 		result.setNewNode(breakNodeBo);
-		long breakNodePid = breakNodeBo.getObj().getPid();
+		long breakNodePid = breakNodeBo.getObj().objPid();
 		log.debug("3.1 打断点的pid = " + breakNodePid);
 
 		log.debug("4 组装 第一条link 的信息");
@@ -157,7 +157,7 @@ public abstract class AbstractLinkBo extends AbstractBo {
 		leftLinkBo.setEnodeBo(breakNodeBo);
 		result.putObj(leftLinkBo.getObj());
 		result.setNewLeftLink(leftLinkBo);
-		log.debug("4.1 生成第一条link信息 pid = " + leftLinkBo.getObj().getPid());
+		log.debug("4.1 生成第一条link信息 pid = " + leftLinkBo.getObj().objPid());
 
 		log.debug("5 组装 第二条link 的信息");
 		AbstractLinkBo rightLinkBo = (AbstractLinkBo)this.copy();
@@ -167,7 +167,7 @@ public abstract class AbstractLinkBo extends AbstractBo {
 		rightLinkBo.setEnodeBo(this.getEnodeBo());
 		result.putObj(rightLinkBo.getObj());
 		result.setNewRightLink(rightLinkBo);
-		log.debug("5.1 生成第二条link信息 pid = " + rightLinkBo.getObj().getPid());
+		log.debug("5.1 生成第二条link信息 pid = " + rightLinkBo.getObj().objPid());
 		
 		return result;
 	}

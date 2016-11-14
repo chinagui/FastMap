@@ -2,9 +2,8 @@ package com.navinfo.dataservice.engine.editplus.model;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
-import com.navinfo.dataservice.dao.glm.iface.ObjType;
+import com.navinfo.dataservice.engine.editplus.model.obj.BasicObj;
 import com.vividsolutions.jts.geom.Geometry;
 
 /** 
@@ -14,10 +13,20 @@ import com.vividsolutions.jts.geom.Geometry;
  * @Description: AbstractNode.java
  */
 public abstract class AbstractNode extends BasicObj {
-	
+	public AbstractNode(BasicRow mainrow) {
+		super(mainrow);
+		// TODO Auto-generated constructor stub
+	}
+	protected long nodePid;
 	protected Geometry geometry;
 	protected List<BasicRow> meshes = new ArrayList<BasicRow>();
 	
+	public long getNodePid() {
+		return nodePid;
+	}
+	public void setNodePid(long nodePid) {
+		this.nodePid = nodePid;
+	}
 	public Geometry getGeometry() {
 		return geometry;
 	}

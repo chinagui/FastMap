@@ -6,10 +6,10 @@ import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdLinkSelector;
+import com.navinfo.dataservice.engine.editplus.bo.AdFaceBo;
+import com.navinfo.dataservice.engine.editplus.bo.AdLinkBo;
 import com.navinfo.dataservice.engine.editplus.bo.CommandCreateException;
-import com.navinfo.dataservice.engine.editplus.bo.ad.AdFaceBo;
-import com.navinfo.dataservice.engine.editplus.bo.ad.AdLinkBo;
-import com.navinfo.dataservice.engine.editplus.operation.AbstractOperator;
+import com.navinfo.dataservice.engine.editplus.operation.AbstractOperation;
 import com.navinfo.dataservice.engine.editplus.operation.LinkBreakResult;
 import com.navinfo.dataservice.engine.editplus.operation.OperationResult;
 import com.vividsolutions.jts.geom.Coordinate;
@@ -22,7 +22,7 @@ import com.vividsolutions.jts.geom.Point;
  * @date 2016年7月15日
  * @Description: AdLinkBreakOperator.java
  */
-public class AdLinkBreakOperator extends AbstractOperator {
+public class AdLinkBreakOperator extends AbstractOperation {
 	
 	protected AdLinkBo adLinkBo;
 	

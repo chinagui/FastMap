@@ -3,10 +3,11 @@ package com.navinfo.dataservice.engine.editplus.model.ad;
 import java.util.List;
 import java.util.Map;
 
-import com.navinfo.dataservice.dao.glm.iface.ObjType;
+import com.navinfo.dataservice.engine.editplus.glm.NonObjPidException;
 import com.navinfo.dataservice.engine.editplus.model.AbstractFace;
-import com.navinfo.dataservice.engine.editplus.model.BasicObj;
 import com.navinfo.dataservice.engine.editplus.model.BasicRow;
+import com.navinfo.dataservice.engine.editplus.model.obj.BasicObj;
+import com.navinfo.dataservice.engine.editplus.model.obj.ObjectType;
 
 /** 
  * @ClassName: AdFace
@@ -15,7 +16,7 @@ import com.navinfo.dataservice.engine.editplus.model.BasicRow;
  * @Description: AdFace.java
  */
 public class AdFace extends AbstractFace {
-
+	
 	@Override
 	public String primaryKey() {
 		return "FACE_PID";
@@ -36,13 +37,11 @@ public class AdFace extends AbstractFace {
 		return "AD_FACE";
 	}
 
-	/* (non-Javadoc)
-	 * @see com.navinfo.dataservice.engine.edit.model.BasicRow#objType()
-	 */
 	@Override
-	public ObjType objType() {
+	public ObjectType objType() {
 		// TODO Auto-generated method stub
-		return ObjType.ADFACE;
+		return ObjectType.AD_FACE;
 	}
+
 
 }

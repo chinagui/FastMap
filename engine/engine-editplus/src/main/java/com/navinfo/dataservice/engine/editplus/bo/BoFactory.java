@@ -1,6 +1,6 @@
 package com.navinfo.dataservice.engine.editplus.bo;
 
-import com.navinfo.dataservice.engine.editplus.model.BasicObj;
+import com.navinfo.dataservice.engine.editplus.model.obj.BasicObj;
 
 public class BoFactory {
 	private volatile static BoFactory instance;

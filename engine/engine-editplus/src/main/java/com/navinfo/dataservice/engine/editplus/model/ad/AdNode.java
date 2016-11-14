@@ -5,8 +5,9 @@ import java.util.Map;
 
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.engine.editplus.model.AbstractNode;
-import com.navinfo.dataservice.engine.editplus.model.BasicObj;
 import com.navinfo.dataservice.engine.editplus.model.BasicRow;
+import com.navinfo.dataservice.engine.editplus.model.obj.BasicObj;
+import com.navinfo.dataservice.engine.editplus.model.obj.ObjectType;
 
 /** 
  * @ClassName: AdNode
@@ -39,8 +40,8 @@ public class AdNode extends AbstractNode {
 
 
 	@Override
-	public ObjType objType() {
-		return ObjType.ADNODE;
+	public ObjectType objType() {
+		return ObjectType.AD_NODE;
 	}
 
 }

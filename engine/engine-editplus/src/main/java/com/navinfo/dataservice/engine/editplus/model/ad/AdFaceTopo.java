@@ -1,7 +1,9 @@
 package com.navinfo.dataservice.engine.editplus.model.ad;
 
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
+import com.navinfo.dataservice.engine.editplus.glm.NonObjPidException;
 import com.navinfo.dataservice.engine.editplus.model.AbstractFaceTopo;
+import com.navinfo.dataservice.engine.editplus.model.obj.ObjectType;
 
 /** 
  * @ClassName: AdFaceTop
@@ -17,8 +19,8 @@ public class AdFaceTopo extends AbstractFaceTopo {
 	}
 
 	@Override
-	public ObjType objType() {
-		return ObjType.ADFACETOPO;
+	public ObjectType objType() {
+		return ObjectType.AD_FACE;
 	}
 
 }

@@ -4,7 +4,7 @@ import com.navinfo.dataservice.engine.editplus.bo.AbstractLinkBo;
 import com.navinfo.dataservice.engine.editplus.bo.AbstractNodeBo;
 
 
-public class LinkBreakResult extends OperationResult {
+public class LinkBreakResult extends EditorOperationResult {
 
 	protected AbstractLinkBo targetLinkBo;
 	protected AbstractLinkBo newLeftLink;

@@ -3,13 +3,14 @@ package com.navinfo.dataservice.engine.editplus.model;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
 
-import com.navinfo.dataservice.api.datahub.model.DbServer;
-import com.navinfo.dataservice.dao.glm.iface.ObjType;
+import com.navinfo.dataservice.engine.editplus.glm.GlmFactory;
+import com.navinfo.dataservice.engine.editplus.glm.GlmRef;
+import com.navinfo.dataservice.engine.editplus.glm.NonGeoPidException;
+import com.navinfo.dataservice.engine.editplus.log.Logable;
 import com.navinfo.dataservice.engine.editplus.operation.OperationType;
 import com.navinfo.navicommons.database.sql.RunnableSQL;
 
@@ -19,13 +20,53 @@ import com.navinfo.navicommons.database.sql.RunnableSQL;
  * @date 2016年8月17日
  * @Description: BasicRow.java
  */
-public abstract class BasicRow {
+public abstract class BasicRow implements Logable{
 	protected Logger log = Logger.getLogger(this.getClass());
-	protected OperationType opType=OperationType.INITIALIZE;
-	protected String rowId;
-	protected Map<String,Object> oldValues=null;
+	protected OperationType opType=OperationType.INITIALIZE;//表记录的操作状态
+	protected String rowId;//row类型的代表就是有row_id
+	protected long objPid;
+	protected Map<String,Object> oldValues=null;//存储变化字段的旧值，key:col_name,value：旧值
+	public BasicRow(long objPid){
+		this.objPid=objPid;
+	}
+	
+	public long getObjPid(){
+		return objPid;
+	}
+	public void setObjPid(long objPid){
+		this.objPid=objPid;
+	}
+
 	public abstract String tableName();
-	public abstract ObjType objType();
+	/**
+	 * 编辑认为的表所属对象
+	 * @return
+	 */
+	public String getObjType(){
+		return GlmFactory.getInstance().getTableByName(tableName()).getObjType();
+	}
+
+	public long getGeoPid()throws NonGeoPidException{
+		GlmRef ref = GlmFactory.getInstance().getTableByName(tableName()).getGeoRef();
+		if(ref.isRefMain()){
+			return (long)getAttrByColName(ref.getCol());
+		}else{
+			throw new NonGeoPidException("表未直接参考几何对象，不能通过记录获取，请尝试通过obj方式获取。");
+		}
+	}
+	
+	public String getGeoType(){
+		return GlmFactory.getInstance().getTableByName(tableName()).getGeoObjType();
+	}
+	
+	public String primaryKey(){
+		return GlmFactory.getInstance().getTableByName(tableName()).getPkColumn();
+	}
+	
+//  //need override
+//	public boolean isGeoChanged() {
+//		return false;
+//	}
 	
 	public OperationType getOpType() {
 		return opType;
@@ -45,16 +86,22 @@ public abstract class BasicRow {
 	public void setOldValues(Map<String, Object> oldValues) {
 		this.oldValues = oldValues;
 	}
+
 	/**
 	 * 行级记录复制,新Row的OperationType为insert
+	 * 
 	 * 新生成rowId
 	 * @return
 	 */
-	public BasicRow copyRow(){
+	public BasicRow copy(){
 		
 		return null;
 	}
-	public RunnableSQL generateSql(){
+	/**
+	 * 根据OperationType生成相应的新增、删除和修改sql
+	 * @return
+	 */
+	protected RunnableSQL toSql(){
 		return null;
 	}
 	/**
@@ -160,6 +207,12 @@ public abstract class BasicRow {
 		}
 		return true;
 	}
+	/**
+	 * 传入基本类型会自动升级成对象类型
+	 * @param colName
+	 * @param newValue
+	 * @throws Exception
+	 */
 	public <T> void setAttrByCol(String colName,T newValue)throws Exception{
 		//colName->getter
 		String getter=colName2Getter(colName);
@@ -167,7 +220,7 @@ public abstract class BasicRow {
 		Object oldValue = methodGetter.invoke(this);
 		if(checkValue(colName,oldValue,newValue)){
 			String setter=colName2Setter(colName);
-			Class[] argtypes = null;
+			Class<?>[] argtypes = null;
 			if(newValue instanceof Integer){
 				argtypes= new Class[]{int.class};
 			}else if(newValue instanceof Double){
@@ -236,4 +289,10 @@ public abstract class BasicRow {
 			return false;
 		}
 	}
+	
+	public static void main(String[] args) {
+		System.out.println((long)new Long(100L));
+	}
+	
+
 }

@@ -69,6 +69,11 @@ public class InitRegiondb {
 			String userNamePrefix = (String) request.get("userNamePrefix");
 			Assert.notNull(userNamePrefix, "userNamePrefix不能为空");
 			
+			int meshExtendCount = 1;
+			if(request.containsKey("meshExtendCount")){
+				meshExtendCount = request.getInt("meshExtendCount");
+			}
+			
 			conn = DBConnector.getInstance().getManConnection();
 			//得到图幅号
 			Map<Integer,List<String>> regionMeshMap = getRegionMeshMap(conn,regionIds);
@@ -77,7 +82,12 @@ public class InitRegiondb {
 				insertRegions(conn,key);
 				//创建库
 				Set<String> meshes = new HashSet<String>(regionMeshMap.get(key));
-				Set<String> extendMeshes = MeshUtils.getNeighborMeshSet(meshes,1);
+				Set<String> extendMeshes = null;
+				if(meshExtendCount>0){
+					extendMeshes = MeshUtils.getNeighborMeshSet(meshes,1);
+				}else{
+					extendMeshes=meshes;
+				}
 				//大区库不直接做检查批处理，不维护M_MESH_TYPE表
 				//创建日db
 				JobInfo info1 = new JobInfo(0, "");

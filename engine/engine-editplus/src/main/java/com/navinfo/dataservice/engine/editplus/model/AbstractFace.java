@@ -2,6 +2,9 @@ package com.navinfo.dataservice.engine.editplus.model;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import com.navinfo.dataservice.engine.editplus.glm.NonObjPidException;
+import com.navinfo.dataservice.engine.editplus.model.obj.BasicObj;
 import com.vividsolutions.jts.geom.Geometry;
 
 /** 
@@ -10,7 +13,13 @@ import com.vividsolutions.jts.geom.Geometry;
  * @date 2016年8月18日
  * @Description: AbstractFace.java
  */
-public abstract class AbstractFace extends BasicObj{
+public abstract class AbstractFace extends BasicRow{
+
+	public AbstractFace(long objPid) {
+		super(objPid);
+	}
+
+	protected long facePid;
 	protected Geometry geometry;
 	protected double area;
 	protected double perimeter;
@@ -51,5 +60,4 @@ public abstract class AbstractFace extends BasicObj{
 	public AbstractFace copyFace(long pid,Geometry geo){
 		return null;
 	}
-
 }

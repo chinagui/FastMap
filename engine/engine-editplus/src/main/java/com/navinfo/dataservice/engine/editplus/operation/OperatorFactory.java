@@ -26,11 +26,11 @@ public class OperatorFactory {
 
 	}
 
-	public AbstractOperator create(String opType, String objType,
+	public AbstractOperation create(String opType, String objType,
 			JSONObject data) throws Exception {
 
 		Class<?> clazz = Class.forName(objType + opType + "Operator");
-		AbstractOperator op = (AbstractOperator) clazz.newInstance();
+		AbstractOperation op = (AbstractOperation) clazz.newInstance();
 
 		op.createCmd(data);
 		

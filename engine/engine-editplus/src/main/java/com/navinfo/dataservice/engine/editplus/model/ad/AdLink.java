@@ -7,8 +7,9 @@ import java.util.Map;
 
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.engine.editplus.model.AbstractLink;
-import com.navinfo.dataservice.engine.editplus.model.BasicObj;
 import com.navinfo.dataservice.engine.editplus.model.BasicRow;
+import com.navinfo.dataservice.engine.editplus.model.obj.BasicObj;
+import com.navinfo.dataservice.engine.editplus.model.obj.ObjectType;
 
 /** 
  * @ClassName: AdLink
@@ -91,8 +92,8 @@ public class AdLink extends AbstractLink {
 	 * @see com.navinfo.dataservice.engine.edit.model.BasicRow#objType()
 	 */
 	@Override
-	public ObjType objType() {
-		return ObjType.ADLINK;
+	public ObjectType objType() {
+		return ObjectType.AD_LINK;
 	}
 
 }

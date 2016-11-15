@@ -140,15 +140,12 @@ public class RdLinkSelector extends AbstractSelector {
 
 	}
 
-	
-	
 	/*
 	 * 仅加载主表RDLINK，其他子表若有需要，请单独加载
 	 */
-	public List<RdLink> loadByNodePids(List<Integer> nodePids, boolean isLock) throws Exception 
-	{
+	public List<RdLink> loadByNodePids(List<Integer> nodePids, boolean isLock) throws Exception {
 		List<RdLink> links = new ArrayList<RdLink>();
-		
+
 		if (nodePids == null || nodePids.size() == 0) {
 			return links;
 		}
@@ -170,15 +167,16 @@ public class RdLinkSelector extends AbstractSelector {
 
 		if (!pidTemp.isEmpty()) {
 			links.addAll(loadByNodePid(pidTemp, isLock));
-		}		
-		
+		}
+
 		return links;
 	}
+
 	/*
 	 * 仅加载主表RDLINK，其他子表若有需要，请单独加载
 	 */
-	private List<RdLink> loadByNodePid(List<Integer> nodePids, boolean isLock) throws Exception {		
-		
+	private List<RdLink> loadByNodePid(List<Integer> nodePids, boolean isLock) throws Exception {
+
 		List<RdLink> links = new ArrayList<RdLink>();
 
 		if (nodePids == null || nodePids.isEmpty()) {
@@ -192,14 +190,14 @@ public class RdLinkSelector extends AbstractSelector {
 
 		sb.append("( ");
 
-		sb.append(" S_NODE_PID IN ( " + ids + ")" );
-		
+		sb.append(" S_NODE_PID IN ( " + ids + ")");
+
 		sb.append("  OR  E_NODE_PID IN ( " + ids + ")");
 
 		sb.append(")");
 
 		sb.append(" AND U_RECORD != 2  ");
-		
+
 		if (isLock) {
 			sb.append(" for update nowait");
 		}
@@ -209,7 +207,7 @@ public class RdLinkSelector extends AbstractSelector {
 		ResultSet resultSet = null;
 
 		try {
-			pstmt = conn.prepareStatement(sb.toString());		
+			pstmt = conn.prepareStatement(sb.toString());
 
 			resultSet = pstmt.executeQuery();
 
@@ -252,7 +250,7 @@ public class RdLinkSelector extends AbstractSelector {
 
 		try {
 			pstmt = conn.prepareStatement(sb.toString());
-			
+
 			resultSet = pstmt.executeQuery();
 
 			while (resultSet.next()) {
@@ -830,9 +828,9 @@ public class RdLinkSelector extends AbstractSelector {
 				RdLink link = new RdLink();
 
 				ReflectionAttrUtils.executeResultSet(link, resultSet);
-				
+
 				List<IRow> zones = this.loadRowsByClassParentId(RdLinkZone.class, link.getPid(), true, null);
-				
+
 				link.setZones(zones);
 
 				rdLinks.add(link);
@@ -852,4 +850,44 @@ public class RdLinkSelector extends AbstractSelector {
 
 	}
 
+	public List<Integer> loadRdLinkKindByIds(List<Integer> linkPidList, boolean isLock) throws Exception {
+		List<Integer> kinds = new ArrayList<Integer>();
+
+		StringBuilder sb = new StringBuilder(
+				"select kind from rd_link where link_pid in(" + StringUtils.join(linkPidList, ",") + ")");
+
+		if (isLock) {
+
+			sb.append(" order by kind desc for update nowait");
+		}
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+
+			pstmt = conn.prepareStatement(sb.toString());
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+
+				int kind = resultSet.getInt("kind");
+
+				kinds.add(kind);
+			}
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+
+			DBUtils.closeResultSet(resultSet);
+
+			DBUtils.closeStatement(pstmt);
+		}
+
+		return kinds;
+	}
 }

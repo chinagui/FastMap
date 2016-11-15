@@ -71,8 +71,9 @@ public class Operation implements IOperation {
 				JSONObject obj = this.command.getCatchInfos().getJSONObject(i);
 				// 分离移动的node
 				int nodePid = obj.getInt("nodePid");
-				Point point = (Point)GeoTranslator.transform(GeoTranslator.point2Jts(obj.getDouble("longitude"),
-						obj.getDouble("longitude")), 1, 5);
+				Point point = (Point) GeoTranslator.transform(
+						GeoTranslator.point2Jts(obj.getDouble("longitude"),
+								obj.getDouble("longitude")), 1, 5);
 				// 分离移动后的经纬度
 				double lon = point.getX();
 				double lat = point.getY();
@@ -85,7 +86,8 @@ public class Operation implements IOperation {
 				if (obj.containsKey("catchNodePid")
 						&& obj.getInt("catchNodePid") != 0) {
 					// 分离节点挂接功能
-					this.departCatchtNode(result,nodePid, obj.getInt("catchNodePid"), preNode, links);
+					this.departCatchtNode(result, nodePid,
+							obj.getInt("catchNodePid"), preNode, links);
 
 				} else if (obj.containsKey("catchLinkPid")
 						&& obj.getInt("catchLinkPid") != 0) {
@@ -300,13 +302,12 @@ public class Operation implements IOperation {
 
 		JSONObject content = new JSONObject();
 		result.setPrimaryPid(this.command.getUpdateLink().getPid());
-		content.put("geometry", command.getLinkGeom());
 
 		// 获取修行后link长度的变化
-		double length = 0;
-		if (null != this.command.getLinkGeom())
-			length = GeometryUtils.getLinkLength(this.command.getLinkGeom());
-		content.put("length", length);
+		content.put("geometry",
+				GeoTranslator.jts2Geojson(this.command.getLinkGeom()));
+		content.put("length",
+				GeometryUtils.getLinkLength(this.command.getLinkGeom()));
 		// 差分获取变化的值
 		boolean isChanged = this.command.getUpdateLink().fillChangeFields(
 				content);

@@ -3,6 +3,7 @@ package com.navinfo.dataservice.dao.glm.selector.rd.lane;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -144,9 +145,8 @@ public class RdLaneSelector extends AbstractSelector {
 
 	/***
 	 * 
-	 * 通过Link查找车道信息
-	 * zhaokk
-	 * 组装LINK对应的车道信息 
+	 * 通过Link查找车道信息 zhaokk 组装LINK对应的车道信息
+	 * 
 	 * @param linkPid
 	 * @param isLock
 	 * @return
@@ -179,43 +179,30 @@ public class RdLaneSelector extends AbstractSelector {
 			JSONArray array = new JSONArray();
 			JSONObject jsonObject = null;
 			while (resultSet.next()) {
-
+				//初始 赋值rdlink值
 				if (resultSet.isFirst()) {
 					jsonObject = new JSONObject();
-					STRUCT struct = (STRUCT) resultSet.getObject("geometry");
-					jsonObject.put("linkPid", resultSet.getInt("link_pid"));
-					jsonObject.put("geometry", Geojson.spatial2Geojson(struct));
-					jsonObject.put("sNodePid", resultSet.getInt("s_node_pid"));
-					jsonObject.put("direct", resultSet.getInt("direct"));
-					jsonObject.put("length", resultSet.getInt("length"));
-					jsonObject.put("eNodePid", resultSet.getInt("e_node_pid"));
-					pids.add(resultSet.getInt("link_pid"));
+					this.setAttr(resultSet,pids, jsonObject);
 				}
-				if (resultSet.isLast()) {
-					jsonObject.put("lanes", array);
-					arrayResult.add(jsonObject);
-				}
+				//合并相同link的车道信息
 				if (pids.contains(resultSet.getInt("link_pid"))) {
-					RdLane slope = (RdLane) this.loadById(
-							resultSet.getInt("lane_pid"), false);
-					array.add(slope);
+					this.setRdlanesToArray(resultSet, array);
+					if (resultSet.isLast()) {
+						jsonObject.put("lanes", array);
+						arrayResult.add(jsonObject);
+					}
 
 				} else {
 					jsonObject.put("lanes", array);
 					arrayResult.add(jsonObject);
 					array = new JSONArray();
-					RdLane slope = (RdLane) this.loadById(
-							resultSet.getInt("lane_pid"), false);
-					array.add(slope);
-					pids.add(resultSet.getInt("link_pid"));
+					this.setRdlanesToArray(resultSet, array);
 					jsonObject = new JSONObject();
-					STRUCT struct = (STRUCT) resultSet.getObject("geometry");
-					jsonObject.put("linkPid", resultSet.getInt("link_pid"));
-					jsonObject.put("direct", resultSet.getInt("direct"));
-					jsonObject.put("length", resultSet.getInt("length"));
-					jsonObject.put("geometry", Geojson.spatial2Geojson(struct));
-					jsonObject.put("sNodePid", resultSet.getInt("s_node_pid"));
-					jsonObject.put("eNodePid", resultSet.getInt("e_node_pid"));
+					this.setAttr(resultSet, pids,jsonObject);
+					if (resultSet.isLast()) {
+						jsonObject.put("lanes", array);
+						arrayResult.add(jsonObject);
+					}
 				}
 
 			}
@@ -230,13 +217,34 @@ public class RdLaneSelector extends AbstractSelector {
 		return arrayResult;
 	}
 
-	public static void main(String[] args) {
-		JSONArray condition = new JSONArray();
-		condition.add(23);
-		condition.add(24);
-		List<Integer> pids = (List<Integer>) JSONArray.toCollection(condition,
-				String.class);
-		System.out.println(pids);
+	/***
+	 * 结果集赋值
+	 * @param resultSet
+	 * @param jsonObject
+	 * @throws SQLException
+	 */
+	private void setAttr(ResultSet resultSet,List<Integer> pids, JSONObject jsonObject)
+			throws Exception {
+		STRUCT struct = (STRUCT) resultSet.getObject("geometry");
+		jsonObject.put("linkPid", resultSet.getInt("link_pid"));
+		jsonObject.put("direct", resultSet.getInt("direct"));
+		jsonObject.put("length", resultSet.getInt("length"));
+		jsonObject.put("geometry", Geojson.spatial2Geojson(struct));
+		jsonObject.put("sNodePid", resultSet.getInt("s_node_pid"));
+		jsonObject.put("eNodePid", resultSet.getInt("e_node_pid"));
+		pids.add(resultSet.getInt("link_pid"));
 	}
+	/***
+	 * rdlane 加載array
+	 * @param resultSet
+	 * @param array
+	 * @throws Exception
+	 */
+	private void setRdlanesToArray(ResultSet resultSet,JSONArray array)throws Exception{
+		RdLane slope = (RdLane) this.loadById(
+				resultSet.getInt("lane_pid"), false);
+		array.add(slope);
+	}
+	
 
 }

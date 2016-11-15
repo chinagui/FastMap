@@ -27,7 +27,7 @@ public class IxParkingHandler implements ResultSetHandler<Map<Long,List<IRow>>>{
 				ixPoiParking.setTollDes(rs.getString("toll_des"));
 				ixPoiParking.setPayment(rs.getString("payment"));
 				ixPoiParking.setRemark(rs.getString("remark"));
-				ixPoiParking.setOpenTiime(rs.getString("open_tiime"));
+				ixPoiParking.setOpenTime(rs.getString("open_tiime"));
 				ixPoiParking.setTotalNum(rs.getInt("total_num"));
 				ixPoiParking.setResHigh(rs.getDouble("res_high"));
 				ixPoiParking.setResWeigh(rs.getDouble("res_weigh"));

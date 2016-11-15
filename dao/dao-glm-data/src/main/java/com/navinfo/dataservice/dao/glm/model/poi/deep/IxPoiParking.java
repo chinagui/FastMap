@@ -36,7 +36,7 @@ public class IxPoiParking implements IObj {
 	private String  payment;//支付方式 
 	private String  remark;//收费备注 
 	private String  source;//信息获取源 
-	private String openTiime;//开放时间 
+	private String openTime;//开放时间 
 	private int totalNum = 0 ;//车位数量 
 	private String workTime;//制作时间
 	private double resHigh = 0;//限高
@@ -96,15 +96,6 @@ public class IxPoiParking implements IObj {
 		this.source = source;
 	}
 
-
-
-	public String getOpenTiime() {
-		return openTiime;
-	}
-
-	public void setOpenTiime(String openTiime) {
-		this.openTiime = openTiime;
-	}
 
 	public int getTotalNum() {
 		return totalNum;
@@ -457,6 +448,14 @@ public class IxPoiParking implements IObj {
 	public Map<Class<? extends IRow>,Map<String,?>> childMap() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	public String getOpenTime() {
+		return openTime;
+	}
+
+	public void setOpenTime(String openTime) {
+		this.openTime = openTime;
 	}
 
 

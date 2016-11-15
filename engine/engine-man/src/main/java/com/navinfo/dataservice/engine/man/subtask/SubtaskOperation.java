@@ -794,7 +794,8 @@ public class SubtaskOperation {
 					+ ",st.STATUS"
 					+ ",r.DAILY_DB_ID"
 					+ ",r.MONTHLY_DB_ID"
-					+ ",st.GEOMETRY";
+					+ ",st.GEOMETRY"
+					+ ",st.REFER_GEOMETRY";
 
 			String fromSql_task = " from subtask st"
 					+ ",task t"
@@ -848,6 +849,8 @@ public class SubtaskOperation {
 				conditionSql_block = conditionSql_block + " and st.STATUS = "
 						+ bean.getStatus();
 			}
+			//conditionSql_task = conditionSql_task + " and st.subtask_id =499 ";
+			//conditionSql_block=conditionSql_block+" and 1>2 ";
 			
 			selectSql = selectSql + fromSql_task
 			+ conditionSql_task
@@ -867,10 +870,6 @@ public class SubtaskOperation {
 						}
 						HashMap<Object,Object> subtask = new HashMap<Object,Object>();
 						
-						Subtask subtaskk = new Subtask();
-						subtaskk.setSubtaskId(rs.getInt("SUBTASK_ID"));
-						subtaskk.setGeometry(rs.getString("GEOMETRY"));
-						
 						subtask.put("subtaskId", rs.getInt("SUBTASK_ID"));
 						subtask.put("name", rs.getString("NAME"));
 						subtask.put("descp", rs.getString("DESCP"));
@@ -884,13 +883,7 @@ public class SubtaskOperation {
 						//版本信息
 						subtask.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
 						
-						STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
-						try {
-							subtask.put("geometry", GeoTranslator.struct2Wkt(struct));
-						} catch (Exception e1) {
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
-						}
+						
 						
 						List<Integer> gridIds = null;
 						try {
@@ -903,10 +896,48 @@ public class SubtaskOperation {
 
 						if (1 == rs.getInt("STAGE")) {
 							subtask.put("dbId", rs.getInt("DAILY_DB_ID"));
+							STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
+							try {
+								subtask.put("geometry", GeoTranslator.struct2Wkt(struct));
+							} catch (Exception e1) {
+								// TODO Auto-generated catch block
+								e1.printStackTrace();
+							}
 						} else if (2 == rs.getInt("STAGE")) {
 							subtask.put("dbId",rs.getInt("MONTHLY_DB_ID"));
-						} else {
+							STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
+							try {
+								subtask.put("geometry", GeoTranslator.struct2Wkt(struct));
+							} catch (Exception e1) {
+								// TODO Auto-generated catch block
+								e1.printStackTrace();
+							}
+						} else if (0 == rs.getInt("STAGE")) {
 							subtask.put("dbId", rs.getInt("DAILY_DB_ID"));
+							STRUCT struct = (STRUCT) rs.getObject("REFER_GEOMETRY");
+							try {
+								subtask.put("referGeometry", GeoTranslator.struct2Wkt(struct));
+							} catch (Exception e1) {
+								// TODO Auto-generated catch block
+								e1.printStackTrace();
+							}
+							JSONArray referGrid;
+							try {
+								referGrid = SubtaskOperation.getReferSubtasksByGridIds(rs.getInt("SUBTASK_ID"),gridIds);
+								subtask.put("referGrid", referGrid);
+							} catch (Exception e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}	
+						}else {
+							subtask.put("dbId", rs.getInt("DAILY_DB_ID"));
+							STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
+							try {
+								subtask.put("geometry", GeoTranslator.struct2Wkt(struct));
+							} catch (Exception e1) {
+								// TODO Auto-generated catch block
+								e1.printStackTrace();
+							}				
 						}
 						
 						//日编POI,日编一体化GRID粗编完成度，任务量信息
@@ -964,6 +995,20 @@ public class SubtaskOperation {
 		Connection conn = null;
 		try{
 			conn = DBConnector.getInstance().getManConnection();
+			return getGridIdsBySubtaskIdWithConn(conn, subtaskId);
+		}finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+
+	}
+	
+	/**
+	 * @param int1
+	 * @return
+	 * @throws Exception 
+	 */
+	public static List<Integer> getGridIdsBySubtaskIdWithConn(Connection conn,int subtaskId) throws Exception {
+		try{
 			QueryRunner run = new QueryRunner();
 //			String selectSql = "select sgm.grid_id from subtask_grid_mapping sgm where sgm.subtask_id = " + subtaskId;
 			String selectSql = "select sgm.grid_id"
@@ -1014,8 +1059,6 @@ public class SubtaskOperation {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new Exception("关闭失败，原因为:"+e.getMessage(),e);
-		}finally {
-			DbUtils.commitAndCloseQuietly(conn);
 		}
 
 	}
@@ -2452,7 +2495,6 @@ public class SubtaskOperation {
 	 * @throws Exception 
 	 */
 	public static JSONArray getReferSubtasksByGridIds(Integer subtaskId, List<Integer> gridIds) throws Exception {
-		// TODO Auto-generated method stub
 		Connection conn = null;
 		try{
 			conn = DBConnector.getInstance().getManConnection();
@@ -2469,55 +2511,42 @@ public class SubtaskOperation {
 	        } 
 			String gridIdsStr = StringUtils.join(gridsWithNeighbor.toArray(), ",");
 			
-			String selectSql = "select s.subtask_id,"
-					+ " s.geometry,"
-					+ " s.refer_geometry,"
-					+ " s.exe_user_id,"
+			String selectSql = "select distinct sgm.grid_id,"
 					+ " u.user_real_name"
 					+ " from subtask s,"
-					+ " user_info u,"
-					+ " (select distinct sgm.subtask_id"
-					+ " from subtask_grid_mapping sgm"
-					+ " where sgm.grid_id in (" + gridIdsStr + "))t"
+					+ " user_info u,subtask_grid_mapping sgm"
 					+ " where s.stage = 0"
-					+ " and s.subtask_id = t.subtask_id"
+					+ " and sgm.grid_id in (" + gridIdsStr + ")"
+					+ " and s.subtask_id = sgm.subtask_id"
 					+ " and s.exe_user_id = u.user_id"
-					+ " and s.subtask_id <> " + subtaskId;
+					+ " and s.subtask_id <> " + subtaskId
+					+ " order by sgm.grid_id";
 			
 			ResultSetHandler<JSONArray> rsHandler = new ResultSetHandler<JSONArray>() {
 				public JSONArray handle(ResultSet rs) throws SQLException {
 					JSONArray referSubtasks = new JSONArray(); 
+					int gridId=0;
+					JSONArray gridUserName = new JSONArray();
 					while (rs.next()) {
-						JSONObject referSubtask = new JSONObject();
-						int temp = rs.getInt("subtask_id");
-						referSubtask.put("subtaskId", rs.getInt("subtask_id"));
-						referSubtask.put("exeUserId", rs.getInt("exe_user_id"));
-						referSubtask.put("exeUserName", rs.getString("user_real_name"));
-						//GEOMETRY
-						STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
-						try {
-							String clobStr = GeoTranslator.struct2Wkt(struct);
-							referSubtask.put("geometry", Geojson.wkt2Geojson(clobStr));
-						} catch (Exception e1) {
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
+						int temp = rs.getInt("grid_id");
+						if(gridId==0){
+							gridId=temp;
+							gridUserName.add(rs.getString("user_real_name"));
+							continue;}
+						if(gridId!=temp){
+							JSONObject tempGridRefer=new JSONObject();
+							tempGridRefer.put("gridId", gridId);
+							tempGridRefer.put("userNameList", gridUserName);
+							referSubtasks.add(tempGridRefer);
+							gridUserName=new JSONArray();
 						}
-						//REFER_GEOMETRY
-						STRUCT struct1 = (STRUCT) rs.getObject("REFER_GEOMETRY");
-						try {
-							if(struct1!=null){
-								String clobStr = GeoTranslator.struct2Wkt(struct1);
-								referSubtask.put("referGeometry", Geojson.wkt2Geojson(clobStr));
-							}else{
-								referSubtask.put("referGeometry",null);
-							}	
-						} catch (Exception e1) {
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
-						}
-						
-						referSubtasks.add(referSubtask);
+						gridId=temp;
+						gridUserName.add(rs.getString("user_real_name"));
 					}
+					JSONObject tempGridRefer=new JSONObject();
+					tempGridRefer.put("gridId", gridId);
+					tempGridRefer.put("userNameList", gridUserName);
+					referSubtasks.add(tempGridRefer);
 					return referSubtasks;
 				}
 			};
@@ -2527,6 +2556,8 @@ public class SubtaskOperation {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
 	

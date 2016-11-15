@@ -55,7 +55,7 @@ public class IxPoiParkingSelector extends AbstractSelector {
 				ixPoiParking.setTollDes(resultSet.getString("toll_des"));
 				ixPoiParking.setPayment(resultSet.getString("payment"));
 				ixPoiParking.setRemark(resultSet.getString("remark"));
-				ixPoiParking.setOpenTiime(resultSet.getString("open_tiime"));
+				ixPoiParking.setOpenTime(resultSet.getString("open_tiime"));
 				ixPoiParking.setTotalNum(resultSet.getInt("total_num"));
 				ixPoiParking.setResHigh(resultSet.getDouble("res_high"));
 				ixPoiParking.setResWeigh(resultSet.getDouble("res_weigh"));

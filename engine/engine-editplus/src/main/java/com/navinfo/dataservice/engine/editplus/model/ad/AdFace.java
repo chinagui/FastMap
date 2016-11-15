@@ -16,32 +16,17 @@ import com.navinfo.dataservice.engine.editplus.model.obj.ObjectType;
  * @Description: AdFace.java
  */
 public class AdFace extends AbstractFace {
+
+	public AdFace(long objPid) {
+		super(objPid);
+		// TODO Auto-generated constructor stub
+	}
 	
-	@Override
-	public String primaryKey() {
-		return "FACE_PID";
-	}
-
-	@Override
-	public Map<Class<? extends BasicRow>, List<BasicRow>> childRows() {
-		return null;
-	}
-
-	@Override
-	public Map<Class<? extends BasicObj>, List<BasicObj>> childObjs() {
-		return null;
-	}
-
 	@Override
 	public String tableName() {
 		return "AD_FACE";
 	}
 
-	@Override
-	public ObjectType objType() {
-		// TODO Auto-generated method stub
-		return ObjectType.AD_FACE;
-	}
 
 
 }

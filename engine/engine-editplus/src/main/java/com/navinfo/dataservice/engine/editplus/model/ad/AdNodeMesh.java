@@ -12,14 +12,14 @@ import com.navinfo.dataservice.engine.editplus.model.obj.ObjectType;
  */
 public class AdNodeMesh extends AbstractNodeMesh {
 
-	@Override
-	public String tableName() {
-		return "AD_NODE_MESH";
+	public AdNodeMesh(long objPid) {
+		super(objPid);
+		// TODO Auto-generated constructor stub
 	}
 
 	@Override
-	public ObjectType objType() {
-		return ObjectType.AD_NODE;
+	public String tableName() {
+		return "AD_NODE_MESH";
 	}
 
 }

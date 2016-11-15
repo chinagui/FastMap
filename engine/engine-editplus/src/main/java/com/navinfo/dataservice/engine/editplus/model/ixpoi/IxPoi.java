@@ -26,6 +26,12 @@ public class IxPoi extends AbstractIx {
 	public String tableName() {
 		return "IX_POI";
 	}
+	
+	@Override
+	public String colName2Getter(String colName){
+		//handler open_24h...
+		return null;
+	}
 
 
 //	@Override

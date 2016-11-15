@@ -12,13 +12,13 @@ import com.navinfo.dataservice.engine.editplus.model.obj.ObjectType;
  * @Description: ObjectDiffConfig.java
  */
 public abstract class ObjectDiffConfig {
-	protected ObjectType objType;
+	protected String objType;
 	protected Map<String,Collection<String>> specTables;//key:tablename,value:columns
 	protected Collection<String> filterTables;//ignore tables
-	public ObjectType getObjType() {
+	public String getObjType() {
 		return objType;
 	}
-	public void setObjType(ObjectType objType) {
+	public void setObjType(String objType) {
 		this.objType = objType;
 	}
 	public Map<String, Collection<String>> getSpecTables() {

@@ -11,9 +11,44 @@ import com.navinfo.navicommons.database.sql.RunnableSQL;
  * @Description: LogOperation.java
  */
 public class LogOperation {
+	protected String opId;
+	protected long usId;
+	protected String opCmd;
 	
 	protected List<LogDetail> details;
 	
+	public String getOpId() {
+		return opId;
+	}
+
+	public void setOpId(String opId) {
+		this.opId = opId;
+	}
+
+	public long getUsId() {
+		return usId;
+	}
+
+	public void setUsId(long usId) {
+		this.usId = usId;
+	}
+
+	public String getOpCmd() {
+		return opCmd;
+	}
+
+	public void setOpCmd(String opCmd) {
+		this.opCmd = opCmd;
+	}
+
+	public List<LogDetail> getDetails() {
+		return details;
+	}
+
+	public void setDetails(List<LogDetail> details) {
+		this.details = details;
+	}
+
 	/**
 	 * 模型生成写入表的sql
 	 * @return

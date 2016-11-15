@@ -15,10 +15,11 @@ import com.vividsolutions.jts.geom.Geometry;
  * @date 2016年8月17日
  * @Description: AbstractLink.java
  */
-public abstract class AbstractLink extends BasicObj {
+public abstract class AbstractLink extends BasicRow {
 
-	public AbstractLink(BasicRow mainrow) {
-		super(mainrow);
+	public AbstractLink(long objPid) {
+		super(objPid);
+		// TODO Auto-generated constructor stub
 	}
 
 	protected long linkPid=0L;

@@ -61,8 +61,10 @@ public class GlmTable {
 	}
 	
 	public String getGeoObjType(){
-		if(geoRef==null||geoRef.isRefMain()){
+		if(geoRef==null){
 			return objType;
+		}else if(geoRef.isRefMain()){
+			return GlmFactory.getInstance().getTableByName(geoRef.getRefTable()).getObjType();
 		}else{
 			return GlmFactory.getInstance().getTableByName(geoRef.getRefTable()).getGeoObjType();
 		}

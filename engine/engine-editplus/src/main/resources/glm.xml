@@ -10,27 +10,31 @@
 		<table name="IX_POI_NAME" pk="NAME_ID"
 			class="com.navinfo.dataservice.engine.editplus.model.ixpoi.IxPoiName">
 			<objRef col="POI_PID" refTable="IX_POI" refCol="PID" isRefMain="true"/>
-		 	<geoRef col="POI_PID" refTable="IX_POI" refCol="PID" isRefMain="true"/>
 		</table>
 		<table name="IX_POI_NAME_FLAG" pk=""
 			class="com.navinfo.dataservice.engine.editplus.model.ixpoi.IxPoiNameFlag">
-			<objRef col="NAME_ID" refTable="IX_POI_NAME" refCol="NAME_ID"/>
-			<geoRef col="NAME_ID" refTable="IX_POI_NAME" refCol="NAME_ID"/>
+			<objRef col="NAME_ID" refTable="IX_POI_NAME" refCol="NAME_ID" isRefMain="false"/>
 		</table>
-		<table name="IX_POI_NAME_TONE" PK=""
+		<table name="IX_POI_NAME_TONE" pk=""
 			class="com.navinfo.dataservice.engine.editplus.model.ixpoi.IxPoiNameTone">
 			<objRef col="NAME_ID" refTable="IX_POI_NAME" refCol="NAME_ID"/>
-			<geoRef col="NAME_ID" refTable="IX_POI_NAME" refCol="NAME_ID"/>
 		</table>
-		<table name="IX_POI_ADDRESS" PK="NAME_ID"
+		<table name="IX_POI_ADDRESS" pk="NAME_ID"
 			class="com.navinfo.dataservice.engine.editplus.model.ixpoi.IxPoiAddress">
 			<objRef col="POI_PID" refTable="IX_POI" refCol="PID"/>
-		 	<geoRef col="POI_PID" refTable="IX_POI" refCol="PID"/>
 		</table>
-		<table name="IX_POI_CONTACT" PK=""
+		<table name="IX_POI_CONTACT" pk=""
 			class="com.navinfo.dataservice.engine.editplus.model.ixpoi.IxPoiContact">
 			<objRef col="POI_PID" refTable="IX_POI" refCol="PID"/>
-		 	<geoRef col="POI_PID" refTable="IX_POI" refCol="PID"/>
+		</table>
+		<table name="IX_POI_PARENT" pk="GROUP_ID"
+			class="">
+			<objRef col="PARENT_POI_PID" refTable="IX_POI" refCol="PID" isRefMain="true"/>
+		</table>
+		<table name="IX_POI_CHILDREN" pk=""
+			class="">
+			<objRef col="GROUP_ID" refTable="IX_POI_PARENT" refCol="GROUP_ID" isRefMain="false"/>
+			<geoRef col="CHILD_POI_PID" refTable="IX_POI" refCol="PID" isRefMain="true"/>
 		</table>
     </object>
 	

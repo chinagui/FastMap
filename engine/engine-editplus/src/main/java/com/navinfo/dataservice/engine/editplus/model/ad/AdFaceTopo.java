@@ -13,14 +13,14 @@ import com.navinfo.dataservice.engine.editplus.model.obj.ObjectType;
  */
 public class AdFaceTopo extends AbstractFaceTopo {
 
-	@Override
-	public String tableName() {
-		return "AD_FACE_TOPO";
+	public AdFaceTopo(long objPid) {
+		super(objPid);
+		// TODO Auto-generated constructor stub
 	}
 
 	@Override
-	public ObjectType objType() {
-		return ObjectType.AD_FACE;
+	public String tableName() {
+		return "AD_FACE_TOPO";
 	}
 
 }

@@ -14,7 +14,7 @@ import com.navinfo.dataservice.engine.editplus.model.obj.ObjectType;
  */
 public class DynamicDiffConfig extends ObjectDiffConfig {
 
-	public DynamicDiffConfig(ObjectType objType,Map<String,Collection<String>> specTables,Collection<String> filterTables){
+	public DynamicDiffConfig(String objType,Map<String,Collection<String>> specTables,Collection<String> filterTables){
 		super();
 		this.objType=objType;
 		this.specTables=specTables;

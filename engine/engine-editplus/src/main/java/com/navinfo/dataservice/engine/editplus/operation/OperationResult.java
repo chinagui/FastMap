@@ -9,6 +9,7 @@ import java.util.Map;
 import com.navinfo.dataservice.dao.glm.iface.ISerializable;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.engine.editplus.log.Logable;
+import com.navinfo.dataservice.engine.editplus.model.BasicRow;
 import com.navinfo.dataservice.engine.editplus.model.obj.BasicObj;
 
 import net.sf.json.JSONArray;
@@ -80,6 +81,7 @@ public class OperationResult{
 
 	/**
 	 * @return 新增记录列表
+	 * key:objType,value:key:objPid,value:obj
 	 */
 	public Map<String,Map<Long,BasicObj>> getAddObjs() {
 		return addObjs;
@@ -87,6 +89,7 @@ public class OperationResult{
 
 	/**
 	 * @return 删除记录列表
+	 * key:objType,value:key:objPid,value:obj
 	 */
 	public Map<String,Map<Long,BasicObj>> getDelObjs() {
 		return delObjs;
@@ -94,6 +97,7 @@ public class OperationResult{
 
 	/**
 	 * @return 修改记录列表
+	 * key:objType,value:key:objPid,value:obj
 	 */
 	public Map<String,Map<Long,BasicObj>> getUpdateObjs() {
 		return updateObjs;
@@ -134,6 +138,14 @@ public class OperationResult{
 	}
 	
 	public Collection<Logable> allRows4Log(){
-		
+		List<Logable> rows=new ArrayList<Logable>();
+		for(BasicObj obj:allObjs){
+			for(List<BasicRow> objs:obj.childRows().values()){
+				if(objs!=null&&objs.size()>0){
+					rows.addAll(objs);
+				}
+			}
+		}
+		return rows;
 	}
 }

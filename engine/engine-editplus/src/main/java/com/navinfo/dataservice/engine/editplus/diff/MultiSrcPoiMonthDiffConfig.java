@@ -1,8 +1,12 @@
 package com.navinfo.dataservice.engine.editplus.diff;
 
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
+
+import com.navinfo.dataservice.engine.editplus.model.obj.ObjectType;
 
 /** 
  * @ClassName: PoiByChangeLogDiffConfig
@@ -21,8 +25,23 @@ public class MultiSrcPoiMonthDiffConfig extends ObjectDiffConfig {
 
 	@Override
 	public void parse() {
+		this.objType=ObjectType.IX_POI;
 		if(types!=null&&types.size()>0){
 			//todo
+			for(String type:types){
+				if("SIGHT_LEVEL".equals(type)){
+					if(this.specTables.containsKey("IX_POI")){
+						this.specTables.get("IX_POI").add("KIND_CODE");
+						
+					}else{
+						Set<String> cols = new HashSet<String>();
+						cols.add("KIND_CODE");
+						this.specTables.put("IX_POI", cols);
+					}
+				}else if("AIRPORT".equals(type)){
+					//his.specTables.put("IX_POI", "IX_POI_NAME");
+				}
+			}
 		}
 	}
 

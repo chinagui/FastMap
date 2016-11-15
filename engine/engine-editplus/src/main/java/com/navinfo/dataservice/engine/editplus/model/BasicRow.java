@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.editplus.model;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.HashMap;
@@ -9,6 +10,7 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.engine.editplus.glm.GlmFactory;
 import com.navinfo.dataservice.engine.editplus.glm.GlmRef;
+import com.navinfo.dataservice.engine.editplus.glm.GlmTable;
 import com.navinfo.dataservice.engine.editplus.glm.NonGeoPidException;
 import com.navinfo.dataservice.engine.editplus.log.Logable;
 import com.navinfo.dataservice.engine.editplus.operation.OperationType;
@@ -46,7 +48,7 @@ public abstract class BasicRow implements Logable{
 		return GlmFactory.getInstance().getTableByName(tableName()).getObjType();
 	}
 
-	public long getGeoPid()throws NonGeoPidException{
+	public long getGeoPid()throws NonGeoPidException,Exception{
 		GlmRef ref = GlmFactory.getInstance().getTableByName(tableName()).getGeoRef();
 		if(ref.isRefMain()){
 			return (long)getAttrByColName(ref.getCol());
@@ -102,6 +104,16 @@ public abstract class BasicRow implements Logable{
 	 * @return
 	 */
 	protected RunnableSQL toSql(){
+		RunnableSQL sql = new RunnableSQL();
+		StringBuilder sb = new StringBuilder();
+		String tbName = tableName();
+		GlmTable tab = GlmFactory.getInstance().getTableByName(tbName);
+		if(OperationType.INSERT.equals(this.opType)){
+			sb.append("INSERT INTO "+tbName+"(");
+			for(Map.Entry<String, String> entry:tab.getColumns().entrySet()){
+				
+			}
+		}
 		return null;
 	}
 	/**
@@ -110,11 +122,15 @@ public abstract class BasicRow implements Logable{
 	 * @return
 	 */
 	public Map<String,Object> getAttrs(Collection<String> colNames){
+		//todo
 		Map<String,Object> attrs = new HashMap<String,Object>();
 		return attrs;
 	}
-	public Object getAttrByColName(String colName){
-		return null;
+	public Object getAttrByColName(String colName)throws NoSuchMethodException,InvocationTargetException, IllegalAccessException, IllegalArgumentException{
+		//todo
+		String mName = this.colName2Getter(colName);
+		Method method = this.getClass().getMethod(mName);
+		return method.invoke(this);
 	}
 	public boolean checkValue(String colName,int oldValue,int newValue){
 		if(newValue==oldValue)return false;
@@ -213,7 +229,7 @@ public abstract class BasicRow implements Logable{
 	 * @param newValue
 	 * @throws Exception
 	 */
-	public <T> void setAttrByCol(String colName,T newValue)throws Exception{
+	public <T> boolean setAttrByCol(String colName,T newValue)throws Exception{
 		//colName->getter
 		String getter=colName2Getter(colName);
 		Method methodGetter = this.getClass().getMethod(getter);
@@ -236,7 +252,9 @@ public abstract class BasicRow implements Logable{
 			}
 			Method method = this.getClass().getMethod(setter,argtypes);
 			method.invoke(this, newValue);
+			return true;
 		}
+		return false;
 	}
 	/**
 	 * 有特殊字段的表重写此方法
@@ -292,6 +310,7 @@ public abstract class BasicRow implements Logable{
 	
 	public static void main(String[] args) {
 		System.out.println((long)new Long(100L));
+		
 	}
 	
 

@@ -16,6 +16,26 @@ import com.navinfo.dataservice.engine.editplus.model.obj.ObjectType;
  */
 public class IxPoiAddress extends BasicRow {
 
+	protected void setNameId(long nameId) {
+		this.nameId = nameId;
+	}
+
+	protected void setPoiPid(long poiPid) {
+		this.poiPid = poiPid;
+	}
+
+	protected void setNameGroupid(long nameGroupid) {
+		this.nameGroupid = nameGroupid;
+	}
+
+	protected void setLangCode(String langCode) {
+		this.langCode = langCode;
+	}
+
+	protected void setSrcFlag(int srcFlag) {
+		this.srcFlag = srcFlag;
+	}
+
 	public IxPoiAddress(long objPid) {
 		super(objPid);
 	}
@@ -29,6 +49,26 @@ public class IxPoiAddress extends BasicRow {
 	@Override
 	public String tableName() {
 		return "IX_POI_ADDRESS";
+	}
+
+	public long getNameId() {
+		return nameId;
+	}
+
+	public long getPoiPid() {
+		return poiPid;
+	}
+
+	public long getNameGroupid() {
+		return nameGroupid;
+	}
+
+	public String getLangCode() {
+		return langCode;
+	}
+
+	public int getSrcFlag() {
+		return srcFlag;
 	}
 
 }

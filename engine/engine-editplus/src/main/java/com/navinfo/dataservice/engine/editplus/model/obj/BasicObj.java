@@ -3,7 +3,6 @@ package com.navinfo.dataservice.engine.editplus.model.obj;
 import java.util.List;
 import java.util.Map;
 
-import com.navinfo.dataservice.engine.editplus.diff.Diffable;
 import com.navinfo.dataservice.engine.editplus.diff.ObjectDiffConfig;
 import com.navinfo.dataservice.engine.editplus.model.BasicRow;
 import com.navinfo.dataservice.engine.editplus.operation.OperationType;
@@ -16,7 +15,7 @@ import com.navinfo.navicommons.database.sql.RunnableSQL;
  * @date 2016年8月17日
  * @Description: BasicObj.java
  */
-public abstract class BasicObj implements Diffable {
+public abstract class BasicObj {
 	
 	protected BasicRow mainrow;
 	//protected Map<Class<? extends BasicObj>, List<BasicObj>> childobjs;//存储对象下面的子对象，不包含子表
@@ -91,9 +90,14 @@ public abstract class BasicObj implements Diffable {
 	 * @return：是否有更新
 	 * @throws Exception
 	 */
-	public boolean diff(Diffable obj,ObjectDiffConfig diffConfig)throws Exception{
+	public boolean diff(BasicObj obj,ObjectDiffConfig diffConfig)throws Exception{
 		//todo
-		return false;
+		boolean isDefer=false;
+		//根据差分配置
+		if(this.getClass().getName().equals(obj.getClass().getName())){
+			isDefer = this.mainrow.setAttrByCol("col1", obj.mainrow.getAttrByColName("col1"));
+		}
+		return isDefer;
 	}
 	
 

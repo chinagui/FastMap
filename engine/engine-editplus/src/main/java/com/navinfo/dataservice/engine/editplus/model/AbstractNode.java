@@ -12,9 +12,10 @@ import com.vividsolutions.jts.geom.Geometry;
  * @date 2016年8月18日
  * @Description: AbstractNode.java
  */
-public abstract class AbstractNode extends BasicObj {
-	public AbstractNode(BasicRow mainrow) {
-		super(mainrow);
+public abstract class AbstractNode extends BasicRow {
+
+	public AbstractNode(long objPid) {
+		super(objPid);
 		// TODO Auto-generated constructor stub
 	}
 	protected long nodePid;

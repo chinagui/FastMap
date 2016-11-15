@@ -10,13 +10,15 @@ import com.navinfo.dataservice.engine.editplus.model.obj.ObjectType;
  * @Description: AdLinkMesh.java
  */
 public class AdLinkMesh extends AbstractLinkMesh {
+
+	public AdLinkMesh(long objPid) {
+		super(objPid);
+		// TODO Auto-generated constructor stub
+	}
+
 	@Override
 	public String tableName() {
 		return "AD_LINK";
-	}
-	@Override
-	public ObjectType objType() {
-		return ObjectType.AD_LINK;
 	}
 
 }

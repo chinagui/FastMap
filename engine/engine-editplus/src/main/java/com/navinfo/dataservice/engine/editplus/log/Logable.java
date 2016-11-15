@@ -2,6 +2,7 @@ package com.navinfo.dataservice.engine.editplus.log;
 
 import java.util.Map;
 
+import com.navinfo.dataservice.engine.editplus.glm.NonGeoPidException;
 import com.navinfo.dataservice.engine.editplus.operation.OperationType;
 
 /** 
@@ -16,7 +17,7 @@ public interface Logable {
 	public Map<String, Object> getOldValues();
 	public String tableName();
 	public long getObjPid();
-	public long getGeoPid();
+	public long getGeoPid()throws NonGeoPidException,Exception;
 	public String getObjType();
 	public String getGeoType();
 }

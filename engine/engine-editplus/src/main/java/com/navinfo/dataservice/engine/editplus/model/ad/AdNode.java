@@ -17,31 +17,13 @@ import com.navinfo.dataservice.engine.editplus.model.obj.ObjectType;
  */
 public class AdNode extends AbstractNode {
 
-	@Override
-	public String primaryKey() {
-		return "NODE_PID";
+	public AdNode(long objPid) {
+		super(objPid);
 	}
-
-	@Override
-	public Map<Class<? extends BasicRow>, List<BasicRow>> childRows() {
-		return null;
-	}
-
-	@Override
-	public Map<Class<? extends BasicObj>, List<BasicObj>> childObjs() {
-		return null;
-	}
-
 
 	@Override
 	public String tableName() {
 		return "AD_NODE";
-	}
-
-
-	@Override
-	public ObjectType objType() {
-		return ObjectType.AD_NODE;
 	}
 
 }

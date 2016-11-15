@@ -175,6 +175,7 @@ public class SubtaskService {
 					+ ",s.stage"
 					+ ",s.status"
 					+ ", s.geometry"
+					+ ", s.refer_geometry"
 					+ ",s.descp"
 					+ " from subtask s "
 					+ "where SDO_GEOM.RELATE(geometry, 'ANYINTERACT', "
@@ -194,6 +195,14 @@ public class SubtaskService {
 						STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
 						try {
 							subtask.setGeometry(GeoTranslator.struct2Wkt(struct));
+						} catch (Exception e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+						
+						STRUCT referStruct = (STRUCT) rs.getObject("REFER_GEOMETRY");
+						try {
+							subtask.setReferGeometry(GeoTranslator.struct2Wkt(referStruct));
 						} catch (Exception e1) {
 							// TODO Auto-generated catch block
 							e1.printStackTrace();

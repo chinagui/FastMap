@@ -217,6 +217,7 @@ public class SubtaskController extends BaseController {
 				SubtaskListByWkt subtaskListByWkt = new SubtaskListByWkt();
 				subtaskListByWkt.setSubtaskId(subtaskList.get(i).getSubtaskId());
 				subtaskListByWkt.setGeometry(subtaskList.get(i).getGeometry());
+				subtaskListByWkt.setReferGeometry(subtaskList.get(i).getReferGeometry());
 				subtaskListByWkt.setDescp(subtaskList.get(i).getDescp());
 				subtaskListByWkt.setName(subtaskList.get(i).getName());
 				subtaskListByWkt.setStage(subtaskList.get(i).getStage());

@@ -309,13 +309,10 @@ public class SubtaskController extends BaseController {
 			}
 			
 			int subtaskId = dataJson.getInt("subtaskId");
-			int platForm = 1;
-			if(dataJson.containsKey("platForm")){
-				platForm = dataJson.getInt("platForm");
-			}
+
 //			Subtask bean = (Subtask)JSONObject.toBean(dataJson, Subtask.class);			
 //			Subtask subtask = SubtaskService.getInstance().query(bean);	
-			Subtask subtask = SubtaskService.getInstance().queryBySubtaskId(subtaskId,platForm);	
+			Subtask subtask = SubtaskService.getInstance().queryBySubtaskId(subtaskId);	
 			if(subtask!=null&&subtask.getSubtaskId()!=null){
 				SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
 				String qualityPlanStartDate = null;

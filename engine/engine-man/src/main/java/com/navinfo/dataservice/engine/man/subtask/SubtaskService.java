@@ -370,7 +370,7 @@ public class SubtaskService {
 	 * 根据subtaskId查询一个任务的详细信息。 参数为Subtask对象
 	 */
 	public Subtask query(Subtask bean) throws ServiceException {
-		return queryBySubtaskId(bean.getSubtaskId(),0);
+		return queryBySubtaskId(bean.getSubtaskId());
 	}
 
 	/*
@@ -523,7 +523,7 @@ public class SubtaskService {
 	 * @author zl zhangli5174@navinfo.com
 	 * @date 2016年11月4日 下午4:08:09 
 	 */
-	public Subtask queryBySubtaskId(Integer subtaskId, final int platForm) throws ServiceException {
+	public Subtask queryBySubtaskId(Integer subtaskId) throws ServiceException {
 		Connection conn = null;
 		try {
 			conn = DBConnector.getInstance().getManConnection();
@@ -540,7 +540,7 @@ public class SubtaskService {
 					+ ",r.DAILY_DB_ID"
 					+ ",r.MONTHLY_DB_ID"
 					+ ",st.GEOMETRY"
-					+ ",st.REFER_GEOMETRY"
+					//+ ",st.REFER_GEOMETRY"
 					//新增返回字段
 					+ "	,st.quality_Subtask_Id qualitySubtaskId,Q.qualityPlanStartDate ,Q.qualityPlanEndDate ,Q.qualityExeUserId ,Q.qualityTaskStatus";
 			String userSql = ",u.user_id as executer_id,u.user_real_name as executer";
@@ -617,7 +617,7 @@ public class SubtaskService {
 							e1.printStackTrace();
 						}
 						//REFER_GEOMETRY
-						STRUCT struct1 = (STRUCT) rs.getObject("REFER_GEOMETRY");
+						/*STRUCT struct1 = (STRUCT) rs.getObject("REFER_GEOMETRY");
 						try {
 							if(struct1!=null){
 								String clobStr = GeoTranslator.struct2Wkt(struct1);
@@ -628,21 +628,20 @@ public class SubtaskService {
 						} catch (Exception e1) {
 							// TODO Auto-generated catch block
 							e1.printStackTrace();
-						}
+						}*/
 						
 						try {
 							List<Integer> gridIds = SubtaskOperation.getGridIdsBySubtaskId(rs.getInt("SUBTASK_ID"));
 							subtask.setGridIds(gridIds);
 							//采集端返回参考子任务信息
-							if(0==platForm && 0==rs.getInt("STAGE")){
+							/*if(0==platForm && 0==rs.getInt("STAGE")){
 								JSONArray referSubtasks = SubtaskOperation.getReferSubtasksByGridIds(subtask.getSubtaskId(),gridIds);
 								subtask.setReferSubtasks(referSubtasks);
-							}
+							}*/
 						} catch (Exception e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
-<<<<<<< .mine
 						
 						if(0==rs.getInt("STAGE")){
 							//采集子任务
@@ -650,20 +649,6 @@ public class SubtaskService {
 							subtask.setBlockId(rs.getInt("BLOCK_ID"));
 							subtask.setBlockManId(rs.getInt("BLOCK_MAN_ID"));
 							subtask.setBlockManName(rs.getString("BLOCK_MAN_NAME"));
-							//需要返回referGeometry :同geometry字段，json格式返回
-							//referSubtask:[{subtaskId:12, referGeometry:12,geometry:12,exeUserId:12,exeUserName:”test”}]
-=======
-
-
-
-
-
-
-
-
-
->>>>>>> .theirs
-
 						}else if (1 == rs.getInt("STAGE")) {
 							//日编子任务
 							subtask.setDbId(rs.getInt("DAILY_DB_ID"));

@@ -13,18 +13,23 @@ import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
+import com.vividsolutions.jts.geom.Geometry;
 
+/***
+ * RDLINK修行
+ * 
+ * @author zhaokk
+ * 
+ */
 public class Command extends AbstractCommand {
 
 	private String requester;
 
 	private int linkPid;
 
-	private JSONObject linkGeom;
+	private Geometry linkGeom;
 
-	private JSONArray interLines;
-
-	private JSONArray interNodes;
+	private JSONArray catchInfos;
 
 	private RdLink updateLink;
 
@@ -52,16 +57,22 @@ public class Command extends AbstractCommand {
 		return linkPid;
 	}
 
-	public JSONObject getLinkGeom() {
+	public Geometry getLinkGeom() {
 		return linkGeom;
 	}
 
-	public JSONArray getInterLines() {
-		return interLines;
+
+
+	public void setLinkGeom(Geometry linkGeom) {
+		this.linkGeom = linkGeom;
 	}
 
-	public JSONArray getInterNodes() {
-		return interNodes;
+	public JSONArray getCatchInfos() {
+		return catchInfos;
+	}
+
+	public void setCatchInfos(JSONArray catchInfos) {
+		this.catchInfos = catchInfos;
 	}
 
 	public RdLink getUpdateLink() {
@@ -102,12 +113,13 @@ public class Command extends AbstractCommand {
 
 		JSONObject geometry = data.getJSONObject("geometry");
 
-		this.linkGeom = GeoTranslator.jts2Geojson(GeoTranslator.geojson2Jts(
+		this.linkGeom = (GeoTranslator.geojson2Jts(
 				geometry, 1, 5));
-
-		this.interLines = data.getJSONArray("interLinks");
-
-		this.interNodes = data.getJSONArray("interNodes");
+		//修行挂接信息
+		if (data.containsKey("catchInfos")) {
+			this.catchInfos = data.getJSONArray("catchInfos");
+		}
+	
 	}
 
 }

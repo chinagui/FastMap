@@ -80,7 +80,7 @@ public class SubtaskService {
 	/*
 	 * 创建一个子任务。 参数1：Subtask对象
 	 */
-	public void create(Subtask bean)throws ServiceException {
+	public int create(Subtask bean)throws ServiceException {
 		Connection conn = null;
 		try {
 			conn = DBConnector.getInstance().getManConnection();
@@ -105,6 +105,7 @@ public class SubtaskService {
 				SubtaskOperation.pushMessage(conn,bean);
 			}*/	
 			log.debug("子任务创建成功!");
+			return subtaskId;
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -285,6 +286,22 @@ public class SubtaskService {
 				qualitySubtask.setPlanStartDate(new Timestamp(df.parse(qualityPlanStartDate).getTime()));
 				qualitySubtask.setPlanEndDate(new Timestamp(df.parse(qualityPlanEndDate).getTime()));
 				subtaskList.add(qualitySubtask);//将质检子任务也加入修改列表
+			}else{
+				if(qualityExeUserId != 0){//qualitySubtaskId=0，且qualityExeUserId非0的时候，表示要创建质检子任务
+					//subtaskArray.getJSONObject(i).discard("subtaskId");//删除subtaskId ,新建质检子任务
+					//Subtask qualitySubtask = (Subtask)JsonOperation.jsonToBean(subtaskArray.getJSONObject(i),Subtask.class);//生成质检子任务的bean
+					Subtask qualitySubtask = SubtaskService.getInstance().queryBySubtaskIdS(subtaskArray.getJSONObject(i).getInt("subtaskId"));
+					qualitySubtask.setName(qualitySubtask.getName()+"_质检");
+					qualitySubtask.setSubtaskId(null);
+					qualitySubtask.setPlanStartDate(new Timestamp(df.parse(qualityPlanStartDate).getTime()));
+					qualitySubtask.setPlanEndDate(new Timestamp(df.parse(qualityPlanEndDate).getTime()));
+					qualitySubtask.setIsQuality(1);//表示此bean是质检子任务
+					qualitySubtask.setExeUserId(qualityExeUserId);
+					//创建质检子任务 subtask	
+					Integer newQualitySubtaskId = SubtaskService.getInstance().create(qualitySubtask);	
+					subtask.setIsQuality(0);
+					subtask.setQualitySubtaskId(newQualitySubtaskId);
+				}
 			}
 			subtaskList.add(subtask);
 			//正常修改子任务
@@ -353,7 +370,7 @@ public class SubtaskService {
 	 * 根据subtaskId查询一个任务的详细信息。 参数为Subtask对象
 	 */
 	public Subtask query(Subtask bean) throws ServiceException {
-		return queryBySubtaskId(bean.getSubtaskId());
+		return queryBySubtaskId(bean.getSubtaskId(),0);
 	}
 
 	/*
@@ -376,7 +393,8 @@ public class SubtaskService {
 					+ ",st.STATUS"
 					+ ",r.DAILY_DB_ID"
 					+ ",r.MONTHLY_DB_ID"
-					+ ",st.GEOMETRY";
+					+ ",st.GEOMETRY"
+					+ ",st.REFER_GEOMETRY";
 			String userSql = ",u.user_real_name as executer";
 			String groupSql = ",ug.group_name as executer";
 			String taskSql = ",T.CITY_ID AS BLOCK_ID,T.TASK_ID AS BLOCK_MAN_ID,T.NAME AS BLOCK_MAN_NAME";
@@ -428,10 +446,23 @@ public class SubtaskService {
 						subtask.setPlanEndDate(rs.getTimestamp("PLAN_END_DATE"));
 						subtask.setDescp(rs.getString("DESCP"));
 						subtask.setStatus(rs.getInt("STATUS"));
-						
+						//GEOMETRY
 						STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
 						try {
 							subtask.setGeometry(GeoTranslator.struct2Wkt(struct));
+						} catch (Exception e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+						//REFER_GEOMETRY
+						STRUCT struct1 = (STRUCT) rs.getObject("REFER_GEOMETRY");
+						try {
+							if(struct1!=null){
+								String clobStr = GeoTranslator.struct2Wkt(struct1);
+								subtask.setReferGeometryJSON(Geojson.wkt2Geojson(clobStr));
+							}else{
+								subtask.setReferGeometryJSON(null);
+							}	
 						} catch (Exception e1) {
 							// TODO Auto-generated catch block
 							e1.printStackTrace();
@@ -485,13 +516,14 @@ public class SubtaskService {
 	 * @Title: queryBySubtaskId
 	 * @Description: 根据subtaskId查询一个任务的详细信息。 参数为Subtask对象(修改)(第七迭代)
 	 * @param subtaskId
+	 * @param platForm 
 	 * @return
 	 * @throws ServiceException  Subtask
 	 * @throws 
 	 * @author zl zhangli5174@navinfo.com
 	 * @date 2016年11月4日 下午4:08:09 
 	 */
-	public Subtask queryBySubtaskId(Integer subtaskId) throws ServiceException {
+	public Subtask queryBySubtaskId(Integer subtaskId, final int platForm) throws ServiceException {
 		Connection conn = null;
 		try {
 			conn = DBConnector.getInstance().getManConnection();
@@ -508,6 +540,7 @@ public class SubtaskService {
 					+ ",r.DAILY_DB_ID"
 					+ ",r.MONTHLY_DB_ID"
 					+ ",st.GEOMETRY"
+					+ ",st.REFER_GEOMETRY"
 					//新增返回字段
 					+ "	,st.quality_Subtask_Id qualitySubtaskId,Q.qualityPlanStartDate ,Q.qualityPlanEndDate ,Q.qualityExeUserId ,Q.qualityTaskStatus";
 			String userSql = ",u.user_id as executer_id,u.user_real_name as executer";
@@ -583,14 +616,33 @@ public class SubtaskService {
 							// TODO Auto-generated catch block
 							e1.printStackTrace();
 						}
+						//REFER_GEOMETRY
+						STRUCT struct1 = (STRUCT) rs.getObject("REFER_GEOMETRY");
+						try {
+							if(struct1!=null){
+								String clobStr = GeoTranslator.struct2Wkt(struct1);
+								subtask.setReferGeometryJSON(Geojson.wkt2Geojson(clobStr));
+							}else{
+								subtask.setReferGeometryJSON(null);
+							}	
+						} catch (Exception e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
 						
 						try {
 							List<Integer> gridIds = SubtaskOperation.getGridIdsBySubtaskId(rs.getInt("SUBTASK_ID"));
 							subtask.setGridIds(gridIds);
+							//采集端返回参考子任务信息
+							if(0==platForm && 0==rs.getInt("STAGE")){
+								JSONArray referSubtasks = SubtaskOperation.getReferSubtasksByGridIds(subtask.getSubtaskId(),gridIds);
+								subtask.setReferSubtasks(referSubtasks);
+							}
 						} catch (Exception e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
+<<<<<<< .mine
 						
 						if(0==rs.getInt("STAGE")){
 							//采集子任务
@@ -600,6 +652,17 @@ public class SubtaskService {
 							subtask.setBlockManName(rs.getString("BLOCK_MAN_NAME"));
 							//需要返回referGeometry :同geometry字段，json格式返回
 							//referSubtask:[{subtaskId:12, referGeometry:12,geometry:12,exeUserId:12,exeUserName:”test”}]
+=======
+
+
+
+
+
+
+
+
+
+>>>>>>> .theirs
 
 						}else if (1 == rs.getInt("STAGE")) {
 							//日编子任务

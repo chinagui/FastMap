@@ -39,7 +39,7 @@ public class RdTmcLocationSearch implements ISearch {
 	}
 
 	@Override
-	public IObj searchDataByPids(List<Integer> pidList) throws Exception {
+	public List<IObj> searchDataByPids(List<Integer> pidList) throws Exception {
 		return null;
 	}
 
@@ -68,6 +68,10 @@ public class RdTmcLocationSearch implements ISearch {
 			pstmt = conn.prepareStatement(sql);
 			
 			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
+			
+			double px = MercatorProjection.tileXToPixelX(x);
+
+			double py = MercatorProjection.tileYToPixelY(y);
 
 			pstmt.setString(1, wkt);
 
@@ -114,7 +118,9 @@ public class RdTmcLocationSearch implements ISearch {
 
 				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
 				
-				JSONObject jo = Geojson.spatial2Geojson(struct);
+				JSONObject geojson = Geojson.spatial2Geojson(struct);
+				
+				JSONObject jo = Geojson.link2Pixel(geojson, px, py, z);
 
 				snapshot.setG(jo.getJSONArray("coordinates"));
 

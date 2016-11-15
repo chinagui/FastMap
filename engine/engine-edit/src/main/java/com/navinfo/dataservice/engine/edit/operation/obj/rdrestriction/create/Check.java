@@ -40,7 +40,7 @@ public class Check {
 
 	public void checkGLM26017(Connection conn, int nodePid) throws Exception {
 
-		String sql = "select node_pid from rd_cross_node where node_pid=:1";
+		String sql = "select node_pid from rd_cross_node where node_pid=:1 and u_record != 2";
 
 		PreparedStatement pstmt = conn.prepareStatement(sql);
 
@@ -67,7 +67,7 @@ public class Check {
 
 	public void checkGLM08033(Connection conn, int inLinkPid, int outLinkPid) throws Exception {
 
-		String sql = "select link_pid from rd_cross_link where link_pid in (:1,:2)";
+		String sql = "select link_pid from rd_cross_link where link_pid in (:1,:2) and u_record != 2";
 
 		PreparedStatement pstmt = conn.prepareStatement(sql);
 

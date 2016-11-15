@@ -287,21 +287,20 @@ public class Command extends AbstractCommand {
 		if (data.containsKey("breakNodePid")) {
 			this.setBreakNodePid(data.getInt("breakNodePid"));
 		}
-		Coordinate coord = new Coordinate(data.getDouble("longitude"),
-				data.getDouble("latitude"));
 
 		this.setDbId(json.getInt("dbId"));
 
-		if (data.containsKey("breakNodePid")) {
-			this.breakNodePid = data.getInt("breakNodePid");
-		}
 		if (data.containsKey("breakNodes")) {
 			this.breakNodes = JSONArray.fromObject(data
 					.getJSONArray("breakNodes"));
 
+		} else {
+			Coordinate coord = new Coordinate(data.getDouble("longitude"),
+					data.getDouble("latitude"));
+
+			this.point = geometryFactory.createPoint(coord);
 		}
 
-		this.point = geometryFactory.createPoint(coord);
 		if (json.containsKey("infect") && json.getInt("infect") == 1) {
 			this.isCheckInfect = true;
 		}

@@ -12,9 +12,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -36,6 +38,7 @@ import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.sql.SqlClause;
@@ -419,6 +422,7 @@ public class SubtaskOperation {
 //			SqlClause inClause = SqlClause.genGeoClauseWithGeoString(conn,bean.getGeometry());
 //			if (inClause!=null)
 //				value.add(inClause.getValues().get(0));
+			//referGeometry
 			
 			value.add(bean.getStage());
 			value.add(bean.getType());
@@ -460,6 +464,14 @@ public class SubtaskOperation {
 				column += ", IS_QUALITY";
 				value.add(0);
 				values += ",?";
+			}
+			//外业参考任务圈
+			if(bean.getReferGeometry() != null){
+				Clob cc = ConnectionUtil.createClob(conn);
+				cc.setString(1, bean.getReferGeometry());
+				value.add(cc);
+				column += ", REFER_GEOMETRY";
+				values += ",sdo_geometry(?,8307)";
 			}
 			
 			if(0!=bean.getExeGroupId()){
@@ -2429,6 +2441,92 @@ public class SubtaskOperation {
 			throw new Exception("关闭失败，原因为:"+e.getMessage(),e);
 		}finally {
 			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+
+
+	/**
+	 * @param subtaskId 
+	 * @param gridIds
+	 * @return
+	 * @throws Exception 
+	 */
+	public static JSONArray getReferSubtasksByGridIds(Integer subtaskId, List<Integer> gridIds) throws Exception {
+		// TODO Auto-generated method stub
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+			//grid扩圈
+			Set<Integer> gridsWithNeighbor = new HashSet<Integer>();
+			for(int j=0;j<gridIds.size();j++)  
+	        {              
+				String gridId = String.valueOf(gridIds.get(j));
+				String[] gridAfter = GridUtils.get9NeighborGrids(gridId);				
+				for(int i=0;i<gridAfter.length;i++){
+					gridsWithNeighbor.add(Integer.valueOf(gridAfter[i]));
+				}           
+	        } 
+			String gridIdsStr = StringUtils.join(gridsWithNeighbor.toArray(), ",");
+			
+			String selectSql = "select s.subtask_id,"
+					+ " s.geometry,"
+					+ " s.refer_geometry,"
+					+ " s.exe_user_id,"
+					+ " u.user_real_name"
+					+ " from subtask s,"
+					+ " user_info u,"
+					+ " (select distinct sgm.subtask_id"
+					+ " from subtask_grid_mapping sgm"
+					+ " where sgm.grid_id in (" + gridIdsStr + "))t"
+					+ " where s.stage = 0"
+					+ " and s.subtask_id = t.subtask_id"
+					+ " and s.exe_user_id = u.user_id"
+					+ " and s.subtask_id <> " + subtaskId;
+			
+			ResultSetHandler<JSONArray> rsHandler = new ResultSetHandler<JSONArray>() {
+				public JSONArray handle(ResultSet rs) throws SQLException {
+					JSONArray referSubtasks = new JSONArray(); 
+					while (rs.next()) {
+						JSONObject referSubtask = new JSONObject();
+						int temp = rs.getInt("subtask_id");
+						referSubtask.put("subtaskId", rs.getInt("subtask_id"));
+						referSubtask.put("exeUserId", rs.getInt("exe_user_id"));
+						referSubtask.put("exeUserName", rs.getString("user_real_name"));
+						//GEOMETRY
+						STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
+						try {
+							String clobStr = GeoTranslator.struct2Wkt(struct);
+							referSubtask.put("geometry", Geojson.wkt2Geojson(clobStr));
+						} catch (Exception e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+						//REFER_GEOMETRY
+						STRUCT struct1 = (STRUCT) rs.getObject("REFER_GEOMETRY");
+						try {
+							if(struct1!=null){
+								String clobStr = GeoTranslator.struct2Wkt(struct1);
+								referSubtask.put("referGeometry", Geojson.wkt2Geojson(clobStr));
+							}else{
+								referSubtask.put("referGeometry",null);
+							}	
+						} catch (Exception e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+						
+						referSubtasks.add(referSubtask);
+					}
+					return referSubtasks;
+				}
+			};
+
+			return run.query(conn, selectSql, rsHandler);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
 		}
 	}
 	

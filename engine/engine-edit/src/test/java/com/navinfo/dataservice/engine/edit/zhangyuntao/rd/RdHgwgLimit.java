@@ -18,4 +18,10 @@ public class RdHgwgLimit extends InitApplication{
         String parameter = "{\"command\":\"CREATE\",\"type\":\"RDHGWGLIMIT\",\"dbId\":17,\"data\":{\"direct\":2,\"linkPid\":200002589,\"latitude\":40.01223045143216,\"longitude\":116.47890601535886}}";
         TestUtil.run(parameter);
     }
+
+    @Test
+    public void move(){
+        String parameter = "{\"command\":\"MOVE\",\"type\":\"RDHGWGLIMIT\",\"dbId\":17,\"data\":{\"pid\":202000002,\"linkPid\":\"207002431\",\"latitude\":40.01279649539292,\"longitude\":116.47630336774168}}";
+        TestUtil.run(parameter);
+    }
 }

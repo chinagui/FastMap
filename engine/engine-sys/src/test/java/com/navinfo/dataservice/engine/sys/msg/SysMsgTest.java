@@ -16,7 +16,7 @@ public class SysMsgTest {
 		sysMsg.setPushUserId(0L);
 		long[] targetUserIds = {2,1672};
 		try {
-			SysMsgPublisher.publishMsg(sysMsg.getMsgTitle(), sysMsg.getMsgContent(), sysMsg.getPushUserId(), targetUserIds, 1, null, "测试00AA00");
+			SysMsgPublisher.publishMsg(sysMsg.getMsgTitle(), sysMsg.getMsgContent(), sysMsg.getPushUserId(), targetUserIds, 1, "测试00AA00", "测试00AA00");
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.out.println(e.getMessage());

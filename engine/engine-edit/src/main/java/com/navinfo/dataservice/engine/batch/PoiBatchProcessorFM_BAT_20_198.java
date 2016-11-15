@@ -36,7 +36,7 @@ public class PoiBatchProcessorFM_BAT_20_198 implements IBatch {
 			for(IRow row : rows)
 			{
 				IxPoiParking poiPark = (IxPoiParking) row;
-				if (!"00:00-24:00".equals(poiPark.getOpenTiime())){
+				if (!"00:00-24:00".equals(poiPark.getOpenTime())){
 					data.put("OpenTiime", "00:00-24:00");
 					data.put("rowId", poiPark.rowId());
 					data.put("objStatus", ObjStatus.UPDATE.toString());

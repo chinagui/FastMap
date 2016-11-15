@@ -749,7 +749,7 @@ public class UploadOperation {
 				parkings.setTollWay(parkingsObj.getString("tollWay"));
 				parkings.setPayment(parkingsObj.getString("payment"));
 				parkings.setRemark(parkingsObj.getString("remark"));
-				parkings.setOpenTiime(parkingsObj.getString("openTime"));
+				parkings.setOpenTime(parkingsObj.getString("openTime"));
 				parkings.setTotalNum(parkingsObj.getInt("totalNum"));
 				parkings.setResHigh(parkingsObj.getInt("resHigh"));
 				parkings.setResWidth(parkingsObj.getInt("resWidth"));

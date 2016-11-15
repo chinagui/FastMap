@@ -39,61 +39,61 @@ public class RdNameImportTest {
 	}
 	
 	
-//	@Test
-//	public static void main(String[] args) {
-//		ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(
-//				new String[] { "dubbo-consumer.xml"});
-//		context.start();
-//		new ApplicationContextUtil().setApplicationContext(context);
-//		RdNameImportor importor = new RdNameImportor();
-//		try {
-//			/*importor.importName("A45", 116.49266, 40.20926, "test_imp1");
-//			importor.importName("测试高速公路", 116.49266, 40.20926, "test_imp1");
-//			importor.importName("测试高架路", 116.49266, 40.20926, "test_imp1");
-//			importor.importName("测试高架桥", 116.49266, 40.20926, "test_imp1");
-//			importor.importName("测试快速路", 116.49266, 40.20926, "test_imp1");
-//			
-//			importor.importName("N", 116.49266, 40.20926, "test_imp1");
-//			importor.importName("n", 116.49266, 40.20926, "test_imp1");
-//			importor.importName("NO", 116.49266, 40.20926, "test_imp1");
-//			importor.importName("no", 116.49266, 40.20926, "test_imp1");
-//			importor.importName("No", 116.49266, 40.20926, "test_imp1");
-//			importor.importName("无道路名", 116.49266, 40.20926, "test_imp1");
-//			importor.importName("无", 116.49266, 40.20926, "test_imp1");
-//			
-//			importor.importName("Ｎ", 116.49266, 40.20926, "test_imp1");
-//			importor.importName("ＮＯ", 116.49266, 40.20926, "test_imp1");
-//			
-//			importor.importName("测试1#路", 116.49266, 40.20926, "test_imp1");
-//			importor.importName("测试2＃路", 116.49266, 40.20926, "test_imp1");*/
-//			
-//			importor.importName("测试罗马 V 路", 116.49266, 40.20926, "test_imp1");
-//			importor.importName("测试123c路", 116.49266, 40.20926, "test_imp1");
-//			
-//			System.out.println("测试完成");
-//			
-//			
-//			
-///*			DELETE FROM RD_NAME N
-//			 WHERE NAME_GROUPID IN
-//			       ( SELECT NAME_GROUPID
-//			                  FROM RD_NAME
-//			                 WHERE SRC_RESUME LIKE '%test_imp1%'
-//			        )
-//			        
-//			        
-//			        
-//			SELECT * FROM RD_NAME N
-//			 WHERE NAME_GROUPID IN
-//			       ( SELECT NAME_GROUPID
-//			                  FROM RD_NAME
-//			                 WHERE SRC_RESUME LIKE '%test_imp1%'
-//			        )*/
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//		}
-//	}
-//	
+	@Test
+	public  void nameImportTest() {
+		/*ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(
+				new String[] { "dubbo-consumer.xml"});
+		context.start();
+		new ApplicationContextUtil().setApplicationContext(context);*/
+		RdNameImportor importor = new RdNameImportor();
+		try {
+			/*importor.importName("A45", 116.49266, 40.20926, "test_imp1");
+			importor.importName("测试高速公路", 116.49266, 40.20926, "test_imp1");
+			importor.importName("测试高架路", 116.49266, 40.20926, "test_imp1");
+			importor.importName("测试高架桥", 116.49266, 40.20926, "test_imp1");
+			importor.importName("测试快速路", 116.49266, 40.20926, "test_imp1");
+			
+			importor.importName("N", 116.49266, 40.20926, "test_imp1");
+			importor.importName("n", 116.49266, 40.20926, "test_imp1");
+			importor.importName("NO", 116.49266, 40.20926, "test_imp1");
+			importor.importName("no", 116.49266, 40.20926, "test_imp1");
+			importor.importName("No", 116.49266, 40.20926, "test_imp1");
+			importor.importName("无道路名", 116.49266, 40.20926, "test_imp1");
+			importor.importName("无", 116.49266, 40.20926, "test_imp1");
+			
+			importor.importName("Ｎ", 116.49266, 40.20926, "test_imp1");
+			importor.importName("ＮＯ", 116.49266, 40.20926, "test_imp1");
+			
+			importor.importName("测试1#路", 116.49266, 40.20926, "test_imp1");
+			importor.importName("测试2＃路", 116.49266, 40.20926, "test_imp1");*/
+			
+			importor.importName("测试罗马 V 路", 116.49266, 40.20926, "test_imp1");
+			importor.importName("测试123c东2路", 116.49266, 40.20926, "test_imp1");
+			
+			System.out.println("测试完成");
+			
+			
+			
+/*			DELETE FROM RD_NAME N
+			 WHERE NAME_GROUPID IN
+			       ( SELECT NAME_GROUPID
+			                  FROM RD_NAME
+			                 WHERE SRC_RESUME LIKE '%test_imp1%'
+			        )
+			        
+			        
+			        
+			SELECT * FROM RD_NAME N
+			 WHERE NAME_GROUPID IN
+			       ( SELECT NAME_GROUPID
+			                  FROM RD_NAME
+			                 WHERE SRC_RESUME LIKE '%test_imp1%'
+			        )*/
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
 	
 	@Test
 	public void testGetRdName()
@@ -115,13 +115,13 @@ public class RdNameImportTest {
 				throw new Exception("subtaskid未找到数据");
 			}
 			
-			int dbId = subtask.getDbId();
+//			int dbId = subtask.getDbId();
 			
 			FccApi apiFcc=(FccApi) ApplicationContextUtil.getBean("fccApi");
 			
 			JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(),1901,new JSONArray());
 			
-			JSONObject data = selector.searchForWeb(jsonReq,tips,dbId);
+			JSONObject data = selector.searchForWeb(jsonReq,tips);
 			
 			System.out.println(data);
 					
@@ -132,7 +132,7 @@ public class RdNameImportTest {
 	
 	@Test
 	public void teilenName () {
-		String parameter = "{\"dbId\":2008,\"data\":[{\"nameId\":1251840566,\"nameGroupid\":1251840566,\"langCode\":\"CHI\",\"roadType\":1}],\"flag\":1,\"subtaskId\":208}";
+		String parameter = "{\"dbId\":9,\"data\":[{\"nameId\":420000001,\"nameGroupid\":503000002,\"langCode\":\"CHI\",\"roadType\":0}],\"flag\":1,\"subtaskId\":208}";
 		
 		Connection conn = null;
 		try {

@@ -55,7 +55,40 @@ public class JsonUtils {
 		}
 
 	}
+	
+	/**
+	 * 控制输出JSON的格式
+	 * 
+	 * @return JsonConfig
+	 */
+	public static JsonConfig getJsonConfig() {
+		JsonConfig jsonConfig = new JsonConfig();
 
+		jsonConfig.registerJsonValueProcessor(String.class, new JsonValueProcessor() {
+
+			@Override
+			public Object processObjectValue(String key, Object value, JsonConfig arg2) {
+				if (value == null) {
+					return null;
+				}
+
+				if (JSONUtils.mayBeJSON(value.toString())) {
+					return "\"" + value + "\"";
+				}
+
+				return value;
+
+			}
+
+			@Override
+			public Object processArrayValue(Object value, JsonConfig arg1) {
+				return value;
+			}
+		});
+
+		return jsonConfig;
+	}
+	
 	public static int getInt(JSONObject json, String key) {
 		if (json.containsKey(key)) {
 			return json.getInt(key);

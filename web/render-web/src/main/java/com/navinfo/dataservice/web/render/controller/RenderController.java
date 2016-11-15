@@ -137,8 +137,7 @@ public class RenderController extends BaseController {
 			}
 		}
 	}
-	
-	
+
 	@RequestMapping(value = "/specia/getByTileWithGap")
 	public void getSpeciaByTile(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
@@ -150,7 +149,18 @@ public class RenderController extends BaseController {
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
-			String type = jsonReq.getString("type");
+			List<String> types = new ArrayList<String>();
+
+			if (jsonReq.containsKey("type")) {
+				types.add(jsonReq.getString("type"));
+			}
+			if (jsonReq.containsKey("types")) {
+				JSONArray typeArray = jsonReq.getJSONArray("types");
+
+				for (int i = 0; i < typeArray.size(); i++) {
+					types.add(typeArray.getString(i));
+				}
+			}
 
 			int dbId = jsonReq.getInt("dbId");
 
@@ -174,7 +184,7 @@ public class RenderController extends BaseController {
 
 				SpecialMapUtils specialMap = new SpecialMapUtils(conn);
 
-				data = specialMap.searchDataByTileWithGap(type, x, y, z, gap);
+				data = specialMap.searchDataByTileWithGap(types, x, y, z, gap);
 
 				response.getWriter().println(
 						ResponseUtils.assembleRegularResult(data));
@@ -213,8 +223,8 @@ public class RenderController extends BaseController {
 			int z = jsonReq.getInt("z");
 
 			int gap = jsonReq.getInt("gap");
-			
-			String mdFlag=jsonReq.getString("mdFlag");
+
+			String mdFlag = jsonReq.getString("mdFlag");
 
 			JSONArray types = new JSONArray();
 
@@ -223,10 +233,9 @@ public class RenderController extends BaseController {
 			}
 
 			TipsSelector selector = new TipsSelector();
-			
-			
+
 			JSONArray array = selector.searchDataByTileWithGap(x, y, z, gap,
-					types,mdFlag);
+					types, mdFlag);
 
 			response.getWriter().println(
 					ResponseUtils.assembleRegularResult(array));

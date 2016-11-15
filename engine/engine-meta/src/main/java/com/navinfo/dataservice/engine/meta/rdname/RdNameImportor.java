@@ -92,7 +92,7 @@ public class RdNameImportor {
 			String srcResume) throws Exception {
 		
 		//***********************以下代码是路演环境临时使用*begin***********************
-		Connection conn=null;
+		/*Connection conn=null;
 		
 		try{
 			
@@ -106,11 +106,16 @@ public class RdNameImportor {
 		//路演环境临时使用
 		conn = DBConnector.getInstance().getConnectionById(Integer.parseInt(dbId));
 		
-		RdNameOperation operation = new RdNameOperation(conn);
+		RdNameOperation operation = new RdNameOperation(conn);*/
 		
 		//***********************end ***********************
 		
-		//RdNameOperation operation = new RdNameOperation();
+		Connection conn=null;
+		try{
+		
+		conn = DBConnector.getInstance().getMetaConnection();
+		
+		RdNameOperation operation = new RdNameOperation(conn);
 		
 		RdName rdName = new RdName();
 
@@ -140,10 +145,11 @@ public class RdNameImportor {
 				rdNameNew.getLangCode(), rdNameNew.getRoadType());
 		
 		}catch (Exception e) {
+			DbUtils.rollback(conn);
 			throw e;
 		}
 		finally{
-			DbUtils.closeQuietly(conn);
+			DbUtils.commitAndCloseQuietly(conn);
 		}
 
 	}
@@ -265,13 +271,13 @@ public class RdNameImportor {
 	 * @return
 	 * @throws Exception
 	 */
-	public JSONObject importRdNameFromWeb(JSONObject params,int dbId) throws Exception {
+	public JSONObject importRdNameFromWeb(JSONObject params) throws Exception {
 		JSONObject result = new JSONObject();
 		
 		Connection conn = null;
 		
 		try {
-			conn = DBConnector.getInstance().getConnectionById(dbId);
+			conn = DBConnector.getInstance().getMetaConnection();
 			
 			RdNameSelector selector = new RdNameSelector(conn);
 			

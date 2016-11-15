@@ -29,7 +29,7 @@ public class IxChargingstationHandler implements ResultSetHandler<Map<Long,List<
 				ixPoiChargingstation.setOpenHour(rs.getString("open_hour"));
 				ixPoiChargingstation.setParkingFees(rs.getInt("parking_fees"));
 				ixPoiChargingstation.setParkingInfo(rs.getString("parking_info"));
-				ixPoiChargingstation.setAvailableState(rs.getInt("availavel_state"));
+				ixPoiChargingstation.setAvailableState(rs.getInt("available_state"));
 				ixPoiChargingstation.setRowId(rs.getString("row_id"));
 				
 				if (chargingstationMap.containsKey(rs.getLong("poi_pid"))) {

@@ -38,16 +38,16 @@ public class Command extends AbstractCommand {
 
     @Override
     public OperType getOperType() {
-        return null;
+        return OperType.MOVE;
     }
 
     @Override
     public String getRequester() {
-        return null;
+        return this.requester;
     }
 
     @Override
     public ObjType getObjType() {
-        return null;
+        return ObjType.RDHGWGLIMIT;
     }
 }

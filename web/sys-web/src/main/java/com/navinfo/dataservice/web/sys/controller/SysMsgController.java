@@ -171,13 +171,14 @@ public class SysMsgController extends BaseController {
 			List<String> titleList = SysMsgService.getInstance().getManMsgTitleList(userId);
 			return new ModelAndView("jsonView", success(titleList));
 		}catch(Exception e){
-			log.error("发送失败，原因："+e.getMessage(), e);
+			log.error("查询失败，原因："+e.getMessage(), e);
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}
 	
 	/**
 	 * 获取man管理消息列表
+	 * 消息中心-服务消息（全部角色）
 	 * @author Han Shaoming
 	 * @param request
 	 * @return
@@ -210,13 +211,14 @@ public class SysMsgController extends BaseController {
 			Page page = SysMsgService.getInstance().getManMsgList(userId,pageNum,pageSize,condition);
 			return new ModelAndView("jsonView", success(page));
 		}catch(Exception e){
-			log.error("发送失败，原因："+e.getMessage(), e);
+			log.error("查询失败，原因："+e.getMessage(), e);
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}
 	
 	/**
 	 * 批量修改管理信息状态
+	 * 消息中心-服务消息（全部角色）
 	 * @author Han Shaoming
 	 * @param request
 	 * @return

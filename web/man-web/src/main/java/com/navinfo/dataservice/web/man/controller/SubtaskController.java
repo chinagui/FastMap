@@ -135,7 +135,7 @@ public class SubtaskController extends BaseController {
 				//根据参数生成日编子任务 subtask dailyBean
 				Subtask dailyBean = SubtaskService.getInstance().createSubtaskBean(userId,dataJson);
 				dailyBean.setName(selfRecordName);
-//				dailyBean.setIsQuality(0);
+				dailyBean.setIsQuality(0);
 				dailyBean.setStatus(2);
 				dailyBean.setStage(1);
 				//创建质检子任务 subtask	
@@ -309,13 +309,10 @@ public class SubtaskController extends BaseController {
 			}
 			
 			int subtaskId = dataJson.getInt("subtaskId");
-			int platForm = 1;
-			if(dataJson.containsKey("platForm")){
-				platForm = dataJson.getInt("platForm");
-			}
+
 //			Subtask bean = (Subtask)JSONObject.toBean(dataJson, Subtask.class);			
 //			Subtask subtask = SubtaskService.getInstance().query(bean);	
-			Subtask subtask = SubtaskService.getInstance().queryBySubtaskId(subtaskId,platForm);	
+			Subtask subtask = SubtaskService.getInstance().queryBySubtaskId(subtaskId);	
 			if(subtask!=null&&subtask.getSubtaskId()!=null){
 				SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
 				String qualityPlanStartDate = null;

@@ -1,8 +1,7 @@
 package com.navinfo.dataservice.engine.editplus.model.ad;
 
-import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.engine.editplus.model.AbstractLinkMesh;
-import com.navinfo.dataservice.engine.editplus.model.BasicRow;
+import com.navinfo.dataservice.engine.editplus.model.obj.ObjectType;
 
 /** 
  * @ClassName: AdLinkMesh
@@ -11,13 +10,15 @@ import com.navinfo.dataservice.engine.editplus.model.BasicRow;
  * @Description: AdLinkMesh.java
  */
 public class AdLinkMesh extends AbstractLinkMesh {
+
+	public AdLinkMesh(long objPid) {
+		super(objPid);
+		// TODO Auto-generated constructor stub
+	}
+
 	@Override
 	public String tableName() {
 		return "AD_LINK";
-	}
-	@Override
-	public ObjType objType() {
-		return ObjType.ADLINKMESH;
 	}
 
 }

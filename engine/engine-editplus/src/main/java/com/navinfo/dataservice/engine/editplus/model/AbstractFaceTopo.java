@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.editplus.model;
 
+import com.navinfo.dataservice.engine.editplus.glm.NonObjPidException;
 
 /** 
  * @ClassName: AbstractFaceTopo
@@ -8,6 +9,10 @@ package com.navinfo.dataservice.engine.editplus.model;
  * @Description: AbstractFaceTopo.java
  */
 public abstract class AbstractFaceTopo extends BasicRow {
+
+	public AbstractFaceTopo(long objPid) {
+		super(objPid);
+	}
 	protected long facePid;
 	protected int seqNum;
 	protected long linkPid;

@@ -18,12 +18,14 @@ public class DeepCoreControl {
 	public JSONObject getLogCount(Subtask subtask,int dbId) throws Exception {
 		
 		StringBuilder sb = new StringBuilder();
-		sb.append("SELECT (select count(1) from poi_deep_status p where p.row_id=i.row_id and p.type=1 and p.status=1 and p.handler is null) AS detail,");
-		sb.append(" (select count(1) from poi_deep_status p where p.row_id=i.row_id and p.type=2 and p.status=1 and p.handler is null) AS parking,");
-		sb.append(" (select count(1) from poi_deep_status p where p.row_id=i.row_id and p.type=3 and p.status=1 and p.handler is null) AS carrental,");
-		sb.append(" FROM ix_poi i");
-		sb.append(" WHERE sdo_within_distance(i.geometry, sdo_geometry(    :1  , 8307), 'mask=anyinteract') = 'TRUE' ");
+		sb.append("SELECT count(1) AS num,p.type");
+		sb.append(" FROM ix_poi i,poi_deep_status p");
+		sb.append(" WHERE sdo_within_distance(i.geometry, sdo_geometry(    :1  , 8307), 'mask=anyinteract') = 'TRUE'");
 		sb.append(" AND i.u_record!=2");
+		sb.append(" AND i.row_id=p.row_id ");
+		sb.append(" AND p.status=1");
+		sb.append(" AND p.handler is null");
+		sb.append(" GROUP BY p.type");
 		
 		Connection conn = null;
 		
@@ -46,10 +48,14 @@ public class DeepCoreControl {
 			
 			JSONObject resutlObj = new JSONObject();
 			
-			if (resultSet.next()) {
-				resutlObj.put("detail", resultSet.getInt("detail"));
-				resutlObj.put("parking", resultSet.getInt("parking"));
-				resutlObj.put("carrental", resultSet.getInt("carrental"));
+			while (resultSet.next()) {
+				if (resultSet.getInt("type")==1) {
+					resutlObj.put("detail", resultSet.getInt("num"));
+				} else if (resultSet.getInt("type")==2) {
+					resutlObj.put("parking", resultSet.getInt("num"));
+				} else if (resultSet.getInt("type")==3) {
+					resutlObj.put("carrental", resultSet.getInt("num"));
+				}
 			}
 			
 			logger.debug("result:"+resutlObj);

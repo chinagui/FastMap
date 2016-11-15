@@ -261,23 +261,6 @@ public class SubtaskService {
 			
 			//正常修改子任务
 			Subtask subtask = (Subtask)JsonOperation.jsonToBean(subtaskArray.getJSONObject(i),Subtask.class);	
-			
-			if(qualitySubtaskId==0 && qualityExeUserId != 0){//qualitySubtaskId=0，且qualityExeUserId非0的时候，表示要创建质检子任务
-				//subtaskArray.getJSONObject(i).discard("subtaskId");//删除subtaskId ,新建质检子任务
-				//Subtask qualitySubtask = (Subtask)JsonOperation.jsonToBean(subtaskArray.getJSONObject(i),Subtask.class);//生成质检子任务的bean
-				Subtask qualitySubtask = SubtaskService.getInstance().queryBySubtaskIdS(subtaskArray.getJSONObject(i).getInt("subtaskId"));
-				qualitySubtask.setName(qualitySubtask.getName()+"_质检");
-				qualitySubtask.setSubtaskId(null);
-				qualitySubtask.setPlanStartDate(new Timestamp(df.parse(qualityPlanStartDate).getTime()));
-				qualitySubtask.setPlanEndDate(new Timestamp(df.parse(qualityPlanEndDate).getTime()));
-				qualitySubtask.setIsQuality(1);//表示此bean是质检子任务
-				qualitySubtask.setExeUserId(qualityExeUserId);
-				//创建质检子任务 subtask	
-				Integer newQualitySubtaskId = SubtaskService.getInstance().createQualitySubtask(qualitySubtask);	
-				subtask.setIsQuality(0);
-				subtask.setQualitySubtaskId(newQualitySubtaskId);
-				qualitySubtaskId=qualitySubtaskId;
-			}
 			//创建或者修改常规任务时，均要调用修改质检任务的代码
 			if(qualitySubtaskId != 0){//非0的时候，表示要修改质检子任务
 				Subtask qualitySubtask = (Subtask)JsonOperation.jsonToBean(subtaskArray.getJSONObject(i),Subtask.class);//生成质检子任务的bean

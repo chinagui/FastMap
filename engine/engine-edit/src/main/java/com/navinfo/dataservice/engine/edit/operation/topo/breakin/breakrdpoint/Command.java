@@ -290,9 +290,6 @@ public class Command extends AbstractCommand {
 
 		this.setDbId(json.getInt("dbId"));
 
-		if (data.containsKey("breakNodePid")) {
-			this.breakNodePid = data.getInt("breakNodePid");
-		}
 		if (data.containsKey("breakNodes")) {
 			this.breakNodes = JSONArray.fromObject(data
 					.getJSONArray("breakNodes"));

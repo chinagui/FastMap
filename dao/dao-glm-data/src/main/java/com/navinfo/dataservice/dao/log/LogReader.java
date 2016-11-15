@@ -151,7 +151,7 @@ public class LogReader {
 	public boolean isUpdateforObjFeild(int objPid, String objTable, String tbNm, String Feild) throws Exception {
 
 		String sql = "SELECT de.row_id,de.op_id,de.tb_nm,de.old,de.new,de.fd_lst,de.op_tp,de.tb_row_id,op.op_dt FROM LOG_DETAIL de,LOG_OPERATION op "
-				+ "WHERE de.OP_ID=op.OP_ID AND de.OB_PID= :1 AND de.OB_NM= :2 AND de.TB_NM=:3 AND de.FD_LST=:4 ";
+				+ "WHERE de.OP_ID=op.OP_ID AND de.OB_PID= :1 AND de.OB_NM= :2 AND de.TB_NM=:3 AND instr(de.FD_LST,:4)>0  ";
 
 		PreparedStatement pstmt = null;
 
@@ -402,7 +402,7 @@ public class LogReader {
 	public static void main(String[] args) throws Exception {
 		Connection con = DriverManager.getConnection("jdbc:oracle:thin:@192.168.3.103:1521/orcl",
 				"fm260_region_16win_d_1", "fm260_region_16win_d_1");
-		int state = new LogReader(con).getObjectState(18165475, "IX_POI");
-		System.out.println(state);
+		boolean flag = new LogReader(con).isUpdateforObjFeild(79887714, "IX_POI","IX_POI","LEVEL");
+		System.out.println(flag);
 	}
 }

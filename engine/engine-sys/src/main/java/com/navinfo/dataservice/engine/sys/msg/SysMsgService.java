@@ -11,6 +11,7 @@ import java.util.Map;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.log4j.Logger;
+
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.StringUtils;
@@ -441,6 +442,154 @@ public class SysMsgService {
 		}
 	}
 	
+	/**
+	 * 查询未读管理消息列表
+	 * @author Han Shaoming
+	 * @param userId
+	 * @return
+	 * @throws ServiceException 
+	 */
+	public List<Map<String, Object>> getUnUnOperateMsg(long userId) throws ServiceException {
+		Connection conn = null;
+		QueryRunner queryRunner = null;
+		try{
+			//查询消息
+			conn =  MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
+			queryRunner = new QueryRunner();
+			String sql = "SELECT T.* FROM SYS_MESSAGE T WHERE NOT EXISTS(SELECT 1 FROM SYS_MESSAGE_READ_LOG L "
+					+ " WHERE T.MSG_ID=L.MSG_ID AND L.USER_ID=?) AND T.TARGET_USER_ID IN (0,?) "
+					+ " AND T.MSG_TYPE IN (2) ORDER BY CREATE_TIME DESC";
+			//日志
+			log.info("查询未读管理消息列表的sql:"+sql);
+			
+			Object[] params = {userId,userId};
+			ResultSetHandler<List<Map<String,Object>>> rsh = new ResultSetHandler<List<Map<String,Object>>>() {
+				
+				@Override
+				public List<Map<String, Object>> handle(ResultSet rs) throws SQLException {
+					// TODO Auto-generated method stub
+					List<Map<String,Object>> msgs = new ArrayList<Map<String,Object>>();
+					while(rs.next()){
+						Map<String,Object> msg = new HashMap<String, Object>();
+						msg.put("msgId",rs.getLong("MSG_ID"));
+						msg.put("msgContent",rs.getString("MSG_CONTENT"));
+						msg.put("createTime",rs.getTimestamp("CREATE_TIME"));
+						msg.put("type", "message");
+						msgs.add(msg);
+					}
+					return msgs;
+				}
+			};
+			List<Map<String, Object>> query = queryRunner.query(sql, rsh, params);
+			log.info("查询未审核消息列表:"+query.toString());
+			return query;
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * 全部消息查询列表
+	 * @author Han Shaoming
+	 * @param userId
+	 * @param condition
+	 * @return
+	 * @throws ServiceException 
+	 */
+	public List<SysMsg> getAllMsg(Long userId, String condition) throws ServiceException {
+		Connection conn = null;
+		QueryRunner queryRunner = null;
+		try{
+			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
+			queryRunner = new QueryRunner();
+			//日志
+			log.info("全部消息查询列表的筛选条件"+condition);
+			
+			JSONObject jo = JSONObject.fromObject(condition);
+			StringBuilder sql = new StringBuilder();
+			sql.append("SELECT T.* FROM SYS_MESSAGE T WHERE NOT EXISTS(SELECT 1 FROM SYS_MESSAGE_READ_LOG L "
+					+ "WHERE T.MSG_ID=L.MSG_ID AND L.USER_ID="+userId+" AND L.MSG_STATUS IN(2,3))   ");
+			//添加筛选条件
+			if(jo.get("msgType") != null){
+				if((Integer)jo.get("msgType") == 1){
+					//筛选系统消息+job消息
+					sql.append(" AND T.MSG_TYPE=1 ");
+				}else if((Integer)jo.get("msgType") == 2){
+					//筛选管理消息
+					sql.append(" AND T.MSG_TYPE=2");
+				}
+			}
+			if(jo.get("isHistory") != null){
+				if((Integer)jo.get("isHistory") == 1){
+					//筛选非历史消息
+					sql.append(" AND T.CREATE_TIME >= (SYSDATE-5) ");
+				}else if((Integer)jo.get("isHistory") == 2){
+					//筛选历史消息
+					sql.append(" AND T.CREATE_TIME < (SYSDATE-5) ");
+				}
+			}
+			sql.append(" AND T.TARGET_USER_ID IN (0,"+userId+") ");
+			String querySql = sql.append(" ORDER BY CREATE_TIME DESC").toString();
+			Object[] params = {};
+			//日志
+			log.info("全部消息查询列表的sql:"+sql.toString());
+			
+			List<SysMsg> msgs = queryRunner.query(conn, querySql, new MultiRowHandler(), params);
+			return msgs;
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * 删除消息查询列表
+	 * @author Han Shaoming
+	 * @param userId
+	 * @param pageNum
+	 * @param pageSize
+	 * @return
+	 * @throws ServiceException 
+	 */
+	public Page getDeleteMsgList(Long userId, int pageNum, int pageSize) throws ServiceException {
+		Connection conn = null;
+		QueryRunner queryRunner = null;
+		try{
+			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
+			queryRunner = new QueryRunner();
+			
+			String sql = "SELECT T.* FROM SYS_MESSAGE T WHERE EXISTS(SELECT 1 FROM SYS_MESSAGE_READ_LOG L "
+					+ " WHERE T.MSG_ID=L.MSG_ID AND L.USER_ID=? AND L.MSG_STATUS IN(2)) "
+					+ " AND T.TARGET_USER_ID IN (0,?)  ORDER BY CREATE_TIME DESC";
+			Object[] params = {userId,userId};
+			//日志
+			log.info("全部消息查询列表的sql:"+sql.toString());
+			
+			Page page = queryRunner.query(pageNum, pageSize, conn, sql, new MultiRowWithPageHandler(pageNum, pageSize), params);
+			//处理消息类型
+			List<SysMsg> msgs =  (List<SysMsg>) page.getResult();
+			for (SysMsg sysMsg : msgs) {
+				if(sysMsg.getMsgType() == 0){
+					sysMsg.setMsgType(1L);
+				}
+			}
+			page.setResult(msgs);
+			return page;
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
 	
 	/* resultset handler */
 	class MultiRowHandler implements ResultSetHandler<List<SysMsg>>{
@@ -546,6 +695,9 @@ public class SysMsgService {
 		}
 		
 	}
+	
+	
+	
 	
 	
 }

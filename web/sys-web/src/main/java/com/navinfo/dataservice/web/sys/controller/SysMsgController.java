@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.web.sys.controller;
 
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -251,6 +252,98 @@ public class SysMsgController extends BaseController {
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}
+	
+	/**
+	 * 查询未读管理消息列表
+	 * 消息中心-服务消息（全部角色）
+	 * 返回targetUserId等于当前用户的（即接收人是当前用户）所有未读消息列表和总数
+	 * @author Han Shaoming
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/apply/listUnOperate")
+	public ModelAndView getUnAuditapply(HttpServletRequest request){
+		try{
+			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			long userId = tokenObj.getUserId();
+			List<Map<String, Object>> msg = SysMsgService.getInstance().getUnUnOperateMsg(userId);
+			return new ModelAndView("jsonView", success(msg));
+		}catch(Exception e){
+			log.error("查询失败，原因："+e.getMessage(), e);
+			return new ModelAndView("jsonView",exception(e));
+		}
+	}
+	
+	/**
+	 * 全部消息查询列表
+	 * 编辑平台-消息中心
+	 * 根据传参查询接收人targetUserId=登陆用户的非删除消息列表，不分页
+	 * @author Han Shaoming
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/sysmsg/listAll")
+	public ModelAndView getAllMsg(HttpServletRequest request){
+		try{
+			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			Long userId = tokenObj.getUserId();
+			String parameter = request.getParameter("parameter");
+			if (StringUtils.isEmpty(parameter)) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			JSONObject paraJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if (paraJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			if(!paraJson.containsKey("condition")){
+				throw new IllegalArgumentException("parameter参数中condition不能为空。");
+			}
+			String condition = paraJson.getString("condition");
+			List<SysMsg> msgs = SysMsgService.getInstance().getAllMsg(userId,condition);
+			return new ModelAndView("jsonView", success(msgs));
+		}catch(Exception e){
+			log.error("查询失败，原因："+e.getMessage(), e);
+			return new ModelAndView("jsonView",exception(e));
+		}
+	}
+	
+	/**
+	 * 删除消息查询列表
+	 * 编辑平台-消息中心-历史消息
+	 * 查询接收人targetUserId=登陆用户的删除消息列表，分页
+	 * @author Han Shaoming
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/sysmsg/listHistory")
+	public ModelAndView getDeleteMsgList(HttpServletRequest request){
+		try{
+			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			Long userId = tokenObj.getUserId();
+			String parameter = request.getParameter("parameter");
+			if (StringUtils.isEmpty(parameter)) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			JSONObject paraJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if (paraJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			if(!paraJson.containsKey("pageNum")){
+				throw new IllegalArgumentException("parameter参数中pageNum不能为空。");
+			}
+			if(!paraJson.containsKey("pageSize")){
+				throw new IllegalArgumentException("parameter参数中pageSize不能为空。");
+			}
+			int pageNum = paraJson.getInt("pageNum");
+			int pageSize = paraJson.getInt("pageSize");
+			Page page = SysMsgService.getInstance().getDeleteMsgList(userId,pageNum,pageSize);
+			return new ModelAndView("jsonView", success(page));
+		}catch(Exception e){
+			log.error("查询失败，原因："+e.getMessage(), e);
+			return new ModelAndView("jsonView",exception(e));
+		}
+	}
+	
 	
 	/**
 	 * 测试发消息的临时接口

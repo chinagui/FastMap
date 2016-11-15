@@ -616,7 +616,7 @@ public class MessageService {
 				queryRunner.update(conn, applyDetailSql, applyDetailParams);
 			}
 			//更改状态
-			this.updateStatus(applyId, applyStatus);
+			this.updateStatus(applyId, applyStatus,userId);
 			//保存数据到application_timeLine表
 			String content = null;
 			if(applyStatus == 2){
@@ -635,6 +635,57 @@ public class MessageService {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new ServiceException("修改失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * 查询未审核消息列表
+	 * @author Han Shaoming
+	 * @param userId
+	 * @param paraJson
+	 * @return
+	 * @throws ServiceException 
+	 */
+	public List<Map<String, Object>> getUnAuditapply(long userId) throws ServiceException {
+		// TODO Auto-generated method stub
+		Connection conn = null;
+		QueryRunner queryRunner = null;
+		try{
+			//查询消息
+			conn = DBConnector.getInstance().getManConnection();
+			queryRunner = new QueryRunner();
+			String sql = "SELECT A.* FROM APPLICATION A WHERE A.APPLY_STATUS = 2 AND A.AUDITOR=?";
+			
+			//日志
+			log.info("查询未审核消息列表的sql:"+sql);
+			
+			Object[] params = {userId};
+			ResultSetHandler<List<Map<String,Object>>> rsh = new ResultSetHandler<List<Map<String,Object>>>() {
+				
+				@Override
+				public List<Map<String, Object>> handle(ResultSet rs) throws SQLException {
+					// TODO Auto-generated method stub
+					List<Map<String,Object>> msgs = new ArrayList<Map<String,Object>>();
+					while(rs.next()){
+						Map<String,Object> msg = new HashMap<String, Object>();
+						msg.put("applyId",rs.getLong("APPLY_ID"));
+						msg.put("applyTitle",rs.getString("APPLY_TITLE"));
+						msg.put("operateTime",rs.getTimestamp("OPERATE_TIME"));
+						msg.put("type", "application");
+						msgs.add(msg);
+					}
+					return msgs;
+				}
+			};
+			List<Map<String, Object>> query = queryRunner.query(sql, rsh, params);
+			log.info("查询未审核消息列表:"+query.toString());
+			return query;
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询失败，原因为:"+e.getMessage(),e);
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
 		}
@@ -776,13 +827,13 @@ public class MessageService {
 	 * @param applyStatus
 	 * @throws ServiceException
 	 */
-	public void updateStatus(long applyId,long applyStatus)throws ServiceException{
+	public void updateStatus(long applyId,long applyStatus,long userId)throws ServiceException{
 		Connection sysConn = null;
 		try{
 			QueryRunner queryRunner = new QueryRunner();
 			sysConn = DBConnector.getInstance().getManConnection();
 			//更改状态
-			String updateSql = "UPDATE APPLICATION SET APPLY_STATUS=? WHERE APPLY_ID=?";
+			String updateSql = "UPDATE APPLICATION SET APPLY_STATUS=? ,OPERATOR=?,OPERATE_TIME=SYSDATE WHERE APPLY_ID=?";
 			Object[] updateParams={applyStatus,applyId};
 			queryRunner.update(sysConn, updateSql, updateParams);
 		}catch(Exception e){
@@ -871,6 +922,8 @@ public class MessageService {
 			return page;
 		}
 	}
+
+	
 
 	
 

@@ -72,5 +72,21 @@ public class SysMsgPublisher {
 			}
 		}
 	}
+	
+	/**
+	 * 发送申请消息到消息队列
+	 * @author Han Shaoming
+	 * @param message
+	 * @throws Exception
+	 */
+	public static void publishApplyMsg(String applyMessage,long userId) throws Exception{
+		JSONObject applyMsg = new JSONObject();
+		applyMsg.put("userId", userId);
+		applyMsg.put("applyMessage", applyMessage);
+		//发送申请消息
+		MsgPublisher.publish2WorkQueue("apply_personal_msg", applyMsg.toString());
+	}
+	
+	
 
 }

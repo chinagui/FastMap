@@ -304,6 +304,7 @@ public class TaskService {
 	 * 2.分配的月编作业组组长
 	 * 任务:XXX(任务名称)内容发生变更，请关注*/
 	public void taskPushMsg(Connection conn,String msgTitle,List<Map<String, Object>> msgContentList, List<Long> groupIdList, long pushUser) throws Exception {
+		//查询所有生管角色
 		String userSql="SELECT DISTINCT M.USER_ID FROM ROLE_USER_MAPPING M WHERE M.ROLE_ID =3";
 		List<Integer> userIdList=UserInfoOperation.getUserListBySql(conn, userSql);
 		//查询分配的作业组组长

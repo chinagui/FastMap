@@ -21,7 +21,14 @@ import net.sf.json.JSONObject;
 public class DeepController extends BaseController {
 	private static final Logger logger = Logger.getLogger(DeepController.class);
 	
-	
+	/**
+	 * 深度信息库存统计接口
+	 * 
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException
+	 */
 	@RequestMapping(value = "/poi/deep/queryKcLog")
 	public ModelAndView getLogCount(HttpServletRequest request) throws ServletException, IOException {
 		

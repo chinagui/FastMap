@@ -642,7 +642,8 @@ public class MessageService {
 				List<Map<String, Object>> list = queryRunner.query(conn, querySql, new ApplyMsgWithHandler(), queryParams);
 				for (Map<String, Object> map : list) {
 					if((Long)map.get("auditor") !=null){
-						SysMsgPublisher.publishApplyMsg(map.toString(), (long) map.get("auditor"));
+						String msg = JSONObject.fromObject(map).toString();
+						SysMsgPublisher.publishApplyMsg(msg, (long) map.get("auditor"));
 					}
 				}
 			} catch (Exception e) {

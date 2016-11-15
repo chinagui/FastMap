@@ -5,6 +5,7 @@ import org.springframework.context.event.ContextRefreshedEvent;
 
 import com.navinfo.dataservice.dao.mq.sys.SysMsgSubscriber;
 import com.navinfo.dataservice.dao.mq.sys.SysMsgType;
+import com.navinfo.dataservice.engine.sys.msg.handle.ApplyMsgHandler;
 import com.navinfo.dataservice.engine.sys.msg.handle.SysMsgHandler;
 
 /**
@@ -45,6 +46,17 @@ public class StartupListener implements ApplicationListener<ContextRefreshedEven
 				public void run(){
 					try{
 						SysMsgSubscriber.subscribeMsg(SysMsgType.MSG_GROUP_JOB, new SysMsgHandler(), null);
+					}catch(Exception e){
+						System.out.println(e.getMessage());
+						e.printStackTrace();
+					}
+				}
+			}.start();
+			new Thread(){
+				@Override
+				public void run(){
+					try{
+						SysMsgSubscriber.subscribeMsg(SysMsgType.MSG_PERSONAL_APPLY, new ApplyMsgHandler(), null);
 					}catch(Exception e){
 						System.out.println(e.getMessage());
 						e.printStackTrace();

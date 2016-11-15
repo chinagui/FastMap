@@ -546,33 +546,34 @@ public class UserInfoOperation {
 	 */
 	public static List<Long> getLeaderIdByGroupId(Connection conn, List<Long> groupIdList) throws Exception {
 		// TODO Auto-generated method stub
+		List<Long> leaderIdList = null;
 		try{
-			QueryRunner run = new QueryRunner();
 			// 查询用户所在组组长id
-			String querySql = "SELECT DISTINCT U.LEADER_ID FROM USER_GROUP U WHERE 1=1 ";
-			JSONArray json = new JSONArray();
 			if(groupIdList !=null && groupIdList.size()>0){
+				QueryRunner run = new QueryRunner();
+				String querySql = "SELECT DISTINCT U.LEADER_ID FROM USER_GROUP U WHERE 1=1 ";
+				JSONArray json = new JSONArray();
 				for (int i=0;i<groupIdList.size();i++) {
 					if(groupIdList.get(i) !=null){
 						json.add(groupIdList.get(i));
 					}
 				}
-			}
-			String condition = "AND U.GROUP_ID IN("+json.join(",")+")";
-			String sql = querySql + condition;
-			
-			ResultSetHandler<List<Long>> rsh = new ResultSetHandler<List<Long>>() {
-				@Override
-				public List<Long> handle(ResultSet rs) throws SQLException {
-					// TODO Auto-generated method stub
-					List<Long> leaderIdList = new ArrayList<Long>();
-					while(rs.next()){
-						leaderIdList.add(rs.getLong("LEADER_ID"));
+				String condition = "AND U.GROUP_ID IN("+json.join(",")+")";
+				String sql = querySql + condition;
+				ResultSetHandler<List<Long>> rsh = new ResultSetHandler<List<Long>>() {
+					@Override
+					public List<Long> handle(ResultSet rs) throws SQLException {
+						// TODO Auto-generated method stub
+						List<Long> leaderIdList = new ArrayList<Long>();
+						while(rs.next()){
+							leaderIdList.add(rs.getLong("LEADER_ID"));
+						}
+						return leaderIdList;
 					}
-					return leaderIdList;
-				}
-			};
-			List<Long> leaderIdList = run.query(conn, sql, rsh);
+				};
+				leaderIdList = run.query(conn, sql, rsh);
+			}
+			
 			return leaderIdList;
 		}catch(Exception e){
 			log.error(e.getMessage(), e);

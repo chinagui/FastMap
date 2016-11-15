@@ -20,6 +20,10 @@ public class SysMsgType {
 	 * 发给一组人
 	 */
 	public static final String MSG_GROUP_JOB="group_msg";
+	/**
+	 * 发给个人申请消息
+	 */
+	public static final String MSG_PERSONAL_APPLY="apply_personal_msg";
 	
 
 }

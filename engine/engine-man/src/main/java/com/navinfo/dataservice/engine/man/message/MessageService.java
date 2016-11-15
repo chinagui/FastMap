@@ -18,6 +18,7 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.xinge.XingeUtil;
+import com.navinfo.dataservice.dao.mq.sys.SysMsgPublisher;
 import com.navinfo.dataservice.engine.man.userDevice.UserDeviceService;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -616,7 +617,7 @@ public class MessageService {
 				queryRunner.update(conn, applyDetailSql, applyDetailParams);
 			}
 			//更改状态
-			this.updateStatus(applyId, applyStatus);
+			this.updateStatus(applyId, applyStatus,userId);
 			//保存数据到application_timeLine表
 			String content = null;
 			if(applyStatus == 2){
@@ -630,11 +631,83 @@ public class MessageService {
 				content = "审核不通过,原因为:"+auditReason;
 			}
 			this.createApplyTimeLine(userId,applyId,content);
+			
+			//发送申请数据到消息队列
+			try {
+				queryRunner = new QueryRunner();
+				//更改状态
+				String querySql = "SELECT A.*,U.USER_REAL_NAME FROM APPLICATION A ,USER_INFO U "
+						+ "WHERE A.OPERATOR=U.USER_ID AND APPLY_ID=?";
+				Object[] queryParams={applyId};
+				List<Map<String, Object>> list = queryRunner.query(conn, querySql, new ApplyMsgWithHandler(), queryParams);
+				for (Map<String, Object> map : list) {
+					if((Long)map.get("auditor") !=null){
+						String msg = JSONObject.fromObject(map).toString();
+						SysMsgPublisher.publishApplyMsg(msg, (long) map.get("auditor"));
+					}
+				}
+			} catch (Exception e) {
+				// TODO: handle exception
+				e.printStackTrace();
+				log.error("发送申请数据到消息队列失败,原因为:"+e.getMessage(), e);
+			}
+			
 			return "修改申请状态成功";
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new ServiceException("修改失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * 查询未审核消息列表
+	 * @author Han Shaoming
+	 * @param userId
+	 * @param paraJson
+	 * @return
+	 * @throws ServiceException 
+	 */
+	public List<Map<String, Object>> getUnAuditapply(long userId) throws ServiceException {
+		// TODO Auto-generated method stub
+		Connection conn = null;
+		QueryRunner queryRunner = null;
+		try{
+			//查询消息
+			conn = DBConnector.getInstance().getManConnection();
+			queryRunner = new QueryRunner();
+			String sql = "SELECT A.* FROM APPLICATION A WHERE A.APPLY_STATUS = 2 AND A.AUDITOR=?";
+			
+			//日志
+			log.info("查询未审核消息列表的sql:"+sql);
+			
+			Object[] params = {userId};
+			ResultSetHandler<List<Map<String,Object>>> rsh = new ResultSetHandler<List<Map<String,Object>>>() {
+				
+				@Override
+				public List<Map<String, Object>> handle(ResultSet rs) throws SQLException {
+					// TODO Auto-generated method stub
+					List<Map<String,Object>> msgs = new ArrayList<Map<String,Object>>();
+					while(rs.next()){
+						Map<String,Object> msg = new HashMap<String, Object>();
+						msg.put("applyId",rs.getLong("APPLY_ID"));
+						msg.put("applyTitle",rs.getString("APPLY_TITLE"));
+						msg.put("operateTime",rs.getTimestamp("OPERATE_TIME"));
+						msg.put("type", "application");
+						msgs.add(msg);
+					}
+					return msgs;
+				}
+			};
+			List<Map<String, Object>> query = queryRunner.query(conn, sql, rsh, params);
+			log.info("查询未审核消息列表:"+query.toString());
+			return query;
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询失败，原因为:"+e.getMessage(),e);
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
 		}
@@ -776,14 +849,14 @@ public class MessageService {
 	 * @param applyStatus
 	 * @throws ServiceException
 	 */
-	public void updateStatus(long applyId,long applyStatus)throws ServiceException{
+	public void updateStatus(long applyId,long applyStatus,long userId)throws ServiceException{
 		Connection sysConn = null;
 		try{
 			QueryRunner queryRunner = new QueryRunner();
 			sysConn = DBConnector.getInstance().getManConnection();
 			//更改状态
-			String updateSql = "UPDATE APPLICATION SET APPLY_STATUS=? WHERE APPLY_ID=?";
-			Object[] updateParams={applyStatus,applyId};
+			String updateSql = "UPDATE APPLICATION SET APPLY_STATUS=? ,OPERATOR=?,OPERATE_TIME=SYSDATE WHERE APPLY_ID=?";
+			Object[] updateParams={applyStatus,userId,applyId};
 			queryRunner.update(sysConn, updateSql, updateParams);
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(sysConn);
@@ -872,6 +945,32 @@ public class MessageService {
 		}
 	}
 
+	/**
+	 * 
+	 * @ClassName ApplyMsgWithHandler
+	 * @author Han Shaoming
+	 * @date 2016年11月15日 下午7:42:37
+	 * @Description TODO
+	 */
+	class ApplyMsgWithHandler implements ResultSetHandler<List<Map<String,Object>>>{
+		public List<Map<String,Object>> handle(ResultSet rs) throws SQLException {
+			List<Map<String,Object>> msgs = new ArrayList<Map<String,Object>>();
+			while(rs.next()){
+				Map<String,Object> msg = new HashMap<String, Object>();
+				msg.put("applyId",rs.getLong("APPLY_ID"));
+				msg.put("applyTitle",rs.getString("APPLY_TITLE"));
+				msg.put("applyType",rs.getLong("APPLY_TYPE"));
+				msg.put("applyStatus",rs.getLong("APPLY_STATUS"));
+				msg.put("operateTime",rs.getTimestamp("OPERATE_TIME"));
+				msg.put("operator",rs.getLong("OPERATOR"));
+				msg.put("operatorUserName",rs.getString("USER_REAL_NAME"));
+				msg.put("auditor",rs.getLong("AUDITOR"));
+				msg.put("type","application");
+				msgs.add(msg);
+			}
+			return msgs;
+		}
+	}
 	
 
 	

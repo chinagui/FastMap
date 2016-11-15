@@ -2054,5 +2054,41 @@ public class TaskOperation {
 		}
 	}
 	
+	/**
+	 * 通过cityId查询task
+	 * @author Han Shaoming
+	 * @param conn
+	 * @param cityId
+	 * @param taskStatus
+	 * @return
+	 * @throws Exception
+	 */
+	public static List<Map<String, Object>> getTaskByCityId(Connection conn,long cityId,long taskStatus) throws Exception{
+		try{
+			QueryRunner run = new QueryRunner();
+			String querySql="SELECT TASK_ID,CITY_ID,MONTH_EDIT_GROUP_ID FROM TASK WHERE CITY_ID=? AND TASK_TYPE=?";
+			Object[] params = {cityId,taskStatus};		
+			ResultSetHandler<List<Map<String, Object>>> rsh = new ResultSetHandler<List<Map<String, Object>>>() {
+				@Override
+				public List<Map<String, Object>> handle(ResultSet rs) throws SQLException {
+					// TODO Auto-generated method stub
+					List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
+					while(rs.next()){
+						Map<String, Object> map = new HashMap<String, Object>();
+						map.put("taskId", rs.getLong("TASK_ID"));
+						map.put("cityId", rs.getLong("CITY_ID"));
+						map.put("monthEditGroupId", rs.getLong("MONTH_EDIT_GROUP_ID"));
+						list.add(map);
+					}
+					return list;
+				}
+			};
+			List<Map<String, Object>> taskList = run.query(conn, querySql, params, rsh);
+			return taskList;			
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}
+	}
 	
 }

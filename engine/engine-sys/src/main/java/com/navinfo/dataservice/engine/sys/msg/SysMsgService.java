@@ -255,37 +255,37 @@ public class SysMsgService {
 			//拼接sql语句
 			JSONObject jo = JSONObject.fromObject(condition);
 			StringBuilder sql = new StringBuilder();
-			sql.append("SELECT T.* FROM SYS_MESSAGE T ");
+			sql.append("SELECT M.* FROM(SELECT T.*,R.USER_ID,R.READ_TYPE,NVL(R.MSG_STATUS,0) MSG_STATUS "
+					+ "FROM SYS_MESSAGE T,SYS_MESSAGE_READ_LOG R WHERE T.MSG_ID = R.MSG_ID(+)) M WHERE 1=1 AND ");
 			//添加筛选条件
 			if(jo.get("msgStatus") != null){
 				if((Integer)jo.get("msgStatus") == 0){
 					//筛选未读消息
-					sql.append(" WHERE NOT EXISTS(SELECT 1 FROM SYS_MESSAGE_READ_LOG L WHERE 1=1 ");
+					sql.append(" M.MSG_STATUS IN (0) ");
 				}else if((Integer)jo.get("msgStatus") == 1){
 					//筛选已读消息
-					sql.append(" WHERE EXISTS(SELECT 1 FROM SYS_MESSAGE_READ_LOG L WHERE L.MSG_STATUS IN (1)");
+					sql.append(" M.MSG_STATUS IN (1)");
 				}else if((Integer)jo.get("msgStatus") == 2){
 					//筛选删除消息
-					sql.append(" WHERE EXISTS(SELECT 1 FROM SYS_MESSAGE_READ_LOG L WHERE L.MSG_STATUS IN (2)");
+					sql.append(" M.MSG_STATUS IN (2)");
 				}
 			}else{
-				sql.append(" WHERE NOT EXISTS(SELECT 1 FROM SYS_MESSAGE_READ_LOG L WHERE L.MSG_STATUS IN (2)");
+				sql.append(" M.MSG_STATUS IN (0,1)");
 			}
-			sql.append(" AND T.MSG_ID=L.MSG_ID AND L.USER_ID="+userId+") ");
 			//添加搜索条件
 			if(StringUtils.isNotEmpty((String) jo.get("pushUserName"))){
 				//模糊搜索处理人
-				sql.append(" AND T.PUSH_USER_NAME LIKE '%"+jo.get("pushUserName")+"%'");
+				sql.append(" AND M.PUSH_USER_NAME LIKE '%"+jo.get("pushUserName")+"%'");
 			}
 			if(StringUtils.isNotEmpty((String)jo.get("msgContent") )){
 				//模糊搜索标题内容
-				sql.append(" AND T.MSG_CONTENT LIKE '%"+jo.get("msgContent")+"%'");
+				sql.append(" AND M.MSG_CONTENT LIKE '%"+jo.get("msgContent")+"%'");
 			}
 			if(StringUtils.isNotEmpty((String)jo.get("msgTitle") )){
 				//精确搜索事件
-				sql.append(" AND T.MSG_TITLE='"+jo.get("msgTitle")+"'");
+				sql.append(" AND M.MSG_TITLE='"+jo.get("msgTitle")+"'");
 			}
-			sql.append(" AND T.TARGET_USER_ID IN (0,"+userId+") AND T.MSG_TYPE=2 ");
+			sql.append(" AND M.TARGET_USER_ID IN (0,"+userId+") AND M.MSG_TYPE=2 ");
 			String querySql = sql.append(" ORDER BY CREATE_TIME DESC").toString();
 			Object[] params = {};
 			//日志
@@ -480,8 +480,8 @@ public class SysMsgService {
 					return msgs;
 				}
 			};
-			List<Map<String, Object>> query = queryRunner.query(sql, rsh, params);
-			log.info("查询未审核消息列表:"+query.toString());
+			List<Map<String, Object>> query = queryRunner.query(conn, sql, rsh, params);
+			log.info("查询未读管理消息列表:"+query.toString());
 			return query;
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -500,7 +500,7 @@ public class SysMsgService {
 	 * @return
 	 * @throws ServiceException 
 	 */
-	public List<SysMsg> getAllMsg(Long userId, String condition) throws ServiceException {
+	public List<Map<String, Object>> getAllMsg(Long userId, String condition) throws ServiceException {
 		Connection conn = null;
 		QueryRunner queryRunner = null;
 		try{
@@ -511,34 +511,35 @@ public class SysMsgService {
 			
 			JSONObject jo = JSONObject.fromObject(condition);
 			StringBuilder sql = new StringBuilder();
-			sql.append("SELECT T.* FROM SYS_MESSAGE T WHERE NOT EXISTS(SELECT 1 FROM SYS_MESSAGE_READ_LOG L "
-					+ "WHERE T.MSG_ID=L.MSG_ID AND L.USER_ID="+userId+" AND L.MSG_STATUS IN(2,3))   ");
+			sql.append("SELECT M.* FROM(SELECT T.*,R.USER_ID,R.READ_TYPE,NVL(R.MSG_STATUS,0) MSG_STATUS "
+					+ "FROM SYS_MESSAGE T,SYS_MESSAGE_READ_LOG R WHERE T.MSG_ID = R.MSG_ID(+)) M "
+					+ "WHERE M.MSG_STATUS IN (0,1) ");
 			//添加筛选条件
 			if(jo.get("msgType") != null){
 				if((Integer)jo.get("msgType") == 1){
 					//筛选系统消息+job消息
-					sql.append(" AND T.MSG_TYPE=1 ");
+					sql.append(" AND M.MSG_TYPE IN (0,1) ");
 				}else if((Integer)jo.get("msgType") == 2){
 					//筛选管理消息
-					sql.append(" AND T.MSG_TYPE=2");
+					sql.append(" AND M.MSG_TYPE=2 ");
 				}
 			}
 			if(jo.get("isHistory") != null){
 				if((Integer)jo.get("isHistory") == 1){
 					//筛选非历史消息
-					sql.append(" AND T.CREATE_TIME >= (SYSDATE-5) ");
+					sql.append(" AND M.CREATE_TIME >= (SYSDATE-5) ");
 				}else if((Integer)jo.get("isHistory") == 2){
 					//筛选历史消息
-					sql.append(" AND T.CREATE_TIME < (SYSDATE-5) ");
+					sql.append(" AND M.CREATE_TIME < (SYSDATE-5) ");
 				}
 			}
-			sql.append(" AND T.TARGET_USER_ID IN (0,"+userId+") ");
+			sql.append(" AND M.TARGET_USER_ID IN (0,"+userId+") ");
 			String querySql = sql.append(" ORDER BY CREATE_TIME DESC").toString();
 			Object[] params = {};
 			//日志
 			log.info("全部消息查询列表的sql:"+sql.toString());
 			
-			List<SysMsg> msgs = queryRunner.query(conn, querySql, new MultiRowHandler(), params);
+			List<Map<String, Object>> msgs = queryRunner.query(conn, querySql, new MsgWithHandler(), params);
 			return msgs;
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -684,6 +685,7 @@ public class SysMsgService {
 				msg.put("relateObject",relateObject);
 				msg.put("relateObjectId",relateObjectId);
 				msg.put("pushUserName",rs.getString("PUSH_USER_NAME"));
+				msg.put("msgStatus",rs.getLong("MSG_STATUS"));
 				msgs.add(msg);
 				if(total==0){
 					total=rs.getInt("TOTAL_RECORD_NUM_");
@@ -696,7 +698,35 @@ public class SysMsgService {
 		
 	}
 	
-	
+	/**
+	 * 
+	 * @ClassName MsgWithHandler
+	 * @author Han Shaoming
+	 * @date 2016年11月15日 下午3:35:23
+	 * @Description TODO
+	 */
+	class MsgWithHandler implements ResultSetHandler<List<Map<String,Object>>>{
+		
+		public List<Map<String,Object>> handle(ResultSet rs) throws SQLException {
+			List<Map<String,Object>> msgs = new ArrayList<Map<String,Object>>();
+			while(rs.next()){
+				Map<String,Object> msg = new HashMap<String, Object>();
+				msg.put("msgId",rs.getLong("MSG_ID"));
+				msg.put("msgType",rs.getInt("MSG_TYPE"));
+				msg.put("msgContent",rs.getString("MSG_CONTENT"));
+				msg.put("createTime",rs.getTimestamp("CREATE_TIME"));
+				msg.put("targetUserId",rs.getLong("TARGET_USER_ID"));
+				msg.put("msgTitle",rs.getString("MSG_TITLE"));
+				msg.put("pushUserId",rs.getLong("PUSH_USER_ID"));
+				msg.put("msgParam",rs.getString("MSG_PARAM"));
+				msg.put("pushUserName",rs.getString("PUSH_USER_NAME"));
+				msg.put("msgStatus",rs.getLong("MSG_STATUS"));
+				msgs.add(msg);
+			}
+			return msgs;
+		}
+		
+	}
 	
 	
 	

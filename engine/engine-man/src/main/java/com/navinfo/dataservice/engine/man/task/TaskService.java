@@ -194,7 +194,7 @@ public class TaskService {
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
-			throw new Exception("发布失败，原因为:"+e.getMessage(),e);
+			throw new Exception("任务发布消息发送失败，原因为:"+e.getMessage(),e);
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
 		}
@@ -287,7 +287,7 @@ public class TaskService {
 			} catch (Exception e) {
 				// TODO: handle exception
 				e.printStackTrace();
-				log.error("发送失败,原因:"+e.getMessage(), e);
+				log.error("任务编辑消息发送失败,原因:"+e.getMessage(), e);
 			}
 			return "任务批量修改"+total+"个成功，0个失败";
 		}catch(Exception e){
@@ -564,7 +564,7 @@ public class TaskService {
 				} catch (Exception e) {
 					// TODO: handle exception
 					e.printStackTrace();
-					log.error("发送失败,原因:"+e.getMessage(), e);
+					log.error("任务关闭消息发送失败,原因:"+e.getMessage(), e);
 				}
 			}
 	    	return newTask;

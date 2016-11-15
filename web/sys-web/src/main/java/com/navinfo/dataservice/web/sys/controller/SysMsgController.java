@@ -261,7 +261,7 @@ public class SysMsgController extends BaseController {
 	 * @param request
 	 * @return
 	 */
-	@RequestMapping(value = "/apply/listUnOperate")
+	@RequestMapping(value = "/message/listUnOperate")
 	public ModelAndView getUnAuditapply(HttpServletRequest request){
 		try{
 			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
@@ -299,7 +299,7 @@ public class SysMsgController extends BaseController {
 				throw new IllegalArgumentException("parameter参数中condition不能为空。");
 			}
 			String condition = paraJson.getString("condition");
-			List<SysMsg> msgs = SysMsgService.getInstance().getAllMsg(userId,condition);
+			List<Map<String, Object>> msgs = SysMsgService.getInstance().getAllMsg(userId,condition);
 			return new ModelAndView("jsonView", success(msgs));
 		}catch(Exception e){
 			log.error("查询失败，原因："+e.getMessage(), e);

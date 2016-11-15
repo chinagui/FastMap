@@ -2075,9 +2075,9 @@ public class TaskOperation {
 					List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
 					while(rs.next()){
 						Map<String, Object> map = new HashMap<String, Object>();
-						map.put("taskId", rs.getInt("TASK_ID"));
-						map.put("cityId", rs.getInt("CITY_ID"));
-						map.put("monthEditGroupId", rs.getInt("MONTH_EDIT_GROUP_ID"));
+						map.put("taskId", rs.getLong("TASK_ID"));
+						map.put("cityId", rs.getLong("CITY_ID"));
+						map.put("monthEditGroupId", rs.getLong("MONTH_EDIT_GROUP_ID"));
 						list.add(map);
 					}
 					return list;

@@ -202,7 +202,7 @@ public class BlockService {
 			} catch (Exception e) {
 				// TODO: handle exception
 				e.printStackTrace();
-				log.error("发送失败,原因:"+e.getMessage(), e);
+				log.error("block编辑消息发送失败,原因:"+e.getMessage(), e);
 			}
 			
 			return updateCount;
@@ -558,7 +558,7 @@ public class BlockService {
 			} catch (Exception e) {
 				// TODO: handle exception
 				e.printStackTrace();
-				log.error("发送失败,原因:"+e.getMessage(), e);
+				log.error("block关闭消息发送失败,原因:"+e.getMessage(), e);
 			}
 			
 			return unClosedBlocks;
@@ -972,7 +972,7 @@ public class BlockService {
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
-			throw new Exception("发布失败，原因为:" + e.getMessage(), e);
+			throw new Exception("新增block消息发送失败，原因为:" + e.getMessage(), e);
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}

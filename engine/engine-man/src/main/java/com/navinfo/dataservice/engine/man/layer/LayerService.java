@@ -59,6 +59,7 @@ public class LayerService {
 		Connection conn = null;
 		QueryRunner queryRunner = null;
 		Long id = null;
+		Long cityId = null;
 		try{
 			conn = DBConnector.getInstance().getManConnection();
 			queryRunner = new QueryRunner();
@@ -66,10 +67,13 @@ public class LayerService {
 			String idSql = "SELECT CUSTOMISED_LAYER_SEQ.NEXTVAL FROM DUAL";
 			Object[] idParams = {};
 			id = queryRunner.queryForLong(conn, idSql, idParams);
-			
+			//获取cityId
+			String cityIdSql = "SELECT C.CITY_ID FROM CITY C WHERE SDO_CONTAINS(C.GEOMETRY,sdo_geometry('"+wkt+"',8307))='TRUE' AND ROWNUM=1";
+			Object[] cityIdParams = {};
+			cityId = queryRunner.queryForLong(conn, cityIdSql, cityIdParams);
+					
 			String createSql = "insert into customised_layer (LAYER_ID, LAYER_NAME,GEOMETRY, CREATE_USER_ID, CREATE_DATE,STATUS,CITY_ID) "
-					+ "values("+id+",'"+layerName+"',sdo_geometry('"+wkt+"',8307),"+userId+",sysdate,1, "
-							+ "(SELECT C.CITY_ID FROM CITY C WHERE SDO_CONTAINS(C.GEOMETRY,sdo_geometry('"+wkt+"',8307))='TRUE' AND ROWNUM=1))";
+					+ "values("+id+",'"+layerName+"',sdo_geometry('"+wkt+"',8307),"+userId+",sysdate,1, "+cityId+")";
 			//log日志
 			log.info("创建重点区块的sql:"+createSql);
 			DbOperation.exeUpdateOrInsertBySql(conn, createSql);
@@ -80,6 +84,7 @@ public class LayerService {
 			 *2.重点区块所在城市的作业组组长(采集、日编、月编)
 			 *新增重点区块:XXX(任务名称),请关注*/
 			try {
+				
 				List<Map<String,Object>> msgContentList=new ArrayList<Map<String,Object>>();
 				List<Long> groupIdList = new ArrayList<Long>();
 				Map<String,Object> map = new HashMap<String, Object>();
@@ -92,8 +97,12 @@ public class LayerService {
 				msgParam.put("relateObjectId", id);
 				map.put("msgParam", msgParam.toString());
 				msgContentList.add(map);
+				
 				//根据cityId查询task数据
-				List<Map<String, Object>> taskList = TaskOperation.getTaskByCityId(conn, id, 1);
+				List<Map<String, Object>> taskList = null;
+				if(cityId !=null){
+					taskList = TaskOperation.getTaskByCityId(conn, cityId, 1);
+				}
 				for (Map<String, Object> task : taskList) {
 					groupIdList.add((Long) task.get("monthEditGroupId"));
 					//查询block分配的采集和日编作业组组长id
@@ -111,8 +120,8 @@ public class LayerService {
 				}
 			} catch (Exception e) {
 				// TODO: handle exception
-				log.error(e.getMessage(), e);
-				throw new Exception("新增失败，原因为:"+e.getMessage(),e);
+				e.printStackTrace();
+				log.error("新增重点区块消息发送失败,原因:"+e.getMessage(), e);
 			}
 			
 		}catch(Exception e){
@@ -181,7 +190,7 @@ public class LayerService {
 						List<HashMap> layerMap = query(selectSql, conn);
 						if(layerMap !=null && layerMap.size()>0){
 							layerName=(String) layerMap.get(0).get("layerName");
-							cityId = (Long) layerMap.get(0).get("city");
+							cityId = (Long) layerMap.get(0).get("cityId");
 						}
 						
 					}
@@ -198,7 +207,10 @@ public class LayerService {
 					map.put("msgParam", msgParam.toString());
 					msgContentList.add(map);
 					//根据cityId查询task数据
-					List<Map<String, Object>> taskList = TaskOperation.getTaskByCityId(conn, cityId, 1);
+					List<Map<String, Object>> taskList = null;
+					if(cityId !=null){
+						taskList = TaskOperation.getTaskByCityId(conn, cityId, 1);
+					}
 					for (Map<String, Object> task : taskList) {
 						groupIdList.add((Long) task.get("monthEditGroupId"));
 						//查询block分配的采集和日编作业组组长id
@@ -217,8 +229,8 @@ public class LayerService {
 				}
 			} catch (Exception e) {
 				// TODO: handle exception
-				log.error(e.getMessage(), e);
-				throw new Exception("发送失败，原因为:"+e.getMessage(),e);
+				e.printStackTrace();
+				log.error("重点区块变更消息发送失败，原因为:"+e.getMessage(), e);
 			}
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -249,7 +261,7 @@ public class LayerService {
 				List<HashMap> layerMap = query(selectSql, conn);
 				if(layerMap !=null && layerMap.size()>0){
 					layerName=(String) layerMap.get(0).get("layerName");
-					cityId = (Long) layerMap.get(0).get("city");
+					cityId = (Long) layerMap.get(0).get("cityId");
 				}
 					
 				List<Map<String,Object>> msgContentList=new ArrayList<Map<String,Object>>();
@@ -265,7 +277,10 @@ public class LayerService {
 				map.put("msgParam", msgParam.toString());
 				msgContentList.add(map);
 				//根据cityId查询task数据
-				List<Map<String, Object>> taskList = TaskOperation.getTaskByCityId(conn, cityId, 1);
+				List<Map<String, Object>> taskList = null;
+				if(cityId !=null){
+					taskList = TaskOperation.getTaskByCityId(conn, cityId, 1);
+				}
 				for (Map<String, Object> task : taskList) {
 					groupIdList.add((Long) task.get("monthEditGroupId"));
 					//查询block分配的采集和日编作业组组长id
@@ -283,8 +298,8 @@ public class LayerService {
 				}
 			} catch (Exception e) {
 				// TODO: handle exception
-				log.error(e.getMessage(), e);
-				throw new Exception("发送失败，原因为:"+e.getMessage(),e);
+				e.printStackTrace();
+				log.error("重点区块删除消息发送失败，原因为:"+e.getMessage(), e);
 			}
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);

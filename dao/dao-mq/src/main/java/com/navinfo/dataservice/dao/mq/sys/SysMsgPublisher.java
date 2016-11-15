@@ -79,9 +79,9 @@ public class SysMsgPublisher {
 	 * @param message
 	 * @throws Exception
 	 */
-	public static void publishApplyMsg(String applyMessage,long userId) throws Exception{
+	public static void publishApplyMsg(String applyMessage,long auditor) throws Exception{
 		JSONObject applyMsg = new JSONObject();
-		applyMsg.put("userId", userId);
+		applyMsg.put("auditor", auditor);
 		applyMsg.put("applyMessage", applyMessage);
 		//发送申请消息
 		MsgPublisher.publish2WorkQueue("apply_personal_msg", applyMsg.toString());

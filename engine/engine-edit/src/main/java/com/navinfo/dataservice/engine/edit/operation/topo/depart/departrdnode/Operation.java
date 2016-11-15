@@ -119,8 +119,6 @@ public class Operation implements IOperation {
         if (this.command.getLinks().size() == 1) {
             data.put("breakNodePid", this.command.getNodePid());
         }
-        data.put("longitude", this.command.getPoint().getX());
-        data.put("latitude", this.command.getPoint().getY());
         breakJson.put("data", data);
         com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrdpoint.Command breakCommand = new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrdpoint.Command(
                 breakJson, breakJson.toString());

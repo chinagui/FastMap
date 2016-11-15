@@ -261,7 +261,7 @@ public class SubtaskService {
 			
 			//正常修改子任务
 			Subtask subtask = (Subtask)JsonOperation.jsonToBean(subtaskArray.getJSONObject(i),Subtask.class);	
-			
+			//创建或者修改常规任务时，均要调用修改质检任务的代码
 			if(qualitySubtaskId != 0){//非0的时候，表示要修改质检子任务
 				Subtask qualitySubtask = (Subtask)JsonOperation.jsonToBean(subtaskArray.getJSONObject(i),Subtask.class);//生成质检子任务的bean
 				qualitySubtask.setSubtaskId(qualitySubtaskId);
@@ -353,7 +353,7 @@ public class SubtaskService {
 	 * 根据subtaskId查询一个任务的详细信息。 参数为Subtask对象
 	 */
 	public Subtask query(Subtask bean) throws ServiceException {
-		return queryBySubtaskId(bean.getSubtaskId(),0);
+		return queryBySubtaskId(bean.getSubtaskId());
 	}
 
 	/*
@@ -506,7 +506,7 @@ public class SubtaskService {
 	 * @author zl zhangli5174@navinfo.com
 	 * @date 2016年11月4日 下午4:08:09 
 	 */
-	public Subtask queryBySubtaskId(Integer subtaskId, final int platForm) throws ServiceException {
+	public Subtask queryBySubtaskId(Integer subtaskId) throws ServiceException {
 		Connection conn = null;
 		try {
 			conn = DBConnector.getInstance().getManConnection();
@@ -523,7 +523,7 @@ public class SubtaskService {
 					+ ",r.DAILY_DB_ID"
 					+ ",r.MONTHLY_DB_ID"
 					+ ",st.GEOMETRY"
-					+ ",st.REFER_GEOMETRY"
+					//+ ",st.REFER_GEOMETRY"
 					//新增返回字段
 					+ "	,st.quality_Subtask_Id qualitySubtaskId,Q.qualityPlanStartDate ,Q.qualityPlanEndDate ,Q.qualityExeUserId ,Q.qualityTaskStatus";
 			String userSql = ",u.user_id as executer_id,u.user_real_name as executer";
@@ -600,7 +600,7 @@ public class SubtaskService {
 							e1.printStackTrace();
 						}
 						//REFER_GEOMETRY
-						STRUCT struct1 = (STRUCT) rs.getObject("REFER_GEOMETRY");
+						/*STRUCT struct1 = (STRUCT) rs.getObject("REFER_GEOMETRY");
 						try {
 							if(struct1!=null){
 								String clobStr = GeoTranslator.struct2Wkt(struct1);
@@ -611,33 +611,41 @@ public class SubtaskService {
 						} catch (Exception e1) {
 							// TODO Auto-generated catch block
 							e1.printStackTrace();
-						}
+						}*/
 						
 						try {
 							List<Integer> gridIds = SubtaskOperation.getGridIdsBySubtaskId(rs.getInt("SUBTASK_ID"));
 							subtask.setGridIds(gridIds);
 							//采集端返回参考子任务信息
-							if(0==platForm && 0==rs.getInt("STAGE")){
+							/*if(0==platForm && 0==rs.getInt("STAGE")){
 								JSONArray referSubtasks = SubtaskOperation.getReferSubtasksByGridIds(subtask.getSubtaskId(),gridIds);
 								subtask.setReferSubtasks(referSubtasks);
-							}
+							}*/
 						} catch (Exception e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
-
-						if (1 == rs.getInt("STAGE")) {
+						
+						if(0==rs.getInt("STAGE")){
+							//采集子任务
+							subtask.setDbId(rs.getInt("DAILY_DB_ID"));
+							subtask.setBlockId(rs.getInt("BLOCK_ID"));
+							subtask.setBlockManId(rs.getInt("BLOCK_MAN_ID"));
+							subtask.setBlockManName(rs.getString("BLOCK_MAN_NAME"));
+						}else if (1 == rs.getInt("STAGE")) {
+							//日编子任务
 							subtask.setDbId(rs.getInt("DAILY_DB_ID"));
 							subtask.setBlockId(rs.getInt("BLOCK_ID"));
 							subtask.setBlockManId(rs.getInt("BLOCK_MAN_ID"));
 							subtask.setBlockManName(rs.getString("BLOCK_MAN_NAME"));
 						} else if (2 == rs.getInt("STAGE")) {
+							//月编子任务，sql语句中查询cityId起的别名block_id,所以此处将block_id记入cityId返回
 							subtask.setDbId(rs.getInt("MONTHLY_DB_ID"));
 							subtask.setCityId(rs.getInt("BLOCK_ID"));
 							subtask.setTaskId(rs.getInt("BLOCK_MAN_ID"));
 							subtask.setTaskName(rs.getString("BLOCK_MAN_NAME"));
 						} else {
-							subtask.setDbId(rs.getInt("MONTHLY_DB_ID"));
+							subtask.setDbId(rs.getInt("DAILY_DB_ID"));
 							subtask.setBlockId(rs.getInt("BLOCK_ID"));
 							subtask.setBlockManId(rs.getInt("BLOCK_MAN_ID"));
 							subtask.setBlockManName(rs.getString("BLOCK_MAN_NAME"));

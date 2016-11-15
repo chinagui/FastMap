@@ -4,6 +4,8 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.sf.json.JSONArray;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -47,15 +49,13 @@ public class RdLaneTest extends InitApplication {
 	}
 	@Test
 	public void testLoadBatchRdLane() throws Exception {
-		Connection conn= DBConnector.getInstance().getConnectionById(42);
+		Connection conn= DBConnector.getInstance().getConnectionById(17);
 		RdLaneSelector selector = new RdLaneSelector(conn);
 		List<Integer> linkPids = new ArrayList<Integer>();
-		linkPids.add(100009699);
-		linkPids.add(100009700);
+		linkPids.add(19376868);
+		linkPids.add(19607272);
 		
-		List<RdLane> lanes = selector.loadByLinks(linkPids, 0, false);
-		for(RdLane lane :lanes){
-			System.out.println(lane.getPid() +"------" +lane.getLinkPid());
-		}
+		JSONArray lanes = selector.loadByLinks(linkPids,  false);
+		System.out.println(lanes);
 	}
 }

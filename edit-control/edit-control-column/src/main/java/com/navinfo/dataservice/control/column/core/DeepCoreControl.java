@@ -3,18 +3,34 @@ package com.navinfo.dataservice.control.column.core;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.dao.check.CheckCommand;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.ObjType;
+import com.navinfo.dataservice.dao.glm.iface.OperType;
+import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
+import com.navinfo.dataservice.engine.check.CheckEngine;
 import com.navinfo.navicommons.database.sql.DBUtils;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 public class DeepCoreControl {
 	private static final Logger logger = Logger.getLogger(DeepCoreControl.class);
 
+	/**
+	 * 深度信息库存统计
+	 * 
+	 * @param subtask
+	 * @param dbId
+	 * @return
+	 * @throws Exception
+	 */
 	public JSONObject getLogCount(Subtask subtask,int dbId) throws Exception {
 		
 		StringBuilder sb = new StringBuilder();
@@ -69,4 +85,34 @@ public class DeepCoreControl {
 			DBUtils.closeStatement(pstmt);
 		}
 	}
+	
+	/**
+	 * 深度信息检查执行方法
+	 * 
+	 * @param pids
+	 * @param checkResultList
+	 * @param objType
+	 * @param operType
+	 * @param conn
+	 * @throws Exception
+	 */
+	public void deepCheckRun(List<Integer> pids,JSONArray checkResultList,String objType,String operType,Connection conn) throws Exception {
+		try {
+			logger.debug("开始执行检查项"+checkResultList);
+			logger.debug("检查数据:"+pids);
+			IxPoiSelector selector = new IxPoiSelector(conn);
+			List<IRow> datas = selector.loadByIds(pids, false, true);
+			CheckCommand checkCommand = new CheckCommand();			
+			checkCommand.setObjType(Enum.valueOf(ObjType.class,objType));
+			checkCommand.setOperType(Enum.valueOf(OperType.class,operType));
+			checkCommand.setGlmList(datas);
+			CheckEngine cEngine=new CheckEngine(checkCommand,conn);
+			cEngine.checkByRules(checkResultList, "POST");	
+			logger.debug("检查完毕");
+		} catch (Exception e) {
+			throw e;
+		}
+	}
+	
+	
 }

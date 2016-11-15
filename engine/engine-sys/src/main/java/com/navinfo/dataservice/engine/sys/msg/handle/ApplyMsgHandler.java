@@ -26,7 +26,7 @@ public class ApplyMsgHandler implements MsgHandler {
 		//解析message
 		JSONObject jo = JSONObject.fromObject(message);
 		long auditor = (Integer) jo.get("auditor");
-		String applyMessage = (String) jo.get("applyMessage");
+		String applyMessage =  jo.getJSONObject("applyMessage").toString();
 		//websocket实时发送消息
 		MsgManWebSocketHandler.getInstance().sendMessageToUser(Long.toString(auditor), new TextMessage(applyMessage));
 	}

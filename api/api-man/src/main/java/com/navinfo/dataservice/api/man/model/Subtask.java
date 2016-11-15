@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.List;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 
@@ -57,6 +58,8 @@ public class Subtask implements Serializable  {
 	private Integer qualityTaskStatus;
 	//外业不规则子任务圈
 	private String referGeometry;
+	private JSONObject referGeometryJSON;
+	private JSONArray referSubtasks;
 
 	public Subtask (){
 	}
@@ -594,6 +597,30 @@ public class Subtask implements Serializable  {
 	 */
 	public void setReferGeometry(String referGeometry) {
 		this.referGeometry = referGeometry;
+	}
+	/**
+	 * @return the referGeometryJSON
+	 */
+	public JSONObject getReferGeometryJSON() {
+		return referGeometryJSON;
+	}
+	/**
+	 * @param referGeometryJSON the referGeometryJSON to set
+	 */
+	public void setReferGeometryJSON(JSONObject referGeometryJSON) {
+		this.referGeometryJSON = referGeometryJSON;
+	}
+	/**
+	 * @return the referSubtasks
+	 */
+	public JSONArray getReferSubtasks() {
+		return referSubtasks;
+	}
+	/**
+	 * @param referSubtasks the referSubtasks to set
+	 */
+	public void setReferSubtasks(JSONArray referSubtasks) {
+		this.referSubtasks = referSubtasks;
 	}
 }
 

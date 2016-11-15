@@ -314,7 +314,7 @@ public class UploadOperation {
 								
 								// 鲜度验证，POI状态更新
 								String rawFields = jo.getString("rawFields");
-								upatePoiStatusForAndroid(conn, poiObj.getString("rowId"), 0, rawFields,1);
+								upatePoiStatusForAndroid(conn, poiObj.getString("rowId"), 0, rawFields,1,poiObj.getInt("pid"));
 
 								conn.commit();
 								count++;
@@ -393,10 +393,10 @@ public class UploadOperation {
 								boolean freshFlag = perRetObj.getBoolean("freshFlag");
 								String rawFields = jo.getString("rawFields");
 								if (freshFlag) {
-									upatePoiStatusForAndroid(conn, poiJson.getString("rowId"), 1, rawFields,1);
+									upatePoiStatusForAndroid(conn, poiJson.getString("rowId"), 1, rawFields,1,poiJson.getInt("pid"));
 									
 								} else {
-									upatePoiStatusForAndroid(conn, poiJson.getString("rowId"), 0, rawFields,1);
+									upatePoiStatusForAndroid(conn, poiJson.getString("rowId"), 0, rawFields,1,poiJson.getInt("pid"));
 								}
 								EditApiImpl editApiImpl = new EditApiImpl(conn);
 								editApiImpl.updatePoifreshVerified(poiJson.getInt("pid"),"andriod");
@@ -461,7 +461,7 @@ public class UploadOperation {
 							String rawFields = jo.getString("rawFields");
 							IxPoiSelector ixPoiSelector = new IxPoiSelector(conn);
 							JSONObject poiRowId = ixPoiSelector.getRowIdById(pid);
-							upatePoiStatusForAndroid(conn, poiRowId.getString("rowId"), 0, rawFields,2);
+							upatePoiStatusForAndroid(conn, poiRowId.getString("rowId"), 0, rawFields,2,pid);
 
 							conn.commit();
 							count++;
@@ -749,7 +749,7 @@ public class UploadOperation {
 				parkings.setTollWay(parkingsObj.getString("tollWay"));
 				parkings.setPayment(parkingsObj.getString("payment"));
 				parkings.setRemark(parkingsObj.getString("remark"));
-				parkings.setOpenTiime(parkingsObj.getString("openTime"));
+				parkings.setOpenTime(parkingsObj.getString("openTime"));
 				parkings.setTotalNum(parkingsObj.getInt("totalNum"));
 				parkings.setResHigh(parkingsObj.getInt("resHigh"));
 				parkings.setResWidth(parkingsObj.getInt("resWidth"));
@@ -1819,18 +1819,18 @@ public class UploadOperation {
 	 * @param row
 	 * @throws Exception
 	 */
-	public void upatePoiStatusForAndroid(Connection conn, String rowId, int freshFlag, String rawFields,int status)
+	public void upatePoiStatusForAndroid(Connection conn, String rowId, int freshFlag, String rawFields,int status,int pid)
 			throws Exception {
 		StringBuilder sb = new StringBuilder(" MERGE INTO poi_edit_status T1 ");
 		sb.append(" USING (SELECT '" + rowId + "' as a, "+status+" as b," + freshFlag + " as c,'" + rawFields
-				+ "' as d," + "sysdate as e" + "  FROM dual) T2 ");
+				+ "' as d," + "sysdate as e,"+ pid + " as f " + "  FROM dual) T2 ");
 		sb.append(" ON ( T1.row_id=T2.a) ");
 		sb.append(" WHEN MATCHED THEN ");
 		sb.append(
-				" UPDATE SET T1.status = T2.b,T1.fresh_verified= T2.c,T1.is_upload = 1,T1.raw_fields = T2.d,T1.upload_date = T2.e ");
+				" UPDATE SET T1.status = T2.b,T1.fresh_verified= T2.c,T1.is_upload = 1,T1.raw_fields = T2.d,T1.upload_date = T2.e,T1.pid=T2.f ");
 		sb.append(" WHEN NOT MATCHED THEN ");
 		sb.append(
-				" INSERT (T1.row_id,T1.status,T1.fresh_verified,T1.is_upload,T1.raw_fields,T1.upload_date) VALUES(T2.a,T2.b,T2.c,1,T2.d,T2.e)");
+				" INSERT (T1.row_id,T1.status,T1.fresh_verified,T1.is_upload,T1.raw_fields,T1.upload_date,T1.pid) VALUES(T2.a,T2.b,T2.c,1,T2.d,T2.e,T2.f)");
 		PreparedStatement pstmt = null;
 		try {
 			pstmt = conn.prepareStatement(sb.toString());

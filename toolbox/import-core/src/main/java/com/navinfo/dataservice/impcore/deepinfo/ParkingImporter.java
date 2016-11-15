@@ -80,10 +80,10 @@ public class ParkingImporter {
 			throw new DataErrorException("remark length too long");
 		}
 
-		parking.setOpenTiime(JsonUtils.getString(parkings, "openTime"));
+		parking.setOpenTime(JsonUtils.getString(parkings, "openTime"));
 
-		if (parking.getOpenTiime() != null
-				&& parking.getOpenTiime().length() > 254) {
+		if (parking.getOpenTime() != null
+				&& parking.getOpenTime().length() > 254) {
 			throw new DataErrorException("openTime length too long");
 		}
 

@@ -12,6 +12,7 @@ import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 
 import net.sf.json.JSONArray;
@@ -37,8 +38,13 @@ public class RdLinkSearch implements ISearch {
 	}
 	
 	@Override
-	public IObj searchDataByPids(List<Integer> pidList) throws Exception {
-		return null;
+	public List<? extends IObj> searchDataByPids(List<Integer> pidList) throws Exception {
+		
+		RdLinkSelector linkSelector = new RdLinkSelector(conn);
+		
+		List<RdLink> linkList = linkSelector.loadByPids(pidList, false);
+		
+		return linkList;
 	}
 	
 	@Override

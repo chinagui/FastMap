@@ -1,7 +1,8 @@
 package com.navinfo.dataservice.commons.geom;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -45,6 +46,8 @@ import com.vividsolutions.jts.precision.GeometryPrecisionReducer;
  */
 public class GeoTranslator {
 
+	public static final double dPrecisionGeo = 1.0;
+	
 	private static final GeometryFactory geoFactory = new GeometryFactory();
 
 	private static final MfGeoFactory mfFactory = new MfGeoFactory() {
@@ -672,22 +675,20 @@ public class GeoTranslator {
 	public static LineString getReformLineString(LineString lineString,
 			Set<Point> points) throws Exception {
 
-		List<Coordinate> coordinates = new ArrayList<Coordinate>();
-		Geometry geometry = GeoTranslator.transform(lineString, 100000, 5);
+		
+		 Geometry geometry = GeoTranslator.transform(lineString, 100000, 5);
+		 List<Coordinate> coordinates = new ArrayList<Coordinate>();
+		 Collections.addAll( coordinates, geometry.getCoordinates());
 		for (Point point : points) {
 			point = (Point) GeoTranslator.transform(point, 100000, 5);
 			// 扩大100000倍保持精度
 			double lon = point.getX();
 			double lat = point.getY();
 
-			for (int i = 0; i < geometry.getCoordinates().length - 1; i++) {
+			for (int i = 0; i < coordinates.size(); i++) {
 
-				Coordinate cs = geometry.getCoordinates()[i];
-				Coordinate ce = geometry.getCoordinates()[i + 1];
-				if(!coordinates.contains(cs)){
-					coordinates.add(cs);
-				}
-				
+				Coordinate cs = coordinates.get(i);
+				Coordinate ce = coordinates.get(i+1);
 				// 是否在形状点上
 				if (Math.abs(lon - ce.x) < 0.0000001
 						&& Math.abs(lat - ce.y) < 0.0000001) {
@@ -697,15 +698,14 @@ public class GeoTranslator {
 				// 是否在线段上
 				if (GeoTranslator.isIntersection(new double[] { cs.x, cs.y },
 						new double[] { ce.x, ce.y }, new double[] { lon, lat })) {
-					coordinates.add(point.getCoordinate());
+					coordinates.add(i+1,point.getCoordinate());
 					break;
 
 				}
 			}
 
 		}
-		coordinates
-				.add(geometry.getCoordinates()[geometry.getCoordinates().length - 1]);
+
 		// 返回linestring
 		Coordinate[] c = (Coordinate[]) coordinates
 				.toArray(new Coordinate[coordinates.size()]);
@@ -722,10 +722,11 @@ public class GeoTranslator {
 	 * @return
 	 * @throws Exception
 	 */
-	public static List<Point> getOrderPoints(LineString lineString,
+	public static List<Point> getOrderPoints(LineString line,
 			Set<Point> points) throws Exception {
+		List<String> str = new ArrayList<String>();
 		List<Point> list = new ArrayList<Point>();
-		LineString line = getReformLineString(lineString, points);
+		//LineString line = getReformLineString(lineString, points);
 		Map<Integer, Point> map = new TreeMap<Integer, Point>();
 		for (Point point : points) {
 			for (int i = 0; i < line.getCoordinates().length; i++) {
@@ -742,30 +743,89 @@ public class GeoTranslator {
 
 	}
 
-	public static void main(String[] args) {
-		List<String> list = new ArrayList<String>();
-		list.add("A");
-		list.add("B");
-		list.add("C");
-		List<String> list1 = new ArrayList<String>();
-		list1.add("1");
-		list1.add("2");
-		list1.add("3");
-		list1.add("A");
-		list1.add("B");
-		list1.add("C");
+	
+	/**
+	 * 点p0是否在点p1和p2的线上
+	 * 
+	 * @param p1
+	 *            线起点
+	 * @param p2
+	 *            线终点
+	 * @param p0
+	 *            点
+	 * @return True 在线上； False 不在线上
+	 * @throws Exception
+	 */
+	public static boolean isIntersection(Coordinate p1, Coordinate p2,
+			Coordinate p0) throws Exception {
+		
+		boolean flag = false;
 
-		for (String s : list) {
-			System.out.println(list1);
-			for (int i = 0; i < list1.size(); i++) {
-				if (s == list1.get(i)) {
-					list1.add("111" + i);
-					break;
-				}
-			}
+		Coordinate[] coordinates = new Coordinate[2];
+
+		coordinates[0] = p1;
+
+		coordinates[1] = p2;
+
+		LineString line = geoFactory.createLineString(coordinates);
+
+		Point point = geoFactory.createPoint(p0);
+
+		if (line.distance(point) <= 1) {
+			flag = true;
 		}
 
-		System.out.println(list1);
+		return flag;
+	}
+	
+	
+	public static long round(double d) {
+		return d < 0 ? (long) d : (long) (d + 0.5);
+	}
 
+	public static boolean isPointEquals(Point point1, Point point2) {
+		return isPointEquals(point1.getX(), point1.getY(), point2.getX(),
+				point2.getY());
+	}
+
+	public static boolean isPointEquals(Coordinate c1, Coordinate c2) {
+		return isPointEquals(c1.x, c1.y, c2.x, c2.y);
+	}
+
+	public static boolean isPointEquals(double x1, double y1, double x2,
+			double y2) {
+		x1 = round(x1);
+		y1 = round(y1);
+		x2 = round(x2);
+		y2 = round(y2);
+
+		if (Math.abs(x1 - x2) >= dPrecisionGeo)
+			return false;
+
+		if (Math.abs(y1 - y2) >= dPrecisionGeo)
+			return false;
+
+		return true;
+	}
+	
+	
+
+
+	public static void main(String[] args) throws Exception {
+		Point point = (Point)wkt2Geometry("POINT (116.38636 40.00512)");
+		Point point1 = (Point)wkt2Geometry("POINT (116.38617 40.00511)");
+		Point point2 = (Point)wkt2Geometry("POINT (116.38602 40.0051)");
+		Set<Point> points = new HashSet<Point>();
+		points.add(point);
+		points.add(point1);
+		points.add(point2);
+		LineString line = (LineString)wkt2Geometry("LineString(116.38586 40.00509, 116.38647 40.00512)");
+		//LINESTRING (116.38586 40.00509, 116.38602 40.0051, 116.38617 40.00511, 116.38636 40.00512, 116.38647 40.00512)
+		LineString s = getReformLineString(line, points);
+		System.out.println(s);
+		
+		//[POINT (116.38636 40.00512), POINT (116.38617 40.00511), POINT (116.38602 40.0051)]
+
+		//LINESTRING (116.38586 40.00509, 116.38636 40.00512, 116.38617 40.00511, 116.38602 40.0051, 116.38647 40.00512)
 	}
 }

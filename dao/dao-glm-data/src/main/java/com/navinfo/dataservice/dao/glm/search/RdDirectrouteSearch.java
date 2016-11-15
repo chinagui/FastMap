@@ -37,7 +37,7 @@ public class RdDirectrouteSearch implements ISearch {
 	}
 	
 	@Override
-	public IObj searchDataByPids(List<Integer> pidList) throws Exception {
+	public List<IObj> searchDataByPids(List<Integer> pidList) throws Exception {
 		// TODO Auto-generated method stub
 		return null;
 	}

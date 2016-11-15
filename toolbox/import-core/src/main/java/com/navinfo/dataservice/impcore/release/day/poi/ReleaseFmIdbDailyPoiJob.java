@@ -55,8 +55,7 @@ public class ReleaseFmIdbDailyPoiJob extends AbstractJob {
 			int produceId=releaseFmIdbDailyPoiRequest.getProduceId();
 			//日出品状态修改为 进行中
 			manApi.updateProduceStatus(produceId, 1);
-//			//获取所有大区库信息
-//			List<Region> regionList = queryRegionList();
+
 			int regionId = releaseFmIdbDailyPoiRequest.getRegionId();
 			Region regionInfo = manApi.queryByRegionId(regionId);
 			

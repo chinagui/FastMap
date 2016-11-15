@@ -39,4 +39,15 @@ public interface MetadataApi {
 	 * @throws Exception
 	 */
 	public JSONArray queryTmcPoint(int x, int y, int z, int gap) throws Exception;
+	
+	/**
+	 * 根据瓦片渲染TMC_LINE
+	 * @param x
+	 * @param y
+	 * @param z
+	 * @param gap
+	 * @return
+	 * @throws Exception
+	 */
+	public JSONArray queryTmcLine(int x, int y, int z, int gap) throws Exception;
 }

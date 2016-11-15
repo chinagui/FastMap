@@ -12,9 +12,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -36,6 +38,7 @@ import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.sql.SqlClause;
@@ -791,7 +794,8 @@ public class SubtaskOperation {
 					+ ",st.STATUS"
 					+ ",r.DAILY_DB_ID"
 					+ ",r.MONTHLY_DB_ID"
-					+ ",st.GEOMETRY";
+					+ ",st.GEOMETRY"
+					+ ",st.REFER_GEOMETRY";
 
 			String fromSql_task = " from subtask st"
 					+ ",task t"
@@ -845,6 +849,8 @@ public class SubtaskOperation {
 				conditionSql_block = conditionSql_block + " and st.STATUS = "
 						+ bean.getStatus();
 			}
+			//conditionSql_task = conditionSql_task + " and st.subtask_id =499 ";
+			//conditionSql_block=conditionSql_block+" and 1>2 ";
 			
 			selectSql = selectSql + fromSql_task
 			+ conditionSql_task
@@ -864,10 +870,6 @@ public class SubtaskOperation {
 						}
 						HashMap<Object,Object> subtask = new HashMap<Object,Object>();
 						
-						Subtask subtaskk = new Subtask();
-						subtaskk.setSubtaskId(rs.getInt("SUBTASK_ID"));
-						subtaskk.setGeometry(rs.getString("GEOMETRY"));
-						
 						subtask.put("subtaskId", rs.getInt("SUBTASK_ID"));
 						subtask.put("name", rs.getString("NAME"));
 						subtask.put("descp", rs.getString("DESCP"));
@@ -881,13 +883,7 @@ public class SubtaskOperation {
 						//版本信息
 						subtask.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
 						
-						STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
-						try {
-							subtask.put("geometry", GeoTranslator.struct2Wkt(struct));
-						} catch (Exception e1) {
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
-						}
+						
 						
 						List<Integer> gridIds = null;
 						try {
@@ -900,10 +896,48 @@ public class SubtaskOperation {
 
 						if (1 == rs.getInt("STAGE")) {
 							subtask.put("dbId", rs.getInt("DAILY_DB_ID"));
+							STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
+							try {
+								subtask.put("geometry", GeoTranslator.struct2Wkt(struct));
+							} catch (Exception e1) {
+								// TODO Auto-generated catch block
+								e1.printStackTrace();
+							}
 						} else if (2 == rs.getInt("STAGE")) {
 							subtask.put("dbId",rs.getInt("MONTHLY_DB_ID"));
-						} else {
+							STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
+							try {
+								subtask.put("geometry", GeoTranslator.struct2Wkt(struct));
+							} catch (Exception e1) {
+								// TODO Auto-generated catch block
+								e1.printStackTrace();
+							}
+						} else if (0 == rs.getInt("STAGE")) {
 							subtask.put("dbId", rs.getInt("DAILY_DB_ID"));
+							STRUCT struct = (STRUCT) rs.getObject("REFER_GEOMETRY");
+							try {
+								subtask.put("referGeometry", GeoTranslator.struct2Wkt(struct));
+							} catch (Exception e1) {
+								// TODO Auto-generated catch block
+								e1.printStackTrace();
+							}
+							JSONArray referGrid;
+							try {
+								referGrid = SubtaskOperation.getReferSubtasksByGridIds(rs.getInt("SUBTASK_ID"),gridIds);
+								subtask.put("referGrid", referGrid);
+							} catch (Exception e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}	
+						}else {
+							subtask.put("dbId", rs.getInt("DAILY_DB_ID"));
+							STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
+							try {
+								subtask.put("geometry", GeoTranslator.struct2Wkt(struct));
+							} catch (Exception e1) {
+								// TODO Auto-generated catch block
+								e1.printStackTrace();
+							}				
 						}
 						
 						//日编POI,日编一体化GRID粗编完成度，任务量信息
@@ -961,6 +995,20 @@ public class SubtaskOperation {
 		Connection conn = null;
 		try{
 			conn = DBConnector.getInstance().getManConnection();
+			return getGridIdsBySubtaskIdWithConn(conn, subtaskId);
+		}finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+
+	}
+	
+	/**
+	 * @param int1
+	 * @return
+	 * @throws Exception 
+	 */
+	public static List<Integer> getGridIdsBySubtaskIdWithConn(Connection conn,int subtaskId) throws Exception {
+		try{
 			QueryRunner run = new QueryRunner();
 //			String selectSql = "select sgm.grid_id from subtask_grid_mapping sgm where sgm.subtask_id = " + subtaskId;
 			String selectSql = "select sgm.grid_id"
@@ -1011,8 +1059,6 @@ public class SubtaskOperation {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new Exception("关闭失败，原因为:"+e.getMessage(),e);
-		}finally {
-			DbUtils.commitAndCloseQuietly(conn);
 		}
 
 	}
@@ -2437,6 +2483,80 @@ public class SubtaskOperation {
 			log.error(e.getMessage(), e);
 			throw new Exception("关闭失败，原因为:"+e.getMessage(),e);
 		}finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+
+
+	/**
+	 * @param subtaskId 
+	 * @param gridIds
+	 * @return
+	 * @throws Exception 
+	 */
+	public static JSONArray getReferSubtasksByGridIds(Integer subtaskId, List<Integer> gridIds) throws Exception {
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+			//grid扩圈
+			Set<Integer> gridsWithNeighbor = new HashSet<Integer>();
+			for(int j=0;j<gridIds.size();j++)  
+	        {              
+				String gridId = String.valueOf(gridIds.get(j));
+				String[] gridAfter = GridUtils.get9NeighborGrids(gridId);				
+				for(int i=0;i<gridAfter.length;i++){
+					gridsWithNeighbor.add(Integer.valueOf(gridAfter[i]));
+				}           
+	        } 
+			String gridIdsStr = StringUtils.join(gridsWithNeighbor.toArray(), ",");
+			
+			String selectSql = "select distinct sgm.grid_id,"
+					+ " u.user_real_name"
+					+ " from subtask s,"
+					+ " user_info u,subtask_grid_mapping sgm"
+					+ " where s.stage = 0"
+					+ " and sgm.grid_id in (" + gridIdsStr + ")"
+					+ " and s.subtask_id = sgm.subtask_id"
+					+ " and s.exe_user_id = u.user_id"
+					+ " and s.subtask_id <> " + subtaskId
+					+ " order by sgm.grid_id";
+			
+			ResultSetHandler<JSONArray> rsHandler = new ResultSetHandler<JSONArray>() {
+				public JSONArray handle(ResultSet rs) throws SQLException {
+					JSONArray referSubtasks = new JSONArray(); 
+					int gridId=0;
+					JSONArray gridUserName = new JSONArray();
+					while (rs.next()) {
+						int temp = rs.getInt("grid_id");
+						if(gridId==0){
+							gridId=temp;
+							gridUserName.add(rs.getString("user_real_name"));
+							continue;}
+						if(gridId!=temp){
+							JSONObject tempGridRefer=new JSONObject();
+							tempGridRefer.put("gridId", gridId);
+							tempGridRefer.put("userNameList", gridUserName);
+							referSubtasks.add(tempGridRefer);
+							gridUserName=new JSONArray();
+						}
+						gridId=temp;
+						gridUserName.add(rs.getString("user_real_name"));
+					}
+					JSONObject tempGridRefer=new JSONObject();
+					tempGridRefer.put("gridId", gridId);
+					tempGridRefer.put("userNameList", gridUserName);
+					referSubtasks.add(tempGridRefer);
+					return referSubtasks;
+				}
+			};
+
+			return run.query(conn, selectSql, rsHandler);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}

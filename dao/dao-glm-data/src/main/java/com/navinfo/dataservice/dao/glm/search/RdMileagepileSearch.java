@@ -6,6 +6,8 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.navinfo.dataservice.commons.util.DisplayUtils;
+import oracle.spatial.geometry.JGeometry;
 import org.apache.commons.dbutils.DbUtils;
 
 import com.navinfo.dataservice.commons.geom.Geojson;
@@ -33,7 +35,7 @@ public class RdMileagepileSearch implements ISearch {
     }
     
     @Override
-	public IObj searchDataByPids(List<Integer> pidList) throws Exception {
+	public List<IObj> searchDataByPids(List<Integer> pidList) throws Exception {
 		return null;
 	}
     
@@ -50,7 +52,7 @@ public class RdMileagepileSearch implements ISearch {
     @Override
     public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z, int gap) throws Exception {
         List<SearchSnapshot> list = new ArrayList<>();
-        String sql = "select a.pid, a.geometry point_geom from rd_mileagepile a where sdo_relate(geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') = 'TRUE' and a.u_record != 2";
+        String sql = "select a.pid, a.geometry point_geom, b.geometry link_geom, a.direct from rd_mileagepile a, rd_link b where sdo_relate(a.geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') = 'TRUE' and a.u_record != 2 and a.link_pid = b.link_pid";
         PreparedStatement pstmt = null;
         ResultSet resultSet = null;
         try {
@@ -62,12 +64,16 @@ public class RdMileagepileSearch implements ISearch {
             double py = MercatorProjection.tileYToPixelY(y);
             while (resultSet.next()) {
                 SearchSnapshot snapshot = new SearchSnapshot();
-                snapshot.setT(36);
+                snapshot.setT(50);
                 snapshot.setI(resultSet.getString("pid"));
                 STRUCT struct = (STRUCT) resultSet.getObject("point_geom");
                 JSONObject geojson = Geojson.spatial2Geojson(struct);
                 Geojson.point2Pixel(geojson, z, px, py);
                 snapshot.setG(geojson.getJSONArray("coordinates"));
+                JSONObject jsonM = new JSONObject();
+                double angle = calAngle(resultSet);
+                jsonM.put("c", String.valueOf((int) angle));
+                snapshot.setM(jsonM);
                 list.add(snapshot);
             }
         } catch (Exception e) {
@@ -78,5 +84,43 @@ public class RdMileagepileSearch implements ISearch {
         }
         return list;
     }
+    // 计算角度
+    private double calAngle(ResultSet resultSet) throws Exception {
+        double angle = 0;
+        STRUCT struct2 = (STRUCT) resultSet.getObject("link_geom");
+        if (struct2 == null) {
+            return angle;
+        }
+        STRUCT struct1 = (STRUCT) resultSet.getObject("point_geom");
+        JGeometry geom1 = JGeometry.load(struct1);
+        double[] point = geom1.getFirstPoint();
+        JGeometry geom2 = JGeometry.load(struct2);
+        int ps = geom2.getNumPoints();
+        int startIndex = 0;
+        for (int i = 0; i < ps - 1; i++) {
+            double sx = geom2.getOrdinatesArray()[i * 2];
+            double sy = geom2.getOrdinatesArray()[i * 2 + 1];
+            double ex = geom2.getOrdinatesArray()[(i + 1) * 2];
+            double ey = geom2.getOrdinatesArray()[(i + 1) * 2 + 1];
+            if (isBetween(sx, ex, point[0]) && isBetween(sy, ey, point[1])) {
+                startIndex = i;
+                break;
+            }
+        }
+        StringBuilder sb = new StringBuilder("LINESTRING (");
+        sb.append(geom2.getOrdinatesArray()[startIndex * 2]);
+        sb.append(" ");
+        sb.append(geom2.getOrdinatesArray()[startIndex * 2 + 1]);
+        sb.append(", ");
+        sb.append(geom2.getOrdinatesArray()[(startIndex + 1) * 2]);
+        sb.append(" ");
+        sb.append(geom2.getOrdinatesArray()[(startIndex + 1) * 2 + 1]);
+        sb.append(")");
+        angle = DisplayUtils.calIncloudedAngle(sb.toString(), resultSet.getInt("direct"));
+        return angle;
+    }
 
+    private static boolean isBetween(double a, double b, double c) {
+        return b > a ? c >= a && c <= b : c >= b && c <= a;
+    }
 }

@@ -9,9 +9,13 @@ import org.apache.log4j.Logger;
 
 import com.alibaba.druid.pool.DruidPooledConnection;
 import com.alibaba.druid.proxy.jdbc.ClobProxyImpl;
+import com.alibaba.druid.proxy.jdbc.ConnectionProxyImpl;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.vividsolutions.jts.geom.util.GeometryTransformer;
 
 import oracle.sql.CLOB;
+import oracle.sql.STRUCT;
 
 /** 
 * @ClassName: ConnectionUtil 
@@ -40,5 +44,13 @@ public class ConnectionUtil {
 			inforGeo = (CLOB) rs.getClob(columnName);
 		}
 		return inforGeo;
+	}
+	
+	public static Connection getObject(Connection conn)throws SQLException{
+		if(conn instanceof DruidPooledConnection){
+			ConnectionProxyImpl impl = (ConnectionProxyImpl) ((DruidPooledConnection) conn).getConnection();
+			return impl.getRawObject();
+		}
+		return conn;
 	}
 }

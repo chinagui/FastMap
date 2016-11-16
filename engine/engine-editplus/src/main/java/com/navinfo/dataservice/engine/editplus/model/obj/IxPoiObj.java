@@ -9,6 +9,7 @@ import com.navinfo.dataservice.engine.editplus.model.BasicRow;
 import com.navinfo.dataservice.engine.editplus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.engine.editplus.model.ixpoi.IxPoiContact;
 import com.navinfo.dataservice.engine.editplus.model.obj.BasicObj;
+import com.navinfo.dataservice.engine.editplus.model.selector.ObjSelector;
 
 /** 
  * @ClassName: IxPoi
@@ -23,11 +24,11 @@ public class IxPoiObj extends AbstractIxObj {
 	}
 
 	//子对象
-	protected List<BasicObj> names=null;
-	protected List<BasicObj> addresses=null;
+	protected List<BasicObj> ixPoiName=null;
+	protected List<BasicObj> ixPoiAddress=null;
 	//...
 	//子表
-	protected List<BasicRow> contacts=null;
+	protected List<BasicRow> ixPoiContact=null;
 
 	
 	@Override
@@ -38,6 +39,17 @@ public class IxPoiObj extends AbstractIxObj {
 			//...
 		}
 		return childrows;
+	}
+	
+	public void setNames(){
+		
+	}
+	
+	public List<BasicObj> getNames(){
+		if(names==null){
+			ObjSelector.selectChildren(this, "IX_POI_NAME");
+		}
+		return names;
 	}
 
 //	@Override

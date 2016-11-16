@@ -64,7 +64,7 @@ public class GlmFactory {
 		
 		return table;
 	}
-	public GlmObject getTablesByObjType(String objType)throws GlmTableNotFoundException{
+	public GlmObject getObjByType(String objType)throws GlmTableNotFoundException{
 		GlmObject obj=null;
 		if(objs!=null){
 			obj=objs.get(objType);

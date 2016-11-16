@@ -32,10 +32,10 @@ public class GlmObject {
 	public void setMainTable(GlmTable mainTable) {
 		this.mainTable = mainTable;
 	}
-	protected String getModelClassName() {
+	public String getModelClassName() {
 		return modelClassName;
 	}
-	protected void setModelClassName(String modelClassName) {
+	public void setModelClassName(String modelClassName) {
 		this.modelClassName = modelClassName;
 	}
 	public Map<String, GlmTable> getTables() {

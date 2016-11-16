@@ -1,6 +1,12 @@
 package com.navinfo.dataservice.engine.editplus.model.obj;
 
+import java.lang.reflect.InvocationTargetException;
+
 import org.apache.log4j.Logger;
+
+import com.navinfo.dataservice.engine.editplus.glm.GlmFactory;
+import com.navinfo.dataservice.engine.editplus.glm.GlmObject;
+import com.navinfo.dataservice.engine.editplus.model.BasicRow;
 
 /** 
  * @ClassName: ObjFactory
@@ -40,5 +46,12 @@ public class ObjFactory {
 	 */
 	public BasicObj create(String objType,boolean isSetPid){
 		return null;
+	}
+	
+	public BasicObj create4Select(BasicRow row)throws ClassNotFoundException,NoSuchMethodException,InvocationTargetException,IllegalAccessException,InstantiationException{
+		GlmObject glmObj =
+		GlmFactory.getInstance().getObjByType(row.getObjType());
+		BasicObj bObj = (BasicObj)Class.forName(glmObj.getModelClassName()).getConstructor(BasicRow.class).newInstance(row);
+		return bObj;
 	}
 }

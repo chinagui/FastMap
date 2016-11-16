@@ -106,7 +106,7 @@ public class TmcPointTest {
 			conn = DBConnector.getInstance().getMetaConnection();
 			TmcSelector selector = new TmcSelector(conn);
 			
-			int[] tmcIds = {522001001};
+			int[] tmcIds = {522006167,522002094};
 			
 			TmcLineTree result = selector.queryTmcTree(tmcIds);
 			

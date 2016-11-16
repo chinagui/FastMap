@@ -10,7 +10,6 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
-import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -24,7 +23,7 @@ public class TmcLineTree implements IObj {
 
 	private ObjType type;
 
-	private Geometry geometry;
+	private JSONArray geometry;
 
 	private List<TmcLineTree> children = new ArrayList<>();
 	
@@ -39,7 +38,7 @@ public class TmcLineTree implements IObj {
 
 		this.setType(ObjType.TMCPOINT);
 
-		this.setGeometry(point.getGeo());
+		this.setGeometry(point.getGeometry());
 	}
 
 	public TmcLineTree(TmcLine line) {
@@ -72,11 +71,11 @@ public class TmcLineTree implements IObj {
 		return tmcId;
 	}
 
-	public Geometry getGeometry() {
+	public JSONArray getGeometry() {
 		return geometry;
 	}
 
-	public void setGeometry(Geometry geometry) {
+	public void setGeometry(JSONArray geometry) {
 		this.geometry = geometry;
 	}
 
@@ -203,6 +202,8 @@ public class TmcLineTree implements IObj {
 
 			json.put("name", name);
 			
+			json.put("geometry", geometry);
+			
 			json.put("type", String.valueOf(type));
 
 			JSONArray array = new JSONArray();
@@ -248,4 +249,24 @@ public class TmcLineTree implements IObj {
 		return null;
 	}
 
+	@Override
+	public boolean equals(Object obj) {
+		if(obj instanceof TmcLineTree)
+		{
+			TmcLineTree compTree = (TmcLineTree) obj;
+			
+			if(compTree.getTmcId() == this.getTmcId() && compTree.getType().equals(this.getType()))
+			{
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+		else
+		{
+			return false;
+		}
+	}
 }

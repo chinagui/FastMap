@@ -3,7 +3,7 @@
  */
 package com.navinfo.dataservice.engine.meta.tmc;
 
-import com.vividsolutions.jts.geom.Geometry;
+import net.sf.json.JSONArray;
 
 /** 
 * @ClassName: TmcLine 
@@ -22,7 +22,7 @@ public class TmcLine {
 	
 	private int upLineTmcId;
 	
-	private Geometry geometry;
+	private JSONArray geometry;
 
 	public int getTmcId() {
 		return tmcId;
@@ -47,12 +47,12 @@ public class TmcLine {
 	public void setCid(int cid) {
 		this.cid = cid;
 	}
-	
-	public Geometry getGeometry() {
+
+	public JSONArray getGeometry() {
 		return geometry;
 	}
 
-	public void setGeometry(Geometry geometry) {
+	public void setGeometry(JSONArray geometry) {
 		this.geometry = geometry;
 	}
 

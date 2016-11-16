@@ -13,12 +13,10 @@ import java.util.Map;
 
 import org.apache.commons.collections.CollectionUtils;
 
-import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.navicommons.database.sql.DBUtils;
-import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -42,15 +40,27 @@ public class TmcSelector {
 	}
 
 	public TmcLineTree queryTmcTree(int[] tmcIds) throws Exception {
-		
-		TmcLineTree result = null;
-		
+
+		List<TmcLineTree> treeList = new ArrayList<>();
+
 		for (int tmcId : tmcIds) {
+			TmcLineTree tmcTree = null;
+
 			// 1.查询根据tmcPointId查询对应的tmcLine对象
 			TmcLine tmcLine = queryTmcLineByPointId(tmcId);
 
 			// 2.根据tmcline_id查询line下所有的tmc_point
 			List<TmcPoint> tmcPointList = queryTmcPointByLineId(tmcLine.getTmcId());
+
+			JSONArray lineGeo = new JSONArray();
+
+			for (TmcPoint tmcPoint : tmcPointList) {
+				JSONArray pointGeo = tmcPoint.getGeometry();
+
+				lineGeo.add(pointGeo);
+			}
+
+			tmcLine.setGeometry(lineGeo);
 
 			// 3.根据tmcline_id查询父tmcline
 			int upperTmcId = tmcLine.getUpLineTmcId();
@@ -59,17 +69,48 @@ public class TmcSelector {
 
 			while (upperTmcId != 0) {
 				TmcLine upperTmcLine = queryTmcLineByTmcLineId(upperTmcId);
-				
-				if(upperTmcLine != null)
-				{
+
+				if (upperTmcLine != null) {
 					upTmcLineList.add(upperTmcLine);
 
 					upperTmcId = upperTmcLine.getUpLineTmcId();
 				}
 			}
-			
-			//upTmcLineList的最后一条数据的upperTmcId是0，代表它的上级是TmcArea
-			upTmcLineList.get(upTmcLineList.size() - 1);
+
+			// 获取TMCAREA数据
+			int startAreaTmcId = tmcLine.getAreaTmcId();
+
+			List<TmcArea> upTmcAreaList = new ArrayList<>();
+
+			if (CollectionUtils.isNotEmpty(upTmcLineList)) {
+				// upTmcLineList的最后一条数据的upperTmcId是0，代表它的上级是TmcArea
+				TmcLine line = upTmcLineList.get(upTmcLineList.size() - 1);
+
+				startAreaTmcId = line.getAreaTmcId();
+
+				while (startAreaTmcId != 0) {
+					TmcArea upperTmcArea = queryTmcAreaByTmcAreaId(startAreaTmcId);
+
+					if (upperTmcArea != null) {
+						upTmcAreaList.add(upperTmcArea);
+
+						startAreaTmcId = upperTmcArea.getUperTmcId();
+					}
+				}
+			} else {
+				// 第一层tmcline向上没有tmcline的情况下使用第一层tmcline的upAreaTmcId
+				startAreaTmcId = tmcLine.getAreaTmcId();
+
+				while (startAreaTmcId != 0) {
+					TmcArea upperTmcArea = queryTmcAreaByTmcAreaId(startAreaTmcId);
+
+					if (upperTmcArea != null) {
+						upTmcAreaList.add(upperTmcArea);
+
+						startAreaTmcId = upperTmcArea.getUperTmcId();
+					}
+				}
+			}
 
 			// 第一层tmcline
 			TmcLineTree tree = new TmcLineTree(tmcLine);
@@ -79,25 +120,88 @@ public class TmcSelector {
 
 				tree.getChildren().add(pointTree);
 			}
-			
+
 			TmcLineTree copyTree = new TmcLineTree();
-			
+
 			copyTree.copy(tree);
-			
+
 			for (TmcLine upperLine : upTmcLineList) {
 				TmcLineTree tmcLineTree = new TmcLineTree(upperLine);
 
 				tmcLineTree.getChildren().add(copyTree);
-				
+
 				copyTree = new TmcLineTree();
-					
+
 				copyTree.copy(tmcLineTree);
-				
-				result = tmcLineTree;
+
+				tmcTree = tmcLineTree;
+			}
+			if (tmcTree == null) {
+				tmcTree = tree;
+			}
+			TmcLineTree copyResultTree = new TmcLineTree();
+
+			copyResultTree.copy(tmcTree);
+
+			for (TmcArea upperArea : upTmcAreaList) {
+				TmcLineTree tmcAreaTree = new TmcLineTree(upperArea);
+
+				tmcAreaTree.getChildren().add(copyResultTree);
+
+				copyResultTree = new TmcLineTree();
+
+				copyResultTree.copy(tmcAreaTree);
+
+				tmcTree = copyResultTree;
+			}
+			if (tmcTree != null) {
+				treeList.add(tmcTree);
 			}
 		}
-		
+
+		// 对树节点进行合并
+		TmcLineTree firstTree = treeList.get(0);
+
+		for (int i = 1; i < treeList.size(); i++) {
+			TmcLineTree tmpTree = treeList.get(i);
+
+			if (firstTree.equals(tmpTree)) {
+				firstTree = addTree2NewTree(firstTree, firstTree.getChildren(), tmpTree.getChildren());
+			} else {
+				throw new Exception("tmc顶层区域无法合并");
+			}
+		}
+
+		return firstTree;
+	}
+
+	/**
+	 * 将两个树结构数据合并为一个新的树，相同层级相同类型的相同tmcId进行合并
+	 * 
+	 * @param firstTree
+	 * @param tmpTree
+	 * @return
+	 */
+	private TmcLineTree addTree2NewTree(TmcLineTree result, List<TmcLineTree> firstTreeChild,
+			List<TmcLineTree> tmpTreeChild) {
+		for (TmcLineTree firstTree : firstTreeChild) {
+			boolean hasAdd = false;
+			for (TmcLineTree tmpTree : tmpTreeChild) {
+				if (!firstTreeChild.contains(tmpTree)) {
+					result.getChildren().add(tmpTree);
+					hasAdd = true;
+				} else {
+					addTree2NewTree(firstTree, firstTree.getChildren(), tmpTree.getChildren());
+				}
+			}
+			if(hasAdd)
+			{
+				break;
+			}
+		}
+
 		return result;
+
 	}
 
 	public TmcLine queryTmcLineByTmcLineId(int tcmLineId) throws Exception {
@@ -138,6 +242,51 @@ public class TmcSelector {
 		}
 
 		return tmcLine;
+	}
+
+	/**
+	 * 根据tmcAreaId查询TmcArea对象
+	 * 
+	 * @param tcmAreaId
+	 * @return
+	 * @throws Exception
+	 */
+	public TmcArea queryTmcAreaByTmcAreaId(int tcmAreaId) throws Exception {
+		String sql = "SELECT t1.tmc_id,t1.cid,t1.UPAREA_TMC_ID,t2.TRANSLATE_NAME FROM tmc_area t1 LEFT JOIN TMC_AREA_TRANSLATENAME t2 ON t1.TMC_ID = t2.TMC_ID WHERE t1.TMC_ID =:1";
+
+		PreparedStatement pstmt = null;
+
+		TmcArea tmcArea = null;
+
+		ResultSet resultSet = null;
+
+		try {
+
+			pstmt = conn.prepareStatement(sql);
+
+			pstmt.setInt(1, tcmAreaId);
+
+			resultSet = pstmt.executeQuery();
+
+			if (resultSet.next()) {
+				tmcArea = new TmcArea();
+
+				tmcArea.setCid(resultSet.getInt("cid"));
+
+				tmcArea.setName(resultSet.getString("TRANSLATE_NAME"));
+
+				tmcArea.setTmcId(resultSet.getInt("TMC_ID"));
+
+				tmcArea.setUperTmcId(resultSet.getInt("UPAREA_TMC_ID"));
+			}
+		} catch (Exception e) {
+			throw new Exception("根据tmcline查询父节点失败");
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+		}
+
+		return tmcArea;
 	}
 
 	public TmcLine queryTmcLineByPointId(int tmcPointId) throws Exception {
@@ -188,11 +337,13 @@ public class TmcSelector {
 	 * @throws Exception
 	 */
 	public List<TmcPoint> queryTmcPointByLineId(int tmcLineId) throws Exception {
-		String sql = "WITH TMP1 AS (SELECT T.LINE_TMC_ID, T.GEOMETRY, T.TMC_ID,T.CID,T.AREA_TMC_ID FROM TMC_POINT T WHERE T.LINE_TMC_ID = :1) SELECT TMP1.*, B.TRANSLATE_NAME FROM TMP1 LEFT JOIN TMC_POINT_TRANSLATENAME B ON TMP1.TMC_ID = B.TMC_ID WHERE B.NAME_FLAG = 1";
+		String sql = "WITH TMP1 AS (SELECT T.LINE_TMC_ID, T.GEOMETRY, T.TMC_ID, T.CID, T.AREA_TMC_ID,T.LOCOFF_POS,T.LOCOFF_NEG FROM TMC_POINT T WHERE T.LINE_TMC_ID = :1) SELECT TMP1.*, B.TRANSLATE_NAME FROM TMP1 LEFT JOIN TMC_POINT_TRANSLATENAME B ON TMP1.TMC_ID = B.TMC_ID WHERE B.NAME_FLAG = 1 ";
 
 		PreparedStatement pstmt = null;
 
 		List<TmcPoint> tmcPointList = new ArrayList<>();
+
+		Map<Integer, TmcPoint> tmcPointMap = new HashMap<>();
 
 		TmcPoint tmcPoint = null;
 
@@ -219,13 +370,53 @@ public class TmcSelector {
 
 				tmcPoint.setLineTmcId(resultSet.getInt("LINE_TMC_ID"));
 
+				tmcPoint.setLocoffNeg(resultSet.getInt("LOCOFF_NEG"));
+
+				tmcPoint.setLocoffPos(resultSet.getInt("LOCOFF_POS"));
+
 				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
 
-				Geometry geometry = GeoTranslator.struct2Jts(struct);
+				JSONObject geojson = Geojson.spatial2Geojson(struct);
 
-				tmcPoint.setGeo(geometry);
+				JSONArray pointGeo = geojson.getJSONArray("coordinates");
 
-				tmcPointList.add(tmcPoint);
+				tmcPoint.setGeometry(pointGeo);
+
+				tmcPointMap.put(tmcPoint.getTmcId(), tmcPoint);
+			}
+			// 对TMCPOINT排序
+			if (tmcPointMap.size() > 0) {
+				TmcPoint firstTmcPoint = tmcPointMap.values().iterator().next();
+
+				tmcPointList.add(0, firstTmcPoint);
+
+				boolean posFlag = true;
+
+				boolean negFlag = true;
+
+				int pos = firstTmcPoint.getLocoffPos();
+
+				int neg = firstTmcPoint.getLocoffNeg();
+
+				while (posFlag) {
+					if (tmcPointMap.get(pos) != null) {
+						tmcPointList.add(tmcPointList.size(), tmcPointMap.get(pos));
+
+						pos = tmcPointMap.get(pos).getLocoffPos();
+					} else {
+						posFlag = false;
+					}
+				}
+
+				while (negFlag) {
+					if (tmcPointMap.get(neg) != null) {
+						tmcPointList.add(0, tmcPointMap.get(neg));
+
+						neg = tmcPointMap.get(neg).getLocoffNeg();
+					} else {
+						negFlag = false;
+					}
+				}
 			}
 		} catch (Exception e) {
 			throw new Exception("根据tmcPointId查询TMCLine失败");
@@ -434,111 +625,5 @@ public class TmcSelector {
 			DBUtils.closeStatement(pstmt);
 		}
 		return list;
-	}
-
-	private TmcLineTree queryTmcLineTreeByTmcId(int tmcId) throws Exception {
-		TmcLineTree tree = new TmcLineTree();
-
-		String tmcIdStr = String.valueOf(tmcId);
-
-		String cid = "";
-
-		if (tmcIdStr.length() == 8) {
-			cid = tmcIdStr.substring(0, 2);
-		} else if (tmcIdStr.length() == 9) {
-			cid = tmcIdStr.substring(0, 3);
-		}
-
-		Map<Integer, String> tmcTreeInfoMap = getTopTmcLineInfo(cid);
-
-		for (Map.Entry<Integer, String> entry : tmcTreeInfoMap.entrySet()) {
-			int id = entry.getKey();
-
-			String name = entry.getValue();
-
-//			if (tree.getLevel() != 1) {
-//				build(tree, tmcTreeInfoMap);
-//			} else {
-//				tree.setTmcLineId(id);
-//
-//				tree.setLevel(1);
-//
-//				tree.setName(name);
-//			}
-		}
-
-		return tree;
-	}
-
-	private void build(TmcLineTree tree, Map<Integer, String> tmcTreeInfoMap) {
-		List<TmcLineTree> treeList = getChildren(tree, tmcTreeInfoMap);
-		if (CollectionUtils.isNotEmpty(treeList)) {
-			for (TmcLineTree childTree : treeList) {
-				tree.getChildren().add(childTree);
-
-				build(tree, tmcTreeInfoMap);
-			}
-		}
-	}
-
-	/**
-	 * @param tree
-	 * @return
-	 */
-	private List<TmcLineTree> getChildren(TmcLineTree tree, Map<Integer, String> tmcTreeInfoMap) {
-//		int tmcLineId = tree.getTmcLineId();
-//
-//		TmcLineTree childTree = new TmcLineTree();
-//
-//		childTree.setTmcLineId(tmcLineId + 1);
-//
-//		childTree.setName(tmcTreeInfoMap.get(tmcLineId + 1));
-//
-//		childTree.setLevel(tree.getLevel() + 1);
-
-		List<TmcLineTree> treeList = new ArrayList<>();
-
-		//treeList.add(childTree);
-
-		return treeList;
-	}
-
-	/**
-	 * 根据CID查询tmcline信息
-	 * 
-	 * @param cid
-	 * @return
-	 * @throws Exception
-	 */
-	public Map<Integer, String> getTopTmcLineInfo(String cid) throws Exception {
-		Map<Integer, String> tmcInfoMap = new HashMap<>();
-
-		StringBuffer cidStrBuf = new StringBuffer();
-
-		cidStrBuf.append(cid).append("000001,").append(cid).append("000002,").append(cid).append("000003");
-
-		String sql = "select tmc_id,translate_name from TMC_AREA_TRANSLATENAME where tmc_id in(" + cidStrBuf.toString()
-				+ ") order by tmc_id ";
-
-		PreparedStatement pstmt = null;
-
-		ResultSet resultSet = null;
-
-		try {
-
-			pstmt = conn.prepareStatement(sql);
-
-			resultSet = pstmt.executeQuery();
-
-			while (resultSet.next()) {
-				tmcInfoMap.put(resultSet.getInt("tmc_id"), resultSet.getString("translate_name"));
-			}
-		} catch (Exception e) {
-			throw new Exception("查询TMC top3层级树失败");
-		} finally {
-			DBUtils.closeResultSet(resultSet);
-			DBUtils.closeStatement(pstmt);
-		}
-		return tmcInfoMap;
 	}
 }

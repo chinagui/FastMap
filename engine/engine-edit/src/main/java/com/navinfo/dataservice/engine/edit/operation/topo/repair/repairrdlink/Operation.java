@@ -140,13 +140,17 @@ public class Operation implements IOperation {
 	 *            原始link的端点pid
 	 * @param pid
 	 *            修行后新的端点pid
+	 * @throws Exception 
 	 */
-	private void updateNodeForLink(int nodePid, int pid) {
+	private void updateNodeForLink(int nodePid, int pid) throws Exception {
+		JSONObject content= new JSONObject();
 		if (this.command.getUpdateLink().getsNodePid() == nodePid) {
-			this.command.getUpdateLink().setsNodePid(pid);
+			content.put("sNodePid", pid);
+			this.command.getUpdateLink().fillChangeFields(content);
 
 		} else {
-			this.command.getUpdateLink().seteNodePid(pid);
+			content.put("eNodePid", pid);
+			this.command.getUpdateLink().fillChangeFields(content);
 		}
 	}
 

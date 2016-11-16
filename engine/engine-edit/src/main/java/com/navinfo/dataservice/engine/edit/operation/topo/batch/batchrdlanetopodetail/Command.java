@@ -2,7 +2,7 @@ package com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlanetopo
 import java.util.ArrayList;
 import java.util.List;
 
-import javassist.expr.NewArray;
+
 
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;

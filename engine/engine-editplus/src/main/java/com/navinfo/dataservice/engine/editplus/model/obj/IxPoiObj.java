@@ -18,7 +18,7 @@ import com.navinfo.dataservice.engine.editplus.model.obj.BasicObj;
  */
 public class IxPoiObj extends AbstractIxObj {
 
-	public IxPoiObj(IxPoi mainrow) {
+	public IxPoiObj(BasicRow mainrow) {
 		super(mainrow);
 	}
 

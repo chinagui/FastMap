@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.navinfo.dataservice.engine.meta.tmc;
+package com.navinfo.dataservice.engine.meta.tmc.model;
 
 /** 
 * @ClassName: TmcArea 

@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.navinfo.dataservice.engine.meta.tmc;
+package com.navinfo.dataservice.engine.meta.tmc.selector;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -16,6 +16,10 @@ import org.apache.commons.collections.CollectionUtils;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
+import com.navinfo.dataservice.engine.meta.tmc.model.TmcArea;
+import com.navinfo.dataservice.engine.meta.tmc.model.TmcLine;
+import com.navinfo.dataservice.engine.meta.tmc.model.TmcLineTree;
+import com.navinfo.dataservice.engine.meta.tmc.model.TmcPoint;
 import com.navinfo.navicommons.database.sql.DBUtils;
 
 import net.sf.json.JSONArray;
@@ -64,7 +68,7 @@ public class TmcSelector {
 			tmcLine.setGeometry(lineGeo);
 
 			// 3.根据tmcline_id查询父tmcline
-			int upperTmcId = tmcLine.getUpLineTmcId();
+			int upperTmcId = tmcLine.getUplineTmcId();
 
 			List<TmcLine> upTmcLineList = new ArrayList<>();
 
@@ -74,7 +78,7 @@ public class TmcSelector {
 				if (upperTmcLine != null) {
 					upTmcLineList.add(upperTmcLine);
 
-					upperTmcId = upperTmcLine.getUpLineTmcId();
+					upperTmcId = upperTmcLine.getUplineTmcId();
 				}
 			}
 
@@ -225,7 +229,7 @@ public class TmcSelector {
 			if (resultSet.next()) {
 				tmcLine = new TmcLine();
 
-				tmcLine.setCid(resultSet.getInt("cid"));
+				tmcLine.setCid(resultSet.getString("cid"));
 
 				tmcLine.setName(resultSet.getString("TRANSLATE_NAME"));
 
@@ -233,7 +237,7 @@ public class TmcSelector {
 
 				tmcLine.setAreaTmcId(resultSet.getInt("area_tmc_id"));
 
-				tmcLine.setUpLineTmcId(resultSet.getInt("upline_tmc_id"));
+				tmcLine.setUplineTmcId(resultSet.getInt("upline_tmc_id"));
 			}
 		} catch (Exception e) {
 			throw new Exception("根据tmcline查询父节点失败");
@@ -310,7 +314,7 @@ public class TmcSelector {
 			if (resultSet.next()) {
 				tmcLine = new TmcLine();
 
-				tmcLine.setCid(resultSet.getInt("cid"));
+				tmcLine.setCid(resultSet.getString("cid"));
 
 				tmcLine.setName(resultSet.getString("TRANSLATE_NAME"));
 
@@ -318,7 +322,7 @@ public class TmcSelector {
 
 				tmcLine.setAreaTmcId(resultSet.getInt("area_tmc_id"));
 
-				tmcLine.setUpLineTmcId(resultSet.getInt("upline_tmc_id"));
+				tmcLine.setUplineTmcId(resultSet.getInt("upline_tmc_id"));
 			}
 		} catch (Exception e) {
 			throw new Exception("根据tmcPointId查询TMCLine失败");
@@ -361,7 +365,7 @@ public class TmcSelector {
 			while (resultSet.next()) {
 				tmcPoint = new TmcPoint();
 
-				tmcPoint.setCid(resultSet.getInt("cid"));
+				tmcPoint.setCid(resultSet.getString("cid"));
 
 				tmcPoint.setName(resultSet.getString("TRANSLATE_NAME"));
 

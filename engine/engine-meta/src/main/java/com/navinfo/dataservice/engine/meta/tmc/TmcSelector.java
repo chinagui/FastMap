@@ -39,15 +39,16 @@ public class TmcSelector {
 		this.conn = conn;
 	}
 
-	public TmcLineTree queryTmcTree(int[] tmcIds) throws Exception {
+	public TmcLineTree queryTmcTree(JSONArray tmcIds) throws Exception {
 
 		List<TmcLineTree> treeList = new ArrayList<>();
 
-		for (int tmcId : tmcIds) {
+		for (int i=0;i<tmcIds.size();i++) {
+			
 			TmcLineTree tmcTree = null;
 
 			// 1.查询根据tmcPointId查询对应的tmcLine对象
-			TmcLine tmcLine = queryTmcLineByPointId(tmcId);
+			TmcLine tmcLine = queryTmcLineByPointId(tmcIds.getInt(i));
 
 			// 2.根据tmcline_id查询line下所有的tmc_point
 			List<TmcPoint> tmcPointList = queryTmcPointByLineId(tmcLine.getTmcId());

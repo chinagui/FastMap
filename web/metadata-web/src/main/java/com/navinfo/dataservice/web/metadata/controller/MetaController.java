@@ -30,6 +30,7 @@ import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.ZipUtils;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
+import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.engine.meta.area.ScPointAdminArea;
 import com.navinfo.dataservice.engine.meta.chain.ChainSelector;
 import com.navinfo.dataservice.engine.meta.chain.FocusSelector;
@@ -42,8 +43,12 @@ import com.navinfo.dataservice.engine.meta.rdname.RdNameImportor;
 import com.navinfo.dataservice.engine.meta.rdname.RdNameOperation;
 import com.navinfo.dataservice.engine.meta.rdname.RdNameSelector;
 import com.navinfo.dataservice.engine.meta.rdname.ScRoadnameTypename;
-import com.navinfo.dataservice.engine.meta.tmc.TmcLineTree;
-import com.navinfo.dataservice.engine.meta.tmc.TmcSelector;
+import com.navinfo.dataservice.engine.meta.tmc.model.TmcLine;
+import com.navinfo.dataservice.engine.meta.tmc.model.TmcLineTree;
+import com.navinfo.dataservice.engine.meta.tmc.model.TmcPoint;
+import com.navinfo.dataservice.engine.meta.tmc.selector.TmcLineSelector;
+import com.navinfo.dataservice.engine.meta.tmc.selector.TmcPointSelector;
+import com.navinfo.dataservice.engine.meta.tmc.selector.TmcSelector;
 import com.navinfo.dataservice.engine.meta.truck.TruckSelector;
 import com.navinfo.dataservice.engine.meta.workitem.Workitem;
 
@@ -883,7 +888,7 @@ public class MetaController extends BaseController {
 		}
 	}
 	
-	@RequestMapping(value = "/queryTmcByIds")
+	@RequestMapping(value = "/queryTmcTreeByIds")
 	public ModelAndView queryTmcByIds(HttpServletRequest request)
 			throws ServletException, IOException {
 
@@ -902,6 +907,47 @@ public class MetaController extends BaseController {
 
 			return new ModelAndView("jsonView", success(tree.Serialize(ObjLevel.BRIEF)));
 
+		} catch (Exception e) {
+
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		} finally {
+			DbUtils.closeQuietly(conn);
+		}
+	}
+	
+	@RequestMapping(value = "/queryTmcById")
+	public ModelAndView queryTmcPointById(HttpServletRequest request)
+			throws ServletException, IOException {
+
+		String parameter = request.getParameter("parameter");
+		Connection conn = null;
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			
+			conn = DBConnector.getInstance().getMetaConnection();
+
+			int tmcId = jsonReq.getInt("tmcId");
+			
+			String objType = jsonReq.getString("type");
+			
+			switch (ObjType.valueOf(objType)) {
+			case TMCLINE:
+				TmcLineSelector lineSelector = new TmcLineSelector(conn);
+
+				TmcLine tmcLine = lineSelector.loadByTmcLineId(tmcId);
+
+				return new ModelAndView("jsonView", success(tmcLine.Serialize(ObjLevel.BRIEF)));
+			case TMCPOINT:
+				TmcPointSelector pointSelector = new TmcPointSelector(conn);
+
+				TmcPoint tmcPoint = pointSelector.loadByTmcPointId(tmcId);
+
+				return new ModelAndView("jsonView", success(tmcPoint.Serialize(ObjLevel.BRIEF)));
+			default:
+				return new ModelAndView("jsonView", fail("TMC查询类型参数错误"));
+			}
 		} catch (Exception e) {
 
 			logger.error(e.getMessage(), e);

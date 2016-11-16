@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.meta.tmc;
+package com.navinfo.dataservice.engine.meta.tmc.model;
 
 import java.util.ArrayList;
 import java.util.List;

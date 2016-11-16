@@ -81,7 +81,7 @@ public class RdLaneTopoDetailSelector extends AbstractSelector {
 		List<Integer> outLinkPids = new ArrayList<Integer>();
 
 		try {
-			String sql = "SELECT out_link_pid FROM rd_lane_topo_detail WHERE in_link_pid =:1 and node_pid = :2 and u_record !=2";
+			String sql = "SELECT distinct(out_link_pid) FROM rd_lane_topo_detail WHERE in_link_pid =:1 and node_pid = :2 and u_record !=2";
 
 			if (isLock) {
 				sql += " for update nowait";

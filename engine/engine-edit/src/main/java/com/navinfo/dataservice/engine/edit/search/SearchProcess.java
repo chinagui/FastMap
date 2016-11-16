@@ -493,7 +493,10 @@ public class SearchProcess {
 					int nodePid =  condition.getInt("nodePid");
 					RdLaneTopoDetailSelector detailSelector = new RdLaneTopoDetailSelector(conn);
 					List<Integer> list = detailSelector.loadOutLinkByinLink(linkPid,nodePid,false);
-					array.fromObject(list);
+					for(Integer pid :list){
+						array.add(pid);
+					}
+					
 				}
 				//按照一组link查询车道联通信息
 				if (condition.containsKey("linkPids")) {

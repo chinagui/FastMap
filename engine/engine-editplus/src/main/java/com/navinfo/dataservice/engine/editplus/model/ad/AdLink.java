@@ -7,8 +7,9 @@ import java.util.Map;
 
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.engine.editplus.model.AbstractLink;
-import com.navinfo.dataservice.engine.editplus.model.BasicObj;
 import com.navinfo.dataservice.engine.editplus.model.BasicRow;
+import com.navinfo.dataservice.engine.editplus.model.obj.BasicObj;
+import com.navinfo.dataservice.engine.editplus.model.obj.ObjectType;
 
 /** 
  * @ClassName: AdLink
@@ -17,6 +18,11 @@ import com.navinfo.dataservice.engine.editplus.model.BasicRow;
  * @Description: AdLink.java
  */
 public class AdLink extends AbstractLink {
+	
+	public AdLink(long objPid) {
+		super(objPid);
+		// TODO Auto-generated constructor stub
+	}
 
 	private int kind = 1;
 	private int form = 1;
@@ -65,34 +71,7 @@ public class AdLink extends AbstractLink {
 	}
 
 	@Override
-	public String primaryKey() {
-		return "LINK_PID";
-	}
-
-	@Override
-	public Map<Class<? extends BasicRow>, List<BasicRow>> childRows() {
-		Map<Class<? extends BasicRow>,List<BasicRow>> childList = new HashMap<>();
-		childList.put(AdLinkMesh.class, meshes);
-		return childList;
-	}
-
-	@Override
-	public Map<Class<? extends BasicObj>, List<BasicObj>> childObjs() {
-		return null;//没有子对象，返回null;
-	}
-
-
-	@Override
 	public String tableName() {
 		return "AD_LINK";
 	}
-
-	/* (non-Javadoc)
-	 * @see com.navinfo.dataservice.engine.edit.model.BasicRow#objType()
-	 */
-	@Override
-	public ObjType objType() {
-		return ObjType.ADLINK;
-	}
-
 }

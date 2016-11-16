@@ -202,7 +202,7 @@ public class BlockService {
 			} catch (Exception e) {
 				// TODO: handle exception
 				e.printStackTrace();
-				log.error("发送失败,原因:"+e.getMessage(), e);
+				log.error("block编辑消息发送失败,原因:"+e.getMessage(), e);
 			}
 			
 			return updateCount;
@@ -558,7 +558,7 @@ public class BlockService {
 			} catch (Exception e) {
 				// TODO: handle exception
 				e.printStackTrace();
-				log.error("发送失败,原因:"+e.getMessage(), e);
+				log.error("block关闭消息发送失败,原因:"+e.getMessage(), e);
 			}
 			
 			return unClosedBlocks;
@@ -972,7 +972,7 @@ public class BlockService {
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
-			throw new Exception("发布失败，原因为:" + e.getMessage(), e);
+			throw new Exception("新增block消息发送失败，原因为:" + e.getMessage(), e);
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
@@ -1584,6 +1584,7 @@ public class BlockService {
 			//获取数据
 			List<Map<String, Object>> list = queryRunner.query(conn, sql, rsh, params);
 			//日志
+			log.info("查询的blockMan数据的sql"+sql);
 			log.info("查询的blockMan数据"+list.toString());
 			return list;
 		}catch(Exception e){

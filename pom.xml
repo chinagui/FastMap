@@ -707,6 +707,11 @@
 				<artifactId>engine-meta</artifactId>
 				<version>0.0.1-SNAPSHOT</version>
 			</dependency>
+			<dependency>
+				<groupId>com.navinfo.dataservice</groupId>
+				<artifactId>engine-check</artifactId>
+				<version>0.0.1-SNAPSHOT</version>
+			</dependency>
             <dependency>
 				<groupId>com.navinfo.dataservice</groupId>
 				<artifactId>dao-fcc-data</artifactId>

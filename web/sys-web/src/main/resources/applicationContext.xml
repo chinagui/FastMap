@@ -67,6 +67,17 @@
 	
 	<mvc:annotation-driven/>
 	
+	<!-- man websocket配置 -->
+	<bean id="msgManWebSocketHandler" class="com.navinfo.dataservice.engine.sys.msg.websocket.MsgManWebSocketHandler"/>
+    
+	<websocket:handlers	allowed-origins="*">
+		<websocket:mapping 	path="/message/manWebSocketServer" handler="msgManWebSocketHandler"/>
+		<!-- 握手协议接口 --> 
+		<websocket:handshake-interceptors>
+			<bean class="com.navinfo.dataservice.web.sys.websocket.ManWebSocketHandshakeInterceptor"></bean>
+		</websocket:handshake-interceptors>
+	</websocket:handlers>
+	
 	<!-- test begin -->
 	<!-- 
 	<bean

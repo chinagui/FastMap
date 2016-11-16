@@ -95,6 +95,24 @@ public class RdLaneTopoDetail implements IObj {
 
 	
 
+	public int getProcessFlag() {
+		return processFlag;
+	}
+
+	public void setProcessFlag(int processFlag) {
+		this.processFlag = processFlag;
+	}
+
+	public int getThroughTurn() {
+		return throughTurn;
+	}
+
+	public void setThroughTurn(int throughTurn) {
+		this.throughTurn = throughTurn;
+	}
+
+
+
 	private int inLanePid; // 进入车道
 	private int outLanePid; // 退出车道
 	private int inLinkPid;// 进入 LINK
@@ -103,6 +121,8 @@ public class RdLaneTopoDetail implements IObj {
 	private int reachDir = 0; // 通达方向
 	private String timeDomain ;// 时间段
 	private long vehicle = 0;// 车辆类型
+	private int processFlag = 2;//处理标志
+	private int throughTurn = 0;//是否借道
 
 
 	private List<IRow> topoVias = new ArrayList<IRow>();

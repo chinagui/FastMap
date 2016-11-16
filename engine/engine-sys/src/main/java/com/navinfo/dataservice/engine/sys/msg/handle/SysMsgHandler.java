@@ -4,7 +4,9 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -15,6 +17,7 @@ import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.dao.mq.MsgHandler;
 import com.navinfo.dataservice.engine.sys.msg.SysMsg;
+import com.navinfo.dataservice.engine.sys.msg.websocket.MsgManWebSocketHandler;
 import com.navinfo.dataservice.engine.sys.msg.websocket.SysMsgWebSocketHandler;
 import com.navinfo.navicommons.database.QueryRunner;
 
@@ -86,6 +89,7 @@ public class SysMsgHandler implements MsgHandler {
 					sendMessage(id);
 				}else if(msgType==2){
 					//管理消息
+					sendManMsg(id);
 				}
 			}
 		} catch (Exception e2) {
@@ -127,6 +131,44 @@ public class SysMsgHandler implements MsgHandler {
 		}
 	}
 	
+	/**
+	 * 发送管理消息
+	 * @author Han Shaoming
+	 * @param id
+	 */
+	private void sendManMsg(long id){
+		Connection conn = null;
+		QueryRunner queryRunner = null;
+		try {
+			//查询消息并将消息发送给用户
+			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
+			queryRunner = new QueryRunner();
+			String userSql = "SELECT * FROM SYS_MESSAGE WHERE MSG_ID=?";
+			Object[] userParams = {id};
+			//查询管理消息
+			List<Map<String, Object>> sysMsg = queryRunner.query(conn, userSql, userParams, new ManMsgHandler());
+			for (Map<String, Object> map : sysMsg) {
+				String jsonSysMsg = JSONArray.fromObject(sysMsg).toString();
+				if(map.get("targetUserId") != null){
+					if((long)map.get("targetUserId")==0){
+						//发给所有人
+						MsgManWebSocketHandler.getInstance().sendMessageToUsers(new TextMessage(jsonSysMsg));
+					}
+					if((long)map.get("targetUserId") > 0){
+						//发给指定用户
+						MsgManWebSocketHandler.getInstance().sendMessageToUser(Long.toString((long) map.get("targetUserId")), new TextMessage(jsonSysMsg));
+					}
+				}
+			}
+		} catch (SQLException e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			e.printStackTrace();
+			log.error("查询失败,原因为:"+e.getMessage(), e);
+		} finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
 	/* resultset handler */
 	class MultiRowHandler implements ResultSetHandler<List<SysMsg>>{
 		
@@ -147,6 +189,34 @@ public class SysMsgHandler implements MsgHandler {
 			}
 			return msgs;
 		}
-		
 	}
+
+/**
+ * MAN管理消息的结果集
+ * @ClassName ManMsgHandler
+ * @author Han Shaoming
+ * @date 2016年11月14日 下午1:59:30
+ * @Description TODO
+ */
+class ManMsgHandler implements ResultSetHandler<List<Map<String,Object>>>{
+		
+		public List<Map<String,Object>> handle(ResultSet rs) throws SQLException {
+			List<Map<String,Object>> msgs = new ArrayList<Map<String,Object>>();
+			while(rs.next()){
+				Map<String,Object> msg = new HashMap<String, Object>();
+				msg.put("msgId",rs.getLong("MSG_ID"));
+				msg.put("msgContent",rs.getString("MSG_CONTENT"));
+				msg.put("createTime",rs.getTimestamp("CREATE_TIME"));
+				msg.put("msgTitle",rs.getString("MSG_TITLE"));
+				msg.put("targetUserId",rs.getLong("TARGET_USER_ID"));
+				msg.put("pushUserId",rs.getLong("PUSH_USER_ID"));
+				msg.put("pushUserName",rs.getString("PUSH_USER_NAME"));
+				msg.put("type", "message");
+				msgs.add(msg);
+			}
+			return msgs;
+		}
+	}
+
+
 }

@@ -4,25 +4,31 @@ import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
+import com.navinfo.dataservice.commons.exception.DataNotChangeException;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 import com.navinfo.dataservice.engine.check.CheckEngine;
+import com.navinfo.dataservice.engine.edit.service.EditApiImpl;
 import com.navinfo.navicommons.database.sql.DBUtils;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import net.sf.json.JSONSerializer;
 
 public class DeepCoreControl {
 	private static final Logger logger = Logger.getLogger(DeepCoreControl.class);
@@ -230,5 +236,104 @@ public class DeepCoreControl {
 			DBUtils.closeStatement(pstmt);
 		}
 	}
+	
+    /**
+     * @param parameter
+     * @param userId
+     * @return
+     * @throws Exception
+     * @Gaopr POI深度信息作业保存
+     */
+    @SuppressWarnings("null")
+	public JSONObject save(String parameter, long userId) throws Exception {
+
+        Connection conn = null;
+        JSONObject result = null;
+        try {
+
+            JSONObject json = JSONObject.fromObject(parameter);
+
+            ObjType objType = Enum.valueOf(ObjType.class,
+                    json.getString("type"));
+
+            int dbId = json.getInt("dbId");
+
+            conn = DBConnector.getInstance().getConnectionById(dbId);
+
+            JSONObject poiData = json.getJSONObject("data");
+
+            if (poiData.size() == 0) {
+                upatePoiStatus(json.getString("objId"), conn, 1);
+                return result;
+            }
+            
+            json.put("command", "UPDATE");
+
+            EditApiImpl editApiImpl = new EditApiImpl(conn);
+            editApiImpl.setToken(userId);
+            result = editApiImpl.runPoi(json);
+            
+            StringBuffer sb = new StringBuffer();
+            int pid = 0;
+            pid = result.getInt("pid");
+            sb.append(String.valueOf(pid));
+            
+            List<Integer> pids = null;
+            pids.add(pid);
+
+            //更新数据状态
+            upatePoiStatus(sb.toString(), conn,1);
+            //调用清理检查结果方法
+            cleanCheckResult(pids,conn);
+            //执行检查
+            Object[] rules = new Object[] {"FM-ZY-20-152", "FM-ZY-20-153","FM-ZY-20-154","FM-ZY-20-155"};  
+            JSONArray checkResultList = (JSONArray) JSONSerializer.toJSON(rules);
+
+            deepCheckRun(pids,checkResultList,objType.toString(),"UPDATE",conn);
+            
+            return result;
+        } catch (DataNotChangeException e) {
+            DbUtils.rollback(conn);
+            logger.error(e.getMessage(), e);
+            throw e;
+        } catch (Exception e) {
+            DbUtils.rollback(conn);
+            logger.error(e.getMessage(), e);
+            throw e;
+        } finally {
+            DbUtils.commitAndClose(conn);
+        }
+    }
+    
+    /**
+     * poi操作修改poi状态为已作业，Flag 1 保存 1 提交
+     *
+     * @param pids
+     * @throws Exception
+     */
+    public void upatePoiStatus(String pids, Connection conn,int flag) throws Exception {
+        StringBuilder sb = new StringBuilder();
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");//设置日期格式
+        System.out.println(df.format(new Date()));// new Date()为获取当前系统时间
+
+        if (flag==1) {
+            sb.append(" UPDATE poi_deep_status T1 SET T1.status = 2 T1.update_date = "+df.format(new Date()));
+        } else {
+        	sb.append(" UPDATE poi_deep_status T1 SET T1.status = 3 T1.update_date = "+df.format(new Date()));
+        }
+
+
+        PreparedStatement pstmt = null;
+        try {
+            pstmt = conn.prepareStatement(sb.toString());
+            pstmt.executeUpdate();
+        } catch (Exception e) {
+            throw e;
+
+        } finally {
+            DBUtils.closeStatement(pstmt);
+        }
+
+    }
 	
 }

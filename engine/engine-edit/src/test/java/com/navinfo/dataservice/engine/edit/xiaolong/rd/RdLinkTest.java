@@ -8,7 +8,6 @@ import java.util.List;
 import org.apache.commons.dbutils.DbUtils;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.web.servlet.ModelAndView;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -38,15 +37,11 @@ public class RdLinkTest extends InitApplication {
 	public void testGetByPid() {
 		Connection conn;
 		try {
-			conn = DBConnector.getInstance().getConnectionById(19);
-
-			String parameter = "{\"type\":\"RWLINK\",\"dbId\":42,\"objId\":100007138}";
-
-			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			conn = DBConnector.getInstance().getConnectionById(17);
 
 			SearchProcess p = new SearchProcess(conn);
 
-			System.out.println(p.searchDataByPid(ObjType.RDLANECONNEXITY, 32060).Serialize(ObjLevel.BRIEF));
+			System.out.println(p.searchDataByPid(ObjType.RDLINK, 574325).Serialize(ObjLevel.FULL));
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -81,7 +76,7 @@ public class RdLinkTest extends InitApplication {
 
 	@Test
 	public void testDelete() {
-		String parameter = "{\"command\":\"CREATE\",\"dbId\":17,\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.39576643705367,40.030863566821544],[116.39630556106567,40.03086562058379]]},\"catchLinks\":[]},\"type\":\"RDLINK\"}";
+		String parameter = "{\"command\":\"DELETE\",\"type\":\"RDMILAGEPILE\",\"dbId\":17,\"objId\":300000004}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.navinfo.dataservice.dao.glm.model.rd.tmc;
+package com.navinfo.dataservice.dao.glm.model.rd.link;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;

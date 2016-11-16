@@ -78,7 +78,6 @@ public class Operation implements IOperation {
 					point = (Point) GeoTranslator.transform(GeoTranslator
 							.point2Jts(obj.getDouble("longitude"),
 									obj.getDouble("latitude")), 1, 5);
-					obj.containsKey("catchNodePid");
 					// 分离移动后的经纬度
 					lon = point.getX();
 					lat = point.getY();

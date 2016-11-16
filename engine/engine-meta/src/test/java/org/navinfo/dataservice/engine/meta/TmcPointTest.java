@@ -7,14 +7,12 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
-import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.engine.meta.service.MetadataApiImpl;
@@ -106,9 +104,13 @@ public class TmcPointTest {
 			conn = DBConnector.getInstance().getMetaConnection();
 			TmcSelector selector = new TmcSelector(conn);
 			
-			int[] tmcIds = {522006167,522002094};
+			JSONArray array = new JSONArray();
 			
-			TmcLineTree result = selector.queryTmcTree(tmcIds);
+			array.add(522006167);
+			
+			array.add(522002094);
+			
+			TmcLineTree result = selector.queryTmcTree(array);
 			
 			System.out.println(result.Serialize(ObjLevel.BRIEF));
 			

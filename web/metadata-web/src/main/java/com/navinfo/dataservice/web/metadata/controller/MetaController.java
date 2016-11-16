@@ -29,6 +29,7 @@ import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.ZipUtils;
+import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.engine.meta.area.ScPointAdminArea;
 import com.navinfo.dataservice.engine.meta.chain.ChainSelector;
 import com.navinfo.dataservice.engine.meta.chain.FocusSelector;
@@ -41,6 +42,8 @@ import com.navinfo.dataservice.engine.meta.rdname.RdNameImportor;
 import com.navinfo.dataservice.engine.meta.rdname.RdNameOperation;
 import com.navinfo.dataservice.engine.meta.rdname.RdNameSelector;
 import com.navinfo.dataservice.engine.meta.rdname.ScRoadnameTypename;
+import com.navinfo.dataservice.engine.meta.tmc.TmcLineTree;
+import com.navinfo.dataservice.engine.meta.tmc.TmcSelector;
 import com.navinfo.dataservice.engine.meta.truck.TruckSelector;
 import com.navinfo.dataservice.engine.meta.workitem.Workitem;
 
@@ -869,6 +872,35 @@ public class MetaController extends BaseController {
 			int truck = selector.getTruck(kind,chain,fuelType);
 
 			return new ModelAndView("jsonView", success(truck));
+
+		} catch (Exception e) {
+
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		} finally {
+			DbUtils.closeQuietly(conn);
+		}
+	}
+	
+	@RequestMapping(value = "/queryTmcByIds")
+	public ModelAndView queryTmcByIds(HttpServletRequest request)
+			throws ServletException, IOException {
+
+		String parameter = request.getParameter("parameter");
+		Connection conn = null;
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			JSONArray tmcIds = jsonReq.getJSONArray("tmcIds");
+			
+			conn = DBConnector.getInstance().getMetaConnection();
+			
+			TmcSelector selector = new TmcSelector(conn);
+
+			TmcLineTree tree = selector.queryTmcTree(tmcIds);
+
+			return new ModelAndView("jsonView", success(tree.Serialize(ObjLevel.BRIEF)));
 
 		} catch (Exception e) {
 

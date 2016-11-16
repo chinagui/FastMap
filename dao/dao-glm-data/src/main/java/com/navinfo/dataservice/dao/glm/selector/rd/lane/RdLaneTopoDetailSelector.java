@@ -94,7 +94,7 @@ public class RdLaneTopoDetailSelector extends AbstractSelector {
 			resultSet = pstmt.executeQuery();
 
 			while (resultSet.next()) {
-				outLinkPids.add(resultSet.getInt("outLinkPid"));
+				outLinkPids.add(resultSet.getInt("out_link_pid"));
 			}
 		} catch (Exception e) {
 			throw e;

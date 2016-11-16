@@ -172,6 +172,8 @@ public class RdLink implements IObj {
 	private List<IRow> walkstairs = new ArrayList<IRow>();
 
 	private List<IRow> zones = new ArrayList<IRow>();
+	
+	private List<IRow> tmclocations = new ArrayList<IRow>();
 
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 
@@ -194,6 +196,8 @@ public class RdLink implements IObj {
 	public Map<String, RdLinkWalkstair> walkstairMap = new HashMap<String, RdLinkWalkstair>();
 
 	public Map<String, RdLinkZone> zoneMap = new HashMap<String, RdLinkZone>();
+	
+	public Map<String, RdTmclocation> locationMap = new HashMap<String, RdTmclocation>();
 
 	public RdLink() {
 
@@ -751,6 +755,32 @@ public class RdLink implements IObj {
 		}
 
 		this.setWalkstairs(walkstairs);		
+		
+		List<IRow> tmcLocationSources = sourceLink.getWalkstairs();
+
+		List<IRow> tmcLocations = new ArrayList<IRow>();
+
+		for (IRow fs : tmcLocationSources) {
+			
+			RdTmclocation locationSource = (RdTmclocation) fs;
+			
+			RdTmclocation locationNew = new RdTmclocation();
+			
+			locationNew.copy(locationSource);
+
+			List<IRow> tmcLocationLinks = locationNew.getLinks();
+			
+			for(IRow tmcLinkRow : tmcLocationLinks)
+			{
+				RdTmclocationLink tmcLocationLink = (RdTmclocationLink) tmcLinkRow;
+				
+				tmcLocationLink.setLinkPid(this.getPid());
+			}
+
+			tmcLocations.add(locationNew);
+		}
+
+		this.setWalkstairs(walkstairs);		
 	}
 
 	@Override
@@ -801,8 +831,18 @@ public class RdLink implements IObj {
 		children.add(this.getSidewalks());
 
 		children.add(this.getWalkstairs());
+		
+		children.add(this.getTmclocations());
 
 		return children;
+	}
+	
+	public List<IRow> getTmclocations() {
+		return tmclocations;
+	}
+
+	public void setTmclocations(List<IRow> tmclocations) {
+		this.tmclocations = tmclocations;
 	}
 
 	@Override
@@ -1245,6 +1285,7 @@ public class RdLink implements IObj {
 		childList.put(RdLinkSpeedlimit.class, speedlimits);
 		childList.put(RdLinkWalkstair.class, walkstairs);
 		childList.put(RdLinkZone.class, zones);
+		childList.put(RdTmclocation.class, tmclocations);
 		return childList;
 	}
 
@@ -1261,6 +1302,7 @@ public class RdLink implements IObj {
 		childMap.put(RdLinkSpeedlimit.class, speedlimitMap);
 		childMap.put(RdLinkWalkstair.class, walkstairMap);
 		childMap.put(RdLinkZone.class, zoneMap);
+		childMap.put(RdTmclocation.class, locationMap);
 		return childMap;
 	}
 

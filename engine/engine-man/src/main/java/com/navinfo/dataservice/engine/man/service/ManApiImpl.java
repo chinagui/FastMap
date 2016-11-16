@@ -2,27 +2,18 @@ package com.navinfo.dataservice.engine.man.service;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.springframework.stereotype.Service;
 
 import com.navinfo.dataservice.api.man.iface.ManApi;
-import com.navinfo.dataservice.api.man.model.Grid;
 import com.navinfo.dataservice.api.man.model.Message;
 import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.engine.man.block.BlockOperation;
 import com.navinfo.dataservice.engine.man.city.CityService;
-import com.navinfo.dataservice.engine.man.grid.GridService;
+import com.navinfo.dataservice.engine.man.config.ConfigService;
 import com.navinfo.dataservice.engine.man.message.MessageService;
-import com.navinfo.dataservice.engine.man.produce.ProduceOperation;
-import com.navinfo.dataservice.engine.man.produce.ProduceService;
-import com.navinfo.dataservice.engine.man.region.RegionService;
-import com.navinfo.dataservice.engine.man.city.CityService;
-import com.navinfo.dataservice.engine.man.grid.GridService;
-import com.navinfo.dataservice.engine.man.message.MessageService;
-import com.navinfo.dataservice.engine.man.produce.ProduceOperation;
 import com.navinfo.dataservice.engine.man.produce.ProduceService;
 import com.navinfo.dataservice.engine.man.region.RegionService;
 import com.navinfo.dataservice.engine.man.statics.StaticsService;
@@ -31,7 +22,6 @@ import com.navinfo.dataservice.engine.man.subtask.SubtaskService;
 import com.navinfo.dataservice.engine.man.task.TaskService;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoService;
 import com.navinfo.dataservice.engine.man.version.VersionService;
-import com.navinfo.navicommons.exception.ServiceException;
 
 import net.sf.json.JSONObject;
 /*
@@ -154,6 +144,12 @@ public class ManApiImpl implements ManApi {
 	public int createJob(long userId, String produceType, JSONObject paraJson) throws Exception {
 		// TODO Auto-generated method stub
 		return ProduceService.getInstance().create(userId,produceType,paraJson,0);
+	}
+	
+	@Override
+	public String queryConfValueByConfKey(String confKey) throws Exception {
+		// TODO Auto-generated method stub
+		return ConfigService.getInstance().query(confKey);
 	}
 }
 

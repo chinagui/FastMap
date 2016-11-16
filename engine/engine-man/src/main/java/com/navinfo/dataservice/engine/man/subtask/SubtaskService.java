@@ -114,50 +114,6 @@ public class SubtaskService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-
-	/**
-	 * @Title: createQualitySubtask
-	 * @Description: 创建一个质检子任务。 参数1：Subtask对象(新增)(第七迭代)
-	 * @param bean
-	 * @return
-	 * @throws ServiceException  Integer
-	 * @throws 
-	 * @author zl zhangli5174@navinfo.com
-	 * @date 2016年11月3日 下午6:16:01 
-	 */
-	public Integer createQualitySubtask(Subtask bean)throws ServiceException {
-		Connection conn = null;
-		try {
-			conn = DBConnector.getInstance().getManConnection();
-			// 获取subtaskId
-			int subtaskId = SubtaskOperation.getSubtaskId(conn, bean);
-
-			bean.setSubtaskId(subtaskId);
-			if(bean.getStatus()== null){
-				bean.setStatus(1);
-			}
-			
-			// 插入subtask
-			SubtaskOperation.insertSubtask(conn, bean);
-			
-			// 插入SUBTASK_GRID_MAPPING
-			if(bean.getGridIds() != null){
-				SubtaskOperation.insertSubtaskGridMapping(conn, bean);
-			}
-			
-			//消息发布
-			/*if(bean.getStatus()==1){
-				SubtaskOperation.pushMessage(conn,bean);
-			}*/	
-			return subtaskId;
-		} catch (Exception e) {
-			DbUtils.rollbackAndCloseQuietly(conn);
-			log.error(e.getMessage(), e);
-			throw new ServiceException("创建失败，原因为:" + e.getMessage(), e);
-		} finally {
-			DbUtils.commitAndCloseQuietly(conn);
-		}
-	}
 	/*
 	 * 根据几何范围,任务类型，作业阶段查询任务列表 参数1：几何范围，String wkt
 	 */
@@ -175,6 +131,7 @@ public class SubtaskService {
 					+ ",s.stage"
 					+ ",s.status"
 					+ ", s.geometry"
+					+ ", s.refer_geometry"
 					+ ",s.descp"
 					+ " from subtask s "
 					+ "where SDO_GEOM.RELATE(geometry, 'ANYINTERACT', "
@@ -194,6 +151,14 @@ public class SubtaskService {
 						STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
 						try {
 							subtask.setGeometry(GeoTranslator.struct2Wkt(struct));
+						} catch (Exception e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+						
+						STRUCT referStruct = (STRUCT) rs.getObject("REFER_GEOMETRY");
+						try {
+							subtask.setReferGeometry(GeoTranslator.struct2Wkt(referStruct));
 						} catch (Exception e1) {
 							// TODO Auto-generated catch block
 							e1.printStackTrace();
@@ -234,7 +199,7 @@ public class SubtaskService {
 	/*
 	 * 批量修改子任务详细信息。 参数：Subtask对象列表
 	 */
-	public String update(JSONArray subtaskArray, long userId) throws ServiceException, ParseException {
+	public String update(JSONArray subtaskArray, long userId) throws ServiceException, ParseException, Exception {
 		List<Subtask> subtaskList = new ArrayList<Subtask>();
 		SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
 		
@@ -260,10 +225,10 @@ public class SubtaskService {
 			}				
 			
 			//正常修改子任务
-			Subtask subtask = (Subtask)JsonOperation.jsonToBean(subtaskArray.getJSONObject(i),Subtask.class);	
+			Subtask subtask = createSubtaskBean(userId,subtaskArray.getJSONObject(i));
 			//创建或者修改常规任务时，均要调用修改质检任务的代码
 			if(qualitySubtaskId != 0){//非0的时候，表示要修改质检子任务
-				Subtask qualitySubtask = (Subtask)JsonOperation.jsonToBean(subtaskArray.getJSONObject(i),Subtask.class);//生成质检子任务的bean
+				Subtask qualitySubtask = createSubtaskBean(userId,subtaskArray.getJSONObject(i));//生成质检子任务的bean
 				qualitySubtask.setSubtaskId(qualitySubtaskId);
 				qualitySubtask.setExeUserId(qualityExeUserId);
 				qualitySubtask.setPlanStartDate(new Timestamp(df.parse(qualityPlanStartDate).getTime()));
@@ -280,6 +245,13 @@ public class SubtaskService {
 					qualitySubtask.setPlanEndDate(new Timestamp(df.parse(qualityPlanEndDate).getTime()));
 					qualitySubtask.setIsQuality(1);//表示此bean是质检子任务
 					qualitySubtask.setExeUserId(qualityExeUserId);
+					if(subtaskArray.getJSONObject(i).containsKey("gridIds")){
+						qualitySubtask.setGridIds(subtask.getGridIds());
+						//根据gridIds获取wkt
+						String wkt = GridUtils.grids2Wkt(subtaskArray.getJSONObject(i).getJSONArray("gridIds"));
+						qualitySubtask.setGeometry(wkt);
+					}
+					
 					//创建质检子任务 subtask	
 					Integer newQualitySubtaskId = SubtaskService.getInstance().create(qualitySubtask);	
 					subtask.setIsQuality(0);
@@ -871,10 +843,11 @@ public class SubtaskService {
 			String wkt = null;
 			if(dataJson.containsKey("gridIds")){
 				JSONArray gridIds = dataJson.getJSONArray("gridIds");
-				Object[] gridIdList = gridIds.toArray();
-				dataJson.put("gridIds",gridIdList);
-				//根据gridIds获取wkt
-				wkt = GridUtils.grids2Wkt(gridIds);
+				if(!gridIds.isEmpty() || gridIds.size()>0){
+					Object[] gridIdList = gridIds.toArray();
+					dataJson.put("gridIds",gridIdList);
+					//根据gridIds获取wkt
+					wkt = GridUtils.grids2Wkt(gridIds);}
 //				if(wkt.contains("MULTIPOLYGON")){
 //					throw new IllegalArgumentException("请输入符合条件的grids");
 //				}

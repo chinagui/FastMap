@@ -14,11 +14,11 @@ import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
-public class IxPoiDeepStatusSelector extends AbstractSelector {
+public class IxPoiColumnStatusSelector extends AbstractSelector {
 	
 	private Connection conn;
 
-	public IxPoiDeepStatusSelector(Connection conn) {
+	public IxPoiColumnStatusSelector(Connection conn) {
 		super(conn);
 		this.conn = conn;
 	}

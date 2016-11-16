@@ -24,38 +24,26 @@ import org.apache.commons.dbutils.handlers.MapHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
-import com.alibaba.druid.sql.visitor.functions.If;
 import com.navinfo.dataservice.api.fcc.iface.FccApi;
-import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Message;
 import com.navinfo.dataservice.api.man.model.Subtask;
-import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.api.statics.iface.StaticsApi;
 import com.navinfo.dataservice.api.statics.model.GridStatInfo;
 import com.navinfo.dataservice.api.statics.model.SubtaskStatInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
-import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
-import com.navinfo.dataservice.commons.sql.SqlClause;
 import com.navinfo.dataservice.commons.util.ArrayUtil;
-import com.navinfo.dataservice.commons.util.DateUtils;
-import com.navinfo.dataservice.commons.xinge.XingeUtil;
 import com.navinfo.dataservice.engine.man.message.MessageService;
 import com.navinfo.dataservice.engine.man.task.TaskOperation;
-import com.navinfo.dataservice.engine.man.userDevice.UserDeviceService;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoOperation;
-import com.navinfo.dataservice.engine.man.userInfo.UserInfoService;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
-import com.navinfo.navicommons.geo.computation.CompGridUtil;
 import com.navinfo.navicommons.geo.computation.GridUtils;
-import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -90,7 +78,7 @@ public class SubtaskOperation {
 			String baseSql = "update SUBTASK set ";
 			QueryRunner run = new QueryRunner();
 			String updateSql="";
-
+			List<Object> value = new ArrayList<Object>();
 			if (bean!=null&&bean.getName()!=null && StringUtils.isNotEmpty(bean.getName().toString())){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql += " NAME= " + "'" + bean.getName() + "'";
@@ -128,14 +116,29 @@ public class SubtaskOperation {
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql += " IS_QUALITY= " + bean.getIsQuality();
 			};
-			
-			
+			if (bean!=null&&bean.getReferGeometry()!=null && StringUtils.isNotEmpty(bean.getReferGeometry().toString())){
+				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
+				updateSql+=" REFER_GEOMETRY=? ";
+				value.add(GeoTranslator.wkt2Struct(conn,bean.getReferGeometry()));
+			};
+			if (bean!=null&&bean.getGeometry()!=null && StringUtils.isNotEmpty(bean.getGeometry().toString())){
+				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
+				updateSql+=" GEOMETRY=? ";
+				value.add(GeoTranslator.wkt2Struct(conn,bean.getGeometry()));
+			};	
+			if(bean.getGridIds() != null){
+				//前端传入grids修改，需要重新更新子任务的grid
+				SubtaskOperation.deleteSubtaskGridMapping(conn, bean.getSubtaskId());
+				SubtaskOperation.insertSubtaskGridMapping(conn, bean);
+			}
 
 			if (bean!=null&&bean.getSubtaskId()!=null && StringUtils.isNotEmpty(bean.getSubtaskId().toString())){
 				updateSql += " where SUBTASK_ID= " + bean.getSubtaskId();
 			};
-			
-			run.update(conn,baseSql+updateSql);
+			if(value.isEmpty() || value.size()==0){
+				run.update(conn,baseSql+updateSql);}
+			else{
+				run.update(conn,baseSql+updateSql,value);}
 			
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -410,85 +413,154 @@ public class SubtaskOperation {
 		try{
 			QueryRunner run = new QueryRunner();
 			
+			String column = "";
+			String values = "";
 			List<Object> value = new ArrayList<Object>();
+			if (bean!=null&&bean.getSubtaskId()!=null && bean.getSubtaskId()!=0 && StringUtils.isNotEmpty(bean.getSubtaskId().toString())){
+				if(StringUtils.isNotEmpty(column)){column+=" , ";values+=" , ";}
+				column+=" SUBTASK_ID ";
+				values+=" ? ";
+				value.add(bean.getSubtaskId());
+			};
+			if (bean!=null&&bean.getName()!=null && StringUtils.isNotEmpty(bean.getName().toString())){
+				if(StringUtils.isNotEmpty(column)){column+=" , ";values+=" , ";}
+				column+=" NAME ";
+				values+=" ? ";
+				value.add(bean.getName());
+			};
+			if (bean!=null&&bean.getGeometry()!=null && StringUtils.isNotEmpty(bean.getGeometry().toString())){
+				if(StringUtils.isNotEmpty(column)){column+=" , ";values+=" , ";}
+				column+=" GEOMETRY ";
+				values+=" ? ";
+				value.add(GeoTranslator.wkt2Struct(conn,bean.getGeometry()));
+			};
+			if (bean!=null&&bean.getStage()!=null && bean.getStage()!=0 
+					&& StringUtils.isNotEmpty(bean.getStage().toString())){
+				if(StringUtils.isNotEmpty(column)){column+=" , ";values+=" , ";}
+				column+=" STAGE ";
+				values+=" ? ";
+				value.add(bean.getStage());
+			};
+			if (bean!=null&&bean.getType()!=null && bean.getType()!=0 
+					&& StringUtils.isNotEmpty(bean.getType().toString())){
+				if(StringUtils.isNotEmpty(column)){column+=" , ";values+=" , ";}
+				column+=" TYPE ";
+				values+=" ? ";
+				value.add(bean.getType());
+			};
+			if (bean!=null&&bean.getCreateUserId()!=null && bean.getCreateUserId()!=0 
+					&& StringUtils.isNotEmpty(bean.getCreateUserId().toString())){
+				if(StringUtils.isNotEmpty(column)){column+=" , ";values+=" , ";}
+				column+=" CREATE_USER_ID ";
+				values+=" ? ";
+				value.add(bean.getCreateUserId());
+			};
 			
-			value.add(bean.getSubtaskId());
-			value.add(bean.getName());
-			
-			//geo
-			Clob c = ConnectionUtil.createClob(conn);
-			c.setString(1, bean.getGeometry());
-			value.add(c);
-//			SqlClause inClause = SqlClause.genGeoClauseWithGeoString(conn,bean.getGeometry());
-//			if (inClause!=null)
-//				value.add(inClause.getValues().get(0));
-			//referGeometry
-			
-			value.add(bean.getStage());
-			value.add(bean.getType());
-			value.add(bean.getCreateUserId());
-//			value.add(bean.getExeUserId());
+			if(StringUtils.isNotEmpty(column)){column+=" , ";values+=" , ";}
+			column+=" CREATE_DATE ";
+			values+=" to_date(?,'yyyy-MM-dd HH24:MI:ss') ";
 			value.add(new Timestamp(System.currentTimeMillis()).toString().substring(0, 10));
-			value.add(bean.getStatus());
-			value.add(bean.getPlanStartDate().toString().substring(0, 10));
-			value.add(bean.getPlanEndDate().toString().substring(0, 10));
-			value.add(bean.getDescp());
-			//GEOMETRY, ,sdo_geometry(?,8307)
-			String createSql = "insert into SUBTASK " ;
-			String column = "(SUBTASK_ID, NAME, GEOMETRY,STAGE, TYPE, CREATE_USER_ID, CREATE_DATE, STATUS, PLAN_START_DATE, PLAN_END_DATE, DESCP";
-			String values = "values(?,?,sdo_geometry(?,8307),?,?,?,to_date(?,'yyyy-MM-dd HH24:MI:ss'),?,to_date(?,'yyyy-MM-dd HH24:MI:ss'),to_date(?,'yyyy-MM-dd HH24:MI:ss'),?";
-
-			if(0!=bean.getBlockManId()){
-				column += ", BLOCK_MAN_ID";
+			
+			if (bean!=null&&bean.getStatus()!=null && bean.getStatus()!=0 
+					&& StringUtils.isNotEmpty(bean.getStatus().toString())){
+				if(StringUtils.isNotEmpty(column)){column+=" , ";values+=" , ";}
+				column+=" STATUS ";
+				values+=" ? ";
+				value.add(bean.getStatus());
+			};
+			
+			if (bean!=null&&bean.getPlanStartDate()!=null
+					&& StringUtils.isNotEmpty(bean.getPlanStartDate().toString())){
+				if(StringUtils.isNotEmpty(column)){column+=" , ";values+=" , ";}
+				column+=" PLAN_START_DATE ";
+				values+=" to_date(?,'yyyy-MM-dd HH24:MI:ss') ";
+				value.add(bean.getPlanStartDate().toString().substring(0, 10));
+			};
+			if (bean!=null&&bean.getPlanEndDate()!=null
+					&& StringUtils.isNotEmpty(bean.getPlanEndDate().toString())){
+				if(StringUtils.isNotEmpty(column)){column+=" , ";values+=" , ";}
+				column+=" PLAN_END_DATE ";
+				values+=" to_date(?,'yyyy-MM-dd HH24:MI:ss') ";
+				value.add(bean.getPlanEndDate().toString().substring(0, 10));
+			};			
+			if (bean!=null&&bean.getDescp()!=null && StringUtils.isNotEmpty(bean.getDescp().toString())){
+				if(StringUtils.isNotEmpty(column)){column+=" , ";values+=" , ";}
+				column+=" DESCP ";
+				values+=" ? ";
+				value.add(bean.getDescp());
+			};
+			if (bean!=null&&bean.getBlockManId()!=null && bean.getBlockManId()!=0 
+					&& StringUtils.isNotEmpty(bean.getBlockManId().toString())){
+				if(StringUtils.isNotEmpty(column)){column+=" , ";values+=" , ";}
+				column+=" BLOCK_MAN_ID ";
+				values+=" ? ";
 				value.add(bean.getBlockManId());
-				values += ",?";
-
-			}else{
-				column += ", TASK_ID";
+			};
+			if (bean!=null&&bean.getTaskId()!=null && bean.getTaskId()!=0 
+					&& StringUtils.isNotEmpty(bean.getTaskId().toString())){
+				if(StringUtils.isNotEmpty(column)){column+=" , ";values+=" , ";}
+				column+=" TASK_ID ";
+				values+=" ? ";
 				value.add(bean.getTaskId());
-				values += ",?";
-			}
-			
-			//判断是否有QUALITY_SUBTASK_ID,IS_QUALITY
-			if(bean.getQualitySubtaskId() != null && 0!=bean.getQualitySubtaskId()){
-				column += ", QUALITY_SUBTASK_ID";
+			};
+			if (bean!=null&&bean.getQualitySubtaskId()!=null && bean.getQualitySubtaskId()!=0 
+					&& StringUtils.isNotEmpty(bean.getQualitySubtaskId().toString())){
+				if(StringUtils.isNotEmpty(column)){column+=" , ";values+=" , ";}
+				column+=" QUALITY_SUBTASK_ID ";
+				values+=" ? ";
 				value.add(bean.getQualitySubtaskId());
-				values += ",?";
-
-			}
-			if(bean.getIsQuality() != null ){
-				column += ", IS_QUALITY";
+			};
+			if(StringUtils.isNotEmpty(column)){column+=" , ";values+=" , ";}
+			column+=" IS_QUALITY ";
+			values+=" ? ";
+			if (bean!=null&&bean.getIsQuality()!=null && bean.getIsQuality()!=0 
+					&& StringUtils.isNotEmpty(bean.getIsQuality().toString())){
 				value.add(bean.getIsQuality());
-				values += ",?";
-			}else{
-				column += ", IS_QUALITY";
-				value.add(0);
-				values += ",?";
-			}
+			}else{value.add(0);}
 			//外业参考任务圈
-			if(bean.getReferGeometry() != null){
-				Clob cc = ConnectionUtil.createClob(conn);
-				cc.setString(1, bean.getReferGeometry());
-				value.add(cc);
-				column += ", REFER_GEOMETRY";
-				values += ",sdo_geometry(?,8307)";
-			}
-			
-			if(0!=bean.getExeGroupId()){
-				column += ", EXE_GROUP_ID)";
+			if (bean!=null&&bean.getReferGeometry()!=null && StringUtils.isNotEmpty(bean.getReferGeometry().toString())){
+				if(StringUtils.isNotEmpty(column)){column+=" , ";values+=" , ";}
+				column+=" REFER_GEOMETRY ";
+				values+=" ? ";
+				value.add(GeoTranslator.wkt2Struct(conn,bean.getReferGeometry()));
+			};
+			if (bean!=null&&bean.getExeGroupId()!=null && bean.getExeGroupId()!=0 
+					&& StringUtils.isNotEmpty(bean.getExeGroupId().toString())){
+				if(StringUtils.isNotEmpty(column)){column+=" , ";values+=" , ";}
+				column+=" EXE_GROUP_ID ";
+				values+=" ? ";
 				value.add(bean.getExeGroupId());
-				values += ",?)";
-
-			}else{
-				column += ", EXE_USER_ID)";
+			};
+			if (bean!=null&&bean.getExeUserId()!=null && bean.getExeUserId()!=0 
+					&& StringUtils.isNotEmpty(bean.getExeUserId().toString())){
+				if(StringUtils.isNotEmpty(column)){column+=" , ";values+=" , ";}
+				column+=" EXE_USER_ID ";
+				values+=" ? ";
 				value.add(bean.getExeUserId());
-				values += ",?)";
-			}
+			};
 			
-			createSql += column+values;
-
+			String createSql ="insert into subtask ("+ column+") values("+values+")";
 			run.update(conn, createSql,value.toArray());
-
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("创建失败，原因为:"+e.getMessage(),e);
+		}
+	}
+	
+	/**
+	 * @param conn
+	 * @param bean
+	 * @throws Exception 
+	 */
+	public static void deleteSubtaskGridMapping(Connection conn, int subtaskId) throws Exception {
+		// TODO Auto-generated method stub
+		try{
+			QueryRunner run = new QueryRunner();
+			String createMappingSql = "delete from sUBTASK_GRID_MAPPING where SUBTASK_ID=?";
+			Object[] temp = new Object[1];
+			temp[0] = subtaskId;
+			run.update(conn, createMappingSql, temp);
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

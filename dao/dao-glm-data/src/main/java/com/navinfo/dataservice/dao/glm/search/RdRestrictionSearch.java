@@ -199,15 +199,18 @@ public class RdRestrictionSearch implements ISearch {
 					{
 						String typ = Integer.toBinaryString(Integer.valueOf(tp));
 						
-						if(typ.length()<=3 && (Integer.parseInt(tp) !=6 || Integer.parseInt(tp) !=7))
+						if(typ.length()<=3)
 						{
-							jsonM.put("a", "1");
-							break;
+							if(Integer.parseInt(tp) !=0 && Integer.parseInt(tp) !=1)
+							{
+								jsonM.put("a", "1");
+								break;
+							}
 						}
 						else
 						{
 							
-							if(typ.charAt(typ.length() - 2) == '0' || typ.charAt(typ.length() - 3) == '0')
+							if(typ.charAt(typ.length() - 2) == '1' || typ.charAt(typ.length() - 3) == '1')
 							{
 								jsonM.put("a", "1");
 								break;

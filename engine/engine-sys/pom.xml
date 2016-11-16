@@ -34,5 +34,9 @@
 		<groupId>org.springframework</groupId>
 		<artifactId>spring-websocket</artifactId>
 	</dependency>
+	<dependency>
+		<groupId>com.navinfo.dataservice</groupId>
+		<artifactId>api-man</artifactId>
+	</dependency>
   </dependencies>
 </project>

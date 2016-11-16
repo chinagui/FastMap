@@ -15,7 +15,7 @@ import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.PoiDeepOpConf;
-import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiDeepStatusSelector;
+import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiColumnStatusSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiOpConfSelector;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
@@ -55,7 +55,7 @@ public class ColumnSubmitJob extends AbstractJob {
 			int type = 1;
 			
 			// 查询可提交数据
-			IxPoiDeepStatusSelector ixPoiDeepStatusSelector = new IxPoiDeepStatusSelector(conn);
+			IxPoiColumnStatusSelector ixPoiDeepStatusSelector = new IxPoiColumnStatusSelector(conn);
 			rowIdList = ixPoiDeepStatusSelector.getRowIdForSubmit(firstWorkItem, secondWorkItem, taskId);
 			
 			IxPoiOpConfSelector ixPoiOpConfSelector = new IxPoiOpConfSelector(conn);

@@ -87,6 +87,8 @@ public class LayerController extends BaseController {
 	@RequestMapping(value = "/layer/update")
 	public ModelAndView update(HttpServletRequest request) {
 		try {
+			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
+			long userId=tokenObj.getUserId();
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request
 					.getParameter("parameter")));
 			if (dataJson == null) {
@@ -96,7 +98,7 @@ public class LayerController extends BaseController {
 			if(dataJson.containsKey("wkt")){wkt=dataJson.getString("wkt");}
 			String layerName=null;
 			if(dataJson.containsKey("layerName")){layerName=dataJson.getString("layerName");}
-			LayerService.getInstance().update(dataJson.getString("layerId"),wkt,layerName);
+			LayerService.getInstance().update(userId,dataJson.getString("layerId"),wkt,layerName);
 			return new ModelAndView("jsonView", success("修改成功"));
 		} catch (Exception e) {
 			log.error("修改失败，原因：" + e.getMessage(), e);
@@ -115,12 +117,14 @@ public class LayerController extends BaseController {
 	@RequestMapping(value = "/layer/delete")
 	public ModelAndView delete(HttpServletRequest request) {
 		try {
+			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
+			long userId=tokenObj.getUserId();
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request
 					.getParameter("parameter")));
 			if (dataJson == null) {
 				throw new IllegalArgumentException("parameter参数不能为空");
 			}
-			LayerService.getInstance().delete(dataJson.getString("layerId"));
+			LayerService.getInstance().delete(userId,dataJson.getString("layerId"));
 			return new ModelAndView("jsonView", success("删除成功"));
 		} catch (Exception e) {
 			log.error("删除失败，原因：" + e.getMessage(), e);

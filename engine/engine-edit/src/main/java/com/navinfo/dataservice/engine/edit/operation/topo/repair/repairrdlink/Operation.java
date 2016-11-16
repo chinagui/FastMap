@@ -71,12 +71,18 @@ public class Operation implements IOperation {
 				JSONObject obj = this.command.getCatchInfos().getJSONObject(i);
 				// 分离移动的node
 				int nodePid = obj.getInt("nodePid");
-				Point point = (Point) GeoTranslator.transform(
-						GeoTranslator.point2Jts(obj.getDouble("longitude"),
-								obj.getDouble("longitude")), 1, 5);
-				// 分离移动后的经纬度
-				double lon = point.getX();
-				double lat = point.getY();
+				Point point = null;
+				double lon = 0;
+				double lat = 0;
+				if (!obj.containsKey("catchNodePid")) {
+					point = (Point) GeoTranslator.transform(GeoTranslator
+							.point2Jts(obj.getDouble("longitude"),
+									obj.getDouble("latitude")), 1, 5);
+					// 分离移动后的经纬度
+					lon = point.getX();
+					lat = point.getY();
+				}
+
 				RdNode preNode = (RdNode) nodeSelector.loadById(nodePid, true,
 						true);
 				// 分离node挂接的link
@@ -134,13 +140,17 @@ public class Operation implements IOperation {
 	 *            原始link的端点pid
 	 * @param pid
 	 *            修行后新的端点pid
+	 * @throws Exception 
 	 */
-	private void updateNodeForLink(int nodePid, int pid) {
+	private void updateNodeForLink(int nodePid, int pid) throws Exception {
+		JSONObject content= new JSONObject();
 		if (this.command.getUpdateLink().getsNodePid() == nodePid) {
-			this.command.getUpdateLink().setsNodePid(pid);
+			content.put("sNodePid", pid);
+			this.command.getUpdateLink().fillChangeFields(content);
 
 		} else {
-			this.command.getUpdateLink().seteNodePid(pid);
+			content.put("eNodePid", pid);
+			this.command.getUpdateLink().fillChangeFields(content);
 		}
 	}
 

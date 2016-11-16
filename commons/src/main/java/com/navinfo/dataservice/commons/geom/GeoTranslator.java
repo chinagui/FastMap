@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.commons.geom;
 
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -26,6 +27,7 @@ import org.mapfish.geo.MfGeoJSONReader;
 import org.mapfish.geo.MfGeoJSONWriter;
 import org.mapfish.geo.MfGeometry;
 
+import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.algorithm.Angle;
@@ -47,7 +49,7 @@ import com.vividsolutions.jts.precision.GeometryPrecisionReducer;
 public class GeoTranslator {
 
 	public static final double dPrecisionGeo = 1.0;
-	
+
 	private static final GeometryFactory geoFactory = new GeometryFactory();
 
 	private static final MfGeoFactory mfFactory = new MfGeoFactory() {
@@ -243,6 +245,20 @@ public class GeoTranslator {
 		String w = new String(new WKT().fromJGeometry(geom));
 
 		return w;
+	}
+	
+	/**
+	 * wkt几何转Oracle几何体
+	 * 
+	 * @param struct
+	 *            Oracle几何
+	 * @return wkt几何
+	 * @throws Exception
+	 */
+	public static STRUCT wkt2Struct(Connection conn,String wkt) throws Exception {
+		JGeometry geom = GeoTranslator.wkt2JGrometry(wkt);
+		STRUCT struct = JGeometry.store(geom, ConnectionUtil.getObject(conn));
+		return struct;
 	}
 
 	/**
@@ -441,6 +457,9 @@ public class GeoTranslator {
 	 */
 	public static Geometry transform(Geometry geom, double scale, int precision) {
 
+		GeometryPrecisionReducer reducer = new GeometryPrecisionReducer(
+				new PrecisionModel(Math.pow(10, precision)));
+		
 		// 防止开发人员在同一级别对Geometry重复缩放，捕获catch后按代码修改前逻辑缩放Geometry。
 		try {
 			Coordinate flagCoordinate = geom.getCoordinate();
@@ -453,10 +472,16 @@ public class GeoTranslator {
 
 				if (scale > 1) {
 					if (flagCoordinate.x > 180 || flagCoordinate.y > 90) {
+						
+						geom = reducer.reduce(geom);
+						
 						return geom;
 					}
 				} else if (scale < 1) {
 					if (flagCoordinate.x < 180 || flagCoordinate.y < 90) {
+						
+						geom = reducer.reduce(geom);
+						
 						return geom;
 					}
 				}
@@ -470,9 +495,6 @@ public class GeoTranslator {
 		aff = aff.scale(scale, scale);
 
 		geom = aff.transform(geom);
-
-		GeometryPrecisionReducer reducer = new GeometryPrecisionReducer(
-				new PrecisionModel(Math.pow(10, precision)));
 
 		geom = reducer.reduce(geom);
 
@@ -675,10 +697,9 @@ public class GeoTranslator {
 	public static LineString getReformLineString(LineString lineString,
 			Set<Point> points) throws Exception {
 
-		
-		 Geometry geometry = GeoTranslator.transform(lineString, 100000, 5);
-		 List<Coordinate> coordinates = new ArrayList<Coordinate>();
-		 Collections.addAll( coordinates, geometry.getCoordinates());
+		Geometry geometry = GeoTranslator.transform(lineString, 100000, 5);
+		List<Coordinate> coordinates = new ArrayList<Coordinate>();
+		Collections.addAll(coordinates, geometry.getCoordinates());
 		for (Point point : points) {
 			point = (Point) GeoTranslator.transform(point, 100000, 5);
 			// 扩大100000倍保持精度
@@ -688,7 +709,7 @@ public class GeoTranslator {
 			for (int i = 0; i < coordinates.size(); i++) {
 
 				Coordinate cs = coordinates.get(i);
-				Coordinate ce = coordinates.get(i+1);
+				Coordinate ce = coordinates.get(i + 1);
 				// 是否在形状点上
 				if (Math.abs(lon - ce.x) < 0.0000001
 						&& Math.abs(lat - ce.y) < 0.0000001) {
@@ -698,7 +719,7 @@ public class GeoTranslator {
 				// 是否在线段上
 				if (GeoTranslator.isIntersection(new double[] { cs.x, cs.y },
 						new double[] { ce.x, ce.y }, new double[] { lon, lat })) {
-					coordinates.add(i+1,point.getCoordinate());
+					coordinates.add(i + 1, point.getCoordinate());
 					break;
 
 				}
@@ -722,11 +743,11 @@ public class GeoTranslator {
 	 * @return
 	 * @throws Exception
 	 */
-	public static List<Point> getOrderPoints(LineString line,
-			Set<Point> points) throws Exception {
+	public static List<Point> getOrderPoints(LineString line, Set<Point> points)
+			throws Exception {
 		List<String> str = new ArrayList<String>();
 		List<Point> list = new ArrayList<Point>();
-		//LineString line = getReformLineString(lineString, points);
+		// LineString line = getReformLineString(lineString, points);
 		Map<Integer, Point> map = new TreeMap<Integer, Point>();
 		for (Point point : points) {
 			for (int i = 0; i < line.getCoordinates().length; i++) {
@@ -743,7 +764,6 @@ public class GeoTranslator {
 
 	}
 
-	
 	/**
 	 * 点p0是否在点p1和p2的线上
 	 * 
@@ -758,7 +778,7 @@ public class GeoTranslator {
 	 */
 	public static boolean isIntersection(Coordinate p1, Coordinate p2,
 			Coordinate p0) throws Exception {
-		
+
 		boolean flag = false;
 
 		Coordinate[] coordinates = new Coordinate[2];
@@ -767,18 +787,19 @@ public class GeoTranslator {
 
 		coordinates[1] = p2;
 
-		LineString line = geoFactory.createLineString(coordinates);
+		LineString line = (LineString) transform(
+				geoFactory.createLineString(coordinates), 100000, 5);
 
-		Point point = geoFactory.createPoint(p0);
+		Point point = (Point) transform(geoFactory.createPoint(p0), 100000, 5);
+		
 
-		if (line.distance(point) <= 1) {
+		if (line.distance(point) < dPrecisionGeo) {
 			flag = true;
 		}
 
 		return flag;
 	}
-	
-	
+
 	public static long round(double d) {
 		return d < 0 ? (long) d : (long) (d + 0.5);
 	}
@@ -794,6 +815,34 @@ public class GeoTranslator {
 
 	public static boolean isPointEquals(double x1, double y1, double x2,
 			double y2) {
+
+		if (x1 <= 180) {
+			x1 = x1 * 100000;
+		}
+		if (x2 <= 180) {
+			x2 = x2 * 100000;
+		}
+		if (y1 <= 90) {
+			y1 = y1 * 100000;
+		}
+		if (y2 <= 90) {
+			y2 = y2 * 100000;
+		}
+
+		if (x1 >= 180 * 100000) {
+			x1 = x1 / 100;
+		}
+		if (x2 >= 180 * 100000) {
+			x2 = x2 / 100;
+		}
+
+		if (y1 >= 180 * 100000) {
+			y1 = y1 / 100;
+		}
+		if (y2 >= 180 * 100000) {
+			y2 = y2 / 100;
+		}
+
 		x1 = round(x1);
 		y1 = round(y1);
 		x2 = round(x2);
@@ -807,25 +856,25 @@ public class GeoTranslator {
 
 		return true;
 	}
-	
-	
-
 
 	public static void main(String[] args) throws Exception {
-		Point point = (Point)wkt2Geometry("POINT (116.38636 40.00512)");
-		Point point1 = (Point)wkt2Geometry("POINT (116.38617 40.00511)");
-		Point point2 = (Point)wkt2Geometry("POINT (116.38602 40.0051)");
+		Point point = (Point) wkt2Geometry("POINT (116.38636 40.00512)");
+		Point point1 = (Point) wkt2Geometry("POINT (116.38617 40.00511)");
+		Point point2 = (Point) wkt2Geometry("POINT (116.38602 40.0051)");
 		Set<Point> points = new HashSet<Point>();
 		points.add(point);
 		points.add(point1);
 		points.add(point2);
-		LineString line = (LineString)wkt2Geometry("LineString(116.38586 40.00509, 116.38647 40.00512)");
-		//LINESTRING (116.38586 40.00509, 116.38602 40.0051, 116.38617 40.00511, 116.38636 40.00512, 116.38647 40.00512)
+		LineString line = (LineString) wkt2Geometry("LineString(116.38586 40.00509, 116.38647 40.00512)");
+		// LINESTRING (116.38586 40.00509, 116.38602 40.0051, 116.38617
+		// 40.00511, 116.38636 40.00512, 116.38647 40.00512)
 		LineString s = getReformLineString(line, points);
 		System.out.println(s);
-		
-		//[POINT (116.38636 40.00512), POINT (116.38617 40.00511), POINT (116.38602 40.0051)]
 
-		//LINESTRING (116.38586 40.00509, 116.38636 40.00512, 116.38617 40.00511, 116.38602 40.0051, 116.38647 40.00512)
+		// [POINT (116.38636 40.00512), POINT (116.38617 40.00511), POINT
+		// (116.38602 40.0051)]
+
+		// LINESTRING (116.38586 40.00509, 116.38636 40.00512, 116.38617
+		// 40.00511, 116.38602 40.0051, 116.38647 40.00512)
 	}
 }

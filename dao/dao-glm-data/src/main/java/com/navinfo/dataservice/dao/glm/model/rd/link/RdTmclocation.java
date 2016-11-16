@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.navinfo.dataservice.dao.glm.model.rd.tmc;
+package com.navinfo.dataservice.dao.glm.model.rd.link;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -53,6 +53,22 @@ public class RdTmclocation implements IObj {
 
 	public List<IRow> getLinks() {
 		return links;
+	}
+	
+	public int getTmcId() {
+		return tmcId;
+	}
+
+	public void setTmcId(int tmcId) {
+		this.tmcId = tmcId;
+	}
+
+	public int getLocationId() {
+		return locationId;
+	}
+
+	public void setLocationId(int locationId) {
+		this.locationId = locationId;
 	}
 
 	public void setLinks(List<IRow> links) {
@@ -267,7 +283,7 @@ public class RdTmclocation implements IObj {
 
 	@Override
 	public String primaryKey() {
-		return "pid";
+		return "group_id";
 	}
 
 	@Override

@@ -3,7 +3,7 @@
  */
 package com.navinfo.dataservice.engine.meta.tmc;
 
-import com.vividsolutions.jts.geom.Geometry;
+import net.sf.json.JSONArray;
 
 /** 
 * @ClassName: TmcPoint 
@@ -22,7 +22,13 @@ public class TmcPoint {
 	
 	private int areaTmcId;
 	
-	private Geometry geo;
+	//正向偏移
+	private int locoffPos;
+	
+	//负向偏移
+	private int locoffNeg;
+	
+	private JSONArray geometry;
 
 	public int getTmcId() {
 		return tmcId;
@@ -30,6 +36,22 @@ public class TmcPoint {
 
 	public void setTmcId(int tmcId) {
 		this.tmcId = tmcId;
+	}
+	
+	public int getLocoffPos() {
+		return locoffPos;
+	}
+
+	public void setLocoffPos(int locoffPos) {
+		this.locoffPos = locoffPos;
+	}
+
+	public int getLocoffNeg() {
+		return locoffNeg;
+	}
+
+	public void setLocoffNeg(int locoffNeg) {
+		this.locoffNeg = locoffNeg;
 	}
 
 	public int getCid() {
@@ -64,11 +86,11 @@ public class TmcPoint {
 		this.areaTmcId = areaTmcId;
 	}
 
-	public Geometry getGeo() {
-		return geo;
+	public JSONArray getGeometry() {
+		return geometry;
 	}
 
-	public void setGeo(Geometry geo) {
-		this.geo = geo;
+	public void setGeometry(JSONArray geometry) {
+		this.geometry = geometry;
 	}
 }

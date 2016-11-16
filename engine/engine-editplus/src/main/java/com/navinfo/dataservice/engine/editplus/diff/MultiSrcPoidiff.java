@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.editplus.model.diff;
+package com.navinfo.dataservice.engine.editplus.diff;
 
 import com.navinfo.dataservice.engine.editplus.model.obj.IxPoiObj;
 

@@ -1,8 +1,6 @@
-package com.navinfo.dataservice.engine.editplus.model.factory;
+package com.navinfo.dataservice.engine.editplus.model.obj;
 
 import org.apache.log4j.Logger;
-
-import com.navinfo.dataservice.engine.editplus.model.obj.BasicObj;
 
 /** 
  * @ClassName: ObjFactory

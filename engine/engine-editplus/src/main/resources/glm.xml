@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mapping>
-    <!-- type:feature|relation -->
-    <object name="IX_POI" type="feature" mainTable="IX_POI"
+    <!-- FEATURE|RELATION -->
+    <object name="IX_POI" type="FEATURE" mainTable="IX_POI"
         class="com.navinfo.dataservice.engine.editplus.model.obj.IxPoiObj">
         <!-- feature main table has no ref-->
 		<table name="IX_POI" pk="PID" 

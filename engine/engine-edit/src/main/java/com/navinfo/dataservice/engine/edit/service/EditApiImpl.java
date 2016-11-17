@@ -2,6 +2,7 @@ package com.navinfo.dataservice.engine.edit.service;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.util.List;
 
 import org.springframework.stereotype.Service;
 
@@ -137,7 +138,8 @@ public class EditApiImpl implements EditApi {
 		int dbId = dataObj.getInt("dbId");
 		try {
 			subConn = DBConnector.getInstance().getConnectionById(dbId);
-			batchProcess.execute(dataObj, subConn, new EditApiImpl(subConn));
+			List<String> batchList = batchProcess.getRowRules();
+			batchProcess.execute(dataObj, subConn, new EditApiImpl(subConn), batchList);
 		} catch (Exception e) {
 			throw e;
 		} finally {

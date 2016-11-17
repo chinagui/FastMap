@@ -15,6 +15,7 @@ import com.vividsolutions.jts.geom.Polygon;
 public class ObjBatchSelector {
 
 	public static List<BasicObj> selectByPids(String objType,SelectorConfig selConfig,Collection<Long> pids,boolean isOnlyMain,boolean isLock){
+		
 		return null;
 	}
 

@@ -36,6 +36,7 @@ public class ObjSelector {
 	}
 
 	public static BasicObj selectByRowid(String objType,SelectorConfig selConfig,String rowid,boolean isOnlyMain,boolean isLock){
+		//根据rowId查询主表，获得主表pid,继续根据pid获取子表
 		return null;
 	}
 	
@@ -138,9 +139,14 @@ public class ObjSelector {
 					+ objRef.getCol() + "=" + objRef.getRefCol();
 			BasicRow childRow = new QueryRunner().query(conn, sql, new SelRsHandler(glmTab,objPid),objPid);
 			//更新obj
+			
 		}
 		//间接关联
 		else{
+			//获取关联表。此处的递归放到BasicObj中实现
+			
+			//查询
+			//更新obj
 			
 		}
 		

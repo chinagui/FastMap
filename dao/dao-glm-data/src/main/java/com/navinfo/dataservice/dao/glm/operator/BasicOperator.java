@@ -2,7 +2,6 @@ package com.navinfo.dataservice.dao.glm.operator;
 
 import java.lang.reflect.Field;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Iterator;
@@ -18,13 +17,11 @@ import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
-import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFace;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiChildren;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiParent;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiPhoto;
 import com.navinfo.dataservice.dao.glm.selector.SelectorUtils;
-import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 import com.vividsolutions.jts.geom.Geometry;
 
 /***
@@ -55,7 +52,6 @@ public class BasicOperator extends AbstractOperator {
 	@Override
 	public void insertRow2Sql(Statement stmt) throws Exception {
 		this.generateInsertSql(stmt, row);
-		this.modifyPoiStatus();
 	}
 
 	/***
@@ -143,7 +139,6 @@ public class BasicOperator extends AbstractOperator {
 		}
 		key.append(M_U_RECORD + ")");
 		value.append(1 + ")");
-		System.out.println(key + " " + value);
 		stmt.addBatch(key.append(value).toString());
 		if (row.children() != null) {
 			List<List<IRow>> lists = row.children();
@@ -235,8 +230,7 @@ public class BasicOperator extends AbstractOperator {
 		String sql = sb.toString();
 		sql = sql.replace(", where", " where");
 		stmt.addBatch(sql);
-		System.out.println(sql);
-		this.modifyPoiStatus();
+
 
 	}
 
@@ -260,7 +254,7 @@ public class BasicOperator extends AbstractOperator {
 	@Override
 	public void deleteRow2Sql(Statement stmt) throws Exception {
 		this.generateDeleteSql(stmt, row);
-		this.modifyPoiStatus();
+	
 	}
 
 	/***
@@ -331,71 +325,6 @@ public class BasicOperator extends AbstractOperator {
 		}
 	}
 
-	private void modifyPoiStatus() throws Exception {
-		if (row instanceof IxPoi) {
-			if (org.apache.commons.lang.StringUtils.isBlank(row.rowId())) {
-				row.setRowId(UuidUtils.genUuid());
-			}
-			upatePoiStatus();
-		}
-		if (row instanceof IxPoiParent) {
-			IxPoiParent ixPoiParent = (IxPoiParent) row;
-			row.setRowId(new IxPoiSelector(conn).loadRowIdByPid(ixPoiParent.getParentPoiPid(), false));
-			upatePoiStatus();
-		}
-		if (row instanceof IxPoiChildren) {
-			IxPoiChildren ixPoiParent = (IxPoiChildren) row;
-			row.setRowId(new IxPoiSelector(conn).loadRowIdByPid(ixPoiParent.getChildPoiPid(), false));
-			upatePoiStatus();
-
-		}
-
-	}
-
-	/**
-	 * poi操作修改poi状态为已作业，鲜度信息为0 zhaokk sourceFlag 0 web 1 Android
-	 * 
-	 * @param row
-	 * @throws Exception
-	 */
-	public void upatePoiStatus() throws Exception {
-		StringBuilder sb = new StringBuilder(" MERGE INTO poi_edit_status T1 ");
-		sb.append(" USING (SELECT '" + row.rowId() + "' as a, 2 as b,0 as c FROM dual) T2 ");
-		sb.append(" ON ( T1.row_id=T2.a) ");
-		sb.append(" WHEN MATCHED THEN ");
-		sb.append(" UPDATE SET T1.status = T2.b,T1.fresh_verified= T2.c ");
-		sb.append(" WHEN NOT MATCHED THEN ");
-		sb.append(" INSERT (T1.row_id,T1.status,T1.fresh_verified) VALUES(T2.a,T2.b,T2.c)");
-		PreparedStatement pstmt = null;
-		try {
-			pstmt = conn.prepareStatement(sb.toString());
-			pstmt.executeUpdate();
-		} catch (Exception e) {
-			throw e;
-
-		} finally {
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-
-			}
-
-		}
-
-	}
-
-	public static void main(String[] args) {
-		AdFace adFace = new AdFace();
-		adFace.setArea(2332);
-		Field[] fields = adFace.getClass().getDeclaredFields();
-		for (Field f : fields) {
-			System.out.println(f.getModifiers());
-			// f.setAccessible(true);
-
-			System.out.println(f);
-			System.out.println();
-		}
-	}
+	
+	
 }

@@ -33,6 +33,6 @@ public class Process extends AbstractProcess<Command> {
 
     @Override
     public String exeOperation() throws Exception {
-        return null;
+        return new Operation(this.getCommand()).run(this.getResult());
     }
 }

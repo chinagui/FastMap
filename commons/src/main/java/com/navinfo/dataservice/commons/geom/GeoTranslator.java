@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.commons.geom;
 
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -26,6 +27,7 @@ import org.mapfish.geo.MfGeoJSONReader;
 import org.mapfish.geo.MfGeoJSONWriter;
 import org.mapfish.geo.MfGeometry;
 
+import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.algorithm.Angle;
@@ -243,6 +245,20 @@ public class GeoTranslator {
 		String w = new String(new WKT().fromJGeometry(geom));
 
 		return w;
+	}
+	
+	/**
+	 * wkt几何转Oracle几何体
+	 * 
+	 * @param struct
+	 *            Oracle几何
+	 * @return wkt几何
+	 * @throws Exception
+	 */
+	public static STRUCT wkt2Struct(Connection conn,String wkt) throws Exception {
+		JGeometry geom = GeoTranslator.wkt2JGrometry(wkt);
+		STRUCT struct = JGeometry.store(geom, ConnectionUtil.getObject(conn));
+		return struct;
 	}
 
 	/**

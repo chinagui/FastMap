@@ -477,7 +477,7 @@ public class SearchProcess {
 				break;
 			case RDLANE:
 				//按照方向  查询link车道信息
-				if (condition.containsKey("linkPid")) {
+				if (condition.containsKey("linkPid")&&condition.containsKey("laneDir")) {
 					int linkPid = condition.getInt("linkPid");
 					int laneDir = condition.getInt("laneDir");
 					RdLaneSelector selector = new RdLaneSelector(this.conn);
@@ -493,7 +493,10 @@ public class SearchProcess {
 					int nodePid =  condition.getInt("nodePid");
 					RdLaneTopoDetailSelector detailSelector = new RdLaneTopoDetailSelector(conn);
 					List<Integer> list = detailSelector.loadOutLinkByinLink(linkPid,nodePid,false);
-					array.fromObject(list);
+					for(Integer pid :list){
+						array.add(pid);
+					}
+					
 				}
 				//按照一组link查询车道联通信息
 				if (condition.containsKey("linkPids")) {

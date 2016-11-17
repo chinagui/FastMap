@@ -894,7 +894,7 @@ public class Operation implements IOperation {
 
 					row.Unserialize(json);
 
-					// row.setPid(0);
+					row.setPid(PidUtil.getInstance().applyPoiChargingstationId());
 
 					row.setPoiPid(ixPoi.getPid());
 

@@ -308,6 +308,8 @@ public class MessageService {
 			String idSql = "SELECT APPLICATION_SEQ.NEXTVAL FROM DUAL";
 			Object[] idParams = {};
 			long applyId = queryRunner.queryForLong(conn, idSql, idParams);
+			String column="";
+			String value="";
 			//获取数据
 			String applytitle = paraJson.getString("applyTitle");
 			long applyType = paraJson.getLong("applyType");
@@ -317,6 +319,16 @@ public class MessageService {
 			long applyGroupId = paraJson.getLong("applyGroupId");
 			String relateObject = paraJson.getString("relateObject");
 			long relateObjectId = paraJson.getLong("relateObjectId");
+			column="APPLY_ID, APPLY_TITLE, APPLY_TYPE, SEVERITY, OPERATE_TIME, "
+					+ "OPERATOR, AUDIT_ROLE_ID, AUDITOR, CREATE_TIME, APPLY_GROUP_ID, APPLY_USER_ID, DELETE_FLAG";
+			value=applyId+",'"+applytitle+"',"+applyType+","+severity+",SYSDATE,"+userId+","+auditRoleId+","
+					+ auditor+",SYSDATE,"+applyGroupId+","+userId+",0";
+			column+=",APPLY_STATUS";
+			if(paraJson.containsKey("applyStatus")){
+				value+=","+paraJson.getInt("applyStatus");
+			}else{
+				value+=",1";
+			}
 			String applyContent = null;
 			//1作业申请2计划变更
 			if(applyType == 1){
@@ -354,10 +366,9 @@ public class MessageService {
 				applyContent = jo.toString();
 			}
 			//保存数据到application表
-			String applySql = "INSERT INTO APPLICATION (APPLY_ID, APPLY_TITLE, APPLY_TYPE, APPLY_STATUS, SEVERITY, OPERATE_TIME, "
-					+ "OPERATOR, AUDIT_ROLE_ID, AUDITOR, CREATE_TIME, APPLY_GROUP_ID, APPLY_USER_ID, DELETE_FLAG) "
-					+ "VALUES (?,?,?,1,?,SYSDATE,?,?,?,SYSDATE,?,?,0)";
-			Object[] applyParams = {applyId,applytitle,applyType,severity,userId,auditRoleId,auditor,applyGroupId,userId};
+			String applySql = "INSERT INTO APPLICATION ("+column+") "
+					+ "VALUES ("+value+")";
+			Object[] applyParams = {};
 			queryRunner.update(conn, applySql, applyParams);
 			//保存数据到application_detail表
 			String applyDetailSql = "INSERT INTO APPLICATION_DETAIL (APPLY_ID, RELATE_OBJECT, RELATE_OBJECT_ID,"
@@ -477,10 +488,22 @@ public class MessageService {
 			queryRunner = new QueryRunner();
 			
 			//根据id查询申请数据
-			String sql = "SELECT A.*,D.RELATE_OBJECT,D.RELATE_OBJECT_ID,D.APPLY_CONTENT,D.AUDIT_REASON,"
-					+ "(SELECT R.ROLE_NAME FROM ROLE R WHERE R.ROLE_ID=A.AUDIT_ROLE_ID) AUDIT_ROLE_NAME,"
-					+ "(SELECT G.GROUP_NAME FROM USER_GROUP G WHERE G.GROUP_ID=A.APPLY_GROUP_ID) APPLY_GROUP_NAME "
-					+ "FROM APPLICATION A,APPLICATION_DETAIL D WHERE A.APPLY_ID=D.APPLY_ID AND A.APPLY_ID=?";
+			String sql = "SELECT A.*,"
+					+ "       UA.USER_REAL_NAME AUDITOR_NAME,"
+					+ "       U.USER_REAL_NAME APPLY_USER_NAME,"
+					+ "       D.RELATE_OBJECT,"
+					+ "       D.RELATE_OBJECT_ID,"
+					+ "       D.APPLY_CONTENT,"
+					+ "       D.AUDIT_REASON,"
+					+ "       (SELECT R.ROLE_NAME FROM ROLE R WHERE R.ROLE_ID = A.AUDIT_ROLE_ID) AUDIT_ROLE_NAME,"
+					+ "       (SELECT G.GROUP_NAME"
+					+ "          FROM USER_GROUP G"
+					+ "         WHERE G.GROUP_ID = A.APPLY_GROUP_ID) APPLY_GROUP_NAME"
+					+ "  FROM APPLICATION A, APPLICATION_DETAIL D,USER_INFO UA,USER_INFO U"
+					+ " WHERE A.APPLY_ID = D.APPLY_ID"
+					+ "   AND A.APPLY_ID = ?"
+					+ "   AND A.AUDITOR=UA.USER_ID(+)"
+					+ "   AND A.APPLY_USER_ID=U.USER_ID(+)";
 			Object[] params = {applyId};
 			//处理结果集
 			ResultSetHandler<Map<String,Object>> rsh = new ResultSetHandler<Map<String,Object>>() {
@@ -496,11 +519,15 @@ public class MessageService {
 						map.put("auditRoleId",rs.getLong("AUDIT_ROLE_ID"));
 						map.put("auditRoleName",rs.getString("AUDIT_ROLE_NAME"));
 						map.put("auditor",rs.getLong("AUDITOR"));
+						map.put("auditorName",rs.getString("AUDITOR_NAME"));
 						map.put("applyGroupId",rs.getLong("APPLY_GROUP_ID"));
+						map.put("applyUserName",rs.getString("APPLY_USER_NAME"));
 						map.put("applyGroupName",rs.getString("APPLY_GROUP_NAME"));
 						map.put("relateObject",rs.getString("RELATE_OBJECT"));
 						map.put("relateObjectId",rs.getLong("RELATE_OBJECT_ID"));
 						map.put("applyContent",rs.getString("APPLY_CONTENT"));
+						map.put("applyStatus",rs.getInt("APPLY_STATUS"));
+						map.put("deleteFlag",rs.getInt("DELETE_FLAG"));
 					}
 					return map;
 				}

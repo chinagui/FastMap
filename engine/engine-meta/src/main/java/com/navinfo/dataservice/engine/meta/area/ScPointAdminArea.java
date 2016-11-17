@@ -245,4 +245,41 @@ public class ScPointAdminArea {
 		
 	}
 	
+	/**
+	 * 根据行政区划号查找电话区号和电话长度
+	 * @param adminCode
+	 * @return JSONObject
+	 * @throws Exception
+	 */
+	public JSONObject searchByAdminCode(String adminCode)
+			throws Exception {
+	    StringBuilder builder = new StringBuilder();
+		builder.append("SELECT adminareacode, areacode,phonenum_len");
+		builder.append(" FROM sc_point_adminarea ");
+		builder.append(" WHERE adminareacode = :1");
+		Connection metaConn = DBConnector.getInstance().getMetaConnection();
+		try{
+			QueryRunner runner = new QueryRunner();
+		    return runner.query(metaConn,builder.toString(), new ResultSetHandler<JSONObject>(){
+				@Override
+				public JSONObject handle(ResultSet rs) throws SQLException {
+					JSONObject object  = new JSONObject();
+					while(rs.next()){
+						JSONObject  jsonObject = new JSONObject();
+						jsonObject.put("code", rs.getString("areacode"));
+						jsonObject.put("telLength", rs.getInt("phonenum_len"));
+						object.put(rs.getString("adminareacode"), jsonObject);
+					}
+					return object;
+				}
+			},adminCode);
+		}catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(metaConn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询明细失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(metaConn);
+		}
+	}
+	
 }

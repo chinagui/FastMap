@@ -344,10 +344,10 @@ public class DownloadOperation {
 				} else {
 					parkings.put("tollWay", parking.getTollWay());
 				}
-				if (parking.getOpenTime() == null) {
+				if (parking.getOpenTiime() == null) {
 					parkings.put("openTime", "");
 				} else {
-					parkings.put("openTime", parking.getOpenTime());
+					parkings.put("openTime", parking.getOpenTiime());
 				}
 				
 				parkings.put("totalNum", parking.getTotalNum());

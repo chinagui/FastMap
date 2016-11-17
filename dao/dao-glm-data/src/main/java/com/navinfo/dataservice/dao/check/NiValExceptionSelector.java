@@ -16,11 +16,13 @@ import org.apache.commons.lang.StringUtils;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
-
+import com.navinfo.dataservice.api.man.iface.ManApi;
+import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 
@@ -291,6 +293,87 @@ public class NiValExceptionSelector {
 					+ "   AND O.MD5_CODE=a.MD5_CODE)");
 		}
 
+		sql.append(" order by created desc,md5_code desc");
+		
+		return new QueryRunner().query(pageNum,pageSize,conn, sql.toString(), new ResultSetHandler<Page>(){
+
+			@Override
+			public Page handle(ResultSet rs) throws SQLException {
+				Page page =new Page(pageNum);
+				page.setPageSize(pageSize);
+				int total = 0;
+				JSONArray results = new JSONArray();
+				while(rs.next()){
+					
+					if(total ==0){total=rs.getInt("TOTAL_RECORD_NUM_");}
+					
+					JSONObject json = new JSONObject();
+					
+					json.put("id",  rs.getString("md5_code"));
+
+					json.put("ruleid", rs.getString("ruleid"));
+
+					json.put("situation", rs.getString("situation"));
+
+					json.put("rank", rs.getInt("level_"));
+
+					json.put("targets", rs.getString("targets"));
+
+					json.put("information", rs.getString("information"));
+
+					json.put("geometry",
+							"(" + rs.getDouble("x") + "," + rs.getDouble("y") + ")");
+
+					json.put("create_date", rs.getString("created"));
+
+					json.put("worker", rs.getString("worker"));
+
+					results.add(json);
+				}
+				page.setTotalCount(total);
+				page.setResult(results);
+				return page;
+			}
+			
+		},pidsClob);
+	}
+	
+	/**
+	 * @Title: rdNaResultslist
+	 * @Description: 道路名检查返回的检查结果列表
+	 * @param subtaskType
+	 * @param grids
+	 * @param pageSize
+	 * @param pageNum
+	 * @return
+	 * @throws Exception  Page
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2016年11月16日 下午3:26:05 
+	 */
+	public Page rdNaResultslist(int subtaskId ,int subtaskType,Collection<String> grids, final int pageSize, final int pageNum)
+			throws Exception {
+		//获得 tips 
+		
+		ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
+		Subtask subtask = apiService.queryBySubtaskId(subtaskId);
+		//FccApi apiFcc=(FccApi) ApplicationContextUtil.getBean("fccApi");
+		
+		//JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(),1901,new JSONArray());
+		JSONArray tips = null ;
+		
+		
+		
+		
+		Clob pidsClob = ConnectionUtil.createClob(conn);
+		pidsClob.setString(1, StringUtils.join(grids, ","));		
+		StringBuilder sql = new StringBuilder("select a.md5_code,ruleid,situation,\"LEVEL\" level_,"
+				+ "targets,information,a.location.sdo_point.x x,a.location.sdo_point.y y,created,"
+				+ "worker from ni_val_exception a where exists(select 1 from ni_val_exception_grid b,"
+				+ "(select to_number(COLUMN_VALUE) COLUMN_VALUE from table(clob_to_table(?))) grid_table "
+				+ "where a.md5_code=b.md5_code and b.grid_id =grid_table.COLUMN_VALUE)");
+		
+		
 		sql.append(" order by created desc,md5_code desc");
 		
 		return new QueryRunner().query(pageNum,pageSize,conn, sql.toString(), new ResultSetHandler<Page>(){

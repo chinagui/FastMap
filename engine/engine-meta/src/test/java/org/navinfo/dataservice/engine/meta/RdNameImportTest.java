@@ -1,6 +1,8 @@
 package org.navinfo.dataservice.engine.meta;
 
 import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -8,7 +10,6 @@ import org.apache.commons.dbutils.DbUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-
 import com.navinfo.dataservice.api.fcc.iface.FccApi;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
@@ -17,7 +18,6 @@ import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.engine.meta.rdname.RdNameImportor;
 import com.navinfo.dataservice.engine.meta.rdname.RdNameOperation;
 import com.navinfo.dataservice.engine.meta.rdname.RdNameSelector;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -98,7 +98,7 @@ public class RdNameImportTest {
 	@Test
 	public void testGetRdName()
 	{
-		String parameter = "{\"subtaskId\":27,\"pageNum\":1,\"pageSize\":20,\"sortby\":\"\",\"flag\":1,\"params\":{\"name\":\"\",\"nameGroupid\":\"\",\"adminId\":\"\"}}";
+		String parameter = "{\"subtaskId\":76,\"pageNum\":1,\"pageSize\":20,\"sortby\":\"\",\"flag\":1,\"params\":{\"name\":\"\",\"nameGroupid\":\"\",\"adminId\":\"\"}}";
 
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
@@ -123,14 +123,14 @@ public class RdNameImportTest {
 			
 			JSONObject data = selector.searchForWeb(jsonReq,tips);
 			
-			System.out.println(data);
+			System.out.println("data  "+data.toString());
 					
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 	
-	@Test
+	//@Test
 	public void teilenName () {
 		String parameter = "{\"dbId\":9,\"data\":[{\"nameId\":420000001,\"nameGroupid\":503000002,\"langCode\":\"CHI\",\"roadType\":0}],\"flag\":1,\"subtaskId\":208}";
 		
@@ -169,5 +169,61 @@ public class RdNameImportTest {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+	
+	//@Test
+	public void saveRdName(){
+		RdNameImportor a = new RdNameImportor();
+		JSONObject jsonReq = JSONObject.fromObject("{'data':{'options':{},'geoLiveType':'ROADNAME','pid':null,'nameId':null,'nameGroupid':null,'langCode':'CHI','name':'33333张莉测试','type':'','base':'','prefix':'','infix':'','suffix':'','namePhonetic':'','typePhonetic':'','basePhonetic':'','prefixPhonetic':'','infixPhonetic':'','suffixPhonetic':'','srcFlag':0,'roadType':0,'adminId':110000,'codeType':0,'voiceFile':'','srcResume':'','paRegionId':null,'splitFlag':0,'memo':'','routeId':0,'uRecord':null,'uFields':'','city':'','adminName':'北京','_initHooksCalled':true},'subtaskId':76,'dbId':17}");
+		
+		JSONObject data = jsonReq.getJSONObject("data");
+		
+		int subtaskId = jsonReq.getInt("subtaskId");
+		try {
+			JSONObject jobj =a.importRdNameFromWeb(data, subtaskId);
+			System.out.println(jobj);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	
+	
+//	@Test
+//	public  void JobTest() throws Exception {
+//		List<String> ruleList=new ArrayList<String>();
+//		ruleList.add("COM60104");
+//		ruleList.add("COM60104");
+//		ruleList.add("GLM02216");
+//		ruleList.add("GLM02262");
+//		ruleList.add("GLM02261");
+//		
+//		
+//		JobApi apiService=(JobApi) ApplicationContextUtil.getBean("jobApi");
+//		JSONObject metaValidationRequestJSON=new JSONObject();
+//		metaValidationRequestJSON.put("executeDBId", 106);//元数据库dbId
+//		metaValidationRequestJSON.put("kdbDBId", 106);//元数据库dbId
+//		metaValidationRequestJSON.put("ruleIds", ruleList);
+//		metaValidationRequestJSON.put("timeOut", 600);
+//	    int jobId=(int) apiService.createJob("checkCore", metaValidationRequestJSON, 3, "元数据库检查");
+//try{
+//	
+//			//初始化context
+//			JobScriptsInterface.initContext();
+//			//执行job
+//			//int jobId=777;
+//			JobInfo jobInfo = JobService.getInstance().getJobById(jobId);
+//			AbstractJob job = JobCreateStrategy.createAsMethod(jobInfo);
+////			job.run();
+//			job.execute();
+//			job.getJobInfo().getResponse();
+//			
+//			System.out.println("Over.");
+//			System.exit(0);
+//		}catch(Exception e){
+//			System.out.println("Oops, something wrong...");
+//			e.printStackTrace();
+//		}
+//	}
 
 }

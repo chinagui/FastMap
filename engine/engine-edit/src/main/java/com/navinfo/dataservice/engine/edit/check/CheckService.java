@@ -35,7 +35,7 @@ public class CheckService {
 	 * @param dbId
 	 * @param subTaskId
 	 * @param userId
-	 * @param checkType 检查类型（0 poi行编，1poi精编, 2道路）
+	 * @param checkType 检查类型（0 poi行编，1poi精编, 2道路,3 道路名）
 	 * @return
 	 * @throws Exception 
 	 */
@@ -68,6 +68,15 @@ public class CheckService {
 		validationRequestJSON.put("rules", ruleList);
 		validationRequestJSON.put("targetDbId", dbId);
 		JobApi apiService=(JobApi) ApplicationContextUtil.getBean("jobApi");
+		if(checkType == 3){  //道路名检查 ,直接调元数据库 全表检查
+			
+			JSONObject metaValidationRequestJSON=new JSONObject();
+			metaValidationRequestJSON.put("executeDBId", 106);//元数据库dbId
+			metaValidationRequestJSON.put("kdbDBId", 106);//元数据库dbId
+			metaValidationRequestJSON.put("ruleIds", ruleList);
+			metaValidationRequestJSON.put("timeOut", 0);
+			jobId=apiService.createJob("checkCore", metaValidationRequestJSON, userId, "元数据库检查");
+		}
 		jobId=apiService.createJob("gdbValidation", validationRequestJSON, userId, "检查");
 		
 		return jobId;

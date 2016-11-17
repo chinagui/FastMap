@@ -1,10 +1,12 @@
 package com.navinfo.dataservice.engine.editplus.model.obj;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import com.navinfo.dataservice.engine.editplus.diff.ObjectDiffConfig;
 import com.navinfo.dataservice.engine.editplus.model.BasicRow;
+import com.navinfo.dataservice.engine.editplus.model.selector.ObjSelector;
 import com.navinfo.dataservice.engine.editplus.operation.OperationType;
 import com.navinfo.navicommons.database.sql.RunnableSQL;
 
@@ -19,11 +21,19 @@ public abstract class BasicObj {
 	
 	protected BasicRow mainrow;
 	//protected Map<Class<? extends BasicObj>, List<BasicObj>> childobjs;//存储对象下面的子对象，不包含子表
-	protected Map<Class<? extends BasicRow>, List<BasicRow>> childrows;//存储对象下的子表,包括二级、三级子表...
+//	protected Map<Class<? extends BasicRow>, List<BasicRow>> childrows;//存储对象下的子表,包括二级、三级子表...
+	protected Map<String,List<BasicRow>> subrows=new HashMap<String,List<BasicRow>>();//key:table_name,value:rows
 	
 	public BasicObj(BasicRow mainrow){
 		this.mainrow=mainrow;
 	}
+	public BasicRow getMainrow() {
+		return mainrow;
+	}
+	public Map<String, List<BasicRow>> getSubrows() {
+		return subrows;
+	}
+	
 	public abstract String objType();
 	
 	public long objPid() {
@@ -32,21 +42,31 @@ public abstract class BasicObj {
 	public OperationType opType(){
 		return mainrow.getOpType();
 	}
+	
 	/**
 	 * 主表对应的子表list。key：Class.class value:模型中子表的list
 	 * @return
 	 */
-	public abstract Map<Class<? extends BasicRow>,List<BasicRow>> childRows(); 
+//	public abstract Map<Class<? extends BasicRow>,List<BasicRow>> childRows(); 
 
 
 	//public abstract Map<Class<? extends BasicObj>,List<BasicObj>> childObjs(); 
 	
 
-	public boolean checkChildren(List<?> oldValue,List<?> newValue){
-		if(oldValue==null&&newValue==null)return false;
-		if(oldValue!=null&&oldValue.equals(newValue))return false;
-		//...TODO
-		return true;
+//	public boolean checkChildren(List<?> oldValue,List<?> newValue){
+//		if(oldValue==null&&newValue==null)return false;
+//		if(oldValue!=null&&oldValue.equals(newValue))return false;
+//		//...TODO
+//		return true;
+//	}
+	
+
+	public List<BasicRow> getRowsByName(String tableName){
+		List<BasicRow> rows = subrows.get(tableName);
+		if(rows==null){
+			//ObjSelector
+		}
+		return subrows.get(tableName);
 	}
 	
 	public BasicObj copy(){

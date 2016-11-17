@@ -22,9 +22,10 @@ public class Operation implements IOperation {
         JSONObject geoPoint = new JSONObject();
         geoPoint.put("type", "Point");
         geoPoint.put("coordinates", new double[]{command.getContent().getDouble("longitude"), command.getContent().getDouble("latitude")});
-        command.getMileagepile().setGeometry(GeoTranslator.geojson2Jts(geoPoint, 100000, 0));
+        command.getMileagepile().changedFields().put("geometry", geoPoint);
         String[] meshes = MeshUtils.point2Meshes(command.getContent().getDouble("longitude"), command.getContent().getDouble("latitude"));
-        command.getMileagepile().setMeshId(Integer.valueOf(meshes[0]));
+        command.getMileagepile().changedFields().put("meshId", Integer.valueOf(meshes[0]));
+        command.getMileagepile().changedFields().put("linkPid", command.getContent().getInt("linkPid"));
         result.insertObject(command.getMileagepile(), ObjStatus.UPDATE, command.getMileagepile().pid());
         return null;
     }

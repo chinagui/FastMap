@@ -10,6 +10,9 @@ import org.apache.log4j.Logger;
 import com.alibaba.druid.pool.DruidPooledConnection;
 import com.alibaba.druid.proxy.jdbc.ClobProxyImpl;
 import com.alibaba.druid.proxy.jdbc.ConnectionProxyImpl;
+import com.navinfo.dataservice.commons.database.oracle.MyDriverManagerConnectionWrapper;
+import com.navinfo.dataservice.commons.database.oracle.MyPoolGuardConnectionWrapper;
+import com.navinfo.dataservice.commons.database.oracle.MyPoolableConnection;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.vividsolutions.jts.geom.util.GeometryTransformer;
@@ -50,6 +53,17 @@ public class ConnectionUtil {
 		if(conn instanceof DruidPooledConnection){
 			ConnectionProxyImpl impl = (ConnectionProxyImpl) ((DruidPooledConnection) conn).getConnection();
 			return impl.getRawObject();
+		}else if (conn instanceof MyDriverManagerConnectionWrapper) {
+			return ((MyDriverManagerConnectionWrapper) conn)
+					.getDelegate();
+		} else if (conn instanceof MyPoolGuardConnectionWrapper) {
+			Connection originConn = ((MyPoolGuardConnectionWrapper) conn)
+					.getDelegate();
+			if (originConn instanceof MyPoolableConnection) {
+				originConn = ((MyPoolableConnection) originConn)
+						.getDelegate();
+			}
+			return originConn;
 		}
 		return conn;
 	}

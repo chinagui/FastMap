@@ -68,7 +68,7 @@ public class PoiBatchProcessorFM_BAT_20_197 implements IBatch {
 			JSONArray carentalDataArray = new JSONArray();
 			List<IRow> carrentals = poi.getCarrentals();
 			// chain值在汽车租赁网址范围内的批
-			if (chainWebsite.containsKey(chain)) {
+			if (chainWebsite.containsKey(chain) && chain != null) {
 				//POI有汽车租赁，则更新website,phone400
 				if (carrentals.size() > 0) {
 					for (IRow carrental : carrentals) {
@@ -78,7 +78,7 @@ public class PoiBatchProcessorFM_BAT_20_197 implements IBatch {
 						carrentalData.put("objStatus", ObjStatus.UPDATE.toString());
 						carrentalData.put("webSite", chainWebsite.getString(chain));
 						//首汽租车 chain=3000,400电话不需要批
-						if (!chain.equals("3000")){
+						if (!"3000".equals(chain)){
 							carrentalData.put("phone400", chainContact.getString(chain));
 						}
 						carentalDataArray.add(carrentalData);
@@ -91,7 +91,7 @@ public class PoiBatchProcessorFM_BAT_20_197 implements IBatch {
 					//设置webSite
 					carrentalObj.setWebSite(chainWebsite.getString(chain));
 					//设置phone400,如果chain=3000则不需要批处理赋值
-					if (!chain.equals("3000")){
+					if (!"3000".equals(chain)){
 						carrentalObj.setPhone400(chainContact.getString(chain));
 					}
 					JSONObject carrentalJsonObject = carrentalObj.Serialize(null);

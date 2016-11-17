@@ -59,9 +59,7 @@ public class OpRefAdFace implements IOperation {
 							obj.getLinkPid(), true));
 				}
 				result.insertObject(obj, ObjStatus.DELETE, face.getPid());
-			}
-			links.add(command.geteAdLink());
-			links.add(command.getsAdLink());
+			}links.addAll(this.command.getNewLinks());
 			com.navinfo.dataservice.engine.edit.operation.obj.adface.create.Operation opFace =
 					new com.navinfo.dataservice.engine.edit.operation.obj.adface.create.Operation(
 					result,face);

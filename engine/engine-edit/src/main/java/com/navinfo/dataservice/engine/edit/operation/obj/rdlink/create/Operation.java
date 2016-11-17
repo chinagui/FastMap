@@ -20,6 +20,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeSelector;
 import com.navinfo.dataservice.engine.edit.utils.AdminOperateUtils;
+import com.navinfo.dataservice.engine.edit.utils.BasicServiceUtils;
 import com.navinfo.dataservice.engine.edit.utils.RdLinkOperateUtils;
 import com.navinfo.dataservice.engine.edit.utils.batch.AdminIDBatchUtils;
 import com.navinfo.dataservice.engine.edit.utils.batch.UrbanBatchUtils;
@@ -41,8 +42,8 @@ public class Operation implements IOperation {
 	private Command command;
 
 	private Connection conn;
-	
-	//新生成的LINK
+
+	// 新生成的LINK
 	private List<RdLink> linkList = new ArrayList<>();
 
 	public Operation(Command command, Check check, Connection conn) {
@@ -86,7 +87,7 @@ public class Operation implements IOperation {
 		// 处理挂机交叉口内link的形态
 		OpRefRdCross opRefRdCross = new OpRefRdCross(conn, linkList);
 		opRefRdCross.run(result);
-		
+
 		return msg;
 	}
 
@@ -173,9 +174,9 @@ public class Operation implements IOperation {
 			AdminIDBatchUtils.updateAdminID(link, null, conn);
 			// 设置link的zoneId属性
 			ZoneIDBatchUtils.updateZoneID(link, null, conn, result);
-			
+
 			this.linkList.add(link);
-			
+
 			result.insertObject(link, ObjStatus.INSERT, link.pid());
 		}
 	}
@@ -245,7 +246,7 @@ public class Operation implements IOperation {
 		AdminIDBatchUtils.updateAdminID(link, null, conn);
 		// 设置link的zoneId属性
 		ZoneIDBatchUtils.updateZoneID(link, null, conn, result);
-		
+
 		this.linkList.add(link);
 
 		result.insertObject(link, ObjStatus.INSERT, link.pid());
@@ -307,51 +308,16 @@ public class Operation implements IOperation {
 
 	public void breakLine(Result result) throws Exception {
 		// 处理连续打断参数
-		JSONArray breakArray = new JSONArray();
-		for (int i = 0; i < command.getCatchLinks().size(); i++) {
-			if (command.getCatchLinks().getJSONObject(i)
-					.containsKey("breakNode")) {
-				breakArray.add(command.getCatchLinks().getJSONObject(i));
-			}
-		}
-		JSONArray resultArr = new JSONArray();
-		if (breakArray.size() > 0) {
-			resultArr = this.createBreaksPara(breakArray);
-		}
+		JSONArray resultArr = BasicServiceUtils.getBreakArray(command
+				.getCatchLinks());
 
 		// 组装打断操作流程
 		for (int i = 0; i < resultArr.size(); i++) {
-			JSONObject modifyJson = resultArr.getJSONObject(i);
-
-			JSONObject breakJson = new JSONObject();
-			breakJson.put("objId", modifyJson.get("linkPid"));
-			breakJson.put("dbId", command.getDbId());
-			JSONObject data = new JSONObject();
-			if (modifyJson.getJSONArray("breakNodePids").size() <= 1) {
-				JSONObject jsonNode = modifyJson.getJSONArray("breakNodePids")
-						.getJSONObject(0);
-				data.put("breakNodePid", jsonNode.getInt("breakNode"));
-				data.put("longitude", jsonNode.get("lon"));
-				data.put("latitude", jsonNode.get("lat"));
-
-			} else {
-				JSONArray array = new JSONArray();
-				for (int j = 0; j < modifyJson.getJSONArray("breakNodePids")
-						.size(); j++) {
-					JSONObject jsonBreak = modifyJson.getJSONArray(
-							"breakNodePids").getJSONObject(j);
-					JSONObject obj = new JSONObject();
-					obj.put("breakNodePid", jsonBreak.getInt("breakNode"));
-					obj.put("longitude", jsonBreak.get("lon"));
-					obj.put("latitude", jsonBreak.get("lat"));
-					array.add(obj);
-
-				}
-				data.put("breakNodes", array);
-			}
-
-			breakJson.put("data", data);
-			// 调用打断API
+			JSONObject obj = resultArr.getJSONObject(i);
+			JSONObject breakJson = BasicServiceUtils.getBreaksPara(obj,
+					this.command.getDbId());
+			// 组装打断线的参数
+			// 保证是同一个连接
 			com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrdpoint.Command breakCommand = new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrdpoint.Command(
 					breakJson, breakJson.toString());
 			com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrdpoint.Process breakProcess = new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrdpoint.Process(
@@ -359,93 +325,6 @@ public class Operation implements IOperation {
 			breakProcess.innerRun();
 
 		}
-	}
-
-	/***
-	 * 组件连续打断参数
-	 * 
-	 * @param catchLinks
-	 * @return
-	 */
-	private JSONArray createBreaksPara(JSONArray catchLinks) {
-		// 参数排序
-		JSONArray sortArry = this.breakSortParas(catchLinks);
-		JSONArray jsonResult = new JSONArray();
-		JSONObject objResult = new JSONObject();
-		JSONArray breakNode = new JSONArray();
-		for (int i = 0; i < sortArry.size(); i++) {
-			JSONObject obj = sortArry.getJSONObject(i);
-			JSONObject nodeObj = new JSONObject();
-			if (i == 0) {
-				objResult.put("linkPid", obj.getInt("linkPid"));
-				nodeObj.put("lon", obj.getDouble("lon"));
-				nodeObj.put("lat", obj.getDouble("lat"));
-				nodeObj.put("breakNode", obj.getInt("breakNode"));
-				breakNode.add(nodeObj);
-
-			} else {
-				if (obj.getInt("linkPid") == objResult.getInt("linkPid")) {
-					nodeObj.put("breakNode", obj.getInt("breakNode"));
-					nodeObj.put("lon", obj.getDouble("lon"));
-					nodeObj.put("lat", obj.getDouble("lat"));
-					breakNode.add(nodeObj);
-
-				} else {
-
-					objResult.put("breakNodePids", breakNode);
-					jsonResult.add(objResult);
-					objResult = new JSONObject();
-					breakNode = new JSONArray();
-					objResult.put("linkPid", obj.getInt("linkPid"));
-					nodeObj.put("breakNode", obj.getInt("breakNode"));
-					nodeObj.put("lon", obj.getDouble("lon"));
-					nodeObj.put("lat", obj.getDouble("lat"));
-					breakNode.add(nodeObj);
-
-				}
-			}
-			if (i == sortArry.size() - 1) {
-				objResult.put("breakNodePids", breakNode);
-				jsonResult.add(objResult);
-			}
-		}
-		return jsonResult;
-	}
-
-	/***
-	 * 连续打断参数按照linkPid排序
-	 * 
-	 * @param catchLinks
-	 * @return
-	 */
-	private JSONArray breakSortParas(JSONArray catchLinks) {
-		List<JSONObject> jsonValues = new ArrayList<JSONObject>();
-		JSONArray sortedJsonArray = new JSONArray();
-		for (int i = 0; i < catchLinks.size(); i++) {
-			jsonValues.add(catchLinks.getJSONObject(i));
-		}
-		Collections.sort(jsonValues, new Comparator<JSONObject>() {
-			private static final String KEY_NAME = "linkPid";
-
-			@Override
-			public int compare(JSONObject a, JSONObject b) {
-				Integer valA = 0;
-				Integer valB = 0;
-				try {
-					valA = (Integer) a.get(KEY_NAME);
-					valB = (Integer) b.get(KEY_NAME);
-				} catch (JSONException e) {
-				}
-
-				return valA.compareTo(valB);
-
-			}
-		});
-		for (int i = 0; i < catchLinks.size(); i++) {
-			sortedJsonArray.add(jsonValues.get(i));
-		}
-		return sortedJsonArray;
-
 	}
 
 	/***

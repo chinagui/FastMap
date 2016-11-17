@@ -83,6 +83,10 @@
 			<artifactId>dubbo</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>com.navinfo.dataservice</groupId>
+			<artifactId>engine-edit</artifactId>
+		</dependency>
 		
   </dependencies>
 </project>

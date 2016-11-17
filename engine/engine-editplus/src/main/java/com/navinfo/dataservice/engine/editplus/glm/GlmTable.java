@@ -14,7 +14,7 @@ public class GlmTable {
 	protected String name;//表名，大写
 	protected String pkColumn;//主键字段，大写，没有主键为null
 	protected String modelClassName;//表对应的模型类名
-	protected GlmRef objRef;//表所属的要素对象参考信息，只记录自己上一层的参考信息
+	protected GlmRef objRef;//表所属的要素对象参考信息，只记录自己上一层的参考信息,如果为空是主表
 	protected GlmRef geoRef;//表所属几何对象参考信息，只记录自己上一层的参考信息
 	protected Map<String,String> columns=new HashMap<String,String>();
 	public String getObjType() {

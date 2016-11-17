@@ -3,6 +3,7 @@ package com.navinfo.dataservice.engine.batch;
 import java.sql.Connection;
 import java.util.List;
 
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiCarrental;
@@ -68,7 +69,7 @@ public class PoiBatchProcessorFM_BAT_20_197 implements IBatch {
 			JSONArray carentalDataArray = new JSONArray();
 			List<IRow> carrentals = poi.getCarrentals();
 			// chain值在汽车租赁网址范围内的批
-			if (chainWebsite.containsKey(chain) && chain != null) {
+			if (chainWebsite.containsKey(chain) && StringUtils.isNotEmpty(chain)) {
 				//POI有汽车租赁，则更新website,phone400
 				if (carrentals.size() > 0) {
 					for (IRow carrental : carrentals) {

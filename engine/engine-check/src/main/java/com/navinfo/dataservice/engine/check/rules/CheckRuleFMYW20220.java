@@ -2,6 +2,8 @@ package com.navinfo.dataservice.engine.check.rules;
 
 import java.util.List;
 
+import com.ctc.wstx.util.StringUtil;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiBusinessTime;
@@ -40,7 +42,7 @@ public class CheckRuleFMYW20220 extends baseRule{
 					for (IRow businessTime: businessTimes){
 						IxPoiBusinessTime ixPoiBusinessTime = (IxPoiBusinessTime) businessTime;
 						String timeDur = ixPoiBusinessTime.getTimeDur();
-						if (!timeDur.isEmpty() && timeDur.contains(":")){
+						if (StringUtils.isNotEmpty(timeDur) && timeDur.contains(":")){
 							//取出time_cur值，以":"分隔,判断小时数
 							String[] time = timeDur.split(":");
 							int hour = Integer.parseInt(time[0]);

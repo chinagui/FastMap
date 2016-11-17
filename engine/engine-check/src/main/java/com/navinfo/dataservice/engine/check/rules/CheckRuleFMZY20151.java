@@ -2,6 +2,7 @@ package com.navinfo.dataservice.engine.check.rules;
 
 import java.util.List;
 
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiParking;
@@ -40,7 +41,7 @@ public class CheckRuleFMZY20151 extends baseRule {
 						IxPoiParking ixPoiParking = (IxPoiParking) parking;
 						String tollWay = ixPoiParking.getTollWay();
 						String errorLog = new String();
-						if (!tollWay.isEmpty()) {
+						if (StringUtils.isNotEmpty(tollWay)) {
 							String value = "0,1,2";
 							if (!tollWay.contains("|") && !value.contains(tollWay)) {
 								errorLog = "收费方式的值没有" + "'" + "|" + "'" + "且不为空时，" + "值不在{0,1,2}中";
@@ -60,7 +61,7 @@ public class CheckRuleFMZY20151 extends baseRule {
 								}
 							}
 						}
-						if (!errorLog.isEmpty()) {
+						if (StringUtils.isNotEmpty(errorLog)) {
 							this.setCheckResult(poi.getGeometry(), "[IX_POI," + poi.getPid() + "]", poi.getMeshId(),
 									errorLog);
 						}

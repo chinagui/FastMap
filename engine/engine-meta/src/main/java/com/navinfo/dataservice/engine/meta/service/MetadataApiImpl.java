@@ -21,7 +21,7 @@ import com.navinfo.dataservice.engine.meta.mesh.MeshSelector;
 import com.navinfo.dataservice.engine.meta.pinyin.PinyinConvertSelector;
 import com.navinfo.dataservice.engine.meta.pinyin.PinyinConverter;
 import com.navinfo.dataservice.engine.meta.rdname.RdNameImportor;
-import com.navinfo.dataservice.engine.meta.tmc.TmcSelector;
+import com.navinfo.dataservice.engine.meta.tmc.selector.TmcSelector;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;

@@ -50,6 +50,8 @@ public class SubtaskListByWkt implements Serializable{
 	private List<Integer> gridIds;
 	@ApiModelProperty(position = 1, required = false, value = "子任务几何")
 	private String geometry ;
+	@ApiModelProperty(position = 1, required = false, value = "子任务几何")
+	private String referGeometry ;
 
 	public String getName(){
 		if(null==name){return "";}
@@ -101,6 +103,9 @@ public class SubtaskListByWkt implements Serializable{
 	}
 	public void setGeometry(String geometry) {
 		this.geometry = geometry;
+	}
+	public void setReferGeometry(String geometry) {
+		this.referGeometry = geometry;
 	}
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()

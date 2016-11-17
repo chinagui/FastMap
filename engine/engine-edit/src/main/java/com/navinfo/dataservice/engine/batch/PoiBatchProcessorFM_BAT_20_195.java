@@ -72,7 +72,7 @@ public class PoiBatchProcessorFM_BAT_20_195 implements IBatch {
 						IxPoiDetail ixPoiDetail = (IxPoiDetail) poiDetail;
 						String ixPoiWebSite = ixPoiDetail.getWebSite();
 						// 判断POI的website是否和规则的一致，一致不批，否则批处理
-						if (!ixPoiWebSite.equals(webSite)) {
+						if (!webSite.equals(ixPoiWebSite)) {
 							JSONObject data = new JSONObject();
 							data.put("rowId", ixPoiDetail.getRowId());
 							data.put("webSite", webSite);

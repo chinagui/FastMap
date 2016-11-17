@@ -132,5 +132,26 @@ public class serchConditionTest extends InitApplication {
 			}
 		}
 	}
+	
+	
+	@Test
+	public void getTitleWithGap1() {
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getConnectionById(17);
+
+			SearchProcess p = new SearchProcess(conn);
+
+			List<ObjType> objType = new ArrayList<>();
+
+			objType.add(ObjType.RDLINK);
+
+			System.out.println(p.searchDataByTileWithGap(objType, 6744,
+					3102, 13, 10));
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 
 }

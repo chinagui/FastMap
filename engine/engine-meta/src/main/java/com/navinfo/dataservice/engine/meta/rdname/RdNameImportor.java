@@ -10,6 +10,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 
+import com.alibaba.druid.sql.visitor.functions.Substring;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.util.DateUtils;
@@ -267,11 +268,23 @@ public class RdNameImportor {
 	/**
 	 * web端保存rdName
 	 * @author wangdongbin
+	 * @param subtaskId 
 	 * @param rdName
 	 * @return
 	 * @throws Exception
 	 */
-	public JSONObject importRdNameFromWeb(JSONObject params) throws Exception {
+	/**
+	 * @Title: importRdNameFromWeb
+	 * @Description: 增加参数 subtaskId
+	 * @param params
+	 * @param subtaskId
+	 * @return
+	 * @throws Exception  JSONObject
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2016年11月14日 下午6:14:57 
+	 */
+	public JSONObject importRdNameFromWeb(JSONObject params, int subtaskId) throws Exception {
 		JSONObject result = new JSONObject();
 		
 		Connection conn = null;
@@ -294,6 +307,10 @@ public class RdNameImportor {
 			}
 			
 			RdNameOperation operation = new RdNameOperation(conn);
+			//web新增rd_name是，根据当前子任务的id， 赋值给rd_name.src_resume 格式 "task":3443434
+			if(rdName.getSrcResume() == null || StringUtils.isEmpty(rdName.getSrcResume())){
+				rdName.setSrcResume("\"task\":"+subtaskId);
+			}
 			// 新增或更新一条道路名
 			RdName rdNameNew = operation.saveOrUpdate(rdName);
 			
@@ -349,6 +366,17 @@ public class RdNameImportor {
 		} catch (Exception e) {
 			throw e;
 		}
+		
+	}
+	
+	public static void main(String[] args) {
+		String a = "\"tips\":\"reuwoireuwir83erewr343\"";
+	//	a.substring();
+		
+		
+		
+		
+		
 		
 	}
 }

@@ -233,7 +233,9 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 			String sortby = params.getString("sortby");
 			int pageSize = params.getInt("pageSize");
 			int pageNum = params.getInt("pageNum");
-			int flag = params.getInt("flag");
+			int flag = params.getInt("flag");//1是任务查，0是全库查
+			int subtaskId = params.getInt("subtaskId");//获取subtaskid 
+			
 			
 			StringUtils sUtils = new StringUtils();
 			
@@ -244,14 +246,17 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 			Clob pidClod = null;
 			if (flag>0) {
 				if (tips.size()>0) {
-					
+					//添加根据子任务id直接查询的sql 
 					sql.append("SELECT * ");
 					sql.append(" FROM (SELECT c.*, rownum rn");
 					sql.append(" FROM (select COUNT (1) OVER (PARTITION BY 1) total,a.* ");
-					sql.append(" from (select substr(src_resume, 0, instr(src_resume, ',') - 1) as tipid,t.*");
-					sql.append(" from rd_name t");
-					sql.append(" where src_resume is not null");
-					sql.append(" and instr(src_resume, ',') > 0) a ");
+					sql.append(" from (");
+					sql.append("SELECT null tipid,r.*  from rd_name r  where r.src_resume = '\"task\":"+ subtaskId +"' ");
+					sql.append(" union all  ");
+					sql.append(" SELECT tt.* FROM ");
+					sql.append("( select substr(replace(t.src_resume,'\"',''),instr(replace(t.src_resume,'\"',''), ':') + 1,length(replace(src_resume,'\"',''))) as tipid,t.* ");
+					sql.append(" from rd_name t  where t.src_resume like '%tips%' ) tt");
+					
 					sql.append(" where 1=1");
 					
 					for (int i=0;i<tips.size();i++) {
@@ -263,7 +268,7 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 					
 					pidClod = ConnectionUtil.createClob(conn);
 					pidClod.setString(1, ids);
-					sql.append(" and a.tipid in (select column_value from table(clob_to_table(?)))");
+					sql.append(" and tt.tipid in (select column_value from table(clob_to_table(?)))) a ");
 					
 				} else {
 					result.put("total", 0);
@@ -294,6 +299,11 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 						}
 					}
 				}
+				
+				
+				
+				
+				
 			}
 			
 			// 添加排序条件
@@ -321,7 +331,7 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 			int startRow = (pageNum-1) * pageSize + 1;
 
 			int endRow = pageNum * pageSize;
-			
+			System.out.println(sql.toString());
 			pstmt = conn.prepareStatement(sql.toString());
 			
 			if (flag>0) {

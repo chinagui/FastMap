@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javassist.expr.NewArray;
 import net.sf.json.JSONObject;
 
 import org.apache.commons.dbutils.DbUtils;

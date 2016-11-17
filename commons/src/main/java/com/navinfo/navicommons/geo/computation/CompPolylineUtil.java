@@ -189,11 +189,17 @@ public class CompPolylineUtil {
 			}		
 		}
 		
-		DoublePolyline rightPolyline = new DoublePolyline(
-				(DoubleLine[]) rightLines.toArray());
+		DoubleLine[] right = new DoubleLine[rightLines.size()];
 
-		DoublePolyline leftPolyline = new DoublePolyline(
-				(DoubleLine[]) leftLines.toArray());		
+		rightLines.toArray(right);
+
+		DoublePolyline rightPolyline = new DoublePolyline(right);
+
+		DoubleLine[] left = new DoubleLine[leftLines.size()];
+
+		leftLines.toArray(left);
+
+		DoublePolyline leftPolyline = new DoublePolyline(left);		
 		
 		// 转换
 		LineString[] results = new LineString[2];

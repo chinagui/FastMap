@@ -20,6 +20,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.se.RdSe;
 import com.navinfo.dataservice.dao.glm.model.rd.tollgate.RdTollgate;
 import com.navinfo.dataservice.dao.glm.model.rd.voiceguide.RdVoiceguide;
+import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
 
@@ -52,6 +53,13 @@ public class RELATING_CHECK_NOSAME_LINE_LINE_RELATION extends baseRule {
 			if(obj instanceof RdBranch ){
 				RdBranch rdBranch = (RdBranch)obj;
 				boolean result = checkRdBranch(rdBranch);
+				if(!result){
+					this.setCheckResult("", "", 0,"相同的进入线，进入点，经过线，退出线，不能创建两组相同类型分歧");
+					return;
+				}
+			}else if(obj instanceof RdBranchDetail ){
+				RdBranchDetail rdBranchDetail = (RdBranchDetail)obj;
+				boolean result = checkRdBranchDetail(rdBranchDetail);
 				if(!result){
 					this.setCheckResult("", "", 0,"相同的进入线，进入点，经过线，退出线，不能创建两组相同类型分歧");
 					return;
@@ -327,6 +335,30 @@ public class RELATING_CHECK_NOSAME_LINE_LINE_RELATION extends baseRule {
 		sb.append(outLinkPid);
 		sb.append(" and rb.node_pid = ");
 		sb.append(nodePid);
+
+		String sql = sb.toString();
+		
+        DatabaseOperator getObj=new DatabaseOperator();
+		List<Object> resultList=new ArrayList<Object>();
+		resultList=getObj.exeSelect(this.getConn(), sql);
+		
+		if (resultList.size()>0){
+			return false;
+		}
+		return true;
+	}
+	
+	private boolean checkRdBranchDetail(RdBranchDetail rdBranchDetail) throws Exception{
+		int branchType=rdBranchDetail.getBranchType();
+		StringBuilder sb = new StringBuilder();
+		sb.append("select rb.branch_pid"
+				+ "  from rd_branch rb, rd_branch_detail d"
+				+ " where rb.branch_pid = d.branch_pid"
+				+ "   AND d.branch_type="+branchType
+				+ "   AND RB.u_record != 2"
+				+ "   AND d.u_record != 2");
+		sb.append(" and rb.branch_pid = ");
+		sb.append(rdBranchDetail.getBranchPid());
 
 		String sql = sb.toString();
 		

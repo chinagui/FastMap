@@ -11,6 +11,7 @@ import org.apache.commons.lang.StringUtils;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
+import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchDetail;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchVia;
 import com.navinfo.dataservice.dao.glm.model.rd.directroute.RdDirectroute;
 import com.navinfo.dataservice.dao.glm.model.rd.gate.RdGate;
@@ -311,17 +312,15 @@ public class RELATING_CHECK_NOSAME_LINE_LINE_RELATION extends baseRule {
 		int inLinkPid = rdBranch.getInLinkPid();
 		int outLinkPid = rdBranch.getOutLinkPid();
 		int nodePid = rdBranch.getNodePid();
-		List<String> vialinkPids = new ArrayList<String>();
-		for(IRow deObj:rdBranch.getVias()){
-			if(deObj instanceof RdBranchVia){
-				RdBranchVia rdBranchVia = (RdBranchVia)deObj;
-				vialinkPids.add(String.valueOf(rdBranchVia.getLinkPid()));
-			}
-		}
+		RdBranchDetail detail=(RdBranchDetail) rdBranch.getDetails().get(0);
+		int branchType=detail.getBranchType();
 		StringBuilder sb = new StringBuilder();
-		sb.append("select distinct LISTAGG(rbv.link_pid, ',') WITHIN GROUP(order by rbv.group_id) over(partition by rb.branch_pid) link_pids,rb.branch_pid"
-				+ ",rbv.group_id from rd_branch rb, rd_branch_via rbv where rb.branch_pid = rbv.branch_pid"
-				+ " AND RB.u_record !=2 AND RBV.u_record !=2");
+		sb.append("select rb.branch_pid"
+				+ "  from rd_branch rb, rd_branch_detail d"
+				+ " where rb.branch_pid = d.branch_pid"
+				+ "   AND d.branch_type="+branchType
+				+ "   AND RB.u_record != 2"
+				+ "   AND d.u_record != 2");
 		sb.append(" and rb.in_link_pid = ");
 		sb.append(inLinkPid);
 		sb.append(" and rb.out_link_pid = ");
@@ -336,18 +335,7 @@ public class RELATING_CHECK_NOSAME_LINE_LINE_RELATION extends baseRule {
 		resultList=getObj.exeSelect(this.getConn(), sql);
 		
 		if (resultList.size()>0){
-			for(int i =0;i<resultList.size();i++){
-				String link_pids = (String) resultList.get(i);
-				String[] via_ink_pids = StringUtils.split(link_pids, ",");
-				List<String> userList = Arrays.asList(via_ink_pids);
-				Set<String> result = new HashSet<String>();
-				result.addAll(vialinkPids);
-				result.removeAll(userList);
-				if(result.isEmpty()){
-					this.setCheckResult("", "", 0);
-					return false;
-				}
-			}
+			return false;
 		}
 		return true;
 	}

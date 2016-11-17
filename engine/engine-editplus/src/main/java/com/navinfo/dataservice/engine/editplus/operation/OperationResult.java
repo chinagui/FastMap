@@ -140,9 +140,10 @@ public class OperationResult{
 	public Collection<Logable> allRows4Log(){
 		List<Logable> rows=new ArrayList<Logable>();
 		for(BasicObj obj:allObjs){
-			for(List<BasicRow> objs:obj.childRows().values()){
-				if(objs!=null&&objs.size()>0){
-					rows.addAll(objs);
+			rows.add(obj.getMainrow());
+			for(Map.Entry<String, List<BasicRow>> entry:obj.getSubrows().entrySet()){
+				if(entry.getValue()!=null&&entry.getValue().size()>0){
+					rows.addAll(entry.getValue());
 				}
 			}
 		}

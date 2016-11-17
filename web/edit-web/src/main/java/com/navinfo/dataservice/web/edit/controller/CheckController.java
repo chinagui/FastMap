@@ -42,6 +42,17 @@ public class CheckController extends BaseController {
 	private static final Logger logger = Logger
 			.getLogger(CheckController.class);
 
+	/**
+	 * @Title: listCheck
+	 * @Description: (修)返回检察结果列表
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException  ModelAndView
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2016年11月16日 上午11:14:09 
+	 */
 	@RequestMapping(value = "/check/list")
 	public ModelAndView listCheck(HttpServletRequest request)
 			throws ServletException, IOException {
@@ -85,7 +96,7 @@ public class CheckController extends BaseController {
 					grids.add(obj.toString());
 				}
 				logger.info("end check/list manApi");
-			}			
+			}		
 			Page page = selector.list(subtaskType,grids, pageSize, pageNum);
 			logger.info("end check/list");
 
@@ -234,14 +245,19 @@ public class CheckController extends BaseController {
 	}
 	
 	/**
+	 * @Title: checkRun
+	 * @Description: 
 	 * 检查执行
 	 * dbId	是	子任务id
-	 * type	是	检查类型（0 poi行编，1poi精编, 2道路）
+	 * type	是	检查类型（0 poi行编，1poi精编, 2道路 , 3道路名）
 	 * 根据输入的子任务和检查类型，对任务范围内的数据执行，执行检查。不执行检查结果清理
 	 * @param request
 	 * @return
 	 * @throws ServletException
-	 * @throws IOException
+	 * @throws IOException  ModelAndView
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2016年11月15日 下午10:12:31 
 	 */
 	@RequestMapping(value = "/check/run")
 	public ModelAndView checkRun(HttpServletRequest request)
@@ -450,11 +466,22 @@ public class CheckController extends BaseController {
 	
 	/**
 	 * 检查规则查询
-	 * @param request
+	 * @param request  
 	 * @return
 	 * @throws ServletException
 	 * @throws IOException
 	 * @author wangdongbin
+	 */
+	/**
+	 * @Title: getCkRules
+	 * @Description: 获取道路名检察的规则列表(修)(第七迭代)
+	 * @param request  type	是	类型（0 POI， 1道路 ,2 道路名）
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException  ModelAndView
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2016年11月15日 下午9:10:32 
 	 */
 	@RequestMapping(value = "/check/getCkRules")
 	public ModelAndView getCkRules(HttpServletRequest request)

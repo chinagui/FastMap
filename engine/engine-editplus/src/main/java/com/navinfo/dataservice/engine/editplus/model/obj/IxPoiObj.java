@@ -22,7 +22,11 @@ public class IxPoiObj extends AbstractIxObj {
 	public IxPoiObj(BasicRow mainrow) {
 		super(mainrow);
 	}
+	protected Map<String,List<BasicObj>> tables;//key:table_name,value:rows
 
+	public List<BasicObj> getTableByName(String tableName){
+		return tables.get(tableName);
+	}
 	//子对象
 	protected List<BasicObj> ixPoiName=null;
 	protected List<BasicObj> ixPoiAddress=null;

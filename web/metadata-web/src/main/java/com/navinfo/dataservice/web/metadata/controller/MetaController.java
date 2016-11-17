@@ -5,18 +5,15 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.util.HashSet;
 import java.util.Set;
-
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 import org.apache.uima.pear.util.FileUtil;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
-
 import com.navinfo.dataservice.api.fcc.iface.FccApi;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
@@ -583,13 +580,17 @@ public class MetaController extends BaseController {
 		}
 	}
 	
+
 	/**
-	 * web端查询rdName
-	 * @author wangdongbin
+	 * @Title: searchRdNameForWeb
+	 * @Description: 根据任务的grid，查找对应任务grid范围内的rd_name
 	 * @param request
 	 * @return
 	 * @throws ServletException
-	 * @throws IOException
+	 * @throws IOException  ModelAndView
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2016年11月14日 下午7:58:19 
 	 */
 	@RequestMapping(value = "/rdname/websearch")
 	public ModelAndView searchRdNameForWeb(HttpServletRequest request)
@@ -628,13 +629,17 @@ public class MetaController extends BaseController {
 		}
 	}
 	
+
 	/**
-	 * web端插入或更新rdName
-	 * @author wangdongbin
+	 * @Title: webSave
+	 * @Description: 增加参数 subtaskId
 	 * @param request
 	 * @return
 	 * @throws ServletException
-	 * @throws IOException
+	 * @throws IOException  ModelAndView
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2016年11月14日 下午6:15:21 
 	 */
 	@RequestMapping(value = "/rdname/websave")
 	public ModelAndView webSave(HttpServletRequest request)
@@ -645,11 +650,13 @@ public class MetaController extends BaseController {
 			
 			JSONObject data = jsonReq.getJSONObject("data");
 			
+			int subtaskId = jsonReq.getInt("subtaskId");
+			
 //			int dbId = jsonReq.getInt("dbId");
 			
 			RdNameImportor importor = new RdNameImportor();
 			
-			JSONObject result = importor.importRdNameFromWeb(data);
+			JSONObject result = importor.importRdNameFromWeb(data,subtaskId);
 			
 			return new ModelAndView("jsonView", success(result));
 		} catch (Exception e) {

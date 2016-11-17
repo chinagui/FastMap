@@ -127,7 +127,8 @@ public class PoiSave {
             if (operType != OperType.DELETE && ObjType.IXSAMEPOI != objType && ObjType.IXPOIPARENT != objType) {
                 json.put("objId", pid);
                 BatchProcess batchProcess = new BatchProcess("row","save");
-                batchProcess.execute(json, conn, editApiImpl);
+                List<String> batchList = batchProcess.getRowRules();
+                batchProcess.execute(json, conn, editApiImpl, batchList);
             }
             upatePoiStatus(sb.toString(), conn, true);
             

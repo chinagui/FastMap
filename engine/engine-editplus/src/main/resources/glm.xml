@@ -60,14 +60,6 @@
 			<objRef col="GROUP_ID" refTable="IX_POI_PARENT" refCol="GROUP_ID" isRefMain="false"/>
 			<geoRef col="CHILD_POI_PID" refTable="IX_POI" refCol="PID" isRefMain="true"/>
 		</table>
-		<table name="IX_SAMEPOI_PART" pk=""
-			class="com.navinfo.dataservice.engine.editplus.model.ixpoi.IxSamepoiPart">
-			<objRef col="POI_PID" refTable="IX_POI" refCol="PID" isRefMain="true"/>
-			<objRef col="GROUP_ID" refTable="IX_SAMEPOI" refCol="GROUP_ID" isRefMain="false"/>
-		</table>
-		<table name="IX_SAMEPOI" pk="GROUP_ID"
-			class="com.navinfo.dataservice.engine.editplus.model.ixpoi.IxSamepoi">
-		</table>
 		
 		<table name="IX_POI_BUILDING" pk=""
 			class="com.navinfo.dataservice.engine.editplus.model.ixpoi.IxPoiBuilding">
@@ -124,13 +116,6 @@
 		<table name="IX_POI_CARRENTAL" pk=""
 			class="com.navinfo.dataservice.engine.editplus.model.ixpoi.IxPoiCarrental">
 			<objRef col="POI_PID" refTable="IX_POI" refCol="PID" isRefMain="true"/>
-		</table>
-		
-		<table name="IX_POI_TOURROUTE" pk="TOUR_ID"
-			class="com.navinfo.dataservice.engine.editplus.model.ixpoi.IxPoiTourroute">
-		</table>
-		<table name="IX_POI_EVENT" pk="EVENT_ID"
-			class="com.navinfo.dataservice.engine.editplus.model.ixpoi.IxPoiEvent">
 		</table>
     </object>
 	

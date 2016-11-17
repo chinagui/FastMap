@@ -290,8 +290,13 @@ public class SearchProcess {
 				} else if (condition.containsKey("nodePidDir")) {
 					int cruuentNodePidDir = condition.getInt("nodePidDir");
 					int cuurentLinkPid = condition.getInt("linkPid");
+					int maxNum = 11;
+					if(condition.containsKey("maxNum"))
+					{
+						maxNum = condition.getInt("maxNum");
+					}
 					RdLinkSearchUtils searchUtils = new RdLinkSearchUtils(conn);
-					List<RdLink> links = searchUtils.getNextTrackLinks(cuurentLinkPid, cruuentNodePidDir);
+					List<RdLink> links = searchUtils.getNextTrackLinks(cuurentLinkPid, cruuentNodePidDir,maxNum);
 					for (RdLink link : links) {
 						array.add(link.Serialize(ObjLevel.BRIEF));
 					}

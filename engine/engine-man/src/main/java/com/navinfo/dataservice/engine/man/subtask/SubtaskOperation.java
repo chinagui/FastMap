@@ -135,8 +135,10 @@ public class SubtaskOperation {
 			if (bean!=null&&bean.getSubtaskId()!=null && StringUtils.isNotEmpty(bean.getSubtaskId().toString())){
 				updateSql += " where SUBTASK_ID= " + bean.getSubtaskId();
 			};
-			
-			run.update(conn,baseSql+updateSql,value);
+			if(value.isEmpty() || value.size()==0){
+				run.update(conn,baseSql+updateSql);}
+			else{
+				run.update(conn,baseSql+updateSql,value);}
 			
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);

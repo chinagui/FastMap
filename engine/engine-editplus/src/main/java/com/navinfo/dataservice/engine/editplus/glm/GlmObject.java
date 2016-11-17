@@ -10,8 +10,9 @@ import java.util.Map;
  */
 public class GlmObject {
 	protected String name;
-	protected String type;//feature|relation
+	protected String type;//FEATURE|RELATION
 	protected GlmTable mainTable;//主表
+	protected String modelClassName;//对象对应的模型类名
 	protected Map<String,GlmTable> tables;//key:表名，value:glmtable,所有表
 	public String getName() {
 		return name;
@@ -30,6 +31,12 @@ public class GlmObject {
 	}
 	public void setMainTable(GlmTable mainTable) {
 		this.mainTable = mainTable;
+	}
+	public String getModelClassName() {
+		return modelClassName;
+	}
+	public void setModelClassName(String modelClassName) {
+		this.modelClassName = modelClassName;
 	}
 	public Map<String, GlmTable> getTables() {
 		return tables;

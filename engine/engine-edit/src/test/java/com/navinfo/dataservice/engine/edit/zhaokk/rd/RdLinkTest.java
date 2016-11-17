@@ -42,7 +42,7 @@ public class RdLinkTest extends InitApplication {
 	@Test
 	public void testAddRdLink() {
 		//{"command":"CREATE","dbId":17,"data":{"eNodePid":0,"sNodePid":0,"geometry":{"type":"LineString","coordinates":[[116.3859374821186,40.00522677058955],[116.3860179677389,40.005098137296194],[116.38613194227219,40.005007962365426],[116.38617365799722,40.00510596742316],[116.3862982392311,40.00520725251356],[116.38636246104478,40.00511552385705],[116.38639479875565,40.00502645322839]]},"catchLinks":[{"linkPid":205002674,"lon":116.3860179677389,"lat":40.005098137296194},{"linkPid":205002674,"lon":116.38617365799722,"lat":40.00510596742316},{"linkPid":205002674,"lon":116.38636246104478,"lat":40.00511552385705}]},"type":"RDLINK"}
-		String parameter ="{\"command\":\"CREATE\",\"dbId\":17,\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.3859374821186,40.00522677058955],[116.3860179677389,40.005098137296194],[116.38613194227219,40.005007962365426],[116.38617365799722,40.00510596742316],[116.3862982392311,40.00520725251356],[116.38636246104478,40.00511552385705],[116.38639479875565,40.00502645322839]]},\"catchLinks\":[{\"linkPid\":205002674,\"lon\":116.3860179677389,\"lat\":40.005098137296194},{\"linkPid\":205002674,\"lon\":116.38617365799722,\"lat\":40.00510596742316},{\"linkPid\":205002674,\"lon\":116.38636246104478,\"lat\":40.00511552385705}]},\"type\":\"RDLINK\"}";
+		String parameter ="{\"command\":\"CREATE\",\"dbId\":17,\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.49890139698982,40.07775023545874],[116.49942710995674,40.07774818310886]]},\"catchInfos\":[{\"nodePid\":203001965,\"longitude\":116.49890139698982,\"latitude\":40.07775023545874},{\"nodePid\":307001986,\"longitude\":116.49942710995674,\"latitude\":40.07774818310886}]},\"type\":\"RDLINK\"}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
@@ -51,7 +51,18 @@ public class RdLinkTest extends InitApplication {
 			e.printStackTrace();
 		}
 	}
-
+	@Test
+	public void testRepairLink() {
+		//{"command":"REPAIR","dbId":19,"objId":206002732,"data":{"geometry":{"type":"LineString","coordinates":[[116.49890139698982,40.07775023545874],[116.49942710995674,40.07774818310886]]},"catchInfos":[{"nodePid":203001965,"longitude":116.49890139698982,"latitude":40.07775023545874},{"nodePid":307001986,"longitude":116.49942710995674,"latitude":40.07774818310886}]},"type":"RDLINK"}
+		String parameter = "{\"command\":\"REPAIR\",\"type\":\"RDLINK\",\"dbId\":19,\"objId\":206002732,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.49890139698982,40.07775023545874],[116.49942710995674,40.07774818310886]]},\"catchInfos\":[{\"nodePid\":203001965,\"longitude\":116.49890139698982,\"latitude\":40.07775023545874},{\"nodePid\":307001986,\"longitude\":116.49942710995674,\"latitude\":40.07774818310886}]}}";
+		Transaction t = new Transaction(parameter);
+		try {
+			String msg = t.run();
+			System.out.println(msg);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 	@Test
 	public void TrackRdLink() throws Exception {
 		// 创建起始link LINESTRING (116.20091 39.84598, 116.20095 39.84568,
@@ -68,7 +79,7 @@ public class RdLinkTest extends InitApplication {
 		int cuurentLinkPid = 100003385;
 		int cruuentNodePidDir = 100019726;
 		List<RdLink> links = new RdLinkSearchUtils(conn).getNextTrackLinks(
-				cuurentLinkPid, cruuentNodePidDir);
+				cuurentLinkPid, cruuentNodePidDir,11);
 		for (RdLink rdLink : links) {
 			System.out.println(rdLink.getPid());
 		}

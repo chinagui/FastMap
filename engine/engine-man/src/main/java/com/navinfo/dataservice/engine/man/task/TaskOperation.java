@@ -259,7 +259,7 @@ public class TaskOperation {
 			if (bean!=null&&bean.getTaskDescp()!=null && StringUtils.isNotEmpty(bean.getTaskDescp().toString())){
 				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
 				insertPart+=" DESCP ";
-				valuePart+=bean.getTaskDescp();
+				valuePart+="'"+bean.getTaskDescp()+"'";
 			};
 			if (bean!=null&&bean.getPlanStartDate()!=null && StringUtils.isNotEmpty(bean.getPlanStartDate().toString())){
 				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}

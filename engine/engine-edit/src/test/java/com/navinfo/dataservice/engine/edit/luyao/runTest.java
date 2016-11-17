@@ -811,6 +811,24 @@ public class runTest extends InitApplication {
 
 		String msg = t.run();
 	}
+	@Test
+	public void run_1115_1() throws Exception {
+
+		String parameter = "{\"command\":\"CREATESIDEROAD\",\"type\":\"RDLINK\",\"dbId\":17,\"distance\":\"5\",\"sideType\":1,\"data\":{\"linkPids\":[305002750,200002676,202002616,310002675]}}";
+
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
 	
+	@Test
+	public void run_1115_2() throws Exception {
+
+		String parameter = "{\"command\":\"CREATESIDEROAD\",\"type\":\"RDLINK\",\"dbId\":17,\"distance\":\"5\",\"sideType\":1,\"data\":{\"linkPids\":[310002711,209002685]}}";
+
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
 	
 }

@@ -148,7 +148,7 @@ public class SysMsgHandler implements MsgHandler {
 			//查询管理消息
 			List<Map<String, Object>> sysMsg = queryRunner.query(conn, userSql, userParams, new ManMsgHandler());
 			for (Map<String, Object> map : sysMsg) {
-				String jsonSysMsg = JSONArray.fromObject(sysMsg).toString();
+				String jsonSysMsg = JSONObject.fromObject(map).toString();
 				if(map.get("targetUserId") != null){
 					if((long)map.get("targetUserId")==0){
 						//发给所有人

@@ -843,10 +843,11 @@ public class SubtaskService {
 			String wkt = null;
 			if(dataJson.containsKey("gridIds")){
 				JSONArray gridIds = dataJson.getJSONArray("gridIds");
-				Object[] gridIdList = gridIds.toArray();
-				dataJson.put("gridIds",gridIdList);
-				//根据gridIds获取wkt
-				wkt = GridUtils.grids2Wkt(gridIds);
+				if(!gridIds.isEmpty() || gridIds.size()>0){
+					Object[] gridIdList = gridIds.toArray();
+					dataJson.put("gridIds",gridIdList);
+					//根据gridIds获取wkt
+					wkt = GridUtils.grids2Wkt(gridIds);}
 //				if(wkt.contains("MULTIPOLYGON")){
 //					throw new IllegalArgumentException("请输入符合条件的grids");
 //				}

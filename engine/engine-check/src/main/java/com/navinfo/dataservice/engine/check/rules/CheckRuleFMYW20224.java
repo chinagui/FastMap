@@ -3,6 +3,7 @@ package com.navinfo.dataservice.engine.check.rules;
 import java.util.List;
 
 import com.navinfo.dataservice.commons.util.ExcelReader;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiParking;
@@ -48,7 +49,7 @@ public class CheckRuleFMYW20224 extends baseRule {
 					for (IRow parking : parkings) {
 						IxPoiParking ixPoiParking = (IxPoiParking) parking;
 						String tollDes = ixPoiParking.getTollDes();
-						if (!tollDes.isEmpty()) {
+						if (StringUtils.isNotEmpty(tollDes)) {
 							// 加载合法字符
 							TyCharacterEgalcharExtCheckSelector tyCharacterSelector = new TyCharacterEgalcharExtCheckSelector();
 							JSONObject characterMap = tyCharacterSelector.getCharacterMap();
@@ -92,7 +93,7 @@ public class CheckRuleFMYW20224 extends baseRule {
 							if (tollDes.contains("：00")) {
 								// IX_POI_PARKING.OPEN_TIME营业时间为空
 								String openTime = ixPoiParking.getOpenTiime();
-								if (openTime.isEmpty()) {
+								if (StringUtils.isNotEmpty(openTime)) {
 									errorLog.append("收费信息包含“：00”，营业时间为空; ");
 								}
 							}

@@ -115,6 +115,9 @@ public class Transaction {
                     case UPDOWNDEPART:
                         return new com.navinfo.dataservice.engine.edit.operation.topo.depart.updowndepartlink.Command(
                                 json, requester);
+                    case CREATESIDEROAD:
+                        return new com.navinfo.dataservice.engine.edit.operation.obj.rdlink.sideRoad.create.Command(
+                                json, requester);
                 }
             case FACE:
                 switch (operType) {
@@ -836,6 +839,10 @@ public class Transaction {
                     case UPDOWNDEPART:
                         return new com.navinfo.dataservice.engine.edit.operation.topo.depart.updowndepartlink.Process(
                                 command);
+                    case CREATESIDEROAD:
+                        return new com.navinfo.dataservice.engine.edit.operation.obj.rdlink.sideRoad.create.Process(
+                                command);   
+                        
                     case BATCH:
                         return new com.navinfo.dataservice.engine.edit.operation.batch.rdlink.Process(
                                 command);

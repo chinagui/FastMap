@@ -68,7 +68,7 @@ public class RdLinkTest extends InitApplication {
 		int cuurentLinkPid = 100003385;
 		int cruuentNodePidDir = 100019726;
 		List<RdLink> links = new RdLinkSearchUtils(conn).getNextTrackLinks(
-				cuurentLinkPid, cruuentNodePidDir);
+				cuurentLinkPid, cruuentNodePidDir,11);
 		for (RdLink rdLink : links) {
 			System.out.println(rdLink.getPid());
 		}

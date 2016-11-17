@@ -8,17 +8,16 @@ import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import com.vividsolutions.jts.geom.Geometry;
+
 /**
- * @author zhaokk
- *新建行政区划线参数基础类 
+ * @author zhaokk 新建行政区划线参数基础类
  */
-public class Command extends AbstractCommand  {
+public class Command extends AbstractCommand {
 
 	private String requester;
 
-	
 	private Geometry geometry;
-	
+
 	public Geometry getGeometry() {
 		return geometry;
 	}
@@ -28,9 +27,9 @@ public class Command extends AbstractCommand  {
 	}
 
 	private int eNodePid;
-	
+
 	private int sNodePid;
-	
+
 	private JSONArray catchLinks;
 
 	public int geteNodePid() {
@@ -49,12 +48,11 @@ public class Command extends AbstractCommand  {
 		this.sNodePid = sNodePid;
 	}
 
-
 	@Override
 	public OperType getOperType() {
 		return OperType.CREATE;
 	}
-	
+
 	@Override
 	public ObjType getObjType() {
 		return ObjType.ADLINK;
@@ -64,48 +62,30 @@ public class Command extends AbstractCommand  {
 	public String getRequester() {
 		return requester;
 	}
-	
-	
-	
+
 	public JSONArray getCatchLinks() {
 		return catchLinks;
 	}
 
-	public Command(JSONObject json, String requester) throws Exception{
+	public Command(JSONObject json, String requester) throws Exception {
 		this.requester = requester;
 		this.setDbId(json.getInt("dbId"));
 		JSONObject data = json.getJSONObject("data");
 
 		this.eNodePid = data.getInt("eNodePid");
-		
+
 		this.sNodePid = data.getInt("sNodePid");
-		this.geometry = GeoTranslator.geojson2Jts(data.getJSONObject("geometry"),1,5);
-	    //获取行政区划线挂接的ADLINK 和ADNODE
-		if (data.containsKey("catchLinks")){
-			
-			this.catchLinks = new JSONArray();
-			
-			JSONArray array = data.getJSONArray("catchLinks");
-			
-			for(int i=0;i<array.size();i++){
-				JSONObject jo = array.getJSONObject(i);
+		this.geometry = GeoTranslator.geojson2Jts(
+				data.getJSONObject("geometry"), 1, 5);
+		// 获取行政区划线挂接的ADLINK 和ADNODE
+		if (data.containsKey("catchLinks")) {
 
-				JSONObject geoPoint = new JSONObject();
+			JSONArray jsonArray = JSONArray.fromObject(data
+					.getJSONArray("catchLinks"));
+			this.catchLinks = jsonArray;
 
-				geoPoint.put("type", "Point");
 
-				geoPoint.put("coordinates", new double[] {jo.getDouble("lon"),
-						jo.getDouble("lat") });
-				
-				Geometry geometry = GeoTranslator.geojson2Jts(geoPoint, 1, 5);
-				
-				jo.put("lon",geometry.getCoordinate().x);
-				
-				jo.put("lat", geometry.getCoordinate().y);
-				
-				this.catchLinks.add(jo);
-			}
-		}else{
+		} else {
 			this.catchLinks = new JSONArray();
 		}
 	}

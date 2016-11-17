@@ -96,6 +96,7 @@ public class JobController extends BaseController {
 			data.put("beginTime", DateUtils.dateToString(jobInfo.getBeginTime()));
 			data.put("endTime", DateUtils.dateToString(jobInfo.getEndTime()));
 			data.put("status", jobInfo.getStatus());
+			data.put("resultMsg", jobInfo.getResultMsg());
 			data.put("stepCount", jobInfo.getStepCount());
 			if(jobInfo.getStepListSize()>0){
 				JobStep step = jobInfo.getSteps().get(jobInfo.getStepListSize()-1);

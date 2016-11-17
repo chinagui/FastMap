@@ -81,7 +81,20 @@ public class Check {
 			String luNodePids = nodePids.get("LU_NODE").toString();
 
 			String[] luNodePidArray = luNodePids.split(",");
-
+			
+			Set<Integer> deFaultLuNodeKind = new HashSet<>();
+			
+			deFaultLuNodeKind.add(1);
+			deFaultLuNodeKind.add(2);
+			deFaultLuNodeKind.add(3);
+			deFaultLuNodeKind.add(4);
+			deFaultLuNodeKind.add(5);
+			deFaultLuNodeKind.add(6);
+			deFaultLuNodeKind.add(7);
+			deFaultLuNodeKind.add(21);
+			deFaultLuNodeKind.add(22);
+			deFaultLuNodeKind.add(23);
+			
 			if (luNodePidArray.length > 2) {
 				throw new Exception("土地利用要素NODE的个数不能超过2个");
 			}
@@ -141,19 +154,6 @@ public class Check {
 						}
 					}
 				}
-				Set<Integer> deFaultLuNodeKind = new HashSet<>();
-				
-				deFaultLuNodeKind.add(1);
-				deFaultLuNodeKind.add(2);
-				deFaultLuNodeKind.add(3);
-				deFaultLuNodeKind.add(4);
-				deFaultLuNodeKind.add(5);
-				deFaultLuNodeKind.add(6);
-				deFaultLuNodeKind.add(7);
-				deFaultLuNodeKind.add(21);
-				deFaultLuNodeKind.add(22);
-				deFaultLuNodeKind.add(23);
-				
 				Set<Integer> firstLuNodeSet = nodeKindMap.get(Integer.parseInt(luNodePidArray[0]));
 
 				Set<Integer> secondLuNodeSet = nodeKindMap.get(Integer.parseInt(luNodePidArray[1]));
@@ -176,6 +176,31 @@ public class Check {
 					}
 				}
 				else
+				{
+					throw new Exception("参与同一点制作的土地利用Node只能为：link种别为大学，购物中心，医院，体育场，公墓，停车场，工业区， BUA边界线，邮区边界线，FM面边界线的node");
+				}
+			}
+			else if(luNodePidArray.length == 1)
+			{
+				LuLinkSelector selector = new LuLinkSelector(conn);
+				
+				Set<Integer> nodeKindSet = new HashSet<>();
+				
+				List<LuLink> luLinkList = selector.loadByNodePids(luNodePids, true);
+				
+				for(LuLink luLink : luLinkList)
+				{
+					List<IRow> linkKindList = luLink.getLinkKinds();
+					
+					for(IRow row : linkKindList)
+					{
+						LuLinkKind kind = (LuLinkKind) row;
+
+						nodeKindSet.add(kind.getKind());
+					}
+				}
+				
+				if(!deFaultLuNodeKind.containsAll(nodeKindSet))
 				{
 					throw new Exception("参与同一点制作的土地利用Node只能为：link种别为大学，购物中心，医院，体育场，公墓，停车场，工业区， BUA边界线，邮区边界线，FM面边界线的node");
 				}

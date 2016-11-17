@@ -135,7 +135,7 @@ public class SubtaskController extends BaseController {
 				//根据参数生成日编子任务 subtask dailyBean
 				Subtask dailyBean = SubtaskService.getInstance().createSubtaskBean(userId,dataJson);
 				dailyBean.setName(selfRecordName);
-//				dailyBean.setIsQuality(0);
+				dailyBean.setIsQuality(0);
 				dailyBean.setStatus(2);
 				dailyBean.setStage(1);
 				//创建质检子任务 subtask	
@@ -217,6 +217,7 @@ public class SubtaskController extends BaseController {
 				SubtaskListByWkt subtaskListByWkt = new SubtaskListByWkt();
 				subtaskListByWkt.setSubtaskId(subtaskList.get(i).getSubtaskId());
 				subtaskListByWkt.setGeometry(subtaskList.get(i).getGeometry());
+				subtaskListByWkt.setReferGeometry(subtaskList.get(i).getReferGeometry());
 				subtaskListByWkt.setDescp(subtaskList.get(i).getDescp());
 				subtaskListByWkt.setName(subtaskList.get(i).getName());
 				subtaskListByWkt.setStage(subtaskList.get(i).getStage());
@@ -308,9 +309,11 @@ public class SubtaskController extends BaseController {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
 			
-			Subtask bean = (Subtask)JSONObject.toBean(dataJson, Subtask.class);
-			
-			Subtask subtask = SubtaskService.getInstance().query(bean);	
+			int subtaskId = dataJson.getInt("subtaskId");
+
+//			Subtask bean = (Subtask)JSONObject.toBean(dataJson, Subtask.class);			
+//			Subtask subtask = SubtaskService.getInstance().query(bean);	
+			Subtask subtask = SubtaskService.getInstance().queryBySubtaskId(subtaskId);	
 			if(subtask!=null&&subtask.getSubtaskId()!=null){
 				SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
 				String qualityPlanStartDate = null;
@@ -351,6 +354,7 @@ public class SubtaskController extends BaseController {
 						, qualityPlanEndDate
 						, subtask.getQualityTaskStatus()
 						, subtask.getReferGeometryJSON()
+						, subtask.getReferSubtasks()
 						);
 				SubtaskQueryResponse response = new SubtaskQueryResponse(0,"success",subtaskQuery);
 				return response;

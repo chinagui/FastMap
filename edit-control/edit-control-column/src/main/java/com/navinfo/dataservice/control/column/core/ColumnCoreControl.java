@@ -22,7 +22,7 @@ import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.glm.search.IxPoiSearch;
-import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiDeepStatusSelector;
+import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiColumnStatusSelector;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
 
@@ -60,8 +60,8 @@ public class ColumnCoreControl {
 //					oldDbId = dbId;
 			conn = DBConnector.getInstance().getConnectionById(17);
 //				}
-			IxPoiDeepStatusSelector deepSelector = new IxPoiDeepStatusSelector(conn);
-			int tempCount = deepSelector.queryHandlerCount(firstWorkItem,userId);
+			IxPoiColumnStatusSelector columnSelector = new IxPoiColumnStatusSelector(conn);
+			int tempCount = columnSelector.queryHandlerCount(firstWorkItem,userId);
 			hasApply += tempCount;
 //			}
 			
@@ -81,7 +81,7 @@ public class ColumnCoreControl {
 //					oldDbId = dbId;
 //					conn = DBConnector.getInstance().getConnectionById(oldDbId);
 //				}
-				IxPoiDeepStatusSelector selector = new IxPoiDeepStatusSelector(conn);
+				IxPoiColumnStatusSelector selector = new IxPoiColumnStatusSelector(conn);
 				List<String> rowIds = selector.getRowIdByTaskId(20160906, firstWorkItem);
 				
 				// 判断是否已申请够
@@ -169,7 +169,7 @@ public class ColumnCoreControl {
 			
 			// 获取未提交数据的rowId
 			conn = DBConnector.getInstance().getConnectionById(17);
-			IxPoiDeepStatusSelector selector = new IxPoiDeepStatusSelector(conn);
+			IxPoiColumnStatusSelector selector = new IxPoiColumnStatusSelector(conn);
 			List<String> rowIdList = selector.columnQuery(status,secondWorkItem,userId);
 			
 			IxPoiSearch poiSearch = new IxPoiSearch(conn);
@@ -203,9 +203,9 @@ public class ColumnCoreControl {
 			
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 			
-			IxPoiDeepStatusSelector ixPoiDeepStatusSelector = new IxPoiDeepStatusSelector(conn);
+			IxPoiColumnStatusSelector ixPoiColumnStatusSelector = new IxPoiColumnStatusSelector(conn);
 			
-			return ixPoiDeepStatusSelector.taskStatistics(taskId);
+			return ixPoiColumnStatusSelector.taskStatistics(taskId);
 		} catch (Exception e) {
 			throw e;
 		} finally {
@@ -235,9 +235,9 @@ public class ColumnCoreControl {
 			
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 			
-			IxPoiDeepStatusSelector ixPoiDeepStatusSelector = new IxPoiDeepStatusSelector(conn);
+			IxPoiColumnStatusSelector ixPoiColumnStatusSelector = new IxPoiColumnStatusSelector(conn);
 			
-			return ixPoiDeepStatusSelector.secondWorkStatistics(firstWorkItem, userId, type);
+			return ixPoiColumnStatusSelector.secondWorkStatistics(firstWorkItem, userId, type);
 		} catch (Exception e) {
 			throw e;
 		} finally {

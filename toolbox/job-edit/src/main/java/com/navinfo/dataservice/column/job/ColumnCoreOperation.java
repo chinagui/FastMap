@@ -15,7 +15,7 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.check.NiValExceptionSelector;
-import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiDeepStatusSelector;
+import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiColumnStatusSelector;
 
 public class ColumnCoreOperation {
 	
@@ -55,7 +55,7 @@ public class ColumnCoreOperation {
 				//根据数据取检查结果
 				NiValExceptionSelector checkSelector=new NiValExceptionSelector(conn);
 				List checkResultList=checkSelector.loadByPid((Integer)mapData.get("pid"), ckRules);
-				IxPoiDeepStatusSelector deepStatusSelector = new IxPoiDeepStatusSelector(conn);
+				IxPoiColumnStatusSelector deepStatusSelector = new IxPoiColumnStatusSelector(conn);
 				
 				//取poi_deep_status中打标记结果
 				List existClassifyList=deepStatusSelector.queryClassifyByRowid(rowId,taskId);

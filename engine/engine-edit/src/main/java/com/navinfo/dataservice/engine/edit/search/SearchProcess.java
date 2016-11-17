@@ -190,6 +190,35 @@ public class SearchProcess {
 		}
 
 	}
+	
+	/**
+	 * 根据pids查询
+	 * 
+	 * @return 查询结果
+	 * @throws Exception
+	 */
+	public List<? extends IObj> searchDataByPids(ObjType type, JSONArray pids) throws Exception {
+
+		try {
+			SearchFactory factory = new SearchFactory(conn);
+
+			ISearch search = factory.createSearch(type);
+			
+			@SuppressWarnings("unchecked")
+			List<Integer> pidList = JSONArray.toList(pids, Integer.class, JsonUtils.getJsonConfig());
+
+			List<? extends IObj> objList = search.searchDataByPids(pidList);
+
+			return objList;
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+
+		}
+
+	}
 
 	public JSONArray searchDataByCondition(ObjType type, JSONObject condition) throws Exception {
 
@@ -421,7 +450,11 @@ public class SearchProcess {
 						}
 						// 路口关系交限不记经过link
 						if (StringUtils.isNotEmpty(objType) && ObjType.valueOf(objType) == ObjType.RDRESTRICTION) {
-							if (relationShipType != 1) {
+							RdLinkSelector selector = new RdLinkSelector(conn);
+							
+							List<Integer> kinds = selector.loadRdLinkKindByIds(viaList, false);
+							
+							if (relationShipType != 1 && kinds.get(0)<10) {
 								obj.put("links", viaArray);
 							} 
 							else
@@ -443,7 +476,8 @@ public class SearchProcess {
 				}
 				break;
 			case RDLANE:
-				if (condition.containsKey("linkPid")) {
+				//按照方向  查询link车道信息
+				if (condition.containsKey("linkPid")&&condition.containsKey("laneDir")) {
 					int linkPid = condition.getInt("linkPid");
 					int laneDir = condition.getInt("laneDir");
 					RdLaneSelector selector = new RdLaneSelector(this.conn);
@@ -453,6 +487,18 @@ public class SearchProcess {
 					}
 
 				}
+				//按照进入点 进入link 查找退出link
+				if(condition.containsKey("nodePid")&&condition.containsKey("linkPid")){
+					int linkPid =  condition.getInt("linkPid");
+					int nodePid =  condition.getInt("nodePid");
+					RdLaneTopoDetailSelector detailSelector = new RdLaneTopoDetailSelector(conn);
+					List<Integer> list = detailSelector.loadOutLinkByinLink(linkPid,nodePid,false);
+					for(Integer pid :list){
+						array.add(pid);
+					}
+					
+				}
+				//按照一组link查询车道联通信息
 				if (condition.containsKey("linkPids")) {
 					JSONArray arrayTopo = new JSONArray();
 					JSONObject object = new JSONObject();
@@ -483,4 +529,5 @@ public class SearchProcess {
 
 		}
 	}
+
 }

@@ -57,6 +57,16 @@
 	</dependency>
 	
 	<dependency>
+		<groupId>com.navinfo.dataservice</groupId>
+		<artifactId>engine-check</artifactId>
+	</dependency>
+	
+	<dependency>
+		<groupId>com.navinfo.dataservice</groupId>
+		<artifactId>engine-edit</artifactId>
+	</dependency>
+	
+	<dependency>
           <groupId>org.springframework</groupId>
           <artifactId>spring-context</artifactId>
      </dependency>
@@ -78,5 +88,6 @@
 			<artifactId>dubbo</artifactId>
 			<scope>test</scope>
 		</dependency>
+		
   </dependencies>
 </project>

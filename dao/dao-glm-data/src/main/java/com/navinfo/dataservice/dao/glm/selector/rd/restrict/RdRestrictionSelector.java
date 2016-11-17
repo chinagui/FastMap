@@ -86,8 +86,8 @@ public class RdRestrictionSelector extends AbstractSelector {
 						
 						RdRestrictionDetail detail = (RdRestrictionDetail) row;
 						
-						if(!hasSelectedOutLinkPid.contains(detail.getOutLinkPid()))
-						{
+//						if(!hasSelectedOutLinkPid.contains(detail.getOutLinkPid()))
+//						{
 							if(tmpRes.contains("["))
 							{
 								int resInfo = Integer.parseInt(tmpRes.substring(1, 2));
@@ -111,7 +111,7 @@ public class RdRestrictionSelector extends AbstractSelector {
 								}
 							}
 						}
-					}
+//					}
 				}
 				
 				for(IRow row : details)

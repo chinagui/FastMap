@@ -1,7 +1,9 @@
 package com.navinfo.dataservice.engine.editplus.model.ad;
 
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
+import com.navinfo.dataservice.engine.editplus.glm.NonObjPidException;
 import com.navinfo.dataservice.engine.editplus.model.AbstractFaceTopo;
+import com.navinfo.dataservice.engine.editplus.model.obj.ObjectType;
 
 /** 
  * @ClassName: AdFaceTop
@@ -11,14 +13,14 @@ import com.navinfo.dataservice.engine.editplus.model.AbstractFaceTopo;
  */
 public class AdFaceTopo extends AbstractFaceTopo {
 
-	@Override
-	public String tableName() {
-		return "AD_FACE_TOPO";
+	public AdFaceTopo(long objPid) {
+		super(objPid);
+		// TODO Auto-generated constructor stub
 	}
 
 	@Override
-	public ObjType objType() {
-		return ObjType.ADFACETOPO;
+	public String tableName() {
+		return "AD_FACE_TOPO";
 	}
 
 }

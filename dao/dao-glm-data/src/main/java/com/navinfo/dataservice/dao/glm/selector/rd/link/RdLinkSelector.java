@@ -27,6 +27,8 @@ import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkSidewalk;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkSpeedlimit;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkWalkstair;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkZone;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdTmclocation;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdTmclocationLink;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
 import com.navinfo.navicommons.database.sql.DBUtils;
@@ -140,15 +142,12 @@ public class RdLinkSelector extends AbstractSelector {
 
 	}
 
-	
-	
 	/*
 	 * 仅加载主表RDLINK，其他子表若有需要，请单独加载
 	 */
-	public List<RdLink> loadByNodePids(List<Integer> nodePids, boolean isLock) throws Exception 
-	{
+	public List<RdLink> loadByNodePids(List<Integer> nodePids, boolean isLock) throws Exception {
 		List<RdLink> links = new ArrayList<RdLink>();
-		
+
 		if (nodePids == null || nodePids.size() == 0) {
 			return links;
 		}
@@ -170,15 +169,16 @@ public class RdLinkSelector extends AbstractSelector {
 
 		if (!pidTemp.isEmpty()) {
 			links.addAll(loadByNodePid(pidTemp, isLock));
-		}		
-		
+		}
+
 		return links;
 	}
+
 	/*
 	 * 仅加载主表RDLINK，其他子表若有需要，请单独加载
 	 */
-	private List<RdLink> loadByNodePid(List<Integer> nodePids, boolean isLock) throws Exception {		
-		
+	private List<RdLink> loadByNodePid(List<Integer> nodePids, boolean isLock) throws Exception {
+
 		List<RdLink> links = new ArrayList<RdLink>();
 
 		if (nodePids == null || nodePids.isEmpty()) {
@@ -192,14 +192,14 @@ public class RdLinkSelector extends AbstractSelector {
 
 		sb.append("( ");
 
-		sb.append(" S_NODE_PID IN ( " + ids + ")" );
-		
+		sb.append(" S_NODE_PID IN ( " + ids + ")");
+
 		sb.append("  OR  E_NODE_PID IN ( " + ids + ")");
 
 		sb.append(")");
 
 		sb.append(" AND U_RECORD != 2  ");
-		
+
 		if (isLock) {
 			sb.append(" for update nowait");
 		}
@@ -209,7 +209,7 @@ public class RdLinkSelector extends AbstractSelector {
 		ResultSet resultSet = null;
 
 		try {
-			pstmt = conn.prepareStatement(sb.toString());		
+			pstmt = conn.prepareStatement(sb.toString());
 
 			resultSet = pstmt.executeQuery();
 
@@ -252,7 +252,7 @@ public class RdLinkSelector extends AbstractSelector {
 
 		try {
 			pstmt = conn.prepareStatement(sb.toString());
-			
+
 			resultSet = pstmt.executeQuery();
 
 			while (resultSet.next()) {
@@ -830,9 +830,9 @@ public class RdLinkSelector extends AbstractSelector {
 				RdLink link = new RdLink();
 
 				ReflectionAttrUtils.executeResultSet(link, resultSet);
-				
+
 				List<IRow> zones = this.loadRowsByClassParentId(RdLinkZone.class, link.getPid(), true, null);
-				
+
 				link.setZones(zones);
 
 				rdLinks.add(link);
@@ -852,4 +852,101 @@ public class RdLinkSelector extends AbstractSelector {
 
 	}
 
+	/**
+	 * 根据linkPid查询TMCLOCATION
+	 * @param linkPid
+	 * @param isLock
+	 * @return
+	 * @throws Exception
+	 */
+	public List<IRow> loadRdTmcByLinkPid(int linkPid, boolean isLock) throws Exception {
+		List<IRow> locationList = new ArrayList<>();
+
+		StringBuilder sb = new StringBuilder(
+				"select t1.* from RD_TMCLOCATION t1 right join rd_tmclocation_link t2 on t2.GROUP_ID = t1.GROUP_ID where t2.LINK_PID = :1 and t2.U_RECORD !=2 and t1.U_RECORD !=2");
+
+		if (isLock) {
+
+			sb.append(" for update nowait");
+		}
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+
+			pstmt = conn.prepareStatement(sb.toString());
+
+			pstmt.setInt(1, linkPid);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+
+				RdTmclocation tmclocation = new RdTmclocation();
+
+				ReflectionAttrUtils.executeResultSet(tmclocation, resultSet);
+
+				List<IRow> tmcLinks = this.loadRowsByClassParentId(RdTmclocationLink.class, tmclocation.getPid(), true,
+						null);
+
+				tmclocation.setLinks(tmcLinks);
+
+				locationList.add(tmclocation);
+			}
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+
+			DBUtils.closeResultSet(resultSet);
+
+			DBUtils.closeStatement(pstmt);
+		}
+
+		return locationList;
+	}
+
+	public List<Integer> loadRdLinkKindByIds(List<Integer> linkPidList, boolean isLock) throws Exception {
+		List<Integer> kinds = new ArrayList<Integer>();
+
+		StringBuilder sb = new StringBuilder(
+				"select kind from rd_link where link_pid in(" + StringUtils.join(linkPidList, ",") + ")");
+
+		if (isLock) {
+
+			sb.append(" order by kind desc for update nowait");
+		}
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+
+			pstmt = conn.prepareStatement(sb.toString());
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+
+				int kind = resultSet.getInt("kind");
+
+				kinds.add(kind);
+			}
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+
+			DBUtils.closeResultSet(resultSet);
+
+			DBUtils.closeStatement(pstmt);
+		}
+
+		return kinds;
+	}
 }

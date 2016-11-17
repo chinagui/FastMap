@@ -1,7 +1,10 @@
 package com.navinfo.dataservice.engine.editplus.bo;
 
 public class CommandCreateException extends Exception{
-    public CommandCreateException(String message) {
+
+	private static final long serialVersionUID = 1L;
+
+	public CommandCreateException(String message) {
         super(message);
     }
 

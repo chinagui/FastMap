@@ -395,6 +395,33 @@ public class RdLinkOperateUtils {
         return node;
 
     }
+    
+	/*
+	 * 创建一条RDLINK对应的端点
+	 */
+	public static JSONObject createRdNodeForLink(List<Coordinate> g,
+			int sNodePid, int eNodePid, Result result) throws Exception {
+		JSONObject node = new JSONObject();
+		if (0 == sNodePid) {
+			Coordinate point = g.get(0);
+			RdNode rdNode = NodeOperateUtils.createRdNode(point.x, point.y);
+			result.insertObject(rdNode, ObjStatus.INSERT, rdNode.pid());
+			node.put("s", rdNode.getPid());
+		} else {
+			node.put("s", sNodePid);
+		}
+		// 创建终止点信息
+		if (0 == eNodePid) {
+			Coordinate point = g.get(g.size() - 1);
+			RdNode rdNode = NodeOperateUtils.createRdNode(point.x, point.y);
+			result.insertObject(rdNode, ObjStatus.INSERT, rdNode.pid());
+			node.put("e", rdNode.getPid());
+		} else {
+			node.put("e", eNodePid);
+		}
+		return node;
+
+	}
 
     /*
      * 创建生成一条RDLINK

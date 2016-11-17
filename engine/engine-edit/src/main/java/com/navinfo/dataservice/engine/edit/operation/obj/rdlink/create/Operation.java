@@ -90,6 +90,15 @@ public class Operation implements IOperation {
 
 		return msg;
 	}
+	
+	public List<RdLink> createSideRoad(Result result) throws Exception {
+
+		linkList.clear();
+
+		run(result);
+
+		return this.linkList;
+	}
 
 	/***
 	 * 新增link参数初始化 1.几何保留五位精度 2.捕捉node几何 重新替换link的形状点 ，为了保持精度

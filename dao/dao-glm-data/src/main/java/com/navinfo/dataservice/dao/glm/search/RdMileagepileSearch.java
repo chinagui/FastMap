@@ -33,12 +33,12 @@ public class RdMileagepileSearch implements ISearch {
         RdMileagepileSelector selector = new RdMileagepileSelector(conn);
         return (IObj) selector.loadById(pid, false);
     }
-    
+
     @Override
-	public List<IObj> searchDataByPids(List<Integer> pidList) throws Exception {
-		return null;
-	}
-    
+    public List<IObj> searchDataByPids(List<Integer> pidList) throws Exception {
+        return null;
+    }
+
     @Override
     public List<SearchSnapshot> searchDataBySpatial(String wkt) throws Exception {
         return null;
@@ -52,7 +52,7 @@ public class RdMileagepileSearch implements ISearch {
     @Override
     public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z, int gap) throws Exception {
         List<SearchSnapshot> list = new ArrayList<>();
-        String sql = "select a.pid, a.geometry point_geom, b.geometry link_geom, a.direct from rd_mileagepile a, rd_link b where sdo_relate(a.geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') = 'TRUE' and a.u_record != 2 and a.link_pid = b.link_pid";
+        String sql = "select a.pid, a.geometry point_geom, b.geometry, a.mileage_num num link_geom, a.direct from rd_mileagepile a, rd_link b where sdo_relate(a.geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') = 'TRUE' and a.u_record != 2 and a.link_pid = b.link_pid";
         PreparedStatement pstmt = null;
         ResultSet resultSet = null;
         try {
@@ -71,6 +71,7 @@ public class RdMileagepileSearch implements ISearch {
                 Geojson.point2Pixel(geojson, z, px, py);
                 snapshot.setG(geojson.getJSONArray("coordinates"));
                 JSONObject jsonM = new JSONObject();
+                jsonM.put("a", resultSet.getDouble("num"));
                 double angle = calAngle(resultSet);
                 jsonM.put("c", String.valueOf((int) angle));
                 snapshot.setM(jsonM);
@@ -84,6 +85,7 @@ public class RdMileagepileSearch implements ISearch {
         }
         return list;
     }
+
     // 计算角度
     private double calAngle(ResultSet resultSet) throws Exception {
         double angle = 0;

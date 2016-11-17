@@ -20,8 +20,12 @@ import net.sf.json.JSONObject;
 public class BatchProcess {
 	private static final Logger logger = Logger.getLogger(BatchProcess.class);
 	
-	private String batchType;
-	private String batchStep;
+	public String batchType;
+	public String batchStep;
+	
+	public BatchProcess(){
+		
+	}
 	
 	public BatchProcess(String batchType,String batchStep) {
 		this.batchType = batchType;
@@ -34,7 +38,7 @@ public class BatchProcess {
 	 * @param poi
 	 * @throws Exception
 	 */
-	public void execute(JSONObject json,Connection conn,EditApiImpl editApiImpl) throws Exception {
+	public void execute(JSONObject json,Connection conn,EditApiImpl editApiImpl, List<String> batchList) throws Exception {
 		JSONObject poiObj = new JSONObject();
 		try {
 			
@@ -42,7 +46,8 @@ public class BatchProcess {
 
 			IxPoi poi = (IxPoi) ixPoiSelector.loadById(json.getInt("objId"), false);
 			
-			List<String> batchList = getRowRules();
+			// 修改为参数传入 -- zpp 2016.11.17 
+			//List<String> batchList = getRowRules();
 			
 			JSONObject result = new JSONObject();
 			for (String batch:batchList) {
@@ -77,7 +82,7 @@ public class BatchProcess {
 	 * @return
 	 * @throws Exception
 	 */
-	private List<String> getRowRules() throws Exception {
+	public List<String> getRowRules() throws Exception {
 		
 		PreparedStatement pstmt = null;
 

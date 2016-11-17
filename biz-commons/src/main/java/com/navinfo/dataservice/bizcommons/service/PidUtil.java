@@ -528,6 +528,16 @@ public class PidUtil {
     public int applyRdVoiceguidePid() throws Exception {
         return applyPid("RD_VOICEGUIDE");
     }
+    
+    /**
+     * 申请rd_tmclocation
+     *
+     * @return
+     * @throws Exception
+     */
+    public int applyRdTmcLocationPid() throws Exception {
+        return applyPid("RD_TMCLOCATION");
+    }
 
     /**
      * 申请rd_voiceguide_detail

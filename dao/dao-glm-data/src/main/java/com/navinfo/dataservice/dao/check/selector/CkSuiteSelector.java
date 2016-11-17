@@ -20,6 +20,18 @@ public class CkSuiteSelector extends AbstractSelector {
 		this.conn = conn;
 	}
 	
+	/**
+	 * @Title: getSuite
+	 * @Description: 根据 type 获取规则列表
+	 * @param pageSize
+	 * @param pageNum
+	 * @param type
+	 * @return
+	 * @throws Exception  JSONArray
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2016年11月15日 下午9:12:46 
+	 */
 	public JSONArray getSuite(int pageSize,int pageNum, int type) throws Exception {
 		StringBuilder sb = new StringBuilder();
 		

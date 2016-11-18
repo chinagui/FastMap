@@ -2,15 +2,10 @@ package com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrdpoint;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import com.navinfo.dataservice.dao.glm.model.rd.hgwg.RdHgwgLimit;
-import com.navinfo.dataservice.dao.glm.selector.rd.hgwg.RdHgwgLimitSelector;
-import org.apache.commons.collections.CollectionUtils;
 
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -23,7 +18,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchVia;
 import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdElectroniceye;
 import com.navinfo.dataservice.dao.glm.model.rd.gate.RdGate;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
-import com.navinfo.dataservice.dao.glm.model.rd.inter.RdInterLink;
+import com.navinfo.dataservice.dao.glm.model.rd.hgwg.RdHgwgLimit;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneTopology;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneVia;
@@ -36,15 +31,13 @@ import com.navinfo.dataservice.dao.glm.model.rd.se.RdSe;
 import com.navinfo.dataservice.dao.glm.model.rd.speedbump.RdSpeedbump;
 import com.navinfo.dataservice.dao.glm.model.rd.speedlimit.RdSpeedlimit;
 import com.navinfo.dataservice.dao.glm.model.rd.tollgate.RdTollgate;
-import com.navinfo.dataservice.dao.glm.model.rd.trafficsignal.RdTrafficsignal;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdAdminSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchViaSelector;
-import com.navinfo.dataservice.dao.glm.selector.rd.crf.RdInterSelector;
-import com.navinfo.dataservice.dao.glm.selector.rd.directroute.RdDirectrouteSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.eleceye.RdElectroniceyeSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.gate.RdGateSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.gsc.RdGscSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.hgwg.RdHgwgLimitSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.laneconnexity.RdLaneConnexitySelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.laneconnexity.RdLaneTopologySelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.laneconnexity.RdLaneViaSelector;
@@ -57,8 +50,6 @@ import com.navinfo.dataservice.dao.glm.selector.rd.se.RdSeSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.speedbump.RdSpeedbumpSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.speedlimit.RdSpeedlimitSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.tollgate.RdTollgateSelector;
-import com.navinfo.dataservice.dao.glm.selector.rd.trafficsignal.RdTrafficsignalSelector;
-import com.navinfo.dataservice.dao.glm.selector.rd.warninginfo.RdWarninginfoSelector;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.operation.AbstractProcess;
 import com.vividsolutions.jts.geom.Coordinate;
@@ -358,7 +349,7 @@ public class Process extends AbstractProcess<Command> {
 
 				this.prepareData();
 
-				Map<String, List<Integer>> infects = confirmRelationObj();
+				Map<String, List<Integer>> infects = new HashMap<>();
 
 				msg = JSONObject.fromObject(infects).toString();
 
@@ -606,211 +597,6 @@ public class Process extends AbstractProcess<Command> {
 		log.info("详细车道USE TIME    " + String.valueOf(refRdLaneTime - refRdCrossTime));
 	}
 
-	/**
-	 * 打断link影响到的关联要素
-	 * 
-	 * @return
-	 * @throws Exception
-	 */
-	private Map<String, List<Integer>> confirmRelationObj() throws Exception {
-		Map<String, List<Integer>> infects = new HashMap<String, List<Integer>>();
-
-		List<List<RdBranchVia>> branchVias = this.getCommand().getBranchVias();
-
-		List<Integer> infectList = new ArrayList<Integer>();
-
-		for (List<RdBranchVia> listVias : branchVias) {
-			for (RdBranchVia via : listVias) {
-				infectList.add(via.getLinkPid());
-			}
-		}
-
-		infects.put("RDBRANCHVIA", infectList);
-
-		infectList = new ArrayList<Integer>();
-
-		for (RdBranch branch : this.getCommand().getInBranchs()) {
-			infectList.add(branch.getPid());
-		}
-
-		for (RdBranch branch : this.getCommand().getOutBranchs()) {
-			infectList.add(branch.getPid());
-		}
-
-		infects.put("RDBRANCH", infectList);
-
-		infectList = new ArrayList<Integer>();
-
-		for (RdLaneConnexity laneConn : this.getCommand().getLaneConnextys()) {
-			infectList.add(laneConn.getPid());
-		}
-
-		infects.put("RDLANECONNEXITY", infectList);
-
-		infectList = new ArrayList<Integer>();
-
-		for (RdLaneTopology topo : this.getCommand().getLaneTopologys()) {
-			infectList.add(topo.getPid());
-		}
-
-		infects.put("RDLANETOPOLOGY", infectList);
-
-		infectList = new ArrayList<Integer>();
-
-		for (List<Entry<Integer, RdLaneVia>> listVias : this.getCommand()
-				.getLaneVias()) {
-			for (Entry<Integer, RdLaneVia> entry : listVias) {
-				infectList.add(entry.getKey());
-			}
-		}
-
-		infects.put("RDLANEVIA", infectList);
-
-		infectList = new ArrayList<Integer>();
-
-		for (RdSpeedlimit limit : this.getCommand().getSpeedlimits()) {
-			infectList.add(limit.getPid());
-		}
-
-		infects.put("RDSPEEDLIMIT", infectList);
-
-		infectList = new ArrayList<Integer>();
-
-		for (RdRestriction res : this.getCommand().getRestrictions()) {
-			infectList.add(res.getPid());
-		}
-
-		infects.put("RDRESTRICTION", infectList);
-
-		infectList = new ArrayList<Integer>();
-
-		for (RdRestrictionDetail detail : this.getCommand()
-				.getRestrictionDetails()) {
-			infectList.add(detail.getPid());
-		}
-
-		infects.put("RDRESTRICTIONDETAIL", infectList);
-
-		infectList = new ArrayList<Integer>();
-
-		for (List<Entry<Integer, RdRestrictionVia>> vias : this.getCommand()
-				.geListRestrictVias()) {
-			for (Entry<Integer, RdRestrictionVia> entry : vias) {
-				infectList.add(entry.getKey());
-			}
-		}
-
-		infects.put("RDRESTRICTIONVIA", infectList);
-
-		infectList = new ArrayList<Integer>();
-
-		for (RdGsc rdGsc : this.getCommand().getRdGscs()) {
-			infectList.add(rdGsc.getPid());
-		}
-
-		infects.put("RDGSC", infectList);
-
-		infectList = new ArrayList<Integer>();
-
-		for (AdAdmin adAdmin : this.getCommand().getAdAdmins()) {
-			infectList.add(adAdmin.getPid());
-		}
-
-		infects.put("ADADMIN", infectList);
-
-		// 警示信息
-		RdWarninginfoSelector selector = new RdWarninginfoSelector(
-				this.getConn());
-
-		infectList = selector.loadPidByLink(this.getCommand().getLinkPid(),
-				false);
-
-		infects.put("RDWARNINGINFO", infectList);
-
-		// 信号灯
-		RdTrafficsignalSelector trafficSelector = new RdTrafficsignalSelector(
-				this.getConn());
-
-		List<RdTrafficsignal> rdTrafficsignals = trafficSelector.loadByLinkPid(
-				true, this.getCommand().getLinkPid());
-
-		if (CollectionUtils.isNotEmpty(rdTrafficsignals)) {
-			infectList = new ArrayList<Integer>();
-
-			infectList.add(rdTrafficsignals.get(0).getPid());
-
-			infects.put("RDTRAFFICSIGNAL", infectList);
-		}
-
-		// 电子眼
-		infectList = new ArrayList<Integer>();
-		for (RdElectroniceye eleceye : this.getCommand().getEleceyes()) {
-			infectList.add(eleceye.pid());
-		}
-		infects.put("RDELECTRONICEYE", infectList);
-
-		// 大门
-		RdGateSelector gateSelector = new RdGateSelector(this.getConn());
-		List<RdGate> gates = gateSelector.loadByLink(this.getCommand()
-				.getLinkPid(), true);
-		infectList = new ArrayList<Integer>();
-		for (RdGate gate : gates) {
-			infectList.add(gate.pid());
-		}
-		infects.put("RDGATE", infectList);
-
-		// 分岔路提示
-		infectList = new ArrayList<Integer>();
-		for (RdSe rdSe : this.getCommand().getRdSes()) {
-			infectList.add(rdSe.pid());
-		}
-		infects.put("RDSE", infectList);
-
-		// 减速带
-		infectList = new ArrayList<Integer>();
-		for (RdSpeedbump speedbump : this.getCommand().getRdSpeedbumps()) {
-			infectList.add(speedbump.pid());
-		}
-		infects.put("RDSPEEDBUMP", infectList);
-
-		// 顺行
-		RdDirectrouteSelector directrouteSelector = new RdDirectrouteSelector(
-				this.getConn());
-
-		infectList = directrouteSelector.loadPidByLink(this.getCommand()
-				.getLinkPid(), false);
-
-		infects.put("RDDIRECTROUTE", infectList);
-
-		// CRF交叉点
-		RdInterSelector interSelector = new RdInterSelector(this.getConn());
-
-		RdInterLink interLink = interSelector.loadByLinkPid(this.getCommand()
-				.getLinkPid(), false);
-
-		infectList = new ArrayList<Integer>();
-
-		infectList.add(interLink.getPid());
-
-		infects.put("RDINTER", infectList);
-
-		// 收费站
-		infectList = new ArrayList<Integer>();
-		for (RdTollgate tdTollgate : this.getCommand().getRdTollgates()) {
-			infectList.add(tdTollgate.pid());
-		}
-		infects.put("RDTOLLGATE", infectList);
-
-		// 限高限重
-		infectList = new ArrayList<Integer>();
-		for (RdHgwgLimit hgwgLimit : getCommand().getRdHgwgLimits()) {
-			infectList.add(hgwgLimit.pid());
-		}
-		infects.put("RDHGWGLIMIT", infectList);
-
-		return infects;
-
-	}
 
 	public static void main(String[] args) {
 		long l1 = System.currentTimeMillis();

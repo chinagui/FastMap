@@ -56,11 +56,8 @@ public class RdLaneSelector extends AbstractSelector {
 
 		try {
 			String sql = "SELECT lane_pid FROM rd_lane WHERE link_pid =:1 and  u_record !=2 ";
-			if (laneDir == 2) {
+			if (laneDir != 0) {
 				sql += " and lane_dir = :2 ";
-			}
-			if (laneDir == 3) {
-				sql += " and lane_dir = :3 ";
 			}
 			sql += " order by seq_num";
 			if (isLock) {
@@ -70,7 +67,7 @@ public class RdLaneSelector extends AbstractSelector {
 			pstmt = conn.prepareStatement(sql);
 
 			pstmt.setInt(1, linkPid);
-			if (laneDir == 2 || laneDir == 3) {
+			if (laneDir != 0) {
 				pstmt.setInt(2, laneDir);
 			}
 

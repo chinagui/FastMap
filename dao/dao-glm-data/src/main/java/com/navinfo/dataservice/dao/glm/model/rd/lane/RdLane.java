@@ -15,6 +15,7 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkLimit;
 /**
  * 车道表
  * @author zhaokaikai
@@ -296,6 +297,35 @@ public class RdLane implements IObj {
 
 	@Override
 	public void copy(IRow row) {
+		RdLane lane = (RdLane)row;
+		this.setArrowDir(lane.getArrowDir());
+		this.setCenterDivider(lane.getCenterDivider());
+		this.setElecEye(lane.getElecEye());
+		this.setFromMaxSpeed(lane.getFromMaxSpeed());
+		this.setFromMinSpeed(lane.getFromMinSpeed());
+		this.setLaneDir(lane.getLaneDir());
+		this.setLaneDivider(lane.getLaneDivider());
+		this.setLaneForming(lane.getLaneForming());
+		this.setLaneMark(lane.getLaneMark());
+		this.setLaneNum(lane.getLaneNum());
+		this.setLaneType(lane.getLaneType());
+		this.setLinkPid(lane.getLinkPid());
+		this.setRestrictHeight(lane.getRestrictHeight());
+		this.setSeqNum(lane.getSeqNum());
+		this.setSpeedFlag(lane.getSpeedFlag());
+		this.setSrcFlag(lane.getSrcFlag());
+		this.setToMaxSpeed(lane.getToMaxSpeed());
+		this.setToMinSpeed(lane.getToMinSpeed());
+		this.setTransitionArea(lane.getTransitionArea());
+		this.setTravelFlag(lane.getTravelFlag());
+		this.setWidth(lane.getWidth());
+		List<IRow> conditions = new ArrayList<IRow>();
+		for (IRow fs : conditions) {
+			RdLaneCondition condition = new RdLaneCondition();
+			condition.copy(fs);
+			condition.setLanePid(this.getPid());
+			conditions.add(condition);
+		}
 
 	}
 

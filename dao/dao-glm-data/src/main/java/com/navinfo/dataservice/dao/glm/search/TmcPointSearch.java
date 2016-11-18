@@ -55,6 +55,7 @@ public class TmcPointSearch implements ISearch {
 
 		List<SearchSnapshot> snapshotList = new ArrayList<>();
 		
+		//调用元数据请求接口
 		MetadataApi metaApi = (MetadataApi) ApplicationContextUtil.getBean("metaApi");
 
 		JSONArray array = metaApi.queryTmcPoint(x, y, z, gap);

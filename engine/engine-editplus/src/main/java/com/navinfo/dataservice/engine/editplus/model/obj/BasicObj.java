@@ -110,14 +110,14 @@ public abstract class BasicObj {
 	 * @return：是否有更新
 	 * @throws Exception
 	 */
-	public boolean diff(BasicObj obj,ObjectDiffConfig diffConfig)throws Exception{
+	public void diff(BasicObj obj,ObjectDiffConfig diffConfig)throws Exception{
 		//todo
-		boolean isDefer=false;
+//		boolean isDefer=false;
 		//根据差分配置
 		if(this.getClass().getName().equals(obj.getClass().getName())){
-			isDefer = this.mainrow.setAttrByCol("col1", obj.mainrow.getAttrByColName("col1"));
+			this.mainrow.setAttrByCol("col1", obj.mainrow.getAttrByColName("col1"));
 		}
-		return isDefer;
+//		return isDefer;
 	}
 	
 

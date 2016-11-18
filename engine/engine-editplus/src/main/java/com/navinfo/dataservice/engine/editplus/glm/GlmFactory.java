@@ -167,19 +167,27 @@ public class GlmFactory {
 				tableSql.append(" AND T.TABLE_NAME IN ('");
 				tableSql.append(StringUtils.join(tables.keySet(),"','"));
 				tableSql.append("') ORDER BY T.TABLE_NAME,C.COLUMN_ID");
-				Map<String,Map<String,String>> results = new QueryRunner().query(conn, tableSql.toString(), new ResultSetHandler<Map<String,Map<String,String>>>(){
+				Map<String,Map<String,GlmColumn>> results = new QueryRunner().query(conn, tableSql.toString(), new ResultSetHandler<Map<String,Map<String,GlmColumn>>>(){
 
 					@Override
-					public Map<String, Map<String, String>> handle(ResultSet rs) throws SQLException {
-						Map<String,Map<String,String>> res = new HashMap<String,Map<String,String>>();
+					public Map<String, Map<String, GlmColumn>> handle(ResultSet rs) throws SQLException {
+						Map<String,Map<String,GlmColumn>> res = new HashMap<String,Map<String,GlmColumn>>();
 						while(rs.next()){
 							String tableName = rs.getString("TABLE_NAME");
-							Map<String,String> cols = res.get(tableName);
+							Map<String,GlmColumn> cols = res.get(tableName);
 							if(cols==null){
-								cols = new HashMap<String,String>();
+								cols = new HashMap<String,GlmColumn>();
 								res.put(tableName, cols);
 							}
-							cols.put(rs.getString("COLUMN_NAME"),rs.getString("DATA_TYPE"));
+							GlmColumn col=null;
+							String colName = rs.getString("COLUMN_NAME");
+							String dataType=rs.getString("DATA_TYPe");
+							if(GlmColumn.TYPE_NUMBER.equals(dataType)){
+								col = new GlmColumn(colName,dataType);
+							}else{
+								col=new GlmColumn(colName,dataType,rs.getInt("DATA_PRECISION"),rs.getInt("DATA_SCALE"));
+							}
+							cols.put(col.getName(),col);
 						}
 						return res;
 					}

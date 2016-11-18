@@ -11,7 +11,8 @@ import java.lang.reflect.Method;
 public class TTT {
 	public static <T> void setAttrByCol(String colName,T newValue)throws Exception{
 		System.out.println(newValue.getClass().getName());
-		Method m = TTT.class.getMethod("runin", int.class);
+//		Method m = TTT.class.getMethod("runin", int.class);
+		Method m = TTT.class.getMethod("runin", newValue.getClass());
 		m.invoke(null, newValue);
 	}
 	public static void runin(int i){

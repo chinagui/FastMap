@@ -41,7 +41,7 @@ public class RdLinkTest extends InitApplication {
 
 			SearchProcess p = new SearchProcess(conn);
 
-			System.out.println(p.searchDataByPid(ObjType.RDLINK, 574325).Serialize(ObjLevel.FULL));
+			System.out.println(p.searchDataByPid(ObjType.RDRESTRICTION, 310000030).Serialize(ObjLevel.FULL));
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -76,7 +76,7 @@ public class RdLinkTest extends InitApplication {
 
 	@Test
 	public void testDelete() {
-		String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDMILEAGEPILE\",\"dbId\":17,\"data\":{\"mileageNum\":121212,\"pid\":200000001,\"objStatus\":\"UPDATE\",\"roadName\":\"dasdasd\",\"roadNum\":\"asdasdad\"}}";
+		String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDRESTRICTION\",\"dbId\":17,\"data\":{\"restricInfo\":\"[4],4\",\"pid\":310000030,\"objStatus\":\"UPDATE\",\"details\":[{\"flag\":1,\"pid\":204000045,\"objStatus\":\"UPDATE\"}]}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

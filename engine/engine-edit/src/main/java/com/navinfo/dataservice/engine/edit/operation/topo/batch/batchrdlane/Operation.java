@@ -683,6 +683,10 @@ public class Operation implements IOperation {
 	 */
 	public void breakRdLink(int linkPid, List<RdLink> links, Result result)
 			throws Exception {
+		//线修行移动分离不是跨图幅不用维护
+		if(links.size()  ==  1){
+			return ;
+		}
 		// 加载原有Link上的车道信息
 		List<RdLane> lanes = new RdLaneSelector(conn).loadByLink(linkPid, 0,
 				true);
@@ -695,18 +699,18 @@ public class Operation implements IOperation {
 				// 设置车道的link信息
 				RdLane rdLane = new RdLane();
 				rdLane.copy(lane);
-				lane.setLinkPid(link.getPid());
+				rdLane.setLinkPid(link.getPid());
 				// 申请车道pid
 				int lanePid = PidUtil.getInstance().applyRdLanePid();
-				lane.setPid(lanePid);
+				rdLane.setPid(lanePid);
 				// 加载详细车道的时间段和车辆限制表信息
-				if (lane.getConditions().size() > 0) {
-					for (IRow row : lane.getConditions()) {
+				if (rdLane.getConditions().size() > 0) {
+					for (IRow row : rdLane.getConditions()) {
 						RdLaneCondition condition = (RdLaneCondition) row;
 						condition.setLanePid(lanePid);
 					}
 				}
-				result.insertObject(rdLane, ObjStatus.INSERT, lane.getPid());
+				result.insertObject(rdLane, ObjStatus.INSERT, rdLane.getPid());
 			}
 		}
 

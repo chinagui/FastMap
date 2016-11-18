@@ -8,6 +8,7 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.engine.editplus.glm.GlmColumn;
 import com.navinfo.dataservice.engine.editplus.glm.GlmFactory;
 import com.navinfo.dataservice.engine.editplus.glm.GlmRef;
 import com.navinfo.dataservice.engine.editplus.glm.GlmTable;
@@ -110,7 +111,7 @@ public abstract class BasicRow implements Logable{
 		GlmTable tab = GlmFactory.getInstance().getTableByName(tbName);
 		if(OperationType.INSERT.equals(this.opType)){
 			sb.append("INSERT INTO "+tbName+"(");
-			for(Map.Entry<String, String> entry:tab.getColumns().entrySet()){
+			for(Map.Entry<String, GlmColumn> entry:tab.getColumns().entrySet()){
 				
 			}
 		}
@@ -229,32 +230,25 @@ public abstract class BasicRow implements Logable{
 	 * @param newValue
 	 * @throws Exception
 	 */
-	public <T> boolean setAttrByCol(String colName,T newValue)throws Exception{
-		//colName->getter
-		String getter=colName2Getter(colName);
-		Method methodGetter = this.getClass().getMethod(getter);
-		Object oldValue = methodGetter.invoke(this);
-		if(checkValue(colName,oldValue,newValue)){
-			String setter=colName2Setter(colName);
-			Class<?>[] argtypes = null;
-			if(newValue instanceof Integer){
-				argtypes= new Class[]{int.class};
-			}else if(newValue instanceof Double){
-				argtypes = new Class[]{double.class};
-			}else if(newValue instanceof Boolean){
-				argtypes= new Class[]{boolean.class};
-			}else if(newValue instanceof Float){
-				argtypes= new Class[]{float.class};
-			}else if(newValue instanceof Long){
-				argtypes= new Class[]{long.class};
-			}else{
-				argtypes = new Class[]{newValue.getClass()};
-			}
-			Method method = this.getClass().getMethod(setter,argtypes);
-			method.invoke(this, newValue);
-			return true;
+	public <T> void setAttrByCol(String colName,T newValue)throws Exception{
+		//colName->setter
+		String setter=colName2Setter(colName);
+		Class<?>[] argtypes = null;
+		if(newValue instanceof Integer){
+			argtypes= new Class[]{int.class};
+		}else if(newValue instanceof Double){
+			argtypes = new Class[]{double.class};
+		}else if(newValue instanceof Boolean){
+			argtypes= new Class[]{boolean.class};
+		}else if(newValue instanceof Float){
+			argtypes= new Class[]{float.class};
+		}else if(newValue instanceof Long){
+			argtypes= new Class[]{long.class};
+		}else{
+			argtypes = new Class[]{newValue.getClass()};
 		}
-		return false;
+		Method method = this.getClass().getMethod(setter,argtypes);
+		method.invoke(this, newValue);
 	}
 	/**
 	 * 有特殊字段的表重写此方法

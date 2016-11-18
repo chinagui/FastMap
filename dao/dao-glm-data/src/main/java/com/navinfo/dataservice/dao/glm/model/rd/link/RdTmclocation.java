@@ -33,7 +33,7 @@ public class RdTmclocation implements IObj {
 	
 	private int tmcId;
 	
-	private int locationId;
+	private int loctableId;
 	
 	private String rowId;
 	
@@ -63,12 +63,12 @@ public class RdTmclocation implements IObj {
 		this.tmcId = tmcId;
 	}
 
-	public int getLocationId() {
-		return locationId;
+	public int getLoctableId() {
+		return loctableId;
 	}
 
-	public void setLocationId(int locationId) {
-		this.locationId = locationId;
+	public void setLoctableId(int loctableId) {
+		this.loctableId = loctableId;
 	}
 
 	public void setLinks(List<IRow> links) {
@@ -113,7 +113,7 @@ public class RdTmclocation implements IObj {
 
 		this.tmcId = tmclocation.tmcId;
 		
-		this.locationId = tmclocation.locationId;
+		this.loctableId = tmclocation.loctableId;
 
 		this.rowId = tmclocation.rowId;
 		

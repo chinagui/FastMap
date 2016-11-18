@@ -41,7 +41,7 @@ public class RdLinkTest extends InitApplication {
 
 			SearchProcess p = new SearchProcess(conn);
 
-			System.out.println(p.searchDataByPid(ObjType.RDLINK, 574325).Serialize(ObjLevel.FULL));
+			System.out.println(p.searchDataByPid(ObjType.RDLINK, 14118075).Serialize(ObjLevel.FULL));
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -76,7 +76,7 @@ public class RdLinkTest extends InitApplication {
 
 	@Test
 	public void testDelete() {
-		String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDMILEAGEPILE\",\"dbId\":17,\"data\":{\"mileageNum\":121212,\"pid\":200000001,\"objStatus\":\"UPDATE\",\"roadName\":\"dasdasd\",\"roadNum\":\"asdasdad\"}}";
+		String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDRESTRICTION\",\"dbId\":17,\"data\":{\"details\":[{\"vias\":[{\"linkPid\":\"385763\",\"rowId\":\"9F0ACD0937004FE184B38FA2B5191DD0\",\"objStatus\":\"UPDATE\"},{\"linkPid\":\"385764\",\"rowId\":\"EDDF1A4C9CDA46C7A43D66203608AF18\",\"objStatus\":\"UPDATE\"}],\"pid\":200000061},{\"outLinkPid\":390463,\"pid\":308000048,\"objStatus\":\"UPDATE\",\"relationshipType\":2,\"vias\":[{\"pid\":0,\"linkPid\":390464,\"groupId\":1,\"seqNum\":1,\"rowId\":null,\"objStatus\":\"INSERT\"}]}],\"pid\":307000044}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

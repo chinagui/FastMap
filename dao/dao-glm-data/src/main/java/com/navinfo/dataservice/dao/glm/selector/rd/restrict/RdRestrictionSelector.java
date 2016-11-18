@@ -114,7 +114,7 @@ public class RdRestrictionSelector extends AbstractSelector {
 //					}
 				}
 				
-				for(IRow row : details)
+				for(IRow row : rows)
 				{
 					RdRestrictionDetail detail = (RdRestrictionDetail) row;
 					
@@ -128,7 +128,7 @@ public class RdRestrictionSelector extends AbstractSelector {
 								condition);
 					}
 				}
-				restrict.setDetails(details);
+				restrict.setDetails(rows);
 			} else {
 
 				throw new DataNotFoundException("数据不存在");

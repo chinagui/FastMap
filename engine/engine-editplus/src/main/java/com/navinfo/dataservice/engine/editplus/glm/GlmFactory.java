@@ -194,7 +194,6 @@ public class GlmFactory {
 								col = new GlmColumn(colName,dataType);
 							}
 							cols.put(col.getName(),col);
-							res.put(tableName, cols);
 						}
 						return res;
 					}

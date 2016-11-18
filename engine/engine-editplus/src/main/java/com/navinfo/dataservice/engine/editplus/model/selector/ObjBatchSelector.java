@@ -144,15 +144,12 @@ public class ObjBatchSelector {
 			, GlmTable glmTab, Collection<Long> pids, GlmTable mainTable) throws SQLException {
 		// TODO Auto-generated method stub
 		GlmTable tempTab = glmTab;
-		List<String[]> conditionList = new ArrayList<String[]>();
+		List<String> tables = new ArrayList<String>();
+		List<String> conditions = new ArrayList<String>();
 		while(true){
 			GlmRef objRef = tempTab.getObjRef();
-			String[] condition = new String[4];
-			condition[0] = tempTab.getName();
-			condition[1] = objRef.getCol();
-			condition[2] = objRef.getRefTable();
-			condition[3] = objRef.getRefCol();
-			conditionList.add(condition);
+			tables.add(tempTab.getName());
+			conditions.add(tempTab.getName() + "." + objRef.getCol() + "=" + objRef.getRefTable() + "." + objRef.getRefCol());
 			if(objRef.isRefMain()){
 				break;
 			}
@@ -160,13 +157,6 @@ public class ObjBatchSelector {
 		}
 		
 		//查询
-		List<String> tables = new ArrayList<String>();
-		List<String> conditions = new ArrayList<String>();
-		for(String[] condition:conditionList){
-			tables.add(condition[0]);
-			conditions.add(condition[0] + "." + condition[1] + "=" + condition[2] + "." + condition[3]);
-		}
-		
 		String sql = "SELECT " + glmTab.getName() + ".*," + mainTable.getName() + "."+ mainTable.getPkColumn() + "AS OBJ_PID FROM "+ StringUtils.join(tables.toArray(),",") +" WHERE "
 				+ StringUtils.join(conditions.toArray()," AND ")
 				+ mainTable.getPkColumn()+" IN (" + StringUtils.join(pids.toArray()," AND ") + ")";

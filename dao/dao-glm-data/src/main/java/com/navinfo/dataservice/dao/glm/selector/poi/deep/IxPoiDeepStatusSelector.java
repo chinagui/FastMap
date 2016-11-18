@@ -113,4 +113,48 @@ public class IxPoiDeepStatusSelector extends AbstractSelector{
 		}
 	}
 	
+	/**
+	 * 根据status,userid,type 获取可提交的数据rowIds
+	 * @param subtask
+	 * @param type
+	 * @return
+	 * @throws Exception
+	 */
+	public List<String> getRowIdsForRelease(Subtask subtask ,int status, long userid, int type) throws Exception {
+		List<String> rowIds = new ArrayList<String>();
+		StringBuilder sb = new StringBuilder();
+		sb.append(" SELECT s.row_id ");
+		sb.append(" FROM POI_DEEP_STATUS s ,ix_poi p ");
+		sb.append(" WHERE sdo_within_distance(p.geometry, sdo_geometry(:1  , 8307), 'mask=anyinteract') = 'TRUE'");
+		sb.append(" AND s.TYPE=:2");
+		sb.append(" AND s.handler=:3");
+		sb.append(" AND s.STATUS = :4");
+		sb.append(" AND p.row_id = s.row_id");
+		sb.append(" AND p.row_id not exist (select in.row_id from  ni_val_exception n AND in.row_id = s.row_id");
+		
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+			pstmt.setString(1, subtask.getGeometry());
+			pstmt.setInt(2, type);
+			pstmt.setLong(3, userid);
+			pstmt.setInt(4, status);
+			
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+				rowIds.add(resultSet.getString("row_id"));
+			}
+			
+			return rowIds;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+	}
+	
+	
 }

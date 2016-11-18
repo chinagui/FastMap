@@ -2,6 +2,7 @@ package com.navinfo.dataservice.engine.check.rules;
 
 import java.util.List;
 
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiBusinessTime;
@@ -41,7 +42,7 @@ public class CheckRuleFMYW20222 extends baseRule {
 						for (IRow businessTime : businessTimes) {
 							IxPoiBusinessTime ixPoiBusinessTime = (IxPoiBusinessTime) businessTime;
 							String timeDur = ixPoiBusinessTime.getTimeDur();
-							if (!timeDur.isEmpty()) {
+							if (StringUtils.isNotEmpty(timeDur)) {
 								if (timeDur.startsWith("24")) {
 									this.setCheckResult(poi.getGeometry(), "[IX_POI," + poi.getPid() + "]",
 											poi.getMeshId(), "银行类营业时长为24小时");

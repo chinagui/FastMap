@@ -799,6 +799,17 @@ public class Transaction {
                     default:
                         break;
                 }
+            case RDTMCLOCATION:
+                switch (operType) {
+                    case CREATE:
+                        return new com.navinfo.dataservice.engine.edit.operation.obj.tmc.create.Command(json, requester);
+                    case UPDATE:
+                        return new com.navinfo.dataservice.engine.edit.operation.obj.tmc.update.Command(json, requester);
+                    case DELETE:
+                        return new com.navinfo.dataservice.engine.edit.operation.obj.tmc.delete.Command(json, requester);
+                    default:
+                        break;
+                }
         }
 
         throw new Exception("不支持的操作类型");
@@ -1527,6 +1538,17 @@ public class Transaction {
                         return new com.navinfo.dataservice.engine.edit.operation.obj.mileagepile.move.Process(command);
                     case DELETE:
                         return new com.navinfo.dataservice.engine.edit.operation.obj.mileagepile.delete.Process(command);
+                    default:
+                        break;
+                }
+            case RDTMCLOCATION:
+                switch (operType) {
+                    case CREATE:
+                        return new com.navinfo.dataservice.engine.edit.operation.obj.tmc.create.Process(command);
+                    case UPDATE:
+                        return new com.navinfo.dataservice.engine.edit.operation.obj.tmc.update.Process(command);
+                    case DELETE:
+                        return new com.navinfo.dataservice.engine.edit.operation.obj.tmc.delete.Process(command);
                     default:
                         break;
                 }

@@ -52,10 +52,10 @@ public class CheckRuleFMZY20149 extends baseRule {
 							}
 							if (tollStd.contains("|")) {
 								StringBuffer sf = new StringBuffer();
-								String[] tollStdArry = tollStd.split("|");
+								String[] tollStdArry = tollStd.split("\\|");
 								for (String toll : tollStdArry) {
 
-									if (!toll.isEmpty() || !"0,1,2,3,4".contains(toll)) {
+									if (StringUtils.isEmpty(toll) || !"0,1,2,3,4".contains(toll)) {
 										errorLog = "收费标准的值有" + "'" + "|" + "'时，" + "'" + "|" + "'"
 												+ "前后的值不在{0,1,2,3,4}中";
 									}

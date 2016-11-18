@@ -1,7 +1,9 @@
 package com.navinfo.dataservice.engine.check.rules;
 
+import java.sql.Connection;
 import java.util.List;
 
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.util.ExcelReader;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.check.CheckCommand;
@@ -51,12 +53,13 @@ public class CheckRuleFMYW20224 extends baseRule {
 						String tollDes = ixPoiParking.getTollDes();
 						if (StringUtils.isNotEmpty(tollDes)) {
 							// 加载合法字符
-							TyCharacterEgalcharExtCheckSelector tyCharacterSelector = new TyCharacterEgalcharExtCheckSelector();
+							Connection metaConn = DBConnector.getInstance().getMetaConnection();
+							TyCharacterEgalcharExtCheckSelector tyCharacterSelector = new TyCharacterEgalcharExtCheckSelector(metaConn);
 							JSONObject characterMap = tyCharacterSelector.getCharacterMap();
 							StringBuffer errorLog = new StringBuffer();
 							// 判断停车场收费信息中的字符是在合法字符集中
 							for (char c : tollDes.toCharArray()) {
-								if (!characterMap.containsKey(c)) {
+								if (!characterMap.containsKey(String.valueOf(c))) {
 									errorLog.append("停车场收费信息存在非法字符; ");
 									break;
 								}

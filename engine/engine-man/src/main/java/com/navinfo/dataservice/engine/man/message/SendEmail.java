@@ -1,5 +1,7 @@
 package com.navinfo.dataservice.engine.man.message;
 
+import javax.mail.MessagingException;
+
 import org.apache.log4j.Logger;
 import com.navinfo.dataservice.commons.email.SendEmailUtil;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
@@ -31,7 +33,11 @@ public class SendEmail {
 	 * @date 2016年11月1日 下午3:58:26 
 	 */
 	public static void sendEmail(String toMail,String mailTitle,String mailContent){
-		SendEmailUtil.sendEmail(VALUE_SMTP, SEND_EMAil, SEND_EMAil, SEND_PWD, toMail, mailTitle, mailContent);
+		try {
+			SendEmailUtil.sendEmail(VALUE_SMTP, SEND_EMAil, SEND_EMAil, SEND_PWD, toMail, mailTitle, mailContent);
+		} catch (MessagingException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public static void main(String[] args) {

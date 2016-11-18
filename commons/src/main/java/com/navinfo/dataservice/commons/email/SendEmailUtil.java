@@ -1,9 +1,12 @@
 package com.navinfo.dataservice.commons.email;
 
 import java.util.Properties;
+
+import javax.mail.Address;
 import javax.mail.Authenticator;
 import javax.mail.Message;
 import javax.mail.MessagingException;
+import javax.mail.NoSuchProviderException;
 import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
 import javax.mail.Transport;
@@ -19,7 +22,6 @@ import com.navinfo.dataservice.commons.log.LoggerRepos;
  * 功能描述:邮件发送公共方法
  */
 public class SendEmailUtil {
-	private  Logger log = LoggerRepos.getLogger(this.getClass());
 	
 	/**
 	 * @Title: sendEmail
@@ -31,6 +33,7 @@ public class SendEmailUtil {
 	 * @param toMail
 	 * @param mailTitle
 	 * @param mailContent  void
+	 * @throws MessagingException 
 	 * @throws 
 	 * @author zl zhangli5174@navinfo.com
 	 * @date 2016年11月1日 下午3:14:41 
@@ -38,7 +41,7 @@ public class SendEmailUtil {
 	public static void sendEmail(String valueSmtp,String fromMail, final String user, final String password,  
             String toMail,  
             String mailTitle,  
-            String mailContent){
+            String mailContent) throws MessagingException{
 		Properties props = System.getProperties();
 		props.setProperty("mail.smtp.host", valueSmtp);
 		props.put("mail.smtp.auth", "true");
@@ -49,6 +52,7 @@ public class SendEmailUtil {
 		      }});
 		s.setDebug(true);
 		MimeMessage message = new MimeMessage(s);
+		Transport transport =  null;
 		try {
 			// 发件人
 			InternetAddress from = new InternetAddress(user);
@@ -62,19 +66,19 @@ public class SendEmailUtil {
 			// 邮件内容,也可以使纯文本"text/plain"
 			message.setContent(mailContent, "text/html;charset=GBK");
 			message.saveChanges();
-			Transport transport = s.getTransport("smtp");
+			transport = s.getTransport("smtp");
 			// smtp验证，就是你用来发邮件的邮箱用户名密码
 			transport.connect(valueSmtp, user, password);
 			// 发送
 			transport.sendMessage(message, message.getAllRecipients());
-			transport.close();
-			System.out.println("send success!");
+			
+			//System.out.println("send success!");
 		} catch (AddressException e) {
-			System.out.println("send fail!");
-			//log.error("邮件发送失败:"+e.getMessage(), e);
 			e.printStackTrace();
 		} catch (MessagingException e) {
 			e.printStackTrace();
+		}finally {
+			transport.close();
 		}
 		
 	}

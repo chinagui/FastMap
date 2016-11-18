@@ -48,10 +48,10 @@ public class CheckRuleFMZY20151 extends baseRule {
 							}
 							if (tollWay.contains("|")) {
 								StringBuffer sf = new StringBuffer();
-								String[] tollWayArry = tollWay.split("|");
+								String[] tollWayArry = tollWay.split("\\|");
 								for (String toll : tollWayArry) {
 
-									if (!toll.isEmpty() || !"0,1,2".contains(toll)) {
+									if (StringUtils.isEmpty(toll) || !"0,1,2".contains(toll)) {
 										errorLog = "收费方式的值有" + "'" + "|" + "'时，" + "'" + "|" + "'" + "前后的值不在{0,1,2}中";
 									}
 									if (sf.toString().contains(toll)) {

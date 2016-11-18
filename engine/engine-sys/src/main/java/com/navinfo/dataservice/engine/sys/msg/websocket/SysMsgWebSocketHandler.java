@@ -40,6 +40,9 @@ public class SysMsgWebSocketHandler extends TextWebSocketHandler {
 	public void afterConnectionEstablished(WebSocketSession session) throws Exception {
 		log.info("connect to the websocket success......");
 		users.add(session);
+		//日志
+		log.info("系统消息集合中WebSocketSession的保存个数:"+users.size());
+		
 		String userId = (String) session.getAttributes().get("userId");
 		/*
 		if(users.size() == 0){

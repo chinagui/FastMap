@@ -11,7 +11,7 @@ import com.navinfo.dataservice.engine.editplus.model.BasicRow;
 /** 
 * @ClassName:  IxPoiEvent 
 * @author code generator
-* @date 2016-11-16 06:05:07 
+* @date 2016-11-18 11:36:55 
 * @Description: TODO
 */
 public class IxPoiEvent extends BasicRow {
@@ -31,9 +31,6 @@ public class IxPoiEvent extends BasicRow {
 	protected String photoName ;
 	protected String reserved ;
 	protected String memo ;
-//	protected Integer uRecord ;
-//	protected String uFields ;
-//	protected String uDate ;
 	
 	public IxPoiEvent (long objPid){
 		super(objPid);
@@ -42,118 +39,132 @@ public class IxPoiEvent extends BasicRow {
 	public long getEventId() {
 		return eventId;
 	}
-	protected void setEventId(long eventId) {
-		this.eventId = eventId;
+	public void setEventId(long eventId) {
+		if(this.checkValue("EVENT_ID",this.eventId,eventId)){
+			this.eventId = eventId;
+		}
 	}
 	public String getEventName() {
 		return eventName;
 	}
-	protected void setEventName(String eventName) {
-		this.eventName = eventName;
+	public void setEventName(String eventName) {
+		if(this.checkValue("EVENT_NAME",this.eventName,eventName)){
+			this.eventName = eventName;
+		}
 	}
 	public String getEventNameEng() {
 		return eventNameEng;
 	}
-	protected void setEventNameEng(String eventNameEng) {
-		this.eventNameEng = eventNameEng;
+	public void setEventNameEng(String eventNameEng) {
+		if(this.checkValue("EVENT_NAME_ENG",this.eventNameEng,eventNameEng)){
+			this.eventNameEng = eventNameEng;
+		}
 	}
 	public String getEventKind() {
 		return eventKind;
 	}
-	protected void setEventKind(String eventKind) {
-		this.eventKind = eventKind;
+	public void setEventKind(String eventKind) {
+		if(this.checkValue("EVENT_KIND",this.eventKind,eventKind)){
+			this.eventKind = eventKind;
+		}
 	}
 	public String getEventKindEng() {
 		return eventKindEng;
 	}
-	protected void setEventKindEng(String eventKindEng) {
-		this.eventKindEng = eventKindEng;
+	public void setEventKindEng(String eventKindEng) {
+		if(this.checkValue("EVENT_KIND_ENG",this.eventKindEng,eventKindEng)){
+			this.eventKindEng = eventKindEng;
+		}
 	}
 	public String getEventDesc() {
 		return eventDesc;
 	}
-	protected void setEventDesc(String eventDesc) {
-		this.eventDesc = eventDesc;
+	public void setEventDesc(String eventDesc) {
+		if(this.checkValue("EVENT_DESC",this.eventDesc,eventDesc)){
+			this.eventDesc = eventDesc;
+		}
 	}
 	public String getEventDescEng() {
 		return eventDescEng;
 	}
-	protected void setEventDescEng(String eventDescEng) {
-		this.eventDescEng = eventDescEng;
+	public void setEventDescEng(String eventDescEng) {
+		if(this.checkValue("EVENT_DESC_ENG",this.eventDescEng,eventDescEng)){
+			this.eventDescEng = eventDescEng;
+		}
 	}
 	public String getStartDate() {
 		return startDate;
 	}
-	protected void setStartDate(String startDate) {
-		this.startDate = startDate;
+	public void setStartDate(String startDate) {
+		if(this.checkValue("START_DATE",this.startDate,startDate)){
+			this.startDate = startDate;
+		}
 	}
 	public String getEndDate() {
 		return endDate;
 	}
-	protected void setEndDate(String endDate) {
-		this.endDate = endDate;
+	public void setEndDate(String endDate) {
+		if(this.checkValue("END_DATE",this.endDate,endDate)){
+			this.endDate = endDate;
+		}
 	}
 	public String getDetailTime() {
 		return detailTime;
 	}
-	protected void setDetailTime(String detailTime) {
-		this.detailTime = detailTime;
+	public void setDetailTime(String detailTime) {
+		if(this.checkValue("DETAIL_TIME",this.detailTime,detailTime)){
+			this.detailTime = detailTime;
+		}
 	}
 	public String getDetailTimeEng() {
 		return detailTimeEng;
 	}
-	protected void setDetailTimeEng(String detailTimeEng) {
-		this.detailTimeEng = detailTimeEng;
+	public void setDetailTimeEng(String detailTimeEng) {
+		if(this.checkValue("DETAIL_TIME_ENG",this.detailTimeEng,detailTimeEng)){
+			this.detailTimeEng = detailTimeEng;
+		}
 	}
 	public String getCity() {
 		return city;
 	}
-	protected void setCity(String city) {
-		this.city = city;
+	public void setCity(String city) {
+		if(this.checkValue("CITY",this.city,city)){
+			this.city = city;
+		}
 	}
 	public String getPoiPid() {
 		return poiPid;
 	}
-	protected void setPoiPid(String poiPid) {
-		this.poiPid = poiPid;
+	public void setPoiPid(String poiPid) {
+		if(this.checkValue("POI_PID",this.poiPid,poiPid)){
+			this.poiPid = poiPid;
+		}
 	}
 	public String getPhotoName() {
 		return photoName;
 	}
-	protected void setPhotoName(String photoName) {
-		this.photoName = photoName;
+	public void setPhotoName(String photoName) {
+		if(this.checkValue("PHOTO_NAME",this.photoName,photoName)){
+			this.photoName = photoName;
+		}
 	}
 	public String getReserved() {
 		return reserved;
 	}
-	protected void setReserved(String reserved) {
-		this.reserved = reserved;
+	public void setReserved(String reserved) {
+		if(this.checkValue("RESERVED",this.reserved,reserved)){
+			this.reserved = reserved;
+		}
 	}
 	public String getMemo() {
 		return memo;
 	}
-	protected void setMemo(String memo) {
-		this.memo = memo;
+	public void setMemo(String memo) {
+		if(this.checkValue("MEMO",this.memo,memo)){
+			this.memo = memo;
+		}
 	}
-//	public Integer getURecord() {
-//		return uRecord;
-//	}
-//	protected void setURecord(Integer uRecord) {
-//		this.uRecord = uRecord;
-//	}
-//	public String getUFields() {
-//		return uFields;
-//	}
-//	protected void setUFields(String uFields) {
-//		this.uFields = uFields;
-//	}
-//	public String getUDate() {
-//		return uDate;
-//	}
-//	protected void setUDate(String uDate) {
-//		this.uDate = uDate;
-//	}
-
+	
 	@Override
 	public String tableName() {
 		return "IX_POI_EVENT";

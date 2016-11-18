@@ -11,7 +11,7 @@ import com.navinfo.dataservice.engine.editplus.model.BasicRow;
 /** 
 * @ClassName:  IxPoiDetail 
 * @author code generator
-* @date 2016-11-16 05:59:44 
+* @date 2016-11-18 11:33:43 
 * @Description: TODO
 */
 public class IxPoiDetail extends BasicRow {
@@ -20,17 +20,14 @@ public class IxPoiDetail extends BasicRow {
 	protected String fax ;
 	protected String starHotel ;
 	protected String briefDesc ;
-	protected Integer adverFlag ;
+	protected int adverFlag ;
 	protected String photoName ;
 	protected String reserved ;
 	protected String memo ;
-	protected Integer hwEntryexit ;
-	protected Integer paycard ;
+	protected int hwEntryexit ;
+	protected int paycard ;
 	protected String cardtype ;
-	protected Integer hospitalClass ;
-//	protected Integer uRecord ;
-//	protected String uFields ;
-//	protected String uDate ;
+	protected int hospitalClass ;
 	
 	public IxPoiDetail (long objPid){
 		super(objPid);
@@ -39,100 +36,108 @@ public class IxPoiDetail extends BasicRow {
 	public long getPoiPid() {
 		return poiPid;
 	}
-	protected void setPoiPid(long poiPid) {
-		this.poiPid = poiPid;
+	public void setPoiPid(long poiPid) {
+		if(this.checkValue("POI_PID",this.poiPid,poiPid)){
+			this.poiPid = poiPid;
+		}
 	}
 	public String getWebSite() {
 		return webSite;
 	}
-	protected void setWebSite(String webSite) {
-		this.webSite = webSite;
+	public void setWebSite(String webSite) {
+		if(this.checkValue("WEB_SITE",this.webSite,webSite)){
+			this.webSite = webSite;
+		}
 	}
 	public String getFax() {
 		return fax;
 	}
-	protected void setFax(String fax) {
-		this.fax = fax;
+	public void setFax(String fax) {
+		if(this.checkValue("FAX",this.fax,fax)){
+			this.fax = fax;
+		}
 	}
 	public String getStarHotel() {
 		return starHotel;
 	}
-	protected void setStarHotel(String starHotel) {
-		this.starHotel = starHotel;
+	public void setStarHotel(String starHotel) {
+		if(this.checkValue("STAR_HOTEL",this.starHotel,starHotel)){
+			this.starHotel = starHotel;
+		}
 	}
 	public String getBriefDesc() {
 		return briefDesc;
 	}
-	protected void setBriefDesc(String briefDesc) {
-		this.briefDesc = briefDesc;
+	public void setBriefDesc(String briefDesc) {
+		if(this.checkValue("BRIEF_DESC",this.briefDesc,briefDesc)){
+			this.briefDesc = briefDesc;
+		}
 	}
-	public Integer getAdverFlag() {
+	public int getAdverFlag() {
 		return adverFlag;
 	}
-	protected void setAdverFlag(Integer adverFlag) {
-		this.adverFlag = adverFlag;
+	public void setAdverFlag(int adverFlag) {
+		if(this.checkValue("ADVER_FLAG",this.adverFlag,adverFlag)){
+			this.adverFlag = adverFlag;
+		}
 	}
 	public String getPhotoName() {
 		return photoName;
 	}
-	protected void setPhotoName(String photoName) {
-		this.photoName = photoName;
+	public void setPhotoName(String photoName) {
+		if(this.checkValue("PHOTO_NAME",this.photoName,photoName)){
+			this.photoName = photoName;
+		}
 	}
 	public String getReserved() {
 		return reserved;
 	}
-	protected void setReserved(String reserved) {
-		this.reserved = reserved;
+	public void setReserved(String reserved) {
+		if(this.checkValue("RESERVED",this.reserved,reserved)){
+			this.reserved = reserved;
+		}
 	}
 	public String getMemo() {
 		return memo;
 	}
-	protected void setMemo(String memo) {
-		this.memo = memo;
+	public void setMemo(String memo) {
+		if(this.checkValue("MEMO",this.memo,memo)){
+			this.memo = memo;
+		}
 	}
-	public Integer getHwEntryexit() {
+	public int getHwEntryexit() {
 		return hwEntryexit;
 	}
-	protected void setHwEntryexit(Integer hwEntryexit) {
-		this.hwEntryexit = hwEntryexit;
+	public void setHwEntryexit(int hwEntryexit) {
+		if(this.checkValue("HW_ENTRYEXIT",this.hwEntryexit,hwEntryexit)){
+			this.hwEntryexit = hwEntryexit;
+		}
 	}
-	public Integer getPaycard() {
+	public int getPaycard() {
 		return paycard;
 	}
-	protected void setPaycard(Integer paycard) {
-		this.paycard = paycard;
+	public void setPaycard(int paycard) {
+		if(this.checkValue("PAYCARD",this.paycard,paycard)){
+			this.paycard = paycard;
+		}
 	}
 	public String getCardtype() {
 		return cardtype;
 	}
-	protected void setCardtype(String cardtype) {
-		this.cardtype = cardtype;
+	public void setCardtype(String cardtype) {
+		if(this.checkValue("CARDTYPE",this.cardtype,cardtype)){
+			this.cardtype = cardtype;
+		}
 	}
-	public Integer getHospitalClass() {
+	public int getHospitalClass() {
 		return hospitalClass;
 	}
-	protected void setHospitalClass(Integer hospitalClass) {
-		this.hospitalClass = hospitalClass;
+	public void setHospitalClass(int hospitalClass) {
+		if(this.checkValue("HOSPITAL_CLASS",this.hospitalClass,hospitalClass)){
+			this.hospitalClass = hospitalClass;
+		}
 	}
-//	public Integer getURecord() {
-//		return uRecord;
-//	}
-//	protected void setURecord(Integer uRecord) {
-//		this.uRecord = uRecord;
-//	}
-//	public String getUFields() {
-//		return uFields;
-//	}
-//	protected void setUFields(String uFields) {
-//		this.uFields = uFields;
-//	}
-//	public String getUDate() {
-//		return uDate;
-//	}
-//	protected void setUDate(String uDate) {
-//		this.uDate = uDate;
-//	}
-
+	
 	@Override
 	public String tableName() {
 		return "IX_POI_DETAIL";

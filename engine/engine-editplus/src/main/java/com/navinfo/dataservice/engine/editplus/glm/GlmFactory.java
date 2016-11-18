@@ -18,6 +18,7 @@ import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.navicommons.database.QueryRunner;
 
 /**
@@ -29,7 +30,10 @@ import com.navinfo.navicommons.database.QueryRunner;
  */
 public class GlmFactory {
 	protected Logger log = Logger.getLogger(this.getClass());
-	private GlmFactory(){loadGlm();}
+	private GlmFactory(){
+		loadGlm();
+		loadGlmColumns();
+	}
 	private volatile static GlmFactory instance;
 	public static GlmFactory getInstance(){
 		if(instance==null){
@@ -83,7 +87,8 @@ public class GlmFactory {
 	}
 	
 	private void loadGlm(){
-		String configFile = "/com/navinfo/dataservice/commons/config/SystemConfig.xml";
+//		String configFile = "/com/navinfo/dataservice/commons/config/SystemConfig.xml";
+		String configFile = "glm.xml";
 		InputStream is = null;
         log.debug("parse file " + configFile);
         try {
@@ -162,8 +167,9 @@ public class GlmFactory {
 		if(tables!=null){
 			Connection conn = null;
 			try{
+				conn = DBConnector.getInstance().getMkConnection();
 				StringBuilder tableSql = new StringBuilder();
-				tableSql.append("SELECT T.TABLE_NAME, C.COLUMN_NAME, C.DATA_TYPE,C.COLUMN_ID FROM USER_TABLES T, USER_TAB_COLUMNS C WHERE T.TABLE_NAME = C.TABLE_NAME");
+				tableSql.append("SELECT T.TABLE_NAME, C.COLUMN_NAME, C.DATA_TYPE, C.COLUMN_ID,C.DATA_PRECISION,C.DATA_SCALE FROM USER_TABLES T, USER_TAB_COLUMNS C WHERE T.TABLE_NAME = C.TABLE_NAME");
 				tableSql.append(" AND T.TABLE_NAME IN ('");
 				tableSql.append(StringUtils.join(tables.keySet(),"','"));
 				tableSql.append("') ORDER BY T.TABLE_NAME,C.COLUMN_ID");
@@ -181,13 +187,14 @@ public class GlmFactory {
 							}
 							GlmColumn col=null;
 							String colName = rs.getString("COLUMN_NAME");
-							String dataType=rs.getString("DATA_TYPe");
+							String dataType=rs.getString("DATA_TYPE");
 							if(GlmColumn.TYPE_NUMBER.equals(dataType)){
-								col = new GlmColumn(colName,dataType);
+								col=new GlmColumn(colName,dataType,rs.getInt("DATA_PRECISION"),rs.getInt("DATA_SCALE"));	
 							}else{
-								col=new GlmColumn(colName,dataType,rs.getInt("DATA_PRECISION"),rs.getInt("DATA_SCALE"));
+								col = new GlmColumn(colName,dataType);
 							}
 							cols.put(col.getName(),col);
+							res.put(tableName, cols);
 						}
 						return res;
 					}

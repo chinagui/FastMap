@@ -181,14 +181,11 @@ public class ObjSelector {
 			}
 			if(!condition.isEmpty()){
 				String sql = "SELECT * FROM "+glmTab.getName()+" WHERE "
-						+ objRef.getCol() + "in(" + StringUtils.join(condition.toArray(),",") + ")";
+						+ objRef.getCol() + "IN(" + StringUtils.join(condition.toArray(),",") + ")";
 				List<BasicRow> childRows = new QueryRunner().query(conn, sql, new MultipleSelRsHandler(glmTab,objPid),objPid);
 				//更新obj
 				obj.insertSubrow(glmTab.getName(),childRows);
 			}
-			
-		}
-		
-	}
-	
+		}		
+	}	
 }

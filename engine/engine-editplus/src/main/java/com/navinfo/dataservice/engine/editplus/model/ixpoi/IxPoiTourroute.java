@@ -11,7 +11,7 @@ import com.navinfo.dataservice.engine.editplus.model.BasicRow;
 /** 
 * @ClassName:  IxPoiTourroute 
 * @author code generator
-* @date 2016-11-16 06:04:53 
+* @date 2016-11-18 11:36:41 
 * @Description: TODO
 */
 public class IxPoiTourroute extends BasicRow {
@@ -30,9 +30,6 @@ public class IxPoiTourroute extends BasicRow {
 	protected String poiPid ;
 	protected String reserved ;
 	protected String memo ;
-//	protected Integer uRecord ;
-//	protected String uFields ;
-//	protected String uDate ;
 	
 	public IxPoiTourroute (long objPid){
 		super(objPid);
@@ -41,111 +38,124 @@ public class IxPoiTourroute extends BasicRow {
 	public long getTourId() {
 		return tourId;
 	}
-	protected void setTourId(long tourId) {
-		this.tourId = tourId;
+	public void setTourId(long tourId) {
+		if(this.checkValue("TOUR_ID",this.tourId,tourId)){
+			this.tourId = tourId;
+		}
 	}
 	public String getTourName() {
 		return tourName;
 	}
-	protected void setTourName(String tourName) {
-		this.tourName = tourName;
+	public void setTourName(String tourName) {
+		if(this.checkValue("TOUR_NAME",this.tourName,tourName)){
+			this.tourName = tourName;
+		}
 	}
 	public String getTourNameEng() {
 		return tourNameEng;
 	}
-	protected void setTourNameEng(String tourNameEng) {
-		this.tourNameEng = tourNameEng;
+	public void setTourNameEng(String tourNameEng) {
+		if(this.checkValue("TOUR_NAME_ENG",this.tourNameEng,tourNameEng)){
+			this.tourNameEng = tourNameEng;
+		}
 	}
 	public String getTourIntr() {
 		return tourIntr;
 	}
-	protected void setTourIntr(String tourIntr) {
-		this.tourIntr = tourIntr;
+	public void setTourIntr(String tourIntr) {
+		if(this.checkValue("TOUR_INTR",this.tourIntr,tourIntr)){
+			this.tourIntr = tourIntr;
+		}
 	}
 	public String getTourIntrEng() {
 		return tourIntrEng;
 	}
-	protected void setTourIntrEng(String tourIntrEng) {
-		this.tourIntrEng = tourIntrEng;
+	public void setTourIntrEng(String tourIntrEng) {
+		if(this.checkValue("TOUR_INTR_ENG",this.tourIntrEng,tourIntrEng)){
+			this.tourIntrEng = tourIntrEng;
+		}
 	}
 	public String getTourType() {
 		return tourType;
 	}
-	protected void setTourType(String tourType) {
-		this.tourType = tourType;
+	public void setTourType(String tourType) {
+		if(this.checkValue("TOUR_TYPE",this.tourType,tourType)){
+			this.tourType = tourType;
+		}
 	}
 	public String getTourTypeEng() {
 		return tourTypeEng;
 	}
-	protected void setTourTypeEng(String tourTypeEng) {
-		this.tourTypeEng = tourTypeEng;
+	public void setTourTypeEng(String tourTypeEng) {
+		if(this.checkValue("TOUR_TYPE_ENG",this.tourTypeEng,tourTypeEng)){
+			this.tourTypeEng = tourTypeEng;
+		}
 	}
 	public double getTourX() {
 		return tourX;
 	}
-	protected void setTourX(double tourX) {
-		this.tourX = tourX;
+	public void setTourX(double tourX) {
+		if(this.checkValue("TOUR_X",this.tourX,tourX)){
+			this.tourX = tourX;
+		}
 	}
 	public double getTourY() {
 		return tourY;
 	}
-	protected void setTourY(double tourY) {
-		this.tourY = tourY;
+	public void setTourY(double tourY) {
+		if(this.checkValue("TOUR_Y",this.tourY,tourY)){
+			this.tourY = tourY;
+		}
 	}
 	public double getTourLen() {
 		return tourLen;
 	}
-	protected void setTourLen(double tourLen) {
-		this.tourLen = tourLen;
+	public void setTourLen(double tourLen) {
+		if(this.checkValue("TOUR_LEN",this.tourLen,tourLen)){
+			this.tourLen = tourLen;
+		}
 	}
 	public String getTrailTime() {
 		return trailTime;
 	}
-	protected void setTrailTime(String trailTime) {
-		this.trailTime = trailTime;
+	public void setTrailTime(String trailTime) {
+		if(this.checkValue("TRAIL_TIME",this.trailTime,trailTime)){
+			this.trailTime = trailTime;
+		}
 	}
 	public String getVisitTime() {
 		return visitTime;
 	}
-	protected void setVisitTime(String visitTime) {
-		this.visitTime = visitTime;
+	public void setVisitTime(String visitTime) {
+		if(this.checkValue("VISIT_TIME",this.visitTime,visitTime)){
+			this.visitTime = visitTime;
+		}
 	}
 	public String getPoiPid() {
 		return poiPid;
 	}
-	protected void setPoiPid(String poiPid) {
-		this.poiPid = poiPid;
+	public void setPoiPid(String poiPid) {
+		if(this.checkValue("POI_PID",this.poiPid,poiPid)){
+			this.poiPid = poiPid;
+		}
 	}
 	public String getReserved() {
 		return reserved;
 	}
-	protected void setReserved(String reserved) {
-		this.reserved = reserved;
+	public void setReserved(String reserved) {
+		if(this.checkValue("RESERVED",this.reserved,reserved)){
+			this.reserved = reserved;
+		}
 	}
 	public String getMemo() {
 		return memo;
 	}
-	protected void setMemo(String memo) {
-		this.memo = memo;
+	public void setMemo(String memo) {
+		if(this.checkValue("MEMO",this.memo,memo)){
+			this.memo = memo;
+		}
 	}
-//	public Integer getURecord() {
-//		return uRecord;
-//	}
-//	protected void setURecord(Integer uRecord) {
-//		this.uRecord = uRecord;
-//	}
-//	public String getUFields() {
-//		return uFields;
-//	}
-//	protected void setUFields(String uFields) {
-//		this.uFields = uFields;
-//	}
-//	public String getUDate() {
-//		return uDate;
-//	}
-//	protected void setUDate(String uDate) {
-//		this.uDate = uDate;
-//	}
+	
 	
 	@Override
 	public String tableName() {

@@ -56,6 +56,9 @@ public class GlmTable {
 	public Map<String, GlmColumn> getColumns() {
 		return columns;
 	}
+	public GlmColumn getColumByName(String name){
+		return columns.get(name);
+	}
 	public void setColumns(Map<String, GlmColumn> columns) {
 		this.columns = columns;
 	}

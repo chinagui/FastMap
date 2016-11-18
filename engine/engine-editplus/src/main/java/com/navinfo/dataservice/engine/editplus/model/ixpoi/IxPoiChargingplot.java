@@ -11,36 +11,33 @@ import com.navinfo.dataservice.engine.editplus.model.BasicRow;
 /** 
 * @ClassName:  IxPoiChargingplot 
 * @author code generator
-* @date 2016-11-16 06:02:18 
+* @date 2016-11-18 11:35:20 
 * @Description: TODO
 */
 public class IxPoiChargingplot extends BasicRow {
 	protected long poiPid ;
-	protected Integer groupId ;
-	protected Integer count ;
-	protected Integer acdc ;
+	protected int groupId ;
+	protected int count ;
+	protected int acdc ;
 	protected String plugType ;
 	protected String power ;
 	protected String voltage ;
 	protected String current ;
-	protected Integer mode ;
+	protected int mode ;
 	protected String memo ;
-	protected Integer plugNum ;
+	protected int plugNum ;
 	protected String prices ;
 	protected String openType ;
-	protected Integer availableState ;
+	protected int availableState ;
 	protected String manufacturer ;
 	protected String factoryNum ;
 	protected String plotNum ;
 	protected String productNum ;
 	protected String parkingNum ;
-	protected Integer floor ;
-	protected Integer locationType ;
+	protected int floor ;
+	protected int locationType ;
 	protected String payment ;
-//	protected Integer uRecord ;
-//	protected String uFields ;
-//	protected String uDate ;
-
+	
 	public IxPoiChargingplot (long objPid){
 		super(objPid);
 	}
@@ -48,153 +45,179 @@ public class IxPoiChargingplot extends BasicRow {
 	public long getPoiPid() {
 		return poiPid;
 	}
-	protected void setPoiPid(long poiPid) {
-		this.poiPid = poiPid;
+	public void setPoiPid(long poiPid) {
+		if(this.checkValue("POI_PID",this.poiPid,poiPid)){
+			this.poiPid = poiPid;
+		}
 	}
-	public Integer getGroupId() {
+	public int getGroupId() {
 		return groupId;
 	}
-	protected void setGroupId(Integer groupId) {
-		this.groupId = groupId;
+	public void setGroupId(int groupId) {
+		if(this.checkValue("GROUP_ID",this.groupId,groupId)){
+			this.groupId = groupId;
+		}
 	}
-	public Integer getCount() {
+	public int getCount() {
 		return count;
 	}
-	protected void setCount(Integer count) {
-		this.count = count;
+	public void setCount(int count) {
+		if(this.checkValue("COUNT",this.count,count)){
+			this.count = count;
+		}
 	}
-	public Integer getAcdc() {
+	public int getAcdc() {
 		return acdc;
 	}
-	protected void setAcdc(Integer acdc) {
-		this.acdc = acdc;
+	public void setAcdc(int acdc) {
+		if(this.checkValue("ACDC",this.acdc,acdc)){
+			this.acdc = acdc;
+		}
 	}
 	public String getPlugType() {
 		return plugType;
 	}
-	protected void setPlugType(String plugType) {
-		this.plugType = plugType;
+	public void setPlugType(String plugType) {
+		if(this.checkValue("PLUG_TYPE",this.plugType,plugType)){
+			this.plugType = plugType;
+		}
 	}
 	public String getPower() {
 		return power;
 	}
-	protected void setPower(String power) {
-		this.power = power;
+	public void setPower(String power) {
+		if(this.checkValue("POWER",this.power,power)){
+			this.power = power;
+		}
 	}
 	public String getVoltage() {
 		return voltage;
 	}
-	protected void setVoltage(String voltage) {
-		this.voltage = voltage;
+	public void setVoltage(String voltage) {
+		if(this.checkValue("VOLTAGE",this.voltage,voltage)){
+			this.voltage = voltage;
+		}
 	}
 	public String getCurrent() {
 		return current;
 	}
-	protected void setCurrent(String current) {
-		this.current = current;
+	public void setCurrent(String current) {
+		if(this.checkValue("CURRENT",this.current,current)){
+			this.current = current;
+		}
 	}
-	public Integer getMode() {
+	public int getMode() {
 		return mode;
 	}
-	protected void setMode(Integer mode) {
-		this.mode = mode;
+	public void setMode(int mode) {
+		if(this.checkValue("MODE",this.mode,mode)){
+			this.mode = mode;
+		}
 	}
 	public String getMemo() {
 		return memo;
 	}
-	protected void setMemo(String memo) {
-		this.memo = memo;
+	public void setMemo(String memo) {
+		if(this.checkValue("MEMO",this.memo,memo)){
+			this.memo = memo;
+		}
 	}
-	public Integer getPlugNum() {
+	public int getPlugNum() {
 		return plugNum;
 	}
-	protected void setPlugNum(Integer plugNum) {
-		this.plugNum = plugNum;
+	public void setPlugNum(int plugNum) {
+		if(this.checkValue("PLUG_NUM",this.plugNum,plugNum)){
+			this.plugNum = plugNum;
+		}
 	}
 	public String getPrices() {
 		return prices;
 	}
-	protected void setPrices(String prices) {
-		this.prices = prices;
+	public void setPrices(String prices) {
+		if(this.checkValue("PRICES",this.prices,prices)){
+			this.prices = prices;
+		}
 	}
 	public String getOpenType() {
 		return openType;
 	}
-	protected void setOpenType(String openType) {
-		this.openType = openType;
+	public void setOpenType(String openType) {
+		if(this.checkValue("OPEN_TYPE",this.openType,openType)){
+			this.openType = openType;
+		}
 	}
-	public Integer getAvailableState() {
+	public int getAvailableState() {
 		return availableState;
 	}
-	protected void setAvailableState(Integer availableState) {
-		this.availableState = availableState;
+	public void setAvailableState(int availableState) {
+		if(this.checkValue("AVAILABLE_STATE",this.availableState,availableState)){
+			this.availableState = availableState;
+		}
 	}
 	public String getManufacturer() {
 		return manufacturer;
 	}
-	protected void setManufacturer(String manufacturer) {
-		this.manufacturer = manufacturer;
+	public void setManufacturer(String manufacturer) {
+		if(this.checkValue("MANUFACTURER",this.manufacturer,manufacturer)){
+			this.manufacturer = manufacturer;
+		}
 	}
 	public String getFactoryNum() {
 		return factoryNum;
 	}
-	protected void setFactoryNum(String factoryNum) {
-		this.factoryNum = factoryNum;
+	public void setFactoryNum(String factoryNum) {
+		if(this.checkValue("FACTORY_NUM",this.factoryNum,factoryNum)){
+			this.factoryNum = factoryNum;
+		}
 	}
 	public String getPlotNum() {
 		return plotNum;
 	}
-	protected void setPlotNum(String plotNum) {
-		this.plotNum = plotNum;
+	public void setPlotNum(String plotNum) {
+		if(this.checkValue("PLOT_NUM",this.plotNum,plotNum)){
+			this.plotNum = plotNum;
+		}
 	}
 	public String getProductNum() {
 		return productNum;
 	}
-	protected void setProductNum(String productNum) {
-		this.productNum = productNum;
+	public void setProductNum(String productNum) {
+		if(this.checkValue("PRODUCT_NUM",this.productNum,productNum)){
+			this.productNum = productNum;
+		}
 	}
 	public String getParkingNum() {
 		return parkingNum;
 	}
-	protected void setParkingNum(String parkingNum) {
-		this.parkingNum = parkingNum;
+	public void setParkingNum(String parkingNum) {
+		if(this.checkValue("PARKING_NUM",this.parkingNum,parkingNum)){
+			this.parkingNum = parkingNum;
+		}
 	}
-	public Integer getFloor() {
+	public int getFloor() {
 		return floor;
 	}
-	protected void setFloor(Integer floor) {
-		this.floor = floor;
+	public void setFloor(int floor) {
+		if(this.checkValue("FLOOR",this.floor,floor)){
+			this.floor = floor;
+		}
 	}
-	public Integer getLocationType() {
+	public int getLocationType() {
 		return locationType;
 	}
-	protected void setLocationType(Integer locationType) {
-		this.locationType = locationType;
+	public void setLocationType(int locationType) {
+		if(this.checkValue("LOCATION_TYPE",this.locationType,locationType)){
+			this.locationType = locationType;
+		}
 	}
 	public String getPayment() {
 		return payment;
 	}
-	protected void setPayment(String payment) {
-		this.payment = payment;
+	public void setPayment(String payment) {
+		if(this.checkValue("PAYMENT",this.payment,payment)){
+			this.payment = payment;
+		}
 	}
-//	public Integer getURecord() {
-//		return uRecord;
-//	}
-//	protected void setURecord(Integer uRecord) {
-//		this.uRecord = uRecord;
-//	}
-//	public String getUFields() {
-//		return uFields;
-//	}
-//	protected void setUFields(String uFields) {
-//		this.uFields = uFields;
-//	}
-//	public String getUDate() {
-//		return uDate;
-//	}
-//	protected void setUDate(String uDate) {
-//		this.uDate = uDate;
-//	}
 	
 	@Override
 	public String tableName() {

@@ -686,9 +686,15 @@ public class Operation implements IOperation {
 		// 加载原有Link上的车道信息
 		List<RdLane> lanes = new RdLaneSelector(conn).loadByLink(linkPid, 0,
 				true);
+		// 删除原有车道信息
+		for (RdLane lane : lanes) {
+			result.insertObject(lane, ObjStatus.DELETE, lane.getPid());
+		}
 		for (RdLink link : links) {
 			for (RdLane lane : lanes) {
 				// 设置车道的link信息
+				RdLane rdLane = new RdLane();
+				rdLane.copy(lane);
 				lane.setLinkPid(link.getPid());
 				// 申请车道pid
 				int lanePid = PidUtil.getInstance().applyRdLanePid();

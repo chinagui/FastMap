@@ -39,7 +39,7 @@ public class IxPoiObj extends AbstractIxObj {
 	public Map<Class<? extends BasicRow>, List<BasicRow>> childRows() {
 		if(childrows==null){
 			childrows=new HashMap<Class<? extends BasicRow>, List<BasicRow>>();
-			childrows.put(IxPoiContact.class,contacts);
+			//childrows.put(IxPoiContact.class,contacts);
 			//...
 		}
 		return childrows;
@@ -49,12 +49,12 @@ public class IxPoiObj extends AbstractIxObj {
 		
 	}
 	
-	public List<BasicObj> getNames(){
-		if(names==null){
-			ObjSelector.selectChildren(this, "IX_POI_NAME");
-		}
-		return names;
-	}
+//	public List<BasicObj> getNames(){
+//		if(names==null){
+//			ObjSelector.selectChildren(this, "IX_POI_NAME");
+//		}
+//		return names;
+//	}
 
 //	@Override
 //	public Map<Class<? extends BasicObj>, List<BasicObj>> childObjs() {

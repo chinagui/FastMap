@@ -67,6 +67,48 @@ public class DeepController extends BaseController {
 	}
 	
 	/**
+	 * 深度信息申请数据接口
+	 * 
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/poi/deep/applyData")
+	public ModelAndView applyData(HttpServletRequest request) throws ServletException, IOException {
+		String parameter = request.getParameter("parameter");
+		logger.debug("深度信息申请数据");
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			logger.debug("parameter="+jsonReq);
+			
+			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			
+			long userId = tokenObj.getUserId();
+			int subtaskId = jsonReq.getInt("subtaskId");
+			int dbId = jsonReq.getInt("dbId");
+			int type = jsonReq.getInt("type");
+			
+			ManApi apiService = (ManApi) ApplicationContextUtil.getBean("manApi");
+			Subtask subtask = apiService.queryBySubtaskId(subtaskId);
+			
+			if (subtask == null) {
+				throw new Exception("subtaskid未找到数据");
+			}
+			
+			DeepCoreControl deepCore = new DeepCoreControl();
+			
+			//申请数据，返回本次申请成功的数据条数
+			int applyNum = deepCore.applyData(subtask, dbId, userId, type);
+			
+			return new ModelAndView("jsonView", success(applyNum));
+			
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			
+			return new ModelAndView("jsonView",fail(e.getMessage()));
+		}
+	}
+	
+	/**
 	 * 深度信息poi保存接口
 	 * 
 	 * @param request
@@ -82,6 +124,29 @@ public class DeepController extends BaseController {
 		try {
 			DeepCoreControl deepCore = new DeepCoreControl();
 			JSONObject result = deepCore.save(parameter, tokenObj.getUserId());
+
+			return new ModelAndView("jsonView", success(result));
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
+	/**
+	 * 深度信息poi提交接口
+	 * 
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException
+	 */
+	@RequestMapping(value = "/poi/deep/release")
+	public ModelAndView poiRelease(HttpServletRequest request) throws ServletException, IOException {
+
+		String parameter = request.getParameter("parameter");
+		AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+		try {
+			DeepCoreControl deepCore = new DeepCoreControl();
+			JSONObject result = deepCore.release(parameter, tokenObj.getUserId());
 
 			return new ModelAndView("jsonView", success(result));
 		} catch (Exception e) {

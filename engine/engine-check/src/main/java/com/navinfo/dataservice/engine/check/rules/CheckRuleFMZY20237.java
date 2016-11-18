@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.List;
 
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
@@ -40,6 +41,13 @@ public class CheckRuleFMZY20237 extends baseRule{
 				if (poiState == 2){
 					return ;
 				}
+				int regionId = poi.getRegionId();
+				//通过poi的regionId获取adminCode
+				String adminCode = getAdminCodeByRegionId(regionId);
+				//获取adminCode对应的电话object
+				ScPointAdminArea scPointAdmin = new ScPointAdminArea();
+				JSONObject adminCodeObj = scPointAdmin.searchByAdminCode(adminCode);
+				
 				List<IRow> contacts = poi.getContacts();
 				if (contacts.size() > 0){
 					for (IRow contact: contacts){
@@ -47,12 +55,7 @@ public class CheckRuleFMZY20237 extends baseRule{
 						String poiContact = ixPoiContact.getContact();
 						//CONTACT_TYPE=11 传真格式
 						if (ixPoiContact.getContactType() == 11){
-							int regionId = poi.getRegionId();
-							//通过poi的regionId获取adminCode
-							String adminCode = getAdminCodeByRegionId(regionId);
-							//获取adminCode对应的电话object
-							ScPointAdminArea scPointAdmin = new ScPointAdminArea();
-							JSONObject adminCodeObj = scPointAdmin.searchByAdminCode(adminCode);
+
 							if (poiContact.contains("-")){
 								String[] tel= poiContact.split("-");
 								JSONObject telObj = adminCodeObj.getJSONObject(adminCode);
@@ -75,9 +78,10 @@ public class CheckRuleFMZY20237 extends baseRule{
 									logMsg.append("传真位数错误，正确位数应为"+String.valueOf(rightLen) + "; ");
 								}
 								String checkLog = logMsg.toString();
-								if (!checkLog.isEmpty()){
+								if (StringUtils.isNotEmpty(checkLog)){
 									this.setCheckResult(poi.getGeometry(), "[IX_POI," + poi.getPid() + "]", poi.getMeshId(),
 											checkLog);
+									break;
 								}
 							}
 							

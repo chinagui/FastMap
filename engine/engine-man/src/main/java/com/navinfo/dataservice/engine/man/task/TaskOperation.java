@@ -424,15 +424,17 @@ public class TaskOperation {
 					if ("dailyProgress".equals(key)) {
 						if(!statusSql.isEmpty()){statusSql+=" or ";}
 						statusSql+=" TASK_LIST.daily_Progress IN ("+conditionJson.getJSONArray(key).join(",")+")";}
-					//1-11未规划,草稿,采集正常,采集异常,采集完成,日编正常,日编异常,日编完成,按时完成,提前完成,逾期完成
+					//1-11未规划,草稿,采集正常,采集异常,采集完成,日编正常,日编异常,日编完成,按时完成,提前完成,逾期完成,12月编正常,13月编异常,14月编完成
 					if("selectParam1".equals(key)){
 						JSONArray selectParam1=conditionJson.getJSONArray(key);
 						JSONArray collectProgress=new JSONArray();
 						JSONArray dailyProgress=new JSONArray();
+						JSONArray monthlyProgress=new JSONArray();
 						for(Object i:selectParam1){
 							int tmp=(int) i;
 							if(tmp==3||tmp==4||tmp==5){collectProgress.add(tmp-2);}
 							if(tmp==6||tmp==7||tmp==8){dailyProgress.add(tmp-5);}
+							if(tmp==12||tmp==13||tmp==14){monthlyProgress.add(tmp-11);}
 						}
 						if(!collectProgress.isEmpty()){
 							if(!statusSql.isEmpty()){statusSql+=" or ";}
@@ -440,6 +442,9 @@ public class TaskOperation {
 						if(!dailyProgress.isEmpty()){
 							if(!statusSql.isEmpty()){statusSql+=" or ";}
 							statusSql+=" TASK_LIST.daily_Progress IN ("+dailyProgress.join(",")+")";}
+						if(!monthlyProgress.isEmpty()){
+							if(!statusSql.isEmpty()){statusSql+=" or ";}
+							statusSql+=" TASK_LIST.monthly_Progress IN ("+monthlyProgress.join(",")+")";}
 					}
 				}
 			}	
@@ -1943,6 +1948,7 @@ public class TaskOperation {
 						HashMap map = new HashMap();
 						map.put("taskId", rs.getInt("TASK_ID"));
 						map.put("taskName", rs.getString("TASK_NAME"));
+						map.put("taskStatus", rs.getInt("TASK_STATUS"));
 						map.put("cityId", rs.getInt("CITY_ID"));
 						map.put("cityName", rs.getString("CITY_NAME"));
 						map.put("cityPlanStatus", rs.getInt("CITY_PLAN_STATUS"));

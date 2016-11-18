@@ -302,7 +302,7 @@ public class ColumnCoreControl {
 			//查询作业信息
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 			String sql = "SELECT PDS.TASK_ID, PDW.FIRST_WORK_ITEM,COUNT(PDS.ROW_ID) AS NUM"
-					+ " FROM POI_DEEP_STATUS PDS, POI_DEEP_WORKITEM_CONF PDW"
+					+ " FROM POI_COLUMN_STATUS PDS, POI_COLUMN_WORKITEM_CONF PDW"
 					+ " WHERE PDS.TASK_ID IN " + taskIds
 					+ " AND PDS.WORK_ITEM_ID = PDW.WORK_ITEM_ID"
 					+ " GROUP BY PDS.TASK_ID, PDW.FIRST_WORK_ITEM";

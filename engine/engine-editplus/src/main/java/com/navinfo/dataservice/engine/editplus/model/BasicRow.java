@@ -3,6 +3,7 @@ package com.navinfo.dataservice.engine.editplus.model;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,6 +17,7 @@ import com.navinfo.dataservice.engine.editplus.glm.NonGeoPidException;
 import com.navinfo.dataservice.engine.editplus.log.Logable;
 import com.navinfo.dataservice.engine.editplus.operation.OperationType;
 import com.navinfo.navicommons.database.sql.RunnableSQL;
+import com.vividsolutions.jts.geom.Geometry;
 
 /** 
  * @ClassName: BasicRow
@@ -234,36 +236,62 @@ public abstract class BasicRow implements Logable{
 		//colName->setter
 		String setter=colName2Setter(colName);
 		Class<?>[] argtypes = null;
-		if(newValue instanceof Integer){
-			argtypes= new Class[]{int.class};
-		}else if(newValue instanceof Double){
-			argtypes = new Class[]{double.class};
-		}else if(newValue instanceof Boolean){
-			argtypes= new Class[]{boolean.class};
-		}else if(newValue instanceof Float){
-			argtypes= new Class[]{float.class};
-		}else if(newValue instanceof Long){
-			argtypes= new Class[]{long.class};
+		//如果newValue非空，则执行setter
+		if(newValue!=null){
+			if(newValue instanceof Integer){
+				argtypes= new Class[]{int.class};
+			}else if(newValue instanceof Double){
+				argtypes = new Class[]{double.class};
+			}else if(newValue instanceof Boolean){
+				argtypes= new Class[]{boolean.class};
+			}else if(newValue instanceof Float){
+				argtypes= new Class[]{float.class};
+			}else if(newValue instanceof Long){
+				argtypes= new Class[]{long.class};
+			}else{
+				argtypes = new Class[]{newValue.getClass()};
+			}
+			Method method = this.getClass().getMethod(setter,argtypes);
+			method.invoke(this, newValue);
 		}else{
-			argtypes = new Class[]{newValue.getClass()};
+			GlmTable table = GlmFactory.getInstance().getTableByName(tableName());
+			GlmColumn column = table.getColumByName(colName);
+			if(column.getType().equals(GlmColumn.TYPE_VARCHAR)){
+				argtypes = new Class[]{String.class};	
+			}else if(column.getType().equals(GlmColumn.TYPE_GEOMETRY)){
+				argtypes = new Class[]{Geometry.class};
+			}else if(column.getType().equals(GlmColumn.TYPE_TIMESTAMP)){
+				argtypes = new Class[]{Date.class};
+			}
+			Method method = this.getClass().getMethod(setter,argtypes);
+			method.invoke(this, newValue);
 		}
-		Method method = this.getClass().getMethod(setter,argtypes);
-		method.invoke(this, newValue);
+
 	}
 	/**
 	 * 有特殊字段的表重写此方法
 	 * @param colName
 	 * @return
 	 */
+//	public String colName2Getter(String colName){
+//		StringBuilder sb = new StringBuilder();
+//		sb.append("get");
+//		for(String s:colName.split("_")){
+//			
+//			char c = s.charAt(0);
+//			c=(char)(c-32);
+//			sb.append(c);
+//			sb.append(s.substring(1, s.length()));
+//		}
+//		return sb.toString();
+//	}
 	public String colName2Getter(String colName){
 		StringBuilder sb = new StringBuilder();
 		sb.append("get");
 		for(String s:colName.split("_")){
-			
 			char c = s.charAt(0);
-			c=(char)(c-32);
 			sb.append(c);
-			sb.append(s.substring(1, s.length()));
+			sb.append(s.toLowerCase().substring(1, s.length()));
 		}
 		return sb.toString();
 	}
@@ -277,12 +305,22 @@ public abstract class BasicRow implements Logable{
 		sb.append("set");
 		for(String s:colName.split("_")){
 			char c = s.charAt(0);
-			c=(char)(c-32);
 			sb.append(c);
-			sb.append(s.substring(1, s.length()));
+			sb.append(s.toLowerCase().substring(1, s.length()));
 		}
 		return sb.toString();
 	}
+//	public String colName2Setter(String colName){
+//		StringBuilder sb = new StringBuilder();
+//		sb.append("set");
+//		for(String s:colName.split("_")){
+//			char c = s.charAt(0);
+//			c=(char)(c-32);
+//			sb.append(c);
+//			sb.append(s.substring(1, s.length()));
+//		}
+//		return sb.toString();
+//	}
 	public String identity(){
 		return rowId;
 	}

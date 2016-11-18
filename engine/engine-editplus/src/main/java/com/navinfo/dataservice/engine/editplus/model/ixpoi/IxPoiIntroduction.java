@@ -11,7 +11,7 @@ import com.navinfo.dataservice.engine.editplus.model.BasicRow;
 /** 
 * @ClassName:  IxPoiIntroduction 
 * @author code generator
-* @date 2016-11-16 06:00:43 
+* @date 2016-11-18 11:34:10 
 * @Description: TODO
 */
 public class IxPoiIntroduction extends BasicRow {
@@ -24,9 +24,6 @@ public class IxPoiIntroduction extends BasicRow {
 	protected String neighborEng ;
 	protected String traffic ;
 	protected String trafficEng ;
-//	protected Integer uRecord ;
-//	protected String uFields ;
-//	protected String uDate ;
 	
 	public IxPoiIntroduction (long objPid){
 		super(objPid);
@@ -35,75 +32,75 @@ public class IxPoiIntroduction extends BasicRow {
 	public long getIntroductionId() {
 		return introductionId;
 	}
-	protected void setIntroductionId(long introductionId) {
-		this.introductionId = introductionId;
+	public void setIntroductionId(long introductionId) {
+		if(this.checkValue("INTRODUCTION_ID",this.introductionId,introductionId)){
+			this.introductionId = introductionId;
+		}
 	}
 	public long getPoiPid() {
 		return poiPid;
 	}
-	protected void setPoiPid(long poiPid) {
-		this.poiPid = poiPid;
+	public void setPoiPid(long poiPid) {
+		if(this.checkValue("POI_PID",this.poiPid,poiPid)){
+			this.poiPid = poiPid;
+		}
 	}
 	public String getIntroduction() {
 		return introduction;
 	}
-	protected void setIntroduction(String introduction) {
-		this.introduction = introduction;
+	public void setIntroduction(String introduction) {
+		if(this.checkValue("INTRODUCTION",this.introduction,introduction)){
+			this.introduction = introduction;
+		}
 	}
 	public String getIntroductionEng() {
 		return introductionEng;
 	}
-	protected void setIntroductionEng(String introductionEng) {
-		this.introductionEng = introductionEng;
+	public void setIntroductionEng(String introductionEng) {
+		if(this.checkValue("INTRODUCTION_ENG",this.introductionEng,introductionEng)){
+			this.introductionEng = introductionEng;
+		}
 	}
 	public String getWebsite() {
 		return website;
 	}
-	protected void setWebsite(String website) {
-		this.website = website;
+	public void setWebsite(String website) {
+		if(this.checkValue("WEBSITE",this.website,website)){
+			this.website = website;
+		}
 	}
 	public String getNeighbor() {
 		return neighbor;
 	}
-	protected void setNeighbor(String neighbor) {
-		this.neighbor = neighbor;
+	public void setNeighbor(String neighbor) {
+		if(this.checkValue("NEIGHBOR",this.neighbor,neighbor)){
+			this.neighbor = neighbor;
+		}
 	}
 	public String getNeighborEng() {
 		return neighborEng;
 	}
-	protected void setNeighborEng(String neighborEng) {
-		this.neighborEng = neighborEng;
+	public void setNeighborEng(String neighborEng) {
+		if(this.checkValue("NEIGHBOR_ENG",this.neighborEng,neighborEng)){
+			this.neighborEng = neighborEng;
+		}
 	}
 	public String getTraffic() {
 		return traffic;
 	}
-	protected void setTraffic(String traffic) {
-		this.traffic = traffic;
+	public void setTraffic(String traffic) {
+		if(this.checkValue("TRAFFIC",this.traffic,traffic)){
+			this.traffic = traffic;
+		}
 	}
 	public String getTrafficEng() {
 		return trafficEng;
 	}
-	protected void setTrafficEng(String trafficEng) {
-		this.trafficEng = trafficEng;
+	public void setTrafficEng(String trafficEng) {
+		if(this.checkValue("TRAFFIC_ENG",this.trafficEng,trafficEng)){
+			this.trafficEng = trafficEng;
+		}
 	}
-//	public Integer getURecord() {
-//		return uRecord;
-//	}
-//	protected void setURecord(Integer uRecord) {
-//		this.uRecord = uRecord;
-//	}
-//	public String getUFields() {
-//		return uFields;
-//	}
-//	protected void setUFields(String uFields) {
-//		this.uFields = uFields;
-//	}
-//	public String getUDate() {
-//		return uDate;
-//	}
-//	protected void setUDate(String uDate) {
-//		this.uDate = uDate;
-//	}
 	
 	@Override
 	public String tableName() {

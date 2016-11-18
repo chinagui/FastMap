@@ -11,7 +11,7 @@ import com.navinfo.dataservice.engine.editplus.model.BasicRow;
 /** 
 * @ClassName:  IxPoiAdvertisement 
 * @author code generator
-* @date 2016-11-16 06:01:17 
+* @date 2016-11-18 11:34:39 
 * @Description: TODO
 */
 public class IxPoiAdvertisement extends BasicRow {
@@ -19,12 +19,9 @@ public class IxPoiAdvertisement extends BasicRow {
 	protected long poiPid ;
 	protected String labelText ;
 	protected String type ;
-	protected Integer priority ;
+	protected int priority ;
 	protected String startTime ;
 	protected String endTime ;
-//	protected Integer uRecord ;
-//	protected String uFields ;
-//	protected String uDate ;
 	
 	public IxPoiAdvertisement (long objPid){
 		super(objPid);
@@ -33,63 +30,59 @@ public class IxPoiAdvertisement extends BasicRow {
 	public long getAdvertiseId() {
 		return advertiseId;
 	}
-	protected void setAdvertiseId(long advertiseId) {
-		this.advertiseId = advertiseId;
+	public void setAdvertiseId(long advertiseId) {
+		if(this.checkValue("ADVERTISE_ID",this.advertiseId,advertiseId)){
+			this.advertiseId = advertiseId;
+		}
 	}
 	public long getPoiPid() {
 		return poiPid;
 	}
-	protected void setPoiPid(long poiPid) {
-		this.poiPid = poiPid;
+	public void setPoiPid(long poiPid) {
+		if(this.checkValue("POI_PID",this.poiPid,poiPid)){
+			this.poiPid = poiPid;
+		}
 	}
 	public String getLabelText() {
 		return labelText;
 	}
-	protected void setLabelText(String labelText) {
-		this.labelText = labelText;
+	public void setLabelText(String labelText) {
+		if(this.checkValue("LABEL_TEXT",this.labelText,labelText)){
+			this.labelText = labelText;
+		}
 	}
 	public String getType() {
 		return type;
 	}
-	protected void setType(String type) {
-		this.type = type;
+	public void setType(String type) {
+		if(this.checkValue("TYPE",this.type,type)){
+			this.type = type;
+		}
 	}
-	public Integer getPriority() {
+	public int getPriority() {
 		return priority;
 	}
-	protected void setPriority(Integer priority) {
-		this.priority = priority;
+	public void setPriority(int priority) {
+		if(this.checkValue("PRIORITY",this.priority,priority)){
+			this.priority = priority;
+		}
 	}
 	public String getStartTime() {
 		return startTime;
 	}
-	protected void setStartTime(String startTime) {
-		this.startTime = startTime;
+	public void setStartTime(String startTime) {
+		if(this.checkValue("START_TIME",this.startTime,startTime)){
+			this.startTime = startTime;
+		}
 	}
 	public String getEndTime() {
 		return endTime;
 	}
-	protected void setEndTime(String endTime) {
-		this.endTime = endTime;
+	public void setEndTime(String endTime) {
+		if(this.checkValue("END_TIME",this.endTime,endTime)){
+			this.endTime = endTime;
+		}
 	}
-//	public Integer getURecord() {
-//		return uRecord;
-//	}
-//	protected void setURecord(Integer uRecord) {
-//		this.uRecord = uRecord;
-//	}
-//	public String getUFields() {
-//		return uFields;
-//	}
-//	protected void setUFields(String uFields) {
-//		this.uFields = uFields;
-//	}
-//	public String getUDate() {
-//		return uDate;
-//	}
-//	protected void setUDate(String uDate) {
-//		this.uDate = uDate;
-//	}
 	
 	@Override
 	public String tableName() {

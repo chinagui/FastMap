@@ -11,15 +11,12 @@ import com.navinfo.dataservice.engine.editplus.model.BasicRow;
 /** 
 * @ClassName:  IxSamepoiPart 
 * @author code generator
-* @date 2016-11-16 01:55:03 
+* @date 2016-11-18 11:33:17 
 * @Description: TODO
 */
 public class IxSamepoiPart extends BasicRow {
 	protected long groupId ;
 	protected long poiPid ;
-//	protected Integer uRecord ;
-//	protected String uFields ;
-//	protected String uDate ;
 	
 	public IxSamepoiPart (long objPid){
 		super(objPid);
@@ -28,36 +25,22 @@ public class IxSamepoiPart extends BasicRow {
 	public long getGroupId() {
 		return groupId;
 	}
-	protected void setGroupId(long groupId) {
-		this.groupId = groupId;
+	public void setGroupId(long groupId) {
+		if(this.checkValue("GROUP_ID",this.groupId,groupId)){
+			this.groupId = groupId;
+		}
 	}
 	public long getPoiPid() {
 		return poiPid;
 	}
-	protected void setPoiPid(long poiPid) {
-		this.poiPid = poiPid;
+	public void setPoiPid(long poiPid) {
+		if(this.checkValue("POI_PID",this.poiPid,poiPid)){
+			this.poiPid = poiPid;
+		}
 	}
-//	public Integer getURecord() {
-//		return uRecord;
-//	}
-//	protected void setURecord(Integer uRecord) {
-//		this.uRecord = uRecord;
-//	}
-//	public String getUFields() {
-//		return uFields;
-//	}
-//	protected void setUFields(String uFields) {
-//		this.uFields = uFields;
-//	}
-//	public String getUDate() {
-//		return uDate;
-//	}
-//	protected void setUDate(String uDate) {
-//		this.uDate = uDate;
-//	}
 
 	@Override
 	public String tableName() {
-		return "IX_POI";
+		return "IX_SAMEPOI_PART";
 	}
 }

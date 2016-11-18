@@ -1424,7 +1424,7 @@ public class BlockService {
 						+ " OR NOT EXISTS(SELECT 1 FROM SUBTASK STT WHERE STT.BLOCK_MAN_ID=T.BLOCK_MAN_ID AND STT."+stagePart+"))"
 				+wherePart					
 				+ "     AND T.BLOCK_MAN_ID = S.BLOCK_MAN_ID(+)"
-				+ "  UNION ALL"
+				+ "  UNION"
 				//分配子任务，且子任务都是关闭状态==〉已完成
 				+ " SELECT DISTINCT T.BLOCK_MAN_ID,"
 				+ "                  T.BLOCK_MAN_NAME,"
@@ -1450,10 +1450,10 @@ public class BlockService {
 				+ "     AND ST.STATUS IN (0,1)"
 				+ "     AND ST."+stagePart
 				+wherePart		
-				+ "     AND NOT EXISTS(SELECT 1 FROM SUBTASK STT WHERE STT.BLOCK_MAN_ID=T.BLOCK_MAN_ID AND STT.STATUS=1 AND STT."+stagePart+")"
+				+ "     AND NOT EXISTS(SELECT 1 FROM SUBTASK STT WHERE STT.BLOCK_MAN_ID=T.BLOCK_MAN_ID AND STT.STATUS in (1,2) AND STT."+stagePart+")"
 				+ "     AND T.BLOCK_MAN_ID = S.BLOCK_MAN_ID(+)"
 				+ "     AND T.BLOCK_MAN_ID = ST.BLOCK_MAN_ID"
-				+ "  UNION ALL"
+				+ "  UNION"
 				//分配子任务，且存在非关子任务==〉作业中
 				+ " SELECT DISTINCT T.BLOCK_MAN_ID,"
 				+ "                  T.BLOCK_MAN_NAME,"
@@ -1482,7 +1482,7 @@ public class BlockService {
 				+ "     AND EXISTS(SELECT 1 FROM SUBTASK STT WHERE STT.BLOCK_MAN_ID=T.BLOCK_MAN_ID AND STT.STATUS<>0 AND STT."+stagePart+")"
 				+ "     AND T.BLOCK_MAN_ID = S.BLOCK_MAN_ID(+)"
 				+ "     AND T.BLOCK_MAN_ID = ST.BLOCK_MAN_ID(+)"
-				+ "  UNION ALL"
+				+ "  UNION"
 				//未规划block
 				+ "  SELECT DISTINCT 0,"
 				+ "                  '---',"

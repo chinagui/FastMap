@@ -706,7 +706,7 @@ public class Operation implements IOperation {
 						condition.setLanePid(lanePid);
 					}
 				}
-				result.insertObject(lane, ObjStatus.INSERT, lane.getPid());
+				result.insertObject(rdLane, ObjStatus.INSERT, lane.getPid());
 			}
 		}
 

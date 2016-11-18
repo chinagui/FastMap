@@ -2,6 +2,7 @@ package com.navinfo.dataservice.engine.check.rules;
 
 import java.util.List;
 
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiParking;
@@ -39,7 +40,7 @@ public class CheckRuleFMZY20149 extends baseRule {
 						IxPoiParking ixPoiParking = (IxPoiParking) parking;
 						String tollStd = ixPoiParking.getTollStd();
 						String errorLog = new String();
-						if (!tollStd.isEmpty()) {
+						if (StringUtils.isNotEmpty(tollStd)) {
 							// 字符串只能含有5或{0,1,2,3,4,|}
 							if (tollStd.contains("5") && tollStd.length() != 1) {
 								errorLog = "收费标准" + "'" + "5" + "'" + "只能单独存在，且不能重复";
@@ -51,10 +52,10 @@ public class CheckRuleFMZY20149 extends baseRule {
 							}
 							if (tollStd.contains("|")) {
 								StringBuffer sf = new StringBuffer();
-								String[] tollStdArry = tollStd.split("|");
+								String[] tollStdArry = tollStd.split("\\|");
 								for (String toll : tollStdArry) {
 
-									if (!toll.isEmpty() || !"0,1,2,3,4".contains(toll)) {
+									if (StringUtils.isEmpty(toll) || !"0,1,2,3,4".contains(toll)) {
 										errorLog = "收费标准的值有" + "'" + "|" + "'时，" + "'" + "|" + "'"
 												+ "前后的值不在{0,1,2,3,4}中";
 									}
@@ -65,7 +66,7 @@ public class CheckRuleFMZY20149 extends baseRule {
 								}
 							}
 						}
-						if (!errorLog.isEmpty()) {
+						if (StringUtils.isNotEmpty(errorLog)) {
 							this.setCheckResult(poi.getGeometry(), "[IX_POI," + poi.getPid() + "]", poi.getMeshId(),
 									errorLog);
 						}

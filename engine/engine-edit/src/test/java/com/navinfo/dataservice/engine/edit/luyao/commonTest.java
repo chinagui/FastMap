@@ -3,6 +3,7 @@ package com.navinfo.dataservice.engine.edit.luyao;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.TreeMap;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -755,5 +756,41 @@ public class commonTest extends InitApplication {
 		
 	}
 	
+	
+	@Test
+	public void jsonTest() {
+		
+		JSONObject parameter = new JSONObject();		
+	
+		parameter.put("command", "CREATE");
+		parameter.put("dbId", 17);
+		
+		
+		parameter.put("data", new JSONObject());
+		
+		
+		parameter.put("type", "RDLINK");
+
+	
+		JSONObject requester = new JSONObject();
+		
+		requester.put("parameter", parameter);
+		String StrRrequester = requester.getString("parameter");
+		int i =1;
+	}
+	@Test
+	public void treeMapTest() {
+		
+		TreeMap<Integer,String> map=new TreeMap<Integer,String>();
+		
+		map.put(1, "1");
+		map.put(1, "2");
+		map.put(1, "3");
+		map.put(1, "4");
+		map.put(1, "5");
+		
+		System.out.print("");
+	
+	}
 	
 }

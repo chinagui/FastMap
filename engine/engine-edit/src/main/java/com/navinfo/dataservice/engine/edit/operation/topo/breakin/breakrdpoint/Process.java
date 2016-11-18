@@ -416,7 +416,8 @@ public class Process extends AbstractProcess<Command> {
 	private void updataRelationObj() throws Exception {
 
 		long startRelationObjTime = System.currentTimeMillis();
-		int oldLink = this.getCommand().getLinkPid();
+		//打断linkpid
+		int oldLinkPid = this.getCommand().getLinkPid();
 
 		OpRefRelationObj opRefRelationObj = new OpRefRelationObj(this.getConn());
 
@@ -462,7 +463,7 @@ public class Process extends AbstractProcess<Command> {
 		// 警示信息
 		OpRefRdWarninginfo opRefRdWarninginfo = new OpRefRdWarninginfo(
 				this.getConn());
-		opRefRdWarninginfo.run(this.getResult(), oldLink, this.getCommand()
+		opRefRdWarninginfo.run(this.getResult(), oldLinkPid, this.getCommand()
 				.getNewLinks());
 		long refRdWarninginfoTime = System.currentTimeMillis();
 		log.info("警示信息 USE TIME  "
@@ -470,7 +471,7 @@ public class Process extends AbstractProcess<Command> {
 		// 信号灯
 		OpRefRdTrafficsignal ofOpRefRdTrafficsignal = new OpRefRdTrafficsignal(
 				this.getConn());
-		ofOpRefRdTrafficsignal.run(this.getResult(), oldLink, this.getCommand()
+		ofOpRefRdTrafficsignal.run(this.getResult(), oldLinkPid, this.getCommand()
 				.getNewLinks());
 		long refRdTrafficsignalTime = System.currentTimeMillis();
 		log.info("信号灯USE TIME  "
@@ -479,7 +480,7 @@ public class Process extends AbstractProcess<Command> {
 		// 电子眼
 		OpRefRdElectroniceye opRefRdElectroniceye = new OpRefRdElectroniceye(
 				this.getConn());
-		opRefRdElectroniceye.run(this.getResult(), oldLink, this.getCommand()
+		opRefRdElectroniceye.run(this.getResult(), oldLinkPid, this.getCommand()
 				.getNewLinks());
 		long refRdElectroniceyeTime = System.currentTimeMillis();
 		log.info("电子眼 USE TIME  "
@@ -487,7 +488,7 @@ public class Process extends AbstractProcess<Command> {
 						- refRdTrafficsignalTime));
 		// 大门
 		OpRefRdGate opRefRdGate = new OpRefRdGate(this.getConn());
-		opRefRdGate.run(this.getResult(), oldLink, this.getCommand()
+		opRefRdGate.run(this.getResult(), oldLinkPid, this.getCommand()
 				.getNewLinks());
 		long refRdGateTime = System.currentTimeMillis();
 		log.info("大门 USE TIME  "
@@ -495,7 +496,7 @@ public class Process extends AbstractProcess<Command> {
 
 		// 分岔路提示
 		OpRefRdSe opRefRdSe = new OpRefRdSe(this.getConn());
-		opRefRdSe.run(this.getResult(), oldLink, this.getCommand()
+		opRefRdSe.run(this.getResult(), oldLinkPid, this.getCommand()
 				.getNewLinks());
 
 		long refRdSeTime = System.currentTimeMillis();
@@ -503,14 +504,14 @@ public class Process extends AbstractProcess<Command> {
 				+ String.valueOf(refRdSeTime - refRdGateTime));
 		// 减速带
 		OpRefRdSpeedbum opRefRdSpeedbum = new OpRefRdSpeedbum(this.getConn());
-		opRefRdSpeedbum.run(this.getResult(), oldLink, this.getCommand()
+		opRefRdSpeedbum.run(this.getResult(), oldLinkPid, this.getCommand()
 				.getNewLinks());
 		long refRdSpeedbumTime = System.currentTimeMillis();
 		log.info("减速带USE TIME  "
 				+ String.valueOf(refRdSpeedbumTime - refRdSeTime));
 		// 坡度
 		OpRefRdSlope opRefRdSlope = new OpRefRdSlope(this.getConn());
-		opRefRdSlope.run(this.getResult(), oldLink, this.getCommand()
+		opRefRdSlope.run(this.getResult(), oldLinkPid, this.getCommand()
 				.getNewLinks());
 		long refRdSlopeTime = System.currentTimeMillis();
 		log.info("坡度USE TIME  "
@@ -547,7 +548,7 @@ public class Process extends AbstractProcess<Command> {
 				+ String.valueOf(refRdObjectTime - refRdRoadTime));
 		// 收费站
 		OpRefRdTollgate opRefRdTollgate = new OpRefRdTollgate(this.getConn());
-		opRefRdTollgate.run(this.getResult(), oldLink, this.getCommand()
+		opRefRdTollgate.run(this.getResult(), oldLinkPid, this.getCommand()
 				.getNewLinks());
 		long refRdTollgateTime = System.currentTimeMillis();
 		log.info("收费站USE TIME  "
@@ -595,6 +596,14 @@ public class Process extends AbstractProcess<Command> {
 		// 维护交叉口类link打断
 		OpRefRdCross rdOpRefRdCross = new OpRefRdCross(getCommand(), getConn());
 		rdOpRefRdCross.run(getResult());
+		long refRdCrossTime= System.currentTimeMillis();
+		log.info("交叉口USE TIME  " + String.valueOf(refRdCrossTime - refHgwgTime));
+		//维护详细车道信息
+		OpRefRdLane opRefRdLane = new OpRefRdLane(this.getConn());
+		opRefRdLane.run(this.getResult(), oldLinkPid, this.getCommand()
+				.getNewLinks());
+		long refRdLaneTime= System.currentTimeMillis();
+		log.info("详细车道USE TIME    " + String.valueOf(refRdLaneTime - refRdCrossTime));
 	}
 
 	/**

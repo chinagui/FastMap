@@ -1,13 +1,10 @@
 package com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrdpoint;
 
 import java.sql.Connection;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import org.joni.exception.JOniException;
 
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
@@ -19,6 +16,7 @@ import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
+import com.navinfo.dataservice.engine.edit.utils.BasicServiceUtils;
 import com.navinfo.dataservice.engine.edit.utils.NodeOperateUtils;
 import com.navinfo.dataservice.engine.edit.utils.RdLinkOperateUtils;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
@@ -125,53 +123,9 @@ public class OpTopo implements IOperation {
 	 * @throws Exception
 	 */
 	private void breakpoint(Result result) throws Exception {
+		List<JSONArray> arrays = BasicServiceUtils.breakpoint(
+				breakLink.getGeometry(), command.getPoint());
 
-		JSONObject geojson = GeoTranslator.jts2Geojson(breakLink.getGeometry());
-		List<JSONArray> arrays = new ArrayList<JSONArray>();
-		Point point = command.getPoint();
-		double lon = point.getCoordinate().x * 100000;
-		double lat = point.getCoordinate().y * 100000;
-		JSONArray ja1 = new JSONArray();
-		JSONArray ja2 = new JSONArray();
-		JSONArray jaLink = geojson.getJSONArray("coordinates");
-		boolean hasFound = false;// 打断的点是否和形状点重合或者是否在线段上
-		for (int i = 0; i < jaLink.size() - 1; i++) {
-			JSONArray jaPS = jaLink.getJSONArray(i);
-			if (i == 0) {
-				ja1.add(jaPS);
-			}
-			JSONArray jaPE = jaLink.getJSONArray(i + 1);
-			if (!hasFound) {
-				// 打断点和形状点重合
-				if (Math.abs(lon - jaPE.getDouble(0)) < 0.0000001
-						&& Math.abs(lat - jaPE.getDouble(1)) < 0.0000001) {
-					ja1.add(new double[] { lon, lat });
-					hasFound = true;
-				}
-				// 打断点在线段上
-				else if (GeoTranslator.isIntersection(
-						new double[] { jaPS.getDouble(0), jaPS.getDouble(1) },
-						new double[] { jaPE.getDouble(0), jaPE.getDouble(1) },
-						new double[] { lon, lat })) {
-					ja1.add(new double[] { lon, lat });
-					ja2.add(new double[] { lon, lat });
-					hasFound = true;
-				} else {
-					ja1.add(jaPE);
-				}
-			} else {
-				ja2.add(jaPS);
-			}
-			if (i == jaLink.size() - 2) {
-				ja2.add(jaPE);
-			}
-		}
-		if (!hasFound) {
-			throw new Exception("打断的点不在打断LINK上");
-		}
-		// 生成新的link
-		arrays.add(ja1);
-		arrays.add(ja2);
 		this.create2NewLink(result, arrays);
 	}
 
@@ -217,7 +171,8 @@ public class OpTopo implements IOperation {
 		// 返回连续打断的点在几何上有序的集合
 		List<Point> orderPoints = GeoTranslator.getOrderPoints(line, points);
 		// 返回分割时有序的参数几何
-		JSONArray breakArr = this.getSplitOrderPara(orderPoints);
+		JSONArray breakArr = BasicServiceUtils.getSplitOrderPara(orderPoints,
+				this.command.getBreakNodes());
 		Map<Geometry, JSONObject> map = RdLinkOperateUtils.splitRdLink(line,
 				sNodePid, eNodePid, breakArr, result);
 		this.createLinks(map, result);
@@ -242,43 +197,6 @@ public class OpTopo implements IOperation {
 			points.add(JtsGeometryFactory.createPoint(new Coordinate(lon, lat)));
 		}
 		return GeoTranslator.getReformLineString((LineString) geometry, points);
-	}
-
-	/***
-	 * 创建多次打断方法 有序的分割参数集合
-	 * 
-	 * @param points
-	 * @return
-	 */
-	private JSONArray getSplitOrderPara(List<Point> points) {
-		JSONArray breakArr = new JSONArray();
-		for (Point point : points) {
-			for (int i = 0; i < this.command.getBreakNodes().size(); i++) {
-				JSONObject obj = this.command.getBreakNodes().getJSONObject(i);
-				double lon = obj.getDouble("longitude");
-				double lat = obj.getDouble("latitude");
-				if (point.getX() == lon && point.getY() == lat) {
-					// 匹配打断参数，加以区分
-					breakArr.add(obj);
-					break;
-				}
-			}
-		}
-		//组件分割参数用以区分
-		for (Object obj : breakArr) {
-			JSONObject jsonObj = (JSONObject) obj;
-			double lon = jsonObj.getDouble("longitude");
-			double lat = jsonObj.getDouble("latitude");
-			int nodePid = jsonObj.getInt("breakNodePid");
-			jsonObj.put("lon", lon);
-			jsonObj.put("lat", lat);
-			jsonObj.put("nodePid", nodePid);
-			jsonObj.remove("longitude");
-			jsonObj.remove("latitude");
-			jsonObj.remove("breakNodePid");
-
-		}
-		return breakArr;
 	}
 
 	/***

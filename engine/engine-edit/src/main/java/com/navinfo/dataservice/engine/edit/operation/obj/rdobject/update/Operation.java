@@ -273,8 +273,6 @@ public class Operation implements IOperation {
 
 					name.setNameId(PidUtil.getInstance().applyAdAdminNamePid());
 
-					name.setNameGroupid(rdObject.getNames().size() + 1);
-
 					result.insertObject(name, ObjStatus.INSERT,
 							name.getPid());
 

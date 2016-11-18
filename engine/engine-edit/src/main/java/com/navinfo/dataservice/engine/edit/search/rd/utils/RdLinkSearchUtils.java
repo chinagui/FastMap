@@ -232,7 +232,7 @@ public class RdLinkSearchUtils {
 	 * @return 查找所有联通link
 	 */
 	public List<RdLink> getNextTrackLinks(int cuurentLinkPid,
-			int cruuentNodePidDir) throws Exception {
+			int cruuentNodePidDir,int maxNum) throws Exception {
 		RdLinkSelector linkSelector = new RdLinkSelector(conn);
 		List<RdLink> tracks = new ArrayList<RdLink>();
 		Set<Integer> nodes = new HashSet<Integer>();
@@ -285,7 +285,7 @@ public class RdLinkSearchUtils {
 			if(nodes.contains(cruuentNodePidDir)){
 				break;
 			}
-			if (tracks.size() >= 11 || tracks.contains(link)) {
+			if (tracks.size() >= maxNum || tracks.contains(link)) {
 				break;
 			}
 			nodes.add(cruuentNodePidDir);

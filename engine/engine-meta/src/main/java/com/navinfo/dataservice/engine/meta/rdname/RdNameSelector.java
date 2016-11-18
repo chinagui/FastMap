@@ -4,6 +4,7 @@ import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -479,5 +480,99 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 		} catch (Exception e) {
 			throw e;
 		}
+	}
+
+	/**
+	 * @Title: searchForWebByNameId
+	 * @Description: 根据rdNamed的NameId查询
+	 * @param nameId
+	 * @return  JSONObject
+	 * @throws Exception 
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2016年11月17日 下午8:16:07 
+	 */
+	public JSONObject searchForWebByNameId(int nameId) {
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		Connection conn = null;
+		
+		try {
+			JSONObject result = new JSONObject();
+			conn = DBConnector.getInstance().getMetaConnection();
+			ScPointAdminArea scPointAdminArea = new ScPointAdminArea(conn);
+			Map<String,String> adminMap = scPointAdminArea.getAdminMap();
+			StringBuilder sql = new StringBuilder();
+			String ids = "";
+			String tmep = "";
+			Clob pidClod = null;
+			
+				sql.append("SELECT * ");
+				sql.append(" from rd_name a where 1=1 ");
+				sql.append(" WHERE a.name_id = ?");
+			System.out.println(sql.toString());
+			pstmt = conn.prepareStatement(sql.toString());
+				pstmt.setInt(1, nameId);
+			
+			resultSet = pstmt.executeQuery();
+			List<JSONObject> data = new ArrayList<JSONObject>();
+			
+			while (resultSet.next()) {
+				data.add(result2Json(resultSet, adminMap));
+			}
+			
+			result.put("data", data);
+			
+			return result;
+		} catch (Exception e) {
+			
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+			DbUtils.closeQuietly(conn);
+		}
+		return null;
+	
+	}
+
+	/**
+	 * @Title: udateResultStatusById
+	 * @Description: 修改某条道路名检查结果的状态
+	 * @param valExceptionId
+	 * @param qaStatus 
+	 * @return  JSONObject
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2016年11月17日 下午8:32:34 
+	 */
+	public void udateResultStatusById(int valExceptionId, int qaStatus) {
+		Connection conn = null; 
+		JSONObject result = null;
+		PreparedStatement pstmt = null;
+		
+		try {
+			StringBuilder sql = new StringBuilder();
+			sql.append(" update ni_val_exception set qa_status = ? ");
+			sql.append(" where 1=1 ");
+			sql.append(" and  val_exception_id = ?");
+			result = new JSONObject();
+			conn = DBConnector.getInstance().getMetaConnection();
+			pstmt = conn.prepareStatement(sql.toString());
+			pstmt.setInt(1, qaStatus);
+			pstmt.setInt(2, valExceptionId);
+			pstmt.execute();
+			
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}finally {
+			//DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+			DbUtils.closeQuietly(conn);
+		}
+		
+		//return null;
 	}
 }

@@ -40,6 +40,7 @@ check (SPLIT_FLAG in (0,1,2)) disable ,
 
 /* GDB+ POI EDIT PART */
 CREATE TABLE POI_EDIT_STATUS(
+  PID NUMBER(10) ,
   ROW_ID RAW(16) NOT NULL,
   STATUS NUMBER(1) DEFAULT 0
       CHECK(STATUS IN (0,1,2,3)) DISABLE,
@@ -51,14 +52,39 @@ CREATE TABLE POI_EDIT_STATUS(
   RAW_FIELDS VARCHAR2(30)
 );
 CREATE UNIQUE INDEX IDX_POI_EDIT_STATUS_1 ON POI_EDIT_STATUS(ROW_ID);
+CREATE INDEX IDX_POI_EDIT_STATUS_2 ON POI_EDIT_STATUS(PID);
 
-CREATE TABLE POI_DEEP_STATUS(
-  ROW_ID RAW(16) NOT NULL,
-  TYPE NUMBER(1) DEFAULT 1 NOT NULL,
-  STATUS NUMBER(1) DEFAULT 1,
-  CONSTRAINT PK_POI_DEEP_STATUS PRIMARY KEY(ROW_ID,TYPE)
-);
-create table POI_DEEP_WORKITEM_CONF
+-- Create table
+create table POI_COLUMN_STATUS
+(
+  ROW_ID             RAW(16) not null,
+  WORK_ITEM_ID       VARCHAR2(50),
+  FIRST_WORK_STATUS  NUMBER(1) default 1,
+  SECOND_WORK_STATUS NUMBER(1) default 1,
+  HANDLER            NUMBER(10),
+  TASK_ID            NUMBER(10)
+)
+-- Add comments to the table 
+comment on table POI_COLUMN_STATUS
+  is 'Г╡╬Г╪√Д╫°Д╦ Г┼╤Ф─│Х║╗';
+-- Add comments to the columns 
+comment on column POI_COLUMN_STATUS.ROW_ID
+  is 'poiХ║╗row_id';
+comment on column POI_COLUMN_STATUS.WORK_ITEM_ID
+  is 'Д╫°Д╦ И║╧Х╖└Е┬≥Е▐╥';
+comment on column POI_COLUMN_STATUS.FIRST_WORK_STATUS
+  is 'Д╦─Г╨╖Д╫°Д╦ И║╧Г┼╤Ф─│';
+comment on column POI_COLUMN_STATUS.SECOND_WORK_STATUS
+  is 'Д╨▄Г╨╖Д╫°Д╦ И║╧Г┼╤Ф─│';
+comment on column POI_COLUMN_STATUS.HANDLER
+  is 'Г■ЁХ╞╥Д╨╨';
+comment on column POI_COLUMN_STATUS.TASK_ID
+  is 'Ф°┬Г╪√Д╦⌠И║╧Е╜░Д╩╩Е┼║id';
+-- Create/Recreate primary, unique and foreign key constraints 
+alter table POI_COLUMN_STATUS
+  add constraint PK_POI_COLUMN_STATUS primary key (ROW_ID);
+
+create table POI_COLUMN_WORKITEM_CONF
 (
   ID               VARCHAR2(100) not null,
   FIRST_WORK_ITEM  VARCHAR2(50),
@@ -67,18 +93,18 @@ create table POI_DEEP_WORKITEM_CONF
   TYPE             NUMBER(1)
 );
 -- Add comments to the columns 
-comment on column POI_DEEP_WORKITEM_CONF.ID
-  is 'жВ╪Э';
-comment on column POI_DEEP_WORKITEM_CONF.FIRST_WORK_ITEM
-  is 'р╩╪╤вВр╣оН:poi_name-жпндцШЁф,poi_address-жпнд╣ьж╥,poi_englishname-с╒ндцШЁф,poi_englishaddress-с╒нд╣ьж╥';
-comment on column POI_DEEP_WORKITEM_CONF.SECOND_WORK_ITEM
-  is '╤Ч╪╤вВр╣оН:nameUnify-цШЁфмЁр╩,shortName-╪РЁфвВр╣,namePinyin-цШЁфф╢рТвВр╣,addrSplit-╣ьж╥╡П╥жвВр╣,addrPinyin-╣ьж╥ф╢рТвВр╣,photoEngName-ууф╛б╪хКс╒ндцШвВр╣,chiEngName-жпнд╪хйгс╒ндвВр╣,confirmEngName-хк╧╓х╥хос╒ндцШвВр╣,officalStandardEngName-╧ы╥╫╠Йв╪╩╞с╒ндвВр╣,nonImportantLongEngName-╥гжьр╙╥жюЮс╒ндцШЁ╛Ё╓вВр╣,engMapAddress-с╒нд╟Ф╣ьм╪вВр╣,nonImportantLongEngAddress-╥гжьр╙╥жюЮс╒нд╣ьж╥Ё╛Ё╓вВр╣,engNameInvalidChar-с╒ндцШ╥г╥╗вж╥Ш╪Л╡И,portuNameInvalidChar-фондцШ╥г╥╗вж╥Ш╪Л╡И,macaoEngName-╟дцес╒ндцШвВр╣,officalStandardPortuName-╧ы╥╫╠Йв╪╩╞фондвВр╣,engAddrInvalidChar-с╒нд╣ьж╥╥г╥╗вж╥Ш╪Л╡И,portuAddrInvalidChar-фонд╣ьж╥╥г╥╗вж╥Ш╪Л╡И,longEngAddress-с╒нд╣ьж╥Ё╛Ё╓вВр╣,longPortuAddress-фонд╣ьж╥Ё╛Ё╓вВр╣,';
-comment on column POI_DEEP_WORKITEM_CONF.WORK_ITEM_ID
-  is 'вВр╣оН╧ФтР╨е';
-comment on column POI_DEEP_WORKITEM_CONF.TYPE
-  is '1Ёё╧Ф╢Сб╫,2Ёё╧Ф╦ш╟д';
+comment on column POI_COLUMN_WORKITEM_CONF.ID
+  is 'О©╫О©╫О©╫О©╫';
+comment on column POI_COLUMN_WORKITEM_CONF.FIRST_WORK_ITEM
+  is 'р╩О©╫О©╫О©╫О©╫р╣О©╫О©╫:poi_name-О©╫О©╫О©╫О©╫О©╫О©╫О©╫,poi_address-О©╫О©╫О©╫д╣О©╫ж╥,poi_englishname-с╒О©╫О©╫О©╫О©╫О©╫,poi_englishaddress-с╒О©╫д╣О©╫ж╥';
+comment on column POI_COLUMN_WORKITEM_CONF.SECOND_WORK_ITEM
+  is 'О©╫О©╫О©╫О©╫О©╫О©╫р╣О©╫О©╫:nameUnify-О©╫О©╫О©╫мЁр╩,shortName-О©╫О©╫О©╫О©╫О©╫р╣,namePinyin-О©╫О©╫О©╫ф╢О©╫О©╫О©╫О©╫р╣,addrSplit-О©╫О©╫ж╥О©╫О©╫О©╫О©╫О©╫р╣,addrPinyin-О©╫О©╫ж╥ф╢О©╫О©╫О©╫О©╫р╣,photoEngName-О©╫О©╫ф╛б╪О©╫О©╫с╒О©╫О©╫О©╫О©╫О©╫О©╫р╣,chiEngName-О©╫О©╫О©╫д╪О©╫О©╫О©╫с╒О©╫О©╫О©╫О©╫р╣,confirmEngName-О©╫к╧О©╫х╥О©╫О©╫с╒О©╫О©╫О©╫О©╫О©╫О©╫р╣,officalStandardEngName-О©╫ы╥О©╫О©╫О©╫в╪О©╫О©╫с╒О©╫О©╫О©╫О©╫р╣,nonImportantLongEngName-О©╫О©╫О©╫О©╫р╙О©╫О©╫О©╫О©╫с╒О©╫О©╫О©╫О©╫О©╫О©╫р╣,engMapAddress-с╒О©╫д╟О©╫О©╫м╪О©╫О©╫р╣,nonImportantLongEngAddress-О©╫О©╫О©╫О©╫р╙О©╫О©╫О©╫О©╫с╒О©╫д╣О©╫ж╥О©╫О©╫О©╫О©╫О©╫О©╫р╣,engNameInvalidChar-с╒О©╫О©╫О©╫О©╫г╥О©╫О©╫ж╥О©╫О©╫О©╫,portuNameInvalidChar-О©╫О©╫О©╫О©╫О©╫О©╫г╥О©╫О©╫ж╥О©╫О©╫О©╫,macaoEngName-О©╫О©╫О©╫О©╫с╒О©╫О©╫О©╫О©╫О©╫О©╫р╣,officalStandardPortuName-О©╫ы╥О©╫О©╫О©╫в╪О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫р╣,engAddrInvalidChar-с╒О©╫д╣О©╫ж╥О©╫г╥О©╫О©╫ж╥О©╫О©╫О©╫,portuAddrInvalidChar-О©╫О©╫О©╫д╣О©╫ж╥О©╫г╥О©╫О©╫ж╥О©╫О©╫О©╫,longEngAddress-с╒О©╫д╣О©╫ж╥О©╫О©╫О©╫О©╫О©╫О©╫р╣,longPortuAddress-О©╫О©╫О©╫д╣О©╫ж╥О©╫О©╫О©╫О©╫О©╫О©╫р╣,';
+comment on column POI_COLUMN_WORKITEM_CONF.WORK_ITEM_ID
+  is 'О©╫О©╫р╣О©╫О©╫О©╫О©╫О©╫О©╫';
+comment on column POI_COLUMN_WORKITEM_CONF.TYPE
+  is '1О©╫О©╫О©╫О©╫О©╫б╫,2О©╫О©╫О©╫О©╫ш╟О©╫';
 
-create table POI_DEEP_OP_CONF
+create table POI_COLUMN_OP_CONF
 (
   ID                   VARCHAR2(100) not null,
   FIRST_WORK_ITEM      VARCHAR2(50),
@@ -98,38 +124,60 @@ create table POI_DEEP_OP_CONF
   TYPE                 NUMBER(1)
 );
 -- Add comments to the columns 
-comment on column POI_DEEP_OP_CONF.ID
-  is 'жВ╪Э';
-comment on column POI_DEEP_OP_CONF.FIRST_WORK_ITEM
-  is 'р╩╪╤вВр╣оН:poi_name-жпндцШЁф,poi_address-жпнд╣ьж╥,poi_englishname-с╒ндцШЁф,poi_englishaddress-с╒нд╣ьж╥';
-comment on column POI_DEEP_OP_CONF.SECOND_WORK_ITEM
-  is 'nameUnify-цШЁфмЁр╩,shortName-╪РЁфвВр╣,namePinyin-цШЁфф╢рТвВр╣,addrSplit-╣ьж╥╡П╥жвВр╣,addrPinyin-╣ьж╥ф╢рТвВр╣,photoEngName-ууф╛б╪хКс╒ндцШвВр╣,chiEngName-жпнд╪хйгс╒ндвВр╣,confirmEngName-хк╧╓х╥хос╒ндцШвВр╣,officalStandardEngName-╧ы╥╫╠Йв╪╩╞с╒ндвВр╣,nonImportantLongEngName-╥гжьр╙╥жюЮс╒ндцШЁ╛Ё╓вВр╣,engMapAddress-с╒нд╟Ф╣ьм╪вВр╣,nonImportantLongEngAddress-╥гжьр╙╥жюЮс╒нд╣ьж╥Ё╛Ё╓вВр╣,engNameInvalidChar-с╒ндцШ╥г╥╗вж╥Ш╪Л╡И,portuNameInvalidChar-фондцШ╥г╥╗вж╥Ш╪Л╡И,macaoEngName-╟дцес╒ндцШвВр╣,officalStandardPortuName-╧ы╥╫╠Йв╪╩╞фондвВр╣,engAddrInvalidChar-с╒нд╣ьж╥╥г╥╗вж╥Ш╪Л╡И,portuAddrInvalidChar-фонд╣ьж╥╥г╥╗вж╥Ш╪Л╡И,longEngAddress-с╒нд╣ьж╥Ё╛Ё╓вВр╣,longPortuAddress-фонд╣ьж╥Ё╛Ё╓вВр╣';
-comment on column POI_DEEP_OP_CONF.SAVE_EXEBATCH
-  is '╠ё╢Фй╠йг╥Яж╢ппеЗ╢╕юМ,0╥Я  1йг';
-comment on column POI_DEEP_OP_CONF.SAVE_BATCHRULES
-  is '╠ё╢Фй╠р╙ж╢пп╣деЗ╢╕юМ╧ФтРйЩвИ,[]';
-comment on column POI_DEEP_OP_CONF.SAVE_EXECHECK
-  is '╠ё╢Фй╠йг╥Яж╢пп╪Л╡И,0╥Я 1йг';
-comment on column POI_DEEP_OP_CONF.SAVE_CKRULES
-  is '╠ё╢Фй╠р╙ж╢пп╣д╪Л╡И╧ФтР';
-comment on column POI_DEEP_OP_CONF.SAVE_EXECLASSIFY
-  is '╠ё╢Фй╠йг╥Яж╢ппжь╥жюЮ,0╥Я   1йг';
-comment on column POI_DEEP_OP_CONF.SAVE_CLASSIFYRULES
-  is '╠ё╢Фй╠р╙ж╢пп╣джь╥жюЮ╧ФтР []';
-comment on column POI_DEEP_OP_CONF.SUBMIT_EXEBATCH
-  is 'лА╫╩й╠йг╥Яж╢ппеЗ╢╕юМ 0╥Я   1йг';
-comment on column POI_DEEP_OP_CONF.SUBMIT_BATCHRULES
-  is '  лА╫╩й╠р╙ж╢пп╣деЗ╢╕юМ╧ФтРйЩвИ,[]';
-comment on column POI_DEEP_OP_CONF.SUBMIT_EXECHECK
-  is 'лА╫╩й╠йг╥Яж╢пп╪Л╡И,0╥Я   1йг';
-comment on column POI_DEEP_OP_CONF.SUBMIT_CKRULES
-  is 'лА╫╩й╠р╙ж╢пп╣д╪Л╡И╧ФтР[]';
-comment on column POI_DEEP_OP_CONF.SUBMIT_EXECLASSIFY
-  is 'лА╫╩й╠йг╥Яж╢ппжь╥жюЮ 0╥Я   1йг';
-comment on column POI_DEEP_OP_CONF.SUBMIT_CLASSIFYRULES
-  is 'лА╫╩й╠р╙ж╢пп╣джь╥жюЮ╧ФтР[]';
-comment on column POI_DEEP_OP_CONF.TYPE
-  is '1Ёё╧Ф╢Сб╫,2Ёё╧Ф╦ш╟д';
+comment on column POI_COLUMN_OP_CONF.ID
+  is 'О©╫О©╫О©╫О©╫';
+comment on column POI_COLUMN_OP_CONF.FIRST_WORK_ITEM
+  is 'р╩О©╫О©╫О©╫О©╫р╣О©╫О©╫:poi_name-О©╫О©╫О©╫О©╫О©╫О©╫О©╫,poi_address-О©╫О©╫О©╫д╣О©╫ж╥,poi_englishname-с╒О©╫О©╫О©╫О©╫О©╫,poi_englishaddress-с╒О©╫д╣О©╫ж╥';
+comment on column POI_COLUMN_OP_CONF.SECOND_WORK_ITEM
+  is 'nameUnify-О©╫О©╫О©╫мЁр╩,shortName-О©╫О©╫О©╫О©╫О©╫р╣,namePinyin-О©╫О©╫О©╫ф╢О©╫О©╫О©╫О©╫р╣,addrSplit-О©╫О©╫ж╥О©╫О©╫О©╫О©╫О©╫р╣,addrPinyin-О©╫О©╫ж╥ф╢О©╫О©╫О©╫О©╫р╣,photoEngName-О©╫О©╫ф╛б╪О©╫О©╫с╒О©╫О©╫О©╫О©╫О©╫О©╫р╣,chiEngName-О©╫О©╫О©╫д╪О©╫О©╫О©╫с╒О©╫О©╫О©╫О©╫р╣,confirmEngName-О©╫к╧О©╫х╥О©╫О©╫с╒О©╫О©╫О©╫О©╫О©╫О©╫р╣,officalStandardEngName-О©╫ы╥О©╫О©╫О©╫в╪О©╫О©╫с╒О©╫О©╫О©╫О©╫р╣,nonImportantLongEngName-О©╫О©╫О©╫О©╫р╙О©╫О©╫О©╫О©╫с╒О©╫О©╫О©╫О©╫О©╫О©╫р╣,engMapAddress-с╒О©╫д╟О©╫О©╫м╪О©╫О©╫р╣,nonImportantLongEngAddress-О©╫О©╫О©╫О©╫р╙О©╫О©╫О©╫О©╫с╒О©╫д╣О©╫ж╥О©╫О©╫О©╫О©╫О©╫О©╫р╣,engNameInvalidChar-с╒О©╫О©╫О©╫О©╫г╥О©╫О©╫ж╥О©╫О©╫О©╫,portuNameInvalidChar-О©╫О©╫О©╫О©╫О©╫О©╫г╥О©╫О©╫ж╥О©╫О©╫О©╫,macaoEngName-О©╫О©╫О©╫О©╫с╒О©╫О©╫О©╫О©╫О©╫О©╫р╣,officalStandardPortuName-О©╫ы╥О©╫О©╫О©╫в╪О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫р╣,engAddrInvalidChar-с╒О©╫д╣О©╫ж╥О©╫г╥О©╫О©╫ж╥О©╫О©╫О©╫,portuAddrInvalidChar-О©╫О©╫О©╫д╣О©╫ж╥О©╫г╥О©╫О©╫ж╥О©╫О©╫О©╫,longEngAddress-с╒О©╫д╣О©╫ж╥О©╫О©╫О©╫О©╫О©╫О©╫р╣,longPortuAddress-О©╫О©╫О©╫д╣О©╫ж╥О©╫О©╫О©╫О©╫О©╫О©╫р╣';
+comment on column POI_COLUMN_OP_CONF.SAVE_EXEBATCH
+  is 'О©╫О©╫О©╫О©╫й╠О©╫г╥О©╫ж╢О©╫О©╫О©╫О©╫О©╫О©╫,0О©╫О©╫  1О©╫О©╫';
+comment on column POI_COLUMN_OP_CONF.SAVE_BATCHRULES
+  is 'О©╫О©╫О©╫О©╫й╠р╙ж╢О©╫п╣О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫,[]';
+comment on column POI_COLUMN_OP_CONF.SAVE_EXECHECK
+  is 'О©╫О©╫О©╫О©╫й╠О©╫г╥О©╫ж╢О©╫п╪О©╫О©╫,0О©╫О©╫ 1О©╫О©╫';
+comment on column POI_COLUMN_OP_CONF.SAVE_CKRULES
+  is 'О©╫О©╫О©╫О©╫й╠р╙ж╢О©╫п╣д╪О©╫О©╫О©╫О©╫О©╫';
+comment on column POI_COLUMN_OP_CONF.SAVE_EXECLASSIFY
+  is 'О©╫О©╫О©╫О©╫й╠О©╫г╥О©╫ж╢О©╫О©╫О©╫ь╥О©╫О©╫О©╫,0О©╫О©╫   1О©╫О©╫';
+comment on column POI_COLUMN_OP_CONF.SAVE_CLASSIFYRULES
+  is 'О©╫О©╫О©╫О©╫й╠р╙ж╢О©╫п╣О©╫О©╫ь╥О©╫О©╫О©╫О©╫О©╫О©╫ []';
+comment on column POI_COLUMN_OP_CONF.SUBMIT_EXEBATCH
+  is 'О©╫А╫╩й╠О©╫г╥О©╫ж╢О©╫О©╫О©╫О©╫О©╫О©╫ 0О©╫О©╫   1О©╫О©╫';
+comment on column POI_COLUMN_OP_CONF.SUBMIT_BATCHRULES
+  is '  О©╫А╫╩й╠р╙ж╢О©╫п╣О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫О©╫,[]';
+comment on column POI_COLUMN_OP_CONF.SUBMIT_EXECHECK
+  is 'О©╫А╫╩й╠О©╫г╥О©╫ж╢О©╫п╪О©╫О©╫,0О©╫О©╫   1О©╫О©╫';
+comment on column POI_COLUMN_OP_CONF.SUBMIT_CKRULES
+  is 'О©╫А╫╩й╠р╙ж╢О©╫п╣д╪О©╫О©╫О©╫О©╫О©╫[]';
+comment on column POI_COLUMN_OP_CONF.SUBMIT_EXECLASSIFY
+  is 'О©╫А╫╩й╠О©╫г╥О©╫ж╢О©╫О©╫О©╫ь╥О©╫О©╫О©╫ 0О©╫О©╫   1О©╫О©╫';
+comment on column POI_COLUMN_OP_CONF.SUBMIT_CLASSIFYRULES
+  is 'О©╫А╫╩й╠р╙ж╢О©╫п╣О©╫О©╫ь╥О©╫О©╫О©╫О©╫О©╫О©╫[]';
+comment on column POI_COLUMN_OP_CONF.TYPE
+  is '1О©╫О©╫О©╫О©╫О©╫б╫,2О©╫О©╫О©╫О©╫ш╟О©╫';
+  
+-- Create table
+create table POI_DEEP_STATUS
+(
+  ROW_ID      RAW(16) not null,
+  HANDLER     NUMBER(10),
+  STATUS      NUMBER(1) default 1 not null,
+  TYPE        NUMBER(1) default 1 not null,
+  UPDATE_DATE TIMESTAMP(6),
+  CONSTRAINT PK_POI_DEEP_STATUS PRIMARY KEY(ROW_ID)
+)
+-- Add comments to the columns 
+comment on column POI_DEEP_STATUS.ROW_ID
+  is 'Е╓√И■╝О╪▄POIГ └row_id';
+comment on column POI_DEEP_STATUS.HANDLER
+  is 'Д╫°Д╦ Е▒≤ID';
+comment on column POI_DEEP_STATUS.STATUS
+  is '1О╪ Е╬┘Д╫°Д╦ ,2О╪ Е╥╡Д╫°Д╦ ,3О╪ Е╥╡Ф▐░Д╨╓';
+comment on column POI_DEEP_STATUS.TYPE
+  is '1О╪ И─ Г■╗О╪▄2О╪ Е│°Х╫╕Е°╨О╪▄3Ф╠╫Х╫╕Г╖÷Х╣│';
+comment on column POI_DEEP_STATUS.UPDATE_DATE
+  is 'Х╝╟Е╫∙Ф⌡╢Ф√╟Ф≈╤И≈╢';
 
 /* GDB+ log part */
 create table LOG_OPERATION (
@@ -191,21 +239,21 @@ CREATE TABLE LOG_DAY_RELEASE
   CONSTRAINT PK_LOG_RELEASE PRIMARY KEY(OP_ID)
 );
 -- Add comments to the columns 
-COMMENT ON TABLE LOG_DAY_RELEASE IS 'бдюЗхуЁЖф╥в╢л╛╠М';
+COMMENT ON TABLE LOG_DAY_RELEASE IS 'О©╫О©╫О©╫О©╫О©╫уЁО©╫ф╥в╢л╛О©╫О©╫';
 COMMENT ON COLUMN LOG_DAY_RELEASE.OP_ID
-  IS 'жВ╪Э ╤тс╕ log_operation.op_id';
+  IS 'О©╫О©╫О©╫О©╫ О©╫О©╫с╕ log_operation.op_id';
 COMMENT ON COLUMN LOG_DAY_RELEASE.REL_POI_STA
-  IS 'POI ЁЖф╥в╢л╛ё╛0 ё╨╥Я 1ё╨йг';
+  IS 'POI О©╫О©╫ф╥в╢л╛О©╫О©╫0 О©╫О©╫О©╫О©╫ 1О©╫О©╫О©╫О©╫';
 COMMENT ON COLUMN LOG_DAY_RELEASE.REL_POI_DT
-  IS 'POIЁЖф╥й╠╪Д';
+  IS 'POIО©╫О©╫ф╥й╠О©╫О©╫';
 COMMENT ON COLUMN LOG_DAY_RELEASE.REL_ALL_STA
-  IS 'POI+ROAD ЁЖф╥в╢л╛ё╛0 ё╨╥Я 1ё╨йг';
+  IS 'POI+ROAD О©╫О©╫ф╥в╢л╛О©╫О©╫0 О©╫О©╫О©╫О©╫ 1О©╫О©╫О©╫О©╫';
 COMMENT ON COLUMN LOG_DAY_RELEASE.REL_ALL_DT
-  IS 'POI+ROAD ЁЖф╥й╠╪Д';
+  IS 'POI+ROAD О©╫О©╫ф╥й╠О©╫О©╫';
 COMMENT ON COLUMN LOG_DAY_RELEASE.REL_POI_LOCK
-  IS 'POI ЁЖф╥кЬ 0 ё╨╥Я 1ё╨йг';
+  IS 'POI О©╫О©╫ф╥О©╫О©╫ 0 О©╫О©╫О©╫О©╫ 1О©╫О©╫О©╫О©╫';
 COMMENT ON COLUMN LOG_DAY_RELEASE.REL_ALL_LOCK
-  IS 'POI+ROAD ЁЖф╥кЬ0 ё╨╥Я 1ё╨йг';
+  IS 'POI+ROAD О©╫О©╫ф╥О©╫О©╫0 О©╫О©╫О©╫О©╫ 1О©╫О©╫О©╫О©╫';
 --ADD INDEXES
 create bitmap index IDX_LOG_DAY_REL_1 on LOG_DAY_RELEASE (rel_poi_sta);
 create bitmap index IDX_LOG_DAY_REL_2 on LOG_DAY_RELEASE (rel_all_sta);

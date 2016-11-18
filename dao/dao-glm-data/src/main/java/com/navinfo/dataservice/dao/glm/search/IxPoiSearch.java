@@ -20,7 +20,7 @@ import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiAddress;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiName;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiPhoto;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
-import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiDeepStatusSelector;
+import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiColumnStatusSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiAddressSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiNameSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
@@ -62,7 +62,7 @@ public class IxPoiSearch implements ISearch {
 	}
 	
 	@Override
-	public IObj searchDataByPids(List<Integer> pidList) throws Exception {
+	public List<IObj> searchDataByPids(List<Integer> pidList) throws Exception {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -269,7 +269,7 @@ public class IxPoiSearch implements ISearch {
 			
 			IxPoiSelector poiSelector = new IxPoiSelector(conn);
 			IxPoiNameSelector nameSelector = new IxPoiNameSelector(conn);
-			IxPoiDeepStatusSelector ixPoiDeepStatusSelector = new IxPoiDeepStatusSelector(conn);
+			IxPoiColumnStatusSelector ixPoiDeepStatusSelector = new IxPoiColumnStatusSelector(conn);
 			
 			for (String rowId:rowIds) {
 				IxPoi poi = (IxPoi) poiSelector.loadByRowId(rowId, isLock);
@@ -358,7 +358,7 @@ public class IxPoiSearch implements ISearch {
 			IxPoiSelector poiSelector = new IxPoiSelector(conn);
 			IxPoiNameSelector nameSelector = new IxPoiNameSelector(conn);
 			IxPoiAddressSelector addressSelector = new IxPoiAddressSelector(conn);
-			IxPoiDeepStatusSelector ixPoiDeepStatusSelector = new IxPoiDeepStatusSelector(conn);
+			IxPoiColumnStatusSelector ixPoiDeepStatusSelector = new IxPoiColumnStatusSelector(conn);
 			
 			for (String rowId:rowIds) {
 				IxPoi poi = (IxPoi) poiSelector.loadByRowId(rowId, isLock);
@@ -452,7 +452,7 @@ public class IxPoiSearch implements ISearch {
 			
 			IxPoiSelector poiSelector = new IxPoiSelector(conn);
 			IxPoiNameSelector nameSelector = new IxPoiNameSelector(conn);
-			IxPoiDeepStatusSelector ixPoiDeepStatusSelector = new IxPoiDeepStatusSelector(conn);
+			IxPoiColumnStatusSelector ixPoiDeepStatusSelector = new IxPoiColumnStatusSelector(conn);
 			
 			for (String rowId:rowIds) {
 				IxPoi poi = (IxPoi) poiSelector.loadByRowId(rowId, isLock);
@@ -510,7 +510,7 @@ public class IxPoiSearch implements ISearch {
 			IxPoiSelector poiSelector = new IxPoiSelector(conn);
 			IxPoiNameSelector nameSelector = new IxPoiNameSelector(conn);
 			IxPoiAddressSelector addressSelector = new IxPoiAddressSelector(conn);
-			IxPoiDeepStatusSelector ixPoiDeepStatusSelector = new IxPoiDeepStatusSelector(conn);
+			IxPoiColumnStatusSelector ixPoiDeepStatusSelector = new IxPoiColumnStatusSelector(conn);
 			
 			for (String rowId:rowIds) {
 				IxPoi poi = (IxPoi) poiSelector.loadByRowId(rowId, isLock);

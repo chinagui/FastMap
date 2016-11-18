@@ -202,7 +202,7 @@ public class BlockService {
 			} catch (Exception e) {
 				// TODO: handle exception
 				e.printStackTrace();
-				log.error("发送失败,原因:"+e.getMessage(), e);
+				log.error("block编辑消息发送失败,原因:"+e.getMessage(), e);
 			}
 			
 			return updateCount;
@@ -558,7 +558,7 @@ public class BlockService {
 			} catch (Exception e) {
 				// TODO: handle exception
 				e.printStackTrace();
-				log.error("发送失败,原因:"+e.getMessage(), e);
+				log.error("block关闭消息发送失败,原因:"+e.getMessage(), e);
 			}
 			
 			return unClosedBlocks;
@@ -972,7 +972,7 @@ public class BlockService {
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
-			throw new Exception("发布失败，原因为:" + e.getMessage(), e);
+			throw new Exception("新增block消息发送失败，原因为:" + e.getMessage(), e);
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
@@ -1548,5 +1548,52 @@ public class BlockService {
 		}
 	}
 	
+	/**
+	 * 查询block名称列表
+	 * @author Han Shaoming
+	 * @param userId
+	 * @param blockManName
+	 * @return
+	 * @throws ServiceException 
+	 */
+	public List<Map<String, Object>> queryBlockManNameList(long userId, String blockManName) throws ServiceException {
+		Connection conn = null;
+		QueryRunner queryRunner = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			queryRunner = new QueryRunner();
+			
+			//根据blockManName查询blockMan数据
+			String sql = "SELECT * FROM BLOCK_MAN WHERE BLOCK_MAN_NAME LIKE '%"+blockManName+"%'";
+			Object[] params = {};
+			//处理结果集
+			ResultSetHandler<List<Map<String, Object>>> rsh = new ResultSetHandler<List<Map<String, Object>>>() {
+				@Override
+				public List<Map<String, Object>> handle(ResultSet rs) throws SQLException {
+					// TODO Auto-generated method stub
+					List<Map<String, Object>> blockManNameList = new ArrayList<Map<String,Object>>();
+					while(rs.next()){
+						Map<String,Object> map = new HashMap<String,Object>();
+						map.put("blockManId",rs.getLong("BLOCK_MAN_ID"));
+						map.put("blockManName",rs.getString("BLOCK_MAN_NAME"));
+						blockManNameList.add(map);
+					}
+					return blockManNameList;
+				}
+			};
+			//获取数据
+			List<Map<String, Object>> list = queryRunner.query(conn, sql, rsh, params);
+			//日志
+			log.info("查询的blockMan数据的sql"+sql);
+			log.info("查询的blockMan数据"+list.toString());
+			return list;
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
 
 }

@@ -100,7 +100,8 @@ public class Operation implements IOperation {
 		return info;
 	}
 
-	public String repairLink(IObj repairLink, String requester, Result result) throws Exception {
+	public String repairLink(IObj repairLink, String requester, Result result)
+			throws Exception {
 
 		int[] info = getOperationInfo(repairLink);
 
@@ -114,7 +115,8 @@ public class Operation implements IOperation {
 
 		RdSameLinkSelector sameLinkSelector = new RdSameLinkSelector(this.conn);
 
-		RdSameLinkPart originalPart = sameLinkSelector.loadLinkPartByLink(repairLinkPid, linkTableName, true);
+		RdSameLinkPart originalPart = sameLinkSelector.loadLinkPartByLink(
+				repairLinkPid, linkTableName, true);
 
 		// 被打断link不存在同一关系，不处理
 		if (originalPart == null) {
@@ -127,7 +129,8 @@ public class Operation implements IOperation {
 			throw new Exception("此link不是该组同一关系中的主要素，不能进行此操作");
 		}
 
-		RdSameLink originalSameLink = (RdSameLink) sameLinkSelector.loadById(originalPart.getGroupId(), true);
+		RdSameLink originalSameLink = (RdSameLink) sameLinkSelector.loadById(
+				originalPart.getGroupId(), true);
 
 		// 同一线中其他的组成link
 		List<RdSameLinkPart> linkParts = new ArrayList<RdSameLinkPart>();
@@ -144,7 +147,8 @@ public class Operation implements IOperation {
 
 		for (RdSameLinkPart part : linkParts) {
 
-			if (linkTableName.equals(part.getTableName()) && repairLinkPid == part.getLinkPid()) {
+			if (linkTableName.equals(part.getTableName())
+					&& repairLinkPid == part.getLinkPid()) {
 				continue;
 			}
 
@@ -168,8 +172,8 @@ public class Operation implements IOperation {
 	 * @param conn
 	 * @throws Exception
 	 */
-	public String breakLink(IObj breakLink, List<IObj> newLinks, IRow newNode, String requester, Result result)
-			throws Exception {
+	public String breakLink(IObj breakLink, List<IObj> newLinks, IRow newNode,
+			String requester, Result result) throws Exception {
 
 		int[] info = getOperationInfo(breakLink);
 
@@ -183,7 +187,8 @@ public class Operation implements IOperation {
 
 		RdSameLinkSelector sameLinkSelector = new RdSameLinkSelector(this.conn);
 
-		RdSameLinkPart originalPart = sameLinkSelector.loadLinkPartByLink(breakLinkPid, linkTableName, true);
+		RdSameLinkPart originalPart = sameLinkSelector.loadLinkPartByLink(
+				breakLinkPid, linkTableName, true);
 
 		// 被打断link不存在同一关系，不处理
 		if (originalPart == null) {
@@ -196,7 +201,8 @@ public class Operation implements IOperation {
 			throw new Exception("此link不是该组同一关系中的主要素，不能进行此操作");
 		}
 
-		RdSameLink originalSameLink = (RdSameLink) sameLinkSelector.loadById(originalPart.getGroupId(), true);
+		RdSameLink originalSameLink = (RdSameLink) sameLinkSelector.loadById(
+				originalPart.getGroupId(), true);
 
 		// 同一线中其他的组成link
 		List<RdSameLinkPart> linkParts = new ArrayList<RdSameLinkPart>();
@@ -224,7 +230,8 @@ public class Operation implements IOperation {
 		handleCurrNewLink(falgPoint, newLinks, links1, links2);
 
 		// link的打断requester可用信息相同，可共用。
-		com.alibaba.fastjson.JSONObject fastJson = com.alibaba.fastjson.JSONObject.parseObject(requester);
+		com.alibaba.fastjson.JSONObject fastJson = com.alibaba.fastjson.JSONObject
+				.parseObject(requester);
 
 		JSONObject breakJson = JsonUtils.fastJson2netJson(fastJson);
 
@@ -234,23 +241,28 @@ public class Operation implements IOperation {
 
 		for (RdSameLinkPart part : linkParts) {
 
-			if (linkTableName.equals(part.getTableName()) && breakLinkPid == part.getLinkPid()) {
+			if (linkTableName.equals(part.getTableName())
+					&& breakLinkPid == part.getLinkPid()) {
 				continue;
 			}
 
-			ObjType type = ReflectionAttrUtils.getObjTypeByTableName(part.getTableName());
+			ObjType type = ReflectionAttrUtils.getObjTypeByTableName(part
+					.getTableName());
 
 			breakJson.element("objId", part.getLinkPid());
 
 			if (type == ObjType.ADLINK) {
 
-				breakAdLink(breakJson, newNodes, links1, links2, falgPoint, result);
+				breakAdLink(breakJson, newNodes, links1, links2, falgPoint,
+						result);
 			}
 			if (type == ObjType.LULINK) {
-				breakLuLink(breakJson, newNodes, links1, links2, falgPoint, result);
+				breakLuLink(breakJson, newNodes, links1, links2, falgPoint,
+						result);
 			}
 			if (type == ObjType.ZONELINK) {
-				breakZoneLink(breakJson, newNodes, links1, links2, falgPoint, result);
+				breakZoneLink(breakJson, newNodes, links1, links2, falgPoint,
+						result);
 			}
 		}
 
@@ -268,7 +280,8 @@ public class Operation implements IOperation {
 		sameLinkOperation.breakSameLink(result, links2);
 
 		// 删除原始同一线
-		result.insertObject(originalSameLink, ObjStatus.DELETE, originalSameLink.getPid());
+		result.insertObject(originalSameLink, ObjStatus.DELETE,
+				originalSameLink.getPid());
 		return null;
 	}
 
@@ -283,7 +296,8 @@ public class Operation implements IOperation {
 	 *            同一线的part组
 	 * @return 同一线组成link的对应的最高等级
 	 */
-	private int getLinkPartsInfo(int currLevel, RdSameLink originalSameLink, List<RdSameLinkPart> linkParts) {
+	private int getLinkPartsInfo(int currLevel, RdSameLink originalSameLink,
+			List<RdSameLinkPart> linkParts) {
 
 		int highLevel = currLevel;
 
@@ -350,7 +364,8 @@ public class Operation implements IOperation {
 	 * @param links1
 	 * @param links2
 	 */
-	private void handleCurrNewLink(Coordinate falgPoint, List<IObj> newLinks, List<IRow> links1, List<IRow> links2) {
+	private void handleCurrNewLink(Coordinate falgPoint, List<IObj> newLinks,
+			List<IRow> links1, List<IRow> links2) {
 
 		ObjType linkType = newLinks.get(0).objType();
 
@@ -373,7 +388,8 @@ public class Operation implements IOperation {
 			coors = ((LuLink) newLinks.get(0)).getGeometry().getCoordinates();
 		}
 
-		if (falgPoint.equals(coors[0]) || falgPoint.equals(coors[coors.length - 1])) {
+		if (falgPoint.equals(coors[0])
+				|| falgPoint.equals(coors[coors.length - 1])) {
 			links1.add(newLinks.get(0));
 
 			links2.add(newLinks.get(1));
@@ -392,8 +408,9 @@ public class Operation implements IOperation {
 	 * @param type
 	 * @throws Exception
 	 */
-	private void breakAdLink(JSONObject breakJson, List<IRow> newNodes, List<IRow> links1, List<IRow> links2,
-			Coordinate falgPoint, Result result) throws Exception {
+	private void breakAdLink(JSONObject breakJson, List<IRow> newNodes,
+			List<IRow> links1, List<IRow> links2, Coordinate falgPoint,
+			Result result) throws Exception {
 
 		breakJson.element("type", "ADLINK");
 
@@ -409,14 +426,16 @@ public class Operation implements IOperation {
 
 		newNodes.add(adCommand.getBreakNode());
 
-		Coordinate[] coors = adCommand.getsAdLink().getGeometry().getCoordinates();
+		Coordinate[] coors = adCommand.getNewLinks().get(0).getGeometry()
+				.getCoordinates();
 
-		if (falgPoint.equals(coors[0]) || falgPoint.equals(coors[coors.length - 1])) {
-			links1.add(adCommand.getsAdLink());
-			links2.add(adCommand.geteAdLink());
+		if (falgPoint.equals(coors[0])
+				|| falgPoint.equals(coors[coors.length - 1])) {
+			links1.add(adCommand.getNewLinks().get(0));
+			links2.add(adCommand.getNewLinks().get(1));
 		} else {
-			links1.add(adCommand.geteAdLink());
-			links2.add(adCommand.getsAdLink());
+			links1.add(adCommand.getNewLinks().get(1));
+			links2.add(adCommand.getNewLinks().get(0));
 		}
 
 	}
@@ -427,8 +446,9 @@ public class Operation implements IOperation {
 	 * @param type
 	 * @throws Exception
 	 */
-	private void breakLuLink(JSONObject breakJson, List<IRow> newNodes, List<IRow> links1, List<IRow> links2,
-			Coordinate falgPoint, Result result) throws Exception {
+	private void breakLuLink(JSONObject breakJson, List<IRow> newNodes,
+			List<IRow> links1, List<IRow> links2, Coordinate falgPoint,
+			Result result) throws Exception {
 
 		breakJson.element("type", "LULINK");
 
@@ -444,9 +464,11 @@ public class Operation implements IOperation {
 
 		newNodes.add(luCommand.getBreakNode());
 
-		Coordinate[] coors = luCommand.getsLuLink().getGeometry().getCoordinates();
+		Coordinate[] coors = luCommand.getsLuLink().getGeometry()
+				.getCoordinates();
 
-		if (falgPoint.equals(coors[0]) || falgPoint.equals(coors[coors.length - 1])) {
+		if (falgPoint.equals(coors[0])
+				|| falgPoint.equals(coors[coors.length - 1])) {
 			links1.add(luCommand.getsLuLink());
 			links2.add(luCommand.geteLuLink());
 		} else {
@@ -461,8 +483,9 @@ public class Operation implements IOperation {
 	 * @param type
 	 * @throws Exception
 	 */
-	private IRow breakZoneLink(JSONObject breakJson, List<IRow> newNodes, List<IRow> links1, List<IRow> links2,
-			Coordinate falgPoint, Result result) throws Exception {
+	private IRow breakZoneLink(JSONObject breakJson, List<IRow> newNodes,
+			List<IRow> links1, List<IRow> links2, Coordinate falgPoint,
+			Result result) throws Exception {
 
 		breakJson.element("type", "ZONELINK");
 
@@ -478,9 +501,11 @@ public class Operation implements IOperation {
 
 		newNodes.add(zoneCommand.getBreakNode());
 
-		Coordinate[] coors = zoneCommand.getsZoneLink().getGeometry().getCoordinates();
+		Coordinate[] coors = zoneCommand.getsZoneLink().getGeometry()
+				.getCoordinates();
 
-		if (falgPoint.equals(coors[0]) || falgPoint.equals(coors[coors.length - 1])) {
+		if (falgPoint.equals(coors[0])
+				|| falgPoint.equals(coors[coors.length - 1])) {
 			links1.add(zoneCommand.getsZoneLink());
 			links2.add(zoneCommand.geteZoneLink());
 		} else {
@@ -499,8 +524,10 @@ public class Operation implements IOperation {
 	 * @param result
 	 * @throws Exception
 	 */
-	private void repairLink(RdSameLinkPart part, JSONObject repairJson, Result result) throws Exception {
-		ObjType type = ReflectionAttrUtils.getObjTypeByTableName(part.getTableName());
+	private void repairLink(RdSameLinkPart part, JSONObject repairJson,
+			Result result) throws Exception {
+		ObjType type = ReflectionAttrUtils.getObjTypeByTableName(part
+				.getTableName());
 
 		switch (type) {
 

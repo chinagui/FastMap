@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.edit.operation.topo.depart.departrdnode;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.List;
 
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
@@ -10,6 +11,7 @@ import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeSelector;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.operation.AbstractProcess;
+import com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrdpoint.OpTopo;
 
 public class Process extends AbstractProcess<Command> {
 
@@ -76,26 +78,11 @@ public class Process extends AbstractProcess<Command> {
 		this.getCommand().setLinks(links);
 		this.getCommand().setRdLink(link);
 		this.getCommand().setNode(node);
-
-		/*
-		 * lockRdRestriction();
-		 * 
-		 * lockRdLaneConnexity();
-		 * 
-		 * lockRdBranch();
-		 */
-
 		return true;
 	}
 
 	@Override
 	public String preCheck() throws Exception {
-
-		// check.checkIsCrossNode(this.getConn(),
-		// this.getCommand().getsNodePid());
-
-		// check.checkIsCrossNode(this.getConn(),
-		// this.getCommand().geteNodePid());
 
 		check.checkIsVia(this.getConn(), this.getCommand().getLinkPid());
 		return super.preCheck();
@@ -103,10 +90,36 @@ public class Process extends AbstractProcess<Command> {
 
 	@Override
 	public String exeOperation() throws Exception {
-		Operation operation = new Operation(this.getCommand(),this.getConn());
+		Operation operation = new Operation(this.getCommand(), this.getConn());
 		String msg = operation.run(this.getResult());
 		return msg;
 
+	}
+
+	public String innerRun() throws Exception {
+		String msg;
+		try {
+
+			this.prepareData();
+
+			String preCheckMsg = this.preCheck();
+
+			if (preCheckMsg != null) {
+				throw new Exception(preCheckMsg);
+			}
+
+			Operation operation = new Operation(this.getCommand(),
+					this.getConn());
+			msg = operation.run(this.getResult());
+
+			this.postCheck();
+		} catch (Exception e) {
+
+			this.getConn().rollback();
+
+			throw e;
+		}
+		return msg;
 	}
 
 }

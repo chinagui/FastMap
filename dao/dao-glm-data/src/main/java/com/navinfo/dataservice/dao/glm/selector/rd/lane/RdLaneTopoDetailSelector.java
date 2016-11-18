@@ -6,19 +6,16 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
 import org.apache.commons.dbutils.DbUtils;
 
 import com.navinfo.dataservice.dao.glm.iface.IRow;
-import com.navinfo.dataservice.dao.glm.model.rd.lane.RdLane;
+
 import com.navinfo.dataservice.dao.glm.model.rd.lane.RdLaneTopoDetail;
 import com.navinfo.dataservice.dao.glm.model.rd.lane.RdLaneTopoVia;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 
 /***
- * 
+ * 车道联通信息查询类
  * @author zhaokk
  * 
  */
@@ -70,6 +67,42 @@ public class RdLaneTopoDetailSelector extends AbstractSelector {
 			DbUtils.closeQuietly(pstmt);
 		}
 		return new ArrayList<IRow>();
+	}
+
+	/***
+	 * 
+	 * 通过进入link和进入node查找退出线
+	 */
+	public List<Integer> loadOutLinkByinLink(int linkPid, int nodePid,
+			boolean isLock) throws Exception {
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+		List<Integer> outLinkPids = new ArrayList<Integer>();
+
+		try {
+			String sql = "SELECT distinct(out_link_pid) FROM rd_lane_topo_detail WHERE in_link_pid =:1 and node_pid = :2 and u_record !=2";
+
+			if (isLock) {
+				sql += " for update nowait";
+			}
+
+			pstmt = conn.prepareStatement(sql);
+
+			pstmt.setInt(1, linkPid);
+			pstmt.setInt(2, nodePid);
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+				outLinkPids.add(resultSet.getInt("out_link_pid"));
+			}
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+		return outLinkPids;
 	}
 
 	/***

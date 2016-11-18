@@ -29,6 +29,7 @@ import com.navinfo.dataservice.dao.mq.email.EmailPublisher;
 import com.navinfo.dataservice.dao.mq.sys.SysMsgPublisher;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
+import com.navinfo.navicommons.exception.ServiceException;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -193,7 +194,7 @@ public class TaskService {
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
-			throw new Exception("发布失败，原因为:"+e.getMessage(),e);
+			throw new Exception("任务发布消息发送失败，原因为:"+e.getMessage(),e);
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
 		}
@@ -286,7 +287,7 @@ public class TaskService {
 			} catch (Exception e) {
 				// TODO: handle exception
 				e.printStackTrace();
-				log.error("发送失败,原因:"+e.getMessage(), e);
+				log.error("任务编辑消息发送失败,原因:"+e.getMessage(), e);
 			}
 			return "任务批量修改"+total+"个成功，0个失败";
 		}catch(Exception e){
@@ -303,6 +304,7 @@ public class TaskService {
 	 * 2.分配的月编作业组组长
 	 * 任务:XXX(任务名称)内容发生变更，请关注*/
 	public void taskPushMsg(Connection conn,String msgTitle,List<Map<String, Object>> msgContentList, List<Long> groupIdList, long pushUser) throws Exception {
+		//查询所有生管角色
 		String userSql="SELECT DISTINCT M.USER_ID FROM ROLE_USER_MAPPING M WHERE M.ROLE_ID =3";
 		List<Integer> userIdList=UserInfoOperation.getUserListBySql(conn, userSql);
 		//查询分配的作业组组长
@@ -562,7 +564,7 @@ public class TaskService {
 				} catch (Exception e) {
 					// TODO: handle exception
 					e.printStackTrace();
-					log.error("发送失败,原因:"+e.getMessage(), e);
+					log.error("任务关闭消息发送失败,原因:"+e.getMessage(), e);
 				}
 			}
 	    	return newTask;
@@ -621,4 +623,54 @@ public class TaskService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+	
+	/**
+	 * 查询任务名称列表
+	 * @author Han Shaoming
+	 * @param userId
+	 * @param taskName
+	 * @return
+	 * @throws ServiceException 
+	 */
+	public List<Map<String, Object>> queryTaskNameList(long userId, String taskName) throws ServiceException {
+		Connection conn = null;
+		QueryRunner queryRunner = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			queryRunner = new QueryRunner();
+			
+			//根据taskName查询任务数据
+			String sql = "SELECT * FROM TASK WHERE NAME LIKE '%"+taskName+"%'";
+			Object[] params = {};
+			//处理结果集
+			ResultSetHandler<List<Map<String, Object>>> rsh = new ResultSetHandler<List<Map<String, Object>>>() {
+				@Override
+				public List<Map<String, Object>> handle(ResultSet rs) throws SQLException {
+					// TODO Auto-generated method stub
+					List<Map<String, Object>> taskNameList = new ArrayList<Map<String,Object>>();
+					while(rs.next()){
+						Map<String,Object> map = new HashMap<String,Object>();
+						map.put("taskId",rs.getLong("TASK_ID"));
+						map.put("taskName",rs.getString("NAME"));
+						taskNameList.add(map);
+					}
+					return taskNameList;
+				}
+			};
+			//获取数据
+			List<Map<String, Object>> list = queryRunner.query(conn, sql, rsh, params);
+			//日志
+			log.info("查询的task数据的sql"+sql);
+			log.info("查询的task数据"+list.toString());
+			return list;
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	
 }

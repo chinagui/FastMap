@@ -2,9 +2,7 @@ package com.navinfo.dataservice.api.man.iface;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-import com.navinfo.dataservice.api.man.model.Grid;
 import com.navinfo.dataservice.api.man.model.Message;
 import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.api.man.model.Subtask;
@@ -64,5 +62,8 @@ public interface ManApi{
 	public Map<String, Object> getUserInfoByUserId(long userId) throws Exception;
 	
 	public int createJob(long userId,String produceType, JSONObject paraJson) throws Exception;
+
+	public String queryConfValueByConfKey(String confKey) throws Exception;
+	
 }
 

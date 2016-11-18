@@ -246,19 +246,20 @@ public class TaskOperation {
 			if (bean!=null&&bean.getTaskName()!=null && StringUtils.isNotEmpty(bean.getTaskName().toString())){
 				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
 				insertPart+=" NAME ";
-				valuePart+=bean.getTaskName();
+				valuePart+= "'" + bean.getTaskName() + "'";
 			};
 			if (bean!=null&&bean.getCityId()!=null && bean.getCityId()!=0 && StringUtils.isNotEmpty(bean.getCityId().toString())){
 				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
 				insertPart+=" CITY_ID ";
 				valuePart+=bean.getCityId();
 			};
+			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
 			insertPart+=" CREATE_USER_ID,CREATE_DATE,STATUS,LATEST ";
-			valuePart+=bean.getCreateUserId()+"sysdate,2,1";
+			valuePart+=bean.getCreateUserId()+",sysdate,2,1";
 			if (bean!=null&&bean.getTaskDescp()!=null && StringUtils.isNotEmpty(bean.getTaskDescp().toString())){
 				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
 				insertPart+=" DESCP ";
-				valuePart+=bean.getTaskDescp();
+				valuePart+="'"+bean.getTaskDescp()+"'";
 			};
 			if (bean!=null&&bean.getPlanStartDate()!=null && StringUtils.isNotEmpty(bean.getPlanStartDate().toString())){
 				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
@@ -423,15 +424,17 @@ public class TaskOperation {
 					if ("dailyProgress".equals(key)) {
 						if(!statusSql.isEmpty()){statusSql+=" or ";}
 						statusSql+=" TASK_LIST.daily_Progress IN ("+conditionJson.getJSONArray(key).join(",")+")";}
-					//1-11未规划,草稿,采集正常,采集异常,采集完成,日编正常,日编异常,日编完成,按时完成,提前完成,逾期完成
+					//1-11未规划,草稿,采集正常,采集异常,采集完成,日编正常,日编异常,日编完成,按时完成,提前完成,逾期完成,12月编正常,13月编异常,14月编完成
 					if("selectParam1".equals(key)){
 						JSONArray selectParam1=conditionJson.getJSONArray(key);
 						JSONArray collectProgress=new JSONArray();
 						JSONArray dailyProgress=new JSONArray();
+						JSONArray monthlyProgress=new JSONArray();
 						for(Object i:selectParam1){
 							int tmp=(int) i;
 							if(tmp==3||tmp==4||tmp==5){collectProgress.add(tmp-2);}
 							if(tmp==6||tmp==7||tmp==8){dailyProgress.add(tmp-5);}
+							if(tmp==12||tmp==13||tmp==14){monthlyProgress.add(tmp-11);}
 						}
 						if(!collectProgress.isEmpty()){
 							if(!statusSql.isEmpty()){statusSql+=" or ";}
@@ -439,6 +442,9 @@ public class TaskOperation {
 						if(!dailyProgress.isEmpty()){
 							if(!statusSql.isEmpty()){statusSql+=" or ";}
 							statusSql+=" TASK_LIST.daily_Progress IN ("+dailyProgress.join(",")+")";}
+						if(!monthlyProgress.isEmpty()){
+							if(!statusSql.isEmpty()){statusSql+=" or ";}
+							statusSql+=" TASK_LIST.monthly_Progress IN ("+monthlyProgress.join(",")+")";}
 					}
 				}
 			}	
@@ -1743,7 +1749,8 @@ public class TaskOperation {
 					conditionSql=conditionSql+" AND MAN_LIST.GROUP_ID ="+conditionJson.getInt(key);}
 				if("planStatus".equals(key)){
 					conditionSql=conditionSql+" AND MAN_LIST.TASK_STATUS =1 AND MAN_LIST.PLAN_STATUS="+conditionJson.getInt(key);}
-				
+				if("taskName".equals(key)){
+					conditionSql=conditionSql+" AND MAN_LIST.TASK_NAME LIKE '%" +conditionJson.getString(key) + "%'";}
 				//1-6月编正常,月编异常,待分配,正常完成,逾期完成,提前完成
 				if("selectParam1".equals(key)){
 					JSONArray selectParam1=conditionJson.getJSONArray(key);
@@ -1833,7 +1840,8 @@ public class TaskOperation {
 				+ "             FROM SUBTASK STT"
 				+ "            WHERE STT.TASK_ID = TT.TASK_ID"
 				+ "              AND STT.STAGE = 2))"
-				+ "     AND TT.MONTH_EDIT_GROUP_ID = G.GROUP_ID(+)"
+//				+ "     AND TT.MONTH_EDIT_GROUP_ID = G.GROUP_ID(+)"
+				+ "     AND TT.MONTH_EDIT_GROUP_ID = G.GROUP_ID"
 				+ "     AND TT.TASK_ID = S.TASK_ID(+)"
 				+ "  UNION ALL"
 				//分配子任务，且子任务都是关闭状态==〉已完成
@@ -1856,7 +1864,8 @@ public class TaskOperation {
 				+ "     AND TT.STATUS = 1"
 				+ "     AND ST.STATUS IN (0, 1)"
 				+ "     AND ST.STAGE = 2"
-				+ "     AND TT.MONTH_EDIT_GROUP_ID = G.GROUP_ID(+)"
+//				+ "     AND TT.MONTH_EDIT_GROUP_ID = G.GROUP_ID(+)"
+				+ "     AND TT.MONTH_EDIT_GROUP_ID = G.GROUP_ID"
 				+ "     AND NOT EXISTS (SELECT 1"
 				+ "            FROM SUBTASK STT"
 				+ "           WHERE STT.TASK_ID = TT.TASK_ID"
@@ -1885,7 +1894,8 @@ public class TaskOperation {
 				+ "     AND TT.STATUS = 1"
 				+ "     AND ST.STATUS IN (0, 1)"
 				+ "     AND ST.STAGE = 2"
-				+ "     AND TT.MONTH_EDIT_GROUP_ID = G.GROUP_ID(+)"
+//				+ "     AND TT.MONTH_EDIT_GROUP_ID = G.GROUP_ID(+)"
+				+ "     AND TT.MONTH_EDIT_GROUP_ID = G.GROUP_ID"
 				+ "     AND EXISTS (SELECT 1"
 				+ "            FROM SUBTASK STT"
 				+ "           WHERE STT.TASK_ID = TT.TASK_ID"
@@ -1938,6 +1948,7 @@ public class TaskOperation {
 						HashMap map = new HashMap();
 						map.put("taskId", rs.getInt("TASK_ID"));
 						map.put("taskName", rs.getString("TASK_NAME"));
+						map.put("taskStatus", rs.getInt("TASK_STATUS"));
 						map.put("cityId", rs.getInt("CITY_ID"));
 						map.put("cityName", rs.getString("CITY_NAME"));
 						map.put("cityPlanStatus", rs.getInt("CITY_PLAN_STATUS"));
@@ -2049,5 +2060,41 @@ public class TaskOperation {
 		}
 	}
 	
+	/**
+	 * 通过cityId查询task
+	 * @author Han Shaoming
+	 * @param conn
+	 * @param cityId
+	 * @param taskStatus
+	 * @return
+	 * @throws Exception
+	 */
+	public static List<Map<String, Object>> getTaskByCityId(Connection conn,long cityId,long taskStatus) throws Exception{
+		try{
+			QueryRunner run = new QueryRunner();
+			String querySql="SELECT TASK_ID,CITY_ID,MONTH_EDIT_GROUP_ID FROM TASK WHERE CITY_ID=? AND TASK_TYPE=?";
+			Object[] params = {cityId,taskStatus};		
+			ResultSetHandler<List<Map<String, Object>>> rsh = new ResultSetHandler<List<Map<String, Object>>>() {
+				@Override
+				public List<Map<String, Object>> handle(ResultSet rs) throws SQLException {
+					// TODO Auto-generated method stub
+					List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
+					while(rs.next()){
+						Map<String, Object> map = new HashMap<String, Object>();
+						map.put("taskId", rs.getLong("TASK_ID"));
+						map.put("cityId", rs.getLong("CITY_ID"));
+						map.put("monthEditGroupId", rs.getLong("MONTH_EDIT_GROUP_ID"));
+						list.add(map);
+					}
+					return list;
+				}
+			};
+			List<Map<String, Object>> taskList = run.query(conn, querySql, params, rsh);
+			return taskList;			
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}
+	}
 	
 }

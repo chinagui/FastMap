@@ -9,7 +9,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.commons.dbutils.DbUtils;
 
@@ -162,7 +161,7 @@ public class RdNameSelector {
 
 		try {
 
-			//***********************以下代码是路演环境临时使用*begin***********************
+		/*	//***********************以下代码是路演环境临时使用*begin***********************
 			String dbId= SystemConfigFactory.getSystemConfig().getValue("region_db_id");
 			
 			if(StringUtils.isEmpty(dbId)){
@@ -170,11 +169,11 @@ public class RdNameSelector {
 			}
 
 			//路演环境临时使用
-			conn = DBConnector.getInstance().getConnectionById(Integer.parseInt(dbId));
+			conn = DBConnector.getInstance().getConnectionById(Integer.parseInt(dbId));*/
 			
 			//***********************end ***********************
 			
-			//conn = DBConnector.getInstance().getMetaConnection();
+			conn = DBConnector.getInstance().getMetaConnection();
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setString(1, name);
 			pstmt.setInt(2, adminId);
@@ -213,7 +212,7 @@ public class RdNameSelector {
 	 * @throws Exception
 	 */
 	@SuppressWarnings({ "static-access", "unchecked" })
-public JSONObject searchForWeb(JSONObject params,JSONArray tips,int dbId) throws Exception {
+public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exception {
 		
 		PreparedStatement pstmt = null;
 
@@ -221,14 +220,10 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips,int dbId) throws
 
 		Connection conn = null;
 		
-		Connection subconn = null;
-		
 		try {
 			JSONObject result = new JSONObject();
 			
 			conn = DBConnector.getInstance().getMetaConnection();
-			
-			subconn = DBConnector.getInstance().getConnectionById(dbId);
 			
 			ScPointAdminArea scPointAdminArea = new ScPointAdminArea(conn);
 					
@@ -238,7 +233,9 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips,int dbId) throws
 			String sortby = params.getString("sortby");
 			int pageSize = params.getInt("pageSize");
 			int pageNum = params.getInt("pageNum");
-			int flag = params.getInt("flag");
+			int flag = params.getInt("flag");//1是任务查，0是全库查
+			int subtaskId = params.getInt("subtaskId");//获取subtaskid 
+			
 			
 			StringUtils sUtils = new StringUtils();
 			
@@ -249,14 +246,17 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips,int dbId) throws
 			Clob pidClod = null;
 			if (flag>0) {
 				if (tips.size()>0) {
-					
+					//添加根据子任务id直接查询的sql 
 					sql.append("SELECT * ");
 					sql.append(" FROM (SELECT c.*, rownum rn");
 					sql.append(" FROM (select COUNT (1) OVER (PARTITION BY 1) total,a.* ");
-					sql.append(" from (select substr(src_resume, 0, instr(src_resume, ',') - 1) as tipid,t.*");
-					sql.append(" from rd_name t");
-					sql.append(" where src_resume is not null");
-					sql.append(" and instr(src_resume, ',') > 0) a ");
+					sql.append(" from (");
+					sql.append("SELECT null tipid,r.*  from rd_name r  where r.src_resume = '\"task\":"+ subtaskId +"' ");
+					sql.append(" union all  ");
+					sql.append(" SELECT tt.* FROM ");
+					sql.append("( select substr(replace(t.src_resume,'\"',''),instr(replace(t.src_resume,'\"',''), ':') + 1,length(replace(src_resume,'\"',''))) as tipid,t.* ");
+					sql.append(" from rd_name t  where t.src_resume like '%tips%' ) tt");
+					
 					sql.append(" where 1=1");
 					
 					for (int i=0;i<tips.size();i++) {
@@ -266,9 +266,9 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips,int dbId) throws
 						ids +=tipsObj.getString("id");
 					}
 					
-					pidClod = ConnectionUtil.createClob(subconn);
+					pidClod = ConnectionUtil.createClob(conn);
 					pidClod.setString(1, ids);
-					sql.append(" and a.tipid in (select column_value from table(clob_to_table(?)))");
+					sql.append(" and tt.tipid in (select column_value from table(clob_to_table(?)))) a ");
 					
 				} else {
 					result.put("total", 0);
@@ -299,6 +299,11 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips,int dbId) throws
 						}
 					}
 				}
+				
+				
+				
+				
+				
 			}
 			
 			// 添加排序条件
@@ -326,8 +331,8 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips,int dbId) throws
 			int startRow = (pageNum-1) * pageSize + 1;
 
 			int endRow = pageNum * pageSize;
-			
-			pstmt = subconn.prepareStatement(sql.toString());
+			System.out.println(sql.toString());
+			pstmt = conn.prepareStatement(sql.toString());
 			
 			if (flag>0) {
 				pstmt.setClob(1, pidClod);
@@ -362,7 +367,6 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips,int dbId) throws
 			DbUtils.closeQuietly(resultSet);
 			DbUtils.closeQuietly(pstmt);
 			DbUtils.closeQuietly(conn);
-			DbUtils.closeQuietly(subconn);
 		}
 	}
 	

@@ -144,6 +144,72 @@ public class CompPolylineUtil {
 		}
 		return null;
 	}
+	
+	public static LineString[] separateSideRoad(Point startPoint,
+			LineString[] lines, double distance) {
+
+		if (lines == null || lines.length < 1) {
+			return null;
+		}
+
+		int length = lines.length;
+		DoublePolyline[] polylines = new DoublePolyline[length];
+		DoublePoint start = JtsGeometryConvertor.convert(startPoint
+				.getCoordinate());// 保留起点
+		DoublePoint end = null;
+		DoublePoint curStart = start;
+		for (int i = 0; i < length; i++) {
+			polylines[i] = JtsGeometryConvertor.convert(lines[i]);
+			if (!curStart.equals(polylines[i].getSpoint())) {
+				polylines[i].reverse();
+			}
+			curStart = polylines[i].getEpoint();
+		}
+		end = polylines[length - 1].getEpoint();// 得到终点
+		// 获取右左偏移平行线
+		DoublePolyline[] rawResults = offset(polylines, distance);
+
+		List<DoubleLine> rightLines = new ArrayList<DoubleLine>();
+		
+		List<DoubleLine> leftLines = new ArrayList<DoubleLine>();
+	
+	
+		for (int j = 0; j < rawResults.length; j++) {
+			
+			if (j < rawResults.length / 2) {
+				for (DoubleLine line : rawResults[j].getLines()) {
+					rightLines.add(line);
+				}
+			}
+			else
+			{
+				for (DoubleLine line : rawResults[j].getLines()) {
+					leftLines.add(line);
+				}
+			}		
+		}
+		
+		DoubleLine[] right = new DoubleLine[rightLines.size()];
+
+		rightLines.toArray(right);
+
+		DoublePolyline rightPolyline = new DoublePolyline(right);
+
+		DoubleLine[] left = new DoubleLine[leftLines.size()];
+
+		leftLines.toArray(left);
+
+		DoublePolyline leftPolyline = new DoublePolyline(left);		
+		
+		// 转换
+		LineString[] results = new LineString[2];
+		// 舍弃多余小数位数
+		results[0] = JtsGeometryConvertor.convertWithSpecDecimal(rightPolyline);
+		results[1] = JtsGeometryConvertor.convertWithSpecDecimal(leftPolyline);
+		
+		return results;
+
+	}
 	/**
 	 * 首尾相连的两条线，获取连接点mid，起始线离mid最近的形状点为start，终点线离mid最近的形状点为end
 	 * @param startLine

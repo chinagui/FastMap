@@ -21,7 +21,7 @@ import com.navinfo.dataservice.dao.log.LogWriter;
  */
 public class OperatorRunner {
 	protected static Logger log = LoggerRepos.getLogger(OperatorRunner.class);
-	public static JSONObject run(int dbId,AbstractOperator op)throws Exception{
+	public static JSONObject run(int dbId,AbstractOperation op)throws Exception{
 		Connection conn=null;
 		try{
 			conn = DBConnector.getInstance().getConnectionById(dbId);

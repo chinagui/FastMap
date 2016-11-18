@@ -24,10 +24,13 @@ import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiChildren;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiEditStatus;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiParent;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkName;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdTmclocation;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLinkName;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiEditStatusSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiParentSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 
 /**
  * @ClassName: BasicSelector
@@ -600,7 +603,11 @@ public class AbstractSelector implements ISelector {
 		} else if (cls.equals(IxPoiEditStatus.class) && obj instanceof IxPoi) {
 			// 特殊场景：2.POI_EDIT_STATUS
 			handlePoiEditStatus((IxPoi) obj, isLock);
-		} else {
+		} 
+		else if (cls.equals(RdTmclocation.class) && obj instanceof RdLink) {
+			// 特殊场景：3.RdTmcLocation
+			handleRdTmcLocation((RdLink) obj, isLock);
+		}else {
 			List<IRow> childRows = loadRowsByClassParentId(cls, obj.pid(), isLock, null);
 			if (CollectionUtils.isNotEmpty(childRows)) {
 				for (IRow row : childRows) {
@@ -631,6 +638,25 @@ public class AbstractSelector implements ISelector {
 		}
 	}
 	
+	/**
+	 * @param obj
+	 * @param isLock
+	 * @throws Exception 
+	 */
+	private void handleRdTmcLocation(RdLink obj, boolean isLock) throws Exception {
+		RdLinkSelector selector = new RdLinkSelector(conn);
+		
+		List<IRow> locationList = selector.loadRdTmcByLinkPid(obj.getPid(), isLock);
+		
+		for(IRow row : locationList)
+		{
+			RdTmclocation tmclocation = (RdTmclocation) row;
+			obj.locationMap.put(row.rowId(), tmclocation);
+		}
+		
+		obj.setTmclocations(locationList);
+	}
+
 	@SuppressWarnings("unchecked")
 	private void setPoiChild(Class<? extends IRow> cls, IObj obj, boolean isLock, List<IRow> values,
 			Map<Class<? extends IRow>, Map<String, ?>> childMap) throws Exception {

@@ -30,6 +30,9 @@ public class IxSamepoiPart implements IRow {
 	private String rowId;
 
 	private int poiPid;
+	
+	// 更新时间
+	private String uDate;
 
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 
@@ -204,6 +207,14 @@ public class IxSamepoiPart implements IRow {
 
 	@Override
 	public void setMesh(int mesh) {
+	}
+
+	public String getuDate() {
+		return uDate;
+	}
+
+	public void setuDate(String uDate) {
+		this.uDate = uDate;
 	}
 
 }

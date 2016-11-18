@@ -39,7 +39,23 @@ public class DeafultDailyReleaseLogSelector extends DefaultLogSelector {
 				"  FROM LOG_OPERATION P, LOG_DETAIL L, LOG_DETAIL_GRID T,LOG_DAY_RELEASE R\r\n" + 
 				" WHERE P.OP_ID = L.OP_ID\r\n" + 
 				"   AND L.ROW_ID = T.LOG_ROW_ID\r\n" + 
-				"   AND P.OP_ID = R.OP_ID\r\n") ; 
+				"   AND P.OP_ID = R.OP_ID"+ 
+				"   AND L.OB_NM !='IX_POI'\r\n") ; 
+		sb.append(" AND R.REL_ALL_STA=0");//POI和全要素 这里实现不同
+		if(this.getGrids()!=null&&this.getGrids().size()>0){
+			SqlClause inClause = SqlClause.genInClauseWithMulInt(conn,this.getGrids()," T.GRID_ID ");
+			if (inClause!=null)
+				sb .append(" AND "+ inClause.getSql());
+			values.addAll(inClause.getValues());
+		}
+		sb.append(" union all");
+		sb.append(" SELECT DISTINCT P.OP_ID, P.OP_DT\r\n" + 
+				"  FROM LOG_OPERATION P, LOG_DETAIL L, LOG_DETAIL_GRID T,LOG_DAY_RELEASE R\r\n" + 
+				" WHERE P.OP_ID = L.OP_ID\r\n" + 
+				"   AND L.ROW_ID = T.LOG_ROW_ID\r\n" + 
+				"   AND P.OP_ID = R.OP_ID\r\n" + 
+				"   AND L.OB_NM ='IX_POI'\r\n" +
+				"	AND EXISTS (SELECT 1 FROM POI_EDIT_STATUS E WHERE E.PID=L.OB_PID AND E.STATUS = 3)\r\n") ; 
 		sb.append(" AND R.REL_ALL_STA=0");//POI和全要素 这里实现不同
 		if(this.getGrids()!=null&&this.getGrids().size()>0){
 			SqlClause inClause = SqlClause.genInClauseWithMulInt(conn,this.getGrids()," T.GRID_ID ");

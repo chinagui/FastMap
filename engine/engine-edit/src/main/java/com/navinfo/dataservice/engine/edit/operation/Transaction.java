@@ -115,6 +115,9 @@ public class Transaction {
                     case UPDOWNDEPART:
                         return new com.navinfo.dataservice.engine.edit.operation.topo.depart.updowndepartlink.Command(
                                 json, requester);
+                    case CREATESIDEROAD:
+                        return new com.navinfo.dataservice.engine.edit.operation.obj.rdlink.sideRoad.create.Command(
+                                json, requester);
                 }
             case FACE:
                 switch (operType) {
@@ -796,6 +799,17 @@ public class Transaction {
                     default:
                         break;
                 }
+            case RDTMCLOCATION:
+                switch (operType) {
+                    case CREATE:
+                        return new com.navinfo.dataservice.engine.edit.operation.obj.tmc.create.Command(json, requester);
+                    case UPDATE:
+                        return new com.navinfo.dataservice.engine.edit.operation.obj.tmc.update.Command(json, requester);
+                    case DELETE:
+                        return new com.navinfo.dataservice.engine.edit.operation.obj.tmc.delete.Command(json, requester);
+                    default:
+                        break;
+                }
         }
 
         throw new Exception("不支持的操作类型");
@@ -836,6 +850,10 @@ public class Transaction {
                     case UPDOWNDEPART:
                         return new com.navinfo.dataservice.engine.edit.operation.topo.depart.updowndepartlink.Process(
                                 command);
+                    case CREATESIDEROAD:
+                        return new com.navinfo.dataservice.engine.edit.operation.obj.rdlink.sideRoad.create.Process(
+                                command);   
+                        
                     case BATCH:
                         return new com.navinfo.dataservice.engine.edit.operation.batch.rdlink.Process(
                                 command);
@@ -1520,6 +1538,17 @@ public class Transaction {
                         return new com.navinfo.dataservice.engine.edit.operation.obj.mileagepile.move.Process(command);
                     case DELETE:
                         return new com.navinfo.dataservice.engine.edit.operation.obj.mileagepile.delete.Process(command);
+                    default:
+                        break;
+                }
+            case RDTMCLOCATION:
+                switch (operType) {
+                    case CREATE:
+                        return new com.navinfo.dataservice.engine.edit.operation.obj.tmc.create.Process(command);
+                    case UPDATE:
+                        return new com.navinfo.dataservice.engine.edit.operation.obj.tmc.update.Process(command);
+                    case DELETE:
+                        return new com.navinfo.dataservice.engine.edit.operation.obj.tmc.delete.Process(command);
                     default:
                         break;
                 }

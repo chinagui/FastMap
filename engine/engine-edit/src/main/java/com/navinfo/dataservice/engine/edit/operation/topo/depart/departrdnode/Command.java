@@ -99,7 +99,6 @@ public class Command extends AbstractCommand {
 		
 
 	}
-
 	public Point getPoint() {
 		return point;
 	}

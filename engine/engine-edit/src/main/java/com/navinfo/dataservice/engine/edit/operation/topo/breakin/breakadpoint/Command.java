@@ -1,7 +1,9 @@
 package com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakadpoint;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
@@ -21,10 +23,36 @@ import com.vividsolutions.jts.geom.Point;
  */
 public class Command extends AbstractCommand {
 	private String requester;
-	private AdLink sAdLink;
-	private AdLink eAdLink;
 	private List<AdFace> faces;
 	private int breakNodePid = 0;
+	private AdLink breakLink = new AdLink();
+	private List<AdLink> newLinks = new ArrayList<AdLink>();
+
+	public List<AdLink> getNewLinks() {
+		return newLinks;
+	}
+
+	public void setNewLinks(List<AdLink> newLinks) {
+		this.newLinks = newLinks;
+	}
+
+	public AdLink getBreakLink() {
+		return breakLink;
+	}
+
+	public void setBreakLink(AdLink breakLink) {
+		this.breakLink = breakLink;
+	}
+
+	private JSONArray breakNodes;
+
+	public JSONArray getBreakNodes() {
+		return breakNodes;
+	}
+
+	public void setBreakNodes(JSONArray breakNodes) {
+		this.breakNodes = breakNodes;
+	}
 
 	private String operationType = "";
 
@@ -52,22 +80,6 @@ public class Command extends AbstractCommand {
 
 	public void setFaces(List<AdFace> faces) {
 		this.faces = faces;
-	}
-
-	public AdLink getsAdLink() {
-		return sAdLink;
-	}
-
-	public void setsAdLink(AdLink sAdLink) {
-		this.sAdLink = sAdLink;
-	}
-
-	public AdLink geteAdLink() {
-		return eAdLink;
-	}
-
-	public void seteAdLink(AdLink eAdLink) {
-		this.eAdLink = eAdLink;
 	}
 
 	public AdNode getBreakNode() {
@@ -103,23 +115,29 @@ public class Command extends AbstractCommand {
 		this.linkPid = json.getInt("objId");
 		JSONObject data = json.getJSONObject("data");
 
-		JSONObject geoPoint = new JSONObject();
-
-		geoPoint.put("type", "Point");
-
-		geoPoint.put("coordinates", new double[] { data.getDouble("longitude"),
-				data.getDouble("latitude") });
-
-		Geometry geometry = GeoTranslator.geojson2Jts(geoPoint, 1, 5);
-
 		if (data.containsKey("breakNodePid")) {
 			this.setBreakNodePid(data.getInt("breakNodePid"));
 		}
-		Coordinate coord = new Coordinate(geometry.getCoordinate().x,
-				geometry.getCoordinate().y);
-		this.eAdLink = new AdLink();
-		this.sAdLink = new AdLink();
-		this.point = geometryFactory.createPoint(coord);
+		if (data.containsKey("breakNodes")) {
+			this.breakNodes = JSONArray.fromObject(data
+					.getJSONArray("breakNodes"));
+
+		} else {
+			JSONObject geoPoint = new JSONObject();
+
+			geoPoint.put("type", "Point");
+
+			geoPoint.put(
+					"coordinates",
+					new double[] { data.getDouble("longitude"),
+							data.getDouble("latitude") });
+
+			Geometry geometry = GeoTranslator.geojson2Jts(geoPoint, 1, 5);
+			Coordinate coord = new Coordinate(geometry.getCoordinate().x,
+					geometry.getCoordinate().y);
+
+			this.point = geometryFactory.createPoint(coord);
+		}
 	}
 
 	public int getLinkPid() {

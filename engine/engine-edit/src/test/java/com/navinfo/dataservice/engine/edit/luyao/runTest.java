@@ -791,5 +791,44 @@ public class runTest extends InitApplication {
 		String msg = t.run();
 	}
 	
+	@Test
+	public void run_1110_1() throws Exception {
+
+		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDLANECONNEXITY\",\"dbId\":17,\"data\":{\"inLinkPid\":209002563,\"nodePid\":303001955,\"outLinkPids\":[301002648],\"laneInfo\":\"[a]\"}}";
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+	
+	@Test
+	public void run_1111_1() throws Exception {
+
+		String parameter = "{\"command\":\"CREATE\",\"dbId\":17,\"objId\":200002625,\"data\":{\"longitude\":116.45005,\"latitude\":40.04905},\"type\":\"RDNODE\"}";
+		
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+	@Test
+	public void run_1115_1() throws Exception {
+
+		String parameter = "{\"command\":\"CREATESIDEROAD\",\"type\":\"RDLINK\",\"dbId\":17,\"distance\":\"5\",\"sideType\":1,\"data\":{\"linkPids\":[305002750,200002676,202002616,310002675]}}";
+
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+	
+	@Test
+	public void run_1115_2() throws Exception {
+
+		String parameter = "{\"command\":\"CREATESIDEROAD\",\"type\":\"RDLINK\",\"dbId\":17,\"distance\":\"5\",\"sideType\":1,\"data\":{\"linkPids\":[310002711,209002685]}}";
+
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
 	
 }

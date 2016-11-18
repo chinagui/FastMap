@@ -57,7 +57,7 @@ public class ColumnSubmitJobRequest extends AbstractJobRequest {
 
 	@Override
 	public String getJobType() {
-		return "columnSaveJob";
+		return "columnSubmitJob";
 	}
 	
 	@Override

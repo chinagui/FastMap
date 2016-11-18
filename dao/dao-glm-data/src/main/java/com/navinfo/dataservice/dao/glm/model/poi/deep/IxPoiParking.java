@@ -97,15 +97,6 @@ public class IxPoiParking implements IObj {
 	}
 
 
-
-	public String getOpenTiime() {
-		return openTiime;
-	}
-
-	public void setOpenTiime(String openTiime) {
-		this.openTiime = openTiime;
-	}
-
 	public int getTotalNum() {
 		return totalNum;
 	}
@@ -457,6 +448,14 @@ public class IxPoiParking implements IObj {
 	public Map<Class<? extends IRow>,Map<String,?>> childMap() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	public String getOpenTiime() {
+		return openTiime;
+	}
+
+	public void setOpenTiime(String openTiime) {
+		this.openTiime = openTiime;
 	}
 
 

@@ -5,18 +5,15 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.util.HashSet;
 import java.util.Set;
-
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 import org.apache.uima.pear.util.FileUtil;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
-
 import com.navinfo.dataservice.api.fcc.iface.FccApi;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
@@ -29,6 +26,8 @@ import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.ZipUtils;
+import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
+import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.engine.meta.area.ScPointAdminArea;
 import com.navinfo.dataservice.engine.meta.chain.ChainSelector;
 import com.navinfo.dataservice.engine.meta.chain.FocusSelector;
@@ -41,6 +40,12 @@ import com.navinfo.dataservice.engine.meta.rdname.RdNameImportor;
 import com.navinfo.dataservice.engine.meta.rdname.RdNameOperation;
 import com.navinfo.dataservice.engine.meta.rdname.RdNameSelector;
 import com.navinfo.dataservice.engine.meta.rdname.ScRoadnameTypename;
+import com.navinfo.dataservice.engine.meta.tmc.model.TmcLine;
+import com.navinfo.dataservice.engine.meta.tmc.model.TmcLineTree;
+import com.navinfo.dataservice.engine.meta.tmc.model.TmcPoint;
+import com.navinfo.dataservice.engine.meta.tmc.selector.TmcLineSelector;
+import com.navinfo.dataservice.engine.meta.tmc.selector.TmcPointSelector;
+import com.navinfo.dataservice.engine.meta.tmc.selector.TmcSelector;
 import com.navinfo.dataservice.engine.meta.truck.TruckSelector;
 import com.navinfo.dataservice.engine.meta.workitem.Workitem;
 
@@ -575,13 +580,17 @@ public class MetaController extends BaseController {
 		}
 	}
 	
+
 	/**
-	 * web端查询rdName
-	 * @author wangdongbin
+	 * @Title: searchRdNameForWeb
+	 * @Description: 根据任务的grid，查找对应任务grid范围内的rd_name
 	 * @param request
 	 * @return
 	 * @throws ServletException
-	 * @throws IOException
+	 * @throws IOException  ModelAndView
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2016年11月14日 下午7:58:19 
 	 */
 	@RequestMapping(value = "/rdname/websearch")
 	public ModelAndView searchRdNameForWeb(HttpServletRequest request)
@@ -602,13 +611,13 @@ public class MetaController extends BaseController {
 				throw new Exception("subtaskid未找到数据");
 			}
 			
-			int dbId = subtask.getDbId();
+//			int dbId = subtask.getDbId();
 			
 			FccApi apiFcc=(FccApi) ApplicationContextUtil.getBean("fccApi");
 			
 			JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(),1901,new JSONArray());
 			
-			JSONObject data = selector.searchForWeb(jsonReq,tips,dbId);
+			JSONObject data = selector.searchForWeb(jsonReq,tips);
 
 			return new ModelAndView("jsonView", success(data));
 
@@ -620,13 +629,17 @@ public class MetaController extends BaseController {
 		}
 	}
 	
+
 	/**
-	 * web端插入或更新rdName
-	 * @author wangdongbin
+	 * @Title: webSave
+	 * @Description: 增加参数 subtaskId
 	 * @param request
 	 * @return
 	 * @throws ServletException
-	 * @throws IOException
+	 * @throws IOException  ModelAndView
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2016年11月14日 下午6:15:21 
 	 */
 	@RequestMapping(value = "/rdname/websave")
 	public ModelAndView webSave(HttpServletRequest request)
@@ -637,11 +650,13 @@ public class MetaController extends BaseController {
 			
 			JSONObject data = jsonReq.getJSONObject("data");
 			
-			int dbId = jsonReq.getInt("dbId");
+			int subtaskId = jsonReq.getInt("subtaskId");
+			
+//			int dbId = jsonReq.getInt("dbId");
 			
 			RdNameImportor importor = new RdNameImportor();
 			
-			JSONObject result = importor.importRdNameFromWeb(data,dbId);
+			JSONObject result = importor.importRdNameFromWeb(data,subtaskId);
 			
 			return new ModelAndView("jsonView", success(result));
 		} catch (Exception e) {
@@ -672,9 +687,9 @@ public class MetaController extends BaseController {
 			
 			int flag = jsonReq.getInt("flag");
 			
-			int dbId = jsonReq.getInt("dbId");
+//			int dbId = jsonReq.getInt("dbId");
 			
-			conn = DBConnector.getInstance().getConnectionById(dbId);
+			conn = DBConnector.getInstance().getMetaConnection();
 			
 			RdNameOperation operation = new RdNameOperation(conn);
 			
@@ -805,9 +820,9 @@ public class MetaController extends BaseController {
 			
 			int nameGroupid = jsonReq.getInt("nameGroupid");
 			
-			int dbId = jsonReq.getInt("dbId");
+//			int dbId = jsonReq.getInt("dbId");
 			
-			conn = DBConnector.getInstance().getConnectionById(dbId);
+			conn = DBConnector.getInstance().getMetaConnection();
 			
 			RdNameOperation operation = new RdNameOperation(conn);
 			
@@ -870,6 +885,76 @@ public class MetaController extends BaseController {
 
 			return new ModelAndView("jsonView", success(truck));
 
+		} catch (Exception e) {
+
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		} finally {
+			DbUtils.closeQuietly(conn);
+		}
+	}
+	
+	@RequestMapping(value = "/queryTmcTreeByIds")
+	public ModelAndView queryTmcByIds(HttpServletRequest request)
+			throws ServletException, IOException {
+
+		String parameter = request.getParameter("parameter");
+		Connection conn = null;
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			JSONArray tmcIds = jsonReq.getJSONArray("tmcIds");
+			
+			conn = DBConnector.getInstance().getMetaConnection();
+			
+			TmcSelector selector = new TmcSelector(conn);
+
+			TmcLineTree tree = selector.queryTmcTree(tmcIds);
+
+			return new ModelAndView("jsonView", success(tree.Serialize(ObjLevel.BRIEF)));
+
+		} catch (Exception e) {
+
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		} finally {
+			DbUtils.closeQuietly(conn);
+		}
+	}
+	
+	@RequestMapping(value = "/queryTmcById")
+	public ModelAndView queryTmcPointById(HttpServletRequest request)
+			throws ServletException, IOException {
+
+		String parameter = request.getParameter("parameter");
+		Connection conn = null;
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			
+			conn = DBConnector.getInstance().getMetaConnection();
+
+			int tmcId = jsonReq.getInt("tmcId");
+			
+			String objType = jsonReq.getString("type");
+			
+			switch (ObjType.valueOf(objType)) {
+			case TMCLINE:
+				TmcLineSelector lineSelector = new TmcLineSelector(conn);
+
+				TmcLine tmcLine = lineSelector.loadByTmcLineId(tmcId);
+
+				return new ModelAndView("jsonView", success(tmcLine.Serialize(ObjLevel.BRIEF)));
+			case TMCPOINT:
+				TmcPointSelector pointSelector = new TmcPointSelector(conn);
+
+				TmcPoint tmcPoint = pointSelector.loadByTmcPointId(tmcId);
+
+				return new ModelAndView("jsonView", success(tmcPoint.Serialize(ObjLevel.BRIEF)));
+			default:
+				return new ModelAndView("jsonView", fail("TMC查询类型参数错误"));
+			}
 		} catch (Exception e) {
 
 			logger.error(e.getMessage(), e);

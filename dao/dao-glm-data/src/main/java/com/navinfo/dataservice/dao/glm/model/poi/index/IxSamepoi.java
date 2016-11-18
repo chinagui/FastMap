@@ -32,6 +32,8 @@ public class IxSamepoi implements IObj {
 	private String rowId;
 
 	private int relationType = 1;
+	// 更新时间
+	private String uDate;
 
 	private List<IRow> parts = new ArrayList<IRow>();
 
@@ -245,6 +247,14 @@ public class IxSamepoi implements IObj {
 		Map<Class<? extends IRow>, Map<String, ?>> child = new HashMap<Class<? extends IRow>, Map<String, ?>>();
 		child.put(IxSamepoiPart.class, partMap);
 		return child;
+	}
+
+	public String getuDate() {
+		return uDate;
+	}
+
+	public void setuDate(String uDate) {
+		this.uDate = uDate;
 	}
 
 }

@@ -35,6 +35,7 @@ import com.navinfo.dataservice.commons.database.DbServerType;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.datahub.exception.DataHubException;
 import com.navinfo.dataservice.datahub.service.DbService;
 import com.navinfo.dataservice.expcore.ExportConfig;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
@@ -69,6 +70,11 @@ public class InitRegiondb {
 			String userNamePrefix = (String) request.get("userNamePrefix");
 			Assert.notNull(userNamePrefix, "userNamePrefix不能为空");
 			
+			int meshExtendCount = 1;
+			if(request.containsKey("meshExtendCount")){
+				meshExtendCount = request.getInt("meshExtendCount");
+			}
+			
 			conn = DBConnector.getInstance().getManConnection();
 			//得到图幅号
 			Map<Integer,List<String>> regionMeshMap = getRegionMeshMap(conn,regionIds);
@@ -77,7 +83,12 @@ public class InitRegiondb {
 				insertRegions(conn,key);
 				//创建库
 				Set<String> meshes = new HashSet<String>(regionMeshMap.get(key));
-				Set<String> extendMeshes = MeshUtils.getNeighborMeshSet(meshes,1);
+				Set<String> extendMeshes = null;
+				if(meshExtendCount>0){
+					extendMeshes = MeshUtils.getNeighborMeshSet(meshes,1);
+				}else{
+					extendMeshes=meshes;
+				}
 				//大区库不直接做检查批处理，不维护M_MESH_TYPE表
 				//创建日db
 				JobInfo info1 = new JobInfo(0, "");
@@ -183,6 +194,46 @@ public class InitRegiondb {
 		cr.create("DBLINK_RMS", false, dataSource,metaDb.getDbUserName(),metaDb.getDbUserPasswd(),metaDb.getDbServer().getIp(),String.valueOf(metaDb.getDbServer().getPort()),metaDb.getDbServer().getServiceName());
 	}
 
+	
+	/**
+	 * @Title: createRegionDbLinks
+	 * @Description: 创建大区库的dblink
+	 * @param regionDbId
+	 * @throws Exception  void
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2016年11月11日 下午8:40:41 
+	 */
+	private static void createRegionDbLinks(DbInfo dbRegion)throws Exception{
+		DbLinkCreator cr = new DbLinkCreator();
+		Connection metaConn = null;
+		try{
+			DbInfo db = DbService.getInstance()
+					.getOnlyDbByBizType(BizType.DB_META_ROAD); //获取元数据库的连接参数
+			
+			DbConnectConfig connConfig = DbConnectConfig.createConnectConfig(db.getConnectParam());
+			DataSource metaDataSource =MultiDataSourceFactory.getInstance().getDataSource(connConfig);
+			DataSource regDdataSource = MultiDataSourceFactory.getInstance().getDataSource(DbConnectConfig.createConnectConfig(dbRegion.getConnectParam())); //获取大区库的数据源
+			metaConn = metaDataSource.getConnection();//获取元数据库的连接
+			//创建元数据库dblink
+			cr.create("RG_DBLINK_"+dbRegion.getDbUserName(), false, metaDataSource,dbRegion.getDbUserName(),dbRegion.getDbUserPasswd(),dbRegion.getDbServer().getIp(),String.valueOf(dbRegion.getDbServer().getPort()),dbRegion.getDbServer().getServiceName());
+			metaConn.commit();
+		}finally{
+			DbUtils.closeQuietly(metaConn);
+		}
+		 
+	}
+	
+	
+	/**
+	 * @Title: installPckUtils
+	 * @Description: (修改)(在初始化日大区库时增加创建元数据库对大区库的dblink)
+	 * @param dbId
+	 * @throws Exception  void
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2016年11月11日 下午8:46:15 
+	 */
 	private static void installPckUtils(int dbId)throws Exception{
 		Connection conn = null;
 		try{
@@ -191,6 +242,10 @@ public class InitRegiondb {
 			DbConnectConfig connConfig = DbConnectConfig.createConnectConfig(db.getConnectParam());
 			//创建元数据库dblink
 			createMetaDbLink(MultiDataSourceFactory.getInstance().getDataSource(connConfig));
+			//************2016.11.11 zl****************
+			//在元数据库中创建大区库的dblink
+			createRegionDbLinks(db);
+			
 			conn = MultiDataSourceFactory.getInstance().getDataSource(connConfig).getConnection();
 			SqlExec sqlExec = new SqlExec(conn);
 			String sqlFile = "/com/navinfo/dataservice/scripts/resources/init_edit_tables.sql";
@@ -268,10 +323,7 @@ public class InitRegiondb {
 		run.update(conn, sql2,regionId);
 	}
 	
-	public static void main(String[] args){
-//		testExeSqlOrPck();
-		testInstallPcks();
-	}
+	
 	private static void testExeSqlOrPck(){
 		Connection conn = null;
 		try{
@@ -296,13 +348,31 @@ public class InitRegiondb {
 		}
 	}
 	
-	
-	private static void testInstallPcks(){
-		try{
-			installPckUtils(500);
-		}catch(Exception e){
-			e.printStackTrace();
-		}
+	public static void main(String[] args){
+//		testExeSqlOrPck();
+		testInstallPcks(111);
 	}
-
+	
+	private static void testInstallPcks(int dbId){
+		Connection conn = null;
+		
+			DbInfo db;
+			try {
+				db = DbService.getInstance()
+						.getDbById(dbId);
+				DbConnectConfig connConfig = DbConnectConfig.createConnectConfig(db.getConnectParam());
+				//************2016.11.11 zl****************
+				//在元数据库中创建大区库的dblink
+				createRegionDbLinks(db);
+				
+			} catch (DataHubException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+		
+	}
 }

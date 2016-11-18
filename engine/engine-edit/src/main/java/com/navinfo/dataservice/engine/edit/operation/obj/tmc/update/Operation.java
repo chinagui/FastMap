@@ -55,17 +55,16 @@ public class Operation implements IOperation {
 		JSONObject content = command.getUpdateContent();
 
 		if (content.containsKey("objStatus")) {
-
-			if (content.containsKey("direct")) {
-				int direct = content.getInt("direct");
+			//判断是否修改tmc匹配信息的方向：包含isChangedDirect参数，并且该参数值为1代表修改
+			if (content.containsKey("isChangedDirect") && content.getInt("isChangedDirect") == 1) {
 				for (IRow row : tmclocation.getLinks()) {
 					RdTmclocationLink tmcLink = (RdTmclocationLink) row;
+					
+					int tmcDirect = tmcLink.getDirect();
+					//修改方向关系，将原来的1值改为2,2值该为1即可
+					tmcLink.changedFields().put("direct", tmcDirect == 1? 2:1);
 
-					if (tmcLink.getDirect() != direct) {
-						tmcLink.changedFields().put("direct", direct);
-
-						result.insertObject(tmcLink, ObjStatus.UPDATE, tmcLocationPid);
-					}
+					result.insertObject(tmcLink, ObjStatus.UPDATE, tmcLocationPid);
 				}
 			}
 			boolean isChanged = tmclocation.fillChangeFields(content);
@@ -74,6 +73,7 @@ public class Operation implements IOperation {
 				result.insertObject(tmclocation, ObjStatus.UPDATE, tmclocation.pid());
 			}
 		}
+		//修改子表数据
 		if (content.containsKey("links")) {
 
 			JSONArray links = content.getJSONArray("links");

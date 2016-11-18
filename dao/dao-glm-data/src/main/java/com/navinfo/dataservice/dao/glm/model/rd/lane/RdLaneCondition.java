@@ -102,6 +102,11 @@ public class RdLaneCondition implements IRow {
 
 	@Override
 	public void copy(IRow row) {
+		RdLaneCondition condition = (RdLaneCondition)row;
+		this.setDirection(condition.getDirection());
+		this.setDirectionTime(condition.getDirectionTime());
+		this.setVehicle(condition.getVehicle());
+		this.setVehicleTime(condition.getVehicleTime());
 	}
 
 	@Override

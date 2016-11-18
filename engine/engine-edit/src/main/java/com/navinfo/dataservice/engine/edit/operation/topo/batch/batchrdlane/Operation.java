@@ -28,7 +28,6 @@ import com.navinfo.dataservice.dao.glm.model.rd.tollgate.RdTollgate;
 import com.navinfo.dataservice.dao.glm.selector.rd.lane.RdLaneSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 
-
 /**
  * 详细车道批量操作
  * 
@@ -47,7 +46,6 @@ public class Operation implements IOperation {
 	private List<String> lanInfos;
 	private int passageNum;
 	private RdTollgate tollgate;
-
 
 	public RdTollgate getTollgate() {
 		return tollgate;
@@ -140,13 +138,13 @@ public class Operation implements IOperation {
 	private void createRdLanes(Result result) throws Exception {
 
 		for (int i = 0; i < this.command.getLinks().size(); i++) {
-			
+
 			List<RdLane> lanes = new ArrayList<RdLane>();
 			RdLink link = (RdLink) this.command.getLinks().get(i);
 			Map<Integer, RdLane> map = new HashMap<Integer, RdLane>();
 			Map<Integer, List<RdLane>> mapLane = new HashMap<Integer, List<RdLane>>();
 			// 计算link上原有的车道信息
-			mapLane =this.caleRdLanesForDir(i, link);
+			mapLane = this.caleRdLanesForDir(i, link);
 			lanes = mapLane.values().iterator().next();
 			int laneDir = mapLane.keySet().iterator().next();
 			if (lanes.size() > 0) {
@@ -159,7 +157,10 @@ public class Operation implements IOperation {
 						JSONObject jsonLaneInfo = this.command.getLaneInfos()
 								.getJSONObject(m);
 						if (map.containsKey(jsonLaneInfo.getInt("pid"))) {
-							if(jsonLaneInfo.size() ==1&&map.get(jsonLaneInfo.getInt("pid")).getLaneNum() == this.command.getLaneInfos().size()){
+							if (jsonLaneInfo.size() == 1
+									&& map.get(jsonLaneInfo.getInt("pid"))
+											.getLaneNum() == this.command
+											.getLaneInfos().size()) {
 								continue;
 							}
 							jsonLaneInfo.put("laneNum", this.command
@@ -183,8 +184,8 @@ public class Operation implements IOperation {
 						}
 					}
 
-				}else{
-					for(RdLane lane : lanes){
+				} else {
+					for (RdLane lane : lanes) {
 						com.navinfo.dataservice.engine.edit.operation.obj.rdlane.delete.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdlane.delete.Operation(
 								conn);
 						operation.deleteRdLane(result, lane);
@@ -206,7 +207,7 @@ public class Operation implements IOperation {
 			lane = (RdLane) new RdLaneSelector(conn).loadById(
 					jsonLaneInfo.getInt("pid"), true, true);
 		}
-        int lanePid = PidUtil.getInstance().applyRdLanePid();
+		int lanePid = PidUtil.getInstance().applyRdLanePid();
 		lane.setPid(lanePid);
 		lane.setLinkPid(linkPid);
 		lane.setLaneNum(this.command.getLaneInfos().size());
@@ -326,7 +327,7 @@ public class Operation implements IOperation {
 	 * @return
 	 * @throws Exception
 	 */
-	private Map<Integer, List<RdLane>> caleRdLanesForDir(int i,RdLink link)
+	private Map<Integer, List<RdLane>> caleRdLanesForDir(int i, RdLink link)
 			throws Exception {
 		int laneDir = 1;
 		Map<Integer, List<RdLane>> map = new HashMap<Integer, List<RdLane>>();
@@ -354,7 +355,7 @@ public class Operation implements IOperation {
 				}
 			}
 		}
-        map.put(laneDir, lanes);
+		map.put(laneDir, lanes);
 		return map;
 	}
 
@@ -670,8 +671,51 @@ public class Operation implements IOperation {
 		}
 		return new RdLaneSelector(this.conn).loadByLink(linkPid, laneDir, true);
 	}
-	
-	
+
+	/***
+	 * 打断link维护详细车道信息
+	 * 
+	 * @param linkPid打断link
+	 * @param links
+	 *            生成的新link
+	 * @param result
+	 * @throws Exception
+	 */
+	public void breakRdLink(int linkPid, List<RdLink> links, Result result)
+			throws Exception {
+		//线修行移动分离不是跨图幅不用维护
+		if(links.size()  ==  1){
+			return ;
+		}
+		// 加载原有Link上的车道信息
+		List<RdLane> lanes = new RdLaneSelector(conn).loadByLink(linkPid, 0,
+				true);
+		// 删除原有车道信息
+		for (RdLane lane : lanes) {
+			result.insertObject(lane, ObjStatus.DELETE, lane.getPid());
+		}
+		for (RdLink link : links) {
+			for (RdLane lane : lanes) {
+				// 设置车道的link信息
+				RdLane rdLane = new RdLane();
+				rdLane.copy(lane);
+				rdLane.setLinkPid(link.getPid());
+				// 申请车道pid
+				int lanePid = PidUtil.getInstance().applyRdLanePid();
+				rdLane.setPid(lanePid);
+				// 加载详细车道的时间段和车辆限制表信息
+				if (rdLane.getConditions().size() > 0) {
+					for (IRow row : rdLane.getConditions()) {
+						RdLaneCondition condition = (RdLaneCondition) row;
+						condition.setLanePid(lanePid);
+					}
+				}
+				result.insertObject(rdLane, ObjStatus.INSERT, rdLane.getPid());
+			}
+		}
+
+	}
+
 	public static void main(String[] args) {
 		Map<Integer, List<RdLane>> map = new HashMap<Integer, List<RdLane>>();
 		List<RdLane> lanes = new ArrayList<RdLane>();
@@ -682,10 +726,8 @@ public class Operation implements IOperation {
 		lanes.add(lane);
 		lanes.add(lane1);
 		map.put(1, lanes);
-		lanes =  map.values().iterator().next();
+		lanes = map.values().iterator().next();
 		System.out.println(lanes.get(1).getPid());
 	}
-	
-
 
 }

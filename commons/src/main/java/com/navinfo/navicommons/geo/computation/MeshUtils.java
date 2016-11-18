@@ -733,35 +733,35 @@ public abstract class MeshUtils {
 		return false;
 	}
 	public static boolean locateMeshBorder(double x,double y,String mesh){
-		TopoLocation loc = meshLocate(x,y,mesh);
+		TopoLocation loc = TopoLocation.valueOf(meshLocate(x,y,mesh));
 		if(loc==TopoLocation.Inside||loc==TopoLocation.Outside){
 			return false;
 		}
 		return true;
 	}
-	public static TopoLocation meshLocate(double x,double y,String mesh){
+	public static String meshLocate(double x,double y,String mesh){
 		double[] rect = mesh2Rect(mesh);
 		if(x<rect[0]||x>rect[2]||y<rect[1]||y>rect[2]){
-			return TopoLocation.Outside;
+			return TopoLocation.Outside.toString();
 		}
 		if(x==rect[0]&&y==rect[1]){
-			return TopoLocation.LeftBottom;
+			return TopoLocation.LeftBottom.toString();
 		}else if(x==rect[2]&&y==rect[1]){
-			return TopoLocation.RightBottom;
+			return TopoLocation.RightBottom.toString();
 		}else if(x==rect[2]&&y==rect[3]){
-			return TopoLocation.RightTop;
+			return TopoLocation.RightTop.toString();
 		}else if(x==rect[0]&&y==rect[3]){
-			return TopoLocation.LeftTop;
+			return TopoLocation.LeftTop.toString();
 		}else if(x==rect[0]){
-			return TopoLocation.Left;
+			return TopoLocation.Left.toString();
 		}else if(y==rect[1]){
-			return TopoLocation.Bottom;
+			return TopoLocation.Bottom.toString();
 		}else if(x==rect[2]){
-			return TopoLocation.Right;
+			return TopoLocation.Right.toString();
 		}else if(y==rect[3]){
-			return TopoLocation.Top;
+			return TopoLocation.Top.toString();
 		}else{
-			return TopoLocation.Inside;
+			return TopoLocation.Inside.toString();
 		}
 	}
 	

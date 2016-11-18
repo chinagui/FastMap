@@ -1843,7 +1843,7 @@ public class TaskOperation {
 //				+ "     AND TT.MONTH_EDIT_GROUP_ID = G.GROUP_ID(+)"
 				+ "     AND TT.MONTH_EDIT_GROUP_ID = G.GROUP_ID"
 				+ "     AND TT.TASK_ID = S.TASK_ID(+)"
-				+ "  UNION ALL"
+				+ "  UNION"
 				//分配子任务，且子任务都是关闭状态==〉已完成
 				+ "  SELECT TT.CITY_ID,"
 				+ "         TT.TASK_ID,"
@@ -1869,11 +1869,11 @@ public class TaskOperation {
 				+ "     AND NOT EXISTS (SELECT 1"
 				+ "            FROM SUBTASK STT"
 				+ "           WHERE STT.TASK_ID = TT.TASK_ID"
-				+ "             AND STT.STATUS = 1"
+				+ "             AND STT.STATUS in (1,2)"
 				+ "             AND STT.STAGE = 2)"
 				+ "     AND TT.TASK_ID = S.TASK_ID(+)"
 				+ "     AND TT.TASK_ID = ST.TASK_ID"
-				+ "  UNION ALL"
+				+ "  UNION"
 				//分配子任务，且存在非关子任务==〉作业中
 				+ "  SELECT TT.CITY_ID,"
 				+ "         TT.TASK_ID,"

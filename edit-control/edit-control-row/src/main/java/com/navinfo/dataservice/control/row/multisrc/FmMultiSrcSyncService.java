@@ -50,7 +50,8 @@ public class FmMultiSrcSyncService {
 			QueryRunner queryRunner = new QueryRunner();
 			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
 			//判断今天是否已经同步成功过POI增量数据
-			String querySql = "SELECT * FROM FM_MULTISRC_SYNC WHERE SYNC_STATUS=18 AND TO_CHAR(SYNC_TIME,'yyyyMMdd')="
+			/*
+			String querySql = "SELECT * FROM FM_MULTISRC_SYNC WHERE SYNC_STATUS IN(1,2,8,18) AND TO_CHAR(SYNC_TIME,'yyyyMMdd')="
 					+ "TO_CHAR(SYSDATE,'yyyyMMdd') ORDER BY SYNC_TIME DESC";
 			Object[] queryParams = {};
 			List<FmMultiSrcSync> querySync = this.querySync(conn, querySql, queryParams);
@@ -58,13 +59,13 @@ public class FmMultiSrcSyncService {
 				//当天已经成功向多源同步过POI数据
 				return "今天已经向多源同步过POI增量,不能重复同步!";
 			}
-			
+			*/
 			//处理数据
 			//查询最近一次同步时间
 			FmMultiSrcSync fmMultiSrcSync = this.queryLastSuccessSync();
 			Date lastSyncTime = null;
 			if(fmMultiSrcSync != null){
-				lastSyncTime = (Date) fmMultiSrcSync.getLastSyncTime();
+				lastSyncTime = (Date) fmMultiSrcSync.getSyncTime();
 				
 				//日志
 				log.info("FM同步到多源最近一次成功数据:"+fmMultiSrcSync.toString());
@@ -176,8 +177,6 @@ public class FmMultiSrcSyncService {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new ServiceException("查询失败，原因为:"+e.getMessage(),e);
-		}finally{
-			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
 

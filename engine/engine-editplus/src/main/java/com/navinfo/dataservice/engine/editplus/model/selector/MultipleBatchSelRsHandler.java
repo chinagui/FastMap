@@ -22,10 +22,8 @@ import com.navinfo.dataservice.engine.editplus.utils.ResultSetGetter;
 public class MultipleBatchSelRsHandler implements ResultSetHandler<Map<Long,List<BasicRow>>> {
 
 	private GlmTable glmTable;
-	private long objPid;
-	public MultipleBatchSelRsHandler(GlmTable glmTable,long objPid){
+	public MultipleBatchSelRsHandler(GlmTable glmTable){
 		this.glmTable=glmTable;
-		this.objPid=objPid;
 	}
 
 	/* (non-Javadoc)
@@ -38,13 +36,21 @@ public class MultipleBatchSelRsHandler implements ResultSetHandler<Map<Long,List
 		List<BasicRow> basicRowList = new ArrayList<BasicRow>();
 		try{
 			while(rs.next()){
+				long objPid = rs.getLong("OBJ_PID");
 				BasicRow row = (BasicRow)Class.forName(glmTable.getModelClassName()).getConstructor(new Class[]{long.class}).newInstance(objPid);
 				for(Map.Entry<String, String> entry:glmTable.getColumns().entrySet()){
 					row.setAttrByCol(entry.getKey(), ResultSetGetter.getValue(rs, entry.getValue()));
 				}
+				if(map.containsKey(objPid)){
+					basicRowList = map.get(objPid);
+					
+				}else{
+					basicRowList.clear();
+				}
 				basicRowList.add(row);
+				map.put(objPid, basicRowList);
 			}
-			return basicRowList;
+			return map;
 		}catch(Exception e){
 			throw new SQLException(e.getMessage(),e);
 		}

@@ -1,10 +1,14 @@
 package com.navinfo.dataservice.engine.editplus.model.obj;
 
+import java.lang.reflect.InvocationTargetException;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import com.navinfo.dataservice.engine.editplus.diff.ObjectDiffConfig;
+import com.navinfo.dataservice.engine.editplus.glm.GlmTableNotFoundException;
 import com.navinfo.dataservice.engine.editplus.model.BasicRow;
 import com.navinfo.dataservice.engine.editplus.model.selector.ObjSelector;
 import com.navinfo.dataservice.engine.editplus.operation.OperationType;
@@ -33,6 +37,9 @@ public abstract class BasicObj {
 	public Map<String, List<BasicRow>> getSubrows() {
 		return subrows;
 	}
+	public void insertSubrow(String tableName,List<BasicRow> basicRowList) {
+		subrows.put(tableName, basicRowList);
+	}
 	
 	public abstract String objType();
 	
@@ -46,6 +53,12 @@ public abstract class BasicObj {
 	/**
 	 * 主表对应的子表list。key：Class.class value:模型中子表的list
 	 * @return
+	 * @throws SQLException 
+	 * @throws GlmTableNotFoundException 
+	 * @throws IllegalArgumentException 
+	 * @throws IllegalAccessException 
+	 * @throws InvocationTargetException 
+	 * @throws NoSuchMethodException 
 	 */
 //	public abstract Map<Class<? extends BasicRow>,List<BasicRow>> childRows(); 
 
@@ -61,10 +74,11 @@ public abstract class BasicObj {
 //	}
 	
 
-	public List<BasicRow> getRowsByName(String tableName){
+	public List<BasicRow> getRowsByName(Connection conn,String tableName) throws GlmTableNotFoundException, SQLException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, IllegalArgumentException{
 		List<BasicRow> rows = subrows.get(tableName);
 		if(rows==null){
 			//ObjSelector
+			ObjSelector.selectChildren(conn,this,tableName);
 		}
 		return subrows.get(tableName);
 	}

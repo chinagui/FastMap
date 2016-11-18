@@ -2,7 +2,6 @@ package com.navinfo.dataservice.engine.editplus.model.selector;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -33,7 +32,8 @@ public class SingleSelRsHandler implements ResultSetHandler<BasicRow> {
 			row = (BasicRow)Class.forName(glmTable.getModelClassName()).getConstructor(new Class[]{long.class}).newInstance(objPid);
 			while(rs.next()){
 				for(Map.Entry<String, String> entry:glmTable.getColumns().entrySet()){
-					row.setAttrByCol(entry.getKey(), ResultSetGetter.getValue(rs, entry.getValue()));
+//					row.setAttrByCol(entry.getKey(), ResultSetGetter.getValue(rs, entry.getValue()));
+					row.setAttrByCol(entry.getKey(), ResultSetGetter.getValue(rs, entry.getKey(), entry.getValue()));
 				}
 			}
 			return row;

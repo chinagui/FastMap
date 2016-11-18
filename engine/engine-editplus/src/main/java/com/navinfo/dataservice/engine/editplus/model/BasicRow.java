@@ -261,15 +261,25 @@ public abstract class BasicRow implements Logable{
 	 * @param colName
 	 * @return
 	 */
+//	public String colName2Getter(String colName){
+//		StringBuilder sb = new StringBuilder();
+//		sb.append("get");
+//		for(String s:colName.split("_")){
+//			
+//			char c = s.charAt(0);
+//			c=(char)(c-32);
+//			sb.append(c);
+//			sb.append(s.substring(1, s.length()));
+//		}
+//		return sb.toString();
+//	}
 	public String colName2Getter(String colName){
 		StringBuilder sb = new StringBuilder();
 		sb.append("get");
 		for(String s:colName.split("_")){
-			
 			char c = s.charAt(0);
-			c=(char)(c-32);
 			sb.append(c);
-			sb.append(s.substring(1, s.length()));
+			sb.append(s.toLowerCase().substring(1, s.length()));
 		}
 		return sb.toString();
 	}
@@ -283,12 +293,22 @@ public abstract class BasicRow implements Logable{
 		sb.append("set");
 		for(String s:colName.split("_")){
 			char c = s.charAt(0);
-			c=(char)(c-32);
 			sb.append(c);
-			sb.append(s.substring(1, s.length()));
+			sb.append(s.toLowerCase().substring(1, s.length()));
 		}
 		return sb.toString();
 	}
+//	public String colName2Setter(String colName){
+//		StringBuilder sb = new StringBuilder();
+//		sb.append("set");
+//		for(String s:colName.split("_")){
+//			char c = s.charAt(0);
+//			c=(char)(c-32);
+//			sb.append(c);
+//			sb.append(s.substring(1, s.length()));
+//		}
+//		return sb.toString();
+//	}
 	public String identity(){
 		return rowId;
 	}

@@ -344,11 +344,11 @@ public class IxPoi extends AbstractIx {
 		return "IX_POI";
 	}
 	
-	@Override
-	public String colName2Getter(String colName){
-		//handler open_24h...
-		return null;
-	}
+//	@Override
+//	public String colName2Getter(String colName){
+//		//handler open_24h...
+//		return null;
+//	}
 
 
 //	@Override

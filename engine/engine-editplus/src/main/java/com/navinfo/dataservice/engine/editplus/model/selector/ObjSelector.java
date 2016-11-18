@@ -1,9 +1,13 @@
 package com.navinfo.dataservice.engine.editplus.model.selector;
 
+import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
+
+import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.engine.editplus.glm.GlmFactory;
 import com.navinfo.dataservice.engine.editplus.glm.GlmObject;
@@ -14,6 +18,7 @@ import com.navinfo.dataservice.engine.editplus.model.BasicRow;
 import com.navinfo.dataservice.engine.editplus.model.obj.BasicObj;
 import com.navinfo.dataservice.engine.editplus.model.obj.ObjFactory;
 import com.navinfo.navicommons.database.QueryRunner;
+import java.util.List;
 
 /** 
  * 
@@ -27,11 +32,15 @@ public class ObjSelector {
 	public static BasicObj selectByPid(Connection conn,String objType,SelectorConfig selConfig,long pid,boolean isOnlyMain,boolean isLock)throws Exception{
 		GlmObject glmObj = GlmFactory.getInstance().getObjByType(objType);
 		GlmTable mainTable = glmObj.getMainTable();
-//		Class<?> clazz = Class.forName(mainTable.getModelClassName());
 		String sql = "SELECT * FROM "+mainTable.getName()+" WHERE "+mainTable.getPkColumn()+"=?";
-		BasicRow mainrow = new QueryRunner().query(conn, sql, new SelRsHandler(mainTable,pid),pid);
+		if(isLock){
+			sql += " FOR UPDATE NOWAIT";
+		}
+		BasicRow mainrow = new QueryRunner().query(conn, sql, new SingleSelRsHandler(mainTable,pid),pid);
 		BasicObj obj = ObjFactory.getInstance().create4Select(mainrow);
-		selectChildren(conn,obj,selConfig);
+		if(!isOnlyMain){
+			selectChildren(conn,obj,selConfig);
+		}
 		return obj;
 	}
 
@@ -60,8 +69,12 @@ public class ObjSelector {
 	 * @param obj
 	 * @param glmObj
 	 * @throws SQLException 
+	 * @throws IllegalArgumentException 
+	 * @throws IllegalAccessException 
+	 * @throws InvocationTargetException 
+	 * @throws NoSuchMethodException 
 	 */
-	public static void selectChildren(Connection conn,BasicObj obj,GlmObject glmObj) throws SQLException{
+	public static void selectChildren(Connection conn,BasicObj obj,GlmObject glmObj) throws SQLException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, IllegalArgumentException{
 		Map<String,GlmTable> tables = glmObj.getTables();
 		for(Map.Entry<String, GlmTable> entry:tables.entrySet()){
 			selectChildren(conn,obj,entry.getValue());
@@ -75,8 +88,12 @@ public class ObjSelector {
 	 * @param glmObj
 	 * @param filterTables
 	 * @throws SQLException 
+	 * @throws IllegalArgumentException 
+	 * @throws IllegalAccessException 
+	 * @throws InvocationTargetException 
+	 * @throws NoSuchMethodException 
 	 */
-	public static void selectChildren(Connection conn,BasicObj obj,GlmObject glmObj,Collection<String> filterTables) throws SQLException{
+	public static void selectChildren(Connection conn,BasicObj obj,GlmObject glmObj,Collection<String> filterTables) throws SQLException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, IllegalArgumentException{
 		Map<String,GlmTable> tables = glmObj.getTables();
 		for(Map.Entry<String, GlmTable> entry:tables.entrySet()){
 			if(filterTables!=null&&filterTables.contains(entry.getKey())){
@@ -93,8 +110,12 @@ public class ObjSelector {
 	 * @param selConfig
 	 * @throws SQLException 
 	 * @throws GlmTableNotFoundException 
+	 * @throws IllegalArgumentException 
+	 * @throws IllegalAccessException 
+	 * @throws InvocationTargetException 
+	 * @throws NoSuchMethodException 
 	 */
-	public static void selectChildren(Connection conn,BasicObj obj,SelectorConfig selConfig) throws GlmTableNotFoundException, SQLException{
+	public static void selectChildren(Connection conn,BasicObj obj,SelectorConfig selConfig) throws GlmTableNotFoundException, SQLException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, IllegalArgumentException{
 		if(selConfig!=null){
 			//存在配置
 			if(selConfig.getSpecTables()!=null){
@@ -118,8 +139,12 @@ public class ObjSelector {
 	 * @param specTable 子表名
 	 * @throws SQLException 
 	 * @throws GlmTableNotFoundException 
+	 * @throws IllegalArgumentException 
+	 * @throws IllegalAccessException 
+	 * @throws InvocationTargetException 
+	 * @throws NoSuchMethodException 
 	 */
-	public static void selectChildren(Connection conn,BasicObj obj,String specTable) throws GlmTableNotFoundException, SQLException{
+	public static void selectChildren(Connection conn,BasicObj obj,String specTable) throws GlmTableNotFoundException, SQLException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, IllegalArgumentException{
 		selectChildren(conn,obj,GlmFactory.getInstance().getTableByName(specTable));
 	}
 
@@ -129,24 +154,38 @@ public class ObjSelector {
 	 * @param obj
 	 * @param glmTab 子表
 	 * @throws SQLException 
+	 * @throws IllegalArgumentException 
+	 * @throws IllegalAccessException 
+	 * @throws InvocationTargetException 
+	 * @throws NoSuchMethodException 
 	 */
-	private static void selectChildren(Connection conn,BasicObj obj,GlmTable glmTab) throws SQLException{
+	private static void selectChildren(Connection conn,BasicObj obj,GlmTable glmTab) throws SQLException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, IllegalArgumentException{
 		long objPid = obj.objPid();
 		GlmRef objRef = glmTab.getObjRef();
 		//直接关联
 		if(objRef.isRefMain()){
-			String sql = "SELECT T.* FROM "+glmTab.getName()+"T,"+objRef.getRefTable()+"R WHERE T."
+			String sql = "SELECT * FROM "+glmTab.getName()+" WHERE "
 					+ objRef.getCol() + "=" + objRef.getRefCol();
-			BasicRow childRow = new QueryRunner().query(conn, sql, new SelRsHandler(glmTab,objPid),objPid);
+			List<BasicRow> childRows = new QueryRunner().query(conn, sql, new MultipleSelRsHandler(glmTab,objPid),objPid);
 			//更新obj
-			
+			obj.insertSubrow(glmTab.getName(),childRows);
 		}
 		//间接关联
 		else{
 			//获取关联表。此处的递归放到BasicObj中实现
-			
+			List<BasicRow> refObjList = obj.getRowsByName(conn,objRef.getRefTable());
 			//查询
-			//更新obj
+			List<String> condition = new ArrayList<String>();
+			for(BasicRow refObj:refObjList){
+				condition.add(refObj.getAttrByColName(objRef.getRefCol()).toString());
+			}
+			if(!condition.isEmpty()){
+				String sql = "SELECT * FROM "+glmTab.getName()+" WHERE "
+						+ objRef.getCol() + "in(" + StringUtils.join(condition.toArray(),",") + ")";
+				List<BasicRow> childRows = new QueryRunner().query(conn, sql, new MultipleSelRsHandler(glmTab,objPid),objPid);
+				//更新obj
+				obj.insertSubrow(glmTab.getName(),childRows);
+			}
 			
 		}
 		

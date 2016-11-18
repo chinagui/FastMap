@@ -76,7 +76,7 @@ public class RdLinkTest extends InitApplication {
 
 	@Test
 	public void testDelete() {
-		String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDRESTRICTION\",\"dbId\":17,\"data\":{\"details\":[{\"vias\":[{\"linkPid\":\"385763\",\"rowId\":\"9F0ACD0937004FE184B38FA2B5191DD0\",\"objStatus\":\"UPDATE\"},{\"linkPid\":\"385764\",\"rowId\":\"EDDF1A4C9CDA46C7A43D66203608AF18\",\"objStatus\":\"UPDATE\"}],\"pid\":200000061},{\"outLinkPid\":390463,\"pid\":308000048,\"objStatus\":\"UPDATE\",\"relationshipType\":2,\"vias\":[{\"pid\":0,\"linkPid\":390464,\"groupId\":1,\"seqNum\":1,\"rowId\":null,\"objStatus\":\"INSERT\"}]}],\"pid\":307000044}}";
+		String parameter = "{\"command\":\"CREATE\",\"dbId\":17,\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.41180202364922,40.04715001064649],[116.41199959952975,40.04721618234809]]},\"catchLinks\":[{\"linkPid\":722925,\"lon\":116.41199959952975,\"lat\":40.04721618234809}]},\"type\":\"RDLINK\"}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

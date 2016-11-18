@@ -62,10 +62,10 @@ public class Check {
 				{
 					throw new Exception("传递的link参数不正确：link_pid错误");
 				}
-				else
-				{
-					this.checkLinkDirect(linkList);
-				}
+//				else
+//				{
+//					this.checkLinkDirect(linkList);
+//				}
 			}
 		}
 		if(CollectionUtils.isNotEmpty(linkList) && ((command.getLinkArray() == null)||(command.getLinkArray().size() == 0)))
@@ -93,24 +93,28 @@ public class Check {
 		}
 	}
 	
-	/**
-	 * 检查link是否正确
-	 * @param linkList
-	 * @throws Exception
-	 */
-	private void checkLinkDirect(List<RdLink> linkList) throws Exception
-	{
-		if(CollectionUtils.isNotEmpty(linkList))
-		{
-			for(RdLink link : linkList)
-			{
-				if(link.getImiCode() != 1 && link.getImiCode() !=2)
-				{
-					throw new Exception("link:"+link.getPid()+"不具有'I、M'属性,不允许制作");
-				}
-			}
-		}
-	}
+//	/**
+//	 * 检查link是否正确
+//	 * @param linkList
+//	 * @throws Exception
+//	 */
+//	private void checkLinkDirect(List<RdLink> linkList) throws Exception
+//	{
+//		if(CollectionUtils.isNotEmpty(linkList))
+//		{
+//			for(RdLink link : linkList)
+//			{
+//				if(link.getSpecialTraffic() == 1)
+//				{
+//					return;
+//				}
+//				if(link.getImiCode() != 1 && link.getImiCode() !=2 && link.getSpecialTraffic() !=1)
+//				{
+//					throw new Exception("link:"+link.getPid()+"不具有'I、M'属性,不允许制作");
+//				}
+//			}
+//		}
+//	}
 
 	/**
 	 * @param conn

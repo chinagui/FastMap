@@ -11,6 +11,7 @@ import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.engine.editplus.glm.GlmColumn;
 import com.navinfo.dataservice.engine.editplus.glm.GlmTable;
 import com.navinfo.dataservice.engine.editplus.model.BasicRow;
+import com.navinfo.dataservice.engine.editplus.operation.OperationType;
 import com.navinfo.dataservice.engine.editplus.utils.ResultSetGetter;
 
 import oracle.sql.STRUCT;
@@ -35,7 +36,7 @@ public class SingleSelRsHandler implements ResultSetHandler<BasicRow> {
 		BasicRow row = null;
 		try{
 			row = (BasicRow)Class.forName(glmTable.getModelClassName()).getConstructor(new Class[]{long.class}).newInstance(objPid);
-			while(rs.next()){
+			if(rs.next()){
 				for(Map.Entry<String, GlmColumn> entry:glmTable.getColumns().entrySet()){
 					String columName = entry.getValue().getName();
 					/*--------测试使用start------*/
@@ -72,6 +73,8 @@ public class SingleSelRsHandler implements ResultSetHandler<BasicRow> {
 					}
 				}
 			}
+			//默认为初始状态
+			//row.setOpType(OperationType.INITIALIZE);
 			return row;
 		}catch(Exception e){
 			throw new SQLException(e.getMessage(),e);

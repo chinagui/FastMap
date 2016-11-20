@@ -14,11 +14,13 @@ import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.engine.editplus.glm.GlmColumn;
 import com.navinfo.dataservice.engine.editplus.glm.GlmTable;
 import com.navinfo.dataservice.engine.editplus.model.BasicRow;
+import com.navinfo.dataservice.engine.editplus.operation.OperationType;
 import com.navinfo.dataservice.engine.editplus.utils.ResultSetGetter;
 
 import oracle.sql.STRUCT;
 
 /** 
+ * selector出来的row为UPDATE状态
  * @ClassName: SingleBatchSelRsHandler
  * @author songdongyan
  * @date 2016年11月17日
@@ -45,6 +47,8 @@ public class SingleBatchSelRsHandler implements ResultSetHandler<List<BasicRow>>
 				for(Map.Entry<String, GlmColumn> entry:glmTable.getColumns().entrySet()){
 					ResultSetGetter.setAttrByCol(rs, row, entry.getValue());
 				}
+				//selector出来的row为UPDATE状态
+				row.setOpType(OperationType.UPDATE);
 				list.add(row);
 			}
 			return list;

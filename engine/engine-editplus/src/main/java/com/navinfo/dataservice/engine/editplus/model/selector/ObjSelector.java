@@ -21,7 +21,7 @@ import com.navinfo.navicommons.database.QueryRunner;
 import java.util.List;
 
 /** 
- * 
+ * selector出来的row为UPDATE状态
  * @ClassName: ObjSelector
  * @author xiaoxiaowen4127
  * @date 2016年11月10日
@@ -32,7 +32,7 @@ public class ObjSelector {
 	public static BasicObj selectByPid(Connection conn,String objType,SelectorConfig selConfig,long pid,boolean isOnlyMain,boolean isLock)throws Exception{
 		GlmObject glmObj = GlmFactory.getInstance().getObjByType(objType);
 		GlmTable mainTable = glmObj.getMainTable();
-		String sql = "SELECT * FROM "+mainTable.getName()+" WHERE "+mainTable.getPkColumn()+"=?";
+		String sql = selectByPidSql(mainTable);
 		if(isLock){
 			sql += " FOR UPDATE NOWAIT";
 		}
@@ -161,31 +161,36 @@ public class ObjSelector {
 	 */
 	private static void selectChildren(Connection conn,BasicObj obj,GlmTable glmTab) throws SQLException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, IllegalArgumentException{
 		long objPid = obj.objPid();
-		GlmRef objRef = glmTab.getObjRef();
-		//直接关联
-		if(objRef.isRefMain()){
-			String sql = "SELECT * FROM "+glmTab.getName()+" WHERE "
-					+ objRef.getCol() + "=" + objRef.getRefCol();
-			List<BasicRow> childRows = new QueryRunner().query(conn, sql, new MultipleSelRsHandler(glmTab,objPid),objPid);
-			//更新obj
-			obj.insertSubrow(glmTab.getName(),childRows);
+		String sql = selectByPidSql(glmTab);
+		List<BasicRow> childRows = new QueryRunner().query(conn, sql, new MultipleSelRsHandler(glmTab,objPid),objPid);
+		//更新obj
+		obj.insertSubrow(glmTab.getName(),childRows);
+	}
+	/**
+	 * 返回带主表pid参数的sql语句
+	 * @param glmTable
+	 * @return
+	 */
+	public static String selectByPidSql(GlmTable glmTable){
+		if(glmTable.getObjRef()==null){
+			return "SELECT P.* FROM "+glmTable.getName()+" P WHERE P."+glmTable.getPkColumn()+"=?";
+		}else{
+			GlmRef objRef = glmTable.getObjRef();
+			//根据参考配置组装sql
+			int i=0;
+			StringBuilder sb = new StringBuilder();
+			StringBuilder whereSb = new StringBuilder();
+			sb.append("SELECT R0.* FROM "+glmTable.getName()+" R0");
+			whereSb.append(" WHERE 1=1");
+			while(objRef!=null&&(!objRef.isRefMain())){
+				sb.append(","+objRef.getRefTable()+" R"+(i+1));
+				whereSb.append("AND R"+i+"."+objRef.getCol()+"=R"+(i+1)+"."+objRef.getRefCol());
+				objRef=GlmFactory.getInstance().getTableByName(objRef.getRefTable()).getObjRef();
+				i++;
+			}
+			whereSb.append("AND R"+i+"."+objRef.getCol()+"=?");
+			sb.append(whereSb.toString());
+			return sb.toString();
 		}
-		//间接关联
-		else{
-			//获取关联表。此处的递归放到BasicObj中实现
-			List<BasicRow> refObjList = obj.getRowsByName(conn,objRef.getRefTable());
-			//查询
-			List<String> condition = new ArrayList<String>();
-			for(BasicRow refObj:refObjList){
-				condition.add(refObj.getAttrByColName(objRef.getRefCol()).toString());
-			}
-			if(!condition.isEmpty()){
-				String sql = "SELECT * FROM "+glmTab.getName()+" WHERE "
-						+ objRef.getCol() + "IN(" + StringUtils.join(condition.toArray(),",") + ")";
-				List<BasicRow> childRows = new QueryRunner().query(conn, sql, new MultipleSelRsHandler(glmTab,objPid),objPid);
-				//更新obj
-				obj.insertSubrow(glmTab.getName(),childRows);
-			}
-		}		
-	}	
+	}
 }

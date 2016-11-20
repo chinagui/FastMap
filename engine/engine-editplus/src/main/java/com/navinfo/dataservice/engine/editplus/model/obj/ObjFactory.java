@@ -48,6 +48,16 @@ public class ObjFactory {
 		return null;
 	}
 	
+	/**
+	 * 
+	 * @param row
+	 * @return
+	 * @throws ClassNotFoundException
+	 * @throws NoSuchMethodException
+	 * @throws InvocationTargetException
+	 * @throws IllegalAccessException
+	 * @throws InstantiationException
+	 */
 	public BasicObj create4Select(BasicRow row)throws ClassNotFoundException,NoSuchMethodException,InvocationTargetException,IllegalAccessException,InstantiationException{
 		GlmObject glmObj =
 		GlmFactory.getInstance().getObjByType(row.getObjType());

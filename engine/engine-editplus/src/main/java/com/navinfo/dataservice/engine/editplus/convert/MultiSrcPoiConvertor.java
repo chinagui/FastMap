@@ -20,7 +20,7 @@ public class MultiSrcPoiConvertor implements ObjConvertor {
 	 */
 	@Override
 	public JSONObject toJson(BasicObj obj) throws ObjConvertException {
-		// TODO Auto-generated method stub
+		// TODO 
 		return null;
 	}
 
@@ -29,7 +29,7 @@ public class MultiSrcPoiConvertor implements ObjConvertor {
 	 */
 	@Override
 	public BasicObj fromJson(JSONObject jo, String objType,boolean isSetPid) throws ObjConvertException {
-		// TODO Auto-generated method stub
+		// 暂不实现
 		return null;
 	}
 

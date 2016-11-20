@@ -22,7 +22,7 @@ import com.navinfo.navicommons.database.sql.RunnableSQL;
  * @Description: BasicObj.java
  */
 public abstract class BasicObj {
-	
+	protected int lifeCycle=0;
 	protected BasicRow mainrow;
 	//protected Map<Class<? extends BasicObj>, List<BasicObj>> childobjs;//存储对象下面的子对象，不包含子表
 //	protected Map<Class<? extends BasicRow>, List<BasicRow>> childrows;//存储对象下的子表,包括二级、三级子表...
@@ -30,6 +30,12 @@ public abstract class BasicObj {
 	
 	public BasicObj(BasicRow mainrow){
 		this.mainrow=mainrow;
+	}
+	protected int getLifeCycle() {
+		return lifeCycle;
+	}
+	protected void setLifeCycle(int lifeCycle) {
+		this.lifeCycle = lifeCycle;
 	}
 	public BasicRow getMainrow() {
 		return mainrow;
@@ -48,6 +54,20 @@ public abstract class BasicObj {
 	}
 	public OperationType opType(){
 		return mainrow.getOpType();
+	}
+	/**
+	 * 设置所有表的操作状态
+	 * @param opType
+	 */
+	public void setOpType(OperationType opType){
+		this.mainrow.setOpType(opType);
+		for(List<BasicRow> rows:subrows.values()){
+			if(rows!=null){
+				for(BasicRow row:rows){
+					row.setOpType(opType);
+				}
+			}
+		}
 	}
 	
 	/**
@@ -81,6 +101,14 @@ public abstract class BasicObj {
 			ObjSelector.selectChildren(conn,this,tableName);
 		}
 		return subrows.get(tableName);
+	}
+	/**
+	 * 判断如果是修改状态下，加载所有子表并全部设置为删除
+	 */
+	public void deleteObj(){
+		if(mainrow.getOpType().equals(OperationType.UPDATE)){
+			//加载所有子表并设置删除
+		}
 	}
 	
 	public BasicObj copy(){

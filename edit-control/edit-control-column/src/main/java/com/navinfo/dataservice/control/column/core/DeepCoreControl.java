@@ -25,6 +25,7 @@ import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
+import com.navinfo.dataservice.dao.glm.selector.SelectorUtils;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiDeepStatusSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 import com.navinfo.dataservice.engine.batch.BatchProcess;
@@ -655,6 +656,39 @@ public class DeepCoreControl {
 				
 			}
 		} catch (Exception e) {
+			throw e;
+		}
+	}
+	
+	
+	/**
+	 * 深度信息查询poi
+	 * @param json
+	 * @param userId
+	 * @return
+	 * @throws Exception 
+	 */
+	public JSONObject queryPoi(JSONObject jsonReq, long userId) throws Exception{
+		JSONObject result = new JSONObject();
+		int subtaskId = jsonReq.getInt("subtaskId");
+		int dbId = jsonReq.getInt("dbId");
+
+
+		try {
+			ManApi apiService = (ManApi) ApplicationContextUtil.getBean("manApi");
+			Subtask subtask = apiService.queryBySubtaskId(subtaskId);
+			
+			if (subtask == null) {
+				throw new Exception("subtaskid未找到数据");
+			}
+			
+			Connection conn = DBConnector.getInstance().getConnectionById(dbId);
+			
+			IxPoiDeepStatusSelector deepSelector = new IxPoiDeepStatusSelector(conn);
+			result = deepSelector.loadDeepPoiByCondition(jsonReq, subtask, userId);
+			
+			return result;
+		} catch(Exception e) {
 			throw e;
 		}
 	}

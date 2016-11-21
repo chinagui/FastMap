@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.edit.operation.topo.depart.departadnode;
+package com.navinfo.dataservice.engine.edit.operation.topo.depart.departzonenode;
 
 import java.util.List;
 
@@ -7,8 +7,8 @@ import net.sf.json.JSONObject;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
-import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
-import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
+import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneLink;
+import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneNode;
 
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import com.vividsolutions.jts.geom.Point;
@@ -24,9 +24,9 @@ public class Command extends AbstractCommand {
 
 	private String requester;
 	private int nodePid;// 分离点的nodePid
-	private AdLink adLink;// 分离线的pid
-	private List<AdLink> links;// 分离点挂接的link
-	private AdNode node;
+	private ZoneLink zoneLink;// 分离线的pid
+	private List<ZoneLink> links;// 分离点挂接的link
+	private ZoneNode node;
 	private int catchLinkPid;// 分离挂接的link
 
 	public int getCatchLinkPid() {
@@ -37,31 +37,31 @@ public class Command extends AbstractCommand {
 		this.catchLinkPid = catchLinkPid;
 	}
 
-	public AdNode getNode() {
+	public ZoneNode getNode() {
 		return node;
 	}
 
-	public void setNode(AdNode node) {
+	public void setNode(ZoneNode node) {
 		this.node = node;
 	}
 
-	public List<AdLink> getLinks() {
+	public List<ZoneLink> getLinks() {
 		return links;
 	}
 
-	public void setLinks(List<AdLink> links) {
+	public void setLinks(List<ZoneLink> links) {
 		this.links = links;
 	}
 
 	private int catchNodePid;// 分离挂接的node
 	private Point point;
 
-	public AdLink getAdLink() {
-		return adLink;
+	public ZoneLink getZoneLink() {
+		return zoneLink;
 	}
 
-	public void setAdLink(AdLink adLink) {
-		this.adLink = adLink;
+	public void setRwLink(ZoneLink zoneLink) {
+		this.zoneLink = zoneLink;
 	}
 
 	public int getCatchNodePid() {
@@ -98,6 +98,7 @@ public class Command extends AbstractCommand {
 							data.getDouble("latitude")), 1, 5));
 		}
 	}
+
 	public Point getPoint() {
 		return point;
 	}
@@ -122,6 +123,6 @@ public class Command extends AbstractCommand {
 
 	@Override
 	public ObjType getObjType() {
-		return ObjType.ADLINK;
+		return ObjType.ZONELINK;
 	}
 }

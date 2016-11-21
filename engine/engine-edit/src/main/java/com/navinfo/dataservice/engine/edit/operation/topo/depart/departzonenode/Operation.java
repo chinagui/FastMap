@@ -1,16 +1,17 @@
-package com.navinfo.dataservice.engine.edit.operation.topo.depart.departadnode;
+package com.navinfo.dataservice.engine.edit.operation.topo.depart.departzonenode;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
-import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
-import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
-import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdNodeSelector;
+import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneLink;
+import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneNode;
+import com.navinfo.dataservice.dao.glm.selector.ad.zone.ZoneNodeSelector;
 
-import com.navinfo.dataservice.engine.edit.utils.AdLinkOperateUtils;
 import com.navinfo.dataservice.engine.edit.utils.NodeOperateUtils;
+import com.navinfo.dataservice.engine.edit.utils.ZoneLinkOperateUtils;
+
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
@@ -67,7 +68,7 @@ public class Operation implements IOperation {
 			}
 			// 如果分离节点没有挂接link和node 并且分离的node有挂接其它的link按照原则此node要新增
 			if (this.command.getLinks().size() > 1) {
-				AdNode node = NodeOperateUtils.createAdNode(this.command
+				ZoneNode node = NodeOperateUtils.createZoneNode(this.command
 						.getPoint().getX(), this.command.getPoint().getY());
 				result.insertObject(node, ObjStatus.INSERT, node.pid());
 				this.updateLinkGeomtry(result, node.getPid());
@@ -102,7 +103,7 @@ public class Operation implements IOperation {
 		// 如果没有挂接的link node需要继承 如果有node需要新生成
 		int breakNodePid = this.command.getNodePid();
 		if (this.command.getLinks().size() > 1) {
-			AdNode node = NodeOperateUtils.createAdNode(this.command.getPoint()
+			ZoneNode node = NodeOperateUtils.createZoneNode(this.command.getPoint()
 					.getX(), this.command.getPoint().getY());
 			result.insertObject(node, ObjStatus.INSERT, node.getPid());
 			breakNodePid = node.getPid();
@@ -121,9 +122,9 @@ public class Operation implements IOperation {
 			data.put("breakNodePid", this.command.getNodePid());
 		}
 		breakJson.put("data", data);
-		com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakadpoint.Command breakCommand = new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakadpoint.Command(
+		com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrwpoint.Command breakCommand = new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrwpoint.Command(
 				breakJson, breakJson.toString());
-		com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakadpoint.Process breakProcess = new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakadpoint.Process(
+		com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrwpoint.Process breakProcess = new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrwpoint.Process(
 				breakCommand, result, conn);
 		breakProcess.innerRun();
 
@@ -157,9 +158,9 @@ public class Operation implements IOperation {
 
 		// 组装更新线的参数
 		// 保证是同一个连接
-		com.navinfo.dataservice.engine.edit.operation.obj.adnode.update.Command updatecommand = new com.navinfo.dataservice.engine.edit.operation.obj.adnode.update.Command(
+		com.navinfo.dataservice.engine.edit.operation.obj.zonenode.update.Command updatecommand = new com.navinfo.dataservice.engine.edit.operation.obj.zonenode.update.Command(
 				updateContent, command.getRequester(), this.command.getNode());
-		com.navinfo.dataservice.engine.edit.operation.obj.adnode.update.Process process = new com.navinfo.dataservice.engine.edit.operation.obj.adnode.update.Process(
+		com.navinfo.dataservice.engine.edit.operation.obj.zonenode.update.Process process = new com.navinfo.dataservice.engine.edit.operation.obj.zonenode.update.Process(
 				updatecommand, result, conn);
 		process.innerRun();
 
@@ -173,10 +174,10 @@ public class Operation implements IOperation {
 	 */
 	private void caleCatchNode(Result result) throws Exception {
 		// 加载挂接的点求几何
-		AdNodeSelector nodeSelector = new AdNodeSelector(conn);
+		ZoneNodeSelector nodeSelector = new ZoneNodeSelector(conn);
 		IRow row = nodeSelector.loadById(this.command.getCatchNodePid(), true,
 				true);
-		AdNode node = (AdNode) row;
+		ZoneNode node = (ZoneNode) row;
 		Geometry geom = GeoTranslator.transform(node.getGeometry(), 0.00001, 5);
 		this.command.setPoint(((Point) GeoTranslator.point2Jts(
 				geom.getCoordinate().x, geom.getCoordinate().y)));
@@ -209,9 +210,9 @@ public class Operation implements IOperation {
 		updateContent.put("objId", this.command.getNodePid());
 		updateContent.put("data", data);
 		// 调用移动的API
-		com.navinfo.dataservice.engine.edit.operation.topo.move.moveadnode.Command updatecommand = new com.navinfo.dataservice.engine.edit.operation.topo.move.moveadnode.Command(
-				updateContent, this.command.getAdLink(), this.command.getNode());
-		com.navinfo.dataservice.engine.edit.operation.topo.move.moveadnode.Process process = new com.navinfo.dataservice.engine.edit.operation.topo.move.moveadnode.Process(
+		com.navinfo.dataservice.engine.edit.operation.topo.move.movezonenode.Command updatecommand = new com.navinfo.dataservice.engine.edit.operation.topo.move.movezonenode.Command(
+				updateContent, this.command.getZoneLink(), this.command.getNode());
+		com.navinfo.dataservice.engine.edit.operation.topo.move.movezonenode.Process process = new com.navinfo.dataservice.engine.edit.operation.topo.move.movezonenode.Process(
 				updatecommand, result, conn);
 		process.innerRun();
 	}
@@ -224,7 +225,7 @@ public class Operation implements IOperation {
 	 * @throws Exception
 	 */
 	private void updateLinkGeomtry(Result result, int nodePid) throws Exception {
-		Geometry geom = GeoTranslator.transform(this.command.getAdLink()
+		Geometry geom = GeoTranslator.transform(this.command.getZoneLink()
 				.getGeometry(), 0.00001, 5);
 
 		Coordinate[] cs = geom.getCoordinates();
@@ -237,7 +238,7 @@ public class Operation implements IOperation {
 			ps[i][1] = cs[i].y;
 		}
 
-		if (this.command.getAdLink().getsNodePid() == command.getNodePid()) {
+		if (this.command.getZoneLink().getsNodePid() == command.getNodePid()) {
 			ps[0][0] = this.command.getPoint().getX();
 
 			ps[0][1] = this.command.getPoint().getY();
@@ -257,10 +258,10 @@ public class Operation implements IOperation {
 		Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(geo);
 		// 修改线的几何属性
 		// 如果没有跨图幅只是修改线的几何
-		List<AdLink> links = new ArrayList<AdLink>();
+		List<ZoneLink> links = new ArrayList<ZoneLink>();
 		if (meshes.size() == 1) {
 			JSONObject updateContent = new JSONObject();
-			if (this.command.getAdLink().geteNodePid() == this.command
+			if (this.command.getZoneLink().geteNodePid() == this.command
 					.getNodePid()) {
 				updateContent.put("eNodePid", nodePid);
 			} else {
@@ -268,8 +269,8 @@ public class Operation implements IOperation {
 			}
 			updateContent.put("geometry", geojson);
 			updateContent.put("length", GeometryUtils.getLinkLength(geo));
-			this.command.getAdLink().fillChangeFields(updateContent);
-			result.insertObject(this.command.getAdLink(), ObjStatus.UPDATE,
+			this.command.getZoneLink().fillChangeFields(updateContent);
+			result.insertObject(this.command.getZoneLink(), ObjStatus.UPDATE,
 					this.command.getLinkPid());
 			// 如果跨图幅就需要打断生成新的link
 		} else {
@@ -279,9 +280,9 @@ public class Operation implements IOperation {
 				maps.put(geo.getCoordinates()[0], nodePid);
 
 				maps.put(geo.getCoordinates()[geo.getCoordinates().length - 1],
-						this.command.getAdLink().geteNodePid());
+						this.command.getZoneLink().geteNodePid());
 			} else {
-				maps.put(geo.getCoordinates()[0], this.command.getAdLink()
+				maps.put(geo.getCoordinates()[0], this.command.getZoneLink()
 						.geteNodePid());
 
 				maps.put(geo.getCoordinates()[geo.getCoordinates().length - 1],
@@ -296,43 +297,42 @@ public class Operation implements IOperation {
 								1, 5));
 				geomInter = GeoTranslator.geojson2Jts(
 						GeoTranslator.jts2Geojson(geomInter), 1, 5);
-				List<AdLink> adLinks = AdLinkOperateUtils
-						.getCreateAdLinksWithMesh(geomInter, maps, result,
-								this.command.getAdLink());
-				for (AdLink link : adLinks) {
+				List<ZoneLink> zoneLinks = ZoneLinkOperateUtils
+						.getCreateZoneLinksWithMesh(geomInter, maps, result,
+								this.command.getZoneLink());
+				for (ZoneLink link : zoneLinks) {
 					result.insertObject(link, ObjStatus.INSERT, link.getPid());
 				}
-				links.addAll(adLinks);
+				links.addAll(zoneLinks);
 
 			}
-			result.insertObject(this.command.getAdLink(), ObjStatus.DELETE,
-					this.command.getAdLink().pid());
+			result.insertObject(this.command.getZoneLink(), ObjStatus.DELETE,
+					this.command.getZoneLink().pid());
 
 		}
 		// 分离节点属性关系维护
 		this.updateRelation(links, result);
 	}
 
-	private void updateRelation(List<AdLink> newLinks, Result result)
+	private void updateRelation(List<ZoneLink> newLinks, Result result)
 			throws Exception {
 		// 构造修改后的link几何
 		assemblyLinks(newLinks);
 
 	}
 
-	private List<AdLink> assemblyLinks(List<AdLink> newLinks)
+	private List<ZoneLink> assemblyLinks(List<ZoneLink> newLinks)
 			throws JSONException {
 		// 如果newLinkl
 		if (newLinks.isEmpty()) {
-			AdLink adLink = command.getAdLink();
-			AdLink newLink = new AdLink();
-			newLink.copy(adLink);
-			newLink.setGeometry(GeoTranslator.geojson2Jts((JSONObject) adLink
+			ZoneLink zoneLink = command.getZoneLink();
+			ZoneLink newLink = new ZoneLink();
+			newLink.copy(zoneLink);
+			newLink.setGeometry(GeoTranslator.geojson2Jts((JSONObject) zoneLink
 					.changedFields().get("geometry")));
 			newLink.setLength(GeometryUtils.getLinkLength(newLink.getGeometry()));
 			newLinks.add(newLink);
 		}
 		return newLinks;
 	}
-
 }

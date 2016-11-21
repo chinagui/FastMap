@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.edit.operation.topo.depart.departadnode;
+package com.navinfo.dataservice.engine.edit.operation.topo.depart.departlunode;
 
 import java.util.List;
 
@@ -7,8 +7,8 @@ import net.sf.json.JSONObject;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
-import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
-import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
+import com.navinfo.dataservice.dao.glm.model.lu.LuLink;
+import com.navinfo.dataservice.dao.glm.model.lu.LuNode;
 
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import com.vividsolutions.jts.geom.Point;
@@ -24,9 +24,9 @@ public class Command extends AbstractCommand {
 
 	private String requester;
 	private int nodePid;// 分离点的nodePid
-	private AdLink adLink;// 分离线的pid
-	private List<AdLink> links;// 分离点挂接的link
-	private AdNode node;
+	private LuLink luLink;// 分离线的pid
+	private List<LuLink> links;// 分离点挂接的link
+	private LuNode node;
 	private int catchLinkPid;// 分离挂接的link
 
 	public int getCatchLinkPid() {
@@ -37,31 +37,31 @@ public class Command extends AbstractCommand {
 		this.catchLinkPid = catchLinkPid;
 	}
 
-	public AdNode getNode() {
+	public LuNode getNode() {
 		return node;
 	}
 
-	public void setNode(AdNode node) {
+	public void setNode(LuNode node) {
 		this.node = node;
 	}
 
-	public List<AdLink> getLinks() {
+	public List<LuLink> getLinks() {
 		return links;
 	}
 
-	public void setLinks(List<AdLink> links) {
+	public void setLinks(List<LuLink> links) {
 		this.links = links;
 	}
 
 	private int catchNodePid;// 分离挂接的node
 	private Point point;
 
-	public AdLink getAdLink() {
-		return adLink;
+	public LuLink getluLink() {
+		return luLink;
 	}
 
-	public void setAdLink(AdLink adLink) {
-		this.adLink = adLink;
+	public void setLuLink(LuLink luLink) {
+		this.luLink = luLink;
 	}
 
 	public int getCatchNodePid() {
@@ -98,6 +98,7 @@ public class Command extends AbstractCommand {
 							data.getDouble("latitude")), 1, 5));
 		}
 	}
+
 	public Point getPoint() {
 		return point;
 	}
@@ -122,6 +123,6 @@ public class Command extends AbstractCommand {
 
 	@Override
 	public ObjType getObjType() {
-		return ObjType.ADLINK;
+		return ObjType.LULINK;
 	}
 }

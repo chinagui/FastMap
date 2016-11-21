@@ -3,6 +3,8 @@ package com.navinfo.dataservice.engine.edit.operation.topo.move.movelunode;
 import java.sql.Connection;
 import java.util.List;
 
+import org.apache.commons.collections.CollectionUtils;
+
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.lu.LuFace;
@@ -16,7 +18,8 @@ import com.navinfo.dataservice.engine.edit.operation.AbstractProcess;
 
 public class Process extends AbstractProcess<Command> {
 
-	public Process(Command command, Result result, Connection conn) throws Exception {
+	public Process(Command command, Result result, Connection conn)
+			throws Exception {
 		super();
 		this.setCommand(command);
 		this.setResult(result);
@@ -38,7 +41,8 @@ public class Process extends AbstractProcess<Command> {
 
 		LuLinkSelector selector = new LuLinkSelector(this.getConn());
 
-		List<LuLink> links = selector.loadByNodePid(this.getCommand().getNodePid(), true);
+		List<LuLink> links = selector.loadByNodePid(this.getCommand()
+				.getNodePid(), true);
 		this.getCommand().setLinks(links);
 	}
 
@@ -47,9 +51,15 @@ public class Process extends AbstractProcess<Command> {
 	 */
 	public void lockLuNode() throws Exception {
 
-		LuNodeSelector nodeSelector = new LuNodeSelector(this.getConn());
+		if (this.getCommand().getNode() == null) {
+			LuNodeSelector nodeSelector = new LuNodeSelector(this.getConn());
 
-		this.updateNode = (LuNode) nodeSelector.loadById(this.getCommand().getNodePid(), true);
+			this.updateNode = (LuNode) nodeSelector.loadById(this.getCommand()
+					.getNodePid(), true);
+		} else {
+			this.updateNode = this.getCommand().getNode();
+		}
+
 	}
 
 	/*
@@ -59,7 +69,8 @@ public class Process extends AbstractProcess<Command> {
 
 		LuFaceSelector faceSelector = new LuFaceSelector(this.getConn());
 
-		this.luFaces = faceSelector.loadLuFaceByNodeId(this.getCommand().getNodePid(), true);
+		this.luFaces = faceSelector.loadLuFaceByNodeId(this.getCommand()
+				.getNodePid(), true);
 		this.getCommand().setFaces(luFaces);
 
 	}
@@ -68,7 +79,9 @@ public class Process extends AbstractProcess<Command> {
 	public boolean prepareData() throws Exception {
 
 		lockLuNode();
-		lockLuLink();
+		if (CollectionUtils.isEmpty(this.getCommand().getLinks())) {
+			lockLuLink();
+		}
 		lockLuFace();
 		return false;
 	}
@@ -84,7 +97,8 @@ public class Process extends AbstractProcess<Command> {
 				throw new Exception(preCheckMsg);
 			}
 
-			IOperation operation = new Operation(this.getCommand(), updateNode, this.getConn());
+			IOperation operation = new Operation(this.getCommand(), updateNode,
+					this.getConn());
 
 			msg = operation.run(this.getResult());
 
@@ -102,7 +116,8 @@ public class Process extends AbstractProcess<Command> {
 
 	@Override
 	public String exeOperation() throws Exception {
-		return new Operation(this.getCommand(), updateNode, this.getConn()).run(this.getResult());
+		return new Operation(this.getCommand(), updateNode, this.getConn())
+				.run(this.getResult());
 	}
 
 }

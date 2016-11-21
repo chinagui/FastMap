@@ -152,7 +152,9 @@ public class ZoneLinkOperateUtils {
     private static void setLinkChildrenKind(ZoneLink link, Geometry g) throws Exception {
         ZoneLinkKind kind = new ZoneLinkKind();
         kind.setLinkPid(link.getPid());
-        if (MeshUtils.isMeshLine(g)) {
+        if (link.getMeshes().size() > 1) {
+            kind.setKind(0);
+        } else {
             kind.setKind(1);
         }
         List<IRow> kinds = new ArrayList<IRow>();
@@ -340,7 +342,7 @@ public class ZoneLinkOperateUtils {
         return (GeoTranslator.geojson2Jts(geojson, 1, 5));
     }
     /*
-	 * 创建行政区划线 针对跨图幅有两种情况 
+     * 创建行政区划线 针对跨图幅有两种情况
 	 * 1.跨图幅和图幅交集是LineString 
 	 * 2.跨图幅和图幅交集是MultineString
 	 * 3.跨图幅需要生成和图廓线的交点

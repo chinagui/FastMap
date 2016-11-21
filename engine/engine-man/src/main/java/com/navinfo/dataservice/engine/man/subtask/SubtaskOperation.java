@@ -965,30 +965,24 @@ public class SubtaskOperation {
 							e1.printStackTrace();
 						}
 						subtask.put("gridIds", gridIds);
+						
+						STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
+						try {
+							subtask.put("geometry", GeoTranslator.struct2Wkt(struct));
+						} catch (Exception e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
 
 						if (1 == rs.getInt("STAGE")) {
 							subtask.put("dbId", rs.getInt("DAILY_DB_ID"));
-							STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
-							try {
-								subtask.put("geometry", GeoTranslator.struct2Wkt(struct));
-							} catch (Exception e1) {
-								// TODO Auto-generated catch block
-								e1.printStackTrace();
-							}
 						} else if (2 == rs.getInt("STAGE")) {
 							subtask.put("dbId",rs.getInt("MONTHLY_DB_ID"));
-							STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
-							try {
-								subtask.put("geometry", GeoTranslator.struct2Wkt(struct));
-							} catch (Exception e1) {
-								// TODO Auto-generated catch block
-								e1.printStackTrace();
-							}
 						} else if (0 == rs.getInt("STAGE")) {
 							subtask.put("dbId", rs.getInt("DAILY_DB_ID"));
-							STRUCT struct = (STRUCT) rs.getObject("REFER_GEOMETRY");
+							STRUCT structRefer = (STRUCT) rs.getObject("REFER_GEOMETRY");
 							try {
-								subtask.put("referGeometry", GeoTranslator.struct2Wkt(struct));
+								subtask.put("referGeometry", GeoTranslator.struct2Wkt(structRefer));
 							} catch (Exception e1) {
 								// TODO Auto-generated catch block
 								e1.printStackTrace();
@@ -1002,14 +996,7 @@ public class SubtaskOperation {
 								e.printStackTrace();
 							}	
 						}else {
-							subtask.put("dbId", rs.getInt("DAILY_DB_ID"));
-							STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
-							try {
-								subtask.put("geometry", GeoTranslator.struct2Wkt(struct));
-							} catch (Exception e1) {
-								// TODO Auto-generated catch block
-								e1.printStackTrace();
-							}				
+							subtask.put("dbId", rs.getInt("DAILY_DB_ID"));				
 						}
 						
 						//日编POI,日编一体化GRID粗编完成度，任务量信息

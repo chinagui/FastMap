@@ -4,6 +4,8 @@ import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
+
+import com.navinfo.dataservice.dao.glm.model.lc.LcNode;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 
 public class Command extends AbstractCommand {
@@ -11,9 +13,19 @@ public class Command extends AbstractCommand {
 	private String requester;
 
 	private JSONObject content;
-	
+
+	private LcNode node;
+
+	public LcNode getNode() {
+		return node;
+	}
+
+	public void setNode(LcNode node) {
+		this.node = node;
+	}
+
 	private int pid;
-	
+
 	public int getPid() {
 		return pid;
 	}
@@ -34,7 +46,7 @@ public class Command extends AbstractCommand {
 	public OperType getOperType() {
 		return OperType.UPDATE;
 	}
-	
+
 	@Override
 	public ObjType getObjType() {
 		return ObjType.LCNODE;
@@ -51,8 +63,14 @@ public class Command extends AbstractCommand {
 		this.setDbId(json.getInt("dbId"));
 
 		this.content = json.getJSONObject("data");
-		
+
 		this.pid = this.content.getInt("pid");
+
+	}
+
+	public Command(JSONObject json, String requester, LcNode node) {
+		this(json, requester);
+		this.node = node;
 
 	}
 

@@ -351,7 +351,7 @@ public class SearchProcess {
 				if (condition.containsKey("nodePid")) {
 					int nodePid = condition.getInt("nodePid");
 					AdLinkSelector selector = new AdLinkSelector(this.conn);
-					List<AdLink> adLinks = selector.loadByNodePid(nodePid, true);
+					List<AdLink> adLinks = selector.loadByNodePid(nodePid, false);
 					for (AdLink link : adLinks) {
 						array.add(link.Serialize(ObjLevel.BRIEF));
 					}
@@ -361,7 +361,7 @@ public class SearchProcess {
 				if (condition.containsKey("nodePid")) {
 					int nodePid = condition.getInt("nodePid");
 					RwLinkSelector selector = new RwLinkSelector(this.conn);
-					List<RwLink> rwLinks = selector.loadByNodePid(nodePid, true);
+					List<RwLink> rwLinks = selector.loadByNodePid(nodePid, false);
 					for (RwLink link : rwLinks) {
 						array.add(link.Serialize(ObjLevel.BRIEF));
 					}
@@ -373,7 +373,7 @@ public class SearchProcess {
 
 					ZoneLinkSelector selector = new ZoneLinkSelector(this.conn);
 
-					List<ZoneLink> zoneLinks = selector.loadByNodePid(nodePid, true);
+					List<ZoneLink> zoneLinks = selector.loadByNodePid(nodePid, false);
 
 					for (ZoneLink link : zoneLinks) {
 						array.add(link.Serialize(ObjLevel.BRIEF));
@@ -386,7 +386,7 @@ public class SearchProcess {
 
 					LuLinkSelector selector = new LuLinkSelector(this.conn);
 
-					List<LuLink> luLinks = selector.loadByNodePid(nodePid, true);
+					List<LuLink> luLinks = selector.loadByNodePid(nodePid, false);
 
 					for (LuLink link : luLinks) {
 						array.add(link.Serialize(ObjLevel.BRIEF));
@@ -399,7 +399,7 @@ public class SearchProcess {
 
 					LcLinkSelector selector = new LcLinkSelector(this.conn);
 
-					List<LcLink> lcLinks = selector.loadByNodePid(nodePid, true);
+					List<LcLink> lcLinks = selector.loadByNodePid(nodePid, false);
 
 					for (LcLink link : lcLinks) {
 						array.add(link.Serialize(ObjLevel.BRIEF));
@@ -412,7 +412,7 @@ public class SearchProcess {
 
 					RdObjectSelector selector = new RdObjectSelector(this.conn);
 
-					List<String> names = selector.getRdObjectName(pid, true);
+					List<String> names = selector.getRdObjectName(pid, false);
 
 					for (String name : names) {
 						array.add(name);

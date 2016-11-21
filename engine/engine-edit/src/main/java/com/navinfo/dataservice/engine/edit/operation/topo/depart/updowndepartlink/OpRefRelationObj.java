@@ -244,4 +244,10 @@ public class OpRefRelationObj {
         com.navinfo.dataservice.engine.edit.operation.obj.hgwg.depart.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.hgwg.depart.Operation(conn);
         return operation.updownDepart(command.getsNode(), command.getLinks(), command.getLeftLinkMapping(), command.getRightLinkMapping(), result);
     }
+
+    // 维护里程桩信息
+    public String handlerRdMileagepile(Command command, Result result) throws Exception {
+        com.navinfo.dataservice.engine.edit.operation.obj.mileagepile.depart.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.mileagepile.depart.Operation(conn);
+        return operation.updownDepart(command.getsNode(), command.getLinks(), command.getLeftLinkMapping(), command.getRightLinkMapping(), result);
+    }
 }

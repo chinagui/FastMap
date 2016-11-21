@@ -250,20 +250,20 @@ public abstract class MeshUtils {
 		}else if(M5_bak>-999){
 			meshes = new String[2];
 			if(M1M2_bak<M1M2||M5_bak<M5){
-				meshes[0] = String.format("%02d%02d%d%d", M1M2_bak, M3M4, M5_bak, M6);
-				meshes[1] = String.format("%02d%02d%d%d", M1M2, M3M4, M5, M6);
-			}else{
 				meshes[0] = String.format("%02d%02d%d%d", M1M2, M3M4, M5, M6);
 				meshes[1] = String.format("%02d%02d%d%d", M1M2_bak, M3M4, M5_bak, M6);
+			}else{
+				meshes[0] = String.format("%02d%02d%d%d", M1M2_bak, M3M4, M5_bak, M6);
+				meshes[1] = String.format("%02d%02d%d%d", M1M2, M3M4, M5, M6);
 			}
 		}else if(M6_bak>-999){
 			meshes = new String[2];
 			if(M3M4_bak<M3M4||M6_bak<M6){
-				meshes[0] = String.format("%02d%02d%d%d", M1M2, M3M4_bak, M5, M6_bak);
-				meshes[1] = String.format("%02d%02d%d%d", M1M2, M3M4, M5, M6);
-			}else{
 				meshes[0] = String.format("%02d%02d%d%d", M1M2, M3M4, M5, M6);
 				meshes[1] = String.format("%02d%02d%d%d", M1M2, M3M4_bak, M5, M6_bak);
+			}else{
+				meshes[0] = String.format("%02d%02d%d%d", M1M2, M3M4_bak, M5, M6_bak);
+				meshes[1] = String.format("%02d%02d%d%d", M1M2, M3M4, M5, M6);
 			}
 		}else{
 			meshes = new String[]{String.format("%02d%02d%d%d", M1M2, M3M4, M5, M6)};

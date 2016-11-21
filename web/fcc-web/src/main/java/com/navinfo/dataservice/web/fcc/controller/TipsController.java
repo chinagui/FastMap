@@ -424,9 +424,11 @@ public class TipsController extends BaseController {
 		}
 	}
 	
+	
+	
 	public static void main(String[] args) {
 		
-		String parameter="{\"jobId\":88}";
+		String parameter="{\"jobId\":9}";
 		JSONObject json = JSONObject.fromObject(parameter);
 
 		int jobId = json.getInt("jobId");

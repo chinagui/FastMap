@@ -3,7 +3,9 @@ package com.navinfo.dataservice.engine.check.rules;
 import java.sql.Connection;
 import java.util.List;
 
+import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.ExcelReader;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.check.CheckCommand;
@@ -12,7 +14,6 @@ import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiParking;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.log.LogReader;
 import com.navinfo.dataservice.engine.check.core.baseRule;
-import com.navinfo.dataservice.engine.meta.character.TyCharacterEgalcharExtCheckSelector;
 
 import net.sf.json.JSONObject;
 
@@ -52,10 +53,10 @@ public class CheckRuleFMYW20224 extends baseRule {
 						IxPoiParking ixPoiParking = (IxPoiParking) parking;
 						String tollDes = ixPoiParking.getTollDes();
 						if (StringUtils.isNotEmpty(tollDes)) {
-							// 加载合法字符
-							Connection metaConn = DBConnector.getInstance().getMetaConnection();
-							TyCharacterEgalcharExtCheckSelector tyCharacterSelector = new TyCharacterEgalcharExtCheckSelector(metaConn);
-							JSONObject characterMap = tyCharacterSelector.getCharacterMap();
+
+							//调用元数据请求接口
+							MetadataApi metaApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
+							JSONObject characterMap = metaApi.getCharacterMap();
 							StringBuffer errorLog = new StringBuffer();
 							// 判断停车场收费信息中的字符是在合法字符集中
 							for (char c : tollDes.toCharArray()) {

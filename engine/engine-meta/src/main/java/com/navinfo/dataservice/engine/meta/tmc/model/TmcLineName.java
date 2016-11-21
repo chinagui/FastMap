@@ -22,7 +22,7 @@ public class TmcLineName {
 	
 	private int nameFlag;
 	
-	private String name;
+	private String translateName;
 
 	public int getTmcId() {
 		return tmcId;
@@ -55,13 +55,13 @@ public class TmcLineName {
 	public void setNameFlag(int nameFlag) {
 		this.nameFlag = nameFlag;
 	}
-	
-	public String getName() {
-		return name;
+
+	public String getTranslateName() {
+		return translateName;
 	}
 
-	public void setName(String name) {
-		this.name = name;
+	public void setTranslateName(String translateName) {
+		this.translateName = translateName;
 	}
 
 	public JSONObject Serialize(ObjLevel objLevel) throws Exception {

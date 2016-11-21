@@ -376,7 +376,7 @@ public class Operation implements IOperation {
 								GeoTranslator.jts2Geojson(subGeo), 1, 5);
 
 						List<RdLink> rdLinkds = RdLinkOperateUtils
-								.getCreateRdLinksWithMesh(geomInter, maps,
+								.getCreateRdLinksWithMesh(subGeo, maps,
 										result, this.command.getUpdateLink());
 						links.addAll(rdLinkds);
 					}

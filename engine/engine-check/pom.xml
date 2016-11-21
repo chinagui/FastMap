@@ -162,8 +162,8 @@
 	</dependency>
 	
 	<dependency>
-		<groupId>com.navinfo.dataservice</groupId>
-		<artifactId>engine-meta</artifactId>
+			<groupId>com.navinfo.dataservice</groupId>
+			<artifactId>api-metadata</artifactId>
 	</dependency>
 	
 	<dependency>

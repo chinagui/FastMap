@@ -110,7 +110,7 @@
 			<objRef col="POI_PID" refTable="IX_POI" refCol="PID" isRefMain="true"/>
 		</table>
 		<table name="IX_POI_RESTAURANT" pk="RESTAURANT_ID"
-			class="com.navinfo.dataservice.engine.editplus.model.ixpoi.IxPoiRestautant">
+			class="com.navinfo.dataservice.engine.editplus.model.ixpoi.IxPoiRestaurant">
 			<objRef col="POI_PID" refTable="IX_POI" refCol="PID" isRefMain="true"/>
 		</table>
 		<table name="IX_POI_CARRENTAL" pk=""

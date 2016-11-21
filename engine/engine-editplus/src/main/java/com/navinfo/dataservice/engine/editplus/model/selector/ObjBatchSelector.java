@@ -30,18 +30,36 @@ import com.vividsolutions.jts.geom.Polygon;
  */
 public class ObjBatchSelector {
 
+	/**
+	 * 
+	 * @param conn
+	 * @param objType
+	 * @param selConfig
+	 * @param pids
+	 * @param isOnlyMain
+	 * @param isLock
+	 * @param isNowait
+	 * @return
+	 * @throws SQLException
+	 * @throws ClassNotFoundException
+	 * @throws NoSuchMethodException
+	 * @throws InvocationTargetException
+	 * @throws IllegalAccessException
+	 * @throws InstantiationException
+	 */
 	public static List<BasicObj> selectByPids(Connection conn,String objType,SelectorConfig selConfig
 			,Collection<Long> pids,boolean isOnlyMain,boolean isLock,boolean isNowait) throws SQLException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException{
 		GlmObject glmObj = GlmFactory.getInstance().getObjByType(objType);
 		GlmTable mainTable = glmObj.getMainTable();
-		String sql = "SELECT * FROM "+mainTable.getName()+" WHERE "+mainTable.getPkColumn()+"=?";
+		String sql = "SELECT R.*,R." + mainTable.getPkColumn() + " OBJ_PID FROM "+ mainTable.getName() + " R WHERE "+mainTable.getPkColumn()
+				+ " IN (" + StringUtils.join(pids.toArray(),",") + ")";
 		if(isLock){
 			sql += " FOR UPDATE";
 			if(isNowait){
 				sql += " NOWAIT";
 			}
 		}
-		List<BasicRow> mainrowList = new QueryRunner().query(conn, sql, new SingleBatchSelRsHandler(mainTable),pids.toArray());
+		List<BasicRow> mainrowList = new QueryRunner().query(conn, sql, new SingleBatchSelRsHandler(mainTable));
 		
 		List<BasicObj> objList = new ArrayList<BasicObj>();
 		for(BasicRow mainrow:mainrowList){
@@ -69,6 +87,10 @@ public class ObjBatchSelector {
 			//存在配置
 			if(selConfig.getSpecTables()!=null){
 				for(String tab:selConfig.getSpecTables()){
+					//不查主表
+					if(tab.equals(mainTable.getName())){
+						continue;
+					}
 					//获取单个子表
 					selectChildren(conn,objList,tab,pids,mainTable);
 				}
@@ -95,6 +117,11 @@ public class ObjBatchSelector {
 		// TODO Auto-generated method stub
 		Map<String,GlmTable> tables = glmObj.getTables();
 		for(Map.Entry<String, GlmTable> entry:tables.entrySet()){
+			//不查主表
+			if(entry.getKey().equals(mainTable.getName())){
+				continue;
+			}
+			System.out.println(entry.getKey());
 			selectChildren(conn,objList,entry.getValue(),pids,mainTable);
 		}
 		
@@ -115,6 +142,11 @@ public class ObjBatchSelector {
 			if(filterTables!=null&&filterTables.contains(entry.getKey())){
 				continue;
 			}
+			//不查主表
+			if(entry.getKey().equals(mainTable.getName())){
+				continue;
+			}
+			
 			selectChildren(conn,objList,entry.getValue(), pids,mainTable);
 		}
 		
@@ -146,6 +178,7 @@ public class ObjBatchSelector {
 		GlmTable tempTab = glmTab;
 		List<String> tables = new ArrayList<String>();
 		List<String> conditions = new ArrayList<String>();
+		tables.add(mainTable.getName());
 		while(true){
 			GlmRef objRef = tempTab.getObjRef();
 			tables.add(tempTab.getName());
@@ -157,9 +190,9 @@ public class ObjBatchSelector {
 		}
 		
 		//查询
-		String sql = "SELECT " + glmTab.getName() + ".*," + mainTable.getName() + "."+ mainTable.getPkColumn() + "AS OBJ_PID FROM "+ StringUtils.join(tables.toArray(),",") +" WHERE "
+		String sql = "SELECT " + glmTab.getName() + ".*," + mainTable.getName() + "."+ mainTable.getPkColumn() + " AS OBJ_PID FROM "+ StringUtils.join(tables.toArray(),",") +" WHERE "
 				+ StringUtils.join(conditions.toArray()," AND ")
-				+ mainTable.getPkColumn()+" IN (" + StringUtils.join(pids.toArray()," AND ") + ")";
+				+ " AND " + mainTable.getName() + "."+ mainTable.getPkColumn()+" IN (" + StringUtils.join(pids.toArray(),",") + ")";
 		Map<Long, List<BasicRow>> childRows = new QueryRunner().query(conn, sql, new MultipleBatchSelRsHandler(glmTab));
 		//更新obj
 		for(BasicObj obj:objList){

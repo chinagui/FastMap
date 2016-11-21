@@ -13,6 +13,7 @@ import com.navinfo.dataservice.engine.editplus.glm.GlmTable;
 import com.navinfo.dataservice.engine.editplus.model.BasicRow;
 import com.navinfo.dataservice.engine.editplus.operation.OperationType;
 import com.navinfo.dataservice.engine.editplus.utils.ResultSetGetter;
+import com.vividsolutions.jts.geom.Geometry;
 
 import oracle.sql.STRUCT;
 
@@ -38,39 +39,7 @@ public class SingleSelRsHandler implements ResultSetHandler<BasicRow> {
 			row = (BasicRow)Class.forName(glmTable.getModelClassName()).getConstructor(new Class[]{long.class}).newInstance(objPid);
 			if(rs.next()){
 				for(Map.Entry<String, GlmColumn> entry:glmTable.getColumns().entrySet()){
-					String columName = entry.getValue().getName();
-					/*--------测试使用start------*/
-					System.out.println(entry.getValue().getName());
-					if(columName.equals("GEOMETRY")){
-						System.out.println(entry.getValue().getName());
-					}
-					/*--------测试使用end------*/
-					String type = entry.getValue().getType();
-					int dataPrecision = entry.getValue().getDataPrecision();
-					int dataScale = entry.getValue().getDataScale();
-					
-					if(type.equals(GlmColumn.TYPE_NUMBER)){
-						if(dataScale > 0){
-							row.setAttrByCol(entry.getKey(), rs.getDouble(columName));
-						}else{
-							if(dataPrecision>8){
-								row.setAttrByCol(entry.getKey(), rs.getLong(columName));
-							}else{
-								row.setAttrByCol(entry.getKey(), rs.getInt(columName));
-							}
-						}
-					}else if(type.equals(GlmColumn.TYPE_VARCHAR)){
-						row.setAttrByCol(entry.getKey(), rs.getString(columName));
-					}else if(type.equals(GlmColumn.TYPE_GEOMETRY)){
-						STRUCT struct = (STRUCT) rs.getObject(columName);
-						row.setAttrByCol(entry.getKey(), GeoTranslator.struct2Jts(struct));
-					}else if(type.equals(GlmColumn.TYPE_RAW)){
-						row.setAttrByCol(entry.getKey(), rs.getString(columName));
-					}else if(type.equals(GlmColumn.TYPE_TIMESTAMP)){
-						Date date = new Date();
-						date = rs.getTimestamp(columName);
-						row.setAttrByCol(entry.getKey(), date);
-					}
+					ResultSetGetter.setAttrByCol(rs, row, entry.getValue());
 				}
 			}
 			//默认为初始状态

@@ -25,10 +25,6 @@ public class Command extends AbstractCommand {
 		this.linkPid = linkPid;
 	}
 
-	// public int getProjectId() {
-	// return projectId;
-	// }
-
 	public JSONObject getUpdateContent() {
 		return updateContent;
 	}
@@ -51,7 +47,6 @@ public class Command extends AbstractCommand {
 	public Command(JSONObject json, String requester) {
 		this.requester = requester;
 
-		// this.projectId = json.getInt("projectId");
 		this.setDbId(json.getInt("dbId"));
 
 		this.updateContent = json.getJSONObject("data");

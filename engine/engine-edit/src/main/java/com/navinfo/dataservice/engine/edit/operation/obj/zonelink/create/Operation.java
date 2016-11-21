@@ -12,19 +12,21 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneLink;
-import com.navinfo.dataservice.dao.glm.model.lu.LuLink;
+import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneNode;
 import com.navinfo.dataservice.dao.glm.selector.ad.zone.ZoneLinkSelector;
-import com.navinfo.dataservice.dao.glm.selector.lu.LuLinkSelector;
+import com.navinfo.dataservice.dao.glm.selector.ad.zone.ZoneNodeSelector;
+import com.navinfo.dataservice.engine.edit.utils.BasicServiceUtils;
 import com.navinfo.dataservice.engine.edit.utils.ZoneLinkOperateUtils;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 /**
- * @author zhaokk  创建ZONE线参数基础类
+ * @author zhaokk 创建ZONE线参数基础类
  */
 public class Operation implements IOperation {
 
@@ -50,26 +52,29 @@ public class Operation implements IOperation {
 		// 执行挂接线处理逻辑
 		if (command.getCatchLinks().size() > 0) {
 			this.caleCatchModifyZoneLink();
+			this.initCommandPara();
 			map = ZoneLinkOperateUtils.splitLink(command.getGeometry(),
 					command.getsNodePid(), command.geteNodePid(),
-					command.getCatchLinks(),ObjType.ZONENODE, result);
+					command.getCatchLinks(), ObjType.ZONENODE, result);
 
 		}
 		// 如果创建ZONE线没有对应的挂接ZONE_NODE和ZONE_FACE
 		// 创建对应的ADNODE
-		if (command.getCatchLinks().size() == 0||map.size() == 0) {
+		if (command.getCatchLinks().size() == 0 || map.size() == 0) {
 			JSONObject se = new JSONObject();
-			se = ZoneLinkOperateUtils.createZoneNodeForLink(command.getGeometry(),
-					command.getsNodePid(), command.geteNodePid(), result);
+			se = ZoneLinkOperateUtils.createZoneNodeForLink(
+					command.getGeometry(), command.getsNodePid(),
+					command.geteNodePid(), result);
 			map.put(command.getGeometry(), se);
 		}
 		// 创建ZONE线信息
-		this.createZoneLinks(map,result);
-		//挂接的线被打断的操作
+		this.createZoneLinks(map, result);
+		// 挂接的线被打断的操作
 		this.breakLine(result);
-		
+
 		return msg;
 	}
+
 	/***
 	 * 当前台未开启挂接功能是，如果传入的点正好是link的端点 应按照挂接node来传参数
 	 * 
@@ -107,13 +112,11 @@ public class Operation implements IOperation {
 				}
 			}
 		}
-		
-		
+
 	}
 
 	/*
-	 * 创建多条被分割的线
-	 *  1.按照线是否跨图幅逻辑走不同分支生成线
+	 * 创建多条被分割的线 1.按照线是否跨图幅逻辑走不同分支生成线
 	 */
 
 	public void createZoneLinks(Map<Geometry, JSONObject> map, Result result)
@@ -121,12 +124,12 @@ public class Operation implements IOperation {
 
 		for (Geometry g : map.keySet()) {
 			Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(g);
-			//不跨图幅
+			// 不跨图幅
 			if (meshes.size() == 1) {
 				this.createAdLinkWithNoMesh(g, (int) map.get(g).get("s"),
 						(int) map.get(g).get("e"), result);
-			} 
-			//跨图幅
+			}
+			// 跨图幅
 			else {
 				Map<Coordinate, Integer> maps = new HashMap<Coordinate, Integer>();
 				maps.put(g.getCoordinates()[0], (int) map.get(g).get("s"));
@@ -135,11 +138,14 @@ public class Operation implements IOperation {
 				Iterator<String> it = meshes.iterator();
 				while (it.hasNext()) {
 					String meshIdStr = it.next();
-					Geometry geomInter = MeshUtils.linkInterMeshPolygon(g,
-							GeoTranslator.transform(MeshUtils.mesh2Jts(meshIdStr),1,5));
+					Geometry geomInter = MeshUtils.linkInterMeshPolygon(
+							g,
+							GeoTranslator.transform(
+									MeshUtils.mesh2Jts(meshIdStr), 1, 5));
 					geomInter = GeoTranslator.geojson2Jts(
 							GeoTranslator.jts2Geojson(geomInter), 1, 5);
-					ZoneLinkOperateUtils.createZoneLinkWithMesh(geomInter, maps,result);
+					ZoneLinkOperateUtils.createZoneLinkWithMesh(geomInter,
+							maps, result);
 
 				}
 			}
@@ -155,42 +161,72 @@ public class Operation implements IOperation {
 	private void createAdLinkWithNoMesh(Geometry g, int sNodePid, int eNodePid,
 			Result result) throws Exception {
 		if (g != null) {
-			JSONObject node = ZoneLinkOperateUtils.createZoneNodeForLink(g, sNodePid,
-					eNodePid, result);
+			JSONObject node = ZoneLinkOperateUtils.createZoneNodeForLink(g,
+					sNodePid, eNodePid, result);
 			ZoneLinkOperateUtils.addLink(g, (int) node.get("s"),
 					(int) node.get("e"), result);
 		}
 	}
+
 	/*
-	 * AD_LINK打断具体操作
-	 * 1.循环挂接的线
-	 * 2.如果有被打断操作执行打断功能
+	 * AD_LINK打断具体操作 1.循环挂接的线 2.如果有被打断操作执行打断功能
 	 */
 	public void breakLine(Result result) throws Exception {
-		for (int i = 0; i < command.getCatchLinks().size(); i++) {
-			JSONObject json = command.getCatchLinks().getJSONObject(i);
-			
-			if (json.containsKey("breakNode")) {
-				JSONObject breakJson = new JSONObject();
-				//要打断线的pid
-				breakJson.put("objId", json.getInt("linkPid"));
-				//要打断线的project_id
-				breakJson.put("dbId", command.getDbId());
-				JSONObject data = new JSONObject();
-				//要打断点的pid和经纬度
-				data.put("breakNodePid", json.getInt("breakNode"));
-				data.put("longitude", json.getDouble("lon"));
-				data.put("latitude", json.getDouble("lat"));
-				breakJson.put("data", data);
-				//组装打断线的参数
-				//保证是同一个连接
-				com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakzonepoint.Command breakCommand = new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakzonepoint.Command(
-						breakJson, breakJson.toString());
-				com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakzonepoint.Process breakProcess = new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakzonepoint.Process(
-						breakCommand,result, conn);
-				breakProcess.innerRun();
-			}
+		JSONArray resultArr = BasicServiceUtils.getBreakArray(command
+				.getCatchLinks());
+		// 组装打断操作流程
+		for (int i = 0; i < resultArr.size(); i++) {
+			JSONObject obj = resultArr.getJSONObject(i);
+			JSONObject breakJson = BasicServiceUtils.getBreaksPara(obj,
+					this.command.getDbId());
+			// 组装打断线的参数
+			// 保证是同一个连接
+			com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrwpoint.Command breakCommand = new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrwpoint.Command(
+					breakJson, breakJson.toString());
+			com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrwpoint.Process breakProcess = new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrwpoint.Process(
+					breakCommand, result, conn);
+			breakProcess.innerRun();
 		}
 	}
 
+	/***
+	 * 新增link参数初始化 1.几何保留五位精度 2.捕捉node几何 重新替换link的形状点 ，为了保持精度
+	 * 
+	 * @throws Exception
+	 */
+	private void initCommandPara() throws Exception {
+		JSONArray array = this.command.getCatchLinks();
+		;
+		for (int i = 0; i < array.size(); i++) {
+			JSONObject jo = array.getJSONObject(i);
+			// 如果有挂接的node 用node的几何替换对应位置线的形状点
+			if (jo.containsKey("nodePid")) {
+				ZoneNodeSelector nodeSelector = new ZoneNodeSelector(this.conn);
+				IRow row = nodeSelector.loadById(jo.getInt("nodePid"), true,
+						true);
+				int seqNum = jo.getInt("seqNum");
+				ZoneNode node = (ZoneNode) row;
+				Geometry geom = GeoTranslator.transform(node.getGeometry(),
+						0.00001, 5);
+				jo.put("lon", geom.getCoordinate().x);
+				jo.put("lat", geom.getCoordinate().y);
+				this.command.getGeometry().getCoordinates()[seqNum] = geom
+						.getCoordinate();
+			}
+			// 挂接link精度处理
+			if (jo.containsKey("linkPid")) {
+
+				JSONObject geoPoint = new JSONObject();
+
+				geoPoint.put("type", "Point");
+				geoPoint.put("coordinates", new double[] { jo.getDouble("lon"),
+						jo.getDouble("lat") });
+				Geometry geometry = GeoTranslator.geojson2Jts(geoPoint, 1, 5);
+				jo.put("lon", geometry.getCoordinate().x);
+				jo.put("lat", geometry.getCoordinate().y);
+			}
+
+		}
+
+	}
 }

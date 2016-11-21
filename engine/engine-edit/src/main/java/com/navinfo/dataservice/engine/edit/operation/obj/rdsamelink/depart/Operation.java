@@ -75,6 +75,6 @@ public class Operation {
         com.navinfo.dataservice.engine.edit.operation.topo.breakin.breaklupoint.Command command =
                 new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breaklupoint.Command(JSONObject.fromObject(requester), requester);
         com.navinfo.dataservice.engine.edit.operation.topo.breakin.breaklupoint.OpTopo operation =
-                new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breaklupoint.OpTopo(command, null, this.conn);
+                new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breaklupoint.OpTopo(command, this.conn);
     }
 }

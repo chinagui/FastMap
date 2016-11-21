@@ -1,15 +1,17 @@
 package com.navinfo.dataservice.engine.check.rules;
+import java.sql.Connection;
 import java.util.List;
 import net.sf.json.JSONObject;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.navinfo.dataservice.engine.meta.character.TyCharacterEgalcharExtCheckSelector;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiCarrental;
 import com.navinfo.dataservice.engine.check.core.baseRule;
+import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.ExcelReader;
 
 /** 
@@ -52,10 +54,9 @@ public class CheckRuleFMZY20198 extends baseRule {
 					log = "营业时间含有半角字符。";
 					this.setCheckResult(ixPoi.getGeometry(), "[IX_POI,"+ixPoi.getPid()+"]", ixPoi.getMeshId(),log);
 				}
-				
-				TyCharacterEgalcharExtCheckSelector egalChar = new TyCharacterEgalcharExtCheckSelector();
-				JSONObject characterMap = new JSONObject();
-				characterMap=egalChar.getCharacterMap();
+				//调用元数据请求接口
+				MetadataApi metaApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
+				JSONObject characterMap = metaApi.getCharacterMap();
 				
 				char[] openHourlist=new char[openHour.length()];
 				openHourlist=openHour.toCharArray();
@@ -68,7 +69,7 @@ public class CheckRuleFMZY20198 extends baseRule {
 					String str=String.valueOf(c);
 					
 					if (!characterMap.has(str)){
-						illegalChar+=illegalChar;
+						illegalChar+=str;
 					}
 				}
 				if (!"".equals(illegalChar)){

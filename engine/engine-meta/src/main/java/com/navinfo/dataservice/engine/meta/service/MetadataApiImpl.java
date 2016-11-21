@@ -13,6 +13,7 @@ import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.engine.meta.area.ScPointAdminArea;
 import com.navinfo.dataservice.engine.meta.chain.ChainSelector;
+import com.navinfo.dataservice.engine.meta.character.TyCharacterEgalcharExtCheckSelector;
 import com.navinfo.dataservice.engine.meta.character.TyCharacterFjtHmCheckSelector;
 import com.navinfo.dataservice.engine.meta.engshort.ScEngshortSelector;
 import com.navinfo.dataservice.engine.meta.kind.KindSelector;
@@ -165,6 +166,27 @@ public class MetadataApiImpl implements MetadataApi {
 		} finally {
 			DbUtils.closeQuietly(conn);
 		}
+	}
+
+	@Override
+	public JSONObject getCharacterMap() throws Exception {
+		Connection conn = null;
+		try {
+
+			conn = DBConnector.getInstance().getMetaConnection();
+
+			TyCharacterEgalcharExtCheckSelector tyCharacterSelector = new TyCharacterEgalcharExtCheckSelector(conn);
+
+			JSONObject characterMap = tyCharacterSelector.getCharacterMap();
+
+			return characterMap;
+
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(conn);
+		}
+
 	}
 
 }

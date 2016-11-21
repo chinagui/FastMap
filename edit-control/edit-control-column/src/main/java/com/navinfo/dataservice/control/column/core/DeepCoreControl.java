@@ -25,7 +25,6 @@ import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
-import com.navinfo.dataservice.dao.glm.selector.SelectorUtils;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiDeepStatusSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 import com.navinfo.dataservice.engine.batch.BatchProcess;
@@ -668,10 +667,10 @@ public class DeepCoreControl {
 	 * @throws Exception 
 	 */
 	public JSONObject queryPoi(JSONObject jsonReq, long userId) throws Exception{
+
 		JSONObject result = new JSONObject();
 		int subtaskId = jsonReq.getInt("subtaskId");
 		int dbId = jsonReq.getInt("dbId");
-
 
 		try {
 			ManApi apiService = (ManApi) ApplicationContextUtil.getBean("manApi");
@@ -689,7 +688,7 @@ public class DeepCoreControl {
 			return result;
 		} catch(Exception e) {
 			throw e;
-		}
+		} 
 	}
 	
 	public static void main(String[] args) throws Exception{

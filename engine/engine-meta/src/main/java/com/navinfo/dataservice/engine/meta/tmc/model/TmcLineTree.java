@@ -34,7 +34,7 @@ public class TmcLineTree implements IObj {
 	public TmcLineTree(TmcPoint point) {
 		this.setTmcId(point.getTmcId());
 
-		this.setName(point.getName());
+		this.setName(point.getTranslateName());
 
 		this.setType(ObjType.TMCPOINT);
 
@@ -44,7 +44,7 @@ public class TmcLineTree implements IObj {
 	public TmcLineTree(TmcLine line) {
 		this.setTmcId(line.getTmcId());
 
-		this.setName(line.getName());
+		this.setName(line.getTranslateName());
 
 		this.setType(ObjType.TMCLINE);
 
@@ -54,7 +54,7 @@ public class TmcLineTree implements IObj {
 	public TmcLineTree(TmcArea tmcArea) {
 		this.setTmcId(tmcArea.getTmcId());
 
-		this.setName(tmcArea.getName());
+		this.setName(tmcArea.getTranslateName());
 
 		this.setType(ObjType.TMCAREA);
 	}

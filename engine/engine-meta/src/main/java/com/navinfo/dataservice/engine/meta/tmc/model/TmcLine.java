@@ -25,7 +25,7 @@ public class TmcLine {
 	//位置代码
 	private int locCode;
 	
-	private String name;
+	private String translateName;
 
 	//位置表代码
 	private String cid;
@@ -59,12 +59,12 @@ public class TmcLine {
 		this.tmcId = tmcId;
 	}
 
-	public String getName() {
-		return name;
+	public String getTranslateName() {
+		return translateName;
 	}
 
-	public void setName(String name) {
-		this.name = name;
+	public void setTranslateName(String translateName) {
+		this.translateName = translateName;
 	}
 
 	public JSONArray getGeometry() {

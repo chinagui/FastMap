@@ -9,14 +9,15 @@ import com.navinfo.dataservice.dao.glm.selector.rd.rw.RwNodeSelector;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.operation.AbstractProcess;
 
-public class Process extends AbstractProcess<Command>{
-	
+public class Process extends AbstractProcess<Command> {
+
 	public Process(AbstractCommand command) throws Exception {
 		super(command);
 	}
-	
-	public Process(Command command,Result result,Connection conn) throws Exception {
-		super(command,result,conn);
+
+	public Process(Command command, Result result, Connection conn)
+			throws Exception {
+		super(command, result, conn);
 	}
 
 	@Override
@@ -25,9 +26,12 @@ public class Process extends AbstractProcess<Command>{
 		return new Operation(this.getCommand()).run(this.getResult());
 
 	}
-	
+
 	@Override
 	public boolean prepareData() throws Exception {
+		if (this.getCommand().getRwNode() != null) {
+			return true;
+		}
 
 		RwNodeSelector selector = new RwNodeSelector(this.getConn());
 
@@ -37,8 +41,7 @@ public class Process extends AbstractProcess<Command>{
 
 		return true;
 	}
-	
-	
+
 	public String innerRun() throws Exception {
 		String msg;
 		try {

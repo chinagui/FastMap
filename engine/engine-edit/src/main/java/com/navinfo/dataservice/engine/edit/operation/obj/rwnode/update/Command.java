@@ -12,11 +12,11 @@ public class Command extends AbstractCommand {
 	private String requester;
 
 	private JSONObject content;
-	
+
 	private int pid;
-	
+
 	private RwNode rwNode;
-	
+
 	public int getPid() {
 		return pid;
 	}
@@ -33,8 +33,6 @@ public class Command extends AbstractCommand {
 		this.content = content;
 	}
 
-	
-	
 	public RwNode getRwNode() {
 		return rwNode;
 	}
@@ -47,7 +45,7 @@ public class Command extends AbstractCommand {
 	public OperType getOperType() {
 		return OperType.UPDATE;
 	}
-	
+
 	@Override
 	public ObjType getObjType() {
 		return ObjType.RWNODE;
@@ -64,8 +62,14 @@ public class Command extends AbstractCommand {
 		this.setDbId(json.getInt("dbId"));
 
 		this.content = json.getJSONObject("data");
-		
+
 		this.pid = this.content.getInt("pid");
+	}
+
+	public Command(JSONObject json, String requester, RwNode node) {
+		this(json, requester);
+		this.rwNode = node;
+
 	}
 
 }

@@ -2,12 +2,13 @@ package com.navinfo.dataservice.engine.check.rules;
 import java.util.List;
 import net.sf.json.JSONObject;
 
-import com.navinfo.dataservice.engine.meta.character.TyCharacterEgalcharExtCheckSelector;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiCarrental;
 import com.navinfo.dataservice.engine.check.core.baseRule;
+import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.ExcelReader;
 
 /** 
@@ -45,10 +46,9 @@ public class CheckRuleFMZY20238 extends baseRule {
 			String address=poiCarrental.getAddress();
 			
 			if (!"".equals(address)){
-				
-				TyCharacterEgalcharExtCheckSelector egalChar = new TyCharacterEgalcharExtCheckSelector();
-				JSONObject characterMap = new JSONObject();
-				characterMap=egalChar.getCharacterMap();
+				//调用元数据请求接口
+				MetadataApi metaApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
+				JSONObject characterMap = metaApi.getCharacterMap();
 				
 				char[] addresslist=new char[address.length()];
 				addresslist=address.toCharArray();
@@ -60,7 +60,7 @@ public class CheckRuleFMZY20238 extends baseRule {
 					char c=addresslist[i];
 					String str=String.valueOf(c);
 					//全角空格
-					if ("　".equals(str)){
+					if ("　".equals(str) || " ".equals(str)){
 						log = "汽车租赁地址描述内容含有空格。";
 						this.setCheckResult(ixPoi.getGeometry(), "[IX_POI,"+ixPoi.getPid()+"]", ixPoi.getMeshId(),log);
 					}

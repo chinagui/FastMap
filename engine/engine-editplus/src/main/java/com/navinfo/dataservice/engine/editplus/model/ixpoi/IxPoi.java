@@ -1,7 +1,6 @@
 package com.navinfo.dataservice.engine.editplus.model.ixpoi;
 
 import com.navinfo.dataservice.engine.editplus.model.AbstractIx;
-
 /** 
 * @ClassName:  IxPoi 
 * @author code generator
@@ -54,9 +53,6 @@ public class IxPoi extends AbstractIx {
 	protected String sportsVenue ;
 	protected int indoor ;
 	protected String vipFlag ;
-//	protected int uRecord ;
-//	protected String uFields ;
-//	protected String uDate ;
 	
 	public IxPoi (long objPid){
 		super(objPid);
@@ -430,36 +426,12 @@ public class IxPoi extends AbstractIx {
 			this.vipFlag = vipFlag;
 		}
 	}
-//	public int getURecord() {
-//		return uRecord;
-//	}
-//	public void setURecord(int uRecord) {
-//		if(this.checkValue("U_RECORD",this.uRecord,uRecord)){
-//			this.uRecord = uRecord;
-//		}
-//	}
-//	public String getUFields() {
-//		return uFields;
-//	}
-//	public void setUFields(String uFields) {
-//		if(this.checkValue("U_FIELDS",this.uFields,uFields)){
-//			this.uFields = uFields;
-//		}
-//	}
-//	public String getUDate() {
-//		return uDate;
-//	}
-//	public void setUDate(String uDate) {
-//		if(this.checkValue("U_DATE",this.uDate,uDate)){
-//			this.uDate = uDate;
-//		}
-//	}
-	
+
 	@Override
 	public String tableName() {
 		return "IX_POI";
 	}
-	
+
 //	@Override
 //	public String colName2Getter(String colName){
 //		//handler open_24h...

@@ -23,7 +23,7 @@ public class TmcPointName {
 	
 	private int nameFlag;
 	
-	private String name;
+	private String translateName;
 
 	public int getTmcId() {
 		return tmcId;
@@ -63,11 +63,11 @@ public class TmcPointName {
 		return json;
 	}
 
-	public String getName() {
-		return name;
+	public String getTranslateName() {
+		return translateName;
 	}
 
-	public void setName(String name) {
-		this.name = name;
+	public void setTranslateName(String translateName) {
+		this.translateName = translateName;
 	}
 }

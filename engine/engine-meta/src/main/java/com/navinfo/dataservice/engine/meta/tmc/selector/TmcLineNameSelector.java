@@ -56,7 +56,7 @@ public class TmcLineNameSelector {
 				
 				lineName.setTransLang(resultSet.getString("TRANS_LANG"));
 				
-				lineName.setName(resultSet.getString("TRANSLATE_NAME"));
+				lineName.setTranslateName(resultSet.getString("TRANSLATE_NAME"));
 
 				tmcLineNames.add(lineName);
 			}

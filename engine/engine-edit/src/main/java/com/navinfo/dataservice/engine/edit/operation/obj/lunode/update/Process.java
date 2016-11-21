@@ -15,7 +15,7 @@ public class Process extends AbstractProcess<Command> {
 
 	public Process(Command command, Result result, Connection conn)
 			throws Exception {
-		super(command,result,conn);
+		super(command, result, conn);
 	}
 
 	public Process(AbstractCommand command) throws Exception {
@@ -31,6 +31,11 @@ public class Process extends AbstractProcess<Command> {
 	@Override
 	public boolean prepareData() throws Exception {
 
+		if (this.getCommand().getNode() != null) {
+			this.lunode = this.getCommand().getNode();
+			return true;
+		}
+
 		LuNodeSelector selector = new LuNodeSelector(this.getConn());
 
 		this.lunode = (LuNode) selector.loadById(this.getCommand().getPid(),
@@ -38,7 +43,7 @@ public class Process extends AbstractProcess<Command> {
 
 		return true;
 	}
-	
+
 	public String innerRun() throws Exception {
 		String msg;
 		try {

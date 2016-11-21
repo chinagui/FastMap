@@ -14,8 +14,9 @@ public class Process extends AbstractProcess<Command> {
 	public Process(AbstractCommand command) throws Exception {
 		super(command);
 	}
-	
-	public Process(Command command, Result result, Connection conn) throws Exception {
+
+	public Process(Command command, Result result, Connection conn)
+			throws Exception {
 		super();
 		this.setCommand(command);
 		this.setResult(result);
@@ -25,14 +26,15 @@ public class Process extends AbstractProcess<Command> {
 
 	@Override
 	public boolean prepareData() throws Exception {
-		RwNodeSelector nodeSelector = new RwNodeSelector(this.getConn());
 
-		RwNode updateNode = (RwNode) nodeSelector.GetRwNodeWithLinkById(this
-				.getCommand().getNodePid(), true);
+		if (this.getCommand().getUpdateNode() == null) {
+			RwNodeSelector nodeSelector = new RwNodeSelector(this.getConn());
 
-		this.getCommand().setUpdateNode(updateNode);
-
-		this.getCommand().setLinks(updateNode.getTopoLinks());
+			RwNode updateNode = (RwNode) nodeSelector.GetRwNodeWithLinkById(
+					this.getCommand().getNodePid(), true);
+			this.getCommand().setUpdateNode(updateNode);
+			this.getCommand().setLinks(updateNode.getTopoLinks());
+		}
 
 		return false;
 	}
@@ -48,7 +50,8 @@ public class Process extends AbstractProcess<Command> {
 				throw new Exception(preCheckMsg);
 			}
 
-			IOperation operation = new Operation(this.getCommand(), this.getConn());
+			IOperation operation = new Operation(this.getCommand(),
+					this.getConn());
 
 			msg = operation.run(this.getResult());
 
@@ -63,7 +66,7 @@ public class Process extends AbstractProcess<Command> {
 
 		return msg;
 	}
-	
+
 	@Override
 	public String exeOperation() throws Exception {
 		return new Operation(this.getCommand(), this.getConn()).run(this

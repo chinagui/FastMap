@@ -70,8 +70,9 @@ public class RdNameImportor {
 		int adminId = new MeshSelector().getAdminIdByLocation(longitude,
 				latitude);
 		if (!exitsInMeshAdmin(meshes, name)) {
-			String srcResume = rowkey + ","
-					+ DateUtils.dateToString(new Date(), "yyyy-MM-dd");
+			//JSONObject srcResumeObj=new JSONObject();
+			//srcResumeObj.put("tips", rowkey);
+			String srcResume ="\"tips\":\""+rowkey+"\"";
 			insertNameAndTeilen(name, DEFAULT_LANG_CODE, adminId, srcResume);
 		}else{
 			log.warn(name+"已存在");

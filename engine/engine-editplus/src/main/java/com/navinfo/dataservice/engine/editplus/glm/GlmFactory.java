@@ -120,7 +120,8 @@ public class GlmFactory {
                 	String curTabName = tab.attributeValue("name");
                 	GlmTable glmTab = new GlmTable();
                 	glmTab.setName(curTabName);
-                	glmTab.setObjType(glmObj.getType());
+//                	glmTab.setObjType(glmObj.getType());
+                	glmTab.setObjType(glmObj.getName());
                 	glmTab.setPkColumn(tab.attributeValue("pk"));
                 	glmTab.setModelClassName(tab.attributeValue("class"));
                 	if(curTabName.equals(mainTabName)){

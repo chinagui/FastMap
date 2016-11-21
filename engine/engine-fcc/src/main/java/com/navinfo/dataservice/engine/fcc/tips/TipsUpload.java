@@ -24,7 +24,6 @@ import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.log4j.Logger;
 
-import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
@@ -34,7 +33,6 @@ import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
 import com.navinfo.dataservice.dao.fcc.SolrController;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
-import com.navinfo.navicommons.geo.computation.MeshUtils;
 
 /**
  * 保存上传的tips数据
@@ -287,6 +285,10 @@ public class TipsUpload {
 				
 				json.put("t_mStatus", 0);
 				
+				json.put("t_inStatus", 0);
+				
+				json.put("t_inMeth", 0);
+				
 				//道路名测线
 				if(sourceType.equals("1901")){
 					roadNameTips.put(rowkey, json);
@@ -420,7 +422,7 @@ public class TipsUpload {
 					put = insertPut(rowkey, json);
 				}
 
-				JSONObject solrIndex = generateSolrIndex(json);
+				JSONObject solrIndex = TipsUtils.generateSolrIndex(json,currentDate);
 
 				solr.addTips(solrIndex);
 
@@ -440,9 +442,10 @@ public class TipsUpload {
 
 		Put put = new Put(rowkey.getBytes());
 		
-		JSONObject jsonTrack = generateTrackJson(3, json.getInt("t_handler"),
+		JSONObject jsonTrack =TipsUtils.generateTrackJson(3, json.getInt("t_handler"),
 				json.getInt("t_command"), null, json.getString("t_operateDate"),
-				json.getInt("t_cStatus"),json.getInt("t_dStatus"),json.getInt("t_mStatus"));
+				json.getInt("t_cStatus"),json.getInt("t_dStatus"),json.getInt("t_mStatus"),
+				json.getInt("t_inStatus"),json.getInt("t_inMeth"));
 
 		put.addColumn("data".getBytes(), "track".getBytes(), jsonTrack
 				.toString().getBytes());
@@ -535,7 +538,7 @@ public class TipsUpload {
 
 				Put put = updatePut(rowkey, json, oldTip);
 
-				JSONObject solrIndex = generateSolrIndex(json);
+				JSONObject solrIndex = TipsUtils.generateSolrIndex(json,currentDate);
 
 				solr.addTips(solrIndex);
 
@@ -556,10 +559,11 @@ public class TipsUpload {
 
 		int lifecycle = json.getInt("t_lifecycle");
 
-		JSONObject jsonTrack = generateTrackJson(lifecycle,
+		JSONObject jsonTrack = TipsUtils.generateTrackJson(lifecycle,
 				json.getInt("t_handler"), json.getInt("t_command"),
 				oldTip.getJSONArray("t_trackInfo"),json.getString("t_operateDate"),
-				json.getInt("t_cStatus"),json.getInt("t_dStatus"),json.getInt("t_mStatus"));
+				json.getInt("t_cStatus"),json.getInt("t_dStatus"),json.getInt("t_mStatus"),
+				json.getInt("t_inStatus"),json.getInt("t_inMeth"));
 
 		put.addColumn("data".getBytes(), "track".getBytes(), jsonTrack
 				.toString().getBytes());
@@ -661,109 +665,10 @@ public class TipsUpload {
 
 		return put;
 	}
-
-	/**
-	 * 组装Track
-	 * 
-	 * @param lifecycle
-	 * @param handler
-	 * @param oldTrackInfo
-	 * @param t_cStatus 
-	 * @param t_dStatus 
-	 * @param t_mStatus
-	 * @return
-	 */
-	private JSONObject generateTrackJson(int lifecycle, int handler,
-			int command, JSONArray oldTrackInfo, String t_operateDate, 
-			int t_cStatus, int t_dStatus, int t_mStatus) {
-		
-		JSONObject jsonTrack = new JSONObject();
-
-		jsonTrack.put("t_lifecycle", lifecycle);
-
-		jsonTrack.put("t_command", command);
-
-		jsonTrack.put("t_date", currentDate);
-		
-		jsonTrack.put("t_cStatus", t_cStatus);
-		
-		jsonTrack.put("t_dStatus", t_dStatus);
-		
-		jsonTrack.put("t_mStatus", t_mStatus);
-
-		JSONObject jsonTrackInfo = new JSONObject();
-
-		jsonTrackInfo.put("stage", 1);
-
-		jsonTrackInfo.put("date", t_operateDate);
-
-		jsonTrackInfo.put("handler", handler);
-		
-		
-		if (null == oldTrackInfo) {
-
-			oldTrackInfo = new JSONArray();
-		}
-
-		oldTrackInfo.add(jsonTrackInfo);
-
-		jsonTrack.put("t_trackInfo", oldTrackInfo);
-
-		return jsonTrack;
-	}
+	
 
 	
-	private JSONObject generateSolrIndex(JSONObject json) throws Exception {
-
-		JSONObject index = new JSONObject();
-
-		index.put("id", json.getString("rowkey"));
-
-		index.put("stage", 1);
-
-		index.put("t_date", currentDate);
-
-		index.put("t_operateDate", json.getString("t_operateDate"));
-
-		index.put("t_lifecycle", json.getInt("t_lifecycle"));
-
-		index.put("t_command", json.getInt("t_command"));
-
-		index.put("handler", json.getInt("t_handler"));
-		
-		index.put("t_cStatus", json.getInt("t_cStatus"));
-		
-		index.put("t_dStatus", json.getInt("t_dStatus"));
-		
-		index.put("t_mStatus", json.getInt("t_mStatus"));
-
-		index.put("s_sourceType", json.getString("s_sourceType"));
-
-		index.put("s_sourceCode", json.getInt("s_sourceCode"));
-
-		index.put("g_guide", json.getJSONObject("g_guide"));
-
-		JSONObject g_location = json.getJSONObject("g_location");
-
-		index.put("g_location", g_location);
-
-		JSONObject deep = json.getJSONObject("deep");
-
-		index.put("deep", deep.toString());
-
-		String sourceType = json.getString("s_sourceType");
-
-		JSONArray feedbacks = json.getJSONArray("feedback");
-
-		index.put("feedback", feedbacks.toString());
-
-		index.put("wkt", TipsImportUtils.generateSolrWkt(sourceType, deep,
-				g_location, feedbacks));
-
-		index.put("s_reliability", 100);
-
-		return index;
-	}
+	
 
 	private Photo getPhoto(JSONObject attachment, JSONObject tip) {
 

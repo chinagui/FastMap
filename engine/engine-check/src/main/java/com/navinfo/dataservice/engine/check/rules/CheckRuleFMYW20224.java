@@ -53,8 +53,7 @@ public class CheckRuleFMYW20224 extends baseRule {
 						IxPoiParking ixPoiParking = (IxPoiParking) parking;
 						String tollDes = ixPoiParking.getTollDes();
 						if (StringUtils.isNotEmpty(tollDes)) {
-							// 加载合法字符
-							Connection metaConn = DBConnector.getInstance().getMetaConnection();
+
 							//调用元数据请求接口
 							MetadataApi metaApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 							JSONObject characterMap = metaApi.getCharacterMap();

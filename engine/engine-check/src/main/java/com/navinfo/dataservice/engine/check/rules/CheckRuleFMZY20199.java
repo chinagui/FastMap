@@ -1,13 +1,15 @@
 package com.navinfo.dataservice.engine.check.rules;
+import java.sql.Connection;
 import java.util.List;
 import net.sf.json.JSONObject;
 
-import com.navinfo.dataservice.engine.meta.character.TyCharacterEgalcharExtCheckSelector;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiCarrental;
 import com.navinfo.dataservice.engine.check.core.baseRule;
+import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.ExcelReader;
 
 /** 
@@ -43,10 +45,9 @@ public class CheckRuleFMZY20199 extends baseRule {
 			String howToGo=poiCarrental.getHowToGo();
 			
 			if (!"".equals(howToGo)){
-				
-				TyCharacterEgalcharExtCheckSelector egalChar = new TyCharacterEgalcharExtCheckSelector();
-				JSONObject characterMap = new JSONObject();
-				characterMap=egalChar.getCharacterMap();
+				//调用元数据请求接口
+				MetadataApi metaApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
+				JSONObject characterMap = metaApi.getCharacterMap();
 				
 				char[] howToGolist=new char[howToGo.length()];
 				howToGolist=howToGo.toCharArray();
@@ -57,18 +58,18 @@ public class CheckRuleFMZY20199 extends baseRule {
 					
 					char c=howToGolist[i];
 					String str=String.valueOf(c);
-					//全角空格
-					if ("　".equals(str)){
+					//全半角空格
+					if ("　".equals(str) || " ".equals(str)){
 						log = "周边交通线路内容含有空格。";
 						this.setCheckResult(ixPoi.getGeometry(), "[IX_POI,"+ixPoi.getPid()+"]", ixPoi.getMeshId(),log);
 					}
 					
 					if (!characterMap.has(str)){
-						illegalChar+=illegalChar;
+						illegalChar+=str;
 					}
 				}
 				if (!"".equals(illegalChar)){
-					log = "停车场开放时间含有非法字符'"+illegalChar+"';";
+					log = "周边交通路线含有非法字符'"+illegalChar+"';";
 					this.setCheckResult(ixPoi.getGeometry(), "[IX_POI,"+ixPoi.getPid()+"]", ixPoi.getMeshId(),log);
 				}
 				if (!howToGo.equals(ExcelReader.h2f(howToGo))){

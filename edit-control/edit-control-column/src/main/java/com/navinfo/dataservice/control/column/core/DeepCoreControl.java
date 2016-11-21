@@ -262,8 +262,7 @@ public class DeepCoreControl {
 
             JSONObject json = JSONObject.fromObject(parameter);
 
-            ObjType objType = Enum.valueOf(ObjType.class,
-                    json.getString("type"));
+            ObjType objType = Enum.valueOf(ObjType.class,"IX_POI");
             int dbId = json.getInt("dbId");
             int pid = json.getInt("pid");
 

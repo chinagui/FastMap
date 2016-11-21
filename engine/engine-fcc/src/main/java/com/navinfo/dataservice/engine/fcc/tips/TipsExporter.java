@@ -29,8 +29,7 @@ public class TipsExporter {
 	private SolrController solr = new SolrController();
 
 	private String folderName;
-
-	public TipsExporter() {
+s	public TipsExporter() {
 	}
 
 	private List<Get> generateGets(String gridId, String date)
@@ -39,10 +38,9 @@ public class TipsExporter {
 
 		Set<String> set = new HashSet<String>();
 
-
 		String wkt = GridUtils.grid2Wkt(gridId);
-
-		List<String> rowkeys = solr.queryTipsMobile(wkt, date);
+		
+		List<String> rowkeys = solr.queryTipsMobile(wkt, date,TipsUtils.notExpSourceType);
 
 		for (String rowkey : rowkeys) {
 			if (set.contains(rowkey)) {

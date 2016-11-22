@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.edit.operation.topo.move.movelcnode;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.json.JSONException;
@@ -9,6 +10,7 @@ import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.lc.LcFace;
 import com.navinfo.dataservice.dao.glm.model.lc.LcLink;
+import com.navinfo.dataservice.dao.glm.model.lc.LcNode;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -21,6 +23,16 @@ public class Command extends AbstractCommand {
 	private double longitude;
 
 	private double latitude;
+	
+	private LcNode node;
+
+	public LcNode getNode() {
+		return node;
+	}
+
+	public void setNode(LcNode node) {
+		this.node = node;
+	}
 
 	private String requester;
 
@@ -75,6 +87,15 @@ public class Command extends AbstractCommand {
 		this.longitude = geometry.getCoordinate().x;
 		this.latitude = geometry.getCoordinate().y;
 		this.setDbId(json.getInt("dbId"));
+	}
+	public Command(JSONObject json, LcLink lcLink, LcNode node)
+			throws JSONException {
+		this(json, "");
+		List<LcLink> links = new ArrayList<>();
+		links.add(lcLink);
+		this.setLinks(links);
+		this.node = node;
+
 	}
 
 	@Override

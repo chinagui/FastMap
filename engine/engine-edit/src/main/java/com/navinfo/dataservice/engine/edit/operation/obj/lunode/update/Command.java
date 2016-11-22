@@ -4,6 +4,7 @@ import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
+import com.navinfo.dataservice.dao.glm.model.lu.LuNode;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 
 public class Command extends AbstractCommand {
@@ -13,6 +14,16 @@ public class Command extends AbstractCommand {
 	private JSONObject content;
 
 	private int pid;
+
+	private LuNode node;
+
+	public LuNode getNode() {
+		return node;
+	}
+
+	public void setNode(LuNode node) {
+		this.node = node;
+	}
 
 	public JSONObject getContent() {
 		return content;
@@ -53,6 +64,12 @@ public class Command extends AbstractCommand {
 		this.content = json.getJSONObject("data");
 
 		this.pid = this.content.getInt("pid");
+	}
+
+	public Command(JSONObject json, String requester, LuNode node) {
+		this(json, requester);
+		this.node = node;
+
 	}
 
 }

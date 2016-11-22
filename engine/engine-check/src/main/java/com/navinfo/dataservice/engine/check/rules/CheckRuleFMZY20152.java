@@ -2,12 +2,13 @@ package com.navinfo.dataservice.engine.check.rules;
 import java.util.List;
 import net.sf.json.JSONObject;
 
-import com.navinfo.dataservice.engine.meta.character.TyCharacterEgalcharExtCheckSelector;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiParking;
 import com.navinfo.dataservice.engine.check.core.baseRule;
+import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 
 /** 
  * @ClassName: CheckRuleFMZY20152
@@ -41,20 +42,22 @@ public class CheckRuleFMZY20152 extends baseRule {
 			
 			if (!"".equals(openTiime)){
 				
-				TyCharacterEgalcharExtCheckSelector egalChar = new TyCharacterEgalcharExtCheckSelector();
-				JSONObject characterMap = new JSONObject();
-				characterMap=egalChar.getCharacterMap();
+				//调用元数据请求接口
+				MetadataApi metaApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
+				JSONObject characterMap = metaApi.getCharacterMap();
 				
 				char[] openTiimeList=new char[openTiime.length()];
 				openTiimeList=openTiime.toCharArray();
 				
 				String illegalChar = "";
+				int aa = openTiimeList.length;
 				
-				for(int i = 0; i < openTiimeList.length; i++){
+				for(int i = 0; i < aa; i++){
 					
 					char c=openTiimeList[i];
-					if (!characterMap.has(String.valueOf(c))){
-						illegalChar+=illegalChar;
+					String str = String.valueOf(c);
+					if (!(characterMap.has(str))){
+						illegalChar+=str;
 					}
 				if (!"".equals(illegalChar)){
 					log = "停车场开放时间含有非法字符'"+illegalChar+"';";

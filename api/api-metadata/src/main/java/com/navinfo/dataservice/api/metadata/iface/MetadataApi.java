@@ -51,5 +51,7 @@ public interface MetadataApi {
 	 */
 	public JSONArray queryTmcLine(int x, int y, int z, int gap) throws Exception;
 	
-	public JSONObject getCharacterMap() throws Exception; 
+	public JSONObject getCharacterMap() throws Exception;
+	
+	public JSONObject searchByAdminCode(String admincode) throws Exception;
 }

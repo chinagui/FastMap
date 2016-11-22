@@ -2,7 +2,9 @@ package com.navinfo.dataservice.engine.fcc;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.Cell;
@@ -94,14 +96,31 @@ public class HBaseOperateTest {
 		try {
 			Get scan = new Get(rowkey.getBytes());// 根据rowkey查询
 			System.out.println("开始查询啊");
-			Result r = htab.get(scan);
-			if (r != null && r.getRow() != null) {
-				System.out.println("获得到rowkey:" + new String(r.getRow()));
-				for (KeyValue keyValue : r.raw()) {
+			Result result = htab.get(scan);
+		/*	if (result != null && result.getRow() != null) {
+				System.out.println("获得到rowkey:" + new String(result.getRow()));
+				for (KeyValue keyValue : result.raw()) {
 					System.out.println("列：" + new String(keyValue.getFamily())
 							+ "====值:" + new String(keyValue.getValue()));
 				}
-			}
+			}*/
+			
+			  List<Cell> ceList =   result.listCells();  
+              Map<String,Object> map = new HashMap<String,Object>();  
+              Map<String,Map<String,Object>> returnMap = new HashMap<String,Map<String,Object>>();  
+              String  row = "";  
+              if(ceList!=null&&ceList.size()>0){  
+                    for(Cell cell:ceList){  
+                     row =Bytes.toString( cell.getRowArray(), cell.getRowOffset(), cell.getRowLength());  
+                     String value =Bytes.toString( cell.getValueArray(), cell.getValueOffset(), cell.getValueLength());  
+                     String family =  Bytes.toString(cell.getFamilyArray(),cell.getFamilyOffset(),cell.getFamilyLength());  
+                     String quali = Bytes.toString( cell.getQualifierArray(),cell.getQualifierOffset(),cell.getQualifierLength());  
+                     map.put(family+"_"+quali, value);  
+                     
+                     System.out.println(family+"_"+quali+":"+value);
+                    }  
+                    map.put("row",row );  
+                } 
 
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -441,7 +460,7 @@ public class HBaseOperateTest {
 
 	public static void main(String[] args) throws Exception {
 		HBaseOperateTest test = new HBaseOperateTest();
-		String rowkey = "0212055b268d5faff94b59b94ad7aec3348d4f";
+		String rowkey = "021606597d72114ef24985bc35dade8993e6b1";
 		// test.QueryAll();
 		 test.QueryByCondition1(rowkey);
 		// test.QueryByCondition4();

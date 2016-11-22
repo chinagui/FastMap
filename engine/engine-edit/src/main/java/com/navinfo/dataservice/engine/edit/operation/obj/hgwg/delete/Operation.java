@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.hgwg.delete;
 
+import com.navinfo.dataservice.dao.glm.iface.AlertObject;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
@@ -54,5 +55,27 @@ public class Operation implements IOperation {
             result.insertObject(hgwgLimit, ObjStatus.DELETE, hgwgLimit.pid());
         }
         return null;
+    }
+
+    /**
+     * 删除link对限高限重的删除影响
+     *
+     * @return
+     * @throws Exception
+     */
+    public List<AlertObject> getDeleteRdHgwgInfectData(int linkPid, Connection conn) throws Exception {
+        RdHgwgLimitSelector selector = new RdHgwgLimitSelector(conn);
+        List<RdHgwgLimit> hgwgLimits = selector.loadByLinkPid(linkPid, true);
+        List<AlertObject> alertList = new ArrayList<>();
+        for (RdHgwgLimit hgwgLimit : hgwgLimits) {
+            AlertObject alertObj = new AlertObject();
+            alertObj.setObjType(hgwgLimit.objType());
+            alertObj.setPid(hgwgLimit.getPid());
+            alertObj.setStatus(ObjStatus.DELETE);
+            if (!alertList.contains(alertObj)) {
+                alertList.add(alertObj);
+            }
+        }
+        return alertList;
     }
 }

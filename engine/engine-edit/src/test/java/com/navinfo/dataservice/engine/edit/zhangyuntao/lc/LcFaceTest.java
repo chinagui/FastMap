@@ -24,7 +24,8 @@ public class LcFaceTest extends InitApplication {
 
 	@Test
 	public void createTest() {
-		String requester = "{\"command\":\"CREATE\",\"type\":\"LCFACE\",\"dbId\":17,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.37449383735655,40.06743126494544],[116.3755989074707,40.06735736911618],[116.37539505958557,40.066799042482025],[116.37449383735655,40.06743126494544]]}}}";
+//		String requester = "{\"command\":\"CREATE\",\"type\":\"LCFACE\",\"dbId\":17,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.25478148460388,40.00035837864984],[116.25629425048827,40.00030906629938],[116.25563979148865,39.99930637411606],[116.25563979148865,39.99930637411606],[116.25478148460388,40.00035837864984]]}}}";
+		String requester = "{\"command\":\"CREATE\",\"type\":\"LCFACE\",\"dbId\":19,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.34263992309572,40.0003830348117],[116.34406685829163,40.00033372247905],[116.34321928024292,39.99948718854876],[116.34263992309572,40.0003830348117]]}}}";
 		TestUtil.run(requester);
 	}
 

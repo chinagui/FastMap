@@ -1070,7 +1070,7 @@ public class TipsSelector {
 
 		String wkt = GridUtils.grid2Wkt(grid);
 
-		boolean flag = conn.checkTipsMobile(wkt, date);
+		boolean flag = conn.checkTipsMobile(wkt, date,TipsUtils.notExpSourceType);
 
 		if (flag) {
 			return 1;

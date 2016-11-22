@@ -56,7 +56,7 @@ public class TmcPointNameSelector {
 				
 				pointName.setTransLang(resultSet.getString("TRANS_LANG"));
 				
-				pointName.setName(resultSet.getString("TRANSLATE_NAME"));
+				pointName.setTranslateName(resultSet.getString("TRANSLATE_NAME"));
 
 				tmcLineNames.add(pointName);
 			}

@@ -93,14 +93,18 @@ public abstract class BasicObj {
 //		return true;
 //	}
 	
-
-	public List<BasicRow> getRowsByName(Connection conn,String tableName) throws GlmTableNotFoundException, SQLException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, IllegalArgumentException{
+	public List<BasicRow> selectRowsByName(Connection conn,String tableName) throws GlmTableNotFoundException, SQLException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, IllegalArgumentException{
 		List<BasicRow> rows = subrows.get(tableName);
 		if(rows==null){
 			//ObjSelector
 			ObjSelector.selectChildren(conn,this,tableName);
 		}
 		return subrows.get(tableName);
+	}
+
+	public List<BasicRow> getRowsByName(String tableName){
+		List<BasicRow> rows = subrows.get(tableName);
+		return rows;
 	}
 	/**
 	 * 判断如果是修改状态下，加载所有子表并全部设置为删除

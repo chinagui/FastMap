@@ -262,8 +262,7 @@ public class DeepCoreControl {
 
             JSONObject json = JSONObject.fromObject(parameter);
 
-            ObjType objType = Enum.valueOf(ObjType.class,
-                    json.getString("type"));
+            ObjType objType = Enum.valueOf(ObjType.class,"IX_POI");
             int dbId = json.getInt("dbId");
             int pid = json.getInt("pid");
 
@@ -657,6 +656,39 @@ public class DeepCoreControl {
 		} catch (Exception e) {
 			throw e;
 		}
+	}
+	
+	
+	/**
+	 * 深度信息查询poi
+	 * @param json
+	 * @param userId
+	 * @return
+	 * @throws Exception 
+	 */
+	public JSONObject queryPoi(JSONObject jsonReq, long userId) throws Exception{
+
+		JSONObject result = new JSONObject();
+		int subtaskId = jsonReq.getInt("subtaskId");
+		int dbId = jsonReq.getInt("dbId");
+
+		try {
+			ManApi apiService = (ManApi) ApplicationContextUtil.getBean("manApi");
+			Subtask subtask = apiService.queryBySubtaskId(subtaskId);
+			
+			if (subtask == null) {
+				throw new Exception("subtaskid未找到数据");
+			}
+			
+			Connection conn = DBConnector.getInstance().getConnectionById(dbId);
+			
+			IxPoiDeepStatusSelector deepSelector = new IxPoiDeepStatusSelector(conn);
+			result = deepSelector.loadDeepPoiByCondition(jsonReq, subtask, userId);
+			
+			return result;
+		} catch(Exception e) {
+			throw e;
+		} 
 	}
 	
 	public static void main(String[] args) throws Exception{

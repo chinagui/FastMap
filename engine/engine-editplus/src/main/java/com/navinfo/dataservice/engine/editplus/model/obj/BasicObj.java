@@ -43,8 +43,12 @@ public abstract class BasicObj {
 	public Map<String, List<BasicRow>> getSubrows() {
 		return subrows;
 	}
-	public void insertSubrow(String tableName,List<BasicRow> basicRowList) {
+	public void insertSubrows(String tableName,List<BasicRow> basicRowList) {
 		subrows.put(tableName, basicRowList);
+	}
+	public void insertSubrow(BasicRow subrow){
+		subrow.setOpType(OperationType.INSERT);
+		//todo
 	}
 	
 	public abstract String objType();

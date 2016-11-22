@@ -322,6 +322,52 @@ public class IxPoiDeepStatusSelector extends AbstractSelector{
 		}
 		
 	}
+	/**
+	 * 根据条件获取检查规则号
+	 * @param fields
+	 * @param values
+	 * @return
+	 * @throws Exception
+	 */
+	public JSONArray getCheckRulesByCondition(List<String> fields,List<String> values) throws Exception{
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select rule_code from ck_rule where rule_status = 'E' ");
+		
+		for(int i = 0; i < fields.size(); i++){
+			String field=fields.get(i);
+			String value=values.get(i);
+			sb.append(" and "+field+" = '"+value+"'");
+		}
+		
+		JSONArray CheckRules = new JSONArray();
+		
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+		
+		Connection conn = null;
+		
+		try {
+			
+			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
+			pstmt = conn.prepareStatement(sb.toString());	
+			resultSet = pstmt.executeQuery();
+			
+			while (resultSet.next()) {
+				CheckRules.add(resultSet.getString("rule_code"));
+			}
+			
+			return CheckRules;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+			DbUtils.closeQuietly(conn);
+		}
+		
+	}
 	
 	
 	/**

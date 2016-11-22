@@ -51,9 +51,8 @@ public class CheckRuleFMZY20152 extends baseRule {
 				openTiimeList=openTiime.toCharArray();
 				
 				String illegalChar = "";
-				int aa = openTiimeList.length;
 				
-				for(int i = 0; i < aa; i++){
+				for(int i = 0; i < openTiimeList.length; i++){
 					
 					char c=openTiimeList[i];
 					String str = String.valueOf(c);

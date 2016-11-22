@@ -24,7 +24,7 @@ public class Process extends AbstractProcess<Command> {
 
 	@Override
 	public boolean prepareData() throws Exception {
-		AbstractSelector selector = new AbstractSelector(this.getConn());
+		AbstractSelector selector = new AbstractSelector(RdTmclocation.class,this.getConn());
 		RdTmclocation rdTmclocation = (RdTmclocation) selector.loadById(this.getCommand().getPid(), true);
 		this.getCommand().setRdTmclocation(rdTmclocation);
 		return true;

@@ -605,7 +605,7 @@ public class DeepCoreControl {
 	 */
 	public void dataSetLock(Connection conn, List<String> rowIds, long userId,SimpleDateFormat df) throws Exception {
 		StringBuilder sb = new StringBuilder();
-		sb.append("UPDATE poi_deep_status SET handler=:1,update_date= to_date('"+ df.format(new Date()) + "','yyyy-MM-dd HH:mm:ss') WHERE row_id in (");
+		sb.append("UPDATE poi_deep_status SET handler=:1,update_date= to_date('"+ df.format(new Date()) + "','yyyy-mm-dd hh24:mi:ss') WHERE row_id in (");
 		String temp = "";
 		for (String rowId:rowIds) {
 			sb.append(temp);

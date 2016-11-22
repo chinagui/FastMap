@@ -36,7 +36,7 @@ public class TmcLineSelector {
 	public TmcLine loadByTmcLineId(int tmcLineId) throws Exception {
 		TmcLine tmcLine = null;
 
-		String sql = "select LOC_CODE,CID,TYPE_CODE,SEQ_NUM,LOCOFF_POS,LOCOFF_NEG,UPLINE_TMC_ID,AREA_TMC_ID from TMC_LINE where TMC_ID = :1 and U_RECORD !=2";
+		String sql = "select LOC_CODE,CID,LOCTABLE_ID,TYPE_CODE,SEQ_NUM,LOCOFF_POS,LOCOFF_NEG,UPLINE_TMC_ID,AREA_TMC_ID from TMC_LINE where TMC_ID = :1 and U_RECORD !=2";
 
 		PreparedStatement pstmt = null;
 
@@ -55,6 +55,8 @@ public class TmcLineSelector {
 				tmcLine.setTmcId(tmcLineId);
 				
 				tmcLine.setAreaTmcId(resultSet.getInt("AREA_TMC_ID"));
+				
+				tmcLine.setLoctableId(resultSet.getString("LOCTABLE_ID"));
 				
 				tmcLine.setCid(resultSet.getString("CID"));
 				

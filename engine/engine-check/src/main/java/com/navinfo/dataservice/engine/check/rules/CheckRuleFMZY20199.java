@@ -1,5 +1,4 @@
 package com.navinfo.dataservice.engine.check.rules;
-import java.sql.Connection;
 import java.util.List;
 import net.sf.json.JSONObject;
 
@@ -11,6 +10,7 @@ import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.ExcelReader;
+import com.navinfo.dataservice.commons.util.StringUtils;
 
 /** 
  * @ClassName: CheckRuleFMZY20199
@@ -44,7 +44,7 @@ public class CheckRuleFMZY20199 extends baseRule {
 			IxPoiCarrental poiCarrental = (IxPoiCarrental) row;
 			String howToGo=poiCarrental.getHowToGo();
 			
-			if (!"".equals(howToGo)){
+			if (StringUtils.isNotEmpty(howToGo)){
 				//调用元数据请求接口
 				MetadataApi metaApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 				JSONObject characterMap = metaApi.getCharacterMap();

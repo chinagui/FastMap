@@ -353,7 +353,7 @@ public class Operation implements IOperation {
 				saveTmcLocationLinks(result,linkArray,obj);
 			}
 		}
-
+		result.setPrimaryPid(this.command.getLinkPid());
 	}
 	
 	private void saveTmcLocationLinks(Result result, JSONArray array,RdTmclocation obj) throws Exception {

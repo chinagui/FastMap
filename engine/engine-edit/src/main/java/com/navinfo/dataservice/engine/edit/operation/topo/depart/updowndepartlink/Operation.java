@@ -932,6 +932,8 @@ public class Operation implements IOperation {
 
         opRefRelationObj.handlerRdHgwgLimit(this.command, result);
 
+        opRefRelationObj.handlerRdMileagepile(this.command, result);
+
     }
 
     /**

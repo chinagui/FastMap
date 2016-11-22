@@ -280,4 +280,19 @@ public class OpRefRelationObj {
         operation.depart(command.getRdLink(), newLinks, result);
         return null;
     }
+
+    /**
+     * 处理里程桩
+     *
+     * @param command
+     * @param newLinks
+     * @param result
+     * @return
+     * @throws Exception
+     */
+    public String handleRdMileagepile(Command command, List<RdLink> newLinks, Result result) throws Exception {
+        com.navinfo.dataservice.engine.edit.operation.obj.mileagepile.depart.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.mileagepile.depart.Operation(this.conn);
+        operation.depart(command.getRdLink(), newLinks, result);
+        return null;
+    }
 }

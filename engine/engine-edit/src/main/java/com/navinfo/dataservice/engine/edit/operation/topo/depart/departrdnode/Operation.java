@@ -364,6 +364,8 @@ public class Operation implements IOperation {
 		opRefRelationObj.handleRdWarninginfo(command, newLinks, result);
 		// 维护限高限重
 		opRefRelationObj.handleRdHgwgLimit(command, newLinks, result);
+		// 维护里程桩
+		opRefRelationObj.handleRdMileagepile(command, newLinks, result);
 	}
 
 	private List<RdLink> assemblyLinks(List<RdLink> newLinks)

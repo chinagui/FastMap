@@ -200,7 +200,7 @@ public class ObjBatchSelector {
 		Map<Long, List<BasicRow>> childRows = new QueryRunner().query(conn, sql, new MultipleBatchSelRsHandler(glmTab));
 		//更新obj
 		for(BasicObj obj:objList){
-			obj.insertSubrow(glmTab.getName(),childRows.get(obj.objPid()));
+			obj.insertSubrows(glmTab.getName(),childRows.get(obj.objPid()));
 		}
 
 	}

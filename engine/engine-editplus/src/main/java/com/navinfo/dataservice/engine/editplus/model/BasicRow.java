@@ -31,6 +31,13 @@ public abstract class BasicRow implements Logable{
 	protected String rowId;//row类型的代表就是有row_id
 	protected long objPid;
 	protected Map<String,Object> oldValues=null;//存储变化字段的旧值，key:col_name,value：旧值
+	
+	
+	public BasicRow() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+
 	public BasicRow(long objPid){
 		this.objPid=objPid;
 	}

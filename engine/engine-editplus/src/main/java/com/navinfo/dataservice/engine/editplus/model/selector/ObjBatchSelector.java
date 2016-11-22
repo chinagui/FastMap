@@ -10,7 +10,9 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.engine.editplus.glm.GlmColumn;
 import com.navinfo.dataservice.engine.editplus.glm.GlmFactory;
 import com.navinfo.dataservice.engine.editplus.glm.GlmObject;
 import com.navinfo.dataservice.engine.editplus.glm.GlmRef;
@@ -30,6 +32,7 @@ import com.vividsolutions.jts.geom.Polygon;
  */
 public class ObjBatchSelector {
 
+	private static final Logger logger = Logger.getLogger(ObjSelector.class);
 	/**
 	 * 
 	 * @param conn
@@ -193,6 +196,7 @@ public class ObjBatchSelector {
 		String sql = "SELECT " + glmTab.getName() + ".*," + mainTable.getName() + "."+ mainTable.getPkColumn() + " AS OBJ_PID FROM "+ StringUtils.join(tables.toArray(),",") +" WHERE "
 				+ StringUtils.join(conditions.toArray()," AND ")
 				+ " AND " + mainTable.getName() + "."+ mainTable.getPkColumn()+" IN (" + StringUtils.join(pids.toArray(),",") + ")";
+		logger.info("批量查询，selectChildren sql:sql");
 		Map<Long, List<BasicRow>> childRows = new QueryRunner().query(conn, sql, new MultipleBatchSelRsHandler(glmTab));
 		//更新obj
 		for(BasicObj obj:objList){
@@ -205,8 +209,68 @@ public class ObjBatchSelector {
 		return null;
 	}
 
-	public static List<BasicObj> selectBySpecColumn(String objType,SelectorConfig selConfig,String colName,Collection<Object> colValues,boolean isOnlyMain,boolean isLock){
-		return null;
+	/**
+	 * 如果多条只返回第一条,仅支持主表数值或字符类型字段
+	 * @param conn
+	 * @param objType
+	 * @param selConfig
+	 * @param colName
+	 * @param colValues
+	 * @param isOnlyMain
+	 * @param isLock
+	 * @param isNowait
+	 * @return
+	 * @throws SQLException 
+	 * @throws InstantiationException 
+	 * @throws IllegalAccessException 
+	 * @throws InvocationTargetException 
+	 * @throws NoSuchMethodException 
+	 * @throws ClassNotFoundException 
+	 */
+	public static List<BasicObj> selectBySpecColumn(Connection conn,String objType,SelectorConfig selConfig,String colName,Collection<Object> colValues,boolean isOnlyMain,boolean isLock,boolean isNowait) throws SQLException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException{
+		GlmObject glmObj = GlmFactory.getInstance().getObjByType(objType);
+		GlmTable mainTable = glmObj.getMainTable();
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("SELECT R.*,R." + mainTable.getPkColumn() + " OBJ_PID FROM "+ mainTable.getName() + " R WHERE R.");
+		//字段类型
+		String colType = mainTable.getColumByName(colName).getType();
+		//根据字段类型拼接查询条件
+		if(colType.equals(GlmColumn.TYPE_NUMBER)){
+			sb.append(colName + " IN (" + StringUtils.join(colValues.toArray(),",") + ")");
+		}else if(colType.equals(GlmColumn.TYPE_VARCHAR)){
+			List<String> colValues2 = new ArrayList<String>();
+			for(Object colValue:colValues){
+				colValues2.add("'" + colValue + "'");
+			}
+			sb.append(colName + " IN (" + StringUtils.join(colValues2.toArray(),",") + ")");
+		}else{
+			logger.info("selectBySpecColumn查询字段非字符型/数字型");
+			return null;
+		}
+		if(isLock){
+			sb.append(" FOR UPDATE");
+			if(isNowait){
+				sb.append(" NOWAIT");
+			}
+		}
+		logger.info("selectBySpecColumn查询主表："+sb.toString());
+		List<BasicRow> mainrowList = new QueryRunner().query(conn, sb.toString(), new SingleBatchSelRsHandler(mainTable));
+		
+		List<BasicObj> objList = new ArrayList<BasicObj>();
+		List<Long> pids = new ArrayList<Long>();
+		for(BasicRow mainrow:mainrowList){
+			BasicObj obj = ObjFactory.getInstance().create4Select(mainrow);
+			objList.add(obj);
+			pids.add(mainrow.getObjPid());
+		}
+		
+		if(!isOnlyMain){
+			logger.info("selectBySpecColumn开始查询子表");
+			selectChildren(conn,objList,selConfig,pids,mainTable);
+			logger.info("selectBySpecColumn开始查询子表");
+		}
+		return objList;
 	}
 	
 	public static List<BasicObj> selectByPolygon(String objType,SelectorConfig selConfig,Polygon polygon,boolean isOnlyMain,boolean isLock){

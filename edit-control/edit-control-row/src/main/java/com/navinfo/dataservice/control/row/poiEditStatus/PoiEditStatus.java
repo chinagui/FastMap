@@ -42,7 +42,7 @@ public class PoiEditStatus {
 	 * @return
 	 * @throws Exception 
 	 */
-	public static Map<Integer,Collection<Long>> FidFileterByEditStatus(Connection conn
+	public static Map<Integer,Collection<Long>> fidFilterByEditStatus(Connection conn
 			,Map<Integer,Collection<Long>> fidMap,int status) throws Exception{
 		
 		try{
@@ -102,7 +102,7 @@ public class PoiEditStatus {
 		pids.put(2, deleteList);
 		pids.put(3, updateList);
 
-		Map<Integer,Collection<Long>> pids2 = FidFileterByEditStatus(conn,pids,3);
+		Map<Integer,Collection<Long>> pids2 = fidFilterByEditStatus(conn,pids,3);
 
 		System.out.println("ok");
 	}

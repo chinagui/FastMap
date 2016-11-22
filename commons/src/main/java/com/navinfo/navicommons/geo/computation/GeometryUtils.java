@@ -287,7 +287,7 @@ public class GeometryUtils {
 				Geometry interGeo = tmp1.intersection(tmp2);
 
 				// 距离大于0代表不相交
-				if (result.distance(interGeo) > 0) {
+				if (result.distance(interGeo) > 1) {
 
 					result = null;
 

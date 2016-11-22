@@ -7,7 +7,7 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiParking;
 import com.navinfo.dataservice.engine.check.core.baseRule;
-
+import com.navinfo.dataservice.commons.util.StringUtils;
 /** 
  * @ClassName: CheckRuleFMZY20155
  * @author Gao Pengrong
@@ -47,11 +47,11 @@ public class CheckRuleFMZY20155 extends baseRule {
 			IxPoiParking poiPark = (IxPoiParking) row;
 			String remark=poiPark.getRemark(); 
 			Arrays.asList(defaultList).contains('|');
-			if ((!"".equals(remark)) && (remark.indexOf("\\|")<0) && (!defaultList.contains(remark))){
+			if (StringUtils.isNotEmpty(remark) && (remark.indexOf("\\|")<0) && (!defaultList.contains(remark))){
                 log="大陆停车场收费备注的值没有'|'时，值不在{0,1,2,3,4,5,6,7}中";
                 this.setCheckResult(ixPoi.getGeometry(), "[IX_POI,"+ixPoi.getPid()+"]", ixPoi.getMeshId(),log);
 			}
-			else if((!"".equals(remark)) && remark.indexOf("|")>=0){
+			else if(StringUtils.isNotEmpty(remark) && remark.indexOf("|")>=0){
 				List<String> strDuplicate = new ArrayList<String>();
 				String[] strArray = remark.split("\\|");
 				for(int i = 0; i < strArray.length; i++){

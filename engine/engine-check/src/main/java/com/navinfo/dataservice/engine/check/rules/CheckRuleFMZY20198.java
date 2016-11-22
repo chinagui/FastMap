@@ -1,5 +1,4 @@
 package com.navinfo.dataservice.engine.check.rules;
-import java.sql.Connection;
 import java.util.List;
 import net.sf.json.JSONObject;
 import java.util.regex.Matcher;
@@ -13,6 +12,7 @@ import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.ExcelReader;
+import com.navinfo.dataservice.commons.util.StringUtils;
 
 /** 
  * @ClassName: CheckRuleFMZY20198
@@ -48,7 +48,7 @@ public class CheckRuleFMZY20198 extends baseRule {
 			IxPoiCarrental poiCarrental = (IxPoiCarrental) row;
 			String openHour=poiCarrental.getOpenHour();
 			
-			if (!"".equals(openHour)){
+			if (StringUtils.isNotEmpty(openHour)){
 			
 				if (!openHour.equals(ExcelReader.h2f(openHour))){
 					log = "营业时间含有半角字符。";

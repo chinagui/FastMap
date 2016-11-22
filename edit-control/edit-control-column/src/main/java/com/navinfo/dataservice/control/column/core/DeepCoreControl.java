@@ -262,15 +262,15 @@ public class DeepCoreControl {
 
             JSONObject json = JSONObject.fromObject(parameter);
 
-            ObjType objType = Enum.valueOf(ObjType.class,"IX_POI");
+            ObjType objType = Enum.valueOf(ObjType.class,"IXPOI");
             int dbId = json.getInt("dbId");
-            int pid = json.getInt("pid");
+            int objId = json.getInt("objId");
 
             conn = DBConnector.getInstance().getConnectionById(dbId);
 
             JSONObject poiData = json.getJSONObject("data");
             
-            pids.add(pid);
+            pids.add(objId);
             rowIdList = getRowIdsByPids(conn,pids);
             
             if (poiData.size() == 0) {
@@ -285,14 +285,17 @@ public class DeepCoreControl {
             result = editApiImpl.runPoi(json);
             
             StringBuffer sb = new StringBuffer();
-            sb.append(String.valueOf(pid));
+            sb.append(String.valueOf(objId));
 
             //更新数据状态
             updateDeepStatus(rowIdList, conn, 0);
             //调用清理检查结果方法
             cleanCheckResult(pids,conn);
-            //执行检查
-            Object[] rules = new Object[] {"FM-ZY-20-152", "FM-ZY-20-153","FM-ZY-20-154","FM-ZY-20-155"};  
+            
+    		//获取后检查需要执行规则列表
+
+    		//执行检查
+            Object[] rules = new Object[] {"FM-ZY-20-152","FM-ZY-20-154","FM-ZY-20-155"};  
             JSONArray checkResultList = (JSONArray) JSONSerializer.toJSON(rules);
 
             deepCheckRun(pids,checkResultList,objType.toString(),"UPDATE",conn);
@@ -367,12 +370,11 @@ public class DeepCoreControl {
 	public void updateDeepStatus(List<String> rowIdList,Connection conn,int flag) throws Exception {
 		StringBuilder sb = new StringBuilder();
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");//设置日期格式
-        System.out.println(df.format(new Date()));// new Date()为获取当前系统时间
         
         if (flag==0) {
-        	sb.append(" UPDATE poi_deep_status T1 SET T1.status = 2,T1.update_date = "+df.format(new Date())+" WHERE row_id in(");
+        	sb.append(" UPDATE poi_deep_status T1 SET T1.status = 2 , T1.update_date = to_date('"+df.format(new Date())+"','yyyy-mm-dd hh24:mi:ss') WHERE row_id in (");
         } else {
-        	sb.append(" UPDATE poi_deep_status T1 SET T1.status = 3,T1.update_date = "+df.format(new Date())+" WHERE row_id in(");
+        	sb.append(" UPDATE poi_deep_status T1 SET T1.status = 3 , T1.update_date = to_date('"+df.format(new Date())+"','yyyy-mm-dd hh24:mi:ss') WHERE row_id in (");
         }
 		
 		PreparedStatement pstmt = null;
@@ -433,19 +435,19 @@ public class DeepCoreControl {
 				return 0;
 			}
 			
-			Timestamp time = new Timestamp(new Date().getTime());
+			SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 			
 			//实际申请到的数据rowIds
 			List<String> applyDataRowIds = new ArrayList<String>();
 			if (rowIds.size() >= canApply){
 				applyDataRowIds = rowIds.subList(0, canApply-1);
 				//数据加锁， 赋值handler，维护update_date
-				dataSetLock(conn, applyDataRowIds, userId, time);
+				dataSetLock(conn, applyDataRowIds, userId, df);
 				applyCount += applyDataRowIds.size();
 			}else{
 				//库里面查询出的数据量小于当前用户可申请的量，即锁定库中查询出的数据
 				applyDataRowIds = rowIds;
-				dataSetLock(conn, applyDataRowIds, userId, time);
+				dataSetLock(conn, applyDataRowIds, userId, df);
 				applyCount += applyDataRowIds.size();
 			}
 			
@@ -598,12 +600,12 @@ public class DeepCoreControl {
 	 * @param conn
 	 * @param rowIds
 	 * @param userId
-	 * @param time
+	 * @param df
 	 * @throws Exception
 	 */
-	public void dataSetLock(Connection conn, List<String> rowIds, long userId,Timestamp time) throws Exception {
+	public void dataSetLock(Connection conn, List<String> rowIds, long userId,SimpleDateFormat df) throws Exception {
 		StringBuilder sb = new StringBuilder();
-		sb.append("UPDATE poi_deep_status SET handler=:1,update_date=:2 WHERE row_id in (");
+		sb.append("UPDATE poi_deep_status SET handler=:1,update_date= to_date('"+ df.format(new Date()) + "','yyyy-mm-dd hh24:mi:ss') WHERE row_id in (");
 		String temp = "";
 		for (String rowId:rowIds) {
 			sb.append(temp);
@@ -619,7 +621,6 @@ public class DeepCoreControl {
 			pstmt = conn.prepareStatement(sb.toString());
 
 			pstmt.setLong(1, userId);
-			pstmt.setTimestamp(2, time);
 			
 			pstmt.execute();
 			

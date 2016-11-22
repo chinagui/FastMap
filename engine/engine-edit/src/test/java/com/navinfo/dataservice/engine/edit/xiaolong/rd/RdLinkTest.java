@@ -76,7 +76,7 @@ public class RdLinkTest extends InitApplication {
 
 	@Test
 	public void testDelete() {
-		String parameter = "{\"command\":\"CREATE\",\"dbId\":259,\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.11072540283203,40.16679777137112],[116.110902428627,40.16651389238418]]},\"catchLinks\":[]},\"type\":\"LULINK\"}";
+		String parameter = "{\"command\":\"REPAIR\",\"dbId\":17,\"objId\":207002707,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.69045,40.26469],[116.69190645217896,40.26547871101068],[116.69207,40.26433]]},\"interLinks\":[],\"interNodes\":[]},\"type\":\"ZONELINK\"}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
@@ -88,7 +88,7 @@ public class RdLinkTest extends InitApplication {
 
 	@Test
 	public void testAddRdLink() {
-		String parameter = "{\"command\":\"CREATE\",\"dbId\":17,\"objId\":303000015,\"data\":{\"longitude\":116.25269451011694,\"latitude\":40.08360598240627},\"type\":\"RWNODE\"}";
+		String parameter = "{\"command\":\"DELETE\",\"type\":\"RDTMCLOCATION\",\"dbId\":17,\"objId\":1454494}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

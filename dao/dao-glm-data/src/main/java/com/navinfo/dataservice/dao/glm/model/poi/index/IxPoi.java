@@ -1174,6 +1174,11 @@ public class IxPoi implements IObj {
 		JsonConfig jsonConfig = Geojson.geoJsonConfig(0.00001, 5);
 
 		JSONObject json = JSONObject.fromObject(this, jsonConfig);
+		
+		if (objLevel == ObjLevel.HISTORY) {
+			json.remove("rawFields");
+			json.remove("status");
+		}
 
 		return json;
 	}

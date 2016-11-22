@@ -246,8 +246,8 @@ public class SelectorTest {
 			Collection<Object> pids = new ArrayList<Object>();
 			String colName = "KIND_CODE";
 			pids.add("110101");
-			pids.add("220200");
-			pids.add("220100");
+//			pids.add("220200");
+//			pids.add("220100");
 			boolean isOnlyMain = false;
 			boolean isLock = false;
 			boolean isNowait = false;

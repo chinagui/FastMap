@@ -3,21 +3,17 @@ package com.navinfo.dataservice.engine.editplus.model.selector;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.dbutils.ResultSetHandler;
 
-import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.engine.editplus.glm.GlmColumn;
 import com.navinfo.dataservice.engine.editplus.glm.GlmTable;
 import com.navinfo.dataservice.engine.editplus.model.BasicRow;
 import com.navinfo.dataservice.engine.editplus.operation.OperationType;
 import com.navinfo.dataservice.engine.editplus.utils.ResultSetGetter;
-
-import oracle.sql.STRUCT;
 
 /** 
  * selector出来的row为UPDATE状态

@@ -9,6 +9,7 @@ import java.util.Date;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.engine.editplus.glm.GlmColumn;
 import com.navinfo.dataservice.engine.editplus.glm.GlmFactory;
@@ -32,18 +33,29 @@ import java.util.List;
  * @Description: ObjSelector.java
  */
 public class ObjSelector {
+	
+	private static final Logger logger = Logger.getLogger(ObjSelector.class);
 
 	public static BasicObj selectByPid(Connection conn,String objType,SelectorConfig selConfig,long pid,boolean isOnlyMain,boolean isLock)throws Exception{
+		//若参数为空，返回null
+		if(pid==0){
+			logger.info("selectByPid查询主表，PID为空");
+			return null;
+		}
+		//根据对象类型构造glmObj
 		GlmObject glmObj = GlmFactory.getInstance().getObjByType(objType);
 		GlmTable mainTable = glmObj.getMainTable();
 		String sql = selectByPidSql(mainTable);
 		if(isLock){
 			sql += " FOR UPDATE NOWAIT";
 		}
+		logger.info("selectByPid查询主表："+sql);
 		BasicRow mainrow = new QueryRunner().query(conn, sql, new SingleSelRsHandler(mainTable,pid),pid);
 		BasicObj obj = ObjFactory.getInstance().create4Select(mainrow);
 		if(!isOnlyMain){
+			logger.info("selectByPid开始查询子表");
 			selectChildren(conn,obj,selConfig);
+			logger.info("selectByPid查询子表结束");
 		}
 		return obj;
 	}
@@ -54,14 +66,14 @@ public class ObjSelector {
 	}
 	
 	/**
-	 * 如果多条只返回第一条
+	 * 如果多条只返回第一条,仅支持主表数值或字符类型字段
 	 * @param objType
 	 * @param selConfig
 	 * @param colName
 	 * @param colValue
 	 * @param isOnlyMain
 	 * @param isLock
-	 * @return
+	 * @return BasicObj
 	 * @throws SQLException 
 	 * @throws InstantiationException 
 	 * @throws IllegalAccessException 
@@ -72,29 +84,30 @@ public class ObjSelector {
 	public static BasicObj selectBySpecColumn(Connection conn,String objType,SelectorConfig selConfig,String colName,Object colValue,boolean isOnlyMain,boolean isLock) throws SQLException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException{
 		GlmObject glmObj = GlmFactory.getInstance().getObjByType(objType);
 		GlmTable mainTable = glmObj.getMainTable();
-		
+		//字段类型
+		String colType = mainTable.getColumByName(colName).getType();
 		StringBuilder sb = new StringBuilder();
 		sb.append("SELECT P.*,P." + mainTable.getPkColumn() + " OBJ_PID FROM " + mainTable.getName() + " P WHERE P.");
 		//根据字段类型拼接查询条件
-		if(colValue instanceof Long){
+		if(colType.equals(GlmColumn.TYPE_NUMBER)){
 			sb.append(colName + "=" + colValue);
-		}else if(colValue instanceof Integer){
-			sb.append(colName + "=" + colValue);
-		}else if(colValue instanceof Geometry){
-			
-		}else if(colValue instanceof String){
-			sb.append(colName + "=" + colValue);
-		}else if(colValue instanceof Date){
-			
+		}else if(colType.equals(GlmColumn.TYPE_VARCHAR)){
+			sb.append(colName + "='" + colValue + "'");
+		}else{
+			logger.info("selectBySpecColumn查询字段非字符型/数字型");
+			return null;
 		}
 		
 		if(isLock){
 			sb.append(" FOR UPDATE NOWAIT");
 		}
+		logger.info("selectBySpecColumn查询主表："+sb.toString());
 		BasicRow mainrow = new QueryRunner().query(conn, sb.toString(), new SingleSpecColumnSelRsHandler(mainTable));
 		BasicObj obj = ObjFactory.getInstance().create4Select(mainrow);
 		if(!isOnlyMain){
+			logger.info("selectBySpecColumn开始查询子表");
 			selectChildren(conn,obj,selConfig);
+			logger.info("selectBySpecColumn开始查询子表");
 		}
 		return obj;
 	}
@@ -210,10 +223,10 @@ public class ObjSelector {
 	private static void selectChildren(Connection conn,BasicObj obj,GlmTable glmTab) throws SQLException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, IllegalArgumentException{
 		long objPid = obj.objPid();
 		String sql = selectByPidSql(glmTab);
-		System.out.println(sql);
+		logger.info("查询，selectChildren sql:sql");
 		List<BasicRow> childRows = new QueryRunner().query(conn, sql, new MultipleSelRsHandler(glmTab,objPid),objPid);
 		//更新obj
-		obj.insertSubrow(glmTab.getName(),childRows);
+		obj.insertSubrows(glmTab.getName(),childRows);
 	}
 	/**
 	 * 返回带主表pid参数的sql语句

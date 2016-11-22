@@ -96,8 +96,8 @@ public class Operation implements IOperation {
 					}
 				}
 				if (sourceSize < currentSize) {
-					for (int i = sourceSize; i <= currentSize; i++) {
-						this.addRdSlope(result, i + 1);
+					for (int i = sourceSize ; i < currentSize; i++) {
+						this.addRdSlope(result, i);
 					}
 				}
 

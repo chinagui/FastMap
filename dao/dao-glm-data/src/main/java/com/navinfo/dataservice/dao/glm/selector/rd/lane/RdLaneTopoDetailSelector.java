@@ -108,15 +108,15 @@ public class RdLaneTopoDetailSelector extends AbstractSelector {
 
 	/***
 	 * 
-	 * @param linkPids 
+	 * @param linkPids
 	 * @param inLinkPid
 	 * @param nodePid
 	 * @param isLock
 	 * @return
 	 * @throws Exception
 	 */
-	public List<IRow> loadByLinkPids(List<Integer> linkPids,
-			int nodePid, boolean isLock) throws Exception {
+	public List<IRow> loadByLinkPids(List<Integer> linkPids, int nodePid,
+			boolean isLock) throws Exception {
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
 		List<Integer> topoPids = new ArrayList<Integer>();
@@ -133,6 +133,7 @@ public class RdLaneTopoDetailSelector extends AbstractSelector {
 			pstmt = conn.prepareStatement(sql);
 
 			pstmt.setInt(1, linkPids.get(0));
+			pstmt.setInt(2, nodePid);
 			resultSet = pstmt.executeQuery();
 
 			while (resultSet.next()) {
@@ -154,10 +155,10 @@ public class RdLaneTopoDetailSelector extends AbstractSelector {
 							topos.add(row);
 						}
 					}
-						if (linkPids.contains(detail.getOutLinkPid())) {
-							topos.add(row);
-						}
-					
+					if (linkPids.contains(detail.getOutLinkPid())) {
+						topos.add(row);
+
+					}
 				}
 			}
 		} catch (Exception e) {

@@ -206,6 +206,7 @@ public class OpTopo implements IOperation {
 			RwLink link = RwLinkOperateUtils
 					.addLink(g, map.get(g).getInt("s"), map.get(g).getInt("e"),
 							result, this.command.getBreakLink());
+			  result.insertObject(link, ObjStatus.INSERT, link.pid());
 			this.command.getNewLinks().add(link);
 
 		}

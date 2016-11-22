@@ -120,9 +120,9 @@ public class Operation implements IOperation {
 			data.put("breakNodePid", this.command.getNodePid());
 		}
 		breakJson.put("data", data);
-		com.navinfo.dataservice.engine.edit.operation.topo.breakin.breaklupoint.Command breakCommand = new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breaklupoint.Command(
+		com.navinfo.dataservice.engine.edit.operation.topo.breakin.breaklcpoint.Command breakCommand = new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breaklcpoint.Command(
 				breakJson, breakJson.toString());
-		com.navinfo.dataservice.engine.edit.operation.topo.breakin.breaklupoint.Process breakProcess = new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breaklupoint.Process(
+		com.navinfo.dataservice.engine.edit.operation.topo.breakin.breaklcpoint.Process breakProcess = new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breaklcpoint.Process(
 				breakCommand, result, conn);
 		breakProcess.innerRun();
 

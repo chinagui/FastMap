@@ -438,7 +438,14 @@ public class LogReader {
 	public static void main(String[] args) throws Exception {
 		Connection con = DriverManager.getConnection("jdbc:oracle:thin:@192.168.3.103:1521/orcl",
 				"fm260_region_16win_d_1", "fm260_region_16win_d_1");
-		boolean flag = new LogReader(con).isUpdateforObjFeild(79887714, "IX_POI","IX_POI","LEVEL");
-		System.out.println(flag);
+//		boolean flag = new LogReader(con).isUpdateforObjFeild(79887714, "IX_POI","IX_POI","LEVEL");
+		String objName = "IX_POI";
+		String mainTabName = "IX_POI";
+		Collection<String> grids = null;
+		String startDate = "201610220000";
+		String endDate = "201610230000";
+		Map<Integer,Collection<Long>> map = new LogReader(con).getUpdatedObj(objName, mainTabName, grids, startDate, endDate);
+		System.out.println("ok");
+//		System.out.println(flag);
 	}
 }

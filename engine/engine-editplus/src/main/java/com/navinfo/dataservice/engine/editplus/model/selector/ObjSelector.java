@@ -5,10 +5,9 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.engine.editplus.glm.GlmColumn;
@@ -21,9 +20,6 @@ import com.navinfo.dataservice.engine.editplus.model.BasicRow;
 import com.navinfo.dataservice.engine.editplus.model.obj.BasicObj;
 import com.navinfo.dataservice.engine.editplus.model.obj.ObjFactory;
 import com.navinfo.navicommons.database.QueryRunner;
-import com.vividsolutions.jts.geom.Geometry;
-
-import java.util.List;
 
 /** 
  * selector出来的row为UPDATE状态
@@ -236,10 +232,6 @@ public class ObjSelector {
 	public static String selectByPidSql(GlmTable glmTable){
 		if(glmTable.getObjRef()==null){			
 			StringBuilder sb = new StringBuilder();
-//			List<String> columnList = getSelectColumns("P",glmTable);
-//			sb.append("SELECT ");
-//			sb.append(StringUtils.join(columnList,","));
-//			sb.append(" FROM " + glmTable.getName() + " P WHERE P." + glmTable.getPkColumn() + "=?");
 			sb.append("SELECT P.* FROM " + glmTable.getName() + " P WHERE P." + glmTable.getPkColumn() + "=?");
 			return sb.toString();
 		}else{
@@ -248,10 +240,6 @@ public class ObjSelector {
 			int i=0;
 			StringBuilder sb = new StringBuilder();
 			StringBuilder whereSb = new StringBuilder();
-//			List<String> columnList = getSelectColumns("R0",glmTable);	
-//			sb.append("SELECT ");
-//			sb.append(StringUtils.join(columnList,","));
-//			sb.append(" FROM "+glmTable.getName()+" R0");
 			sb.append("SELECT R0.* FROM "+glmTable.getName()+" R0");
 			whereSb.append(" WHERE 1=1");
 			while(objRef!=null&&(!objRef.isRefMain())){
@@ -276,9 +264,9 @@ public class ObjSelector {
 		Map<String,GlmColumn> columns = glmTable.getColumns();
 		List<String> columnList = new ArrayList<String>();
 		for(Map.Entry<String,GlmColumn> entry:columns.entrySet()){
-			if(entry.getKey().equals("U_RECORD")||entry.getKey().equals("U_FIELDS")||entry.getKey().equals("U_DATE")){
-				continue;
-			}
+//			if(entry.getKey().equals("U_RECORD")||entry.getKey().equals("U_FIELDS")||entry.getKey().equals("U_DATE")){
+//				continue;
+//			}
 			if(entry.getKey().equals("LEVEL")){
 				if(tableAlias!=null){
 					columnList.add(tableAlias + ".\"" +entry.getKey() + "\"");

@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.editplus.model;
 
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.Point;
 
 /**
  * 
@@ -35,11 +36,17 @@ public abstract class AbstractIx extends BasicRow {
 	public Geometry getGeometry() {
 		return geometry;
 	}
+	public void setGeometry(Point geometry) {
+		if(this.checkValue("GEOMETRY",this.geometry,geometry)){
+			this.geometry = geometry;
+		}
+	}
 	public void setGeometry(Geometry geometry) {
 		if(this.checkValue("GEOMETRY",this.geometry,geometry)){
 			this.geometry = geometry;
 		}
 	}
+
 	public double getXGuide() {
 		return xGuide;
 	}

@@ -78,6 +78,8 @@ public class LcLinkOperateUtils {
         // 创建LcLinkKind
         LcLinkKind kind = new LcLinkKind();
         kind.setLinkPid(link.pid());
+        if (meshes.size() > 1)
+            kind.setKind(8);
         result.insertObject(kind, ObjStatus.INSERT, kind.getLinkPid());
     }
 

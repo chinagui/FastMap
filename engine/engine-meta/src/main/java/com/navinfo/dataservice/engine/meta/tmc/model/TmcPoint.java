@@ -52,7 +52,7 @@ public class TmcPoint {
 	// 道路负向出现
 	private int presentNeg;
 
-	private String name;
+	private String translateName;
 
 	// 道路参考
 	private int lineTmcId;
@@ -108,13 +108,13 @@ public class TmcPoint {
 	public void setLocoffNeg(int locoffNeg) {
 		this.locoffNeg = locoffNeg;
 	}
-
-	public String getName() {
-		return name;
+	
+	public String getTranslateName() {
+		return translateName;
 	}
 
-	public void setName(String name) {
-		this.name = name;
+	public void setTranslateName(String translateName) {
+		this.translateName = translateName;
 	}
 
 	public int getLineTmcId() {

@@ -41,7 +41,7 @@ public class SingleBatchSelRsHandler implements ResultSetHandler<List<BasicRow>>
 		// TODO Auto-generated method stub
 		List<BasicRow> list = new ArrayList<BasicRow>();
 		try{
-			while(rs.next()){
+			if(rs.next()){
 				long objPid = rs.getLong("OBJ_PID");
 				BasicRow row = (BasicRow)Class.forName(glmTable.getModelClassName()).getConstructor(new Class[]{long.class}).newInstance(objPid);
 				for(Map.Entry<String, GlmColumn> entry:glmTable.getColumns().entrySet()){

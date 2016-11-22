@@ -29,7 +29,7 @@ public class TipsExporter {
 	private SolrController solr = new SolrController();
 
 	private String folderName;
-s	public TipsExporter() {
+	public TipsExporter() {
 	}
 
 	private List<Get> generateGets(String gridId, String date)

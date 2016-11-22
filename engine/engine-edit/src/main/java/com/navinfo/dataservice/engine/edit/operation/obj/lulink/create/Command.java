@@ -81,28 +81,9 @@ public class Command extends AbstractCommand {
 		// 获取土地利用线挂接的LuLink 和LuNode
 		if (data.containsKey("catchLinks")) {
 
-			this.catchLinks = new JSONArray();
-
-			JSONArray array = data.getJSONArray("catchLinks");
-
-			for (int i = 0; i < array.size(); i++) {
-				JSONObject jo = array.getJSONObject(i);
-
-				JSONObject geoPoint = new JSONObject();
-
-				geoPoint.put("type", "Point");
-
-				geoPoint.put("coordinates", new double[] {jo.getDouble("lon"),
-						jo.getDouble("lat") });
-				
-				Geometry geometry = GeoTranslator.geojson2Jts(geoPoint, 1, 5);
-				
-				jo.put("lon",geometry.getCoordinate().x);
-				
-				jo.put("lat", geometry.getCoordinate().y);
-				
-				this.catchLinks.add(jo);
-			}
+			JSONArray jsonArray = JSONArray.fromObject(data
+					.getJSONArray("catchLinks"));
+			this.catchLinks = jsonArray;
 		} else {
 			this.catchLinks = new JSONArray();
 		}

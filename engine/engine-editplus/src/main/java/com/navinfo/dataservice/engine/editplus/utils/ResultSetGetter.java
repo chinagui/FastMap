@@ -10,6 +10,7 @@ import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.engine.editplus.glm.GlmColumn;
 import com.navinfo.dataservice.engine.editplus.glm.GlmTable;
 import com.navinfo.dataservice.engine.editplus.model.BasicRow;
+import com.vividsolutions.jts.geom.Geometry;
 
 import oracle.sql.STRUCT;
 
@@ -37,6 +38,15 @@ public class ResultSetGetter {
 	 */
 	public static void setAttrByCol(ResultSet rs,BasicRow row,GlmColumn glmColumn)throws Exception{
 		String columName = glmColumn.getName();
+		if(columName.equals("U_RECORD")||columName.equals("U_FIELDS")||columName.equals("U_DATE")){
+			return;
+		}
+		/*--------测试使用start------*/
+		System.out.println(columName);
+//		if(columName.equals("GEOMETRY")){
+//			System.out.println(columName);
+//		}
+		/*--------测试使用end------*/
 		String type = glmColumn.getType();
 		int dataPrecision = glmColumn.getDataPrecision();
 		int dataScale = glmColumn.getDataScale();

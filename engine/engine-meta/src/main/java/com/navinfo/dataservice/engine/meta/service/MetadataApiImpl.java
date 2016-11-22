@@ -188,5 +188,14 @@ public class MetadataApiImpl implements MetadataApi {
 		}
 
 	}
+	
+	
+	@Override
+	public JSONObject searchByAdminCode(String admincode) throws Exception {
+		
+		ScPointAdminArea scPoint = new ScPointAdminArea();
+		
+		return scPoint.searchByAdminCode(admincode);
+	}
 
 }

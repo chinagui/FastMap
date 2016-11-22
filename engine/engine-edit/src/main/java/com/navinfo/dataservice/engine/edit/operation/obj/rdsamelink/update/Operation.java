@@ -464,16 +464,16 @@ public class Operation implements IOperation {
 
 		newNodes.add(luCommand.getBreakNode());
 
-		Coordinate[] coors = luCommand.getsLuLink().getGeometry()
+		Coordinate[] coors = luCommand.getNewLinks().get(0).getGeometry()
 				.getCoordinates();
 
 		if (falgPoint.equals(coors[0])
 				|| falgPoint.equals(coors[coors.length - 1])) {
-			links1.add(luCommand.getsLuLink());
-			links2.add(luCommand.geteLuLink());
+			links1.add(luCommand.getNewLinks().get(0));
+			links2.add(luCommand.getNewLinks().get(1));
 		} else {
-			links1.add(luCommand.geteLuLink());
-			links2.add(luCommand.getsLuLink());
+			links1.add(luCommand.getNewLinks().get(1));
+			links2.add(luCommand.getNewLinks().get(0));
 		}
 	}
 
@@ -501,16 +501,16 @@ public class Operation implements IOperation {
 
 		newNodes.add(zoneCommand.getBreakNode());
 
-		Coordinate[] coors = zoneCommand.getsZoneLink().getGeometry()
+		Coordinate[] coors = zoneCommand.getNewLinks().get(0).getGeometry()
 				.getCoordinates();
 
 		if (falgPoint.equals(coors[0])
 				|| falgPoint.equals(coors[coors.length - 1])) {
-			links1.add(zoneCommand.getsZoneLink());
-			links2.add(zoneCommand.geteZoneLink());
+			links1.add(zoneCommand.getNewLinks().get(0));
+			links2.add(zoneCommand.getNewLinks().get(1));
 		} else {
-			links1.add(zoneCommand.geteZoneLink());
-			links2.add(zoneCommand.getsZoneLink());
+			links1.add(zoneCommand.getNewLinks().get(1));
+			links2.add(zoneCommand.getNewLinks().get(0));
 		}
 
 		return null;

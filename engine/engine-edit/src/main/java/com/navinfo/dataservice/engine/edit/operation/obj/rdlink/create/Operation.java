@@ -2,8 +2,6 @@ package com.navinfo.dataservice.engine.edit.operation.obj.rdlink.create;
 
 import java.sql.Connection;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -34,7 +32,6 @@ import com.vividsolutions.jts.geom.GeometryCollection;
 import com.vividsolutions.jts.geom.LineString;
 
 import net.sf.json.JSONArray;
-import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 
 public class Operation implements IOperation {
@@ -90,7 +87,7 @@ public class Operation implements IOperation {
 
 		return msg;
 	}
-	
+
 	public List<RdLink> createSideRoad(Result result) throws Exception {
 
 		linkList.clear();
@@ -139,25 +136,6 @@ public class Operation implements IOperation {
 
 		}
 
-	}
-
-	/**
-	 * @param result
-	 * @return
-	 */
-	private List<RdLink> getLinksFromResult(Result result) {
-
-		List<RdLink> links = new ArrayList<>();
-
-		for (IRow row : result.getAddObjects()) {
-			if (row instanceof RdLink) {
-				RdLink link = (RdLink) row;
-
-				links.add(link);
-			}
-		}
-
-		return links;
 	}
 
 	/*

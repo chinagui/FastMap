@@ -58,8 +58,7 @@ public class OpRefLuFace implements IOperation {
 				}
 				result.insertObject(obj, ObjStatus.DELETE, face.getPid());
 			}
-			links.add(command.getsLuLink());
-			links.add(command.geteLuLink());
+			links.addAll(command.getNewLinks());
 			com.navinfo.dataservice.engine.edit.operation.obj.luface.create.Operation opFace = new com.navinfo.dataservice.engine.edit.operation.obj.luface.create.Operation(result, face);
 			opFace.reCaleFaceGeometry(links);
 		}

@@ -11,7 +11,7 @@ import com.navinfo.dataservice.engine.editplus.model.BasicRow;
 /** 
 * @ClassName:  IxPoiGasstation 
 * @author code generator
-* @date 2016-11-16 06:01:42 
+* @date 2016-11-18 11:34:52 
 * @Description: TODO
 */
 public class IxPoiGasstation extends BasicRow {
@@ -27,9 +27,6 @@ public class IxPoiGasstation extends BasicRow {
 	protected String memo ;
 	protected String openHour ;
 	protected String photoName ;
-//	protected Integer uRecord ;
-//	protected String uFields ;
-//	protected String uDate ;
 	
 	public IxPoiGasstation (long objPid){
 		super(objPid);
@@ -38,93 +35,99 @@ public class IxPoiGasstation extends BasicRow {
 	public long getGasstationId() {
 		return gasstationId;
 	}
-	protected void setGasstationId(long gasstationId) {
-		this.gasstationId = gasstationId;
+	public void setGasstationId(long gasstationId) {
+		if(this.checkValue("GASSTATION_ID",this.gasstationId,gasstationId)){
+			this.gasstationId = gasstationId;
+		}
 	}
 	public long getPoiPid() {
 		return poiPid;
 	}
-	protected void setPoiPid(long poiPid) {
-		this.poiPid = poiPid;
+	public void setPoiPid(long poiPid) {
+		if(this.checkValue("POI_PID",this.poiPid,poiPid)){
+			this.poiPid = poiPid;
+		}
 	}
 	public String getServiceProv() {
 		return serviceProv;
 	}
-	protected void setServiceProv(String serviceProv) {
-		this.serviceProv = serviceProv;
+	public void setServiceProv(String serviceProv) {
+		if(this.checkValue("SERVICE_PROV",this.serviceProv,serviceProv)){
+			this.serviceProv = serviceProv;
+		}
 	}
 	public String getFuelType() {
 		return fuelType;
 	}
-	protected void setFuelType(String fuelType) {
-		this.fuelType = fuelType;
+	public void setFuelType(String fuelType) {
+		if(this.checkValue("FUEL_TYPE",this.fuelType,fuelType)){
+			this.fuelType = fuelType;
+		}
 	}
 	public String getOilType() {
 		return oilType;
 	}
-	protected void setOilType(String oilType) {
-		this.oilType = oilType;
+	public void setOilType(String oilType) {
+		if(this.checkValue("OIL_TYPE",this.oilType,oilType)){
+			this.oilType = oilType;
+		}
 	}
 	public String getEgType() {
 		return egType;
 	}
-	protected void setEgType(String egType) {
-		this.egType = egType;
+	public void setEgType(String egType) {
+		if(this.checkValue("EG_TYPE",this.egType,egType)){
+			this.egType = egType;
+		}
 	}
 	public String getMgType() {
 		return mgType;
 	}
-	protected void setMgType(String mgType) {
-		this.mgType = mgType;
+	public void setMgType(String mgType) {
+		if(this.checkValue("MG_TYPE",this.mgType,mgType)){
+			this.mgType = mgType;
+		}
 	}
 	public String getPayment() {
 		return payment;
 	}
-	protected void setPayment(String payment) {
-		this.payment = payment;
+	public void setPayment(String payment) {
+		if(this.checkValue("PAYMENT",this.payment,payment)){
+			this.payment = payment;
+		}
 	}
 	public String getService() {
 		return service;
 	}
-	protected void setService(String service) {
-		this.service = service;
+	public void setService(String service) {
+		if(this.checkValue("SERVICE",this.service,service)){
+			this.service = service;
+		}
 	}
 	public String getMemo() {
 		return memo;
 	}
-	protected void setMemo(String memo) {
-		this.memo = memo;
+	public void setMemo(String memo) {
+		if(this.checkValue("MEMO",this.memo,memo)){
+			this.memo = memo;
+		}
 	}
 	public String getOpenHour() {
 		return openHour;
 	}
-	protected void setOpenHour(String openHour) {
-		this.openHour = openHour;
+	public void setOpenHour(String openHour) {
+		if(this.checkValue("OPEN_HOUR",this.openHour,openHour)){
+			this.openHour = openHour;
+		}
 	}
 	public String getPhotoName() {
 		return photoName;
 	}
-	protected void setPhotoName(String photoName) {
-		this.photoName = photoName;
+	public void setPhotoName(String photoName) {
+		if(this.checkValue("PHOTO_NAME",this.photoName,photoName)){
+			this.photoName = photoName;
+		}
 	}
-//	public Integer getURecord() {
-//		return uRecord;
-//	}
-//	protected void setURecord(Integer uRecord) {
-//		this.uRecord = uRecord;
-//	}
-//	public String getUFields() {
-//		return uFields;
-//	}
-//	protected void setUFields(String uFields) {
-//		this.uFields = uFields;
-//	}
-//	public String getUDate() {
-//		return uDate;
-//	}
-//	protected void setUDate(String uDate) {
-//		this.uDate = uDate;
-//	}
 	
 	@Override
 	public String tableName() {

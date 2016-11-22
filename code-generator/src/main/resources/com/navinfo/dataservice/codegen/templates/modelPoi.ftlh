@@ -27,8 +27,10 @@ public class ${modelClassName} extends BasicRow {
 	public ${column.javaType} get${column.camelName?cap_first}() {
 		return ${column.camelName};
 	}
-	protected void set${column.camelName?cap_first}(${column.javaType} ${column.camelName}) {
-		this.${column.camelName} = ${column.camelName};
+	public void set${column.camelName?cap_first}(${column.javaType} ${column.camelName}) {
+		if(this.checkValue("${column.name}",this.${column.camelName},${column.camelName})){
+			this.${column.camelName} = ${column.camelName};
+		}
 	}
 	</#list>
 	

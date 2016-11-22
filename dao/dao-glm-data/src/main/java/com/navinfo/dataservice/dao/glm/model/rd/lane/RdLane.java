@@ -15,10 +15,13 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkLimit;
+
 /**
  * 车道表
+ * 
  * @author zhaokaikai
- *
+ * 
  */
 public class RdLane implements IObj {
 
@@ -31,31 +34,30 @@ public class RdLane implements IObj {
 	private int travelFlag = 0; // 通行标志 0 右侧通行(大陆) 1 左侧通行(港澳)
 	private int seqNum = 1;// 从 1 开始递增编号注:大陆:从左到右;港澳:从右到左
 	private int laneForming = 0; // 0 不应用1 车道形成(Lane Forming)2 车道结束(Lane
-								 // Ending)3 车 道 形 成 & 结 束 (Lane
+									// Ending)3 车 道 形 成 & 结 束 (Lane
 									// Forming&Ending)
 	private int laneDir = 1;// 1 无2 顺方向3 逆方向
 	private int laneType = 1;// 车道类型
-	private String arrowDir = "9" ;//转向箭头
-	private int laneMark = 0;//车道标线
-	private int width =0 ;//车道宽度
-	private int restrictHeight= 0;//车道限高
-	private int transitionArea = 0;//交换区域 
-	private int fromMaxSpeed = 0;//顺向最高限速
-	private int toMaxSpeed = 0;//逆向最高限速 
-	private int fromMinSpeed = 0;//顺向最低限速
-	private int toMinSpeed = 0;//逆向最低限速 
-	private int elecEye = 0; //电子眼
-	private int laneDivider = 0;//车道分隔带 
-	private int centerDivider = 0; //中央分隔带
-	private int speedFlag = 0 ; //车道限速来源标识
-    private int srcFlag  =1 ;//车道来源 
-    
+	private String arrowDir = "9";// 转向箭头
+	private int laneMark = 0;// 车道标线
+	private int width = 0;// 车道宽度
+	private int restrictHeight = 0;// 车道限高
+	private int transitionArea = 0;// 交换区域
+	private int fromMaxSpeed = 0;// 顺向最高限速
+	private int toMaxSpeed = 0;// 逆向最高限速
+	private int fromMinSpeed = 0;// 顺向最低限速
+	private int toMinSpeed = 0;// 逆向最低限速
+	private int elecEye = 0; // 电子眼
+	private int laneDivider = 0;// 车道分隔带
+	private int centerDivider = 0; // 中央分隔带
+	private int speedFlag = 0; // 车道限速来源标识
+	private int srcFlag = 1;// 车道来源
 
 	private List<IRow> conditions = new ArrayList<IRow>();
 
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 	public Map<String, RdLaneCondition> conditionMap = new HashMap<>();
-	
+
 	public int getLinkPid() {
 		return linkPid;
 	}
@@ -224,14 +226,12 @@ public class RdLane implements IObj {
 		this.srcFlag = srcFlag;
 	}
 
-
-
 	public RdLane() {
 
 	}
 
-	public void setPid(int nodePid) {
-		this.pid = nodePid;
+	public void setPid(int pid) {
+		this.pid = pid;
 	}
 
 	@Override
@@ -296,6 +296,35 @@ public class RdLane implements IObj {
 
 	@Override
 	public void copy(IRow row) {
+		RdLane lane = (RdLane) row;
+		this.setArrowDir(lane.getArrowDir());
+		this.setCenterDivider(lane.getCenterDivider());
+		this.setElecEye(lane.getElecEye());
+		this.setFromMaxSpeed(lane.getFromMaxSpeed());
+		this.setFromMinSpeed(lane.getFromMinSpeed());
+		this.setLaneDir(lane.getLaneDir());
+		this.setLaneDivider(lane.getLaneDivider());
+		this.setLaneForming(lane.getLaneForming());
+		this.setLaneMark(lane.getLaneMark());
+		this.setLaneNum(lane.getLaneNum());
+		this.setLaneType(lane.getLaneType());
+		this.setLinkPid(lane.getLinkPid());
+		this.setRestrictHeight(lane.getRestrictHeight());
+		this.setSeqNum(lane.getSeqNum());
+		this.setSpeedFlag(lane.getSpeedFlag());
+		this.setSrcFlag(lane.getSrcFlag());
+		this.setToMaxSpeed(lane.getToMaxSpeed());
+		this.setToMinSpeed(lane.getToMinSpeed());
+		this.setTransitionArea(lane.getTransitionArea());
+		this.setTravelFlag(lane.getTravelFlag());
+		this.setWidth(lane.getWidth());
+		List<IRow> conditions = new ArrayList<IRow>();
+		for (IRow fs : conditions) {
+			RdLaneCondition condition = new RdLaneCondition();
+			condition.copy(fs);
+			condition.setLanePid(this.getPid());
+			conditions.add(condition);
+		}
 
 	}
 
@@ -329,7 +358,6 @@ public class RdLane implements IObj {
 		children.add(conditions);
 		return children;
 	}
-
 
 	public List<IRow> getConditions() {
 		return conditions;

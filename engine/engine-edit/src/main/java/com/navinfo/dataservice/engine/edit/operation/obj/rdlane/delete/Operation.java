@@ -95,7 +95,7 @@ public class Operation implements IOperation {
 	 */
 	public void deleteRdLaneforRdLink(int linkPid, Result result)
 			throws Exception {
-		List<RdLane> lanes = new RdLaneSelector(conn).loadByLink(linkPid, 1,
+		List<RdLane> lanes = new RdLaneSelector(conn).loadByLink(linkPid, 0,
 				true);
 		for (RdLane lane : lanes) {
 			this.deleteRdLaneTopoDetail(result, lane.getPid());
@@ -110,7 +110,7 @@ public class Operation implements IOperation {
 	 */
 	public List<AlertObject> getDeleteRdLaneInfectData(int linkPid,Connection conn) throws Exception {
 		
-		List<RdLane> lanes = new RdLaneSelector(conn).loadByLink(linkPid, 1,
+		List<RdLane> lanes = new RdLaneSelector(conn).loadByLink(linkPid, 0,
 				true);
 		
 		List<AlertObject> alertList = new ArrayList<>();

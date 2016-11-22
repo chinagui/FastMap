@@ -41,7 +41,7 @@ public class RdLinkTest extends InitApplication {
 
 			SearchProcess p = new SearchProcess(conn);
 
-			System.out.println(p.searchDataByPid(ObjType.RDLINK, 574325).Serialize(ObjLevel.FULL));
+			System.out.println(p.searchDataByPid(ObjType.RDLINK, 14118075).Serialize(ObjLevel.FULL));
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -76,7 +76,7 @@ public class RdLinkTest extends InitApplication {
 
 	@Test
 	public void testDelete() {
-		String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDMILEAGEPILE\",\"dbId\":17,\"data\":{\"mileageNum\":121212,\"pid\":200000001,\"objStatus\":\"UPDATE\",\"roadName\":\"dasdasd\",\"roadNum\":\"asdasdad\"}}";
+		String parameter = "{\"command\":\"CREATE\",\"dbId\":259,\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.11072540283203,40.16679777137112],[116.110902428627,40.16651389238418]]},\"catchLinks\":[]},\"type\":\"LULINK\"}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

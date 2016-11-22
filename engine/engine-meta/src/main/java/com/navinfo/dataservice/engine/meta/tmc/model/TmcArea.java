@@ -12,7 +12,7 @@ package com.navinfo.dataservice.engine.meta.tmc.model;
 public class TmcArea {
 	private int tmcId;
 	
-	private String name;
+	private String translateName;
 	
 	private int uperTmcId;
 	
@@ -26,12 +26,12 @@ public class TmcArea {
 		this.tmcId = tmcId;
 	}
 
-	public String getName() {
-		return name;
+	public String getTranslateName() {
+		return translateName;
 	}
 
-	public void setName(String name) {
-		this.name = name;
+	public void setTranslateName(String translateName) {
+		this.translateName = translateName;
 	}
 
 	public int getUperTmcId() {

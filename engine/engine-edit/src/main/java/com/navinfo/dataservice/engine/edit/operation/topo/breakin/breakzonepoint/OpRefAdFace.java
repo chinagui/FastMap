@@ -60,8 +60,7 @@ public class OpRefAdFace implements IOperation {
 				}
 				result.insertObject(obj, ObjStatus.DELETE, face.getPid());
 			}
-			links.add(command.geteZoneLink());
-			links.add(command.getsZoneLink());
+			links.addAll(command.getNewLinks());
 			com.navinfo.dataservice.engine.edit.operation.obj.zoneface.create.Operation opFace  =
 					new com.navinfo.dataservice.engine.edit.operation.obj.zoneface.create.Operation(
 					result,face);

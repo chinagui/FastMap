@@ -231,7 +231,7 @@ public class TmcSelector {
 
 				tmcLine.setCid(resultSet.getString("cid"));
 
-				tmcLine.setName(resultSet.getString("TRANSLATE_NAME"));
+				tmcLine.setTranslateName(resultSet.getString("TRANSLATE_NAME"));
 
 				tmcLine.setTmcId(resultSet.getInt("TMC_ID"));
 
@@ -278,7 +278,7 @@ public class TmcSelector {
 
 				tmcArea.setCid(resultSet.getInt("cid"));
 
-				tmcArea.setName(resultSet.getString("TRANSLATE_NAME"));
+				tmcArea.setTranslateName(resultSet.getString("TRANSLATE_NAME"));
 
 				tmcArea.setTmcId(resultSet.getInt("TMC_ID"));
 
@@ -316,7 +316,7 @@ public class TmcSelector {
 
 				tmcLine.setCid(resultSet.getString("cid"));
 
-				tmcLine.setName(resultSet.getString("TRANSLATE_NAME"));
+				tmcLine.setTranslateName(resultSet.getString("TRANSLATE_NAME"));
 
 				tmcLine.setTmcId(resultSet.getInt("TMC_ID"));
 
@@ -367,7 +367,7 @@ public class TmcSelector {
 
 				tmcPoint.setCid(resultSet.getString("cid"));
 
-				tmcPoint.setName(resultSet.getString("TRANSLATE_NAME"));
+				tmcPoint.setTranslateName(resultSet.getString("TRANSLATE_NAME"));
 
 				tmcPoint.setTmcId(resultSet.getInt("TMC_ID"));
 

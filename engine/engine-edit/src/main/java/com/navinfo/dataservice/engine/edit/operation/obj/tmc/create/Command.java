@@ -60,12 +60,16 @@ public class Command extends AbstractCommand {
 		
 		this.tmcId = data.getInt("tmcId");
 		
+		//TMC位置方向
 		this.locDirect = data.getInt("locDirect");
 		
+		//方向关系
 		this.direct = data.getInt("direct");
 		
+		//位置表代码
 		this.loctableId = data.getInt("loctableId");
-
+		
+		//link pid
 		JSONArray array = data.getJSONArray("linkPids");
 		
 		linkPids = new ArrayList<Integer>();

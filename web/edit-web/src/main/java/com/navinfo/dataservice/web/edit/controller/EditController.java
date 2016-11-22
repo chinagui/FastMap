@@ -40,6 +40,7 @@ public class EditController extends BaseController {
 	public ModelAndView run(HttpServletRequest request) throws ServletException, IOException {
 
 		String parameter = request.getParameter("parameter");
+		logger.info("parameter===="+parameter);
 		AccessToken tokenObj = (AccessToken) request.getAttribute("token");
 
 		try {

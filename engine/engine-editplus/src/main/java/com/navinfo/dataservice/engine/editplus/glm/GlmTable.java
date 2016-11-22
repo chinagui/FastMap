@@ -16,7 +16,7 @@ public class GlmTable {
 	protected String modelClassName;//表对应的模型类名
 	protected GlmRef objRef;//表所属的要素对象参考信息，只记录自己上一层的参考信息,如果为空是主表
 	protected GlmRef geoRef;//表所属几何对象参考信息，只记录自己上一层的参考信息
-	protected Map<String,String> columns=new HashMap<String,String>();
+	protected Map<String,GlmColumn> columns=new HashMap<String,GlmColumn>();
 	public String getObjType() {
 		return objType;
 	}
@@ -53,10 +53,13 @@ public class GlmTable {
 	public void setGeoRef(GlmRef geoRef) {
 		this.geoRef = geoRef;
 	}
-	public Map<String, String> getColumns() {
+	public Map<String, GlmColumn> getColumns() {
 		return columns;
 	}
-	public void setColumns(Map<String, String> columns) {
+	public GlmColumn getColumByName(String name){
+		return columns.get(name);
+	}
+	public void setColumns(Map<String, GlmColumn> columns) {
 		this.columns = columns;
 	}
 	

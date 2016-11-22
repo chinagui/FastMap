@@ -3,11 +3,14 @@ package com.navinfo.dataservice.engine.editplus.model;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.engine.editplus.glm.GlmColumn;
 import com.navinfo.dataservice.engine.editplus.glm.GlmFactory;
 import com.navinfo.dataservice.engine.editplus.glm.GlmRef;
 import com.navinfo.dataservice.engine.editplus.glm.GlmTable;
@@ -15,6 +18,7 @@ import com.navinfo.dataservice.engine.editplus.glm.NonGeoPidException;
 import com.navinfo.dataservice.engine.editplus.log.Logable;
 import com.navinfo.dataservice.engine.editplus.operation.OperationType;
 import com.navinfo.navicommons.database.sql.RunnableSQL;
+import com.vividsolutions.jts.geom.Geometry;
 
 /** 
  * @ClassName: BasicRow
@@ -28,6 +32,7 @@ public abstract class BasicRow implements Logable{
 	protected String rowId;//row类型的代表就是有row_id
 	protected long objPid;
 	protected Map<String,Object> oldValues=null;//存储变化字段的旧值，key:col_name,value：旧值
+	protected List<ChangeLog> changeLogs;
 	public BasicRow(long objPid){
 		this.objPid=objPid;
 	}
@@ -38,6 +43,7 @@ public abstract class BasicRow implements Logable{
 	public void setObjPid(long objPid){
 		this.objPid=objPid;
 	}
+	
 
 	public abstract String tableName();
 	/**
@@ -85,8 +91,14 @@ public abstract class BasicRow implements Logable{
 	public Map<String, Object> getOldValues() {
 		return oldValues;
 	}
-	public void setOldValues(Map<String, Object> oldValues) {
-		this.oldValues = oldValues;
+	/**
+	 * 会从历史记录中取
+	 * @param colName
+	 * @return
+	 */
+	public Object getOldValue(String colName){
+		//
+		return null;
 	}
 
 	/**
@@ -110,7 +122,7 @@ public abstract class BasicRow implements Logable{
 		GlmTable tab = GlmFactory.getInstance().getTableByName(tbName);
 		if(OperationType.INSERT.equals(this.opType)){
 			sb.append("INSERT INTO "+tbName+"(");
-			for(Map.Entry<String, String> entry:tab.getColumns().entrySet()){
+			for(Map.Entry<String, GlmColumn> entry:tab.getColumns().entrySet()){
 				
 			}
 		}
@@ -229,14 +241,12 @@ public abstract class BasicRow implements Logable{
 	 * @param newValue
 	 * @throws Exception
 	 */
-	public <T> boolean setAttrByCol(String colName,T newValue)throws Exception{
-		//colName->getter
-		String getter=colName2Getter(colName);
-		Method methodGetter = this.getClass().getMethod(getter);
-		Object oldValue = methodGetter.invoke(this);
-		if(checkValue(colName,oldValue,newValue)){
-			String setter=colName2Setter(colName);
-			Class<?>[] argtypes = null;
+	public <T> void setAttrByCol(String colName,T newValue)throws Exception{
+		//colName->setter
+		String setter=colName2Setter(colName);
+		Class<?>[] argtypes = null;
+		//如果newValue非空，则执行setter
+		if(newValue!=null){
 			if(newValue instanceof Integer){
 				argtypes= new Class[]{int.class};
 			}else if(newValue instanceof Double){
@@ -252,24 +262,45 @@ public abstract class BasicRow implements Logable{
 			}
 			Method method = this.getClass().getMethod(setter,argtypes);
 			method.invoke(this, newValue);
-			return true;
+		}else{
+			GlmTable table = GlmFactory.getInstance().getTableByName(tableName());
+			GlmColumn column = table.getColumByName(colName);
+			if(column.getType().equals(GlmColumn.TYPE_VARCHAR)){
+				argtypes = new Class[]{String.class};	
+			}else if(column.getType().equals(GlmColumn.TYPE_GEOMETRY)){
+				argtypes = new Class[]{Geometry.class};
+			}else if(column.getType().equals(GlmColumn.TYPE_TIMESTAMP)){
+				argtypes = new Class[]{Date.class};
+			}
+			Method method = this.getClass().getMethod(setter,argtypes);
+			method.invoke(this, newValue);
 		}
-		return false;
+
 	}
 	/**
 	 * 有特殊字段的表重写此方法
 	 * @param colName
 	 * @return
 	 */
+//	public String colName2Getter(String colName){
+//		StringBuilder sb = new StringBuilder();
+//		sb.append("get");
+//		for(String s:colName.split("_")){
+//			
+//			char c = s.charAt(0);
+//			c=(char)(c-32);
+//			sb.append(c);
+//			sb.append(s.substring(1, s.length()));
+//		}
+//		return sb.toString();
+//	}
 	public String colName2Getter(String colName){
 		StringBuilder sb = new StringBuilder();
 		sb.append("get");
 		for(String s:colName.split("_")){
-			
 			char c = s.charAt(0);
-			c=(char)(c-32);
 			sb.append(c);
-			sb.append(s.substring(1, s.length()));
+			sb.append(s.toLowerCase().substring(1, s.length()));
 		}
 		return sb.toString();
 	}
@@ -283,12 +314,22 @@ public abstract class BasicRow implements Logable{
 		sb.append("set");
 		for(String s:colName.split("_")){
 			char c = s.charAt(0);
-			c=(char)(c-32);
 			sb.append(c);
-			sb.append(s.substring(1, s.length()));
+			sb.append(s.toLowerCase().substring(1, s.length()));
 		}
 		return sb.toString();
 	}
+//	public String colName2Setter(String colName){
+//		StringBuilder sb = new StringBuilder();
+//		sb.append("set");
+//		for(String s:colName.split("_")){
+//			char c = s.charAt(0);
+//			c=(char)(c-32);
+//			sb.append(c);
+//			sb.append(s.substring(1, s.length()));
+//		}
+//		return sb.toString();
+//	}
 	public String identity(){
 		return rowId;
 	}

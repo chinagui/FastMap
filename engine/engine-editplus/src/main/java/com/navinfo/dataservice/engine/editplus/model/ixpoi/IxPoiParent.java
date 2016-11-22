@@ -11,17 +11,14 @@ import com.navinfo.dataservice.engine.editplus.model.BasicRow;
 /** 
 * @ClassName:  IxPoiParent 
 * @author code generator
-* @date 2016-11-16 01:54:02 
+* @date 2016-11-18 11:32:35 
 * @Description: TODO
 */
 public class IxPoiParent extends BasicRow {
 	protected long groupId ;
 	protected long parentPoiPid ;
-	protected Integer tenantFlag ;
+	protected int tenantFlag ;
 	protected String memo ;
-//	protected Integer uRecord ;
-//	protected String uFields ;
-//	protected String uDate ;
 	
 	public IxPoiParent (long objPid){
 		super(objPid);
@@ -30,48 +27,38 @@ public class IxPoiParent extends BasicRow {
 	public long getGroupId() {
 		return groupId;
 	}
-	protected void setGroupId(long groupId) {
-		this.groupId = groupId;
+	public void setGroupId(long groupId) {
+		if(this.checkValue("GROUP_ID",this.groupId,groupId)){
+			this.groupId = groupId;
+		}
 	}
 	public long getParentPoiPid() {
 		return parentPoiPid;
 	}
-	protected void setParentPoiPid(long parentPoiPid) {
-		this.parentPoiPid = parentPoiPid;
+	public void setParentPoiPid(long parentPoiPid) {
+		if(this.checkValue("PARENT_POI_PID",this.parentPoiPid,parentPoiPid)){
+			this.parentPoiPid = parentPoiPid;
+		}
 	}
-	public Integer getTenantFlag() {
+	public int getTenantFlag() {
 		return tenantFlag;
 	}
-	protected void setTenantFlag(Integer tenantFlag) {
-		this.tenantFlag = tenantFlag;
+	public void setTenantFlag(int tenantFlag) {
+		if(this.checkValue("TENANT_FLAG",this.tenantFlag,tenantFlag)){
+			this.tenantFlag = tenantFlag;
+		}
 	}
 	public String getMemo() {
 		return memo;
 	}
-	protected void setMemo(String memo) {
-		this.memo = memo;
+	public void setMemo(String memo) {
+		if(this.checkValue("MEMO",this.memo,memo)){
+			this.memo = memo;
+		}
 	}
-//	public Integer getURecord() {
-//		return uRecord;
-//	}
-//	protected void setURecord(Integer uRecord) {
-//		this.uRecord = uRecord;
-//	}
-//	public String getUFields() {
-//		return uFields;
-//	}
-//	protected void setUFields(String uFields) {
-//		this.uFields = uFields;
-//	}
-//	public String getUDate() {
-//		return uDate;
-//	}
-//	protected void setUDate(String uDate) {
-//		this.uDate = uDate;
-//	}
 	
 	@Override
 	public String tableName() {
-		return "IX_POI";
+		return "IX_POI_PARENT";
 	}
 }

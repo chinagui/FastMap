@@ -47,6 +47,7 @@ public class Operation implements IOperation {
 
 		RdTmclocation tmclocation = new RdTmclocation();
 
+		//设置主表属性
 		tmclocation.setPid(PidUtil.getInstance().applyRdTmcLocationPid());
 		
 		tmclocation.setTmcId(this.command.getTmcId());
@@ -57,8 +58,15 @@ public class Operation implements IOperation {
 		
 		int locDirect = this.command.getLocDirect();
 		
+		//该direct是根据匹配的第一条link与划线方向定的关系，后续的link的方向关系通过计算可获取
 		int direct = this.command.getDirect();
 		
+		/**
+		 * 开始计算每条link的方向关系
+		 * 原则：
+		 * 1）如果作用方向和该link的起点到终点的划线方向一致，则赋值为“1”
+		 * 2）如果作用方向和该link的起点到终点的划线方向相反，则赋值为“2”
+		 */
 		RdLinkSelector selector = new RdLinkSelector(conn);
 		
 		List<IRow> linkList = selector.loadByIds(this.command.getLinkPids(), true, false);
@@ -67,12 +75,14 @@ public class Operation implements IOperation {
 		
 		int inNodePid = 0;
 		
+		//1代表和link的划线方向相同，则下一条link判断方向关系以该link的eNode为判断依据
 		if(direct == 1)
 		{
 			inNodePid = firstLink.geteNodePid();
 		}
 		else if(direct == 2)
 		{
+			//2代表和link的划线方向相同，则下一条link判断方向关系以该link的sNode为判断依据
 			inNodePid = firstLink.getsNodePid();
 		}
 		

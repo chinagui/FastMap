@@ -97,7 +97,7 @@ public class Operation implements IOperation {
 						if (subGeo instanceof LineString) {
 							subGeo = GeoTranslator.geojson2Jts(GeoTranslator.jts2Geojson(subGeo), 1, 5);
 
-							links.addAll(RwLinkOperateUtils.getCreateRwLinksWithMesh(geomInter, maps, result,this.command.getUpdateLink()));
+							links.addAll(RwLinkOperateUtils.getCreateRwLinksWithMesh(subGeo, maps, result,this.command.getUpdateLink()));
 						}
 					}
 				}

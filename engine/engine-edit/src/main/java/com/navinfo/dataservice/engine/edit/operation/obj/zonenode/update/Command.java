@@ -5,20 +5,20 @@ import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneNode;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
+
 /**
- * @author zhaokk
- * 修改ZONE点参数基础类 
+ * @author zhaokk 修改ZONE点参数基础类
  */
 public class Command extends AbstractCommand {
 
 	private String requester;
 
 	private JSONObject content;
-	
+
 	private int pid;
-	
+
 	private ZoneNode zoneNode;
-	
+
 	public ZoneNode getZoneNode() {
 		return zoneNode;
 	}
@@ -47,7 +47,7 @@ public class Command extends AbstractCommand {
 	public OperType getOperType() {
 		return OperType.UPDATE;
 	}
-	
+
 	@Override
 	public ObjType getObjType() {
 		return ObjType.ZONENODE;
@@ -63,8 +63,14 @@ public class Command extends AbstractCommand {
 		this.setDbId(json.getInt("dbId"));
 
 		this.content = json.getJSONObject("data");
-		
+
 		this.pid = this.content.getInt("pid");
+
+	}
+
+	public Command(JSONObject json, String requester, ZoneNode node) {
+		this(json, requester);
+		this.zoneNode = node;
 
 	}
 

@@ -435,19 +435,19 @@ public class DeepCoreControl {
 				return 0;
 			}
 			
-			Timestamp time = new Timestamp(new Date().getTime());
+			SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 			
 			//实际申请到的数据rowIds
 			List<String> applyDataRowIds = new ArrayList<String>();
 			if (rowIds.size() >= canApply){
 				applyDataRowIds = rowIds.subList(0, canApply-1);
 				//数据加锁， 赋值handler，维护update_date
-				dataSetLock(conn, applyDataRowIds, userId, time);
+				dataSetLock(conn, applyDataRowIds, userId, df);
 				applyCount += applyDataRowIds.size();
 			}else{
 				//库里面查询出的数据量小于当前用户可申请的量，即锁定库中查询出的数据
 				applyDataRowIds = rowIds;
-				dataSetLock(conn, applyDataRowIds, userId, time);
+				dataSetLock(conn, applyDataRowIds, userId, df);
 				applyCount += applyDataRowIds.size();
 			}
 			
@@ -600,12 +600,12 @@ public class DeepCoreControl {
 	 * @param conn
 	 * @param rowIds
 	 * @param userId
-	 * @param time
+	 * @param df
 	 * @throws Exception
 	 */
-	public void dataSetLock(Connection conn, List<String> rowIds, long userId,Timestamp time) throws Exception {
+	public void dataSetLock(Connection conn, List<String> rowIds, long userId,SimpleDateFormat df) throws Exception {
 		StringBuilder sb = new StringBuilder();
-		sb.append("UPDATE poi_deep_status SET handler=:1,update_date=:2 WHERE row_id in (");
+		sb.append("UPDATE poi_deep_status SET handler=:1,update_date= to_date('"+ df.format(new Date()) + "','yyyy-mm-dd hh24:mi:ss') WHERE row_id in (");
 		String temp = "";
 		for (String rowId:rowIds) {
 			sb.append(temp);
@@ -621,7 +621,6 @@ public class DeepCoreControl {
 			pstmt = conn.prepareStatement(sb.toString());
 
 			pstmt.setLong(1, userId);
-			pstmt.setTimestamp(2, time);
 			
 			pstmt.execute();
 			

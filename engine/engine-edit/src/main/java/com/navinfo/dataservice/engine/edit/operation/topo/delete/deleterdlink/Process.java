@@ -342,6 +342,10 @@ public class Process extends AbstractProcess<Command> {
         // 限高限重
         OpRefRdHgwgLimit refRdHgwgLimit = new OpRefRdHgwgLimit(getCommand(), getConn());
         refRdHgwgLimit.run(getResult());
+
+        // 里程桩
+        OpRefRdMileagepile refRdMileagepile = new OpRefRdMileagepile(getCommand(), getConn());
+        refRdMileagepile.run(getResult());
     }
 
     /**
@@ -614,6 +618,18 @@ public class Process extends AbstractProcess<Command> {
         List<AlertObject> warningInfoAlertDataList = warningInfoOperation.getDeleteRdWarningInfectData(linkPid, conn);
         if (CollectionUtils.isNotEmpty(warningInfoAlertDataList)) {
             infects.put("删除link删除警示信息", warningInfoAlertDataList);
+        }
+        // 限高限重
+        com.navinfo.dataservice.engine.edit.operation.obj.hgwg.delete.Operation hgwgLimitOperation = new com.navinfo.dataservice.engine.edit.operation.obj.hgwg.delete.Operation(conn);
+        List<AlertObject> hgwgLimitAlertDataList = hgwgLimitOperation.getDeleteRdHgwgInfectData(linkPid, conn);
+        if (CollectionUtils.isNotEmpty(hgwgLimitAlertDataList)) {
+            infects.put("删除link删除限高限重", hgwgLimitAlertDataList);
+        }
+        // 里程桩
+        com.navinfo.dataservice.engine.edit.operation.obj.mileagepile.delete.Operation mileagepileOperation = new com.navinfo.dataservice.engine.edit.operation.obj.mileagepile.delete.Operation(conn);
+        List<AlertObject> mileagepileAlertDataList = mileagepileOperation.getDeleteRdMileagepileInfectData(linkPid, conn);
+        if (CollectionUtils.isNotEmpty(mileagepileAlertDataList)) {
+            infects.put("删除link维护里程桩", mileagepileAlertDataList);
         }
         return infects;
     }

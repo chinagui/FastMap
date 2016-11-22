@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.dao.glm.selector.rd.mileagepile;
 
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.model.rd.hgwg.RdHgwgLimit;
 import com.navinfo.dataservice.dao.glm.model.rd.mileagepile.RdMileagepile;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
@@ -35,6 +36,31 @@ public class RdMileagepileSelector extends AbstractSelector {
         try {
             pstmt = getConn().prepareStatement(sql);
             pstmt.setInt(1, linkPid);
+            resultSet = pstmt.executeQuery();
+            while (resultSet.next()) {
+                RdMileagepile mileagepile = new RdMileagepile();
+                ReflectionAttrUtils.executeResultSet(mileagepile, resultSet);
+                mileagepiles.add(mileagepile);
+            }
+        } catch (Exception e) {
+            throw e;
+        } finally {
+            DbUtils.closeQuietly(resultSet);
+            DbUtils.closeQuietly(pstmt);
+        }
+        return mileagepiles;
+    }
+
+    public List<RdMileagepile> loadByLinkPids(List<Integer> linkPids, boolean isLock) throws Exception {
+        List<RdMileagepile> mileagepiles = new ArrayList<>();
+        String sql = "select * from rd_mileagepile t where t.link_pid in( " + StringUtils.getInteStr(linkPids) + " ) and t.u_record != 2";
+        if (isLock) {
+            sql += " for update nowait";
+        }
+        PreparedStatement pstmt = null;
+        ResultSet resultSet = null;
+        try {
+            pstmt = getConn().prepareStatement(sql);
             resultSet = pstmt.executeQuery();
             while (resultSet.next()) {
                 RdMileagepile mileagepile = new RdMileagepile();

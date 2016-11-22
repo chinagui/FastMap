@@ -42,7 +42,7 @@ public class ResultSetGetter {
 			return;
 		}
 		/*--------测试使用start------*/
-		System.out.println(columName);
+//		System.out.println(columName);
 //		if(columName.equals("GEOMETRY")){
 //			System.out.println(columName);
 //		}

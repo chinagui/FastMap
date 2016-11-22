@@ -21,7 +21,11 @@ public class Command extends AbstractCommand {
 
     private String restricInfos;
 
-    private String restricType;
+    /**
+     * 0:普通交限;
+     * 1:卡车交限;
+     */
+    private int restricType;
 
     public int getInLinkPid() {
         return inLinkPid;
@@ -51,7 +55,7 @@ public class Command extends AbstractCommand {
         return restricInfos;
     }
 
-    public String getRestricType() {
+    public int getRestricType() {
         return restricType;
     }
 
@@ -100,7 +104,7 @@ public class Command extends AbstractCommand {
             restricInfos = data.getString("infos");
         }
         if (data.containsKey("restricType")) {
-            restricType = data.getString("restricType");
+            restricType = data.getInt("restricType");
         }
     }
 

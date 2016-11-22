@@ -5,6 +5,7 @@ import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
@@ -38,6 +39,7 @@ public abstract class BasicRow implements Logable{
 		// TODO Auto-generated constructor stub
 	}
 
+	protected List<ChangeLog> changeLogs;
 	public BasicRow(long objPid){
 		this.objPid=objPid;
 	}
@@ -48,6 +50,7 @@ public abstract class BasicRow implements Logable{
 	public void setObjPid(long objPid){
 		this.objPid=objPid;
 	}
+	
 
 	public abstract String tableName();
 	/**
@@ -95,8 +98,14 @@ public abstract class BasicRow implements Logable{
 	public Map<String, Object> getOldValues() {
 		return oldValues;
 	}
-	public void setOldValues(Map<String, Object> oldValues) {
-		this.oldValues = oldValues;
+	/**
+	 * 会从历史记录中取
+	 * @param colName
+	 * @return
+	 */
+	public Object getOldValue(String colName){
+		//
+		return null;
 	}
 
 	/**

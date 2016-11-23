@@ -3,9 +3,11 @@ package com.navinfo.dataservice.engine.editplus.model.obj;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import com.navinfo.dataservice.engine.editplus.diff.ObjectDiffConfig;
 import com.navinfo.dataservice.engine.editplus.glm.GlmTableNotFoundException;
@@ -147,10 +149,25 @@ public abstract class BasicObj {
 	/**
 	 * 生成这个对象写入库中的sql
 	 * @return
+	 * @throws IllegalArgumentException 
+	 * @throws IllegalAccessException 
+	 * @throws InvocationTargetException 
+	 * @throws NoSuchMethodException 
 	 */
-	public List<RunnableSQL> generateSql(){
-		//todo
-		return null;
+	public List<RunnableSQL> generateSql() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, IllegalArgumentException{
+		List<RunnableSQL> sqlList = new ArrayList<RunnableSQL>();
+		//mainrow
+		sqlList.add(mainrow.toSql());
+		//subrow
+		for(Entry<String, List<BasicRow>> entry:subrows.entrySet()){
+			for(BasicRow subrow:entry.getValue()){
+				RunnableSQL sql = subrow.toSql();
+				if(!sql.getSql().equals("")){
+					sqlList.add(subrow.toSql());
+				}	
+			}
+		}
+		return sqlList;
 	}
 	
 	/**

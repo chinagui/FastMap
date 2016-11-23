@@ -15,6 +15,7 @@ import com.navinfo.dataservice.engine.editplus.model.obj.BasicObj;
 import com.navinfo.dataservice.engine.editplus.model.selector.MultiSrcPoiSelectorConfig;
 import com.navinfo.dataservice.engine.editplus.model.selector.ObjBatchSelector;
 import com.navinfo.dataservice.engine.editplus.model.selector.ObjSelector;
+import com.navinfo.navicommons.database.sql.RunnableSQL;
 
 /** 
  * @ClassName: SelectorTest
@@ -75,6 +76,7 @@ public class SelectorTest {
 			
 			MultiSrcPoiSelectorConfig multiSrcPoiSelectorConfig = MultiSrcPoiSelectorConfig.getInstance();
 			BasicObj obj = ObjSelector.selectByPid(conn, objType, multiSrcPoiSelectorConfig, pid, isOnlyMain, isLock);
+			List<RunnableSQL> sqlList = obj.generateSql();
 			System.out.println("Over.");
 		}catch(Exception e){
 			System.out.println("Oops, something wrong...");

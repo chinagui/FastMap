@@ -37,7 +37,8 @@ public class Process extends AbstractProcess<Command> {
 
 		RdLinkSelector selector = new RdLinkSelector(this.getConn());
 
-		List<RdLink> links = selector.loadByNodePid(this.getCommand().getNodePid(), true);
+		List<RdLink> links = selector.loadByNodePid(this.getCommand()
+				.getNodePid(), true);
 
 		List<Integer> linkPids = new ArrayList<Integer>();
 
@@ -54,7 +55,8 @@ public class Process extends AbstractProcess<Command> {
 
 		RdNodeSelector selector = new RdNodeSelector(this.getConn());
 
-		RdNode node = (RdNode) selector.loadById(this.getCommand().getNodePid(), true);
+		RdNode node = (RdNode) selector.loadById(
+				this.getCommand().getNodePid(), true);
 
 		this.getCommand().setNode(node);
 
@@ -102,12 +104,14 @@ public class Process extends AbstractProcess<Command> {
 		for (Integer linkPid : this.getCommand().getLinkPids()) {
 			RdBranchSelector selector = new RdBranchSelector(this.getConn());
 
-			List<RdBranch> branches = selector.loadRdBranchByInLinkPid(linkPid, true);
+			List<RdBranch> branches = selector.loadRdBranchByInLinkPid(linkPid,
+					true);
 
 			List<RdBranch> viaBranch = selector.loadByLinkPid(linkPid, 3, true);
 
 			// 获取退出线为该link，并且只有一根退出线的车信
-			List<RdBranch> branches2 = selector.loadRdBranchByOutLinkPid(linkPid, true);
+			List<RdBranch> branches2 = selector.loadRdBranchByOutLinkPid(
+					linkPid, true);
 
 			branchList.addAll(branches2);
 
@@ -123,8 +127,9 @@ public class Process extends AbstractProcess<Command> {
 
 		RdCrossSelector selector = new RdCrossSelector(this.getConn());
 
-		List<RdCross> crosses = selector.loadRdCrossByNodeOrLink(this.getCommand().getNodePids(),
-				this.getCommand().getLinkPids(), true);
+		List<RdCross> crosses = selector.loadRdCrossByNodeOrLink(this
+				.getCommand().getNodePids(), this.getCommand().getLinkPids(),
+				true);
 
 		this.getCommand().setCrosses(crosses);
 	}
@@ -133,7 +138,8 @@ public class Process extends AbstractProcess<Command> {
 
 		RdSpeedlimitSelector selector = new RdSpeedlimitSelector(this.getConn());
 
-		List<RdSpeedlimit> limits = selector.loadSpeedlimitByLinkPids(this.getCommand().getLinkPids(), true);
+		List<RdSpeedlimit> limits = selector.loadSpeedlimitByLinkPids(this
+				.getCommand().getLinkPids(), true);
 
 		this.getCommand().setLimits(limits);
 	}
@@ -141,7 +147,8 @@ public class Process extends AbstractProcess<Command> {
 	private void lockAdAdmin() throws Exception {
 		AdAdminSelector selector = new AdAdminSelector(this.getConn());
 
-		List<AdAdmin> adAdminList = selector.loadRowsByLinkPids(this.getCommand().getLinkPids(), true);
+		List<AdAdmin> adAdminList = selector.loadRowsByLinkPids(this
+				.getCommand().getLinkPids(), true);
 
 		this.getCommand().setAdAdmins(adAdminList);
 	}
@@ -238,7 +245,8 @@ public class Process extends AbstractProcess<Command> {
 	 */
 	private void updataRelationObj() throws Exception {
 		// 交限
-		IOperation opRefRestrict = new OpRefRestrict(this.getCommand(), this.getConn());
+		IOperation opRefRestrict = new OpRefRestrict(this.getCommand(),
+				this.getConn());
 		opRefRestrict.run(this.getResult());
 
 		// 分歧
@@ -250,7 +258,8 @@ public class Process extends AbstractProcess<Command> {
 		opRefCross.run(this.getResult());
 
 		// 车信
-		IOperation opRefLaneConnexity = new OpRefLaneConnexity(this.getCommand(), this.getConn());
+		IOperation opRefLaneConnexity = new OpRefLaneConnexity(
+				this.getCommand(), this.getConn());
 		opRefLaneConnexity.run(this.getResult());
 
 		// 限速
@@ -258,7 +267,8 @@ public class Process extends AbstractProcess<Command> {
 		opRefSpeedlimit.run(this.getResult());
 
 		// 立交
-		IOperation opRefRdGsc = new OpRefRdGsc(this.getCommand(), this.getConn());
+		IOperation opRefRdGsc = new OpRefRdGsc(this.getCommand(),
+				this.getConn());
 		opRefRdGsc.run(this.getResult());
 
 		// 行政区划
@@ -266,12 +276,15 @@ public class Process extends AbstractProcess<Command> {
 		opRefAdAdmin.run(this.getResult());
 
 		// 电子眼
-		OpRefRdElectroniceye opRefRdElectroniceye = new OpRefRdElectroniceye(this.getConn(), this.getCommand());
+		OpRefRdElectroniceye opRefRdElectroniceye = new OpRefRdElectroniceye(
+				this.getConn(), this.getCommand());
 		opRefRdElectroniceye.run(this.getResult());
 
 		// 信号灯
-		OpRefTrafficsignal opRefRdTrafficsignal = new OpRefTrafficsignal(this.getConn());
-		opRefRdTrafficsignal.run(this.getResult(), this.getCommand().getLinkPids());
+		OpRefTrafficsignal opRefRdTrafficsignal = new OpRefTrafficsignal(
+				this.getConn());
+		opRefRdTrafficsignal.run(this.getResult(), this.getCommand()
+				.getLinkPids());
 
 		// 大门
 		OpRefRdGate opRefRdGate = new OpRefRdGate(this.getConn());
@@ -282,7 +295,8 @@ public class Process extends AbstractProcess<Command> {
 		opRefRdSe.run(this.getResult());
 
 		// 减速带
-		OpRefRdSpeedbump opRdSpeedbump = new OpRefRdSpeedbump(this.getCommand(), this.getConn());
+		OpRefRdSpeedbump opRdSpeedbump = new OpRefRdSpeedbump(
+				this.getCommand(), this.getConn());
 		opRdSpeedbump.run(this.getResult());
 
 		// 坡度
@@ -291,14 +305,16 @@ public class Process extends AbstractProcess<Command> {
 
 		// CRF交叉点
 		OpRefRdInter opRefRdInter = new OpRefRdInter(this.getConn());
-		opRefRdInter.run(this.getResult(), this.getCommand(), this.getCommand().getNodePids());
+		opRefRdInter.run(this.getResult(), this.getCommand(), this.getCommand()
+				.getNodePids());
 
 		// 同一点关系
 		OpRefRdSameNode opRefRdSameNode = new OpRefRdSameNode(getConn());
 		opRefRdSameNode.run(getResult(), this.getCommand());
 
 		// 收费站
-		OpRefRdTollgate opRefRdTollgate = new OpRefRdTollgate(this.getConn(), this.getCommand());
+		OpRefRdTollgate opRefRdTollgate = new OpRefRdTollgate(this.getConn(),
+				this.getCommand());
 		opRefRdTollgate.run(this.getResult());
 
 		OpRefRelationObj opRefRelationObj = new OpRefRelationObj(this.getConn());
@@ -316,6 +332,10 @@ public class Process extends AbstractProcess<Command> {
 
 		// 同一线
 		opRefRelationObj.handleSameLink(this.getResult(), this.getCommand());
+
+		// 详细车道
+		OpRefRdLane opRefRdLane = new OpRefRdLane(getConn());
+		opRefRdLane.run(getResult(), this.getCommand());
 	}
 
 	/**
@@ -324,7 +344,8 @@ public class Process extends AbstractProcess<Command> {
 	 * @return
 	 * @throws Exception
 	 */
-	private Map<String, List<AlertObject>> confirmRelationObj() throws Exception {
+	private Map<String, List<AlertObject>> confirmRelationObj()
+			throws Exception {
 
 		Map<String, List<AlertObject>> infects = new HashMap<String, List<AlertObject>>();
 
@@ -357,7 +378,8 @@ public class Process extends AbstractProcess<Command> {
 		List<AlertObject> adminAlertDataList = new ArrayList<>();
 		for (RdLink link : links) {
 			int linkPid = link.getPid();
-			adminAlertDataList.addAll(adadminOperation.getUpdateAdminInfectData(linkPid, conn));
+			adminAlertDataList.addAll(adadminOperation
+					.getUpdateAdminInfectData(linkPid, conn));
 
 		}
 		if (CollectionUtils.isNotEmpty(adminAlertDataList)) {
@@ -368,14 +390,16 @@ public class Process extends AbstractProcess<Command> {
 				null);
 		List<AlertObject> linkAlertDataList = new ArrayList<>();
 		for (RdLink link : links) {
-			linkAlertDataList.addAll(opTopo.getDeleteLinkInfectData(link, conn));
+			linkAlertDataList
+					.addAll(opTopo.getDeleteLinkInfectData(link, conn));
 		}
 		if (CollectionUtils.isNotEmpty(linkAlertDataList)) {
 			infects.put("删除Link", linkAlertDataList);
 		}
 		// node
 		OpTopo nodeTOpo = new OpTopo();
-		List<AlertObject> nodeAlertDataList = nodeTOpo.getDeleteNodeInfectData(this.getCommand().getNodePids(), conn);
+		List<AlertObject> nodeAlertDataList = nodeTOpo.getDeleteNodeInfectData(
+				this.getCommand().getNodePids(), conn);
 		if (CollectionUtils.isNotEmpty(nodeAlertDataList)) {
 			infects.put("删除Node", nodeAlertDataList);
 		}
@@ -386,10 +410,13 @@ public class Process extends AbstractProcess<Command> {
 		List<AlertObject> updateResAlertDataList = new ArrayList<>();
 		List<AlertObject> delResAlertDataList = new ArrayList<>();
 
-		delResAlertDataList.addAll(rdrestrictionOperation.getDeleteLinkResInfectData(this.getCommand().getLinkPids()));
-		updateResAlertDataList.addAll(rdrestrictionOperation.getUpdateResInfectData(this.getCommand().getLinkPids()));
+		delResAlertDataList.addAll(rdrestrictionOperation
+				.getDeleteLinkResInfectData(this.getCommand().getLinkPids()));
+		updateResAlertDataList.addAll(rdrestrictionOperation
+				.getUpdateResInfectData(this.getCommand().getLinkPids()));
 		if (CollectionUtils.isNotEmpty(updateResAlertDataList)) {
-			infects.put("此link上存在交限关系信息，删除该Link会对应删除此组关系", updateResAlertDataList);
+			infects.put("此link上存在交限关系信息，删除该Link会对应删除此组关系",
+					updateResAlertDataList);
 		}
 		if (CollectionUtils.isNotEmpty(delResAlertDataList)) {
 			infects.put("此link上存在交限关系信息，删除该Link会对应删除该交限", delResAlertDataList);
@@ -401,14 +428,18 @@ public class Process extends AbstractProcess<Command> {
 
 		com.navinfo.dataservice.engine.edit.operation.obj.rdlaneconnexity.delete.Operation rdLaneConOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdlaneconnexity.delete.Operation(
 				conn);
-		updateRdLaneConAlertDataList.addAll(rdLaneConOperation.getUpdateResInfectData(this.getCommand().getLinkPids()));
-		delRdLaneConAlertDataList
-				.addAll(rdLaneConOperation.getDeleteRdLaneConnexityInfectData(this.getCommand().getLinkPids()));
+		updateRdLaneConAlertDataList.addAll(rdLaneConOperation
+				.getUpdateResInfectData(this.getCommand().getLinkPids()));
+		delRdLaneConAlertDataList.addAll(rdLaneConOperation
+				.getDeleteRdLaneConnexityInfectData(this.getCommand()
+						.getLinkPids()));
 		if (CollectionUtils.isNotEmpty(updateRdLaneConAlertDataList)) {
-			infects.put("此link上存在车信关系信息，删除该Link会对应删除此组关系", updateRdLaneConAlertDataList);
+			infects.put("此link上存在车信关系信息，删除该Link会对应删除此组关系",
+					updateRdLaneConAlertDataList);
 		}
 		if (CollectionUtils.isNotEmpty(delRdLaneConAlertDataList)) {
-			infects.put("此link上存在车信关系信息，删除该Link会对应删除该车信", delRdLaneConAlertDataList);
+			infects.put("此link上存在车信关系信息，删除该Link会对应删除该车信",
+					delRdLaneConAlertDataList);
 		}
 		// 分歧
 		List<AlertObject> delInRdBranchAlertDataList = new ArrayList<>();
@@ -418,9 +449,12 @@ public class Process extends AbstractProcess<Command> {
 				null, null, null);
 		for (RdLink link : links) {
 			int linkPid = link.getPid();
-			delInRdBranchAlertDataList.addAll(rdBranchOperation.getDeleteBranchInfectData(linkPid, conn));
-			delOutRdBranchAlertDataList.addAll(rdBranchOperation.getDeleteBOutLinkranchInfectData(linkPid, conn));
-			delViaRdBranchAlertDataList.addAll(rdBranchOperation.getDeleteBViaLinkranchInfectData(linkPid, conn));
+			delInRdBranchAlertDataList.addAll(rdBranchOperation
+					.getDeleteBranchInfectData(linkPid, conn));
+			delOutRdBranchAlertDataList.addAll(rdBranchOperation
+					.getDeleteBOutLinkranchInfectData(linkPid, conn));
+			delViaRdBranchAlertDataList.addAll(rdBranchOperation
+					.getDeleteBViaLinkranchInfectData(linkPid, conn));
 		}
 		if (CollectionUtils.isNotEmpty(delInRdBranchAlertDataList)) {
 			infects.put("删除link作为进入线的分歧信息", delInRdBranchAlertDataList);
@@ -439,8 +473,10 @@ public class Process extends AbstractProcess<Command> {
 				null, null);
 		for (RdLink link : links) {
 			int linkPid = link.getPid();
-			delCrossAlertDataList.addAll(rdCrossOperation.getDeleteRdCross(linkPid, conn));
-			updateCrossAlertDataList.addAll(rdCrossOperation.getUpdateRdCross(linkPid, conn));
+			delCrossAlertDataList.addAll(rdCrossOperation.getDeleteRdCross(
+					linkPid, conn));
+			updateCrossAlertDataList.addAll(rdCrossOperation.getUpdateRdCross(
+					linkPid, conn));
 		}
 		if (CollectionUtils.isNotEmpty(delCrossAlertDataList)) {
 			infects.put("删除link,删除路口关系", delCrossAlertDataList);
@@ -453,7 +489,8 @@ public class Process extends AbstractProcess<Command> {
 		List<AlertObject> delGscAlertDataList = new ArrayList<>();
 		com.navinfo.dataservice.engine.edit.operation.obj.rdgsc.delete.Operation rdGscOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdgsc.delete.Operation(
 				conn);
-		delGscAlertDataList.addAll(rdGscOperation.getDeleteRdGscInfectData(links));
+		delGscAlertDataList.addAll(rdGscOperation
+				.getDeleteRdGscInfectData(links));
 		if (CollectionUtils.isNotEmpty(delGscAlertDataList)) {
 			infects.put("删除link维护立交", delGscAlertDataList);
 		}
@@ -463,7 +500,8 @@ public class Process extends AbstractProcess<Command> {
 				null, null);
 		for (RdLink link : links) {
 			int linkPid = link.getPid();
-			updateSpeedLimitAlertDataList.addAll(rdSpeedLimitOperation.getUpdateRdSpeedLimitInfectData(linkPid, conn));
+			updateSpeedLimitAlertDataList.addAll(rdSpeedLimitOperation
+					.getUpdateRdSpeedLimitInfectData(linkPid, conn));
 		}
 		if (CollectionUtils.isNotEmpty(updateSpeedLimitAlertDataList)) {
 			infects.put("删除link维护限速关系", updateSpeedLimitAlertDataList);
@@ -474,7 +512,8 @@ public class Process extends AbstractProcess<Command> {
 				conn);
 		for (RdLink link : links) {
 			int linkPid = link.getPid();
-			delRdEyeAlertDataList.addAll(rdEyeOperation.getUpdateRdEyeInfectData(linkPid, conn));
+			delRdEyeAlertDataList.addAll(rdEyeOperation
+					.getUpdateRdEyeInfectData(linkPid, conn));
 		}
 		if (CollectionUtils.isNotEmpty(delRdEyeAlertDataList)) {
 			infects.put("删除link维护电子眼", delRdEyeAlertDataList);
@@ -485,7 +524,8 @@ public class Process extends AbstractProcess<Command> {
 				conn);
 		for (RdLink link : links) {
 			int linkPid = link.getPid();
-			delRdGateAlertDataList.addAll(rdGateOperation.getDeleteRdGateInfectData(linkPid, conn));
+			delRdGateAlertDataList.addAll(rdGateOperation
+					.getDeleteRdGateInfectData(linkPid, conn));
 		}
 		if (CollectionUtils.isNotEmpty(delRdGateAlertDataList)) {
 			infects.put("删除link删除大门", delRdGateAlertDataList);
@@ -495,10 +535,12 @@ public class Process extends AbstractProcess<Command> {
 		List<AlertObject> delRdInterAlertDataList = new ArrayList<>();
 		com.navinfo.dataservice.engine.edit.operation.obj.rdinter.delete.Operation rdInterOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdinter.delete.Operation(
 				conn);
-		updateRdInterAlertDataList
-				.addAll(rdInterOperation.getUpdateRdInterInfectData(this.getCommand().getLinkPids(), this.getCommand().getNodePids(), conn));
-		delRdInterAlertDataList
-				.addAll(rdInterOperation.getDeleteRdInterInfectData(this.getCommand().getLinkPids(), this.getCommand().getNodePids(), conn));
+		updateRdInterAlertDataList.addAll(rdInterOperation
+				.getUpdateRdInterInfectData(this.getCommand().getLinkPids(),
+						this.getCommand().getNodePids(), conn));
+		delRdInterAlertDataList.addAll(rdInterOperation
+				.getDeleteRdInterInfectData(this.getCommand().getLinkPids(),
+						this.getCommand().getNodePids(), conn));
 		if (CollectionUtils.isNotEmpty(updateRdInterAlertDataList)) {
 			infects.put("删除link维护CRF交叉点", updateRdInterAlertDataList);
 		}
@@ -511,7 +553,8 @@ public class Process extends AbstractProcess<Command> {
 				conn);
 		for (RdLink link : links) {
 			int linkPid = link.getPid();
-			updateRdRoadAlertDataList.addAll(rdRoadOperation.getUpdateRdRoadInfectData(linkPid, conn));
+			updateRdRoadAlertDataList.addAll(rdRoadOperation
+					.getUpdateRdRoadInfectData(linkPid, conn));
 		}
 		if (CollectionUtils.isNotEmpty(updateRdRoadAlertDataList)) {
 			infects.put("删除link维护CRF道路", updateRdRoadAlertDataList);
@@ -524,7 +567,8 @@ public class Process extends AbstractProcess<Command> {
 				conn);
 		for (RdLink link : links) {
 			int linkPid = link.getPid();
-			delRdLaneAlertDataList.addAll(rdLaneOperation.getDeleteRdLaneInfectData(linkPid, conn));
+			delRdLaneAlertDataList.addAll(rdLaneOperation
+					.getDeleteRdLaneInfectData(linkPid, conn));
 		}
 		if (CollectionUtils.isNotEmpty(delRdLaneAlertDataList)) {
 			infects.put("删除link删除详细车道", delRdLaneAlertDataList);
@@ -533,8 +577,9 @@ public class Process extends AbstractProcess<Command> {
 		List<AlertObject> sameNodeAlertDataList = new ArrayList<>();
 		com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.delete.Operation sameNodeOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.delete.Operation(
 				conn);
-		sameNodeAlertDataList.addAll(
-				sameNodeOperation.getDeleteLinkSameNodeInfectData(this.getCommand().getNodePids(), "RD_NODE", conn));
+		sameNodeAlertDataList.addAll(sameNodeOperation
+				.getDeleteLinkSameNodeInfectData(this.getCommand()
+						.getNodePids(), "RD_NODE", conn));
 		if (CollectionUtils.isNotEmpty(sameNodeAlertDataList)) {
 			infects.put("删除link影响的同一点", sameNodeAlertDataList);
 		}
@@ -544,7 +589,8 @@ public class Process extends AbstractProcess<Command> {
 		com.navinfo.dataservice.engine.edit.operation.obj.rdsamelink.delete.Operation sameLinkOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdsamelink.delete.Operation(
 				conn);
 		for (RdLink link : links) {
-			sameLinkAlertDataList.addAll(sameLinkOperation.getDeleteLinkSameLinkInfectData(link, conn));
+			sameLinkAlertDataList.addAll(sameLinkOperation
+					.getDeleteLinkSameLinkInfectData(link, conn));
 		}
 		if (CollectionUtils.isNotEmpty(sameLinkAlertDataList)) {
 			infects.put("删除link影响的同一线", sameLinkAlertDataList);
@@ -555,7 +601,8 @@ public class Process extends AbstractProcess<Command> {
 				conn);
 		for (RdLink link : links) {
 			int linkPid = link.getPid();
-			rdSeAlertDataList.addAll(rdSeOperation.getDeleteRdSeInfectData(linkPid, conn));
+			rdSeAlertDataList.addAll(rdSeOperation.getDeleteRdSeInfectData(
+					linkPid, conn));
 		}
 		if (CollectionUtils.isNotEmpty(rdSeAlertDataList)) {
 			infects.put("删除link删除分叉口", rdSeAlertDataList);
@@ -567,8 +614,10 @@ public class Process extends AbstractProcess<Command> {
 				conn);
 		for (RdLink link : links) {
 			int linkPid = link.getPid();
-			rdSlopDeleteAlertDataList.addAll(rdSlopOperation.getDeleteRdSlopeInfectData(linkPid, conn));
-			rdSlopUpdateAlertDataList.addAll(rdSlopOperation.getUpdateRdSlopeInfectData(linkPid, conn));
+			rdSlopDeleteAlertDataList.addAll(rdSlopOperation
+					.getDeleteRdSlopeInfectData(linkPid, conn));
+			rdSlopUpdateAlertDataList.addAll(rdSlopOperation
+					.getUpdateRdSlopeInfectData(linkPid, conn));
 		}
 		if (CollectionUtils.isNotEmpty(rdSlopDeleteAlertDataList)) {
 			infects.put("删除link删除坡度", rdSlopDeleteAlertDataList);
@@ -582,7 +631,8 @@ public class Process extends AbstractProcess<Command> {
 				conn);
 		for (RdLink link : links) {
 			int linkPid = link.getPid();
-			rdSpeedbumpAlertDataList.addAll(rdSpeedbumpOperation.getDeleteRdSpeedbumpInfectData(linkPid, conn));
+			rdSpeedbumpAlertDataList.addAll(rdSpeedbumpOperation
+					.getDeleteRdSpeedbumpInfectData(linkPid, conn));
 		}
 		if (CollectionUtils.isNotEmpty(rdSpeedbumpAlertDataList)) {
 			infects.put("删除link删除减速带", rdSpeedbumpAlertDataList);
@@ -593,7 +643,8 @@ public class Process extends AbstractProcess<Command> {
 				conn);
 		for (RdLink link : links) {
 			int linkPid = link.getPid();
-			rdTollageAlertDataList.addAll(rdTollgateOperation.getDeleteRdTollageInfectData(linkPid, conn));
+			rdTollageAlertDataList.addAll(rdTollgateOperation
+					.getDeleteRdTollageInfectData(linkPid, conn));
 		}
 		if (CollectionUtils.isNotEmpty(rdTollageAlertDataList)) {
 			infects.put("删除link删除收费站", rdTollageAlertDataList);
@@ -605,8 +656,10 @@ public class Process extends AbstractProcess<Command> {
 				conn);
 		for (RdLink link : links) {
 			int linkPid = link.getPid();
-			rdVariableAlertDataList.addAll(rdVariableOperation.getDeleteRdVariableInfectData(linkPid, conn));
-			rdVariableUpdateAlertDataList.addAll(rdVariableOperation.getUpdateRdVariableInfectData(linkPid, conn));
+			rdVariableAlertDataList.addAll(rdVariableOperation
+					.getDeleteRdVariableInfectData(linkPid, conn));
+			rdVariableUpdateAlertDataList.addAll(rdVariableOperation
+					.getUpdateRdVariableInfectData(linkPid, conn));
 		}
 		if (CollectionUtils.isNotEmpty(rdVariableAlertDataList)) {
 			infects.put("删除link删除可变限速", rdVariableAlertDataList);
@@ -620,7 +673,8 @@ public class Process extends AbstractProcess<Command> {
 				conn);
 		for (RdLink link : links) {
 			int linkPid = link.getPid();
-			trafficAlertDataList.addAll(trafficOperation.getDeleteRdTrafficInfectData(linkPid, conn));
+			trafficAlertDataList.addAll(trafficOperation
+					.getDeleteRdTrafficInfectData(linkPid, conn));
 		}
 		if (CollectionUtils.isNotEmpty(trafficAlertDataList)) {
 			infects.put("删除link删除信号灯", trafficAlertDataList);
@@ -631,7 +685,8 @@ public class Process extends AbstractProcess<Command> {
 				conn);
 		for (RdLink link : links) {
 			int linkPid = link.getPid();
-			poiAlertDataList.addAll(poiOperation.getUpdatePoiInfectData(linkPid, conn));
+			poiAlertDataList.addAll(poiOperation.getUpdatePoiInfectData(
+					linkPid, conn));
 		}
 		if (CollectionUtils.isNotEmpty(poiAlertDataList)) {
 			infects.put("删除link维护poi", poiAlertDataList);
@@ -642,7 +697,8 @@ public class Process extends AbstractProcess<Command> {
 				conn);
 		for (RdLink link : links) {
 			int linkPid = link.getPid();
-			routeAlertDataList.addAll(routerOperation.getDeleteRdDirectrouteInfectData(linkPid, conn));
+			routeAlertDataList.addAll(routerOperation
+					.getDeleteRdDirectrouteInfectData(linkPid, conn));
 		}
 		if (CollectionUtils.isNotEmpty(routeAlertDataList)) {
 			infects.put("删除link删除顺行", routeAlertDataList);
@@ -653,7 +709,8 @@ public class Process extends AbstractProcess<Command> {
 				conn);
 		for (RdLink link : links) {
 			int linkPid = link.getPid();
-			voiceGuideAlertDataList.addAll(voiceGuideOperation.getDeleteRdVoiceguideInfectData(linkPid, conn));
+			voiceGuideAlertDataList.addAll(voiceGuideOperation
+					.getDeleteRdVoiceguideInfectData(linkPid, conn));
 		}
 		if (CollectionUtils.isNotEmpty(voiceGuideAlertDataList)) {
 			infects.put("删除link删除语音引导", voiceGuideAlertDataList);
@@ -664,7 +721,8 @@ public class Process extends AbstractProcess<Command> {
 				conn);
 		for (RdLink link : links) {
 			int linkPid = link.getPid();
-			warningInfoAlertDataList.addAll(warningInfoOperation.getDeleteRdWarningInfectData(linkPid, conn));
+			warningInfoAlertDataList.addAll(warningInfoOperation
+					.getDeleteRdWarningInfectData(linkPid, conn));
 		}
 		if (CollectionUtils.isNotEmpty(warningInfoAlertDataList)) {
 			infects.put("删除link删除警示信息", warningInfoAlertDataList);

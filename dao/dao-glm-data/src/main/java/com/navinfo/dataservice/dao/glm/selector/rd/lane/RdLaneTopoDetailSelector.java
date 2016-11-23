@@ -85,13 +85,13 @@ public class RdLaneTopoDetailSelector extends AbstractSelector {
 
 		try {
 			String sql = "SELECT distinct(topo_id) FROM rd_lane_topo_detail rt, rd_lane_topo_via rv "
-					+ "WHERE rt.topo_id = rv.topo_id(+) and (out_lane_pid in ("
+					+ "WHERE rt.topo_id = rv.topo_id(+) and (rt.out_lane_pid in ("
 					+ ids
 					+ ") or in_lane_pid in ("
 					+ ids
 					+ ") or rv.lane_pid in ("
 					+ ids
-					+ ")) and ra.u_record !=2 and rv.u_record(+) !=2";
+					+ ")) and rt.u_record !=2 and rv.u_record(+) !=2";
 
 			if (isLock) {
 				sql += " for update nowait";

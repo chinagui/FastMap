@@ -1138,7 +1138,7 @@ public class SubtaskOperation {
 					+ " where s.task_id = t.task_id"
 					+ " and t.city_id = g.city_id"
 					+ " and s.type in (6, 7, 10)"
-					+ " and bgm.grid_id = " + gridId;
+					+ " and g.grid_id = " + gridId;
 
 			ResultSetHandler<List<Integer>> rsHandler = new ResultSetHandler<List<Integer>>() {
 				public List<Integer> handle(ResultSet rs) throws SQLException {
@@ -2021,6 +2021,7 @@ public class SubtaskOperation {
 			//查询条件
 			String conditionSql = "";
 			Iterator<?> conditionKeys = condition.keys();
+			boolean collectAndDay=true;
 			while (conditionKeys.hasNext()) {
 				String key = (String) conditionKeys.next();
 				//查询条件
@@ -2028,9 +2029,9 @@ public class SubtaskOperation {
 				if ("taskId".equals(key)) {
 					conditionSql+=" AND subtask_list.TASK_ID="+condition.getInt(key);
 				}
-				if (!"stage".equals(key)){
-					conditionSql+=" AND subtask_list.stage IN (0,1)";}
-				if ("stage".equals(key)) {conditionSql+=" AND subtask_list.stage ="+condition.getInt(key);}
+				if ("stage".equals(key)) {
+					collectAndDay=false;
+					conditionSql+=" AND subtask_list.stage ="+condition.getInt(key);}
 				//子任务名称模糊查询
 				if ("subtaskName".equals(key)) {	
 					conditionSql+=" AND subtask_list.NAME like '%" + condition.getString(key) +"%'";
@@ -2094,6 +2095,7 @@ public class SubtaskOperation {
 					}
 				}
 			}
+			if (collectAndDay){conditionSql+=" AND subtask_list.stage IN (0,1)";}
 			QueryRunner run = new QueryRunner();
 			long pageStartNum = (curPageNum - 1) * pageSize + 1;
 			long pageEndNum = curPageNum * pageSize;
@@ -2118,7 +2120,7 @@ public class SubtaskOperation {
 					 * ③开启状态相同剩余工期，根据完成度排序，完成度高>完成度低；其它状态，根据名称
 					 */
 					+ "                  CASE S.STATUS"
-					+ "                      WHEN 1 THEN CASE NVL(FSOS.PERCENT,0) = 100 WHEN 2 THEN 0 end "
+					+ "                      WHEN 1 THEN CASE NVL(FSOS.PERCENT,0) when 100 then 2 WHEN 2 THEN 0 end "
 	                + "                         when 2 then 1"
 	                + "                           when 0 then 3 end order_status"
 					+ " FROM SUBTASK S ,USER_INFO U,USER_GROUP UG,FM_STAT_OVERVIEW_SUBTASK FSOS,quality_task Q"
@@ -2126,7 +2128,7 @@ public class SubtaskOperation {
 					+ " AND S.is_quality = 0" //排除 Subtask 表中的质检子任务
 					+ " AND U.USER_ID(+) = S.EXE_USER_ID"
 					+ " AND UG.GROUP_ID(+) = S.EXE_GROUP_ID"
-					+ " AND S.SUBTASK_ID = FSOS.SUBTASK_ID(+))"
+					+ " AND S.SUBTASK_ID = FSOS.SUBTASK_ID(+)),"
 					+ " FINAL_TABLE AS"
 				+ " (SELECT *"
 				+ "    FROM subtask_list"

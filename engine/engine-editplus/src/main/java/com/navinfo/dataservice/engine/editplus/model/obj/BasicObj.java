@@ -51,6 +51,23 @@ public abstract class BasicObj {
 	public void insertSubrow(BasicRow subrow){
 		subrow.setOpType(OperationType.INSERT);
 		//todo
+		String tname = subrow.tableName();
+		//insert某子表的记录时，改子表在对象中一定加载过，List<BasicRow>不会为null，如果为null，报错
+		List<BasicRow> rows = subrows.get(tname);
+		rows.add(subrow);
+	}
+	public void deleteSubrow(BasicRow subrow){
+		subrow.setOpType(OperationType.DELETE);
+	}
+	public void deleteObj(){
+		this.mainrow.setOpType(OperationType.DELETE);
+		for(List<BasicRow> rows:subrows.values()){
+			if(rows!=null){
+				for(BasicRow row:rows){
+					row.setOpType(OperationType.DELETE);
+				}
+			}
+		}
 	}
 	
 	public abstract String objType();
@@ -111,14 +128,6 @@ public abstract class BasicObj {
 	public List<BasicRow> getRowsByName(String tableName){
 		List<BasicRow> rows = subrows.get(tableName);
 		return rows;
-	}
-	/**
-	 * 判断如果是修改状态下，加载所有子表并全部设置为删除
-	 */
-	public void deleteObj(){
-		if(mainrow.getOpType().equals(OperationType.UPDATE)){
-			//加载所有子表并设置删除
-		}
 	}
 	
 	public BasicObj copy(){

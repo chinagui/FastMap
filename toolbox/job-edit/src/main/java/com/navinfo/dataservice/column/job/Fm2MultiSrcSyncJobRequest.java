@@ -16,15 +16,15 @@ import com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest;
  */
 public class Fm2MultiSrcSyncJobRequest extends AbstractJobRequest {
 	
-	protected List<String> dbIds;
+	protected List<Integer> dbIds;
 	protected String lastSyncTime;
 	protected String syncTime;
 
-	public List<String> getDbIds() {
+	public List<Integer> getDbIds() {
 		return dbIds;
 	}
 
-	public void setDbIds(List<String> dbIds) {
+	public void setDbIds(List<Integer> dbIds) {
 		this.dbIds = dbIds;
 	}
 
@@ -68,7 +68,7 @@ public class Fm2MultiSrcSyncJobRequest extends AbstractJobRequest {
 	@Override
 	public void validate() throws JobException {
 		try{
-			if(dbIds==null)throw new JobException("传入大区库不能为空");
+			if(dbIds==null||dbIds.size()==0)throw new JobException("传入大区库不能为空");
 			if(syncTime==null)throw new JobException("同步截止时间不能为空");
 			if(lastSyncTime!=null){
 				Date lastDate=DateUtils.stringToDate(lastSyncTime, DateUtils.DATE_COMPACTED_FORMAT);

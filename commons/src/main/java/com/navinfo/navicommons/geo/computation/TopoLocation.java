@@ -14,5 +14,5 @@ package com.navinfo.navicommons.geo.computation;
 *  
 */
 public enum TopoLocation {
-	Top, Bottom, Left, Right, LeftTop, LeftBottom, RightTop, RightBottom, Inside,Outside,
+	Top, Bottom, Left, Right, LeftTop, LeftBottom, RightTop, RightBottom, Inside,Outside;
 }

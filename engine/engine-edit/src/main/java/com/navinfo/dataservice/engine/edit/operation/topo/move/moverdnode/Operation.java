@@ -254,6 +254,10 @@ public class Operation implements IOperation {
             sameNodeOperation.moveMainNodeForTopo(this.command.getJson(), ObjType.RDNODE, result);
         }
 
+        // 维护里程桩
+        com.navinfo.dataservice.engine.edit.operation.obj.mileagepile.move.Operation maileageOperation = new com.navinfo.dataservice.engine.edit.operation.obj.mileagepile.move.Operation(conn);
+        maileageOperation.moveMileagepile(oldLink, newLinks, result);
+
 		/*
 		 * 条件以下为仅打断情况下需要处理的元素 (size < 2说明没有进行打断操作)
 		 */
@@ -320,6 +324,9 @@ public class Operation implements IOperation {
         com.navinfo.dataservice.engine.edit.operation.obj.rdvariablespeed.update.Operation variableSpeedOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdvariablespeed.update.Operation(
                 this.conn);
         variableSpeedOperation.breakLine(oldLink, newLinks, result);
+        // 详细车道维护
+        com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation rdlaneOperation = new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation(this.conn);
+        rdlaneOperation.breakRdLink(oldLink.getPid(), newLinks, result);
 
     }
 }

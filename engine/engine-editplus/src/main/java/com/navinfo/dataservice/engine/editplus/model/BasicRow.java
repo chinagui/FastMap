@@ -2,12 +2,19 @@ package com.navinfo.dataservice.engine.editplus.model;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.engine.editplus.glm.GlmColumn;
 import com.navinfo.dataservice.engine.editplus.glm.GlmFactory;
 import com.navinfo.dataservice.engine.editplus.glm.GlmRef;
@@ -15,7 +22,11 @@ import com.navinfo.dataservice.engine.editplus.glm.GlmTable;
 import com.navinfo.dataservice.engine.editplus.glm.NonGeoPidException;
 import com.navinfo.dataservice.engine.editplus.log.Logable;
 import com.navinfo.dataservice.engine.editplus.operation.OperationType;
+import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.RunnableSQL;
+import com.vividsolutions.jts.geom.Geometry;
+
+import sun.awt.SunToolkit.OperationTimedOut;
 
 /** 
  * @ClassName: BasicRow
@@ -29,6 +40,7 @@ public abstract class BasicRow implements Logable{
 	protected String rowId;//row类型的代表就是有row_id
 	protected long objPid;
 	protected Map<String,Object> oldValues=null;//存储变化字段的旧值，key:col_name,value：旧值
+	protected List<ChangeLog> hisChangeLogs;
 	public BasicRow(long objPid){
 		this.objPid=objPid;
 	}
@@ -39,6 +51,7 @@ public abstract class BasicRow implements Logable{
 	public void setObjPid(long objPid){
 		this.objPid=objPid;
 	}
+	
 
 	public abstract String tableName();
 	/**
@@ -70,12 +83,30 @@ public abstract class BasicRow implements Logable{
 //	public boolean isGeoChanged() {
 //		return false;
 //	}
-	
-	public OperationType getOpType() {
+	public OperationType getOpType(){
 		return opType;
 	}
 	public void setOpType(OperationType opType) {
 		this.opType = opType;
+	}
+	public OperationType getHisOpType() {
+		if(hisChangeLogs!=null&&hisChangeLogs.size()>0){
+			int size = hisChangeLogs.size();
+			//取最后一次修改
+			ChangeLog clog = hisChangeLogs.get(size-1); 
+			if(clog.getOpType().equals(OperationType.UPDATE)){
+				for(int i=0;i<(size-1);i++){
+					if(hisChangeLogs.get(i).getOpType().equals(OperationType.INSERT)){
+						return OperationType.INSERT;
+					}
+				}
+				return OperationType.UPDATE;
+			}else{
+				return clog.getOpType();
+			}
+		}else{
+			return OperationType.INITIALIZE;
+		}
 	}
 	public String getRowId() {
 		return rowId;
@@ -86,8 +117,14 @@ public abstract class BasicRow implements Logable{
 	public Map<String, Object> getOldValues() {
 		return oldValues;
 	}
-	public void setOldValues(Map<String, Object> oldValues) {
-		this.oldValues = oldValues;
+	/**
+	 * 会从历史记录中取
+	 * @param colName
+	 * @return
+	 */
+	public Object getHisOldValue(String colName){
+		//
+		return null;
 	}
 
 	/**
@@ -103,20 +140,96 @@ public abstract class BasicRow implements Logable{
 	/**
 	 * 根据OperationType生成相应的新增、删除和修改sql
 	 * @return
+	 * @throws IllegalArgumentException 
+	 * @throws IllegalAccessException 
+	 * @throws InvocationTargetException 
+	 * @throws NoSuchMethodException 
 	 */
-	protected RunnableSQL toSql(){
+	public RunnableSQL toSql() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, IllegalArgumentException{
 		RunnableSQL sql = new RunnableSQL();
 		StringBuilder sb = new StringBuilder();
 		String tbName = tableName();
 		GlmTable tab = GlmFactory.getInstance().getTableByName(tbName);
+		List<String> columnName = new ArrayList<String>();
+		List<String> columnPlaceholder = new ArrayList<String>();
+		List<Object> columnValues = new ArrayList<Object>();
 		if(OperationType.INSERT.equals(this.opType)){
-			sb.append("INSERT INTO "+tbName+"(");
-			for(Map.Entry<String, GlmColumn> entry:tab.getColumns().entrySet()){
+			sb.append("INSERT INTO "+tbName);
+			//字段信息
+			assembleColumnInfo(tab.getColumns(),columnName,columnPlaceholder,columnValues);
+			//更新记录：新增
+			columnName.add("U_RECORD");
+			columnPlaceholder.add("?");
+			columnValues.add(1);
+			
+			sb.append(" (" + StringUtils.join(columnName, ",") + ")");
+			sb.append(" VALUES (" + StringUtils.join(columnPlaceholder, ",") + ")");
+			sb.append(" WHERE ROW_ID = " + getRowId());
+		}else if(OperationType.UPDATE.equals(this.opType)){
+			if(oldValues!=null){
+				sb.append("UPDATE "+tbName + " SET ");
+				GlmTable glmTable = GlmFactory.getInstance().getTableByName(tableName());
+				Map<String,GlmColumn> updateColumns = new HashMap<String,GlmColumn>();
+				for(Entry<String, Object> entry:oldValues.entrySet()){
+					updateColumns.put(entry.getKey(), glmTable.getColumByName(entry.getKey()));
+				}
+				//字段信息
+				assembleColumnInfo(tab.getColumns(),columnName,columnPlaceholder,columnValues);
+				//更新记录：新增
+				columnName.add("U_RECORD");
+				columnPlaceholder.add("?");
+				columnValues.add(3);
 				
+				sb.append(" (" + StringUtils.join(columnName, ",") + ")");
+				sb.append(" = (" + StringUtils.join(columnPlaceholder, ",") + ")");
+				sb.append(" WHERE ROW_ID = " + getRowId());
+			}
+		}else if(OperationType.DELETE.equals(this.opType)){
+			//更新U_RECORD字段为2
+			sb.append("UPDATE "+ tbName + " SET U_RECORD = ?");
+			sb.append(" WHERE ROW_ID = " + getRowId());
+			columnValues.add(2);
+		}
+		sql.setSql(sb.toString());
+		sql.setArgs(columnValues);
+		return sql;
+	}
+	/**
+	 * @param columns
+	 * @param columnName
+	 * @param columnPlaceholder
+	 * @param columnValues
+	 * @throws IllegalArgumentException 
+	 * @throws IllegalAccessException 
+	 * @throws InvocationTargetException 
+	 * @throws NoSuchMethodException 
+	 */
+	private void assembleColumnInfo(Map<String, GlmColumn> columns, List<String> columnName,
+			List<String> columnPlaceholder, List<Object> columnValues) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, IllegalArgumentException {
+		for(Map.Entry<String, GlmColumn> entry:columns.entrySet()){
+			GlmColumn glmColumn = entry.getValue();
+			columnName.add(entry.getKey());
+			if(glmColumn.getType().equals(GlmColumn.TYPE_NUMBER)
+					||glmColumn.getType().equals(GlmColumn.TYPE_VARCHAR)
+					||glmColumn.getType().equals(GlmColumn.TYPE_RAW)){
+				columnPlaceholder.add("?");
+				//生成row_id
+				if(entry.getKey().equals("ROW_ID")){
+					columnValues.add(UuidUtils.genUuid());
+					continue;
+				}
+				columnValues.add(getAttrByColName(entry.getKey()));
+			}else if(glmColumn.getType().equals(GlmColumn.TYPE_TIMESTAMP)){
+				columnPlaceholder.add("TO_DATE(?,'yyyy-MM-dd HH24:MI:ss')");
+				columnValues.add(getAttrByColName(entry.getKey()).toString().substring(0,10));
+			}else if(glmColumn.getType().equals(GlmColumn.TYPE_GEOMETRY)){
+				columnPlaceholder.add("?");
+				//Geometry不转STRUCT
+				columnValues.add(getAttrByColName(entry.getKey()));
 			}
 		}
-		return null;
 	}
+
 	/**
 	 * colNames为空会获取全部属性值
 	 * @param colNames
@@ -234,36 +347,62 @@ public abstract class BasicRow implements Logable{
 		//colName->setter
 		String setter=colName2Setter(colName);
 		Class<?>[] argtypes = null;
-		if(newValue instanceof Integer){
-			argtypes= new Class[]{int.class};
-		}else if(newValue instanceof Double){
-			argtypes = new Class[]{double.class};
-		}else if(newValue instanceof Boolean){
-			argtypes= new Class[]{boolean.class};
-		}else if(newValue instanceof Float){
-			argtypes= new Class[]{float.class};
-		}else if(newValue instanceof Long){
-			argtypes= new Class[]{long.class};
+		//如果newValue非空，则执行setter
+		if(newValue!=null){
+			if(newValue instanceof Integer){
+				argtypes= new Class[]{int.class};
+			}else if(newValue instanceof Double){
+				argtypes = new Class[]{double.class};
+			}else if(newValue instanceof Boolean){
+				argtypes= new Class[]{boolean.class};
+			}else if(newValue instanceof Float){
+				argtypes= new Class[]{float.class};
+			}else if(newValue instanceof Long){
+				argtypes= new Class[]{long.class};
+			}else{
+				argtypes = new Class[]{newValue.getClass()};
+			}
+			Method method = this.getClass().getMethod(setter,argtypes);
+			method.invoke(this, newValue);
 		}else{
-			argtypes = new Class[]{newValue.getClass()};
+			GlmTable table = GlmFactory.getInstance().getTableByName(tableName());
+			GlmColumn column = table.getColumByName(colName);
+			if(column.getType().equals(GlmColumn.TYPE_VARCHAR)){
+				argtypes = new Class[]{String.class};	
+			}else if(column.getType().equals(GlmColumn.TYPE_GEOMETRY)){
+				argtypes = new Class[]{Geometry.class};
+			}else if(column.getType().equals(GlmColumn.TYPE_TIMESTAMP)){
+				argtypes = new Class[]{Date.class};
+			}
+			Method method = this.getClass().getMethod(setter,argtypes);
+			method.invoke(this, newValue);
 		}
-		Method method = this.getClass().getMethod(setter,argtypes);
-		method.invoke(this, newValue);
+
 	}
 	/**
 	 * 有特殊字段的表重写此方法
 	 * @param colName
 	 * @return
 	 */
+//	public String colName2Getter(String colName){
+//		StringBuilder sb = new StringBuilder();
+//		sb.append("get");
+//		for(String s:colName.split("_")){
+//			
+//			char c = s.charAt(0);
+//			c=(char)(c-32);
+//			sb.append(c);
+//			sb.append(s.substring(1, s.length()));
+//		}
+//		return sb.toString();
+//	}
 	public String colName2Getter(String colName){
 		StringBuilder sb = new StringBuilder();
 		sb.append("get");
 		for(String s:colName.split("_")){
-			
 			char c = s.charAt(0);
-			c=(char)(c-32);
 			sb.append(c);
-			sb.append(s.substring(1, s.length()));
+			sb.append(s.toLowerCase().substring(1, s.length()));
 		}
 		return sb.toString();
 	}
@@ -277,12 +416,22 @@ public abstract class BasicRow implements Logable{
 		sb.append("set");
 		for(String s:colName.split("_")){
 			char c = s.charAt(0);
-			c=(char)(c-32);
 			sb.append(c);
-			sb.append(s.substring(1, s.length()));
+			sb.append(s.toLowerCase().substring(1, s.length()));
 		}
 		return sb.toString();
 	}
+//	public String colName2Setter(String colName){
+//		StringBuilder sb = new StringBuilder();
+//		sb.append("set");
+//		for(String s:colName.split("_")){
+//			char c = s.charAt(0);
+//			c=(char)(c-32);
+//			sb.append(c);
+//			sb.append(s.substring(1, s.length()));
+//		}
+//		return sb.toString();
+//	}
 	public String identity(){
 		return rowId;
 	}

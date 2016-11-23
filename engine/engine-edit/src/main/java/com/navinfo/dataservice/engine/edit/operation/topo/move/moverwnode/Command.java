@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.edit.operation.topo.move.moverwnode;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.json.JSONException;
@@ -27,7 +28,7 @@ public class Command extends AbstractCommand {
 	private List<RwLink> links;
 
 	private RwNode updateNode;
-	
+
 	private JSONObject json;
 
 	public List<RwLink> getLinks() {
@@ -61,23 +62,34 @@ public class Command extends AbstractCommand {
 	public Command(JSONObject json, String requester) throws JSONException {
 
 		this.nodePid = json.getInt("objId");
-		
+
 		this.json = json;
 
 		JSONObject geoPoint = new JSONObject();
 
 		geoPoint.put("type", "Point");
 
-		geoPoint.put("coordinates", new double[] {json.getJSONObject("data").getDouble("longitude"),
+		geoPoint.put("coordinates", new double[] {
+				json.getJSONObject("data").getDouble("longitude"),
 				json.getJSONObject("data").getDouble("latitude") });
-		
+
 		Geometry geometry = GeoTranslator.geojson2Jts(geoPoint, 1, 5);
-		
+
 		this.longitude = geometry.getCoordinate().x;
-		
+
 		this.latitude = geometry.getCoordinate().y;
 
 		this.setDbId(json.getInt("dbId"));
+	}
+
+	public Command(JSONObject json, RwLink rwLink, RwNode node)
+			throws JSONException {
+		this(json, "");
+		List<RwLink> links = new ArrayList<>();
+		links.add(rwLink);
+		this.setLinks(links);
+		this.updateNode = node;
+
 	}
 
 	@Override

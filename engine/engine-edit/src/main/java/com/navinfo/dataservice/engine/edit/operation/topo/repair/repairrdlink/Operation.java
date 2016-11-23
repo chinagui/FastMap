@@ -300,7 +300,7 @@ public class Operation implements IOperation {
 	}
 
 	/***
-	 * 
+	 *
 	 * 处理不跨图幅功能
 	 * 
 	 * @param links
@@ -376,7 +376,7 @@ public class Operation implements IOperation {
 								GeoTranslator.jts2Geojson(subGeo), 1, 5);
 
 						List<RdLink> rdLinkds = RdLinkOperateUtils
-								.getCreateRdLinksWithMesh(geomInter, maps,
+								.getCreateRdLinksWithMesh(subGeo, maps,
 										result, this.command.getUpdateLink());
 						links.addAll(rdLinkds);
 					}
@@ -451,11 +451,6 @@ public class Operation implements IOperation {
 			}
 		}
 
-		// 维护限高限重
-		com.navinfo.dataservice.engine.edit.operation.obj.hgwg.move.Operation hgwgOperation = new com.navinfo.dataservice.engine.edit.operation.obj.hgwg.move.Operation(
-				conn);
-		hgwgOperation.moveHgwgLimit(oldLink, newLinks, result);
-
 		/*
 		 * 任何情况均需要处理的元素
 		 */
@@ -485,6 +480,14 @@ public class Operation implements IOperation {
 
 		gscOperation.repairLink(this.command.getGscList(), newLinkMap, oldLink,
 				result);
+
+		// 维护限高限重
+		com.navinfo.dataservice.engine.edit.operation.obj.hgwg.move.Operation hgwgOperation = new com.navinfo.dataservice.engine.edit.operation.obj.hgwg.move.Operation(conn);
+		hgwgOperation.moveHgwgLimit(oldLink, newLinks, result);
+
+		//维护里程桩
+		com.navinfo.dataservice.engine.edit.operation.obj.mileagepile.move.Operation maileageOperation = new com.navinfo.dataservice.engine.edit.operation.obj.mileagepile.move.Operation(conn);
+		maileageOperation.moveMileagepile(oldLink, newLinks, result);
 
 		/*
 		 * 条件以下为仅打断情况下需要处理的元素 (size < 2说明没有进行打断操作)
@@ -546,6 +549,10 @@ public class Operation implements IOperation {
 		com.navinfo.dataservice.engine.edit.operation.obj.rdvariablespeed.update.Operation variableSpeedOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdvariablespeed.update.Operation(
 				this.conn);
 		variableSpeedOperation.breakLine(oldLink, newLinks, result);
+		// 详细车道维护
+        com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation rdlaneOperation = new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation(this.conn);
+        rdlaneOperation.breakRdLink(oldLink.getPid(), newLinks, result);
+
 
 	}
 

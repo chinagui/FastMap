@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.editplus.model;
 
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.Point;
 
 /**
  * 
@@ -28,37 +29,55 @@ public abstract class AbstractIx extends BasicRow {
 		return pid;
 	}
 	public void setPid(long pid) {
-		this.pid = pid;
+		if(this.checkValue("PID",this.pid,pid)){
+			this.pid = pid;
+		}
 	}
 	public Geometry getGeometry() {
 		return geometry;
 	}
-	public void setGeometry(Geometry geometry) {
-		this.geometry = geometry;
+	public void setGeometry(Point geometry) {
+		if(this.checkValue("GEOMETRY",this.geometry,geometry)){
+			this.geometry = geometry;
+		}
 	}
-	public double getxGuide() {
+	public void setGeometry(Geometry geometry) {
+		if(this.checkValue("GEOMETRY",this.geometry,geometry)){
+			this.geometry = geometry;
+		}
+	}
+
+	public double getXGuide() {
 		return xGuide;
 	}
-	public void setxGuide(double xGuide) {
-		this.xGuide = xGuide;
+	public void setXGuide(double xGuide) {
+		if(this.checkValue("X_GUIDE",this.xGuide,xGuide)){
+			this.xGuide = xGuide;
+		}
 	}
-	public double getyGuide() {
+	public double getYGuide() {
 		return yGuide;
 	}
-	public void setyGuide(double yGuide) {
-		this.yGuide = yGuide;
+	public void setYGuide(double yGuide) {
+		if(this.checkValue("Y_GUIDE",this.yGuide,yGuide)){
+			this.yGuide = yGuide;
+		}
 	}
 	public long getLinkPid() {
 		return linkPid;
 	}
 	public void setLinkPid(long linkPid) {
-		this.linkPid = linkPid;
+		if(this.checkValue("LINK_PID",this.linkPid,linkPid)){
+			this.linkPid = linkPid;
+		}
 	}
 	public int getMeshId() {
 		return meshId;
 	}
 	public void setMeshId(int meshId) {
-		this.meshId = meshId;
+		if(this.checkValue("MESH_ID",this.meshId,meshId)){
+			this.meshId = meshId;
+		}
 	}
 
 }

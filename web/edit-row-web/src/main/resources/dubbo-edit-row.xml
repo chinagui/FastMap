@@ -9,4 +9,6 @@ xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
 	<dubbo:reference id="manApi" interface="com.navinfo.dataservice.api.man.iface.ManApi" timeout="5000"/>
 	<dubbo:reference id="jobApi" interface="com.navinfo.dataservice.api.job.iface.JobApi" timeout="5000"/>
 	<dubbo:reference id="metadataApi" interface="com.navinfo.dataservice.api.metadata.iface.MetadataApi" timeout="5000"/>
+	
+	<dubbo:service interface="com.navinfo.dataservice.api.edit.iface.SyncApi" ref="syncApi" />
 </beans>

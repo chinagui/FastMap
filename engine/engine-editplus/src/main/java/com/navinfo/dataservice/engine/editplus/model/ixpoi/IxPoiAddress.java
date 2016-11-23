@@ -11,7 +11,7 @@ import com.navinfo.dataservice.engine.editplus.model.BasicRow;
 /** 
 * @ClassName:  IxPoiAddress 
 * @author code generator
-* @date 2016-11-16 02:30:36 
+* @date 2016-11-18 11:27:08 
 * @Description: TODO
 */
 public class IxPoiAddress extends BasicRow {
@@ -19,7 +19,7 @@ public class IxPoiAddress extends BasicRow {
 	protected long nameGroupid ;
 	protected long poiPid ;
 	protected String langCode ;
-	protected Integer srcFlag ;
+	protected int srcFlag ;
 	protected String fullname ;
 	protected String fullnamePhonetic ;
 	protected String roadname ;
@@ -62,9 +62,6 @@ public class IxPoiAddress extends BasicRow {
 	protected String unitPhonetic ;
 	protected String roomPhonetic ;
 	protected String addonsPhonetic ;
-//	protected Integer uRecord ;
-//	protected String uFields ;
-//	protected String uDate ;
 	
 	public IxPoiAddress (long objPid){
 		super(objPid);
@@ -73,303 +70,379 @@ public class IxPoiAddress extends BasicRow {
 	public long getNameId() {
 		return nameId;
 	}
-	protected void setNameId(long nameId) {
-		this.nameId = nameId;
+	public void setNameId(long nameId) {
+		if(this.checkValue("NAME_ID",this.nameId,nameId)){
+			this.nameId = nameId;
+		}
 	}
 	public long getNameGroupid() {
 		return nameGroupid;
 	}
-	protected void setNameGroupid(long nameGroupid) {
-		this.nameGroupid = nameGroupid;
+	public void setNameGroupid(long nameGroupid) {
+		if(this.checkValue("NAME_GROUPID",this.nameGroupid,nameGroupid)){
+			this.nameGroupid = nameGroupid;
+		}
 	}
 	public long getPoiPid() {
 		return poiPid;
 	}
-	protected void setPoiPid(long poiPid) {
-		this.poiPid = poiPid;
+	public void setPoiPid(long poiPid) {
+		if(this.checkValue("POI_PID",this.poiPid,poiPid)){
+			this.poiPid = poiPid;
+		}
 	}
 	public String getLangCode() {
 		return langCode;
 	}
-	protected void setLangCode(String langCode) {
-		this.langCode = langCode;
+	public void setLangCode(String langCode) {
+		if(this.checkValue("LANG_CODE",this.langCode,langCode)){
+			this.langCode = langCode;
+		}
 	}
-	public Integer getSrcFlag() {
+	public int getSrcFlag() {
 		return srcFlag;
 	}
-	protected void setSrcFlag(Integer srcFlag) {
-		this.srcFlag = srcFlag;
+	public void setSrcFlag(int srcFlag) {
+		if(this.checkValue("SRC_FLAG",this.srcFlag,srcFlag)){
+			this.srcFlag = srcFlag;
+		}
 	}
 	public String getFullname() {
 		return fullname;
 	}
-	protected void setFullname(String fullname) {
-		this.fullname = fullname;
+	public void setFullname(String fullname) {
+		if(this.checkValue("FULLNAME",this.fullname,fullname)){
+			this.fullname = fullname;
+		}
 	}
 	public String getFullnamePhonetic() {
 		return fullnamePhonetic;
 	}
-	protected void setFullnamePhonetic(String fullnamePhonetic) {
-		this.fullnamePhonetic = fullnamePhonetic;
+	public void setFullnamePhonetic(String fullnamePhonetic) {
+		if(this.checkValue("FULLNAME_PHONETIC",this.fullnamePhonetic,fullnamePhonetic)){
+			this.fullnamePhonetic = fullnamePhonetic;
+		}
 	}
 	public String getRoadname() {
 		return roadname;
 	}
-	protected void setRoadname(String roadname) {
-		this.roadname = roadname;
+	public void setRoadname(String roadname) {
+		if(this.checkValue("ROADNAME",this.roadname,roadname)){
+			this.roadname = roadname;
+		}
 	}
 	public String getRoadnamePhonetic() {
 		return roadnamePhonetic;
 	}
-	protected void setRoadnamePhonetic(String roadnamePhonetic) {
-		this.roadnamePhonetic = roadnamePhonetic;
+	public void setRoadnamePhonetic(String roadnamePhonetic) {
+		if(this.checkValue("ROADNAME_PHONETIC",this.roadnamePhonetic,roadnamePhonetic)){
+			this.roadnamePhonetic = roadnamePhonetic;
+		}
 	}
 	public String getAddrname() {
 		return addrname;
 	}
-	protected void setAddrname(String addrname) {
-		this.addrname = addrname;
+	public void setAddrname(String addrname) {
+		if(this.checkValue("ADDRNAME",this.addrname,addrname)){
+			this.addrname = addrname;
+		}
 	}
 	public String getAddrnamePhonetic() {
 		return addrnamePhonetic;
 	}
-	protected void setAddrnamePhonetic(String addrnamePhonetic) {
-		this.addrnamePhonetic = addrnamePhonetic;
+	public void setAddrnamePhonetic(String addrnamePhonetic) {
+		if(this.checkValue("ADDRNAME_PHONETIC",this.addrnamePhonetic,addrnamePhonetic)){
+			this.addrnamePhonetic = addrnamePhonetic;
+		}
 	}
 	public String getProvince() {
 		return province;
 	}
-	protected void setProvince(String province) {
-		this.province = province;
+	public void setProvince(String province) {
+		if(this.checkValue("PROVINCE",this.province,province)){
+			this.province = province;
+		}
 	}
 	public String getCity() {
 		return city;
 	}
-	protected void setCity(String city) {
-		this.city = city;
+	public void setCity(String city) {
+		if(this.checkValue("CITY",this.city,city)){
+			this.city = city;
+		}
 	}
 	public String getCounty() {
 		return county;
 	}
-	protected void setCounty(String county) {
-		this.county = county;
+	public void setCounty(String county) {
+		if(this.checkValue("COUNTY",this.county,county)){
+			this.county = county;
+		}
 	}
 	public String getTown() {
 		return town;
 	}
-	protected void setTown(String town) {
-		this.town = town;
+	public void setTown(String town) {
+		if(this.checkValue("TOWN",this.town,town)){
+			this.town = town;
+		}
 	}
 	public String getPlace() {
 		return place;
 	}
-	protected void setPlace(String place) {
-		this.place = place;
+	public void setPlace(String place) {
+		if(this.checkValue("PLACE",this.place,place)){
+			this.place = place;
+		}
 	}
 	public String getStreet() {
 		return street;
 	}
-	protected void setStreet(String street) {
-		this.street = street;
+	public void setStreet(String street) {
+		if(this.checkValue("STREET",this.street,street)){
+			this.street = street;
+		}
 	}
 	public String getLandmark() {
 		return landmark;
 	}
-	protected void setLandmark(String landmark) {
-		this.landmark = landmark;
+	public void setLandmark(String landmark) {
+		if(this.checkValue("LANDMARK",this.landmark,landmark)){
+			this.landmark = landmark;
+		}
 	}
 	public String getPrefix() {
 		return prefix;
 	}
-	protected void setPrefix(String prefix) {
-		this.prefix = prefix;
+	public void setPrefix(String prefix) {
+		if(this.checkValue("PREFIX",this.prefix,prefix)){
+			this.prefix = prefix;
+		}
 	}
 	public String getHousenum() {
 		return housenum;
 	}
-	protected void setHousenum(String housenum) {
-		this.housenum = housenum;
+	public void setHousenum(String housenum) {
+		if(this.checkValue("HOUSENUM",this.housenum,housenum)){
+			this.housenum = housenum;
+		}
 	}
 	public String getType() {
 		return type;
 	}
-	protected void setType(String type) {
-		this.type = type;
+	public void setType(String type) {
+		if(this.checkValue("TYPE",this.type,type)){
+			this.type = type;
+		}
 	}
 	public String getSubnum() {
 		return subnum;
 	}
-	protected void setSubnum(String subnum) {
-		this.subnum = subnum;
+	public void setSubnum(String subnum) {
+		if(this.checkValue("SUBNUM",this.subnum,subnum)){
+			this.subnum = subnum;
+		}
 	}
 	public String getSurfix() {
 		return surfix;
 	}
-	protected void setSurfix(String surfix) {
-		this.surfix = surfix;
+	public void setSurfix(String surfix) {
+		if(this.checkValue("SURFIX",this.surfix,surfix)){
+			this.surfix = surfix;
+		}
 	}
 	public String getEstab() {
 		return estab;
 	}
-	protected void setEstab(String estab) {
-		this.estab = estab;
+	public void setEstab(String estab) {
+		if(this.checkValue("ESTAB",this.estab,estab)){
+			this.estab = estab;
+		}
 	}
 	public String getBuilding() {
 		return building;
 	}
-	protected void setBuilding(String building) {
-		this.building = building;
+	public void setBuilding(String building) {
+		if(this.checkValue("BUILDING",this.building,building)){
+			this.building = building;
+		}
 	}
 	public String getFloor() {
 		return floor;
 	}
-	protected void setFloor(String floor) {
-		this.floor = floor;
+	public void setFloor(String floor) {
+		if(this.checkValue("FLOOR",this.floor,floor)){
+			this.floor = floor;
+		}
 	}
 	public String getUnit() {
 		return unit;
 	}
-	protected void setUnit(String unit) {
-		this.unit = unit;
+	public void setUnit(String unit) {
+		if(this.checkValue("UNIT",this.unit,unit)){
+			this.unit = unit;
+		}
 	}
 	public String getRoom() {
 		return room;
 	}
-	protected void setRoom(String room) {
-		this.room = room;
+	public void setRoom(String room) {
+		if(this.checkValue("ROOM",this.room,room)){
+			this.room = room;
+		}
 	}
 	public String getAddons() {
 		return addons;
 	}
-	protected void setAddons(String addons) {
-		this.addons = addons;
+	public void setAddons(String addons) {
+		if(this.checkValue("ADDONS",this.addons,addons)){
+			this.addons = addons;
+		}
 	}
 	public String getProvPhonetic() {
 		return provPhonetic;
 	}
-	protected void setProvPhonetic(String provPhonetic) {
-		this.provPhonetic = provPhonetic;
+	public void setProvPhonetic(String provPhonetic) {
+		if(this.checkValue("PROV_PHONETIC",this.provPhonetic,provPhonetic)){
+			this.provPhonetic = provPhonetic;
+		}
 	}
 	public String getCityPhonetic() {
 		return cityPhonetic;
 	}
-	protected void setCityPhonetic(String cityPhonetic) {
-		this.cityPhonetic = cityPhonetic;
+	public void setCityPhonetic(String cityPhonetic) {
+		if(this.checkValue("CITY_PHONETIC",this.cityPhonetic,cityPhonetic)){
+			this.cityPhonetic = cityPhonetic;
+		}
 	}
 	public String getCountyPhonetic() {
 		return countyPhonetic;
 	}
-	protected void setCountyPhonetic(String countyPhonetic) {
-		this.countyPhonetic = countyPhonetic;
+	public void setCountyPhonetic(String countyPhonetic) {
+		if(this.checkValue("COUNTY_PHONETIC",this.countyPhonetic,countyPhonetic)){
+			this.countyPhonetic = countyPhonetic;
+		}
 	}
 	public String getTownPhonetic() {
 		return townPhonetic;
 	}
-	protected void setTownPhonetic(String townPhonetic) {
-		this.townPhonetic = townPhonetic;
+	public void setTownPhonetic(String townPhonetic) {
+		if(this.checkValue("TOWN_PHONETIC",this.townPhonetic,townPhonetic)){
+			this.townPhonetic = townPhonetic;
+		}
 	}
 	public String getStreetPhonetic() {
 		return streetPhonetic;
 	}
-	protected void setStreetPhonetic(String streetPhonetic) {
-		this.streetPhonetic = streetPhonetic;
+	public void setStreetPhonetic(String streetPhonetic) {
+		if(this.checkValue("STREET_PHONETIC",this.streetPhonetic,streetPhonetic)){
+			this.streetPhonetic = streetPhonetic;
+		}
 	}
 	public String getPlacePhonetic() {
 		return placePhonetic;
 	}
-	protected void setPlacePhonetic(String placePhonetic) {
-		this.placePhonetic = placePhonetic;
+	public void setPlacePhonetic(String placePhonetic) {
+		if(this.checkValue("PLACE_PHONETIC",this.placePhonetic,placePhonetic)){
+			this.placePhonetic = placePhonetic;
+		}
 	}
 	public String getLandmarkPhonetic() {
 		return landmarkPhonetic;
 	}
-	protected void setLandmarkPhonetic(String landmarkPhonetic) {
-		this.landmarkPhonetic = landmarkPhonetic;
+	public void setLandmarkPhonetic(String landmarkPhonetic) {
+		if(this.checkValue("LANDMARK_PHONETIC",this.landmarkPhonetic,landmarkPhonetic)){
+			this.landmarkPhonetic = landmarkPhonetic;
+		}
 	}
 	public String getPrefixPhonetic() {
 		return prefixPhonetic;
 	}
-	protected void setPrefixPhonetic(String prefixPhonetic) {
-		this.prefixPhonetic = prefixPhonetic;
+	public void setPrefixPhonetic(String prefixPhonetic) {
+		if(this.checkValue("PREFIX_PHONETIC",this.prefixPhonetic,prefixPhonetic)){
+			this.prefixPhonetic = prefixPhonetic;
+		}
 	}
 	public String getHousenumPhonetic() {
 		return housenumPhonetic;
 	}
-	protected void setHousenumPhonetic(String housenumPhonetic) {
-		this.housenumPhonetic = housenumPhonetic;
+	public void setHousenumPhonetic(String housenumPhonetic) {
+		if(this.checkValue("HOUSENUM_PHONETIC",this.housenumPhonetic,housenumPhonetic)){
+			this.housenumPhonetic = housenumPhonetic;
+		}
 	}
 	public String getTypePhonetic() {
 		return typePhonetic;
 	}
-	protected void setTypePhonetic(String typePhonetic) {
-		this.typePhonetic = typePhonetic;
+	public void setTypePhonetic(String typePhonetic) {
+		if(this.checkValue("TYPE_PHONETIC",this.typePhonetic,typePhonetic)){
+			this.typePhonetic = typePhonetic;
+		}
 	}
 	public String getSubnumPhonetic() {
 		return subnumPhonetic;
 	}
-	protected void setSubnumPhonetic(String subnumPhonetic) {
-		this.subnumPhonetic = subnumPhonetic;
+	public void setSubnumPhonetic(String subnumPhonetic) {
+		if(this.checkValue("SUBNUM_PHONETIC",this.subnumPhonetic,subnumPhonetic)){
+			this.subnumPhonetic = subnumPhonetic;
+		}
 	}
 	public String getSurfixPhonetic() {
 		return surfixPhonetic;
 	}
-	protected void setSurfixPhonetic(String surfixPhonetic) {
-		this.surfixPhonetic = surfixPhonetic;
+	public void setSurfixPhonetic(String surfixPhonetic) {
+		if(this.checkValue("SURFIX_PHONETIC",this.surfixPhonetic,surfixPhonetic)){
+			this.surfixPhonetic = surfixPhonetic;
+		}
 	}
 	public String getEstabPhonetic() {
 		return estabPhonetic;
 	}
-	protected void setEstabPhonetic(String estabPhonetic) {
-		this.estabPhonetic = estabPhonetic;
+	public void setEstabPhonetic(String estabPhonetic) {
+		if(this.checkValue("ESTAB_PHONETIC",this.estabPhonetic,estabPhonetic)){
+			this.estabPhonetic = estabPhonetic;
+		}
 	}
 	public String getBuildingPhonetic() {
 		return buildingPhonetic;
 	}
-	protected void setBuildingPhonetic(String buildingPhonetic) {
-		this.buildingPhonetic = buildingPhonetic;
+	public void setBuildingPhonetic(String buildingPhonetic) {
+		if(this.checkValue("BUILDING_PHONETIC",this.buildingPhonetic,buildingPhonetic)){
+			this.buildingPhonetic = buildingPhonetic;
+		}
 	}
 	public String getFloorPhonetic() {
 		return floorPhonetic;
 	}
-	protected void setFloorPhonetic(String floorPhonetic) {
-		this.floorPhonetic = floorPhonetic;
+	public void setFloorPhonetic(String floorPhonetic) {
+		if(this.checkValue("FLOOR_PHONETIC",this.floorPhonetic,floorPhonetic)){
+			this.floorPhonetic = floorPhonetic;
+		}
 	}
 	public String getUnitPhonetic() {
 		return unitPhonetic;
 	}
-	protected void setUnitPhonetic(String unitPhonetic) {
-		this.unitPhonetic = unitPhonetic;
+	public void setUnitPhonetic(String unitPhonetic) {
+		if(this.checkValue("UNIT_PHONETIC",this.unitPhonetic,unitPhonetic)){
+			this.unitPhonetic = unitPhonetic;
+		}
 	}
 	public String getRoomPhonetic() {
 		return roomPhonetic;
 	}
-	protected void setRoomPhonetic(String roomPhonetic) {
-		this.roomPhonetic = roomPhonetic;
+	public void setRoomPhonetic(String roomPhonetic) {
+		if(this.checkValue("ROOM_PHONETIC",this.roomPhonetic,roomPhonetic)){
+			this.roomPhonetic = roomPhonetic;
+		}
 	}
 	public String getAddonsPhonetic() {
 		return addonsPhonetic;
 	}
-	protected void setAddonsPhonetic(String addonsPhonetic) {
-		this.addonsPhonetic = addonsPhonetic;
+	public void setAddonsPhonetic(String addonsPhonetic) {
+		if(this.checkValue("ADDONS_PHONETIC",this.addonsPhonetic,addonsPhonetic)){
+			this.addonsPhonetic = addonsPhonetic;
+		}
 	}
-//	public Integer getURecord() {
-//		return uRecord;
-//	}
-//	protected void setURecord(Integer uRecord) {
-//		this.uRecord = uRecord;
-//	}
-//	public String getUFields() {
-//		return uFields;
-//	}
-//	protected void setUFields(String uFields) {
-//		this.uFields = uFields;
-//	}
-//	public String getUDate() {
-//		return uDate;
-//	}
-//	protected void setUDate(String uDate) {
-//		this.uDate = uDate;
-//	}
 	
 	@Override
 	public String tableName() {

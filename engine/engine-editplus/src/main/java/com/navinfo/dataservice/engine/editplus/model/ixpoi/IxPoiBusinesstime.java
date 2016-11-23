@@ -11,7 +11,7 @@ import com.navinfo.dataservice.engine.editplus.model.BasicRow;
 /** 
 * @ClassName:  IxPoiBusinesstime 
 * @author code generator
-* @date 2016-11-16 06:00:15 
+* @date 2016-11-18 11:33:55 
 * @Description: TODO
 */
 public class IxPoiBusinesstime extends BasicRow {
@@ -29,9 +29,6 @@ public class IxPoiBusinesstime extends BasicRow {
 	protected String timeDur ;
 	protected String reserved ;
 	protected String memo ;
-//	protected Integer uRecord ;
-//	protected String uFields ;
-//	protected String uDate ;
 	
 	public IxPoiBusinesstime (long objPid){
 		super(objPid);
@@ -40,105 +37,115 @@ public class IxPoiBusinesstime extends BasicRow {
 	public long getPoiPid() {
 		return poiPid;
 	}
-	protected void setPoiPid(long poiPid) {
-		this.poiPid = poiPid;
+	public void setPoiPid(long poiPid) {
+		if(this.checkValue("POI_PID",this.poiPid,poiPid)){
+			this.poiPid = poiPid;
+		}
 	}
 	public String getMonSrt() {
 		return monSrt;
 	}
-	protected void setMonSrt(String monSrt) {
-		this.monSrt = monSrt;
+	public void setMonSrt(String monSrt) {
+		if(this.checkValue("MON_SRT",this.monSrt,monSrt)){
+			this.monSrt = monSrt;
+		}
 	}
 	public String getMonEnd() {
 		return monEnd;
 	}
-	protected void setMonEnd(String monEnd) {
-		this.monEnd = monEnd;
+	public void setMonEnd(String monEnd) {
+		if(this.checkValue("MON_END",this.monEnd,monEnd)){
+			this.monEnd = monEnd;
+		}
 	}
 	public String getWeekInYearSrt() {
 		return weekInYearSrt;
 	}
-	protected void setWeekInYearSrt(String weekInYearSrt) {
-		this.weekInYearSrt = weekInYearSrt;
+	public void setWeekInYearSrt(String weekInYearSrt) {
+		if(this.checkValue("WEEK_IN_YEAR_SRT",this.weekInYearSrt,weekInYearSrt)){
+			this.weekInYearSrt = weekInYearSrt;
+		}
 	}
 	public String getWeekInYearEnd() {
 		return weekInYearEnd;
 	}
-	protected void setWeekInYearEnd(String weekInYearEnd) {
-		this.weekInYearEnd = weekInYearEnd;
+	public void setWeekInYearEnd(String weekInYearEnd) {
+		if(this.checkValue("WEEK_IN_YEAR_END",this.weekInYearEnd,weekInYearEnd)){
+			this.weekInYearEnd = weekInYearEnd;
+		}
 	}
 	public String getWeekInMonthSrt() {
 		return weekInMonthSrt;
 	}
-	protected void setWeekInMonthSrt(String weekInMonthSrt) {
-		this.weekInMonthSrt = weekInMonthSrt;
+	public void setWeekInMonthSrt(String weekInMonthSrt) {
+		if(this.checkValue("WEEK_IN_MONTH_SRT",this.weekInMonthSrt,weekInMonthSrt)){
+			this.weekInMonthSrt = weekInMonthSrt;
+		}
 	}
 	public String getWeekInMonthEnd() {
 		return weekInMonthEnd;
 	}
-	protected void setWeekInMonthEnd(String weekInMonthEnd) {
-		this.weekInMonthEnd = weekInMonthEnd;
+	public void setWeekInMonthEnd(String weekInMonthEnd) {
+		if(this.checkValue("WEEK_IN_MONTH_END",this.weekInMonthEnd,weekInMonthEnd)){
+			this.weekInMonthEnd = weekInMonthEnd;
+		}
 	}
 	public String getValidWeek() {
 		return validWeek;
 	}
-	protected void setValidWeek(String validWeek) {
-		this.validWeek = validWeek;
+	public void setValidWeek(String validWeek) {
+		if(this.checkValue("VALID_WEEK",this.validWeek,validWeek)){
+			this.validWeek = validWeek;
+		}
 	}
 	public String getDaySrt() {
 		return daySrt;
 	}
-	protected void setDaySrt(String daySrt) {
-		this.daySrt = daySrt;
+	public void setDaySrt(String daySrt) {
+		if(this.checkValue("DAY_SRT",this.daySrt,daySrt)){
+			this.daySrt = daySrt;
+		}
 	}
 	public String getDayEnd() {
 		return dayEnd;
 	}
-	protected void setDayEnd(String dayEnd) {
-		this.dayEnd = dayEnd;
+	public void setDayEnd(String dayEnd) {
+		if(this.checkValue("DAY_END",this.dayEnd,dayEnd)){
+			this.dayEnd = dayEnd;
+		}
 	}
 	public String getTimeSrt() {
 		return timeSrt;
 	}
-	protected void setTimeSrt(String timeSrt) {
-		this.timeSrt = timeSrt;
+	public void setTimeSrt(String timeSrt) {
+		if(this.checkValue("TIME_SRT",this.timeSrt,timeSrt)){
+			this.timeSrt = timeSrt;
+		}
 	}
 	public String getTimeDur() {
 		return timeDur;
 	}
-	protected void setTimeDur(String timeDur) {
-		this.timeDur = timeDur;
+	public void setTimeDur(String timeDur) {
+		if(this.checkValue("TIME_DUR",this.timeDur,timeDur)){
+			this.timeDur = timeDur;
+		}
 	}
 	public String getReserved() {
 		return reserved;
 	}
-	protected void setReserved(String reserved) {
-		this.reserved = reserved;
+	public void setReserved(String reserved) {
+		if(this.checkValue("RESERVED",this.reserved,reserved)){
+			this.reserved = reserved;
+		}
 	}
 	public String getMemo() {
 		return memo;
 	}
-	protected void setMemo(String memo) {
-		this.memo = memo;
+	public void setMemo(String memo) {
+		if(this.checkValue("MEMO",this.memo,memo)){
+			this.memo = memo;
+		}
 	}
-//	public Integer getURecord() {
-//		return uRecord;
-//	}
-//	protected void setURecord(Integer uRecord) {
-//		this.uRecord = uRecord;
-//	}
-//	public String getUFields() {
-//		return uFields;
-//	}
-//	protected void setUFields(String uFields) {
-//		this.uFields = uFields;
-//	}
-//	public String getUDate() {
-//		return uDate;
-//	}
-//	protected void setUDate(String uDate) {
-//		this.uDate = uDate;
-//	}
 	
 	@Override
 	public String tableName() {

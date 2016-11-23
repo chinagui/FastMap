@@ -272,6 +272,9 @@ public class Transaction {
                     case REPAIR:
                         return new com.navinfo.dataservice.engine.edit.operation.topo.repair.repairadlink.Command(
                                 json, requester);
+                    case DEPART:
+                        return new com.navinfo.dataservice.engine.edit.operation.topo.depart.departadnode.Command(
+                                json, requester);
                 }
             case ADFACE:
                 switch (operType) {
@@ -359,6 +362,9 @@ public class Transaction {
                     case BREAK:
                         return new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrwpoint.Command(
                                 json, requester);
+                    case DEPART:
+                        return new com.navinfo.dataservice.engine.edit.operation.topo.depart.departrwnode.Command(
+                                json, requester);
                 }
             case ZONENODE:
                 switch (operType) {
@@ -391,6 +397,9 @@ public class Transaction {
                                 json, requester);
                     case REPAIR:
                         return new com.navinfo.dataservice.engine.edit.operation.topo.repair.repairzonelink.Command(
+                                json, requester);
+                    case DEPART:
+                        return new com.navinfo.dataservice.engine.edit.operation.topo.depart.departzonenode.Command(
                                 json, requester);
                 }
             case ZONEFACE:
@@ -433,6 +442,9 @@ public class Transaction {
                                 json, requester);
                     case REPAIR:
                         return new com.navinfo.dataservice.engine.edit.operation.topo.repair.repairlulink.Command(
+                                json, requester);
+                    case DEPART:
+                        return new com.navinfo.dataservice.engine.edit.operation.topo.depart.departlunode.Command(
                                 json, requester);
                 }
             case LUFACE:
@@ -478,6 +490,9 @@ public class Transaction {
                                 json, requester);
                     case REPAIR:
                         return new com.navinfo.dataservice.engine.edit.operation.topo.repair.repairlclink.Command(
+                                json, requester);
+                    case DEPART:
+                        return new com.navinfo.dataservice.engine.edit.operation.topo.depart.departlcnode.Command(
                                 json, requester);
                 }
             case LCFACE:
@@ -1011,6 +1026,10 @@ public class Transaction {
                     case REPAIR:
                         return new com.navinfo.dataservice.engine.edit.operation.topo.repair.repairadlink.Process(
                                 command);
+                    case DEPART:
+                        return new com.navinfo.dataservice.engine.edit.operation.topo.depart.departadnode.Process(
+                                command);
+               
                 }
             case ADFACE:
                 switch (operType) {
@@ -1097,6 +1116,9 @@ public class Transaction {
                     case BREAK:
                         return new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrwpoint.Process(
                                 command);
+                    case DEPART:
+                        return new com.navinfo.dataservice.engine.edit.operation.topo.depart.departrwnode.Process(
+                                command);
                 }
 
             case ZONENODE:
@@ -1130,6 +1152,9 @@ public class Transaction {
                                 command);
                     case REPAIR:
                         return new com.navinfo.dataservice.engine.edit.operation.topo.repair.repairzonelink.Process(
+                                command);
+                    case DEPART:
+                        return new com.navinfo.dataservice.engine.edit.operation.topo.depart.departzonenode.Process(
                                 command);
                 }
             case ZONEFACE:
@@ -1172,6 +1197,9 @@ public class Transaction {
                                 command);
                     case REPAIR:
                         return new com.navinfo.dataservice.engine.edit.operation.topo.repair.repairlulink.Process(
+                                command);
+                    case DEPART:
+                        return new com.navinfo.dataservice.engine.edit.operation.topo.depart.departlunode.Process(
                                 command);
                 }
             case LUFACE:
@@ -1387,6 +1415,9 @@ public class Transaction {
                                 command);
                     case REPAIR:
                         return new com.navinfo.dataservice.engine.edit.operation.topo.repair.repairlclink.Process(
+                                command);
+                    case DEPART:
+                        return new com.navinfo.dataservice.engine.edit.operation.topo.depart.departlcnode.Process(
                                 command);
                 }
             case LCFACE:

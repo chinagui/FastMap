@@ -535,7 +535,7 @@ public class Operation implements IOperation {
                 }
             }
             // 创建交限时间段和车辆限制信息
-            if (StringUtils.isNotEmpty(command.getRestricType()) && "CONDITION".equals(command.getRestricType())) {
+            if (command.getRestricType() == 1) {
                 detail.setConditions(createRdRestrictionConditions(detail));
             }
         }

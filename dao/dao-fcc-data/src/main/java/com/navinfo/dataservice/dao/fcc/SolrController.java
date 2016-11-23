@@ -74,9 +74,10 @@ public class SolrController {
 		client.add(doc);
 
 		client.commit();
+		
 	}
 
-	public boolean checkTipsMobile(String wkt, String date)
+	public boolean checkTipsMobile(String wkt, String date, int[] notExpSourceType)
 			throws SolrServerException, IOException {
 
 	   String param = "wkt:\"intersects(" + wkt + ")\"";
@@ -84,6 +85,21 @@ public class SolrController {
         if (date != null && !date.equals("")) {
             param += " AND t_date:[" + date + " TO *]";
         }
+        
+    	//过滤的类型
+		//  1. 示例：TITLE:(* NOT "上网费用高" NOT "宽带收费不合理" )  
+		if(notExpSourceType!=null&&notExpSourceType.length!=0){
+			String typeStr="( *";
+			for (int type : notExpSourceType) {
+				typeStr+=" NOT \""+type+"\"";
+			}
+			typeStr+=")";
+			
+			param += " AND s_sourceType:"+typeStr;
+			
+			//System.out.println(param);
+			
+		}
 
 		SolrQuery query = new SolrQuery();
 
@@ -108,7 +124,7 @@ public class SolrController {
 		}
 	}
 
-	public List<String> queryTipsMobile(String wkt, String date)
+	public List<String> queryTipsMobile(String wkt, String date, int[] notExpSourceType)
 			throws SolrServerException, IOException {
 		List<String> rowkeys = new ArrayList<String>();
 
@@ -116,6 +132,21 @@ public class SolrController {
 
 		if (date != null && !date.equals("")) {
 			param += " AND t_date:[" + date + " TO *]";
+		}
+		
+		//过滤的类型
+		//  1. 示例：TITLE:(* NOT "上网费用高" NOT "宽带收费不合理" )  
+		if(notExpSourceType!=null&&notExpSourceType.length!=0){
+			String typeStr="( *";
+			for (int type : notExpSourceType) {
+				typeStr+=" NOT \""+type+"\"";
+			}
+			typeStr+=")";
+			
+			param += " AND s_sourceType:"+typeStr;
+			
+			//System.out.println(param);
+			
 		}
 
 		SolrQuery query = new SolrQuery();
@@ -528,6 +559,22 @@ public class SolrController {
 		}
 
 		return sb.toString();
+	}
+
+	/**
+	 * @Description:TOOD
+	 * @param rowkey
+	 * @author: y
+	 * @throws IOException 
+	 * @throws SolrServerException 
+	 * @time:2016-11-16 下午5:26:52
+	 */
+	public void deleteByRowkey(String rowkey) throws SolrServerException, IOException {
+		
+		client.deleteById(rowkey);
+		
+		client.commit();
+		
 	}
 
 }

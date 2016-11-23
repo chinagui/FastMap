@@ -11,7 +11,7 @@ import com.navinfo.dataservice.engine.editplus.model.BasicRow;
 /** 
 * @ClassName:  IxPoiAudio 
 * @author code generator
-* @date 2016-11-16 01:53:33 
+* @date 2016-11-18 11:31:27 
 * @Description: TODO
 */
 public class IxPoiAudio extends BasicRow {
@@ -20,10 +20,7 @@ public class IxPoiAudio extends BasicRow {
 	protected String pid ;
 	protected String status ;
 	protected String memo ;
-	protected Integer tag ;
-//	protected Integer uRecord ;
-//	protected String uFields ;
-//	protected String uDate ;
+	protected int tag ;
 	
 	public IxPoiAudio (long objPid){
 		super(objPid);
@@ -32,58 +29,51 @@ public class IxPoiAudio extends BasicRow {
 	public long getPoiPid() {
 		return poiPid;
 	}
-	protected void setPoiPid(long poiPid) {
-		this.poiPid = poiPid;
+	public void setPoiPid(long poiPid) {
+		if(this.checkValue("POI_PID",this.poiPid,poiPid)){
+			this.poiPid = poiPid;
+		}
 	}
 	public long getAudioId() {
 		return audioId;
 	}
-	protected void setAudioId(long audioId) {
-		this.audioId = audioId;
+	public void setAudioId(long audioId) {
+		if(this.checkValue("AUDIO_ID",this.audioId,audioId)){
+			this.audioId = audioId;
+		}
 	}
 	public String getPid() {
 		return pid;
 	}
-	protected void setPid(String pid) {
-		this.pid = pid;
+	public void setPid(String pid) {
+		if(this.checkValue("PID",this.pid,pid)){
+			this.pid = pid;
+		}
 	}
 	public String getStatus() {
 		return status;
 	}
-	protected void setStatus(String status) {
-		this.status = status;
+	public void setStatus(String status) {
+		if(this.checkValue("STATUS",this.status,status)){
+			this.status = status;
+		}
 	}
 	public String getMemo() {
 		return memo;
 	}
-	protected void setMemo(String memo) {
-		this.memo = memo;
+	public void setMemo(String memo) {
+		if(this.checkValue("MEMO",this.memo,memo)){
+			this.memo = memo;
+		}
 	}
-	public Integer getTag() {
+	public int getTag() {
 		return tag;
 	}
-	protected void setTag(Integer tag) {
-		this.tag = tag;
+	public void setTag(int tag) {
+		if(this.checkValue("TAG",this.tag,tag)){
+			this.tag = tag;
+		}
 	}
-//	public Integer getURecord() {
-//		return uRecord;
-//	}
-//	protected void setURecord(Integer uRecord) {
-//		this.uRecord = uRecord;
-//	}
-//	public String getUFields() {
-//		return uFields;
-//	}
-//	protected void setUFields(String uFields) {
-//		this.uFields = uFields;
-//	}
-//	public String getUDate() {
-//		return uDate;
-//	}
-//	protected void setUDate(String uDate) {
-//		this.uDate = uDate;
-//	}
-
 	
 	@Override
 	public String tableName() {

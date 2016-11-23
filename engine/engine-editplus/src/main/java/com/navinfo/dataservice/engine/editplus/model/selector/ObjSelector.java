@@ -219,7 +219,7 @@ public class ObjSelector {
 	private static void selectChildren(Connection conn,BasicObj obj,GlmTable glmTab) throws SQLException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, IllegalArgumentException{
 		long objPid = obj.objPid();
 		String sql = selectByPidSql(glmTab);
-		logger.info("查询，selectChildren sql:sql");
+		logger.info("查询，selectChildren sql:"+sql);
 		List<BasicRow> childRows = new QueryRunner().query(conn, sql, new MultipleSelRsHandler(glmTab,objPid),objPid);
 		//更新obj
 		obj.insertSubrows(glmTab.getName(),childRows);

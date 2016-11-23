@@ -332,7 +332,6 @@ public class BlockController extends BaseController {
 				stage=dataJson.getInt("stage");
 			}
 			Map<String, Object> resultMap=new HashMap<String, Object>();
-			BlockOperation blockOperation= new BlockOperation();
 			Page page=service.list(stage,condition,order,curPageNum,curPageSize,snapshot);
 			resultMap.put("result", page.getResult());
 			resultMap.put("totalCount", page.getTotalCount());

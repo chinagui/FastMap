@@ -1024,11 +1024,11 @@ public class BlockService {
 		Connection conn = null;		
 		try {
 			conn = DBConnector.getInstance().getManConnection();
-			//返回部分字段
+			//返回部分字段,采集/日编角色返回，仅返回采集/日编的内容
 			if(snapshot==1){
 				return this.listBySnapshot(conn,stage, condition, order, currentPageNum, pageSize);
 				}
-			else{
+			else{//生管角色登陆用：返回采集，日编任务的全部内容
 				return this.listByAll(conn,condition, order, currentPageNum, pageSize);
 			}
 		} catch (Exception e) {
@@ -1050,6 +1050,8 @@ public class BlockService {
 				String key = (String) keys.next();
 				if("blockManName".equals(key)){
 					conditionSql=conditionSql+" AND MAN_LIST.BLOCK_MAN_NAME LIKE '%"+conditionJson.getString(key)+"%'";}
+				if("blockId".equals(key)){
+					conditionSql=conditionSql+" AND MAN_LIST.BLOCK_ID ="+conditionJson.getInt(key);}
 				if("name".equals(key)){
 					conditionSql=conditionSql+" AND (MAN_LIST.BLOCK_MAN_NAME LIKE '%"+conditionJson.getString(key)+"%'"
 							+ " or MAN_LIST.BLOCK_NAME LIKE '%"+conditionJson.getString(key)+"%')";}
@@ -1297,6 +1299,8 @@ public class BlockService {
 				String key = (String) keys.next();
 				if("blockManName".equals(key)){
 					conditionSql=conditionSql+" AND MAN_LIST.BLOCK_MAN_NAME LIKE '%"+conditionJson.getString(key)+"%'";}
+				if("blockId".equals(key)){
+					conditionSql=conditionSql+" AND MAN_LIST.BLOCK_ID ="+conditionJson.getInt(key);}
 				if("name".equals(key)){
 					conditionSql=conditionSql+" AND (MAN_LIST.BLOCK_MAN_NAME LIKE '%"+conditionJson.getString(key)+"%' "
 							+ "or MAN_LIST.BLOCK_NAME LIKE '%"+conditionJson.getString(key)+"%')";}

@@ -991,12 +991,12 @@ public class SubtaskService {
 	 * @param curPageNum
 	 * @return
 	 */
-	public Page list(int planStatus, JSONObject condition, JSONObject filter, int pageSize,int curPageNum) throws ServiceException {
+	public Page list(int planStatus, JSONObject condition, int pageSize,int curPageNum) throws ServiceException {
 		Connection conn = null;
 		try {
 			conn = DBConnector.getInstance().getManConnection();
 			
-			Page page = SubtaskOperation.getList(conn,planStatus,condition,filter,pageSize,curPageNum);
+			Page page = SubtaskOperation.getList(conn,planStatus,condition,pageSize,curPageNum);
 			return page;
 
 		} catch (Exception e) {

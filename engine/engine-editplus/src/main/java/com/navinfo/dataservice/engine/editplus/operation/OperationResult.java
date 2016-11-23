@@ -38,6 +38,14 @@ public class OperationResult{
 
 	private List<BasicObj> allObjs=new ArrayList<BasicObj>();
 	
+	public List<BasicObj> getAllObjs() {
+		return allObjs;
+	}
+
+	public void setAllObjs(List<BasicObj> allObjs) {
+		this.allObjs = allObjs;
+	}
+
 	private JSONArray logs = new JSONArray();//操作业务逻辑完成后统一计算
 	
 	/**

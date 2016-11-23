@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
 import com.navinfo.dataservice.api.edit.iface.SyncApi;
 import com.navinfo.dataservice.api.edit.model.FmMultiSrcSync;
 import com.navinfo.dataservice.api.man.model.Region;
@@ -51,6 +53,22 @@ public class Fm2MultiSrcSyncScript {
 			throw e;
 		}
 		return response;
+	}
+	
+	public static void main(String[] args) {
+		ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(  
+                new String[] { "dubbo-app-scripts.xml","dubbo-scripts.xml" }); 
+		context.start();
+		new ApplicationContextUtil().setApplicationContext(context);
+		JSONObject request=null;
+		JSONObject response = null;
+		try {
+			response = execute(request);
+			System.out.println(response);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 }

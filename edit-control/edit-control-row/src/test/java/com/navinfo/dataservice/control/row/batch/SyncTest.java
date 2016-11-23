@@ -68,7 +68,7 @@ public class SyncTest {
 	public void TestinsertMultiSrcFmSync() throws Exception{
 		
 		SyncApiImpl sy = new SyncApiImpl();
-		String msg = sy.insertMultiSrcFmSync(2,1);
+		String msg = sy.insertMultiSrcFmSync(2,1,"zipFile");
 		System.out.println(msg);
 		
 	}
@@ -82,13 +82,6 @@ public class SyncTest {
 	}
 	
 	
-	@Test
-	public void TestupdateMultiSrcFmSync() throws Exception{
-		
-		SyncApiImpl sy = new SyncApiImpl();
-		sy.updateMultiSrcFmSync(3, "路径");
-		
-	}
 	
 
 }

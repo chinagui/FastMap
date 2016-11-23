@@ -60,10 +60,11 @@ public class SyncApiImpl implements SyncApi {
 
 	//创建MS-POI增量包同步到FM的管理记录
 	@Override
-	public String insertMultiSrcFmSync(long jobId, long dbType) throws Exception {
+	public String insertMultiSrcFmSync(long jobId, long dbType,String zipFile) throws Exception {
 		MultiSrcFmSync obj = new MultiSrcFmSync();
 		obj.setJobId(jobId);
 		obj.setDbType(dbType);
+		obj.setZipFile(zipFile);
 		String msg = MultiSrcFmSyncService.getInstance().insert(obj);
 		return msg;
 	}
@@ -77,12 +78,12 @@ public class SyncApiImpl implements SyncApi {
 	}
 
 	//更新FmMultiSrcSync管理表中增量包文件和同步状态
-	@Override
+	/*@Override
 	public void updateMultiSrcFmSync(long syncStatus, String zipFile) throws Exception {
 		MultiSrcFmSync obj = new MultiSrcFmSync();
 		obj.setSyncStatus(syncStatus);
 		obj.setZipFile(zipFile);
 		MultiSrcFmSyncService.getInstance().updateSync(obj);
-	}
+	}*/
 
 }

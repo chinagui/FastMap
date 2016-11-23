@@ -56,7 +56,7 @@ public interface SyncApi {
 	 * @return
 	 * @throws Exception 
 	 */
-	public String insertMultiSrcFmSync(long jobId,long dbType) throws Exception;
+	public String insertMultiSrcFmSync(long jobId,long dbType,String zipFile) throws Exception;
 	
 	/**
 	 * 更新MultiSrcFmSync管理表的同步状态
@@ -75,6 +75,6 @@ public interface SyncApi {
 	 * @param zipFile
 	 * @throws Exception 
 	 */
-	public void updateMultiSrcFmSync(long syncStatus,String zipFile) throws Exception;
+	//public void updateMultiSrcFmSync(long syncStatus,String zipFile) throws Exception;
 	
 }

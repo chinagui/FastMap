@@ -50,7 +50,7 @@ public class TmcPointTest {
 			
 			MetadataApiImpl impl = new  MetadataApiImpl();
 			
-			JSONArray array = impl.queryTmcPoint(107829, 49685, 17, 80);
+			JSONArray array = impl.queryTmcPoint(107918, 49616, 17, 40);
 			
 			List<SearchSnapshot> snapshotList = new ArrayList<>();
 			
@@ -64,7 +64,7 @@ public class TmcPointTest {
 				
 				snapshotList.add(snapshot);
 			}
-			System.out.println(snapshotList.toString());
+			System.out.println(array);
 			
 		} catch (Exception e) {
 			e.printStackTrace();

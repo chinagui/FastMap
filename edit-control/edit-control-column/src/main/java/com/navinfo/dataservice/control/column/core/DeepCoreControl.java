@@ -7,6 +7,7 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -293,11 +294,11 @@ public class DeepCoreControl {
             cleanCheckResult(pids,conn);
             
     		//获取后检查需要执行规则列表
-
+    		List<String> fields = Arrays.asList("categorys", "subcategory");
+    		List<String> values = Arrays.asList("poi深度信息", "IX_POI_PARKING");
+			IxPoiDeepStatusSelector ixPoiDeepStatusSelector = new IxPoiDeepStatusSelector(conn);
+			JSONArray checkResultList = ixPoiDeepStatusSelector.getCheckRulesByCondition(fields,values);
     		//执行检查
-            Object[] rules = new Object[] {"FM-ZY-20-152","FM-ZY-20-154","FM-ZY-20-155"};  
-            JSONArray checkResultList = (JSONArray) JSONSerializer.toJSON(rules);
-
             deepCheckRun(pids,checkResultList,objType.toString(),"UPDATE",conn);
             
             return result;

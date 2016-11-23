@@ -9,6 +9,7 @@ import org.apache.commons.dbutils.ResultSetHandler;
 import com.navinfo.dataservice.engine.editplus.glm.GlmColumn;
 import com.navinfo.dataservice.engine.editplus.glm.GlmTable;
 import com.navinfo.dataservice.engine.editplus.model.BasicRow;
+import com.navinfo.dataservice.engine.editplus.operation.OperationType;
 import com.navinfo.dataservice.engine.editplus.utils.ResultSetGetter;
 
 /** 
@@ -42,7 +43,7 @@ public class SingleSpecColumnSelRsHandler implements ResultSetHandler<BasicRow>{
 				}
 			}
 			//默认为初始状态
-			//row.setOpType(OperationType.INITIALIZE);
+			row.setOpType(OperationType.UPDATE);
 			return row;
 		}catch(Exception e){
 			throw new SQLException(e.getMessage(),e);

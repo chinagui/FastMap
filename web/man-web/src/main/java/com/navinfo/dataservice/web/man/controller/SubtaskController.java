@@ -548,8 +548,6 @@ public class SubtaskController extends BaseController {
 	@RequestMapping(value = { "/list" }, method = RequestMethod.GET)
 	public SubtaskListResponse list(HttpServletRequest request){
 		try{		
-			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
-			
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
 			if(dataJson==null){
 				throw new IllegalArgumentException("parameter参数不能为空。");
@@ -567,14 +565,8 @@ public class SubtaskController extends BaseController {
 			//查询条件
 			JSONObject condition = dataJson.getJSONObject("condition");
 			//block/task规划状态。2:"已发布",3:"已完成" 。状态不同，排序方式不同。
-			int planStatus = dataJson.getInt("planStatus");
-			//搜索筛选条件
-			JSONObject filter =null; 
-			if(dataJson.containsKey("filter")){
-				filter = dataJson.getJSONObject("filter");
-			}
-			
-			Page page = SubtaskService.getInstance().list(planStatus,condition,filter,pageSize,curPageNum);
+			int planStatus = dataJson.getInt("planStatus");			
+			Page page = SubtaskService.getInstance().list(planStatus,condition,pageSize,curPageNum);
 
 			SubtaskListPage pageList = new SubtaskListPage(page.getPageSize(),page.thePageNum(),page.getStart(),page.getTotalCount(),(List<SubtaskList>)page.getResult());
 			SubtaskListResponse responseList = new SubtaskListResponse(0,"success",pageList);

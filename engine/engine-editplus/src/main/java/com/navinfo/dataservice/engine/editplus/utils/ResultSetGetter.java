@@ -5,6 +5,7 @@ import java.lang.reflect.Method;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
+import java.util.List;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.engine.editplus.glm.GlmColumn;
@@ -38,9 +39,9 @@ public class ResultSetGetter {
 	 */
 	public static void setAttrByCol(ResultSet rs,BasicRow row,GlmColumn glmColumn)throws Exception{
 		String columName = glmColumn.getName();
-		if(columName.equals("U_RECORD")||columName.equals("U_FIELDS")||columName.equals("U_DATE")){
-			return;
-		}
+//		if(columName.equals("U_RECORD")||columName.equals("U_FIELDS")||columName.equals("U_DATE")){
+//			return;
+//		}
 		/*--------测试使用start------*/
 //		System.out.println(columName);
 //		if(columName.equals("GEOMETRY")){
@@ -74,6 +75,8 @@ public class ResultSetGetter {
 			row.setAttrByCol(columName, date);
 		}
 	}
+	
+	
 	
 	public static void main(String[] args) {
 		System.out.println(int.class.getName());

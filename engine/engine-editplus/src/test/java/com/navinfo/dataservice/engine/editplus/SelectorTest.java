@@ -11,10 +11,14 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.engine.editplus.convert.MultiSrcPoiConvertor;
 import com.navinfo.dataservice.engine.editplus.model.obj.BasicObj;
+import com.navinfo.dataservice.engine.editplus.model.obj.IxPoiObj;
 import com.navinfo.dataservice.engine.editplus.model.selector.MultiSrcPoiSelectorConfig;
 import com.navinfo.dataservice.engine.editplus.model.selector.ObjBatchSelector;
 import com.navinfo.dataservice.engine.editplus.model.selector.ObjSelector;
+
+import net.sf.json.JSONObject;
 
 /** 
  * @ClassName: SelectorTest
@@ -54,6 +58,9 @@ public class SelectorTest {
 
 			BasicObj obj = ObjSelector.selectByPid(conn, objType, null, pid, isOnlyMain, isLock);
 			System.out.println("Over.");
+			MultiSrcPoiConvertor ms = new MultiSrcPoiConvertor();
+			JSONObject json = ms.toJson((IxPoiObj) obj);
+			System.out.println(json);
 		}catch(Exception e){
 			System.out.println("Oops, something wrong...");
 			e.printStackTrace();
@@ -76,6 +83,7 @@ public class SelectorTest {
 			MultiSrcPoiSelectorConfig multiSrcPoiSelectorConfig = MultiSrcPoiSelectorConfig.getInstance();
 			BasicObj obj = ObjSelector.selectByPid(conn, objType, multiSrcPoiSelectorConfig, pid, isOnlyMain, isLock);
 			System.out.println("Over.");
+			
 		}catch(Exception e){
 			System.out.println("Oops, something wrong...");
 			e.printStackTrace();

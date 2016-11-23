@@ -4,10 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
+
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.engine.editplus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.engine.editplus.model.obj.BasicObj;
 import com.navinfo.dataservice.engine.editplus.model.obj.IxPoiObj;
 
+import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
 
 /** 
@@ -26,6 +30,10 @@ public class MultiSrcPoiConvertor {
 		IxPoi ixPoi = (IxPoi)poi.getMainrow();
 		//外业采集ID
 		jo.put("fid", ixPoi.getPoiNum());
+		//显示样式
+		jo.put("display_style", "");
+		//显示用的主名称
+		jo.put("display_text", "");
 		//采集用的主名称
 		if(poi.getNameByLct("CHI", 1, 2) != null){
 			jo.put("name", poi.getNameByLct("CHI", 1, 1).getName());
@@ -49,7 +57,7 @@ public class MultiSrcPoiConvertor {
 			if(ixPoi.getLinkPid()==0 
 					&&ixPoi.getXGuide()==0 
 					&&ixPoi.getYGuide()==0){
-				jo.put("guide", null);	
+				jo.put("guide", JSONNull.getInstance());	
 			}else{
 				JSONObject guide = new JSONObject();
 				guide.put("linkPid", ixPoi.getLinkPid());
@@ -90,11 +98,23 @@ public class MultiSrcPoiConvertor {
 		//[集合]联系方式
 		jo.put("contacts", poi.getContacts());
 		//{唯一}餐饮
-		jo.put("foodtypes", poi.getFoodTypes());
+		if(poi.getFoodTypes() != null){
+			jo.put("foodtypes", poi.getFoodTypes());
+		}else{
+			jo.put("foodtypes", JSONNull.getInstance());
+		}
 		//{唯一}停车场扩展信息
-		jo.put("parkings", poi.getParkings());
+		if(poi.getParkings() != null){
+			jo.put("parkings", poi.getParkings());
+		}else{
+			jo.put("parkings", JSONNull.getInstance());
+		}
 		//{唯一}酒店
-		jo.put("hotel", poi.getHotel());
+		if(poi.getHotel() != null){
+			jo.put("hotel", poi.getHotel());
+		}else{
+			jo.put("hotel", JSONNull.getInstance());
+		}
 		//运动场馆
 		if(ixPoi.getSportsVenue() != null){
 			jo.put("sportsVenues", ixPoi.getSportsVenue());
@@ -102,11 +122,20 @@ public class MultiSrcPoiConvertor {
 			jo.put("sportsVenues", "");
 		}
 		//{唯一}充电站
-		jo.put("chargingStation", poi.getChargingStation());
+		if(poi.getChargingStation() != null){
+			jo.put("chargingStation", poi.getChargingStation());
+		}else{
+			jo.put("chargingStation", JSONNull.getInstance());
+		}
 		//[集合]充电桩
 		jo.put("chargingPole", poi.getChargingPole());
 		//{唯一}加油站
-		jo.put("gasStation", poi.getFoodTypes());
+		if(poi.getGasStation() != null){
+			jo.put("gasStation", poi.getGasStation());
+			//jo.put("gasStation", JSONNull.getInstance());
+		}else{
+			jo.put("gasStation", JSONNull.getInstance());
+		}
 		//{唯一}室内扩展信息
 		JSONObject indoor = new JSONObject();
 		//种别
@@ -117,16 +146,16 @@ public class MultiSrcPoiConvertor {
 		}
 		//楼层
 		if(poi.getFloorByLangCode("CHI") != null){
-			indoor.put("floor", poi.getFloorByLangCode("CHI").getFloor());
+			indoor.put("floor", StringUtils.trimToEmpty(poi.getFloorByLangCode("CHI").getFloor()));
 		}else if(poi.getFloorByLangCode("CHT") != null){
-			indoor.put("floor", poi.getFloorByLangCode("CHT").getFloor());
+			indoor.put("floor", StringUtils.trimToEmpty(poi.getFloorByLangCode("CHT").getFloor()));
 		}else{
-			indoor.put("name", "");
+			indoor.put("floor", "");
 		}
 		jo.put("indoor", indoor.toString());
 		//[集合]附件信息
-		List<Map<String,Object>> msgs = new ArrayList<Map<String,Object>>();
-		jo.put("attachments", msgs);
+		List<Map<String,Object>> attachments = new ArrayList<Map<String,Object>>();
+		jo.put("attachments", attachments);
 		//连锁品牌
 		if(ixPoi.getChain() != null){
 			jo.put("chain", ixPoi.getChain());
@@ -136,28 +165,38 @@ public class MultiSrcPoiConvertor {
 		//后期待修改字段
 		jo.put("rawFields", "");
 		//状态
-		if(poi.getl){
-			
+		if(poi.getLifeCycle()==1){
+			jo.put("t_lifecycle", 3);
+		}else if(poi.getLifeCycle()==2){
+			jo.put("t_lifecycle", 1);
+		}else if(poi.getLifeCycle()==3){
+			jo.put("t_lifecycle", 2);
+		}else{
+			jo.put("t_lifecycle", poi.getLifeCycle());
 		}
-		jo.put("t_lifecycle", msgs);
 		//当前阶段作业状态
-		jo.put("t_status", msgs);
+		jo.put("t_status", 0);
 		//[集合]编辑履历
-		jo.put("edits", msgs);
+		List<Map<String,Object>> edits = new ArrayList<Map<String,Object>>();
+		jo.put("edits", edits);
 		//显示坐标
-		jo.put("geometry", msgs);
+		jo.put("geometry", GeoTranslator.jts2Wkt(ixPoi.getGeometry()));
 		//VIP标识
-		jo.put("vipFlag", msgs);
+		if(ixPoi.getVipFlag() != null){
+			jo.put("vipFlag", ixPoi.getVipFlag());
+		}else{
+			jo.put("vipFlag", "");
+		}
 		//记录android端最后一次操作的时间
-		jo.put("t_operateDate", msgs);
+		jo.put("t_operateDate", "");
 		//卡车标识
-		jo.put("truck", msgs);
+		jo.put("truck", ixPoi.getTruckFlag());
 		//与GDB库同步状态
-		jo.put("t_sync", msgs);
+		jo.put("t_sync", 1);
 		//同一POI的
-		jo.put("FidsameFid", msgs);
+		jo.put("sameFid", "");
 
-		return null;
+		return jo;
 	}
 
 	/**

@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.navinfo.dataservice.engine.editplus.model.BasicRow;
 import com.navinfo.dataservice.engine.editplus.model.ixpoi.IxPoiAddress;
 import com.navinfo.dataservice.engine.editplus.model.ixpoi.IxPoiChargingplot;
@@ -68,7 +70,7 @@ public class IxPoiObj extends AbstractIxObj {
 	 */
 	public IxPoiName getNameByLct(String langCode,int nameClass,int nameType){
 		List<BasicRow> rows = getRowsByName("IX_POI_NAME");
-		if(rows!=null){
+		if(rows!=null && rows.size()>0){
 			for(BasicRow row:rows){
 				//
 				IxPoiName name=(IxPoiName)row;
@@ -91,7 +93,7 @@ public class IxPoiObj extends AbstractIxObj {
 	 */
 	public IxPoiAddress getFullNameByLg(String langCode,int nameGroupId){
 		List<BasicRow> rows = getRowsByName("IX_POI_ADDRESS");
-		if(rows!=null){
+		if(rows!=null && rows.size()>0){
 			for(BasicRow row:rows){
 				//
 				IxPoiAddress name=(IxPoiAddress)row;
@@ -112,13 +114,30 @@ public class IxPoiObj extends AbstractIxObj {
 	public List<Map<String,Object>> getContacts(){
 		List<BasicRow> rows = getRowsByName("IX_POI_CONTACT");
 		List<Map<String,Object>> msgs = new ArrayList<Map<String,Object>>();
-		if(rows!=null){
+		if(rows!=null && rows.size()>0){
 			for(BasicRow row:rows){
 				IxPoiContact contact = (IxPoiContact) row;
 				Map<String,Object> msg = new HashMap<String, Object>();
-				msg.put("number", contact.getContact());
+				msg.put("number", StringUtils.trimToEmpty(contact.getContact()));
 				msg.put("type", contact.getContactType());
-				msg.put("linkman", contact.getContactDepart());
+				int cd = contact.getContactDepart();
+				List<String> linkman = new ArrayList<String>();
+				if((cd&1) ==1){
+					linkman.add("总机");
+				}else if((cd&2) ==1){
+					linkman.add("客服");
+				}else if((cd&4) ==1){
+					linkman.add("预订");
+				}else if((cd&8) ==1){
+					linkman.add("销售");
+				}else if((cd&16) ==1){
+					linkman.add("维修");
+				}else if((cd&32) ==1){
+					linkman.add("其他");
+				}else if(cd ==0){
+					linkman.add("");
+				}
+				msg.put("linkman", StringUtils.join(linkman.toArray(), "-"));
 				msg.put("priority", contact.getPriority());
 				msg.put("rowId", contact.getRowId());
 				msgs.add(msg);
@@ -134,14 +153,14 @@ public class IxPoiObj extends AbstractIxObj {
 	 */
 	public Map<String,Object> getFoodTypes(){
 		List<BasicRow> rows = getRowsByName("IX_POI_RESTAURANT");
-		if(rows!=null){
+		if(rows!=null && rows.size()>0){
 			Map<String,Object> msg = new HashMap<String, Object>();
 			for(BasicRow row:rows){
 				IxPoiRestaurant foodType = (IxPoiRestaurant) row;
-				msg.put("foodtype", foodType.getFoodType());
-				msg.put("creditCards", foodType.getCreditCard());
+				msg.put("foodtype", StringUtils.trimToEmpty(foodType.getFoodType()));
+				msg.put("creditCards", StringUtils.trimToEmpty(foodType.getCreditCard()));
 				msg.put("parking", foodType.getParking());
-				msg.put("openHour", foodType.getOpenHour());
+				msg.put("openHour", StringUtils.trimToEmpty(foodType.getOpenHour()));
 				msg.put("avgCost", foodType.getAvgCost());
 				msg.put("rowId", foodType.getRowId());
 			}
@@ -157,24 +176,24 @@ public class IxPoiObj extends AbstractIxObj {
 	 */
 	public Map<String,Object> getParkings(){
 		List<BasicRow> rows = getRowsByName("IX_POI_PARKING");
-		if(rows!=null){
+		if(rows!=null && rows.size()>0){
 			Map<String,Object> msg = new HashMap<String, Object>();
 			for(BasicRow row:rows){
 				IxPoiParking parking = (IxPoiParking) row;
-				msg.put("tollStd", parking.getTollStd());
-				msg.put("tollDes", parking.getTollDes());
-				msg.put("tollWay", parking.getTollWay());
-				msg.put("openTime", parking.getOpenTiime());
+				msg.put("tollStd", StringUtils.trimToEmpty(parking.getTollStd()));
+				msg.put("tollDes", StringUtils.trimToEmpty(parking.getTollDes()));
+				msg.put("tollWay", StringUtils.trimToEmpty(parking.getTollWay()));
+				msg.put("openTime", StringUtils.trimToEmpty(parking.getOpenTiime()));
 				msg.put("totalNum", parking.getTotalNum());
-				msg.put("payment", parking.getPayment());
-				msg.put("remark", parking.getRemark());
-				msg.put("buildingType", parking.getParkingType());
+				msg.put("payment", StringUtils.trimToEmpty(parking.getPayment()));
+				msg.put("remark", StringUtils.trimToEmpty(parking.getRemark()));
+				msg.put("buildingType", StringUtils.trimToEmpty(parking.getParkingType()));
 				msg.put("resHigh", parking.getResHigh());
 				msg.put("resWidth", parking.getResWidth());
 				msg.put("resWeigh", parking.getResWeigh());
 				msg.put("certificate", parking.getCertificate());
 				msg.put("vehicle", parking.getVehicle());
-				msg.put("haveSpecialPlace", parking.getHaveSpecialplace());
+				msg.put("haveSpecialPlace", StringUtils.trimToEmpty(parking.getHaveSpecialplace()));
 				msg.put("womenNum", parking.getWomenNum());
 				msg.put("handicapNum", parking.getHandicapNum());
 				msg.put("miniNum", parking.getMiniNum());		
@@ -193,22 +212,22 @@ public class IxPoiObj extends AbstractIxObj {
 	 */
 	public Map<String,Object> getHotel(){
 		List<BasicRow> rows = getRowsByName("IX_POI_HOTEL");
-		if(rows!=null){
+		if(rows!=null && rows.size()>0){
 			Map<String,Object> msg = new HashMap<String, Object>();
 			for(BasicRow row:rows){
 				IxPoiHotel hotel = (IxPoiHotel) row;
 				msg.put("rating", hotel.getRating());
-				msg.put("creditCards", hotel.getCreditCard());
-				msg.put("description", hotel.getLongDescription());
+				msg.put("creditCards", StringUtils.trimToEmpty(hotel.getCreditCard()));
+				msg.put("description", StringUtils.trimToEmpty(hotel.getLongDescription()));
 				msg.put("checkInTime", hotel.getCheckinTime());
 				msg.put("checkOutTime", hotel.getCheckoutTime());
 				msg.put("roomCount", hotel.getRoomCount());
-				msg.put("roomType", hotel.getRoomType());
-				msg.put("roomPrice", hotel.getRoomPrice());
+				msg.put("roomType", StringUtils.trimToEmpty(hotel.getRoomType()));
+				msg.put("roomPrice", StringUtils.trimToEmpty(hotel.getRoomPrice()));
 				msg.put("breakfast", hotel.getBreakfast());
-				msg.put("service", hotel.getService());
+				msg.put("service", StringUtils.trimToEmpty(hotel.getService()));
 				msg.put("parking", hotel.getParking());
-				msg.put("openHour", hotel.getOpenHour());
+				msg.put("openHour", StringUtils.trimToEmpty(hotel.getOpenHour()));
 				msg.put("rowId", hotel.getRowId());	
 			}
 			return msg;
@@ -223,18 +242,18 @@ public class IxPoiObj extends AbstractIxObj {
 	 */
 	public Map<String,Object> getChargingStation(){
 		List<BasicRow> rows = getRowsByName("IX_POI_CHARGINGSTATION");
-		if(rows!=null){
+		if(rows!=null && rows.size()>0){
 			Map<String,Object> msg = new HashMap<String, Object>();
 			for(BasicRow row:rows){
 				IxPoiChargingstation chargingStation = (IxPoiChargingstation) row;
 				msg.put("type", chargingStation.getChargingType());
-				msg.put("changeBrands", chargingStation.getChangeBrands());
+				msg.put("changeBrands", StringUtils.trimToEmpty(chargingStation.getChangeBrands()));
 				msg.put("changeOpenType", chargingStation.getChangeOpenType());
 				msg.put("servicePro", chargingStation.getServiceProv());
 				msg.put("chargingNum", chargingStation.getChargingNum());
-				msg.put("openHour", chargingStation.getOpenHour());
+				msg.put("openHour", StringUtils.trimToEmpty(chargingStation.getOpenHour()));
 				msg.put("parkingFees", chargingStation.getParkingFees());
-				msg.put("parkingInfo", chargingStation.getParkingInfo());
+				msg.put("parkingInfo", StringUtils.trimToEmpty(chargingStation.getParkingInfo()));
 				msg.put("availableState", chargingStation.getAvailableState());
 				msg.put("rowId", chargingStation.getRowId());	
 			}
@@ -251,27 +270,27 @@ public class IxPoiObj extends AbstractIxObj {
 	public List<Map<String,Object>> getChargingPole(){
 		List<BasicRow> rows = getRowsByName("IX_POI_CHARGINGPLOT");
 		List<Map<String,Object>> msgs = new ArrayList<Map<String,Object>>();
-		if(rows!=null){
+		if(rows!=null && rows.size()>0){
 			for(BasicRow row:rows){
 				Map<String,Object> msg = new HashMap<String, Object>();
 				IxPoiChargingplot chargingPole = (IxPoiChargingplot) row;
 				msg.put("groupId", chargingPole.getGroupId());
 				msg.put("acdc", chargingPole.getAcdc());
 				msg.put("plugType", chargingPole.getPlugType());
-				msg.put("power", chargingPole.getPower());
-				msg.put("voltage", chargingPole.getVoltage());
-				msg.put("current", chargingPole.getCurrent());
+				msg.put("power", StringUtils.trimToEmpty(chargingPole.getPower()));
+				msg.put("voltage", StringUtils.trimToEmpty(chargingPole.getVoltage()));
+				msg.put("current", StringUtils.trimToEmpty(chargingPole.getCurrent()));
 				msg.put("mode", chargingPole.getMode());
 				msg.put("count", chargingPole.getCount());
 				msg.put("plugNum", chargingPole.getPlugNum());
-				msg.put("prices", chargingPole.getPrices());
+				msg.put("prices", StringUtils.trimToEmpty(chargingPole.getPrices()));
 				msg.put("openType", chargingPole.getOpenType());
 				msg.put("availableState", chargingPole.getAvailableState());
-				msg.put("manufacturer", chargingPole.getManufacturer());
-				msg.put("factoryNum", chargingPole.getFactoryNum());
-				msg.put("plotNum", chargingPole.getPlotNum());
-				msg.put("productNum", chargingPole.getProductNum());
-				msg.put("parkingNum", chargingPole.getParkingNum());
+				msg.put("manufacturer", StringUtils.trimToEmpty(chargingPole.getManufacturer()));
+				msg.put("factoryNum", StringUtils.trimToEmpty(chargingPole.getFactoryNum()));
+				msg.put("plotNum", StringUtils.trimToEmpty(chargingPole.getPlotNum()));
+				msg.put("productNum", StringUtils.trimToEmpty(chargingPole.getProductNum()));
+				msg.put("parkingNum", StringUtils.trimToEmpty(chargingPole.getParkingNum()));
 				msg.put("floor", chargingPole.getFloor());
 				msg.put("locationType", chargingPole.getLocationType());
 				msg.put("payment", chargingPole.getPayment());
@@ -289,18 +308,18 @@ public class IxPoiObj extends AbstractIxObj {
 	 */
 	public Map<String,Object> getGasStation(){
 		List<BasicRow> rows = getRowsByName("IX_POI_GASSTATION");
-		if(rows!=null){
+		if(rows!=null && rows.size()>0){
 			Map<String,Object> msg = new HashMap<String, Object>();
 			for(BasicRow row:rows){
 				IxPoiGasstation gasStation = (IxPoiGasstation) row;
-				msg.put("fuelType", gasStation.getFuelType());
-				msg.put("oilType", gasStation.getOilType());
-				msg.put("egType", gasStation.getEgType());
-				msg.put("mgType", gasStation.getMgType());
-				msg.put("payment", gasStation.getPayment());
-				msg.put("service", gasStation.getService());
-				msg.put("servicePro", gasStation.getServiceProv());
-				msg.put("openHour", gasStation.getOpenHour());
+				msg.put("fuelType", StringUtils.trimToEmpty(gasStation.getFuelType()));
+				msg.put("oilType", StringUtils.trimToEmpty(gasStation.getOilType()));
+				msg.put("egType", StringUtils.trimToEmpty(gasStation.getEgType()));
+				msg.put("mgType", StringUtils.trimToEmpty(gasStation.getMgType()));
+				msg.put("payment", StringUtils.trimToEmpty(gasStation.getPayment()));
+				msg.put("service", StringUtils.trimToEmpty(gasStation.getService()));
+				msg.put("servicePro", StringUtils.trimToEmpty(gasStation.getServiceProv()));
+				msg.put("openHour", StringUtils.trimToEmpty(gasStation.getOpenHour()));
 				msg.put("rowId", gasStation.getRowId());
 			}
 			return msg;
@@ -315,7 +334,7 @@ public class IxPoiObj extends AbstractIxObj {
 	 */
 	public IxPoiAddress getFloorByLangCode(String langCode){
 		List<BasicRow> rows = getRowsByName("IX_POI_ADDRESS");
-		if(rows!=null){
+		if(rows!=null && rows.size()>0){
 			for(BasicRow row:rows){
 				IxPoiAddress floor = (IxPoiAddress) row;
 				if(langCode.equals(floor.getLangCode())){
@@ -325,27 +344,6 @@ public class IxPoiObj extends AbstractIxObj {
 		}
 		return null;
 	}
-	
-	public List<Map<String,Object>> getAttachments(){
-		List<BasicRow> rows = getRowsByName("IX_POI_CHARGINGPLOT");
-		List<Map<String,Object>> msgs = new ArrayList<Map<String,Object>>();
-		if(rows!=null){
-			for(BasicRow row:rows){
-				Map<String,Object> msg = new HashMap<String, Object>();
-				IxPoiChargingplot attachment = (IxPoiChargingplot) row;
-				msg.put("rowId", chargingPole.getRowId());
-				id		
-				type		
-				content		
-				extContent		
-				tag		
-
-				msgs.add(msg);
-			}
-		}
-		return msgs;
-	}
-	
 	
 	@Override
 	public String objType() {

@@ -31,10 +31,10 @@ public abstract class BasicObj {
 	public BasicObj(BasicRow mainrow){
 		this.mainrow=mainrow;
 	}
-	protected int getLifeCycle() {
+	public int getLifeCycle() {
 		return lifeCycle;
 	}
-	protected void setLifeCycle(int lifeCycle) {
+	public void setLifeCycle(int lifeCycle) {
 		this.lifeCycle = lifeCycle;
 	}
 	public BasicRow getMainrow() {

@@ -567,7 +567,7 @@ public class TmcSelector {
 	public List<SearchSnapshot> queryTmcPoint(int x, int y, int z, int gap) throws Exception {
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "WITH TMP1 AS (SELECT TMC_ID, LOC_CODE,GEOMETRY FROM TMC_POINT WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2) SELECT A.TMC_ID,A.LOC_CODE,A.GEOMETRY, B.TRANSLATE_NAME FROM TMP1 A LEFT JOIN TMC_POINT_TRANSLATENAME B ON A.TMC_ID = B.TMC_ID WHERE B.NAME_FLAG = 1";
+		String sql = "WITH TMP1 AS (SELECT TMC_ID, LOCTABLE_ID,LOC_CODE,GEOMETRY FROM TMC_POINT WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2) SELECT A.TMC_ID,A.LOC_CODE,A.GEOMETRY,A.LOCTABLE_ID,B.TRANSLATE_NAME FROM TMP1 A LEFT JOIN TMC_POINT_TRANSLATENAME B ON A.TMC_ID = B.TMC_ID WHERE B.NAME_FLAG = 1";
 
 		PreparedStatement pstmt = null;
 
@@ -616,7 +616,9 @@ public class TmcSelector {
 					m.put("c", 0);
 					pointSizeMap.put(geojson.toString(), 1);
 				}
-
+				
+				m.put("d", resultSet.getString("LOCTABLE_ID"));
+				
 				snapshot.setM(m);
 
 				snapshot.setT(48);

@@ -181,9 +181,9 @@ public class Operation implements IOperation {
 					this.command.getDbId());
 			// 组装打断线的参数
 			// 保证是同一个连接
-			com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrwpoint.Command breakCommand = new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrwpoint.Command(
+			com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakzonepoint.Command breakCommand = new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakzonepoint.Command(
 					breakJson, breakJson.toString());
-			com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrwpoint.Process breakProcess = new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrwpoint.Process(
+			com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakzonepoint.Process breakProcess = new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakzonepoint.Process(
 					breakCommand, result, conn);
 			breakProcess.innerRun();
 		}

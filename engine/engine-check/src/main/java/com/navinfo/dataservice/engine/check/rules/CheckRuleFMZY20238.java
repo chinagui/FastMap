@@ -10,6 +10,7 @@ import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.ExcelReader;
+import com.navinfo.dataservice.commons.util.StringUtils;
 
 /** 
  * @ClassName: CheckRuleFMZY20238
@@ -45,7 +46,7 @@ public class CheckRuleFMZY20238 extends baseRule {
 			IxPoiCarrental poiCarrental = (IxPoiCarrental) row;
 			String address=poiCarrental.getAddress();
 			
-			if (!"".equals(address)){
+			if (StringUtils.isNotEmpty(address)){
 				//调用元数据请求接口
 				MetadataApi metaApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 				JSONObject characterMap = metaApi.getCharacterMap();

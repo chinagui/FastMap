@@ -104,6 +104,9 @@ public class DateUtils {
 	public static String getCurYmd(){
 		return dateToString(new Date(),DateUtils.DATE_YMD);
 	}
+	public static String getCurYyyymm(){
+		return dateToString(new Date(),DateUtils.DATE_YMD).substring(0,6);
+	}
 	
 	 public static void main(String[] args) throws ParseException, java.text.ParseException {
 	        //String s = du.numToDate(1350144260, "yyyy-MM-dd hh:mm:ss");
@@ -114,5 +117,6 @@ public class DateUtils {
 //	        System.out.println(time1);
 //	        System.out.println(date);
 		 System.out.println(DateUtils.dateToString(new Date(),DateUtils.DATE_YMD));
+		 System.out.println(DateUtils.getCurYyyymm());
 	 }
 }

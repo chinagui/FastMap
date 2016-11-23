@@ -7,6 +7,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import net.sf.json.JSONObject;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.junit.Before;
@@ -84,16 +85,31 @@ public class ixpoitest {
 	
 	@Test
 	public void testCheck() throws Exception{
-		
-		List<Integer> pids = new ArrayList<Integer>();
-		pids.add(308);
-		JSONArray checkRules = new JSONArray();
-		checkRules.add("FM-YW-20-218");
 		int dbId = 19;
+		List<Integer> pids = new ArrayList<Integer>();
 		Connection conn = DBConnector.getInstance().getConnectionById(dbId);
-		
-		DeepCoreControl deep = new DeepCoreControl();
-		deep.deepCheckRun(pids, checkRules, "IXPOI", "UPDATE", conn);
+		try{
+			
+			pids.add(602474);
+			JSONArray checkRules = new JSONArray();
+			checkRules.add("FM-ZY-20-152");
+//			checkRules.add("FM-ZY-20-153");
+			checkRules.add("FM-ZY-20-198");
+			checkRules.add("FM-ZY-20-199");
+			checkRules.add("FM-ZY-20-238");
+			checkRules.add("FM-ZY-20-154");
+			checkRules.add("FM-ZY-20-155");
+			checkRules.add("FM-YW-20-227");
+			checkRules.add("FM-YW-20-225");
+			checkRules.add("FM-YW-20-235");
+			
+			DeepCoreControl deep = new DeepCoreControl();
+			deep.deepCheckRun(pids, checkRules, "IXPOI", "UPDATE", conn);
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DbUtils.commitAndClose(conn);
+		}
 	}
 	
 	
@@ -117,6 +133,17 @@ public class ixpoitest {
 			//申请数据，返回本次申请成功的数据条数
 			int applyNum = deepCore.applyData(subtask, dbId, userId, type);
 			System.out.println(applyNum);
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+	}
+	@Test
+	public void testSave() throws Exception{
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":19,\"type\":\"IXPOI\",\"objId\":602474,\"data\":{\"parkings\":[{\"tollWay\":\"123\",\"rowId\":\"659FAC5F4DFD41E8BDE447D1475ED3DB\",\"pid\":206000858,\"objStatus\":\"UPDATE\"}],\"rowId\":\"3AE1FB4C35C492F7E050A8C08304EE4C\",\"pid\":602474}}";
+		try {
+			DeepCoreControl deepCore = new DeepCoreControl();
+			JSONObject result = deepCore.save(parameter, 111);
+			System.out.println(result);
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
 		}

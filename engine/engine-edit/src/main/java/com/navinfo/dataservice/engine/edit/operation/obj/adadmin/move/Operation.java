@@ -63,8 +63,6 @@ public class Operation implements IOperation {
 
 		updateContent.put("linkPid", command.getLinkPid());
 
-		moveAdmin.setLinkPid(command.getLinkPid());
-
 		moveAdmin.fillChangeFields(updateContent);
 
 		result.insertObject(moveAdmin, ObjStatus.UPDATE, moveAdmin.pid());

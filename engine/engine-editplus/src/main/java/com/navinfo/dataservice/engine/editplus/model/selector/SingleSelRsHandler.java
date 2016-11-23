@@ -43,7 +43,7 @@ public class SingleSelRsHandler implements ResultSetHandler<BasicRow> {
 				}
 			}
 			//默认为初始状态
-			//row.setOpType(OperationType.INITIALIZE);
+			row.setOpType(OperationType.UPDATE);
 			return row;
 		}catch(Exception e){
 			throw new SQLException(e.getMessage(),e);

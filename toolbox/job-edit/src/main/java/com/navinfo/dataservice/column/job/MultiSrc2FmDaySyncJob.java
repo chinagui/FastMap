@@ -14,13 +14,12 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 
 	public MultiSrc2FmDaySyncJob(JobInfo jobInfo) {
 		super(jobInfo);
-		// TODO Auto-generated constructor stub
 	}
 
 
 	@Override
 	public void execute() throws JobException {
-		// TODO Auto-generated method stub
+		
 
 	}
 

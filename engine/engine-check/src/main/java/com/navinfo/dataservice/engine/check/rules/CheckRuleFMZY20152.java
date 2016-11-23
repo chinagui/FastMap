@@ -9,6 +9,7 @@ import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiParking;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.util.StringUtils;
 
 /** 
  * @ClassName: CheckRuleFMZY20152
@@ -40,7 +41,7 @@ public class CheckRuleFMZY20152 extends baseRule {
 			IxPoiParking poiPark = (IxPoiParking) row;
 			String openTiime=poiPark.getOpenTiime();
 			
-			if (!"".equals(openTiime)){
+			if (StringUtils.isNotEmpty(openTiime)){
 				
 				//调用元数据请求接口
 				MetadataApi metaApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
@@ -50,9 +51,8 @@ public class CheckRuleFMZY20152 extends baseRule {
 				openTiimeList=openTiime.toCharArray();
 				
 				String illegalChar = "";
-				int aa = openTiimeList.length;
 				
-				for(int i = 0; i < aa; i++){
+				for(int i = 0; i < openTiimeList.length; i++){
 					
 					char c=openTiimeList[i];
 					String str = String.valueOf(c);

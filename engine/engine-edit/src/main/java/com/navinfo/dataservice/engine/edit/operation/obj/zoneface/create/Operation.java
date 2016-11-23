@@ -108,7 +108,10 @@ public class Operation implements IOperation {
 			if (link.getMeshes().size() == 1) {
 				for (IRow iRow : link.getMeshes()) {
 					ZoneLinkMesh adlinkmesh = (ZoneLinkMesh) iRow;
-					meshes.add(String.valueOf(adlinkmesh.getMeshId()));
+					if(adlinkmesh.getMeshId() != 0)
+					{
+						meshes.add(String.valueOf(adlinkmesh.getMeshId()));
+					}
 				}
 			}
 		}

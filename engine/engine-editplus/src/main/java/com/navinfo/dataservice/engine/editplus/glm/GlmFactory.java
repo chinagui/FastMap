@@ -188,6 +188,10 @@ public class GlmFactory {
 							}
 							GlmColumn col=null;
 							String colName = rs.getString("COLUMN_NAME");
+							//忽略U_RECORD，U_FIELDS，U_FIELDS
+							if(colName.equals("U_RECORD")||colName.equals("U_FIELDS")||colName.equals("U_DATE")){
+								continue;
+							}
 							String dataType=rs.getString("DATA_TYPE");
 							if(GlmColumn.TYPE_NUMBER.equals(dataType)){
 								col=new GlmColumn(colName,dataType,rs.getInt("DATA_PRECISION"),rs.getInt("DATA_SCALE"));	

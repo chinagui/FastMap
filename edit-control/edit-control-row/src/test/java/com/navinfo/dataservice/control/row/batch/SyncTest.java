@@ -1,5 +1,8 @@
 package com.navinfo.dataservice.control.row.batch;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -29,7 +32,9 @@ public class SyncTest {
 	public void TestinsertFmMultiSrcSync() throws Exception{
 		
 		SyncApiImpl sy = new SyncApiImpl();
-		String msg = sy.insertFmMultiSrcSync(3);
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+		String syncTime = sdf.format(new Date());
+		String msg = sy.insertFmMultiSrcSync(3,syncTime);
 		System.out.println(msg);
 		
 	}

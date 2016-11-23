@@ -15,10 +15,11 @@ public interface SyncApi {
 	 * 创建FM-POI增量包同步到多源的管理记录
 	 * @author Han Shaoming
 	 * @param jobId
+	 * @param syncTime 
 	 * @return
 	 * @throws Exception 
 	 */
-	public String insertFmMultiSrcSync(long jobId) throws Exception;
+	public String insertFmMultiSrcSync(long jobId, String syncTime) throws Exception;
 	
 	/**
 	 * 查询POI增量包同步到多源最新成功的数据

@@ -1,10 +1,13 @@
 package com.navinfo.dataservice.control.row.multisrc;
 
+import java.util.Date;
+
 import org.springframework.stereotype.Service;
 
 import com.navinfo.dataservice.api.edit.iface.SyncApi;
 import com.navinfo.dataservice.api.edit.model.FmMultiSrcSync;
 import com.navinfo.dataservice.api.edit.model.MultiSrcFmSync;
+import com.navinfo.dataservice.commons.util.DateUtils;
 
 /**
  * POI数据同步
@@ -18,10 +21,12 @@ public class SyncApiImpl implements SyncApi {
 
 	//创建FM-POI增量包同步到多源的管理记录
 	@Override
-	public String insertFmMultiSrcSync(long jobId) throws Exception {
+	public String insertFmMultiSrcSync(long jobId,String syncTime) throws Exception {
 		
 		FmMultiSrcSync obj = new FmMultiSrcSync();
 		obj.setJobId(jobId);
+		Date date = DateUtils.stringToDate(syncTime, DateUtils.DATE_COMPACTED_FORMAT);
+		obj.setSyncTime(date);
 		String msg = FmMultiSrcSyncService.getInstance().insert(obj);
 		return msg;
 	}

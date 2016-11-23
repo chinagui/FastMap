@@ -63,4 +63,26 @@ public class Operation implements IOperation {
 		}
 	}
 
+	/***
+	 * 通过车道信息数组删除车道联通信息
+	 * 
+	 * @param result
+	 * @param lanePid
+	 * @throws Exception
+	 */
+	public void deleteTopoForRdLanes(Result result, List<Integer> lanePids) throws Exception {
+
+		List<IRow> details = new RdLaneTopoDetailSelector(conn).loadByLanePids(
+				lanePids, true);
+		
+		if (details.size() > 0) {
+			for (IRow row : details) {
+				RdLaneTopoDetail detail = (RdLaneTopoDetail) row;
+				result.insertObject(detail, ObjStatus.DELETE, detail.getPid());
+			}
+		}
+	
+		
+	}
+
 }

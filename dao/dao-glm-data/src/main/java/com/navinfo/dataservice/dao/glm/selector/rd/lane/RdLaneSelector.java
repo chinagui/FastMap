@@ -14,7 +14,6 @@ import oracle.sql.STRUCT;
 
 import org.apache.commons.dbutils.DbUtils;
 
-import com.jcraft.jsch.Logger;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.dao.glm.model.rd.lane.RdLane;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
@@ -129,9 +128,9 @@ public class RdLaneSelector extends AbstractSelector {
 			resultSet = pstmt.executeQuery();
 
 			while (resultSet.next()) {
-				RdLane slope = (RdLane) this.loadById(
+				RdLane rdlane = (RdLane) this.loadById(
 						resultSet.getInt("lane_pid"), false);
-				lanes.add(slope);
+				lanes.add(rdlane);
 			}
 
 			return lanes;

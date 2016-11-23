@@ -16,6 +16,7 @@ import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 
 /***
  * 车道联通信息查询类
+ * 
  * @author zhaokk
  * 
  */
@@ -107,7 +108,12 @@ public class RdLaneTopoDetailSelector extends AbstractSelector {
 
 	/***
 	 * 
-	 * 通过LINK信息查询车道联通信息
+	 * @param linkPids
+	 * @param inLinkPid
+	 * @param nodePid
+	 * @param isLock
+	 * @return
+	 * @throws Exception
 	 */
 	public List<IRow> loadByLinkPids(List<Integer> linkPids, int nodePid,
 			boolean isLock) throws Exception {
@@ -148,10 +154,10 @@ public class RdLaneTopoDetailSelector extends AbstractSelector {
 								&& linkPids.containsAll(viaLinkPids)) {
 							topos.add(row);
 						}
-					} else {
-						if (linkPids.contains(detail.getOutLinkPid())) {
-							topos.add(row);
-						}
+					}
+					if (linkPids.contains(detail.getOutLinkPid())) {
+						topos.add(row);
+
 					}
 				}
 			}

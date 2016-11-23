@@ -892,6 +892,11 @@ public class RdLinkSelector extends AbstractSelector {
 				List<IRow> tmcLinks = this.loadTmclocationLinkByParentId(tmclocation.getPid(), true);
 
 				tmclocation.setLinks(tmcLinks);
+				
+				for(IRow row : tmcLinks)
+				{
+					tmclocation.linkMap.put(row.rowId(), (RdTmclocationLink) row);
+				}
 
 				locationList.add(tmclocation);
 			}

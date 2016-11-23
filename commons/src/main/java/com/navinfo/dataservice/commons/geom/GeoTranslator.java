@@ -2,19 +2,13 @@ package com.navinfo.dataservice.commons.geom;
 
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-import oracle.spatial.geometry.JGeometry;
-import oracle.spatial.util.GeometryExceptionWithContext;
-import oracle.spatial.util.WKT;
-import oracle.sql.STRUCT;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.json.JSONException;
@@ -42,6 +36,13 @@ import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
 import com.vividsolutions.jts.io.WKTWriter;
 import com.vividsolutions.jts.precision.GeometryPrecisionReducer;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import oracle.spatial.geometry.JGeometry;
+import oracle.spatial.util.GeometryExceptionWithContext;
+import oracle.spatial.util.WKT;
+import oracle.sql.STRUCT;
 
 /**
  * 几何的转换类
@@ -617,26 +618,45 @@ public class GeoTranslator {
 	 */
 	public static Geometry getCalLineToPython(List<Geometry> gList)
 			throws Exception {
-		Coordinate[] c = null;
-		List<Coordinate> list = new ArrayList<Coordinate>();
-		for (Geometry g : gList) {
-			c = (Coordinate[]) ArrayUtils.addAll(c, g.getCoordinates());
+		//gList已经是按照线的联通关系添加后的，只需要根据划线方向组好点的几何
+		List<Coordinate> corList = new ArrayList<>();
+		for(Coordinate cor : gList.get(0).getCoordinates())
+		{
+			corList.add(cor);
 		}
-		for (int i = 0; i < c.length; i++) {
-
-			if (!list.contains(c[i])) {
-				list.add(c[i]);
+		Coordinate endCor = corList.get(corList.size() -1);
+		for (int i = 1;i<gList.size();i++) {
+			Geometry lineGeo = gList.get(i);
+			//线的第一个形状点是上一个线最后一个形状点，直接按顺序加入
+			if(lineGeo.getCoordinates()[0].distance(endCor)<=1)
+			{
+				endCor = lineGeo.getCoordinates()[lineGeo.getCoordinates().length -1];
+				
+				for(int j= 1;j<lineGeo.getCoordinates().length;j++)
+				{
+					Coordinate lineCor = lineGeo.getCoordinates()[j];
+					
+					corList.add(lineCor);
+				}
 			}
-		}
-		list = getOrderCoordinate(list, gList);
-		list.add(c[0]);
-		Coordinate[] c1 = new Coordinate[list.size()];
-		for (int i = 0; i < list.size(); i++) {
-			c1[i] = list.get(i);
+			else
+			{
+				//线的最后一个形状点是上一条线的最后一个行政点，即划线方向不一致，对线进行反向排序后加入即可
+				endCor = lineGeo.getCoordinates()[0];
+				
+				Geometry reverseLine = lineGeo.reverse();
+				
+				for(int j= 1;j<reverseLine.getCoordinates().length;j++)
+				{
+					Coordinate lineCor = reverseLine.getCoordinates()[j];
+					
+					corList.add(lineCor);
+				}
+			}
+			
 		}
 
-		return geoFactory.createPolygon(c1);
-
+		return geoFactory.createPolygon((Coordinate[])corList.toArray(new Coordinate[corList.size()]));
 	}
 
 	/**

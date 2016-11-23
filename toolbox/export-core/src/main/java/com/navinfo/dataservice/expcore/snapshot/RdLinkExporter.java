@@ -50,9 +50,11 @@ public class RdLinkExporter {
 		stmt.execute("alter table gdb_rdLine add op_date text;");
 		stmt.execute("alter table gdb_rdLine add op_lifecycle integer;");
 		stmt.execute("alter table gdb_rdLine add names Blob;");
+		stmt.execute("alter table gdb_rdLine add sNodePid integer;");
+		stmt.execute("alter table gdb_rdLine add eNodePid integer;");
 
 		String insertSql = "insert into gdb_rdLine values("
-				+ "?, GeomFromText(?, 4326), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+				+ "?, GeomFromText(?, 4326), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?)";
 
 		PreparedStatement prep = sqliteConn.prepareStatement(insertSql);
 
@@ -142,6 +144,10 @@ public class RdLinkExporter {
 
 			prep.setBinaryStream(23, new ByteArrayInputStream(names),
 					names.length);
+
+			//
+			prep.setLong(24, json.getLong("sNodePid"));
+			prep.setLong(25, json.getLong("eNodePid"));
 
 			prep.executeUpdate();
 
@@ -348,6 +354,9 @@ public class RdLinkExporter {
 		json.put("op_date", operateDate);
 
 		json.put("op_lifecycle", 0);
+		//s,enodpis
+		json.put("sNodePid",rs.getLong("S_NODE_PID"));
+		json.put("eNodePid",rs.getLong("E_NODE_PID"));
 
 		return json;
 	}

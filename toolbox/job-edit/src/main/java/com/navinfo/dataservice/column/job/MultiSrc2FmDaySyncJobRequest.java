@@ -11,10 +11,8 @@ import com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest;
  * @Description: MultiSrc2FmDaySyncJobRequest.java
  */
 public class MultiSrc2FmDaySyncJobRequest extends AbstractJobRequest {
-
-	/* (non-Javadoc)
-	 * @see com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest#defineSubJobRequests()
-	 */
+	
+	
 	@Override
 	public void defineSubJobRequests() throws JobCreateException {
 		// TODO Auto-generated method stub

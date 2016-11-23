@@ -213,7 +213,7 @@ public class ObjSelector {
 		System.out.println(sql);
 		List<BasicRow> childRows = new QueryRunner().query(conn, sql, new MultipleSelRsHandler(glmTab,objPid),objPid);
 		//更新obj
-		obj.insertSubrow(glmTab.getName(),childRows);
+		obj.insertSubrows(glmTab.getName(),childRows);
 	}
 	/**
 	 * 返回带主表pid参数的sql语句

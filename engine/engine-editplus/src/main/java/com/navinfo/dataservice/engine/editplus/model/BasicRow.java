@@ -40,7 +40,7 @@ public abstract class BasicRow implements Logable{
 	protected String rowId;//row类型的代表就是有row_id
 	protected long objPid;
 	protected Map<String,Object> oldValues=null;//存储变化字段的旧值，key:col_name,value：旧值
-	protected List<ChangeLog> changeLogs;
+	protected List<ChangeLog> hisChangeLogs;
 	public BasicRow(long objPid){
 		this.objPid=objPid;
 	}
@@ -83,12 +83,30 @@ public abstract class BasicRow implements Logable{
 //	public boolean isGeoChanged() {
 //		return false;
 //	}
-	
-	public OperationType getOpType() {
+	public OperationType getOpType(){
 		return opType;
 	}
 	public void setOpType(OperationType opType) {
 		this.opType = opType;
+	}
+	public OperationType getHisOpType() {
+		if(hisChangeLogs!=null&&hisChangeLogs.size()>0){
+			int size = hisChangeLogs.size();
+			//取最后一次修改
+			ChangeLog clog = hisChangeLogs.get(size-1); 
+			if(clog.getOpType().equals(OperationType.UPDATE)){
+				for(int i=0;i<(size-1);i++){
+					if(hisChangeLogs.get(i).getOpType().equals(OperationType.INSERT)){
+						return OperationType.INSERT;
+					}
+				}
+				return OperationType.UPDATE;
+			}else{
+				return clog.getOpType();
+			}
+		}else{
+			return OperationType.INITIALIZE;
+		}
 	}
 	public String getRowId() {
 		return rowId;
@@ -104,7 +122,7 @@ public abstract class BasicRow implements Logable{
 	 * @param colName
 	 * @return
 	 */
-	public Object getOldValue(String colName){
+	public Object getHisOldValue(String colName){
 		//
 		return null;
 	}

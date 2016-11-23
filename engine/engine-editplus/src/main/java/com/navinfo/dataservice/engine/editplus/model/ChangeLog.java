@@ -13,5 +13,16 @@ import com.navinfo.dataservice.engine.editplus.operation.OperationType;
 public class ChangeLog {
 	protected OperationType opType=OperationType.INITIALIZE;//表记录的操作状态
 	protected Map<String,Object> oldValues=null;//存储变化字段的旧值，key:col_name,value：旧值
-	protected boolean persitented;
+	public OperationType getOpType() {
+		return opType;
+	}
+	public void setOpType(OperationType opType) {
+		this.opType = opType;
+	}
+	public Map<String, Object> getOldValues() {
+		return oldValues;
+	}
+	public void setOldValues(Map<String, Object> oldValues) {
+		this.oldValues = oldValues;
+	}
 }

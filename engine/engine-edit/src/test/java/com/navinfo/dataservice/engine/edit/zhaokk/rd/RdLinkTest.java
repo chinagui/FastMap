@@ -27,9 +27,10 @@ public class RdLinkTest extends InitApplication {
 	public RdLinkTest() throws Exception {
 		// this.conn = DBConnector.getInstance().getConnectionById(11);
 	}
-
+@Test
 	public void testDelete() {
-		String parameter = "{\"command\":\"DELETE\",\"type\":\"RDLINK\",\"projectId\":11,\"objId\":100002773}";
+
+		String parameter = "{\"command\":\"DELETE\",\"type\":\"RDNODE\",\"dbId\":17,\"objId\":308002096}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

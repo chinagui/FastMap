@@ -7,6 +7,7 @@ import java.util.Map;
 
 import com.navinfo.dataservice.engine.editplus.model.BasicRow;
 import com.navinfo.dataservice.engine.editplus.model.ixpoi.IxPoi;
+import com.navinfo.dataservice.engine.editplus.model.ixpoi.IxPoiAddress;
 import com.navinfo.dataservice.engine.editplus.model.ixpoi.IxPoiContact;
 import com.navinfo.dataservice.engine.editplus.model.ixpoi.IxPoiName;
 import com.navinfo.dataservice.engine.editplus.model.obj.BasicObj;
@@ -23,36 +24,12 @@ public class IxPoiObj extends AbstractIxObj {
 	public IxPoiObj(BasicRow mainrow) {
 		super(mainrow);
 	}
-
-//	//子对象
-//	protected List<BasicObj> ixPoiName=null;
-//	protected List<BasicObj> ixPoiAddress=null;
-//	//...
-//	//子表
-//	protected List<BasicRow> ixPoiContact=null;
-
-	
-//	@Override
-//	public Map<Class<? extends BasicRow>, List<BasicRow>> childRows() {
-//		if(childrows==null){
-//			childrows=new HashMap<Class<? extends BasicRow>, List<BasicRow>>();
-//			childrows.put(IxPoiContact.class,contacts);
-//			//...
-//		}
-//		return childrows;
-//	}
-	
-
-//	@Override
-//	public Map<Class<? extends BasicObj>, List<BasicObj>> childObjs() {
-//		if(childobjs==null){
-//			childobjs=new HashMap<Class<? extends BasicObj>, List<BasicObj>>();
-//			childobjs.put(IxPoiName.class, names);
-//			childobjs.put(IxPoiAddress.class, addresses);
-//			//...
-//		}
-//		return childobjs;
-//	}
+	public IxPoiName createIxPoiName()throws Exception{
+		return (IxPoiName)(ObjFactory.getInstance().createRow("IX_POI_NAME", this.objPid()));
+	}
+	public IxPoiAddress createIxPoiAddress()throws Exception{
+		return (IxPoiAddress)(ObjFactory.getInstance().createRow("IX_POI_ADDRESS", this.objPid()));
+	}
 	
 	public IxPoiName getNameByLct(String langCode,int nameClass,int nameType){
 		List<BasicRow> rows = getRowsByName("IX_POI_NAME");

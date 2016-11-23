@@ -631,7 +631,7 @@ public class MetaController extends BaseController {
 	
 	/**
 	 * @Title: searchRdNameForWeb
-	 * @Description: 根据任务的grid，查找对应任务grid范围内的rd_name
+	 * @Description: 根据name_id，查询rd_name
 	 * @param request
 	 * @return
 	 * @throws ServletException
@@ -640,7 +640,7 @@ public class MetaController extends BaseController {
 	 * @author zl zhangli5174@navinfo.com
 	 * @date 2016年11月14日 下午7:58:19 
 	 */
-	@RequestMapping(value = "/rdname/websearchone")
+	@RequestMapping(value = "/rdname/getByNameId")
 	public ModelAndView searchByNameId(HttpServletRequest request)
 			throws ServletException, IOException {
 		String parameter = request.getParameter("parameter");
@@ -649,7 +649,7 @@ public class MetaController extends BaseController {
 
 			RdNameSelector selector = new RdNameSelector();
 			
-			int nameId = jsonReq.getInt("nameId");
+			String nameId = jsonReq.getString("nameId");
 			
 			
 			JSONObject data = selector.searchForWebByNameId(nameId);
@@ -734,13 +734,17 @@ public class MetaController extends BaseController {
 		}
 	}
 	
+
 	/**
-	 * web端道路名拆分接口
-	 * @author wangdongbin
+	 * @Title: webTeilen
+	 * @Description: 道路名拆分(修)(第七迭代)  增加铁路类的英文拆分
 	 * @param request
 	 * @return
 	 * @throws ServletException
-	 * @throws IOException
+	 * @throws IOException  ModelAndView
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2016年11月18日 下午7:58:29 
 	 */
 	@RequestMapping(value = "/rdname/webteilen")
 	public ModelAndView webTeilen(HttpServletRequest request)

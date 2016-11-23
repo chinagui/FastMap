@@ -9,20 +9,15 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
-import com.navinfo.dataservice.api.man.iface.ManApi;
-import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 
@@ -337,89 +332,112 @@ public class NiValExceptionSelector {
 			
 		},pidsClob);
 	}
+	//******************************
+/**
+ * @Title: listCheckResults
+ * @Description: 查询道路名检查结果
+ * @param params
+ * @param tips
+ * @return  Page
+ * @throws 
+ * @author zl zhangli5174@navinfo.com
+ * @date 2016年11月22日 下午8:55:38 
+ */
+public Page listCheckResults(JSONObject params, JSONArray tips) {
 	
-	/**
-	 * @Title: rdNaResultslist
-	 * @Description: 道路名检查返回的检查结果列表
-	 * @param subtaskType
-	 * @param grids
-	 * @param pageSize
-	 * @param pageNum
-	 * @return
-	 * @throws Exception  Page
-	 * @throws 
-	 * @author zl zhangli5174@navinfo.com
-	 * @date 2016年11月16日 下午3:26:05 
-	 */
-	public Page rdNaResultslist(int subtaskId ,int subtaskType,Collection<String> grids, final int pageSize, final int pageNum)
-			throws Exception {
-		//获得 tips 
-		
-		ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
-		Subtask subtask = apiService.queryBySubtaskId(subtaskId);
-		//FccApi apiFcc=(FccApi) ApplicationContextUtil.getBean("fccApi");
-		
-		//JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(),1901,new JSONArray());
-		JSONArray tips = null ;
-		
-		
-		
-		
-		Clob pidsClob = ConnectionUtil.createClob(conn);
-		pidsClob.setString(1, StringUtils.join(grids, ","));		
-		StringBuilder sql = new StringBuilder("select a.md5_code,ruleid,situation,\"LEVEL\" level_,"
-				+ "targets,information,a.location.sdo_point.x x,a.location.sdo_point.y y,created,"
-				+ "worker from ni_val_exception a where exists(select 1 from ni_val_exception_grid b,"
-				+ "(select to_number(COLUMN_VALUE) COLUMN_VALUE from table(clob_to_table(?))) grid_table "
-				+ "where a.md5_code=b.md5_code and b.grid_id =grid_table.COLUMN_VALUE)");
-		
-		
-		sql.append(" order by created desc,md5_code desc");
-		
-		return new QueryRunner().query(pageNum,pageSize,conn, sql.toString(), new ResultSetHandler<Page>(){
-
-			@Override
-			public Page handle(ResultSet rs) throws SQLException {
-				Page page =new Page(pageNum);
-				page.setPageSize(pageSize);
-				int total = 0;
-				JSONArray results = new JSONArray();
-				while(rs.next()){
-					
-					if(total ==0){total=rs.getInt("TOTAL_RECORD_NUM_");}
-					
-					JSONObject json = new JSONObject();
-					
-					json.put("id",  rs.getString("md5_code"));
-
-					json.put("ruleid", rs.getString("ruleid"));
-
-					json.put("situation", rs.getString("situation"));
-
-					json.put("rank", rs.getInt("level_"));
-
-					json.put("targets", rs.getString("targets"));
-
-					json.put("information", rs.getString("information"));
-
-					json.put("geometry",
-							"(" + rs.getDouble("x") + "," + rs.getDouble("y") + ")");
-
-					json.put("create_date", rs.getString("created"));
-
-					json.put("worker", rs.getString("worker"));
-
-					results.add(json);
+		Connection conn = null;
+			try {
+				conn = DBConnector.getInstance().getMetaConnection();
+				final int pageSize = params.getInt("pageSize");
+				final int pageNum = params.getInt("pageNum");
+				int subtaskId = params.getInt("subtaskId");//获取subtaskid 
+				
+				StringBuilder sql = new StringBuilder();
+				
+				String ids = "";
+				String tmep = "";
+				for (int i=0;i<tips.size();i++) {
+					JSONObject tipsObj = tips.getJSONObject(i);
+					ids += tmep;
+					tmep = ",";
+					ids +=tipsObj.getString("id");
 				}
-				page.setTotalCount(total);
-				page.setResult(results);
-				return page;
-			}
-			
-		},pidsClob);
-	}
-	
+				sql.append("with  q1 as ( ");
+				sql.append("select a.md5_code,ruleid,situation,\"LEVEL\" level_,"
+						+ "targets,information,a.location.sdo_point.x x,a.location.sdo_point.y y,created,worker,"
+						+ "substr(replace(a.targets,'\"',''),instr(replace(a.targets,'\"',''), ':') + 1,length(replace(a.targets,'\"',''))) rdname_id ");
+				sql.append(" from ni_val_exception a ");
+				sql.append("), ");
+				//**********************
+				sql.append("q2 as ( ");
+				sql.append("select rd.name_id from ( SELECT null tipid,r.* from rd_name r  where r.src_resume = '\"task\":"+subtaskId+"' ");
+				sql.append(" union all ");
+				sql.append(" SELECT tt.*  FROM ( select substr(replace(t.src_resume,'\"',''),instr(replace(t.src_resume,'\"',''), ':') + 1,length(replace(src_resume,'\"',''))) as tipid,t.*  from rd_name t  where t.src_resume like '%tips%' ) tt ");
+				sql.append(" where 1=1 and tt.tipid in (select column_value from table(clob_to_table('"+ids+"'))) ");
+				sql.append(" ) rd )");
+				//**********************
+				sql.append(" select md5_code,ruleid,situation,level_,targets,information, x, y,created,worker "
+						+ "from q1 q  "
+						+ " where  exists(select 1 from q2 n where  n.name_id = to_char(q.rdname_id) ) ");
+				
+				//************************
+				sql.append(" order by created desc,md5_code desc");
+				//System.out.println("listCheckResults sql:  "+sql.toString());
+				
+				QueryRunner run=new QueryRunner();
+				ResultSetHandler<Page> rsHandler=new ResultSetHandler<Page>() {
+					public Page handle(ResultSet rs) throws SQLException{
+						Page page = new Page(pageNum);
+						page.setPageSize(pageSize);
+						int total=0;
+						JSONArray results = new JSONArray();
+						while(rs.next()){
+							
+							if(total ==0){total=rs.getInt("TOTAL_RECORD_NUM_");}
+							
+							JSONObject json = new JSONObject();
+							
+							json.put("id",  rs.getString("md5_code"));
 
+							json.put("ruleid", rs.getString("ruleid"));
+
+							json.put("situation", rs.getString("situation"));
+
+							json.put("rank", rs.getInt("level_"));
+
+							json.put("targets", rs.getString("targets"));
+
+							json.put("information", rs.getString("information"));
+
+							json.put("geometry",
+									"(" + rs.getDouble("x") + "," + rs.getDouble("y") + ")");
+
+							json.put("create_date", rs.getString("created"));
+
+							json.put("worker", rs.getString("worker"));
+
+							results.add(json);
+						}
+						page.setTotalCount(total);
+						page.setResult(results);
+						return page;
+					}
+				};
+				Page p = run.query(conn, sql.toString(),rsHandler);
+ 				return p;
+			} catch (SQLException e) {
+				e.printStackTrace();
+				return null;
+			}finally {
+				try {
+					conn.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+	}
+	//******************************
+	
 	public JSONArray loadByGrid(JSONArray grids, int pageSize, int page)
 			throws Exception {
 
@@ -583,23 +601,5 @@ public class NiValExceptionSelector {
 		}
 
 		return ruleList;
-	}
-	
-	public static void main(String[] args) throws Exception {
-
-
-		NiValExceptionSelector selector = new NiValExceptionSelector(
-				DBConnector.getInstance().getConnectionById(11));
-
-		JSONArray grids = new JSONArray();
-
-		grids.add(60560303);
-//
-//		System.out.println(selector.loadCountByGrid(grids));
-//		
-//		System.out.println(selector.loadByGrid(grids, 10, 1));
-		
-		Page page = selector.list(0, grids, 20, 1);
-		System.out.println(page.getResult());
 	}
 }

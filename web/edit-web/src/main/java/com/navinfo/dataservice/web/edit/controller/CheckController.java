@@ -17,7 +17,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
+import com.navinfo.dataservice.api.fcc.iface.FccApi;
 import com.navinfo.dataservice.api.man.iface.ManApi;
+import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
@@ -31,6 +33,7 @@ import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.engine.check.CheckEngine;
 import com.navinfo.dataservice.engine.check.core.NiValException;
 import com.navinfo.dataservice.engine.edit.check.CheckService;
+import com.navinfo.dataservice.engine.meta.rdname.RdNameSelector;
 import com.navinfo.navicommons.database.Page;
 import com.sun.source.tree.IfTree;
 
@@ -118,6 +121,52 @@ public class CheckController extends BaseController {
 		}
 	}
 	
+	/**
+	 * @Title: listCheckResults
+	 * @Description: 查看检查结果列表(新增)(第七迭代)
+	 * @param request   :parameter={"pageNum":0,"pageSize":20,"subtaskId":76}
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException  ModelAndView
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2016年11月23日 下午1:42:25 
+	 */
+	@RequestMapping(value = "/check/listRdnResult")
+	public ModelAndView listCheckResults(HttpServletRequest request)
+			throws ServletException, IOException {
+
+		String parameter = request.getParameter("parameter");
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			int subtaskId = jsonReq.getInt("subtaskId");
+			
+			ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
+			
+			Subtask subtask = apiService.queryBySubtaskId(subtaskId);
+			NiValExceptionSelector niValExceptionSelector = new NiValExceptionSelector();
+			if (subtask == null) {
+				throw new Exception("subtaskid未找到数据");
+			}
+			
+			FccApi apiFcc=(FccApi) ApplicationContextUtil.getBean("fccApi");
+			
+			JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(),1901,new JSONArray());
+			Page page = niValExceptionSelector.listCheckResults(jsonReq,tips);
+			logger.info("end check/list");
+
+			return new ModelAndView("jsonView", success(page));
+
+		} catch (Exception e) {
+
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		} finally {
+			
+		}
+	}
+	
 	@RequestMapping(value = "/check/get")
 	public ModelAndView getCheck(HttpServletRequest request)
 			throws ServletException, IOException {
@@ -202,6 +251,7 @@ public class CheckController extends BaseController {
 		}
 	}
 
+	
 	@RequestMapping(value = "/check/update")
 	public ModelAndView updateCheck(HttpServletRequest request)
 			throws ServletException, IOException {
@@ -244,6 +294,56 @@ public class CheckController extends BaseController {
 		}
 	}
 	
+	/**
+	 * @Title: updateCheckRdnResult
+	 * @Description: 修改道路名检查结果的状态(新增)(第七迭代)
+	 * @param request : parameter={"id":"11987","type":2} (id:检查结果id,type:状态 1例外， 2确认不修改， 3确认已修改)
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException  ModelAndView
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2016年11月23日 下午1:47:32 
+	 */
+	@RequestMapping(value = "/check/updateRdnResult")
+	public ModelAndView updateCheckRdnResult(HttpServletRequest request)
+			throws ServletException, IOException {
+
+		String parameter = request.getParameter("parameter");
+
+		Connection conn = null;
+
+		try {
+
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			String id = jsonReq.getString("id");
+
+			int type = jsonReq.getInt("type");
+
+			conn = DBConnector.getInstance().getMetaConnection();//获取元数据库连接
+
+			NiValExceptionOperator selector = new NiValExceptionOperator(conn);
+
+			selector.updateCheckLogStatus(id, type);
+
+			return new ModelAndView("jsonView", success());
+
+		} catch (Exception e) {
+
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
 	/**
 	 * @Title: checkRun
 	 * @Description: 
@@ -464,14 +564,7 @@ public class CheckController extends BaseController {
 		}
 	}
 	
-	/**
-	 * 检查规则查询
-	 * @param request  
-	 * @return
-	 * @throws ServletException
-	 * @throws IOException
-	 * @author wangdongbin
-	 */
+
 	/**
 	 * @Title: getCkRules
 	 * @Description: 获取道路名检察的规则列表(修)(第七迭代)

@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.cop.waistcoat.job;
 
+
 import com.navicop.navinfo.check.dms.NaviCopCheckEntry;
 import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
@@ -10,7 +11,6 @@ import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
 import org.apache.commons.lang.StringUtils;
 import java.util.Random;
-
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.SQLException;

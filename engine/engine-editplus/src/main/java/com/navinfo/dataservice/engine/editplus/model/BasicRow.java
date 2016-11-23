@@ -139,6 +139,11 @@ public abstract class BasicRow implements Logable{
 			sb.append("INSERT INTO "+tbName);
 			//字段信息
 			assembleColumnInfo(tab.getColumns(),columnName,columnPlaceholder,columnValues);
+			//更新记录：新增
+			columnName.add("U_RECORD");
+			columnPlaceholder.add("?");
+			columnValues.add(1);
+			
 			sb.append(" (" + StringUtils.join(columnName, ",") + ")");
 			sb.append(" VALUES (" + StringUtils.join(columnPlaceholder, ",") + ")");
 			sb.append(" WHERE ROW_ID = " + getRowId());
@@ -152,6 +157,11 @@ public abstract class BasicRow implements Logable{
 				}
 				//字段信息
 				assembleColumnInfo(tab.getColumns(),columnName,columnPlaceholder,columnValues);
+				//更新记录：新增
+				columnName.add("U_RECORD");
+				columnPlaceholder.add("?");
+				columnValues.add(3);
+				
 				sb.append(" (" + StringUtils.join(columnName, ",") + ")");
 				sb.append(" = (" + StringUtils.join(columnPlaceholder, ",") + ")");
 				sb.append(" WHERE ROW_ID = " + getRowId());
@@ -159,6 +169,7 @@ public abstract class BasicRow implements Logable{
 		}else if(OperationType.DELETE.equals(this.opType)){
 			//更新U_RECORD字段为2
 			sb.append("UPDATE "+ tbName + " SET U_RECORD = ?");
+			sb.append(" WHERE ROW_ID = " + getRowId());
 			columnValues.add(2);
 		}
 		sql.setSql(sb.toString());

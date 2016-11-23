@@ -87,15 +87,17 @@ public class SolrController {
         }
         
     	//过滤的类型
-		//id:[* TO *] -id:(11130220000 11130213400)
+		//  1. 示例：TITLE:(* NOT "上网费用高" NOT "宽带收费不合理" )  
 		if(notExpSourceType!=null&&notExpSourceType.length!=0){
-			String typeStr="(";
+			String typeStr="( *";
 			for (int type : notExpSourceType) {
-				typeStr+=type+" ";
+				typeStr+=" NOT \""+type+"\"";
 			}
 			typeStr+=")";
 			
-			param += " AND s_sourceType::[* TO *] -s_sourceType "+typeStr;
+			param += " AND s_sourceType:"+typeStr;
+			
+			//System.out.println(param);
 			
 		}
 
@@ -133,15 +135,17 @@ public class SolrController {
 		}
 		
 		//过滤的类型
-		//id:[* TO *] -id:(11130220000 11130213400)
+		//  1. 示例：TITLE:(* NOT "上网费用高" NOT "宽带收费不合理" )  
 		if(notExpSourceType!=null&&notExpSourceType.length!=0){
-			String typeStr="(";
+			String typeStr="( *";
 			for (int type : notExpSourceType) {
-				typeStr+=type+" ";
+				typeStr+=" NOT \""+type+"\"";
 			}
 			typeStr+=")";
 			
-			param += " AND s_sourceType::[* TO *] -s_sourceType "+typeStr;
+			param += " AND s_sourceType:"+typeStr;
+			
+			//System.out.println(param);
 			
 		}
 

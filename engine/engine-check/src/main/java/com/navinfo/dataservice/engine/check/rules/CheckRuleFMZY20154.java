@@ -2,11 +2,13 @@ package com.navinfo.dataservice.engine.check.rules;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
+
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiParking;
 import com.navinfo.dataservice.engine.check.core.baseRule;
+import com.navinfo.dataservice.commons.util.StringUtils;
 
 /** 
  * @ClassName: CheckRuleFMZY20154 
@@ -42,11 +44,11 @@ public class CheckRuleFMZY20154 extends baseRule {
 			IxPoiParking poiPark = (IxPoiParking) row;
 			String payment=poiPark.getPayment(); 
 			Arrays.asList(defaultList).contains('|');
-			if ((!"".equals(payment)) && (payment.indexOf("\\|")<0) && (!defaultList.contains(payment))){
+			if (StringUtils.isNotEmpty(payment) && (payment.indexOf("\\|")<0) && (!defaultList.contains(payment))){
                 log="停车场支付方式的值没有'|',且不为空时,值不在{10,11,12,13,14,15}中";
                 this.setCheckResult(ixPoi.getGeometry(), "[IX_POI,"+ixPoi.getPid()+"]", ixPoi.getMeshId(),log);
 			}
-			else if(!"".equals(payment) && payment.indexOf("|")>=0){
+			else if(StringUtils.isNotEmpty(payment) && payment.indexOf("|")>=0){
 				List<String> strDuplicate = new ArrayList<String>();
 				String[] strArray = payment.split("\\|");
 				for(int i = 0; i < strArray.length; i++){

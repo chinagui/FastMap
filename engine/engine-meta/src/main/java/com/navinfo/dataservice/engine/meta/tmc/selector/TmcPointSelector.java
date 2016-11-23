@@ -41,7 +41,7 @@ public class TmcPointSelector {
 	public TmcPoint loadByTmcPointId(int tmcPointId) throws Exception {
 		TmcPoint tmcPoint = null;
 
-		String sql = "SELECT LOCTABLE_ID, LOC_CODE, TYPE_CODE, IN_POS, IN_NEG, OUT_POS, OUT_NEG, PRESENT_POS, PRESENT_NEG, LOCOFF_POS, LOCOFF_NEG, LINE_TMC_ID, AREA_TMC_ID,NEIGHBOUR_BOUND, NEIGHBOUR_TABLE, URBAN, INTERUPT_ROAD, GEOMETRY, EDIT_FLAG, CID FROM TMC_POINT WHERE TMC_ID = :1 AND U_RECORD !=2";
+		String sql = "SELECT LOCTABLE_ID, JUNC_LOCCODE,LOC_CODE, TYPE_CODE, IN_POS, IN_NEG, OUT_POS, OUT_NEG, PRESENT_POS, PRESENT_NEG, LOCOFF_POS, LOCOFF_NEG, LINE_TMC_ID, AREA_TMC_ID,NEIGHBOUR_BOUND, NEIGHBOUR_TABLE, URBAN, INTERUPT_ROAD, GEOMETRY, EDIT_FLAG, CID FROM TMC_POINT WHERE TMC_ID = :1 AND U_RECORD !=2";
 
 		PreparedStatement pstmt = null;
 
@@ -64,6 +64,8 @@ public class TmcPointSelector {
 				tmcPoint.setCid(resultSet.getString("CID"));
 				
 				tmcPoint.setLocCode(resultSet.getInt("LOC_CODE"));
+				
+				tmcPoint.setJuncLoccode(resultSet.getInt("JUNC_LOCCODE"));
 				
 				tmcPoint.setLocoffNeg(resultSet.getInt("LOCOFF_NEG"));
 				

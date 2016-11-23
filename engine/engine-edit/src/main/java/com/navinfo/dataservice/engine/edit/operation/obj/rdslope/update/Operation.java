@@ -80,7 +80,7 @@ public class Operation implements IOperation {
 							this.command.getPid());
 				}
 				for (int i = 0; i < this.command.getSeriesLinkPids().size(); i++) {
-					this.addRdSlope(result, i + 1);
+					this.addRdSlope(result, i);
 				}
 
 			} else {
@@ -96,8 +96,8 @@ public class Operation implements IOperation {
 					}
 				}
 				if (sourceSize < currentSize) {
-					for (int i = sourceSize; i <= currentSize; i++) {
-						this.addRdSlope(result, i + 1);
+					for (int i = sourceSize ; i < currentSize; i++) {
+						this.addRdSlope(result, i);
 					}
 				}
 
@@ -115,7 +115,7 @@ public class Operation implements IOperation {
 		RdSlopeVia rdSlopeVia = new RdSlopeVia();
 		rdSlopeVia.setSlopePid(this.command.getPid());
 		rdSlopeVia.setLinkPid(this.command.getSeriesLinkPids().get(seqNum));
-		rdSlopeVia.setSeqNum(seqNum);
+		rdSlopeVia.setSeqNum(seqNum+1);
 		result.insertObject(rdSlopeVia, ObjStatus.INSERT, this.command.getPid());
 	}
 
@@ -353,6 +353,13 @@ public class Operation implements IOperation {
 					result.insertObject(row, ObjStatus.DELETE, slope.getPid());
 				}
 			}
+		}
+	}
+	public static void main(String[] args) {
+		int sourceSize =0;
+		int currentSize = 2;
+		for (int i = sourceSize ; i < currentSize; i++) {
+		System.out.println(i);
 		}
 	}
 

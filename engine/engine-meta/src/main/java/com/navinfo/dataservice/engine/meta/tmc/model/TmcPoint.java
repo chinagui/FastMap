@@ -65,6 +65,9 @@ public class TmcPoint {
 
 	// 负向偏移
 	private int locoffNeg;
+	
+	//交叉口参考
+	private int juncLoccode;
 
 	// 邻接范围代码
 	private String neighbourBound;
@@ -103,6 +106,14 @@ public class TmcPoint {
 
 	public int getLocoffNeg() {
 		return locoffNeg;
+	}
+	
+	public int getJuncLoccode() {
+		return juncLoccode;
+	}
+
+	public void setJuncLoccode(int juncLoccode) {
+		this.juncLoccode = juncLoccode;
 	}
 
 	public void setLocoffNeg(int locoffNeg) {

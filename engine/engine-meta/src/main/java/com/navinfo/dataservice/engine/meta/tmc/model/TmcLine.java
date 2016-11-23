@@ -25,6 +25,9 @@ public class TmcLine {
 	//位置代码
 	private int locCode;
 	
+	//位置表代码
+	private String loctableId;
+	
 	private String translateName;
 
 	//位置表代码
@@ -61,6 +64,14 @@ public class TmcLine {
 
 	public String getTranslateName() {
 		return translateName;
+	}
+	
+	public String getLoctableId() {
+		return loctableId;
+	}
+
+	public void setLoctableId(String loctableId) {
+		this.loctableId = loctableId;
 	}
 
 	public void setTranslateName(String translateName) {

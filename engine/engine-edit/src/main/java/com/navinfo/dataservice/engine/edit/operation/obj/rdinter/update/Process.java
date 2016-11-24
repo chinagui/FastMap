@@ -32,7 +32,7 @@ public class Process extends AbstractProcess<Command> {
 
 	@Override
 	public String exeOperation() throws Exception {
-		return new Operation(this.getCommand()).run(this.getResult());
+		return new Operation(this.getCommand(),getConn()).run(this.getResult());
 	}
 
 }

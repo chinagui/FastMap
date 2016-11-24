@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.navinfo.dataservice.dao.glm.iface.AlertObject;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -233,5 +234,78 @@ public class Operation implements IOperation {
 				
 			}
 		}
+	}
+	
+	/**
+	 * 删除link、node
+	 * 
+	 * @return
+	 * @throws Exception
+	 */
+	public List<AlertObject> getDeleteInfectRdTmc(List<RdLink> deleteLinks,List<Integer> linkPids) throws Exception {
+
+		List<AlertObject> alertList = new ArrayList<>();
+		
+		for(RdLink oldLink : deleteLinks)
+		{
+			List<IRow> tmcLocations = oldLink.getTmclocations();
+			
+			for(IRow row : tmcLocations)
+			{
+				List<Integer> tmclocationLinkPids = new ArrayList<>();
+				
+				RdTmclocation location = (RdTmclocation) row;
+				
+				for(IRow linkRow : location.getLinks())
+				{
+					RdTmclocationLink tmcLink = (RdTmclocationLink) linkRow;
+					
+					tmclocationLinkPids.add(tmcLink.getLinkPid());
+				}
+				
+				//如果删除的link包含了全部tmclocationlink,则删除tmclocation对象
+				if(linkPids.containsAll(tmclocationLinkPids))
+				{
+					AlertObject alertObj = new AlertObject();
+
+					alertObj.setObjType(location.objType());
+
+					alertObj.setPid(location.getPid());
+
+					alertObj.setStatus(ObjStatus.DELETE);
+
+					if (!alertList.contains(alertObj)) {
+						alertList.add(alertObj);
+					}
+					
+					continue;
+				}
+				
+				for(IRow tmcLinkRow : location.getLinks())
+				{
+					RdTmclocationLink tmcLink = (RdTmclocationLink) tmcLinkRow;
+					
+					if(tmcLink.getLinkPid() == oldLink.getPid())
+					{
+						//删除原link在tmclocationlink中的记录
+						AlertObject alertObj = new AlertObject();
+
+						alertObj.setObjType(location.objType());
+
+						alertObj.setPid(location.getPid());
+
+						alertObj.setStatus(ObjStatus.UPDATE);
+
+						if (!alertList.contains(alertObj)) {
+							alertList.add(alertObj);
+						}
+						break;
+					}
+				}
+				
+			}
+		}
+
+		return alertList;
 	}
 }

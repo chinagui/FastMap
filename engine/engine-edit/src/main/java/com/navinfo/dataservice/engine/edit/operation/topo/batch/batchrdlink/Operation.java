@@ -1,9 +1,10 @@
 package com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlink;
 
 import com.navinfo.dataservice.dao.glm.iface.*;
-import com.navinfo.dataservice.engine.edit.operation.Transaction;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+
+import java.sql.Connection;
 
 /**
  * Created by chaixin on 2016/11/23 0023.
@@ -12,8 +13,11 @@ public class Operation implements IOperation {
 
     private Command command;
 
-    public Operation(Command command) {
+    private Connection conn;
+
+    public Operation(Command command, Connection conn) {
         this.command = command;
+        this.conn = conn;
     }
 
     @Override
@@ -39,11 +43,11 @@ public class Operation implements IOperation {
                 }
             }
             json.put("data", data.toString());
-//            com.navinfo.dataservice.engine.edit.operation.obj.rdlink.update.Command command = new com.navinfo.dataservice.engine.edit.operation.obj.rdlink.update.Command(json, json.toString());
-//            com.navinfo.dataservice.engine.edit.operation.obj.rdlink.update.Process process = new com.navinfo.dataservice.engine.edit.operation.obj.rdlink.update.Process(command);
-//            process.run();
-            Transaction transaction = new Transaction(json.toString());
-            transaction.run();
+            com.navinfo.dataservice.engine.edit.operation.obj.rdlink.update.Command command = new com.navinfo.dataservice.engine.edit.operation.obj.rdlink.update.Command(json, json.toString());
+            com.navinfo.dataservice.engine.edit.operation.obj.rdlink.update.Process process = new com.navinfo.dataservice.engine.edit.operation.obj.rdlink.update.Process(command, result, conn);
+            process.innerRun();
+//            Transaction transaction = new Transaction(json.toString());
+//            transaction.run();
         }
 
         return null;

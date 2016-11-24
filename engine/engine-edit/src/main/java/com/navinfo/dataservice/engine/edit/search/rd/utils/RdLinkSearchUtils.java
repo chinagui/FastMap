@@ -328,7 +328,7 @@ public class RdLinkSearchUtils {
 		while (nextLinks.size() == 1) {
 			RdLink currentLink = nextLinks.get(0);
 			// 10级路不计算挂接个数
-			if (currentLink.getKind() == 15) {
+			if (currentLink.getKind() >= 10) {
 				break;
 			}
 			if (this.getLinksLength(tracks) + currentLink.getLength() + length > 150) {

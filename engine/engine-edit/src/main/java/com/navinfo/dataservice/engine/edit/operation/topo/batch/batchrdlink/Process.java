@@ -27,8 +27,9 @@ public class Process extends AbstractProcess<Command> {
         getConn().setAutoCommit(false);
         try {
             msg = exeOperation();
+            recordData();
+            getConn().commit();
         } catch (Exception e) {
-            getConn().rollback();
             throw e;
         } finally {
             try {
@@ -41,6 +42,6 @@ public class Process extends AbstractProcess<Command> {
 
     @Override
     public String exeOperation() throws Exception {
-        return new Operation(getCommand()).run(getResult());
+        return new Operation(getCommand(), getConn()).run(getResult());
     }
 }

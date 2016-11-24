@@ -4,12 +4,9 @@
 package com.navinfo.dataservice.engine.edit.operation.topo.delete.deleterdnode;
 
 import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.List;
 
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 
 /**
  * @ClassName: OpRefTrafficsignal
@@ -29,12 +26,7 @@ public class OpRefRdObject {
 
 		com.navinfo.dataservice.engine.edit.operation.obj.rdobject.delete.Operation rdinterOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdobject.delete.Operation(
 				this.conn);
-		List<Integer> linkPidList = new ArrayList<>();
-
-		for (RdLink link : command.getLinks()) {
-			linkPidList.add(link.getPid());
-		}
-		rdinterOperation.deleteByType(linkPidList, ObjType.RDLINK, result);
+		rdinterOperation.deleteByType(command.getLinkPids(), ObjType.RDLINK, result);
 		return null;
 	}
 

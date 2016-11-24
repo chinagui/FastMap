@@ -20,7 +20,7 @@ public class OpRefRdlane {
     public void updateRelation(Command command, List<RdLink> newLinks, Result result) throws Exception {
     	// 详细车道维护
         com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation rdlaneOperation = new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation(this.conn);
-        rdlaneOperation.breakRdLink(command.getRdLink().getPid(), newLinks, result);
+        rdlaneOperation.breakRdLink(command.getRdLink(), newLinks, result);
 
     }
 }

@@ -34,13 +34,13 @@ public class OpRefRdLane {
 	 * @return
 	 * @throws Exception
 	 */
-	public String run(Result result, int linkPid, List<RdLink> newLinks)
+	public String run(Result result, RdLink link, List<RdLink> newLinks)
 			throws Exception {
 
 		com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation rdLaneOperation = new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation(
 				conn);
 
-		rdLaneOperation.breakRdLink(linkPid, newLinks, result);
+		rdLaneOperation.breakRdLink(link, newLinks, result);
 
 		return null;
 	}

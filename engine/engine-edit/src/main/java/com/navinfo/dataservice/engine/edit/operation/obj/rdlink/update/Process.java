@@ -1,9 +1,11 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdlink.update;
 
+import java.sql.Connection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.navinfo.dataservice.dao.glm.iface.Result;
 import org.apache.commons.collections.CollectionUtils;
 
 import com.navinfo.dataservice.dao.glm.iface.AlertObject;
@@ -22,7 +24,11 @@ public class Process extends AbstractProcess<Command> {
         // TODO Auto-generated constructor stub
     }
 
-    private RdLink updateLink;
+	public Process(AbstractCommand command, Result result, Connection conn) throws Exception {
+		super(command, result, conn);
+	}
+
+	private RdLink updateLink;
 
     @Override
     public boolean prepareData() throws Exception {

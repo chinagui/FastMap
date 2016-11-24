@@ -118,6 +118,8 @@ public class Transaction {
                     case CREATESIDEROAD:
                         return new com.navinfo.dataservice.engine.edit.operation.obj.rdlink.sideRoad.create.Command(
                                 json, requester);
+                    case BATCH:
+                        return new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlink.Command(json, requester);
                 }
             case FACE:
                 switch (operType) {
@@ -867,11 +869,9 @@ public class Transaction {
                                 command);
                     case CREATESIDEROAD:
                         return new com.navinfo.dataservice.engine.edit.operation.obj.rdlink.sideRoad.create.Process(
-                                command);   
-                        
-                    case BATCH:
-                        return new com.navinfo.dataservice.engine.edit.operation.batch.rdlink.Process(
                                 command);
+                    case BATCH:
+                        return new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlink.Process(command);
                 }
             case FACE:
                 switch (operType) {
@@ -1029,7 +1029,7 @@ public class Transaction {
                     case DEPART:
                         return new com.navinfo.dataservice.engine.edit.operation.topo.depart.departadnode.Process(
                                 command);
-               
+
                 }
             case ADFACE:
                 switch (operType) {

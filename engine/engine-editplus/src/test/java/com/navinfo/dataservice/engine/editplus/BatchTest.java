@@ -37,7 +37,7 @@ public class BatchTest {
 		BatchCommand batchCommand=new BatchCommand();
 		OperationResult operationResult=new OperationResult();
 		BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", null, 308, false, false);
-		operationResult.putObj(obj);
+//		operationResult.putObj(obj);
 		IxPoi row=(IxPoi) obj.getMainrow();
 		row.setKindCode("newkind");
 		batchCommand.setOperationResult(operationResult);

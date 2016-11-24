@@ -1,5 +1,7 @@
 package com.navinfo.dataservice.column.job;
 
+import org.springframework.util.StringUtils;
+
 import com.navinfo.dataservice.jobframework.exception.JobCreateException;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest;
@@ -12,48 +14,39 @@ import com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest;
  */
 public class MultiSrc2FmDaySyncJobRequest extends AbstractJobRequest {
 	
-	protected String zipFileUrl;
-	
+	protected String remoteZipFile;
+
+	public String getRemoteZipFile() {
+		return remoteZipFile;
+	}
+
+	public void setRemoteZipFile(String remoteZipFile) {
+		this.remoteZipFile = remoteZipFile;
+	}
+
 	@Override
 	public void defineSubJobRequests() throws JobCreateException {
-		// TODO Auto-generated method stub
-
+		
 	}
 
-	/* (non-Javadoc)
-	 * @see com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest#getJobType()
-	 */
 	@Override
 	public String getJobType() {
-		// TODO Auto-generated method stub
-		return null;
+		return "multisrc2FmDay";
 	}
 
-	/* (non-Javadoc)
-	 * @see com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest#getJobTypeName()
-	 */
 	@Override
 	public String getJobTypeName() {
-		// TODO Auto-generated method stub
-		return null;
+		return "多源导入日库";
 	}
 
-	/* (non-Javadoc)
-	 * @see com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest#myStepCount()
-	 */
 	@Override
 	protected int myStepCount() throws JobException {
-		// TODO Auto-generated method stub
 		return 0;
 	}
 
-	/* (non-Javadoc)
-	 * @see com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest#validate()
-	 */
 	@Override
 	public void validate() throws JobException {
-		// TODO Auto-generated method stub
-
+		if(StringUtils.isEmpty(remoteZipFile))throw new JobException("导入的目标文件包地址为空");
 	}
 
 }

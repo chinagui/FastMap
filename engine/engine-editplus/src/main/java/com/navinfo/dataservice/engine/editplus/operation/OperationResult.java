@@ -3,9 +3,11 @@ package com.navinfo.dataservice.engine.editplus.operation;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import com.navinfo.dataservice.engine.editplus.log.LogGenerator;
 import com.navinfo.dataservice.engine.editplus.model.obj.BasicObj;
 import com.navinfo.navicommons.database.sql.RunnableSQL;
 
@@ -61,22 +63,28 @@ public class OperationResult{
 	 * @param objs
 	 * @throws Exception
 	 */
-	public void persistChangeLog(Connection conn,List<BasicObj> objs)throws Exception{
-		if(objs==null||objs.size()==0)return;
+	public void persistChangeLog(Connection conn,String opCmd,int opSg,long userId)throws Exception{
+		if(allObjs.size()==0)return;
 		//持久化一次操作的变更，持久化包括数据和履历
-		for(BasicObj obj:objs){
+		//持久化履历
+		LogGenerator.writeLog(conn, allObjs, opCmd, opSg, userId);
+		//持久化数据
+		for(Iterator<BasicObj> it=allObjs.iterator(); it.hasNext();){
+			BasicObj obj = it.next();
 			List<RunnableSQL> sqls = obj.generateSql();
 			if(sqls!=null){
 				for(RunnableSQL sql:sqls){
 					sql.run(conn);
 				}
 			}
+			//持久化把删除的数据移出objs
+			if(obj.getMainrow().getOpType().equals(OperationType.DELETE)
+					||obj.getMainrow().getOpType().equals(OperationType.INSERT_DELETE)){
+				it.remove();
+			}else{//如果不为删除，则将修改加入历史变更，给下一操作阶段做参考
+				obj.afterPersist();
+			}
 		}
-		//...
-		//把本次操作有变更的对象写入result中，不需要加入delete状态的对象
-		//...
-		//把result中的对象的变更信息写hisChangeLogs中
-		//...
 	}
 	
 	/**

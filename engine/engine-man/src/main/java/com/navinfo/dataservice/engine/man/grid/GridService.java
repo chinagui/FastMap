@@ -388,7 +388,6 @@ public class GridService {
 					return gridList;
 				}
 			},pidsClob);
-			
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

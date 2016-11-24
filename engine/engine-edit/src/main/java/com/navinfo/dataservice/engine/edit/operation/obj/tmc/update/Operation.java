@@ -1,11 +1,14 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.tmc.update;
 
 import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdTmclocation;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdTmclocationLink;
 
@@ -130,5 +133,104 @@ public class Operation implements IOperation {
 
 		}
 
+	}
+	
+	/**
+	 * 打断link维护tmc:打断后的link加入tmc组成link中,原tmclocationlink删除
+	 * @param result 结果集
+	 * @param oldLink 旧link
+	 * @param newLinks 新link
+	 */
+	public void breakLinkUpdateTmc(Result result,RdLink oldLink,List<RdLink> newLinks)
+	{
+		List<IRow> tmcLocations = oldLink.getTmclocations();
+		
+		for(IRow row : tmcLocations)
+		{
+			RdTmclocation location = (RdTmclocation) row;
+			
+			for(IRow tmcLinkRow : location.getLinks())
+			{
+				RdTmclocationLink tmcLink = (RdTmclocationLink) tmcLinkRow;
+				
+				if(tmcLink.getLinkPid() == oldLink.getPid())
+				{
+					//删除原link在tmclocationlink中的记录
+					result.insertObject(tmcLink, ObjStatus.DELETE, tmcLink.getGroupId());
+					
+					int groupId = tmcLink.getGroupId();
+					
+					int locDirect = tmcLink.getLocDirect();
+					
+					int direct = tmcLink.getDirect();
+					
+					//打断后新link加入tmclocaitonlink中
+					for(RdLink newLink : newLinks)
+					{
+						RdTmclocationLink newLocationLink = new RdTmclocationLink();
+						
+						newLocationLink.setGroupId(groupId);
+						
+						newLocationLink.setDirect(direct);
+						
+						newLocationLink.setLocDirect(locDirect);
+						
+						newLocationLink.setLinkPid(newLink.getPid());
+						
+						result.insertObject(newLocationLink, ObjStatus.INSERT, groupId);
+					}
+					break;
+				}
+			}
+			
+		}
+	}
+	
+	/**
+	 * 删除link维护TMC：删除该tmc的组成link：如果组成link有且只有该link直接删除该tmc匹配信息
+	 * @param result
+	 * @param oldLink
+	 */
+	public void deleteLinkUpdateTmc(Result result,List<RdLink> deleteLinks,List<Integer> linkPids)
+	{
+		
+		for(RdLink oldLink : deleteLinks)
+		{
+			List<IRow> tmcLocations = oldLink.getTmclocations();
+			
+			for(IRow row : tmcLocations)
+			{
+				List<Integer> tmclocationLinkPids = new ArrayList<>();
+				
+				RdTmclocation location = (RdTmclocation) row;
+				
+				for(IRow linkRow : location.getLinks())
+				{
+					RdTmclocationLink tmcLink = (RdTmclocationLink) linkRow;
+					
+					tmclocationLinkPids.add(tmcLink.getLinkPid());
+				}
+				
+				if(linkPids.containsAll(tmclocationLinkPids))
+				{
+					result.insertObject(location, ObjStatus.DELETE, location.getPid());
+					
+					continue;
+				}
+				
+				for(IRow tmcLinkRow : location.getLinks())
+				{
+					RdTmclocationLink tmcLink = (RdTmclocationLink) tmcLinkRow;
+					
+					if(tmcLink.getLinkPid() == oldLink.getPid())
+					{
+						//删除原link在tmclocationlink中的记录
+						result.insertObject(tmcLink, ObjStatus.DELETE, tmcLink.getGroupId());
+						break;
+					}
+				}
+				
+			}
+		}
 	}
 }

@@ -97,4 +97,11 @@ public class RdLinkTest extends InitApplication {
         String parameter = "{\"command\":\"MOVE\",\"dbId\":17,\"objId\":304000034,\"data\":{\"longitude\":116.37564,\"latitude\":38.51548},\"type\":\"ZONENODE\"}";
         TestUtil.run(parameter);
     }
+
+    @Test
+    public void batch(){
+        String requester = "{\"dbId\":19,\"type\":\"RDLINK\",\"command\":\"BATCH\",\"linkPids\":[205002774,205002775],\"data\":{\"kind\":2,\"names\":[{\"rowId\":\"\",\"nameGroupid\":3562426,\"name\":\"112 Line Guo Ave\",\"seqNum\":2,\"nameClass\":1,\"inputTime\":\"\",\"nameType\":0,\"srcFlag\":9,\"routeAtt\":0,\"code\":0,\"objStatus\":\"INSERT\"},{\"rowId\":[\"42FC03C80E964FB4A63FC500348252F0\",\"BEF3A918871140C1BBAEBC7A54F9752E\"],\"nameGroupid\":111,\"objStatus\":\"UPDATE\"},{\"rowId\":[\"F16A0EEA8FB04EC2A1F1F099EBA60392\",\"CBEACA83C9664EB19024F7E8A3B80CBA\"],\"objStatus\":\"DELETE\"}]}}";
+//        String requester = "{\"dbId\":19,\"type\":\"RDLINK\",\"command\":\"BATCH\",\"linkPids\":[205002774,205002775],\"data\":{\"kind\":4,\"laneNum\":4,\"names\":[{\"rowId\":\"\",\"nameGroupid\":3562426,\"name\":\"112 Line Guo Ave\",\"seqNum\":2,\"nameClass\":1,\"inputTime\":\"\",\"nameType\":0,\"srcFlag\":9,\"routeAtt\":0,\"code\":0,\"objStatus\":\"INSERT\"}]}}";
+        TestUtil.run(requester);
+    }
 }

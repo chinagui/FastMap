@@ -80,6 +80,12 @@ public class RdTmclocationLink implements IRow {
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) throws Exception {
 		JSONObject json = JSONObject.fromObject(this, Geojson.geoJsonConfig(0.00001, 5));
+		
+		//履历不记录geometry字段
+		if(objLevel.equals(ObjLevel.HISTORY))
+		{
+			json.remove("geometry");
+		}
 
 		return json;
 	}

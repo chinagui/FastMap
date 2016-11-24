@@ -32,6 +32,10 @@ public class PidUtil {
         return (int) PidService.getInstance().applyPid(tableName, 1);
     }
 
+    public long applyPidByTableName(String tableName) throws Exception {
+        return PidService.getInstance().applyPid(tableName, 1);
+    }
+
     /**
      * 申請link_pid
      */

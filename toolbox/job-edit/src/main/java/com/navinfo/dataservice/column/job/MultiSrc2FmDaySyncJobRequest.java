@@ -12,6 +12,7 @@ import com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest;
  */
 public class MultiSrc2FmDaySyncJobRequest extends AbstractJobRequest {
 	
+	protected String zipFileUrl;
 	
 	@Override
 	public void defineSubJobRequests() throws JobCreateException {

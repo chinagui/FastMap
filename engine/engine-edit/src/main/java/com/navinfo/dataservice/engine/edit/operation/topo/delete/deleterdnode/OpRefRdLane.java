@@ -25,10 +25,7 @@ public class OpRefRdLane {
 
 		com.navinfo.dataservice.engine.edit.operation.obj.rdlane.delete.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdlane.delete.Operation(
 				conn);
-		for (int linkPid : command.getLinkPids()) {
-
-			operation.deleteRdLaneforRdLink(linkPid, result);
-		}
+		operation.deleteRdLaneforRdLinks(command.getLinkPids(), result);
 		return null;
 	}
 

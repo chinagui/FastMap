@@ -45,12 +45,69 @@ public abstract class BasicObj {
 	public Map<String, List<BasicRow>> getSubrows() {
 		return subrows;
 	}
-	public void insertSubrows(String tableName,List<BasicRow> basicRowList) {
+	/**
+	 * 不会维护状态，操作阶段不要使用
+	 * @param tableName
+	 * @param basicRowList
+	 */
+	public void setSubrows(String tableName,List<BasicRow> basicRowList) {
 		subrows.put(tableName, basicRowList);
 	}
-	public void insertSubrow(BasicRow subrow){
-		subrow.setOpType(OperationType.INSERT);
-		//todo
+	
+	/**
+	 * 写入一条子表记录前，使用对象的createXXX子表表方法创建记录
+	 * @param subrow
+	 */
+	protected void insertSubrow(BasicRow subrow)throws WrongOperationException{
+		//insert某子表的记录时，改子表在对象中一定加载过，List<BasicRow>不会为null，如果为null，报错
+		String tname = subrow.tableName();
+		if(mainrow.getOpType().equals(OperationType.DELETE)){
+			throw new WrongOperationException("删除的对象不允许写入记录");
+		}else if(mainrow.getOpType().equals(OperationType.INSERT)){
+			List<BasicRow> rows = subrows.get(tname);
+			if(rows==null){
+				rows = new ArrayList<BasicRow>();
+				rows.add(subrow);
+				subrows.put(tname, rows);
+			}else{
+				rows.add(subrow);
+			}
+		}else{
+			List<BasicRow> rows = subrows.get(tname);
+			if(rows==null){
+				throw new WrongOperationException("修改的对象但未初始化该子表");
+			}else{
+				rows.add(subrow);
+			}
+		}
+		List<BasicRow> rows = subrows.get(tname);
+		rows.add(subrow);
+	}
+	
+	/**
+	 * 如果是新增状态，物理删除，其他状态打删除标识
+	 * @param subrow
+	 */
+	public void deleteSubrow(BasicRow subrow){
+		if(subrow.getOpType().equals(OperationType.INSERT)){
+			String tname = subrow.tableName();
+			subrows.get(tname).remove(subrow);
+		}else{
+			subrow.setOpType(OperationType.DELETE);
+		}
+	}
+	/**
+	 * 注意：对于一次操作中新增再删除的，在流程中控制不进入OperationResult
+	 */
+	public void deleteObj(){
+		this.mainrow.setOpType(OperationType.DELETE);
+		for(List<BasicRow> rows:subrows.values()){
+			if(rows!=null){
+				for(BasicRow row:rows){
+					row.setOpType(OperationType.DELETE);
+				}
+			}
+		}
 	}
 	
 	public abstract String objType();
@@ -61,47 +118,10 @@ public abstract class BasicObj {
 	public OperationType opType(){
 		return mainrow.getOpType();
 	}
-	/**
-	 * 设置所有表的操作状态
-	 * @param opType
-	 */
-	public void setOpType(OperationType opType){
-		this.mainrow.setOpType(opType);
-		for(List<BasicRow> rows:subrows.values()){
-			if(rows!=null){
-				for(BasicRow row:rows){
-					row.setOpType(opType);
-				}
-			}
-		}
-	}
-	
-	/**
-	 * 主表对应的子表list。key：Class.class value:模型中子表的list
-	 * @return
-	 * @throws SQLException 
-	 * @throws GlmTableNotFoundException 
-	 * @throws IllegalArgumentException 
-	 * @throws IllegalAccessException 
-	 * @throws InvocationTargetException 
-	 * @throws NoSuchMethodException 
-	 */
-//	public abstract Map<Class<? extends BasicRow>,List<BasicRow>> childRows(); 
-
-
-	//public abstract Map<Class<? extends BasicObj>,List<BasicObj>> childObjs(); 
-	
-
-//	public boolean checkChildren(List<?> oldValue,List<?> newValue){
-//		if(oldValue==null&&newValue==null)return false;
-//		if(oldValue!=null&&oldValue.equals(newValue))return false;
-//		//...TODO
-//		return true;
-//	}
 	
 	public List<BasicRow> selectRowsByName(Connection conn,String tableName) throws GlmTableNotFoundException, SQLException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, IllegalArgumentException{
 		List<BasicRow> rows = subrows.get(tableName);
-		if(rows==null){
+		if(rows==null&&mainrow.getOpType().equals(OperationType.UPDATE)){
 			//ObjSelector
 			ObjSelector.selectChildren(conn,this,tableName);
 		}
@@ -111,14 +131,6 @@ public abstract class BasicObj {
 	public List<BasicRow> getRowsByName(String tableName){
 		List<BasicRow> rows = subrows.get(tableName);
 		return rows;
-	}
-	/**
-	 * 判断如果是修改状态下，加载所有子表并全部设置为删除
-	 */
-	public void deleteObj(){
-		if(mainrow.getOpType().equals(OperationType.UPDATE)){
-			//加载所有子表并设置删除
-		}
 	}
 	
 	public BasicObj copy(){

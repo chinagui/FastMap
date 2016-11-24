@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -98,23 +99,36 @@ public class PoiEditStatus {
 			if(pids.isEmpty()){
 				return;
 			}
+			//poi_edit_status中已存在的，更新其状态
 			Set<Long> pidExistsInPoiEditStatus = selectPidExistsInPoiEditStatus(conn,pids);
+			//poi_edit_status中不存在的
+			Set<Long> pidNotExistsInPoiEditStatus = new HashSet<Long>();
+			pidNotExistsInPoiEditStatus.addAll(pids);
+			pidNotExistsInPoiEditStatus.removeAll(pidExistsInPoiEditStatus);
 			int status = 1;//待作业
 			int isUpload = 1;
 			Date uploadDate = new Date();
 			int workType = 2;//多源
-			updatePoiEditStatus(conn,pidExistsInPoiEditStatus,status,isUpload,uploadDate,workType);
+			if(!pidExistsInPoiEditStatus.isEmpty()){
+				updatePoiEditStatus(conn,pidExistsInPoiEditStatus,status,isUpload,uploadDate,workType);
+				//存在于poi_edit_status,poi_edit_multisrc中的
+				Set<Long> pidExistsInPoiEditMultiSrc = selectPidExistsInPoiEditMultiSrc(conn,pidExistsInPoiEditStatus);
+				if(!pidExistsInPoiEditMultiSrc.isEmpty()){
+					updatePoiEditMultiSrc(conn,pidExistsInPoiEditMultiSrc,map);				
+				}
+				//存在于poi_edit_status表内,不存在于poi_edit_multisrc表中的pid
+				pidExistsInPoiEditStatus.removeAll(pidExistsInPoiEditMultiSrc);
+				if(!pidExistsInPoiEditStatus.isEmpty()){
+					insertPoiEditMultiSrc(conn,pidExistsInPoiEditStatus,map);
+				}
+			}
 			
-			//不存在于poi_edit_status表内的pid
-			pids.removeAll(pidExistsInPoiEditStatus);
-			insertPoiEditStatus(conn,pids,status,isUpload,uploadDate,workType);
-			insertPoiEditMultiSrc(conn,pids,map);
+			//不存在于poi_edit_status表内的pid，插入poi_edit_status,poi_edit_multisrc
+			if(!pidNotExistsInPoiEditStatus.isEmpty()){
+				insertPoiEditStatus(conn,pidNotExistsInPoiEditStatus,status,isUpload,uploadDate,workType);
+				insertPoiEditMultiSrc(conn,pidNotExistsInPoiEditStatus,map);
+			}
 			
-			Set<Long> pidExistsInPoiEditMultiSrc = selectPidExistsInPoiEditMultiSrc(conn,pidExistsInPoiEditStatus);
-			updatePoiEditMultiSrc(conn,pidExistsInPoiEditMultiSrc,map);
-			//存在于poi_edit_status表内,不存在于poi_edit_multisrc表中的pid
-			pidExistsInPoiEditStatus.removeAll(pidExistsInPoiEditMultiSrc);
-			insertPoiEditMultiSrc(conn,pidExistsInPoiEditMultiSrc,map);
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			logger.error(e.getMessage(),e);
@@ -131,16 +145,28 @@ public class PoiEditStatus {
 	private static void updatePoiEditMultiSrc(Connection conn, Set<Long> pids,
 			Map<Long, String> map) throws Exception {
 		try{
+			if(pids.isEmpty()||map.isEmpty()){
+				return;
+			}
 			StringBuilder sb = new StringBuilder();
 			sb.append("UPDATE POI_EDIT_MULTISRC SET ");
 			sb.append("SOURCE_TYPE=?");
 			sb.append(",MAIN_TYPE=?");
 			sb.append(" WHERE PID=?");
 			
-			Object[][] values = {{}};
+			Object[][] values = new Object[pids.size()][];
 			int i = 0;
 			for(long pid:pids){
-				Object[] value = {map.get(pid),map.get(pid),pid};
+				String sourceType = map.get(pid);
+				int mainType = 0;
+				if(sourceType.equals("001000020000")){
+					mainType = 1;
+				}else if(sourceType.equals("001000030000")||sourceType.equals("001000030001")||sourceType.equals("001000030002")){
+					mainType = 2;
+				}else if(sourceType.equals("001000030003")||sourceType.equals("001000030004")){
+					mainType = 3;
+				}
+				Object[] value = {sourceType,mainType,pid};
 				values[i] = value;
 				i++;
 			}
@@ -161,13 +187,25 @@ public class PoiEditStatus {
 	 */
 	private static void insertPoiEditMultiSrc(Connection conn, Set<Long> pids, Map<Long, String> map) throws Exception {
 		try{
+			if(pids.isEmpty()||map.isEmpty()){
+				return;
+			}
 			StringBuilder sb = new StringBuilder();
 			sb.append("INSERT INTO POI_EDIT_MULTISRC (PID,SOURCE_TYPE,MAIN_TYPE) VALUES (?,?,?)");
 
-			Object[][] values = {{}};
+			Object[][] values = new Object[pids.size()][];
 			int i = 0;
 			for(long pid:pids){
-				Object[] value = {pid,map.get(pid),map.get(pid)};
+				String sourceType = map.get(pid);
+				int mainType = 0;
+				if(sourceType.equals("001000020000")){
+					mainType = 1;
+				}else if(sourceType.equals("001000030000")||sourceType.equals("001000030001")||sourceType.equals("001000030002")){
+					mainType = 2;
+				}else if(sourceType.equals("001000030003")||sourceType.equals("001000030004")){
+					mainType = 3;
+				}
+				Object[] value = {pid,sourceType,mainType};
 				values[i] = value;
 				i++;
 			}
@@ -192,13 +230,19 @@ public class PoiEditStatus {
 	private static void insertPoiEditStatus(Connection conn, Set<Long> pids, int status, int isUpload, Date uploadDate,
 			int workType) throws Exception {
 		try{
+			if(pids.isEmpty()){
+				return;
+			}
 			StringBuilder sb = new StringBuilder();
-			sb.append("INSERT INTO POI_EDIT_STATUS (PID,STATUS,IS_UPLOAD,UPLOAD_DATE,WORK_TYPE) VALUES (?,?,?,TO_DATE(?,'yyyy-MM-dd HH24:MI:ss'),?)");
+//			sb.append("INSERT INTO POI_EDIT_STATUS (PID,STATUS,IS_UPLOAD,UPLOAD_DATE,WORK_TYPE) VALUES (?,?,?,TO_DATE(?,'yyyy-MM-dd HH24:MI:ss'),?)");
+			sb.append("INSERT INTO POI_EDIT_STATUS (ROW_ID,PID,STATUS,IS_UPLOAD,UPLOAD_DATE,WORK_TYPE) VALUES (?,?,?,?,TO_DATE(?,'yyyy-MM-dd HH24:MI:ss'),?)");
 
-			Object[][] values = {{}};
+			DateFormat format = new java.text.SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+			Object[][] values = new Object[pids.size()][];
 			int i = 0;
 			for(long pid:pids){
-				Object[] value = {pid,status,isUpload,uploadDate.toString().substring(0, 10),workType};
+//				Object[] value = {pid,status,isUpload,uploadDate.toString().substring(0, 10),workType};
+				Object[] value = {String.valueOf(pid),pid,status,isUpload,format.format(uploadDate),workType};
 				values[i] = value;
 				i++;
 			}
@@ -220,6 +264,9 @@ public class PoiEditStatus {
 		// TODO Auto-generated method stub
 		try{
 			Set<Long> pidExistsInPoiEditMultiSrc = new HashSet<Long>();
+			if(pids.isEmpty()){
+				return pidExistsInPoiEditMultiSrc;
+			}
 			StringBuilder sb = new StringBuilder();
 			sb.append("SELECT T.PID FROM POI_EDIT_MULTISRC T WHERE ");
 			Clob clobPids=null;
@@ -262,10 +309,14 @@ public class PoiEditStatus {
 	private static void updatePoiEditStatus(Connection conn, Set<Long> pids
 			,int status,int isUpload, Date uploadDate,int workType) throws Exception {
 		try{
+			if(pids.isEmpty()){
+				return;
+			}
+			DateFormat format = new java.text.SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
 			StringBuilder sb = new StringBuilder();
 			sb.append("UPDATE POI_EDIT_STATUS T SET STATUS="+status);
 			sb.append(",IS_UPLOAD="+isUpload);
-			sb.append(",UPLOAD_DATE=TO_DATE(" + uploadDate.toString().substring(0,10) + ",'yyyy-MM-dd HH24:MI:ss')");
+			sb.append(",UPLOAD_DATE=TO_DATE('" + format.format(uploadDate) + "','yyyy-MM-dd HH24:MI:ss')");
 			sb.append(",WORK_TYPE="+workType);
 			Clob clobPids=null;
 			if(pids.size()>1000){
@@ -299,6 +350,9 @@ public class PoiEditStatus {
 		// TODO Auto-generated method stub
 		try{
 			Set<Long> pidExistsInPoiEditStatus = new HashSet<Long>();
+			if(pids.isEmpty()){
+				return pidExistsInPoiEditStatus;
+			}
 			StringBuilder sb = new StringBuilder();
 			sb.append("SELECT T.PID FROM POI_EDIT_STATUS T WHERE ");
 			Clob clobPids=null;

@@ -2,6 +2,7 @@ package com.navinfo.dataservice.engine.editplus.model;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -145,7 +146,7 @@ public abstract class BasicRow implements Logable{
 	 * @throws InvocationTargetException 
 	 * @throws NoSuchMethodException 
 	 */
-	public RunnableSQL persistSql() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, IllegalArgumentException{
+	public RunnableSQL persist() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, IllegalArgumentException{
 		RunnableSQL sql = new RunnableSQL();
 		StringBuilder sb = new StringBuilder();
 		String tbName = tableName();
@@ -156,7 +157,7 @@ public abstract class BasicRow implements Logable{
 		if(OperationType.INSERT.equals(this.opType)){
 			sb.append("INSERT INTO "+tbName);
 			//字段信息
-			assembleColumnInfo(tab.getColumns(),columnName,columnPlaceholder,columnValues);
+			assembleColumnInfo(tab.getColumns(),columnName,columnPlaceholder,columnValues,OperationType.INSERT);
 			//更新记录：新增
 			columnName.add("U_RECORD");
 			columnPlaceholder.add("?");
@@ -174,14 +175,13 @@ public abstract class BasicRow implements Logable{
 					updateColumns.put(entry.getKey(), glmTable.getColumByName(entry.getKey()));
 				}
 				//字段信息
-				assembleColumnInfo(tab.getColumns(),columnName,columnPlaceholder,columnValues);
+				assembleColumnInfo(tab.getColumns(),columnName,columnPlaceholder,columnValues,OperationType.UPDATE);
 				//更新记录：新增
-				columnName.add("U_RECORD");
+				columnName.add("U_RECORD=?");
 				columnPlaceholder.add("?");
 				columnValues.add(3);
 				
-				sb.append(" (" + StringUtils.join(columnName, ",") + ")");
-				sb.append(" = (" + StringUtils.join(columnPlaceholder, ",") + ")");
+				sb.append(StringUtils.join(columnName, ","));
 				sb.append(" WHERE ROW_ID = " + getRowId());
 			}
 		}else if(OperationType.DELETE.equals(this.opType)){
@@ -199,19 +199,24 @@ public abstract class BasicRow implements Logable{
 	 * @param columnName
 	 * @param columnPlaceholder
 	 * @param columnValues
+	 * @param update 
 	 * @throws IllegalArgumentException 
 	 * @throws IllegalAccessException 
 	 * @throws InvocationTargetException 
 	 * @throws NoSuchMethodException 
 	 */
 	private void assembleColumnInfo(Map<String, GlmColumn> columns, List<String> columnName,
-			List<String> columnPlaceholder, List<Object> columnValues) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, IllegalArgumentException {
+			List<String> columnPlaceholder, List<Object> columnValues, OperationType operationType) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, IllegalArgumentException {
 		for(Map.Entry<String, GlmColumn> entry:columns.entrySet()){
-			GlmColumn glmColumn = entry.getValue();
-			columnName.add(entry.getKey());
+			GlmColumn glmColumn = entry.getValue();	
 			if(glmColumn.getType().equals(GlmColumn.TYPE_NUMBER)
 					||glmColumn.getType().equals(GlmColumn.TYPE_VARCHAR)
 					||glmColumn.getType().equals(GlmColumn.TYPE_RAW)){
+				if(operationType.equals(OperationType.UPDATE)){
+					columnName.add(entry.getKey() + "=?");
+				}else{
+					columnName.add(entry.getKey());
+				}
 				columnPlaceholder.add("?");
 				//生成row_id
 				if(entry.getKey().equals("ROW_ID")){
@@ -220,9 +225,20 @@ public abstract class BasicRow implements Logable{
 				}
 				columnValues.add(getAttrByColName(entry.getKey()));
 			}else if(glmColumn.getType().equals(GlmColumn.TYPE_TIMESTAMP)){
+				DateFormat format = new java.text.SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+				if(operationType.equals(OperationType.UPDATE)){
+					columnName.add(entry.getKey() + "=TO_DATE(?,'yyyy-MM-dd HH24:MI:ss')");
+				}else{
+					columnName.add(entry.getKey());
+				}
 				columnPlaceholder.add("TO_DATE(?,'yyyy-MM-dd HH24:MI:ss')");
-				columnValues.add(getAttrByColName(entry.getKey()).toString().substring(0,10));
+				columnValues.add(getAttrByColName(format.format(entry.getKey())));
 			}else if(glmColumn.getType().equals(GlmColumn.TYPE_GEOMETRY)){
+				if(operationType.equals(OperationType.UPDATE)){
+					columnName.add(entry.getKey() + "=?");
+				}else{
+					columnName.add(entry.getKey());
+				}
 				columnPlaceholder.add("?");
 				//Geometry不转STRUCT
 				columnValues.add(getAttrByColName(entry.getKey()));

@@ -7,8 +7,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -35,14 +39,14 @@ public class PoiEditStatus {
 	}
 	
 	/**
-	 * 
+	 * 删选满足作业状态的pid
 	 * @param conn
 	 * @param fidMap//{变更类型：pid列表}。变更类型：1 新增；2 删除；3 修改
 	 * @param status//作业状态。0: 未作业；1：待作业,2：已作业,3：已提交
 	 * @return
 	 * @throws Exception 
 	 */
-	public static Map<Integer,Collection<Long>> fidFilterByEditStatus(Connection conn
+	public static Map<Integer,Collection<Long>> pidFilterByEditStatus(Connection conn
 			,Map<Integer,Collection<Long>> fidMap,int status) throws Exception{
 		
 		try{
@@ -87,6 +91,247 @@ public class PoiEditStatus {
 			throw new Exception("过滤pid失败:" + e.getMessage(), e);
 		}
 	}
+	
+	public static void tagMultiSrcPoi(Connection conn,Map<Long,String> map) throws Exception{
+		try{
+			Set<Long> pids = map.keySet();
+			if(pids.isEmpty()){
+				return;
+			}
+			Set<Long> pidExistsInPoiEditStatus = selectPidExistsInPoiEditStatus(conn,pids);
+			int status = 1;//待作业
+			int isUpload = 1;
+			Date uploadDate = new Date();
+			int workType = 2;//多源
+			updatePoiEditStatus(conn,pidExistsInPoiEditStatus,status,isUpload,uploadDate,workType);
+			
+			//不存在于poi_edit_status表内的pid
+			pids.removeAll(pidExistsInPoiEditStatus);
+			insertPoiEditStatus(conn,pids,status,isUpload,uploadDate,workType);
+			insertPoiEditMultiSrc(conn,pids,map);
+			
+			Set<Long> pidExistsInPoiEditMultiSrc = selectPidExistsInPoiEditMultiSrc(conn,pidExistsInPoiEditStatus);
+			updatePoiEditMultiSrc(conn,pidExistsInPoiEditMultiSrc,map);
+			//存在于poi_edit_status表内,不存在于poi_edit_multisrc表中的pid
+			pidExistsInPoiEditStatus.removeAll(pidExistsInPoiEditMultiSrc);
+			insertPoiEditMultiSrc(conn,pidExistsInPoiEditMultiSrc,map);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			logger.error(e.getMessage(),e);
+			throw new Exception("多源POI打标签失败");
+		}
+	}
+
+	/**
+	 * @param conn
+	 * @param pidExistsInPoiEditMultiSrc
+	 * @param map
+	 * @throws Exception 
+	 */
+	private static void updatePoiEditMultiSrc(Connection conn, Set<Long> pids,
+			Map<Long, String> map) throws Exception {
+		try{
+			StringBuilder sb = new StringBuilder();
+			sb.append("UPDATE POI_EDIT_MULTISRC SET ");
+			sb.append("SOURCE_TYPE=?");
+			sb.append(",MAIN_TYPE=?");
+			sb.append(" WHERE PID=?");
+			
+			Object[][] values = {{}};
+			int i = 0;
+			for(long pid:pids){
+				Object[] value = {map.get(pid),map.get(pid),pid};
+				values[i] = value;
+				i++;
+			}
+			new QueryRunner().batch(conn, sb.toString(),values);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			logger.error(e.getMessage(),e);
+			throw new Exception("多源POI打标签失败");
+		}
+		
+	}
+
+	/**
+	 * @param conn
+	 * @param pids
+	 * @param map
+	 * @throws Exception 
+	 */
+	private static void insertPoiEditMultiSrc(Connection conn, Set<Long> pids, Map<Long, String> map) throws Exception {
+		try{
+			StringBuilder sb = new StringBuilder();
+			sb.append("INSERT INTO POI_EDIT_MULTISRC (PID,SOURCE_TYPE,MAIN_TYPE) VALUES (?,?,?)");
+
+			Object[][] values = {{}};
+			int i = 0;
+			for(long pid:pids){
+				Object[] value = {pid,map.get(pid),map.get(pid)};
+				values[i] = value;
+				i++;
+			}
+			new QueryRunner().batch(conn, sb.toString(),values);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			logger.error(e.getMessage(),e);
+			throw new Exception("多源POI打标签失败");
+		}
+		
+	}
+
+	/**
+	 * @param conn
+	 * @param pids
+	 * @param status
+	 * @param isUpload
+	 * @param uploadDate
+	 * @param workType
+	 * @throws Exception 
+	 */
+	private static void insertPoiEditStatus(Connection conn, Set<Long> pids, int status, int isUpload, Date uploadDate,
+			int workType) throws Exception {
+		try{
+			StringBuilder sb = new StringBuilder();
+			sb.append("INSERT INTO POI_EDIT_STATUS (PID,STATUS,IS_UPLOAD,UPLOAD_DATE,WORK_TYPE) VALUES (?,?,?,TO_DATE(?,'yyyy-MM-dd HH24:MI:ss'),?)");
+
+			Object[][] values = {{}};
+			int i = 0;
+			for(long pid:pids){
+				Object[] value = {pid,status,isUpload,uploadDate.toString().substring(0, 10),workType};
+				values[i] = value;
+				i++;
+			}
+			new QueryRunner().batch(conn, sb.toString(),values);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			logger.error(e.getMessage(),e);
+			throw new Exception("多源POI打标签失败");
+		}
+	}
+
+	/**
+	 * @param conn
+	 * @param pidExistsInPoiEditStatus
+	 * @return
+	 * @throws Exception 
+	 */
+	private static Set<Long> selectPidExistsInPoiEditMultiSrc(Connection conn, Set<Long> pids) throws Exception {
+		// TODO Auto-generated method stub
+		try{
+			Set<Long> pidExistsInPoiEditMultiSrc = new HashSet<Long>();
+			StringBuilder sb = new StringBuilder();
+			sb.append("SELECT T.PID FROM POI_EDIT_MULTISRC T WHERE ");
+			Clob clobPids=null;
+			if(pids.size()>1000){
+				clobPids = conn.createClob();
+				clobPids.setString(1, StringUtils.join(pids, ","));
+				sb.append("T.PID IN (select to_number(column_value) from table(clob_to_table(?)))");
+			}else{
+				sb.append("T.PID IN (" + StringUtils.join(pids, ",") + ")");
+			}
+			
+			ResultSetHandler<Set<Long>> rsHandler = new ResultSetHandler<Set<Long>>() {
+				public Set<Long> handle(ResultSet rs) throws SQLException {
+					Set<Long> result = new HashSet<Long>();
+					while (rs.next()) {
+						result.add(rs.getLong("PID"));
+					}
+					return result;
+				}
+	
+			};
+			if(clobPids==null){
+				pidExistsInPoiEditMultiSrc = new QueryRunner().query(conn, sb.toString(), rsHandler);
+			}else{
+				pidExistsInPoiEditMultiSrc = new QueryRunner().query(conn, sb.toString(), rsHandler,clobPids);
+			}
+			return pidExistsInPoiEditMultiSrc;
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			logger.error(e.getMessage(),e);
+			throw new Exception("多源POI打标签失败");
+		}
+	}
+
+	/**
+	 * @param conn
+	 * @param pidExistsInPoiEditStatus
+	 * @throws Exception 
+	 */
+	private static void updatePoiEditStatus(Connection conn, Set<Long> pids
+			,int status,int isUpload, Date uploadDate,int workType) throws Exception {
+		try{
+			StringBuilder sb = new StringBuilder();
+			sb.append("UPDATE POI_EDIT_STATUS T SET STATUS="+status);
+			sb.append(",IS_UPLOAD="+isUpload);
+			sb.append(",UPLOAD_DATE=TO_DATE(" + uploadDate.toString().substring(0,10) + ",'yyyy-MM-dd HH24:MI:ss')");
+			sb.append(",WORK_TYPE="+workType);
+			Clob clobPids=null;
+			if(pids.size()>1000){
+				clobPids = conn.createClob();
+				clobPids.setString(1, StringUtils.join(pids, ","));
+				sb.append(" WHERE T.PID IN (select to_number(column_value) from table(clob_to_table(?)))");
+			}else{
+				sb.append(" WHERE T.PID IN (" + StringUtils.join(pids, ",") + ")");
+			}
+
+			if(clobPids==null){
+				new QueryRunner().update(conn, sb.toString());
+			}else{
+				new QueryRunner().update(conn, sb.toString(),clobPids);
+			}
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			logger.error(e.getMessage(),e);
+			throw new Exception("多源POI打标签失败");
+		}
+	}
+
+	/**
+	 * 存在于poi_edit_status表内的pid
+	 * @param conn
+	 * @param pids
+	 * @return
+	 * @throws Exception 
+	 */
+	private static Set<Long> selectPidExistsInPoiEditStatus(Connection conn, Set<Long> pids) throws Exception {
+		// TODO Auto-generated method stub
+		try{
+			Set<Long> pidExistsInPoiEditStatus = new HashSet<Long>();
+			StringBuilder sb = new StringBuilder();
+			sb.append("SELECT T.PID FROM POI_EDIT_STATUS T WHERE ");
+			Clob clobPids=null;
+			if(pids.size()>1000){
+				clobPids = conn.createClob();
+				clobPids.setString(1, StringUtils.join(pids, ","));
+				sb.append("T.PID IN (select to_number(column_value) from table(clob_to_table(?)))");
+			}else{
+				sb.append("T.PID IN (" + StringUtils.join(pids, ",") + ")");
+			}
+			
+			ResultSetHandler<Set<Long>> rsHandler = new ResultSetHandler<Set<Long>>() {
+				public Set<Long> handle(ResultSet rs) throws SQLException {
+					Set<Long> result = new HashSet<Long>();
+					while (rs.next()) {
+						result.add(rs.getLong("PID"));
+					}
+					return result;
+				}
+	
+			};
+			if(clobPids==null){
+				pidExistsInPoiEditStatus = new QueryRunner().query(conn, sb.toString(), rsHandler);
+			}else{
+				pidExistsInPoiEditStatus = new QueryRunner().query(conn, sb.toString(), rsHandler,clobPids);
+			}
+			return pidExistsInPoiEditStatus;
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			logger.error(e.getMessage(),e);
+			throw new Exception("多源POI打标签失败");
+		}
+	}
 
 	public static void main(String[] args) throws Exception{
 		Connection conn = DriverManager.getConnection("jdbc:oracle:thin:@192.168.4.61:1521/orcl",
@@ -102,7 +347,7 @@ public class PoiEditStatus {
 		pids.put(2, deleteList);
 		pids.put(3, updateList);
 
-		Map<Integer,Collection<Long>> pids2 = fidFilterByEditStatus(conn,pids,3);
+		Map<Integer,Collection<Long>> pids2 = pidFilterByEditStatus(conn,pids,3);
 
 		System.out.println("ok");
 	}

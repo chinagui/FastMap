@@ -145,7 +145,7 @@ public abstract class BasicRow implements Logable{
 	 * @throws InvocationTargetException 
 	 * @throws NoSuchMethodException 
 	 */
-	public RunnableSQL toSql() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, IllegalArgumentException{
+	public RunnableSQL persistSql() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, IllegalArgumentException{
 		RunnableSQL sql = new RunnableSQL();
 		StringBuilder sb = new StringBuilder();
 		String tbName = tableName();

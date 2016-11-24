@@ -157,13 +157,13 @@ public abstract class BasicObj {
 	public List<RunnableSQL> generateSql() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, IllegalArgumentException{
 		List<RunnableSQL> sqlList = new ArrayList<RunnableSQL>();
 		//mainrow
-		sqlList.add(mainrow.toSql());
+		sqlList.add(mainrow.persistSql());
 		//subrow
 		for(Entry<String, List<BasicRow>> entry:subrows.entrySet()){
 			for(BasicRow subrow:entry.getValue()){
-				RunnableSQL sql = subrow.toSql();
+				RunnableSQL sql = subrow.persistSql();
 				if(!sql.getSql().equals("")){
-					sqlList.add(subrow.toSql());
+					sqlList.add(subrow.persistSql());
 				}	
 			}
 		}

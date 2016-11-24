@@ -151,89 +151,80 @@ public class ProduceService {
 							if(statuss != null && StringUtils.isNotEmpty(statuss)){
 								conditionStr+=" and T.PRODUCE_STATUS in "
 											+statuss.replace("[", "(").replace("]", ")");
-							}
-							//JSONArray progress=new JSONArray();
-							/*List<Integer> selectParamList = new ArrayList<Integer>();
-							for(Object i:selectParamArr){
-								int tmp=(int) i;
-								selectParamList.add(tmp);
-							}
-							if(selectParamList != null && selectParamList.size() > 0){
-								conditionStr+=" and p.PRODUCE_STATUS in "
-											+selectParamList.toString().replace("[", "(").replace("]", ")");
-							}*/
-								
+							}								
 						}
 					}
 			}
 				long pageStartNum = (currentPageNum - 1) * pageSize + 1;
 				long pageEndNum = currentPageNum * pageSize;
 				conn = DBConnector.getInstance().getManConnection();
-				String sql=
-					  "WITH "
-					+ " q1 AS "//所有状态为开启的子任务及grid
-					+ " ("        
-						+ " SELECT s.subtask_id,m.grid_id "
-						+ " FROM "
-						+ " subtask s,block_grid_mapping m,block_man b "
-						+ " WHERE "
-						+ " s.block_man_id = b.block_man_id and  b.block_id = m.block_id and s.status = 1 and s.type in (0,1,2,3,4) and s.stage in (0,1)"
-						+ " UNION ALL "
-						+ " SELECT ss.subtask_id,mm.grid_id "
-						+ " FROM "
-						+ " subtask ss,subtask_grid_mapping mm "
-						+ " WHERE "
-						+ " ss.subtask_id = mm.subtask_id and ss.status = 1 and ss.type in (0,1,2,3,4) and ss.stage in (0,1)"
-					+ " ) ,"
-						
-					
-					
-					+ " q2 AS"//排除product 表中的subtaskid 的区域子任务
-					+ " ("
-						+ " SELECT s.*,b.block_man_name,b.DAY_PRODUCE_PLAN_START_DATE,b.DAY_PRODUCE_PLAN_END_DATE "
-						+ " FROM subtask s ,block_man b "
-						+ " WHERE "
-							+ " s.block_man_id = b.block_man_id  and  s.type = 4 and s.status = 0 "
-							//+ "  and  s.SUBTASK_ID not in ( select listagg(p.SUBTASK_ID, ',') within GROUP(order by p.SUBTASK_ID) over(partition by p.SUBTASK_ID) SUBTASK_IDS from q3 p)"
-					+ " ),"
-					
-					+ " q3 AS "//produce产品列表(成功或失败)
-					+ " ("
-						+ " SELECT "
-						+ " s.block_man_id,b.block_man_name,s.type ,b.DAY_PRODUCE_PLAN_START_DATE,b.DAY_PRODUCE_PLAN_END_DATE,"
-						+ " p.CREATE_DATE,p.PRODUCE_ID,p.PRODUCE_STATUS,p.CREATE_USER_ID,i.USER_REAL_NAME CREATE_USER_NAME,p.SUBTASK_ID "
-						+ " FROM PRODUCE p ,USER_INFO i,subtask s ,block_man b  "
-						+ " WHERE "
-								+ " p.CREATE_USER_ID = i.USER_ID "
-								+ " and p.SUBTASK_ID = s.SUBTASK_ID "
-								+ " and s.block_man_id = b.block_man_id"
-					+ " ), "
-					
-					+ " q4 AS "//可出品的子任务列表
-					+ " ("
-						+ " SELECT "
-						+ " a.block_man_id,a.block_man_name,a.type ,a.DAY_PRODUCE_PLAN_START_DATE,a.DAY_PRODUCE_PLAN_END_DATE,"
-						+ " null CREATE_DATE,0 PRODUCE_ID,4 PRODUCE_STATUS,0 CREATE_USER_ID,null CREATE_USER_NAME,a.SUBTASK_ID "
-						+ " FROM q2 a "
-						+ " WHERE not exists ( "
-								 + " SELECT 1 FROM q2 b,block_grid_mapping c,block_man d,q1 e "
-								 + " WHERE "
-								 	+ " b.block_man_id = d.block_man_id and d.block_id = c.block_id and c.grid_id = e.grid_id "
-								 	+ " and a.subtask_id = b.subtask_id "
-								 + " ) "
-								 + "  and  a.SUBTASK_ID not in ( select listagg(p.SUBTASK_ID, ',') within GROUP(order by p.SUBTASK_ID) over(partition by p.SUBTASK_ID) SUBTASK_IDS from q3 p)"
-						
-					+ "),"
-					+ " q5 AS "//产品表(成功或失败)右关联可出品的子任务列表
-					+ " ("
-					+ " SELECT  p.* FROM q3 p UNION ALL SELECT  s.* FROM  q4 s  "
-					+ " )"
-					+ " SELECT /*+FIRST_ROWS ORDERED*/"
-					+ " T.*, (SELECT COUNT(1) FROM q5) AS TOTAL_RECORD_NUM"
-					+ "  FROM (SELECT T.*, ROWNUM AS ROWNUM_ FROM q5 T WHERE ROWNUM <= "+pageEndNum+") T"
-					+ " WHERE T.ROWNUM_ >= "+pageStartNum 
-					+ conditionStr 
-					+ " ORDER BY T.PRODUCE_STATUS DESC,T.DAY_PRODUCE_PLAN_START_DATE DESC,T.CREATE_DATE DESC";
+				String sql="WITH GRID_LIST AS"//所有状态为开启的子任务的grid
+						+ " (SELECT M.GRID_ID"
+						+ "    FROM SUBTASK S, BLOCK_GRID_MAPPING M, BLOCK_MAN B"
+						+ "   WHERE S.BLOCK_MAN_ID = B.BLOCK_MAN_ID"
+						+ "     AND B.BLOCK_ID = M.BLOCK_ID"
+						+ "     AND S.STATUS = 1"
+						+ "     AND S.TYPE IN (3, 4)"
+						+ "     AND S.STAGE = 1"
+						+ "  UNION ALL"
+						+ "  SELECT MM.GRID_ID"
+						+ "    FROM SUBTASK SS, SUBTASK_GRID_MAPPING MM"
+						+ "   WHERE SS.SUBTASK_ID = MM.SUBTASK_ID"
+						+ "     AND SS.STATUS = 1"
+						+ "     AND SS.TYPE IN (3, 4)"
+						+ "     AND SS.STAGE = 1"
+						+ "  UNION ALL"
+						+ "  SELECT M.GRID_ID"
+						+ "  FROM INFOR I, SUBTASK_GRID_MAPPING M, BLOCK_MAN B"
+						+ " WHERE I.TASK_ID = B.TASK_ID"
+						+ "   AND B.BLOCK_MAN_ID = M.SUBTASK_ID"
+						+ "   AND I.FEEDBACK_TYPE = 0),"
+						+ " PRODUCE_LIST AS"//可出品的子任务列表（未出品过）
+						+ " (SELECT S.BLOCK_MAN_ID,"
+						+ "         B.BLOCK_MAN_NAME,"
+						+ "         S.TYPE,"
+						+ "         B.DAY_PRODUCE_PLAN_START_DATE,"
+						+ "         B.DAY_PRODUCE_PLAN_END_DATE,"
+						+ "         NULL                          CREATE_DATE,"
+						+ "         0                             PRODUCE_ID,"
+						+ "         4                             PRODUCE_STATUS,"
+						+ "         0                             CREATE_USER_ID,"
+						+ "         NULL                          CREATE_USER_NAME,"
+						+ "         S.SUBTASK_ID"
+						+ "    FROM SUBTASK S, BLOCK_MAN B"
+						+ "   WHERE S.BLOCK_MAN_ID = B.BLOCK_MAN_ID"
+						+ "     AND S.TYPE = 4"
+						+ "     AND S.STATUS = 0"
+						+ "     AND NOT EXISTS (SELECT 1"
+						+ "            FROM BLOCK_GRID_MAPPING C, GRID_LIST E"
+						+ "           WHERE B.BLOCK_ID = C.BLOCK_ID"
+						+ "             AND C.GRID_ID = E.GRID_ID)"
+						+ "     AND NOT EXISTS"
+						+ "   (SELECT 1 FROM PRODUCE P WHERE S.SUBTASK_ID = P.SUBTASK_ID)"
+						+ "  UNION ALL"//produce产品列表(成功或失败)
+						+ "  SELECT S.BLOCK_MAN_ID,"
+						+ "         B.BLOCK_MAN_NAME,"
+						+ "         S.TYPE,"
+						+ "         B.DAY_PRODUCE_PLAN_START_DATE,"
+						+ "         B.DAY_PRODUCE_PLAN_END_DATE,"
+						+ "         P.CREATE_DATE,"
+						+ "         P.PRODUCE_ID,"
+						+ "         P.PRODUCE_STATUS,"
+						+ "         P.CREATE_USER_ID,"
+						+ "         I.USER_REAL_NAME CREATE_USER_NAME,"
+						+ "         P.SUBTASK_ID"
+						+ "    FROM PRODUCE P, USER_INFO I, SUBTASK S, BLOCK_MAN B"
+						+ "   WHERE P.CREATE_USER_ID = I.USER_ID"
+						+ "     AND P.SUBTASK_ID = S.SUBTASK_ID"
+						+ "     AND S.BLOCK_MAN_ID = B.BLOCK_MAN_ID)"
+						+ "SELECT /*+FIRST_ROWS ORDERED*/"
+						+ " T.*, (SELECT COUNT(1) FROM PRODUCE_LIST) AS TOTAL_RECORD_NUM"
+						+ "  FROM (SELECT T.*, ROWNUM AS ROWNUM_ FROM PRODUCE_LIST T WHERE ROWNUM <= "+pageEndNum+") T"
+						+ " WHERE T.ROWNUM_ >= "+pageStartNum
+						+ conditionStr
+						+ " ORDER BY T.PRODUCE_STATUS              DESC,"
+						+ "          T.DAY_PRODUCE_PLAN_START_DATE DESC,"
+						+ "          T.CREATE_DATE                 DESC";
 				log.debug("查询日初评列表sql: "+sql);
 				QueryRunner run=new QueryRunner();
 				ResultSetHandler<Page> rsHandler=new ResultSetHandler<Page>() {

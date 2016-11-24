@@ -37,6 +37,7 @@ import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.navinfo.navicommons.geo.computation.GridUtils;
 import com.vividsolutions.jts.geom.Polygon;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 public class GridService {
@@ -329,37 +330,64 @@ public class GridService {
 		try {
 
 			conn = DBConnector.getInstance().getManConnection();
-			int stage=json.getInt("stage");
-			int type=json.getInt("type");
 			// 根据输入的几何wkt，计算几何包含的gird，
 			Polygon polygon = (Polygon) GeometryUtils.getPolygonByWKT(json.getString("wkt"));
 			Set<String> grids = CompGeometryUtil.geo2GridsWithoutBreak(polygon);
-			List<String> gridByType = new ArrayList();
+			String gridStr = "";
 			for(String grid:grids){
-				gridByType.add(grid);
+				if(!gridStr.isEmpty()){gridStr+=",";}
+				gridStr+=grid;
 			}
+			Clob pidsClob = ConnectionUtil.createClob(conn);
+			pidsClob.setString(1, gridStr);
+			//仅返回可出品状态的grid。判断原则：1.按区域子任务范围出品（已关闭区域子任务）
+			//2.出品条件：
+			//(1)当前任务的区域粗编子任务范围中所有grid涉及的其它日编子任务(排除POI类型子任务)全部关闭，该区域才可以出品，
+			//不支持无子任务范围出品
+			//(2)一级情报已经反馈
+			String sql="WITH GRID_LIST AS"
+					+ " (SELECT M.GRID_ID"
+					+ "    FROM SUBTASK S, BLOCK_GRID_MAPPING M, BLOCK_MAN B"
+					+ "   WHERE S.BLOCK_MAN_ID = B.BLOCK_MAN_ID"
+					+ "     AND B.BLOCK_ID = M.BLOCK_ID"
+					+ "     AND S.STATUS = 1"
+					+ "     AND S.TYPE IN (3, 4)"
+					+ "     AND S.STAGE = 1"
+					+ "  UNION ALL"
+					+ "  SELECT MM.GRID_ID"
+					+ "    FROM SUBTASK SS, SUBTASK_GRID_MAPPING MM"
+					+ "   WHERE SS.SUBTASK_ID = MM.SUBTASK_ID"
+					+ "     AND SS.STATUS = 1"
+					+ "     AND SS.TYPE IN (3, 4)"
+					+ "     AND SS.STAGE = 1"
+					+ "  UNION ALL"
+					+ "  SELECT M.GRID_ID"
+					+ "    FROM INFOR I, SUBTASK_GRID_MAPPING M, BLOCK_MAN B"
+					+ "   WHERE I.TASK_ID = B.TASK_ID"
+					+ "     AND B.BLOCK_MAN_ID = M.SUBTASK_ID"
+					+ "     AND I.FEEDBACK_TYPE = 0)"
+					+ "SELECT DISTINCT M.GRID_ID"
+					+ "  FROM SUBTASK S, BLOCK_GRID_MAPPING M, BLOCK_MAN B"
+					+ " WHERE S.BLOCK_MAN_ID = B.BLOCK_MAN_ID"
+					+ "   AND B.BLOCK_ID = M.BLOCK_ID"
+					+ "   AND S.TYPE = 4"
+					+ "   AND S.STATUS = 0"
+					+ "   AND EXISTS (SELECT 1"
+					+ "	          FROM TABLE(CLOB_TO_TABLE(?)) GRID_TABLE"
+					+ "	         WHERE M.GRID_ID = GRID_TABLE.COLUMN_VALUE)"
+					+ "   AND NOT EXISTS"
+					+ " (SELECT 1 FROM GRID_LIST G WHERE M.GRID_ID = G.GRID_ID)";
 			
-			List<String> gridProduce = new ArrayList();
-			
-			//获取可出品的gird,只有grid完成度为100%，才可出品
-			StaticsApi statics = (StaticsApi) ApplicationContextUtil
-					.getBean("staticsApi");
-			List<GridStatInfo> GridStatList=new ArrayList();
-			if (0==stage){GridStatList=statics.getLatestCollectStatByGrids(gridByType);}
-			if (1==stage){GridStatList=statics.getLatestDailyEditStatByGrids(gridByType);}
-			if (2==stage){GridStatList=statics.getLatestMonthlyEditStatByGrids(gridByType);}
-			
-			for(int i=0;i<GridStatList.size();i++){
-				GridStatInfo statInfo=GridStatList.get(i);
-								if (0==type && statInfo.getPercentPoi()==100){
-					gridProduce.add(statInfo.getGridId());
+			return new QueryRunner().query(conn, sql, new ResultSetHandler<List<String>>(){
+				@Override
+				public List<String> handle(ResultSet rs) throws SQLException {
+					List<String> gridList =new ArrayList<String>();
+					while(rs.next()){
+						gridList.add(rs.getString("GRID_ID"));
+					}
+					return gridList;
 				}
-				if (1==type && statInfo.getPercentRoad()==100){
-					gridProduce.add(statInfo.getGridId());
-				}
-			}
-
-			return gridProduce;
+			},pidsClob);
 			
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);

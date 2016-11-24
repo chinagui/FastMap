@@ -11,11 +11,14 @@ import com.navinfo.dataservice.engine.editplus.model.BasicRow;
 import com.navinfo.dataservice.engine.editplus.model.ixpoi.IxPoiAddress;
 import com.navinfo.dataservice.engine.editplus.model.ixpoi.IxPoiChargingplot;
 import com.navinfo.dataservice.engine.editplus.model.ixpoi.IxPoiChargingstation;
+import com.navinfo.dataservice.engine.editplus.model.ixpoi.IxPoiChildren;
 import com.navinfo.dataservice.engine.editplus.model.ixpoi.IxPoiAddress;
 import com.navinfo.dataservice.engine.editplus.model.ixpoi.IxPoiContact;
+import com.navinfo.dataservice.engine.editplus.model.ixpoi.IxPoiDetail;
 import com.navinfo.dataservice.engine.editplus.model.ixpoi.IxPoiGasstation;
 import com.navinfo.dataservice.engine.editplus.model.ixpoi.IxPoiHotel;
 import com.navinfo.dataservice.engine.editplus.model.ixpoi.IxPoiName;
+import com.navinfo.dataservice.engine.editplus.model.ixpoi.IxPoiParent;
 import com.navinfo.dataservice.engine.editplus.model.ixpoi.IxPoiParking;
 import com.navinfo.dataservice.engine.editplus.model.ixpoi.IxPoiRestaurant;
 
@@ -25,19 +28,6 @@ import com.navinfo.dataservice.engine.editplus.model.ixpoi.IxPoiRestaurant;
  * @date 2016年11月8日
  * @Description: IxPoi.java
  */
-public class IxPoiObj extends AbstractIxObj {
-
-	public IxPoiObj(BasicRow mainrow) {
-		super(mainrow);
-	}
-
-//	//子对象
-//	protected List<BasicObj> ixPoiName=null;
-//	protected List<BasicObj> ixPoiAddress=null;
-//	//...
-//	//子表
-//	protected List<BasicRow> ixPoiContact=null;
-
 
 /** 
  * @ClassName: IxPoi
@@ -50,11 +40,53 @@ public class IxPoiObj extends AbstractIxObj {
 	public IxPoiObj(BasicRow mainrow) {
 		super(mainrow);
 	}
+	public List<IxPoiName> getIxPoiNames(){
+		return (List)subrows.get("IX_POI_NAME");
+	}
 	public IxPoiName createIxPoiName()throws Exception{
 		return (IxPoiName)(ObjFactory.getInstance().createRow("IX_POI_NAME", this.objPid()));
 	}
+	public List<IxPoiAddress> getIxPoiAddresses(){
+		return (List)subrows.get("IX_POI_ADDRESS");
+	}
 	public IxPoiAddress createIxPoiAddress()throws Exception{
 		return (IxPoiAddress)(ObjFactory.getInstance().createRow("IX_POI_ADDRESS", this.objPid()));
+	}
+	public List<IxPoiContact> getIxPoiContacts(){
+		return (List)subrows.get("IX_POI_CONTACT");
+	}
+	public IxPoiContact createIxPoiContact()throws Exception{
+		return (IxPoiContact)(ObjFactory.getInstance().createRow("IX_POI_CONTACT", this.objPid()));
+	}
+	public List<IxPoiRestaurant> getIxPoiRestaurants(){
+		return (List)subrows.get("IX_POI_RESTAURANT");
+	}
+	public IxPoiRestaurant createIxPoiRestaurant()throws Exception{
+		return (IxPoiRestaurant)(ObjFactory.getInstance().createRow("IX_POI_RESTAURANT", this.objPid()));
+	}
+	public List<IxPoiHotel> getIxPoiHotels(){
+		return (List)subrows.get("IX_POI_HOTEL");
+	}
+	public IxPoiHotel createIxPoiHotel()throws Exception{
+		return (IxPoiHotel)(ObjFactory.getInstance().createRow("IX_POI_HOTEL", this.objPid()));
+	}
+	public List<IxPoiDetail> getIxPoiDetails(){
+		return (List)subrows.get("IX_POI_DETAIL");
+	}
+	public IxPoiDetail createIxPoiDetail()throws Exception{
+		return (IxPoiDetail)(ObjFactory.getInstance().createRow("IX_POI_DETAIL", this.objPid()));
+	}
+	public List<IxPoiChildren> getIxPoiChildrens(){
+		return (List)subrows.get("IX_POI_CHILDREN");
+	}
+	public IxPoiChildren createIxPoiChildren()throws Exception{
+		return (IxPoiChildren)(ObjFactory.getInstance().createRow("IX_POI_CHILDREN", this.objPid()));
+	}
+	public List<IxPoiParent> getIxPoiParents(){
+		return (List)subrows.get("IX_POI_PARENT");
+	}
+	public IxPoiParent createIxPoiParent()throws Exception{
+		return (IxPoiParent)(ObjFactory.getInstance().createRow("IX_POI_PARENT", this.objPid()));
 	}
 	
 	/**

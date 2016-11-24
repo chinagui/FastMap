@@ -11,5 +11,5 @@ import net.sf.json.JSONObject;
  * @Description: ObjImportor.java
  */
 public interface JsonImportor {
-	boolean importByJson(BasicObj obj,JSONObject jo)throws ImportException;
+	boolean importByJson(BasicObj obj,JSONObject jo)throws ImportException, Exception;
 }

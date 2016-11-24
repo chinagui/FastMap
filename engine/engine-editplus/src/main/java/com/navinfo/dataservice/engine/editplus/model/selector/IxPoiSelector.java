@@ -53,6 +53,29 @@ public class IxPoiSelector {
 	}
 	
 	/**
+	 * 根据pid查询IxPoiParent数据
+	 * @author Han Shaoming
+	 * @param conn
+	 * @param groupId
+	 * @return
+	 * @throws ServiceException
+	 */
+	public static List<IxPoiParent> getIxPoiParentByPid(Connection conn,long pid) throws ServiceException{
+		List<IxPoiParent> msgs = null;
+		try{
+			QueryRunner queryRunner = new QueryRunner();
+			String sql = "SELECT * FROM IX_POI_PARENT WHERE PARENT_POI_PID=?";
+			Object[] params = {pid};
+			msgs = queryRunner.query(conn, sql, new IxPoiParentHandler(),params);
+			return msgs;
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询失败，原因为:"+e.getMessage(),e);
+		}
+	}
+	
+	/**
 	 * 根据groupId查询IxPoiChildren数据
 	 * @author Han Shaoming
 	 * @param conn

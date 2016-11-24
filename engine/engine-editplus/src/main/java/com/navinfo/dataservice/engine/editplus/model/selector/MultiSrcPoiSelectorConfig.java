@@ -36,8 +36,17 @@ public class MultiSrcPoiSelectorConfig extends SelectorConfig{
 	protected void parse() {
 		specTables=new HashSet<String>();
 		specTables.add("IX_POI_NAME");
+		specTables.add("IX_POI_ADDRESS");
+		specTables.add("IX_POI_CONTACT");
 		specTables.add("IX_POI_RESTAURANT");
-		specTables.add("IX_POI_NAME_FLAG");
+		specTables.add("IX_POI_PARKING");
+		specTables.add("IX_POI_HOTEL");
+		specTables.add("IX_POI_CHARGINGSTATION");
+		specTables.add("IX_POI_CHARGINGPLOT");
+		specTables.add("IX_POI_GASSTATION");
+		specTables.add("IX_POI_CHILDREN");
+		specTables.add("IX_POI_PARENT");
+		specTables.add("IX_POI_DETAIL");
 		//...
 	}
 

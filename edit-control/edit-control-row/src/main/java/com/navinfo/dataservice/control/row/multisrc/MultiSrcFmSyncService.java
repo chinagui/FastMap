@@ -182,7 +182,7 @@ public class MultiSrcFmSyncService {
 			}
 			JSONObject job = new JSONObject();
 			JobApi jobApi = (JobApi) ApplicationContextUtil.getBean("jobApi");
-			job.put("zipFile", zipUrl);
+			job.put("zipFileUrl", zipUrl);
 			//创建job任务,获取jobId
 			long jobId = jobApi.createJob("multiSrc2FmDaySync", job, 0, "创建多源日库增量包导入FM");
 			//创建管理记录

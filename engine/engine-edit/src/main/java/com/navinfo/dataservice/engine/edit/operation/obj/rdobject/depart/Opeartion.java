@@ -6,6 +6,7 @@ import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.crf.RdObject;
 import com.navinfo.dataservice.dao.glm.model.rd.crf.RdObjectLink;
+import com.navinfo.dataservice.dao.glm.model.rd.crf.RdObjectRoad;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.road.RdRoad;
 import com.navinfo.dataservice.dao.glm.model.rd.road.RdRoadLink;
@@ -45,9 +46,9 @@ public class Opeartion {
                 RdObject rdObject = getRdObject(deleteMap, roadObject, key);
                 Iterator<IRow> iterator = rdObject.getRoads().iterator();
                 while (iterator.hasNext()) {
-                    RdRoad road = (RdRoad) iterator.next();
-                    if (roadPid == road.pid()) {
-                        result.insertObject(road, ObjStatus.DELETE, roadPid);
+                    RdObjectRoad objectRoad = (RdObjectRoad) iterator.next();
+                    if (roadPid == objectRoad.getRoadPid()) {
+                        result.insertObject(objectRoad, ObjStatus.DELETE, roadPid);
                         iterator.remove();
                         break;
                     }
@@ -83,7 +84,7 @@ public class Opeartion {
      *
      * @param deleteMap 已处理RdObject
      * @param objectMap 查询结果集RdObject
-     * @param key 主键
+     * @param key       主键
      * @return
      */
     private RdObject getRdObject(Map<Integer, RdObject> deleteMap, Map<String, RdObject> objectMap, String key) {

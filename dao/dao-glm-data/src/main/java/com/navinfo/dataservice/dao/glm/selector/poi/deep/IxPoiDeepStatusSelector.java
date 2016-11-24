@@ -131,18 +131,18 @@ public class IxPoiDeepStatusSelector extends AbstractSelector{
 		StringBuilder sb = new StringBuilder();
 		sb.append(" SELECT s.row_id ");
 		sb.append(" FROM POI_DEEP_STATUS s ,ix_poi p ");
-		sb.append(" WHERE sdo_within_distance(p.geometry, sdo_geometry(:1  , 8307), 'mask=anyinteract') = 'TRUE'");
-		sb.append(" AND s.TYPE=:2");
-		sb.append(" AND s.handler=:3");
-		sb.append(" AND s.STATUS = :4");
+		sb.append(" WHERE sdo_within_distance(p.geometry, sdo_geometry(?, 8307), 'mask=anyinteract') = 'TRUE'");
+		sb.append(" AND s.TYPE=?");
+		sb.append(" AND s.handler=?");
+		sb.append(" AND s.STATUS =?");
 		sb.append(" AND p.row_id = s.row_id");
-		sb.append(" AND p.row_id not exist (select in.row_id from  ni_val_exception n AND in.row_id = s.row_id");
+		sb.append(" AND NOT EXISTS (SELECT C.PID FROM NI_VAL_EXCEPTION N, CK_RESULT_OBJECT C WHERE N.MD5_CODE = C.MD5_CODE AND C.PID = P.PID)");
 		
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
 		try {
 			pstmt = conn.prepareStatement(sb.toString());
-			pstmt.setString(1, subtask.getGeometry());
+			pstmt.setString(1,subtask.getGeometry());
 			pstmt.setInt(2, type);
 			pstmt.setLong(3, userid);
 			pstmt.setInt(4, status);

@@ -8,7 +8,9 @@ import org.apache.commons.collections.CollectionUtils;
 
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.commons.util.StringUtils;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.dao.glm.selector.rd.crf.RdInterSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeSelector;
@@ -62,10 +64,10 @@ public class Check {
 				{
 					throw new Exception("传递的link参数不正确：link_pid错误");
 				}
-//				else
-//				{
-//					this.checkLinkDirect(linkList);
-//				}
+				else
+				{
+					this.checkLinkDirect(linkList);
+				}
 			}
 		}
 		if(CollectionUtils.isNotEmpty(linkList) && ((command.getLinkArray() == null)||(command.getLinkArray().size() == 0)))
@@ -93,28 +95,43 @@ public class Check {
 		}
 	}
 	
-//	/**
-//	 * 检查link是否正确
-//	 * @param linkList
-//	 * @throws Exception
-//	 */
-//	private void checkLinkDirect(List<RdLink> linkList) throws Exception
-//	{
-//		if(CollectionUtils.isNotEmpty(linkList))
-//		{
-//			for(RdLink link : linkList)
-//			{
-//				if(link.getSpecialTraffic() == 1)
-//				{
-//					return;
-//				}
-//				if(link.getImiCode() != 1 && link.getImiCode() !=2 && link.getSpecialTraffic() !=1)
-//				{
-//					throw new Exception("link:"+link.getPid()+"不具有'I、M'属性,不允许制作");
-//				}
-//			}
-//		}
-//	}
+	/**
+	 * 检查link是否正确
+	 * @param linkList
+	 * @throws Exception
+	 */
+	private void checkLinkDirect(List<RdLink> linkList) throws Exception
+	{
+		if(CollectionUtils.isNotEmpty(linkList))
+		{
+			for(RdLink link : linkList)
+			{
+				if(link.getSpecialTraffic() == 1)
+				{
+					return;
+				}
+				else if(link.getImiCode() != 1 && link.getImiCode() !=2)
+				{
+					boolean has33Form = false;
+					List<IRow> linkForms = link.getForms();
+					for(IRow row : linkForms)
+					{
+						RdLinkForm form = (RdLinkForm) row;
+						if(form.getFormOfWay() == 33)
+						{
+							has33Form = true;
+							break;
+						}
+					}
+					//包含环岛属性
+					if(!has33Form)
+					{
+						throw new Exception("CRFI中的Link："+link.getPid()+"无IMI属性且无环岛或特殊交通类型[GLM28009]");
+					}
+				}
+			}
+		}
+	}
 
 	/**
 	 * @param conn

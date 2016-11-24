@@ -303,18 +303,20 @@ public class RdLinkSearchUtils {
 	 *                按照上述方法追踪接续link的过程中，如果在为满足总和长度距离要求之前遇到了挂接
 	 *                ，则停止追踪，将目前追踪到的link/link串作为该坡度的接续link；
 	 *                如果退出link挂接了两条或两条以上的link（10级路不计算挂接个数）则不推荐接续link
-	 * @author zhaokk 
+	 * @author zhaokk
 	 * @param cuurentLinkPid
 	 * @param cruuentNodePidDir
 	 * @param maxNum
-	 * @param length 退出线的长度
+	 * @param length
+	 *            退出线的长度
 	 * @return 查找所有联通link
 	 * @throws Exception
 	 */
-	public List<RdLink> getNextLinksForSlope(double length,int cuurentLinkPid,
+	public List<RdLink> getNextLinksForSlope(double length, int cuurentLinkPid,
 			int cruuentNodePidDir) throws Exception {
 		RdLinkSelector linkSelector = new RdLinkSelector(conn);
 		List<RdLink> tracks = new ArrayList<RdLink>();
+		List<RdLink> resultLinks = new ArrayList<RdLink>();
 		Set<Integer> nodes = new HashSet<Integer>();
 
 		// 添加当前选中的link
@@ -325,47 +327,56 @@ public class RdLinkSearchUtils {
 		// 查找当前link联通的links
 		List<RdLink> nextLinks = linkSelector.loadTrackLink(cuurentLinkPid,
 				cruuentNodePidDir, true);
-		while (nextLinks.size() == 1) {
-			RdLink currentLink = nextLinks.get(0);
-			// 10级路不计算挂接个数
+
+		// 10级路不计算挂接个数
+		for (RdLink link : nextLinks) {
+			if (link.getKind() < 10) {
+				resultLinks.add(link);
+			}
+		}
+		while (resultLinks.size() == 1) {
+			RdLink currentLink = resultLinks.get(0);
 			if (currentLink.getKind() >= 10) {
 				break;
 			}
 			if (this.getLinksLength(tracks) + currentLink.getLength() + length > 150) {
 				break;
-			}else{
+			} else {
 				tracks.add(currentLink);
 			}
-			//计算
+			// 计算
 			cuurentLinkPid = currentLink.getPid();
 			cruuentNodePidDir = (cruuentNodePidDir == currentLink.getsNodePid()) ? currentLink
 					.geteNodePid() : currentLink.getsNodePid();
-			//防止闭环
+			// 防止闭环
 			if (nodes.contains(cruuentNodePidDir)) {
 				break;
 			}
-			
+
 			nodes.add(cruuentNodePidDir);
 			// 赋值查找下一组联通links
-			nextLinks = linkSelector.loadTrackLink(cuurentLinkPid,
+			resultLinks = linkSelector.loadTrackLink(cuurentLinkPid,
 					cruuentNodePidDir, true);
 		}
 		return tracks;
 	}
+
 	/***
 	 * 计算link串的长度
+	 * 
 	 * @param links
 	 * @return
 	 */
-    private double getLinksLength(List<RdLink> links){
-    	double length =0.0;
-    	if(links != null && links.size() > 0){
-    		for(RdLink link:links){
-    			length += link.getLength();
-    		}
-    	}
-    	return length;
-    }
+	private double getLinksLength(List<RdLink> links) {
+		double length = 0.0;
+		if (links != null && links.size() > 0) {
+			for (RdLink link : links) {
+				length += link.getLength();
+			}
+		}
+		return length;
+	}
+
 	/**
 	 * 获取link指定端点处的直线几何
 	 * 

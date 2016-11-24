@@ -50,7 +50,7 @@ public abstract class BasicCheckRule {
 		return rows;
 	}
 	
-	public void run(){
+	public void run()throws Exception{
 		for(String objName:this.objNameList){
 			Map<Long, BasicObj> rows=getRowList();
 				for(Long key:rows.keySet()){
@@ -60,7 +60,7 @@ public abstract class BasicCheckRule {
 			}
 		}
 	
-	public abstract void runCheck(String objName,BasicObj obj);
+	public abstract void runCheck(String objName,BasicObj obj)throws Exception;
 
 	public CheckCommand getCheckCommand() {
 		return checkCommand;

@@ -7,6 +7,7 @@ import com.navinfo.dataservice.engine.editplus.model.BasicRow;
 import com.navinfo.dataservice.engine.editplus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.engine.editplus.model.ixpoi.IxPoiName;
 import com.navinfo.dataservice.engine.editplus.model.obj.BasicObj;
+import com.navinfo.dataservice.engine.editplus.model.obj.IxPoiObj;
 
 public class GLM001TEST extends BasicCheckRule {
 
@@ -16,7 +17,7 @@ public class GLM001TEST extends BasicCheckRule {
 	}
 
 	@Override
-	public void runCheck(String objName, BasicObj obj) {
+	public void runCheck(String objName, BasicObj obj) throws Exception{
 		if(objName.equals("IX_POI")){
 			IxPoi poiObj=(IxPoi) obj.getMainrow();
 			Map<String, Object> oldValueMap=poiObj.getOldValues();
@@ -27,8 +28,9 @@ public class GLM001TEST extends BasicCheckRule {
 				if(br.getObjType().equals("UPDATE")){
 				}
 			}
-			IxPoiName name=new IxPoiName(0);
-			obj.insertSubrow(name);
+			IxPoiObj ixpoiObj = (IxPoiObj)obj;
+			IxPoiName name = ixpoiObj.createIxPoiName();
+			name.setLangCode("CHI");
 		}else if(objName.equals("IX_POI_NAME")){}
 	}
 

@@ -211,6 +211,7 @@ public class Operation implements IOperation {
 					tmclocationLinkPids.add(tmcLink.getLinkPid());
 				}
 				
+				//如果删除的link包含了全部tmclocationlink,则删除tmclocation对象
 				if(linkPids.containsAll(tmclocationLinkPids))
 				{
 					result.insertObject(location, ObjStatus.DELETE, location.getPid());

@@ -756,7 +756,7 @@ public class RdLink implements IObj {
 
 		this.setWalkstairs(walkstairs);		
 		
-		List<IRow> tmcLocationSources = sourceLink.getWalkstairs();
+		List<IRow> tmcLocationSources = sourceLink.getTmclocations();
 
 		List<IRow> tmcLocations = new ArrayList<IRow>();
 

@@ -9,6 +9,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.navinfo.dataservice.api.edit.model.FmMultiSrcSync;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.control.row.multisrc.MultiSrcFmSyncService;
 import com.navinfo.dataservice.control.row.multisrc.SyncApiImpl;
 
 /**
@@ -78,6 +79,13 @@ public class SyncTest {
 		
 		SyncApiImpl sy = new SyncApiImpl();
 		sy.updateMultiSrcFmSyncStatus(5);
+		
+	}
+	
+	@Test
+	public void testApplyUploadDay() throws Exception{
+		
+		MultiSrcFmSyncService.getInstance().applyUploadDay(0, "zipUrl");
 		
 	}
 	

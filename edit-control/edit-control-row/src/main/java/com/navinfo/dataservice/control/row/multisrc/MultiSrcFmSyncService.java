@@ -168,7 +168,7 @@ public class MultiSrcFmSyncService {
 	 * @return:jobId
 	 * @throws Exception
 	 */
-	public String applyUploadDay(Long userId, String zipUrl)throws Exception{
+	public String applyUploadDay(long userId, String zipUrl)throws Exception{
 		Connection conn = null;
 		try {
 			//判断是否有未执行完的导入任务

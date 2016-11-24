@@ -134,7 +134,10 @@ public class Operation implements IOperation {
 			result.insertObject(lane, ObjStatus.DELETE, lane.getPid());
 			lanePids.add(lane.getPid());
 		}
-		this.deleteTopoDetailForRdLanes(result, lanePids);
+		if(lanePids.size() > 0){
+			this.deleteTopoDetailForRdLanes(result, lanePids);
+		}
+		
 	}
 
 	/**

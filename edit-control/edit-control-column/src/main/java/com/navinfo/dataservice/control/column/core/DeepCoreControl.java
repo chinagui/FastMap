@@ -343,7 +343,7 @@ public class DeepCoreControl {
 			
 			// 查询可提交数据
 			IxPoiDeepStatusSelector ixPoiDeepStatusSelector = new IxPoiDeepStatusSelector(conn);
-			rowIdList = ixPoiDeepStatusSelector.getRowIdsForRelease(subtask,2, userId, type);
+			rowIdList = ixPoiDeepStatusSelector.getRowIdsForRelease(subtask,2,userId, type);
 			sucReleaseTotal = rowIdList.size();
 			
 			// 修改poi_deep_status表作业项状态
@@ -371,7 +371,9 @@ public class DeepCoreControl {
 	public void updateDeepStatus(List<String> rowIdList,Connection conn,int flag) throws Exception {
 		StringBuilder sb = new StringBuilder();
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");//设置日期格式
-        
+        if (rowIdList.isEmpty()){
+        	return;
+        }
         if (flag==0) {
         	sb.append(" UPDATE poi_deep_status T1 SET T1.status = 2 , T1.update_date = to_date('"+df.format(new Date())+"','yyyy-mm-dd hh24:mi:ss') WHERE row_id in (");
         } else {

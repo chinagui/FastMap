@@ -6,6 +6,7 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -237,7 +238,7 @@ public class PoiEditStatus {
 //			sb.append("INSERT INTO POI_EDIT_STATUS (PID,STATUS,IS_UPLOAD,UPLOAD_DATE,WORK_TYPE) VALUES (?,?,?,TO_DATE(?,'yyyy-MM-dd HH24:MI:ss'),?)");
 			sb.append("INSERT INTO POI_EDIT_STATUS (ROW_ID,PID,STATUS,IS_UPLOAD,UPLOAD_DATE,WORK_TYPE) VALUES (?,?,?,?,TO_DATE(?,'yyyy-MM-dd HH24:MI:ss'),?)");
 
-			DateFormat format = new java.text.SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+			DateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
 			Object[][] values = new Object[pids.size()][];
 			int i = 0;
 			for(long pid:pids){

@@ -18,6 +18,7 @@ public class LogOperation {
 	protected String opCmd;
 	protected int opSg;
 	protected Date opDt;
+	protected List<LogDetail> details;
 	
 	public Date getOpDt() {
 		return opDt;
@@ -25,8 +26,6 @@ public class LogOperation {
 	public void setOpDt(Date opDt) {
 		this.opDt = opDt;
 	}
-	protected List<LogDetail> details;
-	
 	public int getOpSg() {
 		return opSg;
 	}

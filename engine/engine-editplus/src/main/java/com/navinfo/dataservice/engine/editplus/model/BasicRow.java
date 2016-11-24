@@ -235,11 +235,11 @@ public abstract class BasicRow implements Logable{
 				columnValues.add(getAttrByColName(format.format(entry.getKey())));
 			}else if(glmColumn.getType().equals(GlmColumn.TYPE_GEOMETRY)){
 				if(operationType.equals(OperationType.UPDATE)){
-					columnName.add(entry.getKey() + "=?");
+					columnName.add(entry.getKey() + "=SDO_GEOMETRY(?,8307)");
 				}else{
 					columnName.add(entry.getKey());
 				}
-				columnPlaceholder.add("?");
+				columnPlaceholder.add("SDO_GEOMETRY(?,8307)");
 				//Geometry不转STRUCT
 				columnValues.add(getAttrByColName(entry.getKey()));
 			}

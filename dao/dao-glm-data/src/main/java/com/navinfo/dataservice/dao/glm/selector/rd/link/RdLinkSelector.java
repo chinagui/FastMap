@@ -619,7 +619,7 @@ public class RdLinkSelector extends AbstractSelector {
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
 		try {
-			StringBuilder sb = new StringBuilder("select link_pid,IMI_CODE from rd_link where S_NODE_PID in("
+			StringBuilder sb = new StringBuilder("select link_pid,SPECIAL_TRAFFIC,IMI_CODE from rd_link where S_NODE_PID in("
 					+ nodePidsStr + ") and E_NODE_PID in (" + nodePidsStr + ") and u_record !=2");
 			if (isLock) {
 				sb.append(" for update nowait");
@@ -634,6 +634,12 @@ public class RdLinkSelector extends AbstractSelector {
 				link.setPid(resultSet.getInt("link_pid"));
 
 				link.setImiCode(resultSet.getInt("IMI_CODE"));
+				
+				link.setSpecialTraffic(resultSet.getInt("SPECIAL_TRAFFIC"));
+				
+				List<IRow> forms = new AbstractSelector(RdLinkForm.class,conn).loadRowsByParentId(link.getPid(), isLock);
+				
+				link.setForms(forms);
 
 				list.add(link);
 			}

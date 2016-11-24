@@ -1041,4 +1041,29 @@ public class SubtaskService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+	/**
+	 * 删除子任务，前端只有草稿状态的子任务有删除按钮
+	 * @param subtaskIdList
+	 * @throws ServiceException
+	 */
+	public void delete(List<Integer> subtaskIdList) throws ServiceException {
+		Connection conn = null;
+		try {
+			// 持久化
+			QueryRunner run = new QueryRunner();
+			conn = DBConnector.getInstance().getManConnection();	
+			String updateSql = "delete from SUBTASK S where S.SUBTASK_ID in ("
+					+StringUtils.join(subtaskIdList.toArray(),",") + ")";	
+			run.update(conn,updateSql);
+			updateSql = "delete from SUBTASK_grid_mapping S where S.SUBTASK_ID in ("
+					+StringUtils.join(subtaskIdList.toArray(),",") + ")";	
+			run.update(conn,updateSql);
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("删除失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
 }

@@ -67,8 +67,8 @@ public class GridController extends BaseController {
 			if (dataJson == null) {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
-			if (!dataJson.containsKey("wkt") || !dataJson.containsKey("type")||!dataJson.containsKey("stage")){
-				throw new IllegalArgumentException("wkt/type/stage不能为空");
+			if (!dataJson.containsKey("wkt")){
+				throw new IllegalArgumentException("wkt不能为空");
 			}
 			List<String> data = GridService.getInstance().queryListProduce(dataJson);
 			return new ModelAndView("jsonView", success(data));

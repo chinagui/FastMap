@@ -46,8 +46,8 @@ public class RdLink implements IObj {
 	private int tollInfo = 2;
 
 	private int routeAdopt = 2;
-	
-	private int multiDigitized =0;
+
+	private int multiDigitized = 0;
 
 	private int developState;
 
@@ -135,7 +135,7 @@ public class RdLink implements IObj {
 	private int editFlag = 1;
 
 	private int truckFlag;
-	
+
 	private double feeStd;
 	private int feeFlag;
 	private int systemId;
@@ -172,7 +172,7 @@ public class RdLink implements IObj {
 	private List<IRow> walkstairs = new ArrayList<IRow>();
 
 	private List<IRow> zones = new ArrayList<IRow>();
-	
+
 	private List<IRow> tmclocations = new ArrayList<IRow>();
 
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
@@ -196,7 +196,7 @@ public class RdLink implements IObj {
 	public Map<String, RdLinkWalkstair> walkstairMap = new HashMap<String, RdLinkWalkstair>();
 
 	public Map<String, RdLinkZone> zoneMap = new HashMap<String, RdLinkZone>();
-	
+
 	public Map<String, RdTmclocation> locationMap = new HashMap<String, RdTmclocation>();
 
 	public RdLink() {
@@ -354,8 +354,10 @@ public class RdLink implements IObj {
 			json.put("direct", direct);
 
 			json.put("kind", kind);
+			json.put("length", length);
 
-			json.put("geometry", GeoTranslator.jts2Geojson(geometry, 0.00001, 5));
+			json.put("geometry",
+					GeoTranslator.jts2Geojson(geometry, 0.00001, 5));
 
 			return json;
 		}
@@ -433,7 +435,8 @@ public class RdLink implements IObj {
 
 			} else if ("geometry".equals(key)) {
 
-				Geometry jts = GeoTranslator.geojson2Jts(json.getJSONObject(key), 100000, 0);
+				Geometry jts = GeoTranslator.geojson2Jts(
+						json.getJSONObject(key), 100000, 0);
 
 				this.setGeometry(jts);
 
@@ -491,7 +494,7 @@ public class RdLink implements IObj {
 	@Override
 	public void copy(IRow row) {
 		RdLink sourceLink = (RdLink) row;
-		
+
 		this.setsNodePid(sourceLink.getsNodePid());
 
 		this.seteNodePid(sourceLink.geteNodePid());
@@ -649,8 +652,7 @@ public class RdLink implements IObj {
 		}
 
 		this.setIntRtics(intRtics);
-		
-		
+
 		List<IRow> rticsSources = sourceLink.getRtics();
 
 		List<IRow> rtics = new ArrayList<IRow>();
@@ -666,7 +668,7 @@ public class RdLink implements IObj {
 			rtics.add(f);
 		}
 
-		this.setRtics(rtics);		
+		this.setRtics(rtics);
 
 		List<IRow> limitTrucksSources = sourceLink.getLimitTrucks();
 
@@ -718,9 +720,7 @@ public class RdLink implements IObj {
 		}
 
 		this.setZones(zones);
-		
-		
-		
+
 		List<IRow> sidewalkSources = sourceLink.getSidewalks();
 
 		List<IRow> sidewalks = new ArrayList<IRow>();
@@ -737,8 +737,7 @@ public class RdLink implements IObj {
 		}
 
 		this.setSidewalks(sidewalks);
-		
-		
+
 		List<IRow> walkstairSources = sourceLink.getWalkstairs();
 
 		List<IRow> walkstairs = new ArrayList<IRow>();
@@ -754,33 +753,31 @@ public class RdLink implements IObj {
 			walkstairs.add(f);
 		}
 
-		this.setWalkstairs(walkstairs);		
-		
-		List<IRow> tmcLocationSources = sourceLink.getTmclocations();
+		this.setWalkstairs(walkstairs);
+		List<IRow> tmcLocationSources = sourceLink.getWalkstairs();	
 
 		List<IRow> tmcLocations = new ArrayList<IRow>();
 
 		for (IRow fs : tmcLocationSources) {
-			
+
 			RdTmclocation locationSource = (RdTmclocation) fs;
-			
+
 			RdTmclocation locationNew = new RdTmclocation();
-			
+
 			locationNew.copy(locationSource);
 
 			List<IRow> tmcLocationLinks = locationNew.getLinks();
-			
-			for(IRow tmcLinkRow : tmcLocationLinks)
-			{
+
+			for (IRow tmcLinkRow : tmcLocationLinks) {
 				RdTmclocationLink tmcLocationLink = (RdTmclocationLink) tmcLinkRow;
-				
+
 				tmcLocationLink.setLinkPid(this.getPid());
 			}
 
 			tmcLocations.add(locationNew);
 		}
 
-		this.setWalkstairs(walkstairs);		
+		this.setTmclocations(tmcLocations);
 	}
 
 	@Override
@@ -831,12 +828,12 @@ public class RdLink implements IObj {
 		children.add(this.getSidewalks());
 
 		children.add(this.getWalkstairs());
-		
+
 		children.add(this.getTmclocations());
 
 		return children;
 	}
-	
+
 	public List<IRow> getTmclocations() {
 		return tmclocations;
 	}
@@ -882,7 +879,8 @@ public class RdLink implements IObj {
 				String oldwkt = GeoTranslator.jts2Wkt(geometry, 0.00001, 5);
 
 				if (!wkt.equals(oldwkt)) {
-					double length = GeometryUtils.getLinkLength(GeoTranslator.geojson2Jts(geojson));
+					double length = GeometryUtils.getLinkLength(GeoTranslator
+							.geojson2Jts(geojson));
 
 					changedFields.put("length", length);
 

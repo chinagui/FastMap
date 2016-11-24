@@ -449,6 +449,41 @@ public class SubtaskController extends BaseController {
 		}
 	}
 	
+	/*
+	 * 删除子任务，前端只有草稿状态的子任务有删除按钮
+	 */
+	@ApiOperation(value = "删除subtask", notes = "删除subtask")  
+	@RequestMapping(value = { "/delete" }, method = RequestMethod.GET)
+	public NullResponse delete(@ApiParam(required =true, name = "access_token", value="接口调用凭证")@RequestParam( value = "access_token") String access_token
+			,@ApiParam(required =true, name = "parameter", value="{<br/>\"subtaskIds\":[12]#子任务列表<br/>	}")@RequestParam( value = "parameter") String parameter
+			,HttpServletRequest request){
+		try{		
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if(dataJson==null){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			
+			if(!dataJson.containsKey("subtaskIds")){
+				throw new IllegalArgumentException("subtaskIds不能为空。");
+			}
+			
+			JSONArray subtaskIds = dataJson.getJSONArray("subtaskIds");
+			
+			List<Integer> subtaskIdList = (List<Integer>)JSONArray.toCollection(subtaskIds,Integer.class);
+			SubtaskService.getInstance().delete(subtaskIdList);
+			
+			String message = "批量删除子任务：" + subtaskIdList.size() + "个成功，0个失败。";
+
+			NullResponse result = new NullResponse(0,"success",message);
+			return result;
+		
+		}catch(Exception e){
+			log.error("批量关闭失败，原因："+e.getMessage(), e);
+			NullResponse result = new NullResponse(-1,e.getMessage(),null);
+			return result;
+		}
+	}
+	
 	
 	/*
 	 * 发布功能：选中一条/多条开启状态记录后，点击“发布”按钮，将这些记录进行消息推送。未选中记录时，提示“请选择子任务”；发布后提示“发布成功”/“发布失败”

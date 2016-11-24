@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.edit.operation.topo.move.movezonenode;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.json.JSONException;
@@ -83,6 +84,16 @@ public class Command extends AbstractCommand {
 		
 		this.setDbId(json.getInt("dbId"));
 	}
+	public Command(JSONObject json, ZoneLink zoneLink, ZoneNode node)
+			throws JSONException {
+		this(json, "");
+		List<ZoneLink> links = new ArrayList<>();
+		links.add(zoneLink);
+		this.setLinks(links);
+		this.zoneNode = node;
+
+	}
+
 
 	@Override
 	public OperType getOperType() {
@@ -121,5 +132,6 @@ public class Command extends AbstractCommand {
 	public void setJson(JSONObject json) {
 		this.json = json;
 	}
+	
 	
 }

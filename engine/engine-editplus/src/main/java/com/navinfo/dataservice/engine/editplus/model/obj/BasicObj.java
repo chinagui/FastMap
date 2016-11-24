@@ -1,10 +1,16 @@
 package com.navinfo.dataservice.engine.editplus.model.obj;
 
+import java.lang.reflect.InvocationTargetException;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import com.navinfo.dataservice.engine.editplus.diff.ObjectDiffConfig;
+import com.navinfo.dataservice.engine.editplus.glm.GlmTableNotFoundException;
 import com.navinfo.dataservice.engine.editplus.model.BasicRow;
 import com.navinfo.dataservice.engine.editplus.model.selector.ObjSelector;
 import com.navinfo.dataservice.engine.editplus.operation.OperationType;
@@ -18,7 +24,7 @@ import com.navinfo.navicommons.database.sql.RunnableSQL;
  * @Description: BasicObj.java
  */
 public abstract class BasicObj {
-	
+	protected int lifeCycle=0;
 	protected BasicRow mainrow;
 	//protected Map<Class<? extends BasicObj>, List<BasicObj>> childobjs;//存储对象下面的子对象，不包含子表
 //	protected Map<Class<? extends BasicRow>, List<BasicRow>> childrows;//存储对象下的子表,包括二级、三级子表...
@@ -27,11 +33,81 @@ public abstract class BasicObj {
 	public BasicObj(BasicRow mainrow){
 		this.mainrow=mainrow;
 	}
+	protected int getLifeCycle() {
+		return lifeCycle;
+	}
+	protected void setLifeCycle(int lifeCycle) {
+		this.lifeCycle = lifeCycle;
+	}
 	public BasicRow getMainrow() {
 		return mainrow;
 	}
 	public Map<String, List<BasicRow>> getSubrows() {
 		return subrows;
+	}
+	/**
+	 * 不会维护状态，操作阶段不要使用
+	 * @param tableName
+	 * @param basicRowList
+	 */
+	public void setSubrows(String tableName,List<BasicRow> basicRowList) {
+		subrows.put(tableName, basicRowList);
+	}
+	
+	/**
+	 * 写入一条子表记录前，使用对象的createXXX子表表方法创建记录
+	 * @param subrow
+	 */
+	protected void insertSubrow(BasicRow subrow)throws WrongOperationException{
+		//insert某子表的记录时，改子表在对象中一定加载过，List<BasicRow>不会为null，如果为null，报错
+		String tname = subrow.tableName();
+		if(mainrow.getOpType().equals(OperationType.DELETE)){
+			throw new WrongOperationException("删除的对象不允许写入记录");
+		}else if(mainrow.getOpType().equals(OperationType.INSERT)){
+			List<BasicRow> rows = subrows.get(tname);
+			if(rows==null){
+				rows = new ArrayList<BasicRow>();
+				rows.add(subrow);
+				subrows.put(tname, rows);
+			}else{
+				rows.add(subrow);
+			}
+		}else{
+			List<BasicRow> rows = subrows.get(tname);
+			if(rows==null){
+				throw new WrongOperationException("修改的对象但未初始化该子表");
+			}else{
+				rows.add(subrow);
+			}
+		}
+		List<BasicRow> rows = subrows.get(tname);
+		rows.add(subrow);
+	}
+	
+	/**
+	 * 如果是新增状态，物理删除，其他状态打删除标识
+	 * @param subrow
+	 */
+	public void deleteSubrow(BasicRow subrow){
+		if(subrow.getOpType().equals(OperationType.INSERT)){
+			String tname = subrow.tableName();
+			subrows.get(tname).remove(subrow);
+		}else{
+			subrow.setOpType(OperationType.DELETE);
+		}
+	}
+	/**
+	 * 注意：对于一次操作中新增再删除的，在流程中控制不进入OperationResult
+	 */
+	public void deleteObj(){
+		this.mainrow.setOpType(OperationType.DELETE);
+		for(List<BasicRow> rows:subrows.values()){
+			if(rows!=null){
+				for(BasicRow row:rows){
+					row.setOpType(OperationType.DELETE);
+				}
+			}
+		}
 	}
 	
 	public abstract String objType();
@@ -43,30 +119,18 @@ public abstract class BasicObj {
 		return mainrow.getOpType();
 	}
 	
-	/**
-	 * 主表对应的子表list。key：Class.class value:模型中子表的list
-	 * @return
-	 */
-//	public abstract Map<Class<? extends BasicRow>,List<BasicRow>> childRows(); 
-
-
-	//public abstract Map<Class<? extends BasicObj>,List<BasicObj>> childObjs(); 
-	
-
-//	public boolean checkChildren(List<?> oldValue,List<?> newValue){
-//		if(oldValue==null&&newValue==null)return false;
-//		if(oldValue!=null&&oldValue.equals(newValue))return false;
-//		//...TODO
-//		return true;
-//	}
-	
+	public List<BasicRow> selectRowsByName(Connection conn,String tableName) throws GlmTableNotFoundException, SQLException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, IllegalArgumentException{
+		List<BasicRow> rows = subrows.get(tableName);
+		if(rows==null&&mainrow.getOpType().equals(OperationType.UPDATE)){
+			//ObjSelector
+			ObjSelector.selectChildren(conn,this,tableName);
+		}
+		return subrows.get(tableName);
+	}
 
 	public List<BasicRow> getRowsByName(String tableName){
 		List<BasicRow> rows = subrows.get(tableName);
-		if(rows==null){
-			//ObjSelector
-		}
-		return subrows.get(tableName);
+		return rows;
 	}
 	
 	public BasicObj copy(){
@@ -97,10 +161,25 @@ public abstract class BasicObj {
 	/**
 	 * 生成这个对象写入库中的sql
 	 * @return
+	 * @throws IllegalArgumentException 
+	 * @throws IllegalAccessException 
+	 * @throws InvocationTargetException 
+	 * @throws NoSuchMethodException 
 	 */
-	public List<RunnableSQL> generateSql(){
-		//todo
-		return null;
+	public List<RunnableSQL> generateSql() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, IllegalArgumentException{
+		List<RunnableSQL> sqlList = new ArrayList<RunnableSQL>();
+		//mainrow
+		sqlList.add(mainrow.toSql());
+		//subrow
+		for(Entry<String, List<BasicRow>> entry:subrows.entrySet()){
+			for(BasicRow subrow:entry.getValue()){
+				RunnableSQL sql = subrow.toSql();
+				if(!sql.getSql().equals("")){
+					sqlList.add(subrow.toSql());
+				}	
+			}
+		}
+		return sqlList;
 	}
 	
 	/**
@@ -110,14 +189,14 @@ public abstract class BasicObj {
 	 * @return：是否有更新
 	 * @throws Exception
 	 */
-	public boolean diff(BasicObj obj,ObjectDiffConfig diffConfig)throws Exception{
+	public void diff(BasicObj obj,ObjectDiffConfig diffConfig)throws Exception{
 		//todo
-		boolean isDefer=false;
+//		boolean isDefer=false;
 		//根据差分配置
 		if(this.getClass().getName().equals(obj.getClass().getName())){
-			isDefer = this.mainrow.setAttrByCol("col1", obj.mainrow.getAttrByColName("col1"));
+			this.mainrow.setAttrByCol("col1", obj.mainrow.getAttrByColName("col1"));
 		}
-		return isDefer;
+//		return isDefer;
 	}
 	
 

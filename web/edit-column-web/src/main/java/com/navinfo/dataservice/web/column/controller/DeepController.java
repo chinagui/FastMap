@@ -131,4 +131,61 @@ public class DeepController extends BaseController {
 			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
 	}
+	/**
+	 * 深度信息poi提交接口
+	 * 
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException
+	 */
+	@RequestMapping(value = "/poi/deep/release")
+	public ModelAndView poiRelease(HttpServletRequest request) throws ServletException, IOException {
+
+		String parameter = request.getParameter("parameter");
+		AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+		try {
+			DeepCoreControl deepCore = new DeepCoreControl();
+			JSONObject result = deepCore.release(parameter, tokenObj.getUserId());
+
+			return new ModelAndView("jsonView", success(result));
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
+	
+	/**
+	 * 深度信息poi查询接口
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException
+	 */
+	@RequestMapping(value = "/poi/deep/queryDataList")
+	public ModelAndView queryDataList(HttpServletRequest request) throws ServletException, IOException {
+		
+		String parameter = request.getParameter("parameter");
+		logger.debug("深度信息查询数据");
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			logger.debug("parameter="+jsonReq);
+			
+			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			
+			long userId = tokenObj.getUserId();
+			
+			DeepCoreControl deepCore = new DeepCoreControl();
+			
+			JSONObject result = deepCore.queryPoi(jsonReq, userId);
+			
+			return new ModelAndView("jsonView", success(result));
+			
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			
+			return new ModelAndView("jsonView",fail(e.getMessage()));
+		}
+	}
+	
 }

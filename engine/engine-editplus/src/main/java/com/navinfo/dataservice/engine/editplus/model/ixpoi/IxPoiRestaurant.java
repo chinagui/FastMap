@@ -11,7 +11,7 @@ import com.navinfo.dataservice.engine.editplus.model.BasicRow;
 /** 
 * @ClassName:  IxPoiRestaurant 
 * @author code generator
-* @date 2016-11-16 06:04:22 
+* @date 2016-11-18 11:36:29 
 * @Description: TODO
 */
 public class IxPoiRestaurant extends BasicRow {
@@ -19,8 +19,8 @@ public class IxPoiRestaurant extends BasicRow {
 	protected long poiPid ;
 	protected String foodType ;
 	protected String creditCard ;
-	protected Integer avgCost ;
-	protected Integer parking ;
+	protected int avgCost ;
+	protected int parking ;
 	protected String longDescription ;
 	protected String longDescripEng ;
 	protected String openHour ;
@@ -29,10 +29,7 @@ public class IxPoiRestaurant extends BasicRow {
 	protected String address ;
 	protected String city ;
 	protected String photoName ;
-	protected Integer travelguideFlag ;
-//	protected Integer uRecord ;
-//	protected String uFields ;
-//	protected String uDate ;
+	protected int travelguideFlag ;
 	
 	public IxPoiRestaurant (long objPid){
 		super(objPid);
@@ -41,112 +38,124 @@ public class IxPoiRestaurant extends BasicRow {
 	public long getRestaurantId() {
 		return restaurantId;
 	}
-	protected void setRestaurantId(long restaurantId) {
-		this.restaurantId = restaurantId;
+	public void setRestaurantId(long restaurantId) {
+		if(this.checkValue("RESTAURANT_ID",this.restaurantId,restaurantId)){
+			this.restaurantId = restaurantId;
+		}
 	}
 	public long getPoiPid() {
 		return poiPid;
 	}
-	protected void setPoiPid(long poiPid) {
-		this.poiPid = poiPid;
+	public void setPoiPid(long poiPid) {
+		if(this.checkValue("POI_PID",this.poiPid,poiPid)){
+			this.poiPid = poiPid;
+		}
 	}
 	public String getFoodType() {
 		return foodType;
 	}
-	protected void setFoodType(String foodType) {
-		this.foodType = foodType;
+	public void setFoodType(String foodType) {
+		if(this.checkValue("FOOD_TYPE",this.foodType,foodType)){
+			this.foodType = foodType;
+		}
 	}
 	public String getCreditCard() {
 		return creditCard;
 	}
-	protected void setCreditCard(String creditCard) {
-		this.creditCard = creditCard;
+	public void setCreditCard(String creditCard) {
+		if(this.checkValue("CREDIT_CARD",this.creditCard,creditCard)){
+			this.creditCard = creditCard;
+		}
 	}
-	public Integer getAvgCost() {
+	public int getAvgCost() {
 		return avgCost;
 	}
-	protected void setAvgCost(Integer avgCost) {
-		this.avgCost = avgCost;
+	public void setAvgCost(int avgCost) {
+		if(this.checkValue("AVG_COST",this.avgCost,avgCost)){
+			this.avgCost = avgCost;
+		}
 	}
-	public Integer getParking() {
+	public int getParking() {
 		return parking;
 	}
-	protected void setParking(Integer parking) {
-		this.parking = parking;
+	public void setParking(int parking) {
+		if(this.checkValue("PARKING",this.parking,parking)){
+			this.parking = parking;
+		}
 	}
 	public String getLongDescription() {
 		return longDescription;
 	}
-	protected void setLongDescription(String longDescription) {
-		this.longDescription = longDescription;
+	public void setLongDescription(String longDescription) {
+		if(this.checkValue("LONG_DESCRIPTION",this.longDescription,longDescription)){
+			this.longDescription = longDescription;
+		}
 	}
 	public String getLongDescripEng() {
 		return longDescripEng;
 	}
-	protected void setLongDescripEng(String longDescripEng) {
-		this.longDescripEng = longDescripEng;
+	public void setLongDescripEng(String longDescripEng) {
+		if(this.checkValue("LONG_DESCRIP_ENG",this.longDescripEng,longDescripEng)){
+			this.longDescripEng = longDescripEng;
+		}
 	}
 	public String getOpenHour() {
 		return openHour;
 	}
-	protected void setOpenHour(String openHour) {
-		this.openHour = openHour;
+	public void setOpenHour(String openHour) {
+		if(this.checkValue("OPEN_HOUR",this.openHour,openHour)){
+			this.openHour = openHour;
+		}
 	}
 	public String getOpenHourEng() {
 		return openHourEng;
 	}
-	protected void setOpenHourEng(String openHourEng) {
-		this.openHourEng = openHourEng;
+	public void setOpenHourEng(String openHourEng) {
+		if(this.checkValue("OPEN_HOUR_ENG",this.openHourEng,openHourEng)){
+			this.openHourEng = openHourEng;
+		}
 	}
 	public String getTelephone() {
 		return telephone;
 	}
-	protected void setTelephone(String telephone) {
-		this.telephone = telephone;
+	public void setTelephone(String telephone) {
+		if(this.checkValue("TELEPHONE",this.telephone,telephone)){
+			this.telephone = telephone;
+		}
 	}
 	public String getAddress() {
 		return address;
 	}
-	protected void setAddress(String address) {
-		this.address = address;
+	public void setAddress(String address) {
+		if(this.checkValue("ADDRESS",this.address,address)){
+			this.address = address;
+		}
 	}
 	public String getCity() {
 		return city;
 	}
-	protected void setCity(String city) {
-		this.city = city;
+	public void setCity(String city) {
+		if(this.checkValue("CITY",this.city,city)){
+			this.city = city;
+		}
 	}
 	public String getPhotoName() {
 		return photoName;
 	}
-	protected void setPhotoName(String photoName) {
-		this.photoName = photoName;
+	public void setPhotoName(String photoName) {
+		if(this.checkValue("PHOTO_NAME",this.photoName,photoName)){
+			this.photoName = photoName;
+		}
 	}
-	public Integer getTravelguideFlag() {
+	public int getTravelguideFlag() {
 		return travelguideFlag;
 	}
-	protected void setTravelguideFlag(Integer travelguideFlag) {
-		this.travelguideFlag = travelguideFlag;
+	public void setTravelguideFlag(int travelguideFlag) {
+		if(this.checkValue("TRAVELGUIDE_FLAG",this.travelguideFlag,travelguideFlag)){
+			this.travelguideFlag = travelguideFlag;
+		}
 	}
-//	public Integer getURecord() {
-//		return uRecord;
-//	}
-//	protected void setURecord(Integer uRecord) {
-//		this.uRecord = uRecord;
-//	}
-//	public String getUFields() {
-//		return uFields;
-//	}
-//	protected void setUFields(String uFields) {
-//		this.uFields = uFields;
-//	}
-//	public String getUDate() {
-//		return uDate;
-//	}
-//	protected void setUDate(String uDate) {
-//		this.uDate = uDate;
-//	}
-
+	
 	@Override
 	public String tableName() {
 		return "IX_POI_RESTAURANT";

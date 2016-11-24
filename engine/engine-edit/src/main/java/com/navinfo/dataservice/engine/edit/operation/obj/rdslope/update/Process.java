@@ -21,7 +21,7 @@ public class Process extends AbstractProcess<Command> {
 	@Override
 	public boolean prepareData() throws Exception {
 		RdSlope slope = (RdSlope) new RdSlopeSelector(this.getConn()).loadById(
-				this.getCommand().getPid(), true);
+				this.getCommand().getPid(), false);
 		this.getCommand().setSlope(slope);
 		return true;
 	}

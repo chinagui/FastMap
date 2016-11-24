@@ -18,6 +18,7 @@ import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.navicommons.database.QueryRunner;
 
 /**
@@ -29,7 +30,10 @@ import com.navinfo.navicommons.database.QueryRunner;
  */
 public class GlmFactory {
 	protected Logger log = Logger.getLogger(this.getClass());
-	private GlmFactory(){loadGlm();}
+	private GlmFactory(){
+		loadGlm();
+		loadGlmColumns();
+	}
 	private volatile static GlmFactory instance;
 	public static GlmFactory getInstance(){
 		if(instance==null){
@@ -83,7 +87,8 @@ public class GlmFactory {
 	}
 	
 	private void loadGlm(){
-		String configFile = "/com/navinfo/dataservice/commons/config/SystemConfig.xml";
+//		String configFile = "/com/navinfo/dataservice/commons/config/SystemConfig.xml";
+		String configFile = "glm.xml";
 		InputStream is = null;
         log.debug("parse file " + configFile);
         try {
@@ -115,7 +120,8 @@ public class GlmFactory {
                 	String curTabName = tab.attributeValue("name");
                 	GlmTable glmTab = new GlmTable();
                 	glmTab.setName(curTabName);
-                	glmTab.setObjType(glmObj.getType());
+//                	glmTab.setObjType(glmObj.getType());
+                	glmTab.setObjType(glmObj.getName());
                 	glmTab.setPkColumn(tab.attributeValue("pk"));
                 	glmTab.setModelClassName(tab.attributeValue("class"));
                 	if(curTabName.equals(mainTabName)){
@@ -162,24 +168,37 @@ public class GlmFactory {
 		if(tables!=null){
 			Connection conn = null;
 			try{
+				conn = DBConnector.getInstance().getMkConnection();
 				StringBuilder tableSql = new StringBuilder();
-				tableSql.append("SELECT T.TABLE_NAME, C.COLUMN_NAME, C.DATA_TYPE,C.COLUMN_ID FROM USER_TABLES T, USER_TAB_COLUMNS C WHERE T.TABLE_NAME = C.TABLE_NAME");
+				tableSql.append("SELECT T.TABLE_NAME, C.COLUMN_NAME, C.DATA_TYPE, C.COLUMN_ID,C.DATA_PRECISION,C.DATA_SCALE FROM USER_TABLES T, USER_TAB_COLUMNS C WHERE T.TABLE_NAME = C.TABLE_NAME");
 				tableSql.append(" AND T.TABLE_NAME IN ('");
 				tableSql.append(StringUtils.join(tables.keySet(),"','"));
 				tableSql.append("') ORDER BY T.TABLE_NAME,C.COLUMN_ID");
-				Map<String,Map<String,String>> results = new QueryRunner().query(conn, tableSql.toString(), new ResultSetHandler<Map<String,Map<String,String>>>(){
+				Map<String,Map<String,GlmColumn>> results = new QueryRunner().query(conn, tableSql.toString(), new ResultSetHandler<Map<String,Map<String,GlmColumn>>>(){
 
 					@Override
-					public Map<String, Map<String, String>> handle(ResultSet rs) throws SQLException {
-						Map<String,Map<String,String>> res = new HashMap<String,Map<String,String>>();
+					public Map<String, Map<String, GlmColumn>> handle(ResultSet rs) throws SQLException {
+						Map<String,Map<String,GlmColumn>> res = new HashMap<String,Map<String,GlmColumn>>();
 						while(rs.next()){
 							String tableName = rs.getString("TABLE_NAME");
-							Map<String,String> cols = res.get(tableName);
+							Map<String,GlmColumn> cols = res.get(tableName);
 							if(cols==null){
-								cols = new HashMap<String,String>();
+								cols = new HashMap<String,GlmColumn>();
 								res.put(tableName, cols);
 							}
-							cols.put(rs.getString("COLUMN_NAME"),rs.getString("DATA_TYPE"));
+							GlmColumn col=null;
+							String colName = rs.getString("COLUMN_NAME");
+							//忽略U_RECORD，U_FIELDS，U_FIELDS
+							if(colName.equals("U_RECORD")||colName.equals("U_FIELDS")||colName.equals("U_DATE")){
+								continue;
+							}
+							String dataType=rs.getString("DATA_TYPE");
+							if(GlmColumn.TYPE_NUMBER.equals(dataType)){
+								col=new GlmColumn(colName,dataType,rs.getInt("DATA_PRECISION"),rs.getInt("DATA_SCALE"));	
+							}else{
+								col = new GlmColumn(colName,dataType);
+							}
+							cols.put(col.getName(),col);
 						}
 						return res;
 					}

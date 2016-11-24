@@ -42,12 +42,12 @@ public class TipsSelectorTest {
 		new ApplicationContextUtil().setApplicationContext(context);*/
 
 	//根据网格、类型、作业状态获取tips的snapshot列表（rowkey，点位，类型）
-	@Test
+	//@Test
 	public void testGetSnapshot() {
 		
 		
 	JSONArray grid = JSONArray
-				.fromObject("[60560303,60560313,60560312,60560311,60560302,60560410,60560400]");
+				.fromObject("[59567513,59567512,59567503]");
 	    
 /*		JSONArray grid = JSONArray
 			.fromObject("[59567232,59567233]");*/
@@ -60,8 +60,8 @@ public class TipsSelectorTest {
 		
 		//红绿灯、红绿灯方位、大门、坡度、条件限速、车道限速、车道数、匝道、停车场出入口link、禁止穿行、禁止驶入、提左提右、一般道路方面、路面覆盖、测线
 		//1102、1103 、1104、1106、1111、1113、1202
-		int type = 1104;
-		int dbId = 10;
+		int type = 1501;
+		int dbId = 9;
 		
 		
 		try {
@@ -74,20 +74,22 @@ public class TipsSelectorTest {
 	
 	
     //根据瓦片扩圈获取Tips数据
-	//@Test
+	@Test
 	public void testSearchDataByTileWithGap() {
 		JSONArray types = new JSONArray();
-	/*	types.add(1301);
-		types.add(1205);
+		types.add(1202);
+	/*	types.add(1205);
 		types.add(1401);
 		types.add(1110);
 		types.add(1515);
 		types.add(1105);
-		types.add(1806);*/
-		types.add(1509);
+		types.add(1806);
+		types.add(1509);*/
+		
+		//{"gap":40,"mdFlag":"d","z":17,"x":107942,"y":49613}
 		try {
-			System.out.println(solrSelector.searchDataByTileWithGap(107919, 49617, 17,
-					80, types,"d"));
+			System.out.println(solrSelector.searchDataByTileWithGap(107942, 49613, 17,
+					40, types,"d"));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

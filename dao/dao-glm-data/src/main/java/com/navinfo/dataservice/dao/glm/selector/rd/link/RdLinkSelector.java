@@ -854,6 +854,7 @@ public class RdLinkSelector extends AbstractSelector {
 
 	/**
 	 * 根据linkPid查询TMCLOCATION
+	 * 
 	 * @param linkPid
 	 * @param isLock
 	 * @return
@@ -888,10 +889,14 @@ public class RdLinkSelector extends AbstractSelector {
 
 				ReflectionAttrUtils.executeResultSet(tmclocation, resultSet);
 
-				List<IRow> tmcLinks = this.loadRowsByClassParentId(RdTmclocationLink.class, tmclocation.getPid(), true,
-						null);
+				List<IRow> tmcLinks = this.loadTmclocationLinkByParentId(tmclocation.getPid(), true);
 
 				tmclocation.setLinks(tmcLinks);
+				
+				for(IRow row : tmcLinks)
+				{
+					tmclocation.linkMap.put(row.rowId(), (RdTmclocationLink) row);
+				}
 
 				locationList.add(tmclocation);
 			}
@@ -907,6 +912,55 @@ public class RdLinkSelector extends AbstractSelector {
 		}
 
 		return locationList;
+	}
+
+	public List<IRow> loadTmclocationLinkByParentId(int groupId, boolean isLock) throws Exception {
+		List<IRow> tmcLinks = new ArrayList<>();
+
+		StringBuilder sb = new StringBuilder(
+				"select t1.*,t2.geometry from rd_tmclocation_link t1 left join rd_link t2 on t1.LINK_PID = t2.link_pid  where t1.GROUP_ID = :1 and t1.U_RECORD !=2 and t2.U_RECORD !=2");
+
+		if (isLock) {
+
+			sb.append(" for update nowait");
+		}
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+
+			pstmt = conn.prepareStatement(sb.toString());
+
+			pstmt.setInt(1, groupId);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+
+				RdTmclocationLink tmclocationLink = new RdTmclocationLink();
+
+				ReflectionAttrUtils.executeResultSet(tmclocationLink, resultSet);
+				
+				Geometry value = GeoTranslator.struct2Jts((STRUCT) resultSet.getObject("geometry"), 100000, 0);
+				
+				tmclocationLink.setGeometry(value);
+
+				tmcLinks.add(tmclocationLink);
+			}
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+
+			DBUtils.closeResultSet(resultSet);
+
+			DBUtils.closeStatement(pstmt);
+		}
+
+		return tmcLinks;
 	}
 
 	public List<Integer> loadRdLinkKindByIds(List<Integer> linkPidList, boolean isLock) throws Exception {

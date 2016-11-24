@@ -5,6 +5,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.List;
 
+import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -12,7 +14,6 @@ import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiContact;
 import com.navinfo.dataservice.dao.log.LogReader;
 import com.navinfo.dataservice.engine.check.core.baseRule;
-import com.navinfo.dataservice.engine.meta.area.ScPointAdminArea;
 
 import net.sf.json.JSONObject;
 
@@ -45,8 +46,8 @@ public class CheckRuleFMZY20237 extends baseRule{
 				//通过poi的regionId获取adminCode
 				String adminCode = getAdminCodeByRegionId(regionId);
 				//获取adminCode对应的电话object
-				ScPointAdminArea scPointAdmin = new ScPointAdminArea();
-				JSONObject adminCodeObj = scPointAdmin.searchByAdminCode(adminCode);
+				MetadataApi metaApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
+				JSONObject adminCodeObj = metaApi.searchByAdminCode(adminCode);
 				
 				List<IRow> contacts = poi.getContacts();
 				if (contacts.size() > 0){

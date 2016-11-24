@@ -1,19 +1,19 @@
 package com.navinfo.dataservice.engine.edit.operation.topo.depart.departlcnode;
 
-import java.sql.Connection;
+import java.util.List;
 
-import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.lc.LcLink;
+import com.navinfo.dataservice.dao.glm.model.lc.LcNode;
+
 import com.navinfo.dataservice.dao.glm.selector.lc.LcLinkSelector;
+import com.navinfo.dataservice.dao.glm.selector.lc.LcNodeSelector;
+import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.operation.AbstractProcess;
+import com.navinfo.dataservice.engine.edit.operation.topo.depart.departlcnode.Operation;
 
 public class Process extends AbstractProcess<Command> {
 
-	private LcLink updateLink;
-
-	private Check check = new Check();
-
-	public Process(Command command) throws Exception {
+	public Process(AbstractCommand command) throws Exception {
 		super(command);
 
 	}
@@ -21,21 +21,31 @@ public class Process extends AbstractProcess<Command> {
 	@Override
 	public boolean prepareData() throws Exception {
 		LcLinkSelector linkSelector = new LcLinkSelector(this.getConn());
-		this.updateLink = (LcLink) linkSelector.loadById(this.getCommand().getLinkPid(), true);
+
+		LcNodeSelector nodeSelector = new LcNodeSelector(this.getConn());
+		// 加载分离LcLink信息
+		LcLink link = (LcLink) linkSelector.loadById(this.getCommand()
+				.getLinkPid(), true);
+		// 加载LcLNode挂接的LcLLink信息
+		List<LcLink> links = linkSelector.loadByNodePid(this.getCommand()
+				.getNodePid(), true);
+		// 加载挂接的LcLNode信息
+		LcNode node = (LcNode) nodeSelector.loadById(this.getCommand()
+				.getNodePid(), true);
+		this.getCommand().setLinks(links);
+		this.getCommand().setLcLink(link);
+		this.getCommand().setNode(node);
 		return true;
 	}
 
 	@Override
 	public String preCheck() throws Exception {
-		check.checkIsCrossNode(this.getConn(), this.getCommand().getsNodePid());
-		check.checkIsCrossNode(this.getConn(), this.getCommand().geteNodePid());
-		check.checkIsVia(this.getConn(), this.getCommand().getLinkPid());
 		return super.preCheck();
 	}
 
 	@Override
 	public String exeOperation() throws Exception {
-		return new Operation(this.getCommand(), updateLink, check).run(this.getResult());
+		return new Operation(this.getCommand(),this.getConn()).run(this.getResult());
 	}
 
 }

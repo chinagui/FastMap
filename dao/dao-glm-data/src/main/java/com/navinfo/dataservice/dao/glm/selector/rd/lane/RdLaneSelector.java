@@ -14,7 +14,6 @@ import oracle.sql.STRUCT;
 
 import org.apache.commons.dbutils.DbUtils;
 
-import com.jcraft.jsch.Logger;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.dao.glm.model.rd.lane.RdLane;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
@@ -129,9 +128,9 @@ public class RdLaneSelector extends AbstractSelector {
 			resultSet = pstmt.executeQuery();
 
 			while (resultSet.next()) {
-				RdLane slope = (RdLane) this.loadById(
+				RdLane rdlane = (RdLane) this.loadById(
 						resultSet.getInt("lane_pid"), false);
-				lanes.add(slope);
+				lanes.add(rdlane);
 			}
 
 			return lanes;
@@ -179,12 +178,12 @@ public class RdLaneSelector extends AbstractSelector {
 			JSONArray array = new JSONArray();
 			JSONObject jsonObject = null;
 			while (resultSet.next()) {
-				//初始 赋值rdlink值
+				// 初始 赋值rdlink值
 				if (resultSet.isFirst()) {
 					jsonObject = new JSONObject();
-					this.setAttr(resultSet,pids, jsonObject);
+					this.setAttr(resultSet, pids, jsonObject);
 				}
-				//合并相同link的车道信息
+				// 合并相同link的车道信息
 				if (pids.contains(resultSet.getInt("link_pid"))) {
 					this.setRdlanesToArray(resultSet, array);
 					if (resultSet.isLast()) {
@@ -198,7 +197,7 @@ public class RdLaneSelector extends AbstractSelector {
 					array = new JSONArray();
 					this.setRdlanesToArray(resultSet, array);
 					jsonObject = new JSONObject();
-					this.setAttr(resultSet, pids,jsonObject);
+					this.setAttr(resultSet, pids, jsonObject);
 					if (resultSet.isLast()) {
 						jsonObject.put("lanes", array);
 						arrayResult.add(jsonObject);
@@ -219,12 +218,13 @@ public class RdLaneSelector extends AbstractSelector {
 
 	/***
 	 * 结果集赋值
+	 * 
 	 * @param resultSet
 	 * @param jsonObject
 	 * @throws SQLException
 	 */
-	private void setAttr(ResultSet resultSet,List<Integer> pids, JSONObject jsonObject)
-			throws Exception {
+	private void setAttr(ResultSet resultSet, List<Integer> pids,
+			JSONObject jsonObject) throws Exception {
 		STRUCT struct = (STRUCT) resultSet.getObject("geometry");
 		jsonObject.put("linkPid", resultSet.getInt("link_pid"));
 		jsonObject.put("direct", resultSet.getInt("direct"));
@@ -234,17 +234,19 @@ public class RdLaneSelector extends AbstractSelector {
 		jsonObject.put("eNodePid", resultSet.getInt("e_node_pid"));
 		pids.add(resultSet.getInt("link_pid"));
 	}
+
 	/***
 	 * rdlane 加載array
+	 * 
 	 * @param resultSet
 	 * @param array
 	 * @throws Exception
 	 */
-	private void setRdlanesToArray(ResultSet resultSet,JSONArray array)throws Exception{
-		RdLane slope = (RdLane) this.loadById(
-				resultSet.getInt("lane_pid"), false);
+	private void setRdlanesToArray(ResultSet resultSet, JSONArray array)
+			throws Exception {
+		RdLane slope = (RdLane) this.loadById(resultSet.getInt("lane_pid"),
+				false);
 		array.add(slope);
 	}
-	
 
 }

@@ -28,14 +28,15 @@ check (CODE_TYPE in (0,1,2,3,4,5,6,7)) disable ,
    VOICE_FILE           VARCHAR2(100),
    SRC_RESUME           VARCHAR2(1000),
    PA_REGION_ID         NUMBER(10),
-   SPLIT_FLAG           NUMBER(2)      default 0
-check (SPLIT_FLAG in (0,1,2)) disable ,
    MEMO                 VARCHAR2(200),
    ROUTE_ID             NUMBER(10),
-   PROCESS_FLAG         NUMBER(1)      default 0,
    U_RECORD             NUMBER(2),
    U_FIELDS             VARCHAR2(1000),
-   constraint PK_RD_NAME primary key (NAME_ID)
+   SPLIT_FLAG           NUMBER(2)      default 0
+check (SPLIT_FLAG in (0,1,2)) disable ,
+   CITY                 VARCHAR2(400),
+   PROCESS_FLAG          NUMBER(1) default 0,
+  constraint PK_RD_NAME primary key (NAME_ID)
 );
 
 /* GDB+ POI EDIT PART */
@@ -63,7 +64,7 @@ create table POI_COLUMN_STATUS
   SECOND_WORK_STATUS NUMBER(1) default 1,
   HANDLER            NUMBER(10),
   TASK_ID            NUMBER(10)
-)
+);
 -- Add comments to the table 
 comment on table POI_COLUMN_STATUS
   is '精编作业状态表';
@@ -92,17 +93,6 @@ create table POI_COLUMN_WORKITEM_CONF
   WORK_ITEM_ID     VARCHAR2(50),
   TYPE             NUMBER(1)
 );
--- Add comments to the columns 
-comment on column POI_COLUMN_WORKITEM_CONF.ID
-  is '����';
-comment on column POI_COLUMN_WORKITEM_CONF.FIRST_WORK_ITEM
-  is 'һ����ҵ��:poi_name-�������,poi_address-���ĵ�ַ,poi_englishname-Ӣ�����,poi_englishaddress-Ӣ�ĵ�ַ';
-comment on column POI_COLUMN_WORKITEM_CONF.SECOND_WORK_ITEM
-  is '������ҵ��:nameUnify-���ͳһ,shortName-�����ҵ,namePinyin-���ƴ����ҵ,addrSplit-��ַ�����ҵ,addrPinyin-��ַƴ����ҵ,photoEngName-��Ƭ¼��Ӣ������ҵ,chiEngName-���ļ���Ӣ����ҵ,confirmEngName-�˹�ȷ��Ӣ������ҵ,officalStandardEngName-�ٷ���׼��Ӣ����ҵ,nonImportantLongEngName-����Ҫ����Ӣ������ҵ,engMapAddress-Ӣ�İ��ͼ��ҵ,nonImportantLongEngAddress-����Ҫ����Ӣ�ĵ�ַ������ҵ,engNameInvalidChar-Ӣ����Ƿ��ַ���,portuNameInvalidChar-������Ƿ��ַ���,macaoEngName-����Ӣ������ҵ,officalStandardPortuName-�ٷ���׼��������ҵ,engAddrInvalidChar-Ӣ�ĵ�ַ�Ƿ��ַ���,portuAddrInvalidChar-���ĵ�ַ�Ƿ��ַ���,longEngAddress-Ӣ�ĵ�ַ������ҵ,longPortuAddress-���ĵ�ַ������ҵ,';
-comment on column POI_COLUMN_WORKITEM_CONF.WORK_ITEM_ID
-  is '��ҵ������';
-comment on column POI_COLUMN_WORKITEM_CONF.TYPE
-  is '1�����½,2����۰�';
 
 create table POI_COLUMN_OP_CONF
 (
@@ -123,39 +113,6 @@ create table POI_COLUMN_OP_CONF
   SUBMIT_CLASSIFYRULES VARCHAR2(100),
   TYPE                 NUMBER(1)
 );
--- Add comments to the columns 
-comment on column POI_COLUMN_OP_CONF.ID
-  is '����';
-comment on column POI_COLUMN_OP_CONF.FIRST_WORK_ITEM
-  is 'һ����ҵ��:poi_name-�������,poi_address-���ĵ�ַ,poi_englishname-Ӣ�����,poi_englishaddress-Ӣ�ĵ�ַ';
-comment on column POI_COLUMN_OP_CONF.SECOND_WORK_ITEM
-  is 'nameUnify-���ͳһ,shortName-�����ҵ,namePinyin-���ƴ����ҵ,addrSplit-��ַ�����ҵ,addrPinyin-��ַƴ����ҵ,photoEngName-��Ƭ¼��Ӣ������ҵ,chiEngName-���ļ���Ӣ����ҵ,confirmEngName-�˹�ȷ��Ӣ������ҵ,officalStandardEngName-�ٷ���׼��Ӣ����ҵ,nonImportantLongEngName-����Ҫ����Ӣ������ҵ,engMapAddress-Ӣ�İ��ͼ��ҵ,nonImportantLongEngAddress-����Ҫ����Ӣ�ĵ�ַ������ҵ,engNameInvalidChar-Ӣ����Ƿ��ַ���,portuNameInvalidChar-������Ƿ��ַ���,macaoEngName-����Ӣ������ҵ,officalStandardPortuName-�ٷ���׼��������ҵ,engAddrInvalidChar-Ӣ�ĵ�ַ�Ƿ��ַ���,portuAddrInvalidChar-���ĵ�ַ�Ƿ��ַ���,longEngAddress-Ӣ�ĵ�ַ������ҵ,longPortuAddress-���ĵ�ַ������ҵ';
-comment on column POI_COLUMN_OP_CONF.SAVE_EXEBATCH
-  is '����ʱ�Ƿ�ִ������,0��  1��';
-comment on column POI_COLUMN_OP_CONF.SAVE_BATCHRULES
-  is '����ʱҪִ�е������������,[]';
-comment on column POI_COLUMN_OP_CONF.SAVE_EXECHECK
-  is '����ʱ�Ƿ�ִ�м��,0�� 1��';
-comment on column POI_COLUMN_OP_CONF.SAVE_CKRULES
-  is '����ʱҪִ�еļ�����';
-comment on column POI_COLUMN_OP_CONF.SAVE_EXECLASSIFY
-  is '����ʱ�Ƿ�ִ���ط���,0��   1��';
-comment on column POI_COLUMN_OP_CONF.SAVE_CLASSIFYRULES
-  is '����ʱҪִ�е��ط������ []';
-comment on column POI_COLUMN_OP_CONF.SUBMIT_EXEBATCH
-  is '�ύʱ�Ƿ�ִ������ 0��   1��';
-comment on column POI_COLUMN_OP_CONF.SUBMIT_BATCHRULES
-  is '  �ύʱҪִ�е������������,[]';
-comment on column POI_COLUMN_OP_CONF.SUBMIT_EXECHECK
-  is '�ύʱ�Ƿ�ִ�м��,0��   1��';
-comment on column POI_COLUMN_OP_CONF.SUBMIT_CKRULES
-  is '�ύʱҪִ�еļ�����[]';
-comment on column POI_COLUMN_OP_CONF.SUBMIT_EXECLASSIFY
-  is '�ύʱ�Ƿ�ִ���ط��� 0��   1��';
-comment on column POI_COLUMN_OP_CONF.SUBMIT_CLASSIFYRULES
-  is '�ύʱҪִ�е��ط������[]';
-comment on column POI_COLUMN_OP_CONF.TYPE
-  is '1�����½,2����۰�';
   
 -- Create table
 create table POI_DEEP_STATUS
@@ -166,7 +123,7 @@ create table POI_DEEP_STATUS
   TYPE        NUMBER(1) default 1 not null,
   UPDATE_DATE TIMESTAMP(6),
   CONSTRAINT PK_POI_DEEP_STATUS PRIMARY KEY(ROW_ID)
-)
+);
 -- Add comments to the columns 
 comment on column POI_DEEP_STATUS.ROW_ID
   is '外键，POI的row_id';

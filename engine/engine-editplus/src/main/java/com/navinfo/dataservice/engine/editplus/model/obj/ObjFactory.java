@@ -2,11 +2,16 @@ package com.navinfo.dataservice.engine.editplus.model.obj;
 
 import java.lang.reflect.InvocationTargetException;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.bizcommons.service.PidUtil;
+import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.engine.editplus.glm.GlmFactory;
 import com.navinfo.dataservice.engine.editplus.glm.GlmObject;
+import com.navinfo.dataservice.engine.editplus.glm.GlmTable;
 import com.navinfo.dataservice.engine.editplus.model.BasicRow;
+import com.navinfo.dataservice.engine.editplus.operation.OperationType;
 
 /** 
  * @ClassName: ObjFactory
@@ -48,10 +53,39 @@ public class ObjFactory {
 		return null;
 	}
 	
+	/**
+	 * 
+	 * @param row
+	 * @return
+	 * @throws ClassNotFoundException
+	 * @throws NoSuchMethodException
+	 * @throws InvocationTargetException
+	 * @throws IllegalAccessException
+	 * @throws InstantiationException
+	 */
 	public BasicObj create4Select(BasicRow row)throws ClassNotFoundException,NoSuchMethodException,InvocationTargetException,IllegalAccessException,InstantiationException{
 		GlmObject glmObj =
 		GlmFactory.getInstance().getObjByType(row.getObjType());
 		BasicObj bObj = (BasicObj)Class.forName(glmObj.getModelClassName()).getConstructor(BasicRow.class).newInstance(row);
 		return bObj;
+	}
+	/**
+	 * 新建一个表记录
+	 * @param tableName：表名
+	 * @param objPid：表所属对象的对象pid
+	 * @return
+	 * @throws Exception
+	 */
+	public BasicRow createRow(String tableName,long objPid)throws Exception{
+		GlmTable glmTab=GlmFactory.getInstance().getTableByName(tableName);
+		BasicRow row = (BasicRow)Class.forName(glmTab.getModelClassName()).getConstructor(long.class).newInstance(objPid);
+		row.setRowId(UuidUtils.genUuid());
+		row.setOpType(OperationType.INSERT);
+		//申请pid
+		String pkCol = glmTab.getPkColumn();
+		if(StringUtils.isNotEmpty(pkCol)){
+			row.setAttrByCol(pkCol, PidUtil.getInstance().applyPidByTableName(tableName));
+		}
+		return row;
 	}
 }

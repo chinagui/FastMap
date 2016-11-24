@@ -1,22 +1,25 @@
 package com.navinfo.dataservice.engine.editplus.model.ixpoi;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import net.sf.json.JSONObject;
+
 import com.navinfo.dataservice.engine.editplus.model.BasicRow;
 
 /** 
 * @ClassName:  IxPoiContact 
 * @author code generator
-* @date 2016-11-16 02:34:46 
+* @date 2016-11-18 11:27:23 
 * @Description: TODO
 */
 public class IxPoiContact extends BasicRow {
 	protected long poiPid ;
-	protected Integer contactType ;
+	protected int contactType ;
 	protected String contact ;
-	protected Integer contactDepart ;
-	protected Integer priority ;
-//	protected Integer uRecord ;
-//	protected String uFields ;
-//	protected String uDate ;
+	protected int contactDepart ;
+	protected int priority ;
 	
 	public IxPoiContact (long objPid){
 		super(objPid);
@@ -25,51 +28,43 @@ public class IxPoiContact extends BasicRow {
 	public long getPoiPid() {
 		return poiPid;
 	}
-	protected void setPoiPid(long poiPid) {
-		this.poiPid = poiPid;
+	public void setPoiPid(long poiPid) {
+		if(this.checkValue("POI_PID",this.poiPid,poiPid)){
+			this.poiPid = poiPid;
+		}
 	}
-	public Integer getContactType() {
+	public int getContactType() {
 		return contactType;
 	}
-	protected void setContactType(Integer contactType) {
-		this.contactType = contactType;
+	public void setContactType(int contactType) {
+		if(this.checkValue("CONTACT_TYPE",this.contactType,contactType)){
+			this.contactType = contactType;
+		}
 	}
 	public String getContact() {
 		return contact;
 	}
-	protected void setContact(String contact) {
-		this.contact = contact;
+	public void setContact(String contact) {
+		if(this.checkValue("CONTACT",this.contact,contact)){
+			this.contact = contact;
+		}
 	}
-	public Integer getContactDepart() {
+	public int getContactDepart() {
 		return contactDepart;
 	}
-	protected void setContactDepart(Integer contactDepart) {
-		this.contactDepart = contactDepart;
+	public void setContactDepart(int contactDepart) {
+		if(this.checkValue("CONTACT_DEPART",this.contactDepart,contactDepart)){
+			this.contactDepart = contactDepart;
+		}
 	}
-	public Integer getPriority() {
+	public int getPriority() {
 		return priority;
 	}
-	protected void setPriority(Integer priority) {
-		this.priority = priority;
+	public void setPriority(int priority) {
+		if(this.checkValue("PRIORITY",this.priority,priority)){
+			this.priority = priority;
+		}
 	}
-//	public Integer getURecord() {
-//		return uRecord;
-//	}
-//	protected void setURecord(Integer uRecord) {
-//		this.uRecord = uRecord;
-//	}
-//	public String getUFields() {
-//		return uFields;
-//	}
-//	protected void setUFields(String uFields) {
-//		this.uFields = uFields;
-//	}
-//	public String getUDate() {
-//		return uDate;
-//	}
-//	protected void setUDate(String uDate) {
-//		this.uDate = uDate;
-//	}
 	
 	@Override
 	public String tableName() {

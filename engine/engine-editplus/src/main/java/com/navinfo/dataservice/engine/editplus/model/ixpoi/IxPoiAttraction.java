@@ -11,13 +11,13 @@ import com.navinfo.dataservice.engine.editplus.model.BasicRow;
 /** 
 * @ClassName:  IxPoiAttraction 
 * @author code generator
-* @date 2016-11-16 06:03:30 
+* @date 2016-11-18 11:36:04 
 * @Description: TODO
 */
 public class IxPoiAttraction extends BasicRow {
 	protected long attractionId ;
 	protected long poiPid ;
-	protected Integer sightLevel ;
+	protected int sightLevel ;
 	protected String longDescription ;
 	protected String longDescripEng ;
 	protected String ticketPrice ;
@@ -28,11 +28,8 @@ public class IxPoiAttraction extends BasicRow {
 	protected String address ;
 	protected String city ;
 	protected String photoName ;
-	protected Integer parking ;
-	protected Integer travelguideFlag ;
-//	protected Integer uRecord ;
-//	protected String uFields ;
-//	protected String uDate ;
+	protected int parking ;
+	protected int travelguideFlag ;
 	
 	public IxPoiAttraction (long objPid){
 		super(objPid);
@@ -41,111 +38,123 @@ public class IxPoiAttraction extends BasicRow {
 	public long getAttractionId() {
 		return attractionId;
 	}
-	protected void setAttractionId(long attractionId) {
-		this.attractionId = attractionId;
+	public void setAttractionId(long attractionId) {
+		if(this.checkValue("ATTRACTION_ID",this.attractionId,attractionId)){
+			this.attractionId = attractionId;
+		}
 	}
 	public long getPoiPid() {
 		return poiPid;
 	}
-	protected void setPoiPid(long poiPid) {
-		this.poiPid = poiPid;
+	public void setPoiPid(long poiPid) {
+		if(this.checkValue("POI_PID",this.poiPid,poiPid)){
+			this.poiPid = poiPid;
+		}
 	}
-	public Integer getSightLevel() {
+	public int getSightLevel() {
 		return sightLevel;
 	}
-	protected void setSightLevel(Integer sightLevel) {
-		this.sightLevel = sightLevel;
+	public void setSightLevel(int sightLevel) {
+		if(this.checkValue("SIGHT_LEVEL",this.sightLevel,sightLevel)){
+			this.sightLevel = sightLevel;
+		}
 	}
 	public String getLongDescription() {
 		return longDescription;
 	}
-	protected void setLongDescription(String longDescription) {
-		this.longDescription = longDescription;
+	public void setLongDescription(String longDescription) {
+		if(this.checkValue("LONG_DESCRIPTION",this.longDescription,longDescription)){
+			this.longDescription = longDescription;
+		}
 	}
 	public String getLongDescripEng() {
 		return longDescripEng;
 	}
-	protected void setLongDescripEng(String longDescripEng) {
-		this.longDescripEng = longDescripEng;
+	public void setLongDescripEng(String longDescripEng) {
+		if(this.checkValue("LONG_DESCRIP_ENG",this.longDescripEng,longDescripEng)){
+			this.longDescripEng = longDescripEng;
+		}
 	}
 	public String getTicketPrice() {
 		return ticketPrice;
 	}
-	protected void setTicketPrice(String ticketPrice) {
-		this.ticketPrice = ticketPrice;
+	public void setTicketPrice(String ticketPrice) {
+		if(this.checkValue("TICKET_PRICE",this.ticketPrice,ticketPrice)){
+			this.ticketPrice = ticketPrice;
+		}
 	}
 	public String getTicketPriceEng() {
 		return ticketPriceEng;
 	}
-	protected void setTicketPriceEng(String ticketPriceEng) {
-		this.ticketPriceEng = ticketPriceEng;
+	public void setTicketPriceEng(String ticketPriceEng) {
+		if(this.checkValue("TICKET_PRICE_ENG",this.ticketPriceEng,ticketPriceEng)){
+			this.ticketPriceEng = ticketPriceEng;
+		}
 	}
 	public String getOpenHour() {
 		return openHour;
 	}
-	protected void setOpenHour(String openHour) {
-		this.openHour = openHour;
+	public void setOpenHour(String openHour) {
+		if(this.checkValue("OPEN_HOUR",this.openHour,openHour)){
+			this.openHour = openHour;
+		}
 	}
 	public String getOpenHourEng() {
 		return openHourEng;
 	}
-	protected void setOpenHourEng(String openHourEng) {
-		this.openHourEng = openHourEng;
+	public void setOpenHourEng(String openHourEng) {
+		if(this.checkValue("OPEN_HOUR_ENG",this.openHourEng,openHourEng)){
+			this.openHourEng = openHourEng;
+		}
 	}
 	public String getTelephone() {
 		return telephone;
 	}
-	protected void setTelephone(String telephone) {
-		this.telephone = telephone;
+	public void setTelephone(String telephone) {
+		if(this.checkValue("TELEPHONE",this.telephone,telephone)){
+			this.telephone = telephone;
+		}
 	}
 	public String getAddress() {
 		return address;
 	}
-	protected void setAddress(String address) {
-		this.address = address;
+	public void setAddress(String address) {
+		if(this.checkValue("ADDRESS",this.address,address)){
+			this.address = address;
+		}
 	}
 	public String getCity() {
 		return city;
 	}
-	protected void setCity(String city) {
-		this.city = city;
+	public void setCity(String city) {
+		if(this.checkValue("CITY",this.city,city)){
+			this.city = city;
+		}
 	}
 	public String getPhotoName() {
 		return photoName;
 	}
-	protected void setPhotoName(String photoName) {
-		this.photoName = photoName;
+	public void setPhotoName(String photoName) {
+		if(this.checkValue("PHOTO_NAME",this.photoName,photoName)){
+			this.photoName = photoName;
+		}
 	}
-	public Integer getParking() {
+	public int getParking() {
 		return parking;
 	}
-	protected void setParking(Integer parking) {
-		this.parking = parking;
+	public void setParking(int parking) {
+		if(this.checkValue("PARKING",this.parking,parking)){
+			this.parking = parking;
+		}
 	}
-	public Integer getTravelguideFlag() {
+	public int getTravelguideFlag() {
 		return travelguideFlag;
 	}
-	protected void setTravelguideFlag(Integer travelguideFlag) {
-		this.travelguideFlag = travelguideFlag;
+	public void setTravelguideFlag(int travelguideFlag) {
+		if(this.checkValue("TRAVELGUIDE_FLAG",this.travelguideFlag,travelguideFlag)){
+			this.travelguideFlag = travelguideFlag;
+		}
 	}
-//	public Integer getURecord() {
-//		return uRecord;
-//	}
-//	protected void setURecord(Integer uRecord) {
-//		this.uRecord = uRecord;
-//	}
-//	public String getUFields() {
-//		return uFields;
-//	}
-//	protected void setUFields(String uFields) {
-//		this.uFields = uFields;
-//	}
-//	public String getUDate() {
-//		return uDate;
-//	}
-//	protected void setUDate(String uDate) {
-//		this.uDate = uDate;
-//	}
 	
 	@Override
 	public String tableName() {

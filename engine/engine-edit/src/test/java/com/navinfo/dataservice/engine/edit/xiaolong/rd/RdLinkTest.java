@@ -41,7 +41,7 @@ public class RdLinkTest extends InitApplication {
 
 			SearchProcess p = new SearchProcess(conn);
 
-			System.out.println(p.searchDataByPid(ObjType.RDLINK, 574325).Serialize(ObjLevel.FULL));
+			System.out.println(p.searchDataByPid(ObjType.RDLINK, 14118075).Serialize(ObjLevel.FULL));
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -76,7 +76,7 @@ public class RdLinkTest extends InitApplication {
 
 	@Test
 	public void testDelete() {
-		String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDMILEAGEPILE\",\"dbId\":17,\"data\":{\"mileageNum\":121212,\"pid\":200000001,\"objStatus\":\"UPDATE\",\"roadName\":\"dasdasd\",\"roadNum\":\"asdasdad\"}}";
+		String parameter = "{\"command\":\"REPAIR\",\"dbId\":17,\"objId\":207002707,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.69045,40.26469],[116.69190645217896,40.26547871101068],[116.69207,40.26433]]},\"interLinks\":[],\"interNodes\":[]},\"type\":\"ZONELINK\"}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
@@ -88,7 +88,7 @@ public class RdLinkTest extends InitApplication {
 
 	@Test
 	public void testAddRdLink() {
-		String parameter = "{\"command\":\"CREATE\",\"dbId\":17,\"objId\":303000015,\"data\":{\"longitude\":116.25269451011694,\"latitude\":40.08360598240627},\"type\":\"RWNODE\"}";
+		String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDRESTRICTION\",\"dbId\":17,\"data\":{\"details\":[{\"outLinkPid\":220002834,\"pid\":220000045,\"objStatus\":\"UPDATE\"}],\"pid\":220000030}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

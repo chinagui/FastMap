@@ -45,22 +45,6 @@ public class Check {
 	}
 
 	/**
-	 * 检查link是否正确
-	 * 
-	 * @param linkList
-	 * @throws Exception
-	 */
-	private void checkLinkAttribute(List<RdLink> linkList) throws Exception {
-		if (CollectionUtils.isNotEmpty(linkList)) {
-			for (RdLink link : linkList) {
-				if (link.getImiCode() != 1 && link.getImiCode() != 2) {
-					throw new Exception("link:"+link.getPid()+"不具有'I、M'属性");
-				}
-			}
-		}
-	}
-
-	/**
 	 * @param conn
 	 * @param inter 
 	 * @throws Exception
@@ -94,10 +78,8 @@ public class Check {
 		//检查点形态是否正确
 		this.checkNodeDirect(conn,nodePids);
 		
-		List<RdLink> linkList = checkLinkIsCorrect(buf,inter,conn);
+		checkLinkIsCorrect(buf,inter,conn);
 		
-		//检查线的形态是否正确
-		this.checkLinkAttribute(linkList);
 	}
 
 	/**
@@ -183,10 +165,6 @@ public class Check {
 				{
 					throw new Exception("传递的link参数不正确：link_pid错误");
 				}
-				else
-				{
-					this.checkLinkDirect(linkList);
-				}
 			}
 		}
 		else
@@ -195,22 +173,4 @@ public class Check {
 		}
 	}
 	
-	/**
-	 * 检查link是否正确
-	 * @param linkList
-	 * @throws Exception
-	 */
-	private void checkLinkDirect(List<RdLink> linkList) throws Exception
-	{
-		if(CollectionUtils.isNotEmpty(linkList))
-		{
-			for(RdLink link : linkList)
-			{
-				if(link.getImiCode() != 1 && link.getImiCode() !=2)
-				{
-					throw new Exception("link:"+link.getPid()+"不具有'I、M'属性,不允许制作");
-				}
-			}
-		}
-	}
 }

@@ -629,6 +629,41 @@ public class MetaController extends BaseController {
 		}
 	}
 	
+	/**
+	 * @Title: searchRdNameForWeb
+	 * @Description: 根据任务的grid，查找对应任务grid范围内的rd_name
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException  ModelAndView
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2016年11月14日 下午7:58:19 
+	 */
+	@RequestMapping(value = "/rdname/websearchone")
+	public ModelAndView searchByNameId(HttpServletRequest request)
+			throws ServletException, IOException {
+		String parameter = request.getParameter("parameter");
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			RdNameSelector selector = new RdNameSelector();
+			
+			int nameId = jsonReq.getInt("nameId");
+			
+			
+			JSONObject data = selector.searchForWebByNameId(nameId);
+
+			return new ModelAndView("jsonView", success(data));
+
+		} catch (Exception e) {
+
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
+	
 
 	/**
 	 * @Title: webSave
@@ -668,6 +703,38 @@ public class MetaController extends BaseController {
 	}
 	
 	/**
+	 * @Title: webResultUpdate
+	 * @Description: 修改某条道路名检查结果的状态
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException  ModelAndView
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2016年11月17日 下午8:32:40 
+	 */
+	@RequestMapping(value = "/rdname/webResultUpdate")
+	public void webResultUpdate(HttpServletRequest request)
+			throws ServletException, IOException {
+		String parameter = request.getParameter("parameter");
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			RdNameSelector selector = new RdNameSelector();
+			int valExceptionId = jsonReq.getInt("valExceptionId");
+			int qaStatus = jsonReq.getInt("qaStatus"); //1:以质检  2:未质检
+			
+			selector.udateResultStatusById(valExceptionId,qaStatus);
+			
+			//return new ModelAndView("jsonView", success(result));
+		} catch (Exception e) {
+	
+			logger.error(e.getMessage(), e);
+	
+			//return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
+	
+	/**
 	 * web端道路名拆分接口
 	 * @author wangdongbin
 	 * @param request
@@ -693,11 +760,11 @@ public class MetaController extends BaseController {
 			
 			RdNameOperation operation = new RdNameOperation(conn);
 			
-			if (flag>0) {
+			if (flag>0) {//拆分指定数据
 				JSONArray dataList = jsonReq.getJSONArray("data");
 				
 				operation.teilenRdName(dataList);
-			} else {
+			} else {//拆分整个子任务数据
 				int subtaskId = jsonReq.getInt("subtaskId");
 				
 				ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");

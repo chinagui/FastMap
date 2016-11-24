@@ -329,6 +329,8 @@ public class TaskOperation {
 					String key = (String) keys.next();
 					if("name".equals(key)){
 						conditionSql=conditionSql+" AND (TASK_LIST.CITY_NAME LIKE '%"+conditionJson.getString(key)+"%' OR TASK_LIST.TASK_NAME LIKE '%"+conditionJson.getString(key)+"%')";}
+					if ("cityId".equals(key)) {
+						conditionSql+=" AND TASK_LIST.CITY_ID="+conditionJson.getInt(key);}
 					if ("taskStatus".equals(key)) {
 						if(!statusSql.isEmpty()){statusSql+=" or ";}
 						statusSql+=" TASK_LIST.TASK_STATUS="+conditionJson.getInt(key);}
@@ -418,6 +420,8 @@ public class TaskOperation {
 					String key = (String) keys.next();
 					if("name".equals(key)){
 						conditionSql=conditionSql+" AND (TASK_LIST.CITY_NAME LIKE '%"+conditionJson.getString(key)+"%' OR TASK_LIST.TASK_NAME LIKE '%"+conditionJson.getString(key)+"%')";}
+					if ("cityId".equals(key)) {
+						conditionSql+=" AND TASK_LIST.CITY_ID="+conditionJson.getInt(key);}
 					if ("collectProgress".equals(key)) {
 						if(!statusSql.isEmpty()){statusSql+=" or ";}
 						statusSql+=" TASK_LIST.collect_Progress IN ("+conditionJson.getJSONArray(key).join(",")+")";}
@@ -523,6 +527,8 @@ public class TaskOperation {
 					String key = (String) keys.next();
 					if("name".equals(key)){
 						conditionSql=conditionSql+" AND (TASK_LIST.CITY_NAME LIKE '%"+conditionJson.getString(key)+"%' OR TASK_LIST.TASK_NAME LIKE '%"+conditionJson.getString(key)+"%')";}
+					if ("cityId".equals(key)) {
+						conditionSql+=" AND TASK_LIST.CITY_ID="+conditionJson.getInt(key);}
 					if ("diffDate".equals(key)) {
 						JSONArray diffDateArray=conditionJson.getJSONArray(key);
 						for(Object diffDate:diffDateArray){
@@ -637,6 +643,8 @@ public class TaskOperation {
 					String key = (String) keys.next();
 					if("name".equals(key)){
 						conditionSql=conditionSql+" AND (TASK_LIST.CITY_NAME LIKE '%"+conditionJson.getString(key)+"%' OR TASK_LIST.TASK_NAME LIKE '%"+conditionJson.getString(key)+"%')";}
+					if ("cityId".equals(key)) {
+						conditionSql+=" AND TASK_LIST.CITY_ID="+conditionJson.getInt(key);}
 					if ("diffDate".equals(key)) {
 						JSONArray diffDateArray=conditionJson.getJSONArray(key);
 						for(Object diffDate:diffDateArray){
@@ -743,6 +751,8 @@ public class TaskOperation {
 					if ("taskStatus".equals(key)) {
 						if(!statusSql.isEmpty()){statusSql+=" or ";}
 						statusSql+=" TASK_LIST.TASK_STATUS="+conditionJson.getInt(key);}
+					if ("inforId".equals(key)) {
+						conditionSql+=" AND TASK_LIST.INFOR_ID='"+conditionJson.getString(key)+"'";}
 					if ("blockPlanStatus".equals(key)) {
 						if(!statusSql.isEmpty()){statusSql+=" or ";}
 						statusSql+=" TASK_LIST.INFOR_PLAN_STATUS="+conditionJson.getInt(key);}
@@ -829,6 +839,8 @@ public class TaskOperation {
 					String key = (String) keys.next();
 					if("name".equals(key)){
 						conditionSql=conditionSql+" AND (TASK_LIST.INFOR_NAME LIKE '%"+conditionJson.getString(key)+"%' OR TASK_LIST.TASK_NAME LIKE '%"+conditionJson.getString(key)+"%')";}
+					if ("inforId".equals(key)) {
+						conditionSql+=" AND TASK_LIST.INFOR_ID='"+conditionJson.getString(key)+"'";}
 					if ("collectProgress".equals(key)) {
 						if(!statusSql.isEmpty()){statusSql+=" or ";}
 						statusSql+=" TASK_LIST.collect_Progress IN ("+conditionJson.getJSONArray(key).join(",")+")";}
@@ -905,7 +917,9 @@ public class TaskOperation {
 					+ " WHERE TT.ROWNUM_ >= "+pageStartNum;
 			//System.out.println(selectSql);
 			return run.query(conn, selectSql, getOtherSnapshotQuery(currentPageNum,pageSize));		
-		}catch(Exception e){
+		}
+		catch(Exception e)
+		{
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new Exception("创建失败，原因为:"+e.getMessage(),e);
@@ -934,7 +948,8 @@ public class TaskOperation {
 					String key = (String) keys.next();
 					if("name".equals(key)){
 						conditionSql=conditionSql+" AND (TASK_LIST.INFOR_NAME LIKE '%"+conditionJson.getString(key)+"%' OR TASK_LIST.TASK_NAME LIKE '%"+conditionJson.getString(key)+"%')";}
-					
+					if ("inforId".equals(key)) {
+						conditionSql+=" AND TASK_LIST.INFOR_ID='"+conditionJson.getString(key)+"'";}
 					//1-11未规划,草稿,采集正常,采集异常,采集完成,日编正常,日编异常,日编完成,按时完成,提前完成,逾期完成
 					if("selectParam1".equals(key)){
 						JSONArray selectParam1=conditionJson.getJSONArray(key);
@@ -1053,6 +1068,8 @@ public class TaskOperation {
 					String key = (String) keys.next();
 					if("name".equals(key)){
 						conditionSql=conditionSql+" AND (TASK_LIST.INFOR_NAME LIKE '%"+conditionJson.getString(key)+"%' OR TASK_LIST.TASK_NAME LIKE '%"+conditionJson.getString(key)+"%')";}
+					if ("inforId".equals(key)) {
+						conditionSql+=" AND TASK_LIST.INFOR_ID='"+conditionJson.getString(key)+"'";}
 					if ("diffDate".equals(key)) {
 						JSONArray diffDateArray=conditionJson.getJSONArray(key);
 						for(Object diffDate:diffDateArray){
@@ -1228,47 +1245,6 @@ public class TaskOperation {
     	return rsHandler;
 	}
 	
-	/**
-	 * TASK_STATUS:1常规，2多源，3代理店，4情报
-	 * @param currentPageNum
-	 * @param pageSize
-	 * @return
-	 */
-	private static ResultSetHandler<Page> getSnapshotQuery(final int currentPageNum,final int pageSize){
-		//NVL(T.TASK_ID, 0) TASK_ID,NVL(T.NAME, '---') TASK_NAME, TO_CHAR(C.CITY_ID) UPPER_LEVEL_ID,
-		//C.CITY_NAME UPPER_LEVEL_NAME,1 TASK_TYPE,NVL(T.STATUS, 0) TASK_STATUS,C.PLAN_STATUS,
-		//NVL(T.FINISH_PERCENT, 0) FINISH_PERCENT,ROWNUM_,TOTAL_RECORD_NUM
-		final String version=SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion);
-		ResultSetHandler<Page> rsHandler = new ResultSetHandler<Page>(){
-			public Page handle(ResultSet rs) throws SQLException {
-				List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
-				Page page = new Page(currentPageNum);
-			    page.setPageSize(pageSize);
-			    int total=0;
-				while(rs.next()){
-					Map<String, Object> map = new HashMap<String, Object>();
-					map.put("taskId", rs.getInt("TASK_ID"));
-					map.put("taskName", rs.getString("TASK_NAME"));
-					map.put("upperLevelId", rs.getString("UPPER_LEVEL_ID"));
-					map.put("upperLevelName", rs.getString("UPPER_LEVEL_NAME"));
-					map.put("taskType", rs.getInt("TASK_TYPE"));
-					map.put("taskStatus", rs.getInt("TASK_STATUS"));
-					map.put("planStatus", rs.getInt("PLAN_STATUS"));
-					map.put("finishPercent", rs.getInt("FINISH_PERCENT"));
-					map.put("version", version);
-					//map.put("ROWNUM_", rs.getInt("ROWNUM_"));
-					//map.put("TOTAL_RECORD_NUM", rs.getInt("TOTAL_RECORD_NUM"));
-					total=rs.getInt("TOTAL_RECORD_NUM");
-					list.add(map);
-				}
-				page.setTotalCount(total);
-				page.setResult(list);
-				return page;
-			}
-    	};
-    	return rsHandler;
-	}
-	
 	public static Page getListIntegrate(Connection conn,JSONObject conditionJson,JSONObject orderJson,int currentPageNum,int pageSize) throws Exception{
 		try{
 			QueryRunner run = new QueryRunner();
@@ -1292,6 +1268,9 @@ public class TaskOperation {
 					else{
 						if(conditionSql.isEmpty()){conditionSql+=" where ";}
 						else{conditionSql+=" and ";}}
+					
+					if ("upperLevelId".equals(key)) {
+						conditionSql+=" AND TASK_LIST.UPPER_LEVEL_ID='"+conditionJson.getString(key)+"'";}
 					
 					//城市/情报名称
 					if ("upperLevelName".equals(key)) {conditionSql+=" TASK_LIST.UPPER_LEVEL_NAME like '%"+conditionJson.getString(key)+"%'";}
@@ -1843,7 +1822,7 @@ public class TaskOperation {
 //				+ "     AND TT.MONTH_EDIT_GROUP_ID = G.GROUP_ID(+)"
 				+ "     AND TT.MONTH_EDIT_GROUP_ID = G.GROUP_ID"
 				+ "     AND TT.TASK_ID = S.TASK_ID(+)"
-				+ "  UNION ALL"
+				+ "  UNION"
 				//分配子任务，且子任务都是关闭状态==〉已完成
 				+ "  SELECT TT.CITY_ID,"
 				+ "         TT.TASK_ID,"
@@ -1869,11 +1848,11 @@ public class TaskOperation {
 				+ "     AND NOT EXISTS (SELECT 1"
 				+ "            FROM SUBTASK STT"
 				+ "           WHERE STT.TASK_ID = TT.TASK_ID"
-				+ "             AND STT.STATUS = 1"
+				+ "             AND STT.STATUS in (1,2)"
 				+ "             AND STT.STAGE = 2)"
 				+ "     AND TT.TASK_ID = S.TASK_ID(+)"
 				+ "     AND TT.TASK_ID = ST.TASK_ID"
-				+ "  UNION ALL"
+				+ "  UNION"
 				//分配子任务，且存在非关子任务==〉作业中
 				+ "  SELECT TT.CITY_ID,"
 				+ "         TT.TASK_ID,"

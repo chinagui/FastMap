@@ -11,7 +11,7 @@ import com.navinfo.dataservice.engine.editplus.model.BasicRow;
 /** 
 * @ClassName:  IxPoiCarrental 
 * @author code generator
-* @date 2016-11-16 06:05:32 
+* @date 2016-11-18 11:37:13 
 * @Description: TODO
 */
 public class IxPoiCarrental extends BasicRow {
@@ -21,7 +21,7 @@ public class IxPoiCarrental extends BasicRow {
 	protected String howToGo ;
 	protected String phone400 ;
 	protected String webSite ;
-//	protected Integer uRecord ;
+//	protected int uRecord ;
 //	protected String uFields ;
 //	protected String uDate ;
 	
@@ -32,56 +32,74 @@ public class IxPoiCarrental extends BasicRow {
 	public long getPoiPid() {
 		return poiPid;
 	}
-	protected void setPoiPid(long poiPid) {
-		this.poiPid = poiPid;
+	public void setPoiPid(long poiPid) {
+		if(this.checkValue("POI_PID",this.poiPid,poiPid)){
+			this.poiPid = poiPid;
+		}
 	}
 	public String getOpenHour() {
 		return openHour;
 	}
-	protected void setOpenHour(String openHour) {
-		this.openHour = openHour;
+	public void setOpenHour(String openHour) {
+		if(this.checkValue("OPEN_HOUR",this.openHour,openHour)){
+			this.openHour = openHour;
+		}
 	}
 	public String getAddress() {
 		return address;
 	}
-	protected void setAddress(String address) {
-		this.address = address;
+	public void setAddress(String address) {
+		if(this.checkValue("ADDRESS",this.address,address)){
+			this.address = address;
+		}
 	}
 	public String getHowToGo() {
 		return howToGo;
 	}
-	protected void setHowToGo(String howToGo) {
-		this.howToGo = howToGo;
+	public void setHowToGo(String howToGo) {
+		if(this.checkValue("HOW_TO_GO",this.howToGo,howToGo)){
+			this.howToGo = howToGo;
+		}
 	}
 	public String getPhone400() {
 		return phone400;
 	}
-	protected void setPhone400(String phone400) {
-		this.phone400 = phone400;
+	public void setPhone400(String phone400) {
+		if(this.checkValue("PHONE_400",this.phone400,phone400)){
+			this.phone400 = phone400;
+		}
 	}
 	public String getWebSite() {
 		return webSite;
 	}
-	protected void setWebSite(String webSite) {
-		this.webSite = webSite;
+	public void setWebSite(String webSite) {
+		if(this.checkValue("WEB_SITE",this.webSite,webSite)){
+			this.webSite = webSite;
+		}
 	}
-//	public Integer getURecord() {
+//	public int getURecord() {
 //		return uRecord;
 //	}
-//	protected void setURecord(Integer uRecord) {
-//		this.uRecord = uRecord;
+//	public void setURecord(int uRecord) {
+//		if(this.checkValue("U_RECORD",this.uRecord,uRecord)){
+//			this.uRecord = uRecord;
+//		}
 //	}
 //	public String getUFields() {
 //		return uFields;
 //	}
-//	protected void setUFields(String uFields) {
-//		this.uFields = uFields;
+//	public void setUFields(String uFields) {
+//		if(this.checkValue("U_FIELDS",this.uFields,uFields)){
+//			this.uFields = uFields;
+//		}
 //	}
 //	public String getUDate() {
 //		return uDate;
 //	}
-//	protected void setUDate(String uDate) {
-//		this.uDate = uDate;
+//	public void setUDate(String uDate) {
+//		if(this.checkValue("U_DATE",this.uDate,uDate)){
+//			this.uDate = uDate;
+//		}
 //	}
 	
 	@Override

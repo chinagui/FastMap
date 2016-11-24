@@ -1,42 +1,35 @@
 package com.navinfo.dataservice.engine.editplus.model.ixpoi;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
-import net.sf.json.JSONObject;
-
 import com.navinfo.dataservice.engine.editplus.model.AbstractIx;
-
 /** 
 * @ClassName:  IxPoi 
 * @author code generator
-* @date 2016-11-16 02:22:30 
+* @date 2016-11-18 11:18:40 
 * @Description: TODO
 */
 public class IxPoi extends AbstractIx {
 	protected String kindCode ;
-	protected Integer side ;
+	protected int side ;
 	protected long nameGroupid ;
-	protected Integer roadFlag ;
-	protected Integer pmeshId ;
-	protected Integer adminReal ;
-	protected Integer importance ;
+	protected int roadFlag ;
+	protected int pmeshId ;
+	protected int adminReal ;
+	protected int importance ;
 	protected String chain ;
 	protected String airportCode ;
-	protected Integer accessFlag ;
-	protected Integer open24h ;
+	protected int accessFlag ;
+	protected int open24h ;
 	protected String meshId5k ;
 	protected long regionId ;
 	protected String postCode ;
-	protected Integer editFlag ;
+	protected int editFlag ;
 	protected String difGroupid ;
 	protected String reserved ;
-	protected Integer state ;
+	protected int state ;
 	protected String fieldState ;
 	protected String label ;
-	protected Integer type ;
-	protected Integer addressFlag ;
+	protected int type ;
+	protected int addressFlag ;
 	protected String exPriority ;
 	protected String editionFlag ;
 	protected String poiMemo ;
@@ -49,306 +42,401 @@ public class IxPoi extends AbstractIx {
 	protected long taskId ;
 	protected String dataVersion ;
 	protected long fieldTaskId ;
-	protected Integer verifiedFlag ;
+	protected int verifiedFlag ;
 	protected String collectTime ;
-	protected Integer geoAdjustFlag ;
-	protected Integer fullAttrFlag ;
+	protected int geoAdjustFlag ;
+	protected int fullAttrFlag ;
 	protected double oldXGuide ;
 	protected double oldYGuide ;
-	protected Integer truckFlag ;
+	protected int truckFlag ;
 	protected String level ;
 	protected String sportsVenue ;
-	protected Integer indoor ;
+	protected int indoor ;
 	protected String vipFlag ;
 	
 	public IxPoi (long objPid){
 		super(objPid);
 	}
 	
-
-
 	public String getKindCode() {
 		return kindCode;
 	}
-	protected void setKindCode(String kindCode) {
-		this.kindCode = kindCode;
+	public void setKindCode(String kindCode) {
+		if(this.checkValue("KIND_CODE",this.kindCode,kindCode)){
+			this.kindCode = kindCode;
+		}
 	}
-	public Integer getSide() {
+	public int getSide() {
 		return side;
 	}
-	protected void setSide(Integer side) {
-		this.side = side;
+	public void setSide(int side) {
+		if(this.checkValue("SIDE",this.side,side)){
+			this.side = side;
+		}
 	}
 	public long getNameGroupid() {
 		return nameGroupid;
 	}
-	protected void setNameGroupid(long nameGroupid) {
-		this.nameGroupid = nameGroupid;
+	public void setNameGroupid(long nameGroupid) {
+		if(this.checkValue("NAME_GROUPID",this.nameGroupid,nameGroupid)){
+			this.nameGroupid = nameGroupid;
+		}
 	}
-	public Integer getRoadFlag() {
+	public int getRoadFlag() {
 		return roadFlag;
 	}
-	protected void setRoadFlag(Integer roadFlag) {
-		this.roadFlag = roadFlag;
+	public void setRoadFlag(int roadFlag) {
+		if(this.checkValue("ROAD_FLAG",this.roadFlag,roadFlag)){
+			this.roadFlag = roadFlag;
+		}
 	}
-	public Integer getPmeshId() {
+	public int getPmeshId() {
 		return pmeshId;
 	}
-	protected void setPmeshId(Integer pmeshId) {
-		this.pmeshId = pmeshId;
+	public void setPmeshId(int pmeshId) {
+		if(this.checkValue("PMESH_ID",this.pmeshId,pmeshId)){
+			this.pmeshId = pmeshId;
+		}
 	}
-	public Integer getAdminReal() {
+	public int getAdminReal() {
 		return adminReal;
 	}
-	protected void setAdminReal(Integer adminReal) {
-		this.adminReal = adminReal;
+	public void setAdminReal(int adminReal) {
+		if(this.checkValue("ADMIN_REAL",this.adminReal,adminReal)){
+			this.adminReal = adminReal;
+		}
 	}
-	public Integer getImportance() {
+	public int getImportance() {
 		return importance;
 	}
-	protected void setImportance(Integer importance) {
-		this.importance = importance;
+	public void setImportance(int importance) {
+		if(this.checkValue("IMPORTANCE",this.importance,importance)){
+			this.importance = importance;
+		}
 	}
 	public String getChain() {
 		return chain;
 	}
-	protected void setChain(String chain) {
-		this.chain = chain;
+	public void setChain(String chain) {
+		if(this.checkValue("CHAIN",this.chain,chain)){
+			this.chain = chain;
+		}
 	}
 	public String getAirportCode() {
 		return airportCode;
 	}
-	protected void setAirportCode(String airportCode) {
-		this.airportCode = airportCode;
+	public void setAirportCode(String airportCode) {
+		if(this.checkValue("AIRPORT_CODE",this.airportCode,airportCode)){
+			this.airportCode = airportCode;
+		}
 	}
-	public Integer getAccessFlag() {
+	public int getAccessFlag() {
 		return accessFlag;
 	}
-	protected void setAccessFlag(Integer accessFlag) {
-		this.accessFlag = accessFlag;
+	public void setAccessFlag(int accessFlag) {
+		if(this.checkValue("ACCESS_FLAG",this.accessFlag,accessFlag)){
+			this.accessFlag = accessFlag;
+		}
 	}
-	public Integer getOpen24h() {
+	public int getOpen24h() {
 		return open24h;
 	}
-	protected void setOpen24h(Integer open24h) {
-		this.open24h = open24h;
+	public void setOpen24h(int open24h) {
+		if(this.checkValue("OPEN_24H",this.open24h,open24h)){
+			this.open24h = open24h;
+		}
 	}
 	public String getMeshId5k() {
 		return meshId5k;
 	}
-	protected void setMeshId5k(String meshId5k) {
-		this.meshId5k = meshId5k;
+	public void setMeshId5k(String meshId5k) {
+		if(this.checkValue("MESH_ID_5K",this.meshId5k,meshId5k)){
+			this.meshId5k = meshId5k;
+		}
+	}
+	public int getMeshId() {
+		return meshId;
+	}
+	public void setMeshId(int meshId) {
+		if(this.checkValue("MESH_ID",this.meshId,meshId)){
+			this.meshId = meshId;
+		}
 	}
 	public long getRegionId() {
 		return regionId;
 	}
-	protected void setRegionId(long regionId) {
-		this.regionId = regionId;
+	public void setRegionId(long regionId) {
+		if(this.checkValue("REGION_ID",this.regionId,regionId)){
+			this.regionId = regionId;
+		}
 	}
 	public String getPostCode() {
 		return postCode;
 	}
-	protected void setPostCode(String postCode) {
-		this.postCode = postCode;
+	public void setPostCode(String postCode) {
+		if(this.checkValue("POST_CODE",this.postCode,postCode)){
+			this.postCode = postCode;
+		}
 	}
-	public Integer getEditFlag() {
+	public int getEditFlag() {
 		return editFlag;
 	}
-	protected void setEditFlag(Integer editFlag) {
-		this.editFlag = editFlag;
+	public void setEditFlag(int editFlag) {
+		if(this.checkValue("EDIT_FLAG",this.editFlag,editFlag)){
+			this.editFlag = editFlag;
+		}
 	}
 	public String getDifGroupid() {
 		return difGroupid;
 	}
-	protected void setDifGroupid(String difGroupid) {
-		this.difGroupid = difGroupid;
+	public void setDifGroupid(String difGroupid) {
+		if(this.checkValue("DIF_GROUPID",this.difGroupid,difGroupid)){
+			this.difGroupid = difGroupid;
+		}
 	}
 	public String getReserved() {
 		return reserved;
 	}
-	protected void setReserved(String reserved) {
-		this.reserved = reserved;
+	public void setReserved(String reserved) {
+		if(this.checkValue("RESERVED",this.reserved,reserved)){
+			this.reserved = reserved;
+		}
 	}
-	public Integer getState() {
+	public int getState() {
 		return state;
 	}
-	protected void setState(Integer state) {
-		this.state = state;
+	public void setState(int state) {
+		if(this.checkValue("STATE",this.state,state)){
+			this.state = state;
+		}
 	}
 	public String getFieldState() {
 		return fieldState;
 	}
-	protected void setFieldState(String fieldState) {
-		this.fieldState = fieldState;
+	public void setFieldState(String fieldState) {
+		if(this.checkValue("FIELD_STATE",this.fieldState,fieldState)){
+			this.fieldState = fieldState;
+		}
 	}
 	public String getLabel() {
 		return label;
 	}
-	protected void setLabel(String label) {
-		this.label = label;
+	public void setLabel(String label) {
+		if(this.checkValue("LABEL",this.label,label)){
+			this.label = label;
+		}
 	}
-	public Integer getType() {
+	public int getType() {
 		return type;
 	}
-	protected void setType(Integer type) {
-		this.type = type;
+	public void setType(int type) {
+		if(this.checkValue("TYPE",this.type,type)){
+			this.type = type;
+		}
 	}
-	public Integer getAddressFlag() {
+	public int getAddressFlag() {
 		return addressFlag;
 	}
-	protected void setAddressFlag(Integer addressFlag) {
-		this.addressFlag = addressFlag;
+	public void setAddressFlag(int addressFlag) {
+		if(this.checkValue("ADDRESS_FLAG",this.addressFlag,addressFlag)){
+			this.addressFlag = addressFlag;
+		}
 	}
 	public String getExPriority() {
 		return exPriority;
 	}
-	protected void setExPriority(String exPriority) {
-		this.exPriority = exPriority;
+	public void setExPriority(String exPriority) {
+		if(this.checkValue("EX_PRIORITY",this.exPriority,exPriority)){
+			this.exPriority = exPriority;
+		}
 	}
 	public String getEditionFlag() {
 		return editionFlag;
 	}
-	protected void setEditionFlag(String editionFlag) {
-		this.editionFlag = editionFlag;
+	public void setEditionFlag(String editionFlag) {
+		if(this.checkValue("EDITION_FLAG",this.editionFlag,editionFlag)){
+			this.editionFlag = editionFlag;
+		}
 	}
 	public String getPoiMemo() {
 		return poiMemo;
 	}
-	protected void setPoiMemo(String poiMemo) {
-		this.poiMemo = poiMemo;
+	public void setPoiMemo(String poiMemo) {
+		if(this.checkValue("POI_MEMO",this.poiMemo,poiMemo)){
+			this.poiMemo = poiMemo;
+		}
 	}
 	public String getOldBlockcode() {
 		return oldBlockcode;
 	}
-	protected void setOldBlockcode(String oldBlockcode) {
-		this.oldBlockcode = oldBlockcode;
+	public void setOldBlockcode(String oldBlockcode) {
+		if(this.checkValue("OLD_BLOCKCODE",this.oldBlockcode,oldBlockcode)){
+			this.oldBlockcode = oldBlockcode;
+		}
 	}
 	public String getOldName() {
 		return oldName;
 	}
-	protected void setOldName(String oldName) {
-		this.oldName = oldName;
+	public void setOldName(String oldName) {
+		if(this.checkValue("OLD_NAME",this.oldName,oldName)){
+			this.oldName = oldName;
+		}
 	}
 	public String getOldAddress() {
 		return oldAddress;
 	}
-	protected void setOldAddress(String oldAddress) {
-		this.oldAddress = oldAddress;
+	public void setOldAddress(String oldAddress) {
+		if(this.checkValue("OLD_ADDRESS",this.oldAddress,oldAddress)){
+			this.oldAddress = oldAddress;
+		}
 	}
 	public String getOldKind() {
 		return oldKind;
 	}
-	protected void setOldKind(String oldKind) {
-		this.oldKind = oldKind;
+	public void setOldKind(String oldKind) {
+		if(this.checkValue("OLD_KIND",this.oldKind,oldKind)){
+			this.oldKind = oldKind;
+		}
 	}
 	public String getPoiNum() {
 		return poiNum;
 	}
-	protected void setPoiNum(String poiNum) {
-		this.poiNum = poiNum;
+	public void setPoiNum(String poiNum) {
+		if(this.checkValue("POI_NUM",this.poiNum,poiNum)){
+			this.poiNum = poiNum;
+		}
 	}
 	public String getLog() {
 		return log;
 	}
-	protected void setLog(String log) {
-		this.log = log;
+	public void setLog(String log) {
+		if(this.checkValue("LOG",this.log,log)){
+			this.log = log;
+		}
 	}
 	public long getTaskId() {
 		return taskId;
 	}
-	protected void setTaskId(long taskId) {
-		this.taskId = taskId;
+	public void setTaskId(long taskId) {
+		if(this.checkValue("TASK_ID",this.taskId,taskId)){
+			this.taskId = taskId;
+		}
 	}
 	public String getDataVersion() {
 		return dataVersion;
 	}
-	protected void setDataVersion(String dataVersion) {
-		this.dataVersion = dataVersion;
+	public void setDataVersion(String dataVersion) {
+		if(this.checkValue("DATA_VERSION",this.dataVersion,dataVersion)){
+			this.dataVersion = dataVersion;
+		}
 	}
 	public long getFieldTaskId() {
 		return fieldTaskId;
 	}
-	protected void setFieldTaskId(long fieldTaskId) {
-		this.fieldTaskId = fieldTaskId;
+	public void setFieldTaskId(long fieldTaskId) {
+		if(this.checkValue("FIELD_TASK_ID",this.fieldTaskId,fieldTaskId)){
+			this.fieldTaskId = fieldTaskId;
+		}
 	}
-	public Integer getVerifiedFlag() {
+	public int getVerifiedFlag() {
 		return verifiedFlag;
 	}
-	protected void setVerifiedFlag(Integer verifiedFlag) {
-		this.verifiedFlag = verifiedFlag;
+	public void setVerifiedFlag(int verifiedFlag) {
+		if(this.checkValue("VERIFIED_FLAG",this.verifiedFlag,verifiedFlag)){
+			this.verifiedFlag = verifiedFlag;
+		}
 	}
 	public String getCollectTime() {
 		return collectTime;
 	}
-	protected void setCollectTime(String collectTime) {
-		this.collectTime = collectTime;
+	public void setCollectTime(String collectTime) {
+		if(this.checkValue("COLLECT_TIME",this.collectTime,collectTime)){
+			this.collectTime = collectTime;
+		}
 	}
-	public Integer getGeoAdjustFlag() {
+	public int getGeoAdjustFlag() {
 		return geoAdjustFlag;
 	}
-	protected void setGeoAdjustFlag(Integer geoAdjustFlag) {
-		this.geoAdjustFlag = geoAdjustFlag;
+	public void setGeoAdjustFlag(int geoAdjustFlag) {
+		if(this.checkValue("GEO_ADJUST_FLAG",this.geoAdjustFlag,geoAdjustFlag)){
+			this.geoAdjustFlag = geoAdjustFlag;
+		}
 	}
-	public Integer getFullAttrFlag() {
+	public int getFullAttrFlag() {
 		return fullAttrFlag;
 	}
-	protected void setFullAttrFlag(Integer fullAttrFlag) {
-		this.fullAttrFlag = fullAttrFlag;
+	public void setFullAttrFlag(int fullAttrFlag) {
+		if(this.checkValue("FULL_ATTR_FLAG",this.fullAttrFlag,fullAttrFlag)){
+			this.fullAttrFlag = fullAttrFlag;
+		}
 	}
 	public double getOldXGuide() {
 		return oldXGuide;
 	}
-	protected void setOldXGuide(double oldXGuide) {
-		this.oldXGuide = oldXGuide;
+	public void setOldXGuide(double oldXGuide) {
+		if(this.checkValue("OLD_X_GUIDE",this.oldXGuide,oldXGuide)){
+			this.oldXGuide = oldXGuide;
+		}
 	}
 	public double getOldYGuide() {
 		return oldYGuide;
 	}
-	protected void setOldYGuide(double oldYGuide) {
-		this.oldYGuide = oldYGuide;
+	public void setOldYGuide(double oldYGuide) {
+		if(this.checkValue("OLD_Y_GUIDE",this.oldYGuide,oldYGuide)){
+			this.oldYGuide = oldYGuide;
+		}
 	}
-	public Integer getTruckFlag() {
+	public int getTruckFlag() {
 		return truckFlag;
 	}
-	protected void setTruckFlag(Integer truckFlag) {
-		this.truckFlag = truckFlag;
+	public void setTruckFlag(int truckFlag) {
+		if(this.checkValue("TRUCK_FLAG",this.truckFlag,truckFlag)){
+			this.truckFlag = truckFlag;
+		}
 	}
 	public String getLevel() {
 		return level;
 	}
-	protected void setLevel(String level) {
-		this.level = level;
+	public void setLevel(String level) {
+		if(this.checkValue("LEVEL",this.level,level)){
+			this.level = level;
+		}
 	}
 	public String getSportsVenue() {
 		return sportsVenue;
 	}
-	protected void setSportsVenue(String sportsVenue) {
-		this.sportsVenue = sportsVenue;
+	public void setSportsVenue(String sportsVenue) {
+		if(this.checkValue("SPORTS_VENUE",this.sportsVenue,sportsVenue)){
+			this.sportsVenue = sportsVenue;
+		}
 	}
-	public Integer getIndoor() {
+	public int getIndoor() {
 		return indoor;
 	}
-	protected void setIndoor(Integer indoor) {
-		this.indoor = indoor;
+	public void setIndoor(int indoor) {
+		if(this.checkValue("INDOOR",this.indoor,indoor)){
+			this.indoor = indoor;
+		}
 	}
 	public String getVipFlag() {
 		return vipFlag;
 	}
-	protected void setVipFlag(String vipFlag) {
-		this.vipFlag = vipFlag;
+	public void setVipFlag(String vipFlag) {
+		if(this.checkValue("VIP_FLAG",this.vipFlag,vipFlag)){
+			this.vipFlag = vipFlag;
+		}
 	}
 
-	
 	@Override
 	public String tableName() {
 		return "IX_POI";
 	}
-	
-	@Override
-	public String colName2Getter(String colName){
-		//handler open_24h...
-		return null;
-	}
+
+//	@Override
+//	public String colName2Getter(String colName){
+//		//handler open_24h...
+//		return null;
+//	}
 
 
 //	@Override

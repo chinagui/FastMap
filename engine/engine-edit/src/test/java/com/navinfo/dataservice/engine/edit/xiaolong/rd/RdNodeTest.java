@@ -1,8 +1,13 @@
 package com.navinfo.dataservice.engine.edit.xiaolong.rd;
 
+import java.sql.Connection;
+
 import org.junit.Before;
 import org.junit.Test;
 
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.dao.glm.search.RdCrossSearch;
+import com.navinfo.dataservice.dao.glm.search.RdNodeSearch;
 import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.operation.Transaction;
 
@@ -40,6 +45,7 @@ public class RdNodeTest extends InitApplication{
 	}
 	
 	@Test
+	
 	public void testDelete() {
 		String parameter = "{\"command\":\"DELETE\",\"type\":\"RDTRAFFICSIGNAL\",\"dbId\":19,\"objId\":201000009}";
 		Transaction t = new Transaction(parameter);
@@ -51,4 +57,20 @@ public class RdNodeTest extends InitApplication{
 		}
 	}
 	
-}
+	@Test
+	public void testRdNodeRender()
+	{
+		Connection conn;
+		try {
+			conn = DBConnector.getInstance().getConnectionById(17);
+
+			RdNodeSearch search = new RdNodeSearch(conn);
+			
+			search.searchDataByTileWithGap(107878, 49608, 17, 10);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+	}
+}	

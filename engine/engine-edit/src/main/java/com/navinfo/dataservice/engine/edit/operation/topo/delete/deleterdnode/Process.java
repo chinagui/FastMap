@@ -316,6 +316,10 @@ public class Process extends AbstractProcess<Command> {
 
 		// 同一线
 		opRefRelationObj.handleSameLink(this.getResult(), this.getCommand());
+
+		// 详细车道
+		OpRefRdLane opRefRdLane = new OpRefRdLane(getConn());
+		opRefRdLane.run(getResult(), this.getCommand());
 	}
 
 	/**
@@ -495,10 +499,10 @@ public class Process extends AbstractProcess<Command> {
 		List<AlertObject> delRdInterAlertDataList = new ArrayList<>();
 		com.navinfo.dataservice.engine.edit.operation.obj.rdinter.delete.Operation rdInterOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdinter.delete.Operation(
 				conn);
-		updateRdInterAlertDataList
-				.addAll(rdInterOperation.getUpdateRdInterInfectData(this.getCommand().getLinkPids(), this.getCommand().getNodePids(), conn));
-		delRdInterAlertDataList
-				.addAll(rdInterOperation.getDeleteRdInterInfectData(this.getCommand().getLinkPids(), this.getCommand().getNodePids(), conn));
+		updateRdInterAlertDataList.addAll(rdInterOperation.getUpdateRdInterInfectData(this.getCommand().getLinkPids(),
+				this.getCommand().getNodePids(), conn));
+		delRdInterAlertDataList.addAll(rdInterOperation.getDeleteRdInterInfectData(this.getCommand().getLinkPids(),
+				this.getCommand().getNodePids(), conn));
 		if (CollectionUtils.isNotEmpty(updateRdInterAlertDataList)) {
 			infects.put("删除link维护CRF交叉点", updateRdInterAlertDataList);
 		}
@@ -668,6 +672,13 @@ public class Process extends AbstractProcess<Command> {
 		}
 		if (CollectionUtils.isNotEmpty(warningInfoAlertDataList)) {
 			infects.put("删除link删除警示信息", warningInfoAlertDataList);
+		}
+		// 删除node维护tmclocation匹配关系
+		com.navinfo.dataservice.engine.edit.operation.obj.tmc.update.Operation rdinterOperation = new com.navinfo.dataservice.engine.edit.operation.obj.tmc.update.Operation(
+				this.getConn());
+		List<AlertObject> tmcAlertObject = rdinterOperation.getDeleteInfectRdTmc(this.getCommand().getLinks(), this.getCommand().getLinkPids());
+		if (CollectionUtils.isNotEmpty(tmcAlertObject)) {
+			infects.put("删除link维护TMC匹配信息", tmcAlertObject);
 		}
 		return infects;
 	}

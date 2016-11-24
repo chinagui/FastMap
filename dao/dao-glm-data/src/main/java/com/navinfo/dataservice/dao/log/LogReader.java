@@ -368,6 +368,42 @@ public class LogReader {
 		return new QueryRunner().query(conn, sb.toString(), new ObjStatusHandler(),mainTabName,mainTabName,mainTabName);
 	}
 	
+	public Map<Integer,Collection<Long>> getUpdatedObj(String objName,String mainTabName,Collection<String> grids,String startDate,String endDate)throws SQLException{
+		StringBuilder sb = new StringBuilder();
+		sb.append("WITH A AS\n");
+		sb.append(" (SELECT T.OB_PID, MAX(P.OP_DT) DT FROM LOG_DETAIL T, LOG_DETAIL_GRID G, LOG_OPERATION P\n");
+		sb.append("   WHERE T.OP_ID = P.OP_ID AND T.ROW_ID = G.LOG_ROW_ID AND T.OB_NM = '"+objName+"'\n");
+		if(grids!=null&&grids.size()>0){
+			sb.append("     AND G.GRID_ID IN ("+StringUtils.join(grids, ",")+") AND G.GRID_TYPE = 1\n");
+		}
+		if(StringUtils.isNotEmpty(startDate)){
+			sb.append("     AND P.OP_DT > TO_DATE('"+startDate+"', 'yyyymmddhh24miss')\n");
+		}
+		if(StringUtils.isNotEmpty(endDate)){
+			sb.append("     AND P.OP_DT <= TO_DATE('"+endDate+"', 'yyyymmddhh24miss')\n");
+		}
+		sb.append("   GROUP BY OB_PID),\n");
+		sb.append("B AS\n");
+		sb.append(" (SELECT L.OB_PID, L.OP_TP FROM LOG_DETAIL L, LOG_OPERATION OP, A\n");
+		sb.append("   WHERE L.OP_ID = OP.OP_ID AND L.OB_PID = A.OB_PID AND OP.OP_DT = A.DT AND L.TB_NM = ?),\n");
+		sb.append("C AS\n");
+		sb.append(" (SELECT A.OB_PID, 1 OP_TP FROM A\n");
+		sb.append("   WHERE NOT EXISTS (SELECT 1 FROM B WHERE A.OB_PID = B.OB_PID)\n");
+		sb.append("     AND EXISTS (SELECT 1 FROM LOG_DETAIL D\n");
+		sb.append("           WHERE D.OB_PID = A.OB_PID AND D.TB_NM = ? AND D.OP_TP = 1)),\n");
+		sb.append("D AS\n");
+		sb.append("(SELECT B.* FROM B WHERE B.OP_TP!=3),\n");
+		sb.append("E AS\n");
+		sb.append("(SELECT B.OB_PID,1 FROM B WHERE B.OP_TP=3 AND EXISTS (SELECT 1 FROM LOG_DETAIL D \n");
+		sb.append("WHERE D.OB_PID = B.OB_PID AND D.TB_NM = ? AND D.OP_TP = 1)), \n");       
+		sb.append("F AS\n");
+		sb.append(" (SELECT C.* FROM C UNION ALL SELECT D.* FROM D UNION ALL SELECT E.* FROM E)\n");
+		sb.append("SELECT * FROM F \n");
+		sb.append("UNION ALL \n");
+		sb.append("SELECT A.OB_PID, 3 OP_TP FROM A WHERE NOT EXISTS (SELECT 1 FROM F WHERE A.OB_PID = F.OB_PID)");
+		return new QueryRunner().query(conn, sb.toString(), new ObjStatusHandler(),mainTabName,mainTabName,mainTabName);
+	}
+	
 	class ObjStatusHandler implements ResultSetHandler<Map<Integer,Collection<Long>>>{
 		@Override
 		public Map<Integer, Collection<Long>> handle(ResultSet rs) throws SQLException {
@@ -402,7 +438,14 @@ public class LogReader {
 	public static void main(String[] args) throws Exception {
 		Connection con = DriverManager.getConnection("jdbc:oracle:thin:@192.168.3.103:1521/orcl",
 				"fm260_region_16win_d_1", "fm260_region_16win_d_1");
-		boolean flag = new LogReader(con).isUpdateforObjFeild(79887714, "IX_POI","IX_POI","LEVEL");
-		System.out.println(flag);
+//		boolean flag = new LogReader(con).isUpdateforObjFeild(79887714, "IX_POI","IX_POI","LEVEL");
+		String objName = "IX_POI";
+		String mainTabName = "IX_POI";
+		Collection<String> grids = null;
+		String startDate = "201610220000";
+		String endDate = "201610230000";
+		Map<Integer,Collection<Long>> map = new LogReader(con).getUpdatedObj(objName, mainTabName, grids, startDate, endDate);
+		System.out.println("ok");
+//		System.out.println(flag);
 	}
 }

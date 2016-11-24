@@ -11,26 +11,23 @@ import com.navinfo.dataservice.engine.editplus.model.BasicRow;
 /** 
 * @ClassName:  IxPoiChargingstation 
 * @author code generator
-* @date 2016-11-16 06:02:01 
+* @date 2016-11-18 11:35:05 
 * @Description: TODO
 */
 public class IxPoiChargingstation extends BasicRow {
 	protected long chargingId ;
 	protected long poiPid ;
-	protected Integer chargingType ;
+	protected int chargingType ;
 	protected String changeBrands ;
 	protected String changeOpenType ;
-	protected Integer chargingNum ;
+	protected int chargingNum ;
 	protected String serviceProv ;
 	protected String memo ;
 	protected String photoName ;
 	protected String openHour ;
-	protected Integer parkingFees ;
+	protected int parkingFees ;
 	protected String parkingInfo ;
-	protected Integer availableState ;
-//	protected Integer uRecord ;
-//	protected String uFields ;
-//	protected String uDate ;
+	protected int availableState ;
 	
 	public IxPoiChargingstation (long objPid){
 		super(objPid);
@@ -39,99 +36,107 @@ public class IxPoiChargingstation extends BasicRow {
 	public long getChargingId() {
 		return chargingId;
 	}
-	protected void setChargingId(long chargingId) {
-		this.chargingId = chargingId;
+	public void setChargingId(long chargingId) {
+		if(this.checkValue("CHARGING_ID",this.chargingId,chargingId)){
+			this.chargingId = chargingId;
+		}
 	}
 	public long getPoiPid() {
 		return poiPid;
 	}
-	protected void setPoiPid(long poiPid) {
-		this.poiPid = poiPid;
+	public void setPoiPid(long poiPid) {
+		if(this.checkValue("POI_PID",this.poiPid,poiPid)){
+			this.poiPid = poiPid;
+		}
 	}
-	public Integer getChargingType() {
+	public int getChargingType() {
 		return chargingType;
 	}
-	protected void setChargingType(Integer chargingType) {
-		this.chargingType = chargingType;
+	public void setChargingType(int chargingType) {
+		if(this.checkValue("CHARGING_TYPE",this.chargingType,chargingType)){
+			this.chargingType = chargingType;
+		}
 	}
 	public String getChangeBrands() {
 		return changeBrands;
 	}
-	protected void setChangeBrands(String changeBrands) {
-		this.changeBrands = changeBrands;
+	public void setChangeBrands(String changeBrands) {
+		if(this.checkValue("CHANGE_BRANDS",this.changeBrands,changeBrands)){
+			this.changeBrands = changeBrands;
+		}
 	}
 	public String getChangeOpenType() {
 		return changeOpenType;
 	}
-	protected void setChangeOpenType(String changeOpenType) {
-		this.changeOpenType = changeOpenType;
+	public void setChangeOpenType(String changeOpenType) {
+		if(this.checkValue("CHANGE_OPEN_TYPE",this.changeOpenType,changeOpenType)){
+			this.changeOpenType = changeOpenType;
+		}
 	}
-	public Integer getChargingNum() {
+	public int getChargingNum() {
 		return chargingNum;
 	}
-	protected void setChargingNum(Integer chargingNum) {
-		this.chargingNum = chargingNum;
+	public void setChargingNum(int chargingNum) {
+		if(this.checkValue("CHARGING_NUM",this.chargingNum,chargingNum)){
+			this.chargingNum = chargingNum;
+		}
 	}
 	public String getServiceProv() {
 		return serviceProv;
 	}
-	protected void setServiceProv(String serviceProv) {
-		this.serviceProv = serviceProv;
+	public void setServiceProv(String serviceProv) {
+		if(this.checkValue("SERVICE_PROV",this.serviceProv,serviceProv)){
+			this.serviceProv = serviceProv;
+		}
 	}
 	public String getMemo() {
 		return memo;
 	}
-	protected void setMemo(String memo) {
-		this.memo = memo;
+	public void setMemo(String memo) {
+		if(this.checkValue("MEMO",this.memo,memo)){
+			this.memo = memo;
+		}
 	}
 	public String getPhotoName() {
 		return photoName;
 	}
-	protected void setPhotoName(String photoName) {
-		this.photoName = photoName;
+	public void setPhotoName(String photoName) {
+		if(this.checkValue("PHOTO_NAME",this.photoName,photoName)){
+			this.photoName = photoName;
+		}
 	}
 	public String getOpenHour() {
 		return openHour;
 	}
-	protected void setOpenHour(String openHour) {
-		this.openHour = openHour;
+	public void setOpenHour(String openHour) {
+		if(this.checkValue("OPEN_HOUR",this.openHour,openHour)){
+			this.openHour = openHour;
+		}
 	}
-	public Integer getParkingFees() {
+	public int getParkingFees() {
 		return parkingFees;
 	}
-	protected void setParkingFees(Integer parkingFees) {
-		this.parkingFees = parkingFees;
+	public void setParkingFees(int parkingFees) {
+		if(this.checkValue("PARKING_FEES",this.parkingFees,parkingFees)){
+			this.parkingFees = parkingFees;
+		}
 	}
 	public String getParkingInfo() {
 		return parkingInfo;
 	}
-	protected void setParkingInfo(String parkingInfo) {
-		this.parkingInfo = parkingInfo;
+	public void setParkingInfo(String parkingInfo) {
+		if(this.checkValue("PARKING_INFO",this.parkingInfo,parkingInfo)){
+			this.parkingInfo = parkingInfo;
+		}
 	}
-	public Integer getAvailableState() {
+	public int getAvailableState() {
 		return availableState;
 	}
-	protected void setAvailableState(Integer availableState) {
-		this.availableState = availableState;
+	public void setAvailableState(int availableState) {
+		if(this.checkValue("AVAILABLE_STATE",this.availableState,availableState)){
+			this.availableState = availableState;
+		}
 	}
-//	public Integer getURecord() {
-//		return uRecord;
-//	}
-//	protected void setURecord(Integer uRecord) {
-//		this.uRecord = uRecord;
-//	}
-//	public String getUFields() {
-//		return uFields;
-//	}
-//	protected void setUFields(String uFields) {
-//		this.uFields = uFields;
-//	}
-//	public String getUDate() {
-//		return uDate;
-//	}
-//	protected void setUDate(String uDate) {
-//		this.uDate = uDate;
-//	}
 	
 	@Override
 	public String tableName() {

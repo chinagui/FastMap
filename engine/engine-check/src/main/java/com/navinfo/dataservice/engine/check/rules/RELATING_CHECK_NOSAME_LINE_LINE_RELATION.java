@@ -1,36 +1,30 @@
 package com.navinfo.dataservice.engine.check.rules;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-
-import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchDetail;
-import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchVia;
 import com.navinfo.dataservice.dao.glm.model.rd.directroute.RdDirectroute;
 import com.navinfo.dataservice.dao.glm.model.rd.gate.RdGate;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
+import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionDetail;
 import com.navinfo.dataservice.dao.glm.model.rd.se.RdSe;
 import com.navinfo.dataservice.dao.glm.model.rd.tollgate.RdTollgate;
 import com.navinfo.dataservice.dao.glm.model.rd.voiceguide.RdVoiceguide;
-import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
 
-/** 
+/**
  * @ClassName: RELATING_CHECK_NOSAME_LINE_LINE_RELATION
  * @author songdongyan
  * @date 2016年8月18日
  * @Description: 相同的进入线，进入点，经过线，退出线，不能创建两组相同类型分歧
- * 相同的进入线、进入点不能创建两组（车信、普通交限、顺行、分歧、语音引导、收费站、大门、自然语音引导）
- * 相同的进入线、进入点、退出线不能创建两组分叉口提示
+ *               相同的进入线、进入点不能创建两组（车信、普通交限、顺行、分歧、语音引导、收费站、大门、自然语音引导）
+ *               相同的进入线、进入点、退出线不能创建两组分叉口提示
  */
 public class RELATING_CHECK_NOSAME_LINE_LINE_RELATION extends baseRule {
 
@@ -41,90 +35,103 @@ public class RELATING_CHECK_NOSAME_LINE_LINE_RELATION extends baseRule {
 		// TODO Auto-generated constructor stub
 	}
 
-	/* (non-Javadoc)
-	 * @see com.navinfo.dataservice.engine.check.core.baseRule#preCheck(com.navinfo.dataservice.dao.check.CheckCommand)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.navinfo.dataservice.engine.check.core.baseRule#preCheck(com.navinfo.
+	 * dataservice.dao.check.CheckCommand)
 	 */
 	@Override
 	public void preCheck(CheckCommand checkCommand) throws Exception {
 		// TODO Auto-generated method stub
-		
-		for(IRow obj:checkCommand.getGlmList()){
-			//分歧RdBranch
-			if(obj instanceof RdBranch ){
-				RdBranch rdBranch = (RdBranch)obj;
+		System.out.println();
+		for (IRow obj : checkCommand.getGlmList()) {
+			// 分歧RdBranch
+			if (obj instanceof RdBranch) {
+				RdBranch rdBranch = (RdBranch) obj;
 				boolean result = checkRdBranch(rdBranch);
-				if(!result){
-					this.setCheckResult("", "", 0,"相同的进入线，进入点，经过线，退出线，不能创建两组相同类型分歧");
+				if (!result) {
+					this.setCheckResult("", "", 0, "相同的进入线，进入点，经过线，退出线，不能创建两组相同类型分歧");
 					return;
 				}
-			}else if(obj instanceof RdBranchDetail ){
-				RdBranchDetail rdBranchDetail = (RdBranchDetail)obj;
+			} else if (obj instanceof RdBranchDetail) {
+				RdBranchDetail rdBranchDetail = (RdBranchDetail) obj;
 				boolean result = checkRdBranchDetail(rdBranchDetail);
-				if(!result){
-					this.setCheckResult("", "", 0,"相同的进入线，进入点，经过线，退出线，不能创建两组相同类型分歧");
+				if (!result) {
+					this.setCheckResult("", "", 0, "相同的进入线，进入点，经过线，退出线，不能创建两组相同类型分歧");
 					return;
 				}
 			}
-			//大门RdGate
-			else if(obj instanceof RdGate ){
-				RdGate rdGate = (RdGate)obj;
+			// 大门RdGate
+			else if (obj instanceof RdGate) {
+				RdGate rdGate = (RdGate) obj;
 				boolean result = checkRdGate(rdGate);
-				if(!result){
-					this.setCheckResult("", "", 0,"相同的进入线、进入点不能创建两组大门");
+				if (!result) {
+					this.setCheckResult("", "", 0, "相同的进入线、进入点不能创建两组大门");
 					return;
 				}
 			}
-			//交限RdRestriction
-			else if(obj instanceof RdRestriction ){
-				RdRestriction rdRestriction = (RdRestriction)obj;
+			// 交限RdRestriction
+			else if (obj instanceof RdRestriction) {
+				RdRestriction rdRestriction = (RdRestriction) obj;
 				boolean result = checkRdRestriction(rdRestriction);
-				if(!result){
-					this.setCheckResult("", "", 0,"相同的进入线、进入点不能创建两组普通交限");
+				if (!result) {
+					this.setCheckResult("", "", 0, "相同的进入线、进入点不能创建两组普通交限");
 					return;
 				}
 			}
-			//顺行RdDirectroute
-			else if(obj instanceof RdDirectroute ){
-				RdDirectroute rdDirectroute = (RdDirectroute)obj;
+			// 修改交限退出线
+			else if (obj instanceof RdRestrictionDetail) {
+				RdRestrictionDetail rdRestrictionDetail = (RdRestrictionDetail) obj;
+				boolean result = checkRdRestriction(rdRestrictionDetail);
+				if (!result) {
+					this.setCheckResult("", "", 0, "相同进入线、进入点、退出线不能创建两组普通交限");
+					return;
+				}
+			}
+			// 顺行RdDirectroute
+			else if (obj instanceof RdDirectroute) {
+				RdDirectroute rdDirectroute = (RdDirectroute) obj;
 				boolean result = checkRdDirectroute(rdDirectroute);
-				if(!result){
-					this.setCheckResult("", "", 0,"相同的进入线、进入点不能创建两组顺行");
+				if (!result) {
+					this.setCheckResult("", "", 0, "相同的进入线、进入点不能创建两组顺行");
 					return;
 				}
 			}
-			//分岔口提示RdSe
-			else if(obj instanceof RdSe ){
-				RdSe rdSe = (RdSe)obj;
+			// 分岔口提示RdSe
+			else if (obj instanceof RdSe) {
+				RdSe rdSe = (RdSe) obj;
 				boolean result = checkRdSe(rdSe);
-				if(!result){
-					this.setCheckResult("", "", 0,"相同的进入线、进入点、退出线不能创建两组分叉口提示");
+				if (!result) {
+					this.setCheckResult("", "", 0, "相同的进入线、进入点、退出线不能创建两组分叉口提示");
 					return;
 				}
 			}
-			//收费站RdTollgate
-			else if(obj instanceof RdTollgate ){
-				RdTollgate rdTollgate = (RdTollgate)obj;
+			// 收费站RdTollgate
+			else if (obj instanceof RdTollgate) {
+				RdTollgate rdTollgate = (RdTollgate) obj;
 				boolean result = checkRdTollgate(rdTollgate);
-				if(!result){
-					this.setCheckResult("", "", 0,"相同的进入线、进入点不能创建两组收费站");
+				if (!result) {
+					this.setCheckResult("", "", 0, "相同的进入线、进入点不能创建两组收费站");
 					return;
 				}
 			}
-			//语音引导RdVoiceguide
-			else if(obj instanceof RdVoiceguide ){
-				RdVoiceguide rdVoiceguide = (RdVoiceguide)obj;
+			// 语音引导RdVoiceguide
+			else if (obj instanceof RdVoiceguide) {
+				RdVoiceguide rdVoiceguide = (RdVoiceguide) obj;
 				boolean result = checkRdVoiceguide(rdVoiceguide);
-				if(!result){
-					this.setCheckResult("", "", 0,"相同的进入线、进入点不能创建两组语音引导");
+				if (!result) {
+					this.setCheckResult("", "", 0, "相同的进入线、进入点不能创建两组语音引导");
 					return;
 				}
 			}
-			//车信RdLaneConnexity
-			else if(obj instanceof RdLaneConnexity ){
-				RdLaneConnexity rdLaneConnexity = (RdLaneConnexity)obj;
+			// 车信RdLaneConnexity
+			else if (obj instanceof RdLaneConnexity) {
+				RdLaneConnexity rdLaneConnexity = (RdLaneConnexity) obj;
 				boolean result = checkRdLaneConnexity(rdLaneConnexity);
-				if(!result){
-					this.setCheckResult("", "", 0,"相同的进入线、进入点不能创建两组车信");
+				if (!result) {
+					this.setCheckResult("", "", 0, "相同的进入线、进入点不能创建两组车信");
 					return;
 				}
 			}
@@ -132,11 +139,40 @@ public class RELATING_CHECK_NOSAME_LINE_LINE_RELATION extends baseRule {
 
 	}
 
-	
+	/**
+	 * @param rdRestrictionDetail
+	 * @return
+	 * @throws Exception
+	 */
+	private boolean checkRdRestriction(RdRestrictionDetail rdRestrictionDetail) throws Exception {
+		int restrictPid = rdRestrictionDetail.getRestricPid();
+
+		int outLinkPid = rdRestrictionDetail.getOutLinkPid();
+
+		StringBuilder sb = new StringBuilder();
+
+		sb.append("select detail_id from RD_RESTRICTION_detail where U_RECORD !=2 ");
+		sb.append(" and RESTRIC_PID = ");
+		sb.append(restrictPid);
+		sb.append(" and OUT_LINK_PID = ");
+		sb.append(outLinkPid);
+
+		String sql = sb.toString();
+
+		DatabaseOperator getObj = new DatabaseOperator();
+		List<Object> resultList = new ArrayList<Object>();
+		resultList = getObj.exeSelect(this.getConn(), sql);
+
+		if (resultList.size() > 0) {
+			return false;
+		}
+		return true;
+	}
+
 	/**
 	 * @param rdLaneConnexity
 	 * @return
-	 * @throws Exception 
+	 * @throws Exception
 	 */
 	private boolean checkRdLaneConnexity(RdLaneConnexity rdLaneConnexity) throws Exception {
 		// TODO Auto-generated method stub
@@ -152,12 +188,12 @@ public class RELATING_CHECK_NOSAME_LINE_LINE_RELATION extends baseRule {
 		sb.append(nodePid);
 
 		String sql = sb.toString();
-		
-        DatabaseOperator getObj=new DatabaseOperator();
-		List<Object> resultList=new ArrayList<Object>();
-		resultList=getObj.exeSelect(this.getConn(), sql);
-		
-		if (resultList.size()>0){
+
+		DatabaseOperator getObj = new DatabaseOperator();
+		List<Object> resultList = new ArrayList<Object>();
+		resultList = getObj.exeSelect(this.getConn(), sql);
+
+		if (resultList.size() > 0) {
 			return false;
 		}
 		return true;
@@ -166,7 +202,7 @@ public class RELATING_CHECK_NOSAME_LINE_LINE_RELATION extends baseRule {
 	/**
 	 * @param rdVoiceguide
 	 * @return
-	 * @throws Exception 
+	 * @throws Exception
 	 */
 	private boolean checkRdVoiceguide(RdVoiceguide rdVoiceguide) throws Exception {
 		// TODO Auto-generated method stub
@@ -182,12 +218,12 @@ public class RELATING_CHECK_NOSAME_LINE_LINE_RELATION extends baseRule {
 		sb.append(nodePid);
 
 		String sql = sb.toString();
-		
-        DatabaseOperator getObj=new DatabaseOperator();
-		List<Object> resultList=new ArrayList<Object>();
-		resultList=getObj.exeSelect(this.getConn(), sql);
-		
-		if (resultList.size()>0){
+
+		DatabaseOperator getObj = new DatabaseOperator();
+		List<Object> resultList = new ArrayList<Object>();
+		resultList = getObj.exeSelect(this.getConn(), sql);
+
+		if (resultList.size() > 0) {
 			return false;
 		}
 		return true;
@@ -196,7 +232,7 @@ public class RELATING_CHECK_NOSAME_LINE_LINE_RELATION extends baseRule {
 	/**
 	 * @param rdTollgate
 	 * @return
-	 * @throws Exception 
+	 * @throws Exception
 	 */
 	private boolean checkRdTollgate(RdTollgate rdTollgate) throws Exception {
 		// TODO Auto-generated method stub
@@ -212,12 +248,12 @@ public class RELATING_CHECK_NOSAME_LINE_LINE_RELATION extends baseRule {
 		sb.append(nodePid);
 
 		String sql = sb.toString();
-		
-        DatabaseOperator getObj=new DatabaseOperator();
-		List<Object> resultList=new ArrayList<Object>();
-		resultList=getObj.exeSelect(this.getConn(), sql);
-		
-		if (resultList.size()>0){
+
+		DatabaseOperator getObj = new DatabaseOperator();
+		List<Object> resultList = new ArrayList<Object>();
+		resultList = getObj.exeSelect(this.getConn(), sql);
+
+		if (resultList.size() > 0) {
 			return false;
 		}
 		return true;
@@ -226,7 +262,7 @@ public class RELATING_CHECK_NOSAME_LINE_LINE_RELATION extends baseRule {
 	/**
 	 * @param rdSe
 	 * @return
-	 * @throws Exception 
+	 * @throws Exception
 	 */
 	private boolean checkRdSe(RdSe rdSe) throws Exception {
 		// TODO Auto-generated method stub
@@ -245,12 +281,12 @@ public class RELATING_CHECK_NOSAME_LINE_LINE_RELATION extends baseRule {
 		sb.append(nodePid);
 
 		String sql = sb.toString();
-		
-        DatabaseOperator getObj=new DatabaseOperator();
-		List<Object> resultList=new ArrayList<Object>();
-		resultList=getObj.exeSelect(this.getConn(), sql);
-		
-		if (resultList.size()>0){
+
+		DatabaseOperator getObj = new DatabaseOperator();
+		List<Object> resultList = new ArrayList<Object>();
+		resultList = getObj.exeSelect(this.getConn(), sql);
+
+		if (resultList.size() > 0) {
 			return false;
 		}
 		return true;
@@ -259,7 +295,7 @@ public class RELATING_CHECK_NOSAME_LINE_LINE_RELATION extends baseRule {
 	/**
 	 * @param rdDirectroute
 	 * @return
-	 * @throws Exception 
+	 * @throws Exception
 	 */
 	private boolean checkRdDirectroute(RdDirectroute rdDirectroute) throws Exception {
 		// TODO Auto-generated method stub
@@ -275,12 +311,12 @@ public class RELATING_CHECK_NOSAME_LINE_LINE_RELATION extends baseRule {
 		sb.append(nodePid);
 
 		String sql = sb.toString();
-		
-        DatabaseOperator getObj=new DatabaseOperator();
-		List<Object> resultList=new ArrayList<Object>();
-		resultList=getObj.exeSelect(this.getConn(), sql);
-		
-		if (resultList.size()>0){
+
+		DatabaseOperator getObj = new DatabaseOperator();
+		List<Object> resultList = new ArrayList<Object>();
+		resultList = getObj.exeSelect(this.getConn(), sql);
+
+		if (resultList.size() > 0) {
 			return false;
 		}
 		return true;
@@ -289,7 +325,7 @@ public class RELATING_CHECK_NOSAME_LINE_LINE_RELATION extends baseRule {
 	/**
 	 * @param rdRestriction
 	 * @return
-	 * @throws Exception 
+	 * @throws Exception
 	 */
 	private boolean checkRdRestriction(RdRestriction rdRestriction) throws Exception {
 		// TODO Auto-generated method stub
@@ -305,30 +341,27 @@ public class RELATING_CHECK_NOSAME_LINE_LINE_RELATION extends baseRule {
 		sb.append(nodePid);
 
 		String sql = sb.toString();
-		
-        DatabaseOperator getObj=new DatabaseOperator();
-		List<Object> resultList=new ArrayList<Object>();
-		resultList=getObj.exeSelect(this.getConn(), sql);
-		
-		if (resultList.size()>0){
+
+		DatabaseOperator getObj = new DatabaseOperator();
+		List<Object> resultList = new ArrayList<Object>();
+		resultList = getObj.exeSelect(this.getConn(), sql);
+
+		if (resultList.size() > 0) {
 			return false;
 		}
 		return true;
 	}
 
-	private boolean checkRdBranch(RdBranch rdBranch) throws Exception{
+	private boolean checkRdBranch(RdBranch rdBranch) throws Exception {
 		int inLinkPid = rdBranch.getInLinkPid();
 		int outLinkPid = rdBranch.getOutLinkPid();
 		int nodePid = rdBranch.getNodePid();
-		RdBranchDetail detail=(RdBranchDetail) rdBranch.getDetails().get(0);
-		int branchType=detail.getBranchType();
+		RdBranchDetail detail = (RdBranchDetail) rdBranch.getDetails().get(0);
+		int branchType = detail.getBranchType();
 		StringBuilder sb = new StringBuilder();
-		sb.append("select rb.branch_pid"
-				+ "  from rd_branch rb, rd_branch_detail d"
-				+ " where rb.branch_pid = d.branch_pid"
-				+ "   AND d.branch_type="+branchType
-				+ "   AND RB.u_record != 2"
-				+ "   AND d.u_record != 2");
+		sb.append("select rb.branch_pid" + "  from rd_branch rb, rd_branch_detail d"
+				+ " where rb.branch_pid = d.branch_pid" + "   AND d.branch_type=" + branchType
+				+ "   AND RB.u_record != 2" + "   AND d.u_record != 2");
 		sb.append(" and rb.in_link_pid = ");
 		sb.append(inLinkPid);
 		sb.append(" and rb.out_link_pid = ");
@@ -337,45 +370,42 @@ public class RELATING_CHECK_NOSAME_LINE_LINE_RELATION extends baseRule {
 		sb.append(nodePid);
 
 		String sql = sb.toString();
-		
-        DatabaseOperator getObj=new DatabaseOperator();
-		List<Object> resultList=new ArrayList<Object>();
-		resultList=getObj.exeSelect(this.getConn(), sql);
-		
-		if (resultList.size()>0){
+
+		DatabaseOperator getObj = new DatabaseOperator();
+		List<Object> resultList = new ArrayList<Object>();
+		resultList = getObj.exeSelect(this.getConn(), sql);
+
+		if (resultList.size() > 0) {
 			return false;
 		}
 		return true;
 	}
-	
-	private boolean checkRdBranchDetail(RdBranchDetail rdBranchDetail) throws Exception{
-		int branchType=rdBranchDetail.getBranchType();
+
+	private boolean checkRdBranchDetail(RdBranchDetail rdBranchDetail) throws Exception {
+		int branchType = rdBranchDetail.getBranchType();
 		StringBuilder sb = new StringBuilder();
-		sb.append("select rb.branch_pid"
-				+ "  from rd_branch rb, rd_branch_detail d"
-				+ " where rb.branch_pid = d.branch_pid"
-				+ "   AND d.branch_type="+branchType
-				+ "   AND RB.u_record != 2"
-				+ "   AND d.u_record != 2");
+		sb.append("select rb.branch_pid" + "  from rd_branch rb, rd_branch_detail d"
+				+ " where rb.branch_pid = d.branch_pid" + "   AND d.branch_type=" + branchType
+				+ "   AND RB.u_record != 2" + "   AND d.u_record != 2");
 		sb.append(" and rb.branch_pid = ");
 		sb.append(rdBranchDetail.getBranchPid());
 
 		String sql = sb.toString();
-		
-        DatabaseOperator getObj=new DatabaseOperator();
-		List<Object> resultList=new ArrayList<Object>();
-		resultList=getObj.exeSelect(this.getConn(), sql);
-		
-		if (resultList.size()>0){
+
+		DatabaseOperator getObj = new DatabaseOperator();
+		List<Object> resultList = new ArrayList<Object>();
+		resultList = getObj.exeSelect(this.getConn(), sql);
+
+		if (resultList.size() > 0) {
 			return false;
 		}
 		return true;
 	}
-	
+
 	/**
 	 * @param rdGate
 	 * @return
-	 * @throws Exception 
+	 * @throws Exception
 	 */
 	private boolean checkRdGate(RdGate rdGate) throws Exception {
 		// TODO Auto-generated method stub
@@ -391,19 +421,23 @@ public class RELATING_CHECK_NOSAME_LINE_LINE_RELATION extends baseRule {
 		sb.append(nodePid);
 
 		String sql = sb.toString();
-		
-        DatabaseOperator getObj=new DatabaseOperator();
-		List<Object> resultList=new ArrayList<Object>();
-		resultList=getObj.exeSelect(this.getConn(), sql);
-		
-		if (resultList.size()>0){
+
+		DatabaseOperator getObj = new DatabaseOperator();
+		List<Object> resultList = new ArrayList<Object>();
+		resultList = getObj.exeSelect(this.getConn(), sql);
+
+		if (resultList.size() > 0) {
 			return false;
 		}
 		return true;
 	}
 
-	/* (non-Javadoc)
-	 * @see com.navinfo.dataservice.engine.check.core.baseRule#postCheck(com.navinfo.dataservice.dao.check.CheckCommand)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.navinfo.dataservice.engine.check.core.baseRule#postCheck(com.navinfo.
+	 * dataservice.dao.check.CheckCommand)
 	 */
 	@Override
 	public void postCheck(CheckCommand checkCommand) throws Exception {

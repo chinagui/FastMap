@@ -17,22 +17,29 @@ public class Process extends AbstractProcess<Command> {
 		super(command);
 	}
 
-	public Process(Command command, Result result, Connection conn) throws Exception {
-		super(command,result,conn);
+	public Process(Command command, Result result, Connection conn)
+			throws Exception {
+		super(command, result, conn);
 	}
 
 	@Override
 	public String exeOperation() throws Exception {
-		return new Operation(this.getCommand(), this.lcnode).run(this.getResult());
+		return new Operation(this.getCommand(), this.lcnode).run(this
+				.getResult());
 
 	}
 
 	@Override
 	public boolean prepareData() throws Exception {
+		if (this.getCommand().getNode() != null) {
+			this.lcnode = this.getCommand().getNode();
+			return true;
+		}
 
 		LcNodeSelector selector = new LcNodeSelector(this.getConn());
 
-		this.lcnode = (LcNode) selector.loadById(this.getCommand().getPid(), true);
+		this.lcnode = (LcNode) selector.loadById(this.getCommand().getPid(),
+				true);
 
 		return true;
 	}

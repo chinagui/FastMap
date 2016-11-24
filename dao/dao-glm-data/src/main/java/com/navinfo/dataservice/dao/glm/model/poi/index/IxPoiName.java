@@ -335,9 +335,9 @@ public class IxPoiName implements IObj {
 	public JSONObject Serialize(ObjLevel objLevel) throws Exception {
 		JSONObject json = JSONObject.fromObject(this, JsonUtils.getStrConfig());
 
-		if (objLevel == ObjLevel.HISTORY) {
-			json.remove("name");
-		}
+//		if (objLevel == ObjLevel.HISTORY) {
+//			json.remove("name");
+//		}
 
 		return json;
 	}

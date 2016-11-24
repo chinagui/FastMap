@@ -7,6 +7,7 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -14,11 +15,13 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.exception.DataNotChangeException;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
@@ -248,26 +251,31 @@ public class DeepCoreControl {
      * @throws Exception
      * @Gaopr POI深度信息作业保存
      */
-    @SuppressWarnings("null")
 	public JSONObject save(String parameter, long userId) throws Exception {
 
         Connection conn = null;
         JSONObject result = null;
+        
+        List<String> rowIdList = new ArrayList<String>();
+        List<Integer> pids = new ArrayList<Integer>();
+        
         try {
 
             JSONObject json = JSONObject.fromObject(parameter);
 
-            ObjType objType = Enum.valueOf(ObjType.class,
-                    json.getString("type"));
-
+            ObjType objType = Enum.valueOf(ObjType.class,"IXPOI");
             int dbId = json.getInt("dbId");
+            int objId = json.getInt("objId");
 
             conn = DBConnector.getInstance().getConnectionById(dbId);
 
             JSONObject poiData = json.getJSONObject("data");
-
+            
+            pids.add(objId);
+            rowIdList = getRowIdsByPids(conn,pids);
+            
             if (poiData.size() == 0) {
-                upatePoiStatus(json.getString("objId"), conn, 1);
+            	updateDeepStatus(rowIdList, conn, 0);
                 return result;
             }
             
@@ -278,21 +286,19 @@ public class DeepCoreControl {
             result = editApiImpl.runPoi(json);
             
             StringBuffer sb = new StringBuffer();
-            int pid = 0;
-            pid = result.getInt("pid");
-            sb.append(String.valueOf(pid));
-            
-            List<Integer> pids = null;
-            pids.add(pid);
+            sb.append(String.valueOf(objId));
 
             //更新数据状态
-            upatePoiStatus(sb.toString(), conn,1);
+            updateDeepStatus(rowIdList, conn, 0);
             //调用清理检查结果方法
             cleanCheckResult(pids,conn);
-            //执行检查
-            Object[] rules = new Object[] {"FM-ZY-20-152", "FM-ZY-20-153","FM-ZY-20-154","FM-ZY-20-155"};  
-            JSONArray checkResultList = (JSONArray) JSONSerializer.toJSON(rules);
-
+            
+    		//获取后检查需要执行规则列表
+    		List<String> fields = Arrays.asList("categorys", "subcategory");
+    		List<String> values = Arrays.asList("poi深度信息", "IX_POI_PARKING");
+			IxPoiDeepStatusSelector ixPoiDeepStatusSelector = new IxPoiDeepStatusSelector(conn);
+			JSONArray checkResultList = ixPoiDeepStatusSelector.getCheckRulesByCondition(fields,values);
+    		//执行检查
             deepCheckRun(pids,checkResultList,objType.toString(),"UPDATE",conn);
             
             return result;
@@ -310,35 +316,91 @@ public class DeepCoreControl {
     }
     
     /**
-     * poi操作修改poi状态为已作业，Flag 1 保存 1 提交
-     *
-     * @param pids
+     * @param parameter
+     * @param userId
+     * @return
+     * @throws Exception
+     * @Gaopr POI深度信息作业提交
+     */
+	public JSONObject release(String parameter, long userId) throws Exception {
+		
+		ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
+		
+		List<String> rowIdList = new ArrayList<String>();
+        Connection conn = null;
+        JSONObject result = new JSONObject();
+        int sucReleaseTotal = 0;
+        try {
+
+            JSONObject json = JSONObject.fromObject(parameter);
+
+            int dbId = json.getInt("dbId");
+            int subtaskId = json.getInt("subtaskId");
+            int type = json.getInt("type");
+
+            Subtask subtask = apiService.queryBySubtaskId(subtaskId);
+            conn = DBConnector.getInstance().getConnectionById(dbId);  
+			
+			// 查询可提交数据
+			IxPoiDeepStatusSelector ixPoiDeepStatusSelector = new IxPoiDeepStatusSelector(conn);
+			rowIdList = ixPoiDeepStatusSelector.getRowIdsForRelease(subtask,2, userId, type);
+			sucReleaseTotal = rowIdList.size();
+			
+			// 修改poi_deep_status表作业项状态
+			updateDeepStatus(rowIdList, conn, 1);
+			result.put("sucReleaseTotal", sucReleaseTotal);
+            return result;
+        } catch (DataNotChangeException e) {
+            DbUtils.rollback(conn);
+            logger.error(e.getMessage(), e);
+            throw e;
+        } catch (Exception e) {
+            DbUtils.rollback(conn);
+            logger.error(e.getMessage(), e);
+            throw e;
+        } finally {
+            DbUtils.commitAndClose(conn);
+        }
+    }
+    
+    /**
+     * 深度信息更新配置表状态 
+     * @param pids conn flag(0:保存 1:提交)
      * @throws Exception
      */
-    public void upatePoiStatus(String pids, Connection conn,int flag) throws Exception {
-        StringBuilder sb = new StringBuilder();
+	public void updateDeepStatus(List<String> rowIdList,Connection conn,int flag) throws Exception {
+		StringBuilder sb = new StringBuilder();
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");//设置日期格式
-        System.out.println(df.format(new Date()));// new Date()为获取当前系统时间
-
-        if (flag==1) {
-            sb.append(" UPDATE poi_deep_status T1 SET T1.status = 2 T1.update_date = "+df.format(new Date()));
+        
+        if (flag==0) {
+        	sb.append(" UPDATE poi_deep_status T1 SET T1.status = 2 , T1.update_date = to_date('"+df.format(new Date())+"','yyyy-mm-dd hh24:mi:ss') WHERE row_id in (");
         } else {
-        	sb.append(" UPDATE poi_deep_status T1 SET T1.status = 3 T1.update_date = "+df.format(new Date()));
+        	sb.append(" UPDATE poi_deep_status T1 SET T1.status = 3 , T1.update_date = to_date('"+df.format(new Date())+"','yyyy-mm-dd hh24:mi:ss') WHERE row_id in (");
         }
+		
+		PreparedStatement pstmt = null;
 
-
-        PreparedStatement pstmt = null;
-        try {
-            pstmt = conn.prepareStatement(sb.toString());
-            pstmt.executeUpdate();
-        } catch (Exception e) {
-            throw e;
-
-        } finally {
-            DBUtils.closeStatement(pstmt);
-        }
-
-    }
+		ResultSet resultSet = null;
+		try {
+			String temp="";
+			for (String rowId:rowIdList) {
+				sb.append(temp);
+				sb.append("'"+rowId+"'");
+				temp = ",";
+			}
+			sb.append(")");
+			
+			pstmt = conn.prepareStatement(sb.toString());
+			
+			pstmt.executeUpdate();
+			
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+	}
     
     
     /**
@@ -374,19 +436,19 @@ public class DeepCoreControl {
 				return 0;
 			}
 			
-			Timestamp time = new Timestamp(new Date().getTime());
+			SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 			
 			//实际申请到的数据rowIds
 			List<String> applyDataRowIds = new ArrayList<String>();
 			if (rowIds.size() >= canApply){
 				applyDataRowIds = rowIds.subList(0, canApply-1);
 				//数据加锁， 赋值handler，维护update_date
-				dataSetLock(conn, applyDataRowIds, userId, time);
+				dataSetLock(conn, applyDataRowIds, userId, df);
 				applyCount += applyDataRowIds.size();
 			}else{
 				//库里面查询出的数据量小于当前用户可申请的量，即锁定库中查询出的数据
 				applyDataRowIds = rowIds;
-				dataSetLock(conn, applyDataRowIds, userId, time);
+				dataSetLock(conn, applyDataRowIds, userId, df);
 				applyCount += applyDataRowIds.size();
 			}
 			
@@ -494,6 +556,44 @@ public class DeepCoreControl {
 			DbUtils.closeQuietly(pstmt);
 		}
 	}
+	/**
+	 * 根据pids 获取 RowIds
+	 * @param conn
+	 * @param rowIds
+	 * @return
+	 * @throws Exception 
+	 */
+	public List<String> getRowIdsByPids(Connection conn, List<Integer> pids) throws Exception{
+		List<String> rowIds = new ArrayList<String>();
+		StringBuilder sb = new StringBuilder();
+		sb.append("SELECT row_id FROM ix_poi WHERE pid in (");
+		String temp = "";
+		for (int pid:pids) {
+			sb.append(temp);
+			sb.append(pid);
+			temp = ",";
+		}
+		sb.append(")");
+		
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+			
+			resultSet = pstmt.executeQuery();
+			
+			while (resultSet.next()) {
+				rowIds.add(resultSet.getString("row_id"));
+			}
+			
+			return rowIds;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+	}
 	
 	
 	/**
@@ -501,12 +601,12 @@ public class DeepCoreControl {
 	 * @param conn
 	 * @param rowIds
 	 * @param userId
-	 * @param time
+	 * @param df
 	 * @throws Exception
 	 */
-	public void dataSetLock(Connection conn, List<String> rowIds, long userId,Timestamp time) throws Exception {
+	public void dataSetLock(Connection conn, List<String> rowIds, long userId,SimpleDateFormat df) throws Exception {
 		StringBuilder sb = new StringBuilder();
-		sb.append("UPDATE poi_deep_status SET handler=:1,update_date=:2 WHERE row_id in (");
+		sb.append("UPDATE poi_deep_status SET handler=:1,update_date= to_date('"+ df.format(new Date()) + "','yyyy-mm-dd hh24:mi:ss') WHERE row_id in (");
 		String temp = "";
 		for (String rowId:rowIds) {
 			sb.append(temp);
@@ -522,7 +622,6 @@ public class DeepCoreControl {
 			pstmt = conn.prepareStatement(sb.toString());
 
 			pstmt.setLong(1, userId);
-			pstmt.setTimestamp(2, time);
 			
 			pstmt.execute();
 			
@@ -559,6 +658,39 @@ public class DeepCoreControl {
 		} catch (Exception e) {
 			throw e;
 		}
+	}
+	
+	
+	/**
+	 * 深度信息查询poi
+	 * @param json
+	 * @param userId
+	 * @return
+	 * @throws Exception 
+	 */
+	public JSONObject queryPoi(JSONObject jsonReq, long userId) throws Exception{
+
+		JSONObject result = new JSONObject();
+		int subtaskId = jsonReq.getInt("subtaskId");
+		int dbId = jsonReq.getInt("dbId");
+
+		try {
+			ManApi apiService = (ManApi) ApplicationContextUtil.getBean("manApi");
+			Subtask subtask = apiService.queryBySubtaskId(subtaskId);
+			
+			if (subtask == null) {
+				throw new Exception("subtaskid未找到数据");
+			}
+			
+			Connection conn = DBConnector.getInstance().getConnectionById(dbId);
+			
+			IxPoiDeepStatusSelector deepSelector = new IxPoiDeepStatusSelector(conn);
+			result = deepSelector.loadDeepPoiByCondition(jsonReq, subtask, userId);
+			
+			return result;
+		} catch(Exception e) {
+			throw e;
+		} 
 	}
 	
 	public static void main(String[] args) throws Exception{

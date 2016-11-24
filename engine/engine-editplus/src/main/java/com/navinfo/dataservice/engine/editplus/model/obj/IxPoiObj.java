@@ -11,6 +11,7 @@ import com.navinfo.dataservice.engine.editplus.model.BasicRow;
 import com.navinfo.dataservice.engine.editplus.model.ixpoi.IxPoiAddress;
 import com.navinfo.dataservice.engine.editplus.model.ixpoi.IxPoiChargingplot;
 import com.navinfo.dataservice.engine.editplus.model.ixpoi.IxPoiChargingstation;
+import com.navinfo.dataservice.engine.editplus.model.ixpoi.IxPoiAddress;
 import com.navinfo.dataservice.engine.editplus.model.ixpoi.IxPoiContact;
 import com.navinfo.dataservice.engine.editplus.model.ixpoi.IxPoiGasstation;
 import com.navinfo.dataservice.engine.editplus.model.ixpoi.IxPoiHotel;
@@ -37,28 +38,24 @@ public class IxPoiObj extends AbstractIxObj {
 //	//子表
 //	protected List<BasicRow> ixPoiContact=null;
 
-	
-//	@Override
-//	public Map<Class<? extends BasicRow>, List<BasicRow>> childRows() {
-//		if(childrows==null){
-//			childrows=new HashMap<Class<? extends BasicRow>, List<BasicRow>>();
-//			childrows.put(IxPoiContact.class,contacts);
-//			//...
-//		}
-//		return childrows;
-//	}
-	
 
-//	@Override
-//	public Map<Class<? extends BasicObj>, List<BasicObj>> childObjs() {
-//		if(childobjs==null){
-//			childobjs=new HashMap<Class<? extends BasicObj>, List<BasicObj>>();
-//			childobjs.put(IxPoiName.class, names);
-//			childobjs.put(IxPoiAddress.class, addresses);
-//			//...
-//		}
-//		return childobjs;
-//	}
+/** 
+ * @ClassName: IxPoi
+ * @author xiaoxiaowen4127
+ * @date 2016年11月8日
+ * @Description: IxPoi.java
+ */
+public class IxPoiObj extends AbstractIxObj {
+
+	public IxPoiObj(BasicRow mainrow) {
+		super(mainrow);
+	}
+	public IxPoiName createIxPoiName()throws Exception{
+		return (IxPoiName)(ObjFactory.getInstance().createRow("IX_POI_NAME", this.objPid()));
+	}
+	public IxPoiAddress createIxPoiAddress()throws Exception{
+		return (IxPoiAddress)(ObjFactory.getInstance().createRow("IX_POI_ADDRESS", this.objPid()));
+	}
 	
 	/**
 	 * 根据名称分类,名称类型,语言代码获取名称内容

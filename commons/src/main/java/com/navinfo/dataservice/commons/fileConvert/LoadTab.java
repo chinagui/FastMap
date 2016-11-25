@@ -26,7 +26,7 @@ public class LoadTab {
 	 * 根据文件路径，需读取的列名，返回tab文件中的数据
 	 * @param filePath "D:/temp/block_tab2json/bj.TAB"
 	 * @param columnNameList 需要读取的列名list
-	 * @return List<Map<String,Object>> ：List<Map<列名,列值>>，坐标列固定为GEOMETRY,值域为wkt格式
+	 * @return List<Map<String,Object>> ：List<Map<列名,列值>>，坐标列固定为GEOMETRY,值域为wkt格式；返回值列名均大写
 	 * @throws Exception
 	 */
 	public static List<Map<String,Object>> readTab(String filePath,List<String> columnNameList) throws Exception{
@@ -97,7 +97,7 @@ public class LoadTab {
 	/**
 	 * 根据文件路径，返回tab文件中的所有数据
 	 * @param filePath "D:/temp/block_tab2json/bj.TAB"
-	 * @return List<Map<String,Object>> ：List<Map<列名,列值>>，坐标列固定为GEOMETRY,值域为wkt格式
+	 * @return List<Map<String,Object>> ：List<Map<列名,列值>>，坐标列固定为GEOMETRY,值域为wkt格式；返回值列名均大写
 	 * @throws Exception
 	 */
 	public static List<Map<String,Object>> readTabReturnAllData(String filePath) throws Exception{

@@ -32,9 +32,10 @@ public class Operation implements IOperation {
 
 	private Connection conn;
 
-	public Operation(Command command) {
+	public Operation(Command command,Connection conn) {
 		this.command = command;
 		this.rdInter = this.command.getRdInter();
+		this.conn = conn;
 	}
 
 	public Operation(Connection conn) {
@@ -47,7 +48,23 @@ public class Operation implements IOperation {
 		JSONObject content = command.getContent();
 
 		// 不编辑主表信息
-
+		JSONArray subNodeObj = content.getJSONArray("nodes");
+		
+		JSONArray subLinkObj = content.getJSONArray("links");
+		
+		if(subLinkObj.size() ==0 && subNodeObj.size() == 0)
+		{
+			com.navinfo.dataservice.engine.edit.operation.obj.rdinter.delete.Command command = new com.navinfo.dataservice.engine.edit.operation.obj.rdinter.delete.Command(
+					rdInter.getPid(),rdInter);
+			
+			com.navinfo.dataservice.engine.edit.operation.obj.rdinter.delete.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdinter.delete.Operation(
+					command,conn);
+			
+			operation.run(result);
+			
+			return null;
+		}
+		
 		// node子表
 		if (content.containsKey("nodes")) {
 			updateNode(result, content);

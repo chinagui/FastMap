@@ -12,10 +12,11 @@ public class Batch {
 	public static void run(BatchCommand batchCommand) throws Exception{
 		BatchExcuter excuter=new BatchExcuter();
 		for(String ruleId:batchCommand.getRuleId()){
-			//BatchRule rule=BatchRuleLoader.getInstance().loadByRuleId(ruleId);
-			BatchRule rule=new BatchRule();
+			BatchRule rule=BatchRuleLoader.getInstance().loadByRuleId(ruleId);
+			/*BatchRule rule=new BatchRule();
 			rule.setAccessorType("JAVA");
 			rule.setAccessor("com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.rule.GLM001TEST");
+			*/
 			excuter.exeRule(rule, batchCommand);
 		}
 	}

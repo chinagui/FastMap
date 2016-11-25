@@ -551,9 +551,12 @@ public class Operation implements IOperation {
 		variableSpeedOperation.breakLine(oldLink, newLinks, result);
 		// 详细车道维护
         com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation rdlaneOperation = new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation(this.conn);
-        rdlaneOperation.breakRdLink(oldLink.getPid(), newLinks, result);
+        rdlaneOperation.breakRdLink(oldLink, newLinks, result);
 
-
+        //tmc维护
+        com.navinfo.dataservice.engine.edit.operation.obj.tmc.update.Operation rdTmcLocationLinkOperation = new com.navinfo.dataservice.engine.edit.operation.obj.tmc.update.Operation(
+				this.conn);
+        rdTmcLocationLinkOperation.breakLinkUpdateTmc(result, oldLink, newLinks);
 	}
 
 }

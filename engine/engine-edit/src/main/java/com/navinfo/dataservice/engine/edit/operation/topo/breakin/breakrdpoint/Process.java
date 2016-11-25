@@ -600,7 +600,7 @@ public class Process extends AbstractProcess<Command> {
         log.info("交叉口USE TIME  " + String.valueOf(refRdCrossTime - refHgwgTime));
         //维护详细车道信息
         OpRefRdLane opRefRdLane = new OpRefRdLane(this.getConn());
-        opRefRdLane.run(this.getResult(), oldLinkPid, this.getCommand()
+        opRefRdLane.run(this.getResult(), this.getCommand().getBreakLink(), this.getCommand()
                 .getNewLinks());
         long refRdLaneTime = System.currentTimeMillis();
         log.info("详细车道USE TIME    " + String.valueOf(refRdLaneTime - refRdCrossTime));

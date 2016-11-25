@@ -36,7 +36,7 @@ public abstract class BasicBatchRule {
 		return rows;
 	}
 	
-	public void run(){
+	public void run() throws Exception{
 		for(String objName:this.objNameList){
 			Map<Long, BasicObj> rows=getRowList();
 				for(Long key:rows.keySet()){
@@ -46,7 +46,7 @@ public abstract class BasicBatchRule {
 			}
 		}
 	
-	public abstract void runBatch(String objName,BasicObj obj);
+	public abstract void runBatch(String objName,BasicObj obj) throws Exception;
 
 	public BatchCommand getBatchCommand() {
 		return batchCommand;

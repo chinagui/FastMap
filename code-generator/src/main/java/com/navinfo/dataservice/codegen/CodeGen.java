@@ -122,7 +122,7 @@ public class CodeGen {
 //	 	codeGen.genModel();
 //	    }
 	 public static void main(String[] args) throws Exception {
-		    Table table = new Table("jdbc:oracle:thin:@192.168.4.61:1521/orcl","fm_regiondb_sp6_d_1","fm_regiondb_sp6_d_1","ix_poi_carrental");
+		    Table table = new Table("jdbc:oracle:thin:@192.168.4.61:1521/orcl","fm_regiondb_sp6_d_1","fm_regiondb_sp6_d_1","IX_POI_CARRENTAL");
 		    CodeGen codeGen = new CodeGen("com.navinfo.dataservice.engine.editplus.model.ixpoi",table,"E:\\Users\\songdongyan\\fm_road\\DataService\\engine\\engine-editplus\\src\\main\\java");
 //	 	codeGen.genController();
 //		 	codeGen.genService();

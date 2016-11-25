@@ -55,8 +55,10 @@ public class RdLinkTest extends InitApplication {
 
 	@Test
 	public void testRepairLink() {
-		// {"command":"REPAIR","dbId":19,"objId":206002732,"data":{"geometry":{"type":"LineString","coordinates":[[116.49890139698982,40.07775023545874],[116.49942710995674,40.07774818310886]]},"catchInfos":[{"nodePid":203001965,"longitude":116.49890139698982,"latitude":40.07775023545874},{"nodePid":307001986,"longitude":116.49942710995674,"latitude":40.07774818310886}]},"type":"RDLINK"}
-		String parameter = "{\"command\":\"REPAIR\",\"type\":\"RDLINK\",\"dbId\":19,\"objId\":206002732,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.49890139698982,40.07775023545874],[116.49942710995674,40.07774818310886]]},\"catchInfos\":[{\"nodePid\":203001965,\"longitude\":116.49890139698982,\"latitude\":40.07775023545874},{\"nodePid\":307001986,\"longitude\":116.49942710995674,\"latitude\":40.07774818310886}]}}";
+		
+		//{"command":"REPAIR","dbId":17,"objId":305002831,"data":{"geometry":{"type":"LineString","coordinates":[[118.17572,38.25],[118.1748354434967,38.250945762552064],[118.17482,38.25]]},"interLinks":[],"interNodes":[]},"type":"RDLINK"}
+		// {"command":"REPAIR","dbId":17,"objId":305002831,"data":{"geometry":{"type":"LineString","coordinates":[[118.17572,38.25],[118.1748354434967,38.250945762552064],[118.17482,38.25]]},"catchInfos":[{"nodePid":203001965,"longitude":116.49890139698982,"latitude":40.07775023545874},{"nodePid":307001986,"longitude":116.49942710995674,"latitude":40.07774818310886}]},"type":"RDLINK"}
+		String parameter = "{\"command\":\"REPAIR\",\"type\":\"RDLINK\",\"dbId\":17,\"objId\":305002831,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[118.17572,38.25],[118.1748354434967,38.250945762552064],[118.17482,38.25]]},\"interLinks\":[],\"interNodes\":[]},\"type\":\"RDLINK\"}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

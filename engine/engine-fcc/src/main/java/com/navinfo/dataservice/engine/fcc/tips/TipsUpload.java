@@ -427,6 +427,7 @@ public class TipsUpload {
 					put = insertPut(rowkey, json);
 				}
 
+				
 				JSONObject solrIndex = TipsUtils.generateSolrIndex(json,currentDate);
 
 				solr.addTips(solrIndex);

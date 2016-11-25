@@ -27,6 +27,9 @@ public class SpeedLimitUtils {
     }
 
     public static void updateRdLink(RdLink rdLink, JSONObject json, Result result) {
+        if (json.containsKey("speedlimits")) {
+            return;
+        }
         boolean kindChange = false, laneChange = false, directChange = false, formChange = false, urbanChange = false;
         RdLink link = new RdLink();
         link.copy(rdLink);
@@ -82,7 +85,7 @@ public class SpeedLimitUtils {
                     if (formJSON.containsKey("objStatus")) {
                         String objStatus = formJSON.getString("objStatus");
                         if (ObjStatus.UPDATE.equals(Enum.valueOf(ObjStatus.class, objStatus))) {
-                            if (isWalkigWay(formJSON.getInt("formOfWay"))) {
+                            if (formJSON.containsKey("formOfWay") && isWalkigWay(formJSON.getInt("formOfWay"))) {
                                 formChange = true;
                                 if (0 == newForm || newForm < formJSON.getInt("formOfWay")) {
                                     newForm = formJSON.getInt("formOfWay");
@@ -91,7 +94,7 @@ public class SpeedLimitUtils {
                             }
                         }
                     } else {
-                        if (isWalkigWay(formJSON.getInt("formOfWay"))) {
+                        if (formJSON.containsKey("formOfWay") && isWalkigWay(formJSON.getInt("formOfWay"))) {
                             formChange = true;
                             if (0 == newForm || newForm < formJSON.getInt("formOfWay")) {
                                 newForm = formJSON.getInt("formOfWay");
@@ -267,11 +270,15 @@ public class SpeedLimitUtils {
                 RdLinkSpeedlimit limit = (RdLinkSpeedlimit) row;
                 if (0 == limit.getSpeedType()) {
                     if (0 != speedLimit[0]) {
-                        limit.changedFields().put("fromSpeedLimit", speedLimit[0]);
-                        limit.changedFields().put("toSpeedLimit", speedLimit[0]);
+                        if (link.getDirect() != 3)
+                            limit.changedFields().put("fromSpeedLimit", speedLimit[0]);
+                        if (link.getDirect() != 2)
+                            limit.changedFields().put("toSpeedLimit", speedLimit[0]);
                     } else {
-                        limit.changedFields().put("fromSpeedLimit", speedLimit[1]);
-                        limit.changedFields().put("toSpeedLimit", speedLimit[2]);
+                        if (link.getDirect() != 3)
+                            limit.changedFields().put("fromSpeedLimit", speedLimit[1]);
+                        if (link.getDirect() != 2)
+                            limit.changedFields().put("toSpeedLimit", speedLimit[2]);
                     }
                     result.insertObject(limit, ObjStatus.UPDATE, limit.parentPKValue());
                 }

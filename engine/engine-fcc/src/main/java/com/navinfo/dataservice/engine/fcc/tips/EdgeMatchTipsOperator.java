@@ -8,7 +8,6 @@ import java.util.List;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
-
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.Delete;
@@ -20,7 +19,6 @@ import org.apache.log4j.Logger;
 import org.apache.solr.client.solrj.SolrServerException;
 
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
-import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
@@ -29,6 +27,8 @@ import com.navinfo.dataservice.dao.fcc.SolrController;
 public class EdgeMatchTipsOperator {
 
 	private SolrController solr = new SolrController();
+	
+	static String S_SOURCETYPE="8002";//接边标识tips类型
 
 	private static final Logger logger = Logger
 			.getLogger(EdgeMatchTipsOperator.class);
@@ -52,7 +52,7 @@ public class EdgeMatchTipsOperator {
 	 * @throws Exception
 	 * @time:2016-11-15 上午11:03:20
 	 */
-	public void create(String sourceType, JSONObject g_location, String content, int user, String memo) throws Exception {
+	public void create( JSONObject g_location, String content, int user, String memo) throws Exception {
 
 		Connection hbaseConn;
 		try {
@@ -61,11 +61,11 @@ public class EdgeMatchTipsOperator {
 					.valueOf(HBaseConstant.tipTab));
 
 			// 1.rowkey
-			String rowkey = TipsUtils.getNewRowkey(sourceType);
+			String rowkey = TipsUtils.getNewRowkey(S_SOURCETYPE);
 
 			// 2.feedback
 			String operateDate = DateUtils.dateToString(new Date(),
-					"yyyyMMddhhmmss");
+					DateUtils.DATE_COMPACTED_FORMAT);
 
 			JSONObject feedbackObj = new JSONObject();
 
@@ -85,11 +85,8 @@ public class EdgeMatchTipsOperator {
 				f_array.add(newFeedback2);
 			}
 			
-
 			feedbackObj.put("f_array", f_array);
 			
-			
-			//feedbackObj.put("f_array", feedback);
 			
 			// 3.track
 			int stage = 2;
@@ -102,7 +99,7 @@ public class EdgeMatchTipsOperator {
 			int t_inStatus = 0;
 			int t_inMeth = 1;
 
-			JSONObject jsonTrack = TipsUtils.generateTrackJson(t_lifecycle,
+			JSONObject jsonTrack = TipsUtils.generateTrackJson(t_lifecycle,stage,
 					user, t_command, null, operateDate, t_cStatus, t_dStatus,
 					t_mStatus, t_inStatus, t_inMeth);
 
@@ -119,7 +116,7 @@ public class EdgeMatchTipsOperator {
 			source.put("s_project", JSONNull.getInstance());
 			source.put("s_sourceCode", s_sourceCode);
 			source.put("s_sourceId", JSONNull.getInstance());
-			source.put("s_sourceType", sourceType);
+			source.put("s_sourceType", S_SOURCETYPE);
 			source.put("s_reliability", 100);
 			source.put("s_sourceProvider", 0);
 
@@ -153,7 +150,7 @@ public class EdgeMatchTipsOperator {
 
 			JSONObject solrIndex = TipsUtils.generateSolrIndex(rowkey, stage,
 					operateDate, operateDate, t_lifecycle, t_command, user,
-					t_cStatus, t_dStatus, t_mStatus, sourceType, s_sourceCode,
+					t_cStatus, t_dStatus, t_mStatus, S_SOURCETYPE, s_sourceCode,
 					null, g_location, null, f_array, s_reliability);
 
 			solr.addTips(solrIndex);
@@ -200,7 +197,7 @@ public class EdgeMatchTipsOperator {
 
 			JSONArray trackInfoArr = track.getJSONArray("t_trackInfo");
 
-			String date = DateUtils.dateToString(new Date(), "yyyyMMddhhmmss");
+			String date = DateUtils.dateToString(new Date(), "yyyyMMddHHmmss");
 
 			// 新增一个trackInfo
 			JSONObject jsonTrackInfo = new JSONObject();
@@ -224,17 +221,16 @@ public class EdgeMatchTipsOperator {
 
 			JSONArray f_array = feedBack.getJSONArray("f_array");
 
-			int count = 0;
 
 			for (Object object : f_array) {
 
 				JSONObject obj = JSONObject.fromObject(object);
+				
+				//先删掉
 
 				if (obj.getInt("type") == 3) {
-
-					obj.put("content", memo);
-
-					count++;
+					
+					f_array.remove(obj);
 
 					break;
 				}
@@ -243,14 +239,10 @@ public class EdgeMatchTipsOperator {
 
 			int type = 3; // 文字
 
-			if (count == 0) {
-				String operateDate = DateUtils.dateToString(new Date(),
-						"yyyyMMddhhmmss");
-				JSONObject newFeedback = TipsUtils.newFeedback(user, memo, type,
-						operateDate);
+			JSONObject newFeedback = TipsUtils.newFeedback(user, memo, type,
+					date);
 
-				f_array.add(newFeedback);
-			}
+			f_array.add(newFeedback);
 
 			// 更新feedback
 			feedBack.put("f_array", f_array);
@@ -327,7 +319,7 @@ public class EdgeMatchTipsOperator {
 				String track = new String(result.getValue("data".getBytes(),
 						"track".getBytes()));
 
-				jo.putAll(JSONObject.fromObject(track));
+				jo.put("track",track);
 
 				if (result.containsColumn("data".getBytes(),
 						"feedback".getBytes())) {

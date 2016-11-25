@@ -297,8 +297,15 @@ public class Geojson {
 							JsonConfig arg2) {
 
 						try {
-							return GeoTranslator.jts2Geojson((Geometry) arg1,
-									scale, precision);
+							if(arg1 != null)
+							{
+								return GeoTranslator.jts2Geojson((Geometry) arg1,
+										scale, precision);
+							}
+							else
+							{
+								return "";
+							}
 						} catch (JSONException e) {
 							logger.error(LoggerConstant.errorGeometry, e);
 							return null;

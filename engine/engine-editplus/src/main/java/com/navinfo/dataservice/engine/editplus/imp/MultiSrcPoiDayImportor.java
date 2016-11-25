@@ -50,20 +50,68 @@ public class MultiSrcPoiDayImportor implements JsonImportor {
 		}
 		return null;
 	}
+	
+	/**
+	 * 新增数据解析
+	 * @author Han Shaoming
+	 * @param conn
+	 * @param jo
+	 * @return
+	 * @throws Exception
+	 */
 	public IxPoiObj improtAdd(Connection conn,JSONObject jo)throws Exception{
 		IxPoiObj poiObj = (IxPoiObj) ObjFactory.getInstance().create(ObjectType.IX_POI, true);
+		//新增数据解析
 		this.importByJson(poiObj, jo);
+		//处理父子关系
+		this.handleAddFatherson(conn,poiObj, jo);
 		return poiObj;
 	}
+	
+	/**
+	 * 修改数据解析
+	 * @author Han Shaoming
+	 * @param conn
+	 * @param jo
+	 * @return
+	 * @throws Exception
+	 */
 	public IxPoiObj improtUpdate(Connection conn,JSONObject jo)throws Exception{
 		//ObjSelector.selectByPid(conn, ObjectType.IX_POI,MultiSrcPoiSelectorConfig.getInstance() , pid, isOnlyMain, isLock);
 		return null;
 	}
+	
+	/**
+	 * 删除数据解析
+	 * @author Han Shaoming
+	 * @param conn
+	 * @param jo
+	 * @return
+	 * @throws Exception
+	 */
 	public IxPoiObj improtDelete(Connection conn,JSONObject jo)throws Exception{
 		return null;
 	}
 	
-	public void handleFatherson(List<BasicObj> objs){
+	/**
+	 * 处理新增数据父子关系
+	 * @author Han Shaoming
+	 * @param objs
+	 */
+	public void handleAddFatherson(Connection conn,BasicObj obj,JSONObject jo){
+		String fatherson = jo.getString("fatherson");
+		//当前POIA为新增，fathersion对应的POIB也为新增
+		//当前POIA为新增，fathersion对应的POIB为修改或多源TXT中不存在但存在日库中(非删除),且POIB是其它POI的父
+		//当前POIA为新增，fathersion对应的POIB为修改或多源TXT中不存在但存在日库中(非删除),且POIB不是父
+		//当前POIA为新增，fathersion对应的POIB也为删除或多源TXT中不存在但日库中已逻辑删除,不处理
+	}
+	
+	/**
+	 * 处理修改数据父子关系
+	 * @author Han Shaoming
+	 * @param objs
+	 */
+	public void handleUpdateFatherson(List<BasicObj> objs){
 		
 	}
 	 
@@ -155,10 +203,9 @@ public class MultiSrcPoiDayImportor implements JsonImportor {
 					IxPoiAddress ixPoiAddress = poi.createIxPoiAddress();
 					ixPoiAddress.setFullname(address);
 				}
+				
 				//父子关系
-				if(jo.getString("fatherson") != null){
-					String fatherson = jo.getString("fatherson");
-				}
+				
 				//POI等级--POI 等级 LEVEL
 				String level = jo.getString("level");
 				ixPoi.setLevel(level);

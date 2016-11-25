@@ -99,7 +99,7 @@ public class IxPoiSelector {
 	}
 	
 	/**
-	 * 根据regionId查询IxPoiChildren数据
+	 * 根据regionId查询adAdmin数据
 	 * @author Han Shaoming
 	 * @param conn
 	 * @param regionId
@@ -113,6 +113,29 @@ public class IxPoiSelector {
 			String sql = "SELECT * FROM AD_ADMIN WHERE REGION_ID=?";
 			Object[] params = {regionId};
 			msgs = queryRunner.query(conn, sql, new AdminHandler(),params);
+			return msgs;
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询失败，原因为:"+e.getMessage(),e);
+		}
+	}
+	
+	/**
+	 * PARENT_POI_PID查询IX_POI表(非删除)
+	 * @author Han Shaoming
+	 * @param conn
+	 * @param parentPoiId
+	 * @return
+	 * @throws ServiceException
+	 */
+	public static List<Map<String,Object>> getIxPoiByPid(Connection conn,long parentPoiId) throws ServiceException{
+		List<Map<String,Object>> msgs = null;
+		try{
+			QueryRunner queryRunner = new QueryRunner();
+			String sql = "SELECT * FROM IX_POI WHERE PID=? AND U_RECORD IN(0,1,3)";
+			Object[] params = {parentPoiId};
+			msgs = queryRunner.query(conn, sql, new IxPoiHandler(),params);
 			return msgs;
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -168,6 +191,20 @@ public class IxPoiSelector {
 				msg.put("adminId",rs.getLong("ADMIN_ID"));
 				msg.put("extendId",rs.getLong("EXTEND_ID"));
 				msg.put("adminType",rs.getLong("ADMIN_TYPE"));
+				msgs.add(msg);
+			}
+			return msgs;
+		}
+	}
+	
+	static class IxPoiHandler implements ResultSetHandler<List<Map<String,Object>>>{
+		public List<Map<String,Object>> handle(ResultSet rs) throws SQLException {
+			List<Map<String,Object>> msgs = new ArrayList<Map<String,Object>>();
+			while(rs.next()){
+				Map<String,Object> msg = new HashMap<String,Object>();
+				msg.put("pid",rs.getLong("PID"));
+				msg.put("kindCode",rs.getLong("KIND_CODE"));
+				msg.put("poiNum",rs.getLong("POI_NUM"));
 				msgs.add(msg);
 			}
 			return msgs;

@@ -1,6 +1,5 @@
 package com.navinfo.dataservice.cop.waistcoat.job;
 
-
 import com.navicop.navinfo.check.dms.NaviCopCheckEntry;
 import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
@@ -42,9 +41,12 @@ public class CheckCoreJob extends AbstractJob {
 //        	System.out.println("元数据库:" + checkParams.getCheckUserName()+"  "+ checkParams.getCheckPasswd()+" "+checkParams.getCheckHost());
 //        	System.out.println("kdb: "+  checkParams.getKdbUserName()+"  "+checkParams.getKdbPasswd()+"  "+ checkParams.getKdbHost());
             String taskName = getRandomString(32);
+          //  System.out.println("TaskName:" + taskName);
             checkResult = checkMgr.prepareCheck(taskName, checkParams.getCheckUserName(), checkParams.getCheckPasswd(),
                     checkParams.getCheckHost(), checkParams.getCheckPort(), checkParams.getCheckSid(), checkParams.getKdbUserName(),
                     checkParams.getKdbPasswd(), checkParams.getKdbHost(), checkParams.getKdbPort(), checkParams.getKdbSid(), checkRuleIds, timeOut, null);
+                    
+            //System.out.println(checkResult);
 
             if (checkResult.indexOf("<code>0</code>") > 0) {
                     checkResult = "环境检测失败";

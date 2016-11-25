@@ -95,7 +95,7 @@ public class RdNameImportTest {
 	}
 	
 	
-	//@Test
+	@Test
 	public void testGetRdName()
 	{
 		String parameter = "{\"subtaskId\":76,\"pageNum\":1,\"pageSize\":20,\"sortby\":\"\",\"flag\":1,\"params\":{\"name\":\"\",\"nameGroupid\":\"\",\"adminId\":\"\"}}";
@@ -130,7 +130,7 @@ public class RdNameImportTest {
 		}
 	}
 	
-	@Test
+	//@Test
 	public void testGetRdNameOneByNameID(){
 		String parameter ="{'nameId':'647497'}";
 		JSONObject jsonReq = JSONObject.fromObject(parameter);

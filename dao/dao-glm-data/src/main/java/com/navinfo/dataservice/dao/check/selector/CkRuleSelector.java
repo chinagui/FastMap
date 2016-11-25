@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
 import org.apache.commons.dbutils.DbUtils;
+import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 
@@ -91,6 +92,42 @@ public class CkRuleSelector extends AbstractSelector {
 		}
 	}
 	
-	
+	/**
+	 * 根据type查询检查项信息
+	 * @param suiteArray
+	 * @return
+	 */
+	public JSONArray getRulesByType(Integer type) throws Exception {
+		JSONArray result = new JSONArray();
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		
+		try {
+			StringBuilder sb = new StringBuilder();
+			sb.append("select distinct c.rule_code from ck_rule_cop c ");
+			sb.append(" where c.rule_status=1 and c.suite_id in (");
+			sb.append(" select a.suite_id from ck_suite_cop a  ");
+			if(type != null && StringUtils.isNotEmpty(type.toString())){
+				sb.append("where a.feature=2");
+			}
+			sb.append(") order by c.rule_code ");
+			
+			sb.append("order by c.suite_id");
+			
+			pstmt = conn.prepareStatement(sb.toString());
+			resultSet = pstmt.executeQuery();
+			while (resultSet.next()) {
+				JSONObject data = new JSONObject();
+				data.put("ruleCode", resultSet.getString("rule_code"));
+				result.add(data);
+			}
+			return result;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+	}
 
 }

@@ -133,7 +133,7 @@ public class CheckController extends BaseController {
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 			int subtaskId = jsonReq.getInt("subtaskId");
-			
+			Integer type = jsonReq.getInt("type");
 			ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
 			
 			Subtask subtask = apiService.queryBySubtaskId(subtaskId);
@@ -143,11 +143,15 @@ public class CheckController extends BaseController {
 			}
 			
 			FccApi apiFcc=(FccApi) ApplicationContextUtil.getBean("fccApi");
-			
+			//获取子任务范围内的tips
 			JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(),1901,new JSONArray());
-			Page page = niValExceptionSelector.listCheckResults(jsonReq,tips);
+			//获取规则号
+			JSONArray ruleCodes = CheckService.getInstance().getCkRuleCodes(type);
+			
+			Page page = niValExceptionSelector.listCheckResults(jsonReq,tips,ruleCodes);
 			logger.info("end check/list");
-
+			System.out.println(page.getResult());
+			System.out.println(page.getTotalCount());
 			return new ModelAndView("jsonView", success(page));
 
 		} catch (Exception e) {

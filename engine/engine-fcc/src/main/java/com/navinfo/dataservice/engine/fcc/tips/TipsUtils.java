@@ -4,7 +4,6 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
 
-import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 
 /**
@@ -29,7 +28,7 @@ public class TipsUtils {
 	 * @param t_mStatus
 	 * @return
 	 */
-	public static JSONObject generateTrackJson(int lifecycle, int handler,
+	public static JSONObject generateTrackJson(int lifecycle,int stage, int handler,
 			int command, JSONArray oldTrackInfo, String t_operateDate,
 			int t_cStatus, int t_dStatus, int t_mStatus, int t_inStatus,
 			int t_inMeth) {
@@ -54,7 +53,7 @@ public class TipsUtils {
 
 		JSONObject jsonTrackInfo = new JSONObject();
 
-		jsonTrackInfo.put("stage", 1);
+		jsonTrackInfo.put("stage", stage);
 
 		jsonTrackInfo.put("date", t_inMeth);
 
@@ -180,15 +179,30 @@ public class TipsUtils {
 		index.put("s_sourceType", sourceType);
 
 		index.put("s_sourceCode", s_sourceCode);
+		
+		if(g_guide==null){
+			
+			index.put("g_guide", JSONNull.getInstance());
+		}else{
+			
+			index.put("g_guide", g_guide);
+		}
 
-		index.put("g_guide", g_guide);
+		if(g_location==null){
+			
+			index.put("g_location", JSONNull.getInstance());
+		}else{
+			
+			index.put("g_location", g_location);
+		}
 
-		index.put("g_location", g_location);
 
 		if (deep != null && !deep.isNullObject()) {
+			
 			index.put("deep", deep.toString());
 		} else {
-			index.put("deep", "");
+			
+			index.put("deep", JSONNull.getInstance());
 		}
 
 		index.put("feedback", feedBackArr.toString());

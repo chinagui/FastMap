@@ -42,9 +42,16 @@ public class Column {
 	 * @param type2
 	 * @return
 	 */
+//	private String initJavaType(int type2) {
+//		switch (type2)  {
+//			case 2:return "Integer";
+//			case 12:return "String";
+//			default:return "Object";
+//		}
+//	}
 	private String initJavaType(int type2) {
 		switch (type2)  {
-			case 2:return "Integer";
+			case 2:return "int";
 			case 12:return "String";
 			default:return "Object";
 		}

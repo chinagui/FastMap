@@ -22,15 +22,12 @@ public class GLM001TEST extends BasicCheckRule {
 			IxPoi poiObj=(IxPoi) obj.getMainrow();
 			Map<String, Object> oldValueMap=poiObj.getOldValues();
 			if(!oldValueMap.containsKey("KIND_CODE")){return;}
-			poiObj.setKindCode("test124");
 			List<BasicRow> subRows=obj.getRowsByName("IX_POI_NAME");
 			for(BasicRow br:subRows){
 				if(br.getObjType().equals("UPDATE")){
+					this.setCheckResult(poiObj.getGeometry(), "[IX_POI,"+poiObj.getPid()+"]", poiObj.getMeshId());
 				}
 			}
-			IxPoiObj ixpoiObj = (IxPoiObj)obj;
-			IxPoiName name = ixpoiObj.createIxPoiName();
-			name.setLangCode("CHI");
 		}else if(objName.equals("IX_POI_NAME")){}
 	}
 

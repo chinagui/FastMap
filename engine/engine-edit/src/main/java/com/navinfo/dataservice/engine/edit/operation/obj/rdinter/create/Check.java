@@ -106,6 +106,7 @@ public class Check {
 		{
 			for(RdLink link : linkList)
 			{
+				//特殊交通可以制作
 				if(link.getSpecialTraffic() == 1)
 				{
 					return;
@@ -123,7 +124,7 @@ public class Check {
 							break;
 						}
 					}
-					//包含环岛属性
+					//非特殊交通也不包含环岛属性报log
 					if(!has33Form)
 					{
 						throw new Exception("CRFI中的Link："+link.getPid()+"无IMI属性且无环岛或特殊交通类型[GLM28009]");

@@ -12,14 +12,12 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.engine.editplus.model.BasicRow;
 import com.navinfo.dataservice.engine.editplus.model.obj.BasicObj;
 import com.navinfo.dataservice.engine.editplus.model.obj.BasicObjGrid;
-import com.navinfo.dataservice.engine.editplus.model.obj.ObjFactory;
 import com.navinfo.dataservice.engine.editplus.model.selector.ObjSelector;
 import com.navinfo.dataservice.engine.editplus.operation.OperationType;
 import com.vividsolutions.jts.geom.Geometry;
@@ -109,6 +107,7 @@ public class LogGenerator {
 		return perstmtList;
 	}
 	/**
+	 * 生成log_detail插入preparedStatement
 	 * @param conn
 	 * @param basicObj
 	 * @param subrow
@@ -166,6 +165,7 @@ public class LogGenerator {
 		
 	}
 	/**
+	 * 生成log_detail_grid插入preparedStatement
 	 * @param conn
 	 * @param basicObj
 	 * @param subrow
@@ -198,6 +198,11 @@ public class LogGenerator {
 	
 	
 	public static void writeLog(Connection conn,Collection<BasicObj> basicObjs,String opCmd,int opSg,long userId)throws Exception{
-		//...
+		//获得log PreparedStatement list
+		List<PreparedStatement> preparedStatementList = LogGenerator.generate(conn, basicObjs, opCmd, opSg, userId);
+		//执行log preparedStatement List
+		for(PreparedStatement preparedStatement:preparedStatementList){
+			preparedStatement.executeBatch();
+		}
 	}
 }

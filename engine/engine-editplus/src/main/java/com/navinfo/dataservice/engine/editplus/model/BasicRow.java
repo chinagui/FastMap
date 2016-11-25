@@ -202,7 +202,8 @@ public abstract class BasicRow implements Logable{
 				updateColumns.put(entry.getKey(), glmTable.getColumByName(entry.getKey()));
 			}
 			//字段信息
-			assembleColumnInfo(tab.getColumns(),columnName,columnPlaceholder,columnValues,OperationType.UPDATE);
+			assembleColumnInfo(updateColumns,columnName,columnPlaceholder,columnValues,OperationType.UPDATE);
+//			assembleColumnInfo(tab.getColumns(),columnName,columnPlaceholder,columnValues,OperationType.UPDATE);
 			//更新记录：新增
 			columnName.add("U_RECORD=?");
 			columnPlaceholder.add("?");
@@ -249,6 +250,7 @@ public abstract class BasicRow implements Logable{
 					columnValues.add(UuidUtils.genUuid());
 					continue;
 				}
+				Object temp = getAttrByColName(entry.getKey());
 				columnValues.add(getAttrByColName(entry.getKey()));
 			}else if(glmColumn.getType().equals(GlmColumn.TYPE_TIMESTAMP)){
 				DateFormat format = new java.text.SimpleDateFormat("yyyy-MM-dd hh:mm:ss");

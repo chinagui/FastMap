@@ -21,6 +21,7 @@ public class Command extends AbstractCommand {
 	private String requester;
 	private int inNodePid;// 进入点
 	private int outLinkPid;// 退出线
+	private double length;// 总长度
 	private List<Integer> seriesLinkPids;// 持续links
 
 	public int getInNodePid() {
@@ -69,6 +70,7 @@ public class Command extends AbstractCommand {
 		this.setInNodePid(data.getInt("nodePid"));
 		this.setOutLinkPid(data.getInt("linkPid"));
 		if (data.containsKey("linkPids")) {
+			this.setLength(data.getDouble("length"));
 			seriesLinkPids = new ArrayList<Integer>();
 			JSONArray array = data.getJSONArray("linkPids");
 			for (int i = 0; i < array.size(); i++) {
@@ -79,5 +81,13 @@ public class Command extends AbstractCommand {
 			}
 		}
 
+	}
+
+	public double getLength() {
+		return length;
+	}
+
+	public void setLength(double length) {
+		this.length = length;
 	}
 }

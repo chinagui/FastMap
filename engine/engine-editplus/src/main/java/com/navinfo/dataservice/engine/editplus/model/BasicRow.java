@@ -193,7 +193,6 @@ public abstract class BasicRow implements Logable{
 			
 			sb.append(" (" + StringUtils.join(columnName, ",") + ")");
 			sb.append(" VALUES (" + StringUtils.join(columnPlaceholder, ",") + ")");
-			sb.append(" WHERE ROW_ID = " + getRowId());
 		}else if(OperationType.UPDATE.equals(this.opType)){
 			sb.append("UPDATE "+tbName + " SET ");
 			GlmTable glmTable = GlmFactory.getInstance().getTableByName(tableName());
@@ -210,11 +209,11 @@ public abstract class BasicRow implements Logable{
 			columnValues.add(3);
 			
 			sb.append(StringUtils.join(columnName, ","));
-			sb.append(" WHERE ROW_ID = " + getRowId());
+			sb.append(" WHERE ROW_ID = '" + getRowId() + "'");
 		}else if(OperationType.DELETE.equals(this.opType)){
 			//更新U_RECORD字段为2
 			sb.append("UPDATE "+ tbName + " SET U_RECORD = ?");
-			sb.append(" WHERE ROW_ID = " + getRowId());
+			sb.append(" WHERE ROW_ID = '" + getRowId() + "'");
 			columnValues.add(2);
 		}
 		sql.setSql(sb.toString());

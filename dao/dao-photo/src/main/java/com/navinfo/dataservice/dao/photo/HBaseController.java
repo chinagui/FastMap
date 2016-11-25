@@ -164,17 +164,23 @@ public class HBaseController {
 		Connection hbaseConn = HBaseConnector.getInstance().getConnection();
 
 		Table htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.photoTab));
+		try{
+			Put put = new Put(rowkey.getBytes());
+			
+			put.addColumn("data".getBytes(), "attribute".getBytes(), JSONObject
+					.fromObject(photo).toString().getBytes());
+			
+			put.addColumn("data".getBytes(), "origin".getBytes(), bytes);
+			
+			put.addColumn("data".getBytes(), "thumbnail".getBytes(), sbytes);
+			
+			htab.put(put);
+		}finally{
+			if (htab!=null){
+				htab.close();
+			}
+		}
 		
-		Put put = new Put(rowkey.getBytes());
-		
-		put.addColumn("data".getBytes(), "attribute".getBytes(), JSONObject
-				.fromObject(photo).toString().getBytes());
-		
-		put.addColumn("data".getBytes(), "origin".getBytes(), bytes);
-		
-		put.addColumn("data".getBytes(), "thumbnail".getBytes(), sbytes);
-		
-		htab.put(put);
 		
 	}
 

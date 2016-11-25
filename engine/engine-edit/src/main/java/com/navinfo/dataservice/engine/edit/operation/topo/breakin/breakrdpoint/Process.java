@@ -610,6 +610,11 @@ public class Process extends AbstractProcess<Command> {
                 .getNewLinks());
         long refMileageTime = System.currentTimeMillis();
         log.info("里程桩USE TIME    " + String.valueOf(refMileageTime - refRdLaneTime));
+        OpRefRdTmcLocationLink opRefRdTmcLocationLink = new OpRefRdTmcLocationLink(this.getConn());
+        opRefRdTmcLocationLink.run(this.getResult(), this.getCommand().getBreakLink(), this.getCommand()
+                .getNewLinks());
+        long refTmcLinkTime = System.currentTimeMillis();
+        log.info("TMC USE TIME    " + String.valueOf(refRdLaneTime - refTmcLinkTime));
     }
 
 

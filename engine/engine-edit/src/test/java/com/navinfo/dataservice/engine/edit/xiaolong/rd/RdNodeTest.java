@@ -52,7 +52,7 @@ public class RdNodeTest extends InitApplication{
 	@Test
 	
 	public void testDelete() {
-		String parameter = "{\"command\":\"DELETE\",\"type\":\"RDTRAFFICSIGNAL\",\"dbId\":19,\"objId\":201000009}";
+		String parameter = "{\"command\":\"CREATE\",\"dbId\":17,\"objId\":19688120,\"data\":{\"longitude\":116.51232412837189,\"latitude\":39.76244903245604},\"type\":\"RDNODE\"}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

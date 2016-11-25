@@ -229,4 +229,7 @@ public class LogGenerator {
 		return perstmtList;
 	}
 	
+	public static void writeLog(Connection conn,Collection<BasicObj> basicObjs,String opCmd,int opSg,long userId)throws Exception{
+		//...
+	}
 }

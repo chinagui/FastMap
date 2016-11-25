@@ -52,7 +52,6 @@ public class PretreatmentTipsController extends BaseController {
 
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 			
-			
 			JSONObject tipsGeometry = jsonReq.getJSONObject("geometry");
 			
 			int user = jsonReq.getInt("user");
@@ -99,11 +98,11 @@ public class PretreatmentTipsController extends BaseController {
 	 * @time:2016-11-15 上午9:50:32
 	 */
 	@RequestMapping(value = "/tip/eidtshape")
-	public ModelAndView createEdgeMatchTips(HttpServletRequest request)
+	public ModelAndView editShape(HttpServletRequest request)
 			throws ServletException, IOException {
 		String parameter = request.getParameter("parameter");
 		try {
-			logger.info("/tip/createPre: "+parameter);
+			logger.info("/tip/editShape: "+parameter);
 			
 			if (StringUtils.isEmpty(parameter)) {
 				throw new IllegalArgumentException("parameter参数不能为空。");

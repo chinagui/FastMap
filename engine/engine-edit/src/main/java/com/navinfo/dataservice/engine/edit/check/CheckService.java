@@ -109,5 +109,31 @@ public class CheckService {
 			DbUtils.closeQuietly(conn);
 		}
 	}
+	
+	/**
+	 * @Title: getCkRuleCodes
+	 * @Description: 根据检查类型获取规则号
+	 * @param type
+	 * @return
+	 * @throws Exception  JSONArray
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2016年11月24日 下午2:33:42 
+	 */
+	public JSONArray getCkRuleCodes( Integer type) throws Exception {
+		
+		Connection conn = null;
+		try {
+			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
+			
+			CkRuleSelector ckRuleSelector = new CkRuleSelector(conn);
+			
+			return ckRuleSelector.getRulesByType(type);
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(conn);
+		}
+	}
 
 }

@@ -5,14 +5,11 @@ xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
 	http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
 
-	<dubbo:reference id="datahubApi" interface="com.navinfo.dataservice.api.datahub.iface.DatahubApi" timeout="5000"/>
+	<dubbo:application name="datahub-api-consumer" />
+	<dubbo:registry address="zookeeper://192.168.4.188:2681?backup=192.168.4.188:2682,192.168.4.188:2683" />
+	<dubbo:reference id="datahubApi" interface="com.navinfo.dataservice.api.datahub.iface.DatahubApi" />
 	<dubbo:reference id="manApi" interface="com.navinfo.dataservice.api.man.iface.ManApi" timeout="5000"/>
-	<dubbo:reference id="jobApi" interface="com.navinfo.dataservice.api.job.iface.JobApi" timeout="5000"/>
 	<dubbo:reference id="metadataApi" interface="com.navinfo.dataservice.api.metadata.iface.MetadataApi" timeout="5000"/>
-	<dubbo:reference id="fccApi" interface="com.navinfo.dataservice.api.fcc.iface.FccApi" timeout="5000"/>
-	<dubbo:service interface="com.navinfo.dataservice.api.edit.iface.DatalockApi" ref="datalockApi" />
-	<dubbo:service interface="com.navinfo.dataservice.api.edit.iface.EditApi" ref="editApi" />  
+	<!-- <dubbo:reference id="fccApi" interface="com.navinfo.dataservice.api.fcc.iface.FccApi" timeout="5000"/> -->
 	
-
-
 </beans>

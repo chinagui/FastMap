@@ -197,10 +197,12 @@ public class Operation implements IOperation {
 
 			RdObjectLink objLink = (RdObjectLink) link;
 
-			if (subObj == null || !subObj.contains(objLink.getLinkPid())) {
+			if (!subObj.contains(objLink.getLinkPid())) {
 				result.insertObject(objLink, ObjStatus.DELETE,
 						objLink.getPid());
-			} else {
+			}
+			else
+			{
 				subObj.remove((Integer) objLink.getLinkPid());
 			}
 		}
@@ -211,7 +213,7 @@ public class Operation implements IOperation {
 
 			int linkPid = subObj.getInt(i);
 
-			if (pidList.contains(linkPid)) {
+			if (!pidList.contains(linkPid)) {
 				RdObjectLink objLink = new RdObjectLink();
 
 				objLink.setLinkPid(subObj.getInt(i));

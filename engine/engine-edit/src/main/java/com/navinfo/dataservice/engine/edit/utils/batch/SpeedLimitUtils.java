@@ -27,6 +27,9 @@ public class SpeedLimitUtils {
     }
 
     public static void updateRdLink(RdLink rdLink, JSONObject json, Result result) {
+        if (json.containsKey("speedlimits")) {
+            return;
+        }
         boolean kindChange = false, laneChange = false, directChange = false, formChange = false, urbanChange = false;
         RdLink link = new RdLink();
         link.copy(rdLink);

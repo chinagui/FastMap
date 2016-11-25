@@ -14,6 +14,7 @@ import java.util.Set;
  * @Description: SelectorConfig.java
  */
 public abstract class SelectorConfig {
+	protected String objType;
 	protected Set<String> specTables;//指定表，见类说明
 	protected Set<String> filterTables;//过滤表，见类说明
 	

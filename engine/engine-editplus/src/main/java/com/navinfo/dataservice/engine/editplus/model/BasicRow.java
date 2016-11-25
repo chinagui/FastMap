@@ -65,6 +65,9 @@ public abstract class BasicRow implements Logable{
 
 	public long getGeoPid()throws NonGeoPidException,Exception{
 		GlmRef ref = GlmFactory.getInstance().getTableByName(tableName()).getGeoRef();
+		if(ref==null){
+			return objPid;
+		}
 		if(ref.isRefMain()){
 			return (long)getAttrByColName(ref.getCol());
 		}else{
@@ -109,6 +112,21 @@ public abstract class BasicRow implements Logable{
 			return OperationType.INITIALIZE;
 		}
 	}
+	/**
+	 * 持久化后理论上应该所有删除的记录，不会再进入下一操作阶段
+	 */
+	public void afterPersist(){
+		if(isChanged()){
+			if(hisChangeLogs==null){
+				hisChangeLogs = new ArrayList<ChangeLog>();
+			}
+			ChangeLog log = new ChangeLog(opType,oldValues);
+			hisChangeLogs.add(log);
+		}
+		//把当前的状态设置为修改
+		opType=OperationType.UPDATE;
+		oldValues=null;
+	}
 	public String getRowId() {
 		return rowId;
 	}
@@ -138,6 +156,11 @@ public abstract class BasicRow implements Logable{
 		
 		return null;
 	}
+	public boolean isChanged(){
+		if(opType.equals(OperationType.INSERT_DELETE))return false;
+		if(opType.equals(OperationType.UPDATE)&&(oldValues==null||oldValues.size()==0))return false;
+		return true;
+	}
 	/**
 	 * 根据OperationType生成相应的新增、删除和修改sql
 	 * @return
@@ -146,7 +169,12 @@ public abstract class BasicRow implements Logable{
 	 * @throws InvocationTargetException 
 	 * @throws NoSuchMethodException 
 	 */
-	public RunnableSQL persist() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, IllegalArgumentException{
+	public RunnableSQL generateSql() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, IllegalArgumentException{
+		//判断是否有变化
+		if(!isChanged()){
+			return null;
+		}
+		//以下肯定有变化
 		RunnableSQL sql = new RunnableSQL();
 		StringBuilder sb = new StringBuilder();
 		String tbName = tableName();
@@ -165,29 +193,27 @@ public abstract class BasicRow implements Logable{
 			
 			sb.append(" (" + StringUtils.join(columnName, ",") + ")");
 			sb.append(" VALUES (" + StringUtils.join(columnPlaceholder, ",") + ")");
-			sb.append(" WHERE ROW_ID = " + getRowId());
 		}else if(OperationType.UPDATE.equals(this.opType)){
-			if(oldValues!=null){
-				sb.append("UPDATE "+tbName + " SET ");
-				GlmTable glmTable = GlmFactory.getInstance().getTableByName(tableName());
-				Map<String,GlmColumn> updateColumns = new HashMap<String,GlmColumn>();
-				for(Entry<String, Object> entry:oldValues.entrySet()){
-					updateColumns.put(entry.getKey(), glmTable.getColumByName(entry.getKey()));
-				}
-				//字段信息
-				assembleColumnInfo(tab.getColumns(),columnName,columnPlaceholder,columnValues,OperationType.UPDATE);
-				//更新记录：新增
-				columnName.add("U_RECORD=?");
-				columnPlaceholder.add("?");
-				columnValues.add(3);
-				
-				sb.append(StringUtils.join(columnName, ","));
-				sb.append(" WHERE ROW_ID = " + getRowId());
+			sb.append("UPDATE "+tbName + " SET ");
+			GlmTable glmTable = GlmFactory.getInstance().getTableByName(tableName());
+			Map<String,GlmColumn> updateColumns = new HashMap<String,GlmColumn>();
+			for(Entry<String, Object> entry:oldValues.entrySet()){
+				updateColumns.put(entry.getKey(), glmTable.getColumByName(entry.getKey()));
 			}
+			//字段信息
+			assembleColumnInfo(updateColumns,columnName,columnPlaceholder,columnValues,OperationType.UPDATE);
+//			assembleColumnInfo(tab.getColumns(),columnName,columnPlaceholder,columnValues,OperationType.UPDATE);
+			//更新记录：新增
+			columnName.add("U_RECORD=?");
+			columnPlaceholder.add("?");
+			columnValues.add(3);
+			
+			sb.append(StringUtils.join(columnName, ","));
+			sb.append(" WHERE ROW_ID = '" + getRowId() + "'");
 		}else if(OperationType.DELETE.equals(this.opType)){
 			//更新U_RECORD字段为2
 			sb.append("UPDATE "+ tbName + " SET U_RECORD = ?");
-			sb.append(" WHERE ROW_ID = " + getRowId());
+			sb.append(" WHERE ROW_ID = '" + getRowId() + "'");
 			columnValues.add(2);
 		}
 		sql.setSql(sb.toString());
@@ -223,6 +249,7 @@ public abstract class BasicRow implements Logable{
 					columnValues.add(UuidUtils.genUuid());
 					continue;
 				}
+				Object temp = getAttrByColName(entry.getKey());
 				columnValues.add(getAttrByColName(entry.getKey()));
 			}else if(glmColumn.getType().equals(GlmColumn.TYPE_TIMESTAMP)){
 				DateFormat format = new java.text.SimpleDateFormat("yyyy-MM-dd hh:mm:ss");

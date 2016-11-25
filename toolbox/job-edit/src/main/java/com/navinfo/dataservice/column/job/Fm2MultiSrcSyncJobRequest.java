@@ -52,7 +52,7 @@ public class Fm2MultiSrcSyncJobRequest extends AbstractJobRequest {
 	@Override
 	public String getJobType() {
 		// TODO Auto-generated method stub
-		return "Fm2MultiSrcSync";
+		return "fm2MultiSrcSync";
 	}
 
 	@Override

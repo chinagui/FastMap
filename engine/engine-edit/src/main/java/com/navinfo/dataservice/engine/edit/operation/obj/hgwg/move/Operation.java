@@ -44,6 +44,7 @@ public class Operation implements IOperation {
         String[] meshes = MeshUtils.point2Meshes(content.getDouble("longitude"), content.getDouble("latitude"));
         hgwgLimit.changedFields.put("meshId", Integer.valueOf(meshes[0]));
         hgwgLimit.changedFields.put("linkPid", content.getInt("linkPid"));
+        hgwgLimit.changedFields.put("direct", content.getInt("direct"));
 
         result.insertObject(hgwgLimit, ObjStatus.UPDATE, hgwgLimit.pid());
         return null;

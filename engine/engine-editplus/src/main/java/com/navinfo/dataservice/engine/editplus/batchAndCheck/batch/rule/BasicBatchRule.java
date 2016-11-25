@@ -18,21 +18,12 @@ public abstract class BasicBatchRule {
 	
 	public Map<Long, BasicObj> getRowList(){
 		Map<Long, BasicObj> rows=new HashMap<Long, BasicObj>();
-		for(String objName:this.objNameList){
-			//首先判断是否是按需批处理，检查对象是新增/修改对象
-			if(this.getBatchCommand().getOperationResult().getAddObjs().containsKey(objName)){
-				Map<Long, BasicObj> map=this.getBatchCommand().getOperationResult().getAddObjs().get(objName);
-				if(map!=null){rows.putAll(map);}}
-			if(this.getBatchCommand().getOperationResult().getUpdateObjs().containsKey(objName)){
-				Map<Long, BasicObj> map=this.getBatchCommand().getOperationResult().getUpdateObjs().get(objName);
+		//若全库批处理，则数据统一都是初始化状态，新增修改列表没有记录
+		for(String objName:objNameList){
+			if(this.getBatchCommand().getOperationResult().getAllObjsMap().containsKey(objName)){
+				Map<Long, BasicObj> map=this.getBatchCommand().getOperationResult().getAllObjsMap().get(objName);
 				if(map!=null){rows.putAll(map);}}
 			}
-		if(rows.isEmpty()){
-			//若全库批处理，则数据统一都是初始化状态，新增修改列表没有记录
-			for(String objName:objNameList){
-				//
-				}
-		}
 		return rows;
 	}
 	

@@ -24,6 +24,9 @@ public class IxPoiObj extends AbstractIxObj {
 	public IxPoiObj(BasicRow mainrow) {
 		super(mainrow);
 	}
+	public List<IxPoiName> getIxPoiNames(){
+		return (List)subrows.get("IX_POI_NAME");
+	}
 	public IxPoiName createIxPoiName()throws Exception{
 		return (IxPoiName)(ObjFactory.getInstance().createRow("IX_POI_NAME", this.objPid()));
 	}

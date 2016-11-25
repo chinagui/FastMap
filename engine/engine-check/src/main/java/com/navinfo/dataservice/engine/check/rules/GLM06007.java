@@ -41,10 +41,10 @@ public class GLM06007 extends baseRule {
 				
 				StringBuilder sb = new StringBuilder();
 
-				sb.append("SELECT 1 FROM RD_SE RS");
-				sb.append(" WHERE RS.U_RECORD != 2 AND RS.NODE_PID = ");
+				sb.append("select 1 from(select in_link_pid  from rd_se");
+				sb.append(" WHERE U_RECORD != 2 AND NODE_PID = ");
 				sb.append(node);
-				sb.append(" AND RS.IN_LINK_PID = ");
+				sb.append(" group by IN_LINK_PID) having count(1) >0");
 				sb.append(inLinkPid); 
 
 				String sql = sb.toString();

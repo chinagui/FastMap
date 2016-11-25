@@ -53,18 +53,18 @@ public class Fm2MultiSrcSyncJob extends AbstractJob {
 				new ThreadPoolExecutor.CallerRunsPolicy());
 	}
 	private void shutDownPoolExecutor(){log.debug("关闭线程池");
-	if (threadPoolExecutor != null && !threadPoolExecutor.isShutdown()) {
-		threadPoolExecutor.shutdownNow();
-		try {
-			while (!threadPoolExecutor.isTerminated()) {
-				log.debug("等待线程结束：线程数为" + threadPoolExecutor.getActiveCount());
-				Thread.sleep(2000);
+		if (threadPoolExecutor != null && !threadPoolExecutor.isShutdown()) {
+			threadPoolExecutor.shutdownNow();
+			try {
+				while (!threadPoolExecutor.isTerminated()) {
+					log.debug("等待线程结束：线程数为" + threadPoolExecutor.getActiveCount());
+					Thread.sleep(2000);
+				}
+			} catch (InterruptedException e) {
+				log.error("关闭线程池失败");
+				throw new ServiceRtException("关闭线程池失败", e);
 			}
-		} catch (InterruptedException e) {
-			log.error("关闭线程池失败");
-			throw new ServiceRtException("关闭线程池失败", e);
 		}
-	}
 	}
 
 	@Override
@@ -84,7 +84,7 @@ public class Fm2MultiSrcSyncJob extends AbstractJob {
 			if(!mdirFile.exists()){
 				mdirFile.mkdirs();
 			}
-			//月下一次同步的文件放在自己的目录下
+			//月下,一次同步的文件放在自己的目录下
 			String mydir = monthDir+syncTime+"_day"+File.separator;
 			File file = new File(mydir);
 			file.mkdirs();

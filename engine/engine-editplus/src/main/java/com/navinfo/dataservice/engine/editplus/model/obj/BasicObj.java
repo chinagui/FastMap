@@ -39,8 +39,9 @@ public abstract class BasicObj {
 			//生成grid信息
 			Geometry geo = (Geometry) mainrow.getAttrByColName("GEOMETRY");
 			Set<String> grids = CompGeometryUtil.geo2GridsWithoutBreak(geo);
+			grid = new BasicObjGrid();
 			grid.setGridListAfter(grids);
-			if(mainrow.getOldValues().containsKey("GEOMETRY")){
+			if(mainrow.getOldValues()!=null&&!mainrow.getOldValues().isEmpty()&&mainrow.getOldValues().containsKey("GEOMETRY")){
 				Geometry geoBefore = (Geometry) mainrow.getOldValues().get("GEOMETRY");
 				Set<String> gridsBefore = CompGeometryUtil.geo2GridsWithoutBreak(geoBefore);
 				grid.setGridListBefore(gridsBefore);

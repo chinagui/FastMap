@@ -1,10 +1,20 @@
 package com.navinfo.dataservice.engine.editplus.imp;
 
 import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
+import org.apache.log4j.Logger;
+
+import java.util.Set;
+
+import com.mysql.fabric.xmlrpc.base.Array;
+import com.navinfo.dataservice.api.edit.upload.UploadPois;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.engine.editplus.model.BasicRow;
 import com.navinfo.dataservice.engine.editplus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.engine.editplus.model.ixpoi.IxPoiAddress;
 import com.navinfo.dataservice.engine.editplus.model.ixpoi.IxPoiContact;
@@ -16,6 +26,9 @@ import com.navinfo.dataservice.engine.editplus.model.obj.BasicObj;
 import com.navinfo.dataservice.engine.editplus.model.obj.IxPoiObj;
 import com.navinfo.dataservice.engine.editplus.model.obj.ObjFactory;
 import com.navinfo.dataservice.engine.editplus.model.obj.ObjectType;
+import com.navinfo.dataservice.engine.editplus.model.selector.MultiSrcPoiSelectorConfig;
+import com.navinfo.dataservice.engine.editplus.model.selector.ObjBatchSelector;
+import com.navinfo.dataservice.engine.editplus.model.selector.ObjSelector;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -29,24 +42,29 @@ import net.sf.json.JSONObject;
  * @Description: MultiSrcPoiDayImportor.java
  */
 public class MultiSrcPoiDayImportor implements JsonImportor {
-	protected Map<Long,String> fatherMap;
-	public List<IxPoiObj> importByJsonArray(Connection conn,JSONArray jos)throws Exception{
-		if(jos!=null){
-			for(Object object:jos){
-				JSONObject jo=(JSONObject)object;
-				int addFlag = jo.getInt("addFlag");
-				int delFlag = jo.getInt("delFlag");
-				String log = jo.getString("log");
-				if(addFlag == 1){
-					//新增
-					this.improtAdd(conn, jo);
-				}else if(delFlag == 1){
-					//删除
-				}else if(addFlag!=1 && delFlag!=0 && log != null){
-					//修改
-				}
-				ObjFactory.getInstance();
+	private static final Logger log = Logger.getLogger(MultiSrcPoiDayImportor.class);
+	
+	public List<IxPoiObj> importByJsonArray(Connection conn,UploadPois pois)throws Exception{
+		if(pois!=null){
+			List<IxPoiObj> ixPoiObjList = new ArrayList<IxPoiObj>();
+			//新增
+			Map<String, JSONObject> addPois = pois.getAddPois();
+			for (Map.Entry<String, JSONObject> entry : addPois.entrySet()) {
+				JSONObject jo = entry.getValue();
+				//日志
+				log.info("多源新增json数据"+jo.toString());
+				
+				IxPoiObj ixPoiObjAdd = this.improtAdd(conn, jo);
+				ixPoiObjList.add(ixPoiObjAdd);
 			}
+			//删除
+			Map<String, JSONObject> deletePois = pois.getDeletePois();
+			
+			//修改
+			Map<String, JSONObject> updatePois = pois.getUpdatePois();
+			IxPoiObj ixPoiObjUpdate = this.improtUpdate(conn,updatePois);
+			ixPoiObjList.add(ixPoiObjUpdate);
+			return ixPoiObjList;
 		}
 		return null;
 	}
@@ -60,11 +78,10 @@ public class MultiSrcPoiDayImportor implements JsonImportor {
 	 * @throws Exception
 	 */
 	public IxPoiObj improtAdd(Connection conn,JSONObject jo)throws Exception{
-		IxPoiObj poiObj = (IxPoiObj) ObjFactory.getInstance().create(ObjectType.IX_POI, true);
+		IxPoiObj poiObj = (IxPoiObj) ObjFactory.getInstance().create(ObjectType.IX_POI);
 		//新增数据解析
-		this.importByJson(poiObj, jo);
+		this.importAddByJson(poiObj, jo);
 		//处理父子关系
-		this.handleAddFatherson(conn,poiObj, jo);
 		return poiObj;
 	}
 	
@@ -72,12 +89,34 @@ public class MultiSrcPoiDayImportor implements JsonImportor {
 	 * 修改数据解析
 	 * @author Han Shaoming
 	 * @param conn
-	 * @param jo
+	 * @param jso
+	 * @param updatePois 
 	 * @return
 	 * @throws Exception
 	 */
-	public IxPoiObj improtUpdate(Connection conn,JSONObject jo)throws Exception{
-		//ObjSelector.selectByPid(conn, ObjectType.IX_POI,MultiSrcPoiSelectorConfig.getInstance() , pid, isOnlyMain, isLock);
+	public IxPoiObj improtUpdate(Connection conn,Map<String, JSONObject> updatePois)throws Exception{
+		Collection<Object> fids = new ArrayList<Object>();
+		List<JSONObject> joList = new ArrayList<JSONObject>();
+		for (Map.Entry<String, JSONObject> entry : updatePois.entrySet()) {
+			JSONObject jso = entry.getValue();
+			joList.add(jso);
+			fids.add(entry.getKey());
+		}
+		List<BasicObj> basicObjList = ObjBatchSelector.selectBySpecColumn(conn, ObjectType.IX_POI, MultiSrcPoiSelectorConfig.getInstance(), "POI_NUM", fids, false, false,false);
+		//IxPoiObj poiObj = (IxPoiObj) ObjFactory.getInstance().create(ObjectType.IX_POI);
+		for (JSONObject jo : joList) {
+			//日志
+			log.info("多源修改json数据"+jo.toString());
+			//判断查询记录
+			for (BasicObj basicObj : basicObjList) {
+				IxPoiObj queryObj = (IxPoiObj) basicObj;
+				IxPoi ixPoi = (IxPoi) queryObj.getMainrow();
+				if(ixPoi.getPoiNum().equals(jo.getString("fid"))){
+					this.importUpdateByJson(queryObj, jo);
+					break;
+				}
+			}
+		}
 		return null;
 	}
 	
@@ -93,33 +132,12 @@ public class MultiSrcPoiDayImportor implements JsonImportor {
 		return null;
 	}
 	
-	/**
-	 * 处理新增数据父子关系
-	 * @author Han Shaoming
-	 * @param objs
-	 */
-	public void handleAddFatherson(Connection conn,BasicObj obj,JSONObject jo){
-		String fatherson = jo.getString("fatherson");
-		//当前POIA为新增，fathersion对应的POIB也为新增
-		//当前POIA为新增，fathersion对应的POIB为修改或多源TXT中不存在但存在日库中(非删除),且POIB是其它POI的父
-		//当前POIA为新增，fathersion对应的POIB为修改或多源TXT中不存在但存在日库中(非删除),且POIB不是父
-		//当前POIA为新增，fathersion对应的POIB也为删除或多源TXT中不存在但日库中已逻辑删除,不处理
-	}
 	
-	/**
-	 * 处理修改数据父子关系
-	 * @author Han Shaoming
-	 * @param objs
-	 */
-	public void handleUpdateFatherson(List<BasicObj> objs){
-		
-	}
 	 
 	@Override
-	public boolean importByJson(BasicObj obj,JSONObject jo)throws Exception {
-		if(obj!=null&&jo!=null){
-			if(obj instanceof IxPoiObj){
-				IxPoiObj poi = (IxPoiObj)obj;
+	public boolean importAddByJson(IxPoiObj poi,JSONObject jo)throws Exception {
+		if(poi!=null&&jo!=null){
+			if(poi instanceof IxPoiObj){
 				//POI主表
 				IxPoi ixPoi = (IxPoi) poi.getMainrow();
 				//显示坐标经度
@@ -144,8 +162,6 @@ public class MultiSrcPoiDayImportor implements JsonImportor {
 				//引导坐标纬度--引导Y坐标yGuide
 				Double guidelat = jo.getDouble("guidelat");
 				ixPoi.setYGuide(guidelat);
-				//名称
-				String name = jo.getString("name");
 				//判断是大陆/港澳
 				String regionInfo = jo.getString("regionInfo");
 				String langCode = null;
@@ -156,6 +172,8 @@ public class MultiSrcPoiDayImportor implements JsonImportor {
 					//港澳
 					langCode = "CHT";
 				} 
+				//名称
+				String name = jo.getString("name");
 				//IX_POI_NAME表
 				IxPoiName ixPoiName = poi.createIxPoiName();
 				ixPoiName.setName(name);
@@ -187,7 +205,7 @@ public class MultiSrcPoiDayImportor implements JsonImportor {
 						String number = jso.getString("number");
 						//联系方式类型type
 						int type = jso.getInt("type");
-						//IX_POI_RESTAURANT表
+						//IX_POI_CONTACT表
 						IxPoiContact ixPoiContact = poi.createIxPoiContact();
 						ixPoiContact.setContact(number);
 						ixPoiContact.setContactType(type);
@@ -202,6 +220,7 @@ public class MultiSrcPoiDayImportor implements JsonImportor {
 					//IX_POI_ADDRESS表
 					IxPoiAddress ixPoiAddress = poi.createIxPoiAddress();
 					ixPoiAddress.setFullname(address);
+					ixPoiAddress.setLangCode(langCode);
 				}
 				
 				//父子关系
@@ -225,7 +244,6 @@ public class MultiSrcPoiDayImportor implements JsonImportor {
 					IxPoiHotel ixPoiHotel = poi.createIxPoiHotel();
 					ixPoiHotel.setRating(rating);
 				}
-				//修改履历log
 				//备注
 				String remark = jo.getString("remark");
 				ixPoi.setPoiMemo(remark);
@@ -236,10 +254,211 @@ public class MultiSrcPoiDayImportor implements JsonImportor {
 					IxPoiDetail ixPoiDetail = poi.createIxPoiDetail();
 					ixPoiDetail.setWebSite(website);
 				}
+				return true;
 			}else{
 				throw new ImportException("不支持的对象类型");
 			}
-			return true;
+		}
+		return false;
+	}
+
+	public boolean importUpdateByJson(IxPoiObj poi,JSONObject jo) throws ImportException, Exception {
+		if(poi!=null&&jo!=null){
+			if(poi instanceof IxPoiObj){
+				//查询的POI主表
+				IxPoi ixPoi = (IxPoi) poi.getMainrow();
+				//修改履历
+				String log = jo.getString("log");
+				//判断是大陆/港澳
+				String regionInfo = jo.getString("regionInfo");
+				String langCode = null;
+				if("D".equals(regionInfo)){
+					//大陆
+					langCode = "CHI";
+				}else if("HM".equals(regionInfo)){
+					//港澳
+					langCode = "CHT";
+				} 
+				//改名称
+				if("改名称".contains(log)){
+					//名称
+					String name = jo.getString("name");
+					//IX_POI_NAME表
+					List<IxPoiName> ixPoiNames = poi.getIxPoiNames();
+					boolean flag = true;
+					if(ixPoiNames != null && ixPoiNames.size()>0){
+						for (IxPoiName ixPoiName : ixPoiNames) {
+							if(ixPoiName.getNameClass()==1 &&
+									ixPoiName.getNameType()==2 &&
+									"CHI".equals(ixPoiName.getLangCode())){
+								ixPoiName.setName(name);
+								flag = false;
+							}else if(ixPoiName.getNameClass()==1 &&
+									ixPoiName.getNameType()==2 &&
+									"CHT".equals(ixPoiName.getLangCode())){
+								ixPoiName.setName(name);
+								flag = false;
+							}
+						}
+						if(flag){
+							
+							//IX_POI_NAME表
+							IxPoiName ixPoiName = poi.createIxPoiName();
+							ixPoiName.setName(name);
+							ixPoiName.setNameClass(1);
+							ixPoiName.setNameType(2);
+							ixPoiName.setLangCode(langCode);
+						}
+						
+					}
+				}
+				//改分类
+				if("改分类".contains(log)){
+					String kind = jo.getString("kind");
+					ixPoi.setKindCode(kind);
+				}
+				//改电话
+				if("改电话".contains(log)){
+					//[集合]联系方式
+					String contacts = jo.getString("contacts");
+					//查询IX_POI_RESTAURANT表
+					List<IxPoiContact> ixPoiContacts = poi.getIxPoiContacts();
+					if(!"[]".equals(contacts)){
+						JSONArray ja = JSONArray.fromObject(contacts);
+						for (IxPoiContact contact : ixPoiContacts) {
+							boolean flag = true;
+							for (int i=0;i<ja.size();i++) {
+								JSONObject jso = ja.getJSONObject(i);
+								//号码number
+								String number = jso.getString("number");
+								//联系方式类型type
+								int type = jso.getInt("type");
+								if((!number.equals(contact.getContact()))
+										||type!=contact.getContactType()){
+									//不一致，则将多源中电话和电话类型追加到日库中
+									//IX_POI_CONTACT表
+									IxPoiContact ixPoiContact = poi.createIxPoiContact();
+									ixPoiContact.setContact(number);
+									ixPoiContact.setContactType(type);
+									flag = false;
+								}else if(number.equals(contact.getContact())
+										&&type == contact.getContactType()){
+									//一致，则不处理
+									flag = false;
+								}
+							}
+							if(flag){
+								//多源中不存在，但是日库中存在的电话逻辑删除
+								poi.deleteSubrow(contact);
+							}
+						}
+					}else if("[]".equals(contacts)){
+						//逻辑删除日库中所有电话记录
+						for (IxPoiContact ixPoiContact : ixPoiContacts) {
+							poi.deleteSubrow(ixPoiContact);
+						}
+					}
+				}
+				//改地址
+				if("改地址".contains(log)){
+					//查询的IX_POI_ADDRESS表
+					List<IxPoiAddress> ixPoiAddresses = poi.getIxPoiAddresses();
+					if(jo.getString("address") != null){
+						String address = jo.getString("address");
+						boolean flag = true;
+						for (IxPoiAddress ixPoiAddress : ixPoiAddresses) {
+							//多源address不为空，赋值给IX_POI_ADDRESS.FULLNAME(中文地址)
+							if("CHI".equals(ixPoiAddress.getLangCode())){
+								ixPoiAddress.setFullname(address);
+								flag = false;
+							}else if("CHT".equals(ixPoiAddress.getLangCode())){
+								ixPoiAddress.setFullname(address);
+								flag = false;
+							}
+						}
+						if(flag){
+							//不存在IX_POI_ADDRESS记录，则增加一条记录
+							//IX_POI_ADDRESS表
+							IxPoiAddress ixPoiAddress = poi.createIxPoiAddress();
+							ixPoiAddress.setFullname(address);
+							ixPoiAddress.setLangCode(langCode);
+						}
+					}else{
+						//逻辑删除日库中所有地址记录
+						for (IxPoiAddress ixPoiAddress : ixPoiAddresses) {
+							poi.deleteSubrow(ixPoiAddress);
+						}
+					}
+				}
+				//改邮编
+				if("改邮编".contains(log)){
+					String postCode = jo.getString("postCode");
+					ixPoi.setPostCode(postCode);
+				}
+				//改风味类型
+				if("改风味类型".contains(log)){
+					//查询的IX_POI_RESTAURANT表
+					List<IxPoiRestaurant> ixPoiRestaurants = poi.getIxPoiRestaurants();
+					//[集合]风味类型
+					String foodTypes = jo.getString("foodTypes");
+					if(!"[]".equals(foodTypes)){
+						JSONArray ja = JSONArray.fromObject(foodTypes);
+						for (int i=0;i<ja.size();i++) {
+							JSONObject jso = ja.getJSONObject(i);
+							String foodType = jso.getString("foodType");
+							//IX_POI_RESTAURANT表
+							IxPoiRestaurant ixPoiRestaurant = poi.createIxPoiRestaurant();
+							ixPoiRestaurant.setFoodType(foodType);
+						}
+					}if("[]".equals(ixPoiRestaurants)){
+						//逻辑删除日库中所有风味类型记录
+						for (IxPoiRestaurant ixPoiRestaurant : ixPoiRestaurants) {
+							poi.deleteSubrow(ixPoiRestaurant);
+						}
+						
+					}
+				}
+				//改父子关系
+				if("改父子关系".contains(log)){
+					
+				}
+				//改品牌
+				if("改品牌".contains(log)){
+					String chain = jo.getString("chain");
+					ixPoi.setChain(chain);
+				}
+				//改等级
+				if("改等级".contains(log)){
+					String level = jo.getString("level");
+					ixPoi.setLevel(level);
+				}
+				//改24小时
+				if("改24小时".contains(log)){
+					int open24H =jo.getInt("open24H");
+					ixPoi.setOpen24h(open24H);
+				}
+				//改星级
+				if("改星级".contains(log)){
+					//查询的IX_POI_HOTEL表
+					List<IxPoiHotel> ixPoiHotels = poi.getIxPoiHotels();
+					//星级
+					if(jo.getInt("rating") >-1){
+						int rating =jo.getInt("rating");
+						//IX_POI_HOTEL表
+						IxPoiHotel ixPoiHotel = poi.createIxPoiHotel();
+						ixPoiHotel.setRating(rating);
+					}
+				}
+				//改内部POI
+				if("改内部POI".contains(log)){
+					int indoorType =jo.getInt("indoorType");
+					ixPoi.setIndoor(indoorType);
+				}
+
+				return true;
+			}else{
+				throw new ImportException("不支持的对象类型");
+			}
 		}
 		return false;
 	}

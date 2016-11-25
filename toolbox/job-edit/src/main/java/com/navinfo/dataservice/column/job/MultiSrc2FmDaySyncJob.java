@@ -14,6 +14,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.dbutils.DbUtils;
 
+import com.navinfo.dataservice.api.edit.upload.UploadPois;
 import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.column.job.Fm2MultiSrcSyncJob.Fm2MultiSrcExportThread;
@@ -179,29 +180,7 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 			}
 		}
 	}
-	class UploadPois{
-		protected Map<String,JSONObject> addPois;
-		protected Map<String,JSONObject> deletePois;
-		protected Map<String,JSONObject> updatePois;
-		public void addJsonPoi(JSONObject jo){
-			if(jo.getInt("addFlag")==1){
-				if(addPois==null){
-					addPois=new HashMap<String,JSONObject>();
-				}
-				addPois.put(jo.getString("fid"), jo);
-			}else if(jo.getInt("delFlag")==1){
-				if(deletePois==null){
-					deletePois=new HashMap<String,JSONObject>();
-				}
-				deletePois.put(jo.getString("fid"), jo);
-			}else{
-				if(updatePois==null){
-					updatePois= new HashMap<String,JSONObject>();
-				}
-				updatePois.put(jo.getString("fid"), jo);
-			}
-		}
-	}
+	
 	class MultiSrc2FmDayThread implements Runnable{
 		CountDownLatch latch = null;
 		int regionId=0;

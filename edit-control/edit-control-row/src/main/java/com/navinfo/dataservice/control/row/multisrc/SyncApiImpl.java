@@ -1,10 +1,13 @@
 package com.navinfo.dataservice.control.row.multisrc;
 
+import java.util.Date;
+
 import org.springframework.stereotype.Service;
 
 import com.navinfo.dataservice.api.edit.iface.SyncApi;
 import com.navinfo.dataservice.api.edit.model.FmMultiSrcSync;
 import com.navinfo.dataservice.api.edit.model.MultiSrcFmSync;
+import com.navinfo.dataservice.commons.util.DateUtils;
 
 /**
  * POI数据同步
@@ -18,10 +21,12 @@ public class SyncApiImpl implements SyncApi {
 
 	//创建FM-POI增量包同步到多源的管理记录
 	@Override
-	public String insertFmMultiSrcSync(long jobId) throws Exception {
+	public String insertFmMultiSrcSync(long jobId,String syncTime) throws Exception {
 		
 		FmMultiSrcSync obj = new FmMultiSrcSync();
 		obj.setJobId(jobId);
+		Date date = DateUtils.stringToDate(syncTime, DateUtils.DATE_COMPACTED_FORMAT);
+		obj.setSyncTime(date);
 		String msg = FmMultiSrcSyncService.getInstance().insert(obj);
 		return msg;
 	}
@@ -55,10 +60,11 @@ public class SyncApiImpl implements SyncApi {
 
 	//创建MS-POI增量包同步到FM的管理记录
 	@Override
-	public String insertMultiSrcFmSync(long jobId, long dbType) throws Exception {
+	public String insertMultiSrcFmSync(long jobId, long dbType,String zipFile) throws Exception {
 		MultiSrcFmSync obj = new MultiSrcFmSync();
 		obj.setJobId(jobId);
 		obj.setDbType(dbType);
+		obj.setZipFile(zipFile);
 		String msg = MultiSrcFmSyncService.getInstance().insert(obj);
 		return msg;
 	}
@@ -72,12 +78,12 @@ public class SyncApiImpl implements SyncApi {
 	}
 
 	//更新FmMultiSrcSync管理表中增量包文件和同步状态
-	@Override
+	/*@Override
 	public void updateMultiSrcFmSync(long syncStatus, String zipFile) throws Exception {
 		MultiSrcFmSync obj = new MultiSrcFmSync();
 		obj.setSyncStatus(syncStatus);
 		obj.setZipFile(zipFile);
 		MultiSrcFmSyncService.getInstance().updateSync(obj);
-	}
+	}*/
 
 }

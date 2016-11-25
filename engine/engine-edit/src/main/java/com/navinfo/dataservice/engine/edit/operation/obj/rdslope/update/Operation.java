@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
@@ -69,8 +70,9 @@ public class Operation implements IOperation {
 	 * 2）如果传入的接续link比原有坡度信息接续link多 则新增坡度这部分多的接续link。
 	 * 
 	 * @param result
+	 * @throws Exception
 	 */
-	private void handRdSlopeVia(Result result) {
+	private void handRdSlopeVia(Result result) throws Exception {
 		if (this.command.getSeriesLinkPids() != null) {
 			if (this.command.getOutLinkPid() != 0
 					&& this.command.getOutLinkPid() != this.command.getSlope()
@@ -79,6 +81,8 @@ public class Operation implements IOperation {
 					result.insertObject(row, ObjStatus.DELETE,
 							this.command.getPid());
 				}
+				// 调用特殊打断
+				this.breakRelation(result);
 				for (int i = 0; i < this.command.getSeriesLinkPids().size(); i++) {
 					this.addRdSlope(result, i);
 				}
@@ -96,13 +100,38 @@ public class Operation implements IOperation {
 					}
 				}
 				if (sourceSize < currentSize) {
-					for (int i = sourceSize ; i < currentSize; i++) {
+					for (int i = sourceSize; i < currentSize; i++) {
 						this.addRdSlope(result, i);
 					}
 				}
 
 			}
 		}
+	}
+
+	/***
+	 * 调用创建130米特殊打断功能
+	 * 
+	 * @param result
+	 * @throws Exception
+	 */
+	private void breakRelation(Result result) throws Exception {
+		JSONObject json = new JSONObject();
+		JSONObject breakJson = new JSONObject();
+		breakJson.put("dbId", this.command.getDbId());
+		json.put("linkPid", this.command.getOutLinkPid());
+		json.put("length", this.command.getLength());
+		JSONArray array = new JSONArray();
+		array.add(this.command.getSeriesLinkPids());
+		json.put("linkPids", array);
+		breakJson.put("data", json);
+		com.navinfo.dataservice.engine.edit.operation.obj.rdslope.create.Command command = new com.navinfo.dataservice.engine.edit.operation.obj.rdslope.create.Command(
+				json, this.command.getRequester());
+		com.navinfo.dataservice.engine.edit.operation.obj.rdslope.create.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdslope.create.Operation(
+
+		command, conn);
+		operation.breakRelation(result);
+
 	}
 
 	/***
@@ -115,7 +144,7 @@ public class Operation implements IOperation {
 		RdSlopeVia rdSlopeVia = new RdSlopeVia();
 		rdSlopeVia.setSlopePid(this.command.getPid());
 		rdSlopeVia.setLinkPid(this.command.getSeriesLinkPids().get(seqNum));
-		rdSlopeVia.setSeqNum(seqNum+1);
+		rdSlopeVia.setSeqNum(seqNum + 1);
 		result.insertObject(rdSlopeVia, ObjStatus.INSERT, this.command.getPid());
 	}
 
@@ -198,6 +227,13 @@ public class Operation implements IOperation {
 		}
 	}
 
+	/***
+	 * 增加坡度接续线信息
+	 * @param slopePid
+	 * @param linkPid
+	 * @param seqNum
+	 * @param result
+	 */
 	private void addRdslopeVia(int slopePid, int linkPid, int seqNum,
 			Result result) {
 		RdSlopeVia via = new RdSlopeVia();
@@ -269,97 +305,59 @@ public class Operation implements IOperation {
 			Result result) throws Exception {
 
 		int linkPid = link.getPid();
-
 		RdSlopeSelector selector = new RdSlopeSelector(this.conn);
-
 		// link为退出线的RdSlope
 		List<RdSlope> slopes = selector.loadByOutLink(linkPid, true);
-
 		for (RdSlope slope : slopes) {
-
 			if (slope.getNodePid() == nodePid) {
-
 				result.insertObject(slope, ObjStatus.DELETE, slope.getPid());
-
 			} else {
 				// 只删除接续link
 				for (IRow row : slope.getSlopeVias()) {
-
 					result.insertObject(row, ObjStatus.DELETE, slope.getPid());
 				}
 			}
 		}
 		// link为接续link的RdSlope
 		slopes = selector.loadByViaLink(linkPid, true);
-
 		if (slopes.size() == 0) {
 			return;
 		}
-
 		RdLinkSelector RdLinkSelector = new RdLinkSelector(this.conn);
-
 		for (RdSlope slope : slopes) {
-
 			int currSeqNum = 1;
-
 			for (IRow Row : slope.getSlopeVias()) {
-
 				RdSlopeVia via = (RdSlopeVia) Row;
-
 				if (via.getLinkPid() == linkPid) {
-
 					currSeqNum = via.getSeqNum();
-
 					break;
 				}
 			}
-
 			RdLink preLink = null;
-
 			if (currSeqNum == 1) {
-
 				preLink = (RdLink) RdLinkSelector.loadById(slope.getLinkPid(),
 						true, true);
 			} else {
-
 				for (IRow Row : slope.getSlopeVias()) {
-
 					RdSlopeVia via = (RdSlopeVia) Row;
-
 					if (via.getSeqNum() == currSeqNum - 1) {
-
 						preLink = (RdLink) RdLinkSelector.loadById(
 								via.getLinkPid(), true, true);
-
 						break;
 					}
 				}
 			}
-
 			int flagSeqNum = currSeqNum;
-
 			if (preLink.getsNodePid() == nodePid
 					|| preLink.geteNodePid() == nodePid) {
-
 				flagSeqNum = currSeqNum - 1;
 			}
-
 			for (IRow row : slope.getSlopeVias()) {
-
 				RdSlopeVia via = (RdSlopeVia) row;
-
 				if (via.getSeqNum() > flagSeqNum) {
-
 					result.insertObject(row, ObjStatus.DELETE, slope.getPid());
 				}
 			}
-		}
-	}
-	public static void main(String[] args) {
-		int sourceSize =0;
-		int currentSize = 2;
-		for (int i = sourceSize ; i < currentSize; i++) {
-		System.out.println(i);
 		}
 	}
 

@@ -13,6 +13,7 @@ import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.lu.LuFace;
 import com.navinfo.dataservice.dao.glm.model.lu.LuLink;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
+import com.vividsolutions.jts.geom.Geometry;
 
 public class Command extends AbstractCommand {
 
@@ -20,13 +21,27 @@ public class Command extends AbstractCommand {
 
 	private int linkPid;
 
-	private JSONObject linkGeom;
+	private Geometry linkGeom;
 
-	private JSONArray interNodes;
+	public Geometry getLinkGeom() {
+		return linkGeom;
+	}
 
-	private JSONArray interLines;
+	public void setLinkGeom(Geometry linkGeom) {
+		this.linkGeom = linkGeom;
+	}
+
+	public JSONArray getCatchInfos() {
+		return catchInfos;
+	}
+
+	public void setCatchInfos(JSONArray catchInfos) {
+		this.catchInfos = catchInfos;
+	}
 
 	private LuLink updateLink;
+
+	private JSONArray catchInfos;
 
 	private List<LuFace> faces;
 
@@ -46,30 +61,6 @@ public class Command extends AbstractCommand {
 
 	public void setLinkPid(int linkPid) {
 		this.linkPid = linkPid;
-	}
-
-	public JSONObject getLinkGeom() {
-		return linkGeom;
-	}
-
-	public void setLinkGeom(JSONObject linkGeom) {
-		this.linkGeom = linkGeom;
-	}
-
-	public JSONArray getInterNodes() {
-		return interNodes;
-	}
-
-	public void setInterNodes(JSONArray interNodes) {
-		this.interNodes = interNodes;
-	}
-
-	public JSONArray getInterLines() {
-		return interLines;
-	}
-
-	public void setInterLines(JSONArray interLines) {
-		this.interLines = interLines;
 	}
 
 	public LuLink getUpdateLink() {
@@ -118,11 +109,10 @@ public class Command extends AbstractCommand {
 
 		JSONObject geometry = data.getJSONObject("geometry");
 
-		this.linkGeom = GeoTranslator.jts2Geojson(GeoTranslator.geojson2Jts(
-				geometry, 1, 5));
-		// 修行后挂接对应Lu_Link信息
-		this.interLines = data.getJSONArray("interLinks");
-		// 修行后挂接对应的Lu_Node信息
-		this.interNodes = data.getJSONArray("interNodes");
+		this.linkGeom = (GeoTranslator.geojson2Jts(geometry, 1, 5));
+		// 修行挂接信息
+		if (data.containsKey("catchInfos")) {
+			this.catchInfos = data.getJSONArray("catchInfos");
+		}
 	}
 }

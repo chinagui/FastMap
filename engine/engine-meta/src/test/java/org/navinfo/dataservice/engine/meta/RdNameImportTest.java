@@ -39,7 +39,7 @@ public class RdNameImportTest {
 	}
 	
 	
-	@Test
+	//@Test
 	public  void nameImportTest() {
 		/*ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(
 				new String[] { "dubbo-consumer.xml"});
@@ -95,7 +95,7 @@ public class RdNameImportTest {
 	}
 	
 	
-	@Test
+//	@Test
 	public void testGetRdName()
 	{
 		String parameter = "{\"subtaskId\":76,\"pageNum\":1,\"pageSize\":20,\"sortby\":\"\",\"flag\":1,\"params\":{\"name\":\"\",\"nameGroupid\":\"\",\"adminId\":\"\"}}";
@@ -131,8 +131,39 @@ public class RdNameImportTest {
 	}
 	
 	//@Test
+	public void testGetRdNameOneByNameID(){
+		String parameter ="{'nameId':'647497'}";
+		JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+		RdNameSelector selector = new RdNameSelector();
+		
+		String nameId = jsonReq.getString("nameId");
+		
+		
+		JSONObject data = selector.searchForWebByNameId(nameId);
+		
+		System.out.println(data);
+	}
+	
+	@Test
 	public void teilenName () {
-		String parameter = "{\"dbId\":9,\"data\":[{\"nameId\":420000001,\"nameGroupid\":503000002,\"langCode\":\"CHI\",\"roadType\":0}],\"flag\":1,\"subtaskId\":208}";
+		//String parameter = "{\"dbId\":9,\"data\":[{\"nameId\":40589343,\"nameGroupid\":40589344,\"langCode\":\"CHI\",\"roadType\":3}],\"flag\":1,\"subtaskId\":208}";
+		//String parameter = "{\"dbId\":9,\"data\":[{\"nameId\":0,\"nameGroupid\":11111111,\"langCode\":\"CHI\",\"roadType\":3}],\"flag\":1,\"subtaskId\":208}";
+		//String parameter = "{\"dbId\":9,\"data\":[{\"nameId\":82369,\"nameGroupid\":82369,\"langCode\":\"CHI\",\"roadType\":3}],\"flag\":1,\"subtaskId\":208}";
+		//String parameter = "{\"dbId\":9,\"data\":[{\"nameId\":82371,\"nameGroupid\":82371,\"langCode\":\"CHI\",\"roadType\":3}],\"flag\":1,\"subtaskId\":208}";
+		//三一二国道 String parameter = "{\"dbId\":9,\"data\":[{\"nameId\":2763,\"nameGroupid\":2763,\"langCode\":\"CHI\",\"roadType\":3}],\"flag\":1,\"subtaskId\":208}";
+		//
+		//String parameter = "{\"dbId\":9,\"data\":[{\"nameId\":264491,\"nameGroupid\":264491,\"langCode\":\"CHI\",\"roadType\":3}],\"flag\":1,\"subtaskId\":208}";
+		//地铁13 号线 String parameter = "{\"dbId\":9,\"data\":[{\"nameId\":82374,\"nameGroupid\":82374,\"langCode\":\"CHI\",\"roadType\":3}],\"flag\":1,\"subtaskId\":208}";
+		//轨道交通１号线 String parameter = "{\"dbId\":9,\"data\":[{\"nameId\":40611226,\"nameGroupid\":40611227,\"langCode\":\"CHI\",\"roadType\":3}],\"flag\":1,\"subtaskId\":208}";
+		//地铁八通线String parameter = "{\"dbId\":9,\"data\":[{\"nameId\":82363,\"nameGroupid\":82363,\"langCode\":\"CHI\",\"roadType\":3}],\"flag\":1,\"subtaskId\":208}";
+		//测试地铁八通线308000022
+		//String parameter = "{\"dbId\":9,\"data\":[{\"nameId\":308000022,\"nameGroupid\":206000021,\"langCode\":\"CHI\",\"roadType\":3}],\"flag\":1,\"subtaskId\":208}";
+		//地铁11 号线 String parameter = "{\"dbId\":9,\"data\":[{\"nameId\":82372,\"nameGroupid\":82372,\"langCode\":\"CHI\",\"roadType\":3}],\"flag\":1,\"subtaskId\":208}";
+		// 2号线 
+		// 轻轨2号线		String parameter = "{\"dbId\":9,\"data\":[{\"nameId\":82376,\"nameGroupid\":82376,\"langCode\":\"CHI\",\"roadType\":3}],\"flag\":1,\"subtaskId\":208}";
+		// 地铁亦庄线 
+		String parameter = "{\"dbId\":9,\"data\":[{\"nameId\":82362,\"nameGroupid\":82362,\"langCode\":\"CHI\",\"roadType\":3}],\"flag\":1,\"subtaskId\":208}";
 		
 		Connection conn = null;
 		try {
@@ -140,11 +171,14 @@ public class RdNameImportTest {
 			
 			int flag = jsonReq.getInt("flag");
 			
-			int dbId = jsonReq.getInt("dbId");
+//			int dbId = jsonReq.getInt("dbId");
+//			
+//			conn = DBConnector.getInstance().getConnectionById(dbId);
 			
-			conn = DBConnector.getInstance().getConnectionById(dbId);
+			conn = DBConnector.getInstance().getMetaConnection();
 			
 			RdNameOperation operation = new RdNameOperation(conn);
+			
 			
 			if (flag>0) {
 				JSONArray dataList = jsonReq.getJSONArray("data");

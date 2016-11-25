@@ -3,6 +3,7 @@ package com.navinfo.dataservice.control.row.multisrc;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -72,9 +73,12 @@ public class FmMultiSrcSyncService {
 			}
 			//jobId
 			long jobId = obj.getJobId();
-			
+			//syncTime
+			Date date = obj.getSyncTime();
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+			String syncTime = sdf.format(date);
 			String sql = "INSERT INTO FM_MULTISRC_SYNC (SID,SYNC_STATUS,LAST_SYNC_TIME,SYNC_TIME,JOB_ID,ZIP_FILE) "
-					+ "VALUES (FM_MULTISRC_SYNC_SEQ.NEXTVAL,1, ?, SYSDATE,?,NULL)";
+					+ "VALUES (FM_MULTISRC_SYNC_SEQ.NEXTVAL,1,?,TO_TIMESTAMP('"+syncTime+"', 'YYYY-MM-DD HH24:MI:SS:FF6'),?,NULL)";
 			Object[] params = {lastSyncTime,jobId};
 			queryRunner.update(conn, sql, params);
 			return "创建管理记录成功";

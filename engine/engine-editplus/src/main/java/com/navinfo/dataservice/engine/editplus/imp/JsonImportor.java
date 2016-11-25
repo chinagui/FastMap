@@ -1,6 +1,6 @@
 package com.navinfo.dataservice.engine.editplus.imp;
 
-import com.navinfo.dataservice.engine.editplus.model.obj.BasicObj;
+import com.navinfo.dataservice.engine.editplus.model.obj.IxPoiObj;
 
 import net.sf.json.JSONObject;
 
@@ -11,5 +11,5 @@ import net.sf.json.JSONObject;
  * @Description: ObjImportor.java
  */
 public interface JsonImportor {
-	boolean importByJson(BasicObj obj,JSONObject jo)throws ImportException;
+	boolean importAddByJson(IxPoiObj obj,JSONObject jo)throws ImportException, Exception;
 }

@@ -48,37 +48,44 @@ public class EdgeMatchTipsController extends BaseController {
 			if (StringUtils.isEmpty(parameter)) {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
-
+			
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			
+			String validataMsg=validatePars(jsonReq,"g_location","content","user");
+			
+			if(validataMsg!=null){
+				
+				throw new IllegalArgumentException("参数错误："+validataMsg+" not found");
+			}
 
 			JSONObject g_location = jsonReq.getJSONObject("g_location");
 
-			//JSONObject g_guide = jsonReq.getJSONObject("g_guide");
-			
-			//JSONArray feedback = jsonReq.getJSONArray("feedback");
-			
-			String content=jsonReq.getString("content");
+			JSONArray content=jsonReq.getJSONArray ("content");
 
 			int user = jsonReq.getInt("user");
 
-			String sourceType = jsonReq.getString("sourceType");
+			String memo=null;
 			
-			String memo=jsonReq.getString("memo");
+			if(jsonReq.containsKey("memo")){
+				
+				memo=jsonReq.getString("memo");
+			}
+			
 			
 			//String deep = jsonReq.getString("deep");
 			
-			if (StringUtils.isEmpty(content)) {
+			if (content==null||content.isEmpty()) {
 				throw new IllegalArgumentException("参数错误：content不能为空。");
 			}
 			
 			
-			if (StringUtils.isEmpty(sourceType)) {
+		/*	if (StringUtils.isEmpty(sourceType)) {
 				throw new IllegalArgumentException("参数错误：sourceType不能为空。");
-			}
+			}*/
 			
 			EdgeMatchTipsOperator op = new EdgeMatchTipsOperator();
 
-			op.create(sourceType, g_location, content, user,memo);
+			op.create(g_location, content.toString(), user,memo);
 
 			return new ModelAndView("jsonView", success());
 
@@ -120,10 +127,6 @@ public class EdgeMatchTipsController extends BaseController {
 				throw new IllegalArgumentException("参数错误：rowkey不能为空。");
 			}
 			
-
-		/*	if (StringUtils.isEmpty(user)) {
-				throw new IllegalArgumentException("参数错误：user不能为空。");
-			}*/
 
 			EdgeMatchTipsOperator op = new EdgeMatchTipsOperator();
 			
@@ -186,6 +189,24 @@ public class EdgeMatchTipsController extends BaseController {
 
 			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
+	}
+	
+	
+	/**
+	 * 参数的验证
+	 * 
+	 * @param response
+	 * @return
+	 */
+	public String validatePars(JSONObject jsonReq, String... para) {
+		String notExistsKey = null;
+		for (int i = 0; i < para.length; i++) {
+			 if(!jsonReq.containsKey(para[i])){
+				 notExistsKey=para[i];
+				 break;
+			}
+		}
+		return notExistsKey;
 	}
 
 }

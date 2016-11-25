@@ -197,4 +197,7 @@ public class LogGenerator {
 	}
 	
 	
+	public static void writeLog(Connection conn,Collection<BasicObj> basicObjs,String opCmd,int opSg,long userId)throws Exception{
+		//...
+	}
 }

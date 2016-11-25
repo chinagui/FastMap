@@ -229,6 +229,7 @@ public class BasicOperator extends AbstractOperator {
 		sb.append(getWhereForTable(row));
 		String sql = sb.toString();
 		sql = sql.replace(", where", " where");
+		System.out.println(sql);
 		stmt.addBatch(sql);
 
 

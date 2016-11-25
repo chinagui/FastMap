@@ -17,9 +17,6 @@ public class DefaultPrimaryPidChooser {
 		if(result.getUpdateObjs().size()>0){
 			return result.getUpdateObjs().get(0).get(0).objPid();
 		}
-		if(result.getDelObjs().size()>0){
-			return result.getDelObjs().get(0).get(0).objPid();
-		}
 		return 0L;
 	}
 }

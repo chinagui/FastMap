@@ -5,42 +5,29 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import javassist.Translator;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
 
 import org.apache.hadoop.hbase.Cell;
-import org.apache.hadoop.hbase.KeyValue;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Connection;
-import org.apache.hadoop.hbase.client.Delete;
 import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.log4j.Logger;
-import org.apache.solr.client.solrj.SolrServerException;
 
-import com.google.gson.JsonObject;
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.DateUtils;
-import com.navinfo.dataservice.commons.util.JtsGeometryFactory;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
 import com.navinfo.dataservice.dao.fcc.SolrController;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
-import com.sun.source.tree.ForLoopTree;
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.CoordinateArrays;
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Point;
-import com.vividsolutions.jts.geom.util.GeometryTransformer;
-import com.vividsolutions.jts.operation.union.PointGeometryUnion;
 
 /**
  * 预处理tips操作类
@@ -95,7 +82,7 @@ public class PretreatmentTipsOperator {
 
 			// 2.feedback
 			String operateDate = DateUtils.dateToString(new Date(),
-					"yyyyMMddhhmmss");
+					DateUtils.DATE_COMPACTED_FORMAT);
 
 			JSONObject feedbackObj = new JSONObject();
 
@@ -121,7 +108,7 @@ public class PretreatmentTipsOperator {
 			int t_inStatus = 0;
 			int t_inMeth = 1;
 
-			JSONObject jsonTrack = TipsUtils.generateTrackJson(t_lifecycle,
+			JSONObject jsonTrack = TipsUtils.generateTrackJson(t_lifecycle,stage,
 					user, t_command, null, operateDate, t_cStatus, t_dStatus,
 					t_mStatus, t_inStatus, t_inMeth);
 
@@ -271,7 +258,7 @@ public class PretreatmentTipsOperator {
 			JSONObject track = JSONObject.fromObject(new String(result
 					.getValue("data".getBytes(), "track".getBytes())));
 			
-			String date = DateUtils.dateToString(new Date(), "yyyyMMddhhmmss");
+			String date = DateUtils.dateToString(new Date(), DateUtils.DATE_COMPACTED_FORMAT);
 
 			track = addTrackInfo(user, track,date);
 
@@ -360,7 +347,7 @@ public class PretreatmentTipsOperator {
 			JSONObject track = JSONObject.fromObject(new String(result
 					.getValue("data".getBytes(), "track".getBytes())));
 			
-			String date = DateUtils.dateToString(new Date(), "yyyyMMddhhmmss");
+			String date = DateUtils.dateToString(new Date(), DateUtils.DATE_COMPACTED_FORMAT);
 
 			track = addTrackInfo(user, track,date);
 
@@ -442,12 +429,14 @@ public class PretreatmentTipsOperator {
 			
 			JSONObject newSolrIndex=JSONObject.fromObject(solrIndex);
 			
+			newSolrIndex.put("id", newRowkey);
+			
 			
 			//1.cut line
 			
 			Point point=(Point)GeoTranslator.geojson2Jts(tipGeometry);
 			
-			JSONObject oldGeo=solrIndex.getJSONObject("g_location");
+			JSONObject oldGeo=JSONObject.fromObject(solrIndex.get("g_location")) ;
 			
 			List<JSONObject> cutGeoResult=cutLineByPoint(point,oldGeo);
 			
@@ -462,13 +451,21 @@ public class PretreatmentTipsOperator {
 			JSONObject g_location2=cutGeoResult.get(1);
 			
 			
+			JSONObject g_guide=JSONObject.fromObject(solrIndex.get("g_guide"));
+			
 			geo1.put("g_location", g_location1);
 			
-			geo1.put("g_guide", solrIndex.getJSONObject("g_guide"));
+			geo1.put("g_guide",g_guide);
 			
 			geo2.put("g_location", g_location2);
 			
-			geo2.put("g_guide", solrIndex.getJSONObject("g_guide"));
+			geo2.put("g_guide", g_guide);
+			
+			
+			
+			solrIndex.put("g_location", g_location1);
+
+			newSolrIndex.put("g_location", g_location2);
 			
 			
 			put.addColumn("data".getBytes(), "geometry".getBytes(), geo1
@@ -492,7 +489,7 @@ public class PretreatmentTipsOperator {
 			JSONObject track = JSONObject.fromObject(new String(result
 					.getValue("data".getBytes(), "track".getBytes())));
 			
-			String date = DateUtils.dateToString(new Date(), "yyyyMMddhhmmss");
+			String date = DateUtils.dateToString(new Date(), DateUtils.DATE_COMPACTED_FORMAT);
 
 			track = addTrackInfo(user, track,date);
 			
@@ -511,12 +508,18 @@ public class PretreatmentTipsOperator {
 			solrIndex.put("handler", user);
 
 			solr.addTips(solrIndex);
+			
+			solr.addTips(newSolrIndex);
 
 			htab.put(put);
+			
+			htab.put(newPut);
 
 			return false;
 
-		} catch (IOException e) {
+		} catch (Exception e) {
+			
+			e.printStackTrace();
 
 			logger.error("打断出错,rowkey:" + rowkey + "原因：" + e.getMessage());
 
@@ -564,7 +567,9 @@ public class PretreatmentTipsOperator {
 	private void updateFcTipDeep(JSONObject solrIndex, Put newPut, Put put,
 			JSONObject newSolrIndex, JSONObject g_location1,
 			JSONObject g_location2) throws Exception {
-		JSONObject deep1=solrIndex.getJSONObject("deep");
+		
+		
+		JSONObject deep1=JSONObject.fromObject(solrIndex.get("deep"));;
 		
 		// 几何中心点
 		JSONObject pointGeo1 = getMidPointByGeometry(g_location1);
@@ -573,7 +578,7 @@ public class PretreatmentTipsOperator {
 		deep1.put("geo", pointGeo1);
 		
 		
-		JSONObject deep2=solrIndex.getJSONObject("deep");
+		JSONObject deep2=JSONObject.fromObject(solrIndex.get("deep"));;
 		
 		// 几何中心点
 		JSONObject  pointGeo2= getMidPointByGeometry(g_location2);
@@ -587,9 +592,11 @@ public class PretreatmentTipsOperator {
 		newPut.addColumn("data".getBytes(), "deep".getBytes(), deep2.toString()
 				.getBytes());
 		
-		newSolrIndex.put("deep", deep1);
+		solrIndex.put("deep", deep1);
 		
-		solrIndex.put("deep", deep2);
+		newSolrIndex.put("deep", deep2);
+		
+		
 	}
 
 	/**
@@ -676,10 +683,23 @@ public class PretreatmentTipsOperator {
 	 */
 	private  List<JSONObject> cutLineByPoint(Point point,JSONObject  geojson) throws Exception{
 		
+		
 		List<JSONObject> resultGeoList = new ArrayList<JSONObject>();
+		
+		
+		
+		Geometry geo=GeoTranslator.geojson2Jts(geojson);
+		
+		//将坐标点扩大100000倍，（web给的坐标点，可能不在线上，有一定的误差）
+		geo=GeoTranslator.transform(geo, 100000, 5);
+		
+		geojson=GeoTranslator.jts2Geojson(geo);
 		
 		double lon = point.getCoordinate().x * 100000;
 		double lat = point.getCoordinate().y * 100000;
+		
+/*		double lon = point.getCoordinate().x ;
+		double lat = point.getCoordinate().y ;*/
 		JSONArray ja1 = new JSONArray();
 		JSONArray ja2 = new JSONArray();
 		JSONArray jaLink = geojson.getJSONArray("coordinates");
@@ -729,9 +749,10 @@ public class PretreatmentTipsOperator {
 		sGeojson2.put("type", "LineString");
 		sGeojson2.put("coordinates", ja2);
 		
+		//缩小0.00001倍
+		sGeojson1=GeoTranslator.jts2Geojson(GeoTranslator.transform(GeoTranslator.geojson2Jts(sGeojson1), 0.00001, 5));
 		
-		//JtsGeometryFactory.createLineString(ja1);
-		// GeoTranslator.jts2Geojson(midGeo);
+		sGeojson2=GeoTranslator.jts2Geojson(GeoTranslator.transform(GeoTranslator.geojson2Jts(sGeojson2), 0.00001, 5));
 		
 		resultGeoList.add(sGeojson1);
 		resultGeoList.add(sGeojson2);

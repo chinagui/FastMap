@@ -39,6 +39,7 @@ import com.navinfo.navicommons.geo.computation.GeometryUtils;
  * 
  */
 
+
 class ErrorType {
 	static int InvalidLifecycle = 1;
 
@@ -52,7 +53,11 @@ class ErrorType {
 	
 }
 
+	
+
 public class TipsUpload {
+	
+	static int IMPORT_STATE=1;
 
 	private Map<String, JSONObject> insertTips = new HashMap<String, JSONObject>();
 
@@ -442,7 +447,7 @@ public class TipsUpload {
 
 		Put put = new Put(rowkey.getBytes());
 		
-		JSONObject jsonTrack =TipsUtils.generateTrackJson(3, json.getInt("t_handler"),
+		JSONObject jsonTrack =TipsUtils.generateTrackJson(3, TipsUpload.IMPORT_STATE,json.getInt("t_handler"),
 				json.getInt("t_command"), null, json.getString("t_operateDate"),
 				json.getInt("t_cStatus"),json.getInt("t_dStatus"),json.getInt("t_mStatus"),
 				json.getInt("t_inStatus"),json.getInt("t_inMeth"));
@@ -559,7 +564,7 @@ public class TipsUpload {
 
 		int lifecycle = json.getInt("t_lifecycle");
 
-		JSONObject jsonTrack = TipsUtils.generateTrackJson(lifecycle,
+		JSONObject jsonTrack = TipsUtils.generateTrackJson(lifecycle,TipsUpload.IMPORT_STATE,
 				json.getInt("t_handler"), json.getInt("t_command"),
 				oldTip.getJSONArray("t_trackInfo"),json.getString("t_operateDate"),
 				json.getInt("t_cStatus"),json.getInt("t_dStatus"),json.getInt("t_mStatus"),

@@ -20,10 +20,24 @@ import com.navinfo.navicommons.database.sql.RunnableSQL;
  */
 public class OperationResult{
 	
+	//key:对象d
 	private List<BasicObj> allObjs=new ArrayList<BasicObj>();
+	
+	
+	public Map<String,Map<Long,BasicObj>> getAllObjsMap(){
+		//todo
+		return null;
+	}
 	
 	public List<BasicObj> getAllObjs() {
 		return allObjs;
+	}
+	public Map<Long,BasicObj> getObjsMapByType(String objType){
+		Map<Long,BasicObj> result = new HashMap<Long,BasicObj>();
+		for(BasicObj obj:allObjs){
+			//todo
+		}
+		return result;
 	}
 
 //	private JSONArray logs = new JSONArray();//操作业务逻辑完成后统一计算

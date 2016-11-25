@@ -18,6 +18,7 @@ import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.engine.meta.area.ScPointAdminArea;
+import com.navinfo.navicommons.database.Page;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -300,11 +301,6 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 						}
 					}
 				}
-				
-				
-				
-				
-				
 			}
 			
 			// 添加排序条件
@@ -332,7 +328,7 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 			int startRow = (pageNum-1) * pageSize + 1;
 
 			int endRow = pageNum * pageSize;
-			System.out.println(sql.toString());
+			//System.out.println(sql.toString());
 			pstmt = conn.prepareStatement(sql.toString());
 			
 			if (flag>0) {
@@ -344,9 +340,6 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 
 				pstmt.setInt(2, startRow);
 			}
-			
-			
-			
 			resultSet = pstmt.executeQuery();
 			
 			int total = 0;
@@ -492,7 +485,7 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 	 * @author zl zhangli5174@navinfo.com
 	 * @date 2016年11月17日 下午8:16:07 
 	 */
-	public JSONObject searchForWebByNameId(int nameId) {
+	public JSONObject searchForWebByNameId(String nameId) {
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
@@ -505,26 +498,17 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 			ScPointAdminArea scPointAdminArea = new ScPointAdminArea(conn);
 			Map<String,String> adminMap = scPointAdminArea.getAdminMap();
 			StringBuilder sql = new StringBuilder();
-			String ids = "";
-			String tmep = "";
-			Clob pidClod = null;
-			
 				sql.append("SELECT * ");
 				sql.append(" from rd_name a where 1=1 ");
-				sql.append(" WHERE a.name_id = ?");
-			System.out.println(sql.toString());
+				sql.append(" And a.name_id = ?");
 			pstmt = conn.prepareStatement(sql.toString());
-				pstmt.setInt(1, nameId);
-			
+				pstmt.setString(1, nameId);
 			resultSet = pstmt.executeQuery();
 			List<JSONObject> data = new ArrayList<JSONObject>();
-			
 			while (resultSet.next()) {
 				data.add(result2Json(resultSet, adminMap));
 			}
-			
-			result.put("data", data);
-			
+			result.put("data", data.get(0));
 			return result;
 		} catch (Exception e) {
 			
@@ -575,4 +559,6 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 		
 		//return null;
 	}
+
+	
 }

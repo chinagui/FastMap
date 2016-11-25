@@ -36,7 +36,7 @@ public class BatchTest {
 		Connection conn = DBConnector.getInstance().getConnectionById(17);		
 		BatchCommand batchCommand=new BatchCommand();
 		OperationResult operationResult=new OperationResult();
-		BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", null, 308, false, false);
+		BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", null, 308, false);
 //		operationResult.putObj(obj);
 		IxPoi row=(IxPoi) obj.getMainrow();
 		row.setKindCode("newkind");

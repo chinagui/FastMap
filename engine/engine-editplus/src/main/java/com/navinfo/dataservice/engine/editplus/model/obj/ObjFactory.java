@@ -49,8 +49,16 @@ public class ObjFactory {
 	 * @param isSetPid：
 	 * @return
 	 */
-	public BasicObj create(String objType,boolean isSetPid){
-		return null;
+	public BasicObj create(String objType)throws Exception{
+		GlmObject glmObj = GlmFactory.getInstance().getObjByType(objType);
+		GlmTable mainTab = glmObj.getMainTable();
+		long pid = PidUtil.getInstance().applyPidByTableName(mainTab.getName());
+		BasicRow mainrow = (BasicRow)Class.forName(mainTab.getModelClassName()).getConstructor(long.class).newInstance(pid);
+		mainrow.setRowId(UuidUtils.genUuid());
+		String pkCol = mainTab.getPkColumn();
+		mainrow.setAttrByCol(pkCol, pid);
+		mainrow.setOpType(OperationType.INSERT);
+		return (BasicObj)Class.forName(glmObj.getModelClassName()).getConstructor(BasicRow.class).newInstance(mainrow);
 	}
 	
 	/**
@@ -70,7 +78,7 @@ public class ObjFactory {
 		return bObj;
 	}
 	/**
-	 * 新建一个表记录
+	 * 新建一个表记录,只用于子表创建
 	 * @param tableName：表名
 	 * @param objPid：表所属对象的对象pid
 	 * @return

@@ -65,6 +65,9 @@ public abstract class BasicRow implements Logable{
 
 	public long getGeoPid()throws NonGeoPidException,Exception{
 		GlmRef ref = GlmFactory.getInstance().getTableByName(tableName()).getGeoRef();
+		if(ref==null){
+			return objPid;
+		}
 		if(ref.isRefMain()){
 			return (long)getAttrByColName(ref.getCol());
 		}else{

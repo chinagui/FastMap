@@ -9,22 +9,32 @@ import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.rd.slope.RdSlope;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
+
 /**
- * @author zhaokk
- * 修改坡度参数基础类 
+ * @author zhaokk 修改坡度参数基础类
  */
 public class Command extends AbstractCommand {
 
 	private String requester;
 
 	private JSONObject content;
-	
+
 	private int outLinkPid;
-	
+
+	private double length;
+
+	public double getLength() {
+		return length;
+	}
+
+	public void setLength(double length) {
+		this.length = length;
+	}
+
 	private List<Integer> seriesLinkPids = new ArrayList<>();// 持续links
-	
+
 	private RdSlope slope;
-	
+
 	public RdSlope getSlope() {
 		return slope;
 	}
@@ -34,7 +44,7 @@ public class Command extends AbstractCommand {
 	}
 
 	private int pid;
-	
+
 	public int getPid() {
 		return pid;
 	}
@@ -55,7 +65,7 @@ public class Command extends AbstractCommand {
 	public OperType getOperType() {
 		return OperType.UPDATE;
 	}
-	
+
 	@Override
 	public ObjType getObjType() {
 		return ObjType.RDSLOPE;
@@ -71,10 +81,11 @@ public class Command extends AbstractCommand {
 		this.setDbId(json.getInt("dbId"));
 		this.content = json.getJSONObject("data");
 		this.pid = this.content.getInt("pid");
-		if(this.content.containsKey("linkPid")){
+		if (this.content.containsKey("linkPid")) {
 			this.setOutLinkPid(this.content.getInt("linkPid"));
 		}
-		if(this.content.containsKey("linkPids")){
+		if (this.content.containsKey("linkPids")) {
+            this.setLength(content.getDouble("length"));
 			seriesLinkPids = new ArrayList<Integer>();
 			JSONArray array = this.content.getJSONArray("linkPids");
 			for (int i = 0; i < array.size(); i++) {

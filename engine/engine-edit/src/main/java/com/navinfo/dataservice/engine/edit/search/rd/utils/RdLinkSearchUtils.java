@@ -339,11 +339,10 @@ public class RdLinkSearchUtils {
 			if (currentLink.getKind() >= 10) {
 				break;
 			}
-			if (this.getLinksLength(tracks) + currentLink.getLength() + length > 150) {
-				break;
-			} else {
+			if (this.getLinksLength(tracks) + currentLink.getLength() + length > 100) {
 				tracks.add(currentLink);
-			}
+				break;
+			} 
 			// 计算
 			cuurentLinkPid = currentLink.getPid();
 			cruuentNodePidDir = (cruuentNodePidDir == currentLink.getsNodePid()) ? currentLink

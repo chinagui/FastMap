@@ -10,29 +10,31 @@ import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLink;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
+import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 /**
- * 修行铁路线基础类 
+ * 修行铁路线基础类
+ * 
  * @author zhangxiaolong
- *
+ * 
  */
 public class Command extends AbstractCommand {
 
 	private String requester;
-	
+
 	private int linkPid;
-	
-	private JSONObject linkGeom;
-	
-	private JSONArray interLines;
-	
+
+	private Geometry linkGeom;
+
+	private JSONArray catchInfos;
+
 	private RwLink updateLink;
-	
+
 	private List<RdGsc> gscList;
-	
+
 	public RwLink getUpdateLink() {
 		return updateLink;
 	}
@@ -41,12 +43,10 @@ public class Command extends AbstractCommand {
 		this.updateLink = updateLink;
 	}
 
-	private JSONArray interNodes;
-
 	public int getLinkPid() {
 		return linkPid;
 	}
-	
+
 	public List<RdGsc> getGscList() {
 		return gscList;
 	}
@@ -55,53 +55,61 @@ public class Command extends AbstractCommand {
 		this.gscList = gscList;
 	}
 
-	public JSONObject getLinkGeom() {
+	public Geometry getLinkGeom() {
 		return linkGeom;
 	}
 
-	public JSONArray getInterLines() {
-		return interLines;
+	public void setLinkGeom(Geometry linkGeom) {
+		this.linkGeom = linkGeom;
 	}
 
-	public JSONArray getInterNodes() {
-		return interNodes;
+	public JSONArray getCatchInfos() {
+		return catchInfos;
+	}
+
+	public void setCatchInfos(JSONArray catchInfos) {
+		this.catchInfos = catchInfos;
+	}
+
+	public void setLinkPid(int linkPid) {
+		this.linkPid = linkPid;
 	}
 
 	@Override
 	public OperType getOperType() {
-		
+
 		return OperType.REPAIR;
 	}
 
 	@Override
 	public String getRequester() {
-		
+
 		return requester;
 	}
 
 	@Override
 	public ObjType getObjType() {
-		
+
 		return ObjType.RWLINK;
 	}
 
-	public Command(JSONObject json,String requester) throws JSONException{
-		
+	public Command(JSONObject json, String requester) throws JSONException {
+
 		this.requester = requester;
-		
+
 		this.setDbId(json.getInt("dbId"));
-		
+
 		this.linkPid = json.getInt("objId");
-		
+
 		JSONObject data = json.getJSONObject("data");
-		
+
 		JSONObject geometry = data.getJSONObject("geometry");
-		
-		this.linkGeom = GeoTranslator.jts2Geojson(GeoTranslator.geojson2Jts(geometry, 1, 5));
-		//修行后挂接对应RW_LINK信息
-		this.interLines = data.getJSONArray("interLinks");
-		//修行后挂接对应的RW_NODE信息
-		this.interNodes = data.getJSONArray("interNodes");
+
+		this.linkGeom = GeoTranslator.geojson2Jts(geometry, 1, 5);
+		// 修行挂接信息
+		if (data.containsKey("catchInfos")) {
+			this.catchInfos = data.getJSONArray("catchInfos");
+		}
 	}
 
 }

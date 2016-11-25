@@ -9,11 +9,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.dbutils.DbUtils;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
@@ -27,7 +25,6 @@ import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.navicommons.geo.computation.JGeometryUtil;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.io.WKTReader;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -50,12 +47,12 @@ public class RdObjectSearch implements ISearch {
 	public IObj searchDataByPid(int pid) throws Exception {
 		return (IObj) new AbstractSelector(RdObject.class, conn).loadById(pid, false);
 	}
-	
+
 	@Override
 	public List<IObj> searchDataByPids(List<Integer> pidList) throws Exception {
 		return null;
 	}
-	
+
 	@Override
 	public List<SearchSnapshot> searchDataBySpatial(String wkt) throws Exception {
 		return null;
@@ -70,231 +67,53 @@ public class RdObjectSearch implements ISearch {
 	public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z, int gap) throws Exception {
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "WITH TMP1 AS (SELECT LINK_PID FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2 GROUP BY LINK_PID), TMP4 AS (SELECT NODE_PID FROM RD_NODE WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:2, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2 GROUP BY NODE_PID), TMP_1 AS (SELECT /*+ leading(A,B) use_hash(A,B)*/ C.PID FROM TMP1 A, RD_ROAD_LINK B, RD_OBJECT_ROAD C WHERE A.LINK_PID = B.LINK_PID AND B.PID = C.ROAD_PID AND B.U_RECORD != 2 AND C.U_RECORD != 2 GROUP BY C.PID), TMP_3 AS (SELECT /*+ leading(A,B) use_hash(A,B)*/ B.PID FROM TMP1 A, RD_OBJECT_LINK B WHERE A.LINK_PID = B.LINK_PID AND B.U_RECORD != 2 GROUP BY B.PID), TMP_5 AS (SELECT /*+ leading(A,B) use_hash(A,B)*/ C.PID FROM TMP4 A, RD_INTER_NODE B, RD_OBJECT_INTER C WHERE A.NODE_PID = B.NODE_PID AND C.INTER_PID = B.PID AND B.U_RECORD != 2 AND C.U_RECORD != 2 GROUP BY C.PID), TMP_9 AS (SELECT /*+ leading(A,B) use_hash(A,B)*/ C.PID FROM TMP1 A, RD_INTER_LINK B, RD_OBJECT_INTER C WHERE A.LINK_PID = B.LINK_PID AND C.INTER_PID = B.PID AND B.U_RECORD != 2 AND C.U_RECORD != 2 GROUP BY C.PID), TMP_10 AS (SELECT PID FROM TMP_1 UNION SELECT PID FROM TMP_3 UNION SELECT PID FROM TMP_5 UNION SELECT PID FROM TMP_9), TMP2 AS (SELECT /*index(B)*/ B.PID, A.LINK_PID AS OBJPID, SDO_UTIL.TO_WKTGEOMETRY_VARCHAR(C.GEOMETRY) AS GEOMETRY, 2 AS OBJTYPE, D.ROAD_PID AS CHILDPID FROM TMP_10 B, RD_OBJECT_ROAD D, RD_ROAD_LINK A, RD_LINK C WHERE B.PID = D.PID AND D.ROAD_PID = A.PID AND C.LINK_PID = A.LINK_PID AND A.U_RECORD != 2 AND C.U_RECORD != 2), TMP3 AS (SELECT /*index(A)*/ A.PID, B.LINK_PID AS OBJPID, SDO_UTIL.  TO_WKTGEOMETRY_VARCHAR(C.GEOMETRY) AS GEOMETRY, 0          AS OBJTYPE, B.LINK_PID AS CHILDPID FROM TMP_10 A, RD_OBJECT_LINK B, RD_LINK C WHERE A.PID = B.PID AND B.LINK_PID = C.LINK_PID AND B.U_RECORD != 2), TMP5 AS (SELECT /*index(B)*/ B.PID, A.NODE_PID AS OBJPID, SDO_UTIL.TO_WKTGEOMETRY_VARCHAR(C.GEOMETRY) AS GEOMETRY, 3 AS OBJTYPE, D.INTER_PID AS CHILDPID FROM TMP_10 B, RD_OBJECT_INTER D, RD_INTER_NODE A, RD_NODE C WHERE B.PID = D.PID AND D.INTER_PID = A.PID AND C.NODE_PID = A.NODE_PID AND A.U_RECORD != 2 AND D.U_RECORD != 2 AND C.U_RECORD != 2), TMP9 AS (SELECT /*index(B)*/ B.PID, A.LINK_PID AS OBJPID, SDO_UTIL.TO_WKTGEOMETRY_VARCHAR(C.GEOMETRY) AS GEOMETRY, 1 AS OBJTYPE, D.INTER_PID AS CHILDPID FROM TMP_10 B, RD_OBJECT_INTER D, RD_INTER_LINK A, RD_LINK C WHERE B.PID = D.PID AND D.INTER_PID = A.PID AND A.LINK_PID = C.LINK_PID AND A.U_RECORD != 2 AND D.U_RECORD != 2 AND C.U_RECORD != 2) SELECT TMP7.*, SDO_UTIL.TO_WKTGEOMETRY_VARCHAR(TMP8.GEOMETRY) AS OBJGEO FROM (SELECT TMP6.* FROM (SELECT * FROM TMP2 UNION ALL SELECT * FROM TMP3 UNION ALL SELECT * FROM TMP5 UNION ALL SELECT * FROM TMP9) TMP6 GROUP BY TMP6.PID, TMP6.OBJPID, TMP6.GEOMETRY, TMP6.OBJTYPE, TMP6.CHILDPID) TMP7 LEFT JOIN RD_OBJECT TMP8 ON TMP7.PID = TMP8.PID WHERE TMP8.U_RECORD != 2 ";
+		String sql = "WITH TMP1 AS (SELECT LINK_PID FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2), TMP2 AS (SELECT NODE_PID FROM RD_NODE WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:2, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2), TMP1_1 AS (SELECT /*+index(C road_pid)*/ C.PID from RD_OBJECT_ROAD C where exists( select /*+index(B,PID)*/ 1 from tmp1 A,RD_ROAD_LINK B where A.LINK_PID = B.LINK_PID and B.U_RECORD != 2 and b.pid = c.road_pid ) and C.U_RECORD != 2), TMP1_2 AS (SELECT /*+leading(A,B)use_hash(A,B)*/ B.PID FROM TMP1 A, RD_OBJECT_LINK B WHERE A.LINK_PID = B.LINK_PID AND B.U_RECORD != 2), TMP2_1 AS (SELECT /*+index(C INTER_PID)*/ C.PID FROM RD_OBJECT_INTER C where exists( select /*+index(B PID)*/ 1 from TMP2 A,RD_INTER_NODE B where A.NODE_PID = B.NODE_PID and B.U_RECORD != 2 and B.PID = C.INTER_PID ) and C.U_RECORD != 2), TMP1_3 AS (SELECT /*+index(C INTER_PID)*/ C.PID FROM RD_OBJECT_INTER C where exists( select /*+index(B PID)*/ 1 from TMP1 A, RD_INTER_LINK B where A.LINK_PID = B.LINK_PID and B.U_RECORD != 2 and B.PID = C.INTER_PID ) and C.U_RECORD != 2 GROUP BY C.PID), TMP3 AS (SELECT PID FROM TMP1_1 UNION SELECT PID FROM TMP1_2 UNION SELECT PID FROM TMP2_1 UNION SELECT PID FROM TMP1_3) select tmp3.pid,SDO_UTIL.TO_WKTGEOMETRY_VARCHAR(C.GEOMETRY) as GEOMETRY from tmp3 left join RD_OBJECT c on tmp3.pid = c.pid";
 
-		//String sql = "";
-		
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
 
-		WKTReader wktReader = new WKTReader();
-		
-		System.out.println("1："+DateUtils.dateToString(new Date()));
-
 		try {
 			pstmt = conn.prepareStatement(sql);
 
-			//此处gap写死300,避免查询为空渲染不出数据，导致外包线不连续
-			String wkt = MercatorProjection.getWktWithGap(x, y, z, (z-15)*gap);
+			//扩圈1900像素
+			String wkt = MercatorProjection.getWktWithGap(x, y, z, 1900);
 
 			pstmt.setString(1, wkt);
 
 			pstmt.setString(2, wkt);
-			
+
 			System.out.println(wkt);
-			
+
 			resultSet = pstmt.executeQuery();
-			
-			System.out.println("2："+DateUtils.dateToString(new Date()));
+
+			System.out.println("2：" + DateUtils.dateToString(new Date()));
 
 			double px = MercatorProjection.tileXToPixelX(x);
 
 			double py = MercatorProjection.tileYToPixelY(y);
 
-			Map<Integer, Map<String, List<JSONObject>>> values = new HashMap<Integer, Map<String, List<JSONObject>>>();
-
 			while (resultSet.next()) {
-
-				List<Integer> linkPidList = new ArrayList<>();
-
-				List<Integer> nodePidList = new ArrayList<>();
-
-				int pid = resultSet.getInt("pid");
-
-				// 处理主表pid，将主表pid加入Map
-				if (!values.containsKey(pid)) {
-					Map<String, List<JSONObject>> resultMap = new HashMap<String, List<JSONObject>>();
-
-					List<JSONObject> objGeoList = new ArrayList<>();
-
-					String objPoint = resultSet.getString("objGeo");
-
-					Geometry objNode = wktReader.read(objPoint);
-
-					JSONObject rdObjJSON = new JSONObject();
-
-					rdObjJSON.put("objGeo",
-							Geojson.lonlat2Pixel(objNode.getCoordinate().x, objNode.getCoordinate().y, z, px, py));
-
-					objGeoList.add(rdObjJSON);
-
-					resultMap.put("objGeo", objGeoList);
-
-					values.put(pid, resultMap);
-				}
-
-				Map<String, List<JSONObject>> resultMap = values.get(pid);
-
-				// type:0 表示返回的结果是rd_object_link的数据，type:1表示inter,type:2表示road
-				int type = resultSet.getInt("objType");
-
-				if (type != 3) {
-					int linkPid = resultSet.getInt("objPid");
-
-					if (!linkPidList.contains(linkPid)) {
-						if (!resultMap.containsKey("link")) {
-							resultMap.put("link", new ArrayList<JSONObject>());
-						}
-
-						List<JSONObject> linkList = resultMap.get("link");
-
-						JSONObject linkJSON = new JSONObject();
-
-						String linkWkt = resultSet.getString("geometry");
-
-						int childPid = resultSet.getInt("childPid");
-
-						JSONObject geojson = Geojson.wkt2Geojson(linkWkt);
-
-						linkJSON.put("linkCor", geojson.getJSONArray("coordinates"));
-
-						JSONObject jo = Geojson.link2Pixel(geojson, px, py, z);
-
-						linkJSON.put("g", jo.getJSONArray("coordinates"));
-
-						linkJSON.put("i", linkPid);
-
-						// 要素类型
-						linkJSON.put("t", type);
-
-						// link所属的CRF交叉点或者road的pid
-						linkJSON.put("p", childPid);
-
-						linkList.add(linkJSON);
-
-						resultMap.put("link", linkList);
-
-						linkPidList.add(linkPid);
-					}
-				} else {
-					String nodeWkt = resultSet.getString("geometry");
-
-					int nodePid = resultSet.getInt("objpid");
-					
-					int childPid = resultSet.getInt("childPid");
-
-					if (nodeWkt != null && !nodePidList.contains(nodePid)) {
-
-						if (!resultMap.containsKey("node")) {
-							resultMap.put("node", new ArrayList<JSONObject>());
-						}
-
-						List<JSONObject> nodeList = resultMap.get("node");
-
-						Geometry nodeGeo = wktReader.read(nodeWkt);
-
-						JSONObject nodeJSON = new JSONObject();
-
-						nodeJSON.put("nodeCor", GeoTranslator.jts2Geojson(nodeGeo).getJSONArray("coordinates"));
-
-						nodeJSON.put("g",
-								Geojson.lonlat2Pixel(nodeGeo.getCoordinate().x, nodeGeo.getCoordinate().y, z, px, py));
-
-						nodeJSON.put("i", nodePid);
-						
-						nodeJSON.put("t", 1);
-						
-						nodeJSON.put("p", childPid);
-						
-						nodeList.add(nodeJSON);
-
-						resultMap.put("node", nodeList);
-
-						nodePidList.add(nodePid);
-					}
-				}
-			}
-			
-			System.out.println("3："+DateUtils.dateToString(new Date()));
-			
-			for (Map.Entry<Integer, Map<String, List<JSONObject>>> entry : values.entrySet()) {
-				int pid = entry.getKey();
-
-				Map<String, List<JSONObject>> rdOjbMap = entry.getValue();
 
 				SearchSnapshot snapshot = new SearchSnapshot();
 
-				snapshot.setI(String.valueOf(pid));
+				String pid = resultSet.getString("pid");
 
+				String linkWkt = resultSet.getString("geometry");
+
+				JSONObject geojson = Geojson.wkt2Geojson(linkWkt);
+				
+				Geojson.coord2Pixel(geojson, z, px, py);
+
+				snapshot.setG(geojson.getJSONArray("coordinates"));
+
+				snapshot.setI(pid);
+				
 				snapshot.setT(41);
-
-				List<JSONObject> gObjList = rdOjbMap.get("objGeo");
-
-				snapshot.setG(gObjList.get(0).getJSONArray("objGeo"));
-
-				JSONArray gLinkArray = new JSONArray();
-
-				List<JSONObject> linkObjList = rdOjbMap.get("link");
-
-				for (JSONObject linkJObj : linkObjList) {
-					gLinkArray.add(linkJObj);
-				}
-
-				List<JSONObject> nodeObjList = rdOjbMap.get("node");
-
-				JSONArray gNodeArray = new JSONArray();
-
-				if (CollectionUtils.isNotEmpty(nodeObjList)) {
-					for (JSONObject nodeJObj : nodeObjList) {
-						gNodeArray.add(nodeJObj);
-					}
-				}
-
-				JSONObject jsonM = new JSONObject();
-
-				Coordinate[] coordinates = getLineFromMuitPoint(gLinkArray,gNodeArray);
-				
-				System.out.println("4："+DateUtils.dateToString(new Date()));
-
-				Geometry metry = JGeometryUtil.getPolygonFromPoint(coordinates);
-				
-				System.out.println("5："+DateUtils.dateToString(new Date()));
-				
-				Geometry boundary = metry.getBoundary();
-				
-				boundary = GeoTranslator.transform(boundary,1,5);
-				
-				Coordinate[] cs = boundary.getCoordinates();
-				
-				double[][] ps = new double[cs.length][2];
-
-				for (int i = 0; i < cs.length; i++) {
-					ps[i][0] = cs[i].x;
-
-					ps[i][1] = cs[i].y;
-				}
-				
-				JSONObject geojson = new JSONObject();
-
-				geojson.put("type", "LineString");
-
-				geojson.put("coordinates", ps);
-				
-				JSONObject obj = Geojson.link2Pixel(geojson, px, py, z);
-				
-				jsonM.put("a", gLinkArray);
-
-				jsonM.put("b", gNodeArray);
-				
-				jsonM.put("c", obj.getJSONArray("coordinates"));
-
-				snapshot.setM(jsonM);
-
-				System.out.println("6："+DateUtils.dateToString(new Date()));
+				//查询子表数据
+				loadChildData(snapshot, px, py, z);
 				
 				list.add(snapshot);
-
 			}
 		} catch (Exception e) {
 
@@ -320,6 +139,133 @@ public class RdObjectSearch implements ISearch {
 		return list;
 	}
 
+	private void loadChildData(SearchSnapshot snapshot, double px, double py,int z) throws Exception {
+
+		int pid = Integer.parseInt(snapshot.getI());
+
+		String sql = "select tmp.*,SDO_UTIL.TO_WKTGEOMETRY_VARCHAR(C.GEOMETRY) as geometry from( select 1 as type,B.LINK_PID as lnpid,A.INTER_PID as cpid from RD_OBJECT_INTER A,RD_INTER_LINK B where A.INTER_PID = b.PID and a.pid = :1 and a.U_RECORD !=2 and b.U_RECORD !=2 union all select 2 as type,B.LINK_PID as lnpid,A.road_PID as cpid from RD_OBJECT_ROAD A,RD_ROAD_LINK B where A.ROAD_PID = b.PID and a.pid = :2 and a.U_RECORD !=2 and b.U_RECORD !=2 union all select 0 as type,link_pid,pid as cpid from rd_object_link where pid = :3 and u_record !=2）tmp left join rd_link c on tmp.lnpid = c.link_pid union all select tmp.*,SDO_UTIL.TO_WKTGEOMETRY_VARCHAR(C.GEOMETRY) as geometry from(select 3 as type,B.NODE_PID as lnpid,a.INTER_PID as cpid from RD_OBJECT_INTER A,RD_INTER_NODE B where A.INTER_PID = b.PID and a.pid = :4 and a.U_RECORD !=2 and b.U_RECORD !=2)tmp left join rd_node C on tmp.lnpid = c.node_pid";
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sql);
+
+			pstmt.setInt(1, pid);
+
+			pstmt.setInt(2, pid);
+
+			pstmt.setInt(3, pid);
+
+			pstmt.setInt(4, pid);
+			
+			JSONObject jsonM = new JSONObject();
+
+			resultSet = pstmt.executeQuery();
+			
+			JSONArray linkArray = new JSONArray();
+			
+			JSONArray nodeArray = new JSONArray();
+
+			while (resultSet.next()) {
+
+				int type = resultSet.getInt("type");
+
+				JSONObject linkJObj = null;
+
+				JSONObject nodeJObj = null;
+
+				int lnPid = resultSet.getInt("lnPid");
+
+				int cPid = resultSet.getInt("cPid");
+
+				String lnGeometry = resultSet.getString("geometry");
+				
+				//转换为瓦片的几何
+				JSONObject geojson = Geojson.wkt2Geojson(lnGeometry);
+				
+				if (type != 3) {
+					//线几何对象
+					linkJObj = new JSONObject();
+
+					linkJObj.put("i", lnPid);
+
+					linkJObj.put("p", cPid);
+
+					linkJObj.put("linkCor", geojson.getJSONArray("coordinates"));
+					
+					Geojson.coord2Pixel(geojson, z, px, py);
+					
+					linkJObj.put("g", geojson.getJSONArray("coordinates"));
+					
+					linkJObj.put("t", type);
+					
+					linkArray.add(linkJObj);
+				} else {
+					//点几何对象
+					nodeJObj = new JSONObject();
+
+					nodeJObj.put("i", lnPid);
+
+					nodeJObj.put("p", cPid);
+					
+					nodeJObj.put("t", 1);
+
+					nodeJObj.put("nodeCor", geojson.getJSONArray("coordinates"));
+					
+					Geojson.coord2Pixel(geojson, z, px, py);
+					
+					nodeJObj.put("g", geojson.getJSONArray("coordinates"));
+					
+					nodeArray.add(nodeJObj);
+				}
+			}
+			
+			//包络线几何
+			Coordinate[] cors = getLineFromMuitPoint(linkArray,nodeArray);
+			
+			Geometry metry = JGeometryUtil.getPolygonFromPoint(cors);
+			
+			Geometry boundary = metry.getBoundary();
+			
+			boundary = GeoTranslator.transform(boundary,1,5);
+			
+			Coordinate[] cs = boundary.getCoordinates();
+			
+			double[][] ps = new double[cs.length][2];
+
+			for (int i = 0; i < cs.length; i++) {
+				ps[i][0] = cs[i].x;
+
+				ps[i][1] = cs[i].y;
+			}
+			
+			JSONObject geojson = new JSONObject();       
+
+			geojson.put("type", "LineString");
+
+			geojson.put("coordinates", ps);
+			
+			JSONObject obj = Geojson.link2Pixel(geojson, px, py, z);
+			
+			//CRF组成link对象数组
+			jsonM.put("a", linkArray);
+			
+			//CRF组成node对象数组
+			jsonM.put("b", nodeArray);
+			
+			jsonM.put("c", obj.getJSONArray("coordinates"));
+			
+			snapshot.setM(jsonM);
+		} catch (Exception e) {
+			throw new Exception(e);
+		} finally {
+			DbUtils.close(pstmt);
+			DbUtils.close(resultSet);
+		}
+	}
+	
 	private Coordinate[] getLineFromMuitPoint(JSONArray linkArray, JSONArray nodeArray) {
 
 		List<String> pointStr = new ArrayList<>();

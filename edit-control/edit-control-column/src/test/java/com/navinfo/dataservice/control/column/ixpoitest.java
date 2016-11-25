@@ -148,5 +148,15 @@ public class ixpoitest {
 			System.out.println(e.getMessage());
 		}
 	}
-
+	@Test
+	public void testRelease() throws Exception{
+		String parameter = "{\"subtaskId\":84,\"dbId\":19,\"type\":2}";
+		try {
+			DeepCoreControl deepCore = new DeepCoreControl();
+			JSONObject result = deepCore.release(parameter, 111);
+			System.out.println(result);
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+	}
 }

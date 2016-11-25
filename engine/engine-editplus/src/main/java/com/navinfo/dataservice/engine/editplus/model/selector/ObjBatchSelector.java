@@ -236,7 +236,7 @@ public class ObjBatchSelector {
 		}
 		//更新obj
 		for(BasicObj obj:objList){
-			obj.insertSubrows(glmTab.getName(),childRows.get(obj.objPid()));
+			obj.setSubrows(glmTab.getName(),childRows.get(obj.objPid()));
 		}
 
 	}

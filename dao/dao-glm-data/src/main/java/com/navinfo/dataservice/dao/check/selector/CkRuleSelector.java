@@ -108,12 +108,13 @@ public class CkRuleSelector extends AbstractSelector {
 			sb.append(" where c.rule_status=1 and c.suite_id in (");
 			sb.append(" select a.suite_id from ck_suite_cop a  ");
 			if(type != null && StringUtils.isNotEmpty(type.toString())){
-				sb.append("where a.feature=2");
+				//System.out.println("type: " +type);
+				sb.append("where a.feature="+type+"");
 			}
 			sb.append(") order by c.rule_code ");
 			
-			sb.append("order by c.suite_id");
-			
+			//sb.append("order by c.suite_id");
+			//System.out.println("getRulesByType: "+sb.toString());
 			pstmt = conn.prepareStatement(sb.toString());
 			resultSet = pstmt.executeQuery();
 			while (resultSet.next()) {

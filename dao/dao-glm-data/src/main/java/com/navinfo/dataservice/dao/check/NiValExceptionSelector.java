@@ -400,7 +400,7 @@ public Page listCheckResults(JSONObject params, JSONArray tips, JSONArray ruleCo
 				//**********************
 				sql.append("q4 as ( ");
 				sql.append(" select NVL(d.md5_code,0) md5_code,NVL(d.ruleid,0) ruleid,NVL(d.situation,'') situation,\"LEVEL\" level_,"
-						+ "NVL(d.addition_info,'') targets,"
+						+ "NVL(to_char(d.addition_info),'') targets,"
 						+ "NVL(d.information,'') information, "
 						+ "NVL(d.location.sdo_point.x,0) x, "
 						+ "NVL(d.location.sdo_point.y,0) y,"
@@ -414,7 +414,7 @@ public Page listCheckResults(JSONObject params, JSONArray tips, JSONArray ruleCo
 				sql.append(" WHERE ROWNUM <= "+pageEndNum+") A "
 						+ "WHERE A.ROWNO >= "+pageStartNum+" ");
 				sql.append(" order by created desc,md5_code desc ");
-				System.out.println("listCheckResults sql:  "+sql.toString());
+				//System.out.println("listCheckResults sql:  "+sql.toString());
 				
 				QueryRunner run=new QueryRunner();
 				

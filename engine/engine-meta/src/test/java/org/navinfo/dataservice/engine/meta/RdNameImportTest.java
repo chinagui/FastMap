@@ -95,7 +95,7 @@ public class RdNameImportTest {
 	}
 	
 	
-	@Test
+//	@Test
 	public void testGetRdName()
 	{
 		String parameter = "{\"subtaskId\":76,\"pageNum\":1,\"pageSize\":20,\"sortby\":\"\",\"flag\":1,\"params\":{\"name\":\"\",\"nameGroupid\":\"\",\"adminId\":\"\"}}";
@@ -145,7 +145,7 @@ public class RdNameImportTest {
 		System.out.println(data);
 	}
 	
-	//@Test
+	@Test
 	public void teilenName () {
 		//String parameter = "{\"dbId\":9,\"data\":[{\"nameId\":40589343,\"nameGroupid\":40589344,\"langCode\":\"CHI\",\"roadType\":3}],\"flag\":1,\"subtaskId\":208}";
 		//String parameter = "{\"dbId\":9,\"data\":[{\"nameId\":0,\"nameGroupid\":11111111,\"langCode\":\"CHI\",\"roadType\":3}],\"flag\":1,\"subtaskId\":208}";
@@ -155,9 +155,15 @@ public class RdNameImportTest {
 		//
 		//String parameter = "{\"dbId\":9,\"data\":[{\"nameId\":264491,\"nameGroupid\":264491,\"langCode\":\"CHI\",\"roadType\":3}],\"flag\":1,\"subtaskId\":208}";
 		//地铁13 号线 String parameter = "{\"dbId\":9,\"data\":[{\"nameId\":82374,\"nameGroupid\":82374,\"langCode\":\"CHI\",\"roadType\":3}],\"flag\":1,\"subtaskId\":208}";
-		//轨道交通１号线  String parameter = "{\"dbId\":9,\"data\":[{\"nameId\":40611226,\"nameGroupid\":40611227,\"langCode\":\"CHI\",\"roadType\":3}],\"flag\":1,\"subtaskId\":208}";
-		//
-		String parameter = "{\"dbId\":9,\"data\":[{\"nameId\":40611226,\"nameGroupid\":40611227,\"langCode\":\"CHI\",\"roadType\":3}],\"flag\":1,\"subtaskId\":208}";
+		//轨道交通１号线 String parameter = "{\"dbId\":9,\"data\":[{\"nameId\":40611226,\"nameGroupid\":40611227,\"langCode\":\"CHI\",\"roadType\":3}],\"flag\":1,\"subtaskId\":208}";
+		//地铁八通线String parameter = "{\"dbId\":9,\"data\":[{\"nameId\":82363,\"nameGroupid\":82363,\"langCode\":\"CHI\",\"roadType\":3}],\"flag\":1,\"subtaskId\":208}";
+		//测试地铁八通线308000022
+		//String parameter = "{\"dbId\":9,\"data\":[{\"nameId\":308000022,\"nameGroupid\":206000021,\"langCode\":\"CHI\",\"roadType\":3}],\"flag\":1,\"subtaskId\":208}";
+		//地铁11 号线 String parameter = "{\"dbId\":9,\"data\":[{\"nameId\":82372,\"nameGroupid\":82372,\"langCode\":\"CHI\",\"roadType\":3}],\"flag\":1,\"subtaskId\":208}";
+		// 2号线 
+		// 轻轨2号线		String parameter = "{\"dbId\":9,\"data\":[{\"nameId\":82376,\"nameGroupid\":82376,\"langCode\":\"CHI\",\"roadType\":3}],\"flag\":1,\"subtaskId\":208}";
+		// 地铁亦庄线 
+		String parameter = "{\"dbId\":9,\"data\":[{\"nameId\":82362,\"nameGroupid\":82362,\"langCode\":\"CHI\",\"roadType\":3}],\"flag\":1,\"subtaskId\":208}";
 		
 		Connection conn = null;
 		try {

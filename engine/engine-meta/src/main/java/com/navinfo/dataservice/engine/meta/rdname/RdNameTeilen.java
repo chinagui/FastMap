@@ -346,7 +346,10 @@ public class RdNameTeilen {
 		if(chiRdName.getRoadType() == 3){//道路类型为铁路或地铁
 			
 			String str = engBaseName.replaceAll("Ditie", "").replaceAll("Qinggui", "");
-			if(str.contains("No.") && chiRdName.getBasePhonetic().contains("Hao")){
+			if(Character.isLowerCase(str.charAt(0))){//首字母大写
+	           str = (new StringBuilder()).append(Character.toUpperCase(str.charAt(0))).append(str.substring(1)).toString();
+			}
+	        if(str.contains("No.") && chiRdName.getBasePhonetic().contains("Hao")){
 				String[] Strs = str.split("No.");
 				// 地铁/轻轨+数字(1~9，〇，一..十，百，千)+号+线 ：翻译为：Line+空格+对应阿拉伯数字(0~9)
 				// 数字(1~9，〇，一..十，百，千)+号+线  翻译为 Line+空格+对应阿拉伯数字(0~9)  8号线  翻译为  Line 8
@@ -355,7 +358,7 @@ public class RdNameTeilen {
 				 
 			}else{
 				// 如果英文名的类型是*，则不应该放入到名称中
-				 engName = engPrefix + " " + engBaseName + " " + engInfix + " "
+				 engName = engPrefix + " " + str + " " + engInfix + " "
 						+ (engType == "*" ? "" : engType) + " " + engSuffix;
 			}
 		}else{
@@ -363,7 +366,7 @@ public class RdNameTeilen {
 			 engName = engPrefix + " " + engBaseName + " " + engInfix + " "
 					+ (engType == "*" ? "" : engType) + " " + engSuffix;
 		}
-		
+		//System.out.println("engName: "+engName);
 		log.info("engName: "+engName);
 		// 处理掉前后的空格，把多个空格连在一起的替换成单个空格,注意：这里不会为空了，不用判断为空的情况
 		engName = engName.trim();

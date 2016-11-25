@@ -653,8 +653,12 @@ public class MetaController extends BaseController {
 			
 			
 			JSONObject data = selector.searchForWebByNameId(nameId);
-
-			return new ModelAndView("jsonView", success(data));
+			if(data != null){
+				return new ModelAndView("jsonView", success(data));
+			}
+			else{
+				return new ModelAndView("jsonView", fail("无数据"));
+			}
 
 		} catch (Exception e) {
 

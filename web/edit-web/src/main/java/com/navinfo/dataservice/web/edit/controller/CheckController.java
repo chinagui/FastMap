@@ -130,6 +130,7 @@ public class CheckController extends BaseController {
 			throws ServletException, IOException {
 
 		String parameter = request.getParameter("parameter");
+		logger.debug("listRdnResult:道路名检查结果查询接口:parameter:"+parameter);
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 			int subtaskId = jsonReq.getInt("subtaskId");
@@ -145,13 +146,14 @@ public class CheckController extends BaseController {
 			FccApi apiFcc=(FccApi) ApplicationContextUtil.getBean("fccApi");
 			//获取子任务范围内的tips
 			JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(),1901,new JSONArray());
+			logger.debug("获取子任务范围内的tips: "+tips);
 			//获取规则号
 			JSONArray ruleCodes = CheckService.getInstance().getCkRuleCodes(type);
-			
+			logger.debug("获取规则号"+ruleCodes);
 			Page page = niValExceptionSelector.listCheckResults(jsonReq,tips,ruleCodes);
 			logger.info("end check/list");
-			System.out.println(page.getResult());
-			System.out.println(page.getTotalCount());
+			logger.debug(page.getResult());
+			logger.debug(page.getTotalCount());
 			return new ModelAndView("jsonView", success(page));
 
 		} catch (Exception e) {

@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.api.edit.model;
 
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  * 
@@ -15,8 +16,8 @@ public class FmMultiSrcSync implements Serializable {
 	
 	private Long sid;
 	private Long syncStatus;
-	private Object lastSyncTime;
-	private Object syncTime;
+	private Date lastSyncTime;
+	private Date syncTime;
 	private Long jobId;
 	private String zipFile;
 	
@@ -33,16 +34,16 @@ public class FmMultiSrcSync implements Serializable {
 	public void setSyncStatus(Long syncStatus) {
 		this.syncStatus = syncStatus;
 	}
-	public Object getLastSyncTime() {
+	public Date getLastSyncTime() {
 		return lastSyncTime;
 	}
-	public void setLastSyncTime(Object lastSyncTime) {
+	public void setLastSyncTime(Date lastSyncTime) {
 		this.lastSyncTime = lastSyncTime;
 	}
-	public Object getSyncTime() {
+	public Date getSyncTime() {
 		return syncTime;
 	}
-	public void setSyncTime(Object syncTime) {
+	public void setSyncTime(Date syncTime) {
 		this.syncTime = syncTime;
 	}
 	public Long getJobId() {

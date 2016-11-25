@@ -20,6 +20,12 @@ public class IxPoiParent extends BasicRow {
 	protected int tenantFlag ;
 	protected String memo ;
 	
+	
+	public IxPoiParent() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+
 	public IxPoiParent (long objPid){
 		super(objPid);
 	}

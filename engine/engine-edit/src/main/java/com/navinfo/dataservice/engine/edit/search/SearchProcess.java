@@ -253,9 +253,12 @@ public class SearchProcess {
 				break;
 
 			case RDLINK:
-				// 可变限速追踪原则
+			
 				if (condition.containsKey("queryType")) {
+					
 					String queryType = condition.getString("queryType");
+					
+					// 批量编辑普通限速link追踪
 					if (queryType.equals("RDLINKSPEEDLIMIT")
 							|| queryType.equals("RDSPEEDLIMIT")) {
 						int linkPid = condition.getInt("linkPid");
@@ -276,6 +279,22 @@ public class SearchProcess {
 								.getRdLinkSpeedlimit(nextLinkPids);
 
 						array.add(speedlimitArray);
+					}
+					//可变限速link追踪
+					if(queryType.equals("RDVARIABLESPEED"))
+					{
+						int linkPid = condition.getInt("linkPid");
+						
+						int nodePid = condition.getInt("nodePid");
+						
+						RdLinkSearchUtils searchUtils = new RdLinkSearchUtils(
+								conn);
+						
+						List<Integer> nextLinkPids = searchUtils.variableSpeedNextLinks( linkPid,  nodePid);
+						
+						for (Integer pid : nextLinkPids) {
+							array.add(pid);
+						}
 					}
 					// 坡度追踪原则开发
 					if (queryType.equals("RDSLOPE")) {

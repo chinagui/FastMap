@@ -69,8 +69,14 @@ public class ObjSelector {
 		// TODO Auto-generated method stub
 		if(glmTable.getObjRef()==null){			
 			StringBuilder sb = new StringBuilder();
-			sb.append("SELECT P.* FROM " + glmTable.getName() + " P WHERE P." + colName + "=?");
-			sb.append(" AND P.U_RECORD <> 2");
+			//主键查询
+			if(colName.equals(glmTable.getPkColumn())){
+				sb.append("SELECT P.* FROM " + glmTable.getName() + " P WHERE P." + glmTable.getPkColumn() + "=?");
+			}
+			//非主键查询
+			else{
+				sb.append("SELECT P.*,P." + glmTable.getPkColumn() + " OBJ_PID  FROM " + glmTable.getName() + " P WHERE P." + colName + "=?");
+			}
 			return sb.toString();
 		}else{
 			GlmRef objRef = glmTable.getObjRef();
@@ -79,7 +85,7 @@ public class ObjSelector {
 			StringBuilder sb = new StringBuilder();
 			StringBuilder whereSb = new StringBuilder();
 			sb.append("SELECT R0.* FROM "+glmTable.getName()+" R0");
-			whereSb.append(" WHERE R0.U_RECORD <> 2");
+			whereSb.append(" WHERE 1=1");
 			while(objRef!=null&&(!objRef.isRefMain())){
 				sb.append(","+objRef.getRefTable()+" R"+(i+1));
 				whereSb.append(" AND R"+i+"."+objRef.getCol()+"=R"+(i+1)+"."+objRef.getRefCol());
@@ -87,7 +93,7 @@ public class ObjSelector {
 				objRef=GlmFactory.getInstance().getTableByName(objRef.getRefTable()).getObjRef();
 				i++;
 			}
-			whereSb.append(" AND R"+i+"."+colName+"=?");
+			whereSb.append(" AND R"+i+"."+objRef.getCol()+"=?");
 			whereSb.append(" AND R"+i+".U_RECORD <> 2");
 			sb.append(whereSb.toString());
 			return sb.toString();
@@ -134,7 +140,8 @@ public class ObjSelector {
 	 * @throws NoSuchMethodException 
 	 * @throws ClassNotFoundException 
 	 */
-	public static BasicObj selectBySpecColumn(Connection conn,String objType,Set<String> tabNames,String colName,Object colValue,boolean isLock) throws SQLException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException{
+	public static BasicObj selectBySpecColumn(Connection conn,String objType,Set<String> tabNames,String colName
+			,Object colValue,boolean isLock) throws SQLException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException{
 		GlmObject glmObj = GlmFactory.getInstance().getObjByType(objType);
 		GlmTable mainTable = glmObj.getMainTable();
 		//字段类型
@@ -145,13 +152,13 @@ public class ObjSelector {
 		}
 		
 		//根据对象类型构造glmObj
-		String sql = assembleSql(mainTable,"PID");
+		String sql = assembleSql(mainTable,colName);
 		if(isLock){
 			sql += " FOR UPDATE NOWAIT";
 		}
 		logger.info("selectBySpecColumn查询主表："+sql);
 		
-		BasicRow mainrow = new QueryRunner().query(conn, sql, new SingleSpecColumnSelRsHandler(mainTable));
+		BasicRow mainrow = new QueryRunner().query(conn, sql, new SingleSpecColumnSelRsHandler(mainTable),colValue);
 		BasicObj obj = ObjFactory.getInstance().create4Select(mainrow);
 		if(tabNames!=null&&!tabNames.isEmpty()){
 			logger.info("selectBySpecColumn开始加载子表");

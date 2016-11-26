@@ -4,8 +4,11 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.edit.upload.UploadPois;
@@ -22,7 +25,6 @@ import com.navinfo.dataservice.engine.editplus.model.obj.BasicObj;
 import com.navinfo.dataservice.engine.editplus.model.obj.IxPoiObj;
 import com.navinfo.dataservice.engine.editplus.model.obj.ObjFactory;
 import com.navinfo.dataservice.engine.editplus.model.obj.ObjectType;
-import com.navinfo.dataservice.engine.editplus.model.selector.MultiSrcPoiSelectorConfig;
 import com.navinfo.dataservice.engine.editplus.model.selector.ObjBatchSelector;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Geometry;
@@ -58,13 +60,18 @@ public class MultiSrcPoiDayImportor implements JsonImportor {
 					errLog.put(jo.getString("fid"), StringUtils.isEmpty(e.getMessage())?"不为空的属性字段存在null":e.getMessage());
 				}
 			}
-			//删除
-			Map<String, JSONObject> deletePois = pois.getDeletePois();
-			this.improtDelete(conn, deletePois);
 			//修改
 			Map<String, JSONObject> updatePois = pois.getUpdatePois();
-			IxPoiObj ixPoiObjUpdate = this.improtUpdate(conn,updatePois);
-			ixPoiObjList.add(ixPoiObjUpdate);
+			List<IxPoiObj> ixPoiObjUpdate = this.improtUpdate(conn,updatePois);
+			for (IxPoiObj ixPoiObj : ixPoiObjUpdate) {
+				ixPoiObjList.add(ixPoiObj);
+			}
+			//删除
+			Map<String, JSONObject> deletePois = pois.getDeletePois();
+			List<IxPoiObj> ixPoiObjDelete = this.improtDelete(conn, deletePois);
+			for (IxPoiObj ixPoiObj : ixPoiObjDelete) {
+				ixPoiObjList.add(ixPoiObj);
+			}
 			return ixPoiObjList;
 		}
 		return null;
@@ -94,7 +101,8 @@ public class MultiSrcPoiDayImportor implements JsonImportor {
 	 * @return
 	 * @throws Exception
 	 */
-	public IxPoiObj improtUpdate(Connection conn,Map<String, JSONObject> updatePois)throws Exception{
+	public List<IxPoiObj> improtUpdate(Connection conn,Map<String, JSONObject> updatePois)throws Exception{
+		List<IxPoiObj> ixPoiObjList = new ArrayList<IxPoiObj>();
 		Collection<Object> fids = new ArrayList<Object>();
 		List<JSONObject> joList = new ArrayList<JSONObject>();
 		for (Map.Entry<String, JSONObject> entry : updatePois.entrySet()) {
@@ -102,17 +110,27 @@ public class MultiSrcPoiDayImportor implements JsonImportor {
 			joList.add(jso);
 			fids.add(entry.getKey());
 		}
-		List<BasicObj> basicObjList = ObjBatchSelector.selectBySpecColumn(conn, ObjectType.IX_POI, MultiSrcPoiSelectorConfig.getInstance(), "POI_NUM", fids, false, false,false);
+		//获取所需的子表
+		Set<String> tabNames = this.getTabNames();
+		List<BasicObj> basicObjList = ObjBatchSelector.selectBySpecColumn(conn,ObjectType.IX_POI,tabNames,"POI_NUM",fids,true,true);
 		for (JSONObject jo : joList) {
 			//日志
 			log.info("多源修改json数据"+jo.toString());
+			boolean flag = true;
 			//判断查询记录
 			for (BasicObj basicObj : basicObjList) {
 				IxPoiObj queryObj = (IxPoiObj) basicObj;
 				IxPoi ixPoi = (IxPoi) queryObj.getMainrow();
 				if(ixPoi.getPoiNum().equals(jo.getString("fid"))){
+					flag = false;
 					try{
-						this.importUpdateByJson(queryObj, jo);
+						boolean isDeleted = queryObj.getIsDeleted();
+						if(isDeleted){
+							throw new Exception("该数据已经逻辑删除");
+						}else{
+							this.importUpdateByJson(queryObj, jo);
+							ixPoiObjList.add(queryObj);
+						}
 					} catch (Exception e) {
 						log.error(e.getMessage(),e);
 						errLog.put(jo.getString("fid"), StringUtils.isEmpty(e.getMessage())?"不为空的属性字段存在null":e.getMessage());
@@ -120,8 +138,12 @@ public class MultiSrcPoiDayImportor implements JsonImportor {
 					break;
 				}
 			}
+			//没有查到数据
+			if(flag){
+				errLog.put(jo.getString("fid"), "日库中没有查到相应的数据");
+			}
 		}
-		return null;
+		return ixPoiObjList;
 	}
 	
 	/**
@@ -132,7 +154,8 @@ public class MultiSrcPoiDayImportor implements JsonImportor {
 	 * @return
 	 * @throws Exception
 	 */
-	public IxPoiObj improtDelete(Connection conn,Map<String,JSONObject> deletePois)throws Exception{
+	public List<IxPoiObj> improtDelete(Connection conn,Map<String,JSONObject> deletePois)throws Exception{
+		List<IxPoiObj> ixPoiObjList = new ArrayList<IxPoiObj>();
 		Collection<Object> fids = new ArrayList<Object>();
 		List<JSONObject> joList = new ArrayList<JSONObject>();
 		for (Map.Entry<String, JSONObject> entry : deletePois.entrySet()) {
@@ -140,13 +163,13 @@ public class MultiSrcPoiDayImportor implements JsonImportor {
 			joList.add(jso);
 			fids.add(entry.getKey());
 		}
-		List<BasicObj> basicObjList = ObjBatchSelector.selectBySpecColumn(conn, ObjectType.IX_POI, MultiSrcPoiSelectorConfig.getInstance(), "POI_NUM", fids, false, false,false);
+		//获取所需的子表
+		Set<String> tabNames = this.getTabNames();
+		List<BasicObj> basicObjList = ObjBatchSelector.selectBySpecColumn(conn,ObjectType.IX_POI,tabNames,"POI_NUM",fids,true,true);
 		for (JSONObject jo : joList) {
 			//日志
 			log.info("多源删除json数据"+jo.toString());
 			boolean flag = true;
-			//统计未找到的数量
-			int i=0;
 			//判断查询记录
 			for (BasicObj basicObj : basicObjList) {
 				IxPoiObj deleteObj = (IxPoiObj) basicObj;
@@ -154,20 +177,29 @@ public class MultiSrcPoiDayImportor implements JsonImportor {
 				if(ixPoi.getPoiNum().equals(jo.getString("fid"))){
 					flag = false;
 					try{
-						this.importDeleteByJson(deleteObj, jo);
+						//判断是否已逻辑删除
+						boolean isDeleted = deleteObj.getIsDeleted();
+						if(isDeleted){
+							//已逻辑删除
+							throw new Exception("该数据已经逻辑删除");
+						}else{
+							//该对象逻辑删除
+							this.importDeleteByJson(deleteObj, jo);
+							ixPoiObjList.add(deleteObj);
+						}
 					} catch (Exception e) {
 						log.error(e.getMessage(),e);
 						errLog.put(jo.getString("fid"), StringUtils.isEmpty(e.getMessage())?"不为空的属性字段存在null":e.getMessage());
 					}
 					break;
 				}
-				//没有查到数据
-				if(flag){
-					errLog.put(jo.getString("fid"), "日库中没有查到相应的数据");
-				}
+			}
+			//没有查到数据
+			if(flag){
+				errLog.put(jo.getString("fid"), "日库中没有查到相应的数据");
 			}
 		}
-		return null;
+		return ixPoiObjList;
 	}
 	
 	
@@ -411,6 +443,7 @@ public class MultiSrcPoiDayImportor implements JsonImportor {
 				}
 				//改风味类型
 				if("改风味类型".contains(log)){
+					/*
 					//查询的IX_POI_RESTAURANT表
 					List<IxPoiRestaurant> ixPoiRestaurants = poi.getIxPoiRestaurants();
 					//[集合]风味类型
@@ -441,6 +474,7 @@ public class MultiSrcPoiDayImportor implements JsonImportor {
 						}
 						
 					}
+					*/
 				}
 				//改父子关系
 				if("改父子关系".contains(log)){
@@ -471,6 +505,7 @@ public class MultiSrcPoiDayImportor implements JsonImportor {
 				}
 				//改星级
 				if("改星级".contains(log)){
+					/*
 					//查询的IX_POI_HOTEL表
 					List<IxPoiHotel> ixPoiHotels = poi.getIxPoiHotels();
 					//星级
@@ -480,6 +515,7 @@ public class MultiSrcPoiDayImportor implements JsonImportor {
 						IxPoiHotel ixPoiHotel = poi.createIxPoiHotel();
 						ixPoiHotel.setRating(rating);
 					}
+					*/
 				}
 				//改内部POI
 				if("改内部POI".contains(log)){
@@ -667,12 +703,15 @@ public class MultiSrcPoiDayImportor implements JsonImportor {
 	public boolean importDeleteByJson(IxPoiObj poi,JSONObject jo)throws Exception {
 		if(poi!=null&&jo!=null){
 			if(poi instanceof IxPoiObj){
-				//POI主表
-				IxPoi ixPoi = (IxPoi) poi.getMainrow();
 				//判断是否已逻辑删除
-				
-				//该对象逻辑删除
-				poi.deleteObj();
+				boolean isDeleted = poi.getIsDeleted();
+				if(isDeleted){
+					//已逻辑删除
+					throw new Exception("该数据已经逻辑删除");
+				}else{
+					//该对象逻辑删除
+					poi.deleteObj();
+				}
 				return true;
 			}else{
 				throw new ImportException("不支持的对象类型");
@@ -680,5 +719,23 @@ public class MultiSrcPoiDayImportor implements JsonImportor {
 		}
 		return false;
 		
+	}
+	
+	/**
+	 * 获取查询所需子表
+	 * @author Han Shaoming
+	 * @return
+	 */
+	public Set<String> getTabNames(){
+		//添加所需的子表
+		Set<String> tabNames = new HashSet<>();
+		tabNames.add("IX_POI_NAME");
+		tabNames.add("IX_POI_CONTACT");
+		tabNames.add("IX_POI_ADDRESS");
+		tabNames.add("IX_POI_RESTAURANT");
+		tabNames.add("IX_POI_CHILDREN");
+		tabNames.add("IX_POI_PARENT");
+		tabNames.add("IX_POI_DETAIL");
+		return tabNames;
 	}
 }

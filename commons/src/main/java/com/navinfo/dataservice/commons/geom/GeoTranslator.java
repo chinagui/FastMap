@@ -50,6 +50,9 @@ import oracle.sql.STRUCT;
 public class GeoTranslator {
 
 	public static final double dPrecisionGeo = 1.0;
+	
+	// 几何坐标升级乘10万（100000）
+	public static final int geoUpgrade = 100000;
 
 	private static final GeometryFactory geoFactory = new GeometryFactory();
 

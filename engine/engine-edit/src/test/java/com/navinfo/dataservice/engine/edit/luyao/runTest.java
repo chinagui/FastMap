@@ -878,9 +878,9 @@ public class runTest extends InitApplication {
 		@Test
 	public void run_1126_1() throws Exception {
 
-		String parameter = "{\"command\":\"CREATE\",\"dbId\":17,\"type\":\"RDSAMELINK\",\"data\":{\"links\":[{\"linkPid\":\"203002795\",\"type\":\"RDLINK\",\"isMain\":1},{\"linkPid\":\"308000045\",\"type\":\"ADLINK\",\"isMain\":0},{\"linkPid\":\"304000036\",\"type\":\"LULINK\",\"isMain\":0}]}}";
-		
-		
+		String parameter = "{\"command\":\"DEPART\",\"dbId\":17,\"objId\":306002106,\"data\":{\"catchNodePid\":0,\"catchLinkPid\":\"308002763\",\"linkPid\":\"306002741\",\"longitude\":116.38298679474569,\"latitude\":40.05133614230701},\"type\":\"RDLINK\"}";
+				
+				
 		Transaction t = new Transaction(parameter);
 
 		String msg = t.run();

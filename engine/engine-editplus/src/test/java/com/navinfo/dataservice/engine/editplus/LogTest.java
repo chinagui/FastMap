@@ -3,7 +3,9 @@ package com.navinfo.dataservice.engine.editplus;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -53,12 +55,18 @@ public class LogTest {
 			conn = DBConnector.getInstance().getConnectionById(17);;
 			String objType = "IX_POI";
 			long pid = 308;
-			boolean isOnlyMain = false;
 			boolean isLock = false;
 
-			MultiSrcPoiSelectorConfig multiSrcPoiSelectorConfig = MultiSrcPoiSelectorConfig.getInstance();
-//			BasicObj obj = ObjSelector.selectByPid(conn, objType, multiSrcPoiSelectorConfig, pid, isOnlyMain, isLock);
-			BasicObj obj = ObjSelector.selectByPid(conn, objType, null, pid, isLock);
+			Set<String> tabNames = new HashSet<String>();
+			tabNames.add("IX_POI_NAME");
+			tabNames.add("IX_POI_NAME_FLAG");
+			tabNames.add("IX_POI_NAME_FLAG");
+			tabNames.add("IX_POI_NAME_TONE");
+			tabNames.add("IX_POI_ADDRESS");
+			tabNames.add("IX_POI_CONTACT");
+			tabNames.add("IX_POI_FLAG");
+			
+			BasicObj obj = ObjSelector.selectByPid(conn, objType, tabNames, pid, isLock);
 			
 			obj.getMainrow().setAttrByCol("KIND_CODE", "");
 			List<BasicRow> ixPoiNameList = obj.getRowsByName("IX_POI_NAME");
@@ -101,12 +109,17 @@ public class LogTest {
 			conn = DBConnector.getInstance().getConnectionById(17);;
 			String objType = "IX_POI";
 			long pid = 308;
-			boolean isOnlyMain = false;
 			boolean isLock = false;
+			Set<String> tabNames = new HashSet<String>();
+			tabNames.add("IX_POI_NAME");
+			tabNames.add("IX_POI_NAME_FLAG");
+			tabNames.add("IX_POI_NAME_FLAG");
+			tabNames.add("IX_POI_NAME_TONE");
+			tabNames.add("IX_POI_ADDRESS");
+			tabNames.add("IX_POI_CONTACT");
+			tabNames.add("IX_POI_FLAG");
 
-//			MultiSrcPoiSelectorConfig multiSrcPoiSelectorConfig = MultiSrcPoiSelectorConfig.getInstance();
-//			BasicObj obj = ObjSelector.selectByPid(conn, objType, multiSrcPoiSelectorConfig, pid, isOnlyMain, isLock);
-			BasicObj obj = ObjSelector.selectByPid(conn, objType, null, pid, isLock);
+			BasicObj obj = ObjSelector.selectByPid(conn, objType, tabNames, pid, isLock);
 			
 			Geometry geo = JtsGeometryFactory.read("LINESTRING(129.789321823 34.18782666,129.34455656 34.898776)");
 			obj.getMainrow().setAttrByCol("GEOMETRY", JtsGeometryFactory.read("LINESTRING(129.789321823 34.18782666,129.34455656 34.898776)"));

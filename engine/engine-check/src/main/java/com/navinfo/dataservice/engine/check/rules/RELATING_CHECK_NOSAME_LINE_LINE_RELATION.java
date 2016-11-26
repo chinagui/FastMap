@@ -145,26 +145,29 @@ public class RELATING_CHECK_NOSAME_LINE_LINE_RELATION extends baseRule {
 	 * @throws Exception
 	 */
 	private boolean checkRdRestriction(RdRestrictionDetail rdRestrictionDetail) throws Exception {
-		int restrictPid = rdRestrictionDetail.getRestricPid();
+		if(rdRestrictionDetail.changedFields().containsKey("outLinkPid"))
+		{
+			int restrictPid = rdRestrictionDetail.getRestricPid();
 
-		int outLinkPid = rdRestrictionDetail.getOutLinkPid();
+			int outLinkPid = (int) rdRestrictionDetail.changedFields().get("outLinkPid");
 
-		StringBuilder sb = new StringBuilder();
+			StringBuilder sb = new StringBuilder();
 
-		sb.append("select detail_id from RD_RESTRICTION_detail where U_RECORD !=2 ");
-		sb.append(" and RESTRIC_PID = ");
-		sb.append(restrictPid);
-		sb.append(" and OUT_LINK_PID = ");
-		sb.append(outLinkPid);
+			sb.append("select detail_id from RD_RESTRICTION_detail where U_RECORD !=2 ");
+			sb.append(" and RESTRIC_PID = ");
+			sb.append(restrictPid);
+			sb.append(" and OUT_LINK_PID = ");
+			sb.append(outLinkPid);
 
-		String sql = sb.toString();
+			String sql = sb.toString();
 
-		DatabaseOperator getObj = new DatabaseOperator();
-		List<Object> resultList = new ArrayList<Object>();
-		resultList = getObj.exeSelect(this.getConn(), sql);
+			DatabaseOperator getObj = new DatabaseOperator();
+			List<Object> resultList = new ArrayList<Object>();
+			resultList = getObj.exeSelect(this.getConn(), sql);
 
-		if (resultList.size() > 0) {
-			return false;
+			if (resultList.size() > 0) {
+				return false;
+			}
 		}
 		return true;
 	}

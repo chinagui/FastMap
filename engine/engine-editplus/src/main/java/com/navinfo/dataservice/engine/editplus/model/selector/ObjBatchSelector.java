@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -55,29 +56,21 @@ public class ObjBatchSelector {
 			,Collection<Long> pids,boolean isLock,boolean isNowait) throws SQLException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException{
 		GlmObject glmObj = GlmFactory.getInstance().getObjByType(objType);
 		GlmTable mainTable = glmObj.getMainTable();
-		StringBuilder sb = new StringBuilder();
-		sb.append("SELECT R.*,R." + mainTable.getPkColumn() + " OBJ_PID FROM "+ mainTable.getName() + " R WHERE R.");
-		Clob clobPids=null;
-		if(pids.size()>1000){
-			clobPids=conn.createClob();
-			clobPids.setString(1, StringUtils.join(pids, ","));
-			sb.append(mainTable.getPkColumn() +" IN (select to_number(column_value) from table(clob_to_table(?)))");
-		}else{
-			sb.append(mainTable.getPkColumn() +" IN (" + StringUtils.join(pids.toArray(),",") + ")");
-		}
-
+		String sql = assembleSql(mainTable,mainTable,mainTable.getPkColumn(),pids);
 		if(isLock){
-			sb.append(" FOR UPDATE");
+			sql +=" FOR UPDATE";
 			if(isNowait){
-				sb.append(" NOWAIT");
+				sql +=" NOWAIT";
 			}
 		}
-		logger.info("批量查询，主表查询 sql:" + sb.toString());
+		logger.info("selectBySpecColumn查询主表："+sql);
 		List<BasicRow> mainrowList = new ArrayList<BasicRow>();
-		if(clobPids==null){
-			mainrowList = new QueryRunner().query(conn, sb.toString(), new SingleBatchSelRsHandler(mainTable));
+		if(pids.size()>1000){
+			Clob clobPids=conn.createClob();
+			clobPids.setString(1, StringUtils.join(pids, ","));
+			mainrowList = new QueryRunner().query(conn, sql, new SingleBatchSelRsHandler(mainTable),clobPids);
 		}else{
-			mainrowList = new QueryRunner().query(conn, sb.toString(), new SingleBatchSelRsHandler(mainTable),clobPids);
+			mainrowList = new QueryRunner().query(conn, sql, new SingleBatchSelRsHandler(mainTable));
 		}
 		
 		List<BasicObj> objList = new ArrayList<BasicObj>();
@@ -94,6 +87,15 @@ public class ObjBatchSelector {
 	
 
 
+	/**
+	 * 
+	 * @param conn
+	 * @param objList
+	 * @param tabNames
+	 * @param pids
+	 * @throws GlmTableNotFoundException
+	 * @throws SQLException
+	 */
 	private static void selectChildren(Connection conn, List<BasicObj> objList, Set<String> tabNames,
 			Collection<Long> pids) throws GlmTableNotFoundException, SQLException {
 		for(String tabName:tabNames){
@@ -102,11 +104,13 @@ public class ObjBatchSelector {
 	}
 
 	/**
+	 * 
 	 * @param conn
 	 * @param objList
 	 * @param tab
-	 * @throws SQLException 
-	 * @throws GlmTableNotFoundException 
+	 * @param pids
+	 * @throws GlmTableNotFoundException
+	 * @throws SQLException
 	 */
 	private static void selectChildren(Connection conn, List<BasicObj> objList, String tab
 			, Collection<Long> pids) throws GlmTableNotFoundException, SQLException {
@@ -119,55 +123,29 @@ public class ObjBatchSelector {
 	}
 
 	/**
+	 * 
 	 * @param conn
 	 * @param objList
 	 * @param glmTab
-	 * @throws SQLException 
+	 * @param pids
+	 * @param mainTable
+	 * @throws SQLException
 	 */
 	private static void selectChildren(Connection conn, List<BasicObj> objList
 			, GlmTable glmTab, Collection<Long> pids, GlmTable mainTable) throws SQLException {
-
-		GlmTable tempTab = glmTab;
-		List<String> tables = new ArrayList<String>();
-		List<String> conditions = new ArrayList<String>();
-		tables.add(mainTable.getName());
-		while(true){
-			GlmRef objRef = tempTab.getObjRef();
-			tables.add(tempTab.getName());
-			conditions.add(tempTab.getName() + "." + objRef.getCol() + "=" + objRef.getRefTable() + "." + objRef.getRefCol());
-			if(objRef.isRefMain()){
-				break;
-			}
-			tempTab = GlmFactory.getInstance().getTableByName(objRef.getRefTable());
-		}
+		String sql = assembleSql(glmTab,mainTable,mainTable.getPkColumn(),pids);
+		logger.info("批量查询，selectChildren sql:" + sql);
+		Map<Long, List<BasicRow>> childRows = new HashMap<Long, List<BasicRow>>();
 		
-		//查询
-		StringBuilder sb = new StringBuilder();
-		sb.append("SELECT " + glmTab.getName() + ".*," + mainTable.getName() + "."+ mainTable.getPkColumn() + " AS OBJ_PID FROM "+ StringUtils.join(tables.toArray(),","));
-		sb.append(" WHERE "+ StringUtils.join(conditions.toArray()," AND "));
-		//排除删除的数据
-		for(String table :tables){
-			if(table.equals(mainTable.getName())){
-				continue;
-			}
-			sb.append(" AND " + table + ".U_RECORD <> 2");
-		}
 		Clob clobPids=null;
 		if(pids.size()>1000){
 			clobPids=conn.createClob();
 			clobPids.setString(1, StringUtils.join(pids, ","));
-			sb.append(" AND " + mainTable.getName() + "."+ mainTable.getPkColumn()+" IN (select to_number(column_value) from table(clob_to_table(?)))");
+			childRows = new QueryRunner().query(conn, sql, new MultipleBatchSelRsHandler(glmTab),clobPids);
 		}else{
-			sb.append(" AND " + mainTable.getName() + "."+ mainTable.getPkColumn()+" IN (" + StringUtils.join(pids.toArray(),",") + ")");
+			childRows = new QueryRunner().query(conn, sql, new MultipleBatchSelRsHandler(glmTab));
 		}
 
-		logger.info("批量查询，selectChildren sql:" + sb.toString());
-		Map<Long, List<BasicRow>> childRows = new HashMap<Long, List<BasicRow>>();
-		if(clobPids==null){
-			childRows = new QueryRunner().query(conn, sb.toString(), new MultipleBatchSelRsHandler(glmTab));
-		}else{
-			childRows = new QueryRunner().query(conn, sb.toString(), new MultipleBatchSelRsHandler(glmTab),clobPids);
-		}
 		//更新obj
 		for(BasicObj obj:objList){
 			obj.setSubrows(glmTab.getName(),childRows.get(obj.objPid()));
@@ -183,10 +161,9 @@ public class ObjBatchSelector {
 	 * 如果多条只返回第一条,仅支持主表数值或字符类型字段
 	 * @param conn
 	 * @param objType
-	 * @param selConfig
+	 * @param tabNames
 	 * @param colName
 	 * @param colValues
-	 * @param isOnlyMain
 	 * @param isLock
 	 * @param isNowait
 	 * @return
@@ -197,52 +174,39 @@ public class ObjBatchSelector {
 	 * @throws NoSuchMethodException 
 	 * @throws ClassNotFoundException 
 	 */
-	public static List<BasicObj> selectBySpecColumn(Connection conn,String objType,Set<String> tabNames,String colName
-			,Collection<Object> colValues,boolean isLock,boolean isNowait) throws SQLException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException{
+	public static <T> List<BasicObj> selectBySpecColumn(Connection conn,String objType,Set<String> tabNames,String colName
+			,Collection<T> colValues,boolean isLock,boolean isNowait) throws SQLException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException{
 		GlmObject glmObj = GlmFactory.getInstance().getObjByType(objType);
 		GlmTable mainTable = glmObj.getMainTable();
-		
-		StringBuilder sb = new StringBuilder();
-		sb.append("SELECT R.*,R." + mainTable.getPkColumn() + " OBJ_PID FROM "+ mainTable.getName() + " R WHERE R.U_RECORD <> 2 AND R.");
 		//字段类型
 		String colType = mainTable.getColumByName(colName).getType();
-		//根据字段类型拼接查询条件
-		if(colType.equals(GlmColumn.TYPE_VARCHAR)){
-			List<String> colValues2 = new ArrayList<String>();
-			for(Object colValue:colValues){
-				colValues2.add("'" + colValue + "'");
-			}
-			colValues.clear();
-			colValues.addAll(colValues2);
-		}else{
-			if(!colType.equals(GlmColumn.TYPE_NUMBER)){
-				logger.info("selectBySpecColumn查询字段非字符型/数字型");
-				return null;
+		if(!colType.equals(GlmColumn.TYPE_NUMBER)&&!colType.equals(GlmColumn.TYPE_VARCHAR)){
+			logger.info("selectBySpecColumn不支持查询字段非字符型/数字型");
+			return null;
+		}
+		//参数为空
+		if(colValues.isEmpty()){
+			logger.info("selectBySpecColumn查询字段为空");
+			return null;
+		}
+		String sql = assembleSql(mainTable,mainTable,colName,colValues);
+		if(isLock){
+			sql +=" FOR UPDATE";
+			if(isNowait){
+				sql +=" NOWAIT";
 			}
 		}
+		logger.info("selectBySpecColumn查询主表："+sql);
+		List<BasicRow> mainrowList = new ArrayList<BasicRow>();
 		
-		Clob clobPids=null;
 		if(colValues.size()>1000){
-			clobPids=conn.createClob();
+			Clob clobPids=conn.createClob();
 			clobPids.setString(1, StringUtils.join(colValues, ","));
-			sb.append(colName +" IN (select to_number(column_value) from table(clob_to_table(?)))");
+			mainrowList = new QueryRunner().query(conn, sql, new SingleBatchSelRsHandler(mainTable),clobPids);
 		}else{
-			sb.append(colName +" IN (" + StringUtils.join(colValues.toArray(),",") + ")");
+			mainrowList = new QueryRunner().query(conn, sql, new SingleBatchSelRsHandler(mainTable));
 		}
 
-		if(isLock){
-			sb.append(" FOR UPDATE");
-			if(isNowait){
-				sb.append(" NOWAIT");
-			}
-		}
-		logger.info("selectBySpecColumn查询主表："+sb.toString());
-		List<BasicRow> mainrowList = new ArrayList<BasicRow>();
-		if(clobPids==null){
-			mainrowList = new QueryRunner().query(conn, sb.toString(), new SingleBatchSelRsHandler(mainTable));
-		}else{
-			mainrowList = new QueryRunner().query(conn, sb.toString(), new SingleBatchSelRsHandler(mainTable),clobPids);
-		}
 		
 		List<BasicObj> objList = new ArrayList<BasicObj>();
 		List<Long> pids = new ArrayList<Long>();
@@ -260,20 +224,67 @@ public class ObjBatchSelector {
 		return objList;
 	}
 	
-	private static <T> String assembleSql(Connection conn,GlmTable glmTable, String colName
-			,Collection<T> colValues) throws SQLException {
-			StringBuilder sb = new StringBuilder();
-			sb.append("SELECT R.*,R." + glmTable.getPkColumn() + " OBJ_PID FROM "+ glmTable.getName() + " R WHERE R.");
-			Clob clobPids=null;
-			if(colValues.size()>1000){
-				clobPids=conn.createClob();
-				clobPids.setString(1, StringUtils.join(colValues, ","));
-				sb.append(glmTable.getPkColumn() +" IN (select to_number(column_value) from table(clob_to_table(?)))");
-			}else{
-				sb.append(glmTable.getPkColumn() +" IN (" + StringUtils.join(colValues.toArray(),",") + ")");
+	/**
+	 * 
+	 * 根据参数组装查询sql
+	 * @param glmTable
+	 * @param mainTable
+	 * @param colName
+	 * @param colValues
+	 * @return
+	 * @throws SQLException
+	 */
+	private static <T> String assembleSql(GlmTable glmTable,GlmTable mainTable, String colName,Collection<T> colValues) throws SQLException {
+		StringBuilder sb = new StringBuilder();
+		
+		if(glmTable.getObjRef()==null){			
+			sb = new StringBuilder();
+			sb.append("SELECT P.*,P." + glmTable.getPkColumn() + " OBJ_PID FROM " + glmTable.getName() + " P WHERE P." + colName);
+		}else{
+			GlmTable tempTab = glmTable;
+			List<String> tables = new ArrayList<String>();
+			List<String> conditions = new ArrayList<String>();
+			tables.add(mainTable.getName());
+			while(true){
+				GlmRef objRef = tempTab.getObjRef();
+				tables.add(tempTab.getName());
+				conditions.add(tempTab.getName() + "." + objRef.getCol() + "=" + objRef.getRefTable() + "." + objRef.getRefCol());
+				if(objRef.isRefMain()){
+					break;
+				}
+				tempTab = GlmFactory.getInstance().getTableByName(objRef.getRefTable());
 			}
-
-			return sb.toString();
+			
+			sb.append("SELECT " + glmTable.getName() + ".*," + mainTable.getName() + "."+ mainTable.getPkColumn() + " AS OBJ_PID FROM "+ StringUtils.join(tables.toArray(),","));
+			sb.append(" WHERE "+ StringUtils.join(conditions.toArray()," AND "));
+			//排除删除的数据
+			for(String table :tables){
+				if(table.equals(mainTable.getName())){
+					continue;
+				}
+				sb.append(" AND " + table + ".U_RECORD <> 2");
+			}
+			sb.append(" AND " + mainTable.getName() + "."+ mainTable.getPkColumn());	
+		}
+		//字段类型
+		String colType = mainTable.getColumByName(colName).getType();
+		Collection<String> colValues2 = new HashSet<String>();
+		if(colType.equals(GlmColumn.TYPE_VARCHAR)){
+			for(T colValue:colValues){
+				colValues2.add("'" + colValue.toString() + "'");
+			}
+			colValues.clear();
+			colValues.addAll((Collection<? extends T>) colValues2);
+		}
+		
+				
+		if(colValues.size()<=1000){
+			sb.append(" IN (" + StringUtils.join(colValues.toArray(),",") + ")");
+		}else{
+			sb.append(" IN (select to_number(column_value) from table(clob_to_table(?)))");
+		}
+		
+		return sb.toString();
 	}
 	
 	public static List<BasicObj> selectByPolygon(String objType,SelectorConfig selConfig,Polygon polygon,boolean isOnlyMain,boolean isLock){

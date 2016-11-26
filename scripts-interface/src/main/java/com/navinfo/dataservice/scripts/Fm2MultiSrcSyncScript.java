@@ -23,7 +23,7 @@ public class Fm2MultiSrcSyncScript {
 		try {
 			JSONObject job = new JSONObject();
 			SyncApi syncApi = (SyncApi) ApplicationContextUtil.getBean("syncApi");
-			//²éÑ¯ÉÏ´ÎÍ¬²½³É¹¦µÄÊ±¼ä
+			//æŸ¥è¯¢æœ€è¿‘çš„æˆåŠŸåŒæ­¥æ—¶é—´
 			FmMultiSrcSync fmMultiSrcSync = syncApi.queryLastSuccessSync();
 			String lastSyncTime = null;
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
@@ -31,10 +31,10 @@ public class Fm2MultiSrcSyncScript {
 				lastSyncTime = sdf.format(fmMultiSrcSync.getSyncTime());
 			}
 			job.put("lastSyncTime", lastSyncTime);
-			//Í¬²½Ê±¼ä
+			//Í¬åŒæ­¥æ—¶é—´
 			String syncTime = sdf.format(new Date());
 			job.put("syncTime", syncTime);
-			//²éÑ¯´óÇø¿âdbIds
+			//æŸ¥è¯¢dbIds
 			List<Region> regionList = RegionService.getInstance().list();
 			List<Integer> dbIds = new ArrayList<Integer>();
 			for (Region region : regionList) {
@@ -43,11 +43,11 @@ public class Fm2MultiSrcSyncScript {
 				}
 			}
 			job.put("dbIds", dbIds);
-			//´´½¨jobÈÎÎñ,»ñÈ¡jobId
-			long jobId = JobService.getInstance().create("fm2MultiSrcSync", job, 0, "´´½¨FMÈÕ¿â¶àÔ´ÔöÁ¿°ü");
-			//´´½¨¹ÜÀí¼ÇÂ¼
+			//åˆ›å»ºjob,è·å–jobId
+			long jobId = JobService.getInstance().create("fm2MultiSrcSync", job, 0, "åˆ›å»ºFMæ—¥åº“å¤šæºå¢é‡åŒ…");
+			//åˆ›å»ºç®¡ç†è®°å½•
 			syncApi.insertFmMultiSrcSync(jobId,syncTime);
-			response.put("msg", "Ö´ĞĞ³É¹¦");
+			response.put("msg", "æ‰§è¡ŒæˆåŠŸ");
 		} catch (Exception e) {
 			response.put("msg", "ERROR:" + e.getMessage());
 			throw e;

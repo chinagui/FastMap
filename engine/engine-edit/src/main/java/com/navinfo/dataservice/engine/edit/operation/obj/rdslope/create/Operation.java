@@ -68,10 +68,11 @@ public class Operation implements IOperation {
 		// 退出线
 		slope.setLinkPid(this.command.getOutLinkPid());
 		if (this.command.getSeriesLinkPids() != null) {
-			// 特殊情况打断
-			this.breakRelation(result);
+
 			// 添加坡度接续link信息
 			if (this.command.getSeriesLinkPids().size() > 0) {
+				// 特殊情况打断
+				this.breakRelation(result);
 				List<IRow> rdSlopeVias = new ArrayList<IRow>();
 				for (int i = 0; i < this.command.getSeriesLinkPids().size(); i++) {
 					rdSlopeVias.add(this.addSlopeVia(slope, i));
@@ -195,8 +196,10 @@ public class Operation implements IOperation {
 			return this.command.getLength() - 130;
 		}
 	}
+
 	/***
 	 * 判断两个link是否有共同nodePid
+	 * 
 	 * @param preLink
 	 * @param nextLink
 	 * @return

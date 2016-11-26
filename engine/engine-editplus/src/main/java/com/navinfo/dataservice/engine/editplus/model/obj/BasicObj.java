@@ -35,7 +35,7 @@ public abstract class BasicObj {
 	protected BasicObjGrid grid;
 	protected boolean isDeleted;
 	
-	public boolean isDeleted() {
+	public boolean getIsDeleted() {
 		return isDeleted;
 	}
 	public void setDeleted(boolean isDeleted) {

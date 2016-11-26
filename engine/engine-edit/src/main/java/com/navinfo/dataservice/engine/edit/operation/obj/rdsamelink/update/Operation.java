@@ -2,11 +2,16 @@ package com.navinfo.dataservice.engine.edit.operation.obj.rdsamelink.update;
 
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
-import com.navinfo.dataservice.commons.util.JsonUtils;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -14,15 +19,20 @@ import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneLink;
+import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneNode;
 import com.navinfo.dataservice.dao.glm.model.lu.LuLink;
 import com.navinfo.dataservice.dao.glm.model.lu.LuLinkKind;
+import com.navinfo.dataservice.dao.glm.model.lu.LuNode;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameLink;
 import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameLinkPart;
 import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
 import com.navinfo.dataservice.dao.glm.selector.rd.same.RdSameLinkSelector;
+import com.navinfo.dataservice.engine.edit.utils.NodeOperateUtils;
 import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
 
 public class Operation implements IOperation {
 
@@ -46,13 +56,14 @@ public class Operation implements IOperation {
 	 * @return info[] 1:oldLinkPid,2 打断Link对应同一线等级
 	 * @throws Exception
 	 */
-	private int[] getOperationInfo(IObj oldLink) throws Exception {
+	private int[] getOperationInfo(IRow oldLink) throws Exception {
 
 		ObjType linkType = oldLink.objType();
 
 		int oldLinkPid = 0;
 		// 级别：：1:道路>2:行政区划>
-		// 3:ZONELINK>4:土地利用（BUA边界线）＞5土地利用（大学，购物中心，医院，体育场，公墓，停车场，工业区，邮区边界线，FM面边界线）；
+		// 3:ZONELINK>4:土地利用（BUA边界线）＞
+		// 5土地利用（大学，购物中心，医院，体育场，公墓，停车场，工业区，邮区边界线，FM面边界线）；
 		int currLevel = 0;
 
 		if (linkType == ObjType.RDLINK) {
@@ -98,6 +109,425 @@ public class Operation implements IOperation {
 		info[1] = currLevel;
 
 		return info;
+	}
+
+	/**
+	 * 打断link维护rdsamelink。
+	 * 
+	 * @param oldLinkPid
+	 *            被打断的link
+	 * @param newLinks
+	 *            新生成的link组
+	 * @param newNodes
+	 *            新生成的node组
+	 * @param result
+	 * @throws Exception
+	 */
+	public String breakLink(IRow breakLink, Map<IRow, Geometry> breakNodeMap,
+			LinkedHashMap<IRow, Geometry> linkMap, Result result)
+			throws Exception {
+
+		int[] info = getOperationInfo(breakLink);
+
+		int breakLinkPid = info[0];
+
+		// 级别：：1:道路>2:行政区划>
+		// 3:ZONELINK>4:土地利用（BUA边界线）＞5土地利用（大学，购物中心，医院，体育场，公墓，停车场，工业区，邮区边界线，FM面边界线）；
+		int currLevel = info[1];
+
+		String linkTableName = breakLink.parentTableName().toUpperCase();
+
+		RdSameLinkSelector sameLinkSelector = new RdSameLinkSelector(this.conn);
+
+		RdSameLinkPart originalPart = sameLinkSelector.loadLinkPartByLink(
+				breakLinkPid, linkTableName, true);
+
+		// 被打断link不存在同一关系，不处理
+		if (originalPart == null) {
+
+			return null;
+		}
+
+		if (currLevel == 5) {
+
+			throw new Exception("此link不是该组同一关系中的主要素，不能进行此操作");
+		}
+
+		RdSameLink originalSameLink = (RdSameLink) sameLinkSelector.loadById(
+				originalPart.getGroupId(), true);
+
+		// 同一线中其他的组成link
+		List<RdSameLinkPart> linkParts = new ArrayList<RdSameLinkPart>();
+
+		int highLevel = getLinkPartsInfo(currLevel, originalSameLink, linkParts);
+
+		if (currLevel > highLevel) {
+
+			throw new Exception("此link不是该组同一关系中的主要素，不能进行此操作");
+		}
+
+		Map<String, List<IRow>> sameNodeMap = new HashMap<String, List<IRow>>();
+
+		for (Map.Entry<IRow, Geometry> entry : breakNodeMap.entrySet()) {
+
+			String strKey = entry.getValue().getCoordinate().toString();
+
+			List<IRow> nodeRows = new ArrayList<IRow>();
+
+			nodeRows.add(entry.getKey());
+
+			sameNodeMap.put(strKey, nodeRows);
+		}
+
+		Map<Geometry, List<IRow>> sameLinkMap = new HashMap<Geometry, List<IRow>>();
+
+		for (Map.Entry<IRow, Geometry> entry : linkMap.entrySet()) {
+
+			List<IRow> linkRows = new ArrayList<IRow>();
+
+			linkRows.add(entry.getKey());
+
+			sameLinkMap.put(entry.getValue(), linkRows);
+		}
+
+		for (RdSameLinkPart part : linkParts) {
+
+			JSONObject breakJson = new JSONObject();
+			if (linkTableName.equals(part.getTableName())
+					&& breakLinkPid == part.getLinkPid()) {
+				continue;
+			}
+
+			ObjType type = ReflectionAttrUtils.getObjTypeByTableName(part
+					.getTableName());
+
+			breakJson.element("objId", part.getLinkPid());
+
+			if (type == ObjType.ADLINK) {
+
+				breakAdLink(breakJson, breakNodeMap, sameNodeMap, sameLinkMap,
+						result);
+			}
+			if (type == ObjType.LULINK) {
+				breakLuLink(breakJson, breakNodeMap, sameNodeMap, sameLinkMap,
+						result);
+			}
+			if (type == ObjType.ZONELINK) {
+				breakZoneLink(breakJson, breakNodeMap, sameNodeMap,
+						sameLinkMap, result);
+			}
+		}
+
+		handleSameObj(sameNodeMap, sameLinkMap, originalSameLink, result);
+
+		return null;
+	}
+
+	private void handleSameObj(Map<String, List<IRow>> sameNodeMap,
+			Map<Geometry, List<IRow>> sameLinkMap, RdSameLink originalSameLink,
+			Result result) throws Exception {
+
+		// 新建同一点
+		com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create.Operation samenodeOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create.Operation(
+				null, null);
+
+		for (List<IRow> newNodes : sameNodeMap.values()) {
+			samenodeOperation.breakSameLink(result, newNodes);
+		}
+
+		// 新建同一线
+		com.navinfo.dataservice.engine.edit.operation.obj.rdsamelink.create.Operation sameLinkOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdsamelink.create.Operation(
+				null, null);
+
+		for (List<IRow> newlinks : sameLinkMap.values()) {
+			sameLinkOperation.breakSameLink(result, newlinks);
+		}
+
+		// 删除原始同一线
+		result.insertObject(originalSameLink, ObjStatus.DELETE,
+				originalSameLink.getPid());
+	}
+
+	/**
+	 * 调用adlink打断接口
+	 * 
+	 * @param type
+	 * @throws Exception
+	 */
+	private void breakAdLink(JSONObject breakJson,
+			Map<IRow, Geometry> breakNodeMap,
+			Map<String, List<IRow>> sameNodeMap,
+			Map<Geometry, List<IRow>> sameLinkMap, Result result)
+			throws Exception {
+
+		TreeMap<Integer, Coordinate> nodeMap = new TreeMap<Integer, Coordinate>();
+
+		for (Geometry nodeGeo : breakNodeMap.values()) {
+
+			Coordinate coordinate = GeoTranslator
+					.transform(nodeGeo, 0.00001, 5).getCoordinate();
+
+			AdNode node = NodeOperateUtils.createAdNode(coordinate.x,
+					coordinate.y);
+
+			String strKey = nodeGeo.getCoordinate().toString();
+
+			sameNodeMap.get(strKey).add(node);
+
+			nodeMap.put(node.getPid(), coordinate);
+
+			result.insertObject(node, ObjStatus.INSERT, node.getPid());
+		}
+
+		breakJson.element("type", "ADLINK");
+
+		breakJson = getBreakLinkJson(breakJson, nodeMap);
+
+		com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakadpoint.Command command = new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakadpoint.Command(
+				breakJson, null);
+
+		command.setOperationType("sameLinkBreak");
+
+		com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakadpoint.Process process = new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakadpoint.Process(
+				command, result, conn);
+
+		process.innerRun();
+
+		for (AdLink link : command.getNewLinks()) {
+
+			Geometry linkGeo = link.getGeometry();
+
+			if (sameLinkMap.containsKey(linkGeo)) {
+
+				sameLinkMap.get(linkGeo).add(link);
+
+			} else if (sameLinkMap.containsKey(linkGeo.reverse())) {
+
+				sameLinkMap.get(linkGeo.reverse()).add(link);
+
+			} else {
+				throw new Exception("打断后生成的link几何不相等，不能组成同一线");
+			}
+		}
+	}
+
+	/**
+	 * 调用adlink打断接口
+	 * 
+	 * @param type
+	 * @throws Exception
+	 */
+	private void breakLuLink(JSONObject breakJson,
+			Map<IRow, Geometry> breakNodeMap,
+			Map<String, List<IRow>> sameNodeMap,
+			Map<Geometry, List<IRow>> sameLinkMap, Result result)
+			throws Exception {
+
+		TreeMap<Integer, Coordinate> nodeMap = new TreeMap<Integer, Coordinate>();
+
+		for (Geometry nodeGeo : breakNodeMap.values()) {
+
+			Coordinate coordinate = GeoTranslator
+					.transform(nodeGeo, 0.00001, 5).getCoordinate();
+
+			LuNode node = NodeOperateUtils.createLuNode(coordinate.x,
+					coordinate.y);
+
+			String strKey = nodeGeo.getCoordinate().toString();
+
+			sameNodeMap.get(strKey).add(node);
+
+			nodeMap.put(node.getPid(), coordinate);
+
+			result.insertObject(node, ObjStatus.INSERT, node.getPid());
+		}
+
+		breakJson.element("type", "LULINK");
+
+		breakJson = getBreakLinkJson(breakJson, nodeMap);
+
+		com.navinfo.dataservice.engine.edit.operation.topo.breakin.breaklupoint.Command command = new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breaklupoint.Command(
+				breakJson, null);
+
+		command.setOperationType("sameLinkBreak");
+
+		com.navinfo.dataservice.engine.edit.operation.topo.breakin.breaklupoint.Process process = new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breaklupoint.Process(
+				command, result, conn);
+
+		process.innerRun();
+
+		for (LuLink link : command.getNewLinks()) {
+
+			Geometry linkGeo = link.getGeometry();
+
+			if (sameLinkMap.containsKey(linkGeo)) {
+
+				sameLinkMap.get(linkGeo).add(link);
+
+			} else if (sameLinkMap.containsKey(linkGeo.reverse())) {
+
+				sameLinkMap.get(linkGeo.reverse()).add(link);
+
+			} else {
+				throw new Exception("打断后生成的link几何不相等，不能组成同一线");
+			}
+		}
+
+	}
+
+	/**
+	 * 调用adlink打断接口
+	 * 
+	 * @param type
+	 * @throws Exception
+	 */
+	private void breakZoneLink(JSONObject breakJson,
+			Map<IRow, Geometry> breakNodeMap,
+			Map<String, List<IRow>> sameNodeMap,
+			Map<Geometry, List<IRow>> sameLinkMap, Result result)
+			throws Exception {
+
+		TreeMap<Integer, Coordinate> nodeMap = new TreeMap<Integer, Coordinate>();
+
+		for (Geometry nodeGeo : breakNodeMap.values()) {
+
+			Coordinate coordinate = GeoTranslator
+					.transform(nodeGeo, 0.00001, 5).getCoordinate();
+
+			ZoneNode node = NodeOperateUtils.createZoneNode(coordinate.x,
+					coordinate.y);
+
+			String strKey = nodeGeo.getCoordinate().toString();
+
+			sameNodeMap.get(strKey).add(node);
+
+			nodeMap.put(node.getPid(), coordinate);
+
+			result.insertObject(node, ObjStatus.INSERT, node.getPid());
+		}
+
+		breakJson.element("type", "ZONELINK");
+
+		breakJson = getBreakLinkJson(breakJson, nodeMap);
+
+		com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakzonepoint.Command command = new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakzonepoint.Command(
+				breakJson, null);
+
+		command.setOperationType("sameLinkBreak");
+
+		com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakzonepoint.Process process = new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakzonepoint.Process(
+				command, result, conn);
+
+		process.innerRun();
+
+		for (ZoneLink link : command.getNewLinks()) {
+
+			Geometry linkGeo = link.getGeometry();
+
+			if (sameLinkMap.containsKey(linkGeo)) {
+
+				sameLinkMap.get(linkGeo).add(link);
+
+			} else if (sameLinkMap.containsKey(linkGeo.reverse())) {
+
+				sameLinkMap.get(linkGeo.reverse()).add(link);
+
+			} else {
+				throw new Exception("打断后生成的link几何不相等，不能组成同一线");
+			}
+		}
+	}
+
+	/**
+	 * 获取创建link的josn参数
+	 * 
+	 * @param lineCoordinates
+	 * @param nodeGeoMap
+	 * @param geoNodesMap
+	 * @param intersectionMap
+	 * @param flagIntersections
+	 * @return
+	 * @throws Exception
+	 */
+	private JSONObject getBreakLinkJson(JSONObject breakJson,
+			TreeMap<Integer, Coordinate> nodeMap) throws Exception {
+
+		breakJson.put("command", "BREAK");
+
+		breakJson.put("dbId", 0);
+
+		JSONObject data = new JSONObject();
+
+		if (nodeMap.size() == 1) {
+
+			data.put("breakNodePid", nodeMap.firstEntry().getKey());
+
+			data.put("longitude", nodeMap.firstEntry().getValue().x);
+
+			data.put("latitude", nodeMap.firstEntry().getValue().y);
+
+		} else if (nodeMap.size() > 1) {
+
+			JSONArray array = new JSONArray();
+
+			for (Map.Entry<Integer, Coordinate> entry : nodeMap.entrySet()) {
+
+				JSONObject breakObj = new JSONObject();
+
+				breakObj.put("breakNodePid", entry.getKey());
+
+				breakObj.put("longitude", entry.getValue().x);
+
+				breakObj.put("latitude", entry.getValue().y);
+
+				array.add(breakObj);
+			}
+
+			data.put("breakNodes", array);
+		}
+
+		breakJson.put("data", data);
+
+		return breakJson;
+	}
+
+	/**
+	 * 获取同一线的part信息
+	 * 
+	 * @param currLevel
+	 *            被打断link的对应等级
+	 * @param originalSameLink
+	 *            被打断同一线
+	 * @param linkParts
+	 *            同一线的part组
+	 * @return 同一线组成link的对应的最高等级
+	 */
+	private int getLinkPartsInfo(int currLevel, RdSameLink originalSameLink,
+			List<RdSameLinkPart> linkParts) {
+
+		int highLevel = currLevel;
+
+		for (IRow row : originalSameLink.getParts()) {
+
+			RdSameLinkPart part = (RdSameLinkPart) row;
+
+			if (part.getTableName().equals("RD_LINK") && highLevel > 1) {
+
+				highLevel = 1;
+
+			} else if (part.getTableName().equals("AD_LINK") && highLevel > 2) {
+
+				highLevel = 2;
+
+			} else if (part.getTableName().equals("ZONE_LINK") && highLevel > 3) {
+
+				highLevel = 3;
+			}
+
+			linkParts.add(part);
+		}
+
+		return highLevel;
 	}
 
 	public String repairLink(IObj repairLink, String requester, Result result)
@@ -162,361 +592,6 @@ public class Operation implements IOperation {
 	}
 
 	/**
-	 * 打断link维护rdsamelink。
-	 * 
-	 * @param oldLinkPid
-	 *            被打断的link
-	 * @param newLinks
-	 *            新生成的link组
-	 * @param result
-	 * @param conn
-	 * @throws Exception
-	 */
-	public String breakLink(IObj breakLink, List<IObj> newLinks, IRow newNode,
-			String requester, Result result) throws Exception {
-
-		int[] info = getOperationInfo(breakLink);
-
-		int breakLinkPid = info[0];
-
-		// 级别：：1:道路>2:行政区划>
-		// 3:ZONELINK>4:土地利用（BUA边界线）＞5土地利用（大学，购物中心，医院，体育场，公墓，停车场，工业区，邮区边界线，FM面边界线）；
-		int currLevel = info[1];
-
-		String linkTableName = breakLink.parentTableName().toUpperCase();
-
-		RdSameLinkSelector sameLinkSelector = new RdSameLinkSelector(this.conn);
-
-		RdSameLinkPart originalPart = sameLinkSelector.loadLinkPartByLink(
-				breakLinkPid, linkTableName, true);
-
-		// 被打断link不存在同一关系，不处理
-		if (originalPart == null) {
-
-			return null;
-		}
-
-		if (currLevel == 5) {
-
-			throw new Exception("此link不是该组同一关系中的主要素，不能进行此操作");
-		}
-
-		RdSameLink originalSameLink = (RdSameLink) sameLinkSelector.loadById(
-				originalPart.getGroupId(), true);
-
-		// 同一线中其他的组成link
-		List<RdSameLinkPart> linkParts = new ArrayList<RdSameLinkPart>();
-
-		int highLevel = getLinkPartsInfo(currLevel, originalSameLink, linkParts);
-
-		if (currLevel > highLevel) {
-
-			throw new Exception("此link不是该组同一关系中的主要素，不能进行此操作");
-		}
-
-		// 新生成同一点node组
-		List<IRow> newNodes = new ArrayList<IRow>();
-
-		newNodes.add(newNode);
-
-		// 新生成同一线link组1
-		List<IRow> links1 = new ArrayList<IRow>();
-
-		// 新生成同一线link组2
-		List<IRow> links2 = new ArrayList<IRow>();
-
-		Coordinate falgPoint = getFalgPoint(breakLink);
-
-		handleCurrNewLink(falgPoint, newLinks, links1, links2);
-
-		// link的打断requester可用信息相同，可共用。
-		com.alibaba.fastjson.JSONObject fastJson = com.alibaba.fastjson.JSONObject
-				.parseObject(requester);
-
-		JSONObject breakJson = JsonUtils.fastJson2netJson(fastJson);
-
-		if (breakJson.getJSONObject("data").containsKey("breakNodePid")) {
-			breakJson.getJSONObject("data").element("breakNodePid", 0);
-		}
-
-		for (RdSameLinkPart part : linkParts) {
-
-			if (linkTableName.equals(part.getTableName())
-					&& breakLinkPid == part.getLinkPid()) {
-				continue;
-			}
-
-			ObjType type = ReflectionAttrUtils.getObjTypeByTableName(part
-					.getTableName());
-
-			breakJson.element("objId", part.getLinkPid());
-
-			if (type == ObjType.ADLINK) {
-
-				breakAdLink(breakJson, newNodes, links1, links2, falgPoint,
-						result);
-			}
-			if (type == ObjType.LULINK) {
-				breakLuLink(breakJson, newNodes, links1, links2, falgPoint,
-						result);
-			}
-			if (type == ObjType.ZONELINK) {
-				breakZoneLink(breakJson, newNodes, links1, links2, falgPoint,
-						result);
-			}
-		}
-
-		// 新建同一点
-		com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create.Operation samenodeOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create.Operation(
-				null, null);
-		samenodeOperation.breakSameLink(result, newNodes);
-
-		// 新建同一线
-		com.navinfo.dataservice.engine.edit.operation.obj.rdsamelink.create.Operation sameLinkOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdsamelink.create.Operation(
-				null, null);
-
-		sameLinkOperation.breakSameLink(result, links1);
-
-		sameLinkOperation.breakSameLink(result, links2);
-
-		// 删除原始同一线
-		result.insertObject(originalSameLink, ObjStatus.DELETE,
-				originalSameLink.getPid());
-		return null;
-	}
-
-	/**
-	 * 获取同一线的part信息
-	 * 
-	 * @param currLevel
-	 *            被打断link的对应等级
-	 * @param originalSameLink
-	 *            被打断同一线
-	 * @param linkParts
-	 *            同一线的part组
-	 * @return 同一线组成link的对应的最高等级
-	 */
-	private int getLinkPartsInfo(int currLevel, RdSameLink originalSameLink,
-			List<RdSameLinkPart> linkParts) {
-
-		int highLevel = currLevel;
-
-		for (IRow row : originalSameLink.getParts()) {
-
-			RdSameLinkPart part = (RdSameLinkPart) row;
-
-			if (part.getTableName().equals("RD_LINK") && highLevel > 1) {
-
-				highLevel = 1;
-
-			} else if (part.getTableName().equals("AD_LINK") && highLevel > 2) {
-
-				highLevel = 2;
-
-			} else if (part.getTableName().equals("ZONE_LINK") && highLevel > 3) {
-
-				highLevel = 3;
-			}
-
-			linkParts.add(part);
-		}
-
-		return highLevel;
-	}
-
-	/**
-	 * 获取标识点位，打断时判断新生成的link分组
-	 * 
-	 * @param oldLink
-	 * @return
-	 */
-	private Coordinate getFalgPoint(IObj oldLink) {
-
-		ObjType linkType = oldLink.objType();
-
-		Coordinate coordinate = null;
-
-		if (linkType == ObjType.RDLINK) {
-
-			coordinate = ((RdLink) oldLink).getGeometry().getCoordinates()[0];
-
-		} else if (linkType == ObjType.ADLINK) {
-
-			coordinate = ((AdLink) oldLink).getGeometry().getCoordinates()[0];
-
-		} else if (linkType == ObjType.ZONELINK) {
-
-			coordinate = ((ZoneLink) oldLink).getGeometry().getCoordinates()[0];
-
-		} else if (linkType == ObjType.LULINK) {
-
-			coordinate = ((LuLink) oldLink).getGeometry().getCoordinates()[0];
-		}
-
-		return coordinate;
-	}
-
-	/**
-	 * 打断时通过标识点位 将新生成link进行分组
-	 * 
-	 * @param falgPoint
-	 * @param newLinks
-	 * @param links1
-	 * @param links2
-	 */
-	private void handleCurrNewLink(Coordinate falgPoint, List<IObj> newLinks,
-			List<IRow> links1, List<IRow> links2) {
-
-		ObjType linkType = newLinks.get(0).objType();
-
-		Coordinate[] coors = null;
-
-		if (linkType == ObjType.RDLINK) {
-
-			coors = ((RdLink) newLinks.get(0)).getGeometry().getCoordinates();
-
-		} else if (linkType == ObjType.ADLINK) {
-
-			coors = ((AdLink) newLinks.get(0)).getGeometry().getCoordinates();
-
-		} else if (linkType == ObjType.ZONELINK) {
-
-			coors = ((ZoneLink) newLinks.get(0)).getGeometry().getCoordinates();
-
-		} else if (linkType == ObjType.LULINK) {
-
-			coors = ((LuLink) newLinks.get(0)).getGeometry().getCoordinates();
-		}
-
-		if (falgPoint.equals(coors[0])
-				|| falgPoint.equals(coors[coors.length - 1])) {
-			links1.add(newLinks.get(0));
-
-			links2.add(newLinks.get(1));
-
-		} else {
-
-			links1.add(newLinks.get(1));
-
-			links2.add(newLinks.get(0));
-		}
-	}
-
-	/**
-	 * 调用adlink打断接口
-	 * 
-	 * @param type
-	 * @throws Exception
-	 */
-	private void breakAdLink(JSONObject breakJson, List<IRow> newNodes,
-			List<IRow> links1, List<IRow> links2, Coordinate falgPoint,
-			Result result) throws Exception {
-
-		breakJson.element("type", "ADLINK");
-
-		com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakadpoint.Command adCommand = new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakadpoint.Command(
-				breakJson, null);
-
-		adCommand.setOperationType("innerRun");
-
-		com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakadpoint.Process adProcess = new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakadpoint.Process(
-				adCommand, result, conn);
-
-		adProcess.innerRun();
-
-		newNodes.add(adCommand.getBreakNode());
-
-		Coordinate[] coors = adCommand.getNewLinks().get(0).getGeometry()
-				.getCoordinates();
-
-		if (falgPoint.equals(coors[0])
-				|| falgPoint.equals(coors[coors.length - 1])) {
-			links1.add(adCommand.getNewLinks().get(0));
-			links2.add(adCommand.getNewLinks().get(1));
-		} else {
-			links1.add(adCommand.getNewLinks().get(1));
-			links2.add(adCommand.getNewLinks().get(0));
-		}
-
-	}
-
-	/**
-	 * 调用lulink打断接口
-	 * 
-	 * @param type
-	 * @throws Exception
-	 */
-	private void breakLuLink(JSONObject breakJson, List<IRow> newNodes,
-			List<IRow> links1, List<IRow> links2, Coordinate falgPoint,
-			Result result) throws Exception {
-
-		breakJson.element("type", "LULINK");
-
-		com.navinfo.dataservice.engine.edit.operation.topo.breakin.breaklupoint.Command luCommand = new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breaklupoint.Command(
-				breakJson, null);
-
-		luCommand.setOperationType("innerRun");
-
-		com.navinfo.dataservice.engine.edit.operation.topo.breakin.breaklupoint.Process luProcess = new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breaklupoint.Process(
-				luCommand, result, conn);
-
-		luProcess.innerRun();
-
-		newNodes.add(luCommand.getBreakNode());
-
-		Coordinate[] coors = luCommand.getNewLinks().get(0).getGeometry()
-				.getCoordinates();
-
-		if (falgPoint.equals(coors[0])
-				|| falgPoint.equals(coors[coors.length - 1])) {
-			links1.add(luCommand.getNewLinks().get(0));
-			links2.add(luCommand.getNewLinks().get(1));
-		} else {
-			links1.add(luCommand.getNewLinks().get(1));
-			links2.add(luCommand.getNewLinks().get(0));
-		}
-	}
-
-	/**
-	 * 调用zonelink打断接口
-	 * 
-	 * @param type
-	 * @throws Exception
-	 */
-	private IRow breakZoneLink(JSONObject breakJson, List<IRow> newNodes,
-			List<IRow> links1, List<IRow> links2, Coordinate falgPoint,
-			Result result) throws Exception {
-
-		breakJson.element("type", "ZONELINK");
-
-		com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakzonepoint.Command zoneCommand = new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakzonepoint.Command(
-				breakJson, null);
-
-		zoneCommand.setOperationType("innerRun");
-
-		com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakzonepoint.Process zoneProcess = new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakzonepoint.Process(
-				zoneCommand, result, conn);
-
-		zoneProcess.innerRun();
-
-		newNodes.add(zoneCommand.getBreakNode());
-
-		Coordinate[] coors = zoneCommand.getNewLinks().get(0).getGeometry()
-				.getCoordinates();
-
-		if (falgPoint.equals(coors[0])
-				|| falgPoint.equals(coors[coors.length - 1])) {
-			links1.add(zoneCommand.getNewLinks().get(0));
-			links2.add(zoneCommand.getNewLinks().get(1));
-		} else {
-			links1.add(zoneCommand.getNewLinks().get(1));
-			links2.add(zoneCommand.getNewLinks().get(0));
-		}
-
-		return null;
-	}
-
-	/**
 	 * 对统一关系的其他组成link调用修形功能
 	 * 
 	 * @param part
@@ -536,7 +611,7 @@ public class Operation implements IOperation {
 			com.navinfo.dataservice.engine.edit.operation.topo.repair.repairadlink.Command adCommand = new com.navinfo.dataservice.engine.edit.operation.topo.repair.repairadlink.Command(
 					repairJson, null);
 
-			adCommand.setOperationType("innerRun");
+			adCommand.setOperationType("sameLinkRepair");
 
 			com.navinfo.dataservice.engine.edit.operation.topo.repair.repairadlink.Process adProcess = new com.navinfo.dataservice.engine.edit.operation.topo.repair.repairadlink.Process(
 					adCommand, result, conn);
@@ -546,7 +621,7 @@ public class Operation implements IOperation {
 			repairJson.element("type", "ZONELINK");
 			com.navinfo.dataservice.engine.edit.operation.topo.repair.repairzonelink.Command zoneCommand = new com.navinfo.dataservice.engine.edit.operation.topo.repair.repairzonelink.Command(
 					repairJson, null);
-			zoneCommand.setOperationType("innerRun");
+			zoneCommand.setOperationType("sameLinkRepair");
 			com.navinfo.dataservice.engine.edit.operation.topo.repair.repairzonelink.Process zoneProcess = new com.navinfo.dataservice.engine.edit.operation.topo.repair.repairzonelink.Process(
 					zoneCommand, result, conn);
 			zoneProcess.innerRun();
@@ -555,7 +630,7 @@ public class Operation implements IOperation {
 			repairJson.element("type", "LULINK");
 			com.navinfo.dataservice.engine.edit.operation.topo.repair.repairlulink.Command luCommand = new com.navinfo.dataservice.engine.edit.operation.topo.repair.repairlulink.Command(
 					repairJson, null);
-			luCommand.setOperationType("innerRun");
+			luCommand.setOperationType("sameLinkRepair");
 			com.navinfo.dataservice.engine.edit.operation.topo.repair.repairlulink.Process luProcess = new com.navinfo.dataservice.engine.edit.operation.topo.repair.repairlulink.Process(
 					luCommand, result, conn);
 			luProcess.innerRun();

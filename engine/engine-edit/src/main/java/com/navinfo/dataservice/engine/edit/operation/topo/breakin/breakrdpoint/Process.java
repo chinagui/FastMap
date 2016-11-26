@@ -605,7 +605,7 @@ public class Process extends AbstractProcess<Command> {
 				+ String.valueOf(refPoiTime - refRdVariableSpeedTime));
 
 		// 同一点同一线维护
-		if (!this.getCommand().getOperationType().equals("innerRun")) {
+		if (!this.getCommand().getOperationType().equals("sameLinkRepair")) {
 
 			opRefRelationObj.handleSameLink(this.rdLinkBreakpoint,
 					this.getCommand(), this.getResult());

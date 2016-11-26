@@ -303,7 +303,7 @@ public class Operation implements IOperation {
 		if (meshes.size() == 1) {
 			JSONObject content = new JSONObject();
 			result.setPrimaryPid(this.command.getUpdateLink().getPid());
-			content.put("geometry", command.getLinkGeom());
+			content.put("geometry", GeoTranslator.jts2Geojson(command.getLinkGeom()));
 			Geometry geo = command.getLinkGeom();
 			double length = 0;
 			if (null != geo)
@@ -422,7 +422,7 @@ public class Operation implements IOperation {
 			throws Exception {
 
 		if (links.size() == 1) {
-			if (!this.command.getOperationType().equals("innerRun")) {
+			if (!this.command.getOperationType().equals("sameLinkRepair")) {
 				// 维护同一线
 				com.navinfo.dataservice.engine.edit.operation.obj.rdsamelink.update.Operation samelinkOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdsamelink.update.Operation(
 						this.conn);

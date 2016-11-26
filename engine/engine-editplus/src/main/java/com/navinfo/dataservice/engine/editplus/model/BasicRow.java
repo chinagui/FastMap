@@ -214,7 +214,6 @@ public abstract class BasicRow implements Logable{
 			}
 			//字段信息
 			assembleColumnInfo(updateColumns,columnName,columnPlaceholder,columnValues,OperationType.UPDATE);
-//			assembleColumnInfo(tab.getColumns(),columnName,columnPlaceholder,columnValues,OperationType.UPDATE);
 			//更新记录：新增
 			columnName.add("U_RECORD=?");
 			columnPlaceholder.add("?");
@@ -243,40 +242,44 @@ public abstract class BasicRow implements Logable{
 	 * @throws InvocationTargetException 
 	 * @throws NoSuchMethodException 
 	 */
-	private void assembleColumnInfo(Map<String, GlmColumn> columns, List<String> columnName,
+	private void assembleColumnInfo(Map<String, GlmColumn> columns, List<String> columnNames,
 			List<String> columnPlaceholder, List<Object> columnValues, OperationType operationType) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, IllegalArgumentException {
 		for(Map.Entry<String, GlmColumn> entry:columns.entrySet()){
 			GlmColumn glmColumn = entry.getValue();	
+			Object columnValue = getAttrByColName(entry.getKey());
+			String columnName = entry.getKey();
+			if(columnName.equals("LEVEL")){
+				columnName = "\"LEVEL\"";
+			}
 			if(glmColumn.getType().equals(GlmColumn.TYPE_NUMBER)
 					||glmColumn.getType().equals(GlmColumn.TYPE_VARCHAR)
 					||glmColumn.getType().equals(GlmColumn.TYPE_RAW)){
+
 				if(operationType.equals(OperationType.UPDATE)){
-					columnName.add(entry.getKey() + "=?");
-				}else{
-					columnName.add(entry.getKey());
+					columnNames.add(columnName + "=?");
+				}else if(operationType.equals(OperationType.INSERT)){
+					columnNames.add(columnName);	
 				}
 				columnPlaceholder.add("?");
-				//生成row_id
-				if(entry.getKey().equals("ROW_ID")){
-					columnValues.add(UuidUtils.genUuid());
-					continue;
-				}
-				Object temp = getAttrByColName(entry.getKey());
-				columnValues.add(getAttrByColName(entry.getKey()));
+				columnValues.add(columnValue);
 			}else if(glmColumn.getType().equals(GlmColumn.TYPE_TIMESTAMP)){
 				DateFormat format = new java.text.SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
 				if(operationType.equals(OperationType.UPDATE)){
-					columnName.add(entry.getKey() + "=TO_DATE(?,'yyyy-MM-dd HH24:MI:ss')");
-				}else{
-					columnName.add(entry.getKey());
+					columnNames.add(columnName + "=TO_DATE(?,'yyyy-MM-dd HH24:MI:ss')");
+					columnPlaceholder.add("TO_DATE(?,'yyyy-MM-dd HH24:MI:ss')");
+					columnValues.add(format.format(columnValue));
+				}else if(operationType.equals(OperationType.INSERT)){
+					if(columnValue!=null){
+						columnNames.add(columnName);
+						columnPlaceholder.add("TO_DATE(?,'yyyy-MM-dd HH24:MI:ss')");
+						columnValues.add(format.format(columnValue));
+					}
 				}
-				columnPlaceholder.add("TO_DATE(?,'yyyy-MM-dd HH24:MI:ss')");
-				columnValues.add(getAttrByColName(format.format(entry.getKey())));
 			}else if(glmColumn.getType().equals(GlmColumn.TYPE_GEOMETRY)){
 				if(operationType.equals(OperationType.UPDATE)){
-					columnName.add(entry.getKey() + "=SDO_GEOMETRY(?,8307)");
+					columnNames.add(columnName + "=SDO_GEOMETRY(?,8307)");
 				}else{
-					columnName.add(entry.getKey());
+					columnNames.add(columnName);
 				}
 				columnPlaceholder.add("SDO_GEOMETRY(?,8307)");
 				//Geometry不转STRUCT

@@ -47,8 +47,11 @@ public class SingleBatchSelRsHandler implements ResultSetHandler<List<BasicRow>>
 				for(Map.Entry<String, GlmColumn> entry:glmTable.getColumns().entrySet()){
 					ResultSetGetter.setAttrByCol(rs, row, entry.getValue());
 				}
-				//selector出来的row为UPDATE状态
-				row.setOpType(OperationType.UPDATE);
+				if(rs.getInt("U_RECORD")==2){
+					row.setOpType(OperationType.PRE_DELETED);
+				}else{
+					row.setOpType(OperationType.UPDATE);
+				}
 				list.add(row);
 			}
 			return list;

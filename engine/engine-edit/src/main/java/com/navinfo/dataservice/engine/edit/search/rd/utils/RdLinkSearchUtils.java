@@ -11,7 +11,6 @@ import java.util.Map;
 import java.util.Set;
 
 import net.sf.json.JSONArray;
-
 import oracle.sql.STRUCT;
 
 import com.navinfo.dataservice.commons.geom.AngleCalculator;
@@ -19,9 +18,12 @@ import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkSpeedlimit;
+import com.navinfo.dataservice.dao.glm.model.rd.variablespeed.RdVariableSpeed;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.variablespeed.RdVariableSpeedSelector;
 import com.navinfo.navicommons.database.sql.DBUtils;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.LineSegment;
@@ -36,6 +38,155 @@ public class RdLinkSearchUtils {
 
 	public RdLinkSearchUtils(Connection conn) throws Exception {
 		this.conn = conn;
+	}
+	
+	public final int variableSpeedNextLinkCount = 99;
+
+	RdLinkSelector linkSelector = null;
+
+	RdVariableSpeedSelector variableSpeedSelector = null;
+
+	/**
+	 * 推荐可变限速接续link。
+	 * 
+	 * @param linkPid
+	 *            link
+	 * @param nodePid
+	 *            方向点
+	 * @return
+	 * @throws Exception
+	 */
+	public List<Integer> variableSpeedNextLinks(int linkPid, int nodePid)
+			throws Exception {
+
+		// 初始化查询类
+		linkSelector = new RdLinkSelector(conn);
+
+		variableSpeedSelector = new RdVariableSpeedSelector(this.conn);
+
+		List<Integer> nextLinkPids = new ArrayList<Integer>();
+
+		RdLink link = (RdLink) linkSelector.loadById(linkPid, true, true);
+
+		variableSpeedNextLinks(nextLinkPids, linkPid, nodePid, link.getMeshId());
+
+		return nextLinkPids;
+	}
+
+	/**
+	 * 推荐可变限速接续link。
+	 * 
+	 * @param preLinkPid
+	 *            link
+	 * @param preNodePid
+	 *            方向点
+	 * @return
+	 * @throws Exception
+	 */
+	private void variableSpeedNextLinks(List<Integer> nextLinkPids,
+			int preLinkPid, int preNodePid, int meshId) throws Exception {
+
+		List<RdLink> links = linkSelector.loadByNodePidOnlyRdLink(preNodePid,
+				false);
+
+		List<RdLink> linksTmp = new ArrayList<RdLink>();
+
+		for (RdLink link : links) {
+			
+			if (meshId != link.getMeshId()) {
+				continue;
+			}
+			
+			// 特殊交通类型不可作为可变限速的接续link；
+			if (1 == link.getSpecialTraffic()) {
+				continue;
+			}
+
+			if (preLinkPid == link.getPid()) {
+				continue;
+			}
+
+			if (link.getDirect() == 0) {
+				continue;
+			}
+			if (link.getDirect() == 2 && link.geteNodePid() == preNodePid) {
+				continue;
+			}
+			if (link.getDirect() == 3 && link.getsNodePid() == preNodePid) {
+				continue;
+			}
+
+			int kind = link.getKind();
+
+			if (kind != 8 && kind != 9 && kind != 10 && kind != 11
+					&& kind != 13) {
+				linksTmp.add(link);
+			}
+		}
+		if (linksTmp.size() != 1) {
+			return;
+		}
+
+		RdLink linkTmp = linksTmp.get(0);
+
+		if (!isVariableSpeedLink(linkTmp, preNodePid)) {
+			return;
+		}
+
+		if (nextLinkPids.contains(linkTmp.getPid())) {
+			return;
+		}
+
+		nextLinkPids.add(linkTmp.getPid());
+
+		if (nextLinkPids.size() >= variableSpeedNextLinkCount) {
+			return;
+		}
+
+		int nextNodePid = preNodePid == linkTmp.getsNodePid() ? linkTmp
+				.geteNodePid() : linkTmp.getsNodePid();
+
+		variableSpeedNextLinks(nextLinkPids, linkTmp.getPid(), nextNodePid,
+				meshId);
+
+	}
+
+	/**
+	 * 判断link能否做可变限速的接续线
+	 * 
+	 * @param link
+	 * @param nodePid
+	 * @return
+	 * @throws Exception
+	 */
+	private boolean isVariableSpeedLink(RdLink link, int nodePid)
+			throws Exception {
+
+		List<IRow> forms = new AbstractSelector(RdLinkForm.class, conn)
+				.loadRowsByParentId(link.getPid(), true);
+
+		for (IRow row : forms) {
+
+			RdLinkForm form = (RdLinkForm) row;
+
+			// 特殊交通类型、交叉口内道路的LINK不可作为可变限速的接续link
+			if (form.getFormOfWay() == 33 || form.getFormOfWay() == 50) {
+				return false;
+			}
+		}
+
+		int nextNodePid = nodePid == link.getsNodePid() ? link.geteNodePid()
+				: link.getsNodePid();
+
+		List<RdVariableSpeed> variableSpeeds = variableSpeedSelector
+				.loadRdVariableSpeedByParam(link.getPid(), nextNodePid, null,
+						true);
+
+		if (variableSpeeds.size() > 0) {
+			return false;
+		}
+
+		return true;
 	}
 
 	/**
@@ -336,13 +487,12 @@ public class RdLinkSearchUtils {
 		}
 		while (resultLinks.size() == 1) {
 			RdLink currentLink = resultLinks.get(0);
-			if (currentLink.getKind() >= 10) {
-				break;
-			}
 			if (this.getLinksLength(tracks) + currentLink.getLength() + length > 100) {
 				tracks.add(currentLink);
 				break;
-			} 
+			}
+			tracks.add(currentLink);
+
 			// 计算
 			cuurentLinkPid = currentLink.getPid();
 			cruuentNodePidDir = (cruuentNodePidDir == currentLink.getsNodePid()) ? currentLink

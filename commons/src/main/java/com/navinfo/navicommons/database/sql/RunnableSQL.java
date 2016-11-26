@@ -14,6 +14,7 @@ import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.JtsGeometryFactory;
+import com.navinfo.navicommons.database.QueryRunner;
 import com.vividsolutions.jts.geom.Geometry;
 
 import oracle.spatial.geometry.JGeometry;
@@ -53,6 +54,16 @@ public class RunnableSQL {
 	 * 再优化
 	 * @throws Exception
 	 */
+//	public void run(Connection conn)throws Exception{
+//		try{
+//			new QueryRunner().update(conn,sql,args.toArray());
+//		}catch(Exception e){
+//			log.error(e.getMessage(),e);
+//			throw e;
+//		}finally{
+//			DbUtils.closeQuietly(pst);
+//		}
+//	}
 	public void run(Connection conn)throws Exception{
 		PreparedStatement pst = null;
 		try{

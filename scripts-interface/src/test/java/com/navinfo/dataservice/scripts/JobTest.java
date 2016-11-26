@@ -56,6 +56,8 @@ public class JobTest {
 		ruleList.add("COM60104");*/
 		ruleList.add("GLM02216");
 		ruleList.add("GLM02262");
+		ruleList.add("GLM02137");
+		ruleList.add("GLM02173");
 		/*ruleList.add("GLM02261");*/
 		
 		

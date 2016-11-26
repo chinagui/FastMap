@@ -10,7 +10,6 @@ import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
 import org.apache.commons.lang.StringUtils;
 import java.util.Random;
-
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -42,9 +41,12 @@ public class CheckCoreJob extends AbstractJob {
 //        	System.out.println("元数据库:" + checkParams.getCheckUserName()+"  "+ checkParams.getCheckPasswd()+" "+checkParams.getCheckHost());
 //        	System.out.println("kdb: "+  checkParams.getKdbUserName()+"  "+checkParams.getKdbPasswd()+"  "+ checkParams.getKdbHost());
             String taskName = getRandomString(32);
+          //  System.out.println("TaskName:" + taskName);
             checkResult = checkMgr.prepareCheck(taskName, checkParams.getCheckUserName(), checkParams.getCheckPasswd(),
                     checkParams.getCheckHost(), checkParams.getCheckPort(), checkParams.getCheckSid(), checkParams.getKdbUserName(),
                     checkParams.getKdbPasswd(), checkParams.getKdbHost(), checkParams.getKdbPort(), checkParams.getKdbSid(), checkRuleIds, timeOut, null);
+                    
+            //System.out.println(checkResult);
 
             if (checkResult.indexOf("<code>0</code>") > 0) {
                     checkResult = "环境检测失败";

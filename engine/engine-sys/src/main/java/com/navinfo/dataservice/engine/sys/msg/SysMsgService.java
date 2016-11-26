@@ -14,6 +14,7 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -473,7 +474,7 @@ public class SysMsgService {
 						Map<String,Object> msg = new HashMap<String, Object>();
 						msg.put("msgId",rs.getLong("MSG_ID"));
 						msg.put("msgContent",rs.getString("MSG_CONTENT"));
-						msg.put("createTime",rs.getTimestamp("CREATE_TIME"));
+						msg.put("createTime",DateUtils.dateToString(rs.getTimestamp("CREATE_TIME"),DateUtils.DATE_COMPACTED_FORMAT));
 						msg.put("type", "message");
 						msgs.add(msg);
 					}
@@ -602,7 +603,7 @@ public class SysMsgService {
 				msg.setMsgId(rs.getLong("MSG_ID"));
 				msg.setMsgType(rs.getInt("MSG_TYPE"));
 				msg.setMsgContent(rs.getString("MSG_CONTENT"));
-				msg.setCreateTime(rs.getTimestamp("CREATE_TIME"));
+				msg.setCreateTime(DateUtils.dateToString(rs.getTimestamp("CREATE_TIME"),DateUtils.DATE_COMPACTED_FORMAT));
 				msg.setTargetUserId(rs.getLong("TARGET_USER_ID"));
 				msg.setMsgTitle(rs.getString("MSG_TITLE"));
 				msg.setPushUserId(rs.getLong("PUSH_USER_ID"));
@@ -632,7 +633,7 @@ public class SysMsgService {
 				msg.setMsgId(rs.getLong("MSG_ID"));
 				msg.setMsgType(rs.getInt("MSG_TYPE"));
 				msg.setMsgContent(rs.getString("MSG_CONTENT"));
-				msg.setCreateTime(rs.getTimestamp("CREATE_TIME"));
+				msg.setCreateTime(DateUtils.dateToString(rs.getTimestamp("CREATE_TIME"),DateUtils.DATE_COMPACTED_FORMAT));
 				msg.setTargetUserId(rs.getLong("TARGET_USER_ID"));
 				msg.setMsgTitle(rs.getString("MSG_TITLE"));
 				msg.setPushUserId(rs.getLong("PUSH_USER_ID"));
@@ -673,7 +674,7 @@ public class SysMsgService {
 				msg.put("msgId",rs.getLong("MSG_ID"));
 				msg.put("msgType",rs.getInt("MSG_TYPE"));
 				msg.put("msgContent",rs.getString("MSG_CONTENT"));
-				msg.put("createTime",rs.getTimestamp("CREATE_TIME"));
+				msg.put("createTime",DateUtils.dateToString(rs.getTimestamp("CREATE_TIME"),DateUtils.DATE_COMPACTED_FORMAT));
 				msg.put("targetUserId",rs.getLong("TARGET_USER_ID"));
 				msg.put("msgTitle",rs.getString("MSG_TITLE"));
 				msg.put("pushUserId",rs.getLong("PUSH_USER_ID"));
@@ -714,7 +715,7 @@ public class SysMsgService {
 				msg.put("msgId",rs.getLong("MSG_ID"));
 				msg.put("msgType",rs.getInt("MSG_TYPE"));
 				msg.put("msgContent",rs.getString("MSG_CONTENT"));
-				msg.put("createTime",rs.getTimestamp("CREATE_TIME"));
+				msg.put("createTime",DateUtils.dateToString(rs.getTimestamp("CREATE_TIME"),DateUtils.DATE_COMPACTED_FORMAT));
 				msg.put("targetUserId",rs.getLong("TARGET_USER_ID"));
 				msg.put("msgTitle",rs.getString("MSG_TITLE"));
 				msg.put("pushUserId",rs.getLong("PUSH_USER_ID"));

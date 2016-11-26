@@ -18,6 +18,13 @@ public class IxPoiChildren extends BasicRow {
 	protected long groupId ;
 	protected long childPoiPid ;
 	protected int relationType ;
+	
+	
+
+	public IxPoiChildren() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
 
 	public IxPoiChildren (long objPid){
 		super(objPid);

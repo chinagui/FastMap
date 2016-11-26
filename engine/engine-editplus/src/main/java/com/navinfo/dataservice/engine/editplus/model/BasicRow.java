@@ -42,6 +42,14 @@ public abstract class BasicRow implements Logable{
 	protected long objPid;
 	protected Map<String,Object> oldValues=null;//存储变化字段的旧值，key:col_name,value：旧值
 	protected List<ChangeLog> hisChangeLogs;
+	
+	
+	public BasicRow() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+
+	protected List<ChangeLog> changeLogs;
 	public BasicRow(long objPid){
 		this.objPid=objPid;
 	}

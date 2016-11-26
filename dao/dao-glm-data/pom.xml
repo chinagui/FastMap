@@ -61,5 +61,24 @@
  		<groupId>com.navinfo.dataservice</groupId>
  		<artifactId>biz-commons</artifactId>
 	</dependency>
+	<!--测试需要  zl 2016.11.23-->
+	<dependency>
+			<groupId>org.apache.zookeeper</groupId>
+			<artifactId>zookeeper</artifactId>
+			<type>pom</type>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>com.github.sgroschupf</groupId>
+			<artifactId>zkclient</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>com.alibaba</groupId>
+			<artifactId>dubbo</artifactId>
+			<scope>test</scope>
+		</dependency>
   </dependencies>
 </project>

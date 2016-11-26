@@ -55,7 +55,7 @@ public class LogGenerator {
 		if(basicObjs!=null&&basicObjs.size()>0){
 			Date opDt = new Date();
 			for(BasicObj basicObj:basicObjs){
-				//主表
+				//写入LOG_OPERATION
 				DateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
 				//UUID
 				String opId = UuidUtils.genUuid();
@@ -66,39 +66,14 @@ public class LogGenerator {
 				perstmtLogOperation.setInt(5, opSg);
 				perstmtLogOperation.addBatch();
 
+				//主表，更新log_detail,log_detail_grid
+				goThroughOneBasicRow(conn,perstmtLogDetail,perstmtLogDetailGrid,basicObj,basicObj.getMainrow(),opId);
 				//子表
 				for(Entry<String, List<BasicRow>> entry:basicObj.getSubrows().entrySet()){
 					List<BasicRow> subrows = entry.getValue();
 					for(BasicRow subrow:subrows){
-						//新增
-						if(subrow.getOpType().equals(OperationType.INSERT)){
-							//UUID
-							String logDetailRowId = UuidUtils.genUuid();
-							assembleLogDetail(conn,basicObj,subrow,null,logDetailRowId,opId,perstmtLogDetail);
-							//log_detail_grid
-							assembleLogDetailGrid(conn,basicObj,subrow,logDetailRowId,perstmtLogDetailGrid);
-						}
-						//修改
-						else if(subrow.getOpType().equals(OperationType.UPDATE)){
-							Map<String,Object> oldValues = subrow.getOldValues();
-							if(oldValues!=null&&!oldValues.isEmpty()){
-								for(Entry<String, Object> oldValue:oldValues.entrySet()){
-									//UUID
-									String logDetailRowId = UuidUtils.genUuid();
-									assembleLogDetail(conn,basicObj,subrow,oldValue,logDetailRowId,opId,perstmtLogDetail);
-									//log_detail_grid
-									assembleLogDetailGrid(conn,basicObj,subrow,logDetailRowId,perstmtLogDetailGrid);
-								}
-							}
-						}
-						//删除
-						else if(subrow.getOpType().equals(OperationType.DELETE)){
-							//UUID
-							String logDetailRowId = UuidUtils.genUuid();
-							assembleLogDetail(conn,basicObj,subrow,null,logDetailRowId,opId,perstmtLogDetail);
-							//log_detail_grid
-							assembleLogDetailGrid(conn,basicObj,subrow,logDetailRowId,perstmtLogDetailGrid);
-						}
+						//遍历每个子表，更新log_detail,log_detail_grid
+						goThroughOneBasicRow(conn,perstmtLogDetail,perstmtLogDetailGrid,basicObj,subrow,opId);
 					}
 				}
 			}
@@ -106,6 +81,50 @@ public class LogGenerator {
 		
 		return perstmtList;
 	}
+	
+	/**
+	 * @param conn
+	 * @param perstmtLogDetail
+	 * @param perstmtLogDetailGrid
+	 * @param basicObj
+	 * @param subrow
+	 * @param opId
+	 * @throws Exception 
+	 */
+	private static void goThroughOneBasicRow(Connection conn, PreparedStatement perstmtLogDetail,
+			PreparedStatement perstmtLogDetailGrid, BasicObj basicObj, BasicRow subrow, String opId) throws Exception {
+		//新增
+		if(subrow.getOpType().equals(OperationType.INSERT)){
+			//UUID
+			String logDetailRowId = UuidUtils.genUuid();
+			assembleLogDetail(conn,basicObj,subrow,null,logDetailRowId,opId,perstmtLogDetail);
+			//log_detail_grid
+			assembleLogDetailGrid(conn,basicObj,subrow,logDetailRowId,perstmtLogDetailGrid);
+		}
+		//修改
+		else if(subrow.getOpType().equals(OperationType.UPDATE)){
+			Map<String,Object> oldValues = subrow.getOldValues();
+			if(oldValues!=null&&!oldValues.isEmpty()){
+				for(Entry<String, Object> oldValue:oldValues.entrySet()){
+					//UUID
+					String logDetailRowId = UuidUtils.genUuid();
+					assembleLogDetail(conn,basicObj,subrow,oldValue,logDetailRowId,opId,perstmtLogDetail);
+					//log_detail_grid
+					assembleLogDetailGrid(conn,basicObj,subrow,logDetailRowId,perstmtLogDetailGrid);
+				}
+			}
+		}
+		//删除
+		else if(subrow.getOpType().equals(OperationType.DELETE)){
+			//UUID
+			String logDetailRowId = UuidUtils.genUuid();
+			assembleLogDetail(conn,basicObj,subrow,null,logDetailRowId,opId,perstmtLogDetail);
+			//log_detail_grid
+			assembleLogDetailGrid(conn,basicObj,subrow,logDetailRowId,perstmtLogDetailGrid);
+		}
+		
+	}
+
 	/**
 	 * 生成log_detail插入preparedStatement
 	 * @param conn
@@ -123,7 +142,7 @@ public class LogGenerator {
 	 */
 	private static void assembleLogDetail(Connection conn, BasicObj basicObj, BasicRow subrow,
 			Entry<String, Object> oldValue, String logDetailRowId,String opId,PreparedStatement perstmtLogDetail) throws SQLException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, IllegalArgumentException {
-		DateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+		DateFormat format = new SimpleDateFormat("yyyyMMddhhmmss");
 		perstmtLogDetail.setString(1, opId);
 		perstmtLogDetail.setString(2, logDetailRowId);
 		perstmtLogDetail.setString(3, basicObj.objType());

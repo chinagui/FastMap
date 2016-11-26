@@ -107,6 +107,7 @@ public class SelectorTest {
 			String colValue = "0335100531LS100266";
 			boolean isLock = false;
 			Set<String> tabNames = new HashSet<String>();
+			
 			tabNames.add("IX_POI_NAME");
 			tabNames.add("IX_POI_NAME_FLAG");
 			tabNames.add("IX_POI_NAME_FLAG");
@@ -114,6 +115,26 @@ public class SelectorTest {
 			tabNames.add("IX_POI_ADDRESS");
 			tabNames.add("IX_POI_CONTACT");
 			tabNames.add("IX_POI_FLAG");
+			tabNames.add("IX_POI_ENTRYIMAGE");
+			tabNames.add("IX_POI_ICON");
+			tabNames.add("IX_POI_PHOTO");
+			tabNames.add("IX_POI_AUDIO");
+			tabNames.add("IX_POI_VIDEO");
+			tabNames.add("IX_POI_PARENT");
+			tabNames.add("IX_POI_CHILDREN");
+			tabNames.add("IX_POI_BUILDING");
+			tabNames.add("IX_POI_BUSINESSTIME");
+			tabNames.add("IX_POI_INTRODUCTION");
+			tabNames.add("IX_POI_ADVERTISEMENT");
+			tabNames.add("IX_POI_GASSTATION");
+			tabNames.add("IX_POI_CHARGINGSTATION");
+			tabNames.add("IX_POI_CHARGINGPLOT");
+			tabNames.add("IX_POI_CHARGINGPLOT_PH");
+			tabNames.add("IX_POI_PARKING");
+			tabNames.add("IX_POI_ATTRACTION");
+			tabNames.add("IX_POI_HOTEL");
+			tabNames.add("IX_POI_RESTAURANT");
+			tabNames.add("IX_POI_CARRENTAL");
 
 			BasicObj obj = ObjSelector.selectBySpecColumn(conn, objType, tabNames, colName,colValue, isLock);
 			System.out.println("Over.");
@@ -142,7 +163,53 @@ public class SelectorTest {
 		}
 	}
 	
+	@Test
+	public void test4(){
+		try{
+			Connection conn = null;
+			conn = DBConnector.getInstance().getConnectionById(17);
+			String objType = "IX_POI";
+			String colName = "POI_NUM";
+			String colValue = "0010061110WZS00536";
+			boolean isLock = false;
+			Set<String> tabNames = new HashSet<String>();
+			
+			tabNames.add("IX_POI_NAME");
+			tabNames.add("IX_POI_NAME_FLAG");
+			tabNames.add("IX_POI_NAME_FLAG");
+			tabNames.add("IX_POI_NAME_TONE");
+			tabNames.add("IX_POI_ADDRESS");
+			tabNames.add("IX_POI_CONTACT");
+			tabNames.add("IX_POI_FLAG");
+			tabNames.add("IX_POI_ENTRYIMAGE");
+			tabNames.add("IX_POI_ICON");
+			tabNames.add("IX_POI_PHOTO");
+			tabNames.add("IX_POI_AUDIO");
+			tabNames.add("IX_POI_VIDEO");
+			tabNames.add("IX_POI_PARENT");
+			tabNames.add("IX_POI_CHILDREN");
+			tabNames.add("IX_POI_BUILDING");
+			tabNames.add("IX_POI_BUSINESSTIME");
+			tabNames.add("IX_POI_INTRODUCTION");
+			tabNames.add("IX_POI_ADVERTISEMENT");
+			tabNames.add("IX_POI_GASSTATION");
+			tabNames.add("IX_POI_CHARGINGSTATION");
+			tabNames.add("IX_POI_CHARGINGPLOT");
+			tabNames.add("IX_POI_CHARGINGPLOT_PH");
+			tabNames.add("IX_POI_PARKING");
+			tabNames.add("IX_POI_ATTRACTION");
+			tabNames.add("IX_POI_HOTEL");
+			tabNames.add("IX_POI_RESTAURANT");
+			tabNames.add("IX_POI_CARRENTAL");
 
+			BasicObj obj = ObjSelector.selectBySpecColumn(conn, objType, tabNames, colName,colValue, isLock);
+			List<RunnableSQL> sqlList = obj.generateSql();
+			System.out.println("Over.");
+		}catch(Exception e){
+			System.out.println("Oops, something wrong...");
+			e.printStackTrace();
+		}
+	}
 
 
 	@Test
@@ -236,7 +303,7 @@ public class SelectorTest {
 			Connection conn = null;
 			conn = DBConnector.getInstance().getConnectionById(17);
 			String objType = "IX_POI";
-			Collection<Object> pids = new ArrayList<Object>();
+			Collection<String> pids = new ArrayList<String>();
 			String colName = "POI_NUM";
 			pids.add("0335100531LS100266");
 			pids.add("0010060909HYX00855");

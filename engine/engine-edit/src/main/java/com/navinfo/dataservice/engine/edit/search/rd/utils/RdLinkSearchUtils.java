@@ -336,13 +336,12 @@ public class RdLinkSearchUtils {
 		}
 		while (resultLinks.size() == 1) {
 			RdLink currentLink = resultLinks.get(0);
-			if (currentLink.getKind() >= 10) {
-				break;
-			}
 			if (this.getLinksLength(tracks) + currentLink.getLength() + length > 100) {
 				tracks.add(currentLink);
 				break;
-			} 
+			}
+			tracks.add(currentLink);
+
 			// 计算
 			cuurentLinkPid = currentLink.getPid();
 			cruuentNodePidDir = (cruuentNodePidDir == currentLink.getsNodePid()) ? currentLink

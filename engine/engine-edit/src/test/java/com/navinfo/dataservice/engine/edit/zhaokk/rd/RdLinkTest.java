@@ -149,8 +149,8 @@ public class RdLinkTest extends InitApplication {
 		this.conn = DBConnector.getInstance().getConnectionById(17);
 
 		RdLinkSearchUtils linkSelector = new RdLinkSearchUtils(conn);
-		List<RdLink> links = linkSelector.getNextLinksForSlope(55.319,
-				208002746, 202002051);
+		List<RdLink> links = linkSelector.getNextLinksForSlope(33.493,
+				206002808, 206002100);
 		for (RdLink r : links) {
 			System.out.println(r.getPid());
 		}

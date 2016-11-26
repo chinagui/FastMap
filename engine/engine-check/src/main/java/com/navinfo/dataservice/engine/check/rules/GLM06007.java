@@ -22,16 +22,10 @@ public class GLM06007 extends baseRule {
 	 * 
 	 */
 	public GLM06007() {
-		// TODO Auto-generated constructor stub
-		
 	}
 
-	/* (non-Javadoc)
-	 * @see com.navinfo.dataservice.engine.check.core.baseRule#preCheck(com.navinfo.dataservice.dao.check.CheckCommand)
-	 */
 	@Override
 	public void preCheck(CheckCommand checkCommand) throws Exception {
-		// TODO Auto-generated method stub
 		for(IRow obj:checkCommand.getGlmList()){
 			//获取新建RdBranch信息
 			if(obj instanceof RdSe ){
@@ -44,8 +38,9 @@ public class GLM06007 extends baseRule {
 				sb.append("select 1 from(select in_link_pid  from rd_se");
 				sb.append(" WHERE U_RECORD != 2 AND NODE_PID = ");
 				sb.append(node);
+				sb.append(" and in_link_pid != ");
+				sb.append(inLinkPid);
 				sb.append(" group by IN_LINK_PID) having count(1) >0");
-				sb.append(inLinkPid); 
 
 				String sql = sb.toString();
 				

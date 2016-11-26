@@ -1,12 +1,19 @@
 package com.navinfo.dataservice.engine.edit.operation.topo.breakin.breaklupoint;
 
 import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
 
-import com.navinfo.dataservice.dao.glm.iface.IObj;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.lu.LuLink;
+import com.navinfo.dataservice.dao.glm.model.lu.LuNode;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.LineString;
 
 public class OpRefRelationObj {
 
@@ -17,18 +24,71 @@ public class OpRefRelationObj {
 		this.conn = conn;
 	}
 
+	/**
+	 * 维护同一线
+	 * @param breakLink
+	 * @param command
+	 * @param result
+	 * @return
+	 * @throws Exception
+	 */
 	public String handleSameLink(LuLink breakLink, Command command,
 			Result result) throws Exception {
+		
+		breakLink.setGeometry(GeoTranslator.transform(breakLink.getGeometry(),
+				1, 0));
 
-		List<IObj> newLinks = new ArrayList<IObj>();
+		Map<IRow, Geometry> breakNodeMap = new HashMap<IRow, Geometry>();
 
-		newLinks.addAll(command.getNewLinks());
+		LinkedHashMap<IRow, Geometry> linkMap = new LinkedHashMap<IRow, Geometry>();
+		
+		Set<Integer> pidFlags = new HashSet<Integer>();
 
-		// 打断link维护同一线
+		pidFlags.add(breakLink.geteNodePid());
+
+		pidFlags.add(breakLink.getsNodePid());
+
+		for (LuLink link : command.getNewLinks()) {
+
+			linkMap.put(link, GeoTranslator.transform(link.getGeometry(),
+					1, 0));
+
+			int sNodePid = link.getsNodePid();
+
+			int eNodePid = link.geteNodePid();
+
+			if (!pidFlags.contains(sNodePid) ) {
+				LuNode node = new LuNode();
+
+				node.setPid(sNodePid);
+
+				LineString linkGeo = (LineString) link.getGeometry();
+
+				node.setGeometry(linkGeo.getStartPoint());
+
+				breakNodeMap.put(node, node.getGeometry());
+				
+				pidFlags.add(sNodePid);
+			}
+
+			if (!pidFlags.contains(eNodePid) ) {
+				LuNode node = new LuNode();
+
+				node.setPid(eNodePid);
+
+				LineString linkGeo = (LineString) link.getGeometry();
+
+				node.setGeometry(linkGeo.getEndPoint());
+
+				breakNodeMap.put(node, node.getGeometry());
+				
+				pidFlags.add(eNodePid);
+			}
+		}
+
 		com.navinfo.dataservice.engine.edit.operation.obj.rdsamelink.update.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdsamelink.update.Operation(
 				this.conn);
-		operation.breakLink(breakLink, newLinks, command.getBreakNode(),
-				command.getRequester(), result);
+		operation.breakLink(breakLink, breakNodeMap, linkMap, result);
 
 		return null;
 	}

@@ -841,4 +841,50 @@ public class runTest extends InitApplication {
 		String msg = t.run();
 	}
 	
+		@Test
+	public void run_1124_1() throws Exception {
+
+		String parameter = "{\"command\":\"CREATE\",\"dbId\":17,\"objId\":310002772,\"data\":{\"longitude\":116.45041146329042,\"latitude\":40.05730591966208},\"type\":\"RDNODE\"}";
+		
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+	
+	
+		@Test
+	public void run_1124_2() throws Exception {
+
+		String parameter = "{\"command\":\"DELETE\",\"dbId\":17,\"type\":\"RDNODE\",\"objId\":310002144}";
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+		
+		
+		@Test
+	public void run_1125_1() throws Exception {
+
+		String parameter = "{\"command\":\"REPAIR\",\"dbId\":17,\"objId\":208002784,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.47862,40.07587],[116.47898733615875,40.07585075919639],[116.47937,40.0759]]},\"catchInfos\":[]},\"type\":\"RDLINK\"}";
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+		
+		
+		@Test
+	public void run_1126_1() throws Exception {
+
+		String parameter = "{\"command\":\"DEPART\",\"dbId\":17,\"objId\":306002106,\"data\":{\"catchNodePid\":0,\"catchLinkPid\":\"308002763\",\"linkPid\":\"306002741\",\"longitude\":116.38298679474569,\"latitude\":40.05133614230701},\"type\":\"RDLINK\"}";
+				
+				
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}	
+		
+		
 }

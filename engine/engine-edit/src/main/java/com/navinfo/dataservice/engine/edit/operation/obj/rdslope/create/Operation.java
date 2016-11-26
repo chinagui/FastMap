@@ -68,10 +68,11 @@ public class Operation implements IOperation {
 		// 退出线
 		slope.setLinkPid(this.command.getOutLinkPid());
 		if (this.command.getSeriesLinkPids() != null) {
-			// 特殊情况打断
-			this.breakRelation(result);
+
 			// 添加坡度接续link信息
 			if (this.command.getSeriesLinkPids().size() > 0) {
+				// 特殊情况打断
+				this.breakRelation(result);
 				List<IRow> rdSlopeVias = new ArrayList<IRow>();
 				for (int i = 0; i < this.command.getSeriesLinkPids().size(); i++) {
 					rdSlopeVias.add(this.addSlopeVia(slope, i));
@@ -141,7 +142,7 @@ public class Operation implements IOperation {
 			double breakLength, Result result) throws Exception {
 		// 获取打断的线的几何
 		LineString lineString = (LineString) GeoTranslator.transform(
-				currentlink.getGeometry(), 0.000001, 5);
+				currentlink.getGeometry(), 0.00001, 5);
 		// 获取打断点的位置
 		Coordinate coordinate = GeometryUtils.getPointOnLineStringDistance(
 				lineString, breakLength);
@@ -190,13 +191,15 @@ public class Operation implements IOperation {
 	private double getBreaklength(RdLink preLink, RdLink currentlink) {
 		if (currentlink.getsNodePid() == preLink.getsNodePid()
 				|| currentlink.getsNodePid() == preLink.geteNodePid()) {
-			return currentlink.getLength() - this.command.getLength() - 130;
+			return currentlink.getLength() - this.command.getLength() +130;
 		} else {
 			return this.command.getLength() - 130;
 		}
 	}
+
 	/***
 	 * 判断两个link是否有共同nodePid
+	 * 
 	 * @param preLink
 	 * @param nextLink
 	 * @return

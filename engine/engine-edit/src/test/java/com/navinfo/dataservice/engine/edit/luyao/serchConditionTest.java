@@ -223,5 +223,46 @@ public class serchConditionTest extends InitApplication {
 			e.printStackTrace();
 		}
 	}
+	
+	
+	@Test
+	public void getByCondition_variableSpeed() {
+
+		Connection conn = null;
+
+		try {
+
+			String parameter = "{\"dbId\":17,\"type\":\"RDLINK\",\"data\":{\"queryType\":\"RDVARIABLESPEED\",\"linkPid\":306002745,\"nodePid\":204002212}}";
+
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			String objType = jsonReq.getString("type");
+
+			int dbId = jsonReq.getInt("dbId");
+
+			JSONObject data = jsonReq.getJSONObject("data");
+
+			conn = DBConnector.getInstance().getConnectionById(dbId);
+
+			SearchProcess p = new SearchProcess(conn);
+
+			JSONArray array = p.searchDataByCondition(ObjType.valueOf(objType),
+					data);
+
+			System.out.println(array);
+
+		} catch (Exception e) {
+
+			e.printStackTrace();
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
 
 }

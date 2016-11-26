@@ -143,23 +143,6 @@ public class SelectorTest {
 	}
 	
 
-	@Test
-	public void test4(){
-		try{
-			Connection conn = null;
-			conn = DBConnector.getInstance().getConnectionById(17);
-			String objType = "IX_POI";
-			String colName = "KIND_CODE";
-			String colValue = "110101";
-			boolean isLock = false;
-
-			BasicObj obj = ObjSelector.selectBySpecColumn(conn, objType, null, colName,colValue, isLock);
-			System.out.println("Over.");
-		}catch(Exception e){
-			System.out.println("Oops, something wrong...");
-			e.printStackTrace();
-		}
-	}
 
 
 	@Test
@@ -249,29 +232,6 @@ public class SelectorTest {
 
 	@Test
 	public void test13(){
-		try{
-			Connection conn = null;
-			conn = DBConnector.getInstance().getConnectionById(17);
-			String objType = "IX_POI";
-			Collection<Object> pids = new ArrayList<Object>();
-			String colName = "KIND_CODE";
-			pids.add("110101");
-//			pids.add("220200");
-//			pids.add("220100");
-			boolean isLock = false;
-			boolean isNowait = false;
-
-			List<BasicObj> objList = ObjBatchSelector.selectBySpecColumn(conn, objType, null, colName,pids, isLock,isNowait);
-			System.out.println("Over.");
-		}catch(Exception e){
-			System.out.println("Oops, something wrong...");
-			e.printStackTrace();
-		}
-	}
-	
-
-	@Test
-	public void test14(){
 		try{
 			Connection conn = null;
 			conn = DBConnector.getInstance().getConnectionById(17);

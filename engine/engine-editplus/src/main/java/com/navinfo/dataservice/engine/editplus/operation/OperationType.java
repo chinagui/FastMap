@@ -8,5 +8,5 @@ package com.navinfo.dataservice.engine.editplus.operation;
  * @Description: OperationType.java
  */
 public enum OperationType {
-	INSERT, DELETE, UPDATE,INSERT_DELETE,INITIALIZE;
+	INSERT, DELETE, UPDATE,INSERT_DELETE,INITIALIZE,PRE_DELETED;
 }

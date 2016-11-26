@@ -33,7 +33,14 @@ public abstract class BasicObj {
 //	protected Map<Class<? extends BasicRow>, List<BasicRow>> childrows;//存储对象下的子表,包括二级、三级子表...
 	protected Map<String,List<BasicRow>> subrows=new HashMap<String,List<BasicRow>>();//key:table_name,value:rows
 	protected BasicObjGrid grid;
+	protected boolean isDeleted;
 	
+	public boolean isDeleted() {
+		return isDeleted;
+	}
+	public void setDeleted(boolean isDeleted) {
+		this.isDeleted = isDeleted;
+	}
 	public BasicObjGrid getGrid() throws Exception {
 		if(this.grid==null){
 			//生成grid信息
@@ -55,6 +62,11 @@ public abstract class BasicObj {
 	}
 	public BasicObj(BasicRow mainrow){
 		this.mainrow=mainrow;
+		if(mainrow.getOpType().equals(OperationType.PRE_DELETED)){
+			isDeleted = true;
+		}else{
+			isDeleted = false;
+		}
 	}
 	public int getLifeCycle() {
 		return lifeCycle;
@@ -212,7 +224,7 @@ public abstract class BasicObj {
 	public List<RunnableSQL> generateSql() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, IllegalArgumentException{
 		List<RunnableSQL> sqlList = new ArrayList<RunnableSQL>();
 		//mainrow
-		if(mainrow.getOpType().equals(OperationType.INSERT_DELETE)){
+		if(mainrow.getOpType().equals(OperationType.INSERT_DELETE)||mainrow.getOpType().equals(OperationType.PRE_DELETED)){
 			return sqlList;
 		}
 		RunnableSQL mainsql = mainrow.generateSql();
@@ -223,7 +235,7 @@ public abstract class BasicObj {
 		for(Entry<String, List<BasicRow>> entry:subrows.entrySet()){
 			for(BasicRow subrow:entry.getValue()){
 				RunnableSQL sql = subrow.generateSql();
-				if(sql!=null){
+				if(sql!=null&&!sql.equals("")){
 					sqlList.add(sql);
 				}	
 			}

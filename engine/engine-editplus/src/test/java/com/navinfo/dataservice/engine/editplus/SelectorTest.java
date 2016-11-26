@@ -3,7 +3,9 @@ package com.navinfo.dataservice.engine.editplus;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -44,9 +46,7 @@ public class SelectorTest {
 		new ApplicationContextUtil().setApplicationContext(context);
 	}
 	
-	/*
-	 * ObjSelector-selectByPid:MultiSrcPoiSelectorConfig=null
-	 */
+
 	@Test
 	public void test0(){
 		try{
@@ -54,10 +54,18 @@ public class SelectorTest {
 			conn = DBConnector.getInstance().getConnectionById(17);;
 			String objType = "IX_POI";
 			long pid = 308;
-			boolean isOnlyMain = false;
 			boolean isLock = false;
 
-			BasicObj obj = ObjSelector.selectByPid(conn, objType, null, pid, isOnlyMain, isLock);
+			Set<String> tabNames = new HashSet<String>();
+			tabNames.add("IX_POI_NAME");
+			tabNames.add("IX_POI_NAME_FLAG");
+			tabNames.add("IX_POI_NAME_FLAG");
+			tabNames.add("IX_POI_NAME_TONE");
+			tabNames.add("IX_POI_ADDRESS");
+			tabNames.add("IX_POI_CONTACT");
+			tabNames.add("IX_POI_FLAG");
+			
+			BasicObj obj = ObjSelector.selectByPid(conn, objType, tabNames, pid, isLock);
 			System.out.println("Over.");
 			MultiSrcPoiConvertor ms = new MultiSrcPoiConvertor();
 			JSONObject json = ms.toJson((IxPoiObj) obj);
@@ -68,9 +76,7 @@ public class SelectorTest {
 		}
 	}
 	
-	/*
-	 * ObjSelector-selectByPid:MultiSrcPoiSelectorConfig-specTables
-	 */
+
 	@Test
 	public void test1(){
 		try{
@@ -78,11 +84,9 @@ public class SelectorTest {
 			conn = DBConnector.getInstance().getConnectionById(17);
 			String objType = "IX_POI";
 			long pid = 308;
-			boolean isOnlyMain = false;
 			boolean isLock = false;
-			
-			MultiSrcPoiSelectorConfig multiSrcPoiSelectorConfig = MultiSrcPoiSelectorConfig.getInstance();
-			BasicObj obj = ObjSelector.selectByPid(conn, objType, multiSrcPoiSelectorConfig, pid, isOnlyMain, isLock);
+
+			BasicObj obj = ObjSelector.selectByPid(conn, objType, null, pid, isLock);
 			List<RunnableSQL> sqlList = obj.generateSql();
 			System.out.println("Over.");
 			
@@ -92,23 +96,26 @@ public class SelectorTest {
 		}
 	}
 	
-	/*
-	 * ObjSelector-selectBySpecColumn:MultiSrcPoiSelectorConfig-specTables
-	 */
+
 	@Test
 	public void test2(){
 		try{
 			Connection conn = null;
 			conn = DBConnector.getInstance().getConnectionById(17);
 			String objType = "IX_POI";
-			long pid = 308;
-			String colName = "PID";
-			long colValue = 308;
-			boolean isOnlyMain = false;
+			String colName = "POI_NUM";
+			String colValue = "0335100531LS100266";
 			boolean isLock = false;
-			
-			MultiSrcPoiSelectorConfig multiSrcPoiSelectorConfig = MultiSrcPoiSelectorConfig.getInstance();
-			BasicObj obj = ObjSelector.selectBySpecColumn(conn, objType, multiSrcPoiSelectorConfig, colName,colValue, isOnlyMain, isLock);
+			Set<String> tabNames = new HashSet<String>();
+			tabNames.add("IX_POI_NAME");
+			tabNames.add("IX_POI_NAME_FLAG");
+			tabNames.add("IX_POI_NAME_FLAG");
+			tabNames.add("IX_POI_NAME_TONE");
+			tabNames.add("IX_POI_ADDRESS");
+			tabNames.add("IX_POI_CONTACT");
+			tabNames.add("IX_POI_FLAG");
+
+			BasicObj obj = ObjSelector.selectBySpecColumn(conn, objType, tabNames, colName,colValue, isLock);
 			System.out.println("Over.");
 		}catch(Exception e){
 			System.out.println("Oops, something wrong...");
@@ -131,7 +138,7 @@ public class SelectorTest {
 			boolean isOnlyMain = false;
 			boolean isLock = false;
 
-			BasicObj obj = ObjSelector.selectBySpecColumn(conn, objType, null, colName,colValue, isOnlyMain, isLock);
+			BasicObj obj = ObjSelector.selectBySpecColumn(conn, objType, null, colName,colValue, isLock);
 			System.out.println("Over.");
 		}catch(Exception e){
 			System.out.println("Oops, something wrong...");
@@ -155,8 +162,8 @@ public class SelectorTest {
 			boolean isOnlyMain = false;
 			boolean isLock = false;
 			
-			MultiSrcPoiSelectorConfig multiSrcPoiSelectorConfig = MultiSrcPoiSelectorConfig.getInstance();
-			BasicObj obj = ObjSelector.selectBySpecColumn(conn, objType, multiSrcPoiSelectorConfig, colName,colValue, isOnlyMain, isLock);
+//			MultiSrcPoiSelectorConfig multiSrcPoiSelectorConfig = MultiSrcPoiSelectorConfig.getInstance();
+			BasicObj obj = ObjSelector.selectBySpecColumn(conn, objType, null, colName,colValue, isLock);
 			System.out.println("Over.");
 		}catch(Exception e){
 			System.out.println("Oops, something wrong...");
@@ -181,9 +188,9 @@ public class SelectorTest {
 			boolean isLock = false;
 			boolean isNowait = false;
 			
-			MultiSrcPoiSelectorConfig multiSrcPoiSelectorConfig = MultiSrcPoiSelectorConfig.getInstance();
+//			MultiSrcPoiSelectorConfig multiSrcPoiSelectorConfig = MultiSrcPoiSelectorConfig.getInstance();
 			//MultiSrcPoiSelectorConfig-specTables
-			List<BasicObj> objList = ObjBatchSelector.selectByPids(conn, objType, multiSrcPoiSelectorConfig, pids, isOnlyMain, isLock,isNowait);
+			List<BasicObj> objList = ObjBatchSelector.selectByPids(conn, objType, null, pids, isLock,isNowait);
 			System.out.println("Over.");
 		}catch(Exception e){
 			System.out.println("Oops, something wrong...");
@@ -208,7 +215,7 @@ public class SelectorTest {
 			boolean isLock = false;
 			boolean isNowait = false;
 
-			List<BasicObj> objList = ObjBatchSelector.selectByPids(conn, objType, null, pids, isOnlyMain, isLock,isNowait);
+			List<BasicObj> objList = ObjBatchSelector.selectByPids(conn, objType, null, pids, isLock,isNowait);
 			System.out.println("Over.");
 		}catch(Exception e){
 			System.out.println("Oops, something wrong...");
@@ -234,9 +241,9 @@ public class SelectorTest {
 			boolean isLock = false;
 			boolean isNowait = false;
 
-			MultiSrcPoiSelectorConfig multiSrcPoiSelectorConfig = MultiSrcPoiSelectorConfig.getInstance();
+//			MultiSrcPoiSelectorConfig multiSrcPoiSelectorConfig = MultiSrcPoiSelectorConfig.getInstance();
 			//MultiSrcPoiSelectorConfig-specTables
-			List<BasicObj> objList = ObjBatchSelector.selectBySpecColumn(conn, objType, multiSrcPoiSelectorConfig, colName,pids, isOnlyMain, isLock,isNowait);
+			List<BasicObj> objList = ObjBatchSelector.selectBySpecColumn(conn, objType, null, colName,pids, isLock,isNowait);
 			System.out.println("Over.");
 		}catch(Exception e){
 			System.out.println("Oops, something wrong...");
@@ -262,9 +269,9 @@ public class SelectorTest {
 			boolean isLock = false;
 			boolean isNowait = false;
 
-			MultiSrcPoiSelectorConfig multiSrcPoiSelectorConfig = MultiSrcPoiSelectorConfig.getInstance();
+//			MultiSrcPoiSelectorConfig multiSrcPoiSelectorConfig = MultiSrcPoiSelectorConfig.getInstance();
 			//MultiSrcPoiSelectorConfig-specTables
-			List<BasicObj> objList = ObjBatchSelector.selectBySpecColumn(conn, objType, multiSrcPoiSelectorConfig, colName,pids, isOnlyMain, isLock,isNowait);
+			List<BasicObj> objList = ObjBatchSelector.selectBySpecColumn(conn, objType, null, colName,pids, isLock,isNowait);
 			System.out.println("Over.");
 		}catch(Exception e){
 			System.out.println("Oops, something wrong...");
@@ -290,9 +297,9 @@ public class SelectorTest {
 			boolean isLock = false;
 			boolean isNowait = false;
 
-			MultiSrcPoiSelectorConfig multiSrcPoiSelectorConfig = MultiSrcPoiSelectorConfig.getInstance();
+//			MultiSrcPoiSelectorConfig multiSrcPoiSelectorConfig = MultiSrcPoiSelectorConfig.getInstance();
 			//MultiSrcPoiSelectorConfig-specTables
-			List<BasicObj> objList = ObjBatchSelector.selectBySpecColumn(conn, objType, multiSrcPoiSelectorConfig, colName,pids, isOnlyMain, isLock,isNowait);
+			List<BasicObj> objList = ObjBatchSelector.selectBySpecColumn(conn, objType, null, colName,pids, isLock,isNowait);
 			System.out.println("Over.");
 		}catch(Exception e){
 			System.out.println("Oops, something wrong...");

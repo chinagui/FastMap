@@ -295,7 +295,8 @@ public class Operation implements IOperation {
 
 		for (AdLink link : command.getNewLinks()) {
 
-			Geometry linkGeo = link.getGeometry();
+			//防止double精度丢失
+			Geometry linkGeo =GeoTranslator.transform(link.getGeometry(), GeoTranslator.geoUpgrade, 0) ;
 
 			if (sameLinkMap.containsKey(linkGeo)) {
 
@@ -358,7 +359,8 @@ public class Operation implements IOperation {
 
 		for (LuLink link : command.getNewLinks()) {
 
-			Geometry linkGeo = link.getGeometry();
+			//防止double精度丢失
+			Geometry linkGeo =GeoTranslator.transform(link.getGeometry(), GeoTranslator.geoUpgrade, 0) ;
 
 			if (sameLinkMap.containsKey(linkGeo)) {
 
@@ -422,7 +424,8 @@ public class Operation implements IOperation {
 
 		for (ZoneLink link : command.getNewLinks()) {
 
-			Geometry linkGeo = link.getGeometry();
+			//防止double精度丢失
+			Geometry linkGeo =GeoTranslator.transform(link.getGeometry(), GeoTranslator.geoUpgrade, 0) ;
 
 			if (sameLinkMap.containsKey(linkGeo)) {
 

@@ -11,8 +11,8 @@ import java.util.Map;
 import org.apache.commons.dbutils.ResultSetHandler;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.engine.editplus.glm.GlmColumn;
-import com.navinfo.dataservice.engine.editplus.glm.GlmTable;
+import com.navinfo.dataservice.dao.plus.glm.GlmColumn;
+import com.navinfo.dataservice.dao.plus.glm.GlmTable;
 import com.navinfo.dataservice.engine.editplus.model.BasicRow;
 import com.navinfo.dataservice.engine.editplus.operation.OperationType;
 import com.navinfo.dataservice.engine.editplus.utils.ResultSetGetter;

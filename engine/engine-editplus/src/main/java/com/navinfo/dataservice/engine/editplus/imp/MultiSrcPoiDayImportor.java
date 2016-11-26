@@ -3,17 +3,20 @@ package com.navinfo.dataservice.engine.editplus.imp;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
+import org.springframework.util.StringUtils;
 
 import java.util.Set;
 
 import com.mysql.fabric.xmlrpc.base.Array;
 import com.navinfo.dataservice.api.edit.upload.UploadPois;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.dao.plus.obj.ObjectType;
 import com.navinfo.dataservice.engine.editplus.model.BasicRow;
 import com.navinfo.dataservice.engine.editplus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.engine.editplus.model.ixpoi.IxPoiAddress;
@@ -25,7 +28,6 @@ import com.navinfo.dataservice.engine.editplus.model.ixpoi.IxPoiRestaurant;
 import com.navinfo.dataservice.engine.editplus.model.obj.BasicObj;
 import com.navinfo.dataservice.engine.editplus.model.obj.IxPoiObj;
 import com.navinfo.dataservice.engine.editplus.model.obj.ObjFactory;
-import com.navinfo.dataservice.engine.editplus.model.obj.ObjectType;
 import com.navinfo.dataservice.engine.editplus.model.selector.MultiSrcPoiSelectorConfig;
 import com.navinfo.dataservice.engine.editplus.model.selector.ObjBatchSelector;
 import com.navinfo.dataservice.engine.editplus.model.selector.ObjSelector;
@@ -34,6 +36,7 @@ import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import net.sf.json.util.JSONUtils;
 
 /** 
  * @ClassName: MultiSrcPoiDayImportor
@@ -43,6 +46,7 @@ import net.sf.json.JSONObject;
  */
 public class MultiSrcPoiDayImportor implements JsonImportor {
 	private static final Logger log = Logger.getLogger(MultiSrcPoiDayImportor.class);
+	protected Map<String,String> errLog=new HashMap<String,String>();
 	
 	public List<IxPoiObj> importByJsonArray(Connection conn,UploadPois pois)throws Exception{
 		if(pois!=null){
@@ -54,8 +58,13 @@ public class MultiSrcPoiDayImportor implements JsonImportor {
 				//日志
 				log.info("多源新增json数据"+jo.toString());
 				
-				IxPoiObj ixPoiObjAdd = this.improtAdd(conn, jo);
-				ixPoiObjList.add(ixPoiObjAdd);
+				try{
+					IxPoiObj ixPoiObjAdd = this.improtAdd(conn, jo);
+					ixPoiObjList.add(ixPoiObjAdd);
+				}catch(Exception e){
+					log.error(e.getMessage(),e);
+					errLog.put(jo.getString("fid"), StringUtils.isEmpty(e.getMessage())?"不为空的属性字段存在null":e.getMessage());
+				}
 			}
 			//删除
 			Map<String, JSONObject> deletePois = pois.getDeletePois();
@@ -128,7 +137,8 @@ public class MultiSrcPoiDayImportor implements JsonImportor {
 	 * @return
 	 * @throws Exception
 	 */
-	public IxPoiObj improtDelete(Connection conn,JSONObject jo)throws Exception{
+	public IxPoiObj improtDelete(Connection conn,Map<String,JSONObject> delPois)throws Exception{
+		
 		return null;
 	}
 	
@@ -141,9 +151,9 @@ public class MultiSrcPoiDayImportor implements JsonImportor {
 				//POI主表
 				IxPoi ixPoi = (IxPoi) poi.getMainrow();
 				//显示坐标经度
-				Double lng = (Double) jo.getDouble("lng");
+				double lng = jo.getDouble("lng");
 				//显示坐标纬度
-				Double lat = (Double) jo.getDouble("lat");
+				double lat = jo.getDouble("lat");
 				//显示坐标经纬度--图幅号码meshId
 				String[] meshes = MeshUtils.point2Meshes(lng, lat);
 				if(meshes.length>1){
@@ -157,10 +167,10 @@ public class MultiSrcPoiDayImportor implements JsonImportor {
 				Geometry geometry = GeoTranslator.point2Jts(lng, lat);
 				ixPoi.setGeometry(geometry);
 				//引导坐标经度--引导 X坐标xGuide
-				Double guidelon = jo.getDouble("guidelon");
+				double guidelon = jo.getDouble("guidelon");
 				ixPoi.setXGuide(guidelon);
 				//引导坐标纬度--引导Y坐标yGuide
-				Double guidelat = jo.getDouble("guidelat");
+				double guidelat = jo.getDouble("guidelat");
 				ixPoi.setYGuide(guidelat);
 				//判断是大陆/港澳
 				String regionInfo = jo.getString("regionInfo");
@@ -184,6 +194,11 @@ public class MultiSrcPoiDayImportor implements JsonImportor {
 				String kind = jo.getString("kind");
 				ixPoi.setKindCode(kind);
 				//[集合]风味类型
+				if(!JSONUtils.isNull(jo.get("foodTypes"))){
+					for(Object o:jo.getJSONArray("foodTypes")){
+						//...
+					}
+				}
 				String foodTypes = jo.getString("foodTypes");
 				if(!"[]".equals(foodTypes)){
 					JSONArray ja = JSONArray.fromObject(foodTypes);
@@ -215,6 +230,13 @@ public class MultiSrcPoiDayImportor implements JsonImportor {
 				String postCode = jo.getString("postCode");
 				ixPoi.setPostCode(postCode);
 				//地址
+				if(!JSONUtils.isNull(jo.get("address"))){
+					String address = jo.getString("address");//IX_POI_ADDRESS表
+					IxPoiAddress ixPoiAddress = poi.createIxPoiAddress();
+					ixPoiAddress.setPoiPid(poi.objPid());
+					ixPoiAddress.setFullname(address);
+					ixPoiAddress.setLangCode(langCode);
+				}
 				if(jo.getString("address") != null){
 					String address = jo.getString("address");
 					//IX_POI_ADDRESS表

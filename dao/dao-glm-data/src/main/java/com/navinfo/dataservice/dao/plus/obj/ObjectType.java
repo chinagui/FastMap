@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.editplus.model.obj;
+package com.navinfo.dataservice.dao.plus.obj;
 
 /**
  * 

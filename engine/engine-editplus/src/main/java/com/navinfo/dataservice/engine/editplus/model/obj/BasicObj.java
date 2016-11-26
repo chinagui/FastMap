@@ -5,13 +5,14 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import com.navinfo.dataservice.dao.plus.glm.GlmTableNotFoundException;
 import com.navinfo.dataservice.engine.editplus.diff.ObjectDiffConfig;
-import com.navinfo.dataservice.engine.editplus.glm.GlmTableNotFoundException;
 import com.navinfo.dataservice.engine.editplus.model.BasicRow;
 import com.navinfo.dataservice.engine.editplus.model.selector.ObjSelector;
 import com.navinfo.dataservice.engine.editplus.operation.OperationType;
@@ -141,13 +142,22 @@ public abstract class BasicObj {
 	}
 	/**
 	 * 持久化后理论上应该所有删除的对象，不会再进入下一操作阶段
+	 * 删除的子表在afterPersist后会移除
 	 */
 	public void afterPersist(){
 		this.mainrow.afterPersist();
 		for(List<BasicRow> rows:subrows.values()){
 			if(rows!=null){
-				for(BasicRow row:rows){
-					row.afterPersist();
+				for(Iterator<BasicRow> it=rows.iterator();it.hasNext();){
+					BasicRow row = it.next();
+					//理论上INSERT_DELETE,PRE_DELETE两种状态不会出现在子表上
+					if(row.getOpType().equals(OperationType.DELETE)
+							||row.getOpType().equals(OperationType.INSERT_DELETE)
+							||row.getOpType().equals(OperationType.PRE_DELETED)){
+						it.remove();
+					}else{
+						row.afterPersist();
+					}
 				}
 			}
 		}

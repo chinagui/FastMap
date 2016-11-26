@@ -1,6 +1,6 @@
 package com.navinfo.dataservice.engine.editplus.model;
 
-import com.navinfo.dataservice.engine.editplus.glm.NonObjPidException;
+import com.navinfo.dataservice.dao.plus.glm.NonObjPidException;
 
 /** 
  * @ClassName: AbstractFaceTopo

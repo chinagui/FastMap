@@ -1,7 +1,7 @@
 package com.navinfo.dataservice.engine.editplus.model.ad;
 
+import com.navinfo.dataservice.dao.plus.obj.ObjectType;
 import com.navinfo.dataservice.engine.editplus.model.AbstractLinkMesh;
-import com.navinfo.dataservice.engine.editplus.model.obj.ObjectType;
 
 /** 
  * @ClassName: AdLinkMesh

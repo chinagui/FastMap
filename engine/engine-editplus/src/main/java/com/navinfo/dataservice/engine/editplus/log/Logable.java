@@ -2,7 +2,7 @@ package com.navinfo.dataservice.engine.editplus.log;
 
 import java.util.Map;
 
-import com.navinfo.dataservice.engine.editplus.glm.NonGeoPidException;
+import com.navinfo.dataservice.dao.plus.glm.NonGeoPidException;
 import com.navinfo.dataservice.engine.editplus.operation.OperationType;
 
 /** 

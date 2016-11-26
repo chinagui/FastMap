@@ -6,7 +6,7 @@ import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 
-import com.navinfo.dataservice.engine.editplus.model.obj.ObjectType;
+import com.navinfo.dataservice.dao.plus.obj.ObjectType;
 
 /** 
  * @ClassName: PoiByChangeLogDiffConfig

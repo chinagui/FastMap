@@ -3,7 +3,7 @@ package com.navinfo.dataservice.engine.editplus.model;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.navinfo.dataservice.engine.editplus.glm.NonObjPidException;
+import com.navinfo.dataservice.dao.plus.glm.NonObjPidException;
 import com.navinfo.dataservice.engine.editplus.model.obj.BasicObj;
 import com.vividsolutions.jts.geom.Geometry;
 

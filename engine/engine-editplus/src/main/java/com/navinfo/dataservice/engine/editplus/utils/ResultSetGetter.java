@@ -8,8 +8,8 @@ import java.util.Date;
 import java.util.List;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.engine.editplus.glm.GlmColumn;
-import com.navinfo.dataservice.engine.editplus.glm.GlmTable;
+import com.navinfo.dataservice.dao.plus.glm.GlmColumn;
+import com.navinfo.dataservice.dao.plus.glm.GlmTable;
 import com.navinfo.dataservice.engine.editplus.model.BasicRow;
 import com.vividsolutions.jts.geom.Geometry;
 

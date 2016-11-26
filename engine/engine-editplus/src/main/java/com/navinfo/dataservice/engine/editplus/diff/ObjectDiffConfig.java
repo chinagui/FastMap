@@ -3,7 +3,7 @@ package com.navinfo.dataservice.engine.editplus.diff;
 import java.util.Collection;
 import java.util.Map;
 
-import com.navinfo.dataservice.engine.editplus.model.obj.ObjectType;
+import com.navinfo.dataservice.dao.plus.obj.ObjectType;
 
 /** 
  * @ClassName: ObjectDiffConfig

@@ -16,11 +16,11 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.UuidUtils;
-import com.navinfo.dataservice.engine.editplus.glm.GlmColumn;
-import com.navinfo.dataservice.engine.editplus.glm.GlmFactory;
-import com.navinfo.dataservice.engine.editplus.glm.GlmRef;
-import com.navinfo.dataservice.engine.editplus.glm.GlmTable;
-import com.navinfo.dataservice.engine.editplus.glm.NonGeoPidException;
+import com.navinfo.dataservice.dao.plus.glm.GlmColumn;
+import com.navinfo.dataservice.dao.plus.glm.GlmFactory;
+import com.navinfo.dataservice.dao.plus.glm.GlmRef;
+import com.navinfo.dataservice.dao.plus.glm.GlmTable;
+import com.navinfo.dataservice.dao.plus.glm.NonGeoPidException;
 import com.navinfo.dataservice.engine.editplus.log.Logable;
 import com.navinfo.dataservice.engine.editplus.operation.OperationType;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -130,6 +130,10 @@ public abstract class BasicRow implements Logable{
 			}
 			ChangeLog log = new ChangeLog(opType,oldValues);
 			hisChangeLogs.add(log);
+		}
+		//如果之前为删除，修改为已删除
+		if(opType.equals(OperationType.DELETE)){
+			opType=OperationType.PRE_DELETED;
 		}
 		//把当前的状态设置为修改
 		opType=OperationType.UPDATE;

@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.editplus.glm;
+package com.navinfo.dataservice.dao.plus.glm;
 
 /** 
  * @ClassName: ServiceException 

@@ -1,11 +1,17 @@
 package com.navinfo.dataservice.column.job;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -22,11 +28,17 @@ import com.navinfo.dataservice.commons.thread.VMThreadPoolExecutor;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.ServiceInvokeUtil;
 import com.navinfo.dataservice.commons.util.ZipUtils;
+import com.navinfo.dataservice.dao.log.LogReader;
+import com.navinfo.dataservice.dao.plus.glm.GlmFactory;
+import com.navinfo.dataservice.dao.plus.obj.ObjectType;
+import com.navinfo.dataservice.engine.editplus.convert.MultiSrcPoiConvertor;
+import com.navinfo.dataservice.engine.editplus.model.obj.BasicObj;
+import com.navinfo.dataservice.engine.editplus.model.obj.IxPoiObj;
+import com.navinfo.dataservice.engine.editplus.model.selector.ObjBatchSelector;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
 import com.navinfo.navicommons.exception.ServiceRtException;
 import com.navinfo.navicommons.exception.ThreadExecuteException;
-
 import net.sf.json.JSONObject;
 
 /** 
@@ -52,8 +64,9 @@ public class Fm2MultiSrcSyncJob extends AbstractJob {
 				new LinkedBlockingQueue(),
 				new ThreadPoolExecutor.CallerRunsPolicy());
 	}
-	private void shutDownPoolExecutor(){log.debug("关闭线程池");
+	private void shutDownPoolExecutor(){
 		if (threadPoolExecutor != null && !threadPoolExecutor.isShutdown()) {
+			log.debug("关闭线程池");
 			threadPoolExecutor.shutdownNow();
 			try {
 				while (!threadPoolExecutor.isTerminated()) {
@@ -75,8 +88,8 @@ public class Fm2MultiSrcSyncJob extends AbstractJob {
 			String lastSyncTime=req.getLastSyncTime();
 			String syncTime=req.getSyncTime();
 			//1. 生成目录
-			String rootDownloadPath = SystemConfigFactory.getSystemConfig().getValue(
-					PropConstant.downloadFilePathRoot);
+//			String rootDownloadPath = SystemConfigFactory.getSystemConfig().getValue(PropConstant.downloadFilePathRoot);
+			String rootDownloadPath = "F:\\data\\";
 			//每个月独立目录
 			String curYm = DateUtils.getCurYyyymm();
 			String monthDir = rootDownloadPath+"multisrc"+File.separator+curYm+File.separator;
@@ -129,7 +142,8 @@ public class Fm2MultiSrcSyncJob extends AbstractJob {
 			//
 			//5.组装URL，通知多源平台
 			String zipUrl = "multisrc/"+curYm+"/"+syncTime+"_day.zip";
-			notifyMultiSrc(zipUrl);
+			log.debug("生成数据包url："+zipUrl);
+//			notifyMultiSrc(zipUrl);
 			super.response("通知多源完成", null);
 		}catch(Exception e){
 			log.error(e.getMessage(), e);
@@ -177,10 +191,49 @@ public class Fm2MultiSrcSyncJob extends AbstractJob {
 		@Override
 		public void run() {
 			Connection conn=null;
+			PrintWriter pw = null;
 			try{
 				conn=DBConnector.getInstance().getConnectionById(dbId);
+				pw = new PrintWriter(dir+syncTime+"_day_"+dbId+".txt");
+				//获取有变更的数据pid
+				LogReader lr = new LogReader(conn);
+				//key:liftcyle,value:pids
+				Map<Integer,Collection<Long>> updatePids = lr.getUpdatedObj(ObjectType.IX_POI, GlmFactory.getInstance().getObjByType(ObjectType.IX_POI).getMainTable().getName(), null, lastSyncTime,syncTime);
+				//查询已提交的数据
+//				Map<Integer,Collection<Long>> updAndSubmitPids = PoiEditStatus
+				//
+				Set<String> selConfig = new HashSet<String>();
+				selConfig.add("IX_POI_NAME");
+				selConfig.add("IX_POI_ADDRESS");
+				selConfig.add("IX_POI_CONTACT");
+				selConfig.add("IX_POI_RESTAURANT");
+				selConfig.add("IX_POI_HOTEL");
+				selConfig.add("IX_POI_DETAIL");
+				selConfig.add("IX_POI_CHILDREN");
+				selConfig.add("IX_POI_PARENT");
+				selConfig.add("IX_POI_PARKING");
+				selConfig.add("IX_POI_CHARGINGSTATION");
+				selConfig.add("IX_POI_CHARGINGPLOT");
+				selConfig.add("IX_POI_GASSTATION");
 				//...
-				stats.put(dbId, 1000);
+				List<Long> pidList = new ArrayList<Long>();
+				for(Collection<Long> pids:updatePids.values()){
+					pidList.addAll(pids);
+				}
+				List<BasicObj> objs = ObjBatchSelector.selectByPids(conn, ObjectType.IX_POI, selConfig, pidList, true, false);
+				
+				MultiSrcPoiConvertor conv = new MultiSrcPoiConvertor();
+				for(BasicObj obj:objs){
+					long objPid=obj.objPid();
+					for(Map.Entry<Integer, Collection<Long>> entry:updatePids.entrySet()){
+						if(entry.getValue().contains(objPid)){
+							obj.setLifeCycle(entry.getKey());
+							break;
+						}
+					}
+					pw.println(conv.toJson((IxPoiObj)obj).toString());
+				}
+				stats.put(dbId, objs.size());
 				log.debug("dbId("+dbId+")转出成功。");
 			}catch(Exception e){
 				log.error(e.getMessage(),e);
@@ -188,6 +241,11 @@ public class Fm2MultiSrcSyncJob extends AbstractJob {
 				throw new ThreadExecuteException("dbId("+dbId+")转多源失败，同步时间范围为start("+lastSyncTime+"),end("+syncTime+")");
 			}finally{
 				DbUtils.closeQuietly(conn);
+				try{
+					if(pw!=null)pw.close();
+				}catch(Exception ie){
+					log.error(ie.getMessage(),ie);
+				}
 				if(latch!=null){
 					latch.countDown();
 				}

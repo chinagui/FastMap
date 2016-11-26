@@ -91,9 +91,8 @@ public class OperationResult{
 					sql.run(conn);
 				}
 			}
-			//持久化把删除的数据移出objs
-			if(obj.getMainrow().getOpType().equals(OperationType.DELETE)
-					||obj.getMainrow().getOpType().equals(OperationType.INSERT_DELETE)){
+			//持久化把新增后删除的对象移出objs
+			if(obj.getMainrow().getOpType().equals(OperationType.INSERT_DELETE)){
 				it.remove();
 			}else{//如果不为删除，则将修改加入历史变更，给下一操作阶段做参考
 				obj.afterPersist();

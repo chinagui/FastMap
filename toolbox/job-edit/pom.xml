@@ -37,6 +37,10 @@
 			<groupId>com.navinfo.dataservice</groupId>
 			<artifactId>dao-glm-data</artifactId>
 		</dependency>
+        <dependency>
+            <groupId>com.navinfo.dataservice</groupId>
+            <artifactId>engine-editplus</artifactId>
+        </dependency>
 		<dependency>
 			<groupId>com.navinfo.dataservice</groupId>
 			<artifactId>api-datahub</artifactId>

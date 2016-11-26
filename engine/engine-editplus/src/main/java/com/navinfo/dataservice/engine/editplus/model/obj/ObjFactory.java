@@ -7,9 +7,9 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.util.UuidUtils;
-import com.navinfo.dataservice.engine.editplus.glm.GlmFactory;
-import com.navinfo.dataservice.engine.editplus.glm.GlmObject;
-import com.navinfo.dataservice.engine.editplus.glm.GlmTable;
+import com.navinfo.dataservice.dao.plus.glm.GlmFactory;
+import com.navinfo.dataservice.dao.plus.glm.GlmObject;
+import com.navinfo.dataservice.dao.plus.glm.GlmTable;
 import com.navinfo.dataservice.engine.editplus.model.BasicRow;
 import com.navinfo.dataservice.engine.editplus.operation.OperationType;
 

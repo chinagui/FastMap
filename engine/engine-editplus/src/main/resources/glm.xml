@@ -86,7 +86,7 @@
 			<objRef col="POI_PID" refTable="IX_POI" refCol="PID" isRefMain="true"/>
 		</table>
 		<table name="IX_POI_CHARGINGSTATION" pk="CHARGING_ID"
-			class="com.navinfo.dataservice.engine.editplus.model.ixpoi.IxPoiChargingStation">
+			class="com.navinfo.dataservice.engine.editplus.model.ixpoi.IxPoiChargingstation">
 			<objRef col="POI_PID" refTable="IX_POI" refCol="PID" isRefMain="true"/>
 		</table>
 		<table name="IX_POI_CHARGINGPLOT" pk=""

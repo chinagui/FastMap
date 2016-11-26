@@ -57,7 +57,7 @@ public class MultiSrcPoiDayImportor implements JsonImportor {
 					ixPoiObjList.add(ixPoiObjAdd);
 				} catch (Exception e) {
 					log.error(e.getMessage(),e);
-					errLog.put(jo.getString("fid"), StringUtils.isEmpty(e.getMessage())?"不为空的属性字段存在null":e.getMessage());
+					errLog.put(jo.getString("fid"), StringUtils.isEmpty(e.getMessage())?"新增执行成功":e.getMessage());
 				}
 			}
 			//修改
@@ -133,7 +133,7 @@ public class MultiSrcPoiDayImportor implements JsonImportor {
 						}
 					} catch (Exception e) {
 						log.error(e.getMessage(),e);
-						errLog.put(jo.getString("fid"), StringUtils.isEmpty(e.getMessage())?"不为空的属性字段存在null":e.getMessage());
+						errLog.put(jo.getString("fid"), StringUtils.isEmpty(e.getMessage())?"修改执行成功":e.getMessage());
 					}
 					break;
 				}
@@ -189,7 +189,7 @@ public class MultiSrcPoiDayImportor implements JsonImportor {
 						}
 					} catch (Exception e) {
 						log.error(e.getMessage(),e);
-						errLog.put(jo.getString("fid"), StringUtils.isEmpty(e.getMessage())?"不为空的属性字段存在null":e.getMessage());
+						errLog.put(jo.getString("fid"), StringUtils.isEmpty(e.getMessage())?"删除执行成功":e.getMessage());
 					}
 					break;
 				}

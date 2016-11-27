@@ -4,8 +4,8 @@ import java.sql.Connection;
 import java.util.Collection;
 import java.util.List;
 
-import com.navinfo.dataservice.engine.editplus.model.obj.BasicObj;
-import com.navinfo.dataservice.engine.editplus.operation.OperationResult;
+import com.navinfo.dataservice.dao.plus.obj.BasicObj;
+import com.navinfo.dataservice.dao.plus.operation.OperationResult;
 
 public class BasicCommand {
 	private OperationResult operationResult;

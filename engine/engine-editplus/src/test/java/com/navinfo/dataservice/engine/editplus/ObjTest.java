@@ -3,8 +3,8 @@ package com.navinfo.dataservice.engine.editplus;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.navinfo.dataservice.engine.editplus.model.BasicRow;
-import com.navinfo.dataservice.engine.editplus.model.ixpoi.IxPoiName;
+import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
 
 /** 
  * @ClassName: ObjTest

@@ -1,12 +1,10 @@
 package com.navinfo.dataservice.column.job;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -30,11 +28,11 @@ import com.navinfo.dataservice.commons.util.ServiceInvokeUtil;
 import com.navinfo.dataservice.commons.util.ZipUtils;
 import com.navinfo.dataservice.dao.log.LogReader;
 import com.navinfo.dataservice.dao.plus.glm.GlmFactory;
+import com.navinfo.dataservice.dao.plus.obj.BasicObj;
+import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectType;
+import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
 import com.navinfo.dataservice.engine.editplus.convert.MultiSrcPoiConvertor;
-import com.navinfo.dataservice.engine.editplus.model.obj.BasicObj;
-import com.navinfo.dataservice.engine.editplus.model.obj.IxPoiObj;
-import com.navinfo.dataservice.engine.editplus.model.selector.ObjBatchSelector;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
 import com.navinfo.navicommons.exception.ServiceRtException;

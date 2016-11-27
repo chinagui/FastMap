@@ -1,8 +1,8 @@
 package com.navinfo.dataservice.engine.editplus.batchAndCheck.batch;
 
+import com.navinfo.dataservice.dao.plus.operation.OperationResult;
 import com.navinfo.dataservice.engine.editplus.model.batchAndCheck.BatchCommand;
 import com.navinfo.dataservice.engine.editplus.model.batchAndCheck.BatchRule;
-import com.navinfo.dataservice.engine.editplus.operation.OperationResult;
 
 public class Batch {
 

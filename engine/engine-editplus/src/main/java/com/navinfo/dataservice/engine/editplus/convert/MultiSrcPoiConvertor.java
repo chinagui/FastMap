@@ -8,6 +8,7 @@ import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 
@@ -35,12 +36,12 @@ public class MultiSrcPoiConvertor {
 		//显示用的主名称
 		jo.put("display_text", "");
 		//采集用的主名称
-		if(poi.getNameByLct("CHI", 1, 2) != null){
-			jo.put("name", poi.getNameByLct("CHI", 1, 1).getName());
-		}else if(poi.getNameByLct("CHT", 1, 2) != null){
-			jo.put("name", poi.getNameByLct("CHT", 1, 1).getName());
+		IxPoiName poiName = poi.getNameByLct("CHI", 1, 1);
+		if(poiName==null)poiName=poi.getNameByLct("CHT", 1, 1);
+		if(poiName!=null){
+			jo.put("name", poiName.getName());
 		}else{
-			jo.put("name", "");
+			jo.put("name", JSONNull.getInstance());
 		}
 		//永久ID
 		jo.put("pid",ixPoi.getPid());

@@ -153,7 +153,7 @@ public abstract class BasicObj {
 		}
 	}
 	/**
-	 * 持久化后理论上应该所有删除的对象，不会再进入下一操作阶段
+	 * 持久化后理论上应该所有INSERT_DELETE的对象会删除，不会再进入下一操作阶段
 	 * 删除的子表在afterPersist后会移除
 	 */
 	public void afterPersist(){
@@ -182,15 +182,6 @@ public abstract class BasicObj {
 	}
 	public OperationType opType(){
 		return mainrow.getOpType();
-	}
-	
-	public List<BasicRow> selectRowsByName(Connection conn,String tableName) throws GlmTableNotFoundException, SQLException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, IllegalArgumentException{
-		List<BasicRow> rows = subrows.get(tableName);
-		if(rows==null&&mainrow.getOpType().equals(OperationType.UPDATE)){
-			//ObjSelector
-			ObjSelector.selectChildren(conn,this,tableName);
-		}
-		return subrows.get(tableName);
 	}
 
 	public List<BasicRow> getRowsByName(String tableName){

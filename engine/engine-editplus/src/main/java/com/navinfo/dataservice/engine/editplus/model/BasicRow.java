@@ -124,16 +124,17 @@ public abstract class BasicRow implements Logable{
 	 * 持久化后理论上应该所有删除的记录，不会再进入下一操作阶段
 	 */
 	public void afterPersist(){
+		//如果之前为删除，修改为已删除
+		if(opType.equals(OperationType.DELETE)){
+			opType=OperationType.PRE_DELETED;
+			return;
+		}
 		if(isChanged()){
 			if(hisChangeLogs==null){
 				hisChangeLogs = new ArrayList<ChangeLog>();
 			}
 			ChangeLog log = new ChangeLog(opType,oldValues);
 			hisChangeLogs.add(log);
-		}
-		//如果之前为删除，修改为已删除
-		if(opType.equals(OperationType.DELETE)){
-			opType=OperationType.PRE_DELETED;
 		}
 		//把当前的状态设置为修改
 		opType=OperationType.UPDATE;

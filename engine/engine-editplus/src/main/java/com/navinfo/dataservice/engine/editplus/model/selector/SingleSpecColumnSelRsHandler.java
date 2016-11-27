@@ -41,9 +41,12 @@ public class SingleSpecColumnSelRsHandler implements ResultSetHandler<BasicRow>{
 				for(Map.Entry<String, GlmColumn> entry:glmTable.getColumns().entrySet()){
 					ResultSetGetter.setAttrByCol(rs, row, entry.getValue());
 				}
+				if(rs.getInt("U_RECORD")==2){
+					row.setOpType(OperationType.PRE_DELETED);
+				}else{
+					row.setOpType(OperationType.UPDATE);
+				}
 			}
-			//默认为初始状态
-			row.setOpType(OperationType.UPDATE);
 			return row;
 		}catch(Exception e){
 			throw new SQLException(e.getMessage(),e);

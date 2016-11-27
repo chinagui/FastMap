@@ -142,7 +142,7 @@ public class Operation implements IOperation {
 			double breakLength, Result result) throws Exception {
 		// 获取打断的线的几何
 		LineString lineString = (LineString) GeoTranslator.transform(
-				currentlink.getGeometry(), 0.000001, 5);
+				currentlink.getGeometry(), 0.00001, 5);
 		// 获取打断点的位置
 		Coordinate coordinate = GeometryUtils.getPointOnLineStringDistance(
 				lineString, breakLength);
@@ -191,7 +191,7 @@ public class Operation implements IOperation {
 	private double getBreaklength(RdLink preLink, RdLink currentlink) {
 		if (currentlink.getsNodePid() == preLink.getsNodePid()
 				|| currentlink.getsNodePid() == preLink.geteNodePid()) {
-			return currentlink.getLength() - this.command.getLength() - 130;
+			return currentlink.getLength() - this.command.getLength() +130;
 		} else {
 			return this.command.getLength() - 130;
 		}

@@ -809,12 +809,6 @@ public class GeometryUtils {
 			}
 		}
 
-		// 转换墨卡托坐标为经纬度坐标返回
-
-		// result.x = MercatorProjection.metersXToLongitude(result.x);
-
-		// result.y = MercatorProjection.metersYToLatitude(result.y);
-
 		return result;
 	}
 
@@ -836,16 +830,14 @@ public class GeometryUtils {
 			Geometry g = getLineFromPoint(
 					new double[] { prePoint.x, prePoint.y }, new double[] {
 							currentPoint.x, currentPoint.y });
+			double currentLength = getLinkLength(g);
 			length += getLinkLength(g);
-			System.out.println(length);
 			if (Math.abs(dist - length) < 1) {
 				return currentPoint;
 			}
 			if (length > dist) {
 				Coordinate c = getPointOnLineSegmentByDistance(prePoint,
-						currentPoint, length - dist);
-				System.out
-						.println(IsPointAtLineInter(prePoint, currentPoint, c));
+						currentPoint, dist + currentLength - length);
 				return c;
 			}
 		}
@@ -863,15 +855,18 @@ public class GeometryUtils {
 		String test2 = "LINESTRING (116.05524 39.87189, 116.05571 39.87167,116.05580 39.87190)";
 
 		String test3 = "LINESTRING (116.04920 39.86528, 116.04987 39.86426,116.05038 39.86348)";
-
+		String test4 = "LINESTRING (116.3902 39.9983, 116.3903 39.9984, 116.3905 39.9983, 116.3905 39.9984, 116.3907 39.9983, 116.3907 39.9985, 116.3909 39.9983, 116.3908 39.9985, 116.3911 39.9983, 116.3911 39.9985)";
 		Geometry g1 = r.read(test1);
 
 		Geometry g2 = r.read(test2);
 
 		Geometry g3 = r.read(test3);
-		Coordinate c = getPointOnLineStringDistance((LineString) g2, 30);
+		Geometry g4 = r.read(test4);
+		System.out.println(getLinkLength(g4));
+		Coordinate c = getPointOnLineStringDistance((LineString) g4,
+				82.89500000000001);
 		System.out.println(c.x);
 		System.out.println(c.y);
-
+		// 116.39053, 39.99844
 	}
 }

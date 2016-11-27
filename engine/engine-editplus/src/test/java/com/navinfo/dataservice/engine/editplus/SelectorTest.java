@@ -13,12 +13,12 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.dao.plus.obj.BasicObj;
+import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
+import com.navinfo.dataservice.dao.plus.selector.MultiSrcPoiSelectorConfig;
+import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
+import com.navinfo.dataservice.dao.plus.selector.ObjSelector;
 import com.navinfo.dataservice.engine.editplus.convert.MultiSrcPoiConvertor;
-import com.navinfo.dataservice.engine.editplus.model.obj.BasicObj;
-import com.navinfo.dataservice.engine.editplus.model.obj.IxPoiObj;
-import com.navinfo.dataservice.engine.editplus.model.selector.MultiSrcPoiSelectorConfig;
-import com.navinfo.dataservice.engine.editplus.model.selector.ObjBatchSelector;
-import com.navinfo.dataservice.engine.editplus.model.selector.ObjSelector;
 import com.navinfo.navicommons.database.sql.RunnableSQL;
 
 import net.sf.json.JSONObject;

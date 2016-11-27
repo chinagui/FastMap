@@ -5,11 +5,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.engine.editplus.model.batchAndCheck.BatchCommand;
 import com.navinfo.dataservice.engine.editplus.model.batchAndCheck.CheckCommand;
 import com.navinfo.dataservice.engine.editplus.model.batchAndCheck.CheckRule;
 import com.navinfo.dataservice.engine.editplus.model.batchAndCheck.NiValException;
-import com.navinfo.dataservice.engine.editplus.model.obj.BasicObj;
 import com.vividsolutions.jts.geom.Geometry;
 
 public abstract class BasicCheckRule {

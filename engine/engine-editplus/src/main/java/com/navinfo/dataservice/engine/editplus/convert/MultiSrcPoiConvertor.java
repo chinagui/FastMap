@@ -7,9 +7,9 @@ import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.engine.editplus.model.ixpoi.IxPoi;
-import com.navinfo.dataservice.engine.editplus.model.obj.BasicObj;
-import com.navinfo.dataservice.engine.editplus.model.obj.IxPoiObj;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
+import com.navinfo.dataservice.dao.plus.obj.BasicObj;
+import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 
 import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;

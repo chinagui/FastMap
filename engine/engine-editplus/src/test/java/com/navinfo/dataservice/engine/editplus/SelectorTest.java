@@ -13,6 +13,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.selector.MultiSrcPoiSelectorConfig;
@@ -58,14 +59,20 @@ public class SelectorTest {
 
 			Set<String> tabNames = new HashSet<String>();
 			tabNames.add("IX_POI_NAME");
-			tabNames.add("IX_POI_NAME_FLAG");
-			tabNames.add("IX_POI_NAME_FLAG");
-			tabNames.add("IX_POI_NAME_TONE");
-			tabNames.add("IX_POI_ADDRESS");
 			tabNames.add("IX_POI_CONTACT");
-			tabNames.add("IX_POI_FLAG");
+			tabNames.add("IX_POI_ADDRESS");
+			tabNames.add("IX_POI_RESTAURANT");
+			tabNames.add("IX_POI_CHILDREN");
+			tabNames.add("IX_POI_PARENT");
+			tabNames.add("IX_POI_PARKING");
+			tabNames.add("IX_POI_HOTEL");
+			tabNames.add("IX_POI_CHARGINGSTATION");
+			tabNames.add("IX_POI_CHARGINGPLOT");
+			tabNames.add("IX_POI_GASSTATION");
 			
 			BasicObj obj = ObjSelector.selectByPid(conn, objType, tabNames, pid, isLock);
+			List<BasicRow> list1 = obj.getRowsByName("IX_POI_NAME");
+			List<BasicRow> list2 = obj.getRowsByName("IX_POI_ICON");
 			System.out.println("Over.");
 			MultiSrcPoiConvertor ms = new MultiSrcPoiConvertor();
 			JSONObject json = ms.toJson((IxPoiObj) obj);

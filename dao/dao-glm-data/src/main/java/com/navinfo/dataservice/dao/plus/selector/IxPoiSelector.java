@@ -13,6 +13,7 @@ import java.util.Set;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.log.LoggerRepos;
@@ -133,7 +134,7 @@ public class IxPoiSelector {
 			String sql = "SELECT DISTINCT IPP.PARENT_POI_PID,IPC.CHILD_POI_PID"
 					+ " FROM IX_POI_PARENT IPP,IX_POI_CHILDREN IPC"
 					+ " WHERE IPC.GROUP_ID = IPP.GROUP_ID"
-					+ " AND IPC.CHILD_POI_PID IN (?)";
+					+ " AND IPC.CHILD_POI_PID IN (" + StringUtils.join(pidList.toArray(),",") + ")";
 			
 			ResultSetHandler<Map<Long,Long>> rsHandler = new ResultSetHandler<Map<Long,Long>>() {
 				public Map<Long,Long> handle(ResultSet rs) throws SQLException {
@@ -147,7 +148,8 @@ public class IxPoiSelector {
 				}
 			};
 			
-			childPidParentPid = new QueryRunner().query(sql, rsHandler,pidList.toArray());
+			log.info("getIxPoiParentMapByChildrenPidList查询主表："+sql);
+			childPidParentPid = new QueryRunner().query(conn,sql, rsHandler);
 
 			Set<String> tabNames = new HashSet<String>();
 			tabNames.add("IX_POI_PARENT");

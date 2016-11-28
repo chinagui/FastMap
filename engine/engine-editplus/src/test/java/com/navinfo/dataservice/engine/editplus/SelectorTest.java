@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.junit.Before;
@@ -14,13 +16,19 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiChildren;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiContact;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiParent;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
+import com.navinfo.dataservice.dao.plus.selector.IxPoiSelector;
 import com.navinfo.dataservice.dao.plus.selector.MultiSrcPoiSelectorConfig;
 import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
 import com.navinfo.dataservice.dao.plus.selector.ObjSelector;
 import com.navinfo.dataservice.engine.editplus.convert.MultiSrcPoiConvertor;
 import com.navinfo.navicommons.database.sql.RunnableSQL;
+import com.navinfo.navicommons.exception.ServiceException;
 
 import net.sf.json.JSONObject;
 
@@ -335,5 +343,32 @@ public class SelectorTest {
 			e.printStackTrace();
 		}
 	}
+	
+	@Test
+	public void test14(){
+		try{
+			Connection conn = null;
+			conn = DBConnector.getInstance().getConnectionById(17);
+			List<Long> pids = new ArrayList<Long>();
+			pids.add(32355L);
+			pids.add(29407L);
+			pids.add(44605L);
+			pids.add(37935L);
+			Map<Long, String> parentFid = IxPoiSelector.getParentFid(conn, pids);
+			for(Map.Entry<Long, String> entry :parentFid.entrySet()){
+				System.out.println("parentFid"+entry.getValue()+"========"+entry.getValue());
+			}
+			Map<Long, String> childFid = IxPoiSelector.getChildFid(conn, pids);
+			for(Map.Entry<Long, String> entry :childFid.entrySet()){
+				System.out.println("childFid"+entry.getValue()+"========"+entry.getValue());
+			}
+			System.out.println("Over.");
+		}catch(Exception e){
+			System.out.println("Oops, something wrong...");
+			e.printStackTrace();
+		}
+	}
+	
+	
 	
 }

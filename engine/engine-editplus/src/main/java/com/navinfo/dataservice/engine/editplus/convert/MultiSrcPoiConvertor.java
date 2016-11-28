@@ -94,8 +94,9 @@ public class MultiSrcPoiConvertor {
 			jo.put("open24H", ixPoi.getOpen24h());
 		}
 		//父POI的Fid
+		jo.put("parentFid", poi.getParentFid());
 		//[集合]父子关系,子列表；该POI作为父的子要素
-		
+		jo.put("relateChildren", poi.getChildrens());
 		//[集合]联系方式
 		jo.put("contacts", poi.getContacts());
 		//{唯一}餐饮
@@ -176,7 +177,7 @@ public class MultiSrcPoiConvertor {
 			jo.put("t_lifecycle", poi.getLifeCycle());
 		}
 		//当前阶段作业状态
-		jo.put("t_status", 0);
+		//jo.put("t_status", 0);
 		//[集合]编辑履历
 		List<Map<String,Object>> edits = new ArrayList<Map<String,Object>>();
 		jo.put("edits", edits);

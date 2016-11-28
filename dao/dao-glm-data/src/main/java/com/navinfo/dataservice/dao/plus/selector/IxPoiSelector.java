@@ -1,20 +1,26 @@
 package com.navinfo.dataservice.dao.plus.selector;
 
+import java.sql.Clob;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiChildren;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiParent;
+import com.navinfo.dataservice.dao.plus.selector.custom.PoiNumPidSelHandler;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
 
@@ -28,6 +34,22 @@ import com.navinfo.navicommons.exception.ServiceException;
 public class IxPoiSelector {
 	protected static Logger log = LoggerRepos.getLogger(IxPoiSelector.class);
 	
+	
+	public static Map<String,Long> getPoiPidByFids(Connection conn,Collection<String> fids)throws Exception{
+		if(fids!=null&&fids.size()>0){
+			if(fids.size()>1000){
+				String sql= "SELECT PID,POI_NUM FROM IX_POI WHERE POI_NUM IN (?)";
+				Clob clobFids = ConnectionUtil.createClob(conn);
+				clobFids.setString(1, StringUtils.join(fids, ","));
+				return new QueryRunner().query(conn, sql, new PoiNumPidSelHandler(),clobFids);
+			}else{
+				PreparedStatement ps;
+				String sql= "SELECT PID,POI_NUM FROM IX_POI WHERE POI_NUM IN ('"+StringUtils.join(fids, "','")+"')";
+				return new QueryRunner().query(conn,sql,new PoiNumPidSelHandler());
+			}
+		}
+		return null;
+	}
 	
 	/**
 	 * 根据groupId查询IxPoiParent数据

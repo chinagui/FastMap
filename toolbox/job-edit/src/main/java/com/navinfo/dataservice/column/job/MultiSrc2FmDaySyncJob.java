@@ -16,13 +16,18 @@ import org.apache.commons.dbutils.DbUtils;
 
 import com.navinfo.dataservice.api.edit.upload.UploadPois;
 import com.navinfo.dataservice.api.job.model.JobInfo;
+import com.navinfo.dataservice.api.man.iface.ManApi;
+import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.column.job.Fm2MultiSrcSyncJob.Fm2MultiSrcExportThread;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.thread.VMThreadPoolExecutor;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.ZipUtils;
+import com.navinfo.dataservice.engine.editplus.operation.imp.MultiSrcPoiDayImportor;
+import com.navinfo.dataservice.engine.editplus.operation.imp.MultiSrcPoiDayImportorCommand;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
 import com.navinfo.navicommons.download.DownloadUtils;
@@ -196,11 +201,16 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 			Connection conn=null;
 			try{
 				//region-->dbId
-				int dbId=0;
+				ManApi manApi = (ManApi)ApplicationContextUtil
+						.getBean("datahubApi");
+				Region r = manApi.queryByRegionId(regionId);
+				int dbId=r.getDailyDbId();
 				conn=DBConnector.getInstance().getConnectionById(dbId);
-				//OperationResult or = new OperationResult();
-				//MultiSrcPoiDayImportor
-				//PoiRelationImportor
+				//
+				MultiSrcPoiDayImportorCommand cmd = new MultiSrcPoiDayImportorCommand(pois);
+				MultiSrcPoiDayImportor imp = new MultiSrcPoiDayImportor(conn,null);
+				imp.setCmd(cmd);
+				imp.operate();
 				log.debug("dbId("+dbId+")转出成功。");
 			}catch(Exception e){
 				log.error(e.getMessage(),e);

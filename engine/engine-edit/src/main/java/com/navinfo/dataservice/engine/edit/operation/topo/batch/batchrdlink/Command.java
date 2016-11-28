@@ -17,23 +17,29 @@ public class Command extends AbstractCommand {
 
     private String requester;
 
-    private List<Integer> linkPids;
+    //    private List<Integer> linkPids;
+    private JSONArray linkPids;
 
-    private JSONObject content;
+    private JSONArray content;
 
-    public List<Integer> getLinkPids() {
-        return linkPids;
+    public JSONArray getContent() {
+        return content;
     }
 
-    public JSONObject getContent() {
-        return content;
+    //    public List<Integer> getLinkPids() {
+//        return linkPids;
+//    }
+
+    public JSONArray getLinkPids() {
+        return linkPids;
     }
 
     public Command(JSONObject json, String requester) {
         this.requester = requester;
         setDbId(json.getInt("dbId"));
-        linkPids = new ArrayList<>(JSONArray.toCollection(json.getJSONArray("linkPids")));
-        content = json.getJSONObject("data");
+//        linkPids = new ArrayList<>(JSONArray.toCollection(json.getJSONArray("linkPids")));
+        linkPids = json.getJSONArray("linkPids");
+        content = json.getJSONArray("data");
     }
 
     @Override

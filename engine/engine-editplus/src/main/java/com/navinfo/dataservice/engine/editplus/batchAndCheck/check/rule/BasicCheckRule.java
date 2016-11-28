@@ -5,15 +5,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
+
+import sun.tools.tree.ThisExpression;
+
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
-import com.navinfo.dataservice.engine.editplus.model.batchAndCheck.BatchCommand;
-import com.navinfo.dataservice.engine.editplus.model.batchAndCheck.CheckCommand;
+import com.navinfo.dataservice.engine.editplus.batchAndCheck.check.Check;
+import com.navinfo.dataservice.engine.editplus.model.batchAndCheck.BatchRuleCommand;
+import com.navinfo.dataservice.engine.editplus.model.batchAndCheck.CheckRuleCommand;
 import com.navinfo.dataservice.engine.editplus.model.batchAndCheck.CheckRule;
 import com.navinfo.dataservice.engine.editplus.model.batchAndCheck.NiValException;
 import com.vividsolutions.jts.geom.Geometry;
 
 public abstract class BasicCheckRule {
-	private CheckCommand checkCommand;
+	protected Logger log = Logger.getLogger(this.getClass());
+	private CheckRuleCommand checkRuleCommand;
 	private CheckRule checkRule;
 	public List<String> objNameList=new ArrayList<String>();
 	List<NiValException> checkResultList=new ArrayList<NiValException>();
@@ -34,8 +40,8 @@ public abstract class BasicCheckRule {
 		Map<Long, BasicObj> rows=new HashMap<Long, BasicObj>();
 		//若全库批处理，则数据统一都是初始化状态，新增修改列表没有记录
 		for(String objName:objNameList){
-			if(this.getCheckCommand().getOperationResult().getAllObjsMap().containsKey(objName)){
-				Map<Long, BasicObj> map=this.getCheckCommand().getOperationResult().getAllObjsMap().get(objName);
+			if(checkRuleCommand.getAllDatas().containsKey(objName)){
+				Map<Long, BasicObj> map=checkRuleCommand.getAllDatas().get(objName);
 				if(map!=null){rows.putAll(map);}}
 			}
 		return rows;
@@ -53,12 +59,12 @@ public abstract class BasicCheckRule {
 	
 	public abstract void runCheck(String objName,BasicObj obj)throws Exception;
 
-	public CheckCommand getCheckCommand() {
-		return checkCommand;
+	public CheckRuleCommand getCheckRuleCommand() {
+		return checkRuleCommand;
 	}
 
-	public void setCheckCommand(CheckCommand checkCommand) {
-		this.checkCommand = checkCommand;
+	public void setCheckRuleCommand(CheckRuleCommand checkRuleCommand) {
+		this.checkRuleCommand = checkRuleCommand;
 	}
 	
 	public void setCheckResult(String loc, String targets,int meshId){

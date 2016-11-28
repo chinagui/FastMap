@@ -45,8 +45,8 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 
 	protected Map<String,String> errLog=new HashMap<String,String>();
 	
-	public MultiSrcPoiDayImportor(Connection conn, String name, OperationResult preResult) {
-		super(conn, name, preResult);
+	public MultiSrcPoiDayImportor(Connection conn,OperationResult preResult) {
+		super(conn,preResult);
 	}
 
 	@Override
@@ -735,6 +735,12 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 		tabNames.add("IX_POI_PARENT");
 		tabNames.add("IX_POI_DETAIL");
 		return tabNames;
+	}
+
+	@Override
+	public String getName() {
+		// TODO Auto-generated method stub
+		return "MultiSrcPoiDayImportor";
 	}
 
 }

@@ -62,7 +62,7 @@ public class ImportOracle {
 				}
 				flag=false;
 				dataValues.add(value);
-				break;
+				//break;
 			}
 				
 			String insertSql="insert into "+oracleTableName+" ("+columnStr+")"

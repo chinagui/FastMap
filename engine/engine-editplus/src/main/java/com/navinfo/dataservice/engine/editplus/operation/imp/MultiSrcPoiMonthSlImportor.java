@@ -22,8 +22,8 @@ public class MultiSrcPoiMonthSlImportor extends AbstractOperation {
 	 * @param name
 	 * @param preResult
 	 */
-	public MultiSrcPoiMonthSlImportor(Connection conn, String name, OperationResult preResult) {
-		super(conn, name, preResult);
+	public MultiSrcPoiMonthSlImportor(Connection conn, OperationResult preResult) {
+		super(conn, preResult);
 		// TODO Auto-generated constructor stub
 	}
 
@@ -31,6 +31,12 @@ public class MultiSrcPoiMonthSlImportor extends AbstractOperation {
 	public void operate() throws Exception {
 		// TODO Auto-generated method stub
 		
+	}
+
+	@Override
+	public String getName() {
+		// TODO Auto-generated method stub
+		return "MultiSrcPoiMonthSlImportor";
 	}
 
 }

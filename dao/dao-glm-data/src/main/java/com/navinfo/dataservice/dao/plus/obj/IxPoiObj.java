@@ -36,7 +36,7 @@ import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiRestaurant;
  * @Description: IxPoi.java
  */
 public class IxPoiObj extends AbstractIxObj {
-
+	
 	public IxPoiObj(BasicRow mainrow) {
 		super(mainrow);
 	}

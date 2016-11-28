@@ -9,6 +9,7 @@ import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.lane.RdLane;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.rd.lane.RdLaneSelector;
 
 /***
@@ -134,10 +135,10 @@ public class Operation implements IOperation {
 			result.insertObject(lane, ObjStatus.DELETE, lane.getPid());
 			lanePids.add(lane.getPid());
 		}
-		if(lanePids.size() > 0){
+		if (lanePids.size() > 0) {
 			this.deleteTopoDetailForRdLanes(result, lanePids);
 		}
-		
+
 	}
 
 	/**
@@ -171,4 +172,6 @@ public class Operation implements IOperation {
 
 		return alertList;
 	}
+
+	
 }

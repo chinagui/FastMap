@@ -9,6 +9,7 @@ import org.apache.log4j.Logger;
 
 import sun.tools.tree.ThisExpression;
 
+import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.check.Check;
 import com.navinfo.dataservice.engine.editplus.model.batchAndCheck.BatchRuleCommand;
@@ -21,7 +22,6 @@ public abstract class BasicCheckRule {
 	protected Logger log = Logger.getLogger(this.getClass());
 	private CheckRuleCommand checkRuleCommand;
 	private CheckRule checkRule;
-	public List<String> objNameList=new ArrayList<String>();
 	List<NiValException> checkResultList=new ArrayList<NiValException>();
 
 	public List<NiValException> getCheckResultList() {
@@ -39,7 +39,7 @@ public abstract class BasicCheckRule {
 	public Map<Long, BasicObj> getRowList(){
 		Map<Long, BasicObj> rows=new HashMap<Long, BasicObj>();
 		//若全库批处理，则数据统一都是初始化状态，新增修改列表没有记录
-		for(String objName:objNameList){
+		for(String objName:checkRule.getObjNameSet()){
 			if(checkRuleCommand.getAllDatas().containsKey(objName)){
 				Map<Long, BasicObj> map=checkRuleCommand.getAllDatas().get(objName);
 				if(map!=null){rows.putAll(map);}}
@@ -48,16 +48,15 @@ public abstract class BasicCheckRule {
 	}
 	
 	public void run()throws Exception{
-		for(String objName:this.objNameList){
-			Map<Long, BasicObj> rows=getRowList();
-				for(Long key:rows.keySet()){
-					BasicObj obj=rows.get(key);
-					runCheck(objName, obj);
-				}
-			}
+		Map<Long, BasicObj> rows=getRowList();
+		for(Long key:rows.keySet()){
+			BasicObj obj=rows.get(key);
+			if(!obj.getMainrow().getOpType().equals(OperationType.PRE_DELETED)){
+				runCheck(obj);}
 		}
+	}
 	
-	public abstract void runCheck(String objName,BasicObj obj)throws Exception;
+	public abstract void runCheck(BasicObj obj)throws Exception;
 
 	public CheckRuleCommand getCheckRuleCommand() {
 		return checkRuleCommand;

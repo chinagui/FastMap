@@ -21,8 +21,8 @@ public class GLM001TEST extends BasicBatchRule {
 		if(obj.objType().equals(ObjectType.IX_POI)){
 			IxPoiObj poiObj=(IxPoiObj) obj;
 			IxPoi poi=(IxPoi) poiObj.getMainrow();
-			if(!poi.hisOldValueContains("KIND_CODE")){return;}
-			String oldKindCode=(String) poi.getHisOldValue("KIND_CODE");
+			if(!poi.hisOldValueContains(IxPoi.KIND_CODE)){return;}
+			String oldKindCode=(String) poi.getHisOldValue(IxPoi.KIND_CODE);
 			if(!oldKindCode.isEmpty()){poi.setKindCode("test124");}
 			List<IxPoiName> subRows=poiObj.getIxPoiNames();
 			for(IxPoiName br:subRows){

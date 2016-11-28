@@ -18,12 +18,15 @@ public class GLM001TEST extends BasicCheckRule {
 	@Override
 	public void runCheck(BasicObj obj) throws Exception{
 		if(obj.objType().equals(ObjectType.IX_POI)){
-			IxPoi poiObj=(IxPoi) obj.getMainrow();
-			if(!poiObj.hisOldValueContains("KIND_CODE")){return;}
-			List<BasicRow> subRows=obj.getRowsByName("IX_POI_NAME");
+			IxPoiObj poiObj=(IxPoiObj) obj;
+			IxPoi poi=(IxPoi) poiObj.getMainrow();
+			if(!poi.hisOldValueContains(IxPoi.KIND_CODE)){return;}
+			String oldKindCode=(String) poi.getHisOldValue(IxPoi.KIND_CODE);
+			if(oldKindCode.isEmpty()){return;}
+			List<IxPoiName> subRows=poiObj.getIxPoiNames();
 			for(BasicRow br:subRows){
 				if(br.getObjType().equals("UPDATE")){
-					this.setCheckResult(poiObj.getGeometry(), "[IX_POI,"+poiObj.getPid()+"]", poiObj.getMeshId());
+					this.setCheckResult(poi.getGeometry(), "[IX_POI,"+poi.getPid()+"]", poi.getMeshId());
 				}
 			}
 		}else if(obj.objType().equals(ObjectType.AD_LINK)){}

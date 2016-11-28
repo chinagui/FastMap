@@ -21,10 +21,9 @@ import net.sf.json.JSONObject;
 public class BasicServiceUtils {
 	/***
 	 * 
+	 * @author zhaokk
 	 * @param catchLinks
-	 *            排序json数组
 	 * @param key
-	 *            排序的key
 	 * @return
 	 */
 	public static JSONArray breakSortParas(JSONArray catchLinks,

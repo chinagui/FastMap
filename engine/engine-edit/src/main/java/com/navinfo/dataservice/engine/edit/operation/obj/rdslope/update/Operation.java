@@ -73,7 +73,8 @@ public class Operation implements IOperation {
 	 * @throws Exception
 	 */
 	private void handRdSlopeVia(Result result) throws Exception {
-		if (this.command.getSeriesLinkPids() != null) {
+		if (this.command.getSeriesLinkPids() != null
+				&& this.command.getSeriesLinkPids().size() > 0) {
 			if (this.command.getOutLinkPid() != 0
 					&& this.command.getOutLinkPid() != this.command.getSlope()
 							.getLinkPid()) {

@@ -13,6 +13,10 @@ public class NiValException {
 	private int meshId;
 	private String information;
 	
+	public NiValException()
+	{
+	}
+	
 	public NiValException(String ruleId, String loc, String targets,int meshId,String information){
 		this.setRuleId(ruleId);
 		this.setLoc(loc);

@@ -13,13 +13,13 @@ import org.apache.commons.dbutils.ResultSetHandler;
  * @date 2016年11月28日
  * @Description: PoiNumPidSelHandler.java
  */
-public class PoiAdminIdSelHandler implements ResultSetHandler<Map<String, Long>> {
+public class PoiAdminIdSelHandler implements ResultSetHandler<Map<Long, Long>> {
 
 	@Override
-	public Map<String, Long> handle(ResultSet rs) throws SQLException {
-		Map<String,Long> res = new HashMap<String,Long>();
+	public Map<Long, Long> handle(ResultSet rs) throws SQLException {
+		Map<Long,Long> res = new HashMap<Long,Long>();
 		while(rs.next()){
-			res.put(rs.getString("POI_NUM"), rs.getLong("PID"));
+			res.put(rs.getLong("PID"), rs.getLong("ADMIN_ID"));
 		}
 		return res;
 	}

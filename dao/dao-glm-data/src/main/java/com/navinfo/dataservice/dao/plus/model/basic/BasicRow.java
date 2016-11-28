@@ -95,6 +95,7 @@ public abstract class BasicRow{
 	public void setOpType(OperationType opType) {
 		this.opType = opType;
 	}
+	
 	public OperationType getHisOpType() {
 		if(hisChangeLogs!=null&&hisChangeLogs.size()>0){
 			int size = hisChangeLogs.size();
@@ -139,6 +140,9 @@ public abstract class BasicRow{
 	}
 	public void setRowId(String rowId) {
 		this.rowId = rowId;
+	}
+	public Map<String,Object> getOldValues(){
+		return oldValues;
 	}
 	
 	public boolean hisOldValueContains(String colName){

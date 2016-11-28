@@ -1,12 +1,6 @@
 package com.navinfo.dataservice.dao.plus.model.ixpoi;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
-
-import net.sf.json.JSONObject;
 
 /** 
 * @ClassName:  IxPoiPhoto 
@@ -79,4 +73,12 @@ public class IxPoiPhoto extends BasicRow {
 	public String tableName() {
 		return "IX_POI_PHOTO";
 	}
+	
+	public static final String POI_PID = "POI_PID";
+	public static final String PHOTO_ID = "PHOTO_ID";
+	public static final String PID = "PID";
+	public static final String STATUS = "STATUS";
+	public static final String MEMO = "MEMO";
+	public static final String TAG = "TAG";
+
 }

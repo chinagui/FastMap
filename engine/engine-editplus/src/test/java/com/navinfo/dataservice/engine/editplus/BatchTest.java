@@ -47,7 +47,7 @@ public class BatchTest {
 		ruleIdList.add("GLM001TEST");
 		batchCommand.setRuleIdList(ruleIdList);
 		
-		Batch batch=new Batch(conn,"",operationResult);
+		Batch batch=new Batch(conn,operationResult);
 		batch.setCmd(batchCommand);
 		batch.operate();
 		System.out.println("123");

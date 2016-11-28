@@ -22,8 +22,8 @@ public abstract class EditOperation extends AbstractOperation{
 	 * @param name
 	 * @param preResult
 	 */
-	public EditOperation(Connection conn, String name, OperationResult preResult) {
-		super(conn, name, preResult);
+	public EditOperation(Connection conn, OperationResult preResult) {
+		super(conn, preResult);
 		// TODO Auto-generated constructor stub
 	}
 	

@@ -16,8 +16,8 @@ import com.navinfo.dataservice.engine.editplus.model.batchAndCheck.BatchRuleComm
 
 public class Batch extends AbstractOperation{
 
-	public Batch(Connection conn, String name, OperationResult preResult) {
-		super(conn, name, preResult);
+	public Batch(Connection conn,  OperationResult preResult) {
+		super(conn,  preResult);
 		// TODO Auto-generated constructor stub
 	}
 
@@ -66,5 +66,11 @@ public class Batch extends AbstractOperation{
 			excuter.exeRule(rule, batchRuleCommand);
 		}
 		log.info("end exe batch");
+	}
+
+	@Override
+	public String getName() {
+		// TODO Auto-generated method stub
+		return "BATCH";
 	}
 }

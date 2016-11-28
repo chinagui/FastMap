@@ -53,17 +53,21 @@ public class SelectorTest {
 			Connection conn = null;
 			conn = DBConnector.getInstance().getConnectionById(17);;
 			String objType = "IX_POI";
-			long pid = 308;
+			long pid = 237630;
 			boolean isLock = false;
 
 			Set<String> tabNames = new HashSet<String>();
 			tabNames.add("IX_POI_NAME");
-			tabNames.add("IX_POI_NAME_FLAG");
-			tabNames.add("IX_POI_NAME_FLAG");
-			tabNames.add("IX_POI_NAME_TONE");
-			tabNames.add("IX_POI_ADDRESS");
 			tabNames.add("IX_POI_CONTACT");
-			tabNames.add("IX_POI_FLAG");
+			tabNames.add("IX_POI_ADDRESS");
+			tabNames.add("IX_POI_RESTAURANT");
+			tabNames.add("IX_POI_CHILDREN");
+			tabNames.add("IX_POI_PARENT");
+			tabNames.add("IX_POI_PARKING");
+			tabNames.add("IX_POI_HOTEL");
+			tabNames.add("IX_POI_CHARGINGSTATION");
+			tabNames.add("IX_POI_CHARGINGPLOT");
+			tabNames.add("IX_POI_GASSTATION");
 			
 			BasicObj obj = ObjSelector.selectByPid(conn, objType, tabNames, pid, isLock);
 			System.out.println("Over.");

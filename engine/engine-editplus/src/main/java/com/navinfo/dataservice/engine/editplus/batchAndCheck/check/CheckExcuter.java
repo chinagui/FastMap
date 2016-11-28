@@ -33,6 +33,7 @@ public class CheckExcuter {
 	public List<NiValException> exeJavaRule(CheckRule checkRule,CheckRuleCommand checkRuleCommand) throws Exception{
 		BasicCheckRule ruleObj=(BasicCheckRule) checkRule.getAccessorClass().newInstance();
 		ruleObj.setCheckRuleCommand(checkRuleCommand);
+		ruleObj.setCheckRule(checkRule);
 		ruleObj.run();
 		return ruleObj.getCheckResultList();
 	}

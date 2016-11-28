@@ -112,7 +112,7 @@ public class ObjBatchSelector {
 	 * @throws GlmTableNotFoundException
 	 * @throws SQLException
 	 */
-	private static void selectChildren(Connection conn, List<BasicObj> objList, String tab
+	public static void selectChildren(Connection conn, List<BasicObj> objList, String tab
 			, Collection<Long> pids) throws GlmTableNotFoundException, SQLException {
 		if(objList.isEmpty()){
 			return;

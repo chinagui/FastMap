@@ -1,12 +1,6 @@
 package com.navinfo.dataservice.dao.plus.model.ixpoi;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
-
-import net.sf.json.JSONObject;
 
 /** 
 * @ClassName:  IxPoiBuilding 
@@ -61,4 +55,10 @@ public class IxPoiBuilding extends BasicRow {
 	public String tableName() {
 		return "IX_POI_BUILDING";
 	}
+	
+	public static final String POI_PID = "POI_PID";
+	public static final String FLOOR_USED = "FLOOR_USED";
+	public static final String FLOOR_EMPTY = "FLOOR_EMPTY";
+	public static final String MEMO = "MEMO";
+
 }

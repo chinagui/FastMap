@@ -1,12 +1,6 @@
 package com.navinfo.dataservice.dao.plus.model.ixpoi;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
-
-import net.sf.json.JSONObject;
 
 /** 
 * @ClassName:  IxPoiEvent 
@@ -169,4 +163,22 @@ public class IxPoiEvent extends BasicRow {
 	public String tableName() {
 		return "IX_POI_EVENT";
 	}
+	
+	public static final String EVENT_ID = "EVENT_ID";
+	public static final String EVENT_NAME = "EVENT_NAME";
+	public static final String EVENT_NAME_ENG = "EVENT_NAME_ENG";
+	public static final String EVENT_KIND = "EVENT_KIND";
+	public static final String EVENT_KIND_ENG = "EVENT_KIND_ENG";
+	public static final String EVENT_DESC = "EVENT_DESC";
+	public static final String EVENT_DESC_ENG = "EVENT_DESC_ENG";
+	public static final String START_DATE = "START_DATE";
+	public static final String END_DATE = "END_DATE";
+	public static final String DETAIL_TIME = "DETAIL_TIME";
+	public static final String DETAIL_TIME_ENG = "DETAIL_TIME_ENG";
+	public static final String CITY = "CITY";
+	public static final String POI_PID = "POI_PID";
+	public static final String PHOTO_NAME = "PHOTO_NAME";
+	public static final String RESERVED = "RESERVED";
+	public static final String MEMO = "MEMO";
+
 }

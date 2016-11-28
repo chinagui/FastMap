@@ -89,7 +89,7 @@ public class RwLinkTest extends InitApplication {
 	@Test//不跨图幅
 	public void testAddRwLink()
 	{
-		String parameter = "{\"command\":\"REPAIR\",\"dbId\":17,\"objId\":205000032,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.67294,40.27868],[116.6741180419922,40.27847797779299],[116.67486,40.27836],[116.67572,40.2775]]},\"interLinks\":[],\"interNodes\":[]},\"type\":\"RWLINK\"}";
+		String parameter = "{\"command\":\"REPAIR\",\"dbId\":17,\"objId\":320000022,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.67716,40.29764],[116.6777014732361,40.297595783346516],[116.67819,40.2981],[116.67872,40.29699]]},\"interLinks\":[],\"interNodes\":[]},\"type\":\"RWLINK\"}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

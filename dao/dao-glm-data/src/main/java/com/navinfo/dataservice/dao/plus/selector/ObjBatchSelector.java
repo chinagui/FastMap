@@ -18,6 +18,7 @@ import org.apache.log4j.Logger;
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjFactory;
+import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.dao.plus.glm.GlmColumn;
 import com.navinfo.dataservice.dao.plus.glm.GlmFactory;
 import com.navinfo.dataservice.dao.plus.glm.GlmObject;
@@ -66,7 +67,7 @@ public class ObjBatchSelector {
 		logger.info("selectBySpecColumn查询主表："+sql);
 		List<BasicRow> mainrowList = new ArrayList<BasicRow>();
 		if(pids.size()>1000){
-			Clob clobPids=conn.createClob();
+			Clob clobPids=ConnectionUtil.createClob(conn);
 			clobPids.setString(1, StringUtils.join(pids, ","));
 			mainrowList = new QueryRunner().query(conn, sql, new SingleBatchSelRsHandler(mainTable),clobPids);
 		}else{
@@ -139,7 +140,7 @@ public class ObjBatchSelector {
 		
 		Clob clobPids=null;
 		if(pids.size()>1000){
-			clobPids=conn.createClob();
+			clobPids=ConnectionUtil.createClob(conn);
 			clobPids.setString(1, StringUtils.join(pids, ","));
 			childRows = new QueryRunner().query(conn, sql, new MultipleBatchSelRsHandler(glmTab),clobPids);
 		}else{
@@ -200,7 +201,7 @@ public class ObjBatchSelector {
 		List<BasicRow> mainrowList = new ArrayList<BasicRow>();
 		
 		if(colValues.size()>1000){
-			Clob clobPids=conn.createClob();
+			Clob clobPids=ConnectionUtil.createClob(conn);
 			clobPids.setString(1, StringUtils.join(colValues, ","));
 			mainrowList = new QueryRunner().query(conn, sql, new SingleBatchSelRsHandler(mainTable),clobPids);
 		}else{

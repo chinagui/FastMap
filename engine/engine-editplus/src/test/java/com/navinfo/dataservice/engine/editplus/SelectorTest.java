@@ -3,8 +3,10 @@ package com.navinfo.dataservice.engine.editplus;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.junit.Before;
@@ -18,6 +20,7 @@ import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.selector.MultiSrcPoiSelectorConfig;
 import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
+import com.navinfo.dataservice.dao.plus.selector.ObjChildrenIncreSelector;
 import com.navinfo.dataservice.dao.plus.selector.ObjSelector;
 import com.navinfo.dataservice.engine.editplus.convert.MultiSrcPoiConvertor;
 import com.navinfo.navicommons.database.sql.RunnableSQL;
@@ -329,6 +332,42 @@ public class SelectorTest {
 			tabNames.add("IX_POI_FLAG");
 			
 			List<BasicObj> objList = ObjBatchSelector.selectBySpecColumn(conn, objType, tabNames, colName,pids, isLock,isNowait);
+			System.out.println("Over.");
+		}catch(Exception e){
+			System.out.println("Oops, something wrong...");
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void test20(){
+		try{
+			Connection conn = null;
+			conn = DBConnector.getInstance().getConnectionById(17);
+			String objType = "IX_POI";
+			Collection<String> pids = new ArrayList<String>();
+			String colName = "POI_NUM";
+			pids.add("0335100531LS100266");
+			pids.add("0010060909HYX00855");
+			pids.add("0010060909HYX00856");
+			boolean isLock = false;
+			boolean isNowait = false;
+
+			Set<String> tabNames = new HashSet<String>();
+			tabNames.add("IX_POI_NAME");
+			tabNames.add("IX_POI_NAME_FLAG");
+			tabNames.add("IX_POI_NAME_TONE");
+			
+			List<BasicObj> objList = ObjBatchSelector.selectBySpecColumn(conn, objType, tabNames, colName,pids, isLock,isNowait);
+			
+			tabNames.add("IX_POI_ADDRESS");
+			tabNames.add("IX_POI_CONTACT");
+			tabNames.add("IX_POI_FLAG");
+			Map<Long,BasicObj> objs = new HashMap<Long,BasicObj>();
+			for(BasicObj obj:objList){
+				objs.put(obj.objPid(), obj);
+			}
+			ObjChildrenIncreSelector.increSelect(conn, objs, tabNames);
 			System.out.println("Over.");
 		}catch(Exception e){
 			System.out.println("Oops, something wrong...");

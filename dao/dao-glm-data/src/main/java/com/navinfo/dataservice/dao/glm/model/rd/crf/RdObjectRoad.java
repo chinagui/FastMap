@@ -4,6 +4,7 @@
 package com.navinfo.dataservice.dao.glm.model.rd.crf;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -33,6 +34,8 @@ public class RdObjectRoad implements IRow {
 	private String rowId;
 
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
+	
+	protected List<IRow> links = new ArrayList<>();
 
 	public int getPid() {
 		return pid;
@@ -52,6 +55,14 @@ public class RdObjectRoad implements IRow {
 
 	public String getRowId() {
 		return rowId;
+	}
+
+	public List<IRow> getLinks() {
+		return links;
+	}
+
+	public void setLinks(List<IRow> links) {
+		this.links = links;
 	}
 
 	@Override
@@ -183,7 +194,12 @@ public class RdObjectRoad implements IRow {
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) throws Exception {
 		JSONObject json = JSONObject.fromObject(this, JsonUtils.getStrConfig());
-
+		
+		if(objLevel.toString().equals(ObjLevel.HISTORY.toString()))
+		{
+			json.remove("links");
+		}
+		
 		return json;
 	}
 

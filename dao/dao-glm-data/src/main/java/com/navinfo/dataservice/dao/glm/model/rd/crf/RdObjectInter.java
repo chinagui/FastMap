@@ -4,6 +4,7 @@
 package com.navinfo.dataservice.dao.glm.model.rd.crf;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -34,6 +35,12 @@ public class RdObjectInter implements IRow {
 	
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 	
+	//额外加的links，配合web快速查询
+	protected List<IRow> links = new ArrayList<>();
+	
+	//额外加的nodes，配合web快速查询
+	protected List<IRow> nodes = new ArrayList<>();
+	
 	public int getPid() {
 		return pid;
 	}
@@ -58,10 +65,26 @@ public class RdObjectInter implements IRow {
 	public String rowId() {
 		return this.rowId;
 	}
+	
+	public List<IRow> getNodes() {
+		return nodes;
+	}
+
+	public void setNodes(List<IRow> nodes) {
+		this.nodes = nodes;
+	}
 
 	@Override
 	public void setRowId(String rowId) {
 		this.rowId = rowId;
+	}
+	
+	public List<IRow> getLinks() {
+		return links;
+	}
+
+	public void setLinks(List<IRow> links) {
+		this.links = links;
 	}
 
 	@Override
@@ -183,6 +206,13 @@ public class RdObjectInter implements IRow {
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) throws Exception {
 		JSONObject json = JSONObject.fromObject(this, JsonUtils.getStrConfig());
+		
+		if(objLevel.toString().equals(ObjLevel.HISTORY.toString()))
+		{
+			json.remove("links");
+			
+			json.remove("nodes");
+		}
 
 		return json;
 	}

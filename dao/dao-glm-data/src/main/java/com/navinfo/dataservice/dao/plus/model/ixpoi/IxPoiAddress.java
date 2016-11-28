@@ -1,12 +1,6 @@
 package com.navinfo.dataservice.dao.plus.model.ixpoi;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
-
-import net.sf.json.JSONObject;
 
 /** 
 * @ClassName:  IxPoiAddress 
@@ -448,4 +442,52 @@ public class IxPoiAddress extends BasicRow {
 	public String tableName() {
 		return "IX_POI_ADDRESS";
 	}
+	
+	public static final String NAME_ID = "NAME_ID";
+	public static final String NAME_GROUPID = "NAME_GROUPID";
+	public static final String POI_PID = "POI_PID";
+	public static final String LANG_CODE = "LANG_CODE";
+	public static final String SRC_FLAG = "SRC_FLAG";
+	public static final String FULLNAME = "FULLNAME";
+	public static final String FULLNAME_PHONETIC = "FULLNAME_PHONETIC";
+	public static final String ROADNAME = "ROADNAME";
+	public static final String ROADNAME_PHONETIC = "ROADNAME_PHONETIC";
+	public static final String ADDRNAME = "ADDRNAME";
+	public static final String ADDRNAME_PHONETIC = "ADDRNAME_PHONETIC";
+	public static final String PROVINCE = "PROVINCE";
+	public static final String CITY = "CITY";
+	public static final String COUNTY = "COUNTY";
+	public static final String TOWN = "TOWN";
+	public static final String PLACE = "PLACE";
+	public static final String STREET = "STREET";
+	public static final String LANDMARK = "LANDMARK";
+	public static final String PREFIX = "PREFIX";
+	public static final String HOUSENUM = "HOUSENUM";
+	public static final String TYPE = "TYPE";
+	public static final String SUBNUM = "SUBNUM";
+	public static final String SURFIX = "SURFIX";
+	public static final String ESTAB = "ESTAB";
+	public static final String BUILDING = "BUILDING";
+	public static final String FLOOR = "FLOOR";
+	public static final String UNIT = "UNIT";
+	public static final String ROOM = "ROOM";
+	public static final String ADDONS = "ADDONS";
+	public static final String PROV_PHONETIC = "PROV_PHONETIC";
+	public static final String CITY_PHONETIC = "CITY_PHONETIC";
+	public static final String COUNTY_PHONETIC = "COUNTY_PHONETIC";
+	public static final String TOWN_PHONETIC = "TOWN_PHONETIC";
+	public static final String STREET_PHONETIC = "STREET_PHONETIC";
+	public static final String PLACE_PHONETIC = "PLACE_PHONETIC";
+	public static final String LANDMARK_PHONETIC = "LANDMARK_PHONETIC";
+	public static final String PREFIX_PHONETIC = "PREFIX_PHONETIC";
+	public static final String HOUSENUM_PHONETIC = "HOUSENUM_PHONETIC";
+	public static final String TYPE_PHONETIC = "TYPE_PHONETIC";
+	public static final String SUBNUM_PHONETIC = "SUBNUM_PHONETIC";
+	public static final String SURFIX_PHONETIC = "SURFIX_PHONETIC";
+	public static final String ESTAB_PHONETIC = "ESTAB_PHONETIC";
+	public static final String BUILDING_PHONETIC = "BUILDING_PHONETIC";
+	public static final String FLOOR_PHONETIC = "FLOOR_PHONETIC";
+	public static final String UNIT_PHONETIC = "UNIT_PHONETIC";
+	public static final String ROOM_PHONETIC = "ROOM_PHONETIC";
+	public static final String ADDONS_PHONETIC = "ADDONS_PHONETIC";
 }

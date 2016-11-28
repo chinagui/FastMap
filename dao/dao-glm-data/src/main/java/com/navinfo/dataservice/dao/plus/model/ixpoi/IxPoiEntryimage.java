@@ -1,12 +1,6 @@
 package com.navinfo.dataservice.dao.plus.model.ixpoi;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
-
-import net.sf.json.JSONObject;
 
 /** 
 * @ClassName:  IxPoiEntryimage 
@@ -115,4 +109,16 @@ public class IxPoiEntryimage extends BasicRow {
 	public String tableName() {
 		return "IX_POI_ENTRYIMAGE";
 	}
+	
+	public static final String POI_PID = "POI_PID";
+	public static final String IMAGE_CODE = "IMAGE_CODE";
+	public static final String X_PIXEL_R4 = "X_PIXEL_R4";
+	public static final String Y_PIXEL_R4 = "Y_PIXEL_R4";
+	public static final String X_PIXEL_R5 = "X_PIXEL_R5";
+	public static final String Y_PIXEL_R5 = "Y_PIXEL_R5";
+	public static final String X_PIXEL_35 = "X_PIXEL_35";
+	public static final String Y_PIXEL_35 = "Y_PIXEL_35";
+	public static final String MEMO = "MEMO";
+	public static final String MAIN_POI_PID = "MAIN_POI_PID";
+
 }

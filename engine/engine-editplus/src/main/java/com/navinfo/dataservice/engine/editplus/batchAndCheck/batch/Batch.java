@@ -53,7 +53,7 @@ public class Batch extends AbstractOperation{
 		}
 		log.info("start load incre batch data");
 		//增量加载需要参考的子表数据
-		ObjChildrenIncreSelector.increSelect(result.getAllObjsMap(), selConfig);
+		ObjChildrenIncreSelector.increSelect(conn,result.getAllObjsMap(), selConfig);
 		log.info("end load incre batch data");
 		//构造批处理规则的参数command
 		BatchRuleCommand batchRuleCommand=new BatchRuleCommand();

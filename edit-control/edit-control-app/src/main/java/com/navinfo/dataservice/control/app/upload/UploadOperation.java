@@ -461,7 +461,7 @@ public class UploadOperation {
 							String rawFields = jo.getString("rawFields");
 							IxPoiSelector ixPoiSelector = new IxPoiSelector(conn);
 							JSONObject poiRowId = ixPoiSelector.getRowIdById(pid);
-							upatePoiStatusForAndroid(conn, poiRowId.getString("rowId"), 0, rawFields,2,pid);
+							upatePoiStatusForAndroid(conn, poiRowId.getString("rowId"), 0, rawFields,1,pid);
 
 							conn.commit();
 							count++;

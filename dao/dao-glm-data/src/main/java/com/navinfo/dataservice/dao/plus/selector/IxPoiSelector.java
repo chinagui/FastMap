@@ -4,9 +4,12 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -15,6 +18,8 @@ import org.apache.log4j.Logger;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiChildren;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiParent;
+import com.navinfo.dataservice.dao.plus.obj.BasicObj;
+import com.navinfo.dataservice.dao.plus.obj.ObjectType;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
 
@@ -140,6 +145,50 @@ public class IxPoiSelector {
 			Object[] params = {regionId};
 			msgs = queryRunner.query(conn, sql, new AdminHandler(),params);
 			return msgs;
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询失败，原因为:"+e.getMessage(),e);
+		}
+	}
+	
+	public static Map<Long,BasicObj> getIxPoiParentMapByChildrenPidList(Connection conn,Set<Long> pidList) throws ServiceException{
+		Map<Long,BasicObj> objMap = new HashMap<Long,BasicObj>();
+		try{
+			Map<Long,Long> childPidParentPid = new HashMap<Long,Long>();
+			String sql = "SELECT DISTINCT IPP.PARENT_POI_PID,IPC.CHILD_POI_PID"
+					+ " FROM IX_POI_PARENT IPP,IX_POI_CHILDREN IPC"
+					+ " WHERE IPC.GROUP_ID = IPP.GROUP_ID"
+					+ " AND IPC.CHILD_POI_PID IN (" + StringUtils.join(pidList.toArray(),",") + ")";
+			
+			ResultSetHandler<Map<Long,Long>> rsHandler = new ResultSetHandler<Map<Long,Long>>() {
+				public Map<Long,Long> handle(ResultSet rs) throws SQLException {
+					Map<Long,Long> result = new HashMap<Long,Long>();
+					while (rs.next()) {
+						long parentPid = rs.getLong("PARENT_POI_PID");
+						long childPid = rs.getLong("CHILD_POI_PID");
+						result.put(childPid, parentPid);
+					}
+					return result;
+				}
+			};
+			
+			log.info("getIxPoiParentMapByChildrenPidList查询主表："+sql);
+			childPidParentPid = new QueryRunner().query(conn,sql, rsHandler);
+
+			Set<String> tabNames = new HashSet<String>();
+			tabNames.add("IX_POI_PARENT");
+			tabNames.add("IX_POI_CHILDREN");
+			List<BasicObj> objList = ObjBatchSelector.selectByPids(conn, ObjectType.IX_POI, tabNames, childPidParentPid.values(), true, true);
+			for(BasicObj obj:objList){
+				long pid = obj.objPid();
+				for(Map.Entry<Long, Long> entry:childPidParentPid.entrySet()){
+					if(pid==entry.getValue()){
+						objMap.put(entry.getKey(), obj);
+					}
+				}
+			}
+			return objMap;
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

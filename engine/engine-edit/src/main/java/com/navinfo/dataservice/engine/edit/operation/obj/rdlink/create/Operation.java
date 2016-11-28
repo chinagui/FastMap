@@ -52,7 +52,20 @@ public class Operation implements IOperation {
 	@Override
 	public String run(Result result) throws Exception {
 		String msg = null;
+		// 创建link
+		this.createLinks(result);
+		// 关联要素属性维护
+		this.updataRelationObj(result);
+		return msg;
+	}
 
+	/***
+	 * 创建links
+	 * 
+	 * @param result
+	 * @throws Exception
+	 */
+	private void createLinks(Result result) throws Exception {
 		if (command.getGeometry().getCoordinates().length < 2) {
 			throw new Exception("线至少包含两个点");
 		}
@@ -81,11 +94,6 @@ public class Operation implements IOperation {
 		this.createRdLinks(map, result);
 		// 挂接的线被打断的操作
 		this.breakLine(result);
-		// 处理挂机交叉口内link的形态
-		OpRefRdCross opRefRdCross = new OpRefRdCross(conn, linkList);
-		opRefRdCross.run(result);
-
-		return msg;
 	}
 
 	public List<RdLink> createSideRoad(Result result) throws Exception {
@@ -168,9 +176,15 @@ public class Operation implements IOperation {
 		}
 	}
 
-	/*
+	/***
 	 * 创建RDLINK针对跨图幅有两种情况 1.跨图幅和图幅交集是LineString 2.跨图幅和图幅交集是MultineString
 	 * 跨图幅需要生成和图廓线的交点
+	 * 
+	 * @param g
+	 * @param maps
+	 * @param result
+	 * @param meshId
+	 * @throws Exception
 	 */
 
 	private void createRdLinkWithMesh(Geometry g,
@@ -190,8 +204,13 @@ public class Operation implements IOperation {
 		}
 	}
 
-	/*
+	/***
 	 * 创建RDLINK 针对跨图幅创建图廓点不能重复
+	 * 
+	 * @param g
+	 * @param maps
+	 * @param result
+	 * @throws Exception
 	 */
 	private void calRdLinkWithMesh(Geometry g, Map<Coordinate, Integer> maps,
 			Result result) throws Exception {
@@ -239,10 +258,13 @@ public class Operation implements IOperation {
 		result.insertObject(link, ObjStatus.INSERT, link.pid());
 	}
 
-	/*
+	/***
 	 * 创建多条被分割的线 1.按照线是否跨图幅逻辑走不同分支生成线
+	 * 
+	 * @param map
+	 * @param result
+	 * @throws Exception
 	 */
-
 	public void createRdLinks(Map<Geometry, JSONObject> map, Result result)
 			throws Exception {
 
@@ -293,6 +315,13 @@ public class Operation implements IOperation {
 
 	}
 
+	/***
+	 * 组装打断流程
+	 * 
+	 * @zhaokk
+	 * @param result
+	 * @throws Exception
+	 */
 	public void breakLine(Result result) throws Exception {
 		// 处理连续打断参数
 		JSONArray resultArr = BasicServiceUtils.getBreakArray(command
@@ -351,6 +380,15 @@ public class Operation implements IOperation {
 				}
 			}
 		}
+	}
+
+	private void updataRelationObj(Result result) throws Exception {
+		// 处理挂机交叉口内link的形态
+		OpRefRdCross opRefRdCross = new OpRefRdCross(conn, linkList);
+		opRefRdCross.run(result);
+		//创建link维护详细车道信息
+		OpRefRdLane opRefRdLane = new OpRefRdLane(conn);
+		opRefRdLane.run(result, linkList);
 	}
 
 }

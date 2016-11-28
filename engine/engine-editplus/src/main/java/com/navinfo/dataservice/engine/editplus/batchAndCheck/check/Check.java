@@ -64,7 +64,7 @@ public class Check extends CheckOperation{
 		}
 		log.info("start load incre check data");
 		//增量加载需要参考的子表数据
-		ObjChildrenIncreSelector.increSelect(result.getAllObjsMap(), selConfig);
+		ObjChildrenIncreSelector.increSelect(conn,result.getAllObjsMap(), selConfig);
 		log.info("end load incre check data");
 		//构造批处理规则的参数command
 		CheckRuleCommand checkRuleCommand=new CheckRuleCommand();

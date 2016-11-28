@@ -36,12 +36,12 @@ public class MultiSrcPoiConvertor {
 		//显示用的主名称
 		jo.put("display_text", "");
 		//采集用的主名称
-		IxPoiName poiName = poi.getNameByLct("CHI", 1, 1);
-		if(poiName==null)poiName=poi.getNameByLct("CHT", 1, 1);
+		IxPoiName poiName = poi.getNameByLct("CHI", 1, 2);
+		if(poiName==null)poiName=poi.getNameByLct("CHT", 1, 2);
 		if(poiName!=null){
 			jo.put("name", poiName.getName());
 		}else{
-			jo.put("name", JSONNull.getInstance());
+			jo.put("name", "");
 		}
 		//永久ID
 		jo.put("pid",ixPoi.getPid());

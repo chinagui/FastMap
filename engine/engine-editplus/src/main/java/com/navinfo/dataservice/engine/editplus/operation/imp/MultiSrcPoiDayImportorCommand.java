@@ -10,6 +10,7 @@ import com.navinfo.dataservice.dao.plus.operation.AbstractCommand;
  * @Description: MultiSrcPoiDayImportorCommand.java
  */
 public class MultiSrcPoiDayImportorCommand extends AbstractCommand {
+	
 	protected UploadPois pois;
 
 	public MultiSrcPoiDayImportorCommand(UploadPois pois){

@@ -25,6 +25,7 @@ public class OperationResult{
 	private List<BasicObj> allObjs=new ArrayList<BasicObj>();
 	
 	
+	//key:对象名
 	public Map<String,Map<Long,BasicObj>> getAllObjsMap(){
 		//todo
 		return null;

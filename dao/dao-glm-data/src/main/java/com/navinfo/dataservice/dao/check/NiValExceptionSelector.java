@@ -24,10 +24,7 @@ import com.navinfo.navicommons.database.QueryRunner;
 public class NiValExceptionSelector {
 
 	private Connection conn;
-
-	public NiValExceptionSelector() {
-	}
-
+	
 	public NiValExceptionSelector(Connection conn) {
 		this.conn = conn;
 	}
@@ -344,129 +341,115 @@ public class NiValExceptionSelector {
  * @author zl zhangli5174@navinfo.com
  * @date 2016年11月22日 下午8:55:38 
  */
-public Page listCheckResults(JSONObject params, JSONArray tips, JSONArray ruleCodes) {
+public Page listCheckResults(JSONObject params, JSONArray tips, JSONArray ruleCodes) throws SQLException{
+		final int pageSize = params.getInt("pageSize");
+		final int pageNum = params.getInt("pageNum");
+		int subtaskId = params.getInt("subtaskId");//获取subtaskid 
+		long pageStartNum = (pageNum - 1) * pageSize + 1;
+		long pageEndNum = pageNum * pageSize;
+		StringBuilder sql = new StringBuilder();
+		//获取ids
+		String ids = "";
+		String tmep = "";
+		for (int i=0;i<tips.size();i++) {
+			JSONObject tipsObj = tips.getJSONObject(i);
+			ids += tmep;
+			tmep = ",";
+			ids +=tipsObj.getString("id");
+		}
+		String rules = "";
+		String tmep2 = "";
+		for (int i=0;i<ruleCodes.size();i++) {
+			JSONObject ruleObj = ruleCodes.getJSONObject(i);
+			rules += tmep2;
+			tmep2 = ",";
+			rules +=ruleObj.getString("ruleCode");
+		}
+		
+	//	sql.append(" select * from ( ");
+		sql.append("with ");
+		//**********************
+		//获取子任务范围内的所有 rdName 的nameId 
+		sql.append("q1 as ( ");
+		sql.append("select rd.name_id from ( SELECT null tipid,r.* from rd_name r  where r.src_resume = '\"task\":"+subtaskId+"' ");
+		sql.append(" union all ");
+		sql.append(" SELECT tt.*  FROM ( select substr(replace(t.src_resume,'\"',''),instr(replace(t.src_resume,'\"',''), ':') + 1,length(replace(src_resume,'\"',''))) as tipid,t.*  from rd_name t  where t.src_resume like '%tips%' ) tt ");
+		sql.append(" where 1=1 and tt.tipid in (select column_value from table(clob_to_table('"+ids+"'))) ");
+		sql.append(" ) rd ),");
+		//**********************
+		//所有道路名的检查结果包含的 nameId 及其 val_exception_id
+		sql.append("q2 as ( ");
+		sql.append(" SELECT distinct  to_char(replace(REGEXP_SUBSTR(t.addition_info,'NAME_ID,[0-9]+', 1, LEVEL, 'i'),'NAME_ID,',''))  nameid ,t.val_exception_id eid ");
+		sql.append(" FROM ( ");
+		sql.append(" select a.* from ni_val_exception a  ");
+		sql.append(" where a.ruleid in (select column_value from table(clob_to_table('"+rules+"'))) ");
+		sql.append(" ) t ");
+		sql.append(" CONNECT BY LEVEL <= LENGTH(t.addition_info) - LENGTH(REGEXP_REPLACE(t.addition_info, 'NAME_ID,', 'NAME_ID'))  ");
+		sql.append(" ),");
+		//*********************
+		sql.append("q3 as ( ");
+		sql.append("select distinct b.eid from q2 b ,q1 c where b.nameid = c.name_id  ");
+		sql.append(" ), ");
+		//**********************
+		sql.append("q4 as ( ");
+		sql.append(" select NVL(d.md5_code,0) md5_code,NVL(d.ruleid,0) ruleid,NVL(d.situation,'') situation,\"LEVEL\" level_,"
+				+ "NVL(to_char(d.addition_info),'') targets,"
+				+ "NVL(d.information,'') information, "
+				+ "NVL(d.location.sdo_point.x,0) x, "
+				+ "NVL(d.location.sdo_point.y,0) y,"
+				+ "d.created,NVL(d.worker,'') worker  "
+				+ "from ni_val_exception d ,q3 e where d.val_exception_id = e.eid ");
+		sql.append(") ");
+		//************************
+		sql.append(" SELECT A.*,(SELECT COUNT(1) FROM q4) AS TOTAL_RECORD_NUM_  "
+				+ "FROM "
+				+ "(SELECT T.*, ROWNUM AS ROWNO FROM q4 T ");
+		sql.append(" WHERE ROWNUM <= "+pageEndNum+") A "
+				+ "WHERE A.ROWNO >= "+pageStartNum+" ");
+		sql.append(" order by created desc,md5_code desc ");
+		//System.out.println("listCheckResults sql:  "+sql.toString());
+		
+		QueryRunner run=new QueryRunner();
+		
+		//****************************************
+		ResultSetHandler<Page> rsHandler3=new ResultSetHandler<Page>() {
+			public Page handle(ResultSet rs) throws SQLException{
+				Page page = new Page();
+				int total=0;
+				JSONArray results = new JSONArray();
+				while(rs.next()){
+					if(total ==0){total=rs.getInt("TOTAL_RECORD_NUM_");}
+					
+					JSONObject json = new JSONObject();
+					
+					json.put("id",  rs.getString("md5_code"));
 	
-		Connection conn = null;
-			try {
-				conn = DBConnector.getInstance().getMetaConnection();
-				final int pageSize = params.getInt("pageSize");
-				final int pageNum = params.getInt("pageNum");
-				int subtaskId = params.getInt("subtaskId");//获取subtaskid 
-				long pageStartNum = (pageNum - 1) * pageSize + 1;
-				long pageEndNum = pageNum * pageSize;
-				StringBuilder sql = new StringBuilder();
-				//获取ids
-				String ids = "";
-				String tmep = "";
-				for (int i=0;i<tips.size();i++) {
-					JSONObject tipsObj = tips.getJSONObject(i);
-					ids += tmep;
-					tmep = ",";
-					ids +=tipsObj.getString("id");
+					json.put("ruleid", rs.getString("ruleid"));
+	
+					json.put("situation", rs.getString("situation"));
+	
+					json.put("rank", rs.getInt("level_"));
+	
+					json.put("targets", rs.getString("targets"));
+	
+					json.put("information", rs.getString("information"));
+	
+					json.put("geometry",
+							"(" + rs.getDouble("x") + "," + rs.getDouble("y") + ")");
+	
+					json.put("create_date", rs.getString("created"));
+	
+					json.put("worker", rs.getString("worker"));
+					results.add(json);
 				}
-				String rules = "";
-				String tmep2 = "";
-				for (int i=0;i<ruleCodes.size();i++) {
-					JSONObject ruleObj = ruleCodes.getJSONObject(i);
-					rules += tmep2;
-					tmep2 = ",";
-					rules +=ruleObj.getString("ruleCode");
-				}
-				
-			//	sql.append(" select * from ( ");
-				sql.append("with ");
-				//**********************
-				//获取子任务范围内的所有 rdName 的nameId 
-				sql.append("q1 as ( ");
-				sql.append("select rd.name_id from ( SELECT null tipid,r.* from rd_name r  where r.src_resume = '\"task\":"+subtaskId+"' ");
-				sql.append(" union all ");
-				sql.append(" SELECT tt.*  FROM ( select substr(replace(t.src_resume,'\"',''),instr(replace(t.src_resume,'\"',''), ':') + 1,length(replace(src_resume,'\"',''))) as tipid,t.*  from rd_name t  where t.src_resume like '%tips%' ) tt ");
-				sql.append(" where 1=1 and tt.tipid in (select column_value from table(clob_to_table('"+ids+"'))) ");
-				sql.append(" ) rd ),");
-				//**********************
-				//所有道路名的检查结果包含的 nameId 及其 val_exception_id
-				sql.append("q2 as ( ");
-				sql.append(" SELECT distinct  to_char(replace(REGEXP_SUBSTR(t.addition_info,'NAME_ID,[0-9]+', 1, LEVEL, 'i'),'NAME_ID,',''))  nameid ,t.val_exception_id eid ");
-				sql.append(" FROM ( ");
-				sql.append(" select a.* from ni_val_exception a  ");
-				sql.append(" where a.ruleid in (select column_value from table(clob_to_table('"+rules+"'))) ");
-				sql.append(" ) t ");
-				sql.append(" CONNECT BY LEVEL <= LENGTH(t.addition_info) - LENGTH(REGEXP_REPLACE(t.addition_info, 'NAME_ID,', 'NAME_ID'))  ");
-				sql.append(" ),");
-				//*********************
-				sql.append("q3 as ( ");
-				sql.append("select distinct b.eid from q2 b ,q1 c where b.nameid = c.name_id  ");
-				sql.append(" ), ");
-				//**********************
-				sql.append("q4 as ( ");
-				sql.append(" select NVL(d.md5_code,0) md5_code,NVL(d.ruleid,0) ruleid,NVL(d.situation,'') situation,\"LEVEL\" level_,"
-						+ "NVL(to_char(d.addition_info),'') targets,"
-						+ "NVL(d.information,'') information, "
-						+ "NVL(d.location.sdo_point.x,0) x, "
-						+ "NVL(d.location.sdo_point.y,0) y,"
-						+ "d.created,NVL(d.worker,'') worker  "
-						+ "from ni_val_exception d ,q3 e where d.val_exception_id = e.eid ");
-				sql.append(") ");
-				//************************
-				sql.append(" SELECT A.*,(SELECT COUNT(1) FROM q4) AS TOTAL_RECORD_NUM_  "
-						+ "FROM "
-						+ "(SELECT T.*, ROWNUM AS ROWNO FROM q4 T ");
-				sql.append(" WHERE ROWNUM <= "+pageEndNum+") A "
-						+ "WHERE A.ROWNO >= "+pageStartNum+" ");
-				sql.append(" order by created desc,md5_code desc ");
-				//System.out.println("listCheckResults sql:  "+sql.toString());
-				
-				QueryRunner run=new QueryRunner();
-				
-				//****************************************
-				ResultSetHandler<Page> rsHandler3=new ResultSetHandler<Page>() {
-					public Page handle(ResultSet rs) throws SQLException{
-						Page page = new Page();
-						int total=0;
-						JSONArray results = new JSONArray();
-						while(rs.next()){
-							if(total ==0){total=rs.getInt("TOTAL_RECORD_NUM_");}
-							
-							JSONObject json = new JSONObject();
-							
-							json.put("id",  rs.getString("md5_code"));
-
-							json.put("ruleid", rs.getString("ruleid"));
-
-							json.put("situation", rs.getString("situation"));
-
-							json.put("rank", rs.getInt("level_"));
-
-							json.put("targets", rs.getString("targets"));
-
-							json.put("information", rs.getString("information"));
-
-							json.put("geometry",
-									"(" + rs.getDouble("x") + "," + rs.getDouble("y") + ")");
-
-							json.put("create_date", rs.getString("created"));
-
-							json.put("worker", rs.getString("worker"));
-							results.add(json);
-						}
-						page.setTotalCount(total);
-						page.setResult(results);
-						return page;
-					}
-				};
-				
-				Page p = run.query(conn, sql.toString(),rsHandler3);
- 				return p;
-			} catch (SQLException e) {
-				e.printStackTrace();
-				return null;
-			}finally {
-				try {
-					conn.close();
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
+				page.setTotalCount(total);
+				page.setResult(results);
+				return page;
 			}
+		};
+		
+		Page p = run.query(conn, sql.toString(),rsHandler3);
+			return p;
 	}
 	//******************************
 	

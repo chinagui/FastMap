@@ -75,22 +75,22 @@ public class IxPoiDeepStatusSelector extends AbstractSelector{
 	
 
 	/**
-	 * 根据subtask获取 可申请的数据rowIds
+	 * 根据subtask获取 可申请的数据pids
 	 * @param subtask
 	 * @param type
 	 * @return
 	 * @throws Exception
 	 */
-	public List<String> getRowIds(Subtask subtask, int type) throws Exception {
-		List<String> rowIds = new ArrayList<String>();
+	public List<Integer> getPids(Subtask subtask, int type) throws Exception {
+		List<Integer> pids = new ArrayList<Integer>();
 		StringBuilder sb = new StringBuilder();
-		sb.append("SELECT s.row_id ");
+		sb.append("SELECT s.pid ");
 		sb.append(" FROM IX_POI p,POI_DEEP_STATUS s ");
 		sb.append(" WHERE sdo_within_distance(p.geometry, sdo_geometry(    :1  , 8307), 'mask=anyinteract') = 'TRUE'");
 		sb.append(" AND s.TYPE=:2");
 		sb.append(" AND s.handler is null");
 		sb.append(" AND s.STATUS = 1");
-		sb.append(" AND p.row_id = s.row_id");
+		sb.append(" AND p.pid = s.pid");
 		
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
@@ -101,16 +101,16 @@ public class IxPoiDeepStatusSelector extends AbstractSelector{
 			
 			resultSet = pstmt.executeQuery();
 			int count = 0;
-			//获取100条rowId
+			//获取100条pid
 			while (resultSet.next()) {
-				rowIds.add(resultSet.getString("row_id"));
+				pids.add(resultSet.getInt("pid"));
 				count++;
 				if (count == 100){
 					break;
 				}
 			}
 			
-			return rowIds;
+			return pids;
 		} catch (Exception e) {
 			throw e;
 		} finally {
@@ -192,7 +192,7 @@ public class IxPoiDeepStatusSelector extends AbstractSelector{
 		bufferCondition.append("select COUNT(1) OVER(PARTITION BY 1) total, ipn.poi_pid pid, ipn.name ");
 		bufferCondition.append(" from ix_poi p,poi_deep_status s,ix_poi_name ipn");
 		bufferCondition.append(" where ipn.name_class = 1 and ipn.name_type = 2 and (ipn.lang_code = 'CHI' or ipn.lang_code = 'CHT')");
-		bufferCondition.append(" and p.row_id = s.row_id and p.pid = ipn.poi_pid");
+		bufferCondition.append(" and p.pid = s.pid and p.pid = ipn.poi_pid");
 		bufferCondition.append(" and sdo_within_distance(p.geometry, sdo_geometry('" + subtask.getGeometry() + "', 8307), 'mask=anyinteract') = 'TRUE'");
 		bufferCondition.append(" and s.type = " + type + " and s.status = " + status + " and s.handler = " + userId );
 		

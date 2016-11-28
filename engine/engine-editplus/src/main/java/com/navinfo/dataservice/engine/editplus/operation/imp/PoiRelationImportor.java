@@ -27,7 +27,12 @@ import com.navinfo.dataservice.dao.plus.selector.ObjChildrenIncreSelector;
  * @date 2016年11月25日
  * @Description: PoiRelationImportor.java
  */
-public class PoiRelationImportor {
+public class PoiRelationImportor extends AbstractOperation{
+	
+	public PoiRelationImportor(Connection conn, String name, OperationResult preResult) {
+		super(conn, name, preResult);
+	}
+
 	public static void doImport(Connection conn,OperationResult or,List<PoiRelation> relations) 
 			throws Exception{
 		Set<PoiRelation> fatherAndSonSet = new HashSet<PoiRelation>();
@@ -46,7 +51,15 @@ public class PoiRelationImportor {
 						if(or.getObjsMapByType(ObjectType.IX_POI).get(fatherPid).getRowsByName("IX_POI_PARENT")==null){
 							fatherIncreSelMap.put(fatherPid, or.getObjsMapByType(ObjectType.IX_POI).get(fatherPid));
 						}
+
+	@Override
+	public void operate() throws Exception {
+		
+<<<<<<< .mine
 					}
+=======
+	}
+>>>>>>> .theirs
 					fatherPidSet.add(fatherPid);
 				}else{
 					fatherFidSet.add(poiRelation.getFatherFid());

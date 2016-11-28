@@ -13,6 +13,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.selector.MultiSrcPoiSelectorConfig;
@@ -70,6 +71,8 @@ public class SelectorTest {
 			tabNames.add("IX_POI_GASSTATION");
 			
 			BasicObj obj = ObjSelector.selectByPid(conn, objType, tabNames, pid, isLock);
+			List<BasicRow> list1 = obj.getRowsByName("IX_POI_NAME");
+			List<BasicRow> list2 = obj.getRowsByName("IX_POI_ICON");
 			System.out.println("Over.");
 			MultiSrcPoiConvertor ms = new MultiSrcPoiConvertor();
 			JSONObject json = ms.toJson((IxPoiObj) obj);

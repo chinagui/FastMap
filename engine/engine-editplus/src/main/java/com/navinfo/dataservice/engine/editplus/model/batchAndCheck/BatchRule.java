@@ -1,11 +1,16 @@
 package com.navinfo.dataservice.engine.editplus.model.batchAndCheck;
 
+import java.util.Map;
+import java.util.Set;
+
 public class BatchRule { 
 	
 	private String ruleId;
 	private String accessor;
 	private String accessorType;
 	private Class accessorClass;
+	private Set<String> objNameSet;
+	private Map<String, Set<String>> referSubtableMap;
 
 	public BatchRule() {
 		// TODO Auto-generated constructor stub
@@ -42,6 +47,22 @@ public class BatchRule {
 
 	public void setAccessorClass(Class accessorClass) {
 		this.accessorClass = accessorClass;
+	}
+
+	public Set<String> getObjNameSet() {
+		return objNameSet;
+	}
+
+	public void setObjNameSet(Set<String> objNameSet) {
+		this.objNameSet = objNameSet;
+	}
+
+	public Map<String, Set<String>> getReferSubtableMap() {
+		return referSubtableMap;
+	}
+
+	public void setReferSubtableMap(Map<String, Set<String>> referSubtableMap) {
+		this.referSubtableMap = referSubtableMap;
 	}
 
 }

@@ -12,8 +12,6 @@ import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 public class GLM001TEST extends BasicBatchRule {
 
 	public GLM001TEST() {
-		objNameList.add("IX_POI");
-		objNameList.add("IX_POI_NAME");
 	}
 
 	@Override

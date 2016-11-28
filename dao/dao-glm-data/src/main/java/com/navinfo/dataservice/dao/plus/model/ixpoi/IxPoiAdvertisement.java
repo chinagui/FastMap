@@ -1,12 +1,6 @@
 package com.navinfo.dataservice.dao.plus.model.ixpoi;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
-
-import net.sf.json.JSONObject;
 
 /** 
 * @ClassName:  IxPoiAdvertisement 
@@ -88,4 +82,12 @@ public class IxPoiAdvertisement extends BasicRow {
 	public String tableName() {
 		return "IX_POI_ADVERTISEMENT";
 	}
+	
+	public static final String ADVERTISE_ID = "ADVERTISE_ID";
+	public static final String POI_PID = "POI_PID";
+	public static final String LABEL_TEXT = "LABEL_TEXT";
+	public static final String TYPE = "TYPE";
+	public static final String PRIORITY = "PRIORITY";
+	public static final String START_TIME = "START_TIME";
+	public static final String END_TIME = "END_TIME";
 }

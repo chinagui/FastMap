@@ -1,12 +1,6 @@
 package com.navinfo.dataservice.dao.plus.model.ixpoi;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
-
-import net.sf.json.JSONObject;
 
 /** 
 * @ClassName:  IxPoiHotel 
@@ -214,4 +208,27 @@ public class IxPoiHotel extends BasicRow {
 	public String tableName() {
 		return "IX_POI_HOTEL";
 	}
+	
+	public static final String HOTEL_ID = "HOTEL_ID";
+	public static final String POI_PID = "POI_PID";
+	public static final String CREDIT_CARD = "CREDIT_CARD";
+	public static final String RATING = "RATING";
+	public static final String CHECKIN_TIME = "CHECKIN_TIME";
+	public static final String CHECKOUT_TIME = "CHECKOUT_TIME";
+	public static final String ROOM_COUNT = "ROOM_COUNT";
+	public static final String ROOM_TYPE = "ROOM_TYPE";
+	public static final String ROOM_PRICE = "ROOM_PRICE";
+	public static final String BREAKFAST = "BREAKFAST";
+	public static final String SERVICE = "SERVICE";
+	public static final String PARKING = "PARKING";
+	public static final String LONG_DESCRIPTION = "LONG_DESCRIPTION";
+	public static final String LONG_DESCRIP_ENG = "LONG_DESCRIP_ENG";
+	public static final String OPEN_HOUR = "OPEN_HOUR";
+	public static final String OPEN_HOUR_ENG = "OPEN_HOUR_ENG";
+	public static final String TELEPHONE = "TELEPHONE";
+	public static final String ADDRESS = "ADDRESS";
+	public static final String CITY = "CITY";
+	public static final String PHOTO_NAME = "PHOTO_NAME";
+	public static final String TRAVELGUIDE_FLAG = "TRAVELGUIDE_FLAG";
+
 }

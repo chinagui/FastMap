@@ -8,27 +8,28 @@ import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
+import com.navinfo.dataservice.dao.plus.obj.ObjectType;
 
 public class GLM001TEST extends BasicCheckRule {
 
 	public GLM001TEST() {
-		objNameList.add("IX_POI");
-		objNameList.add("IX_POI_NAME");
 	}
 
 	@Override
-	public void runCheck(String objName, BasicObj obj) throws Exception{
-		if(objName.equals("IX_POI")){
-			IxPoi poiObj=(IxPoi) obj.getMainrow();
-			Map<String, Object> oldValueMap=poiObj.getOldValues();
-			if(!oldValueMap.containsKey("KIND_CODE")){return;}
-			List<BasicRow> subRows=obj.getRowsByName("IX_POI_NAME");
+	public void runCheck(BasicObj obj) throws Exception{
+		if(obj.objType().equals(ObjectType.IX_POI)){
+			IxPoiObj poiObj=(IxPoiObj) obj;
+			IxPoi poi=(IxPoi) poiObj.getMainrow();
+			if(!poi.hisOldValueContains(IxPoi.KIND_CODE)){return;}
+			String oldKindCode=(String) poi.getHisOldValue(IxPoi.KIND_CODE);
+			if(oldKindCode.isEmpty()){return;}
+			List<IxPoiName> subRows=poiObj.getIxPoiNames();
 			for(BasicRow br:subRows){
 				if(br.getObjType().equals("UPDATE")){
-					this.setCheckResult(poiObj.getGeometry(), "[IX_POI,"+poiObj.getPid()+"]", poiObj.getMeshId());
+					this.setCheckResult(poi.getGeometry(), "[IX_POI,"+poi.getPid()+"]", poi.getMeshId());
 				}
 			}
-		}else if(objName.equals("IX_POI_NAME")){}
+		}else if(obj.objType().equals(ObjectType.AD_LINK)){}
 	}
 
 }

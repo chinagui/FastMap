@@ -1,12 +1,6 @@
 package com.navinfo.dataservice.dao.plus.model.ixpoi;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
-
-import net.sf.json.JSONObject;
 
 /** 
 * @ClassName:  IxPoiBusinesstime 
@@ -151,4 +145,20 @@ public class IxPoiBusinesstime extends BasicRow {
 	public String tableName() {
 		return "IX_POI_BUSINESSTIME";
 	}
+	
+	public static final String POI_PID = "POI_PID";
+	public static final String MON_SRT = "MON_SRT";
+	public static final String MON_END = "MON_END";
+	public static final String WEEK_IN_YEAR_SRT = "WEEK_IN_YEAR_SRT";
+	public static final String WEEK_IN_YEAR_END = "WEEK_IN_YEAR_END";
+	public static final String WEEK_IN_MONTH_SRT = "WEEK_IN_MONTH_SRT";
+	public static final String WEEK_IN_MONTH_END = "WEEK_IN_MONTH_END";
+	public static final String VALID_WEEK = "VALID_WEEK";
+	public static final String DAY_SRT = "DAY_SRT";
+	public static final String DAY_END = "DAY_END";
+	public static final String TIME_SRT = "TIME_SRT";
+	public static final String TIME_DUR = "TIME_DUR";
+	public static final String RESERVED = "RESERVED";
+	public static final String MEMO = "MEMO";
+
 }

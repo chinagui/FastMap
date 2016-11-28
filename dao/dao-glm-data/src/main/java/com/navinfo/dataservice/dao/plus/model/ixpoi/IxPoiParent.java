@@ -1,12 +1,6 @@
 package com.navinfo.dataservice.dao.plus.model.ixpoi;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
-
-import net.sf.json.JSONObject;
 
 /** 
 * @ClassName:  IxPoiParent 
@@ -67,4 +61,10 @@ public class IxPoiParent extends BasicRow {
 	public String tableName() {
 		return "IX_POI_PARENT";
 	}
+	
+	public static final String GROUP_ID = "GROUP_ID";
+	public static final String PARENT_POI_PID = "PARENT_POI_PID";
+	public static final String TENANT_FLAG = "TENANT_FLAG";
+	public static final String MEMO = "MEMO";
+
 }

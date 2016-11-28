@@ -84,10 +84,10 @@ public class Command extends AbstractCommand {
 		if (this.content.containsKey("linkPid")) {
 			this.setOutLinkPid(this.content.getInt("linkPid"));
 		}
-		if (this.content.containsKey("linkPids")) {
-            this.setLength(content.getDouble("length"));
+		if (json.containsKey("linkPids")) {
+            this.setLength(json.getDouble("length"));
 			seriesLinkPids = new ArrayList<Integer>();
-			JSONArray array = this.content.getJSONArray("linkPids");
+			JSONArray array = json.getJSONArray("linkPids");
 			for (int i = 0; i < array.size(); i++) {
 				int pid = array.getInt(i);
 				if (!this.getSeriesLinkPids().contains(pid)) {

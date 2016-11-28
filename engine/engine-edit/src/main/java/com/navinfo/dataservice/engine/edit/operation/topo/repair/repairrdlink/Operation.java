@@ -441,7 +441,7 @@ public class Operation implements IOperation {
 		List<RdLink> sortLinks = calLinkOperateUtils.sortLink(newLinks);
 
 		if (newLinks.size() == 1) {
-			if (!this.command.getOperationType().equals("innerRun")) {
+			if (!this.command.getOperationType().equals("sameLinkRepair")) {
 				// 维护同一线
 				com.navinfo.dataservice.engine.edit.operation.obj.rdsamelink.update.Operation samelinkOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdsamelink.update.Operation(
 						this.conn);

@@ -8,13 +8,13 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
+import com.navinfo.dataservice.dao.plus.obj.BasicObj;
+import com.navinfo.dataservice.dao.plus.operation.OperationResult;
+import com.navinfo.dataservice.dao.plus.selector.ObjSelector;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.Batch;
-import com.navinfo.dataservice.engine.editplus.model.BasicRow;
 import com.navinfo.dataservice.engine.editplus.model.batchAndCheck.BatchCommand;
-import com.navinfo.dataservice.engine.editplus.model.ixpoi.IxPoi;
-import com.navinfo.dataservice.engine.editplus.model.obj.BasicObj;
-import com.navinfo.dataservice.engine.editplus.model.selector.ObjSelector;
-import com.navinfo.dataservice.engine.editplus.operation.OperationResult;
 
 public class BatchTest {
 
@@ -36,7 +36,7 @@ public class BatchTest {
 		Connection conn = DBConnector.getInstance().getConnectionById(17);		
 		BatchCommand batchCommand=new BatchCommand();
 		OperationResult operationResult=new OperationResult();
-		BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", null, 308, false, false);
+		BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", null, 308, false);
 //		operationResult.putObj(obj);
 		IxPoi row=(IxPoi) obj.getMainrow();
 		row.setKindCode("newkind");

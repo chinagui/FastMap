@@ -13,6 +13,7 @@ import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneFace;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneLink;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
+import com.vividsolutions.jts.geom.Geometry;
 
 /**
  * @author zhaokk 修行ZONE线参数基础类
@@ -23,9 +24,28 @@ public class Command extends AbstractCommand {
 
 	private int linkPid;
 
-	private JSONObject linkGeom;
+	private Geometry linkGeom;
+	private JSONArray catchInfos;
 
-	private JSONArray interLines;
+	public Geometry getLinkGeom() {
+		return linkGeom;
+	}
+
+	public void setLinkGeom(Geometry linkGeom) {
+		this.linkGeom = linkGeom;
+	}
+
+	public JSONArray getCatchInfos() {
+		return catchInfos;
+	}
+
+	public void setCatchInfos(JSONArray catchInfos) {
+		this.catchInfos = catchInfos;
+	}
+
+	public void setLinkPid(int linkPid) {
+		this.linkPid = linkPid;
+	}
 
 	private ZoneLink updateLink;
 
@@ -55,24 +75,10 @@ public class Command extends AbstractCommand {
 		this.faces = faces;
 	}
 
-	private JSONArray interNodes;
-
 	private List<ZoneFace> faces;
 
 	public int getLinkPid() {
 		return linkPid;
-	}
-
-	public JSONObject getLinkGeom() {
-		return linkGeom;
-	}
-
-	public JSONArray getInterLines() {
-		return interLines;
-	}
-
-	public JSONArray getInterNodes() {
-		return interNodes;
 	}
 
 	@Override
@@ -105,13 +111,11 @@ public class Command extends AbstractCommand {
 
 		JSONObject geometry = data.getJSONObject("geometry");
 
-		this.linkGeom = GeoTranslator.jts2Geojson(GeoTranslator.geojson2Jts(
-				geometry, 1, 5));
-		// 修行后挂接对应ZONE_LINK信息
-		this.interLines = data.getJSONArray("interLinks");
-		// 修行后挂接对应的ZONE_NODE信息
-		this.interNodes = data.getJSONArray("interNodes");
-
+		this.linkGeom = GeoTranslator.geojson2Jts(geometry, 1, 5);
+		// 修行挂接信息
+		if (data.containsKey("catchInfos")) {
+			this.catchInfos = data.getJSONArray("catchInfos");
+		}
 	}
 
 }

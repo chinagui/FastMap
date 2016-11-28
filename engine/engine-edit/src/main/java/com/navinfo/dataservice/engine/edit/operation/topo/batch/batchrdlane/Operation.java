@@ -687,9 +687,16 @@ public class Operation implements IOperation {
 		if (links.size() == 1) {
 			return;
 		}
+		boolean flag =false;
+		RdLinkSelector linkSelector = new RdLinkSelector(conn);
+		List<RdLink> sLinks = linkSelector.loadByNodePid(link.getsNodePid(), false);
+		List<RdLink> eLinks = linkSelector.loadByNodePid(link.geteNodePid(), false);
+		if(sLinks.size() < 3 && eLinks.size() <3){
+			flag = true;
+		}
 		// 加载原有Link上的车道信息
-		List<RdLane> lanes = new RdLaneSelector(conn).loadByLink(link.getPid(), 0,
-				true);
+		List<RdLane> lanes = new RdLaneSelector(conn).loadByLink(link.getPid(),
+				0, true);
 		// 删除原有车道信息
 		for (RdLane lane : lanes) {
 			result.insertObject(lane, ObjStatus.DELETE, lane.getPid());
@@ -699,6 +706,20 @@ public class Operation implements IOperation {
 				// 设置车道的link信息
 				RdLane rdLane = new RdLane();
 				rdLane.copy(lane);
+				if (lane.getArrowDir() != "o" && lane.getArrowDir() != "9") {
+					if (rdLink.getsNodePid() == link.getsNodePid()
+							|| rdLink.getsNodePid() == link.geteNodePid()
+							|| rdLink.geteNodePid() == link.getsNodePid()
+							|| rdLink.geteNodePid() == link.geteNodePid()) {
+						if(flag){
+							rdLane.setArrowDir("9");
+						}
+						
+
+					} else {
+						rdLane.setArrowDir("9");
+					}
+				}
 				rdLane.setLinkPid(rdLink.getPid());
 				// 申请车道pid
 				int lanePid = PidUtil.getInstance().applyRdLanePid();

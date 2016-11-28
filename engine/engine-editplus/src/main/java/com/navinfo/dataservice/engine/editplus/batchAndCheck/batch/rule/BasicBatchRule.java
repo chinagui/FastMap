@@ -5,8 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.engine.editplus.model.batchAndCheck.BatchCommand;
-import com.navinfo.dataservice.engine.editplus.model.obj.BasicObj;
 
 public abstract class BasicBatchRule {
 	private BatchCommand batchCommand;

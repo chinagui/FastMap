@@ -25,7 +25,7 @@ public class Process extends AbstractProcess<Command> {
 		if (this.getCommand().getUpdateTopoIds().size() > 0) {
 			this.getCommand().setUpdateTopInfos(
 					new RdLaneTopoDetailSelector(this.getConn()).loadByIds(this
-							.getCommand().getDelTopoIds(), true, true));
+							.getCommand().getUpdateTopoIds(), true, true));
 
 		}
 		return true;

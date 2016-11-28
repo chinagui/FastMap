@@ -74,18 +74,18 @@ public class Operation implements IOperation {
 
 	/***
 	 * 
-	 * @param obj 修改变化字段json
-	 * @param row 修改的对象
+	 * @param obj
+	 *            修改变化字段json
+	 * @param row
+	 *            修改的对象
 	 * @param result
 	 * @throws Exception
 	 */
 	private void updateLaneTopos(JSONObject obj, IRow row, Result result)
 			throws Exception {
 		RdLaneTopoDetail detail = (RdLaneTopoDetail) row;
-		JSONObject content = obj.getJSONObject("data");
-		if (content.containsKey("objStatus")) {
-			boolean isChanged = detail.fillChangeFields(content);
-
+		if (obj.containsKey("objStatus")) {
+			boolean isChanged = detail.fillChangeFields(obj);
 			if (isChanged) {
 				result.insertObject(row, ObjStatus.UPDATE, detail.getPid());
 			}

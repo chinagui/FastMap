@@ -39,11 +39,6 @@
 		</dependency>
 		<dependency>
 			<groupId>com.navinfo.dataservice</groupId>
-			<artifactId>engine-meta</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>com.navinfo.dataservice</groupId>
 			<artifactId>engine-man</artifactId>
 		</dependency>
 

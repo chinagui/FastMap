@@ -2,6 +2,7 @@ package com.navinfo.dataservice.engine.edit.operation.topo.repair.repairlclink;
 
 import java.util.List;
 
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.model.lc.LcLink;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
 import com.navinfo.dataservice.dao.glm.selector.lc.LcFaceSelector;
@@ -22,15 +23,17 @@ public class Process extends AbstractProcess<Command> {
 	@Override
 	public boolean prepareData() throws Exception {
 		this.getCommand().setUpdateLink(
-				(LcLink) new LcLinkSelector(this.getConn()).loadById(this.getCommand().getLinkPid(), true));
-		this.getCommand()
-				.setFaces(new LcFaceSelector(this.getConn()).loadLcFaceByLinkId(this.getCommand().getLinkPid(), true));
-		
+				(LcLink) new LcLinkSelector(this.getConn()).loadById(this
+						.getCommand().getLinkPid(), true));
+		this.getCommand().setFaces(
+				new LcFaceSelector(this.getConn()).loadLcFaceByLinkId(this
+						.getCommand().getLinkPid(), true));
 
 		// 查询需要修行的线上是否存在立交
 		RdGscSelector gscSelector = new RdGscSelector(this.getConn());
 
-		List<RdGsc> gscList = gscSelector.loadRdGscLinkByLinkPid(this.getCommand().getLinkPid(), "LC_LINK", true);
+		List<RdGsc> gscList = gscSelector.loadRdGscLinkByLinkPid(this
+				.getCommand().getLinkPid(), "LC_LINK", true);
 
 		this.getCommand().setGscList(gscList);
 
@@ -39,14 +42,18 @@ public class Process extends AbstractProcess<Command> {
 
 	@Override
 	public String preCheck() throws Exception {
-		check.checkShapePointDistance(this.getCommand().getLinkGeom());
+		check.checkShapePointDistance(GeoTranslator.jts2Geojson(this
+				.getCommand().getLinkGeom()));
 		return super.preCheck();
 	}
 
 	@Override
 	public String exeOperation() throws Exception {
-		RdGscOperateUtils.checkIsMoveGscPoint(this.getCommand().getLinkGeom(), this.getConn(), this.getCommand().getLinkPid(),"LC_LINK");
-		return new Operation(this.getConn(), this.getCommand()).run(this.getResult());
+		RdGscOperateUtils.checkIsMoveGscPoint(
+				GeoTranslator.jts2Geojson(this.getCommand().getLinkGeom()),
+				this.getConn(), this.getCommand().getLinkPid(), "LC_LINK");
+		return new Operation(this.getConn(), this.getCommand()).run(this
+				.getResult());
 	}
 
 }

@@ -16,9 +16,9 @@ import com.navinfo.dataservice.dao.plus.obj.ObjFactory;
 import com.navinfo.dataservice.dao.plus.obj.ObjectType;
 import com.navinfo.dataservice.dao.plus.operation.AbstractOperation;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
-import com.navinfo.dataservice.dao.plus.selector.IxPoiSelector;
 import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
 import com.navinfo.dataservice.dao.plus.selector.ObjChildrenIncreSelector;
+import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
 
 /** 
  * @ClassName: PoiRelationImportor
@@ -88,8 +88,8 @@ public class PoiRelationImportor extends AbstractOperation{
 		tabNames.add("IX_POI_CHILDREN");
 				
 		if(!fatherPidSet.isEmpty()){
-			List<BasicObj> objs = ObjBatchSelector.selectByPids(conn, ObjectType.IX_POI, tabNames, fatherPidSet, true, true);
-			for(BasicObj obj:objs){
+			Map<Long,BasicObj> objs = ObjBatchSelector.selectByPids(conn, ObjectType.IX_POI, tabNames, fatherPidSet, true, true);
+			for(BasicObj obj:objs.values()){
 				result.putObj(obj);
 			}
 		}

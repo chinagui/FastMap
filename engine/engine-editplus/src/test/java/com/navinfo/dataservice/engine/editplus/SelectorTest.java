@@ -22,10 +22,10 @@ import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiContact;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiParent;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
-import com.navinfo.dataservice.dao.plus.selector.IxPoiSelector;
 import com.navinfo.dataservice.dao.plus.selector.MultiSrcPoiSelectorConfig;
 import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
 import com.navinfo.dataservice.dao.plus.selector.ObjSelector;
+import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
 import com.navinfo.dataservice.engine.editplus.convert.MultiSrcPoiConvertor;
 import com.navinfo.navicommons.database.sql.RunnableSQL;
 import com.navinfo.navicommons.exception.ServiceException;
@@ -249,7 +249,7 @@ public class SelectorTest {
 			tabNames.add("IX_POI_CONTACT");
 			tabNames.add("IX_POI_FLAG");
 			
-			List<BasicObj> objList = ObjBatchSelector.selectByPids(conn, objType, tabNames, pids, isLock,isNowait);
+			Map<Long,BasicObj> objs = ObjBatchSelector.selectByPids(conn, objType, tabNames, pids, isLock,isNowait);
 			System.out.println("Over.");
 		}catch(Exception e){
 			System.out.println("Oops, something wrong...");
@@ -271,7 +271,7 @@ public class SelectorTest {
 			boolean isLock = false;
 			boolean isNowait = false;
 
-			List<BasicObj> objList = ObjBatchSelector.selectByPids(conn, objType, null, pids, isLock,isNowait);
+			Map<Long,BasicObj> objs = ObjBatchSelector.selectByPids(conn, objType, null, pids, isLock,isNowait);
 			System.out.println("Over.");
 		}catch(Exception e){
 			System.out.println("Oops, something wrong...");

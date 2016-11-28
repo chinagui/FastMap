@@ -7,7 +7,7 @@ import java.util.List;
 
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import com.navinfo.dataservice.api.edit.iface.SyncApi;
+import com.navinfo.dataservice.api.edit.iface.FmMultiSrcSyncApi;
 import com.navinfo.dataservice.api.edit.model.FmMultiSrcSync;
 import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
@@ -22,7 +22,7 @@ public class Fm2MultiSrcSyncScript {
 		JSONObject response = new JSONObject();
 		try {
 			JSONObject job = new JSONObject();
-			SyncApi syncApi = (SyncApi) ApplicationContextUtil.getBean("syncApi");
+			FmMultiSrcSyncApi syncApi = (FmMultiSrcSyncApi) ApplicationContextUtil.getBean("syncApi");
 			//查询最近的成功同步时间
 			FmMultiSrcSync fmMultiSrcSync = syncApi.queryLastSuccessSync();
 			String lastSyncTime = null;

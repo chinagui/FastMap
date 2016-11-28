@@ -14,15 +14,26 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.dbutils.DbUtils;
 
+import com.navinfo.dataservice.api.edit.iface.FmMultiSrcSyncApi;
+import com.navinfo.dataservice.api.edit.model.FmMultiSrcSync;
+import com.navinfo.dataservice.api.edit.model.MultiSrcFmSync;
 import com.navinfo.dataservice.api.edit.upload.UploadPois;
 import com.navinfo.dataservice.api.job.model.JobInfo;
+import com.navinfo.dataservice.api.man.iface.ManApi;
+import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.column.job.Fm2MultiSrcSyncJob.Fm2MultiSrcExportThread;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.thread.VMThreadPoolExecutor;
 import com.navinfo.dataservice.commons.util.DateUtils;
+import com.navinfo.dataservice.commons.util.ServiceInvokeUtil;
 import com.navinfo.dataservice.commons.util.ZipUtils;
+import com.navinfo.dataservice.dao.plus.operation.OperationResult;
+import com.navinfo.dataservice.dao.plus.operation.OperationSegment;
+import com.navinfo.dataservice.engine.editplus.operation.imp.MultiSrcPoiDayImportor;
+import com.navinfo.dataservice.engine.editplus.operation.imp.MultiSrcPoiDayImportorCommand;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
 import com.navinfo.navicommons.download.DownloadUtils;
@@ -72,8 +83,11 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 
 	@Override
 	public void execute() throws JobException {
-		PrintWriter pw = null;
+		
+		FmMultiSrcSyncApi syncApi;
 		try{
+			syncApi = (FmMultiSrcSyncApi)ApplicationContextUtil
+				.getBean("syncApi");
 			MultiSrc2FmDaySyncJobRequest req = (MultiSrc2FmDaySyncJobRequest)request;
 			//下载解压远程文件包
 			String localUnzipDir = downloadAndUnzip(req.getRemoteZipFile());
@@ -119,36 +133,47 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 			}
 			log.debug("导入完成");
 			response("导入完成",null);
+			//写导入统计结果并生成zip文件下载url
+			String zipFile = writeImpStat();
+			response("生成统计结果完成",null);
+			//通知多源
+			notifyMultiSrc()
 		}catch(Exception e){
 			log.error(e.getMessage(), e);
 			throw new JobException(e.getMessage(),e);
 		}finally {
-			if(pw!=null){
-				pw.close();
-			}
 			shutDownPoolExecutor();
 		}
 		
 	}
-	private String downloadAndUnzip(String remoteZipFile)throws Exception{
-		String uploadRoot = SystemConfigFactory.getSystemConfig().getValue(
-				PropConstant.uploadPath);
-		//每个月独立目录
-		String curYm = DateUtils.getCurYyyymm();
-		String monthDir = uploadRoot+"multisrc"+File.separator+curYm+File.separator;
-		File mdirFile = new File(monthDir);
-		if(!mdirFile.exists()){
-			mdirFile.mkdirs();
+	private String downloadAndUnzip(FmMultiSrcSyncApi syncApi,String remoteZipFile)throws Exception{
+		try{
+			String uploadRoot = SystemConfigFactory.getSystemConfig().getValue(
+					PropConstant.uploadPath);
+			//每个月独立目录
+			String curYm = DateUtils.getCurYyyymm();
+			String monthDir = uploadRoot+"multisrc"+File.separator+curYm+File.separator;
+			File mdirFile = new File(monthDir);
+			if(!mdirFile.exists()){
+				mdirFile.mkdirs();
+			}
+			//获取zip包名
+			String fileName = remoteZipFile.substring(remoteZipFile.lastIndexOf("/"));
+			//下载
+			String localZipFile = monthDir+fileName;
+			DownloadUtils.download(remoteZipFile,localZipFile);
+			//解压
+			String localUnzipDir = monthDir+fileName.substring(0,fileName.indexOf("."));
+			ZipUtils.unzipFile(localZipFile,localUnzipDir);
+			return localUnzipDir;
+			//设置创建中状态
+			syncApi.updateMultiSrcFmSyncStatus(MultiSrcFmSync.STATUS_DOWNLOAD_SUCCESS);
+		}catch(Exception e){
+			log.error(e.getMessage(),e);
+			//设置创建中状态
+			syncApi.updateMultiSrcFmSyncStatus(MultiSrcFmSync.STATUS_DOWNLOAD_FAIL);
+			throw e;
 		}
-		//获取zip包名
-		String fileName = remoteZipFile.substring(remoteZipFile.lastIndexOf("/"));
-		//下载
-		String localZipFile = monthDir+fileName;
-		DownloadUtils.download(remoteZipFile,localZipFile);
-		//解压
-		String localUnzipDir = monthDir+fileName.substring(0,fileName.indexOf("."));
-		ZipUtils.unzipFile(localZipFile,localUnzipDir);
-		return localUnzipDir;
 	}
 	private JSONArray read(String localUnzipDir)throws Exception{
 		Scanner lines = null;
@@ -180,6 +205,44 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 			}
 		}
 	}
+	private String writeImpStat()throws Exception{
+		PrintWriter pw = null;
+		try{
+
+			return "";
+		}catch(Exception e){
+			log.error(e.getMessage(),e);
+			throw e;
+		}finally{
+			if(pw!=null){
+				pw.close();
+			}
+		}
+	}
+
+	private void notifyMultiSrc(String zipFile,FmMultiSrcSyncApi syncApi){
+		try{
+			//
+			log.debug("开始通知多源平台");
+			String zipFileUrl = SystemConfigFactory.getSystemConfig().getValue(PropConstant.serverUrl)
+					+SystemConfigFactory.getSystemConfig().getValue(PropConstant.downloadUrlPathRoot)
+					+zipFile;
+			log.debug("导入的统计数据包url:"+zipFileUrl);
+			Map<String,String> parMap = new HashMap<String,String>();
+			parMap.put("url", zipFileUrl);
+			String result = ServiceInvokeUtil.invoke("", parMap, 10000);
+			log.debug("notify multisrc result:"+result);
+			syncApi.updateFmMultiSrcSyncStatus(FmMultiSrcSync.STATUS_SYNC_SUCCESS);
+		}catch(Exception e){
+			try{
+				syncApi.updateFmMultiSrcSyncStatus(FmMultiSrcSync.STATUS_SYNC_FAIL);
+			}catch(Exception ex){
+				log.error(ex.getMessage(),e);
+			}
+			log.warn("日库同步数据包已生成，通知多源平台时发生错误，请联系多源平台运维");
+			log.error(e.getMessage(),e);
+		}
+	}
 	
 	class MultiSrc2FmDayThread implements Runnable{
 		CountDownLatch latch = null;
@@ -196,11 +259,17 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 			Connection conn=null;
 			try{
 				//region-->dbId
-				int dbId=0;
+				ManApi manApi = (ManApi)ApplicationContextUtil
+						.getBean("datahubApi");
+				Region r = manApi.queryByRegionId(regionId);
+				int dbId=r.getDailyDbId();
 				conn=DBConnector.getInstance().getConnectionById(dbId);
-				//OperationResult or = new OperationResult();
-				//MultiSrcPoiDayImportor
-				//PoiRelationImportor
+				//
+				MultiSrcPoiDayImportorCommand cmd = new MultiSrcPoiDayImportorCommand(pois);
+				MultiSrcPoiDayImportor imp = new MultiSrcPoiDayImportor(conn,null);
+				imp.setCmd(cmd);
+				imp.operate();
+				imp.persistChangeLog(OperationSegment.SG_ROW, jobInfo.getUserId());
 				log.debug("dbId("+dbId+")转出成功。");
 			}catch(Exception e){
 				log.error(e.getMessage(),e);

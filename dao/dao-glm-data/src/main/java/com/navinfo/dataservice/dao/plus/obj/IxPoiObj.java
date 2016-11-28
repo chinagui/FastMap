@@ -39,6 +39,13 @@ public class IxPoiObj extends AbstractIxObj {
 	
 	protected String parentFid;
 	protected String childFid;
+	protected long adminId=0L;
+	public long getAdminId() {
+		return adminId;
+	}
+	public void setAdminId(long adminId) {
+		this.adminId = adminId;
+	}
 	public String getParentFid() {
 		return parentFid;
 	}

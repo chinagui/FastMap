@@ -10,6 +10,6 @@ xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
 	<dubbo:reference id="datalockApi" interface="com.navinfo.dataservice.api.edit.iface.DatalockApi" />
 	<dubbo:reference id="jobApi" interface="com.navinfo.dataservice.api.job.iface.JobApi" timeout="5000" />
 	<!-- <dubbo:reference id="staticsApi" interface="com.navinfo.dataservice.api.statics.iface.StaticsApi" /> -->
-	<dubbo:reference id="syncApi" interface="com.navinfo.dataservice.api.edit.iface.SyncApi" timeout="5000" />
+	<dubbo:reference id="fmMultiSrcSyncApi" interface="com.navinfo.dataservice.api.edit.iface.FmMultiSrcSyncApi" timeout="5000" />
 
 </beans>

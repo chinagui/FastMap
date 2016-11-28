@@ -4,20 +4,20 @@ import java.util.Date;
 
 import org.springframework.stereotype.Service;
 
-import com.navinfo.dataservice.api.edit.iface.SyncApi;
+import com.navinfo.dataservice.api.edit.iface.FmMultiSrcSyncApi;
 import com.navinfo.dataservice.api.edit.model.FmMultiSrcSync;
 import com.navinfo.dataservice.api.edit.model.MultiSrcFmSync;
 import com.navinfo.dataservice.commons.util.DateUtils;
 
 /**
  * POI数据同步
- * @ClassName SyncApiImpl
+ * @ClassName FmMultiSrcSyncApiImpl
  * @author Han Shaoming
  * @date 2016年11月18日 下午4:55:15
  * @Description TODO
  */
-@Service("syncApi")
-public class SyncApiImpl implements SyncApi {
+@Service("fmMultiSrcSyncApi")
+public class FmMultiSrcSyncApiImpl implements FmMultiSrcSyncApi {
 
 	//创建FM-POI增量包同步到多源的管理记录
 	@Override
@@ -41,7 +41,7 @@ public class SyncApiImpl implements SyncApi {
 
 	//更新FmMultiSrcSync管理表的同步状态
 	@Override
-	public void updateFmMultiSrcSyncStatus(long syncStatus) throws Exception {
+	public void updateFmMultiSrcSyncStatus(int syncStatus) throws Exception {
 		
 		FmMultiSrcSync obj = new FmMultiSrcSync();
 		obj.setSyncStatus(syncStatus);
@@ -50,7 +50,7 @@ public class SyncApiImpl implements SyncApi {
 
 	//更新FmMultiSrcSync管理表中增量包文件和同步状态
 	@Override
-	public void updateFmMultiSrcSync(long syncStatus, String zipFile) throws Exception {
+	public void updateFmMultiSrcSync(int syncStatus, String zipFile) throws Exception {
 		
 		FmMultiSrcSync obj = new FmMultiSrcSync();
 		obj.setSyncStatus(syncStatus);
@@ -60,7 +60,7 @@ public class SyncApiImpl implements SyncApi {
 
 	//创建MS-POI增量包同步到FM的管理记录
 	@Override
-	public String insertMultiSrcFmSync(long jobId, long dbType,String zipFile) throws Exception {
+	public String insertMultiSrcFmSync(long jobId, int dbType,String zipFile) throws Exception {
 		MultiSrcFmSync obj = new MultiSrcFmSync();
 		obj.setJobId(jobId);
 		obj.setDbType(dbType);
@@ -71,7 +71,7 @@ public class SyncApiImpl implements SyncApi {
 
 	//更新MultiSrcFmSync管理表的同步状态
 	@Override
-	public void updateMultiSrcFmSyncStatus(long syncStatus) throws Exception {
+	public void updateMultiSrcFmSyncStatus(int syncStatus) throws Exception {
 		MultiSrcFmSync obj = new MultiSrcFmSync();
 		obj.setSyncStatus(syncStatus);
 		MultiSrcFmSyncService.getInstance().updateSync(obj);

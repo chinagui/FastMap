@@ -19,23 +19,20 @@ import com.navinfo.navicommons.database.sql.RunnableSQL;
  */
 public abstract class AbstractOperation {
 	protected Logger log = Logger.getLogger(this.getClass());
-	protected String name;
 	protected AbstractCommand cmd;
 	protected OperationResult result;
 	protected Connection conn;
 	
-	public AbstractOperation(Connection conn,String name,OperationResult preResult){
+	public AbstractOperation(Connection conn,OperationResult preResult){
 		this.conn=conn;
-		this.name=name;
 		if(preResult==null){
 			result=new OperationResult();
 		}else{
 			this.result=preResult;
 		}
 	}
-	public String getName() {
-		return name;
-	}
+	public abstract String getName();
+	
 	public OperationResult getResult() {
 		return result;
 	}
@@ -57,7 +54,7 @@ public abstract class AbstractOperation {
 		if(result==null||result.getAllObjs().size()==0)return;
 		//持久化一次操作的变更，持久化包括数据和履历
 		//持久化履历
-		LogGenerator.writeLog(conn, result.getAllObjs(), name, opSg, userId);
+		LogGenerator.writeLog(conn, result.getAllObjs(),getName(), opSg, userId);
 		//持久化数据
 		for(Iterator<BasicObj> it=result.getAllObjs().iterator(); it.hasNext();){
 			BasicObj obj = it.next();

@@ -22,6 +22,7 @@ import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.model.rd.crf.RdObject;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.crf.RdObjectSelector;
 import com.navinfo.navicommons.geo.computation.JGeometryUtil;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -45,7 +46,8 @@ public class RdObjectSearch implements ISearch {
 
 	@Override
 	public IObj searchDataByPid(int pid) throws Exception {
-		return (IObj) new AbstractSelector(RdObject.class, conn).loadById(pid, false);
+		RdObjectSelector objSelector = new RdObjectSelector(conn);
+		return (IObj) objSelector.loadById(pid, false);
 	}
 
 	@Override

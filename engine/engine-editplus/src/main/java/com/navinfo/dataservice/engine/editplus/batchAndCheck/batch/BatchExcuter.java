@@ -25,6 +25,7 @@ public class BatchExcuter {
 	public void exeJavaRule(BatchRule batchRule,BatchRuleCommand batchRuleCommand) throws Exception{
 		BasicBatchRule ruleObj=(BasicBatchRule) batchRule.getAccessorClass().newInstance();
 		ruleObj.setBatchRuleCommand(batchRuleCommand);
+		ruleObj.setBatchRule(batchRule);
 		ruleObj.run();
 	}
 

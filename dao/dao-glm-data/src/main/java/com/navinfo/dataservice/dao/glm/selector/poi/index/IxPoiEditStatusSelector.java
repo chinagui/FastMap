@@ -22,7 +22,7 @@ public class IxPoiEditStatusSelector extends AbstractSelector {
 	public int loadStatusByRowId(int pid, boolean isLock) throws Exception {
 		int status = 0;
 
-		String sql = "select status from poi_edit_status where pid=? ";
+		String sql = "select status from poi_edit_status where pid=:1 ";
 
 		if (isLock) {
 			sql += " for update nowait";

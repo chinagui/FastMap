@@ -1,11 +1,15 @@
 package com.navinfo.dataservice.control.row.batch;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.navinfo.dataservice.api.edit.model.FmMultiSrcSync;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.control.row.multisrc.MultiSrcFmSyncService;
 import com.navinfo.dataservice.control.row.multisrc.SyncApiImpl;
 
 /**
@@ -29,7 +33,9 @@ public class SyncTest {
 	public void TestinsertFmMultiSrcSync() throws Exception{
 		
 		SyncApiImpl sy = new SyncApiImpl();
-		String msg = sy.insertFmMultiSrcSync(3);
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+		String syncTime = sdf.format(new Date());
+		String msg = sy.insertFmMultiSrcSync(3,syncTime);
 		System.out.println(msg);
 		
 	}
@@ -63,7 +69,7 @@ public class SyncTest {
 	public void TestinsertMultiSrcFmSync() throws Exception{
 		
 		SyncApiImpl sy = new SyncApiImpl();
-		String msg = sy.insertMultiSrcFmSync(2,1);
+		String msg = sy.insertMultiSrcFmSync(2,1,"zipFile");
 		System.out.println(msg);
 		
 	}
@@ -76,14 +82,14 @@ public class SyncTest {
 		
 	}
 	
-	
 	@Test
-	public void TestupdateMultiSrcFmSync() throws Exception{
+	public void testApplyUploadDay() throws Exception{
 		
-		SyncApiImpl sy = new SyncApiImpl();
-		sy.updateMultiSrcFmSync(3, "路径");
+		MultiSrcFmSyncService.getInstance().applyUploadDay(0, "zipUrl");
 		
 	}
+	
+	
 	
 
 }

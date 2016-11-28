@@ -2,6 +2,8 @@ package com.navinfo.dataservice.control.row.poiEditStatus;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,7 +31,7 @@ public class PoiEditStatusTest {
 	}
 
 	@Test
-	public void test() throws Exception{
+	public void test0() throws Exception{
 		Connection conn = DriverManager.getConnection("jdbc:oracle:thin:@192.168.4.61:1521/orcl",
 				"fm_regiondb_sp6_d_1", "fm_regiondb_sp6_d_1");
 		Map<Long,String> map = new HashMap<Long,String>();
@@ -43,5 +45,20 @@ public class PoiEditStatusTest {
 		
 		PoiEditStatus.tagMultiSrcPoi(conn, map);
 		
+	}
+	
+	@Test
+	public void test1() throws Exception{
+		Connection conn = DriverManager.getConnection("jdbc:oracle:thin:@192.168.4.61:1521/orcl",
+				"fm_regiondb_sp6_d_1", "fm_regiondb_sp6_d_1");
+		Map<Integer,Collection<Long>> pids = new HashMap<Integer,Collection<Long>>();
+		Collection<Long> insertList = new ArrayList<Long>();
+		insertList.add((long) 1);
+		insertList.add((long) 2);
+		insertList.add((long) 3);
+
+		Collection<Long> pids2 = PoiEditStatus.pidFilterByEditStatus(conn,insertList,3);
+
+		System.out.println("ok");
 	}
 }

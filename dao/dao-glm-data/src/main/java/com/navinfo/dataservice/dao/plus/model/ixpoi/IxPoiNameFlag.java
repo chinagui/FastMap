@@ -1,0 +1,46 @@
+package com.navinfo.dataservice.dao.plus.model.ixpoi;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
+
+import net.sf.json.JSONObject;
+
+/** 
+* @ClassName:  IxPoiNameFlag 
+* @author code generator
+* @date 2016-11-18 11:26:21 
+* @Description: TODO
+*/
+public class IxPoiNameFlag extends BasicRow {
+	protected long nameId ;
+	protected String flagCode ;
+	
+	public IxPoiNameFlag (long objPid){
+		super(objPid);
+	}
+	
+	public long getNameId() {
+		return nameId;
+	}
+	public void setNameId(long nameId) {
+		if(this.checkValue("NAME_ID",this.nameId,nameId)){
+			this.nameId = nameId;
+		}
+	}
+	public String getFlagCode() {
+		return flagCode;
+	}
+	public void setFlagCode(String flagCode) {
+		if(this.checkValue("FLAG_CODE",this.flagCode,flagCode)){
+			this.flagCode = flagCode;
+		}
+	}
+	
+	@Override
+	public String tableName() {
+		return "IX_POI_NAME_FLAG";
+	}
+}

@@ -15,6 +15,7 @@ import org.springframework.web.socket.TextMessage;
 
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.dao.mq.MsgHandler;
 import com.navinfo.dataservice.engine.sys.msg.SysMsg;
 import com.navinfo.dataservice.engine.sys.msg.websocket.MsgManWebSocketHandler;
@@ -206,7 +207,7 @@ class ManMsgHandler implements ResultSetHandler<List<Map<String,Object>>>{
 				Map<String,Object> msg = new HashMap<String, Object>();
 				msg.put("msgId",rs.getLong("MSG_ID"));
 				msg.put("msgContent",rs.getString("MSG_CONTENT"));
-				msg.put("createTime",rs.getTimestamp("CREATE_TIME"));
+				msg.put("createTime",DateUtils.dateToString(rs.getTimestamp("CREATE_TIME"),DateUtils.DATE_COMPACTED_FORMAT));
 				msg.put("msgTitle",rs.getString("MSG_TITLE"));
 				msg.put("targetUserId",rs.getLong("TARGET_USER_ID"));
 				msg.put("pushUserId",rs.getLong("PUSH_USER_ID"));

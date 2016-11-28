@@ -1,6 +1,6 @@
 package com.navinfo.dataservice.engine.editplus.convert;
 
-import com.navinfo.dataservice.engine.editplus.model.obj.BasicObj;
+import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 
 import net.sf.json.JSONObject;
 

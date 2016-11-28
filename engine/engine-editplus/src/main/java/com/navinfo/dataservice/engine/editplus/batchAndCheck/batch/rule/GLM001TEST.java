@@ -3,17 +3,15 @@ package com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.rule;
 import java.util.List;
 import java.util.Map;
 
-import com.navinfo.dataservice.engine.editplus.model.BasicRow;
-import com.navinfo.dataservice.engine.editplus.model.ixpoi.IxPoi;
-import com.navinfo.dataservice.engine.editplus.model.ixpoi.IxPoiName;
-import com.navinfo.dataservice.engine.editplus.model.obj.BasicObj;
-import com.navinfo.dataservice.engine.editplus.model.obj.IxPoiObj;
+import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
+import com.navinfo.dataservice.dao.plus.obj.BasicObj;
+import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 
 public class GLM001TEST extends BasicBatchRule {
 
 	public GLM001TEST() {
-		objNameList.add("IX_POI");
-		objNameList.add("IX_POI_NAME");
 	}
 
 	@Override

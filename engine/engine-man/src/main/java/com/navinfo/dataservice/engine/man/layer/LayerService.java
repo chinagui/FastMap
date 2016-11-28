@@ -458,7 +458,7 @@ public class LayerService {
 						e1.printStackTrace();
 					}
 					map.put("createUserId", rs.getInt("CREATE_USER_ID"));
-					map.put("createDate", DateUtils.dateToString(rs.getTimestamp("CREATE_DATE")));
+					map.put("createDate", DateUtils.dateToString(rs.getTimestamp("CREATE_DATE"),DateUtils.DATE_COMPACTED_FORMAT));
 					map.put("createUserName", rs.getString("USER_REAL_NAME"));
 					list.add(map);
 				} catch (Exception e) {

@@ -5,11 +5,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.navinfo.dataservice.engine.editplus.model.batchAndCheck.BatchCommand;
-import com.navinfo.dataservice.engine.editplus.model.obj.BasicObj;
+import com.navinfo.dataservice.dao.plus.obj.BasicObj;
+import com.navinfo.dataservice.engine.editplus.model.batchAndCheck.BatchRuleCommand;
 
 public abstract class BasicBatchRule {
-	private BatchCommand batchCommand;
+	private BatchRuleCommand batchRuleCommand;
 	public List<String> objNameList=new ArrayList<String>();
 
 	public BasicBatchRule() {
@@ -20,8 +20,8 @@ public abstract class BasicBatchRule {
 		Map<Long, BasicObj> rows=new HashMap<Long, BasicObj>();
 		//若全库批处理，则数据统一都是初始化状态，新增修改列表没有记录
 		for(String objName:objNameList){
-			if(this.getBatchCommand().getOperationResult().getAllObjsMap().containsKey(objName)){
-				Map<Long, BasicObj> map=this.getBatchCommand().getOperationResult().getAllObjsMap().get(objName);
+			if(batchRuleCommand.getAllDatas().containsKey(objName)){
+				Map<Long, BasicObj> map=batchRuleCommand.getAllDatas().get(objName);
 				if(map!=null){rows.putAll(map);}}
 			}
 		return rows;
@@ -39,12 +39,12 @@ public abstract class BasicBatchRule {
 	
 	public abstract void runBatch(String objName,BasicObj obj) throws Exception;
 
-	public BatchCommand getBatchCommand() {
-		return batchCommand;
+	public BatchRuleCommand getBatchRuleCommand() {
+		return batchRuleCommand;
 	}
 
-	public void setBatchCommand(BatchCommand batchCommand) {
-		this.batchCommand = batchCommand;
+	public void setBatchRuleCommand(BatchRuleCommand batchRuleCommand) {
+		this.batchRuleCommand = batchRuleCommand;
 	}
 
 }

@@ -10,10 +10,15 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
+import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
+import com.navinfo.dataservice.dao.glm.search.RdGscSearch;
+import com.navinfo.dataservice.dao.glm.search.RdLinkSearch;
+import com.navinfo.dataservice.dao.glm.search.RdObjectSearch;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.SelectorUtils;
 import com.navinfo.dataservice.engine.edit.InitApplication;
@@ -158,7 +163,7 @@ public class RdLinkTest extends InitApplication {
 	@Test
 	public void testBatch()
 	{
-		String parameter = "{\"command\":\"CREATE\",\"type\":\"IXPOI\",\"dbId\":17,\"data\":{\"longitude\":116.20599746704102,\"latitude\":40.580030566358204,\"x_guide\":116.20599746704102,\"y_guide\":40.580030566358204,\"linkPid\":0,\"name\":\"asdas\",\"kindCode\":\"210105\"}}";
+		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDSE\",\"dbId\":17,\"data\":{\"inLinkPid\":206002831,\"outLinkPid\":200002787,\"nodePid\":301002167}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
@@ -166,5 +171,24 @@ public class RdLinkTest extends InitApplication {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+	@Test
+	public void testRdLinkRender()
+	{
+		Connection conn;
+		try {
+			conn = DBConnector.getInstance().getConnectionById(17);
+
+			RdGscSearch search = new RdGscSearch(conn);
+			
+			List<SearchSnapshot> data = search.searchDataByTileWithGap(107994, 49493, 17, 10);
+			
+			System.out.println("data:"+ResponseUtils.assembleRegularResult(data));
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
 	}
 }

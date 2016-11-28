@@ -1,5 +1,8 @@
 package com.navinfo.dataservice.engine.editplus.model.batchAndCheck;
 
+import java.util.Map;
+import java.util.Set;
+
 public class CheckRule { 
 	
 	private String ruleId;
@@ -7,6 +10,8 @@ public class CheckRule {
 	private String accessor;
 	private String accessorType;
 	private Class accessorClass;
+	private Set<String> objNameSet;
+	private Map<String, Set<String>> referSubtableMap;
 
 	public CheckRule() {
 		// TODO Auto-generated constructor stub
@@ -51,6 +56,22 @@ public class CheckRule {
 
 	public void setLog(String log) {
 		this.log = log;
+	}
+
+	public Set<String> getObjNameSet() {
+		return objNameSet;
+	}
+
+	public void setObjNameSet(Set<String> objNameSet) {
+		this.objNameSet = objNameSet;
+	}
+
+	public Map<String, Set<String>> getReferSubtableMap() {
+		return referSubtableMap;
+	}
+
+	public void setReferSubtableMap(Map<String, Set<String>> referSubtableMap) {
+		this.referSubtableMap = referSubtableMap;
 	}
 
 }

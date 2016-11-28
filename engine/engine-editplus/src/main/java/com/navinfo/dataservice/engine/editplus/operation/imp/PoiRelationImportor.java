@@ -14,8 +14,8 @@ import com.navinfo.dataservice.dao.plus.operation.OperationResult;
  */
 public class PoiRelationImportor extends AbstractOperation{
 	
-	public PoiRelationImportor(Connection conn, String name, OperationResult preResult) {
-		super(conn, name, preResult);
+	public PoiRelationImportor(Connection conn,  OperationResult preResult) {
+		super(conn,  preResult);
 	}
 
 	public void doImport(OperationResult or,List<PoiRelation> relations){
@@ -24,5 +24,11 @@ public class PoiRelationImportor extends AbstractOperation{
 	@Override
 	public void operate() throws Exception {
 		
+	}
+
+	@Override
+	public String getName() {
+		// TODO Auto-generated method stub
+		return "PoiRelationImportor";
 	}
 }

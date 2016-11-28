@@ -1,7 +1,5 @@
 package com.navinfo.dataservice.engine.editplus.operation.imp;
 
-import java.util.Set;
-
 /** 
  * @ClassName: PoiRelation
  * @author xiaoxiaowen4127
@@ -12,8 +10,6 @@ public class PoiRelation {
 	protected long pid;
 	protected long fatherPid;
 	protected String fatherFid;
-//	protected Set<Long> sonPids;
-//	protected Set<String> sonFids;
 	protected long samePid;
 	protected String sameFid;
 	protected PoiRelationType poiRelationType;
@@ -44,18 +40,6 @@ public class PoiRelation {
 	public void setFatherFid(String fatherFid) {
 		this.fatherFid = fatherFid;
 	}
-//	public Set<Long> getSonPids() {
-//		return sonPids;
-//	}
-//	public void setSonPids(Set<Long> sonPids) {
-//		this.sonPids = sonPids;
-//	}
-//	public Set<String> getSonFids() {
-//		return sonFids;
-//	}
-//	public void setSonFids(Set<String> sonFids) {
-//		this.sonFids = sonFids;
-//	}
 	public long getSamePid() {
 		return samePid;
 	}

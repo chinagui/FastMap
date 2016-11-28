@@ -16,6 +16,7 @@ import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiParent;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjFactory;
 import com.navinfo.dataservice.dao.plus.obj.ObjectType;
+import com.navinfo.dataservice.dao.plus.operation.AbstractOperation;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
 import com.navinfo.dataservice.dao.plus.operation.OperationResultException;
 import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
@@ -30,7 +31,7 @@ import com.navinfo.dataservice.dao.plus.selector.ObjChildrenIncreSelector;
 public class PoiRelationImportor extends AbstractOperation{
 	
 	public PoiRelationImportor(Connection conn, String name, OperationResult preResult) {
-		super(conn, name, preResult);
+		super(conn, preResult);
 	}
 
 	public static void doImport(Connection conn,OperationResult or,List<PoiRelation> relations) 
@@ -51,16 +52,8 @@ public class PoiRelationImportor extends AbstractOperation{
 						if(or.getObjsMapByType(ObjectType.IX_POI).get(fatherPid).getRowsByName("IX_POI_PARENT")==null){
 							fatherIncreSelMap.put(fatherPid, or.getObjsMapByType(ObjectType.IX_POI).get(fatherPid));
 						}
-
-	@Override
-	public void operate() throws Exception {
-		
-<<<<<<< .mine
+						fatherPidSet.add(fatherPid);
 					}
-=======
-	}
->>>>>>> .theirs
-					fatherPidSet.add(fatherPid);
 				}else{
 					fatherFidSet.add(poiRelation.getFatherFid());
 				}
@@ -135,6 +128,24 @@ public class PoiRelationImportor extends AbstractOperation{
 		}
 		
 		
+		
+	}
+
+	/* (non-Javadoc)
+	 * @see com.navinfo.dataservice.dao.plus.operation.AbstractOperation#getName()
+	 */
+	@Override
+	public String getName() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.navinfo.dataservice.dao.plus.operation.AbstractOperation#operate()
+	 */
+	@Override
+	public void operate() throws Exception {
+		// TODO Auto-generated method stub
 		
 	}
 	

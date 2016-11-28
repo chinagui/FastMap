@@ -1,12 +1,6 @@
 package com.navinfo.dataservice.dao.plus.model.ixpoi;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
-
-import net.sf.json.JSONObject;
 
 /** 
 * @ClassName:  IxPoiRestaurant 
@@ -160,4 +154,21 @@ public class IxPoiRestaurant extends BasicRow {
 	public String tableName() {
 		return "IX_POI_RESTAURANT";
 	}
+	
+	public static final String RESTAURANT_ID = "RESTAURANT_ID";
+	public static final String POI_PID = "POI_PID";
+	public static final String FOOD_TYPE = "FOOD_TYPE";
+	public static final String CREDIT_CARD = "CREDIT_CARD";
+	public static final String AVG_COST = "AVG_COST";
+	public static final String PARKING = "PARKING";
+	public static final String LONG_DESCRIPTION = "LONG_DESCRIPTION";
+	public static final String LONG_DESCRIP_ENG = "LONG_DESCRIP_ENG";
+	public static final String OPEN_HOUR = "OPEN_HOUR";
+	public static final String OPEN_HOUR_ENG = "OPEN_HOUR_ENG";
+	public static final String TELEPHONE = "TELEPHONE";
+	public static final String ADDRESS = "ADDRESS";
+	public static final String CITY = "CITY";
+	public static final String PHOTO_NAME = "PHOTO_NAME";
+	public static final String TRAVELGUIDE_FLAG = "TRAVELGUIDE_FLAG";
+
 }

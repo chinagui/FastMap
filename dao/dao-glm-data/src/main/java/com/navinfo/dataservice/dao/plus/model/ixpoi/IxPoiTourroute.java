@@ -1,12 +1,6 @@
 package com.navinfo.dataservice.dao.plus.model.ixpoi;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
-
-import net.sf.json.JSONObject;
 
 /** 
 * @ClassName:  IxPoiTourroute 
@@ -161,4 +155,21 @@ public class IxPoiTourroute extends BasicRow {
 	public String tableName() {
 		return "IX_POI_TOURROUTE";
 	}
+	
+	public static final String TOUR_ID = "TOUR_ID";
+	public static final String TOUR_NAME = "TOUR_NAME";
+	public static final String TOUR_NAME_ENG = "TOUR_NAME_ENG";
+	public static final String TOUR_INTR = "TOUR_INTR";
+	public static final String TOUR_INTR_ENG = "TOUR_INTR_ENG";
+	public static final String TOUR_TYPE = "TOUR_TYPE";
+	public static final String TOUR_TYPE_ENG = "TOUR_TYPE_ENG";
+	public static final String TOUR_X = "TOUR_X";
+	public static final String TOUR_Y = "TOUR_Y";
+	public static final String TOUR_LEN = "TOUR_LEN";
+	public static final String TRAIL_TIME = "TRAIL_TIME";
+	public static final String VISIT_TIME = "VISIT_TIME";
+	public static final String POI_PID = "POI_PID";
+	public static final String RESERVED = "RESERVED";
+	public static final String MEMO = "MEMO";
+
 }

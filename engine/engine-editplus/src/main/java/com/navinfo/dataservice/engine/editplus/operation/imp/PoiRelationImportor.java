@@ -131,14 +131,6 @@ public class PoiRelationImportor extends AbstractOperation{
 		
 	}
 
-	/* (non-Javadoc)
-	 * @see com.navinfo.dataservice.dao.plus.operation.AbstractOperation#getName()
-	 */
-	@Override
-	public String getName() {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
 	/* (non-Javadoc)
 	 * @see com.navinfo.dataservice.dao.plus.operation.AbstractOperation#operate()

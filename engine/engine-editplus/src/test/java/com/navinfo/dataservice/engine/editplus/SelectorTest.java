@@ -54,7 +54,7 @@ public class SelectorTest {
 			Connection conn = null;
 			conn = DBConnector.getInstance().getConnectionById(17);;
 			String objType = "IX_POI";
-			long pid = 308;
+			long pid = 300000013;
 			boolean isLock = false;
 
 			Set<String> tabNames = new HashSet<String>();

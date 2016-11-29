@@ -43,7 +43,7 @@ public class PoiQuery {
 			Subtask subtaskObj = apiService.queryBySubtaskId(subtaskId);
 			String sql = "SELECT E.STATUS, COUNT(1) COUNT_NUM "
 					+ "  FROM POI_EDIT_STATUS E, IX_POI P"
-					+ " WHERE E.ROW_ID = P.ROW_ID" + "   AND E.STATUS IN (1,2)"
+					+ " WHERE E.PID = P.PID" + "   AND E.STATUS IN (1,2)"
 					+ "   AND SDO_RELATE(P.GEOMETRY, SDO_GEOMETRY('"
 					+ subtaskObj.getGeometry()
 					+ "', 8307), 'MASK=ANYINTERACT') =" + "       'TRUE'"

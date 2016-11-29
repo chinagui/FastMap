@@ -144,7 +144,7 @@ public class IxPoiSelector {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new ServiceException("查询失败，原因为:"+e.getMessage(),e);
-	}
+		}
 	}
 	
 	public static Map<Long,BasicObj> getIxPoiParentMapByChildrenPidList(Connection conn,Set<Long> pidList) throws ServiceException{

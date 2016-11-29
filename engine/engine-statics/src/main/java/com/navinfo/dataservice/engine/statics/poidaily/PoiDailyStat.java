@@ -62,7 +62,7 @@ public class PoiDailyStat implements Runnable {
 			QueryRunner run = new QueryRunner();
 
 //			String sql = "select ip.geometry from ix_poi ip, poi_edit_status pes where ip.row_id = pes.row_id and pes.is_upload=1";
-			String sql = "select ip.geometry from ix_poi ip, poi_edit_status pes where ip.row_id = pes.row_ids";
+			String sql = "select ip.geometry from ix_poi ip, poi_edit_status pes where ip.pid = pes.pid";
 			return run.query(conn, sql, new ResultSetHandler<Map<String, Integer>>() {
 
 				@Override
@@ -102,7 +102,7 @@ public class PoiDailyStat implements Runnable {
 		try {
 			QueryRunner run = new QueryRunner();
 
-			String sql = "select ip.pid,ip.geometry,ip.row_id from ix_poi ip, poi_edit_status pes where ip.row_id = pes.row_id and pes.status=3";
+			String sql = "select ip.pid,ip.geometry,ip.row_id from ix_poi ip, poi_edit_status pes where ip.pid = pes.pid and pes.status=3";
 			return run.query(conn, sql, new ResultSetHandler<Map<String, JSONObject>>() {
 
 				@Override

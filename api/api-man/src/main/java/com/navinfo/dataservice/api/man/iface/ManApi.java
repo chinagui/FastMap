@@ -65,5 +65,7 @@ public interface ManApi{
 
 	public String queryConfValueByConfKey(String confKey) throws Exception;
 	
+	public List<Map<String, Object>> queryDay2MonthList(JSONObject conditionJson) throws Exception;
+	
 }
 

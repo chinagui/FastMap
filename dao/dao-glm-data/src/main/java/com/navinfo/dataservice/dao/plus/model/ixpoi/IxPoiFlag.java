@@ -1,12 +1,6 @@
 package com.navinfo.dataservice.dao.plus.model.ixpoi;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
-
-import net.sf.json.JSONObject;
 
 /** 
 * @ClassName:  IxPoiFlag 
@@ -43,4 +37,8 @@ public class IxPoiFlag extends BasicRow {
 	public String tableName() {
 		return "IX_POI_FLAG";
 	}
+	
+	public static final String POI_PID = "POI_PID";
+	public static final String FLAG_CODE = "FLAG_CODE";
+
 }

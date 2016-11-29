@@ -1,12 +1,6 @@
 package com.navinfo.dataservice.dao.plus.model.ixpoi;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
-
-import net.sf.json.JSONObject;
 
 /** 
 * @ClassName:  IxPoiNameTone 
@@ -88,4 +82,13 @@ public class IxPoiNameTone extends BasicRow {
 	public String tableName() {
 		return "IX_POI_NAME_TONE";
 	}
+	
+	public static final String NAME_ID = "NAME_ID";
+	public static final String TONE_A = "TONE_A";
+	public static final String TONE_B = "TONE_B";
+	public static final String LH_A = "LH_A";
+	public static final String LH_B = "LH_B";
+	public static final String JYUTP = "JYUTP";
+	public static final String MEMO = "MEMO";
+
 }

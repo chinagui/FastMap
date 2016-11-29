@@ -36,7 +36,30 @@ import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiRestaurant;
  * @Description: IxPoi.java
  */
 public class IxPoiObj extends AbstractIxObj {
-
+	
+	protected String parentFid;
+	protected String childFid;
+	protected long adminId=0L;
+	public long getAdminId() {
+		return adminId;
+	}
+	public void setAdminId(long adminId) {
+		this.adminId = adminId;
+	}
+	public String getParentFid() {
+		return parentFid;
+	}
+	public void setParentFid(String parentFid) {
+		this.parentFid = parentFid;
+	}
+	public String getChildFid() {
+		return childFid;
+	}
+	public void setChildFid(String childFid) {
+		this.childFid = childFid;
+	}
+	
+	
 	public IxPoiObj(BasicRow mainrow) {
 		super(mainrow);
 	}
@@ -372,6 +395,28 @@ public class IxPoiObj extends AbstractIxObj {
 			}
 		}
 		return null;
+	}
+	
+	/**
+	 * 子列表
+	 * @author Han Shaoming
+	 * @return
+	 */
+	public List<Map<String,Object>> getChildrens(){
+		List<Map<String,Object>> msgs = new ArrayList<Map<String,Object>>();
+		List<BasicRow> rows = getRowsByName("IX_POI_CHILDREN");
+		if(rows!=null && rows.size()>0){
+			for(BasicRow row:rows){
+				Map<String,Object> msg = new HashMap<String, Object>();
+				IxPoiChildren children = (IxPoiChildren) row;
+				msg.put("type", children.getRelationType());
+				msg.put("childPid", children.getChildPoiPid());
+				msg.put("childFid", this.getChildFid());
+				msg.put("rowId", children.getRowId());
+				msgs.add(msg);
+			}
+		}
+		return msgs;
 	}
 	
 	@Override

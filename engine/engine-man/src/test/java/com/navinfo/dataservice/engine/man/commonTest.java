@@ -26,10 +26,11 @@ public class commonTest {
 		System.out.println("start"); 
 		commonTest test=new commonTest();
 		test.before();
-		String filePathString="D:/temp/block_tab2json/bj.TAB";
+		//String filePathString="D:/temp/block_tab2json/bj.TAB";
+		String filePathString = String.valueOf(args[0]);
 		Connection conn=DBConnector.getInstance().getManConnection();
 		List<Map<String, Object>> dataList = LoadTab.readTabReturnAllData(filePathString);
-		ImportOracle.writeOracle(conn, "test1125", dataList, null, null);
+		ImportOracle.writeOracle(conn, "test1125", dataList);
 		DbUtils.commitAndCloseQuietly(conn);
 		System.out.println("end"); 
 	}

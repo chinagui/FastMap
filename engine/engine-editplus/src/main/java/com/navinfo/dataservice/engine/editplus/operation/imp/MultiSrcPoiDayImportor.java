@@ -9,11 +9,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
-
 import com.navinfo.dataservice.api.edit.upload.UploadPois;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.StringUtils;
+import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiAddress;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiContact;
@@ -45,8 +44,8 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 
 	protected Map<String,String> errLog=new HashMap<String,String>();
 	
-	public MultiSrcPoiDayImportor(Connection conn, String name, OperationResult preResult) {
-		super(conn, name, preResult);
+	public MultiSrcPoiDayImportor(Connection conn,OperationResult preResult) {
+		super(conn,preResult);
 	}
 
 	@Override
@@ -125,8 +124,7 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 				if(ixPoi.getPoiNum().equals(jo.getString("fid"))){
 					flag = false;
 					try{
-						boolean isDeleted = queryObj.getIsDeleted();
-						if(isDeleted){
+						if(queryObj.getMainrow().getOpType().equals(OperationType.PRE_DELETED)){
 							throw new Exception("该数据已经逻辑删除");
 						}else{
 							this.importUpdateByJson(queryObj, jo);
@@ -179,8 +177,7 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 					flag = false;
 					try{
 						//判断是否已逻辑删除
-						boolean isDeleted = deleteObj.getIsDeleted();
-						if(isDeleted){
+						if(deleteObj.getMainrow().getOpType().equals(OperationType.PRE_DELETED)){
 							//已逻辑删除
 							throw new Exception("该数据已经逻辑删除");
 						}else{
@@ -702,8 +699,7 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 		if(poi!=null&&jo!=null){
 			if(poi instanceof IxPoiObj){
 				//判断是否已逻辑删除
-				boolean isDeleted = poi.getIsDeleted();
-				if(isDeleted){
+				if(poi.getMainrow().getOpType().equals(OperationType.PRE_DELETED)){
 					//已逻辑删除
 					throw new Exception("该数据已经逻辑删除");
 				}else{
@@ -735,6 +731,12 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 		tabNames.add("IX_POI_PARENT");
 		tabNames.add("IX_POI_DETAIL");
 		return tabNames;
+	}
+
+	@Override
+	public String getName() {
+		// TODO Auto-generated method stub
+		return "MultiSrcPoiDayImportor";
 	}
 
 }

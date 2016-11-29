@@ -34,14 +34,6 @@ public abstract class BasicObj {
 //	protected Map<Class<? extends BasicRow>, List<BasicRow>> childrows;//存储对象下的子表,包括二级、三级子表...
 	protected Map<String,List<BasicRow>> subrows=new HashMap<String,List<BasicRow>>();//key:table_name,value:rows
 	protected BasicObjGrid grid;
-	protected boolean isDeleted;
-	
-	public boolean getIsDeleted() {
-		return isDeleted;
-	}
-	public void setIsDeleted(boolean isDeleted) {
-		this.isDeleted = isDeleted;
-	}
 	public BasicObjGrid getGrid() throws Exception {
 		if(this.grid==null){
 			//生成grid信息
@@ -63,11 +55,6 @@ public abstract class BasicObj {
 	}
 	public BasicObj(BasicRow mainrow){
 		this.mainrow=mainrow;
-		if(mainrow.getOpType().equals(OperationType.PRE_DELETED)){
-			isDeleted = true;
-		}else{
-			isDeleted = false;
-		}
 	}
 	public int getLifeCycle() {
 		return lifeCycle;

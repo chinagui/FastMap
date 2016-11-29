@@ -110,9 +110,9 @@ public class EditApiImpl implements EditApi {
 			}
 			String sql=null;
 			if ("web".endsWith(platform)){
-				sql="UPDATE poi_edit_status T1 SET T1.fresh_verified = :1 where T1.row_id =(SELECT row_id as a FROM ix_poi where pid = " + pid + ")";
+				sql="UPDATE poi_edit_status T1 SET T1.fresh_verified = :1 where T1.pid =" + pid ;
 			}else{
-				sql="UPDATE poi_edit_status T1 SET T1.fresh_verified = :1,T1.status="+status+" where T1.row_id =(SELECT row_id as a FROM ix_poi where pid = " + pid + ")";
+				sql="UPDATE poi_edit_status T1 SET T1.fresh_verified = :1,T1.status="+status+" where T1.pid = " + pid;
 			}
 			PreparedStatement pstmt = null;
 			try {

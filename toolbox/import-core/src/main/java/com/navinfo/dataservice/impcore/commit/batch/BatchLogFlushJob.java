@@ -90,7 +90,7 @@ public class BatchLogFlushJob extends AbstractJob {
 					"and "+(gridSqlClause==null?"1=1":gridSqlClause.getSql())+"\r\n" + 
 					"and "+(ixTablesSqlClause==null?"1=1":ixTablesSqlClause.getSql())+"\r\n" + 
 					"and d.row_id = p.row_id\r\n" + 
-					"and p.row_id = s.row_id\r\n" + 
+					"and p.pid = s.pid\r\n" + 
 					"and s.status=2\r\n") ;
 		sb.append(" union all\r\n");
 		sb.append("select l.op_id,l.op_dt  from log_operation l ,log_detail d ,log_detail_grid g ,ix_poi  p \r\n" + 

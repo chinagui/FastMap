@@ -3,27 +3,19 @@ package com.navinfo.dataservice.engine.editplus.model.batchAndCheck;
 import java.sql.Connection;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
 
-public class BasicCommand {
-	private OperationResult operationResult;
-	private List<String> ruleIdList;
+public class BasicRuleCommand {
+	private Map<String,Map<Long,BasicObj>> allDatas;
 	private Connection conn;
 
-	public BasicCommand() {
+	public BasicRuleCommand() {
 		// TODO Auto-generated constructor stub
 	}
-
-	public List<String> getRuleId() {
-		return ruleIdList;
-	}
-
-	public void setRuleId(List<String> ruleId) {
-		this.ruleIdList = ruleId;
-	}
-
+	
 	public Connection getConn() {
 		return conn;
 	}
@@ -32,12 +24,12 @@ public class BasicCommand {
 		this.conn = conn;
 	}
 
-	public OperationResult getOperationResult() {
-		return operationResult;
+	public Map<String,Map<Long,BasicObj>> getAllDatas() {
+		return allDatas;
 	}
 
-	public void setOperationResult(OperationResult operationResult) {
-		this.operationResult = operationResult;
+	public void setAllDatas(Map<String,Map<Long,BasicObj>> allDatas) {
+		this.allDatas = allDatas;
 	}
 
 }

@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Set;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
+
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -131,6 +133,7 @@ public class CheckController extends BaseController {
 
 		String parameter = request.getParameter("parameter");
 		logger.debug("listRdnResult:道路名检查结果查询接口:parameter:"+parameter);
+		Connection conn = null;
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 			int subtaskId = jsonReq.getInt("subtaskId");
@@ -138,7 +141,8 @@ public class CheckController extends BaseController {
 			ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
 			
 			Subtask subtask = apiService.queryBySubtaskId(subtaskId);
-			NiValExceptionSelector niValExceptionSelector = new NiValExceptionSelector();
+			conn = DBConnector.getInstance().getMetaConnection();
+			NiValExceptionSelector niValExceptionSelector = new NiValExceptionSelector(conn);
 			if (subtask == null) {
 				throw new Exception("subtaskid未找到数据");
 			}
@@ -157,12 +161,12 @@ public class CheckController extends BaseController {
 			return new ModelAndView("jsonView", success(page));
 
 		} catch (Exception e) {
-
+			
 			logger.error(e.getMessage(), e);
 
 			return new ModelAndView("jsonView", fail(e.getMessage()));
 		} finally {
-			
+			DbUtils.closeQuietly(conn);
 		}
 	}
 	

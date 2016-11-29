@@ -1,8 +1,7 @@
 package com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlanetopodetail;
+
 import java.util.ArrayList;
 import java.util.List;
-
-
 
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
@@ -23,9 +22,10 @@ import net.sf.json.JSONObject;
 public class Command extends AbstractCommand {
 
 	private String requester;
-	private List<RdLaneTopoDetail> laneToptInfos = new ArrayList<RdLaneTopoDetail>() ;//车道联通信息
-	private List<IRow> delToptInfos = new ArrayList<IRow>()  ;//要删除车道联通信息
-	private List<IRow> updateTopInfos = new ArrayList<IRow>();//要修改的联通信息
+	private List<RdLaneTopoDetail> laneToptInfos = new ArrayList<RdLaneTopoDetail>();// 车道联通信息
+	private List<IRow> delToptInfos = new ArrayList<IRow>();// 要删除车道联通信息
+	private List<IRow> updateTopInfos = new ArrayList<IRow>();// 要修改的联通信息
+
 	public List<IRow> getDelToptInfos() {
 		return delToptInfos;
 	}
@@ -34,12 +34,13 @@ public class Command extends AbstractCommand {
 		this.delToptInfos = delToptInfos;
 	}
 
-	private List<Integer> delTopoIds = new ArrayList<Integer>();//删除的车道联通id
-	private List<Integer> updateTopoIds = new ArrayList<Integer>();//删除的车道联通id
-	private int inLanePid;//进入车道
-	private int inLinkPid;//进入LINK
-	private int nodePid;//进入NODE
+	private List<Integer> delTopoIds = new ArrayList<Integer>();// 删除的车道联通id
+	private List<Integer> updateTopoIds = new ArrayList<Integer>();// 删除的车道联通id
+	private int inLanePid;// 进入车道
+	private int inLinkPid;// 进入LINK
+	private int nodePid;// 进入NODE
 	private JSONArray updateArray;
+
 	public JSONArray getUpdateArray() {
 		return updateArray;
 	}
@@ -91,65 +92,71 @@ public class Command extends AbstractCommand {
 		this.requester = requester;
 		this.setDbId(json.getInt("dbId"));
 		JSONObject data = json.getJSONObject("data");
-		//进入线
+		// 进入线
 		this.setInLinkPid(data.getInt("inLinkPid"));
-		//修改的车道联通信息
-		if(data.containsKey("updateInfos")){
+		// 修改的车道联通信息
+		if (data.containsKey("updateInfos")) {
 			this.updateArray = data.getJSONArray("updateInfos");
-			for(int i = 0; i < updateArray.size();i++){
-				JSONObject obj =updateArray.getJSONObject(i); 
+			for (int i = 0; i < updateArray.size(); i++) {
+				JSONObject obj = updateArray.getJSONObject(i);
 				this.updateTopoIds.add(obj.getInt("objId"));
 			}
 		}
-		//进入点
+		// 进入点
 		this.setNodePid(data.getInt("inNodePid"));
-		//删除的联通信息
-		if(data.containsKey("topoIds")){
-			for(int i = 0 ; i < data.getJSONArray("topoIds").size();i++){
+		// 删除的联通信息
+		if (data.containsKey("topoIds")) {
+			for (int i = 0; i < data.getJSONArray("topoIds").size(); i++) {
 				this.delTopoIds.add(data.getJSONArray("topoIds").getInt(i));
 			}
 		}
-		for(int i = 0;i < data.getJSONArray("laneTopoInfos").size(); i++ ){
-			RdLaneTopoDetail  laneTopoDetail = new RdLaneTopoDetail();
-			//车道联通信息
-			JSONObject jsonObject = data.getJSONArray("laneTopoInfos").getJSONObject(i);
+		for (int i = 0; i < data.getJSONArray("laneTopoInfos").size(); i++) {
+			RdLaneTopoDetail laneTopoDetail = new RdLaneTopoDetail();
+			// 车道联通信息
+			JSONObject jsonObject = data.getJSONArray("laneTopoInfos")
+					.getJSONObject(i);
 			laneTopoDetail.setInLanePid(jsonObject.getInt("inLanePid"));
 			laneTopoDetail.setInLinkPid(this.getInLinkPid());
 			laneTopoDetail.setNodePid(this.getNodePid());
-			//退出车道
+			// 退出车道
 			laneTopoDetail.setOutLanePid(jsonObject.getInt("outLanePid"));
-			//退出线
+			// 退出线
 			laneTopoDetail.setOutLinkPid(jsonObject.getInt("outLinkPid"));
-			//处理标识
-			if(jsonObject.containsKey("processFlag")){
+			// 处理标识
+			if (jsonObject.containsKey("processFlag")) {
 				laneTopoDetail.setProcessFlag(jsonObject.getInt("processFlag"));
 			}
-			//是否借道
-			if(jsonObject.containsKey("throughTurn")){
+			// 是否借道
+			if (jsonObject.containsKey("throughTurn")) {
 				laneTopoDetail.setThroughTurn(jsonObject.getInt("throughTurn"));
 			}
-			//车辆类型
-			if(jsonObject.containsKey("vehicle")){
+			// 车辆类型
+			if (jsonObject.containsKey("vehicle")) {
 				laneTopoDetail.setVehicle(jsonObject.getLong("VEHICLE"));
 			}
-			//车道联通经过线信息
-			if(jsonObject.containsKey("laneTopoVias")){
+			if (jsonObject.containsKey("timeDomain")) {
+				laneTopoDetail.setTimeDomain("timeDomain");
+			}
+			// 车道联通经过线信息
+			if (jsonObject.containsKey("laneTopoVias")) {
 				List<IRow> topoVias = new ArrayList<IRow>();
-				for(int j =0 ;j < jsonObject.getJSONArray("laneTopoVias").size();j++){
-					JSONObject via = jsonObject.getJSONArray("laneTopoVias").getJSONObject(j);
+				for (int j = 0; j < jsonObject.getJSONArray("laneTopoVias")
+						.size(); j++) {
+					JSONObject via = jsonObject.getJSONArray("laneTopoVias")
+							.getJSONObject(j);
 					RdLaneTopoVia topoVia = new RdLaneTopoVia();
 					topoVia.setLanePid(via.getInt("lanePid"));
 					topoVia.setSeqNum(via.getInt("seqNum"));
 					topoVia.setViaLinkPid(via.getInt("linkPid"));
 					topoVias.add(topoVia);
-				
+
 				}
-					laneTopoDetail.setTopoVias(topoVias);
+				laneTopoDetail.setTopoVias(topoVias);
 			}
 			laneToptInfos.add(laneTopoDetail);
 
 		}
-        
+
 	}
 
 	public List<RdLaneTopoDetail> getLaneToptInfos() {
@@ -183,7 +190,5 @@ public class Command extends AbstractCommand {
 	public void setUpdateTopoIds(List<Integer> updateTopoIds) {
 		this.updateTopoIds = updateTopoIds;
 	}
-
-
 
 }

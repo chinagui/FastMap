@@ -79,29 +79,11 @@ public class MultiSrcFmSyncService {
 		try{
 			QueryRunner queryRunner = new QueryRunner();
 			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
-			StringBuilder sql = new StringBuilder();
-			sql.append("UPDATE MULTISRC_FM_SYNC SET ");
-			if(obj.getSyncStatus() != null){
-				//更新管理状态
-				long syncStatus = obj.getSyncStatus();
-				sql.append(" SYNC_STATUS="+syncStatus);
-			}
-			if(obj.getZipFile() != null){
-				if(obj.getSyncStatus() != null){
-					sql.append(",");
-				}
-				//更新增量包路径
-				String zipFile = obj.getZipFile();
-				sql.append(" ZIP_FILE='"+zipFile+"' ");
-			}
-			sql.append(" WHERE TO_CHAR(SYNC_TIME,'yyyyMMdd')=TO_CHAR(SYSDATE,'yyyyMMdd')");
-			String querySql = sql.toString();
-			
+			String sql = "UPDATE MULTISRC_FM_SYNC SET SYNC_STATUS=?,ZIP_FILE=? WHERE TO_CHAR(SYNC_TIME,'yyyyMMdd')=TO_CHAR(SYSDATE,'yyyyMMdd')";
 			//日志
-			log.info("更新MULTISRC_FM_SYNC表的管理记录:"+querySql);
+			log.info("更新MULTISRC_FM_SYNC表的管理记录:"+sql);
 			
-			Object[] params = {};
-			queryRunner.update(conn,querySql,params);
+			queryRunner.update(conn,sql,obj.getSyncStatus(),obj.getZipFile());
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -150,11 +132,11 @@ public class MultiSrcFmSyncService {
 			while(rs.next()){
 				MultiSrcFmSync msg = new MultiSrcFmSync();
 				msg.setSid(rs.getLong("SID"));
-				msg.setSyncStatus(rs.getLong("SYNC_STATUS"));
+				msg.setSyncStatus(rs.getInt("SYNC_STATUS"));
 				msg.setSyncTime(rs.getTimestamp("SYNC_TIME"));
 				msg.setJobId(rs.getLong("JOB_ID"));
 				msg.setZipFile(rs.getString("ZIP_FILE"));
-				msg.setDbType(rs.getLong("DB_TYPE"));
+				msg.setDbType(rs.getInt("DB_TYPE"));
 				msgs.add(msg);
 			}
 			return msgs;
@@ -188,7 +170,7 @@ public class MultiSrcFmSyncService {
 			//创建管理记录
 			MultiSrcFmSync obj = new MultiSrcFmSync();
 			obj.setJobId(jobId);
-			obj.setDbType(1L);
+			obj.setDbType(1);
 			obj.setZipFile(zipUrl);
 			insert(obj);
 			return "FM已开始导入";

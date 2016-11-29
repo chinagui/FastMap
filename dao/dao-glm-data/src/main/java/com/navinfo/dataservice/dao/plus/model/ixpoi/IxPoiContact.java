@@ -1,12 +1,6 @@
 package com.navinfo.dataservice.dao.plus.model.ixpoi;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
-
-import net.sf.json.JSONObject;
 
 /** 
 * @ClassName:  IxPoiContact 
@@ -70,4 +64,11 @@ public class IxPoiContact extends BasicRow {
 	public String tableName() {
 		return "IX_POI_CONTACT";
 	}
+	
+	public static final String POI_PID = "POI_PID";
+	public static final String CONTACT_TYPE = "CONTACT_TYPE";
+	public static final String CONTACT = "CONTACT";
+	public static final String CONTACT_DEPART = "CONTACT_DEPART";
+	public static final String PRIORITY = "PRIORITY";
+
 }

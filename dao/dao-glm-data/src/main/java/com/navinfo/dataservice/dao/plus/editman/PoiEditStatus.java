@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.control.row.poiEditStatus;
+package com.navinfo.dataservice.dao.plus.editman;
 
 import java.sql.Clob;
 import java.sql.Connection;

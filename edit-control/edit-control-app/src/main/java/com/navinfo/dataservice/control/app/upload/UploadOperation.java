@@ -393,7 +393,7 @@ public class UploadOperation {
 								boolean freshFlag = perRetObj.getBoolean("freshFlag");
 								String rawFields = jo.getString("rawFields");
 								if (freshFlag) {
-									upatePoiStatusForAndroid(conn,  1, rawFields,1,poiJson.getInt("pid"));
+									upatePoiStatusForAndroid(conn, 1, rawFields,1,poiJson.getInt("pid"));
 									
 								} else {
 									upatePoiStatusForAndroid(conn, 0, rawFields,1,poiJson.getInt("pid"));
@@ -461,7 +461,7 @@ public class UploadOperation {
 							String rawFields = jo.getString("rawFields");
 							IxPoiSelector ixPoiSelector = new IxPoiSelector(conn);
 							//JSONObject poiRowId = ixPoiSelector.getRowIdById(pid);
-							upatePoiStatusForAndroid(conn, 0, rawFields,2,pid);
+							upatePoiStatusForAndroid(conn, 0, rawFields,1,pid);
 
 							conn.commit();
 							count++;
@@ -1819,7 +1819,7 @@ public class UploadOperation {
 	 * @param row
 	 * @throws Exception
 	 */
-	public void upatePoiStatusForAndroid(Connection conn, int freshFlag, String rawFields,int status,int pid)
+	public void upatePoiStatusForAndroid(Connection conn,  int freshFlag, String rawFields,int status,int pid)
 			throws Exception {
 		StringBuilder sb = new StringBuilder(" MERGE INTO poi_edit_status T1 ");
 		sb.append(" USING (SELECT "+status+" as b," + freshFlag + " as c,'" + rawFields

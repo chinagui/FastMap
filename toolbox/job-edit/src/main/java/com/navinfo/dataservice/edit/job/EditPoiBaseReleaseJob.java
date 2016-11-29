@@ -166,7 +166,7 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 					+ "   AND EXISTS (SELECT 1"
 					+ "          FROM IX_POI P"
 					+ "         WHERE SDO_WITHIN_DISTANCE(P.GEOMETRY,SDO_GEOMETRY('"+wkt+"',8307),'MASK=ANYINTERACT') = 'TRUE'"
-					+ "           AND P.ROW_ID = E.ROW_ID)";
+					+ "           AND P.PID = E.PID)";
 			
 			conn = DBConnector.getInstance().getConnectionById(releaseJobRequest.getTargetDbId());
 	    	QueryRunner run = new QueryRunner();		

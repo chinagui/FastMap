@@ -90,7 +90,7 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 				.getBean("syncApi");
 			MultiSrc2FmDaySyncJobRequest req = (MultiSrc2FmDaySyncJobRequest)request;
 			//下载解压远程文件包
-			String localUnzipDir = downloadAndUnzip(req.getRemoteZipFile());
+			String localUnzipDir =null; //downloadAndUnzip(req.getRemoteZipFile());
 			response("下载文件完成",null);
 			//读取文件
 			JSONArray pois = read(localUnzipDir);
@@ -137,7 +137,7 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 			String zipFile = writeImpStat();
 			response("生成统计结果完成",null);
 			//通知多源
-			notifyMultiSrc()
+			//notifyMultiSrc()
 		}catch(Exception e){
 			log.error(e.getMessage(), e);
 			throw new JobException(e.getMessage(),e);
@@ -167,7 +167,7 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 			ZipUtils.unzipFile(localZipFile,localUnzipDir);
 			return localUnzipDir;
 			//设置创建中状态
-			syncApi.updateMultiSrcFmSyncStatus(MultiSrcFmSync.STATUS_DOWNLOAD_SUCCESS);
+			//syncApi.updateMultiSrcFmSyncStatus(MultiSrcFmSync.STATUS_DOWNLOAD_SUCCESS);
 		}catch(Exception e){
 			log.error(e.getMessage(),e);
 			//设置创建中状态

@@ -27,6 +27,7 @@ public class GLM001TEST extends BasicBatchRule {
 			List<IxPoiName> subRows=poiObj.getIxPoiNames();
 			for(IxPoiName br:subRows){
 				if(br.getHisOpType().equals(OperationType.UPDATE)){
+					poiObj.deleteSubrow(br);
 				}
 			}
 			IxPoiObj ixpoiObj = (IxPoiObj)obj;

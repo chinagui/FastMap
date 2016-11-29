@@ -18,28 +18,38 @@ import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
 public class RdCross001 extends baseRule {
 
 	public RdCross001() {
-		// TODO Auto-generated constructor stub
 	}
 
 	@Override
 	public void preCheck(CheckCommand checkCommand) throws Exception {
+		
+		List<Integer> crossNodeList=new ArrayList<Integer>();
+		
 		for(IRow obj : checkCommand.getGlmList()){
 			if (obj instanceof RdCross){
 				RdCross crossObj=(RdCross) obj;
-				List<Integer> crossNodeList=new ArrayList<Integer>();
+				
 				for(IRow crossNode:crossObj.getNodes()){
 					crossNodeList.add(((RdCrossNode) crossNode).getNodePid());
 				}
-				String sql="select 1 from rd_node_form n"
-						+ " where n.form_of_way=15 AND N.U_RECORD != 2 "
-						+ " and n.node_pid in ("+crossNodeList.toString().replace("[", "").replace("]", "")+")";
-				DatabaseOperator operator=new DatabaseOperator();
-				List<Object> resutlList=operator.exeSelect(getConn(), sql);
-				if(resutlList!=null && resutlList.size()>0){
-					this.setCheckResult("", "", 0);
-					break;
-				}
-			}}
+			}
+			else if(obj instanceof RdCrossNode)
+			{
+				RdCrossNode rdCrossNode = (RdCrossNode)obj;
+				
+				crossNodeList.add(rdCrossNode.getNodePid());
+			}	
+		}
+		
+		String sql="select 1 from rd_node_form n"
+				+ " where n.form_of_way=15 AND N.U_RECORD != 2 "
+				+ " and n.node_pid in ("+crossNodeList.toString().replace("[", "").replace("]", "")+")";
+		DatabaseOperator operator=new DatabaseOperator();
+		List<Object> resutlList=operator.exeSelect(getConn(), sql);
+		if(resutlList!=null && resutlList.size()>0){
+			this.setCheckResult("", "", 0);
+			return;
+		}
 	}
 
 	@Override

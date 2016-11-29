@@ -348,7 +348,7 @@ public class IxPoiSelector extends AbstractSelector {
 
 		poi.setSamepoiParts(parts);
 
-		poi.setRawFields(loadRawByRowId(poi.getRowId()));
+		poi.setRawFields(loadRawByRowId(poi.getPid()));
 		
 		poi.setState(logRead.getObjectState(poi.pid(), "IX_POI"));
 
@@ -358,14 +358,14 @@ public class IxPoiSelector extends AbstractSelector {
 	/**
 	 * 查询最新RAW_FIELDS
 	 * 
-	 * @param rowId
+	 * @param pid
 	 * @return
 	 * @throws Exception
 	 */
-	public String loadRawByRowId(String rowId) throws Exception {
+	public String loadRawByRowId(int pid) throws Exception {
 
-		String sql = "SELECT RAW_FIELDS FROM POI_EDIT_STATUS WHERE ROW_ID=HEXTORAW('"
-				+ rowId + "') ORDER BY UPLOAD_DATE DESC";
+		String sql = "SELECT RAW_FIELDS FROM POI_EDIT_STATUS WHERE pid="
+				+ pid + " ORDER BY UPLOAD_DATE DESC";
 
 		PreparedStatement pstmt = null;
 

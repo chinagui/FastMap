@@ -65,6 +65,11 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 			Map<String, JSONObject> deletePois = pois.getDeletePois();
 			List<IxPoiObj> ixPoiObjDelete = this.improtDelete(conn, deletePois);
 			result.putAll(ixPoiObjDelete);
+			//维护父子关系
+			PoiRelationImporterCommand pc = new PoiRelationImporterCommand();
+			pc.setPoiRels(parentPid);
+			new PoiRelationImportor(conn,result,pc).operate();
+			
 		}
 	}
 	
@@ -375,6 +380,7 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 				PoiRelation pr = new PoiRelation();
 				pr.setFatherFid(fatherson);
 				pr.setPid(poi.objPid());
+				pr.setPoiRelationType(PoiRelationType.FATHER_AND_SON);
 				parentPid.add(pr);
 				
 				return true;
@@ -500,6 +506,7 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 					PoiRelation pr = new PoiRelation();
 					pr.setFatherFid(fatherson);
 					pr.setPid(poi.objPid());
+					pr.setPoiRelationType(PoiRelationType.FATHER_AND_SON);
 					parentPid.add(pr);
 				}
 
@@ -730,6 +737,7 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 					PoiRelation pr = new PoiRelation();
 					pr.setFatherFid(fatherson);
 					pr.setPid(poi.objPid());
+					pr.setPoiRelationType(PoiRelationType.FATHER_AND_SON);
 					parentPid.add(pr);
 				}
 				return true;

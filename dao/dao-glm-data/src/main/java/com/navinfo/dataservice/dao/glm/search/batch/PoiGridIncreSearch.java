@@ -167,10 +167,17 @@ public class PoiGridIncreSearch {
 		}
 		return pois;
 	}
+	
 	/**
-	 * 全量下载
+	 * @Title: loadIxPoi
+	 * @Description: 全量下载 (修改)(第七迭代)(变更: 已删除的poi 也需要下载)
+	 * @param grid
+	 * @param conn
 	 * @return
-	 * @throws Exception
+	 * @throws Exception  Map<Long,IxPoi>
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2016年11月28日 下午7:23:21 
 	 */
 	@SuppressWarnings("static-access")
 	private Map<Long,IxPoi> loadIxPoi(String grid,Connection conn)throws Exception{
@@ -179,8 +186,10 @@ public class PoiGridIncreSearch {
 		sb.append("SELECT poi_num,pid,mesh_id,kind_code,link_pid,x_guide,y_guide,post_code,open_24h,chain,u_record,geometry,\"LEVEL\",sports_venue,indoor,vip_flag,truck_flag  ");
 		sb.append(" FROM ix_poi");
 		sb.append(" WHERE sdo_within_distance(geometry, sdo_geometry(    :1  , 8307), 'mask=anyinteract') = 'TRUE' ");
+		//*********2016.11.28 zl***********
 		// 不下载已删除的点20161013
-		sb.append(" AND u_record!=2");
+		//sb.append(" AND u_record!=2");
+		//*********2016.11.28 zl***********
 		logger.info("poi query sql:"+sb);
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;

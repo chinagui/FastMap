@@ -31,9 +31,10 @@ public class RdSlopeTest extends InitApplication {
 
 	@Test
 	public void TestAdd() {
+		//{"dbId":17,"command":"UPDATE","type":"RDSLOPE","objId":308000005,"linkPids":[304002729],"length":49.101,"data":{}}"
 		// {"command":"CREATE","dbId":17,"type":"RDSLOPE","data":{"nodePid":"308002126","linkPid":"320002692","linkPids":[303002756],"length":261.724}}
 		// parameter:{"command":"UPDATE","type":"RDSLOPE","dbId":17,"data":{"objStatus":"UPDATE","pid":208000006,"linkPids":[220002832,22
-		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDSLOPE\",\"dbId\":17,\"data\":{\"nodePid\": 205002180,\"linkPid\": 202002721,\"length\":366.999,\"linkPids\":[204002721]}}";
+		String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDSLOPE\",\"dbId\":17,\"linkPids\":[304002729],\"data\":{},\"objId\":308000005,\"length\":49.101,\"length\":49.101}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

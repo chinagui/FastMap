@@ -144,7 +144,7 @@ public class IxPoiSelector {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new ServiceException("查询失败，原因为:"+e.getMessage(),e);
-	}
+		}
 	}
 	
 	public static Map<Long,BasicObj> getIxPoiParentMapByChildrenPidList(Connection conn,Set<Long> pidList) throws ServiceException{
@@ -171,15 +171,18 @@ public class IxPoiSelector {
 			log.info("getIxPoiParentMapByChildrenPidList查询主表："+sql);
 			childPidParentPid = new QueryRunner().query(conn,sql, rsHandler);
 
-			Set<String> tabNames = new HashSet<String>();
-			tabNames.add("IX_POI_PARENT");
-			tabNames.add("IX_POI_CHILDREN");
-			Map<Long,BasicObj> objs = ObjBatchSelector.selectByPids(conn, ObjectType.IX_POI, tabNames, childPidParentPid.values(), true, true);
-			for(BasicObj obj:objs.values()){
-				long pid = obj.objPid();
-				for(Map.Entry<Long, Long> entry:childPidParentPid.entrySet()){
-					if(pid==entry.getValue()){
-						objMap.put(entry.getKey(), obj);
+			//获取父对象
+			if(childPidParentPid!=null&&!childPidParentPid.isEmpty()){
+				Set<String> tabNames = new HashSet<String>();
+				tabNames.add("IX_POI_PARENT");
+				tabNames.add("IX_POI_CHILDREN");
+				Map<Long,BasicObj> objs = ObjBatchSelector.selectByPids(conn, ObjectType.IX_POI, tabNames, childPidParentPid.values(), true, true);
+				for(BasicObj obj:objs.values()){
+					long pid = obj.objPid();
+					for(Map.Entry<Long, Long> entry:childPidParentPid.entrySet()){
+						if(pid==entry.getValue()){
+							objMap.put(entry.getKey(), obj);
+						}
 					}
 				}
 			}

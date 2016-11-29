@@ -53,7 +53,15 @@ public class SelectorUtils {
 				sql = getSqlFromBufferCondition(bufferCondition, isLock);
 			} else {
 				bufferCondition
-						.append("SELECT COUNT (1) OVER (PARTITION BY 1) total,tmp.pid,tmp.name FROM(select poi.pid,ipn.name from( SELECT ix.pid FROM ix_poi ix where ix.pid ="+object.getInt("pid")+" and ix.U_RECORD !=2 union all select ix.pid from ix_poi ix,poi_edit_status ps where ix.PID = "+object.getInt("pid")+" and ix.U_RECORD = 2 and ix.ROW_ID = ps.ROW_ID and ps.STATUS <3)poi LEFT JOIN ix_poi_name ipn ON poi.pid = ipn.poi_pid AND ipn.name_class=1 AND ipn.name_type =2 AND ipn.lang_code = 'CHI' "+")tmp");
+						.append("SELECT COUNT (1) OVER (PARTITION BY 1) total,tmp.pid,tmp.name "
+								+ "FROM(select poi.pid,ipn.name from( SELECT ix.pid FROM ix_poi ix "
+								+ "where ix.pid ="+object.getInt("pid")+" and ix.U_RECORD !=2 "
+								+ "union all "
+								+ "select ix.pid from ix_poi ix,poi_edit_status ps "
+								+ "where ix.PID = "+object.getInt("pid")+" and ix.U_RECORD = 2 "
+								+ "and ix.PID = ps.PID and ps.STATUS <3)poi "
+								+ "LEFT JOIN ix_poi_name ipn ON poi.pid = ipn.poi_pid "
+								+ "AND ipn.name_class=1 AND ipn.name_type =2 AND ipn.lang_code = 'CHI' "+")tmp");
 				sql = getSqlFromBufferCondition(bufferCondition, isLock);
 
 			}

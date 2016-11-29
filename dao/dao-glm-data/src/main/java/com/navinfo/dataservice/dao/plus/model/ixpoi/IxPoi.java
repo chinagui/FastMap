@@ -469,4 +469,56 @@ public class IxPoi extends AbstractIx {
 //		}
 //		return false;
 //	}
+
+	public static final String OPEN_24H = "OPEN_24H";
+	public static final String MESH_ID_5K = "MESH_ID_5K";
+	public static final String MESH_ID = "MESH_ID";
+	public static final String REGION_ID = "REGION_ID";
+	public static final String POST_CODE = "POST_CODE";
+	public static final String EDIT_FLAG = "EDIT_FLAG";
+	public static final String DIF_GROUPID = "DIF_GROUPID";
+	public static final String RESERVED = "RESERVED";
+	public static final String STATE = "STATE";
+	public static final String FIELD_STATE = "FIELD_STATE";
+	public static final String LABEL = "LABEL";
+	public static final String TYPE = "TYPE";
+	public static final String ADDRESS_FLAG = "ADDRESS_FLAG";
+	public static final String EX_PRIORITY = "EX_PRIORITY";
+	public static final String EDITION_FLAG = "EDITION_FLAG";
+	public static final String POI_MEMO = "POI_MEMO";
+	public static final String OLD_BLOCKCODE = "OLD_BLOCKCODE";
+	public static final String OLD_NAME = "OLD_NAME";
+	public static final String OLD_ADDRESS = "OLD_ADDRESS";
+	public static final String OLD_KIND = "OLD_KIND";
+	public static final String POI_NUM = "POI_NUM";
+	public static final String LOG = "LOG";
+	public static final String TASK_ID = "TASK_ID";
+	public static final String DATA_VERSION = "DATA_VERSION";
+	public static final String FIELD_TASK_ID = "FIELD_TASK_ID";
+	public static final String VERIFIED_FLAG = "VERIFIED_FLAG";
+	public static final String COLLECT_TIME = "COLLECT_TIME";
+	public static final String GEO_ADJUST_FLAG = "GEO_ADJUST_FLAG";
+	public static final String FULL_ATTR_FLAG = "FULL_ATTR_FLAG";
+	public static final String OLD_X_GUIDE = "OLD_X_GUIDE";
+	public static final String OLD_Y_GUIDE = "OLD_Y_GUIDE";
+	public static final String TRUCK_FLAG = "TRUCK_FLAG";
+	public static final String LEVEL = "LEVEL";
+	public static final String SPORTS_VENUE = "SPORTS_VENUE";
+	public static final String INDOOR = "INDOOR";
+	public static final String VIP_FLAG = "VIP_FLAG";
+	public static final String PID = "PID";
+	public static final String KIND_CODE = "KIND_CODE";
+	public static final String GEOMETRY = "GEOMETRY";
+	public static final String X_GUIDE = "X_GUIDE";
+	public static final String Y_GUIDE = "Y_GUIDE";
+	public static final String LINK_PID = "LINK_PID";
+	public static final String SIDE = "SIDE";
+	public static final String NAME_GROUPID = "NAME_GROUPID";
+	public static final String ROAD_FLAG = "ROAD_FLAG";
+	public static final String PMESH_ID = "PMESH_ID";
+	public static final String ADMIN_REAL = "ADMIN_REAL";
+	public static final String IMPORTANCE = "IMPORTANCE";
+	public static final String CHAIN = "CHAIN";
+	public static final String AIRPORT_CODE = "AIRPORT_CODE";
+	public static final String ACCESS_FLAG = "ACCESS_FLAG";
 }

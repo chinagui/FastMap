@@ -128,6 +128,9 @@ public class GdbExportScriptsInterface {
 				for (Map.Entry<Integer, Set<Integer>> en : data.entrySet()) {
 
 					int admincode = en.getKey();
+//					if(admincode!=420000){
+//						continue;
+//					}
 					
 					System.out.println("export admincode "+admincode+" ...");
 					

@@ -1,12 +1,6 @@
 package com.navinfo.dataservice.dao.plus.model.ixpoi;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
-
-import net.sf.json.JSONObject;
 
 /** 
 * @ClassName:  IxPoiChargingplot 
@@ -223,4 +217,28 @@ public class IxPoiChargingplot extends BasicRow {
 	public String tableName() {
 		return "IX_POI_CHARGINGPLOT";
 	}
+	
+	public static final String POI_PID = "POI_PID";
+	public static final String GROUP_ID = "GROUP_ID";
+	public static final String COUNT = "COUNT";
+	public static final String ACDC = "ACDC";
+	public static final String PLUG_TYPE = "PLUG_TYPE";
+	public static final String POWER = "POWER";
+	public static final String VOLTAGE = "VOLTAGE";
+	public static final String CURRENT = "CURRENT";
+	public static final String MODE = "MODE";
+	public static final String MEMO = "MEMO";
+	public static final String PLUG_NUM = "PLUG_NUM";
+	public static final String PRICES = "PRICES";
+	public static final String OPEN_TYPE = "OPEN_TYPE";
+	public static final String AVAILABLE_STATE = "AVAILABLE_STATE";
+	public static final String MANUFACTURER = "MANUFACTURER";
+	public static final String FACTORY_NUM = "FACTORY_NUM";
+	public static final String PLOT_NUM = "PLOT_NUM";
+	public static final String PRODUCT_NUM = "PRODUCT_NUM";
+	public static final String PARKING_NUM = "PARKING_NUM";
+	public static final String FLOOR = "FLOOR";
+	public static final String LOCATION_TYPE = "LOCATION_TYPE";
+	public static final String PAYMENT = "PAYMENT";
+
 }

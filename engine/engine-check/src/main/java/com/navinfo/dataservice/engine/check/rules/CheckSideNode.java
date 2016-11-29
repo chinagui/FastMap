@@ -33,6 +33,12 @@ public class CheckSideNode extends baseRule {
 					}
 				}
 			}
+			else if(obj instanceof RdCrossNode)
+			{
+				RdCrossNode rdCrossNode = (RdCrossNode)obj;
+				
+				nodePids.add(rdCrossNode.getNodePid());
+			}
 					
 		}
 		

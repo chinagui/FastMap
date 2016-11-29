@@ -4,7 +4,6 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
@@ -73,7 +72,8 @@ public class Operation implements IOperation {
 	 * @throws Exception
 	 */
 	private void handRdSlopeVia(Result result) throws Exception {
-		if (this.command.getSeriesLinkPids() != null) {
+		if (this.command.getSeriesLinkPids() != null
+				&& this.command.getSeriesLinkPids().size() > 0) {
 			if (this.command.getOutLinkPid() != 0
 					&& this.command.getOutLinkPid() != this.command.getSlope()
 							.getLinkPid()) {
@@ -120,13 +120,12 @@ public class Operation implements IOperation {
 		JSONObject breakJson = new JSONObject();
 		breakJson.put("dbId", this.command.getDbId());
 		json.put("linkPid", this.command.getOutLinkPid());
+		json.put("nodePid", this.command.getSlope().getNodePid());
 		json.put("length", this.command.getLength());
-		JSONArray array = new JSONArray();
-		array.add(this.command.getSeriesLinkPids());
-		json.put("linkPids", array);
+		json.put("linkPids", this.command.getSeriesLinkPids());
 		breakJson.put("data", json);
 		com.navinfo.dataservice.engine.edit.operation.obj.rdslope.create.Command command = new com.navinfo.dataservice.engine.edit.operation.obj.rdslope.create.Command(
-				json, this.command.getRequester());
+				breakJson, this.command.getRequester());
 		com.navinfo.dataservice.engine.edit.operation.obj.rdslope.create.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdslope.create.Operation(
 
 		command, conn);
@@ -229,6 +228,7 @@ public class Operation implements IOperation {
 
 	/***
 	 * 增加坡度接续线信息
+	 * 
 	 * @param slopePid
 	 * @param linkPid
 	 * @param seqNum

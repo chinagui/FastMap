@@ -8,11 +8,20 @@ public class MultiSrcFmSync implements Serializable {
 	private static final long serialVersionUID = 1L;
 	
 	private Long sid;
-	private Long syncStatus;
+	private int syncStatus;
 	private Date syncTime;
 	private Long jobId;
 	private String zipFile;
-	private Long dbType;
+	private int dbType;
+	
+
+	public static final int STATUS_RECEIVED=1;
+	public static final int STATUS_DOWNLOAD_SUCCESS=2;
+	public static final int STATUS_DOWNLOAD_FAIL=3;
+	public static final int STATUS_IMP_SUCCESS=4;
+	public static final int STATUS_IMP_FAIL=5;
+	public static final int STATUS_NOTIFY_SUCCESS=11;
+	public static final int STATUS_NOTIFY_FAIL=12;	
 	
 	
 	public Long getSid() {
@@ -21,10 +30,10 @@ public class MultiSrcFmSync implements Serializable {
 	public void setSid(Long sid) {
 		this.sid = sid;
 	}
-	public Long getSyncStatus() {
+	public int getSyncStatus() {
 		return syncStatus;
 	}
-	public void setSyncStatus(Long syncStatus) {
+	public void setSyncStatus(int syncStatus) {
 		this.syncStatus = syncStatus;
 	}
 	public Date getSyncTime() {
@@ -45,10 +54,10 @@ public class MultiSrcFmSync implements Serializable {
 	public void setZipFile(String zipFile) {
 		this.zipFile = zipFile;
 	}
-	public Long getDbType() {
+	public int getDbType() {
 		return dbType;
 	}
-	public void setDbType(Long dbType) {
+	public void setDbType(int dbType) {
 		this.dbType = dbType;
 	}
 	

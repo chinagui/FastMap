@@ -1,12 +1,6 @@
 package com.navinfo.dataservice.dao.plus.model.ixpoi;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
-
-import net.sf.json.JSONObject;
 
 /** 
 * @ClassName:  IxPoiParking 
@@ -232,4 +226,29 @@ public class IxPoiParking extends BasicRow {
 	public String tableName() {
 		return "IX_POI_PARKING";
 	}
+	
+	public static final String PARKING_ID = "PARKING_ID";
+	public static final String POI_PID = "POI_PID";
+	public static final String PARKING_TYPE = "PARKING_TYPE";
+	public static final String TOLL_STD = "TOLL_STD";
+	public static final String TOLL_DES = "TOLL_DES";
+	public static final String TOLL_WAY = "TOLL_WAY";
+	public static final String PAYMENT = "PAYMENT";
+	public static final String REMARK = "REMARK";
+	public static final String SOURCE = "SOURCE";
+	public static final String OPEN_TIIME = "OPEN_TIIME";
+	public static final String TOTAL_NUM = "TOTAL_NUM";
+	public static final String WORK_TIME = "WORK_TIME";
+	public static final String RES_HIGH = "RES_HIGH";
+	public static final String RES_WIDTH = "RES_WIDTH";
+	public static final String RES_WEIGH = "RES_WEIGH";
+	public static final String CERTIFICATE = "CERTIFICATE";
+	public static final String VEHICLE = "VEHICLE";
+	public static final String PHOTO_NAME = "PHOTO_NAME";
+	public static final String HAVE_SPECIALPLACE = "HAVE_SPECIALPLACE";
+	public static final String WOMEN_NUM = "WOMEN_NUM";
+	public static final String HANDICAP_NUM = "HANDICAP_NUM";
+	public static final String MINI_NUM = "MINI_NUM";
+	public static final String VIP_NUM = "VIP_NUM";
+
 }

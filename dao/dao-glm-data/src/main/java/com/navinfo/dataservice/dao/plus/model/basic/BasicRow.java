@@ -19,6 +19,7 @@ import com.navinfo.dataservice.dao.plus.glm.GlmFactory;
 import com.navinfo.dataservice.dao.plus.glm.GlmRef;
 import com.navinfo.dataservice.dao.plus.glm.GlmTable;
 import com.navinfo.dataservice.dao.plus.glm.NonGeoPidException;
+import com.navinfo.dataservice.dao.plus.obj.WrongOperationException;
 import com.navinfo.navicommons.database.sql.RunnableSQL;
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -94,6 +95,7 @@ public abstract class BasicRow{
 	public void setOpType(OperationType opType) {
 		this.opType = opType;
 	}
+	
 	public OperationType getHisOpType() {
 		if(hisChangeLogs!=null&&hisChangeLogs.size()>0){
 			int size = hisChangeLogs.size();
@@ -139,17 +141,36 @@ public abstract class BasicRow{
 	public void setRowId(String rowId) {
 		this.rowId = rowId;
 	}
-	public Map<String, Object> getOldValues() {
+	public Map<String,Object> getOldValues(){
 		return oldValues;
 	}
+	
+	public boolean hisOldValueContains(String colName){
+		if(hisChangeLogs!=null){
+			for(ChangeLog log:hisChangeLogs){
+				if(log.getOldValues()!=null&&log.getOldValues().containsKey(colName)){
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
+	
 	/**
 	 * 会从历史记录中取
 	 * @param colName
 	 * @return
 	 */
-	public Object getHisOldValue(String colName){
-		//
-		return null;
+	public Object getHisOldValue(String colName)throws WrongOperationException{
+		if(hisChangeLogs!=null){
+			for(ChangeLog log:hisChangeLogs){
+				if(log.getOldValues()!=null&&log.getOldValues().containsKey(colName)){
+					return log.getOldValues().get(colName);
+				}
+			}
+		}
+		throw new WrongOperationException("历史变更中不包含此字段");
 	}
 
 	/**

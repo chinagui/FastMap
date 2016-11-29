@@ -1,12 +1,7 @@
 package com.navinfo.dataservice.dao.plus.model.ixpoi;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
 
-import net.sf.json.JSONObject;
 
 /** 
 * @ClassName:  IxSamepoiPart 
@@ -43,4 +38,8 @@ public class IxSamepoiPart extends BasicRow {
 	public String tableName() {
 		return "IX_SAMEPOI_PART";
 	}
+	
+	public static final String GROUP_ID = "GROUP_ID";
+	public static final String POI_PID = "POI_PID";
+
 }

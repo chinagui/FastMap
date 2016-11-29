@@ -705,7 +705,7 @@ public class AbstractSelector implements ISelector {
     private void handlePoiEditStatus(IxPoi ixPoi, boolean isLock) throws Exception {
         IxPoiEditStatusSelector ixPoiEditStatusSelector = new IxPoiEditStatusSelector(conn);
 
-        int status = ixPoiEditStatusSelector.loadStatusByRowId(ixPoi.rowId(), isLock);
+        int status = ixPoiEditStatusSelector.loadStatusByRowId(ixPoi.getPid(), isLock);
 
         ixPoi.setStatus(status);
 

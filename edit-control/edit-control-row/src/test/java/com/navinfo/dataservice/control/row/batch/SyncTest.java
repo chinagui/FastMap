@@ -10,7 +10,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import com.navinfo.dataservice.api.edit.model.FmMultiSrcSync;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.control.row.multisrc.MultiSrcFmSyncService;
-import com.navinfo.dataservice.control.row.multisrc.SyncApiImpl;
+import com.navinfo.dataservice.control.row.multisrc.FmMultiSrcSyncApiImpl;;
 
 /**
  * 
@@ -32,7 +32,7 @@ public class SyncTest {
 	@Test
 	public void TestinsertFmMultiSrcSync() throws Exception{
 		
-		SyncApiImpl sy = new SyncApiImpl();
+		FmMultiSrcSyncApiImpl sy = new FmMultiSrcSyncApiImpl();
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
 		String syncTime = sdf.format(new Date());
 		String msg = sy.insertFmMultiSrcSync(3,syncTime);
@@ -43,7 +43,7 @@ public class SyncTest {
 	@Test
 	public void TestqueryLastSuccessSync() throws Exception{
 		
-		SyncApiImpl sy = new SyncApiImpl();
+		FmMultiSrcSyncApiImpl sy = new FmMultiSrcSyncApiImpl();
 		FmMultiSrcSync fmMultiSrcSync = sy.queryLastSuccessSync();
 		System.out.println(fmMultiSrcSync.toString());
 		
@@ -52,7 +52,7 @@ public class SyncTest {
 	@Test
 	public void TestupdateFmMultiSrcSyncStatus() throws Exception{
 		
-		SyncApiImpl sy = new SyncApiImpl();
+		FmMultiSrcSyncApiImpl sy = new FmMultiSrcSyncApiImpl();
 		sy.updateFmMultiSrcSyncStatus(8);
 		
 	}
@@ -60,7 +60,7 @@ public class SyncTest {
 	@Test
 	public void TestupdateFmMultiSrcSync() throws Exception{
 		
-		SyncApiImpl sy = new SyncApiImpl();
+		FmMultiSrcSyncApiImpl sy = new FmMultiSrcSyncApiImpl();
 		sy.updateFmMultiSrcSync(8, "路径");
 		
 	}
@@ -68,7 +68,7 @@ public class SyncTest {
 	@Test
 	public void TestinsertMultiSrcFmSync() throws Exception{
 		
-		SyncApiImpl sy = new SyncApiImpl();
+		FmMultiSrcSyncApiImpl sy = new FmMultiSrcSyncApiImpl();
 		String msg = sy.insertMultiSrcFmSync(2,1,"zipFile");
 		System.out.println(msg);
 		
@@ -77,7 +77,7 @@ public class SyncTest {
 	@Test
 	public void TestupdateMultiSrcFmSyncStatus() throws Exception{
 		
-		SyncApiImpl sy = new SyncApiImpl();
+		FmMultiSrcSyncApiImpl sy = new FmMultiSrcSyncApiImpl();
 		sy.updateMultiSrcFmSyncStatus(5);
 		
 	}

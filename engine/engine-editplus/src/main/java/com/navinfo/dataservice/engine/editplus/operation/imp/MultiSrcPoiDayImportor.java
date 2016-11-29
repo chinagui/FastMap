@@ -9,11 +9,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
-
 import com.navinfo.dataservice.api.edit.upload.UploadPois;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.StringUtils;
+import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiAddress;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiContact;
@@ -125,8 +124,7 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 				if(ixPoi.getPoiNum().equals(jo.getString("fid"))){
 					flag = false;
 					try{
-						boolean isDeleted = queryObj.getIsDeleted();
-						if(isDeleted){
+						if(queryObj.getMainrow().getOpType().equals(OperationType.PRE_DELETED)){
 							throw new Exception("该数据已经逻辑删除");
 						}else{
 							this.importUpdateByJson(queryObj, jo);
@@ -179,8 +177,7 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 					flag = false;
 					try{
 						//判断是否已逻辑删除
-						boolean isDeleted = deleteObj.getIsDeleted();
-						if(isDeleted){
+						if(deleteObj.getMainrow().getOpType().equals(OperationType.PRE_DELETED)){
 							//已逻辑删除
 							throw new Exception("该数据已经逻辑删除");
 						}else{
@@ -264,25 +261,15 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 					throw new Exception("二代分类kind字段名不存在");
 				}
 				//[集合]风味类型
-				if(!JSONUtils.isNull(jo.get("foodTypes"))){
-					String foodTypes = jo.getString("foodTypes");
-					if(!"[]".equals(foodTypes)){
-						JSONArray ja = JSONArray.fromObject(foodTypes);
-						for (int i=0;i<ja.size();i++) {
-							JSONObject jso = ja.getJSONObject(i);
-							String foodType = null;
-							if(!JSONUtils.isNull(jo.get("foodType"))){
-								foodType = jso.getString("foodType");
-							}else{
-								throw new Exception("风味类型foodType字段名不存在");
-							}
-							//IX_POI_RESTAURANT表
-							IxPoiRestaurant ixPoiRestaurant = poi.createIxPoiRestaurant();
-							ixPoiRestaurant.setFoodType(foodType);
-						}
+				if(!JSONUtils.isNull(jo.get("foodType"))){
+					String foodType = jo.getString("foodType");
+					if(foodType!= null){
+						//IX_POI_RESTAURANT表
+						IxPoiRestaurant ixPoiRestaurant = poi.createIxPoiRestaurant();
+						ixPoiRestaurant.setFoodType(foodType);
 					}
 				}else{
-					throw new Exception("风味类型foodTypes字段名不存在");
+					throw new Exception("风味类型foodType字段名不存在");
 				}
 				//[集合]联系方式
 				if(!JSONUtils.isNull(jo.get("contacts"))){
@@ -441,43 +428,12 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 				}
 				//改风味类型
 				if("改风味类型".contains(log)){
-					/*
-					//查询的IX_POI_RESTAURANT表
-					List<IxPoiRestaurant> ixPoiRestaurants = poi.getIxPoiRestaurants();
-					//[集合]风味类型
-					String foodTypes = null;
-					if(!JSONUtils.isNull(jo.get("foodTypes"))){
-						foodTypes = jo.getString("foodTypes");
-					}else{
-						throw new Exception("风味类型foodTypes字段名不存在");
-					}
-					if(!"[]".equals(foodTypes)){
-						JSONArray ja = JSONArray.fromObject(foodTypes);
-						for (int i=0;i<ja.size();i++) {
-							JSONObject jso = ja.getJSONObject(i);
-							String foodType = null;
-							if(!JSONUtils.isNull(jo.get("foodType"))){
-								foodType = jso.getString("foodType");
-							}else{
-								throw new Exception("风味类型foodType字段名不存在");
-							}
-							//IX_POI_RESTAURANT表
-							IxPoiRestaurant ixPoiRestaurant = poi.createIxPoiRestaurant();
-							ixPoiRestaurant.setFoodType(foodType);
-						}
-					}if("[]".equals(ixPoiRestaurants)){
-						//逻辑删除日库中所有风味类型记录
-						for (IxPoiRestaurant ixPoiRestaurant : ixPoiRestaurants) {
-							poi.deleteSubrow(ixPoiRestaurant);
-						}
-						
-					}
-					*/
+					this.usdateFoodType(poi, jo);
 				}
 				//改父子关系
-				if("改父子关系".contains(log)){
+				/*if("改父子关系".contains(log)){
 					
-				}
+				}*/
 				//改品牌
 				if("改品牌".contains(log)){
 					if(!JSONUtils.isNull(jo.get("chain"))){
@@ -503,17 +459,19 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 				}
 				//改星级
 				if("改星级".contains(log)){
-					/*
 					//查询的IX_POI_HOTEL表
 					List<IxPoiHotel> ixPoiHotels = poi.getIxPoiHotels();
 					//星级
 					if(jo.getInt("rating") >-1){
 						int rating =jo.getInt("rating");
-						//IX_POI_HOTEL表
-						IxPoiHotel ixPoiHotel = poi.createIxPoiHotel();
-						ixPoiHotel.setRating(rating);
+						if(ixPoiHotels != null && ixPoiHotels.size()>0){
+							ixPoiHotels.get(0).setRating(rating);
+						}else{
+							//IX_POI_HOTEL表
+							IxPoiHotel ixPoiHotel = poi.createIxPoiHotel();
+							ixPoiHotel.setRating(rating);
+						}
 					}
-					*/
 				}
 				//改内部POI
 				if("改内部POI".contains(log)){
@@ -692,9 +650,38 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 			}
 			
 		}
-		
-		
-		
+	}
+	
+	/**
+	 * 该风味类型
+	 * @author Han Shaoming
+	 * @param poi
+	 * @param jo
+	 * @throws Exception
+	 */
+	public void usdateFoodType(IxPoiObj poi,JSONObject jo) throws Exception{
+		//查询的IX_POI_RESTAURANT表
+		List<IxPoiRestaurant> ixPoiRestaurants = poi.getIxPoiRestaurants();
+		//[集合]风味类型
+		String foodType = null;
+		if(!JSONUtils.isNull(jo.get("foodType"))){
+			foodType = jo.getString("foodType");
+		}else{
+			throw new Exception("风味类型foodType字段名不存在");
+		}
+		if(StringUtils.isNotEmpty(foodType)){
+			if(ixPoiRestaurants != null && ixPoiRestaurants.size()>0){
+				ixPoiRestaurants.get(0).setFoodType(foodType);
+			}else{
+				//IX_POI_RESTAURANT表
+				IxPoiRestaurant ixPoiRestaurant = poi.createIxPoiRestaurant();
+				ixPoiRestaurant.setFoodType(foodType);
+			}
+		}else{
+			//逻辑删除日库中所有风味类型记录
+			IxPoiRestaurant ixPoiRestaurant = ixPoiRestaurants.get(0);
+			poi.deleteSubrow(ixPoiRestaurant);
+		}
 	}
 
 	
@@ -702,8 +689,7 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 		if(poi!=null&&jo!=null){
 			if(poi instanceof IxPoiObj){
 				//判断是否已逻辑删除
-				boolean isDeleted = poi.getIsDeleted();
-				if(isDeleted){
+				if(poi.getMainrow().getOpType().equals(OperationType.PRE_DELETED)){
 					//已逻辑删除
 					throw new Exception("该数据已经逻辑删除");
 				}else{

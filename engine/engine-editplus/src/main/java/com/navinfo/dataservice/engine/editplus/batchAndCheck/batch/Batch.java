@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.navinfo.dataservice.dao.plus.obj.ObjectType;
 import com.navinfo.dataservice.dao.plus.operation.AbstractOperation;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
 import com.navinfo.dataservice.dao.plus.selector.ObjChildrenIncreSelector;
@@ -36,10 +37,13 @@ public class Batch extends AbstractOperation{
 			rule.setAccessorType("JAVA");
 			rule.setAccessor("com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.rule.GLM001TEST");
 			Set<String> objNameSet=new HashSet<String>();
-			objNameSet.add("IX_POI");
+			objNameSet.add(ObjectType.IX_POI);
+			objNameSet.add(ObjectType.AD_LINK);
+			//"IX_POI,AD_LINK"
 			rule.setObjNameSet(objNameSet);
 			Map<String, Set<String>> referSubtableMap=new HashMap<String, Set<String>>();
 			referSubtableMap.put("IX_POI", objNameSet);
+			//{"IX_POI":{"IX_POI_NAME","IX_POI_CHILDREN"}}
 			rule.setReferSubtableMap(referSubtableMap);
 			batchRuleList.add(rule);
 			Map<String, Set<String>> tmpMap = rule.getReferSubtableMap();

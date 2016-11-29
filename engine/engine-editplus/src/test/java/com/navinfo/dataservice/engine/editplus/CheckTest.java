@@ -37,8 +37,8 @@ public class CheckTest {
 		OperationResult operationResult=new OperationResult();
 		BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", null, 308, false);
 //		operationResult.putObj(obj);
-		IxPoi row=(IxPoi) obj.getMainrow();
-		row.setKindCode("newkind");
+		//IxPoi row=(IxPoi) obj.getMainrow();
+		//row.setKindCode("newkind");
 		operationResult.putObj(obj);
 		
 		CheckCommand checkCommand=new CheckCommand();		
@@ -48,7 +48,8 @@ public class CheckTest {
 		
 		Check check=new Check(conn,operationResult);
 		check.setCmd(checkCommand);
-		List<NiValException> niValException = check.operate();
+		check.operate();
+		List<NiValException> niValException = check.getReturnExceptions();
 		System.out.println("123");
 	}
 

@@ -4,7 +4,7 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.junit.Before;
@@ -13,18 +13,14 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
-import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
-import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
 import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
 import com.navinfo.dataservice.dao.plus.selector.ObjSelector;
-import com.navinfo.dataservice.engine.editplus.convert.MultiSrcPoiConvertor;
 import com.navinfo.dataservice.engine.editplus.operation.imp.PoiRelation;
 import com.navinfo.dataservice.engine.editplus.operation.imp.PoiRelationImporterCommand;
 import com.navinfo.dataservice.engine.editplus.operation.imp.PoiRelationImportor;
-
-import net.sf.json.JSONObject;
+import com.navinfo.dataservice.engine.editplus.operation.imp.PoiRelationType;
 
 /** 
  * @ClassName: PoiRelationImporterTest
@@ -71,12 +67,14 @@ public class PoiRelationImporterTest {
 			PoiRelation poiRelation = new PoiRelation();
 			poiRelation.setPid(308);
 			poiRelation.setFatherPid(317);
+			poiRelation.setPoiRelationType(PoiRelationType.FATHER_AND_SON);
 			poiCollectionSet.add(poiRelation);
 			
 			PoiRelationImporterCommand poiRelationImporterCommand = new PoiRelationImporterCommand();
 			poiRelationImporterCommand.setPoiRels(poiCollectionSet);
 			
 			OperationResult result = new OperationResult();
+			result.isObjExist(obj);
 			result.putObj(obj);
 			new PoiRelationImportor(conn,result,poiRelationImporterCommand).operate();
 			System.out.println("Over.");
@@ -108,6 +106,7 @@ public class PoiRelationImporterTest {
 			PoiRelation poiRelation = new PoiRelation();
 			poiRelation.setPid(158982);
 			poiRelation.setFatherPid(317);
+			poiRelation.setPoiRelationType(PoiRelationType.FATHER_AND_SON);
 			poiCollectionSet.add(poiRelation);
 			
 			PoiRelationImporterCommand poiRelationImporterCommand = new PoiRelationImporterCommand();
@@ -133,18 +132,14 @@ public class PoiRelationImporterTest {
 			String objType = "IX_POI";
 			long pid = 158982;
 			boolean isLock = false;
-
-			Set<String> tabNames = new HashSet<String>();
-			tabNames.add("IX_POI_NAME");
-			tabNames.add("IX_POI_CONTACT");
-			tabNames.add("IX_POI_ADDRESS");
 			
-			BasicObj obj = ObjSelector.selectByPid(conn, objType, tabNames, pid, isLock);
+			BasicObj obj = ObjSelector.selectByPid(conn, objType, null, pid, isLock);
 			//构造PoiRelationImporterCommand
 			Set<PoiRelation> poiCollectionSet = new HashSet<PoiRelation>();
 			PoiRelation poiRelation = new PoiRelation();
 			poiRelation.setPid(158982);
 			poiRelation.setFatherPid(0);
+			poiRelation.setPoiRelationType(PoiRelationType.FATHER_AND_SON);
 			poiCollectionSet.add(poiRelation);
 			
 			PoiRelationImporterCommand poiRelationImporterCommand = new PoiRelationImporterCommand();
@@ -174,27 +169,23 @@ public class PoiRelationImporterTest {
 			pids.add((long) 317);
 			boolean isLock = false;
 			boolean isNowait = false;
-			
-			Set<String> tabNames = new HashSet<String>();
-			tabNames.add("IX_POI_NAME");
-			tabNames.add("IX_POI_CONTACT");
-			tabNames.add("IX_POI_ADDRESS");
 
-			List<BasicObj> objList = ObjBatchSelector.selectByPids(conn, objType, tabNames, pids, isLock,isNowait);
+			Map<Long,BasicObj> objMap = ObjBatchSelector.selectByPids(conn, objType, null, pids, isLock,isNowait);
 
 			//构造PoiRelationImporterCommand
 			Set<PoiRelation> poiCollectionSet = new HashSet<PoiRelation>();
 			PoiRelation poiRelation = new PoiRelation();
 			poiRelation.setPid(308);
 			poiRelation.setFatherPid(316);
+			poiRelation.setPoiRelationType(PoiRelationType.FATHER_AND_SON);
 			poiCollectionSet.add(poiRelation);
 			
 			PoiRelationImporterCommand poiRelationImporterCommand = new PoiRelationImporterCommand();
 			poiRelationImporterCommand.setPoiRels(poiCollectionSet);
 			
 			OperationResult result = new OperationResult();
-			for(BasicObj obj:objList){
-				result.putObj(obj);
+			for(Map.Entry<Long, BasicObj> entry:objMap.entrySet()){
+				result.putObj(entry.getValue());
 			}
 			new PoiRelationImportor(conn,result,poiRelationImporterCommand).operate();
 			System.out.println("Over.");
@@ -224,21 +215,22 @@ public class PoiRelationImporterTest {
 			tabNames.add("IX_POI_CONTACT");
 			tabNames.add("IX_POI_ADDRESS");
 
-			List<BasicObj> objList = ObjBatchSelector.selectByPids(conn, objType, tabNames, pids, isLock,isNowait);
+			Map<Long,BasicObj> objMap = ObjBatchSelector.selectByPids(conn, objType, tabNames, pids, isLock,isNowait);
 
 			//构造PoiRelationImporterCommand
 			Set<PoiRelation> poiCollectionSet = new HashSet<PoiRelation>();
 			PoiRelation poiRelation = new PoiRelation();
 			poiRelation.setPid(158982);
 			poiRelation.setFatherPid(308);
+			poiRelation.setPoiRelationType(PoiRelationType.FATHER_AND_SON);
 			poiCollectionSet.add(poiRelation);
 			
 			PoiRelationImporterCommand poiRelationImporterCommand = new PoiRelationImporterCommand();
 			poiRelationImporterCommand.setPoiRels(poiCollectionSet);
 			
 			OperationResult result = new OperationResult();
-			for(BasicObj obj:objList){
-				result.putObj(obj);
+			for(Map.Entry<Long, BasicObj> entry:objMap.entrySet()){
+				result.putObj(entry.getValue());
 			}
 			new PoiRelationImportor(conn,result,poiRelationImporterCommand).operate();
 			System.out.println("Over.");

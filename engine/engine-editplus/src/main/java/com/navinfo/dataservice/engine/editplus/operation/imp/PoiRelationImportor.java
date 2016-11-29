@@ -56,7 +56,7 @@ public class PoiRelationImportor extends AbstractOperation{
 					fatherPidSet.add(fatherPid);	
 				}else{
 					String fatherFid = poiRelation.getFatherFid();
-					if(fatherFid!=null&&fatherFid.equals(""))
+					if(fatherFid!=null&&!fatherFid.equals(""))
 					{
 						fatherFidSet.add(poiRelation.getFatherFid());
 						parentFidChildPid.put(fatherFid,pid);
@@ -118,9 +118,9 @@ public class PoiRelationImportor extends AbstractOperation{
 		//处理父子关系
 		//遍历fatherAndSonSet,维护关系
 		for(Map.Entry<Long,Long> entry:childPidParentPid.entrySet()){
-			//接触原始父子关系
 			long childPid = entry.getKey();
 			long parentPid = entry.getValue();
+			//接触原始父子关系
 			if(childPidOrigionParentPid.containsKey(childPid)&&childPidOrigionParentPid.get(childPid)!=entry.getValue()){
 				BasicObj origionParentObj = result.getObjsMapByType(ObjectType.IX_POI).get(childPidOrigionParentPid.get(childPid));
 				List<BasicRow> ixPoiChildrenList = origionParentObj.getRowsByName("IX_POI_CHILDREN");
@@ -128,14 +128,21 @@ public class PoiRelationImportor extends AbstractOperation{
 				if(ixPoiChildrenList.size()==1){
 					origionParentObj.deleteSubrow(ixPoiParentList.get(0));
 				}
-				origionParentObj.deleteSubrow(ixPoiChildrenList.get(0));
+				for(BasicRow ixPoiChild:ixPoiChildrenList){
+//					System.out.println(ixPoiChild.getAttrByColName("CHILD_POI_PID"));
+					if((long)ixPoiChild.getAttrByColName("CHILD_POI_PID")==childPid){
+						origionParentObj.deleteSubrow(ixPoiChild);
+						break;
+					}
+				}
+				
 			}
 			
 			if(parentPid!=0){
 				
 				BasicObj parentObj = result.getObjsMapByType(ObjectType.IX_POI).get(parentPid);
 				List<BasicRow> parentList = new ArrayList<BasicRow>();
-				if(parentObj.getRowsByName("IX_POI_PARENT").isEmpty()){
+				if(parentObj.getRowsByName("IX_POI_PARENT")==null||parentObj.getRowsByName("IX_POI_PARENT").isEmpty()){
 					//非父节点，需要创建其为父节点
 					IxPoiParent ixPoiParent = (IxPoiParent) ObjFactory.getInstance().createRow("IX_POI_PARENT", parentPid);
 					ixPoiParent.setAttrByCol("PARENT_POI_PID", parentPid);
@@ -147,13 +154,16 @@ public class PoiRelationImportor extends AbstractOperation{
 				}
 				IxPoiParent ixPoiParent = (IxPoiParent) parentList.get(0);
 				
-				List<BasicRow> childrenList = parentObj.getRowsByName("IX_POI_CHIDREN");
+				List<BasicRow> childrenList = parentObj.getRowsByName("IX_POI_CHILDREN");
+				if(childrenList==null){
+					childrenList = new ArrayList<BasicRow>();
+				}
 				
-				IxPoiChildren ixPoiChildren = (IxPoiChildren) ObjFactory.getInstance().createRow("IX_POI_CHIDREN", parentPid);
+				IxPoiChildren ixPoiChildren = (IxPoiChildren) ObjFactory.getInstance().createRow("IX_POI_CHILDREN", parentPid);
 				ixPoiChildren.setAttrByCol("GROUP_ID", ixPoiParent.getGroupId());
 				ixPoiChildren.setAttrByCol("CHILD_POI_PID", childPid);
 				childrenList.add(ixPoiChildren);
-				parentObj.setSubrows("IX_POI_CHIDREN", childrenList);
+				parentObj.setSubrows("IX_POI_CHILDREN", childrenList);
 			}
 			
 		}

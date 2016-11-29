@@ -261,6 +261,10 @@ public class Fm2MultiSrcSyncJob extends AbstractJob {
 					}
 				}
 				//设置父fid
+				 Map<Long, String> ParentFids = IxPoiSelector.getParentFidByPids(conn, objs.keySet());
+				for(Map.Entry<Long, String> entry:ParentFids.entrySet()){
+					((IxPoiObj)objs.get(entry.getKey())).setParentFid(entry.getValue());
+				}
 				
 				//设置adminId
 				 Map<Long,Long> adminIds = IxPoiSelector.getAdminIdByPids(conn, objs.keySet());

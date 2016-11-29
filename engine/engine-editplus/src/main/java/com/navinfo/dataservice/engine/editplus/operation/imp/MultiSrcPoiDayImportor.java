@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+
 import com.navinfo.dataservice.api.edit.upload.UploadPois;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.StringUtils;
@@ -43,6 +44,7 @@ import net.sf.json.util.JSONUtils;
 public class MultiSrcPoiDayImportor extends AbstractOperation {
 
 	protected Map<String,String> errLog=new HashMap<String,String>();
+	protected List<PoiRelation> parentPid = new ArrayList<PoiRelation>();
 	
 	public MultiSrcPoiDayImportor(Connection conn,OperationResult preResult) {
 		super(conn,preResult);
@@ -363,6 +365,18 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 				}else{
 					throw new Exception("网址website字段名不存在");
 				}
+				//处理父子关系
+				String fatherson = null;
+				if(!JSONUtils.isNull(jo.get("fatherson"))){
+					fatherson = jo.getString("fatherson");
+				}else{
+					throw new Exception("父子关系fatherson字段名不存在");
+				}
+				PoiRelation pr = new PoiRelation();
+				pr.setFatherFid(fatherson);
+				pr.setPid(poi.objPid());
+				parentPid.add(pr);
+				
 				return true;
 			}else{
 				throw new ImportException("不支持的对象类型");
@@ -430,10 +444,6 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 				if("改风味类型".contains(log)){
 					this.usdateFoodType(poi, jo);
 				}
-				//改父子关系
-				/*if("改父子关系".contains(log)){
-					
-				}*/
 				//改品牌
 				if("改品牌".contains(log)){
 					if(!JSONUtils.isNull(jo.get("chain"))){
@@ -477,6 +487,20 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 				if("改内部POI".contains(log)){
 					int indoorType =jo.getInt("indoorType");
 					ixPoi.setIndoor(indoorType);
+				}
+				//改父子关系
+				if("改父子关系".contains(log)){
+					//处理父子关系
+					String fatherson = null;
+					if(!JSONUtils.isNull(jo.get("fatherson"))){
+						fatherson = jo.getString("fatherson");
+					}else{
+						throw new Exception("父子关系fatherson字段名不存在");
+					}
+					PoiRelation pr = new PoiRelation();
+					pr.setFatherFid(fatherson);
+					pr.setPid(poi.objPid());
+					parentPid.add(pr);
 				}
 
 				return true;
@@ -695,6 +719,18 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 				}else{
 					//该对象逻辑删除
 					poi.deleteObj();
+					
+					//处理父子关系
+					String fatherson = null;
+					if(!JSONUtils.isNull(jo.get("fatherson"))){
+						fatherson = jo.getString("fatherson");
+					}else{
+						throw new Exception("父子关系fatherson字段名不存在");
+					}
+					PoiRelation pr = new PoiRelation();
+					pr.setFatherFid(fatherson);
+					pr.setPid(poi.objPid());
+					parentPid.add(pr);
 				}
 				return true;
 			}else{
@@ -722,6 +758,8 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 		tabNames.add("IX_POI_DETAIL");
 		return tabNames;
 	}
+	
+	
 
 	@Override
 	public String getName() {

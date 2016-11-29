@@ -197,7 +197,7 @@ public class Fm2MultiSrcSyncJob extends AbstractJob {
 			try{
 				syncApi.updateFmMultiSrcSyncStatus(FmMultiSrcSync.STATUS_SYNC_FAIL);
 			}catch(Exception ex){
-				log.error(ex.getMessage(),e);
+				log.error(ex.getMessage(),ex);
 			}
 			log.warn("日库同步数据包已生成，通知多源平台时发生错误，请联系多源平台运维");
 			log.error(e.getMessage(),e);

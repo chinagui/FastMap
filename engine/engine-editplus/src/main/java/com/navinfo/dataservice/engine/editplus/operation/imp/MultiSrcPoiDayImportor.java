@@ -50,6 +50,14 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 		super(conn,preResult);
 	}
 
+	public Map<String, String> getErrLog() {
+		return errLog;
+	}
+
+	public List<PoiRelation> getParentPid() {
+		return parentPid;
+	}
+
 	@Override
 	public void operate() throws Exception {
 		UploadPois pois = ((MultiSrcPoiDayImportorCommand)cmd).getPois();
@@ -65,10 +73,6 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 			Map<String, JSONObject> deletePois = pois.getDeletePois();
 			List<IxPoiObj> ixPoiObjDelete = this.improtDelete(conn, deletePois);
 			result.putAll(ixPoiObjDelete);
-			//维护父子关系
-			PoiRelationImporterCommand pc = new PoiRelationImporterCommand();
-			pc.setPoiRels(parentPid);
-			new PoiRelationImportor(conn,result,pc).operate();
 			
 		}
 	}

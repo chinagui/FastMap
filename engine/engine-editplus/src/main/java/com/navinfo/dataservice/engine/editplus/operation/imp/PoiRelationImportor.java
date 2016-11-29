@@ -31,12 +31,10 @@ import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
 public class PoiRelationImportor extends AbstractOperation{
 	protected Logger log = Logger.getLogger(this.getClass());
 	
-	protected PoiRelationImporterCommand poiRelationImporterCommand;
+	protected PoiRelationImportorCommand poiRelationImporterCommand;
 	
-	public PoiRelationImportor(Connection conn,  OperationResult preResult
-			,PoiRelationImporterCommand poiRelationImporterCommand) {
+	public PoiRelationImportor(Connection conn,  OperationResult preResult) {
 		super(conn,  preResult);
-		this.poiRelationImporterCommand = poiRelationImporterCommand;
 		
 	}
 

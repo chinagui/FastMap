@@ -10,7 +10,7 @@ import com.navinfo.dataservice.dao.plus.operation.AbstractCommand;
  * @date 2016年11月28日
  * @Description: PoiRelationImporterCommand.java
  */
-public class PoiRelationImporterCommand extends AbstractCommand {
+public class PoiRelationImportorCommand extends AbstractCommand {
 	protected Collection<PoiRelation> poiRels;
 
 	public Collection<PoiRelation> getPoiRels() {

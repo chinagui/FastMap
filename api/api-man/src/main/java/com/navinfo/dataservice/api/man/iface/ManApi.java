@@ -3,6 +3,7 @@ package com.navinfo.dataservice.api.man.iface;
 import java.util.List;
 import java.util.Map;
 
+import com.navinfo.dataservice.api.man.model.CpRegionProvince;
 import com.navinfo.dataservice.api.man.model.Message;
 import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.api.man.model.Subtask;
@@ -67,5 +68,8 @@ public interface ManApi{
 	
 	public List<Map<String, Object>> queryDay2MonthList(JSONObject conditionJson) throws Exception;
 	
+	public List<CpRegionProvince> listCpRegionProvince()throws Exception;
+	
+	public Map<Integer,Integer> listDayDbIdsByAdminId()throws Exception;
 }
 

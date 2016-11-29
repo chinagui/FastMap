@@ -20,6 +20,8 @@ public class MultiSrcFmSync implements Serializable {
 	public static final int STATUS_DOWNLOAD_FAIL=3;
 	public static final int STATUS_IMP_SUCCESS=4;
 	public static final int STATUS_IMP_FAIL=5;
+	public static final int STATUS_CREATE_RES_SUCCESS=6;
+	public static final int STATUS_CREATE_RES_FAIL=7;
 	public static final int STATUS_NOTIFY_SUCCESS=11;
 	public static final int STATUS_NOTIFY_FAIL=12;	
 	

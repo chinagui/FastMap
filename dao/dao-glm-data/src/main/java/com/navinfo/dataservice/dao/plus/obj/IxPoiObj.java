@@ -173,7 +173,7 @@ public class IxPoiObj extends AbstractIxObj {
 	}
 	
 	/**
-	 * 子列表
+	 * 子列表Fid
 	 * @author Han Shaoming
 	 * @return
 	 */

@@ -290,10 +290,10 @@ public class SearchProcess {
 						RdLinkSearchUtils searchUtils = new RdLinkSearchUtils(
 								conn);
 						
-						List<Integer> nextLinkPids = searchUtils.variableSpeedNextLinks( linkPid,  nodePid);
+						List<RdLink> links  = searchUtils.variableSpeedNextLinks( linkPid,  nodePid);						
 						
-						for (Integer pid : nextLinkPids) {
-							array.add(pid);
+						for (RdLink link : links) {
+							array.add(link.Serialize(ObjLevel.BRIEF));
 						}
 					}
 					// 坡度追踪原则开发

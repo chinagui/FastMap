@@ -22,7 +22,8 @@ import com.navinfo.dataservice.engine.editplus.model.batchAndCheck.CheckRuleComm
 import com.navinfo.dataservice.engine.editplus.model.batchAndCheck.CheckRule;
 import com.navinfo.dataservice.engine.editplus.model.batchAndCheck.NiValException;
 
-public class Check extends CheckOperation{
+public class Check extends AbstractOperation{
+	private List<NiValException> returnExceptions =new ArrayList<NiValException>();
 	public Check(Connection conn, OperationResult preResult) {
 		super(conn, preResult);
 		// TODO Auto-generated constructor stub
@@ -42,10 +43,10 @@ public class Check extends CheckOperation{
 		}
 		log.debug("end call insert ni_val");
 	}
-
-	public List<NiValException> operate() throws Exception {
+	@Override
+	public void operate() throws Exception {
 		log.info("start exe check");
-		CheckCommand checkCommand =cmd;
+		CheckCommand checkCommand =(CheckCommand) cmd;
 		//按照规则号list加载规则列表，以及汇总需要参考的子表map
 		log.info("load check rule");
 		Map<String, Set<String>> selConfig=new HashMap<String, Set<String>>();
@@ -89,6 +90,20 @@ public class Check extends CheckOperation{
 			saveCheckResult(conn,checkResult);
 		}
 		log.info("end exe check");
-		return checkResult;
+		setReturnExceptions(checkResult);
+	}
+
+	public List<NiValException> getReturnExceptions() {
+		return returnExceptions;
+	}
+
+	public void setReturnExceptions(List<NiValException> returnExceptions) {
+		this.returnExceptions = returnExceptions;
+	}
+
+	@Override
+	public String getName() {
+		// TODO Auto-generated method stub
+		return "CHECK";
 	}
 }

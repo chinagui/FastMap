@@ -1039,4 +1039,25 @@ public class MetaController extends BaseController {
 			DbUtils.closeQuietly(conn);
 		}
 	}
+	
+	@RequestMapping(value = "/queryChargingChain")
+	public ModelAndView queryChargingChain(HttpServletRequest request)
+			throws ServletException, IOException {
+
+		try {
+
+			ChainSelector selector = new ChainSelector();
+
+			JSONArray data = selector.getChargingChain();
+
+			return new ModelAndView("jsonView", success(data));
+
+		} catch (Exception e) {
+
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
+	
 }

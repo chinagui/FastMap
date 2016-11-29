@@ -232,14 +232,14 @@ public class PoiEditStatus {
 			}
 			StringBuilder sb = new StringBuilder();
 //			sb.append("INSERT INTO POI_EDIT_STATUS (PID,STATUS,IS_UPLOAD,UPLOAD_DATE,WORK_TYPE) VALUES (?,?,?,TO_DATE(?,'yyyy-MM-dd HH24:MI:ss'),?)");
-			sb.append("INSERT INTO POI_EDIT_STATUS (ROW_ID,PID,STATUS,IS_UPLOAD,UPLOAD_DATE,WORK_TYPE) VALUES (?,?,?,?,TO_DATE(?,'yyyy-MM-dd HH24:MI:ss'),?)");
+			sb.append("INSERT INTO POI_EDIT_STATUS (PID,STATUS,IS_UPLOAD,UPLOAD_DATE,WORK_TYPE) VALUES (?,?,?,TO_DATE(?,'yyyy-MM-dd HH24:MI:ss'),?)");
 
 			DateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
 			Object[][] values = new Object[pids.size()][];
 			int i = 0;
 			for(long pid:pids){
 //				Object[] value = {pid,status,isUpload,uploadDate.toString().substring(0, 10),workType};
-				Object[] value = {String.valueOf(pid),pid,status,isUpload,format.format(uploadDate),workType};
+				Object[] value = {pid,status,isUpload,format.format(uploadDate),workType};
 				values[i] = value;
 				i++;
 			}

@@ -56,7 +56,7 @@ public class RdLinkSearchUtils {
 	 * @return
 	 * @throws Exception
 	 */
-	public List<Integer> variableSpeedNextLinks(int linkPid, int nodePid)
+	public List<RdLink> variableSpeedNextLinks(int linkPid, int nodePid)
 			throws Exception {
 
 		// 初始化查询类
@@ -68,9 +68,20 @@ public class RdLinkSearchUtils {
 
 		RdLink link = (RdLink) linkSelector.loadById(linkPid, true, true);
 
-		variableSpeedNextLinks(nextLinkPids, linkPid, nodePid, link.getMeshId());
+		Map<Integer, RdLink> linkStorage = variableSpeedNextLinks(nextLinkPids,
+				linkPid, nodePid, link.getMeshId());
+		
+		List<RdLink> links = new ArrayList<RdLink>();
+		
+		for (int pid : nextLinkPids) {
 
-		return nextLinkPids;
+			if (linkStorage.containsKey(pid)) {
+
+				links.add(linkStorage.get(pid));
+			}
+		}
+
+		return links;
 	}
 
 	/**
@@ -83,8 +94,10 @@ public class RdLinkSearchUtils {
 	 * @return
 	 * @throws Exception
 	 */
-	private void variableSpeedNextLinks(List<Integer> nextLinkPids,
+	private Map<Integer,RdLink> variableSpeedNextLinks(List<Integer> nextLinkPids,
 			int preLinkPid, int preNodePid, int meshId) throws Exception {
+
+		Map<Integer, RdLink> linkStorage = new HashMap<Integer, RdLink>();
 
 		List<RdLink> links = linkSelector.loadByNodePidOnlyRdLink(preNodePid,
 				false);
@@ -92,11 +105,11 @@ public class RdLinkSearchUtils {
 		List<RdLink> linksTmp = new ArrayList<RdLink>();
 
 		for (RdLink link : links) {
-			
+
 			if (meshId != link.getMeshId()) {
 				continue;
 			}
-			
+
 			// 特殊交通类型不可作为可变限速的接续link；
 			if (1 == link.getSpecialTraffic()) {
 				continue;
@@ -124,31 +137,36 @@ public class RdLinkSearchUtils {
 			}
 		}
 		if (linksTmp.size() != 1) {
-			return;
+			return linkStorage;
 		}
 
 		RdLink linkTmp = linksTmp.get(0);
 
 		if (!isVariableSpeedLink(linkTmp, preNodePid)) {
-			return;
+			return linkStorage;
 		}
 
 		if (nextLinkPids.contains(linkTmp.getPid())) {
-			return;
+			return linkStorage;
 		}
 
 		nextLinkPids.add(linkTmp.getPid());
 
+		linkStorage.put(linkTmp.getPid(), linkTmp);
+
 		if (nextLinkPids.size() >= variableSpeedNextLinkCount) {
-			return;
+			return linkStorage;
 		}
 
 		int nextNodePid = preNodePid == linkTmp.getsNodePid() ? linkTmp
 				.geteNodePid() : linkTmp.getsNodePid();
 
-		variableSpeedNextLinks(nextLinkPids, linkTmp.getPid(), nextNodePid,
-				meshId);
+		Map<Integer, RdLink> nextStorage = variableSpeedNextLinks(nextLinkPids,
+				linkTmp.getPid(), nextNodePid, meshId);
+		
+		linkStorage.putAll(nextStorage);
 
+		return linkStorage;
 	}
 
 	/**

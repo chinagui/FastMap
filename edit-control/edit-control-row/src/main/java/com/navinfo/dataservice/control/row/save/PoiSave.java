@@ -176,7 +176,7 @@ public class PoiSave {
             sb.append(" MERGE INTO poi_edit_status T1 ");
             sb.append(" USING (SELECT 2 AS b,0 AS C,pid as d FROM ix_poi where pid in ("
                     + pids + ")) T2 ");
-            sb.append(" ON ( T1.pid=T2.pid) ");
+            sb.append(" ON ( T1.pid=T2.d) ");
             sb.append(" WHEN MATCHED THEN ");
             sb.append(" UPDATE SET T1.status = T2.b,T1.fresh_verified= T2.c ");
             sb.append(" WHEN NOT MATCHED THEN ");

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
+import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
@@ -25,8 +26,9 @@ public class GLM001TEST extends BasicCheckRule {
 			if(oldKindCode.isEmpty()){return;}
 			List<IxPoiName> subRows=poiObj.getIxPoiNames();
 			for(BasicRow br:subRows){
-				if(br.getObjType().equals("UPDATE")){
-					this.setCheckResult(poi.getGeometry(), "[IX_POI,"+poi.getPid()+"]", poi.getMeshId());
+				if(br.getHisOpType().equals(OperationType.UPDATE)){
+					//增加方法，传入IxPoiObj对象
+					this.setCheckResult(poi.getGeometry(), "[IX_POI,"+poi.getPid()+"]", poi.getMeshId(),"kindcode错误");
 				}
 			}
 		}else if(obj.objType().equals(ObjectType.AD_LINK)){}

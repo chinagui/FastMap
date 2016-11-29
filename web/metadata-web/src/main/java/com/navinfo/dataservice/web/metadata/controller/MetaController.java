@@ -1048,7 +1048,7 @@ public class MetaController extends BaseController {
 
 			ChainSelector selector = new ChainSelector();
 
-			JSONObject data = selector.getChargingChain();
+			JSONArray data = selector.getChargingChain();
 
 			return new ModelAndView("jsonView", success(data));
 

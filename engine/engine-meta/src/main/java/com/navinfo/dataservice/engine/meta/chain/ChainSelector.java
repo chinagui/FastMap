@@ -200,12 +200,11 @@ public class ChainSelector {
 		}
 	}
 
-	public JSONObject getChargingChain() throws Exception {
+	public JSONArray getChargingChain() throws Exception {
 		Connection conn = null;
 		ResultSet resultSet = null;
 		PreparedStatement pstmt = null;
 		String sql = "select * from sc_point_charging_chain";
-		JSONObject result = new JSONObject();
 		try {
 			conn = DBConnector.getInstance().getMetaConnection();
 			pstmt = conn.prepareStatement(sql);
@@ -219,8 +218,7 @@ public class ChainSelector {
 				row.put("memo", resultSet.getString("memo"));
 				data.add(row);
 			}
-			result.put("data", data);
-			return result;
+			return data;
 		} catch (Exception e) {
 			throw e;
 		} finally {

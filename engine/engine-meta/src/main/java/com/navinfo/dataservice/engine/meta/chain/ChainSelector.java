@@ -199,6 +199,37 @@ public class ChainSelector {
 			DBUtils.closeStatement(pstmt);
 		}
 	}
+
+	public JSONObject getChargingChain() throws Exception {
+		Connection conn = null;
+		ResultSet resultSet = null;
+		PreparedStatement pstmt = null;
+		String sql = "select * from sc_point_charging_chain";
+		JSONObject result = new JSONObject();
+		try {
+			conn = DBConnector.getInstance().getMetaConnection();
+			pstmt = conn.prepareStatement(sql);
+			resultSet = pstmt.executeQuery();
+			JSONArray data = new JSONArray();
+			while (resultSet.next()) {
+				JSONObject row = new JSONObject();
+				row.put("chainCode", resultSet.getString("chain_code"));
+				row.put("chainName", resultSet.getString("chain_name"));
+				row.put("hm_flag", resultSet.getString("hm_flag"));
+				row.put("memo", resultSet.getString("memo"));
+				data.add(row);
+			}
+			result.put("data", data);
+			return result;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+			DbUtils.close(conn);
+		}
+		
+	}
 	
 	
 }

@@ -28,7 +28,7 @@ public class OperationResult{
 	
 	public boolean isObjExist(BasicObj obj){
 		Map<Long,BasicObj> objs = getObjsMapByType(obj.objType());
-		if(objs.containsKey(obj.objPid())){
+		if(objs!=null&&objs.containsKey(obj.objPid())){
 			return true;
 		}
 		return false;
@@ -36,7 +36,7 @@ public class OperationResult{
 	
 	public boolean isObjExist(String objectType,long pid){
 		Map<Long,BasicObj> objs = getObjsMapByType(objectType);
-		if(objs.containsKey(pid)){
+		if(objs!=null&&objs.containsKey(pid)){
 			return true;
 		}
 		return false;
@@ -67,6 +67,9 @@ public class OperationResult{
 	public void putObj(BasicObj obj)throws OperationResultException{
 		if(obj.opType().equals(OperationType.INITIALIZE)){
 			throw new OperationResultException("未设置操作类型的对象");
+		}
+		if(allObjs.get(obj.objType())==null){
+			allObjs.put(obj.objType(), new HashMap<Long,BasicObj>());
 		}
 		allObjs.get(obj.objType()).put(obj.objPid(), obj);
 	}

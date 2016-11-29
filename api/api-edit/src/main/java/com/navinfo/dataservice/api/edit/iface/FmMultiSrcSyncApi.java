@@ -4,12 +4,12 @@ import com.navinfo.dataservice.api.edit.model.FmMultiSrcSync;
 
 /**
  * POI数据同步
- * @ClassName SyncApi
+ * @ClassName FmMultiSrcSyncApi
  * @author Han Shaoming
  * @date 2016年11月18日 下午3:16:48
  * @Description TODO
  */
-public interface SyncApi {
+public interface FmMultiSrcSyncApi {
 	
 	/**
 	 * 创建FM-POI增量包同步到多源的管理记录
@@ -36,7 +36,7 @@ public interface SyncApi {
 	 * 同步状态:开始创建1，创建中2，已创建8，创建失败9，多源同步成功18，多源同步失败19
 	 * @throws Exception 
 	 */
-	public void updateFmMultiSrcSyncStatus(long syncStatus) throws Exception;
+	public void updateFmMultiSrcSyncStatus(int syncStatus) throws Exception;
 	
 	/**
 	 * 更新FmMultiSrcSync管理表中增量包文件和同步状态
@@ -46,7 +46,7 @@ public interface SyncApi {
 	 * @param zipFile
 	 * @throws Exception 
 	 */
-	public void updateFmMultiSrcSync(long syncStatus,String zipFile) throws Exception;
+	public void updateFmMultiSrcSync(int syncStatus,String zipFile) throws Exception;
 	
 	/**
 	 * 创建MS-POI增量包同步到FM的管理记录
@@ -56,7 +56,7 @@ public interface SyncApi {
 	 * @return
 	 * @throws Exception 
 	 */
-	public String insertMultiSrcFmSync(long jobId,long dbType,String zipFile) throws Exception;
+	public String insertMultiSrcFmSync(long jobId,int dbType,String zipFile) throws Exception;
 	
 	/**
 	 * 更新MultiSrcFmSync管理表的同步状态
@@ -65,7 +65,7 @@ public interface SyncApi {
 	 * 同步状态:已接收1，导入中2 下载成功3，下载失败4，,导入成功5,导入失败6,反馈多源成功11，反馈多源失败12
 	 * @throws Exception 
 	 */
-	public void updateMultiSrcFmSyncStatus(long syncStatus) throws Exception;
+	public void updateMultiSrcFmSyncStatus(int syncStatus) throws Exception;
 	
 	/**
 	 * 更新FmMultiSrcSync管理表中增量包文件和同步状态

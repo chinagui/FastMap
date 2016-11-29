@@ -53,7 +53,7 @@ public class ObjBatchSelector {
 	 * @throws IllegalAccessException
 	 * @throws InstantiationException
 	 */
-	public static List<BasicObj> selectByPids(Connection conn,String objType,Set<String> tabNames
+	public static Map<Long,BasicObj> selectByPids(Connection conn,String objType,Set<String> tabNames
 			,Collection<Long> pids,boolean isLock,boolean isNowait) throws SQLException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException{
 		GlmObject glmObj = GlmFactory.getInstance().getObjByType(objType);
 		GlmTable mainTable = glmObj.getMainTable();
@@ -74,16 +74,16 @@ public class ObjBatchSelector {
 			mainrowList = new QueryRunner().query(conn, sql, new SingleBatchSelRsHandler(mainTable));
 		}
 		
-		List<BasicObj> objList = new ArrayList<BasicObj>();
+		Map<Long,BasicObj> objs = new HashMap<Long,BasicObj>();
 		for(BasicRow mainrow:mainrowList){
 			BasicObj obj = ObjFactory.getInstance().create4Select(mainrow);
-			objList.add(obj);
+			objs.put(mainrow.getObjPid(), obj);
 		}
 		
 		if(tabNames!=null&&!tabNames.isEmpty()){
-			selectChildren(conn,objList,tabNames,pids);
+			selectChildren(conn,objs.values(),tabNames,pids);
 		}
-		return objList;
+		return objs;
 	}
 	
 
@@ -97,10 +97,10 @@ public class ObjBatchSelector {
 	 * @throws GlmTableNotFoundException
 	 * @throws SQLException
 	 */
-	private static void selectChildren(Connection conn, List<BasicObj> objList, Set<String> tabNames,
+	private static void selectChildren(Connection conn, Collection<BasicObj> objs, Set<String> tabNames,
 			Collection<Long> pids) throws GlmTableNotFoundException, SQLException {
 		for(String tabName:tabNames){
-			selectChildren(conn,objList,tabName,pids);
+			selectChildren(conn,objs,tabName,pids);
 		}
 	}
 
@@ -113,13 +113,13 @@ public class ObjBatchSelector {
 	 * @throws GlmTableNotFoundException
 	 * @throws SQLException
 	 */
-	public static void selectChildren(Connection conn, List<BasicObj> objList, String tab
+	public static void selectChildren(Connection conn, Collection<BasicObj> objs, String tab
 			, Collection<Long> pids) throws GlmTableNotFoundException, SQLException {
-		if(objList.isEmpty()){
+		if(objs.isEmpty()){
 			return;
 		}
-		GlmTable mainTable = GlmFactory.getInstance().getTableByName(objList.get(0).getMainrow().tableName());
-		selectChildren(conn,objList,GlmFactory.getInstance().getTableByName(tab), pids,mainTable);
+		GlmTable mainTable = GlmFactory.getInstance().getTableByName(objs.iterator().next().getMainrow().tableName());
+		selectChildren(conn,objs,GlmFactory.getInstance().getTableByName(tab), pids,mainTable);
 		
 	}
 
@@ -132,7 +132,7 @@ public class ObjBatchSelector {
 	 * @param mainTable
 	 * @throws SQLException
 	 */
-	private static void selectChildren(Connection conn, List<BasicObj> objList
+	private static void selectChildren(Connection conn, Collection<BasicObj> objs
 			, GlmTable glmTab, Collection<Long> pids, GlmTable mainTable) throws SQLException {
 		String sql = assembleSql(glmTab,mainTable,mainTable.getPkColumn(),pids);
 		logger.info("批量查询，selectChildren sql:" + sql);
@@ -148,7 +148,7 @@ public class ObjBatchSelector {
 		}
 
 		//更新obj
-		for(BasicObj obj:objList){
+		for(BasicObj obj:objs){
 			obj.setSubrows(glmTab.getName(),childRows.get(obj.objPid()));
 		}
 

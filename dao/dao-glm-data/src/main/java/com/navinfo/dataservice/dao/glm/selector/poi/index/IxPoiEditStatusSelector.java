@@ -19,10 +19,10 @@ public class IxPoiEditStatusSelector extends AbstractSelector {
 		this.setCls(IxPoiEditStatus.class);
 	}
 
-	public int loadStatusByRowId(String rowId, boolean isLock) throws Exception {
+	public int loadStatusByRowId(int pid, boolean isLock) throws Exception {
 		int status = 0;
 
-		String sql = "select status from poi_edit_status where row_id=hextoraw(:1)";
+		String sql = "select status from poi_edit_status where pid=:1 ";
 
 		if (isLock) {
 			sql += " for update nowait";
@@ -35,7 +35,7 @@ public class IxPoiEditStatusSelector extends AbstractSelector {
 		try {
 			pstmt = conn.prepareStatement(sql);
 
-			pstmt.setString(1, rowId);
+			pstmt.setInt(1, pid);
 
 			resultSet = pstmt.executeQuery();
 

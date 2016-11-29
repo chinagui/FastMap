@@ -770,7 +770,7 @@ public class SubtaskOperation {
 //					+ " AND sdo_within_distance(ip.geometry, sdo_geometry('"+ wkt + "', 8307), 'mask=anyinteract') = 'TRUE' ";
 			String sql_unfinish = "select count(1) unfinish"
 					+ " from ix_poi ip, poi_edit_status pes"
-					+ " where ip.row_id = pes.row_id"
+					+ " where ip.pid = pes.pid"
 					+ " and pes.status = 1"
 					+ " AND sdo_within_distance(ip.geometry, sdo_geometry('"+ wkt + "', 8307), 'mask=anyinteract') = 'TRUE' ";			
 			//POI待作业
@@ -788,7 +788,7 @@ public class SubtaskOperation {
 			
 			String sql_total = "select count(1) toal"
 					+ " from ix_poi ip, poi_edit_status pes"
-					+ " where ip.row_id = pes.row_id"
+					+ " where ip.pid = pes.pid"
 					+ " AND sdo_within_distance(ip.geometry, sdo_geometry('"+ wkt + "', 8307), 'mask=anyinteract') = 'TRUE' ";			
 			//poi总量
 			Integer totalPOI = run.query(conn, sql_total, new ResultSetHandler<Integer>() {

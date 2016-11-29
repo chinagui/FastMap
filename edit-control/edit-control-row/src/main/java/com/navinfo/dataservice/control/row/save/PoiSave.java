@@ -174,16 +174,16 @@ public class PoiSave {
         StringBuilder sb = new StringBuilder();
         if (flag) {
             sb.append(" MERGE INTO poi_edit_status T1 ");
-            sb.append(" USING (SELECT row_id as a , 2 AS b,0 AS C,pid as d FROM ix_poi where pid in ("
+            sb.append(" USING (SELECT 2 AS b,0 AS C,pid as d FROM ix_poi where pid in ("
                     + pids + ")) T2 ");
-            sb.append(" ON ( T1.row_id=T2.a) ");
+            sb.append(" ON ( T1.pid=T2.pid) ");
             sb.append(" WHEN MATCHED THEN ");
             sb.append(" UPDATE SET T1.status = T2.b,T1.fresh_verified= T2.c ");
             sb.append(" WHEN NOT MATCHED THEN ");
-            sb.append(" INSERT (T1.row_id,T1.status,T1.fresh_verified,T1.pid) VALUES(T2.a,T2.b,T2.c,T2.d)");
+            sb.append(" INSERT (T1.status,T1.fresh_verified,T1.pid) VALUES(T2.b,T2.c,T2.d)");
         } else {
-            sb.append(" UPDATE poi_edit_status T1 SET T1.status = 2 where T1.row_id = ");
-            sb.append(" (SELECT row_id as a FROM ix_poi where pid = " + pids + ")");
+            sb.append(" UPDATE poi_edit_status T1 SET T1.status = 2 where T1.pid in ("
+                    + pids + ")");
         }
 
 

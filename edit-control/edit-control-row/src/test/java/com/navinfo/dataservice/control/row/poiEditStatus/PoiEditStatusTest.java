@@ -7,13 +7,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Before;
 import org.junit.Test;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
-import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
-import com.navinfo.dataservice.control.row.multisrc.SyncApiImpl;
+import com.navinfo.dataservice.dao.plus.editman.PoiEditStatus;
 
 /** 
  * @ClassName: PoiEditStatusTest

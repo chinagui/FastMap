@@ -14,8 +14,8 @@ import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
-import com.navinfo.dataservice.dao.plus.selector.IxPoiSelector;
 import com.navinfo.dataservice.dao.plus.selector.ObjSelector;
+import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
 import com.navinfo.dataservice.engine.editplus.convert.MultiSrcPoiConvertor;
 
 import net.sf.json.JSONObject;

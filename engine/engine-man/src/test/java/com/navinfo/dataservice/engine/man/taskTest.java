@@ -86,28 +86,28 @@ public class taskTest extends InitApplication{
 		
 		Subtask bean = (Subtask)JSONObject.toBean(dataJson, Subtask.class);
 		
-		Subtask subtask = SubtaskService.getInstance().query(bean);	
-		
-		//根据需要的返回字段拼装结果
-		HashMap<String, Object> data = new HashMap<String, Object>();
-		if(subtask!=null&&subtask.getSubtaskId()!=null){
-			data.put("subtaskId", subtask.getSubtaskId());
-			data.put("stage", subtask.getStage());
-			data.put("type", subtask.getType());
-			data.put("planStartDate", subtask.getPlanStartDate());
-			data.put("planEndDate", subtask.getPlanEndDate());
-			data.put("descp", subtask.getDescp());
-			data.put("name", subtask.getName());
-			data.put("gridIds", subtask.getGridIds());
-			data.put("dbId", subtask.getDbId());
-			data.put("geometry", subtask.getGeometry());
-		}
-		else{
-		}
-		
-		JSONObject result = JsonOperation.beanToJson(data);
-		
-		System.out.println(result);
+//		Subtask subtask = SubtaskService.getInstance().query(bean);	
+//		
+//		//根据需要的返回字段拼装结果
+//		HashMap<String, Object> data = new HashMap<String, Object>();
+//		if(subtask!=null&&subtask.getSubtaskId()!=null){
+//			data.put("subtaskId", subtask.getSubtaskId());
+//			data.put("stage", subtask.getStage());
+//			data.put("type", subtask.getType());
+//			data.put("planStartDate", subtask.getPlanStartDate());
+//			data.put("planEndDate", subtask.getPlanEndDate());
+//			data.put("descp", subtask.getDescp());
+//			data.put("name", subtask.getName());
+//			data.put("gridIds", subtask.getGridIds());
+//			data.put("dbId", subtask.getDbId());
+//			data.put("geometry", subtask.getGeometry());
+//		}
+//		else{
+//		}
+//		
+//		JSONObject result = JsonOperation.beanToJson(data);
+//		
+//		System.out.println(result);
 	}
 
 	@Override

@@ -389,6 +389,7 @@ public class Operation implements IOperation {
 		//创建link维护详细车道信息
 		OpRefRdLane opRefRdLane = new OpRefRdLane(conn);
 		opRefRdLane.run(result, linkList);
+		
 	}
 
 }

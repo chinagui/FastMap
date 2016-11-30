@@ -18,8 +18,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
-import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiChildren;
-import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiParent;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectType;
 import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
@@ -182,43 +180,6 @@ public class IxPoiSelector {
 		}
 	}
 	
-	/**
-	 * 
-	 * @ClassName IxPoiParentHandler
-	 * @author Han Shaoming
-	 * @date 2016年11月21日 下午8:25:04
-	 * @Description TODO
-	 */
-	static class IxPoiParentHandler implements ResultSetHandler<List<IxPoiParent>>{
-		public List<IxPoiParent> handle(ResultSet rs) throws SQLException {
-			List<IxPoiParent> msgs = new ArrayList<IxPoiParent>();
-			while(rs.next()){
-				IxPoiParent msg = new IxPoiParent();
-				msg.setGroupId(rs.getLong("GROUP_ID"));
-				msg.setParentPoiPid(rs.getLong("PARENT_POI_PID"));
-				msg.setTenantFlag(rs.getInt("TENANT_FLAG"));
-				msg.setMemo(rs.getString("MEMO"));
-				msgs.add(msg);
-			}
-			return msgs;
-		}
-	}
-	
-	
-	static class IxPoiChildrenHandler implements ResultSetHandler<List<IxPoiChildren>>{
-		public List<IxPoiChildren> handle(ResultSet rs) throws SQLException {
-			List<IxPoiChildren> msgs = new ArrayList<IxPoiChildren>();
-			while(rs.next()){
-				IxPoiChildren msg = new IxPoiChildren();
-				msg.setGroupId(rs.getLong("GROUP_ID"));
-				msg.setChildPoiPid(rs.getLong("CHILD_POI_PID"));
-				msg.setRelationType(rs.getInt("RELATION_TYPE"));
-				msgs.add(msg);
-			}
-			return msgs;
-		}
-	}
-	
 	static class IxPoiHandler implements ResultSetHandler<List<Map<String,Object>>>{
 		public List<Map<String,Object>> handle(ResultSet rs) throws SQLException {
 			List<Map<String,Object>> msgs = new ArrayList<Map<String,Object>>();
@@ -227,25 +188,6 @@ public class IxPoiSelector {
 				msg.put("pid",rs.getLong("PID"));
 				msg.put("kindCode",rs.getLong("KIND_CODE"));
 				msg.put("poiNum",rs.getString("POI_NUM"));
-				msgs.add(msg);
-			}
-			return msgs;
-		}
-	}
-	
-	static class Children2ParentHandler implements ResultSetHandler<List<Map<String,Object>>>{
-		public List<Map<String,Object>> handle(ResultSet rs) throws SQLException {
-			List<Map<String,Object>> msgs = new ArrayList<Map<String,Object>>();
-			while(rs.next()){
-				Map<String,Object> msg = new HashMap<String,Object>();
-				msg.put("groupId",rs.getLong("GROUP_ID"));
-				msg.put("childPoiPid",rs.getLong("CHILD_POI_PID"));
-				msg.put("relationType",rs.getLong("RELATION_TYPE"));
-				msg.put("rowId",rs.getString("ROW_ID"));
-				msg.put("parentPoiPid",rs.getLong("PARENT_POI_PID"));
-				msg.put("TenantFlag",rs.getLong("TENANT_FLAG"));
-				msg.put("Memo",rs.getString("MEMO"));
-				msg.put("pRowId",rs.getString("P_ROW_ID"));
 				msgs.add(msg);
 			}
 			return msgs;

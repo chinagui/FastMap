@@ -12,6 +12,7 @@ import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiChargingplot;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiChargingstation;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiChildren;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiContact;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiGasstation;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiHotel;
@@ -105,7 +106,7 @@ public class MultiSrcPoiConvertor {
 		//父POI的Fid
 		jo.put("parentFid", StringUtils.trimToEmpty(poi.getParentFid()));
 		//[集合]父子关系,子列表；该POI作为父的子要素
-		jo.put("relateChildren", poi.getChildrens());
+		jo.put("relateChildren", this.getChildrens(poi));
 		//[集合]联系方式
 		jo.put("contacts", this.getContacts(poi));
 		//{唯一}餐饮
@@ -441,5 +442,28 @@ public class MultiSrcPoiConvertor {
 		}
 		return null;
 	}
+	
+	/**
+	 * 父子关系,子列表
+	 * @author Han Shaoming
+	 * @return
+	 */
+	public List<Map<String,Object>> getChildrens(IxPoiObj poi){
+		List<Map<String,Object>> msgs = new ArrayList<Map<String,Object>>();
+		List<BasicRow> rows = poi.getRowsByName("IX_POI_CHILDREN");
+		if(rows!=null && rows.size()>0){
+			for(BasicRow row:rows){
+				Map<String,Object> msg = new HashMap<String, Object>();
+				IxPoiChildren children = (IxPoiChildren) row;
+				msg.put("type", children.getRelationType());
+				msg.put("childPid", children.getChildPoiPid());
+				msg.put("childFid", poi.getChildFid());
+				msg.put("rowId", children.getRowId());
+				msgs.add(msg);
+			}
+		}
+		return msgs;
+	}
+	
 
 }

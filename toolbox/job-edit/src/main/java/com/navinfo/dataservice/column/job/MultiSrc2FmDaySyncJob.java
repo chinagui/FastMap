@@ -29,6 +29,7 @@ import com.navinfo.dataservice.commons.thread.VMThreadPoolExecutor;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.ServiceInvokeUtil;
 import com.navinfo.dataservice.commons.util.ZipUtils;
+import com.navinfo.dataservice.dao.plus.editman.PoiEditStatus;
 import com.navinfo.dataservice.dao.plus.operation.OperationSegment;
 import com.navinfo.dataservice.engine.editplus.operation.imp.MultiSrcPoiDayImportor;
 import com.navinfo.dataservice.engine.editplus.operation.imp.MultiSrcPoiDayImportorCommand;
@@ -320,6 +321,8 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 				MultiSrcPoiDayImportor imp = new MultiSrcPoiDayImportor(conn,null);
 				imp.operate(cmd);
 				imp.persistChangeLog(OperationSegment.SG_ROW, jobInfo.getUserId());
+				//数据打多源标识
+				PoiEditStatus.tagMultiSrcPoi(conn, imp.getSourceTypes());
 				//导入父子关系
 				PoiRelationImportorCommand relCmd = new PoiRelationImportorCommand();
 				relCmd.setPoiRels(imp.getParentPid());

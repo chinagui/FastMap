@@ -46,6 +46,7 @@ public class PoiRelationImportor extends AbstractOperation{
 	 */
 	@Override
 	public void operate(AbstractCommand cmd) throws Exception {
+		poiRelationImporterCommand = (PoiRelationImportorCommand) cmd;
 		//<childPid,parentPid>，用以处理对象父子关系关联。parentPid为空=解除父子关系
 		Map<Long,Long> childPidParentPid = new HashMap<Long,Long>();
 		//<parentFid,childPid>，用于根据父对象fid加载对象之后更新childPidParentPid

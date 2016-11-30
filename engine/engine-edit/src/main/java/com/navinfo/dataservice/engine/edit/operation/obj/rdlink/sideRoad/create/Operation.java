@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -98,14 +99,8 @@ public class Operation implements IOperation {
 			LineString line = lines[i];
 
 			// Geometry交点几何, RdLink打断link
-			Map<Geometry, RdLink> intersectionMap = new HashMap<Geometry, RdLink>();
-
-			// String 交点几何标识,Geometry 交点几何
-			Map<String, Geometry> flagIntersections = new HashMap<String, Geometry>();
-
-			// 获取交点映射信息
-			getIntersectionPoint(noTargetLinks, line, intersectionMap,
-					flagIntersections);
+			Map<Geometry, RdLink> intersectionMap = getIntersectionPoint(
+					noTargetLinks, line);
 
 			List<Coordinate> allCoordinates = getAllCoordinate(line,
 					intersectionMap.keySet());
@@ -114,12 +109,206 @@ public class Operation implements IOperation {
 					intersectionMap.keySet(), allCoordinates, nodeGeoMap);
 
 			JSONObject requester = getCreateRdLinkJson(newLineCoordinates,
-					nodeGeoMap, geoNodesMap, intersectionMap, flagIntersections);
+					nodeGeoMap, geoNodesMap, intersectionMap);
 
 			List<RdLink> sideRoads = exeCreateSideRoad(requester, result);
 
 			setSideRoad(sideRoads);
+			
+			Coordinate sPoint = newLineCoordinates.get(0);
+
+			if (i == 1) {
+				sPoint = newLineCoordinates.get(newLineCoordinates.size() - 1);
+			}
+
+			sideRoads = sortSideRoad(sideRoads, sPoint);
+
+			//按顺序存入将被打断的挂接link和该link与辅路的交点
+			LinkedHashMap<RdLink, Geometry> intersectionSortMap = sortIntersection(
+					newLineCoordinates, intersectionMap);
+			
+			setRdName(sideRoads, intersectionSortMap);
 		}
+	}
+
+	/**
+	 * 按顺序存入将被打断的挂接link和该link与辅路的交点
+	 * @param newLineCoordinates
+	 * @param intersectionMap key：挂接link value：该link与辅路的交点
+	 * @return
+	 */
+	private LinkedHashMap<RdLink, Geometry> sortIntersection(
+			List<Coordinate> newLineCoordinates,
+			Map<Geometry, RdLink> intersectionMap) {
+		
+		LinkedHashMap<RdLink, Geometry> linkMapTmp = new LinkedHashMap<RdLink, Geometry>();
+
+		for (Coordinate coordinate : newLineCoordinates) {
+
+			if (linkMapTmp.size() == intersectionMap.size()) {
+
+				break;
+			}
+			for (Geometry geo : intersectionMap.keySet()) {
+
+				RdLink link = intersectionMap.get(geo);
+
+				if (linkMapTmp.containsKey(geo)) {
+					continue;
+				}
+
+				if (GeoTranslator
+						.isPointEquals(coordinate, geo.getCoordinate())) {
+
+					linkMapTmp.put(link, geo);
+				}
+			}
+		}
+
+		return linkMapTmp;
+	}
+
+	/**
+	 * 设置辅路名称
+	 * @param sideRoads
+	 * @param linkMapTmp
+	 * @throws Exception
+	 */
+	private void setRdName(List<RdLink> sideRoads,
+			LinkedHashMap<RdLink, Geometry> linkMapTmp) throws Exception {
+
+		List<Integer> usedNodePids = new ArrayList<Integer>();
+
+		usedNodePids.add(getStartAndEndNode(command.getLinks(), 0).pid());
+
+		usedNodePids.add(getStartAndEndNode(command.getLinks(), 1).pid());
+
+		List<RdLink> sideRoadsTmp = new ArrayList<RdLink>();
+
+		sideRoadsTmp.addAll(sideRoads);
+
+		ArrayList<RdLink> subMainLinks = new ArrayList<RdLink>();
+
+		for (RdLink link : command.getLinks()) {
+
+			subMainLinks.add(link);
+
+			int nodePidFlag = 0;
+
+			if (!usedNodePids.contains(link.getsNodePid())) {
+
+				nodePidFlag = link.getsNodePid();
+
+			} else if (!usedNodePids.contains(link.geteNodePid())) {
+
+				nodePidFlag = link.geteNodePid();
+			}
+
+			if (nodePidFlag == 0) {
+				continue;
+			}
+
+			usedNodePids.add(nodePidFlag);
+
+			Point geoFlag = null;
+
+			for (Map.Entry<RdLink, Geometry> entry : linkMapTmp.entrySet()) {
+
+				if (entry.getKey().getsNodePid() == nodePidFlag
+						|| entry.getKey().geteNodePid() == nodePidFlag) {
+
+					geoFlag = (Point) entry.getValue();
+
+					linkMapTmp.remove(entry.getKey());
+
+					break;
+				}
+			}
+
+			if (geoFlag == null) {
+				continue;
+			}
+
+			ArrayList<RdLink> subSideLinks = new ArrayList<RdLink>();
+
+			for (RdLink sideLink : sideRoadsTmp) {
+
+				subSideLinks.add(sideLink);
+
+				LineString linkGeo = (LineString) sideLink.getGeometry();
+
+				Point sGeo = linkGeo.getStartPoint();
+
+				Point eGeo = linkGeo.getEndPoint();
+
+				if (GeoTranslator.isPointEquals(sGeo, geoFlag)
+						|| GeoTranslator.isPointEquals(eGeo, geoFlag)) {
+					break;
+				}
+			}
+			
+			handleRdLinkName(subMainLinks, subSideLinks);
+
+			sideRoadsTmp.removeAll(subSideLinks);
+
+			subMainLinks = new ArrayList<RdLink>();
+		}
+
+		handleRdLinkName(subMainLinks, sideRoadsTmp);
+	}
+
+	/**
+	 * 对辅路排序
+	 * @param sideRoads
+	 * @param sPoint
+	 */
+	private List<RdLink> sortSideRoad(List<RdLink> sideRoads, Coordinate sPoint) {
+
+		if (sideRoads.size() < 2) {
+			
+			return sideRoads;
+		}
+	
+		List<RdLink> sortLinks = new ArrayList<RdLink>();
+
+		List<RdLink> sideRoadTmp = new ArrayList<RdLink>();
+
+		sideRoadTmp.addAll(sideRoads);
+
+		Coordinate flagGeo = new Coordinate();
+
+		flagGeo = sPoint;
+
+		for (int i = 0; i < sideRoads.size(); i++) {
+
+			for (RdLink link : sideRoadTmp) {
+
+				Coordinate sGeo = link.getGeometry().getCoordinates()[0];
+
+				Coordinate eGeo = link.getGeometry().getCoordinates()[link
+						.getGeometry().getCoordinates().length - 1];
+
+				if (GeoTranslator.isPointEquals(flagGeo, sGeo)) {
+
+					flagGeo = eGeo;
+					
+				} else if (GeoTranslator.isPointEquals(flagGeo, eGeo)) {
+
+					flagGeo = sGeo;
+
+				} else {
+					continue;
+				}
+
+				sortLinks.add(link);
+
+				sideRoadTmp.remove(link);
+
+				break;
+			}
+		}
+
+		return sortLinks;
 	}
 
 	/**
@@ -146,9 +335,9 @@ public class Operation implements IOperation {
 		}
 
 		// 传入起点和终点Point
-		Point sPoint = JtsGeometryFactory.createPoint(GeoTranslator.transform(
+		Point sPoint = (Point) GeoTranslator.transform(
 				this.getStartAndEndNode(targetLinks, 0).getGeometry(), 0.00001,
-				5).getCoordinate());
+				5);
 
 		// 生成的线按照顺序存放在List<LineString> 第1右线 ，第2是左线
 		LineString[] lines = CompPolylineUtil.separateSideRoad(sPoint,
@@ -238,9 +427,12 @@ public class Operation implements IOperation {
 	 * @return
 	 * @throws Exception
 	 */
-	private void getIntersectionPoint(List<RdLink> noTargetLinks,
-			LineString line, Map<Geometry, RdLink> intersectionMap,
-			Map<String, Geometry> flagPoints) throws Exception {
+	private Map<Geometry, RdLink> getIntersectionPoint(
+			List<RdLink> noTargetLinks, LineString line) throws Exception {
+
+		Map<Geometry, RdLink> intersectionMap = new HashMap<Geometry, RdLink>();
+
+		Map<Integer, RdLink> intersectionLinks = new HashMap<Integer, RdLink>();
 
 		for (RdLink link : noTargetLinks) {
 
@@ -250,25 +442,99 @@ public class Operation implements IOperation {
 			Geometry intersection = GeoTranslator.transform(
 					linkGeo.intersection(line), 0.00001, 5);
 
-			if (intersection.getCoordinates().length > 1) {
-
-				throw new Exception("新增辅路不能将link "
-						+ String.valueOf(link.getPid()) + "打断多次");
-			}
-
 			if (intersection.getCoordinates().length == 1) {
 
-				if (intersectionMap.containsKey(intersection)) {
+				intersectionLinks.put(link.getPid(), link);
 
-					throw new Exception("辅路几何不能在link "
-							+ String.valueOf(link.getPid()) + "与link "
-							+ String.valueOf(intersectionMap.get(intersection))
-							+ "的几何交点处");
-				}
 				intersectionMap.put(intersection, link);
+			}
+		}
 
-				flagPoints.put(intersection.getCoordinate().toString(),
-						intersection);
+		filterLink(intersectionMap, intersectionLinks);
+
+		return intersectionMap;
+	}
+
+	/**
+	 * 筛选有效打断link： 如果与主路、辅路都相交的link上有立交关系则生成的辅路上不做打断
+	 * 
+	 * @param intersectionLink
+	 */
+	private void filterLink(Map<Geometry, RdLink> intersectionMap,
+			Map<Integer, RdLink> intersectionLinks) {
+		if (intersectionMap.size() < 2) {
+			return;
+		}
+
+		// 过滤后需要被打断的挂接linkPid
+		List<Integer> filterLinkPids = new ArrayList<>();
+
+		filterLinkPids.addAll(intersectionLinks.keySet());
+
+		int filterCount = filterLinkPids.size();
+
+		for (int index = 0; index < filterCount; index++) {
+
+			RdLink currLink = intersectionLinks.get(filterLinkPids.get(index));
+
+			Geometry currLinkGeo = GeoTranslator.transform(
+					currLink.getGeometry(), 0.00001, 5);
+
+			Set<Integer> delLink = new HashSet<>();
+
+			for (Integer linkPid : filterLinkPids) {
+
+				if (currLink.getPid() == linkPid) {
+
+					continue;
+				}
+
+				RdLink link = intersectionLinks.get(linkPid);
+
+				Geometry linkGeo = GeoTranslator.transform(link.getGeometry(),
+						0.00001, 5);
+
+				Geometry intersection = currLinkGeo.intersection(linkGeo);
+
+				if ((intersection.getCoordinates().length == 1
+						&& currLink.getsNodePid() != link.getsNodePid()
+						&& currLink.getsNodePid() != link.geteNodePid()
+						&& currLink.geteNodePid() != link.getsNodePid() && currLink
+						.geteNodePid() != link.geteNodePid())
+						|| intersection.getCoordinates().length > 1) {
+
+					delLink.add(currLink.getPid());
+
+					delLink.add(linkPid);
+				}
+			}
+
+			if (delLink.size() > 0) {
+
+				index -= 1;
+
+				filterCount = filterCount - delLink.size();
+
+				filterLinkPids.removeAll(delLink);
+			}
+		}
+
+		// 与辅路相交但不进行打断的link几何
+		Set<Geometry> noFilterGeo = new HashSet<Geometry>();
+
+		for (Map.Entry<Geometry, RdLink> entry : intersectionMap.entrySet()) {
+
+			int linkPid = entry.getValue().getPid();
+
+			if (!filterLinkPids.contains(linkPid)) {
+				noFilterGeo.add(entry.getKey());
+			}
+		}
+
+		for (Geometry geo : noFilterGeo) {
+
+			if (intersectionMap.containsKey(geo)) {
+				intersectionMap.remove(geo);
 			}
 		}
 	}
@@ -361,7 +627,7 @@ public class Operation implements IOperation {
 
 		for (int i = 1; i < allCoordinates.size(); i++) {
 
-			if (!flagPoints.equals(allCoordinates.get(i).toString())) {
+			if (!flagPoints.contains(allCoordinates.get(i).toString())) {
 				continue;
 			}
 
@@ -393,8 +659,17 @@ public class Operation implements IOperation {
 	private JSONObject getCreateRdLinkJson(List<Coordinate> lineCoordinates,
 			Map<Integer, Geometry> nodeGeoMap,
 			Map<String, List<Integer>> geoNodesMap,
-			Map<Geometry, RdLink> intersectionMap,
-			Map<String, Geometry> flagIntersections) throws Exception {
+			Map<Geometry, RdLink> intersectionMap) throws Exception {
+
+		// String 交点几何标识,Geometry 交点几何
+		Map<String, Geometry> flagIntersections = new HashMap<String, Geometry>();
+
+		for (Geometry geo : intersectionMap.keySet()) {
+
+			String keyCoordinate = geo.getCoordinate().toString();
+
+			flagIntersections.put(keyCoordinate, geo);
+		}
 
 		JSONObject parameter = new JSONObject();
 
@@ -424,6 +699,10 @@ public class Operation implements IOperation {
 		} else {
 			data.put("eNodePid", 0);
 		}
+		
+		data.put("kind", 9);
+		
+		data.put("laneNum", 1);
 
 		Coordinate[] linkCoordinates = new Coordinate[lineCoordinates.size()];
 
@@ -501,10 +780,10 @@ public class Operation implements IOperation {
 		com.navinfo.dataservice.engine.edit.operation.obj.rdlink.create.Command command = new com.navinfo.dataservice.engine.edit.operation.obj.rdlink.create.Command(
 				requester, requester.toString());
 
-		com.navinfo.dataservice.engine.edit.operation.obj.rdlink.create.Process process = new com.navinfo.dataservice.engine.edit.operation.obj.rdlink.create.Process(
-				command, result, this.conn);
-
-		List<RdLink> sideRoads = process.createSideRoad();
+		com.navinfo.dataservice.engine.edit.operation.obj.rdlink.create.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdlink.create.Operation(
+				command, this.conn);
+		
+		List<RdLink> sideRoads = operation.createSideRoad(result);
 
 		return sideRoads;
 	}
@@ -596,8 +875,6 @@ public class Operation implements IOperation {
 			// 铺设状态：维护默认值“铺设”
 			link.setPaveStatus(0);
 
-			// 辅路道路名称
-			handleRdLinkName(link);
 			// 线门牌信息
 
 			// 除以上link属性外，新生成的辅路link属性字段均按照新增link的默认值维护
@@ -611,9 +888,14 @@ public class Operation implements IOperation {
 	 * @param link
 	 * @throws Exception
 	 */
-	private void handleRdLinkName(RdLink link) throws Exception {
+	private void handleRdLinkName(List<RdLink> mainLinks, List<RdLink> sideLinks)
+			throws Exception {
 
-		List<RdLinkName> sameNames = getSameName();
+		if (mainLinks.size() < 1 || sideLinks.size() < 1) {
+			return;
+		}
+
+		List<RdLinkName> sameNames = getSameName(mainLinks);
 
 		if (sameNames.size() < 1) {
 			return;
@@ -653,31 +935,36 @@ public class Operation implements IOperation {
 			lstClass1.add(name);
 		}
 
-		List<IRow> allNames = new ArrayList<IRow>();
+		for (RdLink link : sideLinks) {
 
-		List<RdLinkName> nameTmp = new ArrayList<RdLinkName>();
+			List<IRow> allNames = new ArrayList<IRow>();
 
-		nameTmp.addAll(lstClass1);
+			List<RdLinkName> nameTmp = new ArrayList<RdLinkName>();
 
-		nameTmp.addAll(lstClass2);
+			nameTmp.addAll(lstClass1);
 
-		nameTmp.addAll(lstClass3);
+			nameTmp.addAll(lstClass2);
 
-		for (RdLinkName name : nameTmp) {
+			nameTmp.addAll(lstClass3);
 
-			RdLinkName newName = new RdLinkName();
+			for (RdLinkName name : nameTmp) {
 
-			newName.copy(name);
+				RdLinkName newName = new RdLinkName();
 
-			newName.setLinkPid(link.getPid());
+				newName.copy(name);
 
-			allNames.add(newName);
+				newName.setLinkPid(link.getPid());
+
+				allNames.add(newName);
+			}
+
+			link.setNames(allNames);
 		}
-
-		link.setNames(allNames);
 
 		return;
 	}
+
+	
 
 	/**
 	 * 获取相同的道路名
@@ -685,18 +972,27 @@ public class Operation implements IOperation {
 	 * @return
 	 * @throws Exception
 	 */
-	private List<RdLinkName> getSameName() throws Exception {
+	private List<RdLinkName> getSameName(List<RdLink> mainLinks)
+			throws Exception {
 
 		List<RdLinkName> sameNames = new ArrayList<RdLinkName>();
 
-		if (this.command.getLinkPids().size() == 0) {
+		if (mainLinks.size() == 0) {
 
 			return sameNames;
 		}
 
+		List<Integer> linkPids = new ArrayList<Integer>();
+
+		for (RdLink link : mainLinks) {
+			if (!linkPids.contains(link.getPid())) {
+				linkPids.add(link.getPid());
+			}
+		}
+
 		Set<Integer> pids = new HashSet<Integer>();
 
-		pids.addAll(this.command.getLinkPids());
+		pids.addAll(linkPids);
 
 		RdLinkNameSelector linkNameSelector = new RdLinkNameSelector(this.conn);
 
@@ -708,14 +1004,14 @@ public class Operation implements IOperation {
 			return sameNames;
 		}
 
-		sameNames = nameMap.get(this.command.getLinkPids().get(0));
+		sameNames = nameMap.get(linkPids.get(0));
 
-		if (this.command.getLinkPids().size() == 1) {
+		if (linkPids.size() == 1) {
 
 			return sameNames;
 		}
 
-		for (int i = 1; i < this.command.getLinkPids().size(); i++) {
+		for (int i = 1; i < linkPids.size(); i++) {
 
 			int sameSize = sameNames.size();
 
@@ -724,8 +1020,7 @@ public class Operation implements IOperation {
 				break;
 			}
 
-			List<RdLinkName> currNames = nameMap.get(this.command.getLinkPids()
-					.get(i));
+			List<RdLinkName> currNames = nameMap.get(linkPids.get(i));
 
 			for (int j = sameSize - 1; j >= 0; j--) {
 
@@ -759,7 +1054,7 @@ public class Operation implements IOperation {
 		}
 
 		return sameNames;
-	}
+	}	
 
 	/**
 	 * @Description:是否包含数字

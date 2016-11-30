@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.dao.plus.obj;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 

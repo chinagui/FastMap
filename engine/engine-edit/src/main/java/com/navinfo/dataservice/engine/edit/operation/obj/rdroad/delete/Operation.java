@@ -2,9 +2,7 @@ package com.navinfo.dataservice.engine.edit.operation.obj.rdroad.delete;
 
 import java.sql.Connection;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
 
@@ -47,6 +45,21 @@ public class Operation implements IOperation {
 		return msg;
 	}
 
+	private String delete(Result result, List<RdRoad> roadList, List<Integer> deleteRoadPidList) throws Exception {
+
+		for (RdRoad road : roadList) {
+			delete(result, road);
+		}
+
+		// 维护CRFO:如果删除的CRFI属于某个CRFO，要从CRFO组成信息中去掉
+		com.navinfo.dataservice.engine.edit.operation.obj.rdobject.delete.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdobject.delete.Operation(
+				conn);
+
+		operation.deleteByType(deleteRoadPidList, ObjType.RDROAD, result);
+
+		return null;
+	}
+
 	private String delete(Result result, RdRoad road) {
 
 		result.insertObject(road, ObjStatus.DELETE, road.pid());
@@ -54,14 +67,11 @@ public class Operation implements IOperation {
 		return null;
 	}
 
-	public String deleteByLinks(List<Integer> linkPids, Result result)
-			throws Exception {
+	public String deleteByLinks(List<Integer> linkPids, Result result) throws Exception {
 
-		RdRoadLinkSelector rdRoadLinkSelector = new RdRoadLinkSelector(
-				this.conn);
+		RdRoadLinkSelector rdRoadLinkSelector = new RdRoadLinkSelector(this.conn);
 
-		List<RdRoadLink> rdRoadLinks = rdRoadLinkSelector.loadByLinks(linkPids,
-				true);
+		List<RdRoadLink> rdRoadLinks = rdRoadLinkSelector.loadByLinks(linkPids, true);
 
 		if (rdRoadLinks.size() < 1) {
 
@@ -78,12 +88,13 @@ public class Operation implements IOperation {
 			}
 		}
 
-		AbstractSelector roadSelector = new AbstractSelector(RdRoad.class,
-				this.conn);
+		AbstractSelector roadSelector = new AbstractSelector(RdRoad.class, this.conn);
 
 		List<IRow> rows = roadSelector.loadByIds(rdRoadPids, true, true);
 
-		Set<Integer> deleteRoad = new HashSet<Integer>();
+		List<Integer> deleteRoadPidList = new ArrayList<Integer>();
+
+		List<RdRoad> deRoadList = new ArrayList<>();
 
 		for (IRow roadRow : rows) {
 
@@ -103,24 +114,27 @@ public class Operation implements IOperation {
 
 			if ((road.getLinks().size() - deleteCount) < 2) {
 
-				deleteRoad.add(road.getPid());
-
-				delete(result, road);
+				// 需要删除主表
+				if (!deleteRoadPidList.contains(road.getPid())) {
+					deleteRoadPidList.add(road.getPid());
+					deRoadList.add(road);
+				}
 			}
 		}
 
 		for (RdRoadLink roadLink : rdRoadLinks) {
 
-			if (!deleteRoad.contains(roadLink.getPid())) {
+			if (!deleteRoadPidList.contains(roadLink.getPid())) {
 
-				result.insertObject(roadLink, ObjStatus.DELETE,
-						roadLink.getPid());
+				result.insertObject(roadLink, ObjStatus.DELETE, roadLink.getPid());
 			}
 		}
 
+		// 调用删除主表对象方法
+		delete(result, deRoadList, deleteRoadPidList);
 		return null;
 	}
-	
+
 	/**
 	 * 删除link对CRF Road的删除影响
 	 * 
@@ -128,23 +142,20 @@ public class Operation implements IOperation {
 	 * @throws Exception
 	 */
 	public List<AlertObject> getUpdateRdRoadInfectData(int linkPid, Connection conn) throws Exception {
-		
+
 		List<Integer> linkPidList = new ArrayList<>();
-		
+
 		linkPidList.add(linkPid);
-		
-		RdRoadLinkSelector rdRoadLinkSelector = new RdRoadLinkSelector(
-				this.conn);
-		
-		List<RdRoadLink> rdRoadLinks = rdRoadLinkSelector.loadByLinks(linkPidList,
-				true);
+
+		RdRoadLinkSelector rdRoadLinkSelector = new RdRoadLinkSelector(this.conn);
+
+		List<RdRoadLink> rdRoadLinks = rdRoadLinkSelector.loadByLinks(linkPidList, true);
 
 		List<AlertObject> alertList = new ArrayList<>();
 
-		if(CollectionUtils.isNotEmpty(rdRoadLinks))
-		{
+		if (CollectionUtils.isNotEmpty(rdRoadLinks)) {
 			RdRoadLink roadLink = rdRoadLinks.get(0);
-			
+
 			AlertObject alertObj = new AlertObject();
 
 			alertObj.setObjType(ObjType.RDROAD);
@@ -153,8 +164,7 @@ public class Operation implements IOperation {
 
 			alertObj.setStatus(ObjStatus.UPDATE);
 
-			if(!alertList.contains(alertObj))
-			{
+			if (!alertList.contains(alertObj)) {
 				alertList.add(alertObj);
 			}
 		}

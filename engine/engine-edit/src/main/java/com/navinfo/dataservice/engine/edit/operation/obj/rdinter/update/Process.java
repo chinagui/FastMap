@@ -25,7 +25,7 @@ public class Process extends AbstractProcess<Command> {
 		
 		this.getCommand().setRdInter(inter);
 		
-		//check.hasNodeIsInter(getConn(),inter);
+		check.checkNodeDirect(getConn());
 		
 		return true;
 	}

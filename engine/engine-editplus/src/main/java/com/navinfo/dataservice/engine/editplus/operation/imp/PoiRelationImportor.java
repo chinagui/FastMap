@@ -11,6 +11,7 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiChildren;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiParent;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
@@ -66,8 +67,20 @@ public class PoiRelationImportor extends AbstractOperation{
 					String fatherFid = poiRelation.getFatherFid();
 					if(fatherFid!=null&&!fatherFid.equals(""))
 					{
-						fatherFidSet.add(poiRelation.getFatherFid());
-						parentFidChildPid.put(fatherFid,pid);
+						//result中是否含此父对象。如果包含则不加载
+						boolean isFatherExist = false;
+						for(Map.Entry<Long, BasicObj> entry:result.getObjsMapByType(ObjectType.IX_POI).entrySet()){
+							BasicRow fatherObj = entry.getValue().getMainrow();
+							if(fatherObj.getAttrByColName("POI_NUM").equals(fatherFid)){
+								childPidParentPid.put(pid, fatherObj.getObjPid());
+								isFatherExist = true;
+								break;
+							}
+						}
+						if(!isFatherExist){
+							fatherFidSet.add(poiRelation.getFatherFid());
+							parentFidChildPid.put(fatherFid,pid);
+						}
 					}			
 				}
 			}

@@ -47,6 +47,16 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 	protected Map<String,String> errLog=new HashMap<String,String>();
 	protected List<PoiRelation> parentPid = new ArrayList<PoiRelation>();
 	
+	protected Map<Long,String> sourceTypes = new HashMap<Long,String>();
+	
+	public Map<Long, String> getSourceTypes() {
+		return sourceTypes;
+	}
+
+	public void setSourceTypes(Map<Long, String> sourceTypes) {
+		this.sourceTypes = sourceTypes;
+	}
+
 	public MultiSrcPoiDayImportor(Connection conn,OperationResult preResult) {
 		super(conn,preResult);
 	}

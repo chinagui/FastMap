@@ -54,13 +54,13 @@ public class ObjBatchSelector {
 	 * @throws InstantiationException
 	 */
 	public static Map<Long,BasicObj> selectByPids(Connection conn,String objType,Set<String> tabNames
-			,Collection<Long> pids,boolean isLock,boolean isNowait) throws SQLException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException{
+			,Collection<Long> pids,boolean isLock,boolean isWait) throws SQLException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException{
 		GlmObject glmObj = GlmFactory.getInstance().getObjByType(objType);
 		GlmTable mainTable = glmObj.getMainTable();
 		String sql = assembleSql(mainTable,mainTable,mainTable.getPkColumn(),pids);
 		if(isLock){
 			sql +=" FOR UPDATE";
-			if(isNowait){
+			if(!isWait){
 				sql +=" NOWAIT";
 			}
 		}
@@ -166,7 +166,7 @@ public class ObjBatchSelector {
 	 * @param colName
 	 * @param colValues
 	 * @param isLock
-	 * @param isNowait
+	 * @param isWait//是否等待，true:等待；false：不等待
 	 * @return
 	 * @throws SQLException 
 	 * @throws InstantiationException 
@@ -176,7 +176,7 @@ public class ObjBatchSelector {
 	 * @throws ClassNotFoundException 
 	 */
 	public static <T> List<BasicObj> selectBySpecColumn(Connection conn,String objType,Set<String> tabNames,String colName
-			,Collection<T> colValues,boolean isLock,boolean isNowait) throws SQLException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException{
+			,Collection<T> colValues,boolean isLock,boolean isWait) throws SQLException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException{
 		GlmObject glmObj = GlmFactory.getInstance().getObjByType(objType);
 		GlmTable mainTable = glmObj.getMainTable();
 		//字段类型
@@ -193,7 +193,7 @@ public class ObjBatchSelector {
 		String sql = assembleSql(mainTable,mainTable,colName,colValues);
 		if(isLock){
 			sql +=" FOR UPDATE";
-			if(isNowait){
+			if(!isWait){
 				sql +=" NOWAIT";
 			}
 		}

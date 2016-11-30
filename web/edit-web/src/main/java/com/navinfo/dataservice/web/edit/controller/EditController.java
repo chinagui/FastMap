@@ -297,7 +297,7 @@ public class EditController extends BaseController {
 
 			String wkt = jsonReq.getString("wkt");
 
-			JSONArray type = jsonReq.getJSONArray("type");
+			JSONArray type = jsonReq.getJSONArray("types");
 
 			int dbId = jsonReq.getInt("dbId");
 

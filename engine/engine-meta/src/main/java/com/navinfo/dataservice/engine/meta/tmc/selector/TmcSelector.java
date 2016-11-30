@@ -295,7 +295,7 @@ public class TmcSelector {
 	}
 
 	public TmcLine queryTmcLineByPointId(int tmcPointId) throws Exception {
-		String sql = "with tmp1 as ( select t2.tmc_id,t2.cid,t2.area_tmc_id,t2.upline_tmc_id from tmc_point t1,tmc_line t2 where t1.tmc_id = :1 and t1.LINE_TMC_ID = t2.TMC_ID and t1.u_record !=2 ) select tmp1.*,n.TRANSLATE_NAME from tmp1 left join TMC_LINE_TRANSLATENAME n on tmp1.tmc_id = n.tmc_id where n.NAME_FLAG = 0";
+		String sql = "with tmp1 as ( select t2.tmc_id,t2.cid,t2.area_tmc_id,t2.upline_tmc_id from tmc_point t1,tmc_line t2 where t1.tmc_id = :1 and t1.LINE_TMC_ID = t2.TMC_ID and t1.u_record !=2 ) select tmp1.*,n.TRANSLATE_NAME from tmp1 left join TMC_LINE_TRANSLATENAME n on tmp1.tmc_id = n.tmc_id and n.NAME_FLAG = 0";
 
 		PreparedStatement pstmt = null;
 
@@ -315,10 +315,14 @@ public class TmcSelector {
 				tmcLine = new TmcLine();
 
 				tmcLine.setCid(resultSet.getString("cid"));
+				
+				int tmcLineId = resultSet.getInt("TMC_ID");
+				
+				String tmcLineName = resultSet.getString("TRANSLATE_NAME");
 
-				tmcLine.setTranslateName(resultSet.getString("TRANSLATE_NAME"));
+				tmcLine.setTranslateName(tmcLineName == null?String.valueOf(tmcLineId):tmcLineName);
 
-				tmcLine.setTmcId(resultSet.getInt("TMC_ID"));
+				tmcLine.setTmcId(tmcLineId);
 
 				tmcLine.setAreaTmcId(resultSet.getInt("area_tmc_id"));
 

@@ -89,7 +89,7 @@ public class Fm2MultiSrcSyncJob extends AbstractJob {
 		FmMultiSrcSyncApi syncApi;
 		try{
 			syncApi = (FmMultiSrcSyncApi)ApplicationContextUtil
-					.getBean("syncApi");
+					.getBean("fmMultiSrcSyncApi");
 			//设置创建中状态
 			syncApi.updateFmMultiSrcSyncStatus(currentStatus);
 			
@@ -231,9 +231,12 @@ public class Fm2MultiSrcSyncJob extends AbstractJob {
 				//key:liftcyle,value:pids
 				Map<Integer,Collection<Long>> updatePids = lr.getUpdatedObj(ObjectType.IX_POI, GlmFactory.getInstance().getObjByType(ObjectType.IX_POI).getMainTable().getName(), null, lastSyncTime,syncTime);
 				//查询已提交的数据
-				updatePids.put(1, PoiEditStatus.pidFilterByEditStatus(conn, updatePids.get(1), 4));
-				updatePids.put(2, PoiEditStatus.pidFilterByEditStatus(conn, updatePids.get(2), 4));
-				updatePids.put(3, PoiEditStatus.pidFilterByEditStatus(conn, updatePids.get(3), 4));
+				List<Long> pidList = new ArrayList<Long>();
+				for(Map.Entry<Integer, Collection<Long>> entry:updatePids.entrySet()){
+					if(entry.getValue()!=null&&entry.getValue().size()>0){
+						pidList.addAll(PoiEditStatus.pidFilterByEditStatus(conn, entry.getValue(), 3));
+					}
+				}
 				//设置查询子表
 				Set<String> selConfig = new HashSet<String>();
 				selConfig.add("IX_POI_NAME");
@@ -249,38 +252,40 @@ public class Fm2MultiSrcSyncJob extends AbstractJob {
 				selConfig.add("IX_POI_CHARGINGPLOT");
 				selConfig.add("IX_POI_GASSTATION");
 				//...
-				List<Long> pidList = new ArrayList<Long>();
-				for(Collection<Long> pids:updatePids.values()){
-					pidList.addAll(pids);
-				}
-				Map<Long,BasicObj> objs = ObjBatchSelector.selectByPids(conn, ObjectType.IX_POI, selConfig, pidList, true, false);
-				//设置lifeCycle
-				for(Map.Entry<Integer, Collection<Long>> entry:updatePids.entrySet()){
-					for(Long l:entry.getValue()){
-						objs.get(l).setLifeCycle(entry.getKey());
+				if(pidList.size()>0){
+					Map<Long,BasicObj> objs = ObjBatchSelector.selectByPids(conn, ObjectType.IX_POI, selConfig, pidList, true, false);
+					//设置lifeCycle
+					for(Map.Entry<Long, BasicObj> entry:objs.entrySet()){
+						for(Map.Entry<Integer, Collection<Long>> ent:updatePids.entrySet()){
+							if(ent.getValue().contains(entry.getKey())){
+								entry.getValue().setLifeCycle(ent.getKey());
+								break;
+							}
+						}
 					}
+					//设置父fid
+					 Map<Long, String> ParentFids = IxPoiSelector.getParentFidByPids(conn, objs.keySet());
+					for(Map.Entry<Long, String> entry:ParentFids.entrySet()){
+						((IxPoiObj)objs.get(entry.getKey())).setParentFid(entry.getValue());
+					}
+					
+					//设置adminId
+					 Map<Long,Long> adminIds = IxPoiSelector.getAdminIdByPids(conn, objs.keySet());
+					for(Map.Entry<Long, Long> entry:adminIds.entrySet()){
+						((IxPoiObj)objs.get(entry.getKey())).setAdminId(entry.getValue());
+					}
+					
+					MultiSrcPoiConvertor conv = new MultiSrcPoiConvertor();
+					for(BasicObj obj:objs.values()){
+						pw.println(conv.toJson((IxPoiObj)obj).toString());
+					}
+					stats.put(dbId, objs.size());
+				}else{
+					stats.put(dbId, 0);
 				}
-				//设置父fid
-				 Map<Long, String> ParentFids = IxPoiSelector.getParentFidByPids(conn, objs.keySet());
-				for(Map.Entry<Long, String> entry:ParentFids.entrySet()){
-					((IxPoiObj)objs.get(entry.getKey())).setParentFid(entry.getValue());
-				}
-				
-				//设置adminId
-				 Map<Long,Long> adminIds = IxPoiSelector.getAdminIdByPids(conn, objs.keySet());
-				for(Map.Entry<Long, Long> entry:adminIds.entrySet()){
-					((IxPoiObj)objs.get(entry.getKey())).setAdminId(entry.getValue());
-				}
-				
-				MultiSrcPoiConvertor conv = new MultiSrcPoiConvertor();
-				for(BasicObj obj:objs.values()){
-					pw.println(conv.toJson((IxPoiObj)obj).toString());
-				}
-				stats.put(dbId, objs.size());
 				log.debug("dbId("+dbId+")转出成功。");
 			}catch(Exception e){
 				log.error(e.getMessage(),e);
-				destroyExpFile();
 				throw new ThreadExecuteException("dbId("+dbId+")转多源失败，同步时间范围为start("+lastSyncTime+"),end("+syncTime+")");
 			}finally{
 				DbUtils.closeQuietly(conn);
@@ -292,14 +297,6 @@ public class Fm2MultiSrcSyncJob extends AbstractJob {
 				if(latch!=null){
 					latch.countDown();
 				}
-			}
-		}
-		
-		private void destroyExpFile(){
-			try{
-				
-			}catch(Exception e){
-				log.error(e.getMessage(), e);
 			}
 		}
 		

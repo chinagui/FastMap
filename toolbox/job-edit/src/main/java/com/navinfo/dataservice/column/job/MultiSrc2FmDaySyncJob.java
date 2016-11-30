@@ -66,7 +66,7 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 		FmMultiSrcSyncApi syncApi;
 		try{
 			syncApi = (FmMultiSrcSyncApi)ApplicationContextUtil
-				.getBean("syncApi");
+				.getBean("fmMultiSrcSyncApi");
 			MultiSrc2FmDaySyncJobRequest req = (MultiSrc2FmDaySyncJobRequest)request;
 			//下载解压远程文件包
 			String localUnzipDir = downloadAndUnzip(syncApi,req.getRemoteZipFile());
@@ -91,8 +91,8 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 	
 	private String downloadAndUnzip(FmMultiSrcSyncApi syncApi,String remoteZipFile)throws Exception{
 		try{
-			String uploadRoot = SystemConfigFactory.getSystemConfig().getValue(
-					PropConstant.uploadPath);
+//			String uploadRoot = SystemConfigFactory.getSystemConfig().getValue(PropConstant.uploadPath);
+			String uploadRoot = "F:\\data\\upload\\";
 			//每个月独立目录
 			String curYm = DateUtils.getCurYyyymm();
 			String monthDir = uploadRoot+"multisrc"+File.separator+curYm+File.separator;
@@ -153,7 +153,7 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 	}
 	private Map<Integer,UploadPois> distribute(JSONArray pois)throws Exception{
 		Map<Integer,UploadPois> poiMap = new HashMap<Integer,UploadPois>();//key:大区dbid
-		ManApi manApi = (ManApi)ApplicationContextUtil.getBean("datahubApi");
+		ManApi manApi = (ManApi)ApplicationContextUtil.getBean("manApi");
 		//key:admincode,value:day dbid
 		Map<Integer,Integer> adminDbMap = manApi.listDayDbIdsByAdminId();
 		for(Object o:pois){
@@ -194,7 +194,10 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 			
 			//执行导入
 			int dbSize = poiMap.size();
-			if(dbSize==0)return;
+			if(dbSize==0){
+				log.debug("无数据需要导入，导入结束");
+				return;
+			}
 			if(poiMap.size()==1){
 				Map.Entry<Integer,UploadPois> entry = poiMap.entrySet().iterator().next();
 				new MultiSrc2FmDayThread(null,entry.getKey(),entry.getValue()).run();;

@@ -568,7 +568,7 @@ public class SubtaskService {
 						}
 						
 						subtask.put("executer",rs.getString("EXECUTER"));
-						subtask.put("executerId",rs.getString("EXECUTER_ID"));
+						subtask.put("executerId",rs.getInt("EXECUTER_ID"));
 						
 						if(1 == rs.getInt("STATUS")){
 							SubtaskStatInfo stat = staticApi.getStatBySubtask(rs.getInt("SUBTASK_ID"));

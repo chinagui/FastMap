@@ -102,7 +102,7 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 	 */
 	public List<Integer> getApplyPids(Subtask subtask, String firstWorkItem, String secondWorkItem, int type) throws Exception {
 		StringBuilder sb = new StringBuilder();
-		sb.append("SELECT s.pid");
+		sb.append("SELECT DISTINCT s.pid");
 		sb.append(" FROM POI_COLUMN_STATUS s, POI_COLUMN_WORKITEM_CONF w, IX_POI p");
 		sb.append(" WHERE s.work_item_id=w.work_item_id");
 		sb.append(" AND s.pid=p.pid");
@@ -238,7 +238,7 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 	 */
 	public int queryHandlerCount(String firstWorkItem, String secondWorkItem, long userId, int type) throws Exception {
 		StringBuilder sb = new StringBuilder();
-		sb.append("SELECT count(1) num");
+		sb.append("SELECT count(distinct s.pid) num");
 		sb.append(" FROM POI_COLUMN_STATUS s,POI_COLUMN_WORKITEM_CONF w");
 		sb.append(" WHERE s.work_item_id = w.work_item_id");
 		sb.append(" AND s.handler = :1");

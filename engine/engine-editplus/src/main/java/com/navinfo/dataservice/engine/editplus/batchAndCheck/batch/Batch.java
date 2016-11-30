@@ -43,7 +43,9 @@ public class Batch extends AbstractOperation{
 			//"IX_POI,AD_LINK"
 			rule.setObjNameSet(objNameSet);
 			Map<String, Set<String>> referSubtableMap=new HashMap<String, Set<String>>();
-			referSubtableMap.put("IX_POI", objNameSet);
+			Set<String> objNameSetsub=new HashSet<String>();
+			objNameSetsub.add("IX_POI_NAME");
+			referSubtableMap.put("IX_POI", objNameSetsub);
 			//{"IX_POI":{"IX_POI_NAME","IX_POI_CHILDREN"}}
 			rule.setReferSubtableMap(referSubtableMap);
 			batchRuleList.add(rule);

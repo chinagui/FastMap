@@ -1,6 +1,8 @@
 package com.navinfo.dataservice.dao.plus.obj;
 
 import java.util.List;
+import java.util.Map;
+
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiAddress;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiChildren;
@@ -21,7 +23,7 @@ import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiRestaurant;
 public class IxPoiObj extends AbstractIxObj {
 	
 	protected String parentFid;
-	protected String childFid;
+	protected List<Map<Long,Object>> childFids;
 	protected long adminId=0L;
 	public long getAdminId() {
 		return adminId;
@@ -35,11 +37,11 @@ public class IxPoiObj extends AbstractIxObj {
 	public void setParentFid(String parentFid) {
 		this.parentFid = parentFid;
 	}
-	public String getChildFid() {
-		return childFid;
+	public List<Map<Long, Object>> getChildFids() {
+		return childFids;
 	}
-	public void setChildFid(String childFid) {
-		this.childFid = childFid;
+	public void setChildFid(List<Map<Long, Object>> childFids) {
+		this.childFids = childFids;
 	}
 	
 	

@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.commons.dbutils.DbUtils;
@@ -18,7 +19,9 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
+import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectType;
 import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -126,30 +129,6 @@ public class IxPoiSelector {
 	}
 	
 	/**
-	 * PARENT_POI_PID查询IX_POI表(非删除)
-	 * @author Han Shaoming
-	 * @param conn
-	 * @param parentPoiId
-	 * @return
-	 * @throws ServiceException
-	 */
-	public static List<Map<String,Object>> getIxPoiByPid(Connection conn,long parentPoiId) throws ServiceException{
-		List<Map<String,Object>> msgs = null;
-		try{
-			QueryRunner queryRunner = new QueryRunner();
-			String sql = "SELECT * FROM IX_POI WHERE PID=? AND U_RECORD IN(0,1,3)";
-			Object[] params = {parentPoiId};
-			msgs = queryRunner.query(conn, sql, new IxPoiHandler(),params);
-			return msgs;
-		}catch(Exception e){
-			DbUtils.rollbackAndCloseQuietly(conn);
-			log.error(e.getMessage(), e);
-			throw new ServiceException("查询失败，原因为:"+e.getMessage(),e);
-		}
-	}
-	
-	
-	/**
 	 * 查询子POI的fid
 	 * @author Han Shaoming
 	 * @param conn
@@ -157,22 +136,28 @@ public class IxPoiSelector {
 	 * @return
 	 * @throws ServiceException
 	 */
-	public static Map<Long,String> getChildFid(Connection conn,List<Long> pids) throws ServiceException{
+	public static Map<Long,List<Map<Long,Object>>> getChildFidByPids(Connection conn,Map<Long,List<Long>> objMap) throws ServiceException{
 		try {
-			Map<Long,String> msg = new HashMap<Long,String>();
-			for (Long pid : pids) {
-				List<Map<String, Object>> ixPoiList = getIxPoiByPid(conn, pid);
-				if(ixPoiList != null && ixPoiList.size()>0){
-					for (Map<String, Object> map : ixPoiList) {
-						String poiNum = StringUtils.trimToEmpty((String) map.get("poiNum"));
-						msg.put(pid, poiNum);
+			Map<Long,List<Map<Long,Object>>> msgs = new HashMap<Long, List<Map<Long,Object>>>();
+			//获取父对象
+			for(Map.Entry<Long,List<Long>> entry :objMap.entrySet()){
+				long pid = entry.getKey();
+				List<Long> childPids = entry.getValue();
+				List<Map<Long,Object>> childFids = new ArrayList<Map<Long,Object>>();
+				if(childPids!=null && childPids.size()>0){
+					Map<Long,BasicObj> objs = ObjBatchSelector.selectByPids(conn, ObjectType.IX_POI,null,childPids,true,true);
+					for(BasicObj obj:objs.values()){
+						Map<Long,Object> childFid = new HashMap<Long, Object>();
+						IxPoiObj poi = (IxPoiObj) obj;
+						IxPoi ixPoi = (IxPoi)poi.getMainrow();
+						long childPid = obj.objPid();
+						childFid.put(childPid, ixPoi.getPoiNum());
+						childFids.add(childFid);
 					}
-				}else{
-					//未查询到记录
-					msg.put(pid, "");
 				}
+				msgs.put(pid, childFids);
 			}
-			return msg;
+			return msgs;
 		} catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

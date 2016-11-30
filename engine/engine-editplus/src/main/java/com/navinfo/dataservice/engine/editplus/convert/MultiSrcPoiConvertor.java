@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -455,9 +457,23 @@ public class MultiSrcPoiConvertor {
 			for(BasicRow row:rows){
 				Map<String,Object> msg = new HashMap<String, Object>();
 				IxPoiChildren children = (IxPoiChildren) row;
+				long childPoiPid = children.getChildPoiPid();
 				msg.put("type", children.getRelationType());
 				msg.put("childPid", children.getChildPoiPid());
-				msg.put("childFid", poi.getChildFid());
+				List<Map<Long, Object>> childFids = poi.getChildFids();
+				for (Map<Long, Object> map : childFids) {
+					boolean flag = false;
+					for (Map.Entry<Long, Object> entry : map.entrySet()) {
+						if(childPoiPid==entry.getKey()){
+							msg.put("childFid",StringUtils.trimToEmpty((String) map.get(childPoiPid)));
+							flag = true;
+							break;
+						}
+					}
+					if(flag){
+						break;
+					}
+				}
 				msg.put("rowId", children.getRowId());
 				msgs.add(msg);
 			}

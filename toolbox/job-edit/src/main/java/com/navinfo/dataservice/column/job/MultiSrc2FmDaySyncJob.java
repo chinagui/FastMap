@@ -110,12 +110,12 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 			ZipUtils.unzipFile(localZipFile,localUnzipDir);
 			log.debug("解压完成");
 			//设置下载成功状态
-			syncApi.updateMultiSrcFmSyncStatus(MultiSrcFmSync.STATUS_DOWNLOAD_SUCCESS);
+			syncApi.updateMultiSrcFmSyncStatus(MultiSrcFmSync.STATUS_DOWNLOAD_SUCCESS,jobInfo.getId());
 			return localUnzipDir;
 		}catch(Exception e){
 			log.error(e.getMessage(),e);
 			//设置下载失败状态
-			syncApi.updateMultiSrcFmSyncStatus(MultiSrcFmSync.STATUS_DOWNLOAD_FAIL);
+			syncApi.updateMultiSrcFmSyncStatus(MultiSrcFmSync.STATUS_DOWNLOAD_FAIL,jobInfo.getId());
 			throw e;
 		}
 	}
@@ -215,12 +215,12 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 				}
 			}
 			//设置导入成功状态
-			syncApi.updateMultiSrcFmSyncStatus(MultiSrcFmSync.STATUS_IMP_SUCCESS);
+			syncApi.updateMultiSrcFmSyncStatus(MultiSrcFmSync.STATUS_IMP_SUCCESS,jobInfo.getId());
 			log.debug("导入完成，用时"+((System.currentTimeMillis()-t)/1000)+"s");
 		}catch(Exception e){
 			log.error(e.getMessage(),e);
 			//设置导入失败状态
-			syncApi.updateMultiSrcFmSyncStatus(MultiSrcFmSync.STATUS_IMP_FAIL);
+			syncApi.updateMultiSrcFmSyncStatus(MultiSrcFmSync.STATUS_IMP_FAIL,jobInfo.getId());
 			throw e;
 		}
 	}
@@ -238,12 +238,12 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 			pw = new PrintWriter(monthDir+resFileName);
 			pw.println(JSONObject.fromObject(errLog).toString());
 			//设置生成导入结果成功状态
-			syncApi.updateMultiSrcFmSyncStatus(MultiSrcFmSync.STATUS_CREATE_RES_SUCCESS);
+			syncApi.updateMultiSrcFmSyncStatus(MultiSrcFmSync.STATUS_CREATE_RES_SUCCESS,jobInfo.getId());
 			return "multisrc"+File.separator+curYm+File.separator+resFileName;
 		}catch(Exception e){
 			log.error(e.getMessage(),e);
 			//设置生成导入结果失败状态
-			syncApi.updateMultiSrcFmSyncStatus(MultiSrcFmSync.STATUS_CREATE_RES_FAIL);
+			syncApi.updateMultiSrcFmSyncStatus(MultiSrcFmSync.STATUS_CREATE_RES_FAIL,jobInfo.getId());
 			throw e;
 		}finally{
 			if(pw!=null){
@@ -264,10 +264,10 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 			parMap.put("url", zipFileUrl);
 			String result = ServiceInvokeUtil.invoke("", parMap, 10000);
 			log.debug("notify multisrc result:"+result);
-			syncApi.updateMultiSrcFmSyncStatus(MultiSrcFmSync.STATUS_NOTIFY_SUCCESS);
+			syncApi.updateMultiSrcFmSyncStatus(MultiSrcFmSync.STATUS_NOTIFY_SUCCESS,jobInfo.getId());
 		}catch(Exception e){
 			try{
-				syncApi.updateMultiSrcFmSyncStatus(MultiSrcFmSync.STATUS_NOTIFY_FAIL);
+				syncApi.updateMultiSrcFmSyncStatus(MultiSrcFmSync.STATUS_NOTIFY_FAIL,jobInfo.getId());
 			}catch(Exception ex){
 				log.error(ex.getMessage(),ex);
 			}

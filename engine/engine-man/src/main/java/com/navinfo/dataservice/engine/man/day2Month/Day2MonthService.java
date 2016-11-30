@@ -88,10 +88,12 @@ public class Day2MonthService {
 					+ "       D.TYPE,"
 					+ "       D.STATUS,"
 					+ "       NVL(I.USER_REAL_NAME,'') EXE_USER_NAME,"
-					+ "       D.EXE_DATE"
-					+ "  FROM DAY2MONTH_CONFIG D, CITY C, USER_INFO I"
+					+ "       D.EXE_DATE,F.CUR_TOTAL, F.ACCUMULATIVE_TOTAL"
+					+ "  FROM DAY2MONTH_CONFIG D, CITY C, USER_INFO I, FM_STAT_DAY2MONTH F"
 					+ " WHERE D.CITY_ID = C.CITY_ID"
 					+ "   AND D.TYPE = 'POI'"
+					+ "   AND D.CITY_ID = F.CITY_ID(+)"
+					+ "   AND D.TYPE = F.TYPE(+)"
 					+ "   AND D.EXE_USER_ID = I.USER_ID(+))"
 					+ " SELECT /*+FIRST_ROWS ORDERED*/"
 					+ " T.*, (SELECT COUNT(1) FROM day2Month) AS TOTAL_RECORD_NUM"
@@ -115,6 +117,8 @@ public class Day2MonthService {
 						tmp.put("cityName", rs.getString("CITY_NAME"));	
 						tmp.put("type", rs.getString("TYPE"));
 						tmp.put("status", rs.getInt("STATUS"));
+						tmp.put("curTotal", rs.getInt("CUR_TOTAL"));
+						tmp.put("accumulativeTotal", rs.getInt("ACCUMULATIVE_TOTAL"));
 						tmp.put("exeUserName", rs.getString("EXE_USER_NAME"));
 						tmp.put("exeDate", DateUtils.dateToString(rs.getTimestamp("EXE_DATE")));
 						result.add(tmp);

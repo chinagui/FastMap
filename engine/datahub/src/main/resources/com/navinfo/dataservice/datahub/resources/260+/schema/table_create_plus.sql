@@ -49,10 +49,17 @@ CREATE TABLE POI_EDIT_STATUS(
   UPLOAD_DATE TIMESTAMP,
   FRESH_VERIFIED NUMBER(1) DEFAULT 0
     CHECK(FRESH_VERIFIED IN (0,1)) DISABLE,
-  RAW_FIELDS VARCHAR2(30)
+  RAW_FIELDS VARCHAR2(30),
+  WORK_TYPE NUMBER(2) DEFAULT 1
 );
 CREATE UNIQUE INDEX IDX_POI_EDIT_STATUS_2 ON POI_EDIT_STATUS(PID);
 
+create table POI_EDIT_MULTISRC
+(
+  pid         number(10) not null,
+  source_type varchar2(12) not null,
+  main_type   number(2) not null
+);
 -- Create table
 create table POI_COLUMN_STATUS
 (

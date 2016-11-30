@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -12,6 +14,7 @@ import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiChargingplot;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiChargingstation;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiChildren;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiContact;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiGasstation;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiHotel;
@@ -105,7 +108,7 @@ public class MultiSrcPoiConvertor {
 		//父POI的Fid
 		jo.put("parentFid", StringUtils.trimToEmpty(poi.getParentFid()));
 		//[集合]父子关系,子列表；该POI作为父的子要素
-		jo.put("relateChildren", poi.getChildrens());
+		jo.put("relateChildren", this.getChildrens(poi));
 		//[集合]联系方式
 		jo.put("contacts", this.getContacts(poi));
 		//{唯一}餐饮
@@ -441,5 +444,42 @@ public class MultiSrcPoiConvertor {
 		}
 		return null;
 	}
+	
+	/**
+	 * 父子关系,子列表
+	 * @author Han Shaoming
+	 * @return
+	 */
+	public List<Map<String,Object>> getChildrens(IxPoiObj poi){
+		List<Map<String,Object>> msgs = new ArrayList<Map<String,Object>>();
+		List<BasicRow> rows = poi.getRowsByName("IX_POI_CHILDREN");
+		if(rows!=null && rows.size()>0){
+			for(BasicRow row:rows){
+				Map<String,Object> msg = new HashMap<String, Object>();
+				IxPoiChildren children = (IxPoiChildren) row;
+				long childPoiPid = children.getChildPoiPid();
+				msg.put("type", children.getRelationType());
+				msg.put("childPid", children.getChildPoiPid());
+				List<Map<Long, Object>> childFids = poi.getChildFids();
+				for (Map<Long, Object> map : childFids) {
+					boolean flag = false;
+					for (Map.Entry<Long, Object> entry : map.entrySet()) {
+						if(childPoiPid==entry.getKey()){
+							msg.put("childFid",StringUtils.trimToEmpty((String) map.get(childPoiPid)));
+							flag = true;
+							break;
+						}
+					}
+					if(flag){
+						break;
+					}
+				}
+				msg.put("rowId", children.getRowId());
+				msgs.add(msg);
+			}
+		}
+		return msgs;
+	}
+	
 
 }

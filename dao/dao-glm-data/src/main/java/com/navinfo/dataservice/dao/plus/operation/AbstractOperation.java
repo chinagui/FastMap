@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.dao.plus.editman.PoiEditStatus;
 import com.navinfo.dataservice.dao.plus.log.LogGenerator;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
@@ -49,6 +50,8 @@ public abstract class AbstractOperation {
 	public void persistChangeLog(int opSg,long userId)throws Exception{
 		if(result==null||result.getAllObjs().size()==0)return;
 		//持久化一次操作的变更，持久化包括数据和履历
+		//新增IX_POI对象向poi_edit_status表中插入记录
+		PoiEditStatus.insertPoiEditStatus(conn,result);
 		//持久化履历
 		LogGenerator.writeLog(conn, result.getAllObjs(),getName(), opSg, userId);
 		//持久化数据

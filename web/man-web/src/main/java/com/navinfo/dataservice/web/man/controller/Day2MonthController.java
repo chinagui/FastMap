@@ -1,8 +1,5 @@
 package com.navinfo.dataservice.web.man.controller;
 
-import java.util.List;
-import java.util.Map;
-
 import javax.servlet.http.HttpServletRequest;
 
 import net.sf.json.JSONObject;
@@ -15,17 +12,12 @@ import org.springframework.web.servlet.ModelAndView;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
-import com.navinfo.dataservice.commons.util.StringUtils;
-import com.navinfo.dataservice.engine.man.config.ConfigService;
 import com.navinfo.dataservice.engine.man.day2Month.Day2MonthService;
+import com.navinfo.navicommons.database.Page;
 @Controller
 public class Day2MonthController extends BaseController {
 	private Logger log=LoggerRepos.getLogger(getClass());
 
-	public Day2MonthController() {
-		// TODO Auto-generated constructor stub
-	}
-	
 	/**
 	 * a-2-2_生产节奏控制
 	 * man_config表中，有confKey对应记录，则更新记录；没有则报失败，配置参数错误
@@ -33,7 +25,7 @@ public class Day2MonthController extends BaseController {
 	 * @param request
 	 * @return
 	 */
-	@RequestMapping(value="/day2MonthConfig/update")
+	@RequestMapping(value="/day2Month/update")
 	public ModelAndView update(HttpServletRequest request){
 		try{
 			AccessToken token=(AccessToken) request.getAttribute("token");
@@ -48,7 +40,7 @@ public class Day2MonthController extends BaseController {
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}
-	@RequestMapping(value="/config/list")
+	@RequestMapping(value="/day2Month/list")
 	public ModelAndView list(HttpServletRequest request){
 		try{
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
@@ -64,7 +56,7 @@ public class Day2MonthController extends BaseController {
 			if(dataJson.containsKey("condition")){
 				condition=dataJson.getJSONObject("condition");
 			}
-			List<Map<String, Object>> result=Day2MonthService.getInstance().list(condition,curPageNum,curPageSize);
+			Page result=Day2MonthService.getInstance().list(condition,curPageNum,curPageSize);
 			return new ModelAndView("jsonView",success(result));
 		}catch(Exception e){
 			log.error("查询列表错误", e);

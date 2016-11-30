@@ -7,6 +7,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
@@ -88,9 +89,9 @@ public class RdNodeTest extends InitApplication{
 
 			RdNodeSearch search = new RdNodeSearch(conn);
 			
-			String wtk = "POLYGON ((116.69263064861298 40.28212436356775,116.69337093830109 40.28212436356775,116.69337093830109 40.2826891060652,116.69263064861298 40.2826891060652,116.69263064861298 40.28212436356775))";
+			String wkt = "{\"type\":\"Polygon\",\"coordinates\":[[[116.38581,40.23904],[116.38626,40.23904],[116.38625,40.23883],[116.38581,40.23882],[116.38581,40.23904]]]}";
 			
-			List<SearchSnapshot> searchSnapshot = search.searchDataBySpatial(wtk);
+			List<SearchSnapshot> searchSnapshot = search.searchDataBySpatial(Geojson.geojson2Wkt(wkt));
 			
 			JSONArray array = new JSONArray();
 
@@ -104,6 +105,6 @@ public class RdNodeTest extends InitApplication{
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
 	}
+	
 }	

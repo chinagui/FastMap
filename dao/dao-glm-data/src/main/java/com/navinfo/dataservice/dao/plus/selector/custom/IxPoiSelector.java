@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.commons.dbutils.DbUtils;
@@ -164,20 +163,5 @@ public class IxPoiSelector {
 			throw new ServiceException("查询失败，原因为:"+e.getMessage(),e);
 		}
 	}
-	
-	static class IxPoiHandler implements ResultSetHandler<List<Map<String,Object>>>{
-		public List<Map<String,Object>> handle(ResultSet rs) throws SQLException {
-			List<Map<String,Object>> msgs = new ArrayList<Map<String,Object>>();
-			while(rs.next()){
-				Map<String,Object> msg = new HashMap<String,Object>();
-				msg.put("pid",rs.getLong("PID"));
-				msg.put("kindCode",rs.getLong("KIND_CODE"));
-				msg.put("poiNum",rs.getString("POI_NUM"));
-				msgs.add(msg);
-			}
-			return msgs;
-		}
-	}
-	
 	
 }

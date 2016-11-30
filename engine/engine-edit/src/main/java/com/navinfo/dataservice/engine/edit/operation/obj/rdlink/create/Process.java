@@ -40,13 +40,4 @@ public class Process extends AbstractProcess<Command> {
         String msg = operation.run(this.getResult());
         return msg;
     }
-    
-	public List<RdLink> createSideRoad() throws Exception {
-		Operation operation = new Operation(this.getCommand(), check,
-				this.getConn());
-		List<RdLink> sideRoads = operation.createSideRoad(this.getResult());
-		
-		return sideRoads;
-	}
-
 }

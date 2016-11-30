@@ -32,6 +32,7 @@ public class BatchTest {
 	}
 	
 	public static void main(String[] args) throws Exception{
+		System.out.println("start batch test");
 		BatchTest test=new BatchTest();
 		test.init();
 		Connection conn = DBConnector.getInstance().getConnectionById(17);
@@ -48,9 +49,8 @@ public class BatchTest {
 		batchCommand.setRuleIdList(ruleIdList);
 		
 		Batch batch=new Batch(conn,operationResult);
-		batch.setCmd(batchCommand);
-		batch.operate();
-		System.out.println("123");
+		batch.operate(batchCommand);
+		System.out.println("end batch test");
 	}
 
 }

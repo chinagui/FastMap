@@ -48,6 +48,12 @@ public class Operation implements IOperation {
 
 		this.conn = conn;
 	}
+	
+	public Operation(Command command, Connection conn) {
+		this.command = command;
+
+		this.conn = conn;
+	}
 
 	@Override
 	public String run(Result result) throws Exception {
@@ -96,9 +102,16 @@ public class Operation implements IOperation {
 		this.breakLine(result);
 	}
 
+	/**
+	 * 制作辅路
+	 * 
+	 * @param result
+	 * @return
+	 * @throws Exception
+	 */
 	public List<RdLink> createSideRoad(Result result) throws Exception {
 
-		linkList.clear();
+		this.linkList.clear();
 
 		run(result);
 
@@ -389,6 +402,7 @@ public class Operation implements IOperation {
 		//创建link维护详细车道信息
 		OpRefRdLane opRefRdLane = new OpRefRdLane(conn);
 		opRefRdLane.run(result, linkList);
+		
 	}
 
 }

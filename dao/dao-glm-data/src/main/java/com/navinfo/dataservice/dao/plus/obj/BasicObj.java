@@ -34,6 +34,34 @@ public abstract class BasicObj {
 //	protected Map<Class<? extends BasicRow>, List<BasicRow>> childrows;//存储对象下的子表,包括二级、三级子表...
 	protected Map<String,List<BasicRow>> subrows=new HashMap<String,List<BasicRow>>();//key:table_name,value:rows
 	protected BasicObjGrid grid;
+	
+	//对象是否被删除
+	public boolean isDeleted(){
+		if(this.mainrow.getOpType().equals(OperationType.PRE_DELETED)
+				||this.mainrow.getOpType().equals(OperationType.DELETE)
+				||this.mainrow.getOpType().equals(OperationType.INSERT_DELETE)){
+			return true;
+		}else{
+			return false;
+		}
+	}
+	
+	//对象是否被修改:主表、所有子表新增、修改、删除返回true
+	public boolean isChanged(){
+		if(this.mainrow.isChanged()){
+			return true;
+		}
+		for(Map.Entry<String, List<BasicRow>> entry:this.subrows.entrySet()){
+			List<BasicRow> subrowList = entry.getValue();
+			for(BasicRow basicRow:subrowList){
+				if(basicRow.isChanged()){
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
 	public BasicObjGrid getGrid() throws Exception {
 		if(this.grid==null){
 			//生成grid信息

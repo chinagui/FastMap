@@ -18,6 +18,7 @@ import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.control.column.core.ColumnCoreControl;
 import com.navinfo.dataservice.control.column.core.DeepCoreControl;
 import com.navinfo.dataservice.dao.glm.search.IxPoiSearch;
 
@@ -155,6 +156,24 @@ public class ixpoitest {
 			DeepCoreControl deepCore = new DeepCoreControl();
 			JSONObject result = deepCore.release(parameter, 111);
 			System.out.println(result);
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+	}
+	
+	@Test
+	public void testApplyColumnData() throws Exception{
+		JSONObject jsonReq = new JSONObject();
+		jsonReq.put("taskId", 84);
+		jsonReq.put("firstWorkItem","poi_englishname");
+		jsonReq.put("secondWorkItem", "");
+		 
+		long userId = 4994;
+		
+		try {
+			ColumnCoreControl column = new ColumnCoreControl();
+			int count = column.applyData(jsonReq, userId);
+			System.out.println(count);
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
 		}

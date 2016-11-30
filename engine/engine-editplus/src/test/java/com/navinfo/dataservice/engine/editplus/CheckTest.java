@@ -31,6 +31,7 @@ public class CheckTest {
 	}
 	
 	public static void main(String[] args) throws Exception{
+		System.out.println("start check test");
 		CheckTest test=new CheckTest();
 		test.init();
 		Connection conn = DBConnector.getInstance().getConnectionById(17);
@@ -47,10 +48,9 @@ public class CheckTest {
 		checkCommand.setRuleIdList(ruleIdList);
 		
 		Check check=new Check(conn,operationResult);
-		check.setCmd(checkCommand);
-		check.operate();
+		check.operate(checkCommand);
 		List<NiValException> niValException = check.getReturnExceptions();
-		System.out.println("123");
+		System.out.println("end check test");
 	}
 
 }

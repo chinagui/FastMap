@@ -1,5 +1,16 @@
 package com.navinfo.dataservice.dao.glm.selector.rd.node;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.log4j.Logger;
+
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
@@ -9,17 +20,6 @@ import com.navinfo.dataservice.dao.glm.model.rd.node.RdNodeName;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
 import com.navinfo.navicommons.database.sql.DBUtils;
-import com.navinfo.navicommons.database.sql.StringUtil;
-import org.apache.log4j.Logger;
-
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class RdNodeSelector extends AbstractSelector {
 
@@ -163,12 +163,12 @@ public class RdNodeSelector extends AbstractSelector {
      * @return
      * @throws Exception
      */
-    public List<Integer> loadRdNodeWays(String nodePids)
+    public Map<Integer,String> loadRdNodeWays(String nodePids)
             throws Exception {
 
-        String sql = "select FORM_OF_WAY from RD_NODE_FORM where node_pid in(" + nodePids + ") and u_record !=2";
+        String sql = "SELECT NODE_PID, LISTAGG(FORM_OF_WAY, ',') WITHIN GROUP(ORDER BY NODE_PID) as form FROM RD_NODE_FORM WHERE NODE_PID IN ("+nodePids+") AND U_RECORD != 2 GROUP BY NODE_PID";
 
-        List<Integer> result = new ArrayList<>();
+        Map<Integer,String> nodeFormMap = new HashMap<>();
 
         PreparedStatement pstmt = null;
 
@@ -179,8 +179,10 @@ public class RdNodeSelector extends AbstractSelector {
 
             resultSet = pstmt.executeQuery();
 
-            if (resultSet.next()) {
-                result.add(resultSet.getInt("FORM_OF_WAY"));
+            while (resultSet.next()) {
+            	int nodePid = resultSet.getInt("node_pid");
+            	String forms = resultSet.getString("form");
+            	nodeFormMap.put(nodePid, forms);
             }
         } catch (Exception e) {
 
@@ -191,7 +193,7 @@ public class RdNodeSelector extends AbstractSelector {
             DBUtils.closeStatement(pstmt);
         }
 
-        return result;
+        return nodeFormMap;
     }
 
     /**

@@ -5,19 +5,19 @@ import java.util.List;
 import org.apache.commons.collections.CollectionUtils;
 
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiChildren;
-import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiParent;
 
 public class OpRefParent implements IOperation{
 	private Command command;
 
-	private List<IxPoiParent> ixPoiParents;
+	private List<IRow> ixPoiParents;
 	
 	private IxPoiChildren ixPoiChildren;
 
-	public OpRefParent(Command command, List<IxPoiParent> ixPoiParents,IxPoiChildren ixPoiChildren) {
+	public OpRefParent(Command command, List<IRow> ixPoiParents,IxPoiChildren ixPoiChildren) {
 		this.command = command;
 
 		this.ixPoiParents = ixPoiParents;
@@ -30,7 +30,7 @@ public class OpRefParent implements IOperation{
 		
 		if(CollectionUtils.isNotEmpty(ixPoiParents))
 		{
-			for(IxPoiParent parent : ixPoiParents)
+			for(IRow parent : ixPoiParents)
 			{
 				result.insertObject(parent, ObjStatus.DELETE, command.getPid());
 			}

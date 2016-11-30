@@ -11,6 +11,9 @@ public class BatchRule {
 	private Class accessorClass;
 	private Set<String> objNameSet;
 	private Map<String, Set<String>> referSubtableMap;
+	/* 是否修改参考数据。
+	 * 例如日编批处理规则FM-BAT-20-194-1，通过poi，获取poi对应的父，修改父的子表。需要将该规则的changeReferData=true*/
+	private boolean changeReferData;
 
 	public BatchRule() {
 		// TODO Auto-generated constructor stub
@@ -63,6 +66,14 @@ public class BatchRule {
 
 	public void setReferSubtableMap(Map<String, Set<String>> referSubtableMap) {
 		this.referSubtableMap = referSubtableMap;
+	}
+
+	public boolean isChangeReferData() {
+		return changeReferData;
+	}
+
+	public void setChangeReferData(boolean changeReferData) {
+		this.changeReferData = changeReferData;
 	}
 
 }

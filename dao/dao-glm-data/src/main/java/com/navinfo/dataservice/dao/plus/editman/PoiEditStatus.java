@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.commons.dbutils.DbUtils;
@@ -21,6 +22,10 @@ import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
+import com.navinfo.dataservice.dao.plus.obj.BasicObj;
+import com.navinfo.dataservice.dao.plus.obj.ObjectType;
+import com.navinfo.dataservice.dao.plus.operation.OperationResult;
 import com.navinfo.navicommons.database.QueryRunner;
 
 
@@ -96,41 +101,92 @@ public class PoiEditStatus {
 			if(pids.isEmpty()){
 				return;
 			}
-			//poi_edit_status中已存在的，更新其状态
-			Set<Long> pidExistsInPoiEditStatus = selectPidExistsInPoiEditStatus(conn,pids);
-			//poi_edit_status中不存在的
-			Set<Long> pidNotExistsInPoiEditStatus = new HashSet<Long>();
-			pidNotExistsInPoiEditStatus.addAll(pids);
-			pidNotExistsInPoiEditStatus.removeAll(pidExistsInPoiEditStatus);
+			
+			//更新poi_edit_status表
 			int status = 1;//待作业
 			int isUpload = 1;
 			Date uploadDate = new Date();
 			int workType = 2;//多源
-			if(!pidExistsInPoiEditStatus.isEmpty()){
-				updatePoiEditStatus(conn,pidExistsInPoiEditStatus,status,isUpload,uploadDate,workType);
-				//存在于poi_edit_status,poi_edit_multisrc中的
-				Set<Long> pidExistsInPoiEditMultiSrc = selectPidExistsInPoiEditMultiSrc(conn,pidExistsInPoiEditStatus);
-				if(!pidExistsInPoiEditMultiSrc.isEmpty()){
-					updatePoiEditMultiSrc(conn,pidExistsInPoiEditMultiSrc,map);				
-				}
-				//存在于poi_edit_status表内,不存在于poi_edit_multisrc表中的pid
-				pidExistsInPoiEditStatus.removeAll(pidExistsInPoiEditMultiSrc);
-				if(!pidExistsInPoiEditStatus.isEmpty()){
-					insertPoiEditMultiSrc(conn,pidExistsInPoiEditStatus,map);
-				}
-			}
+			updatePoiEditStatus(conn,pids,status,isUpload,uploadDate,workType);
 			
-			//不存在于poi_edit_status表内的pid，插入poi_edit_status,poi_edit_multisrc
-			if(!pidNotExistsInPoiEditStatus.isEmpty()){
-				insertPoiEditStatus(conn,pidNotExistsInPoiEditStatus,status,isUpload,uploadDate,workType);
-				insertPoiEditMultiSrc(conn,pidNotExistsInPoiEditStatus,map);
-			}
+			//更新poi_edit_multisrc表
+			updatePoiEditMultiSrc(conn,map);
+			
+//			//poi_edit_status中已存在的，更新其状态
+//			Set<Long> pidExistsInPoiEditStatus = selectPidExistsInPoiEditStatus(conn,pids);
+//			//poi_edit_status中不存在的
+//			Set<Long> pidNotExistsInPoiEditStatus = new HashSet<Long>();
+//			pidNotExistsInPoiEditStatus.addAll(pids);
+//			pidNotExistsInPoiEditStatus.removeAll(pidExistsInPoiEditStatus);
+//			int status = 1;//待作业
+//			int isUpload = 1;
+//			Date uploadDate = new Date();
+//			int workType = 2;//多源
+//			if(!pidExistsInPoiEditStatus.isEmpty()){
+//				updatePoiEditStatus(conn,pidExistsInPoiEditStatus,status,isUpload,uploadDate,workType);
+//				//存在于poi_edit_status,poi_edit_multisrc中的
+//				Set<Long> pidExistsInPoiEditMultiSrc = selectPidExistsInPoiEditMultiSrc(conn,pidExistsInPoiEditStatus);
+//				if(!pidExistsInPoiEditMultiSrc.isEmpty()){
+//					updatePoiEditMultiSrc(conn,pidExistsInPoiEditMultiSrc,map);				
+//				}
+//				//存在于poi_edit_status表内,不存在于poi_edit_multisrc表中的pid
+//				pidExistsInPoiEditStatus.removeAll(pidExistsInPoiEditMultiSrc);
+//				if(!pidExistsInPoiEditStatus.isEmpty()){
+//					insertPoiEditMultiSrc(conn,pidExistsInPoiEditStatus,map);
+//				}
+//			}
+//			
+//			//不存在于poi_edit_status表内的pid，插入poi_edit_status,poi_edit_multisrc
+//			if(!pidNotExistsInPoiEditStatus.isEmpty()){
+//				insertPoiEditStatus(conn,pidNotExistsInPoiEditStatus,status,isUpload,uploadDate,workType);
+//				insertPoiEditMultiSrc(conn,pidNotExistsInPoiEditStatus,map);
+//			}
 			
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			logger.error(e.getMessage(),e);
 			throw new Exception("多源POI打标签失败");
 		}
+	}
+	
+	private static void updatePoiEditMultiSrc(Connection conn,Map<Long, String> map) throws Exception {
+		try{
+			if(map==null||map.isEmpty()){
+				return;
+			}
+			StringBuilder sb = new StringBuilder();
+			sb.append("MERGE INTO POI_EDIT_MULTISRC A");
+			sb.append(" USING (SELECT ? PID FROM DUAL) B");
+			sb.append(" ON(A.PID=B.PID)");
+			sb.append(" WHEN MATCHED THEN");
+			sb.append(" UPDATE SET A.SOURCE_TYPE = ?,A.MAIN_TYPE = ?");
+			sb.append(" WHEN NOT MATCHED THEN");
+			sb.append(" INSERT (PID,SOURCE_TYPE,MAIN_TYPE) VALUES (?, ?,?)");
+			
+			
+			Object[][] values = new Object[map.keySet().size()][];
+			int i = 0;
+			for(Map.Entry<Long, String> entry:map.entrySet()){
+				String sourceType = entry.getValue();
+				int mainType = 0;
+				if(sourceType.equals("001000020000")){
+					mainType = 1;
+				}else if(sourceType.equals("001000030000")||sourceType.equals("001000030001")||sourceType.equals("001000030002")){
+					mainType = 2;
+				}else if(sourceType.equals("001000030003")||sourceType.equals("001000030004")){
+					mainType = 3;
+				}
+				Object[] value = {entry.getKey(),sourceType,mainType,entry.getKey(),sourceType,mainType};
+				values[i] = value;
+				i++;
+			}
+			new QueryRunner().batch(conn, sb.toString(),values);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			logger.error(e.getMessage(),e);
+			throw new Exception("多源POI打标签失败");
+		}
+		
 	}
 
 	/**
@@ -231,15 +287,44 @@ public class PoiEditStatus {
 				return;
 			}
 			StringBuilder sb = new StringBuilder();
-//			sb.append("INSERT INTO POI_EDIT_STATUS (PID,STATUS,IS_UPLOAD,UPLOAD_DATE,WORK_TYPE) VALUES (?,?,?,TO_DATE(?,'yyyy-MM-dd HH24:MI:ss'),?)");
 			sb.append("INSERT INTO POI_EDIT_STATUS (PID,STATUS,IS_UPLOAD,UPLOAD_DATE,WORK_TYPE) VALUES (?,?,?,TO_DATE(?,'yyyy-MM-dd HH24:MI:ss'),?)");
 
 			DateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
 			Object[][] values = new Object[pids.size()][];
 			int i = 0;
 			for(long pid:pids){
-//				Object[] value = {pid,status,isUpload,uploadDate.toString().substring(0, 10),workType};
 				Object[] value = {pid,status,isUpload,format.format(uploadDate),workType};
+				values[i] = value;
+				i++;
+			}
+			new QueryRunner().batch(conn, sb.toString(),values);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			logger.error(e.getMessage(),e);
+			throw new Exception("多源POI打标签失败");
+		}
+	}
+	
+	/**
+	 * poi_edit_status表中新增记录
+	 * @param conn
+	 * @param pids
+	 * @param status
+	 * @param uploadDate
+	 * @throws Exception
+	 */
+	private static void insertPoiEditStatus(Connection conn, Set<Long> pids, int status) throws Exception {
+		try{
+			if(pids.isEmpty()){
+				return;
+			}
+			StringBuilder sb = new StringBuilder();
+			sb.append("INSERT INTO POI_EDIT_STATUS (PID,STATUS) VALUES (?,?)");
+
+			Object[][] values = new Object[pids.size()][];
+			int i = 0;
+			for(long pid:pids){
+				Object[] value = {pid,status};
 				values[i] = value;
 				i++;
 			}
@@ -387,6 +472,27 @@ public class PoiEditStatus {
 	public static void main(String[] args) throws Exception{
 
 		System.out.println("ok");
+	}
+
+	/**
+	 * 新增POI对象在poi_edit_status表中新增一条初始状态的记录
+	 * @param conn
+	 * @param result
+	 * @throws Exception 
+	 */
+	public static void insertPoiEditStatus(Connection conn, OperationResult result) throws Exception {
+		// TODO Auto-generated method stub
+		Set<Long> pids = new HashSet<Long>();
+		for(Entry<Long, BasicObj> entry:result.getObjsMapByType(ObjectType.IX_POI).entrySet()){
+			if(entry.getValue().opType().equals(OperationType.INSERT)){
+				pids.add(entry.getValue().objPid());
+			}
+		}
+		int status = 0;//默认为初始化状态
+		//插入poi_edit_status表记录
+		if(pids!=null&&!pids.isEmpty()){
+			insertPoiEditStatus(conn,pids,status);
+		}
 	}
 	
 }

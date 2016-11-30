@@ -318,15 +318,13 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 				//导入数据
 				MultiSrcPoiDayImportorCommand cmd = new MultiSrcPoiDayImportorCommand(pois);
 				MultiSrcPoiDayImportor imp = new MultiSrcPoiDayImportor(conn,null);
-				imp.setCmd(cmd);
-				imp.operate();
+				imp.operate(cmd);
 				imp.persistChangeLog(OperationSegment.SG_ROW, jobInfo.getUserId());
 				//导入父子关系
 				PoiRelationImportorCommand relCmd = new PoiRelationImportorCommand();
 				relCmd.setPoiRels(imp.getParentPid());
 				PoiRelationImportor relImp = new PoiRelationImportor(conn,imp.getResult());
-				relImp.setCmd(relCmd);
-				relImp.operate();
+				relImp.operate(relCmd);
 				relImp.persistChangeLog(OperationSegment.SG_ROW, jobInfo.getUserId());
 				errLog.putAll(imp.getErrLog());
 				log.debug("dbId("+dbId+")转出成功。");

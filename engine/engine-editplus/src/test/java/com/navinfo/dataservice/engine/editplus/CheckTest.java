@@ -47,8 +47,7 @@ public class CheckTest {
 		checkCommand.setRuleIdList(ruleIdList);
 		
 		Check check=new Check(conn,operationResult);
-		check.setCmd(checkCommand);
-		check.operate();
+		check.operate(checkCommand);
 		List<NiValException> niValException = check.getReturnExceptions();
 		System.out.println("123");
 	}

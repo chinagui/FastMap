@@ -10,6 +10,7 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.dao.check.NiValExceptionOperator;
+import com.navinfo.dataservice.dao.plus.operation.AbstractCommand;
 import com.navinfo.dataservice.dao.plus.operation.AbstractOperation;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
 import com.navinfo.dataservice.dao.plus.selector.ObjChildrenIncreSelector;
@@ -44,7 +45,7 @@ public class Check extends AbstractOperation{
 		log.debug("end call insert ni_val");
 	}
 	@Override
-	public void operate() throws Exception {
+	public void operate(AbstractCommand cmd) throws Exception {
 		log.info("start exe check");
 		CheckCommand checkCommand =(CheckCommand) cmd;
 		//按照规则号list加载规则列表，以及汇总需要参考的子表map

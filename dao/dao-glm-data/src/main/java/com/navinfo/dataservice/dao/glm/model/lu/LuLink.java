@@ -23,324 +23,330 @@ import com.vividsolutions.jts.geom.Geometry;
 
 public class LuLink implements IObj {
 
-	private int pid;
-
-	private String rowId;
-
-	private int sNodePid;
-
-	private int eNodePid;
-
-	private Geometry geometry;
-
-	private double length;
-
-	private int editFlag = 1;
-
-	private List<IRow> linkKinds = new ArrayList<IRow>();
-
-	public Map<String, LuLinkKind> linkKindMap = new HashMap<String, LuLinkKind>();
-
-	private List<IRow> meshes = new ArrayList<IRow>();
+    private int pid;
+
+    private String rowId;
+
+    private int sNodePid;
+
+    private int eNodePid;
+
+    private Geometry geometry;
+
+    private double length;
+
+    private int editFlag = 1;
+
+    private List<IRow> linkKinds = new ArrayList<IRow>();
+
+    public Map<String, LuLinkKind> linkKindMap = new HashMap<String, LuLinkKind>();
+
+    private List<IRow> meshes = new ArrayList<IRow>();
+
+    public Map<String, LuLinkMesh> meshMap = new HashMap<String, LuLinkMesh>();
+
+    private Map<String, Object> changedFields = new HashMap<String, Object>();
+
+    public LuLink() {
+    }
+
+    @Override
+    public String rowId() {
+        return this.rowId;
+    }
+
+    @Override
+    public void setRowId(String rowId) {
+        this.rowId = rowId;
+    }
 
-	public Map<String, LuLinkMesh> meshMap = new HashMap<String, LuLinkMesh>();
+    @Override
+    public String tableName() {
+        return "lu_link";
+    }
+
+    @Override
+    public ObjStatus status() {
+        return null;
+    }
+
+    @Override
+    public void setStatus(ObjStatus os) {
+    }
+
+    @Override
+    public ObjType objType() {
+        return ObjType.LULINK;
+    }
+
+    @Override
+    public void copy(IRow row) {
+        LuLink sourceLink = (LuLink) row;
+        this.eNodePid = sourceLink.eNodePid;
+        this.geometry = sourceLink.geometry;
+        this.length = sourceLink.length;
+        this.rowId = sourceLink.rowId;
+        this.sNodePid = sourceLink.sNodePid;
+        this.meshes = new ArrayList<IRow>();
+        for (IRow mesh : sourceLink.meshes) {
+            LuLinkMesh linkMesh = new LuLinkMesh();
+            linkMesh.copy(mesh);
+            linkMesh.setLinkPid(this.pid);
+            this.meshes.add(linkMesh);
+        }
+        for (IRow kind : sourceLink.linkKinds) {
+            LuLinkKind linkKind = new LuLinkKind();
+            linkKind.copy(kind);
+            linkKind.setLinkPid(this.pid());
+            this.linkKinds.add(linkKind);
+        }
+    }
+
+    @Override
+    public Map<String, Object> changedFields() {
+        return this.changedFields;
+    }
+
+    @Override
+    public String parentPKName() {
+        return "link_pid";
+    }
 
-	private Map<String, Object> changedFields = new HashMap<String, Object>();
+    @Override
+    public int parentPKValue() {
+        return this.pid;
+    }
 
-	public LuLink() {
-	}
+    @Override
+    public String parentTableName() {
+        return "lu_link";
+    }
 
-	@Override
-	public String rowId() {
-		return this.rowId;
-	}
+    @Override
+    public List<List<IRow>> children() {
+        List<List<IRow>> children = new ArrayList<List<IRow>>();
+        children.add(this.meshes);
+        children.add(this.linkKinds);
+        return children;
+    }
 
-	@Override
-	public void setRowId(String rowId) {
-		this.rowId = rowId;
-	}
+    @Override
+    public boolean fillChangeFields(JSONObject json) throws Exception {
+        @SuppressWarnings("rawtypes")
+        Iterator keys = json.keys();
 
-	@Override
-	public String tableName() {
-		return "lu_link";
-	}
+        while (keys.hasNext()) {
+            String key = (String) keys.next();
 
-	@Override
-	public ObjStatus status() {
-		return null;
-	}
+            if (json.get(key) instanceof JSONArray) {
+                continue;
+            } else {
+                if (!"objStatus".equals(key)) {
 
-	@Override
-	public void setStatus(ObjStatus os) {
-	}
+                    Field field = this.getClass().getDeclaredField(key);
 
-	@Override
-	public ObjType objType() {
-		return ObjType.LULINK;
-	}
+                    field.setAccessible(true);
 
-	@Override
-	public void copy(IRow row) {
-		LuLink sourceLink = (LuLink) row;
-		this.eNodePid = sourceLink.eNodePid;
-		this.geometry = sourceLink.geometry;
-		this.length = sourceLink.length;
-		this.rowId = sourceLink.rowId;
-		this.sNodePid = sourceLink.sNodePid;
-		this.meshes = new ArrayList<IRow>();
-		for (IRow mesh : sourceLink.meshes) {
-			LuLinkMesh linkMesh = new LuLinkMesh();
-			linkMesh.copy(mesh);
-			linkMesh.setLinkPid(this.pid);
-			this.meshes.add(linkMesh);
-		}
-	}
+                    Object objValue = field.get(this);
 
-	@Override
-	public Map<String, Object> changedFields() {
-		return this.changedFields;
-	}
+                    String oldValue = null;
 
-	@Override
-	public String parentPKName() {
-		return "link_pid";
-	}
+                    if (objValue == null) {
+                        oldValue = "null";
+                    } else {
+                        oldValue = String.valueOf(objValue);
+                    }
 
-	@Override
-	public int parentPKValue() {
-		return this.pid;
-	}
+                    String newValue = json.getString(key);
 
-	@Override
-	public String parentTableName() {
-		return "lu_link";
-	}
+                    if (!newValue.equals(oldValue)) {
+                        Object value = json.get(key);
 
-	@Override
-	public List<List<IRow>> children() {
-		List<List<IRow>> children = new ArrayList<List<IRow>>();
-		children.add(this.meshes);
-		children.add(this.linkKinds);
-		return children;
-	}
+                        if (value instanceof String) {
+                            changedFields.put(key, newValue.replace("'", "''"));
+                        } else {
+                            changedFields.put(key, value);
+                        }
 
-	@Override
-	public boolean fillChangeFields(JSONObject json) throws Exception {
-		@SuppressWarnings("rawtypes")
-		Iterator keys = json.keys();
+                    }
 
-		while (keys.hasNext()) {
-			String key = (String) keys.next();
+                }
+            }
+        }
 
-			if (json.get(key) instanceof JSONArray) {
-				continue;
-			} else {
-				if (!"objStatus".equals(key)) {
+        if (changedFields.size() > 0) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 
-					Field field = this.getClass().getDeclaredField(key);
+    @Override
+    public int mesh() {
+        return 0;
+    }
 
-					field.setAccessible(true);
+    @Override
+    public void setMesh(int mesh) {
+    }
 
-					Object objValue = field.get(this);
+    @Override
+    public JSONObject Serialize(ObjLevel objLevel) throws Exception {
+        JsonConfig jsonConfig = Geojson.geoJsonConfig(0.00001, 5);
 
-					String oldValue = null;
+        JSONObject json = JSONObject.fromObject(this, jsonConfig);
 
-					if (objValue == null) {
-						oldValue = "null";
-					} else {
-						oldValue = String.valueOf(objValue);
-					}
+        return json;
+    }
 
-					String newValue = json.getString(key);
+    @Override
+    public boolean Unserialize(JSONObject json) throws Exception {
+        @SuppressWarnings("rawtypes")
+        Iterator keys = json.keys();
 
-					if (!newValue.equals(oldValue)) {
-						Object value = json.get(key);
+        while (keys.hasNext()) {
+            String key = (String) keys.next();
 
-						if (value instanceof String) {
-							changedFields.put(key, newValue.replace("'", "''"));
-						} else {
-							changedFields.put(key, value);
-						}
+            JSONArray ja = null;
 
-					}
+            if (json.get(key) instanceof JSONArray) {
 
-				}
-			}
-		}
+                switch (key) {
+                    case "meshes":
 
-		if (changedFields.size() > 0) {
-			return true;
-		} else {
-			return false;
-		}
-	}
+                        meshes.clear();
 
-	@Override
-	public int mesh() {
-		return 0;
-	}
+                        ja = json.getJSONArray(key);
 
-	@Override
-	public void setMesh(int mesh) {
-	}
+                        for (int i = 0; i < ja.size(); i++) {
+                            JSONObject jo = ja.getJSONObject(i);
 
-	@Override
-	public JSONObject Serialize(ObjLevel objLevel) throws Exception {
-		JsonConfig jsonConfig = Geojson.geoJsonConfig(0.00001, 5);
+                            RdNodeMesh row = new RdNodeMesh();
 
-		JSONObject json = JSONObject.fromObject(this, jsonConfig);
+                            row.Unserialize(jo);
 
-		return json;
-	}
+                            meshes.add(row);
+                        }
+                        break;
+                    default:
+                        break;
+                }
 
-	@Override
-	public boolean Unserialize(JSONObject json) throws Exception {
-		@SuppressWarnings("rawtypes")
-		Iterator keys = json.keys();
+            } else if ("geometry".equals(key)) {
 
-		while (keys.hasNext()) {
-			String key = (String) keys.next();
+                Geometry jts = GeoTranslator.geojson2Jts(json.getJSONObject(key), 100000, 0);
 
-			JSONArray ja = null;
+                this.setGeometry(jts);
 
-			if (json.get(key) instanceof JSONArray) {
+            } else {
+                Field f = this.getClass().getDeclaredField(key);
 
-				switch (key) {
-				case "meshes":
+                f.setAccessible(true);
 
-					meshes.clear();
+                f.set(this, json.get(key));
+            }
+        }
 
-					ja = json.getJSONArray(key);
+        return true;
+    }
 
-					for (int i = 0; i < ja.size(); i++) {
-						JSONObject jo = ja.getJSONObject(i);
+    @Override
+    public List<IRow> relatedRows() {
+        return null;
+    }
 
-						RdNodeMesh row = new RdNodeMesh();
+    @Override
+    public int pid() {
+        return this.pid;
+    }
 
-						row.Unserialize(jo);
+    @Override
+    public String primaryKey() {
+        return "link_pid";
+    }
 
-						meshes.add(row);
-					}
-					break;
-				default:
-					break;
-				}
+    public int getPid() {
+        return pid;
+    }
 
-			} else if ("geometry".equals(key)) {
+    public void setPid(int pid) {
+        this.pid = pid;
+    }
 
-				Geometry jts = GeoTranslator.geojson2Jts(json.getJSONObject(key), 100000, 0);
+    public int getsNodePid() {
+        return sNodePid;
+    }
 
-				this.setGeometry(jts);
+    public void setsNodePid(int sNodePid) {
+        this.sNodePid = sNodePid;
+    }
 
-			} else {
-				Field f = this.getClass().getDeclaredField(key);
+    public int geteNodePid() {
+        return eNodePid;
+    }
 
-				f.setAccessible(true);
+    public void seteNodePid(int eNodePid) {
+        this.eNodePid = eNodePid;
+    }
 
-				f.set(this, json.get(key));
-			}
-		}
+    public Geometry getGeometry() {
+        return geometry;
+    }
 
-		return true;
-	}
+    public void setGeometry(Geometry geometry) {
+        this.geometry = geometry;
+    }
 
-	@Override
-	public List<IRow> relatedRows() {
-		return null;
-	}
+    public double getLength() {
+        return length;
+    }
 
-	@Override
-	public int pid() {
-		return this.pid;
-	}
+    public void setLength(double length) {
+        this.length = length;
+    }
 
-	@Override
-	public String primaryKey() {
-		return "link_pid";
-	}
+    public List<IRow> getMeshes() {
+        return meshes;
+    }
 
-	public int getPid() {
-		return pid;
-	}
+    public void setMeshes(List<IRow> meshes) {
+        this.meshes = meshes;
+    }
 
-	public void setPid(int pid) {
-		this.pid = pid;
-	}
+    public String getRowId() {
+        return rowId;
+    }
 
-	public int getsNodePid() {
-		return sNodePid;
-	}
+    public int getEditFlag() {
+        return editFlag;
+    }
 
-	public void setsNodePid(int sNodePid) {
-		this.sNodePid = sNodePid;
-	}
+    public void setEditFlag(int editFlag) {
+        this.editFlag = editFlag;
+    }
 
-	public int geteNodePid() {
-		return eNodePid;
-	}
+    public List<IRow> getLinkKinds() {
+        return linkKinds;
+    }
 
-	public void seteNodePid(int eNodePid) {
-		this.eNodePid = eNodePid;
-	}
+    public void setLinkKinds(List<IRow> linkKinds) {
+        this.linkKinds = linkKinds;
+    }
 
-	public Geometry getGeometry() {
-		return geometry;
-	}
+    @Override
+    public Map<Class<? extends IRow>, List<IRow>> childList() {
+        Map<Class<? extends IRow>, List<IRow>> childMap = new HashMap<>();
+        childMap.put(LuLinkKind.class, linkKinds);
+        childMap.put(LuLinkMesh.class, meshes);
+        return childMap;
+    }
 
-	public void setGeometry(Geometry geometry) {
-		this.geometry = geometry;
-	}
-
-	public double getLength() {
-		return length;
-	}
-
-	public void setLength(double length) {
-		this.length = length;
-	}
-
-	public List<IRow> getMeshes() {
-		return meshes;
-	}
-
-	public void setMeshes(List<IRow> meshes) {
-		this.meshes = meshes;
-	}
-
-	public String getRowId() {
-		return rowId;
-	}
-
-	public int getEditFlag() {
-		return editFlag;
-	}
-
-	public void setEditFlag(int editFlag) {
-		this.editFlag = editFlag;
-	}
-
-	public List<IRow> getLinkKinds() {
-		return linkKinds;
-	}
-
-	public void setLinkKinds(List<IRow> linkKinds) {
-		this.linkKinds = linkKinds;
-	}
-
-	@Override
-	public Map<Class<? extends IRow>, List<IRow>> childList() {
-		Map<Class<? extends IRow>, List<IRow>> childMap = new HashMap<>();
-		childMap.put(LuLinkKind.class, linkKinds);
-		childMap.put(LuLinkMesh.class, meshes);
-		return childMap;
-	}
-
-	@Override
-	public Map<Class<? extends IRow>, Map<String, ?>> childMap() {
-		Map<Class<? extends IRow>, Map<String, ?>> childMap = new HashMap<Class<? extends IRow>, Map<String, ?>>();
-		childMap.put(LuLinkKind.class, linkKindMap);
-		childMap.put(LuLinkMesh.class, meshMap);
-		return childMap;
-	}
+    @Override
+    public Map<Class<? extends IRow>, Map<String, ?>> childMap() {
+        Map<Class<? extends IRow>, Map<String, ?>> childMap = new HashMap<Class<? extends IRow>, Map<String, ?>>();
+        childMap.put(LuLinkKind.class, linkKindMap);
+        childMap.put(LuLinkMesh.class, meshMap);
+        return childMap;
+    }
 
 }

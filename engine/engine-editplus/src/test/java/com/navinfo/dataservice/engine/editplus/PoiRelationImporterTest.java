@@ -245,4 +245,90 @@ public class PoiRelationImporterTest {
 			e.printStackTrace();
 		}
 	}
+	
+	@Test
+	//改
+	public void test20(){
+		try{
+			Connection conn = null;
+			conn = DBConnector.getInstance().getConnectionById(17);
+			String objType = "IX_POI";
+			Collection<Long> pids = new ArrayList<Long>();
+			pids.add((long) 159117);//原父
+			pids.add((long) 158982);//原子
+			pids.add((long) 308);//新父
+			boolean isLock = false;
+			boolean isNowait = false;
+
+			Map<Long,BasicObj> objMap = ObjBatchSelector.selectByPids(conn, objType, null, pids, isLock,isNowait);
+
+			//构造PoiRelationImporterCommand
+			Set<PoiRelation> poiCollectionSet = new HashSet<PoiRelation>();
+			PoiRelation poiRelation = new PoiRelation();
+			poiRelation.setPid(158982);
+			poiRelation.setFatherFid("0335100531LS100266");
+			poiRelation.setPoiRelationType(PoiRelationType.FATHER_AND_SON);
+			poiCollectionSet.add(poiRelation);
+			
+			PoiRelationImportorCommand poiRelationImporterCommand = new PoiRelationImportorCommand();
+			poiRelationImporterCommand.setPoiRels(poiCollectionSet);
+			
+			OperationResult result = new OperationResult();
+			for(Map.Entry<Long, BasicObj> entry:objMap.entrySet()){
+				result.putObj(entry.getValue());
+			}
+			PoiRelationImportor imp = new PoiRelationImportor(conn,result);
+			imp.operate(poiRelationImporterCommand);
+			System.out.println("Over.");
+
+		}catch(Exception e){
+			System.out.println("Oops, something wrong...");
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	//改
+	public void test21(){
+		try{
+			Connection conn = null;
+			conn = DBConnector.getInstance().getConnectionById(17);
+			String objType = "IX_POI";
+			Collection<Long> pids = new ArrayList<Long>();
+			pids.add((long) 158982);//原子
+			pids.add((long) 308);//新父
+			boolean isLock = false;
+			boolean isNowait = false;
+
+			Map<Long,BasicObj> objMap = ObjBatchSelector.selectByPids(conn, objType, null, pids, isLock,isNowait);
+
+			//构造PoiRelationImporterCommand
+			Set<PoiRelation> poiCollectionSet = new HashSet<PoiRelation>();
+			PoiRelation poiRelation = new PoiRelation();
+			poiRelation.setPid(158982);
+			poiRelation.setFatherFid("0335100531LS100266");
+			poiRelation.setPoiRelationType(PoiRelationType.FATHER_AND_SON);
+			
+			PoiRelation poiRelation2 = new PoiRelation();
+			poiRelation2.setPid(158982);
+			poiRelation2.setFatherFid("0010060909HYX00856");
+			poiRelation2.setPoiRelationType(PoiRelationType.FATHER_AND_SON);
+			poiCollectionSet.add(poiRelation2);
+			
+			PoiRelationImportorCommand poiRelationImporterCommand = new PoiRelationImportorCommand();
+			poiRelationImporterCommand.setPoiRels(poiCollectionSet);
+			
+			OperationResult result = new OperationResult();
+			for(Map.Entry<Long, BasicObj> entry:objMap.entrySet()){
+				result.putObj(entry.getValue());
+			}
+			PoiRelationImportor imp = new PoiRelationImportor(conn,result);
+			imp.operate(poiRelationImporterCommand);
+			System.out.println("Over.");
+
+		}catch(Exception e){
+			System.out.println("Oops, something wrong...");
+			e.printStackTrace();
+		}
+	}
 }

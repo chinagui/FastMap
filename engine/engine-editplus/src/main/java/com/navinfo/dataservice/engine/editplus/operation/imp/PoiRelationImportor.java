@@ -11,6 +11,7 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiChildren;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiParent;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
@@ -45,6 +46,7 @@ public class PoiRelationImportor extends AbstractOperation{
 	 */
 	@Override
 	public void operate(AbstractCommand cmd) throws Exception {
+		poiRelationImporterCommand = (PoiRelationImportorCommand) cmd;
 		//<childPid,parentPid>，用以处理对象父子关系关联。parentPid为空=解除父子关系
 		Map<Long,Long> childPidParentPid = new HashMap<Long,Long>();
 		//<parentFid,childPid>，用于根据父对象fid加载对象之后更新childPidParentPid
@@ -67,8 +69,20 @@ public class PoiRelationImportor extends AbstractOperation{
 					String fatherFid = poiRelation.getFatherFid();
 					if(fatherFid!=null&&!fatherFid.equals(""))
 					{
-						fatherFidSet.add(poiRelation.getFatherFid());
-						parentFidChildPid.put(fatherFid,pid);
+						//result中是否含此父对象。如果包含则不加载
+						boolean isFatherExist = false;
+						for(Map.Entry<Long, BasicObj> entry:result.getObjsMapByType(ObjectType.IX_POI).entrySet()){
+							BasicRow fatherObj = entry.getValue().getMainrow();
+							if(fatherObj.getAttrByColName("POI_NUM").equals(fatherFid)){
+								childPidParentPid.put(pid, fatherObj.getObjPid());
+								isFatherExist = true;
+								break;
+							}
+						}
+						if(!isFatherExist){
+							fatherFidSet.add(poiRelation.getFatherFid());
+							parentFidChildPid.put(fatherFid,pid);
+						}
 					}			
 				}
 			}

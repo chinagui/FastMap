@@ -111,10 +111,9 @@ public class SubtaskOperation {
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql += " IS_QUALITY= " + bean.getIsQuality();
 			};
-			if (bean!=null&&bean.getReferGeometry()!=null && StringUtils.isNotEmpty(bean.getReferGeometry().toString())){
+			if (bean!=null&&bean.getReferId()!=null && StringUtils.isNotEmpty(bean.getReferId().toString())){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
-				updateSql+=" REFER_GEOMETRY=? ";
-				value.add(GeoTranslator.wkt2Struct(conn,bean.getReferGeometry()));
+				updateSql += " REFER_ID= " + bean.getReferId();
 			};
 			if (bean!=null&&bean.getGeometry()!=null && StringUtils.isNotEmpty(bean.getGeometry().toString())){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
@@ -513,12 +512,12 @@ public class SubtaskOperation {
 				value.add(bean.getIsQuality());
 			}else{value.add(0);}
 			//外业参考任务圈
-			if (bean!=null&&bean.getReferGeometry()!=null && StringUtils.isNotEmpty(bean.getReferGeometry().toString())){
-				if(StringUtils.isNotEmpty(column)){column+=" , ";values+=" , ";}
-				column+=" REFER_GEOMETRY ";
+			if (bean!=null&&bean.getReferId()!=null && bean.getReferId()!=0 
+					&& StringUtils.isNotEmpty(bean.getReferId().toString())){
+				column+=" REFER_ID ";
 				values+=" ? ";
-				value.add(GeoTranslator.wkt2Struct(conn,bean.getReferGeometry()));
-			};
+				value.add(bean.getReferId());
+			}
 			if (bean!=null&&bean.getExeGroupId()!=null && bean.getExeGroupId()!=0 
 					&& StringUtils.isNotEmpty(bean.getExeGroupId().toString())){
 				if(StringUtils.isNotEmpty(column)){column+=" , ";values+=" , ";}
@@ -851,78 +850,66 @@ public class SubtaskOperation {
 		// TODO Auto-generated method stub
 		try{
 			QueryRunner run = new QueryRunner();
-			String selectSql = "select st.SUBTASK_ID "
-					+ ",st.NAME"
-					+ ",st.DESCP"
-					+ ",st.PLAN_START_DATE"
-					+ ",st.PLAN_END_DATE"
-					+ ",st.STAGE"
-					+ ",st.TYPE"
-					+ ",st.STATUS"
-					+ ",r.DAILY_DB_ID"
-					+ ",r.MONTHLY_DB_ID"
-					+ ",st.GEOMETRY"
-					+ ",st.REFER_GEOMETRY";
-
-			String fromSql_task = " from subtask st"
-					+ ",task t"
-					+ ",city c"
-					+ ",region r";
-
-			String fromSql_block = " from subtask st"
-					+ ",block_man bm"
-					+ ",block b"
-					+ ",region r";
-
-			String conditionSql_task = " where st.task_id = t.task_id "
-					+ "and t.city_id = c.city_id "
-					+ "and c.region_id = r.region_id "
-					+ "and (st.EXE_USER_ID = " + bean.getExeUserId() + " or st.EXE_GROUP_ID = " + bean.getExeGroupId() + ")";
-//					+ "and st.EXE_USER_ID = " + bean.getExeUserId();
-
-			String conditionSql_block = " where st.block_man_id = bm.block_man_id "
-					+ "and bm.block_id = b.block_id "
-					+ "and b.region_id = r.region_id "
-					+ "and (st.EXE_USER_ID = " + bean.getExeUserId() + " or st.EXE_GROUP_ID = " + bean.getExeGroupId() + ")";
-//					+ "and st.EXE_USER_ID = " + bean.getExeUserId();
-
+			String selectSql = "SELECT *"
+					+ "  FROM (SELECT ST.SUBTASK_ID,"
+					+ "               ST.NAME,"
+					+ "               ST.DESCP,"
+					+ "               ST.PLAN_START_DATE,"
+					+ "               ST.PLAN_END_DATE,"
+					+ "               ST.STAGE,"
+					+ "               ST.TYPE,"
+					+ "               ST.STATUS,"
+					+ "               ST.GEOMETRY,"
+					+ "               ST.EXE_USER_ID,"
+					+ "               ST.EXE_GROUP_ID,"
+					+ "               R.DAILY_DB_ID,"
+					+ "               R.MONTHLY_DB_ID,"
+					+ "               RR.GEOMETRY REFER_GEOMETRY"
+					+ "          FROM SUBTASK ST, TASK T, CITY C, REGION R, SUBTASK_REFER RR"
+					+ "         WHERE ST.TASK_ID = T.TASK_ID"
+					+ "           AND T.CITY_ID = C.CITY_ID"
+					+ "           AND C.REGION_ID = R.REGION_ID"
+					+ "           AND ST.REFER_ID = RR.ID(+)"
+					+ "        UNION ALL"
+					+ "        SELECT ST.SUBTASK_ID,"
+					+ "               ST.NAME,"
+					+ "               ST.DESCP,"
+					+ "               ST.PLAN_START_DATE,"
+					+ "               ST.PLAN_END_DATE,"
+					+ "               ST.STAGE,"
+					+ "               ST.TYPE,"
+					+ "               ST.STATUS,"
+					+ "               ST.GEOMETRY,"
+					+ "               ST.EXE_USER_ID,"
+					+ "               ST.EXE_GROUP_ID,"
+					+ "               R.DAILY_DB_ID,"
+					+ "               R.MONTHLY_DB_ID,"
+					+ "               RR.GEOMETRY REFER_GEOMETRY"
+					+ "          FROM SUBTASK ST, BLOCK_MAN BM, BLOCK B, REGION R, SUBTASK_REFER RR"
+					+ "         WHERE ST.BLOCK_MAN_ID = BM.BLOCK_MAN_ID"
+					+ "           AND BM.BLOCK_ID = B.BLOCK_ID"
+					+ "           AND B.REGION_ID = R.REGION_ID"
+					+ "           AND ST.REFER_ID = RR.ID(+)) T"
+					+ " WHERE 1 = 1";
+			String conditonSql=" AND (T.EXE_USER_ID = " + bean.getExeUserId() 
+					+ " or T.EXE_GROUP_ID = " + bean.getExeGroupId() + ")";
 			if (bean.getStage() != null) {
-				conditionSql_task = conditionSql_task + " and st.STAGE = "
-						+ bean.getStage();
-				conditionSql_block = conditionSql_block + " and st.STAGE = "
-						+ bean.getStage();
+				conditonSql+=" and T.STAGE = "+ bean.getStage();
 			}else{
-				if(0 == platForm){
-					//采集端
-					conditionSql_task = conditionSql_task + " and st.STAGE in (0) ";
-					conditionSql_block = conditionSql_block + " and st.STAGE in (0) ";
-				}else if(1 == platForm){
-					//编辑端
-					conditionSql_task = conditionSql_task + " and st.STAGE in (1,2) ";
-					conditionSql_block = conditionSql_block + " and st.STAGE in (1,2) ";
+				if(0 == platForm){//采集端
+					conditonSql+=" and T.STAGE = 0";
+				}else if(1 == platForm){//编辑端
+					conditonSql+=" and T.STAGE in (1,2) ";
 				}
 			}
 
 			if (bean.getType() != null) {
-				conditionSql_task = conditionSql_task + " and st.TYPE = "
-						+ bean.getType();
-				conditionSql_block = conditionSql_block + " and st.TYPE = "
-						+ bean.getType();
+				conditonSql+=" and st.TYPE = "+ bean.getType();
 			}
 
 			if (bean.getStatus() != null) {
-				conditionSql_task = conditionSql_task + " and st.STATUS = "
-						+ bean.getStatus();
-				conditionSql_block = conditionSql_block + " and st.STATUS = "
-						+ bean.getStatus();
+				conditonSql+=" and st.STATUS = "+ bean.getStatus();
 			}
-			//conditionSql_task = conditionSql_task + " and st.subtask_id =499 ";
-			//conditionSql_block=conditionSql_block+" and 1>2 ";
-			
-			selectSql = selectSql + fromSql_task
-			+ conditionSql_task
-			+ " union all " + selectSql
-			+ fromSql_block + conditionSql_block;
 
 			ResultSetHandler<Page> rsHandler = new ResultSetHandler<Page>() {
 				public Page handle(ResultSet rs) throws SQLException {
@@ -979,8 +966,8 @@ public class SubtaskOperation {
 							try {
 								subtask.put("referGeometry", GeoTranslator.struct2Wkt(structRefer));
 							} catch (Exception e1) {
-								// TODO Auto-generated catch block
 								e1.printStackTrace();
+								subtask.put("referGeometry", subtask.get("geometry"));
 							}
 							JSONArray referGrid;
 							try {
@@ -1017,18 +1004,14 @@ public class SubtaskOperation {
 								// TODO Auto-generated catch block
 								e.printStackTrace();
 							}
-						}
-						
+						}		
 						list.add(subtask);
-
 					}
 					page.setTotalCount(total);
 					page.setResult(list);
 					return page;
 				}
-
 			};
-
 			return run.query(curPageNum, pageSize, conn, selectSql, rsHandler);
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);

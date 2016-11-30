@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -31,76 +32,88 @@ import net.sf.json.JSONObject;
 
 /**
  * 精编业务处理类
+ * 
  * @author wangdongbin
  *
  */
 public class ColumnCoreControl {
-	
-	public void applyData(int groupId,String firstWorkItem,long userId) throws Exception{
-		// 根据组号，查出子任务号
-		List<Integer> subTaskIds = new ArrayList<Integer>();
+
+	public int applyData(JSONObject jsonReq, long userId) throws Exception {
 		// TODO
 		Connection conn = null;
 		try {
-			
-			ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
-			int oldDbId = 0;
+
+			ManApi apiService = (ManApi) ApplicationContextUtil.getBean("manApi");
+
+			int taskId = jsonReq.getInt("taskId");
+			Subtask subtask = apiService.queryBySubtaskId(taskId);
+
+			int dbId = subtask.getDbId();
+			conn = DBConnector.getInstance().getConnectionById(dbId);
+
 			int totalCount = 0;
 			int hasApply = 0;
 			
-			// 查询该作业员名下已申请的数据数量
-//			for (int taskId:subTaskIds) {
-				
-				// 区分大陆，港澳任务
-				
-//				Subtask subtask = apiService.queryBySubtaskId(taskId);
-//				int dbId = subtask.getDbId();
-//				if (dbId != oldDbId) {
-//					DbUtils.closeQuietly(conn);
-//					oldDbId = dbId;
-			conn = DBConnector.getInstance().getConnectionById(17);
-//				}
+			// 默认type为1常规大陆
+			int type = 1;
+
 			IxPoiColumnStatusSelector columnSelector = new IxPoiColumnStatusSelector(conn);
-			int tempCount = columnSelector.queryHandlerCount(firstWorkItem,userId);
-			hasApply += tempCount;
-//			}
-			
-			// 可申请数据条数
-			int canApply = 100 - hasApply;
-			
-			if (canApply == 0) {
-				throw new Exception("该作业员名下已存在100条数据，不可继续申请");
+
+			String firstWorkItem = jsonReq.getString("firstWorkItem");
+			if (StringUtils.isEmpty(firstWorkItem)){
+				throw new Exception("一级作业项不能为空，请确认");
 			}
-			
-			// 查询可申请数据
-//			for (int taskId:subTaskIds) {
-//				Subtask subtask = apiService.queryBySubtaskId(taskId);
-//				int dbId = subtask.getDbId();
-//				if (dbId != oldDbId) {
-//					DbUtils.closeQuietly(conn);
-//					oldDbId = dbId;
-//					conn = DBConnector.getInstance().getConnectionById(oldDbId);
-//				}
-				IxPoiColumnStatusSelector selector = new IxPoiColumnStatusSelector(conn);
-				List<String> rowIds = selector.getRowIdByTaskId(20160906, firstWorkItem);
-				
-				// 判断是否已申请够
-				if (totalCount < canApply) {
-					int leftCount = canApply - totalCount;
-					if (rowIds.size()>leftCount) {
-						List<String> subList = rowIds.subList(0, leftCount-1);
-						// 申请数据
-						updateHandler(subList,userId,conn);
-						totalCount += subList.size();
-					} else if (rowIds.size() > 0){
-						// 申请数据
-						updateHandler(rowIds,userId,conn);
-						totalCount += rowIds.size();
+			String secondWorkItem = jsonReq.getString("secondWorkItem");
+
+			// 月编专项作业和后期专项
+			List<String> columnFirstWorkItems = Arrays.asList("poi_name", "poi_address", "poi_englishname",
+					"poi_englishaddress", "poi_postwork");
+			List<String> columnSecondWorkItems = Arrays.asList("postViewLevel", "postAirportCode", "postImportance",
+					"postAdminReal", "");
+
+			if (columnFirstWorkItems.contains(firstWorkItem)) {
+
+				if (columnSecondWorkItems.contains(secondWorkItem)) {
+
+					hasApply = columnSelector.queryHandlerCount(firstWorkItem, secondWorkItem, userId, type);
+					// 可申请数据条数
+					int canApply = 100 - hasApply;
+					if (canApply == 0) {
+						throw new Exception("该作业员名下已存在100条数据，不可继续申请");
 					}
-				} else {
-//					break;
+
+					// 申请数据
+					List<Integer> pids = columnSelector.getApplyPids(subtask, firstWorkItem, secondWorkItem, type);
+					if (pids.size() == 0) {
+						// 库中未查到可以申请的数据，返回0
+						return 0;
+					}
+
+					// 实际申请到的数据pids
+					List<Integer> applyDataPids = new ArrayList<Integer>();
+					if (pids.size() >= canApply) {
+						applyDataPids = pids.subList(0, canApply - 1);
+					} else {
+						// 库里面查询出的数据量小于当前用户可申请的量，即锁定库中查询出的数据
+						applyDataPids = pids;
+					}
+
+					// 数据加锁， 赋值handler，task_id
+					List<String> workItemIds = columnSelector.getWorkItemIds(firstWorkItem, secondWorkItem);
+					columnSelector.dataSetLock(applyDataPids, workItemIds, userId, taskId);
+					totalCount += applyDataPids.size();
 				}
-//			}
+			}
+
+			// 行政区划关联要素作业, 点位调整作业
+			List<String> locSecondWorkItems = Arrays.asList("locationIcon", "locationLandMark");
+			if (("poi_postwork".equals(firstWorkItem) && "postAdminArea".equals(secondWorkItem))
+					|| ("poi_location".equals(firstWorkItem) && locSecondWorkItems.contains(secondWorkItem))) {
+				// 申请数据
+				// TODO
+			}
+
+			return totalCount;
 
 		} catch (Exception e) {
 			throw e;
@@ -108,74 +121,41 @@ public class ColumnCoreControl {
 			DbUtils.commitAndClose(conn);
 		}
 	}
-	
-	/**
-	 * 更新handler
-	 * @param rowIds
-	 * @param conn
-	 * @throws Exception
-	 */
-	public void updateHandler(List<String> rowIds,Long userId,Connection conn) throws Exception {
-		StringBuilder sb = new StringBuilder();
-		sb.append("UPDATE poi_deep_status SET handler=:1 WHERE row_id in (");
-		String temp = "";
-		for (String rowId:rowIds) {
-			sb.append(temp);
-			sb.append("'"+rowId+"'");
-			temp = ",";
-		}
-		sb.append(")");
-		
-		PreparedStatement pstmt = null;
 
-		try {
-			
-			pstmt = conn.prepareStatement(sb.toString());
-
-			pstmt.setLong(1, userId);
-			
-			pstmt.execute();
-			
-		} catch (Exception e) {
-			throw e;
-		} finally {
-			DbUtils.closeQuietly(pstmt); 
-		}
-	}
-	
 	/**
 	 * 作业数据查询
+	 * 
 	 * @param userId
 	 * @param jsonReq
 	 * @return
 	 * @throws Exception
 	 */
-	public JSONArray columnQuery(long userId ,JSONObject jsonReq) throws Exception {
-		
+	public JSONArray columnQuery(long userId, JSONObject jsonReq) throws Exception {
+
 		Connection conn = null;
-		
+
 		try {
-//			int taskId= jsonReq.getInt("taskId");
-			
-			ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
-			
+			// int taskId= jsonReq.getInt("taskId");
+
+			ManApi apiService = (ManApi) ApplicationContextUtil.getBean("manApi");
+
 			String type = jsonReq.getString("type");
 			int status = jsonReq.getInt("status");
 			String firstWordItem = jsonReq.getString("firstWorkItem");
 			String secondWorkItem = jsonReq.getString("secondWorkItem");
-			
-//			Subtask subtask = apiService.queryBySubtaskId(taskId);
-//			int dbId = subtask.getDbId();
-			
+
+			// Subtask subtask = apiService.queryBySubtaskId(taskId);
+			// int dbId = subtask.getDbId();
+
 			// 获取未提交数据的rowId
 			conn = DBConnector.getInstance().getConnectionById(17);
 			IxPoiColumnStatusSelector selector = new IxPoiColumnStatusSelector(conn);
-			List<String> rowIdList = selector.columnQuery(status,secondWorkItem,userId);
-			
+			List<String> rowIdList = selector.columnQuery(status, secondWorkItem, userId);
+
 			IxPoiSearch poiSearch = new IxPoiSearch(conn);
-			
-			JSONArray datas = poiSearch.searchColumnPoiByRowId(firstWordItem, secondWorkItem,rowIdList, type, "CHI");
-			
+
+			JSONArray datas = poiSearch.searchColumnPoiByRowId(firstWordItem, secondWorkItem, rowIdList, type, "CHI");
+
 			return datas;
 		} catch (Exception e) {
 			throw e;
@@ -183,28 +163,29 @@ public class ColumnCoreControl {
 			DbUtils.closeQuietly(conn);
 		}
 	}
-	
+
 	/**
 	 * 精编任务的统计查询
+	 * 
 	 * @param jsonReq
 	 * @return
 	 * @throws Exception
 	 */
-	public JSONObject taskStatistics(JSONObject jsonReq)  throws Exception {
-		
+	public JSONObject taskStatistics(JSONObject jsonReq) throws Exception {
+
 		Connection conn = null;
-		
+
 		try {
 			int taskId = jsonReq.getInt("taskId");
-			
-			ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
+
+			ManApi apiService = (ManApi) ApplicationContextUtil.getBean("manApi");
 			Subtask subtask = apiService.queryBySubtaskId(taskId);
 			int dbId = subtask.getDbId();
-			
+
 			conn = DBConnector.getInstance().getConnectionById(dbId);
-			
+
 			IxPoiColumnStatusSelector ixPoiColumnStatusSelector = new IxPoiColumnStatusSelector(conn);
-			
+
 			return ixPoiColumnStatusSelector.taskStatistics(taskId);
 		} catch (Exception e) {
 			throw e;
@@ -212,31 +193,32 @@ public class ColumnCoreControl {
 			DbUtils.closeQuietly(conn);
 		}
 	}
-	
+
 	/**
 	 * 查询二级作业项的统计信息
+	 * 
 	 * @param jsonReq
 	 * @param userId
 	 * @return
 	 * @throws Exception
 	 */
-	public JSONObject secondWorkStatistics(JSONObject jsonReq,long userId)  throws Exception {
-		
+	public JSONObject secondWorkStatistics(JSONObject jsonReq, long userId) throws Exception {
+
 		Connection conn = null;
-		
+
 		try {
 			int taskId = jsonReq.getInt("taskId");
 			String firstWorkItem = jsonReq.getString("firstWorkItem");
 			int type = jsonReq.getInt("taskType");
-			
-			ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
+
+			ManApi apiService = (ManApi) ApplicationContextUtil.getBean("manApi");
 			Subtask subtask = apiService.queryBySubtaskId(taskId);
 			int dbId = subtask.getDbId();
-			
+
 			conn = DBConnector.getInstance().getConnectionById(dbId);
-			
+
 			IxPoiColumnStatusSelector ixPoiColumnStatusSelector = new IxPoiColumnStatusSelector(conn);
-			
+
 			return ixPoiColumnStatusSelector.secondWorkStatistics(firstWorkItem, userId, type);
 		} catch (Exception e) {
 			throw e;
@@ -244,97 +226,94 @@ public class ColumnCoreControl {
 			DbUtils.closeQuietly(conn);
 		}
 	}
-	
-	
 
 	/**
 	 * 根据作业组，查询精编任务列表
+	 * 
 	 * @param userId
 	 * @return
-	 * @throws ServiceException 
+	 * @throws ServiceException
 	 */
-	public List<Object> queryTaskList(long userId,JSONObject jsonReq) throws ServiceException {
+	public List<Object> queryTaskList(long userId, JSONObject jsonReq) throws ServiceException {
 		// TODO Auto-generated method stub
 		Connection conn = null;
 		try {
 			// 持久化
 			int type = jsonReq.getInt("type");
-			//获取用户组下所有区域库及子任务
+			// 获取用户组下所有区域库及子任务
 			List<Object> subtaskList = new ArrayList<Object>();
-			Map<Integer, Map<Integer, String>> dbIdAndSubtaskInfo = getDbIdAndSubtaskListByUser(userId,type);
-			
-			//获取所有子任务列表信息
+			Map<Integer, Map<Integer, String>> dbIdAndSubtaskInfo = getDbIdAndSubtaskListByUser(userId, type);
+
+			// 获取所有子任务列表信息
 			Iterator<Entry<Integer, Map<Integer, String>>> iter = dbIdAndSubtaskInfo.entrySet().iterator();
-			while (iter.hasNext()){
+			while (iter.hasNext()) {
 				Entry<Integer, Map<Integer, String>> entry = iter.next();
 				int dbId = (int) entry.getKey();
-				Map<Integer, String> subtasks =  entry.getValue();
-				
-				//获取区域库下子任务信息
-				List<Object> subtasksWithItems = getSubtaskInfoList(dbId,subtasks);
-//				subtaskList.add(subtasksWithItems);
+				Map<Integer, String> subtasks = entry.getValue();
+
+				// 获取区域库下子任务信息
+				List<Object> subtasksWithItems = getSubtaskInfoList(dbId, subtasks);
+				// subtaskList.add(subtasksWithItems);
 				subtaskList.addAll(subtasksWithItems);
 			}
 			return subtaskList;
-			
+
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			throw new ServiceException("查询失败，原因为:" + e.getMessage(), e);
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
-				
+
 	}
 
 	/**
 	 * @param dbId
 	 * @param subtasks
 	 * @return
-	 * @throws ServiceException 
+	 * @throws ServiceException
 	 */
-	private List<Object> getSubtaskInfoList(int dbId,Map<Integer, String> subtasks) throws ServiceException {
+	private List<Object> getSubtaskInfoList(int dbId, Map<Integer, String> subtasks) throws ServiceException {
 		// TODO Auto-generated method stub
 		Connection conn = null;
 		try {
 			QueryRunner run = new QueryRunner();
 			Set<Integer> subtaskIds = subtasks.keySet();
-			String taskIds = "(" + StringUtils.join(subtaskIds.toArray(),",") + ")";
-			//查询作业信息
+			String taskIds = "(" + StringUtils.join(subtaskIds.toArray(), ",") + ")";
+			// 查询作业信息
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 			String sql = "SELECT PDS.TASK_ID, PDW.FIRST_WORK_ITEM,COUNT(PDS.ROW_ID) AS NUM"
-					+ " FROM POI_COLUMN_STATUS PDS, POI_COLUMN_WORKITEM_CONF PDW"
-					+ " WHERE PDS.TASK_ID IN " + taskIds
-					+ " AND PDS.WORK_ITEM_ID = PDW.WORK_ITEM_ID"
-					+ " GROUP BY PDS.TASK_ID, PDW.FIRST_WORK_ITEM";
-	
-			ResultSetHandler<Map<Integer,Object>> rsHandler = new ResultSetHandler<Map<Integer,Object>>() {
-				public Map<Integer,Object> handle(ResultSet rs) throws SQLException {
-					Map<Integer,Object> result = new HashMap<Integer,Object>();
+					+ " FROM POI_COLUMN_STATUS PDS, POI_COLUMN_WORKITEM_CONF PDW" + " WHERE PDS.TASK_ID IN " + taskIds
+					+ " AND PDS.WORK_ITEM_ID = PDW.WORK_ITEM_ID" + " GROUP BY PDS.TASK_ID, PDW.FIRST_WORK_ITEM";
+
+			ResultSetHandler<Map<Integer, Object>> rsHandler = new ResultSetHandler<Map<Integer, Object>>() {
+				public Map<Integer, Object> handle(ResultSet rs) throws SQLException {
+					Map<Integer, Object> result = new HashMap<Integer, Object>();
 					while (rs.next()) {
 						int subtaskId = rs.getInt("TASK_ID");
 						String firstWorkItem = rs.getString("FIRST_WORK_ITEM");
 						int num = rs.getInt("NUM");
-						if(result.containsKey(subtaskId)){
-							Map<String,Integer> firstWorkItems =  (Map<String,Integer>) result.get(subtaskId);
-							firstWorkItems.put(firstWorkItem,num);
+						if (result.containsKey(subtaskId)) {
+							Map<String, Integer> firstWorkItems = (Map<String, Integer>) result.get(subtaskId);
+							firstWorkItems.put(firstWorkItem, num);
 							result.put(subtaskId, firstWorkItems);
-						}else{
-							Map<String,Integer> firstWorkItems = new HashMap<String,Integer>();
-							firstWorkItems.put(firstWorkItem,num);
+						} else {
+							Map<String, Integer> firstWorkItems = new HashMap<String, Integer>();
+							firstWorkItems.put(firstWorkItem, num);
 							result.put(subtaskId, firstWorkItems);
 						}
 					}
 					return result;
 				}
 			};
-			
+
 			Map<?, ?> temp = run.query(conn, sql, rsHandler);
 			List<Object> result = new ArrayList<Object>();
 			Iterator<?> iter = temp.entrySet().iterator();
-			while (iter.hasNext()){
+			while (iter.hasNext()) {
 				Map.Entry entry = (Map.Entry) iter.next();
 				int subtaskId = (int) entry.getKey();
-				Map<String,Integer> firstWorkItems = (Map<String,Integer>) entry.getValue();
+				Map<String, Integer> firstWorkItems = (Map<String, Integer>) entry.getValue();
 				String name = (String) subtasks.get(subtaskId);
 				Map<String, Object> subtask = new HashMap<String, Object>();
 				subtask.put("subtaskId", subtaskId);
@@ -354,42 +333,34 @@ public class ColumnCoreControl {
 
 	/**
 	 * 根据用户获取用户组下精编子任务列表及精编库
+	 * 
 	 * @param userId
 	 * @return
-	 * @throws ServiceException 
+	 * @throws ServiceException
 	 */
-	private Map<Integer, Map<Integer, String>> getDbIdAndSubtaskListByUser(long userId,int type) throws ServiceException {
+	private Map<Integer, Map<Integer, String>> getDbIdAndSubtaskListByUser(long userId, int type)
+			throws ServiceException {
 		// TODO Auto-generated method stub
 		Connection conn = null;
 		try {
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
-			//用户所在组
-			String temp = "(SELECT UG.GROUP_ID"
-					+ " FROM USER_GROUP UG, GROUP_USER_MAPPING GUM"
-					+ " WHERE UG.GROUP_ID = GUM.GROUP_ID"
-					+ " AND UG.GROUP_TYPE = 2"
-					+ " AND GUM.USER_ID = " + userId + ")";
-	
+			// 用户所在组
+			String temp = "(SELECT UG.GROUP_ID" + " FROM USER_GROUP UG, GROUP_USER_MAPPING GUM"
+					+ " WHERE UG.GROUP_ID = GUM.GROUP_ID" + " AND UG.GROUP_TYPE = 2" + " AND GUM.USER_ID = " + userId
+					+ ")";
+
 			String blockSql = "SELECT S.SUBTASK_ID, S.NAME,R.MONTHLY_DB_ID FROM BLOCK_MAN BM, SUBTASK S, REGION R, BLOCK B"
-					+ "," + temp + "TEMP"
-					+ " WHERE BM.MONTH_EDIT_GROUP_ID = TEMP.GROUP_ID"
-					+ " AND BM.BLOCK_MAN_ID = S.BLOCK_MAN_ID"
-					+ " AND BM.LATEST = 1"
-					+ " AND BM.BLOCK_ID = B.BLOCK_ID"
-					+ " AND B.REGION_ID = R.REGION_ID"
-					+ " AND S.TYPE = " + type;
-			
-			String taskSql = "SELECT S.SUBTASK_ID, S.NAME,R.MONTHLY_DB_ID FROM TASK T,SUBTASK S,REGION R,CITY C"
-					+ "," + temp + "TEMP"
-					+ " WHERE T.MONTH_EDIT_GROUP_ID = TEMP.GROUP_ID"
-					+ " AND T.TASK_ID = S.TASK_ID"
-					+ " AND T.LATEST = 1"
-					+ " AND T.CITY_ID = C.CITY_ID"
-					+ " AND C.REGION_ID = R.REGION_ID"
+					+ "," + temp + "TEMP" + " WHERE BM.MONTH_EDIT_GROUP_ID = TEMP.GROUP_ID"
+					+ " AND BM.BLOCK_MAN_ID = S.BLOCK_MAN_ID" + " AND BM.LATEST = 1" + " AND BM.BLOCK_ID = B.BLOCK_ID"
+					+ " AND B.REGION_ID = R.REGION_ID" + " AND S.TYPE = " + type;
+
+			String taskSql = "SELECT S.SUBTASK_ID, S.NAME,R.MONTHLY_DB_ID FROM TASK T,SUBTASK S,REGION R,CITY C" + ","
+					+ temp + "TEMP" + " WHERE T.MONTH_EDIT_GROUP_ID = TEMP.GROUP_ID" + " AND T.TASK_ID = S.TASK_ID"
+					+ " AND T.LATEST = 1" + " AND T.CITY_ID = C.CITY_ID" + " AND C.REGION_ID = R.REGION_ID"
 					+ " AND S.TYPE = " + type;
 			String querySql = blockSql + " union " + taskSql;
-	
+
 			ResultSetHandler<Map<Integer, Map<Integer, String>>> rsHandler = new ResultSetHandler<Map<Integer, Map<Integer, String>>>() {
 				public Map<Integer, Map<Integer, String>> handle(ResultSet rs) throws SQLException {
 					Map<Integer, Map<Integer, String>> result = new HashMap<Integer, Map<Integer, String>>();
@@ -397,11 +368,11 @@ public class ColumnCoreControl {
 						int dbId = rs.getInt("MONTHLY_DB_ID");
 						int subtaskId = rs.getInt("SUBTASK_ID");
 						String name = rs.getString("NAME");
-						if(result.containsKey(dbId)){
+						if (result.containsKey(dbId)) {
 							Map<Integer, String> subtasks = result.get(dbId);
 							subtasks.put(subtaskId, name);
 							result.put(dbId, subtasks);
-						}else{
+						} else {
 							Map<Integer, String> subtasks = new HashMap<Integer, String>();
 							subtasks.put(subtaskId, name);
 							result.put(dbId, subtasks);
@@ -410,7 +381,7 @@ public class ColumnCoreControl {
 					return result;
 				}
 			};
-	
+
 			return run.query(conn, querySql, rsHandler);
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -419,5 +390,5 @@ public class ColumnCoreControl {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-	
+
 }

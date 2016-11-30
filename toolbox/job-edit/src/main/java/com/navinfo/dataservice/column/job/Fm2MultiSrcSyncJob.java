@@ -32,6 +32,8 @@ import com.navinfo.dataservice.commons.util.ZipUtils;
 import com.navinfo.dataservice.dao.log.LogReader;
 import com.navinfo.dataservice.dao.plus.editman.PoiEditStatus;
 import com.navinfo.dataservice.dao.plus.glm.GlmFactory;
+import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiChildren;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectType;
@@ -91,7 +93,7 @@ public class Fm2MultiSrcSyncJob extends AbstractJob {
 			syncApi = (FmMultiSrcSyncApi)ApplicationContextUtil
 					.getBean("syncApi");
 			//设置创建中状态
-			syncApi.updateFmMultiSrcSyncStatus(currentStatus);
+			syncApi.updateFmMultiSrcSyncStatus(currentStatus,jobInfo.getId());
 			
 			Fm2MultiSrcSyncJobRequest req = (Fm2MultiSrcSyncJobRequest)request;
 			String lastSyncTime=req.getLastSyncTime();
@@ -167,10 +169,10 @@ public class Fm2MultiSrcSyncJob extends AbstractJob {
 			ZipUtils.zipFile(mydir,zipFileName);
 			super.response("统计文件生成并打包完成", null);
 			currentStatus=FmMultiSrcSync.STATUS_CREATED_SUCCESS;
-			syncApi.updateFmMultiSrcSync(currentStatus, zipFileName);
+			syncApi.updateFmMultiSrcSync(currentStatus, zipFileName,jobInfo.getId());
 		}catch(Exception e){
 			log.error(e.getMessage(),e);
-			syncApi.updateFmMultiSrcSyncStatus(FmMultiSrcSync.STATUS_CREATED_FAIL);
+			syncApi.updateFmMultiSrcSyncStatus(FmMultiSrcSync.STATUS_CREATED_FAIL,jobInfo.getId());
 			throw e;
 		}finally{
 			if(pw!=null){
@@ -192,10 +194,10 @@ public class Fm2MultiSrcSyncJob extends AbstractJob {
 			parMap.put("url", zipFileUrl);
 			String result = ServiceInvokeUtil.invoke("", parMap, 10000);
 			log.debug("notify multisrc result:"+result);
-			syncApi.updateFmMultiSrcSyncStatus(FmMultiSrcSync.STATUS_SYNC_SUCCESS);
+			syncApi.updateFmMultiSrcSyncStatus(FmMultiSrcSync.STATUS_SYNC_SUCCESS,jobInfo.getId());
 		}catch(Exception e){
 			try{
-				syncApi.updateFmMultiSrcSyncStatus(FmMultiSrcSync.STATUS_SYNC_FAIL);
+				syncApi.updateFmMultiSrcSyncStatus(FmMultiSrcSync.STATUS_SYNC_FAIL,jobInfo.getId());
 			}catch(Exception ex){
 				log.error(ex.getMessage(),ex);
 			}
@@ -265,7 +267,24 @@ public class Fm2MultiSrcSyncJob extends AbstractJob {
 				for(Map.Entry<Long, String> entry:ParentFids.entrySet()){
 					((IxPoiObj)objs.get(entry.getKey())).setParentFid(entry.getValue());
 				}
-				
+				//设置子fid
+				Map<Long,List<Long>> objMap = new HashMap<Long, List<Long>>();
+				for(BasicObj obj:objs.values()){
+					IxPoiObj poi = (IxPoiObj) obj;
+					List<Long> childPids = new ArrayList<Long>();
+					List<BasicRow> rows = poi.getRowsByName("IX_POI_CHILDREN");
+					if(rows!=null && rows.size()>0){
+						for(BasicRow row:rows){
+							IxPoiChildren children = (IxPoiChildren) row;
+							childPids.add(children.getChildPoiPid());
+						}
+					}
+					objMap.put(obj.objPid(), childPids);
+				}
+				Map<Long, List<Map<Long, Object>>> childFids = IxPoiSelector.getChildFidByPids(conn, objMap);
+				for(Map.Entry<Long, List<Map<Long, Object>>> entry:childFids.entrySet()){
+					((IxPoiObj)objs.get(entry.getKey())).setChildFid(entry.getValue());
+				}
 				//设置adminId
 				 Map<Long,Long> adminIds = IxPoiSelector.getAdminIdByPids(conn, objs.keySet());
 				for(Map.Entry<Long, Long> entry:adminIds.entrySet()){

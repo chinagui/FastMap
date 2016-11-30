@@ -2,7 +2,9 @@ package com.navinfo.dataservice.engine.edit.operation.obj.rdinter.create;
 
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.collections.CollectionUtils;
 
@@ -87,11 +89,20 @@ public class Check {
 		
 		RdNodeSelector selector = new RdNodeSelector(conn);
 		
-		List<Integer> loadRdNodeWays = selector.loadRdNodeWays(nodePids);
+		Map<Integer,String> loadRdNodeWays = selector.loadRdNodeWays(nodePids);
 		
-		if(loadRdNodeWays.contains(2))
+		for(Map.Entry<Integer, String> entry : loadRdNodeWays.entrySet())
 		{
-			throw new Exception("图郭点不允许参与制作CRF交叉点");
+			int nodePid = entry.getKey();
+			
+			String forms = entry.getValue();
+			
+			List<String> formList = Arrays.asList(forms.split(","));
+			
+			if(formList.contains("2"))
+			{
+				this.command.getNodeArray().remove(new Integer(nodePid));
+			}
 		}
 	}
 	

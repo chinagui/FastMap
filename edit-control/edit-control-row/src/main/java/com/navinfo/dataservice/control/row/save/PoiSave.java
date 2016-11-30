@@ -2,6 +2,7 @@ package com.navinfo.dataservice.control.row.save;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.dbutils.DbUtils;
@@ -38,7 +39,7 @@ public class PoiSave {
     public JSONObject save(String parameter, long userId) throws Exception {
 
         Connection conn = null;
-        JSONObject result = null;
+        JSONObject result = new JSONObject();
         try {
 
             JSONObject json = JSONObject.fromObject(parameter);
@@ -57,8 +58,9 @@ public class PoiSave {
 
             if (poiData.size() == 0 && operType == OperType.UPDATE && objType != ObjType.IXSAMEPOI && objType != ObjType.IXPOIPARENT) {
                 upatePoiStatus(json.getString("objId"), conn, false);
-                result.put("log", new JSONArray());
-                result.put("check", new JSONArray());
+                JSONArray ret = new JSONArray();
+                result.put("log", ret);
+                result.put("check", ret);
                 return result;
             }
 

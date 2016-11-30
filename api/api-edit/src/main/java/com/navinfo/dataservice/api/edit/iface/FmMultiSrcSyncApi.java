@@ -34,9 +34,10 @@ public interface FmMultiSrcSyncApi {
 	 * @author Han Shaoming
 	 * @param syncStatus
 	 * 同步状态:开始创建1，创建中2，已创建8，创建失败9，多源同步成功18，多源同步失败19
+	 * @param jobId 
 	 * @throws Exception 
 	 */
-	public void updateFmMultiSrcSyncStatus(int syncStatus) throws Exception;
+	public void updateFmMultiSrcSyncStatus(int syncStatus, long jobId) throws Exception;
 	
 	/**
 	 * 更新FmMultiSrcSync管理表中增量包文件和同步状态
@@ -46,7 +47,7 @@ public interface FmMultiSrcSyncApi {
 	 * @param zipFile
 	 * @throws Exception 
 	 */
-	public void updateFmMultiSrcSync(int syncStatus,String zipFile) throws Exception;
+	public void updateFmMultiSrcSync(int syncStatus,String zipFile,long jobId) throws Exception;
 	
 	/**
 	 * 创建MS-POI增量包同步到FM的管理记录
@@ -62,10 +63,10 @@ public interface FmMultiSrcSyncApi {
 	 * 更新MultiSrcFmSync管理表的同步状态
 	 * @author Han Shaoming
 	 * @param syncStatus
-	 * 同步状态:已接收1，导入中2 下载成功3，下载失败4，,导入成功5,导入失败6,反馈多源成功11，反馈多源失败12
+	 * 同步状态:已接收1，导入中2 下载成功3，下载失败4，,导入成功5,导入失败6,生成统计成功7，生成统计失败8,反馈多源成功11，反馈多源失败12
 	 * @throws Exception 
 	 */
-	public void updateMultiSrcFmSyncStatus(int syncStatus) throws Exception;
+	public void updateMultiSrcFmSyncStatus(int syncStatus, long jobId) throws Exception;
 	
 	/**
 	 * 更新FmMultiSrcSync管理表中增量包文件和同步状态

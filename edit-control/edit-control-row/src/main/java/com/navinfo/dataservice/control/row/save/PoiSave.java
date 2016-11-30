@@ -22,6 +22,7 @@ import com.navinfo.dataservice.engine.batch.BatchProcess;
 import com.navinfo.dataservice.engine.edit.service.EditApiImpl;
 import com.navinfo.navicommons.database.sql.DBUtils;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 public class PoiSave {
@@ -56,6 +57,8 @@ public class PoiSave {
 
             if (poiData.size() == 0 && operType == OperType.UPDATE && objType != ObjType.IXSAMEPOI && objType != ObjType.IXPOIPARENT) {
                 upatePoiStatus(json.getString("objId"), conn, false);
+                result.put("log", new JSONArray());
+                result.put("check", new JSONArray());
                 return result;
             }
 

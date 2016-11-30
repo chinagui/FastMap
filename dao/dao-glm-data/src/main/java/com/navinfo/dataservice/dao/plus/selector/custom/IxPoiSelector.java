@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.commons.dbutils.DbUtils;
@@ -18,9 +19,9 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
-import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiChildren;
-import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiParent;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
+import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectType;
 import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -128,30 +129,6 @@ public class IxPoiSelector {
 	}
 	
 	/**
-	 * PARENT_POI_PID查询IX_POI表(非删除)
-	 * @author Han Shaoming
-	 * @param conn
-	 * @param parentPoiId
-	 * @return
-	 * @throws ServiceException
-	 */
-	public static List<Map<String,Object>> getIxPoiByPid(Connection conn,long parentPoiId) throws ServiceException{
-		List<Map<String,Object>> msgs = null;
-		try{
-			QueryRunner queryRunner = new QueryRunner();
-			String sql = "SELECT * FROM IX_POI WHERE PID=? AND U_RECORD IN(0,1,3)";
-			Object[] params = {parentPoiId};
-			msgs = queryRunner.query(conn, sql, new IxPoiHandler(),params);
-			return msgs;
-		}catch(Exception e){
-			DbUtils.rollbackAndCloseQuietly(conn);
-			log.error(e.getMessage(), e);
-			throw new ServiceException("查询失败，原因为:"+e.getMessage(),e);
-		}
-	}
-	
-	
-	/**
 	 * 查询子POI的fid
 	 * @author Han Shaoming
 	 * @param conn
@@ -159,63 +136,32 @@ public class IxPoiSelector {
 	 * @return
 	 * @throws ServiceException
 	 */
-	public static Map<Long,String> getChildFid(Connection conn,List<Long> pids) throws ServiceException{
+	public static Map<Long,List<Map<Long,Object>>> getChildFidByPids(Connection conn,Map<Long,List<Long>> objMap) throws ServiceException{
 		try {
-			Map<Long,String> msg = new HashMap<Long,String>();
-			for (Long pid : pids) {
-				List<Map<String, Object>> ixPoiList = getIxPoiByPid(conn, pid);
-				if(ixPoiList != null && ixPoiList.size()>0){
-					for (Map<String, Object> map : ixPoiList) {
-						String poiNum = StringUtils.trimToEmpty((String) map.get("poiNum"));
-						msg.put(pid, poiNum);
+			Map<Long,List<Map<Long,Object>>> msgs = new HashMap<Long, List<Map<Long,Object>>>();
+			//获取父对象
+			for(Map.Entry<Long,List<Long>> entry :objMap.entrySet()){
+				long pid = entry.getKey();
+				List<Long> childPids = entry.getValue();
+				List<Map<Long,Object>> childFids = new ArrayList<Map<Long,Object>>();
+				if(childPids!=null && childPids.size()>0){
+					Map<Long,BasicObj> objs = ObjBatchSelector.selectByPids(conn, ObjectType.IX_POI,null,childPids,true,true);
+					for(BasicObj obj:objs.values()){
+						Map<Long,Object> childFid = new HashMap<Long, Object>();
+						IxPoiObj poi = (IxPoiObj) obj;
+						IxPoi ixPoi = (IxPoi)poi.getMainrow();
+						long childPid = obj.objPid();
+						childFid.put(childPid, ixPoi.getPoiNum());
+						childFids.add(childFid);
 					}
-				}else{
-					//未查询到记录
-					msg.put(pid, "");
 				}
+				msgs.put(pid, childFids);
 			}
-			return msg;
+			return msgs;
 		} catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new ServiceException("查询失败，原因为:"+e.getMessage(),e);
-		}
-	}
-	
-	/**
-	 * 
-	 * @ClassName IxPoiParentHandler
-	 * @author Han Shaoming
-	 * @date 2016年11月21日 下午8:25:04
-	 * @Description TODO
-	 */
-	static class IxPoiParentHandler implements ResultSetHandler<List<IxPoiParent>>{
-		public List<IxPoiParent> handle(ResultSet rs) throws SQLException {
-			List<IxPoiParent> msgs = new ArrayList<IxPoiParent>();
-			while(rs.next()){
-				IxPoiParent msg = new IxPoiParent();
-				msg.setGroupId(rs.getLong("GROUP_ID"));
-				msg.setParentPoiPid(rs.getLong("PARENT_POI_PID"));
-				msg.setTenantFlag(rs.getInt("TENANT_FLAG"));
-				msg.setMemo(rs.getString("MEMO"));
-				msgs.add(msg);
-			}
-			return msgs;
-		}
-	}
-	
-	
-	static class IxPoiChildrenHandler implements ResultSetHandler<List<IxPoiChildren>>{
-		public List<IxPoiChildren> handle(ResultSet rs) throws SQLException {
-			List<IxPoiChildren> msgs = new ArrayList<IxPoiChildren>();
-			while(rs.next()){
-				IxPoiChildren msg = new IxPoiChildren();
-				msg.setGroupId(rs.getLong("GROUP_ID"));
-				msg.setChildPoiPid(rs.getLong("CHILD_POI_PID"));
-				msg.setRelationType(rs.getInt("RELATION_TYPE"));
-				msgs.add(msg);
-			}
-			return msgs;
 		}
 	}
 	
@@ -227,25 +173,6 @@ public class IxPoiSelector {
 				msg.put("pid",rs.getLong("PID"));
 				msg.put("kindCode",rs.getLong("KIND_CODE"));
 				msg.put("poiNum",rs.getString("POI_NUM"));
-				msgs.add(msg);
-			}
-			return msgs;
-		}
-	}
-	
-	static class Children2ParentHandler implements ResultSetHandler<List<Map<String,Object>>>{
-		public List<Map<String,Object>> handle(ResultSet rs) throws SQLException {
-			List<Map<String,Object>> msgs = new ArrayList<Map<String,Object>>();
-			while(rs.next()){
-				Map<String,Object> msg = new HashMap<String,Object>();
-				msg.put("groupId",rs.getLong("GROUP_ID"));
-				msg.put("childPoiPid",rs.getLong("CHILD_POI_PID"));
-				msg.put("relationType",rs.getLong("RELATION_TYPE"));
-				msg.put("rowId",rs.getString("ROW_ID"));
-				msg.put("parentPoiPid",rs.getLong("PARENT_POI_PID"));
-				msg.put("TenantFlag",rs.getLong("TENANT_FLAG"));
-				msg.put("Memo",rs.getString("MEMO"));
-				msg.put("pRowId",rs.getString("P_ROW_ID"));
 				msgs.add(msg);
 			}
 			return msgs;

@@ -28,32 +28,12 @@ public abstract class EditCommand extends AbstractCommand{
 
 	protected int dbId=0;
 	
-	protected OperType opType;
-	
-	protected ObjType objType;
-
 	public int getDbId() {
 		return dbId;
 	}
 
 	public void setDbId(int dbId) {
 		this.dbId = dbId;
-	}
-
-	public OperType getOpType() {
-		return opType;
-	}
-
-	public void setOpType(OperType opType) {
-		this.opType = opType;
-	}
-
-	public ObjType getObjType() {
-		return objType;
-	}
-
-	public void setObjType(ObjType objType) {
-		this.objType = objType;
 	}
 	
 	public abstract void validate() throws Exception;

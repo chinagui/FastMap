@@ -18,6 +18,7 @@ import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.engine.man.config.ConfigService;
 import com.navinfo.dataservice.engine.man.day2Month.Day2MonthService;
+import com.navinfo.navicommons.database.Page;
 @Controller
 public class Day2MonthController extends BaseController {
 	private Logger log=LoggerRepos.getLogger(getClass());
@@ -64,8 +65,8 @@ public class Day2MonthController extends BaseController {
 			if(dataJson.containsKey("condition")){
 				condition=dataJson.getJSONObject("condition");
 			}
-			List<Map<String, Object>> result=Day2MonthService.getInstance().list(condition,curPageNum,curPageSize);
-			return new ModelAndView("jsonView",success(result));
+			Page page=Day2MonthService.getInstance().list(condition,curPageNum,curPageSize);
+			return new ModelAndView("jsonView",success(page));
 		}catch(Exception e){
 			log.error("查询列表错误", e);
 			return new ModelAndView("jsonView",exception(e));

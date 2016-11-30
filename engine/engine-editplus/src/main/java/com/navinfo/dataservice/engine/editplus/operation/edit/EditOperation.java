@@ -6,6 +6,7 @@ import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
+import com.navinfo.dataservice.dao.plus.operation.AbstractCommand;
 import com.navinfo.dataservice.dao.plus.operation.AbstractOperation;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
 
@@ -17,6 +18,26 @@ import com.navinfo.dataservice.dao.plus.operation.OperationResult;
  */
 public abstract class EditOperation extends AbstractOperation{
 	
+
+	protected OperType opType;
+	
+	protected ObjType objType;
+
+	public OperType getOpType() {
+		return opType;
+	}
+
+	public void setOpType(OperType opType) {
+		this.opType = opType;
+	}
+
+	public ObjType getObjType() {
+		return objType;
+	}
+
+	public void setObjType(ObjType objType) {
+		this.objType = objType;
+	}
 	/**
 	 * @param conn
 	 * @param name
@@ -28,7 +49,7 @@ public abstract class EditOperation extends AbstractOperation{
 	}
 	
     @Override
-	public void operate() throws Exception {
+	public void operate(AbstractCommand cmd) throws Exception {
 //		op.setConn(conn);
 //		op.loadData();
 //		OperationResult result = op.execute();
@@ -63,14 +84,6 @@ public abstract class EditOperation extends AbstractOperation{
 	}
 	public void setConn(Connection conn) {
 		this.conn = conn;
-	}
-
-	public OperType getOpType() {
-		return ((EditCommand)cmd).opType;
-	}
-
-	public ObjType getObjType() {
-		return ((EditCommand)cmd).objType;
 	}
 
 }

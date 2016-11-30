@@ -27,7 +27,7 @@ public class androidtest {
 		try {
 			ColumnCoreControl control = new ColumnCoreControl();
 
-			control.applyData(0, "poi_address", 123);
+			//control.applyData(0, "poi_address", 123);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

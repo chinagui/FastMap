@@ -887,4 +887,15 @@ public class runTest extends InitApplication {
 	}	
 		
 		
+		@Test
+		public void run_1130_1() throws Exception {
+
+			String parameter = "{\"command\":\"CREATESIDEROAD\",\"type\":\"RDLINK\",\"dbId\":17,\"distance\":\"5.5\",\"sideType\":1,\"data\":{\"linkPids\":[300002869,300002870,17256975,17256976]}}";
+
+			Transaction t = new Transaction(parameter);
+
+			String msg = t.run();
+		}
+		
+		
 }

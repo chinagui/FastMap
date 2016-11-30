@@ -79,11 +79,11 @@ public class MultiSrcFmSyncService {
 		try{
 			QueryRunner queryRunner = new QueryRunner();
 			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
-			String sql = "UPDATE MULTISRC_FM_SYNC SET SYNC_STATUS=?,ZIP_FILE=? WHERE TO_CHAR(SYNC_TIME,'yyyyMMdd')=TO_CHAR(SYSDATE,'yyyyMMdd')";
+			String sql = "UPDATE MULTISRC_FM_SYNC SET SYNC_STATUS=?,ZIP_FILE=? WHERE JOB_ID =?";
 			//日志
 			log.info("更新MULTISRC_FM_SYNC表的管理记录:"+sql);
 			
-			queryRunner.update(conn,sql,obj.getSyncStatus(),obj.getZipFile());
+			queryRunner.update(conn,sql,obj.getSyncStatus(),obj.getZipFile(),obj.getJobId());
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -155,12 +155,12 @@ public class MultiSrcFmSyncService {
 		try {
 			//判断是否有未执行完的导入任务
 			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
-			String sql = "SELECT * FROM MULTISRC_FM_SYNC WHERE SYNC_STATUS IN(1,2,3,5) ORDER BY SYNC_TIME DESC";
+			String sql = "SELECT * FROM MULTISRC_FM_SYNC WHERE SYNC_STATUS IN(1,2,3,5,7) ORDER BY SYNC_TIME DESC";
 			Object[] params = {};
 			List<MultiSrcFmSync> list = querySync(conn, sql, params);
 			if(list != null && list.size()>0){
 				//有未执行完的导入任务
-				return "申请失败:有未执行完成的日库多源数据包导入FM任务";
+				throw new Exception("申请失败:有未执行完成的日库多源数据包导入FM任务");
 			}
 			JSONObject job = new JSONObject();
 			JobApi jobApi = (JobApi) ApplicationContextUtil.getBean("jobApi");

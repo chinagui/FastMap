@@ -2,6 +2,7 @@ package com.navinfo.dataservice.engine.edit.luyao;
 
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -467,6 +468,31 @@ public class commonTest extends InitApplication {
 		Matcher matcher=pattern.matcher(ExcelReader.f2h(value));
 		boolean key= matcher.matches();
 		
+		System.out.print("");
+	}
+	
+	@Test
+	public void testMap() {
+
+		Map<Integer, Integer> map = new HashMap<Integer, Integer>();
+
+		map.put(1, 1);
+		map.put(1, 2);
+		map.put(1, 3);
+		map.put(1, 4);
+		map.put(1, 1);
+		map.put(2, 2);
+		map.put(3, 3);
+		map.put(4, 4);
+		
+		for (Map.Entry<Integer, Integer> entry : map.entrySet()) {
+
+			if (entry.getKey() == 1 || entry.getKey() == 3) {
+				map.remove(entry.getKey());
+				break;
+			}
+		}
+
 		System.out.print("");
 	}
 

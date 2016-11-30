@@ -80,4 +80,8 @@
 		class="com.navinfo.dataservice.column.job.Fm2MultiSrcSyncJob"
 	 	request="com.navinfo.dataservice.column.job.Fm2MultiSrcSyncJobRequest"
 	/>
+	<type name="multisrc2FmDay" 
+		class="com.navinfo.dataservice.column.job.MultiSrc2FmDaySyncJob"
+	 	request="com.navinfo.dataservice.column.job.MultiSrc2FmDaySyncJobRequest"
+	/>
 </mapping>

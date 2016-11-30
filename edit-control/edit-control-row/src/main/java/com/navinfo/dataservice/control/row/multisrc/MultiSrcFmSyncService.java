@@ -155,7 +155,7 @@ public class MultiSrcFmSyncService {
 		try {
 			//判断是否有未执行完的导入任务
 			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
-			String sql = "SELECT * FROM MULTISRC_FM_SYNC WHERE SYNC_STATUS IN(1,2,3,5) ORDER BY SYNC_TIME DESC";
+			String sql = "SELECT * FROM MULTISRC_FM_SYNC WHERE SYNC_STATUS IN(1,2,3,5,7) ORDER BY SYNC_TIME DESC";
 			Object[] params = {};
 			List<MultiSrcFmSync> list = querySync(conn, sql, params);
 			if(list != null && list.size()>0){

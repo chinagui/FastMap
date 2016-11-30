@@ -48,8 +48,7 @@ public class BatchTest {
 		batchCommand.setRuleIdList(ruleIdList);
 		
 		Batch batch=new Batch(conn,operationResult);
-		batch.setCmd(batchCommand);
-		batch.operate();
+		batch.operate(batchCommand);
 		System.out.println("123");
 	}
 

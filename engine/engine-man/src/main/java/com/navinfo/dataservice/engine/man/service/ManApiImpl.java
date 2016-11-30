@@ -6,6 +6,7 @@ import java.util.Map;
 import org.springframework.stereotype.Service;
 
 import com.navinfo.dataservice.api.man.iface.ManApi;
+import com.navinfo.dataservice.api.man.model.CpRegionProvince;
 import com.navinfo.dataservice.api.man.model.Message;
 import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.api.man.model.Subtask;
@@ -16,6 +17,7 @@ import com.navinfo.dataservice.engine.man.config.ConfigService;
 import com.navinfo.dataservice.engine.man.day2Month.Day2MonthService;
 import com.navinfo.dataservice.engine.man.message.MessageService;
 import com.navinfo.dataservice.engine.man.produce.ProduceService;
+import com.navinfo.dataservice.engine.man.region.CpRegionProvinceService;
 import com.navinfo.dataservice.engine.man.region.RegionService;
 import com.navinfo.dataservice.engine.man.statics.StaticsService;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskOperation;
@@ -157,6 +159,17 @@ public class ManApiImpl implements ManApi {
 			throws Exception {
 		// TODO Auto-generated method stub
 		return Day2MonthService.getInstance().list(conditionJson);
+	}
+	
+	@Override
+	public List<CpRegionProvince> listCpRegionProvince() throws Exception {
+
+		return CpRegionProvinceService.getInstance().list();
+	}
+	
+	@Override
+	public Map<Integer,Integer> listDayDbIdsByAdminId()throws Exception{
+		return CpRegionProvinceService.getInstance().listDayDbIdsByAdminId();
 	}
 }
 

@@ -387,8 +387,9 @@ public class Operation implements IOperation {
 		OpRefRdCross opRefRdCross = new OpRefRdCross(conn, linkList);
 		opRefRdCross.run(result);
 		//创建link维护详细车道信息
-		OpRefRdLane opRefRdLane = new OpRefRdLane(conn);
-		opRefRdLane.run(result, linkList);
+		//OpRefRdLane opRefRdLane = new OpRefRdLane(conn);
+		//opRefRdLane.run(result, linkList);
+		
 	}
 
 }

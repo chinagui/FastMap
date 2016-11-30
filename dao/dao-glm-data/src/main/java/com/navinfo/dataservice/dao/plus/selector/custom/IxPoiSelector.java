@@ -2,7 +2,6 @@ package com.navinfo.dataservice.dao.plus.selector.custom;
 
 import java.sql.Clob;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -53,99 +52,33 @@ public class IxPoiSelector {
 	}
 	
 	/**
-	 * 根据groupId查询IxPoiParent数据
+	 * 查询父POI的Fid
 	 * @author Han Shaoming
 	 * @param conn
-	 * @param groupId
+	 * @param pids
 	 * @return
-	 * @throws ServiceException
+	 * @throws Exception
 	 */
-	/*public static List<IxPoiParent> getIxPoiParentByGroupId(Connection conn,long groupId) throws ServiceException{
-		List<IxPoiParent> msgs = null;
-		try{
-			QueryRunner queryRunner = new QueryRunner();
-			String sql = "SELECT * FROM IX_POI_PARENT WHERE GROUP_ID=? ORDER BY PARENT_POI_PID ASC";
-			Object[] params = {groupId};
-			msgs = queryRunner.query(conn, sql, new IxPoiParentHandler(),params);
-			return msgs;
-		}catch(Exception e){
-			DbUtils.rollbackAndCloseQuietly(conn);
-			log.error(e.getMessage(), e);
-			throw new ServiceException("查询失败，原因为:"+e.getMessage(),e);
+	public static Map<Long,String> getParentFidByPids(Connection conn,Collection<Long> pids)throws Exception{
+		if(pids!=null&&pids.size()>0){
+			if(pids.size()>1000){
+				String sql= "SELECT C.GROUP_ID,C.CHILD_POI_PID,P.PARENT_POI_PID,I.PID,I.POI_NUM "
+						+ "FROM IX_POI_CHILDREN C,IX_POI_PARENT P,IX_POI I "
+						+ "WHERE C.GROUP_ID=P.GROUP_ID AND P.PARENT_POI_PID=I.PID AND C.CHILD_POI_PID IN  "
+						+ "(SELECT TO_NUMBER(COLUMN_VALUE) FROM TABLE(CLOB_TO_TABLE(?)))";
+				Clob clob = ConnectionUtil.createClob(conn);
+				clob.setString(1, StringUtils.join(pids, ","));
+				return new QueryRunner().query(conn, sql, new PoiParentFidSelHandler(),clob);
+			}else{
+				String sql= "SELECT C.GROUP_ID,C.CHILD_POI_PID,P.PARENT_POI_PID,I.PID,I.POI_NUM "
+						+ "FROM IX_POI_CHILDREN C,IX_POI_PARENT P,IX_POI I WHERE C.GROUP_ID=P.GROUP_ID "
+						+ "AND P.PARENT_POI_PID=I.PID AND C.CHILD_POI_PID IN ("+StringUtils.join(pids, ",")+")";
+				return new QueryRunner().query(conn,sql,new PoiParentFidSelHandler());
+			}
 		}
-	}*/
-	
-	/**
-	 * 根据pid查询IxPoiParent数据
-	 * @author Han Shaoming
-	 * @param conn
-	 * @param groupId
-	 * @return
-	 * @throws ServiceException
-	 */
-	/*public static List<IxPoiParent> getIxPoiParentByPid(Connection conn,long pid) throws ServiceException{
-		List<IxPoiParent> msgs = null;
-		try{
-			QueryRunner queryRunner = new QueryRunner();
-			String sql = "SELECT * FROM IX_POI_PARENT WHERE PARENT_POI_PID=?";
-			Object[] params = {pid};
-			msgs = queryRunner.query(conn, sql, new IxPoiParentHandler(),params);
-			return msgs;
-		}catch(Exception e){
-			DbUtils.rollbackAndCloseQuietly(conn);
-			log.error(e.getMessage(), e);
-			throw new ServiceException("查询失败，原因为:"+e.getMessage(),e);
-		}
-	}*/
-	
-	/**
-	 * 根据groupId查询IxPoiChildren数据
-	 * @author Han Shaoming
-	 * @param conn
-	 * @param groupId
-	 * @return
-	 * @throws ServiceException
-	 */
-	/*public static List<IxPoiChildren> getIxPoiChildrenByGroupId(Connection conn,long groupId) throws ServiceException{
-		List<IxPoiChildren> msgs = null;
-		try{
-			QueryRunner queryRunner = new QueryRunner();
-			String sql = "SELECT * FROM IX_POI_CHILDREN WHERE GROUP_ID=?";
-			Object[] params = {groupId};
-			msgs = queryRunner.query(conn, sql, new IxPoiChildrenHandler(),params);
-			return msgs;
-		}catch(Exception e){
-			DbUtils.rollbackAndCloseQuietly(conn);
-			log.error(e.getMessage(), e);
-			throw new ServiceException("查询失败，原因为:"+e.getMessage(),e);
-		}
-	}*/
-	
-	/**
-	 * 根据pid查询父子表数据
-	 * @author Han Shaoming
-	 * @param conn
-	 * @param groupId
-	 * @return
-	 * @throws ServiceException
-	 */
-	public static List<Map<String,Object>> getParentByPid(Connection conn,long pid) throws ServiceException{
-		List<Map<String,Object>> msgs = null;
-		try{
-			QueryRunner queryRunner = new QueryRunner();
-			String sql = "SELECT C.*,P.PARENT_POI_PID,P.TENANT_FLAG,P.MEMO,P.ROW_ID P_ROW_ID "
-					+ " FROM IX_POI_CHILDREN C,IX_POI_PARENT P WHERE C.GROUP_ID=P.GROUP_ID AND C.CHILD_POI_PID="+pid
-					+ " ORDER BY P.PARENT_POI_PID ASC";
-			log.info("根据pid查询父子表数据"+sql);
-			Object[] params = {};
-			msgs = queryRunner.query(conn, sql, new Children2ParentHandler(),params);
-			return msgs;
-		}catch(Exception e){
-			DbUtils.rollbackAndCloseQuietly(conn);
-			log.error(e.getMessage(), e);
-			throw new ServiceException("查询失败，原因为:"+e.getMessage(),e);
-		}
+		return null;
 	}
+	
 	
 	public static Map<Long,BasicObj> getIxPoiParentMapByChildrenPidList(Connection conn,Set<Long> pidList) throws ServiceException{
 		Map<Long,BasicObj> objMap = new HashMap<Long,BasicObj>();
@@ -217,67 +150,6 @@ public class IxPoiSelector {
 		}
 	}
 	
-	/**
-	 * 查询父POI的Fid
-	 * @author Han Shaoming
-	 * @param conn
-	 * @param pids
-	 * @return
-	 * @throws ServiceException
-	 */
-	public static Map<Long,String> getParentFid(Connection conn,List<Long> pids) throws ServiceException{
-		Long parentPoiPid = null;
-		try {
-			Map<Long,String> msgs = new HashMap<Long,String>();
-			for (Long pid : pids) {
-				List<Map<String, Object>> msg = getParentByPid(conn, pid);
-				if(msg != null && msg.size()>0){
-					if(msg.size()>1){
-						List<Map<String, Object>> list = new ArrayList<Map<String,Object>>();
-						for (Map<String, Object> map : msg) {
-							if((long)map.get("relationType") == 2){
-								list.add(map);
-							}
-						}
-						//若得到多个符合条件的PARENT_POI_PID，
-						//则取IX_POI_CHILDREN.RELATION_TYPE=2（物理关系）的那条
-						if(list.size()==1){
-							parentPoiPid = (long) list.get(0).get("parentPoiPid");
-	
-						}else {
-							//如果没有符合该条件的或有多个符合，则取PARENT_POI_PID最小的那个
-							parentPoiPid = (long) msg.get(0).get("parentPoiPid");
-						}
-						
-					}else if(msg.size() == 1){
-						//获取parentPoiPid
-						parentPoiPid = (long) msg.get(0).get("parentPoiPid");
-					}
-					if(parentPoiPid != null){
-						//查询POI主表
-						List<Map<String, Object>> ixPoiList = getIxPoiByPid(conn, parentPoiPid);
-						if(ixPoiList != null && ixPoiList.size()>0){
-							for (Map<String, Object> map : ixPoiList) {
-								String poiNum = StringUtils.trimToEmpty((String) map.get("poiNum"));
-								msgs.put(pid, poiNum);
-							}
-						}else{
-							//未查询到记录
-							msgs.put(pid, "");
-						}
-					}
-				}else{
-					//未找到符合条件的父时转出空字符串
-					msgs.put(pid, "");
-				}
-			}
-			return msgs;
-		} catch(Exception e){
-			DbUtils.rollbackAndCloseQuietly(conn);
-			log.error(e.getMessage(), e);
-			throw new ServiceException("查询失败，原因为:"+e.getMessage(),e);
-		}
-	}
 	
 	/**
 	 * 查询子POI的fid
@@ -289,20 +161,20 @@ public class IxPoiSelector {
 	 */
 	public static Map<Long,String> getChildFid(Connection conn,List<Long> pids) throws ServiceException{
 		try {
-			Map<Long,String> msgs = new HashMap<Long,String>();
+			Map<Long,String> msg = new HashMap<Long,String>();
 			for (Long pid : pids) {
 				List<Map<String, Object>> ixPoiList = getIxPoiByPid(conn, pid);
 				if(ixPoiList != null && ixPoiList.size()>0){
 					for (Map<String, Object> map : ixPoiList) {
 						String poiNum = StringUtils.trimToEmpty((String) map.get("poiNum"));
-						msgs.put(pid, poiNum);
+						msg.put(pid, poiNum);
 					}
 				}else{
 					//未查询到记录
-					msgs.put(pid, "");
+					msg.put(pid, "");
 				}
 			}
-			return msgs;
+			return msg;
 		} catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

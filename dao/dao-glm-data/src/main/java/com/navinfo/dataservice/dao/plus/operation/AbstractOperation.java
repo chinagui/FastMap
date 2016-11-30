@@ -19,7 +19,6 @@ import com.navinfo.navicommons.database.sql.RunnableSQL;
  */
 public abstract class AbstractOperation {
 	protected Logger log = Logger.getLogger(this.getClass());
-	protected AbstractCommand cmd;
 	protected OperationResult result;
 	protected Connection conn;
 	
@@ -36,10 +35,7 @@ public abstract class AbstractOperation {
 	public OperationResult getResult() {
 		return result;
 	}
-	public void setCmd(AbstractCommand cmd){
-		this.cmd=cmd;
-	}
-	public abstract void operate()throws Exception;
+	public abstract void operate(AbstractCommand cmd)throws Exception;
 
 	/**
 	 * 持久化一次操作的变更，持久化包括数据和履历

@@ -18,7 +18,7 @@ import com.navinfo.dataservice.dao.plus.operation.OperationResult;
 import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
 import com.navinfo.dataservice.dao.plus.selector.ObjSelector;
 import com.navinfo.dataservice.engine.editplus.operation.imp.PoiRelation;
-import com.navinfo.dataservice.engine.editplus.operation.imp.PoiRelationImporterCommand;
+import com.navinfo.dataservice.engine.editplus.operation.imp.PoiRelationImportorCommand;
 import com.navinfo.dataservice.engine.editplus.operation.imp.PoiRelationImportor;
 import com.navinfo.dataservice.engine.editplus.operation.imp.PoiRelationType;
 
@@ -70,13 +70,14 @@ public class PoiRelationImporterTest {
 			poiRelation.setPoiRelationType(PoiRelationType.FATHER_AND_SON);
 			poiCollectionSet.add(poiRelation);
 			
-			PoiRelationImporterCommand poiRelationImporterCommand = new PoiRelationImporterCommand();
+			PoiRelationImportorCommand poiRelationImporterCommand = new PoiRelationImportorCommand();
 			poiRelationImporterCommand.setPoiRels(poiCollectionSet);
 			
 			OperationResult result = new OperationResult();
 			result.isObjExist(obj);
 			result.putObj(obj);
-			new PoiRelationImportor(conn,result,poiRelationImporterCommand).operate();
+			PoiRelationImportor imp = new PoiRelationImportor(conn,result);
+			imp.operate(poiRelationImporterCommand);
 			System.out.println("Over.");
 
 		}catch(Exception e){
@@ -109,12 +110,13 @@ public class PoiRelationImporterTest {
 			poiRelation.setPoiRelationType(PoiRelationType.FATHER_AND_SON);
 			poiCollectionSet.add(poiRelation);
 			
-			PoiRelationImporterCommand poiRelationImporterCommand = new PoiRelationImporterCommand();
+			PoiRelationImportorCommand poiRelationImporterCommand = new PoiRelationImportorCommand();
 			poiRelationImporterCommand.setPoiRels(poiCollectionSet);
 			
 			OperationResult result = new OperationResult();
 			result.putObj(obj);
-			new PoiRelationImportor(conn,result,poiRelationImporterCommand).operate();
+			PoiRelationImportor imp = new PoiRelationImportor(conn,result);
+			imp.operate(poiRelationImporterCommand);
 			System.out.println("Over.");
 
 		}catch(Exception e){
@@ -142,12 +144,13 @@ public class PoiRelationImporterTest {
 			poiRelation.setPoiRelationType(PoiRelationType.FATHER_AND_SON);
 			poiCollectionSet.add(poiRelation);
 			
-			PoiRelationImporterCommand poiRelationImporterCommand = new PoiRelationImporterCommand();
+			PoiRelationImportorCommand poiRelationImporterCommand = new PoiRelationImportorCommand();
 			poiRelationImporterCommand.setPoiRels(poiCollectionSet);
 			
 			OperationResult result = new OperationResult();
 			result.putObj(obj);
-			new PoiRelationImportor(conn,result,poiRelationImporterCommand).operate();
+			PoiRelationImportor imp = new PoiRelationImportor(conn,result);
+			imp.operate(poiRelationImporterCommand);
 			System.out.println("Over.");
 
 		}catch(Exception e){
@@ -180,14 +183,15 @@ public class PoiRelationImporterTest {
 			poiRelation.setPoiRelationType(PoiRelationType.FATHER_AND_SON);
 			poiCollectionSet.add(poiRelation);
 			
-			PoiRelationImporterCommand poiRelationImporterCommand = new PoiRelationImporterCommand();
+			PoiRelationImportorCommand poiRelationImporterCommand = new PoiRelationImportorCommand();
 			poiRelationImporterCommand.setPoiRels(poiCollectionSet);
 			
 			OperationResult result = new OperationResult();
 			for(Map.Entry<Long, BasicObj> entry:objMap.entrySet()){
 				result.putObj(entry.getValue());
 			}
-			new PoiRelationImportor(conn,result,poiRelationImporterCommand).operate();
+			PoiRelationImportor imp = new PoiRelationImportor(conn,result);
+			imp.operate(poiRelationImporterCommand);
 			System.out.println("Over.");
 
 		}catch(Exception e){
@@ -225,14 +229,15 @@ public class PoiRelationImporterTest {
 			poiRelation.setPoiRelationType(PoiRelationType.FATHER_AND_SON);
 			poiCollectionSet.add(poiRelation);
 			
-			PoiRelationImporterCommand poiRelationImporterCommand = new PoiRelationImporterCommand();
+			PoiRelationImportorCommand poiRelationImporterCommand = new PoiRelationImportorCommand();
 			poiRelationImporterCommand.setPoiRels(poiCollectionSet);
 			
 			OperationResult result = new OperationResult();
 			for(Map.Entry<Long, BasicObj> entry:objMap.entrySet()){
 				result.putObj(entry.getValue());
 			}
-			new PoiRelationImportor(conn,result,poiRelationImporterCommand).operate();
+			PoiRelationImportor imp = new PoiRelationImportor(conn,result);
+			imp.operate(poiRelationImporterCommand);
 			System.out.println("Over.");
 
 		}catch(Exception e){

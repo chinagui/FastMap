@@ -84,7 +84,7 @@ public class BasicOperator extends AbstractOperator {
 					oj = Double.parseDouble(String.valueOf(oj));
 				}
 				if (oj instanceof String) {
-					oj = "'" + String.valueOf(oj) + "'";
+					oj = "'" + String.valueOf(oj).replaceAll("'", "''") + "'";
 				}
 				if (oj instanceof Geometry) {
 					String wkt = GeoTranslator.jts2Wkt((Geometry) oj, 0.00001, 5);

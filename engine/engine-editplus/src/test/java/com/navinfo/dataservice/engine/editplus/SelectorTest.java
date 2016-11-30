@@ -354,14 +354,14 @@ public class SelectorTest {
 			pids.add(29407L);
 			pids.add(44605L);
 			pids.add(37935L);
-			Map<Long, String> parentFid = IxPoiSelector.getParentFid(conn, pids);
+			Map<Long, String> parentFid = IxPoiSelector.getParentFidByPids(conn, pids);
 			for(Map.Entry<Long, String> entry :parentFid.entrySet()){
 				System.out.println("parentFid"+entry.getValue()+"========"+entry.getValue());
 			}
-			Map<Long, String> childFid = IxPoiSelector.getChildFid(conn, pids);
+			/*Map<Long, String> childFid = IxPoiSelector.getChildFid(conn, pids);
 			for(Map.Entry<Long, String> entry :childFid.entrySet()){
 				System.out.println("childFid"+entry.getValue()+"========"+entry.getValue());
-			}
+			}*/
 			System.out.println("Over.");
 		}catch(Exception e){
 			System.out.println("Oops, something wrong...");

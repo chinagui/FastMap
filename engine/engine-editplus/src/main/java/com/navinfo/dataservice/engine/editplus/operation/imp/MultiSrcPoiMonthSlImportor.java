@@ -3,6 +3,7 @@ package com.navinfo.dataservice.engine.editplus.operation.imp;
 import java.sql.Connection;
 
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
+import com.navinfo.dataservice.dao.plus.operation.AbstractCommand;
 import com.navinfo.dataservice.dao.plus.operation.AbstractOperation;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
 
@@ -28,7 +29,7 @@ public class MultiSrcPoiMonthSlImportor extends AbstractOperation {
 	}
 
 	@Override
-	public void operate() throws Exception {
+	public void operate(AbstractCommand cmd) throws Exception {
 		// TODO Auto-generated method stub
 		
 	}

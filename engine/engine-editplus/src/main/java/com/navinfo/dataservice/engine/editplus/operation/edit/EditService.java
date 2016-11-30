@@ -25,8 +25,7 @@ public class EditService {
 			EditCommand cmd = null;
 //			cmd = new EditCommand();
 			cmd.parse(data);
-			op.setCmd(cmd);
-			op.operate();
+			op.operate(cmd);
 			//组装返回json
 			return DefaultPrimaryPidChooser.chooseMainObj(op.getResult());
 		}catch(Exception e){

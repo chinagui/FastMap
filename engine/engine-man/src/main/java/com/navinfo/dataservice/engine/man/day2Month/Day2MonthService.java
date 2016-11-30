@@ -138,8 +138,6 @@ public class Day2MonthService {
 	
 		/**
 		 * 查询配置列表
-		 * @param curPageSize 
-		 * @param curPageNum 
 		 * @param condition 
 		 * @param dataJson
 		 * @return

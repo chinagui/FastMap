@@ -77,8 +77,7 @@ public class PoiRelationImporterTest {
 			result.isObjExist(obj);
 			result.putObj(obj);
 			PoiRelationImportor imp = new PoiRelationImportor(conn,result);
-			imp.setCmd(poiRelationImporterCommand);
-			imp.operate();
+			imp.operate(poiRelationImporterCommand);
 			System.out.println("Over.");
 
 		}catch(Exception e){
@@ -117,8 +116,7 @@ public class PoiRelationImporterTest {
 			OperationResult result = new OperationResult();
 			result.putObj(obj);
 			PoiRelationImportor imp = new PoiRelationImportor(conn,result);
-			imp.setCmd(poiRelationImporterCommand);
-			imp.operate();
+			imp.operate(poiRelationImporterCommand);
 			System.out.println("Over.");
 
 		}catch(Exception e){
@@ -152,8 +150,7 @@ public class PoiRelationImporterTest {
 			OperationResult result = new OperationResult();
 			result.putObj(obj);
 			PoiRelationImportor imp = new PoiRelationImportor(conn,result);
-			imp.setCmd(poiRelationImporterCommand);
-			imp.operate();
+			imp.operate(poiRelationImporterCommand);
 			System.out.println("Over.");
 
 		}catch(Exception e){
@@ -194,8 +191,7 @@ public class PoiRelationImporterTest {
 				result.putObj(entry.getValue());
 			}
 			PoiRelationImportor imp = new PoiRelationImportor(conn,result);
-			imp.setCmd(poiRelationImporterCommand);
-			imp.operate();
+			imp.operate(poiRelationImporterCommand);
 			System.out.println("Over.");
 
 		}catch(Exception e){
@@ -241,8 +237,7 @@ public class PoiRelationImporterTest {
 				result.putObj(entry.getValue());
 			}
 			PoiRelationImportor imp = new PoiRelationImportor(conn,result);
-			imp.setCmd(poiRelationImporterCommand);
-			imp.operate();
+			imp.operate(poiRelationImporterCommand);
 			System.out.println("Over.");
 
 		}catch(Exception e){

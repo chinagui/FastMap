@@ -88,7 +88,7 @@ public class Operation implements IOperation {
 	 * @throws Exception
 	 */
 	private void updateNode(Result result, JSONObject content) throws Exception {
-		JSONArray subObj = content.getJSONArray("nodes");
+		JSONArray subObj = this.command.getNodeArray();
 
 		for (IRow interNode : rdInter.getNodes()) {
 			RdInterNode node = (RdInterNode) interNode;
@@ -120,7 +120,7 @@ public class Operation implements IOperation {
 	 * @throws Exception
 	 */
 	private void updateLink(Result result, JSONObject content) throws Exception {
-		JSONArray subObj = content.getJSONArray("links");
+		JSONArray subObj = this.command.getLinkArray();
 
 		for (IRow interLink : rdInter.getLinks()) {
 			RdInterLink link = (RdInterLink) interLink;

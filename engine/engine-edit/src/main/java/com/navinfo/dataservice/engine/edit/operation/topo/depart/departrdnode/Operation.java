@@ -58,16 +58,15 @@ public class Operation implements IOperation {
 	 */
 	private void departNode(Result result) throws Exception {
 
-		if (this.command.getCatchNodePid() == 0
-				&& this.command.getCatchLinkPid() == 0) {
+		if (this.command.getCatchNodePid() == 0 && this.command.getCatchLinkPid() == 0) {
 			// 如果分离节点没有挂接link和node 并且分离的node没有挂接其它的link按照node移动功能处理
 			if (this.command.getLinks().size() == 1) {
 				this.removeNode(result);
 			}
 			// 如果分离节点没有挂接link和node 并且分离的node有挂接其它的link按照原则此node要新增
 			if (this.command.getLinks().size() > 1) {
-				RdNode node = NodeOperateUtils.createRdNode(this.command
-						.getPoint().getX(), this.command.getPoint().getY());
+				RdNode node = NodeOperateUtils.createRdNode(this.command.getPoint().getX(),
+						this.command.getPoint().getY());
 				result.insertObject(node, ObjStatus.INSERT, node.pid());
 				this.updateLinkGeomtry(result, node.getPid());
 			}
@@ -101,8 +100,7 @@ public class Operation implements IOperation {
 		// 如果没有挂接的link node需要继承 如果有node需要新生成
 		int breakNodePid = this.command.getNodePid();
 		if (this.command.getLinks().size() > 1) {
-			RdNode node = NodeOperateUtils.createRdNode(this.command.getPoint()
-					.getX(), this.command.getPoint().getY());
+			RdNode node = NodeOperateUtils.createRdNode(this.command.getPoint().getX(), this.command.getPoint().getY());
 			result.insertObject(node, ObjStatus.INSERT, node.getPid());
 			breakNodePid = node.getPid();
 
@@ -139,9 +137,7 @@ public class Operation implements IOperation {
 		JSONObject geojson = new JSONObject();
 		geojson.put("type", "Point");
 
-		geojson.put("coordinates",
-				new double[] { this.command.getPoint().getX(),
-						this.command.getPoint().getY() });
+		geojson.put("coordinates", new double[] { this.command.getPoint().getX(), this.command.getPoint().getY() });
 
 		JSONObject updateContent = new JSONObject();
 
@@ -173,16 +169,13 @@ public class Operation implements IOperation {
 	private void caleCatchNode(Result result) throws Exception {
 		// 加载挂接的点求几何
 		RdNodeSelector nodeSelector = new RdNodeSelector(conn);
-		IRow row = nodeSelector.loadById(this.command.getCatchNodePid(), true,
-				true);
+		IRow row = nodeSelector.loadById(this.command.getCatchNodePid(), true, true);
 		RdNode node = (RdNode) row;
 		Geometry geom = GeoTranslator.transform(node.getGeometry(), 0.00001, 5);
-		this.command.setPoint(((Point) GeoTranslator.point2Jts(
-				geom.getCoordinate().x, geom.getCoordinate().y)));
+		this.command.setPoint(((Point) GeoTranslator.point2Jts(geom.getCoordinate().x, geom.getCoordinate().y)));
 		// 如果原有node挂接的LINK<=1 原来的node需要删除更新link的几何为新的node
 		if (this.command.getLinks().size() <= 1) {
-			result.insertObject(this.command.getNode(), ObjStatus.DELETE,
-					this.command.getNodePid());
+			result.insertObject(this.command.getNode(), ObjStatus.DELETE, this.command.getNodePid());
 		}
 		// 更新link的几何为新的node点
 		this.updateLinkGeomtry(result, this.command.getCatchNodePid());
@@ -223,8 +216,7 @@ public class Operation implements IOperation {
 	 * @throws Exception
 	 */
 	private void updateLinkGeomtry(Result result, int nodePid) throws Exception {
-		Geometry geom = GeoTranslator.transform(this.command.getRdLink()
-				.getGeometry(), 0.00001, 5);
+		Geometry geom = GeoTranslator.transform(this.command.getRdLink().getGeometry(), 0.00001, 5);
 
 		Coordinate[] cs = geom.getCoordinates();
 
@@ -259,8 +251,7 @@ public class Operation implements IOperation {
 		List<RdLink> links = new ArrayList<RdLink>();
 		if (meshes.size() == 1) {
 			JSONObject updateContent = new JSONObject();
-			if (this.command.getRdLink().geteNodePid() == this.command
-					.getNodePid()) {
+			if (this.command.getRdLink().geteNodePid() == this.command.getNodePid()) {
 				updateContent.put("eNodePid", nodePid);
 			} else {
 				updateContent.put("sNodePid", nodePid);
@@ -268,54 +259,43 @@ public class Operation implements IOperation {
 			updateContent.put("geometry", geojson);
 			updateContent.put("length", GeometryUtils.getLinkLength(geo));
 			this.command.getRdLink().fillChangeFields(updateContent);
-			result.insertObject(this.command.getRdLink(), ObjStatus.UPDATE,
-					this.command.getLinkPid());
+			result.insertObject(this.command.getRdLink(), ObjStatus.UPDATE, this.command.getLinkPid());
 			// 如果跨图幅就需要打断生成新的link
 		} else {
 			Map<Coordinate, Integer> maps = new HashMap<Coordinate, Integer>();
-			if (geo.getCoordinates()[0].equals(this.command.getPoint()
-					.getCoordinate())) {
+			if (geo.getCoordinates()[0].equals(this.command.getPoint().getCoordinate())) {
 				maps.put(geo.getCoordinates()[0], nodePid);
 
-				maps.put(geo.getCoordinates()[geo.getCoordinates().length - 1],
-						this.command.getRdLink().geteNodePid());
+				maps.put(geo.getCoordinates()[geo.getCoordinates().length - 1], this.command.getRdLink().geteNodePid());
 			} else {
-				maps.put(geo.getCoordinates()[0], this.command.getRdLink()
-						.geteNodePid());
+				maps.put(geo.getCoordinates()[0], this.command.getRdLink().geteNodePid());
 
-				maps.put(geo.getCoordinates()[geo.getCoordinates().length - 1],
-						nodePid);
+				maps.put(geo.getCoordinates()[geo.getCoordinates().length - 1], nodePid);
 			}
 
 			Iterator<String> it = meshes.iterator();
 			while (it.hasNext()) {
 				String meshIdStr = it.next();
 				Geometry geomInter = MeshUtils.linkInterMeshPolygon(geo,
-						GeoTranslator.transform(MeshUtils.mesh2Jts(meshIdStr),
-								1, 5));
-				geomInter = GeoTranslator.geojson2Jts(
-						GeoTranslator.jts2Geojson(geomInter), 1, 5);
-				RdLinkOperateUtils.createRdLinkWithMesh(geomInter, maps,
-						this.command.getRdLink(), result, links);
+						GeoTranslator.transform(MeshUtils.mesh2Jts(meshIdStr), 1, 5));
+				geomInter = GeoTranslator.geojson2Jts(GeoTranslator.jts2Geojson(geomInter), 1, 5);
+				RdLinkOperateUtils.createRdLinkWithMesh(geomInter, maps, this.command.getRdLink(), result, links);
 
 			}
 
-			result.insertObject(this.command.getRdLink(), ObjStatus.DELETE,
-					this.command.getRdLink().pid());
+			result.insertObject(this.command.getRdLink(), ObjStatus.DELETE, this.command.getRdLink().pid());
 
 		}
 		// 分离节点属性关系维护
 		this.updateRelation(links, result);
 	}
 
-	private void updateRelation(List<RdLink> newLinks, Result result)
-			throws Exception {
+	private void updateRelation(List<RdLink> newLinks, Result result) throws Exception {
 		// 构造修改后的link几何
 		assemblyLinks(newLinks);
 
 		// 维护电子眼
-		OpRefElectroniceye opRefElectroniceye = new OpRefElectroniceye(
-				this.conn);
+		OpRefElectroniceye opRefElectroniceye = new OpRefElectroniceye(this.conn);
 		opRefElectroniceye.updateRelation(command, newLinks, result);
 		// 维护IxPoi
 		OpRefIxPoi opRefIxPoi = new OpRefIxPoi(this.conn);
@@ -323,6 +303,9 @@ public class Operation implements IOperation {
 		// 维护RdGsc
 		OpRefRdgsc opRefRdgsc = new OpRefRdgsc(this.conn);
 		opRefRdgsc.updateRelation(command, newLinks, result);
+		// 维护CRFRoad
+		OpRefRdRoad opRefRdRoad = new OpRefRdRoad(this.conn);
+		opRefRdRoad.updateRelation(command, newLinks, result);
 		// 维护CRF对象
 		OpRefRdObject opRefRdObject = new OpRefRdObject(this.conn);
 		opRefRdObject.updateRelation(command, newLinks, result);
@@ -368,15 +351,13 @@ public class Operation implements IOperation {
 		opRefRelationObj.handleRdMileagepile(command, newLinks, result);
 	}
 
-	private List<RdLink> assemblyLinks(List<RdLink> newLinks)
-			throws JSONException {
+	private List<RdLink> assemblyLinks(List<RdLink> newLinks) throws JSONException {
 		// 如果newLinkl
 		if (newLinks.isEmpty()) {
 			RdLink rdLink = command.getRdLink();
 			RdLink newLink = new RdLink();
 			newLink.copy(rdLink);
-			newLink.setGeometry(GeoTranslator.geojson2Jts((JSONObject) rdLink
-					.changedFields().get("geometry")));
+			newLink.setGeometry(GeoTranslator.geojson2Jts((JSONObject) rdLink.changedFields().get("geometry")));
 			newLink.setLength(GeometryUtils.getLinkLength(newLink.getGeometry()));
 			newLinks.add(newLink);
 		}

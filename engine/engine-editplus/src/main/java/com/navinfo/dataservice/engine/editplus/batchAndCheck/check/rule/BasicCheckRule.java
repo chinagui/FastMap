@@ -76,6 +76,12 @@ public abstract class BasicCheckRule {
 		this.checkResultList.add(checkResult);
 	}
 	
+	public void setCheckResult(BasicObj obj, String log) throws Exception{
+		if(log==null || log.isEmpty()){log=this.checkRule.getLog();}
+		NiValException checkResult=new NiValException(this.checkRule.getRuleId(), "", "["+obj.getMainrow().tableName()+","+obj.objPid()+"]",0,log);
+		this.checkResultList.add(checkResult);
+	}
+	
 	public void setCheckResult(String loc, String targets,int meshId,String log){
 		NiValException checkResult=new NiValException(this.checkRule.getRuleId(), loc, targets, meshId,log);
 		this.checkResultList.add(checkResult);

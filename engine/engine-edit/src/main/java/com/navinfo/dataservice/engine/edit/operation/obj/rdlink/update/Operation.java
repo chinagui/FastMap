@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import com.navinfo.dataservice.bizcommons.service.RticService;
 import com.navinfo.dataservice.dao.glm.iface.AlertObject;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -28,696 +29,711 @@ import net.sf.json.JSONObject;
 
 public class Operation implements IOperation {
 
-    private Command command;
+	private Command command;
 
-    private RdLink updateLink;
-    private Connection conn;
-    
-    public Operation() {
-    }
-    public Operation(Command command, RdLink updateLink) {
-        this.command = command;
+	private RdLink updateLink;
+	private Connection conn;
 
-        this.updateLink = updateLink;
-    }
+	public Operation() {
+	}
 
-    public Operation(Command command, RdLink updateLink, Connection conn) {
-        this.command = command;
-        this.conn = conn;
-        this.updateLink = updateLink;
-    }
+	public Operation(Command command, RdLink updateLink) {
+		this.command = command;
 
-    public final int KIND = 7;
+		this.updateLink = updateLink;
+	}
 
-    @Override
-    public String run(Result result) throws Exception {
-        JSONObject content = command.getUpdateContent();
+	public Operation(Command command, RdLink updateLink, Connection conn) {
+		this.command = command;
+		this.conn = conn;
+		this.updateLink = updateLink;
+	}
 
-        if (content.containsKey("objStatus")) {
+	public final int KIND = 7;
 
-            if (ObjStatus.DELETE.toString().equals(content.getString("objStatus"))) {
-                result.insertObject(updateLink, ObjStatus.DELETE, updateLink.pid());
+	@Override
+	public String run(Result result) throws Exception {
+		JSONObject content = command.getUpdateContent();
 
-                return null;
-            } else {
+		if (content.containsKey("objStatus")) {
 
-                boolean isChanged = updateLink.fillChangeFields(content);
+			if (ObjStatus.DELETE.toString().equals(content.getString("objStatus"))) {
+				result.insertObject(updateLink, ObjStatus.DELETE, updateLink.pid());
 
-                if (isChanged) {
-                    result.insertObject(updateLink, ObjStatus.UPDATE, updateLink.pid());
-                }
-            }
-        }
+				return null;
+			} else {
 
-        if (content.containsKey("forms")) {
-            JSONArray forms = content.getJSONArray("forms");
+				boolean isChanged = updateLink.fillChangeFields(content);
 
-            this.saveForms(result, forms);
-        }
+				if (isChanged) {
+					result.insertObject(updateLink, ObjStatus.UPDATE, updateLink.pid());
+				}
+			}
+		}
 
-        if (content.containsKey("limits")) {
-            JSONArray limits = content.getJSONArray("limits");
+		if (content.containsKey("forms")) {
+			JSONArray forms = content.getJSONArray("forms");
 
-            this.saveLimits(result, limits);
-        }
+			this.saveForms(result, forms);
+		}
 
-        if (content.containsKey("names")) {
+		if (content.containsKey("limits")) {
+			JSONArray limits = content.getJSONArray("limits");
 
-            JSONArray names = content.getJSONArray("names");
+			this.saveLimits(result, limits);
+		}
 
-            this.saveNames(result, names);
-        }
+		if (content.containsKey("names")) {
 
-        if (content.containsKey("limitTrucks")) {
+			JSONArray names = content.getJSONArray("names");
 
-            JSONArray array = content.getJSONArray("limitTrucks");
+			this.saveNames(result, names);
+		}
 
-            this.saveLimitTrucks(result, array);
-        }
+		if (content.containsKey("limitTrucks")) {
 
-        if (content.containsKey("speedlimits")) {
+			JSONArray array = content.getJSONArray("limitTrucks");
 
-            JSONArray array = content.getJSONArray("speedlimits");
+			this.saveLimitTrucks(result, array);
+		}
 
-            this.saveSpeedlimits(result, array);
-        }
+		if (content.containsKey("speedlimits")) {
 
-        if (content.containsKey("sidewalks")) {
+			JSONArray array = content.getJSONArray("speedlimits");
 
-            JSONArray array = content.getJSONArray("sidewalks");
+			this.saveSpeedlimits(result, array);
+		}
 
-            this.saveSidewalks(result, array);
-        }
+		if (content.containsKey("sidewalks")) {
 
-        if (content.containsKey("walkstairs")) {
+			JSONArray array = content.getJSONArray("sidewalks");
 
-            JSONArray array = content.getJSONArray("walkstairs");
+			this.saveSidewalks(result, array);
+		}
 
-            this.saveWalkstairs(result, array);
-        }
+		if (content.containsKey("walkstairs")) {
 
-        if (content.containsKey("rtics")) {
+			JSONArray array = content.getJSONArray("walkstairs");
 
-            JSONArray array = content.getJSONArray("rtics");
+			this.saveWalkstairs(result, array);
+		}
 
-            this.saveRtics(result, array);
-        }
+		if (content.containsKey("rtics")) {
 
-        if (content.containsKey("intRtics")) {
+			JSONArray array = content.getJSONArray("rtics");
 
-            JSONArray array = content.getJSONArray("intRtics");
+			this.saveRtics(result, array);
+		}
 
-            this.saveIntRtics(result, array);
-        }
+		if (content.containsKey("intRtics")) {
 
-        if (content.containsKey("zones")) {
+			JSONArray array = content.getJSONArray("intRtics");
 
-            JSONArray array = content.getJSONArray("zones");
+			this.saveIntRtics(result, array);
+		}
 
-            this.saveZones(result, array);
-        }
-        this.refRdLaneForRdlinkKind(result);
-        this.calSpeedLimit(updateLink, command.getUpdateContent(), result);
-        this.updateRdTraffic(result);
-        return null;
-    }
+		if (content.containsKey("zones")) {
 
-    private void saveForms(Result result, JSONArray forms) throws Exception {
+			JSONArray array = content.getJSONArray("zones");
 
-        int deleteCount = 0;
+			this.saveZones(result, array);
+		}
+		this.refRdLaneForRdlinkKind(result);
+		this.calSpeedLimit(updateLink, command.getUpdateContent(), result);
+		this.updateRdTraffic(result);
+		return null;
+	}
 
-        int insertCount = 0;
+	private void saveForms(Result result, JSONArray forms) throws Exception {
 
-        for (int i = 0; i < forms.size(); i++) {
+		int deleteCount = 0;
 
-            JSONObject formJson = forms.getJSONObject(i);
+		int insertCount = 0;
 
-            if (formJson.containsKey("objStatus")) {
+		for (int i = 0; i < forms.size(); i++) {
 
-                if (!ObjStatus.INSERT.toString().equals(formJson.getString("objStatus"))) {
+			JSONObject formJson = forms.getJSONObject(i);
 
-                    RdLinkForm form = updateLink.formMap.get(formJson.getString("rowId"));
-                    if (form == null) {
-                        throw new Exception("rowId为" + formJson.getString("rowId") + "的RdLinkForm不存在");
-                    }
+			if (formJson.containsKey("objStatus")) {
 
-                    if (ObjStatus.DELETE.toString().equals(formJson.getString("objStatus"))) {
-                        result.insertObject(form, ObjStatus.DELETE, updateLink.pid());
+				if (!ObjStatus.INSERT.toString().equals(formJson.getString("objStatus"))) {
 
-                        deleteCount++;
-                        this.refRdLaneForRdlinkForm(result, form, 2);
+					RdLinkForm form = updateLink.formMap.get(formJson.getString("rowId"));
+					if (form == null) {
+						throw new Exception("rowId为" + formJson.getString("rowId") + "的RdLinkForm不存在");
+					}
 
-                    } else if (ObjStatus.UPDATE.toString().equals(formJson.getString("objStatus"))) {
+					if (ObjStatus.DELETE.toString().equals(formJson.getString("objStatus"))) {
+						result.insertObject(form, ObjStatus.DELETE, updateLink.pid());
 
-                        boolean isChanged = form.fillChangeFields(formJson);
+						deleteCount++;
+						this.refRdLaneForRdlinkForm(result, form, 2);
 
-                        if (isChanged) {
-                            result.insertObject(form, ObjStatus.UPDATE, updateLink.pid());
-                            RdLinkForm linkForm = new RdLinkForm();
-                            linkForm.copy(form);
-                            if (formJson.containsKey("formOfWay")) {
-                                linkForm.setFormOfWay(formJson.getInt("formOfWay"));
-                                this.refRdLaneForRdlinkForm(result, linkForm, 1);
-                            }
+					} else if (ObjStatus.UPDATE.toString().equals(formJson.getString("objStatus"))) {
 
-                        }
+						boolean isChanged = form.fillChangeFields(formJson);
 
-                    }
+						if (isChanged) {
+							result.insertObject(form, ObjStatus.UPDATE, updateLink.pid());
+							RdLinkForm linkForm = new RdLinkForm();
+							linkForm.copy(form);
+							if (formJson.containsKey("formOfWay")) {
+								linkForm.setFormOfWay(formJson.getInt("formOfWay"));
+								this.refRdLaneForRdlinkForm(result, linkForm, 1);
+							}
 
-                } else {
-                    RdLinkForm form = new RdLinkForm();
+						}
 
-                    form.Unserialize(formJson);
+					}
 
-                    form.setLinkPid(this.updateLink.getPid());
+				} else {
+					RdLinkForm form = new RdLinkForm();
 
-                    form.setMesh(this.updateLink.getMeshId());
+					form.Unserialize(formJson);
 
-                    result.insertObject(form, ObjStatus.INSERT, updateLink.pid());
+					form.setLinkPid(this.updateLink.getPid());
 
-                    insertCount++;
-                }
+					form.setMesh(this.updateLink.getMeshId());
 
-            }
+					result.insertObject(form, ObjStatus.INSERT, updateLink.pid());
 
-        }
+					insertCount++;
+				}
 
-        if (insertCount == 0 && deleteCount == updateLink.getForms().size()) {
-            // rd_link_form被清空时，自动添加一条
+			}
 
-            RdLinkForm form = new RdLinkForm();
+		}
 
-            form.setLinkPid(this.updateLink.getPid());
+		if (insertCount == 0 && deleteCount == updateLink.getForms().size()) {
+			// rd_link_form被清空时，自动添加一条
 
-            form.setMesh(this.updateLink.getMeshId());
+			RdLinkForm form = new RdLinkForm();
 
-            result.insertObject(form, ObjStatus.INSERT, this.updateLink.pid());
-        }
+			form.setLinkPid(this.updateLink.getPid());
 
-    }
+			form.setMesh(this.updateLink.getMeshId());
 
-    private void saveLimits(Result result, JSONArray limits) throws Exception {
+			result.insertObject(form, ObjStatus.INSERT, this.updateLink.pid());
+		}
 
-        for (int i = 0; i < limits.size(); i++) {
+	}
 
-            JSONObject limitJson = limits.getJSONObject(i);
+	private void saveLimits(Result result, JSONArray limits) throws Exception {
 
-            if (limitJson.containsKey("objStatus")) {
+		for (int i = 0; i < limits.size(); i++) {
 
-                if (!ObjStatus.INSERT.toString().equals(limitJson.getString("objStatus"))) {
+			JSONObject limitJson = limits.getJSONObject(i);
 
-                    RdLinkLimit limit = updateLink.limitMap.get(limitJson.getString("rowId"));
+			if (limitJson.containsKey("objStatus")) {
 
-                    if (ObjStatus.DELETE.toString().equals(limitJson.getString("objStatus"))) {
-                        result.insertObject(limit, ObjStatus.DELETE, updateLink.pid());
-                        this.refRdLaneForRdlinkLimit(result, limit, 2);
+				if (!ObjStatus.INSERT.toString().equals(limitJson.getString("objStatus"))) {
 
-                    } else if (ObjStatus.UPDATE.toString().equals(limitJson.getString("objStatus"))) {
+					RdLinkLimit limit = updateLink.limitMap.get(limitJson.getString("rowId"));
 
-                        boolean isChanged = limit.fillChangeFields(limitJson);
+					if (ObjStatus.DELETE.toString().equals(limitJson.getString("objStatus"))) {
+						result.insertObject(limit, ObjStatus.DELETE, updateLink.pid());
+						this.refRdLaneForRdlinkLimit(result, limit, 2);
 
-                        if (isChanged) {
-                            result.insertObject(limit, ObjStatus.UPDATE, updateLink.pid());
+					} else if (ObjStatus.UPDATE.toString().equals(limitJson.getString("objStatus"))) {
 
-                            if (limitJson.containsKey("type") && limit.getType() == 2) {
-                                limit.setLimitDir(1);
-                                this.refRdLaneForRdlinkLimit(result, limit, 2);
-                                continue;
-                            }
-                            RdLinkLimit linkLimit = new RdLinkLimit();
-                            linkLimit.copy(limit);
-                            if (limitJson.containsKey("vehicle")) {
-                                linkLimit.setVehicle(limitJson.getLong("vehicle"));
-                            }
-                            if (limitJson.containsKey("timeDmain")) {
-                                linkLimit.setTimeDomain(limitJson.getString("timeDmain"));
-                            }
-                            if (limitJson.containsKey("limitDir")) {
-                                linkLimit.setLimitDir(limitJson.getInt("limitDir"));
-                            }
-                            this.refRdLaneForRdlinkLimit(result, linkLimit, 1);
-                        }
-                    }
+						boolean isChanged = limit.fillChangeFields(limitJson);
 
-                } else {
-                    RdLinkLimit limit = new RdLinkLimit();
+						if (isChanged) {
+							result.insertObject(limit, ObjStatus.UPDATE, updateLink.pid());
 
-                    limit.Unserialize(limitJson);
+							if (limitJson.containsKey("type") && limit.getType() == 2) {
+								limit.setLimitDir(1);
+								this.refRdLaneForRdlinkLimit(result, limit, 2);
+								continue;
+							}
+							RdLinkLimit linkLimit = new RdLinkLimit();
+							linkLimit.copy(limit);
+							if (limitJson.containsKey("vehicle")) {
+								linkLimit.setVehicle(limitJson.getLong("vehicle"));
+							}
+							if (limitJson.containsKey("timeDmain")) {
+								linkLimit.setTimeDomain(limitJson.getString("timeDmain"));
+							}
+							if (limitJson.containsKey("limitDir")) {
+								linkLimit.setLimitDir(limitJson.getInt("limitDir"));
+							}
+							this.refRdLaneForRdlinkLimit(result, linkLimit, 1);
+						}
+					}
 
-                    limit.setLinkPid(this.updateLink.getPid());
+				} else {
+					RdLinkLimit limit = new RdLinkLimit();
 
-                    limit.setMesh(this.updateLink.getMeshId());
+					limit.Unserialize(limitJson);
 
-                    result.insertObject(limit, ObjStatus.INSERT, updateLink.pid());
+					limit.setLinkPid(this.updateLink.getPid());
 
-                }
-            }
+					limit.setMesh(this.updateLink.getMeshId());
 
-        }
-    }
+					result.insertObject(limit, ObjStatus.INSERT, updateLink.pid());
 
-    private void saveLimitTrucks(Result result, JSONArray array) throws Exception {
+				}
+			}
 
-        for (int i = 0; i < array.size(); i++) {
+		}
+	}
 
-            JSONObject json = array.getJSONObject(i);
+	private void saveLimitTrucks(Result result, JSONArray array) throws Exception {
 
-            if (json.containsKey("objStatus")) {
+		for (int i = 0; i < array.size(); i++) {
 
-                if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
+			JSONObject json = array.getJSONObject(i);
 
-                    RdLinkLimitTruck obj = updateLink.limitTruckMap.get(json.getString("rowId"));
+			if (json.containsKey("objStatus")) {
 
-                    if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
-                        result.insertObject(obj, ObjStatus.DELETE, updateLink.pid());
+				if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
 
-                    } else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
+					RdLinkLimitTruck obj = updateLink.limitTruckMap.get(json.getString("rowId"));
 
-                        boolean isChanged = obj.fillChangeFields(json);
+					if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
+						result.insertObject(obj, ObjStatus.DELETE, updateLink.pid());
 
-                        if (isChanged) {
-                            result.insertObject(obj, ObjStatus.UPDATE, updateLink.pid());
-                        }
-                    }
-                } else {
-                    RdLinkLimitTruck obj = new RdLinkLimitTruck();
+					} else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
 
-                    obj.Unserialize(json);
+						boolean isChanged = obj.fillChangeFields(json);
 
-                    obj.setLinkPid(this.updateLink.getPid());
+						if (isChanged) {
+							result.insertObject(obj, ObjStatus.UPDATE, updateLink.pid());
+						}
+					}
+				} else {
+					RdLinkLimitTruck obj = new RdLinkLimitTruck();
 
-                    obj.setMesh(this.updateLink.getMeshId());
+					obj.Unserialize(json);
 
-                    result.insertObject(obj, ObjStatus.INSERT, updateLink.pid());
+					obj.setLinkPid(this.updateLink.getPid());
 
-                }
-            }
+					obj.setMesh(this.updateLink.getMeshId());
 
-        }
+					result.insertObject(obj, ObjStatus.INSERT, updateLink.pid());
 
-    }
+				}
+			}
 
-    private void saveSpeedlimits(Result result, JSONArray array) throws Exception {
+		}
 
-        for (int i = 0; i < array.size(); i++) {
+	}
 
-            JSONObject json = array.getJSONObject(i);
+	private void saveSpeedlimits(Result result, JSONArray array) throws Exception {
 
-            if (json.containsKey("objStatus")) {
+		for (int i = 0; i < array.size(); i++) {
 
-                if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
+			JSONObject json = array.getJSONObject(i);
 
-                    RdLinkSpeedlimit obj = updateLink.speedlimitMap.get(json.getString("rowId"));
+			if (json.containsKey("objStatus")) {
 
-                    if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
-                        result.insertObject(obj, ObjStatus.DELETE, updateLink.pid());
+				if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
 
-                    } else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
+					RdLinkSpeedlimit obj = updateLink.speedlimitMap.get(json.getString("rowId"));
 
-                        boolean isChanged = obj.fillChangeFields(json);
+					if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
+						result.insertObject(obj, ObjStatus.DELETE, updateLink.pid());
 
-                        if (isChanged) {
-                            result.insertObject(obj, ObjStatus.UPDATE, updateLink.pid());
-                        }
-                    }
-                } else {
-                    RdLinkSpeedlimit obj = new RdLinkSpeedlimit();
+					} else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
 
-                    obj.Unserialize(json);
+						boolean isChanged = obj.fillChangeFields(json);
 
-                    obj.setLinkPid(this.updateLink.getPid());
+						if (isChanged) {
+							result.insertObject(obj, ObjStatus.UPDATE, updateLink.pid());
+						}
+					}
+				} else {
+					RdLinkSpeedlimit obj = new RdLinkSpeedlimit();
 
-                    obj.setMesh(this.updateLink.getMeshId());
+					obj.Unserialize(json);
 
-                    result.insertObject(obj, ObjStatus.INSERT, updateLink.pid());
+					obj.setLinkPid(this.updateLink.getPid());
 
-                }
-            }
+					obj.setMesh(this.updateLink.getMeshId());
 
-        }
+					result.insertObject(obj, ObjStatus.INSERT, updateLink.pid());
 
-    }
+				}
+			}
 
-    private void saveSidewalks(Result result, JSONArray array) throws Exception {
+		}
 
-        for (int i = 0; i < array.size(); i++) {
+	}
 
-            JSONObject json = array.getJSONObject(i);
+	private void saveSidewalks(Result result, JSONArray array) throws Exception {
 
-            if (json.containsKey("objStatus")) {
+		for (int i = 0; i < array.size(); i++) {
 
-                if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
+			JSONObject json = array.getJSONObject(i);
 
-                    RdLinkSidewalk obj = updateLink.sidewalkMap.get(json.getString("rowId"));
+			if (json.containsKey("objStatus")) {
 
-                    if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
-                        result.insertObject(obj, ObjStatus.DELETE, updateLink.pid());
+				if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
 
-                    } else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
+					RdLinkSidewalk obj = updateLink.sidewalkMap.get(json.getString("rowId"));
 
-                        boolean isChanged = obj.fillChangeFields(json);
+					if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
+						result.insertObject(obj, ObjStatus.DELETE, updateLink.pid());
 
-                        if (isChanged) {
-                            result.insertObject(obj, ObjStatus.UPDATE, updateLink.pid());
-                        }
-                    }
-                } else {
-                    RdLinkSidewalk obj = new RdLinkSidewalk();
+					} else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
 
-                    obj.Unserialize(json);
+						boolean isChanged = obj.fillChangeFields(json);
 
-                    obj.setLinkPid(this.updateLink.getPid());
+						if (isChanged) {
+							result.insertObject(obj, ObjStatus.UPDATE, updateLink.pid());
+						}
+					}
+				} else {
+					RdLinkSidewalk obj = new RdLinkSidewalk();
 
-                    obj.setMesh(this.updateLink.getMeshId());
+					obj.Unserialize(json);
 
-                    result.insertObject(obj, ObjStatus.INSERT, updateLink.pid());
+					obj.setLinkPid(this.updateLink.getPid());
 
-                }
-            }
+					obj.setMesh(this.updateLink.getMeshId());
 
-        }
+					result.insertObject(obj, ObjStatus.INSERT, updateLink.pid());
 
-    }
+				}
+			}
 
-    private void saveWalkstairs(Result result, JSONArray array) throws Exception {
+		}
 
-        for (int i = 0; i < array.size(); i++) {
+	}
 
-            JSONObject json = array.getJSONObject(i);
+	private void saveWalkstairs(Result result, JSONArray array) throws Exception {
 
-            if (json.containsKey("objStatus")) {
+		for (int i = 0; i < array.size(); i++) {
 
-                if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
+			JSONObject json = array.getJSONObject(i);
 
-                    RdLinkWalkstair obj = updateLink.walkstairMap.get(json.getString("rowId"));
+			if (json.containsKey("objStatus")) {
 
-                    if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
-                        result.insertObject(obj, ObjStatus.DELETE, updateLink.pid());
+				if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
 
-                    } else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
+					RdLinkWalkstair obj = updateLink.walkstairMap.get(json.getString("rowId"));
 
-                        boolean isChanged = obj.fillChangeFields(json);
+					if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
+						result.insertObject(obj, ObjStatus.DELETE, updateLink.pid());
 
-                        if (isChanged) {
-                            result.insertObject(obj, ObjStatus.UPDATE, updateLink.pid());
-                        }
-                    }
-                } else {
-                    RdLinkWalkstair obj = new RdLinkWalkstair();
+					} else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
 
-                    obj.Unserialize(json);
+						boolean isChanged = obj.fillChangeFields(json);
 
-                    obj.setLinkPid(this.updateLink.getPid());
+						if (isChanged) {
+							result.insertObject(obj, ObjStatus.UPDATE, updateLink.pid());
+						}
+					}
+				} else {
+					RdLinkWalkstair obj = new RdLinkWalkstair();
 
-                    obj.setMesh(this.updateLink.getMeshId());
+					obj.Unserialize(json);
 
-                    result.insertObject(obj, ObjStatus.INSERT, updateLink.pid());
+					obj.setLinkPid(this.updateLink.getPid());
 
-                }
-            }
+					obj.setMesh(this.updateLink.getMeshId());
 
-        }
+					result.insertObject(obj, ObjStatus.INSERT, updateLink.pid());
 
-    }
+				}
+			}
 
-    private void saveRtics(Result result, JSONArray array) throws Exception {
+		}
+	}
 
-        for (int i = 0; i < array.size(); i++) {
+	private void saveRtics(Result result, JSONArray array) throws Exception {
 
-            JSONObject json = array.getJSONObject(i);
+		for (int i = 0; i < array.size(); i++) {
 
-            if (json.containsKey("objStatus")) {
+			JSONObject json = array.getJSONObject(i);
 
-                if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
+			if (json.containsKey("objStatus")) {
 
-                    RdLinkRtic obj = updateLink.rticMap.get(json.getString("rowId"));
+				if (ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
 
-                    if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
-                        result.insertObject(obj, ObjStatus.DELETE, updateLink.pid());
+					RdLinkRtic obj = new RdLinkRtic();
+					obj.Unserialize(json);
 
-                    } else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
+					int code = RticService.getInstance().applyCode(updateLink.pid(), obj.getRangeType());
+					obj.setCode(code);
 
-                        boolean isChanged = obj.fillChangeFields(json);
+					obj.setLinkPid(this.updateLink.getPid());
+					obj.setMesh(this.updateLink.getMeshId());
+					result.insertObject(obj, ObjStatus.INSERT, updateLink.pid());
 
-                        if (isChanged) {
-                            result.insertObject(obj, ObjStatus.UPDATE, updateLink.pid());
-                        }
-                    }
-                } else {
-                    RdLinkRtic obj = new RdLinkRtic();
+				} else {
 
-                    obj.Unserialize(json);
+					RdLinkRtic obj = updateLink.rticMap.get(json.get("rowId"));
 
-                    obj.setLinkPid(this.updateLink.getPid());
+					if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
 
-                    obj.setMesh(this.updateLink.getMeshId());
+						boolean isChanged = obj.fillChangeFields(json);
 
-                    result.insertObject(obj, ObjStatus.INSERT, updateLink.pid());
+						if (isChanged) {
+							if (obj.getCode() == 0) {
 
-                }
-            }
+								int code = RticService.getInstance().applyCode(updateLink.pid(), obj.getRank());
+								obj.setCode(code);
 
-        }
+							}
+							result.insertObject(obj, ObjStatus.UPDATE, updateLink.getPid());
+						}
+					} else if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
 
-    }
+						result.insertObject(obj, ObjStatus.DELETE, updateLink.getPid());
+					}
+				}
+			}
+		}
+	}
 
-    private void saveIntRtics(Result result, JSONArray array) throws Exception {
+	private void saveIntRtics(Result result, JSONArray array) throws Exception {
 
-        for (int i = 0; i < array.size(); i++) {
+		for (int i = 0; i < array.size(); i++) {
 
-            JSONObject json = array.getJSONObject(i);
+			JSONObject json = array.getJSONObject(i);
 
-            if (json.containsKey("objStatus")) {
+			if (json.containsKey("objStatus")) {
+				if (ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
 
-                if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
+					RdLinkIntRtic obj = new RdLinkIntRtic();
+					obj.Unserialize(json);
 
-                    RdLinkIntRtic obj = updateLink.intRticMap.get(json.getString("rowId"));
+					int code = RticService.getInstance().applyCode(updateLink.pid(), obj.getRangeType());
+					obj.setCode(code);
 
-                    if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
-                        result.insertObject(obj, ObjStatus.DELETE, updateLink.pid());
+					obj.setLinkPid(this.updateLink.getPid());
+					obj.setMesh(this.updateLink.getMeshId());
+					result.insertObject(obj, ObjStatus.INSERT, updateLink.pid());
 
-                    } else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
+				} else {
 
-                        boolean isChanged = obj.fillChangeFields(json);
+					RdLinkIntRtic obj = updateLink.intRticMap.get(json.getString("rowId"));
 
-                        if (isChanged) {
-                            result.insertObject(obj, ObjStatus.UPDATE, updateLink.pid());
-                        }
-                    }
-                } else {
-                    RdLinkIntRtic obj = new RdLinkIntRtic();
+					if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
 
-                    obj.Unserialize(json);
+						boolean isChanged = obj.fillChangeFields(json);
 
-                    obj.setLinkPid(this.updateLink.getPid());
+						if (isChanged) {
+							if (obj.getCode() == 0) {
 
-                    obj.setMesh(this.updateLink.getMeshId());
+								int code = RticService.getInstance().applyCode(updateLink.pid(), obj.getRank());
+								obj.setCode(code);
 
-                    result.insertObject(obj, ObjStatus.INSERT, updateLink.pid());
+							}
+							result.insertObject(obj, ObjStatus.UPDATE, updateLink.pid());
+						}
 
-                }
-            }
+					} else if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
 
-        }
+						result.insertObject(obj, ObjStatus.DELETE, updateLink.pid());
+					}
+				}
+			}
+		}
+	}
 
-    }
+	private void saveZones(Result result, JSONArray array) throws Exception {
 
-    private void saveZones(Result result, JSONArray array) throws Exception {
+		for (int i = 0; i < array.size(); i++) {
 
-        for (int i = 0; i < array.size(); i++) {
+			JSONObject json = array.getJSONObject(i);
 
-            JSONObject json = array.getJSONObject(i);
+			if (json.containsKey("objStatus")) {
 
-            if (json.containsKey("objStatus")) {
+				if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
 
-                if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
+					RdLinkZone obj = updateLink.zoneMap.get(json.getString("rowId"));
 
-                    RdLinkZone obj = updateLink.zoneMap.get(json.getString("rowId"));
+					if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
+						result.insertObject(obj, ObjStatus.DELETE, updateLink.pid());
 
-                    if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
-                        result.insertObject(obj, ObjStatus.DELETE, updateLink.pid());
+					} else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
 
-                    } else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
+						boolean isChanged = obj.fillChangeFields(json);
 
-                        boolean isChanged = obj.fillChangeFields(json);
+						if (isChanged) {
+							result.insertObject(obj, ObjStatus.UPDATE, updateLink.pid());
+						}
+					}
+				} else {
+					RdLinkZone obj = new RdLinkZone();
 
-                        if (isChanged) {
-                            result.insertObject(obj, ObjStatus.UPDATE, updateLink.pid());
-                        }
-                    }
-                } else {
-                    RdLinkZone obj = new RdLinkZone();
+					obj.Unserialize(json);
 
-                    obj.Unserialize(json);
+					obj.setLinkPid(this.updateLink.getPid());
 
-                    obj.setLinkPid(this.updateLink.getPid());
+					obj.setMesh(this.updateLink.getMeshId());
 
-                    obj.setMesh(this.updateLink.getMeshId());
+					result.insertObject(obj, ObjStatus.INSERT, updateLink.pid());
 
-                    result.insertObject(obj, ObjStatus.INSERT, updateLink.pid());
+				}
+			}
 
-                }
-            }
+		}
 
-        }
+	}
 
-    }
+	private void saveNames(Result result, JSONArray names) throws Exception {
 
-    private void saveNames(Result result, JSONArray names) throws Exception {
+		for (int i = 0; i < names.size(); i++) {
 
-        for (int i = 0; i < names.size(); i++) {
+			JSONObject nameJson = names.getJSONObject(i);
 
-            JSONObject nameJson = names.getJSONObject(i);
+			if (nameJson.containsKey("objStatus")) {
 
-            if (nameJson.containsKey("objStatus")) {
+				if (!ObjStatus.INSERT.toString().equals(nameJson.getString("objStatus"))) {
 
-                if (!ObjStatus.INSERT.toString().equals(nameJson.getString("objStatus"))) {
+					RdLinkName name = updateLink.nameMap.get(nameJson.getString("rowId"));
 
-                    RdLinkName name = updateLink.nameMap.get(nameJson.getString("rowId"));
+					if (ObjStatus.DELETE.toString().equals(nameJson.getString("objStatus"))) {
+						result.insertObject(name, ObjStatus.DELETE, updateLink.pid());
 
-                    if (ObjStatus.DELETE.toString().equals(nameJson.getString("objStatus"))) {
-                        result.insertObject(name, ObjStatus.DELETE, updateLink.pid());
+					} else if (ObjStatus.UPDATE.toString().equals(nameJson.getString("objStatus"))) {
 
-                    } else if (ObjStatus.UPDATE.toString().equals(nameJson.getString("objStatus"))) {
+						boolean isChanged = name.fillChangeFields(nameJson);
 
-                        boolean isChanged = name.fillChangeFields(nameJson);
+						if (isChanged) {
+							result.insertObject(name, ObjStatus.UPDATE, updateLink.pid());
+						}
+					}
+				} else {
+					RdLinkName name = new RdLinkName();
 
-                        if (isChanged) {
-                            result.insertObject(name, ObjStatus.UPDATE, updateLink.pid());
-                        }
-                    }
-                } else {
-                    RdLinkName name = new RdLinkName();
+					name.Unserialize(nameJson);
 
-                    name.Unserialize(nameJson);
+					name.setLinkPid(this.updateLink.getPid());
 
-                    name.setLinkPid(this.updateLink.getPid());
+					result.insertObject(name, ObjStatus.INSERT, updateLink.pid());
 
-                    result.insertObject(name, ObjStatus.INSERT, updateLink.pid());
+				}
+			}
 
-                }
-            }
+		}
 
-        }
+	}
 
-    }
+	/***
+	 * 种类变更维护车道信息 zhaokk
+	 *
+	 * @param result
+	 * @throws Exception
+	 */
+	private void refRdLaneForRdlinkKind(Result result) throws Exception {
+		if (this.command.getUpdateContent().containsKey("kind")) {
+			int kind = this.command.getUpdateContent().getInt("kind");
+			if (this.updateLink.getKind() != kind) {
+				com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation operation = new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation(
+						conn);
+				operation.setLink(this.updateLink);
+				if (this.updateLink.getKind() <= KIND && kind > KIND) {
+					operation.setFlag(1);
 
-    /***
-     * 种类变更维护车道信息 zhaokk
-     *
-     * @param result
-     * @throws Exception
-     */
-    private void refRdLaneForRdlinkKind(Result result) throws Exception {
-        if (this.command.getUpdateContent().containsKey("kind")) {
-            int kind = this.command.getUpdateContent().getInt("kind");
-            if (this.updateLink.getKind() != kind) {
-                com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation operation = new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation(
-                        conn);
-                operation.setLink(this.updateLink);
-                if (this.updateLink.getKind() <= KIND && kind > KIND) {
-                    operation.setFlag(1);
+					operation.caleRdLinesForRdLinkKind(result);
+				}
+				if (this.updateLink.getKind() > KIND && kind <= KIND) {
+					operation.setFlag(0);
+					operation.caleRdLinesForRdLinkKind(result);
+				}
+			}
+		}
+	}
 
-                    operation.caleRdLinesForRdLinkKind(result);
-                }
-                if (this.updateLink.getKind() > KIND && kind <= KIND) {
-                    operation.setFlag(0);
-                    operation.caleRdLinesForRdLinkKind(result);
-                }
-            }
-        }
-    }
+	/***
+	 * link形态表属性变更维护车道信息
+	 *
+	 * @param result
+	 * @throws Exception
+	 */
+	private void refRdLaneForRdlinkForm(Result result, RdLinkForm form, int flag) throws Exception {
+		if (form.getFormOfWay() == 22 || form.getFormOfWay() == 20) {
+			com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation operation = new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation(
+					conn);
+			operation.setForm(form);
+			operation.setFlag(flag);
+			operation.setLink(this.updateLink);
+			operation.refRdLaneForRdlinkForm(result);
+		}
 
-    /***
-     * link形态表属性变更维护车道信息
-     *
-     * @param result
-     * @throws Exception
-     */
-    private void refRdLaneForRdlinkForm(Result result, RdLinkForm form, int flag) throws Exception {
-        if (form.getFormOfWay() == 22 || form.getFormOfWay() == 20) {
-            com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation operation = new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation(
-                    conn);
-            operation.setForm(form);
-            operation.setFlag(flag);
-            operation.setLink(this.updateLink);
-            operation.refRdLaneForRdlinkForm(result);
-        }
+	}
 
-    }
+	/****
+	 * link车辆类型限制变更 1、 当link上添加或删除车辆类型限制时，或进行车辆类型或时间段变更时，需要进行详细车道维护 2、
+	 * 当link上添加车辆类型及时间段时，则该link上对应方向上所有车道均添加该车辆类型限制及时间
+	 * 3、当link上删除车辆类型及时间时，则该link上对应方向上所有车道均删除该车辆类型限制及时间
+	 * 4、当link车辆类型或时间段变更时，则该link上对应该方向上所有车道更新为link上车辆类型及时间 说明：
+	 * ①在进行车道车辆类型更新时，如果Rd_lane_Condtion中不存在记录的，需要先增加对应车道的记录，再添加车辆类型及时间
+	 * ②在进行车道类型删除更新时，如果删除车辆类型或时间段后，RD_LANE_CONDTION中该车道的方向时间段及车辆类型均为空，
+	 * 则该RD_LANE_CONDTION记录需要删除。
+	 *
+	 * @throws Exception
+	 */
+	private void refRdLaneForRdlinkLimit(Result result, RdLinkLimit limit, int flag) throws Exception {
+		if (limit.getType() == 2
+				&& (limit.getLimitDir() == 1 || limit.getLimitDir() == 2 || limit.getLimitDir() == 3)) {
+			com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation operation = new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation(
+					conn);
+			operation.setLimit(limit);
+			operation.setFlag(flag);
+			operation.setLink(this.updateLink);
+			operation.refRdLaneForRdlinkLimit(result);
+		}
 
-    /****
-     * link车辆类型限制变更 1、 当link上添加或删除车辆类型限制时，或进行车辆类型或时间段变更时，需要进行详细车道维护 2、
-     * 当link上添加车辆类型及时间段时，则该link上对应方向上所有车道均添加该车辆类型限制及时间
-     * 3、当link上删除车辆类型及时间时，则该link上对应方向上所有车道均删除该车辆类型限制及时间
-     * 4、当link车辆类型或时间段变更时，则该link上对应该方向上所有车道更新为link上车辆类型及时间 说明：
-     * ①在进行车道车辆类型更新时，如果Rd_lane_Condtion中不存在记录的，需要先增加对应车道的记录，再添加车辆类型及时间
-     * ②在进行车道类型删除更新时，如果删除车辆类型或时间段后，RD_LANE_CONDTION中该车道的方向时间段及车辆类型均为空，
-     * 则该RD_LANE_CONDTION记录需要删除。
-     *
-     * @throws Exception
-     */
-    private void refRdLaneForRdlinkLimit(Result result, RdLinkLimit limit, int flag) throws Exception {
-        if (limit.getType() == 2
-                && (limit.getLimitDir() == 1 || limit.getLimitDir() == 2 || limit.getLimitDir() == 3)) {
-            com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation operation = new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation(
-                    conn);
-            operation.setLimit(limit);
-            operation.setFlag(flag);
-            operation.setLink(this.updateLink);
-            operation.refRdLaneForRdlinkLimit(result);
-        }
+	}
 
-    }
+	/**
+	 * 更新车道限速信息
+	 *
+	 * @param link
+	 *            原始RdLink
+	 * @param json
+	 *            待修改属性JSON
+	 * @param result
+	 *            结果集
+	 */
+	private void calSpeedLimit(RdLink link, JSONObject json, Result result) {
+		SpeedLimitUtils.updateRdLink(link, json, result);
+	}
 
-    /**
-     * 更新车道限速信息
-     *
-     * @param link   原始RdLink
-     * @param json   待修改属性JSON
-     * @param result 结果集
-     */
-    private void calSpeedLimit(RdLink link, JSONObject json, Result result) {
-        SpeedLimitUtils.updateRdLink(link, json, result);
-    }
+	/**
+	 * 修改link方向维护信号灯关系
+	 *
+	 * @param result
+	 * @throws Exception
+	 */
+	public String updateRdTraffic(Result result) throws Exception {
+		Map<String, Object> changeFields = updateLink.changedFields();
 
-    /**
-     * 修改link方向维护信号灯关系
-     *
-     * @param result
-     * @throws Exception
-     */
-    public String updateRdTraffic(Result result) throws Exception {
-        Map<String, Object> changeFields = updateLink.changedFields();
+		if (changeFields.containsKey("direct")) {
+			com.navinfo.dataservice.engine.edit.operation.obj.trafficsignal.update.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.trafficsignal.update.Operation(
+					conn);
+			List<RdTrafficsignal> trafficsignalList = operation.updateRdCrossByModifyLinkDirect(updateLink);
 
-        if (changeFields.containsKey("direct")) {
-            com.navinfo.dataservice.engine.edit.operation.obj.trafficsignal.update.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.trafficsignal.update.Operation(
-                    conn);
-            List<RdTrafficsignal> trafficsignalList = operation.updateRdCrossByModifyLinkDirect(updateLink);
-            
-            for(RdTrafficsignal signal : trafficsignalList)
-            {
-            	result.insertObject(signal, ObjStatus.DELETE, signal.pid());
-            }
+			for (RdTrafficsignal signal : trafficsignalList) {
+				result.insertObject(signal, ObjStatus.DELETE, signal.pid());
+			}
 
-            com.navinfo.dataservice.engine.edit.operation.obj.rdeleceye.update.Operation eleceye = new com.navinfo.dataservice.engine.edit.operation.obj.rdeleceye.update.Operation(conn);
-            eleceye.updateRdElectroniceyeWithDirect(updateLink, result);
-        }
-        return "";
-    }
-	
+			com.navinfo.dataservice.engine.edit.operation.obj.rdeleceye.update.Operation eleceye = new com.navinfo.dataservice.engine.edit.operation.obj.rdeleceye.update.Operation(
+					conn);
+			eleceye.updateRdElectroniceyeWithDirect(updateLink, result);
+		}
+		return "";
+	}
+
 	/**
 	 * 获取更新link
-	 * @param updateLink 需要更新的link
+	 * 
+	 * @param updateLink
+	 *            需要更新的link
 	 * @return 跟新link提示
 	 * @throws Exception
 	 */
-	public List<AlertObject> getUpdateRdLinkAlertData(RdLink updateLink,JSONObject jsonObj) throws Exception {
-		
+	public List<AlertObject> getUpdateRdLinkAlertData(RdLink updateLink, JSONObject jsonObj) throws Exception {
+
 		boolean flag = updateLink.fillChangeFields(jsonObj);
-		
+
 		List<AlertObject> alertList = new ArrayList<>();
-		
+
 		if (flag) {
 			AlertObject alertObj = new AlertObject();
 
@@ -731,7 +747,7 @@ public class Operation implements IOperation {
 				alertList.add(alertObj);
 			}
 		}
-		
+
 		return alertList;
 	}
 }

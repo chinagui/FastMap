@@ -80,6 +80,36 @@ public class IxPoiSelector {
 		return null;
 	}
 	
+	public static Map<Long,Long> getParentPidsByChildrenPids(Connection conn,Set<Long> pidList) throws ServiceException{
+		Map<Long,Long> childPidParentPid = new HashMap<Long,Long>();
+		try{
+			String sql = "SELECT DISTINCT IPP.PARENT_POI_PID,IPC.CHILD_POI_PID"
+					+ " FROM IX_POI_PARENT IPP,IX_POI_CHILDREN IPC"
+					+ " WHERE IPC.GROUP_ID = IPP.GROUP_ID"
+					+ " AND IPC.CHILD_POI_PID IN (" + StringUtils.join(pidList.toArray(),",") + ")";
+			
+			ResultSetHandler<Map<Long,Long>> rsHandler = new ResultSetHandler<Map<Long,Long>>() {
+				public Map<Long,Long> handle(ResultSet rs) throws SQLException {
+					Map<Long,Long> result = new HashMap<Long,Long>();
+					while (rs.next()) {
+						long parentPid = rs.getLong("PARENT_POI_PID");
+						long childPid = rs.getLong("CHILD_POI_PID");
+						result.put(childPid, parentPid);
+					}
+					return result;
+				}
+			};
+			
+			log.info("getIxPoiParentMapByChildrenPidList查询主表："+sql);
+			childPidParentPid = new QueryRunner().query(conn,sql, rsHandler);
+			return childPidParentPid;
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询失败，原因为:"+e.getMessage(),e);
+		}
+
+	}
 	
 	public static Map<Long,BasicObj> getIxPoiParentMapByChildrenPidList(Connection conn,Set<Long> pidList) throws ServiceException{
 		Map<Long,BasicObj> objMap = new HashMap<Long,BasicObj>();

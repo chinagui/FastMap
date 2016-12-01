@@ -39,12 +39,12 @@ public class IxPoiSelector {
 	public static Map<Long,Long> getAdminIdByPids(Connection conn,Collection<Long> pids)throws Exception{
 		if(pids!=null&&pids.size()>0){
 			if(pids.size()>1000){
-				String sql= "SELECT T.PID,P.ADMIN_ID FROM IX_POI T,AD_ADMIN  WHERE T.REGION_ID=P.REGION_ID AND T.PID IN (SELECT TO_NUMBER(COLUMN_VALUE) FROM TABLE(CLOB_TO_TABLE(?)))";
+				String sql= "SELECT T.PID,P.ADMIN_ID FROM IX_POI T,AD_ADMIN P WHERE T.REGION_ID=P.REGION_ID AND T.PID IN (SELECT TO_NUMBER(COLUMN_VALUE) FROM TABLE(CLOB_TO_TABLE(?)))";
 				Clob clob = ConnectionUtil.createClob(conn);
 				clob.setString(1, StringUtils.join(pids, ","));
 				return new QueryRunner().query(conn, sql, new PoiAdminIdSelHandler(),clob);
 			}else{
-				String sql= "SELECT T.PID,P.ADMIN_ID FROM IX_POI T,AD_ADMIN  WHERE T.REGION_ID=P.REGION_ID AND T.PID IN ("+StringUtils.join(pids, ",")+")";
+				String sql= "SELECT T.PID,P.ADMIN_ID FROM IX_POI T,AD_ADMIN P WHERE T.REGION_ID=P.REGION_ID AND T.PID IN ("+StringUtils.join(pids, ",")+")";
 				return new QueryRunner().query(conn,sql,new PoiAdminIdSelHandler());
 			}
 		}

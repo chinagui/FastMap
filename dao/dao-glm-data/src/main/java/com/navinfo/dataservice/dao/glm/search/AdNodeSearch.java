@@ -83,30 +83,30 @@ public class AdNodeSearch implements ISearch {
 					linkJSON.put("forms", forms.split(",")[i]);
 					
 					linkJSON.put("kinds", resultSet.getString("IMICODES").split(",")[i]);
-
-					String samNodePid = resultSet.getString("samNodePart");
-
-					if (samNodePid != null) {
-						linkJSON.put("sameNode", Integer.parseInt(samNodePid));
-					} else {
-						// 0代表没有同一点关系
-						linkJSON.put("sameNode", 0);
-					}
-
-					String interNodePid = resultSet.getString("interNode");
-
-					if (interNodePid != null) {
-						linkJSON.put("interNode", Integer.parseInt(interNodePid));
-					} else {
-						// 0代表没有制作CRFI
-						linkJSON.put("interNode", 0);
-					}
 					
 					linkArray.add(linkJSON);
 				}
 
 				m.put("a", linkArray);
+				
+				String samNodePid = resultSet.getString("samNodePart");
 
+				if (samNodePid != null) {
+					m.put("sameNode", samNodePid);
+				} else {
+					// 0代表没有同一点关系
+					m.put("sameNode", 0);
+				}
+
+				String interNodePid = resultSet.getString("interNode");
+
+				if (interNodePid != null) {
+					m.put("interNode", interNodePid);
+				} else {
+					// 0代表没有制作CRFI
+					m.put("interNode", 0);
+				}
+				
 				snapshot.setM(m);
 
 				snapshot.setT(17);

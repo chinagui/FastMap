@@ -90,23 +90,6 @@ public class LuNodeSearch implements ISearch {
 
 						linkJSON.put("kinds", kinds.split(",")[i]);
 						
-						String samNodePid = resultSet.getString("samNodePart");
-
-						if (samNodePid != null) {
-							linkJSON.put("sameNode", Integer.parseInt(samNodePid));
-						} else {
-							// 0代表没有同一点关系
-							linkJSON.put("sameNode", 0);
-						}
-
-						String interNodePid = resultSet.getString("interNode");
-
-						if (interNodePid != null) {
-							linkJSON.put("interNode", Integer.parseInt(interNodePid));
-						} else {
-							// 0代表没有制作CRFI
-							linkJSON.put("interNode", 0);
-						}
 						linkMap.put(linkPid, linkJSON);
 					}
 				}
@@ -114,7 +97,25 @@ public class LuNodeSearch implements ISearch {
 				m.put("a", linkMap.values());
 				
 				//点的形态
-				m.put("b", resultSet.getInt("form"));
+				m.put("form", resultSet.getInt("form"));
+				
+				String samNodePid = resultSet.getString("samNodePart");
+
+				if (samNodePid != null) {
+					m.put("sameNode", samNodePid);
+				} else {
+					// 0代表没有同一点关系
+					m.put("sameNode", 0);
+				}
+
+				String interNodePid = resultSet.getString("interNode");
+
+				if (interNodePid != null) {
+					m.put("interNode", interNodePid);
+				} else {
+					// 0代表没有制作CRFI
+					m.put("interNode", 0);
+				}
 
 				snapshot.setM(m);
 

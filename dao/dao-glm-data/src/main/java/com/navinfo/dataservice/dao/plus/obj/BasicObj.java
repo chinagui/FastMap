@@ -52,6 +52,7 @@ public abstract class BasicObj {
 		}
 		for(Map.Entry<String, List<BasicRow>> entry:this.subrows.entrySet()){
 			List<BasicRow> subrowList = entry.getValue();
+			if(subrowList==null){continue;}
 			for(BasicRow basicRow:subrowList){
 				if(basicRow.isChanged()){
 					return true;

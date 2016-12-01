@@ -190,9 +190,12 @@ public class Fm2MultiSrcSyncJob extends AbstractJob {
 					+SystemConfigFactory.getSystemConfig().getValue(PropConstant.downloadUrlPathRoot)
 					+zipFile;
 			log.debug("数据包url:"+zipFileUrl);
+			JSONObject param=new JSONObject();
+			param.put("url", zipFileUrl);
 			Map<String,String> parMap = new HashMap<String,String>();
-			parMap.put("url", zipFileUrl);
-			String result = ServiceInvokeUtil.invoke("", parMap, 10000);
+			parMap.put("parameter", param.toString());
+			String msUrl=SystemConfigFactory.getSystemConfig().getValue(PropConstant.multisrcDaySyncUrl);
+			String result = ServiceInvokeUtil.invoke(msUrl, parMap, 10000);
 			log.debug("notify multisrc result:"+result);
 			syncApi.updateFmMultiSrcSyncStatus(FmMultiSrcSync.STATUS_SYNC_SUCCESS,jobInfo.getId());
 		}catch(Exception e){

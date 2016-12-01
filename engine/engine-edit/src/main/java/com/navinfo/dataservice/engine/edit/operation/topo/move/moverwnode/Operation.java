@@ -180,6 +180,12 @@ public class Operation implements IOperation {
 
 				result.insertObject(nodeMesh, ObjStatus.INSERT, rwNode.getPid());
 			}
+			
+			//如果图幅号大于1个则为图郭点，需要更新node形态为图郭点
+			if(meshSet.size()>1)
+			{
+				rwNode.changedFields().put("form", 4);
+			}
 		}
 
 		JSONObject updateNodeJson = new JSONObject();

@@ -3,7 +3,7 @@ package com.navinfo.dataservice.dao.plus.diff;
 import java.util.Collection;
 import java.util.Map;
 
-import com.navinfo.dataservice.dao.plus.obj.ObjectType;
+import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 
 /** 
  * @ClassName: ObjectDiffConfig

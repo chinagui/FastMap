@@ -16,7 +16,7 @@ import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiChildren;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiParent;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjFactory;
-import com.navinfo.dataservice.dao.plus.obj.ObjectType;
+import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.dataservice.dao.plus.operation.AbstractCommand;
 import com.navinfo.dataservice.dao.plus.operation.AbstractOperation;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
@@ -63,7 +63,7 @@ public class PoiRelationImportor extends AbstractOperation{
 				long fatherPid = poiRelation.getFatherPid();
 				childPidParentPid.put(pid, fatherPid);
 				//需要加载的父对象存在pid,优先用pid加载
-				if(fatherPid!=0&&!result.isObjExist(ObjectType.IX_POI,fatherPid)){
+				if(fatherPid!=0&&!result.isObjExist(ObjectName.IX_POI,fatherPid)){
 					fatherPidSet.add(fatherPid);	
 				}else{
 					String fatherFid = poiRelation.getFatherFid();
@@ -71,7 +71,7 @@ public class PoiRelationImportor extends AbstractOperation{
 					{
 						//result中是否含此父对象。如果包含则不加载
 						boolean isFatherExist = false;
-						for(Map.Entry<Long, BasicObj> entry:result.getObjsMapByType(ObjectType.IX_POI).entrySet()){
+						for(Map.Entry<Long, BasicObj> entry:result.getObjsMapByType(ObjectName.IX_POI).entrySet()){
 							BasicRow fatherObj = entry.getValue().getMainrow();
 							if(fatherObj.getAttrByColName("POI_NUM").equals(fatherFid)){
 								childPidParentPid.put(pid, fatherObj.getObjPid());
@@ -113,7 +113,7 @@ public class PoiRelationImportor extends AbstractOperation{
 		log.info("根据pid加载父对象");
 		//根据fid加载父对象
 		if(!fatherPidSet.isEmpty()){
-			Map<Long,BasicObj> objs = ObjBatchSelector.selectByPids(conn, ObjectType.IX_POI, tabNames, fatherPidSet, true, true);
+			Map<Long,BasicObj> objs = ObjBatchSelector.selectByPids(conn, ObjectName.IX_POI, tabNames, fatherPidSet, true, true);
 			for(BasicObj obj:objs.values()){
 				result.putObj(obj);
 			}
@@ -121,7 +121,7 @@ public class PoiRelationImportor extends AbstractOperation{
 		log.info("根据fid加载父对象");
 		//根据fid加载父对象
 		if(!fatherFidSet.isEmpty()){
-			List<BasicObj> objs = ObjBatchSelector.selectBySpecColumn(conn, ObjectType.IX_POI, tabNames, "POI_NUM", fatherFidSet, true, true);
+			List<BasicObj> objs = ObjBatchSelector.selectBySpecColumn(conn, ObjectName.IX_POI, tabNames, "POI_NUM", fatherFidSet, true, true);
 			for(BasicObj obj:objs){
 				if(!result.isObjExist(obj)){
 					result.putObj(obj);
@@ -144,7 +144,7 @@ public class PoiRelationImportor extends AbstractOperation{
 		}
 		log.info("OperationResult所有POI对象加载父子关系子表");
 		//加载父子关系子表
-		ObjChildrenIncreSelector.increSelect(conn, result.getObjsMapByType(ObjectType.IX_POI), tabNames);
+		ObjChildrenIncreSelector.increSelect(conn, result.getObjsMapByType(ObjectName.IX_POI), tabNames);
 	
 		//处理父子关系
 		//遍历childPidParentPid,维护关系
@@ -155,7 +155,7 @@ public class PoiRelationImportor extends AbstractOperation{
 			//解除原始父子关系
 			if(childPidOrigionParentPid.containsKey(childPid)&&childPidOrigionParentPid.get(childPid)!=entry.getValue()){
 				log.info("解除原始父子关系，childPid:" + childPid + ";parentPid:" + childPidOrigionParentPid.get(childPid));
-				BasicObj origionParentObj = result.getObjsMapByType(ObjectType.IX_POI).get(childPidOrigionParentPid.get(childPid));
+				BasicObj origionParentObj = result.getObjsMapByType(ObjectName.IX_POI).get(childPidOrigionParentPid.get(childPid));
 				List<BasicRow> ixPoiChildrenList = origionParentObj.getRowsByName("IX_POI_CHILDREN");
 				List<BasicRow> ixPoiParentList = origionParentObj.getRowsByName("IX_POI_PARENT");
 				if(ixPoiChildrenList.size()==1){
@@ -172,7 +172,7 @@ public class PoiRelationImportor extends AbstractOperation{
 			//维护新的父子关系
 			if(parentPid!=0){
 				log.info("创建父子关系，childPid:" + childPid + ";parentPid:" + parentPid);
-				BasicObj parentObj = result.getObjsMapByType(ObjectType.IX_POI).get(parentPid);
+				BasicObj parentObj = result.getObjsMapByType(ObjectName.IX_POI).get(parentPid);
 				List<BasicRow> parentList = new ArrayList<BasicRow>();
 				if(parentObj.getRowsByName("IX_POI_PARENT")==null||parentObj.getRowsByName("IX_POI_PARENT").isEmpty()){
 					//非父节点，需要创建其为父节点

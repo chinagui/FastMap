@@ -236,8 +236,12 @@ public class IxPoiObj extends AbstractIxObj {
 	
 	
 	@Override
+	public String objName() {
+		return ObjectName.IX_POI;
+	}
+	@Override
 	public String objType() {
-		return ObjectType.IX_POI;
+		return ObjType.FEATURE;
 	}
 
 }

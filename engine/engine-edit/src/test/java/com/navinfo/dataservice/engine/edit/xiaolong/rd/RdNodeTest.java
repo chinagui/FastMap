@@ -11,6 +11,7 @@ import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
+import com.navinfo.dataservice.dao.glm.search.LuNodeSearch;
 import com.navinfo.dataservice.dao.glm.search.RdNodeSearch;
 import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.operation.Transaction;
@@ -89,7 +90,7 @@ public class RdNodeTest extends InitApplication{
 
 			RdNodeSearch search = new RdNodeSearch(conn);
 			
-			String wkt = "{\"type\":\"Polygon\",\"coordinates\":[[[116.38581,40.23904],[116.38626,40.23904],[116.38625,40.23883],[116.38581,40.23882],[116.38581,40.23904]]]}";
+			String wkt = "{\"type\":\"Polygon\",\"coordinates\":[[[116.47654116153716,40.01106242504529],[116.47654116153716,40.01114049061955],[116.47666454315184,40.01114049061955],[116.47666454315184,40.01106242504529],[116.47654116153716,40.01106242504529]]]}}";
 			
 			List<SearchSnapshot> searchSnapshot = search.searchDataBySpatial(Geojson.geojson2Wkt(wkt));
 			

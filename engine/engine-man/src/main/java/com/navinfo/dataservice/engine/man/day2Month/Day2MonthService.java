@@ -80,7 +80,8 @@ public class Day2MonthService {
 				while (keys.hasNext()) {
 					String key = (String) keys.next();
 					if ("status".equals(key)) {conditionSql+=" AND T.STATUS IN ("+conditionJson.getJSONArray(key).join(",")+")";}
-					}}
+					if("cityName".equals(key)){conditionSql+=" AND T.city_name like '%"+conditionJson.getString(key)+"%'";}
+				}}
 			QueryRunner runner=new QueryRunner();
 			String sql="With day2Month as(SELECT D.CONF_ID,"
 					+ "       D.CITY_ID,"

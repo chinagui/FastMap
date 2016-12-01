@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.editplus.batchAndCheck.check.rule;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +24,7 @@ public abstract class BasicCheckRule {
 	private CheckRuleCommand checkRuleCommand;
 	private CheckRule checkRule;
 	List<NiValException> checkResultList=new ArrayList<NiValException>();
+	public Map<String,Map<Long, BasicObj>> myReferDataMap=new HashMap<String, Map<Long,BasicObj>>();
 
 	public List<NiValException> getCheckResultList() {
 		return checkResultList;
@@ -49,6 +51,7 @@ public abstract class BasicCheckRule {
 	
 	public void run()throws Exception{
 		Map<Long, BasicObj> rows=getRowList();
+		loadReferDatas(rows.values());
 		for(Long key:rows.keySet()){
 			BasicObj obj=rows.get(key);
 			if(!obj.getMainrow().getOpType().equals(OperationType.PRE_DELETED)){
@@ -57,6 +60,8 @@ public abstract class BasicCheckRule {
 	}
 	
 	public abstract void runCheck(BasicObj obj)throws Exception;
+	
+	public abstract void loadReferDatas(Collection<BasicObj> batchDataList) throws Exception;
 
 	public CheckRuleCommand getCheckRuleCommand() {
 		return checkRuleCommand;

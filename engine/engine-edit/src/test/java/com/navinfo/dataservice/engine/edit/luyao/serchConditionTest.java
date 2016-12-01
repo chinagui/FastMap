@@ -232,7 +232,7 @@ public class serchConditionTest extends InitApplication {
 
 		try {
 
-			String parameter = "{\"dbId\":17,\"type\":\"RDLINK\",\"data\":{\"queryType\":\"RDVARIABLESPEED\",\"linkPid\":306002745,\"nodePid\":204002212}}";
+			String parameter = "{\"dbId\":17,\"type\":\"RDLINK\",\"data\":{\"queryType\":\"RDVARIABLESPEED\",\"linkPid\":304002788,\"nodePid\":207002092}}";
 
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 

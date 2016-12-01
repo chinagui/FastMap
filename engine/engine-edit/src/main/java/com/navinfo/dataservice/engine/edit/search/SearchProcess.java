@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
 
+import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
@@ -110,8 +111,10 @@ public class SearchProcess {
 			for (ObjType type : types) {
 
 				ISearch search = factory.createSearch(type);
-
-				List<SearchSnapshot> list = search.searchDataBySpatial(box);
+				
+				String wkt = Geojson.geojson2Wkt(box);
+				
+				List<SearchSnapshot> list = search.searchDataBySpatial(wkt);
 
 				JSONArray array = new JSONArray();
 
@@ -290,10 +293,10 @@ public class SearchProcess {
 						RdLinkSearchUtils searchUtils = new RdLinkSearchUtils(
 								conn);
 						
-						List<Integer> nextLinkPids = searchUtils.variableSpeedNextLinks( linkPid,  nodePid);
+						List<RdLink> links  = searchUtils.variableSpeedNextLinks( linkPid,  nodePid);						
 						
-						for (Integer pid : nextLinkPids) {
-							array.add(pid);
+						for (RdLink link : links) {
+							array.add(link.Serialize(ObjLevel.BRIEF));
 						}
 					}
 					// 坡度追踪原则开发

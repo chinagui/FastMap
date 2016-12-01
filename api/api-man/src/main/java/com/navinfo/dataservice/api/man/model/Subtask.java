@@ -57,9 +57,10 @@ public class Subtask implements Serializable  {
 	private Timestamp qualityPlanEndDate;
 	private Integer qualityTaskStatus;
 	//外业不规则子任务圈
-	private String referGeometry;
+	//private String referGeometry;
 	private JSONObject referGeometryJSON;
 	private JSONArray referSubtasks;
+	private Integer referId;
 
 	public Subtask (){
 	}
@@ -70,7 +71,7 @@ public class Subtask implements Serializable  {
 			List<Integer> gridIds, Integer dbId, Integer groupId, String blockManName, String taskName, String version,
 			Integer executerId, String executer, int percent, JSONObject geometryJSON, Integer qualitySubtaskId,
 			Integer isQuality, Integer qualityExeUserId, Timestamp qualityPlanStartDate, Timestamp qualityPlanEndDate,
-			Integer qualityTaskStatus,String referGeometry) {
+			Integer qualityTaskStatus,Integer referId) {
 		super();
 		this.subtaskId = subtaskId;
 		this.name = name;
@@ -105,7 +106,7 @@ public class Subtask implements Serializable  {
 		this.qualityPlanStartDate = qualityPlanStartDate;
 		this.qualityPlanEndDate = qualityPlanEndDate;
 		this.qualityTaskStatus = qualityTaskStatus;
-		this.referGeometry = referGeometry;
+		this.referId = referId;
 	}
 
 
@@ -586,18 +587,7 @@ public class Subtask implements Serializable  {
 	public void setGeometryJSON(JSONObject geometryJSON) {
 		this.geometryJSON = geometryJSON;
 	}
-	/**
-	 * @return the referGeometry
-	 */
-	public String getReferGeometry() {
-		return referGeometry;
-	}
-	/**
-	 * @param referGeometry the referGeometry to set
-	 */
-	public void setReferGeometry(String referGeometry) {
-		this.referGeometry = referGeometry;
-	}
+
 	/**
 	 * @return the referGeometryJSON
 	 */
@@ -621,6 +611,12 @@ public class Subtask implements Serializable  {
 	 */
 	public void setReferSubtasks(JSONArray referSubtasks) {
 		this.referSubtasks = referSubtasks;
+	}
+	public Integer getReferId() {
+		return referId;
+	}
+	public void setReferId(Integer referId) {
+		this.referId = referId;
 	}
 }
 

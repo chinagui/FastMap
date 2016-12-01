@@ -1,14 +1,23 @@
 package com.navinfo.dataservice.engine.editplus.convert;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiChargingplot;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiChargingstation;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiChildren;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiContact;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiGasstation;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiHotel;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiParking;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiRestaurant;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 
@@ -94,26 +103,30 @@ public class MultiSrcPoiConvertor {
 			jo.put("open24H", ixPoi.getOpen24h());
 		}
 		//父POI的Fid
-		jo.put("parentFid", poi.getParentFid());
+		if(StringUtils.isNotEmpty(poi.getParentFid())){
+			jo.put("parentFid",poi.getParentFid());
+		}else{
+			jo.put("parentFid","");
+		}
 		//[集合]父子关系,子列表；该POI作为父的子要素
-		jo.put("relateChildren", poi.getChildrens());
+		jo.put("relateChildren", this.getChildrens(poi));
 		//[集合]联系方式
-		jo.put("contacts", poi.getContacts());
+		jo.put("contacts", this.getContacts(poi));
 		//{唯一}餐饮
-		if(poi.getFoodTypes() != null){
-			jo.put("foodtypes", poi.getFoodTypes());
+		if(this.getFoodTypes(poi) != null){
+			jo.put("foodtypes", this.getFoodTypes(poi));
 		}else{
 			jo.put("foodtypes", JSONNull.getInstance());
 		}
 		//{唯一}停车场扩展信息
-		if(poi.getParkings() != null){
-			jo.put("parkings", poi.getParkings());
+		if(this.getParkings(poi) != null){
+			jo.put("parkings", this.getParkings(poi));
 		}else{
 			jo.put("parkings", JSONNull.getInstance());
 		}
 		//{唯一}酒店
-		if(poi.getHotel() != null){
-			jo.put("hotel", poi.getHotel());
+		if(this.getHotel(poi) != null){
+			jo.put("hotel", this.getHotel(poi));
 		}else{
 			jo.put("hotel", JSONNull.getInstance());
 		}
@@ -124,17 +137,16 @@ public class MultiSrcPoiConvertor {
 			jo.put("sportsVenues", "");
 		}
 		//{唯一}充电站
-		if(poi.getChargingStation() != null){
-			jo.put("chargingStation", poi.getChargingStation());
+		if(this.getChargingStation(poi) != null){
+			jo.put("chargingStation", this.getChargingStation(poi));
 		}else{
 			jo.put("chargingStation", JSONNull.getInstance());
 		}
 		//[集合]充电桩
-		jo.put("chargingPole", poi.getChargingPole());
+		jo.put("chargingPole", this.getChargingPole(poi));
 		//{唯一}加油站
-		if(poi.getGasStation() != null){
-			jo.put("gasStation", poi.getGasStation());
-			//jo.put("gasStation", JSONNull.getInstance());
+		if(this.getGasStation(poi) != null){
+			jo.put("gasStation", this.getGasStation(poi));
 		}else{
 			jo.put("gasStation", JSONNull.getInstance());
 		}
@@ -148,9 +160,17 @@ public class MultiSrcPoiConvertor {
 		}
 		//楼层
 		if(poi.getFloorByLangCode("CHI") != null){
-			indoor.put("floor", StringUtils.trimToEmpty(poi.getFloorByLangCode("CHI").getFloor()));
+			if(StringUtils.isNotEmpty(poi.getFloorByLangCode("CHI").getFloor())){
+				indoor.put("floor", poi.getFloorByLangCode("CHI").getFloor());
+			}else{
+				indoor.put("floor", "");
+			}
 		}else if(poi.getFloorByLangCode("CHT") != null){
-			indoor.put("floor", StringUtils.trimToEmpty(poi.getFloorByLangCode("CHT").getFloor()));
+			if(StringUtils.isNotEmpty(poi.getFloorByLangCode("CHT").getFloor())){
+				indoor.put("floor", poi.getFloorByLangCode("CHT").getFloor());
+			}else{
+				jo.put("floor","");
+			}
 		}else{
 			indoor.put("floor", "");
 		}
@@ -177,7 +197,7 @@ public class MultiSrcPoiConvertor {
 			jo.put("t_lifecycle", poi.getLifeCycle());
 		}
 		//当前阶段作业状态
-		//jo.put("t_status", 0);
+		jo.put("t_status", 0);
 		//[集合]编辑履历
 		List<Map<String,Object>> edits = new ArrayList<Map<String,Object>>();
 		jo.put("edits", edits);
@@ -197,7 +217,9 @@ public class MultiSrcPoiConvertor {
 		jo.put("t_sync", 1);
 		//同一POI的
 		jo.put("sameFid", "");
-
+		//行政区划号
+		jo.put("adminId", poi.getAdminId());
+		
 		return jo;
 	}
 
@@ -208,6 +230,420 @@ public class MultiSrcPoiConvertor {
 		// 暂不实现
 		return null;
 	}
+	
+	/**
+	 * 查询所有的联系方式
+	 * @author Han Shaoming
+	 * @return
+	 */
+	public List<Map<String,Object>> getContacts(IxPoiObj poi){
+		List<BasicRow> rows = poi.getRowsByName("IX_POI_CONTACT");
+		List<Map<String,Object>> msgs = new ArrayList<Map<String,Object>>();
+		if(rows!=null && rows.size()>0){
+			for(BasicRow row:rows){
+				IxPoiContact contact = (IxPoiContact) row;
+				Map<String,Object> msg = new HashMap<String, Object>();
+				if(StringUtils.isNotEmpty(contact.getContact())){
+					msg.put("number", contact.getContact());
+				}else{
+					msg.put("number", "");
+				}
+				msg.put("type", contact.getContactType());
+				int cd = contact.getContactDepart();
+				List<String> linkman = new ArrayList<String>();
+				if((cd&1) ==1){
+					linkman.add("总机");
+				}else if((cd&2) ==1){
+					linkman.add("客服");
+				}else if((cd&4) ==1){
+					linkman.add("预订");
+				}else if((cd&8) ==1){
+					linkman.add("销售");
+				}else if((cd&16) ==1){
+					linkman.add("维修");
+				}else if((cd&32) ==1){
+					linkman.add("其他");
+				}else if(cd ==0){
+					linkman.add("");
+				}
+				msg.put("linkman", StringUtils.join(linkman.toArray(), "-"));
+				msg.put("priority", contact.getPriority());
+				msg.put("rowId", contact.getRowId());
+				msgs.add(msg);
+			}
+		}
+		return msgs;
+	}
+	
+	/**
+	 * 查询餐饮
+	 * @author Han Shaoming
+	 * @return
+	 */
+	public Map<String,Object> getFoodTypes(IxPoiObj poi){
+		List<BasicRow> rows = poi.getRowsByName("IX_POI_RESTAURANT");
+		if(rows!=null && rows.size()>0){
+			Map<String,Object> msg = new HashMap<String, Object>();
+			for(BasicRow row:rows){
+				IxPoiRestaurant foodType = (IxPoiRestaurant) row;
+				if(StringUtils.isNotEmpty(foodType.getFoodType())){
+					msg.put("foodtype", foodType.getFoodType());
+				}else{
+					msg.put("foodtype", "");
+				}
+				if(StringUtils.isNotEmpty(foodType.getCreditCard())){
+					msg.put("creditCards", foodType.getCreditCard());
+				}else{			
+					msg.put("creditCards", "");
+				}
+				msg.put("parking", foodType.getParking());
+				if(StringUtils.isNotEmpty(foodType.getOpenHour())){
+					msg.put("openHour", foodType.getOpenHour());
+				}else{
+					msg.put("openHour", "");
+				}
+				msg.put("avgCost", foodType.getAvgCost());
+				msg.put("rowId", foodType.getRowId());
+			}
+			return msg;
+		}
+		return null;
+	}
+	
+	/**
+	 * 查询停车场扩展信息
+	 * @author Han Shaoming
+	 * @return
+	 */
+	public Map<String,Object> getParkings(IxPoiObj poi){
+		List<BasicRow> rows = poi.getRowsByName("IX_POI_PARKING");
+		if(rows!=null && rows.size()>0){
+			Map<String,Object> msg = new HashMap<String, Object>();
+			for(BasicRow row:rows){
+				IxPoiParking parking = (IxPoiParking) row;
+				if(StringUtils.isNotEmpty(parking.getTollStd())){
+					msg.put("tollStd", parking.getTollStd());
+				}else{
+					msg.put("tollStd", "");
+				}
+				if(StringUtils.isNotEmpty(parking.getTollDes())){
+					msg.put("tollDes", parking.getTollDes());
+				}else{
+					msg.put("tollDes", "");
+				}
+				if(StringUtils.isNotEmpty(parking.getTollWay())){
+					msg.put("tollWay", parking.getTollWay());
+				}else{
+					msg.put("tollWay", "");
+				}
+				if(StringUtils.isNotEmpty(parking.getOpenTiime())){
+					msg.put("openTime", parking.getOpenTiime());
+				}else{
+					msg.put("openTime", "");
+				}
+				msg.put("totalNum", parking.getTotalNum());
+				if(StringUtils.isNotEmpty(parking.getPayment())){
+					msg.put("payment", parking.getPayment());
+				}else{
+					msg.put("payment", "");
+				}
+				if(StringUtils.isNotEmpty(parking.getRemark())){
+					msg.put("remark", parking.getRemark());
+				}else{
+					msg.put("remark", "");
+				}
+				if(StringUtils.isNotEmpty(parking.getParkingType())){
+					msg.put("buildingType", parking.getParkingType());
+				}else{
+					msg.put("buildingType", "");
+				}
+				msg.put("resHigh", parking.getResHigh());
+				msg.put("resWidth", parking.getResWidth());
+				msg.put("resWeigh", parking.getResWeigh());
+				msg.put("certificate", parking.getCertificate());
+				msg.put("vehicle", parking.getVehicle());
+				if(StringUtils.isNotEmpty(parking.getHaveSpecialplace())){
+					msg.put("haveSpecialPlace", parking.getHaveSpecialplace());
+				}else{
+					msg.put("haveSpecialPlace", "");
+				}
+				msg.put("womenNum", parking.getWomenNum());
+				msg.put("handicapNum", parking.getHandicapNum());
+				msg.put("miniNum", parking.getMiniNum());		
+				msg.put("vipNum", parking.getVipNum());
+				msg.put("rowId", parking.getRowId());		
+			}
+			return msg;
+		}
+		return null;
+	}
+	
+	/**
+	 * 查询酒店
+	 * @author Han Shaoming
+	 * @return
+	 */
+	public Map<String,Object> getHotel(IxPoiObj poi){
+		List<BasicRow> rows = poi.getRowsByName("IX_POI_HOTEL");
+		if(rows!=null && rows.size()>0){
+			Map<String,Object> msg = new HashMap<String, Object>();
+			for(BasicRow row:rows){
+				IxPoiHotel hotel = (IxPoiHotel) row;
+				msg.put("rating", hotel.getRating());
+				if(StringUtils.isNotEmpty(hotel.getCreditCard())){
+					msg.put("creditCards", hotel.getCreditCard());
+				}else{
+					msg.put("creditCards", "");
+				}
+				if(StringUtils.isNotEmpty(hotel.getLongDescription())){
+					msg.put("description", hotel.getLongDescription());
+				}else{
+					msg.put("description", "");
+				}
+				msg.put("checkInTime", hotel.getCheckinTime());
+				msg.put("checkOutTime", hotel.getCheckoutTime());
+				msg.put("roomCount", hotel.getRoomCount());
+				if(StringUtils.isNotEmpty(hotel.getRoomType())){
+					msg.put("roomType", hotel.getRoomType());
+				}else{
+					msg.put("roomType", "");
+				}
+				if(StringUtils.isNotEmpty(hotel.getRoomPrice())){
+					msg.put("roomPrice", hotel.getRoomPrice());
+				}else{
+					msg.put("roomPrice", "");
+				}
+				msg.put("breakfast", hotel.getBreakfast());
+				if(StringUtils.isNotEmpty(hotel.getService())){
+					msg.put("service", hotel.getService());
+				}else{
+					msg.put("service","");
+				}
+				msg.put("parking", hotel.getParking());
+				if(StringUtils.isNotEmpty(hotel.getOpenHour())){
+					msg.put("openHour", hotel.getOpenHour());
+				}else{
+					msg.put("openHour", "");
+				}
+				msg.put("rowId", hotel.getRowId());	
+			}
+			return msg;
+		}
+		return null;
+	}
+	
+	/**
+	 * 查询充电站
+	 * @author Han Shaoming
+	 * @return
+	 */
+	public Map<String,Object> getChargingStation(IxPoiObj poi){
+		List<BasicRow> rows = poi.getRowsByName("IX_POI_CHARGINGSTATION");
+		if(rows!=null && rows.size()>0){
+			Map<String,Object> msg = new HashMap<String, Object>();
+			for(BasicRow row:rows){
+				IxPoiChargingstation chargingStation = (IxPoiChargingstation) row;
+				msg.put("type", chargingStation.getChargingType());
+				if(StringUtils.isNotEmpty(chargingStation.getChangeBrands())){
+					msg.put("changeBrands", chargingStation.getChangeBrands());
+				}else{
+					msg.put("changeBrands", "");
+				}
+				msg.put("changeOpenType", chargingStation.getChangeOpenType());
+				msg.put("servicePro", chargingStation.getServiceProv());
+				msg.put("chargingNum", chargingStation.getChargingNum());
+				if(StringUtils.isNotEmpty(chargingStation.getOpenHour())){
+					msg.put("openHour", chargingStation.getOpenHour());
+				}else{
+					msg.put("openHour", "");
+				}
+				msg.put("parkingFees", chargingStation.getParkingFees());
+				if(StringUtils.isNotEmpty(chargingStation.getParkingInfo())){
+					msg.put("parkingInfo", chargingStation.getParkingInfo());
+				}else{
+					msg.put("parkingInfo", "");
+				}
+				msg.put("availableState", chargingStation.getAvailableState());
+				msg.put("rowId", chargingStation.getRowId());	
+			}
+			return msg;
+		}
+		return null;
+	}
+	
+	/**
+	 * 查询充电桩
+	 * @author Han Shaoming
+	 * @return
+	 */
+	public List<Map<String,Object>> getChargingPole(IxPoiObj poi){
+		List<BasicRow> rows = poi.getRowsByName("IX_POI_CHARGINGPLOT");
+		List<Map<String,Object>> msgs = new ArrayList<Map<String,Object>>();
+		if(rows!=null && rows.size()>0){
+			for(BasicRow row:rows){
+				Map<String,Object> msg = new HashMap<String, Object>();
+				IxPoiChargingplot chargingPole = (IxPoiChargingplot) row;
+				msg.put("groupId", chargingPole.getGroupId());
+				msg.put("acdc", chargingPole.getAcdc());
+				msg.put("plugType", chargingPole.getPlugType());
+				if(StringUtils.isNotEmpty(chargingPole.getPower())){
+					msg.put("power", chargingPole.getPower());
+				}else{
+					msg.put("power", "");
+				}
+				if(StringUtils.isNotEmpty(chargingPole.getVoltage())){
+					msg.put("voltage", chargingPole.getVoltage());
+				}else{
+					msg.put("voltage", "");
+				}
+				if(StringUtils.isNotEmpty(chargingPole.getCurrent())){
+					msg.put("current", chargingPole.getCurrent());
+				}else{
+					msg.put("current", "");
+				}
+				msg.put("mode", chargingPole.getMode());
+				msg.put("count", chargingPole.getCount());
+				msg.put("plugNum", chargingPole.getPlugNum());
+				if(StringUtils.isNotEmpty(chargingPole.getPrices())){
+					msg.put("prices", chargingPole.getPrices());
+				}else{
+					msg.put("prices", "");
+				}
+				msg.put("openType", chargingPole.getOpenType());
+				msg.put("availableState", chargingPole.getAvailableState());
+				if(StringUtils.isNotEmpty(chargingPole.getManufacturer())){
+					msg.put("manufacturer", chargingPole.getManufacturer());
+				}else{
+					msg.put("manufacturer", "");
+				}
+				if(StringUtils.isNotEmpty(chargingPole.getFactoryNum())){
+					msg.put("factoryNum", chargingPole.getFactoryNum());
+				}else{
+					msg.put("factoryNum", "");
+				}
+				if(StringUtils.isNotEmpty(chargingPole.getPlotNum())){
+					msg.put("plotNum", chargingPole.getPlotNum());
+				}else{
+					msg.put("plotNum", "");
+				}
+				if(StringUtils.isNotEmpty(chargingPole.getProductNum())){
+					msg.put("productNum", chargingPole.getProductNum());
+				}else{
+					msg.put("productNum", "");
+				}
+				if(StringUtils.isNotEmpty(chargingPole.getParkingNum())){
+					msg.put("parkingNum", chargingPole.getParkingNum());
+				}else{
+					msg.put("parkingNum", "");
+				}
+				msg.put("floor", chargingPole.getFloor());
+				msg.put("locationType", chargingPole.getLocationType());
+				msg.put("payment", chargingPole.getPayment());
+				msg.put("rowId", chargingPole.getRowId());
+				msgs.add(msg);
+			}
+		}
+		return msgs;
+	}
+	
+	/**
+	 * 查询加油站
+	 * @author Han Shaoming
+	 * @return
+	 */
+	public Map<String,Object> getGasStation(IxPoiObj poi){
+		List<BasicRow> rows = poi.getRowsByName("IX_POI_GASSTATION");
+		if(rows!=null && rows.size()>0){
+			Map<String,Object> msg = new HashMap<String, Object>();
+			for(BasicRow row:rows){
+				IxPoiGasstation gasStation = (IxPoiGasstation) row;
+				if(StringUtils.isNotEmpty(gasStation.getFuelType())){
+					msg.put("fuelType", gasStation.getFuelType());
+				}else{
+					msg.put("fuelType","");
+				}
+				if(StringUtils.isNotEmpty(gasStation.getOilType())){
+					msg.put("oilType", gasStation.getOilType());
+				}else{
+					msg.put("oilType", "");
+				}
+				if(StringUtils.isNotEmpty(gasStation.getEgType())){
+					msg.put("egType", gasStation.getEgType());
+				}else{
+					msg.put("egType", "");
+				}
+				if(StringUtils.isNotEmpty(gasStation.getMgType())){
+					msg.put("mgType", gasStation.getMgType());
+				}else{
+					msg.put("mgType", "");
+				}
+				if(StringUtils.isNotEmpty(gasStation.getPayment())){
+					msg.put("payment", gasStation.getPayment());
+				}else{
+					msg.put("payment", "");
+				}
+				if(StringUtils.isNotEmpty(gasStation.getService())){
+					msg.put("service", gasStation.getService());
+				}else{
+					msg.put("service", "");
+				}
+				if(StringUtils.isNotEmpty(gasStation.getServiceProv())){
+					msg.put("servicePro", gasStation.getServiceProv());
+				}else{
+					msg.put("servicePro", "");
+				}
+				if(StringUtils.isNotEmpty(gasStation.getOpenHour())){
+					msg.put("openHour", gasStation.getOpenHour());
+				}else{
+					msg.put("openHour", "");
+				}
+				msg.put("rowId", gasStation.getRowId());
+			}
+			return msg;
+		}
+		return null;
+	}
+	
+	/**
+	 * 父子关系,子列表
+	 * @author Han Shaoming
+	 * @return
+	 */
+	public List<Map<String,Object>> getChildrens(IxPoiObj poi){
+		List<Map<String,Object>> msgs = new ArrayList<Map<String,Object>>();
+		List<BasicRow> rows = poi.getRowsByName("IX_POI_CHILDREN");
+		if(rows!=null && rows.size()>0){
+			for(BasicRow row:rows){
+				Map<String,Object> msg = new HashMap<String, Object>();
+				IxPoiChildren children = (IxPoiChildren) row;
+				long childPoiPid = children.getChildPoiPid();
+				msg.put("type", children.getRelationType());
+				msg.put("childPid", children.getChildPoiPid());
+				List<Map<Long, Object>> childFids = poi.getChildFids();
+				for (Map<Long, Object> map : childFids) {
+					boolean flag = false;
+					for (Map.Entry<Long, Object> entry : map.entrySet()) {
+						if(childPoiPid==entry.getKey()){
+							if(StringUtils.isNotEmpty((String) map.get(childPoiPid))){
+								msg.put("childFid",(String) map.get(childPoiPid));
+							}else{
+								msg.put("childFid","");
 
+							}
+							flag = true;
+							break;
+						}
+					}
+					if(flag){
+						break;
+					}
+				}
+				msg.put("rowId", children.getRowId());
+				msgs.add(msg);
+			}
+		}
+		return msgs;
+	}
+	
 
 }

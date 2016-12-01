@@ -53,19 +53,14 @@ public class AdLinkSelector extends AbstractSelector {
 				AdLink adLink = new AdLink();
 
 				ReflectionAttrUtils.executeResultSet(adLink, resultSet);
-				List<IRow> forms = new AbstractSelector(AdLinkMesh.class, conn)
-						.loadRowsByParentId(adLink.getPid(), isLock);
-
+				List<IRow> meshes = new AbstractSelector(AdLinkMesh.class, conn).loadRowsByParentId(adLink.getPid(), isLock);
 				// loadRowsByParentId已经查询了mesh,是否可以不做设置
-				for (IRow row : forms) {
-					row.setMesh(adLink.mesh());
-				}
-
-				adLink.setMeshes(forms);
-
+//				for (IRow row : meshes) {
+//					row.setMesh(adLink.mesh());
+//				}
+				adLink.setMeshes(meshes);
 				for (IRow row : adLink.getMeshes()) {
 					AdLinkMesh mesh = (AdLinkMesh) row;
-
 					adLink.meshMap.put(mesh.rowId(), mesh);
 				}
 				links.add(adLink);

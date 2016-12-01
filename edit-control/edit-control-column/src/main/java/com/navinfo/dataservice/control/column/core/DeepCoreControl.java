@@ -611,7 +611,7 @@ public class DeepCoreControl {
 		String temp = "";
 		for (int pid:pids) {
 			sb.append(temp);
-			sb.append("'"+pid+"'");
+			sb.append(pid);
 			temp = ",";
 		}
 		sb.append(")");

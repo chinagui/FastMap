@@ -31,14 +31,15 @@ public class CheckTest {
 	}
 	
 	public static void main(String[] args) throws Exception{
+		System.out.println("start check test");
 		CheckTest test=new CheckTest();
 		test.init();
 		Connection conn = DBConnector.getInstance().getConnectionById(17);
 		OperationResult operationResult=new OperationResult();
 		BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", null, 308, false);
 //		operationResult.putObj(obj);
-		IxPoi row=(IxPoi) obj.getMainrow();
-		row.setKindCode("newkind");
+		//IxPoi row=(IxPoi) obj.getMainrow();
+		//row.setKindCode("newkind");
 		operationResult.putObj(obj);
 		
 		CheckCommand checkCommand=new CheckCommand();		
@@ -47,9 +48,9 @@ public class CheckTest {
 		checkCommand.setRuleIdList(ruleIdList);
 		
 		Check check=new Check(conn,operationResult);
-		check.setCmd(checkCommand);
-		List<NiValException> niValException = check.operate();
-		System.out.println("123");
+		check.operate(checkCommand);
+		List<NiValException> niValException = check.getReturnExceptions();
+		System.out.println("end check test");
 	}
 
 }

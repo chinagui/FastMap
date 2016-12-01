@@ -141,7 +141,8 @@ public class GlmFactory {
                     		glmR.setRefTable(gr.attributeValue("refTable"));
                     		glmR.setRefCol(gr.attributeValue("refCol"));
                     		glmR.setRefMain(Boolean.parseBoolean(gr.attributeValue("isRefMain")));
-                    		glmTab.setObjRef(glmR);
+//                    		glmTab.setObjRef(glmR);
+                    		glmTab.setGeoRef(glmR);
                 		}
                 	}
                 	glmTables.put(curTabName, glmTab);

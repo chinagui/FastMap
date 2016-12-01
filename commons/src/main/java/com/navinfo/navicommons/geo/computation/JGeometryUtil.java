@@ -169,13 +169,13 @@ public class JGeometryUtil {
 		// 实际为GeometryCollection（组成的geometry紧密相连）
 		Geometry ts = builder.getTriangles(gf);
 		
-//		// 以1的距离进行缓冲（因为各多边形两两共边），生成一个多边形
-//		// 此时则将点云构造成了多边形
-//		System.out.println("4.2："+DateUtils.dateToString(new Date()));
-//		Geometry union = ts.buffer(0.0001);
-//		System.out.println("4.3："+DateUtils.dateToString(new Date()));
+		// 以1的距离进行缓冲（因为各多边形两两共边），生成一个多边形
+		// 此时则将点云构造成了多边形
+		System.out.println("4.2："+DateUtils.dateToString(new Date()));
+		Geometry union = ts.buffer(0.00001);
+		System.out.println("4.3："+DateUtils.dateToString(new Date()));
 		
-		BufferOp bufOp = new BufferOp(ts);  
+		BufferOp bufOp = new BufferOp(union);  
         bufOp.setEndCapStyle(BufferParameters.CAP_ROUND);  
         Geometry bg = bufOp.getResultGeometry(0);  
         System.out.println("4.4："+DateUtils.dateToString(new Date()));

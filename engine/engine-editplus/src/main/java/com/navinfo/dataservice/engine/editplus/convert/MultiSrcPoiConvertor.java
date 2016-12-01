@@ -4,9 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
 import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
@@ -106,7 +103,11 @@ public class MultiSrcPoiConvertor {
 			jo.put("open24H", ixPoi.getOpen24h());
 		}
 		//父POI的Fid
-		jo.put("parentFid", StringUtils.trimToEmpty(poi.getParentFid()));
+		if(StringUtils.isNotEmpty(poi.getParentFid())){
+			jo.put("parentFid",poi.getParentFid());
+		}else{
+			jo.put("parentFid","");
+		}
 		//[集合]父子关系,子列表；该POI作为父的子要素
 		jo.put("relateChildren", this.getChildrens(poi));
 		//[集合]联系方式
@@ -146,7 +147,6 @@ public class MultiSrcPoiConvertor {
 		//{唯一}加油站
 		if(this.getGasStation(poi) != null){
 			jo.put("gasStation", this.getGasStation(poi));
-			//jo.put("gasStation", JSONNull.getInstance());
 		}else{
 			jo.put("gasStation", JSONNull.getInstance());
 		}
@@ -160,9 +160,17 @@ public class MultiSrcPoiConvertor {
 		}
 		//楼层
 		if(poi.getFloorByLangCode("CHI") != null){
-			indoor.put("floor", StringUtils.trimToEmpty(poi.getFloorByLangCode("CHI").getFloor()));
+			if(StringUtils.isNotEmpty(poi.getFloorByLangCode("CHI").getFloor())){
+				indoor.put("floor", poi.getFloorByLangCode("CHI").getFloor());
+			}else{
+				indoor.put("floor", "");
+			}
 		}else if(poi.getFloorByLangCode("CHT") != null){
-			indoor.put("floor", StringUtils.trimToEmpty(poi.getFloorByLangCode("CHT").getFloor()));
+			if(StringUtils.isNotEmpty(poi.getFloorByLangCode("CHT").getFloor())){
+				indoor.put("floor", poi.getFloorByLangCode("CHT").getFloor());
+			}else{
+				jo.put("floor","");
+			}
 		}else{
 			indoor.put("floor", "");
 		}
@@ -223,7 +231,6 @@ public class MultiSrcPoiConvertor {
 		return null;
 	}
 	
-	
 	/**
 	 * 查询所有的联系方式
 	 * @author Han Shaoming
@@ -236,7 +243,11 @@ public class MultiSrcPoiConvertor {
 			for(BasicRow row:rows){
 				IxPoiContact contact = (IxPoiContact) row;
 				Map<String,Object> msg = new HashMap<String, Object>();
-				msg.put("number", StringUtils.trimToEmpty(contact.getContact()));
+				if(StringUtils.isNotEmpty(contact.getContact())){
+					msg.put("number", contact.getContact());
+				}else{
+					msg.put("number", "");
+				}
 				msg.put("type", contact.getContactType());
 				int cd = contact.getContactDepart();
 				List<String> linkman = new ArrayList<String>();
@@ -275,10 +286,22 @@ public class MultiSrcPoiConvertor {
 			Map<String,Object> msg = new HashMap<String, Object>();
 			for(BasicRow row:rows){
 				IxPoiRestaurant foodType = (IxPoiRestaurant) row;
-				msg.put("foodtype", StringUtils.trimToEmpty(foodType.getFoodType()));
-				msg.put("creditCards", StringUtils.trimToEmpty(foodType.getCreditCard()));
+				if(StringUtils.isNotEmpty(foodType.getFoodType())){
+					msg.put("foodtype", foodType.getFoodType());
+				}else{
+					msg.put("foodtype", "");
+				}
+				if(StringUtils.isNotEmpty(foodType.getCreditCard())){
+					msg.put("creditCards", foodType.getCreditCard());
+				}else{			
+					msg.put("creditCards", "");
+				}
 				msg.put("parking", foodType.getParking());
-				msg.put("openHour", StringUtils.trimToEmpty(foodType.getOpenHour()));
+				if(StringUtils.isNotEmpty(foodType.getOpenHour())){
+					msg.put("openHour", foodType.getOpenHour());
+				}else{
+					msg.put("openHour", "");
+				}
 				msg.put("avgCost", foodType.getAvgCost());
 				msg.put("rowId", foodType.getRowId());
 			}
@@ -298,20 +321,52 @@ public class MultiSrcPoiConvertor {
 			Map<String,Object> msg = new HashMap<String, Object>();
 			for(BasicRow row:rows){
 				IxPoiParking parking = (IxPoiParking) row;
-				msg.put("tollStd", StringUtils.trimToEmpty(parking.getTollStd()));
-				msg.put("tollDes", StringUtils.trimToEmpty(parking.getTollDes()));
-				msg.put("tollWay", StringUtils.trimToEmpty(parking.getTollWay()));
-				msg.put("openTime", StringUtils.trimToEmpty(parking.getOpenTiime()));
+				if(StringUtils.isNotEmpty(parking.getTollStd())){
+					msg.put("tollStd", parking.getTollStd());
+				}else{
+					msg.put("tollStd", "");
+				}
+				if(StringUtils.isNotEmpty(parking.getTollDes())){
+					msg.put("tollDes", parking.getTollDes());
+				}else{
+					msg.put("tollDes", "");
+				}
+				if(StringUtils.isNotEmpty(parking.getTollWay())){
+					msg.put("tollWay", parking.getTollWay());
+				}else{
+					msg.put("tollWay", "");
+				}
+				if(StringUtils.isNotEmpty(parking.getOpenTiime())){
+					msg.put("openTime", parking.getOpenTiime());
+				}else{
+					msg.put("openTime", "");
+				}
 				msg.put("totalNum", parking.getTotalNum());
-				msg.put("payment", StringUtils.trimToEmpty(parking.getPayment()));
-				msg.put("remark", StringUtils.trimToEmpty(parking.getRemark()));
-				msg.put("buildingType", StringUtils.trimToEmpty(parking.getParkingType()));
+				if(StringUtils.isNotEmpty(parking.getPayment())){
+					msg.put("payment", parking.getPayment());
+				}else{
+					msg.put("payment", "");
+				}
+				if(StringUtils.isNotEmpty(parking.getRemark())){
+					msg.put("remark", parking.getRemark());
+				}else{
+					msg.put("remark", "");
+				}
+				if(StringUtils.isNotEmpty(parking.getParkingType())){
+					msg.put("buildingType", parking.getParkingType());
+				}else{
+					msg.put("buildingType", "");
+				}
 				msg.put("resHigh", parking.getResHigh());
 				msg.put("resWidth", parking.getResWidth());
 				msg.put("resWeigh", parking.getResWeigh());
 				msg.put("certificate", parking.getCertificate());
 				msg.put("vehicle", parking.getVehicle());
-				msg.put("haveSpecialPlace", StringUtils.trimToEmpty(parking.getHaveSpecialplace()));
+				if(StringUtils.isNotEmpty(parking.getHaveSpecialplace())){
+					msg.put("haveSpecialPlace", parking.getHaveSpecialplace());
+				}else{
+					msg.put("haveSpecialPlace", "");
+				}
 				msg.put("womenNum", parking.getWomenNum());
 				msg.put("handicapNum", parking.getHandicapNum());
 				msg.put("miniNum", parking.getMiniNum());		
@@ -335,17 +390,41 @@ public class MultiSrcPoiConvertor {
 			for(BasicRow row:rows){
 				IxPoiHotel hotel = (IxPoiHotel) row;
 				msg.put("rating", hotel.getRating());
-				msg.put("creditCards", StringUtils.trimToEmpty(hotel.getCreditCard()));
-				msg.put("description", StringUtils.trimToEmpty(hotel.getLongDescription()));
+				if(StringUtils.isNotEmpty(hotel.getCreditCard())){
+					msg.put("creditCards", hotel.getCreditCard());
+				}else{
+					msg.put("creditCards", "");
+				}
+				if(StringUtils.isNotEmpty(hotel.getLongDescription())){
+					msg.put("description", hotel.getLongDescription());
+				}else{
+					msg.put("description", "");
+				}
 				msg.put("checkInTime", hotel.getCheckinTime());
 				msg.put("checkOutTime", hotel.getCheckoutTime());
 				msg.put("roomCount", hotel.getRoomCount());
-				msg.put("roomType", StringUtils.trimToEmpty(hotel.getRoomType()));
-				msg.put("roomPrice", StringUtils.trimToEmpty(hotel.getRoomPrice()));
+				if(StringUtils.isNotEmpty(hotel.getRoomType())){
+					msg.put("roomType", hotel.getRoomType());
+				}else{
+					msg.put("roomType", "");
+				}
+				if(StringUtils.isNotEmpty(hotel.getRoomPrice())){
+					msg.put("roomPrice", hotel.getRoomPrice());
+				}else{
+					msg.put("roomPrice", "");
+				}
 				msg.put("breakfast", hotel.getBreakfast());
-				msg.put("service", StringUtils.trimToEmpty(hotel.getService()));
+				if(StringUtils.isNotEmpty(hotel.getService())){
+					msg.put("service", hotel.getService());
+				}else{
+					msg.put("service","");
+				}
 				msg.put("parking", hotel.getParking());
-				msg.put("openHour", StringUtils.trimToEmpty(hotel.getOpenHour()));
+				if(StringUtils.isNotEmpty(hotel.getOpenHour())){
+					msg.put("openHour", hotel.getOpenHour());
+				}else{
+					msg.put("openHour", "");
+				}
 				msg.put("rowId", hotel.getRowId());	
 			}
 			return msg;
@@ -365,13 +444,25 @@ public class MultiSrcPoiConvertor {
 			for(BasicRow row:rows){
 				IxPoiChargingstation chargingStation = (IxPoiChargingstation) row;
 				msg.put("type", chargingStation.getChargingType());
-				msg.put("changeBrands", StringUtils.trimToEmpty(chargingStation.getChangeBrands()));
+				if(StringUtils.isNotEmpty(chargingStation.getChangeBrands())){
+					msg.put("changeBrands", chargingStation.getChangeBrands());
+				}else{
+					msg.put("changeBrands", "");
+				}
 				msg.put("changeOpenType", chargingStation.getChangeOpenType());
 				msg.put("servicePro", chargingStation.getServiceProv());
 				msg.put("chargingNum", chargingStation.getChargingNum());
-				msg.put("openHour", StringUtils.trimToEmpty(chargingStation.getOpenHour()));
+				if(StringUtils.isNotEmpty(chargingStation.getOpenHour())){
+					msg.put("openHour", chargingStation.getOpenHour());
+				}else{
+					msg.put("openHour", "");
+				}
 				msg.put("parkingFees", chargingStation.getParkingFees());
-				msg.put("parkingInfo", StringUtils.trimToEmpty(chargingStation.getParkingInfo()));
+				if(StringUtils.isNotEmpty(chargingStation.getParkingInfo())){
+					msg.put("parkingInfo", chargingStation.getParkingInfo());
+				}else{
+					msg.put("parkingInfo", "");
+				}
 				msg.put("availableState", chargingStation.getAvailableState());
 				msg.put("rowId", chargingStation.getRowId());	
 			}
@@ -395,20 +486,56 @@ public class MultiSrcPoiConvertor {
 				msg.put("groupId", chargingPole.getGroupId());
 				msg.put("acdc", chargingPole.getAcdc());
 				msg.put("plugType", chargingPole.getPlugType());
-				msg.put("power", StringUtils.trimToEmpty(chargingPole.getPower()));
-				msg.put("voltage", StringUtils.trimToEmpty(chargingPole.getVoltage()));
-				msg.put("current", StringUtils.trimToEmpty(chargingPole.getCurrent()));
+				if(StringUtils.isNotEmpty(chargingPole.getPower())){
+					msg.put("power", chargingPole.getPower());
+				}else{
+					msg.put("power", "");
+				}
+				if(StringUtils.isNotEmpty(chargingPole.getVoltage())){
+					msg.put("voltage", chargingPole.getVoltage());
+				}else{
+					msg.put("voltage", "");
+				}
+				if(StringUtils.isNotEmpty(chargingPole.getCurrent())){
+					msg.put("current", chargingPole.getCurrent());
+				}else{
+					msg.put("current", "");
+				}
 				msg.put("mode", chargingPole.getMode());
 				msg.put("count", chargingPole.getCount());
 				msg.put("plugNum", chargingPole.getPlugNum());
-				msg.put("prices", StringUtils.trimToEmpty(chargingPole.getPrices()));
+				if(StringUtils.isNotEmpty(chargingPole.getPrices())){
+					msg.put("prices", chargingPole.getPrices());
+				}else{
+					msg.put("prices", "");
+				}
 				msg.put("openType", chargingPole.getOpenType());
 				msg.put("availableState", chargingPole.getAvailableState());
-				msg.put("manufacturer", StringUtils.trimToEmpty(chargingPole.getManufacturer()));
-				msg.put("factoryNum", StringUtils.trimToEmpty(chargingPole.getFactoryNum()));
-				msg.put("plotNum", StringUtils.trimToEmpty(chargingPole.getPlotNum()));
-				msg.put("productNum", StringUtils.trimToEmpty(chargingPole.getProductNum()));
-				msg.put("parkingNum", StringUtils.trimToEmpty(chargingPole.getParkingNum()));
+				if(StringUtils.isNotEmpty(chargingPole.getManufacturer())){
+					msg.put("manufacturer", chargingPole.getManufacturer());
+				}else{
+					msg.put("manufacturer", "");
+				}
+				if(StringUtils.isNotEmpty(chargingPole.getFactoryNum())){
+					msg.put("factoryNum", chargingPole.getFactoryNum());
+				}else{
+					msg.put("factoryNum", "");
+				}
+				if(StringUtils.isNotEmpty(chargingPole.getPlotNum())){
+					msg.put("plotNum", chargingPole.getPlotNum());
+				}else{
+					msg.put("plotNum", "");
+				}
+				if(StringUtils.isNotEmpty(chargingPole.getProductNum())){
+					msg.put("productNum", chargingPole.getProductNum());
+				}else{
+					msg.put("productNum", "");
+				}
+				if(StringUtils.isNotEmpty(chargingPole.getParkingNum())){
+					msg.put("parkingNum", chargingPole.getParkingNum());
+				}else{
+					msg.put("parkingNum", "");
+				}
 				msg.put("floor", chargingPole.getFloor());
 				msg.put("locationType", chargingPole.getLocationType());
 				msg.put("payment", chargingPole.getPayment());
@@ -430,14 +557,46 @@ public class MultiSrcPoiConvertor {
 			Map<String,Object> msg = new HashMap<String, Object>();
 			for(BasicRow row:rows){
 				IxPoiGasstation gasStation = (IxPoiGasstation) row;
-				msg.put("fuelType", StringUtils.trimToEmpty(gasStation.getFuelType()));
-				msg.put("oilType", StringUtils.trimToEmpty(gasStation.getOilType()));
-				msg.put("egType", StringUtils.trimToEmpty(gasStation.getEgType()));
-				msg.put("mgType", StringUtils.trimToEmpty(gasStation.getMgType()));
-				msg.put("payment", StringUtils.trimToEmpty(gasStation.getPayment()));
-				msg.put("service", StringUtils.trimToEmpty(gasStation.getService()));
-				msg.put("servicePro", StringUtils.trimToEmpty(gasStation.getServiceProv()));
-				msg.put("openHour", StringUtils.trimToEmpty(gasStation.getOpenHour()));
+				if(StringUtils.isNotEmpty(gasStation.getFuelType())){
+					msg.put("fuelType", gasStation.getFuelType());
+				}else{
+					msg.put("fuelType","");
+				}
+				if(StringUtils.isNotEmpty(gasStation.getOilType())){
+					msg.put("oilType", gasStation.getOilType());
+				}else{
+					msg.put("oilType", "");
+				}
+				if(StringUtils.isNotEmpty(gasStation.getEgType())){
+					msg.put("egType", gasStation.getEgType());
+				}else{
+					msg.put("egType", "");
+				}
+				if(StringUtils.isNotEmpty(gasStation.getMgType())){
+					msg.put("mgType", gasStation.getMgType());
+				}else{
+					msg.put("mgType", "");
+				}
+				if(StringUtils.isNotEmpty(gasStation.getPayment())){
+					msg.put("payment", gasStation.getPayment());
+				}else{
+					msg.put("payment", "");
+				}
+				if(StringUtils.isNotEmpty(gasStation.getService())){
+					msg.put("service", gasStation.getService());
+				}else{
+					msg.put("service", "");
+				}
+				if(StringUtils.isNotEmpty(gasStation.getServiceProv())){
+					msg.put("servicePro", gasStation.getServiceProv());
+				}else{
+					msg.put("servicePro", "");
+				}
+				if(StringUtils.isNotEmpty(gasStation.getOpenHour())){
+					msg.put("openHour", gasStation.getOpenHour());
+				}else{
+					msg.put("openHour", "");
+				}
 				msg.put("rowId", gasStation.getRowId());
 			}
 			return msg;
@@ -465,7 +624,12 @@ public class MultiSrcPoiConvertor {
 					boolean flag = false;
 					for (Map.Entry<Long, Object> entry : map.entrySet()) {
 						if(childPoiPid==entry.getKey()){
-							msg.put("childFid",StringUtils.trimToEmpty((String) map.get(childPoiPid)));
+							if(StringUtils.isNotEmpty((String) map.get(childPoiPid))){
+								msg.put("childFid",(String) map.get(childPoiPid));
+							}else{
+								msg.put("childFid","");
+
+							}
 							flag = true;
 							break;
 						}

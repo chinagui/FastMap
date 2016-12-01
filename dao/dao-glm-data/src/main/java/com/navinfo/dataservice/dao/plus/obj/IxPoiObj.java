@@ -154,6 +154,7 @@ public class IxPoiObj extends AbstractIxObj {
 		return ixPoiChildren;
 //		return (IxPoiChildren)(ObjFactory.getInstance().createRow("IX_POI_CHILDREN", this.objPid()));
 	}
+	
 	public List<IxPoiParent> getIxPoiParents(){
 		return (List)subrows.get("IX_POI_PARENT");
 	}

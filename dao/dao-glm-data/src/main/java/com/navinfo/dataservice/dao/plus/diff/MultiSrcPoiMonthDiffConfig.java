@@ -6,7 +6,7 @@ import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 
-import com.navinfo.dataservice.dao.plus.obj.ObjectType;
+import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 
 /** 
  * @ClassName: PoiByChangeLogDiffConfig
@@ -25,7 +25,7 @@ public class MultiSrcPoiMonthDiffConfig extends ObjectDiffConfig {
 
 	@Override
 	public void parse() {
-		this.objType=ObjectType.IX_POI;
+		this.objType=ObjectName.IX_POI;
 		if(types!=null&&types.size()>0){
 			//todo
 			for(String type:types){

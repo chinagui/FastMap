@@ -40,9 +40,9 @@ public class LogGenerator {
 	 * @return
 	 * @throws Exception
 	 */
-	public static List<PreparedStatement> generate(Connection conn,Collection<BasicObj> basicObjs,String opCmd,int opSg,long userId)throws Exception{
+	public static List<PreparedStatement> generate(Connection conn,boolean oneOperation,Collection<BasicObj> basicObjs,String opCmd,int opSg,long userId)throws Exception{
 		List<PreparedStatement> perstmtList = new ArrayList<PreparedStatement>();
-		String insertLogOperationSql = "INSERT INTO LOG_OPERATION (OP_ID,US_ID,OP_CMD,OP_DT,OP_SG) VALUES (?,?,?,TO_DATE(?,'yyyy-MM-dd HH24:MI:ss'),?)";
+		String insertLogOperationSql = "INSERT INTO LOG_OPERATION (OP_ID,US_ID,OP_CMD,OP_DT,OP_SG) VALUES (?,?,?,SYSDATE,?)";
 		String insertLogDetailSql = "INSERT INTO LOG_DETAIL (OP_ID,ROW_ID,OB_NM,OB_PID,TB_NM,OLD,NEW,FD_LST,OP_TP,TB_ROW_ID) VALUES (?,?,?,?,?,?,?,?,?,?)";
 		String insertLogDetailGridSql = "INSERT INTO LOG_DETAIL_GRID (LOG_ROW_ID,GRID_ID,GRID_TYPE) VALUES (?,?,?)";
 		PreparedStatement perstmtLogOperation = conn.prepareStatement(insertLogOperationSql);
@@ -145,10 +145,10 @@ public class LogGenerator {
 		DateFormat format = new SimpleDateFormat("yyyyMMddhhmmss");
 		perstmtLogDetail.setString(1, opId);
 		perstmtLogDetail.setString(2, logDetailRowId);
-		perstmtLogDetail.setString(3, basicObj.objType());
+		perstmtLogDetail.setString(3, basicObj.objName());
 		perstmtLogDetail.setLong(4, basicObj.objPid());
 		perstmtLogDetail.setString(5, subrow.tableName());
-
+		
 		if(subrow.getOpType().equals(OperationType.DELETE)){
 			perstmtLogDetail.setString(6,null);
 			perstmtLogDetail.setString(7,null);
@@ -197,7 +197,7 @@ public class LogGenerator {
 		BasicObjGrid grid = basicObj.getGrid();
 		long geoPid = subrow.getGeoPid();
 		if(subrow.getGeoPid()!=basicObj.objPid()){
-			BasicObj referObj = ObjSelector.selectByPid(conn, basicObj.objType(), null, subrow.getGeoPid(), true);
+			BasicObj referObj = ObjSelector.selectByPid(conn, basicObj.objName(), null, subrow.getGeoPid(), true);
 			grid = referObj.getGrid();
 		}
 		for(String gridId:grid.getGridListBefore()){
@@ -216,9 +216,9 @@ public class LogGenerator {
 	}
 	
 	
-	public static void writeLog(Connection conn,Collection<BasicObj> basicObjs,String opCmd,int opSg,long userId)throws Exception{
+	public static void writeLog(Connection conn,boolean oneOperation,Collection<BasicObj> basicObjs,String opCmd,int opSg,long userId)throws Exception{
 		//获得log PreparedStatement list
-		List<PreparedStatement> preparedStatementList = LogGenerator.generate(conn, basicObjs, opCmd, opSg, userId);
+		List<PreparedStatement> preparedStatementList = LogGenerator.generate(conn, oneOperation,basicObjs, opCmd, opSg, userId);
 		//执行log preparedStatement List
 		for(PreparedStatement preparedStatement:preparedStatementList){
 			preparedStatement.executeBatch();

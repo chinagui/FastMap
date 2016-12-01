@@ -1,8 +1,6 @@
 package com.navinfo.dataservice.dao.plus.obj;
 
 import java.lang.reflect.InvocationTargetException;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -12,10 +10,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import com.navinfo.dataservice.dao.plus.diff.ObjectDiffConfig;
-import com.navinfo.dataservice.dao.plus.glm.GlmTableNotFoundException;
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
-import com.navinfo.dataservice.dao.plus.selector.ObjSelector;
 import com.navinfo.navicommons.database.sql.RunnableSQL;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.vividsolutions.jts.geom.Geometry;
@@ -35,6 +31,9 @@ public abstract class BasicObj {
 	protected Map<String,List<BasicRow>> subrows=new HashMap<String,List<BasicRow>>();//key:table_name,value:rows
 	protected BasicObjGrid grid;
 	
+	public BasicObj(BasicRow mainrow){
+		this.mainrow=mainrow;
+	}
 	//对象是否被删除
 	public boolean isDeleted(){
 		if(this.mainrow.getOpType().equals(OperationType.PRE_DELETED)
@@ -82,9 +81,7 @@ public abstract class BasicObj {
 	public void setGrid(BasicObjGrid grid) {
 		this.grid = grid;
 	}
-	public BasicObj(BasicRow mainrow){
-		this.mainrow=mainrow;
-	}
+
 	public int getLifeCycle() {
 		return lifeCycle;
 	}
@@ -190,7 +187,15 @@ public abstract class BasicObj {
 			}
 		}
 	}
-	
+	/**
+	 * IX_POI OR AD_LINK FROM ObjectName
+	 * @return
+	 */
+	public abstract String objName();
+	/**
+	 * FEATURE OR RELATION FROM ObjType
+	 * @return
+	 */
 	public abstract String objType();
 	
 	public long objPid() {
@@ -210,7 +215,7 @@ public abstract class BasicObj {
 	}
 	
 	public String identity(){
-		return objType()+objPid();
+		return objName()+objPid();
 	}
 	@Override
 	public int hashCode(){
@@ -276,6 +281,23 @@ public abstract class BasicObj {
 		}
 //		return isDefer;
 	}
-	
+
+	public boolean isGeoChanged() {
+		if(objType().equals(ObjType.FEATURE)){
+			//对象新增删除的算几何修改
+			if(mainrow.getOpType().equals(OperationType.INSERT)
+					||mainrow.getOpType().equals(OperationType.DELETE)){
+				return true;
+			}
+			//对象修改的，看看有没有geometry字段修改
+			if(mainrow.getOpType().equals(OperationType.UPDATE)
+					&&mainrow.getOldValues()!=null
+					&&mainrow.getOldValues().containsKey("GEOMETRY")){
+				return true;
+			}
+		}
+		if(mainrow.getOpType().equals(OperationType.INSERT)){}
+		return false;
+	}
 
 }

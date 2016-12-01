@@ -88,7 +88,7 @@ public class RdNodeSearch implements ISearch {
 
 						linkJSON.put("forms", forms.split(",")[i]);
 
-						linkJSON.put("imiCode", resultSet.getString("link_forms").split(",")[i]);
+						linkJSON.put("imiCode", resultSet.getString("IMICODES").split(",")[i]);
 						
 						linkJSON.put("specTraffic", resultSet.getString("TRAFFICS").split(",")[i]);
 

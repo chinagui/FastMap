@@ -17,8 +17,6 @@ public class Process extends AbstractProcess<Command> {
 		super(command);
 	}
 
-	private Check check = new Check(this.getCommand());
-
 	@Override
 	public boolean prepareData() throws Exception {
 		this.getCommand().setRdObject((RdObject) new AbstractSelector(RdObject.class, getConn()).loadById(this.getCommand().getPid(),true));

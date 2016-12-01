@@ -76,7 +76,7 @@ public class ColumnSaveJob extends AbstractJob {
 				}
 				classifyMap.put("data", dataArray);
 				ColumnCoreOperation columnCoreOperation = new ColumnCoreOperation();
-				columnCoreOperation.runClassify(classifyMap);
+				columnCoreOperation.runClassify(classifyMap,conn);
 			}
 			
 			// 修改poi_deep_status表作业项状态

@@ -13,7 +13,6 @@ import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.api.edit.upload.UploadPois;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiAddress;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiContact;
@@ -24,7 +23,7 @@ import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiRestaurant;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjFactory;
-import com.navinfo.dataservice.dao.plus.obj.ObjectType;
+import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.dataservice.dao.plus.operation.AbstractCommand;
 import com.navinfo.dataservice.dao.plus.operation.AbstractOperation;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
@@ -69,16 +68,23 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 		UploadPois pois = ((MultiSrcPoiDayImportorCommand)cmd).getPois();
 		if(pois!=null){
 			//新增
-			List<IxPoiObj> ixPoiObjAdd = this.improtAdd(conn, pois.getAddPois());
-			result.putAll(ixPoiObjAdd);
+			Map<String, JSONObject> addPois = pois.getAddPois();
+			if(addPois!=null){
+				List<IxPoiObj> ixPoiObjAdd = this.improtAdd(conn, addPois);
+				result.putAll(ixPoiObjAdd);
+			}
 			//修改
 			Map<String, JSONObject> updatePois = pois.getUpdatePois();
-			List<IxPoiObj> ixPoiObjUpdate = this.improtUpdate(conn,updatePois);
-			result.putAll(ixPoiObjUpdate);
+			if(updatePois!=null){
+				List<IxPoiObj> ixPoiObjUpdate = this.improtUpdate(conn,updatePois);
+				result.putAll(ixPoiObjUpdate);
+			}
 			//删除
 			Map<String, JSONObject> deletePois = pois.getDeletePois();
-			List<IxPoiObj> ixPoiObjDelete = this.improtDelete(conn, deletePois);
-			result.putAll(ixPoiObjDelete);
+			if(deletePois!=null){
+				List<IxPoiObj> ixPoiObjDelete = this.improtDelete(conn, deletePois);
+				result.putAll(ixPoiObjDelete);
+			}
 			
 		}
 	}
@@ -98,7 +104,7 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 			//日志
 			log.info("多源新增json数据"+jo.toString());
 			try {
-				IxPoiObj poiObj = (IxPoiObj) ObjFactory.getInstance().create(ObjectType.IX_POI);
+				IxPoiObj poiObj = (IxPoiObj) ObjFactory.getInstance().create(ObjectName.IX_POI);
 				importAddByJson(poiObj, jo);
 				ixPoiObjList.add(poiObj);
 			} catch (Exception e) {
@@ -129,7 +135,7 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 		}
 		//获取所需的子表
 		Set<String> tabNames = this.getTabNames();
-		List<BasicObj> basicObjList = ObjBatchSelector.selectBySpecColumn(conn,ObjectType.IX_POI,tabNames,"POI_NUM",fids,true,true);
+		List<BasicObj> basicObjList = ObjBatchSelector.selectBySpecColumn(conn,ObjectName.IX_POI,tabNames,"POI_NUM",fids,true,true);
 		for (JSONObject jo : joList) {
 			//日志
 			log.info("多源修改json数据"+jo.toString());
@@ -141,7 +147,7 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 				if(ixPoi.getPoiNum().equals(jo.getString("fid"))){
 					flag = false;
 					try{
-						if(queryObj.getMainrow().getOpType().equals(OperationType.PRE_DELETED)){
+						if(queryObj.isDeleted()){
 							throw new Exception("该数据已经逻辑删除");
 						}else{
 							this.importUpdateByJson(queryObj, jo);
@@ -181,7 +187,7 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 		}
 		//获取所需的子表
 		Set<String> tabNames = this.getTabNames();
-		List<BasicObj> basicObjList = ObjBatchSelector.selectBySpecColumn(conn,ObjectType.IX_POI,tabNames,"POI_NUM",fids,true,true);
+		List<BasicObj> basicObjList = ObjBatchSelector.selectBySpecColumn(conn,ObjectName.IX_POI,tabNames,"POI_NUM",fids,true,true);
 		for (JSONObject jo : joList) {
 			//日志
 			log.info("多源删除json数据"+jo.toString());
@@ -194,7 +200,7 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 					flag = false;
 					try{
 						//判断是否已逻辑删除
-						if(deleteObj.getMainrow().getOpType().equals(OperationType.PRE_DELETED)){
+						if(deleteObj.isDeleted()){
 							//已逻辑删除
 							throw new Exception("该数据已经逻辑删除");
 						}else{
@@ -393,13 +399,13 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 				pr.setPoiRelationType(PoiRelationType.FATHER_AND_SON);
 				parentPid.add(pr);
 				//多源类型
-				String sourceType = null;
-				if(!JSONUtils.isNull(jo.get("sourceType"))){
-					sourceType = jo.getString("sourceType");
+				String sourceProvider  = null;
+				if(!JSONUtils.isNull(jo.get("sourceProvider"))){
+					sourceProvider  = jo.getString("sourceProvider");
 				}else{
-					throw new Exception("多源类型sourceType字段名不存在");
+					throw new Exception("多源类型sourceProvider字段名不存在");
 				}
-				sourceTypes.put(poi.objPid(), sourceType);
+				sourceTypes.put(poi.objPid(), sourceProvider );
 				return true;
 			}else{
 				throw new ImportException("不支持的对象类型");
@@ -414,7 +420,7 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 				//查询的POI主表
 				IxPoi ixPoi = (IxPoi) poi.getMainrow();
 				//修改履历
-				if(!JSONUtils.isNull(jo.get(""))){
+				if(!JSONUtils.isNull(jo.get("log"))){
 				}else{
 					throw new Exception("字段名不存在");
 				}
@@ -527,13 +533,13 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 					parentPid.add(pr);
 				}
 				//多源类型
-				String sourceType = null;
-				if(!JSONUtils.isNull(jo.get("sourceType"))){
-					sourceType = jo.getString("sourceType");
+				String sourceProvider = null;
+				if(!JSONUtils.isNull(jo.get("sourceProvider"))){
+					sourceProvider = jo.getString("sourceProvider");
 				}else{
-					throw new Exception("多源类型sourceType字段名不存在");
+					throw new Exception("多源类型sourceProvider字段名不存在");
 				}
-				sourceTypes.put(poi.objPid(), sourceType);
+				sourceTypes.put(poi.objPid(), sourceProvider );
 
 				return true;
 			}else{
@@ -745,7 +751,7 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 		if(poi!=null&&jo!=null){
 			if(poi instanceof IxPoiObj){
 				//判断是否已逻辑删除
-				if(poi.getMainrow().getOpType().equals(OperationType.PRE_DELETED)){
+				if(poi.isDeleted()){
 					//已逻辑删除
 					throw new Exception("该数据已经逻辑删除");
 				}else{
@@ -758,13 +764,13 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 					pr.setPoiRelationType(PoiRelationType.FATHER_AND_SON);
 					parentPid.add(pr);
 					//多源类型
-					String sourceType = null;
-					if(!JSONUtils.isNull(jo.get("sourceType"))){
-						sourceType = jo.getString("sourceType");
+					String sourceProvider = null;
+					if(!JSONUtils.isNull(jo.get("sourceProvider"))){
+						sourceProvider = jo.getString("sourceProvider");
 					}else{
-						throw new Exception("多源类型sourceType字段名不存在");
+						throw new Exception("多源类型sourceProvider字段名不存在");
 					}
-					sourceTypes.put(poi.objPid(), sourceType);
+					sourceTypes.put(poi.objPid(), sourceProvider);
 					
 				}
 				return true;

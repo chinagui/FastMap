@@ -14,8 +14,9 @@ public class Process extends AbstractProcess<Command> {
 	@Override
 	public boolean prepareData() throws Exception {
 		check.hasRdInter(getConn());
-		//check.checkLinkByNode(getConn());
+		check.checkLink(getConn());
 		check.checkNodeDirect(getConn());
+		
 		return true;
 	}
 

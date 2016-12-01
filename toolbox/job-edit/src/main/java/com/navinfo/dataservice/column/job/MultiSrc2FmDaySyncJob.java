@@ -92,7 +92,7 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 	private String downloadAndUnzip(FmMultiSrcSyncApi syncApi,String remoteZipFile)throws Exception{
 		try{
 //			String uploadRoot = SystemConfigFactory.getSystemConfig().getValue(PropConstant.uploadPath);
-			String uploadRoot = "F:\\data\\upload\\";
+			String uploadRoot = "F:\\data\\multisrc\\upload\\";
 			//每个月独立目录
 			String curYm = DateUtils.getCurYyyymm();
 			String monthDir = uploadRoot+"multisrc"+File.separator+curYm+File.separator;
@@ -158,20 +158,20 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 		Map<Integer,Integer> adminDbMap = manApi.listDayDbIdsByAdminId();
 		for(Object o:pois){
 			JSONObject poi=(JSONObject)o;
-			String adminId=poi.getString("adminId");
 			try{
-				int adId = Integer.parseInt(adminId);
+				int adminId=Integer.parseInt(poi.getString("adminId").substring(0, 2));
+				adminId=adminId*10000;
 				int dbId = 0;
-				if(adminDbMap.containsKey(adId)){
-					dbId = adminDbMap.get(adId);
+				if(adminDbMap.containsKey(adminId)){
+					dbId = adminDbMap.get(adminId);
 					UploadPois upoi = poiMap.get(dbId);
 					if(upoi==null){
 						upoi=new UploadPois();
-						poiMap.put(adId, upoi);
+						poiMap.put(dbId, upoi);
 					}
 					upoi.addJsonPoi(poi);
 				}else{
-					errLog.put(poi.getString("fid"), adId+"的大区库未找到");
+					errLog.put(poi.getString("fid"), adminId+"的大区库未找到");
 				}
 			}catch(NumberFormatException e){
 				log.warn(e.getMessage(),e);

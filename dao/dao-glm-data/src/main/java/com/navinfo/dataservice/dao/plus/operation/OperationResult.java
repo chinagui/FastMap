@@ -10,7 +10,7 @@ import java.util.Map;
 import com.navinfo.dataservice.dao.plus.log.LogGenerator;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
-import com.navinfo.dataservice.dao.plus.obj.ObjectType;
+import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.navicommons.database.sql.RunnableSQL;
 
 
@@ -27,7 +27,7 @@ public class OperationResult{
 	private Map<String,Map<Long,BasicObj>> allObjs= new HashMap<String,Map<Long,BasicObj>>();
 	
 	public boolean isObjExist(BasicObj obj){
-		Map<Long,BasicObj> objs = getObjsMapByType(obj.objType());
+		Map<Long,BasicObj> objs = getObjsMapByType(obj.objName());
 		if(objs!=null&&objs.containsKey(obj.objPid())){
 			return true;
 		}
@@ -68,10 +68,10 @@ public class OperationResult{
 		if(obj.opType().equals(OperationType.INITIALIZE)){
 			throw new OperationResultException("未设置操作类型的对象");
 		}
-		if(allObjs.get(obj.objType())==null){
-			allObjs.put(obj.objType(), new HashMap<Long,BasicObj>());
+		if(allObjs.get(obj.objName())==null){
+			allObjs.put(obj.objName(), new HashMap<Long,BasicObj>());
 		}
-		allObjs.get(obj.objType()).put(obj.objPid(), obj);
+		allObjs.get(obj.objName()).put(obj.objPid(), obj);
 	}
 
 	public void clear() {
@@ -81,11 +81,10 @@ public class OperationResult{
 	 * 
 	 * @param result
 	 */
-	public void putAll(List<? extends BasicObj> objs) {
+	public void putAll(List<? extends BasicObj> objs) throws OperationResultException{
 		//key:objType,value:key:objPid,value:obj
 		for(BasicObj basicObj:objs){
-			String objType = basicObj.objType();
-			allObjs.get(objType).put(basicObj.objPid(),basicObj);
+			putObj(basicObj);
 		}
 	}
 	

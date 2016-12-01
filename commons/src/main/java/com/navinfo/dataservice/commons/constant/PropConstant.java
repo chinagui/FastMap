@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.commons.constant;
+package com.navinfo.dataservice.commons.constant;import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 
 public class PropConstant {
 
@@ -89,4 +89,6 @@ public class PropConstant {
 	public static final String fmStat="fm_stat";
 	public static final String mongoHost="mongo_host";
 	public static final String mongoPort="mongo_port";
+	
+	public static final String multisrcDaySyncUrl="multisrc.day.sync.url";
 }

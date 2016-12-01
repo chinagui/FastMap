@@ -257,7 +257,7 @@ public abstract class BasicObj {
 		for(Entry<String, List<BasicRow>> entry:subrows.entrySet()){
 			for(BasicRow subrow:entry.getValue()){
 				RunnableSQL sql = subrow.generateSql();
-				if(sql!=null&&!sql.equals("")){
+				if(sql!=null){
 					sqlList.add(sql);
 				}	
 			}

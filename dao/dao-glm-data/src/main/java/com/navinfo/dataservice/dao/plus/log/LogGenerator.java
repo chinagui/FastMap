@@ -109,9 +109,11 @@ public class LogGenerator {
 				//子表
 				for(Entry<String, List<BasicRow>> entry:basicObj.getSubrows().entrySet()){
 					List<BasicRow> subrows = entry.getValue();
-					for(BasicRow subrow:subrows){
-						//遍历每个子表，更新log_detail,log_detail_grid
-						goThroughOneBasicRow(conn,basicObj,subrow,opId);
+					if(subrows!=null){
+						for(BasicRow subrow:subrows){
+							//遍历每个子表，更新log_detail,log_detail_grid
+							goThroughOneBasicRow(conn,basicObj,subrow,opId);
+						}
 					}
 				}
 			}

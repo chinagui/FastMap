@@ -24,75 +24,76 @@ import oracle.sql.STRUCT;
 
 /**
  * ZONE:Link  查询接口
- * @author zhaokk
  *
+ * @author zhaokk
  */
-public class ZoneLinkSelector extends AbstractSelector  {
+public class ZoneLinkSelector extends AbstractSelector {
 
-	private Connection conn;
+    private Connection conn;
 
-	public ZoneLinkSelector(Connection conn) {
-		super(conn);
-		this.conn = conn;
-		this.setCls(ZoneLink.class);
-	}
+    public ZoneLinkSelector(Connection conn) {
+        super(conn);
+        this.conn = conn;
+        this.setCls(ZoneLink.class);
+    }
 
-	public List<ZoneLink> loadByNodePid(int nodePid, boolean isLock)
-			throws Exception {
+    public List<ZoneLink> loadByNodePid(int nodePid, boolean isLock)
+            throws Exception {
 
-		List<ZoneLink> links = new ArrayList<ZoneLink>();
+        List<ZoneLink> links = new ArrayList<ZoneLink>();
 
-		StringBuilder sb = new StringBuilder(
-				"select * from zone_link where (s_node_pid = :1 or e_node_pid = :2) and u_record!=2");
+        StringBuilder sb = new StringBuilder(
+                "select * from zone_link where (s_node_pid = :1 or e_node_pid = :2) and u_record!=2");
 
-		if (isLock) {
-			sb.append(" for update nowait");
-		}
+        if (isLock) {
+            sb.append(" for update nowait");
+        }
 
-		PreparedStatement pstmt = null;
+        PreparedStatement pstmt = null;
 
-		ResultSet resultSet = null;
+        ResultSet resultSet = null;
 
-		try {
-			pstmt = conn.prepareStatement(sb.toString());
+        try {
+            pstmt = conn.prepareStatement(sb.toString());
 
-			pstmt.setInt(1, nodePid);
+            pstmt.setInt(1, nodePid);
 
-			pstmt.setInt(2, nodePid);
+            pstmt.setInt(2, nodePid);
 
-			resultSet = pstmt.executeQuery();
+            resultSet = pstmt.executeQuery();
 
-			while (resultSet.next()) {
-				ZoneLink zoneLink = new ZoneLink();
+            while (resultSet.next()) {
+                ZoneLink zoneLink = new ZoneLink();
 
-				ReflectionAttrUtils.executeResultSet(zoneLink, resultSet);
-				List<IRow> forms = new AbstractSelector(ZoneLinkMesh.class,conn).loadRowsByParentId(zoneLink.getPid(), isLock);
-				List<IRow> kinds = new AbstractSelector(ZoneLinkKind.class,conn).loadRowsByParentId(zoneLink.getPid(), isLock);
+                ReflectionAttrUtils.executeResultSet(zoneLink, resultSet);
+                List<IRow> meshes = new AbstractSelector(ZoneLinkMesh.class, conn).loadRowsByParentId(zoneLink.getPid(), isLock);
+                List<IRow> kinds = new AbstractSelector(ZoneLinkKind.class, conn).loadRowsByParentId(zoneLink.getPid(), isLock);
 
-				for (IRow row : forms) {
-					ZoneLinkMesh mesh = (ZoneLinkMesh) row;
+                for (IRow row : meshes) {
+                    ZoneLinkMesh mesh = (ZoneLinkMesh) row;
+                    zoneLink.meshMap.put(mesh.rowId(), mesh);
+                }
+                zoneLink.setMeshes(meshes);
+                for (IRow row : kinds) {
+                    ZoneLinkKind kind = (ZoneLinkKind) row;
+                    zoneLink.kindMap.put(kind.rowId(), kind);
+                }
+                links.add(zoneLink);
+                zoneLink.setKinds(kinds);
+            }
+        } catch (Exception e) {
 
-					zoneLink.meshMap.put(mesh.rowId(), mesh);
-				}
-				for (IRow row : kinds) {
-					ZoneLinkKind kind = (ZoneLinkKind) row;
-					zoneLink.kindMap.put(kind.rowId(), kind);
-				}
-				links.add(zoneLink);
-				}
-			}catch (Exception e) {
+            throw e;
 
-				throw e;
+        } finally {
+            DBUtils.closeResultSet(resultSet);
+            DBUtils.closeStatement(pstmt);
 
-			} finally {
-				DBUtils.closeResultSet(resultSet);
-				DBUtils.closeStatement(pstmt);
+        }
 
-			}
-				
-		return links;
+        return links;
 
-	}
+    }
 
 
 }

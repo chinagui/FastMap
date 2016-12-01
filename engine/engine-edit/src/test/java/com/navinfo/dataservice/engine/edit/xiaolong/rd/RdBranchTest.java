@@ -24,7 +24,7 @@ public class RdBranchTest extends InitApplication {
 
 	@Test
 	public void testAdd3dBranch() {
-		String parameter = "{\"type\":\"RDBRANCH\",\"command\":\"UPDATE\",\"dbId\":259,\"data\":{\"details\":[{\"names\":[{\"pid\":0,\"seqNum\":1,\"nameGroupid\":1,\"nameClass\":0,\"langCode\":\"CHI\",\"codeType\":0,\"name\":\"西安\",\"phonetic\":\"Xi+An\",\"srcFlag\":0,\"voiceFile\":\"Xi'an\",\"objStatus\":\"INSERT\"}],\"rowId\":\"C7BECE60FC5349CBADE5EC638024F738\",\"pid\":509000008}],\"pid\":507000012}}";
+		String parameter = "{\"type\":\"RDBRANCH\",\"command\":\"UPDATE\",\"dbId\":19,\"data\":{\"signboards\":[{\"backimageCode\":\"000200DJ001\",\"pid\":202000001,\"objStatus\":\"UPDATE\",\"arrowCode\":\"200200DJ001\"}],\"pid\":204000035}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

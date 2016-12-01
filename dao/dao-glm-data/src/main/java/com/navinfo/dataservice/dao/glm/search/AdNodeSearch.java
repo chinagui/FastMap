@@ -81,8 +81,8 @@ public class AdNodeSearch implements ISearch {
 					linkJSON.put("linkPid", linkPid);
 
 					linkJSON.put("forms", forms.split(",")[i]);
-
-					linkJSON.put("imiCode", resultSet.getString("link_forms").split(",")[i]);
+					
+					linkJSON.put("kinds", resultSet.getString("IMICODES").split(",")[i]);
 
 					String samNodePid = resultSet.getString("samNodePart");
 

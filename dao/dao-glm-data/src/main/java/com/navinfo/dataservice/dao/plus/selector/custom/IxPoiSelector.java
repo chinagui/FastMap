@@ -110,52 +110,6 @@ public class IxPoiSelector {
 
 	}
 	
-	public static Map<Long,BasicObj> getIxPoiParentMapByChildrenPidList(Connection conn,Set<Long> pidList) throws ServiceException{
-		Map<Long,BasicObj> objMap = new HashMap<Long,BasicObj>();
-		try{
-			Map<Long,Long> childPidParentPid = new HashMap<Long,Long>();
-			String sql = "SELECT DISTINCT IPP.PARENT_POI_PID,IPC.CHILD_POI_PID"
-					+ " FROM IX_POI_PARENT IPP,IX_POI_CHILDREN IPC"
-					+ " WHERE IPC.GROUP_ID = IPP.GROUP_ID"
-					+ " AND IPC.CHILD_POI_PID IN (" + StringUtils.join(pidList.toArray(),",") + ")";
-			
-			ResultSetHandler<Map<Long,Long>> rsHandler = new ResultSetHandler<Map<Long,Long>>() {
-				public Map<Long,Long> handle(ResultSet rs) throws SQLException {
-					Map<Long,Long> result = new HashMap<Long,Long>();
-					while (rs.next()) {
-						long parentPid = rs.getLong("PARENT_POI_PID");
-						long childPid = rs.getLong("CHILD_POI_PID");
-						result.put(childPid, parentPid);
-					}
-					return result;
-				}
-			};
-			
-			log.info("getIxPoiParentMapByChildrenPidList查询主表："+sql);
-			childPidParentPid = new QueryRunner().query(conn,sql, rsHandler);
-
-			//获取父对象
-			if(childPidParentPid!=null&&!childPidParentPid.isEmpty()){
-				Set<String> tabNames = new HashSet<String>();
-				tabNames.add("IX_POI_PARENT");
-				tabNames.add("IX_POI_CHILDREN");
-				Map<Long,BasicObj> objs = ObjBatchSelector.selectByPids(conn, ObjectType.IX_POI, tabNames, childPidParentPid.values(), true, true);
-				for(BasicObj obj:objs.values()){
-					long pid = obj.objPid();
-					for(Map.Entry<Long, Long> entry:childPidParentPid.entrySet()){
-						if(pid==entry.getValue()){
-							objMap.put(entry.getKey(), obj);
-						}
-					}
-				}
-			}
-			return objMap;
-		}catch(Exception e){
-			DbUtils.rollbackAndCloseQuietly(conn);
-			log.error(e.getMessage(), e);
-			throw new ServiceException("查询失败，原因为:"+e.getMessage(),e);
-		}
-	}
 	
 	/**
 	 * 查询子POI的fid

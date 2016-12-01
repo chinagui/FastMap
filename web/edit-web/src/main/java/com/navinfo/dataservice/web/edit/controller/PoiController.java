@@ -1,6 +1,8 @@
 package com.navinfo.dataservice.web.edit.controller;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,12 +31,18 @@ import net.sf.json.JSONObject;
 public class PoiController extends BaseController{
 	private static final Logger logger = Logger.getLogger(EditController.class);
 	
+
 	/**
-	 * 安卓下载
+	 * @Title: getPoi
+	 * @Description: 安卓下载 (修)(第七迭代)(变更 : 增加返回值  poi下载时间)
 	 * @param request
 	 * @param response
+	 * @return
 	 * @throws ServletException
-	 * @throws IOException
+	 * @throws IOException  ModelAndView
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2016年11月29日 下午8:48:59 
 	 */
 	@RequestMapping(value = "/poi/base/download")
 	public ModelAndView getPoi(HttpServletRequest request,
@@ -57,8 +65,14 @@ public class PoiController extends BaseController{
 			
 			PoiDownloadOperation operation = new PoiDownloadOperation();
 			String url = operation.generateZip(gridDateMap);
-			
-			return new ModelAndView("jsonView", success(url));
+			//*********zl 2016.11.29 ***********
+			String poisDownloadDate = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());//增加抽取时间 poisDownloadDate
+			Map<String,String> dateMap = new HashMap<String,String>();
+			dateMap.put("url", url);
+			dateMap.put("poisDownloadDate", poisDownloadDate);
+			return new ModelAndView("jsonView", success(dateMap));
+			//*********zl 2016.11.29 ***********
+			//return new ModelAndView("jsonView", success(url));
 		}catch(Exception e){
 			String logid = Log4jUtils.genLogid();
 

@@ -2,6 +2,7 @@ package com.navinfo.dataservice.control.app.download;
 
 import java.io.File;
 import java.io.PrintWriter;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -29,7 +30,9 @@ import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiChildrenForAndroid;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiContact;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiName;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiParentForAndroid;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxSamepoiForAndroid;
 import com.navinfo.dataservice.dao.glm.search.batch.PoiGridIncreSearch;
+import com.navinfo.dataservice.dao.glm.search.batch.ixpoi.IxSamepoiHandler;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONNull;
@@ -610,6 +613,18 @@ public class PoiDownloadOperation {
 			jsonObj.put("geometry", geometry);
 			
 			jsonObj.put("t_operateDate", "");
+			
+			//处理统一关系 获取  samefid
+			IxSamepoiForAndroid samepoi = new IxSamepoiForAndroid();
+			List<IRow> samepoiList = poi.getSamepois();
+			if (samepoiList.size()>0) {
+				samepoi = (IxSamepoiForAndroid)poi.getSamepois().get(0);
+			}
+			if (samepoi.getPoiNum() == null) {
+				jsonObj.put("sameFid", "");
+			} else {
+				jsonObj.put("sameFid", samepoi.getPoiNum());
+			}
 			
 			retList.add(jsonObj);
 		}

@@ -44,6 +44,8 @@ import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiContact;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiName;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiParent;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiPhoto;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxSamepoi;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxSamepoiPart;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 import com.navinfo.dataservice.engine.edit.service.EditApiImpl;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -861,6 +863,30 @@ public class UploadOperation {
 				}
 				poi.setChargingplots(chargingPoleList);
 			}
+			//***********2016.11.30****************
+			// 同一关系
+//				if (jo.getString("sameFid") !=null  && StringUtils.isNotEmpty(jo.getString("sameFid"))) {
+//					List<IRow> nameList = new ArrayList<IRow>();
+//					IxPoiName poiName = new IxPoiName();
+//					int nameId = PidUtil.getInstance().applyPoiNameId();
+//					poiName.setPid(nameId);
+//					poiName.setPoiPid(pid);
+//					poiName.setNameGroupid(1);
+//					poiName.setLangCode("CHI");
+//					poiName.setNameClass(1);
+//					poiName.setNameType(2);
+//					poiName.setName(poi.getOldName());
+//					poiName.setRowId(UuidUtils.genUuid());
+//					nameList.add(poiName);
+//					poi.setNames(nameList);
+//					
+//					IxSamepoi samepoi = new IxSamepoi();
+//					IxSamepoiPart samepoiPart =new IxSamepoiPart();
+//					 List<IRow> samepois = new ArrayList<IRow>();
+//					 List<IRow> samepoiParts = new ArrayList<IRow>();
+//				}
+			
+			//*************************************
 			
 
 			retObj.put("flag", 1);

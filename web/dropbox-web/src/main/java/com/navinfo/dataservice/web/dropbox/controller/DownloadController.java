@@ -119,12 +119,20 @@ public class DownloadController extends BaseController {
 	@RequestMapping(value = "/download/metadata")
 	public ModelAndView getPatternimg(HttpServletRequest request)
 			throws ServletException, IOException {
-
+		String parameter = request.getParameter("parameter");
+		int type = 1;
 		try {
+			JSONObject json = JSONObject.fromObject(parameter);
 
+			type = json.getInt("type");
 			DownloadService manager = DownloadService.getInstance();
-
-			JSONObject data = manager.getPatternimg();
+			JSONObject data = null;
+			if(type == 0){
+				data = manager.getMetadta();
+			}else{
+				 data = manager.getPatternimg();
+			}
+			
 
 			return new ModelAndView("jsonView", success(data));
 

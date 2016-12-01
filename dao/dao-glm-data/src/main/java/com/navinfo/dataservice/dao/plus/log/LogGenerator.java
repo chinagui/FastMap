@@ -11,6 +11,7 @@ import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.BasicObjGrid;
+import com.navinfo.dataservice.dao.plus.operation.OperationResult;
 import com.navinfo.dataservice.dao.plus.selector.ObjSelector;
 
 /** 
@@ -27,6 +28,10 @@ public class LogGenerator {
 	PreparedStatement perstmtLogDetail = null;
 	PreparedStatement perstmtLogDetailGrid = null;
 
+	public void writeLog(Connection conn,boolean isUnionOperation,OperationResult result,String opCmd,int opSg,long userId) throws Exception{
+		Collection<BasicObj> allObjs = result.getAllObjs();
+		writeLog( conn, isUnionOperation, allObjs, opCmd, opSg, userId);
+	}
 	/**
 	 * 生成履历
 	 * @param conn

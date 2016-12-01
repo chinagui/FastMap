@@ -9,6 +9,7 @@ import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiAddress;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiChildren;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiContact;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiDetail;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiGasstation;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiHotel;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiParent;
@@ -108,6 +109,12 @@ public class IxPoiObj extends AbstractIxObj {
 		}
 		return ixPoiRestaurant;
 //		return (IxPoiRestaurant)(ObjFactory.getInstance().createRow("IX_POI_RESTAURANT", this.objPid()));
+	}
+	public List<IxPoiGasstation> getIxPoiGasstations(){
+		return (List)subrows.get("IxPoiGasstation");
+	}
+	public IxPoiGasstation createIxPoiGasstation()throws Exception{
+		return null;
 	}
 	public List<IxPoiHotel> getIxPoiHotels(){
 		return (List)subrows.get("IX_POI_HOTEL");

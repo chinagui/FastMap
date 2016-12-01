@@ -1,6 +1,8 @@
 package com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.rule;
 
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
@@ -11,6 +13,7 @@ import com.navinfo.dataservice.engine.editplus.model.batchAndCheck.BatchRuleComm
 public abstract class BasicBatchRule {
 	private BatchRuleCommand batchRuleCommand;
 	private BatchRule batchRule;
+	public Map<String,Map<Long, BasicObj>> myReferDataMap=new HashMap<String, Map<Long,BasicObj>>();
 
 	public BatchRule getBatchRule() {
 		return batchRule;
@@ -36,14 +39,17 @@ public abstract class BasicBatchRule {
 	}
 	
 	public void run() throws Exception{
-		Map<Long, BasicObj> rows=getRowList();
+		Map<Long, BasicObj> rows=getRowList();	
+		loadReferDatas(rows.values());
 		for(Long key:rows.keySet()){
 			BasicObj obj=rows.get(key);
 			if(!obj.getMainrow().getOpType().equals(OperationType.PRE_DELETED)){
 				runBatch(obj);
 			}
 		}
-		}
+	}
+	
+	public abstract void loadReferDatas(Collection<BasicObj> batchDataList) throws Exception;
 	
 	public abstract void runBatch(BasicObj obj) throws Exception;
 
@@ -54,5 +60,4 @@ public abstract class BasicBatchRule {
 	public void setBatchRuleCommand(BatchRuleCommand batchRuleCommand) {
 		this.batchRuleCommand = batchRuleCommand;
 	}
-
 }

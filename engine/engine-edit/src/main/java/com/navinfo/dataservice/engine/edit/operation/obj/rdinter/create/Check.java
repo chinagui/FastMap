@@ -23,6 +23,8 @@ public class Check {
 	
 	private Command command;
 	
+	public Check(){};
+	
 	public Check(Command command)
 	{
 		this.command = command;
@@ -33,11 +35,13 @@ public class Check {
 		@SuppressWarnings("unchecked")
 		List<Integer> linkPids = (List<Integer>) JSONArray.toCollection(command.getLinkArray());
 		
-		List<RdLink> linkList = new RdLinkSelector(conn).loadByPids(linkPids, true);
-		
-		//检查link形态
-		checkLinkDirect(linkList);
+		if(CollectionUtils.isNotEmpty(linkPids))
+		{
+			List<RdLink> linkList = new RdLinkSelector(conn).loadByPids(linkPids, true);
 			
+			//检查link形态
+			checkLinkDirect(linkList);
+		}
 	}
 	
 	/**

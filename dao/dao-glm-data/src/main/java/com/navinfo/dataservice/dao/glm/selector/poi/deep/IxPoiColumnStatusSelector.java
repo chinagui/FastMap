@@ -406,10 +406,9 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 	 * @return
 	 * @throws Exception
 	 */
-	public List<String> queryClassifyByRowid(Object rowId, Object taskId) throws Exception {
+	public List<String> queryClassifyByPid(int pid) throws Exception {
 		StringBuilder sb = new StringBuilder();
-		sb.append(
-				"SELECT work_item_id,handler FROM poi_deep_status s where s.row_id=:1 and s.first_work_status=1 and s.task_id=:2 ");
+		sb.append("SELECT work_item_id FROM poi_deep_status s where s.pid=:1 and s.first_work_status=1 ");
 
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
@@ -419,8 +418,7 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 		try {
 			pstmt = conn.prepareStatement(sb.toString());
 
-			pstmt.setString(1, (String) rowId);
-			pstmt.setInt(2, (int) taskId);
+			pstmt.setInt(1, pid);
 
 			resultSet = pstmt.executeQuery();
 

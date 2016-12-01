@@ -44,7 +44,7 @@ public class ObjChildrenIncreSelector {
 				//逐个对象
 				for(Map.Entry<Long, BasicObj> entry:objs.entrySet()){
 					BasicObj obj = entry.getValue();
-					if(obj.getMainrow().getOpType().equals(OperationType.UPDATE)
+					if((obj.getMainrow().getOpType().equals(OperationType.UPDATE)||obj.getMainrow().getOpType().equals(OperationType.DELETE))
 							&&obj.getRowsByName(tab)==null){
 						myObjs.add(obj);
 						pids.add(entry.getKey());

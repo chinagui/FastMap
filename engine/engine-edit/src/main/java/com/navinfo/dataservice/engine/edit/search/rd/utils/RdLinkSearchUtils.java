@@ -396,18 +396,19 @@ public class RdLinkSearchUtils {
 	 * @param cuurentLinkPid
 	 * @param cruuentNodePidDir
 	 * @param maxNum
+	 * @param loadChild 是否加载子表
 	 * @return 查找所有联通link
 	 * @throws Exception
 	 */
 	public List<RdLink> getNextTrackLinks(int cuurentLinkPid,
-			int cruuentNodePidDir, int maxNum) throws Exception {
+			int cruuentNodePidDir, int maxNum,boolean loadChild) throws Exception {
 		RdLinkSelector linkSelector = new RdLinkSelector(conn);
 		List<RdLink> tracks = new ArrayList<RdLink>();
 		Set<Integer> nodes = new HashSet<Integer>();
 
 		// 添加当前选中的link
-		RdLink fristLink = (RdLink) linkSelector.loadByIdOnlyRdLink(
-				cuurentLinkPid, true);
+		RdLink fristLink = (RdLink) linkSelector.loadById(cuurentLinkPid,
+				!loadChild);
 		nodes.add(fristLink.getsNodePid());
 		nodes.add(fristLink.geteNodePid());
 		tracks.add(fristLink);
@@ -417,7 +418,7 @@ public class RdLinkSearchUtils {
 		while (nextLinks.size() > 0) {
 			// 加载当前link
 			RdLink currentLink = (RdLink) linkSelector.loadById(cuurentLinkPid,
-					true);
+					!loadChild);
 			// 计算当前link直线的几何属性
 			LineSegment currentLinklineSegment = getLineSegment(currentLink,
 					cruuentNodePidDir);

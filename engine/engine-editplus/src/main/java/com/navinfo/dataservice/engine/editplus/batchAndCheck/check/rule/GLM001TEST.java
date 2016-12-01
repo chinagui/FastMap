@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.editplus.batchAndCheck.check.rule;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -32,6 +33,13 @@ public class GLM001TEST extends BasicCheckRule {
 				}
 			}
 		}else if(obj.objName().equals(ObjectName.AD_LINK)){}
+	}
+
+	@Override
+	public void loadReferDatas(Collection<BasicObj> batchDataList)
+			throws Exception {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

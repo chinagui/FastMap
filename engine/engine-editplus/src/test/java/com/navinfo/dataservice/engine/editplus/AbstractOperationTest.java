@@ -1,7 +1,10 @@
 package com.navinfo.dataservice.engine.editplus;
 
 import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.junit.Before;
@@ -12,6 +15,7 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
+import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
 import com.navinfo.dataservice.dao.plus.selector.ObjSelector;
 import com.navinfo.dataservice.engine.editplus.operation.imp.PoiRelation;
 import com.navinfo.dataservice.engine.editplus.operation.imp.PoiRelationImportor;
@@ -63,6 +67,39 @@ public class AbstractOperationTest {
 			OperationResult result = new OperationResult();
 			result.isObjExist(obj);
 			result.putObj(obj);
+			PoiRelationImportor imp = new PoiRelationImportor(conn,result);
+			imp.persistChangeLog(2, (long)1);
+			
+			System.out.println("Over.");
+
+		}catch(Exception e){
+			System.out.println("Oops, something wrong...");
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	//增
+	public void test1(){
+		try{
+			Connection conn = null;
+			conn = DBConnector.getInstance().getConnectionById(17);
+			String objType = "IX_POI";
+			Collection<Long> pids = new ArrayList<Long>();
+			pids.add((long) 308);
+			pids.add((long) 316);
+			pids.add((long) 317);
+			boolean isLock = false;
+			boolean isNowait = false;
+
+			Map<Long,BasicObj> objs = ObjBatchSelector.selectByPids(conn, objType, null, pids, isLock,isNowait);
+			OperationResult result = new OperationResult();
+			for(BasicObj obj:objs.values()){
+				obj.deleteObj();
+				result.isObjExist(obj);
+				result.putObj(obj);
+			}
+
 			PoiRelationImportor imp = new PoiRelationImportor(conn,result);
 			imp.persistChangeLog(2, (long)1);
 			

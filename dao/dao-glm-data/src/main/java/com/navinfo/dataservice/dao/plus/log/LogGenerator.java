@@ -19,6 +19,7 @@ import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.BasicObjGrid;
+import com.navinfo.dataservice.dao.plus.operation.OperationResult;
 import com.navinfo.dataservice.dao.plus.selector.ObjSelector;
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -30,6 +31,31 @@ import com.vividsolutions.jts.geom.Geometry;
  */
 public class LogGenerator {
 	
+	
+	String insertLogOperationSql = "INSERT INTO LOG_OPERATION (OP_ID,US_ID,OP_CMD,OP_DT,OP_SG) VALUES (?,?,?,SYSDATE,?)";
+	String insertLogDetailSql = "INSERT INTO LOG_DETAIL (OP_ID,ROW_ID,OB_NM,OB_PID,TB_NM,OLD,NEW,FD_LST,OP_TP,TB_ROW_ID) VALUES (?,?,?,?,?,?,?,?,?,?)";
+	String insertLogDetailGridSql = "INSERT INTO LOG_DETAIL_GRID (LOG_ROW_ID,GRID_ID,GRID_TYPE) VALUES (?,?,?)";
+	PreparedStatement perstmtLogOperation = null;
+	PreparedStatement perstmtLogDetail = null;
+	PreparedStatement perstmtLogDetailGrid = null;
+
+	public void writeLog(Connection conn,boolean isUnionOperation,Collection<BasicObj> allObjs,String opCmd,int opSg,long userId)throws Exception{
+		if(allObjs==null||allObjs.size()==0)return;
+		
+		//获得log pstm
+		LogGenerator.generate(conn, isUnionOperation,allObjs, opCmd, opSg, userId);
+
+		if(perstmtLogOperation!=null){
+			perstmtLogOperation.executeBatch();
+		}
+		if(perstmtLogDetail!=null){
+			perstmtLogDetail.executeBatch();
+		}
+		if(perstmtLogDetailGrid!=null){
+			perstmtLogDetailGrid.executeBatch();
+		}
+	}
+	
 	/**
 	 * 根据编辑结果生成履历模型对象
 	 * @param basicObjs
@@ -40,7 +66,7 @@ public class LogGenerator {
 	 * @return
 	 * @throws Exception
 	 */
-	public static List<PreparedStatement> generate(Connection conn,boolean oneOperation,Collection<BasicObj> basicObjs,String opCmd,int opSg,long userId)throws Exception{
+	public static List<PreparedStatement> generate(Connection conn,boolean isUnionOperation,Collection<BasicObj> basicObjs,String opCmd,int opSg,long userId)throws Exception{
 		List<PreparedStatement> perstmtList = new ArrayList<PreparedStatement>();
 		String insertLogOperationSql = "INSERT INTO LOG_OPERATION (OP_ID,US_ID,OP_CMD,OP_DT,OP_SG) VALUES (?,?,?,SYSDATE,?)";
 		String insertLogDetailSql = "INSERT INTO LOG_DETAIL (OP_ID,ROW_ID,OB_NM,OB_PID,TB_NM,OLD,NEW,FD_LST,OP_TP,TB_ROW_ID) VALUES (?,?,?,?,?,?,?,?,?,?)";
@@ -51,20 +77,27 @@ public class LogGenerator {
 		perstmtList.add(perstmtLogOperation);
 		perstmtList.add(perstmtLogDetail);
 		perstmtList.add(perstmtLogDetailGrid);
-
+		
+		String geoChangeOpId=null;
 		if(basicObjs!=null&&basicObjs.size()>0){
-			Date opDt = new Date();
 			for(BasicObj basicObj:basicObjs){
-				//写入LOG_OPERATION
-				DateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-				//UUID
-				String opId = UuidUtils.genUuid();
-				perstmtLogOperation.setString(1, opId);
-				perstmtLogOperation.setLong(2, userId);
-				perstmtLogOperation.setString(3, opCmd);
-				perstmtLogOperation.setString(4, format.format(opDt));
-				perstmtLogOperation.setInt(5, opSg);
-				perstmtLogOperation.addBatch();
+				//operation
+				if(isUnionOperation&&basicObj.isGeoChanged()){
+					if(geoChangeOpId==null){
+						geoChangeOpId=UuidUtils.genUuid();
+						perstmtLogOperation.setString(1, geoChangeOpId);
+						perstmtLogOperation.setLong(2, userId);
+						perstmtLogOperation.setString(3, opCmd);
+						perstmtLogOperation.setInt(4, opSg);
+						perstmtLogOperation.addBatch();
+					}
+				}else{
+					perstmtLogOperation.setString(1, UuidUtils.genUuid());
+					perstmtLogOperation.setLong(2, userId);
+					perstmtLogOperation.setString(3, opCmd);
+					perstmtLogOperation.setInt(4, opSg);
+					perstmtLogOperation.addBatch();
+				}
 
 				//主表，更新log_detail,log_detail_grid
 				goThroughOneBasicRow(conn,perstmtLogDetail,perstmtLogDetailGrid,basicObj,basicObj.getMainrow(),opId);
@@ -91,7 +124,7 @@ public class LogGenerator {
 	 * @param opId
 	 * @throws Exception 
 	 */
-	private static void goThroughOneBasicRow(Connection conn, PreparedStatement perstmtLogDetail,
+	private boolean goThroughOneBasicRow(Connection conn, PreparedStatement perstmtLogDetail,
 			PreparedStatement perstmtLogDetailGrid, BasicObj basicObj, BasicRow subrow, String opId) throws Exception {
 		//新增
 		if(subrow.getOpType().equals(OperationType.INSERT)){
@@ -216,12 +249,4 @@ public class LogGenerator {
 	}
 	
 	
-	public static void writeLog(Connection conn,boolean oneOperation,Collection<BasicObj> basicObjs,String opCmd,int opSg,long userId)throws Exception{
-		//获得log PreparedStatement list
-		List<PreparedStatement> preparedStatementList = LogGenerator.generate(conn, oneOperation,basicObjs, opCmd, opSg, userId);
-		//执行log preparedStatement List
-		for(PreparedStatement preparedStatement:preparedStatementList){
-			preparedStatement.executeBatch();
-		}
-	}
 }

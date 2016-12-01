@@ -332,15 +332,32 @@ public class SearchProcess {
 					int cruuentNodePidDir = condition.getInt("nodePidDir");
 					int cuurentLinkPid = condition.getInt("linkPid");
 					int maxNum = 11;
+					boolean loadChild = false;
 					// 默认是11条 以传入为准
 					if (condition.containsKey("maxNum")) {
 						maxNum = condition.getInt("maxNum");
 					}
+					if(condition.containsKey("loadChild"))
+					{
+						int flag = condition.getInt("loadChild");
+						
+						if(flag == 1)
+						{
+							loadChild = true;
+						}
+					}
 					RdLinkSearchUtils searchUtils = new RdLinkSearchUtils(conn);
 					List<RdLink> links = searchUtils.getNextTrackLinks(
-							cuurentLinkPid, cruuentNodePidDir, maxNum);
+							cuurentLinkPid, cruuentNodePidDir, maxNum,loadChild);
 					for (RdLink link : links) {
-						array.add(link.Serialize(ObjLevel.BRIEF));
+						if(loadChild)
+						{
+							array.add(link.Serialize(ObjLevel.FULL));
+						}
+						else
+						{
+							array.add(link.Serialize(ObjLevel.BRIEF));
+						}
 					}
 				} else if (condition.containsKey("linkPids")) {
 					JSONArray linkPids = condition.getJSONArray("linkPids");

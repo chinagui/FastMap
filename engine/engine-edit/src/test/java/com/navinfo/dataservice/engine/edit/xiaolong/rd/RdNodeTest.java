@@ -11,8 +11,10 @@ import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
+import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneNode;
 import com.navinfo.dataservice.dao.glm.search.LuNodeSearch;
 import com.navinfo.dataservice.dao.glm.search.RdNodeSearch;
+import com.navinfo.dataservice.dao.glm.search.ZoneNodeSearch;
 import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.operation.Transaction;
 
@@ -88,9 +90,9 @@ public class RdNodeTest extends InitApplication{
 		try {
 			conn = DBConnector.getInstance().getConnectionById(17);
 
-			LuNodeSearch search = new LuNodeSearch(conn);
+			ZoneNodeSearch search = new ZoneNodeSearch(conn);
 			
-			String wkt = "{\"type\":\"Polygon\",\"coordinates\":[[[116.47459924221039,40.01212246574435],[116.47459924221039,40.012862019273015],[116.47541999816893,40.012862019273015],[116.47541999816893,40.01212246574435],[116.47459924221039,40.01212246574435]]]}}";
+			String wkt = "{\"type\":\"Polygon\",\"coordinates\":[[[116.47709906101225,40.01283736761785],[116.47709906101225,40.01289488813274],[116.47717416286469,40.01289488813274],[116.47717416286469,40.01283736761785],[116.47709906101225,40.01283736761785]]]}}";
 			
 			List<SearchSnapshot> searchSnapshot = search.searchDataBySpatial(Geojson.geojson2Wkt(wkt));
 			

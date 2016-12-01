@@ -28,12 +28,12 @@ public class GLM001TEST extends BasicBatchRule {
 
 	@Override
 	public void runBatch(BasicObj obj) throws Exception {
-		if(obj.objType().equals(ObjectName.IX_POI)){
+		if(obj.objName().equals(ObjectName.IX_POI)){
 			IxPoiObj poiObj=(IxPoiObj) obj;
 			IxPoi poi=(IxPoi) poiObj.getMainrow();
-			if(!poi.hisOldValueContains(IxPoi.KIND_CODE)){return;}
-			String oldKindCode=(String) poi.getHisOldValue(IxPoi.KIND_CODE);
-			if(!oldKindCode.isEmpty()){poi.setKindCode("test124");}
+			//if(!poi.hisOldValueContains(IxPoi.KIND_CODE)){return;}
+			//String oldKindCode=(String) poi.getHisOldValue(IxPoi.KIND_CODE);
+			//if(!oldKindCode.isEmpty()){poi.setKindCode("test124");}
 			List<IxPoiName> subRows=poiObj.getIxPoiNames();
 			for(IxPoiName br:subRows){
 				if(br.getHisOpType().equals(OperationType.UPDATE)){
@@ -43,15 +43,22 @@ public class GLM001TEST extends BasicBatchRule {
 			IxPoiObj ixpoiObj = (IxPoiObj)obj;
 			IxPoiName name = ixpoiObj.createIxPoiName();
 			name.setLangCode("CHI");
+			
 			Long parentId=parentIds.get(poiObj.objPid());
 			BasicObj parentObj=myReferDataMap.get(ObjectName.IX_POI).get(parentId);
 			if(parentObj!=null){
 				IxPoiObj ixPoiParentObj=(IxPoiObj) parentObj;
 				List<IxPoiGasstation> gassRows = ixPoiParentObj.getIxPoiGasstations();
+				if (gassRows==null || gassRows.size()==0) {
+					IxPoi poiParent=(IxPoi) ixPoiParentObj.getMainrow();
+					poiParent.setKindCode("parentKindCode");
+					return;
+				}
 				for(IxPoiGasstation gass:gassRows){
 					gass.setService("updateService");
+					
 				}}
-		}else if(obj.objType().equals(ObjectName.AD_LINK)){}
+		}else if(obj.objName().equals(ObjectName.AD_LINK)){}
 	}
 	@Override
 	public void loadReferDatas(Collection<BasicObj> batchDataList) throws Exception{

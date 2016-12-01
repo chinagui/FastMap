@@ -88,9 +88,9 @@ public class RdNodeTest extends InitApplication{
 		try {
 			conn = DBConnector.getInstance().getConnectionById(17);
 
-			RdNodeSearch search = new RdNodeSearch(conn);
+			LuNodeSearch search = new LuNodeSearch(conn);
 			
-			String wkt = "{\"type\":\"Polygon\",\"coordinates\":[[[116.47654116153716,40.01106242504529],[116.47654116153716,40.01114049061955],[116.47666454315184,40.01114049061955],[116.47666454315184,40.01106242504529],[116.47654116153716,40.01106242504529]]]}}";
+			String wkt = "{\"type\":\"Polygon\",\"coordinates\":[[[116.47459924221039,40.01212246574435],[116.47459924221039,40.012862019273015],[116.47541999816893,40.012862019273015],[116.47541999816893,40.01212246574435],[116.47459924221039,40.01212246574435]]]}}";
 			
 			List<SearchSnapshot> searchSnapshot = search.searchDataBySpatial(Geojson.geojson2Wkt(wkt));
 			

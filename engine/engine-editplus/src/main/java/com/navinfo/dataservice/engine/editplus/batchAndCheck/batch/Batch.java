@@ -3,11 +3,13 @@ package com.navinfo.dataservice.engine.editplus.batchAndCheck.batch;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
+import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.dataservice.dao.plus.operation.AbstractCommand;
 import com.navinfo.dataservice.dao.plus.operation.AbstractOperation;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
@@ -38,8 +40,8 @@ public class Batch extends AbstractOperation{
 			rule.setAccessorType("JAVA");
 			rule.setAccessor("com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.rule.GLM001TEST");
 			Set<String> objNameSet=new HashSet<String>();
-			objNameSet.add(ObjectType.IX_POI);
-			objNameSet.add(ObjectType.AD_LINK);
+			objNameSet.add(ObjectName.IX_POI);
+			objNameSet.add(ObjectName.AD_LINK);
 			//"IX_POI,AD_LINK"
 			rule.setObjNameSet(objNameSet);
 			Map<String, Set<String>> referSubtableMap=new HashMap<String, Set<String>>();
@@ -47,7 +49,8 @@ public class Batch extends AbstractOperation{
 			objNameSetsub.add("IX_POI_NAME");
 			referSubtableMap.put("IX_POI", objNameSetsub);
 			//{"IX_POI":{"IX_POI_NAME","IX_POI_CHILDREN"}}
-			rule.setReferSubtableMap(referSubtableMap);*/
+			rule.setReferSubtableMap(referSubtableMap);
+			//rule.setChangeReferData(true);*/
 			batchRuleList.add(rule);
 			if(rule.isChangeReferData()){changeReferData=true;}
 			Map<String, Set<String>> tmpMap = rule.getReferSubtableMap();
@@ -76,15 +79,15 @@ public class Batch extends AbstractOperation{
 		log.info("start put changeReferData to operationResult");
 		/*若存在修改参考数据的规则，则遍历batchRuleCommand中的referDatas将修改的数据put入result中；
 		 * 调用batch的调用方，通过batch.persistChangeLog将变更持久化*/
-		if(changeReferData){
-			for(Map<Long, BasicObj> referMap:batchRuleCommand.getReferDatas().values()){
-				for(BasicObj obj:referMap.values()){
-					if (obj.isChanged()) {
-						result.putObj(obj);
-					}
+		//if(changeReferData){
+		for(Map<Long, BasicObj> referMap:batchRuleCommand.getReferDatas().values()){
+			for(BasicObj obj:referMap.values()){
+				if (obj.isChanged()) {
+					result.putObj(obj);
 				}
 			}
 		}
+		//}
 		log.info("end exe batch");
 	}
 

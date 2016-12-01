@@ -15,7 +15,7 @@ import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiParent;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
-import com.navinfo.dataservice.dao.plus.obj.ObjectType;
+import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
 import com.navinfo.dataservice.engine.editplus.model.batchAndCheck.BatchRuleCommand;
 
@@ -28,7 +28,7 @@ public class GLM001TEST extends BasicBatchRule {
 
 	@Override
 	public void runBatch(BasicObj obj) throws Exception {
-		if(obj.objType().equals(ObjectType.IX_POI)){
+		if(obj.objType().equals(ObjectName.IX_POI)){
 			IxPoiObj poiObj=(IxPoiObj) obj;
 			IxPoi poi=(IxPoi) poiObj.getMainrow();
 			if(!poi.hisOldValueContains(IxPoi.KIND_CODE)){return;}
@@ -44,14 +44,14 @@ public class GLM001TEST extends BasicBatchRule {
 			IxPoiName name = ixpoiObj.createIxPoiName();
 			name.setLangCode("CHI");
 			Long parentId=parentIds.get(poiObj.objPid());
-			BasicObj parentObj=myReferDataMap.get(ObjectType.IX_POI).get(parentId);
+			BasicObj parentObj=myReferDataMap.get(ObjectName.IX_POI).get(parentId);
 			if(parentObj!=null){
 				IxPoiObj ixPoiParentObj=(IxPoiObj) parentObj;
 				List<IxPoiGasstation> gassRows = ixPoiParentObj.getIxPoiGasstations();
 				for(IxPoiGasstation gass:gassRows){
 					gass.setService("updateService");
 				}}
-		}else if(obj.objType().equals(ObjectType.AD_LINK)){}
+		}else if(obj.objType().equals(ObjectName.AD_LINK)){}
 	}
 	@Override
 	public void loadReferDatas(Collection<BasicObj> batchDataList) throws Exception{
@@ -63,8 +63,8 @@ public class GLM001TEST extends BasicBatchRule {
 		Set<String> referSubrow=new HashSet<String>();
 		referSubrow.add("IX_POI_GASSTATION");
 		//要修改父信息，所以此处isLock=true
-		Map<Long, BasicObj> referObjs = getBatchRuleCommand().loadReferObjs(parentIds.values(), ObjectType.IX_POI, referSubrow, true);
-		myReferDataMap.put(ObjectType.IX_POI, referObjs);
+		Map<Long, BasicObj> referObjs = getBatchRuleCommand().loadReferObjs(parentIds.values(), ObjectName.IX_POI, referSubrow, true);
+		myReferDataMap.put(ObjectName.IX_POI, referObjs);
 	}
 
 }

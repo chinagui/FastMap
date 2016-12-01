@@ -16,7 +16,7 @@ import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiChildren;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiParent;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjFactory;
-import com.navinfo.dataservice.dao.plus.obj.ObjectType;
+import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.dataservice.dao.plus.operation.AbstractCommand;
 import com.navinfo.dataservice.dao.plus.operation.AbstractOperation;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
@@ -62,7 +62,7 @@ public class PoiRelationImportor extends AbstractOperation{
 				long fatherPid = poiRelation.getFatherPid();
 				childPidParentPid.put(pid, fatherPid);
 				//需要加载的父对象存在pid,优先用pid加载;pid不存在用fid加载;pid/fid均为空则不加载
-				if(fatherPid!=0&&!result.isObjExist(ObjectType.IX_POI,fatherPid)){
+				if(fatherPid!=0&&!result.isObjExist(ObjectName.IX_POI,fatherPid)){
 					parentPidChildPid.put(fatherPid, pid);
 				}else{
 					String fatherFid = poiRelation.getFatherFid();
@@ -70,7 +70,7 @@ public class PoiRelationImportor extends AbstractOperation{
 					{
 						//result中是否含此父对象。如果包含则不加载
 						boolean isFatherExist = false;
-						for(Map.Entry<Long, BasicObj> entry:result.getObjsMapByType(ObjectType.IX_POI).entrySet()){
+						for(Map.Entry<Long, BasicObj> entry:result.getObjsMapByType(ObjectName.IX_POI).entrySet()){
 							BasicRow fatherObj = entry.getValue().getMainrow();
 							if(fatherObj.getAttrByColName("POI_NUM").equals(fatherFid)){
 								childPidParentPid.put(pid, fatherObj.getObjPid());
@@ -152,7 +152,7 @@ public class PoiRelationImportor extends AbstractOperation{
 				 */
 				if(childPidOriginParentPid.containsKey(childPid)&&childPidOriginParentPid.get(childPid)!=parentPid){
 					log.info("解除原始父子关系，childPid:" + childPid + ";parentPid:" + childPidOriginParentPid.get(childPid));
-					BasicObj origionParentObj = result.getObjsMapByType(ObjectType.IX_POI).get(childPidOriginParentPid.get(childPid));
+					BasicObj origionParentObj = result.getObjsMapByType(ObjectName.IX_POI).get(childPidOriginParentPid.get(childPid));
 					List<BasicRow> ixPoiChildrenList = origionParentObj.getRowsByName("IX_POI_CHILDREN");
 					List<BasicRow> ixPoiParentList = origionParentObj.getRowsByName("IX_POI_PARENT");
 					if(ixPoiChildrenList.size()==1
@@ -171,7 +171,7 @@ public class PoiRelationImportor extends AbstractOperation{
 				 */
 				if(parentPid!=0){
 					log.info("创建父子关系，childPid:" + childPid + ";parentPid:" + parentPid);
-					BasicObj parentObj = result.getObjsMapByType(ObjectType.IX_POI).get(parentPid);
+					BasicObj parentObj = result.getObjsMapByType(ObjectName.IX_POI).get(parentPid);
 					List<BasicRow> parentList = new ArrayList<BasicRow>();
 					if(parentObj.getRowsByName("IX_POI_PARENT")==null||parentObj.getRowsByName("IX_POI_PARENT").isEmpty()){
 						//非父节点，需要创建其为父节点
@@ -220,12 +220,12 @@ public class PoiRelationImportor extends AbstractOperation{
 			//需要加载的原始父对象Pid
 			Map<Long,Long> childPidOriginParentPidNeedToBeLoad = new HashMap<Long,Long>();
 			for(Map.Entry<Long, Long> entry:childPidOriginParentPid.entrySet()){
-				if(!result.isObjExist(ObjectType.IX_POI, entry.getValue())){
+				if(!result.isObjExist(ObjectName.IX_POI, entry.getValue())){
 					childPidOriginParentPidNeedToBeLoad.put(entry.getKey(), entry.getValue());
 				}
 			}
 			//加载子对象原始父对象
-			Map<Long,BasicObj> originParentMap = ObjBatchSelector.selectByPids(conn, ObjectType.IX_POI, tabNames, childPidOriginParentPidNeedToBeLoad.values(), true, true);
+			Map<Long,BasicObj> originParentMap = ObjBatchSelector.selectByPids(conn, ObjectName.IX_POI, tabNames, childPidOriginParentPidNeedToBeLoad.values(), true, true);
 
 			log.info("将缺失的父对象加载到OperationResult");
 			for(Map.Entry<Long, BasicObj> entry:originParentMap.entrySet()){
@@ -254,7 +254,7 @@ public class PoiRelationImportor extends AbstractOperation{
 		//根据fid加载父对象
 		try{
 			if(!parentFidChildPid.keySet().isEmpty()){
-				List<BasicObj> objs = ObjBatchSelector.selectBySpecColumn(conn, ObjectType.IX_POI, tabNames, "POI_NUM", parentFidChildPid.keySet(), true, true);
+				List<BasicObj> objs = ObjBatchSelector.selectBySpecColumn(conn, ObjectName.IX_POI, tabNames, "POI_NUM", parentFidChildPid.keySet(), true, true);
 				for(BasicObj obj:objs){
 					if(!result.isObjExist(obj)){
 						result.putObj(obj);
@@ -297,7 +297,7 @@ public class PoiRelationImportor extends AbstractOperation{
 		//根据Pid加载父对象
 		try{
 			if(!parentPidChildPid.keySet().isEmpty()){
-				Map<Long,BasicObj> objs = ObjBatchSelector.selectByPids(conn, ObjectType.IX_POI, tabNames, parentPidChildPid.keySet(), true, true);
+				Map<Long,BasicObj> objs = ObjBatchSelector.selectByPids(conn, ObjectName.IX_POI, tabNames, parentPidChildPid.keySet(), true, true);
 				//父对象加入OperationResult
 				for(BasicObj obj:objs.values()){
 					if(!result.isObjExist(obj)){

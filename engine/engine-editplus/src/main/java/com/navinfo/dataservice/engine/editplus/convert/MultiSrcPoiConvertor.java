@@ -39,7 +39,15 @@ public class MultiSrcPoiConvertor {
 		JSONObject jo = new JSONObject();
 		IxPoi ixPoi = (IxPoi)poi.getMainrow();
 		//外业采集ID
-		jo.put("fid", ixPoi.getPoiNum());
+		/**
+		 * 测试时临时规定fid为空时,附空字符串
+		 */
+		if(StringUtils.isNotEmpty(ixPoi.getPoiNum())){
+			jo.put("fid", ixPoi.getPoiNum());
+		}else{
+			jo.put("fid", "");
+		}
+		//jo.put("fid", ixPoi.getPoiNum());
 		//显示样式
 		jo.put("display_style", "");
 		//显示用的主名称

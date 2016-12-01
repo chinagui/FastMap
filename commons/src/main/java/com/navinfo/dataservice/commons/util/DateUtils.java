@@ -29,6 +29,7 @@ public class DateUtils {
 	// formatType格式为yyyy-MM-dd HH:mm:ss//yyyy年MM月dd日 HH时mm分ss秒等等
 	// date Date类型的时间
 	public static String dateToString(Date date, String formatType) {
+		if(date==null){return null;}
 		if(StringUtils.isEmpty(formatType)||DATE_DEFAULT_FORMAT.equals(formatType)){
 			return defaultSdf.format(date);
 		}else if(DATE_COMPACTED_FORMAT.equals(formatType)){

@@ -528,6 +528,7 @@ public class SubtaskService {
 						
 						STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
 						try {
+							subtask.put("geometry",GeoTranslator.struct2Wkt(struct));
 							String clobStr = GeoTranslator.struct2Wkt(struct);
 							subtask.put("geometryJSON",Geojson.wkt2Geojson(clobStr));
 						} catch (Exception e1) {

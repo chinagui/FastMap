@@ -28,14 +28,15 @@ public class Check {
 		this.command = command;
 	}
 	
-	public void checkLinkByNode(Connection conn) throws Exception {
+	public void checkLink(Connection conn) throws Exception {
 		
-		String nodePids = JsonUtils.getStringValueFromJSONArray(this.command.getNodeArray());
+		@SuppressWarnings("unchecked")
+		List<Integer> linkPids = (List<Integer>) JSONArray.toCollection(command.getLinkArray());
 		
-		List<RdLink> linkList = new RdLinkSelector(conn).loadLinkPidByNodePids(nodePids, true);
+		List<RdLink> linkList = new RdLinkSelector(conn).loadByPids(linkPids, true);
 		
-		//检查link参数正确性
-		checkLink(linkList);
+		//检查link形态
+		checkLinkDirect(linkList);
 			
 	}
 	
@@ -111,7 +112,7 @@ public class Check {
 	 * @param linkList
 	 * @throws Exception
 	 */
-	private void checkLinkDirect(List<RdLink> linkList) throws Exception
+	public void checkLinkDirect(List<RdLink> linkList) throws Exception
 	{
 		if(CollectionUtils.isNotEmpty(linkList))
 		{

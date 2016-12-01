@@ -335,10 +335,11 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 				errLog.putAll(imp.getErrLog());
 				log.debug("dbId("+dbId+")转出成功。");
 			}catch(Exception e){
+				DbUtils.rollbackAndCloseQuietly(conn);
 				log.error(e.getMessage(),e);
 				throw new ThreadExecuteException("");
 			}finally{
-				DbUtils.closeQuietly(conn);
+				DbUtils.commitAndCloseQuietly(conn);
 				if(latch!=null){
 					latch.countDown();
 				}

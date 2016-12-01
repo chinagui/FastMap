@@ -97,7 +97,7 @@ public class ObjBatchSelector {
 	 * @throws GlmTableNotFoundException
 	 * @throws SQLException
 	 */
-	private static void selectChildren(Connection conn, Collection<BasicObj> objs, Set<String> tabNames,
+	public static void selectChildren(Connection conn, Collection<BasicObj> objs, Set<String> tabNames,
 			Collection<Long> pids) throws GlmTableNotFoundException, SQLException {
 		for(String tabName:tabNames){
 			selectChildren(conn,objs,tabName,pids);
@@ -175,7 +175,7 @@ public class ObjBatchSelector {
 	 * @throws NoSuchMethodException 
 	 * @throws ClassNotFoundException 
 	 */
-	public static <T> List<BasicObj> selectBySpecColumn(Connection conn,String objType,Set<String> tabNames,String colName
+	public static <T> Map<Long,BasicObj> selectBySpecColumn(Connection conn,String objType,Set<String> tabNames,String colName
 			,Collection<T> colValues,boolean isLock,boolean isWait) throws SQLException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException{
 		GlmObject glmObj = GlmFactory.getInstance().getObjByType(objType);
 		GlmTable mainTable = glmObj.getMainTable();
@@ -209,20 +209,18 @@ public class ObjBatchSelector {
 		}
 
 		
-		List<BasicObj> objList = new ArrayList<BasicObj>();
-		List<Long> pids = new ArrayList<Long>();
+		Map<Long,BasicObj> objs = new HashMap<Long,BasicObj>();
 		for(BasicRow mainrow:mainrowList){
 			BasicObj obj = ObjFactory.getInstance().create4Select(mainrow);
-			objList.add(obj);
-			pids.add(mainrow.getObjPid());
+			objs.put(obj.objPid(), obj);
 		}
 		
 		if(tabNames!=null&&!tabNames.isEmpty()){
 			logger.info("selectBySpecColumn开始加载子表");
-			selectChildren(conn,objList,tabNames,pids);
+			selectChildren(conn,objs.values(),tabNames,objs.keySet());
 			logger.info("selectBySpecColumn开始加载子表");
 		}
-		return objList;
+		return objs;
 	}
 	
 	/**
@@ -235,7 +233,7 @@ public class ObjBatchSelector {
 	 * @return
 	 * @throws SQLException
 	 */
-	private static <T> String assembleSql(GlmTable glmTable,GlmTable mainTable, String colName,Collection<T> colValues) throws SQLException {
+	public static <T> String assembleSql(GlmTable glmTable,GlmTable mainTable, String colName,Collection<T> colValues) throws SQLException {
 		StringBuilder sb = new StringBuilder();
 		
 		if(glmTable.getObjRef()==null){			

@@ -254,8 +254,8 @@ public class PoiRelationImportor extends AbstractOperation{
 		//根据fid加载父对象
 		try{
 			if(!parentFidChildPid.keySet().isEmpty()){
-				List<BasicObj> objs = ObjBatchSelector.selectBySpecColumn(conn, ObjectName.IX_POI, tabNames, "POI_NUM", parentFidChildPid.keySet(), true, true);
-				for(BasicObj obj:objs){
+				Map<Long,BasicObj> objs = ObjBatchSelector.selectBySpecColumn(conn, ObjectName.IX_POI, tabNames, "POI_NUM", parentFidChildPid.keySet(), true, true);
+				for(BasicObj obj:objs.values()){
 					if(!result.isObjExist(obj)){
 						result.putObj(obj);
 					}
@@ -266,7 +266,7 @@ public class PoiRelationImportor extends AbstractOperation{
 				//判断哪些父对象没有加载到
 				if(objs.size()<parentFidChildPid.keySet().size()){
 					for(String parentFid:parentFidChildPid.keySet()){
-						for(BasicObj obj:objs){
+						for(BasicObj obj:objs.values()){
 							if(obj.getMainrow().getAttrByColName("POI_NUM").equals(parentFid)){
 								continue;
 							};

@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.commons.dbutils.DbUtils;
@@ -80,11 +79,9 @@ public class IxPoiSelector {
 		return null;
 	}
 	
-	
-	public static Map<Long,BasicObj> getIxPoiParentMapByChildrenPidList(Connection conn,Set<Long> pidList) throws ServiceException{
-		Map<Long,BasicObj> objMap = new HashMap<Long,BasicObj>();
+	public static Map<Long,Long> getParentPidsByChildrenPids(Connection conn,Set<Long> pidList) throws ServiceException{
+		Map<Long,Long> childPidParentPid = new HashMap<Long,Long>();
 		try{
-			Map<Long,Long> childPidParentPid = new HashMap<Long,Long>();
 			String sql = "SELECT DISTINCT IPP.PARENT_POI_PID,IPC.CHILD_POI_PID"
 					+ " FROM IX_POI_PARENT IPP,IX_POI_CHILDREN IPC"
 					+ " WHERE IPC.GROUP_ID = IPP.GROUP_ID"
@@ -104,29 +101,15 @@ public class IxPoiSelector {
 			
 			log.info("getIxPoiParentMapByChildrenPidList查询主表："+sql);
 			childPidParentPid = new QueryRunner().query(conn,sql, rsHandler);
-
-			//获取父对象
-			if(childPidParentPid!=null&&!childPidParentPid.isEmpty()){
-				Set<String> tabNames = new HashSet<String>();
-				tabNames.add("IX_POI_PARENT");
-				tabNames.add("IX_POI_CHILDREN");
-				Map<Long,BasicObj> objs = ObjBatchSelector.selectByPids(conn, ObjectName.IX_POI, tabNames, childPidParentPid.values(), true, true);
-				for(BasicObj obj:objs.values()){
-					long pid = obj.objPid();
-					for(Map.Entry<Long, Long> entry:childPidParentPid.entrySet()){
-						if(pid==entry.getValue()){
-							objMap.put(entry.getKey(), obj);
-						}
-					}
-				}
-			}
-			return objMap;
+			return childPidParentPid;
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new ServiceException("查询失败，原因为:"+e.getMessage(),e);
 		}
+
 	}
+	
 	
 	/**
 	 * 查询子POI的fid
@@ -164,20 +147,5 @@ public class IxPoiSelector {
 			throw new ServiceException("查询失败，原因为:"+e.getMessage(),e);
 		}
 	}
-	
-	static class IxPoiHandler implements ResultSetHandler<List<Map<String,Object>>>{
-		public List<Map<String,Object>> handle(ResultSet rs) throws SQLException {
-			List<Map<String,Object>> msgs = new ArrayList<Map<String,Object>>();
-			while(rs.next()){
-				Map<String,Object> msg = new HashMap<String,Object>();
-				msg.put("pid",rs.getLong("PID"));
-				msg.put("kindCode",rs.getLong("KIND_CODE"));
-				msg.put("poiNum",rs.getString("POI_NUM"));
-				msgs.add(msg);
-			}
-			return msgs;
-		}
-	}
-	
 	
 }

@@ -11,6 +11,8 @@ import net.sf.json.JSONObject;
 
 
 /** 
+ * 根据大区库创建POI日出品JOB
+ * 一个大区库创建一个job
  * @ClassName: ReleaseFmIdbDailyPoi
  * @author songdongyan
  * @date 2016年11月10日

@@ -141,12 +141,14 @@ public class Check {
 				}
 			}
 		}
-
-		checkLink(resultList, compareArray);
+		
+		com.navinfo.dataservice.engine.edit.operation.obj.rdinter.create.Check check = new com.navinfo.dataservice.engine.edit.operation.obj.rdinter.create.Check();
+		
+		check.checkLinkDirect(resultList);
 
 		return linkList;
 	}
-
+	
 	/**
 	 * 检查link参数正确性
 	 * 
@@ -154,7 +156,7 @@ public class Check {
 	 *            link集合
 	 * @throws Exception
 	 */
-	private void checkLink(List<RdLink> linkList, JSONArray linkArray) throws Exception {
+	public void checkLink(List<RdLink> linkList, JSONArray linkArray) throws Exception {
 		if (linkList != null && linkArray != null && linkArray.size() > 0) {
 			@SuppressWarnings("unchecked")
 			List<Integer> linkPids = (List<Integer>) JSONArray.toCollection(linkArray);

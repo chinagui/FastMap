@@ -412,6 +412,7 @@ public class Operation implements IOperation {
         face.setPid(PidUtil.getInstance().applyLuFacePid());
         result.setPrimaryPid(face.getPid());
         if (null != source) {
+            face.setKind(source.getKind());
             List<IRow> names = new ArrayList<>();
             for (IRow row : source.getFaceNames()) {
                 LuFaceName name = new LuFaceName();

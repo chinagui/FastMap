@@ -102,7 +102,7 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 	 */
 	public List<Integer> getApplyPids(Subtask subtask, String firstWorkItem, String secondWorkItem, int type) throws Exception {
 		StringBuilder sb = new StringBuilder();
-		sb.append("SELECT s.pid");
+		sb.append("SELECT DISTINCT s.pid");
 		sb.append(" FROM POI_COLUMN_STATUS s, POI_COLUMN_WORKITEM_CONF w, IX_POI p");
 		sb.append(" WHERE s.work_item_id=w.work_item_id");
 		sb.append(" AND s.pid=p.pid");
@@ -238,7 +238,7 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 	 */
 	public int queryHandlerCount(String firstWorkItem, String secondWorkItem, long userId, int type) throws Exception {
 		StringBuilder sb = new StringBuilder();
-		sb.append("SELECT count(1) num");
+		sb.append("SELECT count(distinct s.pid) num");
 		sb.append(" FROM POI_COLUMN_STATUS s,POI_COLUMN_WORKITEM_CONF w");
 		sb.append(" WHERE s.work_item_id = w.work_item_id");
 		sb.append(" AND s.handler = :1");
@@ -406,10 +406,9 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 	 * @return
 	 * @throws Exception
 	 */
-	public List<String> queryClassifyByRowid(Object rowId, Object taskId) throws Exception {
+	public List<String> queryClassifyByPid(int pid) throws Exception {
 		StringBuilder sb = new StringBuilder();
-		sb.append(
-				"SELECT work_item_id,handler FROM poi_deep_status s where s.row_id=:1 and s.first_work_status=1 and s.task_id=:2 ");
+		sb.append("SELECT work_item_id FROM poi_deep_status s where s.pid=:1 and s.first_work_status=1 ");
 
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
@@ -419,8 +418,7 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 		try {
 			pstmt = conn.prepareStatement(sb.toString());
 
-			pstmt.setString(1, (String) rowId);
-			pstmt.setInt(2, (int) taskId);
+			pstmt.setInt(1, pid);
 
 			resultSet = pstmt.executeQuery();
 

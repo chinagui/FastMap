@@ -36,7 +36,7 @@ import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiChildren;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
-import com.navinfo.dataservice.dao.plus.obj.ObjectType;
+import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
 import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
 import com.navinfo.dataservice.engine.editplus.convert.MultiSrcPoiConvertor;
@@ -231,7 +231,7 @@ public class Fm2MultiSrcSyncJob extends AbstractJob {
 				//获取有变更的数据pid
 				LogReader lr = new LogReader(conn);
 				//key:liftcyle,value:pids
-				Map<Integer,Collection<Long>> updatePids = lr.getUpdatedObj(ObjectType.IX_POI, GlmFactory.getInstance().getObjByType(ObjectType.IX_POI).getMainTable().getName(), null, lastSyncTime,syncTime);
+				Map<Integer,Collection<Long>> updatePids = lr.getUpdatedObj(ObjectName.IX_POI, GlmFactory.getInstance().getObjByType(ObjectName.IX_POI).getMainTable().getName(), null, lastSyncTime,syncTime);
 				//查询已提交的数据
 				List<Long> pidList = new ArrayList<Long>();
 				for(Map.Entry<Integer, Collection<Long>> entry:updatePids.entrySet()){
@@ -255,7 +255,7 @@ public class Fm2MultiSrcSyncJob extends AbstractJob {
 				selConfig.add("IX_POI_GASSTATION");
 				//...
 				if(pidList.size()>0){
-					Map<Long,BasicObj> objs = ObjBatchSelector.selectByPids(conn, ObjectType.IX_POI, selConfig, pidList, true, false);
+					Map<Long,BasicObj> objs = ObjBatchSelector.selectByPids(conn, ObjectName.IX_POI, selConfig, pidList, true, false);
 					//设置lifeCycle
 					for(Map.Entry<Long, BasicObj> entry:objs.entrySet()){
 						for(Map.Entry<Integer, Collection<Long>> ent:updatePids.entrySet()){

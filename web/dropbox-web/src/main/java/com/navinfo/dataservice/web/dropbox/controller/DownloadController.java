@@ -116,6 +116,17 @@ public class DownloadController extends BaseController {
 
 	}
 
+	/**
+	 * @Title: getPatternimg
+	 * @Description: 查询元数据包
+	 * @param request  type 类型为0（元数据），则返回元数据包的url、版本。如果类型为1（模式图），则返回模式图全量包的url、版本。
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException  ModelAndView
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2016年12月1日 上午9:45:56 
+	 */
 	@RequestMapping(value = "/download/metadata")
 	public ModelAndView getPatternimg(HttpServletRequest request)
 			throws ServletException, IOException {
@@ -127,12 +138,11 @@ public class DownloadController extends BaseController {
 			type = json.getInt("type");
 			DownloadService manager = DownloadService.getInstance();
 			JSONObject data = null;
-			if(type == 0){
+			if(type == 0){  //type 类型为0（元数据）
 				data = manager.getMetadta();
-			}else{
+			}else{//类型为1（模式图）
 				 data = manager.getPatternimg();
 			}
-			
 
 			return new ModelAndView("jsonView", success(data));
 

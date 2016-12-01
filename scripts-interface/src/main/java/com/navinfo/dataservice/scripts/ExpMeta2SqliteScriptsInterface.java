@@ -19,6 +19,10 @@ import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.util.ZipUtils;
 import com.navinfo.navicommons.database.sql.DBUtils;
 
+/**
+ * @author zhangli5174
+ *
+ */
 public class ExpMeta2SqliteScriptsInterface {
 
 	private static void exportMetadata2Sqlite(Connection sqliteConn) throws Exception {
@@ -43,7 +47,7 @@ public class ExpMeta2SqliteScriptsInterface {
 			pointAdminArea(conn,sqliteConn);
 			pointFocus(conn, sqliteConn);
 			pointTruck(conn, sqliteConn);
-		//	metaPoiIcon(gdbConn, sqliteConn);
+			metaPoiIcon(gdbConn, sqliteConn);
 			
 			
 			
@@ -59,6 +63,16 @@ public class ExpMeta2SqliteScriptsInterface {
 		}
 	}
 
+	/**
+	 * @Title: createSqlite
+	 * @Description: 生成sqlite 文件
+	 * @param dir
+	 * @return
+	 * @throws Exception  Connection
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2016年12月1日 上午9:47:29 
+	 */
 	private static Connection createSqlite(String dir) throws Exception {
 		System.out.println("Start to create sqlite...");
 		
@@ -90,7 +104,14 @@ public class ExpMeta2SqliteScriptsInterface {
 		return sqliteConn;
 	}
 	
-	// 创建sqlite
+	/**
+	 * @Title: sqliteInit
+	 * @Description: 初始化 sqlite 库中的表
+	 * @return  List<String>
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2016年12月1日 上午9:48:21 
+	 */
 	public static List<String> sqliteInit() {
 		List<String> sqliteList = new ArrayList<String>();
 		sqliteList.add("CREATE TABLE SC_POINT_CHARGING_CHAIN (chain_name text,chain_code text,hm_flag text,memo text)");
@@ -115,7 +136,7 @@ public class ExpMeta2SqliteScriptsInterface {
 		
 		sqliteList.add("CREATE TABLE SC_POINT_TRUCK (id integer,kind_name text,kind text,chain_name text,chain text,depth_information text,memo text,type integer,truck integer)");
 
-		sqliteList.add("CREATE TABLE META_POIICON (fid text,pid integer,name text ,type integer)");
+		sqliteList.add("CREATE TABLE META_POIICON (fid integer,pid text,name text ,type integer)");
 		//***********************************
 		return sqliteList;
 	}
@@ -858,12 +879,17 @@ public class ExpMeta2SqliteScriptsInterface {
 	public static void metaPoiIcon(Connection conn,Connection sqliteConn) throws Exception{
 		System.out.println("Start to export META_POIICON...");
 		String insertSql = "insert into META_POIICON(fid,pid,name,type) values(?,?,?,?)";
-		String selectSql = "select  pid,poi_num,name,bnum,inum from ("
-				+ "select distinct p.pid,p.poi_num,n.name, "
-				+"nvl((select count(*) numb from cmg_building_poi b where  b.poi_pid = p.pid group by b.poi_pid),0) bnum,"
-				+"nvl((select count(*) numb from ix_poi_icon i where i.poi_pid = p.pid group by i.poi_pid),0) inum  "
-				+"from ix_poi p,ix_poi_name n  where p.pid = n.poi_pid  "
-				+ ") where bnum > 0 or inum > 0";
+		String selectSql = "select distinct pid, poi_num, name, 1 type from ix_poi p, ix_poi_name n, cmg_building_poi b "
+				+ "	 where p.pid = n.poi_pid and b.poi_pid = p.pid "
+				+ " and not exists (select 1 from ix_poi_icon i1 where i1.poi_pid = p.pid) "
+				+ " UNION all "
+				+ "select distinct pid, poi_num, name, 2 type from ix_poi p, ix_poi_name n, ix_poi_icon i "
+				+ " where p.pid = n.poi_pid  and i.poi_pid = p.pid  "
+				+ " and not exists (select 1 from cmg_building_poi b1 where b1.poi_pid = p.pid) "
+				+ "  union all "
+				+" select distinct pid, poi_num, name, 3 type from ix_poi p, ix_poi_name n, ix_poi_icon i, cmg_building_poi b "
+				+"  where p.pid = n.poi_pid and i.poi_pid = p.pid and b.poi_pid = p.pid " ;
+				
 		Statement pstmt = null;
 		ResultSet resultSet = null;
 		PreparedStatement prep = null;
@@ -875,20 +901,10 @@ public class ExpMeta2SqliteScriptsInterface {
 			int count = 0;
 
 			while (resultSet.next()) {
-				prep.setString(1, resultSet.getString("fid"));
-				prep.setInt(2, resultSet.getInt("pid"));
+				prep.setInt(1, resultSet.getInt("pid"));//fid
+				prep.setString(2, resultSet.getString("poi_num"));//pid
 				prep.setString(3, resultSet.getString("name"));
-				if(resultSet.getInt("bnum") > 0 && resultSet.getInt("inum") > 0){
-					prep.setInt(4, 3);
-				}else{
-					if(resultSet.getInt("bnum") > 0 && resultSet.getInt("inum") == 0){
-						prep.setInt(4, 1);
-					}else if(resultSet.getInt("bnum") == 0 && resultSet.getInt("inum") > 0){
-						prep.setInt(4, 2);
-					}else{
-						prep.setInt(4, 0);
-					}
-				}
+				prep.setInt(4, resultSet.getInt("type"));
 				
 				prep.executeUpdate();
 				
@@ -915,23 +931,30 @@ public class ExpMeta2SqliteScriptsInterface {
 		
 //		String filePath = SystemConfigFactory.getSystemConfig().getValue(
 //				PropConstant.downloadFilePathRoot);
-		String filePath = "f:";
+		//String filePath = "f:";
 		try {
-			Connection sqliteConn = createSqlite(dir);
+			Connection sqliteConn = createSqlite(dir+"/metadata");
 
 			exportMetadata2Sqlite(sqliteConn);
 			
 			//4.打包生成zip文件，放在月目录下
 			String zipFileName = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date())+".zip";
-			ZipUtils.zipFile(dir+"/metadata.sqlite",filePath+"/metadata/"+zipFileName);
+			ZipUtils.zipFile(dir+"/metadata/metadata.sqlite",dir+"/metadata/"+zipFileName);
 			sqliteConn.close();
 		} catch (Exception e) {
 			System.out.println(e);
+		}finally{
+			File metaSqliteFile = new File(dir+"/metadata/metadata.sqlite");
+			if(metaSqliteFile.exists()){
+				metaSqliteFile.delete();
+			}
 		}
 	}
 	
 	public static void main(String[] args) {
-		String dir = "f:";
+		//String dir = "f:";  //本地测试用
+		String dir = SystemConfigFactory.getSystemConfig().getValue(
+				PropConstant.downloadFilePathRoot);  //服务器部署路径
 		export2SqliteByNames(dir);
 	}
 	

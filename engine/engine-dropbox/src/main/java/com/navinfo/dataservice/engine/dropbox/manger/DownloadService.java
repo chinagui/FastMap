@@ -110,10 +110,10 @@ public class DownloadService {
 	public JSONObject getMetadta() throws Exception {
 
 		String filePath = SystemConfigFactory.getSystemConfig().getValue(
-				PropConstant.downloadFilePathRoot);
+				PropConstant.downloadFilePathRoot)+"metadata";
 
 		String urlPath = SystemConfigFactory.getSystemConfig().getValue(
-				PropConstant.downloadUrlPathRoot);
+				PropConstant.downloadUrlPathRoot)+"metadata";
 
 		JSONObject data = DropboxUtil.getLastestInfo(urlPath, filePath, null);
 

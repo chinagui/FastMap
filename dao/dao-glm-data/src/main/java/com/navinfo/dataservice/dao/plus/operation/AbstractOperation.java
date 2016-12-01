@@ -96,21 +96,21 @@ public abstract class AbstractOperation {
 		Map<String,Set<String>> selConfigs = new HashMap<String,Set<String>>();
 		for(Iterator<BasicObj> it= result.getAllObjs().iterator();it.hasNext();){
 			BasicObj obj = it.next();
-			if(objs.containsKey(obj.objType())){
-				objs.get(obj.objType()).put(obj.objPid(), obj);
+			if(objs.containsKey(obj.objName())){
+				objs.get(obj.objName()).put(obj.objPid(), obj);
 			}else{
 				Map<Long,BasicObj> objMap = new HashMap<Long,BasicObj>();
 				objMap.put(obj.objPid(), obj);
-				objs.put(obj.objType(), objMap);
+				objs.put(obj.objName(), objMap);
 			}
 			//子表配置
-			if(!selConfigs.containsKey(obj.objType())){
+			if(!selConfigs.containsKey(obj.objName())){
 				//对象全部子表
 				Set<String> selConfig = new HashSet<String>();
-				for(Map.Entry<String, GlmTable> entry:GlmFactory.getInstance().getObjByType(obj.objType()).getTables().entrySet()){
+				for(Map.Entry<String, GlmTable> entry:GlmFactory.getInstance().getObjByType(obj.objName()).getTables().entrySet()){
 					selConfig.add(entry.getKey());
 				}
-				selConfigs.put(obj.objType(), selConfig);
+				selConfigs.put(obj.objName(), selConfig);
 			}	
 		}
 		ObjChildrenIncreSelector.increSelect(conn, objs, selConfigs);

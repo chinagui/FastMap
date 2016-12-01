@@ -13,7 +13,6 @@ import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.api.edit.upload.UploadPois;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiAddress;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiContact;
@@ -141,7 +140,7 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 				if(ixPoi.getPoiNum().equals(jo.getString("fid"))){
 					flag = false;
 					try{
-						if(queryObj.getMainrow().getOpType().equals(OperationType.PRE_DELETED)){
+						if(queryObj.isDeleted()){
 							throw new Exception("该数据已经逻辑删除");
 						}else{
 							this.importUpdateByJson(queryObj, jo);
@@ -194,7 +193,7 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 					flag = false;
 					try{
 						//判断是否已逻辑删除
-						if(deleteObj.getMainrow().getOpType().equals(OperationType.PRE_DELETED)){
+						if(deleteObj.isDeleted()){
 							//已逻辑删除
 							throw new Exception("该数据已经逻辑删除");
 						}else{
@@ -393,13 +392,13 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 				pr.setPoiRelationType(PoiRelationType.FATHER_AND_SON);
 				parentPid.add(pr);
 				//多源类型
-				String sourceType = null;
-				if(!JSONUtils.isNull(jo.get("sourceType"))){
-					sourceType = jo.getString("sourceType");
+				String sourceProvider  = null;
+				if(!JSONUtils.isNull(jo.get("sourceProvider"))){
+					sourceProvider  = jo.getString("sourceProvider");
 				}else{
-					throw new Exception("多源类型sourceType字段名不存在");
+					throw new Exception("多源类型sourceProvider字段名不存在");
 				}
-				sourceTypes.put(poi.objPid(), sourceType);
+				sourceTypes.put(poi.objPid(), sourceProvider );
 				return true;
 			}else{
 				throw new ImportException("不支持的对象类型");
@@ -527,13 +526,13 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 					parentPid.add(pr);
 				}
 				//多源类型
-				String sourceType = null;
-				if(!JSONUtils.isNull(jo.get("sourceType"))){
-					sourceType = jo.getString("sourceType");
+				String sourceProvider = null;
+				if(!JSONUtils.isNull(jo.get("sourceProvider"))){
+					sourceProvider = jo.getString("sourceProvider");
 				}else{
-					throw new Exception("多源类型sourceType字段名不存在");
+					throw new Exception("多源类型sourceProvider字段名不存在");
 				}
-				sourceTypes.put(poi.objPid(), sourceType);
+				sourceTypes.put(poi.objPid(), sourceProvider );
 
 				return true;
 			}else{
@@ -745,7 +744,7 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 		if(poi!=null&&jo!=null){
 			if(poi instanceof IxPoiObj){
 				//判断是否已逻辑删除
-				if(poi.getMainrow().getOpType().equals(OperationType.PRE_DELETED)){
+				if(poi.isDeleted()){
 					//已逻辑删除
 					throw new Exception("该数据已经逻辑删除");
 				}else{
@@ -758,13 +757,13 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 					pr.setPoiRelationType(PoiRelationType.FATHER_AND_SON);
 					parentPid.add(pr);
 					//多源类型
-					String sourceType = null;
-					if(!JSONUtils.isNull(jo.get("sourceType"))){
-						sourceType = jo.getString("sourceType");
+					String sourceProvider = null;
+					if(!JSONUtils.isNull(jo.get("sourceProvider"))){
+						sourceProvider = jo.getString("sourceProvider");
 					}else{
-						throw new Exception("多源类型sourceType字段名不存在");
+						throw new Exception("多源类型sourceProvider字段名不存在");
 					}
-					sourceTypes.put(poi.objPid(), sourceType);
+					sourceTypes.put(poi.objPid(), sourceProvider);
 					
 				}
 				return true;

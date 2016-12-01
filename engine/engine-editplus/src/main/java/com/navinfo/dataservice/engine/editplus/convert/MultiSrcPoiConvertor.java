@@ -620,6 +620,7 @@ public class MultiSrcPoiConvertor {
 				msg.put("type", children.getRelationType());
 				msg.put("childPid", children.getChildPoiPid());
 				List<Map<Long, Object>> childFids = poi.getChildFids();
+				boolean flag1 = true;
 				for (Map<Long, Object> map : childFids) {
 					boolean flag = false;
 					for (Map.Entry<Long, Object> entry : map.entrySet()) {
@@ -631,12 +632,16 @@ public class MultiSrcPoiConvertor {
 
 							}
 							flag = true;
+							flag1 = false;
 							break;
 						}
 					}
 					if(flag){
 						break;
 					}
+				}
+				if(flag1){
+					msg.put("childFid","");
 				}
 				msg.put("rowId", children.getRowId());
 				msgs.add(msg);

@@ -43,6 +43,7 @@ public class GLM001TEST extends BasicBatchRule {
 			IxPoiObj ixpoiObj = (IxPoiObj)obj;
 			IxPoiName name = ixpoiObj.createIxPoiName();
 			name.setLangCode("CHI");
+			
 			Long parentId=parentIds.get(poiObj.objPid());
 			BasicObj parentObj=myReferDataMap.get(ObjectType.IX_POI).get(parentId);
 			if(parentObj!=null){
@@ -50,6 +51,7 @@ public class GLM001TEST extends BasicBatchRule {
 				List<IxPoiGasstation> gassRows = ixPoiParentObj.getIxPoiGasstations();
 				for(IxPoiGasstation gass:gassRows){
 					gass.setService("updateService");
+					
 				}}
 		}else if(obj.objType().equals(ObjectType.AD_LINK)){}
 	}

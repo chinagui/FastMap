@@ -114,7 +114,15 @@ public class IxPoiObj extends AbstractIxObj {
 		return (List)subrows.get("IxPoiGasstation");
 	}
 	public IxPoiGasstation createIxPoiGasstation()throws Exception{
-		return null;
+		IxPoiGasstation ixPoiGasstation = (IxPoiGasstation)(ObjFactory.getInstance().createRow("IX_POI_GASSTATION", this.objPid()));
+		if(subrows.containsKey("IX_POI_GASSTATION")){
+			subrows.get("IX_POI_GASSTATION").add(ixPoiGasstation);
+		}else{
+			List<BasicRow> ixixPoiGasstationList = new ArrayList<BasicRow>();
+			ixixPoiGasstationList.add(ixPoiGasstation);
+			subrows.put("IX_POI_GASSTATION", ixixPoiGasstationList);
+		}
+		return ixPoiGasstation;
 	}
 	public List<IxPoiHotel> getIxPoiHotels(){
 		return (List)subrows.get("IX_POI_HOTEL");

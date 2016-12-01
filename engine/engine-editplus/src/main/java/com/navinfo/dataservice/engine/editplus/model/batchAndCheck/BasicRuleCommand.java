@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.editplus.model.batchAndCheck;
 
 import java.sql.Connection;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -56,7 +57,7 @@ public class BasicRuleCommand {
 	 * @return Map<Long,BasicObj> ：key:pid,value:数据对象BasicObj
 	 * @throws Exception
 	 */
-	public Map<Long,BasicObj> loadReferObjs(Set<Long> objPids,String objType,Set<String> referSubrow,boolean isLock) throws Exception{
+	public Map<Long,BasicObj> loadReferObjs(Collection<Long> objPids,String objType,Set<String> referSubrow,boolean isLock) throws Exception{
 		Map<String,Map<Long,BasicObj>> returnDatas=new HashMap<String,Map<Long,BasicObj>>();
 		Map<Long,BasicObj> returnDataTmp=new HashMap<Long, BasicObj>();
 		if(!objType.isEmpty()&&referSubrow!=null&&!referSubrow.isEmpty()){
@@ -66,11 +67,11 @@ public class BasicRuleCommand {
 			for(Long pid:objPids){
 				if(allDataTmp.containsKey(pid)){
 					BasicObj obj=allDataTmp.get(pid);
-					if(obj.getLifeCycle()==1){
+					if(!obj.isDeleted()){
 						returnDataTmp.put(pid, allDataTmp.get(pid));}
 				}else if(referDatasMap.containsKey(pid)){
 					BasicObj obj=referDatasMap.get(pid);
-					if(obj.getLifeCycle()==1){
+					if(!obj.isDeleted()){
 						returnDataTmp.put(pid, referDatasMap.get(pid));}
 				}else{
 					unLoadPid.add(pid);
@@ -81,7 +82,7 @@ public class BasicRuleCommand {
 			referDatas.put(objType, referDatasMap);			
 			for(Long objPid:unLoadMap.keySet()){
 				BasicObj obj=referDatasMap.get(objPid);
-				if(obj.getLifeCycle()==1){
+				if(!obj.isDeleted()){
 					returnDataTmp.put(objPid,obj);}
 			}
 			returnDatas.put(objType, returnDataTmp);

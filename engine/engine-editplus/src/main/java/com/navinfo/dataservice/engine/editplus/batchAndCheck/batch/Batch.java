@@ -79,7 +79,9 @@ public class Batch extends AbstractOperation{
 		if(changeReferData){
 			for(Map<Long, BasicObj> referMap:batchRuleCommand.getReferDatas().values()){
 				for(BasicObj obj:referMap.values()){
-					result.putObj(obj);
+					if (obj.isChanged()) {
+						result.putObj(obj);
+					}
 				}
 			}
 		}

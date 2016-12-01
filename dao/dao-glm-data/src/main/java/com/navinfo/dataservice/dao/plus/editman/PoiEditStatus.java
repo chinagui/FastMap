@@ -24,7 +24,7 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
-import com.navinfo.dataservice.dao.plus.obj.ObjectType;
+import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
 import com.navinfo.navicommons.database.QueryRunner;
 
@@ -246,7 +246,7 @@ public class PoiEditStatus {
 	public static void insertPoiEditStatus(Connection conn, OperationResult result) throws Exception {
 		// TODO Auto-generated method stub
 		Set<Long> pids = new HashSet<Long>();
-		for(Entry<Long, BasicObj> entry:result.getObjsMapByType(ObjectType.IX_POI).entrySet()){
+		for(Entry<Long, BasicObj> entry:result.getObjsMapByType(ObjectName.IX_POI).entrySet()){
 			if(entry.getValue().opType().equals(OperationType.INSERT)){
 				pids.add(entry.getValue().objPid());
 			}

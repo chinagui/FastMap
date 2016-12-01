@@ -21,7 +21,7 @@ import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
-import com.navinfo.dataservice.dao.plus.obj.ObjectType;
+import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
@@ -128,7 +128,7 @@ public class IxPoiSelector {
 				List<Long> childPids = entry.getValue();
 				List<Map<Long,Object>> childFids = new ArrayList<Map<Long,Object>>();
 				if(childPids!=null && childPids.size()>0){
-					Map<Long,BasicObj> objs = ObjBatchSelector.selectByPids(conn, ObjectType.IX_POI,null,childPids,true,true);
+					Map<Long,BasicObj> objs = ObjBatchSelector.selectByPids(conn, ObjectName.IX_POI,null,childPids,true,true);
 					for(BasicObj obj:objs.values()){
 						Map<Long,Object> childFid = new HashMap<Long, Object>();
 						IxPoiObj poi = (IxPoiObj) obj;

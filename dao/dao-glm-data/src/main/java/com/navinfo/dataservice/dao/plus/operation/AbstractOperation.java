@@ -121,7 +121,7 @@ public abstract class AbstractOperation {
 			for(Map.Entry<Long, BasicObj> subEntry:entry.getValue().entrySet()){
 				BasicObj obj = subEntry.getValue();
 				obj.deleteObj();
-				result.putObj(obj);
+//				result.putObj(obj);
 			}
 		}
 	}

@@ -273,24 +273,24 @@ public class Fm2MultiSrcSyncJob extends AbstractJob {
 					for(Map.Entry<Long, String> entry:ParentFids.entrySet()){
 						((IxPoiObj)objs.get(entry.getKey())).setParentFid(entry.getValue());
 					}
-				//设置子fid
-				Map<Long,List<Long>> objMap = new HashMap<Long, List<Long>>();
-				for(BasicObj obj:objs.values()){
-					IxPoiObj poi = (IxPoiObj) obj;
-					List<Long> childPids = new ArrayList<Long>();
-					List<BasicRow> rows = poi.getRowsByName("IX_POI_CHILDREN");
-					if(rows!=null && rows.size()>0){
-						for(BasicRow row:rows){
-							IxPoiChildren children = (IxPoiChildren) row;
-							childPids.add(children.getChildPoiPid());
+					//设置子fid
+					Map<Long,List<Long>> objMap = new HashMap<Long, List<Long>>();
+					for(BasicObj obj:objs.values()){
+						IxPoiObj poi = (IxPoiObj) obj;
+						List<Long> childPids = new ArrayList<Long>();
+						List<BasicRow> rows = poi.getRowsByName("IX_POI_CHILDREN");
+						if(rows!=null && rows.size()>0){
+							for(BasicRow row:rows){
+								IxPoiChildren children = (IxPoiChildren) row;
+								childPids.add(children.getChildPoiPid());
+							}
 						}
+						objMap.put(obj.objPid(), childPids);
 					}
-					objMap.put(obj.objPid(), childPids);
-				}
-				Map<Long, List<Map<Long, Object>>> childFids = IxPoiSelector.getChildFidByPids(conn, objMap);
-				for(Map.Entry<Long, List<Map<Long, Object>>> entry:childFids.entrySet()){
-					((IxPoiObj)objs.get(entry.getKey())).setChildFid(entry.getValue());
-				}
+					Map<Long, List<Map<Long, Object>>> childFids = IxPoiSelector.getChildFidByPids(conn, objMap);
+					for(Map.Entry<Long, List<Map<Long, Object>>> entry:childFids.entrySet()){
+						((IxPoiObj)objs.get(entry.getKey())).setChildFid(entry.getValue());
+					}
 					//设置adminId
 					 Map<Long,Long> adminIds = IxPoiSelector.getAdminIdByPids(conn, objs.keySet());
 					for(Map.Entry<Long, Long> entry:adminIds.entrySet()){

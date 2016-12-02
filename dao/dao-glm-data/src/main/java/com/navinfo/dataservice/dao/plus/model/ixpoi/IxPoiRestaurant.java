@@ -27,6 +27,7 @@ public class IxPoiRestaurant extends BasicRow {
 	
 	public IxPoiRestaurant (long objPid){
 		super(objPid);
+		setPoiPid(objPid);
 	}
 	
 	public long getRestaurantId() {

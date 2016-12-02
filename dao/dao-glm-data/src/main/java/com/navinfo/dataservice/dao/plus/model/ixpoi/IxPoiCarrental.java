@@ -21,6 +21,7 @@ public class IxPoiCarrental extends BasicRow {
 	
 	public IxPoiCarrental (long objPid){
 		super(objPid);
+		setPoiPid(objPid);
 	}
 	
 	public long getPoiPid() {

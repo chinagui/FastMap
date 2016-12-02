@@ -79,7 +79,7 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 			String zipFile = writeImpResFile(syncApi,resFileName);
 			response("生成统计结果完成",null);
 			//通知多源
-			notifyMultiSrc(zipFile,syncApi);
+//			notifyMultiSrc(zipFile,syncApi);
 		}catch(Exception e){
 			log.error(e.getMessage(), e);
 			throw new JobException(e.getMessage(),e);

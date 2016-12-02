@@ -54,13 +54,13 @@ public class RwLinkTest extends InitApplication {
 	{
 		Connection conn;
 		try {
-			conn = DBConnector.getInstance().getConnectionById(42);
+			conn = DBConnector.getInstance().getConnectionById(19);
 
 			String parameter = "{\"type\":\"RWLINK\",\"dbId\":42,\"objId\":100007138}";
 
 			RdCrossSearch search = new RdCrossSearch(conn);
 			
-			search.searchDataByTileWithGap(107951, 49621, 17, 20);
+			search.searchDataByTileWithGap(108052, 49460, 17, 20);
 
 		} catch (Exception e) {
 			e.printStackTrace();

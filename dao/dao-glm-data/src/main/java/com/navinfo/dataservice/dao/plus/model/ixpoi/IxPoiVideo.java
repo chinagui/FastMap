@@ -18,6 +18,7 @@ public class IxPoiVideo extends BasicRow {
 
 	public IxPoiVideo (long objPid){
 		super(objPid);
+		setPoiPid(objPid);
 	}
 	
 	public long getPoiPid() {

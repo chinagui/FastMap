@@ -21,6 +21,7 @@ public class IxPoiIntroduction extends BasicRow {
 	
 	public IxPoiIntroduction (long objPid){
 		super(objPid);
+		setPoiPid(objPid);
 	}
 	
 	public long getIntroductionId() {

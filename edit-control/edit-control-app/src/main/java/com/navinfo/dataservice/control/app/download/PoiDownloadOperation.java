@@ -2,16 +2,17 @@ package com.navinfo.dataservice.control.app.download;
 
 import java.io.File;
 import java.io.PrintWriter;
+import java.sql.Clob;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-
 import org.apache.log4j.Logger;
-
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
+import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
@@ -30,6 +31,8 @@ import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiContact;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiName;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiParentForAndroid;
 import com.navinfo.dataservice.dao.glm.search.batch.PoiGridIncreSearch;
+import com.navinfo.dataservice.dao.glm.search.batch.ixpoi.IxSamepoiHandler;
+import com.navinfo.dataservice.dao.glm.search.batch.ixpoi.poiEditStatusHandler;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONNull;
@@ -134,6 +137,7 @@ public class PoiDownloadOperation {
 	public JSONArray changeData(Collection<IxPoi> data) throws Exception{
 		JSONArray retList = new JSONArray();
 		JSONObject jsonObj = new JSONObject();
+		
 		for (IxPoi poi:data){
 			
 			jsonObj.put("fid", poi.getPoiNum());
@@ -611,6 +615,16 @@ public class PoiDownloadOperation {
 			
 			jsonObj.put("t_operateDate", "");
 			
+			//处理统一关系 获取  samefid
+			
+			//jsonObj.put("sameFid", poi.getSameFid());
+			//处理编辑状态  获取  poiEditStatus
+			//	jsonObj.put("editStatus", poi.getPoiEditStatus());
+			//*****************************************
+				
+				
+				
+			//*****************************************
 			retList.add(jsonObj);
 		}
 		return retList;

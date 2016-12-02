@@ -118,8 +118,8 @@ public class Fm2MultiSrcSyncJob extends AbstractJob {
 		PrintWriter pw = null;
 		try{
 			//1.生成目录
-//			String rootDownloadPath = SystemConfigFactory.getSystemConfig().getValue(PropConstant.downloadFilePathRoot);
-			String rootDownloadPath = "F:\\data\\";
+			String rootDownloadPath = SystemConfigFactory.getSystemConfig().getValue(PropConstant.downloadFilePathRoot);
+			//String rootDownloadPath = "F:\\data\\";
 			//每个月独立目录
 			String monthDir = rootDownloadPath+"multisrc"+File.separator+curYm+File.separator;
 			File mdirFile = new File(monthDir);

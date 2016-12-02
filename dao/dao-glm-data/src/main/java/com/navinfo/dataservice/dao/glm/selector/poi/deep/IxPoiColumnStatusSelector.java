@@ -544,6 +544,7 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 	 * @param secondWorkItem
 	 * @param userId
 	 * @param type
+	 * @param taskId
 	 * @return
 	 * @throws Exception
 	 * 
@@ -553,17 +554,18 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 	 *             "errmsg": "success"}
 	 */
 	@SuppressWarnings("rawtypes")
-	public JSONObject secondWorkStatistics(String firstWorkItem, long userId, int type) throws Exception {
+	public JSONObject secondWorkStatistics(String firstWorkItem, long userId, int type, int taskId) throws Exception {
 
 		JSONObject result = new JSONObject();
 
 		StringBuilder sql = new StringBuilder();
 		sql.append("SELECT count(1) num,s.second_work_status,w.second_work_item");
-		sql.append(" FROM poi_deep_status s, poi_deep_workitem_conf w");
+		sql.append(" FROM poi_column_status s, poi_column_workitem_conf w");
 		sql.append(" WHERE s.work_item_id = w.work_item_id");
 		sql.append(" AND w.first_work_item='" + firstWorkItem + "'");
 		sql.append(" AND s.handler=" + userId);
 		sql.append(" AND w.type=" + type);
+		sql.append(" AND s.task_id=" + taskId);
 		sql.append(" AND s.second_work_status in (1,2)");
 		sql.append(" group by s.second_work_status,w.second_work_item");
 		sql.append(" order by w.second_work_item");
@@ -613,12 +615,12 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 				int count = data.getInt("check") + data.getInt("work");
 
 				total += count;
-				check += data.getInt("check");
+				check += data.getInt("work");
 
 				JSONObject secondObj = new JSONObject();
 				secondObj.put("count", count);
 				secondObj.put("id", id);
-				secondObj.put("check", data.getInt("check"));
+				secondObj.put("check", data.getInt("work"));
 				details.add(secondObj);
 			}
 

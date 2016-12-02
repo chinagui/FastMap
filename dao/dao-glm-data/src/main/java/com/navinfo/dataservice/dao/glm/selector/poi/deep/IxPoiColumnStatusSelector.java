@@ -3,10 +3,8 @@ package com.navinfo.dataservice.dao.glm.selector.poi.deep;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
@@ -445,18 +443,18 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 	 * @return
 	 * @throws Exception
 	 */
-	public List<String> getRowIdForSubmit(String firstWorkItem, String secondWorkItem, int taskId) throws Exception {
-
+public List<Integer> getRowIdForSubmit(String firstWorkItem,String secondWorkItem,int taskId) throws Exception {
+		
 		StringBuilder sb = new StringBuilder();
-		sb.append(
-				"SELECT s.row_id FROM poi_deep_status s,poi_deep_workitem_conf w WHERE s.work_item_id=w.work_item_id");
-
+		sb.append("SELECT s.pid FROM poi_column_status s,poi_deep_workitem_conf w WHERE s.work_item_id=w.work_item_id");
+		
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
 
 		try {
-			List<String> rowIdList = new ArrayList<String>();
+
+			List<Integer> pidList = new ArrayList<Integer>();
 
 			if (!firstWorkItem.isEmpty()) {
 				sb.append(" AND s.first_work_status=2 AND w.first_work_item='" + firstWorkItem + "'");
@@ -470,10 +468,10 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 			resultSet = pstmt.executeQuery();
 
 			while (resultSet.next()) {
-				rowIdList.add(resultSet.getString("row_id"));
+				pidList.add(resultSet.getInt("pid"));
 			}
-
-			return rowIdList;
+			
+			return pidList;
 		} catch (Exception e) {
 			throw e;
 		} finally {

@@ -34,6 +34,7 @@ public class IxPoiChargingplot extends BasicRow {
 	
 	public IxPoiChargingplot (long objPid){
 		super(objPid);
+		setPoiPid(objPid);
 	}
 	
 	public long getPoiPid() {

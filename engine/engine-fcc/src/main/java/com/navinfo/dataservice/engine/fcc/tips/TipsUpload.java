@@ -762,16 +762,9 @@ public class TipsUpload {
 
 	public static void main(String[] args) throws Exception {
 
-		/*TipsUpload a = new TipsUpload();
+		TipsUpload a = new TipsUpload();
 
 		a.run("D:/4.txt");
-		System.out.println("成功")*/;
-		
-			try {
-				HBaseConnector.getInstance().getConnection();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+		System.out.println("成功");
 	}
 }

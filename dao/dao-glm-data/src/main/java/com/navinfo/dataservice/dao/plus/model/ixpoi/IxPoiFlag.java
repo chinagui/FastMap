@@ -14,6 +14,7 @@ public class IxPoiFlag extends BasicRow {
 	
 	public IxPoiFlag (long objPid){
 		super(objPid);
+		setPoiPid(objPid);
 	}
 	
 	public long getPoiPid() {

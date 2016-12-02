@@ -18,6 +18,7 @@ public class IxPoiAudio extends BasicRow {
 	
 	public IxPoiAudio (long objPid){
 		super(objPid);
+		setPoiPid(objPid);
 	}
 	
 	public long getPoiPid() {

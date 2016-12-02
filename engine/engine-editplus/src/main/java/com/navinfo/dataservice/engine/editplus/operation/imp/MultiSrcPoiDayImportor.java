@@ -292,7 +292,7 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 							//IX_POI_CONTACT表
 							IxPoiContact ixPoiContact = poi.createIxPoiContact();
 							ixPoiContact.setContact(number);
-							ixPoiContact.setContactType(type);
+//							ixPoiContact.setContactType(type);
 						}
 					}
 				}else{

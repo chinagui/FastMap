@@ -10,13 +10,14 @@ import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
 */
 public class IxPoiContact extends BasicRow {
 	protected long poiPid ;
-	protected int contactType ;
+	protected int contactType=1;
 	protected String contact ;
 	protected int contactDepart ;
-	protected int priority ;
+	protected int priority=1 ;
 	
 	public IxPoiContact (long objPid){
 		super(objPid);
+		setPoiPid(objPid);
 	}
 	
 	public long getPoiPid() {

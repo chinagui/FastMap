@@ -56,6 +56,10 @@ public class TipsController extends BaseController {
 			//grid和date的对象数组
 			JSONArray condition = jsonReq.getJSONArray("condition");
 			
+			 if (condition==null||condition.isEmpty()) {
+	                throw new IllegalArgumentException("参数错误:condition不能为空");
+	         }
+			
 			TipsSelector selector = new TipsSelector();
 			
 			JSONArray  resutArr=new JSONArray();
@@ -117,6 +121,20 @@ public class TipsController extends BaseController {
 			int handler = jsonReq.getInt("handler");
 			
 			String mdFlag= jsonReq.getString("mdFlag");
+			
+			 if (StringUtils.isEmpty(rowkey)) {
+	                throw new IllegalArgumentException("参数错误:rowkey不能为空");
+	         }
+			
+			 if (StringUtils.isEmpty(mdFlag)) {
+	                throw new IllegalArgumentException("参数错误:mdFlag不能为空");
+	         }
+			
+			  //值域验证
+            if(!"m".equals(mdFlag)||!"d".equals(mdFlag)){
+            	 throw new IllegalArgumentException("参数错误:mdflag值域错误。");
+            }
+
 
 			int pid = -1;
 
@@ -222,6 +240,10 @@ public class TipsController extends BaseController {
 			}
 			//grid和date的对象数组
 			JSONArray condition = jsonReq.getJSONArray("condition");
+			
+			 if (condition==null||condition.isEmpty()) {
+	                throw new IllegalArgumentException("参数错误:condition不能为空");
+	         }
 
 			TipsExporter op = new TipsExporter();
 			
@@ -365,11 +387,13 @@ public class TipsController extends BaseController {
                 throw new IllegalArgumentException("参数错误:stage不能为空。");
             }
             
-           /* if (dbId==0) {
-                throw new IllegalArgumentException("参数错误:dbId不能为0。");
-            }*/
             if (StringUtils.isEmpty(mdFlag)) {
                 throw new IllegalArgumentException("参数错误:mdFlag不能为空。");
+            }
+            
+            //值域验证
+            if(!"m".equals(mdFlag)||!"d".equals(mdFlag)){
+            	 throw new IllegalArgumentException("参数错误:mdflag值域错误。");
             }
 
 			TipsSelector selector = new TipsSelector();

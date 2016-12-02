@@ -215,7 +215,7 @@ public class ColumnController extends BaseController {
 	 * @throws ServletException
 	 * @throws IOException
 	 */
-	@RequestMapping(value = "/poi/deep/secondWorkStatistics")
+	@RequestMapping(value = "/poi/column/secondWorkStatistics")
 	public ModelAndView secondWorkStatistics(HttpServletRequest request)
 			throws ServletException, IOException {
 		

@@ -209,7 +209,8 @@ public class ColumnCoreControl {
 		try {
 			int taskId = jsonReq.getInt("taskId");
 			String firstWorkItem = jsonReq.getString("firstWorkItem");
-			int type = jsonReq.getInt("taskType");
+			// 默认为大陆
+			int type = 1;
 
 			ManApi apiService = (ManApi) ApplicationContextUtil.getBean("manApi");
 			Subtask subtask = apiService.queryBySubtaskId(taskId);
@@ -219,7 +220,7 @@ public class ColumnCoreControl {
 
 			IxPoiColumnStatusSelector ixPoiColumnStatusSelector = new IxPoiColumnStatusSelector(conn);
 
-			return ixPoiColumnStatusSelector.secondWorkStatistics(firstWorkItem, userId, type);
+			return ixPoiColumnStatusSelector.secondWorkStatistics(firstWorkItem, userId, type, taskId);
 		} catch (Exception e) {
 			throw e;
 		} finally {

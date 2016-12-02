@@ -28,6 +28,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkName;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdTmclocation;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLinkName;
+import com.navinfo.dataservice.dao.glm.model.rd.slope.RdSlopeVia;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiEditStatusSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiParentSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
@@ -322,6 +323,9 @@ public class AbstractSelector implements ISelector {
             } else {
                 sql = "select * from " + row.tableName() + " where " + row.parentPKName() + "=:1 ";
             }
+            if(row instanceof RdSlopeVia){
+            	sql += "  order by seq_num";
+            }
             if (isLock) {
                 sql += " for update nowait";
             }
@@ -463,7 +467,9 @@ public class AbstractSelector implements ISelector {
         } else {
             sql = "select * from " + row.tableName() + " where " + row.parentPKName() + " in ("
                     + StringUtils.getInteStr(idList) + ") and u_record!=:2";
-
+            if(row instanceof RdSlopeVia){
+            	sql += "  order by seq_num";
+            }
             if (isLock) {
                 sql += " for update nowait";
             }
@@ -524,6 +530,9 @@ public class AbstractSelector implements ISelector {
                 sql.append("select * from " + row.tableName() + " where " + row.parentPKName() + "=:1 and u_record!=2");
             } else {
                 sql.append("select * from " + row.tableName() + " where " + row.parentPKName() + "=:1 ");
+            }
+            if(row instanceof RdSlopeVia){
+            	sql .append("  order by seq_num");
             }
             if (StringUtils.isNotEmpty(order)) {
                 sql.append(" order by " + order);

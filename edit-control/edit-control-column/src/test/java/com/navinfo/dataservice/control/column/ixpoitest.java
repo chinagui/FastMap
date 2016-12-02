@@ -42,7 +42,7 @@ public class ixpoitest {
 			IxPoiSearch search = new IxPoiSearch(conn);
 			List<String> rowIds = new ArrayList<String>();
 			rowIds.add("3AE1FB4B0B6992F7E050A8C08304EE4C");
-			search.searchColumnPoiByRowId("poi_name", "namePinyin", rowIds, "1", "CHI");
+			//search.searchColumnPoiByRowId("poi_name", "namePinyin", rowIds, "1", "CHI");
 //			ColumnCoreControl control = new ColumnCoreControl();
 //
 //			control.applyData(0, "poi_name", 2);
@@ -165,7 +165,7 @@ public class ixpoitest {
 	public void testApplyColumnData() throws Exception{
 		JSONObject jsonReq = new JSONObject();
 		jsonReq.put("taskId", 84);
-		jsonReq.put("firstWorkItem","poi_englishname");
+		jsonReq.put("firstWorkItem","poi_name");
 		jsonReq.put("secondWorkItem", "");
 		 
 		long userId = 4994;
@@ -174,6 +174,24 @@ public class ixpoitest {
 			ColumnCoreControl column = new ColumnCoreControl();
 			int count = column.applyData(jsonReq, userId);
 			System.out.println(count);
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+	}
+	
+	
+	@Test
+	public void testSecondColumnStatics() throws Exception{
+		JSONObject jsonReq = new JSONObject();
+		jsonReq.put("taskId", 84);
+		jsonReq.put("firstWorkItem","poi_name");
+		 
+		long userId = 4994;
+		
+		try {
+			ColumnCoreControl column = new ColumnCoreControl();
+			JSONObject data = column.secondWorkStatistics(jsonReq, userId);
+			System.out.println(data);
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
 		}

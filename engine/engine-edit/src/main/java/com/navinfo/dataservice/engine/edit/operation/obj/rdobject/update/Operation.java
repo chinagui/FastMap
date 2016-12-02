@@ -55,6 +55,18 @@ public class Operation implements IOperation {
 	public String run(Result result) throws Exception {
 
 		JSONObject content = command.getContent();
+		
+		//移动landmark
+		if(content.containsKey("geometry"))
+		{
+			JSONObject geojson = new JSONObject();
+			
+			geojson.put("type", "Point");
+
+	        geojson.put("coordinates", new double[]{command.getLongitude(), command.getLatitude()});
+	        
+	        rdObject.changedFields().put("geometry",geojson);
+		}
 
 		// 不编辑主表信息
 

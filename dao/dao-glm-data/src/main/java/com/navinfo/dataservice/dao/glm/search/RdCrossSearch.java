@@ -112,7 +112,7 @@ public class RdCrossSearch implements ISearch {
 					
 					aObject.put("g", Geojson.lonlat2Pixel(gNode.getCoordinate().x, gNode.getCoordinate().y, z, px, py));
 					
-					aObject.put("b", isMains.split(",")[i]);
+					aObject.put("b", Integer.parseInt(isMains.split(",")[i]));
 					
 					maArray.add(aObject);
 				}

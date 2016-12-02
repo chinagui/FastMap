@@ -497,7 +497,7 @@ public class PoiGridIncreSearch {
 			pois.get(pid).setChargingplots(chargingplot.get(pid));
 		}
 		
-		logger.info("设置  samefid");
+		/*logger.info("设置  samefid");
 		
 		StringBuilder sbSamepoi = new StringBuilder();
 		sbSamepoi.append("WITH q1 as(");
@@ -529,7 +529,7 @@ public class PoiGridIncreSearch {
 		Map<Long,Integer> editStatus = run.query(conn, sbEditStatus.toString(), new poiEditStatusHandler(),pidsClob);
 		for(Long pid:editStatus.keySet()){
 			pois.get(pid).setPoiEditStatus(editStatus.get(pid));
-		}
+		}*/
 			
 	}
 	

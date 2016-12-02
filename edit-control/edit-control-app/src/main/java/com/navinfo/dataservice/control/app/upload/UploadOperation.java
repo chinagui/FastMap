@@ -867,7 +867,7 @@ public class UploadOperation {
 				poi.setChargingplots(chargingPoleList);
 			}
 			//***********zl 2016.11.30****************
-			System.out.println("sameFid:"+jo.getString("sameFid") );
+			/*System.out.println("sameFid:"+jo.getString("sameFid") );
 			// 同一关系
 				if (jo.getString("sameFid") !=null  && StringUtils.isNotEmpty(jo.getString("sameFid"))) {
 					System.out.println("pid:"+pid );
@@ -887,7 +887,7 @@ public class UploadOperation {
 							insertSamePoi(pid,otherPid,conn);
 						}
 					}
-				}
+				}*/
 			
 			//*************************************
 			
@@ -1688,7 +1688,7 @@ public class UploadOperation {
 			}
 			
 			//************zl 2016.12.01****************
-			System.out.println("sameFid:"+jo.getString("sameFid") );
+			/*System.out.println("sameFid:"+jo.getString("sameFid") );
 			// 同一关系
 				if (jo.getString("sameFid") !=null  && StringUtils.isNotEmpty(jo.getString("sameFid"))) {
 					System.out.println("pid:"+pid );
@@ -1709,7 +1709,7 @@ public class UploadOperation {
 						}
 					}
 				
-				}
+				}*/
 			
 			//*************************************
 			

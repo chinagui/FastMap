@@ -31,8 +31,28 @@ public class Command extends AbstractCommand {
 	
 	private RdObject rdObject;
 	
+	private double longitude;
+
+	private double latitude;
+	
 	private int pid;
 	
+	public double getLongitude() {
+		return longitude;
+	}
+
+	public void setLongitude(double longitude) {
+		this.longitude = longitude;
+	}
+
+	public double getLatitude() {
+		return latitude;
+	}
+
+	public void setLatitude(double latitude) {
+		this.latitude = latitude;
+	}
+
 	public int getPid() {
 		return pid;
 	}
@@ -91,6 +111,13 @@ public class Command extends AbstractCommand {
 		if(content.containsKey("names"))
 		{
 			this.nameArray = content.getJSONArray("names");
+		}
+		
+		if(content.containsKey("geometry"))
+		{
+			this.latitude = content.getJSONObject("geometry").getDouble("latitude");
+			
+			this.longitude = content.getJSONObject("geometry").getDouble("longitude");
 		}
 	}
 

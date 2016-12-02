@@ -306,7 +306,7 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 					throw new Exception("邮编postCode字段名不存在");
 				}
 				//地址
-				if(!JSONUtils.isNull(jo.get("地址"))){
+				if(!JSONUtils.isNull(jo.get("address"))){
 					if(StringUtils.isNotEmpty(jo.getString("address"))){
 						String address = jo.getString("address");
 						//IX_POI_ADDRESS表
@@ -399,11 +399,12 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 				//查询的POI主表
 				IxPoi ixPoi = (IxPoi) poi.getMainrow();
 				//修改履历
+				String log = null;
 				if(!JSONUtils.isNull(jo.get("log"))){
+					log = jo.getString("log");
 				}else{
-					throw new Exception("字段名不存在");
+					throw new Exception("修改履历log字段名不存在");
 				}
-				String log = jo.getString("log");
 				//判断是大陆/港澳
 				String langCode = null;
 				if(!JSONUtils.isNull(jo.get("regionInfo"))){
@@ -419,11 +420,11 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 					throw new Exception("区域信息regionInfo字段名不存在");
 				}
 				//改名称
-				if("改名称".contains(log)){
+				if(StringUtils.contains(log,"改名称")){
 					this.usdateName(poi, jo, langCode);
 				}
 				//改分类
-				if("改分类".contains(log)){
+				if(StringUtils.contains(log,"改分类")){
 					if(!JSONUtils.isNull(jo.get("kind"))){
 						String kind = jo.getString("kind");
 						ixPoi.setKindCode(kind);
@@ -432,15 +433,15 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 					}
 				}
 				//改电话
-				if("改电话".contains(log)){
+				if(StringUtils.contains(log,"改电话")){
 					this.usdateContact(poi, jo);
 				}
 				//改地址
-				if("改地址".contains(log)){
+				if(StringUtils.contains(log,"改地址")){
 					this.usdateAddress(poi, jo, langCode);
 				}
 				//改邮编
-				if("改邮编".contains(log)){
+				if(StringUtils.contains(log,"改邮编")){
 					if(!JSONUtils.isNull(jo.get("postCode"))){
 						String postCode = jo.getString("postCode");
 						ixPoi.setPostCode(postCode);
@@ -449,11 +450,11 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 					}
 				}
 				//改风味类型
-				if("改风味类型".contains(log)){
+				if(StringUtils.contains(log,"改风味类型")){
 					this.usdateFoodType(poi, jo);
 				}
 				//改品牌
-				if("改品牌".contains(log)){
+				if(StringUtils.contains(log,"改品牌")){
 					if(!JSONUtils.isNull(jo.get("chain"))){
 						String chain = jo.getString("chain");
 						ixPoi.setChain(chain);
@@ -462,7 +463,7 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 					}
 				}
 				//改等级
-				if("改等级".contains(log)){
+				if(StringUtils.contains(log,"改等级")){
 					if(!JSONUtils.isNull(jo.get("level"))){
 						String level = jo.getString("level");
 						ixPoi.setLevel(level);
@@ -471,12 +472,12 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 					}
 				}
 				//改24小时
-				if("改24小时".contains(log)){
+				if(StringUtils.contains(log,"改24小时")){
 					int open24H =jo.getInt("open24H");
 					ixPoi.setOpen24h(open24H);
 				}
 				//改星级
-				if("改星级".contains(log)){
+				if(StringUtils.contains(log,"改星级")){
 					//查询的IX_POI_HOTEL表
 					List<IxPoiHotel> ixPoiHotels = poi.getIxPoiHotels();
 					//星级
@@ -492,12 +493,12 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 					}
 				}
 				//改内部POI
-				if("改内部POI".contains(log)){
+				if(StringUtils.contains(log,"改内部POI")){
 					int indoorType =jo.getInt("indoorType");
 					ixPoi.setIndoor(indoorType);
 				}
 				//改父子关系
-				if("改父子关系".contains(log)){
+				if(StringUtils.contains(log,"改父子关系")){
 					//处理父子关系
 					String fatherson = null;
 					if(!JSONUtils.isNull(jo.get("fatherson"))){

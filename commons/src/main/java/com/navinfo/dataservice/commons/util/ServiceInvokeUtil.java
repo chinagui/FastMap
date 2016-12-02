@@ -16,6 +16,8 @@ import org.apache.commons.httpclient.methods.multipart.Part;
 import org.apache.commons.httpclient.methods.multipart.StringPart;
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.commons.log.LoggerRepos;
+
 /**
  * @author arnold
  * @version $Id:Exp$
@@ -23,7 +25,7 @@ import org.apache.log4j.Logger;
  */
 public class ServiceInvokeUtil
 {
-    private static final transient Logger log = Logger.getLogger(ServiceInvokeUtil.class);
+    private static final transient Logger log = LoggerRepos.getLogger(ServiceInvokeUtil.class);
 
     public static String invoke(String service_url,Map<String,String> parMap) throws Exception
     {

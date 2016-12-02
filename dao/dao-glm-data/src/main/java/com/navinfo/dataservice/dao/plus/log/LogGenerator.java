@@ -157,10 +157,16 @@ public class LogGenerator {
 		perstmtLogDetail.setString(3, basicObj.objName());
 		perstmtLogDetail.setLong(4, basicObj.objPid());
 		perstmtLogDetail.setString(5, subrow.tableName());
-		perstmtLogDetail.setString(6,(subrow.getOldValueJson()==null?null:subrow.getOldValueJson().toString()));
-		perstmtLogDetail.setString(7,(subrow.getNewValueJson()==null?null:subrow.getNewValueJson().toString()));
-		perstmtLogDetail.setString(8,(subrow.getChangedColumns()==null?null:subrow.getChangedColumns().toString()));
-		
+		if(subrow.getOpType().equals(OperationType.UPDATE)){
+			perstmtLogDetail.setString(6,(subrow.getOldValueJson()==null?null:subrow.getOldValueJson().toString()));
+			perstmtLogDetail.setString(7,(subrow.getNewValueJson()==null?null:subrow.getNewValueJson().toString()));
+			perstmtLogDetail.setString(8,(subrow.getChangedColumns()==null?null:subrow.getChangedColumns().toString()));
+		}else{
+			perstmtLogDetail.setString(6,null);
+			perstmtLogDetail.setString(7,null);
+			perstmtLogDetail.setString(8,null);
+		}
+
 		if(subrow.getOpType().equals(OperationType.DELETE)){
 			perstmtLogDetail.setInt(9, 2);
 		}else if(subrow.getOpType().equals(OperationType.INSERT)){

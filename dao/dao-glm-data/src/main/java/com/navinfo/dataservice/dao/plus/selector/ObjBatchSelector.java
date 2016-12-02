@@ -55,6 +55,10 @@ public class ObjBatchSelector {
 	 */
 	public static Map<Long,BasicObj> selectByPids(Connection conn,String objType,Set<String> tabNames
 			,Collection<Long> pids,boolean isLock,boolean isWait) throws SQLException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException{
+		Map<Long,BasicObj> objs = new HashMap<Long,BasicObj>();
+		if(pids.isEmpty()){
+			return objs;
+		}
 		GlmObject glmObj = GlmFactory.getInstance().getObjByType(objType);
 		GlmTable mainTable = glmObj.getMainTable();
 		String sql = assembleSql(mainTable,mainTable,mainTable.getPkColumn(),pids);
@@ -74,7 +78,7 @@ public class ObjBatchSelector {
 			mainrowList = new QueryRunner().query(conn, sql, new SingleBatchSelRsHandler(mainTable));
 		}
 		
-		Map<Long,BasicObj> objs = new HashMap<Long,BasicObj>();
+		
 		for(BasicRow mainrow:mainrowList){
 			BasicObj obj = ObjFactory.getInstance().create4Select(mainrow);
 			objs.put(mainrow.getObjPid(), obj);
@@ -149,7 +153,8 @@ public class ObjBatchSelector {
 
 		//更新obj
 		for(BasicObj obj:objs){
-			obj.setSubrows(glmTab.getName(),childRows.get(obj.objPid()));
+			obj.setSubrows(glmTab.getName(),(childRows.get(obj.objPid())==null?new ArrayList<BasicRow>():childRows.get(obj.objPid())));
+//			obj.setSubrows(glmTab.getName(),childRows.get(obj.objPid()));
 		}
 
 	}
@@ -177,6 +182,10 @@ public class ObjBatchSelector {
 	 */
 	public static <T> Map<Long,BasicObj> selectBySpecColumn(Connection conn,String objType,Set<String> tabNames,String colName
 			,Collection<T> colValues,boolean isLock,boolean isWait) throws SQLException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException{
+		Map<Long,BasicObj> objs = new HashMap<Long,BasicObj>();
+		if(colValues.isEmpty()){
+			return objs;
+		}
 		GlmObject glmObj = GlmFactory.getInstance().getObjByType(objType);
 		GlmTable mainTable = glmObj.getMainTable();
 		//字段类型
@@ -208,8 +217,6 @@ public class ObjBatchSelector {
 			mainrowList = new QueryRunner().query(conn, sql, new SingleBatchSelRsHandler(mainTable));
 		}
 
-		
-		Map<Long,BasicObj> objs = new HashMap<Long,BasicObj>();
 		for(BasicRow mainrow:mainrowList){
 			BasicObj obj = ObjFactory.getInstance().create4Select(mainrow);
 			objs.put(obj.objPid(), obj);
@@ -267,21 +274,29 @@ public class ObjBatchSelector {
 		}
 		//字段类型
 		String colType = mainTable.getColumByName(colName).getType();
-		Collection<String> colValues2 = new HashSet<String>();
-		if(colType.equals(GlmColumn.TYPE_VARCHAR)){
-			for(T colValue:colValues){
-				colValues2.add("'" + colValue.toString() + "'");
+//		Collection<String> colValues2 = new HashSet<String>();
+//		if(colType.equals(GlmColumn.TYPE_VARCHAR)){
+//			for(T colValue:colValues){
+//				colValues2.add("'" + colValue.toString() + "'");
+//			}
+//			colValues.clear();
+//			colValues.addAll((Collection<? extends T>) colValues2);
+//		}
+		
+		if(colType.equals(GlmColumn.TYPE_VARCHAR)||colType.equals(GlmColumn.TYPE_RAW)){
+			if(colValues.size()<=1000){
+				sb.append(" IN ('" + StringUtils.join(colValues.toArray(),"','") + "')");
+			}else{
+				sb.append(" IN (select column_value from table(clob_to_table(?)))");
 			}
-			colValues.clear();
-			colValues.addAll((Collection<? extends T>) colValues2);
+		}else if(colType.equals(GlmColumn.TYPE_NUMBER)){
+			if(colValues.size()<=1000){
+				sb.append(" IN (" + StringUtils.join(colValues.toArray(),",") + ")");
+			}else{
+				sb.append(" IN (select to_number(column_value) from table(clob_to_table(?)))");
+			}
 		}
 		
-				
-		if(colValues.size()<=1000){
-			sb.append(" IN (" + StringUtils.join(colValues.toArray(),",") + ")");
-		}else{
-			sb.append(" IN (select to_number(column_value) from table(clob_to_table(?)))");
-		}
 		
 		return sb.toString();
 	}

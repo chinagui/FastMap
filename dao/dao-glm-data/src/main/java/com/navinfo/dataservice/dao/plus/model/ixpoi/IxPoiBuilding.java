@@ -16,6 +16,7 @@ public class IxPoiBuilding extends BasicRow {
 	
 	public IxPoiBuilding (long objPid){
 		super(objPid);
+		setPoiPid(objPid);
 	}
 	
 	public long getPoiPid() {

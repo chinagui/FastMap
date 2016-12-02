@@ -79,7 +79,7 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 			String zipFile = writeImpResFile(syncApi,resFileName);
 			response("生成统计结果完成",null);
 			//通知多源
-			notifyMultiSrc(zipFile,syncApi);
+//			notifyMultiSrc(zipFile,syncApi);
 		}catch(Exception e){
 			log.error(e.getMessage(), e);
 			throw new JobException(e.getMessage(),e);
@@ -264,9 +264,13 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 					+SystemConfigFactory.getSystemConfig().getValue(PropConstant.downloadUrlPathRoot)
 					+zipFile;
 			log.debug("导入的统计数据包url:"+zipFileUrl);
+			JSONObject jso = new JSONObject();
+			jso.put("url", zipFileUrl);
 			Map<String,String> parMap = new HashMap<String,String>();
-			parMap.put("url", zipFileUrl);
-			String result = ServiceInvokeUtil.invoke("", parMap, 10000);
+			parMap.put("parameter", jso.toString());
+			parMap.put("operate", "downloadFastMapFeedBack");
+			String msUrl = SystemConfigFactory.getSystemConfig().getValue(PropConstant.multisrcDaySyncUrl);
+			String result = ServiceInvokeUtil.invoke(msUrl, parMap, 10000);
 			log.debug("notify multisrc result:"+result);
 			syncApi.updateMultiSrcFmSyncStatus(MultiSrcFmSync.STATUS_NOTIFY_SUCCESS,jobInfo.getId());
 		}catch(Exception e){
@@ -333,7 +337,7 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 				relImp.operate(relCmd);
 				relImp.persistChangeLog(OperationSegment.SG_ROW, jobInfo.getUserId());
 				errLog.putAll(imp.getErrLog());
-				log.debug("dbId("+dbId+")转出成功。");
+				log.debug("dbId("+dbId+")转入成功。");
 			}catch(Exception e){
 				DbUtils.rollbackAndCloseQuietly(conn);
 				log.error(e.getMessage(),e);

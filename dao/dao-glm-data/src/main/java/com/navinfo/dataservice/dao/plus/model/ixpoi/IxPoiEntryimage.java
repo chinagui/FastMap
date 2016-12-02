@@ -22,6 +22,7 @@ public class IxPoiEntryimage extends BasicRow {
 	
 	public IxPoiEntryimage (long objPid){
 		super(objPid);
+		setPoiPid(objPid);
 	}
 	
 	public long getPoiPid() {

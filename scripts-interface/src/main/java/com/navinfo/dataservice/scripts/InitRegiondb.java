@@ -216,8 +216,17 @@ public class InitRegiondb {
 			DataSource regDdataSource = MultiDataSourceFactory.getInstance().getDataSource(DbConnectConfig.createConnectConfig(dbRegion.getConnectParam())); //获取大区库的数据源
 			metaConn = metaDataSource.getConnection();//获取元数据库的连接
 			//创建元数据库dblink
-			cr.create("RG_DBLINK_"+dbRegion.getDbUserName(), false, metaDataSource,dbRegion.getDbUserName(),dbRegion.getDbUserPasswd(),dbRegion.getDbServer().getIp(),String.valueOf(dbRegion.getDbServer().getPort()),dbRegion.getDbServer().getServiceName());
-			metaConn.commit();
+			String dbLinkName = null;
+			String dbUserName = dbRegion.getDbUserName();
+			if(dbUserName.contains("_d_")){
+				dbLinkName = "d_"+dbUserName.split("_d_")[1];
+			}else if(dbUserName.contains("_m_")){
+				dbLinkName = "m_"+dbUserName.split("_m_")[1];
+			}
+			if(dbLinkName != null && StringUtils.isNotEmpty(dbLinkName)){
+				cr.create("RG_DBLINK_"+dbLinkName, false, metaDataSource,dbRegion.getDbUserName(),dbRegion.getDbUserPasswd(),dbRegion.getDbServer().getIp(),String.valueOf(dbRegion.getDbServer().getPort()),dbRegion.getDbServer().getServiceName());
+				metaConn.commit();
+			}
 		}finally{
 			DbUtils.closeQuietly(metaConn);
 		}
@@ -350,7 +359,7 @@ public class InitRegiondb {
 	
 	public static void main(String[] args){
 //		testExeSqlOrPck();
-		testInstallPcks(111);
+	testInstallPcks(111);
 	}
 	
 	private static void testInstallPcks(int dbId){

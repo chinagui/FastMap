@@ -225,7 +225,10 @@ public class PoiRelationImportor extends AbstractOperation{
 				}
 			}
 			//加载子对象原始父对象
-			Map<Long,BasicObj> originParentMap = ObjBatchSelector.selectByPids(conn, ObjectName.IX_POI, tabNames, childPidOriginParentPidNeedToBeLoad.values(), true, true);
+			Map<Long,BasicObj> originParentMap = new HashMap<Long,BasicObj>();
+			if(!childPidOriginParentPidNeedToBeLoad.isEmpty()){
+				originParentMap = ObjBatchSelector.selectByPids(conn, ObjectName.IX_POI, tabNames, childPidOriginParentPidNeedToBeLoad.values(), true, true);
+			}
 
 			log.info("将缺失的父对象加载到OperationResult");
 			for(Map.Entry<Long, BasicObj> entry:originParentMap.entrySet()){

@@ -59,6 +59,7 @@ public class IxPoiAddress extends BasicRow {
 	
 	public IxPoiAddress (long objPid){
 		super(objPid);
+		setPoiPid(objPid);
 	}
 	
 	public long getNameId() {

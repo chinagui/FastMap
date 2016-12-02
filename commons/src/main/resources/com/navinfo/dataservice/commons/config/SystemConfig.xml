@@ -5,7 +5,9 @@
 	<SYS.jdbc.driverClassName>oracle.jdbc.driver.OracleDriver</SYS.jdbc.driverClassName>
 	<SYS.jdbc.url>jdbc:oracle:thin:@192.168.4.131:1521/orcl</SYS.jdbc.url>
 	<SYS.dataSource.validationQuery>select 1 from dual</SYS.dataSource.validationQuery>
-	<SYS.jdbc.username>fm_sys_sp6</SYS.jdbc.username>
+	<!-- <SYS.jdbc.username>fm_sys_test </SYS.jdbc.username>
+	<SYS.jdbc.password>fm_sys_test</SYS.jdbc.password> -->
+	<SYS.jdbc.username>fm_sys_sp6 </SYS.jdbc.username>
 	<SYS.jdbc.password>fm_sys_sp6</SYS.jdbc.password>
 	<SYS.dataSource.initialSize>2</SYS.dataSource.initialSize>
 	<SYS.dataSource.maxActive>25</SYS.dataSource.maxActive>

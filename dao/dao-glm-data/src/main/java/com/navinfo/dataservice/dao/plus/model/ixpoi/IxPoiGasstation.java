@@ -24,6 +24,7 @@ public class IxPoiGasstation extends BasicRow {
 	
 	public IxPoiGasstation (long objPid){
 		super(objPid);
+		setPoiPid(objPid);
 	}
 	
 	public long getGasstationId() {

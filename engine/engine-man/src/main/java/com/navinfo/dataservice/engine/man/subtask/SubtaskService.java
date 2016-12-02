@@ -368,7 +368,7 @@ public class SubtaskService {
 
 			ResultSetHandler<Subtask> rsHandler = new ResultSetHandler<Subtask>() {
 				public Subtask handle(ResultSet rs) throws SQLException {
-					StaticsApi staticApi=(StaticsApi) ApplicationContextUtil.getBean("staticsApi");
+					//StaticsApi staticApi=(StaticsApi) ApplicationContextUtil.getBean("staticsApi");
 					if (rs.next()) {
 						Subtask subtask = new Subtask();						
 						subtask.setSubtaskId(rs.getInt("SUBTASK_ID"));

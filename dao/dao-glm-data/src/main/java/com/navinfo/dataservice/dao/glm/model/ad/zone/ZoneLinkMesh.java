@@ -95,11 +95,11 @@ public class ZoneLinkMesh implements IRow {
 	public void copy(IRow row) {
 		ZoneLinkMesh sourceZoneLinkMesh = (ZoneLinkMesh) row;
 
-		sourceZoneLinkMesh.setMesh(sourceZoneLinkMesh.getMeshId());
+		this.setMesh(sourceZoneLinkMesh.getMeshId());
 
-		sourceZoneLinkMesh.setLinkPid(sourceZoneLinkMesh.getLinkPid());
+		this.setLinkPid(sourceZoneLinkMesh.getLinkPid());
 
-		sourceZoneLinkMesh.setRowId(sourceZoneLinkMesh.getRowId());
+		this.setRowId(sourceZoneLinkMesh.getRowId());
 	}
 
 	@Override

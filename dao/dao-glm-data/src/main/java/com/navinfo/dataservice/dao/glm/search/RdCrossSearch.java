@@ -93,8 +93,6 @@ public class RdCrossSearch implements ISearch {
 
 				JSONArray maArray = new JSONArray();
 
-				jsonM.put("a", maArray);
-
 				String nodePids = resultSet.getString("node_pids");
 
 				String wktPoints = resultSet.getString("wkts");
@@ -115,8 +113,12 @@ public class RdCrossSearch implements ISearch {
 					aObject.put("g", Geojson.lonlat2Pixel(gNode.getCoordinate().x, gNode.getCoordinate().y, z, px, py));
 					
 					aObject.put("b", isMains.split(",")[i]);
+					
+					maArray.add(aObject);
 				}
-
+				
+				jsonM.put("a", maArray);
+				
 				snapshot.setG(new JSONArray());
 
 				snapshot.setM(jsonM);

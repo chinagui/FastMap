@@ -282,7 +282,7 @@ public class Operation implements IOperation {
 						this.command.getAdLink().geteNodePid());
 			} else {
 				maps.put(geo.getCoordinates()[0], this.command.getAdLink()
-						.geteNodePid());
+						.getsNodePid());
 
 				maps.put(geo.getCoordinates()[geo.getCoordinates().length - 1],
 						nodePid);

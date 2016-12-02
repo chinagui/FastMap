@@ -283,7 +283,7 @@ public class Operation implements IOperation {
 						this.command.getZoneLink().geteNodePid());
 			} else {
 				maps.put(geo.getCoordinates()[0], this.command.getZoneLink()
-						.geteNodePid());
+						.getsNodePid());
 
 				maps.put(geo.getCoordinates()[geo.getCoordinates().length - 1],
 						nodePid);

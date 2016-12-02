@@ -60,6 +60,7 @@ public abstract class AbstractOperation {
 	 * @throws Exception
 	 */
 	public void persistChangeLog(int opSg,long userId)throws Exception{
+		log.info("开始持久化数据");
 		if(result==null||result.getAllObjs().size()==0)return;
 		//持久化一次操作的变更，持久化包括数据和履历
 		
@@ -76,6 +77,8 @@ public abstract class AbstractOperation {
 			List<RunnableSQL> sqls = obj.generateSql();
 			if(sqls!=null){
 				for(RunnableSQL sql:sqls){
+					log.info("持久化sql:" + sql.getSql());
+					log.info("持久化sql参数:" + sql.getArgs());
 					sql.run(conn);
 				}
 			}
@@ -86,6 +89,7 @@ public abstract class AbstractOperation {
 				obj.afterPersist();
 			}
 		}
+		log.info("持久化数据结束");
 	}
 	
 	/**
@@ -99,29 +103,32 @@ public abstract class AbstractOperation {
 		Map<String,Set<String>> selConfigs = new HashMap<String,Set<String>>();
 		for(Iterator<BasicObj> it= result.getAllObjs().iterator();it.hasNext();){
 			BasicObj obj = it.next();
-			if(objs.containsKey(obj.objName())){
-				objs.get(obj.objName()).put(obj.objPid(), obj);
-			}else{
-				Map<Long,BasicObj> objMap = new HashMap<Long,BasicObj>();
-				objMap.put(obj.objPid(), obj);
-				objs.put(obj.objName(), objMap);
-			}
-			//子表配置
-			if(!selConfigs.containsKey(obj.objName())){
-				//对象全部子表
-				Set<String> selConfig = new HashSet<String>();
-				for(Map.Entry<String, GlmTable> entry:GlmFactory.getInstance().getObjByType(obj.objName()).getTables().entrySet()){
-					selConfig.add(entry.getKey());
+			if(obj.opType().equals(OperationType.DELETE)){
+				if(objs.containsKey(obj.objName())){
+					objs.get(obj.objName()).put(obj.objPid(), obj);
+				}else{
+					Map<Long,BasicObj> objMap = new HashMap<Long,BasicObj>();
+					objMap.put(obj.objPid(), obj);
+					objs.put(obj.objName(), objMap);
 				}
-				selConfigs.put(obj.objName(), selConfig);
+				//子表配置
+				if(!selConfigs.containsKey(obj.objName())){
+					//对象全部子表
+					Set<String> selConfig = new HashSet<String>();
+					for(Map.Entry<String, GlmTable> entry:GlmFactory.getInstance().getObjByType(obj.objName()).getTables().entrySet()){
+						selConfig.add(entry.getKey());
+					}
+					selConfigs.put(obj.objName(), selConfig);
+				}
 			}	
 		}
-		ObjChildrenIncreSelector.increSelect(conn, objs, selConfigs);
-		for(Map.Entry<String, Map<Long,BasicObj>> entry:objs.entrySet()){
-			for(Map.Entry<Long, BasicObj> subEntry:entry.getValue().entrySet()){
-				BasicObj obj = subEntry.getValue();
-				obj.deleteObj();
-//				result.putObj(obj);
+		if(!objs.isEmpty()){
+			ObjChildrenIncreSelector.increSelect(conn, objs, selConfigs);
+			for(Map.Entry<String, Map<Long,BasicObj>> entry:objs.entrySet()){
+				for(Map.Entry<Long, BasicObj> subEntry:entry.getValue().entrySet()){
+					BasicObj obj = subEntry.getValue();
+					obj.deleteObj();
+				}
 			}
 		}
 	}

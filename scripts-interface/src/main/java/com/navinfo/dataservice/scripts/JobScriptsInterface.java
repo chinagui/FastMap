@@ -31,6 +31,8 @@ public class JobScriptsInterface {
 		JobInfo jobInfo = new JobInfo(0,UuidUtils.genUuid());
 		jobInfo.setType(type);
 		jobInfo.setRequest(request);
+		//设置jobId
+		jobInfo.setId(963);
 		AbstractJob job = JobCreateStrategy.createAsMethod(jobInfo);
 		job.run();
 		return job.getJobInfo().getResponse();

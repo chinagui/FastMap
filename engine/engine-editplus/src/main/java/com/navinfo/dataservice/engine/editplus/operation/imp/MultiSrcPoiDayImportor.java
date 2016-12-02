@@ -306,7 +306,7 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 					throw new Exception("邮编postCode字段名不存在");
 				}
 				//地址
-				if(!JSONUtils.isNull(jo.get("地址"))){
+				if(!JSONUtils.isNull(jo.get("address"))){
 					if(StringUtils.isNotEmpty(jo.getString("address"))){
 						String address = jo.getString("address");
 						//IX_POI_ADDRESS表

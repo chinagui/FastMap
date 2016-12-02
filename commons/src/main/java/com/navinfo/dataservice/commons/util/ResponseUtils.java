@@ -45,6 +45,8 @@ public class ResponseUtils {
 		
 		json.put("errcode", -1);
 		
+		json.put("data", null);
+		
 		json.put("errmsg", errmsg==null?"":errmsg);
 		
 		return json.toString();

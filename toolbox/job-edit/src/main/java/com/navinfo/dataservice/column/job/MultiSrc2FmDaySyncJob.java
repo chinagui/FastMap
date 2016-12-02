@@ -333,7 +333,7 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 				relImp.operate(relCmd);
 				relImp.persistChangeLog(OperationSegment.SG_ROW, jobInfo.getUserId());
 				errLog.putAll(imp.getErrLog());
-				log.debug("dbId("+dbId+")转出成功。");
+				log.debug("dbId("+dbId+")转入成功。");
 			}catch(Exception e){
 				DbUtils.rollbackAndCloseQuietly(conn);
 				log.error(e.getMessage(),e);

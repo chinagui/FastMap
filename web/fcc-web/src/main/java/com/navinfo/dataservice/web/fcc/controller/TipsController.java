@@ -387,9 +387,6 @@ public class TipsController extends BaseController {
                 throw new IllegalArgumentException("参数错误:stage不能为空。");
             }
             
-           /* if (dbId==0) {
-                throw new IllegalArgumentException("参数错误:dbId不能为0。");
-            }*/
             if (StringUtils.isEmpty(mdFlag)) {
                 throw new IllegalArgumentException("参数错误:mdFlag不能为空。");
             }

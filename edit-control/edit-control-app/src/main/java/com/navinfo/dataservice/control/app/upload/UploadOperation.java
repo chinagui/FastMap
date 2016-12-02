@@ -6,7 +6,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -44,6 +46,8 @@ import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiContact;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiName;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiParent;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiPhoto;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxSamepoi;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxSamepoiPart;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 import com.navinfo.dataservice.engine.edit.service.EditApiImpl;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -293,7 +297,7 @@ public class UploadOperation {
 					JSONObject relateParentChildren = new JSONObject();
 					for (int i = 0; i < poiList.size(); i++) {
 						JSONObject jo = poiList.get(i);
-						JSONObject perRetObj = obj2PoiForInsert(jo, version);
+						JSONObject perRetObj = obj2PoiForInsert(jo, version,conn);
 						int flag = perRetObj.getInt("flag");
 						if (flag == 1) {
 							try{
@@ -492,10 +496,11 @@ public class UploadOperation {
 	 * 
 	 * @param jo
 	 * @param version
+	 * @param conn 
 	 * @return
 	 * @throws Exception
 	 */
-	private JSONObject obj2PoiForInsert(JSONObject jo, String version) throws Exception {
+	private JSONObject obj2PoiForInsert(JSONObject jo, String version, Connection conn) throws Exception {
 		IxPoi poi = new IxPoi();
 		String fid = jo.getString("fid");
 		JSONObject retObj = new JSONObject();
@@ -861,6 +866,30 @@ public class UploadOperation {
 				}
 				poi.setChargingplots(chargingPoleList);
 			}
+			//***********zl 2016.11.30****************
+			/*System.out.println("sameFid:"+jo.getString("sameFid") );
+			// 同一关系
+				if (jo.getString("sameFid") !=null  && StringUtils.isNotEmpty(jo.getString("sameFid"))) {
+					System.out.println("pid:"+pid );
+					//获取另一个  同组  pid
+					Integer otherPid = getOtherPoiByPid(pid, conn);
+					if(otherPid != null && otherPid >0 ){ //存在同组的另一个poi
+						//获取 otherpid 的 poi_num
+						System.out.println("otherPid:"+otherPid );
+						String otherPoiNum =getPoiNumByPid(otherPid, conn);
+						if(otherPoiNum != jo.getString("sameFid")){
+							//将 ix_samepoi_part 表下同组的两条记录标记为删除
+							deleteSamePoiPartbyPid(pid,otherPid,conn);
+							//将 ix_samepoi 表中的记录标记为 删除 
+							deleteSamePoibyPid(pid, conn);
+							//在 ix_samepoi_part 表新增一条记录
+							//在 ix_samepoi_part 表新增两条记录
+							insertSamePoi(pid,otherPid,conn);
+						}
+					}
+				}*/
+			
+			//*************************************
 			
 
 			retObj.put("flag", 1);
@@ -1658,6 +1687,32 @@ public class UploadOperation {
 				poiJson.put("chargingstations", newChargingStationArray);
 			}
 			
+			//************zl 2016.12.01****************
+			/*System.out.println("sameFid:"+jo.getString("sameFid") );
+			// 同一关系
+				if (jo.getString("sameFid") !=null  && StringUtils.isNotEmpty(jo.getString("sameFid"))) {
+					System.out.println("pid:"+pid );
+					//获取另一个  同组  pid
+					Integer otherPid = getOtherPoiByPid(pid, conn);
+					if(otherPid != null && otherPid >0 ){ //存在同组的另一个poi
+						//获取 otherpid 的 poi_num
+						System.out.println("otherPid:"+otherPid );
+						String otherPoiNum =getPoiNumByPid(otherPid, conn);
+						if(otherPoiNum != jo.getString("sameFid")){
+							//将 ix_samepoi_part 表下同组的两条记录标记为删除
+							deleteSamePoiPartbyPid(pid,otherPid,conn);
+							//将 ix_samepoi 表中的记录标记为 删除 
+							deleteSamePoibyPid(pid, conn);
+							//在 ix_samepoi_part 表新增一条记录
+							//在 ix_samepoi_part 表新增两条记录
+							insertSamePoi(pid,otherPid,conn);
+						}
+					}
+				
+				}*/
+			
+			//*************************************
+			
 			
 			// 充电桩
 			if (jo.containsKey("chargingPole")) {
@@ -2069,6 +2124,225 @@ public class UploadOperation {
 		
 	}
 	
+/**
+ * @Title: getOtherPoiByGroupId
+ * @Description: 根据上传pid获取通groupid 下的另一个pid (ix_samepoi_part)
+ * @param fid
+ * @param conn
+ * @return
+ * @throws Exception  int
+ * @throws 
+ * @author zl zhangli5174@navinfo.com
+ * @date 2016年12月1日 下午2:31:12 
+ */
+private Integer getOtherPoiByPid(int pid,Connection conn) throws Exception {
+		
+		//String sql = "SELECT pid FROM ix_poi WHERE poi_num=:1";
+		String sql = "select nvl(p.poi_pid,0) pid from ix_samepoi_part p where p.group_id =(select t.group_id from ix_samepoi_part t where t.poi_pid= :1) and p.poi_pid != :2";
+		
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+		
+		try {
+			pstmt = conn.prepareStatement(sql);
+			
+			pstmt.setInt(1, pid);
+			pstmt.setInt(2, pid);
+			
+			resultSet = pstmt.executeQuery();
+			
+			if (resultSet.next()) {
+				return resultSet.getInt("pid");
+			} else {
+				return null;  //无返回数据
+				//throw new Exception("未找到pid为"+pid+"的子ix_samepoi_part");
+			}
+			
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+		}
+		
+	}
+
+/**
+ * @Title: getPoiNumByPid
+ * @Description:通过 pid 获取poiNum  (在ix_poi 里)
+ * @param pid
+ * @param conn
+ * @return
+ * @throws Exception  int
+ * @throws 
+ * @author zl zhangli5174@navinfo.com
+ * @date 2016年12月1日 下午2:51:33 
+ */
+private String getPoiNumByPid(int pid,Connection conn) throws Exception {
+	
+	String sql = "SELECT poi_num FROM ix_poi WHERE pid=:1";
+	
+	PreparedStatement pstmt = null;
+
+	ResultSet resultSet = null;
+	
+	try {
+		pstmt = conn.prepareStatement(sql);
+		
+		pstmt.setInt(1, pid);
+		
+		resultSet = pstmt.executeQuery();
+		
+		if (resultSet.next()) {
+			return resultSet.getString("poi_num");
+		} else {
+			throw new Exception("未找到pid为"+pid+"的子poi");
+		}
+		
+	} catch (Exception e) {
+		throw e;
+	} finally {
+		DBUtils.closeResultSet(resultSet);
+		DBUtils.closeStatement(pstmt);
+	}
+	
+}
+
+
+/**
+ * @param otherPid 
+ * @param pid 
+ * @Title: insertSamePoi
+ * @Description: //在 ix_samepoi_part 表新增一条记录
+ * @param conn
+ * @return  Integer
+ * @throws 
+ * @author zl zhangli5174@navinfo.com
+ * @date 2016年12月1日 下午4:01:25 
+ */
+private void insertSamePoi(int pid, Integer otherPid, Connection conn) {
+	String sql = "INSERT INTO ix_samepoi(group_id,relation_type,u_record ,u_date,row_id) VALUES (?,?,?,?,?) ";
+	String sql_part = " INSERT INTO ix_samepoi_part(group_id,poi_pid,u_record ,u_date,row_id) VALUES (?,?,?,?,?),(?,?,?,?,?) ";
+	PreparedStatement pstmt = null;
+
+	PreparedStatement pstmt_part = null;
+	try {
+		pstmt = conn.prepareStatement(sql);
+		pstmt_part = conn.prepareStatement(sql_part);
+		
+		int groupId = PidUtil.getInstance().applyPoiGroupId();
+		System.out.println("groupId : "+groupId);
+		pstmt.setInt(1, groupId);
+		pstmt.setInt(2, 1);
+		pstmt.setInt(3, 1);
+		pstmt.setString(4, StringUtils.getCurrentTime());
+		pstmt.setString(5, UuidUtils.genUuid());
+		pstmt.execute();
+		
+		//ix_samepoi_part 第一条
+		pstmt_part.setInt(1, groupId);
+		pstmt_part.setInt(2, pid);
+		pstmt_part.setInt(3, 1);
+		pstmt.setString(4, StringUtils.getCurrentTime());
+		pstmt_part.setString(5, UuidUtils.genUuid());
+		//ix_samepoi_part 第二条
+		pstmt_part.setInt(6, groupId);
+		pstmt_part.setInt(7, otherPid);
+		pstmt_part.setInt(8, 1);
+		pstmt.setString(9, StringUtils.getCurrentTime());
+		pstmt_part.setString(10, UuidUtils.genUuid());
+		pstmt_part.execute();
+		
+		//resultSet = pstmt.executeQuery();
+	} catch (Exception e) {
+		try {
+			throw e;
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+	} finally {
+		DBUtils.closeStatement(pstmt);
+		DBUtils.closeStatement(pstmt_part);
+		
+	}
+}
+
+/**
+ * @Title: deleteSamePoibyPid
+ * @Description: 将 ix_samepoi_part 表下同组的两条记录标记为删除
+ * @param pid
+ * @param otherPid  void
+ * @throws 
+ * @author zl zhangli5174@navinfo.com
+ * @date 2016年12月1日 下午3:23:39 
+ */
+private void deleteSamePoiPartbyPid(int pid, Integer otherPid,Connection conn) {
+
+	String sql = "update ix_samepoi_part t  set t.u_record = 2 WHERE t.poi_pid = :1 or t.poi_pid = :2 ";
+	
+	PreparedStatement pstmt = null;
+
+	ResultSet resultSet = null;
+	
+	try {
+		pstmt = conn.prepareStatement(sql);
+		
+		pstmt.setInt(1, pid);
+		pstmt.setInt(2, otherPid);
+		
+		pstmt.execute();
+		
+		//resultSet = pstmt.executeQuery();
+	} catch (Exception e) {
+		try {
+			throw e;
+		} catch (Exception e1) {
+			new Exception("pid: "+pid+",otherPid: "+otherPid+"将 ix_samepoi_part 表下同组的两条记录标记为删除失败 ");
+			e1.printStackTrace();
+		}
+	} finally {
+		DBUtils.closeResultSet(resultSet);
+		DBUtils.closeStatement(pstmt);
+	}
+}
+
+/**
+ * @Title: deleteSamePoibyPid
+ * @Description: 将 ix_samepoi 表中的记录标记为 删除 
+ * @param pid
+ * @param conn  void
+ * @throws 
+ * @author zl zhangli5174@navinfo.com
+ * @date 2016年12月1日 下午3:36:18 
+ */
+private void deleteSamePoibyPid(int pid,Connection conn) {
+
+	String sql = "update ix_samepoi s  set s.u_record = 2 WHERE s.group_id = (select t.group_id  from ix_samepoi_part t where t.poi_pid= :1 ) ";
+	
+	PreparedStatement pstmt = null;
+
+	ResultSet resultSet = null;
+	
+	try {
+		pstmt = conn.prepareStatement(sql);
+		
+		pstmt.setInt(1, pid);
+		
+		pstmt.execute();
+		//resultSet = pstmt.executeQuery();
+	} catch (Exception e) {
+		try {
+			throw e;
+		} catch (Exception e1) {
+			new Exception("pid: "+pid+"将 ix_samepoi 表中的记录标记为 删除 失败 ");
+			e1.printStackTrace();
+		}
+	} finally {
+		DBUtils.closeResultSet(resultSet);
+		DBUtils.closeStatement(pstmt);
+	}
+}
 	private IxPoiParent getParentByPid(int pid,Connection conn) throws Exception {
 		String sql = "SELECT * FROM ix_poi_parent WHERE parent_poi_pid=:1 and u_record !=2";
 		
@@ -2147,6 +2421,11 @@ public class UploadOperation {
 		}
 		
 		
+	}
+	
+	public static void main(String[] args) {
+		System.out.println(StringUtils.getCurrentTime());//u_date
+		System.out.println(new SimpleDateFormat("yyyyMMddHHmmss").format(new Date()));
 	}
 	
 }

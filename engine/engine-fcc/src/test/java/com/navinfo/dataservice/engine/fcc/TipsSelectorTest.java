@@ -74,7 +74,7 @@ public class TipsSelectorTest {
 	
 	
     //根据瓦片扩圈获取Tips数据
-	@Test
+	//@Test
 	public void testSearchDataByTileWithGap() {
 		JSONArray types = new JSONArray();
 		types.add(1202);
@@ -123,11 +123,12 @@ public class TipsSelectorTest {
 		
 		
 		//根据wkt范围获取tips的snapshot列表
-	//	@Test
+		@Test
 		public void testSearchDataBySpatial() {
 			try {
 				JSONArray ja =
-						solrSelector.searchDataBySpatial("POLYGON ((113.70469 26.62879, 119.70818 26.62879, 119.70818 29.62948, 113.70469 29.62948, 113.70469 26.62879))");
+						solrSelector.searchDataBySpatial("POLYGON ((116.0625 40.14583, 116.09375 40.14583, 116.09375 40.125, 116.09375 40.10417, 116.0625 40.10417, 116.03125 40.10417, 116.03125 40.125, 116.03125 40.14583, 116.0625 40.14583))");
+						//solrSelector.searchDataBySpatial("POLYGON ((113.70469 26.62879, 119.70818 26.62879, 119.70818 29.62948, 113.70469 29.62948, 113.70469 26.62879))");
 
 				System.out.println(ja.size());
 			} catch (Exception e) {
@@ -401,7 +402,7 @@ public class TipsSelectorTest {
 		}*/
 		
 		
-		@Test
+		//@Test
 		public void testSubTaskCount(){
 			FccApiImpl imp=new  FccApiImpl();
 			JSONArray grids=new JSONArray();

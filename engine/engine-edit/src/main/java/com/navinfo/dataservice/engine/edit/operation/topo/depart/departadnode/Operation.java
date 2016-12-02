@@ -299,11 +299,7 @@ public class Operation implements IOperation {
 				List<AdLink> adLinks = AdLinkOperateUtils
 						.getCreateAdLinksWithMesh(geomInter, maps, result,
 								this.command.getAdLink());
-				for (AdLink link : adLinks) {
-					result.insertObject(link, ObjStatus.INSERT, link.getPid());
-				}
 				links.addAll(adLinks);
-
 			}
 			result.insertObject(this.command.getAdLink(), ObjStatus.DELETE,
 					this.command.getAdLink().pid());

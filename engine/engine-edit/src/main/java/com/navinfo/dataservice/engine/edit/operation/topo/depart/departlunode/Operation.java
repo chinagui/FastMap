@@ -298,9 +298,6 @@ public class Operation implements IOperation {
 				List<LuLink> luLinks = LuLinkOperateUtils
 						.getCreateLuLinksWithMesh(geomInter, maps, result,
 								this.command.getluLink());
-				for (LuLink link : luLinks) {
-					result.insertObject(link, ObjStatus.INSERT, link.getPid());
-				}
 				links.addAll(luLinks);
 
 			}

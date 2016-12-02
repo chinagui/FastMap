@@ -300,9 +300,6 @@ public class Operation implements IOperation {
 				List<ZoneLink> zoneLinks = ZoneLinkOperateUtils
 						.getCreateZoneLinksWithMesh(geomInter, maps, result,
 								this.command.getZoneLink());
-				for (ZoneLink link : zoneLinks) {
-					result.insertObject(link, ObjStatus.INSERT, link.getPid());
-				}
 				links.addAll(zoneLinks);
 
 			}

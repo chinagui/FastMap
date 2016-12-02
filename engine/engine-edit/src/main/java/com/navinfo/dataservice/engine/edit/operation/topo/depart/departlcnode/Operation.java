@@ -298,9 +298,6 @@ public class Operation implements IOperation {
 				List<LcLink> lcLinks = LcLinkOperateUtils
 						.getCreateLcLinksWithMesh(geomInter, maps, result,
 								this.command.getlcLink());
-				for (LcLink link : lcLinks) {
-					result.insertObject(link, ObjStatus.INSERT, link.getPid());
-				}
 				links.addAll(lcLinks);
 
 			}

@@ -298,9 +298,6 @@ public class Operation implements IOperation {
 				List<RwLink> rwLinks = RwLinkOperateUtils
 						.getCreateRwLinksWithMesh(geomInter, maps, result,
 								this.command.getrwLink());
-				for (RwLink link : rwLinks) {
-					result.insertObject(link, ObjStatus.INSERT, link.getPid());
-				}
 				links.addAll(rwLinks);
 
 			}

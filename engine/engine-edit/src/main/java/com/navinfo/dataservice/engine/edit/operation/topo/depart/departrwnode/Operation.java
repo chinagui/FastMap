@@ -281,7 +281,7 @@ public class Operation implements IOperation {
 						this.command.getrwLink().geteNodePid());
 			} else {
 				maps.put(geo.getCoordinates()[0], this.command.getrwLink()
-						.geteNodePid());
+						.getsNodePid());
 
 				maps.put(geo.getCoordinates()[geo.getCoordinates().length - 1],
 						nodePid);
@@ -298,9 +298,6 @@ public class Operation implements IOperation {
 				List<RwLink> rwLinks = RwLinkOperateUtils
 						.getCreateRwLinksWithMesh(geomInter, maps, result,
 								this.command.getrwLink());
-				for (RwLink link : rwLinks) {
-					result.insertObject(link, ObjStatus.INSERT, link.getPid());
-				}
 				links.addAll(rwLinks);
 
 			}

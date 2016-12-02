@@ -11,7 +11,10 @@ import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
+import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneNode;
+import com.navinfo.dataservice.dao.glm.search.LuNodeSearch;
 import com.navinfo.dataservice.dao.glm.search.RdNodeSearch;
+import com.navinfo.dataservice.dao.glm.search.ZoneNodeSearch;
 import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.operation.Transaction;
 
@@ -40,7 +43,7 @@ public class RdNodeTest extends InitApplication{
 	
 	@Test
 	public void testMove() {
-		String parameter = "{\"command\":\"MOVE\",\"dbId\":17,\"objId\":15430054,\"data\":{\"longitude\":116.62668853998183,\"latitude\":40.333333333333336},\"type\":\"RDNODE\"}";
+		String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDTMCLOCATION\",\"dbId\":17,\"data\":{\"links\":[{\"locDirect\":3,\"rowId\":\"3AE1F8D5514C92F7E050A8C08304EE4C\",\"objStatus\":\"UPDATE\"}],\"rowId\":\"3AE1FA17E63792F7E050A8C08304EE4C\",\"pid\":12504}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
@@ -87,9 +90,9 @@ public class RdNodeTest extends InitApplication{
 		try {
 			conn = DBConnector.getInstance().getConnectionById(17);
 
-			RdNodeSearch search = new RdNodeSearch(conn);
+			ZoneNodeSearch search = new ZoneNodeSearch(conn);
 			
-			String wkt = "{\"type\":\"Polygon\",\"coordinates\":[[[116.38581,40.23904],[116.38626,40.23904],[116.38625,40.23883],[116.38581,40.23882],[116.38581,40.23904]]]}";
+			String wkt = "{\"type\":\"Polygon\",\"coordinates\":[[[116.47709906101225,40.01283736761785],[116.47709906101225,40.01289488813274],[116.47717416286469,40.01289488813274],[116.47717416286469,40.01283736761785],[116.47709906101225,40.01283736761785]]]}}";
 			
 			List<SearchSnapshot> searchSnapshot = search.searchDataBySpatial(Geojson.geojson2Wkt(wkt));
 			

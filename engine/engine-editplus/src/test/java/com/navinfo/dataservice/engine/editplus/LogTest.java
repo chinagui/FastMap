@@ -93,7 +93,7 @@ public class LogTest {
 				}
 			}
 			
-			LogGenerator.writeLog(conn, basicObjs, opCmd, opSg, userId);
+			new LogGenerator().writeLog(conn, false,basicObjs, opCmd, opSg, userId);
 //			conn.commit();
 			System.out.println("Over.");
 		}catch(Exception e){
@@ -147,7 +147,7 @@ public class LogTest {
 			String opCmd = "UPDATE";
 			int opSg = 1; 
 			long userId = 1;
-			LogGenerator.writeLog(conn, basicObjs, opCmd, opSg, userId);
+			new LogGenerator().writeLog(conn,false, basicObjs, opCmd, opSg, userId);
 
 //			conn.commit();
 			System.out.println("Over.");
@@ -180,7 +180,7 @@ public class LogTest {
 			String opCmd = "CREATE";
 			int opSg = 1; 
 			long userId = 1;
-			LogGenerator.writeLog(conn, basicObjs, opCmd, opSg, userId);
+			new LogGenerator().writeLog(conn,false, basicObjs, opCmd, opSg, userId);
 
 //			conn.commit();
 			System.out.println("Over.");

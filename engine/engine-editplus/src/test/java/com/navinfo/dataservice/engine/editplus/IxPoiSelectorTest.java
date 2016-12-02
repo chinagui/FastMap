@@ -52,7 +52,7 @@ public class IxPoiSelectorTest {
 			Set<Long> pidList = new HashSet<Long>();
 			pidList.add((long) 308);
 			pidList.add((long) 37993);
-			IxPoiSelector.getIxPoiParentMapByChildrenPidList(conn, pidList);
+			IxPoiSelector.getParentPidsByChildrenPids(conn, pidList);
 		}catch(Exception e){
 			System.out.println("Oops, something wrong...");
 			e.printStackTrace();

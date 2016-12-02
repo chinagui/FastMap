@@ -13,8 +13,11 @@ import java.util.List;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdTmclocation;
+import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 
 import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
@@ -35,12 +38,23 @@ public class RdTmcLocationSearch implements ISearch {
 	
 	@Override
 	public IObj searchDataByPid(int pid) throws Exception {
-		return null;
+		IObj obj = (IObj) new AbstractSelector(RdTmclocation.class,conn).loadById(pid, false);
+		return obj;
 	}
 
 	@Override
-	public List<IObj> searchDataByPids(List<Integer> pidList) throws Exception {
-		return null;
+	public List<? extends IObj> searchDataByPids(List<Integer> pidList) throws Exception {
+		
+		List<IRow> objList = new AbstractSelector(RdTmclocation.class,conn).loadByIds(pidList, false,true);
+		
+		List<IObj> tmcObjList = new ArrayList<>();
+		
+		for(IRow row : objList)
+		{
+			RdTmclocation location = (RdTmclocation) row;
+			tmcObjList.add(location);
+		}
+		return tmcObjList;
 	}
 
 	@Override

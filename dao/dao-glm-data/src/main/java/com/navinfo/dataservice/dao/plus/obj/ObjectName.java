@@ -2,12 +2,12 @@ package com.navinfo.dataservice.dao.plus.obj;
 
 /**
  * 
- * @ClassName: EditObjType
+ * @ClassName: EditObjName
  * @author xiaoxiaowen4127
  * @date 2016年11月8日
  * @Description: EditObjType.java
  */
-public class ObjectType {
+public class ObjectName {
 	public static final String IX_POI="IX_POI";
 	public static final String IX_HAMLET="IX_HAMLET";
 	public static final String AD_FACE="AD_FACE";

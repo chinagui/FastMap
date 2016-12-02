@@ -1,19 +1,22 @@
 package com.navinfo.dataservice.engine.editplus.operation.imp;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.api.edit.upload.UploadPois;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
+import com.navinfo.dataservice.dao.log.LogReader;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiAddress;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiContact;
@@ -24,11 +27,12 @@ import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiRestaurant;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjFactory;
-import com.navinfo.dataservice.dao.plus.obj.ObjectType;
+import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.dataservice.dao.plus.operation.AbstractCommand;
 import com.navinfo.dataservice.dao.plus.operation.AbstractOperation;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
-import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
+import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
+import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -69,16 +73,23 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 		UploadPois pois = ((MultiSrcPoiDayImportorCommand)cmd).getPois();
 		if(pois!=null){
 			//新增
-			List<IxPoiObj> ixPoiObjAdd = this.improtAdd(conn, pois.getAddPois());
-			result.putAll(ixPoiObjAdd);
+			Map<String, JSONObject> addPois = pois.getAddPois();
+			if(addPois!=null&&addPois.size()>0){
+				List<IxPoiObj> ixPoiObjAdd = this.improtAdd(conn, addPois);
+				result.putAll(ixPoiObjAdd);
+			}
 			//修改
 			Map<String, JSONObject> updatePois = pois.getUpdatePois();
-			List<IxPoiObj> ixPoiObjUpdate = this.improtUpdate(conn,updatePois);
-			result.putAll(ixPoiObjUpdate);
+			if(updatePois!=null&&updatePois.size()>0){
+				List<IxPoiObj> ixPoiObjUpdate = this.improtUpdate(conn,updatePois);
+				result.putAll(ixPoiObjUpdate);
+			}
 			//删除
 			Map<String, JSONObject> deletePois = pois.getDeletePois();
-			List<IxPoiObj> ixPoiObjDelete = this.improtDelete(conn, deletePois);
-			result.putAll(ixPoiObjDelete);
+			if(deletePois!=null&&deletePois.size()>0){
+				List<IxPoiObj> ixPoiObjDelete = this.improtDelete(conn, deletePois);
+				result.putAll(ixPoiObjDelete);
+			}
 			
 		}
 	}
@@ -98,7 +109,7 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 			//日志
 			log.info("多源新增json数据"+jo.toString());
 			try {
-				IxPoiObj poiObj = (IxPoiObj) ObjFactory.getInstance().create(ObjectType.IX_POI);
+				IxPoiObj poiObj = (IxPoiObj) ObjFactory.getInstance().create(ObjectName.IX_POI);
 				importAddByJson(poiObj, jo);
 				ixPoiObjList.add(poiObj);
 			} catch (Exception e) {
@@ -120,43 +131,32 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 	 */
 	public List<IxPoiObj> improtUpdate(Connection conn,Map<String, JSONObject> updatePois)throws Exception{
 		List<IxPoiObj> ixPoiObjList = new ArrayList<IxPoiObj>();
-		Collection<Object> fids = new ArrayList<Object>();
-		List<JSONObject> joList = new ArrayList<JSONObject>();
-		for (Map.Entry<String, JSONObject> entry : updatePois.entrySet()) {
-			JSONObject jso = entry.getValue();
-			joList.add(jso);
-			fids.add(entry.getKey());
-		}
 		//获取所需的子表
 		Set<String> tabNames = this.getTabNames();
-		List<BasicObj> basicObjList = ObjBatchSelector.selectBySpecColumn(conn,ObjectType.IX_POI,tabNames,"POI_NUM",fids,true,true);
-		for (JSONObject jo : joList) {
+		Map<String,BasicObj> objs = IxPoiSelector.selectByFids(conn,tabNames,updatePois.keySet(),true,true);
+
+		//排除有变更的数据
+		filterUpdatePoi(updatePois);
+		//开始导入
+		for (Map.Entry<String, JSONObject> jo : updatePois.entrySet()) {
 			//日志
-			log.info("多源修改json数据"+jo.toString());
-			boolean flag = true;
-			//判断查询记录
-			for (BasicObj basicObj : basicObjList) {
-				IxPoiObj queryObj = (IxPoiObj) basicObj;
-				IxPoi ixPoi = (IxPoi) queryObj.getMainrow();
-				if(ixPoi.getPoiNum().equals(jo.getString("fid"))){
-					flag = false;
-					try{
-						if(queryObj.getMainrow().getOpType().equals(OperationType.PRE_DELETED)){
-							throw new Exception("该数据已经逻辑删除");
-						}else{
-							this.importUpdateByJson(queryObj, jo);
-							ixPoiObjList.add(queryObj);
-						}
-					} catch (Exception e) {
-						log.error(e.getMessage(),e);
-						errLog.put(jo.getString("fid"), StringUtils.isEmpty(e.getMessage())?"修改执行成功":e.getMessage());
+			log.info("多源修改json数据"+jo.getValue().toString());
+			BasicObj obj = objs.get(jo.getKey());
+			if(obj==null){
+				errLog.put(jo.getKey(), "日库中没有查到相应的数据");
+			}else{
+				try{
+					IxPoiObj ixPoiObj = (IxPoiObj)obj;
+					if(ixPoiObj.isDeleted()){
+						throw new Exception("该数据已经逻辑删除");
+					}else{
+						this.importUpdateByJson(ixPoiObj, jo.getValue());
+						ixPoiObjList.add(ixPoiObj);
 					}
-					break;
+				} catch (Exception e) {
+					log.error(e.getMessage(),e);
+					errLog.put(jo.getKey(), StringUtils.isEmpty(e.getMessage())?"修改执行出现空指针错误":e.getMessage());
 				}
-			}
-			//没有查到数据
-			if(flag){
-				errLog.put(jo.getString("fid"), "日库中没有查到相应的数据");
 			}
 		}
 		return ixPoiObjList;
@@ -172,46 +172,31 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 	 */
 	public List<IxPoiObj> improtDelete(Connection conn,Map<String,JSONObject> deletePois)throws Exception{
 		List<IxPoiObj> ixPoiObjList = new ArrayList<IxPoiObj>();
-		Collection<Object> fids = new ArrayList<Object>();
-		List<JSONObject> joList = new ArrayList<JSONObject>();
-		for (Map.Entry<String, JSONObject> entry : deletePois.entrySet()) {
-			JSONObject jso = entry.getValue();
-			joList.add(jso);
-			fids.add(entry.getKey());
-		}
 		//获取所需的子表
 		Set<String> tabNames = this.getTabNames();
-		List<BasicObj> basicObjList = ObjBatchSelector.selectBySpecColumn(conn,ObjectType.IX_POI,tabNames,"POI_NUM",fids,true,true);
-		for (JSONObject jo : joList) {
+		Map<String,BasicObj> objs = IxPoiSelector.selectByFids(conn,tabNames,deletePois.keySet(),true,true);
+		//排除有变更的数据
+		filterUpdatePoi(deletePois);
+		//开始导入
+		for (Map.Entry<String, JSONObject> jo : deletePois.entrySet()) {
 			//日志
-			log.info("多源删除json数据"+jo.toString());
-			boolean flag = true;
-			//判断查询记录
-			for (BasicObj basicObj : basicObjList) {
-				IxPoiObj deleteObj = (IxPoiObj) basicObj;
-				IxPoi ixPoi = (IxPoi) deleteObj.getMainrow();
-				if(ixPoi.getPoiNum().equals(jo.getString("fid"))){
-					flag = false;
-					try{
-						//判断是否已逻辑删除
-						if(deleteObj.getMainrow().getOpType().equals(OperationType.PRE_DELETED)){
-							//已逻辑删除
-							throw new Exception("该数据已经逻辑删除");
-						}else{
-							//该对象逻辑删除
-							this.importDeleteByJson(deleteObj, jo);
-							ixPoiObjList.add(deleteObj);
-						}
-					} catch (Exception e) {
-						log.error(e.getMessage(),e);
-						errLog.put(jo.getString("fid"), StringUtils.isEmpty(e.getMessage())?"删除执行成功":e.getMessage());
+			log.info("多源删除json数据"+jo.getValue().toString());
+			BasicObj obj = objs.get(jo.getKey());
+			if(obj==null){
+				errLog.put(jo.getKey(), "日库中没有查到相应的数据");
+			}else{
+				try{
+					IxPoiObj ixPoiObj = (IxPoiObj)obj;
+					if(ixPoiObj.isDeleted()){
+						throw new Exception("该数据已经逻辑删除");
+					}else{
+						this.importDeleteByJson(ixPoiObj, jo.getValue());
+						ixPoiObjList.add(ixPoiObj);
 					}
-					break;
+				} catch (Exception e) {
+					log.error(e.getMessage(),e);
+					errLog.put(jo.getKey(), StringUtils.isEmpty(e.getMessage())?"删除执行出现空指针错误":e.getMessage());
 				}
-			}
-			//没有查到数据
-			if(flag){
-				errLog.put(jo.getString("fid"), "日库中没有查到相应的数据");
 			}
 		}
 		return ixPoiObjList;
@@ -393,13 +378,13 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 				pr.setPoiRelationType(PoiRelationType.FATHER_AND_SON);
 				parentPid.add(pr);
 				//多源类型
-				String sourceType = null;
-				if(!JSONUtils.isNull(jo.get("sourceType"))){
-					sourceType = jo.getString("sourceType");
+				String sourceProvider  = null;
+				if(!JSONUtils.isNull(jo.get("sourceProvider"))){
+					sourceProvider  = jo.getString("sourceProvider");
 				}else{
-					throw new Exception("多源类型sourceType字段名不存在");
+					throw new Exception("多源类型sourceProvider字段名不存在");
 				}
-				sourceTypes.put(poi.objPid(), sourceType);
+				sourceTypes.put(poi.objPid(), sourceProvider );
 				return true;
 			}else{
 				throw new ImportException("不支持的对象类型");
@@ -414,7 +399,7 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 				//查询的POI主表
 				IxPoi ixPoi = (IxPoi) poi.getMainrow();
 				//修改履历
-				if(!JSONUtils.isNull(jo.get(""))){
+				if(!JSONUtils.isNull(jo.get("log"))){
 				}else{
 					throw new Exception("字段名不存在");
 				}
@@ -527,13 +512,13 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 					parentPid.add(pr);
 				}
 				//多源类型
-				String sourceType = null;
-				if(!JSONUtils.isNull(jo.get("sourceType"))){
-					sourceType = jo.getString("sourceType");
+				String sourceProvider = null;
+				if(!JSONUtils.isNull(jo.get("sourceProvider"))){
+					sourceProvider = jo.getString("sourceProvider");
 				}else{
-					throw new Exception("多源类型sourceType字段名不存在");
+					throw new Exception("多源类型sourceProvider字段名不存在");
 				}
-				sourceTypes.put(poi.objPid(), sourceType);
+				sourceTypes.put(poi.objPid(), sourceProvider );
 
 				return true;
 			}else{
@@ -745,7 +730,7 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 		if(poi!=null&&jo!=null){
 			if(poi instanceof IxPoiObj){
 				//判断是否已逻辑删除
-				if(poi.getMainrow().getOpType().equals(OperationType.PRE_DELETED)){
+				if(poi.isDeleted()){
 					//已逻辑删除
 					throw new Exception("该数据已经逻辑删除");
 				}else{
@@ -758,13 +743,13 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 					pr.setPoiRelationType(PoiRelationType.FATHER_AND_SON);
 					parentPid.add(pr);
 					//多源类型
-					String sourceType = null;
-					if(!JSONUtils.isNull(jo.get("sourceType"))){
-						sourceType = jo.getString("sourceType");
+					String sourceProvider = null;
+					if(!JSONUtils.isNull(jo.get("sourceProvider"))){
+						sourceProvider = jo.getString("sourceProvider");
 					}else{
-						throw new Exception("多源类型sourceType字段名不存在");
+						throw new Exception("多源类型sourceProvider字段名不存在");
 					}
-					sourceTypes.put(poi.objPid(), sourceType);
+					sourceTypes.put(poi.objPid(), sourceProvider);
 					
 				}
 				return true;
@@ -801,5 +786,46 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 		// TODO Auto-generated method stub
 		return "MultiSrcPoiDayImportor";
 	}
-
+	
+	private void filterUpdatePoi(Map<String,JSONObject> pois)throws Exception{
+		//判断数据是否有变更,一批数据的时间可能不同
+		//先写入临时表
+		PreparedStatement pstm = null;
+		try{
+			new QueryRunner().execute(conn, "DELETE FROM SVR_MULTISRC_DAY_IMP");
+			Iterator<Map.Entry<String, JSONObject>> it = pois.entrySet().iterator();
+			while(it.hasNext()){
+				Map.Entry<String, JSONObject> entry = it.next();
+				try{
+					String uTime = entry.getValue().getString("updateTime");
+					if(StringUtils.isEmpty(uTime)){
+						errLog.put(entry.getKey(), "updateTime为空");
+						it.remove();;
+						continue;
+					}
+					if(pstm==null){
+						pstm=conn.prepareStatement("INSERT INTO SVR_MULTISRC_DAY_IMP VALUES (?,TO_DATE(?,'yyyymmddhh24miss'),SYSDATE)");
+					}
+					pstm.setString(1,entry.getKey());
+					pstm.setString(2, uTime);
+					pstm.addBatch();
+				}catch(Exception e){
+					log.error(e.getMessage(),e);
+					errLog.put(entry.getKey(), "updateTime字段错误");
+					it.remove();
+				}
+			}
+			pstm.executeBatch();
+		}finally{
+			DbUtils.closeQuietly(pstm);
+		}
+		//获取有变更的fid
+		Collection<String> updateFids = new LogReader(conn).getUpdatedPoiByTemp("SVR_MULTISRC_DAY_IMP");
+		if(updateFids!=null){
+			for(String f:updateFids){
+				errLog.put(f, "updateTime字段错误");
+				pois.remove(f);
+			}
+		}
+	}
 }

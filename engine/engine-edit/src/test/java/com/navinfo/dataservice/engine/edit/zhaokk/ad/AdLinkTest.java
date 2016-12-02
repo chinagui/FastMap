@@ -95,7 +95,7 @@ public class AdLinkTest extends InitApplication{
 		//4. LINESTRING (116.20111 39.84551, 116.20081 39.84565, 116.20083 39.84554) pid 100002641 s  100018780    e 100018791
 		int cuurentLinkPid = 100003385 ;
 		int cruuentNodePidDir = 100019726;
-		List<RdLink> links  =new RdLinkSearchUtils(conn).getNextTrackLinks(cuurentLinkPid, cruuentNodePidDir,11);
+		List<RdLink> links  =new RdLinkSearchUtils(conn).getNextTrackLinks(cuurentLinkPid, cruuentNodePidDir,11,false);
 		for(RdLink rdLink:links){
 			System.out.println(rdLink.getPid());
 		}

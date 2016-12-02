@@ -73,11 +73,13 @@ public class ServiceInvokeUtil
         {
             servicePost = new PostMethod(service_url);
             servicePost.setRequestHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
-            for(String parName : parMap.keySet())
-            {
-                if(parMap.get(parName) != null)
+            if(parMap!=null){
+                for(String parName : parMap.keySet())
                 {
-                    servicePost.addParameter(parName,parMap.get(parName));
+                    if(parMap.get(parName) != null)
+                    {
+                        servicePost.addParameter(parName,parMap.get(parName));
+                    }
                 }
             }
             HttpClient client = new HttpClient();

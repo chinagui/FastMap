@@ -281,7 +281,7 @@ public class Operation implements IOperation {
 						this.command.getluLink().geteNodePid());
 			} else {
 				maps.put(geo.getCoordinates()[0], this.command.getluLink()
-						.geteNodePid());
+						.getsNodePid());
 
 				maps.put(geo.getCoordinates()[geo.getCoordinates().length - 1],
 						nodePid);

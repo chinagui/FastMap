@@ -8,6 +8,7 @@ import net.sf.json.JSONObject;
 import org.json.JSONException;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.vividsolutions.jts.algorithm.ConvexHull;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -22,7 +23,8 @@ import com.vividsolutions.jts.io.WKTReader;
 
 public class GeometryUtils {
 	private static double EARTH_RADIUS = 6378137;
-	private static double metersPerDegree = 2.0 * Math.PI * EARTH_RADIUS / 360.0;
+	private static double metersPerDegree = 2.0 * Math.PI * EARTH_RADIUS
+			/ 360.0;
 	private static double radiansPerDegree = Math.PI / 180.0;
 
 	private static double rad(double d) {
@@ -33,13 +35,15 @@ public class GeometryUtils {
 		return distance / metersPerDegree;
 	}
 
-	public static double getDistance(double lat1, double lng1, double lat2, double lng2) {
+	public static double getDistance(double lat1, double lng1, double lat2,
+			double lng2) {
 		double radLat1 = rad(lat1);
 		double radLat2 = rad(lat2);
 		double a = radLat1 - radLat2;
 		double b = rad(lng1) - rad(lng2);
-		double s = 2 * Math.asin(Math.sqrt(
-				Math.pow(Math.sin(a / 2), 2) + Math.cos(radLat1) * Math.cos(radLat2) * Math.pow(Math.sin(b / 2), 2)));
+		double s = 2 * Math.asin(Math.sqrt(Math.pow(Math.sin(a / 2), 2)
+				+ Math.cos(radLat1) * Math.cos(radLat2)
+				* Math.pow(Math.sin(b / 2), 2)));
 		s = s * EARTH_RADIUS;
 		s = Math.round(s * 10000) / 10000.0;
 		return s;
@@ -59,7 +63,8 @@ public class GeometryUtils {
 	 * @return line的Geo
 	 * @throws Exception
 	 */
-	public static Geometry getLineFromPoint(double[] p1, double[] p2) throws Exception {
+	public static Geometry getLineFromPoint(double[] p1, double[] p2)
+			throws Exception {
 		StringBuilder sb = new StringBuilder("LINESTRING (" + p1[0]);
 
 		sb.append(" " + p1[1]);
@@ -132,7 +137,8 @@ public class GeometryUtils {
 		Coordinate next = ring[iNext];
 
 		if (prev.equals(hip) || next.equals(hip) || prev.equals(next)) {
-			throw new Exception("degenerate ring (does not contain 3 different points)");
+			throw new Exception(
+					"degenerate ring (does not contain 3 different points)");
 		}
 
 		// translate so that hip is at the origin.
@@ -206,12 +212,13 @@ public class GeometryUtils {
 	 * @return 自相交线的交点
 	 * @throws Exception
 	 */
-	public static Geometry getIntersectGeoBySingleLine(List<Geometry> geometryList) throws Exception {
+	public static Geometry getIntersectGeoBySingleLine(
+			List<Geometry> geometryList) throws Exception {
 
 		StringBuilder sb = new StringBuilder("MULTIPOINT (");
-		
+
 		List<Coordinate> coors = new ArrayList<>();
-		
+
 		List<Geometry> geoList = new ArrayList<>();
 
 		for (int i = 0; i < geometryList.size() - 1; i++) {
@@ -224,35 +231,28 @@ public class GeometryUtils {
 
 				if (tmp1.intersects(tmp2)) {
 					Geometry interGeo = tmp1.intersection(tmp2);
-					
+
 					Coordinate coor = interGeo.getCoordinate();
-					
-					if(!tmp1.touches(tmp2))
-					{
+
+					if (!tmp1.touches(tmp2)) {
 						coors.add(coor);
-					}
-					else
-					{
-						if(geoList.contains(interGeo) && !coors.contains(coor))
-						{
+					} else {
+						if (geoList.contains(interGeo) && !coors.contains(coor)) {
 							coors.add(coor);
-						}
-						else
-						{
+						} else {
 							geoList.add(interGeo);
 						}
 					}
 				}
 			}
 		}
-		
-		for(Coordinate coor : coors)
-		{
+
+		for (Coordinate coor : coors) {
 			sb.append(coor.x + " ");
 
 			sb.append(coor.y + ",");
 		}
-		
+
 		if (sb.toString().contains(",")) {
 			sb.deleteCharAt(sb.lastIndexOf(","));
 		}
@@ -275,7 +275,8 @@ public class GeometryUtils {
 
 		Geometry geo1 = geometryList.get(1);
 
-		Geometry result = GeoTranslator.transform(geo0.intersection(geo1), 1, 0);
+		Geometry result = GeoTranslator
+				.transform(geo0.intersection(geo1), 1, 0);
 
 		for (int i = 1; i < (geometryList.size() - 1); i++) {
 			Geometry tmp1 = geometryList.get(i);
@@ -346,7 +347,8 @@ public class GeometryUtils {
 	 * @return
 	 * @throws Exception
 	 */
-	public static Geometry getInterPointFromSelf(Geometry geometry) throws Exception {
+	public static Geometry getInterPointFromSelf(Geometry geometry)
+			throws Exception {
 
 		Coordinate coorArray[] = geometry.getCoordinates();
 
@@ -383,7 +385,8 @@ public class GeometryUtils {
 	 * @return Map<Integer,Integer> value:start_end 标识
 	 * @throws JSONException
 	 */
-	public static Integer getStartOrEndType(Coordinate[] coors, Geometry standGeo) throws JSONException {
+	public static Integer getStartOrEndType(Coordinate[] coors,
+			Geometry standGeo) throws JSONException {
 		int flag = 0;
 		if (coors[0].equals(standGeo.getCoordinate())) {
 
@@ -436,49 +439,6 @@ public class GeometryUtils {
 		return points;
 	}
 
-	public static void main(String[] args) throws Exception {
-
-		System.out.println(convert2Degree(1));
-
-		// WKTReader r = new WKTReader();
-		//
-		// String a = "LINESTRING (117.35746 39.13152, 117.35761 39.13144,
-		// 117.35788 39.13133, 117.35806 39.13128, 117.35824 39.13124, 117.35869
-		// 39.13117, 117.35908 39.13113, 117.35957 39.1311, 117.35984 39.1311,
-		// 117.36012 39.13112, 117.36057 39.13118, 117.36136 39.13142, 117.36189
-		// 39.13158, 117.36232 39.13173)";
-		//
-		// Geometry g = r.read(a);
-		//
-		// // System.out.println(GeometryUtils.getLinkLength(g));
-		//
-		// String test1 = " LINESTRING (116.05539 39.87195, 116.05554 39.87162,
-		// 116.05578 39.87162, 116.05567 39.87190)";
-		//
-		// String test2 = "LINESTRING (116.05524 39.87189, 116.05571 39.87167,
-		// 116.05580 39.87190)";
-		//
-		// String test3 = "LINESTRING (116.04920 39.86528, 116.04987 39.86426,
-		// 116.05038 39.86348)";
-		//
-		// Geometry g1 = r.read(test1);
-		//
-		// Geometry g2 = r.read(test2);
-		//
-		// Geometry g3 = r.read(test3);
-		//
-		// List<Geometry> list = new ArrayList<>();
-		//
-		// list.add(g1);
-		//
-		// list.add(g2);
-		//
-		// //list.add(g3);
-		//
-		// System.out.println(getIntersectsGeo(list));
-		// System.out.println(getIntersectsGeo(list).getUserData());
-	}
-
 	public static double getCalculateArea(Geometry g) {
 		double area = 0.0;
 		Coordinate[] coordinates = g.getCoordinates();
@@ -505,16 +465,19 @@ public class GeometryUtils {
 		double a = 0.0;
 		for (int i = 0; i < points.size(); ++i) {
 			int j = (i + 1) % points.size();
-			double xi = points.get(i)[0] * metersPerDegree * Math.cos(points.get(i)[1] * radiansPerDegree);
+			double xi = points.get(i)[0] * metersPerDegree
+					* Math.cos(points.get(i)[1] * radiansPerDegree);
 			double yi = points.get(i)[1] * metersPerDegree;
-			double xj = points.get(j)[0] * metersPerDegree * Math.cos(points.get(j)[1] * radiansPerDegree);
+			double xj = points.get(j)[0] * metersPerDegree
+					* Math.cos(points.get(j)[1] * radiansPerDegree);
 			double yj = points.get(j)[1] * metersPerDegree;
 			a += xi * yj - xj * yi;
 		}
 		return Math.abs(a / 2.0);
 	}
 
-	public static JSONObject connectLinks(List<Geometry> geoms) throws ParseException {
+	public static JSONObject connectLinks(List<Geometry> geoms)
+			throws ParseException {
 		JSONObject json = new JSONObject();
 
 		json.put("type", "LineString");
@@ -560,7 +523,8 @@ public class GeometryUtils {
 	 * @return boolean
 	 * @throws ParseException
 	 */
-	public static boolean IsIntersectPolygon(String scrWkt, String clobStr) throws ParseException {
+	public static boolean IsIntersectPolygon(String scrWkt, String clobStr)
+			throws ParseException {
 
 		Geometry srcGeom = GeometryUtils.getPolygonByWKT(scrWkt);
 		Geometry Geom = GeometryUtils.getPolygonByWKT(clobStr);
@@ -594,7 +558,8 @@ public class GeometryUtils {
 	 * @param geom
 	 * @return
 	 */
-	public static Coordinate GetNearestPointOnLine(Coordinate point, Geometry geom) {
+	public static Coordinate GetNearestPointOnLine(Coordinate point,
+			Geometry geom) {
 		Coordinate[] coll = geom.getCoordinates();
 
 		Coordinate targetPoint = new Coordinate();
@@ -619,7 +584,8 @@ public class GeometryUtils {
 
 			pedalPoint = GetPedalPoint(point1, point2, point);
 
-			boolean isPointAtLine = IsPointAtLineInter(point1, point2, pedalPoint);
+			boolean isPointAtLine = IsPointAtLineInter(point1, point2,
+					pedalPoint);
 
 			// 如果在线上
 			if (isPointAtLine) {
@@ -652,7 +618,8 @@ public class GeometryUtils {
 	/**
 	 * 计算垂足点
 	 */
-	public static Coordinate GetPedalPoint(Coordinate point1, Coordinate point2, Coordinate point) {
+	public static Coordinate GetPedalPoint(Coordinate point1,
+			Coordinate point2, Coordinate point) {
 		Coordinate targetPoint = new Coordinate();
 
 		double x1, x2, y1, y2;
@@ -671,7 +638,8 @@ public class GeometryUtils {
 			targetPoint.y = y1;
 		} else {
 			double k = (y2 - y1) / (x2 - x1);
-			double x = (k * k * x1 + k * (point.y - y1) + point.x) / (k * k + 1);
+			double x = (k * k * x1 + k * (point.y - y1) + point.x)
+					/ (k * k + 1);
 			double y = k * (x - x1) + y1;
 
 			targetPoint.x = x;
@@ -692,7 +660,8 @@ public class GeometryUtils {
 	 * @return 位置信息
 	 * @throws Exception
 	 */
-	public static int calulatPointSideOflink(Geometry point, Geometry link, Geometry guideGeo) throws Exception {
+	public static int calulatPointSideOflink(Geometry point, Geometry link,
+			Geometry guideGeo) throws Exception {
 		int side = 0;
 
 		// 如果poi点位在线上则更新side为3，否则计算左右
@@ -700,7 +669,8 @@ public class GeometryUtils {
 			side = 3;
 		} else {
 			// poi的位置点
-			DoublePoint doublePoint = new DoublePoint(point.getCoordinate().x, point.getCoordinate().y);
+			DoublePoint doublePoint = new DoublePoint(point.getCoordinate().x,
+					point.getCoordinate().y);
 
 			Coordinate cor[] = link.getCoordinates();
 
@@ -711,9 +681,11 @@ public class GeometryUtils {
 				Coordinate cor2 = cor[i + 1];
 
 				// 判断点是否在线段上
-				boolean isIntersection = GeoTranslator.isIntersectionInLine(new double[] { cor1.x, cor1.y },
+				boolean isIntersection = GeoTranslator.isIntersectionInLine(
+						new double[] { cor1.x, cor1.y },
 						new double[] { cor2.x, cor2.y },
-						new double[] { guideGeo.getCoordinate().x, guideGeo.getCoordinate().y });
+						new double[] { guideGeo.getCoordinate().x,
+								guideGeo.getCoordinate().y });
 				if (isIntersection) {
 
 					DoublePoint startPoint = new DoublePoint(cor1.x, cor1.y);
@@ -722,7 +694,8 @@ public class GeometryUtils {
 
 					DoubleLine doubleLine = new DoubleLine(startPoint, endPoint);
 
-					boolean flag = CompLineUtil.isRightSide(doubleLine, doublePoint);
+					boolean flag = CompLineUtil.isRightSide(doubleLine,
+							doublePoint);
 
 					if (flag) {
 						side = 2;
@@ -741,7 +714,8 @@ public class GeometryUtils {
 	/**
 	 * 判断点point是否在point1和point2组成的线上
 	 */
-	private static boolean IsPointAtLineInter(Coordinate point1, Coordinate point2, Coordinate point) {
+	private static boolean IsPointAtLineInter(Coordinate point1,
+			Coordinate point2, Coordinate point) {
 		boolean result = false;
 
 		LineSegment lineSegment = new LineSegment(point1, point2);
@@ -760,7 +734,8 @@ public class GeometryUtils {
 		x = point.x;
 		y = point.y;
 
-		if (x >= min(x1, x2) && x <= max(x1, x2) && y >= min(y1, y2) && y <= max(y1, y2)) {
+		if (x >= min(x1, x2) && x <= max(x1, x2) && y >= min(y1, y2)
+				&& y <= max(y1, y2)) {
 			result = true;
 		}
 		return result;
@@ -794,4 +769,104 @@ public class GeometryUtils {
 			return x1;
 	}
 
+	/**
+	 * 计算在直线线上的距离端点距离为dist的点的坐标
+	 * 
+	 * @author zhaokk
+	 * @param coord
+	 *            墨卡托坐标
+	 * @param next
+	 *            墨卡托坐标
+	 * @param dist
+	 *            要获取的点距离coord点的距离（米）
+	 * @return 经纬度坐标
+	 */
+	public static Coordinate getPointOnLineSegmentByDistance(Coordinate coord,
+			Coordinate next, double dist) {
+		Coordinate result = new Coordinate();
+
+		double distance = Math.sqrt(Math.pow(next.x - coord.x, 2)
+				+ Math.pow(next.y - coord.y, 2));
+
+		if (coord.x != next.x) {
+			double k = (coord.y - next.y) / (coord.x - next.x);
+
+			double c = coord.y - k * coord.x;
+
+			result.x = coord.x + (dist / distance / 100000)
+					* (next.x - coord.x);
+
+			result.y = k * result.x + c;
+		} else {
+			// 与x轴垂直
+
+			result.x = coord.x;
+
+			if (coord.y < next.y) {
+				result.y = coord.y + dist / 100000;
+			} else {
+				result.y = coord.y - dist / 100000;
+			}
+		}
+
+		return result;
+	}
+
+	/**
+	 * 计算在线上的距离端点距离为dist的点的坐标
+	 * 
+	 * @author zhaokk
+	 * @param dist
+	 *            要获取的点距离coord点的距离（米）
+	 * @return 经纬度坐标
+	 * @throws Exception
+	 */
+	public static Coordinate getPointOnLineStringDistance(
+			LineString lineString, double dist) throws Exception {
+		double length = 0.0;
+		for (int i = 1; i < lineString.getCoordinates().length; i++) {
+			Coordinate prePoint = lineString.getCoordinates()[i - 1];
+			Coordinate currentPoint = lineString.getCoordinates()[i];
+			Geometry g = getLineFromPoint(
+					new double[] { prePoint.x, prePoint.y }, new double[] {
+							currentPoint.x, currentPoint.y });
+			double currentLength = getLinkLength(g);
+			length += getLinkLength(g);
+			if (Math.abs(dist - length) < 1) {
+				return currentPoint;
+			}
+			if (length > dist) {
+				Coordinate c = getPointOnLineSegmentByDistance(prePoint,
+						currentPoint, dist + currentLength - length);
+				return c;
+			}
+		}
+
+		return null;
+
+	}
+
+	public static void main(String[] args) throws Exception {
+
+		WKTReader r = new WKTReader();
+
+		String test1 = " LINESTRING (116.05539 39.87195, 116.05554 39.87162,116.05578 39.87162, 116.05567 39.87190)";
+
+		String test2 = "LINESTRING (116.05524 39.87189, 116.05571 39.87167,116.05580 39.87190)";
+
+		String test3 = "LINESTRING (116.04920 39.86528, 116.04987 39.86426,116.05038 39.86348)";
+		String test4 = "LINESTRING (116.3902 39.9983, 116.3903 39.9984, 116.3905 39.9983, 116.3905 39.9984, 116.3907 39.9983, 116.3907 39.9985, 116.3909 39.9983, 116.3908 39.9985, 116.3911 39.9983, 116.3911 39.9985)";
+		Geometry g1 = r.read(test1);
+
+		Geometry g2 = r.read(test2);
+
+		Geometry g3 = r.read(test3);
+		Geometry g4 = r.read(test4);
+		System.out.println(getLinkLength(g4));
+		Coordinate c = getPointOnLineStringDistance((LineString) g4,
+				82.89500000000001);
+		System.out.println(c.x);
+		System.out.println(c.y);
+		// 116.39053, 39.99844
+	}
 }

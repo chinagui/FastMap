@@ -3,9 +3,13 @@ package com.navinfo.dataservice.column.job;
 import java.io.File;
 import java.io.PrintWriter;
 import java.sql.Connection;
-import java.util.Date;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -14,19 +18,32 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.dbutils.DbUtils;
 
+import com.navinfo.dataservice.api.edit.iface.FmMultiSrcSyncApi;
+import com.navinfo.dataservice.api.edit.model.FmMultiSrcSync;
 import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.thread.VMThreadPoolExecutor;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.ServiceInvokeUtil;
 import com.navinfo.dataservice.commons.util.ZipUtils;
+import com.navinfo.dataservice.dao.log.LogReader;
+import com.navinfo.dataservice.dao.plus.editman.PoiEditStatus;
+import com.navinfo.dataservice.dao.plus.glm.GlmFactory;
+import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiChildren;
+import com.navinfo.dataservice.dao.plus.obj.BasicObj;
+import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
+import com.navinfo.dataservice.dao.plus.obj.ObjectName;
+import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
+import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
+import com.navinfo.dataservice.engine.editplus.convert.MultiSrcPoiConvertor;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
 import com.navinfo.navicommons.exception.ServiceRtException;
 import com.navinfo.navicommons.exception.ThreadExecuteException;
-
 import net.sf.json.JSONObject;
 
 /** 
@@ -38,6 +55,7 @@ import net.sf.json.JSONObject;
 public class Fm2MultiSrcSyncJob extends AbstractJob {
 
 	protected VMThreadPoolExecutor threadPoolExecutor;
+	int currentStatus=FmMultiSrcSync.STATUS_CREATING;
 
 	public Fm2MultiSrcSyncJob(JobInfo jobInfo) {
 		super(jobInfo);
@@ -52,8 +70,9 @@ public class Fm2MultiSrcSyncJob extends AbstractJob {
 				new LinkedBlockingQueue(),
 				new ThreadPoolExecutor.CallerRunsPolicy());
 	}
-	private void shutDownPoolExecutor(){log.debug("关闭线程池");
+	private void shutDownPoolExecutor(){
 		if (threadPoolExecutor != null && !threadPoolExecutor.isShutdown()) {
+			log.debug("关闭线程池");
 			threadPoolExecutor.shutdownNow();
 			try {
 				while (!threadPoolExecutor.isTerminated()) {
@@ -69,16 +88,39 @@ public class Fm2MultiSrcSyncJob extends AbstractJob {
 
 	@Override
 	public void execute() throws JobException {
-		PrintWriter pw = null;
+		FmMultiSrcSyncApi syncApi;
 		try{
+			syncApi = (FmMultiSrcSyncApi)ApplicationContextUtil
+					.getBean("fmMultiSrcSyncApi");
+			//设置创建中状态
+			syncApi.updateFmMultiSrcSyncStatus(currentStatus,jobInfo.getId());
+			
 			Fm2MultiSrcSyncJobRequest req = (Fm2MultiSrcSyncJobRequest)request;
 			String lastSyncTime=req.getLastSyncTime();
 			String syncTime=req.getSyncTime();
-			//1. 生成目录
-			String rootDownloadPath = SystemConfigFactory.getSystemConfig().getValue(
-					PropConstant.downloadFilePathRoot);
-			//每个月独立目录
 			String curYm = DateUtils.getCurYyyymm();
+			
+			//2. 生成导出数据包
+			createZipFile(syncApi,req.getDbIds(),lastSyncTime,syncTime,curYm);
+			
+			//3.组装URL，通知多源平台
+			String zipUrl = "multisrc/"+curYm+"/"+syncTime+"_day.zip";
+			log.debug("生成数据包url："+zipUrl);
+			notifyMultiSrc(zipUrl,syncApi);
+			super.response("通知多源完成", null);
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new JobException(e.getMessage(),e);
+		}
+	}
+	
+	private void createZipFile(FmMultiSrcSyncApi syncApi,List<Integer> dbIds,String lastSyncTime,String syncTime,String curYm)throws Exception{
+		PrintWriter pw = null;
+		try{
+			//1.生成目录
+//			String rootDownloadPath = SystemConfigFactory.getSystemConfig().getValue(PropConstant.downloadFilePathRoot);
+			String rootDownloadPath = "F:\\data\\";
+			//每个月独立目录
 			String monthDir = rootDownloadPath+"multisrc"+File.separator+curYm+File.separator;
 			File mdirFile = new File(monthDir);
 			if(!mdirFile.exists()){
@@ -88,13 +130,13 @@ public class Fm2MultiSrcSyncJob extends AbstractJob {
 			String mydir = monthDir+syncTime+"_day"+File.separator;
 			File file = new File(mydir);
 			file.mkdirs();
-			//2.多线程执行导出单库数据到文本
+			//2.开始执导出数据到文件
 			log.debug("开始执导出数据到文件");
 			Map<Integer,Integer> stats = new ConcurrentHashMap<Integer,Integer>();
 			long t = System.currentTimeMillis();
-			int dbSize = req.dbIds.size();
+			int dbSize = dbIds.size();
 			if(dbSize==1){
-				new Fm2MultiSrcExportThread(null,req.dbIds.get(0),lastSyncTime,syncTime,mydir,stats).run();
+				new Fm2MultiSrcExportThread(null,dbIds.get(0),lastSyncTime,syncTime,mydir,stats).run();
 			}else{
 				if(dbSize>10){
 					initThreadPool(10);
@@ -104,7 +146,7 @@ public class Fm2MultiSrcSyncJob extends AbstractJob {
 				final CountDownLatch latch = new CountDownLatch(dbSize);
 				threadPoolExecutor.addDoneSignal(latch);
 				// 执行转数据
-				for(int dbId:req.dbIds){
+				for(int dbId:dbIds){
 					threadPoolExecutor.execute(new Fm2MultiSrcExportThread(latch,dbId,lastSyncTime,syncTime,mydir,stats));
 				}
 				latch.await();
@@ -126,22 +168,21 @@ public class Fm2MultiSrcSyncJob extends AbstractJob {
 			String zipFileName = monthDir + syncTime+"_day.zip";
 			ZipUtils.zipFile(mydir,zipFileName);
 			super.response("统计文件生成并打包完成", null);
-			//
-			//5.组装URL，通知多源平台
-			String zipUrl = "multisrc/"+curYm+"/"+syncTime+"_day.zip";
-			notifyMultiSrc(zipUrl);
-			super.response("通知多源完成", null);
+			currentStatus=FmMultiSrcSync.STATUS_CREATED_SUCCESS;
+			syncApi.updateFmMultiSrcSync(currentStatus, zipFileName,jobInfo.getId());
 		}catch(Exception e){
-			log.error(e.getMessage(), e);
-			throw new JobException(e.getMessage(),e);
-		}finally {
+			log.error(e.getMessage(),e);
+			syncApi.updateFmMultiSrcSyncStatus(FmMultiSrcSync.STATUS_CREATED_FAIL,jobInfo.getId());
+			throw e;
+		}finally{
 			if(pw!=null){
 				pw.close();
 			}
 			shutDownPoolExecutor();
 		}
 	}
-	private void notifyMultiSrc(String zipFile){
+	
+	private void notifyMultiSrc(String zipFile,FmMultiSrcSyncApi syncApi){
 		try{
 			//
 			log.debug("开始通知多源平台");
@@ -149,11 +190,19 @@ public class Fm2MultiSrcSyncJob extends AbstractJob {
 					+SystemConfigFactory.getSystemConfig().getValue(PropConstant.downloadUrlPathRoot)
 					+zipFile;
 			log.debug("数据包url:"+zipFileUrl);
+			
 			Map<String,String> parMap = new HashMap<String,String>();
 			parMap.put("url", zipFileUrl);
-			String result = ServiceInvokeUtil.invoke("", parMap, 10000);
+			String msUrl = SystemConfigFactory.getSystemConfig().getValue(PropConstant.multisrcDaySyncUrl);
+			String result = ServiceInvokeUtil.invoke(msUrl, parMap, 10000);
 			log.debug("notify multisrc result:"+result);
+			syncApi.updateFmMultiSrcSyncStatus(FmMultiSrcSync.STATUS_SYNC_SUCCESS,jobInfo.getId());
 		}catch(Exception e){
+			try{
+				syncApi.updateFmMultiSrcSyncStatus(FmMultiSrcSync.STATUS_SYNC_FAIL,jobInfo.getId());
+			}catch(Exception ex){
+				log.error(ex.getMessage(),ex);
+			}
 			log.warn("日库同步数据包已生成，通知多源平台时发生错误，请联系多源平台运维");
 			log.error(e.getMessage(),e);
 		}
@@ -177,28 +226,98 @@ public class Fm2MultiSrcSyncJob extends AbstractJob {
 		@Override
 		public void run() {
 			Connection conn=null;
+			PrintWriter pw = null;
 			try{
 				conn=DBConnector.getInstance().getConnectionById(dbId);
+				pw = new PrintWriter(dir+syncTime+"_day_"+dbId+".txt");
+				//获取有变更的数据pid
+				LogReader lr = new LogReader(conn);
+				//key:liftcyle,value:pids
+				Map<Integer,Collection<Long>> updatePids = lr.getUpdatedObj(ObjectName.IX_POI, GlmFactory.getInstance().getObjByType(ObjectName.IX_POI).getMainTable().getName(), null, lastSyncTime,syncTime);
+				//查询已提交的数据
+				List<Long> pidList = new ArrayList<Long>();
+				for(Map.Entry<Integer, Collection<Long>> entry:updatePids.entrySet()){
+					if(entry.getValue()!=null&&entry.getValue().size()>0){
+						pidList.addAll(PoiEditStatus.pidFilterByEditStatus(conn, entry.getValue(), 3));
+					}
+				}
+				//设置查询子表
+				Set<String> selConfig = new HashSet<String>();
+				selConfig.add("IX_POI_NAME");
+				selConfig.add("IX_POI_ADDRESS");
+				selConfig.add("IX_POI_CONTACT");
+				selConfig.add("IX_POI_RESTAURANT");
+				selConfig.add("IX_POI_HOTEL");
+				selConfig.add("IX_POI_DETAIL");
+				selConfig.add("IX_POI_CHILDREN");
+				selConfig.add("IX_POI_PARENT");
+				selConfig.add("IX_POI_PARKING");
+				selConfig.add("IX_POI_CHARGINGSTATION");
+				selConfig.add("IX_POI_CHARGINGPLOT");
+				selConfig.add("IX_POI_GASSTATION");
 				//...
-				stats.put(dbId, 1000);
+				if(pidList.size()>0){
+					Map<Long,BasicObj> objs = ObjBatchSelector.selectByPids(conn, ObjectName.IX_POI, selConfig, pidList, true, false);
+					//设置lifeCycle
+					for(Map.Entry<Long, BasicObj> entry:objs.entrySet()){
+						for(Map.Entry<Integer, Collection<Long>> ent:updatePids.entrySet()){
+							if(ent.getValue().contains(entry.getKey())){
+								entry.getValue().setLifeCycle(ent.getKey());
+								break;
+							}
+						}
+					}
+					//设置父fid
+					 Map<Long, String> ParentFids = IxPoiSelector.getParentFidByPids(conn, objs.keySet());
+					for(Map.Entry<Long, String> entry:ParentFids.entrySet()){
+						((IxPoiObj)objs.get(entry.getKey())).setParentFid(entry.getValue());
+					}
+				//设置子fid
+				Map<Long,List<Long>> objMap = new HashMap<Long, List<Long>>();
+				for(BasicObj obj:objs.values()){
+					IxPoiObj poi = (IxPoiObj) obj;
+					List<Long> childPids = new ArrayList<Long>();
+					List<BasicRow> rows = poi.getRowsByName("IX_POI_CHILDREN");
+					if(rows!=null && rows.size()>0){
+						for(BasicRow row:rows){
+							IxPoiChildren children = (IxPoiChildren) row;
+							childPids.add(children.getChildPoiPid());
+						}
+					}
+					objMap.put(obj.objPid(), childPids);
+				}
+				Map<Long, List<Map<Long, Object>>> childFids = IxPoiSelector.getChildFidByPids(conn, objMap);
+				for(Map.Entry<Long, List<Map<Long, Object>>> entry:childFids.entrySet()){
+					((IxPoiObj)objs.get(entry.getKey())).setChildFid(entry.getValue());
+				}
+					//设置adminId
+					 Map<Long,Long> adminIds = IxPoiSelector.getAdminIdByPids(conn, objs.keySet());
+					for(Map.Entry<Long, Long> entry:adminIds.entrySet()){
+						((IxPoiObj)objs.get(entry.getKey())).setAdminId(entry.getValue());
+					}
+					
+					MultiSrcPoiConvertor conv = new MultiSrcPoiConvertor();
+					for(BasicObj obj:objs.values()){
+						pw.println(conv.toJson((IxPoiObj)obj).toString());
+					}
+					stats.put(dbId, objs.size());
+				}else{
+					stats.put(dbId, 0);
+				}
 				log.debug("dbId("+dbId+")转出成功。");
 			}catch(Exception e){
 				log.error(e.getMessage(),e);
-				destroyExpFile();
 				throw new ThreadExecuteException("dbId("+dbId+")转多源失败，同步时间范围为start("+lastSyncTime+"),end("+syncTime+")");
 			}finally{
 				DbUtils.closeQuietly(conn);
+				try{
+					if(pw!=null)pw.close();
+				}catch(Exception ie){
+					log.error(ie.getMessage(),ie);
+				}
 				if(latch!=null){
 					latch.countDown();
 				}
-			}
-		}
-		
-		private void destroyExpFile(){
-			try{
-				
-			}catch(Exception e){
-				log.error(e.getMessage(), e);
 			}
 		}
 		

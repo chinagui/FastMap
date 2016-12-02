@@ -26,6 +26,8 @@ import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
 
 /** 
+ * 将一个大区库内所有POI出品
+ * 与ReleaseFmIdbDailyJob的不同点在于只关注一个大区库POI出品
  * @ClassName: ReleaseFmIdbDailyPoiJob
  * @author songdongyan
  * @date 2016年11月10日
@@ -97,45 +99,6 @@ public class ReleaseFmIdbDailyPoiJob extends AbstractJob {
 			finally{
 				unselectLog(logSelector,commitStatus);
 			}
-
-//			for (Region regionInfo:regionList){
-//				this.log.info("regionInfo:"+regionInfo);
-//				try{
-//					//履历删选
-//					DbInfo dailyDb = databhubApi.getDbById(regionInfo.getDailyDbId());
-//					OracleSchema srcDbSchema = new OracleSchema(
-//							DbConnectConfig.createConnectConfig(dailyDb.getConnectParam()));
-//					logSelector = createLogSelector(featureType,srcDbSchema,null);
-//					String tempTable = logSelector.select();
-//					this.log.info("履历选择完成,srcDb:"+dailyDb);
-//					//履历刷库；
-//					DbInfo releaseDb = getReleaseDbConn(databhubApi, featureType);
-//					OracleSchema targetDbSchema = new OracleSchema(
-//							DbConnectConfig.createConnectConfig(releaseDb.getConnectParam()));
-//					LogFlusher logFlusher = new DefaultLogFlusher(srcDbSchema, targetDbSchema, false, tempTable);
-//					FlushResult result = logFlusher.flush();
-//					response("",null);
-//					this.log.info("履历刷库完成,targetDb:"+releaseDb);
-//					//履历搬迁
-//					LogMover logMover = new DefaultLogMover(srcDbSchema, targetDbSchema, tempTable, null);
-//					logMover.move();
-//					this.log.info("履历搬迁完成,targetDb:"+releaseDb);
-//					//更新状态	
-//					LogStatusModifier logStatusModifier = createLogStatusModifier(featureType,srcDbSchema,tempTable);//new PoiReleaseDailyLogStatusModifier(srcDbSchema,tempTable);
-//					logStatusModifier.execute();
-//					this.log.info("完成出品状态更新");
-//					jobResponse.put(regionInfo.getRegionId().toString(), result);
-//					commitStatus=true;
-//				}catch(Exception e){
-//					//日出品状态修改为 失败
-//					manApi.updateProduceStatus(produceId, 3);
-//					throw new JobException(e);
-//				}
-//				finally{
-//					unselectLog(logSelector,commitStatus);
-//				}
-//				
-//			}
 			this.log.info("调用出品转换api");
 			callReleaseTransApi();
 			this.response("日出品执行完毕", jobResponse);

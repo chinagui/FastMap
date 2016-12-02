@@ -16,7 +16,7 @@ public class RdRestrictionTest extends InitApplication{
 	
 	@Test
 	public void testAddRestriction() {
-		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDLANECONNEXITY\",\"dbId\":17,\"data\":{\"inLinkPid\":55133571,\"nodePid\":19640814,\"outLinkPids\":[55133575],\"laneInfo\":\"b\"}}";
+		String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDRESTRICTION\",\"dbId\":17,\"data\":{\"details\":[{\"outLinkPid\":205002791,\"pid\":205000051,\"objStatus\":\"UPDATE\"}],\"pid\":200000036}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

@@ -1,6 +1,5 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.poi.delete;
 
-import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,7 +20,7 @@ public class Process extends AbstractProcess<Command> {
 
 	private IxPoi ixPoi;
 
-	private List<IxPoiParent> ixPoiParents = new ArrayList<>();
+	private List<IRow> ixPoiParents = new ArrayList<>();
 
 	private IxPoiChildren ixPoiChildren;
 
@@ -87,6 +86,10 @@ public class Process extends AbstractProcess<Command> {
 		// 维护poi父子关系
 		IOperation opParent = new OpRefParent(this.getCommand(), ixPoiParents, ixPoiChildren);
 		opParent.run(this.getResult());
+		//情况poi的父\子表数据，避免删除poi递归调用错误删除数据
+		this.ixPoi.getParents().clear();
+		this.ixPoi.children().clear();
+		
 		return msg;
 	}
 }

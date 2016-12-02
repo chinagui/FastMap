@@ -11,9 +11,13 @@ import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.edit.model.MultiSrcFmSync;
+import com.navinfo.dataservice.api.job.iface.JobApi;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
+
+import net.sf.json.JSONObject;
 
 /**
  * 
@@ -49,10 +53,10 @@ public class MultiSrcFmSyncService {
 			//jobId
 			long jobId = obj.getJobId();
 			long dbType = obj.getDbType();
-			
+			String zipFile = obj.getZipFile();
 			String sql = "INSERT INTO MULTISRC_FM_SYNC (SID,SYNC_STATUS,SYNC_TIME,JOB_ID,ZIP_FILE,DB_TYPE) "
-					+ "VALUES (MULTISRC_FM_SYNC_SEQ.NEXTVAL,1,SYSDATE,?,NULL,?)";
-			Object[] params = {jobId,dbType};
+					+ "VALUES (MULTISRC_FM_SYNC_SEQ.NEXTVAL,1,SYSDATE,?,?,?)";
+			Object[] params = {jobId,zipFile,dbType};
 			queryRunner.update(conn, sql, params);
 			return "创建管理记录成功";
 		}catch(Exception e){
@@ -75,29 +79,11 @@ public class MultiSrcFmSyncService {
 		try{
 			QueryRunner queryRunner = new QueryRunner();
 			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
-			StringBuilder sql = new StringBuilder();
-			sql.append("UPDATE MULTISRC_FM_SYNC SET ");
-			if(obj.getSyncStatus() != null){
-				//更新管理状态
-				long syncStatus = obj.getSyncStatus();
-				sql.append(" SYNC_STATUS="+syncStatus);
-			}
-			if(obj.getZipFile() != null){
-				if(obj.getSyncStatus() != null){
-					sql.append(",");
-				}
-				//更新增量包路径
-				String zipFile = obj.getZipFile();
-				sql.append(" ZIP_FILE='"+zipFile+"' ");
-			}
-			sql.append(" WHERE TO_CHAR(SYNC_TIME,'yyyyMMdd')=TO_CHAR(SYSDATE,'yyyyMMdd')");
-			String querySql = sql.toString();
-			
+			String sql = "UPDATE MULTISRC_FM_SYNC SET SYNC_STATUS=?,ZIP_FILE=? WHERE JOB_ID =?";
 			//日志
-			log.info("更新MULTISRC_FM_SYNC表的管理记录:"+querySql);
+			log.info("更新MULTISRC_FM_SYNC表的管理记录:"+sql);
 			
-			Object[] params = {};
-			queryRunner.update(conn,querySql,params);
+			queryRunner.update(conn,sql,obj.getSyncStatus(),obj.getZipFile(),obj.getJobId());
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -106,6 +92,7 @@ public class MultiSrcFmSyncService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+	
 	
 	/**
 	 * 查询数据
@@ -145,11 +132,11 @@ public class MultiSrcFmSyncService {
 			while(rs.next()){
 				MultiSrcFmSync msg = new MultiSrcFmSync();
 				msg.setSid(rs.getLong("SID"));
-				msg.setSyncStatus(rs.getLong("SYNC_STATUS"));
+				msg.setSyncStatus(rs.getInt("SYNC_STATUS"));
 				msg.setSyncTime(rs.getTimestamp("SYNC_TIME"));
 				msg.setJobId(rs.getLong("JOB_ID"));
 				msg.setZipFile(rs.getString("ZIP_FILE"));
-				msg.setDbType(rs.getLong("DB_TYPE"));
+				msg.setDbType(rs.getInt("DB_TYPE"));
 				msgs.add(msg);
 			}
 			return msgs;
@@ -157,14 +144,43 @@ public class MultiSrcFmSyncService {
 	}
 	
 	/**
+	 * 日库多源数据包导入FM申请
+	 * @param userId 
 	 * @param zipUrl
 	 * @return:jobId
 	 * @throws Exception
 	 */
-	public int applyUploadDay(String zipUrl)throws Exception{
-		//创建ms->fm day的job,获取jobId
-		//insert
-		return 0;
+	public String applyUploadDay(long userId, String zipUrl)throws Exception{
+		Connection conn = null;
+		try {
+			//判断是否有未执行完的导入任务
+			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
+			String sql = "SELECT * FROM MULTISRC_FM_SYNC WHERE SYNC_STATUS IN(1,2,3,5,7) ORDER BY SYNC_TIME DESC";
+			Object[] params = {};
+			List<MultiSrcFmSync> list = querySync(conn, sql, params);
+			if(list != null && list.size()>0){
+				//有未执行完的导入任务
+				throw new Exception("申请失败:有未执行完成的日库多源数据包导入FM任务");
+			}
+			JSONObject job = new JSONObject();
+			JobApi jobApi = (JobApi) ApplicationContextUtil.getBean("jobApi");
+			job.put("remoteZipFile", zipUrl);
+			//创建job任务,获取jobId
+			long jobId = jobApi.createJob("multisrc2FmDay", job, 0, "创建多源日库增量包导入FM");
+			//创建管理记录
+			MultiSrcFmSync obj = new MultiSrcFmSync();
+			obj.setJobId(jobId);
+			obj.setDbType(1);
+			obj.setZipFile(zipUrl);
+			insert(obj);
+			return "FM已开始导入";
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("申请失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
 	}
 
 }

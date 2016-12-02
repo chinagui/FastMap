@@ -10,7 +10,6 @@ import net.sf.json.JSONObject;
 
 import org.apache.log4j.Logger;
 
-import com.google.common.collect.Lists;
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -134,7 +133,7 @@ public class Operation implements IOperation {
 	 * @param result
 	 * @throws Exception
 	 */
-	@SuppressWarnings("unchecked")
+
 	private void createRdLanes(Result result) throws Exception {
 
 		for (int i = 0; i < this.command.getLinks().size(); i++) {
@@ -148,43 +147,13 @@ public class Operation implements IOperation {
 			lanes = mapLane.values().iterator().next();
 			int laneDir = mapLane.keySet().iterator().next();
 			if (lanes.size() > 0) {
-
+				// 第一条link 的车道信息是当前编辑的车道信息 需要走则增删改流程
 				if (i == 0) {
-					for (RdLane lane : lanes) {
-						map.put(lane.getPid(), lane);
-					}
-					for (int m = 0; m < this.command.getLaneInfos().size(); m++) {
-						JSONObject jsonLaneInfo = this.command.getLaneInfos()
-								.getJSONObject(m);
-						if (map.containsKey(jsonLaneInfo.getInt("pid"))) {
-							if (jsonLaneInfo.size() == 1
-									&& map.get(jsonLaneInfo.getInt("pid"))
-											.getLaneNum() == this.command
-											.getLaneInfos().size()) {
-								continue;
-							}
-							jsonLaneInfo.put("laneNum", this.command
-									.getLaneInfos().size());
-							com.navinfo.dataservice.engine.edit.operation.obj.rdlane.update.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdlane.update.Operation();
-							operation.updateRdLane(result, jsonLaneInfo,
-									map.get(jsonLaneInfo.getInt("pid")));
-							map.remove(jsonLaneInfo.getInt("pid"));
-						}
-						if (jsonLaneInfo.getInt("pid") == 0) {
-							this.createRdLane(result, jsonLaneInfo,
-									link.getPid(), laneDir);
-						}
-					}
-					if (map.size() > 0) {
-						for (int key : map.keySet()) {
-							// 删除RDLANE
-							com.navinfo.dataservice.engine.edit.operation.obj.rdlane.delete.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdlane.delete.Operation(
-									conn);
-							operation.deleteRdLane(result, map.get(key));
-						}
-					}
-
-				} else {
+					this.caleRdlanes(lanes, map, laneDir, result);
+				}
+				// 如果不是当前编辑的link车道信息（默认为第一条link
+				// 1.先删掉link上原有的车道信息，再按照当前输入的车道信息新增车道
+				else {
 					for (RdLane lane : lanes) {
 						com.navinfo.dataservice.engine.edit.operation.obj.rdlane.delete.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdlane.delete.Operation(
 								conn);
@@ -193,13 +162,78 @@ public class Operation implements IOperation {
 					this.createRdLane(result, link.getPid(), laneDir);
 				}
 
-			} else {
+			} // 如果原有link上没有详细车道信息直接新增
+			else {
 				this.createRdLane(result, link.getPid(), laneDir);
 			}
 
 		}
 	}
 
+	/***
+	 * 批量维护一条link上的车道信息
+	 * 
+	 * @param lanes
+	 *            原有详细车道信息
+	 * @param map
+	 *            存入车道pid和车道信息
+	 * @param laneDir
+	 *            车道方向
+	 * @param result
+	 * @throws Exception
+	 */
+	private void caleRdlanes(List<RdLane> lanes, Map<Integer, RdLane> map,
+			int laneDir, Result result) throws Exception {
+
+		for (RdLane lane : lanes) {
+			map.put(lane.getPid(), lane);
+		}
+		// 获取当前传入的车道信息
+		for (int m = 0; m < this.command.getLaneInfos().size(); m++) {
+			JSONObject jsonLaneInfo = this.command.getLaneInfos()
+					.getJSONObject(m);
+			// 判断此车道信息是否存在
+			if (map.containsKey(jsonLaneInfo.getInt("pid"))) {
+				// 如果传入的车道数和库中车道数一样不予处理
+				if (jsonLaneInfo.size() == 1
+						&& map.get(jsonLaneInfo.getInt("pid")).getLaneNum() == this.command
+								.getLaneInfos().size()) {
+					continue;
+				}
+				// 如果存在车道数，且传入的车道总数和原有库中的不一致，走修改功能
+				jsonLaneInfo.put("laneNum", this.command.getLaneInfos().size());
+				com.navinfo.dataservice.engine.edit.operation.obj.rdlane.update.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdlane.update.Operation();
+				operation.updateRdLane(result, jsonLaneInfo,
+						map.get(jsonLaneInfo.getInt("pid")));
+				// 移除已经修改的车道信息
+				map.remove(jsonLaneInfo.getInt("pid"));
+			}
+			// 如果传入的车道信息pid为0 则新增车道信息
+			if (jsonLaneInfo.getInt("pid") == 0) {
+				this.createRdLane(result, jsonLaneInfo, link.getPid(), laneDir);
+			}
+		}
+		// 库中原有，传入值中没有的车道信息，全部删除。
+		if (map.size() > 0) {
+			for (int key : map.keySet()) {
+				// 删除RDLANE
+				com.navinfo.dataservice.engine.edit.operation.obj.rdlane.delete.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdlane.delete.Operation(
+						conn);
+				operation.deleteRdLane(result, map.get(key));
+			}
+		}
+
+	}
+
+	/***
+	 * 新增详细车道信息
+	 * 
+	 * @param result
+	 * @param jsonLaneInfo
+	 * @param linkPid
+	 * @param laneDir
+	 * @throws Exception
+	 */
 	private void createRdLane(Result result, JSONObject jsonLaneInfo,
 			int linkPid, int laneDir) throws Exception {
 		RdLane lane = new RdLane();
@@ -207,34 +241,38 @@ public class Operation implements IOperation {
 			lane = (RdLane) new RdLaneSelector(conn).loadById(
 					jsonLaneInfo.getInt("pid"), true, true);
 		}
+		// 申请PId
 		int lanePid = PidUtil.getInstance().applyRdLanePid();
 		lane.setPid(lanePid);
 		lane.setLinkPid(linkPid);
+		// 车道总数
 		lane.setLaneNum(this.command.getLaneInfos().size());
-
+		// 车道方向
 		lane.setLaneDir(laneDir);
+		// 车道序号
 		if (jsonLaneInfo.containsKey("seqNum")) {
 			lane.setSeqNum(jsonLaneInfo.getInt("seqNum"));
-		}
+		}// 箭头方向
 		if (jsonLaneInfo.containsKey("arrowDir")) {
 			lane.setArrowDir(jsonLaneInfo.getString("arrowDir"));
 
 		}
+		// 中央隔离带
 		if (jsonLaneInfo.containsKey("centerDivider")) {
 			lane.setCenterDivider(jsonLaneInfo.getInt("centerDivider"));
-		}
+		}// 车道标识
 		if (jsonLaneInfo.containsKey("laneForming")) {
 			lane.setLaneForming(jsonLaneInfo.getInt("laneForming"));
 		}
+		// 车道类型
 		if (jsonLaneInfo.containsKey("laneType")) {
 			lane.setLaneType(jsonLaneInfo.getInt("laneType"));
 		}
+		// 车道分离带
 		if (jsonLaneInfo.containsKey("laneDivider")) {
 			lane.setLaneDivider(jsonLaneInfo.getInt("laneDivider"));
 		}
-		// 车道限速
-		if (jsonLaneInfo.containsKey("")) {
-		}
+		// 车道条件子表详细车道的时间段和车辆限制表
 		if (jsonLaneInfo.containsKey("conditions")) {
 			List<IRow> conditionRows = new ArrayList<IRow>();
 			for (int i = 0; i < jsonLaneInfo.getJSONArray("conditions").size(); i++) {
@@ -242,17 +280,20 @@ public class Operation implements IOperation {
 						"conditions").getJSONObject(i);
 				RdLaneCondition condition = new RdLaneCondition();
 				condition.setLanePid(lanePid);
-
+				// 车道方向
 				if (conditionObject.containsKey("direction")) {
 					condition.setDirection(conditionObject.getInt("direction"));
 				}
+				// 车道限制时间
 				if (conditionObject.containsKey("vehicleTime")) {
 					condition.setVehicleTime(conditionObject
 							.getString("vehicleTime"));
 				}
+				// 车辆类型
 				if (conditionObject.containsKey("vehicle")) {
 					condition.setVehicle(conditionObject.getLong("vehicle"));
 				}
+				// 方向时间段
 				if (conditionObject.containsKey("directionTime")) {
 					condition.setDirectionTime(conditionObject
 							.getString("directionTime"));
@@ -289,6 +330,17 @@ public class Operation implements IOperation {
 		result.insertObject(rdLane, ObjStatus.INSERT, rdLane.getPid());
 	}
 
+	/***
+	 * 新增详细车道 车信
+	 * 
+	 * @param result
+	 * @param linkPid
+	 * @param seqNum
+	 * @param laneDir
+	 * @param laneNum
+	 * @param arrowDir
+	 * @throws Exception
+	 */
 	private void createRdlane(Result result, int linkPid, int seqNum,
 			int laneDir, int laneNum, String arrowDir) throws Exception {
 		RdLane rdLane = new RdLane();
@@ -360,21 +412,23 @@ public class Operation implements IOperation {
 	}
 
 	/***
-	 * 1.LINK种类变动维护原则 2.当link种别由非引导道路变为引导道路时，则视该link为新增link，按link新增原则进行详细车道维护。
-	 * 3.当link种别由引导道路变为非引导道路时，则视该link为删除link，按link删除原则进行详细车道维护。 新增原则：
-	 * 如果link的种别为8级及以上种别，则根据link的车道数生成link上的详细车道。
-	 * 详细原则如下：当link的左右车道数不为0时，则按照左车道数更新该link逆方向详细车道数，
-	 * 按照右车道数更新该link顺方向的详细车道数；当link的左右车道数为0时，
-	 * 则按照总车道数生成该link车道数。如果link为单方向，则详细车道物理车道数=link总车道数，
-	 * 如果link为双方向，则详细车道单侧的物理车道数=link总车道数/2，如果总车道数为奇数时，则为(link总车道数+1)/2。
-	 * 其余属性赋默认值，车道限制不生成记录
+	 * 新建link对详细车道的维护 1、当link新增时，如果link的种别为8级及以上种别，则根据link的车道数生成link上的详细车道。
 	 * 
+	 * @param links
+	 * @param result
+	 * @throws Exception 
+	 */
+	public void caleLanesforCreateRdLinks(List<RdLink> links, Result result) throws Exception {
+		for (RdLink link : links) {
+			this.createRdLaneForLinkRLanes(result, link);
+		}
+	}
+
+	/***
+	 * 1.LINK种类变动维护原则 2.当link种别由非引导道路变为引导道路时，则视该link为新增link，按link新增原则进行详细车道维护。
+	 * 2.当link种别由引导道路变为非引导道路时，则视该link为删除link，按link删除原则进行详细车道维护
 	 * @author zhaokk
 	 * @param result
-	 * @param link
-	 * @param flag
-	 *            0 create 1 delete
-	 * @throws Exception
 	 */
 	public void caleRdLinesForRdLinkKind(Result result) throws Exception {
 		List<RdLane> lanes = new RdLaneSelector(conn).loadByLink(this.getLink()
@@ -389,41 +443,9 @@ public class Operation implements IOperation {
 				}
 			}
 		} else {
+			//新增车道信息
 			if (lanes.size() <= 0) {
-				if (link.getLaneLeft() != 0 && link.getLaneWidthRight() != 0) {
-					for (int i = 0; i < link.getLaneLeft(); i++) {
-						this.createRdlane(result, link.getPid(), i + 1, 3,
-								link.getLaneLeft());
-
-					}
-					for (int i = 0; i < link.getLaneRight(); i++) {
-						this.createRdlane(result, link.getPid(), i + 1, 2,
-								link.getLaneRight());
-
-					}
-
-				} else {
-					if (link.getLaneNum() != 0) {
-						if (link.getDirect() == 2 || link.getDirect() == 3) {
-							for (int i = 0; i < (link.getLaneNum() + 1) / 2; i++) {
-								this.createRdlane(result, link.getPid(), i + 1,
-										2, (link.getLaneNum() + 1) / 2);
-								this.createRdlane(result, link.getPid(), i + 1,
-										3, (link.getLaneNum() + 1) / 2);
-
-							}
-						}
-						if (link.getDirect() == 1) {
-							for (int i = 0; i < link.getLaneNum(); i++) {
-
-								this.createRdlane(result, link.getPid(), i + 1,
-										1, link.getLaneNum());
-
-							}
-						}
-
-					}
-				}
+				this.createRdLaneForLinkRLanes(result, link);
 			}
 		}
 
@@ -687,9 +709,18 @@ public class Operation implements IOperation {
 		if (links.size() == 1) {
 			return;
 		}
+		boolean flag = false;
+		RdLinkSelector linkSelector = new RdLinkSelector(conn);
+		List<RdLink> sLinks = linkSelector.loadByNodePid(link.getsNodePid(),
+				false);
+		List<RdLink> eLinks = linkSelector.loadByNodePid(link.geteNodePid(),
+				false);
+		if (sLinks.size() < 3 && eLinks.size() < 3) {
+			flag = true;
+		}
 		// 加载原有Link上的车道信息
-		List<RdLane> lanes = new RdLaneSelector(conn).loadByLink(link.getPid(), 0,
-				true);
+		List<RdLane> lanes = new RdLaneSelector(conn).loadByLink(link.getPid(),
+				0, true);
 		// 删除原有车道信息
 		for (RdLane lane : lanes) {
 			result.insertObject(lane, ObjStatus.DELETE, lane.getPid());
@@ -699,6 +730,19 @@ public class Operation implements IOperation {
 				// 设置车道的link信息
 				RdLane rdLane = new RdLane();
 				rdLane.copy(lane);
+				if (lane.getArrowDir() != "o" && lane.getArrowDir() != "9") {
+					if (rdLink.getsNodePid() == link.getsNodePid()
+							|| rdLink.getsNodePid() == link.geteNodePid()
+							|| rdLink.geteNodePid() == link.getsNodePid()
+							|| rdLink.geteNodePid() == link.geteNodePid()) {
+						if (flag) {
+							rdLane.setArrowDir("9");
+						}
+
+					} else {
+						rdLane.setArrowDir("9");
+					}
+				}
 				rdLane.setLinkPid(rdLink.getPid());
 				// 申请车道pid
 				int lanePid = PidUtil.getInstance().applyRdLanePid();
@@ -716,18 +760,55 @@ public class Operation implements IOperation {
 
 	}
 
-	public static void main(String[] args) {
-		Map<Integer, List<RdLane>> map = new HashMap<Integer, List<RdLane>>();
-		List<RdLane> lanes = new ArrayList<RdLane>();
-		RdLane lane = new RdLane();
-		lane.setPid(11101);
-		RdLane lane1 = new RdLane();
-		lane1.setPid(11102);
-		lanes.add(lane);
-		lanes.add(lane1);
-		map.put(1, lanes);
-		lanes = map.values().iterator().next();
-		System.out.println(lanes.get(1).getPid());
+	/**
+	 * 根据link上车道总数 左右车道数生成车道信息
+	 * 详细原则如下：当link的左右车道数不为0时，则按照左车道数更新该link逆方向详细车道数，按照右车道数更新该link顺方向的详细车道数；
+	 * 当link的左右车道数为0时，则按照总车道数生成该link车道数。
+	 * 如果link为单方向，则详细车道物理车道数=link总车道数，如果link为双方向
+	 * ，则详细车道单侧的物理车道数=link总车道数/2，如果总车道数为奇数时，则为(link总车道数+1)/2。
+	 * 其余属性赋默认值，车道限制不生成记录。
+	 * 
+	 * @param result
+	 * @throws Exception
+	 */
+	private void createRdLaneForLinkRLanes(Result result, RdLink link)
+			throws Exception {
+
+		if (link.getLaneLeft() != 0 && link.getLaneWidthRight() != 0) {
+			for (int i = 0; i < link.getLaneLeft(); i++) {
+				this.createRdlane(result, link.getPid(), i + 1, 3,
+						link.getLaneLeft());
+
+			}
+			for (int i = 0; i < link.getLaneRight(); i++) {
+				this.createRdlane(result, link.getPid(), i + 1, 2,
+						link.getLaneRight());
+
+			}
+
+		} else {
+			if (link.getLaneNum() != 0) {
+				if (link.getDirect() == 2 || link.getDirect() == 3) {
+					for (int i = 0; i < (link.getLaneNum() + 1) / 2; i++) {
+						this.createRdlane(result, link.getPid(), i + 1, 2,
+								(link.getLaneNum() + 1) / 2);
+						this.createRdlane(result, link.getPid(), i + 1, 3,
+								(link.getLaneNum() + 1) / 2);
+
+					}
+				}
+				if (link.getDirect() == 1) {
+					for (int i = 0; i < link.getLaneNum(); i++) {
+
+						this.createRdlane(result, link.getPid(), i + 1, 1,
+								link.getLaneNum());
+
+					}
+				}
+
+			}
+		}
+
 	}
 
 }

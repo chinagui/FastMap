@@ -52,11 +52,13 @@
 			<groupId>net.sf.ezmorph</groupId>
 			<artifactId>ezmorph</artifactId>
 		</dependency>
-		
+		<dependency>
+		  <groupId>gdal</groupId>
+		  <artifactId>gdal</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>com.tencent</groupId>
   		<artifactId>xinge</artifactId>
-  		<version>1.0</version>
 		</dependency>
 			
 		<dependency>

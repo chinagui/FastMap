@@ -21,9 +21,6 @@ import com.navinfo.dataservice.engine.man.config.ConfigService;
 public class ConfigController extends BaseController {
 	private Logger log=LoggerRepos.getLogger(getClass());
 
-	public ConfigController() {
-		// TODO Auto-generated constructor stub
-	}
 	
 	/**
 	 * a-2-2_生产节奏控制

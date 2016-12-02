@@ -50,6 +50,15 @@ import oracle.sql.STRUCT;
 public class GeoTranslator {
 
 	public static final double dPrecisionGeo = 1.0;
+	
+	/**
+	 * 几何坐标升级 乘10万（100000）
+	 */
+	public static final int geoUpgrade = 100000;
+	/**
+	 * 地图坐标精度单位 0.00001
+	 */
+	public static final double dPrecisionMap = 0.00001;
 
 	private static final GeometryFactory geoFactory = new GeometryFactory();
 
@@ -824,44 +833,53 @@ public class GeoTranslator {
 		return d < 0 ? (long) d : (long) (d + 0.5);
 	}
 
+	/**
+	 * 判断两点是否坐标相同，两点坐标精度一致
+	 * @param point1
+	 * @param point2
+	 * @return
+	 */
 	public static boolean isPointEquals(Point point1, Point point2) {
 		return isPointEquals(point1.getX(), point1.getY(), point2.getX(),
 				point2.getY());
 	}
 
+	/**
+	 * 判断两点是否坐标相同，两点坐标精度一致
+	 * @param point1
+	 * @param point2
+	 * @return
+	 */
 	public static boolean isPointEquals(Coordinate c1, Coordinate c2) {
 		return isPointEquals(c1.x, c1.y, c2.x, c2.y);
 	}
 
+	/**
+	 * 判断两点是否坐标相同，两点坐标精度一致
+	 * @param point1
+	 * @param point2
+	 * @return
+	 */
 	public static boolean isPointEquals(double x1, double y1, double x2,
 			double y2) {
 
 		if (x1 <= 180) {
-			x1 = x1 * 100000;
+			x1 = x1 * geoUpgrade;
+			y1 = y1 * geoUpgrade;
 		}
 		if (x2 <= 180) {
-			x2 = x2 * 100000;
+			x2 = x2 * geoUpgrade;
+			y2 = y2 * geoUpgrade;
 		}
-		if (y1 <= 90) {
-			y1 = y1 * 100000;
-		}
-		if (y2 <= 90) {
-			y2 = y2 * 100000;
-		}
-
-		if (x1 >= 180 * 100000) {
-			x1 = x1 / 100;
-		}
-		if (x2 >= 180 * 100000) {
-			x2 = x2 / 100;
-		}
-
-		if (y1 >= 180 * 100000) {
-			y1 = y1 / 100;
-		}
-		if (y2 >= 180 * 100000) {
-			y2 = y2 / 100;
-		}
+		// 7位精度
+		// if (x1 >= 180 * geoUpgrade) {
+		// x1 = x1 / 100;
+		// y1 = y1 / 100;
+		// }
+		// if (x2 >= 180 * geoUpgrade) {
+		// x2 = x2 / 100;
+		// y2 = y2 / 100;
+		// }
 
 		x1 = round(x1);
 		y1 = round(y1);
@@ -876,6 +894,37 @@ public class GeoTranslator {
 
 		return true;
 	}
+	
+	/// <summary>
+    /// 计算大地距离(单位:米) 输入坐标为真实坐标，形如（11648716，3983362）
+    /// </summary>
+    public static double CalculateSphereDistance(Point point1, Point point2)
+    {
+        if (isPointEquals(point1, point2))
+        {
+            return 0;
+        }
+        
+		Coordinate start = transform(point1, dPrecisionMap, 5).getCoordinate();
+
+		Coordinate stop = transform(point2, dPrecisionMap, 5).getCoordinate();
+
+        double x1, x2, y1, y2;
+
+        x1 = start.x;
+        x2 = stop.x;
+        y1 = start.y;
+        y2 = stop.y;
+
+        x1 = x1 * (Math.PI / 180.0);
+        y1 = y1 * (Math.PI / 180.0);
+        x2 = x2 * (Math.PI / 180.0);
+        y2 = y2 * (Math.PI / 180.0);
+
+        double R = 6367447.5;
+
+        return 2 * R * Math.asin(0.5 * Math.sqrt(2 - 2 * Math.sin(y1) * Math.sin(y2) - 2 * Math.cos(y1) * Math.cos(y2) * Math.cos(x1 - x2)));
+    }
 
 	public static void main(String[] args) throws Exception {
 		Point point = (Point) wkt2Geometry("POINT (116.38636 40.00512)");

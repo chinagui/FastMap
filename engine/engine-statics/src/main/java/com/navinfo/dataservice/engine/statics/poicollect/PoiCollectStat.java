@@ -59,7 +59,7 @@ public class PoiCollectStat implements Runnable {
 		try {
 			QueryRunner run = new QueryRunner();
 
-			String sql = "select ip.geometry from ix_poi ip, poi_edit_status pes where ip.row_id = pes.row_id and pes.is_upload=1";
+			String sql = "select ip.geometry from ix_poi ip, poi_edit_status pes where ip.pid = pes.pid and pes.is_upload=1";
 			return run.query(conn, sql, new ResultSetHandler<Map<String, Integer>>() {
 
 				@Override

@@ -94,10 +94,9 @@ public class ZoneLinkKind implements IRow {
 	@Override
 	public void copy(IRow row) {
 		ZoneLinkKind zoneLinkKind = (ZoneLinkKind) row;
-		zoneLinkKind.setKind(zoneLinkKind.getKind());
-		zoneLinkKind.setForm(zoneLinkKind.getForm());
-		zoneLinkKind.setLinkPid(zoneLinkKind.getLinkPid());
-		zoneLinkKind.setRowId(zoneLinkKind.getRowId());
+		kind = zoneLinkKind.getKind();
+		form = zoneLinkKind.getForm();
+		linkPid = this.getLinkPid();
 	}
 
 	@Override

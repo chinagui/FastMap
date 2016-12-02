@@ -60,23 +60,22 @@ public class Operation implements IOperation {
 
 		// inter子表
 		if (content.containsKey("inters")) {
-			updateObjectInter(result, content);
+			updateObjectInter(result);
 		}
 
 		// road 子表
-
 		if (content.containsKey("roads")) {
-			updateObjectRoad(result, content);
+			updateObjectRoad(result);
 		}
 
 		// link子表
 		if (content.containsKey("links")) {
-			updateObjectLink(result, content);
+			updateObjectLink(result);
 		}
 
 		// name子表
 		if (content.containsKey("names")) {
-			updateObjectName(result, content);
+			updateObjectName(result);
 		}
 
 		result.setPrimaryPid(rdObject.parentPKValue());
@@ -91,18 +90,15 @@ public class Operation implements IOperation {
 	 * @param content
 	 * @throws Exception
 	 */
-	private void updateObjectInter(Result result, JSONObject content)
-			throws Exception {
+	private void updateObjectInter(Result result) throws Exception {
 		JSONArray subObj = this.command.getInterArray();
 
 		for (IRow inter : rdObject.getInters()) {
 			RdObjectInter objectInter = (RdObjectInter) inter;
 			if (subObj == null) {
-				result.insertObject(objectInter, ObjStatus.DELETE,
-						objectInter.getPid());
+				result.insertObject(objectInter, ObjStatus.DELETE, objectInter.getPid());
 			} else if (!subObj.contains(objectInter.getInterPid())) {
-				result.insertObject(objectInter, ObjStatus.DELETE,
-						objectInter.getPid());
+				result.insertObject(objectInter, ObjStatus.DELETE, objectInter.getPid());
 			} else {
 				subObj.remove((Integer) objectInter.getInterPid());
 			}
@@ -121,8 +117,7 @@ public class Operation implements IOperation {
 
 				rdObjectInter.setPid(rdObject.getPid());
 
-				result.insertObject(rdObjectInter, ObjStatus.INSERT,
-						rdObjectInter.getPid());
+				result.insertObject(rdObjectInter, ObjStatus.INSERT, rdObjectInter.getPid());
 
 				pidList.add(interPid);
 			}
@@ -137,19 +132,16 @@ public class Operation implements IOperation {
 	 * @param content
 	 * @throws Exception
 	 */
-	private void updateObjectRoad(Result result, JSONObject content)
-			throws Exception {
+	private void updateObjectRoad(Result result) throws Exception {
 		JSONArray subObj = this.command.getRoadArray();
 
 		for (IRow road : rdObject.getRoads()) {
 			RdObjectRoad objectRoad = (RdObjectRoad) road;
 
 			if (subObj == null) {
-				result.insertObject(objectRoad, ObjStatus.DELETE,
-						objectRoad.getPid());
+				result.insertObject(objectRoad, ObjStatus.DELETE, objectRoad.getPid());
 			} else if (!subObj.contains(objectRoad.getRoadPid())) {
-				result.insertObject(objectRoad, ObjStatus.DELETE,
-						objectRoad.getPid());
+				result.insertObject(objectRoad, ObjStatus.DELETE, objectRoad.getPid());
 			} else {
 				subObj.remove((Integer) objectRoad.getRoadPid());
 			}
@@ -168,8 +160,7 @@ public class Operation implements IOperation {
 
 				rdObjectRoad.setPid(rdObject.getPid());
 
-				result.insertObject(rdObjectRoad, ObjStatus.INSERT,
-						rdObjectRoad.getPid());
+				result.insertObject(rdObjectRoad, ObjStatus.INSERT, rdObjectRoad.getPid());
 
 				pidList.add(roadPid);
 			}
@@ -184,12 +175,10 @@ public class Operation implements IOperation {
 	 * @param content
 	 * @throws Exception
 	 */
-	private void updateObjectLink(Result result, JSONObject content)
-			throws Exception {
+	private void updateObjectLink(Result result) throws Exception {
 		JSONArray subObj = this.command.getLinkArray();
-		
-		if(subObj == null)
-		{
+
+		if (subObj == null) {
 			throw new Exception("link参数不对");
 		}
 
@@ -197,9 +186,8 @@ public class Operation implements IOperation {
 
 			RdObjectLink objLink = (RdObjectLink) link;
 
-			if (subObj == null || !subObj.contains(objLink.getLinkPid())) {
-				result.insertObject(objLink, ObjStatus.DELETE,
-						objLink.getPid());
+			if (!subObj.contains(objLink.getLinkPid())) {
+				result.insertObject(objLink, ObjStatus.DELETE, objLink.getPid());
 			} else {
 				subObj.remove((Integer) objLink.getLinkPid());
 			}
@@ -211,15 +199,14 @@ public class Operation implements IOperation {
 
 			int linkPid = subObj.getInt(i);
 
-			if (pidList.contains(linkPid)) {
+			if (!pidList.contains(linkPid)) {
 				RdObjectLink objLink = new RdObjectLink();
 
 				objLink.setLinkPid(subObj.getInt(i));
 
 				objLink.setPid(rdObject.getPid());
 
-				result.insertObject(objLink, ObjStatus.INSERT,
-						objLink.getPid());
+				result.insertObject(objLink, ObjStatus.INSERT, objLink.getPid());
 
 				pidList.add(linkPid);
 			}
@@ -233,8 +220,7 @@ public class Operation implements IOperation {
 	 * @param content
 	 * @throws Exception
 	 */
-	private void updateObjectName(Result result, JSONObject content)
-			throws Exception {
+	private void updateObjectName(Result result) throws Exception {
 		JSONArray names = this.command.getNameArray();
 
 		for (int i = 0; i < names.size(); i++) {
@@ -243,25 +229,19 @@ public class Operation implements IOperation {
 
 			if (nameJson.containsKey("objStatus")) {
 
-				if (!ObjStatus.INSERT.toString().equals(
-						nameJson.getString("objStatus"))) {
+				if (!ObjStatus.INSERT.toString().equals(nameJson.getString("objStatus"))) {
 
-					RdObjectName name = rdObject.nameMap.get(nameJson
-							.getString("rowId"));
+					RdObjectName name = rdObject.nameMap.get(nameJson.getString("rowId"));
 
-					if (ObjStatus.DELETE.toString().equals(
-							nameJson.getString("objStatus"))) {
-						result.insertObject(name, ObjStatus.DELETE,
-								rdObject.pid());
+					if (ObjStatus.DELETE.toString().equals(nameJson.getString("objStatus"))) {
+						result.insertObject(name, ObjStatus.DELETE, rdObject.pid());
 
-					} else if (ObjStatus.UPDATE.toString().equals(
-							nameJson.getString("objStatus"))) {
+					} else if (ObjStatus.UPDATE.toString().equals(nameJson.getString("objStatus"))) {
 
 						boolean isChanged = name.fillChangeFields(nameJson);
 
 						if (isChanged) {
-							result.insertObject(name, ObjStatus.UPDATE,
-									rdObject.pid());
+							result.insertObject(name, ObjStatus.UPDATE, rdObject.pid());
 						}
 					}
 				} else {
@@ -273,8 +253,7 @@ public class Operation implements IOperation {
 
 					name.setNameId(PidUtil.getInstance().applyAdAdminNamePid());
 
-					result.insertObject(name, ObjStatus.INSERT,
-							name.getPid());
+					result.insertObject(name, ObjStatus.INSERT, name.getPid());
 
 				}
 			}
@@ -292,8 +271,7 @@ public class Operation implements IOperation {
 	 *            结果集
 	 * @throws Exception
 	 */
-	public void updateRdObjectForRdRoad(RdRoad road, Result result)
-			throws Exception {
+	public void updateRdObjectForRdRoad(RdRoad road, Result result) throws Exception {
 		List<IRow> roadLinks = road.getLinks();
 
 		List<Integer> linkPidList = new ArrayList<>();
@@ -306,8 +284,8 @@ public class Operation implements IOperation {
 
 		RdObjectSelector selector = new RdObjectSelector(conn);
 
-		Map<String, RdObject> rdObjectMap = selector.loadRdObjectByPidAndType(
-				StringUtils.getInteStr(linkPidList), ObjType.RDLINK, true);
+		Map<String, RdObject> rdObjectMap = selector.loadRdObjectByPidAndType(StringUtils.getInteStr(linkPidList),
+				ObjType.RDLINK, true);
 
 		for (Map.Entry<String, RdObject> entry : rdObjectMap.entrySet()) {
 			String tmpPids = entry.getKey();
@@ -326,8 +304,7 @@ public class Operation implements IOperation {
 
 				for (Integer tmpPid : tmpPidList) {
 					if (objLink.getLinkPid() == tmpPid) {
-						result.insertObject(objLink, ObjStatus.DELETE,
-								objLink.getPid());
+						result.insertObject(objLink, ObjStatus.DELETE, objLink.getPid());
 						updateRdObject = true;
 					}
 				}
@@ -352,8 +329,7 @@ public class Operation implements IOperation {
 
 					objRoad.setRoadPid(road.getPid());
 
-					result.insertObject(objRoad, ObjStatus.INSERT,
-							objRoad.getPid());
+					result.insertObject(objRoad, ObjStatus.INSERT, objRoad.getPid());
 				}
 			}
 		}
@@ -369,8 +345,7 @@ public class Operation implements IOperation {
 	 *            结果集
 	 * @throws Exception
 	 */
-	public void updateRdObjectForRdInter(RdInter inter, Result result)
-			throws Exception {
+	public void updateRdObjectForRdInter(RdInter inter, Result result) throws Exception {
 		List<IRow> interLinks = inter.getLinks();
 
 		List<Integer> linkPidList = new ArrayList<>();
@@ -383,8 +358,8 @@ public class Operation implements IOperation {
 
 		RdObjectSelector selector = new RdObjectSelector(conn);
 
-		Map<String, RdObject> rdObjectMap = selector.loadRdObjectByPidAndType(
-				StringUtils.getInteStr(linkPidList), ObjType.RDLINK, true);
+		Map<String, RdObject> rdObjectMap = selector.loadRdObjectByPidAndType(StringUtils.getInteStr(linkPidList),
+				ObjType.RDLINK, true);
 
 		for (Map.Entry<String, RdObject> entry : rdObjectMap.entrySet()) {
 			String tmpPids = entry.getKey();
@@ -403,8 +378,7 @@ public class Operation implements IOperation {
 
 				for (Integer tmpPid : tmpPidList) {
 					if (objLink.getLinkPid() == tmpPid) {
-						result.insertObject(objLink, ObjStatus.DELETE,
-								objLink.getPid());
+						result.insertObject(objLink, ObjStatus.DELETE, objLink.getPid());
 						updateRdObject = true;
 					}
 				}
@@ -429,8 +403,7 @@ public class Operation implements IOperation {
 
 					objRoad.setRoadPid(inter.getPid());
 
-					result.insertObject(objRoad, ObjStatus.INSERT,
-							objRoad.getPid());
+					result.insertObject(objRoad, ObjStatus.INSERT, objRoad.getPid());
 				}
 			}
 		}
@@ -447,14 +420,12 @@ public class Operation implements IOperation {
 	 *            结果集
 	 * @throws Exception
 	 */
-	public void breakRdObjectLink(RdLink oldLink, List<RdLink> newLinks,
-			Result result) throws Exception {
+	public void breakRdObjectLink(RdLink oldLink, List<RdLink> newLinks, Result result) throws Exception {
 		RdObjectSelector selector = new RdObjectSelector(conn);
 
 		String linkPid = String.valueOf(oldLink.getPid());
 
-		Map<String, RdObject> rdObjMap = selector.loadRdObjectByPidAndType(
-				linkPid, ObjType.RDLINK, true);
+		Map<String, RdObject> rdObjMap = selector.loadRdObjectByPidAndType(linkPid, ObjType.RDLINK, true);
 
 		RdObject rdObject = rdObjMap.get(linkPid);
 
@@ -466,8 +437,7 @@ public class Operation implements IOperation {
 				RdObjectLink objLink = (RdObjectLink) row;
 
 				if (objLink.getLinkPid() == oldLink.getPid()) {
-					result.insertObject(objLink, ObjStatus.DELETE,
-							objLink.getPid());
+					result.insertObject(objLink, ObjStatus.DELETE, objLink.getPid());
 				}
 			}
 
@@ -478,8 +448,80 @@ public class Operation implements IOperation {
 
 				objLink.setPid(rdObject.getPid());
 
-				result.insertObject(objLink, ObjStatus.INSERT,
-						objLink.getPid());
+				result.insertObject(objLink, ObjStatus.INSERT, objLink.getPid());
+			}
+		}
+	}
+
+	/**
+	 * 如果给CRF Inter中增加link，但是该link属于某一CRFO，则编辑之后，该CRF Inter属于该CRFO
+	 * 
+	 * @param linkPidList
+	 *            新加入inter的linkpid集合
+	 * @param rdInter
+	 *            CRFI对象
+	 * @throws Exception
+	 */
+	public void updateRdObject(Result result, List<Integer> linkPidList, RdInter rdInter) throws Exception {
+		RdObjectSelector rdObjectSelector = new RdObjectSelector(conn);
+
+		Map<String, RdObject> objMap = rdObjectSelector.loadRdObjectByPidAndType(StringUtils.getInteStr(linkPidList),
+				ObjType.RDLINK, true);
+
+		if (objMap.size() > 1) {
+			throw new Exception("所选的LINK不能属于不同的CRFO");
+		} else if (objMap.size() == 1) {
+			String objKeys = objMap.entrySet().iterator().next().getKey();
+
+			RdObject object = objMap.entrySet().iterator().next().getValue();
+
+			List<IRow> interList = object.getInters();
+
+			boolean isObjInter = false;
+
+			for (IRow row : interList) {
+				RdObjectInter objInter = (RdObjectInter) row;
+
+				if (objInter.getInterPid() == rdInter.getPid()) {
+					isObjInter = true;
+
+					break;
+				}
+			}
+			
+			List<IRow> objLinks = object.getLinks();
+			
+			String linkPids[] = objKeys.split(",");
+			
+			for(int i = 0;i<linkPids.length;i++)
+			{
+				int linkPid = Integer.parseInt(linkPids[i]);
+				
+				//删除原来的rdobjlink关系，该关系移入rdobjinter关系中
+				for(IRow row : objLinks)
+				{
+					RdObjectLink objLink = (RdObjectLink) row;
+					
+					if(objLink.getLinkPid() == linkPid)
+					{
+						result.insertObject(objLink, ObjStatus.DELETE, objLink.getPid());
+						
+						break;
+					}
+				}
+				
+			}
+			
+			//如果inter原来属于CRFO，则objInter关系不变，不属于的，需要把inter加入objinter关系中
+			if(!isObjInter)
+			{
+				RdObjectInter objInter = new RdObjectInter();
+				
+				objInter.setPid(object.getPid());
+				
+				objInter.setInterPid(rdInter.getPid());
+				
+				result.insertObject(objInter, ObjStatus.INSERT, objInter.getPid());
 			}
 		}
 	}

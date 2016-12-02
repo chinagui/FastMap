@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.api.edit.model;
 
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  * 
@@ -13,42 +14,50 @@ public class FmMultiSrcSync implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	
-	private Long sid;
-	private Long syncStatus;
-	private Object lastSyncTime;
-	private Object syncTime;
-	private Long jobId;
+	private long sid;
+	private int syncStatus;
+	private Date lastSyncTime;
+	private Date syncTime;
+	private long jobId;
 	private String zipFile;
 	
+	public static final int STATUS_START_CREATE=1;
+	public static final int STATUS_CREATING=2;
+	public static final int STATUS_CREATED_SUCCESS=8;
+	public static final int STATUS_CREATED_FAIL=9;
+	public static final int STATUS_SYNC_SUCCESS=18;
+	public static final int STATUS_SYNC_FAIL=19;
 	
-	public Long getSid() {
+	
+	
+	public long getSid() {
 		return sid;
 	}
-	public void setSid(Long sid) {
+	public void setSid(long sid) {
 		this.sid = sid;
 	}
-	public Long getSyncStatus() {
+	public int getSyncStatus() {
 		return syncStatus;
 	}
-	public void setSyncStatus(Long syncStatus) {
+	public void setSyncStatus(int syncStatus) {
 		this.syncStatus = syncStatus;
 	}
-	public Object getLastSyncTime() {
+	public Date getLastSyncTime() {
 		return lastSyncTime;
 	}
-	public void setLastSyncTime(Object lastSyncTime) {
+	public void setLastSyncTime(Date lastSyncTime) {
 		this.lastSyncTime = lastSyncTime;
 	}
-	public Object getSyncTime() {
+	public Date getSyncTime() {
 		return syncTime;
 	}
-	public void setSyncTime(Object syncTime) {
+	public void setSyncTime(Date syncTime) {
 		this.syncTime = syncTime;
 	}
-	public Long getJobId() {
+	public long getJobId() {
 		return jobId;
 	}
-	public void setJobId(Long jobId) {
+	public void setJobId(long jobId) {
 		this.jobId = jobId;
 	}
 	public String getZipFile() {

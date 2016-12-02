@@ -174,7 +174,7 @@ public class POITest extends InitApplication {
 
 	@Test
 	public void testDeleteParent() {
-		String parameter = "{\"command\":\"DELETE\",\"type\":\"IXPOIPARENT\",\"dbId\":42,\"objId\":73341675}";
+		String parameter = "{\"command\":\"DELETE\",\"type\":\"IXPOI\",\"dbId\":245,\"objId\":64373916}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

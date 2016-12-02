@@ -43,6 +43,10 @@
 		<groupId>com.navinfo.dataservice</groupId>
 		<artifactId>api-man</artifactId>
 	</dependency>
+	<dependency>
+		<groupId>com.navinfo.dataservice</groupId>
+		<artifactId>api-edit</artifactId>
+	</dependency>
 		<dependency>
 			<groupId>org.apache.zookeeper</groupId>
 			<artifactId>zookeeper</artifactId>

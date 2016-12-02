@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import com.navinfo.dataservice.api.man.model.Message;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.xinge.XingeUtil;
 import com.navinfo.dataservice.dao.mq.sys.SysMsgPublisher;
@@ -721,7 +722,7 @@ public class MessageService {
 						Map<String,Object> msg = new HashMap<String, Object>();
 						msg.put("applyId",rs.getLong("APPLY_ID"));
 						msg.put("applyTitle",rs.getString("APPLY_TITLE"));
-						msg.put("operateTime",rs.getTimestamp("OPERATE_TIME"));
+						msg.put("operateTime",DateUtils.dateToString(rs.getTimestamp("OPERATE_TIME"),DateUtils.DATE_COMPACTED_FORMAT));
 						msg.put("type", "application");
 						msgs.add(msg);
 					}
@@ -793,7 +794,7 @@ public class MessageService {
 					List<Map<String,Object>> list = new ArrayList<Map<String,Object>>();
 					while(rs.next()){
 						Map<String,Object> map = new HashMap<String,Object>();
-						map.put("operateTime",rs.getTimestamp("OPERATE_TIME"));
+						map.put("operateTime",DateUtils.dateToString(rs.getTimestamp("OPERATE_TIME"),DateUtils.DATE_COMPACTED_FORMAT));
 						map.put("operatorName",rs.getString("USER_REAL_NAME"));
 						map.put("content",rs.getString("CONTENT"));
 						list.add(map);
@@ -919,7 +920,7 @@ public class MessageService {
 				msg.put("applyTitle",rs.getString("APPLY_TITLE"));
 				msg.put("applyType",rs.getLong("APPLY_TYPE"));
 				msg.put("applyStatus",rs.getLong("APPLY_STATUS"));
-				msg.put("operateTime",rs.getTimestamp("OPERATE_TIME"));
+				msg.put("operateTime",DateUtils.dateToString(rs.getTimestamp("OPERATE_TIME"),DateUtils.DATE_COMPACTED_FORMAT));
 				msg.put("operator",rs.getLong("OPERATOR"));
 				msg.put("operatorUserName",rs.getString("USER_REAL_NAME"));
 				msgs.add(msg);
@@ -958,7 +959,7 @@ public class MessageService {
 				msg.put("applyTitle",rs.getString("APPLY_TITLE"));
 				msg.put("applyType",rs.getLong("APPLY_TYPE"));
 				msg.put("applyStatus",rs.getLong("APPLY_STATUS"));
-				msg.put("operateTime",rs.getTimestamp("OPERATE_TIME"));
+				msg.put("operateTime",DateUtils.dateToString(rs.getTimestamp("OPERATE_TIME"),DateUtils.DATE_COMPACTED_FORMAT));
 				msg.put("auditor",rs.getLong("AUDITOR"));
 				msg.put("auditorName",rs.getString("USER_REAL_NAME"));
 				msgs.add(msg);
@@ -988,7 +989,7 @@ public class MessageService {
 				msg.put("applyTitle",rs.getString("APPLY_TITLE"));
 				msg.put("applyType",rs.getLong("APPLY_TYPE"));
 				msg.put("applyStatus",rs.getLong("APPLY_STATUS"));
-				msg.put("operateTime",rs.getTimestamp("OPERATE_TIME"));
+				msg.put("operateTime",DateUtils.dateToString(rs.getTimestamp("OPERATE_TIME"),DateUtils.DATE_COMPACTED_FORMAT));
 				msg.put("operator",rs.getLong("OPERATOR"));
 				msg.put("operatorUserName",rs.getString("USER_REAL_NAME"));
 				msg.put("auditor",rs.getLong("AUDITOR"));

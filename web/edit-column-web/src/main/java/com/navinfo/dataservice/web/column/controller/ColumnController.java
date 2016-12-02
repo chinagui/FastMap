@@ -30,13 +30,13 @@ public class ColumnController extends BaseController {
 	private static final Logger logger = Logger.getLogger(ColumnController.class);
 	
 	/**
-	 * 精编作业数据申请接口
+	 * POI月编作业数据申请接口
 	 * @param request
 	 * @return
 	 * @throws ServletException
 	 * @throws IOException
 	 */
-	@RequestMapping(value = "/poi/deep/applyPoi")
+	@RequestMapping(value = "/poi/column/applyPoi")
 	public ModelAndView applyPoi(HttpServletRequest request)
 			throws ServletException, IOException {
 
@@ -49,16 +49,11 @@ public class ColumnController extends BaseController {
 			
 			long userId = tokenObj.getUserId();
 
-			String firstWorkItem = jsonReq.getString("firstWorkItem");
-
-//			int groupId = jsonReq.getInt("groupId");
-
-
 			ColumnCoreControl control = new ColumnCoreControl();
 
-			control.applyData(0, firstWorkItem, userId);
+			int count = control.applyData(jsonReq, userId);
 
-			return new ModelAndView("jsonView", success());
+			return new ModelAndView("jsonView", success(count));
 
 		} catch (Exception e) {
 
@@ -220,7 +215,7 @@ public class ColumnController extends BaseController {
 	 * @throws ServletException
 	 * @throws IOException
 	 */
-	@RequestMapping(value = "/poi/deep/secondWorkStatistics")
+	@RequestMapping(value = "/poi/column/secondWorkStatistics")
 	public ModelAndView secondWorkStatistics(HttpServletRequest request)
 			throws ServletException, IOException {
 		

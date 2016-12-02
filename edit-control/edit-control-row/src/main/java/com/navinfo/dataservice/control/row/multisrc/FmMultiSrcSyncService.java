@@ -3,6 +3,7 @@ package com.navinfo.dataservice.control.row.multisrc;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -72,9 +73,12 @@ public class FmMultiSrcSyncService {
 			}
 			//jobId
 			long jobId = obj.getJobId();
-			
+			//syncTime
+			Date date = obj.getSyncTime();
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+			String syncTime = sdf.format(date);
 			String sql = "INSERT INTO FM_MULTISRC_SYNC (SID,SYNC_STATUS,LAST_SYNC_TIME,SYNC_TIME,JOB_ID,ZIP_FILE) "
-					+ "VALUES (FM_MULTISRC_SYNC_SEQ.NEXTVAL,1, ?, SYSDATE,?,NULL)";
+					+ "VALUES (FM_MULTISRC_SYNC_SEQ.NEXTVAL,1,?,TO_TIMESTAMP('"+syncTime+"', 'YYYY-MM-DD HH24:MI:SS:FF6'),?,NULL)";
 			Object[] params = {lastSyncTime,jobId};
 			queryRunner.update(conn, sql, params);
 			return "创建管理记录成功";
@@ -98,29 +102,11 @@ public class FmMultiSrcSyncService {
 		try{
 			QueryRunner queryRunner = new QueryRunner();
 			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
-			StringBuilder sql = new StringBuilder();
-			sql.append("UPDATE FM_MULTISRC_SYNC SET ");
-			if(obj.getSyncStatus() != null){
-				//更新管理状态
-				long syncStatus = obj.getSyncStatus();
-				sql.append(" SYNC_STATUS="+syncStatus);
-			}
-			if(obj.getZipFile() != null){
-				if(obj.getSyncStatus() != null){
-					sql.append(",");
-				}
-				//更新增量包路径
-				String zipFile = obj.getZipFile();
-				sql.append(" ZIP_FILE='"+zipFile+"' ");
-			}
-			sql.append(" WHERE TO_CHAR(SYNC_TIME,'yyyyMMdd')=TO_CHAR(SYSDATE,'yyyyMMdd')");
-			String querySql = sql.toString();
-			
+			String sql = "UPDATE FM_MULTISRC_SYNC SET SYNC_STATUS=?,ZIP_FILE=? WHERE JOB_ID =?";
 			//日志
-			log.info("更新FM_MULTISRC_SYNC表的管理记录:"+querySql);
+			log.info("更新FM_MULTISRC_SYNC表的管理记录:"+sql);
 			
-			Object[] params = {};
-			queryRunner.update(conn,querySql,params);
+			queryRunner.update(conn,sql,obj.getSyncStatus(),obj.getZipFile(),obj.getJobId());
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -194,7 +180,7 @@ public class FmMultiSrcSyncService {
 			while(rs.next()){
 				FmMultiSrcSync msg = new FmMultiSrcSync();
 				msg.setSid(rs.getLong("SID"));
-				msg.setSyncStatus(rs.getLong("SYNC_STATUS"));
+				msg.setSyncStatus(rs.getInt("SYNC_STATUS"));
 				msg.setSyncTime(rs.getTimestamp("SYNC_TIME"));
 				msg.setLastSyncTime(rs.getTimestamp("LAST_SYNC_TIME"));
 				msg.setJobId(rs.getLong("JOB_ID"));

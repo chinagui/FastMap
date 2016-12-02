@@ -403,6 +403,93 @@ public class LogReader {
 		sb.append("SELECT A.OB_PID, 3 OP_TP FROM A WHERE NOT EXISTS (SELECT 1 FROM F WHERE A.OB_PID = F.OB_PID)");
 		return new QueryRunner().query(conn, sb.toString(), new ObjStatusHandler(),mainTabName,mainTabName,mainTabName);
 	}
+
+	/**
+	 * 获取时间段内，对象有变更的pid
+	 * @param objName
+	 * @param pids
+	 * @param startDate
+	 * @param endDate
+	 * @return
+	 * @throws SQLException
+	 */
+	public Collection<Long> getUpdatedObjByPids(String objName,Collection<Long> pids,String startDate,String endDate)throws SQLException{
+		if(pids==null||pids.size()==0)return null;
+		StringBuilder sb = new StringBuilder();
+		sb.append("SELECT DISTINCT T.OB_PID FROM LOG_DETAIL T,LOG_OPERATION P WHERE T.OP_ID=P.OP_ID AND T.OB_NM=?\n");
+		if(StringUtils.isNotEmpty(startDate)){
+			sb.append("     AND P.OP_DT > TO_DATE('"+startDate+"', 'yyyymmddhh24miss')\n");
+		}
+		if(StringUtils.isNotEmpty(endDate)){
+			sb.append("     AND P.OP_DT <= TO_DATE('"+endDate+"', 'yyyymmddhh24miss')\n");
+		}
+		return new QueryRunner().query(conn, sb.toString(), new ResultSetHandler<Collection<Long>>(){
+
+			@Override
+			public Collection<Long> handle(ResultSet rs) throws SQLException {
+				List<Long> result = new ArrayList<Long>();
+				while(rs.next()){
+					result.add(rs.getLong(1));
+				}
+				return result;
+			}
+			
+		},objName);
+	}
+
+	/**
+	 * 传入临时表，字段包括pid,start_date，end_date
+	 * 获取时间段内，对象有变更的pid
+	 * @param objName
+	 * @param pids
+	 * @param startDate
+	 * @param endDate
+	 * @return
+	 * @throws SQLException
+	 */
+	public Collection<Long> getUpdatedObjByPids(String objName,String tempTable)throws SQLException{
+		if(StringUtils.isEmpty(tempTable))return null;
+		String sql = "SELECT DISTINCT T.OB_PID FROM LOG_DETAIL T,LOG_OPERATION P,"+tempTable+" S WHERE T.OP_ID=P.OP_ID AND T.OB_PID=S.PID AND P.OP_DT > S.START_DATE AND P.OP_DT <= S.END_DATE";
+		return new QueryRunner().query(conn, sql, new ResultSetHandler<Collection<Long>>(){
+
+			@Override
+			public Collection<Long> handle(ResultSet rs) throws SQLException {
+				List<Long> result = new ArrayList<Long>();
+				while(rs.next()){
+					result.add(rs.getLong(1));
+				}
+				return result;
+			}
+			
+		},objName);
+	}
+
+	/**
+	 * 传入临时表，字段包括fid,start_date，end_date
+	 * 获取时间段内，对象有变更的pid
+	 * @param objName
+	 * @param pids
+	 * @param startDate
+	 * @param endDate
+	 * @return
+	 * @throws SQLException
+	 */
+	public Collection<String> getUpdatedPoiByTemp(String tempTable)throws SQLException{
+		if(StringUtils.isEmpty(tempTable))return null;
+		String sql = "SELECT DISTINCT IX.POI_NUM FROM LOG_DETAIL T,LOG_OPERATION P, IX_POI IX,"+tempTable+" S WHERE T.OP_ID=P.OP_ID AND T.OB_PID=IX.PID AND IX.POI_NUM=S.FID AND P.OP_DT > S.START_DATE AND P.OP_DT <= S.END_DATE";
+		return new QueryRunner().query(conn, sql, new ResultSetHandler<Collection<String>>(){
+
+			@Override
+			public Collection<String> handle(ResultSet rs) throws SQLException {
+				List<String> result = new ArrayList<String>();
+				while(rs.next()){
+					result.add(rs.getString(1));
+				}
+				return result;
+			}
+			
+		});
+	}
 	
 	class ObjStatusHandler implements ResultSetHandler<Map<Integer,Collection<Long>>>{
 		@Override

@@ -53,7 +53,7 @@ public class ZoneNodeSearch implements ISearch {
 			throws Exception {
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "WITH TMP1 AS (SELECT NODE_PID, GEOMETRY, FORM FROM ZONE_NODE WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2), TMP2 AS (SELECT /*+ index(a) index(c)*/ B.NODE_PID, LISTAGG(A.LINK_PID, ',') WITHIN GROUP(ORDER BY B.NODE_PID) LINKPIDS, LISTAGG(C.KIND, ',') WITHIN GROUP(ORDER BY B.NODE_PID) KINDS FROM TMP1 B LEFT JOIN ZONE_LINK A ON (A.S_NODE_PID = B.NODE_PID OR A.E_NODE_PID = B.NODE_PID) AND A.U_RECORD != 2 LEFT JOIN ZONE_LINK_KIND C ON A.LINK_PID = C.LINK_PID AND C.U_RECORD != 2 GROUP BY B.NODE_PID), TMP3 AS (SELECT /*+ index(a) */ B.NODE_PID, LISTAGG(A.GROUP_ID, ',') WITHIN GROUP(ORDER BY B.NODE_PID) SAMNODEPART FROM TMP1 B LEFT JOIN RD_SAMENODE_PART A ON B.NODE_PID = A.NODE_PID AND A.TABLE_NAME = 'LU_NODE' GROUP BY B.NODE_PID, A.GROUP_ID), TMP4 AS (SELECT /*+ index(a) */ B.NODE_PID, LISTAGG(A.PID, ',') WITHIN GROUP(ORDER BY B.NODE_PID) AS INTERNODE FROM TMP1 B LEFT JOIN RD_INTER_NODE A ON B.NODE_PID = A.NODE_PID GROUP BY B.NODE_PID) SELECT A.NODE_PID, A.GEOMETRY, A.FORM, B.LINKPIDS, B.KINDS, C.SAMNODEPART, D.INTERNODE FROM TMP1 A, TMP2 B, TMP3 C, TMP4 D WHERE A.NODE_PID = B.NODE_PID AND B.NODE_PID = C.NODE_PID AND D.NODE_PID = C.NODE_PID ";
+		String sql = "WITH TMP1 AS (SELECT NODE_PID, GEOMETRY, FORM,KIND FROM ZONE_NODE WHERE sdo_within_distance(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2), TMP2 AS (SELECT /*+ index(a) index(c)*/ B.NODE_PID, LISTAGG(A.LINK_PID, ',') WITHIN GROUP(ORDER BY B.NODE_PID) LINKPIDS, LISTAGG(C.KIND, ',') WITHIN GROUP(ORDER BY B.NODE_PID) KINDS FROM TMP1 B LEFT JOIN ZONE_LINK A ON (A.S_NODE_PID = B.NODE_PID OR A.E_NODE_PID = B.NODE_PID) AND A.U_RECORD != 2 LEFT JOIN ZONE_LINK_KIND C ON A.LINK_PID = C.LINK_PID AND C.U_RECORD != 2 GROUP BY B.NODE_PID), TMP3 AS (SELECT /*+ index(a) */ B.NODE_PID, LISTAGG(A.GROUP_ID, ',') WITHIN GROUP(ORDER BY B.NODE_PID) SAMNODEPART FROM TMP1 B LEFT JOIN RD_SAMENODE_PART A ON B.NODE_PID = A.NODE_PID AND A.TABLE_NAME = 'ZONE_NODE' GROUP BY B.NODE_PID, A.GROUP_ID), TMP4 AS (SELECT /*+ index(a) */ B.NODE_PID, LISTAGG(A.PID, ',') WITHIN GROUP(ORDER BY B.NODE_PID) AS INTERNODE FROM TMP1 B LEFT JOIN RD_INTER_NODE A ON B.NODE_PID = A.NODE_PID GROUP BY B.NODE_PID) SELECT A.NODE_PID, A.GEOMETRY, A.FORM,A.KIND, B.LINKPIDS, B.KINDS, C.SAMNODEPART, D.INTERNODE FROM TMP1 A, TMP2 B, TMP3 C, TMP4 D WHERE A.NODE_PID = B.NODE_PID AND B.NODE_PID = C.NODE_PID AND D.NODE_PID = C.NODE_PID ";
 
 		PreparedStatement pstmt = null;
 
@@ -96,23 +96,6 @@ public class ZoneNodeSearch implements ISearch {
 
 						linkJSON.put("kinds", kinds.split(",")[i]);
 						
-						String samNodePid = resultSet.getString("samNodePart");
-
-						if (samNodePid != null) {
-							linkJSON.put("sameNode", Integer.parseInt(samNodePid));
-						} else {
-							// 0代表没有同一点关系
-							linkJSON.put("sameNode", 0);
-						}
-
-						String interNodePid = resultSet.getString("interNode");
-
-						if (interNodePid != null) {
-							linkJSON.put("interNode", Integer.parseInt(interNodePid));
-						} else {
-							// 0代表没有制作CRFI
-							linkJSON.put("interNode", 0);
-						}
 						linkMap.put(linkPid, linkJSON);
 					}
 				}
@@ -120,7 +103,28 @@ public class ZoneNodeSearch implements ISearch {
 				m.put("a", linkMap.values());
 				
 				//点的形态
-				m.put("b", resultSet.getInt("form"));
+				m.put("form", resultSet.getInt("form"));
+				
+				//点的种别
+				m.put("kind", resultSet.getInt("kind"));
+				
+				String samNodePid = resultSet.getString("samNodePart");
+
+				if (samNodePid != null) {
+					m.put("sameNode", samNodePid);
+				} else {
+					// 0代表没有同一点关系
+					m.put("sameNode", 0);
+				}
+
+				String interNodePid = resultSet.getString("interNode");
+
+				if (interNodePid != null) {
+					m.put("interNode", interNodePid);
+				} else {
+					// 0代表没有制作CRFI
+					m.put("interNode", 0);
+				}
 
 				snapshot.setM(m);
 

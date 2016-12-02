@@ -7,10 +7,14 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
+import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneNode;
+import com.navinfo.dataservice.dao.glm.search.LuNodeSearch;
 import com.navinfo.dataservice.dao.glm.search.RdNodeSearch;
+import com.navinfo.dataservice.dao.glm.search.ZoneNodeSearch;
 import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.operation.Transaction;
 
@@ -27,7 +31,7 @@ public class RdNodeTest extends InitApplication{
 	@Test
 	public void testCreate()
 	{
-		String parameter = "{\"command\":\"CREATE\",\"dbId\":17,\"objId\":301002706,\"data\":{\"longitude\":116.37573358621606,\"latitude\":40.04361587518659},\"type\":\"RDNODE\"}";
+		String parameter = "{\"command\":\"DEPART\",\"dbId\":17,\"objId\":210002203,\"data\":{\"catchNodePid\":0,\"catchLinkPid\":0,\"linkPid\":\"301002875\",\"longitude\":116.38789415359497,\"latitude\":40.24269122410369},\"type\":\"RDLINK\"}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
@@ -39,7 +43,7 @@ public class RdNodeTest extends InitApplication{
 	
 	@Test
 	public void testMove() {
-		String parameter = "{\"command\":\"MOVE\",\"dbId\":17,\"objId\":15430054,\"data\":{\"longitude\":116.62668853998183,\"latitude\":40.333333333333336},\"type\":\"RDNODE\"}";
+		String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDTMCLOCATION\",\"dbId\":17,\"data\":{\"links\":[{\"locDirect\":3,\"rowId\":\"3AE1F8D5514C92F7E050A8C08304EE4C\",\"objStatus\":\"UPDATE\"}],\"rowId\":\"3AE1FA17E63792F7E050A8C08304EE4C\",\"pid\":12504}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
@@ -86,11 +90,11 @@ public class RdNodeTest extends InitApplication{
 		try {
 			conn = DBConnector.getInstance().getConnectionById(17);
 
-			RdNodeSearch search = new RdNodeSearch(conn);
+			ZoneNodeSearch search = new ZoneNodeSearch(conn);
 			
-			String wtk = "POLYGON ((116.69263064861298 40.28212436356775,116.69337093830109 40.28212436356775,116.69337093830109 40.2826891060652,116.69263064861298 40.2826891060652,116.69263064861298 40.28212436356775))";
+			String wkt = "{\"type\":\"Polygon\",\"coordinates\":[[[116.47709906101225,40.01283736761785],[116.47709906101225,40.01289488813274],[116.47717416286469,40.01289488813274],[116.47717416286469,40.01283736761785],[116.47709906101225,40.01283736761785]]]}}";
 			
-			List<SearchSnapshot> searchSnapshot = search.searchDataBySpatial(wtk);
+			List<SearchSnapshot> searchSnapshot = search.searchDataBySpatial(Geojson.geojson2Wkt(wkt));
 			
 			JSONArray array = new JSONArray();
 
@@ -104,6 +108,6 @@ public class RdNodeTest extends InitApplication{
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
 	}
+	
 }	

@@ -169,7 +169,7 @@ public class RdGscSearch implements ISearch {
 			pstmt = conn.prepareStatement(sql);
 			
 			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
-
+			
 			pstmt.setString(1, wkt);
 
 			resultSet = pstmt.executeQuery();
@@ -180,6 +180,8 @@ public class RdGscSearch implements ISearch {
 			
 			int lastPid = 0;
 			
+			String lastTableName = "";
+			
 			SearchSnapshot snapshot = new SearchSnapshot();
 			
 			JSONArray g = new JSONArray();
@@ -187,13 +189,15 @@ public class RdGscSearch implements ISearch {
 			while (resultSet.next()) {
                 int pid = resultSet.getInt("pid");
                 
+                String tableName = resultSet.getString("table_name");
+                
                 if(lastPid==0){
                 	lastPid = pid;
+                	
+                	lastTableName = tableName;
                 }
                 
-                if(pid != lastPid){
-                	
-                	snapshot.setG(g);
+                if(pid != lastPid && !lastTableName.equalsIgnoreCase(tableName)){
                 	
                 	list.add(snapshot);
                 	
@@ -244,17 +248,16 @@ public class RdGscSearch implements ISearch {
 				
 				JSONObject m = new JSONObject();
 				
-				m.put("a", geojsonGsc.getJSONArray("coordinates"));
-				
-				snapshot.setM(m);
+				snapshot.setG(geojsonGsc.getJSONArray("coordinates"));
 				
 				g.add(obj);
 				
+				m.put("a", g);
+				
+				snapshot.setM(m);
 			}
 			
 			if(g.size()>0){
-				snapshot.setG(g);
-            	
             	list.add(snapshot);
 			}
 		} catch (Exception e) {

@@ -1,22 +1,30 @@
 package com.navinfo.dataservice.engine.editplus.batchAndCheck.check.rule;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.navinfo.dataservice.engine.editplus.model.batchAndCheck.BatchCommand;
-import com.navinfo.dataservice.engine.editplus.model.batchAndCheck.CheckCommand;
+import org.apache.log4j.Logger;
+
+import sun.tools.tree.ThisExpression;
+
+import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
+import com.navinfo.dataservice.dao.plus.obj.BasicObj;
+import com.navinfo.dataservice.engine.editplus.batchAndCheck.check.Check;
+import com.navinfo.dataservice.engine.editplus.model.batchAndCheck.BatchRuleCommand;
+import com.navinfo.dataservice.engine.editplus.model.batchAndCheck.CheckRuleCommand;
 import com.navinfo.dataservice.engine.editplus.model.batchAndCheck.CheckRule;
 import com.navinfo.dataservice.engine.editplus.model.batchAndCheck.NiValException;
-import com.navinfo.dataservice.engine.editplus.model.obj.BasicObj;
 import com.vividsolutions.jts.geom.Geometry;
 
 public abstract class BasicCheckRule {
-	private CheckCommand checkCommand;
+	protected Logger log = Logger.getLogger(this.getClass());
+	private CheckRuleCommand checkRuleCommand;
 	private CheckRule checkRule;
-	public List<String> objNameList=new ArrayList<String>();
 	List<NiValException> checkResultList=new ArrayList<NiValException>();
+	public Map<String,Map<Long, BasicObj>> myReferDataMap=new HashMap<String, Map<Long,BasicObj>>();
 
 	public List<NiValException> getCheckResultList() {
 		return checkResultList;
@@ -32,42 +40,35 @@ public abstract class BasicCheckRule {
 	
 	public Map<Long, BasicObj> getRowList(){
 		Map<Long, BasicObj> rows=new HashMap<Long, BasicObj>();
-		for(String objName:this.objNameList){
-			//首先判断是否是按需批处理，检查对象是新增/修改对象
-			if(this.getCheckCommand().getOperationResult().getAddObjs().containsKey(objName)){
-				Map<Long, BasicObj> map=this.getCheckCommand().getOperationResult().getAddObjs().get(objName);
-				if(map!=null){rows.putAll(map);}}
-			if(this.getCheckCommand().getOperationResult().getUpdateObjs().containsKey(objName)){
-				Map<Long, BasicObj> map=this.getCheckCommand().getOperationResult().getUpdateObjs().get(objName);
+		//若全库批处理，则数据统一都是初始化状态，新增修改列表没有记录
+		for(String objName:checkRule.getObjNameSet()){
+			if(checkRuleCommand.getAllDatas().containsKey(objName)){
+				Map<Long, BasicObj> map=checkRuleCommand.getAllDatas().get(objName);
 				if(map!=null){rows.putAll(map);}}
 			}
-		if(rows.isEmpty()){
-			//若全库批处理，则数据统一都是初始化状态，新增修改列表没有记录
-			for(String objName:objNameList){
-				//
-				}
-		}
 		return rows;
 	}
 	
 	public void run()throws Exception{
-		for(String objName:this.objNameList){
-			Map<Long, BasicObj> rows=getRowList();
-				for(Long key:rows.keySet()){
-					BasicObj obj=rows.get(key);
-					runCheck(objName, obj);
-				}
-			}
+		Map<Long, BasicObj> rows=getRowList();
+		loadReferDatas(rows.values());
+		for(Long key:rows.keySet()){
+			BasicObj obj=rows.get(key);
+			if(!obj.getMainrow().getOpType().equals(OperationType.PRE_DELETED)){
+				runCheck(obj);}
 		}
+	}
 	
-	public abstract void runCheck(String objName,BasicObj obj)throws Exception;
+	public abstract void runCheck(BasicObj obj)throws Exception;
+	
+	public abstract void loadReferDatas(Collection<BasicObj> batchDataList) throws Exception;
 
-	public CheckCommand getCheckCommand() {
-		return checkCommand;
+	public CheckRuleCommand getCheckRuleCommand() {
+		return checkRuleCommand;
 	}
 
-	public void setCheckCommand(CheckCommand checkCommand) {
-		this.checkCommand = checkCommand;
+	public void setCheckRuleCommand(CheckRuleCommand checkRuleCommand) {
+		this.checkRuleCommand = checkRuleCommand;
 	}
 	
 	public void setCheckResult(String loc, String targets,int meshId){
@@ -77,6 +78,12 @@ public abstract class BasicCheckRule {
 	
 	public void setCheckResult(Geometry loc, String targets,int meshId) throws Exception{
 		NiValException checkResult=new NiValException(this.checkRule.getRuleId(), loc, targets, meshId,this.checkRule.getLog());
+		this.checkResultList.add(checkResult);
+	}
+	
+	public void setCheckResult(BasicObj obj, String log) throws Exception{
+		if(log==null || log.isEmpty()){log=this.checkRule.getLog();}
+		NiValException checkResult=new NiValException(this.checkRule.getRuleId(), "", "["+obj.getMainrow().tableName()+","+obj.objPid()+"]",0,log);
 		this.checkResultList.add(checkResult);
 	}
 	

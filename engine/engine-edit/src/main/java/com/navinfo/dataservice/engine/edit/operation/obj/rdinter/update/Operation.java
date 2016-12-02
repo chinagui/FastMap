@@ -88,7 +88,7 @@ public class Operation implements IOperation {
 	 * @throws Exception
 	 */
 	private void updateNode(Result result, JSONObject content) throws Exception {
-		JSONArray subObj = content.getJSONArray("nodes");
+		JSONArray subObj = this.command.getNodeArray();
 
 		for (IRow interNode : rdInter.getNodes()) {
 			RdInterNode node = (RdInterNode) interNode;
@@ -120,7 +120,7 @@ public class Operation implements IOperation {
 	 * @throws Exception
 	 */
 	private void updateLink(Result result, JSONObject content) throws Exception {
-		JSONArray subObj = content.getJSONArray("links");
+		JSONArray subObj = this.command.getLinkArray();
 
 		for (IRow interLink : rdInter.getLinks()) {
 			RdInterLink link = (RdInterLink) interLink;
@@ -132,6 +132,8 @@ public class Operation implements IOperation {
 			}
 		}
 
+		List<Integer> linkPidList = new ArrayList<>();
+		
 		for (int i = 0; i < subObj.size(); i++) {
 
 			RdInterLink rdInterLink = new RdInterLink();
@@ -141,7 +143,14 @@ public class Operation implements IOperation {
 			rdInterLink.setPid(rdInter.getPid());
 
 			result.insertObject(rdInterLink, ObjStatus.INSERT, rdInterLink.getPid());
+			
+			linkPidList.add(rdInterLink.getLinkPid());
 		}
+		
+		//删减link维护CRFO对象
+		com.navinfo.dataservice.engine.edit.operation.obj.rdobject.update.Operation rdObjectOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdobject.update.Operation(
+				this.conn);
+		rdObjectOperation.updateRdObject(result, linkPidList, rdInter);
 	}
 
 	/**

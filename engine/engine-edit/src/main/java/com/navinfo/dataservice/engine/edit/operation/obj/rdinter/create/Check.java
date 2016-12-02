@@ -2,7 +2,9 @@ package com.navinfo.dataservice.engine.edit.operation.obj.rdinter.create;
 
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.collections.CollectionUtils;
 
@@ -21,20 +23,25 @@ public class Check {
 	
 	private Command command;
 	
+	public Check(){};
+	
 	public Check(Command command)
 	{
 		this.command = command;
 	}
 	
-	public void checkLinkByNode(Connection conn) throws Exception {
+	public void checkLink(Connection conn) throws Exception {
 		
-		String nodePids = JsonUtils.getStringValueFromJSONArray(this.command.getNodeArray());
+		@SuppressWarnings("unchecked")
+		List<Integer> linkPids = (List<Integer>) JSONArray.toCollection(command.getLinkArray());
 		
-		List<RdLink> linkList = new RdLinkSelector(conn).loadLinkPidByNodePids(nodePids, true);
-		
-		//检查link参数正确性
-		checkLink(linkList);
+		if(CollectionUtils.isNotEmpty(linkPids))
+		{
+			List<RdLink> linkList = new RdLinkSelector(conn).loadByPids(linkPids, true);
 			
+			//检查link形态
+			checkLinkDirect(linkList);
+		}
 	}
 	
 	/**
@@ -87,11 +94,20 @@ public class Check {
 		
 		RdNodeSelector selector = new RdNodeSelector(conn);
 		
-		List<Integer> loadRdNodeWays = selector.loadRdNodeWays(nodePids);
+		Map<Integer,String> loadRdNodeWays = selector.loadRdNodeWays(nodePids);
 		
-		if(loadRdNodeWays.contains(2))
+		for(Map.Entry<Integer, String> entry : loadRdNodeWays.entrySet())
 		{
-			throw new Exception("图郭点不允许参与制作CRF交叉点");
+			int nodePid = entry.getKey();
+			
+			String forms = entry.getValue();
+			
+			List<String> formList = Arrays.asList(forms.split(","));
+			
+			if(formList.contains("2"))
+			{
+				this.command.getNodeArray().remove(new Integer(nodePid));
+			}
 		}
 	}
 	
@@ -100,7 +116,7 @@ public class Check {
 	 * @param linkList
 	 * @throws Exception
 	 */
-	private void checkLinkDirect(List<RdLink> linkList) throws Exception
+	public void checkLinkDirect(List<RdLink> linkList) throws Exception
 	{
 		if(CollectionUtils.isNotEmpty(linkList))
 		{

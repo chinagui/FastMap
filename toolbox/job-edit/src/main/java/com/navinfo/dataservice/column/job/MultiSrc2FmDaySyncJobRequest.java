@@ -41,7 +41,7 @@ public class MultiSrc2FmDaySyncJobRequest extends AbstractJobRequest {
 
 	@Override
 	protected int myStepCount() throws JobException {
-		return 0;
+		return 3;
 	}
 
 	@Override

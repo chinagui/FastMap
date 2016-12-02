@@ -216,7 +216,7 @@ public class OpTopo implements IOperation {
 	}
 
 	private void updataRelationObj(Result result) throws Exception {
-		if (!this.command.getOperationType().equals("innerRun")) {
+		if (!this.command.getOperationType().equals("sameLinkBreak")) {
 			OpRefRelationObj opRefRelationObj = new OpRefRelationObj(this.conn);
 
 			// 处理同一线

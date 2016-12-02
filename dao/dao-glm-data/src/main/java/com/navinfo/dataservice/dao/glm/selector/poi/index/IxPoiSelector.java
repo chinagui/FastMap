@@ -66,7 +66,7 @@ public class IxPoiSelector extends AbstractSelector {
 		buffer.append(" FROM (SELECT /*+ leading(ip,ipn,ps) use_hash(ip,ipn,ps)*/  COUNT (1) OVER (PARTITION BY 1) total,");
 		buffer.append(" ip.pid,ip.kind_code,ps.status, ps.fresh_verified as freshness_vefication,ipn.name,ip.geometry,ip.collect_time,ip.u_record ");
 		buffer.append(" FROM ix_poi ip, (SELECT * FROM ix_poi_name WHERE lang_code = 'CHI' AND name_type = 2 AND name_class = 1) ipn, poi_edit_status ps ");
-		buffer.append(" WHERE  ip.pid = ipn.poi_pid(+) and ip.row_id = ps.row_id ");
+		buffer.append(" WHERE  ip.pid = ipn.poi_pid(+) and ip.pid = ps.pid ");
 
 //		buffer.append(" AND ipn.lang_code = 'CHI'");
 //		buffer.append(" AND ipn.name_type = 2 ");
@@ -348,7 +348,7 @@ public class IxPoiSelector extends AbstractSelector {
 
 		poi.setSamepoiParts(parts);
 
-		poi.setRawFields(loadRawByRowId(poi.getRowId()));
+		poi.setRawFields(loadRawByRowId(poi.getPid()));
 		
 		poi.setState(logRead.getObjectState(poi.pid(), "IX_POI"));
 
@@ -358,14 +358,14 @@ public class IxPoiSelector extends AbstractSelector {
 	/**
 	 * 查询最新RAW_FIELDS
 	 * 
-	 * @param rowId
+	 * @param pid
 	 * @return
 	 * @throws Exception
 	 */
-	public String loadRawByRowId(String rowId) throws Exception {
+	public String loadRawByRowId(int pid) throws Exception {
 
-		String sql = "SELECT RAW_FIELDS FROM POI_EDIT_STATUS WHERE ROW_ID=HEXTORAW('"
-				+ rowId + "') ORDER BY UPLOAD_DATE DESC";
+		String sql = "SELECT RAW_FIELDS FROM POI_EDIT_STATUS WHERE pid="
+				+ pid + " ORDER BY UPLOAD_DATE DESC";
 
 		PreparedStatement pstmt = null;
 

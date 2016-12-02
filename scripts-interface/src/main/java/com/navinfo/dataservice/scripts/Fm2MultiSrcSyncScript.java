@@ -65,6 +65,7 @@ public class Fm2MultiSrcSyncScript {
 		try {
 			response = execute(request);
 			System.out.println(response);
+			System.exit(0);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

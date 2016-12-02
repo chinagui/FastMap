@@ -270,7 +270,7 @@ public class Operation implements IOperation {
 
 				maps.put(geo.getCoordinates()[geo.getCoordinates().length - 1], this.command.getRdLink().geteNodePid());
 			} else {
-				maps.put(geo.getCoordinates()[0], this.command.getRdLink().geteNodePid());
+				maps.put(geo.getCoordinates()[0], this.command.getRdLink().getsNodePid());
 
 				maps.put(geo.getCoordinates()[geo.getCoordinates().length - 1], nodePid);
 			}

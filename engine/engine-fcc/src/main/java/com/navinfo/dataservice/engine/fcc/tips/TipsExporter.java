@@ -120,35 +120,13 @@ public class TipsExporter {
 			json.put("deep", deepjson);
 
 			if (deepjson.containsKey("in")) {
-				try{
-					JSONObject in = deepjson.getJSONObject("in");
+				JSONObject in = deepjson.getJSONObject("in");
 
-					json.put("relatedLinkId", in.getString("id"));
-				}catch (Exception e) {
-					System.out.println("rowkey:"+rowkey);
-					
-					System.out.println("deep:"+deepjson);
-					
-					System.out.println("sourceType:"+json.getString("s_sourceType"));
-					
-					System.out.println("track:"+json);
-					
-					//e.printStackTrace();
-				}
-				
+				json.put("relatedLinkId", in.getString("id"));
 			} else if (deepjson.containsKey("f")) {
-				try{
-					JSONObject f = deepjson.getJSONObject("f");
-					json.put("relatedLinkId", f.getString("id"));
-				}catch (Exception e) {
-					System.out.println("rowkey:"+rowkey);
-					
-					System.out.println("deep:"+deepjson);
-					
-					System.out.println("sourceType:"+json.getString("s_sourceType"));
-				}
 
-				
+				JSONObject f = deepjson.getJSONObject("f");
+				json.put("relatedLinkId", f.getString("id"));
 			} else if (deepjson.containsKey("out")) {
 
 				JSONObject out = deepjson.getJSONObject("out");

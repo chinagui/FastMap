@@ -493,7 +493,7 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 		Connection conn = null;
 		
 		try {
-			JSONObject result = new JSONObject();
+			//JSONObject result = new JSONObject();
 			conn = DBConnector.getInstance().getMetaConnection();
 			ScPointAdminArea scPointAdminArea = new ScPointAdminArea(conn);
 			Map<String,String> adminMap = scPointAdminArea.getAdminMap();
@@ -508,8 +508,9 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 			while (resultSet.next()) {
 				data.add(result2Json(resultSet, adminMap));
 			}
-			result.put("data", data.get(0));
-			return result;
+			//result.put("data", data.get(0));
+			//return result;
+			return data.get(0);
 		} catch (Exception e) {
 			
 		} finally {

@@ -97,6 +97,36 @@ public class DownloadService {
 
 	}
 	
+	/**
+	 * @Title: getMetadta
+	 * @Description: TODO
+	 * @param 
+	 * @return
+	 * @throws Exception  JSONObject
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2016年11月30日 下午8:46:36 
+	 */
+	public JSONObject getMetadta() throws Exception {
+
+		String filePath = SystemConfigFactory.getSystemConfig().getValue(
+				PropConstant.downloadFilePathRoot)+"metadata";
+
+		String urlPath = SystemConfigFactory.getSystemConfig().getValue(
+				PropConstant.downloadUrlPathRoot)+"metadata";
+
+		JSONObject data = DropboxUtil.getLastestInfo(urlPath, filePath, null);
+
+		ManApi man = (ManApi) ApplicationContextUtil.getBean("manApi");
+
+		String specVersion = man.querySpecVersionByType(3);
+
+		data.put("specVersion", specVersion);
+
+		return data;
+
+	}
+	
 	public JSONObject getAppVersion(int type,String platform) throws Exception {
 
 		JSONObject data = DropboxUtil.getAppVersion(type,platform);

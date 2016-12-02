@@ -187,6 +187,7 @@ public abstract class BasicRow{
 	}
 	public boolean isChanged(){
 		if(opType.equals(OperationType.INSERT_DELETE))return false;
+		if(opType.equals(OperationType.PRE_DELETED))return false;
 		if(opType.equals(OperationType.UPDATE)&&(oldValues==null||oldValues.size()==0))return false;
 		return true;
 	}

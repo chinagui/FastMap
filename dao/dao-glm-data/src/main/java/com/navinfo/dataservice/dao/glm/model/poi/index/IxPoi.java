@@ -372,22 +372,44 @@ public class IxPoi implements IObj {
 	public Map<String, IxPoiCarrental> carrentalMap = new HashMap<String, IxPoiCarrental>();
 	//************zl 2016.11.29 *************
 	//添加子表 IxSamepoi
-	private List<IRow> samepois = new ArrayList<IRow>();
+//	private List<IRow> samepois = new ArrayList<IRow>();
 
-	public Map<String, IxSamepoi> samepoiMap = new HashMap<String, IxSamepoi>();
+//	public Map<String, IxSamepoi> samepoiMap = new HashMap<String, IxSamepoi>();
 	//添加子表 IxSamepoi
 	private List<IRow> samepoiParts = new ArrayList<IRow>();
 
 	public Map<String, IxSamepoiPart> samepoiPartMap = new HashMap<String, IxSamepoiPart>();
 	
-	//生成 list 的  get set 方法
-	public List<IRow> getSamepois() {
-		return samepois;
+	//添加 poiEditStatus
+	private int poiEditStatus = 0;
+	
+	//添加 sameFid
+	private String sameFid ;
+
+	public String getSameFid() {
+		return sameFid;
 	}
 
-	public void setSamepois(List<IRow> samepois) {
-		this.samepois = samepois;
+	public void setSameFid(String sameFid) {
+		this.sameFid = sameFid;
 	}
+
+	public int getPoiEditStatus() {
+		return poiEditStatus;
+	}
+
+	public void setPoiEditStatus(int poiEditStatus) {
+		this.poiEditStatus = poiEditStatus;
+	}
+
+	//生成 list 的  get set 方法
+//	public List<IRow> getSamepois() {
+//		return samepois;
+//	}
+//
+//	public void setSamepois(List<IRow> samepois) {
+//		this.samepois = samepois;
+//	}
 
 	public List<IRow> getSamepoiParts() {
 		return samepoiParts;
@@ -1075,7 +1097,7 @@ public class IxPoi implements IObj {
 		children.add(this.getVideoes());
 		children.add(this.getChildren());
 		//************zl 2016.11.29 *************
-		children.add(this.getSamepois());
+		//children.add(this.getSamepois());
 		children.add(this.getSamepoiParts());
 		//************zl 2016.11.29 *************
 		// deep
@@ -1766,9 +1788,9 @@ public class IxPoi implements IObj {
 		
 		//************zl 2016.11.29 *************
 		//设置子表 IX_SAMEPOI
-		childMap.put(IxSamepoi.class, samepois);
+		//childMap.put(IxSamepoi.class, samepois);
 		//设置子表IX_SAMEPOI_PART
-	//	childMap.put(IxSamepoiPart.class,samepoiParts);
+		childMap.put(IxSamepoiPart.class,samepoiParts);
 		
 		//************zl 2016.11.29 *************
 		return childMap;
@@ -1859,9 +1881,9 @@ public class IxPoi implements IObj {
 //		childMap.put(IxSamepoi.class, samepoiMap);
 		//************zl 2016.11.29 *************
 		//设置子表 IX_SAMEPOI
-		childMap.put(IxSamepoi.class, samepoiMap);
+		//childMap.put(IxSamepoi.class, samepoiMap);
 		//设置子表IX_SAMEPOIPART
-		//childMap.put(IxSamepoiPart.class, samepoiPartMap);
+		childMap.put(IxSamepoiPart.class, samepoiPartMap);
 		
 		//************zl 2016.11.29 *************
 

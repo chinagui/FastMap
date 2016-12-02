@@ -33,6 +33,8 @@ import com.navinfo.dataservice.dao.glm.search.batch.ixpoi.IxPoiContactHandler;
 import com.navinfo.dataservice.dao.glm.search.batch.ixpoi.IxPoiNameHandler;
 import com.navinfo.dataservice.dao.glm.search.batch.ixpoi.IxPoiParentHandler;
 import com.navinfo.dataservice.dao.glm.search.batch.ixpoi.IxRestaurantHandler;
+import com.navinfo.dataservice.dao.glm.search.batch.ixpoi.IxSamepoiHandler;
+import com.navinfo.dataservice.dao.glm.search.batch.ixpoi.poiEditStatusHandler;
 import com.navinfo.dataservice.dao.log.LogReader;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.DBUtils;
@@ -495,7 +497,7 @@ public class PoiGridIncreSearch {
 			pois.get(pid).setChargingplots(chargingplot.get(pid));
 		}
 		
-		logger.info("设置子表IX_SAMEPOI");
+		logger.info("设置  samefid");
 		
 		StringBuilder sbSamepoi = new StringBuilder();
 		sbSamepoi.append("WITH q1 as(");
@@ -509,12 +511,24 @@ public class PoiGridIncreSearch {
 //		select q.pid,nvl(i.poi_num,'') poi_num from ix_poi i, 
 //		(select s.group_id,p.group_id,p.poi_pid pid,(select pp.poi_pid  from ix_samepoi_part pp where pp.group_id = p.group_id and pp.poi_pid != p.poi_pid)  otherpid from ix_samepoi s , ix_samepoi_part p where s.group_id = p.group_id and p.poi_pid in (select to_number(column_value) from table(clob_to_table('8165144,55569871,2649586')))) q
 //		 where i.pid=q.otherpid 
-		System.out.println(pidsClob);
+		System.out.println(pidsClob.getSubString((long)1,(int)pidsClob.length()));
 		System.out.println("sql :" + sbSamepoi.toString());
-		Map<Long,List<IRow>> samepoi = run.query(conn, sbSamepoi.toString(), new IxPoiParentHandler(),pidsClob);
-
-		for(Long pid:samepoi.keySet()){
-			pois.get(pid).setSamepois(samepoi.get(pid));
+		//Map<Long,List<IRow>> samepoi = run.query(conn, sbSamepoi.toString(), new IxSamepoiHandler(),pidsClob);
+		Map<Long,String> sameFidMap = run.query(conn, sbSamepoi.toString(), new IxSamepoiHandler(),pidsClob);
+		for(Long pid:sameFidMap.keySet()){
+			pois.get(pid).setSameFid(sameFidMap.get(pid));
+		}
+		
+		logger.info("设置 字段 editstatus");
+		StringBuilder sbEditStatus = new StringBuilder();
+		sbEditStatus.append("select t.pid,t.status from POI_EDIT_STATUS t ");
+		sbEditStatus.append(" where t.pid in (select to_number(column_value) from table(clob_to_table(?))) ");
+		System.out.println(pidsClob);
+		System.out.println("sql :" + sbEditStatus.toString());
+		
+		Map<Long,Integer> editStatus = run.query(conn, sbEditStatus.toString(), new poiEditStatusHandler(),pidsClob);
+		for(Long pid:editStatus.keySet()){
+			pois.get(pid).setPoiEditStatus(editStatus.get(pid));
 		}
 			
 	}

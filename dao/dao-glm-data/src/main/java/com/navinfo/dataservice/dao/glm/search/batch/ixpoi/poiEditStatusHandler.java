@@ -6,18 +6,17 @@ import java.util.HashMap;
 import java.util.Map;
 import org.apache.commons.dbutils.ResultSetHandler;
 
-public class IxSamepoiHandler implements ResultSetHandler<Map<Long,String>>{
+public class poiEditStatusHandler implements ResultSetHandler<Map<Long,Integer>>{
 
 	@Override
-	public Map<Long,String> handle(ResultSet rs) throws SQLException {
-		Map<Long,String> samepoiMap = new HashMap<Long,String>();
+	public Map<Long,Integer> handle(ResultSet rs) throws SQLException {
+		Map<Long,Integer> editStatusMap = new HashMap<Long,Integer>();
 		
 		try {
 			while (rs.next()){
-				samepoiMap.put(rs.getLong("pid"), rs.getString("poi_num"));
-				
+				editStatusMap.put(rs.getLong("pid"), rs.getInt("status"));
 			}
-			return samepoiMap;
+			return editStatusMap;
 		} catch (Exception e) {
 			throw e;
 		}

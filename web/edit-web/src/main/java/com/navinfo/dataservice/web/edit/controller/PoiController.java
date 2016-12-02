@@ -69,7 +69,7 @@ public class PoiController extends BaseController{
 			String poisDownloadDate = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());//增加抽取时间 poisDownloadDate
 			Map<String,String> dateMap = new HashMap<String,String>();
 			dateMap.put("url", url);
-			dateMap.put("poisDownloadDate", poisDownloadDate);
+			dateMap.put("downloadDate", poisDownloadDate);
 			return new ModelAndView("jsonView", success(dateMap));
 			//*********zl 2016.11.29 ***********
 			//return new ModelAndView("jsonView", success(url));

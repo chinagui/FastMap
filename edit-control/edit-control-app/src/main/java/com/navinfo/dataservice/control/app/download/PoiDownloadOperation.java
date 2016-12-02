@@ -8,9 +8,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-
 import org.apache.log4j.Logger;
-
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
@@ -30,10 +28,7 @@ import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiChildrenForAndroid;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiContact;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiName;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiParentForAndroid;
-import com.navinfo.dataservice.dao.glm.model.poi.index.IxSamepoiForAndroid;
 import com.navinfo.dataservice.dao.glm.search.batch.PoiGridIncreSearch;
-import com.navinfo.dataservice.dao.glm.search.batch.ixpoi.IxSamepoiHandler;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
@@ -615,7 +610,7 @@ public class PoiDownloadOperation {
 			jsonObj.put("t_operateDate", "");
 			
 			//处理统一关系 获取  samefid
-			IxSamepoiForAndroid samepoi = new IxSamepoiForAndroid();
+			/*IxSamepoiForAndroid samepoi = new IxSamepoiForAndroid();
 			List<IRow> samepoiList = poi.getSamepois();
 			if (samepoiList.size()>0) {
 				samepoi = (IxSamepoiForAndroid)poi.getSamepois().get(0);
@@ -624,7 +619,10 @@ public class PoiDownloadOperation {
 				jsonObj.put("sameFid", "");
 			} else {
 				jsonObj.put("sameFid", samepoi.getPoiNum());
-			}
+			}*/
+			jsonObj.put("sameFid", poi.getSameFid());
+			//处理编辑状态  获取  poiEditStatus
+				jsonObj.put("editStatus", poi.getPoiEditStatus());
 			
 			retList.add(jsonObj);
 		}

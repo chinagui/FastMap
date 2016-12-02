@@ -57,7 +57,7 @@ public class FmMultiSrcSyncApiImpl implements FmMultiSrcSyncApi {
 		obj.setSyncStatus(syncStatus);
 		obj.setZipFile(zipFile);
 		obj.setJobId(jobId);
-		FmMultiSrcSyncService.getInstance().updateSync(obj);
+		FmMultiSrcSyncService.getInstance().updateZipFile(obj);
 	}
 
 	//创建MS-POI增量包同步到FM的管理记录

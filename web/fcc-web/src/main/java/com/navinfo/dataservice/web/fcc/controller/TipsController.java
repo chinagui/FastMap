@@ -371,6 +371,11 @@ public class TipsController extends BaseController {
             if (StringUtils.isEmpty(mdFlag)) {
                 throw new IllegalArgumentException("参数错误:mdFlag不能为空。");
             }
+            
+            //值域验证
+            if(!"m".equals(mdFlag)||!"d".equals(mdFlag)){
+            	 throw new IllegalArgumentException("参数错误:mdflag值域错误。");
+            }
 
 			TipsSelector selector = new TipsSelector();
 

@@ -904,13 +904,13 @@ public class SubtaskOperation {
 			}
 
 			if (bean.getType() != null) {
-				conditonSql+=" and st.TYPE = "+ bean.getType();
+				conditonSql+=" and t.TYPE = "+ bean.getType();
 			}
 
 			if (bean.getStatus() != null) {
-				conditonSql+=" and st.STATUS = "+ bean.getStatus();
+				conditonSql+=" and t.STATUS = "+ bean.getStatus();
 			}
-
+			selectSql+=conditonSql;
 			ResultSetHandler<Page> rsHandler = new ResultSetHandler<Page>() {
 				public Page handle(ResultSet rs) throws SQLException {
 					SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");

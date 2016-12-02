@@ -79,11 +79,11 @@ public class MultiSrcFmSyncService {
 		try{
 			QueryRunner queryRunner = new QueryRunner();
 			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
-			String sql = "UPDATE MULTISRC_FM_SYNC SET SYNC_STATUS=?,ZIP_FILE=? WHERE JOB_ID =?";
+			String sql = "UPDATE MULTISRC_FM_SYNC SET SYNC_STATUS=? WHERE JOB_ID =?";
 			//日志
 			log.info("更新MULTISRC_FM_SYNC表的管理记录:"+sql);
 			
-			queryRunner.update(conn,sql,obj.getSyncStatus(),obj.getZipFile(),obj.getJobId());
+			queryRunner.update(conn,sql,obj.getSyncStatus(),obj.getJobId());
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

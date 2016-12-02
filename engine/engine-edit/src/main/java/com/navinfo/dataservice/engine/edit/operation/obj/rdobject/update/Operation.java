@@ -66,6 +66,8 @@ public class Operation implements IOperation {
 	        geojson.put("coordinates", new double[]{command.getLongitude(), command.getLatitude()});
 	        
 	        rdObject.changedFields().put("geometry",geojson);
+	        
+	        result.insertObject(rdObject, ObjStatus.UPDATE, rdObject.getPid());
 		}
 
 		// 不编辑主表信息

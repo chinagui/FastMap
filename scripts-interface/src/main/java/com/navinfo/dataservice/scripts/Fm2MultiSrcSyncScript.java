@@ -22,7 +22,7 @@ public class Fm2MultiSrcSyncScript {
 		JSONObject response = new JSONObject();
 		try {
 			JSONObject job = new JSONObject();
-			FmMultiSrcSyncApi syncApi = (FmMultiSrcSyncApi) ApplicationContextUtil.getBean("syncApi");
+			FmMultiSrcSyncApi syncApi = (FmMultiSrcSyncApi) ApplicationContextUtil.getBean("fmMultiSrcSyncApi");
 			//查询最近的成功同步时间
 			FmMultiSrcSync fmMultiSrcSync = syncApi.queryLastSuccessSync();
 			String lastSyncTime = null;

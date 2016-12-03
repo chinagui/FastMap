@@ -3,6 +3,7 @@ INSERT INTO SYS_CONFIG VALUES (SYS_CONFIG_SEQ.NEXTVAL,'dropbox.download.filepath
 INSERT INTO SYS_CONFIG VALUES (SYS_CONFIG_SEQ.NEXTVAL,'dropbox.download.urlpath.root','/resources/download/','下载url的父目录','default');
 INSERT INTO SYS_CONFIG VALUES (SYS_CONFIG_SEQ.NEXTVAL,'rtic.connection.string','ORACLE,192.168.4.131,1521,orcl,fm_pid_1,fm_pid_1','rticid server','default');
 INSERT INTO SYS_CONFIG VALUES (SYS_CONFIG_SEQ.NEXTVAL,'multisrc.day.sync.url','http://192.168.0.40:8090/iqu/data/InfoDataAction.do?operate=downloadFastMapPoi','日增量推送多源url','default');
+
 commit;
 
 exit;

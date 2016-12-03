@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchDetail;
 import com.navinfo.dataservice.dao.glm.model.rd.directroute.RdDirectroute;
@@ -75,7 +76,7 @@ public class RELATING_CHECK_NOSAME_LINE_LINE_RELATION extends baseRule {
 			// 交限RdRestriction
 			else if (obj instanceof RdRestriction) {
 				RdRestriction rdRestriction = (RdRestriction) obj;
-				boolean result = checkRdRestriction(rdRestriction);
+				boolean result = checkRdRestriction(rdRestriction,checkCommand.getOperType());
 				if (!result) {
 					this.setCheckResult("", "", 0, "相同的进入线、进入点不能创建两组普通交限");
 					return;
@@ -327,30 +328,33 @@ public class RELATING_CHECK_NOSAME_LINE_LINE_RELATION extends baseRule {
 
 	/**
 	 * @param rdRestriction
+	 * @param operType 
 	 * @return
 	 * @throws Exception
 	 */
-	private boolean checkRdRestriction(RdRestriction rdRestriction) throws Exception {
-		// TODO Auto-generated method stub
-		int inLinkPid = rdRestriction.getInLinkPid();
-		int nodePid = rdRestriction.getNodePid();
+	private boolean checkRdRestriction(RdRestriction rdRestriction, OperType operType) throws Exception {
+		if(operType == OperType.CREATE)
+		{
+			int inLinkPid = rdRestriction.getInLinkPid();
+			int nodePid = rdRestriction.getNodePid();
 
-		StringBuilder sb = new StringBuilder();
+			StringBuilder sb = new StringBuilder();
 
-		sb.append("SELECT RR.PID FROM RD_RESTRICTION RR WHERE RR.u_record !=2");
-		sb.append(" AND RR.IN_LINK_PID = ");
-		sb.append(inLinkPid);
-		sb.append(" AND RR.NODE_PID = ");
-		sb.append(nodePid);
+			sb.append("SELECT RR.PID FROM RD_RESTRICTION RR WHERE RR.u_record !=2");
+			sb.append(" AND RR.IN_LINK_PID = ");
+			sb.append(inLinkPid);
+			sb.append(" AND RR.NODE_PID = ");
+			sb.append(nodePid);
 
-		String sql = sb.toString();
+			String sql = sb.toString();
 
-		DatabaseOperator getObj = new DatabaseOperator();
-		List<Object> resultList = new ArrayList<Object>();
-		resultList = getObj.exeSelect(this.getConn(), sql);
+			DatabaseOperator getObj = new DatabaseOperator();
+			List<Object> resultList = new ArrayList<Object>();
+			resultList = getObj.exeSelect(this.getConn(), sql);
 
-		if (resultList.size() > 0) {
-			return false;
+			if (resultList.size() > 0) {
+				return false;
+			}
 		}
 		return true;
 	}

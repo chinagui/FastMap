@@ -1,0 +1,9 @@
+﻿-- used by multisrc2fm
+CREATE TABLE SVR_MULTISRC_DAY_IMP(
+FID VARCHAR2(36),
+START_DATE DATE,
+END_DATE DATE
+);
+
+commit;
+exit;

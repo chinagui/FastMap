@@ -56,6 +56,8 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 	
 	Map<String,String> errLog=new ConcurrentHashMap<String,String>();
 	
+	JSONObject resJson=new JSONObject();
+	
 	public MultiSrc2FmDaySyncJob(JobInfo jobInfo) {
 		super(jobInfo);
 	}
@@ -79,7 +81,7 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 			String zipFile = writeImpResFile(syncApi,resFileName);
 			response("生成统计结果完成",null);
 			//通知多源
-//			notifyMultiSrc(zipFile,syncApi);
+			notifyMultiSrc(zipFile,syncApi);
 		}catch(Exception e){
 			log.error(e.getMessage(), e);
 			throw new JobException(e.getMessage(),e);
@@ -102,6 +104,7 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 			}
 			//获取zip包名
 			String fileName = remoteZipFile.substring(remoteZipFile.lastIndexOf("/"));
+			resJson.put("src", fileName);
 			//下载
 			String localZipFile = monthDir+fileName;
 			DownloadUtils.download(remoteZipFile,localZipFile);
@@ -188,6 +191,7 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 			//读取文件
 			JSONArray pois = read(localUnzipDir);
 			response("读取文件完成",null);
+			resJson.put("total", pois.size());
 
 			//分库
 			Map<Integer,UploadPois> poiMap = distribute(pois);
@@ -218,6 +222,12 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 					throw new Exception(threadPoolExecutor.getExceptions().get(0));
 				}
 			}
+			//写统计结果
+			resJson.put("success", pois.size()-errLog.size());
+			JSONObject failJson=new JSONObject();
+			failJson.put("count", errLog.size());
+			failJson.put("fids", errLog);
+			resJson.put("fail", failJson);
 			//设置导入成功状态
 			syncApi.updateMultiSrcFmSyncStatus(MultiSrcFmSync.STATUS_IMP_SUCCESS,jobInfo.getId());
 			log.debug("导入完成，用时"+((System.currentTimeMillis()-t)/1000)+"s");
@@ -240,7 +250,7 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 				mdirFile.mkdirs();
 			}
 			pw = new PrintWriter(monthDir+resFileName);
-			pw.println(JSONObject.fromObject(errLog).toString());
+			pw.println(resJson.toString());
 			//设置生成导入结果成功状态
 			syncApi.updateMultiSrcFmSyncStatus(MultiSrcFmSync.STATUS_CREATE_RES_SUCCESS,jobInfo.getId());
 			return "multisrc"+File.separator+curYm+File.separator+resFileName;

@@ -73,7 +73,7 @@ public class Operation implements IOperation {
      * @return true 是，false 否
      */
     private boolean isOnTheLine(Geometry point, Geometry line) {
-        return line.distance(point) <= 1;
+        return line.intersects(point);
     }
 
 }

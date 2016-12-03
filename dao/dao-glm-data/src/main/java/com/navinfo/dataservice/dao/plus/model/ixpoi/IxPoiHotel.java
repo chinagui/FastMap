@@ -33,6 +33,7 @@ public class IxPoiHotel extends BasicRow {
 	
 	public IxPoiHotel (long objPid){
 		super(objPid);
+		setPoiPid(objPid);
 	}
 	
 	public long getHotelId() {

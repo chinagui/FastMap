@@ -19,6 +19,7 @@ public class IxPoiAdvertisement extends BasicRow {
 	
 	public IxPoiAdvertisement (long objPid){
 		super(objPid);
+		setPoiPid(objPid);
 	}
 	
 	public long getAdvertiseId() {

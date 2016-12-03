@@ -5,3 +5,4 @@
 /logs
 .bin
 /bin
+/target/

@@ -19,6 +19,7 @@ public class IxPoiIcon extends BasicRow {
 	
 	public IxPoiIcon (long objPid){
 		super(objPid);
+		setPoiPid(objPid);
 	}
 	
 	public long getRelId() {

@@ -81,7 +81,7 @@ public class RdLinkTest extends InitApplication {
 
 	@Test
 	public void testDelete() {
-		String parameter = "{ \"command\": \"UPDATE\", \"type\": \"RDTMCLOCATION\", \"dbId\": 17, \"data\": { \"pid\":12611, \"objStatus\":\"UPDATE\" \"links\":[ { \"rowId\":\"3AE1F8D4FFC692F7E050A8C08304EE4C\", \"linkPid\":466158, \"objStatus\":\"UPDATE\", \"locDirect\":3 } ] } }";
+		String parameter = "{\"command\":\"DEPART\",\"dbId\":249,\"objId\":350277,\"data\":{\"catchNodePid\":0,\"catchLinkPid\":\"468962\",\"linkPid\":\"487838\",\"longitude\":116.20513648660511,\"latitude\":39.81957970426371},\"type\":\"RDLINK\"}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

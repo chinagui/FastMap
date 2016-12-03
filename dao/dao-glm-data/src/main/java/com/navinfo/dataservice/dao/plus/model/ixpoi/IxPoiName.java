@@ -22,6 +22,7 @@ public class IxPoiName extends BasicRow {
 	
 	public IxPoiName (long objPid){
 		super(objPid);
+		setPoiPid(objPid);
 	}
 	
 	public long getNameId() {

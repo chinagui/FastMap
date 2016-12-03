@@ -3,6 +3,7 @@
 .settings
 .git
 .classpath
+.gitignore
 /RemoteSystemsTempFiles
 .recommenders/
 _pasted_code_/

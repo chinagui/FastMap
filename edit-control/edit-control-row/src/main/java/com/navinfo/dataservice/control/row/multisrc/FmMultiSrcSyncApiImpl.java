@@ -45,6 +45,7 @@ public class FmMultiSrcSyncApiImpl implements FmMultiSrcSyncApi {
 		
 		FmMultiSrcSync obj = new FmMultiSrcSync();
 		obj.setSyncStatus(syncStatus);
+		obj.setJobId(jobId);
 		FmMultiSrcSyncService.getInstance().updateSync(obj);
 	}
 
@@ -55,7 +56,8 @@ public class FmMultiSrcSyncApiImpl implements FmMultiSrcSyncApi {
 		FmMultiSrcSync obj = new FmMultiSrcSync();
 		obj.setSyncStatus(syncStatus);
 		obj.setZipFile(zipFile);
-		FmMultiSrcSyncService.getInstance().updateSync(obj);
+		obj.setJobId(jobId);
+		FmMultiSrcSyncService.getInstance().updateZipFile(obj);
 	}
 
 	//创建MS-POI增量包同步到FM的管理记录
@@ -74,16 +76,8 @@ public class FmMultiSrcSyncApiImpl implements FmMultiSrcSyncApi {
 	public void updateMultiSrcFmSyncStatus(int syncStatus,long jobId) throws Exception {
 		MultiSrcFmSync obj = new MultiSrcFmSync();
 		obj.setSyncStatus(syncStatus);
+		obj.setJobId(jobId);
 		MultiSrcFmSyncService.getInstance().updateSync(obj);
 	}
-
-	//更新FmMultiSrcSync管理表中增量包文件和同步状态
-	/*@Override
-	public void updateMultiSrcFmSync(long syncStatus, String zipFile) throws Exception {
-		MultiSrcFmSync obj = new MultiSrcFmSync();
-		obj.setSyncStatus(syncStatus);
-		obj.setZipFile(zipFile);
-		MultiSrcFmSyncService.getInstance().updateSync(obj);
-	}*/
 
 }

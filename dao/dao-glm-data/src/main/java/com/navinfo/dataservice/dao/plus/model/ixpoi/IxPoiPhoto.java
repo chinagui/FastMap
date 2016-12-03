@@ -18,6 +18,7 @@ public class IxPoiPhoto extends BasicRow {
 	
 	public IxPoiPhoto (long objPid){
 		super(objPid);
+		setPoiPid(objPid);
 	}
 	
 	public long getPoiPid() {

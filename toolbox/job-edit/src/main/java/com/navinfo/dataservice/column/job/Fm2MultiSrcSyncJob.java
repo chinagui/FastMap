@@ -118,8 +118,8 @@ public class Fm2MultiSrcSyncJob extends AbstractJob {
 		PrintWriter pw = null;
 		try{
 			//1.生成目录
-//			String rootDownloadPath = SystemConfigFactory.getSystemConfig().getValue(PropConstant.downloadFilePathRoot);
-			String rootDownloadPath = "F:\\data\\";
+			String rootDownloadPath = SystemConfigFactory.getSystemConfig().getValue(PropConstant.downloadFilePathRoot);
+			//String rootDownloadPath = "F:\\data\\";
 			//每个月独立目录
 			String monthDir = rootDownloadPath+"multisrc"+File.separator+curYm+File.separator;
 			File mdirFile = new File(monthDir);
@@ -190,9 +190,13 @@ public class Fm2MultiSrcSyncJob extends AbstractJob {
 					+SystemConfigFactory.getSystemConfig().getValue(PropConstant.downloadUrlPathRoot)
 					+zipFile;
 			log.debug("数据包url:"+zipFileUrl);
+			JSONObject jso = new JSONObject();
+			jso.put("url", zipFileUrl);
 			Map<String,String> parMap = new HashMap<String,String>();
-			parMap.put("url", zipFileUrl);
-			String result = ServiceInvokeUtil.invoke("", parMap, 10000);
+			parMap.put("parameter", jso.toString());
+			parMap.put("operate", "downloadFastMapPoi");
+			String msUrl = SystemConfigFactory.getSystemConfig().getValue(PropConstant.multisrcDaySyncUrl);
+			String result = ServiceInvokeUtil.invoke(msUrl, parMap, 10000);
 			log.debug("notify multisrc result:"+result);
 			syncApi.updateFmMultiSrcSyncStatus(FmMultiSrcSync.STATUS_SYNC_SUCCESS,jobInfo.getId());
 		}catch(Exception e){
@@ -270,24 +274,24 @@ public class Fm2MultiSrcSyncJob extends AbstractJob {
 					for(Map.Entry<Long, String> entry:ParentFids.entrySet()){
 						((IxPoiObj)objs.get(entry.getKey())).setParentFid(entry.getValue());
 					}
-					//设置子fid
-					Map<Long,List<Long>> objMap = new HashMap<Long, List<Long>>();
-					for(BasicObj obj:objs.values()){
-						IxPoiObj poi = (IxPoiObj) obj;
-						List<Long> childPids = new ArrayList<Long>();
-						List<BasicRow> rows = poi.getRowsByName("IX_POI_CHILDREN");
-						if(rows!=null && rows.size()>0){
-							for(BasicRow row:rows){
-								IxPoiChildren children = (IxPoiChildren) row;
-								childPids.add(children.getChildPoiPid());
-							}
+				//设置子fid
+				Map<Long,List<Long>> objMap = new HashMap<Long, List<Long>>();
+				for(BasicObj obj:objs.values()){
+					IxPoiObj poi = (IxPoiObj) obj;
+					List<Long> childPids = new ArrayList<Long>();
+					List<BasicRow> rows = poi.getRowsByName("IX_POI_CHILDREN");
+					if(rows!=null && rows.size()>0){
+						for(BasicRow row:rows){
+							IxPoiChildren children = (IxPoiChildren) row;
+							childPids.add(children.getChildPoiPid());
 						}
-						objMap.put(obj.objPid(), childPids);
 					}
-					Map<Long, List<Map<Long, Object>>> childFids = IxPoiSelector.getChildFidByPids(conn, objMap);
-					for(Map.Entry<Long, List<Map<Long, Object>>> entry:childFids.entrySet()){
-						((IxPoiObj)objs.get(entry.getKey())).setChildFid(entry.getValue());
-					}
+					objMap.put(obj.objPid(), childPids);
+				}
+				Map<Long, List<Map<Long, Object>>> childFids = IxPoiSelector.getChildFidByPids(conn, objMap);
+				for(Map.Entry<Long, List<Map<Long, Object>>> entry:childFids.entrySet()){
+					((IxPoiObj)objs.get(entry.getKey())).setChildFid(entry.getValue());
+				}
 					//设置adminId
 					 Map<Long,Long> adminIds = IxPoiSelector.getAdminIdByPids(conn, objs.keySet());
 					for(Map.Entry<Long, Long> entry:adminIds.entrySet()){

@@ -45,14 +45,14 @@ public class Operation {
         List<RdHgwgLimit> hgwgLimits = selector.loadByLinkPid(oldLink.pid(), true);
         // 分离后没产生跨图幅打断
         if (newLinks.size() == 1) {
-            Geometry linkGeo = newLinks.get(0).getGeometry();
+            Geometry linkGeo = GeoTranslator.transform(newLinks.get(0).getGeometry(), 0.00001, 5);
             for (RdHgwgLimit rdHgwgLimit : hgwgLimits) {
                 // 判断限高限重所处段几何是否发生变化
                 Geometry nochangeGeo = GeoTranslator.transform(oldLink.getGeometry(), 0.00001, 5).intersection(linkGeo);
                 if (GeoTranslator.transform(rdHgwgLimit.getGeometry(), 0.00001, 5).intersects(nochangeGeo))
                     continue;
                 // 计算rdHgwgLimit几何与移动后link几何最近的点
-                Coordinate coor = GeometryUtils.GetNearestPointOnLine(rdHgwgLimit.getGeometry().getCoordinate(), linkGeo);
+                Coordinate coor = GeometryUtils.GetNearestPointOnLine(GeoTranslator.transform(rdHgwgLimit.getGeometry(), 0.00001, 5).getCoordinate(), linkGeo);
                 if (null != coor) {
                     rdHgwgLimit.changedFields().put("geometry", GeoTranslator.jts2Geojson(GeoTranslator.point2Jts(coor.x, coor.y)));
                     result.insertObject(rdHgwgLimit, ObjStatus.UPDATE, rdHgwgLimit.pid());
@@ -64,18 +64,18 @@ public class Operation {
                 Coordinate minCoor = null;
                 int minLinkPid = 0;
                 double minLength = 0;
-                Coordinate eyeCoor = rdHgwgLimit.getGeometry().getCoordinate();
+                Coordinate eyeCoor = GeoTranslator.transform(rdHgwgLimit.getGeometry(), 0.00001, 5).getCoordinate();
                 // 判断限高限重所处段几何是否发生变化
                 List<Geometry> geometries = new ArrayList<>();
                 for (RdLink link : newLinks) {
                     geometries.add(link.getGeometry());
                 }
-                Geometry nochangeGeo = GeoTranslator.transform(oldLink.getGeometry(), 0.00001, 5).intersection(GeoTranslator.geojson2Jts(GeometryUtils.connectLinks(geometries)));
+                Geometry nochangeGeo = GeoTranslator.transform(oldLink.getGeometry(), 0.00001, 5).intersection(GeoTranslator.geojson2Jts(GeometryUtils.connectLinks(geometries), 0.00001, 5));
                 if (GeoTranslator.transform(rdHgwgLimit.getGeometry(), 0.00001, 5).intersects(nochangeGeo))
                     continue;
 
                 for (RdLink link : newLinks) {
-                    Geometry linkGeo = link.getGeometry();
+                    Geometry linkGeo = GeoTranslator.transform(link.getGeometry(), 0.00001, 5);
                     Coordinate tmpCoor = GeometryUtils.GetNearestPointOnLine(eyeCoor, linkGeo);
                     if (null != tmpCoor) {
                         double length = GeometryUtils.getDistance(eyeCoor, tmpCoor);

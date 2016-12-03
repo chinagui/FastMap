@@ -281,7 +281,7 @@ public class Operation implements IOperation {
 						this.command.getlcLink().geteNodePid());
 			} else {
 				maps.put(geo.getCoordinates()[0], this.command.getlcLink()
-						.geteNodePid());
+						.getsNodePid());
 
 				maps.put(geo.getCoordinates()[geo.getCoordinates().length - 1],
 						nodePid);
@@ -298,9 +298,6 @@ public class Operation implements IOperation {
 				List<LcLink> lcLinks = LcLinkOperateUtils
 						.getCreateLcLinksWithMesh(geomInter, maps, result,
 								this.command.getlcLink());
-				for (LcLink link : lcLinks) {
-					result.insertObject(link, ObjStatus.INSERT, link.getPid());
-				}
 				links.addAll(lcLinks);
 
 			}

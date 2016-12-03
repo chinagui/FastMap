@@ -130,6 +130,47 @@ public class ColumnCoreControl {
 	 * @return
 	 * @throws Exception
 	 */
+//	public JSONArray columnQuery(long userId, JSONObject jsonReq) throws Exception {
+//
+//		Connection conn = null;
+//
+//		try {
+//			// int taskId= jsonReq.getInt("taskId");
+//
+//			ManApi apiService = (ManApi) ApplicationContextUtil.getBean("manApi");
+//
+//			String type = jsonReq.getString("type");
+//			int status = jsonReq.getInt("status");
+//			String firstWordItem = jsonReq.getString("firstWorkItem");
+//			String secondWorkItem = jsonReq.getString("secondWorkItem");
+//
+//			// Subtask subtask = apiService.queryBySubtaskId(taskId);
+//			// int dbId = subtask.getDbId();
+//
+//			// 获取未提交数据的rowId
+//			conn = DBConnector.getInstance().getConnectionById(17);
+//			IxPoiColumnStatusSelector selector = new IxPoiColumnStatusSelector(conn);
+//			List<String> rowIdList = selector.columnQuery(status, secondWorkItem, userId);
+//
+//			IxPoiSearch poiSearch = new IxPoiSearch(conn);
+//
+//			JSONArray datas = poiSearch.searchColumnPoiByRowId(firstWordItem, secondWorkItem, rowIdList, type, "CHI");
+//
+//			return datas;
+//		} catch (Exception e) {
+//			throw e;
+//		} finally {
+//			DbUtils.closeQuietly(conn);
+//		}
+//	}
+	/**
+	 * 作业数据查询
+	 * 
+	 * @param userId
+	 * @param jsonReq
+	 * @return
+	 * @throws Exception
+	 */
 	public JSONArray columnQuery(long userId, JSONObject jsonReq) throws Exception {
 
 		Connection conn = null;
@@ -143,18 +184,20 @@ public class ColumnCoreControl {
 			int status = jsonReq.getInt("status");
 			String firstWordItem = jsonReq.getString("firstWorkItem");
 			String secondWorkItem = jsonReq.getString("secondWorkItem");
+			int taskId = jsonReq.getInt("taskId");
 
-			// Subtask subtask = apiService.queryBySubtaskId(taskId);
-			// int dbId = subtask.getDbId();
+			Subtask subtask = apiService.queryBySubtaskId(taskId);
+			int dbId = subtask.getDbId();
 
 			// 获取未提交数据的rowId
+			//conn = DBConnector.getInstance().getConnectionById(dbId);
 			conn = DBConnector.getInstance().getConnectionById(17);
 			IxPoiColumnStatusSelector selector = new IxPoiColumnStatusSelector(conn);
-			List<String> rowIdList = selector.columnQuery(status, secondWorkItem, userId);
+			List<String> pidList = selector.columnQuery(status, secondWorkItem, userId);
 
 			IxPoiSearch poiSearch = new IxPoiSearch(conn);
 
-			JSONArray datas = poiSearch.searchColumnPoiByRowId(firstWordItem, secondWorkItem, rowIdList, type, "CHI");
+			JSONArray datas = poiSearch.searchColumnPoiByPid(firstWordItem, secondWorkItem, pidList, type, "CHI");
 
 			return datas;
 		} catch (Exception e) {
@@ -209,7 +252,8 @@ public class ColumnCoreControl {
 		try {
 			int taskId = jsonReq.getInt("taskId");
 			String firstWorkItem = jsonReq.getString("firstWorkItem");
-			int type = jsonReq.getInt("taskType");
+			// 默认为大陆
+			int type = 1;
 
 			ManApi apiService = (ManApi) ApplicationContextUtil.getBean("manApi");
 			Subtask subtask = apiService.queryBySubtaskId(taskId);
@@ -219,7 +263,7 @@ public class ColumnCoreControl {
 
 			IxPoiColumnStatusSelector ixPoiColumnStatusSelector = new IxPoiColumnStatusSelector(conn);
 
-			return ixPoiColumnStatusSelector.secondWorkStatistics(firstWorkItem, userId, type);
+			return ixPoiColumnStatusSelector.secondWorkStatistics(firstWorkItem, userId, type, taskId);
 		} catch (Exception e) {
 			throw e;
 		} finally {

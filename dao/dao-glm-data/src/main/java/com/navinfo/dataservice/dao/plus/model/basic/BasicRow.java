@@ -25,6 +25,7 @@ import com.navinfo.dataservice.dao.plus.utils.RowJsonUtils;
 import com.navinfo.navicommons.database.sql.RunnableSQL;
 import com.vividsolutions.jts.geom.Geometry;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
 
@@ -186,6 +187,7 @@ public abstract class BasicRow{
 	}
 	public boolean isChanged(){
 		if(opType.equals(OperationType.INSERT_DELETE))return false;
+		if(opType.equals(OperationType.PRE_DELETED))return false;
 		if(opType.equals(OperationType.UPDATE)&&(oldValues==null||oldValues.size()==0))return false;
 		return true;
 	}
@@ -540,6 +542,13 @@ public abstract class BasicRow{
 			return RowJsonUtils.toJson(getAttrs(null));
 		}else if(opType.equals(OperationType.UPDATE)&&oldValues!=null&&oldValues.size()>0){
 			return RowJsonUtils.toJson(oldValues);
+		}
+		return null;
+	}
+	
+	public JSONArray getChangedColumns(){
+		if(opType.equals(OperationType.UPDATE)&&oldValues!=null&&oldValues.size()>0){
+			return RowJsonUtils.toJson(oldValues.keySet());
 		}
 		return null;
 	}

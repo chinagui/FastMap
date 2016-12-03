@@ -36,13 +36,13 @@ public class RdCrossSearch implements ISearch {
 
 		return obj;
 	}
-	
+
 	@Override
 	public List<IObj> searchDataByPids(List<Integer> pidList) throws Exception {
 		// TODO Auto-generated method stub
 		return null;
 	}
-	
+
 	@Override
 	public List<SearchSnapshot> searchDataBySpatial(String wkt) throws Exception {
 		// TODO Auto-generated method stub
@@ -91,49 +91,35 @@ public class RdCrossSearch implements ISearch {
 
 				snapshot.setT(8);
 
-				String isMains = resultSet.getString("is_mains");
+				JSONArray maArray = new JSONArray();
 
-				String[] splits = isMains.split(",");
-
-				String b = "";
-
-				b += splits[0];
-
-				for (int i = 1; i < splits.length; i++) {
-					b += "," + splits[i];
-				}
-				
-				jsonM.put("b", b);
-				
 				String nodePids = resultSet.getString("node_pids");
 
-				String a = "";
-
-				splits = nodePids.split(",");
-
-				a += splits[0];
-
-				for (int i = 1; i < splits.length; i++) {
-					a += "," + splits[i];
-				}
-
-				jsonM.put("a", a);
-				
 				String wktPoints = resultSet.getString("wkts");
 
-				JSONArray gArray = new JSONArray();
+				String isMains = resultSet.getString("is_mains");
 
-				splits = wktPoints.split(",");
+				String[] nodeSplits = nodePids.split(",");
 
-				for (int i = 0; i < splits.length; i++) {
+				for (int i = 0; i < nodeSplits.length; i++) {
+					int nodePid = Integer.parseInt(nodeSplits[i]);
 
-					Geometry gNode = wktReader.read(splits[i]);
+					Geometry gNode = wktReader.read(wktPoints.split(",")[i]);
 
-					gArray.add(Geojson.lonlat2Pixel(gNode.getCoordinate().x, gNode.getCoordinate().y, z, px, py));
+					JSONObject aObject = new JSONObject();
 
+					aObject.put("i", nodePid);
+					
+					aObject.put("g", Geojson.lonlat2Pixel(gNode.getCoordinate().x, gNode.getCoordinate().y, z, px, py));
+					
+					aObject.put("b", Integer.parseInt(isMains.split(",")[i]));
+					
+					maArray.add(aObject);
 				}
-
-				snapshot.setG(gArray);
+				
+				jsonM.put("a", maArray);
+				
+				snapshot.setG(new JSONArray());
 
 				snapshot.setM(jsonM);
 

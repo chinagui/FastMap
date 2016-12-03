@@ -80,9 +80,9 @@ public class Operation implements IOperation {
                 double minLength = 0;
                 int minLinkPid = 0;
                 // 计算里程桩原坐标与新生成线段最近的壹个点的坐标
-                Coordinate hgwgLimitCoor = mileagepile.getGeometry().getCoordinate();
+                Coordinate hgwgLimitCoor = GeoTranslator.transform(mileagepile.getGeometry(), 0.00001, 5).getCoordinate();
                 for (RdLink rdLink : newLinks) {
-                    Coordinate tmpPoint = this.GetNearestPointOnLine(hgwgLimitCoor, rdLink.getGeometry());
+                    Coordinate tmpPoint = this.GetNearestPointOnLine(hgwgLimitCoor, GeoTranslator.transform(rdLink.getGeometry(), 0.00001, 5));
                     double tmpLength = GeometryUtils.getDistance(hgwgLimitCoor, tmpPoint);
                     if (minLength == 0 || tmpLength < minLength) {
                         minLength = tmpLength;

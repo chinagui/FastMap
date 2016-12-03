@@ -45,14 +45,14 @@ public class Operation {
         List<RdMileagepile> mileagepiles = selector.loadByLinkPid(oldLink.pid(), true);
         // 分离后没产生跨图幅打断
         if (newLinks.size() == 1) {
-            Geometry linkGeo = newLinks.get(0).getGeometry();
+            Geometry linkGeo = GeoTranslator.transform(newLinks.get(0).getGeometry(), 0.00001, 5);
             for (RdMileagepile mileagepile : mileagepiles) {
                 // 判断里程桩所处段几何是否发生变化
                 Geometry nochangeGeo = GeoTranslator.transform(oldLink.getGeometry(), 0.00001, 5).intersection(linkGeo);
                 if (GeoTranslator.transform(mileagepile.getGeometry(), 0.00001, 5).intersects(nochangeGeo))
                     continue;
                 // 计算rdHgwgLimit几何与移动后link几何最近的点
-                Coordinate coor = GeometryUtils.GetNearestPointOnLine(mileagepile.getGeometry().getCoordinate(), linkGeo);
+                Coordinate coor = GeometryUtils.GetNearestPointOnLine(GeoTranslator.transform(mileagepile.getGeometry(), 0.00001, 5).getCoordinate(), linkGeo);
                 if (null != coor) {
                     mileagepile.changedFields().put("geometry", GeoTranslator.jts2Geojson(GeoTranslator.point2Jts(coor.x, coor.y)));
                     result.insertObject(mileagepile, ObjStatus.UPDATE, mileagepile.pid());
@@ -64,19 +64,19 @@ public class Operation {
                 Coordinate minCoor = null;
                 int minLinkPid = 0;
                 double minLength = 0;
-                Coordinate eyeCoor = mileagepile.getGeometry().getCoordinate();
+                Coordinate eyeCoor = GeoTranslator.transform(mileagepile.getGeometry(), 0.00001, 5).getCoordinate();
                 // 判断里程桩所处段几何是否发生变化
                 List<Geometry> geometries = new ArrayList<>();
                 for (RdLink link : newLinks) {
                     geometries.add(link.getGeometry());
                 }
-                Geometry nochangeGeo = GeoTranslator.transform(oldLink.getGeometry(), 0.00001, 5).intersection(GeoTranslator.geojson2Jts(GeometryUtils.connectLinks(geometries)));
+                Geometry nochangeGeo = GeoTranslator.transform(oldLink.getGeometry(), 0.00001, 5).intersection(GeoTranslator.geojson2Jts(GeometryUtils.connectLinks(geometries), 0.00001, 5));
                 if (GeoTranslator.transform(mileagepile.getGeometry(), 0.00001, 5).intersects(nochangeGeo))
                     continue;
 
                 for (RdLink link : newLinks) {
                     Geometry linkGeo = link.getGeometry();
-                    Coordinate tmpCoor = GeometryUtils.GetNearestPointOnLine(eyeCoor, linkGeo);
+                    Coordinate tmpCoor = GeometryUtils.GetNearestPointOnLine(eyeCoor, GeoTranslator.transform(linkGeo, 0.00001, 5));
                     if (null != tmpCoor) {
                         double length = GeometryUtils.getDistance(eyeCoor, tmpCoor);
                         if (minLength == 0 || length < minLength) {

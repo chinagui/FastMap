@@ -66,11 +66,11 @@ public class Operation {
                 if (admin.getGeometry().intersects(link.getGeometry())) {
                     admin.changedFields().put("side", 3);
                 } else {
-                    Coordinate c = GeometryUtils.GetNearestPointOnLine(admin.getGeometry().getCoordinate(), link.getGeometry());
+                    Coordinate c = GeometryUtils.GetNearestPointOnLine(GeoTranslator.transform(admin.getGeometry(), 0.0001, 5).getCoordinate(), GeoTranslator.transform(link.getGeometry(), 0.00001, 5));
                     JSONObject geojson = new JSONObject();
                     geojson.put("type", "Point");
                     geojson.put("coordinates", new double[]{c.x, c.y});
-                    Geometry nearestPointGeo = GeoTranslator.geojson2Jts(geojson, 1, 0);
+                    Geometry nearestPointGeo = GeoTranslator.geojson2Jts(geojson);
                     int side = GeometryUtils.calulatPointSideOflink(admin.getGeometry(), link.getGeometry(), nearestPointGeo);
                     admin.changedFields().put("side", side);
                 }

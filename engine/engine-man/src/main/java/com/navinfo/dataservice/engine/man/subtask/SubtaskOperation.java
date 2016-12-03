@@ -115,6 +115,7 @@ public class SubtaskOperation {
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql += " REFER_ID= " + bean.getReferId();
 			};
+			
 			if (bean!=null&&bean.getGeometry()!=null && StringUtils.isNotEmpty(bean.getGeometry().toString())){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql+=" GEOMETRY=? ";
@@ -132,7 +133,13 @@ public class SubtaskOperation {
 			if(value.isEmpty() || value.size()==0){
 				run.update(conn,baseSql+updateSql);}
 			else{
-				run.update(conn,baseSql+updateSql,value);}
+				Object[] valueObjects=new Object[value.size()];
+				int i=0;
+				for(Object tmp:value){
+					valueObjects[i]=tmp;
+					i++;
+				}
+				run.update(conn,baseSql+updateSql,valueObjects);}
 			
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);

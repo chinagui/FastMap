@@ -1,17 +1,23 @@
 package com.navinfo.dataservice.engine.man.statics;
 
+import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Struct;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import oracle.sql.STRUCT;
+
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.json.JSONException;
 import org.springframework.stereotype.Service;
@@ -23,6 +29,7 @@ import com.navinfo.dataservice.api.statics.model.BlockExpectStatInfo;
 import com.navinfo.dataservice.api.statics.model.GridChangeStatInfo;
 import com.navinfo.dataservice.api.statics.model.SubtaskStatInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
@@ -32,6 +39,10 @@ import com.navinfo.dataservice.engine.man.city.CityService;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
+import com.navinfo.navicommons.geo.computation.GeometryUtils;
+import com.navinfo.navicommons.geo.computation.GridUtils;
+import com.navinfo.navicommons.geo.computation.MeshUtils;
+import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONArray;
@@ -1289,6 +1300,116 @@ public class StaticsService {
 		Map<String, Object> result = queryRunner.query(conn, sql, rsh, params);
 		//返回数据
 		return result;
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询明细失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+
+	public List<Map<String, Object>> getPoiStatusMap(String wkt, int stage) throws Exception {
+		//通过geo计算所跨图幅
+		Geometry geo = GeometryUtils.getPolygonByWKT(wkt);
+		Coordinate[] coords = geo.getCoordinates();
+		if(coords.length<4){throw new Exception("wkt参数错误，wkt应为一个长方形geo");}
+		String[] meshs=MeshUtils.rect2Meshes(coords[0].x, coords[0].y, coords[2].x, coords[2].y);
+		//通过图幅，获取wkt所跨大区的dbid
+		Connection conn=null;
+		List<Integer> dbList=new ArrayList<Integer>();
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner queryRunner = new QueryRunner();
+			Clob clobMeshs=ConnectionUtil.createClob(conn);
+			clobMeshs.setString(1,StringUtils.join(meshs, ","));
+			String getDbSql="SELECT DISTINCT R.DAILY_DB_ID"
+					+ "  FROM GRID G, REGION R, TABLE(CLOB_TO_TABLE(?)) B"
+					+ " WHERE G.REGION_ID = R.REGION_ID"
+					+ "   AND SUBSTR(G.GRID_ID, 0, LENGTH(G.GRID_ID) - 2) = B.COLUMN_VALUE";
+			dbList=queryRunner.query(conn, getDbSql, clobMeshs, new ResultSetHandler<List<Integer>>() {
+
+				@Override
+				public List<Integer> handle(ResultSet rs) throws SQLException {
+					List<Integer> dbIds=new ArrayList<Integer>();
+					while (rs.next()) {
+						dbIds.add(rs.getInt("DAILY_DB_ID"));						
+					}
+					return dbIds;
+				}
+			});			
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询明细失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+		//循环进dbId查询poi状态。合并后返回
+		List<Map<String,Object>> pois=new ArrayList<Map<String,Object>>();
+		List<Map<String,Object>> poiTmp=new ArrayList<Map<String,Object>>();
+		for(int dbId:dbList){
+			poiTmp=getPoiStatusMapByDbId(dbId,meshs,stage);
+			if(poiTmp!=null&& !poiTmp.isEmpty()){
+				pois.addAll(poiTmp);
+			}
+		}
+		return pois;
+	}
+
+	private List<Map<String, Object>> getPoiStatusMapByDbId(int dbId, String[] meshs, int stage) throws Exception {
+		Connection conn=null;
+		List<Map<String,Object>> pois=new ArrayList<Map<String,Object>>();
+		try{
+			conn = DBConnector.getInstance().getConnectionById(dbId);
+			QueryRunner queryRunner = new QueryRunner();
+			Clob clobMeshs=ConnectionUtil.createClob(conn);
+			clobMeshs.setString(1,StringUtils.join(meshs, ","));
+			//采集  1已采集  0未采集
+			String collectSql="SELECT P.GEOMETRY,IS_UPLOAD STATUS"
+					+ "  FROM POI_EDIT_STATUS S,"
+					+ "       IX_POI P,"
+					+ "       TABLE(CLOB_TO_TABLE(?)) B"
+					+ " WHERE S.PID = P.PID"
+					+ "   AND P.U_RECORD != 2"
+					+ "   AND P.MESH_ID = B.COLUMN_VALUE";
+			//日编  1已日编 0未日编
+			String daySql="SELECT P.GEOMETRY,"
+					+ "       CASE S.STATUS"
+					+ "         WHEN 3 THEN 1 ELSE 0 END STATUS"
+					+ "  FROM POI_EDIT_STATUS S,"
+					+ "       IX_POI P,"
+					+ "       TABLE(CLOB_TO_TABLE(?)) B"
+					+ " WHERE S.PID = P.PID"
+					+ "   AND P.U_RECORD != 2"
+					+ "   AND P.MESH_ID = B.COLUMN_VALUE";
+			String selectSql="";
+			if(stage==0){selectSql=collectSql;}
+			else{selectSql=daySql;}
+			pois=queryRunner.query(conn, selectSql, clobMeshs, new ResultSetHandler<List<Map<String,Object>>>() {
+
+				@Override
+				public List<Map<String,Object>> handle(ResultSet rs) throws SQLException {
+					List<Map<String,Object>> pois=new ArrayList<Map<String,Object>>();
+					while (rs.next()) {
+						Map<String,Object> poi=new HashMap<String, Object>();
+						STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
+						JSONObject geoJson;
+						try {
+							geoJson = GeoTranslator.jts2Geojson(GeoTranslator.struct2Jts(struct));
+							poi.put("geometry", geoJson);
+						} catch (JSONException e) {
+							e.printStackTrace();
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+						poi.put("status", rs.getInt("STATUS"));
+						pois.add(poi);						
+					}
+					return pois;
+				}
+			});		
+			return pois;
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

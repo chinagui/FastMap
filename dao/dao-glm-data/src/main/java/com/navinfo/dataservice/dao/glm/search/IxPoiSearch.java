@@ -713,4 +713,57 @@ public class IxPoiSearch implements ISearch {
 		}
 	}
 	
+	/**
+	 * 精编作业数据查询
+	 * @param firstWordItem
+	 * @param secondWorkItem
+	 * @param rowIds
+	 * @param type
+	 * @param langCode
+	 * @return
+	 * @throws Exception
+	 */
+	public JSONArray searchColumnPoiByPid(String firstWordItem,String secondWorkItem,List<String> pids,String type,String langCode) throws Exception {
+		
+		JSONArray dataList = new JSONArray();
+		
+		try {
+			
+			MetadataApi apiService=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
+			
+			
+			JSONObject metaData = apiService.getMetadataMap();
+			
+			this.CHAINMAP = metaData.getJSONObject("chain");
+			
+			this.KINDCODEMAP = metaData.getJSONObject("kindCode");
+			
+			this.ADMINMAP =  metaData.getJSONObject("admin");
+			
+			this.CHARACTERMAP = metaData.getJSONObject("character");
+			
+			this.NAVICOVPYMAP = metaData.getJSONObject("navicovpy");
+			
+			this.ENGSHORTMAP = metaData.getJSONObject("engshort");
+			
+			switch (firstWordItem) {
+				case "poi_name":
+					dataList = getPoiNameData(secondWorkItem,pids,type,langCode);
+					break;
+				case "poi_address":
+					dataList = getPoiAddressData(secondWorkItem,pids,type,langCode);
+					break;
+				case "poi_englishname":
+					dataList = getPoiEngnameData(secondWorkItem,pids,type,langCode);
+					break;
+				case "poi_englishaddress":
+					dataList = getPoiEngaddrData(secondWorkItem,pids,type,langCode);
+					break;
+			}
+			return dataList;
+		} catch (Exception e) {
+			throw e;
+		}
+	}
+	
 }

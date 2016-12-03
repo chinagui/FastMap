@@ -1,20 +1,24 @@
 package com.navinfo.dataservice.engine.edit.xiaolong.rd;
 
 import java.sql.Connection;
+import java.util.List;
 import java.util.Map.Entry;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
+import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLink;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLinkName;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwNode;
 import com.navinfo.dataservice.dao.glm.search.RdCrossSearch;
+import com.navinfo.dataservice.dao.glm.search.RdGscSearch;
 import com.navinfo.dataservice.dao.glm.search.RwLinkSearch;
 import com.navinfo.dataservice.dao.glm.selector.rd.rdname.RdNameSelector;
 import com.navinfo.dataservice.engine.edit.InitApplication;
@@ -58,9 +62,11 @@ public class RwLinkTest extends InitApplication {
 
 			String parameter = "{\"type\":\"RWLINK\",\"dbId\":42,\"objId\":100007138}";
 
-			RdCrossSearch search = new RdCrossSearch(conn);
+			RdGscSearch search = new RdGscSearch(conn);
 			
-			search.searchDataByTileWithGap(108052, 49460, 17, 20);
+			List<SearchSnapshot> searchDataByTileWithGap = search.searchDataByTileWithGap(108070, 49456, 17, 80);
+			
+			System.out.println("data:"+ResponseUtils.assembleRegularResult(searchDataByTileWithGap));
 
 		} catch (Exception e) {
 			e.printStackTrace();

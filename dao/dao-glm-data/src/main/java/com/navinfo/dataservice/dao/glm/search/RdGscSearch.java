@@ -180,24 +180,19 @@ public class RdGscSearch implements ISearch {
 			
 			int lastPid = 0;
 			
-			String lastTableName = "";
+			JSONArray g = new JSONArray();
 			
 			SearchSnapshot snapshot = new SearchSnapshot();
 			
-			JSONArray g = new JSONArray();
-			
 			while (resultSet.next()) {
+				
                 int pid = resultSet.getInt("pid");
-                
-                String tableName = resultSet.getString("table_name");
                 
                 if(lastPid==0){
                 	lastPid = pid;
-                	
-                	lastTableName = tableName;
                 }
                 
-                if(pid != lastPid && !lastTableName.equalsIgnoreCase(tableName)){
+                if(pid != lastPid){
                 	
                 	list.add(snapshot);
                 	
@@ -256,7 +251,6 @@ public class RdGscSearch implements ISearch {
 				
 				snapshot.setM(m);
 			}
-			
 			if(g.size()>0){
             	list.add(snapshot);
 			}

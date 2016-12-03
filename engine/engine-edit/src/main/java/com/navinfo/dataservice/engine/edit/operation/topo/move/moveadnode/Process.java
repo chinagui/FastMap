@@ -112,7 +112,7 @@ public class Process extends AbstractProcess<Command> {
 
 			msg = operation.run(this.getResult());
 
-			this.postCheck();
+			//this.postCheck();
 
 		} catch (Exception e) {
 

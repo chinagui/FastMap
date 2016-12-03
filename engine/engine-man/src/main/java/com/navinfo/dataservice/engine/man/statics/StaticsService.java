@@ -1314,7 +1314,10 @@ public class StaticsService {
 		Geometry geo = GeometryUtils.getPolygonByWKT(wkt);
 		Coordinate[] coords = geo.getCoordinates();
 		if(coords.length<4){throw new Exception("wkt参数错误，wkt应为一个长方形geo");}
-		String[] meshs=MeshUtils.rect2Meshes(coords[0].x, coords[0].y, coords[2].x, coords[2].y);
+		// 最小外包矩形
+		Geometry mbr = geo.getEnvelope();
+		Coordinate[] mbrCoords = mbr.getCoordinates();
+		String[] meshs=MeshUtils.rect2Meshes(mbrCoords[0].x, mbrCoords[0].y, mbrCoords[2].x, mbrCoords[2].y);
 		//通过图幅，获取wkt所跨大区的dbid
 		Connection conn=null;
 		List<Integer> dbList=new ArrayList<Integer>();

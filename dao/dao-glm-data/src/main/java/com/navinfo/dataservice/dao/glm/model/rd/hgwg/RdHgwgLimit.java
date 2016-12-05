@@ -131,7 +131,7 @@ public class RdHgwgLimit implements IObj {
 
     @Override
     public String parentTableName() {
-        return "RD_HGWH_LIMIT";
+        return "RD_HGWG_LIMIT";
     }
 
     @Override

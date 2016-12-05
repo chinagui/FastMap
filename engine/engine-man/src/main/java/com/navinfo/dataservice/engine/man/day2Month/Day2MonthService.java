@@ -31,7 +31,6 @@ public class Day2MonthService {
 	private static class SingletonHolder{
 		private static final Day2MonthService INSTANCE=new Day2MonthService();
 	}
-	
 	public static Day2MonthService getInstance(){
 		return SingletonHolder.INSTANCE;
 	}
@@ -150,6 +149,7 @@ public class Day2MonthService {
 		public List<Map<String, Object>> list(JSONObject conditionJson) throws Exception {
 			Connection conn=null;
 			try{
+				log.debug("conditionJson:"+conditionJson);
 				conn=DBConnector.getInstance().getManConnection();
 				String conditionSql="";
 				if(null!=conditionJson && !conditionJson.isEmpty()){
@@ -175,6 +175,7 @@ public class Day2MonthService {
 						+ " WHERE 1=1"
 						+conditionSql
 						+ " ORDER BY T.CITY_NAME";
+				log.debug("sql:"+sql);
 				List<Map<String, Object>> result=runner.query(conn, sql, new ResultSetHandler<List<Map<String, Object>>>(){
 
 					@Override

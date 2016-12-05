@@ -22,6 +22,7 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
+import com.navinfo.dataservice.control.column.core.DeepCoreControl;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.check.NiValExceptionOperator;
 import com.navinfo.dataservice.dao.check.NiValExceptionSelector;
@@ -607,6 +608,35 @@ public class CheckController extends BaseController {
 					e.printStackTrace();
 				}
 			}
+		}
+	}
+	
+	
+	/**
+	 * 清检查结果接口
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException
+	 */
+	@RequestMapping(value = "/check/cleanCkResult")
+	public ModelAndView cleanCkResult(HttpServletRequest request)
+			throws ServletException, IOException {
+		String parameter = request.getParameter("parameter");
+		try {
+			
+			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			long userId = tokenObj.getUserId();
+			
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			
+			DeepCoreControl deepControl = new DeepCoreControl();
+			deepControl.cleanCheck(jsonReq, userId);
+			
+			return new ModelAndView("jsonView", success());
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
 	}
 }

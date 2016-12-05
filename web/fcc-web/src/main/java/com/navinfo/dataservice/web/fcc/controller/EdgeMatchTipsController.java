@@ -85,9 +85,13 @@ public class EdgeMatchTipsController extends BaseController {
 			
 			EdgeMatchTipsOperator op = new EdgeMatchTipsOperator();
 
-			op.create(g_location, content.toString(), user,memo);
+			String rowkey= op.create(g_location, content.toString(), user,memo);
+			
+			JSONObject  data=new JSONObject();
+			
+			data.put("rowkey", rowkey);
 
-			return new ModelAndView("jsonView", success());
+			return new ModelAndView("jsonView", success(data));
 
 		} catch (Exception e) {
 

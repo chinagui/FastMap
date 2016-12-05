@@ -108,9 +108,9 @@ public class TipsSelectorTest {
 
 		//{"gap":40,"mdFlag":"d","z":17,"x":107942,"y":49613}
 		try {
-			String wkt = MercatorProjection.getWktWithGap(107942, 49613, 17,
-					40);
-			System.out.println(solrSelector.searchDataByWkt(wkt, types,"d"));
+			String wkt = "POLYGON ((115.78478246015277 40.3580663376903, 117.06198634219226 40.3580663376903, 117.06198634219226 39.090405904000164, 115.78478246015277 39.090405904000164, 115.78478246015277 40.3580663376903))";
+			solrSelector.searchDataByWkt(wkt, types,"d");
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

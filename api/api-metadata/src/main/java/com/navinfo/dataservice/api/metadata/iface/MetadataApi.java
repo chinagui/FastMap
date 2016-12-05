@@ -1,5 +1,7 @@
 package com.navinfo.dataservice.api.metadata.iface;
 
+import java.util.Map;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -54,4 +56,6 @@ public interface MetadataApi {
 	public JSONObject getCharacterMap() throws Exception;
 	
 	public JSONObject searchByAdminCode(String admincode) throws Exception;
-}
+	
+	public Map<String, String> scPointNameckTypeD1() throws Exception;
+	}

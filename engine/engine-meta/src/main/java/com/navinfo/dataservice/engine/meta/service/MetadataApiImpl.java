@@ -2,6 +2,7 @@ package com.navinfo.dataservice.engine.meta.service;
 
 import java.sql.Connection;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.dbutils.DbUtils;
@@ -22,6 +23,7 @@ import com.navinfo.dataservice.engine.meta.mesh.MeshSelector;
 import com.navinfo.dataservice.engine.meta.pinyin.PinyinConvertSelector;
 import com.navinfo.dataservice.engine.meta.pinyin.PinyinConverter;
 import com.navinfo.dataservice.engine.meta.rdname.RdNameImportor;
+import com.navinfo.dataservice.engine.meta.scPointNameck.ScPointNameck;
 import com.navinfo.dataservice.engine.meta.tmc.selector.TmcSelector;
 
 import net.sf.json.JSONArray;
@@ -194,8 +196,13 @@ public class MetadataApiImpl implements MetadataApi {
 	public JSONObject searchByAdminCode(String admincode) throws Exception {
 		
 		ScPointAdminArea scPoint = new ScPointAdminArea();
-		
 		return scPoint.searchByAdminCode(admincode);
+	}
+
+	@Override
+	public Map<String, String> scPointNameckTypeD1() throws Exception {
+		// TODO Auto-generated method stub
+		return ScPointNameck.getInstance().scPointNameckTypeD1();
 	}
 
 }

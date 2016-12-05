@@ -77,7 +77,7 @@ public class TipsSelectorTest {
 	@Test
 	public void testSearchDataByTileWithGap() {
 		JSONArray types = new JSONArray();
-		types.add(1202);
+		//types.add(1202);
 	/*	types.add(1205);
 		types.add(1401);
 		types.add(1110);
@@ -87,8 +87,10 @@ public class TipsSelectorTest {
 		types.add(1509);*/
 		
 		//{"gap":40,"mdFlag":"d","z":17,"x":107942,"y":49613}
+		
+		//{"gap":40,"mdFlag":"d","z":18,"x":215889,"y":99231}
 		try {
-			System.out.println(solrSelector.searchDataByTileWithGap(107942, 49613, 17,
+			System.out.println(solrSelector.searchDataByTileWithGap(215889, 99231, 18,
 					40, types,"d"));
 		} catch (Exception e) {
 			e.printStackTrace();

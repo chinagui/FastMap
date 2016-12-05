@@ -145,8 +145,20 @@ public class TipsSelector {
 
 				JSONObject g_guide = JSONObject.fromObject(json
 						.getString("g_guide"));
-
-				m.put("h", g_guide.getJSONArray("coordinates"));
+				
+				//特殊处理 
+				if(type==8001){
+					
+				}
+				if(type==8002){
+					
+				}
+				//其他的
+				else{
+					m.put("h", g_guide.getJSONArray("coordinates"));
+				}
+				
+				
 
 				JSONObject deep = JSONObject.fromObject(json.getString("deep"));
 
@@ -360,7 +372,7 @@ public class TipsSelector {
 
 				}
 
-				else if (type == 1801 || type == 1806) {
+				else if (type == 1801 || type == 1806|| type == 8001 || type == 8002) {
 					JSONArray feedbacks = JSONArray.fromObject(json
 							.getString("feedback"));
 
@@ -1021,7 +1033,11 @@ public class TipsSelector {
 					m.put("e", "立交");
 				} else if (type == 1806) {
 					m.put("e", "草图");
-				} else if (type == 1205) {
+				}  else if (type == 8002) {
+					m.put("e", "接边标识");
+				} else if (type == 8001) {
+					m.put("e", "FC预处理");
+				}else if (type == 1205) {
 					m.put("e", "SA");
 				} else if (type == 1206) {
 					m.put("e", "PA");

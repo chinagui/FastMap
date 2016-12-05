@@ -25,7 +25,7 @@ public class TipsUpLoadTest extends InitApplication {
 		try {
 			TipsUpload a = new TipsUpload();
 
-			a.run("E:/87/tips.txt");
+			//a.run("E:/87/tips.txt");
 			System.out.println("成功");
 		} catch (Exception e) {
 			e.printStackTrace();

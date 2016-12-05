@@ -2,6 +2,7 @@ package com.navinfo.dataservice.engine.edit.operation.obj.rdslope.update;
 
 import java.sql.Connection;
 import java.util.ArrayList;
+
 import java.util.List;
 
 import net.sf.json.JSONObject;
@@ -90,7 +91,7 @@ public class Operation implements IOperation {
 			} else {
 				int sourceSize = this.command.getSlope().getSlopeVias().size();
 				int currentSize = this.command.getSeriesLinkPids().size();
-
+				  
 				if (sourceSize > currentSize) {
 					for (int i = currentSize; i < sourceSize; i++) {
 						result.insertObject(this.command.getSlope()

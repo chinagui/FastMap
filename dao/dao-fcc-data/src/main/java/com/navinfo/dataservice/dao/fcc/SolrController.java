@@ -422,15 +422,20 @@ public class SolrController {
 		return snapshots;
 	}
 
-	public List<JSONObject> queryTipsWebType(String wkt, JSONArray types,JSONArray stages)
+	public List<JSONObject> queryTipsWebType(String wkt, JSONArray types,JSONArray stages,boolean filterDelete)
 			throws SolrServerException, IOException {
 		List<JSONObject> snapshots = new ArrayList<JSONObject>();
 
 		StringBuilder builder = new StringBuilder();
 		
-		//builder.append("wkt:\"intersects(" + wkt + ")\"  AND stage:(1 2 3)");	
+		//builder.append("wkt:\"intersects(" + wkt + ")\"  AND stage:(1 2 3)");
 		
 		builder.append("wkt:\"intersects(" + wkt + ")\" " );
+
+		if(filterDelete) {
+            //过滤删除的数据
+			builder.append(" AND -t_lifecycle:1 " );
+		}
 		
 		if (stages.size() > 0) {
 

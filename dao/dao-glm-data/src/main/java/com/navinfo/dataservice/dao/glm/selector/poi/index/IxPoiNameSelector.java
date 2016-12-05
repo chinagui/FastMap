@@ -71,7 +71,7 @@ public class IxPoiNameSelector extends AbstractSelector {
 		ResultSet resultSet = null;
 		PreparedStatement pstmt = null;
 		try {
-			String sql = "SELECT name FROM ix_poi_name where poi_pid=:1 AND name_class=1 AND name_type=2 AND lang_code=:2 AND u_record!=2";
+			String sql = "SELECT name FROM ix_poi_name where poi_pid=:1 AND name_class=1 AND name_type=1 AND lang_code=:2 AND u_record!=2";
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setInt(1, id);
 			pstmt.setString(2,langCode);

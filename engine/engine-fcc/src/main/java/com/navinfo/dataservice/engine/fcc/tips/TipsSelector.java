@@ -108,7 +108,7 @@ public class TipsSelector {
 			}
 
 			List<JSONObject> snapshots = conn.queryTipsWebType(wkt, types,
-					stages);
+					stages, false);
 
 			for (JSONObject json : snapshots) {
 
@@ -145,8 +145,20 @@ public class TipsSelector {
 
 				JSONObject g_guide = JSONObject.fromObject(json
 						.getString("g_guide"));
-
-				m.put("h", g_guide.getJSONArray("coordinates"));
+				
+				//特殊处理 
+				if(type==8001){
+					
+				}
+				if(type==8002){
+					
+				}
+				//其他的
+				else{
+					m.put("h", g_guide.getJSONArray("coordinates"));
+				}
+				
+				
 
 				JSONObject deep = JSONObject.fromObject(json.getString("deep"));
 
@@ -360,7 +372,7 @@ public class TipsSelector {
 
 				}
 
-				else if (type == 1801 || type == 1806) {
+				else if (type == 1801 || type == 1806|| type == 8001 || type == 8002) {
 					JSONArray feedbacks = JSONArray.fromObject(json
 							.getString("feedback"));
 
@@ -421,6 +433,76 @@ public class TipsSelector {
 				snapshot.setM(m);
 
 				array.add(snapshot.Serialize(null));
+
+			}
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			try {
+
+			} catch (Exception e) {
+
+			}
+		}
+		return array;
+	}
+
+	public JSONArray searchDataByWkt(String wkt, JSONArray types, String mdFlag) throws Exception {
+		JSONArray array = new JSONArray();
+
+		try {
+
+			JSONArray stages = new JSONArray();
+
+			List<JSONObject> snapshots = conn.queryTipsWebType(wkt, types,
+					stages, true);
+
+			for (JSONObject json : snapshots) {
+				JSONObject result = new JSONObject();
+
+				int type = Integer.valueOf(json.getString("s_sourceType"));
+
+				String geometry = json.getString("g_location");
+
+				// 采集、日编、月编状态
+				if ("c".equals(mdFlag)) {
+
+					result.put("status", json.getString("t_cStatus"));
+
+				} else if ("d".equals(mdFlag)) {
+
+					result.put("status", json.getString("t_dStatus"));
+
+				} else if ("m".equals(mdFlag)) {
+
+					result.put("status", json.getString("t_mStatus"));
+
+				}
+
+				JSONObject deep = JSONObject.fromObject(json.getString("deep"));
+
+				// g字段重新赋值的（显示坐标：取Tips的geo）
+				if (type == 1601 || type == 1602 || type == 1603 || type == 1604
+						|| type == 1605 || type == 1606 || type == 1607 || type == 1901 || type == 2001) {
+
+					JSONObject deepGeo = deep.getJSONObject("geo");
+
+					geometry = deepGeo.toString();
+
+				} else if(type == 1204 || type == 1301 || type == 1501 || type == 1502 || type == 1503
+						|| type == 1504 || type == 1505 || type == 1506 || type == 1507 || type == 1508
+						|| type == 1509 || type == 1510 || type == 1511 || type == 1512 || type == 1513
+						|| type == 1514	|| type == 1515 || type == 1516 || type == 1517) {
+
+					JSONObject gSLoc = deep.getJSONObject("gSLoc");
+
+					geometry = gSLoc.toString();
+
+				}
+
+				result.put("geometry", geometry);
+
+				array.add(result);
 
 			}
 		} catch (Exception e) {
@@ -1021,7 +1103,11 @@ public class TipsSelector {
 					m.put("e", "立交");
 				} else if (type == 1806) {
 					m.put("e", "草图");
-				} else if (type == 1205) {
+				}  else if (type == 8002) {
+					m.put("e", "接边标识");
+				} else if (type == 8001) {
+					m.put("e", "FC预处理");
+				}else if (type == 1205) {
 					m.put("e", "SA");
 				} else if (type == 1206) {
 					m.put("e", "PA");

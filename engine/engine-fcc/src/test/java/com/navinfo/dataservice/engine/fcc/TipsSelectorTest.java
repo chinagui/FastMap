@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -94,7 +95,24 @@ public class TipsSelectorTest {
 			e.printStackTrace();
 		}
 	}
-	
+
+	/**
+	 *
+	 */
+	@Test
+	public void testSearchDataByWkt() {
+		JSONArray types = new JSONArray();
+//		types.add(1202);
+
+		//{"gap":40,"mdFlag":"d","z":17,"x":107942,"y":49613}
+		try {
+			String wkt = MercatorProjection.getWktWithGap(107942, 49613, 17,
+					40);
+			System.out.println(solrSelector.searchDataByWkt(wkt, types,"d"));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 	
 	//根据网格获取tips统计
 	//	@Test
@@ -123,7 +141,7 @@ public class TipsSelectorTest {
 		
 		
 		//根据wkt范围获取tips的snapshot列表
-		@Test
+//		@Test
 		public void testSearchDataBySpatial() {
 			try {
 				JSONArray ja =
@@ -294,8 +312,6 @@ public class TipsSelectorTest {
 		 * 修改tips(增加三个字段)
 		 * 
 		 * @param rowkey
-		 * @param mdFlag 
-		 * @param content
 		 * @return
 		 * @throws Exception
 		 */

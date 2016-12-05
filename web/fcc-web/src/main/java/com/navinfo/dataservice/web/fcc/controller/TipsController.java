@@ -40,6 +40,7 @@ import com.navinfo.dataservice.engine.photo.CollectorImport;
 public class TipsController extends BaseController {
 
 	private static final Logger logger = Logger.getLogger(TipsController.class);
+	
 
 	@RequestMapping(value = "/tip/checkUpdate")
 	public ModelAndView checkUpdate(HttpServletRequest request

@@ -472,9 +472,9 @@ public class Operation implements IOperation {
 	 */
 	public void caleLanesforCreateRdLinks(List<RdLink> links, Result result)
 			throws Exception {
-		for (RdLink link : links) {
+		/*for (RdLink link : links) {
 			this.createRdLaneForLinkRLanes(result, link, false);
-		}
+		}*/
 	}
 
 	/***

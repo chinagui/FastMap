@@ -638,4 +638,41 @@ public List<Integer> getRowIdForSubmit(String firstWorkItem,String secondWorkIte
 		}
 	}
 
+	
+	
+	/**
+	 * 根据任务号和handler获取pids
+	 * @param taskId
+	 * @param userId
+	 * @return
+	 * @throws Exception
+	 */
+	public List<Integer> getPids(int taskId, long userId)  throws Exception{
+		
+		PreparedStatement pstmt = null;
+		
+		ResultSet resultSet = null;
+		try {
+			StringBuilder sb = new StringBuilder();
+			sb.append("select distinct s.pid from poi_column_status s where TASK_ID=:1 and HANDLER=:2");
+			
+			pstmt = conn.prepareStatement(sb.toString());
+			
+			pstmt.setInt(1, taskId);
+			pstmt.setLong(2, userId);
+			
+			resultSet = pstmt.executeQuery();
+			List<Integer> pids = new ArrayList<Integer>();
+			
+			while(resultSet.next()) {
+				pids.add(resultSet.getInt("pid"));
+			}
+			return pids;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+	}
 }

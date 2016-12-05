@@ -196,4 +196,33 @@ public class ixpoitest {
 			System.out.println(e.getMessage());
 		}
 	}
+	
+	@Test
+	public void testCleanCkResult() throws Exception {
+		
+		try {
+			
+			long userId = 4994;
+			
+			JSONObject jsonReq = new JSONObject();
+			jsonReq.put("subtaskId", 84);
+			jsonReq.put("checkType", 0);
+			jsonReq.put("firstWorkItem", "poi_name");
+			jsonReq.put("secondWorkItem", "nameUnify");
+			
+			List<Integer> pids = new ArrayList<Integer>();
+			//pids.add(307000165);
+			jsonReq.put("pids", pids);
+			
+			List<String> ckRules = new ArrayList<String>();
+			ckRules.add("FM-ZY-20-237");
+			jsonReq.put("ckRules", ckRules);
+			
+			DeepCoreControl deepControl = new DeepCoreControl();
+			deepControl.cleanCheck(jsonReq, userId);
+			
+		} catch (Exception e){
+			System.out.println(e.getMessage());
+		}
+	}
 }

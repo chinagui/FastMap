@@ -149,6 +149,9 @@ public class LogGenerator {
 	 * @throws Exception 
 	 */
 	private void assembleLogDetail(Connection conn, BasicObj basicObj, BasicRow subrow,String logDetailRowId,String opId) throws Exception {
+		if(!subrow.isChanged()){
+			return;
+		}
 		if(perstmtLogDetail==null){
 			perstmtLogDetail = conn.prepareStatement(insertLogDetailSql);
 		}
@@ -189,6 +192,9 @@ public class LogGenerator {
 	 * @throws Exception 
 	 */
 	private void assembleLogDetailGrid(Connection conn, BasicObj basicObj, BasicRow subrow, String logDetailRowId) throws Exception {
+		if(!subrow.isChanged()){
+			return;
+		}
 		if(perstmtLogDetailGrid==null){
 			perstmtLogDetailGrid = conn.prepareStatement(insertLogDetailGridSql);
 		}

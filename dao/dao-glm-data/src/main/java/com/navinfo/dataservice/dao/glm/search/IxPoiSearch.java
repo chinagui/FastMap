@@ -15,15 +15,20 @@ import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
+import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiParking;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiAddress;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiName;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiPhoto;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiChildren;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiParent;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdmin;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiColumnStatusSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiAddressSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiNameSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
+import com.navinfo.dataservice.dao.glm.search.AdAdminSearch;
 import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONArray;
@@ -709,6 +714,138 @@ public class IxPoiSearch implements ISearch {
 			}
 			return result;
 		} catch (Exception e) {
+			throw e;
+		}
+	}
+	
+	/**
+	 * 精编作业数据查询
+	 * @param firstWordItem
+	 * @param secondWorkItem
+	 * @param rowIds
+	 * @param type
+	 * @param langCode
+	 * @return
+	 * @throws Exception
+	 */
+	public JSONArray searchColumnPoiByPid(String firstWordItem,String secondWorkItem,List<Integer> pids,String type,String langCode,long userId) throws Exception {
+		
+		JSONArray dataList = new JSONArray();
+		
+		JSONObject poiObj = new JSONObject();
+		
+		boolean isLock = false;
+		
+		try {
+			
+			MetadataApi apiService=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
+			
+			
+			JSONObject metaData = apiService.getMetadataMap();
+			
+			this.CHAINMAP = metaData.getJSONObject("chain");
+			
+			this.KINDCODEMAP = metaData.getJSONObject("kindCode");
+			
+			this.ADMINMAP =  metaData.getJSONObject("admin");
+			
+			this.CHARACTERMAP = metaData.getJSONObject("character");
+			
+			this.NAVICOVPYMAP = metaData.getJSONObject("navicovpy");
+			
+			this.ENGSHORTMAP = metaData.getJSONObject("engshort");
+			for (int pid:pids) {
+				
+				IxPoiSelector poiSelector = new IxPoiSelector(conn);
+				IxPoi poi = (IxPoi) poiSelector.loadById(pid, isLock);
+				//获取各专项共用字段
+				poiObj=getCommenfields(secondWorkItem,pid,type,langCode,poi);
+				poiObj.put("userId", userId);
+				
+				//分别获取各专项特殊字段，待补充
+				switch (firstWordItem) {
+				case "poi_name":
+					break;
+				case "poi_address":
+					break;
+				case "poi_englishname":
+					break;
+				case "poi_englishaddress":
+					break;
+			}
+				
+			}
+			
+			return dataList;
+		} catch (Exception e) {
+			throw e;
+		}
+	}
+	
+	/**
+	 * 查询个专项公共返回字段
+	 * @param secondWorkItem
+	 * @param rowIds
+	 * @param type
+	 * @param langCode
+	 * @return
+	 * @throws Exception
+	 */
+	private JSONObject getCommenfields(String secondWorkItem,int pid,String type,String langCode,IxPoi poi) throws Exception {
+ 
+		boolean isLock = false;
+		try{
+			JSONObject dataObj = new JSONObject();
+			dataObj.put("pid", pid);
+			dataObj.put("poiNum", poi.getPoiNum());
+			dataObj.put("kindCode", poi.getKindCode());
+			dataObj.put("meshId", poi.getMeshId());
+			//ix_poi表通过region_id关联ad_admin，获取adminCode
+			int regionId = poi.getRegionId();
+			AdAdminSearch adAdminSearch = new AdAdminSearch(conn);
+			AdAdmin adAdmin = (AdAdmin) adAdminSearch.searchDataByPid(regionId);
+			dataObj.put("adminCode",adAdmin.getAdminId());
+			
+			//ix_poi表通过pid关联Ix_Poi_Photo，将照片记录转换为json格式的名称组
+			poi.setPhotos(new AbstractSelector(IxPoiPhoto.class,conn).loadRowsByParentId(poi.getPid(), isLock));
+			//ix_poi表通过pid关联ix_poi_parent，将父子关系记录转换为json格式的名称组
+			poi.setParents(new AbstractSelector(IxPoiParent.class,conn).loadRowsByParentId(poi.getPid(), isLock));
+			poi.setChildren(new AbstractSelector(IxPoiChildren.class,conn).loadRowsByParentId(poi.getPid(), isLock));
+			
+			int parProupId = 0,childProupId=0;
+			
+			//ix_poi表通过pid关联ix_poi_parent，取group_id
+			List<IRow> pRows = poi.getParents();
+			for(IRow pRow : pRows){
+				IxPoiParent parents = (IxPoiParent) pRow;
+				parProupId = parents.getPid();
+			}
+			//ix_poi表通过pid关联ix_poi_children，取group_id
+			List<IRow> cRows = poi.getChildren();
+			for(IRow cRow : cRows){
+				IxPoiChildren Children = (IxPoiChildren) cRow;
+				childProupId = Children.getGroupId();
+			}
+					
+			JSONObject poiObj = poi.Serialize(null);	
+			
+			dataObj.put("photos", poiObj.get("photos"));
+			dataObj.put("parent", poiObj.get("parents"));
+			dataObj.put("parentGroupId",parProupId);
+			dataObj.put("childrenGroupId", childProupId);
+			//通过ix_poi表中的chain，去元数据表ci_para_chain中匹配获取相应的名称
+			dataObj.put("brandName", CHAINMAP.get(poi.getChain()));
+			//ix_poi表通过region_id关联ad_admin，获取adminCode，去元数据表sc_point_adminarea中匹配获取相应的名称
+			//待确认
+			if (ADMINMAP.containsKey(Integer.toString(poi.getAdminReal()))) {
+				dataObj.put("whole", ADMINMAP.get(Integer.toString(poi.getAdminReal())));
+			} else {
+				dataObj.put("whole", Integer.toString(poi.getAdminReal()));
+			}
+					
+			return dataObj;	
+		} catch (Exception e) {
+			
 			throw e;
 		}
 	}

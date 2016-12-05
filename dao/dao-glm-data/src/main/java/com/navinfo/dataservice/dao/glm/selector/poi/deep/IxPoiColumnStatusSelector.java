@@ -334,7 +334,7 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 	 * @throws Exception
 	 */
 	public List<String> columnQuery(int status, String secondWorkItem, long userId) throws Exception {
-		String sql = "SELECT s.row_id FROM poi_deep_status s,poi_deep_workitem_conf w "
+		String sql = "SELECT distinct s.pid FROM poi_colunm_status s,poi_colunm_workitem_conf w "
 				+ "WHERE s.work_item_id=w.work_item_id AND s.handler=:1 AND w.second_work_item=:2 "
 				+ "AND s.second_work_status=:3";
 
@@ -348,13 +348,13 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 			pstmt.setInt(3, status);
 			resultSet = pstmt.executeQuery();
 
-			List<String> rowIdList = new ArrayList<String>();
+			List<String> pidList = new ArrayList<String>();
 
 			while (resultSet.next()) {
-				rowIdList.add(resultSet.getString("row_id"));
+				pidList.add(resultSet.getString("pid"));
 			}
 
-			return rowIdList;
+			return pidList;
 		} catch (Exception e) {
 			throw e;
 		} finally {

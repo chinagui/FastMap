@@ -358,6 +358,8 @@ public class RdLink implements IObj {
 
             json.put("geometry", GeoTranslator.jts2Geojson(geometry, 0.00001, 5));
 
+            json.put("imiCode", imiCode);
+
             JSONArray array = new JSONArray();
             for (IRow form : this.getForms()) {
                 array.add(form.Serialize(objLevel));

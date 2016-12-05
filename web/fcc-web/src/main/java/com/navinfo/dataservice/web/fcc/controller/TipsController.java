@@ -447,9 +447,39 @@ public class TipsController extends BaseController {
 			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
 	}
-	
-	
-	
+
+	@RequestMapping(value = "/tip/getByWkt")
+	public void getTipsByWkt(HttpServletRequest request,
+							  HttpServletResponse response) throws ServletException, IOException {
+
+		String parameter = request.getParameter("parameter");
+
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			String wkt = jsonReq.getString("wkt");
+
+			String flag = jsonReq.getString("flag");
+
+			JSONArray types = new JSONArray();
+
+			TipsSelector selector = new TipsSelector();
+
+			JSONArray array = selector.searchDataByWkt(wkt,
+					types, flag);
+
+			response.getWriter().println(
+					ResponseUtils.assembleRegularResult(array));
+
+		} catch (Exception e) {
+
+			logger.error(e.getMessage(), e);
+
+			response.getWriter().println(
+					ResponseUtils.assembleFailResult(e.getMessage()));
+		}
+	}
+
 	public static void main(String[] args) {
 		
 		String parameter="{\"jobId\":9}";

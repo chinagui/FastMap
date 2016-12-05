@@ -758,10 +758,13 @@ public class DeepCoreControl {
 			int checkType = jsonReq.getInt("checkType");
 			
 			List<Integer> pids = new ArrayList<Integer>();
-			pids = jsonReq.getJSONArray("pids");
-			
+			if (jsonReq.containsKey("pids")) {
+				pids = jsonReq.getJSONArray("pids");
+			}
 			List<String> ckRules = new JSONArray();
-			ckRules = jsonReq.getJSONArray("ckRules");
+			if (jsonReq.containsKey("ckRules")) {
+				ckRules = jsonReq.getJSONArray("ckRules");
+			}
 			
 			// POI行编
 			if (checkType == 0){
@@ -782,9 +785,14 @@ public class DeepCoreControl {
 				
 				if (ckRules.size() == 0) {
 					// 如果没有ckRules,则根据firstWorkItem和secondWorkItem从精编配置表POI_COLUMN_WORKITEM_CONF获取
-					String firstWorkItem = jsonReq.getString("firstWorkItem");
-					String secondWorkItem = jsonReq.getString("secondWorkItem");
-					
+					String firstWorkItem = new String();
+					if (jsonReq.containsKey("firstWorkItem")){
+						firstWorkItem = jsonReq.getString("firstWorkItem");
+					}
+					String secondWorkItem = new String();
+					if (jsonReq.containsKey("secondWorkItem")) {
+						secondWorkItem = jsonReq.getString("secondWorkItem");
+					}
 					if (StringUtils.isEmpty(firstWorkItem) || StringUtils.isEmpty(secondWorkItem)) {
 						throw new Exception("检查规则checkType=1为精编，ckRules为空时，firstWorkItem和secondWorkItem不能为空");
 					} else {

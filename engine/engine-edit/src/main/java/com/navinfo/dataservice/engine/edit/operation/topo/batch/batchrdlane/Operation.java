@@ -200,7 +200,7 @@ public class Operation implements IOperation {
 			if (lanes.size() > 0) {
 				// 第一条link 的车道信息是当前编辑的车道信息 需要走则增删改流程
 				if (i == 0) {
-					this.caleRdlanes(lanes, map, laneDir, result);
+					this.caleRdlanes(lanes, link.getPid(), map, laneDir, result);
 				}
 				// 如果不是当前编辑的link车道信息（默认为第一条link
 				// 1.先删掉link上原有的车道信息，再按照当前输入的车道信息新增车道
@@ -233,8 +233,9 @@ public class Operation implements IOperation {
 	 * @param result
 	 * @throws Exception
 	 */
-	private void caleRdlanes(List<RdLane> lanes, Map<Integer, RdLane> map,
-			int laneDir, Result result) throws Exception {
+	private void caleRdlanes(List<RdLane> lanes, int linkPid,
+			Map<Integer, RdLane> map, int laneDir, Result result)
+			throws Exception {
 
 		for (RdLane lane : lanes) {
 			map.put(lane.getPid(), lane);
@@ -261,7 +262,7 @@ public class Operation implements IOperation {
 			}
 			// 如果传入的车道信息pid为0 则新增车道信息
 			if (jsonLaneInfo.getInt("pid") == 0) {
-				this.createRdLane(result, jsonLaneInfo, link.getPid(), laneDir);
+				this.createRdLane(result, jsonLaneInfo, linkPid, laneDir);
 			}
 		}
 		// 库中原有，传入值中没有的车道信息，全部删除。
@@ -658,14 +659,15 @@ public class Operation implements IOperation {
 			for (IRow row : rows) {
 				result.insertObject(row, ObjStatus.DELETE, lane.getPid());
 			}
-			//需要修改
-			if (1 == 1) {
-				RdLaneCondition condition = new RdLaneCondition();
-				condition.setLanePid(lane.getPid());
-				condition.setVehicleTime(this.getLimit().getTimeDomain());
-				condition.setVehicle(this.getLimit().getVehicle());
-				result.insertObject(condition, ObjStatus.UPDATE, lane.getPid());
-			}
+			// 需要修改
+			/*
+			 * if (1 == 1) { RdLaneCondition condition = new RdLaneCondition();
+			 * condition.setLanePid(lane.getPid());
+			 * condition.setVehicleTime(this.getLimit().getTimeDomain());
+			 * condition.setVehicle(this.getLimit().getVehicle());
+			 * result.insertObject(condition, ObjStatus.UPDATE, lane.getPid());
+			 * }
+			 */
 
 		}
 	}

@@ -262,15 +262,15 @@ public class IxPoiObj extends AbstractIxObj {
 	/*
 	 * 官方标准中文名称
 	 */
-	public IxPoiName getOfficeStandardCHIName(){
+	public IxPoiName getOfficeStandardCHName(){
 		List<IxPoiName> subRows=getIxPoiNames();
 		for(IxPoiName br:subRows){
-			if(br.getNameClass()==1&&br.getNameType()==1&&br.getLangCode().equals("CHI")){
+			if(br.getNameClass()==1&&br.getNameType()==1
+					&&(br.getLangCode().equals("CHI")||br.getLangCode().equals("CHT"))){
 				return br;}
 			}
 		return null;
 	}
-	
 	
 	@Override
 	public String objName() {

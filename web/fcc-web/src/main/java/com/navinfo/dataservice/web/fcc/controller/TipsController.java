@@ -2,7 +2,6 @@ package com.navinfo.dataservice.web.fcc.controller;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -27,7 +26,6 @@ import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.commons.util.ZipUtils;
-import com.navinfo.dataservice.engine.audio.Audio;
 import com.navinfo.dataservice.engine.dropbox.manger.UploadService;
 import com.navinfo.dataservice.engine.fcc.tips.TipsExporter;
 import com.navinfo.dataservice.engine.fcc.tips.TipsOperator;
@@ -163,8 +161,7 @@ public class TipsController extends BaseController {
 			) throws ServletException, IOException {
 
 		String parameter = request.getParameter("parameter");
-		
-		logger.info("开始上传tips,parameter:"+parameter);
+
 		try {
 		    
 		    if (StringUtils.isEmpty(parameter)) {
@@ -179,19 +176,19 @@ public class TipsController extends BaseController {
 
 			String filePath = upload.unzipByJobId(jobId);
 			
-			logger.info("jobId"+jobId+"\tfilePath:"+filePath);
+			logger.info("filePath:"+filePath);
 			
 			TipsUpload tipsUploader = new TipsUpload();
 			
-			Map<String, Photo> photoMap=new HashMap<String, Photo>();
+			logger.info("tipsFilePath:"+filePath + "/"
+					+ "tips.txt");
 			
-			Map<String, Audio> audioMap=new HashMap<String, Audio>();
-			
-			tipsUploader.run(filePath + "/"+ "tips.txt",photoMap,audioMap);
+			Map<String, Photo> map = tipsUploader.run(filePath + "/"
+					+ "tips.txt");
 			
 			//CollectorImport.importPhoto(map, filePath + "/photo");
 			
-			CollectorImport.importPhoto(photoMap, filePath );
+			CollectorImport.importPhoto(map, filePath );
 			
 			JSONObject result = new JSONObject();
 
@@ -200,8 +197,6 @@ public class TipsController extends BaseController {
 			result.put("failed", tipsUploader.getFailed());
 
 			result.put("reasons", tipsUploader.getReasons());
-			
-			logger.info("开始上传tips完成，jobId:"+jobId+"\tresult:"+result);
 
 			return new ModelAndView("jsonView", success(result));
 
@@ -219,9 +214,7 @@ public class TipsController extends BaseController {
 			throws ServletException, IOException {
 
 		String parameter = request.getParameter("parameter");
-		
-		logger.info("下载tips,parameter:"+parameter);
-		
+
 		try {
 		    if (StringUtils.isEmpty(parameter)) {
                 throw new IllegalArgumentException("parameter参数不能为空。");
@@ -255,10 +248,9 @@ public class TipsController extends BaseController {
 			TipsExporter op = new TipsExporter();
 			
 			Set<String> images = new HashSet<String>();
-            //1.下载tips、照片、语音(照片的语音根据附件的id下载)
+
 			op.export(condition, filePath, "tips.txt", images);
 			
-			//2.模式图下载： 1406和1401需要导出模式图
 			if(images.size()>0){
 			
 				PatternImageExporter exporter = new PatternImageExporter();
@@ -269,7 +261,7 @@ public class TipsController extends BaseController {
 			String zipFileName = uuid + ".zip";
 
 			String zipFullName = parentPath + zipFileName;
-            //3.打zip包
+
 			ZipUtils.zipFile(filePath, zipFullName);
 			
 			String serverUrl =  SystemConfigFactory.getSystemConfig().getValue(
@@ -277,16 +269,15 @@ public class TipsController extends BaseController {
 			
 			String downloadUrlPath = SystemConfigFactory.getSystemConfig().getValue(
 					PropConstant.downloadUrlPathTips);
-            //4.返回的url
+
 			String url = serverUrl + downloadUrlPath +File.separator+ day + "/"
 					+ zipFileName;
-			logger.error("下载tips完成,resut url:"+url);
-			
+
 			return new ModelAndView("jsonView", success(url));
 
 		} catch (Exception e) {
 
-			logger.error("下载tips出错："+e.getMessage(), e);
+			logger.error(e.getMessage(), e);
 
 			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
@@ -456,5 +447,87 @@ public class TipsController extends BaseController {
 			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
 	}
-	
+
+	@RequestMapping(value = "/tip/getByWkt")
+	public void getTipsByWkt(HttpServletRequest request,
+							  HttpServletResponse response) throws ServletException, IOException {
+
+		String parameter = request.getParameter("parameter");
+
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			String wkt = jsonReq.getString("wkt");
+
+			String flag = jsonReq.getString("flag");
+
+			JSONArray types = new JSONArray();
+
+			TipsSelector selector = new TipsSelector();
+
+			JSONArray array = selector.searchDataByWkt(wkt,
+					types, flag);
+
+			response.getWriter().println(
+					ResponseUtils.assembleRegularResult(array));
+
+		} catch (Exception e) {
+
+			logger.error(e.getMessage(), e);
+
+			response.getWriter().println(
+					ResponseUtils.assembleFailResult(e.getMessage()));
+		}
+	}
+
+	public static void main(String[] args) {
+		
+		String parameter="{\"jobId\":9}";
+		JSONObject json = JSONObject.fromObject(parameter);
+
+		int jobId = json.getInt("jobId");
+
+		UploadService upload = UploadService.getInstance();
+
+		String filePath;
+		try {
+			
+			//int jobId = json.getInt("jobId");
+
+			//UploadService upload = UploadService.getInstance();
+
+			filePath = upload.unzipByJobId(jobId);
+		    //filePath="E:/88";
+			
+			logger.info("---importTips:"+filePath);
+
+			TipsUpload tipsUploader = new TipsUpload();
+			
+			logger.info("---start tipsUploader:"+tipsUploader);
+
+			Map<String, Photo> map = tipsUploader.run(filePath + "/"
+					+ "tips.txt");
+
+			logger.info("---start tipsUploader.run end:");
+			
+			CollectorImport.importPhoto(map, filePath );
+			
+			logger.info("---importPhoto.run end:");
+
+			JSONObject result = new JSONObject();
+
+			result.put("total", tipsUploader.getTotal());
+
+			result.put("failed", tipsUploader.getFailed());
+
+			result.put("reasons", tipsUploader.getReasons());
+			
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+		
+	}
 }

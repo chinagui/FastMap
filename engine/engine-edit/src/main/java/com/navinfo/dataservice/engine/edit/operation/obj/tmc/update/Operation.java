@@ -57,20 +57,49 @@ public class Operation implements IOperation {
 		result.setPrimaryPid(tmcLocationPid);
 
 		JSONObject content = command.getUpdateContent();
-
+		
 		if (content.containsKey("objStatus")) {
 			//判断是否修改tmc匹配信息的方向：包含isChangedDirect参数，并且该参数值为1代表修改
-			if (content.containsKey("isChangedDirect") && content.getInt("isChangedDirect") == 1) {
+			if (content.containsKey("direct")) {
+				int direct = content.getInt("direct");
 				for (IRow row : tmclocation.getLinks()) {
 					RdTmclocationLink tmcLink = (RdTmclocationLink) row;
 					
 					int tmcDirect = tmcLink.getDirect();
+					
 					//修改方向关系，将原来的1值改为2,2值该为1即可
-					tmcLink.changedFields().put("direct", tmcDirect == 1? 2:1);
-
-					result.insertObject(tmcLink, ObjStatus.UPDATE, tmcLocationPid);
+					if(direct != tmcDirect)
+					{
+						tmcLink.changedFields().put("direct", direct);
+					}
 				}
 			}
+			//修改tmcId
+			if(content.containsKey("tmcId"))
+			{
+				int tmcId = content.getInt("tmcId");
+				
+				if(tmclocation.getTmcId() != tmcId)
+				{
+					tmclocation.changedFields().put("tmcId", tmcId);
+				}
+			}
+			//修改loctable_id
+			if(content.containsKey("loctableId"))
+			{
+				int loctableId = content.getInt("loctableId");
+				
+				if(tmclocation.getLoctableId() != loctableId)
+				{
+					tmclocation.changedFields().put("loctableId", loctableId);
+				}
+			}
+			
+			if(tmclocation.changedFields().size() > 0 )
+			{
+				result.insertObject(tmclocation, ObjStatus.UPDATE, tmclocation.getPid());
+			}
+			
 			boolean isChanged = tmclocation.fillChangeFields(content);
 
 			if (isChanged) {
@@ -82,7 +111,7 @@ public class Operation implements IOperation {
 
 			JSONArray links = content.getJSONArray("links");
 
-			this.updateLinks(result, tmclocation, links);
+			this.updateLinks(result, tmclocation,links);
 		}
 		return null;
 	}
@@ -92,13 +121,14 @@ public class Operation implements IOperation {
 	 * 
 	 * @param result
 	 *            结果集
+	 * @param locationLinkMap 
 	 * @param links
 	 *            link信息
 	 * @param direct
 	 * @throws Exception
 	 */
 	private void updateLinks(Result result, RdTmclocation tmclocation, JSONArray links) throws Exception {
-
+		
 		for (int i = 0; i < links.size(); i++) {
 
 			JSONObject linkJson = links.getJSONObject(i);
@@ -114,11 +144,7 @@ public class Operation implements IOperation {
 
 					} else if (ObjStatus.UPDATE.toString().equals(linkJson.getString("objStatus"))) {
 
-						boolean isChanged = locationLink.fillChangeFields(linkJson);
-
-						if (isChanged) {
-							result.insertObject(locationLink, ObjStatus.UPDATE, tmclocation.getPid());
-						}
+						locationLink.fillChangeFields(linkJson);
 					}
 				} else {
 					RdTmclocationLink locationLink = new RdTmclocationLink();
@@ -133,7 +159,15 @@ public class Operation implements IOperation {
 			}
 
 		}
-
+		
+		//修改的tmclocationlink 加入result结果集
+		for(IRow row : tmclocation.getLinks())
+		{
+			if(row.changedFields().size()>0)
+			{
+				result.insertObject(row, ObjStatus.UPDATE, row.parentPKValue());
+			}
+		}
 	}
 	
 	/**

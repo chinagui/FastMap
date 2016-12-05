@@ -20,7 +20,7 @@ public class Operation implements IOperation {
 	private Command command;
 
 	private Connection conn = null;
-
+	
 	public Operation(Command command, Connection conn) {
 
 		this.command = command;

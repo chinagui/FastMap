@@ -49,8 +49,9 @@ public class BatchTest {
 		Map<String, Object> oldValues=new HashMap<String, Object>();
 		oldValues.put("KIND_CODE", "123");
 		logg.setOldValues(oldValues);
-		row.hisChangeLogs=new ArrayList<ChangeLog>();
-		row.hisChangeLogs.add(logg);
+		List<ChangeLog> logList=new ArrayList<ChangeLog>();
+		logList.add(logg);
+		row.setHisChangeLogs(logList);
 		operationResult.putObj(obj);
 		
 		BatchCommand batchCommand=new BatchCommand();		

@@ -333,34 +333,171 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 	 * @return
 	 * @throws Exception
 	 */
-	public List<Integer> columnQuery(int status, String secondWorkItem, long userId) throws Exception {
-		String sql = "SELECT distinct s.pid FROM poi_colunm_status s,poi_colunm_workitem_conf w "
-				+ "WHERE s.work_item_id=w.work_item_id AND s.handler=:1 AND w.second_work_item=:2 "
-				+ "AND s.second_work_status=:3";
-
+	public JSONObject columnQuery(int status, String secondWorkItem, long userId,int startRow,int endRow) throws Exception {
+		//按group_id排序,支持分页
+		StringBuilder sb = new StringBuilder();
+		sb.append(" SELECT PID,TOTAL");
+		sb.append(" FROM (SELECT CC.PID, CC.TOTAL, ROWNUM RN");
+		sb.append("	FROM (SELECT COUNT(1) OVER(PARTITION BY 1) TOTAL, PID");
+		sb.append("	FROM (SELECT DISTINCT IX.PID,");
+		sb.append("	P.GROUP_ID AS PGROUP_ID,");
+		sb.append("	C.GROUP_ID AS CGROUP_ID");
+		sb.append("	FROM IX_POI IX, IX_POI_PARENT P, IX_POI_CHILDREN C");
+		sb.append("	WHERE (IX.PID = P.PARENT_POI_PID OR");
+		sb.append("	IX.PID = C.CHILD_POI_PID)");
+		sb.append("	AND P.GROUP_ID = C.GROUP_ID");
+		sb.append("	AND IX.PID IN");
+		sb.append("	(SELECT DISTINCT S.PID");
+		sb.append("	FROM POI_COLUMN_STATUS        S,");
+		sb.append("	POI_COLUMN_WORKITEM_CONF W");
+		sb.append("	WHERE S.WORK_ITEM_ID = W.WORK_ITEM_ID");
+		sb.append("	AND S.HANDLER =？");
+		sb.append("	AND W.SECOND_WORK_ITEM =？");
+		sb.append("	AND S.SECOND_WORK_STATUS =？)");
+		sb.append("	ORDER BY P.GROUP_ID, C.GROUP_ID)) CC");
+		sb.append("	WHERE ROWNUM <= ？)");
+		sb.append("	WHERE RN >= ？");
+		
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
+		JSONObject data = new JSONObject();
 
 		try {
-			pstmt = conn.prepareStatement(sql);
+			pstmt = conn.prepareStatement(sb.toString());
 			pstmt.setLong(1, userId);
 			pstmt.setString(2, secondWorkItem);
 			pstmt.setInt(3, status);
+			pstmt.setInt(4, endRow);
+			pstmt.setInt(5, startRow);
 			resultSet = pstmt.executeQuery();
 
 			List<Integer> pidList = new ArrayList<Integer>();
+			int total = 0;
 
 			while (resultSet.next()) {
 				pidList.add(resultSet.getInt("pid"));
+				total = resultSet.getInt("total");
 			}
-
-			return pidList;
+			data.put("pidList", pidList);
+			data.put("total", total);
+			return data;
 		} catch (Exception e) {
 			throw e;
 		} finally {
 			DbUtils.closeQuietly(resultSet);
 			DbUtils.closeQuietly(pstmt);
 		}
+	}
+	/**
+	 * 查詢当前poi已打作业标记
+	 * 
+	 * @param pids
+	 * @param secondWorkItem
+	 * @param status
+	 * @return
+	 * @throws Exception
+	 */
+	public JSONObject queryClassifyByPidSecondWorkItem(List<Integer> pids,String secondWorkItem,int status,long userId) throws Exception {
+		StringBuilder sb = new StringBuilder();
+		sb.append("SELECT P.PID,LISTAGG(P.WORK_ITEM_ID, ',') WITHIN GROUP(ORDER BY P.WORK_ITEM_ID) C_POI_PID ");
+		sb.append("  FROM POI_COLUMN_STATUS P, POI_COLUMN_WORKITEM_CONF PC");
+		sb.append(" WHERE P.WORK_ITEM_ID = PC.WORK_ITEM_ID");
+		sb.append("   AND PC.SECOND_WORK_ITEM = :1");
+		sb.append("   AND P.SECOND_WORK_STATUS = :2");
+		sb.append("   AND P.HANDLER = :3");
+		sb.append("   AND P.PID in (");
+		
+		String temp = "";
+		for (int pid:pids) {
+			sb.append(temp);
+			sb.append(pid);
+			temp = ",";
+		}
+		sb.append(")");
+		sb.append(" GROUP BY P.PID");
+
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+
+		JSONObject poiWorkItem = new JSONObject();
+
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+			
+			pstmt.setString(1, secondWorkItem);
+			pstmt.setInt(2, status);
+			pstmt.setLong(3, userId);
+
+			resultSet = pstmt.executeQuery();
+
+			if (resultSet.next()) {
+				poiWorkItem.put(resultSet.getInt("pid"), resultSet.getString("work_item_id"));
+			}
+
+			return poiWorkItem;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+
+	}
+	/**
+	 * 查詢POI子在当前一级项下的错误LOG
+	 * 
+	 * @param pids
+	 * @param firstWorkItem
+	 * @param tbNm
+	 * @return
+	 * @throws Exception
+	 */
+	public JSONObject queryCKLogByPidfirstWorkItem(List<Integer> pids,String firstWorkItem,String tbNm) throws Exception {
+		StringBuilder sb = new StringBuilder();
+		sb.append(" SELECT CO.PID,");
+		sb.append(" LISTAGG('RULEID:' || NE.RULEID || ',' || 'log:' || NE.INFORMATION ||'LEVEL:' || NE.\"LEVEL\",'|') WITHIN GROUP(ORDER BY CO.PID) LOGMSG");
+		sb.append(" FROM CK_RESULT_OBJECT CO, NI_VAL_EXCEPTION NE");
+		sb.append(" WHERE CO.MD5_CODE = NE.MD5_CODE");
+		sb.append(" AND CO.TABLE_NAME = ?");
+		sb.append(" AND NE.RULEID IN (SELECT W.WORK_ITEM_ID");
+		sb.append(" FROM POI_COLUMN_WORKITEM_CONF W");
+		sb.append(" WHERE W.FIRST_WORK_ITEM = ?");
+		sb.append(" AND W.TYPE = 1)");
+		sb.append("   AND CO.PID in (");
+		
+		String temp = "";
+		for (int pid:pids) {
+			sb.append(temp);
+			sb.append(pid);
+			temp = ",";
+		}
+		sb.append(")");
+		sb.append(" GROUP BY CO.PID");
+		
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+
+		JSONObject poiWorkItem = new JSONObject();
+
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+			
+			pstmt.setString(1, tbNm);
+			pstmt.setString(2, firstWorkItem);
+			resultSet = pstmt.executeQuery();
+
+			if (resultSet.next()) {
+				poiWorkItem.put(resultSet.getInt("pid"), resultSet.getString("work_item_id"));
+			}
+
+			return poiWorkItem;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+
 	}
 
 	/**

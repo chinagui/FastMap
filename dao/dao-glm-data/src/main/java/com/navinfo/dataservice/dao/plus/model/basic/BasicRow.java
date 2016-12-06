@@ -174,6 +174,13 @@ public abstract class BasicRow{
 		}
 		throw new WrongOperationException("历史变更中不包含此字段");
 	}
+	
+	public void addChangeLog(ChangeLog log){
+		if(hisChangeLogs==null){
+			hisChangeLogs=new ArrayList<ChangeLog>();
+		}
+		hisChangeLogs.add(log);
+	}
 
 	/**
 	 * 行级记录复制,新Row的OperationType为insert

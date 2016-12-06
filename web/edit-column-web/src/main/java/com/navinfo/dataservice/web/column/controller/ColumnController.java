@@ -126,7 +126,7 @@ public class ColumnController extends BaseController {
 			jobDataJson.put("data", data);
 			jobDataJson.put("secondWorkItem", secondWorkItem);
 			
-			long jobId=jobApi.createJob("columnSaveJob", jobDataJson, userId, "精编保存");
+			long jobId=jobApi.createJob("columnSaveJob", jobDataJson, userId,taskId, "精编保存");
 			
 			
 			return new ModelAndView("jsonView", success(jobId));
@@ -169,7 +169,7 @@ public class ColumnController extends BaseController {
 			jobDataJson.put("firstWorkItem", firstWorkItem);
 			jobDataJson.put("secondWorkItem", secondWorkItem);
 			
-			long jobId=jobApi.createJob("columnSubmitJob", jobDataJson, userId, "精编提交");
+			long jobId=jobApi.createJob("columnSubmitJob", jobDataJson, userId,taskId, "精编提交");
 			
 			return new ModelAndView("jsonView", success(jobId));
 		} catch (Exception e) {

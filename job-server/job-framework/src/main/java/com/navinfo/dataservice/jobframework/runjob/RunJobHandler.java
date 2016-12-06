@@ -37,11 +37,13 @@ public class RunJobHandler implements MsgHandler {
 			String jobGuid = jo.getString("jobGuid");
 			String type = jo.getString("type");
 			long userId = jo.getLong("userId");
+			long taskId=jo.getLong("taskId");
 			JSONObject request = JSONObject.fromObject(jo.get("request"));
 			JobInfo jobInfo = new JobInfo(jobId,jobGuid);
 			jobInfo.setType(type);
 			jobInfo.setRequest(request);
 			jobInfo.setUserId(userId);
+			jobInfo.setTaskId(taskId);
 			//添加到任务线程池
 			JobThreadPoolExecutor.getInstance().execute(jobInfo);
 			//

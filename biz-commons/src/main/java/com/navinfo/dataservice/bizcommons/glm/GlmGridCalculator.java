@@ -180,10 +180,10 @@ public class GlmGridCalculator {
 	 *            ：数据和履历所在库的连接
 	 * @return key:log_detail.row_id,value:对应的记录所属的grid
 	 */
-	public Map<String, String[]> calc(String tableName, Integer[] logOpTypes,
+	public Map<String, LogGeoInfo> calc(String tableName, Integer[] logOpTypes,
 			Connection logConn) throws SQLException {
 		String sql = assembleQueryGeoSql(tableName, logOpTypes);
-		Map<String, String[]> grids = run.query(logConn, sql,
+		Map<String, LogGeoInfo> grids = run.query(logConn, sql,
 				new MultiRowGridHandler(tableName));
 		return grids;
 	}
@@ -205,7 +205,7 @@ public class GlmGridCalculator {
 	 * @return
 	 * @throws SQLException
 	 */
-	public Map<String, String[]> calc(String tableName, Integer[] logOpTypes,
+	public Map<String, LogGeoInfo> calc(String tableName, Integer[] logOpTypes,
 			Connection logConn, String remoteType, String remoteParam)
 			throws SQLException {
 		String sql = null;
@@ -216,7 +216,7 @@ public class GlmGridCalculator {
 			sql = this.assembleQueryGeoSql_Dblink(tableName, logOpTypes,
 					remoteParam);
 		}
-		Map<String, String[]> grids = run.query(logConn, sql,
+		Map<String, LogGeoInfo> grids = run.query(logConn, sql,
 				new MultiRowGridHandler(tableName));
 		return grids;
 	}
@@ -367,7 +367,7 @@ public class GlmGridCalculator {
 	 * @Description: GlmGridCalculator.java
 	 */
 	class MultiRowGridHandler implements
-			ResultSetHandler<Map<String, String[]>> {
+			ResultSetHandler<Map<String, LogGeoInfo>> {
 		private String tableName;
 
 		public MultiRowGridHandler(String tableName) {
@@ -375,59 +375,69 @@ public class GlmGridCalculator {
 		}
 
 		@Override
-		public Map<String, String[]> handle(ResultSet rs) throws SQLException {
+		public Map<String, LogGeoInfo> handle(ResultSet rs) throws SQLException {
 			String rowId = null;
 			try {
-				Map<String, String[]> results = new HashMap<String, String[]>();
-				Map<String, Set<String>> gs = new HashMap<String, Set<String>>();
+				Map<String, LogGeoInfo> results = new HashMap<String, LogGeoInfo>();
 				if ("CK_EXCEPTION".equals(tableName)) {
 					WKT wkt = new WKT();
 					while (rs.next()) {
 						rowId = rs.getString("ROW_ID");
-						Set<String> rowGrids = gs.get(rowId);
-						if (rowGrids == null) {
-							rowGrids = new HashSet<String>();
-							gs.put(rowId, rowGrids);
+						LogGeoInfo geoInfo = results.get(rowId);
+						if (geoInfo == null) {
+							geoInfo = new LogGeoInfo();
+							results.put(rowId, geoInfo);
 						}
+						geoInfo.setGeoName(rs.getString("GEO_NM"));
+						geoInfo.setGeoPid(rs.getInt("GEO_PID"));
+						//grid
 						JGeometry geo = wkt
 								.toJGeometry(rs.getBytes("GEOMETRY"));
 						int meshId = rs.getInt("MESH_ID");
 						if (meshId > 0) {
-							rowGrids.addAll(JGeometryUtil
+							Set<String> grids=JGeometryUtil
 									.intersectGeometryGrid(geo,
-											String.valueOf(meshId)));
+											String.valueOf(meshId));
+							if(grids!=null){
+								geoInfo.setGrids(grids.toArray(new String[0]));
+							}
 						} else {
 							String[] meshes = JGeometryUtil.geo2MeshIds(geo);
-							rowGrids.addAll(JGeometryUtil
-									.intersectGeometryGrid(geo, meshes));
+							Set<String> grids = JGeometryUtil.intersectGeometryGrid(geo, meshes);
+							if(grids!=null){
+								geoInfo.setGrids(grids.toArray(new String[0]));
+							}
 						}
 					}
 				} else {
 					while (rs.next()) {
 						rowId = rs.getString("ROW_ID");
-						Set<String> rowGrids = gs.get(rowId);
-						if (rowGrids == null) {
-							rowGrids = new HashSet<String>();
-							gs.put(rowId, rowGrids);
+						LogGeoInfo geoInfo = results.get(rowId);
+						if (geoInfo == null) {
+							geoInfo = new LogGeoInfo();
+							results.put(rowId, geoInfo);
 						}
+						geoInfo.setGeoName(rs.getString("GEO_NM"));
+						geoInfo.setGeoPid(rs.getInt("GEO_PID"));
+						//grids
 						JGeometry geo = null;
 						geo = JGeometry.load(rs.getBytes("GEOMETRY"));
 						int meshId = rs.getInt("MESH_ID");
 						if (meshId > 0) {
-							rowGrids.addAll(JGeometryUtil
+							Set<String> grids=JGeometryUtil
 									.intersectGeometryGrid(geo,
-											String.valueOf(meshId)));
+											String.valueOf(meshId));
+							if(grids!=null){
+								geoInfo.setGrids(grids.toArray(new String[0]));
+							}
 						} else {
 							String[] meshes = JGeometryUtil.geo2MeshIds(geo);
-							rowGrids.addAll(JGeometryUtil
-									.intersectGeometryGrid(geo, meshes));
+							Set<String> grids = JGeometryUtil.intersectGeometryGrid(geo, meshes);
+							if(grids!=null){
+								geoInfo.setGrids(grids.toArray(new String[0]));
+							}
 						}
 					}
-				}
-				// convert to array
-				for (Map.Entry<String, Set<String>> entry : gs.entrySet()) {
-					results.put(entry.getKey(),
-							entry.getValue().toArray(new String[0]));
 				}
 				return results;
 			} catch (Exception e) {

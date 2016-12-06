@@ -5,9 +5,16 @@ package com.navinfo.dataservice.impcore.mover;
  * 描述：import-coreLogMoveResult.java
  */
 public class LogMoveResult {
+	private int logActionMoveCount;
 	private int logDetailMoveCount;
 	private int logDetailGridMoveCount;
 	private int logOperationMoveCount;
+	public int getLogActionMoveCount() {
+		return logActionMoveCount;
+	}
+	public void setLogActionMoveCount(int logActionMoveCount) {
+		this.logActionMoveCount = logActionMoveCount;
+	}
 	public int getLogDetailMoveCount() {
 		return logDetailMoveCount;
 	}

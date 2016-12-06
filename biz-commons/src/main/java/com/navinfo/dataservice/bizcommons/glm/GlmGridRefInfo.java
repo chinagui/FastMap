@@ -198,8 +198,8 @@ public class GlmGridRefInfo {
 					+ "' ");
 		} else {
 			// ...
-			sb4E.append("SELECT P.ROW_ID,P.GEOMETRY,");
-			sb4D.append("SELECT L.ROW_ID,P.GEOMETRY,");
+			sb4E.append("SELECT P.ROW_ID,P.GEOMETRY");
+			sb4D.append("SELECT L.ROW_ID,P.GEOMETRY");
 
 			// 添加所属几何对应表 和对应pid
 			sb4E.append(",'" + tableName + "' as GEO_NM ");

@@ -55,22 +55,21 @@ public class BatchProcess {
 				logger.info("开始执行批处理："+obj.getClass().getName());
 				JSONObject data = obj.run(poi,conn,json,editApiImpl);
 				result.putAll(data);
+				if (result.size()>0) {
+					result.put("pid", poi.getPid());
+					result.put("rowId", poi.getRowId());
+					poiObj.put("change", result);
+					poiObj.put("pid", poi.getPid());
+					poiObj.put("type", "IXPOI");
+					poiObj.put("command", "BATCH");
+					poiObj.put("dbId", json.getInt("dbId"));
+					poiObj.put("isLock", false);
+					
+					editApiImpl.runPoi(poiObj);
+					
+				}
 			}
-			
-			if (result.size()>0) {
-				result.put("pid", poi.getPid());
-				result.put("rowId", poi.getRowId());
-				poiObj.put("change", result);
-				poiObj.put("pid", poi.getPid());
-				poiObj.put("type", "IXPOI");
-				poiObj.put("command", "BATCH");
-				poiObj.put("dbId", json.getInt("dbId"));
-				poiObj.put("isLock", false);
-				
-				editApiImpl.runPoi(poiObj);
-				conn.commit();
-			}
-			
+			conn.commit();
 		} catch (Exception e) {
 			throw e;
 		}

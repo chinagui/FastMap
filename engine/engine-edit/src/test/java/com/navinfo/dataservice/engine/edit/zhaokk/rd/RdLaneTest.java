@@ -10,8 +10,10 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.lane.RdLane;
 import com.navinfo.dataservice.dao.glm.selector.rd.lane.RdLaneSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.lane.RdLaneTopoDetailSelector;
 import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.operation.Transaction;
 
@@ -22,7 +24,8 @@ public class RdLaneTest extends InitApplication {
 	public void init() {
 		initContext();
 	}
-	//{"command":"BATCH","type":"RDLANE","dbId":17,"data":{"linkPids":["200000021"],"laneDir":2,"laneInfos":[{"pid":205000006,"conditions":[{"direction":"2","directionTime":"[[(t5t6t7)]]","vehicle":120,"vehicleTime":null,"geoLiveType":"RDLANECONDITION"}],"seqNum":1}],"geoLiveType":"RDLANE"}}
+
+	// {"command":"BATCH","type":"RDLANE","dbId":17,"data":{"linkPids":["200000021"],"laneDir":2,"laneInfos":[{"pid":205000006,"conditions":[{"direction":"2","directionTime":"[[(t5t6t7)]]","vehicle":120,"vehicleTime":null,"geoLiveType":"RDLANECONDITION"}],"seqNum":1}],"geoLiveType":"RDLANE"}}
 	@Test
 	public void testAddBatchRdLane() {
 		String parameter = "{\"command\":\"BATCH\",\"type\":\"RDLANE\",\"dbId\":17,"
@@ -35,6 +38,7 @@ public class RdLaneTest extends InitApplication {
 			e.printStackTrace();
 		}
 	}
+
 	@Test
 	public void testDelBatchRdLane() {
 		String parameter = "{\"command\":\"DELETE\",\"type\":\"RDLANE\",\"dbId\":42,"
@@ -47,15 +51,18 @@ public class RdLaneTest extends InitApplication {
 			e.printStackTrace();
 		}
 	}
+
 	@Test
 	public void testLoadBatchRdLane() throws Exception {
-		Connection conn= DBConnector.getInstance().getConnectionById(17);
-		RdLaneSelector selector = new RdLaneSelector(conn);
+		Connection conn = DBConnector.getInstance().getConnectionById(17);
+		RdLaneTopoDetailSelector selector = new RdLaneTopoDetailSelector(conn);
 		List<Integer> linkPids = new ArrayList<Integer>();
-		linkPids.add(19376868);
-		linkPids.add(19607272);
-		
-		JSONArray lanes = selector.loadByLinks(linkPids,  false);
-		System.out.println(lanes);
+		linkPids.add(280391);
+		linkPids.add(280389);
+		linkPids.add(292334);
+		List<IRow> rows = selector.loadByLinkPids(linkPids, 228645, false);
+		for (IRow row : rows) {
+			System.out.println(row.toString());
+		}
 	}
 }

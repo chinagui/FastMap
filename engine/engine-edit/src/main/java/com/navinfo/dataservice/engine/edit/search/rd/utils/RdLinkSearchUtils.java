@@ -39,7 +39,7 @@ public class RdLinkSearchUtils {
 	public RdLinkSearchUtils(Connection conn) throws Exception {
 		this.conn = conn;
 	}
-	
+
 	public final int variableSpeedNextLinkCount = 99;
 
 	RdLinkSelector linkSelector = null;
@@ -70,9 +70,9 @@ public class RdLinkSearchUtils {
 
 		Map<Integer, RdLink> linkStorage = variableSpeedNextLinks(nextLinkPids,
 				linkPid, nodePid, link.getMeshId());
-		
+
 		List<RdLink> links = new ArrayList<RdLink>();
-		
+
 		for (int pid : nextLinkPids) {
 
 			if (linkStorage.containsKey(pid)) {
@@ -94,8 +94,9 @@ public class RdLinkSearchUtils {
 	 * @return
 	 * @throws Exception
 	 */
-	private Map<Integer,RdLink> variableSpeedNextLinks(List<Integer> nextLinkPids,
-			int preLinkPid, int preNodePid, int meshId) throws Exception {
+	private Map<Integer, RdLink> variableSpeedNextLinks(
+			List<Integer> nextLinkPids, int preLinkPid, int preNodePid,
+			int meshId) throws Exception {
 
 		Map<Integer, RdLink> linkStorage = new HashMap<Integer, RdLink>();
 
@@ -163,7 +164,7 @@ public class RdLinkSearchUtils {
 
 		Map<Integer, RdLink> nextStorage = variableSpeedNextLinks(nextLinkPids,
 				linkTmp.getPid(), nextNodePid, meshId);
-		
+
 		linkStorage.putAll(nextStorage);
 
 		return linkStorage;
@@ -486,6 +487,7 @@ public class RdLinkSearchUtils {
 			int cruuentNodePidDir) throws Exception {
 		RdLinkSelector linkSelector = new RdLinkSelector(conn);
 		List<RdLink> tracks = new ArrayList<RdLink>();
+		List<RdLink> tmpLinks = new ArrayList<RdLink>();
 		List<RdLink> resultLinks = new ArrayList<RdLink>();
 		Set<Integer> nodes = new HashSet<Integer>();
 
@@ -523,8 +525,16 @@ public class RdLinkSearchUtils {
 
 			nodes.add(cruuentNodePidDir);
 			// 赋值查找下一组联通links
-			resultLinks = linkSelector.loadTrackLink(cuurentLinkPid,
+			tmpLinks = linkSelector.loadTrackLink(cuurentLinkPid,
 					cruuentNodePidDir, true);
+			//清空当前link
+			resultLinks.clear();
+			// 10级路不计算挂接个数
+			for (RdLink link : tmpLinks) {
+				if (link.getKind() < 10) {
+					resultLinks.add(link);
+				}
+			}
 		}
 		return tracks;
 	}

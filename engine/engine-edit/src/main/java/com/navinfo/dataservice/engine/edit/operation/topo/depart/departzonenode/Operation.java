@@ -283,7 +283,7 @@ public class Operation implements IOperation {
 						this.command.getZoneLink().geteNodePid());
 			} else {
 				maps.put(geo.getCoordinates()[0], this.command.getZoneLink()
-						.geteNodePid());
+						.getsNodePid());
 
 				maps.put(geo.getCoordinates()[geo.getCoordinates().length - 1],
 						nodePid);
@@ -300,9 +300,6 @@ public class Operation implements IOperation {
 				List<ZoneLink> zoneLinks = ZoneLinkOperateUtils
 						.getCreateZoneLinksWithMesh(geomInter, maps, result,
 								this.command.getZoneLink());
-				for (ZoneLink link : zoneLinks) {
-					result.insertObject(link, ObjStatus.INSERT, link.getPid());
-				}
 				links.addAll(zoneLinks);
 
 			}

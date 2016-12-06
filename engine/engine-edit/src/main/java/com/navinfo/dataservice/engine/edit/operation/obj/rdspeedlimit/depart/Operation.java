@@ -37,14 +37,14 @@ public class Operation {
         List<RdSpeedlimit> speedlimits = selector.loadSpeedlimitByLinkPid(oldLink.pid(), true);
         // 分离后没产生跨图幅打断
         if (newLinks.size() == 1) {
-            Geometry linkGeo = newLinks.get(0).getGeometry();
+            Geometry linkGeo = GeoTranslator.transform(newLinks.get(0).getGeometry(), 0.00001, 5);
             for (RdSpeedlimit speedlimit : speedlimits) {
                 // 判断点限速所处段几何是否发生变化
                 Geometry nochangeGeo = GeoTranslator.transform(oldLink.getGeometry(), 0.00001, 5).intersection(linkGeo);
                 if (GeoTranslator.transform(speedlimit.getGeometry(), 0.00001, 5).intersects(nochangeGeo)) continue;
 
                 // 计算speedlimit几何与移动后link几何最近的点
-                Coordinate coor = GeometryUtils.GetNearestPointOnLine(speedlimit.getGeometry().getCoordinate(), linkGeo);
+                Coordinate coor = GeometryUtils.GetNearestPointOnLine(GeoTranslator.transform(speedlimit.getGeometry(), 0.00001, 5).getCoordinate(), linkGeo);
                 if (null != coor) {
                     speedlimit.changedFields().put("geometry", GeoTranslator.jts2Geojson(GeoTranslator.point2Jts(coor.x, coor.y)));
                     result.insertObject(speedlimit, ObjStatus.UPDATE, speedlimit.pid());
@@ -56,7 +56,7 @@ public class Operation {
                 Coordinate minCoor = null;
                 int minLinkPid = 0;
                 double minLength = 0;
-                Geometry limitGeo = speedlimit.getGeometry();
+                Geometry limitGeo = GeoTranslator.transform(speedlimit.getGeometry(), 0.00001, 5);
                 // 判断点限速所处段几何是否发生变化
                 List<Geometry> geometries = new ArrayList<Geometry>();
                 for (RdLink link : newLinks) {
@@ -67,7 +67,7 @@ public class Operation {
 
                 for (RdLink link : newLinks) {
                     Geometry linkGeo = link.getGeometry();
-                    Coordinate tmpCoor = GeometryUtils.GetNearestPointOnLine(limitGeo.getCoordinate(), linkGeo);
+                    Coordinate tmpCoor = GeometryUtils.GetNearestPointOnLine(limitGeo.getCoordinate(), GeoTranslator.transform(linkGeo, 0.00001, 5));
                     if (null != tmpCoor) {
                         double length = GeometryUtils.getDistance(limitGeo.getCoordinate(), tmpCoor);
                         if (minLength == 0 || length < minLength) {

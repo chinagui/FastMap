@@ -29,7 +29,7 @@ public class RdLinkTest extends InitApplication {
     }
 
     @Test
-    public void testDelete() {
+    public void testUpdate() {
         String parameter = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"RDLINK\",\"objId\":575750,\"data\":{\"forms\":[{\"auxiFlag\":76,\"rowId\":\"3AE1FBE7366B92F7E050A8C08304EE4C\",\"objStatus\":\"UPDATE\"}],\"pid\":575750}}";
         TestUtil.run(parameter);
     }

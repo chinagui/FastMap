@@ -170,7 +170,7 @@ public class RdLaneTopoDetailSelector extends AbstractSelector {
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
 		List<Integer> topoPids = new ArrayList<Integer>();
-		List<Integer> viaLinkPids = new ArrayList<Integer>();
+		//List<Integer> viaLinkPids = new ArrayList<Integer>();
 		List<IRow> topos = new ArrayList<IRow>();
 
 		try {
@@ -194,7 +194,7 @@ public class RdLaneTopoDetailSelector extends AbstractSelector {
 						topoPids, true, true);
 				for (IRow row : rows) {
 					RdLaneTopoDetail detail = (RdLaneTopoDetail) row;
-					if (detail.getTopoVias().size() > 0) {
+					/*if (detail.getTopoVias().size() > 0) {
 						List<IRow> vias = detail.getTopoVias();
 						for (IRow via : vias) {
 							RdLaneTopoVia laneTopoVia = (RdLaneTopoVia) via;
@@ -204,7 +204,7 @@ public class RdLaneTopoDetailSelector extends AbstractSelector {
 								&& linkPids.containsAll(viaLinkPids)) {
 							topos.add(row);
 						}
-					}
+					}*/
 					if (linkPids.contains(detail.getOutLinkPid())) {
 						topos.add(row);
 

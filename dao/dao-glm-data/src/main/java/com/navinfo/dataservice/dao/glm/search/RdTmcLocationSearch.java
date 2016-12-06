@@ -18,6 +18,7 @@ import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdTmclocation;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.tmc.RdTmcLocationSelector;
 
 import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
@@ -38,7 +39,9 @@ public class RdTmcLocationSearch implements ISearch {
 	
 	@Override
 	public IObj searchDataByPid(int pid) throws Exception {
-		IObj obj = (IObj) new AbstractSelector(RdTmclocation.class,conn).loadById(pid, false);
+		RdTmcLocationSelector selector = new RdTmcLocationSelector(RdTmclocation.class,conn);
+		
+		IObj obj = selector.getById(pid, false, true);
 		return obj;
 	}
 

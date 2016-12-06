@@ -33,6 +33,8 @@ import com.navinfo.dataservice.dao.glm.search.batch.ixpoi.IxPoiContactHandler;
 import com.navinfo.dataservice.dao.glm.search.batch.ixpoi.IxPoiNameHandler;
 import com.navinfo.dataservice.dao.glm.search.batch.ixpoi.IxPoiParentHandler;
 import com.navinfo.dataservice.dao.glm.search.batch.ixpoi.IxRestaurantHandler;
+import com.navinfo.dataservice.dao.glm.search.batch.ixpoi.IxSamepoiHandler;
+import com.navinfo.dataservice.dao.glm.search.batch.ixpoi.poiEditStatusHandler;
 import com.navinfo.dataservice.dao.log.LogReader;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.DBUtils;
@@ -167,10 +169,17 @@ public class PoiGridIncreSearch {
 		}
 		return pois;
 	}
+	
 	/**
-	 * 全量下载
+	 * @Title: loadIxPoi
+	 * @Description: 全量下载 (修改)(第七迭代)(变更: 已删除的poi 也需要下载)
+	 * @param grid
+	 * @param conn
 	 * @return
-	 * @throws Exception
+	 * @throws Exception  Map<Long,IxPoi>
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2016年11月28日 下午7:23:21 
 	 */
 	@SuppressWarnings("static-access")
 	private Map<Long,IxPoi> loadIxPoi(String grid,Connection conn)throws Exception{
@@ -179,8 +188,10 @@ public class PoiGridIncreSearch {
 		sb.append("SELECT poi_num,pid,mesh_id,kind_code,link_pid,x_guide,y_guide,post_code,open_24h,chain,u_record,geometry,\"LEVEL\",sports_venue,indoor,vip_flag,truck_flag  ");
 		sb.append(" FROM ix_poi");
 		sb.append(" WHERE sdo_within_distance(geometry, sdo_geometry(    :1  , 8307), 'mask=anyinteract') = 'TRUE' ");
+		//*********2016.11.28 zl***********
 		// 不下载已删除的点20161013
-		sb.append(" AND u_record!=2");
+		//sb.append(" AND u_record!=2");
+		//*********2016.11.28 zl***********
 		logger.info("poi query sql:"+sb);
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
@@ -317,6 +328,16 @@ public class PoiGridIncreSearch {
 		
 	}
 	
+	/**
+	 * @Title: loadChildTables
+	 * @Description: 下载子表数据 (修)(第七迭代) (变更: 增加查询 samepoi  子表数据)
+	 * @param conn
+	 * @param pois
+	 * @throws Exception  void
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2016年11月29日 下午5:57:33 
+	 */
 	private void loadChildTables(Connection conn,Map<Long,IxPoi> pois)throws Exception{
 		
 		Collection<Long> pids = pois.keySet();
@@ -329,7 +350,9 @@ public class PoiGridIncreSearch {
 		
 		logger.info("设置子表IX_POI_NAME");
 		
-		String sql="select * from ix_poi_name where u_record !=2 and name_class=1 and name_type=2 and lang_code='CHI' and poi_pid in (select to_number(column_value) from table(clob_to_table(?)))";
+		String sql="select * from ix_poi_name where "
+				//+ "u_record !=2 and "
+				+ "name_class=1 and name_type=2 and lang_code='CHI' and poi_pid in (select to_number(column_value) from table(clob_to_table(?)))";
 		
 		Map<Long,List<IRow>> names = run.query(conn, sql, new IxPoiNameHandler(),pidsClob);
 
@@ -339,7 +362,9 @@ public class PoiGridIncreSearch {
 		
 		logger.info("设置子表IX_POI_ADDRESS");
 		
-		sql="select * from ix_poi_address where u_record !=2 and name_groupid=1 and lang_code='CHI' and poi_pid in (select to_number(column_value) from table(clob_to_table(?)))";
+		sql="select * from ix_poi_address where "
+				//+ "u_record !=2 and "
+				+ "name_groupid=1 and lang_code='CHI' and poi_pid in (select to_number(column_value) from table(clob_to_table(?)))";
 		
 		Map<Long,List<IRow>> addresses = run.query(conn, sql, new IxPoiAddressHandler(),pidsClob);
 
@@ -351,7 +376,9 @@ public class PoiGridIncreSearch {
 		
 		StringBuilder sbParent = new StringBuilder();
 		sbParent.append("WITH A AS(");
-		sbParent.append(" SELECT CH.GROUP_ID,CH.CHILD_POI_PID,CH.RELATION_TYPE,P.PARENT_POI_PID FROM IX_POI_CHILDREN CH,IX_POI_PARENT P WHERE CH.GROUP_ID=P.GROUP_ID AND CH.CHILD_POI_PID IN (select to_number(column_value) PID from table(clob_to_table(?))) AND CH.U_RECORD!=2 ");
+		sbParent.append(" SELECT CH.GROUP_ID,CH.CHILD_POI_PID,CH.RELATION_TYPE,P.PARENT_POI_PID FROM IX_POI_CHILDREN CH,IX_POI_PARENT P WHERE CH.GROUP_ID=P.GROUP_ID AND CH.CHILD_POI_PID IN (select to_number(column_value) PID from table(clob_to_table(?))) "
+			//	+ "AND CH.U_RECORD!=2 "
+				+ "");
 		sbParent.append(" ),");
 		sbParent.append(" B AS(");
 		sbParent.append(" SELECT CHILD_POI_PID,MIN(PARENT_POI_PID) P_PID FROM A WHERE RELATION_TYPE=2 GROUP BY CHILD_POI_PID");
@@ -378,7 +405,7 @@ public class PoiGridIncreSearch {
 		sb.append(" ,ix_poi_children c");
 		sb.append(" WHERE p.group_id=c.group_id");
 		sb.append(" AND p.parent_poi_pid in (select to_number(column_value) from table(clob_to_table(?)))");
-		sb.append(" AND c.u_record !=2");
+		//sb.append(" AND c.u_record !=2");
 		
 		Map<Long,List<IRow>> children = run.query(conn, sb.toString(), new IxPoiChildrenHandler(),pidsClob);
 
@@ -388,7 +415,9 @@ public class PoiGridIncreSearch {
 		
 		logger.info("设置子表IX_POI_CONTACT");
 		
-		sql="select * from ix_poi_contact where u_record!=2 and poi_pid in (select to_number(column_value) from table(clob_to_table(?)))";
+		sql="select * from ix_poi_contact where "
+				//+ "u_record!=2 and "
+				+ "poi_pid in (select to_number(column_value) from table(clob_to_table(?)))";
 		
 		Map<Long,List<IRow>> contact = run.query(conn, sql, new IxPoiContactHandler(),pidsClob);
 
@@ -398,7 +427,9 @@ public class PoiGridIncreSearch {
 		
 		logger.info("设置子表IX_POI_RESTAURANT");
 		
-		sql="select * from ix_poi_restaurant WHERE u_record !=2 and poi_pid in (select to_number(column_value) from table(clob_to_table(?)))";
+		sql="select * from ix_poi_restaurant WHERE "
+				//+ "u_record !=2 and "
+				+ "poi_pid in (select to_number(column_value) from table(clob_to_table(?)))";
 		
 		Map<Long,List<IRow>> restaurant = run.query(conn, sql, new IxRestaurantHandler(),pidsClob);
 
@@ -408,7 +439,9 @@ public class PoiGridIncreSearch {
 		
 		logger.info("设置子表IX_POI_PARKING");
 		
-		sql="select * from ix_poi_parking WHERE u_record !=2 and poi_pid in (select to_number(column_value) from table(clob_to_table(?)))";
+		sql="select * from ix_poi_parking WHERE "
+				//+ "u_record !=2 and "
+				+ "poi_pid in (select to_number(column_value) from table(clob_to_table(?)))";
 		
 		Map<Long,List<IRow>> parking = run.query(conn, sql, new IxParkingHandler(),pidsClob);
 
@@ -418,7 +451,9 @@ public class PoiGridIncreSearch {
 		
 		logger.info("设置子表IX_POI_HOTEL");
 		
-		sql="select * from ix_poi_hotel WHERE u_record !=2 and poi_pid in (select to_number(column_value) from table(clob_to_table(?)))";
+		sql="select * from ix_poi_hotel WHERE "
+				//+ "u_record !=2 and "
+				+ "poi_pid in (select to_number(column_value) from table(clob_to_table(?)))";
 		
 		Map<Long,List<IRow>> hotel = run.query(conn, sql, new IxHotelHandler(),pidsClob);
 
@@ -428,7 +463,9 @@ public class PoiGridIncreSearch {
 		
 		logger.info("设置子表IX_POI_GASSTATION");
 		
-		sql="select * from ix_poi_gasstation WHERE u_record !=2 and poi_pid in (select to_number(column_value) from table(clob_to_table(?)))";
+		sql="select * from ix_poi_gasstation WHERE "
+				//+ "u_record !=2 and "
+				+ "poi_pid in (select to_number(column_value) from table(clob_to_table(?)))";
 		
 		Map<Long,List<IRow>> gasstation = run.query(conn, sql, new IxGasstationHandler(),pidsClob);
 
@@ -438,7 +475,9 @@ public class PoiGridIncreSearch {
 		
 		logger.info("设置子表IX_POI_CHARGINGSTATION");
 		
-		 sql = "select * from ix_poi_chargingstation WHERE u_record !=2 and poi_pid in (select to_number(column_value) from table(clob_to_table(?)))";
+		 sql = "select * from ix_poi_chargingstation WHERE "
+		 		//+ "u_record !=2 and "
+		 		+ "poi_pid in (select to_number(column_value) from table(clob_to_table(?)))";
 		
 		 Map<Long,List<IRow>> chargingstation = run.query(conn, sql, new IxChargingstationHandler(),pidsClob);
 
@@ -448,13 +487,49 @@ public class PoiGridIncreSearch {
 		
 		logger.info("设置子表IX_POI_CHARGINGPLOT");
 		
-		 sql = "select * from ix_poi_chargingplot WHERE u_record !=2 and poi_pid in (select to_number(column_value) from table(clob_to_table(?)))";
+		 sql = "select * from ix_poi_chargingplot WHERE "
+		 		//+ "u_record !=2 and "
+		 		+ "poi_pid in (select to_number(column_value) from table(clob_to_table(?)))";
 		
 		 Map<Long,List<IRow>> chargingplot = run.query(conn, sql, new IxChargingplotHandler(),pidsClob);
 
 		for(Long pid:chargingplot.keySet()){
 			pois.get(pid).setChargingplots(chargingplot.get(pid));
 		}
+		
+		/*logger.info("设置  samefid");
+		
+		StringBuilder sbSamepoi = new StringBuilder();
+		sbSamepoi.append("WITH q1 as(");
+		sbSamepoi.append(" select s.group_id,p.group_id,p.poi_pid pid, ");
+		sbSamepoi.append(" (select pp.poi_pid  from ix_samepoi_part pp where pp.group_id = p.group_id and pp.poi_pid != p.poi_pid)  otherpid  ");
+		sbSamepoi.append(" from ix_samepoi s , ix_samepoi_part p  ");
+		sbSamepoi.append(" where s.group_id = p.group_id ");
+		sbSamepoi.append(" and p.poi_pid in (select to_number(column_value) from table(clob_to_table(?))) ");
+		sbSamepoi.append(" ) ");
+		sbSamepoi.append(" select q.pid,nvl(i.poi_num,'') poi_num from ix_poi i, q1 q where i.pid=q.otherpid ");
+//		select q.pid,nvl(i.poi_num,'') poi_num from ix_poi i, 
+//		(select s.group_id,p.group_id,p.poi_pid pid,(select pp.poi_pid  from ix_samepoi_part pp where pp.group_id = p.group_id and pp.poi_pid != p.poi_pid)  otherpid from ix_samepoi s , ix_samepoi_part p where s.group_id = p.group_id and p.poi_pid in (select to_number(column_value) from table(clob_to_table('8165144,55569871,2649586')))) q
+//		 where i.pid=q.otherpid 
+		System.out.println(pidsClob.getSubString((long)1,(int)pidsClob.length()));
+		System.out.println("sql :" + sbSamepoi.toString());
+		//Map<Long,List<IRow>> samepoi = run.query(conn, sbSamepoi.toString(), new IxSamepoiHandler(),pidsClob);
+		Map<Long,String> sameFidMap = run.query(conn, sbSamepoi.toString(), new IxSamepoiHandler(),pidsClob);
+		for(Long pid:sameFidMap.keySet()){
+			pois.get(pid).setSameFid(sameFidMap.get(pid));
+		}
+		
+		logger.info("设置 字段 editstatus");
+		StringBuilder sbEditStatus = new StringBuilder();
+		sbEditStatus.append("select t.pid,t.status from POI_EDIT_STATUS t ");
+		sbEditStatus.append(" where t.pid in (select to_number(column_value) from table(clob_to_table(?))) ");
+		System.out.println(pidsClob);
+		System.out.println("sql :" + sbEditStatus.toString());
+		
+		Map<Long,Integer> editStatus = run.query(conn, sbEditStatus.toString(), new poiEditStatusHandler(),pidsClob);
+		for(Long pid:editStatus.keySet()){
+			pois.get(pid).setPoiEditStatus(editStatus.get(pid));
+		}*/
 			
 	}
 	

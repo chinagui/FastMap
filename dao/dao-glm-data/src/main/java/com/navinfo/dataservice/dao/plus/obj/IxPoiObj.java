@@ -137,7 +137,6 @@ public class IxPoiObj extends AbstractIxObj {
 			subrows.put("IX_POI_DETAIL", ixPoiHotelList);
 		}
 		return ixPoiHotel;
-//		return (IxPoiHotel)(ObjFactory.getInstance().createRow("IX_POI_HOTEL", this.objPid()));
 	}
 	public List<IxPoiDetail> getIxPoiDetails(){
 		return (List)subrows.get("IX_POI_DETAIL");
@@ -152,13 +151,13 @@ public class IxPoiObj extends AbstractIxObj {
 			subrows.put("IX_POI_DETAIL", ixPoiDetailList);
 		}
 		return ixPoiDetail;
-//		return (IxPoiDetail)(ObjFactory.getInstance().createRow("IX_POI_DETAIL", this.objPid()));
 	}
 	public List<IxPoiChildren> getIxPoiChildrens(){
 		return (List)subrows.get("IX_POI_CHILDREN");
 	}
-	public IxPoiChildren createIxPoiChildren()throws Exception{
+	public IxPoiChildren createIxPoiChildren(long groupId)throws Exception{
 		IxPoiChildren ixPoiChildren = (IxPoiChildren)(ObjFactory.getInstance().createRow("IX_POI_CHILDREN", this.objPid()));
+		ixPoiChildren.setGroupId(groupId);
 		if(subrows.containsKey("IX_POI_CHILDREN")){
 			subrows.get("IX_POI_CHILDREN").add(ixPoiChildren);
 		}else{
@@ -167,7 +166,6 @@ public class IxPoiObj extends AbstractIxObj {
 			subrows.put("IX_POI_CHILDREN", ixPoiChildrenList);
 		}
 		return ixPoiChildren;
-//		return (IxPoiChildren)(ObjFactory.getInstance().createRow("IX_POI_CHILDREN", this.objPid()));
 	}
 	
 	public List<IxPoiParent> getIxPoiParents(){
@@ -183,7 +181,6 @@ public class IxPoiObj extends AbstractIxObj {
 			subrows.put("IX_POI_PARENT", ixPoiParentList);
 		}
 		return ixPoiParent;
-//		return (IxPoiParent)(ObjFactory.getInstance().createRow("IX_POI_PARENT", this.objPid()));
 	}
 	
 	/**
@@ -250,6 +247,30 @@ public class IxPoiObj extends AbstractIxObj {
 		return null;
 	}
 	
+	/*
+	 * 官方原始中文名称
+	 */
+	public IxPoiName getOfficeOriginCHIName(){
+		List<IxPoiName> subRows=getIxPoiNames();
+		for(IxPoiName br:subRows){
+			if(br.getNameClass()==1&&br.getNameType()==2&&br.getLangCode().equals("CHI")){
+				return br;}
+			}
+		return null;
+	}
+	
+	/*
+	 * 官方标准中文名称
+	 */
+	public IxPoiName getOfficeStandardCHName(){
+		List<IxPoiName> subRows=getIxPoiNames();
+		for(IxPoiName br:subRows){
+			if(br.getNameClass()==1&&br.getNameType()==1
+					&&(br.getLangCode().equals("CHI")||br.getLangCode().equals("CHT"))){
+				return br;}
+			}
+		return null;
+	}
 	
 	@Override
 	public String objName() {

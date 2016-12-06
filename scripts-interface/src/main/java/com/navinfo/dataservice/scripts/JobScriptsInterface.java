@@ -32,7 +32,7 @@ public class JobScriptsInterface {
 		jobInfo.setType(type);
 		jobInfo.setRequest(request);
 		//设置jobId
-		jobInfo.setId(963);
+//		jobInfo.setId(963);
 		AbstractJob job = JobCreateStrategy.createAsMethod(jobInfo);
 		job.run();
 		return job.getJobInfo().getResponse();
@@ -91,7 +91,8 @@ public class JobScriptsInterface {
 			}
 			JSONObject request=null;
 			JSONObject response = null;
-			String dir = SystemConfigFactory.getSystemConfig().getValue("scripts.dir");
+//			String dir = SystemConfigFactory.getSystemConfig().getValue("scripts.dir");
+			String dir = "F:\\Fm_Projects_Doc\\scripts\\";
 			request = readJson(dir+"request"+File.separator+irequest);
 			//初始化context
 			initContext();

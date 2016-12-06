@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.web.sys.controller;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -282,24 +283,40 @@ public class SysMsgController extends BaseController {
 	 * @param request
 	 * @return
 	 */
+	@RequestMapping(value = "/sysmsg/listAllHistory")
+	public ModelAndView getAllMsgHistory(HttpServletRequest request){
+		try{
+			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			Long userId = tokenObj.getUserId();
+			String condition ="{\"isHistory\":2}";
+			Map<String, List<Map<String, Object>>> msgs = SysMsgService.getInstance().getAllMsg(userId,condition);
+			return new ModelAndView("jsonView", success(msgs));
+		}catch(Exception e){
+			log.error("查询失败，原因："+e.getMessage(), e);
+			return new ModelAndView("jsonView",exception(e));
+		}
+	}
+	
+	/**
+	 * 全部5天内的系统/管理消息查询列表
+	 * 编辑平台-消息中心
+	 * 根据传参查询接收人targetUserId=登陆用户的非删除消息列表，不分页
+	 * @author 
+	 * @param request
+	 * @return
+	 */
 	@RequestMapping(value = "/sysmsg/listAll")
 	public ModelAndView getAllMsg(HttpServletRequest request){
 		try{
 			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
 			Long userId = tokenObj.getUserId();
-			String parameter = request.getParameter("parameter");
-			if (StringUtils.isEmpty(parameter)) {
-				throw new IllegalArgumentException("parameter参数不能为空。");
-			}
-			JSONObject paraJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
-			if (paraJson == null) {
-				throw new IllegalArgumentException("parameter参数不能为空。");
-			}
-			if(!paraJson.containsKey("condition")){
-				throw new IllegalArgumentException("parameter参数中condition不能为空。");
-			}
-			String condition = paraJson.getString("condition");
-			List<Map<String, Object>> msgs = SysMsgService.getInstance().getAllMsg(userId,condition);
+			String condition ="{\"isHistory\":1,\"msgType\":1}";
+			Map<String, List<Map<String, Object>>> sysMsgs = SysMsgService.getInstance().getAllMsg(userId,condition);
+			condition ="{\"isHistory\":1,\"msgType\":2}";
+			Map<String, List<Map<String, Object>>> manageMsgs = SysMsgService.getInstance().getAllMsg(userId,condition);
+			Map<String,Map<String, List<Map<String, Object>>>> msgs=new HashMap<String, Map<String,List<Map<String,Object>>>>();
+			msgs.put("sys", sysMsgs);
+			msgs.put("manage", manageMsgs);
 			return new ModelAndView("jsonView", success(msgs));
 		}catch(Exception e){
 			log.error("查询失败，原因："+e.getMessage(), e);

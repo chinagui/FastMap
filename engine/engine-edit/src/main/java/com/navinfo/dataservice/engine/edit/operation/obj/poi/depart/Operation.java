@@ -37,7 +37,7 @@ public class Operation {
         List<IxPoi> pois = poiSelector.loadIxPoiByLinkPid(oldLink.pid(), true);
         // 当分离后的线没有跨越图幅时
         if (newLinks.size() == 1) {
-            Geometry linkGeo = newLinks.get(0).getGeometry();
+            Geometry linkGeo = GeoTranslator.transform(newLinks.get(0).getGeometry(), 0.00001, 5);
             for (IxPoi poi : pois) {
                 // 判断Poi引导坐标所处线段几何是否发生变化
                 Geometry oldPoint = GeoTranslator.point2Jts(poi.getxGuide(), poi.getyGuide());
@@ -46,7 +46,8 @@ public class Operation {
 
                 Coordinate coor = null;
                 // 计算poi坐标与移动后link几何最近的点
-                coor = GeometryUtils.GetNearestPointOnLine(oldPoint.getCoordinate(), linkGeo);
+                coor = GeometryUtils.GetNearestPointOnLine(GeoTranslator.transform(oldPoint, 0.00001, 5).getCoordinate(), linkGeo)
+                ;
                 if (null != coor) {
                     poi.changedFields().put("xGuide", coor.x);
                     poi.changedFields().put("yGuide", coor.y);
@@ -66,12 +67,12 @@ public class Operation {
                 for (RdLink link : newLinks) {
                     geometries.add(link.getGeometry());
                 }
-                Geometry nochangeGeo = GeoTranslator.transform(oldLink.getGeometry(), 0.00001, 5).intersection(GeoTranslator.geojson2Jts(GeometryUtils.connectLinks(geometries)));
-                if (GeoTranslator.transform(oldPoint, 0.00001, 5).intersects(nochangeGeo)) continue;
+                Geometry nochangeGeo = GeoTranslator.transform(oldLink.getGeometry(), 0.00001, 5).intersection(GeoTranslator.geojson2Jts(GeometryUtils.connectLinks(geometries), 0.00001, 5));
+                if (oldPoint.intersects(nochangeGeo)) continue;
 
                 for (RdLink link : newLinks) {
                     Geometry linkGeo = link.getGeometry();
-                    Coordinate tmpCoor = GeometryUtils.GetNearestPointOnLine(oldPoint.getCoordinate(), linkGeo);
+                    Coordinate tmpCoor = GeometryUtils.GetNearestPointOnLine(oldPoint.getCoordinate(), GeoTranslator.transform(linkGeo, 0.00001, 5));
                     if (null != tmpCoor) {
                         double length = GeometryUtils.getDistance(oldPoint.getCoordinate(), tmpCoor);
                         if (minLength == 0 || length < minLength) {

@@ -15,15 +15,22 @@ import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
+import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiParking;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiAddress;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiName;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiNameFlag;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiPhoto;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiChildren;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiParent;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdmin;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiColumnStatusSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiAddressSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiNameSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
+import com.navinfo.dataservice.dao.log.LogReader;
+import com.navinfo.dataservice.dao.glm.search.AdAdminSearch;
 import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONArray;
@@ -709,6 +716,333 @@ public class IxPoiSearch implements ISearch {
 			}
 			return result;
 		} catch (Exception e) {
+			throw e;
+		}
+	}
+	
+	/**
+	 * 精编作业数据查询
+	 * @param firstWordItem
+	 * @param secondWorkItem
+	 * @param rowIds
+	 * @param type
+	 * @param langCode
+	 * @return
+	 * @throws Exception
+	 */
+	public JSONArray searchColumnPoiByPid(String firstWordItem,String secondWorkItem,List<Integer> pids,String type,long userId) throws Exception {
+		
+		JSONArray dataList = new JSONArray();
+		
+		JSONObject poiObj = new JSONObject();
+		
+		boolean isLock = false;
+		
+		try {
+			
+			MetadataApi apiService=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
+			
+			
+			JSONObject metaData = apiService.getMetadataMap();
+			
+			this.CHAINMAP = metaData.getJSONObject("chain");
+			
+			this.KINDCODEMAP = metaData.getJSONObject("kindCode");
+			
+			this.ADMINMAP =  metaData.getJSONObject("admin");
+			
+			this.CHARACTERMAP = metaData.getJSONObject("character");
+			
+			this.NAVICOVPYMAP = metaData.getJSONObject("navicovpy");
+			
+			this.ENGSHORTMAP = metaData.getJSONObject("engshort");
+			for (int pid:pids) {
+				
+				IxPoiSelector poiSelector = new IxPoiSelector(conn);
+				IxPoi poi = (IxPoi) poiSelector.loadById(pid, isLock);
+				
+//				IxPoiNameSelector nameSelector = new IxPoiNameSelector(conn);
+//				List<IRow> nameList = nameSelector.loadRowsByParentId(poi.getPid(), isLock);
+//				poi.setNames(nameList);
+				poi.setNames(new AbstractSelector(IxPoiName.class,conn).loadRowsByParentId(poi.getPid(), isLock));
+				poi.setPhotos(new AbstractSelector(IxPoiPhoto.class,conn).loadRowsByParentId(poi.getPid(), isLock));
+				poi.setParents(new AbstractSelector(IxPoiParent.class,conn).loadRowsByParentId(poi.getPid(), isLock));
+				poi.setChildren(new AbstractSelector(IxPoiChildren.class,conn).loadRowsByParentId(poi.getPid(), isLock));
+				
+				//获取各专项共用字段
+				poiObj=getCommenfields(pid,type,poi);
+				poiObj.put("userId", userId);
+				
+				//特殊字段
+				poiObj=getUnCommenfields(firstWordItem,secondWorkItem,pid,type,poi,poiObj);
+				dataList.add(poiObj);
+			}	
+			
+			return dataList;
+		} catch (Exception e) {
+			throw e;
+		}
+	}
+	
+	/**
+	 * 查询个专项公共返回字段
+	 * @param secondWorkItem
+	 * @param rowIds
+	 * @param type
+	 * @param langCode
+	 * @return
+	 * @throws Exception
+	 */
+	private JSONObject getCommenfields(int pid,String type,IxPoi poi) throws Exception {
+ 
+		boolean isLock = false;
+		try{
+			JSONObject dataObj = new JSONObject();
+			dataObj.put("pid", pid);
+			dataObj.put("poiNum", poi.getPoiNum());
+			dataObj.put("kindCode", poi.getKindCode());
+			dataObj.put("meshId", poi.getMeshId());
+			//ix_poi表通过region_id关联ad_admin，获取adminCode
+			int regionId = poi.getRegionId();
+			AdAdminSearch adAdminSearch = new AdAdminSearch(conn);
+			AdAdmin adAdmin = (AdAdmin) adAdminSearch.searchDataByPid(regionId);
+			dataObj.put("adminCode",adAdmin.getAdminId());
+			
+			int parProupId = 0,childProupId=0;
+			
+			//ix_poi表通过pid关联ix_poi_parent，取group_id
+			List<IRow> pRows = poi.getParents();
+			for(IRow pRow : pRows){
+				IxPoiParent parents = (IxPoiParent) pRow;
+				parProupId = parents.getPid();
+			}
+			dataObj.put("parentGroupId",parProupId);
+			//ix_poi表通过pid关联ix_poi_children，取group_id
+			List<IRow> cRows = poi.getChildren();
+			for(IRow cRow : cRows){
+				IxPoiChildren Children = (IxPoiChildren) cRow;
+				childProupId = Children.getGroupId();
+			}
+			dataObj.put("childrenGroupId", childProupId);
+					
+			JSONObject poiObj = poi.Serialize(null);	
+			//ix_poi表通过pid关联Ix_Poi_Photo，将照片记录转换为json格式的名称组
+			dataObj.put("photos", poiObj.get("photos"));
+			//ix_poi表通过pid关联ix_poi_parent，将父子关系记录转换为json格式的名称组
+			dataObj.put("parent", poiObj.get("parents"));
+			
+			//通过ix_poi表中的chain，去元数据表ci_para_chain中匹配获取相应的名称
+			dataObj.put("brandName", CHAINMAP.get(poi.getChain()));
+			//ix_poi表通过region_id关联ad_admin，获取adminCode，去元数据表sc_point_adminarea中匹配获取相应的名称
+			//待确认
+			if (ADMINMAP.containsKey(Integer.toString(poi.getAdminReal()))) {
+				dataObj.put("whole", ADMINMAP.get(Integer.toString(poi.getAdminReal())));
+			} else {
+				dataObj.put("whole", Integer.toString(poi.getAdminReal()));
+			}
+					
+			return dataObj;	
+		} catch (Exception e) {
+			
+			throw e;
+		}
+	}
+	
+	/**
+	 * 查询个专项公共返回字段
+	 * @param secondWorkItem
+	 * @param rowIds
+	 * @param type
+	 * @param langCode
+	 * @return
+	 * @throws Exception
+	 */
+	private JSONObject getUnCommenfields(String firstWordItem,String secondWorkItem,int pid,String type,IxPoi poi,JSONObject dataObj) throws Exception {
+ 
+		boolean isLock = false;
+		try{
+			
+			//parentName 当二级项作业为nameUnify时，取该poi的父名称（官方标准化中文）
+			dataObj=getParentName( secondWorkItem,poi,dataObj);
+			//名称相关字段
+			dataObj=getNamesNameFlagNameList(firstWordItem,secondWorkItem,poi,dataObj);
+			//地址相关字段
+			dataObj=getAddressesAddressList(firstWordItem,secondWorkItem,poi,dataObj);
+			//oldOriginalEngName,newOriginalEngName,oldStandardEngName,newStandardEngName
+			dataObj=getNameBeforBatch(firstWordItem,secondWorkItem,poi,dataObj);
+			
+			return dataObj;	
+		}catch (Exception e) {
+			throw e;
+		}
+	}
+	/**
+	 * 查询poi的父名称
+	 * @param secondWorkItem
+	 * @param poi
+	 * @param dataObj
+	 * @return
+	 * @throws Exception
+	 */
+	private JSONObject getParentName(String secondWorkItem,IxPoi poi,JSONObject dataObj) throws Exception {
+		try{
+			if (secondWorkItem.equals("nameUnify")) {
+				List<IRow> pRows = poi.getParents();
+				int parentPoiPid = 0;
+				for (IRow pRow:pRows) {
+					IxPoiParent parent = (IxPoiParent) pRow;
+					parentPoiPid = parent.getParentPoiPid();
+				}
+				if (parentPoiPid!=0){
+					IxPoiNameSelector nameSelector = new IxPoiNameSelector(conn);
+					dataObj.put("parentName", nameSelector.loadByIdForColumn(parentPoiPid, "CHI"));
+				}else{
+					dataObj.put("parentName", "");
+				}
+			}
+		return dataObj;
+		}catch (Exception e) {
+			throw e;
+		}
+	}
+	/**
+	 * 处理名称组相关字段
+	 * @param firstWordItem
+	 * @param secondWorkItem
+	 * @param poi
+	 * @param dataObj
+	 * @return
+	 * @throws Exception
+	 */
+	private JSONObject getNamesNameFlagNameList(String firstWordItem,String secondWorkItem,IxPoi poi,JSONObject dataObj) throws Exception {
+		JSONArray nameArray = new JSONArray();
+		String nameFlag="";
+		List<IRow> nRows = poi.getNames();
+		try{
+			for (IRow nRow:nRows) {
+				//名称组:pid关联ix_poi_name，将多组名称记录转换为json格式的名称组；
+				IxPoiName name = (IxPoiName) nRow;
+				JSONObject nameObj = name.Serialize(null);
+				/**特殊处理：当一级作业项为：poi_name、二级作业项为：namePinyin时，对'langCode'== 'CHI' and 'type'==1 and 'nameClass' 
+				in [1,3,5,8]的记录，添加字段multiPinyin，multiPinyin的取值原则：对name中存在多音字获取其对应的拼音，
+				例：multiPinyin：[[0, "大", "Da", "Dai", "Tai"], [2, "区", "Qu", "Ou"]]*/
+				if (secondWorkItem.equals("namePinyin")) {
+					List<List<String>> pyList = new ArrayList<List<String>>();
+					if (name.getLangCode().equals("CHI") && name.getNameType() == 1) {
+						if (name.getNameClass()==1||name.getNameClass()==3||name.getNameClass()==5||name.getNameClass()==8) {
+							pyList = pyConvertor(name.getName());
+							nameObj.put("multiPinyin", pyList);
+						}
+					}
+				}
+				nameArray.add(nameObj);
+				//nameFlag赋值
+				if (firstWordItem.equals("poi_englishname")) {
+					if (name.getLangCode().equals("ENG") && name.getNameType() == 2 && name.getNameClass()== 1) {
+						List<IRow> fRows = name.getNameFlags();
+						for (IRow fRow:fRows) {
+							IxPoiNameFlag nFlag = (IxPoiNameFlag) fRow;
+							nameFlag = nFlag.getFlagCode();
+						}
+					}
+				}
+				//nameList赋值
+				if (firstWordItem.equals("poi_englishname")) {
+					if (!secondWorkItem.equals("confirmAliasEngName")&&!secondWorkItem.equals("officalStandardAliasEngName")) {
+						List<String> nameList = new ArrayList<String>();
+						if (name.getLangCode().equals("ENG") && name.getNameType() == 2 && name.getNameClass()== 1) {
+							if (name.getLangCode().equals("ENG")) {
+								String[] wordList = name.getName().split(" ");
+								for (String word:wordList) {
+									if (ENGSHORTMAP.containsKey(word)) {
+										nameList.add(word + "&" + ENGSHORTMAP.get(word));
+									}
+								}
+							}
+						}
+						dataObj.put("nameList", nameList);
+					}
+				}
+			}
+			dataObj.put("names", nameArray);
+			dataObj.put("nameFlag", nameFlag);
+			return dataObj;
+		}catch (Exception e) {
+			throw e;
+		}
+	}
+	/**
+	 * 处理地址组相关字段
+	 * @param firstWordItem
+	 * @param secondWorkItem
+	 * @param poi
+	 * @param dataObj
+	 * @return
+	 * @throws Exception
+	 */
+	private JSONObject getAddressesAddressList(String firstWordItem,String secondWorkItem,IxPoi poi,JSONObject dataObj) throws Exception {
+		JSONArray addrArray = new JSONArray();
+		List<IRow> aRows = poi.getAddresses();
+		try{
+			if (firstWordItem.equals("poi_address") || firstWordItem.equals("poi_englishaddress")) {
+				for (IRow aRow:aRows) {
+					//地址组:当一级作业项=poi_address或poi_englishaddress时，pid关联ix_poi_address，将多组名称记录转换为json格式的名称组；
+					IxPoiAddress address = (IxPoiAddress) aRow;
+					JSONObject addrObj = address.Serialize(null);
+					/**特殊处理：特殊处理：当二级作业项为：addrPinyin时，对'langCode'== 'CHI'的记录，添加字段addrNameMultiPinyin、roadNameMultiPinyin、fullNameMultiPinyin，
+					 取值原则：对address中字段addrName、roadName、fullName存在多音字分别获取其对应的拼音*/
+					if (secondWorkItem.equals("addrPinyin")){	
+						if (address.getLangCode().equals("CHI")) {
+							if (address.getAddrname()!=null && !address.getAddrname().isEmpty()) {
+								List<List<String>> addrNameMultiPinyin = pyConvertor(address.getAddrname());
+								addrObj.put("addrNameMultiPinyin", addrNameMultiPinyin);
+							}
+							if (address.getRoadname()!=null && !address.getRoadname().isEmpty()) {
+								List<List<String>> roadNameMultiPinyin = pyConvertor(address.getRoadname());
+								addrObj.put("roadNameMultiPinyin", roadNameMultiPinyin);
+							}
+							if (address.getFullname()!=null && !address.getFullname().isEmpty()) {
+								List<List<String>> fullNameMultiPinyin = pyConvertor(address.getFullname());
+								addrObj.put("fullNameMultiPinyin", fullNameMultiPinyin);
+							}
+						}	
+					}
+					addrArray.add(addrObj);
+					
+					//addressList赋值
+					List<String> addrList = new ArrayList<String>();
+					if (address.getLangCode().equals("ENG")) {
+						String[] wordList = address.getFullname().split(" ");
+						for (String word:wordList) {
+							if (ENGSHORTMAP.containsKey(word)) {
+								addrList.add(word + "&" + ENGSHORTMAP.get(word));
+							}
+						}
+					}
+					dataObj.put("addressList", addrList);	
+				}
+				dataObj.put("addresses", addrArray);	
+			} 
+			return dataObj;
+		}catch (Exception e) {
+			throw e;
+		}
+	}
+	/**
+	 * 取英文名称批处理前后值
+	 * @param secondWorkItem
+	 * @param poi
+	 * @param dataObj
+	 * @return
+	 * @throws Exception
+	 */
+	private JSONObject getNameBeforBatch(String firstWordItem,String secondWorkItem,IxPoi poi,JSONObject dataObj) throws Exception {
+		LogReader logReader = new LogReader(conn);
+		JSONArray results = new JSONArray();
+		results=logReader.getHisByOperate("Day2MonthPreBatch","IX_POI_NAME","rowid");
+		try{
+			return dataObj;
+		}catch (Exception e) {
 			throw e;
 		}
 	}

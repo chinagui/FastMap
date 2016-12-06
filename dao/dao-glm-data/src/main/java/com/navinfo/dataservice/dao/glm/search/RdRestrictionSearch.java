@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.navinfo.dataservice.commons.geom.AngleCalculator;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.commons.util.DisplayUtils;
@@ -16,6 +17,10 @@ import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.selector.rd.restrict.RdRestrictionSelector;
+import com.navinfo.navicommons.geo.computation.GeometryUtils;
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.LineString;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -221,9 +226,9 @@ public class RdRestrictionSearch implements ISearch {
 
 				STRUCT struct1 = (STRUCT) resultSet.getObject("link_geom");
 
-				JGeometry geom1 = JGeometry.load(struct1);
+				LineString lineGeo = (LineString) GeoTranslator.struct2Jts(struct1);
 
-				String linkWkt = new String(new WKT().fromJGeometry(geom1));
+				String linkWkt = GeoTranslator.jts2Wkt(lineGeo);
 
 				STRUCT struct2 = (STRUCT) resultSet.getObject("point_geom");
 
@@ -236,12 +241,36 @@ public class RdRestrictionSearch implements ISearch {
 				double angle = DisplayUtils.calIncloudedAngle(linkWkt, direct);
 
 				jsonM.put("c", String.valueOf((int)angle));
+				
+				if(direct == 2)
+				{
+					lineGeo = (LineString) lineGeo.reverse();
+				}
+				
+				// 线的长度
+				double lineLength = GeometryUtils.getLinkLength(lineGeo);
+				
+				Geometry point = null;
+				
+				// 调整车信图标位置计算原则：进入线上距离进入点4.5米处，如果进入线不足4.5米，则在20%处；与link保持平行
+				if (lineLength > 4.5) {
+					// 获取打断点的位置
+					Coordinate coordinate = GeometryUtils.getPointOnLineStringDistance(lineGeo, 4.5);
 
-				double[][] point = DisplayUtils.getGdbPointPos(linkWkt,
-						pointWkt, 0);
+					point = GeoTranslator.point2Jts(coordinate.x, coordinate.y);
+				} else {
+					double onePercentFiveLength = lineLength / 5;
 
-				snapshot.setG(Geojson.lonlat2Pixel(point[1][0], point[1][1], z,
-						px, py));
+					Coordinate coordinate = GeometryUtils.getPointOnLineStringDistance(lineGeo, onePercentFiveLength);
+
+					point = GeoTranslator.point2Jts(coordinate.x, coordinate.y);
+				}
+
+				JSONObject geoObj = GeoTranslator.jts2Geojson(point);
+
+				Geojson.point2Pixel(geoObj, z, px, py);
+
+				snapshot.setG(geoObj.getJSONArray("coordinates"));
 
 				snapshot.setM(jsonM);
 

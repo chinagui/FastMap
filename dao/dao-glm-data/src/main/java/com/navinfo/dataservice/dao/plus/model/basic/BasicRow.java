@@ -44,6 +44,10 @@ public abstract class BasicRow{
 	protected List<ChangeLog> hisChangeLogs;
 	
 	
+	public void setHisChangeLogs(List<ChangeLog> hisChangeLogs) {
+		this.hisChangeLogs = hisChangeLogs;
+	}
+
 	public BasicRow() {
 		super();
 		// TODO Auto-generated constructor stub
@@ -187,6 +191,7 @@ public abstract class BasicRow{
 	}
 	public boolean isChanged(){
 		if(opType.equals(OperationType.INSERT_DELETE))return false;
+		if(opType.equals(OperationType.PRE_DELETED))return false;
 		if(opType.equals(OperationType.UPDATE)&&(oldValues==null||oldValues.size()==0))return false;
 		return true;
 	}

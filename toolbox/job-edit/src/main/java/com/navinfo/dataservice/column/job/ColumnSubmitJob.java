@@ -95,9 +95,9 @@ public class ColumnSubmitJob extends AbstractJob {
 			
 			// 批处理
 			BatchCommand batchCommand=new BatchCommand();		
-			List<String> batchList=new ArrayList<String>();
+			//List<String> batchList=new ArrayList<String>();
 //			ruleIdList.add("GLM001TEST");
-			batchCommand.setRuleIdList(batchList);
+			batchCommand.setOperationName("COLUMN_SUBMIT");
 			
 			Batch batch=new Batch(conn,operationResult);
 //			batch.setCmd(batchCommand);

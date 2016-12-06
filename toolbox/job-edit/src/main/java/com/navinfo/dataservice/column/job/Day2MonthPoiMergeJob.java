@@ -1,13 +1,11 @@
 package com.navinfo.dataservice.column.job;
 
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
-import com.navinfo.dataservice.api.edit.iface.FmMultiSrcSyncApi;
 import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.api.man.iface.Day2MonthSyncApi;
 import com.navinfo.dataservice.api.man.iface.ManApi;

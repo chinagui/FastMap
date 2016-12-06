@@ -6,9 +6,6 @@ import java.util.List;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
-
-
-
 /**
  * @ClassName: GlmGridRefInfo
  * @author Xiao Xiaowen
@@ -23,6 +20,7 @@ public class GlmGridRefInfo {
 	private String editQuerySql;// 给编辑时查询数据记录所属grid使用的sql，row_id是数据记录的row_id
 	private String diffQuerySql;// 给履历记录查询所属grid使用的sql，row_id是履历表的row_id
 	public static Logger logger = Logger.getLogger(GlmGridRefInfo.class);
+
 	public GlmGridRefInfo(String tableName) {
 		this.tableName = tableName;
 	}
@@ -117,7 +115,8 @@ public class GlmGridRefInfo {
 
 	private void generateSqlForTrafficSignal() {
 		editQuerySql = "SELECT P.ROW_ID,R1.GEOMETRY,0 MESH_ID ,R1.NODE_PID GEO_PID,'RD_NODE' GEO_NM  FROM "
-				+ tableName + " P,RD_CROSS_NODE R2,RD_NODE R1"
+				+ tableName
+				+ " P,RD_CROSS_NODE R2,RD_NODE R1"
 				+ " WHERE P.NODE_PID=R2.NODE_PID AND R2.NODE_PID=R1.NODE_PID";
 		diffQuerySql = "SELECT L.ROW_ID,R1.GEOMETRY,0 MESH_ID ,R1.NODE_PID GEO_PID,'RD_NODE' GEO_NM FROM "
 				+ tableName
@@ -156,7 +155,7 @@ public class GlmGridRefInfo {
 
 				if ((size - i) == 1) {
 					geoTableName = s[0];
-					geoPidName =s[1];
+					geoPidName = s[1];
 				}
 				// 查询关联表信息
 				sb4S.append("," + s[0] + " R" + (size - i));
@@ -166,13 +165,15 @@ public class GlmGridRefInfo {
 					sb4C.append(" AND R" + (size - i) + "." + s[2]);
 				}
 			}
-			//添加所属几何对应表 和对应pid
-			sb4E.append("',"+geoTableName+" +as GEO_NM '");
-			sb4D.append("',"+geoTableName+" +as GEO_NM '");
-			
-			sb4E.append("',R1."+geoPidName+" as GEO_PID '");
-			
-			sb4D.append("',R1."+geoPidName+" as GEO_PID '");
+
+			// 添加所属几何对应表 和对应pid
+
+			sb4E.append(",'" + geoTableName + "' as GEO_NM ");
+			sb4D.append(",'" + geoTableName + "' as GEO_NM ");
+
+			sb4E.append(",R1." + geoPidName + " as GEO_PID ");
+
+			sb4D.append(",R1." + geoPidName + " as GEO_PID ");
 			// 添加查询图幅字段
 			String meshSql = null;
 			if (singleMesh) {
@@ -199,11 +200,12 @@ public class GlmGridRefInfo {
 			// ...
 			sb4E.append("SELECT P.ROW_ID,P.GEOMETRY,");
 			sb4D.append("SELECT L.ROW_ID,P.GEOMETRY,");
-			//添加所属几何对应表 和对应pid
-			sb4E.append("',"+tableName+" +as GEO_NM '");
-			sb4D.append("',"+tableName+" +as GEO_NM '");
-			sb4E.append("',"+getObjPidName(tableName)+" as GEO_PID '");
-			sb4D.append("',"+getObjPidName(tableName)+" as GEO_PID '");
+
+			// 添加所属几何对应表 和对应pid
+			sb4E.append(",'" + tableName + "' as GEO_NM ");
+			sb4D.append(",'" + tableName + "' as GEO_NM ");
+			sb4E.append(",'" + getObjPidName(tableName) + "' as GEO_PID ");
+			sb4D.append(",'" + getObjPidName(tableName) + "' as GEO_PID ");
 			String meshSql = null;
 			if (singleMesh) {
 				meshSql = ",P.MESH_ID FROM ";
@@ -220,21 +222,21 @@ public class GlmGridRefInfo {
 			sb4D.append(" WHERE P.ROW_ID=L.TB_ROW_ID AND L.TB_NM = '"
 					+ tableName + "' ");
 		}
-		
+
 		editQuerySql = sb4E.toString();
 		diffQuerySql = sb4D.toString();
 		logger.info("editQuerySql" + editQuerySql.toString());
 		logger.info("diffQuerySql" + diffQuerySql.toString());
 
 	}
-	
+
 	/**
 	 * 获取有几何对应的pid名称
 	 * 
 	 * @param row
 	 * @return
 	 */
-	public  String getObjPidName(String tableName) {
+	public String getObjPidName(String tableName) {
 		String defaultPidName = "";
 		if (tableName.contains("LINK")) {
 			defaultPidName = "LINK_PID";
@@ -268,17 +270,16 @@ public class GlmGridRefInfo {
 		String info = "RD_NODE:NODE_PID:NULL";
 		String blankInfo = com.navinfo.dataservice.commons.util.StringUtils
 				.removeBlankChar(info);
-		String[] refArr= blankInfo.split(",");
-		List<String[] > refInfo = new ArrayList<String[]>();
+		String[] refArr = blankInfo.split(",");
+		List<String[]> refInfo = new ArrayList<String[]>();
 		for (String ref : refArr) {
 			String[] arr = ref.split(":");
 			if (arr.length == 3) {
 				refInfo.add(arr);
-			} 
+			}
 		}
-		
-		
-		String tableName= "RD_SLOPE";
+
+		String tableName = "RD_SLOPE";
 		StringBuilder sb4E = new StringBuilder();// edit查询grid使用sql
 		StringBuilder sb4D = new StringBuilder();// diff查询grid使用sql
 		int size = refInfo.size();
@@ -297,7 +298,7 @@ public class GlmGridRefInfo {
 
 			if ((size - i) == 1) {
 				geoTableName = s[0];
-				geoPidName =s[1];
+				geoPidName = s[1];
 			}
 			// 查询关联表信息
 			sb4S.append("," + s[0] + " R" + (size - i));
@@ -307,13 +308,13 @@ public class GlmGridRefInfo {
 				sb4C.append(" AND R" + (size - i) + "." + s[2]);
 			}
 		}
-		//添加所属几何对应表 和对应pid
-		sb4E.append(",'"+geoTableName+"' as GEO_NM ");
-		sb4D.append(",'"+geoTableName+"' as GEO_NM ");
-		
-		sb4E.append(",R1."+geoPidName+" as GEO_PID ");
-		
-		sb4D.append(",R1."+geoPidName+" as GEO_PID ");
+		// 添加所属几何对应表 和对应pid
+		sb4E.append(",'" + geoTableName + "' as GEO_NM ");
+		sb4D.append(",'" + geoTableName + "' as GEO_NM ");
+
+		sb4E.append(",R1." + geoPidName + " as GEO_PID ");
+
+		sb4D.append(",R1." + geoPidName + " as GEO_PID ");
 		// 添加查询图幅字段
 		String meshSql = null;
 		if (true) {
@@ -334,8 +335,8 @@ public class GlmGridRefInfo {
 		sb4D.append(sb4C.toString());
 		sb4D.append(" AND P.ROW_ID=L.TB_ROW_ID AND L.TB_NM = '" + tableName
 				+ "' ");
-		System.out.println( sb4E.toString());
-		System.out.println( sb4D.toString());
-	
+		System.out.println(sb4E.toString());
+		System.out.println(sb4D.toString());
+
 	}
 }

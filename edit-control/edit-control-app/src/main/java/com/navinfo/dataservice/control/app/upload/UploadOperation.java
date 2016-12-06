@@ -297,12 +297,12 @@ public class UploadOperation {
 				try {
 					List<JSONObject> poiList = (List<JSONObject>) insertObj.get(dbId);
 					JSONObject relateParentChildren = new JSONObject();
+					//***********2016.12.06 zl ***********
 					Map<Integer,String> samepoiMap = new HashMap<Integer,String>();//map里存的是<pid,sameFid>
+					
 					for (int i = 0; i < poiList.size(); i++) {
 						JSONObject jo = poiList.get(i);
 						JSONObject perRetObj = obj2PoiForInsert(jo, version,conn);
-						//Map<Integer,String> samepoiMap = new HashMap<Integer,String>();
-						//samepoiMap.put(perRetObj.getInt("pid"), perRetObj.getString("sameFid"));
 						int flag = perRetObj.getInt("flag");
 						if (flag == 1) {
 							try{
@@ -353,11 +353,8 @@ public class UploadOperation {
 					Iterator<Map.Entry<Integer, String>> entries = samepoiMap.entrySet().iterator();  
 					  
 					while (entries.hasNext()) {  
-					  
 					    Map.Entry<Integer, String> entry = entries.next();  
-					  
-					    System.out.println("Key = " + entry.getKey() + ", Value = " + entry.getValue());  
-					  
+					  //  System.out.println("Key = " + entry.getKey() + ", Value = " + entry.getValue());  
 					    samePoiProcess(conn,entry.getKey(),entry.getValue());
 					}  
 					//***************************************************
@@ -414,32 +411,8 @@ public class UploadOperation {
 								if (relateParentChildren.size()>0) {
 									updateParent(conn,relateParentChildren);
 								}
-							//	samePoiProcess(conn,jo);//如果sameFid为空,则通过pid去查找统一关系,解除之;如果不为空,则查找
+								//************zl 2016.12.05****************
 								samePoiProcess(conn,pid,sameFid);
-								//************zl 2016.12.01****************
-								/*System.out.println("sameFid:"+jo.getString("sameFid") );
-								// 同一关系
-									if (jo.getString("sameFid") !=null  && StringUtils.isNotEmpty(jo.getString("sameFid"))) {
-										System.out.println("pid:"+pid );
-										//获取另一个  同组  pid
-										Integer otherPid = getOtherPoiByPid(pid, conn);
-										if(otherPid != null && otherPid >0 ){ //存在同组的另一个poi
-											//获取 otherpid 的 poi_num
-											System.out.println("otherPid:"+otherPid );
-											String otherPoiNum =getPoiNumByPid(otherPid, conn);
-											if(otherPoiNum != jo.getString("sameFid")){
-												//将 ix_samepoi_part 表下同组的两条记录标记为删除
-												deleteSamePoiPartbyPid(pid,otherPid,conn);
-												//将 ix_samepoi 表中的记录标记为 删除 
-												deleteSamePoibyPid(pid, conn);
-												//在 ix_samepoi_part 表新增一条记录
-												//在 ix_samepoi_part 表新增两条记录
-												insertSamePoi(pid,otherPid,conn);
-											}
-										}
-									
-									}*/
-								
 								//*************************************
 								// 鲜度验证，POI状态更新
 								boolean freshFlag = perRetObj.getBoolean("freshFlag");
@@ -484,108 +457,7 @@ public class UploadOperation {
 		}
 	}
 
-	/**
-	 * @Title: samePoiProcess
-	 * @Description: 处理 samePoi
-	 * @param conn
-	 * @param pid
-	 * @param sameFid  void
-	 * @throws Exception 
-	 * @throws 
-	 * @author zl zhangli5174@navinfo.com
-	 * @date 2016年12月2日 下午8:18:53 
-	 */
-	private void samePoiProcess(Connection conn, int pid, String sameFid) throws Exception {
-		// 同一关系
-		//当上传数据的samefid存在时  (有可能更新同一关系,有可能不存在创建同一关系)
-		if (sameFid !=null  && StringUtils.isNotEmpty(sameFid)) {
-			System.out.println("pid:"+pid );
-			// 在Ix_samepoi_part中 获取另一个  同组  pid
-			Integer otherPid = getOtherPoiByPid(pid, conn);
-			if(otherPid != null && otherPid >0 ){ //存在同组的另一个poi
-				//获取 otherpid 的 poi_num
-				System.out.println("otherPid:"+otherPid );
-				String otherPoiNum =getPoiNumByPid(otherPid, conn);
-				if(!otherPoiNum.equals(sameFid)){//与原有的sameFid不一样时
-					//将 ix_samepoi_part 表下同组的两条记录标记为删除
-					deleteSamePoiPartbyPid(pid,otherPid,conn);
-					//将 ix_samepoi 表中的记录标记为 删除 
-					deleteSamePoibyPid(pid, conn);
-					//在 ix_samepoi_part 表新增一条记录
-					//在 ix_samepoi_part 表新增两条记录
-					insertSamePoi(pid,otherPid,conn);
-				}
-			}else{
-				//在 表 Ix_samepoi_part 表中未找到另一个
-				//根据sameFid 去 ix_poi 表查询另一个 poi  (otherPidBySameFid)
-				Integer otherPidBySameFid = getOtherPoiBySameFid(sameFid,conn);
-				//将 ix_samepoi_part 表下同组的两条记录标记为删除
-				deleteSamePoiPartbyPid(pid,otherPidBySameFid,conn);
-				//将 ix_samepoi 表中的记录标记为 删除 
-				deleteSamePoibyPid(pid, conn);
-				//在 ix_samepoi_part 表新增一条记录
-				//在 ix_samepoi_part 表新增两条记录
-				insertSamePoi(pid,otherPidBySameFid,conn);
-			}
-		}else{//当所上传 samefid不存在时有可能 执行 清空同一关系,有可能就是没有同一关系
-			// 在Ix_samepoi_part中 获取另一个  同组  pid
-			Integer otherPid = getOtherPoiByPid(pid, conn);
-			if(otherPid != null && otherPid >0 ){ //存在同组的另一个poi
-				//将 ix_samepoi_part 表下同组的两条记录标记为删除
-				deleteSamePoiPartbyPid(pid,otherPid,conn);
-				//将 ix_samepoi 表中的记录标记为 删除 
-				deleteSamePoibyPid(pid, conn);
-			}
-		}
-		
-	}
-
-	/**
-	 * @Title: getOtherPoiBySameFid
-	 * @Description: 根据sameFid 去 ix_poi 表查询另一个 poi  (otherPidBySameFid)
-	 * @param sameFid
-	 * @param conn
-	 * @return  Integer
-	 * @throws 
-	 * @author zl zhangli5174@navinfo.com
-	 * @date 2016年12月5日 下午4:49:26 
-	 */
-	private Integer getOtherPoiBySameFid(String sameFid,Connection conn) {
-		
-		String sql = "select nvl(p.pid,0) pid from ix_poi p where p.poi_num = :1 and p.u_record != 2 ";
-		
-		System.out.println("getOtherPoiBySameFid sql: "+sql);
-		PreparedStatement pstmt = null;
-
-		ResultSet resultSet = null;
-		
-		try {
-			pstmt = conn.prepareStatement(sql);
-			
-			pstmt.setString(1, sameFid);
-			
-			resultSet = pstmt.executeQuery();
-			
-			if (resultSet.next()) {
-				return resultSet.getInt("pid");
-			} 
-			else {
-				return null;  //无返回数据
-				//throw new Exception("未找到pid为"+pid+"的子ix_samepoi_part");
-			}
-			
-		} catch (Exception e) {
-			try {
-				throw new Exception("未找到poi_num为"+sameFid+"的子ix_poi");
-			} catch (Exception e1) {
-				e1.printStackTrace();
-			}
-			return null;
-		} finally {
-			DBUtils.closeResultSet(resultSet);
-			DBUtils.closeStatement(pstmt);
-		}
-	}
+	
 
 	// 处理删除数据
 	@SuppressWarnings("unchecked")
@@ -612,6 +484,21 @@ public class UploadOperation {
 							// 调用一次删除
 							apiService.run(poiObj);
 
+							//********zl 2016.12.06 删除同一关系**************
+							
+							// 在Ix_samepoi_part中 获取另一个  同组  pid
+							Integer otherPid = getOtherPoiByPid(pid, conn);
+							if(otherPid != null && otherPid >0 ){ //存在同组的另一个poi
+								//获取 otherpid 的 poi_num
+								System.out.println("otherPid:"+otherPid );
+									//将 ix_samepoi_part 表下同组的两条记录标记为删除
+									deleteSamePoiPartbyPid(pid,otherPid,conn);
+									//将 ix_samepoi 表中的记录标记为 删除 
+									deleteSamePoibyPid(pid, conn);
+									
+								}
+							
+							//********************************************
 							// 鲜度验证，POI状态更新
 							String rawFields = jo.getString("rawFields");
 							IxPoiSelector ixPoiSelector = new IxPoiSelector(conn);
@@ -875,7 +762,6 @@ public class UploadOperation {
 			poi.setSameFid("sameFid");
 			//**********************************
 			
-			
 			// 加油站
 			if (jo.getJSONObject("gasStation").size() > 0) {
 				JSONObject gasObj = jo.getJSONObject("gasStation");
@@ -1021,31 +907,6 @@ public class UploadOperation {
 				}
 				poi.setChargingplots(chargingPoleList);
 			}
-			//***********zl 2016.11.30****************
-			System.out.println("sameFid:"+jo.getString("sameFid") );
-			/*// 同一关系
-				if (jo.getString("sameFid") !=null  && StringUtils.isNotEmpty(jo.getString("sameFid"))) {
-					System.out.println("pid:"+pid );
-					//获取另一个  同组  pid
-					Integer otherPid = getOtherPoiByPid(pid, conn);
-					if(otherPid != null && otherPid >0 ){ //存在同组的另一个poi
-						//获取 otherpid 的 poi_num
-						System.out.println("otherPid:"+otherPid );
-						String otherPoiNum =getPoiNumByPid(otherPid, conn);
-						if(otherPoiNum != jo.getString("sameFid")){
-							//将 ix_samepoi_part 表下同组的两条记录标记为删除
-							deleteSamePoiPartbyPid(pid,otherPid,conn);
-							//将 ix_samepoi 表中的记录标记为 删除 
-							deleteSamePoibyPid(pid, conn);
-							//在 ix_samepoi_part 表新增一条记录
-							//在 ix_samepoi_part 表新增两条记录
-							insertSamePoi(pid,otherPid,conn);
-						}
-					}
-				}*/
-			
-			//*************************************
-			
 
 			retObj.put("flag", 1);
 			retObj.put("ret", poi.Serialize(null));
@@ -1842,33 +1703,6 @@ public class UploadOperation {
 				poiJson.put("chargingstations", newChargingStationArray);
 			}
 			
-			//************zl 2016.12.01****************
-			/*System.out.println("sameFid:"+jo.getString("sameFid") );
-			// 同一关系
-				if (jo.getString("sameFid") !=null  && StringUtils.isNotEmpty(jo.getString("sameFid"))) {
-					System.out.println("pid:"+pid );
-					//获取另一个  同组  pid
-					Integer otherPid = getOtherPoiByPid(pid, conn);
-					if(otherPid != null && otherPid >0 ){ //存在同组的另一个poi
-						//获取 otherpid 的 poi_num
-						System.out.println("otherPid:"+otherPid );
-						String otherPoiNum =getPoiNumByPid(otherPid, conn);
-						if(otherPoiNum != jo.getString("sameFid")){
-							//将 ix_samepoi_part 表下同组的两条记录标记为删除
-							deleteSamePoiPartbyPid(pid,otherPid,conn);
-							//将 ix_samepoi 表中的记录标记为 删除 
-							deleteSamePoibyPid(pid, conn);
-							//在 ix_samepoi_part 表新增一条记录
-							//在 ix_samepoi_part 表新增两条记录
-							insertSamePoi(pid,otherPid,conn);
-						}
-					}
-				
-				}*/
-			
-			//*************************************
-			
-			
 			// 充电桩
 			if (jo.containsKey("chargingPole")) {
 				JSONArray chargingPoleList = jo.getJSONArray("chargingPole");
@@ -1955,6 +1789,110 @@ public class UploadOperation {
 		return retObj;
 	}
 
+	
+	/**
+	 * @Title: samePoiProcess
+	 * @Description: 处理 samePoi
+	 * @param conn
+	 * @param pid
+	 * @param sameFid  void
+	 * @throws Exception 
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2016年12月2日 下午8:18:53 
+	 */
+	private void samePoiProcess(Connection conn, int pid, String sameFid) throws Exception {
+		// 同一关系
+		//当上传数据的samefid存在时  (有可能更新同一关系,有可能不存在创建同一关系)
+		if (sameFid !=null  && StringUtils.isNotEmpty(sameFid)) {
+			log.debug("pid:"+pid );
+			// 在Ix_samepoi_part中 获取另一个  同组  pid
+			Integer otherPid = getOtherPoiByPid(pid, conn);
+			if(otherPid != null && otherPid >0 ){ //存在同组的另一个poi
+				//获取 otherpid 的 poi_num
+				log.debug("otherPid:"+otherPid );
+				String otherPoiNum =getPoiNumByPid(otherPid, conn);
+				if(!otherPoiNum.equals(sameFid)){//与原有的sameFid不一样时
+					//将 ix_samepoi_part 表下同组的两条记录标记为删除
+					deleteSamePoiPartbyPid(pid,otherPid,conn);
+					//将 ix_samepoi 表中的记录标记为 删除 
+					deleteSamePoibyPid(pid, conn);
+					//在 ix_samepoi_part 表新增一条记录
+					//在 ix_samepoi_part 表新增两条记录
+					insertSamePoi(pid,otherPid,conn);
+				}
+			}else{
+				//在 表 Ix_samepoi_part 表中未找到另一个
+				//根据sameFid 去 ix_poi 表查询另一个 poi  (otherPidBySameFid)
+				Integer otherPidBySameFid = getOtherPoiBySameFid(sameFid,conn);
+				//将 ix_samepoi_part 表下同组的两条记录标记为删除
+				deleteSamePoiPartbyPid(pid,otherPidBySameFid,conn);
+				//将 ix_samepoi 表中的记录标记为 删除 
+				deleteSamePoibyPid(pid, conn);
+				//在 ix_samepoi_part 表新增一条记录
+				//在 ix_samepoi_part 表新增两条记录
+				insertSamePoi(pid,otherPidBySameFid,conn);
+			}
+		}else{//当所上传 samefid不存在时有可能 执行 清空同一关系,有可能就是没有同一关系
+			// 在Ix_samepoi_part中 获取另一个  同组  pid
+			Integer otherPid = getOtherPoiByPid(pid, conn);
+			if(otherPid != null && otherPid >0 ){ //存在同组的另一个poi
+				//将 ix_samepoi_part 表下同组的两条记录标记为删除
+				deleteSamePoiPartbyPid(pid,otherPid,conn);
+				//将 ix_samepoi 表中的记录标记为 删除 
+				deleteSamePoibyPid(pid, conn);
+			}
+		}
+		
+	}
+
+	/**
+	 * @Title: getOtherPoiBySameFid
+	 * @Description: 根据sameFid 去 ix_poi 表查询另一个 poi  (otherPidBySameFid)
+	 * @param sameFid
+	 * @param conn
+	 * @return  Integer
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2016年12月5日 下午4:49:26 
+	 */
+	private Integer getOtherPoiBySameFid(String sameFid,Connection conn) {
+		
+		String sql = "select nvl(p.pid,0) pid from ix_poi p where p.poi_num = :1 and p.u_record != 2 ";
+		
+		log.debug("getOtherPoiBySameFid sql: "+sql);
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+		
+		try {
+			pstmt = conn.prepareStatement(sql);
+			
+			pstmt.setString(1, sameFid);
+			
+			resultSet = pstmt.executeQuery();
+			
+			if (resultSet.next()) {
+				return resultSet.getInt("pid");
+			} 
+			else {
+				return null;  //无返回数据
+				//throw new Exception("未找到pid为"+pid+"的子ix_samepoi_part");
+			}
+			
+		} catch (Exception e) {
+			try {
+				throw new Exception("未找到poi_num为"+sameFid+"的子ix_poi");
+			} catch (Exception e1) {
+				e1.printStackTrace();
+			}
+			return null;
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+		}
+	}
+	
 	// 差分,区分新增修改
 	@SuppressWarnings("unchecked")
 	private int getDifferent(JSONArray oldArray, JSONObject newObj) throws Exception {
@@ -2294,7 +2232,7 @@ private Integer getOtherPoiByPid(int pid,Connection conn) throws Exception {
 		
 		//String sql = "SELECT pid FROM ix_poi WHERE poi_num=:1";
 		String sql = "select nvl(p.poi_pid,0) pid from ix_samepoi_part p where p.group_id =(select t.group_id from ix_samepoi_part t where t.poi_pid= :1 and t.u_record != 2 ) and p.poi_pid != :2  and p.u_record != 2 ";
-		System.out.println("getOtherPoiByPid sql: "+sql);
+		log.debug("getOtherPoiByPid sql: "+sql);
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
@@ -2337,7 +2275,7 @@ private Integer getOtherPoiByPid(int pid,Connection conn) throws Exception {
 private String getPoiNumByPid(int pid,Connection conn) throws Exception {
 	
 	String sql = "SELECT poi_num FROM ix_poi WHERE pid=:1 and u_record != 2 ";
-	System.out.println("getPoiNumByPid sql: "+sql);
+	log.debug("getPoiNumByPid sql: "+sql);
 	PreparedStatement pstmt = null;
 
 	ResultSet resultSet = null;
@@ -2390,7 +2328,7 @@ private void insertSamePoi(int pid, Integer otherPid, Connection conn) {
 		pidList.add(otherPid);
 		
 		int groupId = PidUtil.getInstance().applyPoiGroupId();
-		System.out.println("groupId : "+groupId);
+		log.debug("groupId : "+groupId);
 		pstmt.setInt(1, groupId);
 		pstmt.setInt(2, 1);
 		pstmt.setInt(3, 1);
@@ -2398,7 +2336,7 @@ private void insertSamePoi(int pid, Integer otherPid, Connection conn) {
 		pstmt.setString(5, UuidUtils.genUuid());
 		pstmt.execute();
 		for(Integer spid : pidList){
-			System.out.println("spid : "+spid);
+			log.debug("spid : "+spid);
 		//ix_samepoi_part 第一条
 			pstmt_part.setInt(1, groupId);
 			pstmt_part.setInt(2, spid);
@@ -2407,15 +2345,6 @@ private void insertSamePoi(int pid, Integer otherPid, Connection conn) {
 			pstmt_part.setString(5, UuidUtils.genUuid());
 			pstmt_part.execute();
 		}
-		//ix_samepoi_part 第二条
-//		pstmt_part.setInt(6, groupId);
-//		pstmt_part.setInt(7, otherPid);
-//		pstmt_part.setInt(8, 1);
-//		pstmt.setString(9, StringUtils.getCurrentTime());
-//		pstmt_part.setString(10, UuidUtils.genUuid());
-		
-		
-		//resultSet = pstmt.executeQuery();
 		conn.commit();
 	} catch (Exception e) {
 		try {

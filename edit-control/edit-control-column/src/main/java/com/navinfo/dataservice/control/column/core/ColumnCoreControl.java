@@ -174,9 +174,10 @@ public class ColumnCoreControl {
 	 * @return
 	 * @throws Exception
 	 */
-	public JSONArray columnQuery(long userId, JSONObject jsonReq) throws Exception {
+	public JSONObject columnQuery(long userId, JSONObject jsonReq) throws Exception {
 
 		Connection conn = null;
+		JSONObject result = new JSONObject();
 
 		try {
 			// int taskId= jsonReq.getInt("taskId");
@@ -188,21 +189,33 @@ public class ColumnCoreControl {
 			String firstWordItem = jsonReq.getString("firstWorkItem");
 			String secondWorkItem = jsonReq.getString("secondWorkItem");
 			int taskId = jsonReq.getInt("taskId");
+			int pageSize = jsonReq.getInt("pageSize");
+			int pageNo = jsonReq.getInt("pageNo");
+			
+			//List<Integer> pidList = new ArrayList<Integer>();
+			int startRow = (pageNo - 1) * pageSize + 1;
+			int endRow = pageNo * pageSize;
 
 			Subtask subtask = apiService.queryBySubtaskId(taskId);
 			int dbId = subtask.getDbId();
-
-			// 获取未提交数据的rowId
+			
 			//conn = DBConnector.getInstance().getConnectionById(dbId);
 			conn = DBConnector.getInstance().getConnectionById(17);
 			IxPoiColumnStatusSelector selector = new IxPoiColumnStatusSelector(conn);
-			List<Integer> pidList = selector.columnQuery(status, secondWorkItem, userId);
-
+			// 获取未提交数据的pid以及总数
+			JSONObject data= selector.columnQuery(status, secondWorkItem, userId,startRow,endRow);
+			List<Integer> pidList =(ArrayList<Integer>) data.get("pidList");
+			int total =(Integer) data.get("total");
+			//获取数据详细字段
+			JSONObject classifyRules= selector.queryClassifyByPidSecondWorkItem(pidList,secondWorkItem,status,userId);
+			JSONObject ckRules= selector.queryCKLogByPidfirstWorkItem(pidList,secondWorkItem,"IX_POI");
+			
 			IxPoiSearch poiSearch = new IxPoiSearch(conn);
+			JSONArray datas = poiSearch.searchColumnPoiByPid(firstWordItem, secondWorkItem, pidList, type,userId,status,classifyRules,ckRules);
 
-			JSONArray datas = poiSearch.searchColumnPoiByPid(firstWordItem, secondWorkItem, pidList, type,userId);
-
-			return datas;
+			result.put("total", total);
+			result.put("rows", datas);
+			return result;
 		} catch (Exception e) {
 			throw e;
 		} finally {

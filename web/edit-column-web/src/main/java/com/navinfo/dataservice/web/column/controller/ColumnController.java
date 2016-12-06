@@ -85,7 +85,7 @@ public class ColumnController extends BaseController {
 			
 			ColumnCoreControl control = new ColumnCoreControl();
 			
-			JSONArray data = control.columnQuery(userId, jsonReq);
+			JSONObject data = control.columnQuery(userId, jsonReq);
 			
 			return new ModelAndView("jsonView", success(data));
 		} catch (Exception e) {

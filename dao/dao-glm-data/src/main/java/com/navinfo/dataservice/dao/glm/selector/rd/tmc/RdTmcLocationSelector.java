@@ -51,7 +51,7 @@ public class RdTmcLocationSelector extends AbstractSelector {
 		List<IRow> tmcLinks = new ArrayList<>();
 
 		StringBuilder sb = new StringBuilder(
-				"select t1.*,t2.geometry from rd_tmclocation_link t1 left join rd_link t2 on t1.LINK_PID = t2.link_pid  where t1.GROUP_ID = :1 and t1.U_RECORD !=2 and t2.U_RECORD !=2");
+				"select t1.*,t2.geometry,t2.s_node_pid,t2.e_node_pid from rd_tmclocation_link t1 left join rd_link t2 on t1.LINK_PID = t2.link_pid  where t1.GROUP_ID = :1 and t1.U_RECORD !=2 and t2.U_RECORD !=2");
 
 		if (isLock) {
 
@@ -79,7 +79,15 @@ public class RdTmcLocationSelector extends AbstractSelector {
 				Geometry value = GeoTranslator.struct2Jts((STRUCT) resultSet.getObject("geometry"), 100000, 0);
 				
 				tmclocationLink.setGeometry(value);
-
+				
+				int sNodePid = resultSet.getInt("s_node_pid");
+				
+				tmclocationLink.setsNodePid(sNodePid);
+				
+				int eNodePid = resultSet.getInt("e_node_pid");
+				
+				tmclocationLink.seteNodePid(eNodePid);
+				
 				tmcLinks.add(tmclocationLink);
 			}
 		} catch (Exception e) {

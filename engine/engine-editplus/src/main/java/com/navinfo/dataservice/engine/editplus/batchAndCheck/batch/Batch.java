@@ -38,6 +38,7 @@ public class Batch extends AbstractOperation{
 	public void operate(AbstractCommand cmd) throws Exception {
 		log.info("start exe batch");
 		BatchCommand batchCommand =(BatchCommand) cmd;
+		setBatchCommand(batchCommand);
 		//按照规则号list加载规则列表，以及汇总需要参考的子表map
 		log.info("start load batch rule");
 		Map<String, Set<String>> selConfig=new HashMap<String, Set<String>>();

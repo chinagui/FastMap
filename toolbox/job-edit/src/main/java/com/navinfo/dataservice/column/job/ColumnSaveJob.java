@@ -96,9 +96,10 @@ public class ColumnSaveJob extends AbstractJob {
 			
 			// 批处理
 			BatchCommand batchCommand=new BatchCommand();		
-			List<String> batchList=new ArrayList<String>();
+			String operationName="COLUMN_SAVE";
+			//List<String> batchList=new ArrayList<String>();
 //			ruleIdList.add("GLM001TEST");
-			batchCommand.setRuleIdList(batchList);
+			batchCommand.setOperationName(operationName);
 			
 			Batch batch=new Batch(conn,operationResult);
 //			batch.setCmd(batchCommand);

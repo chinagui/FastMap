@@ -55,11 +55,12 @@ public class BatchTest {
 		operationResult.putObj(obj);
 		
 		BatchCommand batchCommand=new BatchCommand();	
-		batchCommand.setRuleId("FM-BAT-20-137");
-		
+		//batchCommand.setRuleId("FM-BAT-20-137");
+		batchCommand.setOperationName("day2month");
 		Batch batch=new Batch(conn,operationResult);
 		batch.operate(batchCommand);
-		batch.persistChangeLog(1, 2);
+		System.out.println(batch.getName());
+		//batch.persistChangeLog(1, 2);
 		DbUtils.commitAndCloseQuietly(conn);
 		System.out.println("end batch test");
 	}

@@ -204,8 +204,8 @@ public class GlmGridRefInfo {
 			// 添加所属几何对应表 和对应pid
 			sb4E.append(",'" + tableName + "' as GEO_NM ");
 			sb4D.append(",'" + tableName + "' as GEO_NM ");
-			sb4E.append(",'" + getObjPidName(tableName) + "' as GEO_PID ");
-			sb4D.append(",'" + getObjPidName(tableName) + "' as GEO_PID ");
+			sb4E.append(",p." + getObjPidName(tableName) + " as GEO_PID ");
+			sb4D.append(",p." + getObjPidName(tableName) + " as GEO_PID ");
 			String meshSql = null;
 			if (singleMesh) {
 				meshSql = ",P.MESH_ID FROM ";
@@ -225,8 +225,8 @@ public class GlmGridRefInfo {
 
 		editQuerySql = sb4E.toString();
 		diffQuerySql = sb4D.toString();
-		logger.info("editQuerySql" + editQuerySql.toString());
-		logger.info("diffQuerySql" + diffQuerySql.toString());
+		logger.info("editQuerySql  :  " + editQuerySql.toString());
+		logger.info("diffQuerySql  :   " + diffQuerySql.toString());
 
 	}
 

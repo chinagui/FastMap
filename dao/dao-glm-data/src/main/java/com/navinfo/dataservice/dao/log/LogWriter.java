@@ -781,10 +781,10 @@ public class LogWriter {
 		this.setActId(actId);
 		String opCmd = command.getObjType().name()
 				.concat(command.getOperType().name());
-		String sql = "insert into log_action (act_id, user_id,op_cmd,src_db,stk_id) values (?,?,?,?,?,?,?)";
+		String sql = "insert into log_action (act_id, us_id,op_cmd,src_db,stk_id) values (?,?,?,?,?)";
 		try {
 			QueryRunner run = new QueryRunner();
-			run.update(conn, sql, actId, opCmd, this.getUserId(),
+			run.update(conn, sql, actId,  this.getUserId(),opCmd,
 					this.getDbType(), this.getTaskId());
 
 		} catch (Exception e) {

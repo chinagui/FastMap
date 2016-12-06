@@ -150,7 +150,7 @@ public class GlmGridCalculator {
 		if (tableName.equals("RD_SAMELINK") && sameTableName.length > 0) {
 			sql = sql.replaceAll("RD_LINK", sameTableName[0]);
 		}
-		LogGeoInfo geoInfo  = run.query(dataConn, sql, new SingleRowGridHandler(
+		LogGeoInfo geoInfo = run.query(dataConn, sql, new SingleRowGridHandler(
 				tableName));
 		return geoInfo;
 	}
@@ -431,6 +431,7 @@ public class GlmGridCalculator {
 				}
 				return results;
 			} catch (Exception e) {
+				log.info(e.getMessage(),e);
 				throw new SQLException("查询的geometry可能格式错误，无法转换为object。row_id:"
 						+ rowId, e);
 			}

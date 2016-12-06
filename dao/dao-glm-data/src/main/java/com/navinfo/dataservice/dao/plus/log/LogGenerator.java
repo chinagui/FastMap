@@ -21,16 +21,18 @@ import com.navinfo.dataservice.dao.plus.selector.ObjSelector;
  * @Description: LogGenerator.java
  */
 public class LogGenerator {
-	String insertLogOperationSql = "INSERT INTO LOG_OPERATION (OP_ID,US_ID,OP_CMD,OP_DT,OP_SG) VALUES (?,?,?,SYSDATE,?)";
-	String insertLogDetailSql = "INSERT INTO LOG_DETAIL (OP_ID,ROW_ID,OB_NM,OB_PID,TB_NM,OLD,NEW,FD_LST,OP_TP,TB_ROW_ID) VALUES (?,?,?,?,?,?,?,?,?,?)";
+	String insertLogActionSql = "INSERT INTO LOG_ACTION (ACT_ID,US_ID,OP_CMD,SRC_DB,STK_ID) VALUES (?,?,?,?,?)";
+	String insertLogOperationSql = "INSERT INTO LOG_OPERATION (OP_ID,ACT_ID,OP_DT) VALUES (?,?,SYSDATE)";
+	String insertLogDetailSql = "INSERT INTO LOG_DETAIL (OP_ID,ROW_ID,OB_NM,OB_PID,GEO_NM,GEO_PID,TB_NM,OLD,NEW,FD_LST,OP_TP,TB_ROW_ID) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
 	String insertLogDetailGridSql = "INSERT INTO LOG_DETAIL_GRID (LOG_ROW_ID,GRID_ID,GRID_TYPE) VALUES (?,?,?)";
+	PreparedStatement perstmtLogAction = null;
 	PreparedStatement perstmtLogOperation = null;
 	PreparedStatement perstmtLogDetail = null;
 	PreparedStatement perstmtLogDetailGrid = null;
 
-	public void writeLog(Connection conn,boolean isUnionOperation,OperationResult result,String opCmd,int opSg,long userId) throws Exception{
+	public void writeLog(Connection conn,boolean isUnionOperation,OperationResult result,String opCmd,int srcDb,long userId,int subtaskId) throws Exception{
 		Collection<BasicObj> allObjs = result.getAllObjs();
-		writeLog( conn, isUnionOperation, allObjs, opCmd, opSg, userId);
+		writeLog( conn, isUnionOperation, allObjs, opCmd, srcDb, userId,subtaskId);
 	}
 	/**
 	 * 生成履历
@@ -42,12 +44,16 @@ public class LogGenerator {
 	 * @param userId 操作员ID
 	 * @throws Exception
 	 */
-	public void writeLog(Connection conn,boolean isUnionOperation,Collection<BasicObj> allObjs,String opCmd,int opSg,long userId)throws Exception{
+	public void writeLog(Connection conn,boolean isUnionOperation,Collection<BasicObj> allObjs
+			,String opCmd,int opSg,long userId,int subtaskId)throws Exception{
 		if(allObjs==null||allObjs.size()==0)return;
 		
 		//获得log pstm
-		generate(conn, isUnionOperation,allObjs, opCmd, opSg, userId);
+		generate(conn, isUnionOperation,allObjs, opCmd, opSg, userId,subtaskId);
 
+		if(perstmtLogAction!=null){
+			perstmtLogAction.executeBatch();
+		}
 		if(perstmtLogOperation!=null){
 			perstmtLogOperation.executeBatch();
 		}
@@ -69,9 +75,15 @@ public class LogGenerator {
 	 * @return
 	 * @throws Exception
 	 */
-	private void generate(Connection conn,boolean isUnionOperation,Collection<BasicObj> basicObjs,String opCmd,int opSg,long userId)throws Exception{
-		String geoChangeOpId=null;
+	private void generate(Connection conn,boolean isUnionOperation,Collection<BasicObj> basicObjs,String opCmd
+			,int opSg,long userId,int subtaskId)throws Exception{
 		if(basicObjs!=null&&basicObjs.size()>0){
+			//融合operation id
+			String geoChangeOpId=null;
+			//log_action act_id
+			String actId = UuidUtils.genUuid();
+			
+			//log_operation
 			for(BasicObj basicObj:basicObjs){
 				//对象未修改则不记log
 				if(!basicObj.isChanged()){
@@ -85,12 +97,10 @@ public class LogGenerator {
 							perstmtLogOperation = conn.prepareStatement(insertLogOperationSql);
 						}
 						geoChangeOpId=UuidUtils.genUuid();
-						perstmtLogOperation.setString(1, geoChangeOpId);
-						perstmtLogOperation.setLong(2, userId);
-						perstmtLogOperation.setString(3, opCmd);
-						perstmtLogOperation.setInt(4, opSg);
-						perstmtLogOperation.addBatch();
 					}
+					perstmtLogOperation.setString(1, geoChangeOpId);
+					perstmtLogOperation.setString(2, actId);
+					perstmtLogOperation.addBatch();
 					opId = geoChangeOpId;
 				}else{
 					if(perstmtLogOperation==null){
@@ -98,15 +108,13 @@ public class LogGenerator {
 					}
 					opId = UuidUtils.genUuid();
 					perstmtLogOperation.setString(1, opId);
-					perstmtLogOperation.setLong(2, userId);
-					perstmtLogOperation.setString(3, opCmd);
-					perstmtLogOperation.setInt(4, opSg);
+					perstmtLogOperation.setString(2, actId);
 					perstmtLogOperation.addBatch();
 				}
 
 				//主表，更新log_detail,log_detail_grid
 				goThroughOneBasicRow(conn,basicObj,basicObj.getMainrow(),opId);
-				//子表
+				//子表，更新log_detail,log_detail_grid
 				for(Entry<String, List<BasicRow>> entry:basicObj.getSubrows().entrySet()){
 					List<BasicRow> subrows = entry.getValue();
 					if(subrows!=null){
@@ -116,6 +124,19 @@ public class LogGenerator {
 						}
 					}
 				}
+			}
+			
+			//log_action。此次操作确实产生了履历
+			if(perstmtLogOperation!=null){
+				if(perstmtLogAction==null){
+					perstmtLogAction = conn.prepareStatement(insertLogActionSql);
+				}
+				perstmtLogAction.setString(1, actId);
+				perstmtLogOperation.setLong(2, userId);
+				perstmtLogOperation.setString(3, opCmd);
+				perstmtLogOperation.setInt(4, opSg);//SRC_DB
+				perstmtLogOperation.setInt(5, subtaskId);
+				perstmtLogOperation.addBatch();
 			}
 		}
 	}
@@ -149,6 +170,9 @@ public class LogGenerator {
 	 * @throws Exception 
 	 */
 	private void assembleLogDetail(Connection conn, BasicObj basicObj, BasicRow subrow,String logDetailRowId,String opId) throws Exception {
+		if(!subrow.isChanged()){
+			return;
+		}
 		if(perstmtLogDetail==null){
 			perstmtLogDetail = conn.prepareStatement(insertLogDetailSql);
 		}
@@ -156,26 +180,28 @@ public class LogGenerator {
 		perstmtLogDetail.setString(2, logDetailRowId);
 		perstmtLogDetail.setString(3, basicObj.objName());
 		perstmtLogDetail.setLong(4, basicObj.objPid());
-		perstmtLogDetail.setString(5, subrow.tableName());
+		perstmtLogDetail.setString(5, subrow.getGeoType());//几何参考对象名
+		perstmtLogDetail.setLong(6, subrow.getGeoPid());//几何参考对象pid
+		perstmtLogDetail.setString(7, subrow.tableName());
 		if(subrow.getOpType().equals(OperationType.UPDATE)){
-			perstmtLogDetail.setString(6,(subrow.getOldValueJson()==null?null:subrow.getOldValueJson().toString()));
-			perstmtLogDetail.setString(7,(subrow.getNewValueJson()==null?null:subrow.getNewValueJson().toString()));
-			perstmtLogDetail.setString(8,(subrow.getChangedColumns()==null?null:subrow.getChangedColumns().toString()));
+			perstmtLogDetail.setString(8,(subrow.getOldValueJson()==null?null:subrow.getOldValueJson().toString()));
+			perstmtLogDetail.setString(9,(subrow.getNewValueJson()==null?null:subrow.getNewValueJson().toString()));
+			perstmtLogDetail.setString(10,(subrow.getChangedColumns()==null?null:subrow.getChangedColumns().toString()));
 		}else{
-			perstmtLogDetail.setString(6,null);
-			perstmtLogDetail.setString(7,null);
 			perstmtLogDetail.setString(8,null);
+			perstmtLogDetail.setString(9,null);
+			perstmtLogDetail.setString(10,null);
 		}
 
 		if(subrow.getOpType().equals(OperationType.DELETE)){
-			perstmtLogDetail.setInt(9, 2);
+			perstmtLogDetail.setInt(11, 2);
 		}else if(subrow.getOpType().equals(OperationType.INSERT)){
-			perstmtLogDetail.setInt(9, 1);
+			perstmtLogDetail.setInt(11, 1);
 		}else if(subrow.getOpType().equals(OperationType.UPDATE)){
-			perstmtLogDetail.setInt(9, 3);
+			perstmtLogDetail.setInt(11, 3);
 		}
 		
-		perstmtLogDetail.setString(10, subrow.getRowId());
+		perstmtLogDetail.setString(12, subrow.getRowId());
 		perstmtLogDetail.addBatch();
 		
 	}
@@ -189,6 +215,9 @@ public class LogGenerator {
 	 * @throws Exception 
 	 */
 	private void assembleLogDetailGrid(Connection conn, BasicObj basicObj, BasicRow subrow, String logDetailRowId) throws Exception {
+		if(!subrow.isChanged()){
+			return;
+		}
 		if(perstmtLogDetailGrid==null){
 			perstmtLogDetailGrid = conn.prepareStatement(insertLogDetailGridSql);
 		}

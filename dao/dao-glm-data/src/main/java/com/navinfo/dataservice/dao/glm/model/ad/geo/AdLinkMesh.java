@@ -90,11 +90,11 @@ public class AdLinkMesh implements IRow {
 	public void copy(IRow row) {
 		AdLinkMesh sourceAdLinkMesh = (AdLinkMesh) row;
 
-		sourceAdLinkMesh.setMesh(sourceAdLinkMesh.getMeshId());
+		this.setMesh(sourceAdLinkMesh.getMeshId());
 
-		sourceAdLinkMesh.setLinkPid(sourceAdLinkMesh.getLinkPid());
+		this.setLinkPid(sourceAdLinkMesh.getLinkPid());
 
-		sourceAdLinkMesh.setRowId(sourceAdLinkMesh.getRowId());
+		this.setRowId(sourceAdLinkMesh.getRowId());
 	}
 
 	@Override

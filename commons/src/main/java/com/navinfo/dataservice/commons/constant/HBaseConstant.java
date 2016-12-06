@@ -11,4 +11,6 @@ public class HBaseConstant {
 	public static final String photoTab = SystemConfigFactory.getSystemConfig().getValue(PropConstant.photoTableName);
 	
 	public static final String trackLineTab = SystemConfigFactory.getSystemConfig().getValue(PropConstant.trackLinesTableName);
+	
+	public static final String audioTab = SystemConfigFactory.getSystemConfig().getValue(PropConstant.audioTableName);
 }

@@ -193,6 +193,10 @@
 			<groupId>net.bull.javamelody</groupId>
 			<artifactId>javamelody-core</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>com.navinfo.dataservice</groupId>
+			<artifactId>edit-control-column</artifactId>
+		</dependency>
 	</dependencies>
 	<build>
 		<finalName>edit</finalName>

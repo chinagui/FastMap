@@ -11,24 +11,6 @@ import net.sf.json.JSONObject;
  * @date 2016年11月13日
  * @Description: DefaultObjConvertor.java
  */
-public class DefaultObjConvertor implements ObjConvertor {
-
-	/**
-	 * 参考接口说明
-	 */
-	@Override
-	public BasicObj fromJson(JSONObject jo, String objType,boolean isSetPid) throws ObjConvertException {
-		// TODO
-		return null;
-	}
-
-	/**
-	 * 参考接口说明
-	 */
-	@Override
-	public JSONObject toJson(BasicObj obj) throws ObjConvertException {
-		// TODO
-		return null;
-	}
+public class DefaultObjConvertor {
 
 }

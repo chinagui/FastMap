@@ -258,6 +258,10 @@ public class Operation implements IOperation {
         com.navinfo.dataservice.engine.edit.operation.obj.mileagepile.move.Operation maileageOperation = new com.navinfo.dataservice.engine.edit.operation.obj.mileagepile.move.Operation(conn);
         maileageOperation.moveMileagepile(oldLink, newLinks, result);
 
+        // 维护点限速
+        com.navinfo.dataservice.engine.edit.operation.obj.rdspeedlimit.move.Operation speedOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdspeedlimit.move.Operation(conn);
+        speedOperation.moveSpeedlimit(oldLink, newLinks, result);
+
 		/*
 		 * 条件以下为仅打断情况下需要处理的元素 (size < 2说明没有进行打断操作)
 		 */

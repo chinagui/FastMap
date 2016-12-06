@@ -1,10 +1,13 @@
 package com.navinfo.dataservice.web.man.controller;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import net.sf.json.JSONObject;
 
@@ -14,11 +17,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
-import com.navinfo.dataservice.api.statics.model.BlockExpectStatInfo;
 import com.navinfo.dataservice.api.statics.model.GridChangeStatInfo;
-import com.navinfo.dataservice.api.statics.model.SubtaskStatInfo;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
+import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.engine.man.statics.StaticsService;
 
 @Controller
@@ -366,5 +368,29 @@ public class StaticsController extends BaseController {
 			log.error("创建失败，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", exception(e));
 		}
+	}
+	
+	@RequestMapping(value = "/statics/poiStatusMap")
+	public void getPoiStatusMap(HttpServletRequest request,
+			HttpServletResponse response) throws ServletException, IOException {
+		String parameter = request.getParameter("parameter");
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			String wkt="";
+			if (jsonReq.containsKey("wkt")) {
+				wkt=jsonReq.getString("wkt");
+			}
+			int stage=0;
+			if (jsonReq.containsKey("stage")) {
+				stage=jsonReq.getInt("stage");
+			}
+			List<Map<String, Object>> returnList =StaticsService.getInstance().getPoiStatusMap(wkt,stage);
+			response.getWriter().println(
+					ResponseUtils.assembleRegularResult(returnList));
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			response.getWriter().println(
+					ResponseUtils.assembleFailResult(e.getMessage()));
+		} 
 	}
 }

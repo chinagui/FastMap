@@ -60,7 +60,7 @@ public class ObjHisLogParser {
 			BasicObj obj = objs.get(entry.getKey());
 			List<LogDetail> lds = entry.getValue();
 			if(obj!=null&&lds!=null){
-				
+				parse(obj,lds);
 			}
 		}
 	}

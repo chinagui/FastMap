@@ -60,7 +60,11 @@ public class JobController extends BaseController {
 			if(paraJson.containsKey("descp")){
 				descp = paraJson.getString("descp");
 			}
-			long jobId = JobService.getInstance().create(jobType, jobRequest, userId, descp);
+			long taskId=0L;
+			if(paraJson.containsKey("taskId")){
+				taskId=paraJson.getLong("taskId");
+			}
+			long jobId = JobService.getInstance().create(jobType, jobRequest, userId,taskId, descp);
 			Map<String,Object> data = new HashMap<String,Object>();
 			data.put("jobId", jobId);
 			return new ModelAndView("jsonView", success("job已创建。",data));

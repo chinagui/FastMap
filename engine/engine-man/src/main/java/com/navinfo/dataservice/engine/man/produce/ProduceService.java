@@ -70,7 +70,7 @@ public class ProduceService {
 		jobDataJson.put("produceId", produceId);
 		jobDataJson.put("gridList", gridIds);
 		jobDataJson.put("featureType", produceType);
-		long jobId=jobApi.createJob("releaseFmIdbDailyJob", jobDataJson, userId, "日出品");
+		long jobId=jobApi.createJob("releaseFmIdbDailyJob", jobDataJson, userId,subtaskId, "日出品");
 		
 	}
 	

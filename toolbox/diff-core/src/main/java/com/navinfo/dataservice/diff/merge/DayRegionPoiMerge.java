@@ -201,8 +201,7 @@ public class DayRegionPoiMerge {
 
 			Geometry newGeometry = GeoTranslator.struct2Jts(struct);
 
-			LogOperation op = new LogOperation(UuidUtils.genUuid(),
-					OperType.UPDATE.toString(), 5);
+			LogOperation op = new LogOperation(UuidUtils.genUuid(), 5);
 
 			op.setComSta(1);
 

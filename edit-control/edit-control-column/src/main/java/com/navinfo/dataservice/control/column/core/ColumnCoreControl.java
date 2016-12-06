@@ -4,8 +4,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -98,9 +100,10 @@ public class ColumnCoreControl {
 						applyDataPids = pids;
 					}
 
-					// 数据加锁， 赋值handler，task_id
+					// 数据加锁， 赋值handler，task_id,apply_date
+					Timestamp timeStamp = new Timestamp(new Date().getTime());
 					List<String> workItemIds = columnSelector.getWorkItemIds(firstWorkItem, secondWorkItem);
-					columnSelector.dataSetLock(applyDataPids, workItemIds, userId, taskId);
+					columnSelector.dataSetLock(applyDataPids, workItemIds, userId, taskId, timeStamp);
 					totalCount += applyDataPids.size();
 				}
 			}

@@ -63,19 +63,20 @@ create table POI_EDIT_MULTISRC
 -- Create table
 create table POI_COLUMN_STATUS
 (
-  ROW_ID             RAW(16) not null,
+  PID                NUMBER(10) not null,
   WORK_ITEM_ID       VARCHAR2(50),
   FIRST_WORK_STATUS  NUMBER(1) default 1,
   SECOND_WORK_STATUS NUMBER(1) default 1,
   HANDLER            NUMBER(10),
-  TASK_ID            NUMBER(10)
+  TASK_ID            NUMBER(10),
+  APPLY_DATE		 TIMESTAMP
 );
 -- Add comments to the table 
 comment on table POI_COLUMN_STATUS
   is '精编作业状态表';
 -- Add comments to the columns 
-comment on column POI_COLUMN_STATUS.ROW_ID
-  is 'poi表row_id';
+comment on column POI_COLUMN_STATUS.PID
+  is 'POI的PID';
 comment on column POI_COLUMN_STATUS.WORK_ITEM_ID
   is '作业项规则号';
 comment on column POI_COLUMN_STATUS.FIRST_WORK_STATUS
@@ -86,9 +87,8 @@ comment on column POI_COLUMN_STATUS.HANDLER
   is '申请人';
 comment on column POI_COLUMN_STATUS.TASK_ID
   is '月编专项子任务id';
--- Create/Recreate primary, unique and foreign key constraints 
-alter table POI_COLUMN_STATUS
-  add constraint PK_POI_COLUMN_STATUS primary key (ROW_ID);
+comment on column POI_COLUMN_STATUS.APPLY_DATE
+  is '申请时间戳';
 
 create table POI_COLUMN_WORKITEM_CONF
 (
@@ -119,28 +119,6 @@ create table POI_COLUMN_OP_CONF
   TYPE                 NUMBER(1)
 );
   
--- Create table
-create table POI_DEEP_STATUS
-(
-  ROW_ID      RAW(16) not null,
-  HANDLER     NUMBER(10),
-  STATUS      NUMBER(1) default 1 not null,
-  TYPE        NUMBER(1) default 1 not null,
-  UPDATE_DATE TIMESTAMP(6),
-  CONSTRAINT PK_POI_DEEP_STATUS PRIMARY KEY(ROW_ID)
-);
--- Add comments to the columns 
-comment on column POI_DEEP_STATUS.ROW_ID
-  is '外键，POI的row_id';
-comment on column POI_DEEP_STATUS.HANDLER
-  is '作业员ID';
-comment on column POI_DEEP_STATUS.STATUS
-  is '1：待作业,2：已作业,3：已提交';
-comment on column POI_DEEP_STATUS.TYPE
-  is '1：通用，2：停车场，3汽车租赁';
-comment on column POI_DEEP_STATUS.UPDATE_DATE
-  is '记录更新时间';
-
 /* GDB+ log part */
 create table LOG_OPERATION (
     OP_ID RAW(16) NOT NULL,

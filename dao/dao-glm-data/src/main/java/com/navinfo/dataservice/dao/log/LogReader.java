@@ -22,6 +22,7 @@ import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.DBUtils;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 /**
@@ -403,6 +404,51 @@ public class LogReader {
 		sb.append("SELECT A.OB_PID, 3 OP_TP FROM A WHERE NOT EXISTS (SELECT 1 FROM F WHERE A.OB_PID = F.OB_PID)");
 		return new QueryRunner().query(conn, sb.toString(), new ObjStatusHandler(),mainTabName,mainTabName,mainTabName);
 	}
+	/**
+	 * 根据操作，查询某张表某条记录的新旧值变化
+	 * @param opCmd
+	 * @param tbTb
+	 * @param rowId
+	 * @return 
+	 * @throws Exception
+	 */
+	public JSONArray getHisByOperate(String opCmd,String tbTb,String rowId) throws Exception {
+		StringBuilder sb = new StringBuilder();
+		sb.append(" SELECT ld.old,ld.new");
+		sb.append(" FROM LOG_OPERATION LO, LOG_DETAIL LD");
+		sb.append(" WHERE LO.OP_ID = LD.OP_ID");
+		sb.append(" AND LO.OP_CMD = ?");
+		sb.append(" AND LD.TB_NM = ?");
+		sb.append(" AND LD.TB_ROW_ID = ?");
+		sb.append(" ORDER BY LO.OP_SEQ DESC");
+
+		PreparedStatement pstmt = null;
+		JSONArray results = new JSONArray();
+		ResultSet resultSet = null;
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+
+			pstmt.setString(1, opCmd);
+			pstmt.setString(2, tbTb);
+			pstmt.setString(3, rowId);
+			
+			resultSet = pstmt.executeQuery();
+			while (resultSet.next()) {
+				JSONObject result = new JSONObject();
+				result.put( "old", resultSet.getString("old"));
+				result.put( "new", resultSet.getString("new"));
+				results.add(result);
+			} 
+			return results;
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+		}
+	}
 
 	/**
 	 * 获取时间段内，对象有变更的pid
@@ -490,6 +536,8 @@ public class LogReader {
 			
 		});
 	}
+
+
 	
 	class ObjStatusHandler implements ResultSetHandler<Map<Integer,Collection<Long>>>{
 		@Override

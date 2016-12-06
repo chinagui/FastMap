@@ -42,6 +42,10 @@ public abstract class BasicRow{
 	protected List<ChangeLog> hisChangeLogs;
 	
 	
+	public void setHisChangeLogs(List<ChangeLog> hisChangeLogs) {
+		this.hisChangeLogs = hisChangeLogs;
+	}
+
 	public BasicRow() {
 		super();
 		// TODO Auto-generated constructor stub

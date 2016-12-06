@@ -71,5 +71,19 @@ public interface ManApi{
 	public List<CpRegionProvince> listCpRegionProvince()throws Exception;
 	
 	public Map<Integer,Integer> listDayDbIdsByAdminId()throws Exception;
+
+	/**
+	 * @param cityId 城市代码
+	 * @return 对应的城市信息字段map<br/>
+	 * keys包含 cityId，cityName、provinceName、geometry、regionId、planStatus
+	 * @throws Exception
+	 */
+	public Map<String,Object> getCityById(Integer cityId) throws Exception;
+	/**
+	 * @param cityId 
+	 * @return 城市对应的grid的list
+	 * @throws Exception
+	 */
+	public List<Integer> queryGridOfCity(Integer cityId) throws Exception;
 }
 

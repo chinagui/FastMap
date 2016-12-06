@@ -11,10 +11,15 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
+import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdTmclocation;
+import com.navinfo.dataservice.dao.glm.search.RdGscSearch;
+import com.navinfo.dataservice.dao.glm.search.RdTmcLocationSearch;
+import com.navinfo.dataservice.dao.glm.search.TmcPointSearch;
 import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.operation.Transaction;
 import com.navinfo.dataservice.engine.edit.search.SearchProcess;
@@ -92,5 +97,24 @@ public class RdTmcLocationTest extends InitApplication{
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+	@Test
+	public void testRwRender()
+	{
+		Connection conn;
+		try {
+			conn = DBConnector.getInstance().getConnectionById(17);
+
+			TmcPointSearch search = new TmcPointSearch(conn);
+			
+			List<SearchSnapshot> searchDataByTileWithGap = search.searchDataByTileWithGap(107924, 49616, 17, 80);
+			
+			System.out.println("data:"+ResponseUtils.assembleRegularResult(searchDataByTileWithGap));
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
 	}
 }

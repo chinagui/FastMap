@@ -31,7 +31,14 @@ public abstract class AbstractOperation {
 	protected OperationResult result;
 	protected Connection conn;
 	protected boolean unionOperation=false;//设置true，会在生成履历时把所有有几何修改的对象合并到一个operation
+	protected int subtaskId;
 	
+	public int getSubtaskId() {
+		return subtaskId;
+	}
+	public void setSubtaskId(int subtaskId) {
+		this.subtaskId = subtaskId;
+	}
 	public AbstractOperation(Connection conn,OperationResult preResult){
 		this.conn=conn;
 		if(preResult==null){
@@ -70,7 +77,7 @@ public abstract class AbstractOperation {
 		//新增IX_POI对象向poi_edit_status表中插入记录
 		PoiEditStatus.insertPoiEditStatus(conn,result);
 		//持久化履历
-		new LogGenerator().writeLog(conn,unionOperation,result,getName(), opSg, userId);
+		new LogGenerator().writeLog(conn,unionOperation,result,getName(), opSg, userId,subtaskId);
 		//持久化数据
 		for(Iterator<BasicObj> it=result.getAllObjs().iterator(); it.hasNext();){
 			BasicObj obj = it.next();

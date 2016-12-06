@@ -18,6 +18,15 @@ import com.navinfo.dataservice.engine.editplus.model.batchAndCheck.BatchRule;
 import com.navinfo.dataservice.engine.editplus.model.batchAndCheck.BatchRuleCommand;
 
 public class Batch extends AbstractOperation{
+	private BatchCommand batchCommand;
+
+	public BatchCommand getBatchCommand() {
+		return batchCommand;
+	}
+
+	public void setBatchCommand(BatchCommand batchCommand) {
+		this.batchCommand = batchCommand;
+	}
 
 	public Batch(Connection conn,  OperationResult preResult) {
 		super(conn,  preResult);
@@ -29,11 +38,11 @@ public class Batch extends AbstractOperation{
 	public void operate(AbstractCommand cmd) throws Exception {
 		log.info("start exe batch");
 		BatchCommand batchCommand =(BatchCommand) cmd;
+		setBatchCommand(batchCommand);
 		//按照规则号list加载规则列表，以及汇总需要参考的子表map
 		log.info("start load batch rule");
 		Map<String, Set<String>> selConfig=new HashMap<String, Set<String>>();
 		List<BatchRule> batchRuleList=new ArrayList<BatchRule>();
-		boolean changeReferData=false;
 		for(String ruleId:batchCommand.getRuleIdList()){
 			BatchRule rule=BatchRuleLoader.getInstance().loadByRuleId(ruleId);
 			/*BatchRule rule=new BatchRule();
@@ -52,7 +61,6 @@ public class Batch extends AbstractOperation{
 			rule.setReferSubtableMap(referSubtableMap);
 			//rule.setChangeReferData(true);*/
 			batchRuleList.add(rule);
-			if(rule.isChangeReferData()){changeReferData=true;}
 			Map<String, Set<String>> tmpMap = rule.getReferSubtableMap();
 			for(String manObjName:tmpMap.keySet()){
 				Set<String> tmpSubtableSet=tmpMap.get(manObjName);
@@ -93,7 +101,8 @@ public class Batch extends AbstractOperation{
 
 	@Override
 	public String getName() {
-		// TODO Auto-generated method stub
-		return "BATCH";
+		if(getBatchCommand().getOperationName()==null||getBatchCommand().getOperationName().isEmpty()){
+			return getBatchCommand().getRuleId();
+		}else{return getBatchCommand().getOperationName();}
 	}
 }

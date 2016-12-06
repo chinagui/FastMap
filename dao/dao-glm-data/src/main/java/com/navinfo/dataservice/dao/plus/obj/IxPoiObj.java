@@ -3,7 +3,6 @@ package com.navinfo.dataservice.dao.plus.obj;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiAddress;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiAdvertisement;
@@ -33,6 +32,7 @@ import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiRestaurant;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiTourroute;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiVideo;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxSamepoiPart;
+
 
 
 /** 
@@ -650,6 +650,7 @@ public class IxPoiObj extends AbstractIxObj {
 		}
 		return null;
 	}
+	
 	/**
 	 * 根据json中的key获取对象
 	 */
@@ -714,5 +715,6 @@ public class IxPoiObj extends AbstractIxObj {
 		}
 		return null;
 	}
+	
 
 }

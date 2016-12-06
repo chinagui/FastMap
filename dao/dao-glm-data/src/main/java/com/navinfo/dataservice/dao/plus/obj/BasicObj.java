@@ -16,6 +16,8 @@ import com.navinfo.navicommons.database.sql.RunnableSQL;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.vividsolutions.jts.geom.Geometry;
 
+import net.sf.json.JSONObject;
+
 
 /** 
  * @ClassName: BasicObj:有主键PID即为一个对象

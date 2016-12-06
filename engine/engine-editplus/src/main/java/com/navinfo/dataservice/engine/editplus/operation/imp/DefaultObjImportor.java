@@ -1,19 +1,34 @@
 package com.navinfo.dataservice.engine.editplus.operation.imp;
 
+import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
+import org.apache.commons.collections.MultiMap;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.api.edit.upload.EditJson;
+import com.navinfo.dataservice.api.edit.upload.UploadPois;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
+import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
+import com.navinfo.dataservice.dao.plus.obj.ObjFactory;
+import com.navinfo.dataservice.dao.plus.obj.ObjectName;
+import com.navinfo.dataservice.dao.plus.operation.AbstractCommand;
+import com.navinfo.dataservice.dao.plus.operation.AbstractOperation;
+import com.navinfo.dataservice.dao.plus.operation.OperationResult;
+import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
+import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONNull;
@@ -26,8 +41,8 @@ import net.sf.json.JSONObject;
  * @Description: DefaultObjImportor.java
  */
 @SuppressWarnings({"rawtypes","unused"})
-public class DefaultObjImportor {
-	protected Logger log = LoggerRepos.getLogger(this.getClass());
+public class DefaultObjImportor extends AbstractOperation{
+	protected Map<String,String> errLog = new HashMap<String,String>();
 	protected long dbId;
 	public long getDbId() {
 		return dbId;
@@ -35,7 +50,167 @@ public class DefaultObjImportor {
 	public void setDbId(long dbId) {
 		this.dbId = dbId;
 	}
+	
+	public DefaultObjImportor(Connection conn, OperationResult preResult) {
+		super(conn, preResult);
+	}
+	
+	public Map<String, String> getErrLog() {
+		return errLog;
+	}
 
+	@Override
+	public void operate(AbstractCommand cmd) throws Exception {
+		EditJson editJsons = ((DefaultObjImportorCommand)cmd).getEditJson();
+		if(editJsons!=null){
+			//新增
+			List<Map<String, JSONObject>> addJsons = editJsons.getAddJsons();
+			for (Map<String, JSONObject> addMap : addJsons) {
+				if(addMap!=null&&addMap.size()>0){
+					List<BasicObj> objAdd = this.improtAdd(conn, addMap);
+					result.putAll(objAdd);
+				}
+			}
+			//修改
+			Map<String,Map<Long,JSONObject>> updateJsons = editJsons.getUpdateJsons();
+			if(updateJsons!=null&&updateJsons.size()>0){
+				List<BasicObj> objUpdate = this.improtUpdate(conn,updateJsons);
+				result.putAll(objUpdate);
+			}
+			//删除
+			Map<String,Map<Long,JSONObject>> deleteJsons = editJsons.getDeleteJsons();
+			if(deleteJsons!=null&&deleteJsons.size()>0){
+				List<IxPoiObj> ixPoiObjDelete = this.improtDelete(conn, deleteJsons);
+				result.putAll(ixPoiObjDelete);
+			}
+			
+		}
+	}
+	
+	/**
+	 * 新增数据解析
+	 * @author Han Shaoming
+	 * @param conn
+	 * @param jo
+	 * @return
+	 * @throws Exception
+	 */
+	public List<BasicObj> improtAdd(Connection conn,Map<String, JSONObject> addMap)throws Exception{
+		List<BasicObj> objList = new ArrayList<BasicObj>();
+		for (Map.Entry<String, JSONObject> entry : addMap.entrySet()) {
+			JSONObject jo = entry.getValue();
+			String type = entry.getKey();
+			String objType = this.getObjType(type);
+			//日志
+			log.info("新增json数据"+jo.toString());
+			try {
+				BasicObj obj = ObjFactory.getInstance().create(objType);
+				this.parseByJsonConfig(jo, obj);
+				objList.add(obj);
+			} catch (Exception e) {
+				log.error(e.getMessage(),e);
+				errLog.put(objType+"表", StringUtils.isEmpty(e.getMessage())?"新增执行成功":e.getMessage());
+			}
+		}
+		return objList;
+	}
+	
+	/**
+	 * 修改数据解析
+	 * @author Han Shaoming
+	 * @param conn
+	 * @param jso
+	 * @param updatePois 
+	 * @return
+	 * @throws Exception
+	 */
+	public List<BasicObj> improtUpdate(Connection conn,Map<String,Map<Long,JSONObject>> updateMaps)throws Exception{
+		List<BasicObj> objList = new ArrayList<BasicObj>();
+		for(Entry<String, Map<Long, JSONObject>> entry : updateMaps.entrySet()){
+			String objType = entry.getKey();
+			Map<Long, JSONObject> updateMap = entry.getValue();
+			List<BasicObj> list = this.importUpdateByJson(conn, updateMap, objType);
+			objList.addAll(list);
+		}
+		return objList;
+	}
+	
+	public List<BasicObj> importUpdateByJson(Connection conn,Map<Long, JSONObject> updateMap,String objType) throws Exception {
+		List<BasicObj> objList = new ArrayList<BasicObj>();
+		//获取所需的子表
+		Set<String> tabNames = null;
+		if("IX_POI".equals(objType)){
+			tabNames = DefaultObjSubRowName.getIxPoiTabNames(updateMap);
+		}else if("IX_HAMLET".equals(objType)){
+		}else if("AD_FACE".equals(objType)){
+		}else if("AD_LINK".equals(objType)){
+		}else if("AD_NODE".equals(objType)){
+		}
+		Map<Long, BasicObj> objs = ObjBatchSelector.selectByPids(conn,objType,tabNames,updateMap.keySet(),true,true);
+		//开始导入
+		for (Entry<Long, JSONObject> jo : updateMap.entrySet()) {
+			//日志
+			log.info("修改json数据"+jo.getValue().toString());
+			BasicObj obj = objs.get(jo.getKey());
+			if(obj==null){
+				errLog.put(Long.toString(jo.getKey()), "日库中没有查到相应的数据");
+			}else{
+				try{
+					if(obj.isDeleted()){
+						throw new Exception("该数据已经逻辑删除");
+					}else{
+						this.parseByJsonConfig(jo.getValue(), obj);
+						objList.add(obj);
+					}
+				} catch (Exception e) {
+					log.error(e.getMessage(),e);
+					errLog.put(Long.toString(jo.getKey()), StringUtils.isEmpty(e.getMessage())?"修改执行出现空指针错误":e.getMessage());
+				}
+			}
+		}
+		return objList;
+	}
+	
+	/**
+	 * 删除数据解析
+	 * @author Han Shaoming
+	 * @param conn
+	 * @param jo
+	 * @return
+	 * @throws Exception
+	 */
+	public List<IxPoiObj> improtDelete(Connection conn,Map<String,JSONObject> deletePois)throws Exception{
+		List<IxPoiObj> ixPoiObjList = new ArrayList<IxPoiObj>();
+		//获取所需的子表
+		Set<String> tabNames = this.getTabNames();
+		Map<String,BasicObj> objs = IxPoiSelector.selectByFids(conn,tabNames,deletePois.keySet(),true,true);
+		//排除有变更的数据
+		filterUpdatePoi(deletePois);
+		//开始导入
+		for (Map.Entry<String, JSONObject> jo : deletePois.entrySet()) {
+			//日志
+			log.info("多源删除json数据"+jo.getValue().toString());
+			BasicObj obj = objs.get(jo.getKey());
+			if(obj==null){
+				errLog.put(jo.getKey(), "日库中没有查到相应的数据");
+			}else{
+				try{
+					IxPoiObj ixPoiObj = (IxPoiObj)obj;
+					if(ixPoiObj.isDeleted()){
+						throw new Exception("该数据已经逻辑删除");
+					}else{
+						this.importDeleteByJson(ixPoiObj, jo.getValue());
+						ixPoiObjList.add(ixPoiObj);
+					}
+				} catch (Exception e) {
+					log.error(e.getMessage(),e);
+					errLog.put(jo.getKey(), StringUtils.isEmpty(e.getMessage())?"删除执行出现空指针错误":e.getMessage());
+				}
+			}
+		}
+		return ixPoiObjList;
+	}
+	
 	public void parseByJsonConfig(JSONObject json,BasicObj obj)throws Exception{
 		long objPid = 0L;
 		BasicRow mainrow = null;
@@ -156,20 +331,34 @@ public class DefaultObjImportor {
 	
 	
 	/**
-	 * 获取查询所需子表
+	 * 获取主表类型
 	 * @author Han Shaoming
 	 * @return
+	 * @throws Exception 
 	 */
-	public Set<String> getTabNames(){
+	public String getObjType(String type) throws Exception{
 		//添加所需的子表
-		Set<String> tabNames = new HashSet<String>();
-		tabNames.add("IX_POI_NAME");
-		tabNames.add("IX_POI_CONTACT");
-		tabNames.add("IX_POI_ADDRESS");
-		tabNames.add("IX_POI_RESTAURANT");
-		tabNames.add("IX_POI_CHILDREN");
-		tabNames.add("IX_POI_PARENT");
-		tabNames.add("IX_POI_DETAIL");
-		return tabNames;
+		String objType = null;
+		if("IX_POI".equals(type)){
+			objType = ObjectName.IX_POI;
+		}else if("IX_HAMLET".equals(type)){
+			objType = ObjectName.IX_HAMLET;
+		}else if("AD_FACE".equals(type)){
+			objType = ObjectName.AD_FACE;
+		}else if("AD_LINK".equals(type)){
+			objType = ObjectName.AD_LINK;
+		}else if("AD_NODE".equals(type)){
+			objType = ObjectName.AD_NODE;
+		}else{
+			throw new Exception("未找到相应的主表类型");
+		}
+		return objType;
+	}
+	
+	
+	@Override
+	public String getName() {
+		// TODO Auto-generated method stub
+		return "DefaultObjImportor";
 	}
 }

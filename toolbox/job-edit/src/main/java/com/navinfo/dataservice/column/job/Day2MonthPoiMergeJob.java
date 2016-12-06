@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.column.job;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,6 +14,7 @@ import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.FmDay2MonSync;
 import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.day2mon.Day2MonPoiLogSelector;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
 
@@ -73,9 +75,12 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 				log.info("获取monthDbInfo信息:"+monthDbInfo);
 				FmDay2MonSync lastSyncInfo = d2mSyncApi.queryLastedSyncInfo(cityId);
 				log.info("获取最新的成功同步信息："+lastSyncInfo);
-				Date syncTimeStamp;
+				Date syncTimeStamp= new Date();
 				FmDay2MonSync curSyncInfo = createSyncInfo(d2mSyncApi, cityId,syncTimeStamp);//记录本次的同步信息
+				d2mSyncApi.insertSyncInfo(curSyncInfo);
 				Day2MonPoiLogSelector logSelector = new Day2MonPoiLogSelector(dailyDbInfo,gridsOfCity,lastSyncInfo,curSyncInfo);
+				String tempTable = logSelector.select();
+				
 			}
 		}catch(Exception e){
 			log.error(e.getMessage(), e);
@@ -86,13 +91,14 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 
 	}
 
-	private FmDay2MonSync createSyncInfo(Day2MonthSyncApi d2mSyncApi, Integer cityId) throws Exception {
+	private FmDay2MonSync createSyncInfo(Day2MonthSyncApi d2mSyncApi, Integer cityId, Date syncTimeStamp) throws Exception {
 		FmDay2MonSync info = new FmDay2MonSync();
 		info.setCityId(cityId);
 		info.setSyncStatus(FmDay2MonSync.SyncStatusEnum.CREATE.getValue());
 		info.setJobId(this.getJobInfo().getId());
 		Long sid = d2mSyncApi.insertSyncInfo(info );//写入本次的同步信息
 		info.setSid(sid);
+		info.setSyncTime(syncTimeStamp);
 		return info;
 	}
 	public static void main(String[] args) throws JobException{

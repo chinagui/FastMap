@@ -41,6 +41,10 @@
             <groupId>com.navinfo.dataservice</groupId>
             <artifactId>engine-editplus</artifactId>
         </dependency>
+         <dependency>
+            <groupId>com.navinfo.dataservice</groupId>
+            <artifactId>import-core</artifactId>
+        </dependency>
 		<dependency>
 			<groupId>com.navinfo.dataservice</groupId>
 			<artifactId>api-datahub</artifactId>

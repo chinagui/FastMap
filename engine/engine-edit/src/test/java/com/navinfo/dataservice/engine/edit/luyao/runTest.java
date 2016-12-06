@@ -33,7 +33,7 @@ public class runTest extends InitApplication {
 	public void init() {
 		initContext();
 	}
-	
+
 	@Test
 	public void testGetByPid_0() {
 		Connection conn;
@@ -42,7 +42,7 @@ public class runTest extends InitApplication {
 
 			SearchProcess p = new SearchProcess(conn);
 
-			IObj obj=p.searchDataByPid(ObjType.IXPOI, 303000023);
+			IObj obj = p.searchDataByPid(ObjType.IXPOI, 303000023);
 			System.out.println(obj.Serialize(ObjLevel.BRIEF));
 			System.out.println(obj.Serialize(ObjLevel.FULL));
 			System.out.println(obj.Serialize(ObjLevel.HISTORY));
@@ -51,7 +51,7 @@ public class runTest extends InitApplication {
 			e.printStackTrace();
 		}
 	}
-	
+
 	@Test
 	public void testGetByPid_1() {
 		Connection conn;
@@ -60,7 +60,7 @@ public class runTest extends InitApplication {
 
 			SearchProcess p = new SearchProcess(conn);
 
-			IObj obj=p.searchDataByPid(ObjType.RDBRANCH, 208000024);
+			IObj obj = p.searchDataByPid(ObjType.RDBRANCH, 208000024);
 			System.out.println(obj.Serialize(ObjLevel.BRIEF));
 			System.out.println(obj.Serialize(ObjLevel.FULL));
 			System.out.println(obj.Serialize(ObjLevel.HISTORY));
@@ -100,8 +100,6 @@ public class runTest extends InitApplication {
 			e.printStackTrace();
 		}
 	}
-	
-	
 
 	@Test
 	public void createZoneFace() throws Exception {
@@ -136,7 +134,7 @@ public class runTest extends InitApplication {
 			e.printStackTrace();
 		}
 	}
-	
+
 	@Test
 	public void getTitleWithGap2() {
 		Connection conn = null;
@@ -156,7 +154,7 @@ public class runTest extends InitApplication {
 			e.printStackTrace();
 		}
 	}
-	
+
 	@Test
 	public void getTitleWithGap1() {
 		Connection conn = null;
@@ -466,7 +464,7 @@ public class runTest extends InitApplication {
 
 		String msg = t.run();
 	}
-	
+
 	@Test
 	public void run_0831_3() throws Exception {
 
@@ -476,8 +474,7 @@ public class runTest extends InitApplication {
 
 		String msg = t.run();
 	}
-	
-	
+
 	@Test
 	public void run_00908_3() throws Exception {
 
@@ -487,8 +484,7 @@ public class runTest extends InitApplication {
 
 		String msg = t.run();
 	}
-	
-	
+
 	@Test
 	public void run_00912_1() throws Exception {
 
@@ -498,9 +494,8 @@ public class runTest extends InitApplication {
 
 		String msg = t.run();
 	}
-	
-	
-@Test
+
+	@Test
 	public void run_00921_1() throws Exception {
 
 		String parameter = "{\"type\":\"RDBRANCH\",\"command\":\"UPDATE\",\"dbId\":17,\"data\":{\"details\":[{\"names\":[{\"pid\":308000001,\"objStatus\":\"UPDATE\",\"name\":\"11111\",\"phonetic\":\"Yi+Yi+Yi+Yi+Yi\",\"voiceFile\":\"YiYiYiYiYi\",\"nameGroupid\":2},{\"pid\":304000003,\"objStatus\":\"UPDATE\",\"name\":\"2222\",\"phonetic\":\"Er+Er+Er+Er\",\"voiceFile\":\"ErErErEr\",\"nameGroupid\":1}],\"pid\":40254881}],\"pid\":40291389}}";
@@ -508,127 +503,122 @@ public class runTest extends InitApplication {
 
 		String msg = t.run();
 	}
+
 	@Test
 	public void run_00921_2() throws Exception {
 
 		String parameter = "{\"command\":\"REPAIR\",\"dbId\":17,\"objId\":309000092,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.27721,40.55273],[116.27744216546803,40.552798113177765],[116.27771973609924,40.552882305427765],[116.278,40.55296]]},\"interLinks\":[],\"interNodes\":[]},\"type\":\"RDLINK\"}";
-		
-		
+
 		Transaction t = new Transaction(parameter);
 
 		String msg = t.run();
 	}
-	
+
 	@Test
 	public void run_00926_1() throws Exception {
 
 		String parameter = "{\"command\":\"CREATE\",\"dbId\":17,\"type\":\"IXSAMEPOI\",\"poiPids\":[307000011,308000014]}";
-		
+
 		Transaction t = new Transaction(parameter);
 
 		String msg = t.run();
 	}
-	
+
 	@Test
 	public void run_00926_2() throws Exception {
 
 		String parameter = "{\"command\":\"BREAK\",\"dbId\":17,\"objId\":309000144,\"data\":{\"longitude\":116.26802,\"latitude\":40.54648},\"type\":\"RDLINK\"}";
-		
+
 		Transaction t = new Transaction(parameter);
 
 		String msg = t.run();
 	}
-	
-	
+
 	@Test
 	public void run_00928_1() throws Exception {
 
 		String parameter = "{\"command\":\"BREAK\",\"dbId\":17,\"objId\":205000148,\"data\":{\"longitude\":116.261,\"latitude\":40.54496},\"type\":\"RDLINK\"}";
-		
+
 		Transaction t = new Transaction(parameter);
 
 		String msg = t.run();
 	}
-	
+
 	@Test
 	public void run_00928_2() throws Exception {
 
 		String parameter = "{\"type\":\"RDBRANCH\",\"command\":\"UPDATE\",\"dbId\":17,\"data\":{\"details\":[{\"branchType\":2,\"rowId\":\"61E533B51B6C40E4B916403BCD9CEDE8\",\"pid\":202000013,\"objStatus\":\"UPDATE\",\"estabType\":0,\"nameKind\":0}],\"pid\":304000020}}";
-		
-		
+
 		Transaction t = new Transaction(parameter);
 
 		String msg = t.run();
 	}
-	
+
 	@Test
 	public void run_00928_3() throws Exception {
 
 		String parameter = "{\"command\":\"REPAIR\",\"dbId\":17,\"objId\":204000154,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.26463,40.54527],[116.26564,40.54528]]},\"interLinks\":[],\"interNodes\":[]},\"type\":\"RDLINK\"}";
-		
+
 		Transaction t = new Transaction(parameter);
 
 		String msg = t.run();
 	}
-	
+
 	@Test
 	public void run_00928_4() throws Exception {
 
 		String parameter = "{\"type\":\"RDBRANCH\",\"command\":\"UPDATE\",\"dbId\":17,\"data\":{\"signboards\":[{\"names\":[{\"phonetic\":\"ａ\",\"pid\":209000001,\"objStatus\":\"UPDATE\",\"nameGroupid\":1}],\"pid\":220000003}],\"pid\":304000021}}";
-		
+
 		Transaction t = new Transaction(parameter);
 
 		String msg = t.run();
 	}
-	
+
 	@Test
 	public void run_00929_1() throws Exception {
 
 		String parameter = "{\"command\":\"REPAIR\",\"dbId\":17,\"objId\":209000152,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.28325,40.56169],[116.28362850249809,40.561585569738845],[116.28385110928193,40.5615244049076],[116.28419,40.56143],[116.28452681622852,40.56133650839071],[116.28464803308924,40.561302935344315],[116.28492113608729,40.561226541258385],[116.28516,40.56116]]},\"interLinks\":[],\"interNodes\":[]},\"type\":\"RDLINK\"}";
-		
+
 		Transaction t = new Transaction(parameter);
 
 		String msg = t.run();
 	}
-	
+
 	@Test
 	public void run_00929_2() throws Exception {
 
 		String parameter = "{\"command\":\"REPAIR\",\"dbId\":17,\"objId\":204000167,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.28252,40.55834],[116.28275,40.55826],[116.2828685512793,40.55821583513286],[116.2831,40.55813],[116.28333,40.55805],[116.28363,40.55793],[116.28385,40.55785]]},\"interLinks\":[],\"interNodes\":[]},\"type\":\"RDLINK\"}";
-		
+
 		Transaction t = new Transaction(parameter);
 
 		String msg = t.run();
 	}
-	
+
 	@Test
 	public void run_00929_3() throws Exception {
 
 		String parameter = "{\"command\":\"MOVE\",\"dbId\":17,\"objId\":209000166,\"data\":{\"longitude\":116.37475669384003,\"latitude\":40.479879546842724},\"type\":\"RDNODE\"}";
-		
-		
+
 		Transaction t = new Transaction(parameter);
 
 		String msg = t.run();
 	}
-	
-	
+
 	@Test
 	public void run_00930_1() throws Exception {
 
 		String parameter = "{\"command\":\"MOVE\",\"dbId\":17,\"objId\":209000166,\"data\":{\"longitude\":116.37585,\"latitude\":40.48021},\"type\":\"RDNODE\"}";
-		
-		
+
 		Transaction t = new Transaction(parameter);
 
 		String msg = t.run();
 	}
-	
+
 	@Test
 	public void run_1008_1() throws Exception {
 
 		String parameter = "{\"command\":\"MOVE\",\"dbId\":17,\"objId\":309000179,\"data\":{\"longitude\":116.2514340877533,\"latitude\":40.51831775506456},\"type\":\"RDNODE\"}";
-		
+
 		Transaction t = new Transaction(parameter);
 
 		String msg = t.run();
@@ -643,7 +633,7 @@ public class runTest extends InitApplication {
 
 		String msg = t.run();
 	}
-	
+
 	@Test
 	public void run_1010_11() throws Exception {
 
@@ -656,7 +646,6 @@ public class runTest extends InitApplication {
 
 	@Test
 	public void run_1010_2() throws Exception {
-		
 
 		String parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"dbId\":17,\"distance\":\"6.6\",\"data\":{\"linkPids\":[307001293]}}";
 
@@ -669,67 +658,62 @@ public class runTest extends InitApplication {
 	public void run_1013_1() throws Exception {
 
 		String parameter = "{\"command\":\"CREATE\",\"type\":\"ADFACE\",\"dbId\":17,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.1938738822937,40.5403843741422],[116.19474291801451,40.54014384965778],[116.19376659393309,40.53978102295414],[116.19336962699889,40.54031099388258],[116.1938738822937,40.5403843741422]]}}}";
-		
-		
-		
+
 		Transaction t = new Transaction(parameter);
 
 		String msg = t.run();
 	}
-	
+
 	@Test
 	public void run_1013_2() throws Exception {
 
 		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDLANECONNEXITY\",\"dbId\":17,\"data\":{\"inLinkPid\":308000970,\"nodePid\":200000659,\"outLinkPids\":[308000969],\"laneInfo\":\"b,[a]\"}}";
-		
-		
+
 		Transaction t = new Transaction(parameter);
 
 		String msg = t.run();
 	}
-	
-	
+
 	@Test
 	public void run_1018_1() throws Exception {
 
 		String parameter = "{\"command\":\"DELETE\",\"dbId\":17,\"type\":\"IXPOIPARENT\",\"objId\":303000023}";
-		
+
 		Transaction t = new Transaction(parameter);
 
 		String msg = t.run();
 	}
-	
+
 	@Test
 	public void run_1018_2() throws Exception {
 
 		String parameter = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"IXPOIPARENT\",\"objId\":220000037,\"parentPid\":320000035}";
-		
+
 		Transaction t = new Transaction(parameter);
 
 		String msg = t.run();
 	}
-	
+
 	@Test
 	public void run_1020_2() throws Exception {
 
 		String parameter = "{\"command\":\"DELETE\",\"dbId\":17,\"type\":\"RDLINK\",\"objId\":306001082}";
-		
-		
+
 		Transaction t = new Transaction(parameter);
 
 		String msg = t.run();
 	}
-	
+
 	@Test
 	public void run_1025_1() throws Exception {
 
 		String parameter = "{\"command\":\"CREATE\",\"dbId\":17,\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.40500664710999,39.979117898234875],[116.40540361404423,39.978484856884535]]},\"catchLinks\":[{\"linkPid\":220001464,\"lon\":116.40540361404423,\"lat\":39.978484856884535}]},\"type\":\"RDLINK\"}";
-		
+
 		Transaction t = new Transaction(parameter);
 
 		String msg = t.run();
 	}
-	
+
 	@Test
 	public void run_1026_1() throws Exception {
 
@@ -739,39 +723,37 @@ public class runTest extends InitApplication {
 
 		String msg = t.run();
 	}
-	
+
 	@Test
 	public void run_1101_1() throws Exception {
 
 		String parameter = "{\"command\":\"CREATE\",\"dbId\":17,\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.51475191116333,40.08406399698187],[116.51481628417967,40.08259463490513]]},\"catchLinks\":[]},\"type\":\"RDLINK\"}";
-		
-		
+
 		Transaction t = new Transaction(parameter);
 
 		String msg = t.run();
 	}
+
 	@Test
 	public void run_1101_2() throws Exception {
 
 		String parameter = "{\"command\":\"CREATE\",\"dbId\":17,\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.51569068431854,40.08268493181319],[116.51568531990051,40.08390803267927]]},\"catchLinks\":[]},\"type\":\"RDLINK\"}";
-		
+
 		Transaction t = new Transaction(parameter);
 
 		String msg = t.run();
 	}
-	
+
 	@Test
 	public void run_1102_1() throws Exception {
 
 		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDLANECONNEXITY\",\"dbId\":17,\"data\":{\"inLinkPid\":305002573,\"nodePid\":303001877,\"outLinkPids\":[210002470],\"laneInfo\":\"c,c\"}}";
-		
-		
-		
+
 		Transaction t = new Transaction(parameter);
 
 		String msg = t.run();
 	}
-	
+
 	@Test
 	public void run_1103_1() throws Exception {
 
@@ -781,7 +763,7 @@ public class runTest extends InitApplication {
 
 		String msg = t.run();
 	}
-	
+
 	@Test
 	public void run_1103_2() throws Exception {
 
@@ -790,27 +772,27 @@ public class runTest extends InitApplication {
 
 		String msg = t.run();
 	}
-	
+
 	@Test
 	public void run_1110_1() throws Exception {
 
 		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDLANECONNEXITY\",\"dbId\":17,\"data\":{\"inLinkPid\":209002563,\"nodePid\":303001955,\"outLinkPids\":[301002648],\"laneInfo\":\"[a]\"}}";
-		
+
 		Transaction t = new Transaction(parameter);
 
 		String msg = t.run();
 	}
-	
+
 	@Test
 	public void run_1111_1() throws Exception {
 
 		String parameter = "{\"command\":\"CREATE\",\"dbId\":17,\"objId\":200002625,\"data\":{\"longitude\":116.45005,\"latitude\":40.04905},\"type\":\"RDNODE\"}";
-		
-		
+
 		Transaction t = new Transaction(parameter);
 
 		String msg = t.run();
 	}
+
 	@Test
 	public void run_1115_1() throws Exception {
 
@@ -820,7 +802,7 @@ public class runTest extends InitApplication {
 
 		String msg = t.run();
 	}
-	
+
 	@Test
 	public void run_1115_2() throws Exception {
 
@@ -830,7 +812,7 @@ public class runTest extends InitApplication {
 
 		String msg = t.run();
 	}
-	
+
 	@Test
 	public void run_1122_1() throws Exception {
 
@@ -840,62 +822,84 @@ public class runTest extends InitApplication {
 
 		String msg = t.run();
 	}
-	
-		@Test
+
+	@Test
 	public void run_1124_1() throws Exception {
 
 		String parameter = "{\"command\":\"CREATE\",\"dbId\":17,\"objId\":310002772,\"data\":{\"longitude\":116.45041146329042,\"latitude\":40.05730591966208},\"type\":\"RDNODE\"}";
-		
-		
+
 		Transaction t = new Transaction(parameter);
 
 		String msg = t.run();
 	}
-	
-	
-		@Test
+
+	@Test
 	public void run_1124_2() throws Exception {
 
 		String parameter = "{\"command\":\"DELETE\",\"dbId\":17,\"type\":\"RDNODE\",\"objId\":310002144}";
-		
+
 		Transaction t = new Transaction(parameter);
 
 		String msg = t.run();
 	}
-		
-		
-		@Test
+
+	@Test
 	public void run_1125_1() throws Exception {
 
 		String parameter = "{\"command\":\"REPAIR\",\"dbId\":17,\"objId\":208002784,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.47862,40.07587],[116.47898733615875,40.07585075919639],[116.47937,40.0759]]},\"catchInfos\":[]},\"type\":\"RDLINK\"}";
-		
+
 		Transaction t = new Transaction(parameter);
 
 		String msg = t.run();
 	}
-		
-		
-		@Test
+
+	@Test
 	public void run_1126_1() throws Exception {
 
 		String parameter = "{\"command\":\"DEPART\",\"dbId\":17,\"objId\":306002106,\"data\":{\"catchNodePid\":0,\"catchLinkPid\":\"308002763\",\"linkPid\":\"306002741\",\"longitude\":116.38298679474569,\"latitude\":40.05133614230701},\"type\":\"RDLINK\"}";
-				
-				
+
 		Transaction t = new Transaction(parameter);
 
 		String msg = t.run();
-	}	
-		
-		
-		@Test
-		public void run_1130_1() throws Exception {
+	}
 
-			String parameter = "{\"command\":\"CREATESIDEROAD\",\"type\":\"RDLINK\",\"dbId\":17,\"distance\":\"5.5\",\"sideType\":1,\"data\":{\"linkPids\":[300002869,300002870,17256975,17256976]}}";
+	@Test
+	public void run_1130_1() throws Exception {
 
-			Transaction t = new Transaction(parameter);
+		String parameter = "{\"command\":\"CREATESIDEROAD\",\"type\":\"RDLINK\",\"dbId\":17,\"distance\":\"5.5\",\"sideType\":1,\"data\":{\"linkPids\":[300002869,300002870,17256975,17256976]}}";
 
-			String msg = t.run();
-		}
-		
-		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+
+	@Test
+	public void run_1201_1() throws Exception {
+
+		String parameter = "{\"type\":\"RDBRANCH\",\"command\":\"UPDATE\",\"dbId\":17,\"data\":{\"signboards\":[{\"arrowCode\":\"100200DJ001\",\"pid\":300000004,\"objStatus\":\"UPDATE\"}],\"pid\":209000031}}";
+
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+
+	@Test
+	public void run_1202_1() throws Exception {
+
+		String parameter = "{\"command\":\"MOVE\",\"dbId\":17,\"objId\":307000050,\"data\":{\"longitude\":116.65068492293356,\"latitude\":40.30207164564197},\"type\":\"ZONENODE\"}";
+
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+
+	@Test
+	public void run_1202_2() throws Exception {
+
+		String parameter = "{\"command\":\"BATCH\",\"type\":\"RDLINKSPEEDLIMIT\",\"dbId\":17,\"data\":{\"linkPids\":[300002533,301002537],\"linkSpeedLimit\":{\"speedType\":0,\"fromSpeedLimit\":500,\"fromLimitSrc\":0,\"toSpeedLimit\":0,\"toLimitSrc\":0,\"speedClassWork\":1}}}";
+
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
 }

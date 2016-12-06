@@ -18,6 +18,7 @@ import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.exception.DataNotChangeException;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
+import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
@@ -37,17 +38,33 @@ public class EditController extends BaseController {
 	private static final Logger logger = Logger.getLogger(EditController.class);
 
 	@RequestMapping(value = "/run")
-	public ModelAndView run(HttpServletRequest request) throws ServletException, IOException {
+	public ModelAndView run(HttpServletRequest request)
+			throws ServletException, IOException {
 
 		String parameter = request.getParameter("parameter");
-		logger.info("parameter===="+parameter);
+		logger.info("parameter====" + parameter);
 		AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+		// 修改net.sf.JSONObject的bug：string转json对象损失精度问题（解决方案目前有两种:
+		// 一种替换新的jar包以及依赖的包，第二种先转fastjson后再转net.sf）
+		com.alibaba.fastjson.JSONObject fastJson = com.alibaba.fastjson.JSONObject
+				.parseObject(parameter);
+
+		JSONObject paraJson = JsonUtils.fastJson2netJson(fastJson);
 
 		try {
 			long beginRunTime = System.currentTimeMillis();
 			logger.info("BEGIN EDIT RUN");
 			Transaction t = new Transaction(parameter);
+			// 加载用户ID
 			t.setUserId(tokenObj.getUserId());
+			// 加载用户taskId
+			if (paraJson.containsKey("taskId")) {
+				t.setTaskId(paraJson.getInt("taskId"));
+			}
+			// 加载数据库类型
+			if (paraJson.containsKey("dbType")) {
+				t.setDbType(paraJson.getInt("dbType"));
+			}
 			String msg = t.run();
 
 			String log = t.getLogs();
@@ -63,7 +80,8 @@ public class EditController extends BaseController {
 			json.put("pid", t.getPid());
 			long endRunTime = System.currentTimeMillis();
 			logger.info("END EDIT RUN");
-			logger.info("edit run total use time   " + String.valueOf(endRunTime - beginRunTime));
+			logger.info("edit run total use time   "
+					+ String.valueOf(endRunTime - beginRunTime));
 			if (parameter.contains("\"infect\":1")) {
 				return new ModelAndView("jsonView", infect(json));
 			} else {
@@ -82,7 +100,8 @@ public class EditController extends BaseController {
 	}
 
 	@RequestMapping(value = "/getByCondition")
-	public ModelAndView getByCondition(HttpServletRequest request) throws ServletException, IOException {
+	public ModelAndView getByCondition(HttpServletRequest request)
+			throws ServletException, IOException {
 
 		String parameter = request.getParameter("parameter");
 
@@ -101,7 +120,8 @@ public class EditController extends BaseController {
 
 			SearchProcess p = new SearchProcess(conn);
 
-			JSONArray array = p.searchDataByCondition(ObjType.valueOf(objType), data);
+			JSONArray array = p.searchDataByCondition(ObjType.valueOf(objType),
+					data);
 
 			return new ModelAndView("jsonView", success(array));
 
@@ -122,7 +142,8 @@ public class EditController extends BaseController {
 	}
 
 	@RequestMapping(value = "/getByElementCondition")
-	public ModelAndView getSearchBy(HttpServletRequest request) throws ServletException, IOException {
+	public ModelAndView getSearchBy(HttpServletRequest request)
+			throws ServletException, IOException {
 
 		String parameter = request.getParameter("parameter");
 
@@ -138,7 +159,8 @@ public class EditController extends BaseController {
 			JSONObject data = jsonReq.getJSONObject("data");
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 			SelectorUtils selectorUtils = new SelectorUtils(conn);
-			JSONObject jsonObject = selectorUtils.loadByElementCondition(data, tableName, pageSize, pageNum, false);
+			JSONObject jsonObject = selectorUtils.loadByElementCondition(data,
+					tableName, pageSize, pageNum, false);
 			return new ModelAndView("jsonView", success(jsonObject));
 
 		} catch (Exception e) {
@@ -158,7 +180,8 @@ public class EditController extends BaseController {
 	}
 
 	@RequestMapping(value = "/getByPid")
-	public ModelAndView getByPid(HttpServletRequest request) throws ServletException, IOException {
+	public ModelAndView getByPid(HttpServletRequest request)
+			throws ServletException, IOException {
 
 		String parameter = request.getParameter("parameter");
 
@@ -178,11 +201,13 @@ public class EditController extends BaseController {
 				int branchType = jsonReq.getInt("branchType");
 				String rowId = jsonReq.getString("rowId");
 				RdBranchSelector selector = new RdBranchSelector(conn);
-				IRow row = selector.loadByDetailId(detailId, branchType, rowId, false);
+				IRow row = selector.loadByDetailId(detailId, branchType, rowId,
+						false);
 
 				if (row != null) {
 
-					return new ModelAndView("jsonView", success(row.Serialize(ObjLevel.FULL)));
+					return new ModelAndView("jsonView",
+							success(row.Serialize(ObjLevel.FULL)));
 
 				} else {
 					return new ModelAndView("jsonView", success());
@@ -197,7 +222,8 @@ public class EditController extends BaseController {
 
 				if (obj != null) {
 
-					return new ModelAndView("jsonView", success(obj.Serialize(ObjLevel.FULL)));
+					return new ModelAndView("jsonView",
+							success(obj.Serialize(ObjLevel.FULL)));
 
 				} else {
 					return new ModelAndView("jsonView", success());
@@ -220,7 +246,8 @@ public class EditController extends BaseController {
 	}
 
 	@RequestMapping(value = "/getByPids")
-	public ModelAndView getByPids(HttpServletRequest request) throws ServletException, IOException {
+	public ModelAndView getByPids(HttpServletRequest request)
+			throws ServletException, IOException {
 
 		String parameter = request.getParameter("parameter");
 
@@ -240,11 +267,13 @@ public class EditController extends BaseController {
 				int branchType = jsonReq.getInt("branchType");
 				String rowId = jsonReq.getString("rowId");
 				RdBranchSelector selector = new RdBranchSelector(conn);
-				IRow row = selector.loadByDetailId(detailId, branchType, rowId, false);
+				IRow row = selector.loadByDetailId(detailId, branchType, rowId,
+						false);
 
 				if (row != null) {
 
-					return new ModelAndView("jsonView", success(row.Serialize(ObjLevel.FULL)));
+					return new ModelAndView("jsonView",
+							success(row.Serialize(ObjLevel.FULL)));
 
 				} else {
 					return new ModelAndView("jsonView", success());
@@ -255,7 +284,8 @@ public class EditController extends BaseController {
 
 				SearchProcess p = new SearchProcess(conn);
 
-				List<? extends IObj> objList = p.searchDataByPids(ObjType.valueOf(objType), pidArray);
+				List<? extends IObj> objList = p.searchDataByPids(
+						ObjType.valueOf(objType), pidArray);
 
 				JSONArray array = new JSONArray();
 
@@ -286,7 +316,8 @@ public class EditController extends BaseController {
 	}
 
 	@RequestMapping(value = "/getBySpatial")
-	public ModelAndView getBySpatial(HttpServletRequest request) throws ServletException, IOException {
+	public ModelAndView getBySpatial(HttpServletRequest request)
+			throws ServletException, IOException {
 
 		String parameter = request.getParameter("parameter");
 
@@ -332,7 +363,8 @@ public class EditController extends BaseController {
 	}
 
 	@RequestMapping(value = "/applyPid")
-	public ModelAndView applyPid(HttpServletRequest request) throws ServletException, IOException {
+	public ModelAndView applyPid(HttpServletRequest request)
+			throws ServletException, IOException {
 
 		String parameter = request.getParameter("parameter");
 
@@ -370,7 +402,8 @@ public class EditController extends BaseController {
 	}
 
 	@RequestMapping(value = "/rdname/search")
-	public ModelAndView searchRdName(HttpServletRequest request) throws ServletException, IOException {
+	public ModelAndView searchRdName(HttpServletRequest request)
+			throws ServletException, IOException {
 
 		String parameter = request.getParameter("parameter");
 
@@ -387,7 +420,8 @@ public class EditController extends BaseController {
 
 			RdNameSelector selector = new RdNameSelector();
 
-			JSONObject data = selector.searchByName(name, pageSize, pageNum, dbId);
+			JSONObject data = selector.searchByName(name, pageSize, pageNum,
+					dbId);
 
 			return new ModelAndView("jsonView", success(data));
 
@@ -408,7 +442,8 @@ public class EditController extends BaseController {
 	 * @throws IOException
 	 */
 	@RequestMapping(value = "/road/base/release")
-	public ModelAndView getRoadBaseRelease(HttpServletRequest request) throws ServletException, IOException {
+	public ModelAndView getRoadBaseRelease(HttpServletRequest request)
+			throws ServletException, IOException {
 
 		String parameter = request.getParameter("parameter");
 		AccessToken tokenObj = (AccessToken) request.getAttribute("token");

@@ -39,6 +39,10 @@ public class RdTmclocationLink implements IRow {
 	
 	protected Geometry geometry;
 	
+	protected int sNodePid;
+	
+	protected int eNodePid;
+	
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 
 	public int getGroupId() {
@@ -85,6 +89,10 @@ public class RdTmclocationLink implements IRow {
 		if(objLevel.equals(ObjLevel.HISTORY))
 		{
 			json.remove("geometry");
+			
+			json.remove("sNodePid");
+			
+			json.remove("eNodePid");
 		}
 
 		return json;
@@ -232,6 +240,22 @@ public class RdTmclocationLink implements IRow {
 		}
 	}
 	
+	public int getsNodePid() {
+		return sNodePid;
+	}
+
+	public void setsNodePid(int sNodePid) {
+		this.sNodePid = sNodePid;
+	}
+
+	public int geteNodePid() {
+		return eNodePid;
+	}
+
+	public void seteNodePid(int eNodePid) {
+		this.eNodePid = eNodePid;
+	}
+
 	public Geometry getGeometry() {
 		return geometry;
 	}

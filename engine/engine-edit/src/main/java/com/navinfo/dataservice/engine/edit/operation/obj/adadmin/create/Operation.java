@@ -66,7 +66,7 @@ public class Operation implements IOperation {
 
         adAdmin.setGeometry(GeoTranslator.geojson2Jts(geoPoint, 100000, 0));
         // 计算行政区划代表点与关联线的左右关系
-        Coordinate c = GeometryUtils.GetNearestPointOnLine(adAdmin.getGeometry().getCoordinate(), command.getLink().getGeometry());
+        Coordinate c = GeometryUtils.GetNearestPointOnLine(GeoTranslator.transform(adAdmin.getGeometry(), 0.00001, 5).getCoordinate(), GeoTranslator.transform(command.getLink().getGeometry(), 0.00001, 5));
         JSONObject geojson = new JSONObject();
         geojson.put("type", "Point");
         geojson.put("coordinates", new double[]{c.x, c.y});

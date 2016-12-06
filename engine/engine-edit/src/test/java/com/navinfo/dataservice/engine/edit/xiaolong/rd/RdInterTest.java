@@ -51,7 +51,7 @@ public class RdInterTest extends InitApplication {
 
 	@Test
 	public void testAddRdInter() {
-		String parameter = "{\"command\":\"DELETE\",\"type\":\"RDINTER\",\"dbId\":17,\"objId\":303000000}";
+		String parameter = "{\"command\":\"CREATE\",\"dbId\":17,\"type\":\"RDINTER\",\"data\":{\"links\":[],\"nodes\":[308002182,210002208]}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

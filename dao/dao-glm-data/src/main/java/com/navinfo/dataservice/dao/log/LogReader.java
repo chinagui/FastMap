@@ -22,6 +22,7 @@ import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.DBUtils;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 /**
@@ -403,6 +404,140 @@ public class LogReader {
 		sb.append("SELECT A.OB_PID, 3 OP_TP FROM A WHERE NOT EXISTS (SELECT 1 FROM F WHERE A.OB_PID = F.OB_PID)");
 		return new QueryRunner().query(conn, sb.toString(), new ObjStatusHandler(),mainTabName,mainTabName,mainTabName);
 	}
+	/**
+	 * 根据操作，查询某张表某条记录的新旧值变化
+	 * @param opCmd
+	 * @param tbTb
+	 * @param rowId
+	 * @return 
+	 * @throws Exception
+	 */
+	public JSONArray getHisByOperate(String opCmd,String tbTb,String rowId) throws Exception {
+		StringBuilder sb = new StringBuilder();
+		sb.append(" SELECT ld.old,ld.new");
+		sb.append(" FROM LOG_OPERATION LO, LOG_DETAIL LD");
+		sb.append(" WHERE LO.OP_ID = LD.OP_ID");
+		sb.append(" AND LO.OP_CMD = ?");
+		sb.append(" AND LD.TB_NM = ?");
+		sb.append(" AND LD.TB_ROW_ID = ?");
+		sb.append(" ORDER BY LO.OP_SEQ DESC");
+
+		PreparedStatement pstmt = null;
+		JSONArray results = new JSONArray();
+		ResultSet resultSet = null;
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+
+			pstmt.setString(1, opCmd);
+			pstmt.setString(2, tbTb);
+			pstmt.setString(3, rowId);
+			
+			resultSet = pstmt.executeQuery();
+			while (resultSet.next()) {
+				JSONObject result = new JSONObject();
+				result.put( "old", resultSet.getString("old"));
+				result.put( "new", resultSet.getString("new"));
+				results.add(result);
+			} 
+			return results;
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+		}
+	}
+
+	/**
+	 * 获取时间段内，对象有变更的pid
+	 * @param objName
+	 * @param pids
+	 * @param startDate
+	 * @param endDate
+	 * @return
+	 * @throws SQLException
+	 */
+	public Collection<Long> getUpdatedObjByPids(String objName,Collection<Long> pids,String startDate,String endDate)throws SQLException{
+		if(pids==null||pids.size()==0)return null;
+		StringBuilder sb = new StringBuilder();
+		sb.append("SELECT DISTINCT T.OB_PID FROM LOG_DETAIL T,LOG_OPERATION P WHERE T.OP_ID=P.OP_ID AND T.OB_NM=?\n");
+		if(StringUtils.isNotEmpty(startDate)){
+			sb.append("     AND P.OP_DT > TO_DATE('"+startDate+"', 'yyyymmddhh24miss')\n");
+		}
+		if(StringUtils.isNotEmpty(endDate)){
+			sb.append("     AND P.OP_DT <= TO_DATE('"+endDate+"', 'yyyymmddhh24miss')\n");
+		}
+		return new QueryRunner().query(conn, sb.toString(), new ResultSetHandler<Collection<Long>>(){
+
+			@Override
+			public Collection<Long> handle(ResultSet rs) throws SQLException {
+				List<Long> result = new ArrayList<Long>();
+				while(rs.next()){
+					result.add(rs.getLong(1));
+				}
+				return result;
+			}
+			
+		},objName);
+	}
+
+	/**
+	 * 传入临时表，字段包括pid,start_date，end_date
+	 * 获取时间段内，对象有变更的pid
+	 * @param objName
+	 * @param pids
+	 * @param startDate
+	 * @param endDate
+	 * @return
+	 * @throws SQLException
+	 */
+	public Collection<Long> getUpdatedObjByPids(String objName,String tempTable)throws SQLException{
+		if(StringUtils.isEmpty(tempTable))return null;
+		String sql = "SELECT DISTINCT T.OB_PID FROM LOG_DETAIL T,LOG_OPERATION P,"+tempTable+" S WHERE T.OP_ID=P.OP_ID AND T.OB_PID=S.PID AND P.OP_DT > S.START_DATE AND P.OP_DT <= S.END_DATE";
+		return new QueryRunner().query(conn, sql, new ResultSetHandler<Collection<Long>>(){
+
+			@Override
+			public Collection<Long> handle(ResultSet rs) throws SQLException {
+				List<Long> result = new ArrayList<Long>();
+				while(rs.next()){
+					result.add(rs.getLong(1));
+				}
+				return result;
+			}
+			
+		},objName);
+	}
+
+	/**
+	 * 传入临时表，字段包括fid,start_date，end_date
+	 * 获取时间段内，对象有变更的pid
+	 * @param objName
+	 * @param pids
+	 * @param startDate
+	 * @param endDate
+	 * @return
+	 * @throws SQLException
+	 */
+	public Collection<String> getUpdatedPoiByTemp(String tempTable)throws SQLException{
+		if(StringUtils.isEmpty(tempTable))return null;
+		String sql = "SELECT DISTINCT IX.POI_NUM FROM LOG_DETAIL T,LOG_OPERATION P, IX_POI IX,"+tempTable+" S WHERE T.OP_ID=P.OP_ID AND T.OB_PID=IX.PID AND IX.POI_NUM=S.FID AND P.OP_DT > S.START_DATE AND P.OP_DT <= S.END_DATE";
+		return new QueryRunner().query(conn, sql, new ResultSetHandler<Collection<String>>(){
+
+			@Override
+			public Collection<String> handle(ResultSet rs) throws SQLException {
+				List<String> result = new ArrayList<String>();
+				while(rs.next()){
+					result.add(rs.getString(1));
+				}
+				return result;
+			}
+			
+		});
+	}
+
+
 	
 	class ObjStatusHandler implements ResultSetHandler<Map<Integer,Collection<Long>>>{
 		@Override

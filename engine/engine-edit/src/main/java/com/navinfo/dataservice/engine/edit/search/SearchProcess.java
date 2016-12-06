@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
 
+import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
@@ -110,8 +111,10 @@ public class SearchProcess {
 			for (ObjType type : types) {
 
 				ISearch search = factory.createSearch(type);
-
-				List<SearchSnapshot> list = search.searchDataBySpatial(box);
+				
+				String wkt = Geojson.geojson2Wkt(box);
+				
+				List<SearchSnapshot> list = search.searchDataBySpatial(wkt);
 
 				JSONArray array = new JSONArray();
 
@@ -329,15 +332,32 @@ public class SearchProcess {
 					int cruuentNodePidDir = condition.getInt("nodePidDir");
 					int cuurentLinkPid = condition.getInt("linkPid");
 					int maxNum = 11;
+					boolean loadChild = false;
 					// 默认是11条 以传入为准
 					if (condition.containsKey("maxNum")) {
 						maxNum = condition.getInt("maxNum");
 					}
+					if(condition.containsKey("loadChild"))
+					{
+						int flag = condition.getInt("loadChild");
+						
+						if(flag == 1)
+						{
+							loadChild = true;
+						}
+					}
 					RdLinkSearchUtils searchUtils = new RdLinkSearchUtils(conn);
 					List<RdLink> links = searchUtils.getNextTrackLinks(
-							cuurentLinkPid, cruuentNodePidDir, maxNum);
+							cuurentLinkPid, cruuentNodePidDir, maxNum,loadChild);
 					for (RdLink link : links) {
-						array.add(link.Serialize(ObjLevel.BRIEF));
+						if(loadChild)
+						{
+							array.add(link.Serialize(ObjLevel.FULL));
+						}
+						else
+						{
+							array.add(link.Serialize(ObjLevel.BRIEF));
+						}
 					}
 				} else if (condition.containsKey("linkPids")) {
 					JSONArray linkPids = condition.getJSONArray("linkPids");

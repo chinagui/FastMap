@@ -17,6 +17,7 @@ public class IxPoiParent extends BasicRow {
 	
 	public IxPoiParent() {
 		super();
+		setParentPoiPid(objPid);
 		// TODO Auto-generated constructor stub
 	}
 

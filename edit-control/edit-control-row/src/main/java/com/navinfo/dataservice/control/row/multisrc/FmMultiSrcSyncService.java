@@ -102,11 +102,36 @@ public class FmMultiSrcSyncService {
 		try{
 			QueryRunner queryRunner = new QueryRunner();
 			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
-			String sql = "UPDATE FM_MULTISRC_SYNC SET SYNC_STATUS=?,ZIP_FILE=? WHERE TO_CHAR(SYNC_TIME,'yyyyMMdd')=TO_CHAR(SYSDATE,'yyyyMMdd')";
+			String sql = "UPDATE FM_MULTISRC_SYNC SET SYNC_STATUS=? WHERE JOB_ID =?";
 			//日志
 			log.info("更新FM_MULTISRC_SYNC表的管理记录:"+sql);
 			
-			queryRunner.update(conn,sql,obj.getSyncStatus(),obj.getZipFile());
+			queryRunner.update(conn,sql,obj.getSyncStatus(),obj.getJobId());
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("更新失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * 更新管理记录zipFile和status
+	 * @author Han Shaoming
+	 * @param obj
+	 * @throws ServiceException 
+	 */
+	public void updateZipFile(FmMultiSrcSync obj) throws ServiceException{
+		Connection conn = null;
+		try{
+			QueryRunner queryRunner = new QueryRunner();
+			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
+			String sql = "UPDATE FM_MULTISRC_SYNC SET SYNC_STATUS=?,ZIP_FILE=? WHERE JOB_ID =?";
+			//日志
+			log.info("更新FM_MULTISRC_SYNC表的管理记录:"+sql);
+			
+			queryRunner.update(conn,sql,obj.getSyncStatus(),obj.getZipFile(),obj.getJobId());
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

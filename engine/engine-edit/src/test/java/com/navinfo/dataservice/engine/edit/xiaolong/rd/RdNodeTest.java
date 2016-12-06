@@ -7,10 +7,14 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
+import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneNode;
+import com.navinfo.dataservice.dao.glm.search.LuNodeSearch;
 import com.navinfo.dataservice.dao.glm.search.RdNodeSearch;
+import com.navinfo.dataservice.dao.glm.search.ZoneNodeSearch;
 import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.operation.Transaction;
 
@@ -39,7 +43,7 @@ public class RdNodeTest extends InitApplication{
 	
 	@Test
 	public void testMove() {
-		String parameter = "{\"command\":\"MOVE\",\"dbId\":17,\"objId\":15430054,\"data\":{\"longitude\":116.62668853998183,\"latitude\":40.333333333333336},\"type\":\"RDNODE\"}";
+		String parameter = "{\"command\":\"DEPART\",\"dbId\":19,\"objId\":206002195,\"data\":{\"catchNodePid\":0,\"catchLinkPid\":0,\"linkPid\":\"209002816\",\"longitude\":116.78475379943848,\"latitude\":40.33252745227086},\"type\":\"RDLINK\"}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
@@ -86,11 +90,11 @@ public class RdNodeTest extends InitApplication{
 		try {
 			conn = DBConnector.getInstance().getConnectionById(17);
 
-			RdNodeSearch search = new RdNodeSearch(conn);
+			ZoneNodeSearch search = new ZoneNodeSearch(conn);
 			
-			String wtk = "POLYGON ((116.69263064861298 40.28212436356775,116.69337093830109 40.28212436356775,116.69337093830109 40.2826891060652,116.69263064861298 40.2826891060652,116.69263064861298 40.28212436356775))";
+			String wkt = "{\"type\":\"Polygon\",\"coordinates\":[[[116.47709906101225,40.01283736761785],[116.47709906101225,40.01289488813274],[116.47717416286469,40.01289488813274],[116.47717416286469,40.01283736761785],[116.47709906101225,40.01283736761785]]]}}";
 			
-			List<SearchSnapshot> searchSnapshot = search.searchDataBySpatial(wtk);
+			List<SearchSnapshot> searchSnapshot = search.searchDataBySpatial(Geojson.geojson2Wkt(wkt));
 			
 			JSONArray array = new JSONArray();
 
@@ -104,6 +108,6 @@ public class RdNodeTest extends InitApplication{
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
 	}
+	
 }	

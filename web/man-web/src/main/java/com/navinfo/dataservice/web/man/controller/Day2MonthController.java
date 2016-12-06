@@ -1,5 +1,8 @@
 package com.navinfo.dataservice.web.man.controller;
 
+import java.util.List;
+import java.util.Map;
+
 import javax.servlet.http.HttpServletRequest;
 
 import net.sf.json.JSONObject;
@@ -57,6 +60,18 @@ public class Day2MonthController extends BaseController {
 				condition=dataJson.getJSONObject("condition");
 			}
 			Page result=Day2MonthService.getInstance().list(condition,curPageNum,curPageSize);
+			return new ModelAndView("jsonView",success(result));
+		}catch(Exception e){
+			log.error("查询列表错误", e);
+			return new ModelAndView("jsonView",exception(e));
+		}
+	}
+	
+	@RequestMapping(value="/day2Month/listWkt")
+	public ModelAndView listWkt(HttpServletRequest request){
+		try{
+			//JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			List<Map<String, Object>> result=Day2MonthService.getInstance().listWkt();
 			return new ModelAndView("jsonView",success(result));
 		}catch(Exception e){
 			log.error("查询列表错误", e);

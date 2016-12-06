@@ -23,1285 +23,1291 @@ import net.sf.json.JsonConfig;
 
 public class RdLink implements IObj {
 
-	private int pid;
+    private int pid;
 
-	private int sNodePid;
+    private int sNodePid;
 
-	private int eNodePid;
+    private int eNodePid;
 
-	private int direct = 1;
+    private int direct = 1;
 
-	private int kind = 7;
+    private int kind = 7;
 
-	private int laneNum = 2;
+    private int laneNum = 2;
 
-	private int laneLeft;
+    private int laneLeft;
 
-	private int laneRight;
+    private int laneRight;
 
-	private int functionClass = 5;
+    private int functionClass = 5;
 
-	private int appInfo = 1;
+    private int appInfo = 1;
 
-	private int tollInfo = 2;
+    private int tollInfo = 2;
 
-	private int routeAdopt = 2;
+    private int routeAdopt = 2;
 
-	private int multiDigitized = 0;
+    private int multiDigitized = 0;
 
-	private int developState;
+    private int developState;
 
-	private int imiCode;
+    private int imiCode;
 
-	private int specialTraffic;
+    private int specialTraffic;
 
-	private int urban;
+    private int urban;
 
-	private int paveStatus;
+    private int paveStatus;
 
-	private int laneWidthLeft = 1;
+    private int laneWidthLeft = 1;
 
-	private int laneWidthRight = 1;
+    private int laneWidthRight = 1;
 
-	private int laneClass = 1;
+    private int laneClass = 1;
 
-	private int width = 50;
+    private int width = 50;
 
-	private int isViaduct;
+    private int isViaduct;
 
-	private int leftRegionId;
+    private int leftRegionId;
 
-	private int rightRegionId;
+    private int rightRegionId;
 
-	private double length;
+    private double length;
 
-	private int meshId;
+    private int meshId;
 
-	private int onewayMark;
+    private int onewayMark;
 
-	private int streetLight;
+    private int streetLight;
 
-	private int parkingLot;
+    private int parkingLot;
 
-	private int adasFlag;
+    private int adasFlag;
 
-	private int sidewalkFlag;
+    private int sidewalkFlag;
 
-	private int walkstairFlag;
+    private int walkstairFlag;
 
-	private int diciType;
+    private int diciType;
 
-	private int walkFlag;
-	private int adasMemo;
+    private int walkFlag;
+    private int adasMemo;
 
-	public int getAdasMemo() {
-		return adasMemo;
-	}
+    public int getAdasMemo() {
+        return adasMemo;
+    }
 
-	public void setAdasMemo(int adasMemo) {
-		this.adasMemo = adasMemo;
-	}
+    public void setAdasMemo(int adasMemo) {
+        this.adasMemo = adasMemo;
+    }
 
-	public double getFeeStd() {
-		return feeStd;
-	}
+    public double getFeeStd() {
+        return feeStd;
+    }
 
-	public void setFeeStd(double feeStd) {
-		this.feeStd = feeStd;
-	}
+    public void setFeeStd(double feeStd) {
+        this.feeStd = feeStd;
+    }
 
-	public int getFeeFlag() {
-		return feeFlag;
-	}
+    public int getFeeFlag() {
+        return feeFlag;
+    }
 
-	public void setFeeFlag(int feeFlag) {
-		this.feeFlag = feeFlag;
-	}
+    public void setFeeFlag(int feeFlag) {
+        this.feeFlag = feeFlag;
+    }
 
-	public int getSystemId() {
-		return systemId;
-	}
+    public int getSystemId() {
+        return systemId;
+    }
 
-	public void setSystemId(int systemId) {
-		this.systemId = systemId;
-	}
+    public void setSystemId(int systemId) {
+        this.systemId = systemId;
+    }
 
-	private String difGroupid;
+    private String difGroupid;
 
-	private int srcFlag = 6;
+    private int srcFlag = 6;
 
-	private int digitalLevel;
+    private int digitalLevel;
 
-	private int editFlag = 1;
+    private int editFlag = 1;
 
-	private int truckFlag;
+    private int truckFlag;
 
-	private double feeStd;
-	private int feeFlag;
-	private int systemId;
-	private int originLinkPid;
+    private double feeStd;
+    private int feeFlag;
+    private int systemId;
+    private int originLinkPid;
 
-	private int centerDivider;
+    private int centerDivider;
 
-	private int parkingFlag;
+    private int parkingFlag;
 
-	private String memo;
+    private String memo;
 
-	private Geometry geometry;
+    private Geometry geometry;
 
-	private String rowId;
+    private String rowId;
 
-	// private String name;
+    // private String name;
 
-	private List<IRow> forms = new ArrayList<IRow>();
+    private List<IRow> forms = new ArrayList<IRow>();
 
-	private List<IRow> limits = new ArrayList<IRow>();
+    private List<IRow> limits = new ArrayList<IRow>();
 
-	private List<IRow> names = new ArrayList<IRow>();
+    private List<IRow> names = new ArrayList<IRow>();
 
-	private List<IRow> intRtics = new ArrayList<IRow>();
+    private List<IRow> intRtics = new ArrayList<IRow>();
 
-	private List<IRow> limitTrucks = new ArrayList<IRow>();
+    private List<IRow> limitTrucks = new ArrayList<IRow>();
 
-	private List<IRow> rtics = new ArrayList<IRow>();
+    private List<IRow> rtics = new ArrayList<IRow>();
 
-	private List<IRow> sidewalks = new ArrayList<IRow>();
+    private List<IRow> sidewalks = new ArrayList<IRow>();
 
-	private List<IRow> speedlimits = new ArrayList<IRow>();
+    private List<IRow> speedlimits = new ArrayList<IRow>();
 
-	private List<IRow> walkstairs = new ArrayList<IRow>();
+    private List<IRow> walkstairs = new ArrayList<IRow>();
 
-	private List<IRow> zones = new ArrayList<IRow>();
+    private List<IRow> zones = new ArrayList<IRow>();
 
-	private List<IRow> tmclocations = new ArrayList<IRow>();
+    private List<IRow> tmclocations = new ArrayList<IRow>();
 
-	private Map<String, Object> changedFields = new HashMap<String, Object>();
+    private Map<String, Object> changedFields = new HashMap<String, Object>();
 
-	public Map<String, RdLinkForm> formMap = new HashMap<String, RdLinkForm>();
+    public Map<String, RdLinkForm> formMap = new HashMap<String, RdLinkForm>();
 
-	public Map<String, RdLinkLimit> limitMap = new HashMap<String, RdLinkLimit>();
+    public Map<String, RdLinkLimit> limitMap = new HashMap<String, RdLinkLimit>();
 
-	public Map<String, RdLinkName> nameMap = new HashMap<String, RdLinkName>();
+    public Map<String, RdLinkName> nameMap = new HashMap<String, RdLinkName>();
 
-	public Map<String, RdLinkIntRtic> intRticMap = new HashMap<String, RdLinkIntRtic>();
+    public Map<String, RdLinkIntRtic> intRticMap = new HashMap<String, RdLinkIntRtic>();
 
-	public Map<String, RdLinkRtic> rticMap = new HashMap<String, RdLinkRtic>();
+    public Map<String, RdLinkRtic> rticMap = new HashMap<String, RdLinkRtic>();
 
-	public Map<String, RdLinkLimitTruck> limitTruckMap = new HashMap<String, RdLinkLimitTruck>();
+    public Map<String, RdLinkLimitTruck> limitTruckMap = new HashMap<String, RdLinkLimitTruck>();
 
-	public Map<String, RdLinkSidewalk> sidewalkMap = new HashMap<String, RdLinkSidewalk>();
+    public Map<String, RdLinkSidewalk> sidewalkMap = new HashMap<String, RdLinkSidewalk>();
 
-	public Map<String, RdLinkSpeedlimit> speedlimitMap = new HashMap<String, RdLinkSpeedlimit>();
+    public Map<String, RdLinkSpeedlimit> speedlimitMap = new HashMap<String, RdLinkSpeedlimit>();
 
-	public Map<String, RdLinkWalkstair> walkstairMap = new HashMap<String, RdLinkWalkstair>();
+    public Map<String, RdLinkWalkstair> walkstairMap = new HashMap<String, RdLinkWalkstair>();
 
-	public Map<String, RdLinkZone> zoneMap = new HashMap<String, RdLinkZone>();
+    public Map<String, RdLinkZone> zoneMap = new HashMap<String, RdLinkZone>();
 
-	public Map<String, RdTmclocation> locationMap = new HashMap<String, RdTmclocation>();
+    public Map<String, RdTmclocation> locationMap = new HashMap<String, RdTmclocation>();
 
-	public RdLink() {
+    public RdLink() {
 
-	}
+    }
 
-	public Geometry getGeometry() {
-		return geometry;
-	}
+    public Geometry getGeometry() {
+        return geometry;
+    }
 
-	public void setGeometry(Geometry geometry) {
-		this.geometry = geometry;
-	}
+    public void setGeometry(Geometry geometry) {
+        this.geometry = geometry;
+    }
 
-	public int getLaneNum() {
-		return laneNum;
-	}
+    public int getLaneNum() {
+        return laneNum;
+    }
 
-	public void setLaneNum(int laneNum) {
-		this.laneNum = laneNum;
-	}
+    public void setLaneNum(int laneNum) {
+        this.laneNum = laneNum;
+    }
 
-	public int getLaneLeft() {
-		return laneLeft;
-	}
+    public int getLaneLeft() {
+        return laneLeft;
+    }
 
-	public void setLaneLeft(int laneLeft) {
-		this.laneLeft = laneLeft;
-	}
+    public void setLaneLeft(int laneLeft) {
+        this.laneLeft = laneLeft;
+    }
 
-	public int getLaneRight() {
-		return laneRight;
-	}
+    public int getLaneRight() {
+        return laneRight;
+    }
 
-	public void setLaneRight(int laneRight) {
-		this.laneRight = laneRight;
-	}
+    public void setLaneRight(int laneRight) {
+        this.laneRight = laneRight;
+    }
 
-	public int getMultiDigitized() {
-		return multiDigitized;
-	}
+    public int getMultiDigitized() {
+        return multiDigitized;
+    }
 
-	public void setMultiDigitized(int multiDigitized) {
-		this.multiDigitized = multiDigitized;
-	}
+    public void setMultiDigitized(int multiDigitized) {
+        this.multiDigitized = multiDigitized;
+    }
 
-	public int getFunctionClass() {
-		return functionClass;
-	}
+    public int getFunctionClass() {
+        return functionClass;
+    }
 
-	public void setFunctionClass(int functionClass) {
-		this.functionClass = functionClass;
-	}
+    public void setFunctionClass(int functionClass) {
+        this.functionClass = functionClass;
+    }
 
-	public List<IRow> getForms() {
-		return forms;
-	}
+    public List<IRow> getForms() {
+        return forms;
+    }
 
-	public void setForms(List<IRow> forms) {
-		this.forms = forms;
-	}
+    public void setForms(List<IRow> forms) {
+        this.forms = forms;
+    }
 
-	public List<IRow> getLimits() {
-		return limits;
-	}
+    public List<IRow> getLimits() {
+        return limits;
+    }
 
-	public void setLimits(List<IRow> limits) {
-		this.limits = limits;
-	}
+    public void setLimits(List<IRow> limits) {
+        this.limits = limits;
+    }
 
-	public List<IRow> getNames() {
-		return names;
-	}
+    public List<IRow> getNames() {
+        return names;
+    }
 
-	public void setNames(List<IRow> names) {
-		this.names = names;
-	}
+    public void setNames(List<IRow> names) {
+        this.names = names;
+    }
 
-	public int getPid() {
-		return pid;
-	}
+    public int getPid() {
+        return pid;
+    }
 
-	public void setPid(int linkPid) {
-		this.pid = linkPid;
-	}
+    public void setPid(int linkPid) {
+        this.pid = linkPid;
+    }
 
-	public int getsNodePid() {
-		return sNodePid;
-	}
+    public int getsNodePid() {
+        return sNodePid;
+    }
 
-	public void setsNodePid(int sNodePid) {
-		this.sNodePid = sNodePid;
-	}
+    public void setsNodePid(int sNodePid) {
+        this.sNodePid = sNodePid;
+    }
 
-	public int geteNodePid() {
-		return eNodePid;
-	}
+    public int geteNodePid() {
+        return eNodePid;
+    }
 
-	public void seteNodePid(int eNodePid) {
-		this.eNodePid = eNodePid;
-	}
+    public void seteNodePid(int eNodePid) {
+        this.eNodePid = eNodePid;
+    }
 
-	public int getDirect() {
-		return direct;
-	}
+    public int getDirect() {
+        return direct;
+    }
 
-	public void setDirect(int direct) {
-		this.direct = direct;
-	}
+    public void setDirect(int direct) {
+        this.direct = direct;
+    }
 
-	public int getKind() {
-		return kind;
-	}
+    public int getKind() {
+        return kind;
+    }
 
-	public void setKind(int kind) {
-		this.kind = kind;
-	}
+    public void setKind(int kind) {
+        this.kind = kind;
+    }
 
-	// public String getName() {
-	// return name;
-	// }
-	//
-	// public void setName(String name) {
-	// this.name = name;
-	// }
+    // public String getName() {
+    // return name;
+    // }
+    //
+    // public void setName(String name) {
+    // this.name = name;
+    // }
 
-	@Override
-	public JSONObject Serialize(ObjLevel objLevel) throws Exception {
+    @Override
+    public JSONObject Serialize(ObjLevel objLevel) throws Exception {
 
-		if (objLevel == ObjLevel.FULL || objLevel == ObjLevel.HISTORY) {
-			JsonConfig jsonConfig = Geojson.geoJsonConfig(0.00001, 5);
+        if (objLevel == ObjLevel.FULL || objLevel == ObjLevel.HISTORY) {
+            JsonConfig jsonConfig = Geojson.geoJsonConfig(0.00001, 5);
 
-			JSONObject json = JSONObject.fromObject(this, jsonConfig);
+            JSONObject json = JSONObject.fromObject(this, jsonConfig);
 
-			JSONArray array = new JSONArray();
+            JSONArray array = new JSONArray();
 
-			for (IRow speedlimit : this.getSpeedlimits()) {
-				array.add(speedlimit.Serialize(objLevel));
-			}
+            for (IRow speedlimit : this.getSpeedlimits()) {
+                array.add(speedlimit.Serialize(objLevel));
+            }
 
-			json.put("speedlimits", array);
+            json.put("speedlimits", array);
 
-			return json;
-		} else if (objLevel == ObjLevel.BRIEF) {
-			JSONObject json = new JSONObject();
+            return json;
+        } else if (objLevel == ObjLevel.BRIEF) {
+            JSONObject json = new JSONObject();
 
-			json.put("pid", pid);
+            json.put("pid", pid);
 
-			// json.put("name", name);
+            // json.put("name", name);
 
-			json.put("sNodePid", sNodePid);
+            json.put("sNodePid", sNodePid);
 
-			json.put("eNodePid", eNodePid);
+            json.put("eNodePid", eNodePid);
 
-			json.put("direct", direct);
+            json.put("direct", direct);
 
-			json.put("kind", kind);
-			json.put("length", length);
+            json.put("kind", kind);
+            json.put("length", length);
 
-			json.put("geometry",
-					GeoTranslator.jts2Geojson(geometry, 0.00001, 5));
+            json.put("geometry", GeoTranslator.jts2Geojson(geometry, 0.00001, 5));
 
-			return json;
-		}
-		return null;
-	}
+            json.put("imiCode", imiCode);
 
-	@Override
-	public boolean Unserialize(JSONObject json) throws Exception {
+            JSONArray array = new JSONArray();
+            for (IRow form : this.getForms()) {
+                array.add(form.Serialize(objLevel));
+            }
+            json.put("forms", array);
+            return json;
+        }
+        return null;
+    }
 
-		Iterator keys = json.keys();
+    @Override
+    public boolean Unserialize(JSONObject json) throws Exception {
 
-		while (keys.hasNext()) {
-			String key = (String) keys.next();
+        Iterator keys = json.keys();
 
-			JSONArray ja = null;
+        while (keys.hasNext()) {
+            String key = (String) keys.next();
 
-			if (json.get(key) instanceof JSONArray) {
+            JSONArray ja = null;
 
-				switch (key) {
-				case "forms":
-					forms.clear();
+            if (json.get(key) instanceof JSONArray) {
 
-					ja = json.getJSONArray(key);
+                switch (key) {
+                    case "forms":
+                        forms.clear();
 
-					for (int i = 0; i < ja.size(); i++) {
-						JSONObject jo = ja.getJSONObject(i);
+                        ja = json.getJSONArray(key);
 
-						RdLinkForm row = new RdLinkForm();
+                        for (int i = 0; i < ja.size(); i++) {
+                            JSONObject jo = ja.getJSONObject(i);
 
-						row.Unserialize(jo);
+                            RdLinkForm row = new RdLinkForm();
 
-						forms.add(row);
-					}
+                            row.Unserialize(jo);
 
-					break;
-				case "limits":
+                            forms.add(row);
+                        }
 
-					limits.clear();
+                        break;
+                    case "limits":
 
-					ja = json.getJSONArray(key);
+                        limits.clear();
 
-					for (int i = 0; i < ja.size(); i++) {
-						JSONObject jo = ja.getJSONObject(i);
+                        ja = json.getJSONArray(key);
 
-						RdLinkLimit row = new RdLinkLimit();
+                        for (int i = 0; i < ja.size(); i++) {
+                            JSONObject jo = ja.getJSONObject(i);
 
-						row.Unserialize(jo);
+                            RdLinkLimit row = new RdLinkLimit();
 
-						limits.add(row);
-					}
+                            row.Unserialize(jo);
 
-					break;
+                            limits.add(row);
+                        }
 
-				case "names":
+                        break;
 
-					names.clear();
+                    case "names":
 
-					ja = json.getJSONArray(key);
+                        names.clear();
 
-					for (int i = 0; i < ja.size(); i++) {
-						JSONObject jo = ja.getJSONObject(i);
+                        ja = json.getJSONArray(key);
 
-						RdLinkName row = new RdLinkName();
+                        for (int i = 0; i < ja.size(); i++) {
+                            JSONObject jo = ja.getJSONObject(i);
 
-						row.Unserialize(jo);
+                            RdLinkName row = new RdLinkName();
 
-						names.add(row);
-					}
+                            row.Unserialize(jo);
 
-					break;
+                            names.add(row);
+                        }
 
-				default:
-					break;
-				}
+                        break;
 
-			} else if ("geometry".equals(key)) {
+                    default:
+                        break;
+                }
 
-				Geometry jts = GeoTranslator.geojson2Jts(
-						json.getJSONObject(key), 100000, 0);
+            } else if ("geometry".equals(key)) {
 
-				this.setGeometry(jts);
+                Geometry jts = GeoTranslator.geojson2Jts(
+                        json.getJSONObject(key), 100000, 0);
 
-			} else {
+                this.setGeometry(jts);
 
-				if (!"objStatus".equals(key)) {
-					Field f = this.getClass().getDeclaredField(key);
+            } else {
 
-					f.setAccessible(true);
+                if (!"objStatus".equals(key)) {
+                    Field f = this.getClass().getDeclaredField(key);
 
-					f.set(this, json.get(key));
+                    f.setAccessible(true);
 
-				}
-			}
-		}
+                    f.set(this, json.get(key));
 
-		return true;
-	}
+                }
+            }
+        }
 
-	public static void main(String[] args) {
-		RdLink a = new RdLink();
+        return true;
+    }
 
-		System.out.println(JSONObject.fromObject(a));
-	}
+    public static void main(String[] args) {
+        RdLink a = new RdLink();
 
-	@Override
-	public String tableName() {
+        System.out.println(JSONObject.fromObject(a));
+    }
 
-		return "rd_link";
-	}
+    @Override
+    public String tableName() {
 
-	@Override
-	public ObjStatus status() {
+        return "rd_link";
+    }
 
-		return null;
-	}
+    @Override
+    public ObjStatus status() {
 
-	@Override
-	public void setStatus(ObjStatus os) {
+        return null;
+    }
 
-	}
+    @Override
+    public void setStatus(ObjStatus os) {
 
-	@Override
-	public ObjType objType() {
+    }
 
-		return ObjType.RDLINK;
-	}
+    @Override
+    public ObjType objType() {
 
-	@Override
-	public List<IRow> relatedRows() {
+        return ObjType.RDLINK;
+    }
 
-		return null;
-	}
+    @Override
+    public List<IRow> relatedRows() {
 
-	@Override
-	public void copy(IRow row) {
-		RdLink sourceLink = (RdLink) row;
+        return null;
+    }
 
-		this.setsNodePid(sourceLink.getsNodePid());
+    @Override
+    public void copy(IRow row) {
+        RdLink sourceLink = (RdLink) row;
 
-		this.seteNodePid(sourceLink.geteNodePid());
+        this.setsNodePid(sourceLink.getsNodePid());
 
-		this.setKind(sourceLink.getKind());
+        this.seteNodePid(sourceLink.geteNodePid());
 
-		this.setDirect(sourceLink.getDirect());
+        this.setKind(sourceLink.getKind());
 
-		this.setAppInfo(sourceLink.getAppInfo());
+        this.setDirect(sourceLink.getDirect());
 
-		this.setTollInfo(sourceLink.getTollInfo());
+        this.setAppInfo(sourceLink.getAppInfo());
 
-		this.setRouteAdopt(sourceLink.getRouteAdopt());
+        this.setTollInfo(sourceLink.getTollInfo());
 
-		this.setMultiDigitized(sourceLink.getMultiDigitized());
+        this.setRouteAdopt(sourceLink.getRouteAdopt());
 
-		this.setDevelopState(sourceLink.getDevelopState());
+        this.setMultiDigitized(sourceLink.getMultiDigitized());
 
-		this.setImiCode(sourceLink.getImiCode());
+        this.setDevelopState(sourceLink.getDevelopState());
 
-		this.setSpecialTraffic(sourceLink.getSpecialTraffic());
+        this.setImiCode(sourceLink.getImiCode());
 
-		this.setFunctionClass(sourceLink.getFunctionClass());
+        this.setSpecialTraffic(sourceLink.getSpecialTraffic());
 
-		this.setUrban(sourceLink.getUrban());
+        this.setFunctionClass(sourceLink.getFunctionClass());
 
-		this.setPaveStatus(sourceLink.getPaveStatus());
+        this.setUrban(sourceLink.getUrban());
 
-		this.setLaneLeft(sourceLink.getLaneLeft());
+        this.setPaveStatus(sourceLink.getPaveStatus());
 
-		this.setLaneNum(sourceLink.getLaneNum());
+        this.setLaneLeft(sourceLink.getLaneLeft());
 
-		this.setLaneRight(sourceLink.getLaneRight());
+        this.setLaneNum(sourceLink.getLaneNum());
 
-		this.setLaneWidthLeft(sourceLink.getLaneWidthLeft());
+        this.setLaneRight(sourceLink.getLaneRight());
 
-		this.setLaneWidthRight(sourceLink.getLaneWidthRight());
+        this.setLaneWidthLeft(sourceLink.getLaneWidthLeft());
 
-		this.setLaneClass(sourceLink.getLaneClass());
+        this.setLaneWidthRight(sourceLink.getLaneWidthRight());
 
-		this.setWidth(sourceLink.getWidth());
+        this.setLaneClass(sourceLink.getLaneClass());
 
-		this.setIsViaduct(sourceLink.getIsViaduct());
+        this.setWidth(sourceLink.getWidth());
 
-		this.setLeftRegionId(sourceLink.getLeftRegionId());
+        this.setIsViaduct(sourceLink.getIsViaduct());
 
-		this.setRightRegionId(sourceLink.getRightRegionId());
+        this.setLeftRegionId(sourceLink.getLeftRegionId());
 
-		this.setGeometry(sourceLink.getGeometry());
+        this.setRightRegionId(sourceLink.getRightRegionId());
 
-		this.setLength(sourceLink.getLength());
+        this.setGeometry(sourceLink.getGeometry());
 
-		this.setMeshId(sourceLink.getMeshId());
+        this.setLength(sourceLink.getLength());
 
-		this.setOnewayMark(sourceLink.getOnewayMark());
+        this.setMeshId(sourceLink.getMeshId());
 
-		this.setStreetLight(sourceLink.getStreetLight());
+        this.setOnewayMark(sourceLink.getOnewayMark());
 
-		this.setParkingLot(sourceLink.getParkingLot());
+        this.setStreetLight(sourceLink.getStreetLight());
 
-		this.setAdasFlag(sourceLink.getAdasFlag());
+        this.setParkingLot(sourceLink.getParkingLot());
 
-		this.setSidewalkFlag(sourceLink.getSidewalkFlag());
+        this.setAdasFlag(sourceLink.getAdasFlag());
 
-		this.setWalkstairFlag(sourceLink.getWalkstairFlag());
+        this.setSidewalkFlag(sourceLink.getSidewalkFlag());
 
-		this.setDiciType(sourceLink.getDiciType());
+        this.setWalkstairFlag(sourceLink.getWalkstairFlag());
 
-		this.setWalkFlag(sourceLink.getWalkFlag());
+        this.setDiciType(sourceLink.getDiciType());
 
-		this.setDifGroupid(sourceLink.getDifGroupid());
+        this.setWalkFlag(sourceLink.getWalkFlag());
 
-		this.setSrcFlag(sourceLink.getSrcFlag());
+        this.setDifGroupid(sourceLink.getDifGroupid());
 
-		this.setDigitalLevel(sourceLink.getDigitalLevel());
+        this.setSrcFlag(sourceLink.getSrcFlag());
 
-		this.setEditFlag(sourceLink.getEditFlag());
+        this.setDigitalLevel(sourceLink.getDigitalLevel());
 
-		this.setTruckFlag(sourceLink.getTruckFlag());
+        this.setEditFlag(sourceLink.getEditFlag());
 
-		this.setOriginLinkPid(sourceLink.getOriginLinkPid());
+        this.setTruckFlag(sourceLink.getTruckFlag());
 
-		this.setCenterDivider(sourceLink.getCenterDivider());
+        this.setOriginLinkPid(sourceLink.getOriginLinkPid());
 
-		this.setParkingFlag(sourceLink.getParkingFlag());
+        this.setCenterDivider(sourceLink.getCenterDivider());
 
-		this.setMemo(sourceLink.getMemo());
+        this.setParkingFlag(sourceLink.getParkingFlag());
 
-		// this.setName(sourceLink.getName());
+        this.setMemo(sourceLink.getMemo());
 
-		List<IRow> formsSource = sourceLink.getForms();
+        // this.setName(sourceLink.getName());
 
-		List<IRow> forms = new ArrayList<IRow>();
+        List<IRow> formsSource = sourceLink.getForms();
 
-		for (IRow fs : formsSource) {
+        List<IRow> forms = new ArrayList<IRow>();
 
-			RdLinkForm f = new RdLinkForm();
+        for (IRow fs : formsSource) {
 
-			f.copy(fs);
+            RdLinkForm f = new RdLinkForm();
 
-			f.setLinkPid(this.getPid());
+            f.copy(fs);
 
-			forms.add(f);
-		}
+            f.setLinkPid(this.getPid());
 
-		this.setForms(forms);
+            forms.add(f);
+        }
 
-		List<IRow> limitsSource = sourceLink.getLimits();
+        this.setForms(forms);
 
-		List<IRow> limits = new ArrayList<IRow>();
+        List<IRow> limitsSource = sourceLink.getLimits();
 
-		for (IRow fs : limitsSource) {
+        List<IRow> limits = new ArrayList<IRow>();
 
-			RdLinkLimit f = new RdLinkLimit();
+        for (IRow fs : limitsSource) {
 
-			f.copy(fs);
+            RdLinkLimit f = new RdLinkLimit();
 
-			f.setLinkPid(this.getPid());
+            f.copy(fs);
 
-			limits.add(f);
-		}
+            f.setLinkPid(this.getPid());
 
-		this.setLimits(limits);
+            limits.add(f);
+        }
 
-		List<IRow> namesSource = sourceLink.getNames();
+        this.setLimits(limits);
 
-		List<IRow> names = new ArrayList<IRow>();
+        List<IRow> namesSource = sourceLink.getNames();
 
-		for (IRow fs : namesSource) {
+        List<IRow> names = new ArrayList<IRow>();
 
-			RdLinkName f = new RdLinkName();
+        for (IRow fs : namesSource) {
 
-			f.copy(fs);
+            RdLinkName f = new RdLinkName();
 
-			f.setLinkPid(this.getPid());
+            f.copy(fs);
 
-			names.add(f);
-		}
+            f.setLinkPid(this.getPid());
 
-		this.setNames(names);
+            names.add(f);
+        }
 
-		List<IRow> intRticsSources = sourceLink.getIntRtics();
+        this.setNames(names);
 
-		List<IRow> intRtics = new ArrayList<IRow>();
+        List<IRow> intRticsSources = sourceLink.getIntRtics();
 
-		for (IRow fs : intRticsSources) {
+        List<IRow> intRtics = new ArrayList<IRow>();
 
-			RdLinkIntRtic f = new RdLinkIntRtic();
+        for (IRow fs : intRticsSources) {
 
-			f.copy(fs);
+            RdLinkIntRtic f = new RdLinkIntRtic();
 
-			f.setLinkPid(this.getPid());
+            f.copy(fs);
 
-			intRtics.add(f);
-		}
+            f.setLinkPid(this.getPid());
 
-		this.setIntRtics(intRtics);
+            intRtics.add(f);
+        }
 
-		List<IRow> rticsSources = sourceLink.getRtics();
+        this.setIntRtics(intRtics);
 
-		List<IRow> rtics = new ArrayList<IRow>();
+        List<IRow> rticsSources = sourceLink.getRtics();
 
-		for (IRow fs : rticsSources) {
+        List<IRow> rtics = new ArrayList<IRow>();
 
-			RdLinkRtic f = new RdLinkRtic();
+        for (IRow fs : rticsSources) {
 
-			f.copy(fs);
+            RdLinkRtic f = new RdLinkRtic();
 
-			f.setLinkPid(this.getPid());
+            f.copy(fs);
 
-			rtics.add(f);
-		}
+            f.setLinkPid(this.getPid());
 
-		this.setRtics(rtics);
+            rtics.add(f);
+        }
 
-		List<IRow> limitTrucksSources = sourceLink.getLimitTrucks();
+        this.setRtics(rtics);
 
-		List<IRow> limitTrucks = new ArrayList<IRow>();
+        List<IRow> limitTrucksSources = sourceLink.getLimitTrucks();
 
-		for (IRow fs : limitTrucksSources) {
+        List<IRow> limitTrucks = new ArrayList<IRow>();
 
-			RdLinkLimitTruck f = new RdLinkLimitTruck();
+        for (IRow fs : limitTrucksSources) {
 
-			f.copy(fs);
+            RdLinkLimitTruck f = new RdLinkLimitTruck();
 
-			f.setLinkPid(this.getPid());
+            f.copy(fs);
 
-			limitTrucks.add(f);
-		}
+            f.setLinkPid(this.getPid());
 
-		this.setLimitTrucks(limitTrucks);
+            limitTrucks.add(f);
+        }
 
-		List<IRow> speedlimitSources = sourceLink.getSpeedlimits();
+        this.setLimitTrucks(limitTrucks);
 
-		List<IRow> speedlimits = new ArrayList<IRow>();
+        List<IRow> speedlimitSources = sourceLink.getSpeedlimits();
 
-		for (IRow fs : speedlimitSources) {
+        List<IRow> speedlimits = new ArrayList<IRow>();
 
-			RdLinkSpeedlimit f = new RdLinkSpeedlimit();
+        for (IRow fs : speedlimitSources) {
 
-			f.copy(fs);
+            RdLinkSpeedlimit f = new RdLinkSpeedlimit();
 
-			f.setLinkPid(this.getPid());
+            f.copy(fs);
 
-			speedlimits.add(f);
-		}
+            f.setLinkPid(this.getPid());
 
-		this.setSpeedlimits(speedlimits);
+            speedlimits.add(f);
+        }
 
-		List<IRow> zoneSources = sourceLink.getZones();
+        this.setSpeedlimits(speedlimits);
 
-		List<IRow> zones = new ArrayList<IRow>();
+        List<IRow> zoneSources = sourceLink.getZones();
 
-		for (IRow fs : zoneSources) {
+        List<IRow> zones = new ArrayList<IRow>();
 
-			RdLinkZone f = new RdLinkZone();
+        for (IRow fs : zoneSources) {
 
-			f.copy(fs);
+            RdLinkZone f = new RdLinkZone();
 
-			f.setLinkPid(this.getPid());
+            f.copy(fs);
 
-			zones.add(f);
-		}
+            f.setLinkPid(this.getPid());
 
-		this.setZones(zones);
+            zones.add(f);
+        }
 
-		List<IRow> sidewalkSources = sourceLink.getSidewalks();
+        this.setZones(zones);
 
-		List<IRow> sidewalks = new ArrayList<IRow>();
+        List<IRow> sidewalkSources = sourceLink.getSidewalks();
 
-		for (IRow fs : sidewalkSources) {
+        List<IRow> sidewalks = new ArrayList<IRow>();
 
-			RdLinkSidewalk f = new RdLinkSidewalk();
+        for (IRow fs : sidewalkSources) {
 
-			f.copy(fs);
+            RdLinkSidewalk f = new RdLinkSidewalk();
 
-			f.setLinkPid(this.getPid());
+            f.copy(fs);
 
-			sidewalks.add(f);
-		}
+            f.setLinkPid(this.getPid());
 
-		this.setSidewalks(sidewalks);
+            sidewalks.add(f);
+        }
 
-		List<IRow> walkstairSources = sourceLink.getWalkstairs();
+        this.setSidewalks(sidewalks);
 
-		List<IRow> walkstairs = new ArrayList<IRow>();
+        List<IRow> walkstairSources = sourceLink.getWalkstairs();
 
-		for (IRow fs : walkstairSources) {
+        List<IRow> walkstairs = new ArrayList<IRow>();
 
-			RdLinkWalkstair f = new RdLinkWalkstair();
+        for (IRow fs : walkstairSources) {
 
-			f.copy(fs);
+            RdLinkWalkstair f = new RdLinkWalkstair();
 
-			f.setLinkPid(this.getPid());
+            f.copy(fs);
 
-			walkstairs.add(f);
-		}
+            f.setLinkPid(this.getPid());
 
-		this.setWalkstairs(walkstairs);
-		List<IRow> tmcLocationSources = sourceLink.getWalkstairs();	
+            walkstairs.add(f);
+        }
 
-		List<IRow> tmcLocations = new ArrayList<IRow>();
+        this.setWalkstairs(walkstairs);
+        List<IRow> tmcLocationSources = sourceLink.getWalkstairs();
 
-		for (IRow fs : tmcLocationSources) {
+        List<IRow> tmcLocations = new ArrayList<IRow>();
 
-			RdTmclocation locationSource = (RdTmclocation) fs;
+        for (IRow fs : tmcLocationSources) {
 
-			RdTmclocation locationNew = new RdTmclocation();
+            RdTmclocation locationSource = (RdTmclocation) fs;
 
-			locationNew.copy(locationSource);
+            RdTmclocation locationNew = new RdTmclocation();
 
-			List<IRow> tmcLocationLinks = locationNew.getLinks();
+            locationNew.copy(locationSource);
 
-			for (IRow tmcLinkRow : tmcLocationLinks) {
-				RdTmclocationLink tmcLocationLink = (RdTmclocationLink) tmcLinkRow;
+            List<IRow> tmcLocationLinks = locationNew.getLinks();
 
-				tmcLocationLink.setLinkPid(this.getPid());
-			}
+            for (IRow tmcLinkRow : tmcLocationLinks) {
+                RdTmclocationLink tmcLocationLink = (RdTmclocationLink) tmcLinkRow;
 
-			tmcLocations.add(locationNew);
-		}
+                tmcLocationLink.setLinkPid(this.getPid());
+            }
 
-		this.setTmclocations(tmcLocations);
-	}
+            tmcLocations.add(locationNew);
+        }
 
-	@Override
-	public Map<String, Object> changedFields() {
+        this.setTmclocations(tmcLocations);
+    }
 
-		return changedFields;
-	}
+    @Override
+    public Map<String, Object> changedFields() {
 
-	@Override
-	public int pid() {
+        return changedFields;
+    }
 
-		return this.getPid();
-	}
+    @Override
+    public int pid() {
 
-	@Override
-	public String parentPKName() {
+        return this.getPid();
+    }
 
-		return "link_pid";
-	}
+    @Override
+    public String parentPKName() {
 
-	@Override
-	public int parentPKValue() {
+        return "link_pid";
+    }
 
-		return this.getPid();
-	}
+    @Override
+    public int parentPKValue() {
 
-	@Override
-	public List<List<IRow>> children() {
+        return this.getPid();
+    }
 
-		List<List<IRow>> children = new ArrayList<List<IRow>>();
+    @Override
+    public List<List<IRow>> children() {
 
-		children.add(this.getForms());
+        List<List<IRow>> children = new ArrayList<List<IRow>>();
 
-		children.add(this.getNames());
+        children.add(this.getForms());
 
-		children.add(this.getLimits());
+        children.add(this.getNames());
 
-		children.add(this.getIntRtics());
+        children.add(this.getLimits());
 
-		children.add(this.getLimitTrucks());
+        children.add(this.getIntRtics());
 
-		children.add(this.getSpeedlimits());
+        children.add(this.getLimitTrucks());
 
-		children.add(this.getZones());
+        children.add(this.getSpeedlimits());
 
-		children.add(this.getRtics());
+        children.add(this.getZones());
 
-		children.add(this.getSidewalks());
+        children.add(this.getRtics());
 
-		children.add(this.getWalkstairs());
+        children.add(this.getSidewalks());
 
-		children.add(this.getTmclocations());
+        children.add(this.getWalkstairs());
 
-		return children;
-	}
+        children.add(this.getTmclocations());
 
-	public List<IRow> getTmclocations() {
-		return tmclocations;
-	}
+        return children;
+    }
 
-	public void setTmclocations(List<IRow> tmclocations) {
-		this.tmclocations = tmclocations;
-	}
+    public List<IRow> getTmclocations() {
+        return tmclocations;
+    }
 
-	@Override
-	public String parentTableName() {
+    public void setTmclocations(List<IRow> tmclocations) {
+        this.tmclocations = tmclocations;
+    }
 
-		return "rd_link";
-	}
+    @Override
+    public String parentTableName() {
 
-	@Override
-	public String rowId() {
+        return "rd_link";
+    }
 
-		return rowId;
-	}
+    @Override
+    public String rowId() {
 
-	@Override
-	public void setRowId(String rowId) {
+        return rowId;
+    }
 
-		this.rowId = rowId;
-	}
+    @Override
+    public void setRowId(String rowId) {
 
-	@Override
-	public boolean fillChangeFields(JSONObject json) throws Exception {
+        this.rowId = rowId;
+    }
 
-		Iterator keys = json.keys();
+    @Override
+    public boolean fillChangeFields(JSONObject json) throws Exception {
 
-		while (keys.hasNext()) {
-			String key = (String) keys.next();
+        Iterator keys = json.keys();
 
-			if (json.get(key) instanceof JSONArray) {
-				continue;
-			} else if ("geometry".equals(key)) {
+        while (keys.hasNext()) {
+            String key = (String) keys.next();
 
-				JSONObject geojson = json.getJSONObject(key);
+            if (json.get(key) instanceof JSONArray) {
+                continue;
+            } else if ("geometry".equals(key)) {
 
-				String wkt = Geojson.geojson2Wkt(geojson.toString());
+                JSONObject geojson = json.getJSONObject(key);
 
-				String oldwkt = GeoTranslator.jts2Wkt(geometry, 0.00001, 5);
+                String wkt = Geojson.geojson2Wkt(geojson.toString());
 
-				if (!wkt.equals(oldwkt)) {
-					double length = GeometryUtils.getLinkLength(GeoTranslator
-							.geojson2Jts(geojson));
+                String oldwkt = GeoTranslator.jts2Wkt(geometry, 0.00001, 5);
 
-					changedFields.put("length", length);
+                if (!wkt.equals(oldwkt)) {
+                    double length = GeometryUtils.getLinkLength(GeoTranslator
+                            .geojson2Jts(geojson));
 
-					changedFields.put(key, json.getJSONObject(key));
-				}
-			} else {
-				if (!"objStatus".equals(key)) {
+                    changedFields.put("length", length);
 
-					Field field = this.getClass().getDeclaredField(key);
+                    changedFields.put(key, json.getJSONObject(key));
+                }
+            } else {
+                if (!"objStatus".equals(key)) {
 
-					field.setAccessible(true);
+                    Field field = this.getClass().getDeclaredField(key);
 
-					Object objValue = field.get(this);
+                    field.setAccessible(true);
 
-					String oldValue = null;
+                    Object objValue = field.get(this);
 
-					if (objValue == null) {
-						oldValue = "null";
-					} else {
-						oldValue = String.valueOf(objValue);
-					}
+                    String oldValue = null;
 
-					String newValue = json.getString(key);
+                    if (objValue == null) {
+                        oldValue = "null";
+                    } else {
+                        oldValue = String.valueOf(objValue);
+                    }
 
-					if (!newValue.equals(oldValue)) {
-						Object value = json.get(key);
+                    String newValue = json.getString(key);
 
-						if (value instanceof String) {
-							changedFields.put(key, newValue.replace("'", "''"));
-						} else {
-							changedFields.put(key, value);
-						}
+                    if (!newValue.equals(oldValue)) {
+                        Object value = json.get(key);
 
-					}
+                        if (value instanceof String) {
+                            changedFields.put(key, newValue.replace("'", "''"));
+                        } else {
+                            changedFields.put(key, value);
+                        }
 
-				}
-			}
-		}
+                    }
 
-		if (changedFields.size() > 0) {
-			return true;
-		} else {
-			return false;
-		}
+                }
+            }
+        }
 
-	}
+        if (changedFields.size() > 0) {
+            return true;
+        } else {
+            return false;
+        }
 
-	public int getAppInfo() {
-		return appInfo;
-	}
+    }
 
-	public void setAppInfo(int appInfo) {
-		this.appInfo = appInfo;
-	}
+    public int getAppInfo() {
+        return appInfo;
+    }
 
-	public int getTollInfo() {
-		return tollInfo;
-	}
+    public void setAppInfo(int appInfo) {
+        this.appInfo = appInfo;
+    }
 
-	public void setTollInfo(int tollInfo) {
-		this.tollInfo = tollInfo;
-	}
+    public int getTollInfo() {
+        return tollInfo;
+    }
 
-	public int getRouteAdopt() {
-		return routeAdopt;
-	}
+    public void setTollInfo(int tollInfo) {
+        this.tollInfo = tollInfo;
+    }
 
-	public void setRouteAdopt(int routeAdopt) {
-		this.routeAdopt = routeAdopt;
-	}
+    public int getRouteAdopt() {
+        return routeAdopt;
+    }
 
-	public int getDevelopState() {
-		return developState;
-	}
+    public void setRouteAdopt(int routeAdopt) {
+        this.routeAdopt = routeAdopt;
+    }
 
-	public void setDevelopState(int developState) {
-		this.developState = developState;
-	}
+    public int getDevelopState() {
+        return developState;
+    }
 
-	public int getImiCode() {
-		return imiCode;
-	}
+    public void setDevelopState(int developState) {
+        this.developState = developState;
+    }
 
-	public void setImiCode(int imiCode) {
-		this.imiCode = imiCode;
-	}
+    public int getImiCode() {
+        return imiCode;
+    }
 
-	public int getSpecialTraffic() {
-		return specialTraffic;
-	}
+    public void setImiCode(int imiCode) {
+        this.imiCode = imiCode;
+    }
 
-	public void setSpecialTraffic(int specialTraffic) {
-		this.specialTraffic = specialTraffic;
-	}
+    public int getSpecialTraffic() {
+        return specialTraffic;
+    }
 
-	public int getUrban() {
-		return urban;
-	}
+    public void setSpecialTraffic(int specialTraffic) {
+        this.specialTraffic = specialTraffic;
+    }
 
-	public void setUrban(int urban) {
-		this.urban = urban;
-	}
+    public int getUrban() {
+        return urban;
+    }
 
-	public int getPaveStatus() {
-		return paveStatus;
-	}
+    public void setUrban(int urban) {
+        this.urban = urban;
+    }
 
-	public void setPaveStatus(int paveStatus) {
-		this.paveStatus = paveStatus;
-	}
+    public int getPaveStatus() {
+        return paveStatus;
+    }
 
-	public int getLaneWidthLeft() {
-		return laneWidthLeft;
-	}
+    public void setPaveStatus(int paveStatus) {
+        this.paveStatus = paveStatus;
+    }
 
-	public void setLaneWidthLeft(int laneWidthLeft) {
-		this.laneWidthLeft = laneWidthLeft;
-	}
+    public int getLaneWidthLeft() {
+        return laneWidthLeft;
+    }
 
-	public int getLaneWidthRight() {
-		return laneWidthRight;
-	}
+    public void setLaneWidthLeft(int laneWidthLeft) {
+        this.laneWidthLeft = laneWidthLeft;
+    }
 
-	public void setLaneWidthRight(int laneWidthRight) {
-		this.laneWidthRight = laneWidthRight;
-	}
+    public int getLaneWidthRight() {
+        return laneWidthRight;
+    }
 
-	public int getLaneClass() {
-		return laneClass;
-	}
+    public void setLaneWidthRight(int laneWidthRight) {
+        this.laneWidthRight = laneWidthRight;
+    }
 
-	public void setLaneClass(int laneClass) {
-		this.laneClass = laneClass;
-	}
+    public int getLaneClass() {
+        return laneClass;
+    }
 
-	public int getWidth() {
-		return width;
-	}
+    public void setLaneClass(int laneClass) {
+        this.laneClass = laneClass;
+    }
 
-	public void setWidth(int width) {
-		this.width = width;
-	}
+    public int getWidth() {
+        return width;
+    }
 
-	public int getIsViaduct() {
-		return isViaduct;
-	}
+    public void setWidth(int width) {
+        this.width = width;
+    }
 
-	public void setIsViaduct(int isViaduct) {
-		this.isViaduct = isViaduct;
-	}
+    public int getIsViaduct() {
+        return isViaduct;
+    }
 
-	public int getLeftRegionId() {
-		return leftRegionId;
-	}
+    public void setIsViaduct(int isViaduct) {
+        this.isViaduct = isViaduct;
+    }
 
-	public void setLeftRegionId(int leftRegionId) {
-		this.leftRegionId = leftRegionId;
-	}
+    public int getLeftRegionId() {
+        return leftRegionId;
+    }
 
-	public int getRightRegionId() {
-		return rightRegionId;
-	}
+    public void setLeftRegionId(int leftRegionId) {
+        this.leftRegionId = leftRegionId;
+    }
 
-	public void setRightRegionId(int rightRegionId) {
-		this.rightRegionId = rightRegionId;
-	}
+    public int getRightRegionId() {
+        return rightRegionId;
+    }
 
-	public double getLength() {
-		return length;
-	}
+    public void setRightRegionId(int rightRegionId) {
+        this.rightRegionId = rightRegionId;
+    }
 
-	public void setLength(double length) {
-		this.length = length;
-	}
+    public double getLength() {
+        return length;
+    }
 
-	public int getMeshId() {
-		return meshId;
-	}
+    public void setLength(double length) {
+        this.length = length;
+    }
 
-	public void setMeshId(int meshId) {
-		this.meshId = meshId;
-	}
+    public int getMeshId() {
+        return meshId;
+    }
 
-	public int getOnewayMark() {
-		return onewayMark;
-	}
+    public void setMeshId(int meshId) {
+        this.meshId = meshId;
+    }
 
-	public void setOnewayMark(int onewayMark) {
-		this.onewayMark = onewayMark;
-	}
+    public int getOnewayMark() {
+        return onewayMark;
+    }
 
-	public int getStreetLight() {
-		return streetLight;
-	}
+    public void setOnewayMark(int onewayMark) {
+        this.onewayMark = onewayMark;
+    }
 
-	public void setStreetLight(int streetLight) {
-		this.streetLight = streetLight;
-	}
+    public int getStreetLight() {
+        return streetLight;
+    }
 
-	public int getParkingLot() {
-		return parkingLot;
-	}
+    public void setStreetLight(int streetLight) {
+        this.streetLight = streetLight;
+    }
 
-	public void setParkingLot(int parkingLot) {
-		this.parkingLot = parkingLot;
-	}
+    public int getParkingLot() {
+        return parkingLot;
+    }
 
-	public int getAdasFlag() {
-		return adasFlag;
-	}
+    public void setParkingLot(int parkingLot) {
+        this.parkingLot = parkingLot;
+    }
 
-	public void setAdasFlag(int adasFlag) {
-		this.adasFlag = adasFlag;
-	}
+    public int getAdasFlag() {
+        return adasFlag;
+    }
 
-	public int getSidewalkFlag() {
-		return sidewalkFlag;
-	}
+    public void setAdasFlag(int adasFlag) {
+        this.adasFlag = adasFlag;
+    }
 
-	public void setSidewalkFlag(int sidewalkFlag) {
-		this.sidewalkFlag = sidewalkFlag;
-	}
+    public int getSidewalkFlag() {
+        return sidewalkFlag;
+    }
 
-	public int getWalkstairFlag() {
-		return walkstairFlag;
-	}
+    public void setSidewalkFlag(int sidewalkFlag) {
+        this.sidewalkFlag = sidewalkFlag;
+    }
 
-	public void setWalkstairFlag(int walkstairFlag) {
-		this.walkstairFlag = walkstairFlag;
-	}
+    public int getWalkstairFlag() {
+        return walkstairFlag;
+    }
 
-	public int getDiciType() {
-		return diciType;
-	}
+    public void setWalkstairFlag(int walkstairFlag) {
+        this.walkstairFlag = walkstairFlag;
+    }
 
-	public void setDiciType(int diciType) {
-		this.diciType = diciType;
-	}
+    public int getDiciType() {
+        return diciType;
+    }
 
-	public int getWalkFlag() {
-		return walkFlag;
-	}
+    public void setDiciType(int diciType) {
+        this.diciType = diciType;
+    }
 
-	public void setWalkFlag(int walkFlag) {
-		this.walkFlag = walkFlag;
-	}
+    public int getWalkFlag() {
+        return walkFlag;
+    }
 
-	public String getDifGroupid() {
-		return difGroupid;
-	}
+    public void setWalkFlag(int walkFlag) {
+        this.walkFlag = walkFlag;
+    }
 
-	public void setDifGroupid(String difGroupid) {
-		this.difGroupid = difGroupid;
-	}
+    public String getDifGroupid() {
+        return difGroupid;
+    }
 
-	public int getSrcFlag() {
-		return srcFlag;
-	}
+    public void setDifGroupid(String difGroupid) {
+        this.difGroupid = difGroupid;
+    }
 
-	public void setSrcFlag(int srcFlag) {
-		this.srcFlag = srcFlag;
-	}
+    public int getSrcFlag() {
+        return srcFlag;
+    }
 
-	public int getDigitalLevel() {
-		return digitalLevel;
-	}
+    public void setSrcFlag(int srcFlag) {
+        this.srcFlag = srcFlag;
+    }
 
-	public void setDigitalLevel(int digitalLevel) {
-		this.digitalLevel = digitalLevel;
-	}
+    public int getDigitalLevel() {
+        return digitalLevel;
+    }
 
-	public int getEditFlag() {
-		return editFlag;
-	}
+    public void setDigitalLevel(int digitalLevel) {
+        this.digitalLevel = digitalLevel;
+    }
 
-	public void setEditFlag(int editFlag) {
-		this.editFlag = editFlag;
-	}
+    public int getEditFlag() {
+        return editFlag;
+    }
 
-	public int getTruckFlag() {
-		return truckFlag;
-	}
+    public void setEditFlag(int editFlag) {
+        this.editFlag = editFlag;
+    }
 
-	public void setTruckFlag(int truckFlag) {
-		this.truckFlag = truckFlag;
-	}
+    public int getTruckFlag() {
+        return truckFlag;
+    }
 
-	public int getOriginLinkPid() {
-		return originLinkPid;
-	}
+    public void setTruckFlag(int truckFlag) {
+        this.truckFlag = truckFlag;
+    }
 
-	public void setOriginLinkPid(int originLinkPid) {
-		this.originLinkPid = originLinkPid;
-	}
+    public int getOriginLinkPid() {
+        return originLinkPid;
+    }
 
-	public int getCenterDivider() {
-		return centerDivider;
-	}
+    public void setOriginLinkPid(int originLinkPid) {
+        this.originLinkPid = originLinkPid;
+    }
 
-	public void setCenterDivider(int centerDivider) {
-		this.centerDivider = centerDivider;
-	}
+    public int getCenterDivider() {
+        return centerDivider;
+    }
 
-	public int getParkingFlag() {
-		return parkingFlag;
-	}
+    public void setCenterDivider(int centerDivider) {
+        this.centerDivider = centerDivider;
+    }
 
-	public void setParkingFlag(int parkingFlag) {
-		this.parkingFlag = parkingFlag;
-	}
+    public int getParkingFlag() {
+        return parkingFlag;
+    }
 
-	public String getMemo() {
-		return memo;
-	}
+    public void setParkingFlag(int parkingFlag) {
+        this.parkingFlag = parkingFlag;
+    }
 
-	public void setMemo(String memo) {
-		this.memo = memo;
-	}
+    public String getMemo() {
+        return memo;
+    }
 
-	public List<IRow> getIntRtics() {
-		return intRtics;
-	}
+    public void setMemo(String memo) {
+        this.memo = memo;
+    }
 
-	public void setIntRtics(List<IRow> intRtics) {
-		this.intRtics = intRtics;
-	}
+    public List<IRow> getIntRtics() {
+        return intRtics;
+    }
 
-	public List<IRow> getLimitTrucks() {
-		return limitTrucks;
-	}
+    public void setIntRtics(List<IRow> intRtics) {
+        this.intRtics = intRtics;
+    }
 
-	public void setLimitTrucks(List<IRow> limitTrucks) {
-		this.limitTrucks = limitTrucks;
-	}
+    public List<IRow> getLimitTrucks() {
+        return limitTrucks;
+    }
 
-	public List<IRow> getRtics() {
-		return rtics;
-	}
+    public void setLimitTrucks(List<IRow> limitTrucks) {
+        this.limitTrucks = limitTrucks;
+    }
 
-	public void setRtics(List<IRow> rtics) {
-		this.rtics = rtics;
-	}
+    public List<IRow> getRtics() {
+        return rtics;
+    }
 
-	public List<IRow> getSidewalks() {
-		return sidewalks;
-	}
+    public void setRtics(List<IRow> rtics) {
+        this.rtics = rtics;
+    }
 
-	public void setSidewalks(List<IRow> sidewalks) {
-		this.sidewalks = sidewalks;
-	}
+    public List<IRow> getSidewalks() {
+        return sidewalks;
+    }
 
-	public List<IRow> getSpeedlimits() {
-		return speedlimits;
-	}
+    public void setSidewalks(List<IRow> sidewalks) {
+        this.sidewalks = sidewalks;
+    }
 
-	public void setSpeedlimits(List<IRow> speedlimits) {
-		this.speedlimits = speedlimits;
-	}
+    public List<IRow> getSpeedlimits() {
+        return speedlimits;
+    }
 
-	public List<IRow> getWalkstairs() {
-		return walkstairs;
-	}
+    public void setSpeedlimits(List<IRow> speedlimits) {
+        this.speedlimits = speedlimits;
+    }
 
-	public void setWalkstairs(List<IRow> walkstairs) {
-		this.walkstairs = walkstairs;
-	}
+    public List<IRow> getWalkstairs() {
+        return walkstairs;
+    }
 
-	public List<IRow> getZones() {
-		return zones;
-	}
+    public void setWalkstairs(List<IRow> walkstairs) {
+        this.walkstairs = walkstairs;
+    }
 
-	public void setZones(List<IRow> zones) {
-		this.zones = zones;
-	}
+    public List<IRow> getZones() {
+        return zones;
+    }
 
-	@Override
-	public int mesh() {
-		return this.meshId;
-	}
+    public void setZones(List<IRow> zones) {
+        this.zones = zones;
+    }
 
-	@Override
-	public void setMesh(int mesh) {
-	}
+    @Override
+    public int mesh() {
+        return this.meshId;
+    }
 
-	@Override
-	public String primaryKey() {
-		return "link_pid";
-	}
+    @Override
+    public void setMesh(int mesh) {
+    }
 
-	@Override
-	public Map<Class<? extends IRow>, List<IRow>> childList() {
-		Map<Class<? extends IRow>, List<IRow>> childList = new HashMap<Class<? extends IRow>, List<IRow>>();
-		childList.put(RdLinkName.class, names);
-		childList.put(RdLinkForm.class, forms);
-		childList.put(RdLinkLimit.class, limits);
-		childList.put(RdLinkIntRtic.class, intRtics);
-		childList.put(RdLinkRtic.class, rtics);
-		childList.put(RdLinkLimitTruck.class, limitTrucks);
-		childList.put(RdLinkSidewalk.class, sidewalks);
-		childList.put(RdLinkSpeedlimit.class, speedlimits);
-		childList.put(RdLinkWalkstair.class, walkstairs);
-		childList.put(RdLinkZone.class, zones);
-		childList.put(RdTmclocation.class, tmclocations);
-		return childList;
-	}
+    @Override
+    public String primaryKey() {
+        return "link_pid";
+    }
 
-	@Override
-	public Map<Class<? extends IRow>, Map<String, ?>> childMap() {
-		Map<Class<? extends IRow>, Map<String, ?>> childMap = new HashMap<Class<? extends IRow>, Map<String, ?>>();
-		childMap.put(RdLinkName.class, nameMap);
-		childMap.put(RdLinkForm.class, formMap);
-		childMap.put(RdLinkLimit.class, limitMap);
-		childMap.put(RdLinkIntRtic.class, intRticMap);
-		childMap.put(RdLinkRtic.class, rticMap);
-		childMap.put(RdLinkLimitTruck.class, limitTruckMap);
-		childMap.put(RdLinkSidewalk.class, sidewalkMap);
-		childMap.put(RdLinkSpeedlimit.class, speedlimitMap);
-		childMap.put(RdLinkWalkstair.class, walkstairMap);
-		childMap.put(RdLinkZone.class, zoneMap);
-		childMap.put(RdTmclocation.class, locationMap);
-		return childMap;
-	}
+    @Override
+    public Map<Class<? extends IRow>, List<IRow>> childList() {
+        Map<Class<? extends IRow>, List<IRow>> childList = new HashMap<Class<? extends IRow>, List<IRow>>();
+        childList.put(RdLinkName.class, names);
+        childList.put(RdLinkForm.class, forms);
+        childList.put(RdLinkLimit.class, limits);
+        childList.put(RdLinkIntRtic.class, intRtics);
+        childList.put(RdLinkRtic.class, rtics);
+        childList.put(RdLinkLimitTruck.class, limitTrucks);
+        childList.put(RdLinkSidewalk.class, sidewalks);
+        childList.put(RdLinkSpeedlimit.class, speedlimits);
+        childList.put(RdLinkWalkstair.class, walkstairs);
+        childList.put(RdLinkZone.class, zones);
+        childList.put(RdTmclocation.class, tmclocations);
+        return childList;
+    }
+
+    @Override
+    public Map<Class<? extends IRow>, Map<String, ?>> childMap() {
+        Map<Class<? extends IRow>, Map<String, ?>> childMap = new HashMap<Class<? extends IRow>, Map<String, ?>>();
+        childMap.put(RdLinkName.class, nameMap);
+        childMap.put(RdLinkForm.class, formMap);
+        childMap.put(RdLinkLimit.class, limitMap);
+        childMap.put(RdLinkIntRtic.class, intRticMap);
+        childMap.put(RdLinkRtic.class, rticMap);
+        childMap.put(RdLinkLimitTruck.class, limitTruckMap);
+        childMap.put(RdLinkSidewalk.class, sidewalkMap);
+        childMap.put(RdLinkSpeedlimit.class, speedlimitMap);
+        childMap.put(RdLinkWalkstair.class, walkstairMap);
+        childMap.put(RdLinkZone.class, zoneMap);
+        childMap.put(RdTmclocation.class, locationMap);
+        return childMap;
+    }
 
 }

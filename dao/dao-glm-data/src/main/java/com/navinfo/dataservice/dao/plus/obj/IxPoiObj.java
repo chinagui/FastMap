@@ -1,25 +1,18 @@
 package com.navinfo.dataservice.dao.plus.obj;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
-
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiAddress;
-import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiChargingplot;
-import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiChargingstation;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiChildren;
-import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiAddress;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiContact;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiDetail;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiGasstation;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiHotel;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiParent;
-import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiParking;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiRestaurant;
 
 
@@ -32,7 +25,7 @@ import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiRestaurant;
 public class IxPoiObj extends AbstractIxObj {
 	
 	protected String parentFid;
-	protected String childFid;
+	protected List<Map<Long,Object>> childFids;
 	protected long adminId=0L;
 	public long getAdminId() {
 		return adminId;
@@ -46,11 +39,11 @@ public class IxPoiObj extends AbstractIxObj {
 	public void setParentFid(String parentFid) {
 		this.parentFid = parentFid;
 	}
-	public String getChildFid() {
-		return childFid;
+	public List<Map<Long, Object>> getChildFids() {
+		return childFids;
 	}
-	public void setChildFid(String childFid) {
-		this.childFid = childFid;
+	public void setChildFid(List<Map<Long, Object>> childFids) {
+		this.childFids = childFids;
 	}
 	
 	
@@ -117,6 +110,20 @@ public class IxPoiObj extends AbstractIxObj {
 		return ixPoiRestaurant;
 //		return (IxPoiRestaurant)(ObjFactory.getInstance().createRow("IX_POI_RESTAURANT", this.objPid()));
 	}
+	public List<IxPoiGasstation> getIxPoiGasstations(){
+		return (List)subrows.get("IxPoiGasstation");
+	}
+	public IxPoiGasstation createIxPoiGasstation()throws Exception{
+		IxPoiGasstation ixPoiGasstation = (IxPoiGasstation)(ObjFactory.getInstance().createRow("IX_POI_GASSTATION", this.objPid()));
+		if(subrows.containsKey("IX_POI_GASSTATION")){
+			subrows.get("IX_POI_GASSTATION").add(ixPoiGasstation);
+		}else{
+			List<BasicRow> ixixPoiGasstationList = new ArrayList<BasicRow>();
+			ixixPoiGasstationList.add(ixPoiGasstation);
+			subrows.put("IX_POI_GASSTATION", ixixPoiGasstationList);
+		}
+		return ixPoiGasstation;
+	}
 	public List<IxPoiHotel> getIxPoiHotels(){
 		return (List)subrows.get("IX_POI_HOTEL");
 	}
@@ -130,7 +137,6 @@ public class IxPoiObj extends AbstractIxObj {
 			subrows.put("IX_POI_DETAIL", ixPoiHotelList);
 		}
 		return ixPoiHotel;
-//		return (IxPoiHotel)(ObjFactory.getInstance().createRow("IX_POI_HOTEL", this.objPid()));
 	}
 	public List<IxPoiDetail> getIxPoiDetails(){
 		return (List)subrows.get("IX_POI_DETAIL");
@@ -145,13 +151,13 @@ public class IxPoiObj extends AbstractIxObj {
 			subrows.put("IX_POI_DETAIL", ixPoiDetailList);
 		}
 		return ixPoiDetail;
-//		return (IxPoiDetail)(ObjFactory.getInstance().createRow("IX_POI_DETAIL", this.objPid()));
 	}
 	public List<IxPoiChildren> getIxPoiChildrens(){
 		return (List)subrows.get("IX_POI_CHILDREN");
 	}
-	public IxPoiChildren createIxPoiChildren()throws Exception{
+	public IxPoiChildren createIxPoiChildren(long groupId)throws Exception{
 		IxPoiChildren ixPoiChildren = (IxPoiChildren)(ObjFactory.getInstance().createRow("IX_POI_CHILDREN", this.objPid()));
+		ixPoiChildren.setGroupId(groupId);
 		if(subrows.containsKey("IX_POI_CHILDREN")){
 			subrows.get("IX_POI_CHILDREN").add(ixPoiChildren);
 		}else{
@@ -160,8 +166,8 @@ public class IxPoiObj extends AbstractIxObj {
 			subrows.put("IX_POI_CHILDREN", ixPoiChildrenList);
 		}
 		return ixPoiChildren;
-//		return (IxPoiChildren)(ObjFactory.getInstance().createRow("IX_POI_CHILDREN", this.objPid()));
 	}
+	
 	public List<IxPoiParent> getIxPoiParents(){
 		return (List)subrows.get("IX_POI_PARENT");
 	}
@@ -175,7 +181,6 @@ public class IxPoiObj extends AbstractIxObj {
 			subrows.put("IX_POI_PARENT", ixPoiParentList);
 		}
 		return ixPoiParent;
-//		return (IxPoiParent)(ObjFactory.getInstance().createRow("IX_POI_PARENT", this.objPid()));
 	}
 	
 	/**
@@ -224,8 +229,6 @@ public class IxPoiObj extends AbstractIxObj {
 		return null;
 	}
 
-	
-	
 	/**
 	 * 根据语言代码获取楼层
 	 * @author Han Shaoming
@@ -244,31 +247,38 @@ public class IxPoiObj extends AbstractIxObj {
 		return null;
 	}
 	
-	/**
-	 * 子列表Fid
-	 * @author Han Shaoming
-	 * @return
+	/*
+	 * 官方原始中文名称
 	 */
-	public List<Map<String,Object>> getChildrens(){
-		List<Map<String,Object>> msgs = new ArrayList<Map<String,Object>>();
-		List<BasicRow> rows = getRowsByName("IX_POI_CHILDREN");
-		if(rows!=null && rows.size()>0){
-			for(BasicRow row:rows){
-				Map<String,Object> msg = new HashMap<String, Object>();
-				IxPoiChildren children = (IxPoiChildren) row;
-				msg.put("type", children.getRelationType());
-				msg.put("childPid", children.getChildPoiPid());
-				msg.put("childFid", this.getChildFid());
-				msg.put("rowId", children.getRowId());
-				msgs.add(msg);
+	public IxPoiName getOfficeOriginCHIName(){
+		List<IxPoiName> subRows=getIxPoiNames();
+		for(IxPoiName br:subRows){
+			if(br.getNameClass()==1&&br.getNameType()==2&&br.getLangCode().equals("CHI")){
+				return br;}
 			}
-		}
-		return msgs;
+		return null;
+	}
+	
+	/*
+	 * 官方标准中文名称
+	 */
+	public IxPoiName getOfficeStandardCHName(){
+		List<IxPoiName> subRows=getIxPoiNames();
+		for(IxPoiName br:subRows){
+			if(br.getNameClass()==1&&br.getNameType()==1
+					&&(br.getLangCode().equals("CHI")||br.getLangCode().equals("CHT"))){
+				return br;}
+			}
+		return null;
 	}
 	
 	@Override
+	public String objName() {
+		return ObjectName.IX_POI;
+	}
+	@Override
 	public String objType() {
-		return ObjectType.IX_POI;
+		return ObjType.FEATURE;
 	}
 
 }

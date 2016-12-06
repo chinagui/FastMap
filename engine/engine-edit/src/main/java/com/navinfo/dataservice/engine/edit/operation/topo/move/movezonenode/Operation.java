@@ -17,11 +17,7 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
-import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneFace;
-import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneFaceTopo;
-import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneLink;
-import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneNode;
-import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneNodeMesh;
+import com.navinfo.dataservice.dao.glm.model.ad.zone.*;
 import com.navinfo.dataservice.dao.glm.selector.ad.zone.ZoneLinkSelector;
 import com.navinfo.dataservice.engine.edit.utils.ZoneLinkOperateUtils;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
@@ -97,7 +93,11 @@ public class Operation implements IOperation {
             // 修改线的几何属性
             // 如果没有跨图幅只是修改线的几何
             List<ZoneLink> links = new ArrayList<ZoneLink>();
-            if (meshes.size() == 1) {
+            List<String> linkMeshes = new ArrayList<String>();
+            for (IRow row : link.getMeshes()) {
+                linkMeshes.add(((ZoneLinkMesh) row).getMeshId() + "");
+            }
+            if (meshes.containsAll(linkMeshes)) {
                 JSONObject updateContent = new JSONObject();
                 updateContent.put("geometry", geojson);
                 updateContent.put("length", GeometryUtils.getLinkLength(geo));

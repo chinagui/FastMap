@@ -20,7 +20,7 @@ public class AdLinkTest extends InitApplication {
 	
 	@Test
 	public  void testBreakAdLink() {
-		String parameter = "{\"command\":\"BREAK\",\"projectId\":11,\"objId\":100031763,\"data\":{\"longitude\":116.4725149146884,\"latitude\":40.012285569566565},\"type\":\"ADLINK\"}";
+		String parameter = "{\"command\":\"CREATE\",\"type\":\"ADFACE\",\"linkType\":\"ADLINK\",\"dbId\":259,\"data\":{\"linkPids\":[\"402000643\",\"400000032\",\"505000594\"]}}";
 
 		Transaction t = new Transaction(parameter);
 		try {

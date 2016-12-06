@@ -27,6 +27,7 @@ public class IxPoiAttraction extends BasicRow {
 	
 	public IxPoiAttraction (long objPid){
 		super(objPid);
+		setPoiPid(objPid);
 	}
 	
 	public long getAttractionId() {

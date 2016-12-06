@@ -52,7 +52,7 @@ public class EdgeMatchTipsOperator {
 	 * @throws Exception
 	 * @time:2016-11-15 上午11:03:20
 	 */
-	public void create( JSONObject g_location, String content, int user, String memo) throws Exception {
+	public String create( JSONObject g_location, String content, int user, String memo) throws Exception {
 
 		Connection hbaseConn;
 		try {
@@ -105,8 +105,9 @@ public class EdgeMatchTipsOperator {
 
 			// 4.geometry
 			JSONObject jsonGeom = new JSONObject();
+			JSONObject g_guide=g_location; //g_guide和g_location值一样
 			jsonGeom.put("g_location", g_location);
-			jsonGeom.put("g_guide",JSONNull.getInstance() );
+			jsonGeom.put("g_guide",g_guide ); 
 
 			// source
 			int s_sourceCode = 15;
@@ -151,7 +152,7 @@ public class EdgeMatchTipsOperator {
 			JSONObject solrIndex = TipsUtils.generateSolrIndex(rowkey, stage,
 					operateDate, operateDate, t_lifecycle, t_command, user,
 					t_cStatus, t_dStatus, t_mStatus, S_SOURCETYPE, s_sourceCode,
-					null, g_location, null, f_array, s_reliability);
+					g_guide, g_location, null, f_array, s_reliability);
 
 			solr.addTips(solrIndex);
 
@@ -162,6 +163,8 @@ public class EdgeMatchTipsOperator {
 			htab.put(puts);
 
 			htab.close();
+			
+			return rowkey;
 
 		} catch (IOException e) {
 			logger.error("新增tips出错：原因：" + e.getMessage());

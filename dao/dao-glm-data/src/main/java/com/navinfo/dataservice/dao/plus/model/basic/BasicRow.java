@@ -14,14 +14,20 @@ import java.util.Map.Entry;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.dao.plus.glm.GlmColumn;
 import com.navinfo.dataservice.dao.plus.glm.GlmFactory;
 import com.navinfo.dataservice.dao.plus.glm.GlmRef;
 import com.navinfo.dataservice.dao.plus.glm.GlmTable;
 import com.navinfo.dataservice.dao.plus.glm.NonGeoPidException;
 import com.navinfo.dataservice.dao.plus.obj.WrongOperationException;
+import com.navinfo.dataservice.dao.plus.utils.RowJsonUtils;
 import com.navinfo.navicommons.database.sql.RunnableSQL;
 import com.vividsolutions.jts.geom.Geometry;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONNull;
+import net.sf.json.JSONObject;
 
 /** 
  * @ClassName: BasicRow
@@ -38,6 +44,10 @@ public abstract class BasicRow{
 	protected List<ChangeLog> hisChangeLogs;
 	
 	
+	public void setHisChangeLogs(List<ChangeLog> hisChangeLogs) {
+		this.hisChangeLogs = hisChangeLogs;
+	}
+
 	public BasicRow() {
 		super();
 		// TODO Auto-generated constructor stub
@@ -85,10 +95,6 @@ public abstract class BasicRow{
 		return GlmFactory.getInstance().getTableByName(tableName()).getPkColumn();
 	}
 	
-//  //need override
-//	public boolean isGeoChanged() {
-//		return false;
-//	}
 	public OperationType getOpType(){
 		return opType;
 	}
@@ -185,6 +191,7 @@ public abstract class BasicRow{
 	}
 	public boolean isChanged(){
 		if(opType.equals(OperationType.INSERT_DELETE))return false;
+		if(opType.equals(OperationType.PRE_DELETED))return false;
 		if(opType.equals(OperationType.UPDATE)&&(oldValues==null||oldValues.size()==0))return false;
 		return true;
 	}
@@ -308,9 +315,19 @@ public abstract class BasicRow{
 	 * @param colNames
 	 * @return
 	 */
-	public Map<String,Object> getAttrs(Collection<String> colNames){
+	public Map<String,Object> getAttrs(Collection<String> colNames)throws Exception{
 		//todo
 		Map<String,Object> attrs = new HashMap<String,Object>();
+		if(colNames!=null&&colNames.size()>0){
+			for(String colName:colNames){
+				attrs.put(colName, getAttrByColName(colName));
+			}
+		}else{
+			GlmTable glmTable = GlmFactory.getInstance().getTableByName(tableName());
+			for(String colName:glmTable.getColumns().keySet()){
+				attrs.put(colName, getAttrByColName(colName));
+			}
+		}
 		return attrs;
 	}
 	public Object getAttrByColName(String colName)throws NoSuchMethodException,InvocationTargetException, IllegalAccessException, IllegalArgumentException{
@@ -522,6 +539,31 @@ public abstract class BasicRow{
 		}else{
 			return false;
 		}
+	}
+	
+	public JSONObject getOldValueJson()throws Exception{
+		if(opType.equals(OperationType.DELETE)){
+			return RowJsonUtils.toJson(getAttrs(null));
+		}else if(opType.equals(OperationType.UPDATE)&&oldValues!=null&&oldValues.size()>0){
+			return RowJsonUtils.toJson(oldValues);
+		}
+		return null;
+	}
+	
+	public JSONArray getChangedColumns(){
+		if(opType.equals(OperationType.UPDATE)&&oldValues!=null&&oldValues.size()>0){
+			return RowJsonUtils.toJson(oldValues.keySet());
+		}
+		return null;
+	}
+
+	public JSONObject getNewValueJson()throws Exception{
+		if(opType.equals(OperationType.INSERT)){
+			return RowJsonUtils.toJson(getAttrs(null));
+		}else if(opType.equals(OperationType.UPDATE)&&oldValues!=null&&oldValues.size()>0){
+			return RowJsonUtils.toJson(getAttrs(oldValues.keySet()));
+		}
+		return null;
 	}
 	
 	public static void main(String[] args) {

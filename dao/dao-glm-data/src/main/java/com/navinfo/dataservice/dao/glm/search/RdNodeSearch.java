@@ -45,7 +45,7 @@ public class RdNodeSearch implements ISearch {
 	public List<SearchSnapshot> searchDataBySpatial(String wkt) throws Exception {
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "WITH TMP1 AS (SELECT NODE_PID, GEOMETRY FROM RD_NODE WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2), TMP2 AS (SELECT /*+ index(a) */ B.NODE_PID, LISTAGG(A.LINK_PID, ',') WITHIN GROUP(ORDER BY B.NODE_PID) LINKPIDS, LISTAGG(A.IMI_CODE, ',') WITHIN GROUP(ORDER BY B.NODE_PID) IMICODES, LISTAGG(A.SPECIAL_TRAFFIC, ',') WITHIN GROUP(ORDER BY B.NODE_PID) TRAFFICS, LISTAGG(C.FORM_OF_WAY, ',') WITHIN GROUP(ORDER BY B.NODE_PID) LINK_FORMS FROM TMP1 B LEFT JOIN RD_LINK A ON A.S_NODE_PID = B.NODE_PID OR A.E_NODE_PID = B.NODE_PID LEFT JOIN RD_LINK_FORM C ON A.LINK_PID = C.LINK_PID WHERE A.U_RECORD != 2 GROUP BY B.NODE_PID), TMP3 AS (SELECT /*+ index(a) */ B.NODE_PID, LISTAGG(A.GROUP_ID, ',') WITHIN GROUP(ORDER BY B.NODE_PID) SAMNODEPART FROM TMP1 B LEFT JOIN RD_SAMENODE_PART A ON B.NODE_PID = A.NODE_PID AND A.TABLE_NAME = 'RD_NODE' GROUP BY B.NODE_PID, A.GROUP_ID), TMP4 AS (SELECT /*+ index(a) */ B.NODE_PID, LISTAGG(A.PID, ',') WITHIN GROUP(ORDER BY B.NODE_PID) AS INTERNODE FROM TMP1 B LEFT JOIN RD_INTER_NODE A ON B.NODE_PID = A.NODE_PID GROUP BY B.NODE_PID) SELECT A.NODE_PID, A.GEOMETRY, B.LINKPIDS, B.TRAFFICS, B.LINK_FORMS, B.IMICODES, C.SAMNODEPART, D.INTERNODE FROM TMP1 A, TMP2 B, TMP3 C, TMP4 D WHERE A.NODE_PID = B.NODE_PID AND B.NODE_PID = C.NODE_PID AND D.NODE_PID = C.NODE_PID  ";
+		String sql = "WITH TMP1 AS (SELECT NODE_PID, GEOMETRY,kind FROM RD_NODE WHERE sdo_within_distance(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2), TMP2 AS (SELECT /*+ index(a) */ B.NODE_PID, LISTAGG(A.LINK_PID, ',') WITHIN GROUP(ORDER BY B.NODE_PID) LINKPIDS, LISTAGG(A.IMI_CODE, ',') WITHIN GROUP(ORDER BY B.NODE_PID) IMICODES, LISTAGG(A.SPECIAL_TRAFFIC, ',') WITHIN GROUP(ORDER BY B.NODE_PID) TRAFFICS, LISTAGG(C.FORM_OF_WAY, ',') WITHIN GROUP(ORDER BY B.NODE_PID) LINK_FORMS FROM TMP1 B LEFT JOIN RD_LINK A ON A.S_NODE_PID = B.NODE_PID OR A.E_NODE_PID = B.NODE_PID LEFT JOIN RD_LINK_FORM C ON A.LINK_PID = C.LINK_PID WHERE A.U_RECORD != 2 GROUP BY B.NODE_PID), TMP3 AS (SELECT /*+ index(a) */ B.NODE_PID, LISTAGG(A.GROUP_ID, ',') WITHIN GROUP(ORDER BY B.NODE_PID) SAMNODEPART FROM TMP1 B LEFT JOIN RD_SAMENODE_PART A ON B.NODE_PID = A.NODE_PID AND A.TABLE_NAME = 'RD_NODE' GROUP BY B.NODE_PID, A.GROUP_ID), TMP4 AS (SELECT /*+ index(a) */ B.NODE_PID, LISTAGG(A.PID, ',') WITHIN GROUP(ORDER BY B.NODE_PID) AS INTERNODE FROM TMP1 B LEFT JOIN RD_INTER_NODE A ON B.NODE_PID = A.NODE_PID GROUP BY B.NODE_PID) SELECT A.NODE_PID, A.GEOMETRY, A.KIND,B.LINKPIDS, B.TRAFFICS, B.LINK_FORMS, B.IMICODES, C.SAMNODEPART, D.INTERNODE FROM TMP1 A, TMP2 B, TMP3 C, TMP4 D WHERE A.NODE_PID = B.NODE_PID AND B.NODE_PID = C.NODE_PID AND D.NODE_PID = C.NODE_PID  ";
 
 		PreparedStatement pstmt = null;
 
@@ -88,33 +88,36 @@ public class RdNodeSearch implements ISearch {
 
 						linkJSON.put("forms", forms.split(",")[i]);
 
-						linkJSON.put("imiCode", resultSet.getString("link_forms").split(",")[i]);
+						linkJSON.put("imiCode", resultSet.getString("IMICODES").split(",")[i]);
 						
 						linkJSON.put("specTraffic", resultSet.getString("TRAFFICS").split(",")[i]);
 
-						String samNodePid = resultSet.getString("samNodePart");
-
-						if (samNodePid != null) {
-							linkJSON.put("sameNode", Integer.parseInt(samNodePid));
-						} else {
-							// 0代表没有同一点关系
-							linkJSON.put("sameNode", 0);
-						}
-
-						String interNodePid = resultSet.getString("interNode");
-
-						if (interNodePid != null) {
-							linkJSON.put("interNode", Integer.parseInt(interNodePid));
-						} else {
-							// 0代表没有制作CRFI
-							linkJSON.put("interNode", 0);
-						}
 						linkMap.put(linkPid, linkJSON);
 					}
 				}
-
+				
 				m.put("a", linkMap.values());
+				
+				String samNodePid = resultSet.getString("samNodePart");
 
+				if (samNodePid != null) {
+					m.put("sameNode", samNodePid);
+				} else {
+					// 0代表没有同一点关系
+					m.put("sameNode", 0);
+				}
+
+				String interNodePid = resultSet.getString("interNode");
+
+				if (interNodePid != null) {
+					m.put("interNode", interNodePid);
+				} else {
+					// 0代表没有制作CRFI
+					m.put("interNode", 0);
+				}
+				
+				m.put("kind", resultSet.getInt("kind"));
+				
 				snapshot.setM(m);
 
 				snapshot.setT(16);

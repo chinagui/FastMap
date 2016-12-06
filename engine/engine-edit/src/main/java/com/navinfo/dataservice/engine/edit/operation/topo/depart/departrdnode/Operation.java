@@ -15,6 +15,8 @@ import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryCollection;
+import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Point;
 
 import net.sf.json.JSONObject;
@@ -268,19 +270,30 @@ public class Operation implements IOperation {
 
 				maps.put(geo.getCoordinates()[geo.getCoordinates().length - 1], this.command.getRdLink().geteNodePid());
 			} else {
-				maps.put(geo.getCoordinates()[0], this.command.getRdLink().geteNodePid());
+				maps.put(geo.getCoordinates()[0], this.command.getRdLink().getsNodePid());
 
 				maps.put(geo.getCoordinates()[geo.getCoordinates().length - 1], nodePid);
 			}
 
 			Iterator<String> it = meshes.iterator();
 			while (it.hasNext()) {
-				String meshIdStr = it.next();
-				Geometry geomInter = MeshUtils.linkInterMeshPolygon(geo,
-						GeoTranslator.transform(MeshUtils.mesh2Jts(meshIdStr), 1, 5));
-				geomInter = GeoTranslator.geojson2Jts(GeoTranslator.jts2Geojson(geomInter), 1, 5);
-				RdLinkOperateUtils.createRdLinkWithMesh(geomInter, maps, this.command.getRdLink(), result, links);
+				 String meshIdStr = it.next();
+                 Geometry geomInter = MeshUtils.linkInterMeshPolygon(geo, GeoTranslator.transform(MeshUtils.mesh2Jts(meshIdStr), 1, 5));
+                 if (geomInter instanceof GeometryCollection) {
+                     int geoNum = geomInter.getNumGeometries();
+                     for (int i = 0; i < geoNum; i++) {
+                         Geometry subGeo = geomInter.getGeometryN(i);
+                         if (subGeo instanceof LineString) {
+                             subGeo = GeoTranslator.geojson2Jts(GeoTranslator.jts2Geojson(subGeo), 1, 5);
 
+                             RdLinkOperateUtils.createRdLinkWithMesh(subGeo, maps, this.command.getRdLink(), result, links);
+                         }
+                     }
+                 } else {
+                     geomInter = GeoTranslator.geojson2Jts(GeoTranslator.jts2Geojson(geomInter), 1, 5);
+
+                     RdLinkOperateUtils.createRdLinkWithMesh(geomInter, maps, this.command.getRdLink(), result, links);
+                 }
 			}
 
 			result.insertObject(this.command.getRdLink(), ObjStatus.DELETE, this.command.getRdLink().pid());

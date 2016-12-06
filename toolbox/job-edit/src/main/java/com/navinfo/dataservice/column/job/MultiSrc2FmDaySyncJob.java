@@ -29,6 +29,7 @@ import com.navinfo.dataservice.commons.thread.VMThreadPoolExecutor;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.ServiceInvokeUtil;
 import com.navinfo.dataservice.commons.util.ZipUtils;
+import com.navinfo.dataservice.dao.plus.editman.PoiEditStatus;
 import com.navinfo.dataservice.dao.plus.operation.OperationSegment;
 import com.navinfo.dataservice.engine.editplus.operation.imp.MultiSrcPoiDayImportor;
 import com.navinfo.dataservice.engine.editplus.operation.imp.MultiSrcPoiDayImportorCommand;
@@ -55,6 +56,8 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 	
 	Map<String,String> errLog=new ConcurrentHashMap<String,String>();
 	
+	JSONObject resJson=new JSONObject();
+	
 	public MultiSrc2FmDaySyncJob(JobInfo jobInfo) {
 		super(jobInfo);
 	}
@@ -65,7 +68,7 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 		FmMultiSrcSyncApi syncApi;
 		try{
 			syncApi = (FmMultiSrcSyncApi)ApplicationContextUtil
-				.getBean("syncApi");
+				.getBean("fmMultiSrcSyncApi");
 			MultiSrc2FmDaySyncJobRequest req = (MultiSrc2FmDaySyncJobRequest)request;
 			//下载解压远程文件包
 			String localUnzipDir = downloadAndUnzip(syncApi,req.getRemoteZipFile());
@@ -90,8 +93,8 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 	
 	private String downloadAndUnzip(FmMultiSrcSyncApi syncApi,String remoteZipFile)throws Exception{
 		try{
-			String uploadRoot = SystemConfigFactory.getSystemConfig().getValue(
-					PropConstant.uploadPath);
+//			String uploadRoot = SystemConfigFactory.getSystemConfig().getValue(PropConstant.uploadPath);
+			String uploadRoot = "F:\\data\\multisrc\\upload\\";
 			//每个月独立目录
 			String curYm = DateUtils.getCurYyyymm();
 			String monthDir = uploadRoot+"multisrc"+File.separator+curYm+File.separator;
@@ -101,6 +104,7 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 			}
 			//获取zip包名
 			String fileName = remoteZipFile.substring(remoteZipFile.lastIndexOf("/"));
+			resJson.put("src", fileName);
 			//下载
 			String localZipFile = monthDir+fileName;
 			DownloadUtils.download(remoteZipFile,localZipFile);
@@ -110,12 +114,12 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 			ZipUtils.unzipFile(localZipFile,localUnzipDir);
 			log.debug("解压完成");
 			//设置下载成功状态
-			syncApi.updateMultiSrcFmSyncStatus(MultiSrcFmSync.STATUS_DOWNLOAD_SUCCESS);
+			syncApi.updateMultiSrcFmSyncStatus(MultiSrcFmSync.STATUS_DOWNLOAD_SUCCESS,jobInfo.getId());
 			return localUnzipDir;
 		}catch(Exception e){
 			log.error(e.getMessage(),e);
 			//设置下载失败状态
-			syncApi.updateMultiSrcFmSyncStatus(MultiSrcFmSync.STATUS_DOWNLOAD_FAIL);
+			syncApi.updateMultiSrcFmSyncStatus(MultiSrcFmSync.STATUS_DOWNLOAD_FAIL,jobInfo.getId());
 			throw e;
 		}
 	}
@@ -152,25 +156,25 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 	}
 	private Map<Integer,UploadPois> distribute(JSONArray pois)throws Exception{
 		Map<Integer,UploadPois> poiMap = new HashMap<Integer,UploadPois>();//key:大区dbid
-		ManApi manApi = (ManApi)ApplicationContextUtil.getBean("datahubApi");
+		ManApi manApi = (ManApi)ApplicationContextUtil.getBean("manApi");
 		//key:admincode,value:day dbid
 		Map<Integer,Integer> adminDbMap = manApi.listDayDbIdsByAdminId();
 		for(Object o:pois){
 			JSONObject poi=(JSONObject)o;
-			String adminId=poi.getString("adminId");
 			try{
-				int adId = Integer.parseInt(adminId);
+				int adminId=Integer.parseInt(poi.getString("adminId").substring(0, 2));
+				adminId=adminId*10000;
 				int dbId = 0;
-				if(adminDbMap.containsKey(adId)){
-					dbId = adminDbMap.get(adId);
+				if(adminDbMap.containsKey(adminId)){
+					dbId = adminDbMap.get(adminId);
 					UploadPois upoi = poiMap.get(dbId);
 					if(upoi==null){
 						upoi=new UploadPois();
-						poiMap.put(adId, upoi);
+						poiMap.put(dbId, upoi);
 					}
 					upoi.addJsonPoi(poi);
 				}else{
-					errLog.put(poi.getString("fid"), adId+"的大区库未找到");
+					errLog.put(poi.getString("fid"), adminId+"的大区库未找到");
 				}
 			}catch(NumberFormatException e){
 				log.warn(e.getMessage(),e);
@@ -187,13 +191,17 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 			//读取文件
 			JSONArray pois = read(localUnzipDir);
 			response("读取文件完成",null);
+			resJson.put("total", pois.size());
 
 			//分库
 			Map<Integer,UploadPois> poiMap = distribute(pois);
 			
 			//执行导入
 			int dbSize = poiMap.size();
-			if(dbSize==0)return;
+			if(dbSize==0){
+				log.debug("无数据需要导入，导入结束");
+				return;
+			}
 			if(poiMap.size()==1){
 				Map.Entry<Integer,UploadPois> entry = poiMap.entrySet().iterator().next();
 				new MultiSrc2FmDayThread(null,entry.getKey(),entry.getValue()).run();;
@@ -214,13 +222,19 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 					throw new Exception(threadPoolExecutor.getExceptions().get(0));
 				}
 			}
+			//写统计结果
+			resJson.put("success", pois.size()-errLog.size());
+			JSONObject failJson=new JSONObject();
+			failJson.put("count", errLog.size());
+			failJson.put("fids", errLog);
+			resJson.put("fail", failJson);
 			//设置导入成功状态
-			syncApi.updateMultiSrcFmSyncStatus(MultiSrcFmSync.STATUS_IMP_SUCCESS);
+			syncApi.updateMultiSrcFmSyncStatus(MultiSrcFmSync.STATUS_IMP_SUCCESS,jobInfo.getId());
 			log.debug("导入完成，用时"+((System.currentTimeMillis()-t)/1000)+"s");
 		}catch(Exception e){
 			log.error(e.getMessage(),e);
 			//设置导入失败状态
-			syncApi.updateMultiSrcFmSyncStatus(MultiSrcFmSync.STATUS_IMP_FAIL);
+			syncApi.updateMultiSrcFmSyncStatus(MultiSrcFmSync.STATUS_IMP_FAIL,jobInfo.getId());
 			throw e;
 		}
 	}
@@ -236,14 +250,14 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 				mdirFile.mkdirs();
 			}
 			pw = new PrintWriter(monthDir+resFileName);
-			pw.println(JSONObject.fromObject(errLog).toString());
+			pw.println(resJson.toString());
 			//设置生成导入结果成功状态
-			syncApi.updateMultiSrcFmSyncStatus(MultiSrcFmSync.STATUS_CREATE_RES_SUCCESS);
+			syncApi.updateMultiSrcFmSyncStatus(MultiSrcFmSync.STATUS_CREATE_RES_SUCCESS,jobInfo.getId());
 			return "multisrc"+File.separator+curYm+File.separator+resFileName;
 		}catch(Exception e){
 			log.error(e.getMessage(),e);
 			//设置生成导入结果失败状态
-			syncApi.updateMultiSrcFmSyncStatus(MultiSrcFmSync.STATUS_CREATE_RES_FAIL);
+			syncApi.updateMultiSrcFmSyncStatus(MultiSrcFmSync.STATUS_CREATE_RES_FAIL,jobInfo.getId());
 			throw e;
 		}finally{
 			if(pw!=null){
@@ -260,14 +274,18 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 					+SystemConfigFactory.getSystemConfig().getValue(PropConstant.downloadUrlPathRoot)
 					+zipFile;
 			log.debug("导入的统计数据包url:"+zipFileUrl);
+			JSONObject jso = new JSONObject();
+			jso.put("url", zipFileUrl);
 			Map<String,String> parMap = new HashMap<String,String>();
-			parMap.put("url", zipFileUrl);
-			String result = ServiceInvokeUtil.invoke("", parMap, 10000);
+			parMap.put("parameter", jso.toString());
+			parMap.put("operate", "downloadFastMapFeedBack");
+			String msUrl = SystemConfigFactory.getSystemConfig().getValue(PropConstant.multisrcDaySyncUrl);
+			String result = ServiceInvokeUtil.invoke(msUrl, parMap, 10000);
 			log.debug("notify multisrc result:"+result);
-			syncApi.updateMultiSrcFmSyncStatus(MultiSrcFmSync.STATUS_NOTIFY_SUCCESS);
+			syncApi.updateMultiSrcFmSyncStatus(MultiSrcFmSync.STATUS_NOTIFY_SUCCESS,jobInfo.getId());
 		}catch(Exception e){
 			try{
-				syncApi.updateMultiSrcFmSyncStatus(MultiSrcFmSync.STATUS_NOTIFY_FAIL);
+				syncApi.updateMultiSrcFmSyncStatus(MultiSrcFmSync.STATUS_NOTIFY_FAIL,jobInfo.getId());
 			}catch(Exception ex){
 				log.error(ex.getMessage(),ex);
 			}
@@ -320,6 +338,8 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 				MultiSrcPoiDayImportor imp = new MultiSrcPoiDayImportor(conn,null);
 				imp.operate(cmd);
 				imp.persistChangeLog(OperationSegment.SG_ROW, jobInfo.getUserId());
+				//数据打多源标识
+				PoiEditStatus.tagMultiSrcPoi(conn, imp.getSourceTypes());
 				//导入父子关系
 				PoiRelationImportorCommand relCmd = new PoiRelationImportorCommand();
 				relCmd.setPoiRels(imp.getParentPid());
@@ -327,12 +347,13 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 				relImp.operate(relCmd);
 				relImp.persistChangeLog(OperationSegment.SG_ROW, jobInfo.getUserId());
 				errLog.putAll(imp.getErrLog());
-				log.debug("dbId("+dbId+")转出成功。");
+				log.debug("dbId("+dbId+")转入成功。");
 			}catch(Exception e){
+				DbUtils.rollbackAndCloseQuietly(conn);
 				log.error(e.getMessage(),e);
 				throw new ThreadExecuteException("");
 			}finally{
-				DbUtils.closeQuietly(conn);
+				DbUtils.commitAndCloseQuietly(conn);
 				if(latch!=null){
 					latch.countDown();
 				}

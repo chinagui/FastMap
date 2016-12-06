@@ -32,6 +32,7 @@ import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
 import com.navinfo.dataservice.dao.fcc.SolrController;
+import com.navinfo.dataservice.engine.audio.Audio;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 
 /**
@@ -108,9 +109,11 @@ public class TipsUpload {
 	 * 读取文件内容，保存数据 考虑到数据量不会特别大，所以和数据库一次交互即可
 	 * 
 	 * @param fileName
+	 * @param audioMap 
+	 * @param photoMap 
 	 * @throws Exception
 	 */
-	public Map<String, Photo> run(String fileName) throws Exception {
+	public void run(String fileName, Map<String, Photo> photoMap, Map<String, Audio> audioMap) throws Exception {
 
 		total = 0;
 
@@ -125,9 +128,7 @@ public class TipsUpload {
 		Table htab = hbaseConn
 				.getTable(TableName.valueOf(HBaseConstant.tipTab));
 
-		Map<String, Photo> photoInfo = new HashMap<String, Photo>();
-
-		List<Get> gets = loadFileContent(fileName, photoInfo);
+		List<Get> gets = loadFileContent(fileName, photoMap,audioMap);
 
 		solr = new SolrController();
 
@@ -146,7 +147,6 @@ public class TipsUpload {
 		//道路名入元数据库
 		importRoadNameToMeta();
 
-		return photoInfo;
 	}
 	
 	
@@ -196,7 +196,8 @@ public class TipsUpload {
 	 * @throws Exception
 	 */
 	private List<Get> loadFileContent(String fileName,
-			Map<String, Photo> photoInfo) throws Exception {
+			Map<String, Photo> photoInfo,
+			Map<String, Audio> AudioInfo) throws Exception {
 
 		Scanner scanner = new Scanner(new FileInputStream(fileName));
 
@@ -234,34 +235,64 @@ public class TipsUpload {
 				JSONArray newFeedbacks = new JSONArray();
 
 				for (int i = 0; i < attachments.size(); i++) {
+					
+					//attachment结构：{"id":"","type":1,"content":""}
 					JSONObject attachment = attachments.getJSONObject(i);
 
 					int type = attachment.getInt("type");
 
-					String content = attachment.getString("content");
-
+					String content = "";
+					//照片
 					if (1 == type) {
+						
+						content=attachment.getString("content"); //是文件名
 
 						Photo photo = getPhoto(attachment, json);
 
-						photoInfo.put(content, photo);
+						photoInfo.put(content, photo);  //文件名为key
 
 						content = photo.getRowkey();
 					}
+					//语音
+					if (2 == type) {
+
+						Audio audio = getAudio(attachment, json);
+						
+						content = attachment.getString("id"); //id为key
+
+						AudioInfo.put(content, audio); //id为key
+
+					}
+					//文字
+					if (3 == type) {
+						content = attachment.getString("content"); 
+					}
+					//草图
+					if (6 == type) {
+						content = attachment.getString("content"); 
+					}
+					/*
+					║║ user	整数	edit_Tips	t_handler	原值导入
+					║║ userRole				空
+					║║ type		edit_Tips	attachments	attachments.type
+					║║ content		edit_Tips	attachments	attachments.content
+					║║ auditRemark				空
+					║║ date				数据入库时服务器时间
+					*/
 
 					JSONObject newFeedback = new JSONObject();
 
 					newFeedback.put("user", json.getInt("t_handler"));
 
-					newFeedback.put("userRole", JSONNull.getInstance());
+					newFeedback.put("userRole", "");
 
 					newFeedback.put("type", type);
 
 					newFeedback.put("content", content);
 
-					newFeedback.put("auditRemark", JSONNull.getInstance());
+					newFeedback.put("auditRemark", "");
 
-					newFeedback.put("date", operateDate);
+					newFeedback.put("date", json.getString("t_operateDate")); //原值导入
 
 					newFeedbacks.add(newFeedback);
 				}
@@ -324,6 +355,33 @@ public class TipsUpload {
 		}
 
 		return gets;
+	}
+
+	/**
+	 * @Description:TOOD
+	 * @param attachment
+	 * @param json
+	 * @return
+	 * @author: y
+	 * @time:2016-12-3 下午3:22:17
+	 */
+	private Audio getAudio(JSONObject attachment, JSONObject json) {
+		
+		Audio audio = new Audio();
+
+		JSONObject extContent = attachment.getJSONObject("extContent");
+
+		String id = attachment.getString("id");
+
+		audio.setRowkey(id);
+		
+		audio.setA_uuid(id); 
+
+		audio.setA_uploadUser(json.getInt("t_handler"));
+
+		audio.setA_uploadDate(currentDate);
+
+		return audio;
 	}
 
 	/**
@@ -394,17 +452,17 @@ public class TipsUpload {
 
 				rowkey = en.getKey();
 
-				JSONObject json = en.getValue();
+				JSONObject json = en.getValue();  
 
 				Put put = null;
 				
 				
-				//old有则更新
+				//old有则更新,判断是否已存在
 				if (oldTips.containsKey(rowkey)) {
 
 					JSONObject oldTip = oldTips.get(rowkey);
 					
-					//对比采集时间
+					//对比采集时间，采集时间和数据库中 hbase old.trackinfo.date(最后一条)
 					int res = canUpdate(oldTip, json.getString("t_operateDate"));
 					if (res < 0) {
 						failed += 1;
@@ -699,7 +757,9 @@ public class TipsUpload {
 
 		photo.setRowkey(id);
 
-		photo.setA_uuid(id.substring(14));
+		//photo.setA_uuid(id.substring(14));
+		
+		photo.setA_uuid(id); 
 
 		photo.setA_uploadUser(tip.getInt("t_handler"));
 
@@ -761,17 +821,15 @@ public class TipsUpload {
 	}
 
 	public static void main(String[] args) throws Exception {
-
-		/*TipsUpload a = new TipsUpload();
-
-		a.run("D:/4.txt");
-		System.out.println("成功")*/;
 		
-			try {
-				HBaseConnector.getInstance().getConnection();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+		Map<String, Photo> photoMap=new HashMap<String, Photo>();
+		
+		Map<String, Audio> audioMap=new HashMap<String, Audio>();
+
+		TipsUpload a = new TipsUpload();
+
+		a.run("D:/4.txt",photoMap,audioMap);
+		
+		System.out.println("成功");
 	}
 }

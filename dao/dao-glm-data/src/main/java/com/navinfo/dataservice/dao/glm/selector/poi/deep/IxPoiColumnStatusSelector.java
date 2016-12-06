@@ -3,10 +3,8 @@ package com.navinfo.dataservice.dao.glm.selector.poi.deep;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
@@ -102,7 +100,7 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 	 */
 	public List<Integer> getApplyPids(Subtask subtask, String firstWorkItem, String secondWorkItem, int type) throws Exception {
 		StringBuilder sb = new StringBuilder();
-		sb.append("SELECT s.pid");
+		sb.append("SELECT DISTINCT s.pid");
 		sb.append(" FROM POI_COLUMN_STATUS s, POI_COLUMN_WORKITEM_CONF w, IX_POI p");
 		sb.append(" WHERE s.work_item_id=w.work_item_id");
 		sb.append(" AND s.pid=p.pid");
@@ -238,7 +236,7 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 	 */
 	public int queryHandlerCount(String firstWorkItem, String secondWorkItem, long userId, int type) throws Exception {
 		StringBuilder sb = new StringBuilder();
-		sb.append("SELECT count(1) num");
+		sb.append("SELECT count(distinct s.pid) num");
 		sb.append(" FROM POI_COLUMN_STATUS s,POI_COLUMN_WORKITEM_CONF w");
 		sb.append(" WHERE s.work_item_id = w.work_item_id");
 		sb.append(" AND s.handler = :1");
@@ -335,8 +333,8 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 	 * @return
 	 * @throws Exception
 	 */
-	public List<String> columnQuery(int status, String secondWorkItem, long userId) throws Exception {
-		String sql = "SELECT s.row_id FROM poi_deep_status s,poi_deep_workitem_conf w "
+	public List<Integer> columnQuery(int status, String secondWorkItem, long userId) throws Exception {
+		String sql = "SELECT distinct s.pid FROM poi_colunm_status s,poi_colunm_workitem_conf w "
 				+ "WHERE s.work_item_id=w.work_item_id AND s.handler=:1 AND w.second_work_item=:2 "
 				+ "AND s.second_work_status=:3";
 
@@ -350,13 +348,13 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 			pstmt.setInt(3, status);
 			resultSet = pstmt.executeQuery();
 
-			List<String> rowIdList = new ArrayList<String>();
+			List<Integer> pidList = new ArrayList<Integer>();
 
 			while (resultSet.next()) {
-				rowIdList.add(resultSet.getString("row_id"));
+				pidList.add(resultSet.getInt("pid"));
 			}
 
-			return rowIdList;
+			return pidList;
 		} catch (Exception e) {
 			throw e;
 		} finally {
@@ -406,10 +404,9 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 	 * @return
 	 * @throws Exception
 	 */
-	public List<String> queryClassifyByRowid(Object rowId, Object taskId) throws Exception {
+	public List<String> queryClassifyByPid(int pid) throws Exception {
 		StringBuilder sb = new StringBuilder();
-		sb.append(
-				"SELECT work_item_id,handler FROM poi_deep_status s where s.row_id=:1 and s.first_work_status=1 and s.task_id=:2 ");
+		sb.append("SELECT work_item_id FROM poi_deep_status s where s.pid=:1 and s.first_work_status=1 ");
 
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
@@ -419,8 +416,7 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 		try {
 			pstmt = conn.prepareStatement(sb.toString());
 
-			pstmt.setString(1, (String) rowId);
-			pstmt.setInt(2, (int) taskId);
+			pstmt.setInt(1, pid);
 
 			resultSet = pstmt.executeQuery();
 
@@ -447,18 +443,18 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 	 * @return
 	 * @throws Exception
 	 */
-	public List<String> getRowIdForSubmit(String firstWorkItem, String secondWorkItem, int taskId) throws Exception {
-
+public List<Integer> getRowIdForSubmit(String firstWorkItem,String secondWorkItem,int taskId) throws Exception {
+		
 		StringBuilder sb = new StringBuilder();
-		sb.append(
-				"SELECT s.row_id FROM poi_deep_status s,poi_deep_workitem_conf w WHERE s.work_item_id=w.work_item_id");
-
+		sb.append("SELECT s.pid FROM poi_column_status s,poi_deep_workitem_conf w WHERE s.work_item_id=w.work_item_id");
+		
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
 
 		try {
-			List<String> rowIdList = new ArrayList<String>();
+
+			List<Integer> pidList = new ArrayList<Integer>();
 
 			if (!firstWorkItem.isEmpty()) {
 				sb.append(" AND s.first_work_status=2 AND w.first_work_item='" + firstWorkItem + "'");
@@ -472,10 +468,10 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 			resultSet = pstmt.executeQuery();
 
 			while (resultSet.next()) {
-				rowIdList.add(resultSet.getString("row_id"));
+				pidList.add(resultSet.getInt("pid"));
 			}
-
-			return rowIdList;
+			
+			return pidList;
 		} catch (Exception e) {
 			throw e;
 		} finally {
@@ -546,6 +542,7 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 	 * @param secondWorkItem
 	 * @param userId
 	 * @param type
+	 * @param taskId
 	 * @return
 	 * @throws Exception
 	 * 
@@ -555,17 +552,18 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 	 *             "errmsg": "success"}
 	 */
 	@SuppressWarnings("rawtypes")
-	public JSONObject secondWorkStatistics(String firstWorkItem, long userId, int type) throws Exception {
+	public JSONObject secondWorkStatistics(String firstWorkItem, long userId, int type, int taskId) throws Exception {
 
 		JSONObject result = new JSONObject();
 
 		StringBuilder sql = new StringBuilder();
 		sql.append("SELECT count(1) num,s.second_work_status,w.second_work_item");
-		sql.append(" FROM poi_deep_status s, poi_deep_workitem_conf w");
+		sql.append(" FROM poi_column_status s, poi_column_workitem_conf w");
 		sql.append(" WHERE s.work_item_id = w.work_item_id");
 		sql.append(" AND w.first_work_item='" + firstWorkItem + "'");
 		sql.append(" AND s.handler=" + userId);
 		sql.append(" AND w.type=" + type);
+		sql.append(" AND s.task_id=" + taskId);
 		sql.append(" AND s.second_work_status in (1,2)");
 		sql.append(" group by s.second_work_status,w.second_work_item");
 		sql.append(" order by w.second_work_item");
@@ -615,12 +613,12 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 				int count = data.getInt("check") + data.getInt("work");
 
 				total += count;
-				check += data.getInt("check");
+				check += data.getInt("work");
 
 				JSONObject secondObj = new JSONObject();
 				secondObj.put("count", count);
 				secondObj.put("id", id);
-				secondObj.put("check", data.getInt("check"));
+				secondObj.put("check", data.getInt("work"));
 				details.add(secondObj);
 			}
 
@@ -640,4 +638,41 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 		}
 	}
 
+	
+	
+	/**
+	 * 根据任务号和handler获取pids
+	 * @param taskId
+	 * @param userId
+	 * @return
+	 * @throws Exception
+	 */
+	public List<Integer> getPids(int taskId, long userId)  throws Exception{
+		
+		PreparedStatement pstmt = null;
+		
+		ResultSet resultSet = null;
+		try {
+			StringBuilder sb = new StringBuilder();
+			sb.append("select distinct s.pid from poi_column_status s where TASK_ID=:1 and HANDLER=:2");
+			
+			pstmt = conn.prepareStatement(sb.toString());
+			
+			pstmt.setInt(1, taskId);
+			pstmt.setLong(2, userId);
+			
+			resultSet = pstmt.executeQuery();
+			List<Integer> pids = new ArrayList<Integer>();
+			
+			while(resultSet.next()) {
+				pids.add(resultSet.getInt("pid"));
+			}
+			return pids;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+	}
 }

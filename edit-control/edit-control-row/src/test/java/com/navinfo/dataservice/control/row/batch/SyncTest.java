@@ -53,7 +53,7 @@ public class SyncTest {
 	public void TestupdateFmMultiSrcSyncStatus() throws Exception{
 		
 		FmMultiSrcSyncApiImpl sy = new FmMultiSrcSyncApiImpl();
-		sy.updateFmMultiSrcSyncStatus(8);
+		sy.updateFmMultiSrcSyncStatus(8,1);
 		
 	}
 	
@@ -61,7 +61,7 @@ public class SyncTest {
 	public void TestupdateFmMultiSrcSync() throws Exception{
 		
 		FmMultiSrcSyncApiImpl sy = new FmMultiSrcSyncApiImpl();
-		sy.updateFmMultiSrcSync(8, "路径");
+		sy.updateFmMultiSrcSync(8, "路径",1);
 		
 	}
 	
@@ -78,7 +78,7 @@ public class SyncTest {
 	public void TestupdateMultiSrcFmSyncStatus() throws Exception{
 		
 		FmMultiSrcSyncApiImpl sy = new FmMultiSrcSyncApiImpl();
-		sy.updateMultiSrcFmSyncStatus(5);
+		sy.updateMultiSrcFmSyncStatus(5,5);
 		
 	}
 	

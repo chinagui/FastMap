@@ -303,7 +303,7 @@ public class SelectorTest {
 			tabNames.add("IX_POI_CONTACT");
 			tabNames.add("IX_POI_FLAG");
 
-			List<BasicObj> objList = ObjBatchSelector.selectBySpecColumn(conn, objType, tabNames, colName,pids, isLock,isNowait);
+			Map<Long,BasicObj> objs = ObjBatchSelector.selectBySpecColumn(conn, objType, tabNames, colName,pids, isLock,isNowait);
 			System.out.println("Over.");
 		}catch(Exception e){
 			System.out.println("Oops, something wrong...");
@@ -336,7 +336,7 @@ public class SelectorTest {
 			tabNames.add("IX_POI_CONTACT");
 			tabNames.add("IX_POI_FLAG");
 			
-			List<BasicObj> objList = ObjBatchSelector.selectBySpecColumn(conn, objType, tabNames, colName,pids, isLock,isNowait);
+			Map<Long,BasicObj> objs = ObjBatchSelector.selectBySpecColumn(conn, objType, tabNames, colName,pids, isLock,isNowait);
 			System.out.println("Over.");
 		}catch(Exception e){
 			System.out.println("Oops, something wrong...");

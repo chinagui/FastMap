@@ -9,7 +9,6 @@ import org.junit.Test;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
-import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.operation.Transaction;
 import com.navinfo.dataservice.engine.edit.search.rd.utils.RdLinkSearchUtils;
@@ -84,7 +83,7 @@ public class RdLinkTest extends InitApplication {
 		int cuurentLinkPid = 100003385;
 		int cruuentNodePidDir = 100019726;
 		List<RdLink> links = new RdLinkSearchUtils(conn).getNextTrackLinks(
-				cuurentLinkPid, cruuentNodePidDir, 11);
+				cuurentLinkPid, cruuentNodePidDir, 11,false);
 		for (RdLink rdLink : links) {
 			System.out.println(rdLink.getPid());
 		}
@@ -149,8 +148,8 @@ public class RdLinkTest extends InitApplication {
 		this.conn = DBConnector.getInstance().getConnectionById(17);
 
 		RdLinkSearchUtils linkSelector = new RdLinkSearchUtils(conn);
-		List<RdLink> links = linkSelector.getNextLinksForSlope(33.493,
-				206002808, 206002100);
+		List<RdLink> links = linkSelector.getNextLinksForSlope(20.858,
+				203002892, 201002249);
 		for (RdLink r : links) {
 			System.out.println(r.getPid());
 		}

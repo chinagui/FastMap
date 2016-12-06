@@ -132,6 +132,8 @@ public class Operation implements IOperation {
 			}
 		}
 
+		List<Integer> linkPidList = new ArrayList<>();
+		
 		for (int i = 0; i < subObj.size(); i++) {
 
 			RdInterLink rdInterLink = new RdInterLink();
@@ -141,7 +143,14 @@ public class Operation implements IOperation {
 			rdInterLink.setPid(rdInter.getPid());
 
 			result.insertObject(rdInterLink, ObjStatus.INSERT, rdInterLink.getPid());
+			
+			linkPidList.add(rdInterLink.getLinkPid());
 		}
+		
+		//删减link维护CRFO对象
+		com.navinfo.dataservice.engine.edit.operation.obj.rdobject.update.Operation rdObjectOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdobject.update.Operation(
+				this.conn);
+		rdObjectOperation.updateRdObject(result, linkPidList, rdInter);
 	}
 
 	/**

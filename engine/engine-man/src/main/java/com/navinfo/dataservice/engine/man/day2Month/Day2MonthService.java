@@ -12,6 +12,7 @@ import java.util.Map;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import oracle.sql.STRUCT;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.QueryRunner;
@@ -19,9 +20,11 @@ import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.navicommons.database.Page;
+import com.vividsolutions.jts.geom.Geometry;
 
 public class Day2MonthService {
 	private Logger log=LoggerRepos.getLogger(getClass());
@@ -79,7 +82,8 @@ public class Day2MonthService {
 				while (keys.hasNext()) {
 					String key = (String) keys.next();
 					if ("status".equals(key)) {conditionSql+=" AND T.STATUS IN ("+conditionJson.getJSONArray(key).join(",")+")";}
-					}}
+					if("cityName".equals(key)){conditionSql+=" AND T.city_name like '%"+conditionJson.getString(key)+"%'";}
+				}}
 			QueryRunner runner=new QueryRunner();
 			String sql="With day2Month as(SELECT D.CONF_ID,"
 					+ "       D.CITY_ID,"
@@ -206,4 +210,48 @@ public class Day2MonthService {
 				DbUtils.commitAndCloseQuietly(conn);
 			}
 			}
+
+		public List<Map<String, Object>> listWkt() throws Exception{
+			Connection conn=null;
+			try{
+				conn=DBConnector.getInstance().getManConnection();
+				QueryRunner runner=new QueryRunner();
+				String sql="SELECT C.GEOMETRY, F.ACCUMULATIVE_TOTAL"
+						+ "  FROM DAY2MONTH_CONFIG D, CITY C, FM_STAT_DAY2MONTH F"
+						+ " WHERE D.CITY_ID = C.CITY_ID"
+						+ "   AND D.TYPE = 'POI'"
+						+ "   AND D.CITY_ID = F.CITY_ID(+)"
+						+ "   AND D.TYPE = F.TYPE(+)";
+				List<Map<String,Object>> result=runner.query(conn, sql, new ResultSetHandler<List<Map<String,Object>>>(){
+
+					@Override
+					public List<Map<String,Object>> handle(ResultSet rs)
+							throws SQLException {
+						List<Map<String, Object>> result=new ArrayList<Map<String, Object>>();
+						while (rs.next()) {
+							Map<String, Object> tmp=new HashMap<String, Object>();
+							STRUCT geoStruct = (STRUCT) rs.getObject("GEOMETRY");
+							try {
+								Geometry jts = GeoTranslator.struct2Jts(geoStruct);
+								tmp.put("geometry", GeoTranslator.jts2Geojson(jts));
+							} catch (Exception e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}							
+							tmp.put("accumulativeTotal", rs.getInt("ACCUMULATIVE_TOTAL"));
+							result.add(tmp);
+						}
+						return result;
+					}
+					
+				});
+				return result;
+			}catch(Exception e){
+				DbUtils.rollbackAndCloseQuietly(conn);
+				log.error("查询列表错误", e);
+				throw e;
+			}finally{
+				DbUtils.commitAndCloseQuietly(conn);
+			}
+		}
 }

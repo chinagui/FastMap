@@ -26,6 +26,7 @@ import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
+import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiColumnStatusSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiDeepStatusSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 import com.navinfo.dataservice.engine.batch.BatchProcess;
@@ -241,6 +242,45 @@ public class DeepCoreControl {
 			throw e;
 		} finally {
 			DBUtils.closeStatement(pstmt);
+		}
+	}
+	
+	
+	/**
+	 * 清ni_val_exception_grid表
+	 * @param md5List
+	 * @param conn
+	 * @throws Exception
+	 */
+	public void cleanExceptionGrid(List<String> md5List, Connection conn) throws Exception {
+		PreparedStatement pstmt = null;
+		
+		Clob md5Clod = null;
+		
+		String sql = "DELETE FROM ni_val_exception_grid WHERE md5_code in (select column_value from table(clob_to_table(?)))";
+		try {
+			logger.debug("清理ni_val_exception_grid");
+			logger.debug(md5List);
+			logger.debug("sql:"+sql);
+			String md5s = "";
+			String temp = "";
+			for (int i=0;i<md5List.size();i++) {
+				String md5Code = md5List.get(i);
+				md5s += temp;
+				temp = ",";
+				md5s += md5Code;
+			}
+			md5Clod = ConnectionUtil.createClob(conn);
+			md5Clod.setString(1, md5s);
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setClob(1, md5Clod);
+			pstmt.execute();
+			logger.debug("ni_val_exception_grid表清理完成");
+			
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(pstmt);
 		}
 	}
 	
@@ -694,10 +734,165 @@ public class DeepCoreControl {
 		} 
 	}
 	
-	public static void main(String[] args) throws Exception{
-		long timeCur = new Date().getTime();
-		Timestamp time = new Timestamp(timeCur);
-		System.out.println(time.toString());
+	
+	/**
+	 * 清检查结果，用于POI行编和月编
+	 * @param jsonReq
+	 * @param userId
+	 * @throws Exception
+	 */
+	@SuppressWarnings("unchecked")
+	public void cleanCheck(JSONObject jsonReq, long userId) throws Exception {
+		int taskId = jsonReq.getInt("subtaskId");
+		
+		Connection conn = null;
+		
+		try {
+			ManApi apiService = (ManApi) ApplicationContextUtil.getBean("manApi");
+			Subtask subtask = apiService.queryBySubtaskId(taskId);
+			
+			int dbId = subtask.getDbId();
+			
+			conn = DBConnector.getInstance().getConnectionById(dbId);
+			
+			int checkType = jsonReq.getInt("checkType");
+			
+			List<Integer> pids = new ArrayList<Integer>();
+			if (jsonReq.containsKey("pids")) {
+				pids = jsonReq.getJSONArray("pids");
+			}
+			List<String> ckRules = new JSONArray();
+			if (jsonReq.containsKey("ckRules")) {
+				ckRules = jsonReq.getJSONArray("ckRules");
+			}
+			
+			// POI行编
+			if (checkType == 0){
+
+				if (ckRules.size() == 0) {
+					throw new Exception("检查规则checkType=0为行编时，ckRules不能为空");
+				}
+				if (pids.size() == 0) {
+					IxPoiSelector poiSelector = new IxPoiSelector(conn);
+					pids = poiSelector.getPidsBySubTask(subtask);
+				}
+			} 
+			
+			// POI精编
+			if (checkType == 1) {
+				
+				IxPoiColumnStatusSelector columnSelector = new IxPoiColumnStatusSelector(conn);
+				
+				if (ckRules.size() == 0) {
+					// 如果没有ckRules,则根据firstWorkItem和secondWorkItem从精编配置表POI_COLUMN_WORKITEM_CONF获取
+					String firstWorkItem = new String();
+					if (jsonReq.containsKey("firstWorkItem")){
+						firstWorkItem = jsonReq.getString("firstWorkItem");
+					}
+					String secondWorkItem = new String();
+					if (jsonReq.containsKey("secondWorkItem")) {
+						secondWorkItem = jsonReq.getString("secondWorkItem");
+					}
+					if (StringUtils.isEmpty(firstWorkItem) || StringUtils.isEmpty(secondWorkItem)) {
+						throw new Exception("检查规则checkType=1为精编，ckRules为空时，firstWorkItem和secondWorkItem不能为空");
+					} else {
+						// 根据一级项和二级项获取ckRules
+						ckRules = columnSelector.getWorkItemIds(firstWorkItem, secondWorkItem);
+					}
+				}
+				if (pids.size() == 0) {
+					pids = columnSelector.getPids(taskId, userId);
+				}
+			}
+			
+			String objType = new String();
+			if (checkType == 0 || checkType == 1) {
+				objType = "IX_POI";
+			}
+			// 根据pids和ckRules获取md5List
+			List<String> md5List = new ArrayList<String>();
+			md5List = getMd5List(conn, pids, ckRules, objType);
+			
+			// 清ni_val_exception表
+			cleanCheckException(md5List,conn);
+			// 清ck_result_object表
+			cleanCheckObj(md5List,conn);
+			// 清ni_val_exception_grid表
+			cleanExceptionGrid(md5List,conn);
+			 
+		} catch (DataNotChangeException e) {
+            DbUtils.rollback(conn);
+            logger.error(e.getMessage(), e);
+            throw e;
+        } catch (Exception e) {
+            DbUtils.rollback(conn);
+            logger.error(e.getMessage(), e);
+            throw e;
+        } finally {
+            DbUtils.commitAndClose(conn);
+        }
 	}
 	
+	
+	/**
+	 * 根据pids和ckRules获取md5List
+	 * @param conn
+	 * @param pids
+	 * @param ckRules
+	 * @param objType
+	 * @return
+	 * @throws Exception
+	 */
+	public List<String> getMd5List(Connection conn, List<Integer> pids, List<String> ckRules, String objType) throws Exception {
+		
+		PreparedStatement pstmt = null;
+		
+		ResultSet resultSet = null;
+		
+		try {
+			Clob pidClob = null;
+			String pois = StringUtils.join(pids, ",");
+			pidClob = ConnectionUtil.createClob(conn);
+			pidClob.setString(1, pois);
+			
+			Clob ckRuleClob = null;
+			String rules = "";
+			String temp = "";
+			for (int i=0;i<ckRules.size();i++) {
+				String rule = ckRules.get(i);
+				rules += temp;
+				temp = ",";
+				rules += rule;
+			}
+			ckRuleClob = ConnectionUtil.createClob(conn);
+			ckRuleClob.setString(1, rules);
+			
+			StringBuilder sb = new StringBuilder();
+			sb.append("SELECT o.md5_code FROM ck_result_object o,ni_val_exception e ");
+			sb.append(" WHERE o.md5_code=e.md5_code ");
+			sb.append(" AND o.table_name=? ");
+			sb.append(" AND o.pid in (select column_value from table(clob_to_table(?)))");
+			sb.append(" AND e.ruleid in (select column_value from table(clob_to_table(?)))");
+			
+			pstmt = conn.prepareStatement(sb.toString());
+			
+			pstmt.setString(1, objType);
+			pstmt.setClob(2, pidClob);
+			pstmt.setClob(3, ckRuleClob);
+			
+			resultSet = pstmt.executeQuery();
+			
+			List<String> md5List = new ArrayList<String>();
+			
+			while (resultSet.next()) {
+				md5List.add(resultSet.getString("md5_code"));
+			}
+			return md5List;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+	}
 }

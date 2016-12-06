@@ -35,6 +35,7 @@ public class IxPoiParking extends BasicRow {
 	
 	public IxPoiParking (long objPid){
 		super(objPid);
+		setPoiPid(objPid);
 	}
 	
 	public long getParkingId() {

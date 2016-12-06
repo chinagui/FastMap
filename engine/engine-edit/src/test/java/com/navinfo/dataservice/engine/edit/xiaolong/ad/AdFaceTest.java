@@ -26,8 +26,7 @@ public class AdFaceTest extends InitApplication{
 	protected Logger log = Logger.getLogger(this.getClass());
 	
 	public  void createFaceTest() {
-		String parameter = "{\"command\":\"CREATE\",\"type\":\"ADFACE\",\"projectId\":11," +
-				"\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.30551,39.96853],[ 116.29007,39.95719],[116.30732,39.95042],[116.30551,39.96853]]}}}";
+		String parameter = "{\"command\":\"CREATE\",\"type\":\"ADFACE\",\"linkType\":\"ADLINK\",\"dbId\":259,\"data\":{\"linkPids\":[\"402000643\",\"400000032\",\"505000594\"]}}";
 		log.info(parameter);
 		Transaction t = new Transaction(parameter);;
 		try {

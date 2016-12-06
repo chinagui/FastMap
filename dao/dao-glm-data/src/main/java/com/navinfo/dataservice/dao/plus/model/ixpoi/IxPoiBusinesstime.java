@@ -26,6 +26,7 @@ public class IxPoiBusinesstime extends BasicRow {
 	
 	public IxPoiBusinesstime (long objPid){
 		super(objPid);
+		setPoiPid(objPid);
 	}
 	
 	public long getPoiPid() {

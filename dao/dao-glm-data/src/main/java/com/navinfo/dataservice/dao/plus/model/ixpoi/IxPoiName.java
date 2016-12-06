@@ -22,6 +22,7 @@ public class IxPoiName extends BasicRow {
 	
 	public IxPoiName (long objPid){
 		super(objPid);
+		setPoiPid(objPid);
 	}
 	
 	public long getNameId() {
@@ -103,6 +104,11 @@ public class IxPoiName extends BasicRow {
 		if(this.checkValue("NIDB_PID",this.nidbPid,nidbPid)){
 			this.nidbPid = nidbPid;
 		}
+	}
+	
+	public boolean isShortName(){
+		if(this.nameClass==5){return true;}
+		else{return false;}
 	}
 	
 	@Override

@@ -25,6 +25,7 @@ public class IxPoiChargingstation extends BasicRow {
 	
 	public IxPoiChargingstation (long objPid){
 		super(objPid);
+		setPoiPid(objPid);
 	}
 	
 	public long getChargingId() {

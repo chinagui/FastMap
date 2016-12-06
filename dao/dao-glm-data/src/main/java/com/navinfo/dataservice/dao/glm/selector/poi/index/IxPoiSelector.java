@@ -8,6 +8,7 @@ import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 
+import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
@@ -389,6 +390,48 @@ public class IxPoiSelector extends AbstractSelector {
 
 			DBUtils.closeStatement(pstmt);
 
+		}
+	}
+	
+	
+	/**
+	 * 根据子任务获取该任务圈下所有的PID
+	 * @param subtask
+	 * @return
+	 * @throws Exception
+	 */
+	public List<Integer> getPidsBySubTask(Subtask subtask) throws Exception {
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+		
+		try {
+			StringBuilder sb = new StringBuilder();
+			sb.append("select p.pid from IX_POI p");
+			sb.append(" WHERE sdo_within_distance(p.geometry, sdo_geometry(    :1  , 8307), 'mask=anyinteract') = 'TRUE'");
+			
+			pstmt = conn.prepareStatement(sb.toString());
+			
+			pstmt.setString(1, subtask.getGeometry());
+			
+			resultSet = pstmt.executeQuery();
+			
+			List<Integer> pids = new ArrayList<Integer>();
+			
+			while(resultSet.next()) {
+				pids.add(resultSet.getInt("pid"));
+			}
+			
+			return pids;
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+
+			DBUtils.closeResultSet(resultSet);
+
+			DBUtils.closeStatement(pstmt);
 		}
 	}
 

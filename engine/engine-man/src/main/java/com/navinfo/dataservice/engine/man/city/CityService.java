@@ -18,13 +18,10 @@ import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
-import com.navinfo.navicommons.database.DataBaseUtils;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
-import com.vividsolutions.jts.io.ParseException;
 
 import net.sf.json.JSONObject;
-import oracle.sql.CLOB;
 import oracle.sql.STRUCT;
 
 /** 
@@ -82,8 +79,7 @@ public class CityService {
 							map.put("percent", rs.getInt("percent"));
 							list.add(map);
 						} catch (Exception e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
+							log.error(e.getMessage(), e);
 						}
 						
 					}
@@ -142,8 +138,7 @@ public class CityService {
 							map.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
 							list.add(map);
 						} catch (Exception e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
+							log.error(e.getMessage(), e);
 						}
 						
 					}
@@ -162,7 +157,7 @@ public class CityService {
 		}
 	}
 	
-	public HashMap query(JSONObject json)throws ServiceException{
+	public HashMap<String,Object> query(JSONObject json)throws ServiceException{
 		Connection conn = null;
 		try{
 			//持久化
@@ -170,10 +165,10 @@ public class CityService {
 			conn = DBConnector.getInstance().getManConnection();
 			
 			String selectSql = "select C.CITY_ID,C.CITY_NAME, C.PROVINCE_NAME,C.GEOMETRY,C.REGION_ID,C.PLAN_STATUS from CITY C where C.CITY_ID=?";
-			ResultSetHandler<HashMap> rsHandler = new ResultSetHandler<HashMap>(){
-				public HashMap handle(ResultSet rs) throws SQLException {
+			ResultSetHandler<HashMap<String,Object>> rsHandler = new ResultSetHandler<HashMap<String,Object>>(){
+				public HashMap<String,Object> handle(ResultSet rs) throws SQLException {
 					while(rs.next()){
-						HashMap map = new HashMap();
+						HashMap<String,Object> map = new HashMap<String,Object>();
 						map.put("cityId", rs.getInt("CITY_ID"));
 						map.put("cityName", rs.getString("CITY_NAME"));
 						map.put("provinceName", rs.getString("PROVINCE_NAME"));	
@@ -182,8 +177,7 @@ public class CityService {
 							String clobStr = GeoTranslator.struct2Wkt(struct);
 							map.put("geometry", Geojson.wkt2Geojson(clobStr));
 						} catch (Exception e1) {
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
+							log.error(e1.getMessage(),e1);
 						}
 						map.put("regionId", rs.getInt("REGION_ID"));
 						map.put("planStatus", rs.getInt("PLAN_STATUS"));

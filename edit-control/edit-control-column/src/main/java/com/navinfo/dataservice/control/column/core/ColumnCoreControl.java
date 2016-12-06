@@ -193,11 +193,11 @@ public class ColumnCoreControl {
 			//conn = DBConnector.getInstance().getConnectionById(dbId);
 			conn = DBConnector.getInstance().getConnectionById(17);
 			IxPoiColumnStatusSelector selector = new IxPoiColumnStatusSelector(conn);
-			List<String> pidList = selector.columnQuery(status, secondWorkItem, userId);
+			List<Integer> pidList = selector.columnQuery(status, secondWorkItem, userId);
 
 			IxPoiSearch poiSearch = new IxPoiSearch(conn);
 
-			JSONArray datas = poiSearch.searchColumnPoiByPid(firstWordItem, secondWorkItem, pidList, type, "CHI");
+			JSONArray datas = poiSearch.searchColumnPoiByPid(firstWordItem, secondWorkItem, pidList, type,userId);
 
 			return datas;
 		} catch (Exception e) {

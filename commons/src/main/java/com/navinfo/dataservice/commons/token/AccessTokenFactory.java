@@ -12,7 +12,7 @@ import com.navinfo.dataservice.commons.util.MD5Utils;
 public class AccessTokenFactory {
 	public static AccessToken generate(long userId) {
 		int expireSecond = SystemConfigFactory.getSystemConfig().getIntValue(
-				"token.expire.second", 86400);
+				"token.expire.second", 172800);//default expire time:2 days
 		return generate(userId, expireSecond);
 	}
 

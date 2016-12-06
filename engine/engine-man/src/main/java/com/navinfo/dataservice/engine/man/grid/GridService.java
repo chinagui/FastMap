@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.map.MultiValueMap;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -54,82 +55,6 @@ public class GridService {
 		return SingletonHolder.INSTANCE;
 	}
 
-//	public Set<Integer> queryGrid(int limit) throws SQLException {
-//		String sql = "select grid_id from grid g where rownum<?";
-//		QueryRunner queryRunner = new QueryRunner();
-//		Connection conn = null;
-//		try {
-//			conn = DBConnector.getInstance().getManConnection();
-//			ResultSetHandler<Set<Integer>> rsh = new ResultSetHandler<Set<Integer>>() {
-//
-//				@Override
-//				public Set<Integer> handle(ResultSet rs) throws SQLException {
-//					if (rs != null) {
-//						Set<Integer> grids = new HashSet<Integer>();
-//						while (rs.next()) {
-//							int gridId = rs.getInt("grid_id");
-//							grids.add(gridId);
-//						}
-//						return grids;
-//					}
-//					return null;
-//				}
-//			};
-//			return queryRunner.query(conn, sql, limit, rsh);
-//
-//		} finally {
-//			DbUtils.closeQuietly(conn);
-//		}
-//	}
-//	
-//	/*
-//	 * 根据taskId获取gridId list
-//	 */
-//	public List<Integer> getGridListByTaskId(Integer taskId) throws ServiceException {
-//		Connection conn = null;
-//		try {
-//			conn = DBConnector.getInstance().getManConnection();
-//			QueryRunner run = new QueryRunner();
-//			
-//			String selectSql = "select g.grid_id"
-//					+ " from task t, grid g"
-//					+ " where t.city_id = g.city_id"
-//					+ " and t.task_id = " + taskId;;
-//
-//			ResultSetHandler<List<Integer>> rsHandler = new ResultSetHandler<List<Integer>>() {
-//				public List<Integer> handle(ResultSet rs) throws SQLException {
-//					List<Integer> gridList = new ArrayList<Integer>();
-//					while (rs.next()) {
-//						gridList.add(rs.getInt("grid_id"));
-//					}
-//					return gridList;
-//				}
-//	
-//			};
-//
-//			return run.query(conn, selectSql,rsHandler);
-//			
-//		} catch (Exception e) {
-//			DbUtils.rollbackAndCloseQuietly(conn);
-//			log.error(e.getMessage(), e);
-//			throw new ServiceException("根据taskId查询grid失败，原因为:" + e.getMessage(), e);
-//		} finally {
-//			DbUtils.commitAndCloseQuietly(conn);
-//		}
-//	}
-
-//	public List<Grid> list() throws Exception {
-//		String sql = "SELECT GRID_ID,REGION_ID,CITY_ID,BLOCK_ID FROM GRID";
-//		QueryRunner run = new QueryRunner();
-//		Connection conn = null;
-//		try {
-//			conn = DBConnector.getInstance().getManConnection();
-//			List<Grid> results = run.query(conn, sql, new GridResultSetHandler());
-//			return results;
-//		} finally {
-//			DbUtils.closeQuietly(conn);
-//		}
-//	}
 	
 
 	/**
@@ -178,66 +103,6 @@ public class GridService {
 		return " and " + columName + " in (" + org.apache.commons.lang.StringUtils.join(inValuesList, ",") + ")";
 	}
 
-	/**
-	 * @param taskList
-	 *            subTaskId的列表 <b>注意：如果参数taskList太长（不能超过1000个），会导致oracle
-	 *            sql太长而出现异常；</b>
-	 * @return MultiValueMap key是regionId，value是大区中满足条件的grid的列表
-	 * @throws Exception
-	 */
-//	public Map queryRegionGridMappingOfSubtasks(List<Integer> taskList) throws Exception {
-//		String sql = "select distinct g.grid_id,g.region_id  from grid g,subtask t ,subtask_grid_mapping m "
-//				+ " where t.subtask_id=m.subtask_id and m.grid_id=g.grid_id ";
-//		QueryRunner queryRunner = new QueryRunner();
-//		Connection conn = null;
-//		try {
-//			conn = DBConnector.getInstance().getManConnection();
-//			ResultSetHandler<MultiValueMap> rsh = new ResultSetHandler<MultiValueMap>() {
-//
-//				@Override
-//				public MultiValueMap handle(ResultSet rs) throws SQLException {
-//					if (rs != null) {
-//						MultiValueMap mvMap = new MultiValueMap();
-//						while (rs.next()) {
-//							int gridId = rs.getInt("grid_id");
-//							int regionId = rs.getInt("region_id");
-//							mvMap.put(regionId, gridId);
-//						}
-//						return mvMap;
-//					}
-//					return null;
-//				}
-//			};
-//			String InClause = buildInClause(" t.subtask_id ", taskList);
-//			sql = sql + InClause;
-//			if (StringUtils.isEmpty(InClause)) {
-//				return queryRunner.query(conn, sql, rsh);
-//			} else {
-//				return queryRunner.query(conn, sql, rsh);
-//			}
-//
-//		} finally {
-//			DbUtils.closeQuietly(conn);
-//		}
-//	}
-//
-//	class GridResultSetHandler implements ResultSetHandler<List<Grid>> {
-//
-//		@Override
-//		public List<Grid> handle(ResultSet rs) throws SQLException {
-//			List<Grid> results = new ArrayList<Grid>();
-//			if (rs.next()) {
-//				Grid g = new Grid();
-//				g.setGridId(rs.getInt("GRID_ID"));
-//				g.setRegionId(rs.getInt("REGION_ID"));
-//				g.setCityId(rs.getInt("CITY_ID"));
-//				g.setBlockId(rs.getInt("BLOCK_ID"));
-//				results.add(g);
-//			}
-//			return results;
-//		}
-//
-//	}
 
 	public List<HashMap<String, Object>> queryListByAlloc(JSONObject json) throws ServiceException {
 		Connection conn = null;
@@ -576,6 +441,56 @@ public class GridService {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new Exception("查询grid失败:" + e.getMessage(), e);
+		}
+	}
+
+
+
+	/**
+	 * @param condition JSONObject对象格式的查询条件 {"cityId":"12312"}
+	 * @return grid ID 的列表
+	 */
+	public List<Integer> queryListByCondition(JSONObject condition)throws Exception {
+		String sql = "select grid_id,region_id from grid g where 1=1 ";
+		QueryRunner queryRunner = new QueryRunner();
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			ResultSetHandler<List<Integer>> rsh = new ResultSetHandler<List<Integer>>() {
+
+				@Override
+				public List<Integer> handle(ResultSet rs) throws SQLException {
+					if (rs != null) {
+						List<Integer> gridList = new ArrayList<Integer>();
+						while (rs.next()) {
+							int gridId = rs.getInt("grid_id");
+							gridList.add(gridId);
+						}
+						return gridList;
+					}
+					return null;
+				}
+			};
+			if(condition==null){
+				return queryRunner.query(conn, sql, rsh);
+			}
+			List<Object> values = new ArrayList<Object>();
+			if(condition.get("cityId")!=null){
+				sql = sql + " AND CITY_ID=?";
+				values.add(condition.get("cityId"));
+			}
+			if(CollectionUtils.isEmpty(values)){
+				return queryRunner.query(conn, sql, rsh);
+			}else{
+				return queryRunner.query(conn, sql, rsh,values.toArray());
+			}
+			
+			
+			
+			
+
+		} finally {
+			DbUtils.closeQuietly(conn);
 		}
 	}
 }

@@ -53,7 +53,7 @@ public class CityController extends BaseController {
 			if (dataJson == null) {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
-			HashMap data = service.query(dataJson);
+			HashMap<String,Object> data = service.query(dataJson);
 			return new ModelAndView("jsonView", success(data));
 		} catch (Exception e) {
 			log.error("获取明细失败，原因：" + e.getMessage(), e);

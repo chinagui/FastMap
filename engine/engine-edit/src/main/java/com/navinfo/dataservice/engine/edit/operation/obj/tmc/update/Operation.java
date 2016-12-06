@@ -124,7 +124,7 @@ public class Operation implements IOperation {
 
 					outNodePid = link.geteNodePid();
 				}
-				updateLocationLink(link.getPid(), direct, locDirect, tmcLocationLinkMap);
+				updateLocationLink(result,link.getPid(), direct, locDirect, tmcLocationLinkMap);
 				hasHandledLinkPids.add(link.getPid());
 				break;
 			}
@@ -145,7 +145,7 @@ public class Operation implements IOperation {
 					// 该link的起点作为下一个link的进入点
 					inNodePid = link.getsNodePid();
 				}
-				updateLocationLink(link.getPid(), direct, locDirect, tmcLocationLinkMap);
+				updateLocationLink(result,link.getPid(), direct, locDirect, tmcLocationLinkMap);
 				hasHandledLinkPids.add(link.getPid());
 			}
 		}
@@ -165,7 +165,7 @@ public class Operation implements IOperation {
 					// 该link的起点作为下一个link的进入点
 					outNodePid = link.geteNodePid();
 				}
-				updateLocationLink(link.getPid(), direct, locDirect, tmcLocationLinkMap);
+				updateLocationLink(result,link.getPid(), direct, locDirect, tmcLocationLinkMap);
 				hasHandledLinkPids.add(link.getPid());
 			}
 		}
@@ -186,10 +186,8 @@ public class Operation implements IOperation {
 	 * @param direct
 	 * @throws Exception
 	 */
-	private List<RdTmclocationLink> updateLocationLink(int linkPid, int direct, int locDirect,
+	private void updateLocationLink(Result result, int linkPid, int direct, int locDirect,
 			Map<Integer, RdTmclocationLink> tmcLocationLinkMap) throws Exception {
-
-		List<RdTmclocationLink> updateTmclocationLinkList = new ArrayList<>();
 
 		RdTmclocationLink tmcLocationLink = null;
 
@@ -203,13 +201,9 @@ public class Operation implements IOperation {
 			if (locDirect != -1) {
 				obj.put("locDirect", locDirect);
 			}
-			boolean flag = tmcLocationLink.fillChangeFields(obj);
-
-			// 值发生改变的需要进行更新
-			if (flag) {
-				updateTmclocationLinkList.add(tmcLocationLink);
-			}
-
+			tmcLocationLink.fillChangeFields(obj);
+			
+			//删除需要更新的
 			tmcLocationLinkMap.remove(linkPid);
 		} else {
 			tmcLocationLink = new RdTmclocationLink();
@@ -222,8 +216,20 @@ public class Operation implements IOperation {
 
 			tmcLocationLink.setGroupId(command.getPid());
 		}
-
-		return updateTmclocationLinkList;
+		
+		if(tmcLocationLink != null)
+		{
+			//rowId不为空代表是修改的对象是修改操作
+			if(tmcLocationLink.changedFields().size() > 0 && tmcLocationLink.getRowId() != null)
+			{
+				result.insertObject(tmcLocationLink, ObjStatus.UPDATE, tmcLocationLink.getGroupId());
+			}
+			if(tmcLocationLink.getRowId() == null)
+			{
+				result.insertObject(tmcLocationLink, ObjStatus.INSERT, tmcLocationLink.getGroupId());
+			}
+			
+		}
 	}
 
 	private void updateTmcLinkAttribute(JSONObject content, RdTmclocation tmclocation, Result result) {

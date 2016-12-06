@@ -54,10 +54,8 @@ public class BatchTest {
 		row.setHisChangeLogs(logList);
 		operationResult.putObj(obj);
 		
-		BatchCommand batchCommand=new BatchCommand();		
-		List<String> ruleIdList=new ArrayList<String>();
-		ruleIdList.add("FM-BAT-20-137");
-		batchCommand.setRuleIdList(ruleIdList);
+		BatchCommand batchCommand=new BatchCommand();	
+		batchCommand.setRuleId("FM-BAT-20-137");
 		
 		Batch batch=new Batch(conn,operationResult);
 		batch.operate(batchCommand);

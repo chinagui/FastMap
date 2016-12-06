@@ -3,6 +3,7 @@ package com.navinfo.dataservice.dao.glm.selector.poi.deep;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -130,7 +131,7 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 		}
 		
 		
-		// 后期专项
+		// 后期专项 + 深度信息
 		if (StringUtils.isNotEmpty(secondWorkItem)) {
 			sb.append(" AND w.second_work_item='" + secondWorkItem + "'");
 			sb.append(" AND s.second_work_status != 3");
@@ -184,11 +185,12 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 	 * @param workItemIds
 	 * @param userId
 	 * @param taskId
+	 * @param timeStamp
 	 * @throws Exception
 	 */
-	public void dataSetLock(List<Integer> pids, List<String> workItemIds, long userId, int taskId) throws Exception {
+	public void dataSetLock(List<Integer> pids, List<String> workItemIds, long userId, int taskId, Timestamp timeStamp) throws Exception {
 		StringBuilder sb = new StringBuilder();
-		sb.append("UPDATE POI_COLUMN_STATUS SET handler=:1,task_id=:2 WHERE work_item_id in (");
+		sb.append("UPDATE POI_COLUMN_STATUS SET handler=:1,task_id=:2,apply_date=:3 WHERE work_item_id in (");
 		String temp = "";
 		for (String workItemId : workItemIds) {
 			sb.append(temp);
@@ -214,6 +216,7 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 
 			pstmt.setLong(1, userId);
 			pstmt.setInt(2, taskId);
+			pstmt.setTimestamp(3, timeStamp);
 
 			pstmt.execute();
 

@@ -100,6 +100,10 @@ public class TipsUtils {
 		index.put("t_dStatus", json.getInt("t_dStatus"));
 
 		index.put("t_mStatus", json.getInt("t_mStatus"));
+		
+		index.put("t_inStatus", json.getInt("t_inStatus"));
+
+		index.put("t_inStatus", json.getInt("t_inMeth"));
 
 		index.put("s_sourceType", json.getString("s_sourceType"));
 
@@ -158,7 +162,7 @@ public class TipsUtils {
 			int t_command, int t_handler, int t_cStatus, int t_dStatus,
 			int t_mStatus, String sourceType, int s_sourceCode,
 			JSONObject g_guide, JSONObject g_location, JSONObject deep,
-			JSONArray feedBackArr, int s_reliability) throws Exception {
+			JSONArray feedBackArr, int s_reliability,int t_inStatus,int t_inMeth) throws Exception {
 		JSONObject index = new JSONObject();
 
 		index.put("id", rowkey);
@@ -180,6 +184,10 @@ public class TipsUtils {
 		index.put("t_dStatus", t_dStatus);
 
 		index.put("t_mStatus", t_mStatus);
+		
+		index.put("t_inStatus", t_inStatus);
+
+		index.put("t_inMeth", t_inMeth);
 
 		index.put("s_sourceType", sourceType);
 

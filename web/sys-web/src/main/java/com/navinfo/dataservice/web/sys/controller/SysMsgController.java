@@ -276,14 +276,14 @@ public class SysMsgController extends BaseController {
 	}
 	
 	/**
-	 * 全部消息查询列表
+	 * 全部5天以上的系统/管理消息查询列表
 	 * 编辑平台-消息中心
-	 * 根据传参查询接收人targetUserId=登陆用户的非删除消息列表，不分页
+	 * 根据token获取 接收人targetUserId=登陆用户的全部5天以上的系统/管理消息查询列表，不分页
 	 * @author Han Shaoming
 	 * @param request
 	 * @return
 	 */
-	@RequestMapping(value = "/sysmsg/listAllHistory")
+	@RequestMapping(value = "/sysmsg/listHistory")
 	public ModelAndView getAllMsgHistory(HttpServletRequest request){
 		try{
 			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
@@ -300,7 +300,7 @@ public class SysMsgController extends BaseController {
 	/**
 	 * 全部5天内的系统/管理消息查询列表
 	 * 编辑平台-消息中心
-	 * 根据传参查询接收人targetUserId=登陆用户的非删除消息列表，不分页
+	 * 根据token获取 接收人targetUserId=登陆用户的全部5天内的系统/管理消息查询列表，不分页
 	 * @author 
 	 * @param request
 	 * @return
@@ -325,14 +325,14 @@ public class SysMsgController extends BaseController {
 	}
 	
 	/**
-	 * 删除消息查询列表
+	 * 全部5天以上的系统/管理消息查询列表
 	 * 编辑平台-消息中心-历史消息
-	 * 查询接收人targetUserId=登陆用户的删除消息列表，分页
+	 * 根据token获取 接收人targetUserId=登陆用户的全部5天以上的系统/管理消息查询列表，不分页
 	 * @author Han Shaoming
 	 * @param request
 	 * @return
 	 */
-	@RequestMapping(value = "/sysmsg/listHistory")
+	/*@RequestMapping(value = "/sysmsg/listHistory")
 	public ModelAndView getDeleteMsgList(HttpServletRequest request){
 		try{
 			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
@@ -359,7 +359,7 @@ public class SysMsgController extends BaseController {
 			log.error("查询失败，原因："+e.getMessage(), e);
 			return new ModelAndView("jsonView",exception(e));
 		}
-	}
+	}*/
 	
 	
 	/**

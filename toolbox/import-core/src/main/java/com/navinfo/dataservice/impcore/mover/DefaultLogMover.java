@@ -9,6 +9,7 @@ import org.apache.log4j.Logger;
 import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.RandomUtil;
+import com.navinfo.dataservice.impcore.flushbylog.LogFlushUtil;
 import com.navinfo.navicommons.database.sql.DbLinkCreator;
 
 /** 
@@ -28,6 +29,7 @@ public class DefaultLogMover extends LogMover {
 	protected String tempTable;
 	protected String tempFailLogTable;
 	protected String dbLinkName;
+	protected String tarTempTable;
 	@Override
 	public LogMoveResult move() throws Exception {
 		Connection conn = null;
@@ -37,6 +39,7 @@ public class DefaultLogMover extends LogMover {
 			//create db link
 			dbLinkName = tarSchema.getConnConfig().getUserName()+"_"+RandomUtil.nextNumberStr(4);
 			cr.create(dbLinkName, false, logSchema.getPoolDataSource(), tarSchema.getConnConfig().getUserName(), tarSchema.getConnConfig().getUserPasswd(), tarSchema.getConnConfig().getServerIp(), String.valueOf(tarSchema.getConnConfig().getServerPort()), tarSchema.getConnConfig().getServiceName());
+			tarTempTable = LogFlushUtil.getInstance().createTempTable(tarSchema.getPoolDataSource().getConnection());
 			conn = logSchema.getPoolDataSource().getConnection();
 			result.setLogActionMoveCount(
 					run.update(conn,actionSql()));
@@ -46,6 +49,8 @@ public class DefaultLogMover extends LogMover {
 					run.update(conn, detailSql()));
 			result.setLogDetailGridMoveCount(
 					run.update(conn, gridSql()));
+			run.update(conn,tempTableMoveSql());
+			result.setLogOperationTempTable(this.tarTempTable);//设置目标库的log_operation临时表(记录从日库搬移的log_operation的op_Id,op_dt)
 			run.update(conn,dayReleaseSql());
 			return result;
 		}catch(Exception e){
@@ -56,6 +61,14 @@ public class DefaultLogMover extends LogMover {
 //			if(cr!=null) cr.drop(dbLinkName, false, logSchema.getPoolDataSource());
 			DbUtils.commitAndCloseQuietly(conn);
 		}
+	}
+	private String tempTableMoveSql() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("insert into "+tarTempTable+"@");
+		sb.append(dbLinkName);
+		sb.append(" select * from ");
+		sb.append(tempTable);
+		return sb.toString();
 	}
 	protected String actionSql(){
 		StringBuilder sb = new StringBuilder();

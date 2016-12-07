@@ -15,7 +15,7 @@ public class TestAdAdmin extends InitApplication{
 
     @Test
     public void move(){
-        String requester = "{\"command\":\"MOVE\",\"type\":\"ADADMIN\",\"dbId\":17,\"objId\":210000004,\"data\":{\"longitude\":116.5823221206665,\"latitude\":40.29422437136136,\"linkPid\":19607557}}";
+        String requester = "{\"command\":\"MOVE\",\"dbId\":17,\"objId\":206000040,\"data\":{\"longitude\":116.60364031791686,\"latitude\":40.25},\"type\":\"ADNODE\"}";
         TestUtil.run(requester);
     }
 }

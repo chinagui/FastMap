@@ -6,8 +6,8 @@ import java.util.Date;
 import java.util.List;
 
 import net.sf.json.JSONArray;
-import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
+
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.Delete;
@@ -152,7 +152,7 @@ public class EdgeMatchTipsOperator {
 			JSONObject solrIndex = TipsUtils.generateSolrIndex(rowkey, stage,
 					currentDate, currentDate, t_lifecycle, t_command, user,
 					t_cStatus, t_dStatus, t_mStatus, S_SOURCETYPE, s_sourceCode,
-					g_guide, g_location, null, f_array, s_reliability);
+					g_guide, g_location, null, f_array, s_reliability,t_inStatus,t_inMeth);
 
 			solr.addTips(solrIndex);
 

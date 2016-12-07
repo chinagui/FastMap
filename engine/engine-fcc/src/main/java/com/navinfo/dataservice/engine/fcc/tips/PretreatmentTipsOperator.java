@@ -6,7 +6,6 @@ import java.util.Date;
 import java.util.List;
 
 import net.sf.json.JSONArray;
-import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
 
 import org.apache.hadoop.hbase.Cell;
@@ -162,7 +161,7 @@ public class PretreatmentTipsOperator {
 			JSONObject solrIndex = TipsUtils.generateSolrIndex(rowkey, stage,
 					currentDate, currentDate, t_lifecycle, t_command, user,
 					t_cStatus, t_dStatus, t_mStatus, sourceType, s_sourceCode,
-					null, lineGeometry, deepNew, f_array, s_reliability);
+					null, lineGeometry, deepNew, f_array, s_reliability,t_inStatus,t_inMeth);
 
 			solr.addTips(solrIndex);
 

@@ -14,9 +14,10 @@ public class DefaultObjSubRowName {
 	
 	/**
 	 * 获取需要查询的子表
+	 * @throws Exception 
 	 */
 	@SuppressWarnings("rawtypes")
-	public static Set<String> getIxPoiTabNames(Map<Long, JSONObject> objMap){
+	public static Set<String> getIxPoiTabNames(Map<Long, JSONObject> objMap) throws Exception{
 		//添加所需的子表
 		Set<String> tabNames = new HashSet<String>();
 		if(objMap != null && objMap.size()>0){
@@ -83,6 +84,8 @@ public class DefaultObjSubRowName {
 							tabNames.add("IX_POI_CARRENTAL");
 						}else if("samepoiParts".equals(subRowName)){
 							tabNames.add("IX_SAMEPOI_PART");
+						}else{
+							throw new Exception("字段名为:"+subRowName+"的子表未找到");
 						}
 					}
 				}

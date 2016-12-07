@@ -89,10 +89,11 @@ public class DefaultObjImportor extends AbstractOperation{
 		for (Map.Entry<String, JSONObject> entry : addMap.entrySet()) {
 			JSONObject jo = entry.getValue();
 			String type = entry.getKey();
-			String objType = this.getObjType(type);
+			String objType = null;
 			//日志
 			log.info("新增json数据"+jo.toString());
 			try {
+				objType = this.getObjType(type);
 				BasicObj obj = ObjFactory.getInstance().create(objType);
 				this.parseByJsonConfig(jo, obj);
 				objList.add(obj);
@@ -119,8 +120,13 @@ public class DefaultObjImportor extends AbstractOperation{
 			String objType = entry.getKey();
 			Map<Long, JSONObject> updateMap = entry.getValue();
 			if(updateMap != null && updateMap.size()>0){
-				List<BasicObj> list = this.importUpdateByJson(conn, updateMap, objType);
-				objList.addAll(list);
+				try{
+					List<BasicObj> list = this.importUpdateByJson(conn, updateMap, objType);
+					objList.addAll(list);
+				} catch (Exception e) {
+					log.error(e.getMessage(),e);
+					errLog.put(objType, StringUtils.isEmpty(e.getMessage())?"修改执行成功":e.getMessage());
+				}
 			}
 		}
 		return objList;
@@ -130,12 +136,12 @@ public class DefaultObjImportor extends AbstractOperation{
 		List<BasicObj> objList = new ArrayList<BasicObj>();
 		//获取所需的子表
 		Set<String> tabNames = null;
-		if("IX_POI".equals(objType)){
+		if("IXPOI".equals(objType)){
 			tabNames = DefaultObjSubRowName.getIxPoiTabNames(updateMap);
-		}else if("IX_HAMLET".equals(objType)){
-		}else if("AD_FACE".equals(objType)){
-		}else if("AD_LINK".equals(objType)){
-		}else if("AD_NODE".equals(objType)){
+		}else if("IXHAMLET".equals(objType)){
+		}else if("ADFACE".equals(objType)){
+		}else if("ADLINK".equals(objType)){
+		}else if("ADNODE".equals(objType)){
 		}
 		Map<Long, BasicObj> objs = ObjBatchSelector.selectByPids(conn,objType,tabNames,updateMap.keySet(),true,true);
 		//开始导入
@@ -155,7 +161,7 @@ public class DefaultObjImportor extends AbstractOperation{
 					}
 				} catch (Exception e) {
 					log.error(e.getMessage(),e);
-					errLog.put(Long.toString(jo.getKey()), StringUtils.isEmpty(e.getMessage())?"修改执行出现空指针错误":e.getMessage());
+					errLog.put(Long.toString(jo.getKey()), StringUtils.isEmpty(e.getMessage())?"修改执行成功":e.getMessage());
 				}
 			}
 		}
@@ -176,8 +182,13 @@ public class DefaultObjImportor extends AbstractOperation{
 			String objType = entry.getKey();
 			Map<Long, JSONObject> deleteMap = entry.getValue();
 			if(deleteMap != null && deleteMap.size()>0){
-				List<BasicObj> list = this.importDeleteByJson(conn, deleteMap, objType);
-				objList.addAll(list);
+				try{
+					List<BasicObj> list = this.importDeleteByJson(conn, deleteMap, objType);
+					objList.addAll(list);
+				} catch (Exception e) {
+					log.error(e.getMessage(),e);
+					errLog.put(objType, StringUtils.isEmpty(e.getMessage())?"逻辑删除执行成功":e.getMessage());
+				}
 			}
 		}
 		return objList;
@@ -187,12 +198,12 @@ public class DefaultObjImportor extends AbstractOperation{
 		List<BasicObj> objList = new ArrayList<BasicObj>();
 		//获取所需的子表
 		Set<String> tabNames = null;
-		if("IX_POI".equals(objType)){
+		if("IXPOI".equals(objType)){
 			tabNames = DefaultObjSubRowName.getIxPoiTabNames(deleteMap);
-		}else if("IX_HAMLET".equals(objType)){
-		}else if("AD_FACE".equals(objType)){
-		}else if("AD_LINK".equals(objType)){
-		}else if("AD_NODE".equals(objType)){
+		}else if("IXHAMLET".equals(objType)){
+		}else if("ADFACE".equals(objType)){
+		}else if("ADLINK".equals(objType)){
+		}else if("ADNODE".equals(objType)){
 		}
 		Map<Long, BasicObj> objs = ObjBatchSelector.selectByPids(conn,objType,tabNames,deleteMap.keySet(),true,true);
 		//开始导入
@@ -336,15 +347,15 @@ public class DefaultObjImportor extends AbstractOperation{
 	public String getObjType(String type) throws Exception{
 		//添加所需的子表
 		String objType = null;
-		if("IX_POI".equals(type)){
+		if("IXPOI".equals(type)){
 			objType = ObjectName.IX_POI;
-		}else if("IX_HAMLET".equals(type)){
+		}else if("IXHAMLET".equals(type)){
 			objType = ObjectName.IX_HAMLET;
-		}else if("AD_FACE".equals(type)){
+		}else if("ADFACE".equals(type)){
 			objType = ObjectName.AD_FACE;
-		}else if("AD_LINK".equals(type)){
+		}else if("ADLINK".equals(type)){
 			objType = ObjectName.AD_LINK;
-		}else if("AD_NODE".equals(type)){
+		}else if("ADNODE".equals(type)){
 			objType = ObjectName.AD_NODE;
 		}else{
 			throw new Exception("未找到相应的主表类型");

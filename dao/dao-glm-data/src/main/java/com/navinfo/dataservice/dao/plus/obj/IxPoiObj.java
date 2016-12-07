@@ -647,6 +647,8 @@ public class IxPoiObj extends AbstractIxObj {
 			return this.createIxPoiCarrental();
 		}else if("samepoiParts".equals(subRowName)){
 			return this.createIxSamepoiPart();
+		}else{
+			throw new Exception("字段名为:"+subRowName+"的子表未找到");
 		}
 		return null;
 	}
@@ -712,8 +714,9 @@ public class IxPoiObj extends AbstractIxObj {
 			return (List)subrows.get("IX_POI_CARRENTAL");
 		}else if("samepoiParts".equals(subRowName)){
 			return (List)subrows.get("IX_SAMEPOI_PART");
+		}else{
+			throw new Exception("字段名为:"+subRowName+"的子表未找到");
 		}
-		return null;
 	}
 	
 

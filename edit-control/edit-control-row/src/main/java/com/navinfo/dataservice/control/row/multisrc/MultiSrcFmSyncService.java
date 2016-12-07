@@ -8,6 +8,7 @@ import java.util.List;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.edit.model.MultiSrcFmSync;
@@ -93,6 +94,33 @@ public class MultiSrcFmSyncService {
 		}
 	}
 	
+	/**
+	 * 查询最新同步成功的数据
+	 * @author Han Shaoming
+	 * @return
+	 * @throws ServiceException 
+	 */
+	public MultiSrcFmSync queryLastSuccessSync() throws ServiceException{
+		List<MultiSrcFmSync> msgs = null;
+		Connection conn = null;
+		try{
+			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
+			String sql = "SELECT * FROM MULTISRC_FM_SYNC WHERE SYNC_STATUS IN(11) ORDER BY SYNC_TIME DESC";
+			Object[] params = {};
+			msgs = this.querySync(conn, sql,params);
+			if(msgs != null && msgs.size()>0){
+				return msgs.get(0);
+			}else{
+				return null;
+			}
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
 	
 	/**
 	 * 查询数据
@@ -161,6 +189,14 @@ public class MultiSrcFmSyncService {
 			if(list != null && list.size()>0){
 				//有未执行完的导入任务
 				throw new Exception("申请失败:有未执行完成的日库多源数据包导入FM任务");
+			}
+			//判断是否为已经导入成功的多源增量包
+			MultiSrcFmSync multiSrcFmSync = queryLastSuccessSync();
+			String successZipUrl = multiSrcFmSync.getZipFile();
+			String zipFile = StringUtils.substringAfterLast(successZipUrl, "/");
+			String newZipFile = StringUtils.substringAfterLast(zipUrl, "/");
+			if(newZipFile.equals(zipFile)){
+				throw new Exception("申请失败:日库多源数据包已经导入FM日库,不能重复导入");
 			}
 			JSONObject job = new JSONObject();
 			JobApi jobApi = (JobApi) ApplicationContextUtil.getBean("jobApi");

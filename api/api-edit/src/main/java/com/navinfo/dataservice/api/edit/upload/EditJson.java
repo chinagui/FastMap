@@ -67,42 +67,42 @@ public class EditJson {
 					addJsons.add(addMap);
 				}else if("UPDATE".equals(jo.getString("command"))){
 					String type = jo.getString("type");
-					if("IX_POI".equals(type)){
+					if("IXPOI".equals(type)){
 						ixPoiUpdateMap.put(jo.getLong("objId"), jo.getJSONObject("data"));
-					}else if("IX_HAMLET".equals(type)){
+					}else if("IXHAMLET".equals(type)){
 						ixHamletUpdateMap.put(jo.getLong("objId"), jo.getJSONObject("data"));
-					}else if("AD_FACE".equals(type)){
+					}else if("ADFACE".equals(type)){
 						adFaceUpdateMap.put(jo.getLong("objId"), jo.getJSONObject("data"));
-					}else if("AD_LINK".equals(type)){
+					}else if("ADLINK".equals(type)){
 						adLinkUpdateMap.put(jo.getLong("objId"), jo.getJSONObject("data"));
-					}else if("AD_NODE".equals(type)){
+					}else if("ADNODE".equals(type)){
 						adNodeUpdateMap.put(jo.getLong("objId"), jo.getJSONObject("data"));
 					}
 				}else if("DELETE".equals(jo.getString("command"))){
 					String type = jo.getString("type");
-					if("IX_POI".equals(type)){
+					if("IXPOI".equals(type)){
 						ixPoiDeleteMap.put(jo.getLong("objId"), jo.getJSONObject("data"));
-					}else if("IX_HAMLET".equals(type)){
+					}else if("IXHAMLET".equals(type)){
 						ixHamletDeleteMap.put(jo.getLong("objId"), jo.getJSONObject("data"));
-					}else if("AD_FACE".equals(type)){
+					}else if("ADFACE".equals(type)){
 						adFaceDeleteMap.put(jo.getLong("objId"), jo.getJSONObject("data"));
-					}else if("AD_LINK".equals(type)){
+					}else if("ADLINK".equals(type)){
 						adLinkDeleteMap.put(jo.getLong("objId"), jo.getJSONObject("data"));
-					}else if("AD_NODE".equals(type)){
+					}else if("ADNODE".equals(type)){
 						adNodeDeleteMap.put(jo.getLong("objId"), jo.getJSONObject("data"));
 					}
 				}
 			}
-			updateJsons.put("IX_POI",ixPoiUpdateMap);
-			updateJsons.put("IX_HAMLET",ixHamletUpdateMap);
-			updateJsons.put("AD_FACE",adFaceUpdateMap);
-			updateJsons.put("AD_LINK",adLinkUpdateMap);
-			updateJsons.put("AD_NODE",adNodeUpdateMap);
-			deleteJsons.put("IX_POI",ixPoiDeleteMap);
-			deleteJsons.put("IX_HAMLET",ixHamletDeleteMap);
-			deleteJsons.put("AD_FACE",adFaceDeleteMap);
-			deleteJsons.put("AD_LINK",adLinkDeleteMap);
-			deleteJsons.put("AD_NODE",adNodeDeleteMap);
+			updateJsons.put("IXPOI",ixPoiUpdateMap);
+			updateJsons.put("IXHAMLET",ixHamletUpdateMap);
+			updateJsons.put("ADFACE",adFaceUpdateMap);
+			updateJsons.put("ADLINK",adLinkUpdateMap);
+			updateJsons.put("ADNODE",adNodeUpdateMap);
+			deleteJsons.put("IXPOI",ixPoiDeleteMap);
+			deleteJsons.put("IXHAMLET",ixHamletDeleteMap);
+			deleteJsons.put("ADFACE",adFaceDeleteMap);
+			deleteJsons.put("ADLINK",adLinkDeleteMap);
+			deleteJsons.put("ADNODE",adNodeDeleteMap);
 		}
 	}
 

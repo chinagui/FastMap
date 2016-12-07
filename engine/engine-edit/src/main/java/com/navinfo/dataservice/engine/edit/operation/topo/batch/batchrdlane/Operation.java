@@ -472,9 +472,9 @@ public class Operation implements IOperation {
 	 */
 	public void caleLanesforCreateRdLinks(List<RdLink> links, Result result)
 			throws Exception {
-		/*for (RdLink link : links) {
+		for (RdLink link : links) {
 			this.createRdLaneForLinkRLanes(result, link, false);
-		}*/
+		}
 	}
 
 	/***
@@ -1003,9 +1003,9 @@ public class Operation implements IOperation {
 						.getPid(), 2, true);
 			}
 			// 维护左车道信息
-			this.caleRdlanesForNum(result, leftLanes, link.getLaneLeft(), 3);
+			this.caleRdlanesForNum(result, leftLanes,link, link.getLaneLeft(), 3);
 			// 维护有车道信息
-			this.caleRdlanesForNum(result, rightLanes, link.getLaneRight(), 2);
+			this.caleRdlanesForNum(result, rightLanes,link, link.getLaneRight(), 2);
 		}
 		// 如果link的左右车道为0按照link的总车道数维护信息车道信息
 		else {
@@ -1023,10 +1023,10 @@ public class Operation implements IOperation {
 					}
 					// 维护左车道信息
 					this.caleRdlanesForNum(result, leftLanes,
-							(link.getLaneNum() + 1) / 2, 3);
+							link, (link.getLaneNum() + 1) / 2, 3);
 					// 维护右车道信息
 					this.caleRdlanesForNum(result, rightLanes,
-							(link.getLaneNum() + 1) / 2, 2);
+							link, (link.getLaneNum() + 1) / 2, 2);
 					// 如果原有link为单方向 忽略左右车道信息 生成车道方向为无
 					if (link.getDirect() == 2 || link.getDirect() == 3) {
 						List<RdLane> lanes = new ArrayList<RdLane>();
@@ -1036,7 +1036,7 @@ public class Operation implements IOperation {
 						}
 						// 生成车道方向为无的车道
 						this.caleRdlanesForNum(result, lanes,
-								link.getLaneNum(), 1);
+								link, link.getLaneNum(), 1);
 
 					}
 
@@ -1052,6 +1052,7 @@ public class Operation implements IOperation {
 	 * @param result
 	 * @param lanes
 	 *            原有车道信息
+	 * @param link 
 	 * @param currentNum
 	 *            当前车道总数
 	 * @param laneDir
@@ -1059,7 +1060,7 @@ public class Operation implements IOperation {
 	 * @throws Exception
 	 */
 	private void caleRdlanesForNum(Result result, List<RdLane> lanes,
-			int currentNum, int laneDir) throws Exception {
+			RdLink link, int currentNum, int laneDir) throws Exception {
 		// 如果原有车道数 大于当前车道数 相等不予处理：
 		// 1.按照当前车道数数量更新原有车道总数
 		// 2.多余的车道信息删除掉

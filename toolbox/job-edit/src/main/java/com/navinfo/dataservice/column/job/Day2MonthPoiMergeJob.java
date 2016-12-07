@@ -11,6 +11,8 @@ import com.navinfo.dataservice.api.man.iface.Day2MonthSyncApi;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.FmDay2MonSync;
 import com.navinfo.dataservice.api.man.model.Region;
+import com.navinfo.dataservice.commons.database.DbConnectConfig;
+import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.day2mon.Day2MonPoiLogSelector;
 import com.navinfo.dataservice.jobframework.exception.JobException;
@@ -72,11 +74,18 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 				DbInfo monthDbInfo = datahubApi.getDbById(monthDbId);
 				log.info("获取monthDbInfo信息:"+monthDbInfo);
 				FmDay2MonSync lastSyncInfo = d2mSyncApi.queryLastedSyncInfo(cityId);
-				log.info("获取最新的成功同步信息："+lastSyncInfo);
+				log.info("获取最新的成功同步信息："+lastSyncInfo);				
 				Date syncTimeStamp= new Date();
 				FmDay2MonSync curSyncInfo = createSyncInfo(d2mSyncApi, cityId,syncTimeStamp);//记录本次的同步信息
 				d2mSyncApi.insertSyncInfo(curSyncInfo);
-				Day2MonPoiLogSelector logSelector = new Day2MonPoiLogSelector(dailyDbInfo,gridsOfCity,lastSyncInfo,curSyncInfo);
+				log.info("开始获取日编库履历");
+				OracleSchema dailyDbSchema = new OracleSchema(
+						DbConnectConfig.createConnectConfig(dailyDbInfo.getConnectParam()));				
+				Day2MonPoiLogSelector logSelector = new Day2MonPoiLogSelector(dailyDbSchema);
+				logSelector.setGrids(gridsOfCity);
+				Date lastSyncTime = (lastSyncInfo==null?null:lastSyncInfo.getSyncTime());
+				logSelector.setStartTime(lastSyncTime);
+				logSelector.setStopTime(syncTimeStamp);
 				String tempTable = logSelector.select();
 				
 			}
@@ -84,6 +93,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 			log.error(e.getMessage(), e);
 			throw new JobException(e.getMessage(),e);
 		}finally {
+			
 		}
 		
 

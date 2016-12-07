@@ -10,6 +10,6 @@ import com.navinfo.dataservice.api.man.model.FmDay2MonSync;
  */
 public interface Day2MonthSyncApi {
 	public Long insertSyncInfo(FmDay2MonSync info) throws Exception;
-	public Integer updateSyncInfo(FmDay2MonSync info);
-	public FmDay2MonSync queryLastedSyncInfo(Integer cityId);
+	public Integer updateSyncInfo(FmDay2MonSync info) throws Exception;
+	public FmDay2MonSync queryLastedSyncInfo(Integer cityId)throws Exception;
 }

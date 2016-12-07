@@ -445,25 +445,40 @@ public class DeepCoreControl {
 	}
     
     
-    /**
+	/**
 	 * 深度信息申请数据
-	 * @param subtask
-	 * @param dbId
+	 * @param taskId
 	 * @param userId
-	 * @param type
-	 * @return 申请的数据量
+	 * @param firstWorkItem
+	 * @param secondWorkItem
+	 * @return
 	 * @throws Exception
 	 */
-	public int applyData(Subtask subtask, int dbId, long userId,int type) throws Exception {
+	public int applyData(int taskId, long userId, String firstWorkItem, String secondWorkItem) throws Exception {
 		int applyCount = 0;
 		int hasApply = 0;
+		
 		Connection conn = null;
+		
+		// 默认为大陆数据
+		int type = 1;
 		try {
+			ManApi apiService = (ManApi) ApplicationContextUtil.getBean("manApi");
+			Subtask subtask = apiService.queryBySubtaskId(taskId);
+			
+			if (subtask == null) {
+				throw new Exception("subtaskid未找到数据");
+			}
+			
+			int dbId = subtask.getDbId();
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 			
-			IxPoiDeepStatusSelector poiDeepStatusSelector = new IxPoiDeepStatusSelector(conn);
+			//IxPoiDeepStatusSelector poiDeepStatusSelector = new IxPoiDeepStatusSelector(conn);
+			//hasApply = poiDeepStatusSelector.queryHandlerCount(userId, type);
+			
 			//查询当前作业员已占有数据量
-			hasApply = poiDeepStatusSelector.queryHandlerCount(userId, type);
+			IxPoiColumnStatusSelector poiColumnSelector = new IxPoiColumnStatusSelector(conn);
+			hasApply = poiColumnSelector.queryHandlerCount(firstWorkItem, secondWorkItem, userId, type);
 			
 			// 可申请数据的条数
 			int canApply = 100 - hasApply;
@@ -471,31 +486,38 @@ public class DeepCoreControl {
 				throw new Exception("该作业员名下已存在100条数据，不可继续申请");
 			}
 			
+			
+			//List<Integer> pids = poiDeepStatusSelector.getPids(subtask, type);
+			
 			//获取从状态表查询到能够申请数据的pids
-			List<Integer> pids = poiDeepStatusSelector.getPids(subtask, type);
+			List<Integer> pids = poiColumnSelector.getApplyPids(subtask, firstWorkItem, secondWorkItem, type);
 			if (pids.size() == 0){
 				//未查询到可以申请的数据
 				return 0;
 			}
 			
-			SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			//SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 			
 			//实际申请到的数据pids
 			List<Integer> applyDataPids = new ArrayList<Integer>();
 			if (pids.size() >= canApply){
 				applyDataPids = pids.subList(0, canApply-1);
-				//数据加锁， 赋值handler，维护update_date
-				dataSetLock(conn, applyDataPids, userId, df);
-				applyCount += applyDataPids.size();
 			}else{
 				//库里面查询出的数据量小于当前用户可申请的量，即锁定库中查询出的数据
 				applyDataPids = pids;
-				dataSetLock(conn, applyDataPids, userId, df);
-				applyCount += applyDataPids.size();
 			}
 			
+			Timestamp timeStamp = new Timestamp(new Date().getTime());
+			
+			//数据加锁， 赋值handler，维护update_date,task_id
+			//dataSetLock(conn, applyDataPids, userId, df);
+			
+			applyCount += applyDataPids.size();
+			List<String> workItemIds = poiColumnSelector.getWorkItemIds(firstWorkItem, secondWorkItem);
+			poiColumnSelector.dataSetLock(applyDataPids, workItemIds, userId, taskId, timeStamp);
+			
 			// 深度信息批处理 -- 作业前批
-			List<String> batchRuleList = getDeepBatchRules(type);
+			List<String> batchRuleList = getDeepBatchRules(secondWorkItem);
 			exeBatch(conn, applyDataPids, batchRuleList, dbId);
 			
 			return applyCount;
@@ -508,20 +530,20 @@ public class DeepCoreControl {
 	
 	/**
 	 * 获取深度信息批处理的规则
-	 * @param type
+	 * @param secondWorkItem
 	 * @return
 	 * @throws Exception 
 	 */
-	public List<String> getDeepBatchRules(int type) throws Exception {
+	public List<String> getDeepBatchRules(String secondWorkItem) throws Exception {
 		List<String> rules = new ArrayList<String>();
-		if (type == 1){
+		if ("deepDetail".equals(secondWorkItem)){
 			// 通用
 			rules.add("FM_BAT_20_195");
 			rules.add("FM_BAT_20_196");
-		}else if (type == 2){
+		}else if ("deepParking".equals(secondWorkItem)){
 			// 停车场
 			rules.add("FM_BAT_20_198");
-		}else if (type == 3){
+		}else if ("deepCarrental".equals(secondWorkItem)){
 			// 汽车租赁
 			rules.add("FM_BAT_20_197");
 		}
@@ -758,10 +780,13 @@ public class DeepCoreControl {
 			int checkType = jsonReq.getInt("checkType");
 			
 			List<Integer> pids = new ArrayList<Integer>();
-			pids = jsonReq.getJSONArray("pids");
-			
+			if (jsonReq.containsKey("pids")) {
+				pids = jsonReq.getJSONArray("pids");
+			}
 			List<String> ckRules = new JSONArray();
-			ckRules = jsonReq.getJSONArray("ckRules");
+			if (jsonReq.containsKey("ckRules")) {
+				ckRules = jsonReq.getJSONArray("ckRules");
+			}
 			
 			// POI行编
 			if (checkType == 0){
@@ -782,9 +807,14 @@ public class DeepCoreControl {
 				
 				if (ckRules.size() == 0) {
 					// 如果没有ckRules,则根据firstWorkItem和secondWorkItem从精编配置表POI_COLUMN_WORKITEM_CONF获取
-					String firstWorkItem = jsonReq.getString("firstWorkItem");
-					String secondWorkItem = jsonReq.getString("secondWorkItem");
-					
+					String firstWorkItem = new String();
+					if (jsonReq.containsKey("firstWorkItem")){
+						firstWorkItem = jsonReq.getString("firstWorkItem");
+					}
+					String secondWorkItem = new String();
+					if (jsonReq.containsKey("secondWorkItem")) {
+						secondWorkItem = jsonReq.getString("secondWorkItem");
+					}
 					if (StringUtils.isEmpty(firstWorkItem) || StringUtils.isEmpty(secondWorkItem)) {
 						throw new Exception("检查规则checkType=1为精编，ckRules为空时，firstWorkItem和secondWorkItem不能为空");
 					} else {

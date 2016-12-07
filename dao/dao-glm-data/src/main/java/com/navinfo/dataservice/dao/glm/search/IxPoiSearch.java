@@ -29,6 +29,7 @@ import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiColumnStatusSelect
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiAddressSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiNameSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
+import com.navinfo.dataservice.dao.log.LogReader;
 import com.navinfo.dataservice.dao.glm.search.AdAdminSearch;
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -729,7 +730,7 @@ public class IxPoiSearch implements ISearch {
 	 * @return
 	 * @throws Exception
 	 */
-	public JSONArray searchColumnPoiByPid(String firstWordItem,String secondWorkItem,List<Integer> pids,String type,long userId) throws Exception {
+	public JSONArray searchColumnPoiByPid(String firstWordItem,String secondWorkItem,List<Integer> pids,String type,long userId,int status,JSONObject classifyRules,JSONObject ckRules) throws Exception {
 		
 		JSONArray dataList = new JSONArray();
 		
@@ -771,8 +772,11 @@ public class IxPoiSearch implements ISearch {
 				//获取各专项共用字段
 				poiObj=getCommenfields(pid,type,poi);
 				poiObj.put("userId", userId);
-				
-				//特殊字段
+				    //classifyRules赋值,避免每条数据查一次库，整体查出再处理；
+				poiObj.put("classifyRules", classifyRules.get(Integer.toString(pid)));
+				    //ckRules赋值，获取检查错误
+				poiObj.put("ckRules", ckRules.get(Integer.toString(pid)));
+				//获取特殊字段
 				poiObj=getUnCommenfields(firstWordItem,secondWorkItem,pid,type,poi,poiObj);
 				dataList.add(poiObj);
 			}	
@@ -793,8 +797,6 @@ public class IxPoiSearch implements ISearch {
 	 * @throws Exception
 	 */
 	private JSONObject getCommenfields(int pid,String type,IxPoi poi) throws Exception {
- 
-		boolean isLock = false;
 		try{
 			JSONObject dataObj = new JSONObject();
 			dataObj.put("pid", pid);
@@ -857,11 +859,32 @@ public class IxPoiSearch implements ISearch {
 	 * @throws Exception
 	 */
 	private JSONObject getUnCommenfields(String firstWordItem,String secondWorkItem,int pid,String type,IxPoi poi,JSONObject dataObj) throws Exception {
- 
-		boolean isLock = false;
 		try{
 			
 			//parentName 当二级项作业为nameUnify时，取该poi的父名称（官方标准化中文）
+			dataObj=getParentName( secondWorkItem,poi,dataObj);
+			//名称相关字段
+			dataObj=getNamesNameFlagNameList(firstWordItem,secondWorkItem,poi,dataObj);
+			//地址相关字段
+			dataObj=getAddressesAddressList(firstWordItem,secondWorkItem,poi,dataObj);
+			//oldOriginalEngName,newOriginalEngName,oldStandardEngName,newStandardEngName
+			dataObj=getEngNameBeforBatch(firstWordItem,secondWorkItem,poi,dataObj);
+			
+			return dataObj;	
+		}catch (Exception e) {
+			throw e;
+		}
+	}
+	/**
+	 * 查询poi的父名称
+	 * @param secondWorkItem
+	 * @param poi
+	 * @param dataObj
+	 * @return
+	 * @throws Exception
+	 */
+	private JSONObject getParentName(String secondWorkItem,IxPoi poi,JSONObject dataObj) throws Exception {
+		try{
 			if (secondWorkItem.equals("nameUnify")) {
 				List<IRow> pRows = poi.getParents();
 				int parentPoiPid = 0;
@@ -876,11 +899,27 @@ public class IxPoiSearch implements ISearch {
 					dataObj.put("parentName", "");
 				}
 			}
-			
-			//名称组:pid关联ix_poi_name，将多组名称记录转换为json格式的名称组；
-			JSONArray nameArray = new JSONArray();
-			List<IRow> nRows = poi.getNames();
+		return dataObj;
+		}catch (Exception e) {
+			throw e;
+		}
+	}
+	/**
+	 * 处理名称组相关字段
+	 * @param firstWordItem
+	 * @param secondWorkItem
+	 * @param poi
+	 * @param dataObj
+	 * @return
+	 * @throws Exception
+	 */
+	private JSONObject getNamesNameFlagNameList(String firstWordItem,String secondWorkItem,IxPoi poi,JSONObject dataObj) throws Exception {
+		JSONArray nameArray = new JSONArray();
+		String nameFlag="";
+		List<IRow> nRows = poi.getNames();
+		try{
 			for (IRow nRow:nRows) {
+				//名称组:pid关联ix_poi_name，将多组名称记录转换为json格式的名称组；
 				IxPoiName name = (IxPoiName) nRow;
 				JSONObject nameObj = name.Serialize(null);
 				/**特殊处理：当一级作业项为：poi_name、二级作业项为：namePinyin时，对'langCode'== 'CHI' and 'type'==1 and 'nameClass' 
@@ -896,41 +935,55 @@ public class IxPoiSearch implements ISearch {
 					}
 				}
 				nameArray.add(nameObj);
-				
-				
-				//待补充
-				String nameFlag="";
-				switch (secondWorkItem) {
-				case "NetEngName":
-					if (name.getLangCode().equals("ENG") && name.getNameType() == 1 && name.getNameClass()== 1) {
-						if (name.getNameClass()==1||name.getNameClass()==3||name.getNameClass()==5||name.getNameClass()==8) {
-							List<IRow> fRows = name.getNameFlags();
-							for (IRow fRow:fRows) {
-								IxPoiNameFlag nFlag = (IxPoiNameFlag) fRow;
-								nameFlag = nFlag.getFlagCode();
-							}
+				//nameFlag赋值
+				if (firstWordItem.equals("poi_englishname")) {
+					if (name.getLangCode().equals("ENG") && name.getNameType() == 2 && name.getNameClass()== 1) {
+						List<IRow> fRows = name.getNameFlags();
+						for (IRow fRow:fRows) {
+							IxPoiNameFlag nFlag = (IxPoiNameFlag) fRow;
+							nameFlag = nFlag.getFlagCode();
 						}
 					}
-					break;
-				case "addrSplit":
-					break;
-				case "addrPinyin":
-					break;
-				case "poi_englishaddress":
-					break;
-				case "photoEngName":
-					break;
-				case "chiEngName":
-					break;
+				}
+				//nameList赋值
+				if (firstWordItem.equals("poi_englishname")) {
+					if (!secondWorkItem.equals("confirmAliasEngName")&&!secondWorkItem.equals("officalStandardAliasEngName")) {
+						List<String> nameList = new ArrayList<String>();
+						if (name.getLangCode().equals("ENG") && name.getNameType() == 2 && name.getNameClass()== 1) {
+							String[] wordList = name.getName().split(" ");
+							for (String word:wordList) {
+								if (ENGSHORTMAP.containsKey(word)) {
+									nameList.add(word + "&" + ENGSHORTMAP.get(word));
+								}
+							}
+						}
+						dataObj.put("nameList", nameList);
+					}
 				}
 			}
 			dataObj.put("names", nameArray);
-			JSONArray addrArray = new JSONArray();
-			List<IRow> aRows = poi.getAddresses();
-			
-			//地址组:当一级作业项=poi_address或poi_englishaddress时，pid关联ix_poi_address，将多组名称记录转换为json格式的名称组；
+			dataObj.put("nameFlag", nameFlag);
+			return dataObj;
+		}catch (Exception e) {
+			throw e;
+		}
+	}
+	/**
+	 * 处理地址组相关字段
+	 * @param firstWordItem
+	 * @param secondWorkItem
+	 * @param poi
+	 * @param dataObj
+	 * @return
+	 * @throws Exception
+	 */
+	private JSONObject getAddressesAddressList(String firstWordItem,String secondWorkItem,IxPoi poi,JSONObject dataObj) throws Exception {
+		JSONArray addrArray = new JSONArray();
+		List<IRow> aRows = poi.getAddresses();
+		try{
 			if (firstWordItem.equals("poi_address") || firstWordItem.equals("poi_englishaddress")) {
 				for (IRow aRow:aRows) {
+					//地址组:当一级作业项=poi_address或poi_englishaddress时，pid关联ix_poi_address，将多组名称记录转换为json格式的名称组；
 					IxPoiAddress address = (IxPoiAddress) aRow;
 					JSONObject addrObj = address.Serialize(null);
 					/**特殊处理：特殊处理：当二级作业项为：addrPinyin时，对'langCode'== 'CHI'的记录，添加字段addrNameMultiPinyin、roadNameMultiPinyin、fullNameMultiPinyin，
@@ -952,13 +1005,68 @@ public class IxPoiSearch implements ISearch {
 						}	
 					}
 					addrArray.add(addrObj);
+					//addressList赋值
+					List<String> addrList = new ArrayList<String>();
+					if (address.getLangCode().equals("ENG")) {
+						String[] wordList = address.getFullname().split(" ");
+						for (String word:wordList) {
+							if (ENGSHORTMAP.containsKey(word)) {
+								addrList.add(word + "&" + ENGSHORTMAP.get(word));
+							}
+						}
+					}
+					dataObj.put("addressList", addrList);	
 				}
 				dataObj.put("addresses", addrArray);	
 			} 
-			
-			return dataObj;	
+			return dataObj;
 		}catch (Exception e) {
-			
+			throw e;
+		}
+	}
+	/**
+	 * 取英文名称批处理前后值
+	 * @param secondWorkItem
+	 * @param poi
+	 * @param dataObj
+	 * @return
+	 * @throws Exception
+	 */
+	private JSONObject getEngNameBeforBatch(String firstWordItem,String secondWorkItem,IxPoi poi,JSONObject dataObj) throws Exception {
+		LogReader logReader = new LogReader(conn);
+		JSONArray results = new JSONArray();
+		List<IRow> nRows = poi.getNames();
+		String oldOriginalEngName="",newOriginalEngName="",oldStandardEngName="",newStandardEngName="";
+		try{
+			for (IRow nRow:nRows) {
+				IxPoiName name = (IxPoiName) nRow;
+				//官方原始英文改前改后
+				if (name.getLangCode().equals("ENG") && name.getNameType() == 2 && name.getNameClass()== 1){
+					String rowId = name.getRowId();
+					results=logReader.getHisByOperate("Day2MonthPreBatch","IX_POI_NAME",rowId);
+					if (results.size()>0){
+						JSONObject result =(JSONObject) results.get(0);
+						oldOriginalEngName=result.getString("old");
+						newOriginalEngName=result.getString("new");
+					}
+				}
+				//官方标准化英文改前改后
+				if (name.getLangCode().equals("ENG") && name.getNameType() == 1 && name.getNameClass()== 1){
+					String rowId = name.getRowId();
+					results=logReader.getHisByOperate("Day2MonthPreBatch","IX_POI_NAME",rowId);
+					if (results.size()>0){
+						JSONObject result =(JSONObject) results.get(0);
+						oldStandardEngName=result.getString("old");
+						newStandardEngName=result.getString("new");
+					}
+				}
+			}
+			dataObj.put("oldOriginalEngName", oldOriginalEngName);
+			dataObj.put("newOriginalEngName", newOriginalEngName);
+			dataObj.put("oldStandardEngName", oldStandardEngName);
+			dataObj.put("newStandardEngName", newStandardEngName);
+			return dataObj;
+		}catch (Exception e) {
 			throw e;
 		}
 	}

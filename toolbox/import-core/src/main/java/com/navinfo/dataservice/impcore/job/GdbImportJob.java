@@ -11,6 +11,7 @@ import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.impcore.flushbylog.FlushResult;
 import com.navinfo.dataservice.impcore.flusher.DefaultLogFlusher;
 import com.navinfo.dataservice.impcore.flusher.LogFlusher;
+import com.navinfo.dataservice.impcore.mover.CopBatchLogMover;
 import com.navinfo.dataservice.impcore.mover.DefaultLogMover;
 import com.navinfo.dataservice.impcore.mover.LogMoveResult;
 import com.navinfo.dataservice.impcore.mover.LogMover;
@@ -64,9 +65,14 @@ public class GdbImportJob extends AbstractJob {
 			if(req.getLogDbId()==req.getTargetDbId()){
 				response("履历搬迁完成,相同库无须搬履历",null);
 			}else{
-				LogMover logMover = new DefaultLogMover(logSchema, tarSchema, tempTable, null);
+				LogMover logMover = null;
+				if(req.getLogMoveType().equals("copBatch")){
+					logMover = new CopBatchLogMover(logSchema, tarSchema, tempTable, null);
+				}else{
+					logMover = new DefaultLogMover(logSchema, tarSchema, tempTable, null);
+				}
 				LogMoveResult moveResult = logMover.move();
-				response("履历搬迁完成->Operation:"+moveResult.getLogOperationMoveCount()+",Detail:"
+				response("履历搬迁完成->Action:"+moveResult.getLogActionMoveCount()+",Operation:"+moveResult.getLogOperationMoveCount()+",Detail:"
 						+moveResult.getLogDetailMoveCount()+",Grid:"+moveResult.getLogDetailGridMoveCount(),null);
 			}
 			commitStatus=true;

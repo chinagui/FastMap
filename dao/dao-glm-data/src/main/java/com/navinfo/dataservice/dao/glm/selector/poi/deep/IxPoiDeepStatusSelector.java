@@ -173,7 +173,7 @@ public class IxPoiDeepStatusSelector extends AbstractSelector{
 	 */
 	public JSONObject loadDeepPoiByCondition(JSONObject jsonReq, Subtask subtask, long userId) throws Exception{
 		
-		int type = jsonReq.getInt("type");
+		String type = jsonReq.getString("type");
 
 		JSONArray deepCheckRules = getdeepCheckRules(type);
 		
@@ -190,11 +190,12 @@ public class IxPoiDeepStatusSelector extends AbstractSelector{
 		StringBuilder bufferCondition = new StringBuilder();
 		
 		bufferCondition.append("select COUNT(1) OVER(PARTITION BY 1) total, ipn.poi_pid pid, ipn.name ");
-		bufferCondition.append(" from ix_poi p,poi_deep_status s,ix_poi_name ipn");
+		bufferCondition.append(" from ix_poi p,poi_column_status s,ix_poi_name ipn,poi_column_workitem_conf c");
 		bufferCondition.append(" where ipn.name_class = 1 and ipn.name_type = 2 and (ipn.lang_code = 'CHI' or ipn.lang_code = 'CHT')");
 		bufferCondition.append(" and p.pid = s.pid and p.pid = ipn.poi_pid");
+		bufferCondition.append(" and s.work_item_id=c.work_item_id");
 		bufferCondition.append(" and sdo_within_distance(p.geometry, sdo_geometry('" + subtask.getGeometry() + "', 8307), 'mask=anyinteract') = 'TRUE'");
-		bufferCondition.append(" and s.type = " + type + " and s.status = " + status + " and s.handler = " + userId );
+		bufferCondition.append(" and c.second_work_item = '" + type + "'" + " and s.second_work_status = " + status + " and s.handler = " + userId );
 		
 		if (jsonReq.containsKey("poiName")){
 			// poiName模糊查询
@@ -275,18 +276,18 @@ public class IxPoiDeepStatusSelector extends AbstractSelector{
 	
 	/**
 	 * 根据 type获取深度信息检查规则
-	 * @param subCategory
+	 * @param type
 	 * @return
 	 * @throws Exception
 	 */
-	public JSONArray getdeepCheckRules(int type) throws Exception{
+	public JSONArray getdeepCheckRules(String type) throws Exception{
 		
 		String subCategory = new String();
-		if (type == 1){
+		if ("deepDetail".equals(type)){
 			subCategory = "IX_POI_DETAIL";
-		} else if (type == 2){
+		} else if ("deepParking".equals(type)){
 			subCategory = "IX_POI_PARKING";
-		}else if (type == 3) {
+		}else if ("deepCarrental".equals(type)) {
 			subCategory = "IX_POI_CARRENTAL";
 		}
 		

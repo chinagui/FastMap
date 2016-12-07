@@ -9,11 +9,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import com.navinfo.dataservice.commons.util.JsonUtils;
+import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
+import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -35,6 +36,12 @@ public class RdTmclocationLink implements IRow {
 	private int linkPid;
 	
 	private String rowId;
+	
+	protected Geometry geometry;
+	
+	protected int sNodePid;
+	
+	protected int eNodePid;
 	
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 
@@ -76,7 +83,17 @@ public class RdTmclocationLink implements IRow {
 
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) throws Exception {
-		JSONObject json = JSONObject.fromObject(this, JsonUtils.getStrConfig());
+		JSONObject json = JSONObject.fromObject(this, Geojson.geoJsonConfig(0.00001, 5));
+		
+		//履历不记录geometry字段
+		if(objLevel.equals(ObjLevel.HISTORY))
+		{
+			json.remove("geometry");
+			
+			json.remove("sNodePid");
+			
+			json.remove("eNodePid");
+		}
 
 		return json;
 	}
@@ -221,6 +238,30 @@ public class RdTmclocationLink implements IRow {
 		} else {
 			return false;
 		}
+	}
+	
+	public int getsNodePid() {
+		return sNodePid;
+	}
+
+	public void setsNodePid(int sNodePid) {
+		this.sNodePid = sNodePid;
+	}
+
+	public int geteNodePid() {
+		return eNodePid;
+	}
+
+	public void seteNodePid(int eNodePid) {
+		this.eNodePid = eNodePid;
+	}
+
+	public Geometry getGeometry() {
+		return geometry;
+	}
+
+	public void setGeometry(Geometry geometry) {
+		this.geometry = geometry;
 	}
 
 	@Override

@@ -141,7 +141,7 @@ create or replace package body package_utils is
     select geometry into geo2 from rd_link where link_pid = p_out_link_pid;
     box2       := sdo_geom.sdo_mbr(geo2);
     union_box  := sdo_geom.sdo_mbr(sdo_geom.sdo_union(box1, box2, 0.1));
-    buffer_box := sdo_geom.sdo_buffer(union_box, 0.1, 0.1, 'UNIT=KILOMETER');
+    buffer_box := sdo_geom.sdo_buffer(union_box, 0.2, 0.2, 'UNIT=KILOMETER');
     v_area     := sdo_geom.sdo_area(buffer_box, 0.1, 'unit=SQ_KM');
   
     if v_area <= 4 then

@@ -39,7 +39,7 @@ public class JobService {
 		return SingletonHolder.INSTANCE;
 	}
 	
-	public long create(String jobType,JSONObject request,long userId,String descp)throws ServiceException{
+	public long create(String jobType,JSONObject request,long userId,long taskId,String descp)throws ServiceException{
 		Connection conn = null;
 		try{
 			//持久化
@@ -48,11 +48,11 @@ public class JobService {
 					.getConnection();
 			long jobId = run.queryForLong(conn, "SELECT JOB_ID_SEQ.NEXTVAL FROM DUAL");
 			String jobGuid = UuidUtils.genUuid();
-			String jobInfoSql = "INSERT INTO JOB_INFO(JOB_ID,JOB_TYPE,CREATE_TIME,STATUS,JOB_REQUEST,JOB_GUID,USER_ID,DESCP)"
-					+ " VALUES (?,?,SYSDATE,?,?,?,?,?)";
-			run.update(conn, jobInfoSql, jobId,jobType,JobStatus.STATUS_CREATE,request.toString(),jobGuid,userId,descp);
+			String jobInfoSql = "INSERT INTO JOB_INFO(JOB_ID,JOB_TYPE,CREATE_TIME,STATUS,JOB_REQUEST,JOB_GUID,USER_ID,TASK_ID,DESCP)"
+					+ " VALUES (?,?,SYSDATE,?,?,?,?,?,?)";
+			run.update(conn, jobInfoSql, jobId,jobType,JobStatus.STATUS_CREATE,request.toString(),jobGuid,userId,taskId,descp);
 			//发送run_job消息
-			JobMsgPublisher.runJob(jobId,jobGuid,jobType,request,userId);
+			JobMsgPublisher.runJob(jobId,jobGuid,jobType,request,userId,taskId);
 			return jobId;
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);

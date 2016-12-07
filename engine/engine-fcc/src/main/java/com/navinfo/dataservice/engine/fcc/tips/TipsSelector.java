@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import com.navinfo.navicommons.database.sql.StringUtil;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
@@ -489,7 +490,7 @@ public class TipsSelector {
 
 					geometry = deepGeo.toString();
 
-				} else if(type == 1204 || type == 1301 || type == 1501 || type == 1502 || type == 1503
+				} else if( type == 1501 || type == 1502 || type == 1503
 						|| type == 1504 || type == 1505 || type == 1506 || type == 1507 || type == 1508
 						|| type == 1509 || type == 1510 || type == 1511 || type == 1512 || type == 1513
 						|| type == 1514	|| type == 1515 || type == 1516 || type == 1517) {

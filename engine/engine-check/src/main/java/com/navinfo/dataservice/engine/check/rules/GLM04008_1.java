@@ -24,6 +24,8 @@ import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
  * @Description: 双向道路上制作了一个方向的大门，但另一个方向没有禁止通行（永久）的普通交限，报双向道路上制作了一个方向的大门，在另一个方向没有禁止通行（永久）的交限
  * 大门方向编辑服务端后检查:如果大门为单向，则执行检查。如果大门进入线与退出线为双向道路，且另一个方向并未制作禁止通行的普通交限，则检查不通过。
  * 新增交限服务端后检查：新增交限，如果为非禁止通行（永久）的普通交限，则执行检查。如果交限进入线退出线为双向道路，且另一个方向建立了单方向大门，则检查不通过。
+ * 修改交限服务端后检查：修改交限，如果修改为非禁止通行（永久）的普通交限，则执行检查。如果交限进入线退出线为双向道路，且另一个方向建立了单方向大门，则检查不通过。
+ * 大门方向编辑服务端前检查：如果大门为单向，则执行检查。如果大门进入线与退出线为双向道路，且另一个方向并未制作禁止通行的普通交限，则检查不通过。
  */
 public class GLM04008_1 extends baseRule{
 
@@ -39,7 +41,13 @@ public class GLM04008_1 extends baseRule{
 	 */
 	@Override
 	public void preCheck(CheckCommand checkCommand) throws Exception {
-		// TODO Auto-generated method stub
+		for (IRow obj : checkCommand.getGlmList()) {
+			// 大门RdGate
+			if (obj instanceof RdGate) {
+				RdGate rdGate = (RdGate) obj;
+				checkRdGate(rdGate,checkCommand.getOperType());
+			}	
+		}
 		
 	}
 
@@ -70,7 +78,6 @@ public class GLM04008_1 extends baseRule{
 	 * @throws Exception 
 	 */
 	private void checkRdRestriction(RdRestriction rdRestriction, OperType operType) throws Exception {
-		// TODO Auto-generated method stub
 		if(operType.equals(OperType.CREATE)){
 			int inLinkPid = rdRestriction.getInLinkPid();
 			Set<Integer> outLinkPidSet = new HashSet<Integer>();
@@ -123,13 +130,11 @@ public class GLM04008_1 extends baseRule{
 		if(rdGate.getDir()==1){
 			StringBuilder sb = new StringBuilder();
 
-			sb.append("SELECT 1 FROM RD_GATE G, RD_LINK L1, RD_LINK L2");
-			sb.append(" WHERE G.IN_LINK_PID = L1.LINK_PID");
+			sb.append("SELECT 1 FROM RD_LINK L1, RD_LINK L2");
+			sb.append(" WHERE L1.LINK_PID=" + rdGate.getInLinkPid());
 			sb.append(" AND L1.DIRECT = 1");
-			sb.append(" AND G.OUT_LINK_PID = L2.LINK_PID");
+			sb.append(" AND L2.LINK_PID=" + rdGate.getOutLinkPid());
 			sb.append(" AND L2.DIRECT = 1");
-			sb.append(" AND G.DIR = 1");
-			sb.append(" AND G.U_RECORD <> 2");
 			sb.append(" AND L1.U_RECORD <> 2");
 			sb.append(" AND L2.U_RECORD <> 2") ;
 			sb.append(" AND NOT EXISTS (SELECT 1") ;
@@ -140,7 +145,6 @@ public class GLM04008_1 extends baseRule{
 			sb.append(" AND D.TYPE = 1") ;
 			sb.append(" AND R.U_RECORD <> 2") ;
 			sb.append(" AND D.U_RECORD <> 2)") ;
-			sb.append(" AND G.PID = " + rdGate.getPid()) ;
 
 			String sql = sb.toString();
 			log.info("RdGate后检查GLM04008_1:" + sql);

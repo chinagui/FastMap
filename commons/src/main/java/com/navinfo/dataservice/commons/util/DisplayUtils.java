@@ -158,8 +158,7 @@ public class DisplayUtils {
 		return getLinkPointPos(linkWkt, pointWkt, 3, seqNum, 4.5, 4, 3);
 	}
 
-	public static double[][] getGdbPointPos(String linkWkt, String pointWkt, int seqNum, double base, int veritUnit,
-			int z) throws Exception {
+	public static double[][] getGdbPointPos(String linkWkt, String pointWkt, int seqNum, double base, int veritUnit) throws Exception {
 		return getLinkPointPos(linkWkt, pointWkt, 3, seqNum, base, 4, veritUnit);
 	}
 

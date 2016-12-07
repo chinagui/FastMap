@@ -250,7 +250,7 @@ public class RdRestrictionSearch implements ISearch {
 					offset = 0; break;
 				}
 
-				double[][] point = DisplayUtils.getGdbPointPos(linkWkt, pointWkt, 1, (21 - z)*6+offset, 4,z);
+				double[][] point = DisplayUtils.getGdbPointPos(linkWkt, pointWkt, 1, (21 - z)*6+offset, 4);
 
 				snapshot.setG(Geojson.lonlat2Pixel(point[1][0], point[1][1], z,
 						px, py));

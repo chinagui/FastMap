@@ -15,7 +15,6 @@ import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.selector.rd.laneconnexity.RdLaneConnexitySelector;
-import com.vividsolutions.jts.io.WKTReader;
 
 import net.sf.json.JSONObject;
 import oracle.spatial.geometry.JGeometry;
@@ -111,7 +110,7 @@ public class RdLaneConnexitySearch implements ISearch {
 
 				jsonM.put("c", String.valueOf((int)angle));
 				
-				double[][] point = DisplayUtils.getGdbPointPos(linkWkt, pointWkt, 0, (21-z)*4.5, 4,z);
+				double[][] point = DisplayUtils.getGdbPointPos(linkWkt, pointWkt, 0, (21-z)*4.5, 4);
 
 				snapshot.setG(Geojson.lonlat2Pixel(point[1][0], point[1][1], z,
 						px, py));

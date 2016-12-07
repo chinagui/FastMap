@@ -127,7 +127,7 @@ public class RdVoiceguideSearch implements ISearch {
 					offset = 0; break;
 				}
 				
-				double[][] point = DisplayUtils.getGdbPointPos(linkWkt, pointWkt, 2, (21-z)*7.5+offset, 6,z);
+				double[][] point = DisplayUtils.getGdbPointPos(linkWkt, pointWkt, 2, (21-z)*7.5+offset, 6);
 
 				snapshot.setG(Geojson.lonlat2Pixel(point[1][0], point[1][1], z,
 						px, py));

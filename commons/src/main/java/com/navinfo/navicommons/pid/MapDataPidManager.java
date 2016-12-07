@@ -131,7 +131,7 @@ public class MapDataPidManager {
      * @throws Exception
      */
     public String pidDistribute(String clientId, String tableName, int limit,String remark) throws Exception {
-    	PidDistributeResponse response = PidDistributeResponse.getDefaultResponse();
+        PidDistributeResponse response = PidDistributeResponse.getDefaultResponse();
         List<PidResponse.PidSeg> allPidSegs = new ArrayList<PidResponse.PidSeg>();
         Connection conn = null;
         String pidDistributeXml=null;
@@ -144,19 +144,19 @@ public class MapDataPidManager {
 
                     //共用一个PID类型
                     if("TMC_POINT".equals(tableName) || "TMC_LINE".equals(tableName) || "TMC_AREA".equals(tableName)){
-                    	continue;
+                        continue;
                     }
                     List<PidResponse.PidSeg> pidSegs = applyPid(conn, clientId, tableName, limit);
                     allPidSegs.addAll(pidSegs);
                 }
             } else 
             {
-            		String [] tableNames = tableName.split(",");
-            		for(String aTableName : tableNames)
-            		{
-	                List<PidResponse.PidSeg> pidSegs = applyPid(conn, clientId, aTableName, limit);
-	                allPidSegs.addAll(pidSegs);
-            		}
+                    String [] tableNames = tableName.split(",");
+                    for(String aTableName : tableNames)
+                    {
+                    List<PidResponse.PidSeg> pidSegs = applyPid(conn, clientId, aTableName, limit);
+                    allPidSegs.addAll(pidSegs);
+                    }
             }
             response.setPids(allPidSegs);
             response.setLimit(limit);
@@ -191,7 +191,7 @@ public class MapDataPidManager {
      * @throws Exception
      */
     public List<PidResponse.PidSeg> pidDistribute2fastMap(String clientId, String tableName, int limit) throws Exception {
-    	PidDistributeResponse response = PidDistributeResponse.getDefaultResponse();
+        PidDistributeResponse response = PidDistributeResponse.getDefaultResponse();
         List<PidResponse.PidSeg> allPidSegs = new ArrayList<PidResponse.PidSeg>();
         Connection conn = null;
         String pidDistributeXml=null;
@@ -204,19 +204,19 @@ public class MapDataPidManager {
 
                     //共用一个PID类型
                     if("TMC_POINT".equals(tableName) || "TMC_LINE".equals(tableName) || "TMC_AREA".equals(tableName)){
-                    	continue;
+                        continue;
                     }
                     List<PidResponse.PidSeg> pidSegs = applyPid(conn, clientId, tableName, limit);
                     allPidSegs.addAll(pidSegs);
                 }
             } else 
             {
-            		String [] tableNames = tableName.split(",");
-            		for(String aTableName : tableNames)
-            		{
-	                List<PidResponse.PidSeg> pidSegs = applyPid(conn, clientId, aTableName, limit);
-	                allPidSegs.addAll(pidSegs);
-            		}
+                    String [] tableNames = tableName.split(",");
+                    for(String aTableName : tableNames)
+                    {
+                    List<PidResponse.PidSeg> pidSegs = applyPid(conn, clientId, aTableName, limit);
+                    allPidSegs.addAll(pidSegs);
+                    }
             }
             response.setPids(allPidSegs);
             response.setLimit(limit);
@@ -240,56 +240,56 @@ public class MapDataPidManager {
     
     }
     public String saveDistributeHistory(Connection conn,PidDistributeResponse response) throws SQLException{
-    	
-    	XStream xs = new XStream();  
+        
+        XStream xs = new XStream();  
         xs.processAnnotations(PidDistributeResponse.class);  
         StringBuffer buf= new StringBuffer("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
         String xml=buf.append(xs.toXML(response)).toString();
-    	QueryRunner query=new QueryRunner();
-    	query.update(conn, "insert into pid_distribute_record(distribute_id,create_time,client_id,limit,remark,xml)values(?,to_date(?,'yyyy-MM-dd HH24:mi:ss'),?,?,?,?)",
-    			response.getDistributeId(),response.getCreateTime(),response.getClientId(),response.getLimit(),response.getRemark(),xml);
-    	return xml;
+        QueryRunner query=new QueryRunner();
+        query.update(conn, "insert into pid_distribute_record(distribute_id,create_time,client_id,limit,remark,xml)values(?,to_date(?,'yyyy-MM-dd HH24:mi:ss'),?,?,?,?)",
+                response.getDistributeId(),response.getCreateTime(),response.getClientId(),response.getLimit(),response.getRemark(),xml);
+        return xml;
     }
     @SuppressWarnings("unchecked")
-	public String getDistributeXml(String distributeId) throws SQLException{
-    	String xml=null;
-    	QueryRunner query=new QueryRunner();
-    	xml=query.query(dmsDataSource,"select * from pid_distribute_record t where t.distribute_id=?", 1,new ResultSetHandler<String>(){
+    public String getDistributeXml(String distributeId) throws SQLException{
+        String xml=null;
+        QueryRunner query=new QueryRunner();
+        xml=query.query(dmsDataSource,"select * from pid_distribute_record t where t.distribute_id=?", 1,new ResultSetHandler<String>(){
 
-			public String handle(ResultSet rs) throws SQLException {
-				String xml=null;
-				if(rs.next()){
-					xml=rs.getString("xml");
-				}
-				return xml;
-			}},distributeId);
-    	return xml;
+            public String handle(ResultSet rs) throws SQLException {
+                String xml=null;
+                if(rs.next()){
+                    xml=rs.getString("xml");
+                }
+                return xml;
+            }},distributeId);
+        return xml;
     }
     @SuppressWarnings("unchecked")
-	public Page pidDistributeList(int currentPageNum) throws Exception{
-    	QueryRunner query=new QueryRunner();
-    	final Page page = new Page(currentPageNum);
-    	query.query(currentPageNum, 20, dmsDataSource, "select distribute_id,create_time,client_id,limit,remark from pid_distribute_record order by create_time desc", new ResultSetHandler(){
+    public Page pidDistributeList(int currentPageNum) throws Exception{
+        QueryRunner query=new QueryRunner();
+        final Page page = new Page(currentPageNum);
+        query.query(currentPageNum, 20, dmsDataSource, "select distribute_id,create_time,client_id,limit,remark from pid_distribute_record order by create_time desc", new ResultSetHandler(){
 
-			public Object handle(ResultSet rs) throws SQLException {
-				List list = new ArrayList();
-				page.setResult(list);
-	            SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-				while(rs.next()){
-					HashMap map = new HashMap();
-					page.setTotalCount(rs.getInt(QueryRunner.TOTAL_RECORD_NUM));
-					map.put("distribute_id", rs.getString("distribute_id"));
-					map.put("create_time", sdf.format(rs.getTimestamp("create_time")));
-					map.put("client_id", rs.getString("client_id"));
-					map.put("limit", rs.getString("limit"));
-					map.put("remark", rs.getString("remark"));
-					list.add(map);
-				}
-				return null;
-			}
-    		
-    	});
-    	return page;
+            public Object handle(ResultSet rs) throws SQLException {
+                List list = new ArrayList();
+                page.setResult(list);
+                SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                while(rs.next()){
+                    HashMap map = new HashMap();
+                    page.setTotalCount(rs.getInt(QueryRunner.TOTAL_RECORD_NUM));
+                    map.put("distribute_id", rs.getString("distribute_id"));
+                    map.put("create_time", sdf.format(rs.getTimestamp("create_time")));
+                    map.put("client_id", rs.getString("client_id"));
+                    map.put("limit", rs.getString("limit"));
+                    map.put("remark", rs.getString("remark"));
+                    list.add(map);
+                }
+                return null;
+            }
+            
+        });
+        return page;
     }
 
     public static void main(String[] args) {
@@ -297,69 +297,69 @@ public class MapDataPidManager {
 
     }
 
-	@SuppressWarnings("unchecked")
-	public void pidImport(String distributeId, String xml,final List<String> returnPidRepeatList) throws Exception {
-		Connection conn=null;
-		QueryRunner query=new QueryRunner();
-		//解析xml
-		XStream xs = new XStream();  
-		xs.processAnnotations(PidDistributeResponse.class);  
-		final PidDistributeResponse pidDistributeResponse=new PidDistributeResponse(1,"");
-		xs.fromXML(xml,pidDistributeResponse);
-		//检查分配批次是否已存在
-		int exists = query.queryForInt(dmsDataSource, "select count(1) from pid_distribute_record where distribute_id=?", distributeId);
-		if(exists>0){
-			throw new ServiceException("分配批次号已存在，不能导入");
-		}
-		try {
-			conn=dmsDataSource.getConnection();
-			List<PidSeg> pids = pidDistributeResponse.getPids();
-			//检查PID段是否与存在的号段重叠
-			for (final PidSeg pid : pids ) {
-				query.query(conn, "select t.table_name,t.start_num,t.end_num from pid_segment_usage t " + 
-						"      where t.status=1 and t.table_name=? and ((t.start_num between ? and ? ) or (t.end_num between ? and ?))", 10,new ResultSetHandler() {
+    @SuppressWarnings("unchecked")
+    public void pidImport(String distributeId, String xml,final List<String> returnPidRepeatList) throws Exception {
+        Connection conn=null;
+        QueryRunner query=new QueryRunner();
+        //解析xml
+        XStream xs = new XStream();  
+        xs.processAnnotations(PidDistributeResponse.class);  
+        final PidDistributeResponse pidDistributeResponse=new PidDistributeResponse(1,"");
+        xs.fromXML(xml,pidDistributeResponse);
+        //检查分配批次是否已存在
+        int exists = query.queryForInt(dmsDataSource, "select count(1) from pid_distribute_record where distribute_id=?", distributeId);
+        if(exists>0){
+            throw new ServiceException("分配批次号已存在，不能导入");
+        }
+        try {
+            conn=dmsDataSource.getConnection();
+            List<PidSeg> pids = pidDistributeResponse.getPids();
+            //检查PID段是否与存在的号段重叠
+            for (final PidSeg pid : pids ) {
+                query.query(conn, "select t.table_name,t.start_num,t.end_num from pid_segment_usage t " + 
+                        "      where t.status=1 and t.table_name=? and ((t.start_num between ? and ? ) or (t.end_num between ? and ?))", 10,new ResultSetHandler() {
 
-							public Object handle(ResultSet rs) throws SQLException {
-								while(rs.next()){
-									String msg="导入号段： "+pid.getPidType()+":"+pid.getStartNum()+"->"+pid.getEndNum();
-									msg+="，库中的号段： "+rs.getString("table_name")+":"+rs.getString("start_num")+"->"+rs.getString("end_num");
-									returnPidRepeatList.add(msg);
-								}
-								return null;
-							}
-						},
-						pid.getPidType(),pid.getStartNum(),pid.getEndNum(),pid.getStartNum(),pid.getEndNum());
-			}
-			if(returnPidRepeatList.size()>0){
-				throw new ServiceException("导入的号段与库中的号段重复，不能导入");
-			}
-			//写入分配批次号
-			query.update(conn, "insert into pid_distribute_record(distribute_id,create_time,client_id,limit,remark,xml)values(?,to_date(?,'yyyy-MM-dd HH24:mi:ss'),?,?,?,?)",
-					pidDistributeResponse.getDistributeId(),pidDistributeResponse.getCreateTime(),pidDistributeResponse.getClientId(),pidDistributeResponse.getLimit(),pidDistributeResponse.getRemark(),xml);
-			
-			for (final PidSeg pid : pids ) {
-				String record_id=UUID.randomUUID().toString().replaceAll("-", "");
-				String usage_id=UUID.randomUUID().toString().replaceAll("-", "");
-				//写入申请记录
-				query.update(conn, "insert into pid_apply_record(record_id,client_id,apply_time,limit,table_name,recycle)" +
-						"values(?,?,?,?,?,?)",record_id,"PID导入",new java.sql.Timestamp(new Date().getTime()),(pid.getEndNum()-pid.getStartNum()+1),pid.getPidType(),"1");
-				//写入号段表
-				query.update(conn, "insert into pid_segment_usage(usage_id,record_id,table_name,start_num,end_num,status)" +
-						"values(?,?,?,?,?,?)",usage_id,record_id,pid.getPidType(),pid.getStartNum(),pid.getEndNum(),0);
-				//更新表最大值
-				query.update(conn, "update pid_max_per_table t set pid_max_value=?  where t.table_name=? and t.pid_max_value<?",
-						pid.getEndNum(),pid.getPidType(),pid.getEndNum());
-				
-			}
-		} catch (Exception e) {
-			DbUtils.rollback(conn);
-			log.error("pid 导入出错："+e.getMessage(),e);
-			throw e;
-		} finally {
-			DbUtils.commitAndCloseQuietly(conn);
-		}
-		
-	}
+                            public Object handle(ResultSet rs) throws SQLException {
+                                while(rs.next()){
+                                    String msg="导入号段： "+pid.getPidType()+":"+pid.getStartNum()+"->"+pid.getEndNum();
+                                    msg+="，库中的号段： "+rs.getString("table_name")+":"+rs.getString("start_num")+"->"+rs.getString("end_num");
+                                    returnPidRepeatList.add(msg);
+                                }
+                                return null;
+                            }
+                        },
+                        pid.getPidType(),pid.getStartNum(),pid.getEndNum(),pid.getStartNum(),pid.getEndNum());
+            }
+            if(returnPidRepeatList.size()>0){
+                throw new ServiceException("导入的号段与库中的号段重复，不能导入");
+            }
+            //写入分配批次号
+            query.update(conn, "insert into pid_distribute_record(distribute_id,create_time,client_id,limit,remark,xml)values(?,to_date(?,'yyyy-MM-dd HH24:mi:ss'),?,?,?,?)",
+                    pidDistributeResponse.getDistributeId(),pidDistributeResponse.getCreateTime(),pidDistributeResponse.getClientId(),pidDistributeResponse.getLimit(),pidDistributeResponse.getRemark(),xml);
+            
+            for (final PidSeg pid : pids ) {
+                String record_id=UUID.randomUUID().toString().replaceAll("-", "");
+                String usage_id=UUID.randomUUID().toString().replaceAll("-", "");
+                //写入申请记录
+                query.update(conn, "insert into pid_apply_record(record_id,client_id,apply_time,limit,table_name,recycle)" +
+                        "values(?,?,?,?,?,?)",record_id,"PID导入",new java.sql.Timestamp(new Date().getTime()),(pid.getEndNum()-pid.getStartNum()+1),pid.getPidType(),"1");
+                //写入号段表
+                query.update(conn, "insert into pid_segment_usage(usage_id,record_id,table_name,start_num,end_num,status)" +
+                        "values(?,?,?,?,?,?)",usage_id,record_id,pid.getPidType(),pid.getStartNum(),pid.getEndNum(),0);
+                //更新表最大值
+                query.update(conn, "update pid_max_per_table t set pid_max_value=?  where t.table_name=? and t.pid_max_value<?",
+                        pid.getEndNum(),pid.getPidType(),pid.getEndNum());
+                
+            }
+        } catch (Exception e) {
+            DbUtils.rollback(conn);
+            log.error("pid 导入出错："+e.getMessage(),e);
+            throw e;
+        } finally {
+            DbUtils.commitAndCloseQuietly(conn);
+        }
+        
+    }
 
     public List<PidSeg> applyPid(String clientId, String tableName, Integer limit, String clientIp, String clientTaskId) throws Exception {
         List<PidResponse.PidSeg> allPidSegs = new ArrayList<PidResponse.PidSeg>();

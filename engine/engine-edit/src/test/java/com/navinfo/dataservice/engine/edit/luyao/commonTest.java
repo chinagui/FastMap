@@ -495,5 +495,39 @@ public class commonTest extends InitApplication {
 
 		System.out.print("");
 	}
+	@Test
+	public void testArray() {
+
+	
+
+		System.out.print("");
+	}
+	
+	enum Grade {
+
+		rdLinkLimitTruck(1), rdLinkLimit(2);
+
+		private int value;
+
+		// 定义get方法返回数据
+		public int getValue() {
+			return value;
+		}
+
+		private Grade(int value) {
+			this.value = value;
+		}
+	}
+	
+	
+	@Test
+	public void testEnum() {
+		int i = Grade.rdLinkLimit.getValue();
+
+		int y = Grade.rdLinkLimitTruck.getValue();
+		
+		
+		System.out.print("");
+	}
 
 }

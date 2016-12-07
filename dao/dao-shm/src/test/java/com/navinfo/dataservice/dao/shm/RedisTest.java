@@ -23,9 +23,9 @@ import redis.clients.jedis.Response;
  * Hello world!
  *
  */
-public class App 
+public class RedisTest 
 {
-	protected static Logger log = Logger.getLogger(App.class);
+	protected static Logger log = Logger.getLogger(RedisTest.class);
     public static void main( String[] args )
     {
     	JedisPoolConfig config = new JedisPoolConfig();

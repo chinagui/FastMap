@@ -7,6 +7,7 @@ import com.navinfo.dataservice.diff.exception.InitException;
 import com.navinfo.dataservice.diff.scanner.ChangeLogFiller;
 import com.navinfo.dataservice.diff.scanner.JavaChangeLogFiller;
 import com.navinfo.dataservice.diff.scanner.JavaDiffScanner;
+import com.navinfo.dataservice.diff.scanner.LogActionGenerator;
 import com.navinfo.dataservice.diff.scanner.LogGridCalculatorByCrossUser;
 import com.navinfo.dataservice.diff.scanner.LogOperationGenerator;
 import com.navinfo.dataservice.diff.scanner.LogGridCalculator;
@@ -55,6 +56,7 @@ public class DiffJob extends AbstractJob
 	protected VMThreadPoolExecutor logPoolExecutor;
 	protected VMThreadPoolExecutor logGridPoolExecutor;
 	protected JavaDiffScanner diffScanner;
+	protected LogActionGenerator logActGen;
 	protected LogOperationGenerator logOpGen;
 	protected ChangeLogFiller changeLogFiller;
 	protected LogGridCalculator gridCalc;
@@ -76,9 +78,12 @@ public class DiffJob extends AbstractJob
 			response("差分初始化完成。",null);
 			diffScan();
 			response("字段差分完成。",null);
-			logOpGen.generate();
+			String actId = logActGen.generate(jobInfo.getUserId(), "Diff"+jobInfo.getId(), jobInfo.getTaskId());
+			logOpGen.generate(actId);
 			if(logTables.size()>0){
-				fillLogDetail();
+				fillLogDetailOldNew();
+				fillLogDetailOb();
+				fillLogDetailGeo();
 				calcLogDetailGrid();
 			}
 			response("完整履历填充完成。",null);
@@ -193,7 +198,7 @@ public class DiffJob extends AbstractJob
 		log.debug("所有表差分完成,用时：" + (System.currentTimeMillis() - t) + "ms");
 	}
 
-	protected void fillLogDetail() {
+	protected void fillLogDetailOldNew() {
 		final CountDownLatch latch4Log = new CountDownLatch(logTables.size());
 		logPoolExecutor.addDoneSignal(latch4Log);
 		// 
@@ -224,6 +229,12 @@ public class DiffJob extends AbstractJob
 			throw new ServiceRtException("执行生成履历时发生异常", logPoolExecutor
 					.getExceptions().get(0));
 		log.debug("各生成履历任务执行完成,用时：" + (System.currentTimeMillis() - t) + "ms");
+	}
+	protected void fillLogDetailOb(){
+		
+	}
+	protected void fillLogDetailGeo(){
+		
 	}
 
 

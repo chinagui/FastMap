@@ -67,7 +67,7 @@ public class JobTest {
 		metaValidationRequestJSON.put("kdbDBId", 106);//元数据库dbId
 		metaValidationRequestJSON.put("ruleIds", ruleList);
 		metaValidationRequestJSON.put("timeOut", 600);
-	    int jobId=(int) apiService.createJob("checkCore", metaValidationRequestJSON, 3, "元数据库检查");
+	    int jobId=(int) apiService.createJob("checkCore", metaValidationRequestJSON, 3,0, "元数据库检查");
 	    System.out.println(jobId);
 try{
 	

@@ -18,6 +18,7 @@ import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdTmclocation;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.tmc.RdTmcLocationSelector;
 
 import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
@@ -38,20 +39,26 @@ public class RdTmcLocationSearch implements ISearch {
 	
 	@Override
 	public IObj searchDataByPid(int pid) throws Exception {
-		IObj obj = (IObj) new AbstractSelector(RdTmclocation.class,conn).loadById(pid, false);
+		RdTmcLocationSelector selector = new RdTmcLocationSelector(RdTmclocation.class,conn);
+		
+		IObj obj = selector.getById(pid, false, true);
 		return obj;
 	}
 
 	@Override
 	public List<? extends IObj> searchDataByPids(List<Integer> pidList) throws Exception {
 		
-		List<IRow> objList = new AbstractSelector(RdTmclocation.class,conn).loadByIds(pidList, false,true);
+		List<IRow> objList = new AbstractSelector(RdTmclocation.class,conn).loadByIds(pidList, false,false);
 		
 		List<IObj> tmcObjList = new ArrayList<>();
+		
+		RdTmcLocationSelector selector = new RdTmcLocationSelector(RdTmclocation.class,conn);
 		
 		for(IRow row : objList)
 		{
 			RdTmclocation location = (RdTmclocation) row;
+			List<IRow> tmcLinks = selector.loadTmclocationLinkByParentId(location.getPid(), false);
+			location.setLinks(tmcLinks);
 			tmcObjList.add(location);
 		}
 		return tmcObjList;

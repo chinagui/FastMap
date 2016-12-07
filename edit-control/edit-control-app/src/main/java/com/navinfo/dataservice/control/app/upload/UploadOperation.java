@@ -106,6 +106,7 @@ public class UploadOperation {
 	 */
 	@SuppressWarnings("static-access")
 	private JSONObject changeData(JSONArray ja) throws Exception {
+		Date startTime = new Date();
 		JSONObject retObj = new JSONObject();
 		List<String> errList = new ArrayList<String>();
 		Connection manConn = null;
@@ -239,6 +240,8 @@ public class UploadOperation {
 		} finally {
 			DBUtils.closeConnection(conn);
 			DBUtils.closeConnection(manConn);
+			Date endTime = new Date();
+			log.info("total time:"+ (endTime.getTime() - startTime.getTime())+"ms");
 		}
 	}
 

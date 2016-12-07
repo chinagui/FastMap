@@ -19,6 +19,7 @@ import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdTmclocation;
 import com.navinfo.dataservice.dao.glm.search.RdGscSearch;
 import com.navinfo.dataservice.dao.glm.search.RdTmcLocationSearch;
+import com.navinfo.dataservice.dao.glm.search.TmcPointSearch;
 import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.operation.Transaction;
 import com.navinfo.dataservice.engine.edit.search.SearchProcess;
@@ -105,9 +106,9 @@ public class RdTmcLocationTest extends InitApplication{
 		try {
 			conn = DBConnector.getInstance().getConnectionById(17);
 
-			RdTmcLocationSearch search = new RdTmcLocationSearch(conn);
+			TmcPointSearch search = new TmcPointSearch(conn);
 			
-			List<SearchSnapshot> searchDataByTileWithGap = search.searchDataByTileWithGap(215852, 99235, 18, 80);
+			List<SearchSnapshot> searchDataByTileWithGap = search.searchDataByTileWithGap(107924, 49616, 17, 80);
 			
 			System.out.println("data:"+ResponseUtils.assembleRegularResult(searchDataByTileWithGap));
 

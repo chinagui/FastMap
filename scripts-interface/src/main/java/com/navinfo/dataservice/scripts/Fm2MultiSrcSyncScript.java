@@ -44,7 +44,7 @@ public class Fm2MultiSrcSyncScript {
 			}
 			job.put("dbIds", dbIds);
 			//创建job,获取jobId
-			long jobId = JobService.getInstance().create("fm2MultiSrcSync", job, 0, "创建FM日库多源增量包");
+			long jobId = JobService.getInstance().create("fm2MultiSrcSync", job, 0,0, "创建FM日库多源增量包");
 			//创建管理记录
 			syncApi.insertFmMultiSrcSync(jobId,syncTime);
 			response.put("msg", "执行成功");

@@ -16,7 +16,6 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.dbutils.DbUtils;
 
 import com.navinfo.dataservice.api.edit.iface.FmMultiSrcSyncApi;
-import com.navinfo.dataservice.api.edit.model.FmMultiSrcSync;
 import com.navinfo.dataservice.api.edit.model.MultiSrcFmSync;
 import com.navinfo.dataservice.api.edit.upload.UploadPois;
 import com.navinfo.dataservice.api.job.model.JobInfo;

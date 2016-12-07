@@ -106,6 +106,11 @@ public class IxPoiName extends BasicRow {
 		}
 	}
 	
+	public boolean isShortName(){
+		if(this.nameClass==5){return true;}
+		else{return false;}
+	}
+	
 	@Override
 	public String tableName() {
 		return "IX_POI_NAME";

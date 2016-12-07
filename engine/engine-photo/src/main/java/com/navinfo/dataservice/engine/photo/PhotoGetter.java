@@ -2,6 +2,7 @@ package com.navinfo.dataservice.engine.photo;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -39,6 +40,12 @@ public class PhotoGetter {
 		} else {
 			return FileUtils.makeSmallImage(photo);
 		}
+	}
+	
+	public List<Map<String, Object>> getPhotosByRowkey(JSONArray rowkeys) throws Exception {
+		HBaseController control = new HBaseController();
+		List<Map<String, Object>> photos = control.getPhotosByRowkey(rowkeys);
+		return photos;
 	}
 
 	/**

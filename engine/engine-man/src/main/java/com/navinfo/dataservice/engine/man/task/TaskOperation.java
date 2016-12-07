@@ -2015,7 +2015,7 @@ public class TaskOperation {
 		try{
 			QueryRunner run = new QueryRunner();
 			String querySql="SELECT B.BLOCK_MAN_ID BLOCK_MAN_ID,B.TASK_ID TASK_ID,B.COLLECT_GROUP_ID COLLECT_GROUP_ID,B.DAY_EDIT_GROUP_ID DAY_EDIT_GROUP_ID "
-					+ "FROM BLOCK_MAN B WHERE B.STATUS= ? AND B.TASK_ID = ?";
+					+ "FROM BLOCK_MAN B WHERE B.STATUS= ? AND B.TASK_ID = ? and b.LATEST=1";
 			Object[] params = {blockManStatus,taskId};		
 			ResultSetHandler<Map<String,Object>> rsh = new ResultSetHandler<Map<String,Object>>() {
 				@Override
@@ -2051,7 +2051,7 @@ public class TaskOperation {
 	public static List<Map<String, Object>> getTaskByCityId(Connection conn,long cityId,long taskStatus) throws Exception{
 		try{
 			QueryRunner run = new QueryRunner();
-			String querySql="SELECT TASK_ID,CITY_ID,MONTH_EDIT_GROUP_ID FROM TASK WHERE CITY_ID=? AND TASK_TYPE=?";
+			String querySql="SELECT TASK_ID,CITY_ID,MONTH_EDIT_GROUP_ID FROM TASK WHERE CITY_ID=? AND TASK_TYPE=? and latest=1";
 			Object[] params = {cityId,taskStatus};		
 			ResultSetHandler<List<Map<String, Object>>> rsh = new ResultSetHandler<List<Map<String, Object>>>() {
 				@Override

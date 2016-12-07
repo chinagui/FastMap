@@ -369,4 +369,22 @@ public class DefaultObjImportor extends AbstractOperation{
 		// TODO Auto-generated method stub
 		return "DefaultObjImportor";
 	}
+	
+	public String camelToUnderline(String param) {
+		if (param == null || "".equals(param.trim())) {
+			return "";
+		}
+		int len = param.length();
+		StringBuilder sb = new StringBuilder(len);
+		for (int i = 0; i < len; i++) {
+			char c = param.charAt(i);
+			if (Character.isUpperCase(c)) {
+				sb.append(UNDERLINE);
+				sb.append(c);
+			} else {
+				sb.append(Character.toUpperCase(c));
+			}
+		}
+		return sb.toString();
+	}
 }

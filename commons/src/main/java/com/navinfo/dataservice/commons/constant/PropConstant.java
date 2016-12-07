@@ -93,4 +93,5 @@ public class PropConstant {
 	public static final String mongoPort="mongo_port";
 	
 	public static final String multisrcDaySyncUrl="multisrc.day.sync.url";
+	public static final String seasonVersion="SEASON.VERSION";
 }

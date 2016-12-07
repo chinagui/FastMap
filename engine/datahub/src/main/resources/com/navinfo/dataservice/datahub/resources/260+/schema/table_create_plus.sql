@@ -63,32 +63,32 @@ create table POI_EDIT_MULTISRC
 -- Create table
 create table POI_COLUMN_STATUS
 (
-  ROW_ID             RAW(16) not null,
+  PID                NUMBER(10) not null,
   WORK_ITEM_ID       VARCHAR2(50),
   FIRST_WORK_STATUS  NUMBER(1) default 1,
   SECOND_WORK_STATUS NUMBER(1) default 1,
   HANDLER            NUMBER(10),
-  TASK_ID            NUMBER(10)
+  TASK_ID            NUMBER(10),
+  APPLY_DATE		 TIMESTAMP
 );
 -- Add comments to the table 
 comment on table POI_COLUMN_STATUS
-  is '精编作业状态表';
+  is 'POI������ҵ״̬��';
 -- Add comments to the columns 
-comment on column POI_COLUMN_STATUS.ROW_ID
-  is 'poi表row_id';
+comment on column POI_COLUMN_STATUS.PID
+  is 'POI ID';
 comment on column POI_COLUMN_STATUS.WORK_ITEM_ID
-  is '作业项规则号';
+  is '��ҵ��ID';
 comment on column POI_COLUMN_STATUS.FIRST_WORK_STATUS
-  is '一级作业项状态';
+  is 'һ����ҵ����ҵ״̬';
 comment on column POI_COLUMN_STATUS.SECOND_WORK_STATUS
-  is '二级作业项状态';
+  is '������ҵ����ҵ״̬';
 comment on column POI_COLUMN_STATUS.HANDLER
-  is '申请人';
+  is '������ҵԱID';
 comment on column POI_COLUMN_STATUS.TASK_ID
-  is '月编专项子任务id';
--- Create/Recreate primary, unique and foreign key constraints 
-alter table POI_COLUMN_STATUS
-  add constraint PK_POI_COLUMN_STATUS primary key (ROW_ID);
+  is '�����';
+comment on column POI_COLUMN_STATUS.APPLY_DATE
+  is '����ʱ��';
 
 create table POI_COLUMN_WORKITEM_CONF
 (
@@ -119,49 +119,41 @@ create table POI_COLUMN_OP_CONF
   TYPE                 NUMBER(1)
 );
   
--- Create table
-create table POI_DEEP_STATUS
-(
-  ROW_ID      RAW(16) not null,
-  HANDLER     NUMBER(10),
-  STATUS      NUMBER(1) default 1 not null,
-  TYPE        NUMBER(1) default 1 not null,
-  UPDATE_DATE TIMESTAMP(6),
-  CONSTRAINT PK_POI_DEEP_STATUS PRIMARY KEY(ROW_ID)
-);
--- Add comments to the columns 
-comment on column POI_DEEP_STATUS.ROW_ID
-  is '外键，POI的row_id';
-comment on column POI_DEEP_STATUS.HANDLER
-  is '作业员ID';
-comment on column POI_DEEP_STATUS.STATUS
-  is '1：待作业,2：已作业,3：已提交';
-comment on column POI_DEEP_STATUS.TYPE
-  is '1：通用，2：停车场，3汽车租赁';
-comment on column POI_DEEP_STATUS.UPDATE_DATE
-  is '记录更新时间';
-
 /* GDB+ log part */
+CREATE TABLE LOG_ACTION(
+    ACT_ID RAW(16) NOT NULL,
+    US_ID NUMBER(36) DEFAULT 0,
+    OP_CMD VARCHAR2(1000),
+    SRC_DB NUMBER(1) DEFAULT 0,
+    STK_ID NUMBER(10) DEFAULT 0,
+    CONSTRAINT PK_LOG_ACT PRIMARY KEY(ACT_ID)
+);
+CREATE INDEX IX_LOG_ACT_STKID ON LOG_ACTION(STK_ID);
+
+CREATE SEQUENCE LOG_OP_SEQ MINVALUE 1 MAXVALUE 99999999999 START WITH 1 INCREMENT BY 1 CACHE 20;
 create table LOG_OPERATION (
     OP_ID RAW(16) NOT NULL,
-    US_ID NUMBER(36) DEFAULT 0,
-    OP_CMD VARCHAR2(200),
+    ACT_ID RAW(16) NOT NULL,
     OP_DT TIMESTAMP,
-    OP_SG NUMBER(1) DEFAULT 0 not null
-        check (OP_SG in (0,1,2,3,4,5)) disable,
+    OP_SEQ NUMBER(12) DEFAULT 0 not null,
     COM_STA NUMBER(1) DEFAULT 0 NOT NULL
         CHECK(COM_STA IN (0,1)) DISABLE,
     COM_DT TIMESTAMP,
     LOCK_STA NUMBER(1) DEFAULT 0 NOT NULL
         CHECK(LOCK_STA IN (0,1)) DISABLE,
+    constraint FK_LOG_OP_ACT foreign key (ACT_ID)
+         references LOG_ACTION (ACT_ID) disable,
     constraint PK_LOG_OP primary key (OP_ID)
 );
+CREATE INDEX IX_LOG_OP_DT ON LOG_OPERATION(OP_DT);
 
 create table LOG_DETAIL (
   ROW_ID RAW(16) NOT NULL,
     OP_ID RAW(16) NOT NULL,
-	OB_NM VARCHAR(30),
-	OB_PID NUMBER(10),
+  OB_NM VARCHAR(30),
+  OB_PID NUMBER(10) DEFAULT 0,
+  GEO_NM VARCHAR(30),
+  GEO_PID NUMBER(10) DEFAULT 0,
     TB_NM VARCHAR2(30),
     OLD CLOB,
     NEW CLOB,
@@ -201,26 +193,29 @@ CREATE TABLE LOG_DAY_RELEASE
   CONSTRAINT PK_LOG_RELEASE PRIMARY KEY(OP_ID)
 );
 -- Add comments to the columns 
-COMMENT ON TABLE LOG_DAY_RELEASE IS '�����ճ�Ʒ״̬��';
+COMMENT ON TABLE LOG_DAY_RELEASE IS '�տ��Ʒ������';
 COMMENT ON COLUMN LOG_DAY_RELEASE.OP_ID
-  IS '���� ��Ӧ log_operation.op_id';
+  IS '�ο�log_operation.op_id';
 COMMENT ON COLUMN LOG_DAY_RELEASE.REL_POI_STA
-  IS 'POI ��Ʒ״̬��0 ���� 1����';
+  IS 'POI��Ʒ״̬';
 COMMENT ON COLUMN LOG_DAY_RELEASE.REL_POI_DT
-  IS 'POI��Ʒʱ��';
+  IS 'POI��Ʒʱ��';
 COMMENT ON COLUMN LOG_DAY_RELEASE.REL_ALL_STA
-  IS 'POI+ROAD ��Ʒ״̬��0 ���� 1����';
+  IS 'POI+ROAD��Ʒ״̬';
 COMMENT ON COLUMN LOG_DAY_RELEASE.REL_ALL_DT
-  IS 'POI+ROAD ��Ʒʱ��';
+  IS 'POI+ROAD��Ʒʱ��';
 COMMENT ON COLUMN LOG_DAY_RELEASE.REL_POI_LOCK
-  IS 'POI ��Ʒ�� 0 ���� 1����';
+  IS 'POI ��Ʒ��״̬';
 COMMENT ON COLUMN LOG_DAY_RELEASE.REL_ALL_LOCK
-  IS 'POI+ROAD ��Ʒ��0 ���� 1����';
+  IS 'POI+ROAD��Ʒ��״̬';
 --ADD INDEXES
 create bitmap index IDX_LOG_DAY_REL_1 on LOG_DAY_RELEASE (rel_poi_sta);
 create bitmap index IDX_LOG_DAY_REL_2 on LOG_DAY_RELEASE (rel_all_sta);
 create bitmap index IDX_LOG_DAY_REL_3 on LOG_DAY_RELEASE (rel_poi_lock);
 create bitmap index IDX_LOG_DAY_REL_4 on LOG_DAY_RELEASE (rel_all_lock);
+
+
+/* ck */
 
 CREATE TABLE CK_EXCEPTION_GRID(
   CK_ROW_ID RAW(16) NOT NULL,

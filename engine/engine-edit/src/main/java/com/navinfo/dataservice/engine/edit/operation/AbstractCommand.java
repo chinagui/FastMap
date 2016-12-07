@@ -11,6 +11,24 @@ import com.navinfo.dataservice.dao.glm.iface.ICommand;
 public abstract class AbstractCommand implements ICommand {
 	private int dbId;
 	private long userId;
+	private int taskId;
+	private int dbType;
+
+	public int getTaskId() {
+		return taskId;
+	}
+
+	public void setTaskId(int taskId) {
+		this.taskId = taskId;
+	}
+
+	public int getDbType() {
+		return dbType;
+	}
+
+	public void setDbType(int dbType) {
+		this.dbType = dbType;
+	}
 
 	public long getUserId() {
 		return userId;

@@ -48,13 +48,17 @@ public class RdTmcLocationSearch implements ISearch {
 	@Override
 	public List<? extends IObj> searchDataByPids(List<Integer> pidList) throws Exception {
 		
-		List<IRow> objList = new AbstractSelector(RdTmclocation.class,conn).loadByIds(pidList, false,true);
+		List<IRow> objList = new AbstractSelector(RdTmclocation.class,conn).loadByIds(pidList, false,false);
 		
 		List<IObj> tmcObjList = new ArrayList<>();
+		
+		RdTmcLocationSelector selector = new RdTmcLocationSelector(RdTmclocation.class,conn);
 		
 		for(IRow row : objList)
 		{
 			RdTmclocation location = (RdTmclocation) row;
+			List<IRow> tmcLinks = selector.loadTmclocationLinkByParentId(location.getPid(), false);
+			location.setLinks(tmcLinks);
 			tmcObjList.add(location);
 		}
 		return tmcObjList;

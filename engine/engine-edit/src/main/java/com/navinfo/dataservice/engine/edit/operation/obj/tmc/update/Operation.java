@@ -134,19 +134,25 @@ public class Operation implements IOperation {
 			RdLink link = (RdLink) row;
 			if(!hasHandledLinkPids.contains(link.getPid()))
 			{
+				boolean flag = false;
 				if (link.getsNodePid() == inNodePid) {
 					// 如果作用方向和该link的起点到终点的划线方向一致，则赋值为'1'
 					direct = 1;
 					// 该link的终点作为下一个link的进入点
 					inNodePid = link.geteNodePid();
+					flag = true;
 				} else if (link.geteNodePid() == inNodePid) {
 					// 如果作用方向和该link的起点到终点的划线方向相反，则赋值为'2'
 					direct = 2;
 					// 该link的起点作为下一个link的进入点
 					inNodePid = link.getsNodePid();
+					flag = true;
 				}
-				updateLocationLink(result,link.getPid(), direct, locDirect, tmcLocationLinkMap);
-				hasHandledLinkPids.add(link.getPid());
+				if(flag)
+				{
+					updateLocationLink(result,link.getPid(), direct, locDirect, tmcLocationLinkMap);
+					hasHandledLinkPids.add(link.getPid());
+				}
 			}
 		}
 		//向baseLink往前计算link方向
@@ -154,19 +160,25 @@ public class Operation implements IOperation {
 			RdLink link = (RdLink) row;
 			if(!hasHandledLinkPids.contains(link.getPid()))
 			{
+				boolean flag = false;
 				if (link.geteNodePid() == outNodePid) {
 					// 如果作用方向和该link的起点到终点的划线方向一致，则赋值为'1'
 					direct = 1;
 					// 该link的终点作为下一个link的进入点
 					outNodePid = link.getsNodePid(); 
+					flag = true;
 				} else if (link.getsNodePid() == outNodePid) {
 					// 如果作用方向和该link的起点到终点的划线方向相反，则赋值为'2'
 					direct = 2;
 					// 该link的起点作为下一个link的进入点
 					outNodePid = link.geteNodePid();
+					flag = true;
 				}
-				updateLocationLink(result,link.getPid(), direct, locDirect, tmcLocationLinkMap);
-				hasHandledLinkPids.add(link.getPid());
+				if(flag)
+				{
+					updateLocationLink(result,link.getPid(), direct, locDirect, tmcLocationLinkMap);
+					hasHandledLinkPids.add(link.getPid());
+				}
 			}
 		}
 

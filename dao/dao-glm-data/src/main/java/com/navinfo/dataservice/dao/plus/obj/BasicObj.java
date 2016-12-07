@@ -16,6 +16,8 @@ import com.navinfo.navicommons.database.sql.RunnableSQL;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.vividsolutions.jts.geom.Geometry;
 
+import net.sf.json.JSONObject;
+
 
 /** 
  * @ClassName: BasicObj:有主键PID即为一个对象
@@ -309,5 +311,10 @@ public abstract class BasicObj {
 		if(mainrow.getOpType().equals(OperationType.INSERT)){}
 		return false;
 	}
+	
+	//根据json中的key创建对象
+	public abstract BasicRow createSubRowByName(String subRowName) throws Exception;
+	//根据json中的key获取对象
+	public abstract List<BasicRow> getSubRowByName(String subRowName) throws Exception;
 
 }

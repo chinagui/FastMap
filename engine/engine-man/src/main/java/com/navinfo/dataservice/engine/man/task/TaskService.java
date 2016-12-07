@@ -23,6 +23,7 @@ import com.navinfo.dataservice.engine.man.inforMan.InforManOperation;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoOperation;
 import com.navinfo.dataservice.commons.json.JsonOperation;
 import com.navinfo.dataservice.api.man.model.Task;
+import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.dao.mq.email.EmailPublisher;
@@ -185,6 +186,10 @@ public class TaskService {
 				msgParam.put("relateObject", "TASK");
 				msgParam.put("relateObjectId", task.get("taskId"));
 				map.put("msgParam", msgParam.toString());
+				List<Long> taskGroupIds = new ArrayList<Long>();
+				taskGroupIds.add((Long) task.get("monthEditGroupId"));
+				
+				map.put("taskGroupIds", taskGroupIds);
 				msgContentList.add(map);
 			}
 			if(msgContentList.size()>0){
@@ -198,7 +203,7 @@ public class TaskService {
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
 		}
-		return "发布成功";
+		return "任务批量发布"+taskIds.size()+"个成功，0个失败";
 		
 	}
 	/**
@@ -268,18 +273,22 @@ public class TaskService {
 					JSONObject msgParam = new JSONObject();
 					msgParam.put("relateObject", "TASK");
 					msgParam.put("relateObjectId", task.get("taskId"));
-					map.put("msgParam", msgParam.toString());
-					msgContentList.add(map);
-					
+					map.put("msgParam", msgParam.toString());			
 					groupIdList.add((Long) task.get("monthEditGroupId"));
+					List<Long> taskGroupIds = new ArrayList<Long>();
+					taskGroupIds.add((Long) task.get("monthEditGroupId"));
 					//查询block分配的采集和日编作业组组长id
 					if(task.get("taskId") != null){
 						Map<String, Object> blockMan = TaskOperation.getBlockManByTaskId(conn, (long) task.get("taskId"), 1);
 						if(blockMan != null){
 							groupIdList.add((Long) blockMan.get("collectGroupId"));
 							groupIdList.add((Long) blockMan.get("dayEditGroupId"));
+							taskGroupIds.add((Long) blockMan.get("collectGroupId"));
+							taskGroupIds.add((Long) blockMan.get("dayEditGroupId"));
 						}
 					}
+					map.put("taskGroupIds", taskGroupIds);
+					msgContentList.add(map);
 				}
 				if(msgContentList.size()>0){
 					taskPushMsg(conn,msgTitle,msgContentList, groupIdList, userId);
@@ -305,20 +314,13 @@ public class TaskService {
 	 * 任务:XXX(任务名称)内容发生变更，请关注*/
 	public void taskPushMsg(Connection conn,String msgTitle,List<Map<String, Object>> msgContentList, List<Long> groupIdList, long pushUser) throws Exception {
 		//查询所有生管角色
-		String userSql="SELECT DISTINCT M.USER_ID FROM ROLE_USER_MAPPING M WHERE M.ROLE_ID =3";
-		List<Integer> userIdList=UserInfoOperation.getUserListBySql(conn, userSql);
-		//查询分配的作业组组长
-		List<Long> leaderIdByGroupId = UserInfoOperation.getLeaderIdByGroupId(conn, groupIdList);
-		for (Long leaderId : leaderIdByGroupId) {
-			userIdList.add(leaderId.intValue());
-		}
-		for(int userId:userIdList){
-			//查询用户名称
-			Map<String, Object> userInfo = UserInfoOperation.getUserInfoByUserId(conn, userId);
-			String pushUserName = null;
-			if(userInfo != null && userInfo.size() > 0){
-				pushUserName = (String) userInfo.get("userRealName");
-			}
+		String userSql="SELECT DISTINCT M.USER_ID, I.USER_REAL_NAME,I.USER_EMAIL"
+				+ "  FROM ROLE_USER_MAPPING M, USER_INFO I"
+				+ " WHERE M.ROLE_ID = 3"
+				+ "   AND M.USER_ID = I.USER_ID";
+		Map<Long, UserInfo> userIdList=UserInfoOperation.getUserInfosBySql(conn, userSql);
+		for(Long userId:userIdList.keySet()){
+			String pushUserName =userIdList.get(userId).getUserRealName();
 			for(Map<String, Object> map:msgContentList){
 				//发送消息到消息队列
 				String msgContent = (String) map.get("msgContent");
@@ -326,21 +328,35 @@ public class TaskService {
 				SysMsgPublisher.publishMsg(msgTitle, msgContent, pushUser, new long[]{userId}, 2, msgParam, pushUserName);
 			}
 		}
+		//查询分配的作业组组长
+		Map<Long, UserInfo> leaderIdByGroupId = UserInfoOperation.getLeaderIdByGroupId(conn, groupIdList);
+		//分别发送给对应的日编/采集/月编组长
+		for(Map<String, Object> map:msgContentList){
+			//发送消息到消息队列
+			String msgContent = (String) map.get("msgContent");
+			String msgParam = (String) map.get("msgParam");
+			List<Long> groupIds=(List<Long>) map.get("taskGroupIds");
+			for(Long groupId:groupIds){
+				SysMsgPublisher.publishMsg(msgTitle, msgContent, pushUser,new long[]{Long.valueOf(leaderIdByGroupId.get(groupId).getUserId())},
+						2, msgParam,leaderIdByGroupId.get(groupId).getUserRealName());
+			}
+		}
+		
 		//发送邮件
 		String toMail = null;
 		String mailTitle = null;
 		String mailContent = null;
 		//查询用户详情
-		for (int userId : userIdList) {
-			Map<String, Object> userInfo = UserInfoOperation.getUserInfoByUserId(conn, userId);
-			if(userInfo != null && userInfo.get("userEmail") != null){
+		for (Long userId : userIdList.keySet()) {
+			UserInfo userInfo = userIdList.get(userId);
+			if(userInfo.getUserEmail()!= null&&!userInfo.getUserEmail().isEmpty()){
 				for (Map<String, Object> map : msgContentList) {
 					//判断邮箱格式
 					String check = "^([a-z0-9A-Z]+[-|_|\\.]?)+[a-z0-9A-Z]@([a-z0-9A-Z]+(-[a-z0-9A-Z]+)?\\.)+[a-zA-Z]{2,}$";
 	                Pattern regex = Pattern.compile(check);
-	                Matcher matcher = regex.matcher((CharSequence) userInfo.get("userEmail"));
+	                Matcher matcher = regex.matcher((CharSequence) userInfo.getUserEmail());
 	                if(matcher.matches()){
-	                	toMail = (String) userInfo.get("userEmail");
+	                	toMail = userInfo.getUserEmail();
 	                	mailTitle = msgTitle;
 	                	mailContent = (String) map.get("msgContent");
 	                	//发送邮件到消息队列
@@ -348,6 +364,29 @@ public class TaskService {
 	                	EmailPublisher.publishMsg(toMail, mailTitle, mailContent);
 	                }
 				}
+			}
+		}
+		
+		//分别发送给对应的日编/采集/月编组长
+		for(Map<String, Object> map:msgContentList){
+			//发送消息到消息队列
+			String msgContent = (String) map.get("msgContent");
+			String msgParam = (String) map.get("msgParam");
+			List<Long> groupIds=(List<Long>) map.get("taskGroupIds");
+			for(Long groupId:groupIds){
+				UserInfo userInfo = leaderIdByGroupId.get(groupId);
+				//判断邮箱格式
+				String check = "^([a-z0-9A-Z]+[-|_|\\.]?)+[a-z0-9A-Z]@([a-z0-9A-Z]+(-[a-z0-9A-Z]+)?\\.)+[a-zA-Z]{2,}$";
+                Pattern regex = Pattern.compile(check);
+                Matcher matcher = regex.matcher((CharSequence) userInfo.getUserEmail());
+                if(matcher.matches()){
+                	toMail = userInfo.getUserEmail();
+                	mailTitle = msgTitle;
+                	mailContent = (String) map.get("msgContent");
+                	//发送邮件到消息队列
+                	//SendEmail.sendEmail(toMail, mailTitle, mailContent);
+                	EmailPublisher.publishMsg(toMail, mailTitle, mailContent);
+                }
 			}
 		}
 	}
@@ -545,18 +584,23 @@ public class TaskService {
 						JSONObject msgParam = new JSONObject();
 						msgParam.put("relateObject", "TASK");
 						msgParam.put("relateObjectId", task.get("taskId"));
-						map.put("msgParam", msgParam.toString());
-						msgContentList.add(map);
+						map.put("msgParam", msgParam.toString());						
 						
 						groupIdList.add((Long) task.get("monthEditGroupId"));
+						List<Long> taskGroupIds = new ArrayList<Long>();
+						taskGroupIds.add((Long) task.get("monthEditGroupId"));
 						//查询block分配的采集和日编作业组组长id
 						if(task.get("taskId") != null){
-							Map<String, Object> blockMan = TaskOperation.getBlockManByTaskId(conn, (long) task.get("taskId"),0);
+							Map<String, Object> blockMan = TaskOperation.getBlockManByTaskId(conn, (long) task.get("taskId"), 1);
 							if(blockMan != null){
 								groupIdList.add((Long) blockMan.get("collectGroupId"));
 								groupIdList.add((Long) blockMan.get("dayEditGroupId"));
+								taskGroupIds.add((Long) blockMan.get("collectGroupId"));
+								taskGroupIds.add((Long) blockMan.get("dayEditGroupId"));
 							}
 						}
+						map.put("taskGroupIds", taskGroupIds);
+						msgContentList.add(map);
 					}
 					if(msgContentList.size()>0){
 						taskPushMsg(conn,msgTitle,msgContentList, groupIdList, userId);

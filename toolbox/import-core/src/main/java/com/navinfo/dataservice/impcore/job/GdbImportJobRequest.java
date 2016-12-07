@@ -21,6 +21,7 @@ public class GdbImportJobRequest extends AbstractJobRequest {
 	protected List<Integer> grids;
 	protected String stopTime;
 	protected boolean ignoreError;
+	protected String logMoveType="default";//如果是copBatch
 	
 	
 	@Override
@@ -85,6 +86,14 @@ public class GdbImportJobRequest extends AbstractJobRequest {
 
 	public void setIgnoreError(boolean ignoreError) {
 		this.ignoreError = ignoreError;
+	}
+
+	public String getLogMoveType() {
+		return logMoveType;
+	}
+
+	public void setLogMoveType(String logMoveType) {
+		this.logMoveType = logMoveType;
 	}
 
 	@Override

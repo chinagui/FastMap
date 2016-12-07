@@ -21,7 +21,7 @@ public class GlmGridCalculatorTest {
 			GlmGridCalculator calc = GlmGridCalculatorFactory.getInstance().create("250+");
 			
 			long t1 = System.currentTimeMillis();
-			String[] grids = calc.calc("RD_NODE", "29C263F79929BA8EE050A8C08304FE8E", conn);
+			String[] grids = calc.calc("RD_NODE", "29C263F79929BA8EE050A8C08304FE8E", conn).getGrids();
 			System.out.println("Time consuming:"+(System.currentTimeMillis()-t1)+"ms");
 			for(String s:grids){
 				System.out.println(s);

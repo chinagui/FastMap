@@ -33,7 +33,7 @@ public class JobMsgPublisher {
 		MsgPublisher.publish2WorkQueue("create_job", jobMsg.toString());
 		return "";
 	}
-	public static void runJob(long jobId,String jobGuid,String type,JSONObject jobRequest,long userId)throws Exception{
+	public static void runJob(long jobId,String jobGuid,String type,JSONObject jobRequest,long userId,long taskId)throws Exception{
 		if(jobRequest==null){
 			throw new Exception("jobRequest不能为空");
 		}
@@ -43,6 +43,7 @@ public class JobMsgPublisher {
 		jobMsg.put("type", type);
 		jobMsg.put("request", jobRequest);
 		jobMsg.put("userId", userId);
+		jobMsg.put("taskId", taskId);
 		MsgPublisher.publish2WorkQueue("run_job", jobMsg.toString());
 	}
 

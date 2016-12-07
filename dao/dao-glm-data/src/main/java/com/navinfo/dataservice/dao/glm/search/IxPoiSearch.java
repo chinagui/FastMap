@@ -730,7 +730,7 @@ public class IxPoiSearch implements ISearch {
 	 * @return
 	 * @throws Exception
 	 */
-	public JSONArray searchColumnPoiByPid(String firstWordItem,String secondWorkItem,List<Integer> pids,String type,long userId) throws Exception {
+	public JSONArray searchColumnPoiByPid(String firstWordItem,String secondWorkItem,List<Integer> pids,String type,long userId,int status,JSONObject classifyRules,JSONObject ckRules) throws Exception {
 		
 		JSONArray dataList = new JSONArray();
 		
@@ -772,8 +772,11 @@ public class IxPoiSearch implements ISearch {
 				//获取各专项共用字段
 				poiObj=getCommenfields(pid,type,poi);
 				poiObj.put("userId", userId);
-				
-				//特殊字段
+				    //classifyRules赋值,避免每条数据查一次库，整体查出再处理；
+				poiObj.put("classifyRules", classifyRules.get(Integer.toString(pid)));
+				    //ckRules赋值，获取检查错误
+				poiObj.put("ckRules", ckRules.get(Integer.toString(pid)));
+				//获取特殊字段
 				poiObj=getUnCommenfields(firstWordItem,secondWorkItem,pid,type,poi,poiObj);
 				dataList.add(poiObj);
 			}	
@@ -794,8 +797,6 @@ public class IxPoiSearch implements ISearch {
 	 * @throws Exception
 	 */
 	private JSONObject getCommenfields(int pid,String type,IxPoi poi) throws Exception {
- 
-		boolean isLock = false;
 		try{
 			JSONObject dataObj = new JSONObject();
 			dataObj.put("pid", pid);
@@ -858,8 +859,6 @@ public class IxPoiSearch implements ISearch {
 	 * @throws Exception
 	 */
 	private JSONObject getUnCommenfields(String firstWordItem,String secondWorkItem,int pid,String type,IxPoi poi,JSONObject dataObj) throws Exception {
- 
-		boolean isLock = false;
 		try{
 			
 			//parentName 当二级项作业为nameUnify时，取该poi的父名称（官方标准化中文）
@@ -869,7 +868,7 @@ public class IxPoiSearch implements ISearch {
 			//地址相关字段
 			dataObj=getAddressesAddressList(firstWordItem,secondWorkItem,poi,dataObj);
 			//oldOriginalEngName,newOriginalEngName,oldStandardEngName,newStandardEngName
-			dataObj=getNameBeforBatch(firstWordItem,secondWorkItem,poi,dataObj);
+			dataObj=getEngNameBeforBatch(firstWordItem,secondWorkItem,poi,dataObj);
 			
 			return dataObj;	
 		}catch (Exception e) {
@@ -951,12 +950,10 @@ public class IxPoiSearch implements ISearch {
 					if (!secondWorkItem.equals("confirmAliasEngName")&&!secondWorkItem.equals("officalStandardAliasEngName")) {
 						List<String> nameList = new ArrayList<String>();
 						if (name.getLangCode().equals("ENG") && name.getNameType() == 2 && name.getNameClass()== 1) {
-							if (name.getLangCode().equals("ENG")) {
-								String[] wordList = name.getName().split(" ");
-								for (String word:wordList) {
-									if (ENGSHORTMAP.containsKey(word)) {
-										nameList.add(word + "&" + ENGSHORTMAP.get(word));
-									}
+							String[] wordList = name.getName().split(" ");
+							for (String word:wordList) {
+								if (ENGSHORTMAP.containsKey(word)) {
+									nameList.add(word + "&" + ENGSHORTMAP.get(word));
 								}
 							}
 						}
@@ -1008,7 +1005,6 @@ public class IxPoiSearch implements ISearch {
 						}	
 					}
 					addrArray.add(addrObj);
-					
 					//addressList赋值
 					List<String> addrList = new ArrayList<String>();
 					if (address.getLangCode().equals("ENG")) {
@@ -1036,11 +1032,39 @@ public class IxPoiSearch implements ISearch {
 	 * @return
 	 * @throws Exception
 	 */
-	private JSONObject getNameBeforBatch(String firstWordItem,String secondWorkItem,IxPoi poi,JSONObject dataObj) throws Exception {
+	private JSONObject getEngNameBeforBatch(String firstWordItem,String secondWorkItem,IxPoi poi,JSONObject dataObj) throws Exception {
 		LogReader logReader = new LogReader(conn);
 		JSONArray results = new JSONArray();
-		results=logReader.getHisByOperate("Day2MonthPreBatch","IX_POI_NAME","rowid");
+		List<IRow> nRows = poi.getNames();
+		String oldOriginalEngName="",newOriginalEngName="",oldStandardEngName="",newStandardEngName="";
 		try{
+			for (IRow nRow:nRows) {
+				IxPoiName name = (IxPoiName) nRow;
+				//官方原始英文改前改后
+				if (name.getLangCode().equals("ENG") && name.getNameType() == 2 && name.getNameClass()== 1){
+					String rowId = name.getRowId();
+					results=logReader.getHisByOperate("Day2MonthPreBatch","IX_POI_NAME",rowId);
+					if (results.size()>0){
+						JSONObject result =(JSONObject) results.get(0);
+						oldOriginalEngName=result.getString("old");
+						newOriginalEngName=result.getString("new");
+					}
+				}
+				//官方标准化英文改前改后
+				if (name.getLangCode().equals("ENG") && name.getNameType() == 1 && name.getNameClass()== 1){
+					String rowId = name.getRowId();
+					results=logReader.getHisByOperate("Day2MonthPreBatch","IX_POI_NAME",rowId);
+					if (results.size()>0){
+						JSONObject result =(JSONObject) results.get(0);
+						oldStandardEngName=result.getString("old");
+						newStandardEngName=result.getString("new");
+					}
+				}
+			}
+			dataObj.put("oldOriginalEngName", oldOriginalEngName);
+			dataObj.put("newOriginalEngName", newOriginalEngName);
+			dataObj.put("oldStandardEngName", oldStandardEngName);
+			dataObj.put("newStandardEngName", newStandardEngName);
 			return dataObj;
 		}catch (Exception e) {
 			throw e;

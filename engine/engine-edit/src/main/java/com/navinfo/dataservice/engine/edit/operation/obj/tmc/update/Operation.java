@@ -61,29 +61,195 @@ public class Operation implements IOperation {
 
 		JSONObject content = command.getUpdateContent();
 
+		// 拓补操作更新主表属性信息
+		updateTmcLinkAttribute(content, tmclocation, result);
+
+		// 属性面板修改子表属性信息数据
+		if (content.containsKey("links")) {
+			JSONArray links = content.getJSONArray("links");
+
+			this.updateLinks(result, tmclocation, links);
+		}
+		
+		if(!content.containsKey("link"))
+		{
+			return null;
+		}
+		// 拓补操作更新子表信息
 		Map<Integer, RdTmclocationLink> tmcLocationLinkMap = new HashMap<>();
 
-		// direct = -1代表没有修改方向
-		int direct = -1;
+		// 判断是否修改tmc匹配信息的方向：包含direct参数,并且不为-1;
+		for (IRow row : tmclocation.getLinks()) {
+			RdTmclocationLink tmcLink = (RdTmclocationLink) row;
 
-		if (content.containsKey("direct")) {
-			direct = content.getInt("direct");
+			tmcLocationLinkMap.put(tmcLink.getLinkPid(), tmcLink);
 		}
 
 		// locDirect 取原始默认值，如果参数包含这个，代表修改这个方向
-		int locDirect = ((RdTmclocationLink)tmclocation.getLinks().get(0)).getLocDirect();
+		int locDirect = ((RdTmclocationLink) tmclocation.getLinks().get(0)).getLocDirect();
 
 		if (content.containsKey("locDirect")) {
 			locDirect = content.getInt("locDirect");
 		}
 
-		if (content.containsKey("objStatus")) {
-			// 判断是否修改tmc匹配信息的方向：包含direct参数,并且不为-1;
-			for (IRow row : tmclocation.getLinks()) {
-				RdTmclocationLink tmcLink = (RdTmclocationLink) row;
+		JSONObject obj = content.getJSONObject("link");
 
-				tmcLocationLinkMap.put(tmcLink.getLinkPid(), tmcLink);
+		int linkPid = obj.getInt("linkPid");
+
+		int direct = obj.getInt("direct");
+
+		// 子表拓补修改
+		JSONArray links = content.getJSONArray("linkPids");
+
+		RdLinkSelector selector = new RdLinkSelector(conn);
+
+		@SuppressWarnings("unchecked")
+		List<IRow> linkList = selector.loadByIds((List<Integer>) JSONArray.toCollection(links, Integer.class), true,
+				false);
+
+		int inNodePid = 0;
+
+		int outNodePid = 0;
+
+		List<Integer> hasHandledLinkPids = new ArrayList<>();
+
+		for (IRow row : linkList) {
+			RdLink link = (RdLink) row;
+
+			if (link.getPid() == linkPid) {
+				// 1代表和link的划线方向相同，则下一条link判断方向关系以该link的eNode为判断依据
+				if (direct == 1) {
+					inNodePid = link.geteNodePid();
+
+					outNodePid = link.getsNodePid();
+				} else if (direct == 2) {
+					// 2代表和link的划线方向相反，则下一条link判断方向关系以该link的sNode为判断依据
+					inNodePid = link.getsNodePid();
+
+					outNodePid = link.geteNodePid();
+				}
+				updateLocationLink(result,link.getPid(), direct, locDirect, tmcLocationLinkMap);
+				hasHandledLinkPids.add(link.getPid());
+				break;
 			}
+		}
+		//向baseLink计算link方向
+		for (IRow row : linkList) {
+			RdLink link = (RdLink) row;
+			if(!hasHandledLinkPids.contains(link.getPid()))
+			{
+				boolean flag = false;
+				if (link.getsNodePid() == inNodePid) {
+					// 如果作用方向和该link的起点到终点的划线方向一致，则赋值为'1'
+					direct = 1;
+					// 该link的终点作为下一个link的进入点
+					inNodePid = link.geteNodePid();
+					flag = true;
+				} else if (link.geteNodePid() == inNodePid) {
+					// 如果作用方向和该link的起点到终点的划线方向相反，则赋值为'2'
+					direct = 2;
+					// 该link的起点作为下一个link的进入点
+					inNodePid = link.getsNodePid();
+					flag = true;
+				}
+				if(flag)
+				{
+					updateLocationLink(result,link.getPid(), direct, locDirect, tmcLocationLinkMap);
+					hasHandledLinkPids.add(link.getPid());
+				}
+			}
+		}
+		//向baseLink往前计算link方向
+		for (IRow row : linkList) {
+			RdLink link = (RdLink) row;
+			if(!hasHandledLinkPids.contains(link.getPid()))
+			{
+				boolean flag = false;
+				if (link.geteNodePid() == outNodePid) {
+					// 如果作用方向和该link的起点到终点的划线方向一致，则赋值为'1'
+					direct = 1;
+					// 该link的终点作为下一个link的进入点
+					outNodePid = link.getsNodePid(); 
+					flag = true;
+				} else if (link.getsNodePid() == outNodePid) {
+					// 如果作用方向和该link的起点到终点的划线方向相反，则赋值为'2'
+					direct = 2;
+					// 该link的起点作为下一个link的进入点
+					outNodePid = link.geteNodePid();
+					flag = true;
+				}
+				if(flag)
+				{
+					updateLocationLink(result,link.getPid(), direct, locDirect, tmcLocationLinkMap);
+					hasHandledLinkPids.add(link.getPid());
+				}
+			}
+		}
+
+		// map中的代表需要删除的
+		for (RdTmclocationLink rdTmclocationLink : tmcLocationLinkMap.values()) {
+			result.insertObject(rdTmclocationLink, ObjStatus.DELETE, rdTmclocationLink.getGroupId());
+		}
+
+		return null;
+	}
+
+	/**
+	 * @param result
+	 * @param tmclocation
+	 * @param links
+	 * @param tmcLocationLinkMap
+	 * @param direct
+	 * @throws Exception
+	 */
+	private void updateLocationLink(Result result, int linkPid, int direct, int locDirect,
+			Map<Integer, RdTmclocationLink> tmcLocationLinkMap) throws Exception {
+
+		RdTmclocationLink tmcLocationLink = null;
+
+		if (tmcLocationLinkMap.containsKey(linkPid)) {
+			tmcLocationLink = tmcLocationLinkMap.get(linkPid);
+			JSONObject obj = new JSONObject();
+			// 如果direct不是-1代表修改方向
+			if (direct != -1) {
+				obj.put("direct", direct);
+			}
+			if (locDirect != -1) {
+				obj.put("locDirect", locDirect);
+			}
+			tmcLocationLink.fillChangeFields(obj);
+			
+			//删除需要更新的
+			tmcLocationLinkMap.remove(linkPid);
+		} else {
+			tmcLocationLink = new RdTmclocationLink();
+
+			tmcLocationLink.setLinkPid(linkPid);
+
+			tmcLocationLink.setLocDirect(locDirect);
+
+			tmcLocationLink.setDirect(direct);
+
+			tmcLocationLink.setGroupId(command.getPid());
+		}
+		
+		if(tmcLocationLink != null)
+		{
+			//rowId不为空代表是修改的对象是修改操作
+			if(tmcLocationLink.changedFields().size() > 0 && tmcLocationLink.getRowId() != null)
+			{
+				result.insertObject(tmcLocationLink, ObjStatus.UPDATE, tmcLocationLink.getGroupId());
+			}
+			if(tmcLocationLink.getRowId() == null)
+			{
+				result.insertObject(tmcLocationLink, ObjStatus.INSERT, tmcLocationLink.getGroupId());
+			}
+			
+		}
+	}
+
+	private void updateTmcLinkAttribute(JSONObject content, RdTmclocation tmclocation, Result result) {
+		if (content.containsKey("objStatus")) {
 			// 修改tmcId
 			if (content.containsKey("tmcId")) {
 				int tmcId = content.getInt("tmcId");
@@ -109,129 +275,6 @@ public class Operation implements IOperation {
 				result.insertObject(tmclocation, ObjStatus.UPDATE, tmclocation.pid());
 			}
 		}
-		// 子表拓补修改
-		if (content.containsKey("linkPids")) {
-			JSONArray links = content.getJSONArray("linkPids");
-
-			this.updateLocationLink(result, links, tmcLocationLinkMap, direct,locDirect);
-		}
-
-		// 修改子表属性信息数据
-		if (content.containsKey("links")) {
-			JSONArray links = content.getJSONArray("links");
-
-			this.updateLinks(result, tmclocation, links, tmcLocationLinkMap);
-		}
-		return null;
-	}
-
-	/**
-	 * @param result
-	 * @param tmclocation
-	 * @param links
-	 * @param tmcLocationLinkMap
-	 * @param direct
-	 * @throws Exception 
-	 */
-	private void updateLocationLink(Result result, JSONArray links, Map<Integer, RdTmclocationLink> tmcLocationLinkMap,
-			int direct, int locDirect) throws Exception {
-
-		// 该direct是根据匹配的第一条link与划线方向定的关系，后续的link的方向关系通过计算可获取
-		/**
-		 * 开始计算每条link的方向关系 原则： 1）如果作用方向和该link的起点到终点的划线方向一致，则赋值为“1”
-		 * 2）如果作用方向和该link的起点到终点的划线方向相反，则赋值为“2”
-		 */
-		RdLinkSelector selector = new RdLinkSelector(conn);
-
-		@SuppressWarnings("unchecked")
-		List<IRow> linkList = selector.loadByIds((List<Integer>) JSONArray.toCollection(links, Integer.class), true,
-				false);
-
-		RdLink firstLink = (RdLink) linkList.get(0);
-
-		int inNodePid = 0;
-
-		// 1代表和link的划线方向相同，则下一条link判断方向关系以该link的eNode为判断依据
-		if (direct == 1) {
-			inNodePid = firstLink.geteNodePid();
-		} else if (direct == 2) {
-			// 2代表和link的划线方向相同，则下一条link判断方向关系以该link的sNode为判断依据
-			inNodePid = firstLink.getsNodePid();
-		}
-
-		RdTmclocationLink tmcLocationLink = null;
-
-		for (int i = 0; i < linkList.size(); i++) {
-
-			RdLink link = (RdLink) linkList.get(i);
-
-			int linkPid = link.getPid();
-
-			if (tmcLocationLinkMap.containsKey(link)) {
-				tmcLocationLink = tmcLocationLinkMap.get(linkPid);
-				// 如果direct不是-1代表修改方向
-				if (direct != -1) {
-					tmcLocationLink.changedFields().put("direct", direct);
-				}
-				if(locDirect != -1)
-				{
-					tmcLocationLink.changedFields().put("locDirect", locDirect);
-				}
-				result.insertObject(tmcLocationLink, ObjStatus.UPDATE, tmcLocationLink.getGroupId());
-				
-				tmcLocationLinkMap.remove(linkPid);
-			} else {
-				tmcLocationLink = new RdTmclocationLink();
-
-				tmcLocationLink.setLinkPid(link.getPid());
-
-				tmcLocationLink.setLocDirect(locDirect);
-
-				tmcLocationLink.setDirect(direct);
-
-				tmcLocationLink.setGroupId(command.getPid());
-				
-				result.insertObject(tmcLocationLink, ObjStatus.INSERT, tmcLocationLink.getGroupId());
-			}
-
-			if (i > 0 && inNodePid != 0) {
-				if (link.getsNodePid() == inNodePid) {
-					// 如果作用方向和该link的起点到终点的划线方向一致，则赋值为'1'
-					if(tmcLocationLink.getRowId() != null)
-					{
-						//rowId不为空代表修改
-						tmcLocationLink.changedFields().put("direct", 1);
-					}
-					else
-					{
-						tmcLocationLink.setDirect(1);
-					}
-					// 该link的终点作为下一个link的进入点
-					inNodePid = link.geteNodePid();
-				} else if (link.geteNodePid() == inNodePid) {
-					// 如果作用方向和该link的起点到终点的划线方向相反，则赋值为'2'
-					if(tmcLocationLink.getRowId() != null)
-					{
-						//rowId不为空代表修改
-						tmcLocationLink.changedFields().put("direct", 2);
-					}
-					else
-					{
-						tmcLocationLink.setDirect(2);
-					}
-
-					// 该link的起点作为下一个link的进入点
-					inNodePid = link.getsNodePid();
-				}
-
-			}
-		}
-		
-		//map中的代表需要删除的
-		for(RdTmclocationLink rdTmclocationLink : tmcLocationLinkMap.values())
-		{
-			result.insertObject(rdTmclocationLink, ObjStatus.DELETE, rdTmclocationLink.getGroupId());
-		}
 	}
 
 	/**
@@ -246,8 +289,7 @@ public class Operation implements IOperation {
 	 * @param direct
 	 * @throws Exception
 	 */
-	private void updateLinks(Result result, RdTmclocation tmclocation, JSONArray links,
-			Map<Integer, RdTmclocationLink> map) throws Exception {
+	private void updateLinks(Result result, RdTmclocation tmclocation, JSONArray links) throws Exception {
 
 		for (int i = 0; i < links.size(); i++) {
 

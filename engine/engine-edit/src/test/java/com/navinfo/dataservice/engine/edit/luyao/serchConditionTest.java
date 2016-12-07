@@ -11,7 +11,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
-import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.search.specialMap.SpecialMapUtils;
 import com.navinfo.dataservice.engine.edit.InitApplication;
@@ -72,7 +71,7 @@ public class serchConditionTest extends InitApplication {
 
 		try {
 
-			String parameter = "{\"dbId\":17,\"gap\":10,\"types\":[\"rdLinkLimitTruck\",\"rdLinkLimit\"],\"z\":20,\"x\":861639,\"y\":396652}";
+			String parameter = "{\"dbId\":17,\"gap\":10,\"types\":[\"rdLinkLimitTruck\",\"rdLinkLimit\",\"rdlinkSpeedlimitSpeedClass\",\"rdlinkSpeedlimitSpeedClassWork\",\"rdlinkSpeedlimitSpeedLimitSrc\",\"rdLinkLaneClass\",\"rdLinkFunctionClass\",\"rdLinkLaneNum\",\"rdLinkDevelopState\",\"rdLinkMultiDigitized\",\"rdLinkPaveStatus\",\"rdLinkTollInfo\",\"rdLinkSpecialTraffic\",\"rdLinkIsViaduct\",\"rdLinkAppInfo\",\"rdLinkForm50\",\"rdLinkNameContent\",\"rdLinkNameGroupid\",\"rdLinkNameType\",\"rdlinkSpeedlimitConditionCount\",\"rdLinkLimitType3\",\"rdLinkFormOfWay10\",\"rdLinkFormOfWay11\",\"rdLinkFormOfWay12\",\"rdLinkFormOfWay13\",\"rdLinkFormOfWay14\",\"rdLinkFormOfWay15\",\"rdLinkFormOfWay16\",\"rdLinkFormOfWay17\",\"rdLinkFormOfWay20\",\"rdLinkFormOfWay31\",\"rdLinkFormOfWay33\",\"rdLinkFormOfWay34\",\"rdLinkFormOfWay35\",\"rdLinkFormOfWay36\",\"rdLinkFormOfWay37\",\"rdLinkFormOfWay38\",\"rdLinkFormOfWay39\",\"rdLinkLimitType0\",\"rdLinkLimitType8\",\"rdLinkLimitType9\",\"rdLinkLimitType10\",\"rdLinkLimitType2\",\"rdLinkLimitType5\",\"rdLinkLimitType6\",\"rdLinkLimitType7\",\"rdLinkLimitType1\",\"rdLinkRticRank\",\"rdLinkIntRticRank\",\"rdLinkZoneTpye\",\"rdLinkZoneCount\",\"rdLinkZoneSide\"],\"z\":20,\"x\":861639,\"y\":396652}";
 
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
@@ -112,9 +111,6 @@ public class serchConditionTest extends InitApplication {
 				SpecialMapUtils specialMap = new SpecialMapUtils(conn);
 
 				data = specialMap.searchDataByTileWithGap(types, x, y, z, gap);
-
-				// response.getWriter().println(
-				// ResponseUtils.assembleRegularResult(data));
 			}
 
 			System.out.println(data);
@@ -141,7 +137,7 @@ public class serchConditionTest extends InitApplication {
 
 		try {
 
-			String parameter = "{\"dbId\":17,\"gap\":10,\"types\":[\"rdLinkNameContent\",\"rdLinkNameType\"],\"z\":19,\"x\":431657,\"y\":198398}";
+			String parameter = "{\"dbId\":17,\"gap\":10,\"types\":[\"rdLinkFormOfWay10\",\"rdLinkNameType\"],\"z\":19,\"x\":431657,\"y\":198398}";
 
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
@@ -181,9 +177,6 @@ public class serchConditionTest extends InitApplication {
 				SpecialMapUtils specialMap = new SpecialMapUtils(conn);
 
 				data = specialMap.searchDataByTileWithGap(types, x, y, z, gap);
-
-				// response.getWriter().println(
-				// ResponseUtils.assembleRegularResult(data));
 			}
 
 			System.out.println(data);

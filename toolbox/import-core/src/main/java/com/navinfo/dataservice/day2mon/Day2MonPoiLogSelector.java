@@ -104,19 +104,18 @@ public class Day2MonPoiLogSelector extends DefaultLogSelector{
 	@Override
 	protected SqlClause getPrepareSql(Connection conn) throws Exception{
 		StringBuilder sb = new StringBuilder();
-		sb.append("insert into ");
-		sb.append(tempTable);
-		sb.append("select distinct p.op_id, p.op_dt\r\n" + 
-				"  from log_operation   p,\r\n" + 
+		sb.append("insert into "+tempTable+" \r\n");
+		sb.append(" select distinct p.op_id, p.op_dt\r\n" + 
+				"   from log_operation   p,\r\n" + 
 				"       log_detail d,\r\n" +
 				"       log_detail_grid g,\r\n" + 
 				"       poi_edit_status s\r\n" + 
-				" where p.op_id = d.op_id\r\n" + 
-				"   and d.row_id = g.log_row_id\r\n" + 
-				"   and (d.ob_pid = s.pid or d.geo_pid = s.pid)\r\n"+ 
-				"   and p.com_sta = 0"+ 
-				"   and (d.ob_nm = 'IX_POI' or d.geo_nm = 'IX_POI')"+ 
-				"   and s.status = 3");
+				"   where p.op_id = d.op_id\r\n" + 
+				"    and d.row_id = g.log_row_id\r\n" + 
+				"    and (d.ob_pid = s.pid or d.geo_pid = s.pid)\r\n"+ 
+				"    and p.com_sta = 0"+ 
+				"    and (d.ob_nm = 'IX_POI' or d.geo_nm = 'IX_POI')"+ 
+				"    and s.status = 3");
 		if (this.stopTime!=null){
 			String stopTimeSqlFormat = DateUtils.dateToString(stopTime, DateUtils.DATE_COMPACTED_FORMAT);
 			sb.append("   and p.op_dt < to_date('"+stopTimeSqlFormat+"', 'yyyymmddhh24miss')\r\n") ;
@@ -134,7 +133,6 @@ public class Day2MonPoiLogSelector extends DefaultLogSelector{
 			values.addAll(inClause.getValues());
 		}
 		SqlClause sqlClause = new SqlClause(sb.toString(),values);
-		log.info("getPrepareSql:"+sqlClause);
 		return sqlClause;
 		
 	}

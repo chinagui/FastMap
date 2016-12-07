@@ -240,7 +240,8 @@ public class DefaultObjImportor extends AbstractOperation{
 			for(Iterator it = json.keys();it.hasNext();){
 				String attName = (String)it.next();
 				Object attValue = json.get(attName);
-				if((attValue==null && (!(attValue instanceof JSONNull)))||StringUtils.isEmpty(attName)){
+				if((attValue==null && (!(attValue instanceof JSONNull)))
+						||StringUtils.isEmpty(attName)||"objStatus".equals(attName)){
 					log.warn("注意：request的json中存在name或者value为空的属性，已经被忽略。");
 					continue;
 				}
@@ -252,7 +253,8 @@ public class DefaultObjImportor extends AbstractOperation{
 							||attValue instanceof Boolean
 							||attValue instanceof JSONNull
 							){
-						mainrow.setAttrByCol(attName, attValue);
+						String newAttName = this.camelToUnderline(attName);
+						mainrow.setAttrByCol(newAttName, attValue);
 					}else if(attValue instanceof JSONArray){
 							JSONArray attArr = (JSONArray)attValue;
 							if(attArr.size()>0){
@@ -312,7 +314,8 @@ public class DefaultObjImportor extends AbstractOperation{
 				for(Iterator it = json.keys();it.hasNext();){
 					String attName = (String)it.next();
 					Object attValue = json.get(attName);
-					if((attValue==null && (!(attValue instanceof JSONNull)))||StringUtils.isEmpty(attName)){
+					if((attValue==null && (!(attValue instanceof JSONNull)))
+							||StringUtils.isEmpty(attName)||"objStatus".equals(attName)){
 						log.warn("注意：request的json中存在name或者value为空的属性，已经被忽略。");
 						continue;
 					}
@@ -324,7 +327,8 @@ public class DefaultObjImportor extends AbstractOperation{
 								||attValue instanceof Boolean
 								||attValue instanceof JSONNull
 								){
-							subRow.setAttrByCol(attName, attValue);
+							String newAttName = this.camelToUnderline(attName);
+							subRow.setAttrByCol(newAttName, attValue);
 						}
 					}catch(Exception e){
 						log.error(e.getMessage(),e);

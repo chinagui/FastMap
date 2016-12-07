@@ -70,7 +70,11 @@ public class Operation implements IOperation {
 
 			this.updateLinks(result, tmclocation, links);
 		}
-
+		
+		if(!content.containsKey("link"))
+		{
+			return null;
+		}
 		// 拓补操作更新子表信息
 		Map<Integer, RdTmclocationLink> tmcLocationLinkMap = new HashMap<>();
 

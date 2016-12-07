@@ -23,7 +23,7 @@ public class LogDetail {
 	protected String old;
 	protected String New;
 	protected String fdLst;
-	protected OperationType opTp;
+	protected int opTp;
 	protected String tbRowId;
 	protected int desSta;
 	protected Date desDt;
@@ -78,10 +78,10 @@ public class LogDetail {
 	public void setFdLst(String fdLst) {
 		this.fdLst = fdLst;
 	}
-	public OperationType getOpTp() {
+	public int getOpTp() {
 		return opTp;
 	}
-	public void setOpTp(OperationType operationType) {
+	public void setOpTp(int operationType) {
 		this.opTp = operationType;
 	}
 	public String getTbRowId() {

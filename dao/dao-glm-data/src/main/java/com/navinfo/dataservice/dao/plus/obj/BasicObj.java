@@ -94,6 +94,21 @@ public abstract class BasicObj {
 	public Map<String, List<BasicRow>> getSubrows() {
 		return subrows;
 	}
+	public List<BasicRow> getRowsByName(String tableName){
+		List<BasicRow> rows = subrows.get(tableName);
+		return rows;
+	}
+	public BasicRow getSubrow(String tableName,String rowId){
+		List<BasicRow> rows=subrows.get(tableName);
+		if(rows!=null){
+			for(BasicRow row:rows){
+				if(row.getRowId().equals(rowId)){
+					return row;
+				}
+			}
+		}
+		return null;
+	}
 	/**
 	 * 不会维护状态，操作阶段不要使用
 	 * @param tableName
@@ -203,11 +218,6 @@ public abstract class BasicObj {
 	}
 	public OperationType opType(){
 		return mainrow.getOpType();
-	}
-
-	public List<BasicRow> getRowsByName(String tableName){
-		List<BasicRow> rows = subrows.get(tableName);
-		return rows;
 	}
 	
 	public BasicObj copy(){

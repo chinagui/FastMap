@@ -75,9 +75,9 @@ public class CheckService {
 			metaValidationRequestJSON.put("kdbDBId", 106);//元数据库dbId
 			metaValidationRequestJSON.put("ruleIds", ruleList);
 			metaValidationRequestJSON.put("timeOut", 0);
-			jobId=apiService.createJob("checkCore", metaValidationRequestJSON, userId, "元数据库检查");
+			jobId=apiService.createJob("checkCore", metaValidationRequestJSON, userId,subtaskId, "元数据库检查");
 		}
-		jobId=apiService.createJob("gdbValidation", validationRequestJSON, userId, "检查");
+		jobId=apiService.createJob("gdbValidation", validationRequestJSON, userId,subtaskId, "检查");
 		
 		return jobId;
 	}

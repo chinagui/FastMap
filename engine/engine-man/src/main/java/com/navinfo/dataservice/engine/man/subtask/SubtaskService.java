@@ -11,9 +11,12 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import oracle.net.aso.s;
 import oracle.sql.STRUCT;
 
 import org.apache.commons.dbutils.DbUtils;
@@ -23,6 +26,7 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.man.model.Message;
 import com.navinfo.dataservice.api.man.model.Subtask;
+import com.navinfo.dataservice.api.man.model.UserGroup;
 import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.api.statics.iface.StaticsApi;
 import com.navinfo.dataservice.api.statics.model.SubtaskStatInfo;
@@ -35,6 +39,7 @@ import com.navinfo.dataservice.commons.json.JsonOperation;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
+import com.navinfo.dataservice.dao.mq.email.EmailPublisher;
 import com.navinfo.dataservice.engine.man.message.MessageService;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoOperation;
 import com.navinfo.navicommons.database.Page;
@@ -630,8 +635,11 @@ public class SubtaskService {
 					Subtask subtask = (Subtask) iter.next();
 					//查询分配的作业组组长
 					List<Long> groupIdList = new ArrayList<Long>();
-					groupIdList.add((long)subtask.getExeGroupId());
-					List<Long> leaderIdByGroupId = UserInfoOperation.getLeaderIdByGroupId(conn, groupIdList);
+					if(subtask.getExeUserId()!=null&&subtask.getExeUserId()!=0){
+						UserGroup userGroup = UserInfoOperation.getUserGroupByUserId(conn, subtask.getExeUserId());
+						groupIdList.add(Long.valueOf(userGroup.getGroupId()));
+					}else{groupIdList.add((long)subtask.getExeGroupId());}
+					Map<Long, UserInfo> leaderIdByGroupId = UserInfoOperation.getLeaderIdByGroupId(conn, groupIdList);
 					/*采集/日编/月编子任务关闭
 					 * 分配的作业员
 					 * 采集/日编/月编子任务关闭：XXX(子任务名称)已关闭，请关注*/
@@ -652,24 +660,31 @@ public class SubtaskService {
 					msgParam.put("relateObject", "SUBTASK");
 					msgParam.put("relateObjectId", subtask.getSubtaskId());
 					//查询用户名称
-					Map<String, Object> userInfo = UserInfoOperation.getUserInfoByUserId(conn, subtask.getExeUserId());
-					String pushUserName = null;
-					if(userInfo != null && userInfo.size() > 0){
-						pushUserName = (String) userInfo.get("userRealName");
-					}
 					
 					if(leaderIdByGroupId !=null && leaderIdByGroupId.size()>0){
-						for(int i=0;i<leaderIdByGroupId.size();i++){
+						for(Long groupId:leaderIdByGroupId.keySet()){
+							//发消息
+							UserInfo userInfo = leaderIdByGroupId.get(groupId);
 							Message message = new Message();
 							message.setMsgTitle(msgTitle);
 							message.setMsgContent(msgContent);
 							message.setPushUserId((int)userId);
-							message.setReceiverId(leaderIdByGroupId.get(i).intValue());
+							message.setReceiverId(userInfo.getUserId());
 							message.setMsgParam(msgParam.toString());
-							message.setPushUser(pushUserName);
+							message.setPushUser(userInfo.getUserRealName());
 							
 							MessageService.getInstance().push(message, 0);
-							
+							//发邮件
+							//判断邮箱格式
+							String check = "^([a-z0-9A-Z]+[-|_|\\.]?)+[a-z0-9A-Z]@([a-z0-9A-Z]+(-[a-z0-9A-Z]+)?\\.)+[a-zA-Z]{2,}$";
+			                Pattern regex = Pattern.compile(check);
+			                Matcher matcher = regex.matcher((CharSequence) userInfo.getUserEmail());
+			                if(matcher.matches()){
+			            		String toMail = userInfo.getUserEmail();
+			            		String mailTitle = msgTitle;
+			            		String mailContent = msgContent;
+			                	EmailPublisher.publishMsg(toMail, mailTitle, mailContent);
+			                }
 						}
 					}
 				}
@@ -829,6 +844,7 @@ public class SubtaskService {
 			List<Subtask> subtaskList = SubtaskOperation.getSubtaskListBySubtaskIdList(conn, subtaskIds);
 			
 			Iterator<Subtask> iter = subtaskList.iterator();
+			int success=0;
 			while(iter.hasNext()){
 				Subtask subtask = (Subtask) iter.next();
 				//作业组
@@ -876,6 +892,7 @@ public class SubtaskService {
 					message.setPushUser(pushUserName);
 					
 					MessageService.getInstance().push(message, 1);
+					success++;
 				} catch (Exception e) {
 					// TODO: handle exception
 					e.printStackTrace();
@@ -886,7 +903,7 @@ public class SubtaskService {
 					SubtaskOperation.updateStatus(conn,subtask.getSubtaskId());
 				}
 			}
-			return "发布成功";
+			return "子任务批量发布"+success+"个成功，"+(subtaskList.size()-success)+"个失败";
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

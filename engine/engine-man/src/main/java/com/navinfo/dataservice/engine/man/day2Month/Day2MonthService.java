@@ -26,7 +26,7 @@ import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.navicommons.database.Page;
 import com.vividsolutions.jts.geom.Geometry;
 
-public class Day2MonthService {
+public class Day2MonthService  {
 	private Logger log=LoggerRepos.getLogger(getClass());
 	
 	private Day2MonthService(){}

@@ -2,28 +2,22 @@ package com.navinfo.dataservice.commons.util;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-
-import oracle.spatial.geometry.JGeometry;
 
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.navicommons.geo.computation.DoubleLine;
 import com.navinfo.navicommons.geo.computation.DoublePoint;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.navinfo.navicommons.geo.computation.JtsGeometryConvertor;
-import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.LineSegment;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
-import com.vividsolutions.jts.io.WKTWriter;
-import com.vividsolutions.jts.operation.union.PointGeometryUnion;
+
+import oracle.spatial.geometry.JGeometry;
 
 public class DisplayUtils {
 
@@ -1064,8 +1058,8 @@ public class DisplayUtils {
 
 		position[1] = MercatorProjection.metersYToLatitude(position[1]);
 
-		// 按照引导坐标位置和线通行方向向右找6米位置作为显示坐标位置
-		double[] displayPosition = getDisplayPosition(linkMerArray, position, guideSeqNum, vertiUnit);
+//		// 按照引导坐标位置和线通行方向向右找6米位置作为显示坐标位置
+//		double[] displayPosition = getDisplayPosition(linkMerArray, position, guideSeqNum, vertiUnit);
 
 		return position;
 	}

@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import junit.framework.Assert;
+import net.sf.json.JSONObject;
 
 import org.apache.commons.collections.map.MultiValueMap;
 import org.junit.Before;
@@ -58,14 +59,13 @@ public class GridServiceTest {
 		}
 	}
 
-//	public void testQueryRegionGridMappingOfSubtasks() throws Exception {
-//		GridService selector = GridService.getInstance();
-//		List<Integer> gridList = new ArrayList<Integer>();
-//		gridList.add(34);
-//		gridList.add(35);
-//		MultiValueMap regionGridMapping = (MultiValueMap) (selector.queryRegionGridMappingOfSubtasks(gridList));
-//		Assert.assertNotNull(regionGridMapping);
-//	}
+@Test
+	public void testQueryGridOfCity() throws Exception{
+	JSONObject conditon= new JSONObject().element("cityId", "17");
+	List<Integer> grids = GridService.getInstance().queryListByCondition(conditon);
+	assertNotNull(grids);
+	
+}
 
 }
 

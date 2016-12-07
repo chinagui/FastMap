@@ -1,7 +1,6 @@
 package com.navinfo.dataservice.engine.edit.zhangyuntao.rd;
 
 import com.navinfo.dataservice.engine.edit.InitApplication;
-import com.navinfo.dataservice.engine.edit.utils.translate.EngConverterHelper;
 import org.junit.Test;
 
 import java.io.IOException;

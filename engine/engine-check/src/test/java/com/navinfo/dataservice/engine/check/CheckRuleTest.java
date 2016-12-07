@@ -91,4 +91,26 @@ public class CheckRuleTest {
 		checkEngine.postCheck();
 		System.out.println(checkEngine.preCheck());
 	}
+	
+	@Test
+	public void exeRdGateUpdateCheck() throws Exception{
+		RdGate rdGate = new RdGate();
+		rdGate.setInLinkPid(58155839);
+		rdGate.setOutLinkPid(59193232);
+		rdGate.setNodePid(2030755);
+		rdGate.setDir(1);
+		
+		List<IRow> objList=new ArrayList<IRow>();
+		objList.add(rdGate);
+		
+		Connection conn = DBConnector.getInstance().getConnectionById(17);
+		//检查调用
+		CheckCommand checkCommand=new CheckCommand();
+		checkCommand.setGlmList(objList);
+		checkCommand.setOperType(OperType.UPDATE);
+		checkCommand.setObjType(ObjType.RDGATE);
+		CheckEngine checkEngine=new CheckEngine(checkCommand,conn);
+		checkEngine.postCheck();
+		System.out.println(checkEngine.preCheck());
+	}
 }

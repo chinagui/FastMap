@@ -2,6 +2,7 @@ package com.navinfo.dataservice.web.fcc.controller;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -23,11 +24,13 @@ import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.photo.Photo;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.commons.util.ZipUtils;
 import com.navinfo.dataservice.engine.audio.Audio;
+import com.navinfo.dataservice.engine.audio.AudioImport;
 import com.navinfo.dataservice.engine.dropbox.manger.UploadService;
 import com.navinfo.dataservice.engine.fcc.tips.TipsExporter;
 import com.navinfo.dataservice.engine.fcc.tips.TipsOperator;
@@ -193,6 +196,8 @@ public class TipsController extends BaseController {
 			
 			CollectorImport.importPhoto(photoMap, filePath );
 			
+			AudioImport.importAudio(audioMap,filePath);
+			
 			JSONObject result = new JSONObject();
 
 			result.put("total", tipsUploader.getTotal());
@@ -280,9 +285,16 @@ public class TipsController extends BaseController {
             //4.返回的url
 			String url = serverUrl + downloadUrlPath +File.separator+ day + "/"
 					+ zipFileName;
+			
+			JSONObject result=new JSONObject();
+			result.put("url", url);
+			
+			result.put("downloadDate",  DateUtils.dateToString(new Date(),
+					DateUtils.DATE_COMPACTED_FORMAT));
+			
 			logger.error("下载tips完成,resut url:"+url);
 			
-			return new ModelAndView("jsonView", success(url));
+			return new ModelAndView("jsonView", success(result));
 
 		} catch (Exception e) {
 

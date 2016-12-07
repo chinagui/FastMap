@@ -30,7 +30,7 @@ public class RdTollgateTest extends InitApplication {
 	@Test
 	public void insert() {
 		String parameter = "{'command':'CREATE',` 'dbId':42, 'type':'RDTOLLGATE', 'data':{'inLinkPid':123, 'nodePid':213, 'outLinkPid':321}}";
-		parameter = "{\"command\":\"CREATE\",\"type\":\"RDTOLLGATE\",\"dbId\":17,\"data\":{\"inLinkPid\":205000255,\"outLinkPid\":307000241,\"nodePid\":200000232}}";
+		parameter = "{\"command\":\"CREATE\",\"type\":\"RDHGWGLIMIT\",\"dbId\":17,\"data\":{\"direct\":2,\"linkPid\":\"202002837\",\"latitude\":40.054281901702225,\"longitude\":116.43848979735054}}";
 		TestUtil.run(parameter);
 	}
 
@@ -56,7 +56,7 @@ public class RdTollgateTest extends InitApplication {
 
 			SearchProcess p = new SearchProcess(conn);
 
-			System.out.println(p.searchDataByPid(ObjType.RDTOLLGATE, 209000009).Serialize(ObjLevel.FULL));
+			System.out.println(p.searchDataByPid(ObjType.LUFACE, 203000011).Serialize(ObjLevel.BRIEF));
 
 			// RdTollgateSelector selector = new RdTollgateSelector(conn);
 			// RdTollgate tollgate = selector.loadById(1055, true);

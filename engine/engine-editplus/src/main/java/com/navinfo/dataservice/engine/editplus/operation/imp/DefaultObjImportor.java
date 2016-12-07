@@ -379,7 +379,7 @@ public class DefaultObjImportor extends AbstractOperation{
 		for (int i = 0; i < len; i++) {
 			char c = param.charAt(i);
 			if (Character.isUpperCase(c)) {
-				sb.append(UNDERLINE);
+				sb.append("_");
 				sb.append(c);
 			} else {
 				sb.append(Character.toUpperCase(c));

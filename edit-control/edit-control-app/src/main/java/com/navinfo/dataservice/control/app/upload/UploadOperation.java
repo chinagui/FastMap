@@ -477,6 +477,7 @@ public class UploadOperation {
 					for (int i = 0; i < poiList.size(); i++) {
 						JSONObject jo = poiList.get(i);
 						int pid = jo.getInt("pid");
+						log.debug("删除的pid: "+pid);
 						String fid = jo.getString("fid");
 						JSONObject poiObj = new JSONObject();
 						poiObj.put("dbId", dbId);

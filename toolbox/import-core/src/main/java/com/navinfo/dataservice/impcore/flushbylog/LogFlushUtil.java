@@ -115,9 +115,18 @@ public class LogFlushUtil {
 	 * @throws SQLException
 	 */
 	public String createTempTable(Connection sourceDbConn) throws SQLException {
+		String tempTable = "TEMP_LOG_OP_"+new Random().nextInt(1000000);
+		return createTempTable(sourceDbConn,tempTable);
+		
+	}
+	/**在给定的数据库上面，创建临时表；由于该方法是DDL，因此会自动提交事务。
+	 * @param sourceDbConn
+	 * @return
+	 * @throws SQLException
+	 */
+	public String createTempTable(Connection sourceDbConn,final String tempTable) throws SQLException {
 		QueryRunner run = new QueryRunner();
 		StringBuilder sb = new StringBuilder();
-		String tempTable = "TEMP_LOG_OP_"+new Random().nextInt(1000000);
 		sb.append("CREATE TABLE ");
 		sb.append(tempTable);
 		sb.append("(OP_ID RAW(16),OP_DT TIMESTAMP)");
@@ -125,6 +134,7 @@ public class LogFlushUtil {
 		return tempTable;
 		
 	}
+	
 	/**将要刷的履历的op_id,OP_DT 提取到createTempTable 方法创建的临时表中
 	 * @param sourceDbConn
 	 * @param prepareSql

@@ -100,6 +100,9 @@ public class IxPoiSelector {
 	
 	public static Map<Long,Long> getParentPidsByChildrenPids(Connection conn,Set<Long> pidList) throws ServiceException{
 		Map<Long,Long> childPidParentPid = new HashMap<Long,Long>();
+		if(pidList.isEmpty()){
+			return childPidParentPid;
+		}
 		try{
 			String sql = "SELECT DISTINCT IPP.PARENT_POI_PID,IPC.CHILD_POI_PID"
 					+ " FROM IX_POI_PARENT IPP,IX_POI_CHILDREN IPC"

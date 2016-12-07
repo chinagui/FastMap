@@ -30,7 +30,8 @@ public class Check {
         if (checkInMetadata(poi, otherPoi) || checkInVariable(poi, otherPoi))
             return null;
         else {
-            throw new Exception("创建同一POI失败，创建原则:1.\"两方分类在SC_POINT_KIND_NEW中TYPE=5的POIKIND和R_KIND中存在\" 2.\"一方分类为180400，另一方分类为除了210304外的其他分类\"");
+            throw new Exception("创建同一POI失败，创建原则:1.\"两方分类在SC_POINT_KIND_NEW中TYPE=5的POIKIND和R_KIND" +
+                    "中存在\" 2.\"一方分类为180400，另一方分类为除了210304外的其他分类\"");
         }
     }
 

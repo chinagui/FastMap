@@ -22,6 +22,7 @@ import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
 
 import com.navinfo.dataservice.api.man.model.Task;
+import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.engine.man.message.MessageOperation;
 import com.navinfo.dataservice.engine.man.common.DbOperation;
@@ -477,17 +478,12 @@ public class LayerService {
 	
 	/*重点区块新增/变更/删除
 	 * 1.所有生管角色
-	 * 2.分配的月编作业组组长
+	 * 2.重点区块所在城市的作业组组长(采集、日编、月编)
 	 * 重点区块:XXX(任务名称)内容发生变更，请关注*/
 	public void layerPushMsg(Connection conn,String msgTitle,List<Map<String, Object>> msgContentList, List<Long> groupIdList, long pushUser) throws Exception {
 		//查询所有生管角色
 		String userSql="SELECT DISTINCT M.USER_ID FROM ROLE_USER_MAPPING M WHERE M.ROLE_ID =3";
 		List<Integer> userIdList=UserInfoOperation.getUserListBySql(conn, userSql);
-		//查询分配的作业组组长
-		List<Long> leaderIdByGroupId = UserInfoOperation.getLeaderIdByGroupId(conn, groupIdList);
-		for (Long leaderId : leaderIdByGroupId) {
-			userIdList.add(leaderId.intValue());
-		}
 		for(int userId:userIdList){
 			//查询用户名称
 			Map<String, Object> userInfo = UserInfoOperation.getUserInfoByUserId(conn, userId);
@@ -502,6 +498,21 @@ public class LayerService {
 				SysMsgPublisher.publishMsg(msgTitle, msgContent, pushUser, new long[]{userId}, 2, msgParam, pushUserName);
 			}
 		}
+		
+		//重点区块所在城市的作业组组长(采集、日编、月编)
+		Map<Long, UserInfo> leaderIdByGroupId = UserInfoOperation.getLeaderIdByGroupId(conn, groupIdList);
+		//分别发送给对应的日编/采集/月编组长
+		for(Map<String, Object> map:msgContentList){
+			//发送消息到消息队列
+			String msgContent = (String) map.get("msgContent");
+			String msgParam = (String) map.get("msgParam");
+			List<Long> groupIds=(List<Long>) map.get("taskGroupIds");
+			for(Long groupId:groupIds){
+				SysMsgPublisher.publishMsg(msgTitle, msgContent, pushUser,new long[]{Long.valueOf(leaderIdByGroupId.get(groupId).getUserId())},
+						2, msgParam,leaderIdByGroupId.get(groupId).getUserRealName());
+			}
+		}
+		
 		//发送邮件
 		String toMail = null;
 		String mailTitle = null;
@@ -524,6 +535,29 @@ public class LayerService {
 	                	EmailPublisher.publishMsg(toMail, mailTitle, mailContent);
 	                }
 				}
+			}
+		}
+		
+		//重点区块所在城市的作业组组长(采集、日编、月编)
+		for(Map<String, Object> map:msgContentList){
+			//发送消息到消息队列
+			String msgContent = (String) map.get("msgContent");
+			String msgParam = (String) map.get("msgParam");
+			List<Long> groupIds=(List<Long>) map.get("taskGroupIds");
+			for(Long groupId:groupIds){
+				UserInfo userInfo = leaderIdByGroupId.get(groupId);
+				//判断邮箱格式
+				String check = "^([a-z0-9A-Z]+[-|_|\\.]?)+[a-z0-9A-Z]@([a-z0-9A-Z]+(-[a-z0-9A-Z]+)?\\.)+[a-zA-Z]{2,}$";
+                Pattern regex = Pattern.compile(check);
+                Matcher matcher = regex.matcher((CharSequence) userInfo.getUserEmail());
+                if(matcher.matches()){
+                	toMail = userInfo.getUserEmail();
+                	mailTitle = msgTitle;
+                	mailContent = (String) map.get("msgContent");
+                	//发送邮件到消息队列
+                	//SendEmail.sendEmail(toMail, mailTitle, mailContent);
+                	EmailPublisher.publishMsg(toMail, mailTitle, mailContent);
+                }
 			}
 		}
 	}

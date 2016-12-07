@@ -8,6 +8,8 @@ import java.util.Set;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import com.navinfo.dataservice.engine.meta.translate.EngConverterHelper;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 import org.apache.uima.pear.util.FileUtil;
@@ -54,1010 +56,1034 @@ import net.sf.json.JSONObject;
 
 @Controller
 public class MetaController extends BaseController {
-	private static final Logger logger = Logger.getLogger(MetaController.class);
+    private static final Logger logger = Logger.getLogger(MetaController.class);
 
-	@RequestMapping(value = "/rdname/search")
-	public ModelAndView searchRdName(HttpServletRequest request)
-			throws ServletException, IOException {
+    @RequestMapping(value = "/rdname/search")
+    public ModelAndView searchRdName(HttpServletRequest request)
+            throws ServletException, IOException {
 
-		String parameter = request.getParameter("parameter");
+        String parameter = request.getParameter("parameter");
 
-		try {
-			JSONObject jsonReq = JSONObject.fromObject(parameter);
+        try {
+            JSONObject jsonReq = JSONObject.fromObject(parameter);
 
-			String name = jsonReq.getString("name");
+            String name = jsonReq.getString("name");
 
-			int pageSize = jsonReq.getInt("pageSize");
+            int pageSize = jsonReq.getInt("pageSize");
 
-			int pageNum = jsonReq.getInt("pageNum");
+            int pageNum = jsonReq.getInt("pageNum");
 
-			RdNameSelector selector = new RdNameSelector();
+            RdNameSelector selector = new RdNameSelector();
 
-			JSONObject data = selector.searchByName(name, pageSize, pageNum);
+            JSONObject data = selector.searchByName(name, pageSize, pageNum);
 
-			return new ModelAndView("jsonView", success(data));
+            return new ModelAndView("jsonView", success(data));
 
-		} catch (Exception e) {
+        } catch (Exception e) {
 
-			logger.error(e.getMessage(), e);
+            logger.error(e.getMessage(), e);
 
-			return new ModelAndView("jsonView", fail(e.getMessage()));
-		}
-	}
+            return new ModelAndView("jsonView", fail(e.getMessage()));
+        }
+    }
 
-	@RequestMapping(value = "/pinyin/convert")
-	public ModelAndView convertPinyin(HttpServletRequest request)
-			throws ServletException, IOException {
+    @RequestMapping(value = "/pinyin/convert")
+    public ModelAndView convertPinyin(HttpServletRequest request)
+            throws ServletException, IOException {
 
-		String parameter = request.getParameter("parameter");
+        String parameter = request.getParameter("parameter");
 
-		try {
-			JSONObject jsonReq = JSONObject.fromObject(parameter);
+        try {
+            JSONObject jsonReq = JSONObject.fromObject(parameter);
 
-			String word = jsonReq.getString("word");
+            String word = jsonReq.getString("word");
 
-			PinyinConverter py = new PinyinConverter();
+            PinyinConverter py = new PinyinConverter();
 
-			String[] result = py.convert(word);
+            String[] result = py.convert(word);
 
-			if (result != null) {
-				JSONObject json = new JSONObject();
+            if (result != null) {
+                JSONObject json = new JSONObject();
 
-				json.put("voicefile", result[0]);
+                json.put("voicefile", result[0]);
 
-				json.put("phonetic", result[1]);
+                json.put("phonetic", result[1]);
 
-				return new ModelAndView("jsonView", success(json));
-			} else {
-				throw new Exception("转拼音失败");
-			}
+                return new ModelAndView("jsonView", success(json));
+            } else {
+                throw new Exception("转拼音失败");
+            }
 
-		} catch (Exception e) {
+        } catch (Exception e) {
 
-			logger.error(e.getMessage(), e);
+            logger.error(e.getMessage(), e);
 
-			return new ModelAndView("jsonView", fail(e.getMessage()));
-		}
-	}
+            return new ModelAndView("jsonView", fail(e.getMessage()));
+        }
+    }
 
-	@RequestMapping(value = "/province/getByLocation")
-	public ModelAndView getProvinceByLocation(HttpServletRequest request)
-			throws ServletException, IOException {
+    @RequestMapping(value = "/eng/convert")
+    public ModelAndView convertEng(HttpServletRequest request) throws ServletException, IOException {
+        String parameter = request.getParameter("parameter");
+        try {
+            JSONObject jsonReq = JSONObject.fromObject(parameter);
+            String languageType = jsonReq.getString("languageType");
+            String word = jsonReq.getString("word");
+            EngConverterHelper converterHelper = new EngConverterHelper();
+            String result = converterHelper.chiToEng(word);
+            if (result != null) {
+                JSONObject json = new JSONObject();
+                json.put("eng", result);
+                return new ModelAndView("jsonView", success(json));
+            } else {
+                throw new Exception("转英文名称失败...");
+            }
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            return new ModelAndView("jsonView", fail(e.getMessage()));
+        }
+    }
 
-		String parameter = request.getParameter("parameter");
+    @RequestMapping(value = "/province/getByLocation")
+    public ModelAndView getProvinceByLocation(HttpServletRequest request)
+            throws ServletException, IOException {
 
-		try {
-			JSONObject jsonReq = JSONObject.fromObject(parameter);
+        String parameter = request.getParameter("parameter");
 
-			double lon = jsonReq.getDouble("lon");
+        try {
+            JSONObject jsonReq = JSONObject.fromObject(parameter);
 
-			double lat = jsonReq.getDouble("lat");
+            double lon = jsonReq.getDouble("lon");
 
-			MeshSelector selector = new MeshSelector();
+            double lat = jsonReq.getDouble("lat");
 
-			JSONObject data = selector.getProvinceByLocation(lon, lat);
+            MeshSelector selector = new MeshSelector();
 
-			if (data != null) {
-				return new ModelAndView("jsonView", success(data));
-			} else {
-				throw new Exception("不在中国省市范围内");
-			}
+            JSONObject data = selector.getProvinceByLocation(lon, lat);
 
-		} catch (Exception e) {
+            if (data != null) {
+                return new ModelAndView("jsonView", success(data));
+            } else {
+                throw new Exception("不在中国省市范围内");
+            }
 
-			logger.error(e.getMessage(), e);
+        } catch (Exception e) {
 
-			return new ModelAndView("jsonView", fail(e.getMessage()));
-		}
-	}
+            logger.error(e.getMessage(), e);
 
-	@RequestMapping(value = "/patternImage/checkUpdate")
-	public ModelAndView checkPatternImage(HttpServletRequest request)
-			throws ServletException, IOException {
+            return new ModelAndView("jsonView", fail(e.getMessage()));
+        }
+    }
 
-		String parameter = request.getParameter("parameter");
+    @RequestMapping(value = "/patternImage/checkUpdate")
+    public ModelAndView checkPatternImage(HttpServletRequest request)
+            throws ServletException, IOException {
 
-		try {
-			JSONObject jsonReq = JSONObject.fromObject(parameter);
+        String parameter = request.getParameter("parameter");
 
-			String date = jsonReq.getString("date");
+        try {
+            JSONObject jsonReq = JSONObject.fromObject(parameter);
 
-			PatternImageSelector selector = new PatternImageSelector();
+            String date = jsonReq.getString("date");
 
-			boolean flag = selector.checkUpdate(date);
+            PatternImageSelector selector = new PatternImageSelector();
 
-			return new ModelAndView("jsonView", success(flag));
+            boolean flag = selector.checkUpdate(date);
 
-		} catch (Exception e) {
+            return new ModelAndView("jsonView", success(flag));
 
-			logger.error(e.getMessage(), e);
+        } catch (Exception e) {
 
-			return new ModelAndView("jsonView", fail(e.getMessage()));
-		}
-	}
+            logger.error(e.getMessage(), e);
 
-	@RequestMapping(value = "/patternImage/download")
-	public ModelAndView exportPatternImage(HttpServletRequest request)
-			throws ServletException, IOException {
+            return new ModelAndView("jsonView", fail(e.getMessage()));
+        }
+    }
 
-		String parameter = request.getParameter("parameter");
+    @RequestMapping(value = "/patternImage/download")
+    public ModelAndView exportPatternImage(HttpServletRequest request)
+            throws ServletException, IOException {
 
-		try {
-			JSONObject jsonReq = JSONObject.fromObject(parameter);
+        String parameter = request.getParameter("parameter");
 
-			PatternImageExporter exporter = new PatternImageExporter();
+        try {
+            JSONObject jsonReq = JSONObject.fromObject(parameter);
 
-			SystemConfig config = SystemConfigFactory.getSystemConfig();
+            PatternImageExporter exporter = new PatternImageExporter();
 
-			String url = config.getValue(PropConstant.serverUrl);
+            SystemConfig config = SystemConfigFactory.getSystemConfig();
 
-			url += config.getValue(PropConstant.downloadUrlPathPatternimg);
+            String url = config.getValue(PropConstant.serverUrl);
 
-			String path = config
-					.getValue(PropConstant.downloadFilePathPatternimg);
+            url += config.getValue(PropConstant.downloadUrlPathPatternimg);
 
-			String dir = null;
+            String path = config
+                    .getValue(PropConstant.downloadFilePathPatternimg);
 
-			String currentDate = StringUtils.getCurrentTime();
+            String dir = null;
 
-			String zipFileName = currentDate + ".zip";
+            String currentDate = StringUtils.getCurrentTime();
 
-			if (jsonReq.containsKey("names")) {
-				JSONArray names = jsonReq.getJSONArray("names");
+            String zipFileName = currentDate + ".zip";
 
-				path += "/byname";
+            if (jsonReq.containsKey("names")) {
+                JSONArray names = jsonReq.getJSONArray("names");
 
-				dir = path + "/" + currentDate;
+                path += "/byname";
 
-				Set<String> set = new HashSet<String>();
+                dir = path + "/" + currentDate;
 
-				for (int i = 0; i < names.size(); i++) {
-					set.add(names.getString(i));
-				}
+                Set<String> set = new HashSet<String>();
 
-				exporter.export2SqliteByNames(dir, set);
+                for (int i = 0; i < names.size(); i++) {
+                    set.add(names.getString(i));
+                }
 
-				url += "/byname/" + zipFileName;
-			} else if (jsonReq.containsKey("date")) {
-				String date = jsonReq.getString("date");
+                exporter.export2SqliteByNames(dir, set);
 
-				path += "/bydate";
+                url += "/byname/" + zipFileName;
+            } else if (jsonReq.containsKey("date")) {
+                String date = jsonReq.getString("date");
 
-				dir = path + "/" + currentDate;
+                path += "/bydate";
 
-				exporter.export2SqliteByDate(dir, date);
+                dir = path + "/" + currentDate;
 
-				url += "/bydate/" + zipFileName;
-			} else {
-				throw new Exception("错误的参数");
-			}
+                exporter.export2SqliteByDate(dir, date);
 
-			ZipUtils.zipFile(dir, path + "/" + currentDate + ".zip");
+                url += "/bydate/" + zipFileName;
+            } else {
+                throw new Exception("错误的参数");
+            }
 
-			FileUtil.deleteDirectory(new File(dir));
+            ZipUtils.zipFile(dir, path + "/" + currentDate + ".zip");
 
-			String fullPath = path + "/" + zipFileName;
+            FileUtil.deleteDirectory(new File(dir));
 
-			File f = new File(fullPath);
+            String fullPath = path + "/" + zipFileName;
 
-			long filesize = f.length();
+            File f = new File(fullPath);
 
-			String version = zipFileName.replace(".zip", "");
+            long filesize = f.length();
 
-			JSONObject json = new JSONObject();
+            String version = zipFileName.replace(".zip", "");
 
-			ManApi man = (ManApi) ApplicationContextUtil.getBean("manApi");
+            JSONObject json = new JSONObject();
 
-			String specVersion = man.querySpecVersionByType(3);
+            ManApi man = (ManApi) ApplicationContextUtil.getBean("manApi");
 
-			json.put("version", version);
+            String specVersion = man.querySpecVersionByType(3);
 
-			json.put("url", url);
+            json.put("version", version);
 
-			json.put("filesize", filesize);
+            json.put("url", url);
 
-			json.put("specVersion", specVersion);
+            json.put("filesize", filesize);
 
-			return new ModelAndView("jsonView", success(json));
+            json.put("specVersion", specVersion);
 
-		} catch (Exception e) {
+            return new ModelAndView("jsonView", success(json));
 
-			logger.error(e.getMessage(), e);
+        } catch (Exception e) {
 
-			return new ModelAndView("jsonView", fail(e.getMessage()));
-		}
-	}
+            logger.error(e.getMessage(), e);
 
-	@RequestMapping(value = "/patternImage/getById")
-	public void getPatternImageById(HttpServletRequest request,
-			HttpServletResponse response) throws ServletException, IOException {
+            return new ModelAndView("jsonView", fail(e.getMessage()));
+        }
+    }
 
-		response.setContentType("image/jpeg;charset=GBK");
+    @RequestMapping(value = "/patternImage/getById")
+    public void getPatternImageById(HttpServletRequest request,
+                                    HttpServletResponse response) throws ServletException, IOException {
 
-		String parameter = request.getParameter("parameter");
+        response.setContentType("image/jpeg;charset=GBK");
 
-		try {
-			JSONObject jsonReq = JSONObject.fromObject(parameter);
+        String parameter = request.getParameter("parameter");
 
-			String id = jsonReq.getString("id");
+        try {
+            JSONObject jsonReq = JSONObject.fromObject(parameter);
 
-			PatternImageSelector selector = new PatternImageSelector();
+            String id = jsonReq.getString("id");
 
-			byte[] data = selector.getById(id);
+            PatternImageSelector selector = new PatternImageSelector();
 
-			if (data.length == 0) {
-				throw new Exception("id值不存在");
-			}
-			
-			response.getOutputStream().write(data);
+            byte[] data = selector.getById(id);
 
-		} catch (Exception e) {
+            if (data.length == 0) {
+                throw new Exception("id值不存在");
+            }
 
-			logger.error(e.getMessage(), e);
+            response.getOutputStream().write(data);
 
-			response.getWriter().println(
-					ResponseUtils.assembleFailResult(e.getMessage()));
-		}
-	}
+        } catch (Exception e) {
 
-	@RequestMapping(value = "/patternImage/search")
-	public ModelAndView searchPatternImage(HttpServletRequest request)
-			throws ServletException, IOException {
+            logger.error(e.getMessage(), e);
 
-		String parameter = request.getParameter("parameter");
+            response.getWriter().println(
+                    ResponseUtils.assembleFailResult(e.getMessage()));
+        }
+    }
 
-		try {
-			JSONObject jsonReq = JSONObject.fromObject(parameter);
+    @RequestMapping(value = "/patternImage/search")
+    public ModelAndView searchPatternImage(HttpServletRequest request)
+            throws ServletException, IOException {
 
-			String name = jsonReq.getString("name");
+        String parameter = request.getParameter("parameter");
 
-			int pageSize = jsonReq.getInt("pageSize");
+        try {
+            JSONObject jsonReq = JSONObject.fromObject(parameter);
 
-			int pageNum = jsonReq.getInt("pageNum");
+            String name = jsonReq.getString("name");
 
-			PatternImageSelector selector = new PatternImageSelector();
+            int pageSize = jsonReq.getInt("pageSize");
 
-			JSONObject data = selector.searchByName(name, pageSize, pageNum);
+            int pageNum = jsonReq.getInt("pageNum");
 
-			return new ModelAndView("jsonView", success(data));
+            PatternImageSelector selector = new PatternImageSelector();
 
-		} catch (Exception e) {
+            JSONObject data = selector.searchByName(name, pageSize, pageNum);
 
-			logger.error(e.getMessage(), e);
+            return new ModelAndView("jsonView", success(data));
 
-			return new ModelAndView("jsonView", fail(e.getMessage()));
-		}
-	}
+        } catch (Exception e) {
 
-	@RequestMapping(value = "/queryTelByProvince")
-	public ModelAndView searchTelByProvince(HttpServletRequest request)
-			throws ServletException, IOException {
+            logger.error(e.getMessage(), e);
 
-		String parameter = request.getParameter("parameter");
+            return new ModelAndView("jsonView", fail(e.getMessage()));
+        }
+    }
 
-		try {
-			JSONObject jsonReq = JSONObject.fromObject(parameter);
+    @RequestMapping(value = "/queryTelByProvince")
+    public ModelAndView searchTelByProvince(HttpServletRequest request)
+            throws ServletException, IOException {
 
-			String name = jsonReq.getString("province");
+        String parameter = request.getParameter("parameter");
 
-			ScPointAdminArea selector = new ScPointAdminArea();
+        try {
+            JSONObject jsonReq = JSONObject.fromObject(parameter);
 
-			JSONArray data = selector.searchByProvince(name);
+            String name = jsonReq.getString("province");
 
-			return new ModelAndView("jsonView", success(data));
+            ScPointAdminArea selector = new ScPointAdminArea();
 
-		} catch (Exception e) {
+            JSONArray data = selector.searchByProvince(name);
 
-			logger.error(e.getMessage(), e);
+            return new ModelAndView("jsonView", success(data));
 
-			return new ModelAndView("jsonView", fail(e.getMessage()));
-		}
-	}
+        } catch (Exception e) {
 
-	@RequestMapping(value = "/queryChain")
-	public ModelAndView queryChain(HttpServletRequest request)
-			throws ServletException, IOException {
+            logger.error(e.getMessage(), e);
 
-		String parameter = request.getParameter("parameter");
+            return new ModelAndView("jsonView", fail(e.getMessage()));
+        }
+    }
 
-		try {
-			JSONObject jsonReq = JSONObject.fromObject(parameter);
+    @RequestMapping(value = "/queryChain")
+    public ModelAndView queryChain(HttpServletRequest request)
+            throws ServletException, IOException {
 
-			String kindCode = null;
+        String parameter = request.getParameter("parameter");
 
-			if (jsonReq.has("kindCode")) {
-				kindCode = jsonReq.getString("kindCode");
-			}
+        try {
+            JSONObject jsonReq = JSONObject.fromObject(parameter);
 
-			ChainSelector selector = new ChainSelector();
+            String kindCode = null;
 
-			JSONObject data = selector.getChainByKindCode(kindCode);
+            if (jsonReq.has("kindCode")) {
+                kindCode = jsonReq.getString("kindCode");
+            }
 
-			if (kindCode != null && data.has(kindCode)) {
-				JSONArray array = data.getJSONArray(kindCode);
+            ChainSelector selector = new ChainSelector();
 
-				return new ModelAndView("jsonView", success(array));
-			}
+            JSONObject data = selector.getChainByKindCode(kindCode);
 
-			return new ModelAndView("jsonView", success(data));
+            if (kindCode != null && data.has(kindCode)) {
+                JSONArray array = data.getJSONArray(kindCode);
 
-		} catch (Exception e) {
+                return new ModelAndView("jsonView", success(array));
+            }
 
-			logger.error(e.getMessage(), e);
+            return new ModelAndView("jsonView", success(data));
 
-			return new ModelAndView("jsonView", fail(e.getMessage()));
-		}
-	}
+        } catch (Exception e) {
 
-	@RequestMapping(value = "/chainLevel")
-	public ModelAndView queryChainLevel(HttpServletRequest request)
-			throws ServletException, IOException {
+            logger.error(e.getMessage(), e);
 
-		String parameter = request.getParameter("parameter");
+            return new ModelAndView("jsonView", fail(e.getMessage()));
+        }
+    }
 
-		try {
-			JSONObject jsonReq = JSONObject.fromObject(parameter);
+    @RequestMapping(value = "/chainLevel")
+    public ModelAndView queryChainLevel(HttpServletRequest request)
+            throws ServletException, IOException {
 
-			String kindCode = jsonReq.getString("kindCode");
+        String parameter = request.getParameter("parameter");
 
-			String chainCode = jsonReq.getString("chainCode");
+        try {
+            JSONObject jsonReq = JSONObject.fromObject(parameter);
 
-			ChainSelector selector = new ChainSelector();
+            String kindCode = jsonReq.getString("kindCode");
 
-			String data = selector.getLevelByChain(chainCode, kindCode);
+            String chainCode = jsonReq.getString("chainCode");
 
-			return new ModelAndView("jsonView", success(data));
+            ChainSelector selector = new ChainSelector();
 
-		} catch (Exception e) {
+            String data = selector.getLevelByChain(chainCode, kindCode);
 
-			logger.error(e.getMessage(), e);
+            return new ModelAndView("jsonView", success(data));
 
-			return new ModelAndView("jsonView", fail(e.getMessage()));
-		}
-	}
+        } catch (Exception e) {
 
-	@RequestMapping(value = "/queryFocus")
-	public ModelAndView queryFocus(HttpServletRequest request)
-			throws ServletException, IOException {
+            logger.error(e.getMessage(), e);
 
-		try {
+            return new ModelAndView("jsonView", fail(e.getMessage()));
+        }
+    }
 
-			FocusSelector selector = new FocusSelector();
+    @RequestMapping(value = "/queryFocus")
+    public ModelAndView queryFocus(HttpServletRequest request)
+            throws ServletException, IOException {
 
-			JSONArray data = selector.getPoiNum();
+        try {
 
-			return new ModelAndView("jsonView", success(data));
+            FocusSelector selector = new FocusSelector();
 
-		} catch (Exception e) {
+            JSONArray data = selector.getPoiNum();
 
-			logger.error(e.getMessage(), e);
+            return new ModelAndView("jsonView", success(data));
 
-			return new ModelAndView("jsonView", fail(e.getMessage()));
-		}
-	}
+        } catch (Exception e) {
 
-	@RequestMapping(value = "/queryTelLength")
-	public ModelAndView searchTelLength(HttpServletRequest request)
-			throws ServletException, IOException {
+            logger.error(e.getMessage(), e);
 
-		String parameter = request.getParameter("parameter");
+            return new ModelAndView("jsonView", fail(e.getMessage()));
+        }
+    }
 
-		try {
-			JSONObject jsonReq = JSONObject.fromObject(parameter);
+    @RequestMapping(value = "/queryTelLength")
+    public ModelAndView searchTelLength(HttpServletRequest request)
+            throws ServletException, IOException {
 
-			String code = jsonReq.getString("code");
+        String parameter = request.getParameter("parameter");
 
-			ScPointAdminArea selector = new ScPointAdminArea();
+        try {
+            JSONObject jsonReq = JSONObject.fromObject(parameter);
 
-			String data = selector.searchTelLength(code);
+            String code = jsonReq.getString("code");
 
-			return new ModelAndView("jsonView", success(data));
+            ScPointAdminArea selector = new ScPointAdminArea();
 
-		} catch (Exception e) {
+            String data = selector.searchTelLength(code);
 
-			logger.error(e.getMessage(), e);
+            return new ModelAndView("jsonView", success(data));
 
-			return new ModelAndView("jsonView", fail(e.getMessage()));
-		}
-	}
+        } catch (Exception e) {
 
-	@RequestMapping(value = "/queryFoodType")
-	public ModelAndView searchFoodType(HttpServletRequest request)
-			throws ServletException, IOException {
+            logger.error(e.getMessage(), e);
 
-		String parameter = request.getParameter("parameter");
+            return new ModelAndView("jsonView", fail(e.getMessage()));
+        }
+    }
 
-		try {
-			JSONObject jsonReq = JSONObject.fromObject(parameter);
+    @RequestMapping(value = "/queryFoodType")
+    public ModelAndView searchFoodType(HttpServletRequest request)
+            throws ServletException, IOException {
 
-			String kindId = jsonReq.getString("kindId");
+        String parameter = request.getParameter("parameter");
 
-			ScPointAdminArea selector = new ScPointAdminArea();
+        try {
+            JSONObject jsonReq = JSONObject.fromObject(parameter);
 
-			JSONArray data = selector.searchFoodType(kindId);
+            String kindId = jsonReq.getString("kindId");
 
-			return new ModelAndView("jsonView", success(data));
+            ScPointAdminArea selector = new ScPointAdminArea();
 
-		} catch (Exception e) {
+            JSONArray data = selector.searchFoodType(kindId);
 
-			logger.error(e.getMessage(), e);
+            return new ModelAndView("jsonView", success(data));
 
-			return new ModelAndView("jsonView", fail(e.getMessage()));
-		}
-	}
+        } catch (Exception e) {
 
-	@RequestMapping(value = "/kindLevel")
-	public ModelAndView searchKindLevel(HttpServletRequest request)
-			throws ServletException, IOException {
+            logger.error(e.getMessage(), e);
 
-		String parameter = request.getParameter("parameter");
+            return new ModelAndView("jsonView", fail(e.getMessage()));
+        }
+    }
 
-		try {
-			JSONObject jsonReq = JSONObject.fromObject(parameter);
+    @RequestMapping(value = "/kindLevel")
+    public ModelAndView searchKindLevel(HttpServletRequest request)
+            throws ServletException, IOException {
 
-			String kindId = jsonReq.getString("kindCode");
+        String parameter = request.getParameter("parameter");
 
-			KindCodeSelector selector = new KindCodeSelector();
+        try {
+            JSONObject jsonReq = JSONObject.fromObject(parameter);
 
-			JSONObject data = selector.searchkindLevel(kindId);
+            String kindId = jsonReq.getString("kindCode");
 
-			return new ModelAndView("jsonView", success(data));
+            KindCodeSelector selector = new KindCodeSelector();
 
-		} catch (Exception e) {
+            JSONObject data = selector.searchkindLevel(kindId);
 
-			logger.error(e.getMessage(), e);
+            return new ModelAndView("jsonView", success(data));
 
-			return new ModelAndView("jsonView", fail(e.getMessage()));
-		}
-	}
+        } catch (Exception e) {
 
-	@RequestMapping(value = "/queryTopKind")
-	public ModelAndView QueryTopKind(HttpServletRequest request)
-			throws ServletException, IOException {
+            logger.error(e.getMessage(), e);
 
-		try {
-			KindCodeSelector selector = new KindCodeSelector();
+            return new ModelAndView("jsonView", fail(e.getMessage()));
+        }
+    }
 
-			JSONArray data = selector.queryTopKindInfo();
+    @RequestMapping(value = "/queryTopKind")
+    public ModelAndView QueryTopKind(HttpServletRequest request)
+            throws ServletException, IOException {
 
-			return new ModelAndView("jsonView", success(data));
+        try {
+            KindCodeSelector selector = new KindCodeSelector();
 
-		} catch (Exception e) {
+            JSONArray data = selector.queryTopKindInfo();
 
-			logger.error(e.getMessage(), e);
+            return new ModelAndView("jsonView", success(data));
 
-			return new ModelAndView("jsonView", fail(e.getMessage()));
-		}
-	}
+        } catch (Exception e) {
 
-	@RequestMapping(value = "/queryMediumKind")
-	public ModelAndView queryMediumKind(HttpServletRequest request)
-			throws ServletException, IOException {
+            logger.error(e.getMessage(), e);
 
-		String parameter = request.getParameter("parameter");
+            return new ModelAndView("jsonView", fail(e.getMessage()));
+        }
+    }
 
-		try {
-			JSONObject jsonReq = JSONObject.fromObject(parameter);
+    @RequestMapping(value = "/queryMediumKind")
+    public ModelAndView queryMediumKind(HttpServletRequest request)
+            throws ServletException, IOException {
 
-			String topId = jsonReq.getString("topId");
+        String parameter = request.getParameter("parameter");
 
-			KindCodeSelector selector = new KindCodeSelector();
+        try {
+            JSONObject jsonReq = JSONObject.fromObject(parameter);
 
-			JSONArray data = selector.queryMediumKindInfo(topId);
+            String topId = jsonReq.getString("topId");
 
-			return new ModelAndView("jsonView", success(data));
+            KindCodeSelector selector = new KindCodeSelector();
 
-		} catch (Exception e) {
+            JSONArray data = selector.queryMediumKindInfo(topId);
 
-			logger.error(e.getMessage(), e);
+            return new ModelAndView("jsonView", success(data));
 
-			return new ModelAndView("jsonView", fail(e.getMessage()));
-		}
-	}
+        } catch (Exception e) {
 
-	@RequestMapping(value = "/queryKind")
-	public ModelAndView queryKind(HttpServletRequest request)
-			throws ServletException, IOException {
+            logger.error(e.getMessage(), e);
 
-		String parameter = request.getParameter("parameter");
+            return new ModelAndView("jsonView", fail(e.getMessage()));
+        }
+    }
 
-		try {
-			JSONObject jsonReq = JSONObject.fromObject(parameter);
+    @RequestMapping(value = "/queryKind")
+    public ModelAndView queryKind(HttpServletRequest request)
+            throws ServletException, IOException {
 
-			int region = jsonReq.getInt("region");
+        String parameter = request.getParameter("parameter");
 
-			KindCodeSelector selector = new KindCodeSelector();
+        try {
+            JSONObject jsonReq = JSONObject.fromObject(parameter);
 
-			JSONArray data = selector.queryKindInfo(region);
+            int region = jsonReq.getInt("region");
 
-			return new ModelAndView("jsonView", success(data));
+            KindCodeSelector selector = new KindCodeSelector();
 
-		} catch (Exception e) {
+            JSONArray data = selector.queryKindInfo(region);
 
-			logger.error(e.getMessage(), e);
+            return new ModelAndView("jsonView", success(data));
 
-			return new ModelAndView("jsonView", fail(e.getMessage()));
-		}
-	}
-	
+        } catch (Exception e) {
 
-	/**
-	 * @Title: searchRdNameForWeb
-	 * @Description: 根据任务的grid，查找对应任务grid范围内的rd_name
-	 * @param request
-	 * @return
-	 * @throws ServletException
-	 * @throws IOException  ModelAndView
-	 * @throws 
-	 * @author zl zhangli5174@navinfo.com
-	 * @date 2016年11月14日 下午7:58:19 
-	 */
-	@RequestMapping(value = "/rdname/websearch")
-	public ModelAndView searchRdNameForWeb(HttpServletRequest request)
-			throws ServletException, IOException {
-		String parameter = request.getParameter("parameter");
-		try {
-			JSONObject jsonReq = JSONObject.fromObject(parameter);
+            logger.error(e.getMessage(), e);
 
-			RdNameSelector selector = new RdNameSelector();
-			
-			int subtaskId = jsonReq.getInt("subtaskId");
-			
-			ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
-			
-			Subtask subtask = apiService.queryBySubtaskId(subtaskId);
-			
-			if (subtask == null) {
-				throw new Exception("subtaskid未找到数据");
-			}
-			
+            return new ModelAndView("jsonView", fail(e.getMessage()));
+        }
+    }
+
+
+    /**
+     * @param request
+     * @return
+     * @throws ServletException
+     * @throws IOException      ModelAndView
+     * @throws
+     * @Title: searchRdNameForWeb
+     * @Description: 根据任务的grid，查找对应任务grid范围内的rd_name
+     * @author zl zhangli5174@navinfo.com
+     * @date 2016年11月14日 下午7:58:19
+     */
+    @RequestMapping(value = "/rdname/websearch")
+    public ModelAndView searchRdNameForWeb(HttpServletRequest request)
+            throws ServletException, IOException {
+        String parameter = request.getParameter("parameter");
+        try {
+            JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+            RdNameSelector selector = new RdNameSelector();
+
+            int subtaskId = jsonReq.getInt("subtaskId");
+
+            ManApi apiService = (ManApi) ApplicationContextUtil.getBean("manApi");
+
+            Subtask subtask = apiService.queryBySubtaskId(subtaskId);
+
+            if (subtask == null) {
+                throw new Exception("subtaskid未找到数据");
+            }
+
 //			int dbId = subtask.getDbId();
-			
-			FccApi apiFcc=(FccApi) ApplicationContextUtil.getBean("fccApi");
-			
-			JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(),1901,new JSONArray());
-			
-			JSONObject data = selector.searchForWeb(jsonReq,tips);
 
-			return new ModelAndView("jsonView", success(data));
+            FccApi apiFcc = (FccApi) ApplicationContextUtil.getBean("fccApi");
 
-		} catch (Exception e) {
+            JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(), 1901, new JSONArray());
 
-			logger.error(e.getMessage(), e);
+            JSONObject data = selector.searchForWeb(jsonReq, tips);
 
-			return new ModelAndView("jsonView", fail(e.getMessage()));
-		}
-	}
-	
-	/**
-	 * @Title: searchRdNameForWeb
-	 * @Description: 根据name_id，查询rd_name
-	 * @param request
-	 * @return
-	 * @throws ServletException
-	 * @throws IOException  ModelAndView
-	 * @throws 
-	 * @author zl zhangli5174@navinfo.com
-	 * @date 2016年11月14日 下午7:58:19 
-	 */
-	@RequestMapping(value = "/rdname/getByNameId")
-	public ModelAndView searchByNameId(HttpServletRequest request)
-			throws ServletException, IOException {
-		String parameter = request.getParameter("parameter");
-		try {
-			JSONObject jsonReq = JSONObject.fromObject(parameter);
+            return new ModelAndView("jsonView", success(data));
 
-			RdNameSelector selector = new RdNameSelector();
-			
-			String nameId = jsonReq.getString("nameId");
-			
-			
-			JSONObject data = selector.searchForWebByNameId(nameId);
-			if(data != null){
-				return new ModelAndView("jsonView", success(data));
-			}
-			else{
-				return new ModelAndView("jsonView", fail("无数据"));
-			}
+        } catch (Exception e) {
 
-		} catch (Exception e) {
+            logger.error(e.getMessage(), e);
 
-			logger.error(e.getMessage(), e);
+            return new ModelAndView("jsonView", fail(e.getMessage()));
+        }
+    }
 
-			return new ModelAndView("jsonView", fail(e.getMessage()));
-		}
-	}
-	
+    /**
+     * @param request
+     * @return
+     * @throws ServletException
+     * @throws IOException      ModelAndView
+     * @throws
+     * @Title: searchRdNameForWeb
+     * @Description: 根据name_id，查询rd_name
+     * @author zl zhangli5174@navinfo.com
+     * @date 2016年11月14日 下午7:58:19
+     */
+    @RequestMapping(value = "/rdname/getByNameId")
+    public ModelAndView searchByNameId(HttpServletRequest request)
+            throws ServletException, IOException {
+        String parameter = request.getParameter("parameter");
+        try {
+            JSONObject jsonReq = JSONObject.fromObject(parameter);
 
-	/**
-	 * @Title: webSave
-	 * @Description: 增加参数 subtaskId
-	 * @param request
-	 * @return
-	 * @throws ServletException
-	 * @throws IOException  ModelAndView
-	 * @throws 
-	 * @author zl zhangli5174@navinfo.com
-	 * @date 2016年11月14日 下午6:15:21 
-	 */
-	@RequestMapping(value = "/rdname/websave")
-	public ModelAndView webSave(HttpServletRequest request)
-			throws ServletException, IOException {
-		String parameter = request.getParameter("parameter");
-		try {
-			JSONObject jsonReq = JSONObject.fromObject(parameter);
-			
-			JSONObject data = jsonReq.getJSONObject("data");
-			
-			int subtaskId = jsonReq.getInt("subtaskId");
-			
+            RdNameSelector selector = new RdNameSelector();
+
+            String nameId = jsonReq.getString("nameId");
+
+
+            JSONObject data = selector.searchForWebByNameId(nameId);
+            if (data != null) {
+                return new ModelAndView("jsonView", success(data));
+            } else {
+                return new ModelAndView("jsonView", fail("无数据"));
+            }
+
+        } catch (Exception e) {
+
+            logger.error(e.getMessage(), e);
+
+            return new ModelAndView("jsonView", fail(e.getMessage()));
+        }
+    }
+
+
+    /**
+     * @param request
+     * @return
+     * @throws ServletException
+     * @throws IOException      ModelAndView
+     * @throws
+     * @Title: webSave
+     * @Description: 增加参数 subtaskId
+     * @author zl zhangli5174@navinfo.com
+     * @date 2016年11月14日 下午6:15:21
+     */
+    @RequestMapping(value = "/rdname/websave")
+    public ModelAndView webSave(HttpServletRequest request)
+            throws ServletException, IOException {
+        String parameter = request.getParameter("parameter");
+        try {
+            JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+            JSONObject data = jsonReq.getJSONObject("data");
+
+            int subtaskId = jsonReq.getInt("subtaskId");
+
 //			int dbId = jsonReq.getInt("dbId");
-			
-			RdNameImportor importor = new RdNameImportor();
-			
-			JSONObject result = importor.importRdNameFromWeb(data,subtaskId);
-			
-			return new ModelAndView("jsonView", success(result));
-		} catch (Exception e) {
-	
-			logger.error(e.getMessage(), e);
-	
-			return new ModelAndView("jsonView", fail(e.getMessage()));
-		}
-	}
-	
-	/**
-	 * @Title: webResultUpdate
-	 * @Description: 修改某条道路名检查结果的状态
-	 * @param request
-	 * @return
-	 * @throws ServletException
-	 * @throws IOException  ModelAndView
-	 * @throws 
-	 * @author zl zhangli5174@navinfo.com
-	 * @date 2016年11月17日 下午8:32:40 
-	 */
-	@RequestMapping(value = "/rdname/webResultUpdate")
-	public void webResultUpdate(HttpServletRequest request)
-			throws ServletException, IOException {
-		String parameter = request.getParameter("parameter");
-		try {
-			JSONObject jsonReq = JSONObject.fromObject(parameter);
-			RdNameSelector selector = new RdNameSelector();
-			int valExceptionId = jsonReq.getInt("valExceptionId");
-			int qaStatus = jsonReq.getInt("qaStatus"); //1:以质检  2:未质检
-			
-			selector.udateResultStatusById(valExceptionId,qaStatus);
-			
-			//return new ModelAndView("jsonView", success(result));
-		} catch (Exception e) {
-	
-			logger.error(e.getMessage(), e);
-	
-			//return new ModelAndView("jsonView", fail(e.getMessage()));
-		}
-	}
-	
 
-	/**
-	 * @Title: webTeilen
-	 * @Description: 道路名拆分(修)(第七迭代)  增加铁路类的英文拆分
-	 * @param request
-	 * @return
-	 * @throws ServletException
-	 * @throws IOException  ModelAndView
-	 * @throws 
-	 * @author zl zhangli5174@navinfo.com
-	 * @date 2016年11月18日 下午7:58:29 
-	 */
-	@RequestMapping(value = "/rdname/webteilen")
-	public ModelAndView webTeilen(HttpServletRequest request)
-			throws ServletException, IOException {
-		String parameter = request.getParameter("parameter");
-		
-		Connection conn = null;
-		
-		try {
-			JSONObject jsonReq = JSONObject.fromObject(parameter);
-			
-			int flag = jsonReq.getInt("flag");
-			
+            RdNameImportor importor = new RdNameImportor();
+
+            JSONObject result = importor.importRdNameFromWeb(data, subtaskId);
+
+            return new ModelAndView("jsonView", success(result));
+        } catch (Exception e) {
+
+            logger.error(e.getMessage(), e);
+
+            return new ModelAndView("jsonView", fail(e.getMessage()));
+        }
+    }
+
+    /**
+     * @param request
+     * @return
+     * @throws ServletException
+     * @throws IOException      ModelAndView
+     * @throws
+     * @Title: webResultUpdate
+     * @Description: 修改某条道路名检查结果的状态
+     * @author zl zhangli5174@navinfo.com
+     * @date 2016年11月17日 下午8:32:40
+     */
+    @RequestMapping(value = "/rdname/webResultUpdate")
+    public void webResultUpdate(HttpServletRequest request)
+            throws ServletException, IOException {
+        String parameter = request.getParameter("parameter");
+        try {
+            JSONObject jsonReq = JSONObject.fromObject(parameter);
+            RdNameSelector selector = new RdNameSelector();
+            int valExceptionId = jsonReq.getInt("valExceptionId");
+            int qaStatus = jsonReq.getInt("qaStatus"); //1:以质检  2:未质检
+
+            selector.udateResultStatusById(valExceptionId, qaStatus);
+
+            //return new ModelAndView("jsonView", success(result));
+        } catch (Exception e) {
+
+            logger.error(e.getMessage(), e);
+
+            //return new ModelAndView("jsonView", fail(e.getMessage()));
+        }
+    }
+
+
+    /**
+     * @param request
+     * @return
+     * @throws ServletException
+     * @throws IOException      ModelAndView
+     * @throws
+     * @Title: webTeilen
+     * @Description: 道路名拆分(修)(第七迭代)  增加铁路类的英文拆分
+     * @author zl zhangli5174@navinfo.com
+     * @date 2016年11月18日 下午7:58:29
+     */
+    @RequestMapping(value = "/rdname/webteilen")
+    public ModelAndView webTeilen(HttpServletRequest request)
+            throws ServletException, IOException {
+        String parameter = request.getParameter("parameter");
+
+        Connection conn = null;
+
+        try {
+            JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+            int flag = jsonReq.getInt("flag");
+
 //			int dbId = jsonReq.getInt("dbId");
-			
-			conn = DBConnector.getInstance().getMetaConnection();
-			
-			RdNameOperation operation = new RdNameOperation(conn);
-			
-			if (flag>0) {//拆分指定数据
-				JSONArray dataList = jsonReq.getJSONArray("data");
-				
-				operation.teilenRdName(dataList);
-			} else {//拆分整个子任务数据
-				int subtaskId = jsonReq.getInt("subtaskId");
-				
-				ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
-				
-				Subtask subtask = apiService.queryBySubtaskId(subtaskId);
-				
-				FccApi apiFcc=(FccApi) ApplicationContextUtil.getBean("fccApi");
-				
-				JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(),1901,new JSONArray());
-				
-				operation.teilenRdNameByTask(tips);
-			}
 
-			return new ModelAndView("jsonView", success());
-		} catch (Exception e) {
-	
-			logger.error(e.getMessage(), e);
-	
-			return new ModelAndView("jsonView", fail(e.getMessage()));
-		} finally {
-			DbUtils.commitAndCloseQuietly(conn);
-		}
-	}
-	
-	/**
-	 * 获取nametype
-	 * @param request
-	 * @return
-	 * @throws ServletException
-	 * @throws IOException
-	 */
-	@RequestMapping(value = "/rdname/nametype")
-	public ModelAndView webNameType(HttpServletRequest request)
-			throws ServletException, IOException {
-		String parameter = request.getParameter("parameter");
-		try {
-			JSONObject jsonReq = JSONObject.fromObject(parameter);
-			
-			int pageSize = jsonReq.getInt("pageSize");
-			int pageNum = jsonReq.getInt("pageNum");
-			
-			String name = "";
-			if (jsonReq.containsKey("name")) {
-				name = jsonReq.getString("name");
-			}
-			
-			String sortby = "";
-			if (jsonReq.containsKey("sortby")) {
-				sortby = jsonReq.getString("sortby");
-			}
-			
-			ScRoadnameTypename typename = new ScRoadnameTypename();
-			
-			JSONObject data = typename.getNameType(pageNum,pageSize,name,sortby);
-			
-			return new ModelAndView("jsonView", success(data));
-		} catch (Exception e) {
-	
-			logger.error(e.getMessage(), e);
-	
-			return new ModelAndView("jsonView", fail(e.getMessage()));
-		}
-	}
+            conn = DBConnector.getInstance().getMetaConnection();
 
-	/**
-	 * 获取行政区划
-	 * @param request
-	 * @return
-	 * @throws ServletException
-	 * @throws IOException
-	 */
-	@RequestMapping(value = "/rdname/adminarea")
-	public ModelAndView webAdminarea(HttpServletRequest request)
-			throws ServletException, IOException {
-		String parameter = request.getParameter("parameter");
-		try {
-			JSONObject jsonReq = JSONObject.fromObject(parameter);
-			
-			int pageSize = jsonReq.getInt("pageSize");
-			int pageNum = jsonReq.getInt("pageNum");
-			
-			String name = "";
-			if (jsonReq.containsKey("name")) {
-				name = jsonReq.getString("name");
-			}
-			
-			String sortby = "";
-			if (jsonReq.containsKey("sortby")) {
-				sortby = jsonReq.getString("sortby");
-			}
-			
-			ScPointAdminArea adminarea = new ScPointAdminArea();
-			
-			JSONObject data = adminarea.getAdminArea(pageSize,pageNum,name,sortby);
-			
-			return new ModelAndView("jsonView", success(data));
-		} catch (Exception e) {
-	
-			logger.error(e.getMessage(), e);
-	
-			return new ModelAndView("jsonView", fail(e.getMessage()));
-		}
-	}
-	
-	/**
-	 * 查询该组下是否存在英文/葡文名
-	 * @param request
-	 * @return
-	 * @throws ServletException
-	 * @throws IOException
-	 */
-	@RequestMapping(value = "/rdname/group")
-	public ModelAndView webEngGroup(HttpServletRequest request)
-			throws ServletException, IOException {
-		String parameter = request.getParameter("parameter");
-		
-		Connection conn = null;
-		try {
-			JSONObject jsonReq = JSONObject.fromObject(parameter);
-			
-			int nameGroupid = jsonReq.getInt("nameGroupid");
-			
+            RdNameOperation operation = new RdNameOperation(conn);
+
+            if (flag > 0) {//拆分指定数据
+                JSONArray dataList = jsonReq.getJSONArray("data");
+
+                operation.teilenRdName(dataList);
+            } else {//拆分整个子任务数据
+                int subtaskId = jsonReq.getInt("subtaskId");
+
+                ManApi apiService = (ManApi) ApplicationContextUtil.getBean("manApi");
+
+                Subtask subtask = apiService.queryBySubtaskId(subtaskId);
+
+                FccApi apiFcc = (FccApi) ApplicationContextUtil.getBean("fccApi");
+
+                JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(), 1901, new JSONArray());
+
+                operation.teilenRdNameByTask(tips);
+            }
+
+            return new ModelAndView("jsonView", success());
+        } catch (Exception e) {
+
+            logger.error(e.getMessage(), e);
+
+            return new ModelAndView("jsonView", fail(e.getMessage()));
+        } finally {
+            DbUtils.commitAndCloseQuietly(conn);
+        }
+    }
+
+    /**
+     * 获取nametype
+     *
+     * @param request
+     * @return
+     * @throws ServletException
+     * @throws IOException
+     */
+    @RequestMapping(value = "/rdname/nametype")
+    public ModelAndView webNameType(HttpServletRequest request)
+            throws ServletException, IOException {
+        String parameter = request.getParameter("parameter");
+        try {
+            JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+            int pageSize = jsonReq.getInt("pageSize");
+            int pageNum = jsonReq.getInt("pageNum");
+
+            String name = "";
+            if (jsonReq.containsKey("name")) {
+                name = jsonReq.getString("name");
+            }
+
+            String sortby = "";
+            if (jsonReq.containsKey("sortby")) {
+                sortby = jsonReq.getString("sortby");
+            }
+
+            ScRoadnameTypename typename = new ScRoadnameTypename();
+
+            JSONObject data = typename.getNameType(pageNum, pageSize, name, sortby);
+
+            return new ModelAndView("jsonView", success(data));
+        } catch (Exception e) {
+
+            logger.error(e.getMessage(), e);
+
+            return new ModelAndView("jsonView", fail(e.getMessage()));
+        }
+    }
+
+    /**
+     * 获取行政区划
+     *
+     * @param request
+     * @return
+     * @throws ServletException
+     * @throws IOException
+     */
+    @RequestMapping(value = "/rdname/adminarea")
+    public ModelAndView webAdminarea(HttpServletRequest request)
+            throws ServletException, IOException {
+        String parameter = request.getParameter("parameter");
+        try {
+            JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+            int pageSize = jsonReq.getInt("pageSize");
+            int pageNum = jsonReq.getInt("pageNum");
+
+            String name = "";
+            if (jsonReq.containsKey("name")) {
+                name = jsonReq.getString("name");
+            }
+
+            String sortby = "";
+            if (jsonReq.containsKey("sortby")) {
+                sortby = jsonReq.getString("sortby");
+            }
+
+            ScPointAdminArea adminarea = new ScPointAdminArea();
+
+            JSONObject data = adminarea.getAdminArea(pageSize, pageNum, name, sortby);
+
+            return new ModelAndView("jsonView", success(data));
+        } catch (Exception e) {
+
+            logger.error(e.getMessage(), e);
+
+            return new ModelAndView("jsonView", fail(e.getMessage()));
+        }
+    }
+
+    /**
+     * 查询该组下是否存在英文/葡文名
+     *
+     * @param request
+     * @return
+     * @throws ServletException
+     * @throws IOException
+     */
+    @RequestMapping(value = "/rdname/group")
+    public ModelAndView webEngGroup(HttpServletRequest request)
+            throws ServletException, IOException {
+        String parameter = request.getParameter("parameter");
+
+        Connection conn = null;
+        try {
+            JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+            int nameGroupid = jsonReq.getInt("nameGroupid");
+
 //			int dbId = jsonReq.getInt("dbId");
-			
-			conn = DBConnector.getInstance().getMetaConnection();
-			
-			RdNameOperation operation = new RdNameOperation(conn);
-			
-			boolean result = operation.checkEngName(nameGroupid);
-			
-			return new ModelAndView("jsonView", success(result));
-		} catch (Exception e) {
-	
-			logger.error(e.getMessage(), e);
-	
-			return new ModelAndView("jsonView", fail(e.getMessage()));
-		} finally {
-			DbUtils.closeQuietly(conn);
-		}
-	}
-	
-	@RequestMapping(value = "/deep/workitem")
-	public ModelAndView getWorkItemMap(HttpServletRequest request)
-			throws ServletException, IOException {
-		String parameter = request.getParameter("parameter");
-		
-		try {
-			JSONObject jsonReq = JSONObject.fromObject(parameter);
-			
-			int type = 0;
-			if (jsonReq.containsKey("type")) {
-				type = jsonReq.getInt("type");
-			}
-			
-			Workitem workitem = new Workitem();
-			
-			JSONArray result = workitem.getDataMap(type);
-			
-			return new ModelAndView("jsonView", success(result));
-		} catch (Exception e) {
-	
-			logger.error(e.getMessage(), e);
-	
-			return new ModelAndView("jsonView", fail(e.getMessage()));
-		}
-	}
-	
-	@RequestMapping(value = "/queryTruck")
-	public ModelAndView queryTruck(HttpServletRequest request)
-			throws ServletException, IOException {
 
-		String parameter = request.getParameter("parameter");
-		Connection conn = null;
-		try {
-			JSONObject jsonReq = JSONObject.fromObject(parameter);
+            conn = DBConnector.getInstance().getMetaConnection();
 
-			String kind= jsonReq.getString("kindCode");
-			String chain= jsonReq.getString("chain");
-			String fuelType= jsonReq.getString("fuelType");
-			
-			conn = DBConnector.getInstance().getMetaConnection();
-			TruckSelector selector = new TruckSelector(conn);
+            RdNameOperation operation = new RdNameOperation(conn);
 
-			int truck = selector.getTruck(kind,chain,fuelType);
+            boolean result = operation.checkEngName(nameGroupid);
 
-			return new ModelAndView("jsonView", success(truck));
+            return new ModelAndView("jsonView", success(result));
+        } catch (Exception e) {
 
-		} catch (Exception e) {
+            logger.error(e.getMessage(), e);
 
-			logger.error(e.getMessage(), e);
+            return new ModelAndView("jsonView", fail(e.getMessage()));
+        } finally {
+            DbUtils.closeQuietly(conn);
+        }
+    }
 
-			return new ModelAndView("jsonView", fail(e.getMessage()));
-		} finally {
-			DbUtils.closeQuietly(conn);
-		}
-	}
-	
-	@RequestMapping(value = "/queryTmcTreeByIds")
-	public ModelAndView queryTmcByIds(HttpServletRequest request)
-			throws ServletException, IOException {
+    @RequestMapping(value = "/deep/workitem")
+    public ModelAndView getWorkItemMap(HttpServletRequest request)
+            throws ServletException, IOException {
+        String parameter = request.getParameter("parameter");
 
-		String parameter = request.getParameter("parameter");
-		Connection conn = null;
-		try {
-			JSONObject jsonReq = JSONObject.fromObject(parameter);
+        try {
+            JSONObject jsonReq = JSONObject.fromObject(parameter);
 
-			JSONArray tmcIds = jsonReq.getJSONArray("tmcIds");
-			
-			conn = DBConnector.getInstance().getMetaConnection();
-			
-			TmcSelector selector = new TmcSelector(conn);
+            int type = 0;
+            if (jsonReq.containsKey("type")) {
+                type = jsonReq.getInt("type");
+            }
 
-			TmcLineTree tree = selector.queryTmcTree(tmcIds);
+            Workitem workitem = new Workitem();
 
-			return new ModelAndView("jsonView", success(tree.Serialize(ObjLevel.BRIEF)));
+            JSONArray result = workitem.getDataMap(type);
 
-		} catch (Exception e) {
+            return new ModelAndView("jsonView", success(result));
+        } catch (Exception e) {
 
-			logger.error(e.getMessage(), e);
+            logger.error(e.getMessage(), e);
 
-			return new ModelAndView("jsonView", fail(e.getMessage()));
-		} finally {
-			DbUtils.closeQuietly(conn);
-		}
-	}
-	
-	@RequestMapping(value = "/queryTmcById")
-	public ModelAndView queryTmcPointById(HttpServletRequest request)
-			throws ServletException, IOException {
+            return new ModelAndView("jsonView", fail(e.getMessage()));
+        }
+    }
 
-		String parameter = request.getParameter("parameter");
-		Connection conn = null;
-		try {
-			JSONObject jsonReq = JSONObject.fromObject(parameter);
-			
-			conn = DBConnector.getInstance().getMetaConnection();
+    @RequestMapping(value = "/queryTruck")
+    public ModelAndView queryTruck(HttpServletRequest request)
+            throws ServletException, IOException {
 
-			int tmcId = jsonReq.getInt("tmcId");
-			
-			String objType = jsonReq.getString("type");
-			
-			switch (ObjType.valueOf(objType)) {
-			case TMCLINE:
-				TmcLineSelector lineSelector = new TmcLineSelector(conn);
+        String parameter = request.getParameter("parameter");
+        Connection conn = null;
+        try {
+            JSONObject jsonReq = JSONObject.fromObject(parameter);
 
-				TmcLine tmcLine = lineSelector.loadByTmcLineId(tmcId);
+            String kind = jsonReq.getString("kindCode");
+            String chain = jsonReq.getString("chain");
+            String fuelType = jsonReq.getString("fuelType");
 
-				return new ModelAndView("jsonView", success(tmcLine.Serialize(ObjLevel.BRIEF)));
-			case TMCPOINT:
-				TmcPointSelector pointSelector = new TmcPointSelector(conn);
+            conn = DBConnector.getInstance().getMetaConnection();
+            TruckSelector selector = new TruckSelector(conn);
 
-				TmcPoint tmcPoint = pointSelector.loadByTmcPointId(tmcId);
+            int truck = selector.getTruck(kind, chain, fuelType);
 
-				return new ModelAndView("jsonView", success(tmcPoint.Serialize(ObjLevel.BRIEF)));
-			default:
-				return new ModelAndView("jsonView", fail("TMC查询类型参数错误"));
-			}
-		} catch (Exception e) {
+            return new ModelAndView("jsonView", success(truck));
 
-			logger.error(e.getMessage(), e);
+        } catch (Exception e) {
 
-			return new ModelAndView("jsonView", fail(e.getMessage()));
-		} finally {
-			DbUtils.closeQuietly(conn);
-		}
-	}
-	
-	@RequestMapping(value = "/queryChargingChain")
-	public ModelAndView queryChargingChain(HttpServletRequest request)
-			throws ServletException, IOException {
+            logger.error(e.getMessage(), e);
 
-		try {
+            return new ModelAndView("jsonView", fail(e.getMessage()));
+        } finally {
+            DbUtils.closeQuietly(conn);
+        }
+    }
 
-			ChainSelector selector = new ChainSelector();
+    @RequestMapping(value = "/queryTmcTreeByIds")
+    public ModelAndView queryTmcByIds(HttpServletRequest request)
+            throws ServletException, IOException {
 
-			JSONArray data = selector.getChargingChain();
+        String parameter = request.getParameter("parameter");
+        Connection conn = null;
+        try {
+            JSONObject jsonReq = JSONObject.fromObject(parameter);
 
-			return new ModelAndView("jsonView", success(data));
+            JSONArray tmcIds = jsonReq.getJSONArray("tmcIds");
 
-		} catch (Exception e) {
+            conn = DBConnector.getInstance().getMetaConnection();
 
-			logger.error(e.getMessage(), e);
+            TmcSelector selector = new TmcSelector(conn);
 
-			return new ModelAndView("jsonView", fail(e.getMessage()));
-		}
-	}
-	
+            TmcLineTree tree = selector.queryTmcTree(tmcIds);
+
+            return new ModelAndView("jsonView", success(tree.Serialize(ObjLevel.BRIEF)));
+
+        } catch (Exception e) {
+
+            logger.error(e.getMessage(), e);
+
+            return new ModelAndView("jsonView", fail(e.getMessage()));
+        } finally {
+            DbUtils.closeQuietly(conn);
+        }
+    }
+
+    @RequestMapping(value = "/queryTmcById")
+    public ModelAndView queryTmcPointById(HttpServletRequest request)
+            throws ServletException, IOException {
+
+        String parameter = request.getParameter("parameter");
+        Connection conn = null;
+        try {
+            JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+            conn = DBConnector.getInstance().getMetaConnection();
+
+            int tmcId = jsonReq.getInt("tmcId");
+
+            String objType = jsonReq.getString("type");
+
+            switch (ObjType.valueOf(objType)) {
+                case TMCLINE:
+                    TmcLineSelector lineSelector = new TmcLineSelector(conn);
+
+                    TmcLine tmcLine = lineSelector.loadByTmcLineId(tmcId);
+
+                    return new ModelAndView("jsonView", success(tmcLine.Serialize(ObjLevel.BRIEF)));
+                case TMCPOINT:
+                    TmcPointSelector pointSelector = new TmcPointSelector(conn);
+
+                    TmcPoint tmcPoint = pointSelector.loadByTmcPointId(tmcId);
+
+                    return new ModelAndView("jsonView", success(tmcPoint.Serialize(ObjLevel.BRIEF)));
+                default:
+                    return new ModelAndView("jsonView", fail("TMC查询类型参数错误"));
+            }
+        } catch (Exception e) {
+
+            logger.error(e.getMessage(), e);
+
+            return new ModelAndView("jsonView", fail(e.getMessage()));
+        } finally {
+            DbUtils.closeQuietly(conn);
+        }
+    }
+
+    @RequestMapping(value = "/queryChargingChain")
+    public ModelAndView queryChargingChain(HttpServletRequest request)
+            throws ServletException, IOException {
+
+        try {
+
+            ChainSelector selector = new ChainSelector();
+
+            JSONArray data = selector.getChargingChain();
+
+            return new ModelAndView("jsonView", success(data));
+
+        } catch (Exception e) {
+
+            logger.error(e.getMessage(), e);
+
+            return new ModelAndView("jsonView", fail(e.getMessage()));
+        }
+    }
+
 }

@@ -6,7 +6,6 @@ import java.util.Date;
 import java.util.List;
 
 import net.sf.json.JSONArray;
-import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
 
 import org.apache.hadoop.hbase.Cell;
@@ -81,7 +80,7 @@ public class PretreatmentTipsOperator {
 			String rowkey = TipsUtils.getNewRowkey(sourceType);
 
 			// 2.feedback
-			String operateDate = DateUtils.dateToString(new Date(),
+			String currentDate = DateUtils.dateToString(new Date(),
 					DateUtils.DATE_COMPACTED_FORMAT);
 
 			JSONObject feedbackObj = new JSONObject();
@@ -92,7 +91,7 @@ public class PretreatmentTipsOperator {
 			if (StringUtils.isNotEmpty(memo)) {
 				int type = 3;
 				JSONObject newFeedback2 = TipsUtils.newFeedback(user, memo,
-						type, operateDate);
+						type, currentDate);
 				f_array.add(newFeedback2);
 			}
 			feedbackObj.put("f_array", f_array);
@@ -109,13 +108,13 @@ public class PretreatmentTipsOperator {
 			int t_inMeth = 1;
 
 			JSONObject jsonTrack = TipsUtils.generateTrackJson(t_lifecycle,stage,
-					user, t_command, null, operateDate, t_cStatus, t_dStatus,
+					user, t_command, null, currentDate,currentDate, t_cStatus, t_dStatus,
 					t_mStatus, t_inStatus, t_inMeth);
 
 			// 4.geometry
 			JSONObject jsonGeom = new JSONObject();
 			jsonGeom.put("g_location", lineGeometry);
-			jsonGeom.put("g_guide", JSONNull.getInstance());
+			jsonGeom.put("g_guide", TipsUtils.OBJECT_NULL_DEFAULT_VALUE);
 
 			// source
 			int s_sourceCode = 14;
@@ -160,9 +159,9 @@ public class PretreatmentTipsOperator {
 
 			// solr index json
 			JSONObject solrIndex = TipsUtils.generateSolrIndex(rowkey, stage,
-					operateDate, operateDate, t_lifecycle, t_command, user,
+					currentDate, currentDate, t_lifecycle, t_command, user,
 					t_cStatus, t_dStatus, t_mStatus, sourceType, s_sourceCode,
-					null, lineGeometry, deepNew, f_array, s_reliability);
+					null, lineGeometry, deepNew, f_array, s_reliability,t_inStatus,t_inMeth);
 
 			solr.addTips(solrIndex);
 

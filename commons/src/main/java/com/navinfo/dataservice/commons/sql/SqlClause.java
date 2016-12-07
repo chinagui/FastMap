@@ -9,6 +9,8 @@ import java.util.List;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 
+import com.navinfo.navicommons.database.QueryRunner;
+
 /*
  * @author MaYunFei
  * 2016年6月25日
@@ -103,5 +105,18 @@ public class SqlClause {
 		return null;
 		
 	}
+	public int update(Connection conn) throws SQLException{
+		if (this==null) return 0;
+		QueryRunner run = new QueryRunner();
+		if (this.getValues()==null || this.getValues().size()==0){
+			return run.update(conn, this.getSql());
+		}
+		return run.update(conn, this.getSql(),this.getValues().toArray());
+	}
+	@Override
+	public String toString() {
+		return "SqlClause [sql=" + sql + ", values=" + values + "]";
+	}
+	
 }
 

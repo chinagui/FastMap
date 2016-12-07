@@ -19,7 +19,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionVia;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
 
-/** 
+/** 删除，不要了，=-=
  * @ClassName: GLM04005
  * @author songdongyan
  * @date 2016年12月5日

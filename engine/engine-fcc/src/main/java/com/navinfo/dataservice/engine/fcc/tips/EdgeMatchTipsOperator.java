@@ -164,6 +164,8 @@ public class EdgeMatchTipsOperator {
 
 			htab.close();
 			
+			htab.close();
+			
 			return rowkey;
 
 		} catch (IOException e) {
@@ -275,6 +277,8 @@ public class EdgeMatchTipsOperator {
 			solr.addTips(solrIndex);
 
 			htab.put(put);
+			
+			htab.close();
 
 		} catch (IOException e) {
 			
@@ -369,6 +373,8 @@ public class EdgeMatchTipsOperator {
 			list.add(d1);
 			
 			htab.delete(list);
+			
+			htab.close();
 		} catch (SolrServerException e) {
 
 			logger.error("删除tips失败，rowkey：" + rowkey + "\n" + e.getMessage(), e);

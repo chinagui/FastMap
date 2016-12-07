@@ -16,13 +16,18 @@ import com.navinfo.dataservice.commons.util.UuidUtils;
 public class TipsUtils {
 
 	public static int[] notExpSourceType = { 8001, 8002 }; // 不下载的tips
+	
+	//关于空值得定义：对象NULL,数据[]，字符串""
+	static Object OBJECT_NULL_DEFAULT_VALUE=JSONNull.getInstance();
 
+	static String STRING_NULL_DEFAULT_VALUE="";
 	/**
 	 * 组装Track
 	 * 
 	 * @param lifecycle
 	 * @param handler
 	 * @param oldTrackInfo
+	 * @param currentDate 
 	 * @param t_cStatus
 	 * @param t_dStatus
 	 * @param t_mStatus
@@ -30,7 +35,7 @@ public class TipsUtils {
 	 */
 	public static JSONObject generateTrackJson(int lifecycle,int stage, int handler,
 			int command, JSONArray oldTrackInfo, String t_operateDate,
-			int t_cStatus, int t_dStatus, int t_mStatus, int t_inStatus,
+			String currentDate, int t_cStatus, int t_dStatus, int t_mStatus, int t_inStatus,
 			int t_inMeth) {
 
 		JSONObject jsonTrack = new JSONObject();
@@ -39,7 +44,7 @@ public class TipsUtils {
 
 		jsonTrack.put("t_command", command);
 
-		jsonTrack.put("t_date", t_operateDate);
+		jsonTrack.put("t_date", currentDate);//数据入库时服务器时间
 
 		jsonTrack.put("t_cStatus", t_cStatus);
 
@@ -55,7 +60,7 @@ public class TipsUtils {
 
 		jsonTrackInfo.put("stage", stage);
 
-		jsonTrackInfo.put("date", t_inMeth);
+		jsonTrackInfo.put("date", t_operateDate); //t_operateDate 原值导入
 
 		jsonTrackInfo.put("handler", handler);
 
@@ -80,9 +85,9 @@ public class TipsUtils {
 
 		index.put("stage", 1);
 
-		index.put("t_date", currentDate);
+		index.put("t_date", currentDate); //当前时间
 
-		index.put("t_operateDate", json.getString("t_operateDate"));
+		index.put("t_operateDate", json.getString("t_operateDate")); //t_operateDate原值导入
 
 		index.put("t_lifecycle", json.getInt("t_lifecycle"));
 
@@ -182,7 +187,7 @@ public class TipsUtils {
 		
 		if(g_guide==null){
 			
-			index.put("g_guide", JSONNull.getInstance());
+			index.put("g_guide", TipsUtils.OBJECT_NULL_DEFAULT_VALUE);
 		}else{
 			
 			index.put("g_guide", g_guide);
@@ -190,7 +195,7 @@ public class TipsUtils {
 
 		if(g_location==null){
 			
-			index.put("g_location", JSONNull.getInstance());
+			index.put("g_location", TipsUtils.OBJECT_NULL_DEFAULT_VALUE);
 		}else{
 			
 			index.put("g_location", g_location);
@@ -202,7 +207,7 @@ public class TipsUtils {
 			index.put("deep", deep.toString());
 		} else {
 			
-			index.put("deep", JSONNull.getInstance());
+			index.put("deep", TipsUtils.OBJECT_NULL_DEFAULT_VALUE);
 		}
 
 		index.put("feedback", feedBackArr.toString());
@@ -243,13 +248,13 @@ public class TipsUtils {
 
 		newFeedback.put("user", user);
 
-		newFeedback.put("userRole", JSONNull.getInstance());
+		newFeedback.put("userRole", TipsUtils.OBJECT_NULL_DEFAULT_VALUE);
 
 		newFeedback.put("type", type);
 
 		newFeedback.put("content", memo);
 
-		newFeedback.put("auditRemark", JSONNull.getInstance());
+		newFeedback.put("auditRemark", TipsUtils.STRING_NULL_DEFAULT_VALUE);
 
 		newFeedback.put("date", operateDate);
 		return newFeedback;
@@ -275,7 +280,7 @@ public class TipsUtils {
 		source.put("s_featureKind", s_featureKind);
 		source.put("s_project", s_project);
 		source.put("s_sourceCode", s_sourceCode);
-		source.put("s_sourceId", JSONNull.getInstance());
+		source.put("s_sourceId", TipsUtils.STRING_NULL_DEFAULT_VALUE);
 		source.put("s_sourceType", s_sourceType);
 		source.put("s_reliability", s_reliability);
 		source.put("s_sourceProvider", s_sourceProvider);

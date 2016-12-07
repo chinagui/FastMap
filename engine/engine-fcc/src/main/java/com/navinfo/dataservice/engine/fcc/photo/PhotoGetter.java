@@ -30,8 +30,13 @@ public class PhotoGetter {
 			throws Exception {
 
 		HBaseController control = new HBaseController();
+		
+		System.out.println("rowkey:"+rowkey);
 
 		byte[] photo = control.getPhotoByRowkey(rowkey);
+		
+		if(photo==null||photo.length==0) 
+			return new byte[0];
 
 		if ("origin".equals(type)) {
 			return photo;

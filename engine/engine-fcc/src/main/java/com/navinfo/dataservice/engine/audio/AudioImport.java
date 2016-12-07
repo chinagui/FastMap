@@ -105,10 +105,8 @@ public class AudioImport {
 
 		Put put = new Put(audio.getRowkey().getBytes());
 		
-		JSONObject  attribute=JSONObject.fromObject( JSONObject.fromObject(audio).discard("rowkey"));
+		JSONObject  attribute=JSONObject.fromObject( JSONObject.fromObject(audio).discard("rowkey")); //取掉对象中的rowkey字段
 		
-		System.out.println(attribute);
-
 		put.addColumn("data".getBytes(), "attribute".getBytes(), attribute.toString().getBytes());
 
 		put.addColumn("data".getBytes(), "origin".getBytes(), o_audio

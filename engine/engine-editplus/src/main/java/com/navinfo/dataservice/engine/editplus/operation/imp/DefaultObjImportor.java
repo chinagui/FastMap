@@ -2,34 +2,23 @@ package com.navinfo.dataservice.engine.editplus.operation.imp;
 
 import java.sql.Connection;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.apache.commons.collections.MultiMap;
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-
 import com.navinfo.dataservice.api.edit.upload.EditJson;
-import com.navinfo.dataservice.api.edit.upload.UploadPois;
-import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
-import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
-import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjFactory;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.dataservice.dao.plus.operation.AbstractCommand;
 import com.navinfo.dataservice.dao.plus.operation.AbstractOperation;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
 import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
-import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
@@ -40,7 +29,7 @@ import net.sf.json.JSONObject;
  * @date 2016年12月2日
  * @Description: DefaultObjImportor.java
  */
-@SuppressWarnings({"rawtypes","unused"})
+
 public class DefaultObjImportor extends AbstractOperation{
 	protected Map<String,String> errLog = new HashMap<String,String>();
 	protected long dbId;
@@ -80,8 +69,8 @@ public class DefaultObjImportor extends AbstractOperation{
 			//删除
 			Map<String,Map<Long,JSONObject>> deleteJsons = editJsons.getDeleteJsons();
 			if(deleteJsons!=null&&deleteJsons.size()>0){
-				List<IxPoiObj> ixPoiObjDelete = this.improtDelete(conn, deleteJsons);
-				result.putAll(ixPoiObjDelete);
+				List<BasicObj> objDelete = this.improtDelete(conn, deleteJsons);
+				result.putAll(objDelete);
 			}
 			
 		}
@@ -129,8 +118,10 @@ public class DefaultObjImportor extends AbstractOperation{
 		for(Entry<String, Map<Long, JSONObject>> entry : updateMaps.entrySet()){
 			String objType = entry.getKey();
 			Map<Long, JSONObject> updateMap = entry.getValue();
-			List<BasicObj> list = this.importUpdateByJson(conn, updateMap, objType);
-			objList.addAll(list);
+			if(updateMap != null && updateMap.size()>0){
+				List<BasicObj> list = this.importUpdateByJson(conn, updateMap, objType);
+				objList.addAll(list);
+			}
 		}
 		return objList;
 	}
@@ -179,46 +170,62 @@ public class DefaultObjImportor extends AbstractOperation{
 	 * @return
 	 * @throws Exception
 	 */
-	public List<IxPoiObj> improtDelete(Connection conn,Map<String,JSONObject> deletePois)throws Exception{
-		List<IxPoiObj> ixPoiObjList = new ArrayList<IxPoiObj>();
+	public List<BasicObj> improtDelete(Connection conn,Map<String,Map<Long,JSONObject>> deleteMaps)throws Exception{
+		List<BasicObj> objList = new ArrayList<BasicObj>();
+		for(Entry<String, Map<Long, JSONObject>> entry : deleteMaps.entrySet()){
+			String objType = entry.getKey();
+			Map<Long, JSONObject> deleteMap = entry.getValue();
+			if(deleteMap != null && deleteMap.size()>0){
+				List<BasicObj> list = this.importDeleteByJson(conn, deleteMap, objType);
+				objList.addAll(list);
+			}
+		}
+		return objList;
+	}
+	
+	public List<BasicObj> importDeleteByJson(Connection conn,Map<Long, JSONObject> deleteMap,String objType)throws Exception {
+		List<BasicObj> objList = new ArrayList<BasicObj>();
 		//获取所需的子表
-		Set<String> tabNames = this.getTabNames();
-		Map<String,BasicObj> objs = IxPoiSelector.selectByFids(conn,tabNames,deletePois.keySet(),true,true);
-		//排除有变更的数据
-		filterUpdatePoi(deletePois);
+		Set<String> tabNames = null;
+		if("IX_POI".equals(objType)){
+			tabNames = DefaultObjSubRowName.getIxPoiTabNames(deleteMap);
+		}else if("IX_HAMLET".equals(objType)){
+		}else if("AD_FACE".equals(objType)){
+		}else if("AD_LINK".equals(objType)){
+		}else if("AD_NODE".equals(objType)){
+		}
+		Map<Long, BasicObj> objs = ObjBatchSelector.selectByPids(conn,objType,tabNames,deleteMap.keySet(),true,true);
 		//开始导入
-		for (Map.Entry<String, JSONObject> jo : deletePois.entrySet()) {
+		for (Map.Entry<Long, JSONObject> jo : deleteMap.entrySet()) {
 			//日志
-			log.info("多源删除json数据"+jo.getValue().toString());
+			log.info("删除json数据"+jo.getValue().toString());
 			BasicObj obj = objs.get(jo.getKey());
 			if(obj==null){
-				errLog.put(jo.getKey(), "日库中没有查到相应的数据");
+				errLog.put(Long.toString(jo.getKey()), "日库中没有查到相应的数据");
 			}else{
 				try{
-					IxPoiObj ixPoiObj = (IxPoiObj)obj;
-					if(ixPoiObj.isDeleted()){
+					if(obj.isDeleted()){
 						throw new Exception("该数据已经逻辑删除");
 					}else{
-						this.importDeleteByJson(ixPoiObj, jo.getValue());
-						ixPoiObjList.add(ixPoiObj);
+						//该对象逻辑删除
+						obj.deleteObj();
+						objList.add(obj);
 					}
 				} catch (Exception e) {
 					log.error(e.getMessage(),e);
-					errLog.put(jo.getKey(), StringUtils.isEmpty(e.getMessage())?"删除执行出现空指针错误":e.getMessage());
+					errLog.put(Long.toString(jo.getKey()), StringUtils.isEmpty(e.getMessage())?"删除执行出现空指针错误":e.getMessage());
 				}
 			}
 		}
-		return ixPoiObjList;
+		return objList;
 	}
 	
+	@SuppressWarnings({"rawtypes" })
 	public void parseByJsonConfig(JSONObject json,BasicObj obj)throws Exception{
-		long objPid = 0L;
-		BasicRow mainrow = null;
 		if(json==null) {
 			log.warn("注意：未传入的解析json对象，request未被初始化");
 		}else{
-			objPid = obj.objPid();
-			mainrow = obj.getMainrow();
+			BasicRow mainrow = obj.getMainrow();
 			for(Iterator it = json.keys();it.hasNext();){
 				String attName = (String)it.next();
 				Object attValue = json.get(attName);
@@ -242,13 +249,8 @@ public class DefaultObjImportor extends AbstractOperation{
 									Object subObj = attArr.get(0);
 									if(subObj instanceof JSONObject){
 										//为子表
-										BasicRow subRow = obj.createSubRowByName(attName);
 										JSONObject jo = (JSONObject) subObj;
-										if(subRow != null){
-											
-										}else{
-											throw new Exception("未找到字段名为:"+attName+"的子表");
-										}
+										this.setSubAttrValue(jo, obj, attName);
 									}else{
 										throw new Exception(attName+"为数组类型，其内部格式为不支持的json结构");
 									}
@@ -256,15 +258,9 @@ public class DefaultObjImportor extends AbstractOperation{
 							}
 					}else if (attValue instanceof JSONObject) {
 						//为子表
-						BasicRow subRow = obj.createSubRowByName(attName);
 						JSONObject subJo = (JSONObject) attValue;
-						if(subRow != null){
-							
-						}else{
-							throw new Exception("未找到字段名为:"+attName+"的子表");
-						}
+						this.setSubAttrValue(subJo, obj, attName);
 					}
-					
 				}catch(Exception e){
 					log.error(e.getMessage(),e);
 					throw new Exception("Request解析过程中可能未找到方法,原因为:"+e.getMessage(),e);
@@ -273,6 +269,7 @@ public class DefaultObjImportor extends AbstractOperation{
 		}
 	}
 
+	@SuppressWarnings("rawtypes")
 	public void setSubAttrValue(JSONObject json,BasicObj obj,String subRowName)throws Exception{
 		BasicRow subRow =null;
 		if(json==null) {

@@ -14,8 +14,8 @@ import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
-import com.navinfo.dataservice.dao.glm.search.RdObjectSearch;
-import com.navinfo.dataservice.dao.glm.search.RdVoiceguideSearch;
+import com.navinfo.dataservice.dao.glm.search.RdLaneConnexitySearch;
+import com.navinfo.dataservice.dao.glm.search.RdLinkSpeedLimitSearch;
 import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.operation.Transaction;
 import com.navinfo.dataservice.engine.edit.search.SearchProcess;
@@ -177,15 +177,35 @@ public class RdObjectTest extends InitApplication {
 	}
 	
 	@Test
-	public void testCrfObjectRender()
+	public void RdLaneRender()
 	{
 		Connection conn;
 		try {
 			conn = DBConnector.getInstance().getConnectionById(17);
 
-			RdVoiceguideSearch search = new RdVoiceguideSearch(conn);
+			RdLaneConnexitySearch search = new RdLaneConnexitySearch(conn);
 			
 			List<SearchSnapshot> data = search.searchDataByTileWithGap(108013, 49471, 17, 80);
+			
+			System.out.println("data:"+ResponseUtils.assembleRegularResult(data));
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+	}
+	
+	
+	@Test
+	public void testRdSpeedLimitRender()
+	{
+		Connection conn;
+		try {
+			conn = DBConnector.getInstance().getConnectionById(17);
+
+			RdLinkSpeedLimitSearch search = new RdLinkSpeedLimitSearch(conn);
+			
+			List<SearchSnapshot> data = search.searchDataByTileWithGap(215685, 98715, 18, 80);
 			
 			System.out.println("data:"+ResponseUtils.assembleRegularResult(data));
 

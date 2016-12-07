@@ -6,9 +6,7 @@ import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.Iterator;
 
 /**
  * Created by chaixin on 2016/11/23 0023.
@@ -17,7 +15,6 @@ public class Command extends AbstractCommand {
 
     private String requester;
 
-    //    private List<Integer> linkPids;
     private JSONArray linkPids;
 
     private JSONArray content;
@@ -26,10 +23,6 @@ public class Command extends AbstractCommand {
         return content;
     }
 
-    //    public List<Integer> getLinkPids() {
-//        return linkPids;
-//    }
-
     public JSONArray getLinkPids() {
         return linkPids;
     }
@@ -37,9 +30,8 @@ public class Command extends AbstractCommand {
     public Command(JSONObject json, String requester) {
         this.requester = requester;
         setDbId(json.getInt("dbId"));
-//        linkPids = new ArrayList<>(JSONArray.toCollection(json.getJSONArray("linkPids")));
-        linkPids = json.getJSONArray("linkPids");
         content = json.getJSONArray("data");
+        initLinkPids();
     }
 
     @Override
@@ -55,5 +47,13 @@ public class Command extends AbstractCommand {
     @Override
     public ObjType getObjType() {
         return ObjType.RDLINK;
+    }
+
+    private void initLinkPids() {
+        linkPids = new JSONArray();
+        Iterator<JSONObject> iterator = content.iterator();
+        while (iterator.hasNext()) {
+            linkPids.add(iterator.next().getInt("pid"));
+        }
     }
 }

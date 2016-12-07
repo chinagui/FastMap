@@ -184,7 +184,7 @@ public class ProduceController extends BaseController {
 			JSONObject jobDataJson=new JSONObject();
 			jobDataJson.put("gridList", gridIds);
 			jobDataJson.put("stopTime", "20160616000000");
-			long jobId=jobApi.createJob("releaseFmIdbMonthlyJob", jobDataJson,userId, "月出品");
+			long jobId=jobApi.createJob("releaseFmIdbMonthlyJob", jobDataJson,userId,0, "月出品");
 			return new ModelAndView("jsonView", success(jobId));
 		}catch(Exception e){
 			log.error("月出品失败，原因："+e.getMessage(), e);
@@ -220,7 +220,7 @@ public class ProduceController extends BaseController {
 			JSONObject jobDataJson=new JSONObject();
 			jobDataJson.put("gridList", dataJson.get("gridIds"));
 			jobDataJson.put("stopTime", "20160616000000");
-			long jobId=jobApi.createJob("day2MonthRoadJob", jobDataJson, userId, "ROAD月融合");	
+			long jobId=jobApi.createJob("day2MonthRoadJob", jobDataJson, userId,0, "ROAD月融合");	
 			return new ModelAndView("jsonView", success(jobId));
 			
 		}catch(Exception e){

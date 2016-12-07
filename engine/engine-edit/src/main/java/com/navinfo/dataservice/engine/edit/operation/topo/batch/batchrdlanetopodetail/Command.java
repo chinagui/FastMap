@@ -135,7 +135,7 @@ public class Command extends AbstractCommand {
 				laneTopoDetail.setVehicle(jsonObject.getLong("VEHICLE"));
 			}
 			if (jsonObject.containsKey("timeDomain")) {
-				laneTopoDetail.setTimeDomain("timeDomain");
+				laneTopoDetail.setTimeDomain(jsonObject.getString("timeDomain"));
 			}
 			// 车道联通经过线信息
 			if (jsonObject.containsKey("laneTopoVias")) {

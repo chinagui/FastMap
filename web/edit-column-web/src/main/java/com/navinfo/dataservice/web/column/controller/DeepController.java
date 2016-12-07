@@ -14,6 +14,7 @@ import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.control.column.core.DeepCoreControl;
 
 import net.sf.json.JSONObject;
@@ -83,21 +84,18 @@ public class DeepController extends BaseController {
 			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
 			
 			long userId = tokenObj.getUserId();
-			int subtaskId = jsonReq.getInt("subtaskId");
-			int dbId = jsonReq.getInt("dbId");
-			int type = jsonReq.getInt("type");
+			int taskId = jsonReq.getInt("taskId");
 			
-			ManApi apiService = (ManApi) ApplicationContextUtil.getBean("manApi");
-			Subtask subtask = apiService.queryBySubtaskId(subtaskId);
+			String firstWorkItem = jsonReq.getString("firstWorkItem");
+			String secondWorkItem = jsonReq.getString("secondWorkItem");
 			
-			if (subtask == null) {
-				throw new Exception("subtaskid未找到数据");
+			if (StringUtils.isEmpty(firstWorkItem) || StringUtils.isEmpty(secondWorkItem)) {
+				throw new Exception("firstWorkItem和secondWorkItem不能为空");
 			}
-			
 			DeepCoreControl deepCore = new DeepCoreControl();
 			
 			//申请数据，返回本次申请成功的数据条数
-			int applyNum = deepCore.applyData(subtask, dbId, userId, type);
+			int applyNum = deepCore.applyData(taskId, userId, firstWorkItem, secondWorkItem);
 			
 			return new ModelAndView("jsonView", success(applyNum));
 			

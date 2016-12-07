@@ -387,6 +387,25 @@ public abstract class DataBaseUtils {
 			runner.execute(conn, primaryKeySql);
 		}
     }
+    /**
+     * @param conn 传入的链接，本方法不关闭；调用放负责关闭conn
+     * @param seqName ORACLE sequence 的名称
+     * @return sequnce.NEXTVAL
+     * @throws Exception
+     */
+    public static long fetchSequence(Connection conn,String seqName) throws Exception{
+    	QueryRunner runner = new QueryRunner();
+    	ResultSetHandler<Long> rsh = new ResultSetHandler<Long>(){
+
+			@Override
+			public Long handle(ResultSet rs) throws SQLException {
+				if(rs.next()){
+					return rs.getLong(1);
+				}
+				return 0L;
+			}};
+		return runner.query(conn,"select "+seqName+".NEXTVAL  from dual", rsh );
+    }
 
     public static void main(String args[]) {
         try {

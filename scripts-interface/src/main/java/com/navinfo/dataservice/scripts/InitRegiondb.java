@@ -129,7 +129,7 @@ public class InitRegiondb {
 				}
 				response.put("region_"+key+"_day_exp", "success");
 				//给日库和月库安装包
-				installPckUtils(dbDay);
+				installPckUtils(dbDay,1);
 				response.put("region_"+key+"_day_utils", "success");
 				//创建月db
 				JobInfo info3 = new JobInfo(0, "");
@@ -166,7 +166,7 @@ public class InitRegiondb {
 					throw new Exception("月库导数据过程中job内部发生"+msg);
 				}
 				response.put("region_"+key+"_month_exp", "success");
-				installPckUtils(dbMonth);
+				installPckUtils(dbMonth,2);
 				response.put("region_"+key+"_month_utils", "success");
 				//写入dbID
 				insertDbIds(conn,key,dbDay,dbMonth);
@@ -243,7 +243,7 @@ public class InitRegiondb {
 	 * @author zl zhangli5174@navinfo.com
 	 * @date 2016年11月11日 下午8:46:15 
 	 */
-	private static void installPckUtils(int dbId)throws Exception{
+	private static void installPckUtils(int dbId,int dbType)throws Exception{
 		Connection conn = null;
 		try{
 			DbInfo db = DbService.getInstance()
@@ -256,6 +256,9 @@ public class InitRegiondb {
 			createRegionDbLinks(db);
 			
 			conn = MultiDataSourceFactory.getInstance().getDataSource(connConfig).getConnection();
+			//修改log_action默认值
+			new QueryRunner().execute(conn, "ALTER TABLE LOG_ACTION MODIFY SRC_DB DEFAULT "+dbType);
+			//
 			SqlExec sqlExec = new SqlExec(conn);
 			String sqlFile = "/com/navinfo/dataservice/scripts/resources/init_edit_tables.sql";
 			sqlExec.executeIgnoreError(sqlFile);

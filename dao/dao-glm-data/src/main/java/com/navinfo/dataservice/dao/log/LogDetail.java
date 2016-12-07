@@ -26,6 +26,26 @@ public class LogDetail {
 	private String obNm;
 	
 	private int obPid;
+	
+	private int geoPid;
+	
+	private String geoNm;
+
+	public int getGeoPid() {
+		return geoPid;
+	}
+
+	public void setGeoPid(int geoPid) {
+		this.geoPid = geoPid;
+	}
+
+	public String getGeoNm() {
+		return geoNm;
+	}
+
+	public void setGeoNm(String geoNm) {
+		this.geoNm = geoNm;
+	}
 
 	private List<LogDetailGrid> grids = new ArrayList<LogDetailGrid>();
 	

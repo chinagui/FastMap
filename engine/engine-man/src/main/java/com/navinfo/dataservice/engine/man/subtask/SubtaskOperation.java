@@ -39,6 +39,7 @@ import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
 import com.navinfo.navicommons.geo.computation.GridUtils;
+import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -978,7 +979,7 @@ public class SubtaskOperation {
 							}
 							JSONArray referGrid;
 							try {
-								referGrid = SubtaskOperation.getReferSubtasksByGridIds(rs.getInt("SUBTASK_ID"),gridIds);
+								referGrid = SubtaskOperation.getReferSubtasksByGridIds(rs.getInt("SUBTASK_ID"),gridIds,GeoTranslator.struct2Jts(structRefer));
 								subtask.put("referGrid", referGrid);
 							} catch (Exception e) {
 								// TODO Auto-generated catch block
@@ -2447,25 +2448,38 @@ public class SubtaskOperation {
 	/**
 	 * @param subtaskId 
 	 * @param gridIds
+	 * @param geometry 
 	 * @return
 	 * @throws Exception 
 	 */
-	public static JSONArray getReferSubtasksByGridIds(Integer subtaskId, List<Integer> gridIds) throws Exception {
+	public static JSONArray getReferSubtasksByGridIds(Integer subtaskId, List<Integer> gridIds, Geometry subtaskReferGeo) throws Exception {
 		Connection conn = null;
 		try{
 			conn = DBConnector.getInstance().getManConnection();
 			QueryRunner run = new QueryRunner();
-			//grid扩圈
+			//先按照grid扩圈
 			Set<Integer> gridsWithNeighbor = new HashSet<Integer>();
 			for(int j=0;j<gridIds.size();j++)  
 	        {              
 				String gridId = String.valueOf(gridIds.get(j));
-				String[] gridAfter = GridUtils.get9NeighborGrids(gridId);				
+				String[] gridAfter = GridUtils.get9NeighborGrids(gridId);
 				for(int i=0;i<gridAfter.length;i++){
 					gridsWithNeighbor.add(Integer.valueOf(gridAfter[i]));
 				}           
 	        } 
-			String gridIdsStr = StringUtils.join(gridsWithNeighbor.toArray(), ",");
+			//扩圈后，去除子任务自己的grid，剩余grid依次与不规则任务圈进行关系判断，若接边/交叉，则计算；否则放弃。
+			Set<Integer> geoWithNeighbor=new HashSet<Integer>();
+			geoWithNeighbor.addAll(gridIds);
+			gridsWithNeighbor.removeAll(gridIds);
+			for(Integer grid:gridsWithNeighbor){
+				String gridId = String.valueOf(grid);
+				Geometry gridGeo = GridUtils.grid2Geometry(gridId);
+				if(gridGeo.intersects(subtaskReferGeo)){
+					geoWithNeighbor.add(grid);
+				}
+			}
+			//获取到与不规则子任务圈有交叉/接边的所有grid，然后查询所有非该子任务的所有子任务信息
+			String gridIdsStr = StringUtils.join(geoWithNeighbor.toArray(), ",");
 			
 			String selectSql = "select distinct sgm.grid_id,"
 					+ " u.user_real_name"

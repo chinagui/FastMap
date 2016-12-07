@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
-import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.commons.util.DisplayUtils;
@@ -16,10 +15,6 @@ import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.selector.rd.laneconnexity.RdLaneConnexitySelector;
-import com.navinfo.navicommons.geo.computation.GeometryUtils;
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.io.WKTReader;
 
 import net.sf.json.JSONObject;
@@ -29,8 +24,6 @@ import oracle.sql.STRUCT;
 
 public class RdLaneConnexitySearch implements ISearch {
 	private WKT wktSpatial = new WKT();
-
-	private WKTReader wktReader = new WKTReader();
 
 	private Connection conn;
 
@@ -74,37 +67,37 @@ public class RdLaneConnexitySearch implements ISearch {
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
-
+		
 		try {
 			pstmt = conn.prepareStatement(sql);
-
+			
 			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
 
 			pstmt.setString(1, wkt);
 
 			resultSet = pstmt.executeQuery();
-
+			
 			double px = MercatorProjection.tileXToPixelX(x);
-
+			
 			double py = MercatorProjection.tileYToPixelY(y);
 
 			while (resultSet.next()) {
 
 				SearchSnapshot snapshot = new SearchSnapshot();
-
+				
 				JSONObject jsonM = new JSONObject();
 
 				snapshot.setI(String.valueOf(resultSet.getInt("pid")));
-
+				
 				snapshot.setT(5);
 
-				jsonM.put("b", resultSet.getString("lane_info"));
+				jsonM.put("b",resultSet.getString("lane_info"));
 
 				STRUCT struct1 = (STRUCT) resultSet.getObject("link_geom");
-				
-				LineString lineGeo = (LineString) GeoTranslator.struct2Jts(struct1);
 
-				String linkWkt = GeoTranslator.jts2Wkt(lineGeo);
+				JGeometry geom1 = JGeometry.load(struct1);
+
+				String linkWkt = new String(wktSpatial.fromJGeometry(geom1));
 
 				STRUCT struct2 = (STRUCT) resultSet.getObject("point_geom");
 
@@ -113,40 +106,15 @@ public class RdLaneConnexitySearch implements ISearch {
 				String pointWkt = new String(wktSpatial.fromJGeometry(geom2));
 
 				int direct = DisplayUtils.getDirect(linkWkt, pointWkt);
-
+				
 				double angle = DisplayUtils.calIncloudedAngle(linkWkt, direct);
 
-				jsonM.put("c", String.valueOf((int) angle));
+				jsonM.put("c", String.valueOf((int)angle));
 				
-				if(direct == 2)
-				{
-					lineGeo = (LineString) lineGeo.reverse();
-				}
-				
-				// 线的长度
-				double lineLength = GeometryUtils.getLinkLength(lineGeo);
-				
-				Geometry point = null;
-				
-				// 调整车信图标位置计算原则：进入线上距离进入点4.5米处，如果进入线不足4.5米，则在20%处；与link保持平行
-				if (lineLength > 4.5) {
-					// 获取打断点的位置
-					Coordinate coordinate = GeometryUtils.getPointOnLineStringDistance(lineGeo, 4.5);
+				double[][] point = DisplayUtils.getGdbPointPos(linkWkt, pointWkt, 0, (21-z)*4.5, 4,z);
 
-					point = GeoTranslator.point2Jts(coordinate.x, coordinate.y);
-				} else {
-					double onePercentFiveLength = lineLength / 5;
-
-					Coordinate coordinate = GeometryUtils.getPointOnLineStringDistance(lineGeo, onePercentFiveLength);
-
-					point = GeoTranslator.point2Jts(coordinate.x, coordinate.y);
-				}
-
-				JSONObject geoObj = GeoTranslator.jts2Geojson(point);
-
-				Geojson.point2Pixel(geoObj, z, px, py);
-
-				snapshot.setG(geoObj.getJSONArray("coordinates"));
+				snapshot.setG(Geojson.lonlat2Pixel(point[1][0], point[1][1], z,
+						px, py));
 
 				snapshot.setM(jsonM);
 

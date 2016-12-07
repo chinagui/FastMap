@@ -58,7 +58,7 @@ public class CollectorImport {
 		
 		Map<String,byte[]> mapPhoto = FileUtils.readPhotos(dir);
 		
-		Map<String,byte[]> mapSltPhoto = FileUtils.genSmallImageMap(dir);
+		//Map<String,byte[]> mapSltPhoto = FileUtils.genSmallImageMap(dir);
 		
 		Table photoTab = HBaseConnector.getInstance().getConnection().getTable(
 				TableName.valueOf(HBaseConstant.photoTab));
@@ -73,8 +73,8 @@ public class CollectorImport {
 		
 		while(it.hasNext()){
 			Entry<String,Photo> entry = it.next();
-			
-			Put put = enclosedPut(entry,mapPhoto,mapSltPhoto);
+			//缩略图不存储，参3为null
+			Put put = enclosedPut(entry,mapPhoto,null);
 			
 			if(put == null){
 				continue;
@@ -110,7 +110,7 @@ public class CollectorImport {
 			return null;
 		}
 		
-		byte[] sltPhoto = mapSltPhoto.get(name);
+		//byte[] sltPhoto = mapSltPhoto.get(name);
 		
 		Put put = new Put(pht.getRowkey().getBytes());
 		
@@ -119,7 +119,7 @@ public class CollectorImport {
 		
 		put.addColumn("data".getBytes(), "origin".getBytes(), photo);
 		
-		put.addColumn("data".getBytes(), "thumbnail".getBytes(), sltPhoto);
+		//put.addColumn("data".getBytes(), "thumbnail".getBytes(), sltPhoto);
 		
 		return put;
 	}

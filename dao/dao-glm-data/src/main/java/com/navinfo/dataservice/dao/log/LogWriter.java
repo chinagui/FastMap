@@ -878,8 +878,8 @@ public class LogWriter {
 					// 查询对象的grid，并生成LogDetailGrid
 					LogGeoInfo geoInfo = gridCalculator.calc(ldC.getTbNm()
 							.toUpperCase(), ldC.getTbRowId(), conn);
-					geoInfo.setGeoName(geoInfo.getGeoName());
-					geoInfo.setGeoPid(geoInfo.getGeoPid());
+					ldC.setGeoNm(geoInfo.getGeoName());
+					ldC.setGeoPid(geoInfo.getGeoPid());
 
 					for (String gridId : geoInfo.getGrids()) {
 						LogDetailGrid grid = new LogDetailGrid();

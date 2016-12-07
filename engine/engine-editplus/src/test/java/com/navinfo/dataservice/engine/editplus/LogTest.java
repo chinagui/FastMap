@@ -68,7 +68,7 @@ public class LogTest {
 			
 			BasicObj obj = ObjSelector.selectByPid(conn, objType, tabNames, pid, isLock);
 			
-			obj.getMainrow().setAttrByCol("KIND_CODE", "");
+			obj.getMainrow().setAttrByCol("KIND_CODE", "110102");
 			List<BasicRow> ixPoiNameList = obj.getRowsByName("IX_POI_NAME");
 			ixPoiNameList.get(0).setAttrByCol("NAME_TYPE", 2);
 			IxPoiName ixPoiName = (IxPoiName) ObjFactory.getInstance().createRow("IX_POI_NAME", obj.objPid());
@@ -94,7 +94,7 @@ public class LogTest {
 			}
 			
 			new LogGenerator().writeLog(conn, false,basicObjs, opCmd, opSg, userId,0);
-//			conn.commit();
+			conn.commit();
 			System.out.println("Over.");
 		}catch(Exception e){
 			System.out.println("Oops, something wrong...");
@@ -149,7 +149,7 @@ public class LogTest {
 			long userId = 1;
 			new LogGenerator().writeLog(conn,false, basicObjs, opCmd, opSg, userId,0);
 
-//			conn.commit();
+			conn.commit();
 			System.out.println("Over.");
 		}catch(Exception e){
 			System.out.println("Oops, something wrong...");
@@ -182,7 +182,7 @@ public class LogTest {
 			long userId = 1;
 			new LogGenerator().writeLog(conn,false, basicObjs, opCmd, opSg, userId,0);
 
-//			conn.commit();
+			conn.commit();
 			System.out.println("Over.");
 		}catch(Exception e){
 			System.out.println("Oops, something wrong...");

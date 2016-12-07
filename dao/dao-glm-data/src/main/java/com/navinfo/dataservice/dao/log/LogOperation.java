@@ -9,29 +9,41 @@ public class LogOperation {
 
 	private String opId;
 
-	private String usId;
-
-	private String opCmd;
-
 	private String opDt;
 
-	private int opSg;
-	
 	private int comSta;
-	
+
 	private String comDt;
-	
+
 	private int lockSta;
+
+	private String actId;
+
+	private String opSeq;
+
+	public String getOpSeq() {
+		return opSeq;
+	}
+
+	public void setOpSeq(String opSeq) {
+		this.opSeq = opSeq;
+	}
+
+	public String getActId() {
+		return actId;
+	}
+
+	public void setActId(String actId) {
+		this.actId = actId;
+	}
 
 	private List<LogDetail> details = new ArrayList<LogDetail>();
 
 	private LogDayRelease release;
-	
-	public LogOperation(String opId, String opCmd, int opSg){
+
+	public LogOperation(String opId, int opSg) {
 		this.opId = opId;
-		
-		this.opCmd = opCmd;
-		
+
 		this.opDt = StringUtils.getCurrentTime();
 	}
 
@@ -75,36 +87,12 @@ public class LogOperation {
 		this.opId = opId;
 	}
 
-	public String getUsId() {
-		return usId;
-	}
-
-	public void setUsId(String usId) {
-		this.usId = usId;
-	}
-
-	public String getOpCmd() {
-		return opCmd;
-	}
-
-	public void setOpCmd(String opCmd) {
-		this.opCmd = opCmd;
-	}
-
 	public String getOpDt() {
 		return opDt;
 	}
 
 	public void setOpDt(String opDt) {
 		this.opDt = opDt;
-	}
-
-	public int getOpSg() {
-		return opSg;
-	}
-
-	public void setOpSg(int opSg) {
-		this.opSg = opSg;
 	}
 
 	public List<LogDetail> getDetails() {

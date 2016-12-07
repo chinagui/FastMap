@@ -55,7 +55,7 @@ public class ReleaseFmIdbDailyPoi {
 				jobDataJson.put("produceId", produceId);
 				jobDataJson.put("featureType", "POI");
 				jobDataJson.put("regionId", regionInfo.getRegionId());
-				long jobId=jobApi.createJob("releaseFmIdbDailyPoiJob", jobDataJson, 0, "日出品");
+				long jobId=jobApi.createJob("releaseFmIdbDailyPoiJob", jobDataJson, 0,0, "日出品");
 				System.out.println("jobId" + jobId);
 			}
 		}catch(Exception e){

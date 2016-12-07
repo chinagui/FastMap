@@ -118,21 +118,15 @@ public class ixpoitest {
 	public void testApplyData() throws Exception{
 		long userId = 4994;
 		int subtaskId = 84;
-		int dbId = 19;
-		int type = 1;
 		
+		String firstWorkItem = "poi_deep";
+		String secondWorkItem = "deepDetail";
 		try {
-			ManApi apiService = (ManApi) ApplicationContextUtil.getBean("manApi");
-			Subtask subtask = apiService.queryBySubtaskId(subtaskId);
-			
-			if (subtask == null) {
-				throw new Exception("subtaskid未找到数据");
-			}
 			
 			DeepCoreControl deepCore = new DeepCoreControl();
 			//List<String> batchRuleList = deepCore.getDeepBatchRules(type);
 			//申请数据，返回本次申请成功的数据条数
-			int applyNum = deepCore.applyData(subtask, dbId, userId, type);
+			int applyNum = deepCore.applyData(subtaskId, userId, firstWorkItem, secondWorkItem);
 			System.out.println(applyNum);
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
@@ -222,6 +216,28 @@ public class ixpoitest {
 			deepControl.cleanCheck(jsonReq, userId);
 			
 		} catch (Exception e){
+			System.out.println(e.getMessage());
+		}
+	}
+	
+	
+	@Test
+	public void testDeepQuery() throws Exception{
+		JSONObject jsonReq = new JSONObject();
+		jsonReq.put("subtaskId", 84);
+		jsonReq.put("dbId", 19);
+		jsonReq.put("type", "deepDetail");
+		jsonReq.put("status", 1);
+		jsonReq.put("pageNum", 1);
+		jsonReq.put("pageSize", 10);
+		try {
+			long userId = 4994;
+			
+			DeepCoreControl deepCore = new DeepCoreControl();
+			
+			JSONObject result = deepCore.queryPoi(jsonReq, userId);
+			System.out.println(result);
+		} catch (Exception e) {
 			System.out.println(e.getMessage());
 		}
 	}

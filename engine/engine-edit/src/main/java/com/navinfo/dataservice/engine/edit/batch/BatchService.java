@@ -90,7 +90,7 @@ public class BatchService {
 		batchRequestJSON.put("rules", ruleList);
 		batchRequestJSON.put("targetDbId", dbId);
 		JobApi apiService=(JobApi) ApplicationContextUtil.getBean("jobApi");
-		jobId=apiService.createJob("gdbBatch", batchRequestJSON, userId, "批处理");
+		jobId=apiService.createJob("gdbBatch", batchRequestJSON, userId,subtaskId,"批处理");
 		
 		return jobId;
 	}

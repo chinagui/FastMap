@@ -69,6 +69,7 @@ public class GdbBatchJobRequest extends AbstractJobRequest {
 		subJobRequests.put("diff", diff);
 		//commit
 		AbstractJobRequest commit = JobCreateStrategy.createJobRequest("gdbImport", null);
+		commit.setAttrValue("logMoveType", "copBatch");
 		subJobRequests.put("commit", commit);
 		
 		

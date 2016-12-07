@@ -241,4 +241,18 @@ public class ixpoitest {
 			System.out.println(e.getMessage());
 		}
 	}
+	
+	@Test
+	public void testcolumnKc() throws Exception{
+		int taskId = 84;
+		long userId = 4994;
+		try {
+			ColumnCoreControl column = new ColumnCoreControl();
+			JSONObject result = column.getLogCount(taskId, userId);
+			System.out.println(result);
+			
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+	}
 }

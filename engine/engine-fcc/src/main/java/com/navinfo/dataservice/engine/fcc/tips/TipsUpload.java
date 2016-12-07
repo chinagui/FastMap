@@ -369,8 +369,6 @@ public class TipsUpload {
 		
 		Audio audio = new Audio();
 
-		JSONObject extContent = attachment.getJSONObject("extContent");
-
 		String id = attachment.getString("id");
 
 		audio.setRowkey(id);
@@ -379,7 +377,7 @@ public class TipsUpload {
 
 		audio.setA_uploadUser(json.getInt("t_handler"));
 
-		audio.setA_uploadDate(currentDate);
+		audio.setA_uploadDate(json.getString("t_operateDate"));
 
 		return audio;
 	}
@@ -423,7 +421,7 @@ public class TipsUpload {
 
 					jo.put("feedback", feedback);
 				} else {
-					jo.put("feedback", JSONNull.getInstance());
+					jo.put("feedback", TipsUtils.OBJECT_NULL_DEFAULT_VALUE);
 				}
 
 				oldTips.put(rowkey, jo);
@@ -507,7 +505,7 @@ public class TipsUpload {
 		Put put = new Put(rowkey.getBytes());
 		
 		JSONObject jsonTrack =TipsUtils.generateTrackJson(3, TipsUpload.IMPORT_STATE,json.getInt("t_handler"),
-				json.getInt("t_command"), null, json.getString("t_operateDate"),
+				json.getInt("t_command"), null, json.getString("t_operateDate"),currentDate,
 				json.getInt("t_cStatus"),json.getInt("t_dStatus"),json.getInt("t_mStatus"),
 				json.getInt("t_inStatus"),json.getInt("t_inMeth"));
 
@@ -625,7 +623,7 @@ public class TipsUpload {
 
 		JSONObject jsonTrack = TipsUtils.generateTrackJson(lifecycle,TipsUpload.IMPORT_STATE,
 				json.getInt("t_handler"), json.getInt("t_command"),
-				oldTip.getJSONArray("t_trackInfo"),json.getString("t_operateDate"),
+				oldTip.getJSONArray("t_trackInfo"),json.getString("t_operateDate"),currentDate,
 				json.getInt("t_cStatus"),json.getInt("t_dStatus"),json.getInt("t_mStatus"),
 				json.getInt("t_inStatus"),json.getInt("t_inMeth"));
 
@@ -763,7 +761,7 @@ public class TipsUpload {
 
 		photo.setA_uploadUser(tip.getInt("t_handler"));
 
-		photo.setA_uploadDate(currentDate);
+		photo.setA_uploadDate(tip.getString("t_operateDate"));
 
 		photo.setA_longitude(lng);
 
@@ -788,15 +786,30 @@ public class TipsUpload {
 		int lifecycle = oldTips.getInt("t_lifecycle");
 
 		JSONArray tracks = oldTips.getJSONArray("t_trackInfo");
-
+		
+		String lastDate = null;
+		
+		//入库仅与上次stage=1的数组data进行比较. 最后一条stage=1的数据
+		for (int i = tracks.size()-1; i >0; i--) {
+			
+			JSONObject info=tracks.getJSONObject(i);
+			
+			if(info.getInt("stage")==1){
+				
+				lastDate=info.getString("date");
+				
+				break;
+			}
+		}
+			
 		JSONObject lastTrack = tracks.getJSONObject(tracks.size() - 1);
 
-		String lastDate = lastTrack.getString("date");
-
 		int lastStage = lastTrack.getInt("stage");
+		
 
 		//lifecycle:0（无） 1（删除）2（修改）3（新增） ;
 		//stage:0 初始化；1 外业采集；2 内业日编；3 内业月编 ；4 GDB增量
+		//库里最后最状态是不是增量更新删除：lifecycle=1（删除），t_stage=4（增量更新）,是，则不更新
 		if (lifecycle == 1 && lastStage == 4) {
 
 			return -1;

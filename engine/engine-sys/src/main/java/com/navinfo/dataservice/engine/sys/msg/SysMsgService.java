@@ -722,7 +722,9 @@ public class SysMsgService {
 				}
 				Map<String,Object> msg = new HashMap<String, Object>();
 				msg.put("msgId",rs.getLong("MSG_ID"));
-				msg.put("msgType",rs.getInt("MSG_TYPE"));
+				int msgType=rs.getInt("MSG_TYPE");
+				if(msgType==0){msgType=1;}
+				msg.put("msgType",msgType);
 				msg.put("msgContent",rs.getString("MSG_CONTENT"));
 				msg.put("createTime",DateUtils.dateToString(rs.getTimestamp("CREATE_TIME"),DateUtils.DATE_COMPACTED_FORMAT));
 				msg.put("targetUserId",rs.getLong("TARGET_USER_ID"));

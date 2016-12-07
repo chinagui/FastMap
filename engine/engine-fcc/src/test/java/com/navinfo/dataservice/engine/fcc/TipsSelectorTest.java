@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -75,7 +74,7 @@ public class TipsSelectorTest {
 	
 	
     //根据瓦片扩圈获取Tips数据
-	//@Test
+	@Test
 	public void testSearchDataByTileWithGap() {
 		JSONArray types = new JSONArray();
 		//types.add(1202);
@@ -90,8 +89,11 @@ public class TipsSelectorTest {
 		//{"gap":40,"mdFlag":"d","z":17,"x":107942,"y":49613}
 		
 		//{"gap":40,"mdFlag":"d","z":18,"x":215889,"y":99231}
+		//parameter={"gap":40,"mdFlag":"d","z":18,"x":215894,"y":99196}
+		
+		//={"gap":40,"mdFlag":"d","z":18,"x":216035,"y":99004}
 		try {
-			System.out.println(solrSelector.searchDataByTileWithGap(215889, 99231, 18,
+			System.out.println(solrSelector.searchDataByTileWithGap(216035, 99004, 18,
 					40, types,"d"));
 		} catch (Exception e) {
 			e.printStackTrace();

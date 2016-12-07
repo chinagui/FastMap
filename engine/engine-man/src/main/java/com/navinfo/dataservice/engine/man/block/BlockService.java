@@ -963,12 +963,10 @@ public class BlockService {
 					msgTmp[3]=msgParam.toString();
 					msgContentList.add(msgTmp);
 				}
-				
+				if(msgContentList.size()>0){
+					blockPushMsgByMsg(conn,msgContentList,userId);	}			
 			}
-			if(msgContentList.size()>0){
-				blockPushMsgByMsg(conn,msgContentList,userId);
-				BlockOperation.updateMainBlock(conn, blockManIds);
-			}
+			BlockOperation.updateMainBlock(conn, blockManIds);
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -976,7 +974,7 @@ public class BlockService {
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
-		return "发布成功";
+		return "BLOCK批量发布"+blockManIds.size()+"个成功，0个失败";
 
 	}
 

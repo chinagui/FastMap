@@ -77,7 +77,7 @@ public class RdLinkSpeedLimitSearch implements ISearch {
 			double px = MercatorProjection.tileXToPixelX(x);
 
 			double py = MercatorProjection.tileYToPixelY(y);
-
+			
 			while (resultSet.next()) {
 
 				int fromSpeedLimit = resultSet.getInt("from_speed_limit");
@@ -110,9 +110,9 @@ public class RdLinkSpeedLimitSearch implements ISearch {
 				if (fromSpeedLimit > 0) {
 
 					direct = 2;
-
+					
 					double[] position = DisplayUtils.getMid2MPosition(linkWkt,
-							direct);
+							direct,DisplayUtils.getVerUint(z));
 
 					jsonM.put("a", Geojson.lonlat2Pixel(position[0],
 							position[1], z, px, py));
@@ -133,7 +133,7 @@ public class RdLinkSpeedLimitSearch implements ISearch {
 					direct = 3;
 
 					double[] position = DisplayUtils.getMid2MPosition(linkWkt,
-							direct);
+							direct,DisplayUtils.getVerUint(z));
 
 					jsonM.put("c", Geojson.lonlat2Pixel(position[0],
 							position[1], z, px, py));

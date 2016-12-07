@@ -1415,11 +1415,11 @@ public class DisplayUtils {
 		case 17:
 			offset = 17; break;
 		case 18:
-			offset = 4; break;
+			offset = 6; break;
 		case 19:
-			offset = 1; break;
+			offset = 3; break;
 		case 20:
-			offset = 0; break;
+			offset = 1; break;
 		}
 		return offset;
 	}

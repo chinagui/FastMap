@@ -362,7 +362,7 @@ public class TipsSelector {
 								+ "|" + time + "|" + vtName);
 					}
 				} else if (type == 1604 || type == 1601 || type == 1602
-						|| type == 1605 || type == 1606) {
+						|| type == 1605 || type == 1606  ) {
 
 					m.put("c", geojson.getJSONArray("coordinates"));
 
@@ -371,9 +371,13 @@ public class TipsSelector {
 						m.put("d", geojson.getString("name"));
 					}
 
+				}else if (type ==  8001   ) {
+
+					m.put("c", geojson.getJSONArray("coordinates"));
+
 				}
 
-				else if (type == 1801 || type == 1806|| type == 8001 || type == 8002) {
+				else if (type == 1801 || type == 1806||  type == 8002) {
 					JSONArray feedbacks = JSONArray.fromObject(json
 							.getString("feedback"));
 

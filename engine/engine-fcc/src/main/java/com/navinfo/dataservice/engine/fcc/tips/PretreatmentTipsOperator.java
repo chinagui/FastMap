@@ -299,6 +299,8 @@ public class PretreatmentTipsOperator {
 			solr.addTips(solrIndex);
 
 			htab.put(put);
+			
+			htab.close();
 
 			return false;
 
@@ -376,6 +378,8 @@ public class PretreatmentTipsOperator {
 			solr.addTips(solrIndex);
 
 			htab.put(put);
+			
+			htab.close();
 
 			return false;
 
@@ -513,6 +517,8 @@ public class PretreatmentTipsOperator {
 			htab.put(put);
 			
 			htab.put(newPut);
+			
+			htab.close();
 
 			return false;
 

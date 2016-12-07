@@ -3,6 +3,7 @@ package com.navinfo.dataservice.engine.editplus;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +28,7 @@ import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
 import com.navinfo.dataservice.dao.plus.selector.ObjSelector;
 import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
 import com.navinfo.dataservice.engine.editplus.convert.MultiSrcPoiConvertor;
+import com.navinfo.dataservice.engine.editplus.operation.imp.DefaultObjImportor;
 import com.navinfo.navicommons.database.sql.RunnableSQL;
 import com.navinfo.navicommons.exception.ServiceException;
 
@@ -369,6 +371,35 @@ public class SelectorTest {
 		}
 	}
 	
-	
+	@Test
+	public void test15(){
+		try{
+			Connection conn = null;
+			conn = DBConnector.getInstance().getConnectionById(17);
+			/*
+			String data = "{\"postCode\": \"\",\"rowId\": \"3AE1FB4B927892F7E050A8C08304EE4C\",\"pid\": 69159,"
+					+ "\"objStatus\":\"UPDATE\",\"poiMemo\":\"test\",\"level\":\"B3\","
+					+ "\"addresses\":[{\"nameGroupid\":1,\"poiPid\":0,"
+					+ "\"langCode\":\"CHI\",\"fullname\":\"北京\",\"objStatus\": \"INSERT\"}]}}";
+			*/
+			String data = "{\"postCode\": \"\","
+					+ "\"objStatus\":\"INSERT\",\"poiMemo\":\"test\",\"level\":\"B3\","
+					+ "\"addresses\":[{\"nameGroupid\":1,"
+					+ "\"langCode\":\"CHI\",\"fullname\":\"北京\",\"objStatus\": \"INSERT\"}]}}";
+			JSONObject jo = JSONObject.fromObject(data);
+			System.out.println("导入的json数据"+data);
+			Map<String, JSONObject> addMap = new HashMap<String, JSONObject>();
+			addMap.put("IXPOI", jo);
+			DefaultObjImportor df = new DefaultObjImportor(conn, null);
+			List<BasicObj> list = df.improtAdd(conn, addMap);
+			for (BasicObj basicObj : list) {
+				System.out.println(basicObj);
+			}
+			System.out.println("Over.");
+		}catch(Exception e){
+			System.out.println("Oops, something wrong...");
+			e.printStackTrace();
+		}
+	}
 	
 }

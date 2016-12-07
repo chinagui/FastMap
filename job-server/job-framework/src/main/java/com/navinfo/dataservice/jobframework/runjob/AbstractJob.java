@@ -56,7 +56,7 @@ public abstract class AbstractJob implements Runnable {
 			jobInfo.setResponse(new JSONObject());
 			volidateRequest();
 			lock();
-			response("检查、初始化任务执行环境及相关操作已完成...",null);
+			response("初始化任务执行环境及相关操作已完成...",null);
 			execute();
 			endJob(JobStatus.STATUS_SUCCESS,"job执行成功");
 		}catch(Exception e){

@@ -8,13 +8,17 @@ import java.util.List;
 import org.apache.commons.dbutils.DbUtils;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.web.servlet.ModelAndView;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
+import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
+import com.navinfo.dataservice.dao.glm.search.RdGscSearch;
+import com.navinfo.dataservice.dao.glm.search.RdLinkSearch;
+import com.navinfo.dataservice.dao.glm.search.RdObjectSearch;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.SelectorUtils;
 import com.navinfo.dataservice.engine.edit.InitApplication;
@@ -38,15 +42,11 @@ public class RdLinkTest extends InitApplication {
 	public void testGetByPid() {
 		Connection conn;
 		try {
-			conn = DBConnector.getInstance().getConnectionById(19);
-
-			String parameter = "{\"type\":\"RWLINK\",\"dbId\":42,\"objId\":100007138}";
-
-			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			conn = DBConnector.getInstance().getConnectionById(17);
 
 			SearchProcess p = new SearchProcess(conn);
 
-			System.out.println(p.searchDataByPid(ObjType.RDLANECONNEXITY, 32060).Serialize(ObjLevel.BRIEF));
+			System.out.println(p.searchDataByPid(ObjType.RDLINK, 14118075).Serialize(ObjLevel.FULL));
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -81,7 +81,7 @@ public class RdLinkTest extends InitApplication {
 
 	@Test
 	public void testDelete() {
-		String parameter = "{\"command\":\"CREATE\",\"dbId\":17,\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.39576643705367,40.030863566821544],[116.39630556106567,40.03086562058379]]},\"catchLinks\":[]},\"type\":\"RDLINK\"}";
+		String parameter = "{\"command\":\"DEPART\",\"dbId\":249,\"objId\":350277,\"data\":{\"catchNodePid\":0,\"catchLinkPid\":\"468962\",\"linkPid\":\"487838\",\"longitude\":116.20513648660511,\"latitude\":39.81957970426371},\"type\":\"RDLINK\"}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
@@ -93,7 +93,7 @@ public class RdLinkTest extends InitApplication {
 
 	@Test
 	public void testAddRdLink() {
-		String parameter = "{\"command\":\"CREATE\",\"dbId\":17,\"objId\":303000015,\"data\":{\"longitude\":116.25269451011694,\"latitude\":40.08360598240627},\"type\":\"RWNODE\"}";
+		String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDRESTRICTION\",\"dbId\":17,\"data\":{\"details\":[{\"outLinkPid\":220002834,\"pid\":220000045,\"objStatus\":\"UPDATE\"}],\"pid\":220000030}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
@@ -163,7 +163,7 @@ public class RdLinkTest extends InitApplication {
 	@Test
 	public void testBatch()
 	{
-		String parameter = "{\"command\":\"CREATE\",\"type\":\"IXPOI\",\"dbId\":17,\"data\":{\"longitude\":116.20599746704102,\"latitude\":40.580030566358204,\"x_guide\":116.20599746704102,\"y_guide\":40.580030566358204,\"linkPid\":0,\"name\":\"asdas\",\"kindCode\":\"210105\"}}";
+		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDSE\",\"dbId\":17,\"data\":{\"inLinkPid\":206002831,\"outLinkPid\":200002787,\"nodePid\":301002167}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
@@ -171,5 +171,24 @@ public class RdLinkTest extends InitApplication {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+	@Test
+	public void testRdLinkRender()
+	{
+		Connection conn;
+		try {
+			conn = DBConnector.getInstance().getConnectionById(17);
+
+			RdGscSearch search = new RdGscSearch(conn);
+			
+			List<SearchSnapshot> data = search.searchDataByTileWithGap(107994, 49493, 17, 10);
+			
+			System.out.println("data:"+ResponseUtils.assembleRegularResult(data));
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
 	}
 }

@@ -3,10 +3,12 @@ package com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrwpoint;
 import java.sql.Connection;
 import java.util.List;
 
-import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
+import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLink;
 import com.navinfo.dataservice.dao.glm.selector.rd.gsc.RdGscSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.rw.RwLinkSelector;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.operation.AbstractProcess;
 
@@ -39,7 +41,16 @@ public class Process extends AbstractProcess<Command> {
 		List<RdGsc> rdGscList = selector.loadRdGscLinkByLinkPid(this.getCommand().getLinkPid(), "RW_LINK", true);
 
 		this.getCommand().setRdGscs(rdGscList);
+
+		// 获取要打断LCLINK的对象
+		RwLink breakLink = (RwLink) new RwLinkSelector(this.getConn()).loadById(this.getCommand().getLinkPid(), true,
+				false);
+		this.getCommand().setBreakLink(breakLink);
+		// 删除要打断LCLINK
+		this.getResult().insertObject(breakLink, ObjStatus.DELETE, breakLink.pid());
+
 		return true;
+
 	}
 
 	public String innerRun() throws Exception {
@@ -57,7 +68,7 @@ public class Process extends AbstractProcess<Command> {
 			OpTopo operation = new OpTopo(this.getCommand(), check, this.getConn());
 			msg = operation.run(this.getResult());
 			// 打断线对立交影响
-			OpRefRdGsc opRefRdGsc = new OpRefRdGsc(this.getCommand(), this.getConn());
+			OpRefRdGsc opRefRdGsc = new OpRefRdGsc(this.getCommand());
 			opRefRdGsc.run(this.getResult());
 		} catch (Exception e) {
 
@@ -75,7 +86,7 @@ public class Process extends AbstractProcess<Command> {
 		OpTopo operation = new OpTopo(this.getCommand(), check, this.getConn());
 		String msg = operation.run(this.getResult());
 		// 打断线对立交影响
-		OpRefRdGsc opRefRdGsc = new OpRefRdGsc(this.getCommand(), this.getConn());
+		OpRefRdGsc opRefRdGsc = new OpRefRdGsc(this.getCommand());
 		opRefRdGsc.run(this.getResult());
 		return msg;
 	}

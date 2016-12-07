@@ -75,7 +75,7 @@ public class POITest extends InitApplication {
 
 	@Test
 	public void testDeletePoi() {
-		String parameter = "{\"command\":\"UPDATE\",\"dbId\":22,\"type\":\"IXPOI\",\"objId\":4602392,\"data\":{\"addresses\":[{\"nameGroupid\":1,\"poiPid\":0,\"langCode\":\"CHI\",\"fullname\":\"\",\"objStatus\":\"INSERT\"}],\"rowId\":\"3F836D0B49AA4604E050A8C083041544\",\"pid\":4602392}}";
+		String parameter = "{\"command\":\"CREATE\",\"type\":\"IXPOI\",\"dbId\":253,\"data\":{\"longitude\":116.40917479991913,\"latitude\":40.15681517626733,\"x_guide\":116.4089175822833,\"y_guide\":40.156762892500545,\"linkPid\":1657710,\"name\":\"ce\",\"kindCode\":\"130601\"}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
@@ -162,7 +162,7 @@ public class POITest extends InitApplication {
 
 	@Test
 	public void testUpdatePoi() {
-		String parameter = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"IXPOI\",\"objId\":3452060,\"data\":{\"photos\":[{\"fccPid\":\"4c3e0a43742e4f908d1e102343a110e4\",\"tag\":1,\"photoId\":0,\"status\":\"\",\"memo\":\"\",\"objStatus\":\"INSERT\"},{\"fccPid\":\"9e4e27bb912047ca923d7b628299d618\",\"rowId\":\"46BEC9A37C594562BDA8260B532B20FE\",\"objStatus\":\"UPDATE\"},{\"rowId\":\"2ADB648758DC426D92BBDA08B6623DC0\",\"objStatus\":\"UPDATE\",\"fccPid\":\"c4c16f1e25e643bcaec9e34ad80b93b3\"}],\"rowId\":\"3AE1FB55484A92F7E050A8C08304EE4C\",\"pid\":3452060}}";
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":22,\"type\":\"IXPOI\",\"objId\":4602392,\"data\":{\"addresses\":[{\"nameGroupid\":1,\"poiPid\":0,\"langCode\":\"CHI\",\"fullname\":\"\",\"objStatus\":\"INSERT\"}],\"rowId\":\"3F836D0B49AA4604E050A8C083041544\",\"pid\":4602392}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
@@ -174,7 +174,7 @@ public class POITest extends InitApplication {
 
 	@Test
 	public void testDeleteParent() {
-		String parameter = "{\"command\":\"DELETE\",\"type\":\"IXPOIPARENT\",\"dbId\":42,\"objId\":73341675}";
+		String parameter = "{\"command\":\"DELETE\",\"type\":\"IXPOI\",\"dbId\":245,\"objId\":64373916}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

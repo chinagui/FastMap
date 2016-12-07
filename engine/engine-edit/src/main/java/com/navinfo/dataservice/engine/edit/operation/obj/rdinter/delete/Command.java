@@ -47,6 +47,11 @@ public class Command extends AbstractCommand  implements ICommand {
 		return requester;
 	}
 
+	public Command(int objId,RdInter inter)
+	{
+		this.rdInter = inter;
+		this.pid = objId;
+	}
 	public Command(JSONObject json, String requester) {
 		this.requester = requester;
 

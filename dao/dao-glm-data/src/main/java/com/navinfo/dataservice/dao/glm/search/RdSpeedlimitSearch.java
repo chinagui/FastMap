@@ -11,6 +11,7 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.commons.util.DisplayUtils;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
@@ -37,26 +38,29 @@ public class RdSpeedlimitSearch implements ISearch {
 
 		return obj;
 	}
-	
+
 	@Override
-	public IObj searchDataByPids(List<Integer> pidList) throws Exception {
+	public List<IObj> searchDataByPids(List<Integer> pidList) throws Exception {
 		return null;
 	}
-	
+
 	@Override
-	public List<SearchSnapshot> searchDataBySpatial(String wkt) throws Exception {
+	public List<SearchSnapshot> searchDataBySpatial(String wkt)
+			throws Exception {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public List<SearchSnapshot> searchDataByCondition(String condition) throws Exception {
+	public List<SearchSnapshot> searchDataByCondition(String condition)
+			throws Exception {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z, int gap) throws Exception {
+	public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z,
+			int gap) throws Exception {
 
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
@@ -129,19 +133,21 @@ public class RdSpeedlimitSearch implements ISearch {
 					sb.append(speedDependent);
 
 				} else {
-					String[] lanes = laneSpeedValue.split("\\|");
+					if (!StringUtils.isEmpty(laneSpeedValue)) {
+						String[] lanes = laneSpeedValue.split("\\|");
 
-					sb.append(speedValue / 10);
+						sb.append(speedValue / 10);
 
-					for (int i = 0; i < lanes.length; i++) {
-						if (i == 0) {
-							sb.append(",");
+						for (int i = 0; i < lanes.length; i++) {
+							if (i == 0) {
+								sb.append(",");
+							}
+
+							if (i != 0) {
+								sb.append("|");
+							}
+							sb.append(Integer.valueOf(lanes[i]) / 10);
 						}
-
-						if (i != 0) {
-							sb.append("|");
-						}
-						sb.append(Integer.valueOf(lanes[i]) / 10);
 					}
 
 				}
@@ -155,13 +161,15 @@ public class RdSpeedlimitSearch implements ISearch {
 
 				jsonM.put("c", String.valueOf((int) angle));
 
-				snapshot.setG(Geojson.lonlat2Pixel(geom2.getFirstPoint()[0], geom2.getFirstPoint()[1], z, px, py));
+				snapshot.setG(Geojson.lonlat2Pixel(geom2.getFirstPoint()[0],
+						geom2.getFirstPoint()[1], z, px, py));
 
 				jsonM.put("d", resultSet.getInt("direct"));
 
 				jsonM.put("e", resultSet.getInt("link_pid"));
 
-				jsonM.put("f", resultSet.getString("descript") == null?"":resultSet.getString("descript"));
+				jsonM.put("f", resultSet.getString("descript") == null ? ""
+						: resultSet.getString("descript"));
 
 				snapshot.setM(jsonM);
 
@@ -248,7 +256,8 @@ public class RdSpeedlimitSearch implements ISearch {
 
 		sb.append(")");
 
-		angle = DisplayUtils.calIncloudedAngle(sb.toString(), resultSet.getInt("direct"));
+		angle = DisplayUtils.calIncloudedAngle(sb.toString(),
+				resultSet.getInt("direct"));
 
 		return angle;
 
@@ -272,7 +281,8 @@ public class RdSpeedlimitSearch implements ISearch {
 
 		RdSpeedlimitSearch a = new RdSpeedlimitSearch(conn);
 
-		System.out.println(JSONArray.fromObject(a.searchDataByTileWithGap(107951, 49621, 17, 20)));
+		System.out.println(JSONArray.fromObject(a.searchDataByTileWithGap(
+				107951, 49621, 17, 20)));
 
 	}
 }

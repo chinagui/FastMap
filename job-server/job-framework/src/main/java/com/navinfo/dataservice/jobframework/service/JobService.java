@@ -39,7 +39,7 @@ public class JobService {
 		return SingletonHolder.INSTANCE;
 	}
 	
-	public long create(String jobType,JSONObject request,long userId,String descp)throws ServiceException{
+	public long create(String jobType,JSONObject request,long userId,long taskId,String descp)throws ServiceException{
 		Connection conn = null;
 		try{
 			//持久化
@@ -48,11 +48,11 @@ public class JobService {
 					.getConnection();
 			long jobId = run.queryForLong(conn, "SELECT JOB_ID_SEQ.NEXTVAL FROM DUAL");
 			String jobGuid = UuidUtils.genUuid();
-			String jobInfoSql = "INSERT INTO JOB_INFO(JOB_ID,JOB_TYPE,CREATE_TIME,STATUS,JOB_REQUEST,JOB_GUID,USER_ID,DESCP)"
-					+ " VALUES (?,?,SYSDATE,?,?,?,?,?)";
-			run.update(conn, jobInfoSql, jobId,jobType,JobStatus.STATUS_CREATE,request.toString(),jobGuid,userId,descp);
+			String jobInfoSql = "INSERT INTO JOB_INFO(JOB_ID,JOB_TYPE,CREATE_TIME,STATUS,JOB_REQUEST,JOB_GUID,USER_ID,TASK_ID,DESCP)"
+					+ " VALUES (?,?,SYSDATE,?,?,?,?,?,?)";
+			run.update(conn, jobInfoSql, jobId,jobType,JobStatus.STATUS_CREATE,request.toString(),jobGuid,userId,taskId,descp);
 			//发送run_job消息
-			JobMsgPublisher.runJob(jobId,jobGuid,jobType,request,userId);
+			JobMsgPublisher.runJob(jobId,jobGuid,jobType,request,userId,taskId);
 			return jobId;
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -72,7 +72,7 @@ public class JobService {
 			QueryRunner run = new QueryRunner();
 			conn = MultiDataSourceFactory.getInstance().getSysDataSource()
 					.getConnection();
-			String jobInfoSql = "SELECT T.JOB_ID,T.JOB_TYPE,T.CREATE_TIME,T.BEGIN_TIME,T.END_TIME,T.STEP_COUNT,T.STATUS,T.JOB_REQUEST,T.JOB_RESPONSE,T.JOB_GUID,T.USER_ID,T.DESCP"
+			String jobInfoSql = "SELECT T.JOB_ID,T.JOB_TYPE,T.CREATE_TIME,T.BEGIN_TIME,T.END_TIME,T.STEP_COUNT,T.STATUS,T.JOB_REQUEST,T.JOB_RESPONSE,T.RESULT_MSG,T.JOB_GUID,T.USER_ID,T.DESCP"
 					+ ",S.STEP_SEQ,S.STEP_MSG,S.BEGIN_TIME,S.END_TIME,S.STATUS AS STEP_STATUS FROM JOB_INFO T,JOB_STEP S WHERE T.JOB_ID=S.JOB_ID(+) AND T.JOB_ID=? ORDER BY S.STEP_SEQ";
 			jobInfo = run.query(conn, jobInfoSql, new FullHandler(), jobId);
 			return jobInfo;
@@ -124,6 +124,7 @@ public class JobService {
 				jobInfo.setStatus(rs.getInt("STATUS"));
 				jobInfo.setRequest(JSONObject.fromObject(rs.getString("JOB_REQUEST")));
 				jobInfo.setResponse(JSONObject.fromObject(rs.getString("JOB_RESPONSE")));
+				jobInfo.setResultMsg(rs.getString("RESULT_MSG"));
 				jobInfo.setUserId(rs.getLong("USER_ID"));
 				jobInfo.setDescp(rs.getString("DESCP"));
 				jobInfo.setStepCount(rs.getInt("STEP_COUNT"));

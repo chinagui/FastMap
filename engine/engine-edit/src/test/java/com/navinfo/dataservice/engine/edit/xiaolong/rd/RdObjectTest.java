@@ -14,10 +14,8 @@ import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
-import com.navinfo.dataservice.dao.glm.search.RdCrossSearch;
-import com.navinfo.dataservice.dao.glm.search.RdLinkSearch;
-import com.navinfo.dataservice.dao.glm.search.RdObjectSearch;
-import com.navinfo.dataservice.dao.glm.search.RdTmcLocationSearch;
+import com.navinfo.dataservice.dao.glm.search.RdLaneConnexitySearch;
+import com.navinfo.dataservice.dao.glm.search.RdLinkSpeedLimitSearch;
 import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.operation.Transaction;
 import com.navinfo.dataservice.engine.edit.search.SearchProcess;
@@ -45,7 +43,7 @@ public class RdObjectTest extends InitApplication {
 
 			SearchProcess p = new SearchProcess(conn);
 
-			System.out.println(p.searchDataByPid(ObjType.RDLANECONNEXITY, 306000005).Serialize(ObjLevel.BRIEF));
+			System.out.println(p.searchDataByPid(ObjType.RDOBJECT, 8229).Serialize(ObjLevel.BRIEF));
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -54,7 +52,7 @@ public class RdObjectTest extends InitApplication {
 
 	@Test
 	public void testAddRdObject() {
-		String parameter = "{\"command\":\"CREATE\",\"dbId\":42,\"type\":\"RDSAMENODE\",\"data\":{\"nodes\":[{\"nodePid\":\"100027134\",\"type\":\"RDNODE\",\"isMain\":1},{\"nodePid\":\"100025966\",\"type\":\"ADNODE\",\"isMain\":0}]}}";
+		String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDOBJECT\",\"dbId\":19,\"data\":{\"objStatus\":\"UPDATE\",\"pid\":310000003,\"links\":[279667,279668,88653284,208002741],\"roads\":[168599,171110,265604],\"inters\":[245224]}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
@@ -105,7 +103,7 @@ public class RdObjectTest extends InitApplication {
 	
 	@Test
 	public void testUpdateRdInter() {
-		String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDINTER\",\"dbId\":42,\"data\":{\"objStatus\":\"UPDATE\",\"pid\":100000759,\"links\":[100006596,100006598,100006599,100006614,100006613],\"nodes\":[100023749,100023753,100023754,100023755,100023764]}}";
+		String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDINTER\",\"dbId\":17,\"data\":{\"objStatus\":\"UPDATE\",\"pid\":307000003,\"links\":[305002913,201002827],\"nodes\":[201002212,306002155,201002211,302002186]}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
@@ -179,15 +177,35 @@ public class RdObjectTest extends InitApplication {
 	}
 	
 	@Test
-	public void testCrfObjectRender()
+	public void RdLaneRender()
 	{
 		Connection conn;
 		try {
 			conn = DBConnector.getInstance().getConnectionById(17);
 
-			RdTmcLocationSearch search = new RdTmcLocationSearch(conn);
+			RdLaneConnexitySearch search = new RdLaneConnexitySearch(conn);
 			
-			List<SearchSnapshot> data = search.searchDataByTileWithGap(107829, 49685, 17, 80);
+			List<SearchSnapshot> data = search.searchDataByTileWithGap(108013, 49471, 17, 80);
+			
+			System.out.println("data:"+ResponseUtils.assembleRegularResult(data));
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+	}
+	
+	
+	@Test
+	public void testRdSpeedLimitRender()
+	{
+		Connection conn;
+		try {
+			conn = DBConnector.getInstance().getConnectionById(17);
+
+			RdLinkSpeedLimitSearch search = new RdLinkSpeedLimitSearch(conn);
+			
+			List<SearchSnapshot> data = search.searchDataByTileWithGap(215685, 98715, 18, 80);
 			
 			System.out.println("data:"+ResponseUtils.assembleRegularResult(data));
 

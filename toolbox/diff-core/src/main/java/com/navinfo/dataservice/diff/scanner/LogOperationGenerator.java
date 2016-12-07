@@ -25,11 +25,11 @@ public class LogOperationGenerator {
         runner = new QueryRunner();
     }
     
-    public int generate()throws SQLException{
+    public int generate(String actId)throws SQLException{
     	Connection conn = null;
     	try{
     		conn = diffServer.getPoolDataSource().getConnection();
-    		String sql = "INSERT INTO LOG_OPERATION(OP_ID,OP_DT) SELECT OP_ID,SYSDATE OP_DT FROM LOG_DETAIL";
+    		String sql = "INSERT INTO LOG_OPERATION(OP_ID,ACT_ID,OP_DT,OP_SEQ) SELECT OP_ID,'"+actId+"' act_id,SYSDATE OP_DT,LOG_OP_SEQ.NEXTVAL OP_SEQ FROM LOG_DETAIL";
     		int count = runner.update(conn, sql);
     		conn.commit();
     		return count;

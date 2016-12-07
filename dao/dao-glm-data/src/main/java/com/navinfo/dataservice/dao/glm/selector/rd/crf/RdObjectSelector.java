@@ -18,6 +18,9 @@ import com.navinfo.dataservice.dao.glm.model.rd.crf.RdObject;
 import com.navinfo.dataservice.dao.glm.model.rd.crf.RdObjectInter;
 import com.navinfo.dataservice.dao.glm.model.rd.crf.RdObjectLink;
 import com.navinfo.dataservice.dao.glm.model.rd.crf.RdObjectRoad;
+import com.navinfo.dataservice.dao.glm.model.rd.inter.RdInterLink;
+import com.navinfo.dataservice.dao.glm.model.rd.inter.RdInterNode;
+import com.navinfo.dataservice.dao.glm.model.rd.road.RdRoadLink;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.navicommons.database.sql.DBUtils;
 
@@ -32,7 +35,49 @@ public class RdObjectSelector extends AbstractSelector {
 	public RdObjectSelector(Connection conn) {
 		super(RdObject.class, conn);
 	}
-
+	
+	@Override
+	public IRow loadById(int id, boolean isLock, boolean... noChild) throws Exception {
+		IRow row = super.loadById(id, isLock, noChild);
+		
+		if(row instanceof RdObject)
+		{
+			RdObject rdObject = (RdObject) row;
+			
+			List<IRow> rdObjRoads = rdObject.getRoads();
+			
+			for(IRow rdRoadRow : rdObjRoads)
+			{
+				RdObjectRoad road = (RdObjectRoad) rdRoadRow;
+				
+				int roadPid = road.getRoadPid();
+				
+				List<IRow> links = new AbstractSelector(getConn()).loadRowsByClassParentId(RdRoadLink.class, roadPid, isLock,null,null);
+				
+				road.setLinks(links);
+			}
+			
+			List<IRow> rdObjInters = rdObject.getInters();
+			
+			for(IRow rdObjInter : rdObjInters)
+			{
+				RdObjectInter objInter = (RdObjectInter) rdObjInter;
+				
+				int interPid = objInter.getInterPid();
+				
+				List<IRow> links = new AbstractSelector(getConn()).loadRowsByClassParentId(RdInterLink.class, interPid, isLock,null,null);
+				
+				List<IRow> nodes = new AbstractSelector(getConn()).loadRowsByClassParentId(RdInterNode.class, interPid, isLock,null,null);
+				
+				objInter.setLinks(links);
+				
+				objInter.setNodes(nodes);
+			}
+		}
+		
+		return row;
+	}
+	
 	/**
 	 * 通过crf道路pid查询可以选择的道路名
 	 * 如果选择的CRFO中，存在名称类型为立交桥名（连接路）并且属性为“匝道”或者名称类型为立交桥名（主路）的link，

@@ -8,6 +8,7 @@ import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 
+import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
@@ -66,7 +67,7 @@ public class IxPoiSelector extends AbstractSelector {
 		buffer.append(" FROM (SELECT /*+ leading(ip,ipn,ps) use_hash(ip,ipn,ps)*/  COUNT (1) OVER (PARTITION BY 1) total,");
 		buffer.append(" ip.pid,ip.kind_code,ps.status, ps.fresh_verified as freshness_vefication,ipn.name,ip.geometry,ip.collect_time,ip.u_record ");
 		buffer.append(" FROM ix_poi ip, (SELECT * FROM ix_poi_name WHERE lang_code = 'CHI' AND name_type = 2 AND name_class = 1) ipn, poi_edit_status ps ");
-		buffer.append(" WHERE  ip.pid = ipn.poi_pid(+) and ip.row_id = ps.row_id ");
+		buffer.append(" WHERE  ip.pid = ipn.poi_pid(+) and ip.pid = ps.pid ");
 
 //		buffer.append(" AND ipn.lang_code = 'CHI'");
 //		buffer.append(" AND ipn.name_type = 2 ");
@@ -348,7 +349,7 @@ public class IxPoiSelector extends AbstractSelector {
 
 		poi.setSamepoiParts(parts);
 
-		poi.setRawFields(loadRawByRowId(poi.getRowId()));
+		poi.setRawFields(loadRawByRowId(poi.getPid()));
 		
 		poi.setState(logRead.getObjectState(poi.pid(), "IX_POI"));
 
@@ -358,14 +359,14 @@ public class IxPoiSelector extends AbstractSelector {
 	/**
 	 * 查询最新RAW_FIELDS
 	 * 
-	 * @param rowId
+	 * @param pid
 	 * @return
 	 * @throws Exception
 	 */
-	public String loadRawByRowId(String rowId) throws Exception {
+	public String loadRawByRowId(int pid) throws Exception {
 
-		String sql = "SELECT RAW_FIELDS FROM POI_EDIT_STATUS WHERE ROW_ID=HEXTORAW('"
-				+ rowId + "') ORDER BY UPLOAD_DATE DESC";
+		String sql = "SELECT RAW_FIELDS FROM POI_EDIT_STATUS WHERE pid="
+				+ pid + " ORDER BY UPLOAD_DATE DESC";
 
 		PreparedStatement pstmt = null;
 
@@ -389,6 +390,48 @@ public class IxPoiSelector extends AbstractSelector {
 
 			DBUtils.closeStatement(pstmt);
 
+		}
+	}
+	
+	
+	/**
+	 * 根据子任务获取该任务圈下所有的PID
+	 * @param subtask
+	 * @return
+	 * @throws Exception
+	 */
+	public List<Integer> getPidsBySubTask(Subtask subtask) throws Exception {
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+		
+		try {
+			StringBuilder sb = new StringBuilder();
+			sb.append("select p.pid from IX_POI p");
+			sb.append(" WHERE sdo_within_distance(p.geometry, sdo_geometry(    :1  , 8307), 'mask=anyinteract') = 'TRUE'");
+			
+			pstmt = conn.prepareStatement(sb.toString());
+			
+			pstmt.setString(1, subtask.getGeometry());
+			
+			resultSet = pstmt.executeQuery();
+			
+			List<Integer> pids = new ArrayList<Integer>();
+			
+			while(resultSet.next()) {
+				pids.add(resultSet.getInt("pid"));
+			}
+			
+			return pids;
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+
+			DBUtils.closeResultSet(resultSet);
+
+			DBUtils.closeStatement(pstmt);
 		}
 	}
 

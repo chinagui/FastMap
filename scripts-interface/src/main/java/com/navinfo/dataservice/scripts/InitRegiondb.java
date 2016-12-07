@@ -70,6 +70,11 @@ public class InitRegiondb {
 			String userNamePrefix = (String) request.get("userNamePrefix");
 			Assert.notNull(userNamePrefix, "userNamePrefix不能为空");
 			
+			int meshExtendCount = 1;
+			if(request.containsKey("meshExtendCount")){
+				meshExtendCount = request.getInt("meshExtendCount");
+			}
+			
 			conn = DBConnector.getInstance().getManConnection();
 			//得到图幅号
 			Map<Integer,List<String>> regionMeshMap = getRegionMeshMap(conn,regionIds);
@@ -78,7 +83,12 @@ public class InitRegiondb {
 				insertRegions(conn,key);
 				//创建库
 				Set<String> meshes = new HashSet<String>(regionMeshMap.get(key));
-				Set<String> extendMeshes = MeshUtils.getNeighborMeshSet(meshes,1);
+				Set<String> extendMeshes = null;
+				if(meshExtendCount>0){
+					extendMeshes = MeshUtils.getNeighborMeshSet(meshes,1);
+				}else{
+					extendMeshes=meshes;
+				}
 				//大区库不直接做检查批处理，不维护M_MESH_TYPE表
 				//创建日db
 				JobInfo info1 = new JobInfo(0, "");
@@ -119,7 +129,7 @@ public class InitRegiondb {
 				}
 				response.put("region_"+key+"_day_exp", "success");
 				//给日库和月库安装包
-				installPckUtils(dbDay);
+				installPckUtils(dbDay,1);
 				response.put("region_"+key+"_day_utils", "success");
 				//创建月db
 				JobInfo info3 = new JobInfo(0, "");
@@ -156,7 +166,7 @@ public class InitRegiondb {
 					throw new Exception("月库导数据过程中job内部发生"+msg);
 				}
 				response.put("region_"+key+"_month_exp", "success");
-				installPckUtils(dbMonth);
+				installPckUtils(dbMonth,2);
 				response.put("region_"+key+"_month_utils", "success");
 				//写入dbID
 				insertDbIds(conn,key,dbDay,dbMonth);
@@ -206,8 +216,17 @@ public class InitRegiondb {
 			DataSource regDdataSource = MultiDataSourceFactory.getInstance().getDataSource(DbConnectConfig.createConnectConfig(dbRegion.getConnectParam())); //获取大区库的数据源
 			metaConn = metaDataSource.getConnection();//获取元数据库的连接
 			//创建元数据库dblink
-			cr.create("RG_DBLINK_"+dbRegion.getDbUserName(), false, metaDataSource,dbRegion.getDbUserName(),dbRegion.getDbUserPasswd(),dbRegion.getDbServer().getIp(),String.valueOf(dbRegion.getDbServer().getPort()),dbRegion.getDbServer().getServiceName());
-			metaConn.commit();
+			String dbLinkName = null;
+			String dbUserName = dbRegion.getDbUserName();
+			if(dbUserName.contains("_d_")){
+				dbLinkName = "d_"+dbUserName.split("_d_")[1];
+			}else if(dbUserName.contains("_m_")){
+				dbLinkName = "m_"+dbUserName.split("_m_")[1];
+			}
+			if(dbLinkName != null && StringUtils.isNotEmpty(dbLinkName)){
+				cr.create("RG_DBLINK_"+dbLinkName, false, metaDataSource,dbRegion.getDbUserName(),dbRegion.getDbUserPasswd(),dbRegion.getDbServer().getIp(),String.valueOf(dbRegion.getDbServer().getPort()),dbRegion.getDbServer().getServiceName());
+				metaConn.commit();
+			}
 		}finally{
 			DbUtils.closeQuietly(metaConn);
 		}
@@ -224,7 +243,7 @@ public class InitRegiondb {
 	 * @author zl zhangli5174@navinfo.com
 	 * @date 2016年11月11日 下午8:46:15 
 	 */
-	private static void installPckUtils(int dbId)throws Exception{
+	private static void installPckUtils(int dbId,int dbType)throws Exception{
 		Connection conn = null;
 		try{
 			DbInfo db = DbService.getInstance()
@@ -237,6 +256,9 @@ public class InitRegiondb {
 			createRegionDbLinks(db);
 			
 			conn = MultiDataSourceFactory.getInstance().getDataSource(connConfig).getConnection();
+			//修改log_action默认值
+			new QueryRunner().execute(conn, "ALTER TABLE LOG_ACTION MODIFY SRC_DB DEFAULT "+dbType);
+			//
 			SqlExec sqlExec = new SqlExec(conn);
 			String sqlFile = "/com/navinfo/dataservice/scripts/resources/init_edit_tables.sql";
 			sqlExec.executeIgnoreError(sqlFile);
@@ -340,7 +362,7 @@ public class InitRegiondb {
 	
 	public static void main(String[] args){
 //		testExeSqlOrPck();
-		testInstallPcks(111);
+	testInstallPcks(111);
 	}
 	
 	private static void testInstallPcks(int dbId){

@@ -9,6 +9,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.engine.check.core.NiValException;
+import com.vividsolutions.jts.geom.Geometry;
+
+import oracle.sql.STRUCT;
 
 public class DatabaseOperator {
 
@@ -25,6 +30,38 @@ public class DatabaseOperator {
 		return resultList;
 		}
 	
+	/**
+	 * 通过查询SQL直接返回对应的NiValException（loc+targets+meshid）
+	 * @param conn
+	 * @param sql
+	 * @return
+	 * @throws Exception
+	 */
+	public List<NiValException> getNiValExceptionFromSql(Connection conn,String sql) throws Exception{
+		PreparedStatement pstmt = conn.prepareStatement(sql);		
+		ResultSet resultSet = pstmt.executeQuery();
+		List<NiValException> resultList=new ArrayList<NiValException>();
+		while (resultSet.next()){
+			String pointWkt ="";
+			try{
+				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
+				Geometry geometry = GeoTranslator.struct2Jts(struct, 100000, 0);			
+				Geometry pointGeo=GeoHelper.getPointFromGeo(geometry);
+				pointWkt = GeoTranslator.jts2Wkt(pointGeo, 0.00001, 5);
+			}catch(Exception e){}
+			
+			String targets=resultSet.getString(2);
+			int meshId=resultSet.getInt(3);
+			
+			NiValException checkResult=new NiValException();
+			checkResult.setLoc(pointWkt);
+			checkResult.setTargets(targets);
+			checkResult.setMeshId(meshId);
+			resultList.add(checkResult);
+		} 
+		return resultList;
+	}
+	
 	public List<Object> settleResultSet(ResultSet resultSet) throws Exception{
 		List<Object> resultList=new ArrayList<Object>();
 		while (resultSet.next()){
@@ -35,7 +72,7 @@ public class DatabaseOperator {
 	
 	private void releaseSource(Statement stmt,ResultSet resultSet) throws SQLException{
 		resultSet.close();
-		stmt.close();
+		stmt.close(); 
 	}
 	
 	public static void main(String[] args) throws Exception{

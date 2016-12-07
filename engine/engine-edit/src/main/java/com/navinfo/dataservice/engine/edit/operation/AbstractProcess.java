@@ -326,9 +326,11 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 		lw.generateLog(command, result);
 		OperatorFactory.recordData(conn, result);
 		lw.recordLog(command, result);
-
-		PoiMsgPublisher.publish(result);
-
+		try{
+			PoiMsgPublisher.publish(result);
+		}catch(Exception e){
+			log.error(e, e);
+		}
 		return true;
 	}
 
@@ -343,6 +345,7 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 	public void handleResult(ObjType objType, OperType operType, Result result) {
 		switch (operType) {
 		case CREATE:
+		case CREATESIDEROAD:
 		case BREAK:
 			List<Integer> addObjPidList = result.getListAddIRowObPid();
 			for (int i = 0; i < result.getAddObjects().size(); i++) {

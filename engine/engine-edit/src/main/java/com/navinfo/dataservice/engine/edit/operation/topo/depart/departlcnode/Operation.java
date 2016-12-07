@@ -1,87 +1,333 @@
 package com.navinfo.dataservice.engine.edit.operation.topo.depart.departlcnode;
 
-import net.sf.json.JSONObject;
-
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.lc.LcLink;
-import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
+import com.navinfo.dataservice.dao.glm.model.lc.LcNode;
+import com.navinfo.dataservice.dao.glm.selector.lc.LcNodeSelector;
+import com.navinfo.dataservice.engine.edit.utils.LcLinkOperateUtils;
 import com.navinfo.dataservice.engine.edit.utils.NodeOperateUtils;
+import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
+import com.navinfo.navicommons.geo.computation.GeometryUtils;
+import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.Point;
 
+import net.sf.json.JSONObject;
+import org.json.JSONException;
+
+import java.sql.Connection;
+import java.util.*;
+
+/***
+ * 节点分离具体实现类
+ * 
+ * @author zhaokk
+ * 
+ * 
+ */
 public class Operation implements IOperation {
 
 	private Command command;
+	private Connection conn;
 
-	private LcLink updateLink;
-
-	private Check check;
-
-	public Operation(Command command, LcLink updateLink, Check check) {
+	public Operation(Command command) {
 		this.command = command;
-		this.updateLink = updateLink;
-		this.check = check;
+	}
+
+	public Operation(Command command, Connection conn) {
+		this.command = command;
+		this.conn = conn;
 	}
 
 	@Override
 	public String run(Result result) throws Exception {
-		this.updateLinkGeomtry(result);
-		this.updateNodeGeometry(result);
-		this.updateFaceGeometry(result);
+		this.departNode(result);
 		return null;
 	}
 
-	private void updateLinkGeomtry(Result result) throws Exception {
-		Geometry geom = GeoTranslator.transform(updateLink.getGeometry(), 0.00001, 5);
+	/***
+	 * 分离节点
+	 * 
+	 * @param result
+	 * @throws Exception
+	 */
+	private void departNode(Result result) throws Exception {
+
+		if (this.command.getCatchNodePid() == 0
+				&& this.command.getCatchLinkPid() == 0) {
+			// 如果分离节点没有挂接link和node 并且分离的node没有挂接其它的link按照node移动功能处理
+			if (this.command.getLinks().size() == 1) {
+				this.removeNode(result);
+			}
+			// 如果分离节点没有挂接link和node 并且分离的node有挂接其它的link按照原则此node要新增
+			if (this.command.getLinks().size() > 1) {
+				LcNode node = NodeOperateUtils.createLcNode(this.command
+						.getPoint().getX(), this.command.getPoint().getY());
+				result.insertObject(node, ObjStatus.INSERT, node.pid());
+				this.updateLinkGeomtry(result, node.getPid());
+			}
+
+		} else {
+			// 节点挂接功能
+			if (this.command.getCatchNodePid() != 0) {
+				this.caleCatchNode(result);
+			}
+			// 打断功能
+
+			if (this.command.getCatchLinkPid() != 0) {
+
+				this.caleCatchBreakLink(result);
+			}
+
+		}
+	}
+
+	/***
+	 * 挂接打断功能
+	 * 
+	 * @param result
+	 * @throws Exception
+	 */
+	private void caleCatchBreakLink(Result result) throws Exception {
+		JSONObject breakJson = new JSONObject();
+		breakJson.put("objId", this.command.getCatchLinkPid());
+		breakJson.put("dbId", command.getDbId());
+		JSONObject data = new JSONObject();
+		// 如果没有挂接的link node需要继承 如果有node需要新生成
+		int breakNodePid = this.command.getNodePid();
+		if (this.command.getLinks().size() > 1) {
+			LcNode node = NodeOperateUtils.createLcNode(this.command.getPoint()
+					.getX(), this.command.getPoint().getY());
+			result.insertObject(node, ObjStatus.INSERT, node.getPid());
+			breakNodePid = node.getPid();
+
+		}
+		// node继承需要修改node的几何
+		else {
+			this.updateNodeGeo(result);
+
+		}
+
+		data.put("longitude", this.command.getPoint().getX());
+		data.put("latitude", this.command.getPoint().getY());
+		data.put("breakNodePid", breakNodePid);
+		if (this.command.getLinks().size() == 1) {
+			data.put("breakNodePid", this.command.getNodePid());
+		}
+		breakJson.put("data", data);
+		com.navinfo.dataservice.engine.edit.operation.topo.breakin.breaklcpoint.Command breakCommand = new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breaklcpoint.Command(
+				breakJson, breakJson.toString());
+		com.navinfo.dataservice.engine.edit.operation.topo.breakin.breaklcpoint.Process breakProcess = new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breaklcpoint.Process(
+				breakCommand, result, conn);
+		breakProcess.innerRun();
+
+		// 维护修行link的几何
+		this.updateLinkGeomtry(result, breakNodePid);
+
+	}
+
+	/**
+	 * 修改node的几何
+	 */
+
+	private void updateNodeGeo(Result result) throws Exception {
+		JSONObject geojson = new JSONObject();
+		geojson.put("type", "Point");
+
+		geojson.put("coordinates",
+				new double[] { this.command.getPoint().getX(),
+						this.command.getPoint().getY() });
+
+		JSONObject updateContent = new JSONObject();
+
+		// 要移动点的dbId
+		updateContent.put("dbId", command.getDbId());
+		JSONObject data = new JSONObject();
+		// 移动点的新几何
+		data.put("geometry", geojson);
+		data.put("pid", this.command.getNodePid());
+		data.put("objStatus", ObjStatus.UPDATE);
+		updateContent.put("data", data);
+
+		// 组装更新线的参数
+		// 保证是同一个连接
+		com.navinfo.dataservice.engine.edit.operation.obj.lcnode.update.Command updatecommand = new com.navinfo.dataservice.engine.edit.operation.obj.lcnode.update.Command(
+				updateContent, command.getRequester(), this.command.getNode());
+		com.navinfo.dataservice.engine.edit.operation.obj.lcnode.update.Process process = new com.navinfo.dataservice.engine.edit.operation.obj.lcnode.update.Process(
+				updatecommand, result, conn);
+		process.innerRun();
+
+	}
+
+	/***
+	 * 节点挂接功能
+	 * 
+	 * @param result
+	 * @throws Exception
+	 */
+	private void caleCatchNode(Result result) throws Exception {
+		// 加载挂接的点求几何
+		LcNodeSelector nodeSelector = new LcNodeSelector(conn);
+		IRow row = nodeSelector.loadById(this.command.getCatchNodePid(), true,
+				true);
+		LcNode node = (LcNode) row;
+		Geometry geom = GeoTranslator.transform(node.getGeometry(), 0.00001, 5);
+		this.command.setPoint(((Point) GeoTranslator.point2Jts(
+				geom.getCoordinate().x, geom.getCoordinate().y)));
+		// 如果原有node挂接的LINK<=1 原来的node需要删除更新link的几何为新的node
+		if (this.command.getLinks().size() <= 1) {
+			result.insertObject(this.command.getNode(), ObjStatus.DELETE,
+					this.command.getNodePid());
+		}
+		// 更新link的几何为新的node点
+		this.updateLinkGeomtry(result, this.command.getCatchNodePid());
+
+	}
+
+	/***
+	 * 调用点的移动功能
+	 * 
+	 * @param result
+	 * @throws Exception
+	 */
+	private void removeNode(Result result) throws Exception {
+		JSONObject updateContent = new JSONObject();
+		// 组装移动的参数
+		// dbID
+		updateContent.put("dbId", command.getDbId());
+
+		JSONObject data = new JSONObject();
+		// 移动的经纬度
+		data.put("longitude", this.command.getPoint().getX());
+		data.put("latitude", this.command.getPoint().getY());
+		updateContent.put("objId", this.command.getNodePid());
+		updateContent.put("data", data);
+		// 调用移动的API
+		com.navinfo.dataservice.engine.edit.operation.topo.move.movelcnode.Command updatecommand = new com.navinfo.dataservice.engine.edit.operation.topo.move.movelcnode.Command(
+				updateContent, this.command.getlcLink(), this.command.getNode());
+		com.navinfo.dataservice.engine.edit.operation.topo.move.movelcnode.Process process = new com.navinfo.dataservice.engine.edit.operation.topo.move.movelcnode.Process(
+				updatecommand, result, conn);
+		process.innerRun();
+	}
+
+	/***
+	 * 修改分离后线的几何 如果分离后线跨图幅需要有打断功能
+	 * 
+	 * @param result
+	 * @param nodePid
+	 * @throws Exception
+	 */
+	private void updateLinkGeomtry(Result result, int nodePid) throws Exception {
+		Geometry geom = GeoTranslator.transform(this.command.getlcLink()
+				.getGeometry(), 0.00001, 5);
+
 		Coordinate[] cs = geom.getCoordinates();
+
 		double[][] ps = new double[cs.length][2];
+
 		for (int i = 0; i < cs.length; i++) {
 			ps[i][0] = cs[i].x;
+
 			ps[i][1] = cs[i].y;
 		}
-		if (command.getsNodePid() > 0) {
-			ps[0][0] = command.getSlon();
-			ps[0][1] = command.getSlat();
+
+		if (this.command.getlcLink().getsNodePid() == command.getNodePid()) {
+			ps[0][0] = this.command.getPoint().getX();
+
+			ps[0][1] = this.command.getPoint().getY();
+		} else {
+			ps[ps.length - 1][0] = this.command.getPoint().getX();
+
+			ps[ps.length - 1][1] = this.command.getPoint().getY();
 		}
-		if (command.geteNodePid() > 0) {
-			ps[ps.length - 1][0] = command.getElon();
-			ps[ps.length - 1][1] = command.getElat();
-		}
-		check.checkPointCoincide(ps);
-		check.checkShapePointDistance(ps);
+
 		JSONObject geojson = new JSONObject();
+
 		geojson.put("type", "LineString");
+
 		geojson.put("coordinates", ps);
-		JSONObject updateContent = new JSONObject();
-		updateContent.put("geometry", geojson);
-		updateLink.fillChangeFields(updateContent);
-		result.insertObject(updateLink, ObjStatus.UPDATE, updateLink.pid());
+		Geometry geo = GeoTranslator.geojson2Jts(geojson, 1, 5);
+
+		Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(geo);
+		// 修改线的几何属性
+		// 如果没有跨图幅只是修改线的几何
+		List<LcLink> links = new ArrayList<LcLink>();
+		if (meshes.size() == 1) {
+			JSONObject updateContent = new JSONObject();
+			if (this.command.getlcLink().geteNodePid() == this.command
+					.getNodePid()) {
+				updateContent.put("eNodePid", nodePid);
+			} else {
+				updateContent.put("sNodePid", nodePid);
+			}
+			updateContent.put("geometry", geojson);
+			updateContent.put("length", GeometryUtils.getLinkLength(geo));
+			this.command.getlcLink().fillChangeFields(updateContent);
+			result.insertObject(this.command.getlcLink(), ObjStatus.UPDATE,
+					this.command.getLinkPid());
+			// 如果跨图幅就需要打断生成新的link
+		} else {
+			Map<Coordinate, Integer> maps = new HashMap<Coordinate, Integer>();
+			if (geo.getCoordinates()[0].equals(this.command.getPoint()
+					.getCoordinate())) {
+				maps.put(geo.getCoordinates()[0], nodePid);
+
+				maps.put(geo.getCoordinates()[geo.getCoordinates().length - 1],
+						this.command.getlcLink().geteNodePid());
+			} else {
+				maps.put(geo.getCoordinates()[0], this.command.getlcLink()
+						.getsNodePid());
+
+				maps.put(geo.getCoordinates()[geo.getCoordinates().length - 1],
+						nodePid);
+			}
+
+			Iterator<String> it = meshes.iterator();
+			while (it.hasNext()) {
+				String meshIdStr = it.next();
+				Geometry geomInter = MeshUtils.linkInterMeshPolygon(geo,
+						GeoTranslator.transform(MeshUtils.mesh2Jts(meshIdStr),
+								1, 5));
+				geomInter = GeoTranslator.geojson2Jts(
+						GeoTranslator.jts2Geojson(geomInter), 1, 5);
+				List<LcLink> lcLinks = LcLinkOperateUtils
+						.getCreateLcLinksWithMesh(geomInter, maps, result,
+								this.command.getlcLink());
+				links.addAll(lcLinks);
+
+			}
+			result.insertObject(this.command.getlcLink(), ObjStatus.DELETE,
+					this.command.getlcLink().pid());
+
+		}
+		// 分离节点属性关系维护
+		this.updateRelation(links, result);
 	}
 
-	private void updateNodeGeometry(Result result) throws Exception {
-		if (command.getsNodePid() > 0) {
-			RdNode node = NodeOperateUtils.createRdNode(command.getSlon(), command.getSlat());
-			result.insertObject(node, ObjStatus.INSERT, node.pid());
-		}
-		if (command.geteNodePid() > 0) {
-			RdNode node = NodeOperateUtils.createRdNode(command.getElon(), command.getElat());
-			result.insertObject(node, ObjStatus.INSERT, node.pid());
-		}
+	private void updateRelation(List<LcLink> newLinks, Result result)
+			throws Exception {
+		// 构造修改后的link几何
+		assemblyLinks(newLinks);
 
 	}
 
-	private void updateFaceGeometry(Result result) throws Exception {
-		if (command.getsNodePid() > 0) {
-			RdNode node = NodeOperateUtils.createRdNode(command.getSlon(), command.getSlat());
-			result.insertObject(node, ObjStatus.INSERT, node.pid());
+	private List<LcLink> assemblyLinks(List<LcLink> newLinks)
+			throws JSONException {
+		// 如果newLinkl
+		if (newLinks.isEmpty()) {
+			LcLink lcLink = command.getlcLink();
+			LcLink newLink = new LcLink();
+			newLink.copy(lcLink);
+			newLink.setGeometry(GeoTranslator.geojson2Jts((JSONObject) lcLink
+					.changedFields().get("geometry")));
+			newLink.setLength(GeometryUtils.getLinkLength(newLink.getGeometry()));
+			newLinks.add(newLink);
 		}
-		if (command.geteNodePid() > 0) {
-			RdNode node = NodeOperateUtils.createRdNode(command.getElon(), command.getElat());
-			result.insertObject(node, ObjStatus.INSERT, node.pid());
-		}
+		return newLinks;
 	}
-
 }

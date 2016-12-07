@@ -45,1486 +45,1484 @@ import net.sf.json.JSONObject;
 
 public class Operation implements IOperation {
 
-	private Command command;
+    private Command command;
 
-	private IxPoi ixPoi;
+    private IxPoi ixPoi;
 
-	private Connection conn;
+    private Connection conn;
 
-	public Operation(Connection conn) {
-		this.conn = conn;
-	}
+    public Operation(Connection conn) {
+        this.conn = conn;
+    }
 
-	public Operation(Command command, IxPoi ixPoi, Connection conn) {
-		this.command = command;
+    public Operation(Command command, IxPoi ixPoi, Connection conn) {
+        this.command = command;
 
-		this.ixPoi = ixPoi;
+        this.ixPoi = ixPoi;
 
-		this.conn = conn;
-	}
+        this.conn = conn;
+    }
 
-	@Override
-	public String run(Result result) throws Exception {
+    @Override
+    public String run(Result result) throws Exception {
 
-		JSONObject content = command.getContent();
+        JSONObject content = command.getContent();
 
-		boolean isChanged = ixPoi.fillChangeFields(content);
+        boolean isChanged = ixPoi.fillChangeFields(content);
 
-		if (content.containsKey("objStatus")) {
+        if (content.containsKey("objStatus")) {
 
-			if (ObjStatus.DELETE.toString().equals(content.getString("objStatus"))) {
-				result.insertObject(ixPoi, ObjStatus.DELETE, ixPoi.pid());
+            if (ObjStatus.DELETE.toString().equals(content.getString("objStatus"))) {
+                result.insertObject(ixPoi, ObjStatus.DELETE, ixPoi.pid());
 
-				return null;
-			} else {
+                return null;
+            } else {
 
-				if (isChanged) {
-					result.insertObject(ixPoi, ObjStatus.UPDATE, ixPoi.pid());
-				}
-			}
-		}
+                if (isChanged) {
+                    result.insertObject(ixPoi, ObjStatus.UPDATE, ixPoi.pid());
+                }
+            }
+        }
 
-		updataIxPoiAddress(result, content);
+        updataIxPoiAddress(result, content);
 
-		updataIxPoiAudio(result, content);
+        updataIxPoiAudio(result, content);
 
-		updataIxPoiContact(result, content);
+        updataIxPoiContact(result, content);
 
-		updataIxPoiEntryimage(result, content);
+        updataIxPoiEntryimage(result, content);
 
-		updataIxPoiFlag(result, content);
+        updataIxPoiFlag(result, content);
 
-		updataIxPoiIcon(result, content);
+        updataIxPoiIcon(result, content);
 
-		updataIxPoiName(result, content);
+        updataIxPoiName(result, content);
 
-		updataIxPoiPhoto(result, content);
+        updataIxPoiPhoto(result, content);
 
-		updataIxPoiVideo(result, content);
+        updataIxPoiVideo(result, content);
 
-		updataIxPoiParking(result, content);
+        updataIxPoiParking(result, content);
 
-		updataIxPoiDetail(result, content);
+        updataIxPoiDetail(result, content);
 
-		updataIxPoiBusinessTime(result, content);
+        updataIxPoiBusinessTime(result, content);
 
-		updataIxPoiChargingStation(result, content);
+        updataIxPoiChargingStation(result, content);
 
-		updataIxPoiChargingPlot(result, content);
+        updataIxPoiChargingPlot(result, content);
 
-		updataIxPoiChargingPlotPh(result, content);
+        updataIxPoiChargingPlotPh(result, content);
 
-		updataIxPoiBuilding(result, content);
+        updataIxPoiBuilding(result, content);
 
-		updataIxPoiAdvertisement(result, content);
+        updataIxPoiAdvertisement(result, content);
 
-		updataIxPoiGasstation(result, content);
+        updataIxPoiGasstation(result, content);
 
-		updataIxPoiIntroduction(result, content);
+        updataIxPoiIntroduction(result, content);
 
-		updataIxPoiAttraction(result, content);
+        updataIxPoiAttraction(result, content);
 
-		updataIxPoiHotel(result, content);
+        updataIxPoiHotel(result, content);
 
-		updataIxPoiRestaurant(result, content);
+        updataIxPoiRestaurant(result, content);
 
-		updataIxPoiCarrental(result, content);
+        updataIxPoiCarrental(result, content);
 
-		return null;
-	}
+        return null;
+    }
 
-	private void updataIxPoiAddress(Result result, JSONObject content) throws Exception {
-		if (!content.containsKey("addresses")) {
-			return;
-		}
-		JSONArray subObj = content.getJSONArray("addresses");
+    private void updataIxPoiAddress(Result result, JSONObject content) throws Exception {
+        if (!content.containsKey("addresses")) {
+            return;
+        }
+        JSONArray subObj = content.getJSONArray("addresses");
 
-		for (int i = 0; i < subObj.size(); i++) {
+        for (int i = 0; i < subObj.size(); i++) {
 
-			JSONObject json = subObj.getJSONObject(i);
+            JSONObject json = subObj.getJSONObject(i);
 
-			if (json.containsKey("objStatus")) {
+            if (json.containsKey("objStatus")) {
 
-				if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
+                if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
 
-					IxPoiAddress row = ixPoi.addressMap.get(json.getString("rowId"));
+                    IxPoiAddress row = ixPoi.addressMap.get(json.getString("rowId"));
 
-					if (row == null) {
-						throw new Exception("rowId=" + json.getString("rowId") + "的IxPoiAddress不存在");
-					}
+                    if (row == null) {
+                        throw new Exception("rowId=" + json.getString("rowId") + "的IxPoiAddress不存在");
+                    }
 
-					if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
-						result.insertObject(row, ObjStatus.DELETE, ixPoi.pid());
+                    if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
+                        result.insertObject(row, ObjStatus.DELETE, ixPoi.pid());
 
-						continue;
-					} else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
+                        continue;
+                    } else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
 
-						boolean isChanged = row.fillChangeFields(json);
+                        boolean isChanged = row.fillChangeFields(json);
 
-						if (isChanged) {
-							result.insertObject(row, ObjStatus.UPDATE, ixPoi.pid());
-						}
-					}
-				} else {
-					IxPoiAddress row = new IxPoiAddress();
+                        if (isChanged) {
+                            result.insertObject(row, ObjStatus.UPDATE, ixPoi.pid());
+                        }
+                    }
+                } else {
+                    IxPoiAddress row = new IxPoiAddress();
 
-					row.Unserialize(json);
+                    row.Unserialize(json);
 
-					row.setPid(PidUtil.getInstance().applyPoiAddressId());
+                    row.setPid(PidUtil.getInstance().applyPoiAddressId());
 
-					row.setPoiPid(ixPoi.getPid());
+                    row.setPoiPid(ixPoi.getPid());
 
-					row.setMesh(ixPoi.mesh());
+                    row.setMesh(ixPoi.mesh());
 
-					result.insertObject(row, ObjStatus.INSERT, ixPoi.pid());
-				}
-			}
-		}
+                    result.insertObject(row, ObjStatus.INSERT, ixPoi.pid());
+                }
+            }
+        }
 
-	}
+    }
 
-	private void updataIxPoiAudio(Result result, JSONObject content) throws Exception {
-		if (!content.containsKey("audioes")) {
-			return;
-		}
-		JSONArray subObj = content.getJSONArray("audioes");
+    private void updataIxPoiAudio(Result result, JSONObject content) throws Exception {
+        if (!content.containsKey("audioes")) {
+            return;
+        }
+        JSONArray subObj = content.getJSONArray("audioes");
 
-		for (int i = 0; i < subObj.size(); i++) {
+        for (int i = 0; i < subObj.size(); i++) {
 
-			JSONObject json = subObj.getJSONObject(i);
+            JSONObject json = subObj.getJSONObject(i);
 
-			if (json.containsKey("objStatus")) {
+            if (json.containsKey("objStatus")) {
 
-				if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
+                if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
 
-					IxPoiAudio row = ixPoi.audioMap.get(json.getString("rowId"));
+                    IxPoiAudio row = ixPoi.audioMap.get(json.getString("rowId"));
 
-					if (row == null) {
-						throw new Exception("rowId=" + json.getString("rowId") + "的IxPoiAudio不存在");
-					}
+                    if (row == null) {
+                        throw new Exception("rowId=" + json.getString("rowId") + "的IxPoiAudio不存在");
+                    }
 
-					if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
-						result.insertObject(row, ObjStatus.DELETE, ixPoi.pid());
+                    if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
+                        result.insertObject(row, ObjStatus.DELETE, ixPoi.pid());
 
-						continue;
-					} else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
+                        continue;
+                    } else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
 
-						boolean isChanged = row.fillChangeFields(json);
+                        boolean isChanged = row.fillChangeFields(json);
 
-						if (isChanged) {
-							result.insertObject(row, ObjStatus.UPDATE, ixPoi.pid());
-						}
-					}
-				} else {
-					IxPoiAudio row = new IxPoiAudio();
+                        if (isChanged) {
+                            result.insertObject(row, ObjStatus.UPDATE, ixPoi.pid());
+                        }
+                    }
+                } else {
+                    IxPoiAudio row = new IxPoiAudio();
 
-					row.Unserialize(json);
+                    row.Unserialize(json);
 
-					row.setPoiPid(ixPoi.getPid());
+                    row.setPoiPid(ixPoi.getPid());
 
-					row.setMesh(ixPoi.mesh());
+                    row.setMesh(ixPoi.mesh());
 
-					result.insertObject(row, ObjStatus.INSERT, ixPoi.pid());
-				}
-			}
-		}
+                    result.insertObject(row, ObjStatus.INSERT, ixPoi.pid());
+                }
+            }
+        }
 
-	}
+    }
 
-	private void updataIxPoiContact(Result result, JSONObject content) throws Exception {
-		if (!content.containsKey("contacts")) {
-			return;
-		}
-		JSONArray subObj = content.getJSONArray("contacts");
+    private void updataIxPoiContact(Result result, JSONObject content) throws Exception {
+        if (!content.containsKey("contacts")) {
+            return;
+        }
+        JSONArray subObj = content.getJSONArray("contacts");
 
-		for (int i = 0; i < subObj.size(); i++) {
+        for (int i = 0; i < subObj.size(); i++) {
 
-			JSONObject json = subObj.getJSONObject(i);
+            JSONObject json = subObj.getJSONObject(i);
 
-			if (json.containsKey("objStatus")) {
+            if (json.containsKey("objStatus")) {
 
-				if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
+                if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
 
-					IxPoiContact row = ixPoi.contactMap.get(json.getString("rowId"));
+                    IxPoiContact row = ixPoi.contactMap.get(json.getString("rowId"));
 
-					if (row == null) {
-						throw new Exception("rowId=" + json.getString("rowId") + "的IxPoiContact不存在");
-					}
+                    if (row == null) {
+                        throw new Exception("rowId=" + json.getString("rowId") + "的IxPoiContact不存在");
+                    }
 
-					if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
-						result.insertObject(row, ObjStatus.DELETE, ixPoi.pid());
+                    if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
+                        result.insertObject(row, ObjStatus.DELETE, ixPoi.pid());
 
-						continue;
-					} else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
+                        continue;
+                    } else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
 
-						boolean isChanged = row.fillChangeFields(json);
+                        boolean isChanged = row.fillChangeFields(json);
 
-						if (isChanged) {
-							result.insertObject(row, ObjStatus.UPDATE, ixPoi.pid());
-						}
-					}
-				} else {
-					IxPoiContact row = new IxPoiContact();
+                        if (isChanged) {
+                            result.insertObject(row, ObjStatus.UPDATE, ixPoi.pid());
+                        }
+                    }
+                } else {
+                    IxPoiContact row = new IxPoiContact();
 
-					row.Unserialize(json);
+                    row.Unserialize(json);
 
-					row.setPoiPid(ixPoi.getPid());
+                    row.setPoiPid(ixPoi.getPid());
 
-					row.setMesh(ixPoi.mesh());
+                    row.setMesh(ixPoi.mesh());
 
-					result.insertObject(row, ObjStatus.INSERT, ixPoi.pid());
-				}
-			}
-		}
+                    result.insertObject(row, ObjStatus.INSERT, ixPoi.pid());
+                }
+            }
+        }
 
-	}
+    }
 
-	private void updataIxPoiEntryimage(Result result, JSONObject content) throws Exception {
-		if (!content.containsKey("entryImages")) {
-			return;
-		}
-		JSONArray subObj = content.getJSONArray("entryImages");
+    private void updataIxPoiEntryimage(Result result, JSONObject content) throws Exception {
+        if (!content.containsKey("entryImages")) {
+            return;
+        }
+        JSONArray subObj = content.getJSONArray("entryImages");
 
-		for (int i = 0; i < subObj.size(); i++) {
+        for (int i = 0; i < subObj.size(); i++) {
 
-			JSONObject json = subObj.getJSONObject(i);
+            JSONObject json = subObj.getJSONObject(i);
 
-			if (json.containsKey("objStatus")) {
+            if (json.containsKey("objStatus")) {
 
-				if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
+                if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
 
-					IxPoiEntryimage row = ixPoi.entryImageMap.get(json.getString("rowId"));
+                    IxPoiEntryimage row = ixPoi.entryImageMap.get(json.getString("rowId"));
 
-					if (row == null) {
-						throw new Exception("rowId=" + json.getString("rowId") + "的IxPoiEntryimage不存在");
-					}
+                    if (row == null) {
+                        throw new Exception("rowId=" + json.getString("rowId") + "的IxPoiEntryimage不存在");
+                    }
 
-					if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
-						result.insertObject(row, ObjStatus.DELETE, ixPoi.pid());
+                    if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
+                        result.insertObject(row, ObjStatus.DELETE, ixPoi.pid());
 
-						continue;
-					} else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
+                        continue;
+                    } else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
 
-						boolean isChanged = row.fillChangeFields(json);
+                        boolean isChanged = row.fillChangeFields(json);
 
-						if (isChanged) {
-							result.insertObject(row, ObjStatus.UPDATE, ixPoi.pid());
-						}
-					}
-				} else {
-					IxPoiEntryimage row = new IxPoiEntryimage();
+                        if (isChanged) {
+                            result.insertObject(row, ObjStatus.UPDATE, ixPoi.pid());
+                        }
+                    }
+                } else {
+                    IxPoiEntryimage row = new IxPoiEntryimage();
 
-					row.Unserialize(json);
+                    row.Unserialize(json);
 
-					row.setPoiPid(ixPoi.getPid());
+                    row.setPoiPid(ixPoi.getPid());
 
-					row.setMesh(ixPoi.mesh());
+                    row.setMesh(ixPoi.mesh());
 
-					result.insertObject(row, ObjStatus.INSERT, ixPoi.pid());
-				}
-			}
-		}
+                    result.insertObject(row, ObjStatus.INSERT, ixPoi.pid());
+                }
+            }
+        }
 
-	}
+    }
 
-	private void updataIxPoiFlag(Result result, JSONObject content) throws Exception {
-		if (!content.containsKey("flags")) {
-			return;
-		}
-		JSONArray subObj = content.getJSONArray("flags");
+    private void updataIxPoiFlag(Result result, JSONObject content) throws Exception {
+        if (!content.containsKey("flags")) {
+            return;
+        }
+        JSONArray subObj = content.getJSONArray("flags");
 
-		for (int i = 0; i < subObj.size(); i++) {
+        for (int i = 0; i < subObj.size(); i++) {
 
-			JSONObject json = subObj.getJSONObject(i);
+            JSONObject json = subObj.getJSONObject(i);
 
-			if (json.containsKey("objStatus")) {
+            if (json.containsKey("objStatus")) {
 
-				if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
+                if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
 
-					IxPoiFlag row = ixPoi.flagMap.get(json.getString("rowId"));
+                    IxPoiFlag row = ixPoi.flagMap.get(json.getString("rowId"));
 
-					if (row == null) {
-						throw new Exception("rowId=" + json.getString("rowId") + "的IxPoiFlag不存在");
-					}
+                    if (row == null) {
+                        throw new Exception("rowId=" + json.getString("rowId") + "的IxPoiFlag不存在");
+                    }
 
-					if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
-						result.insertObject(row, ObjStatus.DELETE, ixPoi.pid());
+                    if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
+                        result.insertObject(row, ObjStatus.DELETE, ixPoi.pid());
 
-						continue;
-					} else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
+                        continue;
+                    } else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
 
-						boolean isChanged = row.fillChangeFields(json);
+                        boolean isChanged = row.fillChangeFields(json);
 
-						if (isChanged) {
-							result.insertObject(row, ObjStatus.UPDATE, ixPoi.pid());
-						}
-					}
-				} else {
-					IxPoiFlag row = new IxPoiFlag();
+                        if (isChanged) {
+                            result.insertObject(row, ObjStatus.UPDATE, ixPoi.pid());
+                        }
+                    }
+                } else {
+                    IxPoiFlag row = new IxPoiFlag();
 
-					row.Unserialize(json);
+                    row.Unserialize(json);
 
-					row.setPoiPid(ixPoi.getPid());
+                    row.setPoiPid(ixPoi.getPid());
 
-					row.setMesh(ixPoi.mesh());
+                    row.setMesh(ixPoi.mesh());
 
-					result.insertObject(row, ObjStatus.INSERT, ixPoi.pid());
-				}
-			}
-		}
+                    result.insertObject(row, ObjStatus.INSERT, ixPoi.pid());
+                }
+            }
+        }
 
-	}
+    }
 
-	private void updataIxPoiIcon(Result result, JSONObject content) throws Exception {
-		if (!content.containsKey("icons")) {
-			return;
-		}
-		JSONArray subObj = content.getJSONArray("icons");
+    private void updataIxPoiIcon(Result result, JSONObject content) throws Exception {
+        if (!content.containsKey("icons")) {
+            return;
+        }
+        JSONArray subObj = content.getJSONArray("icons");
 
-		for (int i = 0; i < subObj.size(); i++) {
+        for (int i = 0; i < subObj.size(); i++) {
 
-			JSONObject json = subObj.getJSONObject(i);
+            JSONObject json = subObj.getJSONObject(i);
 
-			if (json.containsKey("objStatus")) {
+            if (json.containsKey("objStatus")) {
 
-				if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
+                if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
 
-					IxPoiIcon row = ixPoi.iconMap.get(json.getString("rowId"));
+                    IxPoiIcon row = ixPoi.iconMap.get(json.getString("rowId"));
 
-					if (row == null) {
-						throw new Exception("rowId=" + json.getString("rowId") + "的IxPoiIcon不存在");
-					}
+                    if (row == null) {
+                        throw new Exception("rowId=" + json.getString("rowId") + "的IxPoiIcon不存在");
+                    }
 
-					if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
-						result.insertObject(row, ObjStatus.DELETE, ixPoi.pid());
+                    if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
+                        result.insertObject(row, ObjStatus.DELETE, ixPoi.pid());
 
-						continue;
-					} else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
+                        continue;
+                    } else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
 
-						boolean isChanged = row.fillChangeFields(json);
+                        boolean isChanged = row.fillChangeFields(json);
 
-						if (isChanged) {
-							result.insertObject(row, ObjStatus.UPDATE, ixPoi.pid());
-						}
-					}
-				} else {
-					IxPoiIcon row = new IxPoiIcon();
+                        if (isChanged) {
+                            result.insertObject(row, ObjStatus.UPDATE, ixPoi.pid());
+                        }
+                    }
+                } else {
+                    IxPoiIcon row = new IxPoiIcon();
 
-					row.Unserialize(json);
+                    row.Unserialize(json);
 
-					row.setPid(PidUtil.getInstance().applyPoiIconId());
+                    row.setPid(PidUtil.getInstance().applyPoiIconId());
 
-					row.setPoiPid(ixPoi.getPid());
+                    row.setPoiPid(ixPoi.getPid());
 
-					row.setMesh(ixPoi.mesh());
+                    row.setMesh(ixPoi.mesh());
 
-					result.insertObject(row, ObjStatus.INSERT, ixPoi.pid());
-				}
-			}
-		}
+                    result.insertObject(row, ObjStatus.INSERT, ixPoi.pid());
+                }
+            }
+        }
 
-	}
+    }
 
-	private void updataIxPoiName(Result result, JSONObject content) throws Exception {
-		if (!content.containsKey("names")) {
-			return;
-		}
+    private void updataIxPoiName(Result result, JSONObject content) throws Exception {
+        if (!content.containsKey("names")) {
+            return;
+        }
 
-		JSONArray subObj = content.getJSONArray("names");
+        JSONArray subObj = content.getJSONArray("names");
 
-		for (int i = 0; i < subObj.size(); i++) {
+        for (int i = 0; i < subObj.size(); i++) {
 
-			JSONObject json = subObj.getJSONObject(i);
+            JSONObject json = subObj.getJSONObject(i);
 
-			if (!json.containsKey("objStatus")) {
-				continue;
-			}
+            if (!json.containsKey("objStatus")) {
+                continue;
+            }
 
-			String objStatus = json.getString("objStatus");
+            String objStatus = json.getString("objStatus");
 
-			IxPoiName row = null;
-			// 新增
-			if (ObjStatus.INSERT.toString().equals(objStatus)) {
+            IxPoiName row = null;
+            // 新增
+            if (ObjStatus.INSERT.toString().equals(objStatus)) {
 
-				row = new IxPoiName();
+                row = new IxPoiName();
 
-				row.Unserialize(json);
+                row.Unserialize(json);
 
-				row.setPid(PidUtil.getInstance().applyPoiNameId());
+                row.setPid(PidUtil.getInstance().applyPoiNameId());
 
-				row.setPoiPid(ixPoi.getPid());
+                row.setPoiPid(ixPoi.getPid());
 
-				row.setMesh(ixPoi.mesh());
+                row.setMesh(ixPoi.mesh());
 
-				result.insertObject(row, ObjStatus.INSERT, ixPoi.pid());
+                result.insertObject(row, ObjStatus.INSERT, ixPoi.pid());
 
-			} else {
+            } else {
 
-				row = ixPoi.nameMap.get(json.getString("rowId"));
+                row = ixPoi.nameMap.get(json.getString("rowId"));
 
-				if (row == null) {
-					throw new Exception("rowId=" + json.getString("rowId") + "的IxPoiName不存在");
-				}
-				// 删除
-				if (ObjStatus.DELETE.toString().equals(objStatus)) {
+                if (row == null) {
+                    throw new Exception("rowId=" + json.getString("rowId") + "的IxPoiName不存在");
+                }
+                // 删除
+                if (ObjStatus.DELETE.toString().equals(objStatus)) {
 
-					result.insertObject(row, ObjStatus.DELETE, ixPoi.pid());
+                    result.insertObject(row, ObjStatus.DELETE, ixPoi.pid());
 
-					continue;
-				}
-				// 更新
-				if (ObjStatus.UPDATE.toString().equals(objStatus)) {
+                    continue;
+                }
+                // 更新
+                if (ObjStatus.UPDATE.toString().equals(objStatus)) {
 
-					boolean isChanged = row.fillChangeFields(json);
+                    boolean isChanged = row.fillChangeFields(json);
 
-					if (isChanged) {
-						result.insertObject(row, ObjStatus.UPDATE, ixPoi.pid());
-					}
-				}
-			}
+                    if (isChanged) {
+                        result.insertObject(row, ObjStatus.UPDATE, ixPoi.pid());
+                    }
+                }
+            }
 
-			// 维护IxPoiNameTone、IxPoiNameFlag
-			if (row != null) {
+            // 维护IxPoiNameTone、IxPoiNameFlag
+            if (row != null) {
 
-				updataIxPoiNameTones(result, row, content);
+                updataIxPoiNameTones(result, row, content);
 
-				updataIxPoiNameFlags(result, row, content);
-			}
-		}
-	}
+                updataIxPoiNameFlags(result, row, content);
+            }
+        }
+    }
 
-	private void updataIxPoiNameTones(Result result, IxPoiName poiName, JSONObject content) throws Exception {
-		if (!content.containsKey("nameTones")) {
-			return;
-		}
+    private void updataIxPoiNameTones(Result result, IxPoiName poiName, JSONObject content) throws Exception {
+        if (!content.containsKey("nameTones")) {
+            return;
+        }
 
-		JSONArray subObj = content.getJSONArray("nameTones");
+        JSONArray subObj = content.getJSONArray("nameTones");
 
-		for (int i = 0; i < subObj.size(); i++) {
+        for (int i = 0; i < subObj.size(); i++) {
 
-			JSONObject json = subObj.getJSONObject(i);
+            JSONObject json = subObj.getJSONObject(i);
 
-			if (!json.containsKey("objStatus")) {
-				continue;
-			}
+            if (!json.containsKey("objStatus")) {
+                continue;
+            }
 
-			String objStatus = json.getString("objStatus");
-			// 新增
-			if (ObjStatus.INSERT.toString().equals(objStatus)) {
+            String objStatus = json.getString("objStatus");
+            // 新增
+            if (ObjStatus.INSERT.toString().equals(objStatus)) {
 
-				IxPoiNameTone row = new IxPoiNameTone();
+                IxPoiNameTone row = new IxPoiNameTone();
 
-				row.Unserialize(json);
+                row.Unserialize(json);
 
-				row.setNameId(poiName.getPid());
+                row.setNameId(poiName.getPid());
 
-				row.setMesh(ixPoi.mesh());
+                row.setMesh(ixPoi.mesh());
 
-				result.insertObject(row, ObjStatus.INSERT, ixPoi.pid());
+                result.insertObject(row, ObjStatus.INSERT, ixPoi.pid());
 
-				continue;
-			}
+                continue;
+            }
 
-			if (!json.containsKey("rowId")) {
-				continue;
-			}
+            if (!json.containsKey("rowId")) {
+                continue;
+            }
 
-			IxPoiNameTone row = poiName.nameToneMap.get(json.getString("rowId"));
+            IxPoiNameTone row = poiName.nameToneMap.get(json.getString("rowId"));
 
-			if (row == null) {
-				throw new Exception("rowId=" + json.getString("rowId") + "的IxPoiNameTone不存在");
-			}
+            if (row == null) {
+                throw new Exception("rowId=" + json.getString("rowId") + "的IxPoiNameTone不存在");
+            }
 
-			// 删除
-			if (ObjStatus.DELETE.toString().equals(objStatus)) {
+            // 删除
+            if (ObjStatus.DELETE.toString().equals(objStatus)) {
 
-				result.insertObject(row, ObjStatus.DELETE, ixPoi.pid());
+                result.insertObject(row, ObjStatus.DELETE, ixPoi.pid());
 
-				continue;
-			}
-			// 修改
-			if (ObjStatus.UPDATE.toString().equals(objStatus)) {
+                continue;
+            }
+            // 修改
+            if (ObjStatus.UPDATE.toString().equals(objStatus)) {
 
-				boolean isChanged = row.fillChangeFields(json);
+                boolean isChanged = row.fillChangeFields(json);
 
-				if (isChanged) {
-					result.insertObject(row, ObjStatus.UPDATE, ixPoi.pid());
-				}
-			}
-		}
-	}
+                if (isChanged) {
+                    result.insertObject(row, ObjStatus.UPDATE, ixPoi.pid());
+                }
+            }
+        }
+    }
 
-	private void updataIxPoiNameFlags(Result result, IxPoiName poiName, JSONObject content) throws Exception {
-		if (!content.containsKey("nameFlags")) {
-			return;
-		}
+    private void updataIxPoiNameFlags(Result result, IxPoiName poiName, JSONObject content) throws Exception {
+        if (!content.containsKey("nameFlags")) {
+            return;
+        }
 
-		JSONArray subObj = content.getJSONArray("nameFlags");
+        JSONArray subObj = content.getJSONArray("nameFlags");
 
-		for (int i = 0; i < subObj.size(); i++) {
+        for (int i = 0; i < subObj.size(); i++) {
 
-			JSONObject json = subObj.getJSONObject(i);
+            JSONObject json = subObj.getJSONObject(i);
 
-			if (!json.containsKey("objStatus")) {
-				continue;
-			}
+            if (!json.containsKey("objStatus")) {
+                continue;
+            }
 
-			String objStatus = json.getString("objStatus");
-			// 新增
-			if (ObjStatus.INSERT.toString().equals(objStatus)) {
+            String objStatus = json.getString("objStatus");
+            // 新增
+            if (ObjStatus.INSERT.toString().equals(objStatus)) {
 
-				IxPoiNameFlag row = new IxPoiNameFlag();
+                IxPoiNameFlag row = new IxPoiNameFlag();
 
-				row.Unserialize(json);
+                row.Unserialize(json);
 
-				row.setNameId(poiName.getPid());
+                row.setNameId(poiName.getPid());
 
-				row.setMesh(ixPoi.mesh());
+                row.setMesh(ixPoi.mesh());
 
-				result.insertObject(row, ObjStatus.INSERT, ixPoi.pid());
+                result.insertObject(row, ObjStatus.INSERT, ixPoi.pid());
 
-				continue;
-			}
+                continue;
+            }
 
-			if (!json.containsKey("rowId")) {
-				continue;
-			}
+            if (!json.containsKey("rowId")) {
+                continue;
+            }
 
-			IxPoiNameFlag row = poiName.nameFlagMap.get(json.getString("rowId"));
+            IxPoiNameFlag row = poiName.nameFlagMap.get(json.getString("rowId"));
 
-			if (row == null) {
-				throw new Exception("rowId=" + json.getString("rowId") + "的IxPoiNameFlag不存在");
-			}
+            if (row == null) {
+                throw new Exception("rowId=" + json.getString("rowId") + "的IxPoiNameFlag不存在");
+            }
 
-			// 删除
-			if (ObjStatus.DELETE.toString().equals(objStatus)) {
+            // 删除
+            if (ObjStatus.DELETE.toString().equals(objStatus)) {
 
-				result.insertObject(row, ObjStatus.DELETE, ixPoi.pid());
+                result.insertObject(row, ObjStatus.DELETE, ixPoi.pid());
 
-				continue;
-			}
-			// 修改
-			if (ObjStatus.UPDATE.toString().equals(objStatus)) {
+                continue;
+            }
+            // 修改
+            if (ObjStatus.UPDATE.toString().equals(objStatus)) {
 
-				boolean isChanged = row.fillChangeFields(json);
+                boolean isChanged = row.fillChangeFields(json);
 
-				if (isChanged) {
-					result.insertObject(row, ObjStatus.UPDATE, ixPoi.pid());
-				}
-			}
-		}
-	}
+                if (isChanged) {
+                    result.insertObject(row, ObjStatus.UPDATE, ixPoi.pid());
+                }
+            }
+        }
+    }
 
-	private void updataIxPoiPhoto(Result result, JSONObject content) throws Exception {
-		if (!content.containsKey("photos")) {
-			return;
-		}
-		JSONArray subObj = content.getJSONArray("photos");
+    private void updataIxPoiPhoto(Result result, JSONObject content) throws Exception {
+        if (!content.containsKey("photos")) {
+            return;
+        }
+        JSONArray subObj = content.getJSONArray("photos");
 
-		for (int i = 0; i < subObj.size(); i++) {
+        for (int i = 0; i < subObj.size(); i++) {
 
-			JSONObject json = subObj.getJSONObject(i);
+            JSONObject json = subObj.getJSONObject(i);
 
-			if (json.containsKey("objStatus")) {
+            if (json.containsKey("objStatus")) {
 
-				if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
+                if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
 
-					IxPoiPhoto row = ixPoi.photoMap.get(json.getString("rowId"));
+                    IxPoiPhoto row = ixPoi.photoMap.get(json.getString("rowId"));
 
-					if (row == null) {
-						throw new Exception("rowId=" + json.getString("rowId") + "的IxPoiPhoto不存在");
-					}
+                    if (row == null) {
+                        throw new Exception("rowId=" + json.getString("rowId") + "的IxPoiPhoto不存在");
+                    }
 
-					if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
-						result.insertObject(row, ObjStatus.DELETE, ixPoi.pid());
+                    if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
+                        result.insertObject(row, ObjStatus.DELETE, ixPoi.pid());
 
-						continue;
-					} else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
+                        continue;
+                    } else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
 
-						boolean isChanged = row.fillChangeFields(json);
+                        boolean isChanged = row.fillChangeFields(json);
 
-						if (isChanged) {
-							result.insertObject(row, ObjStatus.UPDATE, ixPoi.pid());
-						}
-					}
-				} else {
-					IxPoiPhoto row = new IxPoiPhoto();
+                        if (isChanged) {
+                            result.insertObject(row, ObjStatus.UPDATE, ixPoi.pid());
+                        }
+                    }
+                } else {
+                    IxPoiPhoto row = new IxPoiPhoto();
 
-					row.Unserialize(json);
+                    row.Unserialize(json);
 
-					row.setPoiPid(ixPoi.getPid());
+                    row.setPoiPid(ixPoi.getPid());
 
-					row.setMesh(ixPoi.mesh());
+                    row.setMesh(ixPoi.mesh());
 
-					result.insertObject(row, ObjStatus.INSERT, ixPoi.pid());
-				}
-			}
-		}
+                    result.insertObject(row, ObjStatus.INSERT, ixPoi.pid());
+                }
+            }
+        }
 
-	}
+    }
 
-	private void updataIxPoiVideo(Result result, JSONObject content) throws Exception {
-		if (!content.containsKey("videoes")) {
-			return;
-		}
-		JSONArray subObj = content.getJSONArray("videoes");
+    private void updataIxPoiVideo(Result result, JSONObject content) throws Exception {
+        if (!content.containsKey("videoes")) {
+            return;
+        }
+        JSONArray subObj = content.getJSONArray("videoes");
 
-		for (int i = 0; i < subObj.size(); i++) {
+        for (int i = 0; i < subObj.size(); i++) {
 
-			JSONObject json = subObj.getJSONObject(i);
+            JSONObject json = subObj.getJSONObject(i);
 
-			if (json.containsKey("objStatus")) {
+            if (json.containsKey("objStatus")) {
 
-				if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
+                if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
 
-					IxPoiVideo row = ixPoi.videoMap.get(json.getString("rowId"));
+                    IxPoiVideo row = ixPoi.videoMap.get(json.getString("rowId"));
 
-					if (row == null) {
-						throw new Exception("rowId=" + json.getString("rowId") + "的IxPoiVideo不存在");
-					}
+                    if (row == null) {
+                        throw new Exception("rowId=" + json.getString("rowId") + "的IxPoiVideo不存在");
+                    }
 
-					if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
-						result.insertObject(row, ObjStatus.DELETE, ixPoi.pid());
+                    if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
+                        result.insertObject(row, ObjStatus.DELETE, ixPoi.pid());
 
-						continue;
-					} else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
+                        continue;
+                    } else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
 
-						boolean isChanged = row.fillChangeFields(json);
+                        boolean isChanged = row.fillChangeFields(json);
 
-						if (isChanged) {
-							result.insertObject(row, ObjStatus.UPDATE, ixPoi.pid());
-						}
-					}
-				} else {
-					IxPoiVideo row = new IxPoiVideo();
+                        if (isChanged) {
+                            result.insertObject(row, ObjStatus.UPDATE, ixPoi.pid());
+                        }
+                    }
+                } else {
+                    IxPoiVideo row = new IxPoiVideo();
 
-					row.Unserialize(json);
+                    row.Unserialize(json);
 
-					row.setPoiPid(ixPoi.getPid());
+                    row.setPoiPid(ixPoi.getPid());
 
-					row.setMesh(ixPoi.mesh());
+                    row.setMesh(ixPoi.mesh());
 
-					result.insertObject(row, ObjStatus.INSERT, ixPoi.pid());
-				}
-			}
-		}
+                    result.insertObject(row, ObjStatus.INSERT, ixPoi.pid());
+                }
+            }
+        }
 
-	}
+    }
 
-	private void updataIxPoiParking(Result result, JSONObject content) throws Exception {
-		if (!content.containsKey("parkings")) {
-			return;
-		}
-		JSONArray subObj = content.getJSONArray("parkings");
+    private void updataIxPoiParking(Result result, JSONObject content) throws Exception {
+        if (!content.containsKey("parkings")) {
+            return;
+        }
+        JSONArray subObj = content.getJSONArray("parkings");
 
-		for (int i = 0; i < subObj.size(); i++) {
+        for (int i = 0; i < subObj.size(); i++) {
 
-			JSONObject json = subObj.getJSONObject(i);
+            JSONObject json = subObj.getJSONObject(i);
 
-			if (json.containsKey("objStatus")) {
+            if (json.containsKey("objStatus")) {
 
-				if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
+                if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
 
-					IxPoiParking row = ixPoi.parkingMap.get(json.getString("rowId"));
+                    IxPoiParking row = ixPoi.parkingMap.get(json.getString("rowId"));
 
-					if (row == null) {
-						throw new Exception("rowId=" + json.getString("rowId") + "的IxPoiParking不存在");
-					}
+                    if (row == null) {
+                        throw new Exception("rowId=" + json.getString("rowId") + "的IxPoiParking不存在");
+                    }
 
-					if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
-						result.insertObject(row, ObjStatus.DELETE, ixPoi.pid());
+                    if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
+                        result.insertObject(row, ObjStatus.DELETE, ixPoi.pid());
 
-						continue;
-					} else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
+                        continue;
+                    } else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
 
-						boolean isChanged = row.fillChangeFields(json);
+                        boolean isChanged = row.fillChangeFields(json);
 
-						if (isChanged) {
-							result.insertObject(row, ObjStatus.UPDATE, ixPoi.pid());
-						}
-					}
-				} else {
-					IxPoiParking row = new IxPoiParking();
+                        if (isChanged) {
+                            result.insertObject(row, ObjStatus.UPDATE, ixPoi.pid());
+                        }
+                    }
+                } else {
+                    IxPoiParking row = new IxPoiParking();
 
-					row.Unserialize(json);
+                    row.Unserialize(json);
 
-					row.setPid(PidUtil.getInstance().applyPoiParkingsId());
+                    row.setPid(PidUtil.getInstance().applyPoiParkingsId());
 
-					row.setPoiPid(ixPoi.getPid());
+                    row.setPoiPid(ixPoi.getPid());
 
-					row.setMesh(ixPoi.mesh());
+                    row.setMesh(ixPoi.mesh());
 
-					result.insertObject(row, ObjStatus.INSERT, ixPoi.pid());
-				}
-			}
-		}
+                    result.insertObject(row, ObjStatus.INSERT, ixPoi.pid());
+                }
+            }
+        }
 
-	}
+    }
 
-	private void updataIxPoiDetail(Result result, JSONObject content) throws Exception {
-		if (!content.containsKey("details")) {
-			return;
-		}
-		JSONArray subObj = content.getJSONArray("details");
+    private void updataIxPoiDetail(Result result, JSONObject content) throws Exception {
+        if (!content.containsKey("details")) {
+            return;
+        }
+        JSONArray subObj = content.getJSONArray("details");
 
-		for (int i = 0; i < subObj.size(); i++) {
+        for (int i = 0; i < subObj.size(); i++) {
 
-			JSONObject json = subObj.getJSONObject(i);
+            JSONObject json = subObj.getJSONObject(i);
 
-			if (json.containsKey("objStatus")) {
+            if (json.containsKey("objStatus")) {
 
-				if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
+                if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
 
-					IxPoiDetail row = ixPoi.detailMap.get(json.getString("rowId"));
+                    IxPoiDetail row = ixPoi.detailMap.get(json.getString("rowId"));
 
-					if (row == null) {
-						throw new Exception("rowId=" + json.getString("rowId") + "的IxPoiDetail不存在");
-					}
+                    if (row == null) {
+                        throw new Exception("rowId=" + json.getString("rowId") + "的IxPoiDetail不存在");
+                    }
 
-					if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
-						result.insertObject(row, ObjStatus.DELETE, ixPoi.pid());
+                    if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
+                        result.insertObject(row, ObjStatus.DELETE, ixPoi.pid());
 
-						continue;
-					} else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
+                        continue;
+                    } else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
 
-						boolean isChanged = row.fillChangeFields(json);
+                        boolean isChanged = row.fillChangeFields(json);
 
-						if (isChanged) {
-							result.insertObject(row, ObjStatus.UPDATE, ixPoi.pid());
-						}
-					}
-				} else {
-					IxPoiDetail row = new IxPoiDetail();
+                        if (isChanged) {
+                            result.insertObject(row, ObjStatus.UPDATE, ixPoi.pid());
+                        }
+                    }
+                } else {
+                    IxPoiDetail row = new IxPoiDetail();
 
-					row.Unserialize(json);
+                    row.Unserialize(json);
 
-					row.setPoiPid(ixPoi.getPid());
+                    row.setPoiPid(ixPoi.getPid());
 
-					row.setMesh(ixPoi.mesh());
+                    row.setMesh(ixPoi.mesh());
 
-					result.insertObject(row, ObjStatus.INSERT, ixPoi.pid());
-				}
-			}
-		}
+                    result.insertObject(row, ObjStatus.INSERT, ixPoi.pid());
+                }
+            }
+        }
 
-	}
+    }
 
-	private void updataIxPoiBusinessTime(Result result, JSONObject content) throws Exception {
-		if (!content.containsKey("businesstimes")) {
-			return;
-		}
-		JSONArray subObj = content.getJSONArray("businesstimes");
+    private void updataIxPoiBusinessTime(Result result, JSONObject content) throws Exception {
+        if (!content.containsKey("businesstimes")) {
+            return;
+        }
+        JSONArray subObj = content.getJSONArray("businesstimes");
 
-		for (int i = 0; i < subObj.size(); i++) {
+        for (int i = 0; i < subObj.size(); i++) {
 
-			JSONObject json = subObj.getJSONObject(i);
+            JSONObject json = subObj.getJSONObject(i);
 
-			if (json.containsKey("objStatus")) {
+            if (json.containsKey("objStatus")) {
 
-				if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
+                if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
 
-					IxPoiBusinessTime row = ixPoi.businesstimeMap.get(json.getString("rowId"));
+                    IxPoiBusinessTime row = ixPoi.businesstimeMap.get(json.getString("rowId"));
 
-					if (row == null) {
-						throw new Exception("rowId=" + json.getString("rowId") + "的IxPoiBusinessTime不存在");
-					}
+                    if (row == null) {
+                        throw new Exception("rowId=" + json.getString("rowId") + "的IxPoiBusinessTime不存在");
+                    }
 
-					if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
-						result.insertObject(row, ObjStatus.DELETE, ixPoi.pid());
+                    if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
+                        result.insertObject(row, ObjStatus.DELETE, ixPoi.pid());
 
-						continue;
-					} else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
+                        continue;
+                    } else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
 
-						boolean isChanged = row.fillChangeFields(json);
+                        boolean isChanged = row.fillChangeFields(json);
 
-						if (isChanged) {
-							result.insertObject(row, ObjStatus.UPDATE, ixPoi.pid());
-						}
-					}
-				} else {
-					IxPoiBusinessTime row = new IxPoiBusinessTime();
+                        if (isChanged) {
+                            result.insertObject(row, ObjStatus.UPDATE, ixPoi.pid());
+                        }
+                    }
+                } else {
+                    IxPoiBusinessTime row = new IxPoiBusinessTime();
 
-					row.Unserialize(json);
+                    row.Unserialize(json);
 
-					row.setPoiPid(ixPoi.getPid());
+                    row.setPoiPid(ixPoi.getPid());
 
-					row.setMesh(ixPoi.mesh());
+                    row.setMesh(ixPoi.mesh());
 
-					result.insertObject(row, ObjStatus.INSERT, ixPoi.pid());
-				}
-			}
-		}
+                    result.insertObject(row, ObjStatus.INSERT, ixPoi.pid());
+                }
+            }
+        }
 
-	}
+    }
 
-	private void updataIxPoiChargingStation(Result result, JSONObject content) throws Exception {
-		if (!content.containsKey("chargingstations")) {
-			return;
-		}
-		JSONArray subObj = content.getJSONArray("chargingstations");
+    private void updataIxPoiChargingStation(Result result, JSONObject content) throws Exception {
+        if (!content.containsKey("chargingstations")) {
+            return;
+        }
+        JSONArray subObj = content.getJSONArray("chargingstations");
 
-		for (int i = 0; i < subObj.size(); i++) {
+        for (int i = 0; i < subObj.size(); i++) {
 
-			JSONObject json = subObj.getJSONObject(i);
+            JSONObject json = subObj.getJSONObject(i);
 
-			if (json.containsKey("objStatus")) {
+            if (json.containsKey("objStatus")) {
 
-				if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
+                if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
 
-					IxPoiChargingStation row = ixPoi.chargingstationMap.get(json.getString("rowId"));
+                    IxPoiChargingStation row = ixPoi.chargingstationMap.get(json.getString("rowId"));
 
-					if (row == null) {
-						throw new Exception("rowId=" + json.getString("rowId") + "的IxPoiChargingStation不存在");
-					}
+                    if (row == null) {
+                        throw new Exception("rowId=" + json.getString("rowId") + "的IxPoiChargingStation不存在");
+                    }
 
-					if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
-						result.insertObject(row, ObjStatus.DELETE, ixPoi.pid());
+                    if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
+                        result.insertObject(row, ObjStatus.DELETE, ixPoi.pid());
 
-						continue;
-					} else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
+                        continue;
+                    } else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
 
-						boolean isChanged = row.fillChangeFields(json);
+                        boolean isChanged = row.fillChangeFields(json);
 
-						if (isChanged) {
-							result.insertObject(row, ObjStatus.UPDATE, ixPoi.pid());
-						}
-					}
-				} else {
-					IxPoiChargingStation row = new IxPoiChargingStation();
+                        if (isChanged) {
+                            result.insertObject(row, ObjStatus.UPDATE, ixPoi.pid());
+                        }
+                    }
+                } else {
+                    IxPoiChargingStation row = new IxPoiChargingStation();
 
-					row.Unserialize(json);
+                    row.Unserialize(json);
 
-					// row.setPid(0);
+                    row.setPid(PidUtil.getInstance().applyPoiChargingstationId());
 
-					row.setPoiPid(ixPoi.getPid());
+                    row.setPoiPid(ixPoi.getPid());
 
-					row.setMesh(ixPoi.mesh());
+                    row.setMesh(ixPoi.mesh());
 
-					result.insertObject(row, ObjStatus.INSERT, ixPoi.pid());
-				}
-			}
-		}
+                    result.insertObject(row, ObjStatus.INSERT, ixPoi.pid());
+                }
+            }
+        }
 
-	}
+    }
 
-	private void updataIxPoiChargingPlot(Result result, JSONObject content) throws Exception {
-		if (!content.containsKey("chargingplots")) {
-			return;
-		}
-		JSONArray subObj = content.getJSONArray("chargingplots");
+    private void updataIxPoiChargingPlot(Result result, JSONObject content) throws Exception {
+        if (!content.containsKey("chargingplots")) {
+            return;
+        }
+        JSONArray subObj = content.getJSONArray("chargingplots");
 
-		for (int i = 0; i < subObj.size(); i++) {
+        for (int i = 0; i < subObj.size(); i++) {
 
-			JSONObject json = subObj.getJSONObject(i);
+            JSONObject json = subObj.getJSONObject(i);
 
-			if (json.containsKey("objStatus")) {
+            if (json.containsKey("objStatus")) {
 
-				if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
+                if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
 
-					IxPoiChargingPlot row = ixPoi.chargingplotMap.get(json.getString("rowId"));
+                    IxPoiChargingPlot row = ixPoi.chargingplotMap.get(json.getString("rowId"));
 
-					if (row == null) {
-						throw new Exception("rowId=" + json.getString("rowId") + "的IxPoiChargingPlot不存在");
-					}
+                    if (row == null) {
+                        throw new Exception("rowId=" + json.getString("rowId") + "的IxPoiChargingPlot不存在");
+                    }
 
-					if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
-						result.insertObject(row, ObjStatus.DELETE, ixPoi.pid());
+                    if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
+                        result.insertObject(row, ObjStatus.DELETE, ixPoi.pid());
 
-						continue;
-					} else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
+                        continue;
+                    } else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
 
-						boolean isChanged = row.fillChangeFields(json);
+                        boolean isChanged = row.fillChangeFields(json);
 
-						if (isChanged) {
-							result.insertObject(row, ObjStatus.UPDATE, ixPoi.pid());
-						}
-					}
-				} else {
-					IxPoiChargingPlot row = new IxPoiChargingPlot();
+                        if (isChanged) {
+                            result.insertObject(row, ObjStatus.UPDATE, ixPoi.pid());
+                        }
+                    }
+                } else {
+                    IxPoiChargingPlot row = new IxPoiChargingPlot();
 
-					row.Unserialize(json);
+                    row.Unserialize(json);
 
-					row.setPoiPid(ixPoi.getPid());
+                    row.setPoiPid(ixPoi.getPid());
 
-					row.setMesh(ixPoi.mesh());
+                    row.setMesh(ixPoi.mesh());
 
-					result.insertObject(row, ObjStatus.INSERT, ixPoi.pid());
-				}
-			}
-		}
+                    result.insertObject(row, ObjStatus.INSERT, ixPoi.pid());
+                }
+            }
+        }
 
-	}
+    }
 
-	private void updataIxPoiChargingPlotPh(Result result, JSONObject content) throws Exception {
-		if (!content.containsKey("chargingplotPhs")) {
-			return;
-		}
-		JSONArray subObj = content.getJSONArray("chargingplotPhs");
+    private void updataIxPoiChargingPlotPh(Result result, JSONObject content) throws Exception {
+        if (!content.containsKey("chargingplotPhs")) {
+            return;
+        }
+        JSONArray subObj = content.getJSONArray("chargingplotPhs");
 
-		for (int i = 0; i < subObj.size(); i++) {
+        for (int i = 0; i < subObj.size(); i++) {
 
-			JSONObject json = subObj.getJSONObject(i);
+            JSONObject json = subObj.getJSONObject(i);
 
-			if (json.containsKey("objStatus")) {
+            if (json.containsKey("objStatus")) {
 
-				if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
+                if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
 
-					IxPoiChargingPlotPh row = ixPoi.chargingplotPhMap.get(json.getString("rowId"));
+                    IxPoiChargingPlotPh row = ixPoi.chargingplotPhMap.get(json.getString("rowId"));
 
-					if (row == null) {
-						throw new Exception("rowId=" + json.getString("rowId") + "的IxPoiChargingPlotPh不存在");
-					}
+                    if (row == null) {
+                        throw new Exception("rowId=" + json.getString("rowId") + "的IxPoiChargingPlotPh不存在");
+                    }
 
-					if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
-						result.insertObject(row, ObjStatus.DELETE, ixPoi.pid());
+                    if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
+                        result.insertObject(row, ObjStatus.DELETE, ixPoi.pid());
 
-						continue;
-					} else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
+                        continue;
+                    } else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
 
-						boolean isChanged = row.fillChangeFields(json);
+                        boolean isChanged = row.fillChangeFields(json);
 
-						if (isChanged) {
-							result.insertObject(row, ObjStatus.UPDATE, ixPoi.pid());
-						}
-					}
-				} else {
-					IxPoiChargingPlotPh row = new IxPoiChargingPlotPh();
+                        if (isChanged) {
+                            result.insertObject(row, ObjStatus.UPDATE, ixPoi.pid());
+                        }
+                    }
+                } else {
+                    IxPoiChargingPlotPh row = new IxPoiChargingPlotPh();
 
-					row.Unserialize(json);
+                    row.Unserialize(json);
 
-					row.setPoiPid(ixPoi.getPid());
+                    row.setPoiPid(ixPoi.getPid());
 
-					row.setMesh(ixPoi.mesh());
+                    row.setMesh(ixPoi.mesh());
 
-					result.insertObject(row, ObjStatus.INSERT, ixPoi.pid());
-				}
-			}
-		}
+                    result.insertObject(row, ObjStatus.INSERT, ixPoi.pid());
+                }
+            }
+        }
 
-	}
+    }
 
-	private void updataIxPoiBuilding(Result result, JSONObject content) throws Exception {
-		if (!content.containsKey("buildings")) {
-			return;
-		}
-		JSONArray subObj = content.getJSONArray("buildings");
+    private void updataIxPoiBuilding(Result result, JSONObject content) throws Exception {
+        if (!content.containsKey("buildings")) {
+            return;
+        }
+        JSONArray subObj = content.getJSONArray("buildings");
 
-		for (int i = 0; i < subObj.size(); i++) {
+        for (int i = 0; i < subObj.size(); i++) {
 
-			JSONObject json = subObj.getJSONObject(i);
+            JSONObject json = subObj.getJSONObject(i);
 
-			if (json.containsKey("objStatus")) {
+            if (json.containsKey("objStatus")) {
 
-				if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
+                if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
 
-					IxPoiBuilding row = ixPoi.buildingMap.get(json.getString("rowId"));
+                    IxPoiBuilding row = ixPoi.buildingMap.get(json.getString("rowId"));
 
-					if (row == null) {
-						throw new Exception("rowId=" + json.getString("rowId") + "的IxPoiBuilding不存在");
-					}
+                    if (row == null) {
+                        throw new Exception("rowId=" + json.getString("rowId") + "的IxPoiBuilding不存在");
+                    }
 
-					if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
-						result.insertObject(row, ObjStatus.DELETE, ixPoi.pid());
+                    if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
+                        result.insertObject(row, ObjStatus.DELETE, ixPoi.pid());
 
-						continue;
-					} else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
+                        continue;
+                    } else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
 
-						boolean isChanged = row.fillChangeFields(json);
+                        boolean isChanged = row.fillChangeFields(json);
 
-						if (isChanged) {
-							result.insertObject(row, ObjStatus.UPDATE, ixPoi.pid());
-						}
-					}
-				} else {
-					IxPoiBuilding row = new IxPoiBuilding();
+                        if (isChanged) {
+                            result.insertObject(row, ObjStatus.UPDATE, ixPoi.pid());
+                        }
+                    }
+                } else {
+                    IxPoiBuilding row = new IxPoiBuilding();
 
-					row.Unserialize(json);
+                    row.Unserialize(json);
 
-					row.setPoiPid(ixPoi.getPid());
+                    row.setPoiPid(ixPoi.getPid());
 
-					row.setMesh(ixPoi.mesh());
+                    row.setMesh(ixPoi.mesh());
 
-					result.insertObject(row, ObjStatus.INSERT, ixPoi.pid());
-				}
-			}
-		}
+                    result.insertObject(row, ObjStatus.INSERT, ixPoi.pid());
+                }
+            }
+        }
 
-	}
+    }
 
-	private void updataIxPoiAdvertisement(Result result, JSONObject content) throws Exception {
-		if (!content.containsKey("advertisements")) {
-			return;
-		}
-		JSONArray subObj = content.getJSONArray("advertisements");
+    private void updataIxPoiAdvertisement(Result result, JSONObject content) throws Exception {
+        if (!content.containsKey("advertisements")) {
+            return;
+        }
+        JSONArray subObj = content.getJSONArray("advertisements");
 
-		for (int i = 0; i < subObj.size(); i++) {
+        for (int i = 0; i < subObj.size(); i++) {
 
-			JSONObject json = subObj.getJSONObject(i);
+            JSONObject json = subObj.getJSONObject(i);
 
-			if (json.containsKey("objStatus")) {
+            if (json.containsKey("objStatus")) {
 
-				if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
+                if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
 
-					IxPoiAdvertisement row = ixPoi.advertisementMap.get(json.getString("rowId"));
+                    IxPoiAdvertisement row = ixPoi.advertisementMap.get(json.getString("rowId"));
 
-					if (row == null) {
-						throw new Exception("rowId=" + json.getString("rowId") + "的IxPoiAdvertisement不存在");
-					}
+                    if (row == null) {
+                        throw new Exception("rowId=" + json.getString("rowId") + "的IxPoiAdvertisement不存在");
+                    }
 
-					if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
-						result.insertObject(row, ObjStatus.DELETE, ixPoi.pid());
+                    if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
+                        result.insertObject(row, ObjStatus.DELETE, ixPoi.pid());
 
-						continue;
-					} else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
+                        continue;
+                    } else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
 
-						boolean isChanged = row.fillChangeFields(json);
+                        boolean isChanged = row.fillChangeFields(json);
 
-						if (isChanged) {
-							result.insertObject(row, ObjStatus.UPDATE, ixPoi.pid());
-						}
-					}
-				} else {
-					IxPoiAdvertisement row = new IxPoiAdvertisement();
+                        if (isChanged) {
+                            result.insertObject(row, ObjStatus.UPDATE, ixPoi.pid());
+                        }
+                    }
+                } else {
+                    IxPoiAdvertisement row = new IxPoiAdvertisement();
 
-					row.Unserialize(json);
+                    row.Unserialize(json);
 
-					// row.setPid(0);
+                    // row.setPid(0);
 
-					row.setPoiPid(ixPoi.getPid());
+                    row.setPoiPid(ixPoi.getPid());
 
-					row.setMesh(ixPoi.mesh());
+                    row.setMesh(ixPoi.mesh());
 
-					result.insertObject(row, ObjStatus.INSERT, ixPoi.pid());
-				}
-			}
-		}
+                    result.insertObject(row, ObjStatus.INSERT, ixPoi.pid());
+                }
+            }
+        }
 
-	}
+    }
 
-	private void updataIxPoiGasstation(Result result, JSONObject content) throws Exception {
-		if (!content.containsKey("gasstations")) {
-			return;
-		}
-		JSONArray subObj = content.getJSONArray("gasstations");
+    private void updataIxPoiGasstation(Result result, JSONObject content) throws Exception {
+        if (!content.containsKey("gasstations")) {
+            return;
+        }
+        JSONArray subObj = content.getJSONArray("gasstations");
 
-		for (int i = 0; i < subObj.size(); i++) {
+        for (int i = 0; i < subObj.size(); i++) {
 
-			JSONObject json = subObj.getJSONObject(i);
+            JSONObject json = subObj.getJSONObject(i);
 
-			if (json.containsKey("objStatus")) {
+            if (json.containsKey("objStatus")) {
 
-				if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
+                if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
 
-					IxPoiGasstation row = ixPoi.gasstationMap.get(json.getString("rowId"));
+                    IxPoiGasstation row = ixPoi.gasstationMap.get(json.getString("rowId"));
 
-					if (row == null) {
-						throw new Exception("rowId=" + json.getString("rowId") + "的IxPoiGasstation不存在");
-					}
+                    if (row == null) {
+                        throw new Exception("rowId=" + json.getString("rowId") + "的IxPoiGasstation不存在");
+                    }
 
-					if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
-						result.insertObject(row, ObjStatus.DELETE, ixPoi.pid());
+                    if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
+                        result.insertObject(row, ObjStatus.DELETE, ixPoi.pid());
 
-						continue;
-					} else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
+                        continue;
+                    } else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
 
-						boolean isChanged = row.fillChangeFields(json);
+                        boolean isChanged = row.fillChangeFields(json);
 
-						if (isChanged) {
-							result.insertObject(row, ObjStatus.UPDATE, ixPoi.pid());
-						}
-					}
-				} else {
-					IxPoiGasstation row = new IxPoiGasstation();
+                        if (isChanged) {
+                            result.insertObject(row, ObjStatus.UPDATE, ixPoi.pid());
+                        }
+                    }
+                } else {
+                    IxPoiGasstation row = new IxPoiGasstation();
 
-					row.Unserialize(json);
+                    row.Unserialize(json);
 
-					row.setPid(PidUtil.getInstance().applyPoiGasstationId());
+                    row.setPid(PidUtil.getInstance().applyPoiGasstationId());
 
-					row.setPoiPid(ixPoi.getPid());
+                    row.setPoiPid(ixPoi.getPid());
 
-					row.setMesh(ixPoi.mesh());
+                    row.setMesh(ixPoi.mesh());
 
-					result.insertObject(row, ObjStatus.INSERT, ixPoi.pid());
-				}
-			}
-		}
+                    result.insertObject(row, ObjStatus.INSERT, ixPoi.pid());
+                }
+            }
+        }
 
-	}
+    }
 
-	private void updataIxPoiIntroduction(Result result, JSONObject content) throws Exception {
-		if (!content.containsKey("introductions")) {
-			return;
-		}
-		JSONArray subObj = content.getJSONArray("introductions");
+    private void updataIxPoiIntroduction(Result result, JSONObject content) throws Exception {
+        if (!content.containsKey("introductions")) {
+            return;
+        }
+        JSONArray subObj = content.getJSONArray("introductions");
 
-		for (int i = 0; i < subObj.size(); i++) {
+        for (int i = 0; i < subObj.size(); i++) {
 
-			JSONObject json = subObj.getJSONObject(i);
+            JSONObject json = subObj.getJSONObject(i);
 
-			if (json.containsKey("objStatus")) {
+            if (json.containsKey("objStatus")) {
 
-				if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
+                if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
 
-					IxPoiIntroduction row = ixPoi.introductionMap.get(json.getString("rowId"));
+                    IxPoiIntroduction row = ixPoi.introductionMap.get(json.getString("rowId"));
 
-					if (row == null) {
-						throw new Exception("rowId=" + json.getString("rowId") + "的IxPoiIntroduction不存在");
-					}
+                    if (row == null) {
+                        throw new Exception("rowId=" + json.getString("rowId") + "的IxPoiIntroduction不存在");
+                    }
 
-					if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
-						result.insertObject(row, ObjStatus.DELETE, ixPoi.pid());
+                    if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
+                        result.insertObject(row, ObjStatus.DELETE, ixPoi.pid());
 
-						continue;
-					} else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
+                        continue;
+                    } else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
 
-						boolean isChanged = row.fillChangeFields(json);
+                        boolean isChanged = row.fillChangeFields(json);
 
-						if (isChanged) {
-							result.insertObject(row, ObjStatus.UPDATE, ixPoi.pid());
-						}
-					}
-				} else {
-					IxPoiIntroduction row = new IxPoiIntroduction();
+                        if (isChanged) {
+                            result.insertObject(row, ObjStatus.UPDATE, ixPoi.pid());
+                        }
+                    }
+                } else {
+                    IxPoiIntroduction row = new IxPoiIntroduction();
 
-					row.Unserialize(json);
+                    row.Unserialize(json);
 
-					// row.setPid(0);
+                    // row.setPid(0);
 
-					row.setPoiPid(ixPoi.getPid());
+                    row.setPoiPid(ixPoi.getPid());
 
-					row.setMesh(ixPoi.mesh());
+                    row.setMesh(ixPoi.mesh());
 
-					result.insertObject(row, ObjStatus.INSERT, ixPoi.pid());
-				}
-			}
-		}
+                    result.insertObject(row, ObjStatus.INSERT, ixPoi.pid());
+                }
+            }
+        }
 
-	}
+    }
 
-	private void updataIxPoiAttraction(Result result, JSONObject content) throws Exception {
-		if (!content.containsKey("attractions")) {
-			return;
-		}
-		JSONArray subObj = content.getJSONArray("attractions");
+    private void updataIxPoiAttraction(Result result, JSONObject content) throws Exception {
+        if (!content.containsKey("attractions")) {
+            return;
+        }
+        JSONArray subObj = content.getJSONArray("attractions");
 
-		for (int i = 0; i < subObj.size(); i++) {
+        for (int i = 0; i < subObj.size(); i++) {
 
-			JSONObject json = subObj.getJSONObject(i);
+            JSONObject json = subObj.getJSONObject(i);
 
-			if (json.containsKey("objStatus")) {
+            if (json.containsKey("objStatus")) {
 
-				if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
+                if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
 
-					IxPoiAttraction row = ixPoi.attractionMap.get(json.getString("rowId"));
+                    IxPoiAttraction row = ixPoi.attractionMap.get(json.getString("rowId"));
 
-					if (row == null) {
-						throw new Exception("rowId=" + json.getString("rowId") + "的IxPoiAttraction不存在");
-					}
+                    if (row == null) {
+                        throw new Exception("rowId=" + json.getString("rowId") + "的IxPoiAttraction不存在");
+                    }
 
-					if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
-						result.insertObject(row, ObjStatus.DELETE, ixPoi.pid());
+                    if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
+                        result.insertObject(row, ObjStatus.DELETE, ixPoi.pid());
 
-						continue;
-					} else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
+                        continue;
+                    } else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
 
-						boolean isChanged = row.fillChangeFields(json);
+                        boolean isChanged = row.fillChangeFields(json);
 
-						if (isChanged) {
-							result.insertObject(row, ObjStatus.UPDATE, ixPoi.pid());
-						}
-					}
-				} else {
-					IxPoiAttraction row = new IxPoiAttraction();
+                        if (isChanged) {
+                            result.insertObject(row, ObjStatus.UPDATE, ixPoi.pid());
+                        }
+                    }
+                } else {
+                    IxPoiAttraction row = new IxPoiAttraction();
 
-					row.Unserialize(json);
+                    row.Unserialize(json);
 
-					row.setPid(PidUtil.getInstance().applyPoiAttractionId());
+                    row.setPid(PidUtil.getInstance().applyPoiAttractionId());
 
-					row.setPoiPid(ixPoi.getPid());
+                    row.setPoiPid(ixPoi.getPid());
 
-					row.setMesh(ixPoi.mesh());
+                    row.setMesh(ixPoi.mesh());
 
-					result.insertObject(row, ObjStatus.INSERT, ixPoi.pid());
-				}
-			}
-		}
+                    result.insertObject(row, ObjStatus.INSERT, ixPoi.pid());
+                }
+            }
+        }
 
-	}
+    }
 
-	private void updataIxPoiHotel(Result result, JSONObject content) throws Exception {
-		if (!content.containsKey("hotels")) {
-			return;
-		}
-		JSONArray subObj = content.getJSONArray("hotels");
+    private void updataIxPoiHotel(Result result, JSONObject content) throws Exception {
+        if (!content.containsKey("hotels")) {
+            return;
+        }
+        JSONArray subObj = content.getJSONArray("hotels");
 
-		for (int i = 0; i < subObj.size(); i++) {
+        for (int i = 0; i < subObj.size(); i++) {
 
-			JSONObject json = subObj.getJSONObject(i);
+            JSONObject json = subObj.getJSONObject(i);
 
-			if (json.containsKey("objStatus")) {
+            if (json.containsKey("objStatus")) {
 
-				if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
+                if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
 
-					IxPoiHotel row = ixPoi.hotelMap.get(json.getString("rowId"));
+                    IxPoiHotel row = ixPoi.hotelMap.get(json.getString("rowId"));
 
-					if (row == null) {
-						throw new Exception("rowId=" + json.getString("rowId") + "的IxPoiHotel不存在");
-					}
+                    if (row == null) {
+                        throw new Exception("rowId=" + json.getString("rowId") + "的IxPoiHotel不存在");
+                    }
 
-					if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
-						result.insertObject(row, ObjStatus.DELETE, ixPoi.pid());
+                    if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
+                        result.insertObject(row, ObjStatus.DELETE, ixPoi.pid());
 
-						continue;
-					} else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
+                        continue;
+                    } else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
 
-						boolean isChanged = row.fillChangeFields(json);
+                        boolean isChanged = row.fillChangeFields(json);
 
-						if (isChanged) {
-							result.insertObject(row, ObjStatus.UPDATE, ixPoi.pid());
-						}
-					}
-				} else {
-					IxPoiHotel row = new IxPoiHotel();
+                        if (isChanged) {
+                            result.insertObject(row, ObjStatus.UPDATE, ixPoi.pid());
+                        }
+                    }
+                } else {
+                    IxPoiHotel row = new IxPoiHotel();
 
-					row.Unserialize(json);
+                    row.Unserialize(json);
 
-					row.setPid(PidUtil.getInstance().applyPoiHotelId());
+                    row.setPid(PidUtil.getInstance().applyPoiHotelId());
 
-					row.setPoiPid(ixPoi.getPid());
+                    row.setPoiPid(ixPoi.getPid());
 
-					row.setMesh(ixPoi.mesh());
+                    row.setMesh(ixPoi.mesh());
 
-					result.insertObject(row, ObjStatus.INSERT, ixPoi.pid());
-				}
-			}
-		}
+                    result.insertObject(row, ObjStatus.INSERT, ixPoi.pid());
+                }
+            }
+        }
 
-	}
+    }
 
-	private void updataIxPoiRestaurant(Result result, JSONObject content) throws Exception {
-		if (!content.containsKey("restaurants")) {
-			return;
-		}
-		JSONArray subObj = content.getJSONArray("restaurants");
+    private void updataIxPoiRestaurant(Result result, JSONObject content) throws Exception {
+        if (!content.containsKey("restaurants")) {
+            return;
+        }
+        JSONArray subObj = content.getJSONArray("restaurants");
 
-		for (int i = 0; i < subObj.size(); i++) {
+        for (int i = 0; i < subObj.size(); i++) {
 
-			JSONObject json = subObj.getJSONObject(i);
+            JSONObject json = subObj.getJSONObject(i);
 
-			if (json.containsKey("objStatus")) {
+            if (json.containsKey("objStatus")) {
 
-				if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
+                if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
 
-					IxPoiRestaurant row = ixPoi.restaurantMap.get(json.getString("rowId"));
+                    IxPoiRestaurant row = ixPoi.restaurantMap.get(json.getString("rowId"));
 
-					if (row == null) {
-						throw new Exception("rowId=" + json.getString("rowId") + "的IxPoiRestaurant不存在");
-					}
+                    if (row == null) {
+                        throw new Exception("rowId=" + json.getString("rowId") + "的IxPoiRestaurant不存在");
+                    }
 
-					if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
-						result.insertObject(row, ObjStatus.DELETE, ixPoi.pid());
+                    if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
+                        result.insertObject(row, ObjStatus.DELETE, ixPoi.pid());
 
-						continue;
-					} else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
+                        continue;
+                    } else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
 
-						boolean isChanged = row.fillChangeFields(json);
+                        boolean isChanged = row.fillChangeFields(json);
 
-						if (isChanged) {
-							result.insertObject(row, ObjStatus.UPDATE, ixPoi.pid());
-						}
-					}
-				} else {
-					IxPoiRestaurant row = new IxPoiRestaurant();
+                        if (isChanged) {
+                            result.insertObject(row, ObjStatus.UPDATE, ixPoi.pid());
+                        }
+                    }
+                } else {
+                    IxPoiRestaurant row = new IxPoiRestaurant();
 
-					row.Unserialize(json);
+                    row.Unserialize(json);
 
-					row.setPid(PidUtil.getInstance().applyPoiRestaurantId());
+                    row.setPid(PidUtil.getInstance().applyPoiRestaurantId());
 
-					row.setPoiPid(ixPoi.getPid());
+                    row.setPoiPid(ixPoi.getPid());
 
-					row.setMesh(ixPoi.mesh());
+                    row.setMesh(ixPoi.mesh());
 
-					result.insertObject(row, ObjStatus.INSERT, ixPoi.pid());
-				}
-			}
-		}
+                    result.insertObject(row, ObjStatus.INSERT, ixPoi.pid());
+                }
+            }
+        }
 
-	}
+    }
 
-	private void updataIxPoiCarrental(Result result, JSONObject content) throws Exception {
-		if (!content.containsKey("carrentals")) {
-			return;
-		}
-		JSONArray subObj = content.getJSONArray("carrentals");
+    private void updataIxPoiCarrental(Result result, JSONObject content) throws Exception {
+        if (!content.containsKey("carrentals")) {
+            return;
+        }
+        JSONArray subObj = content.getJSONArray("carrentals");
 
-		for (int i = 0; i < subObj.size(); i++) {
+        for (int i = 0; i < subObj.size(); i++) {
 
-			JSONObject json = subObj.getJSONObject(i);
+            JSONObject json = subObj.getJSONObject(i);
 
-			if (json.containsKey("objStatus")) {
+            if (json.containsKey("objStatus")) {
 
-				if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
+                if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
 
-					IxPoiCarrental row = ixPoi.carrentalMap.get(json.getString("rowId"));
+                    IxPoiCarrental row = ixPoi.carrentalMap.get(json.getString("rowId"));
 
-					if (row == null) {
-						throw new Exception("rowId=" + json.getString("rowId") + "的IxPoiCarrental不存在");
-					}
+                    if (row == null) {
+                        throw new Exception("rowId=" + json.getString("rowId") + "的IxPoiCarrental不存在");
+                    }
 
-					if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
-						result.insertObject(row, ObjStatus.DELETE, ixPoi.pid());
+                    if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
+                        result.insertObject(row, ObjStatus.DELETE, ixPoi.pid());
 
-						continue;
-					} else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
+                        continue;
+                    } else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
 
-						boolean isChanged = row.fillChangeFields(json);
+                        boolean isChanged = row.fillChangeFields(json);
 
-						if (isChanged) {
-							result.insertObject(row, ObjStatus.UPDATE, ixPoi.pid());
-						}
-					}
-				} else {
-					IxPoiCarrental row = new IxPoiCarrental();
+                        if (isChanged) {
+                            result.insertObject(row, ObjStatus.UPDATE, ixPoi.pid());
+                        }
+                    }
+                } else {
+                    IxPoiCarrental row = new IxPoiCarrental();
 
-					row.Unserialize(json);
+                    row.Unserialize(json);
 
-					row.setPoiPid(ixPoi.getPid());
+                    row.setPoiPid(ixPoi.getPid());
 
-					row.setMesh(ixPoi.mesh());
+                    row.setMesh(ixPoi.mesh());
 
-					result.insertObject(row, ObjStatus.INSERT, ixPoi.pid());
-				}
-			}
-		}
+                    result.insertObject(row, ObjStatus.INSERT, ixPoi.pid());
+                }
+            }
+        }
 
-	}
+    }
 
-	/**
-	 * 打断link维护poi关系
-	 * 
-	 * @param oldLink
-	 * @param newLinks
-	 * @param result
-	 * @throws Exception
-	 */
-	public void breakLinkForPoi(RdLink oldLink, List<RdLink> newLinks, Result result) throws Exception {
+    /**
+     * 打断link维护poi关系
+     *
+     * @param oldLink
+     * @param newLinks
+     * @param result
+     * @throws Exception
+     */
+    public void breakLinkForPoi(RdLink oldLink, List<RdLink> newLinks, Result result) throws Exception {
 
-		IxPoiSelector ixPoiSelector = new IxPoiSelector(conn);
+        IxPoiSelector ixPoiSelector = new IxPoiSelector(conn);
 
-		List<IxPoi> poiList = ixPoiSelector.loadIxPoiByLinkPid(oldLink.getPid(), true);
+        List<IxPoi> poiList = ixPoiSelector.loadIxPoiByLinkPid(oldLink.getPid(), true);
 
-		for (IxPoi ixPoi : poiList) {
-			RdLink resultLink = breakPoiGuideLink(ixPoi, oldLink, newLinks);
+        for (IxPoi ixPoi : poiList) {
+            RdLink resultLink = breakPoiGuideLink(ixPoi, oldLink, newLinks);
 
-			if (resultLink != null) {
-				ixPoi.changedFields().put("linkPid", resultLink.getPid());
+            if (resultLink != null) {
+                ixPoi.changedFields().put("linkPid", resultLink.getPid());
 
-				result.insertObject(ixPoi, ObjStatus.UPDATE, ixPoi.getPid());
-			}
-		}
-	}
+                result.insertObject(ixPoi, ObjStatus.UPDATE, ixPoi.getPid());
+            }
+        }
+    }
 
-	/**
-	 * 针对修行移动的打断
-	 * 
-	 * @throws Exception
-	 */
-	public void updateLinkSideForPoi(RdLink oldLink, List<RdLink> newLinks, Result result) throws Exception {
+    /**
+     * 针对修行移动的打断
+     *
+     * @throws Exception
+     */
+    public void updateLinkSideForPoi(RdLink oldLink, List<RdLink> newLinks, Result result) throws Exception {
 
-		IxPoiSelector ixPoiSelector = new IxPoiSelector(conn);
+        IxPoiSelector ixPoiSelector = new IxPoiSelector(conn);
 
-		List<IxPoi> poiList = ixPoiSelector.loadIxPoiByLinkPid(oldLink.getPid(), true);
+        List<IxPoi> poiList = ixPoiSelector.loadIxPoiByLinkPid(oldLink.getPid(), true);
 
-		for (IxPoi ixPoi : poiList) {
-			if (ixPoi == null) {
-				return;
-			}
+        for (IxPoi ixPoi : poiList) {
+            if (ixPoi == null) {
+                return;
+            }
 
-			RdLink resultLink = breakPoiGuideLink(ixPoi, oldLink, newLinks);
+            RdLink resultLink = breakPoiGuideLink(ixPoi, oldLink, newLinks);
 
-			if (resultLink != null) {
-				ixPoi.changedFields().put("linkPid", resultLink.getPid());
+            if (resultLink != null) {
+                ixPoi.changedFields().put("linkPid", resultLink.getPid());
 
-				updatePoiGuideLinkSide(ixPoi, resultLink);
-			} else {
-				updatePoiGuideLinkSide(ixPoi, newLinks.get(0));
-			}
+                updatePoiGuideLinkSide(ixPoi, resultLink);
+            } else {
+                updatePoiGuideLinkSide(ixPoi, newLinks.get(0));
+            }
 
-			result.insertObject(ixPoi, ObjStatus.UPDATE, ixPoi.getPid());
-		}
+            result.insertObject(ixPoi, ObjStatus.UPDATE, ixPoi.getPid());
+        }
 
-	}
+    }
 
-	/**
-	 * 更新poi在引导link的的方位
-	 * 
-	 * @param ixPoi
-	 *            poi对象
-	 * @param rdLink
-	 *            引导link对象
-	 * @throws Exception
-	 */
-	private void updatePoiGuideLinkSide(IxPoi ixPoi, RdLink rdLink) throws Exception {
-		Geometry poiGeo = ixPoi.getGeometry();
+    /**
+     * 更新poi在引导link的的方位
+     *
+     * @param ixPoi  poi对象
+     * @param rdLink 引导link对象
+     * @throws Exception
+     */
+    private void updatePoiGuideLinkSide(IxPoi ixPoi, RdLink rdLink) throws Exception {
+        Geometry poiGeo = GeoTranslator.transform(ixPoi.getGeometry(), 0.00001, 5);
 
-		Geometry linkGeo = rdLink.getGeometry();
+        Geometry linkGeo = GeoTranslator.transform(rdLink.getGeometry(), 0.00001, 5);
 
-		Coordinate nearestPoint = GeometryUtils.GetNearestPointOnLine(poiGeo.getCoordinate(), linkGeo);
+        Coordinate nearestPoint = GeometryUtils.GetNearestPointOnLine(poiGeo.getCoordinate(), linkGeo);
 
-		JSONObject geojson = new JSONObject();
+        JSONObject geojson = new JSONObject();
 
-		geojson.put("type", "Point");
+        geojson.put("type", "Point");
 
-		geojson.put("coordinates", new double[] { nearestPoint.x, nearestPoint.y });
+        geojson.put("coordinates", new double[]{nearestPoint.x, nearestPoint.y});
 
-		Geometry nearestPointGeo = GeoTranslator.geojson2Jts(geojson, 1, 0);
+        Geometry nearestPointGeo = GeoTranslator.geojson2Jts(geojson, 1, 0);
 
-		int side = GeometryUtils.calulatPointSideOflink(poiGeo, linkGeo, nearestPointGeo);
+        int side = GeometryUtils.calulatPointSideOflink(poiGeo, linkGeo, nearestPointGeo);
 
-		if (side != 0) {
-			Geometry guidePoint = GeoTranslator.transform(nearestPointGeo, 0.00001, 5);
+        if (side != 0) {
+            Geometry guidePoint = GeoTranslator.transform(nearestPointGeo, 0.00001, 5);
 
-			ixPoi.changedFields().put("xGuide", guidePoint.getCoordinate().x);
+            ixPoi.changedFields().put("xGuide", guidePoint.getCoordinate().x);
 
-			ixPoi.changedFields().put("yGuide", guidePoint.getCoordinate().y);
+            ixPoi.changedFields().put("yGuide", guidePoint.getCoordinate().y);
 
-			ixPoi.changedFields().put("side", side);
-		}
-	}
+            ixPoi.changedFields().put("side", side);
+        }
+    }
 
-	/**
-	 * 打断link维护poi关系的公共方法,不加入result
-	 * 
-	 * @param oldLink
-	 * @param newLinks
-	 * @param result
-	 * @return
-	 * @throws Exception
-	 */
-	private RdLink breakPoiGuideLink(IxPoi ixPoi, RdLink oldLink, List<RdLink> newLinks) throws Exception {
-		RdLink resultLink = null;
+    /**
+     * 打断link维护poi关系的公共方法,不加入result
+     *
+     * @param oldLink
+     * @param newLinks
+     * @param result
+     * @return
+     * @throws Exception
+     */
+    private RdLink breakPoiGuideLink(IxPoi ixPoi, RdLink oldLink, List<RdLink> newLinks) throws Exception {
+        RdLink resultLink = null;
 
-		if (ixPoi != null && newLinks.size() > 1) {
-			double xGuide = ixPoi.getxGuide();
+        if (ixPoi != null && newLinks.size() > 1) {
+            double xGuide = ixPoi.getxGuide();
 
-			double yGuide = ixPoi.getyGuide();
+            double yGuide = ixPoi.getyGuide();
 
-			JSONObject geojson = new JSONObject();
+            JSONObject geojson = new JSONObject();
 
-			geojson.put("type", "Point");
+            geojson.put("type", "Point");
 
-			geojson.put("coordinates", new double[] { xGuide, yGuide });
+            geojson.put("coordinates", new double[]{xGuide, yGuide});
 
-			Geometry point = GeoTranslator.geojson2Jts(geojson, 100000, 0);
+            Geometry point = GeoTranslator.geojson2Jts(geojson, 100000, 0);
 
-			for (RdLink newLink : newLinks) {
-				if (newLink.getGeometry().isWithinDistance(point, 1)) {
-					resultLink = newLink;
-					break;
-				}
-			}
-		}
+            for (RdLink newLink : newLinks) {
+                if (newLink.getGeometry().isWithinDistance(point, 1)) {
+                    resultLink = newLink;
+                    break;
+                }
+            }
+        }
 
-		return resultLink;
-	}
+        return resultLink;
+    }
 }

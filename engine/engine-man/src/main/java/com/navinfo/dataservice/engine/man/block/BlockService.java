@@ -202,7 +202,7 @@ public class BlockService {
 			} catch (Exception e) {
 				// TODO: handle exception
 				e.printStackTrace();
-				log.error("发送失败,原因:"+e.getMessage(), e);
+				log.error("block编辑消息发送失败,原因:"+e.getMessage(), e);
 			}
 			
 			return updateCount;
@@ -558,7 +558,7 @@ public class BlockService {
 			} catch (Exception e) {
 				// TODO: handle exception
 				e.printStackTrace();
-				log.error("发送失败,原因:"+e.getMessage(), e);
+				log.error("block关闭消息发送失败,原因:"+e.getMessage(), e);
 			}
 			
 			return unClosedBlocks;
@@ -963,20 +963,18 @@ public class BlockService {
 					msgTmp[3]=msgParam.toString();
 					msgContentList.add(msgTmp);
 				}
-				
+				if(msgContentList.size()>0){
+					blockPushMsgByMsg(conn,msgContentList,userId);	}			
 			}
-			if(msgContentList.size()>0){
-				blockPushMsgByMsg(conn,msgContentList,userId);
-				BlockOperation.updateMainBlock(conn, blockManIds);
-			}
+			BlockOperation.updateMainBlock(conn, blockManIds);
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
-			throw new Exception("发布失败，原因为:" + e.getMessage(), e);
+			throw new Exception("新增block消息发送失败，原因为:" + e.getMessage(), e);
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
-		return "发布成功";
+		return "BLOCK批量发布"+blockManIds.size()+"个成功，0个失败";
 
 	}
 
@@ -1024,11 +1022,11 @@ public class BlockService {
 		Connection conn = null;		
 		try {
 			conn = DBConnector.getInstance().getManConnection();
-			//返回部分字段
+			//返回部分字段,采集/日编角色返回，仅返回采集/日编的内容
 			if(snapshot==1){
 				return this.listBySnapshot(conn,stage, condition, order, currentPageNum, pageSize);
 				}
-			else{
+			else{//生管角色登陆用：返回采集，日编任务的全部内容
 				return this.listByAll(conn,condition, order, currentPageNum, pageSize);
 			}
 		} catch (Exception e) {
@@ -1050,6 +1048,8 @@ public class BlockService {
 				String key = (String) keys.next();
 				if("blockManName".equals(key)){
 					conditionSql=conditionSql+" AND MAN_LIST.BLOCK_MAN_NAME LIKE '%"+conditionJson.getString(key)+"%'";}
+				if("blockId".equals(key)){
+					conditionSql=conditionSql+" AND MAN_LIST.BLOCK_ID ="+conditionJson.getInt(key);}
 				if("name".equals(key)){
 					conditionSql=conditionSql+" AND (MAN_LIST.BLOCK_MAN_NAME LIKE '%"+conditionJson.getString(key)+"%'"
 							+ " or MAN_LIST.BLOCK_NAME LIKE '%"+conditionJson.getString(key)+"%')";}
@@ -1297,6 +1297,8 @@ public class BlockService {
 				String key = (String) keys.next();
 				if("blockManName".equals(key)){
 					conditionSql=conditionSql+" AND MAN_LIST.BLOCK_MAN_NAME LIKE '%"+conditionJson.getString(key)+"%'";}
+				if("blockId".equals(key)){
+					conditionSql=conditionSql+" AND MAN_LIST.BLOCK_ID ="+conditionJson.getInt(key);}
 				if("name".equals(key)){
 					conditionSql=conditionSql+" AND (MAN_LIST.BLOCK_MAN_NAME LIKE '%"+conditionJson.getString(key)+"%' "
 							+ "or MAN_LIST.BLOCK_NAME LIKE '%"+conditionJson.getString(key)+"%')";}
@@ -1424,7 +1426,7 @@ public class BlockService {
 						+ " OR NOT EXISTS(SELECT 1 FROM SUBTASK STT WHERE STT.BLOCK_MAN_ID=T.BLOCK_MAN_ID AND STT."+stagePart+"))"
 				+wherePart					
 				+ "     AND T.BLOCK_MAN_ID = S.BLOCK_MAN_ID(+)"
-				+ "  UNION ALL"
+				+ "  UNION"
 				//分配子任务，且子任务都是关闭状态==〉已完成
 				+ " SELECT DISTINCT T.BLOCK_MAN_ID,"
 				+ "                  T.BLOCK_MAN_NAME,"
@@ -1450,10 +1452,10 @@ public class BlockService {
 				+ "     AND ST.STATUS IN (0,1)"
 				+ "     AND ST."+stagePart
 				+wherePart		
-				+ "     AND NOT EXISTS(SELECT 1 FROM SUBTASK STT WHERE STT.BLOCK_MAN_ID=T.BLOCK_MAN_ID AND STT.STATUS=1 AND STT."+stagePart+")"
+				+ "     AND NOT EXISTS(SELECT 1 FROM SUBTASK STT WHERE STT.BLOCK_MAN_ID=T.BLOCK_MAN_ID AND STT.STATUS in (1,2) AND STT."+stagePart+")"
 				+ "     AND T.BLOCK_MAN_ID = S.BLOCK_MAN_ID(+)"
 				+ "     AND T.BLOCK_MAN_ID = ST.BLOCK_MAN_ID"
-				+ "  UNION ALL"
+				+ "  UNION"
 				//分配子任务，且存在非关子任务==〉作业中
 				+ " SELECT DISTINCT T.BLOCK_MAN_ID,"
 				+ "                  T.BLOCK_MAN_NAME,"
@@ -1482,7 +1484,7 @@ public class BlockService {
 				+ "     AND EXISTS(SELECT 1 FROM SUBTASK STT WHERE STT.BLOCK_MAN_ID=T.BLOCK_MAN_ID AND STT.STATUS<>0 AND STT."+stagePart+")"
 				+ "     AND T.BLOCK_MAN_ID = S.BLOCK_MAN_ID(+)"
 				+ "     AND T.BLOCK_MAN_ID = ST.BLOCK_MAN_ID(+)"
-				+ "  UNION ALL"
+				+ "  UNION"
 				//未规划block
 				+ "  SELECT DISTINCT 0,"
 				+ "                  '---',"
@@ -1584,6 +1586,7 @@ public class BlockService {
 			//获取数据
 			List<Map<String, Object>> list = queryRunner.query(conn, sql, rsh, params);
 			//日志
+			log.info("查询的blockMan数据的sql"+sql);
 			log.info("查询的blockMan数据"+list.toString());
 			return list;
 		}catch(Exception e){

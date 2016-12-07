@@ -10,6 +10,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 
+import com.alibaba.druid.sql.visitor.functions.Substring;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.util.DateUtils;
@@ -69,8 +70,9 @@ public class RdNameImportor {
 		int adminId = new MeshSelector().getAdminIdByLocation(longitude,
 				latitude);
 		if (!exitsInMeshAdmin(meshes, name)) {
-			String srcResume = rowkey + ","
-					+ DateUtils.dateToString(new Date(), "yyyy-MM-dd");
+			//JSONObject srcResumeObj=new JSONObject();
+			//srcResumeObj.put("tips", rowkey);
+			String srcResume ="\"tips\":\""+rowkey+"\"";
 			insertNameAndTeilen(name, DEFAULT_LANG_CODE, adminId, srcResume);
 		}else{
 			log.warn(name+"已存在");
@@ -92,7 +94,7 @@ public class RdNameImportor {
 			String srcResume) throws Exception {
 		
 		//***********************以下代码是路演环境临时使用*begin***********************
-		Connection conn=null;
+		/*Connection conn=null;
 		
 		try{
 			
@@ -106,11 +108,16 @@ public class RdNameImportor {
 		//路演环境临时使用
 		conn = DBConnector.getInstance().getConnectionById(Integer.parseInt(dbId));
 		
-		RdNameOperation operation = new RdNameOperation(conn);
+		RdNameOperation operation = new RdNameOperation(conn);*/
 		
 		//***********************end ***********************
 		
-		//RdNameOperation operation = new RdNameOperation();
+		Connection conn=null;
+		try{
+		
+		conn = DBConnector.getInstance().getMetaConnection();
+		
+		RdNameOperation operation = new RdNameOperation(conn);
 		
 		RdName rdName = new RdName();
 
@@ -140,10 +147,11 @@ public class RdNameImportor {
 				rdNameNew.getLangCode(), rdNameNew.getRoadType());
 		
 		}catch (Exception e) {
+			DbUtils.rollback(conn);
 			throw e;
 		}
 		finally{
-			DbUtils.closeQuietly(conn);
+			DbUtils.commitAndCloseQuietly(conn);
 		}
 
 	}
@@ -261,11 +269,23 @@ public class RdNameImportor {
 	/**
 	 * web端保存rdName
 	 * @author wangdongbin
+	 * @param subtaskId 
 	 * @param rdName
 	 * @return
 	 * @throws Exception
 	 */
-	public JSONObject importRdNameFromWeb(JSONObject params) throws Exception {
+	/**
+	 * @Title: importRdNameFromWeb
+	 * @Description: 增加参数 subtaskId
+	 * @param params
+	 * @param subtaskId
+	 * @return
+	 * @throws Exception  JSONObject
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2016年11月14日 下午6:14:57 
+	 */
+	public JSONObject importRdNameFromWeb(JSONObject params, int subtaskId) throws Exception {
 		JSONObject result = new JSONObject();
 		
 		Connection conn = null;
@@ -288,6 +308,10 @@ public class RdNameImportor {
 			}
 			
 			RdNameOperation operation = new RdNameOperation(conn);
+			//web新增rd_name是，根据当前子任务的id， 赋值给rd_name.src_resume 格式 "task":3443434
+			if(rdName.getSrcResume() == null || StringUtils.isEmpty(rdName.getSrcResume())){
+				rdName.setSrcResume("\"task\":"+subtaskId);
+			}
 			// 新增或更新一条道路名
 			RdName rdNameNew = operation.saveOrUpdate(rdName);
 			
@@ -343,6 +367,17 @@ public class RdNameImportor {
 		} catch (Exception e) {
 			throw e;
 		}
+		
+	}
+	
+	public static void main(String[] args) {
+		String a = "\"tips\":\"reuwoireuwir83erewr343\"";
+	//	a.substring();
+		
+		
+		
+		
+		
 		
 	}
 }

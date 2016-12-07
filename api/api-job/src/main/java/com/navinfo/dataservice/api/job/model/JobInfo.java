@@ -24,6 +24,7 @@ public class JobInfo implements Serializable{
 	private JSONObject response;
 	private String resultMsg;
 	private long userId;
+	private long taskId;
 	private String descp;
 	private List<JobStep> steps;
 	private int stepCount=0;
@@ -100,6 +101,12 @@ public class JobInfo implements Serializable{
 	}
 	public void setUserId(long userId) {
 		this.userId = userId;
+	}
+	public long getTaskId() {
+		return taskId;
+	}
+	public void setTaskId(long taskId) {
+		this.taskId = taskId;
 	}
 	public String getDescp() {
 		return descp;

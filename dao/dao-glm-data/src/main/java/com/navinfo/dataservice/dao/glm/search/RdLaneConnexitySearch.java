@@ -15,7 +15,6 @@ import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.selector.rd.laneconnexity.RdLaneConnexitySelector;
-import com.vividsolutions.jts.io.WKTReader;
 
 import net.sf.json.JSONObject;
 import oracle.spatial.geometry.JGeometry;
@@ -24,46 +23,41 @@ import oracle.sql.STRUCT;
 
 public class RdLaneConnexitySearch implements ISearch {
 	private WKT wktSpatial = new WKT();
-	
-	private WKTReader wktReader = new WKTReader();
 
 	private Connection conn;
 
 	public RdLaneConnexitySearch(Connection conn) {
 		this.conn = conn;
 	}
-	
+
 	@Override
 	public IObj searchDataByPid(int pid) throws Exception {
 		RdLaneConnexitySelector selector = new RdLaneConnexitySelector(conn);
-		
-		IObj obj = (IObj)selector.loadById(pid, false);
-		
+
+		IObj obj = (IObj) selector.loadById(pid, false);
+
 		return obj;
 	}
-	
+
 	@Override
-	public IObj searchDataByPids(List<Integer> pidList) throws Exception {
+	public List<IObj> searchDataByPids(List<Integer> pidList) throws Exception {
 		return null;
 	}
-	
+
 	@Override
-	public List<SearchSnapshot> searchDataBySpatial(String wkt)
-			throws Exception {
+	public List<SearchSnapshot> searchDataBySpatial(String wkt) throws Exception {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public List<SearchSnapshot> searchDataByCondition(String condition)
-			throws Exception {
+	public List<SearchSnapshot> searchDataByCondition(String condition) throws Exception {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z,
-			int gap) throws Exception {
+	public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z, int gap) throws Exception {
 
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
@@ -115,9 +109,8 @@ public class RdLaneConnexitySearch implements ISearch {
 				double angle = DisplayUtils.calIncloudedAngle(linkWkt, direct);
 
 				jsonM.put("c", String.valueOf((int)angle));
-		
-				double[][] point = DisplayUtils.getGdbPointPos(linkWkt,
-						pointWkt, 1);
+				
+				double[][] point = DisplayUtils.getGdbPointPos(linkWkt, pointWkt, 0, (21-z)*4.5, 4);
 
 				snapshot.setG(Geojson.lonlat2Pixel(point[1][0], point[1][1], z,
 						px, py));
@@ -127,14 +120,14 @@ public class RdLaneConnexitySearch implements ISearch {
 				list.add(snapshot);
 			}
 		} catch (Exception e) {
-			
+
 			throw new SQLException(e);
 		} finally {
 			if (resultSet != null) {
 				try {
 					resultSet.close();
 				} catch (Exception e) {
-					
+
 				}
 			}
 
@@ -142,25 +135,24 @@ public class RdLaneConnexitySearch implements ISearch {
 				try {
 					pstmt.close();
 				} catch (Exception e) {
-					
+
 				}
 			}
-			
+
 		}
 
 		return list;
 	}
-	
 
 	public static void main(String[] args) throws Exception {
-		
+
 		Connection conn = DBConnector.getInstance().getConnectionById(11);
-		
+
 		RdLaneConnexitySearch s = new RdLaneConnexitySearch(conn);
-		
-		List<SearchSnapshot> ss = s.searchDataByTileWithGap(107939,49614,17, 1);
-		
-		for(SearchSnapshot n : ss){
+
+		List<SearchSnapshot> ss = s.searchDataByTileWithGap(107939, 49614, 17, 1);
+
+		for (SearchSnapshot n : ss) {
 			System.out.println(n.Serialize(null));
 		}
 	}

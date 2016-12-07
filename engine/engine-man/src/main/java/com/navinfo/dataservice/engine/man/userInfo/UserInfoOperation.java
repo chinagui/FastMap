@@ -16,6 +16,7 @@ import org.apache.log4j.Logger;
 import java.sql.Connection;
 
 import com.navinfo.dataservice.api.man.model.UserDevice;
+import com.navinfo.dataservice.api.man.model.UserGroup;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.engine.man.task.TaskOperation;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -51,6 +52,38 @@ public class UserInfoOperation {
 				}
 			};
 			List<Integer> userIdList = run.query(conn, sql, rsHandler);
+			return userIdList;
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}
+	
+	}
+	/**
+	 * 
+	 * @param conn
+	 * @param sql USER_ID,USER_NAME
+	 * @return Map<Integer,UserInfo>:key:userId,value:userInfor
+	 * @throws Exception
+	 */
+	public static Map<Long, UserInfo> getUserInfosBySql(Connection conn,String sql) throws Exception{
+		try{
+
+			QueryRunner run = new QueryRunner();
+			ResultSetHandler<Map<Long, UserInfo>> rsHandler = new ResultSetHandler<Map<Long, UserInfo>>() {
+				public Map<Long, UserInfo> handle(ResultSet rs) throws SQLException {
+					Map<Long, UserInfo> userIdList = new HashMap<Long, UserInfo>();
+					while (rs.next()) {
+						UserInfo userInfo=new UserInfo();
+						userInfo.setUserId(rs.getInt("USER_ID"));
+						userInfo.setUserEmail(rs.getString("USER_EMAIL"));
+						userInfo.setUserRealName(rs.getString("USER_REAL_NAME"));
+						userIdList.put(rs.getLong("USER_ID"),userInfo);
+					}
+					return userIdList;
+				}
+			};
+			Map<Long,UserInfo> userIdList = run.query(conn, sql, rsHandler);
 			return userIdList;
 		}catch(Exception e){
 			log.error(e.getMessage(), e);
@@ -506,7 +539,6 @@ public class UserInfoOperation {
 		// TODO Auto-generated method stub
 		try{
 			QueryRunner run = new QueryRunner();
-			
 			// 查询用户组信息
 			String querySql = "SELECT UG.GROUP_ID,UG.GROUP_NAME,UG.GROUP_TYPE"
 					+ " FROM USER_GROUP UG,GROUP_USER_MAPPING GUM"
@@ -516,7 +548,7 @@ public class UserInfoOperation {
 					
 			ResultSetHandler<Map<Object, Object>> rsHandler = new ResultSetHandler<Map<Object, Object>>() {
 				public Map<Object, Object> handle(ResultSet rs) throws SQLException {
-					Map<Object, Object> group = new HashMap<Object, Object>();
+					Map<Object, Object> group = new HashMap<Object, Object>(); 
 					if (rs.next()) {
 						group.put("groupId", rs.getInt("GROUP_ID"));
 						group.put("groupName", rs.getString("GROUP_NAME"));
@@ -536,6 +568,43 @@ public class UserInfoOperation {
 	}
 	
 	/**
+	 * @param conn
+	 * @param user_info
+	 * @return
+	 * @throws Exception 
+	 */
+	public static UserGroup getUserGroupByUserId(Connection conn, int userId) throws Exception {
+		try{
+			QueryRunner run = new QueryRunner();
+			// 查询用户组信息
+			String querySql = "SELECT UG.GROUP_ID,UG.GROUP_NAME,UG.GROUP_TYPE"
+					+ " FROM USER_GROUP UG,GROUP_USER_MAPPING GUM"
+					+ " WHERE UG.GROUP_ID = GUM.GROUP_ID"
+					+ " AND UG.PARENT_GROUP_ID IS NULL"
+					+ " AND GUM.USER_ID = " + userId;
+					
+			ResultSetHandler<UserGroup> rsHandler = new ResultSetHandler<UserGroup>() {
+				public UserGroup handle(ResultSet rs) throws SQLException {
+					UserGroup group = new UserGroup(); 
+					if (rs.next()) {
+						group.setGroupId(rs.getInt("GROUP_ID"));
+						group.setGroupName(rs.getString("GROUP_NAME"));
+						group.setGroupType(rs.getInt("GROUP_TYPE"));
+					}
+					return group;
+				}
+			};
+
+			UserGroup group = run.query(conn, querySql, rsHandler);
+			return group;
+
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("插入userDevice，原因为:"+e.getMessage(),e);
+		}
+	}
+	
+	/**
 	 * 查询分配的月编组组长id
 	 * @author Han Shaoming
 	 * @param conn
@@ -544,35 +613,55 @@ public class UserInfoOperation {
 	 * @return
 	 * @throws Exception
 	 */
-	public static List<Long> getLeaderIdByGroupId(Connection conn, List<Long> groupIdList) throws Exception {
+	public static Map<Long, UserInfo> getLeaderIdByGroupId(Connection conn, List<Long> groupIdList) throws Exception {
 		// TODO Auto-generated method stub
+		Map<Long, UserInfo> leaderIdList = null;
 		try{
-			QueryRunner run = new QueryRunner();
 			// 查询用户所在组组长id
-			String querySql = "SELECT DISTINCT U.LEADER_ID FROM USER_GROUP U WHERE 1=1 ";
-			JSONArray json = new JSONArray();
 			if(groupIdList !=null && groupIdList.size()>0){
+				QueryRunner run = new QueryRunner();
+				String querySql = "WITH T AS"
+						+ " (SELECT GROUP_ID, G.LEADER_ID, I.USER_REAL_NAME, I.USER_EMAIL"
+						+ "    FROM USER_GROUP G, USER_INFO I"
+						+ "   WHERE LEADER_ID IS NOT NULL"
+						+ "     AND LEADER_ID != 0"
+						+ "     AND G.LEADER_ID = I.USER_ID"
+						+ "  UNION ALL"
+						+ "  SELECT DOWNGROUP.GROUP_ID, G.LEADER_ID, I.USER_REAL_NAME, I.USER_EMAIL"
+						+ "    FROM USER_GROUP DOWNGROUP, USER_GROUP G, USER_INFO I"
+						+ "   WHERE G.LEADER_ID IS NOT NULL"
+						+ "     AND G.LEADER_ID != 0"
+						+ "     AND G.LEADER_ID = I.USER_ID"
+						+ "     AND DOWNGROUP.PARENT_GROUP_ID = G.GROUP_ID)"
+						+ "SELECT T.GROUP_ID, T.LEADER_ID, T.USER_REAL_NAME, T.USER_EMAIL"
+						+ "  FROM T"
+						+ " WHERE 1 = 1 ";
+				JSONArray json = new JSONArray();
 				for (int i=0;i<groupIdList.size();i++) {
 					if(groupIdList.get(i) !=null){
 						json.add(groupIdList.get(i));
 					}
 				}
-			}
-			String condition = "AND U.GROUP_ID IN("+json.join(",")+")";
-			String sql = querySql + condition;
-			
-			ResultSetHandler<List<Long>> rsh = new ResultSetHandler<List<Long>>() {
-				@Override
-				public List<Long> handle(ResultSet rs) throws SQLException {
-					// TODO Auto-generated method stub
-					List<Long> leaderIdList = new ArrayList<Long>();
-					while(rs.next()){
-						leaderIdList.add(rs.getLong("LEADER_ID"));
+				String condition = "AND T.GROUP_ID IN("+json.join(",")+")";
+				String sql = querySql + condition;
+				ResultSetHandler<Map<Long, UserInfo>> rsh = new ResultSetHandler<Map<Long, UserInfo>>() {
+					@Override
+					public Map<Long, UserInfo> handle(ResultSet rs) throws SQLException {
+						// TODO Auto-generated method stub
+						Map<Long, UserInfo> leaderIdList = new HashMap<Long, UserInfo>();
+						while(rs.next()){
+							UserInfo userInfoMap=new UserInfo();
+							userInfoMap.setUserId(rs.getInt("LEADER_ID"));
+							userInfoMap.setUserRealName(rs.getString("USER_REAL_NAME"));
+							userInfoMap.setUserEmail(rs.getString("USER_EMAIL"));
+							leaderIdList.put(rs.getLong("GROUP_ID"), userInfoMap);
+						}
+						return leaderIdList;
 					}
-					return leaderIdList;
-				}
-			};
-			List<Long> leaderIdList = run.query(conn, sql, rsh);
+				};
+				leaderIdList = run.query(conn, sql, rsh);
+			}
+			
 			return leaderIdList;
 		}catch(Exception e){
 			log.error(e.getMessage(), e);

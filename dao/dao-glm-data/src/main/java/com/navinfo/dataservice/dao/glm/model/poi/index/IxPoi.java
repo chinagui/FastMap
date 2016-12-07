@@ -370,10 +370,55 @@ public class IxPoi implements IObj {
 	private List<IRow> carrentals = new ArrayList<IRow>();
 
 	public Map<String, IxPoiCarrental> carrentalMap = new HashMap<String, IxPoiCarrental>();
+	//************zl 2016.11.29 *************
+	//添加子表 IxSamepoi
+//	private List<IRow> samepois = new ArrayList<IRow>();
 
+//	public Map<String, IxSamepoi> samepoiMap = new HashMap<String, IxSamepoi>();
+	//添加子表 IxSamepoi
 	private List<IRow> samepoiParts = new ArrayList<IRow>();
 
-	public Map<String, IxSamepoiPart> samepoiMap = new HashMap<String, IxSamepoiPart>();
+	public Map<String, IxSamepoiPart> samepoiPartMap = new HashMap<String, IxSamepoiPart>();
+	
+	//添加 poiEditStatus
+	//private int poiEditStatus = 0;
+	
+	//添加 sameFid
+//	private String sameFid ;
+//
+//	public String getSameFid() {
+//		return sameFid;
+//	}
+//
+//	public void setSameFid(String sameFid) {
+//		this.sameFid = sameFid;
+//	}
+//
+//	public int getPoiEditStatus() {
+//		return poiEditStatus;
+//	}
+//
+//	public void setPoiEditStatus(int poiEditStatus) {
+//		this.poiEditStatus = poiEditStatus;
+//	}
+
+	//生成 list 的  get set 方法
+//	public List<IRow> getSamepois() {
+//		return samepois;
+//	}
+//
+//	public void setSamepois(List<IRow> samepois) {
+//		this.samepois = samepois;
+//	}
+
+	public List<IRow> getSamepoiParts() {
+		return samepoiParts;
+	}
+
+	public void setSamepoiParts(List<IRow> samepoiParts) {
+		this.samepoiParts = samepoiParts;
+	}
+	//************zl 2016.11.29 *************	
 
 	private List<IRow> operateRefs = new ArrayList<IRow>();
 
@@ -981,13 +1026,7 @@ public class IxPoi implements IObj {
 		this.children = children;
 	}
 
-	public List<IRow> getSamepoiParts() {
-		return samepoiParts;
-	}
-
-	public void setSamepoiParts(List<IRow> samepoiParts) {
-		this.samepoiParts = samepoiParts;
-	}
+	
 
 	@Override
 	public String rowId() {
@@ -1057,7 +1096,10 @@ public class IxPoi implements IObj {
 		children.add(this.getPhotos());
 		children.add(this.getVideoes());
 		children.add(this.getChildren());
-
+		//************zl 2016.11.29 *************
+		//children.add(this.getSamepois());
+		children.add(this.getSamepoiParts());
+		//************zl 2016.11.29 *************
 		// deep
 		children.add(this.getParkings());
 		children.add(this.getTourroutes());
@@ -1174,6 +1216,11 @@ public class IxPoi implements IObj {
 		JsonConfig jsonConfig = Geojson.geoJsonConfig(0.00001, 5);
 
 		JSONObject json = JSONObject.fromObject(this, jsonConfig);
+		
+		if (objLevel == ObjLevel.HISTORY) {
+			json.remove("rawFields");
+			json.remove("status");
+		}
 
 		return json;
 	}
@@ -1738,7 +1785,14 @@ public class IxPoi implements IObj {
 		childMap.put(IxPoiCarrental.class, carrentals);
 
 //		childMap.put(IxSamepoi.class, samepois);
-
+		
+		//************zl 2016.11.29 *************
+		//设置子表 IX_SAMEPOI
+		//childMap.put(IxSamepoi.class, samepois);
+		//设置子表IX_SAMEPOI_PART
+		childMap.put(IxSamepoiPart.class,samepoiParts);
+		
+		//************zl 2016.11.29 *************
 		return childMap;
 	}
 
@@ -1825,6 +1879,13 @@ public class IxPoi implements IObj {
 		childMap.put(IxPoiCarrental.class, carrentalMap);
 
 //		childMap.put(IxSamepoi.class, samepoiMap);
+		//************zl 2016.11.29 *************
+		//设置子表 IX_SAMEPOI
+		//childMap.put(IxSamepoi.class, samepoiMap);
+		//设置子表IX_SAMEPOIPART
+		childMap.put(IxSamepoiPart.class, samepoiPartMap);
+		
+		//************zl 2016.11.29 *************
 
 		return childMap;
 	}

@@ -158,7 +158,7 @@ public class CkResultTool {
 					for(String table:subValue.split("\\];\\[")){
 						String[] arr = table.split(",");
 						String pidColName = glm.getTablePidColName(arr[0]);
-						String[] grids = calculator.calc(arr[0], pidColName,Long.valueOf(arr[1]), conn);
+						String[] grids = calculator.calc(arr[0], pidColName,Long.valueOf(arr[1]), conn).getGrids();
 						if(grids!=null){//有的检查结果给出的targets里头的要素不存在，所以计算不了
 							for(String grid:grids){
 								stmt.setString(1, entry.getKey());

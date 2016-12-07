@@ -52,8 +52,12 @@ public class RoleController extends BaseController {
 			if(!paraJson.containsKey("roleId")){
 				throw new IllegalArgumentException("parameter参数中roleId不能为空。");
 			}
+			JSONObject conditionJson=new JSONObject();
+			if(paraJson.containsKey("condition")){
+				conditionJson=paraJson.getJSONObject("condition");
+			}
 			long roleId = paraJson.getLong("roleId");
-			List<Map<String,Object>> userNameList = RoleService.getInstance().queryUserNameByRoleId(userId,roleId);
+			List<Map<String,Object>> userNameList = RoleService.getInstance().queryUserNameByRoleId(userId,roleId,conditionJson);
 			return new ModelAndView("jsonView", success(userNameList));
 		}catch(Exception e){
 			log.error("查询失败，原因："+e.getMessage(), e);

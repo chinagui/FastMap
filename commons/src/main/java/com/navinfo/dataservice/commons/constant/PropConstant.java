@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.commons.constant;
+package com.navinfo.dataservice.commons.constant;import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 
 public class PropConstant {
 
@@ -19,6 +19,8 @@ public class PropConstant {
 	public static final String trackLinesTableName = "hbase.tablename.tracklines";
 	
 	public static final String photoTableName = "hbase.tablename.photo";
+	
+	public static final String audioTableName = "hbase.tablename.audio";
 	
 	public static final String linkTileTableName = "hbase.tablename.linktile";
 
@@ -47,6 +49,10 @@ public class PropConstant {
 	public static final String metaPassword = "meta_password";
 	
 	public static final String uploadPath = "dropbox.upload.path";
+	
+	public static final String downloadFilePathRoot="dropbox.download.filepath.root";
+	
+	public static final String downloadUrlPathRoot="dropbox.download.urlpath.root";
 	
 	public static final String downloadFilePathTips = "dropbox.download.filepath.tips";
 	
@@ -87,4 +93,7 @@ public class PropConstant {
 	public static final String fmStat="fm_stat";
 	public static final String mongoHost="mongo_host";
 	public static final String mongoPort="mongo_port";
+	
+	public static final String multisrcDaySyncUrl="multisrc.day.sync.url";
+	public static final String seasonVersion="SEASON.VERSION";
 }

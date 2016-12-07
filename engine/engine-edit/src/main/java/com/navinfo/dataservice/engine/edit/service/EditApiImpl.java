@@ -2,6 +2,7 @@ package com.navinfo.dataservice.engine.edit.service;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.util.List;
 
 import org.springframework.stereotype.Service;
 
@@ -109,9 +110,9 @@ public class EditApiImpl implements EditApi {
 			}
 			String sql=null;
 			if ("web".endsWith(platform)){
-				sql="UPDATE poi_edit_status T1 SET T1.fresh_verified = :1 where T1.row_id =(SELECT row_id as a FROM ix_poi where pid = " + pid + ")";
+				sql="UPDATE poi_edit_status T1 SET T1.fresh_verified = :1 where T1.pid =" + pid ;
 			}else{
-				sql="UPDATE poi_edit_status T1 SET T1.fresh_verified = :1,T1.status="+status+" where T1.row_id =(SELECT row_id as a FROM ix_poi where pid = " + pid + ")";
+				sql="UPDATE poi_edit_status T1 SET T1.fresh_verified = :1,T1.status="+status+" where T1.pid = " + pid;
 			}
 			PreparedStatement pstmt = null;
 			try {
@@ -137,7 +138,8 @@ public class EditApiImpl implements EditApi {
 		int dbId = dataObj.getInt("dbId");
 		try {
 			subConn = DBConnector.getInstance().getConnectionById(dbId);
-			batchProcess.execute(dataObj, subConn, new EditApiImpl(subConn));
+			List<String> batchList = batchProcess.getRowRules();
+			batchProcess.execute(dataObj, subConn, new EditApiImpl(subConn), batchList);
 		} catch (Exception e) {
 			throw e;
 		} finally {

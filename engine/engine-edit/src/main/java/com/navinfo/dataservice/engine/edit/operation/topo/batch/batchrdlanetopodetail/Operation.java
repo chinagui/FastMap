@@ -2,6 +2,8 @@ package com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlanetopo
 
 import java.util.List;
 
+import net.sf.json.JSONObject;
+
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
@@ -12,7 +14,6 @@ import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.lane.RdLaneTopoDetail;
 import com.navinfo.dataservice.dao.glm.model.rd.lane.RdLaneTopoVia;
-
 
 /**
  * 车道联通批量操作
@@ -42,18 +43,53 @@ public class Operation implements IOperation {
 	 * @throws Exception
 	 */
 	private void createRdLaneTopos(Result result) throws Exception {
-		List<RdLaneTopoDetail>  details = this.command.getLaneToptInfos();
-		for(RdLaneTopoDetail detail:details){
+		List<RdLaneTopoDetail> details = this.command.getLaneToptInfos();
+		// 批量增加
+		for (RdLaneTopoDetail detail : details) {
 			detail.setPid(PidUtil.getInstance().applyRdLaneTopoPid());
-			for(IRow row :detail.getTopoVias()){
-				RdLaneTopoVia via = (RdLaneTopoVia)row;
+			for (IRow row : detail.getTopoVias()) {
+				RdLaneTopoVia via = (RdLaneTopoVia) row;
 				via.setTopoId(detail.getPid());
 			}
 			result.insertObject(detail, ObjStatus.INSERT, detail.getPid());
 		}
-		for(IRow row:this.command.getDelToptInfos()){
-			RdLaneTopoDetail detail = (RdLaneTopoDetail)row;
-			result.insertObject(detail,ObjStatus.DELETE, detail.getPid());
+		// 处理批量删除
+		for (IRow row : this.command.getDelToptInfos()) {
+			RdLaneTopoDetail detail = (RdLaneTopoDetail) row;
+			result.insertObject(detail, ObjStatus.DELETE, detail.getPid());
+		}
+		// 处理批量修改
+		if (this.command.getUpdateArray() != null) {
+			if (this.command.getUpdateArray().size() > 0) {
+				for (int i = 0; i < this.command.getUpdateArray().size(); i++) {
+					JSONObject obj = this.command.getUpdateArray()
+							.getJSONObject(i);
+					this.updateLaneTopos(obj.getJSONObject("data"),
+							this.command.getUpdateTopInfos().get(i), result);
+				}
+
+			}
+		}
+	}
+
+	/***
+	 * 
+	 * @param obj
+	 *            修改变化字段json
+	 * @param row
+	 *            修改的对象
+	 * @param result
+	 * @throws Exception
+	 */
+	private void updateLaneTopos(JSONObject obj, IRow row, Result result)
+			throws Exception {
+		RdLaneTopoDetail detail = (RdLaneTopoDetail) row;
+		if (obj.containsKey("objStatus")) {
+			boolean isChanged = detail.fillChangeFields(obj);
+			if (isChanged) {
+				result.insertObject(row, ObjStatus.UPDATE, detail.getPid());
+			}
+
 		}
 	}
 }

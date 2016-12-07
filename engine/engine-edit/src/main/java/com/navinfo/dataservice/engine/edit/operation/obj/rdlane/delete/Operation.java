@@ -9,6 +9,7 @@ import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.lane.RdLane;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.rd.lane.RdLaneSelector;
 
 /***
@@ -62,14 +63,16 @@ public class Operation implements IOperation {
 		}
 
 	}
+
 	/***
 	 * 删除车道不需要维护对应link上其它车道信息
+	 * 
 	 * @param result
 	 * @param lanePid
 	 * @throws Exception
 	 */
 	public void deleteRdLane(Result result, RdLane lane) throws Exception {
-		this.deleteRdLaneTopoDetail(result, lane.getPid());
+		this.deleteTopoDetailForRdLane(result, lane.getPid());
 		result.insertObject(lane, ObjStatus.DELETE, lane.getPid());
 	}
 
@@ -79,11 +82,24 @@ public class Operation implements IOperation {
 	 * @param result
 	 * @throws Exception
 	 */
-	private void deleteRdLaneTopoDetail(Result result, int lanePid)
+	private void deleteTopoDetailForRdLane(Result result, int lanePid)
 			throws Exception {
 		com.navinfo.dataservice.engine.edit.operation.obj.rdlanetopo.delete.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdlanetopo.delete.Operation(
 				conn);
 		operation.deleteTopoForRdLane(result, lanePid);
+	}
+
+	/***
+	 * 删除多条车道信息维护车道联通信息
+	 * 
+	 * @param result
+	 * @throws Exception
+	 */
+	private void deleteTopoDetailForRdLanes(Result result,
+			List<Integer> lanePids) throws Exception {
+		com.navinfo.dataservice.engine.edit.operation.obj.rdlanetopo.delete.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdlanetopo.delete.Operation(
+				conn);
+		operation.deleteTopoForRdLanes(result, lanePids);
 	}
 
 	/***
@@ -95,24 +111,48 @@ public class Operation implements IOperation {
 	 */
 	public void deleteRdLaneforRdLink(int linkPid, Result result)
 			throws Exception {
-		List<RdLane> lanes = new RdLaneSelector(conn).loadByLink(linkPid, 1,
+		List<RdLane> lanes = new RdLaneSelector(conn).loadByLink(linkPid, 0,
 				true);
 		for (RdLane lane : lanes) {
-			this.deleteRdLaneTopoDetail(result, lane.getPid());
+			this.deleteTopoDetailForRdLane(result, lane.getPid());
 			result.insertObject(lane, ObjStatus.DELETE, lane.getPid());
 		}
 	}
-	
+
+	/***
+	 * 删除link数组维护车道信息
+	 * 
+	 * @param linkPid
+	 * @param result
+	 * @throws Exception
+	 */
+	public void deleteRdLaneforRdLinks(List<Integer> linkPids, Result result)
+			throws Exception {
+		List<RdLane> lanes = new RdLaneSelector(conn).loadByLinks(linkPids, 0,
+				true);
+		List<Integer> lanePids = new ArrayList<Integer>();
+		for (RdLane lane : lanes) {
+			result.insertObject(lane, ObjStatus.DELETE, lane.getPid());
+			lanePids.add(lane.getPid());
+		}
+		if (lanePids.size() > 0) {
+			this.deleteTopoDetailForRdLanes(result, lanePids);
+		}
+
+	}
+
 	/**
 	 * 删除link对详细车道的删除影响
+	 * 
 	 * @return
-	 * @throws Exception 
+	 * @throws Exception
 	 */
-	public List<AlertObject> getDeleteRdLaneInfectData(int linkPid,Connection conn) throws Exception {
-		
-		List<RdLane> lanes = new RdLaneSelector(conn).loadByLink(linkPid, 1,
+	public List<AlertObject> getDeleteRdLaneInfectData(int linkPid,
+			Connection conn) throws Exception {
+
+		List<RdLane> lanes = new RdLaneSelector(conn).loadByLink(linkPid, 0,
 				true);
-		
+
 		List<AlertObject> alertList = new ArrayList<>();
 
 		for (RdLane lane : lanes) {
@@ -125,12 +165,13 @@ public class Operation implements IOperation {
 
 			alertObj.setStatus(ObjStatus.DELETE);
 
-			if(!alertList.contains(alertObj))
-			{
+			if (!alertList.contains(alertObj)) {
 				alertList.add(alertObj);
 			}
 		}
 
 		return alertList;
 	}
+
+	
 }

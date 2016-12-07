@@ -13,7 +13,7 @@ public class Process extends AbstractProcess<Command> {
 		super(command);
 	}
 
-	private Check check = new Check();
+	private Check check = new Check(this.getConn());
 
 	@Override
 	public boolean prepareData() throws Exception {
@@ -30,7 +30,7 @@ public class Process extends AbstractProcess<Command> {
 
 		RdCross cross = (RdCross) crossSelector.loadById(crossNode.parentPKValue(), true);
 
-		check.checkHasTrafficSignal(cross);
+		check.checkHasTrafficSignal(cross,nodePid);
 
 		this.getCommand().setCross(cross);
 

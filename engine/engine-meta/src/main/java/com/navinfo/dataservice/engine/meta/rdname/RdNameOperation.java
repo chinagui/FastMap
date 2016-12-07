@@ -9,7 +9,6 @@ import java.sql.Types;
 
 import org.apache.commons.dbutils.DbUtils;
 
-import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
 
 import net.sf.json.JSONArray;
@@ -25,9 +24,6 @@ public class RdNameOperation {
 	
 	private Connection conn;
 	
-	public RdNameOperation() {
-		
-	}
 	
 	public RdNameOperation(Connection conn) {
 		this.conn = conn;
@@ -85,16 +81,9 @@ public class RdNameOperation {
 		}
 
 		PreparedStatement pstmt = null;
-		Connection subconn = null;
-		boolean isMetaConn=true;
 		try {
-			if (conn == null) {
-				subconn = DBConnector.getInstance().getMetaConnection();
-				pstmt = subconn.prepareStatement(insertSql);
-			} else {
-				isMetaConn=false;
-				pstmt = conn.prepareStatement(insertSql);
-			}
+			
+			pstmt = conn.prepareStatement(insertSql);
 
 			Integer nameId = rdName.getNameId();
 			Integer nameGroupid = rdName.getNameGroupid();
@@ -163,19 +152,13 @@ public class RdNameOperation {
 			return rdName;
 		} catch (SQLException e) {
 			e.printStackTrace();
-			if (subconn != null) {
-				DbUtils.rollback(subconn);
-			}
 			if (conn != null) {
 				DbUtils.rollback(conn);
 			}
 			throw new Exception("新增道路名出错：" + e.getMessage(), e);
 		} finally {
 			DbUtils.close(pstmt);
-			if(isMetaConn){
-				DbUtils.commitAndCloseQuietly(subconn);
-			}
-			
+			//conn由调用者关闭
 		}
 
 	}

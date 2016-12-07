@@ -12,10 +12,21 @@ public class Process extends AbstractProcess<Command> {
 
 	@Override
 	public boolean prepareData() throws Exception {
-		if (this.getCommand().getTopoIds().size() > 0) {
+		// 获取加载要删除的车道联通信息
+
+		if (this.getCommand().getDelTopoIds().size() > 0) {
 			this.getCommand().setDelToptInfos(
 					new RdLaneTopoDetailSelector(this.getConn()).loadByIds(this
-							.getCommand().getTopoIds(), true, true));
+							.getCommand().getDelTopoIds(), true, true));
+		}
+
+		// 获取加载要修改的车道联通信息
+
+		if (this.getCommand().getUpdateTopoIds().size() > 0) {
+			this.getCommand().setUpdateTopInfos(
+					new RdLaneTopoDetailSelector(this.getConn()).loadByIds(this
+							.getCommand().getUpdateTopoIds(), true, true));
+
 		}
 		return true;
 	}

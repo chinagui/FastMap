@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
 
+import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
@@ -64,27 +65,30 @@ public class SearchProcess {
 	private JsonConfig getJsonConfig() {
 		JsonConfig jsonConfig = new JsonConfig();
 
-		jsonConfig.registerJsonValueProcessor(String.class, new JsonValueProcessor() {
+		jsonConfig.registerJsonValueProcessor(String.class,
+				new JsonValueProcessor() {
 
-			@Override
-			public Object processObjectValue(String key, Object value, JsonConfig arg2) {
-				if (value == null) {
-					return null;
-				}
+					@Override
+					public Object processObjectValue(String key, Object value,
+							JsonConfig arg2) {
+						if (value == null) {
+							return null;
+						}
 
-				if (JSONUtils.mayBeJSON(value.toString())) {
-					return "\"" + value + "\"";
-				}
+						if (JSONUtils.mayBeJSON(value.toString())) {
+							return "\"" + value + "\"";
+						}
 
-				return value;
+						return value;
 
-			}
+					}
 
-			@Override
-			public Object processArrayValue(Object value, JsonConfig arg1) {
-				return value;
-			}
-		});
+					@Override
+					public Object processArrayValue(Object value,
+							JsonConfig arg1) {
+						return value;
+					}
+				});
 
 		return jsonConfig;
 	}
@@ -95,7 +99,8 @@ public class SearchProcess {
 	 * @return 查询结果
 	 * @throws Exception
 	 */
-	public JSONObject searchDataBySpatial(List<ObjType> types, String box) throws Exception {
+	public JSONObject searchDataBySpatial(List<ObjType> types, String box)
+			throws Exception {
 
 		JSONObject json = new JSONObject();
 
@@ -106,8 +111,10 @@ public class SearchProcess {
 			for (ObjType type : types) {
 
 				ISearch search = factory.createSearch(type);
-
-				List<SearchSnapshot> list = search.searchDataBySpatial(box);
+				
+				String wkt = Geojson.geojson2Wkt(box);
+				
+				List<SearchSnapshot> list = search.searchDataBySpatial(wkt);
 
 				JSONArray array = new JSONArray();
 
@@ -133,7 +140,8 @@ public class SearchProcess {
 	 * @return 查询结果
 	 * @throws Exception
 	 */
-	public JSONObject searchDataByTileWithGap(List<ObjType> types, int x, int y, int z, int gap) throws Exception {
+	public JSONObject searchDataByTileWithGap(List<ObjType> types, int x,
+			int y, int z, int gap) throws Exception {
 
 		JSONObject json = new JSONObject();
 
@@ -145,7 +153,8 @@ public class SearchProcess {
 
 				ISearch search = factory.createSearch(type);
 
-				List<SearchSnapshot> list = search.searchDataByTileWithGap(x, y, z, gap);
+				List<SearchSnapshot> list = search.searchDataByTileWithGap(x,
+						y, z, gap);
 
 				JSONArray array = new JSONArray();
 
@@ -191,7 +200,39 @@ public class SearchProcess {
 
 	}
 
-	public JSONArray searchDataByCondition(ObjType type, JSONObject condition) throws Exception {
+	/**
+	 * 根据pids查询
+	 * 
+	 * @return 查询结果
+	 * @throws Exception
+	 */
+	public List<? extends IObj> searchDataByPids(ObjType type, JSONArray pids)
+			throws Exception {
+
+		try {
+			SearchFactory factory = new SearchFactory(conn);
+
+			ISearch search = factory.createSearch(type);
+
+			@SuppressWarnings("unchecked")
+			List<Integer> pidList = JSONArray.toList(pids, Integer.class,
+					JsonUtils.getJsonConfig());
+
+			List<? extends IObj> objList = search.searchDataByPids(pidList);
+
+			return objList;
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+
+		}
+
+	}
+
+	public JSONArray searchDataByCondition(ObjType type, JSONObject condition)
+			throws Exception {
 
 		try {
 			JSONArray array = new JSONArray();
@@ -215,22 +256,20 @@ public class SearchProcess {
 				break;
 
 			case RDLINK:
-
-				if (condition.containsKey("queryType") && condition.containsKey("linkPid")
-						&& condition.containsKey("direct")) {
-
+			
+				if (condition.containsKey("queryType")) {
+					
 					String queryType = condition.getString("queryType");
-
-					if (queryType.equals("RDLINKSPEEDLIMIT") || queryType.equals("RDSPEEDLIMIT")) {
-
+					
+					// 批量编辑普通限速link追踪
+					if (queryType.equals("RDLINKSPEEDLIMIT")
+							|| queryType.equals("RDSPEEDLIMIT")) {
 						int linkPid = condition.getInt("linkPid");
-
 						int direct = condition.getInt("direct");
-
-						RdLinkSearchUtils searchUtils = new RdLinkSearchUtils(conn);
-
-						List<Integer> nextLinkPids = searchUtils.getConnectLinks(linkPid, direct, queryType);
-
+						RdLinkSearchUtils searchUtils = new RdLinkSearchUtils(
+								conn);
+						List<Integer> nextLinkPids = searchUtils
+								.getConnectLinks(linkPid, direct, queryType);
 						JSONArray linkPidsArray = new JSONArray();
 
 						for (int pid : nextLinkPids) {
@@ -239,14 +278,44 @@ public class SearchProcess {
 
 						array.add(linkPidsArray);
 
-						JSONArray speedlimitArray = searchUtils.getRdLinkSpeedlimit(nextLinkPids);
+						JSONArray speedlimitArray = searchUtils
+								.getRdLinkSpeedlimit(nextLinkPids);
 
 						array.add(speedlimitArray);
+					}
+					//可变限速link追踪
+					if(queryType.equals("RDVARIABLESPEED"))
+					{
+						int linkPid = condition.getInt("linkPid");
+						
+						int nodePid = condition.getInt("nodePid");
+						
+						RdLinkSearchUtils searchUtils = new RdLinkSearchUtils(
+								conn);
+						
+						List<RdLink> links  = searchUtils.variableSpeedNextLinks( linkPid,  nodePid);						
+						
+						for (RdLink link : links) {
+							array.add(link.Serialize(ObjLevel.BRIEF));
+						}
+					}
+					// 坡度追踪原则开发
+					if (queryType.equals("RDSLOPE")) {
+						int cruuentNodePidDir = condition.getInt("nodePidDir");
+						int cuurentLinkPid = condition.getInt("linkPid");
+						int length = condition.getInt("length");
+						RdLinkSearchUtils searchUtils = new RdLinkSearchUtils(
+								conn);
+						List<RdLink> links = searchUtils.getNextLinksForSlope(
+								length, cuurentLinkPid, cruuentNodePidDir);
+						for (RdLink link : links) {
+							array.add(link.Serialize(ObjLevel.BRIEF));
+						}
 					}
 
 					return array;
 				}
-
+				// node追踪原则
 				if (condition.containsKey("nodePid")) {
 
 					int nodePid = condition.getInt("nodePid");
@@ -258,19 +327,41 @@ public class SearchProcess {
 					for (RdLink link : links) {
 						array.add(link.Serialize(ObjLevel.BRIEF));
 					}
-				} else if (condition.containsKey("nodePidDir")) {
+				} // 上线线分离追踪原则
+				else if (condition.containsKey("nodePidDir")) {
 					int cruuentNodePidDir = condition.getInt("nodePidDir");
 					int cuurentLinkPid = condition.getInt("linkPid");
+					int maxNum = 11;
+					boolean loadChild = false;
+					// 默认是11条 以传入为准
+					if (condition.containsKey("maxNum")) {
+						maxNum = condition.getInt("maxNum");
+					}
+					if(condition.containsKey("loadChild"))
+					{
+						int flag = condition.getInt("loadChild");
+						
+						if(flag == 1)
+						{
+							loadChild = true;
+						}
+					}
 					RdLinkSearchUtils searchUtils = new RdLinkSearchUtils(conn);
-					List<RdLink> links = searchUtils.getNextTrackLinks(cuurentLinkPid, cruuentNodePidDir);
+					List<RdLink> links = searchUtils.getNextTrackLinks(
+							cuurentLinkPid, cruuentNodePidDir, maxNum,loadChild);
 					for (RdLink link : links) {
-						array.add(link.Serialize(ObjLevel.BRIEF));
+						if(loadChild)
+						{
+							array.add(link.Serialize(ObjLevel.FULL));
+						}
+						else
+						{
+							array.add(link.Serialize(ObjLevel.BRIEF));
+						}
 					}
 				} else if (condition.containsKey("linkPids")) {
 					JSONArray linkPids = condition.getJSONArray("linkPids");
-
 					List<Integer> pids = new ArrayList<Integer>();
-
 					for (int i = 0; i < linkPids.size(); i++) {
 						int pid = linkPids.getInt(i);
 
@@ -295,18 +386,21 @@ public class SearchProcess {
 
 					RdBranchSelector selector = new RdBranchSelector(conn);
 
-					IRow row = selector.loadByDetailId(detailId, branchType, rowId, false);
+					IRow row = selector.loadByDetailId(detailId, branchType,
+							rowId, false);
 
 					array.add(row.Serialize(ObjLevel.FULL));
 				}
 				break;
 			case ADADMINGROUP:
 				if (condition.containsKey("subTaskId")) {
-					AdAdminTreeSelector adAdminTreeSelector = new AdAdminTreeSelector(conn);
+					AdAdminTreeSelector adAdminTreeSelector = new AdAdminTreeSelector(
+							conn);
 
 					int subTaskId = condition.getInt("subTaskId");
 
-					IRow row = adAdminTreeSelector.loadRowsBySubTaskId(subTaskId, false);
+					IRow row = adAdminTreeSelector.loadRowsBySubTaskId(
+							subTaskId, false);
 
 					array.add(row.Serialize(ObjLevel.BRIEF));
 				} else {
@@ -317,7 +411,8 @@ public class SearchProcess {
 				if (condition.containsKey("nodePid")) {
 					int nodePid = condition.getInt("nodePid");
 					AdLinkSelector selector = new AdLinkSelector(this.conn);
-					List<AdLink> adLinks = selector.loadByNodePid(nodePid, true);
+					List<AdLink> adLinks = selector.loadByNodePid(nodePid,
+							false);
 					for (AdLink link : adLinks) {
 						array.add(link.Serialize(ObjLevel.BRIEF));
 					}
@@ -327,7 +422,8 @@ public class SearchProcess {
 				if (condition.containsKey("nodePid")) {
 					int nodePid = condition.getInt("nodePid");
 					RwLinkSelector selector = new RwLinkSelector(this.conn);
-					List<RwLink> rwLinks = selector.loadByNodePid(nodePid, true);
+					List<RwLink> rwLinks = selector.loadByNodePid(nodePid,
+							false);
 					for (RwLink link : rwLinks) {
 						array.add(link.Serialize(ObjLevel.BRIEF));
 					}
@@ -339,7 +435,8 @@ public class SearchProcess {
 
 					ZoneLinkSelector selector = new ZoneLinkSelector(this.conn);
 
-					List<ZoneLink> zoneLinks = selector.loadByNodePid(nodePid, true);
+					List<ZoneLink> zoneLinks = selector.loadByNodePid(nodePid,
+							false);
 
 					for (ZoneLink link : zoneLinks) {
 						array.add(link.Serialize(ObjLevel.BRIEF));
@@ -352,7 +449,8 @@ public class SearchProcess {
 
 					LuLinkSelector selector = new LuLinkSelector(this.conn);
 
-					List<LuLink> luLinks = selector.loadByNodePid(nodePid, true);
+					List<LuLink> luLinks = selector.loadByNodePid(nodePid,
+							false);
 
 					for (LuLink link : luLinks) {
 						array.add(link.Serialize(ObjLevel.BRIEF));
@@ -365,7 +463,8 @@ public class SearchProcess {
 
 					LcLinkSelector selector = new LcLinkSelector(this.conn);
 
-					List<LcLink> lcLinks = selector.loadByNodePid(nodePid, true);
+					List<LcLink> lcLinks = selector.loadByNodePid(nodePid,
+							false);
 
 					for (LcLink link : lcLinks) {
 						array.add(link.Serialize(ObjLevel.BRIEF));
@@ -378,7 +477,7 @@ public class SearchProcess {
 
 					RdObjectSelector selector = new RdObjectSelector(this.conn);
 
-					List<String> names = selector.getRdObjectName(pid, true);
+					List<String> names = selector.getRdObjectName(pid, false);
 
 					for (String name : names) {
 						array.add(name);
@@ -386,7 +485,8 @@ public class SearchProcess {
 				}
 				break;
 			case RDLANEVIA:
-				if (condition.containsKey("inLinkPid") && condition.containsKey("nodePid")
+				if (condition.containsKey("inLinkPid")
+						&& condition.containsKey("nodePid")
 						&& condition.containsKey("outLinkPid")) {
 
 					int inLinkPid = condition.getInt("inLinkPid");
@@ -404,10 +504,12 @@ public class SearchProcess {
 					CalLinkOperateUtils calLinkOperateUtils = new CalLinkOperateUtils();
 
 					// 计算经过线
-					List<Integer> viaList = calLinkOperateUtils.calViaLinks(this.conn, inLinkPid, nodePid, outLinkPid);
+					List<Integer> viaList = calLinkOperateUtils.calViaLinks(
+							this.conn, inLinkPid, nodePid, outLinkPid);
 
 					// 计算关系类型
-					int relationShipType = calLinkOperateUtils.getRelationShipType(conn, nodePid, outLinkPid);
+					int relationShipType = calLinkOperateUtils
+							.getRelationShipType(conn, nodePid, outLinkPid);
 
 					JSONObject obj = new JSONObject();
 
@@ -420,21 +522,22 @@ public class SearchProcess {
 							viaArray.add(via);
 						}
 						// 路口关系交限不记经过link
-						if (StringUtils.isNotEmpty(objType) && ObjType.valueOf(objType) == ObjType.RDRESTRICTION) {
-							if (relationShipType != 1) {
+						if (StringUtils.isNotEmpty(objType)
+								&& ObjType.valueOf(objType) == ObjType.RDRESTRICTION) {
+							RdLinkSelector selector = new RdLinkSelector(conn);
+
+							List<Integer> kinds = selector.loadRdLinkKindByIds(
+									viaList, false);
+
+							if (relationShipType != 1 && kinds.get(0) < 10) {
 								obj.put("links", viaArray);
-							} 
-							else
-							{
+							} else {
 								obj.put("links", new JSONArray());
 							}
-						}
-						else {
+						} else {
 							obj.put("links", viaArray);
 						}
-					}
-					else
-					{
+					} else {
 						obj.put("links", new JSONArray());
 					}
 					array.add(obj);
@@ -443,27 +546,49 @@ public class SearchProcess {
 				}
 				break;
 			case RDLANE:
-				if (condition.containsKey("linkPid")) {
+				// 按照方向 查询link车道信息
+				if (condition.containsKey("linkPid")
+						&& condition.containsKey("laneDir")) {
 					int linkPid = condition.getInt("linkPid");
 					int laneDir = condition.getInt("laneDir");
 					RdLaneSelector selector = new RdLaneSelector(this.conn);
-					List<RdLane> lanes = selector.loadByLink(linkPid, laneDir, false);
+					List<RdLane> lanes = selector.loadByLink(linkPid, laneDir,
+							false);
 					for (RdLane lane : lanes) {
 						array.add(lane);
 					}
 
 				}
+				// 按照进入点 进入link 查找退出link
+				if (condition.containsKey("nodePid")
+						&& condition.containsKey("linkPid")) {
+					int linkPid = condition.getInt("linkPid");
+					int nodePid = condition.getInt("nodePid");
+					RdLaneTopoDetailSelector detailSelector = new RdLaneTopoDetailSelector(
+							conn);
+					List<Integer> list = detailSelector.loadOutLinkByinLink(
+							linkPid, nodePid, false);
+					for (Integer pid : list) {
+						array.add(pid);
+					}
+
+				}
+				// 按照一组link查询车道联通信息
 				if (condition.containsKey("linkPids")) {
 					JSONArray arrayTopo = new JSONArray();
 					JSONObject object = new JSONObject();
-					JsonUtils.getStringValueFromJSONArray(condition.getJSONArray("linkPids"));
+					JsonUtils.getStringValueFromJSONArray(condition
+							.getJSONArray("linkPids"));
 
 					@SuppressWarnings("unchecked")
-					List<Integer> pids = (List<Integer>) JSONArray.toCollection(condition.getJSONArray("linkPids"),
-							Integer.class);
+					List<Integer> pids = (List<Integer>) JSONArray
+							.toCollection(condition.getJSONArray("linkPids"),
+									Integer.class);
 					RdLaneSelector selector = new RdLaneSelector(this.conn);
-					RdLaneTopoDetailSelector detailSelector = new RdLaneTopoDetailSelector(conn);
-					List<IRow> rows = detailSelector.loadByLinkPids(pids, condition.getInt("nodePid"), false);
+					RdLaneTopoDetailSelector detailSelector = new RdLaneTopoDetailSelector(
+							conn);
+					List<IRow> rows = detailSelector.loadByLinkPids(pids,
+							condition.getInt("nodePid"), false);
 					object.put("laneInfos", selector.loadByLinks(pids, false));
 					for (IRow row : rows) {
 						arrayTopo.add(row);
@@ -483,4 +608,5 @@ public class SearchProcess {
 
 		}
 	}
+
 }

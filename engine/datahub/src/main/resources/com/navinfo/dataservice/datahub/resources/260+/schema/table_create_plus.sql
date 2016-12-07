@@ -28,20 +28,20 @@ check (CODE_TYPE in (0,1,2,3,4,5,6,7)) disable ,
    VOICE_FILE           VARCHAR2(100),
    SRC_RESUME           VARCHAR2(1000),
    PA_REGION_ID         NUMBER(10),
-   SPLIT_FLAG           NUMBER(2)      default 0
-check (SPLIT_FLAG in (0,1,2)) disable ,
    MEMO                 VARCHAR2(200),
    ROUTE_ID             NUMBER(10),
-   PROCESS_FLAG         NUMBER(1)      default 0,
    U_RECORD             NUMBER(2),
    U_FIELDS             VARCHAR2(1000),
-   constraint PK_RD_NAME primary key (NAME_ID)
+   SPLIT_FLAG           NUMBER(2)      default 0
+check (SPLIT_FLAG in (0,1,2)) disable ,
+   CITY                 VARCHAR2(400),
+   PROCESS_FLAG          NUMBER(1) default 0,
+  constraint PK_RD_NAME primary key (NAME_ID)
 );
 
 /* GDB+ POI EDIT PART */
 CREATE TABLE POI_EDIT_STATUS(
   PID NUMBER(10) ,
-  ROW_ID RAW(16) NOT NULL,
   STATUS NUMBER(1) DEFAULT 0
       CHECK(STATUS IN (0,1,2,3)) DISABLE,
   IS_UPLOAD NUMBER(1) DEFAULT 0
@@ -49,18 +49,48 @@ CREATE TABLE POI_EDIT_STATUS(
   UPLOAD_DATE TIMESTAMP,
   FRESH_VERIFIED NUMBER(1) DEFAULT 0
     CHECK(FRESH_VERIFIED IN (0,1)) DISABLE,
-  RAW_FIELDS VARCHAR2(30)
+  RAW_FIELDS VARCHAR2(30),
+  WORK_TYPE NUMBER(2) DEFAULT 1
 );
-CREATE UNIQUE INDEX IDX_POI_EDIT_STATUS_1 ON POI_EDIT_STATUS(ROW_ID);
-CREATE INDEX IDX_POI_EDIT_STATUS_2 ON POI_EDIT_STATUS(PID);
+CREATE UNIQUE INDEX IDX_POI_EDIT_STATUS_2 ON POI_EDIT_STATUS(PID);
 
-CREATE TABLE POI_DEEP_STATUS(
-  ROW_ID RAW(16) NOT NULL,
-  TYPE NUMBER(1) DEFAULT 1 NOT NULL,
-  STATUS NUMBER(1) DEFAULT 1,
-  CONSTRAINT PK_POI_DEEP_STATUS PRIMARY KEY(ROW_ID,TYPE)
+create table POI_EDIT_MULTISRC
+(
+  pid         number(10) not null,
+  source_type varchar2(12) not null,
+  main_type   number(2) not null
 );
-create table POI_DEEP_WORKITEM_CONF
+-- Create table
+create table POI_COLUMN_STATUS
+(
+  PID                NUMBER(10) not null,
+  WORK_ITEM_ID       VARCHAR2(50),
+  FIRST_WORK_STATUS  NUMBER(1) default 1,
+  SECOND_WORK_STATUS NUMBER(1) default 1,
+  HANDLER            NUMBER(10),
+  TASK_ID            NUMBER(10),
+  APPLY_DATE		 TIMESTAMP
+);
+-- Add comments to the table 
+comment on table POI_COLUMN_STATUS
+  is 'POI������ҵ״̬��';
+-- Add comments to the columns 
+comment on column POI_COLUMN_STATUS.PID
+  is 'POI ID';
+comment on column POI_COLUMN_STATUS.WORK_ITEM_ID
+  is '��ҵ��ID';
+comment on column POI_COLUMN_STATUS.FIRST_WORK_STATUS
+  is 'һ����ҵ����ҵ״̬';
+comment on column POI_COLUMN_STATUS.SECOND_WORK_STATUS
+  is '������ҵ����ҵ״̬';
+comment on column POI_COLUMN_STATUS.HANDLER
+  is '������ҵԱID';
+comment on column POI_COLUMN_STATUS.TASK_ID
+  is '�����';
+comment on column POI_COLUMN_STATUS.APPLY_DATE
+  is '����ʱ��';
+
+create table POI_COLUMN_WORKITEM_CONF
 (
   ID               VARCHAR2(100) not null,
   FIRST_WORK_ITEM  VARCHAR2(50),
@@ -68,19 +98,8 @@ create table POI_DEEP_WORKITEM_CONF
   WORK_ITEM_ID     VARCHAR2(50),
   TYPE             NUMBER(1)
 );
--- Add comments to the columns 
-comment on column POI_DEEP_WORKITEM_CONF.ID
-  is '����';
-comment on column POI_DEEP_WORKITEM_CONF.FIRST_WORK_ITEM
-  is 'һ����ҵ��:poi_name-�������,poi_address-���ĵ�ַ,poi_englishname-Ӣ�����,poi_englishaddress-Ӣ�ĵ�ַ';
-comment on column POI_DEEP_WORKITEM_CONF.SECOND_WORK_ITEM
-  is '������ҵ��:nameUnify-���ͳһ,shortName-�����ҵ,namePinyin-���ƴ����ҵ,addrSplit-��ַ�����ҵ,addrPinyin-��ַƴ����ҵ,photoEngName-��Ƭ¼��Ӣ������ҵ,chiEngName-���ļ���Ӣ����ҵ,confirmEngName-�˹�ȷ��Ӣ������ҵ,officalStandardEngName-�ٷ���׼��Ӣ����ҵ,nonImportantLongEngName-����Ҫ����Ӣ������ҵ,engMapAddress-Ӣ�İ��ͼ��ҵ,nonImportantLongEngAddress-����Ҫ����Ӣ�ĵ�ַ������ҵ,engNameInvalidChar-Ӣ����Ƿ��ַ���,portuNameInvalidChar-������Ƿ��ַ���,macaoEngName-����Ӣ������ҵ,officalStandardPortuName-�ٷ���׼��������ҵ,engAddrInvalidChar-Ӣ�ĵ�ַ�Ƿ��ַ���,portuAddrInvalidChar-���ĵ�ַ�Ƿ��ַ���,longEngAddress-Ӣ�ĵ�ַ������ҵ,longPortuAddress-���ĵ�ַ������ҵ,';
-comment on column POI_DEEP_WORKITEM_CONF.WORK_ITEM_ID
-  is '��ҵ������';
-comment on column POI_DEEP_WORKITEM_CONF.TYPE
-  is '1�����½,2����۰�';
 
-create table POI_DEEP_OP_CONF
+create table POI_COLUMN_OP_CONF
 (
   ID                   VARCHAR2(100) not null,
   FIRST_WORK_ITEM      VARCHAR2(50),
@@ -99,61 +118,42 @@ create table POI_DEEP_OP_CONF
   SUBMIT_CLASSIFYRULES VARCHAR2(100),
   TYPE                 NUMBER(1)
 );
--- Add comments to the columns 
-comment on column POI_DEEP_OP_CONF.ID
-  is '����';
-comment on column POI_DEEP_OP_CONF.FIRST_WORK_ITEM
-  is 'һ����ҵ��:poi_name-�������,poi_address-���ĵ�ַ,poi_englishname-Ӣ�����,poi_englishaddress-Ӣ�ĵ�ַ';
-comment on column POI_DEEP_OP_CONF.SECOND_WORK_ITEM
-  is 'nameUnify-���ͳһ,shortName-�����ҵ,namePinyin-���ƴ����ҵ,addrSplit-��ַ�����ҵ,addrPinyin-��ַƴ����ҵ,photoEngName-��Ƭ¼��Ӣ������ҵ,chiEngName-���ļ���Ӣ����ҵ,confirmEngName-�˹�ȷ��Ӣ������ҵ,officalStandardEngName-�ٷ���׼��Ӣ����ҵ,nonImportantLongEngName-����Ҫ����Ӣ������ҵ,engMapAddress-Ӣ�İ��ͼ��ҵ,nonImportantLongEngAddress-����Ҫ����Ӣ�ĵ�ַ������ҵ,engNameInvalidChar-Ӣ����Ƿ��ַ���,portuNameInvalidChar-������Ƿ��ַ���,macaoEngName-����Ӣ������ҵ,officalStandardPortuName-�ٷ���׼��������ҵ,engAddrInvalidChar-Ӣ�ĵ�ַ�Ƿ��ַ���,portuAddrInvalidChar-���ĵ�ַ�Ƿ��ַ���,longEngAddress-Ӣ�ĵ�ַ������ҵ,longPortuAddress-���ĵ�ַ������ҵ';
-comment on column POI_DEEP_OP_CONF.SAVE_EXEBATCH
-  is '����ʱ�Ƿ�ִ������,0��  1��';
-comment on column POI_DEEP_OP_CONF.SAVE_BATCHRULES
-  is '����ʱҪִ�е������������,[]';
-comment on column POI_DEEP_OP_CONF.SAVE_EXECHECK
-  is '����ʱ�Ƿ�ִ�м��,0�� 1��';
-comment on column POI_DEEP_OP_CONF.SAVE_CKRULES
-  is '����ʱҪִ�еļ�����';
-comment on column POI_DEEP_OP_CONF.SAVE_EXECLASSIFY
-  is '����ʱ�Ƿ�ִ���ط���,0��   1��';
-comment on column POI_DEEP_OP_CONF.SAVE_CLASSIFYRULES
-  is '����ʱҪִ�е��ط������ []';
-comment on column POI_DEEP_OP_CONF.SUBMIT_EXEBATCH
-  is '�ύʱ�Ƿ�ִ������ 0��   1��';
-comment on column POI_DEEP_OP_CONF.SUBMIT_BATCHRULES
-  is '  �ύʱҪִ�е������������,[]';
-comment on column POI_DEEP_OP_CONF.SUBMIT_EXECHECK
-  is '�ύʱ�Ƿ�ִ�м��,0��   1��';
-comment on column POI_DEEP_OP_CONF.SUBMIT_CKRULES
-  is '�ύʱҪִ�еļ�����[]';
-comment on column POI_DEEP_OP_CONF.SUBMIT_EXECLASSIFY
-  is '�ύʱ�Ƿ�ִ���ط��� 0��   1��';
-comment on column POI_DEEP_OP_CONF.SUBMIT_CLASSIFYRULES
-  is '�ύʱҪִ�е��ط������[]';
-comment on column POI_DEEP_OP_CONF.TYPE
-  is '1�����½,2����۰�';
-
+  
 /* GDB+ log part */
+CREATE TABLE LOG_ACTION(
+    ACT_ID RAW(16) NOT NULL,
+    US_ID NUMBER(36) DEFAULT 0,
+    OP_CMD VARCHAR2(1000),
+    SRC_DB NUMBER(1) DEFAULT 0,
+    STK_ID NUMBER(10) DEFAULT 0,
+    CONSTRAINT PK_LOG_ACT PRIMARY KEY(ACT_ID)
+);
+CREATE INDEX IX_LOG_ACT_STKID ON LOG_ACTION(STK_ID);
+
+CREATE SEQUENCE LOG_OP_SEQ MINVALUE 1 MAXVALUE 99999999999 START WITH 1 INCREMENT BY 1 CACHE 20;
 create table LOG_OPERATION (
     OP_ID RAW(16) NOT NULL,
-    US_ID NUMBER(36) DEFAULT 0,
-    OP_CMD VARCHAR2(200),
+    ACT_ID RAW(16) NOT NULL,
     OP_DT TIMESTAMP,
-    OP_SG NUMBER(1) DEFAULT 0 not null
-        check (OP_SG in (0,1,2,3,4,5)) disable,
+    OP_SEQ NUMBER(12) DEFAULT 0 not null,
     COM_STA NUMBER(1) DEFAULT 0 NOT NULL
         CHECK(COM_STA IN (0,1)) DISABLE,
     COM_DT TIMESTAMP,
     LOCK_STA NUMBER(1) DEFAULT 0 NOT NULL
         CHECK(LOCK_STA IN (0,1)) DISABLE,
+    constraint FK_LOG_OP_ACT foreign key (ACT_ID)
+         references LOG_ACTION (ACT_ID) disable,
     constraint PK_LOG_OP primary key (OP_ID)
 );
+CREATE INDEX IX_LOG_OP_DT ON LOG_OPERATION(OP_DT);
 
 create table LOG_DETAIL (
   ROW_ID RAW(16) NOT NULL,
     OP_ID RAW(16) NOT NULL,
-	OB_NM VARCHAR(30),
-	OB_PID NUMBER(10),
+  OB_NM VARCHAR(30),
+  OB_PID NUMBER(10) DEFAULT 0,
+  GEO_NM VARCHAR(30),
+  GEO_PID NUMBER(10) DEFAULT 0,
     TB_NM VARCHAR2(30),
     OLD CLOB,
     NEW CLOB,
@@ -193,26 +193,29 @@ CREATE TABLE LOG_DAY_RELEASE
   CONSTRAINT PK_LOG_RELEASE PRIMARY KEY(OP_ID)
 );
 -- Add comments to the columns 
-COMMENT ON TABLE LOG_DAY_RELEASE IS '�����ճ�Ʒ״̬��';
+COMMENT ON TABLE LOG_DAY_RELEASE IS '�տ��Ʒ������';
 COMMENT ON COLUMN LOG_DAY_RELEASE.OP_ID
-  IS '���� ��Ӧ log_operation.op_id';
+  IS '�ο�log_operation.op_id';
 COMMENT ON COLUMN LOG_DAY_RELEASE.REL_POI_STA
-  IS 'POI ��Ʒ״̬��0 ���� 1����';
+  IS 'POI��Ʒ״̬';
 COMMENT ON COLUMN LOG_DAY_RELEASE.REL_POI_DT
-  IS 'POI��Ʒʱ��';
+  IS 'POI��Ʒʱ��';
 COMMENT ON COLUMN LOG_DAY_RELEASE.REL_ALL_STA
-  IS 'POI+ROAD ��Ʒ״̬��0 ���� 1����';
+  IS 'POI+ROAD��Ʒ״̬';
 COMMENT ON COLUMN LOG_DAY_RELEASE.REL_ALL_DT
-  IS 'POI+ROAD ��Ʒʱ��';
+  IS 'POI+ROAD��Ʒʱ��';
 COMMENT ON COLUMN LOG_DAY_RELEASE.REL_POI_LOCK
-  IS 'POI ��Ʒ�� 0 ���� 1����';
+  IS 'POI ��Ʒ��״̬';
 COMMENT ON COLUMN LOG_DAY_RELEASE.REL_ALL_LOCK
-  IS 'POI+ROAD ��Ʒ��0 ���� 1����';
+  IS 'POI+ROAD��Ʒ��״̬';
 --ADD INDEXES
 create bitmap index IDX_LOG_DAY_REL_1 on LOG_DAY_RELEASE (rel_poi_sta);
 create bitmap index IDX_LOG_DAY_REL_2 on LOG_DAY_RELEASE (rel_all_sta);
 create bitmap index IDX_LOG_DAY_REL_3 on LOG_DAY_RELEASE (rel_poi_lock);
 create bitmap index IDX_LOG_DAY_REL_4 on LOG_DAY_RELEASE (rel_all_lock);
+
+
+/* ck */
 
 CREATE TABLE CK_EXCEPTION_GRID(
   CK_ROW_ID RAW(16) NOT NULL,
@@ -240,4 +243,11 @@ ALTER TABLE RD_TOLLGATE_MAPPING ADD (U_RECORD NUMBER(2) default 0 not null check
 ALTER TABLE RD_TOLLGATE_FEE ADD (U_RECORD NUMBER(2) default 0 not null check (U_RECORD in (0,1,2,3)),U_DATE VARCHAR2(14),ROW_ID RAW(16));
 CREATE TABLE NI_VAL_EXCEPTION_HISTORY AS SELECT * FROM NI_VAL_EXCEPTION WHERE 1=2;
 CREATE UNIQUE INDEX IX_NIVAL_HIS_MD5 ON NI_VAL_EXCEPTION_HISTORY(MD5_CODE);
+
+-- SVR INNER TABLE
+CREATE TABLE SVR_MULTISRC_DAY_IMP(
+FID VARCHAR2(36),
+START_DATE DATE,
+END_DATE DATE
+);
 

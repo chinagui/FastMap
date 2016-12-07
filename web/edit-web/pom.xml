@@ -13,7 +13,10 @@
 	<name>edit-web Maven Webapp</name>
 	<url>http://maven.apache.org</url>
 	<dependencies>
-
+		<dependency>
+			<groupId>com.navinfo.dataservice</groupId>
+			<artifactId>api-fcc</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>servlet-api</artifactId>
@@ -189,6 +192,10 @@
 		<dependency>
 			<groupId>net.bull.javamelody</groupId>
 			<artifactId>javamelody-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.navinfo.dataservice</groupId>
+			<artifactId>edit-control-column</artifactId>
 		</dependency>
 	</dependencies>
 	<build>

@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import net.sf.json.JSONObject;
+
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.log4j.Logger;
@@ -39,10 +41,11 @@ public class RoleService {
 	 * @author Han Shaoming
 	 * @param userId
 	 * @param roleId
+	 * @param conditionJson 
 	 * @return
 	 * @throws ServiceException 
 	 */
-	public List<Map<String, Object>> queryUserNameByRoleId(long userId, long roleId) throws ServiceException {
+	public List<Map<String, Object>> queryUserNameByRoleId(long userId, long roleId, JSONObject conditionJson) throws ServiceException {
 		Connection conn = null;
 		QueryRunner queryRunner = null;
 		try{
@@ -51,6 +54,11 @@ public class RoleService {
 			
 			//根据roleId查询用户数据
 			String sql = "SELECT U.* FROM USER_INFO U,ROLE_USER_MAPPING R WHERE U.USER_ID=R.USER_ID AND R.ROLE_ID=?";
+			if(!conditionJson.isEmpty()){
+				if(conditionJson.containsKey("userName")){
+					sql+=" and u.USER_REAL_NAME like '%"+conditionJson.getString("userName")+"%'";
+				}
+			}
 			Object[] params = {roleId};
 			//处理结果集
 			ResultSetHandler<List<Map<String, Object>>> rsh = new ResultSetHandler<List<Map<String, Object>>>() {

@@ -32,6 +32,10 @@ public class PidUtil {
         return (int) PidService.getInstance().applyPid(tableName, 1);
     }
 
+    public long applyPidByTableName(String tableName) throws Exception {
+        return PidService.getInstance().applyPid(tableName, 1);
+    }
+
     /**
      * 申請link_pid
      */
@@ -527,6 +531,16 @@ public class PidUtil {
      */
     public int applyRdVoiceguidePid() throws Exception {
         return applyPid("RD_VOICEGUIDE");
+    }
+    
+    /**
+     * 申请rd_tmclocation
+     *
+     * @return
+     * @throws Exception
+     */
+    public int applyRdTmcLocationPid() throws Exception {
+        return applyPid("RD_TMCLOCATION");
     }
 
     /**

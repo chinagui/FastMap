@@ -8,20 +8,23 @@ import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneNode;
 import com.navinfo.dataservice.dao.glm.selector.ad.zone.ZoneNodeSelector;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.operation.AbstractProcess;
+
 /**
  * 
  * Zone 点修改执行方法
+ * 
  * @author zhaokk
- *
+ * 
  */
 public class Process extends AbstractProcess<Command> {
 
 	public Process(AbstractCommand command) throws Exception {
 		super(command);
 	}
-	
-	public Process(Command command,Result result,Connection conn) throws Exception {
-		super(command,result,conn);
+
+	public Process(Command command, Result result, Connection conn)
+			throws Exception {
+		super(command, result, conn);
 	}
 
 	@Override
@@ -30,16 +33,18 @@ public class Process extends AbstractProcess<Command> {
 		return new Operation(this.getCommand()).run(this.getResult());
 
 	}
-	
+
 	@Override
 	public boolean prepareData() throws Exception {
+		if (this.getCommand().getZoneNode() != null) {
+			return true;
+		}
 		ZoneNodeSelector selector = new ZoneNodeSelector(this.getConn());
-		this.getCommand().setZoneNode((ZoneNode)selector.loadById(this.getCommand().getPid(),
-				true));
+		this.getCommand().setZoneNode(
+				(ZoneNode) selector.loadById(this.getCommand().getPid(), true));
 		return true;
 	}
-	
-	
+
 	public String innerRun() throws Exception {
 		String msg;
 		try {
@@ -66,6 +71,5 @@ public class Process extends AbstractProcess<Command> {
 
 		return msg;
 	}
-
 
 }

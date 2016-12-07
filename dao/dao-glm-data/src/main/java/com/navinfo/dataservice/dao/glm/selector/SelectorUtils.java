@@ -19,8 +19,9 @@ public class SelectorUtils {
 		this.conn = conn;
 	}
 
-	public JSONObject loadByElementCondition(JSONObject object, String tableName, int pageSize, int pageNum,
-			boolean isLock) throws Exception {
+	public JSONObject loadByElementCondition(JSONObject object,
+			String tableName, int pageSize, int pageNum, boolean isLock)
+			throws Exception {
 
 		JSONObject result = new JSONObject();
 		JSONArray array = new JSONArray();
@@ -47,13 +48,27 @@ public class SelectorUtils {
 		}
 		if (tableName.equals(ObjType.IXPOI.toString())) {
 			if (object.containsKey("name")) {
-				bufferCondition.append(
-						" select COUNT (1) OVER (PARTITION BY 1) total,ipn.poi_pid pid,ipn.name from ix_poi_name ipn where ipn.name_class=1 and ipn.name_type =2 and ipn.lang_code = 'CHI' ");
-				bufferCondition.append(" and ipn.name like '%" + object.getString("name") + "%' ");
+				bufferCondition
+						.append(" select COUNT (1) OVER (PARTITION BY 1) total,ipn.poi_pid pid,ipn.name from ix_poi_name ipn where ipn.name_class=1 and ipn.name_type =2 and ipn.lang_code = 'CHI' ");
+				bufferCondition.append(" and ipn.name like '%"
+						+ object.getString("name") + "%' ");
 				sql = getSqlFromBufferCondition(bufferCondition, isLock);
 			} else {
 				bufferCondition
-						.append("SELECT COUNT (1) OVER (PARTITION BY 1) total,tmp.pid,tmp.name FROM(select poi.pid,ipn.name from( SELECT ix.pid FROM ix_poi ix where ix.pid ="+object.getInt("pid")+" and ix.U_RECORD !=2 union all select ix.pid from ix_poi ix,poi_edit_status ps where ix.PID = "+object.getInt("pid")+" and ix.U_RECORD = 2 and ix.ROW_ID = ps.ROW_ID and ps.STATUS <3)poi LEFT JOIN ix_poi_name ipn ON poi.pid = ipn.poi_pid AND ipn.name_class=1 AND ipn.name_type =2 AND ipn.lang_code = 'CHI' "+")tmp");
+						.append("SELECT COUNT (1) OVER (PARTITION BY 1) total,tmp.pid,tmp.name "
+								+ "FROM(select poi.pid,ipn.name from( SELECT ix.pid FROM ix_poi ix "
+								+ "where ix.pid ="
+								+ object.getInt("pid")
+								+ " and ix.U_RECORD !=2 "
+								+ "union all "
+								+ "select ix.pid from ix_poi ix,poi_edit_status ps "
+								+ "where ix.PID = "
+								+ object.getInt("pid")
+								+ " and ix.U_RECORD = 2 "
+								+ "and ix.PID = ps.PID and ps.STATUS <3)poi "
+								+ "LEFT JOIN ix_poi_name ipn ON poi.pid = ipn.poi_pid "
+								+ "AND ipn.name_class=1 AND ipn.name_type =2 AND ipn.lang_code = 'CHI' "
+								+ ")tmp");
 				sql = getSqlFromBufferCondition(bufferCondition, isLock);
 
 			}
@@ -65,7 +80,7 @@ public class SelectorUtils {
 		try {
 			pstmt = conn.prepareStatement(sql);
 			System.out.println(sql);
-			
+
 			pstmt.setInt(1, endRow);
 			pstmt.setInt(2, startRow);
 			resultSet = pstmt.executeQuery();
@@ -98,7 +113,8 @@ public class SelectorUtils {
 		}
 	}
 
-	private String getSqlFromBufferCondition(StringBuilder bufferCondition, boolean isLock) {
+	private String getSqlFromBufferCondition(StringBuilder bufferCondition,
+			boolean isLock) {
 		StringBuilder buffer = new StringBuilder();
 		buffer.append(" SELECT * ");
 		buffer.append(" FROM (SELECT c.*, ROWNUM rn ");
@@ -132,18 +148,18 @@ public class SelectorUtils {
 			return "RD_RESTRICTION";
 		case "RD_RESTRICTION_CONDITION":
 			return "RD_RESTRICTION";
-		// 分歧
+			// 分歧
 		case "RD_BRANCH_NAME":
 			return "RD_BRANCH";
 		case "RD_SIGNBOARD_NAME":
 			return "RD_BRANCH";
-		// 车信
+			// 车信
 		case "RD_LANE_VIA":
 			return "RD_LANE_CONNEXITY";
-		// 语音引导
+			// 语音引导
 		case "RD_VOICEGUIDE_VIA":
 			return "RD_VOICEGUIDE";
-		// POI
+			// POI
 		case "IX_POI_NAME_TONE":
 			return "IX_POI";
 		case "IX_SAMEPOI":
@@ -152,17 +168,19 @@ public class SelectorUtils {
 			return "IX_POI";
 		case "IX_POI_CHILDREN":
 			return "IX_POI";
-		// 铁路
+			// 铁路
 		case "RW_LINK":
 			return "RW_LINK";
-		// 土地覆盖
+			// 土地覆盖
 		case "LC_FACE":
 			return "LC_FACE";
-		// 土地利用
+			// 土地利用
 		case "LU_FACE":
 			return "LU_FACE";
 		default:
 			return rowParentTableName;
 		}
 	}
+
+	
 }

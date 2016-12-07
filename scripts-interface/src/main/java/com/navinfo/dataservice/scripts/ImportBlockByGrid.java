@@ -102,6 +102,15 @@ public class ImportBlockByGrid {
 		runner.update(conn, sql, city.getCityId(),city.getCityName(),city.getProvinceName(),city.getProvinceName(),clob,city.getProvinceName());	
 	}
 	
+	private static void insertDay2MonthConfig(Connection conn) throws SQLException{		
+		String sql = "INSERT INTO DAY2MONTH_CONFIG"
+				+ "  (CONF_ID, CITY_ID, TYPE, STATUS)"
+				+ "  SELECT DAY2MONTH_CONFIG_SEQ.NEXTVAL, CITY_ID, 'POI', 0"
+				+ "    FROM CITY"
+				+ "   WHERE CITY_ID NOT IN (100000, 100001, 100002, 100003)";
+		runner.update(conn, sql);	
+	}
+	
 	public static JSONObject execute(JSONObject request) throws Exception{
 		JSONObject response = new JSONObject();
 		Connection conn = null;
@@ -182,6 +191,8 @@ public class ImportBlockByGrid {
 				System.out.println("insret block:"+b.getBlockId());
 				insertBlock(conn,b,blockGrids.get(b.getBlockId()));
 			}
+			//insert day2monthConfig日落月poi开关表初始化
+			insertDay2MonthConfig(conn);
 			conn.commit();
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);

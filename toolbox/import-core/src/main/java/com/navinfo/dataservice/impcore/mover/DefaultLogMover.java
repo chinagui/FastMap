@@ -38,6 +38,8 @@ public class DefaultLogMover extends LogMover {
 			dbLinkName = tarSchema.getConnConfig().getUserName()+"_"+RandomUtil.nextNumberStr(4);
 			cr.create(dbLinkName, false, logSchema.getPoolDataSource(), tarSchema.getConnConfig().getUserName(), tarSchema.getConnConfig().getUserPasswd(), tarSchema.getConnConfig().getServerIp(), String.valueOf(tarSchema.getConnConfig().getServerPort()), tarSchema.getConnConfig().getServiceName());
 			conn = logSchema.getPoolDataSource().getConnection();
+			result.setLogActionMoveCount(
+					run.update(conn,actionSql()));
 			result.setLogOperationMoveCount(
 					run.update(conn, operationSql()));
 			result.setLogDetailMoveCount(
@@ -54,6 +56,20 @@ public class DefaultLogMover extends LogMover {
 //			if(cr!=null) cr.drop(dbLinkName, false, logSchema.getPoolDataSource());
 			DbUtils.commitAndCloseQuietly(conn);
 		}
+	}
+	protected String actionSql(){
+		StringBuilder sb = new StringBuilder();
+		sb.append("insert into log_action@");
+		sb.append(dbLinkName);
+		sb.append(" select l.* from log_action l where l.op_id in (select op_id from ");
+		sb.append(tempTable);
+		sb.append(" t)");
+//		if(StringUtils.isNotEmpty(tempFailLogTable)){
+//			sb.append(" WHERE NOT EXISTS(SELECT 1 FROM ");
+//			sb.append(tempFailLogTable);
+//			sb.append(" f WHERE f.row_id=l.row_Id)");
+//		}
+		return sb.toString();
 	}
 	protected String detailSql(){
 		StringBuilder sb = new StringBuilder();

@@ -35,7 +35,7 @@ public class CheckService {
 	 * @param dbId
 	 * @param subTaskId
 	 * @param userId
-	 * @param checkType 检查类型（0 poi行编，1poi精编, 2道路）
+	 * @param checkType 检查类型（0 poi行编，1poi精编, 2道路,3 道路名）
 	 * @return
 	 * @throws Exception 
 	 */
@@ -68,7 +68,16 @@ public class CheckService {
 		validationRequestJSON.put("rules", ruleList);
 		validationRequestJSON.put("targetDbId", dbId);
 		JobApi apiService=(JobApi) ApplicationContextUtil.getBean("jobApi");
-		jobId=apiService.createJob("gdbValidation", validationRequestJSON, userId, "检查");
+		if(checkType == 3){  //道路名检查 ,直接调元数据库 全表检查
+			
+			JSONObject metaValidationRequestJSON=new JSONObject();
+			metaValidationRequestJSON.put("executeDBId", 106);//元数据库dbId
+			metaValidationRequestJSON.put("kdbDBId", 106);//元数据库dbId
+			metaValidationRequestJSON.put("ruleIds", ruleList);
+			metaValidationRequestJSON.put("timeOut", 0);
+			jobId=apiService.createJob("checkCore", metaValidationRequestJSON, userId,subtaskId, "元数据库检查");
+		}
+		jobId=apiService.createJob("gdbValidation", validationRequestJSON, userId,subtaskId, "检查");
 		
 		return jobId;
 	}
@@ -94,6 +103,32 @@ public class CheckService {
 			CkRuleSelector ckRuleSelector = new CkRuleSelector(conn);
 			
 			return ckRuleSelector.getRules(suiteArray);
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(conn);
+		}
+	}
+	
+	/**
+	 * @Title: getCkRuleCodes
+	 * @Description: 根据检查类型获取规则号
+	 * @param type
+	 * @return
+	 * @throws Exception  JSONArray
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2016年11月24日 下午2:33:42 
+	 */
+	public JSONArray getCkRuleCodes( Integer type) throws Exception {
+		
+		Connection conn = null;
+		try {
+			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
+			
+			CkRuleSelector ckRuleSelector = new CkRuleSelector(conn);
+			
+			return ckRuleSelector.getRulesByType(type);
 		} catch (Exception e) {
 			throw e;
 		} finally {

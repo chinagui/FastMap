@@ -2,6 +2,7 @@ package com.navinfo.dataservice.engine.meta.service;
 
 import java.sql.Connection;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.dbutils.DbUtils;
@@ -13,6 +14,7 @@ import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.engine.meta.area.ScPointAdminArea;
 import com.navinfo.dataservice.engine.meta.chain.ChainSelector;
+import com.navinfo.dataservice.engine.meta.character.TyCharacterEgalcharExtCheckSelector;
 import com.navinfo.dataservice.engine.meta.character.TyCharacterFjtHmCheckSelector;
 import com.navinfo.dataservice.engine.meta.engshort.ScEngshortSelector;
 import com.navinfo.dataservice.engine.meta.kind.KindSelector;
@@ -21,7 +23,8 @@ import com.navinfo.dataservice.engine.meta.mesh.MeshSelector;
 import com.navinfo.dataservice.engine.meta.pinyin.PinyinConvertSelector;
 import com.navinfo.dataservice.engine.meta.pinyin.PinyinConverter;
 import com.navinfo.dataservice.engine.meta.rdname.RdNameImportor;
-import com.navinfo.dataservice.engine.meta.tmc.TmcSelector;
+import com.navinfo.dataservice.engine.meta.scPointNameck.ScPointNameck;
+import com.navinfo.dataservice.engine.meta.tmc.selector.TmcSelector;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -165,6 +168,41 @@ public class MetadataApiImpl implements MetadataApi {
 		} finally {
 			DbUtils.closeQuietly(conn);
 		}
+	}
+
+	@Override
+	public JSONObject getCharacterMap() throws Exception {
+		Connection conn = null;
+		try {
+
+			conn = DBConnector.getInstance().getMetaConnection();
+
+			TyCharacterEgalcharExtCheckSelector tyCharacterSelector = new TyCharacterEgalcharExtCheckSelector(conn);
+
+			JSONObject characterMap = tyCharacterSelector.getCharacterMap();
+
+			return characterMap;
+
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(conn);
+		}
+
+	}
+	
+	
+	@Override
+	public JSONObject searchByAdminCode(String admincode) throws Exception {
+		
+		ScPointAdminArea scPoint = new ScPointAdminArea();
+		return scPoint.searchByAdminCode(admincode);
+	}
+
+	@Override
+	public Map<String, String> scPointNameckTypeD1() throws Exception {
+		// TODO Auto-generated method stub
+		return ScPointNameck.getInstance().scPointNameckTypeD1();
 	}
 
 }

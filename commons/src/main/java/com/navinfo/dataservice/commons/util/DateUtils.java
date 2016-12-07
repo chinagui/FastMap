@@ -8,9 +8,10 @@ import java.util.Date;
 public class DateUtils {
 	public static String DATE_DEFAULT_FORMAT ="yyyy-MM-dd HH:mm:ss";
 	public static String DATE_COMPACTED_FORMAT ="yyyyMMddHHmmss";
+	public static String DATE_YMD="yyyyMMdd";
 	private static SimpleDateFormat compactedSdf=new SimpleDateFormat(DATE_COMPACTED_FORMAT);
 	private static SimpleDateFormat defaultSdf=new SimpleDateFormat(DATE_DEFAULT_FORMAT);
-	
+	private static SimpleDateFormat ymdSdf = new SimpleDateFormat(DATE_YMD);
 
 	/**
 	 * 
@@ -28,11 +29,15 @@ public class DateUtils {
 	// formatType格式为yyyy-MM-dd HH:mm:ss//yyyy年MM月dd日 HH时mm分ss秒等等
 	// date Date类型的时间
 	public static String dateToString(Date date, String formatType) {
+		if(date==null){return null;}
 		if(StringUtils.isEmpty(formatType)||DATE_DEFAULT_FORMAT.equals(formatType)){
 			return defaultSdf.format(date);
 		}else if(DATE_COMPACTED_FORMAT.equals(formatType)){
 			return compactedSdf.format(date);
-		}else{
+		}else if(DATE_YMD.equals(formatType)){
+			return ymdSdf.format(date);
+		}
+		else{
 			return new SimpleDateFormat(formatType).format(date);
 		}
 	}
@@ -97,6 +102,13 @@ public class DateUtils {
 		return sdf.format(date);
 	}
 	
+	public static String getCurYmd(){
+		return dateToString(new Date(),DateUtils.DATE_YMD);
+	}
+	public static String getCurYyyymm(){
+		return dateToString(new Date(),DateUtils.DATE_YMD).substring(0,6);
+	}
+	
 	 public static void main(String[] args) throws ParseException, java.text.ParseException {
 	        //String s = du.numToDate(1350144260, "yyyy-MM-dd hh:mm:ss");
 //	        long time = DateUtils.stringToLong("20160302154457", "yyyyMMddhhmmss");
@@ -105,6 +117,7 @@ public class DateUtils {
 //	        System.out.println(time);
 //	        System.out.println(time1);
 //	        System.out.println(date);
-		 System.out.println(DateUtils.dateToString(null));
+		 System.out.println(DateUtils.dateToString(new Date(),DateUtils.DATE_YMD));
+		 System.out.println(DateUtils.getCurYyyymm());
 	 }
 }

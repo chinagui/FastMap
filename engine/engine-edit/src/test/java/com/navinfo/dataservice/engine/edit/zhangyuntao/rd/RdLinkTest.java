@@ -29,8 +29,8 @@ public class RdLinkTest extends InitApplication {
     }
 
     @Test
-    public void testDelete() {
-        String parameter = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"RDLINK\",\"objId\":308002568,\"data\":{\"feeStd\":66.99,\"pid\":308002568,\"objStatus\":\"UPDATE\"}}";
+    public void testUpdate() {
+        String parameter = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"RDLINK\",\"objId\":575750,\"data\":{\"forms\":[{\"auxiFlag\":76,\"rowId\":\"3AE1FBE7366B92F7E050A8C08304EE4C\",\"objStatus\":\"UPDATE\"}],\"pid\":575750}}";
         TestUtil.run(parameter);
     }
 
@@ -38,18 +38,18 @@ public class RdLinkTest extends InitApplication {
     public void update() {
         String parameter = "{\"command\":\"BREAK\",\"dbId\":42,\"objId\":100008435,\"data\":{\"longitude\":116.4702206995429,\"latitude\":40.08258242178863},\"type\":\"RDLINK\"}";
         parameter = "{\"command\":\"UPDATE\",\"dbId\":42,\"type\":\"RDLINK\",\"objId\":589615,\"data\":{\"kind\":3,\"pid\":589615,\"objStatus\":\"UPDATE\"}}";
-        parameter = "{\"command\":\"UPDATE\",\"dbId\":42,\"type\":\"RDLINK\",\"objId\":589615,\"data\":{\"laneNum\":4,\"pid\":589615,\"objStatus\":\"UPDATE\"}}";
+        parameter = "{ \"command\": \"UPDATE\", \"dbId\": 17, \"type\": \"RDLINK\", \"objId\": 301002809, \"data\": { \"kind\": 4, \"pid\": 301002809, \"objStatus\": \"UPDATE\", \"routeAdopt\": 4, \"names\": [{ \"linkPid\": 301002809, \"rowId\": \"\", \"nameGroupid\": 307303, \"name\": \"117 Hwy\", \"seqNum\": 1, \"nameClass\": 1, \"inputTime\": \"\", \"nameType\": 0, \"srcFlag\": 9, \"routeAtt\": 0, \"code\": 1, \"objStatus\": \"INSERT\" }] } }";
 
-        try {
-            Connection conn = DBConnector.getInstance().getConnectionById(42);
-            RdLinkSelector selector = new RdLinkSelector(conn);
-            RdLink link = (RdLink) selector.loadById(589615, false, null);
-            JSONObject json = JSONObject.fromObject("{\"urban\":1,\"pid\":589615,\"objStatus\":\"UPDATE\"}");
-            SpeedLimitUtils.updateRdLink(link, json, null);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        // TestUtil.run(parameter);
+//        try {
+//            Connection conn = DBConnector.getInstance().getConnectionById(42);
+//            RdLinkSelector selector = new RdLinkSelector(conn);
+//            RdLink link = (RdLink) selector.loadById(589615, false, null);
+//            JSONObject json = JSONObject.fromObject("{\"urban\":1,\"pid\":589615,\"objStatus\":\"UPDATE\"}");
+//            SpeedLimitUtils.updateRdLink(link, json, null);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+         TestUtil.run(parameter);
     }
 
     @Test
@@ -88,7 +88,7 @@ public class RdLinkTest extends InitApplication {
     @Test
     public void updownDepart() {
         String parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"dbId\":17,\"distance\":\"6.6\",\"data\":{\"linkPids\":[209000217]}}";
-        parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"dbId\":17,\"distance\":\"6.6\",\"data\":{\"linkPids\":[207002623]}}";
+        parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"dbId\":17,\"distance\":\"8.3\",\"data\":{\"linkPids\":[17654882,17654862,402705,402701,88702781,88702780,410213,394888,39749818,39749817,405828]}}";
         TestUtil.run(parameter);
     }
 
@@ -96,5 +96,12 @@ public class RdLinkTest extends InitApplication {
     public void move() {
         String parameter = "{\"command\":\"MOVE\",\"dbId\":17,\"objId\":304000034,\"data\":{\"longitude\":116.37564,\"latitude\":38.51548},\"type\":\"ZONENODE\"}";
         TestUtil.run(parameter);
+    }
+
+    @Test
+    public void batch(){
+//        String requester = "{\"dbId\":19,\"type\":\"RDLINK\",\"command\":\"BATCH\",\"linkPids\":[205002774,205002775],\"data\":{\"kind\":2,\"names\":[{\"rowId\":\"\",\"nameGroupid\":3562426,\"name\":\"112 Line Guo Ave\",\"seqNum\":2,\"nameClass\":1,\"inputTime\":\"\",\"nameType\":0,\"srcFlag\":9,\"routeAtt\":0,\"code\":0,\"objStatus\":\"INSERT\"},{\"rowId\":[\"42FC03C80E964FB4A63FC500348252F0\",\"BEF3A918871140C1BBAEBC7A54F9752E\"],\"nameGroupid\":111,\"objStatus\":\"UPDATE\"},{\"rowId\":[\"F16A0EEA8FB04EC2A1F1F099EBA60392\",\"CBEACA83C9664EB19024F7E8A3B80CBA\"],\"objStatus\":\"DELETE\"}]}}";
+        String requester = "{ \"command\": \"UPDATE\", \"dbId\": 17, \"type\": \"RDLINK\", \"linkPids\": [302002756, 303002740, 304002735], \"data\": [{ \"kind\": 6, \"pid\": 302002756, \"objStatus\": \"UPDATE\", \"names\": [{ \"rowId\": \"8E19A3597DCB4FE4AB46769F6BAA8766\", \"objStatus\": \"UPDATE\", \"nameGroupid\": 307358, \"name\": \"212 City Ave\" }, { \"linkPid\": 302002756, \"rowId\": \"7E0F87B8EDFB469D810A15C5BAF429B4\", \"nameGroupid\": 3539279, \"name\": \"１７线街\", \"seqNum\": 2, \"nameClass\": 1, \"inputTime\": \"\", \"nameType\": 0, \"srcFlag\": 9, \"routeAtt\": 0, \"code\": 0, \"objStatus\": \"DELETE\", \"pid\": 302002756 }, { \"linkPid\": 302002756, \"rowId\": \"\", \"nameGroupid\": 3539279, \"name\": \"１７线街\", \"seqNum\": 2, \"nameClass\": 1, \"inputTime\": \"\", \"nameType\": 0, \"srcFlag\": 9, \"routeAtt\": 0, \"code\": 0, \"objStatus\": \"INSERT\" }] }, { \"kind\": 6, \"pid\": 303002740, \"objStatus\": \"UPDATE\", \"names\": [{ \"rowId\": \"037FED0808AA4CAD953EB4543C2B9889\", \"objStatus\": \"UPDATE\", \"nameGroupid\": 307358, \"name\": \"212 City Ave\" }, { \"linkPid\": 303002740, \"rowId\": \"05598049E4924812A0B8A95D409747FB\", \"nameGroupid\": 3539279, \"name\": \"１７线街\", \"seqNum\": 2, \"nameClass\": 1, \"inputTime\": \"\", \"nameType\": 0, \"srcFlag\": 9, \"routeAtt\": 0, \"code\": 0, \"objStatus\": \"DELETE\", \"pid\": 303002740 }, { \"linkPid\": 303002740, \"rowId\": \"\", \"nameGroupid\": 3539279, \"name\": \"１７线街\", \"seqNum\": 2, \"nameClass\": 1, \"inputTime\": \"\", \"nameType\": 0, \"srcFlag\": 9, \"routeAtt\": 0, \"code\": 0, \"objStatus\": \"INSERT\" }] }, { \"kind\": 6, \"pid\": 304002735, \"objStatus\": \"UPDATE\", \"names\": [{ \"rowId\": \"0682BB237F7645B7B3ABF29EB8AB39B7\", \"objStatus\": \"UPDATE\", \"nameGroupid\": 307358, \"name\": \"212 City Ave\" }, { \"linkPid\": 304002735, \"rowId\": \"8C7CBE80D2CC4D239DE09C7CD5AC2BAB\", \"nameGroupid\": 3539279, \"name\": \"１７线街\", \"seqNum\": 2, \"nameClass\": 1, \"inputTime\": \"\", \"nameType\": 0, \"srcFlag\": 9, \"routeAtt\": 0, \"code\": 0, \"objStatus\": \"DELETE\", \"pid\": 304002735 }, { \"linkPid\": 304002735, \"rowId\": \"\", \"nameGroupid\": 3539279, \"name\": \"１７线街\", \"seqNum\": 2, \"nameClass\": 1, \"inputTime\": \"\", \"nameType\": 0, \"srcFlag\": 9, \"routeAtt\": 0, \"code\": 0, \"objStatus\": \"INSERT\" }] }] }";
+        TestUtil.run(requester);
     }
 }

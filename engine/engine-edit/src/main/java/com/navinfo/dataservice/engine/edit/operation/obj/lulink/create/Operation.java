@@ -11,7 +11,10 @@ import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.lu.LuLink;
+import com.navinfo.dataservice.dao.glm.model.lu.LuNode;
 import com.navinfo.dataservice.dao.glm.selector.lu.LuLinkSelector;
+import com.navinfo.dataservice.dao.glm.selector.lu.LuNodeSelector;
+import com.navinfo.dataservice.engine.edit.utils.BasicServiceUtils;
 import com.navinfo.dataservice.engine.edit.utils.LuLinkOperateUtils;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
@@ -20,20 +23,19 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryCollection;
 import com.vividsolutions.jts.geom.LineString;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 public class Operation implements IOperation {
 
 	private Command command;
 
-	private Check check;
 
 	private Connection conn;
 
-	public Operation(Command command, Check check, Connection conn) {
+	public Operation(Command command, Connection conn) {
 		super();
 		this.command = command;
-		this.check = check;
 		this.conn = conn;
 	}
 
@@ -45,6 +47,7 @@ public class Operation implements IOperation {
 		// 执行打断操作
 		if (command.getCatchLinks().size() > 0) {
 			this.caleCatchModifyLuLink();
+			this.initCommandPara();
 			map = LuLinkOperateUtils.splitLink(command.getGeometry(),
 					command.getsNodePid(), command.geteNodePid(),
 					command.getCatchLinks(), result);
@@ -172,27 +175,63 @@ public class Operation implements IOperation {
 	 * LuLink打断具体操作 1.循环挂接的线 2.如果有被打断操作执行打断功能
 	 */
 	public void breakLine(Result result) throws Exception {
-		for (int i = 0; i < command.getCatchLinks().size(); i++) {
-			JSONObject json = command.getCatchLinks().getJSONObject(i);
 
-			if (json.containsKey("breakNode")) {
-				JSONObject breakJson = new JSONObject();
-				breakJson.put("objId", json.getInt("linkPid"));
-				breakJson.put("dbId", command.getDbId());
-				JSONObject data = new JSONObject();
-				data.put("breakNodePid", json.getInt("breakNode"));
-				data.put("longitude", json.getDouble("lon"));
-				data.put("latitude", json.getDouble("lat"));
-				breakJson.put("data", data);
-				// 组装打断线的参数
-				// 保证是同一个连接
-				com.navinfo.dataservice.engine.edit.operation.topo.breakin.breaklupoint.Command breakCommand = new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breaklupoint.Command(
-						breakJson, breakJson.toString());
-				com.navinfo.dataservice.engine.edit.operation.topo.breakin.breaklupoint.Process breakProcess = new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breaklupoint.Process(
-						breakCommand, result, conn);
-				breakProcess.innerRun();
-			}
+		JSONArray resultArr = BasicServiceUtils.getBreakArray(command
+				.getCatchLinks());
+		// 组装打断操作流程
+		for (int i = 0; i < resultArr.size(); i++) {
+			JSONObject obj = resultArr.getJSONObject(i);
+			JSONObject breakJson = BasicServiceUtils.getBreaksPara(obj,
+					this.command.getDbId());
+			// 组装打断线的参数
+			// 保证是同一个连接
+			com.navinfo.dataservice.engine.edit.operation.topo.breakin.breaklupoint.Command breakCommand = new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breaklupoint.Command(
+					breakJson, breakJson.toString());
+			com.navinfo.dataservice.engine.edit.operation.topo.breakin.breaklupoint.Process breakProcess = new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breaklupoint.Process(
+					breakCommand, result, conn);
+			breakProcess.innerRun();
 		}
+	}
+	
+	/***
+	 * 新增link参数初始化 1.几何保留五位精度 2.捕捉node几何 重新替换link的形状点 ，为了保持精度
+	 * 
+	 * @throws Exception
+	 */
+	private void initCommandPara() throws Exception {
+		JSONArray array = this.command.getCatchLinks();
+		;
+		for (int i = 0; i < array.size(); i++) {
+			JSONObject jo = array.getJSONObject(i);
+			// 如果有挂接的node 用node的几何替换对应位置线的形状点
+			if (jo.containsKey("nodePid")) {
+				LuNodeSelector nodeSelector = new LuNodeSelector(this.conn);
+				IRow row = nodeSelector.loadById(jo.getInt("nodePid"), true,
+						true);
+				int seqNum = jo.getInt("seqNum");
+				LuNode node = (LuNode) row;
+				Geometry geom = GeoTranslator.transform(node.getGeometry(),
+						0.00001, 5);
+				jo.put("lon", geom.getCoordinate().x);
+				jo.put("lat", geom.getCoordinate().y);
+				this.command.getGeometry().getCoordinates()[seqNum] = geom
+						.getCoordinate();
+			}
+			// 挂接link精度处理
+			if (jo.containsKey("linkPid")) {
+
+				JSONObject geoPoint = new JSONObject();
+
+				geoPoint.put("type", "Point");
+				geoPoint.put("coordinates", new double[] { jo.getDouble("lon"),
+						jo.getDouble("lat") });
+				Geometry geometry = GeoTranslator.geojson2Jts(geoPoint, 1, 5);
+				jo.put("lon", geometry.getCoordinate().x);
+				jo.put("lat", geometry.getCoordinate().y);
+			}
+
+		}
+
 	}
 
 }

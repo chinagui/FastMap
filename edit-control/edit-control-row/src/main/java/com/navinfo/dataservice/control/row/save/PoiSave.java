@@ -2,6 +2,7 @@ package com.navinfo.dataservice.control.row.save;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.dbutils.DbUtils;
@@ -22,6 +23,7 @@ import com.navinfo.dataservice.engine.batch.BatchProcess;
 import com.navinfo.dataservice.engine.edit.service.EditApiImpl;
 import com.navinfo.navicommons.database.sql.DBUtils;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 public class PoiSave {
@@ -37,7 +39,7 @@ public class PoiSave {
     public JSONObject save(String parameter, long userId) throws Exception {
 
         Connection conn = null;
-        JSONObject result = null;
+        JSONObject result = new JSONObject();
         try {
 
             JSONObject json = JSONObject.fromObject(parameter);
@@ -56,6 +58,9 @@ public class PoiSave {
 
             if (poiData.size() == 0 && operType == OperType.UPDATE && objType != ObjType.IXSAMEPOI && objType != ObjType.IXPOIPARENT) {
                 upatePoiStatus(json.getString("objId"), conn, false);
+                JSONArray ret = new JSONArray();
+                result.put("log", ret);
+                result.put("check", ret);
                 return result;
             }
 
@@ -127,7 +132,8 @@ public class PoiSave {
             if (operType != OperType.DELETE && ObjType.IXSAMEPOI != objType && ObjType.IXPOIPARENT != objType) {
                 json.put("objId", pid);
                 BatchProcess batchProcess = new BatchProcess("row","save");
-                batchProcess.execute(json, conn, editApiImpl);
+                List<String> batchList = batchProcess.getRowRules();
+                batchProcess.execute(json, conn, editApiImpl, batchList);
             }
             upatePoiStatus(sb.toString(), conn, true);
             
@@ -173,16 +179,16 @@ public class PoiSave {
         StringBuilder sb = new StringBuilder();
         if (flag) {
             sb.append(" MERGE INTO poi_edit_status T1 ");
-            sb.append(" USING (SELECT row_id as a , 2 AS b,0 AS C FROM ix_poi where pid in ("
+            sb.append(" USING (SELECT 2 AS b,0 AS C,pid as d FROM ix_poi where pid in ("
                     + pids + ")) T2 ");
-            sb.append(" ON ( T1.row_id=T2.a) ");
+            sb.append(" ON ( T1.pid=T2.d) ");
             sb.append(" WHEN MATCHED THEN ");
             sb.append(" UPDATE SET T1.status = T2.b,T1.fresh_verified= T2.c ");
             sb.append(" WHEN NOT MATCHED THEN ");
-            sb.append(" INSERT (T1.row_id,T1.status,T1.fresh_verified) VALUES(T2.a,T2.b,T2.c)");
+            sb.append(" INSERT (T1.status,T1.fresh_verified,T1.pid) VALUES(T2.b,T2.c,T2.d)");
         } else {
-            sb.append(" UPDATE poi_edit_status T1 SET T1.status = 2 where T1.row_id = ");
-            sb.append(" (SELECT row_id as a FROM ix_poi where pid = " + pids + ")");
+            sb.append(" UPDATE poi_edit_status T1 SET T1.status = 2 where T1.pid in ("
+                    + pids + ")");
         }
 
 

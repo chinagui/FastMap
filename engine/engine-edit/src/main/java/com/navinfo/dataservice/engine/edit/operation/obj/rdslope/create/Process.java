@@ -9,16 +9,16 @@ public class Process extends AbstractProcess<Command> {
 		super(command);
 	}
 
-	
 	@Override
 	public boolean prepareData() throws Exception {
-		
+
 		return false;
 	}
 
 	@Override
 	public String exeOperation() throws Exception {
-		return new Operation(this.getCommand()).run(this.getResult());
+		return new Operation(this.getCommand(), this.getConn()).run(this
+				.getResult());
 	}
-	
+
 }

@@ -36,7 +36,7 @@ public class TmcPointSearch implements ISearch {
 	}
 
 	@Override
-	public IObj searchDataByPids(List<Integer> pidList) throws Exception {
+	public List<IObj> searchDataByPids(List<Integer> pidList) throws Exception {
 		return null;
 	}
 
@@ -55,7 +55,8 @@ public class TmcPointSearch implements ISearch {
 
 		List<SearchSnapshot> snapshotList = new ArrayList<>();
 		
-		MetadataApi metaApi = (MetadataApi) ApplicationContextUtil.getBean("metaApi");
+		//调用元数据请求接口
+		MetadataApi metaApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 
 		JSONArray array = metaApi.queryTmcPoint(x, y, z, gap);
 		

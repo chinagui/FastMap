@@ -22,6 +22,7 @@ import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.DBUtils;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 /**
@@ -151,7 +152,7 @@ public class LogReader {
 	public boolean isUpdateforObjFeild(int objPid, String objTable, String tbNm, String Feild) throws Exception {
 
 		String sql = "SELECT de.row_id,de.op_id,de.tb_nm,de.old,de.new,de.fd_lst,de.op_tp,de.tb_row_id,op.op_dt FROM LOG_DETAIL de,LOG_OPERATION op "
-				+ "WHERE de.OP_ID=op.OP_ID AND de.OB_PID= :1 AND de.OB_NM= :2 AND de.TB_NM=:3 AND de.FD_LST=:4 ";
+				+ "WHERE de.OP_ID=op.OP_ID AND de.OB_PID= :1 AND de.OB_NM= :2 AND de.TB_NM=:3 AND instr(de.FD_LST,:4)>0  ";
 
 		PreparedStatement pstmt = null;
 
@@ -368,6 +369,176 @@ public class LogReader {
 		return new QueryRunner().query(conn, sb.toString(), new ObjStatusHandler(),mainTabName,mainTabName,mainTabName);
 	}
 	
+	public Map<Integer,Collection<Long>> getUpdatedObj(String objName,String mainTabName,Collection<String> grids,String startDate,String endDate)throws SQLException{
+		StringBuilder sb = new StringBuilder();
+		sb.append("WITH A AS\n");
+		sb.append(" (SELECT T.OB_PID, MAX(P.OP_DT) DT FROM LOG_DETAIL T, LOG_DETAIL_GRID G, LOG_OPERATION P\n");
+		sb.append("   WHERE T.OP_ID = P.OP_ID AND T.ROW_ID = G.LOG_ROW_ID AND T.OB_NM = '"+objName+"'\n");
+		if(grids!=null&&grids.size()>0){
+			sb.append("     AND G.GRID_ID IN ("+StringUtils.join(grids, ",")+") AND G.GRID_TYPE = 1\n");
+		}
+		if(StringUtils.isNotEmpty(startDate)){
+			sb.append("     AND P.OP_DT > TO_DATE('"+startDate+"', 'yyyymmddhh24miss')\n");
+		}
+		if(StringUtils.isNotEmpty(endDate)){
+			sb.append("     AND P.OP_DT <= TO_DATE('"+endDate+"', 'yyyymmddhh24miss')\n");
+		}
+		sb.append("   GROUP BY OB_PID),\n");
+		sb.append("B AS\n");
+		sb.append(" (SELECT L.OB_PID, L.OP_TP FROM LOG_DETAIL L, LOG_OPERATION OP, A\n");
+		sb.append("   WHERE L.OP_ID = OP.OP_ID AND L.OB_PID = A.OB_PID AND OP.OP_DT = A.DT AND L.TB_NM = ?),\n");
+		sb.append("C AS\n");
+		sb.append(" (SELECT A.OB_PID, 1 OP_TP FROM A\n");
+		sb.append("   WHERE NOT EXISTS (SELECT 1 FROM B WHERE A.OB_PID = B.OB_PID)\n");
+		sb.append("     AND EXISTS (SELECT 1 FROM LOG_DETAIL D\n");
+		sb.append("           WHERE D.OB_PID = A.OB_PID AND D.TB_NM = ? AND D.OP_TP = 1)),\n");
+		sb.append("D AS\n");
+		sb.append("(SELECT B.* FROM B WHERE B.OP_TP!=3),\n");
+		sb.append("E AS\n");
+		sb.append("(SELECT B.OB_PID,1 FROM B WHERE B.OP_TP=3 AND EXISTS (SELECT 1 FROM LOG_DETAIL D \n");
+		sb.append("WHERE D.OB_PID = B.OB_PID AND D.TB_NM = ? AND D.OP_TP = 1)), \n");       
+		sb.append("F AS\n");
+		sb.append(" (SELECT C.* FROM C UNION ALL SELECT D.* FROM D UNION ALL SELECT E.* FROM E)\n");
+		sb.append("SELECT * FROM F \n");
+		sb.append("UNION ALL \n");
+		sb.append("SELECT A.OB_PID, 3 OP_TP FROM A WHERE NOT EXISTS (SELECT 1 FROM F WHERE A.OB_PID = F.OB_PID)");
+		return new QueryRunner().query(conn, sb.toString(), new ObjStatusHandler(),mainTabName,mainTabName,mainTabName);
+	}
+	/**
+	 * 根据操作，查询某张表某条记录的新旧值变化
+	 * @param opCmd
+	 * @param tbTb
+	 * @param rowId
+	 * @return 
+	 * @throws Exception
+	 */
+	public JSONArray getHisByOperate(String opCmd,String tbTb,String rowId) throws Exception {
+		StringBuilder sb = new StringBuilder();
+		sb.append(" SELECT ld.old,ld.new");
+		sb.append(" FROM LOG_OPERATION LO, LOG_DETAIL LD");
+		sb.append(" WHERE LO.OP_ID = LD.OP_ID");
+		sb.append(" AND LO.OP_CMD = ?");
+		sb.append(" AND LD.TB_NM = ?");
+		sb.append(" AND LD.TB_ROW_ID = ?");
+		sb.append(" ORDER BY LO.OP_SEQ DESC");
+
+		PreparedStatement pstmt = null;
+		JSONArray results = new JSONArray();
+		ResultSet resultSet = null;
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+
+			pstmt.setString(1, opCmd);
+			pstmt.setString(2, tbTb);
+			pstmt.setString(3, rowId);
+			
+			resultSet = pstmt.executeQuery();
+			while (resultSet.next()) {
+				JSONObject result = new JSONObject();
+				result.put( "old", resultSet.getString("old"));
+				result.put( "new", resultSet.getString("new"));
+				results.add(result);
+			} 
+			return results;
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+		}
+	}
+
+	/**
+	 * 获取时间段内，对象有变更的pid
+	 * @param objName
+	 * @param pids
+	 * @param startDate
+	 * @param endDate
+	 * @return
+	 * @throws SQLException
+	 */
+	public Collection<Long> getUpdatedObjByPids(String objName,Collection<Long> pids,String startDate,String endDate)throws SQLException{
+		if(pids==null||pids.size()==0)return null;
+		StringBuilder sb = new StringBuilder();
+		sb.append("SELECT DISTINCT T.OB_PID FROM LOG_DETAIL T,LOG_OPERATION P WHERE T.OP_ID=P.OP_ID AND T.OB_NM=?\n");
+		if(StringUtils.isNotEmpty(startDate)){
+			sb.append("     AND P.OP_DT > TO_DATE('"+startDate+"', 'yyyymmddhh24miss')\n");
+		}
+		if(StringUtils.isNotEmpty(endDate)){
+			sb.append("     AND P.OP_DT <= TO_DATE('"+endDate+"', 'yyyymmddhh24miss')\n");
+		}
+		return new QueryRunner().query(conn, sb.toString(), new ResultSetHandler<Collection<Long>>(){
+
+			@Override
+			public Collection<Long> handle(ResultSet rs) throws SQLException {
+				List<Long> result = new ArrayList<Long>();
+				while(rs.next()){
+					result.add(rs.getLong(1));
+				}
+				return result;
+			}
+			
+		},objName);
+	}
+
+	/**
+	 * 传入临时表，字段包括pid,start_date，end_date
+	 * 获取时间段内，对象有变更的pid
+	 * @param objName
+	 * @param pids
+	 * @param startDate
+	 * @param endDate
+	 * @return
+	 * @throws SQLException
+	 */
+	public Collection<Long> getUpdatedObjByPids(String objName,String tempTable)throws SQLException{
+		if(StringUtils.isEmpty(tempTable))return null;
+		String sql = "SELECT DISTINCT T.OB_PID FROM LOG_DETAIL T,LOG_OPERATION P,"+tempTable+" S WHERE T.OP_ID=P.OP_ID AND T.OB_PID=S.PID AND P.OP_DT > S.START_DATE AND P.OP_DT <= S.END_DATE";
+		return new QueryRunner().query(conn, sql, new ResultSetHandler<Collection<Long>>(){
+
+			@Override
+			public Collection<Long> handle(ResultSet rs) throws SQLException {
+				List<Long> result = new ArrayList<Long>();
+				while(rs.next()){
+					result.add(rs.getLong(1));
+				}
+				return result;
+			}
+			
+		},objName);
+	}
+
+	/**
+	 * 传入临时表，字段包括fid,start_date，end_date
+	 * 获取时间段内，对象有变更的pid
+	 * @param objName
+	 * @param pids
+	 * @param startDate
+	 * @param endDate
+	 * @return
+	 * @throws SQLException
+	 */
+	public Collection<String> getUpdatedPoiByTemp(String tempTable)throws SQLException{
+		if(StringUtils.isEmpty(tempTable))return null;
+		String sql = "SELECT DISTINCT IX.POI_NUM FROM LOG_DETAIL T,LOG_OPERATION P, IX_POI IX,"+tempTable+" S WHERE T.OP_ID=P.OP_ID AND T.OB_PID=IX.PID AND IX.POI_NUM=S.FID AND P.OP_DT > S.START_DATE AND P.OP_DT <= S.END_DATE";
+		return new QueryRunner().query(conn, sql, new ResultSetHandler<Collection<String>>(){
+
+			@Override
+			public Collection<String> handle(ResultSet rs) throws SQLException {
+				List<String> result = new ArrayList<String>();
+				while(rs.next()){
+					result.add(rs.getString(1));
+				}
+				return result;
+			}
+			
+		});
+	}
+
+
+	
 	class ObjStatusHandler implements ResultSetHandler<Map<Integer,Collection<Long>>>{
 		@Override
 		public Map<Integer, Collection<Long>> handle(ResultSet rs) throws SQLException {
@@ -402,7 +573,14 @@ public class LogReader {
 	public static void main(String[] args) throws Exception {
 		Connection con = DriverManager.getConnection("jdbc:oracle:thin:@192.168.3.103:1521/orcl",
 				"fm260_region_16win_d_1", "fm260_region_16win_d_1");
-		int state = new LogReader(con).getObjectState(18165475, "IX_POI");
-		System.out.println(state);
+//		boolean flag = new LogReader(con).isUpdateforObjFeild(79887714, "IX_POI","IX_POI","LEVEL");
+		String objName = "IX_POI";
+		String mainTabName = "IX_POI";
+		Collection<String> grids = null;
+		String startDate = "201610220000";
+		String endDate = "201610230000";
+		Map<Integer,Collection<Long>> map = new LogReader(con).getUpdatedObj(objName, mainTabName, grids, startDate, endDate);
+		System.out.println("ok");
+//		System.out.println(flag);
 	}
 }

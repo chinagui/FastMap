@@ -53,7 +53,7 @@ CREATE TABLE POI_EDIT_STATUS(
 CREATE UNIQUE INDEX IDX_POI_EDIT_STATUS_1 ON POI_EDIT_STATUS(ROW_ID);
 
 -- Create table
-create table POI_DEEP_STATUS
+create table POI_COLUMN_STATUS
 (
   ROW_ID             RAW(16) not null,
   WORK_ITEM_ID       VARCHAR2(50),
@@ -63,20 +63,20 @@ create table POI_DEEP_STATUS
   TASK_ID            NUMBER(10)
 )
 -- Add comments to the columns 
-comment on column POI_DEEP_STATUS.ROW_ID
+comment on column POI_COLUMN_STATUS.ROW_ID
   is 'poi的row_id';
-comment on column POI_DEEP_STATUS.WORK_ITEM_ID
+comment on column POI_COLUMN_STATUS.WORK_ITEM_ID
   is '作业标记';
-comment on column POI_DEEP_STATUS.FIRST_WORK_STATUS
+comment on column POI_COLUMN_STATUS.FIRST_WORK_STATUS
   is '一级作业状态，1：待作业,2：已作业,3：已提交';
-comment on column POI_DEEP_STATUS.SECOND_WORK_STATUS
+comment on column POI_COLUMN_STATUS.SECOND_WORK_STATUS
   is '二级作业状态，1：待作业,2：已作业,3：已提交';
-comment on column POI_DEEP_STATUS.HANDLER
+comment on column POI_COLUMN_STATUS.HANDLER
   is '申请人userId';
-comment on column POI_DEEP_STATUS.TASK_ID
+comment on column POI_COLUMN_STATUS.TASK_ID
   is '子任务id';
   
-create table POI_DEEP_WORKITEM_CONF
+create table POI_COLUMN_WORKITEM_CONF
 (
   ID               VARCHAR2(100) not null,
   FIRST_WORK_ITEM  VARCHAR2(50),
@@ -85,15 +85,15 @@ create table POI_DEEP_WORKITEM_CONF
   TYPE             NUMBER(1)
 )
 -- Add comments to the columns 
-comment on column POI_DEEP_WORKITEM_CONF.ID
+comment on column POI_COLUMN_WORKITEM_CONF.ID
   is '主键';
-comment on column POI_DEEP_WORKITEM_CONF.FIRST_WORK_ITEM
+comment on column POI_COLUMN_WORKITEM_CONF.FIRST_WORK_ITEM
   is '一级作业项,poi_name:中文名称；
 poi_address:中文地址；
 poi_englishname:英文名称；
 poi_englishaddress：英文地址
 ';
-comment on column POI_DEEP_WORKITEM_CONF.SECOND_WORK_ITEM
+comment on column POI_COLUMN_WORKITEM_CONF.SECOND_WORK_ITEM
   is '二级作业项,nameUnify: 名称统一;
  shortName: 简称作业;
  namePinyin:名称拼音作业;
@@ -115,12 +115,12 @@ portuAddrInvalidChar: 葡文地址非法字符检查;
 longEngAddress: 英文地址超长作业;
 longPortuAddress : 葡文地址超长作业;
 ';
-comment on column POI_DEEP_WORKITEM_CONF.WORK_ITEM_ID
+comment on column POI_COLUMN_WORKITEM_CONF.WORK_ITEM_ID
   is '作业项规则号';
-comment on column POI_DEEP_WORKITEM_CONF.TYPE
+comment on column POI_COLUMN_WORKITEM_CONF.TYPE
   is '1常规大陆；2常规港澳';
 
-create table POI_DEEP_OP_CONF
+create table POI_COLUMN_OP_CONF
 (
   ID                   VARCHAR2(100) not null,
   FIRST_WORK_ITEM      VARCHAR2(50),
@@ -140,15 +140,15 @@ create table POI_DEEP_OP_CONF
   TYPE                 NUMBER(1)
 )
 -- Add comments to the columns 
-comment on column POI_DEEP_OP_CONF.ID
+comment on column POI_COLUMN_OP_CONF.ID
   is '主键';
-comment on column POI_DEEP_OP_CONF.FIRST_WORK_ITEM
+comment on column POI_COLUMN_OP_CONF.FIRST_WORK_ITEM
   is '一级作业项,poi_name:中文名称；
 poi_address:中文地址；
 poi_englishname:英文名称；
 poi_englishaddress：英文地址
 ';
-comment on column POI_DEEP_OP_CONF.SECOND_WORK_ITEM
+comment on column POI_COLUMN_OP_CONF.SECOND_WORK_ITEM
   is 'nameUnify: 名称统一;
  shortName: 简称作业;
  namePinyin:名称拼音作业;
@@ -170,31 +170,31 @@ portuAddrInvalidChar: 葡文地址非法字符检查;
 longEngAddress: 英文地址超长作业;
 longPortuAddress : 葡文地址超长作业;
 ';
-comment on column POI_DEEP_OP_CONF.SAVE_EXEBATCH
+comment on column POI_COLUMN_OP_CONF.SAVE_EXEBATCH
   is '保存时是否执行批处理,0否  1是';
-comment on column POI_DEEP_OP_CONF.SAVE_BATCHRULES
+comment on column POI_COLUMN_OP_CONF.SAVE_BATCHRULES
   is '保存时要执行的批处理规则数组,[]';
-comment on column POI_DEEP_OP_CONF.SAVE_EXECHECK
+comment on column POI_COLUMN_OP_CONF.SAVE_EXECHECK
   is '保存时是否执行检查,0否 1是';
-comment on column POI_DEEP_OP_CONF.SAVE_CKRULES
+comment on column POI_COLUMN_OP_CONF.SAVE_CKRULES
   is '保存时要执行的检查规则';
-comment on column POI_DEEP_OP_CONF.SAVE_EXECLASSIFY
+comment on column POI_COLUMN_OP_CONF.SAVE_EXECLASSIFY
   is '保存时是否执行重分类,0否   1是';
-comment on column POI_DEEP_OP_CONF.SAVE_CLASSIFYRULES
+comment on column POI_COLUMN_OP_CONF.SAVE_CLASSIFYRULES
   is '保存时要执行的重分类规则 []';
-comment on column POI_DEEP_OP_CONF.SUBMIT_EXEBATCH
+comment on column POI_COLUMN_OP_CONF.SUBMIT_EXEBATCH
   is '提交时是否执行批处理 0否   1是';
-comment on column POI_DEEP_OP_CONF.SUBMIT_BATCHRULES
+comment on column POI_COLUMN_OP_CONF.SUBMIT_BATCHRULES
   is '	提交时要执行的批处理规则数组,[]';
-comment on column POI_DEEP_OP_CONF.SUBMIT_EXECHECK
+comment on column POI_COLUMN_OP_CONF.SUBMIT_EXECHECK
   is '提交时是否执行检查,0否   1是';
-comment on column POI_DEEP_OP_CONF.SUBMIT_CKRULES
+comment on column POI_COLUMN_OP_CONF.SUBMIT_CKRULES
   is '提交时要执行的检查规则[]';
-comment on column POI_DEEP_OP_CONF.SUBMIT_EXECLASSIFY
+comment on column POI_COLUMN_OP_CONF.SUBMIT_EXECLASSIFY
   is '提交时是否执行重分类 0否   1是';
-comment on column POI_DEEP_OP_CONF.SUBMIT_CLASSIFYRULES
+comment on column POI_COLUMN_OP_CONF.SUBMIT_CLASSIFYRULES
   is '提交时要执行的重分类规则[]';
-comment on column POI_DEEP_OP_CONF.TYPE
+comment on column POI_COLUMN_OP_CONF.TYPE
   is '1常规大陆；2常规港澳';
   
 /* GDB+ log part */

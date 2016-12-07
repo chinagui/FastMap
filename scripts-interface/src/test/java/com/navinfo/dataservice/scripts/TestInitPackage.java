@@ -26,7 +26,7 @@ public class TestInitPackage extends ClassPathXmlAppContextInit{
 		initContext(new String[]{"dubbo-app-scripts.xml","dubbo-scripts.xml"});
 	}
 	
-	@Test
+	//@Test
 	public void testInit() throws Exception {
 		Connection conn = DBConnector.getInstance().getConnectionById(19);
 		try {
@@ -41,5 +41,13 @@ public class TestInitPackage extends ClassPathXmlAppContextInit{
 		}finally {
 			DBUtils.closeConnection(conn);
 		}
+	}
+	
+	
+	@Test
+	public void testMetadataDonwnload() throws Exception {
+		ExpMeta2SqliteScriptsInterface a =new ExpMeta2SqliteScriptsInterface();
+		String dir = "f:";
+		a.export2SqliteByNames(dir);
 	}
 }

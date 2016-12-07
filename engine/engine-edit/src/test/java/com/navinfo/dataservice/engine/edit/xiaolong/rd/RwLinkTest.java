@@ -1,20 +1,24 @@
 package com.navinfo.dataservice.engine.edit.xiaolong.rd;
 
 import java.sql.Connection;
+import java.util.List;
 import java.util.Map.Entry;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
+import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLink;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLinkName;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwNode;
 import com.navinfo.dataservice.dao.glm.search.RdCrossSearch;
+import com.navinfo.dataservice.dao.glm.search.RdGscSearch;
 import com.navinfo.dataservice.dao.glm.search.RwLinkSearch;
 import com.navinfo.dataservice.dao.glm.selector.rd.rdname.RdNameSelector;
 import com.navinfo.dataservice.engine.edit.InitApplication;
@@ -54,13 +58,15 @@ public class RwLinkTest extends InitApplication {
 	{
 		Connection conn;
 		try {
-			conn = DBConnector.getInstance().getConnectionById(42);
+			conn = DBConnector.getInstance().getConnectionById(19);
 
 			String parameter = "{\"type\":\"RWLINK\",\"dbId\":42,\"objId\":100007138}";
 
-			RdCrossSearch search = new RdCrossSearch(conn);
+			RdGscSearch search = new RdGscSearch(conn);
 			
-			search.searchDataByTileWithGap(107951, 49621, 17, 20);
+			List<SearchSnapshot> searchDataByTileWithGap = search.searchDataByTileWithGap(108070, 49456, 17, 80);
+			
+			System.out.println("data:"+ResponseUtils.assembleRegularResult(searchDataByTileWithGap));
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -89,7 +95,7 @@ public class RwLinkTest extends InitApplication {
 	@Test//不跨图幅
 	public void testAddRwLink()
 	{
-		String parameter = "{\"command\":\"REPAIR\",\"dbId\":17,\"objId\":320000016,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.25685,40.0827],[116.25834345817564,40.083563268216146],[116.25957,40.08333]]},\"interLinks\":[],\"interNodes\":[]},\"type\":\"RWLINK\"}";
+		String parameter = "{\"command\":\"CREATE\",\"dbId\":271,\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.906778216362,40.20085053292654],[116.90841436386107,40.19989586234487],[116.9089937210083,40.19891659400523]]},\"catchLinks\":[{\"linkPid\":404000020,\"lon\":116.906778216362,\"lat\":40.20085053292654}]},\"type\":\"RWLINK\"}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

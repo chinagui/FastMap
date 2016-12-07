@@ -12,10 +12,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.navinfo.dataservice.api.job.iface.JobApi;
+import com.navinfo.dataservice.api.man.iface.ManApi;
+import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.control.column.core.ColumnCoreControl;
+import com.navinfo.dataservice.control.column.core.DeepCoreControl;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -30,13 +33,13 @@ public class ColumnController extends BaseController {
 	private static final Logger logger = Logger.getLogger(ColumnController.class);
 	
 	/**
-	 * 精编作业数据申请接口
+	 * POI月编作业数据申请接口
 	 * @param request
 	 * @return
 	 * @throws ServletException
 	 * @throws IOException
 	 */
-	@RequestMapping(value = "/poi/deep/applyPoi")
+	@RequestMapping(value = "/poi/column/applyPoi")
 	public ModelAndView applyPoi(HttpServletRequest request)
 			throws ServletException, IOException {
 
@@ -49,16 +52,11 @@ public class ColumnController extends BaseController {
 			
 			long userId = tokenObj.getUserId();
 
-			String firstWorkItem = jsonReq.getString("firstWorkItem");
-
-//			int groupId = jsonReq.getInt("groupId");
-
-
 			ColumnCoreControl control = new ColumnCoreControl();
 
-			control.applyData(0, firstWorkItem, userId);
+			int count = control.applyData(jsonReq, userId);
 
-			return new ModelAndView("jsonView", success());
+			return new ModelAndView("jsonView", success(count));
 
 		} catch (Exception e) {
 
@@ -90,7 +88,7 @@ public class ColumnController extends BaseController {
 			
 			ColumnCoreControl control = new ColumnCoreControl();
 			
-			JSONArray data = control.columnQuery(userId, jsonReq);
+			JSONObject data = control.columnQuery(userId, jsonReq);
 			
 			return new ModelAndView("jsonView", success(data));
 		} catch (Exception e) {
@@ -131,7 +129,7 @@ public class ColumnController extends BaseController {
 			jobDataJson.put("data", data);
 			jobDataJson.put("secondWorkItem", secondWorkItem);
 			
-			long jobId=jobApi.createJob("columnSaveJob", jobDataJson, userId, "精编保存");
+			long jobId=jobApi.createJob("columnSaveJob", jobDataJson, userId,taskId, "精编保存");
 			
 			
 			return new ModelAndView("jsonView", success(jobId));
@@ -174,7 +172,7 @@ public class ColumnController extends BaseController {
 			jobDataJson.put("firstWorkItem", firstWorkItem);
 			jobDataJson.put("secondWorkItem", secondWorkItem);
 			
-			long jobId=jobApi.createJob("columnSubmitJob", jobDataJson, userId, "精编提交");
+			long jobId=jobApi.createJob("columnSubmitJob", jobDataJson, userId,taskId, "精编提交");
 			
 			return new ModelAndView("jsonView", success(jobId));
 		} catch (Exception e) {
@@ -220,7 +218,7 @@ public class ColumnController extends BaseController {
 	 * @throws ServletException
 	 * @throws IOException
 	 */
-	@RequestMapping(value = "/poi/deep/secondWorkStatistics")
+	@RequestMapping(value = "/poi/column/secondWorkStatistics")
 	public ModelAndView secondWorkStatistics(HttpServletRequest request)
 			throws ServletException, IOException {
 		
@@ -272,4 +270,40 @@ public class ColumnController extends BaseController {
 	}
 
 
+	
+	/**
+	 * 月编专项库存统计接口
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException
+	 */
+	@RequestMapping(value = "/poi/column/queryKcLog")
+	public ModelAndView getLogCount(HttpServletRequest request) throws ServletException, IOException {
+		
+		String parameter = request.getParameter("parameter");
+		
+		logger.debug("月编专项库存总量统计");
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			
+			logger.debug("parameter="+jsonReq);
+			
+			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			
+			long userId = tokenObj.getUserId();
+			
+			int subtaskId = jsonReq.getInt("subtaskId");
+			
+			ColumnCoreControl columnControl = new ColumnCoreControl();
+			
+			JSONObject result = columnControl.getLogCount(subtaskId, userId);
+			
+			return new ModelAndView("jsonView", success(result));
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
 }

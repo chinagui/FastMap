@@ -25,14 +25,14 @@ public class Process extends AbstractProcess<Command> {
 		
 		this.getCommand().setRdInter(inter);
 		
-		//check.hasNodeIsInter(getConn(),inter);
+		check.checkNodeDirect(getConn());
 		
 		return true;
 	}
 
 	@Override
 	public String exeOperation() throws Exception {
-		return new Operation(this.getCommand()).run(this.getResult());
+		return new Operation(this.getCommand(),getConn()).run(this.getResult());
 	}
 
 }

@@ -1,7 +1,6 @@
 package com.navinfo.dataservice.engine.sys.msg;
 
 import java.io.Serializable;
-import java.util.Date;
 
 /** 
  * @ClassName: SysMsg
@@ -11,10 +10,12 @@ import java.util.Date;
  */
 public class SysMsg implements Serializable{
 	
+	private static final long serialVersionUID = 1L;
+	
 	private long msgId;
 	private long msgType;
 	private String msgContent;
-	private Date createTime;
+	private Object createTime;
 	private long targetUserId;
 	private String msgTitle;
 	private long pushUserId;
@@ -39,10 +40,10 @@ public class SysMsg implements Serializable{
 	public void setMsgContent(String msgContent) {
 		this.msgContent = msgContent;
 	}
-	public Date getCreateTime() {
+	public Object getCreateTime() {
 		return createTime;
 	}
-	public void setCreateTime(Date createTime) {
+	public void setCreateTime(Object createTime) {
 		this.createTime = createTime;
 	}
 	public long getTargetUserId() {

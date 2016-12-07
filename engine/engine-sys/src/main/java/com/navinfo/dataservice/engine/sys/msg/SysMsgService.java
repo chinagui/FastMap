@@ -11,8 +11,10 @@ import java.util.Map;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.log4j.Logger;
+
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -254,37 +256,37 @@ public class SysMsgService {
 			//拼接sql语句
 			JSONObject jo = JSONObject.fromObject(condition);
 			StringBuilder sql = new StringBuilder();
-			sql.append("SELECT T.* FROM SYS_MESSAGE T ");
+			sql.append("SELECT M.* FROM(SELECT T.*,R.USER_ID,R.READ_TYPE,NVL(R.MSG_STATUS,0) MSG_STATUS "
+					+ "FROM SYS_MESSAGE T,SYS_MESSAGE_READ_LOG R WHERE T.MSG_ID = R.MSG_ID(+)) M WHERE 1=1 AND ");
 			//添加筛选条件
 			if(jo.get("msgStatus") != null){
 				if((Integer)jo.get("msgStatus") == 0){
 					//筛选未读消息
-					sql.append(" WHERE NOT EXISTS(SELECT 1 FROM SYS_MESSAGE_READ_LOG L WHERE 1=1 ");
+					sql.append(" M.MSG_STATUS IN (0) ");
 				}else if((Integer)jo.get("msgStatus") == 1){
 					//筛选已读消息
-					sql.append(" WHERE EXISTS(SELECT 1 FROM SYS_MESSAGE_READ_LOG L WHERE L.MSG_STATUS IN (1)");
+					sql.append(" M.MSG_STATUS IN (1)");
 				}else if((Integer)jo.get("msgStatus") == 2){
 					//筛选删除消息
-					sql.append(" WHERE EXISTS(SELECT 1 FROM SYS_MESSAGE_READ_LOG L WHERE L.MSG_STATUS IN (2)");
+					sql.append(" M.MSG_STATUS IN (2)");
 				}
 			}else{
-				sql.append(" WHERE NOT EXISTS(SELECT 1 FROM SYS_MESSAGE_READ_LOG L WHERE L.MSG_STATUS IN (2)");
+				sql.append(" M.MSG_STATUS IN (0,1)");
 			}
-			sql.append(" AND T.MSG_ID=L.MSG_ID AND L.USER_ID="+userId+") ");
 			//添加搜索条件
 			if(StringUtils.isNotEmpty((String) jo.get("pushUserName"))){
 				//模糊搜索处理人
-				sql.append(" AND T.PUSH_USER_NAME LIKE '%"+jo.get("pushUserName")+"%'");
+				sql.append(" AND M.PUSH_USER_NAME LIKE '%"+jo.get("pushUserName")+"%'");
 			}
 			if(StringUtils.isNotEmpty((String)jo.get("msgContent") )){
 				//模糊搜索标题内容
-				sql.append(" AND T.MSG_CONTENT LIKE '%"+jo.get("msgContent")+"%'");
+				sql.append(" AND M.MSG_CONTENT LIKE '%"+jo.get("msgContent")+"%'");
 			}
 			if(StringUtils.isNotEmpty((String)jo.get("msgTitle") )){
 				//精确搜索事件
-				sql.append(" AND T.MSG_TITLE='"+jo.get("msgTitle")+"'");
+				sql.append(" AND M.MSG_TITLE='"+jo.get("msgTitle")+"'");
 			}
-			sql.append(" AND T.TARGET_USER_ID IN (0,"+userId+") AND T.MSG_TYPE=2 ");
+			sql.append(" AND M.TARGET_USER_ID IN (0,"+userId+") AND M.MSG_TYPE=2 ");
 			String querySql = sql.append(" ORDER BY CREATE_TIME DESC").toString();
 			Object[] params = {};
 			//日志
@@ -441,6 +443,155 @@ public class SysMsgService {
 		}
 	}
 	
+	/**
+	 * 查询未读管理消息列表
+	 * @author Han Shaoming
+	 * @param userId
+	 * @return
+	 * @throws ServiceException 
+	 */
+	public List<Map<String, Object>> getUnUnOperateMsg(long userId) throws ServiceException {
+		Connection conn = null;
+		QueryRunner queryRunner = null;
+		try{
+			//查询消息
+			conn =  MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
+			queryRunner = new QueryRunner();
+			String sql = "SELECT T.* FROM SYS_MESSAGE T WHERE NOT EXISTS(SELECT 1 FROM SYS_MESSAGE_READ_LOG L "
+					+ " WHERE T.MSG_ID=L.MSG_ID AND L.USER_ID=?) AND T.TARGET_USER_ID IN (0,?) "
+					+ " AND T.MSG_TYPE IN (2) ORDER BY CREATE_TIME DESC";
+			//日志
+			log.info("查询未读管理消息列表的sql:"+sql);
+			
+			Object[] params = {userId,userId};
+			ResultSetHandler<List<Map<String,Object>>> rsh = new ResultSetHandler<List<Map<String,Object>>>() {
+				
+				@Override
+				public List<Map<String, Object>> handle(ResultSet rs) throws SQLException {
+					// TODO Auto-generated method stub
+					List<Map<String,Object>> msgs = new ArrayList<Map<String,Object>>();
+					while(rs.next()){
+						Map<String,Object> msg = new HashMap<String, Object>();
+						msg.put("msgId",rs.getLong("MSG_ID"));
+						msg.put("msgContent",rs.getString("MSG_CONTENT"));
+						msg.put("createTime",DateUtils.dateToString(rs.getTimestamp("CREATE_TIME"),DateUtils.DATE_COMPACTED_FORMAT));
+						msg.put("type", "message");
+						msgs.add(msg);
+					}
+					return msgs;
+				}
+			};
+			List<Map<String, Object>> query = queryRunner.query(conn, sql, rsh, params);
+			log.info("查询未读管理消息列表:"+query.toString());
+			return query;
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * 全部消息查询列表
+	 * @author Han Shaoming
+	 * @param userId
+	 * @param condition
+	 * @return Map<String, List<Map<String, Object>>>: Map<"20161128", List<Map<"msgId", 123>>>按照日期分组返回
+	 * @throws ServiceException 
+	 */
+	public Map<String, List<Map<String, Object>>> getAllMsg(Long userId, String condition) throws ServiceException {
+		Connection conn = null;
+		QueryRunner queryRunner = null;
+		try{
+			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
+			queryRunner = new QueryRunner();
+			//日志
+			log.info("全部消息查询列表的筛选条件"+condition);
+			
+			JSONObject jo = JSONObject.fromObject(condition);
+			StringBuilder sql = new StringBuilder();
+			sql.append("SELECT M.* FROM(SELECT T.*,R.USER_ID,R.READ_TYPE,NVL(R.MSG_STATUS,0) MSG_STATUS "
+					+ "FROM SYS_MESSAGE T,SYS_MESSAGE_READ_LOG R WHERE T.MSG_ID = R.MSG_ID(+)) M "
+					+ "WHERE M.MSG_STATUS IN (0,1) ");
+			//添加筛选条件
+			if(jo.get("msgType") != null){
+				if((Integer)jo.get("msgType") == 1){
+					//筛选系统消息+job消息
+					sql.append(" AND M.MSG_TYPE IN (0,1) ");
+				}else if((Integer)jo.get("msgType") == 2){
+					//筛选管理消息
+					sql.append(" AND M.MSG_TYPE=2 ");
+				}
+			}
+			if(jo.get("isHistory") != null){
+				if((Integer)jo.get("isHistory") == 1){
+					//筛选非历史消息
+					sql.append(" AND M.CREATE_TIME >= (SYSDATE-5) ");
+				}else if((Integer)jo.get("isHistory") == 2){
+					//筛选历史消息
+					sql.append(" AND M.CREATE_TIME < (SYSDATE-5) ");
+				}
+			}
+			sql.append(" AND M.TARGET_USER_ID IN (0,"+userId+") ");
+			String querySql = sql.append(" ORDER BY CREATE_TIME DESC").toString();
+			Object[] params = {};
+			//日志
+			log.info("全部消息查询列表的sql:"+sql.toString());
+			
+			Map<String, List<Map<String, Object>>> msgs = queryRunner.query(conn, querySql, new MsgWithHandler(), params);
+			return msgs;
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * 删除消息查询列表
+	 * @author Han Shaoming
+	 * @param userId
+	 * @param pageNum
+	 * @param pageSize
+	 * @return
+	 * @throws ServiceException 
+	 */
+	public Page getDeleteMsgList(Long userId, int pageNum, int pageSize) throws ServiceException {
+		Connection conn = null;
+		QueryRunner queryRunner = null;
+		try{
+			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
+			queryRunner = new QueryRunner();
+			
+			String sql = "SELECT T.* FROM SYS_MESSAGE T WHERE EXISTS(SELECT 1 FROM SYS_MESSAGE_READ_LOG L "
+					+ " WHERE T.MSG_ID=L.MSG_ID AND L.USER_ID=? AND L.MSG_STATUS IN(2)) "
+					+ " AND T.TARGET_USER_ID IN (0,?)  ORDER BY CREATE_TIME DESC";
+			Object[] params = {userId,userId};
+			//日志
+			log.info("全部消息查询列表的sql:"+sql.toString());
+			
+			Page page = queryRunner.query(pageNum, pageSize, conn, sql, new MultiRowWithPageHandler(pageNum, pageSize), params);
+			//处理消息类型
+			List<SysMsg> msgs =  (List<SysMsg>) page.getResult();
+			for (SysMsg sysMsg : msgs) {
+				if(sysMsg.getMsgType() == 0){
+					sysMsg.setMsgType(1L);
+				}
+			}
+			page.setResult(msgs);
+			return page;
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
 	
 	/* resultset handler */
 	class MultiRowHandler implements ResultSetHandler<List<SysMsg>>{
@@ -452,7 +603,7 @@ public class SysMsgService {
 				msg.setMsgId(rs.getLong("MSG_ID"));
 				msg.setMsgType(rs.getInt("MSG_TYPE"));
 				msg.setMsgContent(rs.getString("MSG_CONTENT"));
-				msg.setCreateTime(rs.getTimestamp("CREATE_TIME"));
+				msg.setCreateTime(DateUtils.dateToString(rs.getTimestamp("CREATE_TIME"),DateUtils.DATE_COMPACTED_FORMAT));
 				msg.setTargetUserId(rs.getLong("TARGET_USER_ID"));
 				msg.setMsgTitle(rs.getString("MSG_TITLE"));
 				msg.setPushUserId(rs.getLong("PUSH_USER_ID"));
@@ -482,7 +633,7 @@ public class SysMsgService {
 				msg.setMsgId(rs.getLong("MSG_ID"));
 				msg.setMsgType(rs.getInt("MSG_TYPE"));
 				msg.setMsgContent(rs.getString("MSG_CONTENT"));
-				msg.setCreateTime(rs.getTimestamp("CREATE_TIME"));
+				msg.setCreateTime(DateUtils.dateToString(rs.getTimestamp("CREATE_TIME"),DateUtils.DATE_COMPACTED_FORMAT));
 				msg.setTargetUserId(rs.getLong("TARGET_USER_ID"));
 				msg.setMsgTitle(rs.getString("MSG_TITLE"));
 				msg.setPushUserId(rs.getLong("PUSH_USER_ID"));
@@ -523,7 +674,7 @@ public class SysMsgService {
 				msg.put("msgId",rs.getLong("MSG_ID"));
 				msg.put("msgType",rs.getInt("MSG_TYPE"));
 				msg.put("msgContent",rs.getString("MSG_CONTENT"));
-				msg.put("createTime",rs.getTimestamp("CREATE_TIME"));
+				msg.put("createTime",DateUtils.dateToString(rs.getTimestamp("CREATE_TIME"),DateUtils.DATE_COMPACTED_FORMAT));
 				msg.put("targetUserId",rs.getLong("TARGET_USER_ID"));
 				msg.put("msgTitle",rs.getString("MSG_TITLE"));
 				msg.put("pushUserId",rs.getLong("PUSH_USER_ID"));
@@ -535,6 +686,7 @@ public class SysMsgService {
 				msg.put("relateObject",relateObject);
 				msg.put("relateObjectId",relateObjectId);
 				msg.put("pushUserName",rs.getString("PUSH_USER_NAME"));
+				msg.put("msgStatus",rs.getLong("MSG_STATUS"));
 				msgs.add(msg);
 				if(total==0){
 					total=rs.getInt("TOTAL_RECORD_NUM_");
@@ -546,6 +698,52 @@ public class SysMsgService {
 		}
 		
 	}
+	
+	/**
+	 * 
+	 * @ClassName MsgWithHandler
+	 * @author Han Shaoming
+	 * @date 2016年11月15日 下午3:35:23
+	 * @Description TODO
+	 */
+	class MsgWithHandler implements ResultSetHandler<Map<String,List<Map<String,Object>>>>{
+		
+		public Map<String,List<Map<String,Object>>> handle(ResultSet rs) throws SQLException {
+			Map<String,List<Map<String,Object>>> msgMap=new HashMap<String, List<Map<String,Object>>>();
+			List<Map<String,Object>> msgs = new ArrayList<Map<String,Object>>();
+			String dateBefore="";
+			while(rs.next()){
+				String dateTmp=DateUtils.dateToString(rs.getTimestamp("CREATE_TIME"),DateUtils.DATE_YMD);
+				if(dateBefore.isEmpty()){dateBefore=dateTmp;}
+				if(!dateBefore.equals(dateTmp)){
+					msgMap.put(dateBefore, msgs);
+					msgs = new ArrayList<Map<String,Object>>();	
+					dateBefore=dateTmp;
+				}
+				Map<String,Object> msg = new HashMap<String, Object>();
+				msg.put("msgId",rs.getLong("MSG_ID"));
+				int msgType=rs.getInt("MSG_TYPE");
+				if(msgType==0){msgType=1;}
+				msg.put("msgType",msgType);
+				msg.put("msgContent",rs.getString("MSG_CONTENT"));
+				msg.put("createTime",DateUtils.dateToString(rs.getTimestamp("CREATE_TIME"),DateUtils.DATE_COMPACTED_FORMAT));
+				msg.put("targetUserId",rs.getLong("TARGET_USER_ID"));
+				msg.put("msgTitle",rs.getString("MSG_TITLE"));
+				msg.put("pushUserId",rs.getLong("PUSH_USER_ID"));
+				msg.put("msgParam",rs.getString("MSG_PARAM"));
+				msg.put("pushUserName",rs.getString("PUSH_USER_NAME"));
+				msg.put("msgStatus",rs.getLong("MSG_STATUS"));
+				msgs.add(msg);
+			}
+			if(!msgs.isEmpty()){
+				msgMap.put(dateBefore, msgs);
+				msgs = new ArrayList<Map<String,Object>>();	
+			}
+			return msgMap;
+		}
+		
+	}
+	
 	
 	
 }

@@ -40,10 +40,11 @@ public class Operation implements IOperation {
         JSONObject geoPoint = new JSONObject();
         geoPoint.put("type", "Point");
         geoPoint.put("coordinates", new double[]{content.getDouble("longitude"), content.getDouble("latitude")});
-        hgwgLimit.changedFields.put("geometry", GeoTranslator.geojson2Jts(geoPoint, 100000, 0));
+        hgwgLimit.changedFields.put("geometry", geoPoint);
         String[] meshes = MeshUtils.point2Meshes(content.getDouble("longitude"), content.getDouble("latitude"));
         hgwgLimit.changedFields.put("meshId", Integer.valueOf(meshes[0]));
         hgwgLimit.changedFields.put("linkPid", content.getInt("linkPid"));
+        hgwgLimit.changedFields.put("direct", content.getInt("direct"));
 
         result.insertObject(hgwgLimit, ObjStatus.UPDATE, hgwgLimit.pid());
         return null;
@@ -52,10 +53,8 @@ public class Operation implements IOperation {
     /**
      * 移动RDNODE时维护限高限重的坐标以及关联Link
      *
-     * @param oldLink
-     *            限高限重原关联rdlink
-     * @param newLinks
-     *            新生成的rdlinks
+     * @param oldLink  限高限重原关联rdlink
+     * @param newLinks 新生成的rdlinks
      * @param result
      * @return
      * @throws Exception
@@ -86,9 +85,9 @@ public class Operation implements IOperation {
                 double minLength = 0;
                 int minLinkPid = 0;
                 // 计算限高限重原坐标与新生成线段最近的壹个点的坐标
-                Coordinate hgwgLimitCoor = hgwgLimit.getGeometry().getCoordinate();
+                Coordinate hgwgLimitCoor = GeoTranslator.transform(hgwgLimit.getGeometry(), 0.00001, 5).getCoordinate();
                 for (RdLink rdLink : newLinks) {
-                    Coordinate tmpPoint = this.GetNearestPointOnLine(hgwgLimitCoor, rdLink.getGeometry());
+                    Coordinate tmpPoint = this.GetNearestPointOnLine(hgwgLimitCoor, GeoTranslator.transform(rdLink.getGeometry(), 0.00001, 5));
                     double tmpLength = GeometryUtils.getDistance(hgwgLimitCoor, tmpPoint);
                     if (minLength == 0 || tmpLength < minLength) {
                         minLength = tmpLength;
@@ -98,7 +97,7 @@ public class Operation implements IOperation {
                 }
                 JSONObject geoPoint = new JSONObject();
                 geoPoint.put("type", "Point");
-                geoPoint.put("coordinates", new double[] { minPoint.x, minPoint.y });
+                geoPoint.put("coordinates", new double[]{minPoint.x, minPoint.y});
                 Geometry tmpGeo = GeoTranslator.geojson2Jts(geoPoint);
                 geoPoint = GeoTranslator.jts2Geojson(tmpGeo, 0.00001, 5);
                 hgwgLimit.changedFields().put("geometry", geoPoint);
@@ -112,10 +111,8 @@ public class Operation implements IOperation {
     /**
      * 判断点是否在线段上
      *
-     * @param point
-     *            点
-     * @param line
-     *            线段
+     * @param point 点
+     * @param line  线段
      * @return true 是，false 否
      */
     private boolean isOnTheLine(Geometry point, Geometry line) {

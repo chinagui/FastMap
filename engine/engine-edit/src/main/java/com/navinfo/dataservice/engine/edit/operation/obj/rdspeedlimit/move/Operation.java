@@ -37,7 +37,7 @@ public class Operation {
             isOnTheLine = false;
             for (RdLink link : newLinks) {
                 // 判断限速关系的坐标是否在任意一条新生成的线段上
-                isOnTheLine = this.isOnTheLine(speedlimit.getGeometry(), link.getGeometry());
+                isOnTheLine = this.isOnTheLine(GeoTranslator.transform(speedlimit.getGeometry(), 0.00001, 5), GeoTranslator.transform(link.getGeometry(), 0.00001, 5));
                 // 当限速关系的坐标在新生成的线段时仅维护该限速关系的linkpid属性
                 if (isOnTheLine) {
                     speedlimit.changedFields().put("linkPid", link.pid());
@@ -51,10 +51,10 @@ public class Operation {
                 double minLength = 0;
                 int minLinkPid = 0;
                 // 计算限速关系原坐标与新生成线段最近的壹个点的坐标
-                Coordinate eleceyeCoor = speedlimit.getGeometry().getCoordinate();
+                Geometry eleceyeGeo = GeoTranslator.transform(speedlimit.getGeometry(), 0.00001, 5);
                 for (RdLink rdLink : newLinks) {
-                    Coordinate tmpPoint = this.GetNearestPointOnLine(eleceyeCoor, rdLink.getGeometry());
-                    double tmpLength = GeometryUtils.getDistance(eleceyeCoor, tmpPoint);
+                    Coordinate tmpPoint = this.GetNearestPointOnLine(eleceyeGeo.getCoordinate(), GeoTranslator.transform(rdLink.getGeometry(), 0.00001, 5));
+                    double tmpLength = GeometryUtils.getDistance(eleceyeGeo.getCoordinate(), tmpPoint);
                     if (minLength == 0 || tmpLength < minLength) {
                         minLength = tmpLength;
                         minLinkPid = rdLink.pid();
@@ -65,7 +65,7 @@ public class Operation {
                 geoPoint.put("type", "Point");
                 geoPoint.put("coordinates", new double[]{minPoint.x, minPoint.y});
                 Geometry tmpGeo = GeoTranslator.geojson2Jts(geoPoint);
-                geoPoint = GeoTranslator.jts2Geojson(tmpGeo, 0.00001, 5);
+                geoPoint = GeoTranslator.jts2Geojson(tmpGeo);
                 speedlimit.changedFields().put("geometry", geoPoint);
                 speedlimit.changedFields().put("linkPid", minLinkPid);
                 result.insertObject(speedlimit, ObjStatus.UPDATE, speedlimit.pid());
@@ -82,7 +82,7 @@ public class Operation {
      * @return true 是，false 否
      */
     private boolean isOnTheLine(Geometry point, Geometry line) {
-        return line.distance(point) <= 1;
+        return line.intersects(point);
     }
 
     /**

@@ -91,5 +91,11 @@ public class LuLinkTest extends InitApplication {
 			e.printStackTrace();
 		}
 	}
+
+	@Test
+	public void move(){
+		String parameter = "{\"command\":\"MOVE\",\"dbId\":351,\"objId\":405000009,\"data\":{\"longitude\":116.62570551037787,\"latitude\":39.9165819072175},\"type\":\"LUNODE\"}";
+		TestUtil.run(parameter);
+	}
 	
 }

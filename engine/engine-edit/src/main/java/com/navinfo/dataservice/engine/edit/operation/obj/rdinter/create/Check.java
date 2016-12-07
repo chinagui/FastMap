@@ -2,13 +2,17 @@ package com.navinfo.dataservice.engine.edit.operation.obj.rdinter.create;
 
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.collections.CollectionUtils;
 
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.commons.util.StringUtils;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.dao.glm.selector.rd.crf.RdInterSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeSelector;
@@ -19,20 +23,25 @@ public class Check {
 	
 	private Command command;
 	
+	public Check(){};
+	
 	public Check(Command command)
 	{
 		this.command = command;
 	}
 	
-	public void checkLinkByNode(Connection conn) throws Exception {
+	public void checkLink(Connection conn) throws Exception {
 		
-		String nodePids = JsonUtils.getStringValueFromJSONArray(this.command.getNodeArray());
+		@SuppressWarnings("unchecked")
+		List<Integer> linkPids = (List<Integer>) JSONArray.toCollection(command.getLinkArray());
 		
-		List<RdLink> linkList = new RdLinkSelector(conn).loadLinkPidByNodePids(nodePids, true);
-		
-		//检查link参数正确性
-		checkLink(linkList);
+		if(CollectionUtils.isNotEmpty(linkPids))
+		{
+			List<RdLink> linkList = new RdLinkSelector(conn).loadByPids(linkPids, true);
 			
+			//检查link形态
+			checkLinkDirect(linkList);
+		}
 	}
 	
 	/**
@@ -85,11 +94,20 @@ public class Check {
 		
 		RdNodeSelector selector = new RdNodeSelector(conn);
 		
-		List<Integer> loadRdNodeWays = selector.loadRdNodeWays(nodePids);
+		Map<Integer,String> loadRdNodeWays = selector.loadRdNodeWays(nodePids);
 		
-		if(loadRdNodeWays.contains(2))
+		for(Map.Entry<Integer, String> entry : loadRdNodeWays.entrySet())
 		{
-			throw new Exception("图郭点不允许参与制作CRF交叉点");
+			int nodePid = entry.getKey();
+			
+			String forms = entry.getValue();
+			
+			List<String> formList = Arrays.asList(forms.split(","));
+			
+			if(formList.contains("2"))
+			{
+				this.command.getNodeArray().remove(new Integer(nodePid));
+			}
 		}
 	}
 	
@@ -98,15 +116,35 @@ public class Check {
 	 * @param linkList
 	 * @throws Exception
 	 */
-	private void checkLinkDirect(List<RdLink> linkList) throws Exception
+	public void checkLinkDirect(List<RdLink> linkList) throws Exception
 	{
 		if(CollectionUtils.isNotEmpty(linkList))
 		{
 			for(RdLink link : linkList)
 			{
-				if(link.getImiCode() != 1 && link.getImiCode() !=2)
+				//特殊交通可以制作
+				if(link.getSpecialTraffic() == 1)
 				{
-					throw new Exception("link:"+link.getPid()+"不具有'I、M'属性,不允许制作");
+					return;
+				}
+				else if(link.getImiCode() != 1 && link.getImiCode() !=2)
+				{
+					boolean has33Form = false;
+					List<IRow> linkForms = link.getForms();
+					for(IRow row : linkForms)
+					{
+						RdLinkForm form = (RdLinkForm) row;
+						if(form.getFormOfWay() == 33)
+						{
+							has33Form = true;
+							break;
+						}
+					}
+					//非特殊交通也不包含环岛属性报log
+					if(!has33Form)
+					{
+						throw new Exception("CRFI中的Link："+link.getPid()+"无IMI属性且无环岛或特殊交通类型[GLM28009]");
+					}
 				}
 			}
 		}

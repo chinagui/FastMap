@@ -8,6 +8,7 @@ import com.navinfo.dataservice.dao.mq.email.EmailSubscriber;
 import com.navinfo.dataservice.dao.mq.sys.SysMsgSubscriber;
 import com.navinfo.dataservice.dao.mq.sys.SysMsgType;
 import com.navinfo.dataservice.engine.man.mqmsg.InfoChangeMsgHandler;
+import com.navinfo.dataservice.engine.man.mqmsg.InfoFeedbackMsgHandler;
 import com.navinfo.dataservice.engine.man.mqmsg.SendEmailMsgHandler;
 
 /** 
@@ -37,6 +38,18 @@ public class StartupListener implements ApplicationListener<ContextRefreshedEven
 				public void run(){
 					try{
 						EmailSubscriber.subscribeMsg("send_email", new SendEmailMsgHandler(), null);
+					}catch(Exception e){
+						System.out.println(e.getMessage());
+						e.printStackTrace();
+					}
+				}
+			}.start();
+			//一级情报反馈
+			new Thread(){
+				@Override
+				public void run() {
+					try{
+						MsgSubscriber.getInstance().subscribeFromWorkQueue("Info_Feedback", new InfoFeedbackMsgHandler(), null);
 					}catch(Exception e){
 						System.out.println(e.getMessage());
 						e.printStackTrace();

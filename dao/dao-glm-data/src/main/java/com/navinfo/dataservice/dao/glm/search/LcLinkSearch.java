@@ -38,7 +38,7 @@ public class LcLinkSearch implements ISearch {
     }
     
     @Override
-	public IObj searchDataByPids(List<Integer> pidList) throws Exception {
+	public List<IObj> searchDataByPids(List<Integer> pidList) throws Exception {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -49,7 +49,7 @@ public class LcLinkSearch implements ISearch {
 
         List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-        String sql = "select a.link_pid, a.geometry, a.s_node_pid, a.e_node_pid, b.kind from lc_link a, lc_link_kind b where a.u_record != 2 and b.u_record != 2 and sdo_within_distance(a.geometry, sdo_geometry(:1, 8307), 'DISTANCE=0') = 'TRUE' and a.link_pid = b.link_pid";
+        String sql = "select a.link_pid, a.geometry, a.s_node_pid, a.e_node_pid, b.kind from lc_link a, lc_link_kind b where a.u_record != 2 and b.u_record != 2 and sdo_within_distance(a.geometry, sdo_geometry(:1, 8307), 'DISTANCE=0') = 'TRUE' and a.link_pid = b.link_pid and rownum = 1";
 
         PreparedStatement pstmt = null;
 
@@ -111,7 +111,7 @@ public class LcLinkSearch implements ISearch {
 
         List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-        String sql = "select a.link_pid, a.geometry, a.s_node_pid, a.e_node_pid, b.kind from lc_link a, lc_link_kind b where a.u_record != 2 and b.u_record != 2 and sdo_within_distance(a.geometry, sdo_geometry(:1, 8307), 'DISTANCE=0') = 'TRUE' and a.link_pid = b.link_pid";
+        String sql = "select a.link_pid, a.geometry, a.s_node_pid, a.e_node_pid, b.kind from lc_link a, lc_link_kind b where a.u_record != 2 and b.u_record != 2 and sdo_within_distance(a.geometry, sdo_geometry(:1, 8307), 'DISTANCE=0') = 'TRUE' and a.link_pid = b.link_pid and rownum = 1";
 
         PreparedStatement pstmt = null;
 

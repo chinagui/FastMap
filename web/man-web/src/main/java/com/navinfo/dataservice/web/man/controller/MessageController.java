@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.web.man.controller;
 
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -321,6 +322,27 @@ public class MessageController extends BaseController {
 			return new ModelAndView("jsonView", success(msg));
 		}catch(Exception e){
 			log.error("修改失败，原因："+e.getMessage(), e);
+			return new ModelAndView("jsonView",exception(e));
+		}
+	}
+	
+	/**
+	 * 查询未审核消息列表
+	 * 消息中心-服务消息（全部角色）
+	 * 根据access_token的用户返回该用户的所有未审核申请，即auditor =该用户 的未审核申请列表和总数
+	 * @author Han Shaoming
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/apply/listUnOperate")
+	public ModelAndView getUnAuditapply(HttpServletRequest request){
+		try{
+			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			long userId = tokenObj.getUserId();
+			List<Map<String, Object>> msg = service.getUnAuditapply(userId);
+			return new ModelAndView("jsonView", success(msg));
+		}catch(Exception e){
+			log.error("查询失败，原因："+e.getMessage(), e);
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}

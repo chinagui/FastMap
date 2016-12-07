@@ -24,7 +24,6 @@ import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.log4j.Logger;
 
-import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
@@ -33,13 +32,14 @@ import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
 import com.navinfo.dataservice.dao.fcc.SolrController;
+import com.navinfo.dataservice.engine.audio.Audio;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
-import com.navinfo.navicommons.geo.computation.MeshUtils;
 
 /**
  * 保存上传的tips数据
  * 
  */
+
 
 class ErrorType {
 	static int InvalidLifecycle = 1;
@@ -54,7 +54,11 @@ class ErrorType {
 	
 }
 
+	
+
 public class TipsUpload {
+	
+	static int IMPORT_STATE=1;
 
 	private Map<String, JSONObject> insertTips = new HashMap<String, JSONObject>();
 
@@ -105,9 +109,11 @@ public class TipsUpload {
 	 * 读取文件内容，保存数据 考虑到数据量不会特别大，所以和数据库一次交互即可
 	 * 
 	 * @param fileName
+	 * @param audioMap 
+	 * @param photoMap 
 	 * @throws Exception
 	 */
-	public Map<String, Photo> run(String fileName) throws Exception {
+	public void run(String fileName, Map<String, Photo> photoMap, Map<String, Audio> audioMap) throws Exception {
 
 		total = 0;
 
@@ -122,9 +128,7 @@ public class TipsUpload {
 		Table htab = hbaseConn
 				.getTable(TableName.valueOf(HBaseConstant.tipTab));
 
-		Map<String, Photo> photoInfo = new HashMap<String, Photo>();
-
-		List<Get> gets = loadFileContent(fileName, photoInfo);
+		List<Get> gets = loadFileContent(fileName, photoMap,audioMap);
 
 		solr = new SolrController();
 
@@ -143,7 +147,6 @@ public class TipsUpload {
 		//道路名入元数据库
 		importRoadNameToMeta();
 
-		return photoInfo;
 	}
 	
 	
@@ -193,7 +196,8 @@ public class TipsUpload {
 	 * @throws Exception
 	 */
 	private List<Get> loadFileContent(String fileName,
-			Map<String, Photo> photoInfo) throws Exception {
+			Map<String, Photo> photoInfo,
+			Map<String, Audio> AudioInfo) throws Exception {
 
 		Scanner scanner = new Scanner(new FileInputStream(fileName));
 
@@ -231,34 +235,64 @@ public class TipsUpload {
 				JSONArray newFeedbacks = new JSONArray();
 
 				for (int i = 0; i < attachments.size(); i++) {
+					
+					//attachment结构：{"id":"","type":1,"content":""}
 					JSONObject attachment = attachments.getJSONObject(i);
 
 					int type = attachment.getInt("type");
 
-					String content = attachment.getString("content");
-
+					String content = "";
+					//照片
 					if (1 == type) {
+						
+						content=attachment.getString("content"); //是文件名
 
 						Photo photo = getPhoto(attachment, json);
 
-						photoInfo.put(content, photo);
+						photoInfo.put(content, photo);  //文件名为key
 
 						content = photo.getRowkey();
 					}
+					//语音
+					if (2 == type) {
+
+						Audio audio = getAudio(attachment, json);
+						
+						content = attachment.getString("id"); //id为key
+
+						AudioInfo.put(content, audio); //id为key
+
+					}
+					//文字
+					if (3 == type) {
+						content = attachment.getString("content"); 
+					}
+					//草图
+					if (6 == type) {
+						content = attachment.getString("content"); 
+					}
+					/*
+					║║ user	整数	edit_Tips	t_handler	原值导入
+					║║ userRole				空
+					║║ type		edit_Tips	attachments	attachments.type
+					║║ content		edit_Tips	attachments	attachments.content
+					║║ auditRemark				空
+					║║ date				数据入库时服务器时间
+					*/
 
 					JSONObject newFeedback = new JSONObject();
 
 					newFeedback.put("user", json.getInt("t_handler"));
 
-					newFeedback.put("userRole", JSONNull.getInstance());
+					newFeedback.put("userRole", "");
 
 					newFeedback.put("type", type);
 
 					newFeedback.put("content", content);
 
-					newFeedback.put("auditRemark", JSONNull.getInstance());
+					newFeedback.put("auditRemark", "");
 
-					newFeedback.put("date", operateDate);
+					newFeedback.put("date", json.getString("t_operateDate")); //原值导入
 
 					newFeedbacks.add(newFeedback);
 				}
@@ -286,6 +320,10 @@ public class TipsUpload {
 				json.put("t_dStatus", 0);
 				
 				json.put("t_mStatus", 0);
+				
+				json.put("t_inStatus", 0);
+				
+				json.put("t_inMeth", 0);
 				
 				//道路名测线
 				if(sourceType.equals("1901")){
@@ -317,6 +355,31 @@ public class TipsUpload {
 		}
 
 		return gets;
+	}
+
+	/**
+	 * @Description:TOOD
+	 * @param attachment
+	 * @param json
+	 * @return
+	 * @author: y
+	 * @time:2016-12-3 下午3:22:17
+	 */
+	private Audio getAudio(JSONObject attachment, JSONObject json) {
+		
+		Audio audio = new Audio();
+
+		String id = attachment.getString("id");
+
+		audio.setRowkey(id);
+		
+		audio.setA_uuid(id); 
+
+		audio.setA_uploadUser(json.getInt("t_handler"));
+
+		audio.setA_uploadDate(json.getString("t_operateDate"));
+
+		return audio;
 	}
 
 	/**
@@ -358,7 +421,7 @@ public class TipsUpload {
 
 					jo.put("feedback", feedback);
 				} else {
-					jo.put("feedback", JSONNull.getInstance());
+					jo.put("feedback", TipsUtils.OBJECT_NULL_DEFAULT_VALUE);
 				}
 
 				oldTips.put(rowkey, jo);
@@ -387,17 +450,17 @@ public class TipsUpload {
 
 				rowkey = en.getKey();
 
-				JSONObject json = en.getValue();
+				JSONObject json = en.getValue();  
 
 				Put put = null;
 				
 				
-				//old有则更新
+				//old有则更新,判断是否已存在
 				if (oldTips.containsKey(rowkey)) {
 
 					JSONObject oldTip = oldTips.get(rowkey);
 					
-					//对比采集时间
+					//对比采集时间，采集时间和数据库中 hbase old.trackinfo.date(最后一条)
 					int res = canUpdate(oldTip, json.getString("t_operateDate"));
 					if (res < 0) {
 						failed += 1;
@@ -420,7 +483,8 @@ public class TipsUpload {
 					put = insertPut(rowkey, json);
 				}
 
-				JSONObject solrIndex = generateSolrIndex(json);
+				
+				JSONObject solrIndex = TipsUtils.generateSolrIndex(json,currentDate);
 
 				solr.addTips(solrIndex);
 
@@ -440,9 +504,10 @@ public class TipsUpload {
 
 		Put put = new Put(rowkey.getBytes());
 		
-		JSONObject jsonTrack = generateTrackJson(3, json.getInt("t_handler"),
-				json.getInt("t_command"), null, json.getString("t_operateDate"),
-				json.getInt("t_cStatus"),json.getInt("t_dStatus"),json.getInt("t_mStatus"));
+		JSONObject jsonTrack =TipsUtils.generateTrackJson(3, TipsUpload.IMPORT_STATE,json.getInt("t_handler"),
+				json.getInt("t_command"), null, json.getString("t_operateDate"),currentDate,
+				json.getInt("t_cStatus"),json.getInt("t_dStatus"),json.getInt("t_mStatus"),
+				json.getInt("t_inStatus"),json.getInt("t_inMeth"));
 
 		put.addColumn("data".getBytes(), "track".getBytes(), jsonTrack
 				.toString().getBytes());
@@ -535,7 +600,7 @@ public class TipsUpload {
 
 				Put put = updatePut(rowkey, json, oldTip);
 
-				JSONObject solrIndex = generateSolrIndex(json);
+				JSONObject solrIndex = TipsUtils.generateSolrIndex(json,currentDate);
 
 				solr.addTips(solrIndex);
 
@@ -556,10 +621,11 @@ public class TipsUpload {
 
 		int lifecycle = json.getInt("t_lifecycle");
 
-		JSONObject jsonTrack = generateTrackJson(lifecycle,
+		JSONObject jsonTrack = TipsUtils.generateTrackJson(lifecycle,TipsUpload.IMPORT_STATE,
 				json.getInt("t_handler"), json.getInt("t_command"),
-				oldTip.getJSONArray("t_trackInfo"),json.getString("t_operateDate"),
-				json.getInt("t_cStatus"),json.getInt("t_dStatus"),json.getInt("t_mStatus"));
+				oldTip.getJSONArray("t_trackInfo"),json.getString("t_operateDate"),currentDate,
+				json.getInt("t_cStatus"),json.getInt("t_dStatus"),json.getInt("t_mStatus"),
+				json.getInt("t_inStatus"),json.getInt("t_inMeth"));
 
 		put.addColumn("data".getBytes(), "track".getBytes(), jsonTrack
 				.toString().getBytes());
@@ -661,109 +727,10 @@ public class TipsUpload {
 
 		return put;
 	}
-
-	/**
-	 * 组装Track
-	 * 
-	 * @param lifecycle
-	 * @param handler
-	 * @param oldTrackInfo
-	 * @param t_cStatus 
-	 * @param t_dStatus 
-	 * @param t_mStatus
-	 * @return
-	 */
-	private JSONObject generateTrackJson(int lifecycle, int handler,
-			int command, JSONArray oldTrackInfo, String t_operateDate, 
-			int t_cStatus, int t_dStatus, int t_mStatus) {
-		
-		JSONObject jsonTrack = new JSONObject();
-
-		jsonTrack.put("t_lifecycle", lifecycle);
-
-		jsonTrack.put("t_command", command);
-
-		jsonTrack.put("t_date", currentDate);
-		
-		jsonTrack.put("t_cStatus", t_cStatus);
-		
-		jsonTrack.put("t_dStatus", t_dStatus);
-		
-		jsonTrack.put("t_mStatus", t_mStatus);
-
-		JSONObject jsonTrackInfo = new JSONObject();
-
-		jsonTrackInfo.put("stage", 1);
-
-		jsonTrackInfo.put("date", t_operateDate);
-
-		jsonTrackInfo.put("handler", handler);
-		
-		
-		if (null == oldTrackInfo) {
-
-			oldTrackInfo = new JSONArray();
-		}
-
-		oldTrackInfo.add(jsonTrackInfo);
-
-		jsonTrack.put("t_trackInfo", oldTrackInfo);
-
-		return jsonTrack;
-	}
+	
 
 	
-	private JSONObject generateSolrIndex(JSONObject json) throws Exception {
-
-		JSONObject index = new JSONObject();
-
-		index.put("id", json.getString("rowkey"));
-
-		index.put("stage", 1);
-
-		index.put("t_date", currentDate);
-
-		index.put("t_operateDate", json.getString("t_operateDate"));
-
-		index.put("t_lifecycle", json.getInt("t_lifecycle"));
-
-		index.put("t_command", json.getInt("t_command"));
-
-		index.put("handler", json.getInt("t_handler"));
-		
-		index.put("t_cStatus", json.getInt("t_cStatus"));
-		
-		index.put("t_dStatus", json.getInt("t_dStatus"));
-		
-		index.put("t_mStatus", json.getInt("t_mStatus"));
-
-		index.put("s_sourceType", json.getString("s_sourceType"));
-
-		index.put("s_sourceCode", json.getInt("s_sourceCode"));
-
-		index.put("g_guide", json.getJSONObject("g_guide"));
-
-		JSONObject g_location = json.getJSONObject("g_location");
-
-		index.put("g_location", g_location);
-
-		JSONObject deep = json.getJSONObject("deep");
-
-		index.put("deep", deep.toString());
-
-		String sourceType = json.getString("s_sourceType");
-
-		JSONArray feedbacks = json.getJSONArray("feedback");
-
-		index.put("feedback", feedbacks.toString());
-
-		index.put("wkt", TipsImportUtils.generateSolrWkt(sourceType, deep,
-				g_location, feedbacks));
-
-		index.put("s_reliability", 100);
-
-		return index;
-	}
+	
 
 	private Photo getPhoto(JSONObject attachment, JSONObject tip) {
 
@@ -788,11 +755,13 @@ public class TipsUpload {
 
 		photo.setRowkey(id);
 
-		photo.setA_uuid(id.substring(14));
+		//photo.setA_uuid(id.substring(14));
+		
+		photo.setA_uuid(id); 
 
 		photo.setA_uploadUser(tip.getInt("t_handler"));
 
-		photo.setA_uploadDate(currentDate);
+		photo.setA_uploadDate(tip.getString("t_operateDate"));
 
 		photo.setA_longitude(lng);
 
@@ -817,15 +786,30 @@ public class TipsUpload {
 		int lifecycle = oldTips.getInt("t_lifecycle");
 
 		JSONArray tracks = oldTips.getJSONArray("t_trackInfo");
-
+		
+		String lastDate = null;
+		
+		//入库仅与上次stage=1的数组data进行比较. 最后一条stage=1的数据
+		for (int i = tracks.size()-1; i >0; i--) {
+			
+			JSONObject info=tracks.getJSONObject(i);
+			
+			if(info.getInt("stage")==1){
+				
+				lastDate=info.getString("date");
+				
+				break;
+			}
+		}
+			
 		JSONObject lastTrack = tracks.getJSONObject(tracks.size() - 1);
 
-		String lastDate = lastTrack.getString("date");
-
 		int lastStage = lastTrack.getInt("stage");
+		
 
 		//lifecycle:0（无） 1（删除）2（修改）3（新增） ;
 		//stage:0 初始化；1 外业采集；2 内业日编；3 内业月编 ；4 GDB增量
+		//库里最后最状态是不是增量更新删除：lifecycle=1（删除），t_stage=4（增量更新）,是，则不更新
 		if (lifecycle == 1 && lastStage == 4) {
 
 			return -1;
@@ -850,17 +834,15 @@ public class TipsUpload {
 	}
 
 	public static void main(String[] args) throws Exception {
-
-		/*TipsUpload a = new TipsUpload();
-
-		a.run("D:/4.txt");
-		System.out.println("成功")*/;
 		
-			try {
-				HBaseConnector.getInstance().getConnection();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+		Map<String, Photo> photoMap=new HashMap<String, Photo>();
+		
+		Map<String, Audio> audioMap=new HashMap<String, Audio>();
+
+		TipsUpload a = new TipsUpload();
+
+		a.run("D:/4.txt",photoMap,audioMap);
+		
+		System.out.println("成功");
 	}
 }

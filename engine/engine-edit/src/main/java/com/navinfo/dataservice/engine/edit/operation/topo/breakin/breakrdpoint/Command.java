@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import com.navinfo.dataservice.dao.glm.model.rd.hgwg.RdHgwgLimit;
+import com.navinfo.dataservice.dao.glm.model.rd.mileagepile.RdMileagepile;
 import org.json.JSONException;
 
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
@@ -116,6 +117,8 @@ public class Command extends AbstractCommand {
 	private List<RdTollgate> rdTollgates;
 
 	private List<RdHgwgLimit> rdHgwgLimits;
+
+	private List<RdMileagepile> rdMileagepiles;
 
 	private boolean isCheckInfect = false;
 
@@ -277,6 +280,14 @@ public class Command extends AbstractCommand {
 		this.rdTollgates = rdTollgates;
 	}
 
+	public List<RdMileagepile> getRdMileagepiles() {
+		return rdMileagepiles;
+	}
+
+	public void setRdMileagepiles(List<RdMileagepile> rdMileagepiles) {
+		this.rdMileagepiles = rdMileagepiles;
+	}
+
 	public Command(JSONObject json, String requester) throws JSONException {
 		this.requester = requester;
 
@@ -290,9 +301,6 @@ public class Command extends AbstractCommand {
 
 		this.setDbId(json.getInt("dbId"));
 
-		if (data.containsKey("breakNodePid")) {
-			this.breakNodePid = data.getInt("breakNodePid");
-		}
 		if (data.containsKey("breakNodes")) {
 			this.breakNodes = JSONArray.fromObject(data
 					.getJSONArray("breakNodes"));

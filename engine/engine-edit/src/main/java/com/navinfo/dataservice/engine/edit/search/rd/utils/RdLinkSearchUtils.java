@@ -11,7 +11,6 @@ import java.util.Map;
 import java.util.Set;
 
 import net.sf.json.JSONArray;
-
 import oracle.sql.STRUCT;
 
 import com.navinfo.dataservice.commons.geom.AngleCalculator;
@@ -19,9 +18,12 @@ import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkSpeedlimit;
+import com.navinfo.dataservice.dao.glm.model.rd.variablespeed.RdVariableSpeed;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.variablespeed.RdVariableSpeedSelector;
 import com.navinfo.navicommons.database.sql.DBUtils;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.LineSegment;
@@ -36,6 +38,174 @@ public class RdLinkSearchUtils {
 
 	public RdLinkSearchUtils(Connection conn) throws Exception {
 		this.conn = conn;
+	}
+
+	public final int variableSpeedNextLinkCount = 99;
+
+	RdLinkSelector linkSelector = null;
+
+	RdVariableSpeedSelector variableSpeedSelector = null;
+
+	/**
+	 * 推荐可变限速接续link。
+	 * 
+	 * @param linkPid
+	 *            link
+	 * @param nodePid
+	 *            方向点
+	 * @return
+	 * @throws Exception
+	 */
+	public List<RdLink> variableSpeedNextLinks(int linkPid, int nodePid)
+			throws Exception {
+
+		// 初始化查询类
+		linkSelector = new RdLinkSelector(conn);
+
+		variableSpeedSelector = new RdVariableSpeedSelector(this.conn);
+
+		List<Integer> nextLinkPids = new ArrayList<Integer>();
+
+		RdLink link = (RdLink) linkSelector.loadById(linkPid, true, true);
+
+		Map<Integer, RdLink> linkStorage = variableSpeedNextLinks(nextLinkPids,
+				linkPid, nodePid, link.getMeshId());
+
+		List<RdLink> links = new ArrayList<RdLink>();
+
+		for (int pid : nextLinkPids) {
+
+			if (linkStorage.containsKey(pid)) {
+
+				links.add(linkStorage.get(pid));
+			}
+		}
+
+		return links;
+	}
+
+	/**
+	 * 推荐可变限速接续link。
+	 * 
+	 * @param preLinkPid
+	 *            link
+	 * @param preNodePid
+	 *            方向点
+	 * @return
+	 * @throws Exception
+	 */
+	private Map<Integer, RdLink> variableSpeedNextLinks(
+			List<Integer> nextLinkPids, int preLinkPid, int preNodePid,
+			int meshId) throws Exception {
+
+		Map<Integer, RdLink> linkStorage = new HashMap<Integer, RdLink>();
+
+		List<RdLink> links = linkSelector.loadByNodePidOnlyRdLink(preNodePid,
+				false);
+
+		List<RdLink> linksTmp = new ArrayList<RdLink>();
+
+		for (RdLink link : links) {
+
+			if (meshId != link.getMeshId()) {
+				continue;
+			}
+
+			// 特殊交通类型不可作为可变限速的接续link；
+			if (1 == link.getSpecialTraffic()) {
+				continue;
+			}
+
+			if (preLinkPid == link.getPid()) {
+				continue;
+			}
+
+			if (link.getDirect() == 0) {
+				continue;
+			}
+			if (link.getDirect() == 2 && link.geteNodePid() == preNodePid) {
+				continue;
+			}
+			if (link.getDirect() == 3 && link.getsNodePid() == preNodePid) {
+				continue;
+			}
+
+			int kind = link.getKind();
+
+			if (kind != 8 && kind != 9 && kind != 10 && kind != 11
+					&& kind != 13) {
+				linksTmp.add(link);
+			}
+		}
+		if (linksTmp.size() != 1) {
+			return linkStorage;
+		}
+
+		RdLink linkTmp = linksTmp.get(0);
+
+		if (!isVariableSpeedLink(linkTmp, preNodePid)) {
+			return linkStorage;
+		}
+
+		if (nextLinkPids.contains(linkTmp.getPid())) {
+			return linkStorage;
+		}
+
+		nextLinkPids.add(linkTmp.getPid());
+
+		linkStorage.put(linkTmp.getPid(), linkTmp);
+
+		if (nextLinkPids.size() >= variableSpeedNextLinkCount) {
+			return linkStorage;
+		}
+
+		int nextNodePid = preNodePid == linkTmp.getsNodePid() ? linkTmp
+				.geteNodePid() : linkTmp.getsNodePid();
+
+		Map<Integer, RdLink> nextStorage = variableSpeedNextLinks(nextLinkPids,
+				linkTmp.getPid(), nextNodePid, meshId);
+
+		linkStorage.putAll(nextStorage);
+
+		return linkStorage;
+	}
+
+	/**
+	 * 判断link能否做可变限速的接续线
+	 * 
+	 * @param link
+	 * @param nodePid
+	 * @return
+	 * @throws Exception
+	 */
+	private boolean isVariableSpeedLink(RdLink link, int nodePid)
+			throws Exception {
+
+		List<IRow> forms = new AbstractSelector(RdLinkForm.class, conn)
+				.loadRowsByParentId(link.getPid(), true);
+
+		for (IRow row : forms) {
+
+			RdLinkForm form = (RdLinkForm) row;
+
+			// 特殊交通类型、交叉口内道路的LINK不可作为可变限速的接续link
+			if (form.getFormOfWay() == 33 || form.getFormOfWay() == 50) {
+				return false;
+			}
+		}
+
+		int nextNodePid = nodePid == link.getsNodePid() ? link.geteNodePid()
+				: link.getsNodePid();
+
+		List<RdVariableSpeed> variableSpeeds = variableSpeedSelector
+				.loadRdVariableSpeedByParam(link.getPid(), nextNodePid, null,
+						true);
+
+		if (variableSpeeds.size() > 0) {
+			return false;
+		}
+
+		return true;
 	}
 
 	/**
@@ -80,7 +250,7 @@ public class RdLinkSearchUtils {
 
 		return nextLinkPids;
 	}
-	 
+
 	public JSONArray getRdLinkSpeedlimit(List<Integer> linkPids)
 			throws Exception {
 		AbstractSelector speedlimitSelector = new AbstractSelector(
@@ -92,15 +262,15 @@ public class RdLinkSearchUtils {
 		JSONArray array = new JSONArray();
 
 		for (IRow row : rows) {
-			
-			RdLinkSpeedlimit speedlimit =( RdLinkSpeedlimit)row;
-			
+
+			RdLinkSpeedlimit speedlimit = (RdLinkSpeedlimit) row;
+
 			if (speedlimit.getSpeedType() == 0) {
 
 				array.add(speedlimit.Serialize(ObjLevel.FULL));
 			}
 		}
-		
+
 		return array;
 	}
 
@@ -125,8 +295,6 @@ public class RdLinkSearchUtils {
 		ResultSet resultSet = null;
 
 		try {
-
-			System.out.println(sql);
 
 			pstmt = conn.prepareStatement(sql);
 
@@ -223,23 +391,25 @@ public class RdLinkSearchUtils {
 
 	}
 
-	/*
-	 * @查询上下线分离关联的link 1.关联link数量不能超过999 2.关联查找link 必须联通link方向一致
-	 * 3.关联link必须是夹角最小的一个link
-	 * 
-	 * @param cuurentLinkPid 当前link 当前方向node
-	 * 
+	/***
+	 * @查询上下线分离关联的link 1.关联link数量不能超过maxNum 2.关联查找link必须联通link方向一致
+	 *                 3.关联link必须是夹角最小的一个link
+	 * @param cuurentLinkPid
+	 * @param cruuentNodePidDir
+	 * @param maxNum
+	 * @param loadChild 是否加载子表
 	 * @return 查找所有联通link
+	 * @throws Exception
 	 */
 	public List<RdLink> getNextTrackLinks(int cuurentLinkPid,
-			int cruuentNodePidDir) throws Exception {
+			int cruuentNodePidDir, int maxNum,boolean loadChild) throws Exception {
 		RdLinkSelector linkSelector = new RdLinkSelector(conn);
 		List<RdLink> tracks = new ArrayList<RdLink>();
 		Set<Integer> nodes = new HashSet<Integer>();
-	
+
 		// 添加当前选中的link
-		RdLink fristLink = (RdLink) linkSelector.loadByIdOnlyRdLink(
-				cuurentLinkPid, true);
+		RdLink fristLink = (RdLink) linkSelector.loadById(cuurentLinkPid,
+				!loadChild);
 		nodes.add(fristLink.getsNodePid());
 		nodes.add(fristLink.geteNodePid());
 		tracks.add(fristLink);
@@ -249,7 +419,7 @@ public class RdLinkSearchUtils {
 		while (nextLinks.size() > 0) {
 			// 加载当前link
 			RdLink currentLink = (RdLink) linkSelector.loadById(cuurentLinkPid,
-					true);
+					!loadChild);
 			// 计算当前link直线的几何属性
 			LineSegment currentLinklineSegment = getLineSegment(currentLink,
 					cruuentNodePidDir);
@@ -265,7 +435,7 @@ public class RdLinkSearchUtils {
 				double minAngle = Math.abs(180 - AngleCalculator
 						.getConnectLinksAngle(currentLinklineSegment,
 								nextLinklineSegment));
-				
+
 				if (map.size() > 0) {
 					if (map.keySet().iterator().next() > minAngle) {
 						map.clear();
@@ -282,10 +452,10 @@ public class RdLinkSearchUtils {
 			cuurentLinkPid = link.getPid();
 			cruuentNodePidDir = (cruuentNodePidDir == link.getsNodePid()) ? link
 					.geteNodePid() : link.getsNodePid();
-			if(nodes.contains(cruuentNodePidDir)){
+			if (nodes.contains(cruuentNodePidDir)) {
 				break;
 			}
-			if (tracks.size() >= 11 || tracks.contains(link)) {
+			if (tracks.size() >= maxNum || tracks.contains(link)) {
 				break;
 			}
 			nodes.add(cruuentNodePidDir);
@@ -295,6 +465,94 @@ public class RdLinkSearchUtils {
 					cruuentNodePidDir, true);
 		}
 		return tracks;
+	}
+
+	/***
+	 * @推荐坡度查询的link接续 沿着坡度点到坡度退出线的方向追踪计算，追踪至退出link和接续link的长度总和大于100米小于150米处停止；
+	 *                如果按照link既有的节点计算link长度大于150米，则在长度总和为130米处提示打断点位，
+	 *                确认后在130米的提示点位处自动打断
+	 *                按照上述方法追踪接续link的过程中，如果在为满足总和长度距离要求之前遇到了挂接
+	 *                ，则停止追踪，将目前追踪到的link/link串作为该坡度的接续link；
+	 *                如果退出link挂接了两条或两条以上的link（10级路不计算挂接个数）则不推荐接续link
+	 * @author zhaokk
+	 * @param cuurentLinkPid
+	 * @param cruuentNodePidDir
+	 * @param maxNum
+	 * @param length
+	 *            退出线的长度
+	 * @return 查找所有联通link
+	 * @throws Exception
+	 */
+	public List<RdLink> getNextLinksForSlope(double length, int cuurentLinkPid,
+			int cruuentNodePidDir) throws Exception {
+		RdLinkSelector linkSelector = new RdLinkSelector(conn);
+		List<RdLink> tracks = new ArrayList<RdLink>();
+		List<RdLink> tmpLinks = new ArrayList<RdLink>();
+		List<RdLink> resultLinks = new ArrayList<RdLink>();
+		Set<Integer> nodes = new HashSet<Integer>();
+
+		// 添加当前选中的link
+		RdLink fristLink = (RdLink) linkSelector.loadByIdOnlyRdLink(
+				cuurentLinkPid, true);
+		nodes.add(fristLink.getsNodePid());
+		nodes.add(fristLink.geteNodePid());
+		// 查找当前link联通的links
+		List<RdLink> nextLinks = linkSelector.loadTrackLink(cuurentLinkPid,
+				cruuentNodePidDir, true);
+
+		// 10级路不计算挂接个数
+		for (RdLink link : nextLinks) {
+			if (link.getKind() < 10) {
+				resultLinks.add(link);
+			}
+		}
+		while (resultLinks.size() == 1) {
+			RdLink currentLink = resultLinks.get(0);
+			if (this.getLinksLength(tracks) + currentLink.getLength() + length > 100) {
+				tracks.add(currentLink);
+				break;
+			}
+			tracks.add(currentLink);
+
+			// 计算
+			cuurentLinkPid = currentLink.getPid();
+			cruuentNodePidDir = (cruuentNodePidDir == currentLink.getsNodePid()) ? currentLink
+					.geteNodePid() : currentLink.getsNodePid();
+			// 防止闭环
+			if (nodes.contains(cruuentNodePidDir)) {
+				break;
+			}
+
+			nodes.add(cruuentNodePidDir);
+			// 赋值查找下一组联通links
+			tmpLinks = linkSelector.loadTrackLink(cuurentLinkPid,
+					cruuentNodePidDir, true);
+			//清空当前link
+			resultLinks.clear();
+			// 10级路不计算挂接个数
+			for (RdLink link : tmpLinks) {
+				if (link.getKind() < 10) {
+					resultLinks.add(link);
+				}
+			}
+		}
+		return tracks;
+	}
+
+	/***
+	 * 计算link串的长度
+	 * 
+	 * @param links
+	 * @return
+	 */
+	private double getLinksLength(List<RdLink> links) {
+		double length = 0.0;
+		if (links != null && links.size() > 0) {
+			for (RdLink link : links) {
+				length += link.getLength();
+			}
+		}
+		return length;
 	}
 
 	/**

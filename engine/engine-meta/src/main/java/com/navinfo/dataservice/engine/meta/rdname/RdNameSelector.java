@@ -4,6 +4,7 @@ import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -17,6 +18,7 @@ import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.engine.meta.area.ScPointAdminArea;
+import com.navinfo.navicommons.database.Page;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -161,7 +163,7 @@ public class RdNameSelector {
 
 		try {
 
-			//***********************以下代码是路演环境临时使用*begin***********************
+		/*	//***********************以下代码是路演环境临时使用*begin***********************
 			String dbId= SystemConfigFactory.getSystemConfig().getValue("region_db_id");
 			
 			if(StringUtils.isEmpty(dbId)){
@@ -169,11 +171,11 @@ public class RdNameSelector {
 			}
 
 			//路演环境临时使用
-			conn = DBConnector.getInstance().getConnectionById(Integer.parseInt(dbId));
+			conn = DBConnector.getInstance().getConnectionById(Integer.parseInt(dbId));*/
 			
 			//***********************end ***********************
 			
-			//conn = DBConnector.getInstance().getMetaConnection();
+			conn = DBConnector.getInstance().getMetaConnection();
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setString(1, name);
 			pstmt.setInt(2, adminId);
@@ -233,7 +235,9 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 			String sortby = params.getString("sortby");
 			int pageSize = params.getInt("pageSize");
 			int pageNum = params.getInt("pageNum");
-			int flag = params.getInt("flag");
+			int flag = params.getInt("flag");//1是任务查，0是全库查
+			int subtaskId = params.getInt("subtaskId");//获取subtaskid 
+			
 			
 			StringUtils sUtils = new StringUtils();
 			
@@ -244,14 +248,17 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 			Clob pidClod = null;
 			if (flag>0) {
 				if (tips.size()>0) {
-					
+					//添加根据子任务id直接查询的sql 
 					sql.append("SELECT * ");
 					sql.append(" FROM (SELECT c.*, rownum rn");
 					sql.append(" FROM (select COUNT (1) OVER (PARTITION BY 1) total,a.* ");
-					sql.append(" from (select substr(src_resume, 0, instr(src_resume, ',') - 1) as tipid,t.*");
-					sql.append(" from rd_name t");
-					sql.append(" where src_resume is not null");
-					sql.append(" and instr(src_resume, ',') > 0) a ");
+					sql.append(" from (");
+					sql.append("SELECT null tipid,r.*  from rd_name r  where r.src_resume = '\"task\":"+ subtaskId +"' ");
+					sql.append(" union all  ");
+					sql.append(" SELECT tt.* FROM ");
+					sql.append("( select substr(replace(t.src_resume,'\"',''),instr(replace(t.src_resume,'\"',''), ':') + 1,length(replace(src_resume,'\"',''))) as tipid,t.* ");
+					sql.append(" from rd_name t  where t.src_resume like '%tips%' ) tt");
+					
 					sql.append(" where 1=1");
 					
 					for (int i=0;i<tips.size();i++) {
@@ -263,7 +270,7 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 					
 					pidClod = ConnectionUtil.createClob(conn);
 					pidClod.setString(1, ids);
-					sql.append(" and a.tipid in (select column_value from table(clob_to_table(?)))");
+					sql.append(" and tt.tipid in (select column_value from table(clob_to_table(?)))) a ");
 					
 				} else {
 					result.put("total", 0);
@@ -321,7 +328,7 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 			int startRow = (pageNum-1) * pageSize + 1;
 
 			int endRow = pageNum * pageSize;
-			
+			//System.out.println(sql.toString());
 			pstmt = conn.prepareStatement(sql.toString());
 			
 			if (flag>0) {
@@ -333,9 +340,6 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 
 				pstmt.setInt(2, startRow);
 			}
-			
-			
-			
 			resultSet = pstmt.executeQuery();
 			
 			int total = 0;
@@ -470,4 +474,92 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 			throw e;
 		}
 	}
+
+	/**
+	 * @Title: searchForWebByNameId
+	 * @Description: 根据rdNamed的NameId查询
+	 * @param nameId
+	 * @return  JSONObject
+	 * @throws Exception 
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2016年11月17日 下午8:16:07 
+	 */
+	public JSONObject searchForWebByNameId(String nameId) {
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		Connection conn = null;
+		
+		try {
+			//JSONObject result = new JSONObject();
+			conn = DBConnector.getInstance().getMetaConnection();
+			ScPointAdminArea scPointAdminArea = new ScPointAdminArea(conn);
+			Map<String,String> adminMap = scPointAdminArea.getAdminMap();
+			StringBuilder sql = new StringBuilder();
+				sql.append("SELECT * ");
+				sql.append(" from rd_name a where 1=1 ");
+				sql.append(" And a.name_id = ?");
+			pstmt = conn.prepareStatement(sql.toString());
+				pstmt.setString(1, nameId);
+			resultSet = pstmt.executeQuery();
+			List<JSONObject> data = new ArrayList<JSONObject>();
+			while (resultSet.next()) {
+				data.add(result2Json(resultSet, adminMap));
+			}
+			//result.put("data", data.get(0));
+			//return result;
+			return data.get(0);
+		} catch (Exception e) {
+			
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+			DbUtils.closeQuietly(conn);
+		}
+		return null;
+	
+	}
+
+	/**
+	 * @Title: udateResultStatusById
+	 * @Description: 修改某条道路名检查结果的状态
+	 * @param valExceptionId
+	 * @param qaStatus 
+	 * @return  JSONObject
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2016年11月17日 下午8:32:34 
+	 */
+	public void udateResultStatusById(int valExceptionId, int qaStatus) {
+		Connection conn = null; 
+		JSONObject result = null;
+		PreparedStatement pstmt = null;
+		
+		try {
+			StringBuilder sql = new StringBuilder();
+			sql.append(" update ni_val_exception set qa_status = ? ");
+			sql.append(" where 1=1 ");
+			sql.append(" and  val_exception_id = ?");
+			result = new JSONObject();
+			conn = DBConnector.getInstance().getMetaConnection();
+			pstmt = conn.prepareStatement(sql.toString());
+			pstmt.setInt(1, qaStatus);
+			pstmt.setInt(2, valExceptionId);
+			pstmt.execute();
+			
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}finally {
+			//DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+			DbUtils.closeQuietly(conn);
+		}
+		
+		//return null;
+	}
+
+	
 }

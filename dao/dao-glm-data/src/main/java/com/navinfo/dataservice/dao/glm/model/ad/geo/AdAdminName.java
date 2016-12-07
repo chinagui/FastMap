@@ -18,14 +18,13 @@ import com.navinfo.dataservice.dao.glm.iface.ObjType;
 
 public class AdAdminName implements IObj {
 	private int regionId ;
-	private int nameGroupId = 1;
+	private int nameGroupid = 1;
 	private String langCode;
 	private   int nameClass = 1; 
 	private  int pid;
 	private String name ;
 	private String phonetic;
 	
-	private int linkPid = 0;
 	private int srcFlag = 0;
     private String rowId;
     private Map<String, Object> changedFields = new HashMap<String, Object>();
@@ -58,12 +57,12 @@ public class AdAdminName implements IObj {
 		this.regionId = regionId;
 	}
 
-	public int getNameGroupId() {
-		return nameGroupId;
+	public int getNameGroupid() {
+		return nameGroupid;
 	}
 
-	public void setNameGroupId(int nameGroupId) {
-		this.nameGroupId = nameGroupId;
+	public void setNameGroupid(int nameGroupid) {
+		this.nameGroupid = nameGroupid;
 	}
 
 	public String getLangCode() {
@@ -96,14 +95,6 @@ public class AdAdminName implements IObj {
 
 	public void setPhonetic(String phonetic) {
 		this.phonetic = phonetic;
-	}
-
-	public int getLinkPid() {
-		return linkPid;
-	}
-
-	public void setLinkPid(int linkPid) {
-		this.linkPid = linkPid;
 	}
 
 	public int getSrcFlag() {

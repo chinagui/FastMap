@@ -2,10 +2,13 @@ package com.navinfo.dataservice.engine.edit.operation.obj.rdinter.update;
 
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.collections.CollectionUtils;
 
+import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.model.rd.inter.RdInter;
@@ -33,39 +36,37 @@ public class Check {
 	 * @param conn
 	 * @throws Exception
 	 */
-	private void checkNodeDirect(Connection conn,String nodePisStr) throws Exception {
+	public void checkNodeDirect(Connection conn) throws Exception {
+
+		String nodePids = JsonUtils.getStringValueFromJSONArray(this.command.getNodeArray());
 
 		RdNodeSelector selector = new RdNodeSelector(conn);
 
-		List<Integer> loadRdNodeWays = selector.loadRdNodeWays(nodePisStr);
+		Map<Integer, String> loadRdNodeWays = selector.loadRdNodeWays(nodePids);
 
-		if (loadRdNodeWays.contains(2)) {
-			throw new Exception("图郭点不允许参与制作CRF交叉点");
-		}
-	}
+		for (Map.Entry<Integer, String> entry : loadRdNodeWays.entrySet()) {
+			int nodePid = entry.getKey();
 
-	/**
-	 * 检查link是否正确
-	 * 
-	 * @param linkList
-	 * @throws Exception
-	 */
-	private void checkLinkAttribute(List<RdLink> linkList) throws Exception {
-		if (CollectionUtils.isNotEmpty(linkList)) {
-			for (RdLink link : linkList) {
-				if (link.getImiCode() != 1 && link.getImiCode() != 2) {
-					throw new Exception("link:"+link.getPid()+"不具有'I、M'属性");
-				}
+			String forms = entry.getValue();
+
+			List<String> formList = Arrays.asList(forms.split(","));
+
+			if (formList.contains("2")) {
+				this.command.getNodeArray().remove(nodePid);
 			}
 		}
 	}
 
 	/**
 	 * @param conn
-	 * @param inter 
+	 * @param inter
 	 * @throws Exception
 	 */
 	public void hasNodeIsInter(Connection conn, RdInter inter) throws Exception {
+
+		// 检查点形态是否正确
+		this.checkNodeDirect(conn);
+
 		RdInterSelector selector = new RdInterSelector(conn);
 
 		StringBuffer buf = new StringBuffer();
@@ -82,63 +83,53 @@ public class Check {
 				}
 			}
 		}
-		
+
 		String nodePids = buf.deleteCharAt(buf.lastIndexOf(",")).toString();
-		
+
 		List<Integer> interPidList = selector.loadInterPidByNodePid(nodePids, false);
 
 		if (CollectionUtils.isNotEmpty(interPidList)) {
 			throw new Exception("新增的点位已包含crf交叉点");
 		}
-		
-		//检查点形态是否正确
-		this.checkNodeDirect(conn,nodePids);
-		
-		List<RdLink> linkList = checkLinkIsCorrect(buf,inter,conn);
-		
-		//检查线的形态是否正确
-		this.checkLinkAttribute(linkList);
+
+		checkLinkIsCorrect(buf, inter, conn);
+
 	}
 
 	/**
-	 * @throws Exception 
+	 * @throws Exception
 	 * 
 	 */
-	private List<RdLink> checkLinkIsCorrect(StringBuffer buf,RdInter inter,Connection conn) throws Exception {
-		for(IRow row : inter.getNodes())
-		{
-			RdInterNode interNode = (RdInterNode) row; 
-			
-			buf.append(","+interNode.getNodePid());
+	private List<RdLink> checkLinkIsCorrect(StringBuffer buf, RdInter inter, Connection conn) throws Exception {
+		for (IRow row : inter.getNodes()) {
+			RdInterNode interNode = (RdInterNode) row;
+
+			buf.append("," + interNode.getNodePid());
 		}
-		
+
 		String allNodePids = buf.toString();
-				
+
 		List<RdLink> linkList = new RdLinkSelector(conn).loadLinkPidByNodePids(allNodePids, true);
-		
-		//后台计算出需要新增的rd_inter_link集合
+
+		// 后台计算出需要新增的rd_inter_link集合
 		List<RdLink> resultList = new ArrayList<>();
-		
-		for(RdLink link : linkList)
-		{
-			for(IRow row : inter.getLinks())
-			{
+
+		for (RdLink link : linkList) {
+			for (IRow row : inter.getLinks()) {
 				RdInterLink interLink = (RdInterLink) row;
-				
-				if(link.getPid() != interLink.getLinkPid())
-				{
+
+				if (link.getPid() != interLink.getLinkPid()) {
 					resultList.add(link);
 					break;
 				}
 			}
 		}
-		
+
 		JSONArray linkArray = this.command.getLinkArray();
-		
+
 		JSONArray compareArray = new JSONArray();
-		
-		if(linkArray != null)
-		{
+
+		if (linkArray != null) {
 			for (int i = 0; i < linkArray.size(); i++) {
 				JSONObject json = linkArray.getJSONObject(i);
 
@@ -151,66 +142,40 @@ public class Check {
 			}
 		}
 		
-		checkLink(resultList,compareArray);
+		com.navinfo.dataservice.engine.edit.operation.obj.rdinter.create.Check check = new com.navinfo.dataservice.engine.edit.operation.obj.rdinter.create.Check();
 		
+		check.checkLinkDirect(resultList);
+
 		return linkList;
 	}
 	
 	/**
 	 * 检查link参数正确性
-	 * @param linkList link集合
+	 * 
+	 * @param linkList
+	 *            link集合
 	 * @throws Exception
 	 */
-	private void checkLink(List<RdLink> linkList,JSONArray linkArray) throws Exception {
-		if(linkList != null && linkArray != null && linkArray.size()>0)
-		{
+	public void checkLink(List<RdLink> linkList, JSONArray linkArray) throws Exception {
+		if (linkList != null && linkArray != null && linkArray.size() > 0) {
 			@SuppressWarnings("unchecked")
 			List<Integer> linkPids = (List<Integer>) JSONArray.toCollection(linkArray);
-			if(linkList.size() != linkPids.size())
-			{
+			if (linkList.size() != linkPids.size()) {
 				throw new Exception("传递的link参数不正确:包含的link个数错误");
-			}
-			else
-			{
+			} else {
 				List<Integer> dbLinkPids = new ArrayList<>();
-				
-				for(RdLink link :linkList)
-				{
+
+				for (RdLink link : linkList) {
 					dbLinkPids.add(link.getPid());
 				}
-				
-				if(!(linkPids.containsAll(dbLinkPids) && dbLinkPids.containsAll(linkPids)))
-				{
+
+				if (!(linkPids.containsAll(dbLinkPids) && dbLinkPids.containsAll(linkPids))) {
 					throw new Exception("传递的link参数不正确：link_pid错误");
 				}
-				else
-				{
-					this.checkLinkDirect(linkList);
-				}
 			}
-		}
-		else
-		{
+		} else {
 			throw new Exception("传递的link参数不正确：缺失link参数");
 		}
 	}
-	
-	/**
-	 * 检查link是否正确
-	 * @param linkList
-	 * @throws Exception
-	 */
-	private void checkLinkDirect(List<RdLink> linkList) throws Exception
-	{
-		if(CollectionUtils.isNotEmpty(linkList))
-		{
-			for(RdLink link : linkList)
-			{
-				if(link.getImiCode() != 1 && link.getImiCode() !=2)
-				{
-					throw new Exception("link:"+link.getPid()+"不具有'I、M'属性,不允许制作");
-				}
-			}
-		}
-	}
+
 }

@@ -1,109 +1,111 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdrestriction.create;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Command extends AbstractCommand {
 
-	private String requester;
-	
-	private int inLinkPid;
+    private String requester;
 
-	private int nodePid;
+    private int inLinkPid;
 
-	private List<Integer> outLinkPids;
+    private int nodePid;
 
-	private String restricInfos;
+    private List<Integer> outLinkPids;
 
-	public int getInLinkPid() {
-		return inLinkPid;
-	}
+    private String restricInfos;
 
-	public void setInLinkPid(int inLinkPid) {
-		this.inLinkPid = inLinkPid;
-	}
+    /**
+     * 0:普通交限;
+     * 1:卡车交限;
+     */
+    private int restricType;
 
-	public int getNodePid() {
-		return nodePid;
-	}
+    public int getInLinkPid() {
+        return inLinkPid;
+    }
 
-	public void setNodePid(int nodePid) {
-		this.nodePid = nodePid;
-	}
+    public void setInLinkPid(int inLinkPid) {
+        this.inLinkPid = inLinkPid;
+    }
 
-	public List<Integer> getOutLinkPids() {
-		return outLinkPids;
-	}
+    public int getNodePid() {
+        return nodePid;
+    }
 
-	public void setOutLinkPids(List<Integer> outLinkPids) {
-		this.outLinkPids = outLinkPids;
-	}
-	
-	public String getRestricInfos() {
-		return restricInfos;
-	}
+    public void setNodePid(int nodePid) {
+        this.nodePid = nodePid;
+    }
 
-	public void setRestricInfos(String restricInfos) {
-		this.restricInfos = restricInfos;
-	}
+    public List<Integer> getOutLinkPids() {
+        return outLinkPids;
+    }
 
-	@Override
-	public OperType getOperType() {
-		return OperType.CREATE;
-	}
+    public void setOutLinkPids(List<Integer> outLinkPids) {
+        this.outLinkPids = outLinkPids;
+    }
 
-	@Override
-	public ObjType getObjType() {
-		return ObjType.RDRESTRICTION;
-	}
+    public String getRestricInfos() {
+        return restricInfos;
+    }
 
-	@Override
-	public String getRequester() {
-		return requester;
-	}
-	
-	public void createGlmList() throws Exception {
-		// TODO Auto-generated method stub
-		
-	}
-	
-	public Command(JSONObject json, String requester) {
-		this.requester = requester;
+    public int getRestricType() {
+        return restricType;
+    }
 
-		this.setDbId(json.getInt("dbId"));
+    @Override
+    public OperType getOperType() {
+        return OperType.CREATE;
+    }
 
-		JSONObject data = json.getJSONObject("data");
+    @Override
+    public ObjType getObjType() {
+        return ObjType.RDRESTRICTION;
+    }
 
-		this.nodePid = data.getInt("nodePid");
+    @Override
+    public String getRequester() {
+        return requester;
+    }
 
-		this.inLinkPid = data.getInt("inLinkPid");
-		
-		outLinkPids = new ArrayList<Integer>();
-		
-		if (data.containsKey("outLinkPids")) {
-			JSONArray array = data.getJSONArray("outLinkPids");
+    public Command(JSONObject json, String requester) {
+        this.requester = requester;
 
-			for (int i = 0; i < array.size(); i++) {
+        this.setDbId(json.getInt("dbId"));
 
-				int pid = array.getInt(i);
+        JSONObject data = json.getJSONObject("data");
 
-				if (!outLinkPids.contains(pid)) {
-					outLinkPids.add(pid);
-				}
-			}
-		}
-		
-		if(data.containsKey("infos"))
-		{
-			restricInfos = data.getString("infos");
-		}
-	}
-	
+        this.nodePid = data.getInt("nodePid");
+
+        this.inLinkPid = data.getInt("inLinkPid");
+
+        outLinkPids = new ArrayList<>();
+
+        if (data.containsKey("outLinkPids")) {
+            JSONArray array = data.getJSONArray("outLinkPids");
+
+            for (int i = 0; i < array.size(); i++) {
+
+                int pid = array.getInt(i);
+
+                if (!outLinkPids.contains(pid)) {
+                    outLinkPids.add(pid);
+                }
+            }
+        }
+
+        if (data.containsKey("infos")) {
+            restricInfos = data.getString("infos");
+        }
+        if (data.containsKey("restricType")) {
+            restricType = data.getInt("restricType");
+        }
+    }
+
 }

@@ -11,6 +11,8 @@ import net.sf.json.JSONObject;
 
 
 /** 
+ * 根据大区库创建POI日出品JOB
+ * 一个大区库创建一个job
  * @ClassName: ReleaseFmIdbDailyPoi
  * @author songdongyan
  * @date 2016年11月10日
@@ -53,7 +55,7 @@ public class ReleaseFmIdbDailyPoi {
 				jobDataJson.put("produceId", produceId);
 				jobDataJson.put("featureType", "POI");
 				jobDataJson.put("regionId", regionInfo.getRegionId());
-				long jobId=jobApi.createJob("releaseFmIdbDailyPoiJob", jobDataJson, 0, "日出品");
+				long jobId=jobApi.createJob("releaseFmIdbDailyPoiJob", jobDataJson, 0,0, "日出品");
 				System.out.println("jobId" + jobId);
 			}
 		}catch(Exception e){

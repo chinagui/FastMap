@@ -177,7 +177,7 @@ public class InfoChangeMsgHandler implements MsgHandler {
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			log.error("发送失败,原因:"+e.getMessage(), e);
+			log.error("新增一级情报消息发送失败,原因:"+e.getMessage(), e);
 		}
 	}
 	

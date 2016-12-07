@@ -9,4 +9,6 @@ xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
 	<dubbo:reference id="manApi" interface="com.navinfo.dataservice.api.man.iface.ManApi" />
 	<dubbo:reference id="datalockApi" interface="com.navinfo.dataservice.api.edit.iface.DatalockApi" />
 	<dubbo:reference id="staticsApi" interface="com.navinfo.dataservice.api.statics.iface.StaticsApi" />
+	<dubbo:reference id="fmMultiSrcSyncApi" interface="com.navinfo.dataservice.api.edit.iface.FmMultiSrcSyncApi" />
+	<dubbo:reference id="day2MonthSyncApi" interface="com.navinfo.dataservice.api.man.iface.Day2MonthSyncApi" />
 </beans>

@@ -270,7 +270,7 @@ public class EdgeMatchTipsOperator {
 
 			solrIndex.put("handler", user);
 
-			solrIndex.put("feedback", feedBack);
+			solrIndex.put("feedback", f_array);
 
 			solr.addTips(solrIndex);
 

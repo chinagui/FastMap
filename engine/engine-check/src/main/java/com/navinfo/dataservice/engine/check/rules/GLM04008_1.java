@@ -62,11 +62,57 @@ public class GLM04008_1 extends baseRule{
 				RdRestriction rdRestriction = (RdRestriction) obj;
 				checkRdRestriction(rdRestriction,checkCommand.getOperType());
 			}
+			//交限RdRestrictionDetail
+			else if(obj instanceof RdRestrictionDetail){
+				RdRestrictionDetail rdRestrictionDetail = (RdRestrictionDetail)obj;
+				checkRdRestrictionDetail(rdRestrictionDetail);
+			}
 			// 大门RdGate
 			else if (obj instanceof RdGate) {
 				RdGate rdGate = (RdGate) obj;
 				checkRdGate(rdGate,checkCommand.getOperType());
 			}	
+		}
+		
+	}
+
+	/**
+	 * @param rdRestrictionDetail
+	 * @throws Exception 
+	 */
+	private void checkRdRestrictionDetail(RdRestrictionDetail rdRestrictionDetail) throws Exception {
+		//禁止进入交限
+		//如果进入线退出线均为双向，则另一方向需制作单向大门
+		if(rdRestrictionDetail.getType()==1){
+			int pid = rdRestrictionDetail.getRestricPid();
+			int outLinkPid = rdRestrictionDetail.getOutLinkPid();
+			StringBuilder sb = new StringBuilder();
+
+			sb.append("SELECT 1 FROM RD_RESTRICTION R,RD_GATE G,RD_LINK RL1, RD_LINK RL2");
+			sb.append(" WHERE R.IN_LINK_PID = G.OUT_LINK_PID");
+			sb.append(" AND R.PID = " + pid);
+			sb.append(" AND G.IN_LINK_PID = " + outLinkPid);
+			sb.append(" AND G.DIR = 1");
+			sb.append(" AND G.IN_LINK_PID = RL1.LINK_PID");
+			sb.append(" AND G.OUT_LINK_PID = RL2.LINK_PID");
+			sb.append(" AND RL1.DIRECT = 1");
+			sb.append(" AND RL2.DIRECT = 1");
+			sb.append(" AND G.U_RECORD <> 2") ;
+			sb.append(" AND RL1.U_RECORD <> 2") ;
+			sb.append(" AND RL2.U_RECORD <> 2") ;
+
+			String sql = sb.toString();
+			log.info("RdRestriction后检查GLM04008_1:" + sql);
+
+			DatabaseOperator getObj = new DatabaseOperator();
+			List<Object> resultList = new ArrayList<Object>();
+			resultList = getObj.exeSelect(this.getConn(), sql);
+			
+			if(resultList.size()>0){
+				String target = "[RD_RESTRICTION," + pid + "]";
+				this.setCheckResult("", target, 0);
+			}
+
 		}
 		
 	}

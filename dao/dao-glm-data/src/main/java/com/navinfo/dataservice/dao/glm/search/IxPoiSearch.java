@@ -810,7 +810,6 @@ public class IxPoiSearch implements ISearch {
 			dataObj.put("adminCode",adAdmin.getAdminId());
 			
 			int parProupId = 0,childProupId=0;
-			
 			//ix_poi表通过pid关联ix_poi_parent，取group_id
 			List<IRow> pRows = poi.getParents();
 			for(IRow pRow : pRows){

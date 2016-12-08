@@ -38,6 +38,10 @@
 			<artifactId>job-framework</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>com.navinfo.dataservice</groupId>
+			<artifactId>engine-editplus</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>net.sf.json-lib</groupId>
 			<artifactId>json-lib</artifactId>
 			<classifier>jdk15</classifier>

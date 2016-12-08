@@ -25,6 +25,7 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
 
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
+import com.navinfo.dataservice.commons.photo.RotateImageUtils;
 import com.navinfo.dataservice.commons.util.ZipUtils;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiPhoto;
 import com.navinfo.dataservice.dao.photo.HBaseController;
@@ -206,7 +207,11 @@ public class UploadService {
 		
 		if(fileType.equals("photo")){
 			InputStream fileStream = uploadItem.getInputStream();
-			
+			//******zl 2016.12.07 添加自动图片旋转**************
+			if(fileStream != null){
+				fileStream = RotateImageUtils.rotateImage(fileStream);
+			}
+			//********************
 			DBController dbController = new DBController();
 			HBaseController hbaseController = new HBaseController();
 				

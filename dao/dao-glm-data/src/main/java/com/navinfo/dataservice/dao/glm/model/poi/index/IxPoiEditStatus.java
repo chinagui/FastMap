@@ -20,6 +20,17 @@ import net.sf.json.JSONObject;
 */
 public class IxPoiEditStatus implements IRow{
 
+	//2016.12.08  zl:当前编辑状态 0:未提交过 ;  1:已提交
+	private int commitHisStatus = 0;
+	
+	public int getCommit_his_status() {
+		return commitHisStatus;
+	}
+	
+	public void setCommitHisStatus(int commitHisStatus) {
+		this.commitHisStatus = commitHisStatus;
+	}
+
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) throws Exception {
 		return null;

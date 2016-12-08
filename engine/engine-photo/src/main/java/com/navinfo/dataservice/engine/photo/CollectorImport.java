@@ -2,6 +2,7 @@ package com.navinfo.dataservice.engine.photo;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -17,6 +18,7 @@ import org.apache.hadoop.hbase.client.Table;
 
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.commons.photo.Photo;
+import com.navinfo.dataservice.commons.photo.RotateImageUtils;
 import com.navinfo.dataservice.commons.util.FileUtils;
 import com.navinfo.dataservice.dao.photo.HBaseConnector;
 import com.navinfo.dataservice.dao.photo.HBaseController;
@@ -38,8 +40,13 @@ public class CollectorImport {
 		for (File f : files) {
 			if(f.isFile() && f.getName().endsWith(".jpg")){
 				FileInputStream in = new FileInputStream(f);
-				controller.putPhoto(f.getName().replace(".jpg", ""),in);
+				//******zl 2016.12.07 添加自动图片旋转**************
+				InputStream newInStream = RotateImageUtils.rotateImage(in);
+				//********************
+				//controller.putPhoto(f.getName().replace(".jpg", ""),in);
+				controller.putPhoto(f.getName().replace(".jpg", ""),newInStream);
 				in.close();
+				newInStream.close();
 			}
 		}
 	}
@@ -55,6 +62,11 @@ public class CollectorImport {
 		if (!file.exists()) {
 			return;
 		}
+		
+		//******zl 2016.12.07 添加自动图片旋转**************
+		//需要旋转的图片,旋转后替换原有图片
+		 RotateImageUtils.rotateImage(dir);
+		//********************
 		
 		Map<String,byte[]> mapPhoto = FileUtils.readPhotos(dir);
 		

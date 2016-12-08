@@ -415,9 +415,10 @@ public class LogReader {
 	public JSONArray getHisByOperate(String opCmd,String tbTb,String rowId) throws Exception {
 		StringBuilder sb = new StringBuilder();
 		sb.append(" SELECT ld.old,ld.new");
-		sb.append(" FROM LOG_OPERATION LO, LOG_DETAIL LD");
-		sb.append(" WHERE LO.OP_ID = LD.OP_ID");
-		sb.append(" AND LO.OP_CMD = ?");
+		sb.append(" FROM LOG_ACTION LA, LOG_OPERATION LO, LOG_DETAIL LD");
+		sb.append(" WHERE LA.ACT_ID = LO.ACT_ID");
+		sb.append(" AND LO.OP_ID = LD.OP_ID");
+		sb.append(" AND LA.OP_CMD = ?");
 		sb.append(" AND LD.TB_NM = ?");
 		sb.append(" AND LD.TB_ROW_ID = ?");
 		sb.append(" ORDER BY LO.OP_SEQ DESC");

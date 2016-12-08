@@ -170,10 +170,16 @@ public class PoiSave {
     }
 
     /**
-     * poi操作修改poi状态为已作业，鲜度信息为0 zhaokk sourceFlag 0 web 1 Android
-     *
+     * @Title: upatePoiStatus
+     * @Description:poi操作修改poi状态为已作业，鲜度信息为0 zhaokk sourceFlag 0 web 1 Android
+     * 		(修)(第七迭代) 变更:当新增 poi_edit_status 时,为 commit_his_status 字段赋默认值 0 
      * @param pids
-     * @throws Exception
+     * @param conn
+     * @param flag
+     * @throws Exception  void
+     * @throws 
+     * @author zl zhangli5174@navinfo.com
+     * @date 2016年12月8日 下午1:50:56 
      */
     public void upatePoiStatus(String pids, Connection conn, boolean flag) throws Exception {
         StringBuilder sb = new StringBuilder();
@@ -185,7 +191,8 @@ public class PoiSave {
             sb.append(" WHEN MATCHED THEN ");
             sb.append(" UPDATE SET T1.status = T2.b,T1.fresh_verified= T2.c ");
             sb.append(" WHEN NOT MATCHED THEN ");
-            sb.append(" INSERT (T1.status,T1.fresh_verified,T1.pid) VALUES(T2.b,T2.c,T2.d)");
+            //zl 2016.12.08 新增时为 commit_his_status 字段赋默认值 0 
+            sb.append(" INSERT (T1.status,T1.fresh_verified,T1.pid,commit_his_status) VALUES(T2.b,T2.c,T2.d,0)");
         } else {
             sb.append(" UPDATE poi_edit_status T1 SET T1.status = 2 where T1.pid in ("
                     + pids + ")");

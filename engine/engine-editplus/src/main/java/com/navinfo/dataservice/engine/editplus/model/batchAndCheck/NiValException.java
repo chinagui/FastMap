@@ -18,7 +18,7 @@ public class NiValException {
 	private String targets;
 	private int meshId;
 	private String information;
-	private List<Map<String, Object>> targetsList=new ArrayList<Map<String,Object>>();
+	//private List<Map<String, Object>> targetsList=new ArrayList<Map<String,Object>>();
 	
 	public NiValException(String ruleId, String loc, String targets,int meshId,String information){
 		this.setRuleId(ruleId);
@@ -61,25 +61,6 @@ public class NiValException {
 
 	public void setTargets(String targets) {
 		this.targets = targets;
-		splitTargets(targets);
-	}
-	/**
-	 * targets拆分后存入list
-	 * @param targets 
-	 * [{tableName:ix_poi,pid:123}]
-	 */
-	private void splitTargets(String targets){
-		String value=StringUtils.removeBlankChar(targets);
-		if (value != null && value.length() > 2) {
-			String subValue = value.substring(1, value.length() - 1);
-			for (String table : subValue.split("\\];\\[")) {
-				String[] arr = table.split(",");
-				Map<String, Object> oneTargets=new HashMap<String, Object>();
-				oneTargets.put("tableName", arr[0]);
-				oneTargets.put("pid", arr[1]);
-				targetsList.add(oneTargets);
-			}
-		}
 	}
 
 	public int getMeshId() {

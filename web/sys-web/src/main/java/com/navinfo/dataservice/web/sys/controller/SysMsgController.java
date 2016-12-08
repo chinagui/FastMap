@@ -263,7 +263,7 @@ public class SysMsgController extends BaseController {
 	 * @return
 	 */
 	@RequestMapping(value = "/message/listUnOperate")
-	public ModelAndView getUnAuditapply(HttpServletRequest request){
+	public ModelAndView listUnOperate(HttpServletRequest request){
 		try{
 			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
 			long userId = tokenObj.getUserId();

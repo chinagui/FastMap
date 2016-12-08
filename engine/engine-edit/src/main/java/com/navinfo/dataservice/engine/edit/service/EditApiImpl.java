@@ -140,6 +140,7 @@ public class EditApiImpl implements EditApi {
 			subConn = DBConnector.getInstance().getConnectionById(dbId);
 			List<String> batchList = batchProcess.getRowRules();
 			batchProcess.execute(dataObj, subConn, new EditApiImpl(subConn), batchList);
+			subConn.commit();
 		} catch (Exception e) {
 			throw e;
 		} finally {

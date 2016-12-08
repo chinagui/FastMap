@@ -67,7 +67,7 @@ public class BatchProcess {
 					
 				}
 			}
-			conn.commit();
+			
 		} catch (Exception e) {
 			throw e;
 		}

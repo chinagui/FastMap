@@ -73,22 +73,22 @@ create table POI_COLUMN_STATUS
 );
 -- Add comments to the table 
 comment on table POI_COLUMN_STATUS
-  is 'POI¾«±à×÷Òµ×´Ì¬±í';
+  is 'POIï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµ×´Ì¬ï¿½ï¿½';
 -- Add comments to the columns 
 comment on column POI_COLUMN_STATUS.PID
   is 'POI ID';
 comment on column POI_COLUMN_STATUS.WORK_ITEM_ID
-  is '×÷ÒµÏîID';
+  is 'ï¿½ï¿½Òµï¿½ï¿½ID';
 comment on column POI_COLUMN_STATUS.FIRST_WORK_STATUS
-  is 'Ò»¼¶×÷ÒµÏî×÷Òµ×´Ì¬';
+  is 'Ò»ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½Òµ×´Ì¬';
 comment on column POI_COLUMN_STATUS.SECOND_WORK_STATUS
-  is '¶þ¼¶×÷ÒµÏî×÷Òµ×´Ì¬';
+  is 'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½Òµ×´Ì¬';
 comment on column POI_COLUMN_STATUS.HANDLER
-  is 'ÉêÇë×÷ÒµÔ±ID';
+  is 'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÒµÔ±ID';
 comment on column POI_COLUMN_STATUS.TASK_ID
-  is 'ÈÎÎñºÅ';
+  is 'ï¿½ï¿½ï¿½ï¿½ï¿½';
 comment on column POI_COLUMN_STATUS.APPLY_DATE
-  is 'ÉêÇëÊ±¼ä';
+  is 'ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½';
 
 create table POI_COLUMN_WORKITEM_CONF
 (
@@ -96,6 +96,7 @@ create table POI_COLUMN_WORKITEM_CONF
   FIRST_WORK_ITEM  VARCHAR2(50),
   SECOND_WORK_ITEM VARCHAR2(50),
   WORK_ITEM_ID     VARCHAR2(50),
+  CHECK_FLAG       NUMBER(1),
   TYPE             NUMBER(1)
 );
 
@@ -193,21 +194,21 @@ CREATE TABLE LOG_DAY_RELEASE
   CONSTRAINT PK_LOG_RELEASE PRIMARY KEY(OP_ID)
 );
 -- Add comments to the columns 
-COMMENT ON TABLE LOG_DAY_RELEASE IS 'ÈÕ¿â³öÆ·¹ÜÀí±í';
+COMMENT ON TABLE LOG_DAY_RELEASE IS 'ï¿½Õ¿ï¿½ï¿½Æ·ï¿½ï¿½ï¿½ï¿½ï¿½';
 COMMENT ON COLUMN LOG_DAY_RELEASE.OP_ID
-  IS '²Î¿¼log_operation.op_id';
+  IS 'ï¿½Î¿ï¿½log_operation.op_id';
 COMMENT ON COLUMN LOG_DAY_RELEASE.REL_POI_STA
-  IS 'POI³öÆ·×´Ì¬';
+  IS 'POIï¿½ï¿½Æ·×´Ì¬';
 COMMENT ON COLUMN LOG_DAY_RELEASE.REL_POI_DT
-  IS 'POI³öÆ·Ê±¼ä';
+  IS 'POIï¿½ï¿½Æ·Ê±ï¿½ï¿½';
 COMMENT ON COLUMN LOG_DAY_RELEASE.REL_ALL_STA
-  IS 'POI+ROAD³öÆ·×´Ì¬';
+  IS 'POI+ROADï¿½ï¿½Æ·×´Ì¬';
 COMMENT ON COLUMN LOG_DAY_RELEASE.REL_ALL_DT
-  IS 'POI+ROAD³öÆ·Ê±¼ä';
+  IS 'POI+ROADï¿½ï¿½Æ·Ê±ï¿½ï¿½';
 COMMENT ON COLUMN LOG_DAY_RELEASE.REL_POI_LOCK
-  IS 'POI ³öÆ·Ëø×´Ì¬';
+  IS 'POI ï¿½ï¿½Æ·ï¿½ï¿½×´Ì¬';
 COMMENT ON COLUMN LOG_DAY_RELEASE.REL_ALL_LOCK
-  IS 'POI+ROAD³öÆ·Ëø×´Ì¬';
+  IS 'POI+ROADï¿½ï¿½Æ·ï¿½ï¿½×´Ì¬';
 --ADD INDEXES
 create bitmap index IDX_LOG_DAY_REL_1 on LOG_DAY_RELEASE (rel_poi_sta);
 create bitmap index IDX_LOG_DAY_REL_2 on LOG_DAY_RELEASE (rel_all_sta);

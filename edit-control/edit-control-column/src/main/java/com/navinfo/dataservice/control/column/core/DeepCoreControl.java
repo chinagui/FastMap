@@ -296,7 +296,6 @@ public class DeepCoreControl {
         Connection conn = null;
         JSONObject result = null;
         
-        List<String> rowIdList = new ArrayList<String>();
         List<Integer> pids = new ArrayList<Integer>();
         
         try {
@@ -312,10 +311,10 @@ public class DeepCoreControl {
             JSONObject poiData = json.getJSONObject("data");
             
             pids.add(objId);
-            rowIdList = getRowIdsByPids(conn,pids);
+            //rowIdList = getRowIdsByPids(conn,pids);
             
             if (poiData.size() == 0) {
-            	updateDeepStatus(rowIdList, conn, 0);
+            	updateDeepStatus(pids, conn, 0);
                 return result;
             }
             
@@ -329,7 +328,7 @@ public class DeepCoreControl {
             sb.append(String.valueOf(objId));
 
             //更新数据状态
-            updateDeepStatus(rowIdList, conn, 0);
+            updateDeepStatus(pids, conn, 0);
             //调用清理检查结果方法
             cleanCheckResult(pids,conn);
             
@@ -366,7 +365,7 @@ public class DeepCoreControl {
 		
 		ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
 		
-		List<String> rowIdList = new ArrayList<String>();
+		List<Integer> pidList = new ArrayList<Integer>();
         Connection conn = null;
         JSONObject result = new JSONObject();
         int sucReleaseTotal = 0;
@@ -376,18 +375,18 @@ public class DeepCoreControl {
 
             int dbId = json.getInt("dbId");
             int subtaskId = json.getInt("subtaskId");
-            int type = json.getInt("type");
+            String secondWorkItem = json.getString("secondWorkItem");
 
             Subtask subtask = apiService.queryBySubtaskId(subtaskId);
             conn = DBConnector.getInstance().getConnectionById(dbId);  
 			
 			// 查询可提交数据
-			IxPoiDeepStatusSelector ixPoiDeepStatusSelector = new IxPoiDeepStatusSelector(conn);
-			rowIdList = ixPoiDeepStatusSelector.getRowIdsForRelease(subtask,2,userId, type);
-			sucReleaseTotal = rowIdList.size();
+            IxPoiColumnStatusSelector ixPoiColumnStatusSelector = new IxPoiColumnStatusSelector(conn);
+			pidList = ixPoiColumnStatusSelector.getpidsForRelease(subtask,2,userId, secondWorkItem);
+			sucReleaseTotal = pidList.size();
 			
 			// 修改poi_deep_status表作业项状态
-			updateDeepStatus(rowIdList, conn, 1);
+			updateDeepStatus(pidList, conn, 1);
 			result.put("sucReleaseTotal", sucReleaseTotal);
             return result;
         } catch (DataNotChangeException e) {
@@ -408,16 +407,16 @@ public class DeepCoreControl {
      * @param pids conn flag(0:保存 1:提交)
      * @throws Exception
      */
-	public void updateDeepStatus(List<String> rowIdList,Connection conn,int flag) throws Exception {
+	public void updateDeepStatus(List<Integer> pidList,Connection conn,int flag) throws Exception {
 		StringBuilder sb = new StringBuilder();
-        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");//设置日期格式
-        if (rowIdList.isEmpty()){
+		Timestamp timeStamp = new Timestamp(new Date().getTime());
+        if (pidList.isEmpty()){
         	return;
         }
         if (flag==0) {
-        	sb.append(" UPDATE poi_deep_status T1 SET T1.status = 2 , T1.update_date = to_date('"+df.format(new Date())+"','yyyy-mm-dd hh24:mi:ss') WHERE row_id in (");
+        	sb.append(" UPDATE poi_column_status T1 SET T1.SECOND_WORK_STATUS= 2  WHERE pid in (");
         } else {
-        	sb.append(" UPDATE poi_deep_status T1 SET T1.status = 3 , T1.update_date = to_date('"+df.format(new Date())+"','yyyy-mm-dd hh24:mi:ss') WHERE row_id in (");
+        	sb.append(" UPDATE poi_column_status T1 SET T1.SECOND_WORK_STATUS= 3,T1.HANDLER=0  WHERE pid in (");
         }
 		
 		PreparedStatement pstmt = null;
@@ -425,9 +424,9 @@ public class DeepCoreControl {
 		ResultSet resultSet = null;
 		try {
 			String temp="";
-			for (String rowId:rowIdList) {
+			for (int pid:pidList) {
 				sb.append(temp);
-				sb.append("'"+rowId+"'");
+				sb.append("'"+pid+"'");
 				temp = ",";
 			}
 			sb.append(")");

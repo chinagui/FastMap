@@ -193,7 +193,7 @@ public class TipsImportUtils {
 
 				for (int j = 0; j < content.size(); j++) {
 
-					JSONObject geo = content.getJSONObject(i);
+					JSONObject geo = content.getJSONObject(j);
 
 					Geometry g = GeoTranslator.geojson2Jts(geo
 							.getJSONObject("geo"));

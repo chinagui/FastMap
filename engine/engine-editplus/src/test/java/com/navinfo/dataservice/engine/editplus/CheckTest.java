@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -58,7 +59,7 @@ public class CheckTest {
 		
 		Check check=new Check(conn,operationResult);
 		check.operate(checkCommand);
-		List<NiValException> niValException = check.getReturnExceptions();
+		Map<String, Map<Long, Set<String>>> errorPid = check.getErrorPidMap();
 		System.out.println("end check test");
 	}
 

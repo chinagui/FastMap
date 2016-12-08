@@ -25,6 +25,7 @@ import com.navinfo.dataservice.engine.editplus.model.batchAndCheck.NiValExceptio
 
 public class Check extends AbstractOperation{
 	private List<NiValException> returnExceptions =new ArrayList<NiValException>();
+	private CheckRuleCommand checkRuleCommand;
 	public Check(Connection conn, OperationResult preResult) {
 		super(conn, preResult);
 		// TODO Auto-generated constructor stub
@@ -69,16 +70,16 @@ public class Check extends AbstractOperation{
 		ObjChildrenIncreSelector.increSelect(conn,result.getAllObjsMap(), selConfig);
 		log.info("end load incre check data");
 		//构造批处理规则的参数command
-		CheckRuleCommand checkRuleCommand=new CheckRuleCommand();
-		checkRuleCommand.setConn(conn);
-		checkRuleCommand.setAllDatas(result.getAllObjsMap());
+		this.checkRuleCommand=new CheckRuleCommand();
+		this.checkRuleCommand.setConn(conn);
+		this.checkRuleCommand.setAllDatas(result.getAllObjsMap());
 		//顺序执行检查规则
 		List<NiValException> checkResult=new ArrayList<NiValException>();
 		CheckExcuter excuter=new CheckExcuter();
 		log.info("start run check rule");
 		for(CheckRule rule:checkRuleList){
 			List<NiValException> checkResultTmp=new ArrayList<NiValException>();
-			checkResultTmp=excuter.exeRule(rule, checkRuleCommand);
+			checkResultTmp=excuter.exeRule(rule, this.checkRuleCommand);
 			checkResult.addAll(checkResultTmp);
 			//isErrorReturn为ture，表示有错误log，则直接停止后续检查；false则继续执行，最后检查结果统一返回
 			if(checkCommand.isErrorReturn() && !checkResult.isEmpty() && checkResult.size()>0){
@@ -100,6 +101,17 @@ public class Check extends AbstractOperation{
 
 	public void setReturnExceptions(List<NiValException> returnExceptions) {
 		this.returnExceptions = returnExceptions;
+	}
+	
+	/**
+	 * 
+	 * @return:
+	 * IX_POI对象的检查错误，按照pid查找规则号的集合
+	 * key:ObjectName.java中的对象名 
+	 * value：Map<Long, Set<String>> key:pid value:检查规则号集合
+	 */
+	public Map<String, Map<Long, Set<String>>> getErrorPidMap() {
+		return this.checkRuleCommand.getErrorPidRuleMap();
 	}
 
 	@Override

@@ -10,8 +10,12 @@ import org.apache.log4j.Logger;
 
 import sun.tools.tree.ThisExpression;
 
+import com.navinfo.dataservice.commons.util.StringUtils;
+import com.navinfo.dataservice.dao.plus.glm.GlmFactory;
+import com.navinfo.dataservice.dao.plus.glm.GlmObject;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
+import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.check.Check;
 import com.navinfo.dataservice.engine.editplus.model.batchAndCheck.BatchRuleCommand;
 import com.navinfo.dataservice.engine.editplus.model.batchAndCheck.CheckRuleCommand;
@@ -73,28 +77,57 @@ public abstract class BasicCheckRule {
 	
 	public void setCheckResult(String loc, String targets,int meshId){
 		NiValException checkResult=new NiValException(this.checkRule.getRuleId(), loc, targets, meshId,this.checkRule.getLog());
+		splitTargets(targets);
 		this.checkResultList.add(checkResult);
 	}
 	
 	public void setCheckResult(Geometry loc, String targets,int meshId) throws Exception{
 		NiValException checkResult=new NiValException(this.checkRule.getRuleId(), loc, targets, meshId,this.checkRule.getLog());
+		splitTargets(targets);
 		this.checkResultList.add(checkResult);
 	}
 	
 	public void setCheckResult(BasicObj obj, String log) throws Exception{
 		if(log==null || log.isEmpty()){log=this.checkRule.getLog();}
-		NiValException checkResult=new NiValException(this.checkRule.getRuleId(), "", "["+obj.getMainrow().tableName()+","+obj.objPid()+"]",0,log);
+		String targets="["+obj.getMainrow().tableName()+","+obj.objPid()+"]";
+		NiValException checkResult=new NiValException(this.checkRule.getRuleId(), "", targets,0,log);
+		splitTargets(targets);
 		this.checkResultList.add(checkResult);
 	}
 	
 	public void setCheckResult(String loc, String targets,int meshId,String log){
 		NiValException checkResult=new NiValException(this.checkRule.getRuleId(), loc, targets, meshId,log);
+		splitTargets(targets);
 		this.checkResultList.add(checkResult);
 	}
 	
 	public void setCheckResult(Geometry loc, String targets,int meshId,String log) throws Exception{
 		NiValException checkResult=new NiValException(this.checkRule.getRuleId(), loc, targets, meshId,log);
+		splitTargets(targets);
 		this.checkResultList.add(checkResult);
+	}
+	
+	/**
+	 * targets拆分后存入list,主要用于poi精编重分类，目前仅支持poi类。
+	 * @param targets 
+	 * {IX_POI:{PID,[RULE1,RULE2]}}
+	 */
+	private void splitTargets(String targets){
+		GlmObject glmObject = GlmFactory.getInstance().getObjByType(ObjectName.IX_POI);
+		String mainTableName=glmObject.getMainTable().getName();
+		String value=StringUtils.removeBlankChar(targets);
+		if (value != null && value.length() > 2) {
+			String subValue = value.substring(1, value.length() - 1);
+			for (String table : subValue.split("\\];\\[")) {
+				String[] arr = table.split(",");
+				String tableName= arr[0];
+				String pid=arr[1];
+				if(mainTableName.equals(tableName)){
+					this.checkRuleCommand.setErrorPidRuleMap(ObjectName.IX_POI, Long.valueOf(pid), 
+							this.checkRule.getRuleId());
+				}
+			}
+		}
 	}
 
 	public CheckRule getCheckRule() {

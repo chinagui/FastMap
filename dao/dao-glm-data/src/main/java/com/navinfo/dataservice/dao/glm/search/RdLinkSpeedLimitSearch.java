@@ -205,7 +205,7 @@ public class RdLinkSpeedLimitSearch implements ISearch {
 
 			double ey = linkGeom.getOrdinatesArray()[(i + 1) * 2 + 1];
 
-			if (isBetween(sx, ex, point[0]) && isBetween(sy, ey, point[1])) {
+			if (isBetween(sx, ex, point[2]) && isBetween(sy, ey, point[3])) {
 				startIndex = i;
 				break;
 			}

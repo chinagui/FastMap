@@ -815,4 +815,126 @@ public List<Integer> getRowIdForSubmit(String firstWorkItem,String secondWorkIte
 			DbUtils.closeQuietly(pstmt);
 		}
 	}
+	
+	/**
+	 * 统计精编库存log量统计
+	 * @param subtask
+	 * @return
+	 * @throws Exception
+	 */
+	public JSONObject getColumnCount(Subtask subtask) throws Exception{
+		
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		
+		try {
+			StringBuilder sb = new StringBuilder();
+			sb.append("select count(1) as num, c.first_work_item as type");
+			sb.append("  from poi_column_status s, poi_column_workitem_conf c,ix_poi p");
+			sb.append(" where s.work_item_id = c.work_item_id");
+			sb.append("  and s.pid=p.pid");
+			sb.append("  and sdo_within_distance(p.geometry, sdo_geometry(    :1  , 8307), 'mask=anyinteract') = 'TRUE'");
+			sb.append("  and c.first_work_item in");
+			sb.append("  ('poi_name', 'poi_address', 'poi_englishname', 'poi_englishaddress')");
+			sb.append("  and s.first_work_status = 1");
+			sb.append("  and s.handler = 0");
+			sb.append(" GROUP BY c.first_work_item");
+			sb.append(" union all");
+			sb.append(" select count(1) as num, c1.second_work_item as type");
+			sb.append("  from poi_column_status s1, poi_column_workitem_conf c1,ix_poi p1");
+			sb.append(" where s1.work_item_id = c1.work_item_id");
+			sb.append("  and s1.pid=p1.pid");
+			sb.append("  and sdo_within_distance(p1.geometry, sdo_geometry(    :2  , 8307), 'mask=anyinteract') = 'TRUE'");
+			sb.append("  and c1.second_work_item in ('deepDetail', 'deepParking', 'deepCarrental')");
+			sb.append("  and s1.second_work_status = 1");
+			sb.append("  and s1.handler = 0");
+			sb.append(" GROUP BY c1.second_work_item");
+
+			pstmt = conn.prepareStatement(sb.toString());
+			pstmt.setString(1, subtask.getGeometry());
+			pstmt.setString(2, subtask.getGeometry());
+			
+			resultSet = pstmt.executeQuery();
+			
+			String parameter = "{\"poi_name\":0,\"poi_address\":0,\"poi_englishname\":0,\"poi_englishaddress\":0,\"deepDetail\":0,\"deepParking\":0,\"deepCarrental\":0}";
+			JSONObject result = JSONObject.fromObject(parameter);
+			
+			while (resultSet.next()) {
+				String type = resultSet.getString("type");
+				if ("poi_name".equals(type)) {
+					result.put("poi_name", resultSet.getInt("num"));
+				} else if ("poi_address".equals(type)) {
+					result.put("poi_address", resultSet.getInt("num"));
+				} else if ("poi_englishname".equals(type)) {
+					result.put("poi_englishname", resultSet.getInt("num"));
+				} else if ("poi_englishaddress".equals(type)) {
+					result.put("poi_englishaddress", resultSet.getInt("num"));
+				} else if ("deepDetail".equals(type)) {
+					result.put("deepDetail", resultSet.getInt("num"));
+				} else if ("deepParking".equals(type)) {
+					result.put("deepParking", resultSet.getInt("num"));
+				} else if ("deepCarrental".equals(type)) {
+					result.put("deepCarrental", resultSet.getInt("num"));
+				}
+			}
+			
+			return result;
+		} catch (Exception e){
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+
+	}
+	/**
+	 * 根据status,userid,secondWorkItem,subtask 获取可提交的数据rowIds
+	 * @param subtask
+	 * @param status
+	 * @param userid
+	 * @param secondWorkItem
+	 * @return
+	 * @throws Exception
+	 */
+	public List<Integer> getpidsForRelease(int subtaskId ,int status, long userid, String secondWorkItem) throws Exception {
+		List<Integer> pids = new ArrayList<Integer>();
+		StringBuilder sb = new StringBuilder();
+		sb.append(" SELECT S.PID");
+		sb.append(" FROM POI_COLUMN_STATUS S");
+		sb.append(" WHERE S.TASK_ID = ?");
+		sb.append(" AND S.WORK_ITEM_ID IN");
+		sb.append(" (SELECT CF.WORK_ITEM_ID");
+		sb.append(" FROM POI_COLUMN_WORKITEM_CONF CF");
+		sb.append(" WHERE CF.SECOND_WORK_ITEM = ?)");
+		sb.append(" AND S.HANDLER = ?");
+		sb.append(" AND S.SECOND_WORK_STATUS = ?");
+		sb.append(" AND NOT EXISTS (SELECT C.PID");
+		sb.append(" FROM NI_VAL_EXCEPTION N, CK_RESULT_OBJECT C");
+		sb.append(" WHERE N.MD5_CODE = C.MD5_CODE");
+		sb.append(" AND C.PID = s.PID)");
+		
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+			pstmt.setInt(1,subtaskId);
+			pstmt.setString(2, secondWorkItem);
+			pstmt.setLong(3, userid);
+			pstmt.setInt(4, status);
+			
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+				pids.add(resultSet.getInt("pid"));
+			}
+			
+			return pids;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+	}
+	
 }

@@ -189,4 +189,40 @@ public class LogTest {
 			e.printStackTrace();
 		}
 	}
+	
+	
+	@Test
+	public void test3(){
+		try{
+			Connection conn = null;
+			conn = DBConnector.getInstance().getConnectionById(17);;
+			String objType = "IX_POI";
+			long pid = 307000172;
+			boolean isLock = true;
+
+			BasicObj obj = ObjSelector.selectByPid(conn, objType, null, pid, isLock);
+			obj.deleteObj();
+			
+			List<BasicObj> basicObjs = new ArrayList<BasicObj>();
+			basicObjs.add(obj);
+
+			for(BasicObj basicObj:basicObjs){
+				List<RunnableSQL> runnableSqlList = basicObj.generateSql();
+				for(RunnableSQL runnableSql:runnableSqlList){
+					runnableSql.run(conn);
+				}
+			}
+			
+			String opCmd = "UPDATE";
+			int opSg = 1; 
+			long userId = 1;
+			new LogGenerator().writeLog(conn,false, basicObjs, opCmd, opSg, userId,0);
+
+			conn.commit();
+			System.out.println("Over.");
+		}catch(Exception e){
+			System.out.println("Oops, something wrong...");
+			e.printStackTrace();
+		}
+	}
 }

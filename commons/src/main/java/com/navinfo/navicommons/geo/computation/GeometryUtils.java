@@ -8,6 +8,7 @@ import net.sf.json.JSONObject;
 import org.json.JSONException;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.util.DisplayUtils;
 import com.vividsolutions.jts.algorithm.ConvexHull;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -822,6 +823,7 @@ public class GeometryUtils {
 	 */
 	public static Coordinate getPointOnLineStringDistance(
 			LineString lineString, double dist) throws Exception {
+		Coordinate c = null;
 		double length = 0.0;
 		for (int i = 1; i < lineString.getCoordinates().length; i++) {
 			Coordinate prePoint = lineString.getCoordinates()[i - 1];
@@ -832,16 +834,15 @@ public class GeometryUtils {
 			double currentLength = getLinkLength(g);
 			length += getLinkLength(g);
 			if (Math.abs(dist - length) < 1) {
-				return currentPoint;
+				c = currentPoint;
 			}
 			if (length > dist) {
-				Coordinate c = getPointOnLineSegmentByDistance(prePoint,
+				c = getPointOnLineSegmentByDistance(prePoint,
 						currentPoint, dist + currentLength - length);
-				return c;
 			}
 		}
 
-		return null;
+		return c;
 
 	}
 

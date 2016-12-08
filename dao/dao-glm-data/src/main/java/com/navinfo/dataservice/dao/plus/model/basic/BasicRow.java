@@ -14,7 +14,6 @@ import java.util.Map.Entry;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
-import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.dao.plus.glm.GlmColumn;
 import com.navinfo.dataservice.dao.plus.glm.GlmFactory;
 import com.navinfo.dataservice.dao.plus.glm.GlmRef;
@@ -26,7 +25,6 @@ import com.navinfo.navicommons.database.sql.RunnableSQL;
 import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONArray;
-import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
 
 /** 

@@ -2,13 +2,18 @@ package com.navinfo.dataservice.dao.photo;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Connection;
+import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.Put;
+import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Table;
 import org.hbase.async.GetRequest;
 import org.hbase.async.KeyValue;
@@ -16,7 +21,9 @@ import org.hbase.async.Scanner;
 
 import ch.hsr.geohash.GeoHash;
 
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
+import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.commons.photo.Photo;
@@ -152,6 +159,8 @@ public class HBaseController {
 		Photo photo = new Photo();
 		
 		photo.setRowkey(rowkey);
+		photo.setA_version(SystemConfigFactory.getSystemConfig()
+				.getValue(PropConstant.seasonVersion));
 		
 		int count = in.available();
 		
@@ -188,5 +197,33 @@ public class HBaseController {
 		String rowkey = UuidUtils.genUuid();
 		putPhoto(rowkey, in);
 		return rowkey;
+	}
+	
+	public List<Map<String, Object>> getPhotosByRowkey(JSONArray rowkeys) throws Exception{
+		Connection hbaseConn = HBaseConnector.getInstance().getConnection();
+		Table htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.photoTab));
+		List<Get> getList=new ArrayList<Get>();
+		for(Object rowkey:rowkeys){
+			Get get = new Get(((String)rowkey).getBytes());
+			getList.add(get);
+		}
+		Result[] rs = htab.get(getList);
+		List<Map<String, Object>> photos=new ArrayList<Map<String,Object>>();
+		for (Result result : rs) {
+			if (result.isEmpty()) {continue;}
+			Map<String, Object> photoMap=new HashMap<String, Object>();
+			String rowkey = new String(result.getRow());
+			photoMap.put("rowkey", rowkey);
+//			byte[] thumbnail = FileUtils.makeSmallImage(result.getValue("data".getBytes(),
+//					"origin".getBytes()));
+//			photoMap.put("thumbnail", thumbnail);
+			String attribute = new String(result.getValue("data".getBytes(),
+					"attribute".getBytes()));
+			
+			JSONObject attrJson = JSONObject.fromObject(attribute);
+			photoMap.put("version", attrJson.getString("a_version"));
+			photos.add(photoMap);
+		}
+		return photos;
 	}
 }

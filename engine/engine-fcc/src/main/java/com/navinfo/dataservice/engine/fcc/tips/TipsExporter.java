@@ -274,6 +274,7 @@ public class TipsExporter {
 				ja.add(json);
 			}
 */
+			ja.add(json);
 		}
 
 	/*	if (list.size() > 0) {
@@ -322,7 +323,7 @@ public class TipsExporter {
 				ja.add(json);
 			}
 		}*/
-
+		
 		return ja;
 	}
 

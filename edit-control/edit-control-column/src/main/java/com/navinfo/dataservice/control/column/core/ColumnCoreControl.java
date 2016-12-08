@@ -451,4 +451,34 @@ public class ColumnCoreControl {
 		}
 	}
 
+	
+	/**
+	 * 月编专项获取库存总量
+	 * @param subtaskId
+	 * @param userId
+	 * @return
+	 * @throws Exception
+	 */
+	public JSONObject getLogCount(int subtaskId, long userId) throws Exception {
+		Connection conn = null;
+		try {
+			ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
+			
+			Subtask subtask = apiService.queryBySubtaskId(subtaskId);
+			
+			if (subtask == null) {
+				throw new Exception("subtaskid未找到数据");
+			}
+			
+			int dbId = subtask.getDbId();
+			conn = DBConnector.getInstance().getConnectionById(dbId);
+			
+			IxPoiColumnStatusSelector columnStatusSelector = new IxPoiColumnStatusSelector(conn);
+			JSONObject result = columnStatusSelector.getColumnCount(subtask);
+			
+			return result;
+		} catch (Exception e) {
+			throw e;
+		}
+	}
 }

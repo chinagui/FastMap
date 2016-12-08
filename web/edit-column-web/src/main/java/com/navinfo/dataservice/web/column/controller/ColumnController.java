@@ -12,10 +12,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.navinfo.dataservice.api.job.iface.JobApi;
+import com.navinfo.dataservice.api.man.iface.ManApi;
+import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.control.column.core.ColumnCoreControl;
+import com.navinfo.dataservice.control.column.core.DeepCoreControl;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -267,4 +270,40 @@ public class ColumnController extends BaseController {
 	}
 
 
+	
+	/**
+	 * 月编专项库存统计接口
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException
+	 */
+	@RequestMapping(value = "/poi/column/queryKcLog")
+	public ModelAndView getLogCount(HttpServletRequest request) throws ServletException, IOException {
+		
+		String parameter = request.getParameter("parameter");
+		
+		logger.debug("月编专项库存总量统计");
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			
+			logger.debug("parameter="+jsonReq);
+			
+			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			
+			long userId = tokenObj.getUserId();
+			
+			int subtaskId = jsonReq.getInt("subtaskId");
+			
+			ColumnCoreControl columnControl = new ColumnCoreControl();
+			
+			JSONObject result = columnControl.getLogCount(subtaskId, userId);
+			
+			return new ModelAndView("jsonView", success(result));
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
 }

@@ -88,9 +88,12 @@ public class PropConstant {
 	
 	public static final String pidServers="pid.connection.string";
 	
+	public static final String rticServers = "rtic.connection.string";
+	
 	public static final String fmStat="fm_stat";
 	public static final String mongoHost="mongo_host";
 	public static final String mongoPort="mongo_port";
 	
 	public static final String multisrcDaySyncUrl="multisrc.day.sync.url";
+	public static final String seasonVersion="SEASON.VERSION";
 }

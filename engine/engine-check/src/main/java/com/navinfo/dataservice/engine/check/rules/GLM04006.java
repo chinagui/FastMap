@@ -1,7 +1,14 @@
 package com.navinfo.dataservice.engine.check.rules;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
+import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -18,8 +25,9 @@ import com.navinfo.dataservice.engine.check.helper.DatabaseOperatorResultWithGeo
  * @author songdongyan
  * @date 2016年12月5日
  * @Description: 大门的进入线或退出线有一根为10级路或者都为10级路，则大门的“通行对象”只能为“行人”
- * 新增大门,编辑端后检查:
- * Link种别编辑，编辑端后检查
+ * 新增大门编辑服务端后检查
+ * 通行对象编辑服务端后检查
+ * Link种别编辑编辑服务端后检查
  */
 public class GLM04006 extends baseRule{
 
@@ -35,8 +43,6 @@ public class GLM04006 extends baseRule{
 	 */
 	@Override
 	public void preCheck(CheckCommand checkCommand) throws Exception {
-		// TODO Auto-generated method stub
-		
 	}
 
 	/* (non-Javadoc)
@@ -138,26 +144,28 @@ public class GLM04006 extends baseRule{
 	 */
 	private void checkRdGate(RdGate rdGate, OperType operType) throws Exception {
 		StringBuilder sb = new StringBuilder();
+		for(Entry<String, RdGateCondition> entry:rdGate.rdGateConditionMap.entrySet()){
+			RdGateCondition rdGateCondition = entry.getValue();
+			if(rdGateCondition.getValidObj()==0){
+				Set<Integer> linkPidSet = new HashSet<Integer>();
+				linkPidSet.add(rdGate.getInLinkPid());
+				linkPidSet.add(rdGate.getOutLinkPid());
+				sb.append("SELECT 1 FROM RD_LINK R");
+				sb.append("WHERE R.U_RECORD != 2 ");
+				sb.append("AND R.KIND = 10 ");
+				sb.append("AND R.LINK_PID IN (" + StringUtils.join(linkPidSet.toArray()) + ")");
 
-		sb.append("SELECT 1 FROM RD_LINK R, RD_GATE G, RD_GATE_CONDITION C ");
-		sb.append("WHERE G.PID = " + rdGate.getPid());
-		sb.append("AND G.PID = C.PID ");
-		sb.append("AND R.U_RECORD != 2 ");
-		sb.append("AND G.U_RECORD != 2 ");
-		sb.append("AND C.U_RECORD != 2 ");
-		sb.append("AND R.KIND = 10 ");
-		sb.append("AND C.VALID_OBJ <> 1 ");
-		sb.append("AND (G.IN_LINK_PID = R.LINK_PID OR G.OUT_LINK_PID = R.LINK_PID) ");
+				String sql = sb.toString();
 
-		String sql = sb.toString();
+				DatabaseOperator getObj = new DatabaseOperator();
+				List<Object> resultList = new ArrayList<Object>();
+				resultList = getObj.exeSelect(this.getConn(), sql);
 
-		DatabaseOperator getObj = new DatabaseOperator();
-		List<Object> resultList = new ArrayList<Object>();
-		resultList = getObj.exeSelect(this.getConn(), sql);
-
-		if(resultList.size()>0){
-			String target = "[RD_GATE," + rdGate.getPid() + "]";
-			this.setCheckResult("", target, 0);
+				if(resultList.size()>0){
+					String target = "[RD_GATE," + rdGate.getPid() + "]";
+					this.setCheckResult("", target, 0);
+				}
+			}
 		}
 	}
 

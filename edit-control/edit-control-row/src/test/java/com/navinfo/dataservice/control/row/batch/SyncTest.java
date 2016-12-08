@@ -8,6 +8,7 @@ import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.navinfo.dataservice.api.edit.model.FmMultiSrcSync;
+import com.navinfo.dataservice.api.edit.model.MultiSrcFmSync;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.control.row.multisrc.MultiSrcFmSyncService;
 import com.navinfo.dataservice.control.row.multisrc.FmMultiSrcSyncApiImpl;;
@@ -83,10 +84,18 @@ public class SyncTest {
 	}
 	
 	@Test
+	public void test01() throws Exception{
+		
+		MultiSrcFmSync multiSrcFmSync = MultiSrcFmSyncService.getInstance().queryLastSuccessSync();
+		System.out.println("状态:"+multiSrcFmSync.getSyncStatus()+"压缩包:"+multiSrcFmSync.getZipFile());
+		
+		
+	}
+	
+	@Test
 	public void testApplyUploadDay() throws Exception{
-		
-		MultiSrcFmSyncService.getInstance().applyUploadDay(0, "zipUrl");
-		
+		String zipUrl = "http://192.168.0.40:8090/pdf/upload/fmJsonZips/20161201/20161202103647_day.zip";
+		MultiSrcFmSyncService.getInstance().applyUploadDay(0, zipUrl);
 	}
 	
 	

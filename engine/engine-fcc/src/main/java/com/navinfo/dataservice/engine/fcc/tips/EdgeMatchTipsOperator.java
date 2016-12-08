@@ -6,8 +6,8 @@ import java.util.Date;
 import java.util.List;
 
 import net.sf.json.JSONArray;
-import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
+
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.Delete;
@@ -64,7 +64,7 @@ public class EdgeMatchTipsOperator {
 			String rowkey = TipsUtils.getNewRowkey(S_SOURCETYPE);
 
 			// 2.feedback
-			String operateDate = DateUtils.dateToString(new Date(),
+			String currentDate = DateUtils.dateToString(new Date(),
 					DateUtils.DATE_COMPACTED_FORMAT);
 
 			JSONObject feedbackObj = new JSONObject();
@@ -74,14 +74,14 @@ public class EdgeMatchTipsOperator {
 			//geo
 			int type=6;
 			JSONObject newFeedback = TipsUtils.newFeedback(user, content, type,
-						operateDate);
+						currentDate);
 			f_array.add(newFeedback);
 			
 			//memo,如果有，则增加一个备注
 			if(StringUtils.isNotEmpty(memo)){
 				type=3;
 				JSONObject newFeedback2 = TipsUtils.newFeedback(user, memo, type,
-							operateDate);
+							currentDate);
 				f_array.add(newFeedback2);
 			}
 			
@@ -100,7 +100,7 @@ public class EdgeMatchTipsOperator {
 			int t_inMeth = 1;
 
 			JSONObject jsonTrack = TipsUtils.generateTrackJson(t_lifecycle,stage,
-					user, t_command, null, operateDate, t_cStatus, t_dStatus,
+					user, t_command, null, currentDate,currentDate,t_cStatus, t_dStatus,
 					t_mStatus, t_inStatus, t_inMeth);
 
 			// 4.geometry
@@ -114,9 +114,9 @@ public class EdgeMatchTipsOperator {
 			int s_reliability = 100;
 			JSONObject source = new JSONObject();
 			source.put("s_featureKind", 2);
-			source.put("s_project", JSONNull.getInstance());
+			source.put("s_project", TipsUtils.STRING_NULL_DEFAULT_VALUE);
 			source.put("s_sourceCode", s_sourceCode);
-			source.put("s_sourceId", JSONNull.getInstance());
+			source.put("s_sourceId", TipsUtils.STRING_NULL_DEFAULT_VALUE);
 			source.put("s_sourceType", S_SOURCETYPE);
 			source.put("s_reliability", 100);
 			source.put("s_sourceProvider", 0);
@@ -150,9 +150,9 @@ public class EdgeMatchTipsOperator {
 			// solr index json
 
 			JSONObject solrIndex = TipsUtils.generateSolrIndex(rowkey, stage,
-					operateDate, operateDate, t_lifecycle, t_command, user,
+					currentDate, currentDate, t_lifecycle, t_command, user,
 					t_cStatus, t_dStatus, t_mStatus, S_SOURCETYPE, s_sourceCode,
-					g_guide, g_location, null, f_array, s_reliability);
+					g_guide, g_location, null, f_array, s_reliability,t_inStatus,t_inMeth);
 
 			solr.addTips(solrIndex);
 
@@ -162,6 +162,8 @@ public class EdgeMatchTipsOperator {
 
 			htab.put(puts);
 
+			htab.close();
+			
 			htab.close();
 			
 			return rowkey;
@@ -270,11 +272,13 @@ public class EdgeMatchTipsOperator {
 
 			solrIndex.put("handler", user);
 
-			solrIndex.put("feedback", feedBack);
+			solrIndex.put("feedback", f_array);
 
 			solr.addTips(solrIndex);
 
 			htab.put(put);
+			
+			htab.close();
 
 		} catch (IOException e) {
 			
@@ -332,7 +336,7 @@ public class EdgeMatchTipsOperator {
 
 					jo.put("feedback", feedback);
 				} else {
-					jo.put("feedback", JSONNull.getInstance());
+					jo.put("feedback", TipsUtils.OBJECT_NULL_DEFAULT_VALUE);
 				}
 				oldTip = jo;
 			} catch (Exception e) {
@@ -369,6 +373,8 @@ public class EdgeMatchTipsOperator {
 			list.add(d1);
 			
 			htab.delete(list);
+			
+			htab.close();
 		} catch (SolrServerException e) {
 
 			logger.error("删除tips失败，rowkey：" + rowkey + "\n" + e.getMessage(), e);

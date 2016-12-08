@@ -1,6 +1,8 @@
 package com.navinfo.dataservice.web.fcc.controller;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -108,6 +110,32 @@ public class PhotoController extends BaseController {
 
 			response.getWriter().println(
 					ResponseUtils.assembleFailResult(e.getMessage()));
+		}
+
+	}
+	
+	@RequestMapping(value = "/photo/getPhotosByRowkey")
+	public ModelAndView getPhotosByRowkey(HttpServletRequest request,
+			HttpServletResponse response) throws ServletException, IOException {
+
+//		response.setContentType("image/jpeg;charset=GBK");
+//
+//		response.setHeader("Access-Control-Allow-Origin", "*");
+//		response.setHeader("Access-Control-Allow-Methods",
+//				"POST, GET, OPTIONS, DELETE,PUT");
+		String parameter = request.getParameter("parameter");
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			JSONArray rowkeys = jsonReq.getJSONArray("rowkeys");
+			PhotoGetter getter = new PhotoGetter();
+			List<Map<String, Object>> data = getter.getPhotosByRowkey(rowkeys);
+			//response.getOutputStream().write(data.toString().getBytes());
+			return new ModelAndView("jsonView", success(data));
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+//			response.getWriter().println(
+//					ResponseUtils.assembleFailResult(e.getMessage()));
 		}
 
 	}

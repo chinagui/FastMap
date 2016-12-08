@@ -30,7 +30,7 @@ public class AudioImport {
 
 	private static String AUDIO_TABLE_NAME = HBaseConstant.audioTab;
 
-	public static void importPhoto(Map<String, Audio> map, String dir)
+	public static void importAudio(Map<String, Audio> map, String dir)
 			throws Exception {
 
 		if (map.size() == 0) {
@@ -43,10 +43,10 @@ public class AudioImport {
 			return;
 		}
 
-		// readPhotos 读取同照片
+		// readPhotos 读取同照片 这里不用修改
 		Map<String, byte[]> mapAdio = FileUtils.readPhotos(dir);
 
-		Table photoTab = HBaseConnector.getInstance().getConnection()
+		Table audioTab = HBaseConnector.getInstance().getConnection()
 				.getTable(TableName.valueOf(AUDIO_TABLE_NAME));
 
 		List<Put> puts = new ArrayList<Put>();
@@ -71,7 +71,7 @@ public class AudioImport {
 			num++;
 
 			if (num >= 1000) {
-				photoTab.put(puts);
+				audioTab.put(puts);
 
 				puts.clear();
 
@@ -79,9 +79,9 @@ public class AudioImport {
 			}
 		}
 
-		photoTab.put(puts);
+		audioTab.put(puts);
 
-		photoTab.close();
+		audioTab.close();
 	}
 
 	private static Put enclosedPut(Entry<String, Audio> entry,
@@ -104,9 +104,10 @@ public class AudioImport {
 		o_audio.put("o_audio", audioByte);
 
 		Put put = new Put(audio.getRowkey().getBytes());
-
-		put.addColumn("data".getBytes(), "attribute".getBytes(), JSONObject
-				.fromObject(audio).toString().getBytes());
+		
+		JSONObject  attribute=JSONObject.fromObject( JSONObject.fromObject(audio).discard("rowkey")); //取掉对象中的rowkey字段
+		
+		put.addColumn("data".getBytes(), "attribute".getBytes(), attribute.toString().getBytes());
 
 		put.addColumn("data".getBytes(), "origin".getBytes(), o_audio
 				.toString().getBytes());

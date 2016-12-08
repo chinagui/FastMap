@@ -41,7 +41,7 @@ public class androidtest {
 			}
 			
 			PoiDownloadOperation operation = new PoiDownloadOperation();
-			operation.export2Txt(gridDateMap, "f://poidownload", "poi99.txt");
+			operation.export2Txt(gridDateMap, "f://poidownload", "poi00.txt");
 			Date endTime = new Date();
 			System.out.println("total time:"+ (endTime.getTime() - startTime.getTime()));
 //			download.export(gridList, "f://poidownload", "poi.txt");

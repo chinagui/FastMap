@@ -1982,10 +1982,12 @@ public class UploadOperation {
 				" UPDATE SET T1.status = T2.b,T1.fresh_verified= T2.c,T1.is_upload = 1,T1.raw_fields = T2.d,T1.upload_date = T2.e ");
 		sb.append(" WHEN NOT MATCHED THEN ");
 		sb.append(
-				" INSERT (T1.status,T1.fresh_verified,T1.is_upload,T1.raw_fields,T1.upload_date,T1.pid) VALUES(T2.b,T2.c,1,T2.d,T2.e,T2.f)");
+				//zl 2016.12.08 新增时为 commit_his_status 字段赋默认值 0 
+				" INSERT (T1.status,T1.fresh_verified,T1.is_upload,T1.raw_fields,T1.upload_date,T1.pid,commit_his_status) VALUES(T2.b,T2.c,1,T2.d,T2.e,T2.f,0)");
 		PreparedStatement pstmt = null;
 		try {
 			pstmt = conn.prepareStatement(sb.toString());
+			System.out.println("sb.toString(): "+sb.toString());
 			pstmt.executeUpdate();
 		} catch (Exception e) {
 			throw e;

@@ -517,8 +517,9 @@ public class PoiGridIncreSearch {
 		
 		logger.info("设置 字段 editstatus");
 		StringBuilder sbEditStatus = new StringBuilder();
-		sbEditStatus.append("select t.pid,t.status from POI_EDIT_STATUS t ");
-		sbEditStatus.append(" where t.pid in (select to_number(column_value) from table(clob_to_table(?))) ");
+		sbEditStatus.append("select distinct t.pid,t.commit_his_status from POI_EDIT_STATUS t ");
+		sbEditStatus.append(" where t.pid in (select to_number(column_value) from table(clob_to_table(?))) "
+							+ " and t.pid is not null");
 		logger.debug("editstatus sql :" + sbEditStatus.toString());
 		
 		Map<Long,Integer> editStatus = run.query(conn, sbEditStatus.toString(), new poiEditStatusHandler(),pidsClob);

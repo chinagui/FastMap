@@ -377,12 +377,12 @@ public class DeepCoreControl {
             int subtaskId = json.getInt("subtaskId");
             String secondWorkItem = json.getString("secondWorkItem");
 
-            Subtask subtask = apiService.queryBySubtaskId(subtaskId);
+            //Subtask subtask = apiService.queryBySubtaskId(subtaskId);
             conn = DBConnector.getInstance().getConnectionById(dbId);  
 			
 			// 查询可提交数据
             IxPoiColumnStatusSelector ixPoiColumnStatusSelector = new IxPoiColumnStatusSelector(conn);
-			pidList = ixPoiColumnStatusSelector.getpidsForRelease(subtask,2,userId, secondWorkItem);
+			pidList = ixPoiColumnStatusSelector.getpidsForRelease(subtaskId,2,userId, secondWorkItem);
 			sucReleaseTotal = pidList.size();
 			
 			// 修改poi_deep_status表作业项状态

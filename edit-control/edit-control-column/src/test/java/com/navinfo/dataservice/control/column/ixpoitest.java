@@ -154,6 +154,19 @@ public class ixpoitest {
 			System.out.println(e.getMessage());
 		}
 	}
+	@Test
+	public void testColumnQuery() throws Exception{
+		String parameter = "{\"taskId\":84,\"type\":\"integrate\",\"firstWorkItem\":\"poi_deep\",\"secondWorkItem\":\"deepParking\",\"status\":2,\"pageSize\":10,\"pageNo\":1}";
+		try {
+			JSONObject param = JSONObject.fromObject(parameter);
+			long userId =111;
+			ColumnCoreControl columnCore = new ColumnCoreControl();
+			JSONObject result = columnCore.columnQuery(userId,param);
+			System.out.println(result);
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+	}
 	
 	@Test
 	public void testApplyColumnData() throws Exception{

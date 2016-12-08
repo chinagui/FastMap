@@ -473,9 +473,6 @@ public class DeepCoreControl {
 			int dbId = subtask.getDbId();
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 			
-			//IxPoiDeepStatusSelector poiDeepStatusSelector = new IxPoiDeepStatusSelector(conn);
-			//hasApply = poiDeepStatusSelector.queryHandlerCount(userId, type);
-			
 			//查询当前作业员已占有数据量
 			IxPoiColumnStatusSelector poiColumnSelector = new IxPoiColumnStatusSelector(conn);
 			hasApply = poiColumnSelector.queryHandlerCount(firstWorkItem, secondWorkItem, userId, type);
@@ -486,17 +483,12 @@ public class DeepCoreControl {
 				throw new Exception("该作业员名下已存在100条数据，不可继续申请");
 			}
 			
-			
-			//List<Integer> pids = poiDeepStatusSelector.getPids(subtask, type);
-			
 			//获取从状态表查询到能够申请数据的pids
 			List<Integer> pids = poiColumnSelector.getApplyPids(subtask, firstWorkItem, secondWorkItem, type);
 			if (pids.size() == 0){
 				//未查询到可以申请的数据
 				return 0;
 			}
-			
-			//SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 			
 			//实际申请到的数据pids
 			List<Integer> applyDataPids = new ArrayList<Integer>();
@@ -510,8 +502,6 @@ public class DeepCoreControl {
 			Timestamp timeStamp = new Timestamp(new Date().getTime());
 			
 			//数据加锁， 赋值handler，维护update_date,task_id
-			//dataSetLock(conn, applyDataPids, userId, df);
-			
 			applyCount += applyDataPids.size();
 			List<String> workItemIds = poiColumnSelector.getWorkItemIds(firstWorkItem, secondWorkItem);
 			poiColumnSelector.dataSetLock(applyDataPids, workItemIds, userId, taskId, timeStamp);
@@ -658,42 +648,6 @@ public class DeepCoreControl {
 		}
 	}
 	
-	
-	/**
-	 * 深度信息申请数据-数据加锁
-	 * @param conn
-	 * @param pids
-	 * @param userId
-	 * @param df
-	 * @throws Exception
-	 */
-	public void dataSetLock(Connection conn, List<Integer> pids, long userId,SimpleDateFormat df) throws Exception {
-		StringBuilder sb = new StringBuilder();
-		sb.append("UPDATE poi_deep_status SET handler=:1,update_date= to_date('"+ df.format(new Date()) + "','yyyy-mm-dd hh24:mi:ss') WHERE pid in (");
-		String temp = "";
-		for (int pid:pids) {
-			sb.append(temp);
-			sb.append(pid);
-			temp = ",";
-		}
-		sb.append(")");
-		
-		PreparedStatement pstmt = null;
-
-		try {
-			
-			pstmt = conn.prepareStatement(sb.toString());
-
-			pstmt.setLong(1, userId);
-			
-			pstmt.execute();
-			
-		} catch (Exception e) {
-			throw e;
-		} finally {
-			DbUtils.closeQuietly(pstmt); 
-		}
-	}
 	
 	/**
 	 * 深度信息申请数据后-作业前批处理

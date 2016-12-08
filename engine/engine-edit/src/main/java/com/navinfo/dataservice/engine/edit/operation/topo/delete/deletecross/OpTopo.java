@@ -25,7 +25,7 @@ public class OpTopo implements IOperation {
 	private Command command;
 
 	private Connection conn;
-	
+
 	public OpTopo() {
 	}
 
@@ -52,6 +52,11 @@ public class OpTopo implements IOperation {
 		return msg;
 	}
 
+	/**
+	 * 删除路口维护路口内link的形态
+	 * @param result
+	 * @throws Exception
+	 */
 	private void updateLinkForm(Result result) throws Exception {
 		ISelector selector = new AbstractSelector(RdLinkForm.class, conn);
 
@@ -62,30 +67,37 @@ public class OpTopo implements IOperation {
 
 			List<IRow> forms = selector.loadRowsByParentId(linkPid, true);
 
-			IRow targetRow = null;
+			// 需要删除的linkForm
+			List<RdLinkForm> deleteFormList = new ArrayList<>();
 
 			for (IRow formrow : forms) {
-
 				RdLinkForm form = (RdLinkForm) formrow;
 
-				if (form.getFormOfWay() == 50) { // 交叉点内道路
-					form.changedFields().put("formOfWay", 1);
-
-					targetRow = form;
+				if (form.getFormOfWay() == 50 || form.getFormOfWay() == 35) { // 交叉点内道路
+					deleteFormList.add(form);
 				}
 			}
 
-			if (targetRow != null) {
-				if (forms.size() == 1) {
-					result.insertObject(targetRow, ObjStatus.UPDATE, command.getCross().pid());
-				} else {
-					result.insertObject(targetRow, ObjStatus.DELETE, command.getCross().pid());
+			//需要删除所有的交叉口和掉头口形态后，link没有其他形态，需要将link形态维护为无属性
+			if(deleteFormList.size() == forms.size())
+			{
+				RdLinkForm updateForm = deleteFormList.remove(0);
+				
+				if(updateForm.getFormOfWay() != 1)
+				{
+					updateForm.changedFields().put("formOfWay", 1);
+					
+					result.insertObject(updateForm, ObjStatus.UPDATE, command.getCross().pid());
 				}
 			}
-
+			
+			for(RdLinkForm linkForm : deleteFormList)
+			{
+				result.insertObject(linkForm, ObjStatus.DELETE, command.getCross().pid());
+			}
 		}
 	}
-	
+
 	public List<AlertObject> getDeleteRdCross(int linkPid, Connection conn) throws Exception {
 
 		RdNodeSelector selector = new RdNodeSelector(conn);
@@ -128,9 +140,8 @@ public class OpTopo implements IOperation {
 				alertObj.setPid(cross.getPid());
 
 				alertObj.setStatus(ObjStatus.DELETE);
-				
-				if(!alertList.contains(alertObj))
-				{
+
+				if (!alertList.contains(alertObj)) {
 					alertList.add(alertObj);
 				}
 			}
@@ -181,8 +192,7 @@ public class OpTopo implements IOperation {
 
 				alertObj.setStatus(ObjStatus.UPDATE);
 
-				if(!alertList.contains(alertObj))
-				{
+				if (!alertList.contains(alertObj)) {
 					alertList.add(alertObj);
 				}
 			}
@@ -190,18 +200,21 @@ public class OpTopo implements IOperation {
 
 		return alertList;
 	}
-	
+
 	/**
 	 * 删除路口的提示
-	 * @param crossPid 路口pid
-	 * @param conn 数据库conn
+	 * 
+	 * @param crossPid
+	 *            路口pid
+	 * @param conn
+	 *            数据库conn
 	 * @return 提示信息
 	 * @throws Exception
 	 */
 	public List<AlertObject> getDeleteCrossInfectData(int crossPid) throws Exception {
-		
+
 		List<AlertObject> alertList = new ArrayList<>();
-		
+
 		AlertObject alertObj = new AlertObject();
 
 		alertObj.setObjType(ObjType.RDCROSS);
@@ -209,9 +222,8 @@ public class OpTopo implements IOperation {
 		alertObj.setPid(crossPid);
 
 		alertObj.setStatus(ObjStatus.DELETE);
-		
-		if(!alertList.contains(alertObj))
-		{
+
+		if (!alertList.contains(alertObj)) {
 			alertList.add(alertObj);
 		}
 

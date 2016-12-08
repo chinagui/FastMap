@@ -979,7 +979,7 @@ public class SubtaskOperation {
 							}
 							JSONArray referGrid;
 							try {
-								referGrid = SubtaskOperation.getReferSubtasksByGridIds(rs.getInt("SUBTASK_ID"),gridIds,GeoTranslator.struct2Jts(structRefer));
+								referGrid = SubtaskOperation.getReferSubtasksByGridIds(rs.getInt("SUBTASK_ID"),gridIds,GeoTranslator.wkt2Geometry((String) subtask.get("referGeometry")));
 								subtask.put("referGrid", referGrid);
 							} catch (Exception e) {
 								// TODO Auto-generated catch block
@@ -2513,10 +2513,11 @@ public class SubtaskOperation {
 						gridId=temp;
 						gridUserName.add(rs.getString("user_real_name"));
 					}
-					JSONObject tempGridRefer=new JSONObject();
-					tempGridRefer.put("gridId", gridId);
-					tempGridRefer.put("userNameList", gridUserName);
-					referSubtasks.add(tempGridRefer);
+					if(gridId!=0){
+						JSONObject tempGridRefer=new JSONObject();
+						tempGridRefer.put("gridId", gridId);
+						tempGridRefer.put("userNameList", gridUserName);
+						referSubtasks.add(tempGridRefer);}
 					return referSubtasks;
 				}
 			};

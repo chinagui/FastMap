@@ -208,14 +208,15 @@ public class UploadService {
 		if(fileType.equals("photo")){
 			InputStream fileStream = uploadItem.getInputStream();
 			//******zl 2016.12.07 添加自动图片旋转**************
-			InputStream newfileStream = RotateImageUtils.rotateImage(fileStream);
+			if(fileStream != null){
+				fileStream = RotateImageUtils.rotateImage(fileStream);
+			}
 			//********************
 			DBController dbController = new DBController();
 			HBaseController hbaseController = new HBaseController();
 				
 			//调用hadoop方法传输文件流，userId,经纬度，获取photo_id
-			//String photoId = hbaseController.putPhoto(fileStream);
-			String photoId = hbaseController.putPhoto(newfileStream);
+			String photoId = hbaseController.putPhoto(fileStream);
 			
 			HashMap<Object,Object> data = new HashMap<Object,Object>();
 			

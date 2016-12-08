@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.bizcommons.service;
 
+import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
@@ -108,12 +109,15 @@ public class RticService implements Observer {
     private int applyRticCodeFromDb(String meshId, String rticClass, String limit, String taskId, String clientId,
             String clientIp, String useFor) {
         Connection conn = null;
-        OracleCallableStatement cs = null;
+        //OracleCallableStatement cs = null;
+        CallableStatement cs = null;
+        
         int rticCode = 0;
         try {
             String sql = "{call DMS_RTICID_MAN.APPLY_RTICID(?,?,?,?,?,?,?,?,?)}";
             conn = dataSources.get(0).getConnection();
-            cs = (OracleCallableStatement) conn.prepareCall(sql);
+            //cs = (OracleCallableStatement) conn.prepareCall(sql);
+            cs = (CallableStatement) conn.prepareCall(sql);
 
             cs.setString(1, meshId);
             cs.setLong(2, Long.parseLong(rticClass));
@@ -126,13 +130,14 @@ public class RticService implements Observer {
             cs.setString(9, useFor);
             cs.execute();
 
-            ARRAY meshARRAY = cs.getARRAY(4);
+            ARRAY meshARRAY = (ARRAY) cs.getArray(4);   // cs.getARRAY(4);
 
             String[] meshes = (String[]) meshARRAY.getArray();
 
             if (meshes.length > 0) {
                 rticCode = Integer.parseInt(meshes[0]);
             }
+            conn.commit();
         } catch (Exception e) {
             log.error(e);
             DbUtils.closeQuietly(cs);

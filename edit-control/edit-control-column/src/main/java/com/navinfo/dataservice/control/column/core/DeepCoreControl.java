@@ -690,6 +690,7 @@ public class DeepCoreControl {
 		int subtaskId = jsonReq.getInt("subtaskId");
 		int dbId = jsonReq.getInt("dbId");
 
+		Connection conn = null;
 		try {
 			ManApi apiService = (ManApi) ApplicationContextUtil.getBean("manApi");
 			Subtask subtask = apiService.queryBySubtaskId(subtaskId);
@@ -698,15 +699,17 @@ public class DeepCoreControl {
 				throw new Exception("subtaskid未找到数据");
 			}
 			
-			Connection conn = DBConnector.getInstance().getConnectionById(dbId);
+			conn = DBConnector.getInstance().getConnectionById(dbId);
 			
 			IxPoiDeepStatusSelector deepSelector = new IxPoiDeepStatusSelector(conn);
-			result = deepSelector.loadDeepPoiByCondition(jsonReq, subtask, userId);
+			result = deepSelector.loadDeepPoiByCondition(jsonReq, subtaskId, userId);
 			
 			return result;
 		} catch(Exception e) {
 			throw e;
-		} 
+		} finally {
+			DbUtils.closeQuietly(conn);
+		}
 	}
 	
 	

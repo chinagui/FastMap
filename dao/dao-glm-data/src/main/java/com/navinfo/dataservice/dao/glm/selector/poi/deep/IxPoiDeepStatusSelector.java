@@ -37,12 +37,12 @@ public class IxPoiDeepStatusSelector extends AbstractSelector{
 	 * 深度信息 按条件查询poi
 	 * 
 	 * @param jsonReq
-	 * @param subtask
+	 * @param subtaskId
 	 * @param userId
 	 * @return
 	 * @throws Exception 
 	 */
-	public JSONObject loadDeepPoiByCondition(JSONObject jsonReq, Subtask subtask, long userId) throws Exception{
+	public JSONObject loadDeepPoiByCondition(JSONObject jsonReq, int subtaskId, long userId) throws Exception{
 		
 		String type = jsonReq.getString("type");
 
@@ -60,12 +60,12 @@ public class IxPoiDeepStatusSelector extends AbstractSelector{
 		String sql = "";
 		StringBuilder bufferCondition = new StringBuilder();
 		
-		bufferCondition.append("select COUNT(1) OVER(PARTITION BY 1) total, ipn.poi_pid pid, ipn.name ");
+		bufferCondition.append("select COUNT(1) OVER(PARTITION BY 1) total, ipn.poi_pid pid, ipn.name, p.kind_code ");
 		bufferCondition.append(" from ix_poi p,poi_column_status s,ix_poi_name ipn,poi_column_workitem_conf c");
 		bufferCondition.append(" where ipn.name_class = 1 and ipn.name_type = 2 and (ipn.lang_code = 'CHI' or ipn.lang_code = 'CHT')");
 		bufferCondition.append(" and p.pid = s.pid and p.pid = ipn.poi_pid");
 		bufferCondition.append(" and s.work_item_id=c.work_item_id");
-		bufferCondition.append(" and sdo_within_distance(p.geometry, sdo_geometry('" + subtask.getGeometry() + "', 8307), 'mask=anyinteract') = 'TRUE'");
+		bufferCondition.append(" and s.task_id=" + subtaskId );
 		bufferCondition.append(" and c.second_work_item = '" + type + "'" + " and s.second_work_status = " + status + " and s.handler = " + userId );
 		
 		if (jsonReq.containsKey("poiName")){
@@ -95,6 +95,7 @@ public class IxPoiDeepStatusSelector extends AbstractSelector{
 				JSONObject json = new JSONObject();
 				json.put("pid", resultSet.getInt("pid"));
 				json.put("name", resultSet.getString("name"));
+				json.put("kindCode", resultSet.getString("kind_code"));
 				json.put("status", status);
 				int pid = resultSet.getInt("pid");
 				//获取state

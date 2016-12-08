@@ -331,7 +331,7 @@ public class SearchProcess {
 				else if (condition.containsKey("nodePidDir")) {
 					int cruuentNodePidDir = condition.getInt("nodePidDir");
 					int cuurentLinkPid = condition.getInt("linkPid");
-					int maxNum = 11;
+					int maxNum = 30;
 					boolean loadChild = false;
 					// 默认是11条 以传入为准
 					if (condition.containsKey("maxNum")) {

@@ -976,8 +976,8 @@ public class DisplayUtils {
 
 	// 显示坐标：
 	// 取link中点坐标，限速的通行方向的右侧2米
-	public static double[] getMid2MPosition(String linkWkt, int direct) throws Exception {
-		double[] position = new double[2];
+	public static double[] getMid2MPosition(String linkWkt, int direct,double veritUnit) throws Exception {
+		double[] position = new double[4];
 
 		double[][] linkMerArray = convertLinkToMerArray(linkWkt);
 
@@ -1052,14 +1052,21 @@ public class DisplayUtils {
 				position[1] = midPoint[1];
 			}
 		}
+		
+		position[2] = MercatorProjection.metersXToLongitude(position[0]);
 
-		position[0] = MercatorProjection.metersXToLongitude(position[0]);
+		position[3] = MercatorProjection.metersYToLatitude(position[1]);
+		
+		// 返回值为引导坐标所处的LINK形状段上的第几段，从0开始
+		int guideSeqNum = getGuidePosition(linkMerArray, linkLength/2, position);
+		
+		// 按照引导坐标位置和线通行方向向右找5米位置作为显示坐标位置
+		double[] displayPosition = getDisplayPosition(linkMerArray, position, guideSeqNum, veritUnit);
+		
+		position[0] = MercatorProjection.metersXToLongitude(displayPosition[0]);
 
-		position[1] = MercatorProjection.metersYToLatitude(position[1]);
-
-//		// 按照引导坐标位置和线通行方向向右找6米位置作为显示坐标位置
-//		double[] displayPosition = getDisplayPosition(linkMerArray, position, guideSeqNum, vertiUnit);
-
+		position[1] = MercatorProjection.metersYToLatitude(displayPosition[1]);
+		
 		return position;
 	}
 
@@ -1398,5 +1405,22 @@ public class DisplayUtils {
 		String wkt = "LINESTRING(116.48686 40.01237, 116.48676 40.01244,116.48661 40.01244)";
 		LineString ls = getGscLine(JtsGeometryFactory.read(wkt), 0, 1);
 		System.out.println(ls.toText());
+	}
+	
+	public static double getVerUint(int z)
+	{
+		double offset = 10;
+		switch(z){
+		case 16:
+		case 17:
+			offset = 17; break;
+		case 18:
+			offset = 6; break;
+		case 19:
+			offset = 3; break;
+		case 20:
+			offset = 1; break;
+		}
+		return offset;
 	}
 }

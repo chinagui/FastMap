@@ -158,10 +158,10 @@ public class Process extends AbstractProcess<Command> {
 
 		opRefTrafficsignal.run(this.getResult(), this.getCommand().getCross().getNodes());
 		
-		//分歧
-		IOperation opRefBranch = new OpRefRdBranch(this.getCommand());
-		
-		opRefBranch.run(this.getResult());
+//		//分歧
+//		IOperation opRefBranch = new OpRefRdBranch(this.getCommand());
+//		
+//		opRefBranch.run(this.getResult());
 		
 		//顺行
 		OpRefDirectoroute opRefDirectoroute = new OpRefDirectoroute(this.getConn());
@@ -219,13 +219,13 @@ public class Process extends AbstractProcess<Command> {
 		{
 			infects.put("删除路口删除路口交限", rdResAlertData);
 		}
-		//分歧
-		com.navinfo.dataservice.engine.edit.operation.obj.rdbranch.delete.Operation rdBranchOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdbranch.delete.Operation();
-		List<AlertObject> rdBranchAlertData = rdBranchOperation.getDeleteCrossBranchInfectData(this.getCommand().getBranches());
-		if(CollectionUtils.isNotEmpty(rdBranchAlertData))
-		{
-			infects.put("删除路口删除路口分歧", rdBranchAlertData);
-		}
+//		//分歧
+//		com.navinfo.dataservice.engine.edit.operation.obj.rdbranch.delete.Operation rdBranchOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdbranch.delete.Operation();
+//		List<AlertObject> rdBranchAlertData = rdBranchOperation.getDeleteCrossBranchInfectData(this.getCommand().getBranches());
+//		if(CollectionUtils.isNotEmpty(rdBranchAlertData))
+//		{
+//			infects.put("删除路口删除路口分歧", rdBranchAlertData);
+//		}
 		//语音引导
 		com.navinfo.dataservice.engine.edit.operation.obj.rdvoiceguide.delete.Operation voiceGuideOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdvoiceguide.delete.Operation(conn);
 		List<AlertObject> voiceGuideAlertData = voiceGuideOperation.getDeleteCrossVoiceGuideInfectData(crossPid);

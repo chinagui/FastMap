@@ -296,7 +296,6 @@ public class DeepCoreControl {
         Connection conn = null;
         JSONObject result = null;
         
-        List<String> rowIdList = new ArrayList<String>();
         List<Integer> pids = new ArrayList<Integer>();
         
         try {
@@ -312,10 +311,10 @@ public class DeepCoreControl {
             JSONObject poiData = json.getJSONObject("data");
             
             pids.add(objId);
-            rowIdList = getRowIdsByPids(conn,pids);
+            //rowIdList = getRowIdsByPids(conn,pids);
             
             if (poiData.size() == 0) {
-            	updateDeepStatus(rowIdList, conn, 0);
+            	updateDeepStatus(pids, conn, 0);
                 return result;
             }
             
@@ -329,7 +328,7 @@ public class DeepCoreControl {
             sb.append(String.valueOf(objId));
 
             //更新数据状态
-            updateDeepStatus(rowIdList, conn, 0);
+            updateDeepStatus(pids, conn, 0);
             //调用清理检查结果方法
             cleanCheckResult(pids,conn);
             
@@ -366,7 +365,7 @@ public class DeepCoreControl {
 		
 		ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
 		
-		List<String> rowIdList = new ArrayList<String>();
+		List<Integer> pidList = new ArrayList<Integer>();
         Connection conn = null;
         JSONObject result = new JSONObject();
         int sucReleaseTotal = 0;
@@ -376,18 +375,18 @@ public class DeepCoreControl {
 
             int dbId = json.getInt("dbId");
             int subtaskId = json.getInt("subtaskId");
-            int type = json.getInt("type");
+            String secondWorkItem = json.getString("secondWorkItem");
 
-            Subtask subtask = apiService.queryBySubtaskId(subtaskId);
+            //Subtask subtask = apiService.queryBySubtaskId(subtaskId);
             conn = DBConnector.getInstance().getConnectionById(dbId);  
 			
 			// 查询可提交数据
-			IxPoiDeepStatusSelector ixPoiDeepStatusSelector = new IxPoiDeepStatusSelector(conn);
-			rowIdList = ixPoiDeepStatusSelector.getRowIdsForRelease(subtask,2,userId, type);
-			sucReleaseTotal = rowIdList.size();
+            IxPoiColumnStatusSelector ixPoiColumnStatusSelector = new IxPoiColumnStatusSelector(conn);
+			pidList = ixPoiColumnStatusSelector.getpidsForRelease(subtaskId,2,userId, secondWorkItem);
+			sucReleaseTotal = pidList.size();
 			
 			// 修改poi_deep_status表作业项状态
-			updateDeepStatus(rowIdList, conn, 1);
+			updateDeepStatus(pidList, conn, 1);
 			result.put("sucReleaseTotal", sucReleaseTotal);
             return result;
         } catch (DataNotChangeException e) {
@@ -408,16 +407,16 @@ public class DeepCoreControl {
      * @param pids conn flag(0:保存 1:提交)
      * @throws Exception
      */
-	public void updateDeepStatus(List<String> rowIdList,Connection conn,int flag) throws Exception {
+	public void updateDeepStatus(List<Integer> pidList,Connection conn,int flag) throws Exception {
 		StringBuilder sb = new StringBuilder();
-        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");//设置日期格式
-        if (rowIdList.isEmpty()){
+		Timestamp timeStamp = new Timestamp(new Date().getTime());
+        if (pidList.isEmpty()){
         	return;
         }
         if (flag==0) {
-        	sb.append(" UPDATE poi_deep_status T1 SET T1.status = 2 , T1.update_date = to_date('"+df.format(new Date())+"','yyyy-mm-dd hh24:mi:ss') WHERE row_id in (");
+        	sb.append(" UPDATE poi_column_status T1 SET T1.SECOND_WORK_STATUS= 2  WHERE pid in (");
         } else {
-        	sb.append(" UPDATE poi_deep_status T1 SET T1.status = 3 , T1.update_date = to_date('"+df.format(new Date())+"','yyyy-mm-dd hh24:mi:ss') WHERE row_id in (");
+        	sb.append(" UPDATE poi_column_status T1 SET T1.SECOND_WORK_STATUS= 3,T1.HANDLER=0  WHERE pid in (");
         }
 		
 		PreparedStatement pstmt = null;
@@ -425,9 +424,9 @@ public class DeepCoreControl {
 		ResultSet resultSet = null;
 		try {
 			String temp="";
-			for (String rowId:rowIdList) {
+			for (int pid:pidList) {
 				sb.append(temp);
-				sb.append("'"+rowId+"'");
+				sb.append("'"+pid+"'");
 				temp = ",";
 			}
 			sb.append(")");
@@ -473,9 +472,6 @@ public class DeepCoreControl {
 			int dbId = subtask.getDbId();
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 			
-			//IxPoiDeepStatusSelector poiDeepStatusSelector = new IxPoiDeepStatusSelector(conn);
-			//hasApply = poiDeepStatusSelector.queryHandlerCount(userId, type);
-			
 			//查询当前作业员已占有数据量
 			IxPoiColumnStatusSelector poiColumnSelector = new IxPoiColumnStatusSelector(conn);
 			hasApply = poiColumnSelector.queryHandlerCount(firstWorkItem, secondWorkItem, userId, type);
@@ -486,17 +482,12 @@ public class DeepCoreControl {
 				throw new Exception("该作业员名下已存在100条数据，不可继续申请");
 			}
 			
-			
-			//List<Integer> pids = poiDeepStatusSelector.getPids(subtask, type);
-			
 			//获取从状态表查询到能够申请数据的pids
 			List<Integer> pids = poiColumnSelector.getApplyPids(subtask, firstWorkItem, secondWorkItem, type);
 			if (pids.size() == 0){
 				//未查询到可以申请的数据
 				return 0;
 			}
-			
-			//SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 			
 			//实际申请到的数据pids
 			List<Integer> applyDataPids = new ArrayList<Integer>();
@@ -510,8 +501,6 @@ public class DeepCoreControl {
 			Timestamp timeStamp = new Timestamp(new Date().getTime());
 			
 			//数据加锁， 赋值handler，维护update_date,task_id
-			//dataSetLock(conn, applyDataPids, userId, df);
-			
 			applyCount += applyDataPids.size();
 			List<String> workItemIds = poiColumnSelector.getWorkItemIds(firstWorkItem, secondWorkItem);
 			poiColumnSelector.dataSetLock(applyDataPids, workItemIds, userId, taskId, timeStamp);
@@ -658,42 +647,6 @@ public class DeepCoreControl {
 		}
 	}
 	
-	
-	/**
-	 * 深度信息申请数据-数据加锁
-	 * @param conn
-	 * @param pids
-	 * @param userId
-	 * @param df
-	 * @throws Exception
-	 */
-	public void dataSetLock(Connection conn, List<Integer> pids, long userId,SimpleDateFormat df) throws Exception {
-		StringBuilder sb = new StringBuilder();
-		sb.append("UPDATE poi_deep_status SET handler=:1,update_date= to_date('"+ df.format(new Date()) + "','yyyy-mm-dd hh24:mi:ss') WHERE pid in (");
-		String temp = "";
-		for (int pid:pids) {
-			sb.append(temp);
-			sb.append(pid);
-			temp = ",";
-		}
-		sb.append(")");
-		
-		PreparedStatement pstmt = null;
-
-		try {
-			
-			pstmt = conn.prepareStatement(sb.toString());
-
-			pstmt.setLong(1, userId);
-			
-			pstmt.execute();
-			
-		} catch (Exception e) {
-			throw e;
-		} finally {
-			DbUtils.closeQuietly(pstmt); 
-		}
-	}
 	
 	/**
 	 * 深度信息申请数据后-作业前批处理

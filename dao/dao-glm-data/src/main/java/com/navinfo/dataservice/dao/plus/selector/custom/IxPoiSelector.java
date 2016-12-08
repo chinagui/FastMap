@@ -42,6 +42,19 @@ import com.navinfo.navicommons.exception.ServiceException;
 public class IxPoiSelector {
 	protected static Logger log = LoggerRepos.getLogger(IxPoiSelector.class);
 
+	public static Map<String,Long> getPidByFids(Connection conn,Collection<String> fids)throws Exception{
+		if(fids==null|fids.size()==0)return null;
+
+		if(fids.size()>1000){
+			String sql= "SELECT PID,POI_NUM FROM IX_POI WHERE POI_NUM IN (SELECT COLUMN_VALUE FROM TABLE(CLOB_TO_TABLE(?)))";
+			Clob clob = ConnectionUtil.createClob(conn);
+			clob.setString(1, StringUtils.join(fids, ","));
+			return new QueryRunner().query(conn, sql, new FidPidSelHandler(),clob);
+		}else{
+			String sql= "SELECT PID,POI_NUM FROM IX_POI WHERE POI_NUM IN ('"+StringUtils.join(fids, "','")+"')";
+			return new QueryRunner().query(conn,sql,new FidPidSelHandler());
+		}
+	}
 	public static Map<Long,Long> getAdminIdByPids(Connection conn,Collection<Long> pids)throws Exception{
 		if(pids!=null&&pids.size()>0){
 			if(pids.size()>1000){
@@ -87,6 +100,9 @@ public class IxPoiSelector {
 	
 	public static Map<Long,Long> getParentPidsByChildrenPids(Connection conn,Set<Long> pidList) throws ServiceException{
 		Map<Long,Long> childPidParentPid = new HashMap<Long,Long>();
+		if(pidList.isEmpty()){
+			return childPidParentPid;
+		}
 		try{
 			String sql = "SELECT DISTINCT IPP.PARENT_POI_PID,IPC.CHILD_POI_PID"
 					+ " FROM IX_POI_PARENT IPP,IX_POI_CHILDREN IPC"

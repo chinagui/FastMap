@@ -887,5 +887,54 @@ public List<Integer> getRowIdForSubmit(String firstWorkItem,String secondWorkIte
 		}
 
 	}
+	/**
+	 * 根据status,userid,secondWorkItem,subtask 获取可提交的数据rowIds
+	 * @param subtask
+	 * @param status
+	 * @param userid
+	 * @param secondWorkItem
+	 * @return
+	 * @throws Exception
+	 */
+	public List<Integer> getpidsForRelease(int subtaskId ,int status, long userid, String secondWorkItem) throws Exception {
+		List<Integer> pids = new ArrayList<Integer>();
+		StringBuilder sb = new StringBuilder();
+		sb.append(" SELECT S.PID");
+		sb.append(" FROM POI_COLUMN_STATUS S");
+		sb.append(" WHERE S.TASK_ID = ?");
+		sb.append(" AND S.WORK_ITEM_ID IN");
+		sb.append(" (SELECT CF.WORK_ITEM_ID");
+		sb.append(" FROM POI_COLUMN_WORKITEM_CONF CF");
+		sb.append(" WHERE CF.SECOND_WORK_ITEM = ?)");
+		sb.append(" AND S.HANDLER = ?");
+		sb.append(" AND S.SECOND_WORK_STATUS = ?");
+		sb.append(" AND NOT EXISTS (SELECT C.PID");
+		sb.append(" FROM NI_VAL_EXCEPTION N, CK_RESULT_OBJECT C");
+		sb.append(" WHERE N.MD5_CODE = C.MD5_CODE");
+		sb.append(" AND C.PID = s.PID)");
+		
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+			pstmt.setInt(1,subtaskId);
+			pstmt.setString(2, secondWorkItem);
+			pstmt.setLong(3, userid);
+			pstmt.setInt(4, status);
+			
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+				pids.add(resultSet.getInt("pid"));
+			}
+			
+			return pids;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+	}
 	
 }

@@ -104,6 +104,9 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 	 */
 	public List<IxPoiObj> improtAdd(Connection conn,Map<String, JSONObject> addPois)throws Exception{
 		List<IxPoiObj> ixPoiObjList = new ArrayList<IxPoiObj>();
+		//排除fid已存在的
+		filterAddedPoi(addPois);
+		
 		for (Map.Entry<String, JSONObject> entry : addPois.entrySet()) {
 			JSONObject jo = entry.getValue();
 			//日志
@@ -786,6 +789,15 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 	public String getName() {
 		// TODO Auto-generated method stub
 		return "MultiSrcPoiDayImportor";
+	}
+	
+	private void filterAddedPoi(Map<String, JSONObject> addPois)throws Exception{
+		Map<String,Long> exists = IxPoiSelector.getPidByFids(conn,addPois.keySet());
+		if(exists==null)return;
+		for(String fid:exists.keySet()){
+			errLog.put(fid, "fid库中已存在");
+			addPois.remove(fid);
+		}
 	}
 	
 	private void filterUpdatePoi(Map<String,JSONObject> pois)throws Exception{

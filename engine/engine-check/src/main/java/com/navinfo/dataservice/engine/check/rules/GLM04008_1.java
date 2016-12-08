@@ -13,7 +13,9 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.rd.gate.RdGate;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
+import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionCondition;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionDetail;
+import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionVia;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
 
@@ -24,7 +26,9 @@ import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
  * @Description: 双向道路上制作了一个方向的大门，但另一个方向没有禁止通行（永久）的普通交限，报双向道路上制作了一个方向的大门，在另一个方向没有禁止通行（永久）的交限
  * 大门方向编辑服务端后检查:如果大门为单向，则执行检查。如果大门进入线与退出线为双向道路，且另一个方向并未制作禁止通行的普通交限，则检查不通过。
  * 新增交限服务端后检查：新增交限，如果为非禁止通行（永久）的普通交限，则执行检查。如果交限进入线退出线为双向道路，且另一个方向建立了单方向大门，则检查不通过。
- * 修改交限服务端后检查：修改交限，如果修改为非禁止通行（永久）的普通交限，则执行检查。如果交限进入线退出线为双向道路，且另一个方向建立了单方向大门，则检查不通过。
+ * 修改交限服务端后检查：修改交限，如果修改为非禁止通行（永久）的普通交限，则执行检查。如果交限进入线退出线为双向道路，且另一个方向建立了单方向大门，则检查不通过；
+ * 		如果修改为禁止通行（永久）的普通交限，则执行检查。如果交限进入线退出线为双向道路，且另一个方向建立非单方向大门，则检查不通过。
+ * 		修改RD_RESTRICTION，RD_RESTRICTION_DETAIL会触发检查项=-=
  * 大门方向编辑服务端前检查：如果大门为单向，则执行检查。如果大门进入线与退出线为双向道路，且另一个方向并未制作禁止通行的普通交限，则检查不通过。
  */
 public class GLM04008_1 extends baseRule{
@@ -76,45 +80,56 @@ public class GLM04008_1 extends baseRule{
 		
 	}
 
+
 	/**
 	 * @param rdRestrictionDetail
 	 * @throws Exception 
 	 */
 	private void checkRdRestrictionDetail(RdRestrictionDetail rdRestrictionDetail) throws Exception {
 		//禁止进入交限
-		//如果进入线退出线均为双向，则另一方向需制作单向大门
-		if(rdRestrictionDetail.getType()==1){
-			int pid = rdRestrictionDetail.getRestricPid();
-			int outLinkPid = rdRestrictionDetail.getOutLinkPid();
-			StringBuilder sb = new StringBuilder();
-
-			sb.append("SELECT 1 FROM RD_RESTRICTION R,RD_GATE G,RD_LINK RL1, RD_LINK RL2");
-			sb.append(" WHERE R.IN_LINK_PID = G.OUT_LINK_PID");
-			sb.append(" AND R.PID = " + pid);
-			sb.append(" AND G.IN_LINK_PID = " + outLinkPid);
-			sb.append(" AND G.DIR = 1");
-			sb.append(" AND G.IN_LINK_PID = RL1.LINK_PID");
-			sb.append(" AND G.OUT_LINK_PID = RL2.LINK_PID");
+		StringBuilder sb = new StringBuilder();
+		if(rdRestrictionDetail.getType() ==1){
+			sb.append("SELECT 1 FROM RD_RESTRICTION R, RD_LINK RL1, RD_LINK RL2, RD_GATE G");
+			sb.append(" WHERE R.IN_LINK_PID = RL1.LINK_PID");
+			sb.append(" AND RL2.LINK_PID = " + rdRestrictionDetail.getOutLinkPid());
 			sb.append(" AND RL1.DIRECT = 1");
 			sb.append(" AND RL2.DIRECT = 1");
-			sb.append(" AND G.U_RECORD <> 2") ;
-			sb.append(" AND RL1.U_RECORD <> 2") ;
-			sb.append(" AND RL2.U_RECORD <> 2") ;
-
-			String sql = sb.toString();
-			log.info("RdRestriction后检查GLM04008_1:" + sql);
-
-			DatabaseOperator getObj = new DatabaseOperator();
-			List<Object> resultList = new ArrayList<Object>();
-			resultList = getObj.exeSelect(this.getConn(), sql);
-			
-			if(resultList.size()>0){
-				String target = "[RD_RESTRICTION," + pid + "]";
-				this.setCheckResult("", target, 0);
-			}
-
+			sb.append(" AND G.IN_LINK_PID = " + rdRestrictionDetail.getOutLinkPid());
+			sb.append(" AND G.OUT_LINK_PID = R.IN_LINK_PID");
+			sb.append(" AND G.DIR <> 1");
+			sb.append(" AND R.U_RECORD <> 2");
+			sb.append(" AND RL1.U_RECORD <> 2");
+			sb.append(" AND RL2.U_RECORD <> 2");
+			sb.append(" AND G.U_RECORD <> 2");
+			sb.append(" AND R.PID = " + rdRestrictionDetail.getRestricPid());
 		}
-		
+		//非禁止进入交限
+		else{
+			sb.append("SELECT 1 FROM RD_RESTRICTION R, RD_LINK RL1, RD_LINK RL2, RD_GATE G");
+			sb.append(" WHERE R.IN_LINK_PID = RL1.LINK_PID");
+			sb.append(" AND RL2.LINK_PID = " + rdRestrictionDetail.getOutLinkPid());
+			sb.append(" AND RL1.DIRECT = 1");
+			sb.append(" AND RL2.DIRECT = 1");
+			sb.append(" AND G.IN_LINK_PID = " + rdRestrictionDetail.getOutLinkPid());
+			sb.append(" AND G.OUT_LINK_PID = R.IN_LINK_PID");
+			sb.append(" AND G.DIR = 1");
+			sb.append(" AND R.U_RECORD <> 2");
+			sb.append(" AND RL1.U_RECORD <> 2");
+			sb.append(" AND RL2.U_RECORD <> 2");
+			sb.append(" AND G.U_RECORD <> 2");
+			sb.append(" AND R.PID = " + rdRestrictionDetail.getRestricPid());
+		}
+		String sql = sb.toString();
+		log.info("RdGate后检查GLM04008_1:" + sql);
+
+		DatabaseOperator getObj = new DatabaseOperator();
+		List<Object> resultList = new ArrayList<Object>();
+		resultList = getObj.exeSelect(this.getConn(), sql);
+
+		if(resultList.size()>0){
+			String target = "[RD_RESTRICTION," + rdRestrictionDetail.getRestricPid() + "]";
+			this.setCheckResult("", target, 0);
+		}
 	}
 
 	/**
@@ -124,44 +139,36 @@ public class GLM04008_1 extends baseRule{
 	 * @throws Exception 
 	 */
 	private void checkRdRestriction(RdRestriction rdRestriction, OperType operType) throws Exception {
-		if(operType.equals(OperType.CREATE)){
-			int inLinkPid = rdRestriction.getInLinkPid();
-			Set<Integer> outLinkPidSet = new HashSet<Integer>();
-			for(Map.Entry<Integer, RdRestrictionDetail> entry:rdRestriction.detailMap.entrySet()){
-				RdRestrictionDetail rdRestrictionDetail = entry.getValue();
-				if(rdRestrictionDetail.getType()!=1){
-					outLinkPidSet.add(rdRestrictionDetail.getOutLinkPid());
-				}
-			}
-			//非禁止交限
-			if(!outLinkPidSet.isEmpty()){
-				StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder();
 
-				sb.append("SELECT 1 FROM RD_GATE G,RD_LINK RL1, RD_LINK RL2");
-				sb.append(" WHERE G.OUT_LINK_PID = " + inLinkPid);
-				sb.append(" AND G.IN_LINK_PID IN (" + StringUtils.join(outLinkPidSet.toArray(),",") + ")");
-				sb.append(" AND G.DIR = 1");
-				sb.append(" AND G.IN_LINK_PID = RL1.LINK_PID");
-				sb.append(" AND G.OUT_LINK_PID = RL2.LINK_PID");
-				sb.append(" AND RL1.DIRECT = 1");
-				sb.append(" AND RL2.DIRECT = 1");
-				sb.append(" AND G.U_RECORD <> 2") ;
-				sb.append(" AND RL1.U_RECORD <> 2") ;
-				sb.append(" AND RL2.U_RECORD <> 2") ;
+		sb.append("SELECT 1 FROM RD_RESTRICTION R, RD_RESTRICTION_DETAIL D, RD_LINK RL1, RD_LINK RL2, RD_GATE G");
+		sb.append(" WHERE R.PID = D.RESTRIC_PID");
+		sb.append(" AND D.TYPE = 1");
+		sb.append(" AND R.IN_LINK_PID = RL1.LINK_PID");
+		sb.append(" AND D.OUT_LINK_PID = RL2.LINK_PID");
+		sb.append(" AND RL1.DIRECT = 1");
+		sb.append(" AND RL2.DIRECT = 1");
+		sb.append(" AND G.IN_LINK_PID = D.OUT_LINK_PID");
+		sb.append(" AND G.OUT_LINK_PID = R.IN_LINK_PID");
+		sb.append(" AND G.DIR <> 1");
+		sb.append(" AND R.U_RECORD <> 2");
+		sb.append(" AND D.U_RECORD <> 2");
+		sb.append(" AND RL1.U_RECORD <> 2");
+		sb.append(" AND RL2.U_RECORD <> 2");
+		sb.append(" AND G.U_RECORD <> 2");
+		sb.append(" AND R.PID = " + rdRestriction.getPid());
+		
 
-				String sql = sb.toString();
-				log.info("RdRestriction后检查GLM04008_1:" + sql);
+		String sql = sb.toString();
+		log.info("RdGate后检查GLM04008_1:" + sql);
 
-				DatabaseOperator getObj = new DatabaseOperator();
-				List<Object> resultList = new ArrayList<Object>();
-				resultList = getObj.exeSelect(this.getConn(), sql);
-				
-				if(resultList.size()>0){
-					String target = "[RD_RESTRICTION," + rdRestriction.getPid() + "]";
-					this.setCheckResult("", target, 0);
-				}
+		DatabaseOperator getObj = new DatabaseOperator();
+		List<Object> resultList = new ArrayList<Object>();
+		resultList = getObj.exeSelect(this.getConn(), sql);
 
-			}
+		if(resultList.size()>0){
+			String target = "[RD_RESTRICTION," + rdRestriction.getPid() + "]";
+			this.setCheckResult("", target, 0);
 		}
 	}
 

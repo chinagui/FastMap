@@ -22,9 +22,9 @@ import com.navinfo.dataservice.engine.fcc.tips.TipsUpload;
 
 /** 
  * @ClassName: TipsExportTest.java
- * @author y
+ * @author y  
  * @date 2016-11-1 上午10:37:59
- * @Description: TODO
+ * @Description: 草图预处理tips 接口测试
  *  
  */
 public class TipsOperateTest2 extends InitApplication{

@@ -11,10 +11,12 @@ import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
+import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchVia;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
 import com.navinfo.dataservice.dao.glm.search.RdGscSearch;
 import com.navinfo.dataservice.dao.glm.search.RdLaneConnexitySearch;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchViaSelector;
 import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.operation.Transaction;
 
@@ -71,10 +73,9 @@ public class RdBranchTest extends InitApplication {
 			e.printStackTrace();
 		}
 	}
-	
+
 	@Test
-	public void testDeleteBranch()
-	{
+	public void testDeleteBranch() {
 		String parameter = "{\"command\":\"DELETE\",\"dbId\":42,\"type\":\"RDBRANCH\",\"detailId\":100005938,\"rowId\":\"\",\"branchType\":8}";
 		Transaction t = new Transaction(parameter);
 		try {
@@ -85,10 +86,9 @@ public class RdBranchTest extends InitApplication {
 			e.printStackTrace();
 		}
 	}
-	
+
 	@Test
-	public void testUpdateBranch()
-	{
+	public void testUpdateBranch() {
 		String parameter = "{\"dbId\":25,\"type\":\"RDBRANCH\",\"detailId\":\"111401467052\",\"rowId\":\"\",\"branchType\":9}";
 		Transaction t = new Transaction(parameter);
 		try {
@@ -99,23 +99,46 @@ public class RdBranchTest extends InitApplication {
 			e.printStackTrace();
 		}
 	}
-	
+
 	@Test
-	public void testRwRender()
-	{
+	public void testRwRender() {
 		Connection conn;
 		try {
 			conn = DBConnector.getInstance().getConnectionById(17);
 
 			RdLaneConnexitySearch search = new RdLaneConnexitySearch(conn);
-			
+
 			List<SearchSnapshot> searchDataByTileWithGap = search.searchDataByTileWithGap(215663, 99422, 18, 80);
-			
-			System.out.println("data:"+ResponseUtils.assembleRegularResult(searchDataByTileWithGap));
+
+			System.out.println("data:" + ResponseUtils.assembleRegularResult(searchDataByTileWithGap));
 
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+
+	}
+
+	@Test
+	public void testGetByLinkPid() {
+		int linkPid = 208003004;
+
+		Connection conn;
+		try {
+			conn = DBConnector.getInstance().getConnectionById(17);
+			
+			RdBranchViaSelector viaSelector = new RdBranchViaSelector(conn);
+			
+			List<List<RdBranchVia>> loadRdBranchViaByLinkPid = viaSelector.loadRdBranchViaByLinkPid(linkPid, false);
+			
+			for(List<RdBranchVia> viaList : loadRdBranchViaByLinkPid)
+			{
+				for(RdBranchVia via : viaList)
+				{
+					System.out.println(via.Serialize(null));
+				}
+			}
+		}
+		catch (Exception e) {
+		}
 	}
 }

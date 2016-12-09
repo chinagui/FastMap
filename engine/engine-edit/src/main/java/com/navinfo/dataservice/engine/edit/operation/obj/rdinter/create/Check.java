@@ -109,6 +109,11 @@ public class Check {
 				this.command.getNodeArray().remove(new Integer(nodePid));
 			}
 		}
+		
+		if(this.command.getNodeArray().size() == 0 && this.command.getLinkArray().size() == 0)
+		{
+			throw new Exception("除图郭点,没有可参与制作CRF交叉点的组成要素");
+		}
 	}
 	
 	/**

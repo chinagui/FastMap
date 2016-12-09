@@ -25,6 +25,12 @@
 9. add_multisrc_fm_sync.sql
   功能：新增多源POI成果导入FM日库管理表
   目标库：sys库
+10. update_fm_regiondb_day.sql
+  功能：修改gdb+的POI_EDIT_STATUS表，增加字段work_type；新增表POI_EDIT_MULTISRC
+  目标库：日大区库
+11. drop_check_rules.sql
+  功能：删除ck_rule,ck_suite,ck_suite_rule_mapping
+  目标库：sys库  目标库：sys库
 10.man_add_day2month_config.sql
   功能：新增日落月开关配置表
   目标库：man库

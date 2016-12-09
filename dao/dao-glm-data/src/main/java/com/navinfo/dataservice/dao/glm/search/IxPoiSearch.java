@@ -730,7 +730,7 @@ public class IxPoiSearch implements ISearch {
 	 * @return
 	 * @throws Exception
 	 */
-	public JSONArray searchColumnPoiByPid(String firstWordItem,String secondWorkItem,List<Integer> pids,String type,long userId,int status,JSONObject classifyRules,JSONObject ckRules) throws Exception {
+	public JSONArray searchColumnPoiByPid(String firstWordItem,String secondWorkItem,List<Integer> pids,long userId,int status,JSONObject classifyRules,JSONObject ckRules) throws Exception {
 		
 		JSONArray dataList = new JSONArray();
 		
@@ -770,14 +770,24 @@ public class IxPoiSearch implements ISearch {
 				poi.setChildren(new AbstractSelector(IxPoiChildren.class,conn).loadRowsByParentId(poi.getPid(), isLock));
 				
 				//获取各专项共用字段
-				poiObj=getCommenfields(pid,type,poi);
+				poiObj=getCommenfields(pid,poi);
 				poiObj.put("userId", userId);
 				    //classifyRules赋值,避免每条数据查一次库，整体查出再处理；
-				poiObj.put("classifyRules", classifyRules.get(Integer.toString(pid)));
+				String classifyRule="";
+				Object cf=classifyRules.get(Integer.toString(pid));
+				if (cf!=null){
+					classifyRule=cf.toString();
+				}
+				poiObj.put("classifyRules",classifyRule );
 				    //ckRules赋值，获取检查错误
-				poiObj.put("ckRules", ckRules.get(Integer.toString(pid)));
+				String ckRule="";
+				Object cr=ckRules.get(Integer.toString(pid));
+				if (cr!=null){
+					ckRule=cr.toString();
+				}
+				poiObj.put("ckRules", ckRule);
 				//获取特殊字段
-				poiObj=getUnCommenfields(firstWordItem,secondWorkItem,pid,type,poi,poiObj);
+				poiObj=getUnCommenfields(firstWordItem,secondWorkItem,pid,poi,poiObj);
 				dataList.add(poiObj);
 			}	
 			
@@ -796,7 +806,7 @@ public class IxPoiSearch implements ISearch {
 	 * @return
 	 * @throws Exception
 	 */
-	private JSONObject getCommenfields(int pid,String type,IxPoi poi) throws Exception {
+	private JSONObject getCommenfields(int pid,IxPoi poi) throws Exception {
 		try{
 			JSONObject dataObj = new JSONObject();
 			dataObj.put("pid", pid);
@@ -810,7 +820,6 @@ public class IxPoiSearch implements ISearch {
 			dataObj.put("adminCode",adAdmin.getAdminId());
 			
 			int parProupId = 0,childProupId=0;
-			
 			//ix_poi表通过pid关联ix_poi_parent，取group_id
 			List<IRow> pRows = poi.getParents();
 			for(IRow pRow : pRows){
@@ -833,7 +842,12 @@ public class IxPoiSearch implements ISearch {
 			dataObj.put("parent", poiObj.get("parents"));
 			
 			//通过ix_poi表中的chain，去元数据表ci_para_chain中匹配获取相应的名称
-			dataObj.put("brandName", CHAINMAP.get(poi.getChain()));
+			String brandName="";
+			Object bn=CHAINMAP.get(poi.getChain());
+			if (bn!=null){
+				brandName=bn.toString();
+			}
+			dataObj.put("brandName", brandName);
 			//ix_poi表通过region_id关联ad_admin，获取adminCode，去元数据表sc_point_adminarea中匹配获取相应的名称
 			//待确认
 			if (ADMINMAP.containsKey(Integer.toString(poi.getAdminReal()))) {
@@ -858,7 +872,7 @@ public class IxPoiSearch implements ISearch {
 	 * @return
 	 * @throws Exception
 	 */
-	private JSONObject getUnCommenfields(String firstWordItem,String secondWorkItem,int pid,String type,IxPoi poi,JSONObject dataObj) throws Exception {
+	private JSONObject getUnCommenfields(String firstWordItem,String secondWorkItem,int pid,IxPoi poi,JSONObject dataObj) throws Exception {
 		try{
 			
 			//parentName 当二级项作业为nameUnify时，取该poi的父名称（官方标准化中文）

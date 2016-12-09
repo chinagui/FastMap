@@ -240,7 +240,8 @@ public class DefaultObjImportor extends AbstractOperation{
 			for(Iterator it = json.keys();it.hasNext();){
 				String attName = (String)it.next();
 				Object attValue = json.get(attName);
-				if((attValue==null && (!(attValue instanceof JSONNull)))||StringUtils.isEmpty(attName)){
+				if((attValue==null && (!(attValue instanceof JSONNull)))
+						||StringUtils.isEmpty(attName)||"objStatus".equals(attName)){
 					log.warn("注意：request的json中存在name或者value为空的属性，已经被忽略。");
 					continue;
 				}
@@ -252,7 +253,8 @@ public class DefaultObjImportor extends AbstractOperation{
 							||attValue instanceof Boolean
 							||attValue instanceof JSONNull
 							){
-						mainrow.setAttrByCol(attName, attValue);
+						String newAttName = this.camelToUnderline(attName);
+						mainrow.setAttrByCol(newAttName, attValue);
 					}else if(attValue instanceof JSONArray){
 							JSONArray attArr = (JSONArray)attValue;
 							if(attArr.size()>0){
@@ -312,7 +314,8 @@ public class DefaultObjImportor extends AbstractOperation{
 				for(Iterator it = json.keys();it.hasNext();){
 					String attName = (String)it.next();
 					Object attValue = json.get(attName);
-					if((attValue==null && (!(attValue instanceof JSONNull)))||StringUtils.isEmpty(attName)){
+					if((attValue==null && (!(attValue instanceof JSONNull)))
+							||StringUtils.isEmpty(attName)||"objStatus".equals(attName)){
 						log.warn("注意：request的json中存在name或者value为空的属性，已经被忽略。");
 						continue;
 					}
@@ -324,7 +327,8 @@ public class DefaultObjImportor extends AbstractOperation{
 								||attValue instanceof Boolean
 								||attValue instanceof JSONNull
 								){
-							subRow.setAttrByCol(attName, attValue);
+							String newAttName = this.camelToUnderline(attName);
+							subRow.setAttrByCol(newAttName, attValue);
 						}
 					}catch(Exception e){
 						log.error(e.getMessage(),e);
@@ -368,5 +372,23 @@ public class DefaultObjImportor extends AbstractOperation{
 	public String getName() {
 		// TODO Auto-generated method stub
 		return "DefaultObjImportor";
+	}
+	
+	public String camelToUnderline(String param) {
+		if (param == null || "".equals(param.trim())) {
+			return "";
+		}
+		int len = param.length();
+		StringBuilder sb = new StringBuilder(len);
+		for (int i = 0; i < len; i++) {
+			char c = param.charAt(i);
+			if (Character.isUpperCase(c)) {
+				sb.append("_");
+				sb.append(c);
+			} else {
+				sb.append(Character.toUpperCase(c));
+			}
+		}
+		return sb.toString();
 	}
 }

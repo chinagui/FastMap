@@ -5,7 +5,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -36,7 +35,6 @@ import com.navinfo.navicommons.database.sql.DBUtils;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import net.sf.json.JSONSerializer;
 
 public class DeepCoreControl {
 	private static final Logger logger = Logger.getLogger(DeepCoreControl.class);
@@ -512,6 +510,8 @@ public class DeepCoreControl {
 			return applyCount;
 		} catch (Exception e) {
 			throw e;
+		} finally {
+			DbUtils.commitAndClose(conn);
 		}
 
 	}
@@ -690,6 +690,7 @@ public class DeepCoreControl {
 		int subtaskId = jsonReq.getInt("subtaskId");
 		int dbId = jsonReq.getInt("dbId");
 
+		Connection conn = null;
 		try {
 			ManApi apiService = (ManApi) ApplicationContextUtil.getBean("manApi");
 			Subtask subtask = apiService.queryBySubtaskId(subtaskId);
@@ -698,15 +699,17 @@ public class DeepCoreControl {
 				throw new Exception("subtaskid未找到数据");
 			}
 			
-			Connection conn = DBConnector.getInstance().getConnectionById(dbId);
+			conn = DBConnector.getInstance().getConnectionById(dbId);
 			
 			IxPoiDeepStatusSelector deepSelector = new IxPoiDeepStatusSelector(conn);
-			result = deepSelector.loadDeepPoiByCondition(jsonReq, subtask, userId);
+			result = deepSelector.loadDeepPoiByCondition(jsonReq, subtaskId, userId);
 			
 			return result;
 		} catch(Exception e) {
 			throw e;
-		} 
+		} finally {
+			DbUtils.closeQuietly(conn);
+		}
 	}
 	
 	

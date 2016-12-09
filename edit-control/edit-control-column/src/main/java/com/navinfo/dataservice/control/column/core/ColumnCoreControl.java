@@ -184,34 +184,38 @@ public class ColumnCoreControl {
 
 			ManApi apiService = (ManApi) ApplicationContextUtil.getBean("manApi");
 
-			String type = jsonReq.getString("type");
 			int status = jsonReq.getInt("status");
 			String firstWordItem = jsonReq.getString("firstWorkItem");
 			String secondWorkItem = jsonReq.getString("secondWorkItem");
 			int taskId = jsonReq.getInt("taskId");
-			int pageSize = jsonReq.getInt("pageSize");
-			int pageNo = jsonReq.getInt("pageNo");
+//			int pageSize = jsonReq.getInt("pageSize");
+//			int pageNo = jsonReq.getInt("pageNo");
 			
-			//List<Integer> pidList = new ArrayList<Integer>();
-			int startRow = (pageNo - 1) * pageSize + 1;
-			int endRow = pageNo * pageSize;
+//			int startRow = (pageNo - 1) * pageSize + 1;
+//			int endRow = pageNo * pageSize;
 
 			Subtask subtask = apiService.queryBySubtaskId(taskId);
 			int dbId = subtask.getDbId();
-			
-			//conn = DBConnector.getInstance().getConnectionById(dbId);
-			conn = DBConnector.getInstance().getConnectionById(17);
+			conn = DBConnector.getInstance().getConnectionById(dbId);
 			IxPoiColumnStatusSelector selector = new IxPoiColumnStatusSelector(conn);
 			// 获取未提交数据的pid以及总数
-			JSONObject data= selector.columnQuery(status, secondWorkItem, userId,startRow,endRow);
-			List<Integer> pidList =(ArrayList<Integer>) data.get("pidList");
+			JSONObject data= selector.columnQuery(status, secondWorkItem, userId);
+			List<Integer> pidList =new ArrayList<Integer>();
+			if(data.get("pidList") instanceof List){ 
+				pidList = (List) data.get("pidList"); 
+			}
 			int total =(Integer) data.get("total");
+			JSONArray datas=new JSONArray();
+			if (total==0){
+				result.put("total", 0);
+				result.put("rows", datas);
+				return result;
+			}
 			//获取数据详细字段
 			JSONObject classifyRules= selector.queryClassifyByPidSecondWorkItem(pidList,secondWorkItem,status,userId);
-			JSONObject ckRules= selector.queryCKLogByPidfirstWorkItem(pidList,secondWorkItem,"IX_POI");
-			
+			JSONObject ckRules= selector.queryCKLogByPidfirstWorkItem(pidList,firstWordItem,secondWorkItem,"IX_POI");
 			IxPoiSearch poiSearch = new IxPoiSearch(conn);
-			JSONArray datas = poiSearch.searchColumnPoiByPid(firstWordItem, secondWorkItem, pidList, type,userId,status,classifyRules,ckRules);
+			datas = poiSearch.searchColumnPoiByPid(firstWordItem, secondWorkItem, pidList,userId,status,classifyRules,ckRules);
 
 			result.put("total", total);
 			result.put("rows", datas);

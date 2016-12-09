@@ -381,26 +381,26 @@ public class IxPoi implements IObj {
 	public Map<String, IxSamepoiPart> samepoiPartMap = new HashMap<String, IxSamepoiPart>();
 	
 	//添加 poiEditStatus
-	//private int poiEditStatus = 0;
+	protected int poiEditStatus = 0;
 	
 	//添加 sameFid
-//	private String sameFid ;
-//
-//	public String getSameFid() {
-//		return sameFid;
-//	}
-//
-//	public void setSameFid(String sameFid) {
-//		this.sameFid = sameFid;
-//	}
-//
-//	public int getPoiEditStatus() {
-//		return poiEditStatus;
-//	}
-//
-//	public void setPoiEditStatus(int poiEditStatus) {
-//		this.poiEditStatus = poiEditStatus;
-//	}
+	protected String sameFid="" ;
+
+	public String getSameFid() {
+		return sameFid;
+	}
+
+	public void setSameFid(String sameFid) {
+		this.sameFid = sameFid;
+	}
+
+	public int getPoiEditStatus() {
+		return poiEditStatus;
+	}
+
+	public void setPoiEditStatus(int poiEditStatus) {
+		this.poiEditStatus = poiEditStatus;
+	}
 
 	//生成 list 的  get set 方法
 //	public List<IRow> getSamepois() {

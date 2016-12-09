@@ -89,13 +89,18 @@ public class EditApiImpl implements EditApi {
 
 		return json;
 	}
+
 	/**
-	 * 修改的数据，安卓上传：1)若只有照片和备注的履历，则为鲜度验证,更新为待作业;2)若没任何修改履历，也为鲜度验证，更新为已作业
+	 * @Title: updatePoifreshVerified
+	 * @Description: 修改的数据，安卓上传：1)若只有照片和备注的履历，则为鲜度验证,更新为待作业;2)若没任何修改履历，也为鲜度验证，更新为已作业
 	 * web:不修改状态，只做鲜度验证字段的判断修改，web保存的数据总在已作业
+	 * (修)(第七迭代) 变更:当新增 poi_edit_status 时,为 commit_his_status 字段赋默认值 0 
 	 * @param pid
-	 * @param platform: web,andriod
-	 * @param conn
-	 * @throws Exception
+	 * @param platform
+	 * @throws Exception  void
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2016年12月8日 下午1:52:16 
 	 */
 	public void updatePoifreshVerified(int pid,String platform) throws Exception {
 			LogReader lr=new LogReader(conn);
@@ -140,6 +145,7 @@ public class EditApiImpl implements EditApi {
 			subConn = DBConnector.getInstance().getConnectionById(dbId);
 			List<String> batchList = batchProcess.getRowRules();
 			batchProcess.execute(dataObj, subConn, new EditApiImpl(subConn), batchList);
+			subConn.commit();
 		} catch (Exception e) {
 			throw e;
 		} finally {

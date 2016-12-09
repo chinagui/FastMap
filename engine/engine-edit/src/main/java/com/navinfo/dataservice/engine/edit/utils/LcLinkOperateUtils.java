@@ -130,14 +130,6 @@ public class LcLinkOperateUtils {
         link.setsNodePid(sNodePid);
         link.seteNodePid(eNodePid);
         result.insertObject(link, ObjStatus.INSERT, link.pid());
-//        for (IRow row : sourcelink.getKinds()) {
-//            LcLinkKind sourceKind = (LcLinkKind) row;
-//            LcLinkKind kind = new LcLinkKind();
-//            kind.setLinkPid(link.getPid());
-//            kind.setKind(sourceKind.getKind());
-//            kind.setForm(sourceKind.getForm());
-//            result.insertObject(kind, ObjStatus.INSERT, kind.getLinkPid());
-//        }
         return link;
     }
 

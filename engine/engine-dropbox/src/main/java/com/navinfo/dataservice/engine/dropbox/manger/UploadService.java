@@ -13,6 +13,7 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Scanner;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -25,6 +26,7 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
 
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
+import com.navinfo.dataservice.commons.photo.RotateImageUtils;
 import com.navinfo.dataservice.commons.util.ZipUtils;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiPhoto;
 import com.navinfo.dataservice.dao.photo.HBaseController;
@@ -206,7 +208,6 @@ public class UploadService {
 		
 		if(fileType.equals("photo")){
 			InputStream fileStream = uploadItem.getInputStream();
-			
 			DBController dbController = new DBController();
 			HBaseController hbaseController = new HBaseController();
 				

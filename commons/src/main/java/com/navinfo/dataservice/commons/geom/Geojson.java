@@ -252,14 +252,16 @@ public class Geojson {
 				JSONArray line = ja.getJSONArray(i);
 
 				JSONArray newline = new JSONArray();
+				
+				//20161208 modified by liya .多线返回的坐标有问题，修改前返回值：经纬度坐标和瓦片坐标夹杂这返回了
 
 				for (int j = 0; j < line.size(); j++) {
 					JSONArray point = line.getJSONArray(j);
 
-					point.add(lonlat2Pixel(point.getDouble(0),
+					newline.add(lonlat2Pixel(point.getDouble(0),
 							point.getDouble(1), z, px, py));
 					
-					newline.add(point);
+					//newline.add(point);
 				}
 
 				coords.add(newline);

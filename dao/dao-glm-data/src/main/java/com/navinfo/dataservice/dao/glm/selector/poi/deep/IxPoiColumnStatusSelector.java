@@ -342,24 +342,23 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 		sb.append(" SELECT PID,TOTAL");
 		sb.append(" FROM (SELECT CC.PID, CC.TOTAL, ROWNUM RN");
 		sb.append("	FROM (SELECT COUNT(1) OVER(PARTITION BY 1) TOTAL, PID");
-		sb.append("	FROM (SELECT DISTINCT IX.PID,");
+		sb.append("	FROM (SELECT IX.PID,");
 		sb.append("	P.GROUP_ID AS PGROUP_ID,");
 		sb.append("	C.GROUP_ID AS CGROUP_ID");
 		sb.append("	FROM IX_POI IX, IX_POI_PARENT P, IX_POI_CHILDREN C");
-		sb.append("	WHERE (IX.PID = P.PARENT_POI_PID OR");
-		sb.append("	IX.PID = C.CHILD_POI_PID)");
-		sb.append("	AND P.GROUP_ID = C.GROUP_ID");
+		sb.append("	WHERE IX.PID = P.PARENT_POI_PID(+)");
+		sb.append("	AND IX.PID = C.CHILD_POI_PID(+)");
 		sb.append("	AND IX.PID IN");
 		sb.append("	(SELECT DISTINCT S.PID");
-		sb.append("	FROM POI_COLUMN_STATUS        S,");
+		sb.append("	FROM POI_COLUMN_STATUS S,");
 		sb.append("	POI_COLUMN_WORKITEM_CONF W");
 		sb.append("	WHERE S.WORK_ITEM_ID = W.WORK_ITEM_ID");
-		sb.append("	AND S.HANDLER =？");
-		sb.append("	AND W.SECOND_WORK_ITEM =？");
-		sb.append("	AND S.SECOND_WORK_STATUS =？)");
+		sb.append("	AND S.HANDLER =:1");
+		sb.append("	AND W.SECOND_WORK_ITEM =:2");
+		sb.append("	AND S.SECOND_WORK_STATUS =:3)");
 		sb.append("	ORDER BY P.GROUP_ID, C.GROUP_ID)) CC");
-		sb.append("	WHERE ROWNUM <= ？)");
-		sb.append("	WHERE RN >= ？");
+		sb.append("	WHERE ROWNUM <= :4)");
+		sb.append("	WHERE RN >= :5");
 		
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
@@ -376,7 +375,6 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 
 			List<Integer> pidList = new ArrayList<Integer>();
 			int total = 0;
-
 			while (resultSet.next()) {
 				pidList.add(resultSet.getInt("pid"));
 				total = resultSet.getInt("total");
@@ -434,7 +432,7 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 			resultSet = pstmt.executeQuery();
 
 			if (resultSet.next()) {
-				poiWorkItem.put(resultSet.getInt("pid"), resultSet.getString("work_item_id"));
+				poiWorkItem.put(resultSet.getInt("pid"), resultSet.getString("C_POI_PID"));
 			}
 
 			return poiWorkItem;
@@ -481,7 +479,6 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 		ResultSet resultSet = null;
 
 		JSONObject poiWorkItem = new JSONObject();
-
 		try {
 			pstmt = conn.prepareStatement(sb.toString());
 			

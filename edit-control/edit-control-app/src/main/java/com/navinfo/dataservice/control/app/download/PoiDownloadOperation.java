@@ -615,14 +615,12 @@ public class PoiDownloadOperation {
 			
 			jsonObj.put("t_operateDate", "");
 			
-			//处理统一关系 获取  samefid
 			
-			//jsonObj.put("sameFid", poi.getSameFid());
+			//************zl 2016.12.05*****************************
+			//处理统一关系 获取  samefid
+			jsonObj.put("sameFid", poi.getSameFid());
 			//处理编辑状态  获取  poiEditStatus
-			//	jsonObj.put("editStatus", poi.getPoiEditStatus());
-			//*****************************************
-				
-				
+			jsonObj.put("commitHisStatus", poi.getPoiEditStatus());
 				
 			//*****************************************
 			retList.add(jsonObj);

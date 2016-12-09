@@ -198,20 +198,26 @@ public class ColumnCoreControl {
 
 			Subtask subtask = apiService.queryBySubtaskId(taskId);
 			int dbId = subtask.getDbId();
-			
-			//conn = DBConnector.getInstance().getConnectionById(dbId);
-			conn = DBConnector.getInstance().getConnectionById(17);
+			conn = DBConnector.getInstance().getConnectionById(dbId);
 			IxPoiColumnStatusSelector selector = new IxPoiColumnStatusSelector(conn);
 			// 获取未提交数据的pid以及总数
 			JSONObject data= selector.columnQuery(status, secondWorkItem, userId,startRow,endRow);
-			List<Integer> pidList =(ArrayList<Integer>) data.get("pidList");
+			List<Integer> pidList =new ArrayList<Integer>();
+			if(data.get("pidList") instanceof List){ 
+				pidList = (List) data.get("pidList"); 
+			}
 			int total =(Integer) data.get("total");
+			JSONArray datas=new JSONArray();
+			if (total==0){
+				result.put("total", 0);
+				result.put("rows", datas);
+				return result;
+			}
 			//获取数据详细字段
 			JSONObject classifyRules= selector.queryClassifyByPidSecondWorkItem(pidList,secondWorkItem,status,userId);
 			JSONObject ckRules= selector.queryCKLogByPidfirstWorkItem(pidList,secondWorkItem,"IX_POI");
-			
 			IxPoiSearch poiSearch = new IxPoiSearch(conn);
-			JSONArray datas = poiSearch.searchColumnPoiByPid(firstWordItem, secondWorkItem, pidList, type,userId,status,classifyRules,ckRules);
+			datas = poiSearch.searchColumnPoiByPid(firstWordItem, secondWorkItem, pidList, type,userId,status,classifyRules,ckRules);
 
 			result.put("total", total);
 			result.put("rows", datas);

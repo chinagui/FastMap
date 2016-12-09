@@ -94,7 +94,7 @@ public class LuLinkTest extends InitApplication {
 
 	@Test
 	public void move(){
-		String parameter = "{\"command\":\"MOVE\",\"dbId\":351,\"objId\":405000009,\"data\":{\"longitude\":116.62570551037787,\"latitude\":39.9165819072175},\"type\":\"LUNODE\"}";
+		String parameter = "{\"command\":\"MOVE\",\"dbId\":17,\"objId\":202000040,\"data\":{\"longitude\":116.62445425987244,\"latitude\":40.398529177904926},\"type\":\"LUNODE\"}";
 		TestUtil.run(parameter);
 	}
 	

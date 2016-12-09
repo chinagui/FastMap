@@ -21,21 +21,17 @@ import com.navinfo.navicommons.database.sql.DbLinkCreator;
 public class CopBatchLogMover extends DefaultLogMover {
 	Logger log = LoggerRepos.getLogger(this.getClass());
 	public CopBatchLogMover(OracleSchema logSchema, OracleSchema tarSchema,String tempTable,String tempFailLogTable) {
-		super(logSchema, tarSchema, tempFailLogTable, tempFailLogTable);
-		this.tempTable=tempTable;
-		this.tempFailLogTable=tempFailLogTable;
+		super(logSchema, tarSchema, tempTable, tempFailLogTable);
 	}
-	protected String tempTable;
-	protected String tempFailLogTable;
-	protected String dbLinkName;
+	
 	@Override
 	protected String actionSql(){
 		StringBuilder sb = new StringBuilder();
 		sb.append("insert into log_action@");
 		sb.append(dbLinkName);
-		sb.append("(ACT_ID,US_ID,OP_CMD,STK_ID) select l.act_id,l.us_id,l.op_cmd,l.stk_id from log_action l where l.op_id in (select op_id from ");
+		sb.append(" (ACT_ID,US_ID,OP_CMD,STK_ID) select la.act_id,la.us_id,la.op_cmd,la.stk_id from log_action la where la.act_id in (select distinct lp.act_id from log_operation lp where lp.op_id in (select op_id from ");
 		sb.append(tempTable);
-		sb.append(" t)");
+		sb.append(" t))");
 //		if(StringUtils.isNotEmpty(tempFailLogTable)){
 //			sb.append(" WHERE NOT EXISTS(SELECT 1 FROM ");
 //			sb.append(tempFailLogTable);

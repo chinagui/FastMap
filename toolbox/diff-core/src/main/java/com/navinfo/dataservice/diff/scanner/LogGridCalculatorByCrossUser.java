@@ -49,13 +49,14 @@ public class LogGridCalculatorByCrossUser implements LogGridCalculator {
 			stmt = conn.prepareStatement(flushLogGridSql);
 			
 			//计算new grid:insert+update类型的履历
+			//key:log的row_id
         	Map<String,LogGeoInfo> newGrids = calculator.calc(table.getName(), new Integer[]{1,3}, conn);
         	flushLogGrids(newGrids,0,stmt,conn);
         	//计算old grid：update+delete类型的履历
         	Map<String,LogGeoInfo> oldGrids = calculator.calc(table.getName(), new Integer[]{2,3}, conn,"CROSS_USER",rightSchemaUserName);
         	flushLogGrids(oldGrids,1,stmt,conn);
         	//填充几何依赖
-        	String geoSql = "UPDATE LOG_DETAIL SET GEO_NM=?,GEO_PID=?";
+        	String geoSql = "UPDATE LOG_DETAIL SET GEO_NM=?,GEO_PID=? WHERE ROW_ID=?";
         	stmt4Geo=conn.prepareStatement(geoSql);
         	flushLogDetailGeo(newGrids,stmt4Geo);
 			conn.commit();
@@ -97,6 +98,7 @@ public class LogGridCalculatorByCrossUser implements LogGridCalculator {
 			for(Entry<String,LogGeoInfo> entry:grids.entrySet()){
 				stmt.setString(1, entry.getValue().getGeoName());
 				stmt.setLong(2, entry.getValue().getGeoPid());
+				stmt.setString(3, entry.getKey());
 				stmt.addBatch();
 				batchCount++;
 			    if (batchCount % 1000 == 0) {

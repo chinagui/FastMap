@@ -5,12 +5,14 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.imageio.ImageIO;
 
+import com.navinfo.dataservice.commons.photo.RotateImageUtils;
 import com.sun.image.codec.jpeg.JPEGCodec;
 import com.sun.image.codec.jpeg.JPEGImageEncoder;
 import com.sun.xml.internal.messaging.saaj.util.ByteInputStream;
@@ -122,19 +124,39 @@ public class FileUtils {
 	}
 
 	/**
-	 * 创建缩略图
-	 * 
-	 * @param srcImageFile
+	 * @Title: makeSmallImage
+	 * @Description: 创建缩略图 
+	 * (修)(第七迭代) 变更:增加图片自动旋转
+	 * @param bytes
 	 * @return
-	 * @throws Exception
+	 * @throws Exception  byte[]
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2016年12月9日 上午10:43:14 
 	 */
 	public static byte[] makeSmallImage(byte[] bytes) throws Exception {
 		JPEGImageEncoder encoder = null;
 		BufferedImage tagImage = null;
 		Image srcImage = null;
-		ByteInputStream bis = new ByteInputStream(bytes, bytes.length);
-
-		srcImage = ImageIO.read(bis);
+		//ByteInputStream bis = new ByteInputStream(bytes, bytes.length);
+		//srcImage = ImageIO.read(bis);
+		
+		//**********2016.12.09 zl 添加图片自动旋转功能 **************
+		Image newImage = null;
+	    InputStream newIn = new ByteInputStream(bytes, bytes.length);//为计算图片旋转度准备的 in
+	    int rotateAngle = RotateImageUtils.rotateOrientatione(newIn);//获取图片旋转角度
+    	if(rotateAngle > 0){
+    		InputStream newImageIn = new ByteInputStream(bytes, bytes.length);//为计算生成新的图片Image准备的 in
+	    	 newImage = RotateImageUtils.rotateImage(ImageIO.read(newImageIn),rotateAngle);
+    	}
+    	if(newImage != null){
+    		srcImage = newImage;
+    	}else{
+    		ByteInputStream bis = new ByteInputStream(bytes, bytes.length);
+    		srcImage = ImageIO.read(bis);
+    	}
+		//*****************************************************
+		
 		int srcWidth = srcImage.getWidth(null);// 原图片宽度
 		int srcHeight = srcImage.getHeight(null);// 原图片高度
 		int dstMaxSize = 120;// 目标缩略图的最大宽度/高度，宽度与高度将按比例缩写

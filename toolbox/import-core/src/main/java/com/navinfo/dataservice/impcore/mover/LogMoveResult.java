@@ -9,6 +9,8 @@ public class LogMoveResult {
 	private int logDetailMoveCount;
 	private int logDetailGridMoveCount;
 	private int logOperationMoveCount;
+	private String logOperationTempTable;
+	
 	public int getLogActionMoveCount() {
 		return logActionMoveCount;
 	}
@@ -32,6 +34,16 @@ public class LogMoveResult {
 	}
 	public void setLogOperationMoveCount(int logOperationMoveCount) {
 		this.logOperationMoveCount = logOperationMoveCount;
+	}
+	public String getLogOperationTempTable() {
+		return logOperationTempTable;
+	}
+	/**设置目标库的log_operation临时表(记录从日库搬移的log_operation的op_Id,op_dt)
+	 * @param tarTempTable
+	 */
+	public void setLogOperationTempTable(String tarTempTable) {
+		this.logOperationTempTable = tarTempTable;
+		
 	}
 	
 	

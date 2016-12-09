@@ -2,6 +2,7 @@ package com.navinfo.dataservice.dao.plus.operation;
 
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -81,7 +82,7 @@ public class OperationResult{
 	 * 
 	 * @param result
 	 */
-	public void putAll(List<? extends BasicObj> objs) throws OperationResultException{
+	public void putAll(Collection<? extends BasicObj> objs) throws OperationResultException{
 		//key:objType,value:key:objPid,value:obj
 		for(BasicObj basicObj:objs){
 			putObj(basicObj);

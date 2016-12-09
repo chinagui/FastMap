@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
@@ -29,15 +30,26 @@ public class LogWriter {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
 	private static WKT wktUtil = new WKT();
 	private Connection targetDbConn;
+	private boolean ignoreError;
+	
+	/**
+	 * @param conn 目标库的连接
+	 * @param ignoreError 是否忽略履历刷新时的错误
+	 */
+	public LogWriter(Connection conn,boolean ignoreError) {
+		this.targetDbConn=conn;
+		this.ignoreError = ignoreError;
+		
+	}
 	/**
 	 * @param conn 目标库的连接
 	 * 默认情况下，出现履历执行的错误，不抛异常
 	 */
 	public LogWriter(Connection conn) {
-		this.targetDbConn=conn;
+		this(conn,false);
 	}
 
-	public void write(EditLog editLog,ILogWriteListener listener){
+	public void write(EditLog editLog,ILogWriteListener listener) throws Exception{
 		int op_tp = editLog.getOpType();
 		if (op_tp == 1) {// 新增
 			listener.preInsert();
@@ -126,7 +138,7 @@ public class LogWriter {
 		}
 	}
 	
-	private int insertData(EditLog editLog) {
+	private int insertData(EditLog editLog) throws Exception {
 
 		StringBuilder sb = new StringBuilder("insert into ");
 
@@ -134,27 +146,15 @@ public class LogWriter {
 
 		try {
 			String newValue = editLog.getNewValue();
-
 			JSONObject json = JSONObject.fromObject(newValue);
-			
 			String tableName = editLog.getTableName().toLowerCase();
-
 			sb.append(tableName);
 			sb.append(" (");
-
 			Iterator<String> it = json.keys();
-
 			int keySize = json.keySet().size();
-
 			int tmpPos = 0;
-			//"access_flag":0,"address_flag":0,"admin_real":0,"airport_code":"","chain":"","changed_fields":{},"collect_time":"20160729165352","data_version":"250+","dif_groupid":"","edit_flag":1,"edition_flag":"","ex_priority":"","field_state":"改种别代码","field_task_id":0,"full_attr_flag":9,"geo_adjust_flag":9,"geometry":"POINT (116.47389 40.01167)","importance":0,"indoor":0,"kind_code":"110101","label":"","\"LEVEL\"":"B2","link_pid":574126,"log":"改名称|改分类|改POI_LEVEL|改RELATION","mesh_id":605603,"mesh_id_5k":"","name_groupid":0,"old_address":"","old_blockcode":"","old_kind":"110101","old_name":"测试餐饮企业集团","old_x_guide":0,"old_y_guide":0,"open_24h":0,"pid":1152117135,"pmesh_id":0,"poi_memo":"","poi_num":"00166420160729165352","post_code":"","region_id":0,"reserved":"","road_flag":0,"row_id":"00B0AD28E8A74984AC6C94C749BC653E","side":0,"sports_venue":"","state":0,"status":0,"task_id":0,"type":0,"u_date":"","u_record":1,"verified_flag":9,"vip_flag":"","x_guide":116.47389,"y_guide":40.01162}
-			
-			
 			while (it.hasNext()) {
 				String filed = it.next();
-//				if("IX_POI".equalsIgnoreCase(tableName)&& !includeFiledsSet.contains(filed) ){
-//					continue;
-//				}
 				if("IX_POI".equalsIgnoreCase(tableName)&& !isFieldInIncludeFiledsSet(filed)){
 					continue;
 				}
@@ -191,26 +191,13 @@ public class LogWriter {
 			}else{
 				sb.append(",U_RECORD) ");
 			}
-//			if(sb.indexOf(",u_record")!=-1){
-//				hasUrecord=true;
-//			}
-//			if (hasUrecord){
-//				sb.append(") ");
-//			}else{
-//				sb.append(",u_record) ");
-//			}
-
 			sb.append("values(");
 			this.log.debug("json"+json);
-			it = json.keys();
-
+			
 			tmpPos = 0;
 			this.log.debug(json.keys());
 			int i =0;
 			for (Object key : json.keySet()){
-//				if("IX_POI".equalsIgnoreCase(tableName)&& !includeFiledsSet.contains(key.toString()) ){
-//					continue;
-//				}
 				if("IX_POI".equalsIgnoreCase(tableName)&& !isFieldInIncludeFiledsSet(key.toString())){
 					continue;
 				}
@@ -297,17 +284,16 @@ public class LogWriter {
 			int result = pstmt.executeUpdate();
 			return result;
 		} catch (Exception e) {
-			log.info(sb.toString());
-			log.error(e.getMessage(),e);
-
-			return 0;
+			return handleFlushException( e);
+			
 		} finally {
-			try {
-				pstmt.close();
-			} catch (Exception e) {
-
-			}
+			DbUtils.closeQuietly(pstmt);
 		}
+	}
+	private int handleFlushException(Exception e) throws Exception {
+		log.error(e.getMessage(),e);
+		if(this.ignoreError)return 0;
+		throw e;
 	}
 
 	private boolean isExcludeField(String filed,String tableName) {
@@ -342,7 +328,7 @@ public class LogWriter {
 				||"type".equalsIgnoreCase(filed);
 	}
 
-	private int updateData(EditLog editLog) {
+	private int updateData(EditLog editLog) throws Exception {
 
 		PreparedStatement pstmt = null;
 
@@ -436,23 +422,17 @@ public class LogWriter {
 			return result;
 
 		} catch (Exception e) {
-			log.info(sb.toString());
-			log.error(e.getMessage(),e);
-			return 0;
+			return handleFlushException(e);
+			
 		} finally {
-			try {
-				pstmt.close();
-			} catch (Exception e) {
-
-			}
+			DbUtils.closeQuietly(pstmt);
 		}
 	}
 
-	private int deleteData(EditLog editLog) {
+	private int deleteData(EditLog editLog) throws Exception {
 
 		PreparedStatement pstmt = null;
 
-		StringBuilder sb = new StringBuilder("update ");
 		try {
 			String sql = "update " + editLog.getTableName()
 					+ " set u_record = 2 where row_id =hextoraw('"
@@ -463,17 +443,11 @@ public class LogWriter {
 			return result;
 
 		} catch (Exception e) {
-			log.info(sb.toString());
-			log.error(e.getMessage(),e);
-
-			return 0;
+			this.handleFlushException( e);
 		} finally {
-			try {
-				pstmt.close();
-			} catch (Exception e) {
-
-			}
+			DbUtils.closeQuietly(pstmt);
 		}
+		return 0;
 
 	}
 }

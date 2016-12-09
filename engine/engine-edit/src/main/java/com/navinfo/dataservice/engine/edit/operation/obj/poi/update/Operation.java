@@ -1503,20 +1503,12 @@ public class Operation implements IOperation {
         RdLink resultLink = null;
 
         if (ixPoi != null && newLinks.size() > 1) {
-            double xGuide = ixPoi.getxGuide();
 
-            double yGuide = ixPoi.getyGuide();
-
-            JSONObject geojson = new JSONObject();
-
-            geojson.put("type", "Point");
-
-            geojson.put("coordinates", new double[]{xGuide, yGuide});
-
-            Geometry point = GeoTranslator.geojson2Jts(geojson, 100000, 0);
+            Geometry point = GeoTranslator.transform(ixPoi.getGeometry(), 0.000001, 5);
 
             for (RdLink newLink : newLinks) {
-                if (newLink.getGeometry().isWithinDistance(point, 1)) {
+            	Coordinate cor = GeometryUtils.getLinkPedalPointOnLine(point.getCoordinate(), GeoTranslator.transform(newLink.getGeometry(), 0.000001, 5));
+                if (cor != null) {
                     resultLink = newLink;
                     break;
                 }

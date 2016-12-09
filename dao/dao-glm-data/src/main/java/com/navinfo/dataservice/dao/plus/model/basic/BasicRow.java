@@ -233,21 +233,23 @@ public abstract class BasicRow{
 			sb.append(" (" + StringUtils.join(columnName, ",") + ")");
 			sb.append(" VALUES (" + StringUtils.join(columnPlaceholder, ",") + ")");
 		}else if(OperationType.UPDATE.equals(this.opType)){
-			sb.append("UPDATE "+tbName + " SET ");
-			GlmTable glmTable = GlmFactory.getInstance().getTableByName(tableName());
-			Map<String,GlmColumn> updateColumns = new HashMap<String,GlmColumn>();
-			for(Entry<String, Object> entry:oldValues.entrySet()){
-				updateColumns.put(entry.getKey(), glmTable.getColumByName(entry.getKey()));
+			if(!oldValues.isEmpty()){
+				sb.append("UPDATE "+tbName + " SET ");
+				GlmTable glmTable = GlmFactory.getInstance().getTableByName(tableName());
+				Map<String,GlmColumn> updateColumns = new HashMap<String,GlmColumn>();
+				for(Entry<String, Object> entry:oldValues.entrySet()){
+					updateColumns.put(entry.getKey(), glmTable.getColumByName(entry.getKey()));
+				}
+				//字段信息
+				assembleColumnInfo(updateColumns,columnName,columnPlaceholder,columnValues,OperationType.UPDATE);
+				//更新记录：新增
+				columnName.add("U_RECORD=?");
+				columnPlaceholder.add("?");
+				columnValues.add(3);
+				
+				sb.append(StringUtils.join(columnName, ","));
+				sb.append(" WHERE ROW_ID = '" + getRowId() + "'");
 			}
-			//字段信息
-			assembleColumnInfo(updateColumns,columnName,columnPlaceholder,columnValues,OperationType.UPDATE);
-			//更新记录：新增
-			columnName.add("U_RECORD=?");
-			columnPlaceholder.add("?");
-			columnValues.add(3);
-			
-			sb.append(StringUtils.join(columnName, ","));
-			sb.append(" WHERE ROW_ID = '" + getRowId() + "'");
 		}else if(OperationType.DELETE.equals(this.opType)){
 			//更新U_RECORD字段为2
 			sb.append("UPDATE "+ tbName + " SET U_RECORD = ?");
@@ -274,6 +276,10 @@ public abstract class BasicRow{
 		for(Map.Entry<String, GlmColumn> entry:columns.entrySet()){
 			GlmColumn glmColumn = entry.getValue();	
 			Object columnValue = getAttrByColName(entry.getKey());
+			//如果字段为空,则不拼入sql
+			if(columnValue==null){
+				continue;
+			}
 			String columnName = entry.getKey();
 			if(columnName.equals("LEVEL")){
 				columnName = "\"LEVEL\"";

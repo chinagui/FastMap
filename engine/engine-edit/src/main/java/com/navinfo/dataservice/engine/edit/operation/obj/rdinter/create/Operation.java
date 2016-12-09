@@ -1,5 +1,7 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdinter.create;
 
+import org.apache.commons.collections.CollectionUtils;
+
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -68,7 +70,8 @@ public class Operation implements IOperation {
 
 			rdInter.getNodes().add(interNode);
 		}
-
+		//判断是否存在组成要素
+		if(CollectionUtils.isNotEmpty(rdInter.getNodes()) || CollectionUtils.isNotEmpty(rdInter.getLinks()))
 		result.insertObject(rdInter, ObjStatus.INSERT, rdInter.getPid());
 	}
 }

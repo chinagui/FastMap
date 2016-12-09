@@ -1,8 +1,9 @@
 package com.navinfo.dataservice.day2mon;
 
+import java.sql.Connection;
+
 import org.apache.log4j.Logger;
 
-import com.mysql.jdbc.Connection;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.Batch;

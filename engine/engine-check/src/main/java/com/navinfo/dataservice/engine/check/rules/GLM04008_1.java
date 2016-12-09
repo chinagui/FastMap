@@ -193,8 +193,8 @@ public class GLM04008_1 extends baseRule{
 			sb.append(" AND NOT EXISTS (SELECT 1") ;
 			sb.append(" FROM RD_RESTRICTION R, RD_RESTRICTION_DETAIL D") ;
 			sb.append(" WHERE R.PID = D.RESTRIC_PID") ;
-			sb.append(" AND R.IN_LINK_PID = G.OUT_LINK_PID") ;
-			sb.append(" AND D.OUT_LINK_PID = G.IN_LINK_PID") ;
+			sb.append(" AND R.IN_LINK_PID = " + rdGate.getOutLinkPid()) ;
+			sb.append(" AND D.OUT_LINK_PID = " + rdGate.getInLinkPid()) ;
 			sb.append(" AND D.TYPE = 1") ;
 			sb.append(" AND R.U_RECORD <> 2") ;
 			sb.append(" AND D.U_RECORD <> 2)") ;

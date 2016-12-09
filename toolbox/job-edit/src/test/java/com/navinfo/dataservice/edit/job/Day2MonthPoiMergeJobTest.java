@@ -4,10 +4,15 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import com.navinfo.dataservice.api.job.iface.JobApi;
 import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.column.job.Day2MonthPoiMergeJob;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
-import com.navinfo.dataservice.jobframework.exception.JobException;
+import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
+import com.navinfo.dataservice.jobframework.runjob.JobCreateStrategy;
+import com.navinfo.dataservice.jobframework.service.JobService;
+
+import net.sf.json.JSONObject;
 
 public class Day2MonthPoiMergeJobTest {
 	@Before
@@ -18,9 +23,23 @@ public class Day2MonthPoiMergeJobTest {
 		new ApplicationContextUtil().setApplicationContext(context);
 	}
 	@Test
-	public void execute() throws JobException{
-		JobInfo jobInfo = new JobInfo(0, "Day2MonthPoiMergeJobTest");
-		Day2MonthPoiMergeJob job = new Day2MonthPoiMergeJob(jobInfo );
-		job.execute();
+	public void execute() throws Exception{
+		JobApi apiService=(JobApi) ApplicationContextUtil.getBean("jobApi");
+		JSONObject request=new JSONObject();
+	    int jobId=(int) apiService.createJob("day2MonSyncJob", request, 3,0, "日落月");
+	    System.out.println(jobId);
+try{
+	
+			JobInfo jobInfo = JobService.getInstance().getJobById(jobId);
+			AbstractJob job = new Day2MonthPoiMergeJob(jobInfo);
+			job.execute();
+			job.getJobInfo().getResponse();
+			
+			System.out.println("Over.");
+			System.exit(0);
+		}catch(Exception e){
+			System.out.println("Oops, something wrong...");
+			e.printStackTrace();
+		}
 	}
 }

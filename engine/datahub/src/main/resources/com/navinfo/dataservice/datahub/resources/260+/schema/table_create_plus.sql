@@ -61,6 +61,7 @@ create table POI_EDIT_MULTISRC
   source_type varchar2(12) not null,
   main_type   number(2) not null
 );
+CREATE INDEX IDX_POI_EDIT_MS_ID ON POI_EDIT_MULTISRC(PID);
 -- Create table
 create table POI_COLUMN_STATUS
 (
@@ -74,22 +75,22 @@ create table POI_COLUMN_STATUS
 );
 -- Add comments to the table 
 comment on table POI_COLUMN_STATUS
-  is 'POI������ҵ״̬��';
+  is 'POI精编作业状态';
 -- Add comments to the columns 
 comment on column POI_COLUMN_STATUS.PID
   is 'POI ID';
 comment on column POI_COLUMN_STATUS.WORK_ITEM_ID
-  is '��ҵ��ID';
+  is '作业项ID';
 comment on column POI_COLUMN_STATUS.FIRST_WORK_STATUS
-  is 'һ����ҵ����ҵ״̬';
+  is '一级作业项状态';
 comment on column POI_COLUMN_STATUS.SECOND_WORK_STATUS
-  is '������ҵ����ҵ״̬';
+  is '二级作业项状态';
 comment on column POI_COLUMN_STATUS.HANDLER
-  is '������ҵԱID';
+  is '作业人员ID';
 comment on column POI_COLUMN_STATUS.TASK_ID
-  is '�����';
+  is '任务号';
 comment on column POI_COLUMN_STATUS.APPLY_DATE
-  is '����ʱ��';
+  is '申请时间';
 
 create table POI_COLUMN_WORKITEM_CONF
 (
@@ -195,21 +196,21 @@ CREATE TABLE LOG_DAY_RELEASE
   CONSTRAINT PK_LOG_RELEASE PRIMARY KEY(OP_ID)
 );
 -- Add comments to the columns 
-COMMENT ON TABLE LOG_DAY_RELEASE IS '�տ��Ʒ�����';
+COMMENT ON TABLE LOG_DAY_RELEASE IS '日库出品管理表';
 COMMENT ON COLUMN LOG_DAY_RELEASE.OP_ID
-  IS '�ο�log_operation.op_id';
+  IS '参考log_operation.op_id';
 COMMENT ON COLUMN LOG_DAY_RELEASE.REL_POI_STA
-  IS 'POI��Ʒ״̬';
+  IS 'POI出品状态';
 COMMENT ON COLUMN LOG_DAY_RELEASE.REL_POI_DT
-  IS 'POI��Ʒʱ��';
+  IS 'POI出品时间';
 COMMENT ON COLUMN LOG_DAY_RELEASE.REL_ALL_STA
-  IS 'POI+ROAD��Ʒ״̬';
+  IS 'POI+ROAD出品状态';
 COMMENT ON COLUMN LOG_DAY_RELEASE.REL_ALL_DT
-  IS 'POI+ROAD��Ʒʱ��';
+  IS 'POI+ROAD出品时间';
 COMMENT ON COLUMN LOG_DAY_RELEASE.REL_POI_LOCK
-  IS 'POI ��Ʒ��״̬';
+  IS 'POI 出品锁状态';
 COMMENT ON COLUMN LOG_DAY_RELEASE.REL_ALL_LOCK
-  IS 'POI+ROAD��Ʒ��״̬';
+  IS 'POI+ROAD出品锁状态';
 --ADD INDEXES
 create bitmap index IDX_LOG_DAY_REL_1 on LOG_DAY_RELEASE (rel_poi_sta);
 create bitmap index IDX_LOG_DAY_REL_2 on LOG_DAY_RELEASE (rel_all_sta);

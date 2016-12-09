@@ -10,8 +10,8 @@ import net.sf.json.JSONObject;
 
 public class EditJson {
 	protected List<Map<String,JSONObject>> addJsons;//key:type
-	protected Map<String,Map<Long,JSONObject>> updateJsons;//Map<String,Map<Long,JSONObject>>key:type,value:key-pid
-	protected Map<String,Map<Long,JSONObject>> deleteJsons;//Map<String,Map<Long,JSONObject>>key:type,value:key-pid
+	protected Map<String,Map<Long,JSONObject>> updateJsons;//key:type,value:key-pid
+	protected Map<String,Map<Long,JSONObject>> deleteJsons;//key:type,value:key-pid
 	public void addJsonPoi(Object jo){
 		if(addJsons==null){
 			addJsons=new ArrayList<Map<String,JSONObject>>();

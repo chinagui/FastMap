@@ -20,7 +20,6 @@ import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.commons.database.DbConnectConfig;
 import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
-import com.navinfo.dataservice.impcore.commit.day.road.Day2MonthRoadJobRequest;
 import com.navinfo.dataservice.impcore.exception.LockException;
 import com.navinfo.dataservice.impcore.mover.LogMoveResult;
 import com.navinfo.navicommons.database.QueryRunner;

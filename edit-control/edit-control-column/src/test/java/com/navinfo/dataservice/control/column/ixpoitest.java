@@ -159,7 +159,7 @@ public class ixpoitest {
 		String parameter = "{\"taskId\":84,\"type\":\"integrate\",\"firstWorkItem\":\"poi_deep\",\"secondWorkItem\":\"deepParking\",\"status\":2,\"pageSize\":10,\"pageNo\":1}";
 		try {
 			JSONObject param = JSONObject.fromObject(parameter);
-			long userId =111;
+			long userId =2;
 			ColumnCoreControl columnCore = new ColumnCoreControl();
 			JSONObject result = columnCore.columnQuery(userId,param);
 			System.out.println(result);

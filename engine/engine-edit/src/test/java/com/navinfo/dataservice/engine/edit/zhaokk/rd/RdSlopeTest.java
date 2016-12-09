@@ -34,7 +34,8 @@ public class RdSlopeTest extends InitApplication {
 		//{"dbId":17,"command":"UPDATE","type":"RDSLOPE","objId":308000005,"linkPids":[304002729],"length":49.101,"data":{}}"
 		// {"command":"CREATE","dbId":17,"type":"RDSLOPE","data":{"nodePid":"308002126","linkPid":"320002692","linkPids":[303002756],"length":261.724}}
 		// parameter:{"command":"UPDATE","type":"RDSLOPE","dbId":17,"data":{"objStatus":"UPDATE","pid":208000006,"linkPids":[220002832,22
-		String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDSLOPE\",\"dbId\":19,\"linkPids\":[207002828,308002850],\"data\":{},\"objId\":310000012,\"length\":76.59}";
+		//{"dbId":17,"command":"UPDATE","type":"RDSLOPE","objId":320000005,"linkPids":[201002944],"length":403.003,"data":{"objStatus":"UPDATE","linkPid":309002929}}
+		String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDSLOPE\",\"dbId\":17,\"linkPids\":[201002944],\"data\":{\"objStatus\":\"UPDATE\",\"linkPid\":309002929},\"objId\":320000005,\"length\":403.003}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

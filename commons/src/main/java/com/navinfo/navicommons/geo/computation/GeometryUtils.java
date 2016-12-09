@@ -3,12 +3,9 @@ package com.navinfo.navicommons.geo.computation;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.sf.json.JSONObject;
-
 import org.json.JSONException;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.commons.util.DisplayUtils;
 import com.vividsolutions.jts.algorithm.ConvexHull;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -20,6 +17,8 @@ import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
+
+import net.sf.json.JSONObject;
 
 public class GeometryUtils {
 	private static double EARTH_RADIUS = 6378137;
@@ -614,6 +613,56 @@ public class GeometryUtils {
 		}
 		return targetPoint;
 	}
+	
+	
+	/**
+	 * 计算点与的线垂足点位
+	 * 
+	 * @param point
+	 * @param geom
+	 * @return
+	 */
+	public static Coordinate getLinkPedalPointOnLine(Coordinate point,
+			Geometry geom) {
+		Coordinate[] coll = geom.getCoordinates();
+
+		Coordinate targetPoint = new Coordinate();
+
+		if (coll.length < 2) {
+			return null;
+		}
+
+		double minDistance = 0;
+
+		targetPoint = null;
+
+		minDistance = Double.MAX_VALUE;
+
+		for (int i = 0; i < coll.length - 1; i++) {
+			Coordinate point1 = new Coordinate();
+			Coordinate point2 = new Coordinate();
+			Coordinate pedalPoint = new Coordinate();
+
+			point1 = coll[i];
+			point2 = coll[i + 1];
+
+			pedalPoint = GetPedalPoint(point1, point2, point);
+
+			boolean isPointAtLine = IsPointAtLineInter(point1, point2,
+					pedalPoint);
+
+			// 如果在线上
+			if (isPointAtLine) {
+				double pedalLong = GeometryUtils.getDistance(point, pedalPoint);
+				if (pedalLong < minDistance) {
+					minDistance = pedalLong;
+					targetPoint = pedalPoint;
+				}
+			} 
+		}
+		return targetPoint;
+	}
+
 
 	/**
 	 * 计算垂足点

@@ -131,7 +131,7 @@ public class IxPoiObj extends AbstractIxObj {
 //		return (IxPoiRestaurant)(ObjFactory.getInstance().createRow("IX_POI_RESTAURANT", this.objPid()));
 	}
 	public List<IxPoiGasstation> getIxPoiGasstations(){
-		return (List)subrows.get("IxPoiGasstation");
+		return (List)subrows.get("IX_POI_GASSTATION");
 	}
 	public IxPoiGasstation createIxPoiGasstation()throws Exception{
 		IxPoiGasstation ixPoiGasstation = (IxPoiGasstation)(ObjFactory.getInstance().createRow("IX_POI_GASSTATION", this.objPid()));
@@ -148,13 +148,13 @@ public class IxPoiObj extends AbstractIxObj {
 		return (List)subrows.get("IX_POI_HOTEL");
 	}
 	public IxPoiHotel createIxPoiHotel()throws Exception{
-		IxPoiHotel ixPoiHotel = (IxPoiHotel)(ObjFactory.getInstance().createRow("IX_POI_DETAIL", this.objPid()));
-		if(subrows.containsKey("IX_POI_DETAIL")){
-			subrows.get("IX_POI_DETAIL").add(ixPoiHotel);
+		IxPoiHotel ixPoiHotel = (IxPoiHotel)(ObjFactory.getInstance().createRow("IX_POI_HOTEL", this.objPid()));
+		if(subrows.containsKey("IX_POI_HOTEL")){
+			subrows.get("IX_POI_HOTEL").add(ixPoiHotel);
 		}else{
 			List<BasicRow> ixPoiHotelList = new ArrayList<BasicRow>();
 			ixPoiHotelList.add(ixPoiHotel);
-			subrows.put("IX_POI_DETAIL", ixPoiHotelList);
+			subrows.put("IX_POI_HOTEL", ixPoiHotelList);
 		}
 		return ixPoiHotel;
 	}

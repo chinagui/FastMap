@@ -41,8 +41,13 @@ public class GLM04008_2 extends baseRule {
 	 */
 	@Override
 	public void preCheck(CheckCommand checkCommand) throws Exception {
-		// TODO Auto-generated method stub
-		
+		for (IRow obj : checkCommand.getGlmList()) {
+			// 大门RdGate
+			if (obj instanceof RdGate) {
+				RdGate rdGate = (RdGate) obj;
+				checkRdGate(rdGate,checkCommand.getOperType());
+			}	
+		}
 	}
 
 	/* (non-Javadoc)

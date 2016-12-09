@@ -1,9 +1,11 @@
 package com.navinfo.dataservice.engine.man.service;
 
+import org.springframework.stereotype.Service;
+
 import com.navinfo.dataservice.api.man.iface.Day2MonthSyncApi;
 import com.navinfo.dataservice.api.man.model.FmDay2MonSync;
 import com.navinfo.dataservice.engine.man.day2Month.Day2MonthSyncService;
-
+@Service("day2MonthSyncApi")
 public class Day2MonthSyncImpl implements Day2MonthSyncApi {
 
 	@Override

@@ -73,7 +73,7 @@ public class IxPoiSelector extends AbstractSelector {
 //		buffer.append(" AND ipn.name_type = 2 ");
 //		buffer.append(" AND ipn.name_class = 1");
 
-		buffer.append(" AND ps.status = " + type + "");
+		buffer.append(" AND ps.work_type=1 AND ps.status = " + type + "");
 		buffer.append(" AND sdo_within_distance(ip.geometry, sdo_geometry(    '"
 				+ g + "'  , 8307), 'mask=anyinteract') = 'TRUE' ");
 		if (pid != 0) {

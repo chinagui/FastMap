@@ -199,8 +199,17 @@ public class LogTest {
 			String objType = "IX_POI";
 			long pid = 307000172;
 			boolean isLock = true;
+			
+			Set<String> tabNames = new HashSet<String>();
+			tabNames.add("IX_POI_NAME");
+			tabNames.add("IX_POI_NAME_FLAG");
+			tabNames.add("IX_POI_NAME_FLAG");
+			tabNames.add("IX_POI_NAME_TONE");
+			tabNames.add("IX_POI_ADDRESS");
+			tabNames.add("IX_POI_CONTACT");
+			tabNames.add("IX_POI_FLAG");
 
-			BasicObj obj = ObjSelector.selectByPid(conn, objType, null, pid, isLock);
+			BasicObj obj = ObjSelector.selectByPid(conn, objType, tabNames, pid, isLock);
 			obj.deleteObj();
 			
 			List<BasicObj> basicObjs = new ArrayList<BasicObj>();
@@ -213,7 +222,7 @@ public class LogTest {
 				}
 			}
 			
-			String opCmd = "UPDATE";
+			String opCmd = "TEST";
 			int opSg = 1; 
 			long userId = 1;
 			new LogGenerator().writeLog(conn,false, basicObjs, opCmd, opSg, userId,0);

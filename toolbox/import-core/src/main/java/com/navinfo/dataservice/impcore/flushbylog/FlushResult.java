@@ -34,6 +34,8 @@ public class FlushResult {
 
 	private List<String> deleteFailedList = new ArrayList<String>();
 
+	private String tempFailLogTable;
+
 	public void insertFailedLog(String opId,String rowId){
 		List<String> row = new ArrayList<String>();
 		row.add(opId);
@@ -240,5 +242,12 @@ public class FlushResult {
 		System.out.println("Log op moved:" + this.getLogOpMoved());
 		System.out.println("Log detail moved:" + this.getLogDetailMoved());
 		System.out.println("Log detail grid moved:" + this.getLogDetailGridMoved());
+	}
+	
+	public String getTempFailLogTable() {
+		return tempFailLogTable;
+	}
+	public void setTempFailLogTable(String tempFailLogTable) {
+		this.tempFailLogTable = tempFailLogTable;
 	}
 }

@@ -134,7 +134,7 @@ public class ixpoitest {
 	}
 	@Test
 	public void testSave() throws Exception{
-		String parameter = "{\"command\":\"UPDATE\",\"dbId\":19,\"type\":\"IXPOI\",\"objId\":602474,\"data\":{\"parkings\":[{\"tollWay\":\"123\",\"rowId\":\"659FAC5F4DFD41E8BDE447D1475ED3DB\",\"pid\":206000858,\"objStatus\":\"UPDATE\"}],\"rowId\":\"3AE1FB4C35C492F7E050A8C08304EE4C\",\"pid\":602474}}";
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":19,\"type\":\"IXPOI\",\"objId\":602474,\"data\":{\"parkings\":[{\"tollWay\":\"1234\",\"rowId\":\"659FAC5F4DFD41E8BDE447D1475ED3DB\",\"pid\":206000858,\"objStatus\":\"UPDATE\"}],\"rowId\":\"3AE1FB4C35C492F7E050A8C08304EE4C\",\"pid\":602474}}";
 		try {
 			DeepCoreControl deepCore = new DeepCoreControl();
 			JSONObject result = deepCore.save(parameter, 111);
@@ -145,10 +145,23 @@ public class ixpoitest {
 	}
 	@Test
 	public void testRelease() throws Exception{
-		String parameter = "{\"subtaskId\":84,\"dbId\":19,\"type\":2}";
+		String parameter = "{\"subtaskId\":84,\"dbId\":19,\"secondWorkItem\":'deepDetail'}";
 		try {
 			DeepCoreControl deepCore = new DeepCoreControl();
 			JSONObject result = deepCore.release(parameter, 111);
+			System.out.println(result);
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+	}
+	@Test
+	public void testColumnQuery() throws Exception{
+		String parameter = "{\"taskId\":84,\"type\":\"integrate\",\"firstWorkItem\":\"poi_deep\",\"secondWorkItem\":\"deepParking\",\"status\":2,\"pageSize\":10,\"pageNo\":1}";
+		try {
+			JSONObject param = JSONObject.fromObject(parameter);
+			long userId =111;
+			ColumnCoreControl columnCore = new ColumnCoreControl();
+			JSONObject result = columnCore.columnQuery(userId,param);
 			System.out.println(result);
 		} catch (Exception e) {
 			System.out.println(e.getMessage());

@@ -14,7 +14,7 @@ public class poiEditStatusHandler implements ResultSetHandler<Map<Long,Integer>>
 		
 		try {
 			while (rs.next()){
-				editStatusMap.put(rs.getLong("pid"), rs.getInt("status"));
+				editStatusMap.put(rs.getLong("pid"), rs.getInt("commit_his_status"));
 			}
 			return editStatusMap;
 		} catch (Exception e) {

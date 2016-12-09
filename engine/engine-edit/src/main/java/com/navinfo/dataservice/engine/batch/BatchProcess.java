@@ -49,16 +49,14 @@ public class BatchProcess {
 			// 修改为参数传入 -- zpp 2016.11.17 
 			//List<String> batchList = getRowRules();
 			
-			JSONObject result = new JSONObject();
 			for (String batch:batchList) {
 				IBatch obj = (IBatch) Class.forName(batch).newInstance();
 				logger.info("开始执行批处理："+obj.getClass().getName());
 				JSONObject data = obj.run(poi,conn,json,editApiImpl);
-				result.putAll(data);
-				if (result.size()>0) {
-					result.put("pid", poi.getPid());
-					result.put("rowId", poi.getRowId());
-					poiObj.put("change", result);
+				if (data.size()>0) {
+					data.put("pid", poi.getPid());
+					data.put("rowId", poi.getRowId());
+					poiObj.put("change", data);
 					poiObj.put("pid", poi.getPid());
 					poiObj.put("type", "IXPOI");
 					poiObj.put("command", "BATCH");
@@ -69,7 +67,7 @@ public class BatchProcess {
 					
 				}
 			}
-			conn.commit();
+			
 		} catch (Exception e) {
 			throw e;
 		}

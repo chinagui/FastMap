@@ -31,147 +31,18 @@ public class IxPoiDeepStatusSelector extends AbstractSelector{
 		this.conn = conn;
 	}
 	
-	/**
-	 * 查询 作业员名下 已申请未提交的数据量
-	 * @param userId
-	 * @param type
-	 * @return
-	 * @throws Exception
-	 */
-	public int queryHandlerCount(long userId, int type) throws Exception {
-		int count = 0;
-		StringBuilder sb = new StringBuilder();
-		sb.append("SELECT count(1) num");
-		sb.append(" FROM poi_deep_status s");
-		sb.append(" WHERE s.handler=:1");
-		sb.append(" AND s.TYPE=:2");
-		sb.append(" AND s.STATUS != 3");
-		
-		PreparedStatement pstmt = null;
-		ResultSet resultSet = null;
-		
-		try {
-			
-			pstmt = conn.prepareStatement(sb.toString());
-			pstmt.setLong(1, userId);
-			pstmt.setInt(2, type);
-			
-			resultSet = pstmt.executeQuery();
-			
-			if (resultSet.next()){
-				count = resultSet.getInt("num");
-			}
-			
-			return count;
-			
-		} catch (Exception e) {
-			throw e;
-		} finally {
-			DbUtils.closeQuietly(resultSet);
-			DbUtils.closeQuietly(pstmt);
-		}
-		
-	}
 	
-
-	/**
-	 * 根据subtask获取 可申请的数据pids
-	 * @param subtask
-	 * @param type
-	 * @return
-	 * @throws Exception
-	 */
-	public List<Integer> getPids(Subtask subtask, int type) throws Exception {
-		List<Integer> pids = new ArrayList<Integer>();
-		StringBuilder sb = new StringBuilder();
-		sb.append("SELECT s.pid ");
-		sb.append(" FROM IX_POI p,POI_DEEP_STATUS s ");
-		sb.append(" WHERE sdo_within_distance(p.geometry, sdo_geometry(    :1  , 8307), 'mask=anyinteract') = 'TRUE'");
-		sb.append(" AND s.TYPE=:2");
-		sb.append(" AND s.handler is null");
-		sb.append(" AND s.STATUS = 1");
-		sb.append(" AND p.pid = s.pid");
-		
-		PreparedStatement pstmt = null;
-		ResultSet resultSet = null;
-		try {
-			pstmt = conn.prepareStatement(sb.toString());
-			pstmt.setString(1, subtask.getGeometry());
-			pstmt.setInt(2, type);
-			
-			resultSet = pstmt.executeQuery();
-			int count = 0;
-			//获取100条pid
-			while (resultSet.next()) {
-				pids.add(resultSet.getInt("pid"));
-				count++;
-				if (count == 100){
-					break;
-				}
-			}
-			
-			return pids;
-		} catch (Exception e) {
-			throw e;
-		} finally {
-			DbUtils.closeQuietly(resultSet);
-			DbUtils.closeQuietly(pstmt);
-		}
-	}
-	
-	/**
-	 * 根据status,userid,type 获取可提交的数据rowIds
-	 * @param subtask
-	 * @param type
-	 * @return
-	 * @throws Exception
-	 */
-	public List<String> getRowIdsForRelease(Subtask subtask ,int status, long userid, int type) throws Exception {
-		List<String> rowIds = new ArrayList<String>();
-		StringBuilder sb = new StringBuilder();
-		sb.append(" SELECT s.row_id ");
-		sb.append(" FROM POI_DEEP_STATUS s ,ix_poi p ");
-		sb.append(" WHERE sdo_within_distance(p.geometry, sdo_geometry(?, 8307), 'mask=anyinteract') = 'TRUE'");
-		sb.append(" AND s.TYPE=?");
-		sb.append(" AND s.handler=?");
-		sb.append(" AND s.STATUS =?");
-		sb.append(" AND p.row_id = s.row_id");
-		sb.append(" AND NOT EXISTS (SELECT C.PID FROM NI_VAL_EXCEPTION N, CK_RESULT_OBJECT C WHERE N.MD5_CODE = C.MD5_CODE AND C.PID = P.PID)");
-		
-		PreparedStatement pstmt = null;
-		ResultSet resultSet = null;
-		try {
-			pstmt = conn.prepareStatement(sb.toString());
-			pstmt.setString(1,subtask.getGeometry());
-			pstmt.setInt(2, type);
-			pstmt.setLong(3, userid);
-			pstmt.setInt(4, status);
-			
-			resultSet = pstmt.executeQuery();
-
-			while (resultSet.next()) {
-				rowIds.add(resultSet.getString("row_id"));
-			}
-			
-			return rowIds;
-		} catch (Exception e) {
-			throw e;
-		} finally {
-			DbUtils.closeQuietly(resultSet);
-			DbUtils.closeQuietly(pstmt);
-		}
-	}
 	
 	/**
 	 * 深度信息 按条件查询poi
 	 * 
 	 * @param jsonReq
-	 * @param subtask
+	 * @param subtaskId
 	 * @param userId
 	 * @return
 	 * @throws Exception 
 	 */
-	public JSONObject loadDeepPoiByCondition(JSONObject jsonReq, Subtask subtask, long userId) throws Exception{
+	public JSONObject loadDeepPoiByCondition(JSONObject jsonReq, int subtaskId, long userId) throws Exception{
 		
 		String type = jsonReq.getString("type");
 
@@ -189,12 +60,12 @@ public class IxPoiDeepStatusSelector extends AbstractSelector{
 		String sql = "";
 		StringBuilder bufferCondition = new StringBuilder();
 		
-		bufferCondition.append("select COUNT(1) OVER(PARTITION BY 1) total, ipn.poi_pid pid, ipn.name ");
+		bufferCondition.append("select COUNT(1) OVER(PARTITION BY 1) total, ipn.poi_pid pid, ipn.name, p.kind_code ");
 		bufferCondition.append(" from ix_poi p,poi_column_status s,ix_poi_name ipn,poi_column_workitem_conf c");
 		bufferCondition.append(" where ipn.name_class = 1 and ipn.name_type = 2 and (ipn.lang_code = 'CHI' or ipn.lang_code = 'CHT')");
 		bufferCondition.append(" and p.pid = s.pid and p.pid = ipn.poi_pid");
 		bufferCondition.append(" and s.work_item_id=c.work_item_id");
-		bufferCondition.append(" and sdo_within_distance(p.geometry, sdo_geometry('" + subtask.getGeometry() + "', 8307), 'mask=anyinteract') = 'TRUE'");
+		bufferCondition.append(" and s.task_id=" + subtaskId );
 		bufferCondition.append(" and c.second_work_item = '" + type + "'" + " and s.second_work_status = " + status + " and s.handler = " + userId );
 		
 		if (jsonReq.containsKey("poiName")){
@@ -224,6 +95,7 @@ public class IxPoiDeepStatusSelector extends AbstractSelector{
 				JSONObject json = new JSONObject();
 				json.put("pid", resultSet.getInt("pid"));
 				json.put("name", resultSet.getString("name"));
+				json.put("kindCode", resultSet.getString("kind_code"));
 				json.put("status", status);
 				int pid = resultSet.getInt("pid");
 				//获取state

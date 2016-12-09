@@ -28,8 +28,6 @@ import com.navinfo.dataservice.engine.check.helper.DatabaseOperatorResultWithGeo
  * 新增大门编辑服务端后检查
  * 通行对象编辑服务端后检查
  * Link种别编辑编辑服务端后检查
- * 大门通行对象编辑服务端前检查
- * 新增大门编辑端前检查
  */
 public class GLM04006 extends baseRule{
 
@@ -45,19 +43,6 @@ public class GLM04006 extends baseRule{
 	 */
 	@Override
 	public void preCheck(CheckCommand checkCommand) throws Exception {
-		for (IRow obj : checkCommand.getGlmList()) {
-			// 大门RdGate
-			if (obj instanceof RdGate) {
-				RdGate rdGate = (RdGate) obj;
-				checkRdGate(rdGate,checkCommand.getOperType());
-			}
-			// 大门RdGateCondition
-			else if (obj instanceof RdGateCondition) {
-				RdGateCondition rdGateCondition = (RdGateCondition) obj;
-				checkRdGateCondition(rdGateCondition,checkCommand.getOperType());
-			}			
-		}
-		
 	}
 
 	/* (non-Javadoc)

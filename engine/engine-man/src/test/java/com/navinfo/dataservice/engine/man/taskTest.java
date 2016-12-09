@@ -12,12 +12,16 @@ import org.junit.Test;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.man.model.Task;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.json.JsonOperation;
 import com.navinfo.dataservice.engine.man.grid.GridService;
 import com.navinfo.dataservice.engine.man.service.ManApiImpl;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskService;
 import com.navinfo.navicommons.exception.ServiceException;
 import com.navinfo.navicommons.geo.computation.GridUtils;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.util.GeometryTransformer;
+import com.vividsolutions.jts.io.ParseException;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -62,7 +66,7 @@ public class taskTest extends InitApplication{
 //				
 //	}
 	
-	public static void taskTestUpdate() throws Exception {
+	public void taskTestUpdate() throws Exception {
 		// TODO Auto-generated constructor stub
 		String parameter = "";
 		if (StringUtils.isEmpty(parameter)){
@@ -121,6 +125,18 @@ public class taskTest extends InitApplication{
 		SubtaskService subService = SubtaskService.getInstance(); 
 		
 		subService.queryAdminIdBySubtask(162);
+	}
+	
+	@Test
+	public void test() throws ServiceException
+	{
+		try {
+			Geometry geo = GridUtils.grid2Geometry("60566122");
+			System.out.println(GeoTranslator.jts2Wkt(geo));
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 }

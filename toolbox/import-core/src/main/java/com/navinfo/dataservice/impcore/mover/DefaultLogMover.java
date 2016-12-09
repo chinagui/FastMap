@@ -74,9 +74,9 @@ public class DefaultLogMover extends LogMover {
 		StringBuilder sb = new StringBuilder();
 		sb.append("insert into log_action@");
 		sb.append(dbLinkName);
-		sb.append(" select l.* from log_action l where l.op_id in (select op_id from ");
+		sb.append(" select la.* from log_action la where la.act_id in (select distinct lp.act_id from log_operation lp where lp.op_id in (select t.op_id from ");
 		sb.append(tempTable);
-		sb.append(" t)");
+		sb.append(" t))");
 //		if(StringUtils.isNotEmpty(tempFailLogTable)){
 //			sb.append(" WHERE NOT EXISTS(SELECT 1 FROM ");
 //			sb.append(tempFailLogTable);
@@ -118,7 +118,7 @@ public class DefaultLogMover extends LogMover {
 		StringBuilder sb = new StringBuilder();
 		sb.append("INSERT INTO LOG_OPERATION@");
 		sb.append(dbLinkName);
-		sb.append("(OP_ID,US_ID,OP_CMD,OP_DT) SELECT L.OP_ID,L.US_ID,L.OP_CMD,L.OP_DT FROM LOG_OPERATION L,");
+		sb.append("(OP_ID,ACT_ID,OP_DT,OP_SEQ) SELECT T.OP_ID,T.ACT_ID,SYSDATE,LOG_OP_SEQ.NEXTVAL@"+dbLinkName+" FROM (SELECT L.OP_ID,L.ACT_ID FROM LOG_OPERATION L,");
 		sb.append(tempTable);
 		sb.append(" T WHERE L.OP_ID=T.OP_ID  ");
 		if(StringUtils.isNotEmpty(tempFailLogTable)){
@@ -126,6 +126,7 @@ public class DefaultLogMover extends LogMover {
 			sb.append(tempFailLogTable);
 			sb.append(" F WHERE F.ROW_ID=D.ROW_ID)");
 		}
+		sb.append(" ORDER BY L.OP_DT) T");
 		return sb.toString();
 	}
 

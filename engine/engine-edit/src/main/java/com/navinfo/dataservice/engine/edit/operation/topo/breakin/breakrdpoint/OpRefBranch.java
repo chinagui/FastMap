@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrdpoint;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -8,6 +9,7 @@ import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchVia;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 
 public class OpRefBranch implements IOperation {
 
@@ -26,29 +28,27 @@ public class OpRefBranch implements IOperation {
 		this.result = result;
 
 		this.handleRdBranchsIn(command.getInBranchs());
-		
+
 		this.handleRdBranchsOut(command.getOutBranchs());
-		
+
 		this.handleRdBranchVias(command.getBranchVias());
 
 		return null;
 	}
 
 	// 处理交限进入线
-	private void handleRdBranchsIn(List<RdBranch> list)
-			throws Exception {
+	private void handleRdBranchsIn(List<RdBranch> list) throws Exception {
 
 		for (RdBranch branch : list) {
 			Map<String, Object> changedFields = branch.changedFields();
 
 			int inLinkPid = 0;
-//			if (branch.getNodePid() == command.getLink1().getsNodePid()) {
-//
-//				inLinkPid = command.getLink1().getPid();
-//
-//			} else {
-//				inLinkPid = command.getLink2().getPid();
-//			}
+			for (RdLink link : command.getNewLinks()) {
+				if (branch.getNodePid() == link.getsNodePid()) {
+
+					inLinkPid = link.getPid();
+				}
+			}
 
 			changedFields.put("inLinkPid", inLinkPid);
 
@@ -58,24 +58,19 @@ public class OpRefBranch implements IOperation {
 	}
 
 	// 处理交限退出线
-	private void handleRdBranchsOut(List<RdBranch> list)
-			throws Exception {
+	private void handleRdBranchsOut(List<RdBranch> list) throws Exception {
 
 		for (RdBranch branch : list) {
 
 			Map<String, Object> changedFields = branch.changedFields();
 
-//			if (branch.igetOutNodePid() == command.getLink1().getsNodePid()
-//					|| branch.igetOutNodePid() == command.getLink1()
-//							.geteNodePid()) {
-//
-//				changedFields
-//						.put("outLinkPid", command.getLink1().getPid());
-//
-//			} else {
-//				changedFields
-//						.put("outLinkPid", command.getLink2().getPid());
-//			}
+			for (RdLink link : command.getNewLinks()) {
+				if (branch.igetOutNodePid() == link.getsNodePid() || branch.igetOutNodePid() == link.geteNodePid()) {
+
+					changedFields.put("outLinkPid", link.getPid());
+
+				}
+			}
 
 			result.insertObject(branch, ObjStatus.UPDATE, branch.pid());
 		}
@@ -84,51 +79,53 @@ public class OpRefBranch implements IOperation {
 
 	// 处理交限经过线
 
-	private void handleRdBranchVias(List<List<RdBranchVia>> list)
-			throws Exception {
+	private void handleRdBranchVias(List<List<RdBranchVia>> list) throws Exception {
+
+		int newLinkSize = command.getNewLinks().size();
 
 		for (List<RdBranchVia> vias : list) {
 
-			for (RdBranchVia v : vias) {
-				if (v.getLinkPid() != command.getLinkPid()) {
-					Map<String, Object> changedFields = v.changedFields();
+			RdBranchVia breakVia = null;
 
-					changedFields.put("seqNum", v.getSeqNum() + 1);
+			for (RdBranchVia v : vias) {
+				if (v.getLinkPid() == command.getLinkPid()) {
+
+					breakVia = v;
+					
+					int sNodePid = v.igetsNodePid();
+					
+					List<RdBranchVia> newBranchViaList = new ArrayList<>();
+					while(newBranchViaList.size() != newLinkSize)
+					{
+						for (RdLink newLink : command.getNewLinks()) {
+							if (sNodePid == newLink.getsNodePid()) {
+								sNodePid = newLink.geteNodePid();
+							}
+							else if(sNodePid == newLink.geteNodePid())
+							{
+								sNodePid = newLink.getsNodePid();
+							}
+							RdBranchVia newVia = new  RdBranchVia();
+							
+							newVia.setGroupId(v.getGroupId());
+							
+							newVia.setSeqNum(v.getSeqNum() + newBranchViaList.size());
+							
+							newVia.setLinkPid(newLink.getPid());
+							
+							newVia.setBranchPid(v.getBranchPid());
+							
+							newBranchViaList.add(newVia);
+							
+							result.insertObject(newVia, ObjStatus.INSERT, newVia.getBranchPid());
+						}
+					}
+					result.insertObject(v, ObjStatus.DELETE, v.parentPKValue());
+				} else if(breakVia != null){
+					
+					v.changedFields().put("seqNum", v.getSeqNum()+newLinkSize - 1);
 
 					result.insertObject(v, ObjStatus.UPDATE, v.parentPKValue());
-				} else {
-
-					RdBranchVia via1 = new RdBranchVia();
-
-					RdBranchVia via2 = new RdBranchVia();
-
-					via1.copy(v);
-
-					via2.copy(v);
-					
-					via1.setBranchPid(v.getBranchPid());
-					
-					via2.setBranchPid(v.getBranchPid());
-
-//					if (v.igetsNodePid() == command.getLink1().getsNodePid()
-//							|| v.igetsNodePid() == command.getLink1()
-//									.geteNodePid()) {
-//						via1.setLinkPid(command.getLink1().getPid());
-//						via2.setLinkPid(command.getLink2().getPid());
-//
-//					} else {
-//						via1.setLinkPid(command.getLink2().getPid());
-//						via2.setLinkPid(command.getLink1().getPid());
-//					}
-
-					via2.setSeqNum(via2.getSeqNum() + 1);
-
-					result.insertObject(v, ObjStatus.DELETE, v.parentPKValue());
-
-					result.insertObject(via1, ObjStatus.INSERT, via1.parentPKValue());
-
-					result.insertObject(via2, ObjStatus.INSERT, via1.parentPKValue());
-
 				}
 			}
 		}

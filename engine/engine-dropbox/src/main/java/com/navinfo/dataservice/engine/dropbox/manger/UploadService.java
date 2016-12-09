@@ -13,6 +13,7 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Scanner;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -207,11 +208,6 @@ public class UploadService {
 		
 		if(fileType.equals("photo")){
 			InputStream fileStream = uploadItem.getInputStream();
-			//******zl 2016.12.07 添加自动图片旋转**************
-			if(fileStream != null){
-				fileStream = RotateImageUtils.rotateImage(fileStream);
-			}
-			//********************
 			DBController dbController = new DBController();
 			HBaseController hbaseController = new HBaseController();
 				

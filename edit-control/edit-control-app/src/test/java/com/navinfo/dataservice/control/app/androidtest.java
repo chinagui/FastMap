@@ -29,7 +29,8 @@ public class androidtest {
 		Date startTime = new Date();
 		JSONArray gridDateList = new JSONArray();
 		JSONObject grid = new JSONObject();
-		grid.put("grid", "60560233");//60562422
+		grid.put("grid", "60562203");//60562422//60562203//60560233
+
 		grid.put("date", "");
 		gridDateList.add(grid);
 		try {
@@ -41,7 +42,7 @@ public class androidtest {
 			}
 			
 			PoiDownloadOperation operation = new PoiDownloadOperation();
-			operation.export2Txt(gridDateMap, "f://poidownload", "poi00.txt");
+			operation.export2Txt(gridDateMap, "f://poidownload", "poi008.txt");
 			Date endTime = new Date();
 			System.out.println("total time:"+ (endTime.getTime() - startTime.getTime()));
 //			download.export(gridList, "f://poidownload", "poi.txt");

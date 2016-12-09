@@ -117,6 +117,7 @@ public class DiffJob extends AbstractJob
 			
 			//diffScanner
 			diffScanner = new JavaDiffScanner(leftSchema);
+			logActGen = new LogActionGenerator(leftSchema);
 			logOpGen = new LogOperationGenerator(leftSchema);
 			changeLogFiller = new JavaChangeLogFiller(leftSchema);
 			gridCalc = new LogGridCalculatorByCrossUser(leftSchema,rightSchema.getConnConfig().getUserName());

@@ -168,6 +168,7 @@ public class GdbBatchJob extends AbstractJob {
 			req.getSubJobRequest("diff").setAttrValue("leftDbId", batchDbId);
 			req.getSubJobRequest("diff").setAttrValue("rightDbId", bakDbId);
 			JobInfo diffJobInfo = new JobInfo(jobInfo.getId(), jobInfo.getGuid());
+			diffJobInfo.setTaskId(jobInfo.getTaskId());
 			AbstractJob diffJob = JobCreateStrategy.createAsSubJob(diffJobInfo, req.getSubJobRequest("diff"), this);
 			diffJob.run();
 			if (diffJob.getJobInfo().getStatus() != 3) {

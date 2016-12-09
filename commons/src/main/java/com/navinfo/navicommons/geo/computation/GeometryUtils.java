@@ -884,10 +884,12 @@ public class GeometryUtils {
 			length += getLinkLength(g);
 			if (Math.abs(dist - length) < 1) {
 				c = currentPoint;
+				break;
 			}
 			if (length > dist) {
 				c = getPointOnLineSegmentByDistance(prePoint,
 						currentPoint, dist + currentLength - length);
+				break;
 			}
 		}
 

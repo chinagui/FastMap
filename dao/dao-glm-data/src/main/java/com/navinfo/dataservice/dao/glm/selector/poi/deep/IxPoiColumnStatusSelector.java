@@ -336,12 +336,10 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 	 * @return
 	 * @throws Exception
 	 */
-	public JSONObject columnQuery(int status, String secondWorkItem, long userId,int startRow,int endRow) throws Exception {
-		//按group_id排序,支持分页
+	public JSONObject columnQuery(int status, String secondWorkItem, long userId) throws Exception {
+		//按group_id排序
 		StringBuilder sb = new StringBuilder();
-		sb.append(" SELECT PID,TOTAL");
-		sb.append(" FROM (SELECT CC.PID, CC.TOTAL, ROWNUM RN");
-		sb.append("	FROM (SELECT COUNT(1) OVER(PARTITION BY 1) TOTAL, PID");
+		sb.append("	SELECT COUNT(1) OVER(PARTITION BY 1) TOTAL, PID");
 		sb.append("	FROM (SELECT IX.PID,");
 		sb.append("	P.GROUP_ID AS PGROUP_ID,");
 		sb.append("	C.GROUP_ID AS CGROUP_ID");
@@ -356,9 +354,7 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 		sb.append("	AND S.HANDLER =:1");
 		sb.append("	AND W.SECOND_WORK_ITEM =:2");
 		sb.append("	AND S.SECOND_WORK_STATUS =:3)");
-		sb.append("	ORDER BY P.GROUP_ID, C.GROUP_ID)) CC");
-		sb.append("	WHERE ROWNUM <= :4)");
-		sb.append("	WHERE RN >= :5");
+		sb.append("	ORDER BY P.GROUP_ID, C.GROUP_ID)");
 		
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
@@ -369,8 +365,6 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 			pstmt.setLong(1, userId);
 			pstmt.setString(2, secondWorkItem);
 			pstmt.setInt(3, status);
-			pstmt.setInt(4, endRow);
-			pstmt.setInt(5, startRow);
 			resultSet = pstmt.executeQuery();
 
 			List<Integer> pidList = new ArrayList<Integer>();
@@ -453,16 +447,19 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 	 * @return
 	 * @throws Exception
 	 */
-	public JSONObject queryCKLogByPidfirstWorkItem(List<Integer> pids,String firstWorkItem,String tbNm) throws Exception {
+	public JSONObject queryCKLogByPidfirstWorkItem(List<Integer> pids,String firstWorkItem,String secondWorkItem,String tbNm) throws Exception {
 		StringBuilder sb = new StringBuilder();
 		sb.append(" SELECT CO.PID,");
-		sb.append(" LISTAGG('RULEID:' || NE.RULEID || ',' || 'log:' || NE.INFORMATION ||'LEVEL:' || NE.\"LEVEL\",'|') WITHIN GROUP(ORDER BY CO.PID) LOGMSG");
+		sb.append(" LISTAGG('RULEID:' || NE.RULEID || ',' || 'log:' || NE.INFORMATION ||'LEVEL:' || NE.\"LEVEL\",'__|__') WITHIN GROUP(ORDER BY CO.PID) LOGMSG");
 		sb.append(" FROM CK_RESULT_OBJECT CO, NI_VAL_EXCEPTION NE");
 		sb.append(" WHERE CO.MD5_CODE = NE.MD5_CODE");
-		sb.append(" AND CO.TABLE_NAME = ?");
+		sb.append(" AND CO.TABLE_NAME = :1");
 		sb.append(" AND NE.RULEID IN (SELECT W.WORK_ITEM_ID");
 		sb.append(" FROM POI_COLUMN_WORKITEM_CONF W");
-		sb.append(" WHERE W.FIRST_WORK_ITEM = ?");
+		sb.append(" WHERE W.FIRST_WORK_ITEM = :2");
+		if (firstWorkItem.equals("poi_deep")){
+			sb.append(" AND W.SECOND_WORK_ITEM = :3");
+		}
 		sb.append(" AND W.TYPE = 1)");
 		sb.append("   AND CO.PID in (");
 		
@@ -484,10 +481,13 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 			
 			pstmt.setString(1, tbNm);
 			pstmt.setString(2, firstWorkItem);
+			if (firstWorkItem.equals("poi_deep")){
+				pstmt.setString(3, secondWorkItem);
+			}
 			resultSet = pstmt.executeQuery();
 
 			if (resultSet.next()) {
-				poiWorkItem.put(resultSet.getInt("pid"), resultSet.getString("work_item_id"));
+				poiWorkItem.put(resultSet.getInt("pid"), resultSet.getString("LOGMSG"));
 			}
 
 			return poiWorkItem;

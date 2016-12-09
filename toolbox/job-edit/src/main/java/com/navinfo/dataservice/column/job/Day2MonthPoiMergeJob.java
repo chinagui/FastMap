@@ -133,10 +133,10 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 		Connection monthConn = monthDbSchema.getPoolDataSource().getConnection();
 		OperationResult result = parseLog(logMoveResult, monthConn);
 		log.info("开始执行前批");
-		new PreBatch(result).execute();
+		new PreBatch(result, monthConn).execute();
 		log.info("开始执行检查");
-		List<NiValException> checkResult = new Check(result).execute();
-		new Classifier(checkResult).execute();
+		Map<String, Map<Long, Set<String>>> checkResult = new Check(result, monthConn).execute();
+		new Classifier(checkResult,monthConn).execute();
 		log.info("开始执行后批处理");
 		new PostBatch(result).execute();
 		log.info("修改同步信息为成功");

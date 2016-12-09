@@ -3,4 +3,4 @@ source ./update_fm_regiondb.conf
 
 sqlplus $fmregiondb_url @./add_svr_inner_table.sql
 
-sqlplus $fmsys_url @./update_log.sql
+sqlplus $fmregiondb_url @./update_log.sql

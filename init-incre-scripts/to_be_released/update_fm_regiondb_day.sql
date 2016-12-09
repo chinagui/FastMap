@@ -6,4 +6,5 @@ create table POI_EDIT_MULTISRC
 )
 ;
 ALTER TABLE POI_EDIT_STATUS ADD (WORK_TYPE NUMBER(2) default 1);
+commit;
 EXIT;

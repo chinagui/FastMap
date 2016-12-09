@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.day2mon;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -9,7 +10,6 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
-import com.mysql.jdbc.Connection;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.navicommons.database.sql.DBUtils;
 

@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.day2mon;
 
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -7,7 +8,6 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
-import com.mysql.jdbc.Connection;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.check.CheckCommand;

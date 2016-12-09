@@ -1,5 +1,7 @@
 package com.navinfo.dataservice.engine.photo;
 
+import java.awt.Image;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -8,6 +10,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import javax.imageio.ImageIO;
+
 import java.util.Set;
 
 import net.sf.json.JSONObject;
@@ -40,13 +45,21 @@ public class CollectorImport {
 		for (File f : files) {
 			if(f.isFile() && f.getName().endsWith(".jpg")){
 				FileInputStream in = new FileInputStream(f);
-				//******zl 2016.12.07 添加自动图片旋转**************
-				InputStream newInStream = RotateImageUtils.rotateImage(in);
+				//******zl 2016.12.09添加自动图片旋转**************
+				FileInputStream inn = new FileInputStream(f);
+				int rotateAngle = RotateImageUtils.rotateOrientatione(inn);//获取图片旋转角度
+				InputStream newIn =new FileInputStream(f);;
+		    	if(rotateAngle > 0){
+					BufferedImage image= ImageIO.read(in); 
+			    	Image newImage = RotateImageUtils.rotateImage(image,rotateAngle);
+			    	if(newImage !=null){
+			    		newIn = RotateImageUtils.getImageStream((BufferedImage) newImage);
+			    	}
+		    	}
 				//********************
-				//controller.putPhoto(f.getName().replace(".jpg", ""),in);
-				controller.putPhoto(f.getName().replace(".jpg", ""),newInStream);
+				controller.putPhoto(f.getName().replace(".jpg", ""),newIn);
 				in.close();
-				newInStream.close();
+				newIn.close();
 			}
 		}
 	}

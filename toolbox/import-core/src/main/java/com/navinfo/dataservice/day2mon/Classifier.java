@@ -44,9 +44,7 @@ public class Classifier {
 	public void execute() throws Exception {
 		// 重分类
 		Map<Long, Set<String>> poiMap = checkResult.get("IX_POI");
-		
-		
-		
+
 		for (Long pid:poiMap.keySet()) {
 			
 			Set<String> ruleList = poiMap.get(pid);
@@ -57,38 +55,75 @@ public class Classifier {
 			int engNameHandler = 1;
 			if (ruleList.contains("FM-YW-20-013")) {
 				workItemIdEngName.add("FM-YW-20-013");
-				isEng = true;
+				ruleList.remove("FM-YW-20-013");
+				if (ruleList.contains("FM-YW-20-012")) {
+					ruleList.remove("FM-YW-20-012");
+				}
+				if (ruleList.contains("FM-YW-20-014")) {
+					ruleList.remove("FM-YW-20-014");
+				}
+				if (ruleList.contains("FM-YW-20-017")) {
+					ruleList.remove("FM-YW-20-017");
+				}
+ 				isEng = true;
 			} else if (ruleList.contains("FM-YW-20-012")) {
 				workItemIdEngName.add("FM-YW-20-012");
 				isEng = true;
+				ruleList.remove("FM-YW-20-012");
+				if (ruleList.contains("FM-YW-20-014")) {
+					ruleList.remove("FM-YW-20-014");
+				}
+				if (ruleList.contains("FM-YW-20-017")) {
+					ruleList.remove("FM-YW-20-017");
+				}
 			} else if (ruleList.contains("FM-YW-20-014")) {
 				workItemIdEngName.add("FM-YW-20-014");
 				isEng = true;
+				ruleList.remove("FM-YW-20-014");
+				if (ruleList.contains("FM-YW-20-017")) {
+					ruleList.remove("FM-YW-20-017");
+				}
 			} else if (ruleList.contains("FM-YW-20-017")) {
 				workItemIdEngName.add("FM-YW-20-017");
 				isEng = true;
+				ruleList.remove("FM-YW-20-017");
 			} 
-			ruleList.removeAll(workItemIdEngName);
 			
 			// poi_name
 			Set<String> workItemIdName = new HashSet<String>();
 			int nameHandler = 1;
-			for (String rule:ruleList) {
-				if (namelist1.contains(rule)) {
-					workItemIdName.add(rule);
-					isName = true;
-				} else if (namelist2.contains(rule)) {
-					workItemIdName.add(rule);
-					isName = true;
-					if (rule == "FM-A07-02") {
-						nameHandler = 107020;
-					}
-				} else if (othernamelist.contains(rule)) {
-					workItemIdName.add(rule);
+			
+			for (String name1:namelist1) {
+				if(ruleList.contains(name1)) {
+					workItemIdName.add(name1);
 					isName = true;
 				}
 			}
+			
+			for (String name2:namelist2) {
+				if(ruleList.contains(name2)) {
+					workItemIdName.add(name2);
+					isName = true;
+					if (name2 == "FM-A07-02") {
+						nameHandler = 107020;
+					}
+					break;
+				}
+			}
+			
+			for (String otherName:othernamelist) {
+				if(ruleList.contains(otherName)) {
+					workItemIdName.add(otherName);
+					isName = true;
+				}
+			}
+			
 			ruleList.removeAll(workItemIdName);
+			for (String name2:namelist2) {
+				if (ruleList.contains(name2)) {
+					ruleList.remove(name2);
+				}
+			}
 			
 			// 其他作业
 			Set<String> otherWorkItemId = new HashSet<String>();

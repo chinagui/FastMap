@@ -37,9 +37,19 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.util.JtsGeometryFactory;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
 import com.navinfo.dataservice.dao.fcc.HBaseController;
+import com.navinfo.dataservice.engine.fcc.tips.TipsUtils;
+import com.navinfo.navicommons.geo.GeoUtils;
+import com.navinfo.navicommons.geo.computation.GeometryRelationUtils;
+import com.navinfo.navicommons.geo.computation.GeometryUtils;
+import com.navinfo.navicommons.geo.computation.GridUtils;
+import com.navinfo.navicommons.geo.computation.JtsGeometryConvertor;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
 
 /**
  * @ClassName: HBaseOperateTest.java
@@ -462,7 +472,15 @@ public class HBaseOperateTest {
 		HBaseOperateTest test = new HBaseOperateTest();
 		String rowkey = "021606597d72114ef24985bc35dade8993e6b1";
 		// test.QueryAll();
-		 test.QueryByCondition1(rowkey);
+		// test.QueryByCondition1(rowkey);
+		 
+		//test.testDbCopy();
+		JSONObject geoJson=JSONObject.fromObject("{\"type\":\"LineString\",\"coordinates\":[[116.69374,39.90471],[116.69376,39.9047],[116.69381,39.90468],[116.69387,39.90465],[116.69391,39.90463],[116.69395,39.90459],[116.69395,39.90458],[116.69392,39.90457],[116.6939,39.90456],[116.69387,39.90455],[116.69384,39.90455],[116.69381,39.90456],[116.69377,39.90458],[116.69376,39.9046],[116.69376,39.90461],[116.69378,39.90461],[116.69379,39.90461],[116.69382,39.90459],[116.69383,39.90457],[116.69382,39.90455],[116.69382,39.90454],[116.69379,39.90452],[116.69376,39.9045],[116.69373,39.90449],[116.6937,39.90449],[116.69366,39.90451],[116.69366,39.90451]]}");
+		
+		Geometry geo=GeoTranslator.geojson2Jts(geoJson);
+		System.out.println(GeoTranslator.jts2Wkt(geo));
+		
+		
 		// test.QueryByCondition4();
 		
 	//	test.insertData();
@@ -542,8 +560,114 @@ public class HBaseOperateTest {
 				.getBytes());
 
 		htab.put(put);
+		htab.close();
 
 		return true;
 	}
+	
+	
+	/**
+	 * copy一张表的数据到另外一张表
+	 * @Description:TOOD
+	 * @throws Exception
+	 * @author: y
+	 * @time:2016-12-7 下午8:02:49
+	 */
+	public void testDbCopy() throws Exception{
+		Connection hbaseConn;
+		hbaseConn = HBaseConnector.getInstance().getConnection();
+
+		Table htab = hbaseConn.getTable(TableName
+				.valueOf("tips_tzly"));
+
+		Result result = getResultByRowKey(htab, "021806bc5182ea6c5b4115882b6745a9c6dc40", null);
+
+		// 0.copy一个新的tips,rowkey重新申请
+		
+		String newRowkey="021806bc5182ea6c5b4115882b6745a9c6dc40";
+		
+		Put newPut = copyNewATips(result,newRowkey);
+		
+		Table htabNew = hbaseConn.getTable(TableName
+				.valueOf("tips_sprint6"));
+		
+		htabNew.put(newPut);
+		
+		htabNew.close();
+		
+		htab.close();
+	}
+	
+
+	/**
+	 * @Description:通过rowkey查询tips的信息
+	 * @param htab
+	 * @param rowkey
+	 * @param queryColNames
+	 *            ：查询的字段名
+	 * @return
+	 * @throws Exception
+	 * @author: y
+	 * @time:2016-11-18 下午4:42:45
+	 */
+	private Result getResultByRowKey(Table htab, String rowkey,
+			String[] queryColNames) throws Exception {
+
+		Result result = null;
+		try {
+
+			Get get = new Get(rowkey.getBytes());
+
+			// 没有给定字段，则全字段查
+			if (queryColNames != null && queryColNames.length != 0) {
+
+				for (String colName : queryColNames) {
+
+					get.addColumn("data".getBytes(), colName.getBytes());
+				}
+			}
+
+			result = htab.get(get);
+
+		} catch (Exception e) {
+
+
+			throw new Exception("根据rowkey查询tips信息出错:" + rowkey + "原因："
+					+ e.getMessage(), e);
+		}
+
+		return result;
+	}
+	
+	/**
+	 * 
+	 * @Description:从旧的tips复制一个新的tips
+	 * @param result
+	 * @param rowkey
+	 * @return
+	 * @author: y
+	 * @time:2016-11-18 下午7:52:00
+	 */
+	private Put copyNewATips(Result result,String rowkey) {
+
+		Put put=new Put(rowkey.getBytes());
+		
+		if (result != null) {
+			List<Cell> ceList = result.listCells();
+			if (ceList != null && ceList.size() > 0) {
+				for (Cell cell : ceList) {
+					String value = Bytes.toString(cell.getValueArray(),
+							cell.getValueOffset(), cell.getValueLength());
+					String colName = Bytes.toString(cell.getQualifierArray(),
+							cell.getQualifierOffset(),
+							cell.getQualifierLength());
+					put.addColumn("data".getBytes(), colName.getBytes(), value.toString()
+							.getBytes());
+				}
+			}
+		}
+		return put;
+	}
+
 
 }

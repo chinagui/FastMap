@@ -17,12 +17,14 @@ import org.apache.hadoop.hbase.client.Table;
 import org.junit.Test;
 
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
+import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.util.ExcelReader;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
 import com.navinfo.dataservice.dao.fcc.SolrController;
 import com.navinfo.dataservice.engine.fcc.service.FccApiImpl;
 import com.navinfo.dataservice.engine.fcc.tips.TipsSelector;
+import com.navinfo.navicommons.geo.GeoUtils;
 import com.navinfo.navicommons.geo.computation.GridUtils;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 
@@ -77,7 +79,7 @@ public class TipsSelectorTest {
 	@Test
 	public void testSearchDataByTileWithGap() {
 		JSONArray types = new JSONArray();
-		//types.add(1202);
+		types.add(1806);
 	/*	types.add(1205);
 		types.add(1401);
 		types.add(1110);
@@ -92,9 +94,17 @@ public class TipsSelectorTest {
 		//parameter={"gap":40,"mdFlag":"d","z":18,"x":215894,"y":99196}
 		
 		//={"gap":40,"mdFlag":"d","z":18,"x":216035,"y":99004}
+		
+		//{"gap":40,"mdFlag":"d","z":17,"x":108022,"y":49665,types:[1806]}
+		
+		
+		//返回的坐标和经纬度加载 {"gap":40,"mdFlag":"d","z":18,"x":216046,"y":99332}  rowkey:0215167ea4a06d6ebd4339a2cbb0f527482c3a.  路演环境数据
+		
+		//{"gap":40,"mdFlag":"d","z":19,"x":431790,"y":198467,"types":["1806"]}  19级别 应该返回数据，但是没有返回
 		try {
-			System.out.println(solrSelector.searchDataByTileWithGap(216035, 99004, 18,
-					40, types,"d"));
+			System.out.println(solrSelector.searchDataByTileWithGap(431790, 198467, 19,
+					40, types,"m"));
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -112,7 +122,44 @@ public class TipsSelectorTest {
 		try {
 			String wkt = "POLYGON ((115.78478246015277 40.3580663376903, 117.06198634219226 40.3580663376903, 117.06198634219226 39.090405904000164, 115.78478246015277 39.090405904000164, 115.78478246015277 40.3580663376903))";
 			solrSelector.searchDataByWkt(wkt, types,"d");
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	/**
+	 *
+	 */
+	@Test
+	public void testOther() {
 
+		try {
+			//JSONObject obj=solrSelector.searchDataByRowkey("111503249654");
+			
+			/*JSONObject geojson = JSONObject.fromObject(obj
+					.getString("g_location"));
+			// 渲染的坐标都是屏幕坐标
+			Geojson.coord2Pixel(geojson, 18, 5.5283968E7, 2.5481728E7);*/
+			
+			//System.out.println("geojson:"+geojson);
+			
+			
+			
+			
+			String geo1="{\"coordinates\":[[116.48576,40.00849],[116.48582,40.00857],[116.48591,40.00866],[116.486,40.00876],[116.48613,40.00888],[116.48625,40.00902],[116.48633,40.00911],[116.48641,40.00918],[116.48645,40.00922]],\"type\":\"LineString\"}";
+			String geo2="{\"coordinates\":[[116.48604,40.00812],[116.48617,40.00823],[116.48629,40.00837],[116.48643,40.00853],[116.48656,40.0087],[116.48669,40.00884],[116.48676,40.00893],[116.48681,40.00899],[116.48675,40.00902],[116.48655,40.00902],[116.48635,40.00901]],\"type\":\"LineString\"}";
+			String geo3="{\"coordinates\":[[116.48577,40.00902],[116.48581,40.00897],[116.48594,40.00889],[116.48606,40.00879],[116.48619,40.00867],[116.4863,40.00855],[116.48637,40.00848],[116.48644,40.00841],[116.48649,40.00837],[116.48655,40.00834],[116.48652,40.00842],[116.48643,40.00856]],\"type\":\"LineString\"}";
+			String geo4="{\"coordinates\":[[116.48617,40.00905],[116.48623,40.00901],[116.48635,40.00889],[116.48646,40.00874],[116.48654,40.00858],[116.48659,40.00842],[116.48659,40.00835]],\"type\":\"LineString\"}";
+			String geo5="{\"coordinates\":[[116.48631,40.0081],[116.48639,40.00818],[116.4865,40.00827],[116.48664,40.00838],[116.48678,40.00851],[116.48692,40.00864],[116.48707,40.00876],[116.48725,40.00891],[116.48743,40.00905],[116.48762,40.00918]],\"type\":\"LineString\"}";
+			        
+				
+			System.out.println(Geojson.geojson2Wkt(geo1)+",");
+			System.out.println(Geojson.geojson2Wkt(geo2)+",");
+			System.out.println(Geojson.geojson2Wkt(geo3)+",");
+			System.out.println(Geojson.geojson2Wkt(geo4)+",");
+			System.out.println(Geojson.geojson2Wkt(geo5));
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

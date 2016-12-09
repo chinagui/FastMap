@@ -17,6 +17,20 @@ import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchVia;
 import com.navinfo.dataservice.dao.glm.model.rd.gate.RdGate;
+import com.navinfo.dataservice.dao.glm.model.rd.gate.RdGateCondition;
+import com.navinfo.dataservice.dao.glm.model.rd.lane.RdLane;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
+import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
+import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionDetail;
+import com.navinfo.dataservice.engine.check.rules.GLM01091;
+import com.navinfo.dataservice.engine.check.rules.GLM01570;
+import com.navinfo.dataservice.engine.check.rules.GLM04003;
+import com.navinfo.dataservice.engine.check.rules.GLM04006;
+import com.navinfo.dataservice.engine.check.rules.GLM04008_1;
+import com.navinfo.dataservice.engine.check.rules.GLM04008_2;
+import com.navinfo.dataservice.engine.check.rules.GLM32005;
+import com.navinfo.dataservice.engine.check.rules.GLM32038;
 
 /** 
  * @ClassName: CheckRuleTest
@@ -112,5 +126,221 @@ public class CheckRuleTest {
 		CheckEngine checkEngine=new CheckEngine(checkCommand,conn);
 		checkEngine.postCheck();
 		System.out.println(checkEngine.preCheck());
+	}
+	
+	
+	@Test
+	public void testGLM32005() throws Exception{
+		Connection conn=DBConnector.getInstance().getConnectionById(17);
+		CheckCommand cc = new CheckCommand();
+		List<IRow> glmList = new ArrayList<IRow>();
+		RdLane rdLane  = new RdLane();
+		rdLane.setLaneDir(2);
+		rdLane.setPid(31434086);
+		rdLane.setLinkPid(39257545);
+		glmList.add(rdLane);
+		
+		RdLink rdLink = new RdLink();
+		rdLink.setPid(39257545);
+		rdLink.setDirect(2);
+		glmList.add(rdLink);
+		
+		cc.setGlmList(glmList);
+		GLM32005 c = new GLM32005();
+		c.setConn(conn);
+		c.postCheck(cc);
+		
+		System.out.println("end");
+	}
+	
+	@Test
+	public void testGLM32038() throws Exception{
+		Connection conn=DBConnector.getInstance().getConnectionById(17);
+		CheckCommand cc = new CheckCommand();
+		List<IRow> glmList = new ArrayList<IRow>();
+		RdLane rdLane  = new RdLane();
+		rdLane.setLaneDivider(1);;
+		rdLane.setPid(31434086);
+		rdLane.setLinkPid(39257545);
+		glmList.add(rdLane);
+		
+		RdLink rdLink = new RdLink();
+		rdLink.setPid(39257545);
+		glmList.add(rdLink);
+		
+		RdLinkForm rdLinkForm = new RdLinkForm();
+		rdLinkForm.setFormOfWay(50);
+		rdLinkForm.setLinkPid(39257545);
+		glmList.add(rdLinkForm);
+		
+		cc.setGlmList(glmList);
+		GLM32038 c = new GLM32038();
+		c.setConn(conn);
+		c.postCheck(cc);
+		List result = c.getCheckResultList();
+		
+		System.out.println("end");
+	}
+	
+	@Test
+	public void testGLM01570() throws Exception{
+		Connection conn=DBConnector.getInstance().getConnectionById(17);
+		CheckCommand cc = new CheckCommand();
+		List<IRow> glmList = new ArrayList<IRow>();
+		RdGate rdGate = new RdGate();
+		rdGate.setInLinkPid(39257545);
+		rdGate.setOutLinkPid(39257546);
+		glmList.add(rdGate);
+		
+		RdLink rdLink = new RdLink();
+		rdLink.setPid(39257545);
+		glmList.add(rdLink);
+		
+		RdLinkForm rdLinkForm = new RdLinkForm();
+		rdLinkForm.setFormOfWay(60);
+		rdLinkForm.setLinkPid(39257545);
+		glmList.add(rdLinkForm);
+		
+		cc.setGlmList(glmList);
+		GLM01570 c = new GLM01570();
+		c.setConn(conn);
+		c.postCheck(cc);
+		List result = c.getCheckResultList();
+		
+		System.out.println("end");
+	}
+	
+	@Test
+	public void testGLM01091() throws Exception{
+		Connection conn=DBConnector.getInstance().getConnectionById(17);
+		CheckCommand cc = new CheckCommand();
+		List<IRow> glmList = new ArrayList<IRow>();
+		RdGate rdGate = new RdGate();
+		rdGate.setInLinkPid(39257545);
+		rdGate.setOutLinkPid(39257546);
+		glmList.add(rdGate);
+		
+		RdLink rdLink = new RdLink();
+		rdLink.setPid(39257545);
+		rdLink.setFunctionClass(4);
+		glmList.add(rdLink);
+		
+		
+		cc.setGlmList(glmList);
+		GLM01091 c = new GLM01091();
+		c.setConn(conn);
+		c.postCheck(cc);
+		List result = c.getCheckResultList();
+		
+		System.out.println("end");
+	}
+	
+	@Test
+	public void testGLM04003() throws Exception{
+		Connection conn=DBConnector.getInstance().getConnectionById(17);
+		CheckCommand cc = new CheckCommand();
+		List<IRow> glmList = new ArrayList<IRow>();
+		RdGate rdGate = new RdGate();
+		rdGate.setInLinkPid(39257545);
+		rdGate.setOutLinkPid(39257546);
+		rdGate.setType(0);
+		glmList.add(rdGate);
+
+		cc.setGlmList(glmList);
+		GLM04003 c = new GLM04003();
+		c.setConn(conn);
+		c.preCheck(cc);
+		List result = c.getCheckResultList();
+		
+		System.out.println("end");
+	}
+	
+	@Test
+	public void testGLM04006() throws Exception{
+		Connection conn=DBConnector.getInstance().getConnectionById(17);
+		CheckCommand cc = new CheckCommand();
+		List<IRow> glmList = new ArrayList<IRow>();
+		RdGate rdGate = new RdGate();
+		rdGate.setInLinkPid(39257545);
+		rdGate.setOutLinkPid(39257546);
+		rdGate.setType(0);
+		glmList.add(rdGate);
+		
+		RdGateCondition rdGateCondition = new RdGateCondition();
+		rdGateCondition.setValidObj(0);
+		glmList.add(rdGateCondition);
+		
+		RdLink rdLink = new RdLink();
+		rdLink.setPid(39257545);
+		glmList.add(rdLink);
+
+		cc.setGlmList(glmList);
+		GLM04006 c = new GLM04006();
+		c.setConn(conn);
+		c.postCheck(cc);
+		List result = c.getCheckResultList();
+		
+		System.out.println("end");
+	}
+	
+	@Test
+	public void testGLM04008_2() throws Exception{
+		Connection conn=DBConnector.getInstance().getConnectionById(17);
+		CheckCommand cc = new CheckCommand();
+		List<IRow> glmList = new ArrayList<IRow>();
+		RdGate rdGate = new RdGate();
+		rdGate.setInLinkPid(39257545);
+		rdGate.setOutLinkPid(39257546);
+		rdGate.setType(0);
+		glmList.add(rdGate);
+		
+		
+		RdLink rdLink = new RdLink();
+		rdLink.setPid(39257545);
+		glmList.add(rdLink);
+
+		cc.setGlmList(glmList);
+		GLM04008_2 c = new GLM04008_2();
+		c.setConn(conn);
+		c.postCheck(cc);
+		List result = c.getCheckResultList();
+		
+		System.out.println("end");
+	}
+	
+	@Test
+	public void testGLM04008_1() throws Exception{
+		Connection conn=DBConnector.getInstance().getConnectionById(17);
+		CheckCommand cc = new CheckCommand();
+		List<IRow> glmList = new ArrayList<IRow>();
+		RdGate rdGate = new RdGate();
+		rdGate.setInLinkPid(39257545);
+		rdGate.setOutLinkPid(39257546);
+		rdGate.setDir(1);
+		glmList.add(rdGate);
+		
+		RdRestriction rdRestriction = new RdRestriction();
+		rdRestriction.setPid(39257545);
+		glmList.add(rdRestriction);
+		
+		RdRestrictionDetail rdRestrictionDetail = new RdRestrictionDetail();
+		rdRestrictionDetail.setRestricPid(39257545);
+		rdRestrictionDetail.setOutLinkPid(39257546);
+		rdRestrictionDetail.setType(1);
+		glmList.add(rdRestrictionDetail);
+		
+		RdRestrictionDetail rdRestrictionDetail1 = new RdRestrictionDetail();
+		rdRestrictionDetail1.setRestricPid(39257545);
+		rdRestrictionDetail1.setOutLinkPid(39257546);
+		rdRestrictionDetail1.setType(2);
+		glmList.add(rdRestrictionDetail1);
+
+		cc.setGlmList(glmList);
+		GLM04008_1 c = new GLM04008_1();
+		c.setConn(conn);
+		c.postCheck(cc);
+		List result = c.getCheckResultList();
+		
+		System.out.println("end");
 	}
 }

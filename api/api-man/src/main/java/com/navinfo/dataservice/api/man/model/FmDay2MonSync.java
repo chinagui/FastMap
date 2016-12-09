@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.api.man.model;
 
+import java.io.Serializable;
 import java.util.Date;
 
 /** 
@@ -41,7 +42,7 @@ increment by 1
 cache 20;
 
  */
-public class FmDay2MonSync {
+public class FmDay2MonSync implements Serializable {
 	private long sid;
 	private long cityId;
 	private Date syncTime;

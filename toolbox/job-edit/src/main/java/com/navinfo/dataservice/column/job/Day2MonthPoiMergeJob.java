@@ -41,6 +41,7 @@ import com.navinfo.dataservice.impcore.mover.LogMover;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 /** 
@@ -76,7 +77,9 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 				.getBean("day2MonthSyncApi");
 		try {
 			log.info("开始获取日落月开关控制信息");
-			JSONObject conditionJson = new JSONObject().element("status", 0);
+			Set<Integer> statusValues = new HashSet<Integer>();
+			statusValues.add(0);
+			JSONObject conditionJson = new JSONObject().element("status", statusValues);
 			List<Map<String, Object>> d2mInfoList= manApi.queryDay2MonthList(conditionJson );
 			response("获取日落月开关控制信息ok",null);
 			log.info("开始获取日落月城市信息:城市的基础信息、城市的grid，城市的大区库");

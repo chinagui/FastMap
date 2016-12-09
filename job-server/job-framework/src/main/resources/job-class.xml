@@ -84,4 +84,8 @@
 		class="com.navinfo.dataservice.column.job.MultiSrc2FmDaySyncJob"
 	 	request="com.navinfo.dataservice.column.job.MultiSrc2FmDaySyncJobRequest"
 	/>
+	<type name="day2MonSyncJob" 
+		class=" com.navinfo.dataservice.column.job.Day2MonthPoiMergeJob"
+	 	request="com.navinfo.dataservice.column.job.Day2MonthPoiMergeJobRequest"
+	/>
 </mapping>

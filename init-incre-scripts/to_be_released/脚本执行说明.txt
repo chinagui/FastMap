@@ -19,3 +19,9 @@
 7. sys_update_job.sql
   功能：升级job_info表，增加task_id字段
   目标库：sys库
+8. add_fm_multisrc_sync.sql
+  功能：新增FM日库POI增量更新多源镜像库管理表
+  目标库：sys库
+9. add_multisrc_fm_sync.sql
+  功能：新增多源POI成果导入FM日库管理表
+  目标库：sys库

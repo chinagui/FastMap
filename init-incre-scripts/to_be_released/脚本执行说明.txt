@@ -14,7 +14,7 @@
   功能：添加多源日库接入的配置信息
   目标库：sys库
 6. sys_add_config_rtic.sql
-  功能：添加rticid申请的配置信息
+  功能：添加rticid申请的配置信息，注意修改配置信息
   目标库：sys库
 7. sys_update_job.sql
   功能：升级job_info表，增加task_id字段

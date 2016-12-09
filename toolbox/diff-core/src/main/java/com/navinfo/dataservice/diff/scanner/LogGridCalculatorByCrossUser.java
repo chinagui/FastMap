@@ -55,7 +55,7 @@ public class LogGridCalculatorByCrossUser implements LogGridCalculator {
         	Map<String,LogGeoInfo> oldGrids = calculator.calc(table.getName(), new Integer[]{2,3}, conn,"CROSS_USER",rightSchemaUserName);
         	flushLogGrids(oldGrids,1,stmt,conn);
         	//填充几何依赖
-        	String geoSql = "UPDATE LOG_OPERATION SET GEO_NM=?,GEO_PID=?";
+        	String geoSql = "UPDATE LOG_DETAIL SET GEO_NM=?,GEO_PID=?";
         	stmt4Geo=conn.prepareStatement(geoSql);
         	flushLogDetailGeo(newGrids,stmt4Geo);
 			conn.commit();

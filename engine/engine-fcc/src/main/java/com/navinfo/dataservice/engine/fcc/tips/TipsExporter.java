@@ -82,11 +82,11 @@ public class TipsExporter {
 
 		Result[] results = htab.get(gets);
 
-		//Set<String> photoIdSet = new HashSet<String>();
+		Set<String> photoIdSet = new HashSet<String>();
 
-		//List<Get> photoGets = new ArrayList<Get>();
+		List<Get> photoGets = new ArrayList<Get>();
 
-		//List<JSONObject> list = new ArrayList<JSONObject>();
+		List<JSONObject> list = new ArrayList<JSONObject>();
 
 		for (Result result : results) {
 
@@ -175,69 +175,34 @@ public class TipsExporter {
 					.size() - 1);
 
 			String lastDate = lastTrackInfo.getString("date");
-            //track.t_trackInfo中最后一条date赋值	
+			int handler = lastTrackInfo.getInt("handler");
+
+			for (int i = tTrackInfo.size() - 1; i >= 0; i--) {
+				JSONObject trackinfo = tTrackInfo.getJSONObject(i);
+
+				if (trackinfo.getInt("stage") != 3) {
+					lastDate = trackinfo.getString("date");
+
+					handler = trackinfo.getInt("handler");
+
+					break;
+				}
+			}
+
 			json.put("t_operateDate", lastDate);
 
-			json.put("t_handler", 0);
-			
-			//附件的转出
+			json.put("t_handler", handler);
+
+			json.put("t_status", 0);
+
+			boolean flag = false;
+
 			if (result.containsColumn("data".getBytes(), "feedback".getBytes())) {
 				JSONObject feedback = JSONObject.fromObject(new String(result
 						.getValue("data".getBytes(), "feedback".getBytes())));
-				
-				JSONArray farray = feedback.getJSONArray("f_array");
-				
-				//返回的附件信息
-				JSONArray farrayExport = new JSONArray();
 
-				for (int i = 0; i < farray.size(); i++) {
-					JSONObject jo = farray.getJSONObject(i);
-					int type = jo.getInt("type");
-					JSONObject attachment=new JSONObject();
-					//照片的转出
-					if (type == 1) {
-						String id=jo.getString("content");
-						PhotoGetter getter = new PhotoGetter();
-						byte[] data = getter.getPhotoByRowkey(id, "thumbnail");//返回缩略图
-						attachment.put("id", id);
-						attachment.put("content", data);
-						attachment.put("type", 1);
-					}
-					//语音转出
-					if (type == 2) {
-						String id=jo.getString("content");
-						AudioGetter getter = new AudioGetter();
-						byte[] data = getter.getAudioByRowkey(id); //暂未实现
-						attachment.put("id", id);
-						attachment.put("content", data);
-						attachment.put("type", 2);
-					}
-					//文字转出
-					if (type == 3) {
-						attachment.put("id", "");
-						attachment.put("content", jo.getString("content"));
-						attachment.put("type", 3);
-					}
-					//草图转出
-					if (type == 6) {
-						attachment.put("id", "");
-						attachment.put("content", jo.getString("content"));
-						attachment.put("type", 6);
-					}
-					farrayExport.add(attachment);
-				}
-				json.put("attachments", farrayExport);
-			} else {
-				//没有附件返回空数组
-				json.put("attachments", new JSONArray());
-			}
-
-			/*if (result.containsColumn("data".getBytes(), "feedback".getBytes())) {
-				JSONObject feedback = JSONObject.fromObject(new String(result
-						.getValue("data".getBytes(), "feedback".getBytes())));
-				
 				JSONArray farray = feedback.getJSONArray("f_array");
-                //原值导出
+
 				json.put("attachments", farray);
 
 				for (int i = 0; i < farray.size(); i++) {
@@ -268,17 +233,16 @@ public class TipsExporter {
 			} else {
 				json.put("attachments", new JSONArray());
 			}
-            //有照片，则需要导出照片
+
 			if (flag) {
 				list.add(json);
 			} else {
 				ja.add(json);
 			}
-*/
-			ja.add(json);
+
 		}
 
-	/*	if (list.size() > 0) {
+		if (list.size() > 0) {
 			Map<String, JSONObject> photoMap = exportPhotos(photoGets);
 
 			for (int i = 0; i < list.size(); i++) {
@@ -323,8 +287,8 @@ public class TipsExporter {
 
 				ja.add(json);
 			}
-		}*/
-		
+		}
+
 		return ja;
 	}
 

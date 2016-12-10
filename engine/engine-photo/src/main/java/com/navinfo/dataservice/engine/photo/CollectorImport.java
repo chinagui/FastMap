@@ -75,10 +75,12 @@ public class CollectorImport {
 		if (!file.exists()) {
 			return;
 		}
-		
 		//******zl 2016.12.07 添加自动图片旋转**************
 		//需要旋转的图片,旋转后替换原有图片
-		 RotateImageUtils.rotateImage(dir);
+		//20161210, modifiedby liya 增加判断，如果路径不是个Directory，才进行旋转代码。因为tips传入的是文件路径，会报错
+		if(!file.isDirectory()){
+			RotateImageUtils.rotateImage(dir);
+		}
 		//********************
 		
 		Map<String,byte[]> mapPhoto = FileUtils.readPhotos(dir);

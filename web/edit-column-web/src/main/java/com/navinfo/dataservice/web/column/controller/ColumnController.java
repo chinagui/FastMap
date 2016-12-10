@@ -116,18 +116,13 @@ public class ColumnController extends BaseController {
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(parameter));
 			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
 			long userId=tokenObj.getUserId();
-			
 			int taskId = dataJson.getInt("taskId");
-			JSONArray data = dataJson.getJSONArray("data");
-			String secondWorkItem = dataJson.getString("secondWorkItem");
 			
 			JobApi jobApi=(JobApi) ApplicationContextUtil.getBean("jobApi");
 			
 			JSONObject jobDataJson=new JSONObject();
-			jobDataJson.put("taskId", taskId);
 			jobDataJson.put("userId", userId);
-			jobDataJson.put("data", data);
-			jobDataJson.put("secondWorkItem", secondWorkItem);
+			jobDataJson.put("param", parameter);
 			
 			long jobId=jobApi.createJob("columnSaveJob", jobDataJson, userId,taskId, "精编保存");
 			

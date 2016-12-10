@@ -18,6 +18,13 @@ public class Command extends AbstractCommand {
 	private double distance;
 
 	private double sideType;
+	
+	private int sNodePid;
+	
+	public int getSNodePid() {
+		
+		return sNodePid;
+	}
 
 	/**
 	 * 1:双侧，2右侧，3左侧
@@ -85,6 +92,11 @@ public class Command extends AbstractCommand {
 		this.distance = json.getDouble("distance");
 		// 1: 两侧；2：右侧、3左侧
 		this.sideType = json.getInt("sideType");
+		
+		if (json.containsKey("sNodePid")) {
+
+			this.sNodePid = json.getInt("sNodePid");
+		}
 		// 获取要上下线分离的linkPids
 		JSONObject data = json.getJSONObject("data");
 		JSONArray array = data.getJSONArray("linkPids");

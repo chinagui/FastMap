@@ -14,18 +14,8 @@ import net.sf.json.JSONArray;
  */
 public class ColumnSaveJobRequest extends AbstractJobRequest {
 	
-	private int taskId;
 	private int userId;
-	private JSONArray data;
-	private String secondWorkItem;
-
-	public int getTaskId() {
-		return taskId;
-	}
-
-	public void setTaskId(int taskId) {
-		this.taskId = taskId;
-	}
+	private String param;
 
 	public int getUserId() {
 		return userId;
@@ -35,20 +25,12 @@ public class ColumnSaveJobRequest extends AbstractJobRequest {
 		this.userId = userId;
 	}
 
-	public JSONArray getData() {
-		return data;
+	public String getParam() {
+		return param;
 	}
 
-	public void setData(JSONArray data) {
-		this.data = data;
-	}
-
-	public String getSecondWorkItem() {
-		return secondWorkItem;
-	}
-
-	public void setSecondWorkItem(String secondWorkItem) {
-		this.secondWorkItem = secondWorkItem;
+	public void setParam(String param) {
+		this.param = param;
 	}
 
 	@Override

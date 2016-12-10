@@ -62,6 +62,12 @@ public class TipsExportTest extends InitApplication{
 			
 			parameter="{\"condition\":[{\"grid\":60561300,\"date\":\"\"}]}";
 			
+			parameter="{\"condition\":[{\"grid\":60562500,\"date\":\"\"},{\"grid\":60562501,\"date\":\"\"},{\"grid\":60562502,\"date\":\"\"},{\"grid\":60562503,\"date\":\"\"},{\"grid\":60562510,\"date\":\"\"},{\"grid\":60562511,\"date\":\"\"},{\"grid\":60562512,\"date\":\"\"},{\"grid\":60562513,\"date\":\"\"},{\"grid\":60562520,\"date\":\"\"},{\"grid\":60562521,\"date\":\"\"},{\"grid\":60562522,\"date\":\"\"},{\"grid\":60562523,\"date\":\"\"},{\"grid\":60562530,\"date\":\"\"},{\"grid\":60562531,\"date\":\"\"},{\"grid\":60562532,\"date\":\"\"},{\"grid\":60562533,\"date\":\"\"}]}";
+			
+			//http://192.168.4.188:8000/service/fcc/tip/export?access_token=000001A8IWK0EVJSBD50286D509D3B1320F5C38F5C5D9C0E&parameter={"condition":[{"grid":60560220,"date":"20161210104905"}]}
+			
+			parameter="{\"condition\":[{\"grid\":60560232,\"date\":\"20161210120406\"}]}";
+			
 			String uuid = UuidUtils.genUuid();
 			
 			JSONObject jsonReq=JSONObject.fromObject(parameter);

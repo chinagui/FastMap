@@ -224,6 +224,7 @@ public class TipsExporter {
 						attachment.put("content", jo.getString("content"));
 						attachment.put("type", 6);
 					}
+					farrayExport.add(attachment);
 				}
 				json.put("attachments", farrayExport);
 			} else {

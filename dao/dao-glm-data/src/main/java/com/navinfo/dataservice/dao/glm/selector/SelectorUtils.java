@@ -4,6 +4,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
+import org.apache.commons.collections.CollectionUtils;
+
 import com.navinfo.dataservice.bizcommons.glm.GlmGridCalculator;
 import com.navinfo.dataservice.bizcommons.glm.GlmGridCalculatorFactory;
 import com.navinfo.dataservice.bizcommons.glm.GlmGridRefInfo;
@@ -57,11 +59,20 @@ public class SelectorUtils {
 			
 			StringBuilder fromSql = new StringBuilder(" FROM ");
 			
-			StringBuilder selectSql = new StringBuilder("SELECT COUNT (1) OVER (PARTITION BY 1) total,tmp.pid,tmp.name,tmp.geometry from("+"SELECT P."+key+" AS PID,R1.GEOMETRY,'列名' as name");
+			StringBuilder selectSql = new StringBuilder("SELECT COUNT (1) OVER (PARTITION BY 1) total,tmp.pid,tmp.name,tmp.geometry from("+"SELECT P."+key+" AS PID,'列名' as name");
 			
 			StringBuilder whereSql = new StringBuilder();
 			
 			GlmGridRefInfo glmGridRefInfo = gridCalculator.getGlmGridRefInfo(tableName);
+			
+			if(CollectionUtils.isNotEmpty(glmGridRefInfo.getRefInfo()))
+			{
+				selectSql.append(",R1.GEOMETRY ");
+			}
+			else
+			{
+				selectSql.append(",P.GEOMETRY ");
+			}
 			
 			/**
 			 * SELECT P.ROW_ID,R1.GEOMETRY,'RD_LINK' as GEO_NM ,R1.LINK_PID as GEO_PID ,

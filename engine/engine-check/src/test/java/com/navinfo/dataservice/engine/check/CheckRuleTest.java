@@ -19,6 +19,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchVia;
 import com.navinfo.dataservice.dao.glm.model.rd.gate.RdGate;
 import com.navinfo.dataservice.dao.glm.model.rd.gate.RdGateCondition;
 import com.navinfo.dataservice.dao.glm.model.rd.lane.RdLane;
+import com.navinfo.dataservice.dao.glm.model.rd.lane.RdLaneCondition;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
@@ -30,6 +31,8 @@ import com.navinfo.dataservice.engine.check.rules.GLM04006;
 import com.navinfo.dataservice.engine.check.rules.GLM04008_1;
 import com.navinfo.dataservice.engine.check.rules.GLM04008_2;
 import com.navinfo.dataservice.engine.check.rules.GLM32005;
+import com.navinfo.dataservice.engine.check.rules.GLM32006;
+import com.navinfo.dataservice.engine.check.rules.GLM32020;
 import com.navinfo.dataservice.engine.check.rules.GLM32038;
 
 /** 
@@ -337,6 +340,62 @@ public class CheckRuleTest {
 
 		cc.setGlmList(glmList);
 		GLM04008_1 c = new GLM04008_1();
+		c.setConn(conn);
+		c.postCheck(cc);
+		List result = c.getCheckResultList();
+		
+		System.out.println("end");
+	}
+	
+	@Test
+	public void testGLM32006() throws Exception{
+		Connection conn=DBConnector.getInstance().getConnectionById(17);
+		CheckCommand cc = new CheckCommand();
+		List<IRow> glmList = new ArrayList<IRow>();
+		RdLane rdLane  = new RdLane();
+		rdLane.setPid(31434086);
+		rdLane.setLinkPid(59193232);
+		rdLane.setLaneDir(0);
+		glmList.add(rdLane);
+		
+		RdLink rdLink = new RdLink();
+		rdLink.setPid(59193232);
+		rdLink.setDirect(1);
+		glmList.add(rdLink);
+
+		cc.setGlmList(glmList);
+		GLM32006 c = new GLM32006();
+		c.setConn(conn);
+		c.postCheck(cc);
+		List result = c.getCheckResultList();
+		
+		System.out.println("end");
+	}
+	
+	@Test
+	public void testGLM32020() throws Exception{
+		Connection conn=DBConnector.getInstance().getConnectionById(17);
+		CheckCommand cc = new CheckCommand();
+		List<IRow> glmList = new ArrayList<IRow>();
+		RdLane rdLane  = new RdLane();
+		rdLane.setPid(31434086);
+		glmList.add(rdLane);
+		
+		RdLaneCondition rdLineCondition = new RdLaneCondition();
+		rdLineCondition.setVehicle(214748416);
+		glmList.add(rdLineCondition);
+		
+		RdLink rdLink = new RdLink();
+		rdLink.setPid(59193232);
+		glmList.add(rdLink);
+		
+		RdLinkForm rdLinkForm = new RdLinkForm();
+		rdLinkForm.setLinkPid(59193232);
+		rdLinkForm.setFormOfWay(22);
+		glmList.add(rdLinkForm);
+
+		cc.setGlmList(glmList);
+		GLM32020 c = new GLM32020();
 		c.setConn(conn);
 		c.postCheck(cc);
 		List result = c.getCheckResultList();

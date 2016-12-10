@@ -6,7 +6,7 @@ import java.sql.ResultSet;
 
 import org.apache.commons.dbutils.DbUtils;
 
-import com.navinfo.dataservice.dao.glm.model.poi.deep.PoiDeepOpConf;
+import com.navinfo.dataservice.dao.glm.model.poi.deep.PoiColumnOpConf;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 
 public class IxPoiOpConfSelector extends AbstractSelector {
@@ -26,10 +26,10 @@ public class IxPoiOpConfSelector extends AbstractSelector {
 	 * @return
 	 * @throws Exception
 	 */
-	public PoiDeepOpConf getDeepOpConf(String firstWorkItem,String secondWorkItem,int type) throws Exception {
-		PoiDeepOpConf result = new PoiDeepOpConf();
+	public PoiColumnOpConf getDeepOpConf(String firstWorkItem,String secondWorkItem,int type) throws Exception {
+		PoiColumnOpConf result = new PoiColumnOpConf();
 		
-		String sql = "SELECT * FROM poi_deep_op_conf WHERE type=" + type;
+		String sql = "SELECT * FROM poi_column_op_conf WHERE type=" + type;
 		if (!firstWorkItem.isEmpty()) {
 			sql += " AND first_work_item='" + firstWorkItem + "'";
 		}
@@ -56,8 +56,8 @@ public class IxPoiOpConfSelector extends AbstractSelector {
 		}
 	}
 	
-	private PoiDeepOpConf getDeepOpConfObj(ResultSet resultSet) throws Exception {
-		PoiDeepOpConf result = new PoiDeepOpConf();
+	private PoiColumnOpConf getDeepOpConfObj(ResultSet resultSet) throws Exception {
+		PoiColumnOpConf result = new PoiColumnOpConf();
 		try {
 			if (resultSet.next()) {
 				result.setId(resultSet.getString("ID"));

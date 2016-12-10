@@ -12,6 +12,7 @@ import com.navinfo.dataservice.bizcommons.glm.GlmGridRefInfo;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.navicommons.database.sql.DBUtils;
@@ -51,7 +52,7 @@ public class SelectorUtils {
 		}
 		else
 		{
-			String key = object.keys().next().toString();
+			String key = StringUtils.toColumnName(object.keys().next().toString());
 			
 			int pid = object.getInt(key);
 			
@@ -150,9 +151,9 @@ public class SelectorUtils {
 				sql = bufferCondition.toString();
 			} else {
 				bufferCondition
-						.append("SELECT  COUNT(1) OVER(PARTITION BY 1) TOTAL, tmp.pid,rn.name FROM( SELECT /*index(tmpLink)*/ tmpLink.LINK_PID PID ,rln.name_groupid  FROM rd_link tmpLink LEFT JOIN RD_LINK_NAME RLN ON tmpLink.Link_Pid = rln.link_pid AND RLN.NAME_CLASS = 1 and RLN.u_record !=2 where tmpLink.LINK_PID = "
+						.append("SELECT COUNT(1) OVER(PARTITION BY 1) TOTAL, TMP.PID, RN.NAME,TMP.geometry FROM (SELECT /*index(tmpLink)*/ TMPLINK.LINK_PID PID, RLN.NAME_GROUPID,TMPLINK.geometry FROM RD_LINK TMPLINK LEFT JOIN RD_LINK_NAME RLN ON TMPLINK.LINK_PID = RLN.LINK_PID AND RLN.NAME_CLASS = 1 AND RLN.U_RECORD != 2 and RLN.SEQ_NUM  =1 WHERE TMPLINK.LINK_PID = "
 								+ object.getString("linkPid")
-								+ " and tmpLink.u_record !=2 GROUP BY tmpLink.LINK_PID,rln.name_groupid )tmp LEFT JOIN RD_NAME rn ON tmp.name_groupid = rn.name_groupid AND  RN.LANG_CODE = 'CHI' and rn.u_record !=2");
+								+ " AND TMPLINK.U_RECORD != 2 ) TMP LEFT JOIN RD_NAME RN ON TMP.NAME_GROUPID = RN.NAME_GROUPID AND RN.LANG_CODE = 'CHI' AND RN.U_RECORD != 2");
 
 				sql = getSqlFromBufferCondition(bufferCondition, isLock);
 			}

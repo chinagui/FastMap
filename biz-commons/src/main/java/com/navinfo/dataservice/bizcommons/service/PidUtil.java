@@ -3,6 +3,7 @@ package com.navinfo.dataservice.bizcommons.service;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.navicommons.exception.ServiceException;
 
 /**
  * @author xiaoxiaowen4127
@@ -35,6 +36,10 @@ public class PidUtil {
     public long applyPidByTableName(String tableName) throws Exception {
         return PidService.getInstance().applyPid(tableName, 1);
     }
+    public long applyPidByTableName(String tableName, int limit) throws Exception {
+    	return PidService.getInstance().applyPid(tableName, limit);
+		
+	}
 
     /**
      * 申請link_pid
@@ -582,5 +587,7 @@ public class PidUtil {
     public int applyRdMileagepilePid() throws Exception {
         return applyPid("RD_MILEAGEPILE");
     }
+
+	
 
 }

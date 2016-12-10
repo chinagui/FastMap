@@ -40,7 +40,7 @@
     <filter-class>com.navinfo.dataservice.commons.token.TokenValidateFilter</filter-class>
     <init-param>
       <param-name>exclude-url-pattern</param-name>
-      <param-value>/login|/druid|/monitoring</param-value>
+      <param-value>/login|/druid|/monitoring|/pid/apply/</param-value>
     </init-param>
   </filter>
   <filter-mapping>

@@ -68,6 +68,8 @@ public class TipsExportTest extends InitApplication{
 			
 			parameter="{\"condition\":[{\"grid\":60560232,\"date\":\"20161210120406\"}]}";
 			
+			parameter="{\"condition\":[{\"grid\":60560233,\"date\":\"20161210114441\"}]}";
+			
 			String uuid = UuidUtils.genUuid();
 			
 			JSONObject jsonReq=JSONObject.fromObject(parameter);

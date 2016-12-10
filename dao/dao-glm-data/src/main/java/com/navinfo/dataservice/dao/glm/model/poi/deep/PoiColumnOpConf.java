@@ -5,7 +5,7 @@ package com.navinfo.dataservice.dao.glm.model.poi.deep;
  * @author wangdongbin
  *
  */
-public class PoiDeepOpConf {
+public class PoiColumnOpConf {
 	
 	private String id;
 	private String firstWorkItem;

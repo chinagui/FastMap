@@ -19,7 +19,7 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.control.column.core.DeepCoreControl;
-import com.navinfo.dataservice.dao.glm.model.poi.deep.PoiDeepOpConf;
+import com.navinfo.dataservice.dao.glm.model.poi.deep.PoiColumnOpConf;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiOpConfSelector;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
@@ -50,10 +50,15 @@ public class ColumnSaveJob extends AbstractJob {
 		Connection conn = null;
 		try {
 			ColumnSaveJobRequest columnSaveJobRequest = (ColumnSaveJobRequest) this.request;
-			int taskId = columnSaveJobRequest.getTaskId();
+			JSONObject dataJson = columnSaveJobRequest.getParam();
 			int userId = columnSaveJobRequest.getUserId();
-			JSONArray data = columnSaveJobRequest.getData();
-			String secondWorkItem = columnSaveJobRequest.getSecondWorkItem();
+			String param = dataJson.getString("param");
+			param = "{" + param + "}";
+			JSONObject paramJson = JSONObject.fromObject(param);
+			int taskId = paramJson.getInt("taskId");
+			JSONArray data = paramJson.getJSONArray("data");
+			String secondWorkItem = paramJson.getString("secondWorkItem");
+			
 			
 			Subtask subtask = apiService.queryBySubtaskId(taskId);
 			
@@ -80,7 +85,7 @@ public class ColumnSaveJob extends AbstractJob {
 			
 			// 查询检查、批处理和重分类配置
 			IxPoiOpConfSelector ixPoiOpConfSelector = new IxPoiOpConfSelector(conn);
-			PoiDeepOpConf deepOpConf = ixPoiOpConfSelector.getDeepOpConf("",secondWorkItem, type);
+			PoiColumnOpConf columnOpConf = ixPoiOpConfSelector.getDeepOpConf("",secondWorkItem, type);
 			
 			// 清理检查结果
 			DeepCoreControl deepControl = new DeepCoreControl();
@@ -95,32 +100,37 @@ public class ColumnSaveJob extends AbstractJob {
 			operationResult.putAll(objList);
 			
 			// 批处理
-			BatchCommand batchCommand=new BatchCommand();		
-			String operationName="COLUMN_SAVE";
-			//List<String> batchList=new ArrayList<String>();
-//			ruleIdList.add("GLM001TEST");
-			batchCommand.setOperationName(operationName);
+			if (columnOpConf.getSaveExebatch() == 1) {
+				BatchCommand batchCommand=new BatchCommand();		
+				for (String ruleId:columnOpConf.getSaveBatchrules().split(",")) {
+					batchCommand.setRuleId(ruleId);
+				}
+
+				Batch batch=new Batch(conn,operationResult);
+				batch.operate(batchCommand);
+			}
 			
-			Batch batch=new Batch(conn,operationResult);
-//			batch.setCmd(batchCommand);
-//			batch.operate();
 			
 			// 检查
-			CheckCommand checkCommand=new CheckCommand();		
-			List<String> checkList=new ArrayList<String>();
-//			checkList.add("GLM001TEST");
-			checkCommand.setRuleIdList(checkList);
+			if (columnOpConf.getSaveExecheck() == 1) {
+				CheckCommand checkCommand=new CheckCommand();		
+				List<String> checkList=new ArrayList<String>();
+				for (String ckRule:columnOpConf.getSaveCkrules().split(",")) {
+					checkList.add(ckRule);
+				}
+				checkCommand.setRuleIdList(checkList);
+				
+				Check check=new Check(conn,operationResult);
+				check.operate(checkCommand);
+			}
 			
-			Check check=new Check(conn,operationResult);
-//			check.setCmd(checkCommand);
-//			check.operate();
 			
 			// 重分类
-			if (deepOpConf.getSaveExeclassify()==1) {
+			if (columnOpConf.getSaveExeclassify()==1) {
 				HashMap<String,Object> classifyMap = new HashMap<String,Object>();
 				classifyMap.put("userId", userId);
-				classifyMap.put("ckRules", deepOpConf.getSaveCkrules());
-				classifyMap.put("classifyRules", deepOpConf.getSaveClassifyrules());
+				classifyMap.put("ckRules", columnOpConf.getSaveCkrules());
+				classifyMap.put("classifyRules", columnOpConf.getSaveClassifyrules());
 				
 				classifyMap.put("data", dataArray);
 				ColumnCoreOperation columnCoreOperation = new ColumnCoreOperation();

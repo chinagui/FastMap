@@ -179,9 +179,9 @@ public class Operation implements IOperation {
 
 		List<Integer> usedNodePids = new ArrayList<Integer>();
 
-		usedNodePids.add(getStartAndEndNode(command.getLinks(), 0).pid());
+		usedNodePids.add(command.getSNodePid());
 
-		usedNodePids.add(getStartAndEndNode(command.getLinks(), 1).pid());
+		usedNodePids.add(getLastNodePid(command.getLinks()));
 
 		List<RdLink> sideRoadsTmp = new ArrayList<RdLink>();
 
@@ -334,10 +334,14 @@ public class Operation implements IOperation {
 			return null;
 		}
 
-		// 传入起点和终点Point
-		Point sPoint = (Point) GeoTranslator.transform(
-				this.getStartAndEndNode(targetLinks, 0).getGeometry(), 0.00001,
-				5);
+		RdNodeSelector nodeSelector = new RdNodeSelector(conn);
+
+		RdNode sNode = (RdNode) nodeSelector.loadById(command.getSNodePid(),
+				true);
+
+		// 起点Geo
+		Point sPoint = (Point) GeoTranslator.transform(sNode.getGeometry(),
+				0.00001, 5);
 
 		// 生成的线按照顺序存放在List<LineString> 第1右线 ，第2是左线
 		LineString[] lines = CompPolylineUtil.separateSideRoad(sPoint,
@@ -1169,49 +1173,32 @@ public class Operation implements IOperation {
 
 		return true;
 	}
+	
+	private int getLastNodePid(List<RdLink> links) {
 
-	// 获取联通线的起点和终点
-	// 0 起点 1 终点
-	// 根据联通线的第一条link和第二条link算出起点Node
-	// 根据联通线最后一条link和倒数第二条link算出终点Node
-	private RdNode getStartAndEndNode(List<RdLink> links, int flag)
-			throws Exception {
-		RdNodeSelector nodeSelector = new RdNodeSelector(conn);
-		RdLink fristLink = null;
-		RdLink secondLink = null;
-		RdNode node = null;
+		int nodePid = 0;
+
 		if (links.size() == 1) {
-			if (flag == 0) {
-				IRow row = nodeSelector.loadById(links.get(0).getsNodePid(),
-						true);
-				return (RdNode) row;
-			} else {
-				IRow row = nodeSelector.loadById(links.get(0).geteNodePid(),
-						true);
-				return (RdNode) row;
-			}
-		}
-		if (flag == 0) {
-			fristLink = links.get(0);
-			secondLink = links.get(1);
-		}
-		if (flag == 1) {
-			fristLink = links.get(links.size() - 1);
-			secondLink = links.get(links.size() - 2);
-		}
-		List<Integer> nodes = new ArrayList<Integer>();
-		nodes.add(secondLink.getsNodePid());
-		nodes.add(secondLink.geteNodePid());
-		if (nodes.contains(fristLink.getsNodePid())) {
-			IRow row = nodeSelector.loadById(fristLink.geteNodePid(), true);
-			node = (RdNode) row;
-		}
-		if (nodes.contains(fristLink.geteNodePid())) {
-			IRow row = nodeSelector.loadById(fristLink.getsNodePid(), true);
-			node = (RdNode) row;
 
+			RdLink link = links.get(0);
+
+			nodePid = link.geteNodePid() == command.getSNodePid() ? link
+					.getsNodePid() : link.geteNodePid();
+
+		} else {
+
+			RdLink fristLink = links.get(links.size() - 1);
+
+			RdLink secondLink = links.get(links.size() - 2);
+
+			int fristSNodePid = fristLink.getsNodePid();
+
+			int fristENodePid = fristLink.geteNodePid();
+
+			nodePid = (fristSNodePid == secondLink.getsNodePid() || fristSNodePid == secondLink
+					.geteNodePid()) ? fristENodePid : fristSNodePid;
 		}
-		return node;
+		return nodePid;
 	}
 
 	/**

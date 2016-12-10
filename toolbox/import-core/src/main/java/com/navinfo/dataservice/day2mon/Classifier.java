@@ -133,15 +133,15 @@ public class Classifier {
 				otherHandler = 201250;
 			}
 			
-			if (isEng&&isName) {
-				// 英文名作业只有FM-YW-20-017且不需中文作业的，执行FM-BAT-20-135批处理
+			if (isEng&&!isName) {
+				// 英文名作业只有FM-YW-20-017且不需中文作业的，执行FM-BAT-20-115,FM-BAT-20-135,FM-BAT-20-163批处理
 				if (workItemIdEngName.size() == 1 && workItemIdEngName.contains("FM-YW-20-017")) {
 					engNameHandler = 200170;
 				} else if (workItemIdEngName.size() == 1 && workItemIdEngName.contains("FM-YW-20-014")) {
-					// 不需中文名称作业，需要FM-YW-20-014作业的执行FM-BAT-20-115，FM-BAT-20-140，FM-BAT-20-147
+					// 不需中文名称作业，需要FM-YW-20-014作业的执行FM-BAT-20-115
 					engNameHandler = 200140;
 				} else {
-					// 不需中文名称作业，需要英文名称作业的执行FM-BAT-20-115，FM-BAT-20-140
+					// 不需中文名称作业，需要英文名称作业的执行FM-BAT-20-115
 					engNameHandler = 201150;
 				}
 			}
@@ -155,6 +155,8 @@ public class Classifier {
 	
 	// 执行重分类，更新POI_COLUMN_STATUS 表
 	private void updateColumnStatus(Long pid,Set<String> workItemId,int handler) throws Exception {
+		// TODO 清理上次灌库时所打的数据标记
+		
 		PreparedStatement pstmt = null;
 		try {
 			for (String workItem:workItemId) {

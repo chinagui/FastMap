@@ -33,11 +33,12 @@ public class Operation implements IOperation {
 	public Operation(Connection conn) {
 		this.conn = conn;
 	}
-    
-	public Operation(Command command,Connection conn) {
+
+	public Operation(Command command, Connection conn) {
 		this.command = command;
 		this.conn = conn;
 	}
+
 	@Override
 	public String run(Result result) throws Exception {
 		this.updateRdSlope(result);
@@ -95,7 +96,7 @@ public class Operation implements IOperation {
 			} else {
 				int sourceSize = this.command.getSlope().getSlopeVias().size();
 				int currentSize = this.command.getSeriesLinkPids().size();
-				  
+
 				if (sourceSize > currentSize) {
 					for (int i = currentSize; i < sourceSize; i++) {
 						result.insertObject(this.command.getSlope()
@@ -134,7 +135,11 @@ public class Operation implements IOperation {
 		com.navinfo.dataservice.engine.edit.operation.obj.rdslope.create.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdslope.create.Operation(
 
 		command, conn);
-		operation.breakRelation(result);
+		RdLink link = operation.breakRelation(result);
+		if (link != null) {
+			this.command.getSeriesLinkPids().set(
+					this.command.getSeriesLinkPids().size() - 1, link.getPid());
+		}
 
 	}
 

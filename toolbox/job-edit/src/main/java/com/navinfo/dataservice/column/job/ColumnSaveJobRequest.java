@@ -4,7 +4,7 @@ import com.navinfo.dataservice.jobframework.exception.JobCreateException;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest;
 
-import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 /**
  * 
@@ -14,18 +14,8 @@ import net.sf.json.JSONArray;
  */
 public class ColumnSaveJobRequest extends AbstractJobRequest {
 	
-	private int taskId;
 	private int userId;
-	private JSONArray data;
-	private String secondWorkItem;
-
-	public int getTaskId() {
-		return taskId;
-	}
-
-	public void setTaskId(int taskId) {
-		this.taskId = taskId;
-	}
+	private JSONObject param;
 
 	public int getUserId() {
 		return userId;
@@ -35,20 +25,12 @@ public class ColumnSaveJobRequest extends AbstractJobRequest {
 		this.userId = userId;
 	}
 
-	public JSONArray getData() {
-		return data;
+	public JSONObject getParam() {
+		return param;
 	}
 
-	public void setData(JSONArray data) {
-		this.data = data;
-	}
-
-	public String getSecondWorkItem() {
-		return secondWorkItem;
-	}
-
-	public void setSecondWorkItem(String secondWorkItem) {
-		this.secondWorkItem = secondWorkItem;
+	public void setParam(JSONObject param) {
+		this.param = param;
 	}
 
 	@Override

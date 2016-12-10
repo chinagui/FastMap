@@ -53,6 +53,10 @@ public class SolrController {
 		
 		doc.addField("t_dStatus", json.getInt("t_dStatus"));
 		
+        doc.addField("t_inStatus", json.getInt("t_inStatus"));
+		
+		doc.addField("t_inMeth", json.getInt("t_inMeth"));
+		
 		doc.addField("handler", json.getInt("handler"));
 		
 		doc.addField("t_mStatus", json.getInt("t_mStatus"));
@@ -145,7 +149,7 @@ public class SolrController {
 			
 			param += " AND s_sourceType:"+typeStr;
 			
-			//System.out.println(param);
+		    System.out.println(param);
 			
 		}
 

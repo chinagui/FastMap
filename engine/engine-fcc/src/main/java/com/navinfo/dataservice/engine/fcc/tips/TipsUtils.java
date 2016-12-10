@@ -103,7 +103,7 @@ public class TipsUtils {
 		
 		index.put("t_inStatus", json.getInt("t_inStatus"));
 
-		index.put("t_inStatus", json.getInt("t_inMeth"));
+		index.put("t_inMeth", json.getInt("t_inMeth"));
 
 		index.put("s_sourceType", json.getString("s_sourceType"));
 

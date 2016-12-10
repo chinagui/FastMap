@@ -115,26 +115,98 @@ public class ReflectionAttrUtils {
 	 */
 	public static String getTableNameByObjType(ObjType objType) throws Exception {
 		switch (objType) {
-		case RDNODE:
-			return "RD_NODE";
-		case ADNODE:
-			return "AD_NODE";
-		case ZONENODE:
-			return "ZONE_NODE";
-		case LUNODE:
-			return "LU_NODE";
-		case RWNODE:
-			return "RW_NODE";
 		case RDLINK:
 			return "RD_LINK";
+		case LCFACE:
+			return "LC_FACE";
+		case RDSE:
+			return "RD_SE";
+		case RDSPEEDBUMP:
+			return "RD_SPEEDBUMP";
+		case RDSAMENODE:
+			return "RD_SAMENODE";
+		case RDSAMELINK:
+			return "RD_SAMELINK";
+		case RDDIRECTROUTE:
+			return "RD_DIRECTROUTE";
+		case RDTOLLGATE:
+			return "RD_TOLLGATE";
+		case RDOBJECT:
+			return "RD_OBJECT";
+		case RDROAD:
+			return "RD_ROAD";
+		case RDVOICEGUIDE:
+			return "RD_VOICEGUIDE";
+		case RDVARIABLESPEED:
+			return "RD_VARIABLESPEED";
+		case RDLANE:
+			return "RD_LANE";
+		case IXSAMEPOI:
+			return "IX_SAMEPOI";
+		case RDHGWGLIMIT:
+			return "RD_HGWGLIMIT";
+		case RDMILEAGEPILE:
+			return "RD_MILEAGEPILE";
+		case RDTMCLOCATION:
+			return "RD_TMCLOCATION";
+		case RDNODE:
+			return "RD_NODE";
+		case RDRESTRICTION:
+			return "RD_RESTRICTION";
+		case RDCROSS:
+			return "";
+		case RDLANECONNEXITY:
+			return "RD_LANECONNEXITY";
+		case RDSPEEDLIMIT:
+			return "RD_SPEEDLIMIT";
+		case RDLINKSPEEDLIMIT:
+			return "RD_LINK_SPEEDLIMIT";
+		case RDBRANCH:
+			return "RD_BRANCH";
+		case RDGSC:
+			return "RD_GSC";
 		case ADLINK:
 			return "AD_LINK";
-		case ZONELINK:
-			return "ZONE_LINK";
-		case LULINK:
-			return "LU_LINK";
+		case ADFACE:
+			return "AD_FACE";
+		case ADNODE:
+			return "AD_NODE";
 		case RWLINK:
 			return "RW_LINK";
+		case RWNODE:
+			return "RW_NODE";
+		case ADADMIN:
+			return "AD_ADMIN";
+		case IXPOI:
+			return "IX_POI";
+		case ZONENODE:
+			return "ZONE_NODE";
+		case ZONELINK:
+			return "ZONE_LINK";
+		case ZONEFACE:
+			return "ZONE_FACE";
+		case LUNODE:
+			return "LU_NODE";
+		case LULINK:
+			return "LU_LINK";
+		case LUFACE:
+			return "LU_FACE";
+		case RDTRAFFICSIGNAL:
+			return "RD_TRAFFICSIGNAL";
+		case RDELECTRONICEYE:
+			return "RD_ELECTRONICEYE";
+		case RDWARNINGINFO:
+			return "RD_WARNINGINFO";
+		case RDSLOPE:
+			return "RD_SLOPE";
+		case RDGATE:
+			return "RD_GATE";
+		case RDINTER:
+			return "RD_INTER";
+		case LCNODE:
+			return "LC_NODE";
+		case LCLINK:
+			return "LC_LINK";
 		default:
 			throw new Exception("不支持的对象类型:" + objType.toString());
 		}

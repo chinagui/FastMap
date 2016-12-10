@@ -167,13 +167,13 @@ public class SelectorUtils {
 				sql = getSqlFromBufferCondition(bufferCondition, isLock);
 			} else {
 				bufferCondition
-						.append("SELECT COUNT (1) OVER (PARTITION BY 1) total,tmp.pid,tmp.name "
-								+ "FROM(select poi.pid,ipn.name,ipn.geometry from( SELECT ix.pid,ix.geometry FROM ix_poi ix "
+						.append("SELECT COUNT (1) OVER (PARTITION BY 1) total,tmp.pid,tmp.name,tmp.geometry "
+								+ "FROM(select poi.pid,ipn.name,poi.geometry from( SELECT ix.pid,ix.geometry FROM ix_poi ix "
 								+ "where ix.pid ="
 								+ object.getInt("pid")
 								+ " and ix.U_RECORD !=2 "
 								+ "union all "
-								+ "select ix.pid from ix_poi ix,poi_edit_status ps "
+								+ "select ix.pid,ix.geometry from ix_poi ix,poi_edit_status ps "
 								+ "where ix.PID = "
 								+ object.getInt("pid")
 								+ " and ix.U_RECORD = 2 "

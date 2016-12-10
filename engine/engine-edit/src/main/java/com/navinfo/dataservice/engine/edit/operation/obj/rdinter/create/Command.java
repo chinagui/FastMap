@@ -17,9 +17,9 @@ public class Command extends AbstractCommand{
 	
 	private int nodePid;
 	
-	private JSONArray nodeArray;
+	private JSONArray nodeArray = new JSONArray();
 	
-	private JSONArray linkArray;
+	private JSONArray linkArray = new JSONArray();
 	
 	public JSONArray getNodeArray() {
 		return nodeArray;

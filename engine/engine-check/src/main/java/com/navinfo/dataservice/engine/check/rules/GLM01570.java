@@ -72,6 +72,7 @@ public class GLM01570 extends baseRule{
 	 */
 	private void checkRdGate(RdGate rdGate, OperType operType) throws Exception {
 		//新增大门
+//		operType=OperType.CREATE;
 		if(operType.equals(OperType.CREATE)){
 			StringBuilder sb = new StringBuilder();
 
@@ -85,7 +86,7 @@ public class GLM01570 extends baseRule{
 			sb.append(" AND RG.PID = " + rdGate.getPid()) ;
 
 			String sql = sb.toString();
-			log.info("RdGate后检查GLM04008_1:" + sql);
+			log.info("RdGate后检查GLM01570:" + sql);
 
 			DatabaseOperator getObj = new DatabaseOperator();
 			List<Object> resultList = new ArrayList<Object>();
@@ -122,7 +123,6 @@ public class GLM01570 extends baseRule{
 			sb.append(" AND F.FORM_OF_WAY = 60");
 			sb.append(" AND G.IN_LINK_PID = " + rdLinkForm.getLinkPid());
 			sb.append(" AND G.OUT_LINK_PID = R.LINK_PID");
-			sb.append(" UNION ALL");
 
 			String sql = sb.toString();
 			log.info("RdLink后检查GLM01570:" + sql);
@@ -149,19 +149,30 @@ public class GLM01570 extends baseRule{
 				StringBuilder sb = new StringBuilder();
 
 				sb.append("SELECT 1");
-				sb.append(" FROM RD_LINK R, RD_LINK_FORM F, RD_GATE G");
-				sb.append(" WHERE R.LINK_PID = F.LINK_PID");
-				sb.append(" AND F.FORM_OF_WAY = 60");
+				sb.append(" FROM RD_LINK R, RD_LINK_FORM F1, RD_LINK_FORM F2,RD_GATE G");
+				sb.append(" WHERE R.LINK_PID = F1.LINK_PID");
+				sb.append(" AND F1.FORM_OF_WAY = 60");
 				sb.append(" AND G.IN_LINK_PID = R.LINK_PID");
 				sb.append(" AND G.OUT_LINK_PID = " + rdLink.getPid());
+				sb.append(" AND F2.LINK_PID = " + rdLink.getPid());
+				sb.append(" AND F2.FORM_OF_WAY = 60");
+				sb.append(" AND F1.U_RECORD <> 2");
+				sb.append(" AND F2.U_RECORD <> 2");
+				sb.append(" AND R.U_RECORD <> 2");
+				sb.append(" AND G.U_RECORD <> 2");
 				sb.append(" UNION ALL");
 				sb.append(" SELECT 1");
-				sb.append(" FROM RD_LINK R, RD_LINK_FORM F, RD_GATE G");
-				sb.append(" WHERE R.LINK_PID = F.LINK_PID");
-				sb.append(" AND F.FORM_OF_WAY = 60");
+				sb.append(" FROM RD_LINK R, RD_LINK_FORM F1, RD_LINK_FORM F2, RD_GATE G");
+				sb.append(" WHERE R.LINK_PID = F1.LINK_PID");
+				sb.append(" AND F1.FORM_OF_WAY = 60");
 				sb.append(" AND G.IN_LINK_PID = " + rdLink.getPid() );
 				sb.append(" AND G.OUT_LINK_PID = R.LINK_PID");
-				sb.append(" UNION ALL");
+				sb.append(" AND F2.LINK_PID = " + rdLink.getPid());
+				sb.append(" AND F2.FORM_OF_WAY = 60");
+				sb.append(" AND F1.U_RECORD <> 2");
+				sb.append(" AND F2.U_RECORD <> 2");
+				sb.append(" AND R.U_RECORD <> 2");
+				sb.append(" AND G.U_RECORD <> 2");
 
 				String sql = sb.toString();
 				log.info("RdLink后检查GLM01570:" + sql);

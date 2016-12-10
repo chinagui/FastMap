@@ -115,8 +115,7 @@ public class GLM04006 extends baseRule{
 
 		sb.append("SELECT R.GEOMETRY, '[RD_LINK,' || R.LINK_PID || ']', R.MESH_ID");
 		sb.append(" FROM RD_LINK R, RD_GATE G, RD_GATE_CONDITION C");
-		sb.append(" WHERE G.PID = RDGATE_PID");
-		sb.append(" AND G.PID = C.PID");
+		sb.append(" WHERE G.PID = C.PID");
 		sb.append(" AND R.U_RECORD != 2");
 		sb.append(" AND G.U_RECORD != 2");
 		sb.append(" AND C.U_RECORD != 2");
@@ -151,9 +150,9 @@ public class GLM04006 extends baseRule{
 				linkPidSet.add(rdGate.getInLinkPid());
 				linkPidSet.add(rdGate.getOutLinkPid());
 				sb.append("SELECT 1 FROM RD_LINK R");
-				sb.append("WHERE R.U_RECORD != 2 ");
-				sb.append("AND R.KIND = 10 ");
-				sb.append("AND R.LINK_PID IN (" + StringUtils.join(linkPidSet.toArray()) + ")");
+				sb.append(" WHERE R.U_RECORD != 2 ");
+				sb.append(" AND R.KIND = 10 ");
+				sb.append(" AND R.LINK_PID IN (" + StringUtils.join(linkPidSet.toArray()) + ")");
 
 				String sql = sb.toString();
 

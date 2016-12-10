@@ -10,10 +10,8 @@ xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
 	<dubbo:reference id="jobApi" interface="com.navinfo.dataservice.api.job.iface.JobApi" timeout="5000"/>
 	<dubbo:reference id="metadataApi" interface="com.navinfo.dataservice.api.metadata.iface.MetadataApi" timeout="5000"/>
 	<dubbo:reference id="fccApi" interface="com.navinfo.dataservice.api.fcc.iface.FccApi" timeout="5000"/>
-	<!-- <dubbo:service interface="com.navinfo.dataservice.api.edit.iface.DatalockApi" ref="datalockApi" />
-	<dubbo:service interface="com.navinfo.dataservice.api.edit.iface.EditApi" ref="editApi" />  
-	 -->
-	
+	<dubbo:service interface="com.navinfo.dataservice.api.edit.iface.DatalockApi" ref="datalockApi" />
+	<dubbo:service interface="com.navinfo.dataservice.api.edit.iface.EditApi" ref="editApi" /> 
 
 
 </beans>

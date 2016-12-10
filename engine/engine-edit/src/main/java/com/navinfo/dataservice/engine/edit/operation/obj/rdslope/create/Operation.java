@@ -109,7 +109,8 @@ public class Operation implements IOperation {
 	 * @param result
 	 * @throws Exception
 	 */
-	public void breakRelation(Result result) throws Exception {
+	public RdLink breakRelation(Result result) throws Exception {
+		RdLink resultLink =null;
 		int size = this.command.getSeriesLinkPids().size();
 		if (this.command.getLength() > 150) {
 			// 在130m出做打断功能
@@ -123,11 +124,13 @@ public class Operation implements IOperation {
 			// 获取打断位置长度单位米
 			double breakLength = this.getBreaklength(preLink, currentlink);
 			// 获取打断新生成的link加入到坡度的接续线
-			RdLink resultLink = this.getResultBreakLink(currentlink, preLink,
+			 resultLink = this.getResultBreakLink(currentlink, preLink,
 					breakLength, result);
 			this.command.getSeriesLinkPids().set(size - 1, resultLink.getPid());
+			
 
 		}
+		return resultLink;
 	}
 
 	/***

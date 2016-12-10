@@ -93,7 +93,7 @@ public class AccessTokenFactory {
 	}
 	public static void main(String[] args) {
 		try{
-			AccessToken token = generate(1573,3153600);//一年
+			AccessToken token = generate(1573,172800);//一年
 			validate(token);
 			System.out.println(token.getTokenString());
 		}catch(Exception e){

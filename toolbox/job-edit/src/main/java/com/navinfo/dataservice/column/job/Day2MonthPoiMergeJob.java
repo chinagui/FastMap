@@ -87,6 +87,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 				Integer cityId = (Integer) d2mInfo.get("cityId");
 				doSync(manApi, datahubApi, d2mSyncApi, cityId);
 			}
+			log.info("日落月完成");
 		}catch(Exception e){
 			log.error(e.getMessage(), e);
 			throw new JobException(e.getMessage(),e);

@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javassist.expr.NewArray;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import oracle.net.aso.s;
@@ -1069,8 +1070,44 @@ public class SubtaskService {
 		}
 	}
 
-	public HashMap<String, Integer> staticWithType(long userId) {
-		// TODO Auto-generated method stub
-		return null;
+	public Map<Integer, Integer> staticWithType(long userId) throws Exception {
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			
+			//获取用户所在组
+			UserInfo userInfo = new UserInfo();
+			userInfo.setUserId((int)userId);
+			Map<Object,Object> userGroup = UserInfoOperation.getUserGroup(conn, userInfo);
+			int userGroupId=0;
+			if(!userGroup.isEmpty()){
+				userGroupId = (int)userGroup.get("groupId");
+			}
+			String sql="SELECT T.TYPE, COUNT(1) TYPE_COUNT"
+					+ "  FROM SUBTASK T"
+					+ " WHERE (T.EXE_USER_ID = "+userId+" OR T.EXE_GROUP_ID = "+userGroupId+")"
+					+ "   AND T.STATUS = 1"
+					+ "   AND T.STAGE != 0"
+					+ " GROUP BY T.TYPE";
+			QueryRunner run=new QueryRunner();
+			Map<Integer, Integer> result = run.query(conn, sql, new ResultSetHandler<Map<Integer, Integer>>(){
+
+				@Override
+				public Map<Integer, Integer> handle(ResultSet rs)
+						throws SQLException {
+					Map<Integer, Integer> result=new HashMap<Integer, Integer>();
+					while (rs.next()) {
+						result.put(rs.getInt("TYPE"), rs.getInt("TYPE_COUNT"));
+					}
+					return result;
+				}});
+			return result;
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询列表失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
 	}
 }

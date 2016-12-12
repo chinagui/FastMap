@@ -7,6 +7,8 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
@@ -18,7 +20,7 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.control.column.core.DeepCoreControl;
-import com.navinfo.dataservice.dao.glm.model.poi.deep.PoiDeepOpConf;
+import com.navinfo.dataservice.dao.glm.model.poi.deep.PoiColumnOpConf;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiColumnStatusSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiOpConfSelector;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
@@ -78,7 +80,6 @@ public class ColumnSubmitJob extends AbstractJob {
 				dataArray.add(temp);
 			}
 			
-			// TODO 检查和批处理
 			// 清理检查结果
 			DeepCoreControl deepControl = new DeepCoreControl();
 			deepControl.cleanCheckResult(pidList, conn);
@@ -93,43 +94,51 @@ public class ColumnSubmitJob extends AbstractJob {
 			}
 			operationResult.putAll(objList);
 			
-			// 批处理
-			BatchCommand batchCommand=new BatchCommand();		
-			//List<String> batchList=new ArrayList<String>();
-//			ruleIdList.add("GLM001TEST");
-			batchCommand.setOperationName("COLUMN_SUBMIT");
+			IxPoiOpConfSelector ixPoiOpConfSelector = new IxPoiOpConfSelector(conn);
+			PoiColumnOpConf columnOpConf = ixPoiOpConfSelector.getDeepOpConf(firstWorkItem,secondWorkItem, type);
 			
-			Batch batch=new Batch(conn,operationResult);
-//			batch.setCmd(batchCommand);
-//			batch.operate();
+			// 批处理
+			if (columnOpConf.getSaveExebatch() == 1) {
+				BatchCommand batchCommand=new BatchCommand();		
+				for (String ruleId:columnOpConf.getSaveBatchrules().split(",")) {
+					batchCommand.setRuleId(ruleId);
+				}
+				
+				Batch batch=new Batch(conn,operationResult);
+				batch.operate(batchCommand);
+			}
 			
 			// 检查
-			CheckCommand checkCommand=new CheckCommand();		
-			List<String> checkList=new ArrayList<String>();
-//			checkList.add("GLM001TEST");
-			checkCommand.setRuleIdList(checkList);
-			
-			Check check=new Check(conn,operationResult);
-//			check.setCmd(checkCommand);
-//			check.operate();
-			
-			// rowIdList替换为无检查错误的list
-			// rowIdList = TODO
-						
+			if (columnOpConf.getSaveExecheck() == 1) {
+				CheckCommand checkCommand=new CheckCommand();		
+				List<String> checkList=new ArrayList<String>();
+				for (String ckRule:columnOpConf.getSaveCkrules().split(",")) {
+					checkList.add(ckRule);
+				}
+				checkCommand.setRuleIdList(checkList);
+				
+				Check check=new Check(conn,operationResult);
+				check.operate(checkCommand);
+				
+				// pidList替换为无检查错误的pidList
+				Map<String, Map<Long, Set<String>>> errorMap = check.getErrorPidMap();
+				Map<Long, Set<String>> poiMap = errorMap.get("IX_POI");
+				for (long pid:poiMap.keySet()) {
+					pidList.remove(pid);
+				}
+				
+			}
 			
 			// 修改poi_deep_status表作业项状态
 			updateDeepStatus(pidList, conn, 3);
 			
-			IxPoiOpConfSelector ixPoiOpConfSelector = new IxPoiOpConfSelector(conn);
-			PoiDeepOpConf deepOpConf = ixPoiOpConfSelector.getDeepOpConf(firstWorkItem,secondWorkItem, type);
-			
 			
 			// 重分类
-			if (deepOpConf.getSubmitExeclassify()==1) {
+			if (columnOpConf.getSubmitExeclassify()==1) {
 				HashMap<String,Object> classifyMap = new HashMap<String,Object>();
 				classifyMap.put("userId", userId);
-				classifyMap.put("ckRules", deepOpConf.getSaveCkrules());
-				classifyMap.put("classifyRules", deepOpConf.getSaveClassifyrules());
+				classifyMap.put("ckRules", columnOpConf.getSaveCkrules());
+				classifyMap.put("classifyRules", columnOpConf.getSaveClassifyrules());
 				
 				classifyMap.put("data", dataArray);
 				ColumnCoreOperation columnCoreOperation = new ColumnCoreOperation();

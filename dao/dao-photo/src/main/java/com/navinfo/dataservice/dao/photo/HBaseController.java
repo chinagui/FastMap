@@ -209,6 +209,7 @@ public class HBaseController {
 		}
 		Result[] rs = htab.get(getList);
 		List<Map<String, Object>> photos=new ArrayList<Map<String,Object>>();
+		String seasonVersion=SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion);
 		for (Result result : rs) {
 			if (result.isEmpty()) {continue;}
 			Map<String, Object> photoMap=new HashMap<String, Object>();
@@ -221,7 +222,9 @@ public class HBaseController {
 					"attribute".getBytes()));
 			
 			JSONObject attrJson = JSONObject.fromObject(attribute);
-			photoMap.put("version", attrJson.getString("a_version"));
+			if(seasonVersion!=null&&seasonVersion.equals(attrJson.getString("a_version"))){
+				photoMap.put("version", 1);}
+			else{photoMap.put("version", 0);}
 			photos.add(photoMap);
 		}
 		return photos;

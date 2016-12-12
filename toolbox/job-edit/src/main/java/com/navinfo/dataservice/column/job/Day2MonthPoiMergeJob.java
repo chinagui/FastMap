@@ -87,6 +87,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 				Integer cityId = (Integer) d2mInfo.get("cityId");
 				doSync(manApi, datahubApi, d2mSyncApi, cityId);
 			}
+			log.info("日落月完成");
 		}catch(Exception e){
 			log.error(e.getMessage(), e);
 			throw new JobException(e.getMessage(),e);
@@ -138,7 +139,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 		Map<String, Map<Long, Set<String>>> checkResult = new Check(result, monthConn).execute();
 		new Classifier(checkResult,monthConn).execute();
 		log.info("开始执行后批处理");
-		new PostBatch(result).execute();
+		new PostBatch(monthConn).execute();
 		log.info("修改同步信息为成功");
 		curSyncInfo.setSyncStatus(FmDay2MonSync.SyncStatusEnum.SUCCESS.getValue());
 		d2mSyncApi.updateSyncInfo(curSyncInfo);

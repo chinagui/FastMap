@@ -694,16 +694,36 @@ public List<Integer> getRowIdForSubmit(String firstWorkItem,String secondWorkIte
 		JSONObject result = new JSONObject();
 
 		StringBuilder sql = new StringBuilder();
-		sql.append("SELECT count(1) num,s.second_work_status,w.second_work_item");
-		sql.append(" FROM poi_column_status s, poi_column_workitem_conf w");
-		sql.append(" WHERE s.work_item_id = w.work_item_id");
-		sql.append(" AND w.first_work_item='" + firstWorkItem + "'");
-		sql.append(" AND s.handler=" + userId);
-		sql.append(" AND w.type=" + type);
-		sql.append(" AND s.task_id=" + taskId);
-		sql.append(" AND s.second_work_status in (1,2)");
-		sql.append(" group by s.second_work_status,w.second_work_item");
-		sql.append(" order by w.second_work_item");
+//		sql.append("SELECT count(1) num,s.second_work_status,w.second_work_item");
+//		sql.append(" FROM poi_column_status s, poi_column_workitem_conf w");
+//		sql.append(" WHERE s.work_item_id = w.work_item_id");
+//		sql.append(" AND w.first_work_item='" + firstWorkItem + "'");
+//		sql.append(" AND s.handler=" + userId);
+//		sql.append(" AND w.type=" + type);
+//		sql.append(" AND s.task_id=" + taskId);
+//		sql.append(" AND s.second_work_status in (1,2)");
+//		sql.append(" group by s.second_work_status,w.second_work_item");
+//		sql.append(" order by w.second_work_item");
+		sql.append("SELECT AA.SECOND_WORK_ITEM,");
+		sql.append("       NVL(TT.SECOND_WORK_STATUS, 0) SECOND_WORK_STATUS,");
+		sql.append("       NVL(TT.CT, 0) NUM");
+		sql.append("  FROM (SELECT CC.SECOND_WORK_ITEM, S.SECOND_WORK_STATUS, COUNT(1) CT");
+		sql.append("          FROM POI_COLUMN_STATUS S,");
+		sql.append("               (SELECT DISTINCT CF.SECOND_WORK_ITEM, CF.WORK_ITEM_ID");
+		sql.append("                  FROM POI_COLUMN_WORKITEM_CONF CF");
+		sql.append("                 WHERE CF.FIRST_WORK_ITEM = '"+ firstWorkItem +"'");
+		sql.append("                   AND CF.CHECK_FLAG IN (1, 3)");
+		sql.append("                   AND CF.TYPE = " + type + ") CC");
+		sql.append("         WHERE S.WORK_ITEM_ID = CC.WORK_ITEM_ID");
+		sql.append("           AND S.SECOND_WORK_STATUS IN (1, 2)");
+		sql.append("           AND S.HANDLER = " + userId);
+		sql.append("           AND S.TASK_ID = " + taskId);
+		sql.append("         GROUP BY CC.SECOND_WORK_ITEM, S.SECOND_WORK_STATUS) TT,");
+		sql.append("       (SELECT DISTINCT CF.SECOND_WORK_ITEM");
+		sql.append("          FROM POI_COLUMN_WORKITEM_CONF CF");
+		sql.append("         WHERE CF.FIRST_WORK_ITEM = '" + firstWorkItem + "'");
+		sql.append("           AND CF.CHECK_FLAG IN (1, 3)) AA");
+		sql.append(" WHERE TT.SECOND_WORK_ITEM(+) = AA.SECOND_WORK_ITEM");
 
 		PreparedStatement pstmt = null;
 
@@ -732,9 +752,15 @@ public List<Integer> getRowIdForSubmit(String firstWorkItem,String secondWorkIte
 				if (secondWork.containsKey(secondId)) {
 					data = secondWork.getJSONObject(secondId);
 				}
-
+				
 				int status = resultSet.getInt("second_work_status");
 
+				// 对于查询在库中没有的二级项的POI，赋second_work_status默认值为0，所以查询出的总量和待提交量都是0
+				if (status == 0){
+					data.put("check", 0);
+					data.put("work", 0);
+				}
+				
 				if (status == 1) {
 					data.put("check", resultSet.getInt("num"));
 				} else if (status == 2) {

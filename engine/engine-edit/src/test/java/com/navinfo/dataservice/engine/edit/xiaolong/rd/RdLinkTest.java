@@ -130,14 +130,14 @@ public class RdLinkTest extends InitApplication {
 	@Test
 	public void testGetByElementCondition()
 	{
-		String parameter = "{\"dbId\":17,\"pageNum\":1,\"pageSize\":5,\"data\":{\"linkPid\":\"323024\"},\"type\":\"RDLINK\"}";
+		String parameter = "{\"dbId\":17,\"pageNum\":1,\"pageSize\":5,\"data\":{\"pid\":\"302000171\"},\"type\":\"IXPOI\"}";
 
 		Connection conn = null;
 
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
-			String tableName = jsonReq.getString("type");
+			ObjType tableName = ObjType.valueOf(jsonReq.getString("type"));
 			int pageNum = jsonReq.getInt("pageNum");
 			int pageSize = jsonReq.getInt("pageSize");
 			int dbId = jsonReq.getInt("dbId");

@@ -152,7 +152,7 @@ public class EditController extends BaseController {
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
-			String tableName = jsonReq.getString("type");
+			ObjType objType = ObjType.valueOf(jsonReq.getString("type"));
 			int pageNum = jsonReq.getInt("pageNum");
 			int pageSize = jsonReq.getInt("pageSize");
 			int dbId = jsonReq.getInt("dbId");
@@ -160,7 +160,7 @@ public class EditController extends BaseController {
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 			SelectorUtils selectorUtils = new SelectorUtils(conn);
 			JSONObject jsonObject = selectorUtils.loadByElementCondition(data,
-					tableName, pageSize, pageNum, false);
+					objType, pageSize, pageNum, false);
 			return new ModelAndView("jsonView", success(jsonObject));
 
 		} catch (Exception e) {

@@ -41,6 +41,16 @@ public class Operation implements IOperation {
 		String msg = null;
 
 		msg = delete(result, command.getRoad());
+		
+		List<RdRoad> roadList = new ArrayList<>();
+		
+		List<Integer> deleteRoadPidList = new ArrayList<>();
+		
+		roadList.add(command.getRoad());
+		
+		deleteRoadPidList.add(command.getPid());
+		
+		delete(result,roadList,deleteRoadPidList);
 
 		return msg;
 	}
@@ -63,7 +73,7 @@ public class Operation implements IOperation {
 	private String delete(Result result, RdRoad road) {
 
 		result.insertObject(road, ObjStatus.DELETE, road.pid());
-
+		
 		return null;
 	}
 

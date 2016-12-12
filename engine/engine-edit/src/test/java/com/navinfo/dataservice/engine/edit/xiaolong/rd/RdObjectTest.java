@@ -153,7 +153,7 @@ public class RdObjectTest extends InitApplication {
 	
 	@Test
 	public void testDelRdLink() {
-		String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDOBJECT\",\"dbId\":42,\"data\":{\"names\":[{\"pid\":100000046,\"nameGroupid\":1,\"langCode\":\"CHI\",\"name\":\"西红门南桥\",\"phonetic\":\"Xi+Hong+Men+Nan+Qiao\",\"srcFlag\":0,\"objStatus\":\"INSERT\"}],\"pid\":100000046}}";
+		String parameter = "{\"command\":\"DELETE\",\"type\":\"RDROAD\",\"dbId\":17,\"objId\":200000004}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

@@ -63,6 +63,7 @@ public class GLM01091 extends baseRule {
 	 * @throws Exception 
 	 */
 	private void checkRdGate(RdGate rdGate, OperType operType) throws Exception {
+//		operType = OperType.CREATE;
 		if(operType.equals(OperType.CREATE)){
 			StringBuilder sb = new StringBuilder();
 
@@ -104,7 +105,7 @@ public class GLM01091 extends baseRule {
 			sb.append(" AND R.LINK_PID = " + rdLink.getPid());
 
 			String sql = sb.toString();
-			log.info("RdLink后检查GLM01570:" + sql);
+			log.info("RdLink后检查GLM01091:" + sql);
 
 			DatabaseOperatorResultWithGeo getObj = new DatabaseOperatorResultWithGeo();
 			List<Object> resultList = new ArrayList<Object>();

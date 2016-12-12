@@ -561,7 +561,6 @@ public class TipsUpload {
 	 */
 	private void doUpdate(List<Put> puts) throws Exception {
 		Set<Entry<String, JSONObject>> set = updateTips.entrySet();
-
 		Iterator<Entry<String, JSONObject>> it = set.iterator();
 
 		while (it.hasNext()) {
@@ -790,9 +789,9 @@ public class TipsUpload {
 		String lastDate = null;
 		
 		//入库仅与上次stage=1的数组data进行比较. 最后一条stage=1的数据
-		for (int i = tracks.size()-1; i >0; i--) {
+		for (int i = tracks.size(); i >0; i--) {
 			
-			JSONObject info=tracks.getJSONObject(i);
+			JSONObject info=tracks.getJSONObject(i-1);
 			
 			if(info.getInt("stage")==1){
 				
@@ -814,8 +813,8 @@ public class TipsUpload {
 
 			return -1;
 		}
-
-		if (operateDate.compareTo(lastDate) <= 0) {
+        //最后一条数据stage!=0需要用stage=1的最后一条数据和采集端对比（stage=0是初始化数据，不进行时间对比）
+		if (lastStage!=0&&operateDate.compareTo(lastDate) <= 0) {
 			return -2;
 		}
 

@@ -38,6 +38,8 @@ public class TipsImportTest extends InitApplication {
 
 			String filePath = "E:\\03 ni_robot\\Nav_Robot\\10测试数据\\01上传下载\\音频测试数据\\1423"; //本地测试用
 			
+			//String filePath="E:\\03 ni_robot\\Nav_Robot\\10测试数据\\01上传下载\\upload\\893";
+			
 			Map<String, Photo> photoMap=new HashMap<String, Photo>();
 			
 			Map<String, Audio> audioMap=new HashMap<String, Audio>();

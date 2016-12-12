@@ -52,15 +52,18 @@ public class SelectorUtils {
 		}
 		else
 		{
-			String key = StringUtils.toColumnName(object.keys().next().toString());
+			
+			String key = object.keys().next().toString();
 			
 			int pid = object.getInt(key);
+			
+			String columnName = StringUtils.toColumnName(key);
 			
 			String tableName = ReflectionAttrUtils.getTableNameByObjType(objType);
 			
 			StringBuilder fromSql = new StringBuilder(" FROM ");
 			
-			StringBuilder selectSql = new StringBuilder("SELECT COUNT (1) OVER (PARTITION BY 1) total,tmp.pid,tmp.name,tmp.geometry from("+"SELECT P."+key+" AS PID,'列名' as name");
+			StringBuilder selectSql = new StringBuilder("SELECT COUNT (1) OVER (PARTITION BY 1) total,tmp.pid,tmp.name,tmp.geometry from("+"SELECT P."+columnName+" AS PID,'列名' as name");
 			
 			StringBuilder whereSql = new StringBuilder();
 			
@@ -91,7 +94,7 @@ public class SelectorUtils {
 			
 			String whereCondition = editQuerySql.substring(whereIndex);
 			
-			whereSql.append(whereCondition+" AND P."+key+"= "+pid);
+			whereSql.append(whereCondition+" AND P."+columnName+"= "+pid);
 			
 			selectSql.append(fromSql).append(whereSql).append(")tmp");
 			

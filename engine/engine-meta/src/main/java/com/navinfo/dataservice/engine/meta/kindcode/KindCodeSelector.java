@@ -385,5 +385,43 @@ public class KindCodeSelector {
 			DBUtils.closeStatement(pstmt);
 		}
 	}
+	/**
+	 * 根据kindCode获取KIND_NAME
+	 * 
+	 * @auth gaopengrong
+	 * @param kindCode
+	 * @return KIND_NAME
+	 * @throws Exception
+	 */
+	public String searchKindName(String kindCode) throws Exception {
+
+		Connection conn = DBConnector.getInstance().getMetaConnection();
+		String sql = "select t.kind_name from SC_POINT_POICODE_NEW t where t.kind_code=:1";
+		
+		ResultSet resultSet = null;
+		
+		String kindName="";
+		
+		PreparedStatement pstmt = null;
+		
+		try {
+			pstmt = conn.prepareStatement(sql);
+			
+			pstmt.setString(1, kindCode);
+			
+			resultSet = pstmt.executeQuery();
+			
+			while (resultSet.next()) {
+				kindName=resultSet.getString("kind_name");
+			}
+			return kindName;
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询明细失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
 
 }

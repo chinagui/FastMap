@@ -53,6 +53,9 @@ public class PoiBatchProcessorFM_BAT_20_188 implements IBatch {
 			if (!kindcode.equals("230218") || uRecord ==2 || children.size() == 0) {
 				return result;
 			}
+			if (poi.getChargingstations().size() == 0) {
+				return result;
+			}
 			IxPoiChargingStation poiChargingStation = (IxPoiChargingStation) poi.getChargingstations().get(0);
 			String serviceProv = poiChargingStation.getServiceProv();
 			if (serviceProv == null || serviceList.contains(serviceProv)) {

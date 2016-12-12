@@ -115,12 +115,9 @@ public class ColumnController extends BaseController {
 			
 			JobApi jobApi=(JobApi) ApplicationContextUtil.getBean("jobApi");
 			
-			String jsonString =  dataJson.toString();
-			jsonString = jsonString.substring(1, jsonString.length()-1);
-			
 			JSONObject jobDataJson=new JSONObject();
 			jobDataJson.put("userId", userId);
-			jobDataJson.put("param", jsonString);
+			jobDataJson.put("param", dataJson);
 			
 			long jobId=jobApi.createJob("columnSaveJob", jobDataJson, userId,taskId, "精编保存");
 			

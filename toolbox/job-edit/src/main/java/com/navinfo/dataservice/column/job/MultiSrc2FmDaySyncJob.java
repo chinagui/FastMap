@@ -92,8 +92,8 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 	
 	private String downloadAndUnzip(FmMultiSrcSyncApi syncApi,String remoteZipFile)throws Exception{
 		try{
-//			String uploadRoot = SystemConfigFactory.getSystemConfig().getValue(PropConstant.uploadPath);
-			String uploadRoot = "F:\\data\\multisrc\\upload\\";
+			String uploadRoot = SystemConfigFactory.getSystemConfig().getValue(PropConstant.uploadPath);
+			//String uploadRoot = "F:\\data\\multisrc\\upload\\";
 			//每个月独立目录
 			String curYm = DateUtils.getCurYyyymm();
 			String monthDir = uploadRoot+"multisrc"+File.separator+curYm+File.separator;

@@ -15,6 +15,8 @@ import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
+import com.navinfo.dataservice.dao.glm.utils.TableNameFactory;
+import com.navinfo.dataservice.dao.glm.utils.TableNameSqlInfo;
 import com.navinfo.navicommons.database.sql.DBUtils;
 
 import net.sf.json.JSONArray;
@@ -26,7 +28,7 @@ public class SelectorUtils {
 	private Connection conn;
 	
 	private GlmGridCalculator gridCalculator;
-
+	
 	public SelectorUtils(Connection conn) {
 		this.conn = conn;
 		String gdbVersion = SystemConfigFactory.getSystemConfig().getValue(
@@ -39,7 +41,9 @@ public class SelectorUtils {
 	public JSONObject loadByElementCondition(JSONObject object,
 			ObjType objType, int pageSize, int pageNum, boolean isLock)
 			throws Exception {
-
+		
+		TableNameFactory nameFactory = TableNameFactory.getInstance();
+		
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
 		JSONObject result = new JSONObject();
@@ -52,33 +56,61 @@ public class SelectorUtils {
 		}
 		else
 		{
-			String key = StringUtils.toColumnName(object.keys().next().toString());
+			
+			String key = object.keys().next().toString();
 			
 			int pid = object.getInt(key);
+			
+			String columnName = StringUtils.toColumnName(key);
 			
 			String tableName = ReflectionAttrUtils.getTableNameByObjType(objType);
 			
 			StringBuilder fromSql = new StringBuilder(" FROM ");
 			
-			StringBuilder selectSql = new StringBuilder("SELECT COUNT (1) OVER (PARTITION BY 1) total,tmp.pid,tmp.name,tmp.geometry from("+"SELECT P."+key+" AS PID,'列名' as name");
+			StringBuilder innerLeftJoinSql = new StringBuilder();
+			
+			StringBuilder selectSql = new StringBuilder("SELECT COUNT (1) OVER (PARTITION BY 1) total,tmp.pid,");
+			
+			//获取关联名称的sql
+			TableNameSqlInfo sqlInfo = nameFactory.getSqlInfoByTableName(tableName);
+			
+			if(sqlInfo != null && StringUtils.isNotEmpty(sqlInfo.getOutSelectCol()))
+			{
+				selectSql.append(sqlInfo.getOutSelectCol());
+			}
+			else
+			{
+				selectSql.append("'' as name");
+			}
+			
+			String tmpSql = ",tmp.geometry from("+"SELECT P."+columnName+" AS PID,";
+			
+			selectSql.append(tmpSql);
+			
+			if(sqlInfo != null && StringUtils.isNotEmpty(sqlInfo.getSelectColumn()))
+			{
+				selectSql.append(sqlInfo.getSelectColumn()+" as name,");
+				
+				if(StringUtils.isNotEmpty(sqlInfo.getLeftJoinSql()))
+				{
+					innerLeftJoinSql.append(" LEFT JOIN "+sqlInfo.getLeftJoinSql());
+				}
+			}
 			
 			StringBuilder whereSql = new StringBuilder();
 			
 			GlmGridRefInfo glmGridRefInfo = gridCalculator.getGlmGridRefInfo(tableName);
 			
-			if(CollectionUtils.isNotEmpty(glmGridRefInfo.getRefInfo()))
+			if(CollectionUtils.isNotEmpty(glmGridRefInfo.getRefInfo()) || glmGridRefInfo.getTableName().equals("RD_CROSS"))
 			{
-				selectSql.append(",R1.GEOMETRY ");
+				selectSql.append("R1.GEOMETRY ");
 			}
 			else
 			{
-				selectSql.append(",P.GEOMETRY ");
+				selectSql.append("P.GEOMETRY ");
 			}
 			
-			/**
-			 * SELECT P.ROW_ID,R1.GEOMETRY,'RD_LINK' as GEO_NM ,R1.LINK_PID as GEO_PID ,
-			 * R1.MESH_ID FROM RD_TRAFFICSIGNAL P,RD_LINK R1 WHERE P.LINK_PID=R1.LINK_PID
-			 */
+			//解析glm grid map,获取计算geometry的sql
 			String editQuerySql = glmGridRefInfo.getEditQuerySql();
 			
 			int fromIndex = editQuerySql.indexOf("FROM");
@@ -91,9 +123,16 @@ public class SelectorUtils {
 			
 			String whereCondition = editQuerySql.substring(whereIndex);
 			
-			whereSql.append(whereCondition+" AND P."+key+"= "+pid);
+			whereSql.append(whereCondition+" AND P."+columnName+"= "+pid);
 			
-			selectSql.append(fromSql).append(whereSql).append(")tmp");
+			StringBuilder outerLeftJoinSql = new StringBuilder();
+			
+			if(sqlInfo != null && StringUtils.isNotEmpty(sqlInfo.getOutLeftJoinSql()))
+			{
+				outerLeftJoinSql.append(" LEFT JOIN "+sqlInfo.getOutLeftJoinSql());
+			}
+			
+			selectSql.append(fromSql).append(innerLeftJoinSql).append(whereSql).append(")tmp").append(outerLeftJoinSql);
 			
 			sql = getSqlFromBufferCondition(selectSql,false);
 		}

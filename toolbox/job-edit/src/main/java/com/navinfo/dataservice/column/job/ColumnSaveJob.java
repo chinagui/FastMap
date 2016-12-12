@@ -11,7 +11,6 @@ import java.util.List;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
 
-import com.navinfo.dataservice.api.edit.iface.EditApi;
 import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
@@ -24,6 +23,7 @@ import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiOpConfSelector;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
 import com.navinfo.dataservice.dao.plus.selector.ObjSelector;
+import com.navinfo.dataservice.engine.edit.service.EditApiImpl;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.Batch;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.BatchCommand;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.check.Check;
@@ -50,13 +50,10 @@ public class ColumnSaveJob extends AbstractJob {
 		Connection conn = null;
 		try {
 			ColumnSaveJobRequest columnSaveJobRequest = (ColumnSaveJobRequest) this.request;
-			String param = columnSaveJobRequest.getParam();
+			JSONObject paramJson = columnSaveJobRequest.getParam();
 			int userId = columnSaveJobRequest.getUserId();
-			param = param.replace('/', '"');
-			param = "{" + param + "}";
-			JSONObject paramJson = JSONObject.fromObject(param);
 			int taskId = paramJson.getInt("taskId");
-			JSONArray data = paramJson.getJSONArray("data");
+			JSONArray data = paramJson.getJSONArray("dataList");
 			String secondWorkItem = paramJson.getString("secondWorkItem");
 			
 			
@@ -65,12 +62,12 @@ public class ColumnSaveJob extends AbstractJob {
 			int dbId = subtask.getDbId();
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 			
-			columnSave(dbId, data);
+			columnSave(data,conn);
 			
 			JSONArray dataArray = new JSONArray(); 
 			for (int i=0;i<data.size();i++) {
 				JSONObject temp = new JSONObject();
-				int pid = data.getJSONObject(i).getInt("pid");
+				int pid = data.getJSONObject(i).getInt("objId");
 				pidList.add(pid);
 				temp.put("pid", pid);
 				temp.put("taskId", taskId);
@@ -78,7 +75,7 @@ public class ColumnSaveJob extends AbstractJob {
 			}
 			
 			// 修改poi_deep_status表作业项状态
-			updateDeepStatus(pidList, conn, 2);
+			updateColumnStatus(pidList, conn, 2);
 			
 			// TODO 区分大陆/港澳
 			int type = 1;
@@ -150,14 +147,11 @@ public class ColumnSaveJob extends AbstractJob {
 	 * @param data
 	 * @throws Exception
 	 */
-	public void columnSave(int dbId,JSONArray data) throws Exception {
+	public void columnSave(JSONArray data,Connection conn) throws Exception {
 		try {
 			for (int i=0;i<data.size();i++) {
-				JSONObject poiObj = new JSONObject();
-				poiObj.put("dbId", dbId);
-				poiObj.put("data", data.getJSONObject(i));
-				EditApi apiEdit=(EditApi) ApplicationContextUtil.getBean("editApi");
-				apiEdit.run(poiObj);
+				EditApiImpl apiEdit = new EditApiImpl(conn);
+				apiEdit.runPoi(data.getJSONObject(i));
 			}
 			
 		} catch (Exception e) {
@@ -171,7 +165,7 @@ public class ColumnSaveJob extends AbstractJob {
 	 * @param conn
 	 * @throws Exception
 	 */
-	public void updateDeepStatus(List<Integer> pidList,Connection conn,int status) throws Exception {
+	public void updateColumnStatus(List<Integer> pidList,Connection conn,int status) throws Exception {
 		StringBuilder sb = new StringBuilder();
 		sb.append("UPDATE poi_column_status SET firstWorkStatus="+status+",secondWorkStatus="+status+" WHERE pid in (select to_number(column_value) from table(clob_to_table(?)))");
 		

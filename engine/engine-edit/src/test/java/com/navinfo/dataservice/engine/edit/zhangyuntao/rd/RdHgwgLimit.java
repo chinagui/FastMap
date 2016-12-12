@@ -15,7 +15,7 @@ public class RdHgwgLimit extends InitApplication{
 
     @Test
     public void create(){
-        String parameter = "{\"command\":\"CREATE\",\"type\":\"RDHGWGLIMIT\",\"dbId\":17,\"data\":{\"direct\":2,\"linkPid\":200002589,\"latitude\":40.01223045143216,\"longitude\":116.47890601535886}}";
+        String parameter = "{\"command\":\"MOVE\",\"dbId\":17,\"objId\":301000064,\"data\":{\"longitude\":116.69297933578491,\"latitude\":40.249570038001465},\"type\":\"ADNODE\"}";
         TestUtil.run(parameter);
     }
 

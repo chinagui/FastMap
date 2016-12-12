@@ -1068,4 +1068,9 @@ public class SubtaskService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+
+	public HashMap<String, Integer> staticWithType(long userId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

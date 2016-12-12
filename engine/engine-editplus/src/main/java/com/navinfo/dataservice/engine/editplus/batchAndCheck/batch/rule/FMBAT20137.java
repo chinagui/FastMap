@@ -111,8 +111,8 @@ public class FMBAT20137 extends BasicBatchRule {
 		if(br!=null){
 			if(br.getHisOpType().equals(OperationType.INSERT)){return true;}
 			if(br.getHisOpType().equals(OperationType.UPDATE) && br.hisOldValueContains(IxPoiName.NAME)){
-				String oldName=(String) poi.getHisOldValue(IxPoiName.NAME);
-				String newName=poi.getKindCode();
+				String oldName=(String) br.getHisOldValue(IxPoiName.NAME);
+				String newName=br.getName();
 				if(!newName.equals(oldName)){
 					return true;
 				}}

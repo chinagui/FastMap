@@ -112,6 +112,7 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 			String localUnzipDir = monthDir+fileName.substring(0,fileName.indexOf("."));
 			ZipUtils.unzipFile(localZipFile,localUnzipDir);
 			log.debug("解压完成");
+			log.info("保存路径:"+localUnzipDir);
 			//设置下载成功状态
 			syncApi.updateMultiSrcFmSyncStatus(MultiSrcFmSync.STATUS_DOWNLOAD_SUCCESS,jobInfo.getId());
 			return localUnzipDir;

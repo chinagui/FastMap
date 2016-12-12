@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<config>
+	<!--铁路-->
+	<obj-info type="RW_LINK">
+		<selectColumn>RN.NAME_GROUPID</selectColumn>
+		<leftJoinSql> RW_LINK_NAME RN on p.LINK_PID = rn.LINK_PID and rn.U_RECORD !=2</leftJoinSql>
+		<outSelectCol>NM.NAME</outSelectCol>
+		<outLeftJoinSql>RD_NAME NM ON TMP.NAME = NM.NAME_GROUPID AND NM.LANG_CODE = 'CHI'</outLeftJoinSql>
+	</obj-info>
+	<!--道路点-->
+	<obj-info type="RD_NODE">
+		<selectColumn>RN.NAME</selectColumn>
+		<leftJoinSql>RD_NODE_NAME RN ON P.NODE_PID = RN.NODE_PID AND RN.LANG_CODE = 'CHI' AND RN.U_RECORD !=2</leftJoinSql>
+		<outSelectCol>TMP.NAME</outSelectCol>
+		<outLeftJoinSql></outLeftJoinSql>
+	</obj-info>
+	<!--虚拟链接-->
+	<obj-info type="RD_VIRCONNECT">
+		<selectColumn></selectColumn>
+		<leftJoinSql></leftJoinSql>
+		<outSelectCol>RN.NAME</outSelectCol>
+		<outLeftJoinSql>RD_VIRCONNECT_NAME RN ON P.PID = RN.PID AND RN.LANG_CODE = 'CHI' AND RN.U_RECORD !=2</outLeftJoinSql>
+	</obj-info>
+	<!--分歧-->
+	<obj-info type="RD_BRANCH_DETAIL">
+		<selectColumn></selectColumn>
+		<leftJoinSql></leftJoinSql>
+		<outSelectCol>RN.NAME</outSelectCol>
+		<outLeftJoinSql>RD_BRANCH_NAME RN ON TMP.PID = RN.DETAIL_ID AND RN.LANG_CODE = 'CHI' AND RN.U_RECORD !=2</outLeftJoinSql>
+	</obj-info>
+	<!--方向看板-->
+	<obj-info type="RD_SIGNBOARD">
+		<selectColumn></selectColumn>
+		<leftJoinSql></leftJoinSql>
+		<outSelectCol>RN.NAME</outSelectCol>
+		<outLeftJoinSql>RD_SIGNBOARD_NAME RN ON TMP.PID = RN.SIGNBOARD_ID AND RN.LANG_CODE = 'CHI' AND RN.U_RECORD !=2</outLeftJoinSql>
+	</obj-info>
+	<!--收费站-->
+	<obj-info type="RD_TOLLGATE">
+		<selectColumn></selectColumn>
+		<leftJoinSql></leftJoinSql>
+		<outSelectCol>RN.NAME</outSelectCol>
+		<outLeftJoinSql>RD_TOLLGATE_NAME RN ON TMP.PID = RN.PID AND RN.LANG_CODE = 'CHI' AND RN.U_RECORD !=2</outLeftJoinSql>
+	</obj-info>
+	<!--路口-->
+	<obj-info type="RD_CROSS">
+		<selectColumn></selectColumn>
+		<leftJoinSql></leftJoinSql>
+		<outSelectCol>RN.NAME</outSelectCol>
+		<outLeftJoinSql>RD_CROSS_NAME RN ON TMP.PID = RN.PID AND RN.LANG_CODE = 'CHI' AND RN.U_RECORD !=2</outLeftJoinSql>
+	</obj-info>
+	<!--CRF对象-->
+	<obj-info type="RD_OBJECT">
+		<selectColumn>RN.NAME</selectColumn>
+		<leftJoinSql>RD_OBJECT_NAME RN ON P.PID = RN.PID AND RN.LANG_CODE = 'CHI' AND RN.U_RECORD !=2</leftJoinSql>
+		<outSelectCol>TMP.NAME</outSelectCol>
+		<outLeftJoinSql></outLeftJoinSql>
+	</obj-info>
+	<!--行政区划代表点-->
+	<obj-info type="AD_ADMIN">
+		<selectColumn>RN.NAME</selectColumn>
+		<leftJoinSql>AD_ADMIN_NAME RN ON P.REGION_ID = RN.REGION_ID AND RN.LANG_CODE = 'CHI' AND RN.NAME_CLASS = 1 AND RN.U_RECORD !=2</leftJoinSql>
+		<outSelectCol>TMP.NAME</outSelectCol>
+		<outLeftJoinSql></outLeftJoinSql>
+	</obj-info>
+	<!--土地覆盖-->
+	<obj-info type="LC_FACE">
+		<selectColumn>RN.NAME</selectColumn>
+		<leftJoinSql>LC_FACE_NAME RN ON P.FACE_PID = RN.FACE_PID AND RN.LANG_CODE = 'CHI' AND RN.U_RECORD !=2</leftJoinSql>
+		<outSelectCol>TMP.NAME</outSelectCol>
+		<outLeftJoinSql></outLeftJoinSql>
+	</obj-info>
+	<!--土地利用-->
+	<obj-info type="LU_FACE">
+		<selectColumn>RN.NAME</selectColumn>
+		<leftJoinSql>LU_FACE_NAME RN ON P.FACE_PID = RN.FACE_PID AND RN.LANG_CODE = 'CHI' AND RN.U_RECORD !=2</leftJoinSql>
+		<outSelectCol>TMP.NAME</outSelectCol>
+		<outLeftJoinSql></outLeftJoinSql>
+	</obj-info>
+</config>

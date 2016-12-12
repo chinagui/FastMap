@@ -602,4 +602,22 @@ public class SubtaskController extends BaseController {
 			return new ModelAndView("jsonView", exception(e));
 		}
 	}
+	
+	/**
+	 * 按照token用户子任务类型统计子任务量
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/subtask/staticWithType")
+	public ModelAndView staticWithType(HttpServletRequest request) {
+		try {
+			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
+			long userId = tokenObj.getUserId();
+			Map<Integer,Integer> data = SubtaskService.getInstance().staticWithType(userId);
+			return new ModelAndView("jsonView", success(data));
+		} catch (Exception e) {
+			log.error("获取城市列表失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
 }

@@ -54,6 +54,9 @@ public class PoiBatchProcessorFM_BAT_20_185_1 implements IBatch {
 			IxPoi parentPoi = (IxPoi) ixPoiSelector.loadById(parentPid, false, false);
 			
 			List<IRow> parentChargingStations = parentPoi.getChargingstations();
+			if (parentChargingStations.size()==0) {
+				return result;
+			}
 			IxPoiChargingStation parentChargingStation = (IxPoiChargingStation) parentChargingStations.get(0);
 			int charingNum = parentChargingStation.getChargingNum();
 			parentChargingStation.setChargingNum(charingNum-reduce+increase);

@@ -78,40 +78,37 @@ public class Operation implements IOperation {
 	 * @throws Exception
 	 */
 	private void handRdSlopeVia(Result result) throws Exception {
-		if (this.command.getSeriesLinkPids() != null
-				&& this.command.getSeriesLinkPids().size() > 0) {
-			if (this.command.getOutLinkPid() != 0
-					&& this.command.getOutLinkPid() != this.command.getSlope()
-							.getLinkPid()) {
-				for (IRow row : this.command.getSlope().getSlopeVias()) {
-					result.insertObject(row, ObjStatus.DELETE,
-							this.command.getPid());
+
+		if (this.command.getOutLinkPid() != 0
+				&& this.command.getOutLinkPid() != this.command.getSlope()
+						.getLinkPid()) {
+			for (IRow row : this.command.getSlope().getSlopeVias()) {
+				result.insertObject(row, ObjStatus.DELETE,
+						this.command.getPid());
+			}
+			// 调用特殊打断
+			this.breakRelation(result);
+			for (int i = 0; i < this.command.getSeriesLinkPids().size(); i++) {
+				this.addRdSlope(result, i);
+			}
+
+		} else {
+			int sourceSize = this.command.getSlope().getSlopeVias().size();
+			int currentSize = this.command.getSeriesLinkPids().size();
+
+			if (sourceSize > currentSize) {
+				for (int i = currentSize; i < sourceSize; i++) {
+					result.insertObject(this.command.getSlope().getSlopeVias()
+							.get(i), ObjStatus.DELETE, this.command.getPid());
+
 				}
-				// 调用特殊打断
-				this.breakRelation(result);
-				for (int i = 0; i < this.command.getSeriesLinkPids().size(); i++) {
+			}
+			if (sourceSize < currentSize) {
+				for (int i = sourceSize; i < currentSize; i++) {
 					this.addRdSlope(result, i);
 				}
-
-			} else {
-				int sourceSize = this.command.getSlope().getSlopeVias().size();
-				int currentSize = this.command.getSeriesLinkPids().size();
-
-				if (sourceSize > currentSize) {
-					for (int i = currentSize; i < sourceSize; i++) {
-						result.insertObject(this.command.getSlope()
-								.getSlopeVias().get(i), ObjStatus.DELETE,
-								this.command.getPid());
-
-					}
-				}
-				if (sourceSize < currentSize) {
-					for (int i = sourceSize; i < currentSize; i++) {
-						this.addRdSlope(result, i);
-					}
-				}
-
 			}
+
 		}
 	}
 

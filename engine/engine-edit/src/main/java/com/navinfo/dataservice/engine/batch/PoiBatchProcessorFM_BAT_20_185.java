@@ -43,6 +43,9 @@ public class PoiBatchProcessorFM_BAT_20_185 implements IBatch {
 				count += childChargingPlot.size();
 			}
 			List<IRow> parentChargingStations = poi.getChargingstations();
+			if (parentChargingStations.size()==0) {
+				return result;
+			}
 			IxPoiChargingStation parentChargingStation = (IxPoiChargingStation) parentChargingStations.get(0);
 			parentChargingStation.setChargingNum(count);
 			JSONArray dataArray = new JSONArray();

@@ -134,6 +134,7 @@ public class ColumnSaveJob extends AbstractJob {
 				columnCoreOperation.runClassify(classifyMap,conn);
 			}
 			
+			conn.commit();
 		} catch (Exception e) {
 			throw new JobException(e);
 		} finally {

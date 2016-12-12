@@ -96,7 +96,7 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 			//String uploadRoot = "F:\\data\\multisrc\\upload\\";
 			//每个月独立目录
 			String curYm = DateUtils.getCurYyyymm();
-			String monthDir = uploadRoot+"multisrc"+File.separator+curYm+File.separator;
+			String monthDir = uploadRoot+File.separator+"multisrc"+File.separator+curYm+File.separator;
 			File mdirFile = new File(monthDir);
 			if(!mdirFile.exists()){
 				mdirFile.mkdirs();

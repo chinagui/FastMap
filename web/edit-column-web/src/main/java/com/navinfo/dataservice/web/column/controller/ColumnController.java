@@ -117,6 +117,7 @@ public class ColumnController extends BaseController {
 			
 			String jsonString =  dataJson.toString();
 			jsonString = jsonString.substring(1, jsonString.length()-1);
+			jsonString = jsonString.replace('"', '/');
 			
 			JSONObject jobDataJson=new JSONObject();
 			jobDataJson.put("userId", userId);

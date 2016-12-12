@@ -50,9 +50,9 @@ public class ColumnSaveJob extends AbstractJob {
 		Connection conn = null;
 		try {
 			ColumnSaveJobRequest columnSaveJobRequest = (ColumnSaveJobRequest) this.request;
-			JSONObject dataJson = columnSaveJobRequest.getParam();
+			String param = columnSaveJobRequest.getParam();
 			int userId = columnSaveJobRequest.getUserId();
-			String param = dataJson.getString("param");
+			param.replace('/', '"');
 			param = "{" + param + "}";
 			JSONObject paramJson = JSONObject.fromObject(param);
 			int taskId = paramJson.getInt("taskId");

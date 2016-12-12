@@ -13,6 +13,7 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.engine.meta.area.ScPointAdminArea;
+import com.navinfo.dataservice.engine.meta.area.ScPointDeepPlanarea;
 import com.navinfo.dataservice.engine.meta.chain.ChainSelector;
 import com.navinfo.dataservice.engine.meta.character.TyCharacterEgalcharExtCheckSelector;
 import com.navinfo.dataservice.engine.meta.character.TyCharacterFjtHmCheckSelector;
@@ -203,6 +204,12 @@ public class MetadataApiImpl implements MetadataApi {
 	public Map<String, String> scPointNameckTypeD1() throws Exception {
 		// TODO Auto-generated method stub
 		return ScPointNameck.getInstance().scPointNameckTypeD1();
+	}
+	
+	@Override
+	public List<String> getDeepAdminCodeList() throws Exception {
+		ScPointDeepPlanarea deepPlanarea = new ScPointDeepPlanarea();
+		return deepPlanarea.getDeepAdminCodeList();
 	}
 
 }

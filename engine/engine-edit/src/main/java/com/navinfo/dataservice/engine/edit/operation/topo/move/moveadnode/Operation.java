@@ -100,7 +100,7 @@ public class Operation implements IOperation {
             for (IRow row : link.getMeshes()) {
                 linkMeshes.add(((AdLinkMesh) row).getMeshId() + "");
             }
-            if (meshes.containsAll(linkMeshes)) {
+            if (linkMeshes.containsAll(meshes)) {
                 JSONObject updateContent = new JSONObject();
                 updateContent.put("geometry", geojson);
                 updateContent.put("length", GeometryUtils.getLinkLength(geo));

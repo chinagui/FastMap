@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.editplus.operation.imp;
 
+import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -253,6 +254,14 @@ public class DefaultObjImportor extends AbstractOperation{
 							||attValue instanceof Boolean
 							||attValue instanceof JSONNull
 							){
+						//数据类型转换
+						if(attValue instanceof Integer){
+							Field field = mainrow.getClass().getDeclaredField(attName);
+							if("Long".equalsIgnoreCase(field.getType().getName())){
+								attValue = Long.valueOf((Integer)attValue);
+								log.info("转换字段:"+attName);
+							}
+						}
 						String newAttName = this.camelToUnderline(attName);
 						mainrow.setAttrByCol(newAttName, attValue);
 					}else if(attValue instanceof JSONArray){
@@ -327,6 +336,14 @@ public class DefaultObjImportor extends AbstractOperation{
 								||attValue instanceof Boolean
 								||attValue instanceof JSONNull
 								){
+							//数据类型转换
+							if(attValue instanceof Integer){
+								Field field = subRow.getClass().getDeclaredField(attName);
+								if("Long".equalsIgnoreCase(field.getType().getName())){
+									attValue = Long.valueOf((Integer)attValue);
+									log.info("转换字段:"+attName);
+								}
+							}
 							String newAttName = this.camelToUnderline(attName);
 							subRow.setAttrByCol(newAttName, attValue);
 						}

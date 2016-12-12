@@ -382,16 +382,22 @@ public class SelectorTest {
 					+ "\"addresses\":[{\"nameGroupid\":1,\"poiPid\":0,"
 					+ "\"langCode\":\"CHI\",\"fullname\":\"北京\",\"objStatus\": \"INSERT\"}]}}";
 			*/
-			String data = "{\"postCode\": \"\","
-					+ "\"objStatus\":\"INSERT\",\"poiMemo\":\"test\",\"level\":\"B3\","
-					+ "\"addresses\":[{\"nameGroupid\":1,"
-					+ "\"langCode\":\"CHI\",\"fullname\":\"北京\",\"objStatus\": \"INSERT\"}]}}";
+			String data = "{\"postCode\": \"\",\"rowId\": \"3AE1FB4B927892F7E050A8C08304EE4C\",\"pid\": 69159,"
+					+ "\"objStatus\":\"UPDATE\",\"poiMemo\":\"test\",\"level\":\"B3\",\"side\":0,\"regionId\":10010,"
+					+ "\"addresses\":[{\"nameGroupid\":1,\"srcFlag\":1,"
+					+ "\"poiPid\":\"69159\",\"rowId\":\"D476DB9402074216A28607D8D8C9C71D\","
+					+ "\"langCode\":\"CHI\",\"fullname\":\"北京\",\"objStatus\": \"UPDATE\"}]}}";
 			JSONObject jo = JSONObject.fromObject(data);
 			System.out.println("导入的json数据"+data);
-			Map<String, JSONObject> addMap = new HashMap<String, JSONObject>();
-			addMap.put("IXPOI", jo);
+			//Map<String, JSONObject> addMap = new HashMap<String, JSONObject>();
+			//addMap.put("IXPOI", jo);
+			Map<String, Map<Long, JSONObject>> updateMap = new HashMap<String, Map<Long, JSONObject>>();
+			Map<Long, JSONObject> update = new HashMap<Long, JSONObject>();
+			update.put(69519L, jo);
+			updateMap.put("IXPOI", update);
 			DefaultObjImportor df = new DefaultObjImportor(conn, null);
-			List<BasicObj> list = df.improtAdd(conn, addMap);
+			//List<BasicObj> list = df.improtAdd(conn, addMap);
+			List<BasicObj> list = df.improtUpdate(conn, updateMap);
 			for (BasicObj basicObj : list) {
 				System.out.println(basicObj);
 			}

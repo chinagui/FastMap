@@ -137,14 +137,20 @@ public class DefaultObjImportor extends AbstractOperation{
 		List<BasicObj> objList = new ArrayList<BasicObj>();
 		//获取所需的子表
 		Set<String> tabNames = null;
+		String newObjType = null;
 		if("IXPOI".equals(objType)){
 			tabNames = DefaultObjSubRowName.getIxPoiTabNames(updateMap);
+			newObjType = ObjectName.IX_POI;
 		}else if("IXHAMLET".equals(objType)){
+			newObjType = ObjectName.IX_HAMLET;
 		}else if("ADFACE".equals(objType)){
+			newObjType = ObjectName.AD_FACE;
 		}else if("ADLINK".equals(objType)){
+			newObjType = ObjectName.AD_LINK;
 		}else if("ADNODE".equals(objType)){
+			newObjType = ObjectName.AD_NODE;
 		}
-		Map<Long, BasicObj> objs = ObjBatchSelector.selectByPids(conn,objType,tabNames,updateMap.keySet(),true,true);
+		Map<Long, BasicObj> objs = ObjBatchSelector.selectByPids(conn,newObjType,tabNames,updateMap.keySet(),true,true);
 		//开始导入
 		for (Entry<Long, JSONObject> jo : updateMap.entrySet()) {
 			//日志
@@ -199,14 +205,20 @@ public class DefaultObjImportor extends AbstractOperation{
 		List<BasicObj> objList = new ArrayList<BasicObj>();
 		//获取所需的子表
 		Set<String> tabNames = null;
+		String newObjType = null;
 		if("IXPOI".equals(objType)){
 			tabNames = DefaultObjSubRowName.getIxPoiTabNames(deleteMap);
+			newObjType = ObjectName.IX_POI;
 		}else if("IXHAMLET".equals(objType)){
+			newObjType = ObjectName.IX_HAMLET;
 		}else if("ADFACE".equals(objType)){
+			newObjType = ObjectName.AD_FACE;
 		}else if("ADLINK".equals(objType)){
+			newObjType = ObjectName.AD_LINK;
 		}else if("ADNODE".equals(objType)){
+			newObjType = ObjectName.AD_NODE;
 		}
-		Map<Long, BasicObj> objs = ObjBatchSelector.selectByPids(conn,objType,tabNames,deleteMap.keySet(),true,true);
+		Map<Long, BasicObj> objs = ObjBatchSelector.selectByPids(conn,newObjType,tabNames,deleteMap.keySet(),true,true);
 		//开始导入
 		for (Map.Entry<Long, JSONObject> jo : deleteMap.entrySet()) {
 			//日志
@@ -241,8 +253,8 @@ public class DefaultObjImportor extends AbstractOperation{
 			for(Iterator it = json.keys();it.hasNext();){
 				String attName = (String)it.next();
 				Object attValue = json.get(attName);
-				if((attValue==null && (!(attValue instanceof JSONNull)))
-						||StringUtils.isEmpty(attName)||"objStatus".equals(attName)){
+				if((attValue==null && (!(attValue instanceof JSONNull)))||StringUtils.isEmpty(attName)
+						||"objStatus".equals(attName)){
 					log.warn("注意：request的json中存在name或者value为空的属性，已经被忽略。");
 					continue;
 				}
@@ -254,9 +266,9 @@ public class DefaultObjImportor extends AbstractOperation{
 							||attValue instanceof Boolean
 							||attValue instanceof JSONNull
 							){
-						//数据类型转换
+						//数据类型转换||"pid".equals(attName)
 						if(attValue instanceof Integer){
-							Field field = mainrow.getClass().getDeclaredField(attName);
+							Field field = this.getFieldByName(mainrow.getClass(), attName);
 							if("Long".equalsIgnoreCase(field.getType().getName())){
 								attValue = Long.valueOf((Integer)attValue);
 								log.info("转换字段:"+attName);
@@ -338,7 +350,7 @@ public class DefaultObjImportor extends AbstractOperation{
 								){
 							//数据类型转换
 							if(attValue instanceof Integer){
-								Field field = subRow.getClass().getDeclaredField(attName);
+								Field field = this.getFieldByName(subRow.getClass(), attName);
 								if("Long".equalsIgnoreCase(field.getType().getName())){
 									attValue = Long.valueOf((Integer)attValue);
 									log.info("转换字段:"+attName);
@@ -407,5 +419,23 @@ public class DefaultObjImportor extends AbstractOperation{
 			}
 		}
 		return sb.toString();
+	}
+	
+	public Field getFieldByName(Class<?> clazz,String attName) throws Exception{
+		Field field = null;
+		Field[] fields = clazz.getDeclaredFields();
+		boolean flag = true;
+		for (Field fd : fields) {
+			if(attName.equals(fd.getName())){
+				field = fd;
+				flag = false;
+				break;
+			}
+		}
+		if(flag){
+			Class<?> superclass = clazz.getSuperclass();
+			field = getFieldByName(superclass, attName);
+		}
+		return field;
 	}
 }

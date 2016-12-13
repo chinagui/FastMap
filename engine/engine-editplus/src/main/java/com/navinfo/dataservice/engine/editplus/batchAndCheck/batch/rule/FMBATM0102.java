@@ -39,7 +39,7 @@ public class FMBATM0102 extends BasicBatchRule {
 			//查询别名原始英文列表
 			List<IxPoiName> brList=poiObj.getOriginAliasENGNameList();
 			for(IxPoiName br:brList){
-				if (br.getHisOpType().equals(OperationType.DELETE)){
+				if (br.getOpType().equals(OperationType.DELETE)){
 					continue;
 				}
 				IxPoiName standardAliasEngName=poiObj.getStandardAliasENGName(br.getNameGroupid());
@@ -48,16 +48,18 @@ public class FMBATM0102 extends BasicBatchRule {
 				}
 				MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 				Map<String, String> typeMap8 = metadataApi.scPointSpecKindCodeType8();
+				IxPoiName aliasCHIName=poiObj.getAliasCHIName(br.getNameGroupid());
 				if(((br.getName()).length()>35)&&typeMap8.containsKey(mainPoi.getKindCode())){
 					if (standardAliasEngName!=null){
-						standardAliasEngName.setName(metadataApi.convertEng(br.getName()));
+						standardAliasEngName.setName(metadataApi.convertEng(aliasCHIName.getName()));
 					}else{
 						IxPoiName poiName=(IxPoiName) poiObj.createIxPoiName();
 						poiName.setNameId(PidUtil.getInstance().applyPoiNameId());
 						poiName.setNameGroupid(br.getNameGroupid());
 						poiName.setLangCode(br.getLangCode());
 						poiName.setNameClass(3);
-						poiName.setNameType(2);			
+						poiName.setNameType(2);		
+						poiName.setName(aliasCHIName.getName());
 					}
 				}
 			}

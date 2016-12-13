@@ -62,5 +62,7 @@ public interface MetadataApi {
 	
 	public Map<String, String> scPointNameckTypeD1() throws Exception;
 	
+	public Map<String, String> scPointNameckTypeD10() throws Exception;
+	
 	public List<String> getDeepAdminCodeList() throws Exception;
 	}

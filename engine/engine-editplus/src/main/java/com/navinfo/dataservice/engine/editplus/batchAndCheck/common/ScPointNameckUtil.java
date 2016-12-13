@@ -17,4 +17,17 @@ public class ScPointNameckUtil {
 		//matchResult.put("国家人口和计划生育委员会", "人口计生委");
 		return matchResult;
 	}
+	public static Map<String, String> matchTypeD10(String name,Map<String, String> typeD10){
+		Map<String, String> matchResult=new HashMap<String, String>();
+		for(String key:typeD10.keySet()){
+			//name开头匹配关键字
+			if(name.startsWith(key)){
+				String result=typeD10.get(key);
+				matchResult.put(key, result);
+				break;
+			}
+		}
+		//matchResult.put("中国工商银行", "工行");
+		return matchResult;
+	}
 }

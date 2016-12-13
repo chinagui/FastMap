@@ -229,18 +229,18 @@ public class TmcSelector {
 			if (resultSet.next()) {
 				tmcLine = new TmcLine();
 				
-				List<TmcPoint> tmcPointList = this.queryTmcPointByLineId(tcmLineId);
+//				List<TmcPoint> tmcPointList = this.queryTmcPointByLineId(tcmLineId);
 				
-				//返回tmc线的几何
-				JSONArray lineGeo = new JSONArray();
+//				//返回tmc线的几何
+//				JSONArray lineGeo = new JSONArray();
+//
+//				for (TmcPoint tmcPoint : tmcPointList) {
+//					JSONArray pointGeo = tmcPoint.getGeometry();
+//
+//					lineGeo.add(pointGeo);
+//				}
 
-				for (TmcPoint tmcPoint : tmcPointList) {
-					JSONArray pointGeo = tmcPoint.getGeometry();
-
-					lineGeo.add(pointGeo);
-				}
-
-				tmcLine.setGeometry(lineGeo);
+//				tmcLine.setGeometry(lineGeo);
 				
 				tmcLine.setCid(resultSet.getString("cid"));
 

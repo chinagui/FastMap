@@ -8,6 +8,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
 import com.navinfo.dataservice.commons.geom.Geojson;
+import com.navinfo.dataservice.engine.meta.tmc.model.TmcLine;
 import com.navinfo.dataservice.engine.meta.tmc.model.TmcPoint;
 import com.navinfo.navicommons.database.sql.DBUtils;
 
@@ -94,6 +95,8 @@ public class TmcPointSelector {
 				
 				tmcPoint.setNeighbourTable(resultSet.getInt("NEIGHBOUR_TABLE"));
 				
+				tmcPoint.setLineTmcId(resultSet.getInt("LINE_TMC_ID"));
+				
 				tmcPoint.setUrban(resultSet.getInt("URBAN"));
 				
 				tmcPoint.setInteruptRoad(resultSet.getInt("INTERUPT_ROAD"));
@@ -107,6 +110,12 @@ public class TmcPointSelector {
 				tmcPoint.setPresentNeg(resultSet.getInt("PRESENT_NEG"));
 				
 				tmcPoint.setPresentPos(resultSet.getInt("PRESENT_POS"));
+				
+				TmcSelector selector = new TmcSelector(this.conn);
+				
+				TmcLine line = selector.queryTmcLineByPointId(tmcPointId);
+				
+				tmcPoint.setLineGeometry(line.getGeometry());
 				
 				// 获取LINK对应的关联数据 rd_link_name
 				tmcPoint.setNames(new TmcPointNameSelector(conn).loadRowsByParentId(tmcPoint.getTmcId()));

@@ -86,6 +86,9 @@ public class TmcPoint {
 	
 	private JSONArray geometry;
 	
+	//tmcPoint对应的line几何
+	private JSONArray lineGeometry;
+	
 	private List<TmcPointName> names = new ArrayList<>();
 
 	public int getTmcId() {
@@ -134,6 +137,14 @@ public class TmcPoint {
 
 	public void setLineTmcId(int lineTmcId) {
 		this.lineTmcId = lineTmcId;
+	}
+	
+	public JSONArray getLineGeometry() {
+		return lineGeometry;
+	}
+
+	public void setLineGeometry(JSONArray lineGeometry) {
+		this.lineGeometry = lineGeometry;
 	}
 
 	public int getAreaTmcId() {

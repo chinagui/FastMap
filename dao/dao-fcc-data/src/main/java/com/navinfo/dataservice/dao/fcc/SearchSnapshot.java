@@ -10,7 +10,7 @@ import com.navinfo.dataservice.commons.util.JsonUtils;
  */
 public class SearchSnapshot implements ISerializable {
 
-	private int t;
+	private String t;
 
 	private String i;
 	
@@ -48,17 +48,9 @@ public class SearchSnapshot implements ISerializable {
 	public boolean Unserialize(JSONObject json) throws Exception {
 		this.setI(json.getString("i"));
 		this.setG(json.getJSONArray("g"));
-		this.setT(json.getInt("t"));
+		this.setT(json.getString("t"));
 		this.setM(json.getJSONObject("m"));
 		return false;
-	}
-
-	public int getT() {
-		return t;
-	}
-
-	public void setT(int t) {
-		this.t = t;
 	}
 
 	public JSONArray getG() {
@@ -68,5 +60,21 @@ public class SearchSnapshot implements ISerializable {
 	public void setG(JSONArray g) {
 		this.g = g;
 	}
+
+	/**
+	 * @return the t
+	 */
+	public String getT() {
+		return t;
+	}
+
+	/**
+	 * @param t the t to set
+	 */
+	public void setT(String t) {
+		this.t = t;
+	}
+	
+	
 
 }

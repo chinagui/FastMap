@@ -101,7 +101,7 @@ public class RdSameNodeSearch implements ISearch {
 					
 					groupIdList.add(groupId);
 					
-					snapshot.setI(String.valueOf(groupId));
+					snapshot.setI(groupId);
 
 					snapshot.setT(37);
 

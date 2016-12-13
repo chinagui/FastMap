@@ -61,7 +61,7 @@ public class ZoneFaceSearch implements ISearch {
 
 				snapshot.setT(19);
 
-				snapshot.setI(String.valueOf(resultSet.getInt("face_pid")));
+				snapshot.setI(resultSet.getInt("face_pid"));
 
 				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
 
@@ -131,7 +131,7 @@ public class ZoneFaceSearch implements ISearch {
 
 				snapshot.setT(19);
 
-				snapshot.setI(String.valueOf(resultSet.getInt("face_pid")));
+				snapshot.setI(resultSet.getInt("face_pid"));
 
 				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
 

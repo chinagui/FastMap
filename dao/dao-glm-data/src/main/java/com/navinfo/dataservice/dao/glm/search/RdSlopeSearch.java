@@ -88,7 +88,7 @@ public class RdSlopeSearch implements ISearch {
 
 				snapshot.setT(24);
 
-				snapshot.setI(resultSet.getString("pid"));
+				snapshot.setI(resultSet.getInt("pid"));
 
 				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
 

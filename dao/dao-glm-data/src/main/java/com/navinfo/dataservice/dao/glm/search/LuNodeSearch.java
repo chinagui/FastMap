@@ -121,7 +121,7 @@ public class LuNodeSearch implements ISearch {
 
 				snapshot.setT(16);
 
-				snapshot.setI(resultSet.getString("node_pid"));
+				snapshot.setI(resultSet.getInt("node_pid"));
 
 				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
 
@@ -183,7 +183,7 @@ public class LuNodeSearch implements ISearch {
 
 				snapshot.setT(28);
 
-				snapshot.setI(resultSet.getString("node_pid"));
+				snapshot.setI(resultSet.getInt("node_pid"));
 
 				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
 

@@ -90,7 +90,7 @@ public class RdGateSearch implements ISearch {
 
 				snapshot.setT(23);
 
-				snapshot.setI(resultSet.getString("pid"));
+				snapshot.setI(resultSet.getInt("pid"));
 
 				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
 

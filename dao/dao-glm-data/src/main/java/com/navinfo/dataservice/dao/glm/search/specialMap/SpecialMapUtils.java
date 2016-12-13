@@ -305,7 +305,7 @@ public class SpecialMapUtils {
 
 				snapshot.setT(specialMapType.getValue());
 
-				snapshot.setI(String.valueOf(resultSet.getInt("LINK_PID")));
+				snapshot.setI(resultSet.getInt("LINK_PID"));
 
 				JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
 
@@ -371,7 +371,7 @@ public class SpecialMapUtils {
 
 				snapshot.setT(specialMapType.getValue());
 
-				snapshot.setI(String.valueOf(resultSet.getInt("LINK_PID")));
+				snapshot.setI(resultSet.getInt("LINK_PID"));
 
 				JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
 
@@ -444,7 +444,7 @@ public class SpecialMapUtils {
 
 				snapshot.setT(specialMapType.getValue());
 
-				snapshot.setI(String.valueOf(resultSet.getInt("LINK_PID")));
+				snapshot.setI(resultSet.getInt("LINK_PID"));
 
 				JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
 
@@ -516,7 +516,7 @@ public class SpecialMapUtils {
 
 				snapshot.setT(specialMapType.getValue());
 
-				snapshot.setI(String.valueOf(resultSet.getInt("LINK_PID")));
+				snapshot.setI(resultSet.getInt("LINK_PID"));
 
 				JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
 
@@ -612,7 +612,7 @@ public class SpecialMapUtils {
 
 				snapshot.setT(specialMapType.getValue());
 
-				snapshot.setI(String.valueOf(resultSet.getInt("LINK_PID")));
+				snapshot.setI(resultSet.getInt("LINK_PID"));
 
 				JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
 
@@ -678,7 +678,7 @@ public class SpecialMapUtils {
 
 				snapshot.setT(specialMapType.getValue());
 
-				snapshot.setI(String.valueOf(resultSet.getInt("LINK_PID")));
+				snapshot.setI(resultSet.getInt("LINK_PID"));
 
 				JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
 
@@ -751,7 +751,7 @@ public class SpecialMapUtils {
 
 				snapshot.setT(specialMapType.getValue());
 
-				snapshot.setI(String.valueOf(resultSet.getInt("LINK_PID")));
+				snapshot.setI(resultSet.getInt("LINK_PID"));
 
 				JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
 
@@ -846,7 +846,7 @@ public class SpecialMapUtils {
 
 				snapshot.setT(specialMapType.getValue());
 
-				snapshot.setI(String.valueOf(resultSet.getInt("LINK_PID")));
+				snapshot.setI(resultSet.getInt("LINK_PID"));
 
 				JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
 
@@ -912,7 +912,7 @@ public class SpecialMapUtils {
 
 				snapshot.setT(specialMapType.getValue());
 
-				snapshot.setI(String.valueOf(resultSet.getInt("LINK_PID")));
+				snapshot.setI(resultSet.getInt("LINK_PID"));
 
 				JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
 
@@ -978,7 +978,7 @@ public class SpecialMapUtils {
 
 				snapshot.setT(specialMapType.getValue());
 
-				snapshot.setI(String.valueOf(resultSet.getInt("LINK_PID")));
+				snapshot.setI(resultSet.getInt("LINK_PID"));
 
 				JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
 
@@ -1044,7 +1044,7 @@ public class SpecialMapUtils {
 
 				snapshot.setT(specialMapType.getValue());
 
-				snapshot.setI(String.valueOf(resultSet.getInt("LINK_PID")));
+				snapshot.setI(resultSet.getInt("LINK_PID"));
 
 				JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
 
@@ -1110,7 +1110,7 @@ public class SpecialMapUtils {
 
 				snapshot.setT(specialMapType.getValue());
 
-				snapshot.setI(String.valueOf(resultSet.getInt("LINK_PID")));
+				snapshot.setI(resultSet.getInt("LINK_PID"));
 
 				JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
 
@@ -1176,7 +1176,7 @@ public class SpecialMapUtils {
 
 				snapshot.setT(specialMapType.getValue());
 
-				snapshot.setI(String.valueOf(resultSet.getInt("LINK_PID")));
+				snapshot.setI(resultSet.getInt("LINK_PID"));
 
 				JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
 
@@ -1242,7 +1242,7 @@ public class SpecialMapUtils {
 
 				snapshot.setT(specialMapType.getValue());
 
-				snapshot.setI(String.valueOf(resultSet.getInt("LINK_PID")));
+				snapshot.setI(resultSet.getInt("LINK_PID"));
 
 				JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
 
@@ -1308,7 +1308,7 @@ public class SpecialMapUtils {
 
 				snapshot.setT(specialMapType.getValue());
 
-				snapshot.setI(String.valueOf(resultSet.getInt("LINK_PID")));
+				snapshot.setI(resultSet.getInt("LINK_PID"));
 
 				JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
 
@@ -1374,7 +1374,7 @@ public class SpecialMapUtils {
 
 				snapshot.setT(specialMapType.getValue());
 
-				snapshot.setI(String.valueOf(resultSet.getInt("LINK_PID")));
+				snapshot.setI(resultSet.getInt("LINK_PID"));
 
 				JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
 
@@ -1462,7 +1462,7 @@ public class SpecialMapUtils {
 
 					snapshot.setT(specialMapType.getValue());
 
-					snapshot.setI(String.valueOf(currLinkPid));
+					snapshot.setI(currLinkPid);
 
 					JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
 
@@ -1549,7 +1549,7 @@ public class SpecialMapUtils {
 
 				snapshot.setT(specialMapType.getValue());
 
-				snapshot.setI(String.valueOf(resultSet.getInt("LINK_PID")));
+				snapshot.setI(resultSet.getInt("LINK_PID"));
 
 				JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
 
@@ -1676,7 +1676,7 @@ public class SpecialMapUtils {
 
 					snapshot.setT(specialMapType.getValue());
 
-					snapshot.setI(String.valueOf(currLinkPid));
+					snapshot.setI(currLinkPid);
 
 					JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
 
@@ -1767,7 +1767,7 @@ public class SpecialMapUtils {
 
 				snapshot.setT(specialMapType.getValue());
 
-				snapshot.setI(String.valueOf(resultSet.getInt("LINK_PID")));
+				snapshot.setI(resultSet.getInt("LINK_PID"));
 
 				JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
 
@@ -1875,7 +1875,7 @@ public class SpecialMapUtils {
 
 				snapshot.setT(specialMapType.getValue());
 
-				snapshot.setI(String.valueOf(resultSet.getInt("LINK_PID")));
+				snapshot.setI(resultSet.getInt("LINK_PID"));
 
 				JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
 
@@ -2000,7 +2000,7 @@ public class SpecialMapUtils {
 
 					snapshot.setT(specialMapType.getValue());
 
-					snapshot.setI(String.valueOf(currLinkPid));
+					snapshot.setI(currLinkPid);
 
 					JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
 
@@ -2167,7 +2167,7 @@ public class SpecialMapUtils {
 
 				snapshot.setT(specialMapType.getValue());
 
-				snapshot.setI(String.valueOf(resultSet.getInt("LINK_PID")));
+				snapshot.setI(resultSet.getInt("LINK_PID"));
 
 				JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
 
@@ -2287,7 +2287,7 @@ public class SpecialMapUtils {
 
 					snapshot.setT(specialMapType.getValue());
 
-					snapshot.setI(String.valueOf(currLinkPid));
+					snapshot.setI(currLinkPid);
 
 					JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
 
@@ -2403,7 +2403,7 @@ public class SpecialMapUtils {
 
 					snapshot.setT(specialMapType.getValue());
 
-					snapshot.setI(String.valueOf(currLinkPid));
+					snapshot.setI(currLinkPid);
 
 					JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
 
@@ -2546,7 +2546,7 @@ public class SpecialMapUtils {
 
 					snapshot.setT(specialMapType.getValue());
 
-					snapshot.setI(String.valueOf(currLinkPid));
+					snapshot.setI(currLinkPid);
 
 					JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
 
@@ -2637,7 +2637,7 @@ public class SpecialMapUtils {
 
 				snapshot.setT(specialMapType.getValue());
 
-				snapshot.setI(String.valueOf(resultSet.getInt("LINK_PID")));
+				snapshot.setI(resultSet.getInt("LINK_PID"));
 
 				JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
 
@@ -2753,7 +2753,7 @@ public class SpecialMapUtils {
 
 					snapshot.setT(specialMapType.getValue());
 
-					snapshot.setI(String.valueOf(currLinkPid));
+					snapshot.setI(currLinkPid);
 
 					JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
 

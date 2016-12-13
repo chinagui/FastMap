@@ -104,7 +104,7 @@ public class RdTmcLocationSearch implements ISearch {
 				
 				JSONObject jsonM = new JSONObject();
 
-				snapshot.setI(String.valueOf(resultSet.getInt("GROUP_ID")));
+				snapshot.setI(resultSet.getInt("GROUP_ID"));
 				
 				snapshot.setT(49);
 

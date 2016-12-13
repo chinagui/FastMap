@@ -111,7 +111,7 @@ public class RdRoadSearch implements ISearch {
 
 				snapshot.setT(40);
 
-				snapshot.setI(roadPid);
+				snapshot.setI(Integer.parseInt(roadPid));
 
 				Map<String, JSONObject> linkMap = values.get(roadPid);
 

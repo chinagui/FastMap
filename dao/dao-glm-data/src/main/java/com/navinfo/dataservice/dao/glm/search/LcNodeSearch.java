@@ -87,7 +87,7 @@ public class LcNodeSearch implements ISearch {
 
 				snapshot.setT(33);
 
-				snapshot.setI(resultSet.getString("node_pid"));
+				snapshot.setI(resultSet.getInt("node_pid"));
 
 				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
 

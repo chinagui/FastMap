@@ -122,7 +122,7 @@ public class RdNodeSearch implements ISearch {
 
 				snapshot.setT(16);
 
-				snapshot.setI(resultSet.getString("node_pid"));
+				snapshot.setI(resultSet.getInt("node_pid"));
 
 				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
 
@@ -185,7 +185,7 @@ public class RdNodeSearch implements ISearch {
 
 				snapshot.setT(16);
 
-				snapshot.setI(resultSet.getString("node_pid"));
+				snapshot.setI(resultSet.getInt("node_pid"));
 
 				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
 

@@ -589,6 +589,20 @@ public class IxPoiObj extends AbstractIxObj {
 	}
 	
 	/*
+	 * 简称标准中文名称组
+	 */
+	public List<IxPoiName> getShortStandardCHName(){
+		List<IxPoiName> shortCHNameList=null;
+		List<IxPoiName> subRows=getIxPoiNames();
+		for(IxPoiName br:subRows){
+			if(br.getOpType()!=OperationType.DELETE && br.getNameClass()==5&&br.getNameType()==1
+					&&(br.getLangCode().equals("CHI")||br.getLangCode().equals("CHT"))){
+				shortCHNameList.add(br);}
+			}
+		return shortCHNameList;
+	}
+	
+	/*
 	 * 别名中文(name_class=3,name_type=1,lang_code='CHI')列表
 	 */
 	public List<IxPoiName> getAliasCHIName(){

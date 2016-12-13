@@ -55,7 +55,7 @@ public class FMBATM0101 extends BasicBatchRule {
 						IxPoiName originEngAlias=poiObj.getOriginAliasENGName(br.getNameGroupid());
 						MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 						if(originEngAlias!=null){
-							originEngAlias.setName(metadataApi.convertEng(originEngAlias.getName()));
+							originEngAlias.setName(metadataApi.convertEng(br.getName()));
 						} 
 						else{
 							IxPoiName poiName=(IxPoiName) poiObj.createIxPoiName();
@@ -64,6 +64,7 @@ public class FMBATM0101 extends BasicBatchRule {
 							poiName.setLangCode(originEngAlias.getLangCode());
 							poiName.setNameClass(3);
 							poiName.setNameType(2);
+							poiName.setName(metadataApi.convertEng(br.getName()));
 						}	}
 					
 				}

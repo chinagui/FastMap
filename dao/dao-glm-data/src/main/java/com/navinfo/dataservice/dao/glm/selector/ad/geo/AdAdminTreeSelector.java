@@ -75,7 +75,7 @@ public class AdAdminTreeSelector extends AbstractSelector {
 	 * @param isLock
 	 * @return
 	 */
-	private AdAdminTree loadRowsByRegionId(int regionId, boolean isLock, int groupId) {
+	public AdAdminTree loadRowsByRegionId(int regionId, boolean isLock, int groupId) {
 		AdAdminTree tree = getAdAdminTreeById(regionId, isLock, groupId);
 
 		if (tree == null) {

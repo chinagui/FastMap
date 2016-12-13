@@ -96,7 +96,7 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 			//String uploadRoot = "F:\\data\\multisrc\\upload\\";
 			//每个月独立目录
 			String curYm = DateUtils.getCurYyyymm();
-			String monthDir = uploadRoot+"multisrc"+File.separator+curYm+File.separator;
+			String monthDir = uploadRoot+File.separator+"multisrc"+File.separator+curYm+File.separator;
 			File mdirFile = new File(monthDir);
 			if(!mdirFile.exists()){
 				mdirFile.mkdirs();
@@ -112,6 +112,7 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 			String localUnzipDir = monthDir+fileName.substring(0,fileName.indexOf("."));
 			ZipUtils.unzipFile(localZipFile,localUnzipDir);
 			log.debug("解压完成");
+			log.info("保存路径:"+localUnzipDir);
 			//设置下载成功状态
 			syncApi.updateMultiSrcFmSyncStatus(MultiSrcFmSync.STATUS_DOWNLOAD_SUCCESS,jobInfo.getId());
 			return localUnzipDir;

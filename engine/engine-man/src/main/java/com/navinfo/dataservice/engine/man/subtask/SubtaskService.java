@@ -14,10 +14,8 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javassist.expr.NewArray;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import oracle.net.aso.s;
 import oracle.sql.STRUCT;
 
 import org.apache.commons.dbutils.DbUtils;

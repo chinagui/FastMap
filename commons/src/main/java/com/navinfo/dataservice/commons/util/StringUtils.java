@@ -209,7 +209,14 @@ public class StringUtils {
 		}
 		return null;
 	}
-
+	public static boolean isNumeric(String str){
+	    for(int i=str.length();--i>=0;){
+	       int chr=str.charAt(i);
+	       if(chr<48 || chr>57)
+	          return false;
+	    }
+	    return true;
+	 }
 	public static String laneSpeedValue2KM(String laneSpeedValue) {
 
 		String[] values = laneSpeedValue.split("\\|");

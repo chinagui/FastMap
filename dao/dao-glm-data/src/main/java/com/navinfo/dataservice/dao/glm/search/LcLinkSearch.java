@@ -77,7 +77,7 @@ public class LcLinkSearch implements ISearch {
 
                 snapshot.setT(31);
 
-                snapshot.setI(String.valueOf(resultSet.getInt("link_pid")));
+                snapshot.setI(resultSet.getInt("link_pid"));
 
                 STRUCT struct = (STRUCT) resultSet.getObject("geometry");
 
@@ -145,7 +145,7 @@ public class LcLinkSearch implements ISearch {
 
                 snapshot.setT(31);
 
-                snapshot.setI(String.valueOf(resultSet.getInt("link_pid")));
+                snapshot.setI(resultSet.getInt("link_pid"));
 
                 STRUCT struct = (STRUCT) resultSet.getObject("geometry");
 

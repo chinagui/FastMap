@@ -12,17 +12,17 @@ public class SearchSnapshot implements ISerializable {
 
 	private int t;
 
-	private String i;
+	private int i;
 	
 	private JSONArray g;
 
 	private JSONObject m;
 
-	public String getI() {
+	public int getI() {
 		return i;
 	}
 
-	public void setI(String i) {
+	public void setI(int i) {
 		this.i = i;
 	}
 
@@ -46,7 +46,7 @@ public class SearchSnapshot implements ISerializable {
 
 	@Override
 	public boolean Unserialize(JSONObject json) throws Exception {
-		this.setI(json.getString("i"));
+		this.setI(json.getInt("i"));
 		this.setG(json.getJSONArray("g"));
 		this.setT(json.getInt("t"));
 		this.setM(json.getJSONObject("m"));

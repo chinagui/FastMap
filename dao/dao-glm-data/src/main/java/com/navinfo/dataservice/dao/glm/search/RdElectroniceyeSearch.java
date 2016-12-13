@@ -80,7 +80,7 @@ public class RdElectroniceyeSearch implements ISearch {
 
 				snapshot.setT(26);
 
-				snapshot.setI(resultSet.getString("pid"));
+				snapshot.setI(resultSet.getInt("pid"));
 
 				JSONObject m = new JSONObject();
 

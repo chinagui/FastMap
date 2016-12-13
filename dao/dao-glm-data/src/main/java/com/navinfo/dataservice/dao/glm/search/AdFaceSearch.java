@@ -63,7 +63,7 @@ public class AdFaceSearch implements ISearch {
 
 				snapshot.setT(13);
 
-				snapshot.setI(String.valueOf(resultSet.getInt("face_pid")));
+				snapshot.setI(resultSet.getInt("face_pid"));
 
 				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
 
@@ -133,7 +133,7 @@ public class AdFaceSearch implements ISearch {
 
 				snapshot.setT(13);
 
-				snapshot.setI(String.valueOf(resultSet.getInt("face_pid")));
+				snapshot.setI(resultSet.getInt("face_pid"));
 
 				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
 

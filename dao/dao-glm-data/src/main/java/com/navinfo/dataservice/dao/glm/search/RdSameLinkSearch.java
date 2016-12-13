@@ -95,7 +95,7 @@ public class RdSameLinkSearch implements ISearch {
 
 					groupIdList.add(groupId);
 
-					snapshot.setI(String.valueOf(groupId));
+					snapshot.setI(groupId);
 
 					snapshot.setT(38);
 

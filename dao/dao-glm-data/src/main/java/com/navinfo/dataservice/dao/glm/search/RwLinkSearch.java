@@ -63,7 +63,7 @@ public class RwLinkSearch extends AbstractSearch implements ISearch {
 
 				snapshot.setT(14);
 
-				snapshot.setI(String.valueOf(resultSet.getInt("link_pid")));
+				snapshot.setI(resultSet.getInt("link_pid"));
 
 				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
 
@@ -145,7 +145,7 @@ public class RwLinkSearch extends AbstractSearch implements ISearch {
 
 				snapshot.setT(14);
 
-				snapshot.setI(String.valueOf(resultSet.getInt("link_pid")));
+				snapshot.setI(resultSet.getInt("link_pid"));
 
 				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
 

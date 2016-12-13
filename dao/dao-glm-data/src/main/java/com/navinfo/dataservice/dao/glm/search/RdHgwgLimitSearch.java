@@ -65,7 +65,7 @@ public class RdHgwgLimitSearch implements ISearch {
             while (resultSet.next()) {
                 SearchSnapshot snapshot = new SearchSnapshot();
                 snapshot.setT(47);
-                snapshot.setI(resultSet.getString("pid"));
+                snapshot.setI(resultSet.getInt("pid"));
                 STRUCT struct = (STRUCT) resultSet.getObject("point_geom");
                 JSONObject geojson = Geojson.spatial2Geojson(struct);
                 Geojson.point2Pixel(geojson, z, px, py);

@@ -15,6 +15,7 @@ import org.apache.commons.collections.CollectionUtils;
 
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
+import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.engine.meta.tmc.model.TmcArea;
 import com.navinfo.dataservice.engine.meta.tmc.model.TmcLine;
@@ -132,14 +133,17 @@ public class TmcSelector {
 
 			for (TmcLine upperLine : upTmcLineList) {
 				TmcLineTree tmcLineTree = new TmcLineTree(upperLine);
+				
+				if(!tmcLineTree.equals(copyTree))
+				{
+					tmcLineTree.getChildren().add(copyTree);
 
-				tmcLineTree.getChildren().add(copyTree);
+					copyTree = new TmcLineTree();
 
-				copyTree = new TmcLineTree();
+					copyTree.copy(tmcLineTree);
 
-				copyTree.copy(tmcLineTree);
-
-				tmcTree = tmcLineTree;
+					tmcTree = tmcLineTree;
+				}
 			}
 			if (tmcTree == null) {
 				tmcTree = tree;
@@ -150,14 +154,17 @@ public class TmcSelector {
 
 			for (TmcArea upperArea : upTmcAreaList) {
 				TmcLineTree tmcAreaTree = new TmcLineTree(upperArea);
+				
+				if(!tmcAreaTree.equals(copyResultTree))
+				{
+					tmcAreaTree.getChildren().add(copyResultTree);
 
-				tmcAreaTree.getChildren().add(copyResultTree);
+					copyResultTree = new TmcLineTree();
 
-				copyResultTree = new TmcLineTree();
+					copyResultTree.copy(tmcAreaTree);
 
-				copyResultTree.copy(tmcAreaTree);
-
-				tmcTree = copyResultTree;
+					tmcTree = copyResultTree;
+				}
 			}
 			if (tmcTree != null) {
 				treeList.add(tmcTree);
@@ -192,7 +199,7 @@ public class TmcSelector {
 		for (TmcLineTree firstTree : firstTreeChild) {
 			boolean hasAdd = false;
 			for (TmcLineTree tmpTree : tmpTreeChild) {
-				if (!firstTreeChild.contains(tmpTree)) {
+				if (!firstTreeChild.contains(tmpTree) && firstTree.getType() != ObjType.TMCPOINT) {
 					result.getChildren().add(tmpTree);
 					hasAdd = true;
 				} else {

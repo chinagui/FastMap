@@ -111,17 +111,15 @@ public class TmcPointTest {
 			
 			JSONArray array = new JSONArray();
 			
-			array.add(522000109);
+			array.add(522000300);
 			
-			array.add(522000144);
+			array.add(522000743);
 			
-			array.add(522000302);
+			array.add(522001493);
 			
-			array.add(522000792);
+			array.add(522001494);
 			
-			array.add(522002687);
-			
-			array.add(522004085);
+			array.add(522001593);
 			
 			TmcLineTree result = selector.queryTmcTree(array);
 			

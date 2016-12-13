@@ -633,6 +633,19 @@ public class IxPoiObj extends AbstractIxObj {
 		return originAliasENGNameList;
 	}
 	
+	
+	/*
+	 * 别名中文(name_class=3,name_type=1,lang_code='CHI')列表
+	 */
+	public IxPoiName getAliasCHIName(long nameGroupId){
+		List<IxPoiName> subRows=getIxPoiNames();
+		for(IxPoiName br:subRows){
+			if(br.getNameClass()==3&&br.getLangCode().equals("CHI")){
+				return br;}
+			}
+		return null;
+	}
+	
 	@Override
 	public String objName() {
 		return ObjectName.IX_POI;

@@ -10,11 +10,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import com.navinfo.navicommons.database.sql.StringUtil;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
-import net.sf.json.test.JSONAssert;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -119,7 +117,7 @@ public class TipsSelector {
 
 				int type = Integer.valueOf(json.getString("s_sourceType"));
 
-				snapshot.setT(type);
+				snapshot.setT(String.valueOf(type));
 
 				JSONObject geojson = JSONObject.fromObject(json
 						.getString("g_location"));
@@ -807,7 +805,7 @@ public class TipsSelector {
 
 				snapshot.setI(json.getString("id"));
 
-				snapshot.setT(Integer.valueOf(json.getString("s_sourceType")));
+				snapshot.setT(json.getString("s_sourceType"));
 
 				JSONObject glocation = JSONObject.fromObject(json
 						.getString("g_location"));

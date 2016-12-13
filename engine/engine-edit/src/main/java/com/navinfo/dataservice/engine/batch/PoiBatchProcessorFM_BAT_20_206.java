@@ -32,11 +32,11 @@ public class PoiBatchProcessorFM_BAT_20_206 implements IBatch {
 				IxPoiChargingStation poiChargingStation = (IxPoiChargingStation) poi.getChargingstations().get(0);
 				if (poi.getChargingstations().size()>0) {
 					if (poiChargingStation.getOpenHour() != null) {
-						poiChargingStation.setOpenHour(ExcelReader.h2f(poiChargingStation.getOpenHour()));
+						poiChargingStation.setOpenHour(ExcelReader.f2h(poiChargingStation.getOpenHour()));
 						ischanged = true;
 					}
 					if (poiChargingStation.getParkingInfo() != null) {
-						poiChargingStation.setParkingInfo(ExcelReader.h2f(poiChargingStation.getParkingInfo()));
+						poiChargingStation.setParkingInfo(ExcelReader.f2h(poiChargingStation.getParkingInfo()));
 						ischanged = true;
 					}
 					if (!ischanged) {
@@ -54,39 +54,39 @@ public class PoiBatchProcessorFM_BAT_20_206 implements IBatch {
 				for (IRow plot:poiChargingPlots) {
 					IxPoiChargingPlot poiChargingPlot = (IxPoiChargingPlot) plot;
 					if (poiChargingPlot.getPower() != null) {
-						poiChargingPlot.setPower(ExcelReader.h2f(poiChargingPlot.getPower()));
+						poiChargingPlot.setPower(ExcelReader.f2h(poiChargingPlot.getPower()));
 						ischanged = true;
 					}
 					if (poiChargingPlot.getVoltage() != null) {
-						poiChargingPlot.setVoltage(ExcelReader.h2f(poiChargingPlot.getVoltage()));
+						poiChargingPlot.setVoltage(ExcelReader.f2h(poiChargingPlot.getVoltage()));
 						ischanged = true;
 					}
 					if (poiChargingPlot.getCurrent() != null) {
-						poiChargingPlot.setCurrent(ExcelReader.h2f(poiChargingPlot.getCurrent()));
+						poiChargingPlot.setCurrent(ExcelReader.f2h(poiChargingPlot.getCurrent()));
 						ischanged = true;
 					}
 					if (poiChargingPlot.getPrices() != null) {
-						poiChargingPlot.setPrices(ExcelReader.h2f(poiChargingPlot.getPrices()));
+						poiChargingPlot.setPrices(ExcelReader.f2h(poiChargingPlot.getPrices()));
 						ischanged = true;
 					}
 					if (poiChargingPlot.getParkingNum() != null) {
-						poiChargingPlot.setParkingNum(ExcelReader.h2f(poiChargingPlot.getParkingNum()));
+						poiChargingPlot.setParkingNum(ExcelReader.f2h(poiChargingPlot.getParkingNum()));
 						ischanged = true;
 					}
 					if (poiChargingPlot.getManufacturer() != null) {
-						poiChargingPlot.setManufacturer(ExcelReader.h2f(poiChargingPlot.getManufacturer()));
+						poiChargingPlot.setManufacturer(ExcelReader.f2h(poiChargingPlot.getManufacturer()));
 						ischanged = true;
 					}
 					if (poiChargingPlot.getPlotNum() != null) {
-						poiChargingPlot.setPlotNum(ExcelReader.h2f(poiChargingPlot.getPlotNum()));
+						poiChargingPlot.setPlotNum(ExcelReader.f2h(poiChargingPlot.getPlotNum()));
 						ischanged = true;
 					}
 					if (poiChargingPlot.getFactoryNum() != null) {
-						poiChargingPlot.setFactoryNum(ExcelReader.h2f(poiChargingPlot.getFactoryNum()));
+						poiChargingPlot.setFactoryNum(ExcelReader.f2h(poiChargingPlot.getFactoryNum()));
 						ischanged = true;
 					}
 					if (poiChargingPlot.getProductNum() != null) {
-						poiChargingPlot.setProductNum(ExcelReader.h2f(poiChargingPlot.getProductNum()));
+						poiChargingPlot.setProductNum(ExcelReader.f2h(poiChargingPlot.getProductNum()));
 						ischanged = true;
 					}
 					if (!ischanged) {

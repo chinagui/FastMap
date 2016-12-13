@@ -374,7 +374,11 @@ public Page listCheckResults(JSONObject params, JSONArray tips, JSONArray ruleCo
 		sql.append("select rd.name_id from ( SELECT null tipid,r.* from rd_name r  where r.src_resume = '\"task\":"+subtaskId+"' ");
 		sql.append(" union all ");
 		sql.append(" SELECT tt.*  FROM ( select substr(replace(t.src_resume,'\"',''),instr(replace(t.src_resume,'\"',''), ':') + 1,length(replace(src_resume,'\"',''))) as tipid,t.*  from rd_name t  where t.src_resume like '%tips%' ) tt ");
-		sql.append(" where 1=1 and tt.tipid in (select column_value from table(clob_to_table('"+ids+"'))) ");
+		sql.append(" where 1=1 ");
+		//********zl 2016.12.12 新增判断tips 是否有值****************
+		if(ids != null && StringUtils.isNotEmpty(ids)){
+			sql.append(" and tt.tipid in (select column_value from table(clob_to_table('"+ids+"'))) ");
+		}
 		sql.append(" ) rd ),");
 		//**********************
 		//所有道路名的检查结果包含的 nameId 及其 val_exception_id

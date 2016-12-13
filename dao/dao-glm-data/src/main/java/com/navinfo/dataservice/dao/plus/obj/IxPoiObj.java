@@ -187,6 +187,17 @@ public class IxPoiObj extends AbstractIxObj {
 		}
 		return ixPoiChildren;
 	}
+	public IxPoiChildren createIxPoiChildren()throws Exception{
+		IxPoiChildren ixPoiChildren = (IxPoiChildren)(ObjFactory.getInstance().createRow("IX_POI_CHILDREN", this.objPid()));
+		if(subrows.containsKey("IX_POI_CHILDREN")){
+			subrows.get("IX_POI_CHILDREN").add(ixPoiChildren);
+		}else{
+			List<BasicRow> ixPoiChildrenList = new ArrayList<BasicRow>();
+			ixPoiChildrenList.add(ixPoiChildren);
+			subrows.put("IX_POI_CHILDREN", ixPoiChildrenList);
+		}
+		return ixPoiChildren;
+	}
 	
 	public List<IxPoiParent> getIxPoiParents(){
 		return (List)subrows.get("IX_POI_PARENT");
@@ -608,7 +619,7 @@ public class IxPoiObj extends AbstractIxObj {
 		}else if("parents".equals(subRowName)){
 			return this.createIxPoiParent();
 		}else if("children".equals(subRowName)){
-			//return this.createIxPoiChildren(0);
+			return this.createIxPoiChildren();
 		}else if("photos".equals(subRowName)){
 			return this.createIxPoiPhoto();
 		}else if("videoes".equals(subRowName)){
@@ -648,9 +659,8 @@ public class IxPoiObj extends AbstractIxObj {
 		}else if("samepoiParts".equals(subRowName)){
 			return this.createIxSamepoiPart();
 		}else{
-			throw new Exception("字段名为:"+subRowName+"的子表未找到");
+			throw new Exception("字段名为:"+subRowName+"的子表未创建");
 		}
-		return null;
 	}
 	
 	/**

@@ -134,6 +134,7 @@ public class ColumnSaveJob extends AbstractJob {
 				columnCoreOperation.runClassify(classifyMap,conn);
 			}
 			
+			conn.commit();
 		} catch (Exception e) {
 			throw new JobException(e);
 		} finally {
@@ -167,7 +168,7 @@ public class ColumnSaveJob extends AbstractJob {
 	 */
 	public void updateColumnStatus(List<Integer> pidList,Connection conn,int status) throws Exception {
 		StringBuilder sb = new StringBuilder();
-		sb.append("UPDATE poi_column_status SET firstWorkStatus="+status+",secondWorkStatus="+status+" WHERE pid in (select to_number(column_value) from table(clob_to_table(?)))");
+		sb.append("UPDATE poi_column_status SET first_work_status="+status+",second_work_status="+status+" WHERE pid in (select to_number(column_value) from table(clob_to_table(?)))");
 		
 		PreparedStatement pstmt = null;
 

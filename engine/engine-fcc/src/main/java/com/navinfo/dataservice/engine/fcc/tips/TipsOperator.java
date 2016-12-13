@@ -32,7 +32,7 @@ public class TipsOperator {
 	 * @return
 	 * @throws Exception
 	 */
-	public boolean update(String rowkey, int handler, int pid, String mdFlag)
+	public boolean update(String rowkey, int handler, String pid, String mdFlag)
 			throws Exception {
 
 		Connection hbaseConn = HBaseConnector.getInstance().getConnection();
@@ -44,7 +44,7 @@ public class TipsOperator {
 
 		get.addColumn("data".getBytes(), "track".getBytes());
 
-		if (pid > 0) {
+		if (StringUtils.isNotEmpty(pid)) {
 			get.addColumn("data".getBytes(), "deep".getBytes());
 		}
 
@@ -114,7 +114,7 @@ public class TipsOperator {
 
 		String newDeep = null;
 
-		if (pid > 0) {
+		if (StringUtils.isNotEmpty(pid)) {
 
 			JSONObject deep = JSONObject.fromObject(new String(result.getValue(
 					"data".getBytes(), "deep".getBytes())));

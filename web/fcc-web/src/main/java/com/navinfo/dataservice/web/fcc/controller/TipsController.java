@@ -141,10 +141,10 @@ public class TipsController extends BaseController {
             }
 
 
-			int pid = -1;
+			String pid = null;
 
 			if (jsonReq.containsKey("pid")) {
-				pid = jsonReq.getInt("pid");
+				pid = jsonReq.getString("pid");
 			}
 
 			TipsOperator op = new TipsOperator();
@@ -392,7 +392,7 @@ public class TipsController extends BaseController {
                 throw new IllegalArgumentException("参数错误:grids不能为空。");
             }
 
-			int type = jsonReq.getInt("type");
+			String type = jsonReq.getString("type");
 
 			JSONArray stage = jsonReq.getJSONArray("stage");
 
@@ -419,7 +419,7 @@ public class TipsController extends BaseController {
 
 			TipsSelector selector = new TipsSelector();
 
-			JSONArray array = selector.getSnapshot(grids, stage, type,
+			JSONArray array = selector.getSnapshot(grids, stage, Integer.parseInt(type),
 					dbId,mdFlag);
 
 			response.getWriter().println(

@@ -201,6 +201,11 @@ public class MetadataApiImpl implements MetadataApi {
 		ScPointAdminArea scPoint = new ScPointAdminArea();
 		return scPoint.searchByAdminCode(admincode);
 	}
+	@Override
+	public String searchKindName(String kindcode) throws Exception {
+		KindCodeSelector kind = new KindCodeSelector();
+		return kind.searchKindName(kindcode);
+	}
 
 	@Override
 	public Map<String, String> scPointNameckTypeD1() throws Exception {

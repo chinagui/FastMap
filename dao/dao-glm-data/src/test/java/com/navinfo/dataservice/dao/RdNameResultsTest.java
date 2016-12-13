@@ -32,7 +32,7 @@ public class RdNameResultsTest {
 					"ORACLE", "oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@192.168.4.131:1521/orcl", "TEMP_XXW_01", "TEMP_XXW_01").getConnection();
 
 			NiValExceptionSelector a = new NiValExceptionSelector(conn);
-				JSONObject jsonReq = JSONObject.fromObject("{'pageSize':20,'pageNum':1,'subtaskId':76,'dbId':17}");
+				JSONObject jsonReq = JSONObject.fromObject("{'pageSize':20,'pageNum':1,'subtaskId':78,'dbId':17}");
 				
 				//JSONObject data = jsonReq.getJSONObject("data");
 				JSONObject jso = JSONObject.fromObject("{'tips':[{'id':'021901d7e8ed4c7c604242a1392291a530fbb2'},{'id':'021901404F5A9DE3AB4ECCACE7B512207BC00B'},{'id':'02190151EEF41E16D34C5C8976B5DD6292DEAC'}]}");

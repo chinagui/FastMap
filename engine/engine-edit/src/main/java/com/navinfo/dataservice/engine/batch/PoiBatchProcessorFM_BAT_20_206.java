@@ -23,33 +23,75 @@ public class PoiBatchProcessorFM_BAT_20_206 implements IBatch {
 		try {
 			String kindcode = poi.getKindCode();
 			int uRecord = poi.getuRecord();
+			boolean ischanged = false;
 			if ((!kindcode.equals("230218")&&!kindcode.equals("230227"))||uRecord==2) {
 				return result;
 			}
 			if (kindcode.equals("230218")) {
 				JSONArray dataArray = new JSONArray();
 				IxPoiChargingStation poiChargingStation = (IxPoiChargingStation) poi.getChargingstations().get(0);
-				poiChargingStation.setOpenHour(ExcelReader.h2f(poiChargingStation.getOpenHour()));
-				poiChargingStation.setParkingInfo(ExcelReader.h2f(poiChargingStation.getParkingInfo()));
-				JSONObject changeFields = poiChargingStation.Serialize(null);
-				changeFields.put("objStatus", ObjStatus.UPDATE.toString());
-				changeFields.remove("uDate");
-				dataArray.add(changeFields);
-				result.put("chargingstations", dataArray);
+				if (poi.getChargingstations().size()>0) {
+					if (poiChargingStation.getOpenHour() != null) {
+						poiChargingStation.setOpenHour(ExcelReader.h2f(poiChargingStation.getOpenHour()));
+						ischanged = true;
+					}
+					if (poiChargingStation.getParkingInfo() != null) {
+						poiChargingStation.setParkingInfo(ExcelReader.h2f(poiChargingStation.getParkingInfo()));
+						ischanged = true;
+					}
+					if (!ischanged) {
+						return result;
+					}
+					JSONObject changeFields = poiChargingStation.Serialize(null);
+					changeFields.put("objStatus", ObjStatus.UPDATE.toString());
+					changeFields.remove("uDate");
+					dataArray.add(changeFields);
+					result.put("chargingstations", dataArray);
+				}
 			} else if (kindcode.equals("230227")) {
 				JSONArray dataArray = new JSONArray();
 				List<IRow> poiChargingPlots = poi.getChargingplots();
 				for (IRow plot:poiChargingPlots) {
 					IxPoiChargingPlot poiChargingPlot = (IxPoiChargingPlot) plot;
-					poiChargingPlot.setPower(ExcelReader.h2f(poiChargingPlot.getPower()));
-					poiChargingPlot.setVoltage(ExcelReader.h2f(poiChargingPlot.getVoltage()));
-					poiChargingPlot.setCurrent(ExcelReader.h2f(poiChargingPlot.getCurrent()));
-					poiChargingPlot.setPrices(ExcelReader.h2f(poiChargingPlot.getPrices()));
-					poiChargingPlot.setParkingNum(ExcelReader.h2f(poiChargingPlot.getParkingNum()));
-					poiChargingPlot.setManufacturer(ExcelReader.h2f(poiChargingPlot.getManufacturer()));
-					poiChargingPlot.setPlotNum(ExcelReader.h2f(poiChargingPlot.getPlotNum()));
-					poiChargingPlot.setFactoryNum(ExcelReader.h2f(poiChargingPlot.getFactoryNum()));
-					poiChargingPlot.setProductNum(ExcelReader.h2f(poiChargingPlot.getProductNum()));
+					if (poiChargingPlot.getPower() != null) {
+						poiChargingPlot.setPower(ExcelReader.h2f(poiChargingPlot.getPower()));
+						ischanged = true;
+					}
+					if (poiChargingPlot.getVoltage() != null) {
+						poiChargingPlot.setVoltage(ExcelReader.h2f(poiChargingPlot.getVoltage()));
+						ischanged = true;
+					}
+					if (poiChargingPlot.getCurrent() != null) {
+						poiChargingPlot.setCurrent(ExcelReader.h2f(poiChargingPlot.getCurrent()));
+						ischanged = true;
+					}
+					if (poiChargingPlot.getPrices() != null) {
+						poiChargingPlot.setPrices(ExcelReader.h2f(poiChargingPlot.getPrices()));
+						ischanged = true;
+					}
+					if (poiChargingPlot.getParkingNum() != null) {
+						poiChargingPlot.setParkingNum(ExcelReader.h2f(poiChargingPlot.getParkingNum()));
+						ischanged = true;
+					}
+					if (poiChargingPlot.getManufacturer() != null) {
+						poiChargingPlot.setManufacturer(ExcelReader.h2f(poiChargingPlot.getManufacturer()));
+						ischanged = true;
+					}
+					if (poiChargingPlot.getPlotNum() != null) {
+						poiChargingPlot.setPlotNum(ExcelReader.h2f(poiChargingPlot.getPlotNum()));
+						ischanged = true;
+					}
+					if (poiChargingPlot.getFactoryNum() != null) {
+						poiChargingPlot.setFactoryNum(ExcelReader.h2f(poiChargingPlot.getFactoryNum()));
+						ischanged = true;
+					}
+					if (poiChargingPlot.getProductNum() != null) {
+						poiChargingPlot.setProductNum(ExcelReader.h2f(poiChargingPlot.getProductNum()));
+						ischanged = true;
+					}
+					if (!ischanged) {
+						return result;
+					}
 					JSONObject changeFields = poiChargingPlot.Serialize(null);
 					changeFields.put("objStatus", ObjStatus.UPDATE.toString());
 					changeFields.remove("uDate");

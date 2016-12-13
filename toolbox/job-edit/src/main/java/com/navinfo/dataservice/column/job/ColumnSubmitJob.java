@@ -160,7 +160,7 @@ public class ColumnSubmitJob extends AbstractJob {
 	 */
 	public void updateDeepStatus(List<Integer> pidList,Connection conn,int status) throws Exception {
 		StringBuilder sb = new StringBuilder();
-		sb.append("UPDATE poi_column_status SET firstWorkStatus="+status+",secondWorkStatus="+status+",handler=0 WHERE pid in (select to_number(column_value) from table(clob_to_table(?)))");
+		sb.append("UPDATE poi_column_status SET first_work_status="+status+",second_work_status="+status+",handler=0 WHERE pid in (select to_number(column_value) from table(clob_to_table(?)))");
 		
 		PreparedStatement pstmt = null;
 

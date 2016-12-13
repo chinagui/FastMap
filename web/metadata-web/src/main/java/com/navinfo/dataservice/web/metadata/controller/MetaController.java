@@ -1085,5 +1085,29 @@ public class MetaController extends BaseController {
             return new ModelAndView("jsonView", fail(e.getMessage()));
         }
     }
+    @RequestMapping(value = "/queryAreaCodeByAdminCode")
+    public ModelAndView queryAreaCodeByAdminCode(HttpServletRequest request)
+            throws ServletException, IOException {
+    	String parameter = request.getParameter("parameter");
+
+        try {
+        	
+        	JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+        	String adminCode = jsonReq.getString("adminCode");
+
+        	ScPointAdminArea selector = new ScPointAdminArea();
+
+        	JSONObject data = selector.searchByAdminCode(adminCode);
+
+            return new ModelAndView("jsonView", success(data));
+
+        } catch (Exception e) {
+
+            logger.error(e.getMessage(), e);
+
+            return new ModelAndView("jsonView", fail(e.getMessage()));
+        }
+    }
 
 }

@@ -21,6 +21,8 @@ import com.navinfo.dataservice.dao.glm.search.RdLinkSearch;
 import com.navinfo.dataservice.dao.glm.search.RdObjectSearch;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.SelectorUtils;
+import com.navinfo.dataservice.dao.glm.utils.TableNameFactory;
+import com.navinfo.dataservice.dao.glm.utils.TableNameSqlInfo;
 import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.operation.Transaction;
 import com.navinfo.dataservice.engine.edit.search.SearchProcess;
@@ -130,7 +132,7 @@ public class RdLinkTest extends InitApplication {
 	@Test
 	public void testGetByElementCondition()
 	{
-		String parameter = "{\"dbId\":17,\"pageNum\":1,\"pageSize\":5,\"data\":{\"pid\":\"302000171\"},\"type\":\"IXPOI\"}";
+		String parameter = "{\"dbId\":17,\"pageNum\":1,\"pageSize\":5,\"data\":{\"pid\":\"2077881\"},\"type\":\"RDROAD\"}";
 
 		Connection conn = null;
 
@@ -190,5 +192,19 @@ public class RdLinkTest extends InitApplication {
 			e.printStackTrace();
 		}
 		
+	}
+	
+	@Test
+	public void testParseTableName() throws Exception
+	{
+		TableNameFactory tableNameFactory = TableNameFactory.getInstance();
+		
+		TableNameSqlInfo sqlInfo = tableNameFactory.getSqlInfoByTableName("RW_LINK");
+		
+		System.out.println(sqlInfo.getLeftJoinSql());
+		
+		TableNameSqlInfo sqlInfo2 = tableNameFactory.getSqlInfoByTableName("RD_OBJECT2");
+		
+		System.out.println(sqlInfo2.getLeftJoinSql());
 	}
 }

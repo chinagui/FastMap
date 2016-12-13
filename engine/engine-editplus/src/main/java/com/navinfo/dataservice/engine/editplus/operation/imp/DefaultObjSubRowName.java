@@ -8,6 +8,8 @@ import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 
+import net.sf.json.JSONArray;
+import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
 
 public class DefaultObjSubRowName {
@@ -25,9 +27,12 @@ public class DefaultObjSubRowName {
 				JSONObject json = entry.getValue();
 				for(Iterator it = json.keys();it.hasNext();){
 					String subRowName = (String)it.next();
-					if(StringUtils.isEmpty(subRowName)){
+					Object attValue = json.get(subRowName);
+					if((attValue==null && (!(attValue instanceof JSONNull)))
+							||StringUtils.isEmpty(subRowName)||"objStatus".equals(subRowName)){
 						continue;
-					}else{
+					}
+					if(attValue instanceof JSONArray||attValue instanceof JSONObject){
 						if("addresses".equals(subRowName)){
 							tabNames.add("IX_POI_ADDRESS");
 						}else if("audioes".equals(subRowName)){

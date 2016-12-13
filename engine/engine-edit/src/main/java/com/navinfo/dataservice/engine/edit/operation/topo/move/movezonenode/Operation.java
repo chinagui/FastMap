@@ -97,7 +97,7 @@ public class Operation implements IOperation {
             for (IRow row : link.getMeshes()) {
                 linkMeshes.add(((ZoneLinkMesh) row).getMeshId() + "");
             }
-            if (meshes.containsAll(linkMeshes)) {
+            if (linkMeshes.containsAll(meshes)) {
                 JSONObject updateContent = new JSONObject();
                 updateContent.put("geometry", geojson);
                 updateContent.put("length", GeometryUtils.getLinkLength(geo));
@@ -273,6 +273,19 @@ public class Operation implements IOperation {
 
             }
         }
+    }
 
+    public static void main(String[] args) {
+        List<String> list1 = new ArrayList<>();
+        List<String> list2 = new ArrayList<>();
+
+        list1.add("a");
+        list1.add("b");
+
+        list2.add("b");
+        list2.add("a");
+        list1.removeAll(list2);
+
+        System.out.println(list1.size() + "," + list2.size());
     }
 }

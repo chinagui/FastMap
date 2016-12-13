@@ -786,6 +786,8 @@ public class IxPoiSearch implements ISearch {
 					ckRule=cr.toString();
 				}
 				poiObj.put("ckRules", ckRule);
+				//大陆作业无值，港澳后续补充
+				poiObj.put("namerefMsg", "");
 				//获取特殊字段
 				poiObj=getUnCommenfields(firstWordItem,secondWorkItem,pid,poi,poiObj);
 				dataList.add(poiObj);
@@ -813,6 +815,11 @@ public class IxPoiSearch implements ISearch {
 			dataObj.put("poiNum", poi.getPoiNum());
 			dataObj.put("kindCode", poi.getKindCode());
 			dataObj.put("meshId", poi.getMeshId());
+			
+            MetadataApi apiService=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
+			String KindName = apiService.searchKindName(poi.getKindCode());
+			dataObj.put("kindName", KindName);
+			
 			//ix_poi表通过region_id关联ad_admin，获取adminCode
 			int regionId = poi.getRegionId();
 			AdAdminSearch adAdminSearch = new AdAdminSearch(conn);

@@ -30,6 +30,8 @@ public interface MetadataApi {
 	
 	public JSONObject getMetadataMap() throws Exception;
 	
+	public String searchKindName(String kindcode) throws Exception;
+	
 	public String[] pyConvert(String word) throws Exception;
 	
 	/**

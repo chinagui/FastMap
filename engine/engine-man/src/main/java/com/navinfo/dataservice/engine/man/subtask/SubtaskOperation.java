@@ -711,16 +711,20 @@ public class SubtaskOperation {
 							try {
 								List<Integer> gridIds = getGridIdsBySubtaskId(rs.getInt("SUBTASK_ID"));
 								Map<String,Integer> subtaskStat = subtaskStatRealtime((int)subtask.get("dbId"),rs.getInt("TYPE"),gridIds);
-								if(!subtaskStat.isEmpty()){
-									if(subtaskStat.containsKey("poi")){
-										subtask.put("poi",subtaskStat.get("poi"));
+								if(subtaskStat != null){
+									if(subtaskStat.containsKey("poiFinish")){
+										subtask.put("poiFinish",subtaskStat.get("poiFinish"));
+										subtask.put("poiTotal",subtaskStat.get("poiTotal"));
 									}
-									if(subtaskStat.containsKey("tips")){
-										subtask.put("tips",subtaskStat.get("tips"));
+									if(subtaskStat.containsKey("tipsFinish")){
+										subtask.put("tipsFinish",subtaskStat.get("tipsFinish"));
+										subtask.put("tipsTotal",subtaskStat.get("tipsTotal"));
 									}
-									if(subtaskStat.containsKey("percent")){
-										subtask.put("percent",subtaskStat.get("percent"));
-									}
+								}else{
+									subtask.put("poiFinish",0);
+									subtask.put("poiTotal",0);
+									subtask.put("tipsFinish",0);
+									subtask.put("tipsTotal",0);
 								}
 							} catch (Exception e) {
 								// TODO Auto-generated catch block
@@ -810,30 +814,32 @@ public class SubtaskOperation {
 			}
 			);
 			
-			int percent = 0;
-			int percentPOI = 0;
-			int percentRoad = 0; 
+			//int percent = 0;
+			//int percentPOI = 0;
+			//int percentRoad = 0; 
 			//poi数量及完成度
-			stat.put("poi", unfinishPOI);
-			if(0 != unfinishPOI){
+			stat.put("poiFinish", totalPOI-unfinishPOI);
+			stat.put("poiTotal", totalPOI);
+			/*if(0 != unfinishPOI){
 				percentPOI = (totalPOI-unfinishPOI)*100/totalPOI;
 			}else{
 				percentPOI = 100;
-			}
+			}*/
 			//type=3,一体化grid粗编子任务。增加道路数量及完成度
 			if(3 == type){
 				FccApi api=(FccApi) ApplicationContextUtil.getBean("fccApi");
 				JSONObject resultRoad = api.getSubTaskStats(gridIdsJsonArray);
 				int tips = resultRoad.getInt("total") + resultRoad.getInt("finished");
-				stat.put("tips", tips);				
-				if(0 != tips){
+				stat.put("tipsFinish", resultRoad.getInt("finished"));
+				stat.put("tipsTotal", tips);	
+				/*if(0 != tips){
 					percentRoad = resultRoad.getInt("finished")*100/tips;
 				}else{
 					percentRoad = 100;
-				}
+				}*/
 			}
-			percent = (int) (percentPOI*0.5 + percentRoad*0.5);
-			stat.put("percent", percent);
+			/*percent = (int) (percentPOI*0.5 + percentRoad*0.5);
+			stat.put("percent", percent);*/
 			return stat;
 		}catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -994,19 +1000,19 @@ public class SubtaskOperation {
 							try {
 								Map<String,Integer> subtaskStat = subtaskStatRealtime((int)subtask.get("dbId"),rs.getInt("TYPE"),gridIds);
 								if(subtaskStat != null){
-									if(subtaskStat.containsKey("poi")){
-										subtask.put("poi",subtaskStat.get("poi"));
+									if(subtaskStat.containsKey("poiFinish")){
+										subtask.put("poiFinish",subtaskStat.get("poiFinish"));
+										subtask.put("poiTotal",subtaskStat.get("poiTotal"));
 									}
-									if(subtaskStat.containsKey("tips")){
-										subtask.put("tips",subtaskStat.get("tips"));
-									}
-									if(subtaskStat.containsKey("percent")){
-										subtask.put("percent",subtaskStat.get("percent"));
+									if(subtaskStat.containsKey("tipsFinish")){
+										subtask.put("tipsFinish",subtaskStat.get("tipsFinish"));
+										subtask.put("tipsTotal",subtaskStat.get("tipsTotal"));
 									}
 								}else{
-									subtask.put("poi",0);
-									subtask.put("tips",0);
-									subtask.put("percent",0);
+									subtask.put("poiFinish",0);
+									subtask.put("poiTotal",0);
+									subtask.put("tipsFinish",0);
+									subtask.put("tipsTotal",0);
 								}
 							} catch (Exception e) {
 								// TODO Auto-generated catch block

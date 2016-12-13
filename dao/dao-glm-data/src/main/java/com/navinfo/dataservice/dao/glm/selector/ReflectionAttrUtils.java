@@ -154,7 +154,7 @@ public class ReflectionAttrUtils {
 		case RDRESTRICTION:
 			return "RD_RESTRICTION";
 		case RDCROSS:
-			return "";
+			return "RD_CROSS";
 		case RDLANECONNEXITY:
 			return "RD_LANECONNEXITY";
 		case RDSPEEDLIMIT:
@@ -207,6 +207,10 @@ public class ReflectionAttrUtils {
 			return "LC_NODE";
 		case LCLINK:
 			return "LC_LINK";
+		case RDBRANCHDETAIL:
+			return "RD_BRANCH_DETAIL";
+		case RDSIGNBOARD:
+			return "RD_SIGNBOARD";
 		default:
 			throw new Exception("不支持的对象类型:" + objType.toString());
 		}

@@ -227,7 +227,7 @@ public class RdObjectSearch implements ISearch {
 			//包络线几何
 			Coordinate[] cors = getLineFromMuitPoint(linkArray,nodeArray);
 			
-			Geometry metry = JGeometryUtil.getPolygonFromPoint(cors);
+			Geometry metry = JGeometryUtil.getBuffer(cors);
 			
 			Geometry boundary = metry.getBoundary();
 			

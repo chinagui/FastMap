@@ -13,7 +13,6 @@ import java.util.Scanner;
 import java.util.Set;
 
 import net.sf.json.JSONArray;
-import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
 
 import org.apache.hadoop.hbase.TableName;
@@ -228,7 +227,7 @@ public class TipsUpload {
 					continue;
 				}
 
-				String operateDate = json.getString("t_operateDate");
+				//String operateDate = json.getString("t_operateDate");
 
 				JSONArray attachments = json.getJSONArray("attachments");
 
@@ -374,6 +373,8 @@ public class TipsUpload {
 		audio.setRowkey(id);
 		
 		audio.setA_uuid(id); 
+		
+		audio.setA_fileName(attachment.getString("content"));
 
 		audio.setA_uploadUser(json.getInt("t_handler"));
 

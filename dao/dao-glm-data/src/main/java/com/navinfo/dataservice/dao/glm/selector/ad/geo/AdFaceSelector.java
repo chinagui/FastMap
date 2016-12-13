@@ -67,6 +67,51 @@ public class AdFaceSelector extends AbstractSelector {
 		return faces;
 	}
 
+	/**
+	 * 根据regionId查询ADFACE
+	 * @param regionId 
+	 * @param isLock
+	 * @return ADFACE集合
+	 * @throws Exception
+	 */
+	public List<AdFace> loadAdFaceByRegionId(int regionId, boolean isLock) throws Exception {
+		List<AdFace> faces = new ArrayList<AdFace>();
+
+		StringBuilder bf = new StringBuilder();
+		bf.append("select * from ad_face where region_id = :1");
+		if (isLock) {
+			bf.append(" for update nowait");
+		}
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = this.conn.prepareStatement(bf.toString());
+
+			pstmt.setInt(1, regionId);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+
+				AdFace face = new AdFace();
+				ReflectionAttrUtils.executeResultSet(face, resultSet);
+				faces.add(face);
+			}
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+		}
+
+		return faces;
+	}
+
 	public List<AdFace> loadAdFaceByLinkId(int linkPid, boolean isLock) throws Exception {
 
 		List<AdFace> faces = new ArrayList<AdFace>();

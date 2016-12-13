@@ -71,6 +71,7 @@ public class FMBAT20138 extends BasicBatchRule {
 						newShortSubrow.setNameClass(5);
 						newShortSubrow.setNameType(1);
 						newShortSubrow.setName(newShortName);
+						newShortSubrow.setNameGroupid(poiObj.getMaxGroupIdFromNames()+1);
 						//批拼音
 						newShortSubrow.setNamePhonetic(metadataApi.pyConvert(newShortName)[0]);	
 						return;
@@ -89,6 +90,7 @@ public class FMBAT20138 extends BasicBatchRule {
 					newShortSubrow.setNameClass(5);
 					newShortSubrow.setNameType(1);
 					newShortSubrow.setName(newShortName);
+					newShortSubrow.setNameGroupid(poiObj.getMaxGroupIdFromNames()+1);
 					//批拼音
 					newShortSubrow.setNamePhonetic(metadataApi.pyConvert(newShortName)[0]);				
 				}

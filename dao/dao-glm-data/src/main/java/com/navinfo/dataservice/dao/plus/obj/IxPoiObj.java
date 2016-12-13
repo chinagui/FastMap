@@ -603,6 +603,19 @@ public class IxPoiObj extends AbstractIxObj {
 	}
 	
 	/*
+	 * 获取名称组中最大group_id
+	 */
+	public long getMaxGroupIdFromNames(){
+		long groupId=0;
+		List<IxPoiName> subRows=getIxPoiNames();
+		for(IxPoiName br:subRows){
+			long gId=br.getNameGroupid();
+			if (groupId<=gId){groupId=gId;}
+		}	
+		return groupId;
+	}
+	
+	/*
 	 * 别名中文(name_class=3,name_type=1,lang_code='CHI')列表
 	 */
 	public List<IxPoiName> getAliasCHIName(){

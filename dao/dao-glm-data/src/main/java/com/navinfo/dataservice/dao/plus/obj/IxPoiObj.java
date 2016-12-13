@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
+import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiAddress;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiAdvertisement;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiAttraction;
@@ -574,6 +575,51 @@ public class IxPoiObj extends AbstractIxObj {
 				return br;}
 			}
 		return null;
+	}
+	
+	/*
+	 * 别名中文(name_class=3,name_type=1,lang_code='CHI')列表
+	 */
+	public List<IxPoiName> getAliasCHIName(){
+		List<IxPoiName> aliasCHINameList=null;
+		List<IxPoiName> subRows=getIxPoiNames();
+		for(IxPoiName br:subRows){
+			if(br.getNameClass()==3&&br.getNameType()==1&&br.getLangCode().equals("CHI")){
+				aliasCHINameList.add(br);}
+			}
+		return aliasCHINameList;
+	}
+	
+	public IxPoiName getStandardAliasENGName(long nameGroupId){
+		List<IxPoiName> subRows=getIxPoiNames();
+		for(IxPoiName br:subRows){
+			if(br.getNameGroupid()==nameGroupId&&br.getNameClass()==3&&br.getNameType()==1&&br.getLangCode().equals("ENG")){
+				return br;}
+			}
+		return null;
+	}
+	
+	public IxPoiName getOriginAliasENGName(long nameGroupId){
+		List<IxPoiName> subRows=getIxPoiNames();
+		for(IxPoiName br:subRows){
+			if(br.getNameGroupid()==nameGroupId&&br.getNameClass()==3&&br.getNameType()==2&&br.getLangCode().equals("ENG")){
+				return br;}
+			}
+		return null;
+	}
+	/**
+	 * 获取原始英文别名列表
+	 * @param nameGroupId
+	 * @return
+	 */
+	public List<IxPoiName> getOriginAliasENGNameList(){
+		List<IxPoiName> originAliasENGNameList=null;
+		List<IxPoiName> subRows=getIxPoiNames();
+		for(IxPoiName br:subRows){
+			if(br.getNameClass()==3&&br.getNameType()==2&&br.getLangCode().equals("ENG")){
+				originAliasENGNameList.add(br);}
+			}
+		return originAliasENGNameList;
 	}
 	
 	@Override

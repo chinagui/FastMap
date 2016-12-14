@@ -688,6 +688,14 @@ public class IxPoiObj extends AbstractIxObj {
 		return null;
 	}
 	
+	public IxPoiAddress getCHIAddress(){
+		List<IxPoiAddress> subRows=getIxPoiAddresses();
+		for(IxPoiAddress br:subRows){
+			if(br.getLangCode().equals("CHI")&&br.isChanged()){
+				return br;}
+			}
+		return null;
+	}
 	@Override
 	public String objName() {
 		return ObjectName.IX_POI;

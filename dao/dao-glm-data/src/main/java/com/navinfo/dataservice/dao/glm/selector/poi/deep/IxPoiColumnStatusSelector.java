@@ -543,7 +543,7 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 	 */
 	public List<String> queryClassifyByPid(int pid) throws Exception {
 		StringBuilder sb = new StringBuilder();
-		sb.append("SELECT work_item_id FROM poi_deep_status s where s.pid=:1 and s.first_work_status=1 ");
+		sb.append("SELECT work_item_id FROM poi_column_status s where s.pid=:1 and s.first_work_status=1 ");
 
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;

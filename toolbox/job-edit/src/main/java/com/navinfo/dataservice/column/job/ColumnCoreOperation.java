@@ -3,6 +3,7 @@ package com.navinfo.dataservice.column.job;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -32,10 +33,11 @@ public class ColumnCoreOperation {
 	@SuppressWarnings("rawtypes")
 	public void runClassify(HashMap mapParams,Connection conn) throws Exception {
 		try{
-			List ckRules=(List) mapParams.get("ckRules");
-			List classifyRules=(List) mapParams.get("classifyRules");
+			String[] strCkRules=((String) mapParams.get("ckRules")).split(",");
+			String[] strClassifyRules=((String) mapParams.get("classifyRules")).split(",");
 			List pidList=(List) mapParams.get("pids"); //每条数据需包含pid
-			
+			List ckRules= Arrays.asList(strCkRules);
+			List classifyRules=Arrays.asList(strClassifyRules);
 			for(int i=0;i<pidList.size();i++){
 				int pid=(Integer) pidList.get(i);
 				//根据数据取检查结果

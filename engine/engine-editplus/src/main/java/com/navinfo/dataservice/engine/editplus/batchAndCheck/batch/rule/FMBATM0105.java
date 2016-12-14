@@ -105,33 +105,34 @@ public class FMBATM0105 extends BasicBatchRule {
 		if (!metadataApi.judgeScPointKind(poi.getKindCode(), poi.getChain())){
 			return false;
 		}
-		//满足(2)POI对象新增地址或修改地址的POI数据
-		List<IxPoiAddress> addrList=poiObj.getIxPoiAddresses();
+		//满足(2)POI对象新增中文地址或修改中文地址的POI数据
+		IxPoiAddress addr=poiObj.getCHIAddress();
 		boolean changeAddrFlag=false;
-		for(IxPoiAddress addr:addrList){
-			if ((!(addr.getOpType().equals(OperationType.DELETE)))&&(addr.getHisOpType().equals(OperationType.INSERT)||addr.getHisOpType().equals(OperationType.UPDATE))){
-				changeAddrFlag=true;
-				break;
-			}
+		if ((!(addr.getOpType().equals(OperationType.DELETE)))&&(addr.getHisOpType().equals(OperationType.INSERT)||addr.getHisOpType().equals(OperationType.UPDATE))){
+			changeAddrFlag=true;
 		}
 		if (!changeAddrFlag){
 			return false;
 		}
-		//满足(3)简单地址POI数据
+		//满足(3)简单中文地址POI数据
 		boolean simpleAddrFlag=false;
-		for(IxPoiAddress addr:addrList){
-			if ((!(addr.getOpType().equals(OperationType.DELETE)))&&!StringUtils.isEmpty(addr.getStreet()+addr.getHousenum()+addr.getType())&&StringUtils.isEmpty(addr.getProvince()+
+		if ((!(addr.getOpType().equals(OperationType.DELETE)))&&!StringUtils.isEmpty(addr.getStreet()+addr.getHousenum()+addr.getType())&&StringUtils.isEmpty(addr.getProvince()+
 					addr.getCity()+addr.getTown()+addr.getPlace()+addr.getLandmark()+addr.getPrefix()+addr.getSubnum()+addr.getSurfix()+addr.getEstab()+addr.getBuilding()+addr.getFloor()
 					+addr.getUnit()+addr.getRoom()+addr.getAddons())){
 				simpleAddrFlag=true;
-				break;
 			}
-		}
+		
 		if(!simpleAddrFlag){
 			return false;
 		}
 		//满足(4)IX_POI_ADDRESS.TYPE为空，或IX_POI_ADDRESS.TYPE不为空，且IX_POI_ADDRESS.TYPE的值在SC_POINT_ENGKEYWORDS.type=1对应的SC_POINT_ENGKEYWORDS.chikeywords中存在
-		Map<String, String> typeMap8 = metadataApi.scPointSpecKindCodeType8();
+		Map<String, String> typeMap1 = metadataApi.scPointEngKeyWordsType1();
+		if (StringUtils.isEmpty(addr.getType())){
+			return false;
+		}else if(!typeMap1.containsKey(addr.getType())){
+			return false;
+		}
+		
 		return true;
 	}
 

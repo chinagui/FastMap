@@ -74,7 +74,6 @@ public class ColumnSubmitJob extends AbstractJob {
 			JSONArray dataArray = new JSONArray(); 
 			for (int pid:pidList) {
 				JSONObject temp = new JSONObject();
-				pidList.add(pid);
 				temp.put("pid", pid);
 				temp.put("taskId", taskId);
 				dataArray.add(temp);

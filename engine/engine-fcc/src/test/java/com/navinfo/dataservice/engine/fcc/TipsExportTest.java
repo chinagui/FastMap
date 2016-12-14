@@ -5,7 +5,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import javax.sound.sampled.AudioInputStream;
@@ -84,7 +86,7 @@ public class TipsExportTest extends InitApplication{
 			
 			parameter="{\"condition\":[{\"grid\":60560233,\"date\":\"20161210114441\"}]}";
 			
-			parameter="{\"condition\":[{\"grid\":59567220,\"date\":\"20161213112535\"}]}";
+			parameter="{\"condition\":[{\"grid\":59567220,\"date\":\"20161215112535\"}]}";
 			
 			String uuid = UuidUtils.genUuid();
 			
@@ -104,18 +106,27 @@ public class TipsExportTest extends InitApplication{
 			
 			Set<String> images = new HashSet<String>();
 
-			op.export(condition, filePath, "tips.txt", images);
+			int expCount=op.export(condition, filePath, "tips.txt", images);
 			
 			System.out.println("导出成功:"+filePath);
 			System.out.println(op.export(condition, filePath, "tips.txt", images));
 			
-			JSONObject result=new JSONObject();
-			result.put("url", filePath);
 			
-			result.put("downloadDate",  DateUtils.dateToString(new Date(),
-					DateUtils.DATE_COMPACTED_FORMAT));
+			JSONObject data=null;
+			if(expCount>0){
+				data=new JSONObject();
+				data.put("url", filePath);
+				
+				data.put("downloadDate",  DateUtils.dateToString(new Date(),
+						DateUtils.DATE_COMPACTED_FORMAT));	
+			}
 			
-			System.out.println(result);
+			Map<String,Object> result = new HashMap<String,Object>();
+	    	result.put("errcode", 0);
+	    	result.put("errmsg", "success");
+	    	result.put("data", data);
+			
+			System.out.println(JSONObject.fromObject(result));
 			
 		} catch (Exception e) {
 			e.printStackTrace();

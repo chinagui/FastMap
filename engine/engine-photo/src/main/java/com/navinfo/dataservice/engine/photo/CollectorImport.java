@@ -15,6 +15,7 @@ import javax.imageio.ImageIO;
 
 import java.util.Set;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import org.apache.hadoop.hbase.TableName;
@@ -85,6 +86,8 @@ public class CollectorImport {
 		
 		Map<String,byte[]> mapPhoto = FileUtils.readPhotos(dir);
 		
+		Map<String, Integer> exitstPhoto=getAllExitsPhoto(map); //找到所有的在数据库中已存在的照片,已存在则不再导入
+		
 		//Map<String,byte[]> mapSltPhoto = FileUtils.genSmallImageMap(dir);
 		
 		Table photoTab = HBaseConnector.getInstance().getConnection().getTable(
@@ -101,7 +104,7 @@ public class CollectorImport {
 		while(it.hasNext()){
 			Entry<String,Photo> entry = it.next();
 			//缩略图不存储，参3为null
-			Put put = enclosedPut(entry,mapPhoto,null);
+			Put put = enclosedPut(entry,mapPhoto,null,exitstPhoto);
 			
 			if(put == null){
 				continue;
@@ -125,9 +128,49 @@ public class CollectorImport {
 		photoTab.close();
 	}
 	
-	private static Put enclosedPut(Entry<String,Photo> entry,Map<String,byte[]> mapPhoto,Map<String,byte[]> mapSltPhoto) throws Exception
+	/**
+	 * @Description:TOOD
+	 * @param map
+	 * @return
+	 * @author: y
+	 * @throws Exception 
+	 * @time:2016-12-14 下午6:19:10
+	 */
+	private static Map<String, Integer> getAllExitsPhoto(Map<String, Photo> map) throws Exception {
+		Set<Entry<String,Photo>> set = map.entrySet();
+		
+		Iterator<Entry<String,Photo>> it = set.iterator();
+		
+		int num = 0;
+		
+		JSONArray keysArr=new JSONArray();
+		
+		while(it.hasNext()){
+			
+			Entry<String,Photo> entry = it.next();
+			
+			Photo pht = entry.getValue();
+			
+			String rowkey=pht.getRowkey();
+			
+			keysArr.add(rowkey);
+		}
+		
+		Map<String, Integer> result=new PhotoGetter().getPhotosExistByRowkey(keysArr);
+		
+		return result;
+	}
+
+	private static Put enclosedPut(Entry<String,Photo> entry,Map<String,byte[]> mapPhoto,Map<String,byte[]> mapSltPhoto, Map<String, Integer> exitstPhoto) throws Exception
 	{
 		Photo pht = entry.getValue();
+		
+		String rowkey=pht.getRowkey();
+		
+		//如果数据库中已经存在改id，则不再导入
+		if(exitstPhoto.get(rowkey)!=null){
+			return  null;
+		}
 		
 		String name = entry.getKey();
 		

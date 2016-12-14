@@ -229,4 +229,32 @@ public class HBaseController {
 		}
 		return photos;
 	}
+	
+	
+	/**
+	 * @Description:根据rowkey查询tips是否存，存在则返回<rowkey,1>
+	 * @param rowkeys
+	 * @return
+	 * @throws Exception
+	 * @author: y
+	 * @time:2016-12-14 下午6:35:23
+	 */
+	public Map<String, Integer> getExistPhotosByRowkey(JSONArray rowkeys) throws Exception{
+		 Map<String, Integer> resultMap=new HashMap<String, Integer>();
+		
+		Connection hbaseConn = HBaseConnector.getInstance().getConnection();
+		Table htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.photoTab));
+		List<Get> getList=new ArrayList<Get>();
+		for(Object rowkey:rowkeys){
+			Get get = new Get(((String)rowkey).getBytes());
+			getList.add(get);
+		}
+		Result[] rs = htab.get(getList);
+		for (Result result : rs) {
+			if (result.isEmpty()) {continue;}
+			String rowkey = new String(result.getRow());
+			resultMap.put(rowkey, 1);
+		}
+		return resultMap;
+	}
 }

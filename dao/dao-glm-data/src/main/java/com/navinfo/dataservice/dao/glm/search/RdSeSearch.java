@@ -89,7 +89,7 @@ public class RdSeSearch implements ISearch {
 
 				snapshot.setT(34);
 
-				snapshot.setI(resultSet.getString("pid"));
+				snapshot.setI(resultSet.getInt("pid"));
 
 				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
 

@@ -99,7 +99,7 @@ public class RdObjectSearch implements ISearch {
 
 				SearchSnapshot snapshot = new SearchSnapshot();
 
-				String pid = resultSet.getString("pid");
+				int pid = resultSet.getInt("pid");
 
 				String linkWkt = resultSet.getString("geometry");
 
@@ -143,7 +143,7 @@ public class RdObjectSearch implements ISearch {
 
 	private void loadChildData(SearchSnapshot snapshot, double px, double py,int z) throws Exception {
 
-		int pid = Integer.parseInt(snapshot.getI());
+		int pid = snapshot.getI();
 
 		String sql = "select tmp.*,SDO_UTIL.TO_WKTGEOMETRY_VARCHAR(C.GEOMETRY) as geometry from( select 1 as type,B.LINK_PID as lnpid,A.INTER_PID as cpid from RD_OBJECT_INTER A,RD_INTER_LINK B where A.INTER_PID = b.PID and a.pid = :1 and a.U_RECORD !=2 and b.U_RECORD !=2 union all select 2 as type,B.LINK_PID as lnpid,A.road_PID as cpid from RD_OBJECT_ROAD A,RD_ROAD_LINK B where A.ROAD_PID = b.PID and a.pid = :2 and a.U_RECORD !=2 and b.U_RECORD !=2 union all select 0 as type,link_pid,pid as cpid from rd_object_link where pid = :3 and u_record !=2）tmp left join rd_link c on tmp.lnpid = c.link_pid union all select tmp.*,SDO_UTIL.TO_WKTGEOMETRY_VARCHAR(C.GEOMETRY) as geometry from(select 3 as type,B.NODE_PID as lnpid,a.INTER_PID as cpid from RD_OBJECT_INTER A,RD_INTER_NODE B where A.INTER_PID = b.PID and a.pid = :4 and a.U_RECORD !=2 and b.U_RECORD !=2)tmp left join rd_node C on tmp.lnpid = c.node_pid";
 
@@ -227,7 +227,7 @@ public class RdObjectSearch implements ISearch {
 			//包络线几何
 			Coordinate[] cors = getLineFromMuitPoint(linkArray,nodeArray);
 			
-			Geometry metry = JGeometryUtil.getPolygonFromPoint(cors);
+			Geometry metry = JGeometryUtil.getBuffer(cors);
 			
 			Geometry boundary = metry.getBoundary();
 			

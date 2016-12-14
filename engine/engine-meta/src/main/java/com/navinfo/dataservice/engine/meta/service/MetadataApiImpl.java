@@ -25,7 +25,9 @@ import com.navinfo.dataservice.engine.meta.pinyin.PinyinConvertSelector;
 import com.navinfo.dataservice.engine.meta.pinyin.PinyinConverter;
 import com.navinfo.dataservice.engine.meta.rdname.RdNameImportor;
 import com.navinfo.dataservice.engine.meta.scPointNameck.ScPointNameck;
+import com.navinfo.dataservice.engine.meta.scPointSpecKindcode.ScPointSpecKindcode;
 import com.navinfo.dataservice.engine.meta.tmc.selector.TmcSelector;
+import com.navinfo.dataservice.engine.meta.translate.EngConverterHelper;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -212,9 +214,30 @@ public class MetadataApiImpl implements MetadataApi {
 	}
 	
 	@Override
+	public Map<String, String> scPointNameckTypeD10() throws Exception {
+		// TODO Auto-generated method stub
+		return ScPointNameck.getInstance().scPointNameckTypeD10();
+	}
+	
+	@Override
 	public List<String> getDeepAdminCodeList() throws Exception {
 		ScPointDeepPlanarea deepPlanarea = new ScPointDeepPlanarea();
 		return deepPlanarea.getDeepAdminCodeList();
 	}
+	
+	@Override
+	public String convertEng(String word) throws Exception {
+		
+		 EngConverterHelper converterHelper = new EngConverterHelper();
+         String result = converterHelper.chiToEng(word);
+		return result;
+	}
+	
+	@Override
+	public Map<String, String> scPointSpecKindCodeType8() throws Exception {
+		// TODO Auto-generated method stub
+		return ScPointSpecKindcode.getInstance().scPointSpecKindCodeType8();
+	}
+	
 
 }

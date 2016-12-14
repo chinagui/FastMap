@@ -73,7 +73,7 @@ public class JobService {
 			conn = MultiDataSourceFactory.getInstance().getSysDataSource()
 					.getConnection();
 			String jobInfoSql = "SELECT T.JOB_ID,T.JOB_TYPE,T.CREATE_TIME,T.BEGIN_TIME,T.END_TIME,T.STEP_COUNT,T.STATUS,T.JOB_REQUEST,T.JOB_RESPONSE,T.RESULT_MSG,T.JOB_GUID,T.USER_ID,T.DESCP"
-					+ ",S.STEP_SEQ,S.STEP_MSG,S.BEGIN_TIME,S.END_TIME,S.STATUS AS STEP_STATUS FROM JOB_INFO T,JOB_STEP S WHERE T.JOB_ID=S.JOB_ID(+) AND T.JOB_ID=? ORDER BY S.STEP_SEQ";
+					+ ",S.STEP_SEQ,S.STEP_MSG,S.BEGIN_TIME,S.END_TIME,S.STATUS AS STEP_STATUS,T.TASK_ID FROM JOB_INFO T,JOB_STEP S WHERE T.JOB_ID=S.JOB_ID(+) AND T.JOB_ID=? ORDER BY S.STEP_SEQ";
 			jobInfo = run.query(conn, jobInfoSql, new FullHandler(), jobId);
 			return jobInfo;
 		}catch(Exception e){
@@ -128,6 +128,7 @@ public class JobService {
 				jobInfo.setUserId(rs.getLong("USER_ID"));
 				jobInfo.setDescp(rs.getString("DESCP"));
 				jobInfo.setStepCount(rs.getInt("STEP_COUNT"));
+				jobInfo.setTaskId(rs.getLong("TASK_ID"));
 				List<JobStep> steps = new ArrayList<JobStep>();
 				do{
 					if(rs.getObject("STEP_SEQ")!=null){

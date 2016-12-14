@@ -86,7 +86,7 @@ public class RdGscSearch implements ISearch {
                 
                 snapshot.setT(11);
                 
-                snapshot.setI(String.valueOf(pid));
+                snapshot.setI(pid);
                 
                 int zlevel = resultSet.getInt("zlevel");
                 
@@ -205,7 +205,7 @@ public class RdGscSearch implements ISearch {
                 
                 snapshot.setT(11);
                 
-                snapshot.setI(String.valueOf(pid));
+                snapshot.setI(pid);
                 
                 int zlevel = resultSet.getInt("zlevel");
                 

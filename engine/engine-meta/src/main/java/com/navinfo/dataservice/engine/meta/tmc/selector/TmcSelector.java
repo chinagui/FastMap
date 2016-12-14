@@ -228,7 +228,20 @@ public class TmcSelector {
 
 			if (resultSet.next()) {
 				tmcLine = new TmcLine();
+				
+//				List<TmcPoint> tmcPointList = this.queryTmcPointByLineId(tcmLineId);
+				
+//				//返回tmc线的几何
+//				JSONArray lineGeo = new JSONArray();
+//
+//				for (TmcPoint tmcPoint : tmcPointList) {
+//					JSONArray pointGeo = tmcPoint.getGeometry();
+//
+//					lineGeo.add(pointGeo);
+//				}
 
+//				tmcLine.setGeometry(lineGeo);
+				
 				tmcLine.setCid(resultSet.getString("cid"));
 
 				tmcLine.setTranslateName(resultSet.getString("TRANSLATE_NAME"));
@@ -503,7 +516,7 @@ public class TmcSelector {
 
 				SearchSnapshot snapshot = new SearchSnapshot();
 
-				snapshot.setI(tmcLineId);
+				snapshot.setI(Integer.parseInt(tmcLineId));
 
 				snapshot.setT(50);
 
@@ -596,7 +609,7 @@ public class TmcSelector {
 			while (resultSet.next()) {
 				SearchSnapshot snapshot = new SearchSnapshot();
 
-				snapshot.setI(resultSet.getString("TMC_ID"));
+				snapshot.setI(Integer.parseInt(resultSet.getString("TMC_ID")));
 
 				JSONObject m = new JSONObject();
 

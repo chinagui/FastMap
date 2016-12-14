@@ -118,13 +118,6 @@ public class RenderController extends BaseController {
 				data = p.searchDataByTileWithGap(types, x, y, z, gap);
 
 			}
-			if (data != null) {
-				if (data.containsKey("i")) {
-					if (StringUtils.isNotEmpty(data.getString("i"))) {
-						data.element("i", data.getInt("i"));
-					}
-				}
-			}
 			response.getWriter().println(
 					ResponseUtils.assembleRegularResult(data));
 		} catch (Exception e) {

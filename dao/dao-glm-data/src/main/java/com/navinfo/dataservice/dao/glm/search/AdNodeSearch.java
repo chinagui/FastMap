@@ -111,7 +111,7 @@ public class AdNodeSearch implements ISearch {
 
 				snapshot.setT(17);
 
-				snapshot.setI(resultSet.getString("node_pid"));
+				snapshot.setI(resultSet.getInt("node_pid"));
 
 				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
 
@@ -175,7 +175,7 @@ public class AdNodeSearch implements ISearch {
 
 				snapshot.setT(17);
 
-				snapshot.setI(resultSet.getString("node_pid"));
+				snapshot.setI(resultSet.getInt("node_pid"));
 
 				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
 

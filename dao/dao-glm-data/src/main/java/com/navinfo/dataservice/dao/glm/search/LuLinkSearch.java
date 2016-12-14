@@ -122,7 +122,7 @@ public class LuLinkSearch implements ISearch {
 
 				snapshot.setT(16);
 
-				snapshot.setI(resultSet.getString("node_pid"));
+				snapshot.setI(resultSet.getInt("node_pid"));
 
 				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
 
@@ -202,7 +202,7 @@ public class LuLinkSearch implements ISearch {
 
 				snapshot.setT(29);
 
-				snapshot.setI(String.valueOf(resultSet.getInt("link_pid")));
+				snapshot.setI(resultSet.getInt("link_pid"));
 
 				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
 

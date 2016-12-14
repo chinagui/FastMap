@@ -75,4 +75,6 @@ public interface MetadataApi {
 	public String convertEng(String word) throws Exception;
 	
 	public Map<String, String> scPointSpecKindCodeType8() throws Exception;
+	
+	public boolean judgeScPointKind(String kindCode,String chain) throws Exception;
 }

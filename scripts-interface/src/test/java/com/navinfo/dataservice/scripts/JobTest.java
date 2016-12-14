@@ -11,9 +11,12 @@ import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Test;
 
+import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
+import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.api.job.iface.JobApi;
 import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
+import com.navinfo.dataservice.commons.database.DbConnectConfig;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
@@ -62,6 +65,12 @@ public class JobTest {
 		
 		
 		JobApi apiService=(JobApi) ApplicationContextUtil.getBean("jobApi");
+		DatahubApi datahub = (DatahubApi) ApplicationContextUtil
+				.getBean("datahubApi");
+		DbInfo metaDb = datahub.getOnlyDbByType("metaRoad");
+		Integer metaDbid = metaDb.getDbId();
+		if(metaDbid != null && metaDbid >0){
+			System.out.println("metaDbid: "+metaDbid);
 		JSONObject metaValidationRequestJSON=new JSONObject();
 		metaValidationRequestJSON.put("executeDBId", 106);//元数据库dbId
 		metaValidationRequestJSON.put("kdbDBId", 106);//元数据库dbId
@@ -69,9 +78,7 @@ public class JobTest {
 		metaValidationRequestJSON.put("timeOut", 600);
 	    int jobId=(int) apiService.createJob("checkCore", metaValidationRequestJSON, 3,0, "元数据库检查");
 	    System.out.println(jobId);
-try{
-	
-			
+	    try{
 			//执行job
 			//int jobId=777;
 			JobInfo jobInfo = JobService.getInstance().getJobById(jobId);
@@ -85,6 +92,7 @@ try{
 		}catch(Exception e){
 			System.out.println("Oops, something wrong...");
 			e.printStackTrace();
+		}
 		}
 	}
 

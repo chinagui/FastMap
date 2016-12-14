@@ -371,16 +371,11 @@ public class CheckController extends BaseController {
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 			int subtaskId=jsonReq.getInt("subtaskId");
-			int checkType=jsonReq.getInt("checkType");
-			String ckRules = "";
-			if (jsonReq.containsKey("ckRules")) {
-				ckRules = jsonReq.getString("ckRules");
-			}
-			
+			int checkType=jsonReq.getInt("checkType");			
 			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
 			long userId=tokenObj.getUserId();
 			//long userId=2;
-			long jobId=CheckService.getInstance().checkRun(subtaskId,userId,checkType,ckRules);				
+			long jobId=CheckService.getInstance().checkRun(subtaskId,userId,checkType,jsonReq);				
 			return new ModelAndView("jsonView", success(jobId));
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);

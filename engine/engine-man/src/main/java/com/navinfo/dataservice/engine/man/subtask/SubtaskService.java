@@ -1103,8 +1103,8 @@ public class SubtaskService {
 						int stage=rs.getInt("STAGE");
 						int typeCount=rs.getInt("TYPE_COUNT");
 						String name="";
-						if(stage==1){name+="日编 _ ";}
-						else{name+="月编 _ ";}
+						if(stage==1){name+="日编 - ";}
+						else{name+="月编 - ";}
 						//0POI，1道路，2一体化，3一体化_grid粗编，4一体化_区域粗编，5多源POI，6
 						//代理店， 7POI专项,8道路_grid精编，9道路_grid粗编，10道路区域专项
 						if(type==0){name+="POI";}

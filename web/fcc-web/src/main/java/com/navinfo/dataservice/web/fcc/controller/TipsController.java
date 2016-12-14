@@ -286,17 +286,21 @@ public class TipsController extends BaseController {
 			String url = serverUrl + downloadUrlPath +File.separator+ day + "/"
 					+ zipFileName;
 			
+			logger.info("url:"+url);
+			
 			JSONObject result=null; //如果没有数据，则返回 {"errmsg":"success","data":null，errcode":0} ,不返回url
 			if(expCount>0){
 				result=new JSONObject();
 				
-				result.put("url", filePath);
+				result.put("url", url);
 				
 				result.put("downloadDate",  DateUtils.dateToString(new Date(),
 						DateUtils.DATE_COMPACTED_FORMAT));	
+				
+				logger.info("下载tips完成,resut :"+result);
+			}else{
+				logger.info("下载tips完成,没有可下载的数据");
 			}
-			
-			logger.error("下载tips完成,resut url:"+url);
 			
 			return new ModelAndView("jsonView", success(result));
 

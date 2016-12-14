@@ -69,7 +69,7 @@ public class ColumnController extends BaseController {
 	 * @throws ServletException
 	 * @throws IOException
 	 */
-	@RequestMapping(value = "/poi/deep/columnQuery")
+	@RequestMapping(value = "/poi/column/columnQuery")
 	public ModelAndView columnQuery(HttpServletRequest request)
 			throws ServletException, IOException {
 		
@@ -102,7 +102,7 @@ public class ColumnController extends BaseController {
 	 * @throws ServletException
 	 * @throws IOException
 	 */
-	@RequestMapping(value = "/poi/deep/columnSave")
+	@RequestMapping(value = "/poi/column/columnSave")
 	public ModelAndView columnSave(HttpServletRequest request)
 			throws ServletException, IOException {
 		
@@ -139,7 +139,7 @@ public class ColumnController extends BaseController {
 	 * @throws ServletException
 	 * @throws IOException
 	 */
-	@RequestMapping(value = "/poi/deep/columnSubmit")
+	@RequestMapping(value = "/poi/column/columnSubmit")
 	public ModelAndView columnSubmit(HttpServletRequest request)
 			throws ServletException, IOException {
 		
@@ -180,7 +180,7 @@ public class ColumnController extends BaseController {
 	 * @throws ServletException
 	 * @throws IOException
 	 */
-	@RequestMapping(value = "/poi/deep/task/statistics")
+	@RequestMapping(value = "/poi/column/task/statistics")
 	public ModelAndView taskStatistics(HttpServletRequest request)
 			throws ServletException, IOException {
 		
@@ -238,7 +238,7 @@ public class ColumnController extends BaseController {
 	 * @throws ServletException
 	 * @throws IOException
 	 */
-	@RequestMapping(value = "poi/deep/queryTaskList")
+	@RequestMapping(value = "poi/column/queryTaskList")
 	public ModelAndView queryTaskList(HttpServletRequest request)
 			throws ServletException, IOException {
 		try {

@@ -11,8 +11,6 @@ import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
-import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneNode;
-import com.navinfo.dataservice.dao.glm.search.LuNodeSearch;
 import com.navinfo.dataservice.dao.glm.search.RdNodeSearch;
 import com.navinfo.dataservice.dao.glm.search.ZoneNodeSearch;
 import com.navinfo.dataservice.engine.edit.InitApplication;
@@ -43,7 +41,7 @@ public class RdNodeTest extends InitApplication{
 	
 	@Test
 	public void testMove() {
-		String parameter = "{\"command\":\"DEPART\",\"dbId\":19,\"objId\":206002195,\"data\":{\"catchNodePid\":0,\"catchLinkPid\":0,\"linkPid\":\"209002816\",\"longitude\":116.78475379943848,\"latitude\":40.33252745227086},\"type\":\"RDLINK\"}";
+		String parameter = "{\"command\":\"MOVE\",\"dbId\":17,\"objId\":208002343,\"data\":{\"longitude\":116.17045417428017,\"latitude\":40.55143839584169},\"type\":\"RDNODE\"}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
@@ -54,7 +52,6 @@ public class RdNodeTest extends InitApplication{
 	}
 	
 	@Test
-	
 	public void testDelete() {
 		String parameter = "{\"command\":\"CREATE\",\"dbId\":17,\"objId\":19688120,\"data\":{\"longitude\":116.51232412837189,\"latitude\":39.76244903245604},\"type\":\"RDNODE\"}";
 		Transaction t = new Transaction(parameter);

@@ -64,6 +64,10 @@ public interface MetadataApi {
 	
 	public Map<String, String> scPointNameckTypeD10() throws Exception;
 	
+	public Map<String, String> scPointNameckTypeD5() throws Exception;
+	
+	public Map<String, String> scPointNameckTypeD7() throws Exception;
+	
 	public List<String> getDeepAdminCodeList() throws Exception;
 
 	/**
@@ -75,4 +79,9 @@ public interface MetadataApi {
 	public String convertEng(String word) throws Exception;
 	
 	public Map<String, String> scPointSpecKindCodeType8() throws Exception;
+	
+	public boolean judgeScPointKind(String kindCode,String chain) throws Exception;
+
+
+	public Map<String, String> scPointEngKeyWordsType1() throws Exception;
 }

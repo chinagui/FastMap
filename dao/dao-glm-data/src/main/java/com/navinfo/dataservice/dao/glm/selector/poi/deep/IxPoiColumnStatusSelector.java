@@ -543,7 +543,7 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 	 */
 	public List<String> queryClassifyByPid(int pid) throws Exception {
 		StringBuilder sb = new StringBuilder();
-		sb.append("SELECT work_item_id FROM poi_deep_status s where s.pid=:1 and s.first_work_status=1 ");
+		sb.append("SELECT work_item_id FROM poi_column_status s where s.pid=:1 and s.first_work_status=1 ");
 
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
@@ -583,7 +583,7 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 public List<Integer> getRowIdForSubmit(String firstWorkItem,String secondWorkItem,int taskId) throws Exception {
 		
 		StringBuilder sb = new StringBuilder();
-		sb.append("SELECT s.pid FROM poi_column_status s,poi_deep_workitem_conf w WHERE s.work_item_id=w.work_item_id");
+		sb.append("SELECT s.pid FROM poi_column_status s,poi_column_workitem_conf w WHERE s.work_item_id=w.work_item_id");
 		
 		PreparedStatement pstmt = null;
 

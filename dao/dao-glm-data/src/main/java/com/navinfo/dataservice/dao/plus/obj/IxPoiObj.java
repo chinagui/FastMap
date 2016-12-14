@@ -603,6 +603,21 @@ public class IxPoiObj extends AbstractIxObj {
 	}
 	
 	/*
+	 * 标准中文名称组
+	 */
+	public List<IxPoiName> getStandardCHName(){
+		List<IxPoiName> standardCHName=null;
+		List<IxPoiName> subRows=getIxPoiNames();
+		for(IxPoiName br:subRows){
+			if(br.getOpType()!=OperationType.DELETE &&(br.getNameClass()==1||br.getNameClass()==3
+					||br.getNameClass()==5||br.getNameClass()==6)&&br.getNameType()==1
+					&&(br.getLangCode().equals("CHI")||br.getLangCode().equals("CHT"))){
+				standardCHName.add(br);}
+			}
+		return standardCHName;
+	}
+	
+	/*
 	 * 获取名称组中最大group_id
 	 */
 	public long getMaxGroupIdFromNames(){
@@ -673,6 +688,14 @@ public class IxPoiObj extends AbstractIxObj {
 		return null;
 	}
 	
+	public IxPoiAddress getCHIAddress(){
+		List<IxPoiAddress> subRows=getIxPoiAddresses();
+		for(IxPoiAddress br:subRows){
+			if(br.getLangCode().equals("CHI")&&br.isChanged()){
+				return br;}
+			}
+		return null;
+	}
 	@Override
 	public String objName() {
 		return ObjectName.IX_POI;

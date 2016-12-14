@@ -53,6 +53,8 @@ public class TmcLine {
 	private JSONArray geometry;
 
 	private List<TmcLineName> names = new ArrayList<>();
+	
+	private List<TmcPoint> points = new ArrayList<>();
 
 	public int getTmcId() {
 		return tmcId;
@@ -165,6 +167,14 @@ public class TmcLine {
 
 	public int getUplineTmcId() {
 		return uplineTmcId;
+	}
+	
+	public List<TmcPoint> getPoints() {
+		return points;
+	}
+
+	public void setPoints(List<TmcPoint> points) {
+		this.points = points;
 	}
 
 	public void setUplineTmcId(int uplineTmcId) {

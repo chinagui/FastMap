@@ -47,14 +47,23 @@ public class PhotoGetter {
 		List<Map<String, Object>> photos = control.getPhotosByRowkey(rowkeys);
 		return photos;
 	}
-
+	
+	
+	
 	/**
-	 * 通过uuid获取照片详细信息
-	 * 
-	 * @param rowkey
-	 * @return JSONObject
+	 * @Description:根据rowkey查询tips是否存，存在则返回<rowkey,1>
+	 * @param rowkeys
+	 * @return
 	 * @throws Exception
+	 * @author: y
+	 * @time:2016-12-14 下午6:38:26
 	 */
+	public Map<String, Integer> getPhotosExistByRowkey(JSONArray rowkeys) throws Exception {
+		HBaseController control = new HBaseController();
+		Map<String, Integer> exitstPhotoKeyMap = control.getExistPhotosByRowkey(rowkeys);
+		return exitstPhotoKeyMap;
+	}
+
 	public JSONObject getPhotoDetailByRowkey(String rowkey) throws Exception {
 
 		HBaseController control = new HBaseController();

@@ -613,7 +613,7 @@ public class SubtaskController extends BaseController {
 		try {
 			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
 			long userId = tokenObj.getUserId();
-			Map<Integer,Integer> data = SubtaskService.getInstance().staticWithType(userId);
+			Map<String, Object> data = SubtaskService.getInstance().staticWithType(userId);
 			return new ModelAndView("jsonView", success(data));
 		} catch (Exception e) {
 			log.error("获取城市列表失败，原因：" + e.getMessage(), e);

@@ -32,7 +32,7 @@ import com.navinfo.navicommons.geo.computation.GridUtils;
 /**
  * 
  * @author zhangxiaoyi
- * 本提交模块是整体grids一起提交，暂不支持部分提交
+ * 按grid提交时，如检查中报log，则该grid下的POI不能一起提交：poi提交时，按单个poi进行处理-------没有检查错误的提交；有检查错误的不提交。
  *
  */
 public class EditPoiBaseReleaseJob extends AbstractJob{
@@ -49,23 +49,10 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 		EditPoiBaseReleaseJobRequest releaseJobRequest=(EditPoiBaseReleaseJobRequest) request;
 		try{
 			log.info("check exception1");
-			//判断是否有检查错误，有检查错误则直接返回不进行后续步骤
-			List<Integer> errorGrid=hasException(releaseJobRequest);
-			List<Integer> allGrid=releaseJobRequest.getGridIds();
-			//将有错误的grid排除
-			allGrid.removeAll(errorGrid);
-			if(errorGrid.size()!=0){
-				log.error("has exception,connot commit!");
-				Map<String, List<Integer>> returnGrid=new HashMap<String, List<Integer>>();
-				returnGrid.put("有检查错误的grid", errorGrid);
-				super.response("grids中有检查错误，不能提交！",returnGrid);}
-			if(allGrid.size()==0){
-				throw new Exception("所有grid均存在检查错误，终止提交操作！");
-			}
 			//1对grids提取数据执行gdb检查
 			log.info("start gdb check");
 			JobInfo valJobInfo = new JobInfo(jobInfo.getId(), jobInfo.getGuid());
-			releaseJobRequest.getSubJobRequest("validation").setAttrValue("grids", allGrid);
+			releaseJobRequest.getSubJobRequest("validation").setAttrValue("grids",releaseJobRequest.getGridIds());
 			AbstractJob valJob = JobCreateStrategy.createAsSubJob(valJobInfo,
 					releaseJobRequest.getSubJobRequest("validation"), this);
 			valJob.run();
@@ -76,19 +63,6 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 			int valDbId=valJob.getJobInfo().getResponse().getInt("valDbId");
 			jobInfo.addResponse("val&BatchDbId", valDbId);
 			log.info("end gdb check");
-			//判断是否有检查错误，有检查错误则直接返回不进行后续步骤
-			log.info("check exception2");
-			errorGrid=hasException(releaseJobRequest);
-			//将有错误的grid排除
-			allGrid.removeAll(errorGrid);
-			if(errorGrid.size()!=0){
-				log.error("has exception,connot commit!");
-				Map<String, List<Integer>> returnGrid=new HashMap<String, List<Integer>>();
-				returnGrid.put("有检查错误的grid", errorGrid);
-				super.response("grids中有检查错误，不能提交！",returnGrid);}
-			if(allGrid.size()==0){
-				throw new Exception("所有grid均存在检查错误，终止提交操作！");
-			}
 			//对grids执行批处理
 //			log.info("start gdb batch");
 //			JobInfo batchJobInfo = new JobInfo(jobInfo.getId(), jobInfo.getGuid());
@@ -102,9 +76,9 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 //				throw new Exception("执行批处理job内部发生"+msg);
 //			}
 //			log.info("end gdb batch");
-			//修改数据提交状态
+			//修改数据提交状态:将没有检查错误的已作业poi进行提交
 			log.info("start change poi_edit_status=3 commit");
-			commitPoi(allGrid,releaseJobRequest);
+			commitPoi(releaseJobRequest);
 			log.info("end change poi_edit_status=3 commit");
 			super.response("POI行编提交成功！",null);
 		}catch (Exception e){
@@ -156,57 +130,27 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 	 * @param releaseJobRequest
 	 * @throws Exception
 	 */
-	public void commitPoi(List<Integer> grids,EditPoiBaseReleaseJobRequest releaseJobRequest) throws Exception{
+	public void commitPoi(EditPoiBaseReleaseJobRequest releaseJobRequest) throws Exception{
 		Connection conn = null;
 		try{
-			String wkt = GridUtils.grids2Wkt((JSONArray) grids);
+			String wkt = GridUtils.grids2Wkt((JSONArray) releaseJobRequest.getGridIds());
 			String sql="UPDATE POI_EDIT_STATUS E"
-					+ " SET E.STATUS = 3,FRESH_VERIFIED=0 "
+					+ "   SET E.STATUS = 3, FRESH_VERIFIED = 0,E.SUBMIT_DATE=SYSDATE"
 					+ " WHERE E.STATUS = 2"
+					+ "   AND NOT EXISTS (SELECT 1"
+					+ "          FROM CK_RESULT_OBJECT R"
+					+ "         WHERE R.TABLE_NAME = 'IX_POI'"
+					+ "           AND R.PID = E.PID)"
 					+ "   AND EXISTS (SELECT 1"
 					+ "          FROM IX_POI P"
-					+ "         WHERE SDO_WITHIN_DISTANCE(P.GEOMETRY,SDO_GEOMETRY('"+wkt+"',8307),'MASK=ANYINTERACT') = 'TRUE'"
+					+ "         WHERE SDO_WITHIN_DISTANCE(P.GEOMETRY,"
+					+ "                                   SDO_GEOMETRY('"+wkt+"', 8307),"
+					+ "                                   'MASK=ANYINTERACT') = 'TRUE'"
 					+ "           AND P.PID = E.PID)";
 			
 			conn = DBConnector.getInstance().getConnectionById(releaseJobRequest.getTargetDbId());
 	    	QueryRunner run = new QueryRunner();		
 	    	run.execute(conn, sql);
-		}catch (Exception e) {
-			DbUtils.rollbackAndCloseQuietly(conn);
-			log.error(e.getMessage(), e);
-			throw e;
-		} finally {
-			DbUtils.commitAndCloseQuietly(conn);
-		}
-	}
-	
-	/**
-	 * 是否有检查错误 false:有检查错误 true：无检查错误
-	 * @return
-	 */
-	public List<Integer> hasException(EditPoiBaseReleaseJobRequest releaseJobRequest) throws Exception{
-		Connection conn = null;
-		try{
-			String sql="select DISTINCT G.GRID_ID from ni_val_exception v, ni_val_exception_grid g "
-					+ " where v.md5_code=g.md5_code "
-					+ " and G.GRID_ID IN ("+org.apache.commons.lang.StringUtils.join(releaseJobRequest.getGridIds(),",")+")"
-					+ " AND EXISTS ("
-					+ " SELECT 1 FROM CK_RESULT_OBJECT O "
-					+ " WHERE (O.table_name like 'IX_POI\\_%' ESCAPE '\\' OR O.table_name ='IX_POI')"
-					+ "   AND O.MD5_CODE=G.MD5_CODE)";
-			conn = DBConnector.getInstance().getConnectionById(releaseJobRequest.getTargetDbId());
-			ResultSetHandler<List<Integer>> rsHandler = new ResultSetHandler<List<Integer>>(){
-				public List<Integer> handle(ResultSet rs) throws SQLException {
-					List<Integer> errorGrid=new ArrayList<Integer>();
-					while(rs.next()){
-						errorGrid.add(rs.getInt(1));
-					}
-					return errorGrid;
-				}	    		
-			};		
-			QueryRunner run = new QueryRunner();		
-			List<Integer> errorGrid=run.query(conn, sql,rsHandler);
-			return errorGrid;
 		}catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

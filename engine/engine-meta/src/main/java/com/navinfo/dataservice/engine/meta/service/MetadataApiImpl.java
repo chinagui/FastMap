@@ -220,6 +220,18 @@ public class MetadataApiImpl implements MetadataApi {
 	}
 	
 	@Override
+	public Map<String, String> scPointNameckTypeD5() throws Exception {
+		// TODO Auto-generated method stub
+		return ScPointNameck.getInstance().scPointNameckTypeD5();
+	}
+	
+	@Override
+	public Map<String, String> scPointNameckTypeD7() throws Exception {
+		// TODO Auto-generated method stub
+		return ScPointNameck.getInstance().scPointNameckTypeD7();
+	}
+	
+	@Override
 	public List<String> getDeepAdminCodeList() throws Exception {
 		ScPointDeepPlanarea deepPlanarea = new ScPointDeepPlanarea();
 		return deepPlanarea.getDeepAdminCodeList();

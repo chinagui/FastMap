@@ -33,7 +33,6 @@ public class FMBAT20138 extends BasicBatchRule {
 	public void loadReferDatas(Collection<BasicObj> batchDataList)
 			throws Exception {
 		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
@@ -61,7 +60,7 @@ public class FMBAT20138 extends BasicBatchRule {
 					if (keyResult.size()==0){return;}
 					for(String preKey:keyResult.keySet()){
 						newShortName=newShortName.replace(preKey, keyResult.get(preKey));
-						}
+					}
 					
 					List<IxPoiName> sn=poiObj.getShortStandardCHName();
 					//如果没有简称，则新增一条简称记录

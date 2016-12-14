@@ -30,4 +30,17 @@ public class ScPointNameckUtil {
 		//matchResult.put("中国工商银行", "工行");
 		return matchResult;
 	}
+	/**
+	 * 通用匹配方法
+	 */
+	public static Map<String, String> matchType(String name,Map<String, String> typeData){
+		Map<String, String> matchResult=new HashMap<String, String>();
+		for(String key:typeData.keySet()){
+			if(name.contains(key)){
+				String result=typeData.get(key);
+				matchResult.put(key, result);
+			}
+		}
+		return matchResult;
+	}
 }

@@ -261,7 +261,7 @@ public class TipsController extends BaseController {
 			
 			Set<String> images = new HashSet<String>();
             //1.下载tips、照片、语音(照片的语音根据附件的id下载)
-			op.export(condition, filePath, "tips.txt", images);
+			int expCount=op.export(condition, filePath, "tips.txt", images);
 			
 			//2.模式图下载： 1406和1401需要导出模式图
 			if(images.size()>0){
@@ -286,11 +286,15 @@ public class TipsController extends BaseController {
 			String url = serverUrl + downloadUrlPath +File.separator+ day + "/"
 					+ zipFileName;
 			
-			JSONObject result=new JSONObject();
-			result.put("url", url);
-			
-			result.put("downloadDate",  DateUtils.dateToString(new Date(),
-					DateUtils.DATE_COMPACTED_FORMAT));
+			JSONObject result=null; //如果没有数据，则返回 {"errmsg":"success","data":null，errcode":0} ,不返回url
+			if(expCount>0){
+				result=new JSONObject();
+				
+				result.put("url", filePath);
+				
+				result.put("downloadDate",  DateUtils.dateToString(new Date(),
+						DateUtils.DATE_COMPACTED_FORMAT));	
+			}
 			
 			logger.error("下载tips完成,resut url:"+url);
 			

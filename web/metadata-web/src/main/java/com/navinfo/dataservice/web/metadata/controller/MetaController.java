@@ -30,6 +30,8 @@ import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.ZipUtils;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdmin;
+import com.navinfo.dataservice.dao.glm.search.AdAdminSearch;
 import com.navinfo.dataservice.engine.meta.area.ScPointAdminArea;
 import com.navinfo.dataservice.engine.meta.chain.ChainSelector;
 import com.navinfo.dataservice.engine.meta.chain.FocusSelector;
@@ -1085,7 +1087,7 @@ public class MetaController extends BaseController {
             return new ModelAndView("jsonView", fail(e.getMessage()));
         }
     }
-    @RequestMapping(value = "/queryAreaCodeByAdminCode")
+    @RequestMapping(value = "/queryAreaCodeByRegionId")
     public ModelAndView queryAreaCodeByAdminCode(HttpServletRequest request)
             throws ServletException, IOException {
     	String parameter = request.getParameter("parameter");
@@ -1094,11 +1096,21 @@ public class MetaController extends BaseController {
         	
         	JSONObject jsonReq = JSONObject.fromObject(parameter);
 
-        	String adminCode = jsonReq.getString("adminCode");
-
+        	int regionId = jsonReq.getInt("regionId");
+        	int taskId = jsonReq.getInt("taskId");
+        	
+        	ManApi apiService = (ManApi) ApplicationContextUtil.getBean("manApi");
+        	Subtask subtask = apiService.queryBySubtaskId(taskId);
+			int dbId = subtask.getDbId();
+			Connection conn = DBConnector.getInstance().getConnectionById(dbId);
+        	
+        	AdAdminSearch adAdminSearch = new AdAdminSearch(conn);
+			AdAdmin adAdmin = (AdAdmin) adAdminSearch.searchDataByPid(regionId);
+			int adminId=adAdmin.getAdminId();
+        	
         	ScPointAdminArea selector = new ScPointAdminArea();
 
-        	JSONObject data = selector.searchByAdminCode(adminCode);
+        	JSONObject data = selector.searchByAdminCode(adminId);
 
             return new ModelAndView("jsonView", success(data));
 

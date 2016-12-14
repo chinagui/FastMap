@@ -52,5 +52,30 @@ public class ScPointSpecKindcode {
 			}
 			return typeMap8;
 	}
+	
+	public boolean judgeScPointKind(String kindCode,String chain) throws Exception {
+		String sql = "select 1 from sc_point_spec_kindcode_new t WHERE (poi_kind=:1 and category=1) or (chain=:2 and category=3)";
+		
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getMetaConnection();
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, kindCode);
+			pstmt.setString(2, chain);
+			rs = pstmt.executeQuery();
+			if (rs.next()) {
+				return true;
+			}
+			return false;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.close(rs);
+			DbUtils.close(pstmt);
+			DbUtils.close(conn);
+		}
+	}
 
 }

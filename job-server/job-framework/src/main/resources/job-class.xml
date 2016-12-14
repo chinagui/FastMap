@@ -48,6 +48,14 @@
 		class="com.navinfo.dataservice.cop.waistcoat.job.GdbValidationJob"
 	 	request="com.navinfo.dataservice.cop.waistcoat.job.GdbValidationJobRequest"
 	/>
+	<type name="poiColumnValidation" 
+		class="com.navinfo.dataservice.column.job.PoiColumnValidationJob"
+	 	request="com.navinfo.dataservice.column.job.PoiColumnValidationJobRequest"
+	/>
+	<type name="poiRowValidation" 
+		class="com.navinfo.dataservice.row.job.PoiRowValidationJob"
+	 	request="com.navinfo.dataservice.row.job.PoiRowValidationJobRequest"
+	/>
 		<type name="checkCore" 
 		class="com.navinfo.dataservice.cop.waistcoat.job.CheckCoreJob"
 	 	request="com.navinfo.dataservice.cop.waistcoat.job.CheckCoreJobRequest"

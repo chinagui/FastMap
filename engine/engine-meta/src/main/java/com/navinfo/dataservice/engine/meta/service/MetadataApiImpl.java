@@ -238,6 +238,14 @@ public class MetadataApiImpl implements MetadataApi {
 		// TODO Auto-generated method stub
 		return ScPointSpecKindcode.getInstance().scPointSpecKindCodeType8();
 	}
+
+	/**
+	 * 判断重要分类
+	 */
+	@Override
+	public boolean judgeScPointKind(String kindCode, String chain) throws Exception {
+		return ScPointSpecKindcode.getInstance().judgeScPointKind(kindCode, chain);
+	}
 	
 
 }

@@ -22,7 +22,7 @@ public class ScPointEngKeyWords {
 		return SingletonHolder.INSTANCE;
 	}
 	
-	public Map<String, String> scPointEngKeyWords() throws Exception{
+	public Map<String, String> scPointEngKeyWordsType1() throws Exception{
 		if (typeMap1==null||typeMap1.isEmpty()) {
 				synchronized (this) {
 					if (typeMap1==null||typeMap1.isEmpty()) {

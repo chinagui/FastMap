@@ -24,6 +24,7 @@ import com.navinfo.dataservice.engine.meta.mesh.MeshSelector;
 import com.navinfo.dataservice.engine.meta.pinyin.PinyinConvertSelector;
 import com.navinfo.dataservice.engine.meta.pinyin.PinyinConverter;
 import com.navinfo.dataservice.engine.meta.rdname.RdNameImportor;
+import com.navinfo.dataservice.engine.meta.scPointEngKeyWords.ScPointEngKeyWords;
 import com.navinfo.dataservice.engine.meta.scPointNameck.ScPointNameck;
 import com.navinfo.dataservice.engine.meta.scPointSpecKindcode.ScPointSpecKindcode;
 import com.navinfo.dataservice.engine.meta.tmc.selector.TmcSelector;
@@ -259,5 +260,13 @@ public class MetadataApiImpl implements MetadataApi {
 		return ScPointSpecKindcode.getInstance().judgeScPointKind(kindCode, chain);
 	}
 	
+	/**
+	 * 返回TYPE=1时地址关键字翻译对照MAP
+	 */
+	@Override
+	public Map<String, String> scPointEngKeyWordsType1() throws Exception {
+		// TODO Auto-generated method stub
+		return ScPointEngKeyWords.getInstance().scPointEngKeyWordsType1();
+	}
 
 }

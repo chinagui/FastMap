@@ -1088,7 +1088,7 @@ public class MetaController extends BaseController {
         }
     }
     @RequestMapping(value = "/queryAreaCodeByRegionId")
-    public ModelAndView queryAreaCodeByAdminCode(HttpServletRequest request)
+    public ModelAndView queryAreaCodeByRegionId(HttpServletRequest request)
             throws ServletException, IOException {
     	String parameter = request.getParameter("parameter");
 

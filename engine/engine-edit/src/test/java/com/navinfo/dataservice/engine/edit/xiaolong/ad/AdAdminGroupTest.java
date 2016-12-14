@@ -7,6 +7,8 @@ import org.junit.Test;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdminTree;
+import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdAdminTreeSelector;
 import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.operation.Transaction;
 import com.navinfo.dataservice.engine.edit.search.SearchProcess;
@@ -14,13 +16,13 @@ import com.navinfo.dataservice.engine.edit.search.SearchProcess;
 import net.sf.json.JSONObject;
 
 public class AdAdminGroupTest extends InitApplication {
-	
+
 	@Override
 	@Before
 	public void init() {
 		initContext();
 	}
-	
+
 	@Test
 	public void searchAdminGroupLevel() {
 		Connection conn;
@@ -39,6 +41,25 @@ public class AdAdminGroupTest extends InitApplication {
 			e.printStackTrace();
 		}
 
+	}
+
+	@Test
+	public void testLoadAdminGroupByRegionId() {
+		Connection conn;
+		try {
+			conn = DBConnector.getInstance().getConnectionById(17);
+
+			AdAdminTreeSelector selector = new AdAdminTreeSelector(conn);
+			
+			int regionId = 211172;
+			
+			int groupId = 114;
+			
+			AdAdminTree tree = selector.loadRowsByRegionId(regionId, false, groupId);
+			
+			System.out.println(tree.Serialize(null));
+		} catch (Exception e) {
+		}
 	}
 
 	@Test

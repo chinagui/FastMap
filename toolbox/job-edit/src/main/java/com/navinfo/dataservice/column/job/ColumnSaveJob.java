@@ -64,14 +64,9 @@ public class ColumnSaveJob extends AbstractJob {
 			
 			columnSave(data,conn);
 			
-			JSONArray dataArray = new JSONArray(); 
 			for (int i=0;i<data.size();i++) {
-				JSONObject temp = new JSONObject();
 				int pid = data.getJSONObject(i).getInt("objId");
 				pidList.add(pid);
-				temp.put("pid", pid);
-				temp.put("taskId", taskId);
-				dataArray.add(temp);
 			}
 			
 			// 修改poi_deep_status表作业项状态
@@ -129,7 +124,7 @@ public class ColumnSaveJob extends AbstractJob {
 				classifyMap.put("ckRules", columnOpConf.getSaveCkrules());
 				classifyMap.put("classifyRules", columnOpConf.getSaveClassifyrules());
 				
-				classifyMap.put("data", dataArray);
+				classifyMap.put("pids", pidList);
 				ColumnCoreOperation columnCoreOperation = new ColumnCoreOperation();
 				columnCoreOperation.runClassify(classifyMap,conn);
 			}

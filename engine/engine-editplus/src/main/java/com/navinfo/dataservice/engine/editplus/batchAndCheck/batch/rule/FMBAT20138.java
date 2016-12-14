@@ -25,7 +25,7 @@ import com.navinfo.dataservice.engine.editplus.batchAndCheck.common.ScPointNamec
  * 如果数据中存在简称，当“RESULT_KEY”字段内容+官方标准化中文名称中未被替换的其余部分在简称名称找不到时，则标识删除所有简称记录，
  * 并新增一条简称（NAME_GROUPID=max(POI名称组号）+1，NAME_TYPE=1，NAME_ID程序申请PID赋值，LANG_CODE赋值“CHI或者CHT”），
  * 内容为“RESULT_KEY”字段内容+官方标准化中文名称中的剩余部分），内容为“RESULT_KEY”字段内容+官方标准化中文名称中的剩余部分；生成批处理履历;
- * @author zhangxiaoyi
+ * @author gaopengrong
  */
 public class FMBAT20138 extends BasicBatchRule {
 

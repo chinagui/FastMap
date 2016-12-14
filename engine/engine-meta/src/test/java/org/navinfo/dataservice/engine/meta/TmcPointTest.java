@@ -47,90 +47,83 @@ public class TmcPointTest {
 	public void testQueryTmcPoint() throws Exception {
 
 		try {
-			
-			MetadataApiImpl impl = new  MetadataApiImpl();
-			
+
+			MetadataApiImpl impl = new MetadataApiImpl();
+
 			JSONArray array = impl.queryTmcPoint(107918, 49616, 17, 40);
-			
+
 			List<SearchSnapshot> snapshotList = new ArrayList<>();
-			
-			for(int i = 0;i<array.size();i++)
-			{
+
+			for (int i = 0; i < array.size(); i++) {
 				JSONObject obj = array.getJSONObject(i);
-				
+
 				SearchSnapshot snapshot = new SearchSnapshot();
-				
+
 				snapshot.Unserialize(obj);
-				
+
 				snapshotList.add(snapshot);
 			}
 			System.out.println(array);
-			
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
 	}
-	
+
 	@Test
 	public void testQueryTmcLine() throws Exception {
 
 		try {
-			
-			MetadataApiImpl impl = new  MetadataApiImpl();
-			
+
+			MetadataApiImpl impl = new MetadataApiImpl();
+
 			JSONArray array = impl.queryTmcLine(107829, 49685, 17, 80);
-			
+
 			List<SearchSnapshot> snapshotList = new ArrayList<>();
-			
-			for(int i = 0;i<array.size();i++)
-			{
+
+			for (int i = 0; i < array.size(); i++) {
 				JSONObject obj = array.getJSONObject(i);
-				
+
 				SearchSnapshot snapshot = new SearchSnapshot();
-				
+
 				snapshot.Unserialize(obj);
-				
+
 				snapshotList.add(snapshot);
 			}
 			System.out.println(array.toString());
-			
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
 	}
-	
+
 	@Test
 	public void testQueryTmcTree() throws Exception {
 		Connection conn = null;
 		try {
 
 			conn = DBConnector.getInstance().getMetaConnection();
+			
 			TmcSelector selector = new TmcSelector(conn);
-			
-			JSONArray array = new JSONArray();
-			
-			array.add(522000300);
-			
-			array.add(522000743);
-			
-			array.add(522001493);
-			
-			array.add(522001494);
-			
-			array.add(522001593);
-			
-			TmcLineTree result = selector.queryTmcTree(array);
-			
+
+			String ids = "{\"tmcIds\":[\"522000103\",\"522000293\",\"522000919\",\"522001099\",\"522002667\",\"522002669\",\"522002673\",\"522002675\"]}";
+
+			JSONObject jsonReq = JSONObject.fromObject(ids);
+
+			JSONArray tmcIds = jsonReq.getJSONArray("tmcIds");
+
+			TmcLineTree result = selector.queryTmcTree(tmcIds);
+
 			System.out.println(result.Serialize(ObjLevel.BRIEF));
-			
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
 	}
-	
+
 	@Test
 	public void testQueryTmcPointById() throws Exception {
 		Connection conn = null;
@@ -138,20 +131,19 @@ public class TmcPointTest {
 
 			conn = DBConnector.getInstance().getMetaConnection();
 			TmcPointSelector selector = new TmcPointSelector(conn);
-			
+
 			TmcPoint point = selector.loadByTmcPointId(522002094);
-			
+
 			System.out.println(point.Serialize(ObjLevel.BRIEF));
-			
+
 		} catch (Exception e) {
 			e.printStackTrace();
-		}
-		finally {
+		} finally {
 			DbUtils.close(conn);
 		}
 
 	}
-	
+
 	@Test
 	public void testQueryTmcLineById() throws Exception {
 		Connection conn = null;
@@ -159,15 +151,14 @@ public class TmcPointTest {
 
 			conn = DBConnector.getInstance().getMetaConnection();
 			TmcLineSelector selector = new TmcLineSelector(conn);
-			
+
 			TmcLine line = selector.loadByTmcLineId(522002093);
-			
+
 			System.out.println(line.Serialize(ObjLevel.BRIEF));
-			
+
 		} catch (Exception e) {
 			e.printStackTrace();
-		}
-		finally {
+		} finally {
 			DbUtils.close(conn);
 		}
 

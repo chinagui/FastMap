@@ -49,6 +49,13 @@ public class TmcLineTree implements IObj {
 		this.setType(ObjType.TMCLINE);
 
 		this.setGeometry(line.getGeometry());
+		
+		for(TmcPoint point : line.getPoints())
+		{
+			TmcLineTree pointTree = new TmcLineTree(point);
+
+			this.getChildren().add(pointTree);
+		}
 	}
 	
 	public TmcLineTree(TmcArea tmcArea) {

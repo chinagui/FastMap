@@ -1,11 +1,8 @@
 package com.navinfo.dataservice.engine.editplus.batchAndCheck.check.rule;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
@@ -53,7 +50,6 @@ public class FMA0418 extends BasicCheckRule {
 						MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 						Map<String, String> typeD5 = metadataApi.scPointNameckTypeD5();
 						Map<String, String> keyResult5=ScPointNameckUtil.matchType(newNameStr, typeD5);
-						if (keyResult5.size()==0){return;}
 						for(String preKey:keyResult5.keySet()){
 							if (!newNamePhonetic.contains(keyResult5.get(preKey))){
 								String log="POI标准化名称中含有多音字“"+preKey+"”,且拼音与配置表中拼音不相同";

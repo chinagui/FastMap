@@ -52,24 +52,8 @@ public class GLM34001 extends baseRule {
 				||rdLink.getKind()==9||rdLink.getKind()==10
 				||rdLink.getKind()==11||rdLink.getKind()==13){
 			StringBuilder sb = new StringBuilder();
-			sb.append("SELECT R.GEOMETRY,'[RD_LINK,' || R.LINK_PID || ']',R.MESH_ID FROM RD_LINK R,");
-			if(rdLink.getKind()==1){
-				sb.append("'高速道路上制作了减速带' LOG ");
-			}else if(rdLink.getKind()==2){
-				sb.append("'城市高速上制作了减速带' LOG ");
-			}else if(rdLink.getKind()==8){
-				sb.append("'8级路上制作了减速带' LOG ");
-			}else if(rdLink.getKind()==9){
-				sb.append("'9级路上制作了减速带' LOG ");
-			}else if(rdLink.getKind()==10){
-				sb.append("'10级路上制作了减速带' LOG ");
-			}else if(rdLink.getKind()==11){
-				sb.append("'人渡上制作了减速带' LOG ");
-			}else if(rdLink.getKind()==13){
-				sb.append("'轮渡上制作了减速带' LOG ");
-			}
-
-			sb.append(" WHERE R.LINK_PID = "+rdLink.getPid());
+			sb.append("SELECT R.GEOMETRY,'[RD_LINK,' || R.LINK_PID || ']',R.MESH_ID");
+			sb.append(" FROM RD_LINK R WHERE R.LINK_PID = "+rdLink.getPid());
 			sb.append(" AND R.U_RECORD <> 2 ");
 			sb.append(" AND EXISTS( ");
 			sb.append(" SELECT 1 FROM RD_SPEEDBUMP S WHERE R.LINK_PID=S.LINK_PID ");
@@ -83,7 +67,23 @@ public class GLM34001 extends baseRule {
 			resultList = getObj.exeSelect(this.getConn(), sql);
 			
 			if(!resultList.isEmpty()){
-				this.setCheckResult(resultList.get(0).toString(), resultList.get(1).toString(), (int)resultList.get(2),resultList.get(3).toString());
+				String log = null;
+				if(rdLink.getKind()==1){
+					log = "高速道路上制作了减速带";
+				}else if(rdLink.getKind()==2){
+					log = "城市高速上制作了减速带";
+				}else if(rdLink.getKind()==8){
+					log = "8级路上制作了减速带";
+				}else if(rdLink.getKind()==9){
+					log = "9级路上制作了减速带";
+				}else if(rdLink.getKind()==10){
+					log = "10级路上制作了减速带";
+				}else if(rdLink.getKind()==11){
+					log = "人渡上制作了减速带";
+				}else if(rdLink.getKind()==13){
+					log = "轮渡上制作了减速带";
+				}
+				this.setCheckResult(resultList.get(0).toString(), resultList.get(1).toString(), (int)resultList.get(2),log);
 			}
 		}
 		

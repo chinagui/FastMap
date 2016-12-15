@@ -28,7 +28,7 @@ public class GLM14007 extends baseRule {
 		// TODO Auto-generated method stub
 		for(IRow row:checkCommand.getGlmList()){
 			//道路属性编辑
-			if(row instanceof RdLinkForm){
+			if(row instanceof RdLink){
 				RdLink rdLink = (RdLink)row;
 				checkRdLink(rdLink);
 			}else if(row instanceof RdLinkForm){
@@ -64,7 +64,7 @@ public class GLM14007 extends baseRule {
 		StringBuilder sb = new StringBuilder();
 
 		sb.append("WITH RLF AS (SELECT RF.LINK_PID FROM RD_LINK_FORM RF WHERE");
-		sb.append(" AND R.LINK_PID = "+rdLink.getPid()+" AND RF.FORM_OF_WAY = 50 AND RF.U_RECORD <> 2)");
+		sb.append(" RF.LINK_PID = "+rdLink.getPid()+" AND RF.FORM_OF_WAY = 50 AND RF.U_RECORD <> 2)");
 		sb.append(" SELECT DR.PID FROM RD_DIRECTROUTE DR,RLF WHERE DR.IN_LINK_PID = RLF.LINK_PID AND DR.U_RECORD <> 2");
 		sb.append(" UNION");
 		sb.append(" SELECT DR.PID FROM RD_DIRECTROUTE DR,RLF WHERE DR.OUT_LINK_PID = RLF.LINK_PID AND DR.U_RECORD <> 2");

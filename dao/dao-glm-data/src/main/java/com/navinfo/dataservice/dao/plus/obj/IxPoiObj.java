@@ -696,6 +696,14 @@ public class IxPoiObj extends AbstractIxObj {
 			}
 		return null;
 	}
+	public IxPoiAddress getENGAddress(long nameGroupId){
+		List<IxPoiAddress> subRows=getIxPoiAddresses();
+		for(IxPoiAddress br:subRows){
+			if(br.getLangCode().equals("ENG")&&br.getNameGroupid()==nameGroupId){
+				return br;}
+			}
+		return null;
+	}
 	@Override
 	public String objName() {
 		return ObjectName.IX_POI;

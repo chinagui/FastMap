@@ -61,35 +61,13 @@ public class FMBATM0105 extends BasicBatchRule {
 		if(obj.objName().equals(ObjectName.IX_POI)){
 			IxPoiObj poiObj=(IxPoiObj) obj;
 			IxPoi mainPoi=(IxPoi) poiObj.getMainrow();
-			//查询别名原始英文列表
-			List<IxPoiName> brList=poiObj.getOriginAliasENGNameList();
-			for(IxPoiName br:brList){
-				if (br.getOpType().equals(OperationType.DELETE)){
-					continue;
-				}
-				IxPoiName standardAliasEngName=poiObj.getStandardAliasENGName(br.getNameGroupid());
-				if((br.getName()).length()<=35&&standardAliasEngName!=null){
-					poiObj.deleteSubrow(standardAliasEngName);
-				}
-				MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
-				Map<String, String> typeMap8 = metadataApi.scPointSpecKindCodeType8();
-				IxPoiName aliasCHIName=poiObj.getAliasCHIName(br.getNameGroupid());
-				if(((br.getName()).length()>35)&&typeMap8.containsKey(mainPoi.getKindCode())){
-					if (standardAliasEngName!=null){
-						standardAliasEngName.setName(metadataApi.convertEng(aliasCHIName.getName()));
-					}else{
-						IxPoiName poiName=(IxPoiName) poiObj.createIxPoiName();
-						poiName.setNameId(PidUtil.getInstance().applyPoiNameId());
-						poiName.setNameGroupid(br.getNameGroupid());
-						poiName.setLangCode(br.getLangCode());
-						poiName.setNameClass(3);
-						poiName.setNameType(2);		
-						poiName.setName(aliasCHIName.getName());
-					}
+			if(isBatch(poiObj)){
+				IxPoiAddress chiAddr=poiObj.getCHIAddress();
+				IxPoiAddress engAddr=poiObj.getENGAddress(chiAddr.getNameGroupid());
+				if (engAddr!=null){
+					engAddr.setFullname("");
 				}
 			}
-			
-			
 		}		
 	}
 	/**
@@ -107,6 +85,9 @@ public class FMBATM0105 extends BasicBatchRule {
 		}
 		//满足(2)POI对象新增中文地址或修改中文地址的POI数据
 		IxPoiAddress addr=poiObj.getCHIAddress();
+		if (addr==null){
+			return false;
+		}
 		boolean changeAddrFlag=false;
 		if ((!(addr.getOpType().equals(OperationType.DELETE)))&&(addr.getHisOpType().equals(OperationType.INSERT)||addr.getHisOpType().equals(OperationType.UPDATE))){
 			changeAddrFlag=true;
@@ -136,5 +117,5 @@ public class FMBATM0105 extends BasicBatchRule {
 		return true;
 	}
 
-
+   
 }

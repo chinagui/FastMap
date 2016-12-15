@@ -616,8 +616,11 @@ public Page listCheckResults(JSONObject params, JSONArray tips, JSONArray ruleCo
 		Statement stmt = null;
 
 		ResultSet rs = null;
+		
+		String ckRules = "(";
+		ckRules += StringUtils.join(ckRule.toArray(), ",") + ")";
 
-		StringBuilder sql = new StringBuilder("select ruleid from ni_val_exception where dbms_lob.instr(targets,'"+pid+"',1,1)<>0 and ruleid in "+ckRule);                          
+		StringBuilder sql = new StringBuilder("SELECT n.ruleid FROM ck_result_object c,ni_val_exception n WHERE c.pid="+pid+" AND c.md5_code=n.md5_code AND n.ruleid IN "+ckRules);                          
 
 		try {
 

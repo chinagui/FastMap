@@ -421,9 +421,9 @@ public class TipsExporter {
 			
 		}
 		
-		photoMap = exportPhotos(photoGets);
+		exportPhotos(photoGets,photoMap);
 		
-		audioMap = exportAudio(audioGets);
+		exportAudio(audioGets,audioMap);
 			
 	}
 
@@ -433,13 +433,14 @@ public class TipsExporter {
 	 * @param audioGets
 	 * @return
 	 * @author: y
+	 * @param audioMap 
 	 * @throws Exception 
 	 * @time:2016-12-14 上午9:55:54
 	 */
-	private Map<String, Audio> exportAudio(List<Get> audioGets) throws Exception {
+	private Map<String, Audio> exportAudio(List<Get> audioGets, Map<String, Audio> audioMap) throws Exception {
 	/*Map<String, JSONObject> photoMap = new HashMap<String, JSONObject>();*/
 		
-		Map<String, Audio> audioMap = new HashMap<String, Audio>();
+		//Map<String, Audio> audioMap = new HashMap<String, Audio>();
 
 		Connection hbaseConn = HBaseConnector.getInstance().getConnection();
 
@@ -523,12 +524,10 @@ public class TipsExporter {
 	 * @author: y
 	 * @time:2016-12-13 下午8:33:26
 	 */
-	private Map<String, Photo> exportPhotos(List<Get> gets)
+	private Map<String, Photo> exportPhotos(List<Get> gets,Map<String, Photo> photoMap)
 			throws Exception {
 
 		/*Map<String, JSONObject> photoMap = new HashMap<String, JSONObject>();*/
-		
-		Map<String, Photo> photoMap = new HashMap<String, Photo>();
 
 		Connection hbaseConn = HBaseConnector.getInstance().getConnection();
 

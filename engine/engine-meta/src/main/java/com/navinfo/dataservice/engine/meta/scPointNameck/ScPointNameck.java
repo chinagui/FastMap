@@ -30,7 +30,10 @@ public class ScPointNameck {
 	public static final ScPointNameck getInstance() {
 		return SingletonHolder.INSTANCE;
 	}
-	
+	/**
+	 * 需要按照顺序进行key值替换名称，所以用list，按照key长度存放。
+	 * 获取sc_Point_Nameck元数据库表中type=1的大陆的记录列表
+	 */
 	public List<ScPointNameckObj> scPointNameckTypeD1() throws Exception{
 		if (typeD1==null||typeD1.isEmpty()) {
 				synchronized (this) {

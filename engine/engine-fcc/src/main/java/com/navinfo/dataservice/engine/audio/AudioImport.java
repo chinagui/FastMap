@@ -99,9 +99,9 @@ public class AudioImport {
 			return null;
 		}
 
-		JSONObject o_audio = new JSONObject();
+	/*	JSONObject o_audio = new JSONObject();
 
-		o_audio.put("o_audio", audioByte);
+		o_audio.put("o_audio", audioByte);*/
 
 		Put put = new Put(audio.getRowkey().getBytes());
 		
@@ -109,8 +109,7 @@ public class AudioImport {
 		
 		put.addColumn("data".getBytes(), "attribute".getBytes(), attribute.toString().getBytes());
 
-		put.addColumn("data".getBytes(), "origin".getBytes(), o_audio
-				.toString().getBytes());
+		put.addColumn("data".getBytes(), "origin.o_audio".getBytes(), audioByte);
 
 		return put;
 	}

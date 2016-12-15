@@ -1,9 +1,16 @@
 package com.navinfo.dataservice.dao.plus.obj;
 
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.commons.lang.StringUtils;
+
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
+import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiAddress;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiAdvertisement;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiAttraction;
@@ -225,6 +232,17 @@ public class IxPoiObj extends AbstractIxObj {
 	public IxPoiChildren createIxPoiChildren(long groupId)throws Exception{
 		IxPoiChildren ixPoiChildren = (IxPoiChildren)(ObjFactory.getInstance().createRow("IX_POI_CHILDREN", this.objPid()));
 		ixPoiChildren.setGroupId(groupId);
+		if(subrows.containsKey("IX_POI_CHILDREN")){
+			subrows.get("IX_POI_CHILDREN").add(ixPoiChildren);
+		}else{
+			List<BasicRow> ixPoiChildrenList = new ArrayList<BasicRow>();
+			ixPoiChildrenList.add(ixPoiChildren);
+			subrows.put("IX_POI_CHILDREN", ixPoiChildrenList);
+		}
+		return ixPoiChildren;
+	}
+	public IxPoiChildren createIxPoiChildren()throws Exception{
+		IxPoiChildren ixPoiChildren = (IxPoiChildren)(ObjFactory.getInstance().createRow("IX_POI_CHILDREN", this.objPid()));
 		if(subrows.containsKey("IX_POI_CHILDREN")){
 			subrows.get("IX_POI_CHILDREN").add(ixPoiChildren);
 		}else{
@@ -747,6 +765,212 @@ public class IxPoiObj extends AbstractIxObj {
 		return null;
 	}
 	
+	/*
+	 * 简称标准中文名称组
+	 */
+	public List<IxPoiName> getShortStandardCHName(){
+		List<IxPoiName> shortCHNameList=null;
+		List<IxPoiName> subRows=getIxPoiNames();
+		for(IxPoiName br:subRows){
+			if(br.getOpType()!=OperationType.DELETE && br.getNameClass()==5&&br.getNameType()==1
+					&&(br.getLangCode().equals("CHI")||br.getLangCode().equals("CHT"))){
+				shortCHNameList.add(br);}
+			}
+		return shortCHNameList;
+	}
+	
+	/*
+	 * 标准中文名称组
+	 */
+	public List<IxPoiName> getStandardCHName(){
+		List<IxPoiName> standardCHName=null;
+		List<IxPoiName> subRows=getIxPoiNames();
+		for(IxPoiName br:subRows){
+			if(br.getOpType()!=OperationType.DELETE &&(br.getNameClass()==1||br.getNameClass()==3
+					||br.getNameClass()==5||br.getNameClass()==6)&&br.getNameType()==1
+					&&(br.getLangCode().equals("CHI")||br.getLangCode().equals("CHT"))){
+				standardCHName.add(br);}
+			}
+		return standardCHName;
+	}
+	
+	/*
+	 * 获取名称组中最大group_id
+	 */
+	public long getMaxGroupIdFromNames(){
+		long groupId=0;
+		List<IxPoiName> subRows=getIxPoiNames();
+		for(IxPoiName br:subRows){
+			long gId=br.getNameGroupid();
+			if (groupId<=gId){groupId=gId;}
+		}	
+		return groupId;
+	}
+	
+	/*
+	 * 别名中文(name_class=3,name_type=1,lang_code='CHI')列表
+	 */
+	public List<IxPoiName> getAliasCHIName(){
+		List<IxPoiName> aliasCHINameList=null;
+		List<IxPoiName> subRows=getIxPoiNames();
+		for(IxPoiName br:subRows){
+			if(br.getNameClass()==3&&br.getNameType()==1&&br.getLangCode().equals("CHI")){
+				aliasCHINameList.add(br);}
+			}
+		return aliasCHINameList;
+	}
+	
+	public IxPoiName getStandardAliasENGName(long nameGroupId){
+		List<IxPoiName> subRows=getIxPoiNames();
+		for(IxPoiName br:subRows){
+			if(br.getNameGroupid()==nameGroupId&&br.getNameClass()==3&&br.getNameType()==1&&br.getLangCode().equals("ENG")){
+				return br;}
+			}
+		return null;
+	}
+	
+	public IxPoiName getOriginAliasENGName(long nameGroupId){
+		List<IxPoiName> subRows=getIxPoiNames();
+		for(IxPoiName br:subRows){
+			if(br.getNameGroupid()==nameGroupId&&br.getNameClass()==3&&br.getNameType()==2&&br.getLangCode().equals("ENG")){
+				return br;}
+			}
+		return null;
+	}
+	
+	public List<IxPoiName> getAliasENGName(){
+		List<IxPoiName> subRows=getIxPoiNames();
+		List<IxPoiName> aliasENGNameList=null;
+		for(IxPoiName br:subRows){
+			if(br.getNameClass()==3&&br.getLangCode().equals("ENG")){
+				aliasENGNameList.add(br);}
+			}
+		return aliasENGNameList;
+	}
+	/**
+	 * 获取原始英文别名列表
+	 * @param nameGroupId
+	 * @return
+	 */
+	public List<IxPoiName> getOriginAliasENGNameList(){
+		List<IxPoiName> originAliasENGNameList=null;
+		List<IxPoiName> subRows=getIxPoiNames();
+		for(IxPoiName br:subRows){
+			if(br.getNameClass()==3&&br.getNameType()==2&&br.getLangCode().equals("ENG")){
+				originAliasENGNameList.add(br);}
+			}
+		return originAliasENGNameList;
+	}
+	
+	
+	/*
+	 * 别名中文(name_class=3,name_type=1,lang_code='CHI')列表
+	 */
+	public IxPoiName getAliasCHIName(long nameGroupId){
+		List<IxPoiName> subRows=getIxPoiNames();
+		for(IxPoiName br:subRows){
+			if(br.getNameClass()==3&&br.getLangCode().equals("CHI")){
+				return br;}
+			}
+		return null;
+	}
+	
+	public IxPoiAddress getCHIAddress(){
+		List<IxPoiAddress> subRows=getIxPoiAddresses();
+		for(IxPoiAddress br:subRows){
+			if(br.getLangCode().equals("CHI")&&br.isChanged()){
+				return br;}
+			}
+		return null;
+	}
+	public IxPoiAddress getENGAddress(long nameGroupId){
+		List<IxPoiAddress> subRows=getIxPoiAddresses();
+		for(IxPoiAddress br:subRows){
+			if(br.getLangCode().equals("ENG")&&br.getNameGroupid()==nameGroupId){
+				return br;}
+			}
+		return null;
+	}
+	
+	/**
+	 * 街巷名翻译：
+ 	 * 通过IX_POI_ADDRESS.STREET与道路名RD_NAME表中LANG_CODE='CHI'(港澳数据为CHT)对应的name进行关联，
+     * 若关联一条中文记录，则通过RD_NAME.name_groupid查询匹配的英文记录，则将英文RD_NAME.NAME赋值给IX_POI_ADDRESS.STREET；
+     * 若关联多条中文记录，
+     *   则通过IX_POI_ADDRESS.STREET_PHONETIC与中文对应的RD_NAME.NAME_PHONEETIC关联，
+     *   如果拼音一致且只有一条，则将这条中文对应的英文name赋值给IX_POI_ADDRESS.STREET；
+     *   如果拼音一致且多条记录，则取RD_NAME.SRC_FLAG=1的中文对应的英文name赋值给IX_POI_ADDRESS.STREET；
+     *   若没有SRC_FLAG=1的，则取NAME_GROUPID最小的中文对应的英文name赋值给IX_POI_ADDRESS.STREET；
+     *   如果拼音不一致，则取取NAME_GROUPID最小的中文对应的英文name赋值给IX_POI_ADDRESS.STREET；
+     *   如果找不到匹配的英文记录，则不更新取IX_POI_ADDRESS.STREET，也不新增记录；
+	 * @param conn
+	 * @param nameGroupId
+	 * @return
+	 * @throws Exception
+	 */
+	public String getRdEngName(Connection conn,long nameGroupId)
+			throws Exception {
+		String strStreet="";
+		Statement stmt = null;
+		ResultSet rs = null;
+	    String sql1="SELECT COUNT(1) total FROM ix_poi_address ad,rd_name r WHERE r.lang_code='CHI' AND ad.street=r.name AND ad.lang_code='CHI' and ad.name_groupid="+nameGroupId;
+		try {
+			stmt = conn.createStatement();
+			rs = stmt.executeQuery(sql1);
+			while (rs.next()) {
+				if (rs.getInt("total")==1){
+					ResultSet rs1=stmt.executeQuery("SELECT r.name FROM rd_name r WHERE r.lang_code='ENG' AND r.name_groupid=(SELECT n.name_groupid FROM ix_poi_address ad,rd_name n WHERE n.lang_code='CHI' AND ad.street=n.name AND ad.lang_code='CHI' AND ad.name_groupid="+nameGroupId+")");
+					while(rs1.next()){
+						return rs1.getString("name");
+					}
+				}
+				if(rs.getInt("total")>1){
+					ResultSet rs2=stmt.executeQuery("SELECT COUNT(1) total FROM ix_poi_address ad,rd_name r WHERE r.lang_code='CHI' AND ad.STREET_PHONETIC=r.name_phonetic AND ad.lang_code='CHI' AND ad.name_groupid="+nameGroupId);
+				    while(rs2.next()){
+				    	if(rs2.getInt("total")==0){
+				    		ResultSet rs3=stmt.executeQuery("SELECT r.name FROM rd_name r WHERE r.lang_code='ENG' AND r.name_groupid=(SELECT MIN(r.name_groupid) FROM ix_poi_address ad,rd_name r WHERE r.lang_code='CHI' AND ad.street=r.name AND ad.lang_code='CHI' AND ad.name_groupid="+nameGroupId+") ");	
+				    	    while(rs3.next()){
+				    	    	return rs3.getString("name");
+				    	    }
+				    	}
+				    	else if (rs2.getInt("total")==1){
+				    		ResultSet rs4=stmt.executeQuery("SELECT r.name FROM rd_name r WHERE r.lang_code='ENG' AND r.name_groupid=(SELECT r.name_groupid FROM ix_poi_address ad,rd_name r WHERE r.lang_code='CHI' AND ad.STREET_PHONETIC=r.name_phonetic AND ad.lang_code='CHI' AND ad.name_groupid="+nameGroupId+") ");	
+				    	    while(rs4.next()){
+				    	    	return rs4.getString("name");
+				    	    }
+				    	}
+				    	else if(rs2.getInt("total")>1){
+				    		ResultSet rs5=stmt.executeQuery("SELECT r.name_groupid FROM ix_poi_address ad,rd_name r WHERE r.lang_code='CHI' AND ad.STREET_PHONETIC=r.name_phonetic AND ad.lang_code='CHI' and r.src_flag=1 AND ad.name_groupid="+nameGroupId);	
+				    		while(rs5.next()){
+				    	    	ResultSet rs6=stmt.executeQuery("SELECT r.name FROM rd_name r WHERE r.lang_code='ENG' AND r.name_groupid="+rs5.getInt("name_groupid"));	
+						    	while(rs6.next()){
+						    	    return rs6.getString("name");
+						    	 }
+				    	     }
+				    		ResultSet rs7=stmt.executeQuery("SELECT r.name FROM rd_name r WHERE r.lang_code='ENG' AND r.name_groupid=(SELECT MIN(r.name_groupid) FROM ix_poi_address ad,rd_name r WHERE r.lang_code='CHI' AND ad.STREET_PHONETIC=r.name_phonetic AND ad.lang_code='CHI' AND ad.name_groupid="+nameGroupId+") ");	
+				    		while(rs7.next()){
+					    	    return rs7.getString("name");
+					    	 }
+				    	}		    		
+				    	}
+				    }
+				}
+			}
+catch (Exception e) {
+			throw e;
+		} finally {
+			try {
+				rs.close();
+			} catch (Exception e) {
+			}
+
+			try {
+				stmt.close();
+			} catch (Exception e) {
+			}
+		}
+		return strStreet;
+	}
 	@Override
 	public String objName() {
 		return ObjectName.IX_POI;
@@ -779,7 +1003,7 @@ public class IxPoiObj extends AbstractIxObj {
 		}else if("parents".equals(subRowName)){
 			return this.createIxPoiParent();
 		}else if("children".equals(subRowName)){
-			//return this.createIxPoiChildren(0);
+			return this.createIxPoiChildren();
 		}else if("photos".equals(subRowName)){
 			return this.createIxPoiPhoto();
 		}else if("videoes".equals(subRowName)){
@@ -819,9 +1043,8 @@ public class IxPoiObj extends AbstractIxObj {
 		}else if("samepoiParts".equals(subRowName)){
 			return this.createIxSamepoiPart();
 		}else{
-			throw new Exception("字段名为:"+subRowName+"的子表未找到");
+			throw new Exception("字段名为:"+subRowName+"的子表未创建");
 		}
-		return null;
 	}
 	
 	/**

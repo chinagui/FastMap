@@ -86,7 +86,7 @@ public class RdLaneConnexitySearch implements ISearch {
 				
 				JSONObject jsonM = new JSONObject();
 
-				snapshot.setI(String.valueOf(resultSet.getInt("pid")));
+				snapshot.setI(resultSet.getInt("pid"));
 				
 				snapshot.setT(5);
 

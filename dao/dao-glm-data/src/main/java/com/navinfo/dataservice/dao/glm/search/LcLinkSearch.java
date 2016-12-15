@@ -49,7 +49,7 @@ public class LcLinkSearch implements ISearch {
 
         List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-        String sql = "select a.link_pid, a.geometry, a.s_node_pid, a.e_node_pid, b.kind from lc_link a, lc_link_kind b where a.u_record != 2 and b.u_record != 2 and sdo_within_distance(a.geometry, sdo_geometry(:1, 8307), 'DISTANCE=0') = 'TRUE' and a.link_pid = b.link_pid and rownum = 1";
+        String sql = "with tmp as (select a.link_pid, max(b.kind) as kind from lc_link a, lc_link_kind b where sdo_within_distance(a.geometry, sdo_geometry(:1, 8307), 'DISTANCE=0') = 'TRUE' and a.link_pid = b.link_pid and a.u_record != 2 and b.u_record != 2 group by a.link_pid) select t2.link_pid, t2.geometry, t2.s_node_pid, t2.e_node_pid, t1.kind from tmp t1, lc_link t2 where t1.link_pid = t2.link_pid";
 
         PreparedStatement pstmt = null;
 
@@ -77,7 +77,7 @@ public class LcLinkSearch implements ISearch {
 
                 snapshot.setT(31);
 
-                snapshot.setI(String.valueOf(resultSet.getInt("link_pid")));
+                snapshot.setI(resultSet.getInt("link_pid"));
 
                 STRUCT struct = (STRUCT) resultSet.getObject("geometry");
 
@@ -111,7 +111,7 @@ public class LcLinkSearch implements ISearch {
 
         List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-        String sql = "select a.link_pid, a.geometry, a.s_node_pid, a.e_node_pid, b.kind from lc_link a, lc_link_kind b where a.u_record != 2 and b.u_record != 2 and sdo_within_distance(a.geometry, sdo_geometry(:1, 8307), 'DISTANCE=0') = 'TRUE' and a.link_pid = b.link_pid and rownum = 1";
+        String sql = "with tmp as (select a.link_pid, max(b.kind) as kind from lc_link a, lc_link_kind b where sdo_within_distance(a.geometry, sdo_geometry(:1, 8307), 'DISTANCE=0') = 'TRUE' and a.link_pid = b.link_pid and a.u_record != 2 and b.u_record != 2 group by a.link_pid) select t2.link_pid, t2.geometry, t2.s_node_pid, t2.e_node_pid, t1.kind from tmp t1, lc_link t2 where t1.link_pid = t2.link_pid";
 
         PreparedStatement pstmt = null;
 
@@ -145,7 +145,7 @@ public class LcLinkSearch implements ISearch {
 
                 snapshot.setT(31);
 
-                snapshot.setI(String.valueOf(resultSet.getInt("link_pid")));
+                snapshot.setI(resultSet.getInt("link_pid"));
 
                 STRUCT struct = (STRUCT) resultSet.getObject("geometry");
 

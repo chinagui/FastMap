@@ -24,8 +24,12 @@ import com.navinfo.dataservice.engine.meta.mesh.MeshSelector;
 import com.navinfo.dataservice.engine.meta.pinyin.PinyinConvertSelector;
 import com.navinfo.dataservice.engine.meta.pinyin.PinyinConverter;
 import com.navinfo.dataservice.engine.meta.rdname.RdNameImportor;
+import com.navinfo.dataservice.engine.meta.scPointEngKeyWords.ScPointEngKeyWords;
 import com.navinfo.dataservice.engine.meta.scPointNameck.ScPointNameck;
+import com.navinfo.dataservice.engine.meta.scPointSpecKindcode.ScPointSpecKindcode;
 import com.navinfo.dataservice.engine.meta.tmc.selector.TmcSelector;
+import com.navinfo.dataservice.engine.meta.translate.ConvertUtil;
+import com.navinfo.dataservice.engine.meta.translate.EngConverterHelper;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -212,9 +216,63 @@ public class MetadataApiImpl implements MetadataApi {
 	}
 	
 	@Override
+	public Map<String, String> scPointNameckTypeD10() throws Exception {
+		// TODO Auto-generated method stub
+		return ScPointNameck.getInstance().scPointNameckTypeD10();
+	}
+	
+	@Override
+	public Map<String, String> scPointNameckTypeD5() throws Exception {
+		// TODO Auto-generated method stub
+		return ScPointNameck.getInstance().scPointNameckTypeD5();
+	}
+	
+	@Override
+	public Map<String, String> scPointNameckTypeD7() throws Exception {
+		// TODO Auto-generated method stub
+		return ScPointNameck.getInstance().scPointNameckTypeD7();
+	}
+	
+	@Override
 	public List<String> getDeepAdminCodeList() throws Exception {
 		ScPointDeepPlanarea deepPlanarea = new ScPointDeepPlanarea();
 		return deepPlanarea.getDeepAdminCodeList();
+	}
+	
+	@Override
+	public String convertEng(String word) throws Exception {
+		
+		 EngConverterHelper converterHelper = new EngConverterHelper();
+         String result = converterHelper.chiToEng(word);
+		return result;
+	}
+	
+	@Override
+	public Map<String, String> scPointSpecKindCodeType8() throws Exception {
+		// TODO Auto-generated method stub
+		return ScPointSpecKindcode.getInstance().scPointSpecKindCodeType8();
+	}
+
+	/**
+	 * 判断重要分类
+	 */
+	@Override
+	public boolean judgeScPointKind(String kindCode, String chain) throws Exception {
+		return ScPointSpecKindcode.getInstance().judgeScPointKind(kindCode, chain);
+	}
+	
+	/**
+	 * 返回TYPE=1时地址关键字翻译对照MAP
+	 */
+	@Override
+	public Map<String, String> scPointEngKeyWordsType1() throws Exception {
+		// TODO Auto-generated method stub
+		return ScPointEngKeyWords.getInstance().scPointEngKeyWordsType1();
+	}
+	
+	@Override
+	public String convFull2Half(String word) throws Exception {
+		return ConvertUtil.convFull2Half(word);
 	}
 
 }

@@ -55,6 +55,7 @@ public class Check extends AbstractOperation{
 		List<CheckRule> checkRuleList=new ArrayList<CheckRule>();
 		for(String ruleId:checkCommand.getRuleIdList()){
 			CheckRule rule=CheckRuleLoader.getInstance().loadByRuleId(ruleId);
+			if(rule==null){continue;}
 			checkRuleList.add(rule);
 			Map<String, Set<String>> tmpMap = rule.getReferSubtableMap();
 			for(String manObjName:tmpMap.keySet()){

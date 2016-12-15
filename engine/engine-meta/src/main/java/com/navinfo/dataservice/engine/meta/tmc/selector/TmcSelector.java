@@ -15,6 +15,7 @@ import org.apache.commons.collections.CollectionUtils;
 
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
+import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.engine.meta.tmc.model.TmcArea;
 import com.navinfo.dataservice.engine.meta.tmc.model.TmcLine;
@@ -47,110 +48,132 @@ public class TmcSelector {
 
 		List<TmcLineTree> treeList = new ArrayList<>();
 
-		for (int i=0;i<tmcIds.size();i++) {
-			
+		for (int i = 0; i < tmcIds.size(); i++) {
+
 			TmcLineTree tmcTree = null;
+
+			List<TmcLine> tmcLineList = new ArrayList<>();
 
 			// 1.查询根据tmcPointId查询对应的tmcLine对象
 			TmcLine tmcLine = queryTmcLineByPointId(tmcIds.getInt(i));
 
-			// 2.根据tmcline_id查询line下所有的tmc_point
-			List<TmcPoint> tmcPointList = queryTmcPointByLineId(tmcLine.getTmcId());
+			int upperLineTmcId = tmcLine.getUplineTmcId();
 
-			JSONArray lineGeo = new JSONArray();
+			if (upperLineTmcId != 0) {
+				List<TmcLine> upperLinesList = queryTmcLinesByUperLineId(upperLineTmcId);
 
-			for (TmcPoint tmcPoint : tmcPointList) {
-				JSONArray pointGeo = tmcPoint.getGeometry();
+				for (TmcLine line : upperLinesList) {
+					// 根据tmcline_id查询line下所有的tmc_point
+					List<TmcPoint> tmcPointList = queryTmcPointByLineId(line.getTmcId());
 
-				lineGeo.add(pointGeo);
+					JSONArray lineGeo = new JSONArray();
+
+					for (TmcPoint tmcPoint : tmcPointList) {
+						JSONArray pointGeo = tmcPoint.getGeometry();
+
+						lineGeo.add(pointGeo);
+					}
+
+					line.setGeometry(lineGeo);
+					
+					line.setPoints(tmcPointList);
+
+					tmcLineList.add(line);
+				}
+			} else {
+				// 2.根据tmcline_id查询line下所有的tmc_point
+				List<TmcPoint> tmcPointList = queryTmcPointByLineId(tmcLine.getTmcId());
+
+				JSONArray lineGeo = new JSONArray();
+
+				for (TmcPoint tmcPoint : tmcPointList) {
+					JSONArray pointGeo = tmcPoint.getGeometry();
+
+					lineGeo.add(pointGeo);
+				}
+
+				tmcLine.setGeometry(lineGeo);
+				
+				tmcLine.setPoints(tmcPointList);
+
+				tmcLineList.add(tmcLine);
 			}
 
-			tmcLine.setGeometry(lineGeo);
-
 			// 3.根据tmcline_id查询父tmcline
-			int upperTmcId = tmcLine.getUplineTmcId();
+			int startAreaTmcId = tmcLine.getAreaTmcId();
 
 			List<TmcLine> upTmcLineList = new ArrayList<>();
 
-			while (upperTmcId != 0) {
-				TmcLine upperTmcLine = queryTmcLineByTmcLineId(upperTmcId);
+			while (upperLineTmcId != 0) {
+				TmcLine upperTmcLine = queryTmcLineByTmcLineId(upperLineTmcId);
 
 				if (upperTmcLine != null) {
 					upTmcLineList.add(upperTmcLine);
+					
+					upperLineTmcId = upperTmcLine.getUplineTmcId();
 
-					upperTmcId = upperTmcLine.getUplineTmcId();
+					startAreaTmcId = upperTmcLine.getAreaTmcId();
 				}
 			}
 
 			// 获取TMCAREA数据
-			int startAreaTmcId = tmcLine.getAreaTmcId();
-
 			List<TmcArea> upTmcAreaList = new ArrayList<>();
 
-			if (CollectionUtils.isNotEmpty(upTmcLineList)) {
-				// upTmcLineList的最后一条数据的upperTmcId是0，代表它的上级是TmcArea
-				TmcLine line = upTmcLineList.get(upTmcLineList.size() - 1);
+			while (startAreaTmcId != 0) {
+				TmcArea upperTmcArea = queryTmcAreaByTmcAreaId(startAreaTmcId);
 
-				startAreaTmcId = line.getAreaTmcId();
+				if (upperTmcArea != null) {
+					upTmcAreaList.add(upperTmcArea);
 
-				while (startAreaTmcId != 0) {
-					TmcArea upperTmcArea = queryTmcAreaByTmcAreaId(startAreaTmcId);
-
-					if (upperTmcArea != null) {
-						upTmcAreaList.add(upperTmcArea);
-
-						startAreaTmcId = upperTmcArea.getUperTmcId();
-					}
-				}
-			} else {
-				// 第一层tmcline向上没有tmcline的情况下使用第一层tmcline的upAreaTmcId
-				startAreaTmcId = tmcLine.getAreaTmcId();
-
-				while (startAreaTmcId != 0) {
-					TmcArea upperTmcArea = queryTmcAreaByTmcAreaId(startAreaTmcId);
-
-					if (upperTmcArea != null) {
-						upTmcAreaList.add(upperTmcArea);
-
-						startAreaTmcId = upperTmcArea.getUperTmcId();
-					}
+					startAreaTmcId = upperTmcArea.getUperTmcId();
 				}
 			}
 
-			// 第一层tmcline
-			TmcLineTree tree = new TmcLineTree(tmcLine);
+		TmcLineTree copyTree = new TmcLineTree(tmcLineList.get(0));
 
-			for (TmcPoint point : tmcPointList) {
-				TmcLineTree pointTree = new TmcLineTree(point);
+		for (TmcLine upperLine : upTmcLineList) {
+			TmcLineTree tmcLineTree = new TmcLineTree(upperLine);
 
-				tree.getChildren().add(pointTree);
+			if (!tmcLineTree.equals(copyTree)) {
+				if(CollectionUtils.isEmpty(tmcLineList))
+				{
+					tmcLineTree.getChildren().add(copyTree);
+					
+					tmcTree = tmcLineTree;
+					break;
+				}
+				else
+				{
+					for(TmcLine tmpTmcLine : tmcLineList)
+					{
+						// 第一层tmcline
+						TmcLineTree tree = new TmcLineTree(tmpTmcLine);
+						
+						tmcLineTree.getChildren().add(tree);
+
+						copyTree = new TmcLineTree();
+
+						copyTree.copy(tmcLineTree);
+
+						tmcTree = tmcLineTree;
+					}
+					//清空tmclinelist
+					tmcLineList.clear();
+				}
 			}
+		}
+		if (tmcTree == null) {
+			tmcTree = copyTree;
+		}
+		
+		TmcLineTree copyResultTree = new TmcLineTree();
 
-			TmcLineTree copyTree = new TmcLineTree();
+		copyResultTree.copy(tmcTree);
 
-			copyTree.copy(tree);
+		for (TmcArea upperArea : upTmcAreaList) {
+			TmcLineTree tmcAreaTree = new TmcLineTree(upperArea);
 
-			for (TmcLine upperLine : upTmcLineList) {
-				TmcLineTree tmcLineTree = new TmcLineTree(upperLine);
-
-				tmcLineTree.getChildren().add(copyTree);
-
-				copyTree = new TmcLineTree();
-
-				copyTree.copy(tmcLineTree);
-
-				tmcTree = tmcLineTree;
-			}
-			if (tmcTree == null) {
-				tmcTree = tree;
-			}
-			TmcLineTree copyResultTree = new TmcLineTree();
-
-			copyResultTree.copy(tmcTree);
-
-			for (TmcArea upperArea : upTmcAreaList) {
-				TmcLineTree tmcAreaTree = new TmcLineTree(upperArea);
-
+			if (!tmcAreaTree.equals(copyResultTree)) {
 				tmcAreaTree.getChildren().add(copyResultTree);
 
 				copyResultTree = new TmcLineTree();
@@ -159,25 +182,70 @@ public class TmcSelector {
 
 				tmcTree = copyResultTree;
 			}
-			if (tmcTree != null) {
-				treeList.add(tmcTree);
-			}
 		}
-
-		// 对树节点进行合并
-		TmcLineTree firstTree = treeList.get(0);
-
-		for (int i = 1; i < treeList.size(); i++) {
-			TmcLineTree tmpTree = treeList.get(i);
-
-			if (firstTree.equals(tmpTree)) {
-				firstTree = addTree2NewTree(firstTree, firstTree.getChildren(), tmpTree.getChildren());
-			} else {
-				throw new Exception("tmc顶层区域无法合并");
-			}
+		if (tmcTree != null) {
+			treeList.add(tmcTree);
 		}
+	}
 
+	// 对树节点进行合并
+	TmcLineTree firstTree = treeList.get(0);
+
+	for(
+	int i = 1;i<treeList.size();i++)
+	{
+		TmcLineTree tmpTree = treeList.get(i);
+
+		if (firstTree.equals(tmpTree)) {
+			firstTree = addTree2NewTree(firstTree, firstTree.getChildren(), tmpTree.getChildren());
+		} else {
+			throw new Exception("tmc顶层区域无法合并");
+		}
+	}
+
+	// 设置tmcline的上级line的geometry
+	setLineGeometry(firstTree);
+		
 		return firstTree;
+	}
+
+	/**
+	 * 设置tmcline的上级line的geometry
+	 * @param tree tmc树型结构对象
+	 */
+	private void setLineGeometry(TmcLineTree tree)
+	{
+		for(TmcLineTree tmcLineTree : tree.getChildren())
+		{
+			if(tmcLineTree.getType() == ObjType.TMCLINE)
+			{
+				if(CollectionUtils.isEmpty(tmcLineTree.getGeometry()))
+				{
+					JSONArray tmcLineGeo = new JSONArray();
+					
+					for(TmcLineTree tempLineTree : tmcLineTree.getChildren())
+					{
+						if(tempLineTree.getType() == ObjType.TMCLINE)
+						{
+							if(CollectionUtils.isNotEmpty(tempLineTree.getGeometry()))
+							{
+								tmcLineGeo.add(tempLineTree.getGeometry());
+							}
+							else
+							{
+								setLineGeometry(tempLineTree);
+							}
+						}
+					}
+					
+					tmcLineTree.setGeometry(tmcLineGeo);
+				}
+			}
+			else
+			{
+				setLineGeometry(tmcLineTree);
+			}
+		}
 	}
 
 	/**
@@ -192,15 +260,14 @@ public class TmcSelector {
 		for (TmcLineTree firstTree : firstTreeChild) {
 			boolean hasAdd = false;
 			for (TmcLineTree tmpTree : tmpTreeChild) {
-				if (!firstTreeChild.contains(tmpTree)) {
+				if (!firstTreeChild.contains(tmpTree) && firstTree.getType() != ObjType.TMCPOINT) {
 					result.getChildren().add(tmpTree);
 					hasAdd = true;
 				} else {
 					addTree2NewTree(firstTree, firstTree.getChildren(), tmpTree.getChildren());
 				}
 			}
-			if(hasAdd)
-			{
+			if (hasAdd) {
 				break;
 			}
 		}
@@ -247,6 +314,57 @@ public class TmcSelector {
 		}
 
 		return tmcLine;
+	}
+
+	/**
+	 * 根据上级tmcId查询其下所有tmcline
+	 * 
+	 * @param upperLineTmcId
+	 * @return
+	 * @throws Exception
+	 */
+	public List<TmcLine> queryTmcLinesByUperLineId(int upperLineTmcId) throws Exception {
+		String sql = "SELECT t1.tmc_id,t1.cid,t1.area_tmc_id,t1.UPLINE_TMC_ID,t2.TRANSLATE_NAME FROM tmc_line t1 LEFT JOIN TMC_LINE_TRANSLATENAME t2 ON t1.TMC_ID = t2.TMC_ID WHERE t1.UPLINE_TMC_ID =:1 AND t2.NAME_FLAG = 0";
+
+		PreparedStatement pstmt = null;
+
+		List<TmcLine> upperTmcLineList = new ArrayList<>();
+
+		TmcLine tmcLine = null;
+
+		ResultSet resultSet = null;
+
+		try {
+
+			pstmt = conn.prepareStatement(sql);
+
+			pstmt.setInt(1, upperLineTmcId);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+				tmcLine = new TmcLine();
+
+				tmcLine.setCid(resultSet.getString("cid"));
+
+				tmcLine.setTranslateName(resultSet.getString("TRANSLATE_NAME"));
+
+				tmcLine.setTmcId(resultSet.getInt("TMC_ID"));
+
+				tmcLine.setAreaTmcId(resultSet.getInt("area_tmc_id"));
+
+				tmcLine.setUplineTmcId(resultSet.getInt("upline_tmc_id"));
+
+				upperTmcLineList.add(tmcLine);
+			}
+		} catch (Exception e) {
+			throw new Exception("根据tmcline查询父节点失败");
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+		}
+
+		return upperTmcLineList;
 	}
 
 	/**
@@ -315,12 +433,12 @@ public class TmcSelector {
 				tmcLine = new TmcLine();
 
 				tmcLine.setCid(resultSet.getString("cid"));
-				
+
 				int tmcLineId = resultSet.getInt("TMC_ID");
-				
+
 				String tmcLineName = resultSet.getString("TRANSLATE_NAME");
 
-				tmcLine.setTranslateName(tmcLineName == null?String.valueOf(tmcLineId):tmcLineName);
+				tmcLine.setTranslateName(tmcLineName == null ? String.valueOf(tmcLineId) : tmcLineName);
 
 				tmcLine.setTmcId(tmcLineId);
 
@@ -450,7 +568,7 @@ public class TmcSelector {
 
 			pstmt = conn.prepareStatement(sql);
 
-			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
+			String wkt = MercatorProjection.getWktWithGap(x, y, z, 100);
 
 			pstmt.setString(1, wkt);
 
@@ -503,7 +621,7 @@ public class TmcSelector {
 
 				SearchSnapshot snapshot = new SearchSnapshot();
 
-				snapshot.setI(tmcLineId);
+				snapshot.setI(Integer.parseInt(tmcLineId));
 
 				snapshot.setT(50);
 
@@ -580,8 +698,10 @@ public class TmcSelector {
 		try {
 
 			pstmt = conn.prepareStatement(sql);
+			
+			//gap：100防止文字显示被其他瓦片覆盖
 
-			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
+			String wkt = MercatorProjection.getWktWithGap(x, y, z, 100);
 
 			pstmt.setString(1, wkt);
 
@@ -596,7 +716,7 @@ public class TmcSelector {
 			while (resultSet.next()) {
 				SearchSnapshot snapshot = new SearchSnapshot();
 
-				snapshot.setI(resultSet.getString("TMC_ID"));
+				snapshot.setI(Integer.parseInt(resultSet.getString("TMC_ID")));
 
 				JSONObject m = new JSONObject();
 
@@ -620,13 +740,13 @@ public class TmcSelector {
 					m.put("c", 0);
 					pointSizeMap.put(geojson.toString(), 1);
 				}
-				
+
 				m.put("d", resultSet.getString("LOCTABLE_ID"));
-				
+
 				m.put("e", resultSet.getInt("LOCOFF_POS"));
-				
+
 				m.put("f", resultSet.getInt("LOCOFF_NEG"));
-				
+
 				snapshot.setM(m);
 
 				snapshot.setT(48);

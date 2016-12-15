@@ -65,7 +65,7 @@ public class IxSamepoiSearch implements ISearch {
 			while (resultSet.next()) {
 				SearchSnapshot snapshot = new SearchSnapshot();
 				snapshot.setT(33);
-				snapshot.setI(resultSet.getString("group_id"));
+				snapshot.setI(resultSet.getInt("group_id"));
 				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
 				JSONObject geojson = Geojson.spatial2Geojson(struct);
 				Geojson.point2Pixel(geojson, z, px, py);

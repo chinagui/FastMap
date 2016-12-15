@@ -101,7 +101,6 @@ public class Operation implements IOperation {
 	 * 跟新rd_object_inter子表
 	 * 
 	 * @param result
-	 * @param content
 	 * @throws Exception
 	 */
 	private void updateObjectInter(Result result) throws Exception {
@@ -143,7 +142,6 @@ public class Operation implements IOperation {
 	 * 跟新rd_object_road子表
 	 * 
 	 * @param result
-	 * @param content
 	 * @throws Exception
 	 */
 	private void updateObjectRoad(Result result) throws Exception {
@@ -186,7 +184,6 @@ public class Operation implements IOperation {
 	 * 更新link子表
 	 * 
 	 * @param result
-	 * @param content
 	 * @throws Exception
 	 */
 	private void updateObjectLink(Result result) throws Exception {
@@ -231,7 +228,6 @@ public class Operation implements IOperation {
 	 * 更新link子表
 	 * 
 	 * @param result
-	 * @param content
 	 * @throws Exception
 	 */
 	private void updateObjectName(Result result) throws Exception {

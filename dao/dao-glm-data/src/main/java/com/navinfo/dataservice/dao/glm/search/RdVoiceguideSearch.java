@@ -94,7 +94,7 @@ public class RdVoiceguideSearch implements ISearch {
 
 				snapshot.setT(44);
 
-				snapshot.setI(String.valueOf(resultSet.getInt("pid")));
+				snapshot.setI(resultSet.getInt("pid"));
 
 				STRUCT struct = (STRUCT) resultSet.getObject("point_geom");
 				

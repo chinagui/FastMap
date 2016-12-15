@@ -71,15 +71,6 @@ public class ColumnSubmitJob extends AbstractJob {
 			IxPoiColumnStatusSelector ixPoiDeepStatusSelector = new IxPoiColumnStatusSelector(conn);
 			pidList = ixPoiDeepStatusSelector.getRowIdForSubmit(firstWorkItem, secondWorkItem, taskId);
 			
-			JSONArray dataArray = new JSONArray(); 
-			for (int pid:pidList) {
-				JSONObject temp = new JSONObject();
-				pidList.add(pid);
-				temp.put("pid", pid);
-				temp.put("taskId", taskId);
-				dataArray.add(temp);
-			}
-			
 			// 清理检查结果
 			DeepCoreControl deepControl = new DeepCoreControl();
 			deepControl.cleanCheckResult(pidList, conn);
@@ -140,7 +131,7 @@ public class ColumnSubmitJob extends AbstractJob {
 				classifyMap.put("ckRules", columnOpConf.getSaveCkrules());
 				classifyMap.put("classifyRules", columnOpConf.getSaveClassifyrules());
 				
-				classifyMap.put("data", dataArray);
+				classifyMap.put("pids", pidList);
 				ColumnCoreOperation columnCoreOperation = new ColumnCoreOperation();
 				columnCoreOperation.runClassify(classifyMap,conn);
 			}
@@ -160,7 +151,7 @@ public class ColumnSubmitJob extends AbstractJob {
 	 */
 	public void updateDeepStatus(List<Integer> pidList,Connection conn,int status) throws Exception {
 		StringBuilder sb = new StringBuilder();
-		sb.append("UPDATE poi_column_status SET firstWorkStatus="+status+",secondWorkStatus="+status+",handler=0 WHERE pid in (select to_number(column_value) from table(clob_to_table(?)))");
+		sb.append("UPDATE poi_column_status SET first_work_status="+status+",second_work_status="+status+",handler=0 WHERE pid in (select to_number(column_value) from table(clob_to_table(?)))");
 		
 		PreparedStatement pstmt = null;
 

@@ -64,14 +64,9 @@ public class ColumnSaveJob extends AbstractJob {
 			
 			columnSave(data,conn);
 			
-			JSONArray dataArray = new JSONArray(); 
 			for (int i=0;i<data.size();i++) {
-				JSONObject temp = new JSONObject();
 				int pid = data.getJSONObject(i).getInt("objId");
 				pidList.add(pid);
-				temp.put("pid", pid);
-				temp.put("taskId", taskId);
-				dataArray.add(temp);
 			}
 			
 			// 修改poi_deep_status表作业项状态
@@ -129,11 +124,12 @@ public class ColumnSaveJob extends AbstractJob {
 				classifyMap.put("ckRules", columnOpConf.getSaveCkrules());
 				classifyMap.put("classifyRules", columnOpConf.getSaveClassifyrules());
 				
-				classifyMap.put("data", dataArray);
+				classifyMap.put("pids", pidList);
 				ColumnCoreOperation columnCoreOperation = new ColumnCoreOperation();
 				columnCoreOperation.runClassify(classifyMap,conn);
 			}
 			
+			conn.commit();
 		} catch (Exception e) {
 			throw new JobException(e);
 		} finally {
@@ -167,7 +163,7 @@ public class ColumnSaveJob extends AbstractJob {
 	 */
 	public void updateColumnStatus(List<Integer> pidList,Connection conn,int status) throws Exception {
 		StringBuilder sb = new StringBuilder();
-		sb.append("UPDATE poi_column_status SET firstWorkStatus="+status+",secondWorkStatus="+status+" WHERE pid in (select to_number(column_value) from table(clob_to_table(?)))");
+		sb.append("UPDATE poi_column_status SET first_work_status="+status+",second_work_status="+status+" WHERE pid in (select to_number(column_value) from table(clob_to_table(?)))");
 		
 		PreparedStatement pstmt = null;
 

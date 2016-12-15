@@ -16,6 +16,10 @@ public class Audio {
 	private int a_uploadUser;
 
 	private String a_uploadDate;
+	
+	private String a_fileName;
+	
+	
 
 	private List<String> a_tag;
 	
@@ -61,6 +65,20 @@ public class Audio {
 
 	public void setA_tag(List<String> a_tag) {
 		this.a_tag = a_tag;
+	}
+
+	/**
+	 * @return the a_fileName
+	 */
+	public String getA_fileName() {
+		return a_fileName;
+	}
+
+	/**
+	 * @param a_fileName the a_fileName to set
+	 */
+	public void setA_fileName(String a_fileName) {
+		this.a_fileName = a_fileName;
 	}
 
 

@@ -15,6 +15,7 @@ import com.navinfo.dataservice.dao.plus.glm.GlmFactory;
 import com.navinfo.dataservice.dao.plus.glm.GlmObject;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
+import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.check.Check;
 import com.navinfo.dataservice.engine.editplus.model.batchAndCheck.BatchRuleCommand;
@@ -86,11 +87,31 @@ public abstract class BasicCheckRule {
 		splitTargets(targets);
 		this.checkResultList.add(checkResult);
 	}
-	
+	/**
+	 * 根据对象，组成检查log；参数log可为null，若为null，则取规则的log描述作为检查log。
+	 * @param obj
+	 * @param log 可为null
+	 * @throws Exception
+	 */
 	public void setCheckResult(BasicObj obj, String log) throws Exception{
 		if(log==null || log.isEmpty()){log=this.checkRule.getLog();}
 		String targets="["+obj.getMainrow().tableName()+","+obj.objPid()+"]";
 		NiValException checkResult=new NiValException(this.checkRule.getRuleId(), "", targets,0,log);
+		splitTargets(targets);
+		this.checkResultList.add(checkResult);
+	}
+	/**
+	 * 根据对象，组成检查log；参数log可为null，若为null，则取规则的log描述作为检查log。
+	 * 增加坐标的传参，减少后期二次查库。
+	 * @param geometry
+	 * @param obj
+	 * @param log 可为null
+	 * @throws Exception
+	 */
+	public void setCheckResult(Geometry geometry, BasicObj obj, String log) throws Exception {
+		if(log==null || log.isEmpty()){log=this.checkRule.getLog();}
+		String targets="["+obj.getMainrow().tableName()+","+obj.objPid()+"]";
+		NiValException checkResult=new NiValException(this.checkRule.getRuleId(), geometry, targets,0,log);
 		splitTargets(targets);
 		this.checkResultList.add(checkResult);
 	}
@@ -109,7 +130,7 @@ public abstract class BasicCheckRule {
 	
 	/**
 	 * targets拆分后存入list,主要用于poi精编重分类，目前仅支持poi类。
-	 * @param targets 
+	 * @param targets [IX_POI,123];[IX_POI,24]
 	 * {IX_POI:{PID,[RULE1,RULE2]}}
 	 */
 	private void splitTargets(String targets){

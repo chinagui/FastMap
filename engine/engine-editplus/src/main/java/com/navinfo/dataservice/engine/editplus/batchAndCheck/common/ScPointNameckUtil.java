@@ -1,25 +1,16 @@
 package com.navinfo.dataservice.engine.editplus.batchAndCheck.common;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-import com.navinfo.dataservice.api.metadata.model.ScPointNameckObj;
-
 public class ScPointNameckUtil {
-	/**
-	 * 需要按照顺序进行key值替换名称，所以用list，按照key长度存放。若preKey包含resultKey则跳过（批处理规则FM-BAT-20-137需求）
-	 * @param name
-	 * @param typeD1
-	 * @return
-	 */
-	public static List<ScPointNameckObj> matchTypeD1(String name,List<ScPointNameckObj> typeD1){
-		List<ScPointNameckObj> matchResult=new ArrayList<ScPointNameckObj>();
-		for(ScPointNameckObj obj:typeD1){
-			if(name.contains(obj.getPreKey())){
-				if(!obj.getPreKey().contains(obj.getResultKey())){
-					matchResult.add(obj);
+	public static Map<String, String> matchTypeD1(String name,Map<String, String> typeD1){
+		Map<String, String> matchResult=new HashMap<String, String>();
+		for(String key:typeD1.keySet()){
+			if(name.contains(key)){
+				String result=typeD1.get(key);
+				if(!key.contains(result)){
+					matchResult.put(key, result);
 				}
 			}
 		}

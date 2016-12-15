@@ -37,7 +37,7 @@ public class AdAdminTest extends InitApplication {
 	@Test
 	public void testDelete()
 	{
-		String parameter = "{\"command\":\"DELETE\",\"type\":\"ADADMIN\",\"dbId\":17,\"objId\":1422}";
+		String parameter = "{\"command\":\"DELETE\",\"type\":\"ADADMIN\",\"projectId\":11,\"objId\":100000138}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

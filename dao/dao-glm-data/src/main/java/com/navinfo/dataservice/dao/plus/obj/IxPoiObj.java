@@ -1,8 +1,14 @@
 package com.navinfo.dataservice.dao.plus.obj;
 
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.commons.lang.StringUtils;
+
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiAddress;
@@ -660,6 +666,16 @@ public class IxPoiObj extends AbstractIxObj {
 			}
 		return null;
 	}
+	
+	public List<IxPoiName> getAliasENGName(){
+		List<IxPoiName> subRows=getIxPoiNames();
+		List<IxPoiName> aliasENGNameList=null;
+		for(IxPoiName br:subRows){
+			if(br.getNameClass()==3&&br.getLangCode().equals("ENG")){
+				aliasENGNameList.add(br);}
+			}
+		return aliasENGNameList;
+	}
 	/**
 	 * 获取原始英文别名列表
 	 * @param nameGroupId
@@ -703,6 +719,86 @@ public class IxPoiObj extends AbstractIxObj {
 				return br;}
 			}
 		return null;
+	}
+	
+	/**
+	 * 街巷名翻译：
+ 	 * 通过IX_POI_ADDRESS.STREET与道路名RD_NAME表中LANG_CODE='CHI'(港澳数据为CHT)对应的name进行关联，
+     * 若关联一条中文记录，则通过RD_NAME.name_groupid查询匹配的英文记录，则将英文RD_NAME.NAME赋值给IX_POI_ADDRESS.STREET；
+     * 若关联多条中文记录，
+     *   则通过IX_POI_ADDRESS.STREET_PHONETIC与中文对应的RD_NAME.NAME_PHONEETIC关联，
+     *   如果拼音一致且只有一条，则将这条中文对应的英文name赋值给IX_POI_ADDRESS.STREET；
+     *   如果拼音一致且多条记录，则取RD_NAME.SRC_FLAG=1的中文对应的英文name赋值给IX_POI_ADDRESS.STREET；
+     *   若没有SRC_FLAG=1的，则取NAME_GROUPID最小的中文对应的英文name赋值给IX_POI_ADDRESS.STREET；
+     *   如果拼音不一致，则取取NAME_GROUPID最小的中文对应的英文name赋值给IX_POI_ADDRESS.STREET；
+     *   如果找不到匹配的英文记录，则不更新取IX_POI_ADDRESS.STREET，也不新增记录；
+	 * @param conn
+	 * @param nameGroupId
+	 * @return
+	 * @throws Exception
+	 */
+	public String getRdEngName(Connection conn,long nameGroupId)
+			throws Exception {
+		String strStreet="";
+		Statement stmt = null;
+		ResultSet rs = null;
+	    String sql1="SELECT COUNT(1) total FROM ix_poi_address ad,rd_name r WHERE r.lang_code='CHI' AND ad.street=r.name AND ad.lang_code='CHI' and ad.name_groupid="+nameGroupId;
+		try {
+			stmt = conn.createStatement();
+			rs = stmt.executeQuery(sql1);
+			while (rs.next()) {
+				if (rs.getInt("total")==1){
+					ResultSet rs1=stmt.executeQuery("SELECT r.name FROM rd_name r WHERE r.lang_code='ENG' AND r.name_groupid=(SELECT n.name_groupid FROM ix_poi_address ad,rd_name n WHERE n.lang_code='CHI' AND ad.street=n.name AND ad.lang_code='CHI' AND ad.name_groupid="+nameGroupId+")");
+					while(rs1.next()){
+						return rs1.getString("name");
+					}
+				}
+				if(rs.getInt("total")>1){
+					ResultSet rs2=stmt.executeQuery("SELECT COUNT(1) total FROM ix_poi_address ad,rd_name r WHERE r.lang_code='CHI' AND ad.STREET_PHONETIC=r.name_phonetic AND ad.lang_code='CHI' AND ad.name_groupid="+nameGroupId);
+				    while(rs2.next()){
+				    	if(rs2.getInt("total")==0){
+				    		ResultSet rs3=stmt.executeQuery("SELECT r.name FROM rd_name r WHERE r.lang_code='ENG' AND r.name_groupid=(SELECT MIN(r.name_groupid) FROM ix_poi_address ad,rd_name r WHERE r.lang_code='CHI' AND ad.street=r.name AND ad.lang_code='CHI' AND ad.name_groupid="+nameGroupId+") ");	
+				    	    while(rs3.next()){
+				    	    	return rs3.getString("name");
+				    	    }
+				    	}
+				    	else if (rs2.getInt("total")==1){
+				    		ResultSet rs4=stmt.executeQuery("SELECT r.name FROM rd_name r WHERE r.lang_code='ENG' AND r.name_groupid=(SELECT r.name_groupid FROM ix_poi_address ad,rd_name r WHERE r.lang_code='CHI' AND ad.STREET_PHONETIC=r.name_phonetic AND ad.lang_code='CHI' AND ad.name_groupid="+nameGroupId+") ");	
+				    	    while(rs4.next()){
+				    	    	return rs4.getString("name");
+				    	    }
+				    	}
+				    	else if(rs2.getInt("total")>1){
+				    		ResultSet rs5=stmt.executeQuery("SELECT r.name_groupid FROM ix_poi_address ad,rd_name r WHERE r.lang_code='CHI' AND ad.STREET_PHONETIC=r.name_phonetic AND ad.lang_code='CHI' and r.src_flag=1 AND ad.name_groupid="+nameGroupId);	
+				    		while(rs5.next()){
+				    	    	ResultSet rs6=stmt.executeQuery("SELECT r.name FROM rd_name r WHERE r.lang_code='ENG' AND r.name_groupid="+rs5.getInt("name_groupid"));	
+						    	while(rs6.next()){
+						    	    return rs6.getString("name");
+						    	 }
+				    	     }
+				    		ResultSet rs7=stmt.executeQuery("SELECT r.name FROM rd_name r WHERE r.lang_code='ENG' AND r.name_groupid=(SELECT MIN(r.name_groupid) FROM ix_poi_address ad,rd_name r WHERE r.lang_code='CHI' AND ad.STREET_PHONETIC=r.name_phonetic AND ad.lang_code='CHI' AND ad.name_groupid="+nameGroupId+") ");	
+				    		while(rs7.next()){
+					    	    return rs7.getString("name");
+					    	 }
+				    	}		    		
+				    	}
+				    }
+				}
+			}
+catch (Exception e) {
+			throw e;
+		} finally {
+			try {
+				rs.close();
+			} catch (Exception e) {
+			}
+
+			try {
+				stmt.close();
+			} catch (Exception e) {
+			}
+		}
+		return strStreet;
 	}
 	@Override
 	public String objName() {

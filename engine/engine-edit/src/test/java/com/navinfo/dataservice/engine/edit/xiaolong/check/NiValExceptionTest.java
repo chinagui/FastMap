@@ -2,16 +2,12 @@ package com.navinfo.dataservice.engine.edit.xiaolong.check;
 
 import java.sql.Connection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.junit.Test;
-import org.springframework.web.servlet.ModelAndView;
 
-import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
-import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.check.NiValExceptionOperator;
 import com.navinfo.dataservice.dao.check.NiValExceptionSelector;
 import com.navinfo.dataservice.engine.edit.InitApplication;
@@ -30,7 +26,7 @@ public class NiValExceptionTest extends InitApplication {
 	@Test
 	public void testLoadByGrid() throws Exception {
 
-		String parameter = "{\"dbId\":17,\"pageNum\":1,\"subtaskType\":4,\"pageSize\":5,\"subtaskId\":\"78\",\"grids\":[60566121]}";
+		String parameter = "{\"dbId\":42,\"grids\":[60560301,60560302,60560303,60560311,60560312,60560313,60560322,60560323,60560331,60560332,60560333,60560320,60560330,60560300,60560321,60560310]}";
 
 		Connection conn = null;
 
@@ -39,48 +35,18 @@ public class NiValExceptionTest extends InitApplication {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
 			int dbId = jsonReq.getInt("dbId");
-			
-			int subtaskType = jsonReq.getInt("subtaskType");
-			int subtaskId =0;
-			if(jsonReq.containsKey("subtaskId")){
-				subtaskId=jsonReq.getInt("subtaskId");
-			}
 
-			JSONArray gridJas = jsonReq.getJSONArray("grids");
-
-			int pageSize = jsonReq.getInt("pageSize");
-
-			int pageNum = jsonReq.getInt("pageNum");
+			JSONArray grids = jsonReq.getJSONArray("grids");
 
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 
 			NiValExceptionSelector selector = new NiValExceptionSelector(conn);
-			
-			Set<String> grids = new HashSet<String>();
-			for(Object obj:gridJas){
-				grids.add(obj.toString());
-			}
-			if(grids.size()<1){
-				ManApi manApi=(ManApi) ApplicationContextUtil.getBean("manApi");
-				List<Integer> gridList = manApi.getGridIdsBySubtaskId(subtaskId);
-				for(Integer obj:gridList){
-					grids.add(obj.toString());
-				}
-			}		
-			Page page = selector.list(subtaskType,grids, pageSize, pageNum);
 
-			System.out.println(page);
+			int data = selector.loadCountByGrid(grids);
 
+			System.out.println("data:"+data);
 		} catch (Exception e) {
 			e.printStackTrace();
-		} finally {
-			if (conn != null) {
-				try {
-					conn.close();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
 		}
 	}
 	

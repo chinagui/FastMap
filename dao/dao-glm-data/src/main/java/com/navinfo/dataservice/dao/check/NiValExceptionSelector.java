@@ -287,8 +287,6 @@ public class NiValExceptionSelector {
 
 		sql.append(" order by created desc,md5_code desc");
 		
-		System.out.println(sql.toString());
-		
 		return new QueryRunner().query(pageNum,pageSize,conn, sql.toString(), new ResultSetHandler<Page>(){
 
 			@Override

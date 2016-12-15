@@ -55,9 +55,7 @@ public abstract class baseRule {
 	}
 	
 	//添加检查错误
-	public void setCheckResult(NiValException niValexception){
-		this.checkResultList.add(niValexception);
-	}
+	public void setCheckResult(NiValException niValexception){}
 	
 	public void setCheckResult(String loc, String targets,int meshId){
 		NiValException checkResult=new NiValException(this.ruleCode, loc, targets, meshId,this.ruleLog);

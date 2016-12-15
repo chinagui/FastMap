@@ -99,4 +99,5 @@ public interface MetadataApi {
 	public Map<String, String> scPointEngKeyWordsType1() throws Exception;
 	
 	public Map<String, String> scEngshortListMap() throws Exception;
+    public String convFull2Half(String word) throws Exception;
 }

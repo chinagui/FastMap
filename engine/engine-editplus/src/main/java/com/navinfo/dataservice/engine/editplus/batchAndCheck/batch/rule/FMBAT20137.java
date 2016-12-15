@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
-import com.navinfo.dataservice.api.metadata.model.ScPointNameckObj;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
@@ -61,13 +60,11 @@ public class FMBAT20137 extends BasicBatchRule {
 				if(br==null){return;}
 				String name=br.getName();
 				MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
-				
-				List<ScPointNameckObj> typeD1 = metadataApi.scPointNameckTypeD1();
-				List<ScPointNameckObj> keyResult=ScPointNameckUtil.matchTypeD1(name, typeD1);
+				Map<String, String> typeD1 = metadataApi.scPointNameckTypeD1();
+				Map<String, String> keyResult=ScPointNameckUtil.matchTypeD1(name, typeD1);
 				String newName=name;
-				for(ScPointNameckObj metaObj:keyResult){
-					newName=newName.replace(metaObj.getPreKey(), metaObj.getResultKey());
-				}
+				for(String preKey:keyResult.keySet()){
+					newName=newName.replace(preKey, keyResult.get(preKey));}
 				br.setName(newName);
 				//批拼音
 				br.setNamePhonetic(metadataApi.pyConvert(newName)[0]);
@@ -80,12 +77,12 @@ public class FMBAT20137 extends BasicBatchRule {
 					if(br==null){return;}
 					String name=br.getName();
 					MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
-					List<ScPointNameckObj> typeD1 = metadataApi.scPointNameckTypeD1();
-					List<ScPointNameckObj> keyResult=ScPointNameckUtil.matchTypeD1(name, typeD1);
+					Map<String, String> typeD1 = metadataApi.scPointNameckTypeD1();
+					Map<String, String> keyResult=ScPointNameckUtil.matchTypeD1(name, typeD1);
 					String newName=name;
-					for(ScPointNameckObj metaObj:keyResult){
-						if(newName.startsWith(metaObj.getPreKey())){
-							newName=newName.replace(metaObj.getPreKey(), metaObj.getResultKey());}
+					for(String preKey:keyResult.keySet()){
+						if(newName.startsWith(preKey)){
+							newName=newName.replace(preKey, keyResult.get(preKey));}
 						}
 					br.setName(newName);
 					//批拼音

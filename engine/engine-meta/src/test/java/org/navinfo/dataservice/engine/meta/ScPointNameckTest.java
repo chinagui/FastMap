@@ -1,13 +1,11 @@
 package org.navinfo.dataservice.engine.meta;
 
-import java.util.List;
 import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import com.navinfo.dataservice.api.metadata.model.ScPointNameckObj;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.engine.meta.area.ScPointAdminArea;
@@ -31,7 +29,7 @@ public class ScPointNameckTest {
 	@Test
 	public void testScPointNameckTypeD1() {
 		try {
-			List<ScPointNameckObj> tt = ScPointNameck.getInstance().scPointNameckTypeD1();			
+			Map<String, String> tt = ScPointNameck.getInstance().scPointNameckTypeD1();			
 			System.out.println();
 		} catch (Exception e) {
 			System.out.println(ResponseUtils.assembleFailResult(e.getMessage()));

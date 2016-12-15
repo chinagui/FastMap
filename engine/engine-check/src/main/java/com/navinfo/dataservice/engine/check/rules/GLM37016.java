@@ -4,7 +4,6 @@ import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.mileagepile.RdMileagepile;
 import com.navinfo.dataservice.engine.check.core.baseRule;
-import net.sf.json.JSONObject;
 
 import java.util.regex.Pattern;
 
@@ -20,10 +19,7 @@ public class GLM37016 extends baseRule {
     public void postCheck(CheckCommand checkCommand) throws Exception {
         for (IRow obj : checkCommand.getGlmList()) {
             if (obj instanceof RdMileagepile) {
-                RdMileagepile mileagepile = new RdMileagepile();
-                mileagepile.copy(obj);
-                mileagepile.Unserialize(JSONObject.fromObject(obj.changedFields()));
-
+                RdMileagepile mileagepile = (RdMileagepile) obj;
                 String roadName = mileagepile.getRoadName();
                 String regex = "[0-9a-zA-Z|]{1}";
                 roadName = roadName.replaceAll(regex, "");

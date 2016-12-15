@@ -25,6 +25,7 @@ import com.navinfo.dataservice.engine.meta.mesh.MeshSelector;
 import com.navinfo.dataservice.engine.meta.pinyin.PinyinConvertSelector;
 import com.navinfo.dataservice.engine.meta.pinyin.PinyinConverter;
 import com.navinfo.dataservice.engine.meta.rdname.RdNameImportor;
+import com.navinfo.dataservice.engine.meta.scEngshortList.ScEngshortList;
 import com.navinfo.dataservice.engine.meta.scPointEngKeyWords.ScPointEngKeyWords;
 import com.navinfo.dataservice.engine.meta.scPointNameck.ScPointNameck;
 import com.navinfo.dataservice.engine.meta.scPointSpecKindcode.ScPointSpecKindcode;
@@ -276,6 +277,11 @@ public class MetadataApiImpl implements MetadataApi {
 	public Map<String, String> scPointEngKeyWordsType1() throws Exception {
 		// TODO Auto-generated method stub
 		return ScPointEngKeyWords.getInstance().scPointEngKeyWordsType1();
+	}
+
+	@Override
+	public Map<String, String> scEngshortListMap() throws Exception {
+		return ScEngshortList.getInstance().scEngshortListMap();
 	}
 
 }

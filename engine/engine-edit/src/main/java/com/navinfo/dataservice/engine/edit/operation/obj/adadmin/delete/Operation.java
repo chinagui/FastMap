@@ -15,6 +15,7 @@ import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdminTree;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFace;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneFace;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
+import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdAdminPartSelector;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdAdminTreeSelector;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdFaceSelector;
 import com.navinfo.dataservice.dao.glm.selector.ad.zone.ZoneFaceSelector;
@@ -52,7 +53,7 @@ public class Operation implements IOperation {
 		
 		updateZoneFace(regionId, result);
 		
-		updateAdminGroup(regionId,adAdmin.getPid(),result);
+		updateAdminGroup(regionId,0,result);
 				
 		return null;
 	}
@@ -105,15 +106,17 @@ public class Operation implements IOperation {
 	 */
 	public void updateAdminGroup(int regionId,int groupId,Result result) throws Exception
 	{
+		AdAdminPartSelector partSelector = new AdAdminPartSelector(conn);
+		
+		AdAdminPart part = partSelector.loadByRegionId(regionId, true);
+		
 		AdAdminTreeSelector treeSelector = new AdAdminTreeSelector(conn);
 		
-		AdAdminTree tree = treeSelector.loadRowsByRegionId(regionId, true, groupId);
-		
-		AdAdminPart part = tree.getPart();
+		AdAdminTree tree = treeSelector.loadRowsByRegionId(regionId, true, part.getGroupId());
 		
 		result.insertObject(part, ObjStatus.DELETE, part.getGroupId());
 		
-		treeSelector.loadById(part.getGroupId(), true, true);
+		//treeSelector.loadById(part.getGroupId(), true, true);
 		
 		if(tree.getGroup() != null)
 		{

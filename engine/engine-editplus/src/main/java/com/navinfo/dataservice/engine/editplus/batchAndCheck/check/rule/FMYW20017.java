@@ -28,6 +28,7 @@ public class FMYW20017 extends BasicCheckRule {
 	@Override
 	public void runCheck(BasicObj obj) throws Exception {
 		IxPoiObj poiObj=(IxPoiObj) obj;
+		if(!isCheck(poiObj)){return;}
 		IxPoi poi=(IxPoi) poiObj.getMainrow();
 		String kindCode=poi.getKindCode();
 		MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
@@ -43,7 +44,7 @@ public class FMYW20017 extends BasicCheckRule {
 	 *     (2)存在IX_POI_NAME的修改；
 	 *     (3) 存在KIND_CODE或CHAIN修改且修改前后在word_kind表中对应的词库不一样；
 	 * @param poiObj
-	 * @return
+	 * @return true满足检查条件，false不满足检查条件
 	 * @throws Exception 
 	 */
 	private boolean isCheck(IxPoiObj poiObj) throws Exception{

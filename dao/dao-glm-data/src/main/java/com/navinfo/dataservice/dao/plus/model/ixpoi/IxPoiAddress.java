@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.dao.plus.model.ixpoi;
 
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
+import com.sun.source.tree.Tree;
 
 /** 
 * @ClassName:  IxPoiAddress 
@@ -437,6 +438,26 @@ public class IxPoiAddress extends BasicRow {
 		if(this.checkValue("ADDONS_PHONETIC",this.addonsPhonetic,addonsPhonetic)){
 			this.addonsPhonetic = addonsPhonetic;
 		}
+	}
+	/**
+	 * 是否中文地址，langCode IN (CHI，CHT)就算
+	 * @return
+	 */
+	public boolean isCH() {
+		if(this.langCode.equals("CHI")||this.langCode.equals("CHT")){
+			return true;
+		}
+		return false;
+	}
+	/**
+	 * 是否英文地址，langCode IN (ENG)就算
+	 * @return
+	 */
+	public boolean isEng() {
+		if(this.langCode.equals("ENG")){
+			return true;
+		}
+		return false;
 	}
 	
 	@Override

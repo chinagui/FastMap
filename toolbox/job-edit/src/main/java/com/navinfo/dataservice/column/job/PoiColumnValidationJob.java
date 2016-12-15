@@ -153,6 +153,8 @@ public class PoiColumnValidationJob extends AbstractJob {
 	 * 获取精编自定义检查规则
 	 * 1.参数request中rules有值，则直接返回
 	 * 2.rule没值，通过request的FirstWorkItem参数获取一级项对应的自定义检查规则列表
+	 * 
+	 * poi精编按照一级项获取检查规则，poi精编深度信息按照二级项获取检查规则
 	 * @param conn
 	 * @param myRequest
 	 * @throws JobException
@@ -165,6 +167,10 @@ public class PoiColumnValidationJob extends AbstractJob {
 					+ "  FROM POI_COLUMN_WORKITEM_CONF C"
 					+ " WHERE C.FIRST_WORK_ITEM = '"+myRequest.getFirstWorkItem()+"'"
 					+ "   AND CHECK_FLAG IN (2, 3)";
+			//poi精编按照一级项获取检查规则，poi精编深度信息按照二级项获取检查规则
+			if(myRequest.getFirstWorkItem().equals("poi_deep")){
+				sql+="   AND C.SECOND_WORK_ITEM='"+myRequest.getSecondWorkItem()+"'";
+			}
 			QueryRunner run=new QueryRunner();
 			rules=run.query(conn, sql, new ResultSetHandler<List<String>>(){
 

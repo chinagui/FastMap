@@ -52,7 +52,14 @@ public class ScPointSpecKindcode {
 			}
 			return typeMap8;
 	}
-	
+	/**
+	 * 重要分类判断方法
+	 * 传入poi的kindCode和chain，返回boolean，是否为重要分类
+	 * @param kindCode
+	 * @param chain
+	 * @return true重要分类，false 非重要分类
+	 * @throws Exception
+	 */
 	public boolean judgeScPointKind(String kindCode,String chain) throws Exception {
 		String sql = "select 1 from sc_point_spec_kindcode_new t WHERE (poi_kind=:1 and category=1) or (chain=:2 and category=3)";
 		

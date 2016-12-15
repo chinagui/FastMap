@@ -221,7 +221,7 @@ public class Operation implements IOperation {
 
         List<RdLink> sortLinks = calLinkOperateUtils.sortLink(newLinks);
         /*
-		 * 任何情况均需要处理的元素
+         * 任何情况均需要处理的元素
 		 */
         // 电子眼
         com.navinfo.dataservice.engine.edit.operation.obj.rdeleceye.move.Operation eleceyeOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdeleceye.move.Operation(
@@ -272,12 +272,12 @@ public class Operation implements IOperation {
         // 警示信息
         com.navinfo.dataservice.engine.edit.operation.obj.rdwarninginfo.update.Operation warninginOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdwarninginfo.update.Operation(
                 this.conn);
-        warninginOperation.breakRdLink(oldLink.getPid(), newLinks, result);
+        warninginOperation.breakRdLink(null, oldLink.getPid(), newLinks, result);
 
         // 维护信号灯
         com.navinfo.dataservice.engine.edit.operation.obj.trafficsignal.update.Operation trafficSignalOperation = new com.navinfo.dataservice.engine.edit.operation.obj.trafficsignal.update.Operation(
                 this.conn);
-        trafficSignalOperation.breakRdLink(oldLink.getPid(), newLinks, result);
+        trafficSignalOperation.breakRdLink(null, oldLink.getPid(), newLinks, result);
 
         // 分岔路提示
         com.navinfo.dataservice.engine.edit.operation.obj.rdse.update.Operation rdSeOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdse.update.Operation(
@@ -287,12 +287,12 @@ public class Operation implements IOperation {
         // 减速带
         com.navinfo.dataservice.engine.edit.operation.obj.rdspeedbump.update.Operation rdSpeedbumpOpeartion = new com.navinfo.dataservice.engine.edit.operation.obj.rdspeedbump.update.Operation(
                 this.conn);
-        rdSpeedbumpOpeartion.breakSpeedbump(result, oldLink.getPid(), newLinks);
+        rdSpeedbumpOpeartion.breakSpeedbump(null, result, oldLink.getPid(), newLinks);
 
         // 坡度
         com.navinfo.dataservice.engine.edit.operation.obj.rdslope.update.Operation rdSlopeOpeartion = new com.navinfo.dataservice.engine.edit.operation.obj.rdslope.update.Operation(
                 this.conn);
-        rdSlopeOpeartion.breakRdLink(oldLink.getPid(), newLinks, result);
+        rdSlopeOpeartion.breakRdLink(null, oldLink.getPid(), newLinks, result);
 
         // 顺行
         com.navinfo.dataservice.engine.edit.operation.obj.rddirectroute.update.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rddirectroute.update.Operation(
@@ -327,14 +327,14 @@ public class Operation implements IOperation {
         // 维护可变限速关系
         com.navinfo.dataservice.engine.edit.operation.obj.rdvariablespeed.update.Operation variableSpeedOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdvariablespeed.update.Operation(
                 this.conn);
-        variableSpeedOperation.breakLine(oldLink, newLinks, result);
+        variableSpeedOperation.breakLine(null, oldLink, newLinks, result);
         // 详细车道维护
         com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation rdlaneOperation = new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation(this.conn);
         rdlaneOperation.breakRdLink(oldLink, newLinks, result);
-        
+
         //tmc维护
         com.navinfo.dataservice.engine.edit.operation.obj.tmc.update.Operation rdTmcLocationLinkOperation = new com.navinfo.dataservice.engine.edit.operation.obj.tmc.update.Operation(
-				this.conn);
+                this.conn);
         rdTmcLocationLinkOperation.breakLinkUpdateTmc(result, oldLink, newLinks);
 
     }

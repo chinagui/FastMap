@@ -6,6 +6,7 @@ import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.hgwg.RdHgwgLimit;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.selector.rd.hgwg.RdHgwgLimitSelector;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
@@ -106,6 +107,18 @@ public class Operation implements IOperation {
             }
         }
         return null;
+    }
+
+    public void repairHgwgLimit(RdNode oldNode, RdLink oldLink, List<RdLink> newLinks, Result result) throws Exception {
+        // 查询出所有会被影响的限高限重
+        RdHgwgLimitSelector selector = new RdHgwgLimitSelector(this.conn);
+        List<RdHgwgLimit> hgwgLimits = selector.loadByLinkPid(oldLink.pid(), true);
+        // 定义限高限重是否在新生成的线段上
+        boolean isOnTheLine;
+        // 循环处理所有限高限重
+        for (RdHgwgLimit hgwgLimit : hgwgLimits) {
+
+        }
     }
 
     /**

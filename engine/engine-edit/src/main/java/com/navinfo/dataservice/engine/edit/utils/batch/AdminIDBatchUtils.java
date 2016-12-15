@@ -3,12 +3,18 @@ package com.navinfo.dataservice.engine.edit.utils.batch;
 import java.sql.Connection;
 import java.util.List;
 
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
+import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFace;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdFaceSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.edit.utils.GeoRelationUtils;
 import com.vividsolutions.jts.geom.Geometry;
+
+import static org.apache.hadoop.yarn.webapp.hamlet.HamletSpec.Scope.row;
 
 /**
  * @author zhangyt
@@ -36,8 +42,11 @@ public class AdminIDBatchUtils extends BaseBatchUtils {
             Geometry linkGeometry = null == geometry ? shrink(loadGeometry(row)) : shrink(geometry);
             // 获取RdLink关联的AdFace
             AdFace face = loadAdFace(conn, linkGeometry);
-            if (null == face)
+            if (null == face) {
+                link.changedFields().put("leftRegionId", 0);
+                link.changedFields().put("rightRegionId", 0);
                 return;
+            }
             // 获取AdFace的regionId
             Integer regionId = face.getRegionId();
             Geometry faceGeometry = shrink(face.getGeometry());
@@ -105,5 +114,64 @@ public class AdminIDBatchUtils extends BaseBatchUtils {
         }
         AdFace adFace = faces.get(0);
         return adFace;
+    }
+
+    /**
+     * face新增、修改、删除时维护面内link属性
+     *
+     * @param face     修形前面几何
+     * @param geometry 修形后面几何(删除时传入null)
+     * @param conn     数据库链接
+     * @throws Exception
+     */
+    public static void updateAdminID(AdFace face, Geometry geometry, Connection conn, Result result) throws Exception {
+        RdLinkSelector selector = new RdLinkSelector(conn);
+        Geometry faceGeometry = GeoTranslator.transform(face.getGeometry(), 0.00001, 5);
+        // 删除时将面内link的regionId清空
+        if (null == geometry) {
+            List<RdLink> links = selector.loadLinkByFaceGeo(faceGeometry, true);
+            for (RdLink link : links) {
+                link.changedFields().put("leftRegionId", 0);
+                link.changedFields().put("rightRegionId", 0);
+                result.insertObject(link, ObjStatus.UPDATE, link.pid());
+            }
+            return;
+        }
+        // 修形时对面内新增link赋regionId
+        geometry = GeoTranslator.transform(geometry, 0.00001, 5);
+        List<RdLink> links = selector.loadLinkByFaceGeo(geometry, true);
+        for (RdLink link : links) {
+            int regionId = face.getRegionId();
+            Geometry linkGeometry = GeoTranslator.transform(link.getGeometry(), 0.00001, 5);
+            // 判断RdLink与AdFace的关系
+            // RdLink包含在AdFace内
+            if (isContainOrCover(linkGeometry, geometry)) {
+                // 修行时修改regionId
+                link.changedFields().put("leftRegionId", regionId);
+                link.changedFields().put("rightRegionId", regionId);
+                // RdLink处在AdFace组成线上
+            } else if (GeoRelationUtils.Boundary(linkGeometry, geometry)) {
+                // RdLink在AdFace的右边
+                if (GeoRelationUtils.IsLinkOnLeftOfRing(linkGeometry, geometry)) {
+                    // 修改时修改RightRegionId值
+                    link.changedFields().put("rightRegionId", regionId);
+                } else {
+                    // 修改时修改LeftRegionId值
+                    link.changedFields().put("leftRegionId", regionId);
+                }
+            } else {
+                // 其他情况暂不处理
+            }
+        }
+        // 修形时删除原面内link的regionId
+        if (null != faceGeometry) {
+            Geometry diffGeo = faceGeometry.difference(geometry);
+            links = selector.loadLinkByFaceGeo(diffGeo, true);
+            for (RdLink link : links) {
+                link.changedFields().put("leftRegionId", 0);
+                link.changedFields().put("rightRegionId", 0);
+                result.insertObject(link, ObjStatus.UPDATE, link.pid());
+            }
+        }
     }
 }

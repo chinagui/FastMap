@@ -56,8 +56,8 @@ public class COM60154 extends baseRule {
 
 		StringBuilder sb = new StringBuilder();
 
-		sb.append("with tmp1 as(     select tmc_id,GROUP_ID from RD_TMCLOCATION where GROUP_ID = " + link.getGroupId()
-				+ " and U_RECORD !=2 ),tmp2 as (     select a.GROUP_ID,b.link_pid  from     tmp1 a,RD_TMCLOCATION_LINK b     WHERE a.GROUP_ID = b.GROUP_ID AND 	b.U_RECORD !=2 	 AND 	b.LINK_PID = ");
+		sb.append("WITH TMP1 AS (select tmc_id,group_id from RD_TMCLOCATION where TMC_ID in( SELECT TMC_ID FROM RD_TMCLOCATION WHERE GROUP_ID  = " + link.getGroupId()
+				+ " and U_RECORD !=2 )),tmp2 as (     select a.GROUP_ID,b.link_pid  from     tmp1 a,RD_TMCLOCATION_LINK b     WHERE a.GROUP_ID = b.GROUP_ID AND 	b.U_RECORD !=2 	 AND 	b.LINK_PID = ");
 		sb.append(link.getLinkPid());
 		sb.append(" and b.LOC_DIRECT =");
 		sb.append(locDirect);

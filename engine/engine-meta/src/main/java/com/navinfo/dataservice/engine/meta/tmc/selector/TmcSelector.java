@@ -701,7 +701,7 @@ public class TmcSelector {
 			
 			//gap：100防止文字显示被其他瓦片覆盖
 
-			String wkt = MercatorProjection.getWktWithGap(x, y, z, 100);
+			String wkt = MercatorProjection.getWktWithGap(x, y, z, 150);
 
 			pstmt.setString(1, wkt);
 

@@ -184,7 +184,7 @@ public class VariablesFactory {
 	public static Set<String> getRdDirectroutePid(IRow data) {
 		// TODO Auto-generated method stub
 		Set<String> rdLinkSet = new HashSet<String>();
-		if (data instanceof RdGate) {
+		if (data instanceof RdDirectroute) {
 			RdDirectroute rdDirectroute = (RdDirectroute) data;
 			rdLinkSet.add(String.valueOf(rdDirectroute.getPid()));
 		}

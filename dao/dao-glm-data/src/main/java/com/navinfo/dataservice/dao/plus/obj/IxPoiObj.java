@@ -80,6 +80,12 @@ public class IxPoiObj extends AbstractIxObj {
 	public List<IxPoiName> getIxPoiNames(){
 		return (List)subrows.get("IX_POI_NAME");
 	}
+	/**
+	 * @return
+	 * @throws Exception
+	 * 创建一个IxPoiName对象，完成主键赋值，完成objPid赋值，完成并将其写入到IxPoi的subrows属性中。
+	 * 暂时没有维护IxPoiName对象的外键
+	 */
 	public IxPoiName createIxPoiName()throws Exception{
 		IxPoiName ixPoiName = (IxPoiName)(ObjFactory.getInstance().createRow("IX_POI_NAME", this.objPid()));
 		if(subrows.containsKey("IX_POI_NAME")){
@@ -90,11 +96,17 @@ public class IxPoiObj extends AbstractIxObj {
 			subrows.put("IX_POI_NAME", ixPoiNameList);
 		}
 		return ixPoiName;
-//		return (IxPoiName)(ObjFactory.getInstance().createRow("IX_POI_NAME", this.objPid()));
 	}
 	public List<IxPoiAddress> getIxPoiAddresses(){
 		return (List)subrows.get("IX_POI_ADDRESS");
 	}
+	/**
+	 * @return
+	 * @throws Exception
+	 * 创建IxPoiAddress
+	 * 创建一个IxPoiAddress对象，完成主键赋值，完成objPid赋值，并将其写入到IxPoi的subrows属性中。
+	 * 暂时没有维护IxPoiAddress对象的外键
+	 */
 	public IxPoiAddress createIxPoiAddress()throws Exception{
 		IxPoiAddress ixPoiAddress = (IxPoiAddress)(ObjFactory.getInstance().createRow("IX_POI_ADDRESS", this.objPid()));
 		if(subrows.containsKey("IX_POI_ADDRESS")){
@@ -110,6 +122,12 @@ public class IxPoiObj extends AbstractIxObj {
 	public List<IxPoiContact> getIxPoiContacts(){
 		return (List)subrows.get("IX_POI_CONTACT");
 	}
+	/**
+	 * @return
+	 * @throws Exception
+	 * 创建一个IxPoiContact对象，完成主键赋值，完成objPid赋值，完成并将其写入到IxPoi的subrows属性中。
+	 * 暂时没有维护IxPoiContact对象的外键
+	 */
 	public IxPoiContact createIxPoiContact()throws Exception{
 		IxPoiContact ixPoiContact = (IxPoiContact)(ObjFactory.getInstance().createRow("IX_POI_CONTACT", this.objPid()));
 		if(subrows.containsKey("IX_POI_CONTACT")){
@@ -120,11 +138,16 @@ public class IxPoiObj extends AbstractIxObj {
 			subrows.put("IX_POI_CONTACT", ixPoiContactList);
 		}
 		return ixPoiContact;
-//		return (IxPoiContact)(ObjFactory.getInstance().createRow("IX_POI_CONTACT", this.objPid()));
 	}
 	public List<IxPoiRestaurant> getIxPoiRestaurants(){
 		return (List)subrows.get("IX_POI_RESTAURANT");
 	}
+	/**
+	 * @return
+	 * @throws Exception
+	 * 创建一个IxPoiRestaurant对象，完成主键赋值，完成objPid赋值，完成并将其写入到IxPoi的subrows属性中。
+	 * 暂时没有维护IxPoiRestaurant对象的外键
+	 */
 	public IxPoiRestaurant createIxPoiRestaurant()throws Exception{
 		IxPoiRestaurant ixPoiRestaurant = (IxPoiRestaurant)(ObjFactory.getInstance().createRow("IX_POI_RESTAURANT", this.objPid()));
 		if(subrows.containsKey("IX_POI_RESTAURANT")){
@@ -140,6 +163,12 @@ public class IxPoiObj extends AbstractIxObj {
 	public List<IxPoiGasstation> getIxPoiGasstations(){
 		return (List)subrows.get("IX_POI_GASSTATION");
 	}
+	/**
+	 * @return
+	 * @throws Exception
+	 * 创建一个IxPoiGasstation对象，完成主键赋值，完成objPid赋值，完成并将其写入到IxPoi的subrows属性中。
+	 * 暂时没有维护IxPoiGasstation对象的外键
+	 */
 	public IxPoiGasstation createIxPoiGasstation()throws Exception{
 		IxPoiGasstation ixPoiGasstation = (IxPoiGasstation)(ObjFactory.getInstance().createRow("IX_POI_GASSTATION", this.objPid()));
 		if(subrows.containsKey("IX_POI_GASSTATION")){
@@ -154,6 +183,12 @@ public class IxPoiObj extends AbstractIxObj {
 	public List<IxPoiHotel> getIxPoiHotels(){
 		return (List)subrows.get("IX_POI_HOTEL");
 	}
+	/**
+	 * @return
+	 * @throws Exception
+	 * 创建一个IxPoiHotel对象，完成主键赋值，完成objPid赋值，完成并将其写入到IxPoi的subrows属性中。
+	 * 暂时没有维护IxPoiHotel对象的外键
+	 */
 	public IxPoiHotel createIxPoiHotel()throws Exception{
 		IxPoiHotel ixPoiHotel = (IxPoiHotel)(ObjFactory.getInstance().createRow("IX_POI_HOTEL", this.objPid()));
 		if(subrows.containsKey("IX_POI_HOTEL")){
@@ -168,6 +203,12 @@ public class IxPoiObj extends AbstractIxObj {
 	public List<IxPoiDetail> getIxPoiDetails(){
 		return (List)subrows.get("IX_POI_DETAIL");
 	}
+	/**
+	 * @return
+	 * @throws Exception
+	 * 创建一个IxPoiDetail对象，完成主键赋值，完成objPid赋值，完成并将其写入到IxPoi的subrows属性中。
+	 * 暂时没有维护IxPoiDetail对象的外键
+	 */
 	public IxPoiDetail createIxPoiDetail()throws Exception{
 		IxPoiDetail ixPoiDetail = (IxPoiDetail)(ObjFactory.getInstance().createRow("IX_POI_DETAIL", this.objPid()));
 		if(subrows.containsKey("IX_POI_DETAIL")){
@@ -182,6 +223,12 @@ public class IxPoiObj extends AbstractIxObj {
 	public List<IxPoiChildren> getIxPoiChildrens(){
 		return (List)subrows.get("IX_POI_CHILDREN");
 	}
+	/**
+	 * @return
+	 * @throws Exception
+	 * 创建一个IxPoiChildren对象，完成主键赋值，完成objPid赋值，完成并将其写入到IxPoi的subrows属性中。
+	 * 暂时没有维护IxPoiChildren对象的外键
+	 */
 	public IxPoiChildren createIxPoiChildren(long groupId)throws Exception{
 		IxPoiChildren ixPoiChildren = (IxPoiChildren)(ObjFactory.getInstance().createRow("IX_POI_CHILDREN", this.objPid()));
 		ixPoiChildren.setGroupId(groupId);
@@ -209,6 +256,12 @@ public class IxPoiObj extends AbstractIxObj {
 	public List<IxPoiParent> getIxPoiParents(){
 		return (List)subrows.get("IX_POI_PARENT");
 	}
+	/**
+	 * @return
+	 * @throws Exception
+	 * 创建一个IxPoiParent对象，完成主键赋值，完成objPid赋值，完成并将其写入到IxPoi的subrows属性中。
+	 * 暂时没有维护IxPoiParent对象的外键
+	 */
 	public IxPoiParent createIxPoiParent()throws Exception{
 		IxPoiParent ixPoiParent = (IxPoiParent)(ObjFactory.getInstance().createRow("IX_POI_PARENT", this.objPid()));
 		if(subrows.containsKey("IX_POI_PARENT")){
@@ -224,6 +277,12 @@ public class IxPoiObj extends AbstractIxObj {
 	public List<IxPoiParking> getIxPoiParkings(){
 		return (List)subrows.get("IX_POI_PARKING");
 	}
+	/**
+	 * @return
+	 * @throws Exception
+	 * 创建一个IxPoiParking对象，完成主键赋值，完成objPid赋值，完成并将其写入到IxPoi的subrows属性中。
+	 * 暂时没有维护IxPoiParking对象的外键
+	 */
 	public IxPoiParking createIxPoiParking()throws Exception{
 		IxPoiParking ixPoiParking = (IxPoiParking)(ObjFactory.getInstance().createRow("IX_POI_PARKING", this.objPid()));
 		if(subrows.containsKey("IX_POI_PARKING")){
@@ -239,6 +298,12 @@ public class IxPoiObj extends AbstractIxObj {
 	public List<IxPoiChargingstation> getIxPoiChargingstations(){
 		return (List)subrows.get("IX_POI_CHARGINGSTATION");
 	}
+	/**
+	 * @return
+	 * @throws Exception
+	 * 创建一个IxPoiChargingstation对象，完成主键赋值，完成objPid赋值，完成并将其写入到IxPoi的subrows属性中。
+	 * 暂时没有维护IxPoiChargingstation对象的外键
+	 */
 	public IxPoiChargingstation createIxPoiChargingstation()throws Exception{
 		IxPoiChargingstation ixPoiChargingstation = (IxPoiChargingstation)(ObjFactory.getInstance().createRow("IX_POI_CHARGINGSTATION", this.objPid()));
 		if(subrows.containsKey("IX_POI_CHARGINGSTATION")){
@@ -254,6 +319,12 @@ public class IxPoiObj extends AbstractIxObj {
 	public List<IxPoiChargingplot> getIxPoiChargingplots(){
 		return (List)subrows.get("IX_POI_CHARGINGPLOT");
 	}
+	/**
+	 * @return
+	 * @throws Exception
+	 * 创建一个IxPoiChargingplot对象，完成主键赋值，完成objPid赋值，完成并将其写入到IxPoi的subrows属性中。
+	 * 暂时没有维护IxPoiChargingplot对象的外键
+	 */
 	public IxPoiChargingplot createIxPoiChargingplot()throws Exception{
 		IxPoiChargingplot ixPoiChargingplot = (IxPoiChargingplot)(ObjFactory.getInstance().createRow("IX_POI_CHARGINGPLOT", this.objPid()));
 		if(subrows.containsKey("IX_POI_CHARGINGPLOT")){
@@ -269,6 +340,12 @@ public class IxPoiObj extends AbstractIxObj {
 	public List<IxPoiChargingplotPh> getIxPoiChargingplotPhs(){
 		return (List)subrows.get("IX_POI_CHARGINGPLOT_PH");
 	}
+	/**
+	 * @return
+	 * @throws Exception
+	 * 创建一个IxPoiChargingplotPh对象，完成主键赋值，完成objPid赋值，完成并将其写入到IxPoi的subrows属性中。
+	 * 暂时没有维护IxPoiChargingplotPh对象的外键
+	 */
 	public IxPoiChargingplotPh createIxPoiChargingplotPh()throws Exception{
 		IxPoiChargingplotPh ixPoiChargingplotPh = (IxPoiChargingplotPh)(ObjFactory.getInstance().createRow("IX_POI_CHARGINGPLOT_PH", this.objPid()));
 		if(subrows.containsKey("IX_POI_CHARGINGPLOT_PH")){
@@ -284,6 +361,12 @@ public class IxPoiObj extends AbstractIxObj {
 	public List<IxPoiFlag> getIxPoiFlags(){
 		return (List)subrows.get("IX_POI_FLAG");
 	}
+	/**
+	 * @return
+	 * @throws Exception
+	 * 创建一个IxPoiFlag对象，完成主键赋值，完成objPid赋值，完成并将其写入到IxPoi的subrows属性中。
+	 * 暂时没有维护IxPoiFlag对象的外键
+	 */
 	public IxPoiFlag createIxPoiFlag()throws Exception{
 		IxPoiFlag ixPoiFlag = (IxPoiFlag)(ObjFactory.getInstance().createRow("IX_POI_FLAG", this.objPid()));
 		if(subrows.containsKey("IX_POI_FLAG")){
@@ -299,6 +382,12 @@ public class IxPoiObj extends AbstractIxObj {
 	public List<IxPoiEntryimage> getIxPoiEntryimages(){
 		return (List)subrows.get("IX_POI_ENTRYIMAGE");
 	}
+	/**
+	 * @return
+	 * @throws Exception
+	 * 创建一个IxPoiEntryimage对象，完成主键赋值，完成objPid赋值，完成并将其写入到IxPoi的subrows属性中。
+	 * 暂时没有维护IxPoiEntryimage对象的外键
+	 */
 	public IxPoiEntryimage createIxPoiEntryimage()throws Exception{
 		IxPoiEntryimage ixPoiEntryimage = (IxPoiEntryimage)(ObjFactory.getInstance().createRow("IX_POI_ENTRYIMAGE", this.objPid()));
 		if(subrows.containsKey("IX_POI_ENTRYIMAGE")){
@@ -314,6 +403,12 @@ public class IxPoiObj extends AbstractIxObj {
 	public List<IxPoiIcon> getIxPoiIcons(){
 		return (List)subrows.get("IX_POI_ICON");
 	}
+	/**
+	 * @return
+	 * @throws Exception
+	 * 创建一个IxPoiIcon对象，完成主键赋值，完成objPid赋值，完成并将其写入到IxPoi的subrows属性中。
+	 * 暂时没有维护IxPoiIcon对象的外键
+	 */
 	public IxPoiIcon createIxPoiIcon()throws Exception{
 		IxPoiIcon ixPoiIcon = (IxPoiIcon)(ObjFactory.getInstance().createRow("IX_POI_ICON", this.objPid()));
 		if(subrows.containsKey("IX_POI_ICON")){
@@ -329,6 +424,12 @@ public class IxPoiObj extends AbstractIxObj {
 	public List<IxPoiPhoto> getIxPoiPhotos(){
 		return (List)subrows.get("IX_POI_PHOTO");
 	}
+	/**
+	 * @return
+	 * @throws Exception
+	 * 创建一个IxPoiPhoto对象，完成主键赋值，完成objPid赋值，完成并将其写入到IxPoi的subrows属性中。
+	 * 暂时没有维护IxPoiPhoto对象的外键
+	 */
 	public IxPoiPhoto createIxPoiPhoto()throws Exception{
 		IxPoiPhoto ixPoiPhoto = (IxPoiPhoto)(ObjFactory.getInstance().createRow("IX_POI_PHOTO", this.objPid()));
 		if(subrows.containsKey("IX_POI_PHOTO")){
@@ -344,6 +445,13 @@ public class IxPoiObj extends AbstractIxObj {
 	public List<IxPoiAudio> getIxPoiAudios(){
 		return (List)subrows.get("IX_POI_AUDIO");
 	}
+	/**
+	 * 
+	 * @return
+	 * @throws Exception
+	 * 创建一个IxPoiAudio对象，完成主键赋值，完成objPid赋值，并将其写入到IxPoi的subrows属性中。
+	 * 暂时没有维护IxPoiAudio对象的外键
+	 */
 	public IxPoiAudio createIxPoiAudio()throws Exception{
 		IxPoiAudio ixPoiAudio = (IxPoiAudio)(ObjFactory.getInstance().createRow("IX_POI_AUDIO", this.objPid()));
 		if(subrows.containsKey("IX_POI_AUDIO")){
@@ -359,6 +467,12 @@ public class IxPoiObj extends AbstractIxObj {
 	public List<IxPoiVideo> getIxPoiVideos(){
 		return (List)subrows.get("IX_POI_VIDEO");
 	}
+	/**
+	 * @return
+	 * @throws Exception
+	 * 创建一个IxPoiVideo对象，完成主键赋值，完成objPid赋值，完成并将其写入到IxPoi的subrows属性中。
+	 * 暂时没有维护IxPoiVideo对象的外键
+	 */
 	public IxPoiVideo createIxPoiVideo()throws Exception{
 		IxPoiVideo ixPoiVideo = (IxPoiVideo)(ObjFactory.getInstance().createRow("IX_POI_VIDEO", this.objPid()));
 		if(subrows.containsKey("IX_POI_VIDEO")){
@@ -374,6 +488,12 @@ public class IxPoiObj extends AbstractIxObj {
 	public List<IxPoiTourroute> getIxPoiTourroutes(){
 		return (List)subrows.get("IX_POI_TOURROUTE");
 	}
+	/**
+	 * @return
+	 * @throws Exception
+	 * 创建一个IxPoiTourroute对象，完成主键赋值，完成objPid赋值，完成并将其写入到IxPoi的subrows属性中。
+	 * 暂时没有维护IxPoiTourroute对象的外键
+	 */
 	public IxPoiTourroute createIxPoiTourroute()throws Exception{
 		IxPoiTourroute ixPoiTourroute = (IxPoiTourroute)(ObjFactory.getInstance().createRow("IX_POI_TOURROUTE", this.objPid()));
 		if(subrows.containsKey("IX_POI_TOURROUTE")){
@@ -389,6 +509,12 @@ public class IxPoiObj extends AbstractIxObj {
 	public List<IxPoiEvent> getIxPoiEvents(){
 		return (List)subrows.get("IX_POI_EVENT");
 	}
+	/**
+	 * @return
+	 * @throws Exception
+	 * 创建一个IxPoiEvent对象，完成主键赋值，完成objPid赋值，完成并将其写入到IxPoi的subrows属性中。
+	 * 暂时没有维护IxPoiEvent对象的外键
+	 */
 	public IxPoiEvent createIxPoiEvent()throws Exception{
 		IxPoiEvent ixPoiEvent = (IxPoiEvent)(ObjFactory.getInstance().createRow("IX_POI_EVENT", this.objPid()));
 		if(subrows.containsKey("IX_POI_EVENT")){
@@ -404,6 +530,12 @@ public class IxPoiObj extends AbstractIxObj {
 	public List<IxPoiBusinesstime> getIxPoiBusinesstimes(){
 		return (List)subrows.get("IX_POI_BUSINESSTIME");
 	}
+	/**
+	 * @return
+	 * @throws Exception
+	 * 创建一个IxPoiBusinesstime对象，完成主键赋值，完成objPid赋值，完成并将其写入到IxPoi的subrows属性中。
+	 * 暂时没有维护IxPoiBusinesstime对象的外键
+	 */
 	public IxPoiBusinesstime createIxPoiBusinesstime()throws Exception{
 		IxPoiBusinesstime ixPoiBusinesstime = (IxPoiBusinesstime)(ObjFactory.getInstance().createRow("IX_POI_BUSINESSTIME", this.objPid()));
 		if(subrows.containsKey("IX_POI_BUSINESSTIME")){
@@ -419,6 +551,13 @@ public class IxPoiObj extends AbstractIxObj {
 	public List<IxPoiBuilding> getIxPoiBuildings(){
 		return (List)subrows.get("IX_POI_BUILDING");
 	}
+	/**
+	 * 
+	 * @return
+	 * @throws Exception
+	 * 创建一个IxPoiBuilding对象，完成主键赋值，完成objPid赋值，并将其写入到IxPoi的subrows属性中。
+	 * 暂时没有维护IxPoiBuilding对象的外键
+	 */
 	public IxPoiBuilding createIxPoiBuilding()throws Exception{
 		IxPoiBuilding ixPoiBuilding = (IxPoiBuilding)(ObjFactory.getInstance().createRow("IX_POI_BUILDING", this.objPid()));
 		if(subrows.containsKey("IX_POI_BUILDING")){
@@ -434,6 +573,13 @@ public class IxPoiObj extends AbstractIxObj {
 	public List<IxPoiAdvertisement> getIxPoiAdvertisements(){
 		return (List)subrows.get("IX_POI_ADVERTISEMENT");
 	}
+	/**
+	 * 
+	 * @return
+	 * @throws Exception
+	 * 创建一个IxPoiAdvertisement对象，完成主键赋值，完成objPid赋值，并将其写入到IxPoi的subrows属性中。
+	 * 暂时没有维护IxPoiAdvertisement对象的外键
+	 */
 	public IxPoiAdvertisement createIxPoiAdvertisement()throws Exception{
 		IxPoiAdvertisement ixPoiAdvertisement = (IxPoiAdvertisement)(ObjFactory.getInstance().createRow("IX_POI_ADVERTISEMENT", this.objPid()));
 		if(subrows.containsKey("IX_POI_ADVERTISEMENT")){
@@ -449,6 +595,12 @@ public class IxPoiObj extends AbstractIxObj {
 	public List<IxPoiIntroduction> getIxPoiIntroductions(){
 		return (List)subrows.get("IX_POI_INTRODUCTION");
 	}
+	/**
+	 * @return
+	 * @throws Exception
+	 * 创建一个IxPoiIntroduction对象，完成主键赋值，完成objPid赋值，完成并将其写入到IxPoi的subrows属性中。
+	 * 暂时没有维护IxPoiIntroduction对象的外键
+	 */
 	public IxPoiIntroduction createIxPoiIntroduction()throws Exception{
 		IxPoiIntroduction ixPoiIntroduction = (IxPoiIntroduction)(ObjFactory.getInstance().createRow("IX_POI_INTRODUCTION", this.objPid()));
 		if(subrows.containsKey("IX_POI_INTRODUCTION")){
@@ -464,6 +616,13 @@ public class IxPoiObj extends AbstractIxObj {
 	public List<IxPoiAttraction> getIxPoiAttractions(){
 		return (List)subrows.get("IX_POI_ATTRACTION");
 	}
+	/**
+	 * 
+	 * @return
+	 * @throws Exception
+	 * 创建一个IxPoiAttraction对象，完成主键赋值，完成objPid赋值，并将其写入到IxPoi的subrows属性中。
+	 * 暂时没有维护IxPoiAttraction对象的外键
+	 */
 	public IxPoiAttraction createIxPoiAttraction()throws Exception{
 		IxPoiAttraction ixPoiAttraction = (IxPoiAttraction)(ObjFactory.getInstance().createRow("IX_POI_ATTRACTION", this.objPid()));
 		if(subrows.containsKey("IX_POI_ATTRACTION")){
@@ -479,6 +638,12 @@ public class IxPoiObj extends AbstractIxObj {
 	public List<IxPoiCarrental> getIxPoiCarrentals(){
 		return (List)subrows.get("IX_POI_CARRENTAL");
 	}
+	/**
+	 * @return
+	 * @throws Exception
+	 * 创建一个IxPoiCarrental对象，完成主键赋值，完成objPid赋值，完成并将其写入到IxPoi的subrows属性中。
+	 * 暂时没有维护IxPoiCarrental对象的外键
+	 */
 	public IxPoiCarrental createIxPoiCarrental()throws Exception{
 		IxPoiCarrental ixPoiCarrental = (IxPoiCarrental)(ObjFactory.getInstance().createRow("IX_POI_CARRENTAL", this.objPid()));
 		if(subrows.containsKey("IX_POI_CARRENTAL")){
@@ -494,6 +659,12 @@ public class IxPoiObj extends AbstractIxObj {
 	public List<IxSamepoiPart> getIxSamepoiParts(){
 		return (List)subrows.get("IX_SAMEPOI_PART");
 	}
+	/**
+	 * @return
+	 * @throws Exception
+	 * 创建一个IxSamepoiPart对象，完成主键赋值，完成objPid赋值，完成并将其写入到IxPoi的subrows属性中。
+	 * 暂时没有维护IxSamepoiPart对象的外键
+	 */
 	public IxSamepoiPart createIxSamepoiPart()throws Exception{
 		IxSamepoiPart ixSamepoiPart = (IxSamepoiPart)(ObjFactory.getInstance().createRow("IX_SAMEPOI_PART", this.objPid()));
 		if(subrows.containsKey("IX_SAMEPOI_PART")){

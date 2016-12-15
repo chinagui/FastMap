@@ -160,7 +160,7 @@ public class GLM04008_1 extends baseRule{
 		
 
 		String sql = sb.toString();
-		log.info("RdGate后检查GLM04008_1:" + sql);
+		log.info("RdRestriction后检查GLM04008_1:" + sql);
 
 		DatabaseOperator getObj = new DatabaseOperator();
 		List<Object> resultList = new ArrayList<Object>();

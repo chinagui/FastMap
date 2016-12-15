@@ -257,7 +257,12 @@ public class MetadataApiImpl implements MetadataApi {
 	}
 
 	/**
-	 * 判断重要分类
+	 * 重要分类判断方法
+	 * 传入poi的kindCode和chain，返回boolean，是否为重要分类
+	 * @param kindCode
+	 * @param chain
+	 * @return true重要分类，false 非重要分类
+	 * @throws Exception
 	 */
 	@Override
 	public boolean judgeScPointKind(String kindCode, String chain) throws Exception {

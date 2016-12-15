@@ -28,6 +28,7 @@ import com.navinfo.dataservice.engine.meta.scPointEngKeyWords.ScPointEngKeyWords
 import com.navinfo.dataservice.engine.meta.scPointNameck.ScPointNameck;
 import com.navinfo.dataservice.engine.meta.scPointSpecKindcode.ScPointSpecKindcode;
 import com.navinfo.dataservice.engine.meta.tmc.selector.TmcSelector;
+import com.navinfo.dataservice.engine.meta.translate.ConvertUtil;
 import com.navinfo.dataservice.engine.meta.translate.EngConverterHelper;
 
 import net.sf.json.JSONArray;
@@ -267,6 +268,11 @@ public class MetadataApiImpl implements MetadataApi {
 	public Map<String, String> scPointEngKeyWordsType1() throws Exception {
 		// TODO Auto-generated method stub
 		return ScPointEngKeyWords.getInstance().scPointEngKeyWordsType1();
+	}
+	
+	@Override
+	public String convFull2Half(String word) throws Exception {
+		return ConvertUtil.convFull2Half(word);
 	}
 
 }

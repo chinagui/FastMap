@@ -1,7 +1,6 @@
 package com.navinfo.dataservice.dao.plus.model.ixpoi;
 
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
-import com.sun.source.tree.Tree;
 
 /** 
 * @ClassName:  IxPoiAddress 

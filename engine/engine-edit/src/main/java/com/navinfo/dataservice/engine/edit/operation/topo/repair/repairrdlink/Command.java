@@ -1,9 +1,11 @@
 package com.navinfo.dataservice.engine.edit.operation.topo.repair.repairrdlink;
 
+import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import java.util.List;
+import java.util.Map;
 
 import org.json.JSONException;
 
@@ -17,109 +19,118 @@ import com.vividsolutions.jts.geom.Geometry;
 
 /***
  * RDLINK修行
- * 
+ *
  * @author zhaokk
- * 
+ *
  */
 public class Command extends AbstractCommand {
 
-	private String requester;
+    private String requester;
 
-	private int linkPid;
+    private int linkPid;
 
-	private Geometry linkGeom;
+    private Geometry linkGeom;
 
-	private JSONArray catchInfos;
+    private JSONArray catchInfos;
 
-	private RdLink updateLink;
+    private RdLink updateLink;
 
-	private String operationType = "";
+    private String operationType = "";
 
-	public String getOperationType() {
-		return operationType;
-	}
+    private Map<RdNode, List<RdLink>> nodeLinkRelation;
 
-	public void setOperationType(String operationType) {
-		this.operationType = operationType;
-	}
+    public String getOperationType() {
+        return operationType;
+    }
 
-	private List<RdGsc> gscList;
+    public void setOperationType(String operationType) {
+        this.operationType = operationType;
+    }
 
-	public List<RdGsc> getGscList() {
-		return gscList;
-	}
+    private List<RdGsc> gscList;
 
-	public void setGscList(List<RdGsc> gscList) {
-		this.gscList = gscList;
-	}
+    public List<RdGsc> getGscList() {
+        return gscList;
+    }
 
-	public int getLinkPid() {
-		return linkPid;
-	}
+    public void setGscList(List<RdGsc> gscList) {
+        this.gscList = gscList;
+    }
 
-	public Geometry getLinkGeom() {
-		return linkGeom;
-	}
+    public int getLinkPid() {
+        return linkPid;
+    }
+
+    public Geometry getLinkGeom() {
+        return linkGeom;
+    }
 
 
+    public void setLinkGeom(Geometry linkGeom) {
+        this.linkGeom = linkGeom;
+    }
 
-	public void setLinkGeom(Geometry linkGeom) {
-		this.linkGeom = linkGeom;
-	}
+    public JSONArray getCatchInfos() {
+        return catchInfos;
+    }
 
-	public JSONArray getCatchInfos() {
-		return catchInfos;
-	}
+    public void setCatchInfos(JSONArray catchInfos) {
+        this.catchInfos = catchInfos;
+    }
 
-	public void setCatchInfos(JSONArray catchInfos) {
-		this.catchInfos = catchInfos;
-	}
+    public RdLink getUpdateLink() {
+        return updateLink;
+    }
 
-	public RdLink getUpdateLink() {
-		return updateLink;
-	}
+    public void setUpdateLink(RdLink updateLink) {
+        this.updateLink = updateLink;
+    }
 
-	public void setUpdateLink(RdLink updateLink) {
-		this.updateLink = updateLink;
-	}
+    public Map<RdNode, List<RdLink>> getNodeLinkRelation() {
+        return nodeLinkRelation;
+    }
 
-	@Override
-	public OperType getOperType() {
+    public void setNodeLinkRelation(Map<RdNode, List<RdLink>> nodeLinkRelation) {
+        this.nodeLinkRelation = nodeLinkRelation;
+    }
 
-		return OperType.REPAIR;
-	}
+    @Override
+    public OperType getOperType() {
 
-	@Override
-	public String getRequester() {
+        return OperType.REPAIR;
+    }
 
-		return requester;
-	}
+    @Override
+    public String getRequester() {
 
-	@Override
-	public ObjType getObjType() {
+        return requester;
+    }
 
-		return ObjType.RDLINK;
-	}
+    @Override
+    public ObjType getObjType() {
 
-	public Command(JSONObject json, String requester) throws JSONException {
+        return ObjType.RDLINK;
+    }
 
-		this.requester = requester;
+    public Command(JSONObject json, String requester) throws JSONException {
 
-		this.setDbId(json.getInt("dbId"));
+        this.requester = requester;
 
-		this.linkPid = json.getInt("objId");
+        this.setDbId(json.getInt("dbId"));
 
-		JSONObject data = json.getJSONObject("data");
+        this.linkPid = json.getInt("objId");
 
-		JSONObject geometry = data.getJSONObject("geometry");
+        JSONObject data = json.getJSONObject("data");
 
-		this.linkGeom = (GeoTranslator.geojson2Jts(
-				geometry, 1, 5));
-		//修行挂接信息
-		if (data.containsKey("catchInfos")) {
-			this.catchInfos = data.getJSONArray("catchInfos");
-		}
-	
-	}
+        JSONObject geometry = data.getJSONObject("geometry");
+
+        this.linkGeom = (GeoTranslator.geojson2Jts(
+                geometry, 1, 5));
+        //修行挂接信息
+        if (data.containsKey("catchInfos")) {
+            this.catchInfos = data.getJSONArray("catchInfos");
+        }
+
+    }
 
 }

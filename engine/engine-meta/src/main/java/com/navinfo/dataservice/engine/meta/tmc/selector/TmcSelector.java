@@ -568,7 +568,7 @@ public class TmcSelector {
 
 			pstmt = conn.prepareStatement(sql);
 
-			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
+			String wkt = MercatorProjection.getWktWithGap(x, y, z, 100);
 
 			pstmt.setString(1, wkt);
 
@@ -699,9 +699,9 @@ public class TmcSelector {
 
 			pstmt = conn.prepareStatement(sql);
 			
-			//gap+200防止文字显示被其他瓦片覆盖
+			//gap：100防止文字显示被其他瓦片覆盖
 
-			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap+200);
+			String wkt = MercatorProjection.getWktWithGap(x, y, z, 100);
 
 			pstmt.setString(1, wkt);
 

@@ -4,15 +4,18 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.dbutils.DbUtils;
 
+import com.navinfo.dataservice.api.metadata.model.ScPointNameckObj;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 
 public class ScPointNameck {
-	private Map<String, String> typeD1 = new HashMap<String, String>();
+	private List<ScPointNameckObj> typeD1 = new ArrayList<ScPointNameckObj>();
 	
 	private Map<String, String> typeD10 = new HashMap<String, String>();
 	
@@ -28,7 +31,7 @@ public class ScPointNameck {
 		return SingletonHolder.INSTANCE;
 	}
 	
-	public Map<String, String> scPointNameckTypeD1() throws Exception{
+	public List<ScPointNameckObj> scPointNameckTypeD1() throws Exception{
 		if (typeD1==null||typeD1.isEmpty()) {
 				synchronized (this) {
 					if (typeD1==null||typeD1.isEmpty()) {
@@ -46,7 +49,11 @@ public class ScPointNameck {
 								pstmt = conn.prepareStatement(sql);
 								rs = pstmt.executeQuery();
 								while (rs.next()) {
-									typeD1.put(rs.getString("PRE_KEY"), rs.getString("RESULT_KEY"));					
+									ScPointNameckObj obj=new ScPointNameckObj();
+									obj.setPreKey(rs.getString("PRE_KEY"));
+									obj.setResultKey(rs.getString("RESULT_KEY"));
+									obj.setType(1);
+									typeD1.add(obj);
 								} 
 							} catch (Exception e) {
 								throw new Exception(e);

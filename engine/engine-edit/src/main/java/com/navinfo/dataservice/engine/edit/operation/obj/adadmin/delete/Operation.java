@@ -15,7 +15,6 @@ import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdminTree;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFace;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneFace;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
-import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdAdminSelector;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdAdminTreeSelector;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdFaceSelector;
 import com.navinfo.dataservice.dao.glm.selector.ad.zone.ZoneFaceSelector;
@@ -131,6 +130,7 @@ public class Operation implements IOperation {
 		
 		List<AdAdminTree> treeList = tree.getChildren();
 		
+		//递归删除子节点
 		deleteChild(treeList,result);
 	}
 	

@@ -208,7 +208,10 @@ public class MetadataApiImpl implements MetadataApi {
 		KindCodeSelector kind = new KindCodeSelector();
 		return kind.searchKindName(kindcode);
 	}
-
+	/**
+	 * 需要按照顺序进行key值替换名称，所以用list，按照key长度存放。
+	 * 获取sc_Point_Nameck元数据库表中type=1的大陆的记录列表
+	 */
 	@Override
 	public List<ScPointNameckObj> scPointNameckTypeD1() throws Exception {
 		// TODO Auto-generated method stub
@@ -254,7 +257,12 @@ public class MetadataApiImpl implements MetadataApi {
 	}
 
 	/**
-	 * 判断重要分类
+	 * 重要分类判断方法
+	 * 传入poi的kindCode和chain，返回boolean，是否为重要分类
+	 * @param kindCode
+	 * @param chain
+	 * @return true重要分类，false 非重要分类
+	 * @throws Exception
 	 */
 	@Override
 	public boolean judgeScPointKind(String kindCode, String chain) throws Exception {

@@ -55,7 +55,7 @@ public class RdLinkTest extends InitApplication {
     @Test
     public void repair() {
         String parameter = "{\"command\":\"REPAIR\",\"dbId\":42,\"objId\":100008849,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.46721,40.083],[116.46730363368988,40.082890151613405],[116.46738,40.08272]]},\"interLinks\":[],\"interNodes\":[]},\"type\":\"RDLINK\"}";
-        parameter = "{\"command\":\"CREATE\",\"dbId\":17,\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.44574403762817,39.91689151500802],[116.44597470760347,39.91648007577787]]},\"catchLinks\":[]},\"type\":\"RDLINK\"}";
+        parameter = "{\"command\":\"REPAIR\",\"dbId\":17,\"objId\":202002945,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.71868,40.30907],[116.71971559524535,40.30871534048766],[116.72068119049071,40.30820808633702]]},\"catchInfos\":[{\"nodePid\":320002285,\"longitude\":116.72068119049071,\"latitude\":40.30820808633702}]},\"type\":\"RDLINK\"}";
         TestUtil.run(parameter);
     }
 

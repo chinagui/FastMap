@@ -88,7 +88,8 @@ public class RdTmcLocationSearch implements ISearch {
 		try {
 			pstmt = conn.prepareStatement(sql);
 			
-			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
+			//gap固定给100，防止文字被其他瓦片覆盖
+			String wkt = MercatorProjection.getWktWithGap(x, y, z, 100);
 			
 			double px = MercatorProjection.tileXToPixelX(x);
 

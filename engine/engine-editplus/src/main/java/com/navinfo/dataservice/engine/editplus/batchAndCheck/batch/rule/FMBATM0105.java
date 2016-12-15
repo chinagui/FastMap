@@ -65,7 +65,7 @@ public class FMBATM0105 extends BasicBatchRule {
 				IxPoiAddress chiAddr=poiObj.getCHIAddress();
 				IxPoiAddress engAddr=poiObj.getENGAddress(chiAddr.getNameGroupid());
 				if (engAddr!=null){
-					engAddr.setFullname();
+					engAddr.setFullname("");
 				}
 			}
 		}		
@@ -117,5 +117,5 @@ public class FMBATM0105 extends BasicBatchRule {
 		return true;
 	}
 
-
+   
 }

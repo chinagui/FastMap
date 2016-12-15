@@ -86,7 +86,7 @@ public class TipsExportTest extends InitApplication{
 			
 			parameter="{\"condition\":[{\"grid\":60560233,\"date\":\"20161210114441\"}]}";
 			
-			parameter="{\"condition\":[{\"grid\":59567220,\"date\":\"20161215112535\"}]}";
+			parameter="{\"condition\":[{\"grid\":59567220,\"date\":\"20161210112535\"}]}";
 			
 			String uuid = UuidUtils.genUuid();
 			

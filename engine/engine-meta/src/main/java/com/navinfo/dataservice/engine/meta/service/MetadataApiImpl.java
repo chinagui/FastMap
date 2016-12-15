@@ -9,6 +9,7 @@ import org.apache.commons.dbutils.DbUtils;
 import org.springframework.stereotype.Service;
 
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
+import com.navinfo.dataservice.api.metadata.model.ScPointNameckObj;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
@@ -209,7 +210,7 @@ public class MetadataApiImpl implements MetadataApi {
 	}
 
 	@Override
-	public Map<String, String> scPointNameckTypeD1() throws Exception {
+	public List<ScPointNameckObj> scPointNameckTypeD1() throws Exception {
 		// TODO Auto-generated method stub
 		return ScPointNameck.getInstance().scPointNameckTypeD1();
 	}

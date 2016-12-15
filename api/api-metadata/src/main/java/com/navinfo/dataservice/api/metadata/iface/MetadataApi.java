@@ -3,6 +3,8 @@ package com.navinfo.dataservice.api.metadata.iface;
 import java.util.List;
 import java.util.Map;
 
+import com.navinfo.dataservice.api.metadata.model.ScPointNameckObj;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -59,8 +61,12 @@ public interface MetadataApi {
 	public JSONObject getCharacterMap() throws Exception;
 	
 	public JSONObject searchByAdminCode(String admincode) throws Exception;
-	
-	public Map<String, String> scPointNameckTypeD1() throws Exception;
+	/**
+	 * 需要按照顺序进行key值替换名称，所以用list，按照key长度存放。
+	 * @return
+	 * @throws Exception
+	 */
+	public List<ScPointNameckObj> scPointNameckTypeD1() throws Exception;
 	
 	public Map<String, String> scPointNameckTypeD10() throws Exception;
 	

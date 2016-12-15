@@ -1,8 +1,5 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.poi.update;
 
-import java.sql.Connection;
-import java.util.List;
-
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
@@ -39,9 +36,11 @@ import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+
+import java.sql.Connection;
+import java.util.List;
 
 public class Operation implements IOperation {
 
@@ -1495,7 +1494,7 @@ public class Operation implements IOperation {
      *
      * @param oldLink
      * @param newLinks
-     * @param result
+     * @param ixPoi
      * @return
      * @throws Exception
      */
@@ -1506,15 +1505,16 @@ public class Operation implements IOperation {
 
             Geometry point = GeoTranslator.transform(ixPoi.getGeometry(), 0.000001, 5);
 
+            double minLength = 0;
             for (RdLink newLink : newLinks) {
-            	Coordinate cor = GeometryUtils.getLinkPedalPointOnLine(point.getCoordinate(), GeoTranslator.transform(newLink.getGeometry(), 0.000001, 5));
+                Coordinate cor = GeometryUtils.getLinkPedalPointOnLine(point.getCoordinate(), GeoTranslator.transform(newLink.getGeometry(), 0.000001, 5));
                 if (cor != null) {
-                    resultLink = newLink;
-                    break;
+                    double length = GeometryUtils.getDistance(cor, point.getCoordinate());
+                    if (minLength == 0 || minLength > length)
+                        resultLink = newLink;
                 }
             }
         }
-
         return resultLink;
     }
 }

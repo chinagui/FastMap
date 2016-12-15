@@ -152,7 +152,7 @@ public class IxPoiSearch implements ISearch {
 
 				snapshot.setT(21);
 
-				snapshot.setI(resultSet.getString("pid"));
+				snapshot.setI(resultSet.getInt("pid"));
 
 				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
 

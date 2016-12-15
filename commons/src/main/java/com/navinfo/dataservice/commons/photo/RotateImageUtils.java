@@ -93,17 +93,29 @@ public class RotateImageUtils {
     	  
         Metadata metadata = ImageMetadataReader.readMetadata(jpegFile);  
         Directory directory = (Directory) metadata.getFirstDirectoryOfType(ExifIFD0Directory.class);  
-
+        int orientationtag = 0;  
         int orientation = 0;  
         if(directory != null){
         try {  
-            orientation = directory.getInt(ExifIFD0Directory.TAG_ORIENTATION);  
+        	orientationtag = directory.getInt(ExifIFD0Directory.TAG_ORIENTATION);  
         } catch (MetadataException me) {  
            // logger.warn("Could not get orientation");  
         }  
   
-        System.out.println("orientation: "+orientation);  
+        System.out.println("orientationtag: "+orientationtag);  
   
+        if(orientationtag==3){
+        	orientation = 180;
+        }else if(orientationtag==6){
+        	orientation= 90;
+        }else if(orientationtag==8){
+        	orientation= 270;
+        }else{
+        	orientation= orientationtag;
+        }
+        System.out.println("orientation"+orientation);
+        
+        
         BufferedImage src = ImageIO.read(jpegFile);  
         BufferedImage des = RotateImageUtils.Rotate(src, orientation);  
         ImageIO.write(des,"jpg", new File(path)); 
@@ -125,18 +137,29 @@ public class RotateImageUtils {
     public static int rotateOrientatione(InputStream imageStream) throws ImageProcessingException, IOException{
         Metadata metadata = ImageMetadataReader.readMetadata(imageStream);  
         Directory directory = (Directory) metadata.getFirstDirectoryOfType(ExifIFD0Directory.class);  
-        int orientation = 0;  
-        InputStream rotateImgStream = imageStream;
-        BufferedImage src1 = ImageIO.read(imageStream); 
+        int orientationtag = 0;  
+        int orientation = 0;
+//        InputStream rotateImgStream = imageStream;
+//        BufferedImage src1 = ImageIO.read(imageStream); 
         if(directory != null ){
         try {  
-            orientation = directory.getInt(ExifIFD0Directory.TAG_ORIENTATION);  
+        	orientationtag = directory.getInt(ExifIFD0Directory.TAG_ORIENTATION);  
         } catch (MetadataException me) {  
            // logger.warn("Could not get orientation");  
         }  
-        System.out.println("orientation: "+orientation);  
+        System.out.println("orientationtag: "+orientationtag);  
 	       
         }
+        if(orientationtag==3){
+        	orientation = 180;
+        }else if(orientationtag==6){
+        	orientation= 90;
+        }else if(orientationtag==8){
+        	orientation= 270;
+        }else{
+        	orientation= orientationtag;
+        }
+        System.out.println("orientation"+orientation);
         return orientation;
     }
     
@@ -187,10 +210,10 @@ public class RotateImageUtils {
         }
     
     public static void main(String[] args) throws IOException, Exception {
-    	rotateImage("f:/x11.jpg");
+    	//rotateImage("f:/1.jpg");
     	
-    	/*Image srcImage = null;
-    	File file= new File("f:/x1.jpg");
+    	Image srcImage = null;
+    	File file= new File("f:/11.jpg");
     	InputStream bis =  new FileInputStream(file);
 		srcImage = ImageIO.read(bis);
 		System.out.println("srcImage:"+srcImage);
@@ -217,7 +240,7 @@ public class RotateImageUtils {
 		int dstMaxSize = 120;// 目标缩略图的最大宽度/高度，宽度与高度将按比例缩写
 		int dstWidth = srcWidth;// 缩略图宽度
 		int dstHeight = srcHeight;// 缩略图高度
-*/	}
+	}
     
     /*public static void main(String[] args) throws ImageProcessingException, IOException {  
     	//rotateImage("f:/xx.jpg");

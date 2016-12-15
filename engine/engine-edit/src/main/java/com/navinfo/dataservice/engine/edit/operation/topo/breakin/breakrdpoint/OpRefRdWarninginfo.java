@@ -22,7 +22,7 @@ public class OpRefRdWarninginfo {
 		com.navinfo.dataservice.engine.edit.operation.obj.rdwarninginfo.update.Operation warninginfoOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdwarninginfo.update.Operation(
 				conn);
 
-		warninginfoOperation.breakRdLink(linkPid, newLinks, result);
+		warninginfoOperation.breakRdLink(null, linkPid, newLinks, result);
 
 		return null;
 	}

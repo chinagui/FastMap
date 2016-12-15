@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
+import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiAddress;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiAdvertisement;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiAttraction;
@@ -587,6 +588,122 @@ public class IxPoiObj extends AbstractIxObj {
 		return null;
 	}
 	
+	/*
+	 * 简称标准中文名称组
+	 */
+	public List<IxPoiName> getShortStandardCHName(){
+		List<IxPoiName> shortCHNameList=null;
+		List<IxPoiName> subRows=getIxPoiNames();
+		for(IxPoiName br:subRows){
+			if(br.getOpType()!=OperationType.DELETE && br.getNameClass()==5&&br.getNameType()==1
+					&&(br.getLangCode().equals("CHI")||br.getLangCode().equals("CHT"))){
+				shortCHNameList.add(br);}
+			}
+		return shortCHNameList;
+	}
+	
+	/*
+	 * 标准中文名称组
+	 */
+	public List<IxPoiName> getStandardCHName(){
+		List<IxPoiName> standardCHName=null;
+		List<IxPoiName> subRows=getIxPoiNames();
+		for(IxPoiName br:subRows){
+			if(br.getOpType()!=OperationType.DELETE &&(br.getNameClass()==1||br.getNameClass()==3
+					||br.getNameClass()==5||br.getNameClass()==6)&&br.getNameType()==1
+					&&(br.getLangCode().equals("CHI")||br.getLangCode().equals("CHT"))){
+				standardCHName.add(br);}
+			}
+		return standardCHName;
+	}
+	
+	/*
+	 * 获取名称组中最大group_id
+	 */
+	public long getMaxGroupIdFromNames(){
+		long groupId=0;
+		List<IxPoiName> subRows=getIxPoiNames();
+		for(IxPoiName br:subRows){
+			long gId=br.getNameGroupid();
+			if (groupId<=gId){groupId=gId;}
+		}	
+		return groupId;
+	}
+	
+	/*
+	 * 别名中文(name_class=3,name_type=1,lang_code='CHI')列表
+	 */
+	public List<IxPoiName> getAliasCHIName(){
+		List<IxPoiName> aliasCHINameList=null;
+		List<IxPoiName> subRows=getIxPoiNames();
+		for(IxPoiName br:subRows){
+			if(br.getNameClass()==3&&br.getNameType()==1&&br.getLangCode().equals("CHI")){
+				aliasCHINameList.add(br);}
+			}
+		return aliasCHINameList;
+	}
+	
+	public IxPoiName getStandardAliasENGName(long nameGroupId){
+		List<IxPoiName> subRows=getIxPoiNames();
+		for(IxPoiName br:subRows){
+			if(br.getNameGroupid()==nameGroupId&&br.getNameClass()==3&&br.getNameType()==1&&br.getLangCode().equals("ENG")){
+				return br;}
+			}
+		return null;
+	}
+	
+	public IxPoiName getOriginAliasENGName(long nameGroupId){
+		List<IxPoiName> subRows=getIxPoiNames();
+		for(IxPoiName br:subRows){
+			if(br.getNameGroupid()==nameGroupId&&br.getNameClass()==3&&br.getNameType()==2&&br.getLangCode().equals("ENG")){
+				return br;}
+			}
+		return null;
+	}
+	/**
+	 * 获取原始英文别名列表
+	 * @param nameGroupId
+	 * @return
+	 */
+	public List<IxPoiName> getOriginAliasENGNameList(){
+		List<IxPoiName> originAliasENGNameList=null;
+		List<IxPoiName> subRows=getIxPoiNames();
+		for(IxPoiName br:subRows){
+			if(br.getNameClass()==3&&br.getNameType()==2&&br.getLangCode().equals("ENG")){
+				originAliasENGNameList.add(br);}
+			}
+		return originAliasENGNameList;
+	}
+	
+	
+	/*
+	 * 别名中文(name_class=3,name_type=1,lang_code='CHI')列表
+	 */
+	public IxPoiName getAliasCHIName(long nameGroupId){
+		List<IxPoiName> subRows=getIxPoiNames();
+		for(IxPoiName br:subRows){
+			if(br.getNameClass()==3&&br.getLangCode().equals("CHI")){
+				return br;}
+			}
+		return null;
+	}
+	
+	public IxPoiAddress getCHIAddress(){
+		List<IxPoiAddress> subRows=getIxPoiAddresses();
+		for(IxPoiAddress br:subRows){
+			if(br.getLangCode().equals("CHI")&&br.isChanged()){
+				return br;}
+			}
+		return null;
+	}
+	public IxPoiAddress getENGAddress(long nameGroupId){
+		List<IxPoiAddress> subRows=getIxPoiAddresses();
+		for(IxPoiAddress br:subRows){
+			if(br.getLangCode().equals("ENG")&&br.getNameGroupid()==nameGroupId){
+				return br;}
+			}
+		return null;
+	}
 	@Override
 	public String objName() {
 		return ObjectName.IX_POI;

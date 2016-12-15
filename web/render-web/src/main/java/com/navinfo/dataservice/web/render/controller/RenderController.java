@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.util.ResponseUtils;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.search.specialMap.SpecialMapUtils;
 import com.navinfo.dataservice.engine.edit.search.SearchProcess;
@@ -117,7 +118,6 @@ public class RenderController extends BaseController {
 				data = p.searchDataByTileWithGap(types, x, y, z, gap);
 
 			}
-
 			response.getWriter().println(
 					ResponseUtils.assembleRegularResult(data));
 		} catch (Exception e) {

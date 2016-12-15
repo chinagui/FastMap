@@ -176,5 +176,48 @@ public class ZoneFaceSelector extends AbstractSelector {
 		}
 		return faces;
 	}
+	
+	/**
+	 * 根据regionId查询ZONEFACE
+	 * @param regionId 
+	 * @param isLock
+	 * @return ZoneFace集合
+	 * @throws Exception
+	 */
+	public List<ZoneFace> loadZoneFaceByRegionId(int regionId, boolean isLock) throws Exception {
+		List<ZoneFace> faces = new ArrayList<ZoneFace>();
 
+		StringBuilder bf = new StringBuilder();
+		bf.append("select * from zone_face where region_id = :1");
+		if (isLock) {
+			bf.append(" for update nowait");
+		}
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = this.conn.prepareStatement(bf.toString());
+
+			pstmt.setInt(1, regionId);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+				ZoneFace face = new ZoneFace();
+				ReflectionAttrUtils.executeResultSet(face, resultSet);
+				faces.add(face);
+			}
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+		}
+
+		return faces;
+	}
 }

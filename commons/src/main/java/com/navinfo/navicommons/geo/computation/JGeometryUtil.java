@@ -1,22 +1,18 @@
 package com.navinfo.navicommons.geo.computation;
 
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 
-import com.navinfo.dataservice.commons.util.DateUtils;
 import com.vividsolutions.jts.algorithm.ConvexHull;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.MultiPoint;
 import com.vividsolutions.jts.geom.Polygon;
-import com.vividsolutions.jts.operation.buffer.BufferOp;
-import com.vividsolutions.jts.operation.buffer.BufferParameters;
 import com.vividsolutions.jts.triangulate.ConformingDelaunayTriangulationBuilder;
 
 import oracle.spatial.geometry.JGeometry;
@@ -165,21 +161,20 @@ public class JGeometryUtil {
 		ConformingDelaunayTriangulationBuilder builder = new ConformingDelaunayTriangulationBuilder();
 
 		builder.setSites(mp);
-		System.out.println("4.1："+DateUtils.dateToString(new Date()));
 		// 实际为GeometryCollection（组成的geometry紧密相连）
 		Geometry ts = builder.getTriangles(gf);
 		
-		// 以1的距离进行缓冲（因为各多边形两两共边），生成一个多边形
-		// 此时则将点云构造成了多边形
-		System.out.println("4.2："+DateUtils.dateToString(new Date()));
-		Geometry union = ts.buffer(0.00001);
-		System.out.println("4.3："+DateUtils.dateToString(new Date()));
-		
-		BufferOp bufOp = new BufferOp(union);  
-        bufOp.setEndCapStyle(BufferParameters.CAP_ROUND);  
-        Geometry bg = bufOp.getResultGeometry(0);  
-        System.out.println("4.4："+DateUtils.dateToString(new Date()));
-		return bg;
+//		// 以1的距离进行缓冲（因为各多边形两两共边），生成一个多边形
+//		// 此时则将点云构造成了多边形
+//		System.out.println("4.2："+DateUtils.dateToString(new Date()));
+//		Geometry union = ts.buffer(0.00001);
+//		System.out.println("4.3："+DateUtils.dateToString(new Date()));
+//		
+//		BufferOp bufOp = new BufferOp(union);  
+//        bufOp.setEndCapStyle(BufferParameters.CAP_ROUND);  
+//        Geometry bg = bufOp.getResultGeometry(0);  
+//        System.out.println("4.4："+DateUtils.dateToString(new Date()));
+		return ts;
 	}
 	
 	public static Geometry getBuffer(Coordinate[] coordinates) {
@@ -192,7 +187,7 @@ public class JGeometryUtil {
 
 		Geometry geosRing = hull.getConvexHull();
 
-		Geometry buff = geosRing.buffer(0);
+		Geometry buff = geosRing.buffer(0.00001);
 
 		Polygon myPolygon = (Polygon) buff;
 

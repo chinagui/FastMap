@@ -89,7 +89,7 @@ public class RdVariableSpeedSearch implements ISearch {
 
 				JSONObject jsonM = new JSONObject();
 
-				snapshot.setI(String.valueOf(resultSet.getInt("vspeed_pid")));
+				snapshot.setI(resultSet.getInt("vspeed_pid"));
 
 				snapshot.setT(43);
 

@@ -85,7 +85,7 @@ public class AdAdminSearch implements ISearch {
 
 				snapshot.setT(15);
 
-				snapshot.setI(resultSet.getString("region_id"));
+				snapshot.setI(resultSet.getInt("region_id"));
 				
 				JSONObject m = new JSONObject();
 

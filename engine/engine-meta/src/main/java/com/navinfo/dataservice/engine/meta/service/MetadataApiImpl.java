@@ -9,6 +9,7 @@ import org.apache.commons.dbutils.DbUtils;
 import org.springframework.stereotype.Service;
 
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
+import com.navinfo.dataservice.api.metadata.model.ScPointNameckObj;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
@@ -24,8 +25,11 @@ import com.navinfo.dataservice.engine.meta.mesh.MeshSelector;
 import com.navinfo.dataservice.engine.meta.pinyin.PinyinConvertSelector;
 import com.navinfo.dataservice.engine.meta.pinyin.PinyinConverter;
 import com.navinfo.dataservice.engine.meta.rdname.RdNameImportor;
+import com.navinfo.dataservice.engine.meta.scPointEngKeyWords.ScPointEngKeyWords;
 import com.navinfo.dataservice.engine.meta.scPointNameck.ScPointNameck;
+import com.navinfo.dataservice.engine.meta.scPointSpecKindcode.ScPointSpecKindcode;
 import com.navinfo.dataservice.engine.meta.tmc.selector.TmcSelector;
+import com.navinfo.dataservice.engine.meta.translate.EngConverterHelper;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -204,17 +208,74 @@ public class MetadataApiImpl implements MetadataApi {
 		KindCodeSelector kind = new KindCodeSelector();
 		return kind.searchKindName(kindcode);
 	}
-
+	/**
+	 * 需要按照顺序进行key值替换名称，所以用list，按照key长度存放。
+	 * 获取sc_Point_Nameck元数据库表中type=1的大陆的记录列表
+	 */
 	@Override
-	public Map<String, String> scPointNameckTypeD1() throws Exception {
+	public List<ScPointNameckObj> scPointNameckTypeD1() throws Exception {
 		// TODO Auto-generated method stub
 		return ScPointNameck.getInstance().scPointNameckTypeD1();
+	}
+	
+	@Override
+	public Map<String, String> scPointNameckTypeD10() throws Exception {
+		// TODO Auto-generated method stub
+		return ScPointNameck.getInstance().scPointNameckTypeD10();
+	}
+	
+	@Override
+	public Map<String, String> scPointNameckTypeD5() throws Exception {
+		// TODO Auto-generated method stub
+		return ScPointNameck.getInstance().scPointNameckTypeD5();
+	}
+	
+	@Override
+	public Map<String, String> scPointNameckTypeD7() throws Exception {
+		// TODO Auto-generated method stub
+		return ScPointNameck.getInstance().scPointNameckTypeD7();
 	}
 	
 	@Override
 	public List<String> getDeepAdminCodeList() throws Exception {
 		ScPointDeepPlanarea deepPlanarea = new ScPointDeepPlanarea();
 		return deepPlanarea.getDeepAdminCodeList();
+	}
+	
+	@Override
+	public String convertEng(String word) throws Exception {
+		
+		 EngConverterHelper converterHelper = new EngConverterHelper();
+         String result = converterHelper.chiToEng(word);
+		return result;
+	}
+	
+	@Override
+	public Map<String, String> scPointSpecKindCodeType8() throws Exception {
+		// TODO Auto-generated method stub
+		return ScPointSpecKindcode.getInstance().scPointSpecKindCodeType8();
+	}
+
+	/**
+	 * 重要分类判断方法
+	 * 传入poi的kindCode和chain，返回boolean，是否为重要分类
+	 * @param kindCode
+	 * @param chain
+	 * @return true重要分类，false 非重要分类
+	 * @throws Exception
+	 */
+	@Override
+	public boolean judgeScPointKind(String kindCode, String chain) throws Exception {
+		return ScPointSpecKindcode.getInstance().judgeScPointKind(kindCode, chain);
+	}
+	
+	/**
+	 * 返回TYPE=1时地址关键字翻译对照MAP
+	 */
+	@Override
+	public Map<String, String> scPointEngKeyWordsType1() throws Exception {
+		// TODO Auto-generated method stub
+		return ScPointEngKeyWords.getInstance().scPointEngKeyWordsType1();
 	}
 
 }

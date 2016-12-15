@@ -81,7 +81,7 @@ List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
 				snapshot.setT(25);
 
-				snapshot.setI(resultSet.getString("PID"));
+				snapshot.setI(resultSet.getInt("PID"));
 
 				STRUCT struct = (STRUCT) resultSet.getObject("GEOMETRY");
 				

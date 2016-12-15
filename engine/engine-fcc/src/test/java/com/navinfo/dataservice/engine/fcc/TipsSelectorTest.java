@@ -1,7 +1,11 @@
 package com.navinfo.dataservice.engine.fcc;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -14,19 +18,29 @@ import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Table;
+import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.client.solrj.impl.HttpSolrClient;
+import org.apache.solr.client.solrj.response.QueryResponse;
+import org.apache.solr.common.SolrDocument;
+import org.apache.solr.common.SolrDocumentList;
 import org.junit.Test;
 
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.util.ExcelReader;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
+import com.navinfo.dataservice.dao.fcc.SolrConnector;
 import com.navinfo.dataservice.dao.fcc.SolrController;
 import com.navinfo.dataservice.engine.fcc.service.FccApiImpl;
 import com.navinfo.dataservice.engine.fcc.tips.TipsSelector;
 import com.navinfo.navicommons.geo.GeoUtils;
 import com.navinfo.navicommons.geo.computation.GridUtils;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
 
 public class TipsSelectorTest {
 
@@ -486,6 +500,122 @@ public class TipsSelectorTest {
 			}
 		
 		}
+		
+		//修改一下solr中的所有数据的wkt
+		public static void main(String[] args) {
+			
+			int fetchNum = Integer.MAX_VALUE;
+			
+			List<JSONObject> snapshots = new ArrayList<JSONObject>();
+
+			SolrQuery query = new SolrQuery();
+
+			query.set("start", 0);
+
+			query.set("rows", fetchNum);
+			
+			HttpSolrClient client = SolrConnector.getInstance().getClient();
+
+			QueryResponse response;
+			try {
+				response = client.query(query);
+				
+				SolrDocumentList sdList = response.getResults();
+
+				long totalNum = sdList.getNumFound();
+
+				if (totalNum <= fetchNum) {
+					for (int i = 0; i < totalNum; i++) {
+						SolrDocument doc = sdList.get(i);
+
+						JSONObject snapshot = JSONObject.fromObject(doc);
+
+						snapshots.add(snapshot);
+					}
+				} else {
+					// 暂先不处理
+				}
+			} catch (Exception e) {
+			}
+
+			
+
+
+			
+			
+		}
+		
+		
+		
+		public static String generateSolrWkt(String sourceType, 
+				JSONObject g_location, JSONArray feedbacks) throws Exception {
+			List<Geometry> geos = new ArrayList<Geometry>();
+
+			GeometryFactory factory = new GeometryFactory();
+
+			if (sourceType.equals("1501")) {
+				return null;
+			} else {
+
+				Geometry g = GeoTranslator.geojson2Jts(g_location);
+
+				if (!g.isValid()) {
+					throw new Exception("invalid g_location");
+				}
+
+				geos.add(g);
+			}
+
+			for (int i = 0; i < feedbacks.size(); i++) {
+				JSONObject feedback = feedbacks.getJSONObject(i);
+
+				if (feedback.getInt("type") == 6) {
+					// 草图
+					JSONArray content = feedback.getJSONArray("content");
+
+					for (int j = 0; j < content.size(); j++) {
+
+						JSONObject geo = content.getJSONObject(j);
+
+						Geometry g = GeoTranslator.geojson2Jts(geo
+								.getJSONObject("geo"));
+
+						geos.add(g);
+					}
+
+					break;
+				}
+			}
+
+			if (geos.size() == 1) {
+				return GeoTranslator.jts2Wkt(geos.get(0));
+			} else {
+				/**
+				 * 20161026修改，如果复杂几何中存在相同的坐标，则保留一个，否则solr计算wkt相交有问题（
+				 * 和王磊确认目前采集端不限制多线几何重复或者自相交的情况）
+				 **/
+				Geometry[] gArray = null;
+				// 去重处理
+				Set<Geometry> gSet = new TreeSet<Geometry>();
+				for (int i = 0; i < geos.size(); i++) {
+					gSet.add(geos.get(i));
+				}
+
+				gArray = new Geometry[gSet.size()];
+
+				Iterator<Geometry> it = gSet.iterator();// 先迭代出来
+				int i = 0;
+				while (it.hasNext()) {// 遍历
+					gArray[i] = it.next();
+					i++;
+				}
+				Geometry g = factory.createGeometryCollection(gArray);
+
+				return GeoTranslator.jts2Wkt(g);
+			}
+
+		}
+
 		
 
 

@@ -32,7 +32,7 @@ public class Process extends  AbstractProcess<Command> implements IProcess {
 	 */
 	@Override
 	public String exeOperation() throws Exception {
-		return new Operation(this.getCommand(), this.adAdmin).run(this.getResult()); 
+		return new Operation(this.getCommand(), this.adAdmin,getConn()).run(this.getResult()); 
 	}
 
 }

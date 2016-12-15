@@ -6,6 +6,8 @@ import java.util.List;
 
 import org.apache.commons.dbutils.DbUtils;
 
+import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
+import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.api.job.iface.JobApi;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
@@ -64,12 +66,21 @@ public class CheckService {
 		
 		JobApi apiService=(JobApi) ApplicationContextUtil.getBean("jobApi");
 		if(checkType == 3){  //道路名检查 ,直接调元数据库 全表检查		
+			//System.out.println("checkType == 3");
+			DatahubApi datahub = (DatahubApi) ApplicationContextUtil
+					.getBean("datahubApi");
+			DbInfo metaDb = datahub.getOnlyDbByType("metaRoad");
+			Integer metaDbid = metaDb.getDbId();
+			if(metaDbid != null && metaDbid >0){
+			//System.out.println("metaDbid: "+metaDbid);
 			JSONObject metaValidationRequestJSON=new JSONObject();
-			metaValidationRequestJSON.put("executeDBId", 106);//元数据库dbId
-			metaValidationRequestJSON.put("kdbDBId", 106);//元数据库dbId
+			metaValidationRequestJSON.put("executeDBId", metaDbid);//元数据库dbId
+			metaValidationRequestJSON.put("kdbDBId", metaDbid);//元数据库dbId
 			metaValidationRequestJSON.put("ruleIds", ruleList);
 			metaValidationRequestJSON.put("timeOut", 0);
 			jobId=apiService.createJob("checkCore", metaValidationRequestJSON, userId,subtaskId, "元数据库检查");
+			//System.out.println("jobId == "+jobId);
+			}
 		}else if(checkType==2 ||checkType ==0){//道路
 			List<Integer> grids= subtaskObj.getGridIds();
 			JSONObject validationRequestJSON=new JSONObject();

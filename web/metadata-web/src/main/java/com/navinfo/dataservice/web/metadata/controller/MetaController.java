@@ -1110,7 +1110,7 @@ public class MetaController extends BaseController {
         	
         	ScPointAdminArea selector = new ScPointAdminArea();
 
-        	JSONObject data = selector.searchByAdminCode(adminId);
+        	JSONObject data = selector.searchByAdminCode(String.valueOf(adminId));
 
             return new ModelAndView("jsonView", success(data));
 

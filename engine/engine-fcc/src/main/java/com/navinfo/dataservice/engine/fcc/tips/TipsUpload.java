@@ -374,7 +374,7 @@ public class TipsUpload {
 		
 		audio.setA_uuid(id); 
 		
-		audio.setA_fileName(attachment.getString("content"));
+		//audio.setA_fileName(attachment.getString("content"));
 
 		audio.setA_uploadUser(json.getInt("t_handler"));
 

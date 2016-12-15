@@ -251,7 +251,7 @@ public class ScPointAdminArea {
 	 * @return JSONObject
 	 * @throws Exception
 	 */
-	public JSONObject searchByAdminCode(int adminCode)
+	public JSONObject searchByAdminCode(String adminCode)
 			throws Exception {
 	    StringBuilder builder = new StringBuilder();
 		builder.append("SELECT adminareacode, areacode,phonenum_len");

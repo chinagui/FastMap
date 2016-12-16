@@ -734,4 +734,124 @@ public class CheckRuleTest {
 		checkEngine.postCheck();
 		System.out.println("ok");
 	}
+	
+	@Test
+	public void exeRdTollgateCreateCheck() throws Exception{
+		RdTollgate rdTollGate = new RdTollgate();
+		rdTollGate.setPid(31434101);
+		
+		List<IRow> objList=new ArrayList<IRow>();
+		objList.add(rdTollGate);
+		
+		Connection conn = DBConnector.getInstance().getConnectionById(17);
+		//检查调用
+		CheckCommand checkCommand=new CheckCommand();
+		checkCommand.setGlmList(objList);
+		checkCommand.setOperType(OperType.CREATE);
+		checkCommand.setObjType(ObjType.RDTOLLGATE);
+		CheckEngine checkEngine=new CheckEngine(checkCommand,conn);
+		checkEngine.preCheck();
+		checkEngine.postCheck();
+		System.out.println("ok");
+	}
+	
+	@Test
+	public void exeRdTollgateUpdateCheck() throws Exception{
+		RdTollgate rdTollGate = new RdTollgate();
+		rdTollGate.setPid(31434101);
+		
+		List<IRow> objList=new ArrayList<IRow>();
+		objList.add(rdTollGate);
+		
+		Connection conn = DBConnector.getInstance().getConnectionById(17);
+		//检查调用
+		CheckCommand checkCommand=new CheckCommand();
+		checkCommand.setGlmList(objList);
+		checkCommand.setOperType(OperType.UPDATE);
+		checkCommand.setObjType(ObjType.RDTOLLGATE);
+		CheckEngine checkEngine=new CheckEngine(checkCommand,conn);
+		checkEngine.preCheck();
+		checkEngine.postCheck();
+		System.out.println("ok");
+	}
+	
+	@Test
+	public void exeRdLaneConnexityUpdateCheck() throws Exception{
+		RdLaneConnexity rdLaneConnexity = new RdLaneConnexity();
+		rdLaneConnexity.setPid(31434101);
+		
+		List<IRow> objList=new ArrayList<IRow>();
+		objList.add(rdLaneConnexity);
+		
+		Connection conn = DBConnector.getInstance().getConnectionById(17);
+		//检查调用
+		CheckCommand checkCommand=new CheckCommand();
+		checkCommand.setGlmList(objList);
+		checkCommand.setOperType(OperType.UPDATE);
+		checkCommand.setObjType(ObjType.RDLANECONNEXITY);
+		CheckEngine checkEngine=new CheckEngine(checkCommand,conn);
+		checkEngine.preCheck();
+		checkEngine.postCheck();
+		System.out.println("ok");
+	}
+	
+	@Test
+	public void exeRdLaneConnexityCreateCheck() throws Exception{
+		RdLaneConnexity rdLaneConnexity = new RdLaneConnexity();
+		rdLaneConnexity.setPid(31434101);
+		
+		List<IRow> objList=new ArrayList<IRow>();
+		objList.add(rdLaneConnexity);
+		
+		Connection conn = DBConnector.getInstance().getConnectionById(17);
+		//检查调用
+		CheckCommand checkCommand=new CheckCommand();
+		checkCommand.setGlmList(objList);
+		checkCommand.setOperType(OperType.CREATE);
+		checkCommand.setObjType(ObjType.RDLANECONNEXITY);
+		CheckEngine checkEngine=new CheckEngine(checkCommand,conn);
+		checkEngine.preCheck();
+		checkEngine.postCheck();
+		System.out.println("ok");
+	}
+	
+	@Test
+	public void exeRdRestrictionCreateCheck() throws Exception{
+		RdRestriction rdRestriction = new RdRestriction();
+		rdRestriction.setPid(31434101);
+		
+		List<IRow> objList=new ArrayList<IRow>();
+		objList.add(rdRestriction);
+		
+		Connection conn = DBConnector.getInstance().getConnectionById(17);
+		//检查调用
+		CheckCommand checkCommand=new CheckCommand();
+		checkCommand.setGlmList(objList);
+		checkCommand.setOperType(OperType.CREATE);
+		checkCommand.setObjType(ObjType.RDRESTRICTION);
+		CheckEngine checkEngine=new CheckEngine(checkCommand,conn);
+		checkEngine.preCheck();
+		checkEngine.postCheck();
+		System.out.println("ok");
+	}
+	
+	@Test
+	public void exeRdRestrictionUpdateCheck() throws Exception{
+		RdRestriction rdRestriction = new RdRestriction();
+		rdRestriction.setPid(31434101);
+		
+		List<IRow> objList=new ArrayList<IRow>();
+		objList.add(rdRestriction);
+		
+		Connection conn = DBConnector.getInstance().getConnectionById(17);
+		//检查调用
+		CheckCommand checkCommand=new CheckCommand();
+		checkCommand.setGlmList(objList);
+		checkCommand.setOperType(OperType.UPDATE);
+		checkCommand.setObjType(ObjType.RDRESTRICTION);
+		CheckEngine checkEngine=new CheckEngine(checkCommand,conn);
+		checkEngine.preCheck();
+		checkEngine.postCheck();
+		System.out.println("ok");
+	}
 }

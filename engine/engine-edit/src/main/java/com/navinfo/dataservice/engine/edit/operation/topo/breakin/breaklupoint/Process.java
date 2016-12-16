@@ -44,6 +44,11 @@ public class Process extends AbstractProcess<Command> {
 		// 获取要打断LCLINK的对象
 		LuLink breakLink = (LuLink) new LuLinkSelector(this.getConn())
 				.loadById(this.getCommand().getLinkPid(), true, false);
+		
+		if(this.getCommand().getRepairLinkGeo()!=null)
+		{
+			breakLink.setGeometry(this.getCommand().getRepairLinkGeo());
+		}
 		this.getCommand().setBreakLink(breakLink);
 		// 删除要打断LCLINK
 		this.getResult().insertObject(breakLink, ObjStatus.DELETE,

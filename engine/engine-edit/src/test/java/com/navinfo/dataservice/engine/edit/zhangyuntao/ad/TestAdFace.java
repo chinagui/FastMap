@@ -39,4 +39,10 @@ public class TestAdFace extends InitApplication {
 		wkt = MercatorProjection.getWktWithGap(107939, 49582, 17, 80);
 		System.out.println(wkt);
 	}
+
+	@Test
+	public void relation(){
+		String parameter = "{\"command\":\"RELATION\",\"dbId\":17,\"type\":\"ADADMIN\",\"data\":{\"regionId\":303000005,\"facePid\":\"2882\",\"objectType\":\"ADFACE\"}}";
+		TestUtil.run(parameter);
+	}
 }

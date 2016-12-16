@@ -32,7 +32,7 @@ public class Operation implements IOperation {
             ZoneFaceSelector selector = new ZoneFaceSelector(conn);
             face = (ZoneFace) selector.loadById(command.getFacePid(), true);
         }
-        face.changedFields().put("REGION_ID", command.getRegionId());
+        face.changedFields().put("regionId", command.getRegionId());
         result.insertObject(face, ObjStatus.UPDATE, face.pid());
         return null;
     }

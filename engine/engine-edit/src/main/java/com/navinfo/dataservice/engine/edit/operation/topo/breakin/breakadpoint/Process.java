@@ -42,6 +42,12 @@ public class Process extends AbstractProcess<Command> {
 		// 获取要打断ADLINK的对象
 		AdLink breakLink = (AdLink) new AdLinkSelector(this.getConn())
 				.loadById(this.getCommand().getLinkPid(), true, false);
+		
+		if(this.getCommand().getRepairLinkGeo()!=null)
+		{
+			breakLink.setGeometry(this.getCommand().getRepairLinkGeo());
+		}
+		
 		this.getCommand().setBreakLink(breakLink);
 		// 删除要打断ADLINK
 		this.getResult().insertObject(breakLink, ObjStatus.DELETE,

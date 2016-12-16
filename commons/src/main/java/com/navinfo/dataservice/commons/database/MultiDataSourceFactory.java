@@ -309,6 +309,8 @@ public class MultiDataSourceFactory {
 			bds = new PoolDataSource();
 		}else if(DbServerType.TYPE_MYSQL.equals(serverType)){
 			bds = new BasicDataSource();
+		}else if(DbServerType.TYPE_POSTGRES.equals(serverType)){
+			bds = new BasicDataSource();
 		}else{
 			throw new DataSourceException("不支持的数据库类型，找不到相应的DriverManagerDataSource");
 		}

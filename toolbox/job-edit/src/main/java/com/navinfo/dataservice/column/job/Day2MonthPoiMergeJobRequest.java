@@ -13,12 +13,12 @@ public class Day2MonthPoiMergeJobRequest extends AbstractJobRequest {
 
 	@Override
 	public String getJobType() {
-		return "day2MonSyncJob";
+		return "day2MonSync";
 	}
 
 	@Override
 	public String getJobTypeName() {
-		return "日落月任务";
+		return "日落月";
 	}
 
 	@Override

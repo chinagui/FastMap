@@ -11,6 +11,7 @@ public class DbServerType {
 	public static final String TYPE_NONE = "NONE";
 	public static final String TYPE_ORACLE = "ORACLE";
 	public static final String TYPE_MYSQL = "MYSQL";
+	public static final String TYPE_POSTGRES="POSTGRES";
 	public static final String TYPE_HBASE = "HBASE";
 	public static final String TYPE_MONGODB = "MONGODB";
 }

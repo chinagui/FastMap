@@ -1,4 +1,6 @@
-﻿1. insert_ck_rule.sql
-  功能：新增TMC检查脚本
+﻿1. update_sys_batch.sql
+  功能：月编检查批处理
   目标库：sys库
-  author: 张小龙
+  author: 张晓毅
+  
+  

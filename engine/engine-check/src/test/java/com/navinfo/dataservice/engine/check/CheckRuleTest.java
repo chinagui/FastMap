@@ -41,6 +41,8 @@ import com.navinfo.dataservice.engine.check.rules.GLM32020;
 import com.navinfo.dataservice.engine.check.rules.GLM32021;
 import com.navinfo.dataservice.engine.check.rules.GLM32038;
 import com.navinfo.dataservice.engine.check.rules.GLM32049;
+import com.navinfo.dataservice.engine.check.rules.GLM32051;
+import com.navinfo.dataservice.engine.check.rules.GLM32052;
 import com.navinfo.dataservice.engine.check.rules.GLM32060;
 import com.navinfo.dataservice.engine.check.rules.GLM32071;
 import com.navinfo.dataservice.engine.check.rules.GLM32092;
@@ -585,6 +587,50 @@ public class CheckRuleTest {
 	}
 	
 	@Test
+	public void testGLM32051() throws Exception{
+		Connection conn=DBConnector.getInstance().getConnectionById(17);
+		CheckCommand cc = new CheckCommand();
+		List<IRow> glmList = new ArrayList<IRow>();
+		RdLane rdLane  = new RdLane();
+		rdLane.setPid(46621466);
+		glmList.add(rdLane);
+		
+		RdLink rdLink = new RdLink();
+		rdLink.setPid(322290);
+		glmList.add(rdLink);
+		
+		cc.setGlmList(glmList);
+		GLM32051 c = new GLM32051();
+		c.setConn(conn);
+		c.postCheck(cc);
+		List result = c.getCheckResultList();
+		
+		System.out.println("end");
+	}
+	
+	@Test
+	public void testGLM32052() throws Exception{
+		Connection conn=DBConnector.getInstance().getConnectionById(17);
+		CheckCommand cc = new CheckCommand();
+		List<IRow> glmList = new ArrayList<IRow>();
+		RdLane rdLane  = new RdLane();
+		rdLane.setPid(46621466);
+		glmList.add(rdLane);
+		
+		RdLink rdLink = new RdLink();
+		rdLink.setPid(322290);
+		glmList.add(rdLink);
+		
+		cc.setGlmList(glmList);
+		GLM32052 c = new GLM32052();
+		c.setConn(conn);
+		c.postCheck(cc);
+		List result = c.getCheckResultList();
+		
+		System.out.println("end");
+	}
+	
+	@Test
 	public void exeRdLaneCreateCheck() throws Exception{
 		RdLane rdLane = new RdLane();
 		rdLane.setPid(31434101);
@@ -600,7 +646,92 @@ public class CheckRuleTest {
 		checkCommand.setOperType(OperType.CREATE);
 		checkCommand.setObjType(ObjType.RDLANE);
 		CheckEngine checkEngine=new CheckEngine(checkCommand,conn);
+		checkEngine.preCheck();
 		checkEngine.postCheck();
-		System.out.println(checkEngine.preCheck());
+		System.out.println("ok");
+	}
+	
+	@Test
+	public void exeRdLaneUpdateCheck() throws Exception{
+		RdLane rdLane = new RdLane();
+		rdLane.setPid(31434101);
+
+		
+		List<IRow> objList=new ArrayList<IRow>();
+		objList.add(rdLane);
+		
+		Connection conn = DBConnector.getInstance().getConnectionById(17);
+		//检查调用
+		CheckCommand checkCommand=new CheckCommand();
+		checkCommand.setGlmList(objList);
+		checkCommand.setOperType(OperType.UPDATE);
+		checkCommand.setObjType(ObjType.RDLANE);
+		CheckEngine checkEngine=new CheckEngine(checkCommand,conn);
+		checkEngine.preCheck();
+		checkEngine.postCheck();
+		System.out.println("ok");
+	}
+	
+	@Test
+	public void exeRdLaneDeleteCheck() throws Exception{
+		RdLane rdLane = new RdLane();
+		rdLane.setPid(31434101);
+
+		
+		List<IRow> objList=new ArrayList<IRow>();
+		objList.add(rdLane);
+		
+		Connection conn = DBConnector.getInstance().getConnectionById(17);
+		//检查调用
+		CheckCommand checkCommand=new CheckCommand();
+		checkCommand.setGlmList(objList);
+		checkCommand.setOperType(OperType.DELETE);
+		checkCommand.setObjType(ObjType.RDLANE);
+		CheckEngine checkEngine=new CheckEngine(checkCommand,conn);
+		checkEngine.preCheck();
+		checkEngine.postCheck();
+		System.out.println("ok");
+	}
+	
+	@Test
+	public void exeRdLaneTopoDetailUpdateCheck() throws Exception{
+		RdLaneTopoDetail rdLaneTopoDetail = new RdLaneTopoDetail();
+		rdLaneTopoDetail.setPid(31434101);
+
+		
+		List<IRow> objList=new ArrayList<IRow>();
+		objList.add(rdLaneTopoDetail);
+		
+		Connection conn = DBConnector.getInstance().getConnectionById(17);
+		//检查调用
+		CheckCommand checkCommand=new CheckCommand();
+		checkCommand.setGlmList(objList);
+		checkCommand.setOperType(OperType.UPDATE);
+		checkCommand.setObjType(ObjType.RDLANETOPODETAIL);
+		CheckEngine checkEngine=new CheckEngine(checkCommand,conn);
+		checkEngine.preCheck();
+		checkEngine.postCheck();
+		System.out.println("ok");
+	}
+	
+	@Test
+	public void exeRdLaneTopoDetailCreateCheck() throws Exception{
+		RdLaneTopoDetail rdLaneTopoDetail = new RdLaneTopoDetail();
+		rdLaneTopoDetail.setPid(31434101);
+
+		
+		List<IRow> objList=new ArrayList<IRow>();
+		objList.add(rdLaneTopoDetail);
+		
+		Connection conn = DBConnector.getInstance().getConnectionById(17);
+		//检查调用
+		CheckCommand checkCommand=new CheckCommand();
+		checkCommand.setGlmList(objList);
+		checkCommand.setOperType(OperType.CREATE);
+		checkCommand.setObjType(ObjType.RDLANETOPODETAIL);
+		CheckEngine checkEngine=new CheckEngine(checkCommand,conn);
+		checkEngine.preCheck();
+		checkEngine.postCheck();
+		System.out.println("ok");
 	}
 }

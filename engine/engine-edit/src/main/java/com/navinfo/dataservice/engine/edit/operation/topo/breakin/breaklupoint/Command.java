@@ -25,6 +25,17 @@ public class Command extends AbstractCommand {
 	private JSONArray breakNodes;
 	private List<LuLink> newLinks = new ArrayList<LuLink>();
 	private LuLink breakLink = new LuLink();
+	
+	
+	private Geometry repairLinkGeo=null;	
+
+	public Geometry getRepairLinkGeo() {
+		return repairLinkGeo;
+	}
+
+	public void setRepairLinkGeo(Geometry repairLinkGeo) {
+		this.repairLinkGeo = repairLinkGeo;
+	}
 
 	public List<LuLink> getNewLinks() {
 		return newLinks;

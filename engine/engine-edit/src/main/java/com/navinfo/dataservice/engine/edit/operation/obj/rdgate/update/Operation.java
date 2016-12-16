@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdgate.update;
 
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -151,22 +152,43 @@ public class Operation implements IOperation {
 		}
 	}
 	
+	
 	/**
 	 * 分离节点
-	 * @param link 
+	 * 
+	 * @param link
 	 * @param nodePid
-	 * @param rdlinks 
+	 * @param rdlinks
 	 * @param result
 	 * @throws Exception
 	 */
 	public void departNode(RdLink link, int nodePid, List<RdLink> rdlinks,
 			Result result) throws Exception {
 
+		List<Integer> nodePids = new ArrayList<Integer>();
+
+		nodePids.add(nodePid);
+
+		departNode(link, nodePids, rdlinks, result);
+	}
+	
+	/**
+	 * 分离节点
+	 * 
+	 * @param link
+	 * @param nodePid
+	 * @param rdlinks
+	 * @param result
+	 * @throws Exception
+	 */
+	public void departNode(RdLink link, List<Integer> nodePids,
+			List<RdLink> rdlinks, Result result) throws Exception {
+
 		int linkPid = link.getPid();
 
 		// 跨图幅处理的link为进入线的RdGate
-		Map<Integer, RdGate> gateInLink =null;
-		
+		Map<Integer, RdGate> gateInLink = null;
+
 		// 跨图幅处理的link为退出线的RdGate
 		Map<Integer, RdGate> gateOutLink = null;
 
@@ -176,55 +198,57 @@ public class Operation implements IOperation {
 
 			gateOutLink = new HashMap<Integer, RdGate>();
 		}
-		
-		RdGateSelector selector = new RdGateSelector(
-				this.conn);
+
+		RdGateSelector selector = new RdGateSelector(this.conn);
 
 		// 在link上的RdGate
 		List<RdGate> gates = selector.loadByLink(linkPid, true);
 
-		for (RdGate gate : gates) {
+		for (int nodePid : nodePids) {
+			for (RdGate gate : gates) {
 
-			if (gate.getNodePid() == nodePid) {
+				if (gate.getNodePid() == nodePid) {
 
-				result.insertObject(gate, ObjStatus.DELETE, gate.getPid());
+					result.insertObject(gate, ObjStatus.DELETE, gate.getPid());
 
-			} else if (gateInLink != null && gate.getInLinkPid() == linkPid) {
+				} else if (gateInLink != null && gate.getInLinkPid() == linkPid) {
 
-				gateInLink.put(gate.getPid(), gate);
+					gateInLink.put(gate.getPid(), gate);
 
-			} else if (gateOutLink != null && gate.getOutLinkPid() == linkPid) {
+				} else if (gateOutLink != null
+						&& gate.getOutLinkPid() == linkPid) {
 
-				gateOutLink.put(gate.getPid(), gate);
-			}
-		}
-	
-		if (gateOutLink == null|| gateInLink==null) {
-			return;
-		}
-		
-		int connectNode = link.getsNodePid() == nodePid ? link.geteNodePid()
-				: link.getsNodePid();
-
-		for (RdLink rdlink : rdlinks) {
-
-			if (rdlink.getsNodePid() != connectNode
-					&& rdlink.geteNodePid() != connectNode) {
-
-				continue;
-			}
-			for (RdGate gate : gateInLink.values()) {
-
-				gate.changedFields().put("inLinkPid", rdlink.getPid());
-
-				result.insertObject(gate, ObjStatus.UPDATE, gate.pid());
+					gateOutLink.put(gate.getPid(), gate);
+				}
 			}
 
-			for (RdGate gate : gateOutLink.values()) {
+			if (gateOutLink == null || gateInLink == null) {
+				return;
+			}
 
-				gate.changedFields().put("outLinkPid", rdlink.getPid());
+			int connectNode = link.getsNodePid() == nodePid ? link
+					.geteNodePid() : link.getsNodePid();
 
-				result.insertObject(gate, ObjStatus.UPDATE, gate.pid());
+			for (RdLink rdlink : rdlinks) {
+
+				if (rdlink.getsNodePid() != connectNode
+						&& rdlink.geteNodePid() != connectNode) {
+
+					continue;
+				}
+				for (RdGate gate : gateInLink.values()) {
+
+					gate.changedFields().put("inLinkPid", rdlink.getPid());
+
+					result.insertObject(gate, ObjStatus.UPDATE, gate.pid());
+				}
+
+				for (RdGate gate : gateOutLink.values()) {
+
+					gate.changedFields().put("outLinkPid", rdlink.getPid());
+
+					result.insertObject(gate, ObjStatus.UPDATE, gate.pid());
+				}
 			}
 		}
 	}

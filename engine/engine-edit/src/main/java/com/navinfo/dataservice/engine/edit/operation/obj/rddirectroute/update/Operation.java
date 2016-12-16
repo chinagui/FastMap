@@ -351,14 +351,34 @@ public class Operation implements IOperation {
 	
 	/**
 	 * 分离节点
-	 * @param link 
+	 * 
+	 * @param link
 	 * @param nodePid
-	 * @param rdlinks 
+	 * @param rdlinks
 	 * @param result
 	 * @throws Exception
 	 */
 	public void departNode(RdLink link, int nodePid, List<RdLink> rdlinks,
 			Result result) throws Exception {
+
+		List<Integer> nodePids = new ArrayList<Integer>();
+
+		nodePids.add(nodePid);
+
+		departNode(link, nodePids, rdlinks, result);
+	}
+	
+	/**
+	 * 分离节点
+	 * 
+	 * @param link
+	 * @param nodePid
+	 * @param rdlinks
+	 * @param result
+	 * @throws Exception
+	 */
+	public void departNode(RdLink link, List<Integer> nodePids,
+			List<RdLink> rdlinks, Result result) throws Exception {
 
 		int linkPid = link.getPid();
 
@@ -374,74 +394,80 @@ public class Operation implements IOperation {
 
 			directrouteOutLink = new HashMap<Integer, RdDirectroute>();
 		}
-		
-		RdDirectrouteSelector selector = new RdDirectrouteSelector(
-				this.conn);
 
-		// 在link上的RdDirectroute
-		List<RdDirectroute> directroutes = selector.loadByInOutLink(linkPid, true);
+		RdDirectrouteSelector selector = new RdDirectrouteSelector(this.conn);
 
-		for(RdDirectroute directroute:directroutes)
-		{
-			if(directroute.getNodePid()==nodePid)
-			{
-				result.insertObject(directroute, ObjStatus.DELETE,
-						directroute.getPid());
-				continue;
-			}
-			// 分离node是经过线和退出线的连接node
-			if (directroute.getVias().size() > 0
-					&& directroute.getOutLinkPid() == linkPid) {
+		for (int nodePid : nodePids) {
 
-				if (isConnect(directroute, nodePid)) {
+			// 在link上的RdDirectroute
+			List<RdDirectroute> directroutes = selector.loadByInOutLink(
+					linkPid, true);
 
+			for (RdDirectroute directroute : directroutes) {
+				if (directroute.getNodePid() == nodePid) {
 					result.insertObject(directroute, ObjStatus.DELETE,
 							directroute.getPid());
+					continue;
+				}
+				// 分离node是经过线和退出线的连接node
+				if (directroute.getVias().size() > 0
+						&& directroute.getOutLinkPid() == linkPid) {
+
+					if (isConnect(directroute, nodePid)) {
+
+						result.insertObject(directroute, ObjStatus.DELETE,
+								directroute.getPid());
+
+						continue;
+					}
+				}
+				if (directrouteInLink != null
+						&& directroute.getInLinkPid() == linkPid) {
+					directrouteInLink.put(directroute.getPid(), directroute);
+				} else if (directrouteOutLink != null
+						&& directroute.getOutLinkPid() == linkPid) {
+					directrouteOutLink.put(directroute.getPid(), directroute);
+				}
+			}
+
+			if (directrouteOutLink == null || directrouteInLink == null) {
+
+				return;
+			}
+
+			int connectNode = link.getsNodePid() == nodePid ? link
+					.geteNodePid() : link.getsNodePid();
+
+			for (RdLink rdlink : rdlinks) {
+
+				if (rdlink.getsNodePid() != connectNode
+						&& rdlink.geteNodePid() != connectNode) {
 
 					continue;
 				}
-			}
-			if (directrouteInLink != null
-					&& directroute.getInLinkPid() == linkPid) {
-				directrouteInLink.put(directroute.getPid(), directroute);
-			}
-			else if(directrouteOutLink!=null&&directroute.getOutLinkPid()==linkPid)
-			{
-				directrouteOutLink.put(directroute.getPid(), directroute);
-			}
-		}
-	
-		if (directrouteOutLink == null|| directrouteInLink==null) {
-			
-			return;
-		}
-		
-		int connectNode = link.getsNodePid() == nodePid ? link.geteNodePid()
-				: link.getsNodePid();
 
-		for (RdLink rdlink : rdlinks) {
+				for (RdDirectroute directroute : directrouteInLink.values()) {
 
-			if (rdlink.getsNodePid() != connectNode
-					&& rdlink.geteNodePid() != connectNode) {
+					directroute.changedFields().put("inLinkPid",
+							rdlink.getPid());
 
-				continue;
-			}
-			
-			for (RdDirectroute directroute : directrouteInLink.values()) {
+					result.insertObject(directroute, ObjStatus.UPDATE,
+							directroute.pid());
+				}
 
-				directroute.changedFields().put("inLinkPid", rdlink.getPid());
+				for (RdDirectroute directroute : directrouteOutLink.values()) {
 
-				result.insertObject(directroute, ObjStatus.UPDATE, directroute.pid());
-			}
+					directroute.changedFields().put("outLinkPid",
+							rdlink.getPid());
 
-			for (RdDirectroute directroute : directrouteOutLink.values()) {
-
-				directroute.changedFields().put("outLinkPid", rdlink.getPid());
-
-				result.insertObject(directroute, ObjStatus.UPDATE, directroute.pid());
+					result.insertObject(directroute, ObjStatus.UPDATE,
+							directroute.pid());
+				}
 			}
 		}
 	}
+	
+	
 	private boolean isConnect(RdDirectroute directroute, int nodePid) throws Exception {
 
 		RdLinkSelector rdLinkSelector = new RdLinkSelector(this.conn);

@@ -42,6 +42,8 @@ public class Operation implements IOperation {
 
 		this.conn = conn;
 	}
+	
+	private Geometry repairLinkGeo = null;
 
 	@Override
 	public String run(Result result) throws Exception {
@@ -109,6 +111,29 @@ public class Operation implements IOperation {
 		info[1] = currLevel;
 
 		return info;
+	}
+	
+	
+	/**
+	 * 平滑修行打断link维护rdsamelink。
+	 * 
+	 * @param oldLinkPid
+	 *            被打断的link
+	 * @param newLinks
+	 *            新生成的link组
+	 * @param newNodes
+	 *            新生成的node组
+	 * @param result
+	 * @throws Exception
+	 */
+	public String breakLinkForRepair(IRow breakLink,
+			Map<IRow, Geometry> breakNodeMap,
+			LinkedHashMap<IRow, Geometry> linkMap, Geometry repairLinkGeo,
+			Result result) throws Exception {
+
+		this.repairLinkGeo = repairLinkGeo;
+
+		return breakLink(breakLink, breakNodeMap, linkMap, result);
 	}
 
 	/**
@@ -285,6 +310,10 @@ public class Operation implements IOperation {
 
 		com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakadpoint.Command command = new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakadpoint.Command(
 				breakJson, null);
+		
+		if (repairLinkGeo != null) {
+			command.setRepairLinkGeo(repairLinkGeo);
+		}
 
 		command.setOperationType("sameLinkBreak");
 
@@ -349,6 +378,10 @@ public class Operation implements IOperation {
 
 		com.navinfo.dataservice.engine.edit.operation.topo.breakin.breaklupoint.Command command = new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breaklupoint.Command(
 				breakJson, null);
+		
+		if (repairLinkGeo != null) {
+			command.setRepairLinkGeo(repairLinkGeo);
+		}
 
 		command.setOperationType("sameLinkBreak");
 
@@ -414,6 +447,10 @@ public class Operation implements IOperation {
 
 		com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakzonepoint.Command command = new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakzonepoint.Command(
 				breakJson, null);
+		
+		if (repairLinkGeo != null) {
+			command.setRepairLinkGeo(repairLinkGeo);
+		}
 
 		command.setOperationType("sameLinkBreak");
 

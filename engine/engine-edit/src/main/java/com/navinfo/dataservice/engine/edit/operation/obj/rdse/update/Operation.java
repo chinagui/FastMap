@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdse.update;
 
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -94,7 +95,7 @@ public class Operation implements IOperation {
 		}
 		return null;
 	}
-
+	
 	/**
 	 * 分离节点
 	 * 
@@ -106,6 +107,25 @@ public class Operation implements IOperation {
 	 */
 	public void departNode(RdLink link, int nodePid, List<RdLink> rdlinks,
 			Result result) throws Exception {
+
+		List<Integer> nodePids = new ArrayList<Integer>();
+
+		nodePids.add(nodePid);
+
+		departNode(link, nodePids, rdlinks, result);
+	}
+
+	/**
+	 * 分离节点
+	 * 
+	 * @param link
+	 * @param nodePid
+	 * @param rdlinks
+	 * @param result
+	 * @throws Exception
+	 */
+	public void departNode(RdLink link, List<Integer> nodePids,
+			List<RdLink> rdlinks, Result result) throws Exception {
 
 		int linkPid = link.getPid();
 
@@ -127,49 +147,53 @@ public class Operation implements IOperation {
 		// 在link上的RdSe
 		List<RdSe> ses = selector.loadRdSesWithLinkPid(linkPid, true);
 
-		for (RdSe se : ses) {
-			if (se.getNodePid() == nodePid) {
+		for (int nodePid : nodePids) {
+			
+			for (RdSe se : ses) {
+				
+				if (se.getNodePid() == nodePid) {
 
-				result.insertObject(se, ObjStatus.DELETE, se.getPid());
+					result.insertObject(se, ObjStatus.DELETE, se.getPid());
 
-			} else if (seInLink != null && se.getInLinkPid() == linkPid) {
+				} else if (seInLink != null && se.getInLinkPid() == linkPid) {
 
-				seInLink.put(se.getPid(), se);
+					seInLink.put(se.getPid(), se);
 
-			} else if (seOutLink != null && se.getOutLinkPid() == linkPid) {
+				} else if (seOutLink != null && se.getOutLinkPid() == linkPid) {
 
-				seOutLink.put(se.getPid(), se);
-			}
-		}
-
-		if (seOutLink == null || seInLink == null) {
-
-			return;
-		}
-
-		int connectNode = link.getsNodePid() == nodePid ? link.geteNodePid()
-				: link.getsNodePid();
-
-		for (RdLink rdlink : rdlinks) {
-
-			if (rdlink.getsNodePid() != connectNode
-					&& rdlink.geteNodePid() != connectNode) {
-
-				continue;
+					seOutLink.put(se.getPid(), se);
+				}
 			}
 
-			for (RdSe se : seInLink.values()) {
+			if (seOutLink == null || seInLink == null) {
 
-				se.changedFields().put("inLinkPid", rdlink.getPid());
-
-				result.insertObject(se, ObjStatus.UPDATE, se.pid());
+				return;
 			}
 
-			for (RdSe se : seOutLink.values()) {
+			int connectNode = link.getsNodePid() == nodePid ? link
+					.geteNodePid() : link.getsNodePid();
 
-				se.changedFields().put("outLinkPid", rdlink.getPid());
+			for (RdLink rdlink : rdlinks) {
 
-				result.insertObject(se, ObjStatus.UPDATE, se.pid());
+				if (rdlink.getsNodePid() != connectNode
+						&& rdlink.geteNodePid() != connectNode) {
+
+					continue;
+				}
+
+				for (RdSe se : seInLink.values()) {
+
+					se.changedFields().put("inLinkPid", rdlink.getPid());
+
+					result.insertObject(se, ObjStatus.UPDATE, se.pid());
+				}
+
+				for (RdSe se : seOutLink.values()) {
+
+					se.changedFields().put("outLinkPid", rdlink.getPid());
+
+					result.insertObject(se, ObjStatus.UPDATE, se.pid());
+				}
 			}
 		}
 	}

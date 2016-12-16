@@ -735,7 +735,7 @@ public class GeoTranslator {
 			double lon = point.getX();
 			double lat = point.getY();
 
-			for (int i = 0; i < coordinates.size(); i++) {
+			for (int i = 0; i < coordinates.size()-1; i++) {
 
 				Coordinate cs = coordinates.get(i);
 				Coordinate ce = coordinates.get(i + 1);

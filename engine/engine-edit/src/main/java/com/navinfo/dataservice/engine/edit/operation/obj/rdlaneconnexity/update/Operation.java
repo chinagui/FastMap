@@ -277,9 +277,28 @@ public class Operation implements IOperation {
 		 */
 
 	}
-
+	
+	/**
+	 * 分离节点
+	 * 
+	 * @param link
+	 * @param nodePid
+	 * @param rdlinks
+	 * @param result
+	 * @throws Exception
+	 */
 	public void departNode(RdLink link, int nodePid, List<RdLink> rdlinks,
 			Result result) throws Exception {
+
+		List<Integer> nodePids = new ArrayList<Integer>();
+
+		nodePids.add(nodePid);
+
+		departNode(link, nodePids, rdlinks, result);
+	}
+
+	public void departNode(RdLink link, List<Integer> nodePids,
+			List<RdLink> rdlinks, Result result) throws Exception {
 
 		int linkPid = link.getPid();
 
@@ -289,10 +308,10 @@ public class Operation implements IOperation {
 		// 需要分离节点处理的RdLaneTopology
 		Map<Integer, RdLaneTopology> topologyDepart = new HashMap<Integer, RdLaneTopology>();
 
-		//跨图幅打断需要处理的RdLaneConnexity
+		// 跨图幅打断需要处理的RdLaneConnexity
 		Map<Integer, RdLaneConnexity> connexityMesh = null;
 
-		//跨图幅打断需要处理的RdLaneTopology
+		// 跨图幅打断需要处理的RdLaneTopology
 		Map<Integer, RdLaneTopology> topologyMesh = null;
 
 		if (rdlinks != null && rdlinks.size() > 1) {
@@ -304,84 +323,88 @@ public class Operation implements IOperation {
 
 		RdLaneConnexitySelector selector = new RdLaneConnexitySelector(
 				this.conn);
+		
+		for (int nodePid : nodePids) {
+			// link作为进入线的RdLaneConnexity
+			List<RdLaneConnexity> laneConnexitys = selector.loadByLink(linkPid,
+					1, true);
 
-		// link作为进入线的RdLaneConnexity
-		List<RdLaneConnexity> laneConnexitys = selector.loadByLink(linkPid, 1,
-				true);
+			getInLinkDepartInfo(nodePid, laneConnexitys, connexityDepart,
+					connexityMesh);
 
-		getInLinkDepartInfo(nodePid, laneConnexitys, connexityDepart,
-				connexityMesh);
+			// link作为退出线的RdLaneConnexity
+			laneConnexitys = selector.loadByLink(linkPid, 2, true);
 
-		// link作为退出线的RdLaneConnexity
-		laneConnexitys = selector.loadByLink(linkPid, 2, true);
+			Map<Integer, RdLaneTopology> topologyTmp = new HashMap<Integer, RdLaneTopology>();
 
-		Map<Integer, RdLaneTopology> topologyTmp = new HashMap<Integer, RdLaneTopology>();
+			getOutLinkDepartInfo(nodePid, linkPid, laneConnexitys, topologyTmp,
+					topologyMesh);
 
-		getOutLinkDepartInfo(nodePid, linkPid, laneConnexitys, topologyTmp,
-				topologyMesh);
+			for (RdLaneConnexity laneConnexity : laneConnexitys) {
 
-		for (RdLaneConnexity laneConnexity : laneConnexitys) {
+				if (!topologyTmp.containsKey(laneConnexity.getPid())) {
 
-			if (!topologyTmp.containsKey(laneConnexity.getPid())) {
+					continue;
+				}
 
-				continue;
+				if (laneConnexity.getTopos().size() > 1) {
+
+					RdLaneTopology delTopology = topologyTmp.get(laneConnexity
+							.getPid());
+
+					topologyDepart.put(delTopology.getPid(), delTopology);
+
+				} else {
+
+					connexityDepart.put(laneConnexity.getPid(), laneConnexity);
+				}
 			}
 
-			if (laneConnexity.getTopos().size() > 1) {
+			for (RdLaneTopology delTopology : topologyDepart.values()) {
 
-				RdLaneTopology delTopology = topologyTmp.get(laneConnexity
-						.getPid());
-
-				topologyDepart.put(delTopology.getPid(), delTopology);
-
-			} else {
-
-				connexityDepart.put(laneConnexity.getPid(), laneConnexity);
-			}
-		}
-
-		for (RdLaneTopology delTopology : topologyDepart.values()) {
-
-			result.insertObject(delTopology, ObjStatus.DELETE,
-					delTopology.parentPKValue());
-		}
-
-		for (RdLaneConnexity laneConnexity : connexityDepart.values()) {
-
-			result.insertObject(laneConnexity, ObjStatus.DELETE,
-					laneConnexity.pid());
-		}
-
-		if (connexityMesh == null || topologyMesh == null) {
-
-			return;
-		}
-
-		int connectNode = link.getsNodePid() == nodePid ? link.geteNodePid()
-				: link.getsNodePid();
-
-		for (RdLink rdlink : rdlinks) {
-
-			if (rdlink.getsNodePid() != connectNode
-					&& rdlink.geteNodePid() != connectNode) {
-
-				continue;
+				result.insertObject(delTopology, ObjStatus.DELETE,
+						delTopology.parentPKValue());
 			}
 
-			for (RdLaneConnexity laneConnexity : connexityMesh.values()) {
+			for (RdLaneConnexity laneConnexity : connexityDepart.values()) {
 
-				laneConnexity.changedFields().put("inLinkPid", rdlink.getPid());
-
-				result.insertObject(laneConnexity, ObjStatus.UPDATE,
+				result.insertObject(laneConnexity, ObjStatus.DELETE,
 						laneConnexity.pid());
 			}
 
-			for (RdLaneTopology laneTopology : topologyMesh.values()) {
+			if (connexityMesh == null || topologyMesh == null) {
 
-				laneTopology.changedFields().put("outLinkPid", rdlink.getPid());
+				return;
+			}
 
-				result.insertObject(laneTopology, ObjStatus.UPDATE,
-						laneTopology.parentPKValue());
+			int connectNode = link.getsNodePid() == nodePid ? link
+					.geteNodePid() : link.getsNodePid();
+
+			for (RdLink rdlink : rdlinks) {
+
+				if (rdlink.getsNodePid() != connectNode
+						&& rdlink.geteNodePid() != connectNode) {
+
+					continue;
+				}
+
+				for (RdLaneConnexity laneConnexity : connexityMesh.values()) {
+
+					laneConnexity.changedFields().put("inLinkPid",
+							rdlink.getPid());
+
+					result.insertObject(laneConnexity, ObjStatus.UPDATE,
+							laneConnexity.pid());
+				}
+
+				for (RdLaneTopology laneTopology : topologyMesh.values()) {
+
+					laneTopology.changedFields().put("outLinkPid",
+							rdlink.getPid());
+
+					result.insertObject(laneTopology, ObjStatus.UPDATE,
+							laneTopology.parentPKValue());
+				}
 			}
 		}
 	}

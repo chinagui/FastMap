@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdtollgate.update;
 
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -198,16 +199,36 @@ public class Operation implements IOperation {
         }
     }
     
-	/**
+    /**
 	 * 分离节点
-	 * @param link 
+	 * 
+	 * @param link
 	 * @param nodePid
-	 * @param rdlinks 
+	 * @param rdlinks
 	 * @param result
 	 * @throws Exception
 	 */
 	public void departNode(RdLink link, int nodePid, List<RdLink> rdlinks,
 			Result result) throws Exception {
+
+		List<Integer> nodePids = new ArrayList<Integer>();
+
+		nodePids.add(nodePid);
+
+		departNode(link, nodePids, rdlinks, result);
+	}
+    
+	/**
+	 * 分离节点
+	 * 
+	 * @param link
+	 * @param nodePid
+	 * @param rdlinks
+	 * @param result
+	 * @throws Exception
+	 */
+	public void departNode(RdLink link, List<Integer> nodePids,
+			List<RdLink> rdlinks, Result result) throws Exception {
 
 		int linkPid = link.getPid();
 
@@ -223,58 +244,58 @@ public class Operation implements IOperation {
 
 			tollgateOutLink = new HashMap<Integer, RdTollgate>();
 		}
-		
-		RdTollgateSelector selector = new RdTollgateSelector(
-				this.conn);
+
+		RdTollgateSelector selector = new RdTollgateSelector(this.conn);
 
 		// 在link上的RdTollgate
-		List<RdTollgate> tollgates = selector.loadRdTollgatesWithLinkPid(linkPid, true);
+		List<RdTollgate> tollgates = selector.loadRdTollgatesWithLinkPid(
+				linkPid, true);
 
-		for(RdTollgate tollgate:tollgates)
-		{
-			if(tollgate.getNodePid()==nodePid)
-			{
-				result.insertObject(tollgate, ObjStatus.DELETE,
-						tollgate.getPid());
-			}
-			else if(tollgateInLink!=null&&tollgate.getInLinkPid()==linkPid)
-			{
-				tollgateInLink.put(tollgate.getPid(), tollgate);
-			}
-			else if(tollgateOutLink!=null&&tollgate.getOutLinkPid()==linkPid)
-			{
-				tollgateOutLink.put(tollgate.getPid(), tollgate);
-			}
-		}
-	
-		if (tollgateOutLink == null|| tollgateInLink==null) {
-			
-			return;
-		}
-		
-		int connectNode = link.getsNodePid() == nodePid ? link.geteNodePid()
-				: link.getsNodePid();
-
-		for (RdLink rdlink : rdlinks) {
-
-			if (rdlink.getsNodePid() != connectNode
-					&& rdlink.geteNodePid() != connectNode) {
-
-				continue;
-			}
-			
-			for (RdTollgate tollgate : tollgateInLink.values()) {
-
-				tollgate.changedFields().put("inLinkPid", rdlink.getPid());
-
-				result.insertObject(tollgate, ObjStatus.UPDATE, tollgate.pid());
+		for (int nodePid : nodePids) {
+			for (RdTollgate tollgate : tollgates) {
+				if (tollgate.getNodePid() == nodePid) {
+					result.insertObject(tollgate, ObjStatus.DELETE,
+							tollgate.getPid());
+				} else if (tollgateInLink != null
+						&& tollgate.getInLinkPid() == linkPid) {
+					tollgateInLink.put(tollgate.getPid(), tollgate);
+				} else if (tollgateOutLink != null
+						&& tollgate.getOutLinkPid() == linkPid) {
+					tollgateOutLink.put(tollgate.getPid(), tollgate);
+				}
 			}
 
-			for (RdTollgate tollgate : tollgateOutLink.values()) {
+			if (tollgateOutLink == null || tollgateInLink == null) {
 
-				tollgate.changedFields().put("outLinkPid", rdlink.getPid());
+				return;
+			}
 
-				result.insertObject(tollgate, ObjStatus.UPDATE, tollgate.pid());
+			int connectNode = link.getsNodePid() == nodePid ? link
+					.geteNodePid() : link.getsNodePid();
+
+			for (RdLink rdlink : rdlinks) {
+
+				if (rdlink.getsNodePid() != connectNode
+						&& rdlink.geteNodePid() != connectNode) {
+
+					continue;
+				}
+
+				for (RdTollgate tollgate : tollgateInLink.values()) {
+
+					tollgate.changedFields().put("inLinkPid", rdlink.getPid());
+
+					result.insertObject(tollgate, ObjStatus.UPDATE,
+							tollgate.pid());
+				}
+
+				for (RdTollgate tollgate : tollgateOutLink.values()) {
+
+					tollgate.changedFields().put("outLinkPid", rdlink.getPid());
+
+					result.insertObject(tollgate, ObjStatus.UPDATE,
+							tollgate.pid());
+				}
 			}
 		}
 	}

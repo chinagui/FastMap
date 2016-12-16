@@ -902,4 +902,63 @@ public class runTest extends InitApplication {
 
 		String msg = t.run();
 	}
+	
+		@Test
+	public void run_1215_1() throws Exception {
+
+		String parameter = "{\"command\":\"REPAIR\",\"dbId\":17,\"objId\":306002996,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.75,40.3009],[116.75055,40.30088],[116.75110280513765,40.301165450662424]]},\"catchInfos\":[{\"nodePid\":310002364,\"longitude\":116.75110280513765,\"latitude\":40.301165450662424}]},\"type\":\"RDLINK\"}";
+		
+		
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+	
+	
+		@Test
+	public void run_1215_2() throws Exception {
+
+		String parameter = "{\"command\":\"REPAIR\",\"dbId\":17,\"objId\":208003072,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.75053,40.3123],[116.75046775131834,40.31248246083938],[116.74963295459747,40.31254416826017],[116.75039201974869,40.312707788542156],[116.75109,40.31234]]},\"catchInfos\":[]},\"type\":\"RDLINK\"}";
+		
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+		@Test
+	public void run_1216_1() throws Exception {
+
+		String parameter = "{\"command\":\"REPAIR\",\"dbId\":17,\"objId\":305003101,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.75024986267088,40.31194286031829],[116.75154,40.31177]]},\"catchInfos\":[{\"nodePid\":200002388,\"longitude\":116.75024986267088,\"latitude\":40.31194286031829}]},\"type\":\"RDLINK\"}";
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}	
+		
+		
+		@Test
+	public void run_1216_2() throws Exception {
+
+		String parameter = "{\"command\":\"REPAIR\",\"dbId\":17,\"objId\":309002993,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.75131,40.31441],[116.74915015697479,40.3144175967717]]},\"catchInfos\":[{\"nodePid\":207002276,\"longitude\":116.74915015697479,\"latitude\":40.3144175967717}]},\"type\":\"RDLINK\"}";
+		
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}	
+		
+		
+		@Test
+	public void run_1216_3() throws Exception {
+
+		String parameter = "{\"command\":\"REPAIR\",\"dbId\":17,\"objId\":200003042,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.74949884414673,40.3158819435657],[116.75127,40.31589]]},\"catchInfos\":[{\"nodePid\":205002389,\"longitude\":116.74949884414673,\"latitude\":40.3158819435657}]},\"type\":\"RDLINK\"}";
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}	
+		
+	
+	
+	
 }

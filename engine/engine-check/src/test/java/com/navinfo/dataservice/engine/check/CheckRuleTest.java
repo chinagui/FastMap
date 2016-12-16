@@ -584,4 +584,23 @@ public class CheckRuleTest {
 		System.out.println("end");
 	}
 	
+	@Test
+	public void exeRdLaneCreateCheck() throws Exception{
+		RdLane rdLane = new RdLane();
+		rdLane.setPid(31434101);
+
+		
+		List<IRow> objList=new ArrayList<IRow>();
+		objList.add(rdLane);
+		
+		Connection conn = DBConnector.getInstance().getConnectionById(17);
+		//检查调用
+		CheckCommand checkCommand=new CheckCommand();
+		checkCommand.setGlmList(objList);
+		checkCommand.setOperType(OperType.CREATE);
+		checkCommand.setObjType(ObjType.RDLANE);
+		CheckEngine checkEngine=new CheckEngine(checkCommand,conn);
+		checkEngine.postCheck();
+		System.out.println(checkEngine.preCheck());
+	}
 }

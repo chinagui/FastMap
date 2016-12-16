@@ -11,6 +11,7 @@ import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiAddress;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
+import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 /**
  * FM-YW-20-018	地址英文作业	DHM	
  * 检查条件：
@@ -28,15 +29,16 @@ public class FMYW20018 extends BasicCheckRule {
 
 	@Override
 	public void runCheck(BasicObj obj) throws Exception {
-		IxPoiObj poiObj=(IxPoiObj) obj;
-		if(!isCheck(poiObj)){return;}
-		IxPoi poi=(IxPoi) poiObj.getMainrow();
-		String kindCode=poi.getKindCode();
-		MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
-		boolean isImportant=metadataApi.judgeScPointKind(kindCode, poi.getChain());
-		if(isImportant){
-			setCheckResult(poi.getGeometry(),poiObj,null);
-		}		
+		if(obj.objName().equals(ObjectName.IX_POI)){
+			IxPoiObj poiObj=(IxPoiObj) obj;
+			if(!isCheck(poiObj)){return;}
+			IxPoi poi=(IxPoi) poiObj.getMainrow();
+			String kindCode=poi.getKindCode();
+			MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
+			boolean isImportant=metadataApi.judgeScPointKind(kindCode, poi.getChain());
+			if(isImportant){
+				setCheckResult(poi.getGeometry(),poiObj,null);
+			}}
 	}
 
 	/**

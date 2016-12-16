@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdgsc.update;
 
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -16,6 +17,8 @@ import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGscLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLink;
+import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
+import com.navinfo.dataservice.dao.glm.selector.rd.gsc.RdGscSelector;
 import com.navinfo.dataservice.engine.edit.utils.RdGscOperateUtils;
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -38,17 +41,25 @@ public class Operation implements IOperation {
 
 	private String tableName;
 
+	private Connection conn;
+
 	public Operation(Command command, RdGsc rdGsc) {
 		this.command = command;
 
 		this.rdGsc = rdGsc;
 	}
-	
+
 	public Operation() {
 	}
-	
+
 	public Operation(String tableName) {
 		this.tableName = tableName;
+	}
+
+	public Operation(String tableName, Connection conn) {
+		this.tableName = tableName;
+
+		this.conn = conn;
 	}
 
 	@Override
@@ -270,6 +281,36 @@ public class Operation implements IOperation {
 		return targetPid;
 	}
 
+	public void breakRdLink(Result result, IObj oldLink,
+			List<? extends IObj> newLinks) throws Exception {
+
+		String linkType = ReflectionAttrUtils.getTableNameByObjType(oldLink
+				.objType());
+
+		int pid=0;
+		
+		if(oldLink instanceof RdLink)
+		{
+			pid=((RdLink)oldLink).getPid();
+		}
+		else if(oldLink instanceof RwLink)
+		{
+			pid=((RwLink)oldLink).getPid();
+		}
+		else if(oldLink instanceof LcLink)
+		{
+			pid=((LcLink)oldLink).getPid();
+		}
+		
+		// 获取由该link组成的立交（RDGSC）
+		RdGscSelector selector = new RdGscSelector(conn);
+
+		List<RdGsc> rdGscList = selector.loadRdGscLinkByLinkPid(pid, linkType,
+				true);
+
+		breakLineForGsc(result, oldLink, newLinks, rdGscList);
+	}
+	
 	public void breakLineForGsc(Result result, IObj oldLink, List<? extends IObj> newLinks, List<RdGsc> rdGscList)
 			throws Exception {
 		for (RdGsc rr : rdGscList) {

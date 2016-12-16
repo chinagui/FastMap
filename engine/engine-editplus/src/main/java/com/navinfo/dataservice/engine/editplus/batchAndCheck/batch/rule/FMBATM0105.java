@@ -16,6 +16,7 @@ import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
+import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
 /**
  * 检查条件：
  * (1)非重要分类的POI数据：即不满足条件a也不满足条件b即为非重要分类。
@@ -64,8 +65,14 @@ public class FMBATM0105 extends BasicBatchRule {
 			if(isBatch(poiObj)){
 				IxPoiAddress chiAddr=poiObj.getCHIAddress();
 				IxPoiAddress engAddr=poiObj.getENGAddress(chiAddr.getNameGroupid());
+				String fullName=convertAddr(poiObj,chiAddr);
 				if (engAddr!=null){
-					engAddr.setFullname("");
+					engAddr.setFullname(fullName);
+				}else{
+					IxPoiAddress newEngAddr=poiObj.createIxPoiAddress();
+					newEngAddr.setNameGroupid(chiAddr.getNameGroupid());
+					newEngAddr.setLangCode("ENG");
+					newEngAddr.setFullname(fullName);
 				}
 			}
 		}		
@@ -89,7 +96,7 @@ public class FMBATM0105 extends BasicBatchRule {
 			return false;
 		}
 		boolean changeAddrFlag=false;
-		if ((!(addr.getOpType().equals(OperationType.DELETE)))&&(addr.getHisOpType().equals(OperationType.INSERT)||addr.getHisOpType().equals(OperationType.UPDATE))){
+		if ((addr.getHisOpType().equals(OperationType.INSERT)||addr.getHisOpType().equals(OperationType.UPDATE))){
 			changeAddrFlag=true;
 		}
 		if (!changeAddrFlag){
@@ -97,7 +104,7 @@ public class FMBATM0105 extends BasicBatchRule {
 		}
 		//满足(3)简单中文地址POI数据
 		boolean simpleAddrFlag=false;
-		if ((!(addr.getOpType().equals(OperationType.DELETE)))&&!StringUtils.isEmpty(addr.getStreet()+addr.getHousenum()+addr.getType())&&StringUtils.isEmpty(addr.getProvince()+
+		if (!StringUtils.isEmpty(addr.getStreet()+addr.getHousenum()+addr.getType())&&StringUtils.isEmpty(addr.getProvince()+
 					addr.getCity()+addr.getTown()+addr.getPlace()+addr.getLandmark()+addr.getPrefix()+addr.getSubnum()+addr.getSurfix()+addr.getEstab()+addr.getBuilding()+addr.getFloor()
 					+addr.getUnit()+addr.getRoom()+addr.getAddons())){
 				simpleAddrFlag=true;
@@ -117,5 +124,23 @@ public class FMBATM0105 extends BasicBatchRule {
 		return true;
 	}
 
+	private String convertAddr(IxPoiObj poiObj,IxPoiAddress chiAddr) throws Exception{
+		String fullName="";
+		MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
+		//类型翻译
+		Map<String, String> typeMap1 = metadataApi.scPointEngKeyWordsType1();
+		String strType=typeMap1.get(chiAddr.getType());
+		//门牌号翻译
+		String strHouseNum=metadataApi.convFull2Half(chiAddr.getHousenum());	
+		//街巷名翻译
+		//通过IX_POI_ADDRESS.STREET与道路名RD_NAME表中LANG_CODE='CHI'(港澳数据为CHT)对应的name进行关联
+		String strStreet= poiObj.getRdEngName(getBatchRuleCommand().getConn(), chiAddr.getNameGroupid());
+		if (strType.endsWith("No.")){
+			fullName=strType+strHouseNum+" "+strStreet;
+		}else{
+			fullName=strType+" "+strHouseNum+" "+strStreet;
+		}
+		return fullName;
+	}
    
 }

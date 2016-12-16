@@ -697,7 +697,8 @@ public class Operation implements IOperation {
 			}
 		}
 	}
-
+	
+	
 	/**
 	 * 分离节点
 	 * 
@@ -709,6 +710,25 @@ public class Operation implements IOperation {
 	 */
 	public void departNode(RdLink link, int nodePid, List<RdLink> rdlinks,
 			Result result) throws Exception {
+
+		List<Integer> nodePids = new ArrayList<Integer>();
+
+		nodePids.add(nodePid);
+
+		departNode(link, nodePids, rdlinks, result);
+	}
+
+	/**
+	 * 分离节点
+	 * 
+	 * @param link
+	 * @param nodePid
+	 * @param rdlinks
+	 * @param result
+	 * @throws Exception
+	 */
+	public void departNode(RdLink link, List<Integer> nodePids,
+			List<RdLink> rdlinks, Result result) throws Exception {
 
 		int linkPid = link.getPid();
 
@@ -727,72 +747,76 @@ public class Operation implements IOperation {
 
 		RdBranchSelector selector = new RdBranchSelector(this.conn);
 
-		List<RdBranch> branchs = new ArrayList<RdBranch>();
+		for (int nodePid : nodePids) {
+			List<RdBranch> branchs = new ArrayList<RdBranch>();
 
-		// link作为进入线的RdBranch
-		branchs.addAll(selector.loadByLinkPid(linkPid, 1, true));
+			// link作为进入线的RdBranch
+			branchs.addAll(selector.loadByLinkPid(linkPid, 1, true));
 
-		// link作为 退出线的RdBranch
-		branchs.addAll(selector.loadByLinkPid(linkPid, 2, true));
+			// link作为 退出线的RdBranch
+			branchs.addAll(selector.loadByLinkPid(linkPid, 2, true));
 
-		for (RdBranch branch : branchs) {
+			for (RdBranch branch : branchs) {
 
-			if (branch.getNodePid() == nodePid) {
+				if (branch.getNodePid() == nodePid) {
 
-				result.insertObject(branch, ObjStatus.DELETE, branch.getPid());
+					result.insertObject(branch, ObjStatus.DELETE,
+							branch.getPid());
 
-				continue;
+					continue;
+				}
+
+				// 分离node是经过线和退出线的连接node
+				if (branch.getVias().size() > 0
+						&& branch.getOutLinkPid() == linkPid
+						&& isConnect(branch, nodePid)) {
+
+					result.insertObject(branch, ObjStatus.DELETE,
+							branch.getPid());
+
+					continue;
+
+				}
+
+				if (branchInLink != null && branch.getInLinkPid() == linkPid) {
+
+					branchInLink.put(branch.getPid(), branch);
+
+				} else if (branchOutLink != null
+						&& branch.getOutLinkPid() == linkPid) {
+
+					branchOutLink.put(branch.getPid(), branch);
+				}
 			}
 
-			// 分离node是经过线和退出线的连接node
-			if (branch.getVias().size() > 0
-					&& branch.getOutLinkPid() == linkPid
-					&& isConnect(branch, nodePid)) {
+			if (branchOutLink == null || branchInLink == null) {
 
-				result.insertObject(branch, ObjStatus.DELETE, branch.getPid());
-
-				continue;
-
+				return;
 			}
 
-			if (branchInLink != null && branch.getInLinkPid() == linkPid) {
+			int connectNode = link.getsNodePid() == nodePid ? link
+					.geteNodePid() : link.getsNodePid();
 
-				branchInLink.put(branch.getPid(), branch);
+			for (RdLink rdlink : rdlinks) {
 
-			} else if (branchOutLink != null
-					&& branch.getOutLinkPid() == linkPid) {
+				if (rdlink.getsNodePid() != connectNode
+						&& rdlink.geteNodePid() != connectNode) {
 
-				branchOutLink.put(branch.getPid(), branch);
-			}
-		}
+					continue;
+				}
+				for (RdBranch branch : branchInLink.values()) {
 
-		if (branchOutLink == null || branchInLink == null) {
+					branch.changedFields().put("inLinkPid", rdlink.getPid());
 
-			return;
-		}
+					result.insertObject(branch, ObjStatus.UPDATE, branch.pid());
+				}
 
-		int connectNode = link.getsNodePid() == nodePid ? link.geteNodePid()
-				: link.getsNodePid();
+				for (RdBranch branch : branchOutLink.values()) {
 
-		for (RdLink rdlink : rdlinks) {
+					branch.changedFields().put("outLinkPid", rdlink.getPid());
 
-			if (rdlink.getsNodePid() != connectNode
-					&& rdlink.geteNodePid() != connectNode) {
-
-				continue;
-			}
-			for (RdBranch branch : branchInLink.values()) {
-
-				branch.changedFields().put("inLinkPid", rdlink.getPid());
-
-				result.insertObject(branch, ObjStatus.UPDATE, branch.pid());
-			}
-
-			for (RdBranch branch : branchOutLink.values()) {
-
-				branch.changedFields().put("outLinkPid", rdlink.getPid());
-
-				result.insertObject(branch, ObjStatus.UPDATE, branch.pid());
+					result.insertObject(branch, ObjStatus.UPDATE, branch.pid());
+				}
 			}
 		}
 	}

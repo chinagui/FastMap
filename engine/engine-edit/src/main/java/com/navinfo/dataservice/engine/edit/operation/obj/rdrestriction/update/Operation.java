@@ -267,109 +267,144 @@ public class Operation implements IOperation {
         return null;
     }
 
-    /**
-     * 分离节点
-     *
-     * @param link
-     * @param nodePid
-     * @param rdlinks
-     * @param result
-     * @throws Exception
-     */
-    public void departNode(RdLink link, int nodePid, List<RdLink> rdlinks, Result result) throws Exception {
+	/**
+	 * 分离节点
+	 * 
+	 * @param link
+	 * @param nodePid
+	 * @param rdlinks
+	 * @param result
+	 * @throws Exception
+	 */
+	public void departNode(RdLink link, int nodePid, List<RdLink> rdlinks,
+			Result result) throws Exception {
 
-        int linkPid = link.getPid();
+		List<Integer> nodePids = new ArrayList<Integer>();
 
-        // 需要分离节点处理的RdRestriction
-        Map<Integer, RdRestriction> restrictionDepart = new HashMap<Integer, RdRestriction>();
+		nodePids.add(nodePid);
 
-        // 需要分离节点处理的RdRestrictionDetail
-        Map<Integer, RdRestrictionDetail> detailDepart = new HashMap<Integer, RdRestrictionDetail>();
+		departNode(link, nodePids, rdlinks, result);
+	}
+    
+	/**
+	 * 分离节点
+	 * 
+	 * @param link
+	 * @param nodePid
+	 * @param rdlinks
+	 * @param result
+	 * @throws Exception
+	 */
+	public void departNode(RdLink link, List<Integer> nodePids,
+			List<RdLink> rdlinks, Result result) throws Exception {
 
-        // 分离节点不处理，跨图幅打断需要处理的RdRestriction
-        Map<Integer, RdRestriction> restrictionMesh = null;
+		int linkPid = link.getPid();
 
-        // 分离节点不处理，跨图幅打断需要处理的RdRestrictionDetail
-        Map<Integer, RdRestrictionDetail> detailMesh = null;
+		// 需要分离节点处理的RdRestriction
+		Map<Integer, RdRestriction> restrictionDepart = new HashMap<Integer, RdRestriction>();
 
-        if (rdlinks != null && rdlinks.size() > 1) {
+		// 需要分离节点处理的RdRestrictionDetail
+		Map<Integer, RdRestrictionDetail> detailDepart = new HashMap<Integer, RdRestrictionDetail>();
 
-            restrictionMesh = new HashMap<Integer, RdRestriction>();
+		// 分离节点不处理，跨图幅打断需要处理的RdRestriction
+		Map<Integer, RdRestriction> restrictionMesh = null;
 
-            detailMesh = new HashMap<Integer, RdRestrictionDetail>();
-        }
+		// 分离节点不处理，跨图幅打断需要处理的RdRestrictionDetail
+		Map<Integer, RdRestrictionDetail> detailMesh = null;
 
-        RdRestrictionSelector selector = new RdRestrictionSelector(this.conn);
+		if (rdlinks != null && rdlinks.size() > 1) {
 
-        // link作为进入线的RdRestriction
-        List<RdRestriction> restrictions = selector.loadByLink(linkPid, 1, true);
-        getInLinkDepartInfo(nodePid, restrictions, restrictionDepart, restrictionMesh);
+			restrictionMesh = new HashMap<Integer, RdRestriction>();
 
-        // link作为退出线的RdRestriction
-        restrictions = selector.loadByLink(linkPid, 2, true);
+			detailMesh = new HashMap<Integer, RdRestrictionDetail>();
+		}
 
-        Map<Integer, RdRestrictionDetail> detailTmp = new HashMap<Integer, RdRestrictionDetail>();
+		RdRestrictionSelector selector = new RdRestrictionSelector(this.conn);
 
-        getOutLinkDepartInfo(nodePid, linkPid, restrictions, detailTmp, detailMesh);
+		for (int nodePid : nodePids) {
 
-        for (RdRestriction restriction : restrictions) {
+			// link作为进入线的RdRestriction
+			List<RdRestriction> restrictions = selector.loadByLink(linkPid, 1,
+					true);
 
-            if (!detailTmp.containsKey(restriction.getPid())) {
+			getInLinkDepartInfo(nodePid, restrictions, restrictionDepart,
+					restrictionMesh);
 
-                continue;
-            }
+			// link作为退出线的RdRestriction
+			restrictions = selector.loadByLink(linkPid, 2, true);
 
-            if (restriction.getDetails().size() > 1) {
+			Map<Integer, RdRestrictionDetail> detailTmp = new HashMap<Integer, RdRestrictionDetail>();
 
-                RdRestrictionDetail delDetail = detailTmp.get(restriction.getPid());
+			getOutLinkDepartInfo(nodePid, linkPid, restrictions, detailTmp,
+					detailMesh);
 
-                detailDepart.put(delDetail.getPid(), delDetail);
+			for (RdRestriction restriction : restrictions) {
 
-            } else {
+				if (!detailTmp.containsKey(restriction.getPid())) {
 
-                restrictionDepart.put(restriction.getPid(), restriction);
-            }
-        }
+					continue;
+				}
 
-        for (RdRestrictionDetail delDetail : detailDepart.values()) {
+				if (restriction.getDetails().size() > 1) {
 
-            result.insertObject(delDetail, ObjStatus.DELETE, delDetail.pid());
-        }
+					RdRestrictionDetail delDetail = detailTmp.get(restriction
+							.getPid());
 
-        for (RdRestriction restriction : restrictionDepart.values()) {
+					detailDepart.put(delDetail.getPid(), delDetail);
 
-            result.insertObject(restriction, ObjStatus.DELETE, restriction.pid());
-        }
+				} else {
 
-        if (restrictionMesh == null || detailMesh == null) {
+					restrictionDepart.put(restriction.getPid(), restriction);
+				}
+			}
 
-            return;
-        }
+			for (RdRestrictionDetail delDetail : detailDepart.values()) {
 
-        int connectNode = link.getsNodePid() == nodePid ? link.geteNodePid() : link.getsNodePid();
+				result.insertObject(delDetail, ObjStatus.DELETE,
+						delDetail.pid());
+			}
 
-        for (RdLink rdlink : rdlinks) {
+			for (RdRestriction restriction : restrictionDepart.values()) {
 
-            if (rdlink.getsNodePid() != connectNode && rdlink.geteNodePid() != connectNode) {
+				result.insertObject(restriction, ObjStatus.DELETE,
+						restriction.pid());
+			}
 
-                continue;
-            }
+			if (restrictionMesh == null || detailMesh == null) {
 
-            for (RdRestriction restriction : restrictionMesh.values()) {
+				return;
+			}
 
-                restriction.changedFields().put("inLinkPid", rdlink.getPid());
+			int connectNode = link.getsNodePid() == nodePid ? link
+					.geteNodePid() : link.getsNodePid();
 
-                result.insertObject(restriction, ObjStatus.UPDATE, restriction.pid());
-            }
+			for (RdLink rdlink : rdlinks) {
 
-            for (RdRestrictionDetail detail : detailMesh.values()) {
+				if (rdlink.getsNodePid() != connectNode
+						&& rdlink.geteNodePid() != connectNode) {
 
-                detail.changedFields().put("outLinkPid", rdlink.getPid());
+					continue;
+				}
 
-                result.insertObject(detail, ObjStatus.UPDATE, detail.getRestricPid());
-            }
-        }
-    }
+				for (RdRestriction restriction : restrictionMesh.values()) {
+
+					restriction.changedFields().put("inLinkPid",
+							rdlink.getPid());
+
+					result.insertObject(restriction, ObjStatus.UPDATE,
+							restriction.pid());
+				}
+
+				for (RdRestrictionDetail detail : detailMesh.values()) {
+
+					detail.changedFields().put("outLinkPid", rdlink.getPid());
+
+					result.insertObject(detail, ObjStatus.UPDATE,
+							detail.getRestricPid());
+				}
+			}
+		}
+	}
 
     /**
      * 获取link作为进入线时交限的信息

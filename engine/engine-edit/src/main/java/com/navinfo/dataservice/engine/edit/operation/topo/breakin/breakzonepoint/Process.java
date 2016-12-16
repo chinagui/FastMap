@@ -39,6 +39,11 @@ public class Process extends AbstractProcess<Command> {
 		ZoneLink breakLink = (ZoneLink) new ZoneLinkSelector(this.getConn())
 				.loadById(this.getCommand().getLinkPid(), true, false);
 		this.getCommand().setBreakLink(breakLink);
+		
+		if(this.getCommand().getRepairLinkGeo()!=null)
+		{
+			breakLink.setGeometry(this.getCommand().getRepairLinkGeo());
+		}
 		// 删除要打断LCLINK
 		this.getResult().insertObject(breakLink, ObjStatus.DELETE,
 				breakLink.pid());

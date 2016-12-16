@@ -1,4 +1,4 @@
-﻿1. add_svr_inner_table.sql（脚本内需要修改参数）
-  功能：给大区库上增加多源同步用到的内部表
-  目标库：日、月大区库
-  author: XXW
+﻿1. insert_ck_rule.sql
+  功能：新增TMC检查脚本
+  目标库：sys库
+  author: 张小龙

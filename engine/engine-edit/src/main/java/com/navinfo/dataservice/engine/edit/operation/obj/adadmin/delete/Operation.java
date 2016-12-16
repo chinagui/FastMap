@@ -46,13 +46,15 @@ public class Operation implements IOperation {
 
 		result.insertObject(adAdmin, ObjStatus.DELETE, adAdmin.pid());
 		
-		//维护行政区划面，ZONE面
 		int regionId = adAdmin.getPid();
 		
+		//删除维护行政区划面
 		updateAdFace(regionId, result);
 		
+		//删除维护zone面
 		updateZoneFace(regionId, result);
 		
+		//删除维护行政区划层级
 		updateAdminGroup(regionId,result);
 				
 		return null;

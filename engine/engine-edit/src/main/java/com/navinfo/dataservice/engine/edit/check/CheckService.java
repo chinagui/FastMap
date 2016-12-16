@@ -51,7 +51,7 @@ public class CheckService {
 		}		
 		int dbId=subtaskObj.getDbId();
 		
-		String ckRules = null;		
+		String ckRules = "";		
 		if (jsonReq.containsKey("ckRules")) {
 			ckRules = jsonReq.getString("ckRules");
 		}

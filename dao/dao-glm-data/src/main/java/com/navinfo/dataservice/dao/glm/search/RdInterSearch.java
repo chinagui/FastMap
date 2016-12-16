@@ -91,7 +91,7 @@ public class RdInterSearch implements ISearch {
 
 				SearchSnapshot snapshot = new SearchSnapshot();
 
-				snapshot.setI(String.valueOf(resultSet.getInt("pid")));
+				snapshot.setI(resultSet.getInt("pid"));
 
 				snapshot.setT(39);
 

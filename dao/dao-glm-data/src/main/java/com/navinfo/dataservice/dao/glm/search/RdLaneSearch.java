@@ -94,7 +94,7 @@ public class RdLaneSearch implements ISearch {
 
 				snapshot.setT(46);
 
-				snapshot.setI(String.valueOf(resultSet.getInt("link_pid")));
+				snapshot.setI(resultSet.getInt("link_pid"));
 
 				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
 

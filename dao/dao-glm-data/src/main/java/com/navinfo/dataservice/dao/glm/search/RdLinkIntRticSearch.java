@@ -94,7 +94,7 @@ public class RdLinkIntRticSearch implements ISearch {
 
 				snapshot.setT(10);
 
-				snapshot.setI(String.valueOf(resultSet.getInt("link_pid")));
+				snapshot.setI(resultSet.getInt("link_pid"));
 
 				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
 
@@ -203,7 +203,7 @@ public class RdLinkIntRticSearch implements ISearch {
 
 				snapshot.setT(10);
 
-				snapshot.setI(String.valueOf(resultSet.getInt("link_pid")));
+				snapshot.setI(resultSet.getInt("link_pid"));
 
 				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
 				

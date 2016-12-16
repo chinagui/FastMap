@@ -1,23 +1,39 @@
 package com.navinfo.dataservice.engine.fcc;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioFileFormat.Type;
+import javax.sound.sampled.spi.AudioFileWriter;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+import org.apache.solr.common.util.ContentStreamBase.FileStream;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.util.DateUtils;
+import com.navinfo.dataservice.commons.util.FileUtils;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
+import com.navinfo.dataservice.engine.audio.AudioController;
+import com.navinfo.dataservice.engine.audio.AudioImport;
+import com.navinfo.dataservice.engine.fcc.photo.HBaseController;
 import com.navinfo.dataservice.engine.fcc.tips.TipsExporter;
 import com.navinfo.dataservice.engine.fcc.tips.TipsUpload;
+import com.navinfo.navicommons.geo.computation.CompGridUtil;
+import com.navinfo.navicommons.geo.computation.GridUtils;
 
 /** 
  * @ClassName: TipsExportTest.java
@@ -70,6 +86,8 @@ public class TipsExportTest extends InitApplication{
 			
 			parameter="{\"condition\":[{\"grid\":60560233,\"date\":\"20161210114441\"}]}";
 			
+			parameter="{\"condition\":[{\"grid\":59567220,\"date\":\"20161210112535\"}]}";
+			
 			String uuid = UuidUtils.genUuid();
 			
 			JSONObject jsonReq=JSONObject.fromObject(parameter);
@@ -88,22 +106,116 @@ public class TipsExportTest extends InitApplication{
 			
 			Set<String> images = new HashSet<String>();
 
-			op.export(condition, filePath, "tips.txt", images);
+			int expCount=op.export(condition, filePath, "tips.txt", images);
 			
 			System.out.println("导出成功:"+filePath);
 			System.out.println(op.export(condition, filePath, "tips.txt", images));
 			
-			JSONObject result=new JSONObject();
-			result.put("url", filePath);
 			
-			result.put("downloadDate",  DateUtils.dateToString(new Date(),
-					DateUtils.DATE_COMPACTED_FORMAT));
+			JSONObject data=null;
+			if(expCount>0){
+				data=new JSONObject();
+				data.put("url", filePath);
+				
+				data.put("downloadDate",  DateUtils.dateToString(new Date(),
+						DateUtils.DATE_COMPACTED_FORMAT));	
+			}
 			
-			System.out.println(result);
+			Map<String,Object> result = new HashMap<String,Object>();
+	    	result.put("errcode", 0);
+	    	result.put("errmsg", "success");
+	    	result.put("data", data);
+			
+			System.out.println(JSONObject.fromObject(result));
 			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+	
+	public static void transFile(byte[] fileBt,String fileName){
+        String filePath = "E:\\testE\\exp\\";   //文件路径
+        FileOutputStream fstream =null;
+        try
+        {
+        	fstream=new FileOutputStream(filePath+fileName);
+            fstream.write(fileBt);
+        }
+        catch (Exception ex)
+        {
+            //抛出异常信息
+        }
+        finally
+        {
+        	try {
+				fstream.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+        }
+ 
+    }
+	
+	
+	public static void transAudioFile(byte[] fileBt,String fileName){
+        String filePath = "E:\\testE\\exp\\";   //文件路径
+        
+        OutputStream fstream =null;
+        
+        try
+        {
+        	fstream=new FileOutputStream(filePath+fileName);
+            fstream.write(fileBt);
+        }
+        catch (Exception ex)
+        {
+            //抛出异常信息
+        }
+        finally
+        {
+        	try {
+				fstream.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+        }
+ 
+    }
+	public static void main(String[] args) {
+		String rowkey="702A3C888FC34A1CAABCE498E188AEE1";
+		/*HBaseController  photoCon=new HBaseController();*/
+		AudioController  photoCon=new AudioController();
+		byte[] photoBytye;
+		byte[] photoBytye2;
+		try {
+			//photoBytye = photoCon.getPhotoByRowkey(rowkey);
+			photoBytye = photoCon.getAudioByRowkey(rowkey);
+			
+			photoBytye2 = FileUtils.readPhotos("E:\\testE\\exp\\").get("702A3C888FC34A1CAABCE498E188AEE1.amr");
+			System.out.println(photoBytye.length==photoBytye2.length);
+			System.out.println(photoBytye==photoBytye2);
+			System.out.println("photoBytye.len(数据库的):"+photoBytye.length);
+			System.out.println("photoBytye2.len:"+photoBytye2.length);
+			transAudioFile(photoBytye,"test.amr");
+			System.out.println("导出成功");
+			
+			//POINT (116.27175 39.97312)
+			String grid_id = CompGridUtil.point2Grids(116.27175, 39.97312)[0];
+			
+			System.out.println(grid_id);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}finally{
+			
+		}
+		
+		
+		
+		
 	}
 
 }

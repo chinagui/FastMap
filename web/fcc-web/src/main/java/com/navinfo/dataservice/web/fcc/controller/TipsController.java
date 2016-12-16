@@ -141,10 +141,10 @@ public class TipsController extends BaseController {
             }
 
 
-			int pid = -1;
+			String pid = null;
 
 			if (jsonReq.containsKey("pid")) {
-				pid = jsonReq.getInt("pid");
+				pid = jsonReq.getString("pid");
 			}
 
 			TipsOperator op = new TipsOperator();
@@ -261,7 +261,7 @@ public class TipsController extends BaseController {
 			
 			Set<String> images = new HashSet<String>();
             //1.下载tips、照片、语音(照片的语音根据附件的id下载)
-			op.export(condition, filePath, "tips.txt", images);
+			int expCount=op.export(condition, filePath, "tips.txt", images);
 			
 			//2.模式图下载： 1406和1401需要导出模式图
 			if(images.size()>0){
@@ -286,13 +286,21 @@ public class TipsController extends BaseController {
 			String url = serverUrl + downloadUrlPath +File.separator+ day + "/"
 					+ zipFileName;
 			
-			JSONObject result=new JSONObject();
-			result.put("url", url);
+			logger.info("url:"+url);
 			
-			result.put("downloadDate",  DateUtils.dateToString(new Date(),
-					DateUtils.DATE_COMPACTED_FORMAT));
-			
-			logger.error("下载tips完成,resut url:"+url);
+			JSONObject result=null; //如果没有数据，则返回 {"errmsg":"success","data":null，errcode":0} ,不返回url
+			if(expCount>0){
+				result=new JSONObject();
+				
+				result.put("url", url);
+				
+				result.put("downloadDate",  DateUtils.dateToString(new Date(),
+						DateUtils.DATE_COMPACTED_FORMAT));	
+				
+				logger.info("下载tips完成,resut :"+result);
+			}else{
+				logger.info("下载tips完成,没有可下载的数据");
+			}
 			
 			return new ModelAndView("jsonView", success(result));
 
@@ -392,7 +400,7 @@ public class TipsController extends BaseController {
                 throw new IllegalArgumentException("参数错误:grids不能为空。");
             }
 
-			int type = jsonReq.getInt("type");
+			String type = jsonReq.getString("type");
 
 			JSONArray stage = jsonReq.getJSONArray("stage");
 
@@ -419,7 +427,7 @@ public class TipsController extends BaseController {
 
 			TipsSelector selector = new TipsSelector();
 
-			JSONArray array = selector.getSnapshot(grids, stage, type,
+			JSONArray array = selector.getSnapshot(grids, stage, Integer.parseInt(type),
 					dbId,mdFlag);
 
 			response.getWriter().println(

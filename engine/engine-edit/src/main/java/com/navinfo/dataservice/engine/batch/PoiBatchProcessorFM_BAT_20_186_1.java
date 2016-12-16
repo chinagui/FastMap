@@ -59,9 +59,11 @@ public class PoiBatchProcessorFM_BAT_20_186_1 implements IBatch {
 					List<IRow> parentAddresses = poi.getAddresses();
 					for (IRow parentAddress:parentAddresses) {
 						IxPoiAddress parentAdd = (IxPoiAddress) parentAddress;
+						parentAdd.setPoiPid(childPoi.getPid());
 						JSONObject parentAddObj = parentAdd.Serialize(null);
 						parentAddObj.put("objStatus", ObjStatus.INSERT.toString());
 						parentAddObj.remove("uDate");
+						parentAddObj.remove("rowId");
 						addressArray.add(parentAddObj);
 					}
 				}
@@ -81,9 +83,11 @@ public class PoiBatchProcessorFM_BAT_20_186_1 implements IBatch {
 					List<IRow> parentContacts = poi.getContacts();
 					for (IRow parentContact:parentContacts) {
 						IxPoiContact parentCon = (IxPoiContact) parentContact;
+						parentCon.setPoiPid(childPoi.getPid());
 						JSONObject parentConObj = parentCon.Serialize(null);
 						parentConObj.put("objStatus", ObjStatus.INSERT.toString());
 						parentConObj.remove("uDate");
+						parentConObj.remove("rowId");
 						contactsArray.add(parentConObj);
 					}
 					
@@ -91,19 +95,20 @@ public class PoiBatchProcessorFM_BAT_20_186_1 implements IBatch {
 				
 				JSONObject poiObj = new JSONObject();
 				JSONObject changeFields = new JSONObject();
-				changeFields.put("addresses", addressArray);
-				changeFields.put("contacts", contactsArray);
-				changeFields.put("pid", childPoi.getPid());
-				changeFields.put("rowId", childPoi.getRowId());
-				poiObj.put("change", changeFields);
-				poiObj.put("pid", childPoi.getPid());
-				poiObj.put("type", "IXPOI");
-				poiObj.put("command", "BATCH");
-				poiObj.put("dbId", json.getInt("dbId"));
-				poiObj.put("isLock", false);
-				
-				editApiImpl.runPoi(poiObj);
-				
+				if (addressArray.size()>0||contactsArray.size()>0) {
+					changeFields.put("addresses", addressArray);
+					changeFields.put("contacts", contactsArray);
+					changeFields.put("pid", childPoi.getPid());
+					changeFields.put("rowId", childPoi.getRowId());
+					poiObj.put("change", changeFields);
+					poiObj.put("pid", childPoi.getPid());
+					poiObj.put("type", "IXPOI");
+					poiObj.put("command", "BATCH");
+					poiObj.put("dbId", json.getInt("dbId"));
+					poiObj.put("isLock", false);
+					
+					editApiImpl.runPoi(poiObj);
+				}
 			}
 			
 			return result;

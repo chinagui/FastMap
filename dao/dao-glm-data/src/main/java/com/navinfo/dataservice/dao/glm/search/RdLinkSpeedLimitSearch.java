@@ -93,7 +93,7 @@ public class RdLinkSpeedLimitSearch implements ISearch {
 
 				JSONObject jsonM = new JSONObject();
 
-				snapshot.setI(String.valueOf(resultSet.getInt("link_pid")));
+				snapshot.setI(resultSet.getInt("link_pid"));
 
 				snapshot.setT(9);
 

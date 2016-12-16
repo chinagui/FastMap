@@ -15,7 +15,7 @@ import net.sf.json.JSONObject;
 public class ColumnSaveJobRequest extends AbstractJobRequest {
 	
 	private int userId;
-	private String param;
+	private JSONObject param;
 
 	public int getUserId() {
 		return userId;
@@ -25,11 +25,11 @@ public class ColumnSaveJobRequest extends AbstractJobRequest {
 		this.userId = userId;
 	}
 
-	public String getParam() {
+	public JSONObject getParam() {
 		return param;
 	}
 
-	public void setParam(String param) {
+	public void setParam(JSONObject param) {
 		this.param = param;
 	}
 

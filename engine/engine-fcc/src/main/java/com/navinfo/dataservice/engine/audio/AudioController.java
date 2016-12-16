@@ -58,7 +58,7 @@ public class AudioController {
 	 */
 	public byte[] getAudioByRowkey(String rowkey) throws Exception {
 		
-		List<KeyValue> list = getByRowkey(tableName, rowkey, "data", "origin");
+		List<KeyValue> list = getByRowkey(tableName, rowkey, "data", "origin.o_audio");
 
 		for (KeyValue kv : list) {
 			return kv.value();

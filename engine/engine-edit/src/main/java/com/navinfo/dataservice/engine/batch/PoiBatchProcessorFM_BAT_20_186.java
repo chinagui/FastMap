@@ -49,9 +49,11 @@ public class PoiBatchProcessorFM_BAT_20_186 implements IBatch {
 			List<IRow> parentAddresses = parentPoi.getAddresses();
 			for (IRow parentAddress:parentAddresses) {
 				IxPoiAddress parentAdd = (IxPoiAddress) parentAddress;
+				parentAdd.setPoiPid(poi.getPid());
 				JSONObject parentAddObj = parentAdd.Serialize(null);
 				parentAddObj.put("objStatus", ObjStatus.INSERT.toString());
 				parentAddObj.remove("uDate");
+				parentAddObj.remove("rowId");
 				addressDataArray.add(parentAddObj);
 			}
 			
@@ -68,9 +70,11 @@ public class PoiBatchProcessorFM_BAT_20_186 implements IBatch {
 			List<IRow> parentContacts = parentPoi.getContacts();
 			for (IRow parentContact:parentContacts) {
 				IxPoiContact parentCon = (IxPoiContact) parentContact;
+				parentCon.setPoiPid(poi.getPid());
 				JSONObject parentConObj = parentCon.Serialize(null);
 				parentConObj.put("objStatus", ObjStatus.INSERT.toString());
 				parentConObj.remove("uDate");
+				parentConObj.remove("rowId");
 				contactDataArray.add(parentConObj);
 			}
 			

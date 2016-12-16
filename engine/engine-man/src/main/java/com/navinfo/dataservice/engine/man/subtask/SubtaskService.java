@@ -16,7 +16,6 @@ import java.util.regex.Pattern;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import oracle.net.aso.s;
 import oracle.sql.STRUCT;
 
 import org.apache.commons.dbutils.DbUtils;
@@ -1069,8 +1068,74 @@ public class SubtaskService {
 		}
 	}
 
-	public HashMap<String, Integer> staticWithType(long userId) {
-		// TODO Auto-generated method stub
-		return null;
+	public Map<String, Object> staticWithType(long userId) throws Exception {
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			
+			//获取用户所在组
+			UserInfo userInfo = new UserInfo();
+			userInfo.setUserId((int)userId);
+			Map<Object,Object> userGroup = UserInfoOperation.getUserGroup(conn, userInfo);
+			int userGroupId=0;
+			if(!userGroup.isEmpty()){
+				userGroupId = (int)userGroup.get("groupId");
+			}
+			String sql="SELECT T.STAGE, T.TYPE, COUNT(1) TYPE_COUNT"
+					+ "  FROM SUBTASK T"
+					+ " WHERE (T.EXE_USER_ID = "+userId+" OR T.EXE_GROUP_ID = "+userGroupId+")"
+					+ "   AND T.STATUS = 1"
+					+ "   AND T.STAGE != 0"
+					+ " GROUP BY T.STAGE, T.TYPE"
+					+ " ORDER BY T.STAGE, T.TYPE";
+			QueryRunner run=new QueryRunner();
+			Map<String, Object> result = run.query(conn, sql, new ResultSetHandler<Map<String, Object>>(){
+
+				@Override
+				public Map<String, Object> handle(ResultSet rs)
+						throws SQLException {
+					Map<String, Object> result=new HashMap<String, Object>();
+					List<Map<String, Object>> subList=new ArrayList<Map<String,Object>>();
+					int total=0;
+					while (rs.next()) {
+						Map<String, Object> subResult=new HashMap<String, Object>();
+						int type=rs.getInt("TYPE");
+						int stage=rs.getInt("STAGE");
+						int typeCount=rs.getInt("TYPE_COUNT");
+						String name="";
+						if(stage==1){name+="日编 - ";}
+						else{name+="月编 - ";}
+						//0POI，1道路，2一体化，3一体化_grid粗编，4一体化_区域粗编，5多源POI，6
+						//代理店， 7POI专项,8道路_grid精编，9道路_grid粗编，10道路区域专项
+						if(type==0){name+="POI";}
+						else if(type==1){name+="道路";}
+						else if(type==2){name+="一体化";}
+						else if(type==3){name+="一体化grid粗编";}
+						else if(type==4){name+="一体化区域粗编";}
+						else if(type==5){name+="多源POI";}
+						else if(type==6){name+="代理店";}
+						else if(type==7){name+="POI专项";}
+						else if(type==8){name+="道路grid精编";}
+						else if(type==9){name+="道路grid粗编";}
+						else if(type==10){name+="道路区域专项";}
+						subResult.put("type", type);
+						subResult.put("stage", stage);
+						subResult.put("name", name);
+						subResult.put("total", typeCount);
+						subList.add(subResult);
+						total+=typeCount;
+					}
+					result.put("totalCount", total);
+					result.put("result", subList);
+					return result;
+				}});
+			return result;
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询列表失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
 	}
 }

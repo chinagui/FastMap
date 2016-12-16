@@ -18,154 +18,162 @@ import oracle.sql.STRUCT;
 
 public class ZoneFaceSearch implements ISearch {
 
-	private Connection conn;
+    private Connection conn;
 
-	public ZoneFaceSearch(Connection conn) {
-		this.conn = conn;
-	}
+    public ZoneFaceSearch(Connection conn) {
+        this.conn = conn;
+    }
 
-	@Override
-	public IObj searchDataByPid(int pid) throws Exception {
-		ZoneFaceSelector selector = new ZoneFaceSelector(conn);
+    @Override
+    public IObj searchDataByPid(int pid) throws Exception {
+        ZoneFaceSelector selector = new ZoneFaceSelector(conn);
 
-		IObj obj = (IObj) selector.loadById(pid, false);
+        IObj obj = (IObj) selector.loadById(pid, false);
 
-		return obj;
-	}
-	
-	@Override
-	public List<IObj> searchDataByPids(List<Integer> pidList) throws Exception {
-		return null;
-	}
-	
-	@Override
-	public List<SearchSnapshot> searchDataBySpatial(String wkt) throws Exception {
+        return obj;
+    }
 
-		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
+    @Override
+    public List<IObj> searchDataByPids(List<Integer> pidList) throws Exception {
+        return null;
+    }
 
-		String sql = "select a.face_pid,        a.geometry   from zone_face a          where a.u_record != 2      and sdo_within_distance(a.geometry, sdo_geometry(:1, 8307), 'DISTANCE=0') =        'TRUE'";
+    @Override
+    public List<SearchSnapshot> searchDataBySpatial(String wkt) throws Exception {
 
-		PreparedStatement pstmt = null;
+        List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		ResultSet resultSet = null;
+        String sql = "select a.face_pid, a.geometry, a.region_id from zone_face a          where a.u_record != 2      and sdo_within_distance(a.geometry, sdo_geometry(:1, 8307), 'DISTANCE=0') =        'TRUE'";
 
-		try {
-			pstmt = conn.prepareStatement(sql);
+        PreparedStatement pstmt = null;
 
-			pstmt.setString(1, wkt);
+        ResultSet resultSet = null;
 
-			resultSet = pstmt.executeQuery();
+        try {
+            pstmt = conn.prepareStatement(sql);
 
-			while (resultSet.next()) {
-				SearchSnapshot snapshot = new SearchSnapshot();
+            pstmt.setString(1, wkt);
 
-				snapshot.setT(19);
+            resultSet = pstmt.executeQuery();
 
-				snapshot.setI(String.valueOf(resultSet.getInt("face_pid")));
+            while (resultSet.next()) {
+                SearchSnapshot snapshot = new SearchSnapshot();
 
-				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
+                snapshot.setT(19);
 
-				JSONObject jo = Geojson.spatial2Geojson(struct);
+                JSONObject m = new JSONObject();
+                m.put("a", resultSet.getInt("region_id"));
+                snapshot.setM(m);
 
-				snapshot.setG(jo.getJSONArray("coordinates"));
+                snapshot.setI(resultSet.getInt("face_pid"));
 
-				list.add(snapshot);
-			}
-		} catch (Exception e) {
+                STRUCT struct = (STRUCT) resultSet.getObject("geometry");
 
-			throw new Exception(e);
-		} finally {
-			if (resultSet != null) {
-				try {
-					resultSet.close();
-				} catch (Exception e) {
+                JSONObject jo = Geojson.spatial2Geojson(struct);
 
-				}
-			}
+                snapshot.setG(jo.getJSONArray("coordinates"));
 
-			if (pstmt != null) {
-				try {
-					pstmt.close();
-				} catch (Exception e) {
+                list.add(snapshot);
+            }
+        } catch (Exception e) {
 
-				}
-			}
+            throw new Exception(e);
+        } finally {
+            if (resultSet != null) {
+                try {
+                    resultSet.close();
+                } catch (Exception e) {
 
-		}
+                }
+            }
 
-		return list;
-	}
+            if (pstmt != null) {
+                try {
+                    pstmt.close();
+                } catch (Exception e) {
 
-	@Override
-	public List<SearchSnapshot> searchDataByCondition(String condition) throws Exception {
+                }
+            }
 
-		return null;
-	}
+        }
 
-	@Override
-	public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z, int gap) throws Exception {
+        return list;
+    }
 
-		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
+    @Override
+    public List<SearchSnapshot> searchDataByCondition(String condition) throws Exception {
 
-		String sql = "select a.face_pid,        a.geometry   from zone_face a          where a.u_record != 2      and sdo_within_distance(a.geometry, sdo_geometry(:1, 8307), 'DISTANCE=0') =        'TRUE'";
+        return null;
+    }
 
-		PreparedStatement pstmt = null;
+    @Override
+    public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z, int gap) throws Exception {
 
-		ResultSet resultSet = null;
+        List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		try {
-			pstmt = conn.prepareStatement(sql);
+        String sql = "select a.face_pid, a.geometry, a.region_id from zone_face a          where a.u_record != 2      and sdo_within_distance(a.geometry, sdo_geometry(:1, 8307), 'DISTANCE=0') =        'TRUE'";
 
-			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
+        PreparedStatement pstmt = null;
 
-			pstmt.setString(1, wkt);
+        ResultSet resultSet = null;
 
-			resultSet = pstmt.executeQuery();
+        try {
+            pstmt = conn.prepareStatement(sql);
 
-			double px = MercatorProjection.tileXToPixelX(x);
+            String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
 
-			double py = MercatorProjection.tileYToPixelY(y);
+            pstmt.setString(1, wkt);
 
-			while (resultSet.next()) {
-				SearchSnapshot snapshot = new SearchSnapshot();
+            resultSet = pstmt.executeQuery();
 
-				snapshot.setT(19);
+            double px = MercatorProjection.tileXToPixelX(x);
 
-				snapshot.setI(String.valueOf(resultSet.getInt("face_pid")));
+            double py = MercatorProjection.tileYToPixelY(y);
 
-				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
+            while (resultSet.next()) {
+                SearchSnapshot snapshot = new SearchSnapshot();
 
-				JSONObject geojson = Geojson.spatial2Geojson(struct);
+                snapshot.setT(19);
 
-				JSONObject jo = Geojson.face2Pixel(geojson, px, py, z);
+                JSONObject m = new JSONObject();
+                m.put("a", resultSet.getInt("region_id"));
+                snapshot.setM(m);
 
-				snapshot.setG(jo.getJSONArray("coordinates"));
+                snapshot.setI(resultSet.getInt("face_pid"));
 
-				list.add(snapshot);
-			}
-		} catch (Exception e) {
+                STRUCT struct = (STRUCT) resultSet.getObject("geometry");
 
-			throw new Exception(e);
-		} finally {
-			if (resultSet != null) {
-				try {
-					resultSet.close();
-				} catch (Exception e) {
+                JSONObject geojson = Geojson.spatial2Geojson(struct);
 
-				}
-			}
+                JSONObject jo = Geojson.face2Pixel(geojson, px, py, z);
 
-			if (pstmt != null) {
-				try {
-					pstmt.close();
-				} catch (Exception e) {
+                snapshot.setG(jo.getJSONArray("coordinates"));
 
-				}
-			}
+                list.add(snapshot);
+            }
+        } catch (Exception e) {
 
-		}
+            throw new Exception(e);
+        } finally {
+            if (resultSet != null) {
+                try {
+                    resultSet.close();
+                } catch (Exception e) {
 
-		return list;
-	}
+                }
+            }
+
+            if (pstmt != null) {
+                try {
+                    pstmt.close();
+                } catch (Exception e) {
+
+                }
+            }
+
+        }
+
+        return list;
+    }
 
 }

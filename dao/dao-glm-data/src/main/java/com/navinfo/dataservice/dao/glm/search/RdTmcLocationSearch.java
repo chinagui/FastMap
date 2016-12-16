@@ -88,7 +88,7 @@ public class RdTmcLocationSearch implements ISearch {
 		try {
 			pstmt = conn.prepareStatement(sql);
 			
-			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
+			String wkt = MercatorProjection.getWktWithGap(x, y, z, 100);
 			
 			double px = MercatorProjection.tileXToPixelX(x);
 
@@ -104,7 +104,7 @@ public class RdTmcLocationSearch implements ISearch {
 				
 				JSONObject jsonM = new JSONObject();
 
-				snapshot.setI(String.valueOf(resultSet.getInt("GROUP_ID")));
+				snapshot.setI(resultSet.getInt("GROUP_ID"));
 				
 				snapshot.setT(49);
 

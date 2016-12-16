@@ -438,6 +438,26 @@ public class IxPoiAddress extends BasicRow {
 			this.addonsPhonetic = addonsPhonetic;
 		}
 	}
+	/**
+	 * 是否中文地址，langCode IN (CHI，CHT)就算
+	 * @return
+	 */
+	public boolean isCH() {
+		if(this.langCode.equals("CHI")||this.langCode.equals("CHT")){
+			return true;
+		}
+		return false;
+	}
+	/**
+	 * 是否英文地址，langCode IN (ENG)就算
+	 * @return
+	 */
+	public boolean isEng() {
+		if(this.langCode.equals("ENG")){
+			return true;
+		}
+		return false;
+	}
 	
 	@Override
 	public String tableName() {

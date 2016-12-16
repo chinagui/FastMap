@@ -374,18 +374,46 @@ public Page listCheckResults(JSONObject params, JSONArray tips, JSONArray ruleCo
 		sql.append("select rd.name_id from ( SELECT null tipid,r.* from rd_name r  where r.src_resume = '\"task\":"+subtaskId+"' ");
 		sql.append(" union all ");
 		sql.append(" SELECT tt.*  FROM ( select substr(replace(t.src_resume,'\"',''),instr(replace(t.src_resume,'\"',''), ':') + 1,length(replace(src_resume,'\"',''))) as tipid,t.*  from rd_name t  where t.src_resume like '%tips%' ) tt ");
-		sql.append(" where 1=1 and tt.tipid in (select column_value from table(clob_to_table('"+ids+"'))) ");
+		sql.append(" where 1=1 ");
+		//********zl 2016.12.12 新增判断tips 是否有值****************
+		if(ids != null && StringUtils.isNotEmpty(ids)){
+			sql.append(" and tt.tipid in (select column_value from table(clob_to_table('"+ids+"'))) ");
+		}
 		sql.append(" ) rd ),");
 		//**********************
 		//所有道路名的检查结果包含的 nameId 及其 val_exception_id
+		/*select  t.val_exception_id eid,REGEXP_SUBSTR(t.addition_info,
+                '(\[NAME_ID,[0-9]+)',
+                1,
+                LEVEL,
+                'i') nameid 
+		from   
+		(select a.val_exception_id,to_char(a.addition_info) addition_info
+		from ni_val_exception a  where a.ruleid in
+		(select column_value
+		from table(clob_to_table('COM01001,COM01003,COM20552,COM60104,GLM02115,GLM02129,GLM02130,GLM02131,GLM02132,GLM02137,GLM02138,GLM02139,GLM02142,GLM02145,GLM02150,GLM02154,GLM02156,GLM02157,GLM02166,GLM02167,GLM02170,GLM02173,GLM02183,GLM02187,GLM02191,GLM02197,GLM02198,GLM02209,GLM02213,GLM02214,GLM02215,GLM02216,GLM02223,GLM02224,GLM02227,GLM02228,GLM02230,GLM02233,GLM02234,GLM02235,GLM02236,GLM02248,GLM02254,GLM02260,GLM02261,GLM02262,GLM02269,GLM02270,GLM90216')))
+		and a.addition_info like '%NAME_ID,%'  ) t       
+		CONNECT BY LEVEL <= 
+		LENGTH(t.addition_info) -
+		LENGTH(replace(t.addition_info, '[NAME_ID,', '[NAME_ID'))*/
 		sql.append("q2 as ( ");
+		sql.append(" SELECT  t.val_exception_id eid, replace(REGEXP_SUBSTR(t.addition_info,'(\\[NAME_ID,[0-9]+)', 1, LEVEL, 'i'),'[NAME_ID,','')  nameid  ");
+		sql.append(" FROM ( ");
+		sql.append(" select a.val_exception_id,to_char(a.addition_info) addition_info from ni_val_exception a  ");
+		sql.append(" where a.ruleid in (select column_value from table(clob_to_table('"+rules+"'))) ");
+		sql.append(" ) t ");
+		sql.append(" CONNECT BY LEVEL <= LENGTH(t.addition_info) - LENGTH(replace(t.addition_info, '[NAME_ID,', '[NAME_ID'))  ");
+		sql.append(" ),");
+		
+		
+		/*sql.append("q2 as ( ");
 		sql.append(" SELECT distinct  to_char(replace(REGEXP_SUBSTR(t.addition_info,'NAME_ID,[0-9]+', 1, LEVEL, 'i'),'NAME_ID,',''))  nameid ,t.val_exception_id eid ");
 		sql.append(" FROM ( ");
 		sql.append(" select a.* from ni_val_exception a  ");
 		sql.append(" where a.ruleid in (select column_value from table(clob_to_table('"+rules+"'))) ");
 		sql.append(" ) t ");
 		sql.append(" CONNECT BY LEVEL <= LENGTH(t.addition_info) - LENGTH(REGEXP_REPLACE(t.addition_info, 'NAME_ID,', 'NAME_ID'))  ");
-		sql.append(" ),");
+		sql.append(" ),");*/
 		//*********************
 		sql.append("q3 as ( ");
 		sql.append("select distinct b.eid from q2 b ,q1 c where b.nameid = c.name_id  ");
@@ -407,7 +435,7 @@ public Page listCheckResults(JSONObject params, JSONArray tips, JSONArray ruleCo
 		sql.append(" WHERE ROWNUM <= "+pageEndNum+") A "
 				+ "WHERE A.ROWNO >= "+pageStartNum+" ");
 		sql.append(" order by created desc,md5_code desc ");
-		//System.out.println("listCheckResults sql:  "+sql.toString());
+		System.out.println("listCheckResults sql:  "+sql.toString());
 		
 		QueryRunner run=new QueryRunner();
 		
@@ -588,8 +616,11 @@ public Page listCheckResults(JSONObject params, JSONArray tips, JSONArray ruleCo
 		Statement stmt = null;
 
 		ResultSet rs = null;
+		
+		String ckRules = "(";
+		ckRules += StringUtils.join(ckRule.toArray(), ",") + ")";
 
-		StringBuilder sql = new StringBuilder("select ruleid from ni_val_exception where dbms_lob.instr(targets,'"+pid+"',1,1)<>0 and ruleid in "+ckRule);                          
+		StringBuilder sql = new StringBuilder("SELECT n.ruleid FROM ck_result_object c,ni_val_exception n WHERE c.pid="+pid+" AND c.md5_code=n.md5_code AND n.ruleid IN "+ckRules);                          
 
 		try {
 

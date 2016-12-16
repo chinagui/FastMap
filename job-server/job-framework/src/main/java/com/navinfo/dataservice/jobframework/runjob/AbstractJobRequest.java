@@ -142,7 +142,7 @@ public abstract class AbstractJobRequest {
 				
 			}else if(attValue instanceof JSONObject){
 				//sub job
-				argtypes = new Class[]{String.class};
+				argtypes= new Class[]{JSONObject.class};
 			}
 			Method method = this.getClass().getMethod(methodName, argtypes);
 			method.invoke(this, attValue);

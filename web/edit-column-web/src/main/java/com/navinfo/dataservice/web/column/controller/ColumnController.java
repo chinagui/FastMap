@@ -69,7 +69,7 @@ public class ColumnController extends BaseController {
 	 * @throws ServletException
 	 * @throws IOException
 	 */
-	@RequestMapping(value = "/poi/deep/columnQuery")
+	@RequestMapping(value = "/poi/column/columnQuery")
 	public ModelAndView columnQuery(HttpServletRequest request)
 			throws ServletException, IOException {
 		
@@ -102,7 +102,7 @@ public class ColumnController extends BaseController {
 	 * @throws ServletException
 	 * @throws IOException
 	 */
-	@RequestMapping(value = "/poi/deep/columnSave")
+	@RequestMapping(value = "/poi/column/columnSave")
 	public ModelAndView columnSave(HttpServletRequest request)
 			throws ServletException, IOException {
 		
@@ -115,13 +115,9 @@ public class ColumnController extends BaseController {
 			
 			JobApi jobApi=(JobApi) ApplicationContextUtil.getBean("jobApi");
 			
-			String jsonString =  dataJson.toString();
-			jsonString = jsonString.substring(1, jsonString.length()-1);
-			jsonString = jsonString.replace('"', '/');
-			
 			JSONObject jobDataJson=new JSONObject();
 			jobDataJson.put("userId", userId);
-			jobDataJson.put("param", jsonString);
+			jobDataJson.put("param", dataJson);
 			
 			long jobId=jobApi.createJob("columnSaveJob", jobDataJson, userId,taskId, "精编保存");
 			
@@ -143,7 +139,7 @@ public class ColumnController extends BaseController {
 	 * @throws ServletException
 	 * @throws IOException
 	 */
-	@RequestMapping(value = "/poi/deep/columnSubmit")
+	@RequestMapping(value = "/poi/column/columnSubmit")
 	public ModelAndView columnSubmit(HttpServletRequest request)
 			throws ServletException, IOException {
 		
@@ -184,7 +180,7 @@ public class ColumnController extends BaseController {
 	 * @throws ServletException
 	 * @throws IOException
 	 */
-	@RequestMapping(value = "/poi/deep/task/statistics")
+	@RequestMapping(value = "/poi/column/task/statistics")
 	public ModelAndView taskStatistics(HttpServletRequest request)
 			throws ServletException, IOException {
 		
@@ -242,7 +238,7 @@ public class ColumnController extends BaseController {
 	 * @throws ServletException
 	 * @throws IOException
 	 */
-	@RequestMapping(value = "poi/deep/queryTaskList")
+	@RequestMapping(value = "poi/column/queryTaskList")
 	public ModelAndView queryTaskList(HttpServletRequest request)
 			throws ServletException, IOException {
 		try {

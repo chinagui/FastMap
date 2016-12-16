@@ -763,7 +763,7 @@ public class UploadOperation {
 				retObj.put("relate", jo.getJSONArray("relateChildren"));
 			}
 			//********zl 2016.12.05 ************
-			poi.setSameFid("sameFid");
+			poi.setSameFid(jo.getString("sameFid"));
 			//**********************************
 			
 			// 加油站
@@ -1817,18 +1817,42 @@ public class UploadOperation {
 				log.debug("otherPid:"+otherPid );
 				String otherPoiNum =getPoiNumByPid(otherPid, conn);
 				if(!otherPoiNum.equals(sameFid)){//与原有的sameFid不一样时
+					//根据sameFid 去 ix_poi 表查询另一个 poi  (otherPidBySameFid)
+					Integer otherPidBySameFid1 = getOtherPoiBySameFid(sameFid,conn);
+					//*************************
+					// 在Ix_samepoi_part中 获取另一个  同组  pid
+					Integer otherPid1 = getOtherPoiByPid(pid, conn);
+					if(otherPid1 != null && otherPid1 >0){//如果新的同一关系的poi 也存在同一关系,应先解除
+						
+						//将 ix_samepoi_part 表下同组的两条记录标记为删除
+						deleteSamePoiPartbyPid(otherPidBySameFid1,otherPid1,conn);
+						//将 ix_samepoi 表中的记录标记为 删除 
+						deleteSamePoibyPid(otherPidBySameFid1, conn);
+					}
+					//*************************
 					//将 ix_samepoi_part 表下同组的两条记录标记为删除
 					deleteSamePoiPartbyPid(pid,otherPid,conn);
 					//将 ix_samepoi 表中的记录标记为 删除 
 					deleteSamePoibyPid(pid, conn);
 					//在 ix_samepoi_part 表新增一条记录
 					//在 ix_samepoi_part 表新增两条记录
-					insertSamePoi(pid,otherPid,conn);
+					insertSamePoi(pid,otherPidBySameFid1,conn);
 				}
 			}else{
 				//在 表 Ix_samepoi_part 表中未找到另一个
 				//根据sameFid 去 ix_poi 表查询另一个 poi  (otherPidBySameFid)
 				Integer otherPidBySameFid = getOtherPoiBySameFid(sameFid,conn);
+				//*************************
+				// 在Ix_samepoi_part中 获取另一个  同组  pid
+				Integer otherPid2 = getOtherPoiByPid(pid, conn);
+				if(otherPid2 != null && otherPid2 >0){//如果新的同一关系的poi 也存在同一关系,应先解除
+					
+					//将 ix_samepoi_part 表下同组的两条记录标记为删除
+					deleteSamePoiPartbyPid(otherPidBySameFid,otherPid2,conn);
+					//将 ix_samepoi 表中的记录标记为 删除 
+					deleteSamePoibyPid(otherPidBySameFid, conn);
+				}
+				//*************************
 				//将 ix_samepoi_part 表下同组的两条记录标记为删除
 				deleteSamePoiPartbyPid(pid,otherPidBySameFid,conn);
 				//将 ix_samepoi 表中的记录标记为 删除 

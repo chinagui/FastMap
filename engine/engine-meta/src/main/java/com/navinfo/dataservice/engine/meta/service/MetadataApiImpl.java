@@ -30,6 +30,7 @@ import com.navinfo.dataservice.engine.meta.scPointEngKeyWords.ScPointEngKeyWords
 import com.navinfo.dataservice.engine.meta.scPointNameck.ScPointNameck;
 import com.navinfo.dataservice.engine.meta.scPointSpecKindcode.ScPointSpecKindcode;
 import com.navinfo.dataservice.engine.meta.tmc.selector.TmcSelector;
+import com.navinfo.dataservice.engine.meta.translate.ConvertUtil;
 import com.navinfo.dataservice.engine.meta.translate.EngConverterHelper;
 
 import net.sf.json.JSONArray;
@@ -284,4 +285,8 @@ public class MetadataApiImpl implements MetadataApi {
 		return ScEngshortList.getInstance().scEngshortListMap();
 	}
 
+	@Override
+	public String convFull2Half(String word) throws Exception {
+		 return ConvertUtil.convFull2Half(word);
+	}
 }

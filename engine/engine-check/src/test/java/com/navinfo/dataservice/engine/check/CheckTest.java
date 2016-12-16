@@ -1,3 +1,9 @@
+package com.navinfo.dataservice.engine.check;
+
+import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.commons.dbutils.DbUtils;
 import org.junit.Before;
 import org.junit.Test;

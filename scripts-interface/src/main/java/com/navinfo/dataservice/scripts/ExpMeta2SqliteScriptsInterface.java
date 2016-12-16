@@ -18,6 +18,7 @@ import com.navinfo.dataservice.commons.util.ZipUtils;
 import com.navinfo.navicommons.database.sql.DBUtils;
 
 /**
+ * 元数据库下载,生成 sqllite并存入下载文件夹
  * @author zhangli5174
  *
  */
@@ -32,6 +33,9 @@ public class ExpMeta2SqliteScriptsInterface {
 			conn = DBConnector.getInstance().getMetaConnection();
 			gdbConn = DBConnector.getInstance().getMkConnection();
 			pointChargingChain(conn,sqliteConn);
+			
+			fmControl(conn,sqliteConn);
+			
 			pointFoodtype(conn,sqliteConn);
 			pointPoicodeNew(conn,sqliteConn);
 			pointKindNew(conn,sqliteConn);
@@ -113,7 +117,7 @@ public class ExpMeta2SqliteScriptsInterface {
 	public static List<String> sqliteInit() {
 		List<String> sqliteList = new ArrayList<String>();
 		sqliteList.add("CREATE TABLE SC_POINT_CHARGING_CHAIN (chain_name text,chain_code text,hm_flag text,memo text)");
-	//	sqliteList.add("CREATE TABLE SC_FM_CONTROL (id integer,kind_code text,kind_change integer,parent integer,parent_level integer,important integer,name_keyword text,level text,eng_permit integer,agent integer,region integer,tenant integer,extend integer,extend_photo integer,photo integer,internal integer,chain integer,tel_cs integer,add_cs integer,disp_onlink integer)");
+		sqliteList.add("CREATE TABLE SC_FM_CONTROL (id integer,kind_code text,kind_change integer,parent integer,parent_level integer,important integer,name_keyword text,level text,eng_permit integer,agent integer,region integer,tenant integer,extend integer,extend_photo integer,photo integer,internal integer,chain integer,tel_cs integer,add_cs integer,disp_onlink integer)");
 		//sqliteList.add("CREATE TABLE SC_POINT_CHAIN_CODE (chain_name text,chain_code text,kg_flag text,hm_flag text,memo text,type integer,chain_name_cht text,chain_name_eng text,category integer,weight integer)");
 		sqliteList.add("CREATE TABLE SC_POINT_FOODTYPE (poikind text,foodtype text,type text,kg_flag text,hm_flag text,memo text,foodtypename text,chain text)");
 		
@@ -140,7 +144,8 @@ public class ExpMeta2SqliteScriptsInterface {
 	}
 	
 	/**
-	 * @Title: pointChargingChain
+	 * 1
+	 * @Title: pointChargingChain 
 	 * @Description: SC_POINT_CHARGING_CHAIN
 	 * @param conn
 	 * @param sqliteConn
@@ -186,11 +191,13 @@ public class ExpMeta2SqliteScriptsInterface {
 		}
 	}
 	
+	//2
 	// SC_FM_CONTROL
 	public static void fmControl(Connection conn,Connection sqliteConn) throws Exception{
 		System.out.println("Start to export SC_FM_CONTROL...");
 		String insertSql = "insert into SC_FM_CONTROL(id,kind_code,kind_change,parent,parent_level,important,name_keyword,level,eng_permit,agent,region,tenant,extend,extend_photo,photo,internal,chain,tel_cs,add_cs,disp_onlink) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-		String selectSql = "select id,kind_code,kind_change,parent,parent_level,important,name_keyword,level,eng_permit,agent,region,tenant,extend,extend_photo,photo,internal,chain,tel_cs,add_cs,disp_onlink from SC_FM_CONTROL";
+		//String selectSql = "select id,kind_code,kind_change,parent,parent_level,important,name_keyword,level,eng_permit,agent,region,tenant,extend,extend_photo,photo,internal,chain,tel_cs,add_cs,disp_onlink from SC_FM_CONTROL";
+		String selectSql = "select * from SC_FM_CONTROL";
 		Statement pstmt = null;
 		ResultSet resultSet = null;
 		PreparedStatement prep = null;
@@ -219,9 +226,9 @@ public class ExpMeta2SqliteScriptsInterface {
 				prep.setInt(15, resultSet.getInt("photo"));
 				prep.setInt(16, resultSet.getInt("internal"));
 				prep.setInt(17, resultSet.getInt("chain"));
-				prep.setInt(17, resultSet.getInt("tel_cs"));
-				prep.setInt(18, resultSet.getInt("add_cs"));
-				prep.setInt(19, resultSet.getInt("disp_onlink"));
+				prep.setInt(18, resultSet.getInt("tel_cs"));
+				prep.setInt(19, resultSet.getInt("add_cs"));
+				prep.setInt(20, resultSet.getInt("disp_onlink"));
 				prep.executeUpdate();
 				
 				count += 1;
@@ -285,6 +292,7 @@ public class ExpMeta2SqliteScriptsInterface {
 	}*/
 	
 	/**
+	 * 3
 	 * @Title: pointFoodtype
 	 * @Description: SC_POINT_FOODTYPE
 	 * @param conn
@@ -337,6 +345,7 @@ public class ExpMeta2SqliteScriptsInterface {
 	
 	
 	/**
+	 * 4
 	 * @Title: pointPoicodeNew
 	 * @Description: SC_POINT_POICODE_NEW
 	 * @param conn
@@ -400,6 +409,7 @@ public class ExpMeta2SqliteScriptsInterface {
 	}
 	
 		/**
+		 * 5
 		 * @Title: pointKindNew
 		 * @Description: SC_POINT_KIND_NEW
 		 * @param conn
@@ -463,6 +473,7 @@ public class ExpMeta2SqliteScriptsInterface {
 		
 		
 		/**
+		 * 6
 		 * @Title: pointChainCode
 		 * @Description: SC_POINT_CHAIN_CODE
 		 * @param conn
@@ -519,6 +530,7 @@ public class ExpMeta2SqliteScriptsInterface {
 		}
 
 		/**
+		 * 7
 		 * @Title: pointBrandFoodtype
 		 * @Description: SC_POINT_BRAND_FOODTYPE
 		 * @param conn
@@ -574,6 +586,7 @@ public class ExpMeta2SqliteScriptsInterface {
 		
 		
 		/**
+		 * 8
 		 * @Title: pointCode2Level
 		 * @Description: SC_POINT_CODE2LEVEL
 		 * @param conn
@@ -633,6 +646,7 @@ public class ExpMeta2SqliteScriptsInterface {
 		}
 		
 		/**
+		 * 9
 		 * @Title: pointNameck
 		 * @Description: SC_POINT_NAMECK
 		 * @param conn
@@ -691,6 +705,7 @@ public class ExpMeta2SqliteScriptsInterface {
 		
 		
 		/**
+		 * 10
 		 * @Title: pointAdminArea
 		 * @Description: SC_POINT_ADMINAREA
 		 * @param conn
@@ -752,6 +767,7 @@ public class ExpMeta2SqliteScriptsInterface {
 		
 		
 		/**
+		 * 11
 		 * @Title: pointFocus
 		 * @Description: SC_POINT_FOCUS
 		 * @param conn
@@ -810,6 +826,7 @@ public class ExpMeta2SqliteScriptsInterface {
 		
 	
 	/**
+	 * 12
 	 * @Title: pointTruck
 	 * @Description: SC_POINT_TRUCK
 	 * @param conn
@@ -865,6 +882,7 @@ public class ExpMeta2SqliteScriptsInterface {
 	}
 	
 	/**
+	 * 13
 	 * @Title: metaPoiIcon
 	 * @Description: META_POIICON
 	 * @param conn

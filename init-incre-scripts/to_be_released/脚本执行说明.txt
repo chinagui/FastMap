@@ -1,4 +1,1 @@
-﻿1. insert_ck_rule.sql
-  功能：新增TMC检查脚本
-  目标库：sys库
-  author: 张小龙
+﻿

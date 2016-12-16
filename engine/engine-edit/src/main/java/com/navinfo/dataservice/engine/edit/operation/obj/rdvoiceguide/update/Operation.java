@@ -387,6 +387,26 @@ public class Operation implements IOperation {
 		}
 	}
 	
+	
+	
+	/**
+	 * 分离节点
+	 * 
+	 * @param link
+	 * @param nodePid
+	 * @param rdlinks
+	 * @param result
+	 * @throws Exception
+	 */
+	public void departNode(RdLink link, int nodePid, List<RdLink> rdlinks,
+			Result result) throws Exception {
+
+		List<Integer> nodePids = new ArrayList<Integer>();
+
+		nodePids.add(nodePid);
+
+		departNode(link, nodePids, rdlinks, result);
+	}
 	/**
 	 * 分离节点
 	 * @param link 
@@ -395,8 +415,8 @@ public class Operation implements IOperation {
 	 * @param result
 	 * @throws Exception
 	 */
-	public void departNode(RdLink link, int nodePid, List<RdLink> rdlinks,
-			Result result) throws Exception {
+	public void departNode(RdLink link, List<Integer> nodePids,
+			List<RdLink> rdlinks, Result result) throws Exception {
 
 		int linkPid = link.getPid();
 
@@ -405,99 +425,103 @@ public class Operation implements IOperation {
 
 		// 需要分离节点处理的RdVoiceguideDetail
 		Map<Integer, RdVoiceguideDetail> detailDepart = new HashMap<Integer, RdVoiceguideDetail>();
-		
+
 		// 跨图幅打断需要处理的RdVoiceguide
 		Map<Integer, RdVoiceguide> voiceguideMesh = null;
 
 		// 跨图幅打断需要处理的RdVoiceguideDetail
 		Map<Integer, RdVoiceguideDetail> detailMesh = null;
 
-		if (rdlinks!=null &&rdlinks.size() >1) {			
-			
+		if (rdlinks != null && rdlinks.size() > 1) {
+
 			voiceguideMesh = new HashMap<Integer, RdVoiceguide>();
 
 			detailMesh = new HashMap<Integer, RdVoiceguideDetail>();
 		}
-		
-		RdVoiceguideSelector selector = new RdVoiceguideSelector(
-				this.conn);
 
-		// link作为进入线的RdVoiceguide
-		List<RdVoiceguide> voiceguides = selector.loadRdVoiceguideByLinkPid(linkPid,1, true);
+		RdVoiceguideSelector selector = new RdVoiceguideSelector(this.conn);
 
-		getInLinkDepartInfo(nodePid, voiceguides, voiceguideDepart,
-				voiceguideMesh);
+		for (int nodePid : nodePids) {
 
-		// link作为退出线的RdVoiceguide
-		voiceguides = selector.loadRdVoiceguideByLinkPid(linkPid,2, true);
+			// link作为进入线的RdVoiceguide
+			List<RdVoiceguide> voiceguides = selector
+					.loadRdVoiceguideByLinkPid(linkPid, 1, true);
 
-		Map<Integer, RdVoiceguideDetail> detailTmp = new HashMap<Integer, RdVoiceguideDetail>();
+			getInLinkDepartInfo(nodePid, voiceguides, voiceguideDepart,
+					voiceguideMesh);
 
-		getOutLinkDepartInfo(nodePid, linkPid, voiceguides, detailTmp,
-				detailMesh);
+			// link作为退出线的RdVoiceguide
+			voiceguides = selector.loadRdVoiceguideByLinkPid(linkPid, 2, true);
 
-		for (RdVoiceguide voiceguide : voiceguides) {
+			Map<Integer, RdVoiceguideDetail> detailTmp = new HashMap<Integer, RdVoiceguideDetail>();
 
-			if (!detailTmp.containsKey(voiceguide.getPid())) {
+			getOutLinkDepartInfo(nodePid, linkPid, voiceguides, detailTmp,
+					detailMesh);
 
-				continue;
+			for (RdVoiceguide voiceguide : voiceguides) {
+
+				if (!detailTmp.containsKey(voiceguide.getPid())) {
+
+					continue;
+				}
+
+				if (voiceguide.getDetails().size() > 1) {
+
+					RdVoiceguideDetail delTopology = detailTmp.get(voiceguide
+							.getPid());
+
+					detailDepart.put(delTopology.getPid(), delTopology);
+
+				} else {
+
+					voiceguideDepart.put(voiceguide.getPid(), voiceguide);
+				}
 			}
 
-			if (voiceguide.getDetails().size() > 1) {
+			for (RdVoiceguideDetail delDetail : detailDepart.values()) {
 
-				RdVoiceguideDetail delTopology = detailTmp.get(voiceguide
-						.getPid());
-
-				detailDepart.put(delTopology.getPid(), delTopology);
-
-			} else {
-
-				voiceguideDepart.put(voiceguide.getPid(), voiceguide);
-			}
-		}
-
-		for (RdVoiceguideDetail delDetail : detailDepart.values()) {
-
-			result.insertObject(delDetail, ObjStatus.DELETE,
-					delDetail.parentPKValue());
-		}
-
-		for (RdVoiceguide voiceguide : voiceguideDepart.values()) {
-
-			result.insertObject(voiceguide, ObjStatus.DELETE,
-					voiceguide.pid());
-		}
-
-		if (voiceguideMesh == null || detailMesh == null) {
-			
-			return;
-		}
-
-		int connectNode = link.getsNodePid() == nodePid ? link.geteNodePid()
-				: link.getsNodePid();
-
-		for (RdLink rdlink : rdlinks) {
-			
-			if (rdlink.getsNodePid() != connectNode
-					&& rdlink.geteNodePid() != connectNode) {
-				
-				continue;
+				result.insertObject(delDetail, ObjStatus.DELETE,
+						delDetail.parentPKValue());
 			}
 
-			for (RdVoiceguide voiceguide : voiceguideMesh.values()) {
-				
-				voiceguide.changedFields().put("inLinkPid", rdlink.getPid());
+			for (RdVoiceguide voiceguide : voiceguideDepart.values()) {
 
-				result.insertObject(voiceguide, ObjStatus.UPDATE,
+				result.insertObject(voiceguide, ObjStatus.DELETE,
 						voiceguide.pid());
 			}
 
-			for (RdVoiceguideDetail detail : detailMesh.values()) {
-				
-				detail.changedFields().put("outLinkPid", rdlink.getPid());
+			if (voiceguideMesh == null || detailMesh == null) {
 
-				result.insertObject(detail, ObjStatus.UPDATE,
-						detail.parentPKValue());
+				return;
+			}
+
+			int connectNode = link.getsNodePid() == nodePid ? link
+					.geteNodePid() : link.getsNodePid();
+
+			for (RdLink rdlink : rdlinks) {
+
+				if (rdlink.getsNodePid() != connectNode
+						&& rdlink.geteNodePid() != connectNode) {
+
+					continue;
+				}
+
+				for (RdVoiceguide voiceguide : voiceguideMesh.values()) {
+
+					voiceguide.changedFields()
+							.put("inLinkPid", rdlink.getPid());
+
+					result.insertObject(voiceguide, ObjStatus.UPDATE,
+							voiceguide.pid());
+				}
+
+				for (RdVoiceguideDetail detail : detailMesh.values()) {
+
+					detail.changedFields().put("outLinkPid", rdlink.getPid());
+
+					result.insertObject(detail, ObjStatus.UPDATE,
+							detail.parentPKValue());
+				}
 			}
 		}
 	}

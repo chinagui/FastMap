@@ -445,21 +445,11 @@ public class Operation implements IOperation {
         CalLinkOperateUtils calLinkOperateUtils = new CalLinkOperateUtils();
 
         List<RdLink> sortLinks = calLinkOperateUtils.sortLink(newLinks);
+        
+		OpRefRelationObj opRefRelationObj = new OpRefRelationObj(this.conn);
+        
+		opRefRelationObj.handleRelationObj(this.command, sortLinks, result);
 
-        if (newLinks.size() == 1) {
-            if (!this.command.getOperationType().equals("sameLinkRepair")) {
-                // 维护同一线
-                com.navinfo.dataservice.engine.edit.operation.obj.rdsamelink.update.Operation samelinkOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdsamelink.update.Operation(
-                        this.conn);
-
-                samelinkOperation.repairLink(newLinks.get(0),
-                        this.command.getRequester(), result);
-            }
-        }
-
-		/*
-         * 任何情况均需要处理的元素
-		 */
         // 电子眼
         com.navinfo.dataservice.engine.edit.operation.obj.rdeleceye.move.Operation eleceyeOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdeleceye.move.Operation(
                 this.conn);
@@ -479,18 +469,6 @@ public class Operation implements IOperation {
                 this.conn);
         speedlimitOperation.moveSpeedlimit(oldLink, newLinks, result);
 
-        // 立交
-        com.navinfo.dataservice.engine.edit.operation.obj.rdgsc.update.Operation gscOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdgsc.update.Operation();
-
-        Map<Integer, Geometry> newLinkMap = new HashMap<Integer, Geometry>();
-
-        for (RdLink link : newLinks) {
-            newLinkMap.put(link.getPid(), link.getGeometry());
-        }
-
-        gscOperation.repairLink(this.command.getGscList(), newLinkMap, oldLink,
-                result);
-
         // 维护限高限重
         com.navinfo.dataservice.engine.edit.operation.obj.hgwg.move.Operation hgwgOperation = new com.navinfo.dataservice.engine.edit.operation.obj.hgwg.move.Operation(conn);
         hgwgOperation.moveHgwgLimit(oldLink, newLinks, result);
@@ -498,13 +476,7 @@ public class Operation implements IOperation {
         //维护里程桩
         com.navinfo.dataservice.engine.edit.operation.obj.mileagepile.move.Operation maileageOperation = new com.navinfo.dataservice.engine.edit.operation.obj.mileagepile.move.Operation(conn);
         maileageOperation.moveMileagepile(oldLink, newLinks, result);
-
-		/*
-         * 条件以下为仅打断情况下需要处理的元素 (size < 2说明没有进行打断操作)
-		 */
-        //if (newLinks.size() < 2) {
-        //    return;
-        //}
+	
         // 警示信息
         com.navinfo.dataservice.engine.edit.operation.obj.rdwarninginfo.update.Operation warninginOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdwarninginfo.update.Operation(
                 this.conn);
@@ -513,12 +485,7 @@ public class Operation implements IOperation {
         // 维护信号灯
         com.navinfo.dataservice.engine.edit.operation.obj.trafficsignal.update.Operation trafficSignalOperation = new com.navinfo.dataservice.engine.edit.operation.obj.trafficsignal.update.Operation(
                 this.conn);
-        trafficSignalOperation.breakRdLink(command.getNodeLinkRelation(), oldLink.getPid(), newLinks, result);
-
-        // 分岔路提示
-        com.navinfo.dataservice.engine.edit.operation.obj.rdse.update.Operation rdSeOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdse.update.Operation(
-                this.conn);
-        rdSeOperation.breakRdSe(result, oldLink.pid(), newLinks);
+        trafficSignalOperation.breakRdLink(command.getNodeLinkRelation(), oldLink.getPid(), newLinks, result);      
 
         // 减速带
         com.navinfo.dataservice.engine.edit.operation.obj.rdspeedbump.update.Operation rdSpeedbumpOpeartion = new com.navinfo.dataservice.engine.edit.operation.obj.rdspeedbump.update.Operation(
@@ -528,32 +495,12 @@ public class Operation implements IOperation {
         com.navinfo.dataservice.engine.edit.operation.obj.rdslope.update.Operation rdSlopeOpeartion = new com.navinfo.dataservice.engine.edit.operation.obj.rdslope.update.Operation(
                 this.conn);
         rdSlopeOpeartion.breakRdLink(command.getNodeLinkRelation(), oldLink.getPid(), newLinks, result);
-        // 顺行
-        com.navinfo.dataservice.engine.edit.operation.obj.rddirectroute.update.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rddirectroute.update.Operation(
-                conn);
-        operation.breakRdLink(oldLink, sortLinks, result);
+       
         // 维护CRF交叉点
         com.navinfo.dataservice.engine.edit.operation.obj.rdinter.update.Operation rdinterOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdinter.update.Operation(
-                this.conn);
-        // 维护CRF道路
-        com.navinfo.dataservice.engine.edit.operation.obj.rdroad.update.Operation rdRoadOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdroad.update.Operation(
-                this.conn);
-        rdRoadOperation.breakRdLink(oldLink.getPid(), newLinks, result);
+                this.conn);      
 
-        rdinterOperation.breakRdLink(oldLink, newLinks, result);
-        // 维护CRF对象
-        com.navinfo.dataservice.engine.edit.operation.obj.rdobject.update.Operation rdObjectOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdobject.update.Operation(
-                this.conn);
-        rdObjectOperation.breakRdObjectLink(oldLink, newLinks, result);
-        // 收费站
-        com.navinfo.dataservice.engine.edit.operation.obj.rdtollgate.update.Operation rdTollgateOpeartion = new com.navinfo.dataservice.engine.edit.operation.obj.rdtollgate.update.Operation(
-                this.conn);
-        rdTollgateOpeartion.breakRdTollgate(result, oldLink.getPid(), newLinks);
-
-        // 语音引导
-        com.navinfo.dataservice.engine.edit.operation.obj.rdvoiceguide.update.Operation voiceguideOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdvoiceguide.update.Operation(
-                conn);
-        voiceguideOperation.breakRdLink(oldLink, sortLinks, result);
+        rdinterOperation.breakRdLink(oldLink, newLinks, result);      
 
         // 维护可变限速关系
         com.navinfo.dataservice.engine.edit.operation.obj.rdvariablespeed.update.Operation variableSpeedOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdvariablespeed.update.Operation(

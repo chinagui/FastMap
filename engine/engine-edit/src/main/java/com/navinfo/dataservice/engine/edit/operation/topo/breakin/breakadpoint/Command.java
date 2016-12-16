@@ -27,6 +27,16 @@ public class Command extends AbstractCommand {
 	private int breakNodePid = 0;
 	private AdLink breakLink = new AdLink();
 	private List<AdLink> newLinks = new ArrayList<AdLink>();
+	
+	private Geometry repairLinkGeo=null;	
+
+	public Geometry getRepairLinkGeo() {
+		return repairLinkGeo;
+	}
+
+	public void setRepairLinkGeo(Geometry repairLinkGeo) {
+		this.repairLinkGeo = repairLinkGeo;
+	}
 
 	public List<AdLink> getNewLinks() {
 		return newLinks;

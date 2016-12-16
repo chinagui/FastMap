@@ -949,18 +949,18 @@ public class ExpMeta2SqliteScriptsInterface {
 //				PropConstant.downloadFilePathRoot);
 		//String filePath = "f:";
 		try {
-			Connection sqliteConn = createSqlite(dir+"/metadata");
+			Connection sqliteConn = createSqlite(dir);
 
 			exportMetadata2Sqlite(sqliteConn);
 			
 			//4.打包生成zip文件，放在月目录下
 			String zipFileName = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date())+".zip";
-			ZipUtils.zipFile(dir+"/metadata/metadata.sqlite",dir+"/metadata/"+zipFileName);
+			ZipUtils.zipFile(dir+"/metadata.sqlite",dir+"/"+zipFileName);
 			sqliteConn.close();
 		} catch (Exception e) {
 			System.out.println(e);
 		}finally{
-			File metaSqliteFile = new File(dir+"/metadata/metadata.sqlite");
+			File metaSqliteFile = new File(dir+"/metadata.sqlite");
 			if(metaSqliteFile.exists()){
 				metaSqliteFile.delete();
 			}
@@ -971,7 +971,7 @@ public class ExpMeta2SqliteScriptsInterface {
 		//String dir = "f:";  //本地测试用
 		String dir = SystemConfigFactory.getSystemConfig().getValue(
 				PropConstant.downloadFilePathRoot);  //服务器部署路径
-		export2SqliteByNames(dir);
+		export2SqliteByNames(dir+"/metadata");
 	}
 	
 }

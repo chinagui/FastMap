@@ -752,7 +752,7 @@ public class IxPoiObj extends AbstractIxObj {
 		return null;
 	}
 	
-	/*
+	/**
 	 * 官方标准中文名称
 	 */
 	public IxPoiName getOfficeStandardCHName(){
@@ -765,7 +765,7 @@ public class IxPoiObj extends AbstractIxObj {
 		return null;
 	}
 	
-	/*
+	/**
 	 * 官方标准化简体中文名称
 	 */
 	public IxPoiName getOfficeStandardCHIName(){
@@ -778,8 +778,8 @@ public class IxPoiObj extends AbstractIxObj {
 		return null;
 	}
 	
-	/*
-	 * 官方标准中文名称
+	/**
+	 * 简称中文名称
 	 */
 	public List<IxPoiName> getShortCHNames(){
 		List<IxPoiName> shortNames=new ArrayList<IxPoiName>();

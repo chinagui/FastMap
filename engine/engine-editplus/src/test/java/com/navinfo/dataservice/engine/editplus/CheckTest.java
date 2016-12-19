@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.dbutils.DbUtils;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
@@ -19,6 +20,7 @@ import com.navinfo.dataservice.dao.plus.selector.ObjSelector;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.check.Check;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.check.CheckCommand;
 import com.navinfo.dataservice.engine.editplus.model.batchAndCheck.NiValException;
+import com.navinfo.navicommons.database.sql.DBUtils;
 
 public class CheckTest {
 
@@ -40,12 +42,12 @@ public class CheckTest {
 		test.init();
 		Connection conn = DBConnector.getInstance().getConnectionById(17);
 		OperationResult operationResult=new OperationResult();
-		BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", null, 2179861, false);
+		BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", null, 66, false);
 		IxPoi row=(IxPoi) obj.getMainrow();
 		//row.setKindCode("190100");
 		ChangeLog logg=new ChangeLog();
 		Map<String, Object> oldValues=new HashMap<String, Object>();
-		oldValues.put("KIND_CODE", "123");
+		oldValues.put("KIND_CODE", "0");
 		logg.setOldValues(oldValues);
 		List<ChangeLog> logList=new ArrayList<ChangeLog>();
 		logList.add(logg);
@@ -54,12 +56,13 @@ public class CheckTest {
 		
 		CheckCommand checkCommand=new CheckCommand();		
 		List<String> ruleIdList=new ArrayList<String>();
-		ruleIdList.add("FM-A07-11");
+		ruleIdList.add("FM-A04-04");
 		checkCommand.setRuleIdList(ruleIdList);
 		
 		Check check=new Check(conn,operationResult);
 		check.operate(checkCommand);
 		Map<String, Map<Long, Set<String>>> errorPid = check.getErrorPidMap();
+		DbUtils.commitAndCloseQuietly(conn);
 		System.out.println("end check test");
 	}
 

@@ -783,7 +783,7 @@ public class IxPoiObj extends AbstractIxObj {
 	 * 标准中文名称组
 	 */
 	public List<IxPoiName> getStandardCHName(){
-		List<IxPoiName> standardCHName=null;
+		List<IxPoiName> standardCHName=new ArrayList<IxPoiName>();
 		List<IxPoiName> subRows=getIxPoiNames();
 		for(IxPoiName br:subRows){
 			if(br.getOpType()!=OperationType.DELETE &&(br.getNameClass()==1||br.getNameClass()==3

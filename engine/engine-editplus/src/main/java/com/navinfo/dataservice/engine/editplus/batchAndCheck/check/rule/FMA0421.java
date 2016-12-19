@@ -46,7 +46,7 @@ public class FMA0421 extends BasicCheckRule {
 			Matcher m = p.matcher(standardName.getName());
 
 			if (m.matches()) {
-				setCheckResult(poi.getGeometry(),poiObj,null);
+				setCheckResult(poi.getGeometry(),poiObj,poi.getMeshId(),null);
 			}
 		}
 

@@ -302,8 +302,25 @@ public class Operation implements IOperation {
 		if (meshes.size() == 1) {
 			JSONObject content = new JSONObject();
 			result.setPrimaryPid(this.command.getUpdateLink().getPid());
-			content.put("geometry", GeoTranslator.jts2Geojson(command.getLinkGeom()));
+			
+			
 			Geometry geo = command.getLinkGeom();
+
+			if (this.command.getOperationType().equals("sameLinkRepair")) {
+				Coordinate oldGeoSCoordinate = this.command.getUpdateLink()
+						.getGeometry().getCoordinate();
+
+				Coordinate newGeoSCoordinate = command.getLinkGeom()
+						.getCoordinate();
+				if (!GeoTranslator.isPointEquals(oldGeoSCoordinate,
+						newGeoSCoordinate)) {
+					geo = command.getLinkGeom().reverse();
+				}
+			}
+
+			content.put("geometry", GeoTranslator.jts2Geojson(geo));
+			
+			
 			double length = 0;
 			if (null != geo)
 				length = GeometryUtils.getLinkLength(geo);

@@ -956,9 +956,26 @@ public class runTest extends InitApplication {
 		Transaction t = new Transaction(parameter);
 
 		String msg = t.run();
-	}	
+	}
 		
+		@Test
+	public void run_1216_4() throws Exception {
+
+		String parameter = "{\"command\":\"CREATE\",\"dbId\":17,\"type\":\"RDSAMELINK\",\"data\":{\"links\":[{\"linkPid\":202002965,\"type\":\"RDLINK\",\"isMain\":1},{\"linkPid\":201000062,\"type\":\"ADLINK\",\"isMain\":0}]}}";
+		
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}	
 	
-	
-	
+			@Test
+	public void run_1219_1() throws Exception {
+
+		String parameter = "{\"command\":\"REPAIR\",\"dbId\":17,\"objId\":301003059,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.7502,40.31965],[116.75041,40.31951]]},\"interLinks\":[],\"interNodes\":[]},\"type\":\"RDLINK\"}";
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
 }

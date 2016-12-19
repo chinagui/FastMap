@@ -103,7 +103,7 @@ public class ScPointNameck {
 					}
 				}
 			}
-			return typeD3;
+			return typeD10;
 	}
 	public Map<String,String> scPointNameckTypeD3() throws Exception{
 		if (typeD3==null||typeD3.isEmpty()) {
@@ -135,7 +135,7 @@ public class ScPointNameck {
 					}
 				}
 			}
-			return typeD10;
+			return typeD3;
 	}
 	public Map<String,String> scPointNameckTypeD5() throws Exception{
 		if (typeD5==null||typeD5.isEmpty()) {

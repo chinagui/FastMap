@@ -45,6 +45,7 @@ public class Batch extends AbstractOperation{
 		List<BatchRule> batchRuleList=new ArrayList<BatchRule>();
 		for(String ruleId:batchCommand.getRuleIdList()){
 			BatchRule rule=BatchRuleLoader.getInstance().loadByRuleId(ruleId);
+			if(rule==null){continue;}
 			/*BatchRule rule=new BatchRule();
 			rule.setAccessorType("JAVA");
 			rule.setAccessor("com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.rule.GLM001TEST");

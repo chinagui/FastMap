@@ -19,6 +19,7 @@ public class ScPointNameck {
 	
 	private Map<String, String> typeD10 = new HashMap<String, String>();
 	
+	private Map<String, String> typeD4 = new HashMap<String, String>();
 	private Map<String, String> typeD3 = new HashMap<String, String>();
 	
 	private Map<String, String> typeD5 = new HashMap<String, String>();
@@ -136,6 +137,43 @@ public class ScPointNameck {
 				}
 			}
 			return typeD10;
+	}
+	/**
+	 * 返回SC_POINT_NAMECK中“TYPE”=4且HM_FLAG<>’HM’的PRE_KEY, RESULT_KEY
+	 * @return Map<String,String> key:PRE_KEY,value:RESULT_KEY
+	 * @throws Exception
+	 */
+	public Map<String,String> scPointNameckTypeD4() throws Exception{
+		if (typeD4==null||typeD4.isEmpty()) {
+				synchronized (this) {
+					if (typeD4==null||typeD4.isEmpty()) {
+						try {
+							String sql = "SELECT PRE_KEY, RESULT_KEY"
+									+ "  FROM SC_POINT_NAMECK"
+									+ " WHERE TYPE = 4"
+									+ "   AND HM_FLAG <> 'HM'";
+							PreparedStatement pstmt = null;
+							ResultSet rs = null;
+							Connection conn = null;
+							try {
+								conn = DBConnector.getInstance().getMetaConnection();
+								pstmt = conn.prepareStatement(sql);
+								rs = pstmt.executeQuery();
+								while (rs.next()) {
+									typeD4.put(rs.getString("PRE_KEY"), rs.getString("RESULT_KEY"));					
+								} 
+							} catch (Exception e) {
+								throw new Exception(e);
+							} finally {
+								DbUtils.commitAndCloseQuietly(conn);
+							}
+						} catch (Exception e) {
+							throw new SQLException("加载scpointNameck失败："+ e.getMessage(), e);
+						}
+					}
+				}
+			}
+			return typeD4;
 	}
 	public Map<String,String> scPointNameckTypeD5() throws Exception{
 		if (typeD5==null||typeD5.isEmpty()) {

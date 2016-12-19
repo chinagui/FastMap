@@ -29,6 +29,10 @@ import com.navinfo.navicommons.exception.ServiceException;
  * @author xiaoxiaowen4127
  * @date 2016年11月25日
  * @Description: PoiRelationImportor.java
+ * POI关系维护：父子关系，同一关系，目前只实现了父子关系
+ * 父子关系传参：PoiRelation
+ * 			若删除父子关系，则fatherPid=0&&fatherFid=null/""
+ * 			若对象删除，父子关系维护同删除父子关系。
  */
 public class PoiRelationImportor extends AbstractOperation{
 	protected Logger log = Logger.getLogger(this.getClass());

@@ -19,6 +19,8 @@ import com.navinfo.dataservice.dao.glm.model.rd.directroute.RdDirectroute;
 import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdEleceyePart;
 import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdElectroniceye;
 import com.navinfo.dataservice.dao.glm.model.rd.gate.RdGate;
+import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
+import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGscLink;
 import com.navinfo.dataservice.dao.glm.model.rd.lane.RdLane;
 import com.navinfo.dataservice.dao.glm.model.rd.lane.RdLaneCondition;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
@@ -47,6 +49,9 @@ public class VariablesFactory {
 		if (data instanceof RdLink) {
 			rdLinkSet.add(String.valueOf(((RdLink) data).getPid()));
 		}
+		if (data instanceof RdLinkForm) {
+			rdLinkSet.add(String.valueOf(((RdLinkForm) data).getLinkPid()));
+		}
 		if (data instanceof RdRestriction) {
 			rdLinkSet.add(String.valueOf(((RdRestriction) data).getInLinkPid()));
 		}
@@ -69,6 +74,18 @@ public class VariablesFactory {
 		}
 		if (data instanceof RdSe) {
 			rdLinkSet.add(String.valueOf(((RdSe) data).getInLinkPid()));
+		}
+		if(data instanceof RdGsc)
+		{
+			RdGsc gsc = (RdGsc) data;
+			for(IRow row : gsc.getLinks())
+			{
+				rdLinkSet.add(String.valueOf(((RdGscLink) row).getLinkPid()));
+			}
+		}
+		if (data instanceof RdGscLink)
+		{
+			rdLinkSet.add(String.valueOf(((RdGscLink) data).getLinkPid()));
 		}
 		if (data instanceof RdTmclocation) {
 			List<IRow> rows = ((RdTmclocation) data).getLinks();

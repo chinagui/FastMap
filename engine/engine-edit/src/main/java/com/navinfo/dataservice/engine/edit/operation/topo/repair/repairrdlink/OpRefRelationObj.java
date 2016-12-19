@@ -45,6 +45,11 @@ public class OpRefRelationObj {
 	private void getDepartNodePids(Command command) {
 		
 		departNodePids = new ArrayList<Integer>();
+		
+		if( command.getCatchInfos()==null)
+		{
+			return;
+		}
 
 		for (int i = 0; i < command.getCatchInfos().size(); i++) {
 

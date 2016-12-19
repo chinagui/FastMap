@@ -108,10 +108,10 @@ public abstract class BasicCheckRule {
 	 * @param log 可为null
 	 * @throws Exception
 	 */
-	public void setCheckResult(Geometry geometry, BasicObj obj, String log) throws Exception {
+	public void setCheckResult(Geometry geometry, BasicObj obj,int meshId,String log) throws Exception {
 		if(log==null || log.isEmpty()){log=this.checkRule.getLog();}
 		String targets="["+obj.getMainrow().tableName()+","+obj.objPid()+"]";
-		NiValException checkResult=new NiValException(this.checkRule.getRuleId(), geometry, targets,0,log);
+		NiValException checkResult=new NiValException(this.checkRule.getRuleId(), geometry, targets,meshId,log);
 		splitTargets(targets);
 		this.checkResultList.add(checkResult);
 	}

@@ -71,6 +71,15 @@ public interface MetadataApi {
 	
 	public Map<String, String> scPointNameckTypeD10() throws Exception;
 	
+	/**
+	 * 返回SC_POINT_NAMECK中“TYPE”=4且HM_FLAG<>’HM’的PRE_KEY, RESULT_KEY
+	 * @return Map<String,String> key:PRE_KEY,value:RESULT_KEY
+	 * @throws Exception
+	 */
+	public Map<String, String> scPointNameckTypeD4() throws Exception;
+	
+	public Map<String, String> scPointNameckTypeD3() throws Exception;
+	
 	public Map<String, String> scPointNameckTypeD5() throws Exception;
 	
 	public Map<String, String> scPointNameckTypeD7() throws Exception;

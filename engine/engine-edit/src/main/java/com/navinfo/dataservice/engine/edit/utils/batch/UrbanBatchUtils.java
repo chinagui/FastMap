@@ -79,14 +79,15 @@ public class UrbanBatchUtils extends BaseBatchUtils {
     /**
      * 新增、修改Face时更新Link信息
      *
-     * @param faceGeometry 修形前面几何
-     * @param geometry     修形后面几何(删除时传入null)
-     * @param conn         数据库链接
-     * @param result       结果集
+     * @param faceGeometry     修形前面
+     * @param geometry 修形后面几何(删除时传入null)
+     * @param conn     数据库链接
+     * @param result   结果集
      * @throws Exception
      */
     public static void updateUrban(Geometry faceGeometry, Geometry geometry, Connection conn, Result result) throws Exception {
         RdLinkSelector selector = new RdLinkSelector(conn);
+        faceGeometry = GeoTranslator.transform(faceGeometry, 0.00001, 5);
         // 删除面时,原面内Link的Urban赋0
         if (null == geometry) {
             List<RdLink> links = selector.loadLinkByFaceGeo(faceGeometry, true);

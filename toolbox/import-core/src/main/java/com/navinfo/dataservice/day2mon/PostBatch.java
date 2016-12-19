@@ -110,12 +110,14 @@ public class PostBatch {
 		Check check=new Check(conn,operationResult);
 		check.operate(checkCommand);
 		Map<String, Map<Long, Set<String>>> checkResult = check.getErrorPidMap();
-		// 打上052标记
-		Map<Long, Set<String>> poiMap = checkResult.get("IX_POI");
-		Set<String> workItem = new HashSet<String>();
-		workItem.add("FM-YW-20-052");
-		for (Long pid:poiMap.keySet()) {
-			updateColumnStatus(pid,workItem,1);
+		if(checkResult!=null){
+			// 打上052标记
+			Map<Long, Set<String>> poiMap = checkResult.get("IX_POI");
+			Set<String> workItem = new HashSet<String>();
+			workItem.add("FM-YW-20-052");
+			for (Long pid:poiMap.keySet()) {
+				updateColumnStatus(pid,workItem,1);
+			}
 		}
 		// 执行批处理FM-BAT-20-135,FM-BAT-20-163
 		batchCommand=new BatchCommand();

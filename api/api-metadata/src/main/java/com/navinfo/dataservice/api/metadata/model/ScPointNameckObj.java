@@ -1,6 +1,8 @@
 package com.navinfo.dataservice.api.metadata.model;
 
-public class ScPointNameckObj {
+import java.io.Serializable;
+
+public class ScPointNameckObj implements Serializable{
 	private String preKey;
 	private String resultKey;
 	private int type;

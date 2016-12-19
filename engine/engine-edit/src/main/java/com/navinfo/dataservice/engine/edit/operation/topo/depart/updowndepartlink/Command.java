@@ -129,7 +129,7 @@ public class Command extends AbstractCommand {
 		this.requester = requester;
 		this.setDbId(json.getInt("dbId"));
 		// 移动距离
-		this.distance = json.getInt("distance");
+		this.distance = json.getDouble("distance");
 		// 获取要上下线分离的linkPids
 		JSONObject data = json.getJSONObject("data");
 		JSONArray array = data.getJSONArray("linkPids");

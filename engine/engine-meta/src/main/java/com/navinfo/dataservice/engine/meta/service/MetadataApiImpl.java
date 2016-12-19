@@ -227,6 +227,12 @@ public class MetadataApiImpl implements MetadataApi {
 	}
 	
 	@Override
+	public Map<String, String> scPointNameckTypeD3() throws Exception {
+		// TODO Auto-generated method stub
+		return ScPointNameck.getInstance().scPointNameckTypeD3();
+	}
+	
+	@Override
 	public Map<String, String> scPointNameckTypeD5() throws Exception {
 		// TODO Auto-generated method stub
 		return ScPointNameck.getInstance().scPointNameckTypeD5();

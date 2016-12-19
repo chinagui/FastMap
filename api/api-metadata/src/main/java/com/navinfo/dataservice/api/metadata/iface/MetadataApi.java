@@ -71,6 +71,8 @@ public interface MetadataApi {
 	
 	public Map<String, String> scPointNameckTypeD10() throws Exception;
 	
+	public Map<String, String> scPointNameckTypeD3() throws Exception;
+	
 	public Map<String, String> scPointNameckTypeD5() throws Exception;
 	
 	public Map<String, String> scPointNameckTypeD7() throws Exception;

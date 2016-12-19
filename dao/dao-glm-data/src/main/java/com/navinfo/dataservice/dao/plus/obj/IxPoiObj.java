@@ -799,7 +799,7 @@ public class IxPoiObj extends AbstractIxObj {
 		List<IxPoiName> shortCHNameList=new ArrayList<IxPoiName>();
 		List<IxPoiName> subRows=getIxPoiNames();
 		for(IxPoiName br:subRows){
-			if(br.getOpType()!=OperationType.DELETE && br.getNameClass()==5&&br.getNameType()==1
+			if(br.getNameClass()==5&&br.getNameType()==1
 					&&(br.getLangCode().equals("CHI")||br.getLangCode().equals("CHT"))){
 				shortCHNameList.add(br);
 			}
@@ -814,7 +814,7 @@ public class IxPoiObj extends AbstractIxObj {
 		List<IxPoiName> standardCHName=new ArrayList<IxPoiName>();
 		List<IxPoiName> subRows=getIxPoiNames();
 		for(IxPoiName br:subRows){
-			if(br.getOpType()!=OperationType.DELETE &&(br.getNameClass()==1||br.getNameClass()==3
+			if((br.getNameClass()==1||br.getNameClass()==3
 					||br.getNameClass()==5||br.getNameClass()==6)&&br.getNameType()==1
 					&&(br.getLangCode().equals("CHI")||br.getLangCode().equals("CHT"))){
 				standardCHName.add(br);

@@ -98,7 +98,8 @@ public class Day2MonPoiLogSelector extends DefaultLogSelector{
 				sb.append(" )\r\n");
 				SqlClause sqlClause = new SqlClause(sb.toString(),values);
 				log.info("removeInvalidLogOperation:"+sqlClause);
-				return sqlClause.update(conn);
+				int count = sqlClause.update(conn);
+				return count;
 		
 	}
 	@Override

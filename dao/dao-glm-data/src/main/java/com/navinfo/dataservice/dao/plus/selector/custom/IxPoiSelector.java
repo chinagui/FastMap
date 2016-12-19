@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -16,6 +17,7 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.dao.plus.glm.GlmFactory;
@@ -130,6 +132,33 @@ public class IxPoiSelector {
 			throw new ServiceException("查询失败，原因为:"+e.getMessage(),e);
 		}
 
+	}
+	
+	/**
+	 * 通过子poi查询父，祖父等，一直到一级父（即父没有父了，只有子）
+	 * @param conn
+	 * @param pidList
+	 * @return
+	 * @throws ServiceException
+	 */
+	public static Map<Long,Long> getAllParentPidsByChildrenPids(Connection conn,Set<Long> pidList) throws ServiceException{
+		Map<Long,Long> childPidParentPid = new HashMap<Long,Long>();
+		if(pidList.isEmpty()){
+			return childPidParentPid;
+		}
+		childPidParentPid=getParentPidsByChildrenPids(conn,pidList);
+		Set<Long> poiPids=new HashSet<Long>();
+		poiPids=childPidParentPid.keySet();
+		poiPids.addAll(childPidParentPid.values());
+		poiPids.addAll(pidList);
+		//循环查询直到没有新父被查出来为止
+		while(poiPids.size()!=pidList.size()){
+			pidList=poiPids;
+			childPidParentPid=getParentPidsByChildrenPids(conn,pidList);
+			poiPids=childPidParentPid.keySet();
+			poiPids.addAll(childPidParentPid.values());
+		}
+		return childPidParentPid;
 	}
 	
 	

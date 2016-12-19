@@ -766,6 +766,33 @@ public class IxPoiObj extends AbstractIxObj {
 	}
 	
 	/*
+	 * 官方标准化简体中文名称
+	 */
+	public IxPoiName getOfficeStandardCHIName(){
+		List<IxPoiName> subRows=getIxPoiNames();
+		for(IxPoiName br:subRows){
+			if(br.getNameClass()==1&&br.getNameType()==1
+					&&br.getLangCode().equals("CHI")){
+				return br;}
+			}
+		return null;
+	}
+	
+	/*
+	 * 官方标准中文名称
+	 */
+	public List<IxPoiName> getShortCHNames(){
+		List<IxPoiName> shortNames=new ArrayList<IxPoiName>();
+		List<IxPoiName> subRows=getIxPoiNames();
+		for(IxPoiName br:subRows){
+			if(br.getNameClass()==5
+					&&(br.getLangCode().equals("CHI")||br.getLangCode().equals("CHT"))){
+				shortNames.add(br);}
+			}
+		return shortNames;
+	}
+	
+	/*
 	 * 简称标准中文名称组
 	 */
 	public List<IxPoiName> getShortStandardCHName(){

@@ -223,7 +223,7 @@ public class EditController extends BaseController {
 				if (obj != null) {
 					JSONObject json = obj.Serialize(ObjLevel.FULL);
 					json.put("geoLiveType", objType);
-					return new ModelAndView("jsonView", success(obj));
+					return new ModelAndView("jsonView", success(json));
 
 				} else {
 					return new ModelAndView("jsonView", success());
@@ -274,7 +274,7 @@ public class EditController extends BaseController {
 
 					JSONObject json = row.Serialize(ObjLevel.FULL);
 					json.put("geoLiveType", objType);
-					return new ModelAndView("jsonView", success(row));
+					return new ModelAndView("jsonView", success(json));
 
 				} else {
 					return new ModelAndView("jsonView", success());

@@ -24,6 +24,7 @@ public class Check {
 	}
 	public Map<String, Map<Long, Set<String>>> execute() throws Exception{
 		// 检查
+		log.info("开始执行检查");
 		CheckCommand checkCommand=new CheckCommand();		
 		List<String> checkList=new ArrayList<String>();
 		checkList.add("FM-A04-04");
@@ -50,10 +51,12 @@ public class Check {
 		checkList.add("FM-YW-20-018");
 		checkList.add("FM-GLM60189");
 		checkCommand.setRuleIdList(checkList);
+		log.info("要执行的检查项:"+checkList.toString());
 		
 		com.navinfo.dataservice.engine.editplus.batchAndCheck.check.Check check=new com.navinfo.dataservice.engine.editplus.batchAndCheck.check.Check(conn,opResult);
 		check.operate(checkCommand);
 		
+		log.info("检查完成");
 		return check.getErrorPidMap();
 	}
 }

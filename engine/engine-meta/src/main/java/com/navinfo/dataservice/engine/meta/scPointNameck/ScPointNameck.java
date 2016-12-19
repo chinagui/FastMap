@@ -20,6 +20,8 @@ public class ScPointNameck {
 	private Map<String, String> typeD10 = new HashMap<String, String>();
 	
 	private Map<String, String> typeD4 = new HashMap<String, String>();
+	private Map<String, String> typeD3 = new HashMap<String, String>();
+	
 	private Map<String, String> typeD5 = new HashMap<String, String>();
 	
 	private Map<String, String> typeD7 = new HashMap<String, String>();
@@ -90,6 +92,38 @@ public class ScPointNameck {
 								rs = pstmt.executeQuery();
 								while (rs.next()) {
 									typeD10.put(rs.getString("PRE_KEY"), rs.getString("RESULT_KEY"));					
+								} 
+							} catch (Exception e) {
+								throw new Exception(e);
+							} finally {
+								DbUtils.commitAndCloseQuietly(conn);
+							}
+						} catch (Exception e) {
+							throw new SQLException("加载scpointNameck失败："+ e.getMessage(), e);
+						}
+					}
+				}
+			}
+			return typeD3;
+	}
+	public Map<String,String> scPointNameckTypeD3() throws Exception{
+		if (typeD3==null||typeD3.isEmpty()) {
+				synchronized (this) {
+					if (typeD3==null||typeD3.isEmpty()) {
+						try {
+							String sql = "SELECT PRE_KEY, RESULT_KEY"
+									+ "  FROM SC_POINT_NAMECK"
+									+ " WHERE TYPE = 3"
+									+ "   AND HM_FLAG = 'D'";
+							PreparedStatement pstmt = null;
+							ResultSet rs = null;
+							Connection conn = null;
+							try {
+								conn = DBConnector.getInstance().getMetaConnection();
+								pstmt = conn.prepareStatement(sql);
+								rs = pstmt.executeQuery();
+								while (rs.next()) {
+									typeD3.put(rs.getString("PRE_KEY"), rs.getString("RESULT_KEY"));					
 								} 
 							} catch (Exception e) {
 								throw new Exception(e);

@@ -769,13 +769,14 @@ public class IxPoiObj extends AbstractIxObj {
 	 * 简称标准中文名称组
 	 */
 	public List<IxPoiName> getShortStandardCHName(){
-		List<IxPoiName> shortCHNameList=null;
+		List<IxPoiName> shortCHNameList=new ArrayList();
 		List<IxPoiName> subRows=getIxPoiNames();
 		for(IxPoiName br:subRows){
 			if(br.getOpType()!=OperationType.DELETE && br.getNameClass()==5&&br.getNameType()==1
 					&&(br.getLangCode().equals("CHI")||br.getLangCode().equals("CHT"))){
-				shortCHNameList.add(br);}
+				shortCHNameList.add(br);
 			}
+		}
 		return shortCHNameList;
 	}
 	
@@ -783,14 +784,15 @@ public class IxPoiObj extends AbstractIxObj {
 	 * 标准中文名称组
 	 */
 	public List<IxPoiName> getStandardCHName(){
-		List<IxPoiName> standardCHName=null;
+		List<IxPoiName> standardCHName=new ArrayList();
 		List<IxPoiName> subRows=getIxPoiNames();
 		for(IxPoiName br:subRows){
 			if(br.getOpType()!=OperationType.DELETE &&(br.getNameClass()==1||br.getNameClass()==3
 					||br.getNameClass()==5||br.getNameClass()==6)&&br.getNameType()==1
 					&&(br.getLangCode().equals("CHI")||br.getLangCode().equals("CHT"))){
-				standardCHName.add(br);}
+				standardCHName.add(br);
 			}
+		}
 		return standardCHName;
 	}
 	
@@ -811,7 +813,7 @@ public class IxPoiObj extends AbstractIxObj {
 	 * 别名中文(name_class=3,name_type=1,lang_code='CHI')列表
 	 */
 	public List<IxPoiName> getAliasCHIName(){
-		List<IxPoiName> aliasCHINameList=null;
+		List<IxPoiName> aliasCHINameList=new ArrayList();
 		List<IxPoiName> subRows=getIxPoiNames();
 		for(IxPoiName br:subRows){
 			if(br.getNameClass()==3&&br.getNameType()==1&&br.getLangCode().equals("CHI")){
@@ -840,7 +842,7 @@ public class IxPoiObj extends AbstractIxObj {
 	
 	public List<IxPoiName> getAliasENGName(){
 		List<IxPoiName> subRows=getIxPoiNames();
-		List<IxPoiName> aliasENGNameList=null;
+		List<IxPoiName> aliasENGNameList=new ArrayList();
 		for(IxPoiName br:subRows){
 			if(br.getNameClass()==3&&br.getLangCode().equals("ENG")){
 				aliasENGNameList.add(br);}
@@ -853,7 +855,7 @@ public class IxPoiObj extends AbstractIxObj {
 	 * @return
 	 */
 	public List<IxPoiName> getOriginAliasENGNameList(){
-		List<IxPoiName> originAliasENGNameList=null;
+		List<IxPoiName> originAliasENGNameList=new ArrayList();
 		List<IxPoiName> subRows=getIxPoiNames();
 		for(IxPoiName br:subRows){
 			if(br.getNameClass()==3&&br.getNameType()==2&&br.getLangCode().equals("ENG")){

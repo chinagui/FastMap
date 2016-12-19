@@ -205,9 +205,9 @@ public class EditController extends BaseController {
 						false);
 
 				if (row != null) {
-
-					return new ModelAndView("jsonView",
-							success(row.Serialize(ObjLevel.FULL)));
+					JSONObject obj = row.Serialize(ObjLevel.FULL);
+					obj.put("geoLiveType", objType);
+					return new ModelAndView("jsonView", success(obj));
 
 				} else {
 					return new ModelAndView("jsonView", success());
@@ -221,9 +221,9 @@ public class EditController extends BaseController {
 				IObj obj = p.searchDataByPid(ObjType.valueOf(objType), pid);
 
 				if (obj != null) {
-
-					return new ModelAndView("jsonView",
-							success(obj.Serialize(ObjLevel.FULL)));
+					JSONObject json = obj.Serialize(ObjLevel.FULL);
+					json.put("geoLiveType", objType);
+					return new ModelAndView("jsonView", success(obj));
 
 				} else {
 					return new ModelAndView("jsonView", success());
@@ -272,8 +272,9 @@ public class EditController extends BaseController {
 
 				if (row != null) {
 
-					return new ModelAndView("jsonView",
-							success(row.Serialize(ObjLevel.FULL)));
+					JSONObject json = row.Serialize(ObjLevel.FULL);
+					json.put("geoLiveType", objType);
+					return new ModelAndView("jsonView", success(row));
 
 				} else {
 					return new ModelAndView("jsonView", success());
@@ -290,9 +291,11 @@ public class EditController extends BaseController {
 				JSONArray array = new JSONArray();
 
 				if (objList != null) {
-
+                    
 					for (IObj obj : objList) {
-						array.add(obj.Serialize(ObjLevel.FULL));
+						JSONObject json = obj.Serialize(ObjLevel.FULL);
+						json.put("geoLiveType", objType);
+						array.add(json);
 					}
 					return new ModelAndView("jsonView", success(array));
 				} else {

@@ -54,7 +54,7 @@ public class LuFaceTest extends InitApplication {
 
 	@Test
 	public void delete(){
-		String parameter = "{\"command\":\"DELETE\",\"dbId\":17,\"type\":\"LUFACE\",\"objId\":301000000}";
+		String parameter = "{\"command\":\"DELETE\",\"dbId\":17,\"type\":\"ZONEFACE\",\"objId\":220000033}";
 		TestUtil.run(parameter);
 	}
 	

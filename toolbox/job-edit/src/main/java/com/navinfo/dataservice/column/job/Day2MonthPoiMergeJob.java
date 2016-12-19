@@ -145,7 +145,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 			Map<String, Map<Long, Set<String>>> checkResult = new Check(result, monthConn).execute();
 			new Classifier(checkResult,monthConn).execute();
 			log.info("开始执行后批处理");
-			new PostBatch(monthConn).execute();
+			new PostBatch(result,monthConn).execute();
 			log.info("修改同步信息为成功");
 			curSyncInfo.setSyncStatus(FmDay2MonSync.SyncStatusEnum.SUCCESS.getValue());
 			d2mSyncApi.updateSyncInfo(curSyncInfo);
@@ -162,14 +162,6 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 		
 	}
 
-	private String selectDailyLog(List<Integer> gridsOfCity, Date syncTimeStamp, OracleSchema dailyDbSchema)
-			throws Exception {
-		Day2MonPoiLogSelector logSelector = new Day2MonPoiLogSelector(dailyDbSchema);
-		logSelector.setGrids(gridsOfCity);
-		logSelector.setStopTime(syncTimeStamp);
-		String tempOpTable = logSelector.select();
-		return tempOpTable;
-	}
 
 	private OperationResult parseLog(LogMoveResult logMoveResult, Connection monthConn)
 			throws Exception, SQLException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException,

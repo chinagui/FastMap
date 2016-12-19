@@ -47,11 +47,13 @@ public class Classifier {
 			return ;	
 		}
 		// 重分类
+		log.info("开始执行重分类");
 		Map<Long, Set<String>> poiMap = checkResult.get("IX_POI");
 
 		for (Long pid:poiMap.keySet()) {
-			
+			log.info("当前执行poi:"+pid);
 			Set<String> ruleList = poiMap.get(pid);
+			log.info("当前poi检查结果:"+ruleList.toString());
 			boolean isEng = false;
 			boolean isName = false;
 			// poi_englishname
@@ -92,6 +94,7 @@ public class Classifier {
 				isEng = true;
 				ruleList.remove("FM-YW-20-017");
 			} 
+			log.info("英文名称：workItemIdEngName:"+workItemIdEngName.toString());
 			
 			// poi_name
 			Set<String> workItemIdName = new HashSet<String>();
@@ -129,6 +132,8 @@ public class Classifier {
 				}
 			}
 			
+			log.info("中文名：workItemIdName:"+workItemIdName.toString());
+			
 			// 其他作业
 			Set<String> otherWorkItemId = new HashSet<String>();
 			otherWorkItemId = ruleList;
@@ -136,6 +141,8 @@ public class Classifier {
 			if (otherWorkItemId.contains("FM-YW-20-018")) {
 				otherHandler = 201250;
 			}
+			
+			log.info("其他作业：otherWorkItemId:"+otherWorkItemId.toString());
 			
 			if (isEng&&!isName) {
 				// 英文名作业只有FM-YW-20-017且不需中文作业的，执行FM-BAT-20-115,FM-BAT-20-135,FM-BAT-20-163批处理
@@ -149,6 +156,10 @@ public class Classifier {
 					engNameHandler = 201150;
 				}
 			}
+			log.info("特殊标记engNameHandler:"+engNameHandler);
+			log.info("特殊标记nameHandler:"+nameHandler);
+			log.info("特殊标记otherHandler:"+otherHandler);
+			
 			updateColumnStatus(pid,workItemIdEngName,engNameHandler);
 			updateColumnStatus(pid,workItemIdName,nameHandler);
 			updateColumnStatus(pid,otherWorkItemId,otherHandler);

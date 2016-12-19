@@ -36,7 +36,7 @@ public class FMBATM0101 extends BasicBatchRule {
 
 			// 查询别名中文列表
 			List<IxPoiName> brList = poiObj.getAliasCHIName();
-			if (brList != null) {
+			if (brList.size()!=0) {
 				for (IxPoiName br : brList) {
 					// 满足条件（2）时，执行对应操作
 					if ((br.getHisOpType().equals(OperationType.INSERT))

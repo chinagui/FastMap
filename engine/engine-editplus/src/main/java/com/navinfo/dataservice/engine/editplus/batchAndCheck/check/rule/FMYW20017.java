@@ -36,7 +36,7 @@ public class FMYW20017 extends BasicCheckRule {
 			MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 			boolean isImportant=metadataApi.judgeScPointKind(kindCode, poi.getChain());
 			if(!isImportant){
-				setCheckResult(poi.getGeometry(),poiObj,null);
+				setCheckResult(poi.getGeometry(),poiObj,poi.getMeshId(),null);
 			}	}	
 	}
 

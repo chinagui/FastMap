@@ -39,7 +39,7 @@ public class BatchTestGPR {
 		System.out.println("start batch test");
 		BatchTest test=new BatchTest();
 		test.init();
-		Connection conn = DBConnector.getInstance().getConnectionById(17);
+		Connection conn = DBConnector.getInstance().getConnectionById(19);
 		OperationResult operationResult=new OperationResult();
 		BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", null, 78675641, false);
 //		operationResult.putObj(obj);
@@ -55,14 +55,14 @@ public class BatchTestGPR {
 		operationResult.putObj(obj);
 		
 		BatchCommand batchCommand=new BatchCommand();	
-		batchCommand.setRuleId("FM-BAT-20-124");
-		batchCommand.setOperationName("day2month");
+		batchCommand.setRuleId("FM-BAT-M01-01");
+		//batchCommand.setOperationName("day2month");
 		Batch batch=new Batch(conn,operationResult);
 		batch.operate(batchCommand);
 		System.out.println(batch.getName());
-		//batch.persistChangeLog(1, 2);
+		batch.persistChangeLog(1, 2);
 		DbUtils.commitAndCloseQuietly(conn);
-		System.out.println("end batch test FM-BAT-20-124");
+		System.out.println("end batch test FM-BAT-20-138");
 	}
 
 }

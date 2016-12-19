@@ -111,6 +111,26 @@ public class IxPoiName extends BasicRow {
 		else{return false;}
 	}
 	
+	public boolean isOfficeName(){
+		if(this.nameClass==1){return true;}
+		else{return false;}
+	}
+	
+	public boolean isOriginName(){
+		if(this.nameType==2){return true;}
+		else{return false;}
+	}
+	
+	public boolean isCH(){
+		if(this.langCode.equals("CHI")||this.langCode.equals("CHT")){return true;}
+		else{return false;}
+	}
+	
+	public boolean isEng(){
+		if(this.langCode.equals("ENG")){return true;}
+		else{return false;}
+	}
+	
 	@Override
 	public String tableName() {
 		return "IX_POI_NAME";

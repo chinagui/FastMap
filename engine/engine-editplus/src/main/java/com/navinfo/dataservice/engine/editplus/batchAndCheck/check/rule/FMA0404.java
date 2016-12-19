@@ -38,9 +38,17 @@ public class FMA0404 extends BasicCheckRule {
 		if(obj.objName().equals(ObjectName.IX_POI)){
 			IxPoiObj poiObj=(IxPoiObj) obj;
 			IxPoi poi=(IxPoi) poiObj.getMainrow();
-			poi.hisOldValueContains(IxPoi.KIND_CODE);
-			String oldKCStr=(String) poi.getHisOldValue(IxPoi.KIND_CODE);
+			
+			//判断poi 分类是否修改
 			String newKCStr=poi.getKindCode();
+			boolean poiUpdateFlag = false;
+			if(poi.getHisOpType().equals(OperationType.UPDATE) && poi.hisOldValueContains(IxPoi.KIND_CODE)){
+				String oldKCStr=(String) poi.getHisOldValue(IxPoi.KIND_CODE);
+				if(!newKCStr.equals(oldKCStr)){
+					poiUpdateFlag = true;
+				}
+			}
+			
 			String[] kindCodeArr = new String[]{"190100","190101","190102","190103","190104","190105","190106","190107","190108","190109","190110","190111","190112","190500","190501","190502","190301","190200","190201","190202","190203","190204","230103","230111","230114","230105","230126","230127","150101","230208","230128"};
 			List<String> kindCodeList  = Arrays.asList(kindCodeArr);
 
@@ -48,28 +56,22 @@ public class FMA0404 extends BasicCheckRule {
 			IxPoiName standardNameObj=poiObj.getOfficeStandardCHName();
 			IxPoiName originalNameObj=poiObj.getOfficeOriginCHIName();
 			if(standardNameObj != null && originalNameObj != null ){
-			//存在IX_POI_NAME新增或者修改履历
-			List<IxPoiName> names=new ArrayList<IxPoiName>();
-			names.add(standardNameObj);
-			names.add(originalNameObj);
-			String standardName = "";
-			String originalName = "";
+				String standardName = "";
+				String originalName = "";
 			
-				for (IxPoiName name:names){
-					if((!newKCStr.equals(oldKCStr) ||  name.getHisOpType().equals(OperationType.INSERT)|| name.getHisOpType().equals(OperationType.UPDATE)) 
-							&& kindCodeList.contains(newKCStr)){
-							if(name.getNameType() == 1){//标准化
-								standardName = name.getName();
-							}else{//原始
-								originalName = name.getName();
-							}
-						}
-					}
-			if(StringUtils.isNotEmpty(standardName) && StringUtils.isNotEmpty(originalName) && standardName.equals(originalName)){
-				String log="无简化的POI名称统一";
-				System.out.println("poi"+poi.getPid());
-				setCheckResult(poi.getGeometry(), "[IX_POI,"+poi.getPid()+"]", poi.getMeshId(),log);
-			}
+				//存在IX_POI_NAME新增或者修改履历
+				if((poiUpdateFlag ||  originalNameObj.getHisOpType().equals(OperationType.INSERT)|| originalNameObj.getHisOpType().equals(OperationType.UPDATE)) 
+						&& kindCodeList.contains(newKCStr)){
+						//标准化
+						standardName = standardNameObj.getName();
+						//原始
+						originalName = originalNameObj.getName();
+				}
+				if(StringUtils.isNotEmpty(standardName) && StringUtils.isNotEmpty(originalName) && standardName.equals(originalName)){
+					String log="无简化的POI名称统一";
+					System.out.println("poi"+poi.getPid());
+					setCheckResult(poi.getGeometry(), "[IX_POI,"+poi.getPid()+"]", poi.getMeshId(),log);
+				}
 		}
 		}
 	}

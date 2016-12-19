@@ -190,6 +190,20 @@ public class VariablesFactory {
 		}
 		return rdLinkSet;
 	}
+	
+	/**
+	 * @param data
+	 * @return
+	 */
+	public static Set<String> getRdDirectrouteOutLinkPid(IRow data) {
+		// TODO Auto-generated method stub
+		Set<String> rdLinkSet = new HashSet<String>();
+		if (data instanceof RdDirectroute) {
+			RdDirectroute rdDirectroute = (RdDirectroute) data;
+			rdLinkSet.add(String.valueOf(rdDirectroute.getOutLinkPid()));
+		}
+		return rdLinkSet;
+	}
 
 	/**
 	 * @param data

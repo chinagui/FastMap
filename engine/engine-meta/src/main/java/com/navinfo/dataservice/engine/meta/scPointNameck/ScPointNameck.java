@@ -104,7 +104,7 @@ public class ScPointNameck {
 					}
 				}
 			}
-			return typeD3;
+			return typeD10;
 	}
 	public Map<String,String> scPointNameckTypeD3() throws Exception{
 		if (typeD3==null||typeD3.isEmpty()) {
@@ -136,7 +136,7 @@ public class ScPointNameck {
 					}
 				}
 			}
-			return typeD10;
+			return typeD3;
 	}
 	/**
 	 * 返回SC_POINT_NAMECK中“TYPE”=4且HM_FLAG<>’HM’的PRE_KEY, RESULT_KEY

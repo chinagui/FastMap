@@ -77,7 +77,6 @@ public class FMA0405 extends BasicCheckRule {
 					if(originNameStr.contains(nameckObj.getPreKey())){
 						String log="有简化的POI名称统一：“"+nameckObj.getPreKey()+"”,应简化为“"+nameckObj.getResultKey()+"”";
 						setCheckResult(poi.getGeometry(), "[IX_POI,"+poi.getPid()+"]", poi.getMeshId(),log);
-						return;
 					}
 				}
 

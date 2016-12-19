@@ -10,6 +10,7 @@ import java.util.Set;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiParent;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
@@ -38,30 +39,36 @@ public class FMA0712 extends BasicCheckRule {
 			if(!isCheck(poiObj)){return;}
 			IxPoi poi=(IxPoi) poiObj.getMainrow();
 			Long pid=poi.getPid();
-			//数据必须存在父子关系，且对应的第一级父分类为“230126”
 			//获取一级父pid
 			Long parentPid=getFirstParentPid(pid);
-			if(parentPid==null){return;}
-			//获取一级父poi
-			Map<Long, BasicObj> poiMap = myReferDataMap.get(ObjectName.IX_POI);
-			if(!poiMap.containsKey(parentPid)){return;}
-			IxPoiObj parentObj = (IxPoiObj) poiMap.get(parentPid);
-			IxPoi parentPoi=(IxPoi) parentObj.getMainrow();
-			if(!parentPoi.getKindCode().equals("230126")){return;}
-			//子的官方标准化中文名称包含第一级父的官方标准化中文名称的记录
-			IxPoiName poiOfficeName=poiObj.getOfficeStandardCHName();
-			IxPoiName parentOfficeName=parentObj.getOfficeStandardCHName();
-			if(!poiOfficeName.getName().contains(parentOfficeName.getName())){
-				setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), null);
+			if(parentPid==null){// 如果POI作为第一级父子关系中的父，将此父POI记录报出来；
+				if(!poi.getKindCode().equals("230126")){return;}
+				List<IxPoiParent> parentObjs = poiObj.getIxPoiParents();
+				if(parentObjs!=null&&parentObjs.size()>0){
+					setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), null);
+				}
+			}else{
+				//数据必须存在父子关系，且对应的第一级父分类为“230126”
+				//获取一级父poi
+				Map<Long, BasicObj> poiMap = myReferDataMap.get(ObjectName.IX_POI);
+				if(!poiMap.containsKey(parentPid)){return;}
+				IxPoiObj parentObj = (IxPoiObj) poiMap.get(parentPid);
+				IxPoi parentPoi=(IxPoi) parentObj.getMainrow();
+				if(!parentPoi.getKindCode().equals("230126")){return;}
+				//子的官方标准化中文名称包含第一级父的官方标准化中文名称的记录
+				IxPoiName poiOfficeName=poiObj.getOfficeStandardCHName();
+				IxPoiName parentOfficeName=parentObj.getOfficeStandardCHName();
+				if(!poiOfficeName.getName().contains(parentOfficeName.getName())){
+					setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), null);
+				}
 			}
-			//TODO 如果POI作为第一级父子关系中的父，将此父POI记录报出来；
 		}
 	}
 	
 	private Long getFirstParentPid(Long pid){
 		if(!parentMap.containsKey(pid)){return null;}
 		Long parentPid=parentMap.get(pid);
-		while(!parentMap.containsKey(parentPid)){
+		while(parentMap.containsKey(parentPid)){
 			parentPid=parentMap.get(parentPid);
 		}
 		return parentPid;

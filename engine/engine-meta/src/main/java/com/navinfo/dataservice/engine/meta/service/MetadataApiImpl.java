@@ -226,6 +226,17 @@ public class MetadataApiImpl implements MetadataApi {
 		return ScPointNameck.getInstance().scPointNameckTypeD10();
 	}
 	
+	/**
+	 * 返回SC_POINT_NAMECK中“TYPE”=4且HM_FLAG<>’HM’的PRE_KEY, RESULT_KEY
+	 * @return Map<String,String> key:PRE_KEY,value:RESULT_KEY
+	 * @throws Exception
+	 */
+	@Override
+	public Map<String, String> scPointNameckTypeD4() throws Exception {
+		// TODO Auto-generated method stub
+		return ScPointNameck.getInstance().scPointNameckTypeD4();
+	}
+	
 	@Override
 	public Map<String, String> scPointNameckTypeD5() throws Exception {
 		// TODO Auto-generated method stub

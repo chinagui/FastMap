@@ -1,4 +1,9 @@
-﻿1. init_check_rules.sh（drop_check_rules.sql，sysCheck.dmp）
-  功能：全量更新检查项相关表ck_rule,ck_suite,ck_suite_rule_mapping,ck_object_node
-  目标库：sys库
-  author: 宋冬燕
+1. update_sys_batch.sql
+	目标库：sys库
+	功能：月编检查批处理
+	author: 张晓毅
+
+﻿2. init_check_rules.sh（drop_check_rules.sql，sysCheck.dmp）
+	功能：全量更新检查项相关表ck_rule,ck_suite,ck_suite_rule_mapping,ck_object_node
+	目标库：sys库
+	author: 宋冬燕

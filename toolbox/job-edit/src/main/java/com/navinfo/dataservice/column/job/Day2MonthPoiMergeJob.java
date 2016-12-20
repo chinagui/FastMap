@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
@@ -33,6 +34,8 @@ import com.navinfo.dataservice.day2mon.Day2MonPoiLogSelector;
 import com.navinfo.dataservice.day2mon.PostBatch;
 import com.navinfo.dataservice.day2mon.PreBatch;
 import com.navinfo.dataservice.impcore.flushbylog.FlushResult;
+import com.navinfo.dataservice.impcore.flushbylog.LogFlushUtil;
+import com.navinfo.dataservice.impcore.flusher.Day2MonLogFlusher;
 import com.navinfo.dataservice.impcore.flusher.DefaultLogFlusher;
 import com.navinfo.dataservice.impcore.flusher.LogFlusher;
 import com.navinfo.dataservice.impcore.mover.DefaultLogMover;
@@ -121,24 +124,26 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 		FmDay2MonSync curSyncInfo = createSyncInfo(d2mSyncApi, cityId,syncTimeStamp);//记录本次的同步信息
 		d2mSyncApi.insertSyncInfo(curSyncInfo);
 		Day2MonPoiLogSelector logSelector = null;
+		OracleSchema dailyDbSchema = new OracleSchema(
+				DbConnectConfig.createConnectConfig(dailyDbInfo.getConnectParam()));
+		Connection dailyConn = dailyDbSchema.getPoolDataSource().getConnection();
+		OracleSchema monthDbSchema = new OracleSchema(
+				DbConnectConfig.createConnectConfig(monthDbInfo.getConnectParam()));
+		Connection monthConn = monthDbSchema.getPoolDataSource().getConnection();
 		try{
 			log.info("开始获取日编库履历");
-			OracleSchema dailyDbSchema = new OracleSchema(
-					DbConnectConfig.createConnectConfig(dailyDbInfo.getConnectParam()));
+			
 			logSelector = new Day2MonPoiLogSelector(dailyDbSchema);
 			logSelector.setGrids(gridsOfCity);
 			logSelector.setStopTime(syncTimeStamp);
 			String tempOpTable = logSelector.select();
 			log.info("开始奖日库履历刷新到月库");
-			OracleSchema monthDbSchema = new OracleSchema(
-					DbConnectConfig.createConnectConfig(monthDbInfo.getConnectParam()));
-			LogFlusher flusher = new DefaultLogFlusher(dailyDbSchema, monthDbSchema, true, tempOpTable);
-			FlushResult flushResult = flusher.flush();
+			FlushResult flushResult= new Day2MonLogFlusher(dailyDbSchema,dailyConn,monthConn,true,tempOpTable).flush();
 			log.info("开始将履历搬到月库");
-			LogMover logMover = new DefaultLogMover(dailyDbSchema, monthDbSchema, tempOpTable, flushResult.getTempFailLogTable());
+			LogMover logMover = new DefaultLogMover(dailyDbSchema, monthDbSchema, tempOpTable, flushResult.getTempFailLogTable(),dailyConn,true);
 			LogMoveResult logMoveResult = logMover.move();
 			log.info("开始进行履历分析");
-			Connection monthConn = monthDbSchema.getPoolDataSource().getConnection();
+			
 			OperationResult result = parseLog(logMoveResult, monthConn);
 			log.info("开始执行前批");
 			new PreBatch(result, monthConn).execute();
@@ -153,14 +158,21 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 			d2mSyncApi.updateSyncInfo(curSyncInfo);
 			log.info("finished:"+cityId);
 		}catch(Exception e){
+			if(monthConn!=null)monthConn.rollback();
+			if(dailyConn!=null)dailyConn.rollback();
+			log.info("rollback db");
 			log.error(e.getMessage(),e);
 			curSyncInfo.setSyncStatus(FmDay2MonSync.SyncStatusEnum.FAIL.getValue());
 			d2mSyncApi.updateSyncInfo(curSyncInfo);
+			
 		}finally{
 			if(logSelector!=null){
 				log.info("释放履历锁");
 				logSelector.unselect(true);
 			}
+			if(monthConn!=null)monthConn.commit();
+			if(dailyConn!=null)dailyConn.commit();
+			log.info("commit db");
 		}
 		
 	}

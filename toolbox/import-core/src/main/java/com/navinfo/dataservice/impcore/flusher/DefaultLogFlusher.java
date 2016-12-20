@@ -29,15 +29,14 @@ public class DefaultLogFlusher extends LogFlusher {
 
 	protected String tempTable;
 	protected String tempFailLogTable;
-
 	@Override
 	public FlushResult flush() throws Exception {
 		Connection logConn = null;
 		Connection tarConn = null;
 		try{
 			logConn = logSchema.getPoolDataSource().getConnection();
-			tempFailLogTable = createFailueLogTempTable(logConn);
 			tarConn = tarSchema.getPoolDataSource().getConnection();
+			tempFailLogTable = createFailueLogTempTable(logConn);
 			FlushResult result = LogFlushUtil.getInstance().flush(logConn, tarConn, selectLogSql(),this.ignoreError);
 			recordFailLog2Temptable(result,logConn);
 			result.setTempFailLogTable(tempFailLogTable);
@@ -63,13 +62,7 @@ public class DefaultLogFlusher extends LogFlusher {
 	 * @throws Exception
 	 */
 	protected String createFailueLogTempTable(Connection conn)throws Exception{
-		StringBuilder sb = new StringBuilder();
-		String table = "TEMP_FAIL_LOG_"+new Random().nextInt(1000000);
-		sb.append("CREATE TABLE ");
-		sb.append(table);
-		sb.append("(OP_ID RAW(16),ROW_ID RAW(16))");
-		run.execute(conn, sb.toString());
-		return table;
+		return LogFlusherHelper.createFailueLogTempTable(conn);
 	}
 	
 	protected String selectLogSql(){

@@ -40,6 +40,7 @@ import com.navinfo.dataservice.impcore.mover.LogMoveResult;
 import com.navinfo.dataservice.impcore.mover.LogMover;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
+import com.navinfo.navicommons.database.QueryRunner;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -146,6 +147,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 			new Classifier(checkResult,monthConn).execute();
 			log.info("开始执行后批处理");
 			new PostBatch(result,monthConn).execute();
+			updateLogCommitStatus(dailyDbSchema,tempOpTable);
 			log.info("修改同步信息为成功");
 			curSyncInfo.setSyncStatus(FmDay2MonSync.SyncStatusEnum.SUCCESS.getValue());
 			d2mSyncApi.updateSyncInfo(curSyncInfo);
@@ -162,7 +164,12 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 		
 	}
 
-
+	protected void updateLogCommitStatus(OracleSchema dailyDbSchema,String tempTable) throws Exception {
+		QueryRunner run = new QueryRunner();
+		String sql = "update LOG_OPERATION set com_dt = sysdate,com_sta=1,LOCK_STA=0 where OP_ID IN (SELECT OP_ID FROM "+tempTable+")";
+		run.execute(dailyDbSchema.getPoolDataSource().getConnection(), sql);
+		
+	}
 	private OperationResult parseLog(LogMoveResult logMoveResult, Connection monthConn)
 			throws Exception, SQLException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException,
 			IllegalAccessException, InstantiationException, OperationResultException {

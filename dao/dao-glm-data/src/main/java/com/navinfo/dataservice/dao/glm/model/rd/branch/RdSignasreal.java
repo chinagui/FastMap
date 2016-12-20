@@ -40,6 +40,10 @@ public class RdSignasreal implements IObj {
 	public RdSignasreal() {
 
 	}
+	
+	public String getRowId() {
+		return rowId;
+	}
 
 	public int getPid() {
 		return pid;

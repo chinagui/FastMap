@@ -76,6 +76,10 @@ public class RdSignboardName implements IObj {
 	public void setNameGroupid(int nameGroupid) {
 		this.nameGroupid = nameGroupid;
 	}
+	
+	public String getRowId() {
+		return rowId;
+	}
 
 	public int getSignboardId() {
 		return signboardId;

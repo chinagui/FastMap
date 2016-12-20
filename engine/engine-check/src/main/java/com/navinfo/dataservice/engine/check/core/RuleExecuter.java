@@ -265,7 +265,7 @@ public class RuleExecuter {
 				sqlListTmp.add(sql.replace(firstVariable, variableValueList.iterator().next()));
 			}else{
 				String sqlTmp=sql.replace("= "+firstVariable, "="+firstVariable);
-				sqlListTmp.add(sqlTmp.replace("="+firstVariable, "in ("+variableValueList.toString().replace("[", "").replace("]", "")+")"));
+				sqlListTmp.add(sqlTmp.replace("="+firstVariable, " in ("+variableValueList.toString().replace("[", "").replace("]", "")+")"));
 			}
 		}else{
 			//有多个变量，或者sql中变量出现多次

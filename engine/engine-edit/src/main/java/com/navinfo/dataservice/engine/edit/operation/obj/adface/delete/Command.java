@@ -1,5 +1,7 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.adface.delete;
 
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdmin;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFace;
 import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.dao.glm.iface.ICommand;
@@ -9,39 +11,57 @@ import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 
 public class Command extends AbstractCommand implements ICommand {
 
-	private String requester;
+    private String requester;
 
+    private int faceId;
 
-	private int faceId;
+    private AdFace face;
 
-	public int getFaceId() {
-		return faceId;
-	}
+    private AdAdmin adAdmin;
 
-	public void setFaceId(int faceId) {
-		this.faceId = faceId;
-	}
+    public int getFaceId() {
+        return faceId;
+    }
 
+    public void setFaceId(int faceId) {
+        this.faceId = faceId;
+    }
 
-	@Override
-	public OperType getOperType() {
-		return OperType.DELETE;
-	}
-	
-	@Override
-	public ObjType getObjType() {
-		return ObjType.ADFACE;
-	}
+    public AdFace getFace() {
+        return face;
+    }
 
-	@Override
-	public String getRequester() {
-		return requester;
-	}
+    public void setFace(AdFace face) {
+        this.face = face;
+    }
 
-	public Command(JSONObject json, String requester) throws Exception{
-		this.requester = requester;
+    public AdAdmin getAdAdmin() {
+        return adAdmin;
+    }
+
+    public void setAdAdmin(AdAdmin adAdmin) {
+        this.adAdmin = adAdmin;
+    }
+
+    @Override
+    public OperType getOperType() {
+        return OperType.DELETE;
+    }
+
+    @Override
+    public ObjType getObjType() {
+        return ObjType.ADFACE;
+    }
+
+    @Override
+    public String getRequester() {
+        return requester;
+    }
+
+    public Command(JSONObject json, String requester) throws Exception {
+        this.requester = requester;
         this.faceId = json.getInt("objId");
-		this.setDbId(json.getInt("dbId"));
-	}
+        this.setDbId(json.getInt("dbId"));
+    }
 
 }

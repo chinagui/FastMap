@@ -32,7 +32,7 @@ public class FMBAT20124 extends BasicBatchRule {
 			if (kindCode=="230111"||kindCode=="230114"){return;}
 			List<IxPoiName> Names= poiObj.getIxPoiNames();
 			for (IxPoiName Name : Names) {
-				if (Name.getClass().equals(8)){
+				if (Name.getNameClass()==8){
 					poiObj.deleteSubrow(Name);
 				}
 			}

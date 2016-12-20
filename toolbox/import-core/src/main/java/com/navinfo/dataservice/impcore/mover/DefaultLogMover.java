@@ -124,7 +124,7 @@ public class DefaultLogMover extends LogMover {
 		if(StringUtils.isNotEmpty(tempFailLogTable)){
 			sb.append(" AND NOT EXISTS(SELECT 1 FROM ");
 			sb.append(tempFailLogTable);
-			sb.append(" F WHERE F.ROW_ID=D.ROW_ID)");
+			sb.append(" F WHERE F.OP_ID=T.OP_ID)");
 		}
 		sb.append(" ORDER BY L.OP_DT) T");
 		return sb.toString();

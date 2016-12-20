@@ -40,6 +40,7 @@ import com.navinfo.dataservice.impcore.mover.LogMoveResult;
 import com.navinfo.dataservice.impcore.mover.LogMover;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
+import com.navinfo.navicommons.database.QueryRunner;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -107,6 +108,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 		Integer regionId = (Integer) cityInfo.get("regionId");
 		Region regionInfo = manApi.queryByRegionId(regionId);
 		log.info("获取大区信息:"+regionInfo);
+		if(regionInfo==null) return ;
 		Integer dailyDbId = regionInfo.getDailyDbId();
 		DbInfo dailyDbInfo = datahubApi.getDbById(dailyDbId);
 		log.info("获取dailyDbInfo信息:"+dailyDbInfo);
@@ -118,43 +120,56 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 		Date syncTimeStamp= new Date();
 		FmDay2MonSync curSyncInfo = createSyncInfo(d2mSyncApi, cityId,syncTimeStamp);//记录本次的同步信息
 		d2mSyncApi.insertSyncInfo(curSyncInfo);
-		log.info("开始获取日编库履历");
-		OracleSchema dailyDbSchema = new OracleSchema(
-				DbConnectConfig.createConnectConfig(dailyDbInfo.getConnectParam()));				
-		String tempOpTable = selectDailyLog(gridsOfCity, syncTimeStamp, dailyDbSchema);
-		log.info("开始奖日库履历刷新到月库");
-		OracleSchema monthDbSchema = new OracleSchema(
-				DbConnectConfig.createConnectConfig(monthDbInfo.getConnectParam()));
-		LogFlusher flusher = new DefaultLogFlusher(dailyDbSchema, monthDbSchema, true, tempOpTable);
-		FlushResult flushResult = flusher.flush();
-		log.info("开始将履历搬到月库");
-		LogMover logMover = new DefaultLogMover(dailyDbSchema, monthDbSchema, tempOpTable, flushResult.getTempFailLogTable());
-		LogMoveResult logMoveResult = logMover.move();
-		log.info("开始进行履历分析");
-		Connection monthConn = monthDbSchema.getPoolDataSource().getConnection();
-		OperationResult result = parseLog(logMoveResult, monthConn);
-		log.info("开始执行前批");
-		new PreBatch(result, monthConn).execute();
-		log.info("开始执行检查");
-		Map<String, Map<Long, Set<String>>> checkResult = new Check(result, monthConn).execute();
-		new Classifier(checkResult,monthConn).execute();
-		log.info("开始执行后批处理");
-		new PostBatch(result, monthConn).execute();
-		log.info("修改同步信息为成功");
-		curSyncInfo.setSyncStatus(FmDay2MonSync.SyncStatusEnum.SUCCESS.getValue());
-		d2mSyncApi.updateSyncInfo(curSyncInfo);
-		log.info("finished:"+cityId);
+		Day2MonPoiLogSelector logSelector = null;
+		try{
+			log.info("开始获取日编库履历");
+			OracleSchema dailyDbSchema = new OracleSchema(
+					DbConnectConfig.createConnectConfig(dailyDbInfo.getConnectParam()));
+			logSelector = new Day2MonPoiLogSelector(dailyDbSchema);
+			logSelector.setGrids(gridsOfCity);
+			logSelector.setStopTime(syncTimeStamp);
+			String tempOpTable = logSelector.select();
+			log.info("开始奖日库履历刷新到月库");
+			OracleSchema monthDbSchema = new OracleSchema(
+					DbConnectConfig.createConnectConfig(monthDbInfo.getConnectParam()));
+			LogFlusher flusher = new DefaultLogFlusher(dailyDbSchema, monthDbSchema, true, tempOpTable);
+			FlushResult flushResult = flusher.flush();
+			log.info("开始将履历搬到月库");
+			LogMover logMover = new DefaultLogMover(dailyDbSchema, monthDbSchema, tempOpTable, flushResult.getTempFailLogTable());
+			LogMoveResult logMoveResult = logMover.move();
+			log.info("开始进行履历分析");
+			Connection monthConn = monthDbSchema.getPoolDataSource().getConnection();
+			OperationResult result = parseLog(logMoveResult, monthConn);
+			log.info("开始执行前批");
+			new PreBatch(result, monthConn).execute();
+			log.info("开始执行检查");
+			Map<String, Map<Long, Set<String>>> checkResult = new Check(result, monthConn).execute();
+			new Classifier(checkResult,monthConn).execute();
+			log.info("开始执行后批处理");
+			new PostBatch(result,monthConn).execute();
+			updateLogCommitStatus(dailyDbSchema,tempOpTable);
+			log.info("修改同步信息为成功");
+			curSyncInfo.setSyncStatus(FmDay2MonSync.SyncStatusEnum.SUCCESS.getValue());
+			d2mSyncApi.updateSyncInfo(curSyncInfo);
+			log.info("finished:"+cityId);
+		}catch(Exception e){
+			curSyncInfo.setSyncStatus(FmDay2MonSync.SyncStatusEnum.FAIL.getValue());
+			d2mSyncApi.updateSyncInfo(curSyncInfo);
+		}finally{
+			if(logSelector!=null){
+				log.info("释放履历锁");
+				logSelector.unselect(true);
+			}
+		}
+		
 	}
 
-	private String selectDailyLog(List<Integer> gridsOfCity, Date syncTimeStamp, OracleSchema dailyDbSchema)
-			throws Exception {
-		Day2MonPoiLogSelector logSelector = new Day2MonPoiLogSelector(dailyDbSchema);
-		logSelector.setGrids(gridsOfCity);
-		logSelector.setStopTime(syncTimeStamp);
-		String tempOpTable = logSelector.select();
-		return tempOpTable;
+	protected void updateLogCommitStatus(OracleSchema dailyDbSchema,String tempTable) throws Exception {
+		QueryRunner run = new QueryRunner();
+		String sql = "update LOG_OPERATION set com_dt = sysdate,com_sta=1,LOCK_STA=0 where OP_ID IN (SELECT OP_ID FROM "+tempTable+")";
+		run.execute(dailyDbSchema.getPoolDataSource().getConnection(), sql);
+		
 	}
-
 	private OperationResult parseLog(LogMoveResult logMoveResult, Connection monthConn)
 			throws Exception, SQLException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException,
 			IllegalAccessException, InstantiationException, OperationResultException {

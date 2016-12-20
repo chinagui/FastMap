@@ -54,8 +54,11 @@ public class Check extends AbstractOperation{
 		Map<String, Set<String>> selConfig=new HashMap<String, Set<String>>();
 		List<CheckRule> checkRuleList=new ArrayList<CheckRule>();
 		for(String ruleId:checkCommand.getRuleIdList()){
-			CheckRule rule=CheckRuleLoader.getInstance().loadByRuleId(ruleId);
-			if(rule==null){continue;}
+			CheckRule rule = loadCheckRule(ruleId);
+			if(rule==null){
+				log.error("检查规则加载失败,rule Id:"+ruleId);
+				continue;
+			}
 			checkRuleList.add(rule);
 			Map<String, Set<String>> tmpMap = rule.getReferSubtableMap();
 			for(String manObjName:tmpMap.keySet()){
@@ -94,6 +97,17 @@ public class Check extends AbstractOperation{
 		}
 		log.info("end exe check");
 		setReturnExceptions(checkResult);
+	}
+
+	private CheckRule loadCheckRule(String ruleId) throws Exception {
+		try{
+			return CheckRuleLoader.getInstance().loadByRuleId(ruleId);
+		}catch(Exception e){
+			log.info("加载检查规则失败,ruleId:"+ruleId+",errorMsg:"+e.getMessage());
+			return null;
+		}
+		
+		
 	}
 
 	public List<NiValException> getReturnExceptions() {

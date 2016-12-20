@@ -7,3 +7,7 @@
 	功能：全量更新检查项相关表ck_rule,ck_suite,ck_suite_rule_mapping,ck_object_node
 	目标库：sys库
 	author: 宋冬燕
+3.update_fm_man.sh
+  功能：初始化日落月开关控制配置表DAY2MONTH_CONFIG
+  目标库：man库
+  author：马云飞

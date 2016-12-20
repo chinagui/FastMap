@@ -38,7 +38,7 @@ try{
 			System.out.println("Over.");
 			System.exit(0);
 		}catch(Exception e){
-			System.out.println("Oops, something wrong...");
+			System.out.println("Oops, something wrong:"+e.getMessage());
 			e.printStackTrace();
 		}
 	}

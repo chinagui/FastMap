@@ -33,7 +33,9 @@ public class StringUtils {
 	 * @return 列名
 	 */
 	public static String toColumnName(String fieldName) {
-
+		if (fieldName.equals("fccPid")) {
+			return "pid";
+		}
 		if (fieldName.equals("open24h")) {
 			return "open_24h";
 		}

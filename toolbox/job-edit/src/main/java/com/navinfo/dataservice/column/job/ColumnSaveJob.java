@@ -11,6 +11,7 @@ import java.util.List;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
 
+import com.navinfo.dataservice.api.edit.upload.EditJson;
 import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
@@ -20,14 +21,13 @@ import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.control.column.core.DeepCoreControl;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.PoiColumnOpConf;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiOpConfSelector;
-import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
-import com.navinfo.dataservice.dao.plus.selector.ObjSelector;
-import com.navinfo.dataservice.engine.edit.service.EditApiImpl;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.Batch;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.BatchCommand;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.check.Check;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.check.CheckCommand;
+import com.navinfo.dataservice.engine.editplus.operation.imp.DefaultObjImportor;
+import com.navinfo.dataservice.engine.editplus.operation.imp.DefaultObjImportorCommand;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
 
@@ -62,7 +62,14 @@ public class ColumnSaveJob extends AbstractJob {
 			int dbId = subtask.getDbId();
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 			
-			columnSave(data,conn);
+			
+			DefaultObjImportor importor = new DefaultObjImportor(conn,null);
+			EditJson editJson = new EditJson();
+			editJson.addJsonPoi(data);
+			DefaultObjImportorCommand command = new DefaultObjImportorCommand(editJson);
+			importor.operate(command);
+			
+//			columnSave(data,conn);
 			
 			for (int i=0;i<data.size();i++) {
 				int pid = data.getJSONObject(i).getInt("objId");
@@ -83,13 +90,7 @@ public class ColumnSaveJob extends AbstractJob {
 			DeepCoreControl deepControl = new DeepCoreControl();
 			deepControl.cleanCheckResult(pidList, conn);
 			
-			OperationResult operationResult=new OperationResult();
-			List<BasicObj> objList = new ArrayList<BasicObj>();
-			for (int pid:pidList) {
-				BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", null, pid, false);
-				objList.add(obj);
-			}
-			operationResult.putAll(objList);
+			OperationResult operationResult=importor.getResult();
 			
 			// 批处理
 			if (columnOpConf.getSaveExebatch() == 1) {
@@ -151,17 +152,17 @@ public class ColumnSaveJob extends AbstractJob {
 	 * @param data
 	 * @throws Exception
 	 */
-	public void columnSave(JSONArray data,Connection conn) throws Exception {
-		try {
-			for (int i=0;i<data.size();i++) {
-				EditApiImpl apiEdit = new EditApiImpl(conn);
-				apiEdit.runPoi(data.getJSONObject(i));
-			}
-			
-		} catch (Exception e) {
-			throw e;
-		}
-	}
+//	public void columnSave(JSONArray data,Connection conn) throws Exception {
+//		try {
+//			for (int i=0;i<data.size();i++) {
+//				EditApiImpl apiEdit = new EditApiImpl(conn);
+//				apiEdit.runPoi(data.getJSONObject(i));
+//			}
+//			
+//		} catch (Exception e) {
+//			throw e;
+//		}
+//	}
 	
 	/**
 	 * 更新配置表状态

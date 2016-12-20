@@ -102,4 +102,6 @@ public interface MetadataApi {
 
 
 	public String convFull2Half(String word) throws Exception;
+	
+	public String wordKind(String kindCode,String chain) throws Exception;
 }

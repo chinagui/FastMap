@@ -1,7 +1,9 @@
 package com.navinfo.dataservice.engine.edit.utils.batch;
 
 import java.sql.Connection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -137,9 +139,20 @@ public class AdminIDBatchUtils extends BaseBatchUtils {
             }
             return;
         }
-        // 修形时对面内新增link赋regionId
+        List<RdLink> links = null;
+        Map<Integer, RdLink> maps = new HashMap<>();
         geometry = GeoTranslator.transform(geometry, 0.00001, 5);
-        List<RdLink> links = selector.loadLinkByFaceGeo(geometry, true);
+        // 修形时删除原面内link的regionId
+        if (null != faceGeometry) {
+            links = selector.loadLinkByFaceGeo(geometry, true);
+            for (RdLink link : links) {
+                link.changedFields().put("leftRegionId", 0);
+                link.changedFields().put("rightRegionId", 0);
+                maps.put(link.pid(), link);
+            }
+        }
+        // 修形时对面内新增link赋regionId
+        links = selector.loadLinkByFaceGeo(geometry, true);
         for (RdLink link : links) {
             int regionId = face.getRegionId();
             Geometry linkGeometry = GeoTranslator.transform(link.getGeometry(), 0.00001, 5);
@@ -162,16 +175,10 @@ public class AdminIDBatchUtils extends BaseBatchUtils {
             } else {
                 // 其他情况暂不处理
             }
+            maps.put(link.pid(), link);
         }
-        // 修形时删除原面内link的regionId
-        if (null != faceGeometry) {
-            Geometry diffGeo = faceGeometry.difference(geometry);
-            links = selector.loadLinkByFaceGeo(diffGeo, true);
-            for (RdLink link : links) {
-                link.changedFields().put("leftRegionId", 0);
-                link.changedFields().put("rightRegionId", 0);
-                result.insertObject(link, ObjStatus.UPDATE, link.pid());
-            }
+        for (RdLink link : maps.values()) {
+            result.insertObject(link, ObjStatus.UPDATE, link.pid());
         }
     }
 }

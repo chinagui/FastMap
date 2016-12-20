@@ -158,7 +158,7 @@ public class Process extends AbstractProcess<Command> {
 		
 		updataRelationObj() ;
 		// 删除土地利用点有关土地利用面具体操作
-		return new OpRefLuFace(this.getCommand()).run(this.getResult());
+		return new OpRefLuFace(this.getCommand(), getConn()).run(this.getResult());
 	}
 
 	

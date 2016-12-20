@@ -13,6 +13,13 @@ public class TestAdAdmin extends InitApplication{
         super.initContext();
     }
 
+
+    @Test
+    public void delete(){
+        String parameter = "{\"command\":\"DELETE\",\"dbId\":17,\"type\":\"ADADMIN\",\"objId\":305000003}";
+        TestUtil.run(parameter);
+    }
+
     @Test
     public void move(){
         String requester = "{\"command\":\"MOVE\",\"dbId\":17,\"objId\":206000040,\"data\":{\"longitude\":116.60364031791686,\"latitude\":40.25},\"type\":\"ADNODE\"}";

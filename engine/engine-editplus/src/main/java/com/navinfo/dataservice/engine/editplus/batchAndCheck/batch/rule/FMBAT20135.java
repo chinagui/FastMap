@@ -36,10 +36,12 @@ public class FMBAT20135 extends BasicBatchRule {
 		List<IxPoiName> names = poiObj.getIxPoiNames();
 		List<IxPoiFlag> flags = poiObj.getIxPoiFlags();
 		boolean isFlag = false;
-		for (IxPoiFlag flag:flags) {
-			if (flag.getFlagCode().equals("002000080000") || flag.equals("002000090000")) {
-				isFlag = true;
-				break;
+		if (flags != null) {
+			for (IxPoiFlag flag:flags) {
+				if (flag.getFlagCode().equals("002000080000") || flag.equals("002000090000")) {
+					isFlag = true;
+					break;
+				}
 			}
 		}
 		if (isFlag) {
@@ -52,10 +54,10 @@ public class FMBAT20135 extends BasicBatchRule {
 					officialName = name;
 					officialNameStr = name.getName();
 				} else if (name.getNameClass()==1 && name.getNameType()==1 && name.getLangCode().equals("ENG")) {
-					if (name.getName().length()>0) {
-						hasStandardName = true;
-					} else {
+					if (name.getName() == null || name.getName().isEmpty()) {
 						standardName = name;
+					} else {
+						hasStandardName = true;
 					}
 				}
 			}
@@ -76,27 +78,30 @@ public class FMBAT20135 extends BasicBatchRule {
 		Map<String,String> engshortList = metadata.scEngshortListMap();
 		String[] officialNameStrList = officialNameStr.split(" ");
 		int strLength = officialNameStrList.length;
+		boolean hasShort = false;
 		for (int i=1;i<=officialNameStrList.length;i++) {
 			String fullName = officialNameStrList[strLength-i];
 			if (engshortList.containsKey(fullName)) {
 				String shortName = engshortList.get(fullName);
 				officialNameStr = officialNameStr.replace(fullName, shortName);
 				if (officialNameStr.length()<=35) {
-				break;
+					hasShort = true;
+					break;
 				}
 			}
 		}
-		if (standardName == null) {
-			IxPoiName poiName = poiObj.createIxPoiName();
-			poiName.setNameGroupid(officialName.getNameGroupid());
-			poiName.setLangCode(officialName.getLangCode());
-			poiName.setNameClass(1);
-			poiName.setNameType(1);
-			poiName.setName(officialNameStr);
-		} else {
-			standardName.setName(officialNameStr);
+		if (hasShort) {
+			if (standardName == null) {
+				IxPoiName poiName = poiObj.createIxPoiName();
+				poiName.setNameGroupid(officialName.getNameGroupid());
+				poiName.setLangCode(officialName.getLangCode());
+				poiName.setNameClass(1);
+				poiName.setNameType(1);
+				poiName.setName(officialNameStr);
+			} else {
+				standardName.setName(officialNameStr);
+			}
 		}
-		
 	}
 
 }

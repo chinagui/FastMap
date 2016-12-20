@@ -132,7 +132,7 @@ public class RdLinkTest extends InitApplication {
 	@Test
 	public void testGetByElementCondition()
 	{
-		String parameter = "{\"dbId\":17,\"pageNum\":1,\"pageSize\":5,\"data\":{\"pid\":\"2077881\"},\"type\":\"RDROAD\"}";
+		String parameter = "{\"dbId\":17,\"pageNum\":1,\"pageSize\":5,\"data\":{\"pid\":\"300000041\"},\"type\":\"RDLANECONNEXITY\"}";
 
 		Connection conn = null;
 

@@ -156,7 +156,7 @@ public class ReflectionAttrUtils {
 		case RDCROSS:
 			return "RD_CROSS";
 		case RDLANECONNEXITY:
-			return "RD_LANECONNEXITY";
+			return "RD_LANE_CONNEXITY";
 		case RDSPEEDLIMIT:
 			return "RD_SPEEDLIMIT";
 		case RDLINKSPEEDLIMIT:

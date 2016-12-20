@@ -11,4 +11,5 @@ xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
 	<dubbo:reference id="datahubApi" interface="com.navinfo.dataservice.api.datahub.iface.DatahubApi" />
 	<dubbo:reference id="day2MonthSyncApi" interface="com.navinfo.dataservice.api.man.iface.Day2MonthSyncApi" />
 	<dubbo:reference id="jobApi" interface="com.navinfo.dataservice.api.job.iface.JobApi" timeout="5000"/> 
+	<dubbo:reference id="metadataApi" interface="com.navinfo.dataservice.api.metadata.iface.MetadataApi" timeout="5000"/>
 </beans>

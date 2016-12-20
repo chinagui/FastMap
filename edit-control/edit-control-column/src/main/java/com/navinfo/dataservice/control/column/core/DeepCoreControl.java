@@ -873,4 +873,19 @@ public class DeepCoreControl {
 			DbUtils.closeQuietly(pstmt);
 		}
 	}
+	
+	/**
+	 * 根据规则号清理检查结果
+	 * @param conn
+	 * @param pids
+	 * @param ckRules
+	 * @param objType
+	 * @throws Exception
+	 */
+	public void cleanExByCkRule(Connection conn, List<Integer> pids, List<String> ckRules, String objType) throws Exception {
+		List<String> md5List = getMd5List(conn,pids,ckRules,objType);
+		cleanCheckException(md5List,conn);
+		cleanCheckObj(md5List,conn);
+	}
+	
 }

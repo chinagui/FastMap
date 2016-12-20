@@ -40,8 +40,25 @@ public class SearchSnapshot implements ISerializable {
 
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) throws Exception {
-
-		return JSONObject.fromObject(this,JsonUtils.getStrConfig());
+		
+		if(objLevel == ObjLevel.BRIEF)
+		{
+			JSONObject obj = new JSONObject();
+			
+			obj.put("i", String.valueOf(this.getI()));
+			
+			obj.put("t", this.getT());
+			
+			obj.put("g", this.getG());
+			
+			obj.put("m", this.getM());
+			
+			return obj;
+		}
+		else
+		{
+			return JSONObject.fromObject(this,JsonUtils.getStrConfig());
+		}
 	}
 
 	@Override

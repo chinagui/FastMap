@@ -42,6 +42,10 @@ public class Classifier {
 		othernamelist.add("FM-A04-18");
 	}
 	public void execute() throws Exception {
+		if (checkResult==null) {
+			log.info("检查结果为空，不执行重分类");
+			return ;	
+		}
 		// 重分类
 		log.info("开始执行重分类");
 		Map<Long, Set<String>> poiMap = checkResult.get("IX_POI");

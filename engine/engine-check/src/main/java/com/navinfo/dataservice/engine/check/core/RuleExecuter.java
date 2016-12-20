@@ -67,6 +67,8 @@ public class RuleExecuter {
 			{variablevalue=VariablesFactory.getRdGateOutLinkPid(data);break;}
 			case RDDIRECTROUTE_PID:
 			{variablevalue=VariablesFactory.getRdDirectroutePid(data);break;}
+			case RDDIRECTROUTE_OUTLINKPID:
+			{variablevalue=VariablesFactory.getRdDirectrouteOutLinkPid(data);break;}
 			case RDSLOPE_PID:
 			{variablevalue=VariablesFactory.getRdSlopePid(data);break;}
 			case RDWARNINGINFO_PID:

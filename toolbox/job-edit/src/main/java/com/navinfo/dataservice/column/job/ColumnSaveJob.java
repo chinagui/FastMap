@@ -129,6 +129,14 @@ public class ColumnSaveJob extends AbstractJob {
 				columnCoreOperation.runClassify(classifyMap,conn);
 			}
 			
+			// 清理重分类检查结果
+			List<String> ckRules = new ArrayList<String>();
+			String classifyrules = columnOpConf.getSaveClassifyrules();
+			for (String classifyrule:classifyrules.split(",")) {
+				ckRules.add(classifyrule);
+			}
+			deepControl.cleanExByCkRule(conn, pidList, ckRules, "IX_POI");
+			
 			conn.commit();
 		} catch (Exception e) {
 			throw new JobException(e);

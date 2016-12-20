@@ -19,6 +19,7 @@ import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiNameFlag;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
+import com.navinfo.dataservice.dao.plus.operation.OperationSegment;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.Batch;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.BatchCommand;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.check.Check;
@@ -137,6 +138,7 @@ public class PostBatch {
 		batchCommand.setRuleId("FM-BAT-20-163");
 		batch=new Batch(conn,operationResult);
 		batch.operate(batchCommand);
+		persistBatch(batch);
 	}
 	
 	// 200140与201150特殊处理
@@ -164,6 +166,7 @@ public class PostBatch {
 		batchCommand.setRuleId("FM-BAT-20-115");
 		Batch batch=new Batch(conn,operationResult);
 		batch.operate(batchCommand);
+		persistBatch(batch);
 	}
 	
 	// 201250特殊处理
@@ -189,6 +192,11 @@ public class PostBatch {
 		batchCommand.setRuleId("FM-BAT-20-125");
 		Batch batch=new Batch(conn,operationResult);
 		batch.operate(batchCommand);
+		persistBatch(batch);
+	}
+
+	private void persistBatch(Batch batch) throws Exception {
+		batch.persistChangeLog(OperationSegment.SG_COLUMN, 0);//FIXME:修改默认的用户
 	}
 	
 	// 获取需特殊处理的数据的pid

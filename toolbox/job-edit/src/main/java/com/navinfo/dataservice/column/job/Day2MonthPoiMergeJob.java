@@ -10,6 +10,8 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
+import org.apache.commons.dbutils.DbUtils;
+
 import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.api.job.model.JobInfo;
@@ -170,8 +172,8 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 				log.info("释放履历锁");
 				logSelector.unselect(true);
 			}
-			if(monthConn!=null)monthConn.commit();
-			if(dailyConn!=null)dailyConn.commit();
+			DbUtils.commitAndCloseQuietly(monthConn);
+			DbUtils.commitAndCloseQuietly(dailyConn);
 			log.info("commit db");
 		}
 		

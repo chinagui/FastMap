@@ -29,12 +29,14 @@ import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionCondition;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionDetail;
 import com.navinfo.dataservice.dao.glm.model.rd.tollgate.RdTollgate;
+import com.navinfo.dataservice.engine.check.rules.GLM01017;
 import com.navinfo.dataservice.engine.check.rules.GLM01091;
 import com.navinfo.dataservice.engine.check.rules.GLM01570;
 import com.navinfo.dataservice.engine.check.rules.GLM04003;
 import com.navinfo.dataservice.engine.check.rules.GLM04006;
 import com.navinfo.dataservice.engine.check.rules.GLM04008_1;
 import com.navinfo.dataservice.engine.check.rules.GLM04008_2;
+import com.navinfo.dataservice.engine.check.rules.GLM08004;
 import com.navinfo.dataservice.engine.check.rules.GLM32005;
 import com.navinfo.dataservice.engine.check.rules.GLM32006;
 import com.navinfo.dataservice.engine.check.rules.GLM32020;
@@ -854,4 +856,55 @@ public class CheckRuleTest {
 		checkEngine.postCheck();
 		System.out.println("ok");
 	}
+	
+	@Test
+	public void testGLM01017() throws Exception{
+		Connection conn=DBConnector.getInstance().getConnectionById(17);
+		CheckCommand cc = new CheckCommand();
+		List<IRow> glmList = new ArrayList<IRow>();
+		RdRestriction rdRestriction  = new RdRestriction();
+		rdRestriction.setPid(302000037);
+		glmList.add(rdRestriction);
+		
+		RdLink rdLink = new RdLink();
+		rdLink.setPid(39257545);
+		rdLink.setFunctionClass(4);
+		glmList.add(rdLink);
+		
+		cc.setGlmList(glmList);
+		GLM01017 c = new GLM01017();
+		c.setConn(conn);
+		c.preCheck(cc);
+		List result = c.getCheckResultList();
+		
+		System.out.println("end");
+	}
+	
+	@Test
+	public void testGLM08004() throws Exception{
+		Connection conn=DBConnector.getInstance().getConnectionById(17);
+		CheckCommand cc = new CheckCommand();
+		List<IRow> glmList = new ArrayList<IRow>();
+		RdRestriction rdRestriction  = new RdRestriction();
+		rdRestriction.setPid(302000037);
+		rdRestriction.setInLinkPid(292857);
+		glmList.add(rdRestriction);
+		
+		RdRestrictionDetail rdRestrictionDetail  = new RdRestrictionDetail();
+		rdRestrictionDetail.setOutLinkPid(306844);;
+		glmList.add(rdRestrictionDetail);
+		
+		RdRestrictionDetail rdRestrictionDetail1  = new RdRestrictionDetail();
+		rdRestrictionDetail1.setOutLinkPid(296498);;
+		glmList.add(rdRestrictionDetail1);
+		
+		cc.setGlmList(glmList);
+		GLM08004 c = new GLM08004();
+		c.setConn(conn);
+		c.preCheck(cc);
+		List result = c.getCheckResultList();
+		
+		System.out.println("end");
+	}
 }
+

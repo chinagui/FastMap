@@ -46,17 +46,21 @@ public class LogFlushUtil {
 	 * @throws Exception
 	 */
 	public  FlushResult flush(Connection sourceDbConn,Connection targetDbConn,String logQuerySql) throws Exception {
+		return flush(sourceDbConn,targetDbConn,logQuerySql,false);
+		
+	}
+	public  FlushResult flush(Connection sourceDbConn,Connection targetDbConn,String logQuerySql,boolean ignoreError) throws Exception {
 		LogReader logReader = new LogReader(sourceDbConn,logQuerySql);
-		return flush(logReader,targetDbConn);
+		return flush(logReader,targetDbConn,ignoreError);
 		
 	}
 	
-	private  FlushResult flush(LogReader logReader,Connection targetDbConn) throws Exception {
+	private  FlushResult flush(LogReader logReader,Connection targetDbConn,boolean ignoreError) throws Exception {
 		ResultSet rs = logReader.read();
 		try{
 			rs.setFetchSize(1000);
 			FlushResult flushResult =new FlushResult();
-			LogWriter logWriter = new LogWriter(targetDbConn);
+			LogWriter logWriter = new LogWriter(targetDbConn,ignoreError);
 			while (rs.next()) {
 				flushResult .addTotal();
 				int opType = rs.getInt("op_tp");

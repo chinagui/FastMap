@@ -470,7 +470,7 @@ public class RdLinkSelector extends AbstractSelector {
 			boolean isLock) throws Exception {
 		List<RdLink> list = new ArrayList<RdLink>();
 		StringBuilder sb = new StringBuilder();
-		sb.append(" select rl.* from rd_link rl  where (r1.s_node_pid = :1 or r1.e_node_pid = :2) and rl.link_pid <> :3 and rl.u_record !=2 ");
+		sb.append(" select rl.* from rd_link rl  where (rl.s_node_pid = :1 or rl.e_node_pid = :2) and rl.link_pid <> :3 and rl.u_record !=2 ");
 		if (isLock) {
 			sb.append(" for update nowait");
 		}

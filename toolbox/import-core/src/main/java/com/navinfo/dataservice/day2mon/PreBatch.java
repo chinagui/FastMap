@@ -24,10 +24,11 @@ public class PreBatch {
 		log.info("开始执行前批");
 		// 批处理
 		BatchCommand batchCommand=new BatchCommand();
-		batchCommand.setRuleId("FM-BAT-20-124");
-		batchCommand.setRuleId("FM-BAT-20-137");
-		batchCommand.setRuleId("FM-BAT-20-138");
-		batchCommand.setRuleId("FM-BAT-20-110");
+		batchCommand.setOperationName("BATCH_DAY2MONTH_BEFORE");
+//		batchCommand.setRuleId("FM-BAT-20-124");
+//		batchCommand.setRuleId("FM-BAT-20-137");
+//		batchCommand.setRuleId("FM-BAT-20-138");
+//		batchCommand.setRuleId("FM-BAT-20-110");
 		
 		log.info("要执行的规则号:"+batchCommand.getRuleIdList().toString());
 		Batch batch=new Batch(conn,opResult);

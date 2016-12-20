@@ -153,6 +153,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 			d2mSyncApi.updateSyncInfo(curSyncInfo);
 			log.info("finished:"+cityId);
 		}catch(Exception e){
+			log.error(e.getMessage(),e);
 			curSyncInfo.setSyncStatus(FmDay2MonSync.SyncStatusEnum.FAIL.getValue());
 			d2mSyncApi.updateSyncInfo(curSyncInfo);
 		}finally{

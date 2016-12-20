@@ -6,6 +6,7 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
+import com.navinfo.dataservice.dao.plus.operation.OperationSegment;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.Batch;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.BatchCommand;
 
@@ -33,6 +34,7 @@ public class PreBatch {
 		log.info("要执行的规则号:"+batchCommand.getRuleIdList().toString());
 		Batch batch=new Batch(conn,opResult);
 		batch.operate(batchCommand);
+		batch.persistChangeLog(OperationSegment.SG_COLUMN, 0);//FIXME:修改默认的用户
 		log.info("前批完成");
 		return opResult;
 	}

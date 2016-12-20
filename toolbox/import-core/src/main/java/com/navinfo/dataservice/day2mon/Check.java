@@ -52,6 +52,7 @@ public class Check {
 //		checkList.add("FM-GLM60189");
 //		checkCommand.setRuleIdList(checkList);
 		checkCommand.setOperationName("CHECK_DAY2MONTH");
+		checkCommand.setSaveResult(false);
 //		log.info("要执行的检查项:"+checkList.toString());
 		
 		com.navinfo.dataservice.engine.editplus.batchAndCheck.check.Check check=new com.navinfo.dataservice.engine.editplus.batchAndCheck.check.Check(conn,opResult);

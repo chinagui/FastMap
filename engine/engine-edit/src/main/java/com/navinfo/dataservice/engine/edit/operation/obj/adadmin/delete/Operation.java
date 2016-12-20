@@ -112,9 +112,19 @@ public class Operation implements IOperation {
 		
 		AdAdminPart part = partSelector.loadByRegionId(regionId, true);
 		
+		if(part == null)
+		{
+			return;
+		}
+		
 		AdAdminTreeSelector treeSelector = new AdAdminTreeSelector(conn);
 		
 		AdAdminTree tree = treeSelector.loadRowsByRegionId(regionId, true, part.getGroupId());
+		
+		if(tree == null)
+		{
+			return;
+		}
 		
 		result.insertObject(part, ObjStatus.DELETE, part.getGroupId());
 		

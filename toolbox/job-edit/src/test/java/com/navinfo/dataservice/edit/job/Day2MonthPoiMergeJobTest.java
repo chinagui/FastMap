@@ -9,7 +9,6 @@ import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.column.job.Day2MonthPoiMergeJob;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
-import com.navinfo.dataservice.jobframework.runjob.JobCreateStrategy;
 import com.navinfo.dataservice.jobframework.service.JobService;
 
 import net.sf.json.JSONObject;
@@ -38,7 +37,7 @@ try{
 			System.out.println("Over.");
 			System.exit(0);
 		}catch(Exception e){
-			System.out.println("Oops, something wrong...");
+			System.out.println("Oops, something wrong:"+e.getMessage());
 			e.printStackTrace();
 		}
 	}

@@ -23,153 +23,153 @@ import com.navinfo.dataservice.engine.edit.operation.OperatorFactory;
 
 public class Process extends AbstractProcess<Command> {
 
-	public Process(AbstractCommand command) throws Exception {
-		super(command);
-		// TODO Auto-generated constructor stub
-	}
+    public Process(AbstractCommand command) throws Exception {
+        super(command);
+        // TODO Auto-generated constructor stub
+    }
 
-	protected Logger log = Logger.getLogger(this.getClass());
+    protected Logger log = Logger.getLogger(this.getClass());
 
-	/*
-	 * 加载行ZONE点对应的ZONE线
-	 */
-	public void lockZoneLink() throws Exception {
+    /*
+     * 加载行ZONE点对应的ZONE线
+     */
+    public void lockZoneLink() throws Exception {
 
-		ZoneLinkSelector selector = new ZoneLinkSelector(this.getConn());
-		List<ZoneLink> links = selector.loadByNodePid(this.getCommand().getNodePid(), true);
-		List<Integer> linkPids = new ArrayList<Integer>();
-		for (ZoneLink link : links) {
-			linkPids.add(link.getPid());
-		}
-		this.getCommand().setLinks(links);
+        ZoneLinkSelector selector = new ZoneLinkSelector(this.getConn());
+        List<ZoneLink> links = selector.loadByNodePid(this.getCommand().getNodePid(), true);
+        List<Integer> linkPids = new ArrayList<Integer>();
+        for (ZoneLink link : links) {
+            linkPids.add(link.getPid());
+        }
+        this.getCommand().setLinks(links);
 
-		this.getCommand().setLinkPids(linkPids);
-	}
+        this.getCommand().setLinkPids(linkPids);
+    }
 
-	/*
-	 * 加载行Zone点对应的Zone点
-	 */
-	public void lockZoneNode() throws Exception {
+    /*
+     * 加载行Zone点对应的Zone点
+     */
+    public void lockZoneNode() throws Exception {
 
-		ZoneNodeSelector selector = new ZoneNodeSelector(this.getConn());
+        ZoneNodeSelector selector = new ZoneNodeSelector(this.getConn());
 
-		ZoneNode node = (ZoneNode) selector.loadById(this.getCommand().getNodePid(), true);
+        ZoneNode node = (ZoneNode) selector.loadById(this.getCommand().getNodePid(), true);
 
-		this.getCommand().setNode(node);
+        this.getCommand().setNode(node);
 
-	}
+    }
 
-	/*
-	 * 加载ZONE点对应的行政区盲端节点
-	 */
-	public void lockEndZoneNode() throws Exception {
+    /*
+     * 加载ZONE点对应的行政区盲端节点
+     */
+    public void lockEndZoneNode() throws Exception {
 
-		ZoneNodeSelector selector = new ZoneNodeSelector(this.getConn());
+        ZoneNodeSelector selector = new ZoneNodeSelector(this.getConn());
 
-		List<Integer> nodePids = new ArrayList<Integer>();
+        List<Integer> nodePids = new ArrayList<Integer>();
 
-		nodePids.add(this.getCommand().getNodePid());
+        nodePids.add(this.getCommand().getNodePid());
 
-		List<ZoneNode> nodes = new ArrayList<ZoneNode>();
+        List<ZoneNode> nodes = new ArrayList<ZoneNode>();
 
-		for (Integer linkPid : this.getCommand().getLinkPids()) {
+        for (Integer linkPid : this.getCommand().getLinkPids()) {
 
-			List<ZoneNode> list = selector.loadEndZoneNodeByLinkPid(linkPid, true);
+            List<ZoneNode> list = selector.loadEndZoneNodeByLinkPid(linkPid, true);
 
-			for (ZoneNode node : list) {
-				int nodePid = node.getPid();
+            for (ZoneNode node : list) {
+                int nodePid = node.getPid();
 
-				if (nodePids.contains(nodePid)) {
-					continue;
-				}
+                if (nodePids.contains(nodePid)) {
+                    continue;
+                }
 
-				nodePids.add(node.getPid());
+                nodePids.add(node.getPid());
 
-				nodes.add(node);
-			}
+                nodes.add(node);
+            }
 
-		}
+        }
 
-		this.getCommand().setNodes(nodes);
+        this.getCommand().setNodes(nodes);
 
-		this.getCommand().setNodePids(nodePids);
-	}
+        this.getCommand().setNodePids(nodePids);
+    }
 
-	/*
-	 * 加载Zone点对应的ZONE线
-	 */
-	public void lockZoneFace() throws Exception {
+    /*
+     * 加载Zone点对应的ZONE线
+     */
+    public void lockZoneFace() throws Exception {
 
-		ZoneFaceSelector selector = new ZoneFaceSelector(this.getConn());
+        ZoneFaceSelector selector = new ZoneFaceSelector(this.getConn());
 
-		List<ZoneFace> faces = new ArrayList<ZoneFace>();
+        List<ZoneFace> faces = new ArrayList<ZoneFace>();
 
-		for (Integer linkPid : this.getCommand().getLinkPids()) {
+        for (Integer linkPid : this.getCommand().getLinkPids()) {
 
-			List<ZoneFace> list = selector.loadZoneFaceByLinkId(linkPid, true);
+            List<ZoneFace> list = selector.loadZoneFaceByLinkId(linkPid, true);
 
-			for (ZoneFace face : list) {
-				faces.add(face);
+            for (ZoneFace face : list) {
+                faces.add(face);
 
-			}
-		}
-		this.getCommand().setFaces(faces);
-	}
+            }
+        }
+        this.getCommand().setFaces(faces);
+    }
 
-	@Override
-	public boolean prepareData() throws Exception {
+    @Override
+    public boolean prepareData() throws Exception {
 
-		// 检查是否可以删除
-		String msg = preCheck();
+        // 检查是否可以删除
+        String msg = preCheck();
 
-		if (null != msg) {
-			throw new Exception(msg);
-		}
-		this.lockZoneNode();
-		this.lockZoneLink();
-		this.lockEndZoneNode();
-		this.lockZoneFace();
-		return true;
-	}
+        if (null != msg) {
+            throw new Exception(msg);
+        }
+        this.lockZoneNode();
+        this.lockZoneLink();
+        this.lockEndZoneNode();
+        this.lockZoneFace();
+        return true;
+    }
 
-	@Override
-	public boolean recordData() throws Exception {
+    @Override
+    public boolean recordData() throws Exception {
 
-		LogWriter lw = new LogWriter(this.getConn());
+        LogWriter lw = new LogWriter(this.getConn());
 
-		lw.generateLog(this.getCommand(), this.getResult());
+        lw.generateLog(this.getCommand(), this.getResult());
 
-		OperatorFactory.recordData(this.getConn(), this.getResult());
+        OperatorFactory.recordData(this.getConn(), this.getResult());
 
-		lw.recordLog(this.getCommand(), this.getResult());
+        lw.recordLog(this.getCommand(), this.getResult());
 
-		return true;
-	}
+        return true;
+    }
 
-	@Override
-	public String exeOperation() throws Exception {
-		// 删除ZONE点有关ZONE点、线具体操作
-		IOperation op = new OpTopo(this.getCommand());
-		op.run(this.getResult());
-		// 同一点关系
-		OpRefRdSameNode opRefRdSameNode = new OpRefRdSameNode(getConn());
-		opRefRdSameNode.run(getResult(), this.getCommand());
-		
-		updataRelationObj();
-		// 删除ZONE点有关ZONE面具体操作
-		IOperation opAdFace = new OpRefAdFace(this.getCommand());
-		return opAdFace.run(this.getResult());
-	}
+    @Override
+    public String exeOperation() throws Exception {
+        // 删除ZONE点有关ZONE点、线具体操作
+        IOperation op = new OpTopo(this.getCommand());
+        op.run(this.getResult());
+        // 同一点关系
+        OpRefRdSameNode opRefRdSameNode = new OpRefRdSameNode(getConn());
+        opRefRdSameNode.run(getResult(), this.getCommand());
 
-	/**
-	 * 维护关联要素
-	 * 
-	 * @throws Exception
-	 */
-	private void updataRelationObj() throws Exception {
-		
-		OpRefRelationObj opRefRelationObj = new OpRefRelationObj(getConn());
+        updataRelationObj();
+        // 删除ZONE点有关ZONE面具体操作
+        IOperation opAdFace = new OpRefAdFace(this.getCommand(), getConn());
+        return opAdFace.run(this.getResult());
+    }
 
-		opRefRelationObj.handleSameLink(this.getResult(), this.getCommand());
-	}
+    /**
+     * 维护关联要素
+     *
+     * @throws Exception
+     */
+    private void updataRelationObj() throws Exception {
+
+        OpRefRelationObj opRefRelationObj = new OpRefRelationObj(getConn());
+
+        opRefRelationObj.handleSameLink(this.getResult(), this.getCommand());
+    }
 }

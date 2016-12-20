@@ -15,123 +15,112 @@ import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneLink;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneNode;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import com.vividsolutions.jts.geom.Geometry;
+
 /**
  * @author zhaokk
- * Zone点参数基础类 
+ *         Zone点参数基础类
  */
 public class Command extends AbstractCommand {
-	
-	private int nodePid;
-	
-	private double longitude;
-	
-	private double latitude;
-	
-	private String requester;
-	
-	private List<ZoneLink> links;
-	private List<ZoneFace> faces;
-	private ZoneNode zoneNode;
-	
-	private JSONObject json;
 
-	public ZoneNode getZoneNode() {
-		return zoneNode;
-	}
+    private int nodePid;
 
-	public void setZoneNode(ZoneNode zoneNode) {
-		this.zoneNode = zoneNode;
-	}
+    private double longitude;
 
-	public void setNodePid(int nodePid) {
-		this.nodePid = nodePid;
-	}
+    private double latitude;
 
-	public List<ZoneLink> getLinks() {
-		return links;
-	}
+    private String requester;
 
-	public void setLinks(List<ZoneLink> links) {
-		this.links = links;
-	}
+    private List<ZoneLink> links;
+    private List<ZoneFace> faces;
+    private ZoneNode zoneNode;
 
-	public List<ZoneFace> getFaces() {
-		return faces;
-	}
+    private JSONObject json;
 
-	public void setFaces(List<ZoneFace> faces) {
-		this.faces = faces;
-	}
-	
-	public Command(JSONObject json,String requester) throws JSONException{
-		
-		this.json = json;
-		
-		this.nodePid = json.getInt("objId");
-		
-		JSONObject geoPoint = new JSONObject();
+    public ZoneNode getZoneNode() {
+        return zoneNode;
+    }
 
-		geoPoint.put("type", "Point");
+    public void setZoneNode(ZoneNode zoneNode) {
+        this.zoneNode = zoneNode;
+    }
 
-		geoPoint.put("coordinates", new double[] {json.getJSONObject("data").getDouble("longitude"),
-				json.getJSONObject("data").getDouble("latitude") });
-		
-		Geometry geometry = GeoTranslator.geojson2Jts(geoPoint, 1, 5);
-		
-		this.longitude = geometry.getCoordinate().x;
-		
-		this.latitude = geometry.getCoordinate().y;
-		
-		this.setDbId(json.getInt("dbId"));
-	}
-	public Command(JSONObject json, ZoneLink zoneLink, ZoneNode node)
-			throws JSONException {
-		this(json, "");
-		List<ZoneLink> links = new ArrayList<>();
-		links.add(zoneLink);
-		this.setLinks(links);
-		this.zoneNode = node;
+    public void setNodePid(int nodePid) {
+        this.nodePid = nodePid;
+    }
 
-	}
+    public List<ZoneLink> getLinks() {
+        return links;
+    }
+
+    public void setLinks(List<ZoneLink> links) {
+        this.links = links;
+    }
+
+    public List<ZoneFace> getFaces() {
+        return faces;
+    }
+
+    public void setFaces(List<ZoneFace> faces) {
+        this.faces = faces;
+    }
+
+    public Command(JSONObject json, String requester) throws JSONException {
+        this.requester = requester;
+        this.json = json;
+        this.nodePid = json.getInt("objId");
+        JSONObject geoPoint = new JSONObject();
+        geoPoint.put("type", "Point");
+        geoPoint.put("coordinates", new double[]{json.getJSONObject("data").getDouble("longitude"), json.getJSONObject("data").getDouble("latitude")});
+        Geometry geometry = GeoTranslator.geojson2Jts(geoPoint, 1, 5);
+        this.longitude = geometry.getCoordinate().x;
+        this.latitude = geometry.getCoordinate().y;
+        this.setDbId(json.getInt("dbId"));
+    }
+
+    public Command(JSONObject json, ZoneLink zoneLink, ZoneNode node) throws JSONException {
+        this(json, "");
+        List<ZoneLink> links = new ArrayList<>();
+        links.add(zoneLink);
+        this.setLinks(links);
+        this.zoneNode = node;
+
+    }
 
 
-	@Override
-	public OperType getOperType() {
-		
-		return OperType.MOVE;
-	}
+    @Override
+    public OperType getOperType() {
+        return OperType.MOVE;
+    }
 
-	@Override
-	public String getRequester() {
-		
-		return requester;
-	}
+    @Override
+    public String getRequester() {
+        return requester;
+    }
 
-	@Override
-	public ObjType getObjType() {
-		
-		return ObjType.ZONENODE;
-	}
+    @Override
+    public ObjType getObjType() {
+        return ObjType.ZONENODE;
+    }
 
-	public int getNodePid() {
-		return nodePid;
-	}
+    public int getNodePid() {
+        return nodePid;
+    }
 
-	public double getLongitude() {
-		return longitude;
-	}
+    public double getLongitude() {
+        return longitude;
+    }
 
-	public double getLatitude() {
-		return latitude;
-	}
+    public double getLatitude() {
+        return latitude;
+    }
 
-	public JSONObject getJson() {
-		return json;
-	}
+    public JSONObject getJson() {
+        return json;
+    }
 
-	public void setJson(JSONObject json) {
-		this.json = json;
-	}
-	
-	
+    public void setJson(JSONObject json) {
+        this.json = json;
+    }
+
+
 }

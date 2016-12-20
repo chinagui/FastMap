@@ -970,6 +970,8 @@ public class Operation implements IOperation {
 		opRefRelationObj.handlerdSpeedlimit(this.command, result);
 
 		opRefRelationObj.handlerdRdElectroniceye(this.command, result);
+		
+		opRefRelationObj.handlerRdLinkTmc(this.command, result);
 
 		// opRefRelationObj.handlerRdLinkRtic(this.command, result);
 

@@ -35,6 +35,7 @@ public class Day2MonthSynServiceTest {
 		info.setSid(3);
 		info.setCityId(7);
 		info.setSyncStatus(FmDay2MonSync.SyncStatusEnum.SUCCESS.getValue());
+		info.setSyncTime(new Date());
 		svr.updateSyncInfo(info );
 	}
 

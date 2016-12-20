@@ -9,9 +9,12 @@ import com.navinfo.dataservice.dao.glm.selector.lu.LuFaceSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.edit.utils.GeoRelationUtils;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.index.kdtree.KdNode;
 
 import java.sql.Connection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author zhangyt
@@ -79,7 +82,7 @@ public class UrbanBatchUtils extends BaseBatchUtils {
     /**
      * 新增、修改Face时更新Link信息
      *
-     * @param faceGeometry 修形前面几何
+     * @param faceGeometry 修形前面几何(新增时与geometry传入同一对象）
      * @param geometry     修形后面几何(删除时传入null)
      * @param conn         数据库链接
      * @param result       结果集
@@ -96,8 +99,18 @@ public class UrbanBatchUtils extends BaseBatchUtils {
             }
             return;
         }
+        Map<Integer, RdLink> maps = new HashMap<>();
+        // 修形面时,原几何内link的Urban赋0
+        List<RdLink> links = null;
+        if (null != faceGeometry && faceGeometry != geometry && !faceGeometry.difference(geometry).isEmpty()) {
+            links = selector.loadLinkByFaceGeo(faceGeometry, true);
+            for (RdLink link : links) {
+                link.changedFields().put("urban", IS_NOT_URBAN);
+                maps.put(link.pid(), link);
+            }
+        }
         // 修形面时,新几何内link的Urban赋1
-        List<RdLink> links = selector.loadLinkByFaceGeo(geometry, true);
+        links = selector.loadLinkByFaceGeo(geometry, true);
         for (RdLink link : links) {
             Geometry linkGeometry = GeoTranslator.transform(link.getGeometry(), 0.00001, 5);
             // 判断link是否完全包含于该面
@@ -122,16 +135,10 @@ public class UrbanBatchUtils extends BaseBatchUtils {
             } else {
                 // 其余情况暂不作处理
             }
-            result.insertObject(link, ObjStatus.UPDATE, link.pid());
+            maps.put(link.pid(), link);
         }
-        // 修形面时,原几何与新几何差分后内link的Urban赋0
-        if (null != faceGeometry) {
-            Geometry diffGeo = faceGeometry.difference(geometry);
-            links = selector.loadLinkByFaceGeo(diffGeo, true);
-            for (RdLink link : links) {
-                link.changedFields().put("urban", IS_NOT_URBAN);
-                result.insertObject(link, ObjStatus.UPDATE, link.pid());
-            }
+        for (RdLink link : maps.values()) {
+            result.insertObject(link, ObjStatus.UPDATE, link.pid());
         }
     }
 }

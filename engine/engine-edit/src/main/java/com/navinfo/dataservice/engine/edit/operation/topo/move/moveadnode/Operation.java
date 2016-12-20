@@ -1,15 +1,5 @@
 package com.navinfo.dataservice.engine.edit.operation.topo.move.moveadnode;
 
-import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
@@ -17,7 +7,12 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
-import com.navinfo.dataservice.dao.glm.model.ad.geo.*;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFace;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFaceTopo;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLinkMesh;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNodeMesh;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdLinkSelector;
 import com.navinfo.dataservice.engine.edit.utils.AdLinkOperateUtils;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
@@ -27,8 +22,17 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryCollection;
 import com.vividsolutions.jts.geom.LineString;
-
 import net.sf.json.JSONObject;
+
+import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author zhaokk 移动行政区划点操作类 移动行政区划点 点不会打断其它的行政区划线
@@ -159,13 +163,11 @@ public class Operation implements IOperation {
             String mainType = updateJson.getString("mainType");
 
             if (mainType.equals(ObjType.ADNODE.toString())) {
-                com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create.Operation sameNodeOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create.Operation(
-                        null, this.conn);
+                com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create.Operation sameNodeOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create.Operation(null, this.conn);
                 sameNodeOperation.moveMainNodeForTopo(updateJson, ObjType.ADNODE, result);
             }
         } else {
-            com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create.Operation sameNodeOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create.Operation(
-                    null, this.conn);
+            com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create.Operation sameNodeOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create.Operation(null, this.conn);
             sameNodeOperation.moveMainNodeForTopo(updateJson, ObjType.ADNODE, result);
         }
 
@@ -225,10 +227,8 @@ public class Operation implements IOperation {
 
         // 组装打断线的参数
         // 保证是同一个连接
-        com.navinfo.dataservice.engine.edit.operation.obj.adnode.update.Command updatecommand = new com.navinfo.dataservice.engine.edit.operation.obj.adnode.update.Command(
-                updateNodeJson, command.getRequester());
-        com.navinfo.dataservice.engine.edit.operation.obj.adnode.update.Process process = new com.navinfo.dataservice.engine.edit.operation.obj.adnode.update.Process(
-                updatecommand, result, conn);
+        com.navinfo.dataservice.engine.edit.operation.obj.adnode.update.Command updatecommand = new com.navinfo.dataservice.engine.edit.operation.obj.adnode.update.Command(updateNodeJson, command.getRequester());
+        com.navinfo.dataservice.engine.edit.operation.obj.adnode.update.Process process = new com.navinfo.dataservice.engine.edit.operation.obj.adnode.update.Process(updatecommand, result, conn);
         process.innerRun();
     }
 
@@ -260,16 +260,14 @@ public class Operation implements IOperation {
                 }
                 if (flag) {
                     // 如果跨图幅需要重新生成面并且删除原有面信息
-                    com.navinfo.dataservice.engine.edit.operation.obj.adface.create.Operation opFace = new com.navinfo.dataservice.engine.edit.operation.obj.adface.create.Operation(
-                            result);
+                    com.navinfo.dataservice.engine.edit.operation.obj.adface.create.Operation opFace = new com.navinfo.dataservice.engine.edit.operation.obj.adface.create.Operation(conn, result);
                     List<IObj> objs = new ArrayList<IObj>();
                     objs.addAll(links);
                     opFace.createFaceByAdLink(objs);
                     result.insertObject(face, ObjStatus.DELETE, face.getPid());
                 } else {
                     // 如果不跨图幅只需要维护面的行政几何
-                    com.navinfo.dataservice.engine.edit.operation.obj.adface.create.Operation opFace = new com.navinfo.dataservice.engine.edit.operation.obj.adface.create.Operation(
-                            result, face);
+                    com.navinfo.dataservice.engine.edit.operation.obj.adface.create.Operation opFace = new com.navinfo.dataservice.engine.edit.operation.obj.adface.create.Operation(conn, result, face);
                     opFace.reCaleFaceGeometry(links);
                 }
 

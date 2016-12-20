@@ -23,162 +23,162 @@ import com.navinfo.dataservice.engine.edit.operation.OperatorFactory;
 
 public class Process extends AbstractProcess<Command> {
 
-	public Process(AbstractCommand command) throws Exception {
-		super(command);
-		// TODO Auto-generated constructor stub
-	}
+    public Process(AbstractCommand command) throws Exception {
+        super(command);
+        // TODO Auto-generated constructor stub
+    }
 
-	protected Logger log = Logger.getLogger(this.getClass());
+    protected Logger log = Logger.getLogger(this.getClass());
 
-	/*
-	 * 加载行政区划点对应的行政区划线
-	 */
-	public void lockAdLink() throws Exception {
+    /*
+     * 加载行政区划点对应的行政区划线
+     */
+    public void lockAdLink() throws Exception {
 
-		AdLinkSelector selector = new AdLinkSelector(this.getConn());
-		List<AdLink> links = selector.loadByNodePid(this.getCommand().getNodePid(), true);
-		List<Integer> linkPids = new ArrayList<Integer>();
-		for (AdLink link : links) {
-			linkPids.add(link.getPid());
-		}
-		this.getCommand().setLinks(links);
+        AdLinkSelector selector = new AdLinkSelector(this.getConn());
+        List<AdLink> links = selector.loadByNodePid(this.getCommand().getNodePid(), true);
+        List<Integer> linkPids = new ArrayList<Integer>();
+        for (AdLink link : links) {
+            linkPids.add(link.getPid());
+        }
+        this.getCommand().setLinks(links);
 
-		this.getCommand().setLinkPids(linkPids);
-	}
+        this.getCommand().setLinkPids(linkPids);
+    }
 
-	/*
-	 * 加载行政区划点对应的行政区点
-	 */
-	public void lockAdNode() throws Exception {
+    /*
+     * 加载行政区划点对应的行政区点
+     */
+    public void lockAdNode() throws Exception {
 
-		AdNodeSelector selector = new AdNodeSelector(this.getConn());
+        AdNodeSelector selector = new AdNodeSelector(this.getConn());
 
-		AdNode node = (AdNode) selector.loadById(this.getCommand().getNodePid(), true);
+        AdNode node = (AdNode) selector.loadById(this.getCommand().getNodePid(), true);
 
-		this.getCommand().setNode(node);
+        this.getCommand().setNode(node);
 
-	}
+    }
 
-	/*
-	 * 加载行政区划点对应的行政区盲端节点
-	 */
-	public void lockEndAdNode() throws Exception {
+    /*
+     * 加载行政区划点对应的行政区盲端节点
+     */
+    public void lockEndAdNode() throws Exception {
 
-		AdNodeSelector selector = new AdNodeSelector(this.getConn());
+        AdNodeSelector selector = new AdNodeSelector(this.getConn());
 
-		List<Integer> nodePids = new ArrayList<Integer>();
+        List<Integer> nodePids = new ArrayList<Integer>();
 
-		nodePids.add(this.getCommand().getNodePid());
+        nodePids.add(this.getCommand().getNodePid());
 
-		List<AdNode> nodes = new ArrayList<AdNode>();
+        List<AdNode> nodes = new ArrayList<AdNode>();
 
-		for (Integer linkPid : this.getCommand().getLinkPids()) {
+        for (Integer linkPid : this.getCommand().getLinkPids()) {
 
-			List<AdNode> list = selector.loadEndAdNodeByLinkPid(linkPid, true);
+            List<AdNode> list = selector.loadEndAdNodeByLinkPid(linkPid, true);
 
-			for (AdNode node : list) {
-				int nodePid = node.getPid();
+            for (AdNode node : list) {
+                int nodePid = node.getPid();
 
-				if (nodePids.contains(nodePid)) {
-					continue;
-				}
+                if (nodePids.contains(nodePid)) {
+                    continue;
+                }
 
-				nodePids.add(node.getPid());
+                nodePids.add(node.getPid());
 
-				nodes.add(node);
-			}
+                nodes.add(node);
+            }
 
-		}
+        }
 
-		this.getCommand().setNodes(nodes);
+        this.getCommand().setNodes(nodes);
 
-		this.getCommand().setNodePids(nodePids);
-	}
+        this.getCommand().setNodePids(nodePids);
+    }
 
-	/*
-	 * 加载行政区划点对应的行政区划线
-	 */
-	public void lockAdFace() throws Exception {
+    /*
+     * 加载行政区划点对应的行政区划线
+     */
+    public void lockAdFace() throws Exception {
 
-		AdFaceSelector selector = new AdFaceSelector(this.getConn());
+        AdFaceSelector selector = new AdFaceSelector(this.getConn());
 
-		List<AdFace> faces = new ArrayList<AdFace>();
+        List<AdFace> faces = new ArrayList<AdFace>();
 
-		for (Integer linkPid : this.getCommand().getLinkPids()) {
+        for (Integer linkPid : this.getCommand().getLinkPids()) {
 
-			List<AdFace> list = selector.loadAdFaceByLinkId(linkPid, true);
+            List<AdFace> list = selector.loadAdFaceByLinkId(linkPid, true);
 
-			for (AdFace face : list) {
-				faces.add(face);
+            for (AdFace face : list) {
+                faces.add(face);
 
-			}
-		}
-		this.getCommand().setFaces(faces);
-	}
+            }
+        }
+        this.getCommand().setFaces(faces);
+    }
 
-	@Override
-	public boolean prepareData() throws Exception {
+    @Override
+    public boolean prepareData() throws Exception {
 
-		// 检查是否可以删除
-		String msg = preCheck();
+        // 检查是否可以删除
+        String msg = preCheck();
 
-		if (null != msg) {
-			throw new Exception(msg);
-		}
+        if (null != msg) {
+            throw new Exception(msg);
+        }
 
-		// 获取该adnode对象
-		lockAdNode();
+        // 获取该adnode对象
+        lockAdNode();
 
-		if (this.getCommand().getNode() == null) {
+        if (this.getCommand().getNode() == null) {
 
-			throw new Exception("指定删除的RDNODE不存在！");
-		}
+            throw new Exception("指定删除的RDNODE不存在！");
+        }
 
-		lockAdLink();
+        lockAdLink();
 
-		lockEndAdNode();
-		lockAdFace();
-		return true;
-	}
+        lockEndAdNode();
+        lockAdFace();
+        return true;
+    }
 
-	@Override
-	public boolean recordData() throws Exception {
+    @Override
+    public boolean recordData() throws Exception {
 
-		LogWriter lw = new LogWriter(this.getConn());
+        LogWriter lw = new LogWriter(this.getConn());
 
-		lw.generateLog(this.getCommand(), this.getResult());
+        lw.generateLog(this.getCommand(), this.getResult());
 
-		OperatorFactory.recordData(this.getConn(), this.getResult());
+        OperatorFactory.recordData(this.getConn(), this.getResult());
 
-		lw.recordLog(this.getCommand(), this.getResult());
+        lw.recordLog(this.getCommand(), this.getResult());
 
-		return true;
-	}
+        return true;
+    }
 
-	@Override
-	public String exeOperation() throws Exception {
-		// 删除行政区划点有关行政区划点、线具体操作
-		IOperation op = new OpTopo(this.getCommand());
-		op.run(this.getResult());
-		// 同一点关系
-		OpRefRdSameNode opRefRdSameNode = new OpRefRdSameNode(getConn());
-		opRefRdSameNode.run(getResult(), this.getCommand());
-		
-		updataRelationObj();
-		// 删除行政区划点有关行政区划面具体操作
-		IOperation opAdFace = new OpRefAdFace(this.getCommand());
-		return opAdFace.run(this.getResult());
-	}
+    @Override
+    public String exeOperation() throws Exception {
+        // 删除行政区划点有关行政区划点、线具体操作
+        IOperation op = new OpTopo(this.getCommand());
+        op.run(this.getResult());
+        // 同一点关系
+        OpRefRdSameNode opRefRdSameNode = new OpRefRdSameNode(getConn());
+        opRefRdSameNode.run(getResult(), this.getCommand());
+
+        updataRelationObj();
+        // 删除行政区划点有关行政区划面具体操作
+        IOperation opAdFace = new OpRefAdFace(this.getCommand(), getConn());
+        return opAdFace.run(this.getResult());
+    }
 
 
-	/**
-	 * 维护关联要素
-	 * 
-	 * @throws Exception
-	 */
-	private void updataRelationObj() throws Exception {
-		OpRefRelationObj opRefRelationObj = new OpRefRelationObj(getConn());
+    /**
+     * 维护关联要素
+     *
+     * @throws Exception
+     */
+    private void updataRelationObj() throws Exception {
+        OpRefRelationObj opRefRelationObj = new OpRefRelationObj(getConn());
 
-		opRefRelationObj.handleSameLink(this.getResult(), this.getCommand());
-	}
+        opRefRelationObj.handleSameLink(this.getResult(), this.getCommand());
+    }
 }

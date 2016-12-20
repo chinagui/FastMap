@@ -3,7 +3,9 @@ package com.navinfo.dataservice.engine.man.day2Month;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.dbutils.DbUtils;
@@ -60,8 +62,9 @@ public class Day2MonthSyncService {
 		try {
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
-			String sql = "update fm_day2month_sync set city_id=?,sync_time=?,sync_status=?,job_id=? where sync_id=?";
-			return run.update(conn, sql, info.getCityId(),info.getSyncTime(),info.getSyncStatus(),info.getJobId(),info.getSid());
+			String sql = "update fm_day2month_sync set city_id=?,sync_time=to_date(?,'yyyyMMddhh24miss'),sync_status=?,job_id=? where sync_id=?";
+			String syncTime =  new SimpleDateFormat("yyyyMMddHHmmss").format(info.getSyncTime());
+			return run.update(conn, sql, info.getCityId(),syncTime,info.getSyncStatus(),info.getJobId(),info.getSid());
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

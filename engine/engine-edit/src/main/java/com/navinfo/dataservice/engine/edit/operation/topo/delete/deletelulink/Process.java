@@ -79,7 +79,7 @@ public class Process extends AbstractProcess<Command> {
 
 		updataRelationObj();
 
-		return new OpRefLuFace(this.getCommand()).run(this.getResult());
+		return new OpRefLuFace(this.getCommand(), getConn()).run(this.getResult());
 	}
 
 	/**

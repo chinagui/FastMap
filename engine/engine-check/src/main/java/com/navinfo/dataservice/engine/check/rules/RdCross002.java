@@ -25,7 +25,7 @@ public class RdCross002 extends baseRule {
 	@Override
 	public void preCheck(CheckCommand checkCommand) throws Exception {
 		List<Integer> crossNodeList=new ArrayList<Integer>();
-		if(!checkCommand.getListStatus().equals("ADD")){return;}
+//		if(!checkCommand.getListStatus().equals("ADD")){return;}
 		for(IRow obj : checkCommand.getGlmList()){
 			if (obj instanceof RdCross){
 				RdCross crossObj=(RdCross) obj;

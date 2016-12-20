@@ -148,14 +148,13 @@ public class IxPoiSelector {
 		}
 		childPidParentPid=getParentPidsByChildrenPids(conn,pidList);
 		Set<Long> poiPids=new HashSet<Long>();
-		poiPids=childPidParentPid.keySet();
+		poiPids.addAll(childPidParentPid.keySet());
 		poiPids.addAll(childPidParentPid.values());
 		poiPids.addAll(pidList);
 		//循环查询直到没有新父被查出来为止
 		while(poiPids.size()!=pidList.size()){
-			pidList=poiPids;
+			pidList.addAll(poiPids);
 			childPidParentPid=getParentPidsByChildrenPids(conn,pidList);
-			poiPids=childPidParentPid.keySet();
 			poiPids.addAll(childPidParentPid.values());
 		}
 		return childPidParentPid;

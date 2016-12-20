@@ -16,6 +16,8 @@ import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchVia;
+import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
+import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossLink;
 import com.navinfo.dataservice.dao.glm.model.rd.gate.RdGate;
 import com.navinfo.dataservice.dao.glm.model.rd.gate.RdGateCondition;
 import com.navinfo.dataservice.dao.glm.model.rd.lane.RdLane;
@@ -29,6 +31,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionCondition;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionDetail;
 import com.navinfo.dataservice.dao.glm.model.rd.tollgate.RdTollgate;
+import com.navinfo.dataservice.engine.check.core.CheckRule;
 import com.navinfo.dataservice.engine.check.rules.GLM01017;
 import com.navinfo.dataservice.engine.check.rules.GLM01091;
 import com.navinfo.dataservice.engine.check.rules.GLM01570;
@@ -37,6 +40,7 @@ import com.navinfo.dataservice.engine.check.rules.GLM04006;
 import com.navinfo.dataservice.engine.check.rules.GLM04008_1;
 import com.navinfo.dataservice.engine.check.rules.GLM04008_2;
 import com.navinfo.dataservice.engine.check.rules.GLM08004;
+import com.navinfo.dataservice.engine.check.rules.GLM26044;
 import com.navinfo.dataservice.engine.check.rules.GLM32005;
 import com.navinfo.dataservice.engine.check.rules.GLM32006;
 import com.navinfo.dataservice.engine.check.rules.GLM32020;
@@ -905,6 +909,79 @@ public class CheckRuleTest {
 		List result = c.getCheckResultList();
 		
 		System.out.println("end");
+	}
+	
+	@Test
+	public void testGLM26044() throws Exception{
+		Connection conn=DBConnector.getInstance().getConnectionById(17);
+		CheckCommand cc = new CheckCommand();
+		List<IRow> glmList = new ArrayList<IRow>();
+		RdCross rdCross  = new RdCross();
+		rdCross.setPid(8557);
+		glmList.add(rdCross);
+		
+		RdCrossLink rdCrossLink  = new RdCrossLink();
+		rdCrossLink.setPid(1446213);
+		glmList.add(rdCrossLink);
+		
+		RdLink rdLink  = new RdLink();
+		rdLink.setPid(1286634);;
+		glmList.add(rdLink);
+		
+		RdLinkForm rdLinkForm  = new RdLinkForm();
+		rdLinkForm.setLinkPid(1292760);
+		rdLinkForm.setFormOfWay(33);
+		glmList.add(rdLinkForm);
+		
+		cc.setGlmList(glmList);
+		GLM26044 c = new GLM26044();
+		c.setConn(conn);
+		c.postCheck(cc);
+		List result = c.getCheckResultList();
+		
+		System.out.println("end");
+	}
+	
+	@Test
+	public void exeRdCrossCreateCheck() throws Exception{
+		RdCross rdCross = new RdCross();
+		rdCross.setPid(8557);
+		
+		List<IRow> objList=new ArrayList<IRow>();
+		objList.add(rdCross);
+		
+		Connection conn = DBConnector.getInstance().getConnectionById(17);
+		//检查调用
+		CheckCommand checkCommand=new CheckCommand();
+		checkCommand.setGlmList(objList);
+		checkCommand.setOperType(OperType.CREATE);
+		checkCommand.setObjType(ObjType.RDCROSS);
+		CheckEngine checkEngine=new CheckEngine(checkCommand,conn);
+		checkEngine.preCheck();
+		checkEngine.postCheck();
+		List<CheckRule> checkRuleList = checkEngine.checkRuleList;
+		System.out.println("ok");
+	}
+	
+	@Test
+	public void exeRdCrossUpdateCheck() throws Exception{
+		RdCross rdCross = new RdCross();
+		rdCross.setPid(8557);
+		
+		List<IRow> objList=new ArrayList<IRow>();
+		objList.add(rdCross);
+		
+		Connection conn = DBConnector.getInstance().getConnectionById(17);
+		//检查调用
+		CheckCommand checkCommand=new CheckCommand();
+		checkCommand.setGlmList(objList);
+		checkCommand.setOperType(OperType.UPDATE);
+		checkCommand.setObjType(ObjType.RDCROSS);
+		CheckEngine checkEngine=new CheckEngine(checkCommand,conn);
+		checkEngine.preCheck();
+		checkEngine.postCheck();
+		List<CheckRule> checkRuleList = checkEngine.checkRuleList;
+		System.out.println("ok");
 	}
 }
 

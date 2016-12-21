@@ -51,6 +51,10 @@
 		</dependency>
 		<dependency>
 			<groupId>com.navinfo.dataservice</groupId>
+			<artifactId>api-metadata</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.navinfo.dataservice</groupId>
 			<artifactId>job-framework</artifactId>
 		</dependency>
 		<dependency>

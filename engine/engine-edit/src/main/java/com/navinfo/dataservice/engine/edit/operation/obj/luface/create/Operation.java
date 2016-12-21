@@ -1,14 +1,5 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.luface.create;
 
-import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import com.alibaba.druid.util.StringUtils;
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
@@ -19,18 +10,32 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
-import com.navinfo.dataservice.dao.glm.model.lu.*;
+import com.navinfo.dataservice.dao.glm.model.lu.LuFace;
+import com.navinfo.dataservice.dao.glm.model.lu.LuFaceName;
+import com.navinfo.dataservice.dao.glm.model.lu.LuFaceTopo;
+import com.navinfo.dataservice.dao.glm.model.lu.LuLink;
+import com.navinfo.dataservice.dao.glm.model.lu.LuLinkMesh;
+import com.navinfo.dataservice.dao.glm.model.lu.LuNode;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.engine.edit.utils.LuLinkOperateUtils;
 import com.navinfo.dataservice.engine.edit.utils.NodeOperateUtils;
+import com.navinfo.dataservice.engine.edit.utils.batch.UrbanBatchUtils;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.LineString;
-
 import net.sf.json.JSONObject;
+
+import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * 土地利用面具体操作类
@@ -44,20 +49,20 @@ public class Operation implements IOperation {
     private LuFace face;
     private boolean updateFlag = true;
 
-    public Operation(Result result) {
+    public Operation(Connection conn, Result result) {
         this.result = result;
+        this.conn = conn;
     }
 
-    public Operation(Result result, LuFace face) {
+    public Operation(Connection conn, Result result, LuFace face) {
         this.face = face;
         this.result = result;
+        this.conn = conn;
     }
 
     public Operation(Command command, Check check, Connection conn, Result result) {
         this.command = command;
-
         this.check = check;
-
         this.conn = conn;
         this.result = result;
         this.updateFlag = false;
@@ -69,18 +74,18 @@ public class Operation implements IOperation {
         if (command.getLinkPids() != null) {
             // LULINK
             if (command.getLinkType().equals(ObjType.LULINK.toString())) {
-                this.createFaceByLuLink(command.getLinks(), null);
+                this.createFaceByLink(command.getLinks(), null);
             }
             // RDLINK
             if (command.getLinkType().equals(ObjType.RDLINK.toString())) {
                 // 根据RDLINK生成ADLINK
                 Map<Coordinate, Integer> maps = new HashMap<Coordinate, Integer>();
-                List<IObj> luLinks = new ArrayList<IObj>();
+                List<IObj> rdLinks = new ArrayList<IObj>();
                 for (IObj obj : command.getLinks()) {
                     RdLink link = (RdLink) obj;
-                    luLinks.add(this.createLinkOfFace(GeoTranslator.transform(link.getGeometry(), 0.00001, 5), maps));
+                    rdLinks.add(this.createLinkOfFace(GeoTranslator.transform(link.getGeometry(), 0.00001, 5), maps));
                 }
-                this.createFaceByLuLink(luLinks, null);
+                this.createFaceByLink(rdLinks, null);
             }
         }
         // 创建
@@ -94,9 +99,11 @@ public class Operation implements IOperation {
      * 根据既有线创建面
      *
      * @param linkList 传入构成面的线
+     * @param face     继承面，没有时传null
      */
-    public void createFaceByLuLink(List<IObj> linkList, LuFace face) throws Exception {
-        if (null != face) this.face = face;
+    public void createFaceByLink(List<IObj> linkList, LuFace face) throws Exception {
+        if (null != face)
+            this.face = face;
         Set<String> meshes = new HashSet<String>();
         List<LuLink> luLinks = new ArrayList<LuLink>();
         for (IObj obj : linkList) {
@@ -131,8 +138,8 @@ public class Operation implements IOperation {
     private void createFaceWithMesh(Set<String> meshes, Geometry geom, List<IObj> objList, int flag) throws Exception {
         LuFace source = this.face;
         Iterator<String> it = meshes.iterator();
-        Map<Coordinate, Integer> mapNode = new HashMap<Coordinate, Integer>();
-        Map<Geometry, LuLink> mapLink = new HashMap<Geometry, LuLink>();
+        Map<Coordinate, Integer> mapNode = new HashMap<>();
+        Map<Geometry, LuLink> mapLink = new HashMap<>();
         if (flag == 1) {
             for (IObj obj : objList) {
                 LuLink luLink = (LuLink) obj;
@@ -151,8 +158,7 @@ public class Operation implements IOperation {
         while (it.hasNext()) {
             String meshIdStr = it.next();
             // 获取每个图幅中闭合线的数组
-            Set<LineString[]> set = CompGeometryUtil.cut(JtsGeometryFactory.createPolygon(geom.getCoordinates()),
-                    meshIdStr);
+            Set<LineString[]> set = CompGeometryUtil.cut(JtsGeometryFactory.createPolygon(geom.getCoordinates()), meshIdStr);
             Iterator<LineString[]> itLine = set.iterator();
             while (itLine.hasNext()) {
                 LineString[] lineStrings = itLine.next();
@@ -193,9 +199,7 @@ public class Operation implements IOperation {
                 this.createFace(source);
                 this.reCaleFaceGeometry(links);
             }
-
         }
-
     }
 
     /**
@@ -363,13 +367,20 @@ public class Operation implements IOperation {
             c1 = g.getCoordinates();
         }
         // 更新面的几何属性
+        Geometry faceGeo = GeoTranslator.getPolygonToPoints(c1);
+        // 为面内link的urban属性赋值
+        initLinkUrban(faceGeo);
         if (this.updateFlag) {
-            this.updateGeometry(GeoTranslator.getPolygonToPoints(c1), this.face);
-
+            this.updateGeometry(faceGeo, this.face);
         } else {
-            this.createFaceGeometry(GeoTranslator.getPolygonToPoints(c1), this.face);
+            this.createFaceGeometry(faceGeo, this.face);
         }
+    }
 
+    private void initLinkUrban(Geometry geometry) throws Exception {
+        Geometry faceGeometry = face.getGeometry();
+        if (face.getKind() == 21)
+            UrbanBatchUtils.updateUrban(faceGeometry == null ? null : GeoTranslator.transform(faceGeometry, 0.00001, 5), GeoTranslator.transform(geometry, 0.00001, 5), conn, result);
     }
 
     /*
@@ -440,5 +451,4 @@ public class Operation implements IOperation {
             }
         }
     }
-
 }

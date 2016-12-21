@@ -15,7 +15,8 @@ import com.navinfo.dataservice.engine.check.core.baseRule;
  * @ClassName: CheckSideNode
  * @author songdongyan
  * @date 下午3:02:10
- * @Description: CheckSideNode.java
+ * @Description: 盲端不允许创建路口
+ * 新增路口前检查
  */
 public class CheckSideNode extends baseRule {
 	

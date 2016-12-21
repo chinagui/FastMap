@@ -9,7 +9,6 @@ import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.column.job.Day2MonthPoiMergeJob;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
-import com.navinfo.dataservice.jobframework.runjob.JobCreateStrategy;
 import com.navinfo.dataservice.jobframework.service.JobService;
 
 import net.sf.json.JSONObject;

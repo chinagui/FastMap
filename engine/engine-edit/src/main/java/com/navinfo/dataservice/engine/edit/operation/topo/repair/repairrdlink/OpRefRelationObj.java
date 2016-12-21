@@ -103,7 +103,7 @@ public class OpRefRelationObj {
 		handleRdObject(result, newLinks, command.getUpdateLink());
 
 		// 处理同一关系
-		handleRdSame(command, result, newLinks, command.getUpdateLink());
+		// handleRdSame(command, result, newLinks, command.getUpdateLink());
 
 		return null;
 	}

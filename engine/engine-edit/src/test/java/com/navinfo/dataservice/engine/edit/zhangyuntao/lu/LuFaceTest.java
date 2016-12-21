@@ -22,7 +22,7 @@ public class LuFaceTest extends InitApplication {
 
 	@Test
 	public void createFaceByGeometryTest() {
-		String parameter = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"LUFACE\",\"objId\":305000002,\"data\":{\"faceNames\":[{\"pid\":305000002,\"nameGroupid\":1,\"langCode\":\"CHI\",\"name\":\"\",\"phonetic\":\"\",\"srcFlag\":0,\"objStatus\":\"INSERT\"}],\"pid\":305000002}}";
+		String parameter = "";
 		TestUtil.run(parameter);
 	}
 
@@ -48,7 +48,7 @@ public class LuFaceTest extends InitApplication {
 	
 	@Test
 	public void update(){
-		String requester = "{\"command\":\"UPDATE\",\"dbId\":43,\"type\":\"LUFACE\",\"objId\":378,\"data\":{\"faceNames\":[{\"pid\":0,\"nameGroupid\":756,\"langCode\":\"CHI\",\"name\":\"44444\",\"phonetic\":\"4444\",\"srcFlag\":0,\"objStatus\":\"INSERT\"}],\"pid\":378}}";
+		String requester = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"LUFACE\",\"objId\":202000007,\"data\":{\"kind\":1,\"pid\":202000007,\"objStatus\":\"UPDATE\"}}";
 		TestUtil.run(requester);
 	}
 

@@ -397,12 +397,14 @@ public class RdLinkSearchUtils {
 	 * @param cuurentLinkPid
 	 * @param cruuentNodePidDir
 	 * @param maxNum
-	 * @param loadChild 是否加载子表
+	 * @param loadChild
+	 *            是否加载子表
 	 * @return 查找所有联通link
 	 * @throws Exception
 	 */
 	public List<RdLink> getNextTrackLinks(int cuurentLinkPid,
-			int cruuentNodePidDir, int maxNum,boolean loadChild) throws Exception {
+			int cruuentNodePidDir, int maxNum, boolean loadChild)
+			throws Exception {
 		RdLinkSelector linkSelector = new RdLinkSelector(conn);
 		List<RdLink> tracks = new ArrayList<RdLink>();
 		Set<Integer> nodes = new HashSet<Integer>();
@@ -497,8 +499,8 @@ public class RdLinkSearchUtils {
 		nodes.add(fristLink.getsNodePid());
 		nodes.add(fristLink.geteNodePid());
 		// 查找当前link联通的links
-		List<RdLink> nextLinks = linkSelector.loadTrackLink(cuurentLinkPid,
-				cruuentNodePidDir, true);
+		List<RdLink> nextLinks = linkSelector.loadTrackLinkNoDirect(
+				cuurentLinkPid, cruuentNodePidDir, true);
 
 		// 10级路不计算挂接个数
 		for (RdLink link : nextLinks) {
@@ -525,9 +527,9 @@ public class RdLinkSearchUtils {
 
 			nodes.add(cruuentNodePidDir);
 			// 赋值查找下一组联通links
-			tmpLinks = linkSelector.loadTrackLink(cuurentLinkPid,
+			tmpLinks = linkSelector.loadTrackLinkNoDirect(cuurentLinkPid,
 					cruuentNodePidDir, true);
-			//清空当前link
+			// 清空当前link
 			resultLinks.clear();
 			// 10级路不计算挂接个数
 			for (RdLink link : tmpLinks) {

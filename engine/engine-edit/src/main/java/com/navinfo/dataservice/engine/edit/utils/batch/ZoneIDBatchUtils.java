@@ -1,6 +1,8 @@
 package com.navinfo.dataservice.engine.edit.utils.batch;
 
 import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
@@ -16,6 +18,8 @@ import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkZone;
 import com.navinfo.dataservice.dao.glm.selector.ad.zone.ZoneFaceSelector;
 import com.navinfo.dataservice.engine.edit.utils.GeoRelationUtils;
 import com.vividsolutions.jts.geom.Geometry;
+
+import static org.apache.hadoop.yarn.webapp.hamlet.HamletSpec.Scope.row;
 
 /**
  * @author zhangyt
@@ -133,10 +137,26 @@ public class ZoneIDBatchUtils extends BaseBatchUtils {
             }
             return;
         }
+        List<Integer> deleteLinkPids = new ArrayList<>();
+        List<RdLink> links = null;
+        // 修形时删除原面内zone属性
+        if (null != faceGeometry) {
+            links = selector.loadLinkByFaceGeo(faceGeometry, true);
+            for (RdLink link : links) {
+                Iterator<IRow> iterator = link.getZones().iterator();
+                while (iterator.hasNext()) {
+                    IRow row = iterator.next();
+                    result.insertObject(row, ObjStatus.DELETE, row.parentPKValue());
+                }
+                deleteLinkPids.add(link.pid());
+            }
+        }
         // 修形时对面内新增link赋zone属性
         geometry = GeoTranslator.transform(geometry, 0.00001, 5);
-        List<RdLink> links = selector.loadLinkByFaceGeo(geometry, true);
+        links = selector.loadLinkByFaceGeo(geometry, true);
         for (RdLink link : links) {
+            if (deleteLinkPids.contains(link.pid()))
+                link.getZones().clear();
             Geometry linkGeometry = GeoTranslator.transform(link.getGeometry(), 0.00001, 5);
             RdLinkZone linkZone = null;
             // 获取关联face的regionId
@@ -198,16 +218,6 @@ public class ZoneIDBatchUtils extends BaseBatchUtils {
                     }
                 }
             } else {
-            }
-        }
-        // 修形时删除原面内zone属性
-        if (null != faceGeometry) {
-            Geometry diffGeo = faceGeometry.difference(geometry);
-            links = selector.loadLinkByFaceGeo(diffGeo, true);
-            for (RdLink link : links) {
-                for (IRow row : link.getZones()) {
-                    result.insertObject(row, ObjStatus.DELETE, row.parentPKValue());
-                }
             }
         }
     }

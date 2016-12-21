@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.day2mon;
 
+import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -10,8 +11,10 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.dbutils.DbUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
@@ -50,6 +53,8 @@ public class PostBatch {
 		// 处理sourceFlag
 		log.info("执行sourceFlag特殊处理");
 		detealSourceFlag();
+		// handler置0
+		updateHandler();
 	}
 	
 	// 处理sourceFlag
@@ -259,6 +264,28 @@ public class PostBatch {
 				pstmt = conn.prepareStatement(sb.toString());
 				pstmt.execute();
 			}
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DBUtils.closeStatement(pstmt);
+		}
+	}
+	
+	// 后批完成，handler置0
+	private void updateHandler() throws Exception {
+		String sql = "UPDATE poi_column_status SET handler=0 WHERE pid in (select to_number(column_value) from table(clob_to_table(?)))";
+		PreparedStatement pstmt = null;
+		try {
+			Map<String, Map<Long, BasicObj>> ObjMap = opResult.getAllObjsMap();
+			Map<Long, BasicObj> poiMap = ObjMap.get("IX_POI");
+			Set<Long> pids = poiMap.keySet();
+			Clob pidsClob = ConnectionUtil.createClob(conn);
+			pidsClob.setString(1, StringUtils.join(pids, ","));
+			
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setClob(1, pidsClob);
+			pstmt.executeUpdate();
+			
 		} catch (Exception e) {
 			throw e;
 		} finally {

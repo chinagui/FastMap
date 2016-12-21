@@ -3,6 +3,8 @@ package com.navinfo.dataservice.dao.glm.selector.poi.deep;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.dbutils.DbUtils;
 
@@ -80,6 +82,29 @@ public class IxPoiOpConfSelector extends AbstractSelector {
 			return result;
 		} catch (Exception e) {
 			throw e;
+		}
+	}
+	
+	public List<String> getSecondByFirst(String firstWorkItem,int type) throws Exception {
+		String sql = "SELECT second_work_item FROM poi_column_op_conf WHERE type=" + type + " AND first_work_item='"+firstWorkItem+"'";
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+		try {
+			pstmt = conn.prepareStatement(sql);
+
+			resultSet = pstmt.executeQuery();
+			
+			List<String> secondList = new ArrayList<String>();
+			while(resultSet.next()) {
+				secondList.add(resultSet.getString("second_work_item"));
+			}
+			return secondList;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
 		}
 	}
 	

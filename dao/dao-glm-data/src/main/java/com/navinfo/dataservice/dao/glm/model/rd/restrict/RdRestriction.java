@@ -45,6 +45,10 @@ public class RdRestriction implements IObj {
 	public RdRestriction() {
 
 	}
+	
+	public String getRowId() {
+		return rowId;
+	}
 
 	public int getPid() {
 		return pid;

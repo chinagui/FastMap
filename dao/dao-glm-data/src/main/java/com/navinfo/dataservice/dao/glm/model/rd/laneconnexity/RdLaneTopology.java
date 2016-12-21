@@ -44,6 +44,10 @@ public class RdLaneTopology implements IObj {
 	public RdLaneTopology() {
 
 	}
+	
+	public String getRowId() {
+		return rowId;
+	}
 
 	@Override
 	public void setRowId(String rowId) {

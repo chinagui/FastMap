@@ -22,6 +22,7 @@ import com.navinfo.dataservice.control.column.core.DeepCoreControl;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.PoiColumnOpConf;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiOpConfSelector;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
+import com.navinfo.dataservice.dao.plus.operation.OperationSegment;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.Batch;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.BatchCommand;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.check.Check;
@@ -68,6 +69,7 @@ public class ColumnSaveJob extends AbstractJob {
 			editJson.addJsonPoi(data);
 			DefaultObjImportorCommand command = new DefaultObjImportorCommand(editJson);
 			importor.operate(command);
+			importor.persistChangeLog(OperationSegment.SG_COLUMN, userId);
 			
 //			columnSave(data,conn);
 			

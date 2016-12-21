@@ -41,7 +41,8 @@ public class ObjBatchSelector {
 	 * 
 	 * @param conn
 	 * @param objType
-	 * @param tabNames
+	 * @param tabNames：所需要加载子表列表；null或空则加载所有子表
+	 * @param isMainOnly:是否只加载主表，true则只加载主表
 	 * @param pids
 	 * @param isLock
 	 * @param isNowait
@@ -53,7 +54,7 @@ public class ObjBatchSelector {
 	 * @throws IllegalAccessException
 	 * @throws InstantiationException
 	 */
-	public static Map<Long,BasicObj> selectByPids(Connection conn,String objType,Set<String> tabNames
+	public static Map<Long,BasicObj> selectByPids(Connection conn,String objType,Set<String> tabNames,boolean isMainOnly
 			,Collection<Long> pids,boolean isLock,boolean isWait) throws SQLException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException{
 		Map<Long,BasicObj> objs = new HashMap<Long,BasicObj>();
 		if(pids.isEmpty()){
@@ -83,10 +84,21 @@ public class ObjBatchSelector {
 			BasicObj obj = ObjFactory.getInstance().create4Select(mainrow);
 			objs.put(mainrow.getObjPid(), obj);
 		}
-		
-		if(tabNames!=null&&!tabNames.isEmpty()){
+		//加载子表
+		if(isMainOnly){
+			logger.info("selectByPid不加载子表");
+		}else{
+			if(tabNames==null||tabNames.isEmpty()){
+				//加载所有子表
+				tabNames = glmObj.getTables().keySet();
+			}
+			logger.info("selectByPid开始加载子表");
 			selectChildren(conn,objs.values(),tabNames,pids);
+			logger.info("selectByPid加载子表结束");
 		}
+//		if(tabNames!=null&&!tabNames.isEmpty()){
+//			selectChildren(conn,objs.values(),tabNames,pids);
+//		}
 		return objs;
 	}
 	
@@ -167,7 +179,8 @@ public class ObjBatchSelector {
 	 * 如果多条只返回第一条,仅支持主表数值或字符类型字段
 	 * @param conn
 	 * @param objType
-	 * @param tabNames
+	 * @param tabNames：所需要加载子表列表；null或空则加载所有子表
+	 * @param isMainOnly:是否只加载主表，true则只加载主表
 	 * @param colName
 	 * @param colValues
 	 * @param isLock
@@ -180,7 +193,7 @@ public class ObjBatchSelector {
 	 * @throws NoSuchMethodException 
 	 * @throws ClassNotFoundException 
 	 */
-	public static <T> Map<Long,BasicObj> selectBySpecColumn(Connection conn,String objType,Set<String> tabNames,String colName
+	public static <T> Map<Long,BasicObj> selectBySpecColumn(Connection conn,String objType,Set<String> tabNames,boolean isMainOnly,String colName
 			,Collection<T> colValues,boolean isLock,boolean isWait) throws SQLException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException{
 		Map<Long,BasicObj> objs = new HashMap<Long,BasicObj>();
 		if(colValues.isEmpty()){
@@ -222,11 +235,23 @@ public class ObjBatchSelector {
 			objs.put(obj.objPid(), obj);
 		}
 		
-		if(tabNames!=null&&!tabNames.isEmpty()){
-			logger.info("selectBySpecColumn开始加载子表");
+		//加载子表
+		if(isMainOnly){
+			logger.info("selectByPid不加载子表");
+		}else{
+			if(tabNames==null||tabNames.isEmpty()){
+				//加载所有子表
+				tabNames = glmObj.getTables().keySet();
+			}
+			logger.info("selectByPid开始加载子表");
 			selectChildren(conn,objs.values(),tabNames,objs.keySet());
-			logger.info("selectBySpecColumn开始加载子表");
+			logger.info("selectByPid加载子表结束");
 		}
+//		if(tabNames!=null&&!tabNames.isEmpty()){
+//			logger.info("selectBySpecColumn开始加载子表");
+//			selectChildren(conn,objs.values(),tabNames,objs.keySet());
+//			logger.info("selectBySpecColumn开始加载子表");
+//		}
 		return objs;
 	}
 	

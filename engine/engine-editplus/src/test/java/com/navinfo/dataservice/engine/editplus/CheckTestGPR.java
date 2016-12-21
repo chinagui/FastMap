@@ -42,7 +42,7 @@ public class CheckTestGPR {
 		test.init();
 		Connection conn = DBConnector.getInstance().getConnectionById(19);
 		OperationResult operationResult=new OperationResult();
-		BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", null, 78675641, false);
+		BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", null, false,78675641, false);
 		IxPoi row=(IxPoi) obj.getMainrow();
 		//row.setKindCode("190100");
 		ChangeLog logg=new ChangeLog();

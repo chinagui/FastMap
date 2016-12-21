@@ -66,7 +66,7 @@ public class LogTest {
 			tabNames.add("IX_POI_CONTACT");
 			tabNames.add("IX_POI_FLAG");
 			
-			BasicObj obj = ObjSelector.selectByPid(conn, objType, tabNames, pid, isLock);
+			BasicObj obj = ObjSelector.selectByPid(conn, objType, tabNames, false,pid, isLock);
 			
 			obj.getMainrow().setAttrByCol("KIND_CODE", "110102");
 			List<BasicRow> ixPoiNameList = obj.getRowsByName("IX_POI_NAME");
@@ -119,7 +119,7 @@ public class LogTest {
 			tabNames.add("IX_POI_CONTACT");
 			tabNames.add("IX_POI_FLAG");
 
-			BasicObj obj = ObjSelector.selectByPid(conn, objType, tabNames, pid, isLock);
+			BasicObj obj = ObjSelector.selectByPid(conn, objType, tabNames,false, pid, isLock);
 			
 			Geometry geo = JtsGeometryFactory.read("LINESTRING(129.789321823 34.18782666,129.34455656 34.898776)");
 			obj.getMainrow().setAttrByCol("GEOMETRY", JtsGeometryFactory.read("LINESTRING(129.789321823 34.18782666,129.34455656 34.898776)"));
@@ -209,7 +209,7 @@ public class LogTest {
 			tabNames.add("IX_POI_CONTACT");
 			tabNames.add("IX_POI_FLAG");
 
-			BasicObj obj = ObjSelector.selectByPid(conn, objType, tabNames, pid, isLock);
+			BasicObj obj = ObjSelector.selectByPid(conn, objType, tabNames,false, pid, isLock);
 			obj.deleteObj();
 			
 			List<BasicObj> basicObjs = new ArrayList<BasicObj>();

@@ -79,7 +79,7 @@ public class ColumnSubmitJob extends AbstractJob {
 			
 			List<BasicObj> objList = new ArrayList<BasicObj>();
 			for (int pid:pidList) {
-				BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", null, pid, false);
+				BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", null,true, pid, false);
 				objList.add(obj);
 				
 			}

@@ -38,7 +38,7 @@ public class RdLinkTest extends InitApplication {
     public void update() {
         String parameter = "{\"command\":\"BREAK\",\"dbId\":42,\"objId\":100008435,\"data\":{\"longitude\":116.4702206995429,\"latitude\":40.08258242178863},\"type\":\"RDLINK\"}";
         parameter = "{\"command\":\"UPDATE\",\"dbId\":42,\"type\":\"RDLINK\",\"objId\":589615,\"data\":{\"kind\":3,\"pid\":589615,\"objStatus\":\"UPDATE\"}}";
-        parameter = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"RDLINK\",\"objId\":210003024,\"data\":{\"forms\":[{\"rowId\":\"6405584554AF4FB0A50263FA0144C5A2\",\"objStatus\":\"DELETE\",\"formOfWay\":1}],\"pid\":210003024}}";
+        parameter = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"RDLINK\",\"objId\":305003119,\"data\":{\"imiCode\":1,\"pid\":305003119,\"objStatus\":\"UPDATE\"}}";
 
         //        try {
         //            Connection conn = DBConnector.getInstance().getConnectionById(42);
@@ -62,7 +62,7 @@ public class RdLinkTest extends InitApplication {
     @Test
     public void create() {
         String parameter = "{\"command\":\"CREATE\",\"dbId\":42,\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.46699,40.08309],[116.46714,40.08249]]},\"catchLinks\":[]},\"type\":\"RDLINK\"}";
-        parameter = "{\"command\":\"CREATE\",\"dbId\":17,\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.44574403762817,39.91689151500802],[116.44597470760347,39.91648007577787]]},\"catchLinks\":[]},\"type\":\"RDLINK\"}";
+        parameter = "{\"command\":\"CREATE\",\"dbId\":271,\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.94954872131346,40.20741813825946],[116.95039093494414,40.20782782430726]]},\"catchLinks\":[]},\"type\":\"RDLINK\"}";
         //        parameter = "{\"command\":\"CREATE\",\"dbId\":17,\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.44590497016907,39.91660762220357],[116.44618928432465,39.91627846965277]]},\"catchLinks\":[]},\"type\":\"RDLINK\"}";
         TestUtil.run(parameter);
     }
@@ -88,7 +88,7 @@ public class RdLinkTest extends InitApplication {
     @Test
     public void updownDepart() {
         String parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"dbId\":17,\"distance\":\"6.6\",\"data\":{\"linkPids\":[209000217]}}";
-        parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"dbId\":17,\"distance\":\"8.3\",\"data\":{\"linkPids\":[17654882,17654862,402705,402701,88702781,88702780,410213,394888,39749818,39749817,405828]}}";
+        parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"dbId\":17,\"distance\":\"6.6\",\"data\":{\"linkPids\":[307002979]}}";
         TestUtil.run(parameter);
     }
 

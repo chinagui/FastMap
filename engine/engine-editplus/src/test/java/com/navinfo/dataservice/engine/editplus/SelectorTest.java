@@ -375,25 +375,27 @@ public class SelectorTest {
 	public void test15(){
 		try{
 			Connection conn = null;
-			conn = DBConnector.getInstance().getConnectionById(17);
+			conn = DBConnector.getInstance().getConnectionById(19);
 			/*
 			String data = "{\"postCode\": \"\",\"rowId\": \"3AE1FB4B927892F7E050A8C08304EE4C\",\"pid\": 69159,"
 					+ "\"objStatus\":\"UPDATE\",\"poiMemo\":\"test\",\"level\":\"B3\","
 					+ "\"addresses\":[{\"nameGroupid\":1,\"poiPid\":0,"
 					+ "\"langCode\":\"CHI\",\"fullname\":\"北京\",\"objStatus\": \"INSERT\"}]}}";
 			*/
-			String data = "{\"postCode\": \"\",\"rowId\": \"3AE1FB4B927892F7E050A8C08304EE4C\",\"pid\": 69159,"
+			/*String data = "{\"postCode\": \"\",\"rowId\": \"3AE1FB4B927892F7E050A8C08304EE4C\",\"pid\": 69159,"
 					+ "\"objStatus\":\"UPDATE\",\"poiMemo\":\"test\",\"level\":\"B3\",\"side\":0,\"regionId\":10010,"
 					+ "\"addresses\":[{\"nameGroupid\":1,\"srcFlag\":1,"
 					+ "\"poiPid\":69159,\"rowId\":\"D476DB9402074216A28607D8D8C9C71D\","
-					+ "\"langCode\":\"CHI\",\"fullname\":\"北京\",\"objStatus\": \"UPDATE\"}]}}";
+					+ "\"langCode\":\"CHI\",\"fullname\":\"北京\",\"objStatus\": \"UPDATE\"}]}}";*/
+			String data = "{\"names\":[{\"name\":\"北京华军中医医院\",\"rowId\":\"3AE1FCF65D1F92F7E050A8C08304EE4C\""
+					+ ",\"pid\":335,\"objStatus\":\"UPDATE\"}],\"pid\":335}";
 			JSONObject jo = JSONObject.fromObject(data);
 			System.out.println("导入的json数据"+data);
 			//Map<String, JSONObject> addMap = new HashMap<String, JSONObject>();
 			//addMap.put("IXPOI", jo);
 			Map<String, Map<Long, JSONObject>> updateMap = new HashMap<String, Map<Long, JSONObject>>();
 			Map<Long, JSONObject> update = new HashMap<Long, JSONObject>();
-			update.put(69159L, jo);
+			update.put(335L, jo);
 			updateMap.put("IXPOI", update);
 			DefaultObjImportor df = new DefaultObjImportor(conn, null);
 			//List<BasicObj> list = df.improtAdd(conn, addMap);

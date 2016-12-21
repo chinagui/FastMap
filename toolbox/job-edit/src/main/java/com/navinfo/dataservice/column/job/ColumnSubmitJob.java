@@ -23,8 +23,12 @@ import com.navinfo.dataservice.control.column.core.DeepCoreControl;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.PoiColumnOpConf;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiColumnStatusSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiOpConfSelector;
+import com.navinfo.dataservice.dao.plus.log.LogDetail;
+import com.navinfo.dataservice.dao.plus.log.ObjHisLogParser;
+import com.navinfo.dataservice.dao.plus.log.PoiLogDetailStat;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
+import com.navinfo.dataservice.dao.plus.operation.OperationSegment;
 import com.navinfo.dataservice.dao.plus.selector.ObjSelector;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.Batch;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.BatchCommand;
@@ -33,15 +37,13 @@ import com.navinfo.dataservice.engine.editplus.batchAndCheck.check.CheckCommand;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
 public class ColumnSubmitJob extends AbstractJob {
 	
 	public ColumnSubmitJob(JobInfo jobInfo) {
 		super(jobInfo);
 	}
 
+	@SuppressWarnings("static-access")
 	@Override
 	public void execute() throws JobException {
 		
@@ -77,12 +79,24 @@ public class ColumnSubmitJob extends AbstractJob {
 			
 			OperationResult operationResult=new OperationResult();
 			
+			List<Long> pids = new ArrayList<Long>();
+			for (int pid:pidList) {
+				pids.add((long)pid);
+			}
+			
+			PoiLogDetailStat logDetail = new PoiLogDetailStat();
+			Map<Long,List<LogDetail>> submitLogs = logDetail.loadByColEditStatus(conn, pids, userId, taskId, firstWorkItem, secondWorkItem);
 			List<BasicObj> objList = new ArrayList<BasicObj>();
+			ObjHisLogParser logParser = new ObjHisLogParser();
 			for (int pid:pidList) {
 				BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", null, pid, false);
+				if (submitLogs.containsKey(pid)) {
+					logParser.parse(obj, submitLogs.get(pid));
+				}
 				objList.add(obj);
-				
 			}
+			
+			
 			operationResult.putAll(objList);
 			
 			IxPoiOpConfSelector ixPoiOpConfSelector = new IxPoiOpConfSelector(conn);
@@ -97,6 +111,7 @@ public class ColumnSubmitJob extends AbstractJob {
 				
 				Batch batch=new Batch(conn,operationResult);
 				batch.operate(batchCommand);
+				batch.persistChangeLog(OperationSegment.SG_COLUMN, userId);
 			}
 			
 			// 检查

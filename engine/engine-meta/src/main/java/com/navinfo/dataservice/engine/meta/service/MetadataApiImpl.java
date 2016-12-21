@@ -33,6 +33,7 @@ import com.navinfo.dataservice.engine.meta.scPointSpecKindcode.ScPointSpecKindco
 import com.navinfo.dataservice.engine.meta.tmc.selector.TmcSelector;
 import com.navinfo.dataservice.engine.meta.translate.ConvertUtil;
 import com.navinfo.dataservice.engine.meta.translate.EngConverterHelper;
+import com.navinfo.dataservice.engine.meta.wordKind.WordKind;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -316,5 +317,10 @@ public class MetadataApiImpl implements MetadataApi {
 	public Map<String, List<String>> tyCharacterEgalcharExtGetExtentionTypeMap()
 			throws Exception {
 		return TyCharacterEgalcharExt.getInstance().getExtentionTypeMap();
+	}
+
+	@Override
+	public String wordKind(String kindCode,String chain) throws Exception {
+		return WordKind.getInstance().getWordKind(kindCode, chain);
 	}
 }

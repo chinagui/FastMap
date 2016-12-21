@@ -39,7 +39,7 @@ public class RdRestrictionVia implements IRow {
 	public int igetInNodePid() {
 		return inNodePid;
 	}
-
+	
 	public void isetInNodePid(int inNodePid) {
 		this.inNodePid = inNodePid;
 	}

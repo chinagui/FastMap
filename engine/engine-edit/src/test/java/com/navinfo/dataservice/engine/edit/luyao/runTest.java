@@ -978,4 +978,15 @@ public class runTest extends InitApplication {
 
 		String msg = t.run();
 	}
+
+	@Test
+	public void run_1220_1() throws Exception {
+
+		String parameter = "{\"command\":\"REPAIR\",\"dbId\":17,\"objId\":303003035,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.66208565235138,40.30279168355063],[116.66261,40.30248]]},\"catchInfos\":[{\"nodePid\":210002390,\"catchNodePid\":\"309002361\"}]},\"type\":\"RDLINK\"}";
+
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+			
 }

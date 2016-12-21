@@ -13,6 +13,7 @@ import org.springframework.web.servlet.ModelAndView;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.commons.util.StringUtils;
+import com.navinfo.dataservice.control.row.day2mon.Day2Mon;
 import com.navinfo.dataservice.control.row.query.PoiQuery;
 import com.navinfo.dataservice.control.row.release.PoiRelease;
 import com.navinfo.dataservice.control.row.save.PoiSave;
@@ -98,6 +99,21 @@ public class RowEditController extends BaseController {
 		try {
 			PoiRelease poiRelease = new PoiRelease();
 			long jobId = poiRelease.release(parameter, tokenObj.getUserId());
+			return new ModelAndView("jsonView", success(jobId));
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
+	@RequestMapping(value = "/poi/day2mon/")
+	public ModelAndView day2mon(HttpServletRequest request)
+			throws ServletException, IOException {
+
+		String parameter = request.getParameter("parameter");
+		AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+		try {
+			Day2Mon day2Mon = new Day2Mon();
+			long jobId = day2Mon.sync(parameter, tokenObj.getUserId());
 			return new ModelAndView("jsonView", success(jobId));
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);

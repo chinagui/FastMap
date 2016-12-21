@@ -68,6 +68,7 @@ public class FM14SUM1208 extends BasicCheckRule {
 					if(errorList.size()>0){
 						setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(),
 								"标准化中文名称空格错误："+errorList.toString().replace("[", "").replace("]", ""));
+						return;
 					}
 				}
 			}

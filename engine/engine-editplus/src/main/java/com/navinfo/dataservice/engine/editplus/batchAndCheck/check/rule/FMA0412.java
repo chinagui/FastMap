@@ -35,6 +35,7 @@ public class FMA0412 extends BasicCheckRule {
 					String name=nameTmp.getName();
 					if(name.length()>35){
 						setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), null);
+						return;
 					}
 				}
 			}

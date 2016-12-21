@@ -109,8 +109,14 @@ public interface MetadataApi {
 	
 	public Map<String, String> scEngshortListMap() throws Exception;
 
-
 	public String convFull2Half(String word) throws Exception;
 	
 	public String wordKind(String kindCode,String chain) throws Exception;
+
+	/**
+	 * 返回“TY_CHARACTER_EGALCHAR_EXT”表中数据。
+	 * @return Map<String, List<String>> key:EXTENTION_TYPE value:CHARACTER字段列表
+	 * @throws Exception
+	 */
+	public Map<String, List<String>> tyCharacterEgalcharExtGetExtentionTypeMap() throws Exception;
 }

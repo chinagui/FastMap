@@ -12,13 +12,11 @@ import com.navinfo.dataservice.dao.plus.obj.ObjectName;
  *检查条件：
  *该POI发生变更(新增或修改主子表、删除子表)
  *检查原则：
- *NAME（LANG_CODE="CHI")，不能有繁体字。查找的繁体字在TY_CHARACTER_FJT_HZ中所在行的CONVERT字段的值：
- *1、如果是1表示不转化，不用报log；
- *2、如果是0表示需要确认后转化，报log：**是繁体字，对应的简体字是**，需确认是否转化；
- *检查名称：标准化中文名称（NAME_TYPE=1，NAME_CLASS={1}，LANG_CODE=CHI）
+ *名称(NAME)中存在全、半角字符“|”，报log：名称中含有非法字符“|”
+ *检查名称：标准化中文名称（NAME_TYPE=1，NAME_CLASS={1,5}，LANG_CODE=CHI或CHT）
  * @author gaopengrong
  */
-public class FMYW20036 extends BasicCheckRule {
+public class FMYW20058 extends BasicCheckRule {
 	
 	@Override
 	public void loadReferDatas(Collection<BasicObj> batchDataList)

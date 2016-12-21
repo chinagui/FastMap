@@ -7,7 +7,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -19,19 +18,17 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.navinfo.dataservice.api.edit.iface.EditApi;
 import com.navinfo.dataservice.api.edit.upload.EditJson;
-import com.navinfo.dataservice.api.job.iface.JobApi;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.column.job.ColumnCoreOperation;
-import com.navinfo.dataservice.column.job.ColumnSaveJobRequest;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
-import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.control.column.core.DeepCoreControl;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.PoiColumnOpConf;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiOpConfSelector;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
+import com.navinfo.dataservice.dao.plus.operation.AbstractOperation;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
 import com.navinfo.dataservice.dao.plus.selector.ObjSelector;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.Batch;
@@ -42,9 +39,6 @@ import com.navinfo.dataservice.engine.editplus.operation.imp.DefaultObjImportor;
 import com.navinfo.dataservice.engine.editplus.operation.imp.DefaultObjImportorCommand;
 import com.navinfo.dataservice.jobframework.exception.JobCreateException;
 import com.navinfo.dataservice.jobframework.exception.JobException;
-import com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest;
-import com.navinfo.dataservice.jobframework.runjob.JobCreateStrategy;
-import com.navinfo.dataservice.jobframework.service.JobApiImpl;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONNull;
@@ -70,6 +64,8 @@ public class columnSaveTest {
 		editJson.addJsonPoi(dataJson.getJSONArray("dataList"));
 		DefaultObjImportorCommand command = new DefaultObjImportorCommand(editJson);
 		importor.operate(command);
+		importor.persistChangeLog(2, 0);
+//		AbstractOperation operation = new AbstractOperation(conn,importor.getResult());
 		conn.commit();
 		
 	}

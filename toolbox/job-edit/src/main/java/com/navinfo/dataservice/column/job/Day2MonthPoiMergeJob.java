@@ -143,8 +143,11 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 			String tempOpTable = logSelector.select();
 			log.info("开始奖日库履历刷新到月库,temptable:"+tempOpTable);
 			FlushResult flushResult= new Day2MonLogFlusher(dailyDbSchema,dailyConn,monthConn,true,tempOpTable).flush();
-			monthConn.commit();
-			log.info("开始将履历搬到月库");
+			if(0==flushResult.getTotal()){
+				log.info("没有符合条件的履历，不执行日落月，返回");
+				return;
+			}
+			log.info("开始将履历搬到月库：logtotal:"+flushResult.getTotal());
 			logMover = new Day2MonMover(dailyDbSchema, monthDbSchema, tempOpTable, flushResult.getTempFailLogTable());
 			LogMoveResult logMoveResult = logMover.move();
 			log.info("开始进行履历分析");
@@ -169,19 +172,22 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 			log.error(e.getMessage(),e);
 			curSyncInfo.setSyncStatus(FmDay2MonSync.SyncStatusEnum.FAIL.getValue());
 			d2mSyncApi.updateSyncInfo(curSyncInfo);
-			
-		}finally{
-			if(logSelector!=null){
-				log.info("释放履历锁");
-				logSelector.unselect(false);
-			}
 			if(logMover!=null){
 				log.info("搬移履历回滚");
 				logMover.rollbackMove();
 			}
+			
+		}finally{
 			DbUtils.commitAndCloseQuietly(monthConn);
 			DbUtils.commitAndCloseQuietly(dailyConn);
 			log.info("commit db");
+			if(logSelector!=null){
+				log.info("释放履历锁");
+				logSelector.unselect(false);
+			}
+			
+			
+			
 		}
 		
 	}

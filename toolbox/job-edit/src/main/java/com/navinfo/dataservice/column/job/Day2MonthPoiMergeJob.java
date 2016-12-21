@@ -40,6 +40,7 @@ import com.navinfo.dataservice.impcore.flushbylog.LogFlushUtil;
 import com.navinfo.dataservice.impcore.flusher.Day2MonLogFlusher;
 import com.navinfo.dataservice.impcore.flusher.DefaultLogFlusher;
 import com.navinfo.dataservice.impcore.flusher.LogFlusher;
+import com.navinfo.dataservice.impcore.mover.Day2MonMover;
 import com.navinfo.dataservice.impcore.mover.DefaultLogMover;
 import com.navinfo.dataservice.impcore.mover.LogMoveResult;
 import com.navinfo.dataservice.impcore.mover.LogMover;
@@ -132,6 +133,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 		OracleSchema monthDbSchema = new OracleSchema(
 				DbConnectConfig.createConnectConfig(monthDbInfo.getConnectParam()));
 		Connection monthConn = monthDbSchema.getPoolDataSource().getConnection();
+		LogMover logMover = null;
 		try{
 			log.info("开始获取日编库履历");
 			
@@ -139,10 +141,14 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 			logSelector.setGrids(gridsOfCity);
 			logSelector.setStopTime(syncTimeStamp);
 			String tempOpTable = logSelector.select();
-			log.info("开始奖日库履历刷新到月库");
+			log.info("开始奖日库履历刷新到月库,temptable:"+tempOpTable);
 			FlushResult flushResult= new Day2MonLogFlusher(dailyDbSchema,dailyConn,monthConn,true,tempOpTable).flush();
-			log.info("开始将履历搬到月库");
-			LogMover logMover = new DefaultLogMover(dailyDbSchema, monthDbSchema, tempOpTable, flushResult.getTempFailLogTable(),dailyConn,true);
+			if(0==flushResult.getTotal()){
+				log.info("没有符合条件的履历，不执行日落月，返回");
+				return;
+			}
+			log.info("开始将履历搬到月库：logtotal:"+flushResult.getTotal());
+			logMover = new Day2MonMover(dailyDbSchema, monthDbSchema, tempOpTable, flushResult.getTempFailLogTable());
 			LogMoveResult logMoveResult = logMover.move();
 			log.info("开始进行履历分析");
 			
@@ -154,7 +160,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 			new Classifier(checkResult,monthConn).execute();
 			log.info("开始执行后批处理");
 			new PostBatch(result,monthConn).execute();
-			updateLogCommitStatus(dailyDbSchema,tempOpTable);
+			updateLogCommitStatus(dailyConn,tempOpTable);
 			log.info("修改同步信息为成功");
 			curSyncInfo.setSyncStatus(FmDay2MonSync.SyncStatusEnum.SUCCESS.getValue());
 			d2mSyncApi.updateSyncInfo(curSyncInfo);
@@ -166,23 +172,30 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 			log.error(e.getMessage(),e);
 			curSyncInfo.setSyncStatus(FmDay2MonSync.SyncStatusEnum.FAIL.getValue());
 			d2mSyncApi.updateSyncInfo(curSyncInfo);
+			if(logMover!=null){
+				log.info("搬移履历回滚");
+				logMover.rollbackMove();
+			}
 			
 		}finally{
-			if(logSelector!=null){
-				log.info("释放履历锁");
-				logSelector.unselect(true);
-			}
 			DbUtils.commitAndCloseQuietly(monthConn);
 			DbUtils.commitAndCloseQuietly(dailyConn);
 			log.info("commit db");
+			if(logSelector!=null){
+				log.info("释放履历锁");
+				logSelector.unselect(false);
+			}
+			
+			
+			
 		}
 		
 	}
 
-	protected void updateLogCommitStatus(OracleSchema dailyDbSchema,String tempTable) throws Exception {
+	protected void updateLogCommitStatus(Connection dailyConn,String tempTable) throws Exception {
 		QueryRunner run = new QueryRunner();
 		String sql = "update LOG_OPERATION set com_dt = sysdate,com_sta=1,LOCK_STA=0 where OP_ID IN (SELECT OP_ID FROM "+tempTable+")";
-		run.execute(dailyDbSchema.getPoolDataSource().getConnection(), sql);
+		run.execute(dailyConn, sql);
 		
 	}
 	private OperationResult parseLog(LogMoveResult logMoveResult, Connection monthConn)

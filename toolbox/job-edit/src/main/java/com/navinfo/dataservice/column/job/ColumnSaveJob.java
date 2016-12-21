@@ -22,6 +22,7 @@ import com.navinfo.dataservice.control.column.core.DeepCoreControl;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.PoiColumnOpConf;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiOpConfSelector;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
+import com.navinfo.dataservice.dao.plus.operation.OperationSegment;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.Batch;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.BatchCommand;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.check.Check;
@@ -43,6 +44,8 @@ public class ColumnSaveJob extends AbstractJob {
 	@Override
 	public void execute() throws JobException {
 		
+		log.info("columnSave start...");
+		
 		ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
 		
 		List<Integer> pidList = new ArrayList<Integer>();
@@ -56,18 +59,22 @@ public class ColumnSaveJob extends AbstractJob {
 			JSONArray data = paramJson.getJSONArray("dataList");
 			String secondWorkItem = paramJson.getString("secondWorkItem");
 			
+			log.info("userId:"+userId+",taskId:"+taskId);
+			log.info("secondWorkItem:"+secondWorkItem);
 			
 			Subtask subtask = apiService.queryBySubtaskId(taskId);
 			
 			int dbId = subtask.getDbId();
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 			
+			log.info("dbId:"+dbId);
 			
 			DefaultObjImportor importor = new DefaultObjImportor(conn,null);
 			EditJson editJson = new EditJson();
 			editJson.addJsonPoi(data);
 			DefaultObjImportorCommand command = new DefaultObjImportorCommand(editJson);
 			importor.operate(command);
+			importor.persistChangeLog(OperationSegment.SG_COLUMN, userId);
 			
 //			columnSave(data,conn);
 			
@@ -76,7 +83,7 @@ public class ColumnSaveJob extends AbstractJob {
 				pidList.add(pid);
 			}
 			
-			// 修改poi_deep_status表作业项状态
+			// 修改poi_column_status表作业项状态
 			updateColumnStatus(pidList, conn, 2);
 			
 			// TODO 区分大陆/港澳
@@ -87,12 +94,14 @@ public class ColumnSaveJob extends AbstractJob {
 			PoiColumnOpConf columnOpConf = ixPoiOpConfSelector.getDeepOpConf("",secondWorkItem, type);
 			
 			// 清理检查结果
+			log.info("清理检查结果");
 			DeepCoreControl deepControl = new DeepCoreControl();
 			deepControl.cleanCheckResult(pidList, conn);
 			
 			OperationResult operationResult=importor.getResult();
 			
 			// 批处理
+			log.info("执行批处理");
 			if (columnOpConf.getSaveExebatch() == 1) {
 				BatchCommand batchCommand=new BatchCommand();		
 				for (String ruleId:columnOpConf.getSaveBatchrules().split(",")) {
@@ -101,10 +110,12 @@ public class ColumnSaveJob extends AbstractJob {
 
 				Batch batch=new Batch(conn,operationResult);
 				batch.operate(batchCommand);
+				batch.persistChangeLog(OperationSegment.SG_COLUMN, userId);
 			}
 			
 			
 			// 检查
+			log.info("执行检查");
 			if (columnOpConf.getSaveExecheck() == 1) {
 				CheckCommand checkCommand=new CheckCommand();		
 				List<String> checkList=new ArrayList<String>();
@@ -119,6 +130,7 @@ public class ColumnSaveJob extends AbstractJob {
 			
 			
 			// 重分类
+			log.info("执行重分类");
 			if (columnOpConf.getSaveExeclassify()==1) {
 				HashMap<String,Object> classifyMap = new HashMap<String,Object>();
 				classifyMap.put("userId", userId);
@@ -131,6 +143,7 @@ public class ColumnSaveJob extends AbstractJob {
 			}
 			
 			// 清理重分类检查结果
+			log.info("清理重分类检查结果");
 			List<String> ckRules = new ArrayList<String>();
 			String classifyrules = columnOpConf.getSaveClassifyrules();
 			for (String classifyrule:classifyrules.split(",")) {
@@ -139,6 +152,7 @@ public class ColumnSaveJob extends AbstractJob {
 			deepControl.cleanExByCkRule(conn, pidList, ckRules, "IX_POI");
 			
 			conn.commit();
+			log.info("月编保存完成");
 		} catch (Exception e) {
 			throw new JobException(e);
 		} finally {

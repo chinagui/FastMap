@@ -6,6 +6,7 @@ import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.mileagepile.RdMileagepile;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
+import com.navinfo.dataservice.dao.glm.model.rd.speedlimit.RdSpeedlimit;
 import com.navinfo.dataservice.dao.glm.selector.rd.mileagepile.RdMileagepileSelector;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Coordinate;
@@ -107,42 +108,63 @@ public class Operation {
      * @return
      * @throws Exception
      */
-    public String updownDepart(RdNode sNode, List<RdLink> links, Map<Integer, RdLink> leftLinks, Map<Integer, RdLink> rightLinks, Result result) throws Exception {
+    public String updownDepart(RdNode sNode, List<RdLink> links, Map<Integer, RdLink> leftLinks, Map<Integer, RdLink> rightLinks, Map<Integer, RdLink> noTargetLinks, Result result) throws Exception {
         // 查找上下线分离对影响到的里程桩
         List<Integer> linkPids = new ArrayList<>();
         linkPids.addAll(leftLinks.keySet());
         RdMileagepileSelector selector = new RdMileagepileSelector(conn);
         List<RdMileagepile> mileagepiles = selector.loadByLinkPids(linkPids, true);
         // 里程桩数量为零则不需要维护
-        if (mileagepiles.size() == 0) {
-            return "";
-        }
-        // 构建RdLinkPid-里程桩的对应集合
-        Map<Integer, List<RdMileagepile>> mileagepileMap = new HashMap<Integer, List<RdMileagepile>>();
-        for (RdMileagepile mileagepile : mileagepiles) {
-            List<RdMileagepile> list = mileagepileMap.get(mileagepile.getLinkPid());
-            if (null != list) {
-                list.add(mileagepile);
-            } else {
-                list = new ArrayList<>();
-                list.add(mileagepile);
-                mileagepileMap.put(mileagepile.getLinkPid(), list);
+        if (mileagepiles.size() != 0) {
+            // 构建RdLinkPid-里程桩的对应集合
+            Map<Integer, List<RdMileagepile>> mileagepileMap = new HashMap<Integer, List<RdMileagepile>>();
+            for (RdMileagepile mileagepile : mileagepiles) {
+                List<RdMileagepile> list = mileagepileMap.get(mileagepile.getLinkPid());
+                if (null != list) {
+                    list.add(mileagepile);
+                } else {
+                    list = new ArrayList<>();
+                    list.add(mileagepile);
+                    mileagepileMap.put(mileagepile.getLinkPid(), list);
+                }
+            }
+            for (RdLink link : links) {
+                RdLink leftLink = leftLinks.get(link.pid());
+                RdLink rightLink = rightLinks.get(link.pid());
+                if (mileagepileMap.containsKey(link.getPid())) {
+                    List<RdMileagepile> mileagepiles1 = mileagepileMap.get(link.getPid());
+                    for (RdMileagepile mileagepile : mileagepiles1) {
+                        int direct = mileagepile.getDirect();
+                        if (2 == direct)
+                            // 里程桩为顺方向则关联link为右线
+                            updateMileagepile(rightLink, mileagepile, result);
+                        else if (0 == direct || 3 == direct)
+                            // 里程桩为逆方向则关联link为左线
+                            updateMileagepile(leftLink, mileagepile, result);
+                    }
+                }
             }
         }
-        for (RdLink link : links) {
-            RdLink leftLink = leftLinks.get(link.pid());
-            RdLink rightLink = rightLinks.get(link.pid());
-            if (mileagepileMap.containsKey(link.getPid())) {
-                List<RdMileagepile> mileagepiles1 = mileagepileMap.get(link.getPid());
-                for (RdMileagepile mileagepile : mileagepiles1) {
-                    int direct = mileagepile.getDirect();
-                    if (2 == direct)
-                        // 里程桩为顺方向则关联link为右线
-                        updateMileagepile(rightLink, mileagepile, result);
-                    else if (0 == direct || 3 == direct)
-                        // 里程桩为逆方向则关联link为左线
-                        updateMileagepile(leftLink, mileagepile, result);
-                }
+        // 维护非目标Link的信息
+        for (Map.Entry<Integer, RdLink> entry : noTargetLinks.entrySet()) {
+            int linkPid = entry.getKey();
+            List<RdMileagepile> mileages = selector.loadByLinkPid(linkPid, true);
+            RdLink sourceLink = entry.getValue();
+            RdLink link = new RdLink();
+            link.copy(sourceLink);
+
+            Geometry newGeo = null;
+            if (sourceLink.changedFields().containsKey("geometry")) {
+                newGeo = GeoTranslator.geojson2Jts(JSONObject.fromObject(sourceLink.changedFields().get("geometry")), 100000, 5);
+            }
+            if (null == newGeo || newGeo.isEmpty())
+                continue;
+            else {
+                link.setPid(sourceLink.pid());
+                link.setGeometry(newGeo);
+            }
+            for (RdMileagepile mileage : mileages) {
+                updateMileagepile(link, mileage, result);
             }
         }
         return "";
@@ -157,7 +179,8 @@ public class Operation {
         geoPoint.put("coordinates", new double[]{targetPoint.x, targetPoint.y});
         mileagepile.changedFields().put("geometry", geoPoint);
         mileagepile.changedFields().put("linkPid", link.getPid());
-        mileagepile.changedFields().put("direct", link.getDirect());
+        if (link.getDirect() != 1)
+            mileagepile.changedFields().put("direct", link.getDirect());
         // 更新里程桩坐标以及挂接线
         result.insertObject(mileagepile, ObjStatus.UPDATE, mileagepile.pid());
     }

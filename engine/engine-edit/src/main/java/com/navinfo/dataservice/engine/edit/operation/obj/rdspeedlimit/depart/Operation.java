@@ -41,7 +41,8 @@ public class Operation {
             for (RdSpeedlimit speedlimit : speedlimits) {
                 // 判断点限速所处段几何是否发生变化
                 Geometry nochangeGeo = GeoTranslator.transform(oldLink.getGeometry(), 0.00001, 5).intersection(linkGeo);
-                if (GeoTranslator.transform(speedlimit.getGeometry(), 0.00001, 5).intersects(nochangeGeo)) continue;
+                if (GeoTranslator.transform(speedlimit.getGeometry(), 0.00001, 5).intersects(nochangeGeo))
+                    continue;
 
                 // 计算speedlimit几何与移动后link几何最近的点
                 Coordinate coor = GeometryUtils.GetNearestPointOnLine(GeoTranslator.transform(speedlimit.getGeometry(), 0.00001, 5).getCoordinate(), linkGeo);
@@ -63,7 +64,8 @@ public class Operation {
                     geometries.add(link.getGeometry());
                 }
                 Geometry nochangeGeo = GeoTranslator.transform(oldLink.getGeometry(), 0.00001, 5).intersection(GeoTranslator.geojson2Jts(GeometryUtils.connectLinks(geometries)));
-                if (GeoTranslator.transform(speedlimit.getGeometry(), 0.00001, 5).intersects(nochangeGeo)) continue;
+                if (GeoTranslator.transform(speedlimit.getGeometry(), 0.00001, 5).intersects(nochangeGeo))
+                    continue;
 
                 for (RdLink link : newLinks) {
                     Geometry linkGeo = link.getGeometry();
@@ -87,42 +89,63 @@ public class Operation {
     }
 
     // 用于维护上下线分离对点限速的影响
-    public String updownDepart(RdNode sNode, List<RdLink> links, Map<Integer, RdLink> leftLinks, Map<Integer, RdLink> rightLinks, Result result) throws Exception {
+    public String updownDepart(RdNode sNode, List<RdLink> links, Map<Integer, RdLink> leftLinks, Map<Integer, RdLink> rightLinks, Map<Integer, RdLink> noTargetLinks, Result result) throws Exception {
         // 查找上下线分离对影响到的点限速
         List<Integer> linkPids = new ArrayList<Integer>();
         linkPids.addAll(leftLinks.keySet());
         RdSpeedlimitSelector rdSpeedlimitSelector = new RdSpeedlimitSelector(conn);
         List<RdSpeedlimit> rdSpeedlimits = rdSpeedlimitSelector.loadSpeedlimitByLinkPids(linkPids, true);
         // 点限速数量为零则不需要维护
-        if (rdSpeedlimits.size() == 0) {
-            return "";
-        }
-        // 构建RdLinkPid-电子眼的对应集合
-        Map<Integer, List<RdSpeedlimit>> rdSpeedlimitMap = new HashMap<Integer, List<RdSpeedlimit>>();
-        for (RdSpeedlimit rdSpeedlimit : rdSpeedlimits) {
-            List<RdSpeedlimit> list = rdSpeedlimitMap.get(rdSpeedlimit.getLinkPid());
-            if (null != list) {
-                list.add(rdSpeedlimit);
-            } else {
-                list = new ArrayList<RdSpeedlimit>();
-                list.add(rdSpeedlimit);
-                rdSpeedlimitMap.put(rdSpeedlimit.getLinkPid(), list);
+        if (rdSpeedlimits.size() != 0) {
+            // 构建RdLinkPid-电子眼的对应集合
+            Map<Integer, List<RdSpeedlimit>> rdSpeedlimitMap = new HashMap<Integer, List<RdSpeedlimit>>();
+            for (RdSpeedlimit rdSpeedlimit : rdSpeedlimits) {
+                List<RdSpeedlimit> list = rdSpeedlimitMap.get(rdSpeedlimit.getLinkPid());
+                if (null != list) {
+                    list.add(rdSpeedlimit);
+                } else {
+                    list = new ArrayList<RdSpeedlimit>();
+                    list.add(rdSpeedlimit);
+                    rdSpeedlimitMap.put(rdSpeedlimit.getLinkPid(), list);
+                }
+            }
+            for (RdLink link : links) {
+                RdLink leftLink = leftLinks.get(link.pid());
+                RdLink rightLink = rightLinks.get(link.pid());
+                if (rdSpeedlimitMap.containsKey(link.getPid())) {
+                    List<RdSpeedlimit> rdSpeedlimitList = rdSpeedlimitMap.get(link.getPid());
+                    for (RdSpeedlimit rdSpeedlimit : rdSpeedlimitList) {
+                        int direct = rdSpeedlimit.getDirect();
+                        if (2 == direct)
+                            // 点限速为顺方向则关联link为右线
+                            updateRdSpeedlimit(rightLink, rdSpeedlimit, result);
+                        else if (3 == direct)
+                            // 点限速为逆方向则关联link为左线
+                            updateRdSpeedlimit(leftLink, rdSpeedlimit, result);
+                    }
+                }
             }
         }
-        for (RdLink link : links) {
-            RdLink leftLink = leftLinks.get(link.pid());
-            RdLink rightLink = rightLinks.get(link.pid());
-            if (rdSpeedlimitMap.containsKey(link.getPid())) {
-                List<RdSpeedlimit> rdSpeedlimitList = rdSpeedlimitMap.get(link.getPid());
-                for (RdSpeedlimit rdSpeedlimit : rdSpeedlimitList) {
-                    int direct = rdSpeedlimit.getDirect();
-                    if (2 == direct)
-                        // 点限速为顺方向则关联link为右线
-                        updateRdSpeedlimit(rightLink, rdSpeedlimit, result);
-                    else if (3 == direct)
-                        // 点限速为逆方向则关联link为左线
-                        updateRdSpeedlimit(leftLink, rdSpeedlimit, result);
-                }
+        // 维护非目标Link的信息
+        for (Map.Entry<Integer, RdLink> entry : noTargetLinks.entrySet()) {
+            int linkPid = entry.getKey();
+            List<RdSpeedlimit> limits = rdSpeedlimitSelector.loadSpeedlimitByLinkPid(linkPid, true);
+            RdLink sourceLink = entry.getValue();
+            RdLink link = new RdLink();
+            link.copy(sourceLink);
+
+            Geometry newGeo = null;
+            if (sourceLink.changedFields().containsKey("geometry")) {
+                newGeo = GeoTranslator.geojson2Jts(JSONObject.fromObject(sourceLink.changedFields().get("geometry")), 100000, 5);
+            }
+            if (null == newGeo || newGeo.isEmpty())
+                continue;
+            else {
+                link.setPid(sourceLink.pid());
+                link.setGeometry(newGeo);
+            }
+            for (RdSpeedlimit limit : limits) {
+                updateRdSpeedlimit(link, limit, result);
             }
         }
         return "";
@@ -137,7 +160,8 @@ public class Operation {
         geoPoint.put("coordinates", new double[]{targetPoint.x, targetPoint.y});
         rdSpeedlimit.changedFields().put("geometry", geoPoint);
         rdSpeedlimit.changedFields().put("linkPid", link.getPid());
-        rdSpeedlimit.changedFields().put("direct", link.getDirect());
+        if (link.getDirect() != 1)
+            rdSpeedlimit.changedFields().put("direct", link.getDirect());
         // 更新点限速坐标以及挂接线
         result.insertObject(rdSpeedlimit, ObjStatus.UPDATE, rdSpeedlimit.pid());
     }

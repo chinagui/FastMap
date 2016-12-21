@@ -33,6 +33,7 @@ public class FMYW20052 extends BasicCheckRule {
 					String name = nameTmp.getName();
 					if(name.length()>150&&!metadataApi.judgeScPointKind(poi.getKindCode(), poi.getChain())){
 						setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), null);
+						return;
 					}
 				}
 			}

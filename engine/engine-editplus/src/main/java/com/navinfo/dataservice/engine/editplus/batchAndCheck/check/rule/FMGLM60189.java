@@ -30,6 +30,7 @@ public class FMGLM60189 extends BasicCheckRule {
 					String addFullname = addTmp.getFullname();
 					if(addFullname.length()>50&&!metadataApi.judgeScPointKind(poi.getKindCode(), poi.getChain())){
 						setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), null);
+						return;
 					}
 				}
 			}

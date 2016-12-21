@@ -51,6 +51,7 @@ public class FM14SUM1203 extends BasicCheckRule {
 						}
 						log="名称错别字："+log;
 						setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), log);
+						return;
 					}
 				}
 			}

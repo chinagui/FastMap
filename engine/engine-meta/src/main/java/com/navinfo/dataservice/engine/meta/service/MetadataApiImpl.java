@@ -16,6 +16,7 @@ import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.engine.meta.area.ScPointAdminArea;
 import com.navinfo.dataservice.engine.meta.area.ScPointDeepPlanarea;
 import com.navinfo.dataservice.engine.meta.chain.ChainSelector;
+import com.navinfo.dataservice.engine.meta.character.TyCharacterEgalcharExt;
 import com.navinfo.dataservice.engine.meta.character.TyCharacterEgalcharExtCheckSelector;
 import com.navinfo.dataservice.engine.meta.character.TyCharacterFjtHmCheckSelector;
 import com.navinfo.dataservice.engine.meta.engshort.ScEngshortSelector;
@@ -306,6 +307,16 @@ public class MetadataApiImpl implements MetadataApi {
 	@Override
 	public String convFull2Half(String word) throws Exception {
 		 return ConvertUtil.convFull2Half(word);
+	}
+	/**
+	 * 返回“TY_CHARACTER_EGALCHAR_EXT”表中数据。
+	 * @return Map<String, List<String>> key:EXTENTION_TYPE value:CHARACTER字段列表
+	 * @throws Exception
+	 */
+	@Override
+	public Map<String, List<String>> tyCharacterEgalcharExtGetExtentionTypeMap()
+			throws Exception {
+		return TyCharacterEgalcharExt.getInstance().getExtentionTypeMap();
 	}
 
 	@Override

@@ -41,11 +41,12 @@ public class FMA0413 extends BasicCheckRule {
 			for(IxPoiName nameTmp:poiObj.getIxPoiNames()){
 				if(nameTmp.isCH()&&nameTmp.getNameType()==1&&(nameTmp.getNameClass()==1||nameTmp.getNameClass()==5)){
 					String name=nameTmp.getName();
-					for(String nameSub:name.split("")){
-						if(!map.get("GBK").contains(nameSub)&&!map.get("ENG_F_U").contains(nameSub)
-								&&!map.get("ENG_F_L").contains(nameSub)&&!map.get("DIGIT_F").contains(nameSub)
-								&&!map.get("SYMBOL_F").contains(nameSub)){
-							errorList.add(nameSub);
+					for(char nameSub:name.toCharArray()){
+						String nameSubStr=String.valueOf(nameSub);
+						if(!map.get("GBK").contains(nameSubStr)&&!map.get("ENG_F_U").contains(nameSubStr)
+								&&!map.get("ENG_F_L").contains(nameSubStr)&&!map.get("DIGIT_F").contains(nameSubStr)
+								&&!map.get("SYMBOL_F").contains(nameSubStr)){
+							errorList.add(nameSubStr);
 						}
 					}
 				}

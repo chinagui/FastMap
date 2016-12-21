@@ -110,6 +110,7 @@ public class ColumnSaveJob extends AbstractJob {
 
 				Batch batch=new Batch(conn,operationResult);
 				batch.operate(batchCommand);
+				batch.persistChangeLog(OperationSegment.SG_COLUMN, userId);
 			}
 			
 			

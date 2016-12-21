@@ -593,11 +593,10 @@ public List<Integer> getRowIdForSubmit(String firstWorkItem,String secondWorkIte
 
 			List<Integer> pidList = new ArrayList<Integer>();
 
-			if (!firstWorkItem.isEmpty()) {
-				sb.append(" AND s.first_work_status=2 AND w.first_work_item='" + firstWorkItem + "'");
-			}
 			if (!secondWorkItem.isEmpty()) {
 				sb.append(" AND s.second_work_status=2 AND w.second_work_item='" + secondWorkItem + "'");
+			} else if (!firstWorkItem.isEmpty()) {
+				sb.append(" AND s.first_work_status=2 AND w.first_work_item='" + firstWorkItem + "'");
 			}
 
 			pstmt = conn.prepareStatement(sb.toString());

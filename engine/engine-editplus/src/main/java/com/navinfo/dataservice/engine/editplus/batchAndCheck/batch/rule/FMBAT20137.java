@@ -75,7 +75,7 @@ public class FMBAT20137 extends BasicBatchRule {
 			//品牌chain不能是9005和9006
 			if(newKindCode.equals("150101")){
 				String chain=poi.getChain();
-				if(!"9005".equals(chain)&&!"9006".equals(chain)){
+				if(chain!=null &&!chain.equals("9005")&&!chain.equals("9006")){
 					IxPoiName br=poiObj.getOfficeStandardCHName();
 					if(br==null){return;}
 					String name=br.getName();

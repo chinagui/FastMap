@@ -93,15 +93,12 @@ public class CheckTest {
 	@Test
 	public void testCheck() throws Exception{
 		//List<IRow> vias = new ArrayList<IRow>();
-//		RdDirectroute rdDirectroute = new RdDirectroute();
-//		rdDirectroute.setPid(11540);
-//		rdDirectroute.setProcessFlag(0);
-		RdLinkForm rdLinkForm = new RdLinkForm();
-		rdLinkForm.setLinkPid(246342);
-		rdLinkForm.setFormOfWay(50);
+		RdDirectroute rdDirectroute = new RdDirectroute();
+		rdDirectroute.setPid(11540);
+		rdDirectroute.setProcessFlag(0);
 		
 		List<IRow> objList=new ArrayList<IRow>();
-		objList.add(rdLinkForm);
+		objList.add(rdDirectroute);
 		
 		Connection conn = DBConnector.getInstance().getConnectionById(17);
 		//检查调用
@@ -110,7 +107,7 @@ public class CheckTest {
 		checkCommand.setOperType(OperType.UPDATE);
 		checkCommand.setObjType(ObjType.RDDIRECTROUTE);
 		CheckEngine checkEngine=new CheckEngine(checkCommand,conn);
-		checkEngine.preCheck();
+		checkEngine.postCheck();
 		//System.out.println(checkEngine.postCheck());
 	}
 	

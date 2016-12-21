@@ -46,7 +46,7 @@ public class FMGLM60407 extends BasicCheckRule {
 			if(br==null){return;}
 			String name=br.getName();
 			String kindCode= poi.getKindCode();
-			String chain= poi.getKindCode();
+			String chain= poi.getChain();
 			if(kindCode.equals("150101")){
 				if (chain==null){return;}
 				if (chain.equals("6003")||chain.equals("6045")||chain.equals("6002")

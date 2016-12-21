@@ -28,6 +28,7 @@ import com.navinfo.dataservice.dao.plus.log.ObjHisLogParser;
 import com.navinfo.dataservice.dao.plus.log.PoiLogDetailStat;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
+import com.navinfo.dataservice.dao.plus.operation.OperationSegment;
 import com.navinfo.dataservice.dao.plus.selector.ObjSelector;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.Batch;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.BatchCommand;
@@ -110,6 +111,7 @@ public class ColumnSubmitJob extends AbstractJob {
 				
 				Batch batch=new Batch(conn,operationResult);
 				batch.operate(batchCommand);
+				batch.persistChangeLog(OperationSegment.SG_COLUMN, userId);
 			}
 			
 			// 检查

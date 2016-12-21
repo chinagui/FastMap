@@ -20,4 +20,7 @@ public abstract class LogMover {
 		run = new QueryRunner();
 	}
 	public abstract LogMoveResult move()throws Exception;
+	public void rollbackMove() throws Exception{
+		//do nothing
+	}
 }

@@ -132,7 +132,7 @@ public class LogFlushUtil {
 		StringBuilder sb = new StringBuilder();
 		sb.append("CREATE TABLE ");
 		sb.append(tempTable);
-		sb.append("(OP_ID RAW(16),OP_DT TIMESTAMP)");
+		sb.append("(OP_ID RAW(16),OP_DT TIMESTAMP,OP_SEQ NUMBER(10))");
 		run.execute(sourceDbConn, sb.toString());
 		return tempTable;
 		

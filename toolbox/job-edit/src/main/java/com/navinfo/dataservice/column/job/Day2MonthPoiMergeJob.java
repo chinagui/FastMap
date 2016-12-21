@@ -7,7 +7,6 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 
 import org.apache.commons.dbutils.DbUtils;
@@ -23,7 +22,6 @@ import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.commons.database.DbConnectConfig;
 import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
-import com.navinfo.dataservice.dao.check.NiValException;
 import com.navinfo.dataservice.dao.plus.log.LogDetail;
 import com.navinfo.dataservice.dao.plus.log.ObjHisLogParser;
 import com.navinfo.dataservice.dao.plus.log.PoiLogDetailStat;
@@ -36,21 +34,15 @@ import com.navinfo.dataservice.day2mon.Classifier;
 import com.navinfo.dataservice.day2mon.Day2MonPoiLogSelector;
 import com.navinfo.dataservice.day2mon.PostBatch;
 import com.navinfo.dataservice.day2mon.PreBatch;
-import com.navinfo.dataservice.edit.job.EditPoiBaseReleaseJobRequest;
 import com.navinfo.dataservice.impcore.flushbylog.FlushResult;
-import com.navinfo.dataservice.impcore.flushbylog.LogFlushUtil;
 import com.navinfo.dataservice.impcore.flusher.Day2MonLogFlusher;
-import com.navinfo.dataservice.impcore.flusher.DefaultLogFlusher;
-import com.navinfo.dataservice.impcore.flusher.LogFlusher;
 import com.navinfo.dataservice.impcore.mover.Day2MonMover;
-import com.navinfo.dataservice.impcore.mover.DefaultLogMover;
 import com.navinfo.dataservice.impcore.mover.LogMoveResult;
 import com.navinfo.dataservice.impcore.mover.LogMover;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
 import com.navinfo.navicommons.database.QueryRunner;
 
-import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 /** 

@@ -46,8 +46,7 @@ public class CheckTest {
 		CheckCommand cc = new CheckCommand();
 		List<IRow> glmList = new ArrayList<IRow>();
 		RdLink rdLink  = new RdLink();
-		rdLink.setPid(59193232);
-		rdLink.setKind(1);
+		rdLink.setPid(203003057);
 		glmList.add(rdLink);
 		
 		cc.setGlmList(glmList);

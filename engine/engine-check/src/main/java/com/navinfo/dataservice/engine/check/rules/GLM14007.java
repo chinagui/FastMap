@@ -3,6 +3,8 @@ package com.navinfo.dataservice.engine.check.rules;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.directroute.RdDirectroute;
@@ -22,7 +24,8 @@ import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
  * 道路属性编辑服务端前检查:RdLinkForm
  */
 public class GLM14007 extends baseRule {
-
+	protected Logger log = Logger.getLogger(this.getClass());
+	
 	@Override
 	public void preCheck(CheckCommand checkCommand) throws Exception {
 		// TODO Auto-generated method stub

@@ -14,6 +14,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSignasreal;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSignboard;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossName;
+import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossNode;
 import com.navinfo.dataservice.dao.glm.model.rd.crosswalk.RdCrosswalk;
 import com.navinfo.dataservice.dao.glm.model.rd.directroute.RdDirectroute;
 import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdEleceyePart;
@@ -205,6 +206,20 @@ public class VariablesFactory {
 		if (data instanceof RdDirectroute) {
 			RdDirectroute rdDirectroute = (RdDirectroute) data;
 			rdLinkSet.add(String.valueOf(rdDirectroute.getPid()));
+		}
+		return rdLinkSet;
+	}
+	
+	/**
+	 * @param data
+	 * @return
+	 */
+	public static Set<String> getRdDirectrouteOutLinkPid(IRow data) {
+		// TODO Auto-generated method stub
+		Set<String> rdLinkSet = new HashSet<String>();
+		if (data instanceof RdDirectroute) {
+			RdDirectroute rdDirectroute = (RdDirectroute) data;
+			rdLinkSet.add(String.valueOf(rdDirectroute.getOutLinkPid()));
 		}
 		return rdLinkSet;
 	}
@@ -412,6 +427,8 @@ public class VariablesFactory {
 			rdLinkSet.add(String.valueOf(((RdCross) data).getPid()));
 		}else if (data instanceof RdCrossName) {
 			rdLinkSet.add(String.valueOf(((RdCrossName) data).getPid()));
+		}else if (data instanceof RdCrossNode) {
+			rdLinkSet.add(String.valueOf(((RdCrossNode) data).getPid()));
 		}
 		return rdLinkSet;
 	}

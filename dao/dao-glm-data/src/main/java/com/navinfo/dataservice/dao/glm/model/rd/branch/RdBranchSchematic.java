@@ -40,6 +40,10 @@ public class RdBranchSchematic implements IObj {
 	public RdBranchSchematic() {
 
 	}
+	
+	public String getRowId() {
+		return rowId;
+	}
 
 	public int getPid() {
 		return pid;

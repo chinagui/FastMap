@@ -3,6 +3,8 @@ package com.navinfo.dataservice.engine.check.rules;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.directroute.RdDirectroute;
@@ -22,7 +24,8 @@ import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
  * 道路属性编辑服务端前检查:RdLinkForm
  */
 public class GLM14007 extends baseRule {
-
+	protected Logger log = Logger.getLogger(this.getClass());
+	
 	@Override
 	public void preCheck(CheckCommand checkCommand) throws Exception {
 		// TODO Auto-generated method stub
@@ -61,24 +64,11 @@ public class GLM14007 extends baseRule {
 	 */
 	private void checkRdLink(RdLink rdLink) throws Exception {
 		//道路属性编辑,触发检查
-		StringBuilder sb = new StringBuilder();
-
-		sb.append("WITH RLF AS (SELECT RF.LINK_PID FROM RD_LINK_FORM RF WHERE");
-		sb.append(" RF.LINK_PID = "+rdLink.getPid()+" AND RF.FORM_OF_WAY = 50 AND RF.U_RECORD <> 2)");
-		sb.append(" SELECT DR.PID FROM RD_DIRECTROUTE DR,RLF WHERE DR.IN_LINK_PID = RLF.LINK_PID AND DR.U_RECORD <> 2");
-		sb.append(" UNION");
-		sb.append(" SELECT DR.PID FROM RD_DIRECTROUTE DR,RLF WHERE DR.OUT_LINK_PID = RLF.LINK_PID AND DR.U_RECORD <> 2");
-		
-		String sql = sb.toString();
-		log.info("RdLink前检查GLM14007--sql:" + sql);
-		
-		DatabaseOperator getObj = new DatabaseOperator();
-		List<Object> resultList = new ArrayList<Object>();
-		resultList = getObj.exeSelect(this.getConn(), sql);
-
-		if(!resultList.isEmpty()){
-			String target = "[RD_LINK," + rdLink.getPid() + "]";
-			this.setCheckResult("", target, 0);
+		//获取子表
+		List<IRow> forms = rdLink.getForms();
+		for (IRow iRow : forms) {
+			RdLinkForm rdLinkForm = (RdLinkForm) iRow;
+			this.checkRdLinkForm(rdLinkForm);
 		}
 	}
 	/**

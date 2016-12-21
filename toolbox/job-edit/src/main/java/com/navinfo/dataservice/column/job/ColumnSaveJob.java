@@ -177,7 +177,7 @@ public class ColumnSaveJob extends AbstractJob {
 //			throw e;
 //		}
 //	}
-	
+			
 	/**
 	 * 更新配置表状态
 	 * @param rowIdList

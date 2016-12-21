@@ -150,7 +150,7 @@ public class DefaultObjImportor extends AbstractOperation{
 		}else if("ADNODE".equals(objType)){
 			newObjType = ObjectName.AD_NODE;
 		}
-		Map<Long, BasicObj> objs = ObjBatchSelector.selectByPids(conn,newObjType,tabNames,updateMap.keySet(),true,true);
+		Map<Long, BasicObj> objs = ObjBatchSelector.selectByPids(conn,newObjType,tabNames,false,updateMap.keySet(),true,true);
 		//开始导入
 		for (Entry<Long, JSONObject> jo : updateMap.entrySet()) {
 			//日志
@@ -218,7 +218,7 @@ public class DefaultObjImportor extends AbstractOperation{
 		}else if("ADNODE".equals(objType)){
 			newObjType = ObjectName.AD_NODE;
 		}
-		Map<Long, BasicObj> objs = ObjBatchSelector.selectByPids(conn,newObjType,tabNames,deleteMap.keySet(),true,true);
+		Map<Long, BasicObj> objs = ObjBatchSelector.selectByPids(conn,newObjType,tabNames,false,deleteMap.keySet(),true,true);
 		//开始导入
 		for (Map.Entry<Long, JSONObject> jo : deleteMap.entrySet()) {
 			//日志

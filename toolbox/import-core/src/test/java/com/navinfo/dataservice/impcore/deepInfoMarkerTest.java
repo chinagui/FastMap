@@ -30,7 +30,7 @@ public class deepInfoMarkerTest {
 			OperationResult opResult = null;
 			conn = DBConnector.getInstance().getConnectionById(19);
 			OperationResult operationResult=new OperationResult();
-			BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", null, 2179861, false);
+			BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", null,true, 2179861, false);
 			operationResult.putObj(obj);
 			DeepInfoMarker deepInfo = new DeepInfoMarker(opResult, conn);
 			deepInfo.execute();

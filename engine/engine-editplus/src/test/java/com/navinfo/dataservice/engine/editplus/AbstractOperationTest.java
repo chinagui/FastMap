@@ -61,7 +61,7 @@ public class AbstractOperationTest {
 			tabNames.add("IX_POI_CONTACT");
 			tabNames.add("IX_POI_ADDRESS");
 			
-			BasicObj obj = ObjSelector.selectByPid(conn, objType, tabNames, pid, isLock);
+			BasicObj obj = ObjSelector.selectByPid(conn, objType, tabNames,false, pid, isLock);
 			obj.deleteObj();
 			
 			OperationResult result = new OperationResult();
@@ -92,7 +92,7 @@ public class AbstractOperationTest {
 			boolean isLock = false;
 			boolean isNowait = false;
 
-			Map<Long,BasicObj> objs = ObjBatchSelector.selectByPids(conn, objType, null, pids, isLock,isNowait);
+			Map<Long,BasicObj> objs = ObjBatchSelector.selectByPids(conn, objType, null, true,pids, isLock,isNowait);
 			OperationResult result = new OperationResult();
 			for(BasicObj obj:objs.values()){
 				obj.deleteObj();

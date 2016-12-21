@@ -33,7 +33,18 @@ public class ObjSelector {
 	
 	private static final Logger logger = Logger.getLogger(ObjSelector.class);
 
-	public static BasicObj selectByPid(Connection conn,String objType,Set<String> tabNames,long pid,boolean isLock)throws Exception{
+	/**
+	 * 
+	 * @param conn
+	 * @param objType
+	 * @param tabNames：所需要加载子表列表；null或空则加载所有子表
+	 * @param isMainOnly:是否只加载主表，true则只加载主表，判断优先级高于tabNames
+	 * @param pid
+	 * @param isLock
+	 * @return
+	 * @throws Exception
+	 */
+	public static BasicObj selectByPid(Connection conn,String objType,Set<String> tabNames,boolean isMainOnly,long pid,boolean isLock)throws Exception{
 		//若参数为空，返回null
 		if(pid==0){
 			logger.info("selectByPid查询主表，PID为空");
@@ -51,11 +62,22 @@ public class ObjSelector {
 		BasicObj obj = ObjFactory.getInstance().create4Select(mainrow);
 		
 		//加载子表
-		if(tabNames!=null&&!tabNames.isEmpty()){
+		if(isMainOnly){
+			logger.info("selectByPid不加载子表");
+		}else{
+			if(tabNames==null||tabNames.isEmpty()){
+				//加载所有子表
+				tabNames = glmObj.getTables().keySet();
+			}
 			logger.info("selectByPid开始加载子表");
 			selectChildren(conn,obj,tabNames);
 			logger.info("selectByPid加载子表结束");
 		}
+//		if(tabNames!=null&&!tabNames.isEmpty()){
+//			logger.info("selectByPid开始加载子表");
+//			selectChildren(conn,obj,tabNames);
+//			logger.info("selectByPid加载子表结束");
+//		}
 		return obj;
 	}
 
@@ -123,7 +145,8 @@ public class ObjSelector {
 	 * 如果多条只返回第一条,仅支持主表数值或字符类型字段 
 	 * @param conn
 	 * @param objType
-	 * @param tabNames
+	 * @param tabNames：所需要加载子表列表；null或空则加载所有子表
+	 * @param isMainOnly:是否只加载主表，true则只加载主表
 	 * @param colName
 	 * @param colValue
 	 * @param isLock
@@ -135,7 +158,7 @@ public class ObjSelector {
 	 * @throws IllegalAccessException
 	 * @throws InstantiationException
 	 */
-	public static BasicObj selectBySpecColumn(Connection conn,String objType,Set<String> tabNames,String colName
+	public static BasicObj selectBySpecColumn(Connection conn,String objType,Set<String> tabNames,boolean isMainOnly,String colName
 			,Object colValue,boolean isLock) throws SQLException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException{
 		GlmObject glmObj = GlmFactory.getInstance().getObjByType(objType);
 		GlmTable mainTable = glmObj.getMainTable();
@@ -155,11 +178,23 @@ public class ObjSelector {
 		
 		BasicRow mainrow = new QueryRunner().query(conn, sql, new SingleSpecColumnSelRsHandler(mainTable),colValue);
 		BasicObj obj = ObjFactory.getInstance().create4Select(mainrow);
-		if(tabNames!=null&&!tabNames.isEmpty()){
-			logger.info("selectBySpecColumn开始加载子表");
+		
+		if(isMainOnly){
+			logger.info("selectByPid不加载子表");
+		}else{
+			if(tabNames==null||tabNames.isEmpty()){
+				//加载所有子表
+				tabNames = glmObj.getTables().keySet();
+			}
+			logger.info("selectByPid开始加载子表");
 			selectChildren(conn,obj,tabNames);
-			logger.info("selectBySpecColumn开始加载子表");
+			logger.info("selectByPid加载子表结束");
 		}
+//		if(tabNames!=null&&!tabNames.isEmpty()){
+//			logger.info("selectBySpecColumn开始加载子表");
+//			selectChildren(conn,obj,tabNames);
+//			logger.info("selectBySpecColumn开始加载子表");
+//		}
 		return obj;	
 	}
 

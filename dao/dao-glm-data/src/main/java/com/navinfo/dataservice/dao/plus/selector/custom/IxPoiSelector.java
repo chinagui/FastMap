@@ -178,7 +178,7 @@ public class IxPoiSelector {
 				List<Long> childPids = entry.getValue();
 				List<Map<Long,Object>> childFids = new ArrayList<Map<Long,Object>>();
 				if(childPids!=null && childPids.size()>0){
-					Map<Long,BasicObj> objs = ObjBatchSelector.selectByPids(conn, ObjectName.IX_POI,null,childPids,true,true);
+					Map<Long,BasicObj> objs = ObjBatchSelector.selectByPids(conn, ObjectName.IX_POI,null,true,childPids,true,true);
 					for(BasicObj obj:objs.values()){
 						Map<Long,Object> childFid = new HashMap<Long, Object>();
 						IxPoiObj poi = (IxPoiObj) obj;

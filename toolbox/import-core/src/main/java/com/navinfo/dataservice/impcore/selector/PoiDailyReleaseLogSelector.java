@@ -27,7 +27,7 @@ public class PoiDailyReleaseLogSelector extends DeafultDailyReleaseLogSelector {
 		StringBuilder sb = new StringBuilder();
 		sb.append("INSERT INTO ");
 		sb.append(super.tempTable);
-		sb.append(" SELECT DISTINCT P.OP_ID, P.OP_DT\r\n" + 
+		sb.append(" SELECT DISTINCT P.OP_ID, P.OP_DT,P.OP_SEQ\r\n" + 
 				"  FROM LOG_OPERATION P, LOG_DETAIL L, LOG_DETAIL_GRID T,LOG_DAY_RELEASE R\r\n" + 
 				" WHERE P.OP_ID = L.OP_ID\r\n" + 
 				"   AND L.ROW_ID = T.LOG_ROW_ID\r\n" + 

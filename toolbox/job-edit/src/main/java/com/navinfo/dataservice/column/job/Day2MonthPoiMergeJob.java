@@ -7,11 +7,11 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 
 import org.apache.commons.dbutils.DbUtils;
 
+import com.alibaba.dubbo.common.utils.StringUtils;
 import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.api.job.model.JobInfo;
@@ -22,7 +22,6 @@ import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.commons.database.DbConnectConfig;
 import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
-import com.navinfo.dataservice.dao.check.NiValException;
 import com.navinfo.dataservice.dao.plus.log.LogDetail;
 import com.navinfo.dataservice.dao.plus.log.ObjHisLogParser;
 import com.navinfo.dataservice.dao.plus.log.PoiLogDetailStat;
@@ -36,19 +35,14 @@ import com.navinfo.dataservice.day2mon.Day2MonPoiLogSelector;
 import com.navinfo.dataservice.day2mon.PostBatch;
 import com.navinfo.dataservice.day2mon.PreBatch;
 import com.navinfo.dataservice.impcore.flushbylog.FlushResult;
-import com.navinfo.dataservice.impcore.flushbylog.LogFlushUtil;
 import com.navinfo.dataservice.impcore.flusher.Day2MonLogFlusher;
-import com.navinfo.dataservice.impcore.flusher.DefaultLogFlusher;
-import com.navinfo.dataservice.impcore.flusher.LogFlusher;
 import com.navinfo.dataservice.impcore.mover.Day2MonMover;
-import com.navinfo.dataservice.impcore.mover.DefaultLogMover;
 import com.navinfo.dataservice.impcore.mover.LogMoveResult;
 import com.navinfo.dataservice.impcore.mover.LogMover;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
 import com.navinfo.navicommons.database.QueryRunner;
 
-import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 /** 
@@ -90,10 +84,17 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 			List<Map<String, Object>> d2mInfoList= manApi.queryDay2MonthList(conditionJson );
 			response("获取日落月开关控制信息ok",null);
 			log.info("开始获取日落月城市信息:城市的基础信息、城市的grid，城市的大区库");
-			for(Map<String,Object> d2mInfo:d2mInfoList){
-				Integer cityId = (Integer) d2mInfo.get("cityId");
-				doSync(manApi, datahubApi, d2mSyncApi, cityId);
+			Day2MonthPoiMergeJobRequest day2MonRequest=(Day2MonthPoiMergeJobRequest) request;
+			String reqCityId = day2MonRequest==null?null:day2MonRequest.getCityId();
+			if(StringUtils.isNotEmpty(reqCityId)){
+				doSync(manApi, datahubApi, d2mSyncApi, Integer.parseInt(reqCityId));
+			}else{//全部DAY2MONTH_CONFIG中处于打开状态的城市
+				for(Map<String,Object> d2mInfo:d2mInfoList){
+					Integer cityId = (Integer) d2mInfo.get("cityId");
+					doSync(manApi, datahubApi, d2mSyncApi, cityId);
+				}
 			}
+			
 			log.info("日落月完成");
 		}catch(Exception e){
 			log.error(e.getMessage(), e);

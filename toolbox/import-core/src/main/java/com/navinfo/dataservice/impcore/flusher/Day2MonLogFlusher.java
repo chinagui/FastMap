@@ -35,7 +35,7 @@ public class Day2MonLogFlusher {
 		StringBuilder sb = new StringBuilder();
 		sb.append("SELECT L.* FROM LOG_DETAIL L,");
 		sb.append(tempTable);
-		sb.append(" T WHERE L.OP_ID=T.OP_ID ORDER BY T.OP_DT");
+		sb.append(" T WHERE L.OP_ID=T.OP_ID ORDER BY T.OP_SEQ");
 		return sb.toString();
 	}
 }

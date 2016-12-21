@@ -32,6 +32,7 @@ public class FMA0701 extends BasicCheckRule {
 			String kindCode=poi.getKindCode();
 			if(kindCode.equals("230103")||kindCode.equals("230105")){
 				setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(),null);
+				return;
 			}
 		}
 	}

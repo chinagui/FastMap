@@ -1,6 +1,8 @@
 package com.navinfo.dataservice.dao.plus.glm;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /** 
  * @ClassName: GlmObject

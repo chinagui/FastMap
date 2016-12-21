@@ -105,7 +105,7 @@ public class RowEditController extends BaseController {
 			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
 	}
-	@RequestMapping(value = "/poi/day2mon/")
+	@RequestMapping(value = "/poi/base/day2mon/")
 	public ModelAndView day2mon(HttpServletRequest request)
 			throws ServletException, IOException {
 

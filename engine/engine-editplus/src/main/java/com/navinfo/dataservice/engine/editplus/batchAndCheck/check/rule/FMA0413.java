@@ -53,6 +53,7 @@ public class FMA0413 extends BasicCheckRule {
 			if(errorList.size()>0){
 				setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "POI中文名中含有非法字符“"
 						+errorList.toString().replace("[", "").replace("]", "")+"”");
+				return;
 			}
 		}
 	}

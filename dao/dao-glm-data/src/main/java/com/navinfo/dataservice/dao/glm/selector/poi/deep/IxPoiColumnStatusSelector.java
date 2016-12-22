@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.dbutils.DbUtils;
+import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.commons.util.StringUtils;
@@ -20,7 +21,7 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 public class IxPoiColumnStatusSelector extends AbstractSelector {
-
+	private static final Logger logger = Logger.getLogger(IxPoiColumnStatusSelector.class);
 	private Connection conn;
 
 	public IxPoiColumnStatusSelector(Connection conn) {
@@ -61,6 +62,7 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 		ResultSet resultSet = null;
 
 		try {
+			logger.info("getRowIdByTaskId sql:"+sb);
 			pstmt = conn.prepareStatement(sb.toString());
 
 			pstmt.setInt(1, taskId);
@@ -141,7 +143,7 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 
 		ResultSet resultSet = null;
 		try {
-
+			logger.info("getApplyPids sql:"+sb);
 			pstmt = conn.prepareStatement(sb.toString());
 			
 			pstmt.setInt(1, type);

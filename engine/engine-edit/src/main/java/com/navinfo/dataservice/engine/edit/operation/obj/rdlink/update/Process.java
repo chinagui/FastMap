@@ -112,20 +112,6 @@ public class Process extends AbstractProcess<Command> {
 
     @Override
     public String exeOperation() throws Exception {
-        //        // 判断是否检查，如检查发现没有受影响信号灯直接执行修改，如有影响则返回提示信息
-        //        if (getCommand().isInfect()) {
-        //        	Map<String, List<AlertObject>> infects = new HashMap<String, List<AlertObject>>();
-        //        	com.navinfo.dataservice.engine.edit.operation.obj.trafficsignal.update.Operation trafficOperation = new com.navinfo.dataservice.engine.edit.operation.obj.trafficsignal.update.Operation(
-        //    				this.getConn());
-        //    		List<AlertObject> deleteTrafficAlertDataList = trafficOperation.getUpdateLinkDirectInfectData(updateLink);
-        //    		if (CollectionUtils.isNotEmpty(deleteTrafficAlertDataList)) {
-        //    			infects.put("修改link方向删除link上原有信号灯（请重新维护信号灯）", deleteTrafficAlertDataList);
-        //    		}
-        //    		return JSONObject.fromObject(infects).toString();
-        //        } else {
-        //        	Operation operation = new Operation(this.getCommand(), updateLink, this.getConn());
-        //            operation.run(this.getResult());
-        //        }
         return null;
     }
 

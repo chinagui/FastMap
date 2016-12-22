@@ -144,6 +144,7 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 		ResultSet resultSet = null;
 		try {
 			logger.info("getApplyPids sql:"+sb);
+			logger.info("subtask.getGeometry():"+subtask.getGeometry());
 			pstmt = conn.prepareStatement(sb.toString());
 			
 			pstmt.setInt(1, type);
@@ -731,6 +732,7 @@ public List<Integer> getRowIdForSubmit(String firstWorkItem,String secondWorkIte
 		ResultSet resultSet = null;
 
 		try {
+			logger.info("secondWorkStatistics:"+sql);
 			pstmt = conn.prepareStatement(sql.toString());
 
 			resultSet = pstmt.executeQuery();

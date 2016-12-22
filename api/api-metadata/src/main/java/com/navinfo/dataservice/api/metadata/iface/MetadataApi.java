@@ -138,4 +138,12 @@ public interface MetadataApi {
 	 */
 	public Map<String, JSONObject> tyCharacterFjtHzCheckSelectorGetFtExtentionTypeMap() throws Exception;
 
+	/**
+	 * 返回“TY_CHARACTER_FJT_HZ”表中数据。
+	 * @return Map<String, JSONObject> key:jt value:对应其它
+	 * @throws Exception
+	 */
+	Map<String, JSONObject> tyCharacterFjtHzCheckSelectorGetJtExtentionTypeMap()
+			throws Exception;
+
 }

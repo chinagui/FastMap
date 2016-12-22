@@ -274,8 +274,6 @@ public class Process extends AbstractProcess<Command> {
 			}
 
 			updataRelationObj();
-
-			this.postCheck();
 		} catch (Exception e) {
 
 			this.getConn().rollback();

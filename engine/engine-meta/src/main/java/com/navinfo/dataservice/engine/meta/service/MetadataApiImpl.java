@@ -3,6 +3,7 @@ package com.navinfo.dataservice.engine.meta.service;
 import java.sql.Connection;
 import java.util.List;
 import java.util.Map;
+import net.sf.json.JSONObject;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.dbutils.DbUtils;
@@ -17,6 +18,7 @@ import com.navinfo.dataservice.engine.meta.area.ScPointAdminArea;
 import com.navinfo.dataservice.engine.meta.area.ScPointDeepPlanarea;
 import com.navinfo.dataservice.engine.meta.chain.ChainSelector;
 import com.navinfo.dataservice.engine.meta.character.TyCharacterEgalcharExt;
+import com.navinfo.dataservice.engine.meta.character.TyCharacterFjtHzCheckSelector;
 import com.navinfo.dataservice.engine.meta.character.TyCharacterEgalcharExtCheckSelector;
 import com.navinfo.dataservice.engine.meta.character.TyCharacterFjtHmCheckSelector;
 import com.navinfo.dataservice.engine.meta.engshort.ScEngshortSelector;
@@ -317,6 +319,27 @@ public class MetadataApiImpl implements MetadataApi {
 	public Map<String, List<String>> tyCharacterEgalcharExtGetExtentionTypeMap()
 			throws Exception {
 		return TyCharacterEgalcharExt.getInstance().getExtentionTypeMap();
+	}
+	/**
+	 * 返回“TY_CHARACTER_FJT_HZ”表中数据。
+	 * @return Map<String, JSONObject> key:ft value:对应其它
+	 * @throws Exception
+	 */
+	@Override
+	public Map<String, JSONObject> tyCharacterFjtHzCheckSelectorGetFtExtentionTypeMap()
+			throws Exception {
+		return TyCharacterFjtHzCheckSelector.getInstance().getFtExtentionTypeMap();
+	}
+	
+	/**
+	 * 返回“TY_CHARACTER_FJT_HZ”表中数据。
+	 * @return Map<String, JSONObject> key:jt value:对应其它
+	 * @throws Exception
+	 */
+	@Override
+	public Map<String, JSONObject> tyCharacterFjtHzCheckSelectorGetJtExtentionTypeMap()
+			throws Exception {
+		return TyCharacterFjtHzCheckSelector.getInstance().getJtExtentionTypeMap();
 	}
 
 	@Override

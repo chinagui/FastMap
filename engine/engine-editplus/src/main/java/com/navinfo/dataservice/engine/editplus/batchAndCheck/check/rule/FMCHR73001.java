@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.sf.json.JSONObject;
+
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
@@ -41,18 +43,18 @@ public class FMCHR73001 extends BasicCheckRule {
 						&&(nameTmp.getNameClass()==1 ||nameTmp.getNameClass()==5)){
 					String name=nameTmp.getName();
 					if(name==null){continue;}
-					String[] pyList=metadataApi.pyConvert(name);
-					boolean isRightPy=false;
-					for(String py:pyList){
-						if(py.equals(nameTmp.getNamePhonetic())){
-							isRightPy=true;
-							break;
+					Map<String, JSONObject> ft = metadataApi.tyCharacterFjtHzCheckSelectorGetFtExtentionTypeMap();
+					for(char item:name.toCharArray()){
+					String str=String.valueOf(item);
+					if(ft.containsKey(str)){
+						JSONObject data= ft.get(str);
+						Object convert= data.get("convert");
+						if(convert.equals(2)){
+							String jt=(String) data.get("jt");
+							String log="“"+str+"”是繁体字，对应的简体字是“"+jt+"”，必须转化";
+							setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(),log);
 						}
-					}
-					if(!isRightPy){
-						setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), null);
-						return;
-					}
+					}}
 				}
 			}
 		}

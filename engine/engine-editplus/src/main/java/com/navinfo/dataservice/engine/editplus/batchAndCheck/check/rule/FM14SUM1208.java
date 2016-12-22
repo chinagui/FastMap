@@ -46,22 +46,7 @@ public class FM14SUM1208 extends BasicCheckRule {
 						&&(nameTmp.getNameClass()==1 ||nameTmp.getNameClass()==5)){
 					String nameStr=CheckUtil.strQ2B(nameTmp.getName());
 					List<String> errorList=new ArrayList<String>();
-					//2、前后空格检查：不能以空格开头或结尾；
-					if(nameStr.startsWith(" ")||nameStr.endsWith(" ")){
-						errorList.add("前后空格");
-					}
-					//3、多个空格检查：不能出现连续空格；
-					if (nameStr.contains("  ")) {
-						errorList.add("多个空格");
-					}
-					//4、回车符检查：不能包含回车符；
-					if (nameStr.contains("\n")||nameStr.contains("\r")) {
-						errorList.add("回车符");
-					}
-					//5、Tab符检查：不能包含Tab符号；
-					if (nameStr.contains("\t")) {
-						errorList.add("Tab符");
-					}
+					errorList=CheckUtil.checkIllegalBlank(nameStr);
 					if(!CheckUtil.blankRuleTable(nameStr)){
 						errorList.add("非法空格");
 					}

@@ -73,7 +73,7 @@ public class FMA0419 extends BasicCheckRule {
 			String newNameStr=poiName.getName();
 			if(!newNameStr.equals(oldNameStr)){return true;}
 		}
-		return true;
+		return false;
 	}
 
 	@Override

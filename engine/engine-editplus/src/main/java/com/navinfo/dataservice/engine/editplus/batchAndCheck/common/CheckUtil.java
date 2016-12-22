@@ -1,5 +1,7 @@
 package com.navinfo.dataservice.engine.editplus.batchAndCheck.common;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -97,6 +99,36 @@ public class CheckUtil {
         String returnString = new String(c);
         return returnString;
     }
+    
+    /**
+     * 1） 回车符检查：包含回车符的记录；
+     * 2） Tab符检查：包含Tab符号的记录；
+     * 3） 多个空格检查：两个及两个以上连续空格的记录；
+     * 4） 前后空格检查：名称开始前或者结尾处包含空格的记录；
+     * @param word
+     * @return 错误原因列表 ["前后空格","多个空格"]
+     */
+    public static List<String> checkIllegalBlank(String word){
+    	List<String> errorList=new ArrayList<String>();
+    	//2、前后空格检查：不能以空格开头或结尾；
+		if(word.startsWith(" ")||word.endsWith(" ")){
+			errorList.add("前后空格");
+		}
+		//3、多个空格检查：不能出现连续空格；
+		if (word.contains("  ")) {
+			errorList.add("多个空格");
+		}
+		//4、回车符检查：不能包含回车符；
+		if (word.contains("\n")||word.contains("\r")) {
+			errorList.add("回车符");
+		}
+		//5、Tab符检查：不能包含Tab符号；
+		if (word.contains("\t")) {
+			errorList.add("Tab符");
+		}
+		return errorList;
+    }
+    
     /**
      * 若存在括号，则
      *   1、括号“（”和“）”要成对出现；

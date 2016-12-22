@@ -1,17 +1,16 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdlink.update;
 
 import java.sql.Connection;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.navinfo.dataservice.dao.glm.iface.IRow;
-import com.navinfo.dataservice.dao.glm.iface.Result;
 import org.apache.commons.collections.CollectionUtils;
 
 import com.navinfo.dataservice.dao.glm.iface.AlertObject;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
@@ -50,15 +49,16 @@ public class Process extends AbstractProcess<Command> {
         try {
             if (!this.getCommand().isInfect()) {
                 this.getConn().setAutoCommit(false);
-                String preCheckMsg = this.preCheck();
-                if (preCheckMsg != null) {
-                    throw new Exception(preCheckMsg);
-                }
 
                 prepareData();
 
                 Operation operation = new Operation(this.getCommand(), updateLink, this.getConn());
                 operation.run(this.getResult());
+                
+                String preCheckMsg = this.preCheck();
+                if (preCheckMsg != null) {
+                    throw new Exception(preCheckMsg);
+                }
 
                 recordData();
 
@@ -134,17 +134,17 @@ public class Process extends AbstractProcess<Command> {
         try {
             this.prepareData();
 
+            IOperation operation = new Operation(this.getCommand(), this.updateLink, getConn());
+
+            msg = operation.run(this.getResult());
+            
             String preCheckMsg = this.preCheck();
 
             if (preCheckMsg != null) {
                 throw new Exception(preCheckMsg);
             }
 
-            IOperation operation = new Operation(this.getCommand(), this.updateLink, getConn());
-
-            msg = operation.run(this.getResult());
-
-            this.postCheck();
+            //this.postCheck();
 
         } catch (Exception e) {
 

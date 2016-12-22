@@ -66,12 +66,6 @@ public class Process extends AbstractProcess<Command> {
 	@Override
 	public boolean prepareData() throws Exception {
 
-		String msg = preCheck();
-
-		if (null != msg) {
-			throw new Exception(msg);
-		}
-
 		lockRdCross();
 
 		if (this.getCommand().getCross() == null) {

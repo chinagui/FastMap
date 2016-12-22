@@ -380,7 +380,7 @@ public class Operation implements IOperation {
     private void initLinkUrban(Geometry geometry) throws Exception {
         Geometry faceGeometry = face.getGeometry();
         if (face.getKind() == 21)
-            UrbanBatchUtils.updateUrban(faceGeometry == null ? null : GeoTranslator.transform(faceGeometry, 0.00001, 5), GeoTranslator.transform(geometry, 0.00001, 5), conn, result);
+            UrbanBatchUtils.updateUrban(faceGeometry == null ? null : GeoTranslator.transform(faceGeometry, 0.00001, 5), GeoTranslator.transform(geometry, 0.00001, 5), face.getMeshId(), conn, result);
     }
 
     /*

@@ -33,7 +33,7 @@ public class OpRefAdFace implements IOperation {
         log.debug("删除ZONE点对应的面关系");
         for (ZoneFace face : command.getFaces()) {
             result.insertObject(face, ObjStatus.DELETE, face.pid());
-            ZoneIDBatchUtils.updateZoneID(face, null, conn, result);
+            ZoneIDBatchUtils.updateZoneID(face, null, face.getMeshId(), conn, result);
             result.setPrimaryPid(face.getPid());
         }
         return null;

@@ -139,7 +139,8 @@ public class BasicOperator extends AbstractOperator {
 		}
 		key.append(M_U_RECORD + ")");
 		value.append(1 + ")");
-		stmt.addBatch(key.append(value).toString());
+		String sql = key.append(value).toString();
+		stmt.addBatch(sql);
 		if (row.children() != null) {
 			List<List<IRow>> lists = row.children();
 			for (List<IRow> list : lists) {

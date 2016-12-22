@@ -35,7 +35,7 @@ public class Operation implements IOperation {
     private void relateUrban(Result result, LuFace luFace) throws Exception {
         if (luFace.getKind() == 21)
             // 删除LuFace时维护link的urban属性
-            UrbanBatchUtils.updateUrban(luFace.getGeometry(), null, conn, result);
+            UrbanBatchUtils.updateUrban(luFace.getGeometry(), null, luFace.getMeshId(), conn, result);
     }
 
 }

@@ -27,7 +27,7 @@ public class OpRefLuFace implements IOperation {
         if (null != command.getFaces()) {
             for (LuFace face : command.getFaces()) {
                 result.insertObject(face, ObjStatus.DELETE, face.getPid());
-                UrbanBatchUtils.updateUrban(face.getGeometry(), null, conn, result);
+                UrbanBatchUtils.updateUrban(face.getGeometry(), null, face.getMeshId(), conn, result);
             }
         }
         return null;

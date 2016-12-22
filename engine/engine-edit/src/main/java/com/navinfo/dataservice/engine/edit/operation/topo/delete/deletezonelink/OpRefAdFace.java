@@ -24,7 +24,7 @@ public class OpRefAdFace implements IOperation {
     public String run(Result result) throws Exception {
         for (ZoneFace zoneFace : command.getFaces()) {
             result.insertObject(zoneFace, ObjStatus.DELETE, zoneFace.getPid());
-            ZoneIDBatchUtils.updateZoneID(zoneFace, null, conn, result);
+            ZoneIDBatchUtils.updateZoneID(zoneFace, null, zoneFace.getMeshId(), conn, result);
         }
         return null;
     }

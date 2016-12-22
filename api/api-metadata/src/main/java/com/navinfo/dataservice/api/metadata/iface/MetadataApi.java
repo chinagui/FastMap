@@ -95,6 +95,9 @@ public interface MetadataApi {
 	public String convertEng(String word) throws Exception;
 	
 	public Map<String, String> scPointSpecKindCodeType8() throws Exception;
+	
+	public Map<String, String> scPointSpecKindCodeType14() throws Exception;
+	
 	/**
 	 * 重要分类判断方法
 	 * 传入poi的kindCode和chain，返回boolean，是否为重要分类

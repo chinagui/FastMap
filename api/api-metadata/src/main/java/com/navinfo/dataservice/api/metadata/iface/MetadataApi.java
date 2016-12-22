@@ -143,7 +143,7 @@ public interface MetadataApi {
 	 * @return Map<String, JSONObject> key:jt value:对应其它
 	 * @throws Exception
 	 */
-	Map<String, JSONObject> tyCharacterFjtHzCheckSelectorGetJtExtentionTypeMap()
+	public Map<String, JSONObject> tyCharacterFjtHzCheckSelectorGetJtExtentionTypeMap()
 			throws Exception;
 
 }

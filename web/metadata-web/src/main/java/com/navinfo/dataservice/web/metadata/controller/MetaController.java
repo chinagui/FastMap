@@ -44,6 +44,7 @@ import com.navinfo.dataservice.engine.meta.rdname.RdNameImportor;
 import com.navinfo.dataservice.engine.meta.rdname.RdNameOperation;
 import com.navinfo.dataservice.engine.meta.rdname.RdNameSelector;
 import com.navinfo.dataservice.engine.meta.rdname.ScRoadnameTypename;
+import com.navinfo.dataservice.engine.meta.svg.SvgImageSelector;
 import com.navinfo.dataservice.engine.meta.tmc.model.TmcLine;
 import com.navinfo.dataservice.engine.meta.tmc.model.TmcLineTree;
 import com.navinfo.dataservice.engine.meta.tmc.model.TmcPoint;
@@ -342,6 +343,35 @@ public class MetaController extends BaseController {
             int pageNum = jsonReq.getInt("pageNum");
 
             PatternImageSelector selector = new PatternImageSelector();
+
+            JSONObject data = selector.searchByName(name, pageSize, pageNum);
+
+            return new ModelAndView("jsonView", success(data));
+
+        } catch (Exception e) {
+
+            logger.error(e.getMessage(), e);
+
+            return new ModelAndView("jsonView", fail(e.getMessage()));
+        }
+    }
+    
+    @RequestMapping(value = "/svgImage/search")
+    public ModelAndView searchSvgImage(HttpServletRequest request)
+            throws ServletException, IOException {
+
+        String parameter = request.getParameter("parameter");
+
+        try {
+            JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+            String name = jsonReq.getString("name");
+
+            int pageSize = jsonReq.getInt("pageSize");
+
+            int pageNum = jsonReq.getInt("pageNum");
+
+            SvgImageSelector selector = new SvgImageSelector();
 
             JSONObject data = selector.searchByName(name, pageSize, pageNum);
 

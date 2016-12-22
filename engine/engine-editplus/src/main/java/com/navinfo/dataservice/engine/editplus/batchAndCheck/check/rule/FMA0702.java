@@ -4,6 +4,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.collections.CollectionUtils;
+
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
@@ -50,6 +52,7 @@ public class FMA0702 extends BasicCheckRule {
 				setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(),"银行类POI简称个数错误");
 				return;
 			}
+			if(CollectionUtils.isEmpty(shortCHNames)){return ;}
 			IxPoiName shortCHName=shortCHNames.get(0);
 			MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 			Map<String, String> typeD10 =metadataApi.scPointNameckTypeD10();

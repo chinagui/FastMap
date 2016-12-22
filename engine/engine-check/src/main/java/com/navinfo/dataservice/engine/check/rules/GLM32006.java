@@ -92,7 +92,7 @@ public class GLM32006 extends baseRule {
 	 */
 	private void checkRdLane(RdLane rdLane) throws Exception {
 		//车道方向为“无”，触发检查
-		if(rdLane.getLaneDir()==0){
+		if(rdLane.getLaneDir()==1){
 			StringBuilder sb = new StringBuilder();
 
 			sb.append("SELECT 1 FROM RD_LINK L");

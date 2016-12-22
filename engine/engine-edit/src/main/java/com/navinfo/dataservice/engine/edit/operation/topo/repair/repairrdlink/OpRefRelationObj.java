@@ -103,7 +103,7 @@ public class OpRefRelationObj {
 		handleRdObject(result, newLinks, command.getUpdateLink());
 
 		// 处理同一关系
-		// handleRdSame(command, result, newLinks, command.getUpdateLink());
+		handleRdSame(command, result, newLinks, command.getUpdateLink());
 
 		return null;
 	}
@@ -498,27 +498,21 @@ public class OpRefRelationObj {
 		Map<Integer, Geometry> nodeGeoMap = new HashMap<Integer, Geometry>();
 
 		for (int i = 0; i < command.getCatchInfos().size(); i++) {
+			
 			JSONObject obj = command.getCatchInfos().getJSONObject(i);
 			// 分离移动的node
 			int nodePid = obj.getInt("nodePid");
-			
-			Point point = (Point) GeoTranslator.transform(
-					GeoTranslator.point2Jts(obj.getDouble("longitude"),
-							obj.getDouble("latitude")), 1, 5);
+	
+			for (RdLink link : newLinks) {
 
-			nodeGeoMap.put(nodePid, point);
-			
-			//跨图幅平滑修行link端点pid维护正确后 启用
-//			for (RdLink link : newLinks) {
-//
-//				LineString linkGeo = (LineString) link.getGeometry();
-//
-//				if (link.getsNodePid() == nodePid) {
-//					nodeGeoMap.put(nodePid, linkGeo.getStartPoint());
-//				} else if (link.geteNodePid() == nodePid) {
-//					nodeGeoMap.put(nodePid, linkGeo.getEndPoint());
-//				}
-//			}
+				LineString linkGeo = (LineString) link.getGeometry();
+
+				if (link.getsNodePid() == nodePid) {
+					nodeGeoMap.put(nodePid, linkGeo.getStartPoint());
+				} else if (link.geteNodePid() == nodePid) {
+					nodeGeoMap.put(nodePid, linkGeo.getEndPoint());
+				}
+			}
 		}
 
 		for (int nodePid : sameNodeMap.keySet()) {

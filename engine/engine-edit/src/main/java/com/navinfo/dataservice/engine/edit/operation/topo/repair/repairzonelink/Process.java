@@ -23,7 +23,6 @@ public class Process extends AbstractProcess<Command> {
 
 	public Process(AbstractCommand command) throws Exception {
 		super(command);
-		// TODO Auto-generated constructor stub
 	}
 
 	public Process(Command command, Result result, Connection conn)
@@ -68,18 +67,16 @@ public class Process extends AbstractProcess<Command> {
 		try {
 			this.prepareData();
 
-			String preCheckMsg = this.preCheck();
-
-			if (preCheckMsg != null) {
-				throw new Exception(preCheckMsg);
-			}
-
 			IOperation operation = new Operation(this.getConn(),
 					this.getCommand());
 
 			msg = operation.run(this.getResult());
 
-			this.postCheck();
+			String preCheckMsg = this.preCheck();
+
+			if (preCheckMsg != null) {
+				throw new Exception(preCheckMsg);
+			}
 
 		} catch (Exception e) {
 

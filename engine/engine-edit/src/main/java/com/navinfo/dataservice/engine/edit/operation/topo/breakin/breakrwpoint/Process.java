@@ -59,17 +59,18 @@ public class Process extends AbstractProcess<Command> {
 
 			this.prepareData();
 
-			String preCheckMsg = this.preCheck();
-
-			if (preCheckMsg != null) {
-				throw new Exception(preCheckMsg);
-			}
 			// 创建铁路点有关铁路线具体操作
 			OpTopo operation = new OpTopo(this.getCommand(), check, this.getConn());
 			msg = operation.run(this.getResult());
 			// 打断线对立交影响
 			OpRefRdGsc opRefRdGsc = new OpRefRdGsc(this.getCommand());
 			opRefRdGsc.run(this.getResult());
+			
+			String preCheckMsg = this.preCheck();
+
+			if (preCheckMsg != null) {
+				throw new Exception(preCheckMsg);
+			}
 		} catch (Exception e) {
 
 			this.getConn().rollback();

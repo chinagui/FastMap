@@ -336,7 +336,7 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 	 * @return
 	 * @throws Exception
 	 */
-	public JSONObject columnQuery(int status, String secondWorkItem, long userId) throws Exception {
+	public JSONObject columnQuery(int status, String secondWorkItem, long userId,int taskId) throws Exception {
 		//按group_id排序
 		StringBuilder sb = new StringBuilder();
 		sb.append("	SELECT COUNT(1) OVER(PARTITION BY 1) TOTAL, PID");
@@ -353,7 +353,8 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 		sb.append("	WHERE S.WORK_ITEM_ID = W.WORK_ITEM_ID");
 		sb.append("	AND S.HANDLER =:1");
 		sb.append("	AND W.SECOND_WORK_ITEM =:2");
-		sb.append("	AND S.SECOND_WORK_STATUS =:3)");
+		sb.append("	AND S.SECOND_WORK_STATUS =:3");
+		sb.append("	AND S.TASK_ID = :4)");
 		sb.append("	ORDER BY P.GROUP_ID, C.GROUP_ID)");
 		
 		PreparedStatement pstmt = null;
@@ -365,6 +366,7 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 			pstmt.setLong(1, userId);
 			pstmt.setString(2, secondWorkItem);
 			pstmt.setInt(3, status);
+			pstmt.setInt(4, taskId);
 			resultSet = pstmt.executeQuery();
 
 			List<Integer> pidList = new ArrayList<Integer>();

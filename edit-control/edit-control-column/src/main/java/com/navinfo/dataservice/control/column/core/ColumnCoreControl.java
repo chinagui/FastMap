@@ -199,7 +199,7 @@ public class ColumnCoreControl {
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 			IxPoiColumnStatusSelector selector = new IxPoiColumnStatusSelector(conn);
 			// 获取未提交数据的pid以及总数
-			JSONObject data= selector.columnQuery(status, secondWorkItem, userId);
+			JSONObject data= selector.columnQuery(status, secondWorkItem, userId,taskId);
 			List<Integer> pidList =new ArrayList<Integer>();
 			if(data.get("pidList") instanceof List){ 
 				pidList = (List) data.get("pidList"); 

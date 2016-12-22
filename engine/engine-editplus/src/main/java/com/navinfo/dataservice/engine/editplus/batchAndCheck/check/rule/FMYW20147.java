@@ -13,13 +13,12 @@ import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 /**
- *检查条件：
- *该POI发生变更(新增或修改主子表、删除子表)
- *检查原则：
- *NAME（LANG_CODE="CHI")，不能有繁体字。查找的繁体字在TY_CHARACTER_FJT_HZ中所在行的CONVERT字段的值：
- *1、如果是1表示不转化，不用报log；
- *2、如果是0表示需要确认后转化，报log：**是繁体字，对应的简体字是**，需确认是否转化；
- *检查名称：标准化中文名称（NAME_TYPE=1，NAME_CLASS=5，LANG_CODE=CHI）
+ * 检查条件：
+ * 该POI发生变更(新增或修改主子表、删除子表)
+ * 检查原则：
+ * NAME（LANG_CODE="CHI")，不能有繁体字。查找的繁体字在TY_CHARACTER_FJT_HZ中所在行的CONVERT字段的值：
+ * 1、如果是2表示必须转化，报log：**是繁体字，对应的简体字是**，必须转化
+ * 检查名称：标准化中文名称（type=1，class=5，langCode=CHI）
  * @author gaopengrong
  */
 public class FMYW20147 extends BasicCheckRule {
@@ -48,9 +47,9 @@ public class FMYW20147 extends BasicCheckRule {
 					if(ft.containsKey(str)){
 						JSONObject data= ft.get(str);
 						Object convert= data.get("convert");
-						if(convert.equals(0)){
+						if(convert.equals(2)){
 							String jt=(String) data.get("jt");
-							String log="“"+str+"”是繁体字，对应的简体字是“"+jt+"”，需确认是否转化";
+							String log="“"+str+"”是繁体字，对应的简体字是“"+jt+"”，必须转化";
 							setCheckResult(poi.getGeometry(), "[IX_POI,"+poi.getPid()+"]", poi.getMeshId(),log);
 						}
 					}

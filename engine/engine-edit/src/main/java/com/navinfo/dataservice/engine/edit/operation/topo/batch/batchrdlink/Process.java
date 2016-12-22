@@ -22,25 +22,6 @@ public class Process extends AbstractProcess<Command> {
     }
 
     @Override
-    public String run() throws Exception {
-        String msg = null;
-        getConn().setAutoCommit(false);
-        try {
-            msg = exeOperation();
-            recordData();
-            getConn().commit();
-        } catch (Exception e) {
-            throw e;
-        } finally {
-            try {
-                getConn().close();
-            } catch (Exception e) {
-            }
-        }
-        return msg;
-    }
-
-    @Override
     public String exeOperation() throws Exception {
         return new Operation(getCommand(), getConn()).run(getResult());
     }

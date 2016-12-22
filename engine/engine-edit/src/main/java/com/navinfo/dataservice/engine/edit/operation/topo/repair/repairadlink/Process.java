@@ -60,18 +60,16 @@ public class Process extends AbstractProcess<Command> {
 		try {
 			this.prepareData();
 
-			String preCheckMsg = this.preCheck();
-
-			if (preCheckMsg != null) {
-				throw new Exception(preCheckMsg);
-			}
-
 			IOperation operation = new Operation(this.getConn(),
 					this.getCommand());
 
 			msg = operation.run(this.getResult());
 
-			this.postCheck();
+			String preCheckMsg = this.preCheck();
+
+			if (preCheckMsg != null) {
+				throw new Exception(preCheckMsg);
+			}
 
 		} catch (Exception e) {
 

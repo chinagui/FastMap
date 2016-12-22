@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.dao.glm.selector.poi.deep;
 
+import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -13,6 +14,7 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.man.model.Subtask;
+import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.log.LogReader;
@@ -148,8 +150,9 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 			pstmt = conn.prepareStatement(sb.toString());
 			
 			pstmt.setInt(1, type);
-
-			pstmt.setString(2, subtask.getGeometry());
+			Clob geom = ConnectionUtil.createClob(conn);
+			geom.setString(1, subtask.getGeometry());
+			pstmt.setClob(2,geom);
 
 			resultSet = pstmt.executeQuery();
 

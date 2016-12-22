@@ -1909,20 +1909,20 @@ public class SpecialMapUtils {
 			return 2;
 		}
 		if (dirs.contains(3)) {
-			return 3;
+			return 2;
 		}
 		if (dirs.contains(0)) {
-			return 0;
+			return 3;
 		}
 		if (dirs.contains(9)) {
-			return 9;
+			return 3;
 		}
 
 		return 99;
 	}
 
 	/**
-	 * 未完成
+	 * 普通限制： 适用 28 季节性关闭道路 、29 Usage fee required、30 超车限制、31 单行限制
 	 * 
 	 * @param x
 	 * @param y
@@ -1987,7 +1987,13 @@ public class SpecialMapUtils {
 
 						m.put("a", type);
 
-						m.put("d", String.valueOf(direct));
+						if (dirs.contains(2) && !dirs.contains(3)) {
+							m.put("d", String.valueOf(2));
+						} else if (dirs.contains(3) && !dirs.contains(2)) {
+							m.put("d", String.valueOf(3));
+						} else {
+							m.put("d", String.valueOf(direct));
+						}
 
 						snapshot.setM(m);
 
@@ -2025,8 +2031,14 @@ public class SpecialMapUtils {
 				int type = getLimitDir(dirs);
 
 				m.put("a", type);
-
-				m.put("d", String.valueOf(direct));
+				
+				if (dirs.contains(2) && !dirs.contains(3)) {
+					m.put("d", String.valueOf(2));
+				} else if (dirs.contains(3) && !dirs.contains(2)) {
+					m.put("d", String.valueOf(3));
+				} else {
+					m.put("d", String.valueOf(direct));
+				}
 
 				snapshot.setM(m);
 
@@ -2449,7 +2461,7 @@ public class SpecialMapUtils {
 	}
 
 	/**
-	 * 获取rtic等级
+	 * 获取zone类型
 	 * 
 	 * @param dirs
 	 * @return

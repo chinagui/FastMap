@@ -339,7 +339,11 @@ public class Operation implements IOperation {
 	 */
 	public void breakLinkUpdateTmc(Result result, RdLink oldLink, List<RdLink> newLinks) {
 		List<IRow> tmcLocations = oldLink.getTmclocations();
-
+		//打断前清空原link的tmc子表数据，防止删除原link删除tmc子表数据
+		if(!oldLink.getTmclocations().isEmpty())
+		{
+			oldLink.getTmclocations().clear();
+		}
 		for (IRow row : tmcLocations) {
 			RdTmclocation location = (RdTmclocation) row;
 

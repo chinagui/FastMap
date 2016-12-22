@@ -24,7 +24,7 @@ public class OpRefAdFace implements IOperation {
     public String run(Result result) throws Exception {
         for (AdFace adFace : command.getFaces()) {
             result.insertObject(adFace, ObjStatus.DELETE, adFace.getPid());
-            AdminIDBatchUtils.updateAdminID(adFace, null, conn, result);
+            AdminIDBatchUtils.updateAdminID(adFace, null, adFace.getMeshId(), conn, result);
         }
         return null;
     }

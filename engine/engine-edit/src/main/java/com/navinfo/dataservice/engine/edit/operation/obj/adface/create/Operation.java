@@ -351,11 +351,8 @@ public class Operation implements IOperation {
             if (face.getRegionId() != 0) {
                 AdAdminSelector selector = new AdAdminSelector(conn);
                 AdAdmin admin = (AdAdmin) selector.loadById(face.getRegionId(), false);
-                if (null != admin && (admin.getAdminType() == 0 || admin.getAdminType() == 1 || admin.getAdminType() == 2
-                        || admin.getAdminType() == 2.5 || admin.getAdminType() == 3 || admin.getAdminType() == 3.5
-                        ||admin.getAdminType() == 4 || admin.getAdminType() == 4.5 || admin.getAdminType() == 4.8
-                        || admin.getAdminType() == 5 || admin.getAdminType() == 6 || admin.getAdminType() == 7)) {
-                    AdminIDBatchUtils.updateAdminID(face, faceGeo, conn, result);
+                if (null != admin && (admin.getAdminType() == 0 || admin.getAdminType() == 1 || admin.getAdminType() == 2 || admin.getAdminType() == 2.5 || admin.getAdminType() == 3 || admin.getAdminType() == 3.5 || admin.getAdminType() == 4 || admin.getAdminType() == 4.5 || admin.getAdminType() == 4.8 || admin.getAdminType() == 5 || admin.getAdminType() == 6 || admin.getAdminType() == 7)) {
+                    AdminIDBatchUtils.updateAdminID(face, faceGeo, face.getMeshId(), conn, result);
                 }
             }
         }

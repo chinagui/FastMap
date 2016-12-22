@@ -346,7 +346,7 @@ public class Operation implements IOperation {
                 AdAdminSelector selector = new AdAdminSelector(conn);
                 AdAdmin admin = (AdAdmin) selector.loadById(face.getRegionId(), false);
                 if (null != admin && (admin.getAdminType() == 8 || admin.getAdminType() == 9))
-                    ZoneIDBatchUtils.updateZoneID(face, faceGeo, conn, result);
+                    ZoneIDBatchUtils.updateZoneID(face, faceGeo, face.getMeshId(), conn, result);
             }
         }
         // 更新面的几何属性

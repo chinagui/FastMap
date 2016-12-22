@@ -1,7 +1,9 @@
 package com.navinfo.dataservice.engine.edit.operation.topo.delete.deleteadnode;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 
@@ -99,20 +101,16 @@ public class Process extends AbstractProcess<Command> {
      * 加载行政区划点对应的行政区划线
      */
     public void lockAdFace() throws Exception {
-
         AdFaceSelector selector = new AdFaceSelector(this.getConn());
-
-        List<AdFace> faces = new ArrayList<AdFace>();
-
+        Map<Integer, AdFace> maps = new HashMap<>();
         for (Integer linkPid : this.getCommand().getLinkPids()) {
-
             List<AdFace> list = selector.loadAdFaceByLinkId(linkPid, true);
-
             for (AdFace face : list) {
-                faces.add(face);
-
+                maps.put(face.pid(), face);
             }
         }
+        List<AdFace> faces = new ArrayList<>();
+        faces.addAll(maps.values());
         this.getCommand().setFaces(faces);
     }
 

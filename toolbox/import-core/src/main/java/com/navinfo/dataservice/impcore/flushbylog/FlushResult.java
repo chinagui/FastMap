@@ -1,7 +1,11 @@
 package com.navinfo.dataservice.impcore.flushbylog;
 
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.navinfo.dataservice.commons.util.NaviListUtils;
+import com.navinfo.navicommons.database.QueryRunner;
 
 public class FlushResult {
 	
@@ -249,5 +253,12 @@ public class FlushResult {
 	}
 	public void setTempFailLogTable(String tempFailLogTable) {
 		this.tempFailLogTable = tempFailLogTable;
+	}
+	public void recordFailLog2Temptable(Connection conn) throws Exception{
+		if (this.isSuccess()) return ;
+		QueryRunner run = new QueryRunner();
+		String sql = "insert into "+tempFailLogTable+" values(?,?)";
+		Object[][] batchParams = NaviListUtils.toArrayMatrix(this.getFailedLog());
+		run.batch(conn, sql, batchParams);
 	}
 }

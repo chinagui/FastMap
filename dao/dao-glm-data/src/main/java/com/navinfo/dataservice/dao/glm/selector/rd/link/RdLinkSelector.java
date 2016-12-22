@@ -4,12 +4,17 @@ import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.navinfo.dataservice.dao.glm.iface.IObj;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFace;
+import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneFace;
+import com.navinfo.dataservice.dao.glm.model.lu.LuFace;
 import org.apache.commons.lang.StringUtils;
 
 import com.alibaba.druid.pool.DruidPooledConnection;
@@ -375,6 +380,14 @@ public class RdLinkSelector extends AbstractSelector {
         return map;
     }
 
+    /***
+     * 加载联通link考虑方向
+     * @param linkPid
+     * @param nodePidDir
+     * @param isLock
+     * @return
+     * @throws Exception
+     */
     public List<RdLink> loadTrackLink(int linkPid, int nodePidDir, boolean isLock) throws Exception {
 
         List<RdLink> list = new ArrayList<RdLink>();
@@ -408,6 +421,54 @@ public class RdLinkSelector extends AbstractSelector {
             pstmt.setInt(3, nodePidDir);
             pstmt.setInt(4, nodePidDir);
             pstmt.setInt(5, linkPid);
+
+            resultSet = pstmt.executeQuery();
+
+            while (resultSet.next()) {
+                RdLink rdLink = new RdLink();
+                ReflectionAttrUtils.executeResultSet(rdLink, resultSet);
+                list.add(rdLink);
+
+            }
+            return list;
+        } catch (Exception e) {
+
+            throw e;
+
+        } finally {
+            DBUtils.closeResultSet(resultSet);
+            DBUtils.closeStatement(pstmt);
+        }
+    }
+
+    /***
+     * 加载联通link不考虑方向
+     *
+     * @param linkPid
+     * @param nodePidDir
+     * @param isLock
+     * @return
+     * @throws Exception
+     */
+
+    public List<RdLink> loadTrackLinkNoDirect(int linkPid, int nodePidDir, boolean isLock) throws Exception {
+        List<RdLink> list = new ArrayList<RdLink>();
+        StringBuilder sb = new StringBuilder();
+        sb.append(" select rl.* from rd_link rl  where (rl.s_node_pid = :1 or rl.e_node_pid = :2) and rl.link_pid <> :3 and rl.u_record !=2 ");
+        if (isLock) {
+            sb.append(" for update nowait");
+        }
+
+        PreparedStatement pstmt = null;
+
+        ResultSet resultSet = null;
+
+        try {
+            pstmt = conn.prepareStatement(sb.toString());
+
+            pstmt.setInt(1, nodePidDir);
+            pstmt.setInt(2, nodePidDir);
+            pstmt.setInt(3, linkPid);
 
             resultSet = pstmt.executeQuery();
 
@@ -840,15 +901,19 @@ public class RdLinkSelector extends AbstractSelector {
     /**
      * 加载与面相交或者在面内的link
      *
-     * @param faceGeo
+     * @param geometry
      * @param isLock
      * @return 面内link集合，link只加载主表信息
      * @throws Exception
      */
-    public List<RdLink> loadLinkByFaceGeo(Geometry faceGeo, boolean isLock) throws Exception {
+    public List<RdLink> loadLinkByFaceGeo(Geometry geometry, int meshId, boolean isLock) throws Exception {
+        // initTmpFaceGeometry(GeoTranslator.jts2Wkt(geometry));
+
         List<RdLink> rdLinks = new ArrayList<>();
-        StringBuilder sb = new StringBuilder("SELECT A.* FROM RD_LINK A WHERE A.U_RECORD != 2");
-        sb.append(" AND SDO_RELATE(A.GEOMETRY, SDO_GEOMETRY(:1, 8307) , 'mask=anyinteract') = 'TRUE'");
+        StringBuilder sb = new StringBuilder("WITH TMP AS (SELECT * FROM RD_LINK WHERE MESH_ID LIKE '%");
+        sb.append(meshId);
+        sb.append("%' AND U_RECORD != 2) SELECT RL.* FROM TMP RL WHERE");
+        sb.append(" SDO_RELATE(RL.GEOMETRY, SDO_GEOMETRY(:1, 8307),  'mask=anyinteract') = 'TRUE'");
         if (isLock) {
             sb.append(" for update nowait");
         }
@@ -856,12 +921,12 @@ public class RdLinkSelector extends AbstractSelector {
         ResultSet resultSet = null;
         try {
             pstmt = conn.prepareStatement(sb.toString());
-            pstmt.setString(1, GeoTranslator.jts2Wkt(faceGeo));
+            pstmt.setString(1, GeoTranslator.jts2Wkt(geometry));
             resultSet = pstmt.executeQuery();
             while (resultSet.next()) {
                 RdLink link = new RdLink();
                 ReflectionAttrUtils.executeResultSet(link, resultSet);
-                List<IRow> zones = this.loadRowsByClassParentId(RdLinkZone.class, link.getPid(), true, null);
+                List<IRow> zones = new AbstractSelector(RdLinkZone.class, conn).loadRowsByParentId(link.pid(), true);
                 link.setZones(zones);
                 rdLinks.add(link);
             }
@@ -871,6 +936,9 @@ public class RdLinkSelector extends AbstractSelector {
             DBUtils.closeResultSet(resultSet);
             DBUtils.closeStatement(pstmt);
         }
+
+        // delTmpFaceGeometry();
+
         return rdLinks;
     }
 
@@ -972,5 +1040,18 @@ public class RdLinkSelector extends AbstractSelector {
         }
 
         return kinds;
+    }
+
+    private void initTmpFaceGeometry(String wkt) throws SQLException {
+        String sql = "INSERT INTO TMP_FACE_GEOMETRY VALUES (SDO_GEOMETRY(:1, 8307))";
+        PreparedStatement pstmt = conn.prepareStatement(sql);
+        pstmt.setString(1, wkt);
+        pstmt.execute();
+    }
+
+    private void delTmpFaceGeometry() throws SQLException {
+        String sql = "DELETE FROM TMP_FACE_GEOMETRY";
+        PreparedStatement pstmt = conn.prepareStatement(sql);
+        pstmt.execute();
     }
 }

@@ -67,6 +67,8 @@ public class RuleExecuter {
 			{variablevalue=VariablesFactory.getRdGateOutLinkPid(data);break;}
 			case RDDIRECTROUTE_PID:
 			{variablevalue=VariablesFactory.getRdDirectroutePid(data);break;}
+			case RDDIRECTROUTE_OUTLINKPID:
+			{variablevalue=VariablesFactory.getRdDirectrouteOutLinkPid(data);break;}
 			case RDSLOPE_PID:
 			{variablevalue=VariablesFactory.getRdSlopePid(data);break;}
 			case RDWARNINGINFO_PID:
@@ -263,7 +265,7 @@ public class RuleExecuter {
 				sqlListTmp.add(sql.replace(firstVariable, variableValueList.iterator().next()));
 			}else{
 				String sqlTmp=sql.replace("= "+firstVariable, "="+firstVariable);
-				sqlListTmp.add(sqlTmp.replace("="+firstVariable, "in ("+variableValueList.toString().replace("[", "").replace("]", "")+")"));
+				sqlListTmp.add(sqlTmp.replace("="+firstVariable, " in ("+variableValueList.toString().replace("[", "").replace("]", "")+")"));
 			}
 		}else{
 			//有多个变量，或者sql中变量出现多次

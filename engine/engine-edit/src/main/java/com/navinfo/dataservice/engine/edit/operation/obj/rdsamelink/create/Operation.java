@@ -152,6 +152,8 @@ public class Operation implements IOperation {
 		case LULINK:
 			com.navinfo.dataservice.engine.edit.operation.topo.repair.repairlulink.Command luCommand = new com.navinfo.dataservice.engine.edit.operation.topo.repair.repairlulink.Command(
 					updateContent, command.getRequester());
+			
+			luCommand.setOperationType("sameLinkRepair");
 
 			com.navinfo.dataservice.engine.edit.operation.topo.repair.repairlulink.Process luProcess = new com.navinfo.dataservice.engine.edit.operation.topo.repair.repairlulink.Process(
 					luCommand, result, conn);
@@ -162,6 +164,8 @@ public class Operation implements IOperation {
 			com.navinfo.dataservice.engine.edit.operation.topo.repair.repairadlink.Command adCommand = new com.navinfo.dataservice.engine.edit.operation.topo.repair.repairadlink.Command(
 					updateContent, command.getRequester());
 
+			adCommand.setOperationType("sameLinkRepair");
+			
 			com.navinfo.dataservice.engine.edit.operation.topo.repair.repairadlink.Process adProcess = new com.navinfo.dataservice.engine.edit.operation.topo.repair.repairadlink.Process(
 					adCommand, result, conn);
 
@@ -170,6 +174,8 @@ public class Operation implements IOperation {
 		case ZONELINK:
 			com.navinfo.dataservice.engine.edit.operation.topo.repair.repairzonelink.Command zoneCommand = new com.navinfo.dataservice.engine.edit.operation.topo.repair.repairzonelink.Command(
 					updateContent, command.getRequester());
+			
+			zoneCommand.setOperationType("sameLinkRepair");
 
 			com.navinfo.dataservice.engine.edit.operation.topo.repair.repairzonelink.Process zoneProcess = new com.navinfo.dataservice.engine.edit.operation.topo.repair.repairzonelink.Process(
 					zoneCommand, result, conn);

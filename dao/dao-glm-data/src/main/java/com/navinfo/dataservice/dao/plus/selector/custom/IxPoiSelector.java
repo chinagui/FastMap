@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -16,6 +17,7 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.dao.plus.glm.GlmFactory;
@@ -132,6 +134,32 @@ public class IxPoiSelector {
 
 	}
 	
+	/**
+	 * 通过子poi查询父，祖父等，一直到一级父（即父没有父了，只有子）
+	 * @param conn
+	 * @param pidList
+	 * @return
+	 * @throws ServiceException
+	 */
+	public static Map<Long,Long> getAllParentPidsByChildrenPids(Connection conn,Set<Long> pidList) throws ServiceException{
+		Map<Long,Long> childPidParentPid = new HashMap<Long,Long>();
+		if(pidList.isEmpty()){
+			return childPidParentPid;
+		}
+		childPidParentPid=getParentPidsByChildrenPids(conn,pidList);
+		Set<Long> poiPids=new HashSet<Long>();
+		poiPids.addAll(childPidParentPid.keySet());
+		poiPids.addAll(childPidParentPid.values());
+		poiPids.addAll(pidList);
+		//循环查询直到没有新父被查出来为止
+		while(poiPids.size()!=pidList.size()){
+			pidList.addAll(poiPids);
+			childPidParentPid=getParentPidsByChildrenPids(conn,pidList);
+			poiPids.addAll(childPidParentPid.values());
+		}
+		return childPidParentPid;
+	}
+	
 	
 	/**
 	 * 查询子POI的fid
@@ -150,7 +178,7 @@ public class IxPoiSelector {
 				List<Long> childPids = entry.getValue();
 				List<Map<Long,Object>> childFids = new ArrayList<Map<Long,Object>>();
 				if(childPids!=null && childPids.size()>0){
-					Map<Long,BasicObj> objs = ObjBatchSelector.selectByPids(conn, ObjectName.IX_POI,null,childPids,true,true);
+					Map<Long,BasicObj> objs = ObjBatchSelector.selectByPids(conn, ObjectName.IX_POI,null,true,childPids,true,true);
 					for(BasicObj obj:objs.values()){
 						Map<Long,Object> childFid = new HashMap<Long, Object>();
 						IxPoiObj poi = (IxPoiObj) obj;

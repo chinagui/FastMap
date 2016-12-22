@@ -404,6 +404,10 @@ public class RdBranch implements IObj {
 
 		return "rd_branch";
 	}
+	
+	public String getRowId() {
+		return rowId;
+	}
 
 	@Override
 	public String rowId() {

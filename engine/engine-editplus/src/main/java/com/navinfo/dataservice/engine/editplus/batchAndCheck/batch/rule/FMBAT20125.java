@@ -60,7 +60,7 @@ public class FMBAT20125 extends BasicBatchRule {
 				}
 				
 				if (CHIaddress.getFullname() != null && !CHIaddress.getFullname().isEmpty()) {
-					if (CHIaddress.getOldValues().containsKey("fullname")) {
+					if (CHIaddress.hisOldValueContains(IxPoiAddress.FULLNAME)) {
 						if (ENGaddress != null) {
 							ENGaddress.setFullname(metadata.convertEng(CHIaddress.getFullname()));
 						} else {

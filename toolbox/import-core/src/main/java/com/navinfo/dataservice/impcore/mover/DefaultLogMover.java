@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.impcore.mover;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
@@ -21,10 +22,17 @@ import com.navinfo.navicommons.database.sql.DbLinkCreator;
 */
 public class DefaultLogMover extends LogMover {
 	Logger log = LoggerRepos.getLogger(this.getClass());
+	private Connection moveConn;
+	private boolean autoCommit;
 	public DefaultLogMover(OracleSchema logSchema, OracleSchema tarSchema,String tempTable,String tempFailLogTable) {
+		this(logSchema, tarSchema,tempTable,tempFailLogTable,null,true);
+	}
+	public DefaultLogMover(OracleSchema logSchema, OracleSchema tarSchema,String tempTable,String tempFailLogTable,Connection moveConn,boolean autoCommit) {
 		super(logSchema, tarSchema);
 		this.tempTable=tempTable;
 		this.tempFailLogTable=tempFailLogTable;
+		this.moveConn = moveConn;
+		this.autoCommit = autoCommit;
 	}
 	protected String tempTable;
 	protected String tempFailLogTable;
@@ -40,29 +48,40 @@ public class DefaultLogMover extends LogMover {
 			dbLinkName = tarSchema.getConnConfig().getUserName()+"_"+RandomUtil.nextNumberStr(4);
 			cr.create(dbLinkName, false, logSchema.getPoolDataSource(), tarSchema.getConnConfig().getUserName(), tarSchema.getConnConfig().getUserPasswd(), tarSchema.getConnConfig().getServerIp(), String.valueOf(tarSchema.getConnConfig().getServerPort()), tarSchema.getConnConfig().getServiceName());
 			tarTempTable = LogFlushUtil.getInstance().createTempTable(tarSchema.getPoolDataSource().getConnection());
-			conn = logSchema.getPoolDataSource().getConnection();
-			result.setLogActionMoveCount(
-					run.update(conn,actionSql()));
-			result.setLogOperationMoveCount(
-					run.update(conn, operationSql()));
-			result.setLogDetailMoveCount(
-					run.update(conn, detailSql()));
-			result.setLogDetailGridMoveCount(
-					run.update(conn, gridSql()));
-			run.update(conn,tempTableMoveSql());
-			result.setLogOperationTempTable(this.tarTempTable);//设置目标库的log_operation临时表(记录从日库搬移的log_operation的op_Id,op_dt)
-			run.update(conn,dayReleaseSql());
+			
+			if(moveConn==null){
+				moveConn=logSchema.getPoolDataSource().getConnection();
+			}
+			conn = moveConn;
+			doMove(conn, result);
 			return result;
 		}catch(Exception e){
-			log.error(e.getMessage(),e);
-			DbUtils.rollbackAndCloseQuietly(conn);
+			if(autoCommit){
+				DbUtils.rollbackAndCloseQuietly(conn);
+			}
 			throw e;
 		}finally{
 //			if(cr!=null) cr.drop(dbLinkName, false, logSchema.getPoolDataSource());
-			DbUtils.commitAndCloseQuietly(conn);
+			if(autoCommit){
+				DbUtils.commitAndCloseQuietly(conn);
+			}
+			
 		}
 	}
-	private String tempTableMoveSql() {
+	protected void doMove(Connection conn, LogMoveResult result) throws SQLException {
+		result.setLogActionMoveCount(
+				run.update(conn,actionSql()));
+		result.setLogOperationMoveCount(
+				run.update(conn, operationSql()));
+		result.setLogDetailMoveCount(
+				run.update(conn, detailSql()));
+		result.setLogDetailGridMoveCount(
+				run.update(conn, gridSql()));
+		run.update(conn,tempTableMoveSql());
+		result.setLogOperationTempTable(this.tarTempTable);//设置目标库的log_operation临时表(记录从日库搬移的log_operation的op_Id,op_dt)
+		run.update(conn,dayReleaseSql());
+	}
+	protected String tempTableMoveSql() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("insert into "+tarTempTable+"@");
 		sb.append(dbLinkName);
@@ -124,7 +143,7 @@ public class DefaultLogMover extends LogMover {
 		if(StringUtils.isNotEmpty(tempFailLogTable)){
 			sb.append(" AND NOT EXISTS(SELECT 1 FROM ");
 			sb.append(tempFailLogTable);
-			sb.append(" F WHERE F.ROW_ID=D.ROW_ID)");
+			sb.append(" F WHERE F.OP_ID=T.OP_ID)");
 		}
 		sb.append(" ORDER BY L.OP_DT) T");
 		return sb.toString();

@@ -73,7 +73,7 @@ public class LuLinkTest extends InitApplication {
 
 	@Test
 	public void tesRepairtLuLink() {
-		String requester = "{\"command\":\"REPAIR\",\"dbId\":17,\"objId\":320000009,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[115.625,39.41894],[115.62467,39.41878],[115.62544405460356,39.41844578116937],[115.62462,39.41816],[115.6246,39.4178],[115.62463,39.4175],[115.62467,39.41736],[115.62469,39.41728]]},\"interLinks\":[],\"interNodes\":[]},\"type\":\"LULINK\"}";
+		String requester = "{\"command\":\"REPAIR\",\"dbId\":17,\"objId\":304000045,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.87547,40.46244],[116.87371730804443,40.46237660751921],[116.87474727630615,40.46083381216987],[116.87698,40.46105],[116.87675,40.46305],[116.87547,40.46244]]},\"catchInfos\":[]},\"type\":\"LULINK\"}";
 		TestUtil.run(requester);
 	}
 

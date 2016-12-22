@@ -9,6 +9,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.dbutils.DbUtils;
+import org.apache.commons.lang.StringUtils;
+
 import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.api.job.model.JobInfo;
@@ -19,7 +22,6 @@ import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.commons.database.DbConnectConfig;
 import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
-import com.navinfo.dataservice.dao.check.NiValException;
 import com.navinfo.dataservice.dao.plus.log.LogDetail;
 import com.navinfo.dataservice.dao.plus.log.ObjHisLogParser;
 import com.navinfo.dataservice.dao.plus.log.PoiLogDetailStat;
@@ -33,15 +35,14 @@ import com.navinfo.dataservice.day2mon.Day2MonPoiLogSelector;
 import com.navinfo.dataservice.day2mon.PostBatch;
 import com.navinfo.dataservice.day2mon.PreBatch;
 import com.navinfo.dataservice.impcore.flushbylog.FlushResult;
-import com.navinfo.dataservice.impcore.flusher.DefaultLogFlusher;
-import com.navinfo.dataservice.impcore.flusher.LogFlusher;
-import com.navinfo.dataservice.impcore.mover.DefaultLogMover;
+import com.navinfo.dataservice.impcore.flusher.Day2MonLogFlusher;
+import com.navinfo.dataservice.impcore.mover.Day2MonMover;
 import com.navinfo.dataservice.impcore.mover.LogMoveResult;
 import com.navinfo.dataservice.impcore.mover.LogMover;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
+import com.navinfo.navicommons.database.QueryRunner;
 
-import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 /** 
@@ -83,10 +84,17 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 			List<Map<String, Object>> d2mInfoList= manApi.queryDay2MonthList(conditionJson );
 			response("获取日落月开关控制信息ok",null);
 			log.info("开始获取日落月城市信息:城市的基础信息、城市的grid，城市的大区库");
-			for(Map<String,Object> d2mInfo:d2mInfoList){
-				Integer cityId = (Integer) d2mInfo.get("cityId");
-				doSync(manApi, datahubApi, d2mSyncApi, cityId);
+			Day2MonthPoiMergeJobRequest day2MonRequest=(Day2MonthPoiMergeJobRequest) request;
+			String reqCityId = day2MonRequest==null?null:day2MonRequest.getCityId();
+			if(StringUtils.isNotEmpty(reqCityId)){
+				doSync(manApi, datahubApi, d2mSyncApi, Integer.parseInt(reqCityId));
+			}else{//全部DAY2MONTH_CONFIG中处于打开状态的城市
+				for(Map<String,Object> d2mInfo:d2mInfoList){
+					Integer cityId = (Integer) d2mInfo.get("cityId");
+					doSync(manApi, datahubApi, d2mSyncApi, cityId);
+				}
 			}
+			
 			log.info("日落月完成");
 		}catch(Exception e){
 			log.error(e.getMessage(), e);
@@ -107,6 +115,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 		Integer regionId = (Integer) cityInfo.get("regionId");
 		Region regionInfo = manApi.queryByRegionId(regionId);
 		log.info("获取大区信息:"+regionInfo);
+		if(regionInfo==null) return ;
 		Integer dailyDbId = regionInfo.getDailyDbId();
 		DbInfo dailyDbInfo = datahubApi.getDbById(dailyDbId);
 		log.info("获取dailyDbInfo信息:"+dailyDbInfo);
@@ -118,43 +127,78 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 		Date syncTimeStamp= new Date();
 		FmDay2MonSync curSyncInfo = createSyncInfo(d2mSyncApi, cityId,syncTimeStamp);//记录本次的同步信息
 		d2mSyncApi.insertSyncInfo(curSyncInfo);
-		log.info("开始获取日编库履历");
+		Day2MonPoiLogSelector logSelector = null;
 		OracleSchema dailyDbSchema = new OracleSchema(
-				DbConnectConfig.createConnectConfig(dailyDbInfo.getConnectParam()));				
-		String tempOpTable = selectDailyLog(gridsOfCity, syncTimeStamp, dailyDbSchema);
-		log.info("开始奖日库履历刷新到月库");
+				DbConnectConfig.createConnectConfig(dailyDbInfo.getConnectParam()));
+		Connection dailyConn = dailyDbSchema.getPoolDataSource().getConnection();
 		OracleSchema monthDbSchema = new OracleSchema(
 				DbConnectConfig.createConnectConfig(monthDbInfo.getConnectParam()));
-		LogFlusher flusher = new DefaultLogFlusher(dailyDbSchema, monthDbSchema, true, tempOpTable);
-		FlushResult flushResult = flusher.flush();
-		log.info("开始将履历搬到月库");
-		LogMover logMover = new DefaultLogMover(dailyDbSchema, monthDbSchema, tempOpTable, flushResult.getTempFailLogTable());
-		LogMoveResult logMoveResult = logMover.move();
-		log.info("开始进行履历分析");
 		Connection monthConn = monthDbSchema.getPoolDataSource().getConnection();
-		OperationResult result = parseLog(logMoveResult, monthConn);
-		log.info("开始执行前批");
-		new PreBatch(result, monthConn).execute();
-		log.info("开始执行检查");
-		Map<String, Map<Long, Set<String>>> checkResult = new Check(result, monthConn).execute();
-		new Classifier(checkResult,monthConn).execute();
-		log.info("开始执行后批处理");
-		new PostBatch(monthConn).execute();
-		log.info("修改同步信息为成功");
-		curSyncInfo.setSyncStatus(FmDay2MonSync.SyncStatusEnum.SUCCESS.getValue());
-		d2mSyncApi.updateSyncInfo(curSyncInfo);
-		log.info("finished:"+cityId);
+		LogMover logMover = null;
+		try{
+			log.info("开始获取日编库履历");
+			
+			logSelector = new Day2MonPoiLogSelector(dailyDbSchema);
+			logSelector.setGrids(gridsOfCity);
+			logSelector.setStopTime(syncTimeStamp);
+			String tempOpTable = logSelector.select();
+			log.info("开始奖日库履历刷新到月库,temptable:"+tempOpTable);
+			FlushResult flushResult= new Day2MonLogFlusher(dailyDbSchema,dailyConn,monthConn,true,tempOpTable).flush();
+			if(0==flushResult.getTotal()){
+				log.info("没有符合条件的履历，不执行日落月，返回");
+				return;
+			}
+			log.info("开始将履历搬到月库：logtotal:"+flushResult.getTotal());
+			logMover = new Day2MonMover(dailyDbSchema, monthDbSchema, tempOpTable, flushResult.getTempFailLogTable());
+			LogMoveResult logMoveResult = logMover.move();
+			log.info("开始进行履历分析");
+			
+			OperationResult result = parseLog(logMoveResult, monthConn);
+			log.info("开始执行前批");
+			new PreBatch(result, monthConn).execute();
+			log.info("开始执行检查");
+			Map<String, Map<Long, Set<String>>> checkResult = new Check(result, monthConn).execute();
+			new Classifier(checkResult,monthConn).execute();
+			log.info("开始执行后批处理");
+			new PostBatch(result,monthConn).execute();
+			updateLogCommitStatus(dailyConn,tempOpTable);
+			log.info("修改同步信息为成功");
+			curSyncInfo.setSyncStatus(FmDay2MonSync.SyncStatusEnum.SUCCESS.getValue());
+			d2mSyncApi.updateSyncInfo(curSyncInfo);
+			log.info("finished:"+cityId);
+		}catch(Exception e){
+			if(monthConn!=null)monthConn.rollback();
+			if(dailyConn!=null)dailyConn.rollback();
+			log.info("rollback db");
+			log.error(e.getMessage(),e);
+			curSyncInfo.setSyncStatus(FmDay2MonSync.SyncStatusEnum.FAIL.getValue());
+			d2mSyncApi.updateSyncInfo(curSyncInfo);
+			if(logMover!=null){
+				log.info("搬移履历回滚");
+				logMover.rollbackMove();
+			}
+			
+		}finally{
+			DbUtils.commitAndCloseQuietly(monthConn);
+			DbUtils.commitAndCloseQuietly(dailyConn);
+			log.info("commit db");
+			if(logSelector!=null){
+				log.info("释放履历锁");
+				logSelector.unselect(false);
+			}
+			
+			
+			
+		}
+		
 	}
 
-	private String selectDailyLog(List<Integer> gridsOfCity, Date syncTimeStamp, OracleSchema dailyDbSchema)
-			throws Exception {
-		Day2MonPoiLogSelector logSelector = new Day2MonPoiLogSelector(dailyDbSchema);
-		logSelector.setGrids(gridsOfCity);
-		logSelector.setStopTime(syncTimeStamp);
-		String tempOpTable = logSelector.select();
-		return tempOpTable;
+	protected void updateLogCommitStatus(Connection dailyConn,String tempTable) throws Exception {
+		QueryRunner run = new QueryRunner();
+		String sql = "update LOG_OPERATION set com_dt = sysdate,com_sta=1,LOCK_STA=0 where OP_ID IN (SELECT OP_ID FROM "+tempTable+")";
+		run.execute(dailyConn, sql);
+		
 	}
-
 	private OperationResult parseLog(LogMoveResult logMoveResult, Connection monthConn)
 			throws Exception, SQLException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException,
 			IllegalAccessException, InstantiationException, OperationResultException {
@@ -163,7 +207,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 		tabNames.add("IX_POI_NAME");
 		tabNames.add("IX_POI_ADDRESS");
 		OperationResult result = new OperationResult();
-		Map<Long,BasicObj> objs =  ObjBatchSelector.selectByPids(monthConn, "IX_POI", tabNames, logStatInfo.keySet(), true, true);
+		Map<Long,BasicObj> objs =  ObjBatchSelector.selectByPids(monthConn, "IX_POI", tabNames,false, logStatInfo.keySet(), true, true);
 		ObjHisLogParser.parse(objs,logStatInfo);
 		result.putAll(objs.values());
 		return result;

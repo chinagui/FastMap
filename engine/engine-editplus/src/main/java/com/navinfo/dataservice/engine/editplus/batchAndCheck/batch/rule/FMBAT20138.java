@@ -47,6 +47,7 @@ public class FMBAT20138 extends BasicBatchRule {
 			if(br==null){return;}
 			String name=br.getName();
 			if(newKindCode.equals("150101")){
+				if (newChain==null){return;}
 				if (newChain.equals("6003")||newChain.equals("6045")||newChain.equals("6002")
 					||newChain.equals("6001")||newChain.equals("6000")||newChain.equals("6028")
 					||newChain.equals("6025")||newChain.equals("602C")||newChain.equals("6047")

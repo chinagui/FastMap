@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.day2mon;
 
+import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -10,15 +11,18 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.dbutils.DbUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiNameFlag;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
-import com.navinfo.dataservice.dao.plus.selector.ObjSelector;
+import com.navinfo.dataservice.dao.plus.operation.OperationSegment;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.Batch;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.BatchCommand;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.check.Check;
@@ -28,21 +32,29 @@ import com.navinfo.navicommons.database.sql.DBUtils;
 public class PostBatch {
 	Logger log = LoggerRepos.getLogger(this.getClass());
 	private Connection conn;
+	private OperationResult opResult ;
 
-	public PostBatch(Connection conn) {
+	public PostBatch(OperationResult opResult,Connection conn) {
 		super();
+		this.opResult = opResult;
 		this.conn = conn;
 	}
 	
 	public void execute() throws Exception{
 		// 200170特殊处理
+		log.info("执行200170特殊处理");
 		deteal200170();
 		// 200140与201150特殊处理
+		log.info("执行200140特殊处理");
 		deteal200140();
 		// 201250特殊处理
+		log.info("执行201250特殊处理");
 		deteal201250();
 		// 处理sourceFlag
+		log.info("执行sourceFlag特殊处理");
 		detealSourceFlag();
+		// handler置0
+		updateHandler();
 	}
 	
 	// 处理sourceFlag
@@ -56,28 +68,31 @@ public class PostBatch {
 	
 	private List<BasicObj> changeSourceFlag(String workItem,String sourceFlag) throws Exception {
 		List<Long> pidList = getPidByWorkItem(workItem);
+		log.info("changeSourceFlag:"+workItem+",pids:"+pidList.toString());
 		List<BasicObj> objList = new ArrayList<BasicObj>();
-		 Set<String> tabNames = new HashSet<String>();
-		 tabNames.add("IX_POI_NAME");
-		 tabNames.add("IX_POI_NAME_FLAG");
 		for (Long pid:pidList) {
-			BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", tabNames, pid, false);
-			List<BasicRow> nameList = obj.getSubrows().get("IX_POI_NAME");
-			Long nameId = 0l;
-			for (BasicRow name:nameList) {
-				IxPoiName poiName = (IxPoiName) name;
-				if (poiName.getLangCode().equals("ENG")&&poiName.getNameType()==2&&poiName.getNameClass()==1) {
-					nameId = poiName.getNameId();
+			List<BasicObj> allObjs = opResult.getAllObjs();
+			for (BasicObj obj:allObjs) {
+				IxPoi ixPoi = (IxPoi) obj.getMainrow();
+				if (ixPoi.getPid() == pid) {
+					List<BasicRow> nameList = obj.getSubrows().get("IX_POI_NAME");
+					Long nameId = 0l;
+					for (BasicRow name:nameList) {
+						IxPoiName poiName = (IxPoiName) name;
+						if (poiName.getLangCode().equals("ENG")&&poiName.getNameType()==2&&poiName.getNameClass()==1) {
+							nameId = poiName.getNameId();
+						}
+					}
+					List<BasicRow> flagList = obj.getSubrows().get("IX_POI_NAME_FLAG");
+					for (BasicRow flag:flagList) {
+						IxPoiNameFlag poiFlag = (IxPoiNameFlag) flag;
+						if (poiFlag.getNameId() == nameId) {
+							poiFlag.setFlagCode(sourceFlag);
+						}
+					}
+					objList.add(obj);
 				}
 			}
-			List<BasicRow> flagList = obj.getSubrows().get("IX_POI_NAME_FLAG");
-			for (BasicRow flag:flagList) {
-				IxPoiNameFlag poiFlag = (IxPoiNameFlag) flag;
-				if (poiFlag.getNameId() == nameId) {
-					poiFlag.setFlagCode(sourceFlag);
-				}
-			}
-			objList.add(obj);
 		}
 		return objList;
 	}
@@ -86,14 +101,17 @@ public class PostBatch {
 	private void deteal200170() throws Exception {
 		int handler = 200170;
 		List<Long> pidList = getPidByHandler(handler);
+		log.info("特殊处理200170pids:"+pidList.toString());
 		OperationResult operationResult=new OperationResult();
 		List<BasicObj> objList = new ArrayList<BasicObj>();
-		 Set<String> tabNames = new HashSet<String>();
-		 tabNames.add("IX_POI_NAME");
-		 tabNames.add("IX_POI_ADDRESS");
 		for (Long pid:pidList) {
-			BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", tabNames, pid, false);
-			objList.add(obj);
+			List<BasicObj> allObj = opResult.getAllObjs();
+			for (BasicObj obj:allObj) {
+				IxPoi ixPoi = (IxPoi) obj.getMainrow();
+				if (ixPoi.getPid() == pid) {
+					objList.add(obj);
+				}
+			}
 		}
 		operationResult.putAll(objList);
 		
@@ -110,12 +128,14 @@ public class PostBatch {
 		Check check=new Check(conn,operationResult);
 		check.operate(checkCommand);
 		Map<String, Map<Long, Set<String>>> checkResult = check.getErrorPidMap();
-		// 打上052标记
-		Map<Long, Set<String>> poiMap = checkResult.get("IX_POI");
-		Set<String> workItem = new HashSet<String>();
-		workItem.add("FM-YW-20-052");
-		for (Long pid:poiMap.keySet()) {
-			updateColumnStatus(pid,workItem,1);
+		if(checkResult!=null){
+			// 打上052标记
+			Map<Long, Set<String>> poiMap = checkResult.get("IX_POI");
+			Set<String> workItem = new HashSet<String>();
+			workItem.add("FM-YW-20-052");
+			for (Long pid:poiMap.keySet()) {
+				updateColumnStatus(pid,workItem,1);
+			}
 		}
 		// 执行批处理FM-BAT-20-135,FM-BAT-20-163
 		batchCommand=new BatchCommand();
@@ -123,6 +143,7 @@ public class PostBatch {
 		batchCommand.setRuleId("FM-BAT-20-163");
 		batch=new Batch(conn,operationResult);
 		batch.operate(batchCommand);
+		persistBatch(batch);
 	}
 	
 	// 200140与201150特殊处理
@@ -131,14 +152,17 @@ public class PostBatch {
 		List<Long> pidList = getPidByHandler(handler);
 		handler = 200150;
 		pidList.addAll(getPidByHandler(handler));
+		log.info("特殊处理200140和200150:"+pidList.toString());
 		OperationResult operationResult=new OperationResult();
 		List<BasicObj> objList = new ArrayList<BasicObj>();
-		 Set<String> tabNames = new HashSet<String>();
-		 tabNames.add("IX_POI_NAME");
-		 tabNames.add("IX_POI_ADDRESS");
 		for (Long pid:pidList) {
-			BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", tabNames, pid, false);
-			objList.add(obj);
+			List<BasicObj> allObj = opResult.getAllObjs();
+			for (BasicObj obj:allObj) {
+				IxPoi ixPoi = (IxPoi) obj.getMainrow();
+				if (ixPoi.getPid() == pid) {
+					objList.add(obj);
+				}
+			}
 		}
 		operationResult.putAll(objList);
 		
@@ -147,20 +171,24 @@ public class PostBatch {
 		batchCommand.setRuleId("FM-BAT-20-115");
 		Batch batch=new Batch(conn,operationResult);
 		batch.operate(batchCommand);
+		persistBatch(batch);
 	}
 	
 	// 201250特殊处理
 	private void deteal201250() throws Exception {
 		int handler = 201250;
 		List<Long> pidList = getPidByHandler(handler);
+		log.info("特殊处理200150:"+pidList.toString());
 		OperationResult operationResult=new OperationResult();
 		List<BasicObj> objList = new ArrayList<BasicObj>();
-		 Set<String> tabNames = new HashSet<String>();
-		 tabNames.add("IX_POI_NAME");
-		 tabNames.add("IX_POI_ADDRESS");
 		for (Long pid:pidList) {
-			BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", tabNames, pid, false);
-			objList.add(obj);
+			List<BasicObj> allObj = opResult.getAllObjs();
+			for (BasicObj obj:allObj) {
+				IxPoi ixPoi = (IxPoi) obj.getMainrow();
+				if (ixPoi.getPid() == pid) {
+					objList.add(obj);
+				}
+			}
 		}
 		operationResult.putAll(objList);
 		
@@ -169,6 +197,11 @@ public class PostBatch {
 		batchCommand.setRuleId("FM-BAT-20-125");
 		Batch batch=new Batch(conn,operationResult);
 		batch.operate(batchCommand);
+		persistBatch(batch);
+	}
+
+	private void persistBatch(Batch batch) throws Exception {
+		batch.persistChangeLog(OperationSegment.SG_COLUMN, 0);//FIXME:修改默认的用户
 	}
 	
 	// 获取需特殊处理的数据的pid
@@ -231,6 +264,28 @@ public class PostBatch {
 				pstmt = conn.prepareStatement(sb.toString());
 				pstmt.execute();
 			}
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DBUtils.closeStatement(pstmt);
+		}
+	}
+	
+	// 后批完成，handler置0
+	private void updateHandler() throws Exception {
+		String sql = "UPDATE poi_column_status SET handler=0 WHERE pid in (select to_number(column_value) from table(clob_to_table(?)))";
+		PreparedStatement pstmt = null;
+		try {
+			Map<String, Map<Long, BasicObj>> ObjMap = opResult.getAllObjsMap();
+			Map<Long, BasicObj> poiMap = ObjMap.get("IX_POI");
+			Set<Long> pids = poiMap.keySet();
+			Clob pidsClob = ConnectionUtil.createClob(conn);
+			pidsClob.setString(1, StringUtils.join(pids, ","));
+			
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setClob(1, pidsClob);
+			pstmt.executeUpdate();
+			
 		} catch (Exception e) {
 			throw e;
 		} finally {

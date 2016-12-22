@@ -359,10 +359,20 @@ public class Operation implements IOperation {
                                   Result result) throws Exception {
         // 计算Link图幅范围
         Iterator<String> it = meshes.iterator();
-        Map<Coordinate, Integer> maps = new HashMap<Coordinate, Integer>();
-        Geometry g = GeoTranslator.transform(this.command.getUpdateLink()
-                .getGeometry(), 0.00001, 5);
-        // 容器中加入原有link的起始点信息
+		Map<Coordinate, Integer> maps = new HashMap<Coordinate, Integer>();
+		
+		// Geometry g = GeoTranslator.transform(this.command.getUpdateLink()
+		// .getGeometry(), 0.00001, 5);
+
+		// // 容器中加入原有link的起始点信息
+		// maps.put(g.getCoordinates()[0], this.command.getUpdateLink()
+		// .getsNodePid());
+		// maps.put(g.getCoordinates()[g.getCoordinates().length - 1],
+		// this.command.getUpdateLink().geteNodePid());
+
+		Geometry g = GeoTranslator.transform(this.command.getLinkGeom(),
+				0.00001, 5);
+        // 容器中加入更新几何后原有link的起始点信息
         maps.put(g.getCoordinates()[0], this.command.getUpdateLink()
                 .getsNodePid());
         maps.put(g.getCoordinates()[g.getCoordinates().length - 1],

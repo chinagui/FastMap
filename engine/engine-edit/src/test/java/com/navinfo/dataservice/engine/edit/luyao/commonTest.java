@@ -471,6 +471,25 @@ public class commonTest extends InitApplication {
 		System.out.print("");
 	}
 	
+	
+	
+		@Test
+	public void isRegex() {
+		
+		String value="0a";
+		
+		String regex = "^(09|0a|0b|12|0c|11|19|21|06|01|00|02|22|03|04|05|24|33|52|51|43|61|14)$";
+		
+		Pattern pattern = Pattern.compile(regex);
+		
+		Matcher matcher=pattern.matcher(value);
+		boolean key= matcher.matches();
+		
+		System.out.print("");
+	}
+	
+	
+	
 	@Test
 	public void testMap() {
 

@@ -157,13 +157,11 @@ public class Operation implements IOperation {
         if (updateJson.containsKey("mainType")) {
             String mainType = updateJson.getString("mainType");
             if (mainType.equals(ObjType.ZONENODE.toString())) {
-                com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create.Operation sameNodeOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create.Operation(
-                        null, this.conn);
+                com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create.Operation sameNodeOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create.Operation(null, this.conn);
                 sameNodeOperation.moveMainNodeForTopo(this.command.getJson(), ObjType.ZONENODE, result);
             }
         } else {
-            com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create.Operation sameNodeOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create.Operation(
-                    null, this.conn);
+            com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create.Operation sameNodeOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create.Operation(null, this.conn);
             sameNodeOperation.moveMainNodeForTopo(this.command.getJson(), ObjType.ZONENODE, result);
         }
 
@@ -223,10 +221,8 @@ public class Operation implements IOperation {
 
         // 组装打断线的参数
         // 保证是同一个连接
-        com.navinfo.dataservice.engine.edit.operation.obj.zonenode.update.Command updatecommand = new com.navinfo.dataservice.engine.edit.operation.obj.zonenode.update.Command(
-                updateNodeJson, command.getRequester());
-        com.navinfo.dataservice.engine.edit.operation.obj.zonenode.update.Process process = new com.navinfo.dataservice.engine.edit.operation.obj.zonenode.update.Process(
-                updatecommand, result, conn);
+        com.navinfo.dataservice.engine.edit.operation.obj.zonenode.update.Command updatecommand = new com.navinfo.dataservice.engine.edit.operation.obj.zonenode.update.Command(updateNodeJson, command.getRequester());
+        com.navinfo.dataservice.engine.edit.operation.obj.zonenode.update.Process process = new com.navinfo.dataservice.engine.edit.operation.obj.zonenode.update.Process(updatecommand, result, conn);
         process.innerRun();
     }
 
@@ -238,7 +234,6 @@ public class Operation implements IOperation {
      */
     private void updateFaceGeomtry(Result result) throws Exception {
         if (command.getFaces() != null && command.getFaces().size() > 0) {
-
             for (ZoneFace face : command.getFaces()) {
                 boolean flag = false;
                 List<ZoneLink> links = new ArrayList<ZoneLink>();
@@ -252,22 +247,18 @@ public class Operation implements IOperation {
                     } else {
                         links.add((ZoneLink) new ZoneLinkSelector(conn).loadById(obj.getLinkPid(), true));
                     }
-
                     result.insertObject(obj, ObjStatus.DELETE, face.getPid());
-
                 }
                 if (flag) {
                     // 如果跨图幅需要重新生成面并且删除原有面信息
-                    com.navinfo.dataservice.engine.edit.operation.obj.zoneface.create.Operation opFace = new com.navinfo.dataservice.engine.edit.operation.obj.zoneface.create.Operation(
-                            result);
+                    com.navinfo.dataservice.engine.edit.operation.obj.zoneface.create.Operation opFace = new com.navinfo.dataservice.engine.edit.operation.obj.zoneface.create.Operation(conn, result);
                     List<IObj> objs = new ArrayList<IObj>();
                     objs.addAll(links);
                     opFace.createFaceByZoneLink(objs);
                     result.insertObject(face, ObjStatus.DELETE, face.getPid());
                 } else {
                     // 如果不跨图幅只需要维护面的行政几何
-                    com.navinfo.dataservice.engine.edit.operation.obj.zoneface.create.Operation opFace = new com.navinfo.dataservice.engine.edit.operation.obj.zoneface.create.Operation(
-                            result, face);
+                    com.navinfo.dataservice.engine.edit.operation.obj.zoneface.create.Operation opFace = new com.navinfo.dataservice.engine.edit.operation.obj.zoneface.create.Operation(conn, result, face);
                     opFace.reCaleFaceGeometry(links);
                 }
 

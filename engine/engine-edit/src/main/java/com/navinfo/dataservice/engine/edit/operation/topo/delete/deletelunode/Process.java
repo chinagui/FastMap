@@ -113,13 +113,6 @@ public class Process extends AbstractProcess<Command> {
 	@Override
 	public boolean prepareData() throws Exception {
 
-		// 检查是否可以删除
-		String msg = preCheck();
-
-		if (null != msg) {
-			throw new Exception(msg);
-		}
-
 		lockLuNode();
 
 		if (this.getCommand().getNode() == null) {
@@ -158,7 +151,7 @@ public class Process extends AbstractProcess<Command> {
 		
 		updataRelationObj() ;
 		// 删除土地利用点有关土地利用面具体操作
-		return new OpRefLuFace(this.getCommand()).run(this.getResult());
+		return new OpRefLuFace(this.getCommand(), getConn()).run(this.getResult());
 	}
 
 	

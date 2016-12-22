@@ -35,18 +35,15 @@ public class Process extends AbstractProcess<Command> {
 		return false;
 	}
 
-
 	public String innerRun() throws Exception {
 		try {
 			this.prepareData();
+			IOperation operation = new Operation(this.getCommand());
+			operation.run(this.getResult());
 			String preCheckMsg = this.preCheck();
 			if (preCheckMsg != null) {
 				throw new Exception(preCheckMsg);
 			}
-			IOperation operation = new Operation(this.getCommand());
-			operation.run(this.getResult());
-			this.postCheck();
-
 		} catch (Exception e) {
 
 			getConn().rollback();

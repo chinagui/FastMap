@@ -366,12 +366,11 @@ public class RdBranchSelector extends AbstractSelector {
 		return branchs;
 	}
 
-	public List<RdBranch> loadRdBranchByLinkNode(int linkPid, int nodePid1,
-			int nodePid2, boolean isLock) throws Exception {
+	public List<RdBranch> loadRdBranchByLinkNode(int linkPid, int nodePid, boolean isLock) throws Exception {
 
 		List<RdBranch> branchs = new ArrayList<RdBranch>();
 
-		String sql = "select * from rd_branch where node_pid in (:1,:2) and in_link_pid=:3 and u_record!=2";
+		String sql = "select * from rd_branch where node_pid =:1 and in_link_pid=:2 and u_record!=2";
 
 		if (isLock) {
 			sql += " for update nowait";
@@ -384,11 +383,9 @@ public class RdBranchSelector extends AbstractSelector {
 		try {
 			pstmt = conn.prepareStatement(sql);
 
-			pstmt.setInt(1, nodePid1);
+			pstmt.setInt(1, nodePid);
 
-			pstmt.setInt(2, nodePid2);
-
-			pstmt.setInt(3, linkPid);
+			pstmt.setInt(2, linkPid);
 
 			resultSet = pstmt.executeQuery();
 

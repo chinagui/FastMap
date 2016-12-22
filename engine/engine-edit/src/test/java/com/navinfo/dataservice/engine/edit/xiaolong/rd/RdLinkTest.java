@@ -95,7 +95,7 @@ public class RdLinkTest extends InitApplication {
 
 	@Test
 	public void testAddRdLink() {
-		String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDRESTRICTION\",\"dbId\":17,\"data\":{\"details\":[{\"outLinkPid\":220002834,\"pid\":220000045,\"objStatus\":\"UPDATE\"}],\"pid\":220000030}}";
+		String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDGSC\",\"dbId\":17,\"data\":{\"links\":[{\"zlevel\":0,\"rowId\":\"999371EFDE7745B69D6ABA528CBBADBA\",\"pid\":209000014,\"objStatus\":\"UPDATE\",\"linkPid\":203003055},{\"zlevel\":1,\"rowId\":\"0FEED82F0ACC4CC5BD99A33D819FF0D6\",\"pid\":209000014,\"objStatus\":\"UPDATE\",\"linkPid\":203003056}],\"pid\":209000014}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
@@ -132,7 +132,7 @@ public class RdLinkTest extends InitApplication {
 	@Test
 	public void testGetByElementCondition()
 	{
-		String parameter = "{\"dbId\":17,\"pageNum\":1,\"pageSize\":5,\"data\":{\"pid\":\"2077881\"},\"type\":\"RDROAD\"}";
+		String parameter = "{\"dbId\":17,\"pageNum\":1,\"pageSize\":5,\"data\":{\"pid\":\"300000041\"},\"type\":\"RDLANECONNEXITY\"}";
 
 		Connection conn = null;
 

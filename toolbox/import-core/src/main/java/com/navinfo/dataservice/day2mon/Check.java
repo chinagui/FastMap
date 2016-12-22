@@ -24,36 +24,41 @@ public class Check {
 	}
 	public Map<String, Map<Long, Set<String>>> execute() throws Exception{
 		// 检查
+		log.info("开始执行检查");
 		CheckCommand checkCommand=new CheckCommand();		
-		List<String> checkList=new ArrayList<String>();
-		checkList.add("FM-A04-04");
-		checkList.add("FM-A04-05");
-		checkList.add("FM-A04-08");
-		checkList.add("FM-A04-10");
-		checkList.add("FM-A04-21");
-		checkList.add("FM-A04-09");
-		checkList.add("FM-A07-01");
-		checkList.add("FM-A07-03");
-		checkList.add("FM-A07-02");
-		checkList.add("FM-A07-11");
-		checkList.add("FM-A07-12");
-		checkList.add("FM-A04-18");
-		
-		checkList.add("FM-A09-01");
-		checkList.add("FM-YW-20-026");
-		
-		checkList.add("FM-YW-20-012");
-		checkList.add("FM-YW-20-013");
-		checkList.add("FM-YW-20-014");
-		checkList.add("FM-YW-20-017");
-		
-		checkList.add("FM-YW-20-018");
-		checkList.add("FM-GLM60189");
-		checkCommand.setRuleIdList(checkList);
+//		List<String> checkList=new ArrayList<String>();
+//		checkList.add("FM-A04-04");
+//		checkList.add("FM-A04-05");
+//		checkList.add("FM-A04-08");
+//		checkList.add("FM-A04-10");
+//		checkList.add("FM-A04-21");
+//		checkList.add("FM-A04-09");
+//		checkList.add("FM-A07-01");
+//		checkList.add("FM-A07-03");
+//		checkList.add("FM-A07-02");
+//		checkList.add("FM-A07-11");
+//		checkList.add("FM-A07-12");
+//		checkList.add("FM-A04-18");
+//		
+//		checkList.add("FM-A09-01");
+//		checkList.add("FM-YW-20-026");
+//		
+//		checkList.add("FM-YW-20-012");
+//		checkList.add("FM-YW-20-013");
+//		checkList.add("FM-YW-20-014");
+//		checkList.add("FM-YW-20-017");
+//		
+//		checkList.add("FM-YW-20-018");
+//		checkList.add("FM-GLM60189");
+//		checkCommand.setRuleIdList(checkList);
+		checkCommand.setOperationName("CHECK_DAY2MONTH");
+		checkCommand.setSaveResult(false);
+//		log.info("要执行的检查项:"+checkList.toString());
 		
 		com.navinfo.dataservice.engine.editplus.batchAndCheck.check.Check check=new com.navinfo.dataservice.engine.editplus.batchAndCheck.check.Check(conn,opResult);
 		check.operate(checkCommand);
 		
+		log.info("检查完成");
 		return check.getErrorPidMap();
 	}
 }

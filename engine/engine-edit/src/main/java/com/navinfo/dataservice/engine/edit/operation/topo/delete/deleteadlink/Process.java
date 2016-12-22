@@ -15,91 +15,84 @@ import com.navinfo.dataservice.engine.edit.operation.AbstractProcess;
 
 public class Process extends AbstractProcess<Command> {
 
-	public Process(AbstractCommand command) throws Exception {
-		super(command);
+    public Process(AbstractCommand command) throws Exception {
+        super(command);
 
-	}
+    }
 
-	public void lockAdLink() throws Exception {
+    public void lockAdLink() throws Exception {
 
-		AdLinkSelector selector = new AdLinkSelector(this.getConn());
+        AdLinkSelector selector = new AdLinkSelector(this.getConn());
 
-		AdLink link = (AdLink) selector.loadById(this.getCommand().getLinkPid(), true);
+        AdLink link = (AdLink) selector.loadById(this.getCommand().getLinkPid(), true);
 
-		this.getCommand().setLink(link);
-	}
+        this.getCommand().setLink(link);
+    }
 
-	// 锁定盲端节点
-	public void lockAdNode() throws Exception {
+    // 锁定盲端节点
+    public void lockAdNode() throws Exception {
 
-		AdNodeSelector selector = new AdNodeSelector(this.getConn());
+        AdNodeSelector selector = new AdNodeSelector(this.getConn());
 
-		List<AdNode> nodes = selector.loadEndAdNodeByLinkPid(this.getCommand().getLinkPid(), false);
+        List<AdNode> nodes = selector.loadEndAdNodeByLinkPid(this.getCommand().getLinkPid(), false);
 
-		List<Integer> nodePids = new ArrayList<Integer>();
+        List<Integer> nodePids = new ArrayList<Integer>();
 
-		for (AdNode node : nodes) {
-			nodePids.add(node.getPid());
-		}
-		this.getCommand().setNodes(nodes);
+        for (AdNode node : nodes) {
+            nodePids.add(node.getPid());
+        }
+        this.getCommand().setNodes(nodes);
 
-		this.getCommand().setNodePids(nodePids);
-	}
+        this.getCommand().setNodePids(nodePids);
+    }
 
-	// 锁定盲端节点
-	public void lockAdFace() throws Exception {
-		AdFaceSelector selector = new AdFaceSelector(this.getConn());
-		List<AdFace> faces = selector.loadAdFaceByLinkId(this.getCommand().getLinkPid(), true);
-		this.getCommand().setFaces(faces);
-	}
+    // 锁定盲端节点
+    public void lockAdFace() throws Exception {
+        AdFaceSelector selector = new AdFaceSelector(this.getConn());
+        List<AdFace> faces = selector.loadAdFaceByLinkId(this.getCommand().getLinkPid(), true);
+        this.getCommand().setFaces(faces);
+    }
 
-	@Override
-	public boolean prepareData() throws Exception {
+    @Override
+    public boolean prepareData() throws Exception {
 
-		// 检查link是否可以删除
-		String msg = preCheck();
+        // 获取该link对象
+        lockAdLink();
 
-		if (null != msg) {
-			throw new Exception(msg);
-		}
+        if (this.getCommand().getLink() == null) {
 
-		// 获取该link对象
-		lockAdLink();
+            throw new Exception("指定删除的LINK不存在！");
+        }
 
-		if (this.getCommand().getLink() == null) {
+        lockAdNode();
+        lockAdFace();
+        return true;
+    }
 
-			throw new Exception("指定删除的LINK不存在！");
-		}
+    @Override
+    public String exeOperation() throws Exception {
+        // 删除行政区划线有关行政区划点、线具体操作
+        IOperation op = new OpTopo(this.getCommand());
+        op.run(this.getResult());
+        // 同一点关系
+        OpRefRdSameNode opRefRdSameNode = new OpRefRdSameNode(getConn());
+        opRefRdSameNode.run(getResult(), this.getCommand().getNodePids());
 
-		lockAdNode();
-		lockAdFace();
-		return true;
-	}
+        updataRelationObj();
+        // 删除行政区划线有关行政区划面具体操作
+        IOperation opAdFace = new OpRefAdFace(this.getCommand(), getConn());
+        return opAdFace.run(this.getResult());
+    }
 
-	@Override
-	public String exeOperation() throws Exception {
-		// 删除行政区划线有关行政区划点、线具体操作
-		IOperation op = new OpTopo(this.getCommand());
-		op.run(this.getResult());
-		// 同一点关系
-		OpRefRdSameNode opRefRdSameNode = new OpRefRdSameNode(getConn());
-		opRefRdSameNode.run(getResult(), this.getCommand().getNodePids());
-		
-		updataRelationObj();
-		// 删除行政区划线有关行政区划面具体操作
-		IOperation opAdFace = new OpRefAdFace(this.getCommand());
-		return opAdFace.run(this.getResult());
-	}
-	
-	/**
-	 * 维护关联要素
-	 * 
-	 * @throws Exception
-	 */
-	private void updataRelationObj() throws Exception {
-		OpRefRelationObj opRefRelationObj = new OpRefRelationObj(getConn());
+    /**
+     * 维护关联要素
+     *
+     * @throws Exception
+     */
+    private void updataRelationObj() throws Exception {
+        OpRefRelationObj opRefRelationObj = new OpRefRelationObj(getConn());
 
-		opRefRelationObj.handleSameLink(this.getResult(), this.getCommand());
-	}
+        opRefRelationObj.handleSameLink(this.getResult(), this.getCommand());
+    }
 
 }

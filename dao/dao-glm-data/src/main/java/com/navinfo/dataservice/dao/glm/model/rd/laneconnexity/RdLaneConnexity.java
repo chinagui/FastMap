@@ -51,6 +51,11 @@ public class RdLaneConnexity implements IObj {
 
 	}
 
+	public String getRowId() {
+		return rowId;
+	}
+
+
 	public int getPid() {
 		return pid;
 	}

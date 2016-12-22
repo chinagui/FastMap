@@ -3,6 +3,7 @@ package com.navinfo.dataservice.engine.meta.service;
 import java.sql.Connection;
 import java.util.List;
 import java.util.Map;
+import net.sf.json.JSONObject;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.dbutils.DbUtils;
@@ -16,6 +17,8 @@ import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.engine.meta.area.ScPointAdminArea;
 import com.navinfo.dataservice.engine.meta.area.ScPointDeepPlanarea;
 import com.navinfo.dataservice.engine.meta.chain.ChainSelector;
+import com.navinfo.dataservice.engine.meta.character.TyCharacterEgalcharExt;
+import com.navinfo.dataservice.engine.meta.character.TyCharacterFjtHzCheckSelector;
 import com.navinfo.dataservice.engine.meta.character.TyCharacterEgalcharExtCheckSelector;
 import com.navinfo.dataservice.engine.meta.character.TyCharacterFjtHmCheckSelector;
 import com.navinfo.dataservice.engine.meta.engshort.ScEngshortSelector;
@@ -32,6 +35,7 @@ import com.navinfo.dataservice.engine.meta.scPointSpecKindcode.ScPointSpecKindco
 import com.navinfo.dataservice.engine.meta.tmc.selector.TmcSelector;
 import com.navinfo.dataservice.engine.meta.translate.ConvertUtil;
 import com.navinfo.dataservice.engine.meta.translate.EngConverterHelper;
+import com.navinfo.dataservice.engine.meta.wordKind.WordKind;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -226,6 +230,23 @@ public class MetadataApiImpl implements MetadataApi {
 		return ScPointNameck.getInstance().scPointNameckTypeD10();
 	}
 	
+	/**
+	 * 返回SC_POINT_NAMECK中“TYPE”=4且HM_FLAG<>’HM’的PRE_KEY, RESULT_KEY
+	 * @return Map<String,String> key:PRE_KEY,value:RESULT_KEY
+	 * @throws Exception
+	 */
+	@Override
+	public Map<String, String> scPointNameckTypeD4() throws Exception {
+		// TODO Auto-generated method stub
+		return ScPointNameck.getInstance().scPointNameckTypeD4();
+	}
+	
+	@Override
+	public Map<String, String> scPointNameckTypeD3() throws Exception {
+		// TODO Auto-generated method stub
+		return ScPointNameck.getInstance().scPointNameckTypeD3();
+	}
+	
 	@Override
 	public Map<String, String> scPointNameckTypeD5() throws Exception {
 		// TODO Auto-generated method stub
@@ -288,5 +309,41 @@ public class MetadataApiImpl implements MetadataApi {
 	@Override
 	public String convFull2Half(String word) throws Exception {
 		 return ConvertUtil.convFull2Half(word);
+	}
+	/**
+	 * 返回“TY_CHARACTER_EGALCHAR_EXT”表中数据。
+	 * @return Map<String, List<String>> key:EXTENTION_TYPE value:CHARACTER字段列表
+	 * @throws Exception
+	 */
+	@Override
+	public Map<String, List<String>> tyCharacterEgalcharExtGetExtentionTypeMap()
+			throws Exception {
+		return TyCharacterEgalcharExt.getInstance().getExtentionTypeMap();
+	}
+	/**
+	 * 返回“TY_CHARACTER_FJT_HZ”表中数据。
+	 * @return Map<String, JSONObject> key:ft value:对应其它
+	 * @throws Exception
+	 */
+	@Override
+	public Map<String, JSONObject> tyCharacterFjtHzCheckSelectorGetFtExtentionTypeMap()
+			throws Exception {
+		return TyCharacterFjtHzCheckSelector.getInstance().getFtExtentionTypeMap();
+	}
+	
+	/**
+	 * 返回“TY_CHARACTER_FJT_HZ”表中数据。
+	 * @return Map<String, JSONObject> key:jt value:对应其它
+	 * @throws Exception
+	 */
+	@Override
+	public Map<String, JSONObject> tyCharacterFjtHzCheckSelectorGetJtExtentionTypeMap()
+			throws Exception {
+		return TyCharacterFjtHzCheckSelector.getInstance().getJtExtentionTypeMap();
+	}
+
+	@Override
+	public String wordKind(String kindCode,String chain) throws Exception {
+		return WordKind.getInstance().getWordKind(kindCode, chain);
 	}
 }

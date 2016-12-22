@@ -44,22 +44,12 @@ public class Batch extends AbstractOperation{
 		Map<String, Set<String>> selConfig=new HashMap<String, Set<String>>();
 		List<BatchRule> batchRuleList=new ArrayList<BatchRule>();
 		for(String ruleId:batchCommand.getRuleIdList()){
+			log.info("rule ID:"+ruleId);
 			BatchRule rule=BatchRuleLoader.getInstance().loadByRuleId(ruleId);
-			/*BatchRule rule=new BatchRule();
-			rule.setAccessorType("JAVA");
-			rule.setAccessor("com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.rule.GLM001TEST");
-			Set<String> objNameSet=new HashSet<String>();
-			objNameSet.add(ObjectName.IX_POI);
-			objNameSet.add(ObjectName.AD_LINK);
-			//"IX_POI,AD_LINK"
-			rule.setObjNameSet(objNameSet);
-			Map<String, Set<String>> referSubtableMap=new HashMap<String, Set<String>>();
-			Set<String> objNameSetsub=new HashSet<String>();
-			objNameSetsub.add("IX_POI_NAME");
-			referSubtableMap.put("IX_POI", objNameSetsub);
-			//{"IX_POI":{"IX_POI_NAME","IX_POI_CHILDREN"}}
-			rule.setReferSubtableMap(referSubtableMap);
-			//rule.setChangeReferData(true);*/
+			if (rule ==null) {
+				log.warn("批处理规则加载失败，rule ID:"+ruleId);
+				continue;
+			}
 			batchRuleList.add(rule);
 			Map<String, Set<String>> tmpMap = rule.getReferSubtableMap();
 			for(String manObjName:tmpMap.keySet()){

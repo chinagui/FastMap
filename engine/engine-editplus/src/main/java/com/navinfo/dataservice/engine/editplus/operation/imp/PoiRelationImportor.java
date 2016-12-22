@@ -29,6 +29,10 @@ import com.navinfo.navicommons.exception.ServiceException;
  * @author xiaoxiaowen4127
  * @date 2016年11月25日
  * @Description: PoiRelationImportor.java
+ * POI关系维护：父子关系，同一关系，目前只实现了父子关系
+ * 父子关系传参：PoiRelation
+ * 			若删除父子关系，则fatherPid=0&&fatherFid=null/""
+ * 			若对象删除，父子关系维护同删除父子关系。
  */
 public class PoiRelationImportor extends AbstractOperation{
 	protected Logger log = Logger.getLogger(this.getClass());
@@ -227,7 +231,7 @@ public class PoiRelationImportor extends AbstractOperation{
 			//加载子对象原始父对象
 			Map<Long,BasicObj> originParentMap = new HashMap<Long,BasicObj>();
 			if(!childPidOriginParentPidNeedToBeLoad.isEmpty()){
-				originParentMap = ObjBatchSelector.selectByPids(conn, ObjectName.IX_POI, tabNames, childPidOriginParentPidNeedToBeLoad.values(), true, true);
+				originParentMap = ObjBatchSelector.selectByPids(conn, ObjectName.IX_POI, tabNames, false,childPidOriginParentPidNeedToBeLoad.values(), true, true);
 			}
 
 			log.info("将缺失的父对象加载到OperationResult");
@@ -258,7 +262,7 @@ public class PoiRelationImportor extends AbstractOperation{
 		//根据fid加载父对象
 		try{
 			if(!parentFidChildPid.keySet().isEmpty()){
-				Map<Long,BasicObj> objs = ObjBatchSelector.selectBySpecColumn(conn, ObjectName.IX_POI, tabNames, "POI_NUM", parentFidChildPid.keySet(), true, true);
+				Map<Long,BasicObj> objs = ObjBatchSelector.selectBySpecColumn(conn, ObjectName.IX_POI, tabNames,false, "POI_NUM", parentFidChildPid.keySet(), true, true);
 				for(BasicObj obj:objs.values()){
 					if(!result.isObjExist(obj)){
 						result.putObj(obj);
@@ -301,7 +305,7 @@ public class PoiRelationImportor extends AbstractOperation{
 		//根据Pid加载父对象
 		try{
 			if(!parentPidChildPid.keySet().isEmpty()){
-				Map<Long,BasicObj> objs = ObjBatchSelector.selectByPids(conn, ObjectName.IX_POI, tabNames, parentPidChildPid.keySet(), true, true);
+				Map<Long,BasicObj> objs = ObjBatchSelector.selectByPids(conn, ObjectName.IX_POI, tabNames,false, parentPidChildPid.keySet(), true, true);
 				//父对象加入OperationResult
 				for(BasicObj obj:objs.values()){
 					if(!result.isObjExist(obj)){

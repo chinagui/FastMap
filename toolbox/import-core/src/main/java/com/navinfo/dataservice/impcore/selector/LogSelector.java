@@ -48,6 +48,8 @@ public abstract class LogSelector {
 			logOperationCount+=selectLog(conn);
 			logOperationCount+=extendLog(conn);
 			String lockSql = getOperationLockSql();
+			log.debug("logOperationCount:"+logOperationCount);
+			log.debug("lockSql"+lockSql);
 			if(StringUtils.isNotEmpty(lockSql)){
 				int result = run.update(conn, lockSql);
 				if(result<logOperationCount){

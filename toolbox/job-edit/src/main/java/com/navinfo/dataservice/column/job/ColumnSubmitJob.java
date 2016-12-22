@@ -23,8 +23,12 @@ import com.navinfo.dataservice.control.column.core.DeepCoreControl;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.PoiColumnOpConf;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiColumnStatusSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiOpConfSelector;
+import com.navinfo.dataservice.dao.plus.log.LogDetail;
+import com.navinfo.dataservice.dao.plus.log.ObjHisLogParser;
+import com.navinfo.dataservice.dao.plus.log.PoiLogDetailStat;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
+import com.navinfo.dataservice.dao.plus.operation.OperationSegment;
 import com.navinfo.dataservice.dao.plus.selector.ObjSelector;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.Batch;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.BatchCommand;
@@ -33,15 +37,13 @@ import com.navinfo.dataservice.engine.editplus.batchAndCheck.check.CheckCommand;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
 public class ColumnSubmitJob extends AbstractJob {
 	
 	public ColumnSubmitJob(JobInfo jobInfo) {
 		super(jobInfo);
 	}
 
+	@SuppressWarnings("static-access")
 	@Override
 	public void execute() throws JobException {
 		
@@ -67,27 +69,49 @@ public class ColumnSubmitJob extends AbstractJob {
 			// TODO 区分大陆/港澳
 			int type = 1;
 			
-			// 查询可提交数据
-			IxPoiColumnStatusSelector ixPoiDeepStatusSelector = new IxPoiColumnStatusSelector(conn);
-			pidList = ixPoiDeepStatusSelector.getRowIdForSubmit(firstWorkItem, secondWorkItem, taskId);
+			IxPoiOpConfSelector ixPoiOpConfSelector = new IxPoiOpConfSelector(conn);
 			
+			IxPoiColumnStatusSelector ixPoiDeepStatusSelector = new IxPoiColumnStatusSelector(conn);
+			
+			List<String> secondWorkList = new ArrayList<String>();
+			if (secondWorkItem == null || secondWorkItem.isEmpty()) {
+				secondWorkList = ixPoiOpConfSelector.getSecondByFirst(firstWorkItem, type);
+			} else {
+				secondWorkList.add(secondWorkItem);
+			}
+			for (String second:secondWorkList) {
+				// 查询可提交数据
+				pidList = ixPoiDeepStatusSelector.getRowIdForSubmit(firstWorkItem, second, taskId);
+				
 			// 清理检查结果
 			DeepCoreControl deepControl = new DeepCoreControl();
 			deepControl.cleanCheckResult(pidList, conn);
 			
 			OperationResult operationResult=new OperationResult();
 			
-			List<BasicObj> objList = new ArrayList<BasicObj>();
-			for (int pid:pidList) {
-				BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", null, pid, false);
-				objList.add(obj);
+				List<Long> pids = new ArrayList<Long>();
+				for (int pid:pidList) {
+					pids.add((long)pid);
+				}
 				
-			}
+				PoiLogDetailStat logDetail = new PoiLogDetailStat();
+				Map<Long,List<LogDetail>> submitLogs = logDetail.loadByColEditStatus(conn, pids, userId, taskId, firstWorkItem, second);
+			List<BasicObj> objList = new ArrayList<BasicObj>();
+				ObjHisLogParser logParser = new ObjHisLogParser();
+			for (int pid:pidList) {
+				BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", null,true, pid, false);
+					if (submitLogs.containsKey(pid)) {
+						logParser.parse(obj, submitLogs.get(pid));
+					}
+				objList.add(obj);
+				}
+				
+				
 			operationResult.putAll(objList);
 			
-			IxPoiOpConfSelector ixPoiOpConfSelector = new IxPoiOpConfSelector(conn);
-			PoiColumnOpConf columnOpConf = ixPoiOpConfSelector.getDeepOpConf(firstWorkItem,secondWorkItem, type);
 			
+				PoiColumnOpConf columnOpConf = ixPoiOpConfSelector.getDeepOpConf(firstWorkItem,second, type);
+				
 			// 批处理
 			if (columnOpConf.getSaveExebatch() == 1) {
 				BatchCommand batchCommand=new BatchCommand();		
@@ -97,6 +121,7 @@ public class ColumnSubmitJob extends AbstractJob {
 				
 				Batch batch=new Batch(conn,operationResult);
 				batch.operate(batchCommand);
+					batch.persistChangeLog(OperationSegment.SG_COLUMN, userId);
 			}
 			
 			// 检查
@@ -135,6 +160,17 @@ public class ColumnSubmitJob extends AbstractJob {
 				ColumnCoreOperation columnCoreOperation = new ColumnCoreOperation();
 				columnCoreOperation.runClassify(classifyMap,conn);
 			}
+			
+			// 清理重分类检查结果
+			List<String> ckRules = new ArrayList<String>();
+			String classifyrules = columnOpConf.getSaveClassifyrules();
+			for (String classifyrule:classifyrules.split(",")) {
+				ckRules.add(classifyrule);
+			}
+			deepControl.cleanExByCkRule(conn, pidList, ckRules, "IX_POI");
+			}
+			
+			conn.commit();
 			
 		} catch (Exception e) {
 			throw new JobException(e);

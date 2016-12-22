@@ -64,8 +64,10 @@ public class GLM04003 extends baseRule{
 			sb.append(" AND L.TYPE = 2");
 			sb.append(" AND L.TIME_DOMAIN IS NULL");
 			sb.append(" AND L.VEHICLE <> 0");
-			sb.append(" AND BIT_UTIL.BITSUB(L.VEHICLE, 7, 1) = 0");
-			sb.append(" AND BIT_UTIL.BITSUB(L.VEHICLE, 31, 1) = 1");
+			sb.append(" AND BITAND(L.VEHICLE, 2147483648) = 2147483648");
+			sb.append(" AND BITAND(L.VEHICLE, 128) = 0");
+//			sb.append(" AND BIT_UTIL.BITSUB(L.VEHICLE, 7, 1) = 0");
+//			sb.append(" AND BIT_UTIL.BITSUB(L.VEHICLE, 31, 1) = 1");
 			sb.append(" UNION ALL");
 			sb.append(" SELECT 'EG类型大门的进入和退出link上的“永久车辆限制”信息的“禁止”不能包含“急救车”' LOG");
 			sb.append(" FROM RD_LINK_LIMIT L");
@@ -73,8 +75,10 @@ public class GLM04003 extends baseRule{
 			sb.append(" AND L.TYPE = 2");
 			sb.append(" AND L.TIME_DOMAIN IS NULL");
 			sb.append(" AND L.VEHICLE <> 0");
-			sb.append(" AND BIT_UTIL.BITSUB(L.VEHICLE, 7, 1) = 1");
-			sb.append(" AND BIT_UTIL.BITSUB(L.VEHICLE, 31, 1) = 0");
+			sb.append(" AND BITAND(L.VEHICLE, 2147483648) = 0");
+			sb.append(" AND BITAND(L.VEHICLE, 128) = 128");
+//			sb.append(" AND BIT_UTIL.BITSUB(L.VEHICLE, 7, 1) = 1");
+//			sb.append(" AND BIT_UTIL.BITSUB(L.VEHICLE, 31, 1) = 0");
 			
 			String sql = sb.toString();
 

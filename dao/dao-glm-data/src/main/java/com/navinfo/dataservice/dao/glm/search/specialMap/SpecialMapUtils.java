@@ -606,7 +606,7 @@ public class SpecialMapUtils {
 
 				m.put("a", speedClassWork);
 
-				m.put("d", direct);
+				m.put("d", String.valueOf(direct));
 
 				snapshot.setM(m);
 
@@ -1449,7 +1449,7 @@ public class SpecialMapUtils {
 
 						m.put("a", content.trim());
 
-						m.put("d", direct);
+						m.put("d", String.valueOf(direct));
 
 						snapshot.setM(m);
 
@@ -1483,7 +1483,7 @@ public class SpecialMapUtils {
 
 				m.put("a", content.trim());
 
-				m.put("d", direct);
+				m.put("d", String.valueOf(direct));
 
 				snapshot.setM(m);
 
@@ -1663,7 +1663,7 @@ public class SpecialMapUtils {
 
 						m.put("a", flagType);
 
-						m.put("d", direct);
+						m.put("d", String.valueOf(direct));
 
 						snapshot.setM(m);
 
@@ -1701,7 +1701,7 @@ public class SpecialMapUtils {
 
 				m.put("a", flagType);
 
-				m.put("d", direct);
+				m.put("d", String.valueOf(direct));
 
 				snapshot.setM(m);
 
@@ -1987,7 +1987,7 @@ public class SpecialMapUtils {
 
 						m.put("a", type);
 
-						m.put("d", direct);
+						m.put("d", String.valueOf(direct));
 
 						snapshot.setM(m);
 
@@ -2026,7 +2026,7 @@ public class SpecialMapUtils {
 
 				m.put("a", type);
 
-				m.put("d", direct);
+				m.put("d", String.valueOf(direct));
 
 				snapshot.setM(m);
 
@@ -2274,7 +2274,7 @@ public class SpecialMapUtils {
 
 						m.put("a", type);
 
-						m.put("d", direct);
+						m.put("d", String.valueOf(direct));
 
 						snapshot.setM(m);
 
@@ -2313,7 +2313,7 @@ public class SpecialMapUtils {
 
 				m.put("a", type);
 
-				m.put("d", direct);
+				m.put("d", String.valueOf(direct));
 
 				snapshot.setM(m);
 
@@ -2390,7 +2390,7 @@ public class SpecialMapUtils {
 
 						m.put("a", type);
 
-						m.put("d", direct);
+						m.put("d", String.valueOf(direct));
 
 						snapshot.setM(m);
 
@@ -2429,7 +2429,7 @@ public class SpecialMapUtils {
 
 				m.put("a", type);
 
-				m.put("d", direct);
+				m.put("d", String.valueOf(direct));
 
 				snapshot.setM(m);
 
@@ -2533,7 +2533,7 @@ public class SpecialMapUtils {
 
 						m.put("a", type);
 
-						m.put("d", direct);
+						m.put("d", String.valueOf(direct));
 
 						snapshot.setM(m);
 
@@ -2572,7 +2572,7 @@ public class SpecialMapUtils {
 
 				m.put("a", type);
 
-				m.put("d", direct);
+				m.put("d", String.valueOf(direct));
 
 				snapshot.setM(m);
 
@@ -2740,7 +2740,7 @@ public class SpecialMapUtils {
 
 						m.put("a", regionInfo);
 
-						m.put("d", direct);
+						m.put("d", String.valueOf(direct));
 
 						snapshot.setM(m);
 
@@ -2786,7 +2786,7 @@ public class SpecialMapUtils {
 
 				m.put("a", regionInfo);
 
-				m.put("d", direct);
+				m.put("d", String.valueOf(direct));
 
 				snapshot.setM(m);
 

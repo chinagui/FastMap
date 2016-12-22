@@ -80,7 +80,7 @@ public class SelectorTest {
 			tabNames.add("IX_POI_CHARGINGPLOT");
 			tabNames.add("IX_POI_GASSTATION");
 			
-			BasicObj obj = ObjSelector.selectByPid(conn, objType, tabNames, pid, isLock);
+			BasicObj obj = ObjSelector.selectByPid(conn, objType, tabNames,false, pid, isLock);
 			List<BasicRow> list1 = obj.getRowsByName("IX_POI_NAME");
 			List<BasicRow> list2 = obj.getRowsByName("IX_POI_ICON");
 			System.out.println("Over.");
@@ -103,7 +103,7 @@ public class SelectorTest {
 			long pid = 308;
 			boolean isLock = false;
 
-			BasicObj obj = ObjSelector.selectByPid(conn, objType, null, pid, isLock);
+			BasicObj obj = ObjSelector.selectByPid(conn, objType, null,true, pid, isLock);
 			List<RunnableSQL> sqlList = obj.generateSql();
 			System.out.println("Over.");
 			
@@ -153,7 +153,7 @@ public class SelectorTest {
 			tabNames.add("IX_POI_RESTAURANT");
 			tabNames.add("IX_POI_CARRENTAL");
 
-			BasicObj obj = ObjSelector.selectBySpecColumn(conn, objType, tabNames, colName,colValue, isLock);
+			BasicObj obj = ObjSelector.selectBySpecColumn(conn, objType, tabNames,false, colName,colValue, isLock);
 			System.out.println("Over.");
 		}catch(Exception e){
 			System.out.println("Oops, something wrong...");
@@ -172,7 +172,7 @@ public class SelectorTest {
 			long colValue = 308;
 			boolean isLock = false;
 
-			BasicObj obj = ObjSelector.selectBySpecColumn(conn, objType, null, colName,colValue, isLock);
+			BasicObj obj = ObjSelector.selectBySpecColumn(conn, objType, null,false, colName,colValue, isLock);
 			System.out.println("Over.");
 		}catch(Exception e){
 			System.out.println("Oops, something wrong...");
@@ -219,7 +219,7 @@ public class SelectorTest {
 			tabNames.add("IX_POI_RESTAURANT");
 			tabNames.add("IX_POI_CARRENTAL");
 
-			BasicObj obj = ObjSelector.selectBySpecColumn(conn, objType, tabNames, colName,colValue, isLock);
+			BasicObj obj = ObjSelector.selectBySpecColumn(conn, objType, tabNames,true, colName,colValue, isLock);
 			List<RunnableSQL> sqlList = obj.generateSql();
 			System.out.println("Over.");
 		}catch(Exception e){
@@ -251,7 +251,7 @@ public class SelectorTest {
 			tabNames.add("IX_POI_CONTACT");
 			tabNames.add("IX_POI_FLAG");
 			
-			Map<Long,BasicObj> objs = ObjBatchSelector.selectByPids(conn, objType, tabNames, pids, isLock,isNowait);
+			Map<Long,BasicObj> objs = ObjBatchSelector.selectByPids(conn, objType, tabNames,false, pids, isLock,isNowait);
 			System.out.println("Over.");
 		}catch(Exception e){
 			System.out.println("Oops, something wrong...");
@@ -273,7 +273,7 @@ public class SelectorTest {
 			boolean isLock = false;
 			boolean isNowait = false;
 
-			Map<Long,BasicObj> objs = ObjBatchSelector.selectByPids(conn, objType, null, pids, isLock,isNowait);
+			Map<Long,BasicObj> objs = ObjBatchSelector.selectByPids(conn, objType, null, false,pids, isLock,isNowait);
 			System.out.println("Over.");
 		}catch(Exception e){
 			System.out.println("Oops, something wrong...");
@@ -305,7 +305,7 @@ public class SelectorTest {
 			tabNames.add("IX_POI_CONTACT");
 			tabNames.add("IX_POI_FLAG");
 
-			Map<Long,BasicObj> objs = ObjBatchSelector.selectBySpecColumn(conn, objType, tabNames, colName,pids, isLock,isNowait);
+			Map<Long,BasicObj> objs = ObjBatchSelector.selectBySpecColumn(conn, objType, tabNames, true,colName,pids, isLock,isNowait);
 			System.out.println("Over.");
 		}catch(Exception e){
 			System.out.println("Oops, something wrong...");
@@ -338,7 +338,7 @@ public class SelectorTest {
 			tabNames.add("IX_POI_CONTACT");
 			tabNames.add("IX_POI_FLAG");
 			
-			Map<Long,BasicObj> objs = ObjBatchSelector.selectBySpecColumn(conn, objType, tabNames, colName,pids, isLock,isNowait);
+			Map<Long,BasicObj> objs = ObjBatchSelector.selectBySpecColumn(conn, objType, tabNames, false,colName,pids, isLock,isNowait);
 			System.out.println("Over.");
 		}catch(Exception e){
 			System.out.println("Oops, something wrong...");
@@ -375,25 +375,27 @@ public class SelectorTest {
 	public void test15(){
 		try{
 			Connection conn = null;
-			conn = DBConnector.getInstance().getConnectionById(17);
+			conn = DBConnector.getInstance().getConnectionById(19);
 			/*
 			String data = "{\"postCode\": \"\",\"rowId\": \"3AE1FB4B927892F7E050A8C08304EE4C\",\"pid\": 69159,"
 					+ "\"objStatus\":\"UPDATE\",\"poiMemo\":\"test\",\"level\":\"B3\","
 					+ "\"addresses\":[{\"nameGroupid\":1,\"poiPid\":0,"
 					+ "\"langCode\":\"CHI\",\"fullname\":\"北京\",\"objStatus\": \"INSERT\"}]}}";
 			*/
-			String data = "{\"postCode\": \"\",\"rowId\": \"3AE1FB4B927892F7E050A8C08304EE4C\",\"pid\": 69159,"
+			/*String data = "{\"postCode\": \"\",\"rowId\": \"3AE1FB4B927892F7E050A8C08304EE4C\",\"pid\": 69159,"
 					+ "\"objStatus\":\"UPDATE\",\"poiMemo\":\"test\",\"level\":\"B3\",\"side\":0,\"regionId\":10010,"
 					+ "\"addresses\":[{\"nameGroupid\":1,\"srcFlag\":1,"
 					+ "\"poiPid\":69159,\"rowId\":\"D476DB9402074216A28607D8D8C9C71D\","
-					+ "\"langCode\":\"CHI\",\"fullname\":\"北京\",\"objStatus\": \"UPDATE\"}]}}";
+					+ "\"langCode\":\"CHI\",\"fullname\":\"北京\",\"objStatus\": \"UPDATE\"}]}}";*/
+			String data = "{\"names\":[{\"name\":\"北京华军中医医院\",\"rowId\":\"3AE1FCF65D1F92F7E050A8C08304EE4C\""
+					+ ",\"pid\":335,\"objStatus\":\"UPDATE\"}],\"pid\":335}";
 			JSONObject jo = JSONObject.fromObject(data);
 			System.out.println("导入的json数据"+data);
 			//Map<String, JSONObject> addMap = new HashMap<String, JSONObject>();
 			//addMap.put("IXPOI", jo);
 			Map<String, Map<Long, JSONObject>> updateMap = new HashMap<String, Map<Long, JSONObject>>();
 			Map<Long, JSONObject> update = new HashMap<Long, JSONObject>();
-			update.put(69159L, jo);
+			update.put(335L, jo);
 			updateMap.put("IXPOI", update);
 			DefaultObjImportor df = new DefaultObjImportor(conn, null);
 			//List<BasicObj> list = df.improtAdd(conn, addMap);

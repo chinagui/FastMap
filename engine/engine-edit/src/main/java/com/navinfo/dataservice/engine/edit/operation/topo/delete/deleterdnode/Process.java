@@ -149,13 +149,6 @@ public class Process extends AbstractProcess<Command> {
 	@Override
 	public boolean prepareData() throws Exception {
 
-		// 检查是否可以删除
-		String msg = preCheck();
-
-		if (null != msg) {
-			throw new Exception(msg);
-		}
-
 		// 获取该rdnode对象
 		lockRdNode();
 
@@ -185,16 +178,18 @@ public class Process extends AbstractProcess<Command> {
 		try {
 			if (!this.getCommand().isCheckInfect()) {
 				getConn().setAutoCommit(false);
-				String preCheckMsg = this.preCheck();
-				if (preCheckMsg != null) {
-					throw new Exception(preCheckMsg);
-				}
+				
 				prepareData();
 
 				IOperation op = new OpTopo(this.getCommand());
 				op.run(this.getResult());
 
 				updataRelationObj();
+				
+				String preCheckMsg = this.preCheck();
+				if (preCheckMsg != null) {
+					throw new Exception(preCheckMsg);
+				}
 
 				recordData();
 
@@ -331,13 +326,6 @@ public class Process extends AbstractProcess<Command> {
 	private Map<String, List<AlertObject>> confirmRelationObj() throws Exception {
 
 		Map<String, List<AlertObject>> infects = new HashMap<String, List<AlertObject>>();
-
-		// 检查是否可以删除
-		String msg = preCheck();
-
-		if (null != msg) {
-			throw new Exception(msg);
-		}
 
 		// 获取该rdnode对象
 		lockRdNode();

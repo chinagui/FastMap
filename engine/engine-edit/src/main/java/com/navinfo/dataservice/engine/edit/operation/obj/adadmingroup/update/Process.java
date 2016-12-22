@@ -13,9 +13,7 @@ public class Process extends AbstractProcess<Command> implements IProcess {
 	public Process(AbstractCommand command) throws Exception {
 		super(command);
 	}
-	/* (non-Javadoc)
-	 * @see com.navinfo.dataservice.engine.edit.edit.operation.Abstractprocess#createOperation(com.navinfo.dataservice.engine.edit.edit.operation.AbstractCommand, java.sql.Connection)
-	 */
+	
 	@Override
 	public String exeOperation() throws Exception {
 		return new Operation(this.getCommand(), this.getConn()).run(this.getResult());

@@ -1,41 +1,31 @@
 package com.navinfo.dataservice.engine.edit.operation.topo.delete.deletezonelink;
 
+import java.sql.Connection;
 import java.util.List;
 
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneFace;
+import com.navinfo.dataservice.engine.edit.utils.batch.ZoneIDBatchUtils;
 
 public class OpRefAdFace implements IOperation {
 
-	private Command command;
+    private Command command;
 
-	private Result result;
+    private Connection conn;
 
-	public OpRefAdFace(Command command) {
-		this.command = command;
+    public OpRefAdFace(Command command, Connection conn) {
+        this.command = command;
+        this.conn = conn;
+    }
 
-	}
-
-	@Override
-	public String run(Result result) throws Exception {
-
-		this.result = result;
-
-		this.handleZoneFace(command.getFaces());
-		
-		return null;
-	}
-
-	// 处理面
-	private void handleZoneFace(List<ZoneFace> list)throws Exception {
-		if(list != null && list.size() > 0){
-		for (ZoneFace zoneFace : list) {
-			result.insertObject(zoneFace, ObjStatus.DELETE,zoneFace.getPid());
-		 }
-		}
-	}
-
-	
+    @Override
+    public String run(Result result) throws Exception {
+        for (ZoneFace zoneFace : command.getFaces()) {
+            result.insertObject(zoneFace, ObjStatus.DELETE, zoneFace.getPid());
+            ZoneIDBatchUtils.updateZoneID(zoneFace, null, zoneFace.getMeshId(), conn, result);
+        }
+        return null;
+    }
 }

@@ -45,8 +45,6 @@ public class RELATING_CHECK_NOSAME_LINE_LINE_RELATION extends baseRule {
 	 */
 	@Override
 	public void preCheck(CheckCommand checkCommand) throws Exception {
-		// TODO Auto-generated method stub
-		System.out.println();
 		for (IRow obj : checkCommand.getGlmList()) {
 			// 分歧RdBranch
 			if (obj instanceof RdBranch) {

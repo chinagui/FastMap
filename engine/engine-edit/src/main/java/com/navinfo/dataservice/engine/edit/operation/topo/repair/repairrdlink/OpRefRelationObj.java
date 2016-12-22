@@ -68,6 +68,9 @@ public class OpRefRelationObj {
 			Result result) throws Exception {
 
 		getDepartNodePids(command);
+		
+		// 路口
+		handleRdCross(result, newLinks, command.getUpdateLink());
 
 		// 处理交限
 		handleRdRestriction(result, newLinks, command.getUpdateLink());
@@ -104,6 +107,29 @@ public class OpRefRelationObj {
 
 		// 处理同一关系
 		handleRdSame(command, result, newLinks, command.getUpdateLink());
+
+		return null;
+	}
+	
+	/**
+	 * 处理路口
+	 * 
+	 * @param command
+	 * @param newLinks
+	 * @param result
+	 * @return
+	 * @throws Exception
+	 */
+	public String handleRdCross(Result result, List<RdLink> newLinks,
+			RdLink updateLink) throws Exception {
+
+		com.navinfo.dataservice.engine.edit.operation.obj.rdcross.update.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdcross.update.Operation(
+				this.conn);
+
+		// 仅移link动形状点且新link个数大于1，调用打断维护
+		if (newLinks.size() > 1) {
+			operation.breakRdLink(updateLink, newLinks, result);
+		}
 
 		return null;
 	}

@@ -52,11 +52,6 @@ public class Process extends AbstractProcess<Command> {
 
 			this.prepareData();
 
-			String preCheckMsg = this.preCheck();
-
-			if (preCheckMsg != null) {
-				throw new Exception(preCheckMsg);
-			}
 			// 创建土地覆盖点有关土地覆盖线具体操作
 			OpTopo operation = new OpTopo(this.getCommand());
 			msg = operation.run(this.getResult());
@@ -64,6 +59,13 @@ public class Process extends AbstractProcess<Command> {
 			OpRefLcFace opRefLcFace = new OpRefLcFace(this.getCommand(),
 					this.getConn());
 			opRefLcFace.run(this.getResult());
+			
+
+			String preCheckMsg = this.preCheck();
+
+			if (preCheckMsg != null) {
+				throw new Exception(preCheckMsg);
+			}
 		} catch (Exception e) {
 			this.getConn().rollback();
 			throw e;

@@ -29,7 +29,7 @@ public class OpRefAdFace implements IOperation {
         log.debug("删除行政区划点对应的面关系");
         for (AdFace face : command.getFaces()) {
             result.insertObject(face, ObjStatus.DELETE, face.pid());
-            AdminIDBatchUtils.updateAdminID(face, null, conn, result);
+            AdminIDBatchUtils.updateAdminID(face, null, face.getMeshId(), conn, result);
             result.setPrimaryPid(face.getPid());
         }
         return msg;

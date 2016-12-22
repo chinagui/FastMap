@@ -62,12 +62,7 @@ public class Process extends AbstractProcess<Command> {
 		try {
 
 			this.prepareData();
-
-			String preCheckMsg = this.preCheck();
-
-			if (preCheckMsg != null) {
-				throw new Exception(preCheckMsg);
-			}
+			
 			// 创建土地利用点有关土地利用线的具体操作类
 			OpTopo operation = new OpTopo(this.getCommand(), this.getConn());
 			msg = operation.run(this.getResult());
@@ -75,6 +70,12 @@ public class Process extends AbstractProcess<Command> {
 			OpRefLuFace opRefLuFace = new OpRefLuFace(this.getCommand(),
 					this.getConn());
 			opRefLuFace.run(this.getResult());
+			
+			String preCheckMsg = this.preCheck();
+
+			if (preCheckMsg != null) {
+				throw new Exception(preCheckMsg);
+			}
 		} catch (Exception e) {
 
 			this.getConn().rollback();

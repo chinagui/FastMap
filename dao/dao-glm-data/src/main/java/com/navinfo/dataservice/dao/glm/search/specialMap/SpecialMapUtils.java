@@ -1408,8 +1408,8 @@ public class SpecialMapUtils {
 
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "WITH TMP1 AS (SELECT LINK_PID, GEOMETRY, DIRECT FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2), TMP2 AS (SELECT /*+ index(N) */ T.LINK_PID, N.NAME_GROUPID, N.SEQ_NUM, T.GEOMETRY, T.DIRECT FROM TMP1 T LEFT JOIN RD_LINK_NAME N ON T.LINK_PID = N.LINK_PID AND N.U_RECORD != 2) SELECT /*+ index(RN) */ T2.*, RN.NAME FROM TMP2 T2 LEFT JOIN RD_NAME RN ON T2.NAME_GROUPID = RN.NAME_GROUPID AND (RN.LANG_CODE = 'CHI' OR RN.LANG_CODE = 'CHT') ORDER BY T2.LINK_PID, T2.SEQ_NUM ";
-
+		String sql = "WITH TMP1 AS (SELECT LINK_PID, GEOMETRY, DIRECT, KIND FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2), TMP2 AS (SELECT /*+ index(N) */ T.LINK_PID, N.NAME_GROUPID, N.SEQ_NUM, T.GEOMETRY, T.DIRECT, T.KIND FROM TMP1 T LEFT JOIN RD_LINK_NAME N ON T.LINK_PID = N.LINK_PID AND N.U_RECORD != 2) SELECT /*+ index(RN) */ T2.*, RN.NAME FROM TMP2 T2 LEFT JOIN RD_NAME RN ON T2.NAME_GROUPID = RN.NAME_GROUPID AND (RN.LANG_CODE = 'CHI' OR RN.LANG_CODE = 'CHT') ORDER BY T2.LINK_PID, T2.SEQ_NUM";
+		
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
@@ -1434,12 +1434,16 @@ public class SpecialMapUtils {
 			String content = "";
 
 			String direct = "";
+			
+			String kind ="";
 
 			while (resultSet.next()) {
 
 				int currLinkPid = resultSet.getInt("LINK_PID");
 
 				direct = resultSet.getString("DIRECT");
+				
+				kind = resultSet.getString("KIND");
 
 				if (flagLinkPid != currLinkPid) {
 
@@ -1447,7 +1451,9 @@ public class SpecialMapUtils {
 
 						JSONObject m = new JSONObject();
 
-						m.put("a", content.trim());
+						m.put("a", kind);
+						
+						m.put("b", content.trim());
 
 						m.put("d", String.valueOf(direct));
 
@@ -1481,7 +1487,9 @@ public class SpecialMapUtils {
 
 				JSONObject m = new JSONObject();
 
-				m.put("a", content.trim());
+				m.put("a", kind);
+				
+				m.put("b", content.trim());
 
 				m.put("d", String.valueOf(direct));
 
@@ -1909,20 +1917,20 @@ public class SpecialMapUtils {
 			return 2;
 		}
 		if (dirs.contains(3)) {
-			return 3;
+			return 2;
 		}
 		if (dirs.contains(0)) {
-			return 0;
+			return 3;
 		}
 		if (dirs.contains(9)) {
-			return 9;
+			return 3;
 		}
 
 		return 99;
 	}
 
 	/**
-	 * 未完成
+	 * 普通限制： 适用 28 季节性关闭道路 、29 Usage fee required、30 超车限制、31 单行限制
 	 * 
 	 * @param x
 	 * @param y
@@ -1987,7 +1995,13 @@ public class SpecialMapUtils {
 
 						m.put("a", type);
 
-						m.put("d", String.valueOf(direct));
+						if (dirs.contains(2) && !dirs.contains(3)) {
+							m.put("d", String.valueOf(2));
+						} else if (dirs.contains(3) && !dirs.contains(2)) {
+							m.put("d", String.valueOf(3));
+						} else {
+							m.put("d", String.valueOf(direct));
+						}
 
 						snapshot.setM(m);
 
@@ -2025,8 +2039,14 @@ public class SpecialMapUtils {
 				int type = getLimitDir(dirs);
 
 				m.put("a", type);
-
-				m.put("d", String.valueOf(direct));
+				
+				if (dirs.contains(2) && !dirs.contains(3)) {
+					m.put("d", String.valueOf(2));
+				} else if (dirs.contains(3) && !dirs.contains(2)) {
+					m.put("d", String.valueOf(3));
+				} else {
+					m.put("d", String.valueOf(direct));
+				}
 
 				snapshot.setM(m);
 
@@ -2449,7 +2469,7 @@ public class SpecialMapUtils {
 	}
 
 	/**
-	 * 获取rtic等级
+	 * 获取zone类型
 	 * 
 	 * @param dirs
 	 * @return

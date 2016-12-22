@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.collections.CollectionUtils;
+
 import com.navinfo.dataservice.dao.glm.iface.AlertObject;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -337,7 +339,11 @@ public class Operation implements IOperation {
 	 */
 	public void breakLinkUpdateTmc(Result result, RdLink oldLink, List<RdLink> newLinks) {
 		List<IRow> tmcLocations = oldLink.getTmclocations();
-
+		//打断前清空原link的tmc子表数据，防止删除原link删除tmc子表数据
+		if(!oldLink.getTmclocations().isEmpty())
+		{
+			oldLink.getTmclocations().clear();
+		}
 		for (IRow row : tmcLocations) {
 			RdTmclocation location = (RdTmclocation) row;
 
@@ -356,6 +362,14 @@ public class Operation implements IOperation {
 
 					// 打断后新link加入tmclocaitonlink中
 					for (RdLink newLink : newLinks) {
+						//清空新link拷贝的原link上的tmc信息
+						List<IRow> tmcLocationList = newLink.getTmclocations();
+						
+						if(CollectionUtils.isNotEmpty(tmcLocationList))
+						{
+							tmcLocationList.clear();
+						}
+						//开始维护新link上的tmc信息
 						RdTmclocationLink newLocationLink = new RdTmclocationLink();
 
 						newLocationLink.setGroupId(groupId);

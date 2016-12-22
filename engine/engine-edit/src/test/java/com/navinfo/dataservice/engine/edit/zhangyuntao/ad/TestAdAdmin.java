@@ -16,7 +16,7 @@ public class TestAdAdmin extends InitApplication{
 
     @Test
     public void delete(){
-        String parameter = "{\"command\":\"DELETE\",\"dbId\":17,\"type\":\"ADADMIN\",\"objId\":305000003}";
+        String parameter = "{\"command\":\"DELETE\",\"dbId\":17,\"type\":\"ADNODE\",\"objId\":20178}";
         TestUtil.run(parameter);
     }
 

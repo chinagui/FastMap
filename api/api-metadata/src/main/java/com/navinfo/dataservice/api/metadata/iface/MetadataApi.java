@@ -130,4 +130,12 @@ public interface MetadataApi {
 	 * @return List<String> 返回合法的所有半角字符列表
 	 */
 	public List<String> halfCharList() throws Exception;
+	
+	/**
+	 * 返回“TY_CHARACTER_FJT_HZ”表中数据。
+	 * @return Map<String, JSONObject> key:ft value:对应其它
+	 * @throws Exception
+	 */
+	public Map<String, JSONObject> tyCharacterFjtHzCheckSelectorGetFtExtentionTypeMap() throws Exception;
+
 }

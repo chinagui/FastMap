@@ -29,7 +29,7 @@ public class OpRefLuFace implements IOperation {
         // 删除土地利用点对应的面关系
         for (LuFace face : command.getFaces()) {
             result.insertObject(face, ObjStatus.DELETE, face.pid());
-            UrbanBatchUtils.updateUrban(face.getGeometry(), null, conn, result);
+            UrbanBatchUtils.updateUrban(face.getGeometry(), null, face.getMeshId(), conn, result);
             result.setPrimaryPid(face.getPid());
         }
         return msg;

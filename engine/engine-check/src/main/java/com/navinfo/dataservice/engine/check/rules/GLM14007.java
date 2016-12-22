@@ -2,6 +2,7 @@ package com.navinfo.dataservice.engine.check.rules;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 
@@ -78,7 +79,9 @@ public class GLM14007 extends baseRule {
 	 */
 	private void checkRdLinkForm(RdLinkForm rdLinkForm) throws Exception {
 		//道路属性编辑,触发检查
-		if(rdLinkForm.getFormOfWay()==50){
+		Map<String, Object> changedFields = rdLinkForm.changedFields();
+		int formOfWay = (int) changedFields.get("formOfWay");
+		if(formOfWay == 50){
 			StringBuilder sb = new StringBuilder();
 
 			sb.append("SELECT DR.PID FROM RD_DIRECTROUTE DR");

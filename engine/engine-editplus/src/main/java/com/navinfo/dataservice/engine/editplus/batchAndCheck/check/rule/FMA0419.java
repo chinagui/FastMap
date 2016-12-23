@@ -3,9 +3,6 @@ package com.navinfo.dataservice.engine.editplus.batchAndCheck.check.rule;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
-
-import org.hamcrest.core.Is;
 
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;

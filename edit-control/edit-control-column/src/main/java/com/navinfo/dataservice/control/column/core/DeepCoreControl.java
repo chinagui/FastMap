@@ -715,6 +715,10 @@ public class DeepCoreControl {
 	
 	/**
 	 * 清检查结果，用于POI行编和月编
+	 * 月编 ：
+	 * jsonReq JSONObject
+	 * pids：[123,123],ckRules:["rule1","rule2"],checkType:1 //0行编 1精编 
+	 * @param jsonReq JSONObject
 	 * @param jsonReq
 	 * @param userId
 	 * @throws Exception

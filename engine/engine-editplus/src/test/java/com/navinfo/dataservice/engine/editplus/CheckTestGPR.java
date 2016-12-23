@@ -42,7 +42,7 @@ public class CheckTestGPR {
 		test.init();
 		Connection conn = DBConnector.getInstance().getConnectionById(19);
 		OperationResult operationResult=new OperationResult();
-		BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", null, 78675641, false);
+		BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", null,true, 70, false);
 		IxPoi row=(IxPoi) obj.getMainrow();
 		//row.setKindCode("190100");
 		ChangeLog logg=new ChangeLog();
@@ -56,7 +56,7 @@ public class CheckTestGPR {
 		
 		CheckCommand checkCommand=new CheckCommand();		
 		List<String> ruleIdList=new ArrayList<String>();
-		ruleIdList.add("FM-A04-08");
+		ruleIdList.add("FM-YW-20-146");
 		checkCommand.setRuleIdList(ruleIdList);
 		
 		Check check=new Check(conn,operationResult);

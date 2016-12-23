@@ -138,22 +138,9 @@ public class ZoneIDBatchUtils extends BaseBatchUtils {
             return;
         }
         List<Integer> deleteLinkPids = new ArrayList<>();
-        List<RdLink> links = null;
-        // 修形时删除原面内zone属性
-        if (null != faceGeometry) {
-            links = selector.loadLinkByFaceGeo(faceGeometry, true);
-            for (RdLink link : links) {
-                Iterator<IRow> iterator = link.getZones().iterator();
-                while (iterator.hasNext()) {
-                    IRow row = iterator.next();
-                    result.insertObject(row, ObjStatus.DELETE, row.parentPKValue());
-                }
-                deleteLinkPids.add(link.pid());
-            }
-        }
         // 修形时对面内新增link赋zone属性
         geometry = GeoTranslator.transform(geometry, 0.00001, 5);
-        links = selector.loadLinkByFaceGeo(geometry, true);
+        List<RdLink> links = selector.loadLinkByDiffGeo(geometry, faceGeometry, true);
         for (RdLink link : links) {
             if (deleteLinkPids.contains(link.pid()))
                 link.getZones().clear();
@@ -218,6 +205,18 @@ public class ZoneIDBatchUtils extends BaseBatchUtils {
                     }
                 }
             } else {
+            }
+        }
+        // 修形时删除原面内zone属性
+        if (null != faceGeometry) {
+            links = selector.loadLinkByDiffGeo(faceGeometry, geometry, true);
+            for (RdLink link : links) {
+                Iterator<IRow> iterator = link.getZones().iterator();
+                while (iterator.hasNext()) {
+                    IRow row = iterator.next();
+                    result.insertObject(row, ObjStatus.DELETE, row.parentPKValue());
+                }
+                deleteLinkPids.add(link.pid());
             }
         }
     }

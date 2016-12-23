@@ -988,5 +988,30 @@ public class runTest extends InitApplication {
 
 		String msg = t.run();
 	}
+	
+	@Test
+	public void run_1221_1() throws Exception {
+
+		String parameter = "{\"command\":\"REPAIR\",\"dbId\":17,\"objId\":207003013,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.62555, 40.31876],[116.62461, 40.31901]]},\"catchInfos\":[{\"nodePid\":307002289,\"longitude\":116.62461,\"latitude\":40.31901}]},\"type\":\"RDLINK\"}";
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+	
+	
+	@Test
+	public void run_1221_2() throws Exception {
+
+		String parameter = "{\"command\":\"REPAIR\",\"dbId\":17,\"objId\":301003078,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.62586,40.31674],[116.62632912397385,40.31672045187265]]},\"catchInfos\":[{\"nodePid\":207002303,\"catchNodePid\":\"304002404\"}]},\"type\":\"RDLINK\"}";
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+	
+	
+	
+	
 			
 }

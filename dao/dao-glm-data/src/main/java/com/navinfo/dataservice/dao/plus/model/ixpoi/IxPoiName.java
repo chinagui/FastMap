@@ -121,6 +121,11 @@ public class IxPoiName extends BasicRow {
 		else{return false;}
 	}
 	
+	public boolean isStandardName(){
+		if(this.nameType==1){return true;}
+		else{return false;}
+	}
+	
 	public boolean isCH(){
 		if(this.langCode.equals("CHI")||this.langCode.equals("CHT")){return true;}
 		else{return false;}

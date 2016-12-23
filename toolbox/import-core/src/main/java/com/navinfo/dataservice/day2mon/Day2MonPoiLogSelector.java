@@ -106,7 +106,7 @@ public class Day2MonPoiLogSelector extends DefaultLogSelector{
 	protected SqlClause getPrepareSql(Connection conn) throws Exception{
 		StringBuilder sb = new StringBuilder();
 		sb.append("insert into "+tempTable+" \r\n");
-		sb.append(" select distinct p.op_id, p.op_dt\r\n" + 
+		sb.append(" select distinct p.op_id, p.op_dt,P.OP_SEQ\r\n" + 
 				"   from log_operation   p,\r\n" + 
 				"       log_detail d,\r\n" +
 				"       log_detail_grid g,\r\n" + 

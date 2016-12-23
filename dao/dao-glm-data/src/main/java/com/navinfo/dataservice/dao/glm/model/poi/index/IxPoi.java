@@ -211,6 +211,17 @@ public class IxPoi implements IObj {
 	
 	//app修改标识
 	protected String rawFields;
+	
+	//鲜度验证字段
+	protected int freshVerified;
+	
+	public int getFreshVerified() {
+		return freshVerified;
+	}
+
+	public void setFreshVerified(int freshVerified) {
+		this.freshVerified = freshVerified;
+	}
 
 	public String getLevel() {
 		return level;
@@ -1220,6 +1231,9 @@ public class IxPoi implements IObj {
 		if (objLevel == ObjLevel.HISTORY) {
 			json.remove("rawFields");
 			json.remove("status");
+			json.remove("poiEditStatus");
+			json.remove("sameFid");
+			json.remove("freshVerified");
 		}
 
 		return json;

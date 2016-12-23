@@ -1,4 +1,4 @@
-1. update_sys_batch.sql
+﻿1. update_sys_batch.sql
 	目标库：sys库
 	功能：月编检查批处理
 	author: 张晓毅
@@ -11,3 +11,7 @@
   功能：初始化日落月开关控制配置表DAY2MONTH_CONFIG
   目标库：man库
   author：马云飞
+4. fm_sys/update_token_sys_config.sql
+  功能：修改token有效期为2天
+  目标库：sys库
+  author：XXW

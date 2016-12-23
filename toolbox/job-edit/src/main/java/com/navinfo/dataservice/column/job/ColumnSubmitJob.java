@@ -69,39 +69,49 @@ public class ColumnSubmitJob extends AbstractJob {
 			// TODO 区分大陆/港澳
 			int type = 1;
 			
-			// 查询可提交数据
-			IxPoiColumnStatusSelector ixPoiDeepStatusSelector = new IxPoiColumnStatusSelector(conn);
-			pidList = ixPoiDeepStatusSelector.getRowIdForSubmit(firstWorkItem, secondWorkItem, taskId);
+			IxPoiOpConfSelector ixPoiOpConfSelector = new IxPoiOpConfSelector(conn);
 			
+			IxPoiColumnStatusSelector ixPoiDeepStatusSelector = new IxPoiColumnStatusSelector(conn);
+			
+			List<String> secondWorkList = new ArrayList<String>();
+			if (secondWorkItem == null || secondWorkItem.isEmpty()) {
+				secondWorkList = ixPoiOpConfSelector.getSecondByFirst(firstWorkItem, type);
+			} else {
+				secondWorkList.add(secondWorkItem);
+			}
+			for (String second:secondWorkList) {
+				// 查询可提交数据
+				pidList = ixPoiDeepStatusSelector.getRowIdForSubmit(firstWorkItem, second, taskId);
+				
 			// 清理检查结果
 			DeepCoreControl deepControl = new DeepCoreControl();
 			deepControl.cleanCheckResult(pidList, conn);
 			
 			OperationResult operationResult=new OperationResult();
 			
-			List<Long> pids = new ArrayList<Long>();
-			for (int pid:pidList) {
-				pids.add((long)pid);
-			}
-			
-			PoiLogDetailStat logDetail = new PoiLogDetailStat();
-			Map<Long,List<LogDetail>> submitLogs = logDetail.loadByColEditStatus(conn, pids, userId, taskId, firstWorkItem, secondWorkItem);
-			List<BasicObj> objList = new ArrayList<BasicObj>();
-			ObjHisLogParser logParser = new ObjHisLogParser();
-			for (int pid:pidList) {
-				BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", null, pid, false);
-				if (submitLogs.containsKey(pid)) {
-					logParser.parse(obj, submitLogs.get(pid));
+				List<Long> pids = new ArrayList<Long>();
+				for (int pid:pidList) {
+					pids.add((long)pid);
 				}
+				
+				PoiLogDetailStat logDetail = new PoiLogDetailStat();
+				Map<Long,List<LogDetail>> submitLogs = logDetail.loadByColEditStatus(conn, pids, userId, taskId, firstWorkItem, second);
+			List<BasicObj> objList = new ArrayList<BasicObj>();
+				ObjHisLogParser logParser = new ObjHisLogParser();
+			for (int pid:pidList) {
+				BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", null,true, pid, false);
+					if (submitLogs.containsKey(pid)) {
+						logParser.parse(obj, submitLogs.get(pid));
+					}
 				objList.add(obj);
-			}
-			
-			
+				}
+				
+				
 			operationResult.putAll(objList);
 			
-			IxPoiOpConfSelector ixPoiOpConfSelector = new IxPoiOpConfSelector(conn);
-			PoiColumnOpConf columnOpConf = ixPoiOpConfSelector.getDeepOpConf(firstWorkItem,secondWorkItem, type);
 			
+				PoiColumnOpConf columnOpConf = ixPoiOpConfSelector.getDeepOpConf(firstWorkItem,second, type);
+				
 			// 批处理
 			if (columnOpConf.getSaveExebatch() == 1) {
 				BatchCommand batchCommand=new BatchCommand();		
@@ -111,7 +121,7 @@ public class ColumnSubmitJob extends AbstractJob {
 				
 				Batch batch=new Batch(conn,operationResult);
 				batch.operate(batchCommand);
-				batch.persistChangeLog(OperationSegment.SG_COLUMN, userId);
+					batch.persistChangeLog(OperationSegment.SG_COLUMN, userId);
 			}
 			
 			// 检查
@@ -136,7 +146,7 @@ public class ColumnSubmitJob extends AbstractJob {
 			}
 			
 			// 修改poi_deep_status表作业项状态
-			updateDeepStatus(pidList, conn, 3);
+			updateDeepStatus(pidList, conn, 3,second);
 			
 			
 			// 重分类
@@ -158,6 +168,7 @@ public class ColumnSubmitJob extends AbstractJob {
 				ckRules.add(classifyrule);
 			}
 			deepControl.cleanExByCkRule(conn, pidList, ckRules, "IX_POI");
+			}
 			
 			conn.commit();
 			
@@ -174,9 +185,9 @@ public class ColumnSubmitJob extends AbstractJob {
 	 * @param conn
 	 * @throws Exception
 	 */
-	public void updateDeepStatus(List<Integer> pidList,Connection conn,int status) throws Exception {
+	public void updateDeepStatus(List<Integer> pidList,Connection conn,int status,String second) throws Exception {
 		StringBuilder sb = new StringBuilder();
-		sb.append("UPDATE poi_column_status SET first_work_status="+status+",second_work_status="+status+",handler=0 WHERE pid in (select to_number(column_value) from table(clob_to_table(?)))");
+		sb.append("UPDATE poi_column_status SET first_work_status="+status+",second_work_status="+status+",handler=0 WHERE work_item_id IN (SELECT cf.work_item_id FROM POI_COLUMN_WORKITEM_CONF cf WHERE cf.second_work_item='"+second+"') AND  pid in (select to_number(column_value) from table(clob_to_table(?)))");
 		
 		PreparedStatement pstmt = null;
 

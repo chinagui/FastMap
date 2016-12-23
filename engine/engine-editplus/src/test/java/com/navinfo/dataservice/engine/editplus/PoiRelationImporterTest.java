@@ -61,7 +61,7 @@ public class PoiRelationImporterTest {
 			tabNames.add("IX_POI_CONTACT");
 			tabNames.add("IX_POI_ADDRESS");
 			
-			BasicObj obj = ObjSelector.selectByPid(conn, objType, tabNames, pid, isLock);
+			BasicObj obj = ObjSelector.selectByPid(conn, objType, tabNames,false, pid, isLock);
 			//构造PoiRelationImporterCommand
 			Set<PoiRelation> poiCollectionSet = new HashSet<PoiRelation>();
 			PoiRelation poiRelation = new PoiRelation();
@@ -101,7 +101,7 @@ public class PoiRelationImporterTest {
 			tabNames.add("IX_POI_CONTACT");
 			tabNames.add("IX_POI_ADDRESS");
 			
-			BasicObj obj = ObjSelector.selectByPid(conn, objType, tabNames, pid, isLock);
+			BasicObj obj = ObjSelector.selectByPid(conn, objType, tabNames,false, pid, isLock);
 			//构造PoiRelationImporterCommand
 			Set<PoiRelation> poiCollectionSet = new HashSet<PoiRelation>();
 			PoiRelation poiRelation = new PoiRelation();
@@ -135,7 +135,7 @@ public class PoiRelationImporterTest {
 			long pid = 158982;
 			boolean isLock = false;
 			
-			BasicObj obj = ObjSelector.selectByPid(conn, objType, null, pid, isLock);
+			BasicObj obj = ObjSelector.selectByPid(conn, objType, null,true, pid, isLock);
 			//构造PoiRelationImporterCommand
 			Set<PoiRelation> poiCollectionSet = new HashSet<PoiRelation>();
 			PoiRelation poiRelation = new PoiRelation();
@@ -173,7 +173,7 @@ public class PoiRelationImporterTest {
 			boolean isLock = false;
 			boolean isNowait = false;
 
-			Map<Long,BasicObj> objMap = ObjBatchSelector.selectByPids(conn, objType, null, pids, isLock,isNowait);
+			Map<Long,BasicObj> objMap = ObjBatchSelector.selectByPids(conn, objType, null,true, pids, isLock,isNowait);
 
 			//构造PoiRelationImporterCommand
 			Set<PoiRelation> poiCollectionSet = new HashSet<PoiRelation>();
@@ -219,7 +219,7 @@ public class PoiRelationImporterTest {
 			tabNames.add("IX_POI_CONTACT");
 			tabNames.add("IX_POI_ADDRESS");
 
-			Map<Long,BasicObj> objMap = ObjBatchSelector.selectByPids(conn, objType, tabNames, pids, isLock,isNowait);
+			Map<Long,BasicObj> objMap = ObjBatchSelector.selectByPids(conn, objType, tabNames,false, pids, isLock,isNowait);
 
 			//构造PoiRelationImporterCommand
 			Set<PoiRelation> poiCollectionSet = new HashSet<PoiRelation>();
@@ -260,7 +260,7 @@ public class PoiRelationImporterTest {
 			boolean isLock = false;
 			boolean isNowait = false;
 
-			Map<Long,BasicObj> objMap = ObjBatchSelector.selectByPids(conn, objType, null, pids, isLock,isNowait);
+			Map<Long,BasicObj> objMap = ObjBatchSelector.selectByPids(conn, objType, null,false, pids, isLock,isNowait);
 
 			//构造PoiRelationImporterCommand
 			Set<PoiRelation> poiCollectionSet = new HashSet<PoiRelation>();
@@ -300,7 +300,7 @@ public class PoiRelationImporterTest {
 			boolean isLock = false;
 			boolean isNowait = false;
 
-			Map<Long,BasicObj> objMap = ObjBatchSelector.selectByPids(conn, objType, null, pids, isLock,isNowait);
+			Map<Long,BasicObj> objMap = ObjBatchSelector.selectByPids(conn, objType, null,false, pids, isLock,isNowait);
 
 			//构造PoiRelationImporterCommand
 			Set<PoiRelation> poiCollectionSet = new HashSet<PoiRelation>();

@@ -230,8 +230,8 @@ public abstract class BasicRow{
 			columnPlaceholder.add("?");
 			columnValues.add(1);
 			
-			sb.append(" (" + StringUtils.join(columnName, ",") + ")");
-			sb.append(" VALUES (" + StringUtils.join(columnPlaceholder, ",") + ")");
+			sb.append(" (" + StringUtils.join(columnName, ",") + ",U_DATE)");
+			sb.append(" VALUES (" + StringUtils.join(columnPlaceholder, ",") + ",SYSDATE)");
 		}else if(OperationType.UPDATE.equals(this.opType)){
 			if(!oldValues.isEmpty()){
 				sb.append("UPDATE "+tbName + " SET ");
@@ -248,12 +248,13 @@ public abstract class BasicRow{
 				columnValues.add(3);
 				
 				sb.append(StringUtils.join(columnName, ","));
-				sb.append(" WHERE ROW_ID = '" + getRowId() + "'");
+				sb.append(",U_DATE=SYSDATE");
+				sb.append(" WHERE ROW_ID = HEXTORAW('" + getRowId() + "')");
 			}
 		}else if(OperationType.DELETE.equals(this.opType)){
 			//更新U_RECORD字段为2
-			sb.append("UPDATE "+ tbName + " SET U_RECORD = ?");
-			sb.append(" WHERE ROW_ID = '" + getRowId() + "'");
+			sb.append("UPDATE "+ tbName + " SET U_RECORD = ?,U_DATE=SYSDATE");
+			sb.append(" WHERE ROW_ID = HEXTORAW('" + getRowId() + "')");
 			columnValues.add(2);
 		}
 		sql.setSql(sb.toString());

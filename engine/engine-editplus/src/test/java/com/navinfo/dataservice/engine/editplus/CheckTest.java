@@ -43,9 +43,9 @@ public class CheckTest {
 		test.init();
 		Connection conn = DBConnector.getInstance().getConnectionById(17);
 		OperationResult operationResult=new OperationResult();
-		BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", null, 190, false);
+		BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", null,true, 2179861, false);
 		IxPoi row=(IxPoi) obj.getMainrow();
-		//row.setKindCode("190100");
+		row.setKindCode("230126");
 		ChangeLog logg=new ChangeLog();
 		Map<String, Object> oldValues=new HashMap<String, Object>();
 		oldValues.put("KIND_CODE", "121");
@@ -58,12 +58,15 @@ public class CheckTest {
 		
 		CheckCommand checkCommand=new CheckCommand();		
 		List<String> ruleIdList=new ArrayList<String>();
-		ruleIdList.add("FM-A04-04");
+		ruleIdList.add("FM-A04-19");
 		checkCommand.setRuleIdList(ruleIdList);
 		
 		Check check=new Check(conn,operationResult);
 		check.operate(checkCommand);
 		Map<String, Map<Long, Set<String>>> errorPid = check.getErrorPidMap();
+		if(errorPid!=null){
+			System.out.println(check.getReturnExceptions().get(0).getInformation());}
+		else{System.out.println("null");}
 		DbUtils.commitAndCloseQuietly(conn);
 		System.out.println("end check test");
 	}

@@ -66,7 +66,8 @@ public class FMA0711 extends BasicCheckRule {
 			}	
 			if(!hasParentShortName){return;}
 			if(!poiShortName.getName().contains(parentShortName.getName())){
-				setCheckResult(poi.getGeometry(), "[IX_POI,"+poi.getPid()+"]", poi.getMeshId());}
+				setCheckResult(poi.getGeometry(), "[IX_POI,"+poi.getPid()+"]", poi.getMeshId());
+				return;}
 		}
 	}
 

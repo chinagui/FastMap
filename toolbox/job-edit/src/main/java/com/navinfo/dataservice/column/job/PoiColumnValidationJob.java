@@ -10,11 +10,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.sf.json.JSONObject;
+
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 
 import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.control.column.core.DeepCoreControl;
 import com.navinfo.dataservice.dao.plus.log.LogDetail;
 import com.navinfo.dataservice.dao.plus.log.ObjHisLogParser;
 import com.navinfo.dataservice.dao.plus.log.PoiLogDetailStat;
@@ -46,12 +49,24 @@ public class PoiColumnValidationJob extends AbstractJob {
 		Connection conn=null;
 		try{
 			conn=DBConnector.getInstance().getConnectionById(myRequest.getTargetDbId());
-			log.info("PoiColumnValidationJob:获取精编检查规则列表");
-			//获取规则号列表
-			getCheckRuleList(conn, myRequest);
 			log.info("PoiColumnValidationJob:获取精编检查数据pid");
 			//获取要检查的数据pid
 			getCheckPidList(conn,myRequest);
+			if(myRequest.getPids()==null||myRequest.getPids().size()==0){
+				log.info("没有需要检查的数据");
+				return;
+			}
+			log.info("PoiColumnValidationJob:获取精编检查规则列表");
+			//获取规则号列表
+			getCheckRuleList(conn, myRequest);			
+			// 清理检查结果
+			log.info("清理检查结果");
+			DeepCoreControl deepControl = new DeepCoreControl();
+			JSONObject jsonReq=new JSONObject();
+			jsonReq.put("pids", myRequest.getPids());
+			jsonReq.put("ckRules", myRequest.getRules());
+			jsonReq.put("checkType", 1);
+			deepControl.cleanCheck(jsonReq, jobInfo.getUserId());
 			log.info("PoiColumnValidationJob:获取精编检查数据履历");
 			//获取log
 			Map<Long, List<LogDetail>> logs = PoiLogDetailStat.loadByColEditStatus(conn, myRequest.getPids(),
@@ -59,7 +74,7 @@ public class PoiColumnValidationJob extends AbstractJob {
 			Set<String> tabNames=getChangeTableSet(logs);
 			log.info("PoiColumnValidationJob:加载精编检查对象");
 			//获取poi对象			
-			Map<Long, BasicObj> objs = ObjBatchSelector.selectByPids(conn, ObjectName.IX_POI, tabNames, 
+			Map<Long, BasicObj> objs = ObjBatchSelector.selectByPids(conn, ObjectName.IX_POI, tabNames, false,
 					myRequest.getPids(), false, false);
 			//将poi对象与履历合并起来
 			ObjHisLogParser.parse(objs, logs);

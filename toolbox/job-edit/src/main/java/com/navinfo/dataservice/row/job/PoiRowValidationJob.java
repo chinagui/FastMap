@@ -58,7 +58,7 @@ public class PoiRowValidationJob extends AbstractJob {
 			Set<String> tabNames=getChangeTableSet(logs);
 			log.info("PoiRowValidationJob:加载检查对象");
 			//获取poi对象			
-			Map<Long, BasicObj> objs = ObjBatchSelector.selectByPids(conn, ObjectName.IX_POI, tabNames, 
+			Map<Long, BasicObj> objs = ObjBatchSelector.selectByPids(conn, ObjectName.IX_POI, tabNames, false,
 					myRequest.getPids(), false, false);
 			//将poi对象与履历合并起来
 			ObjHisLogParser.parse(objs, logs);

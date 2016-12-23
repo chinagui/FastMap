@@ -29,7 +29,6 @@ public class Process extends AbstractProcess<Command> {
 
 	@Override
 	public String exeOperation() throws Exception {
-		// TODO Auto-generated method stub
 		return new Operation(this.getCommand()).run(this.getResult());
 
 	}
@@ -50,17 +49,15 @@ public class Process extends AbstractProcess<Command> {
 		try {
 			this.prepareData();
 
+			IOperation operation = new Operation(this.getCommand());
+
+			msg = operation.run(this.getResult());
+
 			String preCheckMsg = this.preCheck();
 
 			if (preCheckMsg != null) {
 				throw new Exception(preCheckMsg);
 			}
-
-			IOperation operation = new Operation(this.getCommand());
-
-			msg = operation.run(this.getResult());
-
-			this.postCheck();
 
 		} catch (Exception e) {
 

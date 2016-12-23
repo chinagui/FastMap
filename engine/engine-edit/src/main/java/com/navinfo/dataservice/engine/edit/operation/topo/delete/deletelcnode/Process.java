@@ -76,11 +76,6 @@ public class Process extends AbstractProcess<Command> {
 
 	@Override
 	public boolean prepareData() throws Exception {
-		// 检查是否可以删除
-		String msg = preCheck();
-		if (null != msg) {
-			throw new Exception(msg);
-		}
 		// 获取该adnode对象
 		lockLcNode();
 		if (this.getCommand().getNode() == null) {

@@ -28,6 +28,7 @@ public class RdLinkForm implements IRow {
 	private int auxiFlag;
 
 	private int kgFlag;
+	private ObjStatus status;
 
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 
@@ -120,12 +121,12 @@ public class RdLinkForm implements IRow {
 	@Override
 	public ObjStatus status() {
 
-		return null;
+		return status;
 	}
 
 	@Override
 	public void setStatus(ObjStatus os) {
-
+		status = os;
 	}
 
 	@Override

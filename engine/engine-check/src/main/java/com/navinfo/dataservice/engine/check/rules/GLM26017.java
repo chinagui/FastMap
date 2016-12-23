@@ -7,37 +7,23 @@ import java.util.Map;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.model.rd.directroute.RdDirectroute;
-import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneTopology;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionDetail;
 import com.navinfo.dataservice.dao.glm.model.rd.voiceguide.RdVoiceguide;
 import com.navinfo.dataservice.dao.glm.model.rd.voiceguide.RdVoiceguideDetail;
-import com.navinfo.dataservice.dao.glm.selector.rd.directroute.RdDirectrouteSelector;
-import com.navinfo.dataservice.dao.glm.selector.rd.laneconnexity.RdLaneConnexitySelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
-import com.navinfo.dataservice.dao.glm.selector.rd.restrict.RdRestrictionSelector;
-import com.navinfo.dataservice.dao.glm.selector.rd.voiceguide.RdVoiceguideSelector;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
-import com.navinfo.navicommons.geo.computation.GeometryUtils;
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.CoordinateFilter;
-import com.vividsolutions.jts.geom.CoordinateSequenceComparator;
-import com.vividsolutions.jts.geom.CoordinateSequenceFilter;
-import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryComponentFilter;
-import com.vividsolutions.jts.geom.GeometryFilter;
-import com.vividsolutions.jts.geom.util.GeometryTransformer;
 
 /**
  * 交限 html GLM26017 后台 如果交限、语音引导、顺行进入线和退出线挂接在同一点上，而且这个点未登记路口（不属于任何路口），则不允许制作和修改
  * 
  * @author zhangxiaoyi
- * 
+ * 如果交限、语音引导、顺行进入线和退出线挂接在同一点上，而且这个点未登记路口（不属于任何路口），则不允许制作和修改
  */
 public class GLM26017 extends baseRule {
 
@@ -82,7 +68,7 @@ public class GLM26017 extends baseRule {
 				}
 				// 进入线和退出线挂接在同一点上，而且这个点未登记路口
 				if (hasSameNode && !isCrossNode(nodePid)) {
-					this.setCheckResult(GeoTranslator.transform(link.getGeometry(), 0.00001, 5), "[RD_NODE,"+nodePid+"]", link.getMeshId(),"交限进入线和退出线挂接在同一点上，而且这个点未登记路口");
+					this.setCheckResult(GeoTranslator.transform(link.getGeometry(), 0.00001, 5), "[RD_NODE,"+nodePid+"]", link.getMeshId(),"如果交限进入线和退出线挂接在同一点上，而且这个点未登记路口（不属于任何路口），则不允许制作和修改");
 					return;
 				}
 			} else if (obj instanceof RdDirectroute) {// 顺行
@@ -108,7 +94,7 @@ public class GLM26017 extends baseRule {
 				}
 				// 进入线和退出线挂接在同一点上，而且这个点未登记路口
 				if (hasSameNode && !isCrossNode(nodePid)) {
-					this.setCheckResult(GeoTranslator.transform(linkObj.getGeometry(), 0.00001, 5), "[RD_NODE,"+nodePid+"]", linkObj.getMeshId(),"顺行进入线和退出线挂接在同一点上，而且这个点未登记路口");
+					this.setCheckResult(GeoTranslator.transform(linkObj.getGeometry(), 0.00001, 5), "[RD_NODE,"+nodePid+"]", linkObj.getMeshId(),"如果顺行进入线和退出线挂接在同一点上，而且这个点未登记路口（不属于任何路口），则不允许制作和修改");
 					return;
 				}
 			} else if (obj instanceof RdVoiceguide) {// 语音引导
@@ -140,7 +126,7 @@ public class GLM26017 extends baseRule {
 				}
 				// 进入线和退出线挂接在同一点上，而且这个点未登记路口
 				if (hasSameNode && !isCrossNode(nodePid)) {
-					this.setCheckResult(GeoTranslator.transform(link.getGeometry(), 0.00001, 5), "[RD_NODE,"+nodePid+"]", link.getMeshId(),"语音引导进入线和退出线挂接在同一点上，而且这个点未登记路口");
+					this.setCheckResult(GeoTranslator.transform(link.getGeometry(), 0.00001, 5), "[RD_NODE,"+nodePid+"]", link.getMeshId(),"如果语音引导进入线和退出线挂接在同一点上，而且这个点未登记路口（不属于任何路口），则不允许制作和修改");
 					return;
 				}
 			}
@@ -167,6 +153,48 @@ public class GLM26017 extends baseRule {
 
 	@Override
 	public void postCheck(CheckCommand checkCommand) throws Exception {
-		checkCore(checkCommand);
+		//checkCore(checkCommand);
+		for(IRow row:checkCommand.getGlmList()){
+			//车信关系类型编辑
+			if (row instanceof RdLaneTopology){
+				RdLaneTopology rdLaneTopology = (RdLaneTopology) row;
+				checkRdLaneTopology(rdLaneTopology);
+			}
+		}
+	}
+	
+	/**
+	 * @author Han Shaoming
+	 * @param rdLaneConnexity
+	 * @throws Exception 
+	 */
+	private void checkRdLaneTopology(RdLaneTopology rdLaneTopology) throws Exception {
+		// TODO Auto-generated method stub
+		//修改车信,触发检查
+		if(ObjStatus.UPDATE.equals(rdLaneTopology.status())){
+			StringBuilder sb = new StringBuilder();
+			
+			sb.append("WITH T AS (SELECT RL.S_NODE_PID NODE_PID,RLT.CONNEXITY_PID");
+			sb.append(" FROM RD_LANE_TOPOLOGY RLT, RD_LINK RL WHERE RLT.OUT_LINK_PID = RL.LINK_PID AND RLT.U_RECORD <>2");
+			sb.append(" AND RL.U_RECORD <>2 AND RLT.TOPOLOGY_ID="+rdLaneTopology.getPid());
+			sb.append(" UNION SELECT RL.E_NODE_PID NODE_PID,RLT.CONNEXITY_PID");
+			sb.append(" FROM RD_LANE_TOPOLOGY RLT, RD_LINK RL WHERE RLT.OUT_LINK_PID = RL.LINK_PID");
+			sb.append(" AND RLT.U_RECORD <>2 AND RL.U_RECORD <>2 AND RLT.TOPOLOGY_ID="+rdLaneTopology.getPid()+")");
+			sb.append(" SELECT DISTINCT RLC.PID FROM RD_LANE_CONNEXITY RLC,T");
+			sb.append(" WHERE RLC.PID=T.CONNEXITY_PID AND RLC.U_RECORD <> 2 AND NOT EXISTS");
+			sb.append(" (SELECT 1 FROM RD_CROSS_NODE CN WHERE CN.NODE_PID = RLC.NODE_PID AND CN.U_RECORD <> 2)");
+			
+			String sql = sb.toString();
+			log.info("RdLaneConnexity后检查GLM26017--sql:" + sql);
+			
+			DatabaseOperator getObj = new DatabaseOperator();
+			List<Object> resultList = new ArrayList<Object>();
+			resultList = getObj.exeSelect(this.getConn(), sql);
+			
+			if(!resultList.isEmpty()){
+				String target = "[RD_LANE_CONNEXITY," + (long)resultList.get(0) + "]";
+				this.setCheckResult("", target, 0,"如果车信进入线和退出线挂接在同一点上，而且这个点未登记路口（不属于任何路口），则不允许制作和修改");
+			}
+		}
 	}
 }

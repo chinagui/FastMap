@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -32,7 +33,7 @@ import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
  * 大门方向编辑服务端前检查：如果大门为单向，则执行检查。如果大门进入线与退出线为双向道路，且另一个方向并未制作禁止通行的普通交限，则检查不通过。
  */
 public class GLM04008_1 extends baseRule{
-
+	
 	/**
 	 * 
 	 */

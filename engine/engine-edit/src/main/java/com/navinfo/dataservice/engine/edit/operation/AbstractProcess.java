@@ -130,25 +130,33 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 	public String preCheck() throws Exception {
 		// TODO Auto-generated method stub
 		// createPreCheckGlmList();
-		this.checkCommand.setGlmList(this.getResult().getAddObjects());
-		this.checkCommand.setListStatus("ADD");
+		List<IRow> glmList = new ArrayList<IRow>();
+		glmList.addAll(this.getResult().getAddObjects());
+		glmList.addAll(this.getResult().getUpdateObjects());
+		glmList.addAll(this.getResult().getDelObjects());
+		this.checkCommand.setGlmList(glmList);
 		String msg = checkEngine.preCheck();
-
-		if (msg != null && !msg.isEmpty()) {
-			return msg;
-		}
-
-		this.checkCommand.setGlmList(this.getResult().getUpdateObjects());
-		this.checkCommand.setListStatus("UPDATE");
-		msg = checkEngine.preCheck();
-		if (msg != null && !msg.isEmpty()) {
-			return msg;
-		}
-
-		this.checkCommand.setGlmList(this.getResult().getDelObjects());
-		this.checkCommand.setListStatus("DEL");
-		msg = checkEngine.preCheck();
 		return msg;
+		
+//		this.checkCommand.setGlmList(this.getResult().getAddObjects());
+//		this.checkCommand.setListStatus("ADD");
+//		String msg = checkEngine.preCheck();
+//
+//		if (msg != null && !msg.isEmpty()) {
+//			return msg;
+//		}
+//
+//		this.checkCommand.setGlmList(this.getResult().getUpdateObjects());
+//		this.checkCommand.setListStatus("UPDATE");
+//		msg = checkEngine.preCheck();
+//		if (msg != null && !msg.isEmpty()) {
+//			return msg;
+//		}
+//
+//		this.checkCommand.setGlmList(this.getResult().getDelObjects());
+//		this.checkCommand.setListStatus("DEL");
+//		msg = checkEngine.preCheck();
+//		return msg;
 	}
 
 	// 构造前检查参数。前检查，如果command中的构造不满足前检查参数需求，则需重写该方法，具体可参考createPostCheckGlmList
@@ -291,13 +299,18 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 	public void postCheck() throws Exception {
 		// TODO Auto-generated method stub
 		// this.createPostCheckGlmList();
-		this.checkCommand.setGlmList(this.getResult().getAddObjects());
-		this.checkCommand.setListStatus("ADD");
+		List<IRow> glmList = new ArrayList<IRow>();
+		glmList.addAll(this.getResult().getAddObjects());
+		glmList.addAll(this.getResult().getUpdateObjects());
+		this.checkCommand.setGlmList(glmList);
 		this.checkEngine.postCheck();
-
-		this.checkCommand.setGlmList(this.getResult().getUpdateObjects());
-		this.checkCommand.setListStatus("UPDATE");
-		this.checkEngine.postCheck();
+//		this.checkCommand.setGlmList(this.getResult().getAddObjects());
+//		this.checkCommand.setListStatus("ADD");
+//		this.checkEngine.postCheck();
+//
+//		this.checkCommand.setGlmList(this.getResult().getUpdateObjects());
+//		this.checkCommand.setListStatus("UPDATE");
+//		this.checkEngine.postCheck();
 
 	}
 

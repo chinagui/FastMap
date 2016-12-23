@@ -12,6 +12,7 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
@@ -25,6 +26,8 @@ import com.navinfo.dataservice.dao.glm.model.rd.lane.RdLaneCondition;
 import com.navinfo.dataservice.dao.glm.model.rd.lane.RdLaneTopoDetail;
 import com.navinfo.dataservice.dao.glm.model.rd.lane.RdLaneTopoVia;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
+import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneTopology;
+import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneVia;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
@@ -32,6 +35,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionCondition;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionDetail;
 import com.navinfo.dataservice.dao.glm.model.rd.tollgate.RdTollgate;
 import com.navinfo.dataservice.engine.check.core.CheckRule;
+import com.navinfo.dataservice.engine.check.rules.CrossingLaneOutlinkDirect;
 import com.navinfo.dataservice.engine.check.rules.GLM01017;
 import com.navinfo.dataservice.engine.check.rules.GLM01091;
 import com.navinfo.dataservice.engine.check.rules.GLM01570;
@@ -40,6 +44,9 @@ import com.navinfo.dataservice.engine.check.rules.GLM04006;
 import com.navinfo.dataservice.engine.check.rules.GLM04008_1;
 import com.navinfo.dataservice.engine.check.rules.GLM04008_2;
 import com.navinfo.dataservice.engine.check.rules.GLM08004;
+import com.navinfo.dataservice.engine.check.rules.GLM19001_2;
+import com.navinfo.dataservice.engine.check.rules.GLM19001_3;
+import com.navinfo.dataservice.engine.check.rules.GLM19014;
 import com.navinfo.dataservice.engine.check.rules.GLM26044;
 import com.navinfo.dataservice.engine.check.rules.GLM32005;
 import com.navinfo.dataservice.engine.check.rules.GLM32006;
@@ -53,6 +60,9 @@ import com.navinfo.dataservice.engine.check.rules.GLM32060;
 import com.navinfo.dataservice.engine.check.rules.GLM32071;
 import com.navinfo.dataservice.engine.check.rules.GLM32092;
 import com.navinfo.dataservice.engine.check.rules.GLM32093;
+import com.navinfo.dataservice.engine.check.rules.PERMIT_CHECK_LANE_PASSLINKS_LESS15;
+import com.navinfo.dataservice.engine.check.rules.RELATING_CHECK_CROSS_RELATION_MUST_CONNECTED1;
+import com.navinfo.dataservice.engine.check.rules.RdLane002;
 
 /** 
  * @ClassName: CheckRuleTest
@@ -983,5 +993,355 @@ public class CheckRuleTest {
 		List<CheckRule> checkRuleList = checkEngine.checkRuleList;
 		System.out.println("ok");
 	}
+	
+	@Test
+	public void testPERMIT_CHECK_LANE_PASSLINKS_LESS15() throws Exception{
+		Connection conn=DBConnector.getInstance().getConnectionById(17);
+		CheckCommand cc = new CheckCommand();
+		List<IRow> glmList = new ArrayList<IRow>();
+		RdLaneConnexity rdLaneConnexity  = new RdLaneConnexity();
+		rdLaneConnexity.setStatus(ObjStatus.INSERT);
+		
+		List<IRow> topos = new ArrayList<IRow>();
+		RdLaneTopology rdLaneTopology = new RdLaneTopology();
+		rdLaneTopology.setPid(1);
+		rdLaneTopology.setRelationshipType(2);
+		rdLaneTopology.setStatus(ObjStatus.INSERT);
+		
+		List<IRow> vias = new ArrayList<IRow>();
+		
+		RdLaneVia rdLaneVia = new RdLaneVia();
+		rdLaneVia.setTopologyId(1);
+		rdLaneVia.setStatus(ObjStatus.INSERT);
+		vias.add(rdLaneVia);
+		glmList.add(rdLaneVia);
+		RdLaneVia rdLaneVia2 = new RdLaneVia();
+		rdLaneVia2.setTopologyId(1);
+		rdLaneVia2.setStatus(ObjStatus.UPDATE);
+		vias.add(rdLaneVia2);
+		glmList.add(rdLaneVia2);
+		
+		rdLaneTopology.setVias(vias);
+		topos.add(rdLaneTopology);
+		rdLaneConnexity.setTopos(topos);
+		
+		glmList.add(rdLaneConnexity);
+
+		
+		RdLaneTopology rdLaneTopology2 = new RdLaneTopology();
+		rdLaneTopology2.setPid(1);
+		rdLaneTopology2.setStatus(ObjStatus.UPDATE);
+		rdLaneTopology2.setVias(vias);
+		glmList.add(rdLaneTopology2);
+		
+		RdLaneVia rdLaneVia3 = new RdLaneVia();
+		rdLaneVia3.setTopologyId(1);
+		rdLaneVia3.setStatus(ObjStatus.DELETE);
+		glmList.add(rdLaneVia3);
+
+		RdLaneVia rdLaneVia4 = new RdLaneVia();
+		rdLaneVia4.setTopologyId(1);
+		rdLaneVia4.setStatus(ObjStatus.INSERT);
+		glmList.add(rdLaneVia4);
+
+		cc.setGlmList(glmList);
+		PERMIT_CHECK_LANE_PASSLINKS_LESS15 c = new PERMIT_CHECK_LANE_PASSLINKS_LESS15();
+		c.setConn(conn);
+		c.preCheck(cc);
+		List result = c.getCheckResultList();
+		
+		System.out.println("end");
+	}
+	
+	@Test
+	public void testRELATING_CHECK_CROSS_RELATION_MUST_CONNECTED1() throws Exception{
+		Connection conn=DBConnector.getInstance().getConnectionById(17);
+		CheckCommand cc = new CheckCommand();
+		List<IRow> glmList = new ArrayList<IRow>();
+		RdLaneConnexity rdLaneConnexity  = new RdLaneConnexity();
+		rdLaneConnexity.setInLinkPid(1);
+		rdLaneConnexity.setNodePid(2);
+		rdLaneConnexity.setStatus(ObjStatus.INSERT);
+		glmList.add(rdLaneConnexity);
+
+		List<IRow> topos = new ArrayList<IRow>();
+		RdLaneTopology rdLaneTopology = new RdLaneTopology();
+		rdLaneTopology.setOutLinkPid(2);
+		rdLaneTopology.setRelationshipType(1);
+		rdLaneTopology.setStatus(ObjStatus.INSERT);
+		topos.add(rdLaneTopology);
+		rdLaneConnexity.setTopos(topos);
+
+		RdLaneTopology rdLaneTopology2 = new RdLaneTopology();
+		rdLaneTopology2.setPid(1);
+		rdLaneTopology2.setOutLinkPid(2);
+		rdLaneTopology2.setConnexityPid(1);
+		rdLaneTopology2.setStatus(ObjStatus.INSERT);
+		glmList.add(rdLaneTopology2);
+
+		cc.setGlmList(glmList);
+		RELATING_CHECK_CROSS_RELATION_MUST_CONNECTED1 c = new RELATING_CHECK_CROSS_RELATION_MUST_CONNECTED1();
+		c.setConn(conn);
+		c.preCheck(cc);
+		List result = c.getCheckResultList();
+		
+		System.out.println("end");
+	}
+	
+	@Test
+	public void testGLM19001_2() throws Exception{
+		Connection conn=DBConnector.getInstance().getConnectionById(17);
+		CheckCommand cc = new CheckCommand();
+		List<IRow> glmList = new ArrayList<IRow>();
+		RdLaneConnexity rdLaneConnexity  = new RdLaneConnexity();
+		rdLaneConnexity.setInLinkPid(1);
+		rdLaneConnexity.setStatus(ObjStatus.INSERT);
+		
+		List<IRow> topos = new ArrayList<IRow>();
+		RdLaneTopology rdLaneTopology = new RdLaneTopology();
+		rdLaneTopology.setPid(1);
+		rdLaneTopology.setOutLinkPid(2);
+		rdLaneTopology.setRelationshipType(2);
+		rdLaneTopology.setStatus(ObjStatus.INSERT);
+		
+		List<IRow> vias = new ArrayList<IRow>();
+		
+		RdLaneVia rdLaneVia = new RdLaneVia();
+		rdLaneVia.setTopologyId(1);
+		rdLaneVia.setLinkPid(3);
+		rdLaneVia.setStatus(ObjStatus.INSERT);
+		vias.add(rdLaneVia);
+		glmList.add(rdLaneVia);
+		RdLaneVia rdLaneVia2 = new RdLaneVia();
+		rdLaneVia2.setTopologyId(1);
+		rdLaneVia2.setStatus(ObjStatus.UPDATE);
+		rdLaneVia2.setLinkPid(4);
+		vias.add(rdLaneVia2);
+		glmList.add(rdLaneVia2);
+		
+		rdLaneTopology.setVias(vias);
+		topos.add(rdLaneTopology);
+		rdLaneConnexity.setTopos(topos);
+		
+		glmList.add(rdLaneConnexity);
+
+		
+		RdLaneTopology rdLaneTopology2 = new RdLaneTopology();
+		rdLaneTopology2.setPid(1);
+		rdLaneTopology2.setStatus(ObjStatus.UPDATE);
+		rdLaneTopology2.setVias(vias);
+		glmList.add(rdLaneTopology2);
+		
+		RdLaneVia rdLaneVia3 = new RdLaneVia();
+		rdLaneVia3.setTopologyId(1);
+		rdLaneVia3.setStatus(ObjStatus.DELETE);
+		rdLaneVia3.setGroupId(5);
+		glmList.add(rdLaneVia3);
+
+		RdLaneVia rdLaneVia4 = new RdLaneVia();
+		rdLaneVia4.setTopologyId(1);
+		rdLaneVia4.setStatus(ObjStatus.INSERT);
+		rdLaneVia3.setGroupId(6);
+		glmList.add(rdLaneVia4);
+
+		cc.setGlmList(glmList);
+		GLM19001_2 c = new GLM19001_2();
+		c.setConn(conn);
+		c.preCheck(cc);
+		List result = c.getCheckResultList();
+		
+		System.out.println("end");
+	}
+	
+	@Test
+	public void testGLM19001_3() throws Exception{
+		Connection conn=DBConnector.getInstance().getConnectionById(17);
+		CheckCommand cc = new CheckCommand();
+		List<IRow> glmList = new ArrayList<IRow>();
+		RdLaneConnexity rdLaneConnexity  = new RdLaneConnexity();
+		rdLaneConnexity.setInLinkPid(1);
+		rdLaneConnexity.setStatus(ObjStatus.INSERT);
+		
+		List<IRow> topos = new ArrayList<IRow>();
+		RdLaneTopology rdLaneTopology = new RdLaneTopology();
+		rdLaneTopology.setPid(1);
+		rdLaneTopology.setOutLinkPid(2);
+		rdLaneTopology.setRelationshipType(2);
+		rdLaneTopology.setStatus(ObjStatus.INSERT);
+		
+		List<IRow> vias = new ArrayList<IRow>();
+		
+		RdLaneVia rdLaneVia = new RdLaneVia();
+		rdLaneVia.setTopologyId(1);
+		rdLaneVia.setLinkPid(3);
+		rdLaneVia.setStatus(ObjStatus.INSERT);
+		vias.add(rdLaneVia);
+		glmList.add(rdLaneVia);
+		RdLaneVia rdLaneVia2 = new RdLaneVia();
+		rdLaneVia2.setTopologyId(1);
+		rdLaneVia2.setStatus(ObjStatus.UPDATE);
+		rdLaneVia2.setLinkPid(4);
+		vias.add(rdLaneVia2);
+		glmList.add(rdLaneVia2);
+		
+		rdLaneTopology.setVias(vias);
+		topos.add(rdLaneTopology);
+		rdLaneConnexity.setTopos(topos);
+		
+		glmList.add(rdLaneConnexity);
+
+		
+		RdLaneTopology rdLaneTopology2 = new RdLaneTopology();
+		rdLaneTopology2.setPid(1);
+		rdLaneTopology2.setStatus(ObjStatus.UPDATE);
+		rdLaneTopology2.setVias(vias);
+		glmList.add(rdLaneTopology2);
+		
+		RdLaneVia rdLaneVia3 = new RdLaneVia();
+		rdLaneVia3.setTopologyId(1);
+		rdLaneVia3.setStatus(ObjStatus.DELETE);
+		rdLaneVia3.setGroupId(5);
+		glmList.add(rdLaneVia3);
+
+		RdLaneVia rdLaneVia4 = new RdLaneVia();
+		rdLaneVia4.setTopologyId(1);
+		rdLaneVia4.setStatus(ObjStatus.INSERT);
+		rdLaneVia3.setGroupId(6);
+		glmList.add(rdLaneVia4);
+
+		cc.setGlmList(glmList);
+		GLM19001_3 c = new GLM19001_3();
+		c.setConn(conn);
+		c.preCheck(cc);
+		List result = c.getCheckResultList();
+		
+		System.out.println("end");
+	}
+	
+	@Test
+	public void testGLM19014() throws Exception{
+		Connection conn=DBConnector.getInstance().getConnectionById(17);
+		CheckCommand cc = new CheckCommand();
+		List<IRow> glmList = new ArrayList<IRow>();
+		RdLinkForm rdLinkForm = new RdLinkForm();
+		rdLinkForm.setFormOfWay(50);
+		rdLinkForm.setLinkPid(1);
+		glmList.add(rdLinkForm);
+
+		cc.setGlmList(glmList);
+		GLM19014 c = new GLM19014();
+		c.setConn(conn);
+		c.preCheck(cc);
+		List result = c.getCheckResultList();
+		
+		System.out.println("end");
+	}
+	
+	@Test
+	public void testCrossingLaneOutlinkDirect() throws Exception{
+		Connection conn=DBConnector.getInstance().getConnectionById(17);
+		CheckCommand cc = new CheckCommand();
+		List<IRow> glmList = new ArrayList<IRow>();
+		RdLaneConnexity rdLaneConnexity  = new RdLaneConnexity();
+		rdLaneConnexity.setInLinkPid(1);
+		rdLaneConnexity.setNodePid(1);
+		rdLaneConnexity.setStatus(ObjStatus.INSERT);
+		
+		List<IRow> topos = new ArrayList<IRow>();
+		RdLaneTopology rdLaneTopology = new RdLaneTopology();
+		rdLaneTopology.setPid(1);
+		rdLaneTopology.setOutLinkPid(2);
+		rdLaneTopology.setRelationshipType(1);
+		rdLaneTopology.setStatus(ObjStatus.INSERT);
+
+		topos.add(rdLaneTopology);
+		rdLaneConnexity.setTopos(topos);
+		
+		glmList.add(rdLaneConnexity);
+
+		
+		RdLaneTopology rdLaneTopology2 = new RdLaneTopology();
+		rdLaneTopology2.setPid(2);
+		rdLaneTopology2.setConnexityPid(1);
+		rdLaneTopology2.setOutLinkPid(5);
+		rdLaneTopology2.setStatus(ObjStatus.INSERT);
+		rdLaneTopology.setRelationshipType(1);
+		glmList.add(rdLaneTopology2);
+
+		cc.setGlmList(glmList);
+		CrossingLaneOutlinkDirect c = new CrossingLaneOutlinkDirect();
+		c.setConn(conn);
+		c.preCheck(cc);
+		List result = c.getCheckResultList();
+		
+		System.out.println("end");
+	}
+	
+	@Test
+	public void testRdLane002() throws Exception{
+		Connection conn=DBConnector.getInstance().getConnectionById(17);
+		CheckCommand cc = new CheckCommand();
+		List<IRow> glmList = new ArrayList<IRow>();
+		RdLaneConnexity rdLaneConnexity  = new RdLaneConnexity();
+		rdLaneConnexity.setInLinkPid(1);
+		rdLaneConnexity.setStatus(ObjStatus.INSERT);
+		
+		List<IRow> topos = new ArrayList<IRow>();
+		RdLaneTopology rdLaneTopology = new RdLaneTopology();
+		rdLaneTopology.setPid(1);
+		rdLaneTopology.setOutLinkPid(2);
+		rdLaneTopology.setRelationshipType(2);
+		rdLaneTopology.setStatus(ObjStatus.INSERT);
+		
+		List<IRow> vias = new ArrayList<IRow>();
+		
+		RdLaneVia rdLaneVia = new RdLaneVia();
+		rdLaneVia.setTopologyId(1);
+		rdLaneVia.setLinkPid(3);
+		rdLaneVia.setStatus(ObjStatus.INSERT);
+		vias.add(rdLaneVia);
+		glmList.add(rdLaneVia);
+		RdLaneVia rdLaneVia2 = new RdLaneVia();
+		rdLaneVia2.setTopologyId(1);
+		rdLaneVia2.setStatus(ObjStatus.UPDATE);
+		rdLaneVia2.setLinkPid(4);
+		vias.add(rdLaneVia2);
+		glmList.add(rdLaneVia2);
+		
+		rdLaneTopology.setVias(vias);
+		topos.add(rdLaneTopology);
+		rdLaneConnexity.setTopos(topos);
+		
+		glmList.add(rdLaneConnexity);
+
+		
+		RdLaneTopology rdLaneTopology2 = new RdLaneTopology();
+		rdLaneTopology2.setPid(1);
+		rdLaneTopology2.setRelationshipType(2);
+		rdLaneTopology2.setStatus(ObjStatus.UPDATE);
+		rdLaneTopology2.setVias(vias);
+		glmList.add(rdLaneTopology2);
+		
+		RdLaneVia rdLaneVia3 = new RdLaneVia();
+		rdLaneVia3.setTopologyId(1);
+		rdLaneVia3.setStatus(ObjStatus.DELETE);
+		rdLaneVia3.setGroupId(5);
+		glmList.add(rdLaneVia3);
+
+		RdLaneVia rdLaneVia4 = new RdLaneVia();
+		rdLaneVia4.setTopologyId(1);
+		rdLaneVia4.setStatus(ObjStatus.INSERT);
+		rdLaneVia3.setGroupId(6);
+		glmList.add(rdLaneVia4);
+
+		cc.setGlmList(glmList);
+		RdLane002 c = new RdLane002();
+		c.setConn(conn);
+		c.preCheck(cc);
+		List result = c.getCheckResultList();
+		
+		System.out.println("end");
+	}
+	
 }
 

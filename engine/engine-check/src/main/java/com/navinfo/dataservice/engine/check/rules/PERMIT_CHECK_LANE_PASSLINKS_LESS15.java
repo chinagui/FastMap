@@ -6,30 +6,31 @@ import java.util.Map;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
+import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneTopology;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneVia;
 import com.navinfo.dataservice.engine.check.core.baseRule;
-/**
- * 车信	html	RDLANE002	后台	
- * 线线车信必须有经过线
- * @author zhangxiaoyi
- *新增车信服务端前检查RdLaneConnexity
- *修改车信服务端前检查RdLaneTopology
+
+/** 
+ * @ClassName: PERMIT_CHECK_LANE_PASSLINKS_LESS15
+ * @author songdongyan
+ * @date 2016年12月22日
+ * @Description: 一条进入线和一条退出线之间，不能超过15条经过线
+ * 新增车信服务端前检查:RdLaneConnexity
+ * 修改车信服务端前检查:RdLaneTopology
  */
-public class RdLane002 extends baseRule {
+public class PERMIT_CHECK_LANE_PASSLINKS_LESS15 extends baseRule{
 
-	public RdLane002() {
-		// TODO Auto-generated constructor stub
-	}
-
+	/* (non-Javadoc)
+	 * @see com.navinfo.dataservice.engine.check.core.baseRule#preCheck(com.navinfo.dataservice.dao.check.CheckCommand)
+	 */
 	@Override
 	public void preCheck(CheckCommand checkCommand) throws Exception {
 		for(IRow obj : checkCommand.getGlmList()){
-			//create的时候只有主表对象，其中包含的内容涵盖子表内容，可直接用
-			if (obj instanceof RdLaneConnexity){//交限
-				RdLaneConnexity laneObj=(RdLaneConnexity) obj;
-				checkRdLaneConnexity(laneObj);
+			if (obj instanceof RdLaneConnexity){
+				RdLaneConnexity rdLaneConnexity = (RdLaneConnexity)obj;
+				checkRdLaneConnexity(rdLaneConnexity,checkCommand.getOperType());
 			}
 			//修改车信
 			else if(obj instanceof RdLaneTopology){
@@ -37,16 +38,17 @@ public class RdLane002 extends baseRule {
 				checkRdLaneTopology(rdLaneTopology,checkCommand);
 			}
 		}
+		
 	}
+
 	/**
 	 * @param rdLaneTopology
-	 * @param checkCommand 
-	 * @throws Exception 
+	 * @param checkCommand
 	 */
-	private void checkRdLaneTopology(RdLaneTopology rdLaneTopology, CheckCommand checkCommand) throws Exception {
+	private void checkRdLaneTopology(RdLaneTopology rdLaneTopology, CheckCommand checkCommand) {
 		//新增联通关系
+		ObjStatus temp = rdLaneTopology.status();
 		if(rdLaneTopology.status().equals(ObjStatus.INSERT)){
-			if(rdLaneTopology.getRelationshipType()==2){
 				int viaNum = 0;
 				for(IRow objInnerLoop : checkCommand.getGlmList()){
 					if(objInnerLoop instanceof RdLaneVia){
@@ -60,26 +62,13 @@ public class RdLane002 extends baseRule {
 						}
 					}
 				}
-				if(viaNum==0){
+				if(viaNum>15){
 					this.setCheckResult("", "", 0);
 				}
-			}
 		}
 		//修改联通关系
 		else if(rdLaneTopology.status().equals(ObjStatus.UPDATE)){
 			int viaNum = rdLaneTopology.getVias().size();
-//			List<String> viaLinks = new ArrayList<String>();
-//			String sql = "SELECT LISTAGG(V.LINK_PID,',') WITHIN GROUP (ORDER BY V.LINK_PID)"
-//					+ " FROM RD_LANE_VIA V"
-//					+ " WHERE V.TOPOLOGY_ID = " + rdLaneTopology.getPid()
-//					+ " AND V.U_RECORD <> 2 ";
-//			DatabaseOperator getObj = new DatabaseOperator();
-//			List<Object> resultList = new ArrayList<Object>();
-//			resultList = getObj.exeSelect(this.getConn(), sql);
-//			
-//			if(resultList.size()>0){
-//				viaLinks = Arrays.asList(resultList.get(0).toString().split(","));
-//			}
 			for(IRow objInnerLoop : checkCommand.getGlmList()){
 				if(objInnerLoop instanceof RdLaneVia){
 					RdLaneVia rdLaneVia = (RdLaneVia)objInnerLoop;
@@ -100,7 +89,7 @@ public class RdLane002 extends baseRule {
 				}
 			}
 			
-			if(viaNum==0){
+			if(viaNum>15){
 				this.setCheckResult("", "", 0);
 			}
 		}
@@ -108,17 +97,18 @@ public class RdLane002 extends baseRule {
 	}
 
 	/**
-	 * @param laneObj
+	 * @param rdLaneConnexity
+	 * @param operType
 	 */
-	private void checkRdLaneConnexity(RdLaneConnexity laneObj) {
-		Map<String, Object> changedFields=laneObj.changedFields();
+	private void checkRdLaneConnexity(RdLaneConnexity rdLaneConnexity, OperType operType) {
+		Map<String, Object> changedFields=rdLaneConnexity.changedFields();
 		//新增执行该检查
 		if(changedFields!=null && !changedFields.isEmpty()){return;}
-		for(IRow topo:laneObj.getTopos()){
+		for(IRow topo:rdLaneConnexity.getTopos()){
 			RdLaneTopology topoObj=(RdLaneTopology) topo;
 			if(topoObj.getRelationshipType()==2){
 				List<IRow> vias=topoObj.getVias();
-				if(vias==null||vias.size()==0){
+				if(vias.size()>15){
 					this.setCheckResult("", "", 0);
 					return;
 				}
@@ -127,6 +117,9 @@ public class RdLane002 extends baseRule {
 		
 	}
 
+	/* (non-Javadoc)
+	 * @see com.navinfo.dataservice.engine.check.core.baseRule#postCheck(com.navinfo.dataservice.dao.check.CheckCommand)
+	 */
 	@Override
 	public void postCheck(CheckCommand checkCommand) throws Exception {
 		// TODO Auto-generated method stub

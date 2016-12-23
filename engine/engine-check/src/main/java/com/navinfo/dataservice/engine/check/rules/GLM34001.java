@@ -10,7 +10,6 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.helper.DatabaseOperatorResult;
-import com.navinfo.dataservice.engine.check.helper.DatabaseOperatorResultWithGeo;
 
 /**
  * 

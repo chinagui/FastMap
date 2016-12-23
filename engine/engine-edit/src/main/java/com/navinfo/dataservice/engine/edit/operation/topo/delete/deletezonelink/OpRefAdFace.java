@@ -6,7 +6,9 @@ import java.util.List;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdmin;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneFace;
+import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdAdminSelector;
 import com.navinfo.dataservice.engine.edit.utils.batch.ZoneIDBatchUtils;
 
 public class OpRefAdFace implements IOperation {
@@ -22,9 +24,13 @@ public class OpRefAdFace implements IOperation {
 
     @Override
     public String run(Result result) throws Exception {
+        AdAdminSelector selector = new AdAdminSelector(conn);
         for (ZoneFace zoneFace : command.getFaces()) {
             result.insertObject(zoneFace, ObjStatus.DELETE, zoneFace.getPid());
-            ZoneIDBatchUtils.updateZoneID(zoneFace, null, zoneFace.getMeshId(), conn, result);
+            AdAdmin admin = (AdAdmin) selector.loadById(zoneFace.getRegionId(), true);
+            if (null != admin && (admin.getAdminType() == 8 || admin.getAdminType() == 9)){
+                ZoneIDBatchUtils.updateZoneID(zoneFace, null, conn, result);
+            }
         }
         return null;
     }

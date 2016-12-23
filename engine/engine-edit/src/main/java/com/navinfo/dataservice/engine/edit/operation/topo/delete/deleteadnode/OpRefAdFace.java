@@ -1,6 +1,8 @@
 package com.navinfo.dataservice.engine.edit.operation.topo.delete.deleteadnode;
 
 
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdmin;
+import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdAdminSelector;
 import com.navinfo.dataservice.engine.edit.utils.batch.AdminIDBatchUtils;
 import org.apache.log4j.Logger;
 
@@ -25,14 +27,18 @@ public class OpRefAdFace implements IOperation {
 
     @Override
     public String run(Result result) throws Exception {
-        String msg = null;
+        AdAdminSelector selector = new AdAdminSelector(conn);
         log.debug("删除行政区划点对应的面关系");
         for (AdFace face : command.getFaces()) {
             result.insertObject(face, ObjStatus.DELETE, face.pid());
-            AdminIDBatchUtils.updateAdminID(face, null, face.getMeshId(), conn, result);
+            AdAdmin admin = (AdAdmin) selector.loadById(face.getRegionId(), true);
+            if(null != admin) {
+                if (null != admin && (admin.getAdminType() == 0 || admin.getAdminType() == 1 || admin.getAdminType() == 2 || admin.getAdminType() == 2.5 || admin.getAdminType() == 3 || admin.getAdminType() == 3.5 || admin.getAdminType() == 4 || admin.getAdminType() == 4.5 || admin.getAdminType() == 4.8 || admin.getAdminType() == 5 || admin.getAdminType() == 6 || admin.getAdminType() == 7))
+                    AdminIDBatchUtils.updateAdminID(face, null, conn, result);
+            }
             result.setPrimaryPid(face.getPid());
         }
-        return msg;
+        return "";
     }
 }
 

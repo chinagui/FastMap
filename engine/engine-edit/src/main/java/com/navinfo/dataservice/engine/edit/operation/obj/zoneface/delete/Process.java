@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.zoneface.delete;
 
 import com.navinfo.dataservice.dao.glm.iface.IProcess;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdmin;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneFace;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdAdminSelector;
 import com.navinfo.dataservice.dao.glm.selector.ad.zone.ZoneFaceSelector;
@@ -32,7 +33,7 @@ public class Process extends AbstractProcess<Command> implements IProcess {
         getCommand().setZoneFace(zoneFace);
         try {
             AdAdminSelector selector = new AdAdminSelector(getConn());
-            getCommand().setAdAdmin(selector.loadByAdminId(zoneFace.getRegionId(), true));
+            getCommand().setAdAdmin((AdAdmin) selector.loadById(zoneFace.getRegionId(), true));
         } catch (Exception e) {
         }
         return super.prepareData();

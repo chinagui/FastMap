@@ -20,8 +20,6 @@ import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
-import com.navinfo.dataservice.dao.glm.model.rd.crf.RdObject;
-import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.crf.RdObjectSelector;
 import com.navinfo.navicommons.geo.computation.JGeometryUtil;
 import com.vividsolutions.jts.geom.Coordinate;
@@ -69,7 +67,7 @@ public class RdObjectSearch implements ISearch {
 	public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z, int gap) throws Exception {
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "WITH TMP1 AS (SELECT LINK_PID FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2), TMP2 AS (SELECT NODE_PID FROM RD_NODE WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:2, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2), TMP1_1 AS (SELECT /*+index(C road_pid)*/ C.PID from RD_OBJECT_ROAD C where exists( select /*+index(B,PID)*/ 1 from tmp1 A,RD_ROAD_LINK B where A.LINK_PID = B.LINK_PID and B.U_RECORD != 2 and b.pid = c.road_pid ) and C.U_RECORD != 2), TMP1_2 AS (SELECT /*+leading(A,B)use_hash(A,B)*/ B.PID FROM TMP1 A, RD_OBJECT_LINK B WHERE A.LINK_PID = B.LINK_PID AND B.U_RECORD != 2), TMP2_1 AS (SELECT /*+index(C INTER_PID)*/ C.PID FROM RD_OBJECT_INTER C where exists( select /*+index(B PID)*/ 1 from TMP2 A,RD_INTER_NODE B where A.NODE_PID = B.NODE_PID and B.U_RECORD != 2 and B.PID = C.INTER_PID ) and C.U_RECORD != 2), TMP1_3 AS (SELECT /*+index(C INTER_PID)*/ C.PID FROM RD_OBJECT_INTER C where exists( select /*+index(B PID)*/ 1 from TMP1 A, RD_INTER_LINK B where A.LINK_PID = B.LINK_PID and B.U_RECORD != 2 and B.PID = C.INTER_PID ) and C.U_RECORD != 2 GROUP BY C.PID), TMP3 AS (SELECT PID FROM TMP1_1 UNION SELECT PID FROM TMP1_2 UNION SELECT PID FROM TMP2_1 UNION SELECT PID FROM TMP1_3) select tmp3.pid,SDO_UTIL.TO_WKTGEOMETRY_VARCHAR(C.GEOMETRY) as GEOMETRY from tmp3 left join RD_OBJECT c on tmp3.pid = c.pid";
+		String sql = "WITH TMP1 AS (SELECT LINK_PID FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2), TMP2 AS (SELECT NODE_PID FROM RD_NODE WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:2, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2), TMP1_1 AS (SELECT /*+index(C)*/ C.PID FROM RD_OBJECT_ROAD C WHERE C.ROAD_PID IN (SELECT /*+index(B)*/ distinct B.PID FROM TMP1 A, RD_ROAD_LINK B WHERE A.LINK_PID = B.LINK_PID AND B.U_RECORD != 2 AND B.PID = C.ROAD_PID) AND C.U_RECORD != 2 ), TMP1_2 AS (SELECT /*+leading(A,B)use_hash(A,B)*/ B.PID FROM TMP1 A, RD_OBJECT_LINK B WHERE A.LINK_PID = B.LINK_PID AND B.U_RECORD != 2 ), TMP2_1 AS (SELECT /*+index(C)*/ C.PID FROM RD_OBJECT_INTER C WHERE C.INTER_PID IN (SELECT /*+index(B)*/ distinct B.PID FROM TMP2 A, RD_INTER_NODE B WHERE A.NODE_PID = B.NODE_PID AND B.U_RECORD != 2 AND B.PID = C.INTER_PID) AND C.U_RECORD != 2), TMP1_3 AS (SELECT /*+index(C)*/ C.PID FROM RD_OBJECT_INTER C WHERE C.INTER_PID in (SELECT /*+index(B)*/ distinct B.PID FROM TMP1 A, RD_INTER_LINK B WHERE A.LINK_PID = B.LINK_PID AND B.U_RECORD != 2 AND B.PID = C.INTER_PID) AND C.U_RECORD != 2), TMP3 AS (SELECT PID FROM TMP1_1 UNION SELECT TMP1_2.PID FROM TMP1_2,tmp1_1 where tmp1_2.pid != TMP1_1.pid UNION SELECT TMP2_1.PID FROM TMP2_1,TMP1_2,tmp1_1 where TMP2_1.pid != TMP1_1.pid UNION SELECT PID FROM TMP1_3) SELECT TMP3.PID, SDO_UTIL.TO_WKTGEOMETRY_VARCHAR(C.GEOMETRY) AS GEOMETRY FROM TMP3 LEFT JOIN RD_OBJECT C ON TMP3.PID = C.PID";
 
 		PreparedStatement pstmt = null;
 
@@ -78,14 +76,12 @@ public class RdObjectSearch implements ISearch {
 		try {
 			pstmt = conn.prepareStatement(sql);
 
-			//扩圈1900像素
-			String wkt = MercatorProjection.getWktWithGap(x, y, z, 1900);
+			//扩圈1000像素
+			String wkt = MercatorProjection.getWktWithGap(x, y, z, 1000);
 
 			pstmt.setString(1, wkt);
 
 			pstmt.setString(2, wkt);
-
-			System.out.println(wkt);
 
 			resultSet = pstmt.executeQuery();
 

@@ -231,7 +231,7 @@ public class GlmGridRefInfo {
 		if (tableName.contains("FACE")) {
 			defaultPidName = "FACE_PID";
 		}
-		if("CK_EXCEPTION" ==tableName){
+		if("CK_EXCEPTION".equals(tableName)){
 			defaultPidName = "EXCEPTION_ID";
 		}
 		switch (tableName) {

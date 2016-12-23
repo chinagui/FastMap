@@ -33,7 +33,7 @@ public class Process extends AbstractProcess<Command> implements IProcess {
         AdFace face = (AdFace) new AdFaceSelector(getConn()).loadById(getCommand().getFaceId(), true);
         getCommand().setFace(face);
         try {
-            AdAdmin admin = new AdAdminSelector(getConn()).loadByAdminId(face.getRegionId(), true);
+            AdAdmin admin = (AdAdmin) new AdAdminSelector(getConn()).loadById(face.getRegionId(), true);
             getCommand().setAdAdmin(admin);
         } catch (Exception e) {
         }

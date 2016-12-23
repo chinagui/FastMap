@@ -22,7 +22,7 @@ public class ZoneTest extends InitApplication {
 
     @Test
     public void remove(){
-        String parameter = "{\"command\":\"DELETE\",\"type\":\"ZONENODE\",\"dbId\":17,\"objId\":304000015}";
+        String parameter = "{\"command\":\"DELETE\",\"type\":\"ZONEFACE\",\"dbId\":17,\"objId\":309000042}";
         TestUtil.run(parameter);
     }
 

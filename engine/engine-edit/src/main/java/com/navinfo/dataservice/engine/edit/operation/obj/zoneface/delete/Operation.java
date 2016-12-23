@@ -8,6 +8,7 @@ import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdmin;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFace;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneFace;
+import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdAdminSelector;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdFaceSelector;
 import com.navinfo.dataservice.dao.glm.selector.ad.zone.ZoneFaceSelector;
 import com.navinfo.dataservice.engine.edit.utils.batch.AdminIDBatchUtils;
@@ -44,7 +45,7 @@ public class Operation implements IOperation {
         if (null != adAdmin) {
             double type = adAdmin.getAdminType();
             if (type == 8 || type == 9)
-                ZoneIDBatchUtils.updateZoneID(zoneFace, null,zoneFace.getMeshId(), conn, result);
+                ZoneIDBatchUtils.updateZoneID(zoneFace, null, conn, result);
         }
     }
 

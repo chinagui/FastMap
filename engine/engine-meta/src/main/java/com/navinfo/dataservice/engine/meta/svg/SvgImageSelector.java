@@ -5,13 +5,14 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.dbutils.DbUtils;
+
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import oracle.sql.BLOB;
-
-import org.apache.commons.codec.binary.Base64;
-
-import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 
 public class SvgImageSelector {
 
@@ -102,30 +103,9 @@ public class SvgImageSelector {
 			throw e;
 
 		} finally {
-			if (resultSet != null) {
-				try {
-					resultSet.close();
-				} catch (Exception e) {
-
-				}
-			}
-
-			if (pstmt != null) {
-				try {
-					pstmt.close();
-				} catch (Exception e) {
-
-				}
-			}
-			if (conn != null) {
-				try {
-					conn.close();
-				} catch (Exception e) {
-
-				}
-			}
-
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+			DbUtils.closeQuietly(conn);
 		}
-
 	}
 }

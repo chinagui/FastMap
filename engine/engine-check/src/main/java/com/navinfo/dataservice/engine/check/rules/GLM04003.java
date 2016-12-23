@@ -9,6 +9,7 @@ import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.rd.gate.RdGate;
 import com.navinfo.dataservice.engine.check.core.baseRule;
@@ -52,42 +53,55 @@ public class GLM04003 extends baseRule{
 	 * @throws Exception 
 	 */
 	private void checkRdGate(RdGate rdGate, OperType operType) throws Exception {
-		if(rdGate.getType()==0){
-			Set<Integer> rdLinkPidSet = new HashSet<Integer>();
-			rdLinkPidSet.add(rdGate.getInLinkPid());
-			rdLinkPidSet.add(rdGate.getOutLinkPid());
-			StringBuilder sb = new StringBuilder();
+		if(rdGate.changedFields.containsKey("type")){
+			int type = (Integer) rdGate.changedFields.get("type");
+			if(type!=0){
+				return;
+			}
+			else{
+				//获取进入线退出线信息
+				Set<Integer> rdLinkPidSet = new HashSet<Integer>();
+				if(rdGate.changedFields.containsKey("inLinkPid")){
+					rdLinkPidSet.add((Integer) rdGate.changedFields.get("inLinkPid"));
+				}else{
+					rdLinkPidSet.add(rdGate.getInLinkPid());
+				}
+				if(rdGate.changedFields.containsKey("outLinkPid")){
+					rdLinkPidSet.add((Integer) rdGate.changedFields.get("outLinkPid"));
+				}else{
+					rdLinkPidSet.add(rdGate.getOutLinkPid());
+				}
+				
+				StringBuilder sb = new StringBuilder();
 
-			sb.append("SELECT 'EG类型大门的进入和退出link上的“永久车辆限制”信息的“允许”必须包含“急救车”' LOG");
-			sb.append(" FROM RD_LINK_LIMIT L");
-			sb.append(" WHERE L.LINK_PID IN (" + StringUtils.join(rdLinkPidSet.toArray(),",") + ")");
-			sb.append(" AND L.TYPE = 2");
-			sb.append(" AND L.TIME_DOMAIN IS NULL");
-			sb.append(" AND L.VEHICLE <> 0");
-			sb.append(" AND BITAND(L.VEHICLE, 2147483648) = 2147483648");
-			sb.append(" AND BITAND(L.VEHICLE, 128) = 0");
-//			sb.append(" AND BIT_UTIL.BITSUB(L.VEHICLE, 7, 1) = 0");
-//			sb.append(" AND BIT_UTIL.BITSUB(L.VEHICLE, 31, 1) = 1");
-			sb.append(" UNION ALL");
-			sb.append(" SELECT 'EG类型大门的进入和退出link上的“永久车辆限制”信息的“禁止”不能包含“急救车”' LOG");
-			sb.append(" FROM RD_LINK_LIMIT L");
-			sb.append(" WHERE L.LINK_PID IN (" + StringUtils.join(rdLinkPidSet.toArray(),",") + ")");
-			sb.append(" AND L.TYPE = 2");
-			sb.append(" AND L.TIME_DOMAIN IS NULL");
-			sb.append(" AND L.VEHICLE <> 0");
-			sb.append(" AND BITAND(L.VEHICLE, 2147483648) = 0");
-			sb.append(" AND BITAND(L.VEHICLE, 128) = 128");
-//			sb.append(" AND BIT_UTIL.BITSUB(L.VEHICLE, 7, 1) = 1");
-//			sb.append(" AND BIT_UTIL.BITSUB(L.VEHICLE, 31, 1) = 0");
-			
-			String sql = sb.toString();
+				sb.append("SELECT 'EG类型大门的进入和退出link上的“永久车辆限制”信息的“允许”必须包含“急救车”' LOG");
+				sb.append(" FROM RD_LINK_LIMIT L");
+				sb.append(" WHERE L.LINK_PID IN (" + StringUtils.join(rdLinkPidSet.toArray(),",") + ")");
+				sb.append(" AND L.TYPE = 2");
+				sb.append(" AND L.TIME_DOMAIN IS NULL");
+				sb.append(" AND L.VEHICLE <> 0");
+				sb.append(" AND BITAND(L.VEHICLE, 2147483648) = 2147483648");
+				sb.append(" AND BITAND(L.VEHICLE, 128) = 0");
+				sb.append(" UNION ALL");
+				sb.append(" SELECT 'EG类型大门的进入和退出link上的“永久车辆限制”信息的“禁止”不能包含“急救车”' LOG");
+				sb.append(" FROM RD_LINK_LIMIT L");
+				sb.append(" WHERE L.LINK_PID IN (" + StringUtils.join(rdLinkPidSet.toArray(),",") + ")");
+				sb.append(" AND L.TYPE = 2");
+				sb.append(" AND L.TIME_DOMAIN IS NULL");
+				sb.append(" AND L.VEHICLE <> 0");
+				sb.append(" AND BITAND(L.VEHICLE, 2147483648) = 0");
+				sb.append(" AND BITAND(L.VEHICLE, 128) = 128");
+				
+				String sql = sb.toString();
 
-			DatabaseOperator getObj = new DatabaseOperator();
-			List<Object> resultList = new ArrayList<Object>();
-			resultList = getObj.exeSelect(this.getConn(), sql);
+				DatabaseOperator getObj = new DatabaseOperator();
+				List<Object> resultList = new ArrayList<Object>();
+				resultList = getObj.exeSelect(this.getConn(), sql);
 
-			if (!resultList.isEmpty()) {
-				this.setCheckResult("", "", 0,resultList.get(0).toString());
+				if (!resultList.isEmpty()) {
+					this.setCheckResult("", "", 0,resultList.get(0).toString());
+				}
+				
 			}
 		}
 		

@@ -47,11 +47,54 @@ public class GLM04008_1 extends baseRule{
 	@Override
 	public void preCheck(CheckCommand checkCommand) throws Exception {
 		for (IRow obj : checkCommand.getGlmList()) {
-			// 大门RdGate
+			// 大门方向编辑RdGate
 			if (obj instanceof RdGate) {
 				RdGate rdGate = (RdGate) obj;
-				checkRdGate(rdGate,checkCommand.getOperType());
+				checkRdGatePre(rdGate);
 			}	
+		}
+		
+	}
+
+	/**
+	 * @param rdGate
+	 * @throws Exception 
+	 */
+	private void checkRdGatePre(RdGate rdGate) throws Exception {
+		if(rdGate.changedFields.containsKey("dir")){
+			int dir = (int) rdGate.changedFields.get("dir");
+			//非单向大门，不触发检查
+			if(dir!=1){
+				return;
+			}
+			StringBuilder sb = new StringBuilder();
+
+			sb.append("SELECT 1 FROM RD_LINK L1, RD_LINK L2");
+			sb.append(" WHERE L1.LINK_PID=" + rdGate.getInLinkPid());
+			sb.append(" AND L1.DIRECT = 1");
+			sb.append(" AND L2.LINK_PID=" + rdGate.getOutLinkPid());
+			sb.append(" AND L2.DIRECT = 1");
+			sb.append(" AND L1.U_RECORD <> 2");
+			sb.append(" AND L2.U_RECORD <> 2") ;
+			sb.append(" AND NOT EXISTS (SELECT 1") ;
+			sb.append(" FROM RD_RESTRICTION R, RD_RESTRICTION_DETAIL D") ;
+			sb.append(" WHERE R.PID = D.RESTRIC_PID") ;
+			sb.append(" AND R.IN_LINK_PID = " + rdGate.getOutLinkPid()) ;
+			sb.append(" AND D.OUT_LINK_PID = " + rdGate.getInLinkPid()) ;
+			sb.append(" AND D.TYPE = 1") ;
+			sb.append(" AND R.U_RECORD <> 2") ;
+			sb.append(" AND D.U_RECORD <> 2)") ;
+
+			String sql = sb.toString();
+			log.info("RdGate前检查GLM04008_1:" + sql);
+
+			DatabaseOperator getObj = new DatabaseOperator();
+			List<Object> resultList = new ArrayList<Object>();
+			resultList = getObj.exeSelect(this.getConn(), sql);
+
+			if(resultList.size()>0){
+				this.setCheckResult("", "", 0);
+			}
 		}
 		
 	}
@@ -181,7 +224,14 @@ public class GLM04008_1 extends baseRule{
 	 * @throws Exception 
 	 */
 	private void checkRdGate(RdGate rdGate, OperType operType) throws Exception {
-		if(rdGate.getDir()==1){
+		//大门方向编辑	
+		if(rdGate.changedFields.containsKey("dir")){
+			int dir = (int) rdGate.changedFields.get("dir");
+			//非单向大门，不触发检查
+			if(dir!=1){
+				return;
+			}
+			
 			StringBuilder sb = new StringBuilder();
 
 			sb.append("SELECT 1 FROM RD_LINK L1, RD_LINK L2");

@@ -21,6 +21,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.directroute.RdDirectroute;
 import com.navinfo.dataservice.dao.glm.model.rd.lane.RdLane;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
+import com.navinfo.dataservice.engine.check.rules.GLM08052;
 import com.navinfo.dataservice.engine.check.rules.GLM14007;
 import com.navinfo.dataservice.engine.check.rules.GLM32005;
 import com.navinfo.dataservice.engine.check.rules.GLM34001;
@@ -111,5 +112,25 @@ public class CheckTest {
 		//System.out.println(checkEngine.postCheck());
 	}
 	
+	@Test
+	public void testGLM08052() throws Exception{
+		Connection conn=DBConnector.getInstance().getConnectionById(17);
+		
+		CheckCommand cc = new CheckCommand();
+		List<IRow> glmList = new ArrayList<IRow>();
+		/*RdLink rdLink  = new RdLink();
+		rdLink.setPid(246342);*/
+//		RdLinkForm rdLinkForm = new RdLinkForm();
+//		rdLinkForm.setLinkPid(246342);
+//		rdLinkForm.setFormOfWay(50);
+		
+		glmList.add(rdLinkForm);
+		cc.setGlmList(glmList);
+		GLM08052 c = new GLM08052();
+		c.setConn(conn);
+		c.preCheck(cc);
+		
+		System.out.println("end");
+	}
 	
 }

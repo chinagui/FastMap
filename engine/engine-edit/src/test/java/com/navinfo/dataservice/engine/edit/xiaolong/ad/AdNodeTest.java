@@ -27,9 +27,8 @@ public class AdNodeTest extends InitApplication {
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	public void createAdNodeTest() throws Exception {
-		String parameter = "{\"command\":\"BREAK\",\"projectId\":11,\"objId\":100031585,\"data\":{\"longitude\":116.47493102897037,\"latitude\":40.01395406127133},\"type\":\"ADLINK\"}";
+		String parameter = "{\"command\":\"DELETE\",\"dbId\":17,\"type\":\"ADNODE\",\"objId\":44489}";
 		Transaction t = new Transaction(parameter);
-		;
 		String msg = t.run();
 	}
 
@@ -79,8 +78,7 @@ public class AdNodeTest extends InitApplication {
 		}
 
 		try {
-			SearchProcess p = new SearchProcess(
-					DBConnector.getInstance().getConnectionById(projectId));
+			SearchProcess p = new SearchProcess(DBConnector.getInstance().getConnectionById(projectId));
 			JSONObject data = p.searchDataByTileWithGap(types, x, y, z, gap);
 
 			System.out.println(ResponseUtils.assembleRegularResult(data));

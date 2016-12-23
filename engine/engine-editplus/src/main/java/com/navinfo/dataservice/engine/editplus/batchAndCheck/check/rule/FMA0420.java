@@ -3,7 +3,6 @@ package com.navinfo.dataservice.engine.editplus.batchAndCheck.check.rule;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;

@@ -182,11 +182,11 @@ public class RdObjectTest extends InitApplication {
 	{
 		Connection conn;
 		try {
-			conn = DBConnector.getInstance().getConnectionById(17);
+			conn = DBConnector.getInstance().getConnectionById(247);
 
 			RdObjectSearch search = new RdObjectSearch(conn);
 			
-			List<SearchSnapshot> data = search.searchDataByTileWithGap(107919, 49648, 17, 80);
+			List<SearchSnapshot> data = search.searchDataByTileWithGap(107931, 49644, 17, 40);
 			
 			System.out.println("data:"+ResponseUtils.assembleRegularResult(data));
 

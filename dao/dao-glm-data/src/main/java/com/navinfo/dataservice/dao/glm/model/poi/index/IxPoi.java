@@ -1220,6 +1220,8 @@ public class IxPoi implements IObj {
 		if (objLevel == ObjLevel.HISTORY) {
 			json.remove("rawFields");
 			json.remove("status");
+			json.remove("poiEditStatus");
+			json.remove("sameFid");
 		}
 
 		return json;

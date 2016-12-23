@@ -45,6 +45,8 @@ public class Operation implements IOperation {
         RdElectroniceye electroniceye = this.command.getEleceye();
         boolean isChanged = electroniceye.fillChangeFields(this.command.getContent());
         if (isChanged) {
+            if (command.getLink().getDirect() != 1)
+                electroniceye.changedFields().put("direct", command.getLink().getDirect());
             result.insertObject(electroniceye, ObjStatus.UPDATE, electroniceye.pid());
             result.setPrimaryPid(electroniceye.pid());
         }
@@ -99,19 +101,19 @@ public class Operation implements IOperation {
                 JSONObject geoPoint = new JSONObject();
                 geoPoint.put("type", "Point");
                 geoPoint.put("coordinates", new double[]{minPoint.x, minPoint.y});
-//				for (RdLink link : newLinks) {
-//					// 判断新生成的坐标处在哪条新生成的线段上并更新电子眼的linkpid字段
-//					if (isOnTheLine(GeoTranslator.geojson2Jts(geoPoint), link.getGeometry())) {
-//						// 更新电子眼的坐标字段
-//						Geometry tmpGeo = GeoTranslator.geojson2Jts(geoPoint);
-//						geoPoint = GeoTranslator.jts2Geojson(tmpGeo, 0.00001, 5);
-//						eleceye.changedFields().put("geometry", geoPoint);
-//
-//						eleceye.changedFields().put("linkPid", link.pid());
-//						result.insertObject(eleceye, ObjStatus.UPDATE, eleceye.pid());
-//						break;
-//					}
-//				}
+                //				for (RdLink link : newLinks) {
+                //					// 判断新生成的坐标处在哪条新生成的线段上并更新电子眼的linkpid字段
+                //					if (isOnTheLine(GeoTranslator.geojson2Jts(geoPoint), link.getGeometry())) {
+                //						// 更新电子眼的坐标字段
+                //						Geometry tmpGeo = GeoTranslator.geojson2Jts(geoPoint);
+                //						geoPoint = GeoTranslator.jts2Geojson(tmpGeo, 0.00001, 5);
+                //						eleceye.changedFields().put("geometry", geoPoint);
+                //
+                //						eleceye.changedFields().put("linkPid", link.pid());
+                //						result.insertObject(eleceye, ObjStatus.UPDATE, eleceye.pid());
+                //						break;
+                //					}
+                //				}
                 Geometry tmpGeo = GeoTranslator.geojson2Jts(geoPoint);
                 geoPoint = GeoTranslator.jts2Geojson(tmpGeo, 0.00001, 5);
                 eleceye.changedFields().put("geometry", geoPoint);

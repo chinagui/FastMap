@@ -3,8 +3,9 @@ package com.navinfo.dataservice.dao.glm.selector.poi.index;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.HashMap;
+import java.util.Map;
 
-import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiEditStatus;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.navicommons.database.sql.DBUtils;
@@ -19,10 +20,23 @@ public class IxPoiEditStatusSelector extends AbstractSelector {
 		this.setCls(IxPoiEditStatus.class);
 	}
 
-	public int loadStatusByRowId(int pid, boolean isLock) throws Exception {
+	/**
+	 * 根据poi的pid查询poi状态表的字段值
+	 * @param pid
+	 * @param isLock
+	 * @return
+	 * @throws Exception
+	 */
+	public Map<String,Integer> loadStatusByRowId(int pid, boolean isLock) throws Exception {
+		//poi作业状态
 		int status = 0;
-
-		String sql = "select status from poi_edit_status where pid=:1 ";
+		
+		//poi鲜度验证字段
+		int freshVerified = 0;
+		
+		Map<String,Integer> poiEditStatusData = new HashMap<String, Integer>();
+		
+		String sql = "select status,FRESH_VERIFIED from poi_edit_status where pid=:1 ";
 
 		if (isLock) {
 			sql += " for update nowait";
@@ -41,7 +55,12 @@ public class IxPoiEditStatusSelector extends AbstractSelector {
 
 			if (resultSet.next()) {
 				status = resultSet.getInt("status");
+				
+				freshVerified = resultSet.getInt("FRESH_VERIFIED");
 			} 
+			poiEditStatusData.put("status", status);
+			
+			poiEditStatusData.put("freshVerified", freshVerified);
 		} catch (Exception e) {
 
 			throw e;
@@ -52,6 +71,6 @@ public class IxPoiEditStatusSelector extends AbstractSelector {
 
 			DBUtils.closeStatement(pstmt);
 		}
-		return status;
+		return poiEditStatusData;
 	}
 }

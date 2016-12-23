@@ -433,7 +433,7 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 
 			resultSet = pstmt.executeQuery();
 
-			if (resultSet.next()) {
+			while (resultSet.next()) {
 				poiWorkItem.put(resultSet.getInt("pid"), resultSet.getString("C_POI_PID"));
 			}
 
@@ -457,8 +457,8 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 	 */
 	public JSONObject queryCKLogByPidfirstWorkItem(List<Integer> pids,String firstWorkItem,String secondWorkItem,String tbNm) throws Exception {
 		StringBuilder sb = new StringBuilder();
-		sb.append(" SELECT CO.PID,");
-		sb.append(" LISTAGG('RULEID:' || NE.RULEID || ',' || 'log:' || NE.INFORMATION ||'LEVEL:' || NE.\"LEVEL\",'__|__') WITHIN GROUP(ORDER BY CO.PID) LOGMSG");
+		sb.append(" SELECT CO.PID,NE.RULEID,NE.INFORMATION,NE.\"LEVEL\"");
+		//sb.append(" LISTAGG('RULEID:' || NE.RULEID || ',' || 'log:' || NE.INFORMATION ||'LEVEL:' || NE.\"LEVEL\",'__|__') WITHIN GROUP(ORDER BY CO.PID) LOGMSG");
 		sb.append(" FROM CK_RESULT_OBJECT CO, NI_VAL_EXCEPTION NE");
 		sb.append(" WHERE CO.MD5_CODE = NE.MD5_CODE");
 		sb.append(" AND CO.TABLE_NAME = :1");
@@ -478,7 +478,7 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 			temp = ",";
 		}
 		sb.append(")");
-		sb.append(" GROUP BY CO.PID");
+		//sb.append(" GROUP BY CO.PID");
 		
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
@@ -493,9 +493,21 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 				pstmt.setString(3, secondWorkItem);
 			}
 			resultSet = pstmt.executeQuery();
-
-			if (resultSet.next()) {
-				poiWorkItem.put(resultSet.getInt("pid"), resultSet.getString("LOGMSG"));
+			while (resultSet.next()) {
+				String keyPid=String.valueOf(resultSet.getInt("PID"));
+				JSONObject ckLog=new JSONObject();
+				ckLog.put("ruleId", resultSet.getString("RULEID"));
+				ckLog.put("log", resultSet.getString("INFORMATION"));
+				ckLog.put("level", resultSet.getString("LEVEL"));
+				if(poiWorkItem.containsKey(keyPid)){
+					List<JSONObject> oldValue= (List<JSONObject>) poiWorkItem.get(keyPid);
+					oldValue.add(ckLog);
+					poiWorkItem.put(keyPid, oldValue);
+				}else{
+					List<JSONObject> newValue=new ArrayList<JSONObject>();
+					newValue.add(ckLog);
+					poiWorkItem.put(keyPid, newValue);
+				}
 			}
 
 			return poiWorkItem;

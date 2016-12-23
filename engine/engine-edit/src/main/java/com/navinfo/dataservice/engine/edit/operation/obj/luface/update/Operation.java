@@ -48,9 +48,9 @@ public class Operation implements IOperation {
                 if (face.changedFields().containsKey("kind")) {
                     int kind = (int) face.changedFields().get("kind");
                     if (kind == 21) {
-                        UrbanBatchUtils.updateUrban(faceGeometry, faceGeometry, face.getMeshId(), conn, result);
+                        UrbanBatchUtils.updateUrban(faceGeometry, faceGeometry, conn, result);
                     } else if (sourcrKind == 21) {
-                        UrbanBatchUtils.updateUrban(faceGeometry, null, face.getMeshId(), conn, result);
+                        UrbanBatchUtils.updateUrban(faceGeometry, null, conn, result);
                     }
                 }
             }

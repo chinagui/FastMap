@@ -38,77 +38,94 @@ public class OpRefRdCross implements IOperation {
 
 		this.conn = connection;
 	}
+	
+	
+	private String handleRdCross(RdLink breakLink, List<RdLink> newLinks,
+			Result result) throws Exception {
+
+		com.navinfo.dataservice.engine.edit.operation.obj.rdcross.update.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdcross.update.Operation(
+				this.conn);
+
+		if (newLinks.size() > 1) {
+			operation.breakRdLink(breakLink, newLinks, result);
+		}
+
+		return null;
+	}
 
 	@Override
 	public String run(Result result) throws Exception {
+		
+		handleRdCross(this.command.getBreakLink(), command.getNewLinks(),
+				result);
 
-		boolean isCrossLink = false;
-
-		RdLink breakLink = this.command.getBreakLink();
-
-		for (IRow row : breakLink.getForms()) {
-			RdLinkForm form = (RdLinkForm) row;
-
-			if (form.getFormOfWay() == 50) {
-				isCrossLink = true;
-				break;
-			}
-		}
-
-		if (isCrossLink) {
-			RdCrossSelector crossSelector = new RdCrossSelector(conn);
-
-			List<Integer> linkPid = new ArrayList<>();
-
-			linkPid.add(breakLink.getPid());
-
-			List<RdCross> crossList = crossSelector.loadRdCrossByNodeOrLink(null, linkPid, true);
-
-			// 是路口内link的，需要新增路口点和路口组成link，删除原路口组成link
-			if (CollectionUtils.isNotEmpty(crossList)) {
-				// 新增路口点 rd_cross_node
-				RdCross cross = crossList.get(0);
-
-				int breakNodePid = command.getBreakNodePid();
-
-				RdCrossNode crossNode = new RdCrossNode();
-
-				crossNode.setPid(cross.getPid());
-
-				crossNode.setNodePid(breakNodePid);
-
-				result.insertObject(crossNode, ObjStatus.INSERT, crossNode.getPid());
-
-				List<RdLink> newLinks = command.getNewLinks();
-
-				for (RdLink link : newLinks) {
-					// 新增路口组成link rd_cross_link
-					RdCrossLink crossLink1 = new RdCrossLink();
-
-					crossLink1.setPid(cross.getPid());
-
-					crossLink1.setLinkPid(link.getPid());
-
-					result.insertObject(crossLink1, ObjStatus.INSERT, crossLink1.getPid());
-				}
-
-				// 删除原路口组成link
-
-				for (RdCross crs : crossList) {
-					List<IRow> links = crs.getLinks();
-
-					for (IRow row : links) {
-						RdCrossLink crosLink = (RdCrossLink) row;
-
-						if (crosLink.getLinkPid() == breakLink.getPid()) {
-							result.insertObject(crosLink, ObjStatus.DELETE, crosLink.getPid());
-							// 打断前只有一条，找到后跳出循环，提高维护效率
-							break;
-						}
-					}
-				}
-			}
-		}
+//		boolean isCrossLink = false;
+//
+//		RdLink breakLink = this.command.getBreakLink();
+//
+//		for (IRow row : breakLink.getForms()) {
+//			RdLinkForm form = (RdLinkForm) row;
+//
+//			if (form.getFormOfWay() == 50) {
+//				isCrossLink = true;
+//				break;
+//			}
+//		}
+//
+//		if (isCrossLink) {
+//			RdCrossSelector crossSelector = new RdCrossSelector(conn);
+//
+//			List<Integer> linkPid = new ArrayList<>();
+//
+//			linkPid.add(breakLink.getPid());
+//
+//			List<RdCross> crossList = crossSelector.loadRdCrossByNodeOrLink(null, linkPid, true);
+//
+//			// 是路口内link的，需要新增路口点和路口组成link，删除原路口组成link
+//			if (CollectionUtils.isNotEmpty(crossList)) {
+//				// 新增路口点 rd_cross_node
+//				RdCross cross = crossList.get(0);
+//
+//				int breakNodePid = command.getBreakNodePid();
+//
+//				RdCrossNode crossNode = new RdCrossNode();
+//
+//				crossNode.setPid(cross.getPid());
+//
+//				crossNode.setNodePid(breakNodePid);
+//
+//				result.insertObject(crossNode, ObjStatus.INSERT, crossNode.getPid());
+//
+//				List<RdLink> newLinks = command.getNewLinks();
+//
+//				for (RdLink link : newLinks) {
+//					// 新增路口组成link rd_cross_link
+//					RdCrossLink crossLink1 = new RdCrossLink();
+//
+//					crossLink1.setPid(cross.getPid());
+//
+//					crossLink1.setLinkPid(link.getPid());
+//
+//					result.insertObject(crossLink1, ObjStatus.INSERT, crossLink1.getPid());
+//				}
+//
+//				// 删除原路口组成link
+//
+//				for (RdCross crs : crossList) {
+//					List<IRow> links = crs.getLinks();
+//
+//					for (IRow row : links) {
+//						RdCrossLink crosLink = (RdCrossLink) row;
+//
+//						if (crosLink.getLinkPid() == breakLink.getPid()) {
+//							result.insertObject(crosLink, ObjStatus.DELETE, crosLink.getPid());
+//							// 打断前只有一条，找到后跳出循环，提高维护效率
+//							break;
+//						}
+//					}
+//				}
+//			}
+//		}
 
 		return null;
 	}

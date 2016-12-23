@@ -1,6 +1,8 @@
 package com.navinfo.dataservice.engine.edit.operation.topo.delete.deletezonenode;
 
 
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdmin;
+import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdAdminSelector;
 import com.navinfo.dataservice.engine.edit.utils.batch.ZoneIDBatchUtils;
 import org.apache.log4j.Logger;
 
@@ -30,10 +32,13 @@ public class OpRefAdFace implements IOperation {
 
     @Override
     public String run(Result result) throws Exception {
-        log.debug("删除ZONE点对应的面关系");
+        AdAdminSelector selector = new AdAdminSelector(conn);
         for (ZoneFace face : command.getFaces()) {
             result.insertObject(face, ObjStatus.DELETE, face.pid());
-            ZoneIDBatchUtils.updateZoneID(face, null, face.getMeshId(), conn, result);
+            AdAdmin admin = (AdAdmin) selector.loadById(face.getRegionId(), true);
+            if (null != admin && (admin.getAdminType() == 8 || admin.getAdminType() == 9)) {
+                ZoneIDBatchUtils.updateZoneID(face, null, conn, result);
+            }
             result.setPrimaryPid(face.getPid());
         }
         return null;

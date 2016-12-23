@@ -39,7 +39,7 @@ public class Operation implements IOperation {
         if (null != adAdmin) {
             double type = adAdmin.getAdminType();
             if (type == 0 || type == 1 || type == 2 || type == 2.5 || type == 3 || type == 3.5 || type == 4 || type == 4.5 || type == 4.8 || type == 5 || type == 6 || type == 7 || type == 8)
-                AdminIDBatchUtils.updateAdminID(adFace, null, adFace.getMeshId(), conn, result);
+                AdminIDBatchUtils.updateAdminID(adFace, null, conn, result);
         }
     }
 

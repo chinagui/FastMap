@@ -41,6 +41,8 @@ public class RdLaneTopology implements IObj {
 	
 	public Map<String,RdLaneVia> viaMap = new HashMap<String,RdLaneVia>();
 	
+	private ObjStatus status;
+	
 	public RdLaneTopology() {
 
 	}
@@ -190,12 +192,12 @@ public class RdLaneTopology implements IObj {
 	@Override
 	public ObjStatus status() {
 
-		return null;
+		return status;
 	}
 
 	@Override
 	public void setStatus(ObjStatus os) {
-
+		status = os;
 	}
 
 	@Override

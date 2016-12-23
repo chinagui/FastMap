@@ -231,6 +231,9 @@ public class GlmGridRefInfo {
 		if (tableName.contains("FACE")) {
 			defaultPidName = "FACE_PID";
 		}
+		if("CK_EXCEPTION" ==tableName){
+			defaultPidName = "EXCEPTION_ID";
+		}
 		switch (tableName) {
 		// 点限速 立交 CRF对象 POI
 		case "RD_SPEEDLIMIT":

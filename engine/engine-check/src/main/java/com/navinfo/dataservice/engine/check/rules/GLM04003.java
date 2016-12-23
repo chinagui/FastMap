@@ -54,7 +54,7 @@ public class GLM04003 extends baseRule{
 	 */
 	private void checkRdGate(RdGate rdGate, OperType operType) throws Exception {
 		if(rdGate.changedFields.containsKey("type")){
-			int type = (Integer) rdGate.changedFields.get("type");
+			int type = Integer.parseInt(rdGate.changedFields.get("type").toString()) ;
 			if(type!=0){
 				return;
 			}

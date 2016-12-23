@@ -58,7 +58,7 @@ public class GLM04008_2 extends baseRule {
 	 */
 	private void checkRdGatePre(RdGate rdGate) throws Exception {
 		if(rdGate.changedFields.containsKey("dir")){
-			int dir = (int) rdGate.changedFields.get("dir");
+			int dir = Integer.parseInt(rdGate.changedFields.get("dir").toString()) ;
 			if(dir!=2){
 				return;
 			}

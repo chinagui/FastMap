@@ -62,7 +62,7 @@ public class GLM04008_1 extends baseRule{
 	 */
 	private void checkRdGatePre(RdGate rdGate) throws Exception {
 		if(rdGate.changedFields.containsKey("dir")){
-			int dir = (int) rdGate.changedFields.get("dir");
+			int dir = Integer.parseInt(rdGate.changedFields.get("dir").toString()) ;
 			//非单向大门，不触发检查
 			if(dir!=1){
 				return;
@@ -226,7 +226,7 @@ public class GLM04008_1 extends baseRule{
 	private void checkRdGate(RdGate rdGate, OperType operType) throws Exception {
 		//大门方向编辑	
 		if(rdGate.changedFields.containsKey("dir")){
-			int dir = (int) rdGate.changedFields.get("dir");
+			int dir = Integer.parseInt(rdGate.changedFields.get("dir").toString()) ;
 			//非单向大门，不触发检查
 			if(dir!=1){
 				return;

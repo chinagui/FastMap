@@ -10,7 +10,6 @@ import org.apache.commons.lang.StringUtils;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
-import com.navinfo.dataservice.dao.glm.model.rd.gate.RdGate;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;

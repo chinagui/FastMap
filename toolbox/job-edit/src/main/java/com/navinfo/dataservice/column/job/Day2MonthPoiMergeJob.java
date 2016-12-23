@@ -32,6 +32,7 @@ import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
 import com.navinfo.dataservice.day2mon.Check;
 import com.navinfo.dataservice.day2mon.Classifier;
 import com.navinfo.dataservice.day2mon.Day2MonPoiLogSelector;
+import com.navinfo.dataservice.day2mon.DeepInfoMarker;
 import com.navinfo.dataservice.day2mon.PostBatch;
 import com.navinfo.dataservice.day2mon.PreBatch;
 import com.navinfo.dataservice.impcore.flushbylog.FlushResult;
@@ -152,8 +153,9 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 			logMover = new Day2MonMover(dailyDbSchema, monthDbSchema, tempOpTable, flushResult.getTempFailLogTable());
 			LogMoveResult logMoveResult = logMover.move();
 			log.info("开始进行履历分析");
-			
 			OperationResult result = parseLog(logMoveResult, monthConn);
+			log.info("开始进行深度信息打标记");
+			new DeepInfoMarker(result,monthConn).execute();
 			log.info("开始执行前批");
 			new PreBatch(result, monthConn).execute();
 			log.info("开始执行检查");

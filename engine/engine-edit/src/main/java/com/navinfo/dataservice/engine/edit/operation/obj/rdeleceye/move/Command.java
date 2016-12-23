@@ -4,6 +4,7 @@ package com.navinfo.dataservice.engine.edit.operation.obj.rdeleceye.move;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdElectroniceye;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 
 import net.sf.json.JSONObject;
@@ -22,6 +23,8 @@ public class Command extends AbstractCommand {
 	private RdElectroniceye eleceye;
 
 	private int pid;
+
+	private RdLink link;
 
 	private JSONObject content = new JSONObject();
 
@@ -47,6 +50,14 @@ public class Command extends AbstractCommand {
 
 	public void setContent(JSONObject content) {
 		this.content = content;
+	}
+
+	public RdLink getLink() {
+		return link;
+	}
+
+	public void setLink(RdLink link) {
+		this.link = link;
 	}
 
 	public Command(JSONObject json, String requester) {

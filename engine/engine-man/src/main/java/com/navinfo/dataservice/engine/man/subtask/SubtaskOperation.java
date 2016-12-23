@@ -740,7 +740,7 @@ public class SubtaskOperation {
 				}
 
 			};
-
+			log.info("getListByUserSnapshotPage-sql:"+selectSql);
 			return run.query(curPageNum, pageSize, conn, selectSql, rsHandler);
 
 		}catch(Exception e){
@@ -925,6 +925,7 @@ public class SubtaskOperation {
 				conditonSql+=" and t.STATUS = "+ bean.getStatus();
 			}
 			selectSql+=conditonSql;
+			selectSql+=conditonSql+" order by subtask_id desc";
 			ResultSetHandler<Page> rsHandler = new ResultSetHandler<Page>() {
 				public Page handle(ResultSet rs) throws SQLException {
 					SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
@@ -1026,6 +1027,7 @@ public class SubtaskOperation {
 					return page;
 				}
 			};
+			log.info("getListByUserPage-selectSql"+selectSql);
 			return run.query(curPageNum, pageSize, conn, selectSql, rsHandler);
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);

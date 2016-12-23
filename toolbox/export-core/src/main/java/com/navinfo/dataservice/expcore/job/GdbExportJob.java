@@ -46,10 +46,10 @@ public class GdbExportJob extends AbstractJob {
 
 	@Override
 	public void execute() throws JobException {
+		OracleInput input = null;
 		try{
 			GdbExportJobRequest req = (GdbExportJobRequest)request;
 			//1. 导出源预处理
-			OracleInput input = null;
 			DatahubApi datahub = (DatahubApi)ApplicationContextUtil.getBean("datahubApi");
 			DbInfo sourceDb = datahub.getDbById(req.getSourceDbId());
 			OracleSchema sourceSchema = new OracleSchema(DbConnectConfig.createConnectConfig(sourceDb.getConnectParam()));
@@ -94,6 +94,11 @@ public class GdbExportJob extends AbstractJob {
 		}catch(Exception e){
 			log.error(e.getMessage(),e);
 			throw new JobException("job执行过程出错："+e.getMessage(),e);
+		}finally{
+			//释放临时表资源
+			if(input!=null){
+				input.releaseSource();
+			}
 		}
 	}
 	

@@ -95,6 +95,9 @@ public interface MetadataApi {
 	public String convertEng(String word) throws Exception;
 	
 	public Map<String, String> scPointSpecKindCodeType8() throws Exception;
+	
+	public Map<String, String> scPointSpecKindCodeType14() throws Exception;
+	
 	/**
 	 * 重要分类判断方法
 	 * 传入poi的kindCode和chain，返回boolean，是否为重要分类
@@ -119,4 +122,31 @@ public interface MetadataApi {
 	 * @throws Exception
 	 */
 	public Map<String, List<String>> tyCharacterEgalcharExtGetExtentionTypeMap() throws Exception;
+
+	/**
+	 * 1.“TY_CHARACTER_EGALCHAR_EXT”表，“EXTENTION_TYPE”字段中，“ENG_H_U”、“ENG_H_L”、“DIGIT_H”、
+	 * “SYMBOL_H”类型对应的“CHARACTER”字段的内容;
+	 * 2.“TY_CHARACTER_EGALCHAR_EXT”表，和 “EXTENTION_TYPE ”字段里“SYMBOL_F”类型，
+	 * 		2.1在全半角对照关系表中（TY_CHARACTER_FULL2HALF表）FULL_WIDTH字段一致，
+	 * 找到FULL_WIDTH字段对应的半角“HALF_WIDTH”,且“HALF_WIDTH”字段非空
+	 * 		2.2.如果“HALF_WIDTH”字段对应的半角字符为空，则FULL_WIDTH字段对应的全角字符也是拼音的合法字符
+	 * @return List<String> 返回合法的所有半角字符列表
+	 */
+	public List<String> halfCharList() throws Exception;
+	
+	/**
+	 * 返回“TY_CHARACTER_FJT_HZ”表中数据。
+	 * @return Map<String, JSONObject> key:ft value:对应其它
+	 * @throws Exception
+	 */
+	public Map<String, JSONObject> tyCharacterFjtHzCheckSelectorGetFtExtentionTypeMap() throws Exception;
+
+	/**
+	 * 返回“TY_CHARACTER_FJT_HZ”表中数据。
+	 * @return Map<String, JSONObject> key:jt value:对应其它
+	 * @throws Exception
+	 */
+	public Map<String, JSONObject> tyCharacterFjtHzCheckSelectorGetJtExtentionTypeMap()
+			throws Exception;
+
 }

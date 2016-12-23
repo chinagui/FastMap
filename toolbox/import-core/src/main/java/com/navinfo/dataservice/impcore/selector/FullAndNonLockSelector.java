@@ -21,7 +21,7 @@ public class FullAndNonLockSelector extends LogSelector {
 		StringBuilder sb = new StringBuilder();
 		sb.append("INSERT INTO ");
 		sb.append(tempTable);
-		sb.append(" SELECT P.OP_ID,P.OP_DT FROM LOG_OPERATION P");
+		sb.append(" SELECT P.OP_ID,P.OP_DT,P.OP_SEQ FROM LOG_OPERATION P");
 		return run.update(conn, sb.toString());
 	}
 

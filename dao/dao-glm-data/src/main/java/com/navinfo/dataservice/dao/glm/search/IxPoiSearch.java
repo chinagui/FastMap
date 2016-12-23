@@ -822,9 +822,14 @@ public class IxPoiSearch implements ISearch {
 			
 			//ix_poi表通过region_id关联ad_admin，获取adminCode
 			int regionId = poi.getRegionId();
-			AdAdminSearch adAdminSearch = new AdAdminSearch(conn);
-			AdAdmin adAdmin = (AdAdmin) adAdminSearch.searchDataByPid(regionId);
-			dataObj.put("adminCode",adAdmin.getAdminId());
+			if(regionId==0){
+				dataObj.put("adminCode",0);
+			}else{
+				AdAdminSearch adAdminSearch = new AdAdminSearch(conn);
+				AdAdmin adAdmin = (AdAdmin) adAdminSearch.searchDataByPid(regionId);
+				dataObj.put("adminCode",adAdmin.getAdminId());
+			}
+			
 			
 			int parProupId = 0,childProupId=0;
 			//ix_poi表通过pid关联ix_poi_parent，取group_id

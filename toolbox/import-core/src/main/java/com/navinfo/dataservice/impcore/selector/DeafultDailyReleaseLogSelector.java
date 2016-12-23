@@ -35,7 +35,7 @@ public class DeafultDailyReleaseLogSelector extends DefaultLogSelector {
 		StringBuilder sb = new StringBuilder();
 		sb.append("INSERT INTO ");
 		sb.append(super.tempTable);
-		sb.append(" SELECT DISTINCT P.OP_ID, P.OP_DT\r\n" + 
+		sb.append(" SELECT DISTINCT P.OP_ID, P.OP_DT,P.OP_SEQ\r\n" + 
 				"  FROM LOG_OPERATION P, LOG_DETAIL L, LOG_DETAIL_GRID T,LOG_DAY_RELEASE R\r\n" + 
 				" WHERE P.OP_ID = L.OP_ID\r\n" + 
 				"   AND L.ROW_ID = T.LOG_ROW_ID\r\n" + 
@@ -49,7 +49,7 @@ public class DeafultDailyReleaseLogSelector extends DefaultLogSelector {
 			values.addAll(inClause.getValues());
 		}
 		sb.append(" union all");
-		sb.append(" SELECT DISTINCT P.OP_ID, P.OP_DT\r\n" + 
+		sb.append(" SELECT DISTINCT P.OP_ID, P.OP_DT,P.OP_SEQ\r\n" + 
 				"  FROM LOG_OPERATION P, LOG_DETAIL L, LOG_DETAIL_GRID T,LOG_DAY_RELEASE R\r\n" + 
 				" WHERE P.OP_ID = L.OP_ID\r\n" + 
 				"   AND L.ROW_ID = T.LOG_ROW_ID\r\n" + 
@@ -71,13 +71,13 @@ public class DeafultDailyReleaseLogSelector extends DefaultLogSelector {
 		StringBuilder sb = new StringBuilder();
 		sb.append("MERGE INTO ");
 		sb.append(this.tempTable);
-		sb.append(" T USING (SELECT P.OP_ID,P.OP_DT FROM LOG_OPERATION P,LOG_DETAIL L,LOG_DAY_RELEASE R WHERE EXISTS (SELECT 1 FROM LOG_DETAIL L1,");
+		sb.append(" T USING (SELECT P.OP_ID,P.OP_DT,P.OP_SEQ FROM LOG_OPERATION P,LOG_DETAIL L,LOG_DAY_RELEASE R WHERE EXISTS (SELECT 1 FROM LOG_DETAIL L1,");
 		sb.append(this.tempTable);
 		sb.append(" T1 WHERE L1.OP_ID=T1.OP_ID AND L1.ROW_ID=L.ROW_ID AND P.OP_DT<=T1.OP_DT) AND P.OP_ID=L.OP_ID AND P.OP_ID=R.OP_ID "
 				+ "AND R.REL_ALL_STA=0" //全要素和poi这的实现不同
 				+ ") TP "
 				+ "ON (T.OP_ID=TP.OP_ID) "
-				+ "WHEN NOT MATCHED THEN INSERT VALUES (TP.OP_ID,TP.OP_DT)");
+				+ "WHEN NOT MATCHED THEN INSERT VALUES (TP.OP_ID,TP.OP_DT,TP.OP_SEQ)");
 		return sb.toString();
 	}
 	

@@ -201,12 +201,13 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 					&& !this.getCommand().getObjType().equals(ObjType.LCFACE)) {
 				handleResult(this.getCommand().getObjType(), this.getCommand().getOperType(), result);
 			}
-
+			
 			String preCheckMsg = this.preCheck();
 
 			if (preCheckMsg != null) {
 				throw new Exception(preCheckMsg);
 			}
+			
 			this.recordData();
 			long startPostCheckTime = System.currentTimeMillis();
 			log.info("BEGIN  POSTCHECK ");

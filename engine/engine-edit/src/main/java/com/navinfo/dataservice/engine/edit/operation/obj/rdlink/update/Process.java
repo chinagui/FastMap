@@ -1,17 +1,16 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdlink.update;
 
 import java.sql.Connection;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.navinfo.dataservice.dao.glm.iface.IRow;
-import com.navinfo.dataservice.dao.glm.iface.Result;
 import org.apache.commons.collections.CollectionUtils;
 
 import com.navinfo.dataservice.dao.glm.iface.AlertObject;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
@@ -50,15 +49,16 @@ public class Process extends AbstractProcess<Command> {
         try {
             if (!this.getCommand().isInfect()) {
                 this.getConn().setAutoCommit(false);
-                String preCheckMsg = this.preCheck();
-                if (preCheckMsg != null) {
-                    throw new Exception(preCheckMsg);
-                }
 
                 prepareData();
 
                 Operation operation = new Operation(this.getCommand(), updateLink, this.getConn());
                 operation.run(this.getResult());
+                
+                String preCheckMsg = this.preCheck();
+                if (preCheckMsg != null) {
+                    throw new Exception(preCheckMsg);
+                }
 
                 recordData();
 
@@ -112,20 +112,6 @@ public class Process extends AbstractProcess<Command> {
 
     @Override
     public String exeOperation() throws Exception {
-        //        // 判断是否检查，如检查发现没有受影响信号灯直接执行修改，如有影响则返回提示信息
-        //        if (getCommand().isInfect()) {
-        //        	Map<String, List<AlertObject>> infects = new HashMap<String, List<AlertObject>>();
-        //        	com.navinfo.dataservice.engine.edit.operation.obj.trafficsignal.update.Operation trafficOperation = new com.navinfo.dataservice.engine.edit.operation.obj.trafficsignal.update.Operation(
-        //    				this.getConn());
-        //    		List<AlertObject> deleteTrafficAlertDataList = trafficOperation.getUpdateLinkDirectInfectData(updateLink);
-        //    		if (CollectionUtils.isNotEmpty(deleteTrafficAlertDataList)) {
-        //    			infects.put("修改link方向删除link上原有信号灯（请重新维护信号灯）", deleteTrafficAlertDataList);
-        //    		}
-        //    		return JSONObject.fromObject(infects).toString();
-        //        } else {
-        //        	Operation operation = new Operation(this.getCommand(), updateLink, this.getConn());
-        //            operation.run(this.getResult());
-        //        }
         return null;
     }
 
@@ -134,17 +120,17 @@ public class Process extends AbstractProcess<Command> {
         try {
             this.prepareData();
 
+            IOperation operation = new Operation(this.getCommand(), this.updateLink, getConn());
+
+            msg = operation.run(this.getResult());
+            
             String preCheckMsg = this.preCheck();
 
             if (preCheckMsg != null) {
                 throw new Exception(preCheckMsg);
             }
 
-            IOperation operation = new Operation(this.getCommand(), this.updateLink, getConn());
-
-            msg = operation.run(this.getResult());
-
-            this.postCheck();
+            //this.postCheck();
 
         } catch (Exception e) {
 

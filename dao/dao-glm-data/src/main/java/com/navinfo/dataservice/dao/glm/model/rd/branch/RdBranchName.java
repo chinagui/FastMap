@@ -52,6 +52,10 @@ public class RdBranchName implements IObj {
 	public RdBranchName() {
 
 	}
+	
+	public String getRowId() {
+		return rowId;
+	}
 
 	public int getPid() {
 		return pid;

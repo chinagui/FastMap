@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.dao.glm.selector.poi.deep;
 
+import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -10,8 +11,10 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.dbutils.DbUtils;
+import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.man.model.Subtask;
+import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.log.LogReader;
@@ -20,7 +23,7 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 public class IxPoiColumnStatusSelector extends AbstractSelector {
-
+	private static final Logger logger = Logger.getLogger(IxPoiColumnStatusSelector.class);
 	private Connection conn;
 
 	public IxPoiColumnStatusSelector(Connection conn) {
@@ -61,6 +64,7 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 		ResultSet resultSet = null;
 
 		try {
+			logger.info("getRowIdByTaskId sql:"+sb);
 			pstmt = conn.prepareStatement(sb.toString());
 
 			pstmt.setInt(1, taskId);
@@ -141,12 +145,14 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 
 		ResultSet resultSet = null;
 		try {
-
+			logger.info("getApplyPids sql:"+sb);
+			logger.info("subtask.getGeometry():"+subtask.getGeometry());
 			pstmt = conn.prepareStatement(sb.toString());
 			
 			pstmt.setInt(1, type);
-
-			pstmt.setString(2, subtask.getGeometry());
+			Clob geom = ConnectionUtil.createClob(conn);
+			geom.setString(1, subtask.getGeometry());
+			pstmt.setClob(2,geom);
 
 			resultSet = pstmt.executeQuery();
 
@@ -336,7 +342,7 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 	 * @return
 	 * @throws Exception
 	 */
-	public JSONObject columnQuery(int status, String secondWorkItem, long userId) throws Exception {
+	public JSONObject columnQuery(int status, String secondWorkItem, long userId,int taskId) throws Exception {
 		//按group_id排序
 		StringBuilder sb = new StringBuilder();
 		sb.append("	SELECT COUNT(1) OVER(PARTITION BY 1) TOTAL, PID");
@@ -353,7 +359,8 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 		sb.append("	WHERE S.WORK_ITEM_ID = W.WORK_ITEM_ID");
 		sb.append("	AND S.HANDLER =:1");
 		sb.append("	AND W.SECOND_WORK_ITEM =:2");
-		sb.append("	AND S.SECOND_WORK_STATUS =:3)");
+		sb.append("	AND S.SECOND_WORK_STATUS =:3");
+		sb.append("	AND S.TASK_ID = :4)");
 		sb.append("	ORDER BY P.GROUP_ID, C.GROUP_ID)");
 		
 		PreparedStatement pstmt = null;
@@ -365,6 +372,7 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 			pstmt.setLong(1, userId);
 			pstmt.setString(2, secondWorkItem);
 			pstmt.setInt(3, status);
+			pstmt.setInt(4, taskId);
 			resultSet = pstmt.executeQuery();
 
 			List<Integer> pidList = new ArrayList<Integer>();
@@ -729,6 +737,7 @@ public List<Integer> getRowIdForSubmit(String firstWorkItem,String secondWorkIte
 		ResultSet resultSet = null;
 
 		try {
+			logger.info("secondWorkStatistics:"+sql);
 			pstmt = conn.prepareStatement(sql.toString());
 
 			resultSet = pstmt.executeQuery();

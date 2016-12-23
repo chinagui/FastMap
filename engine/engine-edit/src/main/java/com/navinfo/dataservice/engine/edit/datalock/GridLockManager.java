@@ -4,6 +4,7 @@ import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
@@ -13,6 +14,7 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.navinfo.dataservice.api.edit.model.FmEditLock;
 import com.navinfo.dataservice.api.man.iface.ManApi;
@@ -312,23 +314,18 @@ public class GridLockManager{
 	
 	
 
-	public static void main(String[] args){
-		try{
-//		long t1 = System.currentTimeMillis();
-//		System.out.println(UUID.randomUUID().toString());
-//		System.out.println(System.currentTimeMillis()-t1);
-//		System.out.println(Integer.MAX_VALUE);
-//		System.out.println(Long.MAX_VALUE);
-//			for(int i=0;i<1001;i++){
-//				meshes.add(100000+i);
-//			}
-			
-			
-			
-		}catch(Exception e){
-			e.printStackTrace();
-		}
-		
+	public static void main(String[] args) throws LockException{
+		ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(  
+                new String[] { "dubbo-consumer-datahub-test.xml" }); 
+		context.start();
+		new ApplicationContextUtil().setApplicationContext(context);
+		Integer[] gridArr=new Integer[]{60560323,60560301,60560302,60560303,60560311,60560312,60560313,60560322,60560323,60560331,60560332,60560333,60560320,60560330,60560300,60560321,60560310};
+		Set<Integer> gris = new HashSet<Integer>();
+		gris.addAll(Arrays.asList(gridArr));
+		//r.getRegionId(), FmEditLock.LOCK_OBJ_POI, req.getGridIds(), FmEditLock.TYPE_EDIT_POI_BASE_RELEASE,
+		//dbType,jobInfo.getId()
+		GridLockManager.getInstance().lock(1, FmEditLock.LOCK_OBJ_POI,gris ,FmEditLock.TYPE_EDIT_POI_BASE_RELEASE,"DAY",0);
+		System.exit(0);
 	}
 	private class GridLockResultSetHandler4QueryLock implements ResultSetHandler<Set<Integer>>{
 		@Override

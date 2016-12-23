@@ -139,20 +139,10 @@ public class AdminIDBatchUtils extends BaseBatchUtils {
             }
             return;
         }
-        List<RdLink> links = null;
         Map<Integer, RdLink> maps = new HashMap<>();
         geometry = GeoTranslator.transform(geometry, 0.00001, 5);
-        // 修形时删除原面内link的regionId
-        if (null != faceGeometry) {
-            links = selector.loadLinkByFaceGeo(geometry, true);
-            for (RdLink link : links) {
-                link.changedFields().put("leftRegionId", 0);
-                link.changedFields().put("rightRegionId", 0);
-                maps.put(link.pid(), link);
-            }
-        }
         // 修形时对面内新增link赋regionId
-        links = selector.loadLinkByFaceGeo(geometry, true);
+        List<RdLink> links = selector.loadLinkByDiffGeo(geometry, faceGeometry, true);
         for (RdLink link : links) {
             int regionId = face.getRegionId();
             Geometry linkGeometry = GeoTranslator.transform(link.getGeometry(), 0.00001, 5);
@@ -176,6 +166,15 @@ public class AdminIDBatchUtils extends BaseBatchUtils {
                 // 其他情况暂不处理
             }
             maps.put(link.pid(), link);
+        }
+        // 修形时删除原面内link的regionId
+        if (null != faceGeometry) {
+            links = selector.loadLinkByDiffGeo(faceGeometry, geometry, true);
+            for (RdLink link : links) {
+                link.changedFields().put("leftRegionId", 0);
+                link.changedFields().put("rightRegionId", 0);
+                maps.put(link.pid(), link);
+            }
         }
         for (RdLink link : maps.values()) {
             result.insertObject(link, ObjStatus.UPDATE, link.pid());

@@ -114,13 +114,6 @@ public class Process extends AbstractProcess<Command> {
 	@Override
 	public boolean prepareData() throws Exception {
 
-		// 检查link是否可以删除
-		String msg = preCheck();
-
-		if (null != msg) {
-			throw new Exception(msg);
-		}
-
 		// 获取该link对象
 		lockRdLink();
 
@@ -163,10 +156,6 @@ public class Process extends AbstractProcess<Command> {
 		try {
 			if (!this.getCommand().isCheckInfect()) {
 				this.getConn().setAutoCommit(false);
-				String preCheckMsg = this.preCheck();
-				if (preCheckMsg != null) {
-					throw new Exception(preCheckMsg);
-				}
 
 				prepareData();
 
@@ -175,6 +164,11 @@ public class Process extends AbstractProcess<Command> {
 				op.run(this.getResult());
 
 				updataRelationObj();
+				
+				String preCheckMsg = this.preCheck();
+				if (preCheckMsg != null) {
+					throw new Exception(preCheckMsg);
+				}
 
 				recordData();
 
@@ -209,10 +203,6 @@ public class Process extends AbstractProcess<Command> {
 	public String innerRun() throws Exception {
 
 		try {
-			String preCheckMsg = this.preCheck();
-			if (preCheckMsg != null) {
-				throw new Exception(preCheckMsg);
-			}
 			prepareData();
 
 			IOperation op = new OpTopo(this.getCommand());
@@ -220,6 +210,11 @@ public class Process extends AbstractProcess<Command> {
 			op.run(this.getResult());
 
 			updataRelationObj();
+			
+			String preCheckMsg = this.preCheck();
+			if (preCheckMsg != null) {
+				throw new Exception(preCheckMsg);
+			}
 
 			recordData();
 

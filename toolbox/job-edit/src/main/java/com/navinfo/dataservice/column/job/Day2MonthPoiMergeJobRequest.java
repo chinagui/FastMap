@@ -5,6 +5,8 @@ import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest;
 
 public class Day2MonthPoiMergeJobRequest extends AbstractJobRequest {
+	private String cityId;//需要日落月的城市id，为空表示全部DAY2MONTH_CONFIG中处于打开状态的城市
+	
 
 	@Override
 	public void defineSubJobRequests() throws JobCreateException {
@@ -29,6 +31,13 @@ public class Day2MonthPoiMergeJobRequest extends AbstractJobRequest {
 	@Override
 	public void validate() throws JobException {
 
+	}
+	public String getCityId() {
+		return cityId;
+	}
+
+	public void setCityId(String cityId) {
+		this.cityId = cityId;
 	}
 
 }

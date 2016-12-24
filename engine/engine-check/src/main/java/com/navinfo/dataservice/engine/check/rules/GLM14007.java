@@ -80,30 +80,28 @@ public class GLM14007 extends baseRule {
 	 */
 	private void checkRdLinkForm(RdLinkForm rdLinkForm) throws Exception {
 		//道路属性编辑,触发检查
-		if(ObjStatus.UPDATE.equals(rdLinkForm.status())){
-			Map<String, Object> changedFields = rdLinkForm.changedFields();
-			int formOfWay = (int) changedFields.get("formOfWay");
-			if(formOfWay == 50){
-				StringBuilder sb = new StringBuilder();
-				
-				sb.append("SELECT DR.PID FROM RD_DIRECTROUTE DR");
-				sb.append(" WHERE DR.IN_LINK_PID = " + rdLinkForm.getLinkPid());
-				sb.append(" AND DR.U_RECORD <> 2 UNION");
-				sb.append(" SELECT DR.PID FROM RD_DIRECTROUTE DR");
-				sb.append(" WHERE DR.OUT_LINK_PID = " + rdLinkForm.getLinkPid());
-				sb.append(" AND DR.U_RECORD <> 2");
-				
-				String sql = sb.toString();
-				log.info("RdLinkForm前检查GLM14007--sql:" + sql);
-				
-				DatabaseOperator getObj = new DatabaseOperator();
-				List<Object> resultList = new ArrayList<Object>();
-				resultList = getObj.exeSelect(this.getConn(), sql);
-				
-				if(!resultList.isEmpty()){
-					String target = "[RD_LINK," + rdLinkForm.getLinkPid() + "]";
-					this.setCheckResult("", target, 0);
-				}
+		Map<String, Object> changedFields = rdLinkForm.changedFields();
+		int formOfWay = (int) changedFields.get("formOfWay");
+		if(formOfWay == 50){
+			StringBuilder sb = new StringBuilder();
+			
+			sb.append("SELECT DR.PID FROM RD_DIRECTROUTE DR");
+			sb.append(" WHERE DR.IN_LINK_PID = " + rdLinkForm.getLinkPid());
+			sb.append(" AND DR.U_RECORD <> 2 UNION");
+			sb.append(" SELECT DR.PID FROM RD_DIRECTROUTE DR");
+			sb.append(" WHERE DR.OUT_LINK_PID = " + rdLinkForm.getLinkPid());
+			sb.append(" AND DR.U_RECORD <> 2");
+			
+			String sql = sb.toString();
+			log.info("RdLinkForm前检查GLM14007--sql:" + sql);
+			
+			DatabaseOperator getObj = new DatabaseOperator();
+			List<Object> resultList = new ArrayList<Object>();
+			resultList = getObj.exeSelect(this.getConn(), sql);
+			
+			if(!resultList.isEmpty()){
+				String target = "[RD_LINK," + rdLinkForm.getLinkPid() + "]";
+				this.setCheckResult("", target, 0);
 			}
 		}
 	}

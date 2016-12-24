@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
+
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -26,7 +28,7 @@ import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
  * 如果交限、语音引导、顺行进入线和退出线挂接在同一点上，而且这个点未登记路口（不属于任何路口），则不允许制作和修改
  */
 public class GLM26017 extends baseRule {
-
+	protected Logger log = Logger.getLogger(this.getClass());
 	public GLM26017() {
 		// TODO Auto-generated constructor stub
 	}

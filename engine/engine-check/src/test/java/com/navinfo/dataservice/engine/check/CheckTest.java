@@ -125,10 +125,10 @@ public class CheckTest {
 //		rdLinkForm.setFormOfWay(50);
 		
 //		glmList.add(rdLinkForm);
-		cc.setGlmList(glmList);
-		GLM08052 c = new GLM08052();
-		c.setConn(conn);
-		c.preCheck(cc);
+//		cc.setGlmList(glmList);
+//		GLM08052 c = new GLM08052();
+//		c.setConn(conn);
+//		c.preCheck(cc);
 		
 		System.out.println("end");
 	}

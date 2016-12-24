@@ -142,7 +142,7 @@ public class RdLinkIntRticSearch implements ISearch {
 
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "with tmp1 as  (select link_pid     from rd_link    where sdo_relate(geometry, sdo_geometry(   :1    , 8307), 'mask=anyinteract') =          'TRUE'      and u_record != 2), tmp2 as (select listagg(a.code || ',' || a.rank || ',' || a.rtic_dir || ',' ||                        a.updown_flag,                        '-') within group(order by a.link_pid) rtics,               a.link_pid           from rd_link_int_rtic a, tmp1 b          where a.u_record != 2 and a.link_pid=b.link_pid          group by a.link_pid)               select a.*,b.geometry from tmp2 a , rd_link b where a.link_pid=b.link_pid ";
+		String sql = "with tmp1 as  (select link_pid     from rd_link    where sdo_relate(geometry, sdo_geometry(   :1    , 8307), 'mask=anyinteract') =          'TRUE'      and u_record != 2), tmp2 as (select listagg(a.code || ',' || a.rank || ',' || a.rtic_dir || ',' ||                        a.updown_flag,                        '-') within group(order by a.link_pid) rtics,               a.link_pid           from rd_link_int_rtic a, tmp1 b          where a.u_record != 2 and a.link_pid=b.link_pid          group by a.link_pid)               select a.*,b.geometry,b.direct from tmp2 a , rd_link b where a.link_pid=b.link_pid ";
 		
 		PreparedStatement pstmt = null;
 
@@ -167,6 +167,10 @@ public class RdLinkIntRticSearch implements ISearch {
 				JSONObject m = new JSONObject();
 
 				String rticstr = resultSet.getString("rtics");
+				
+				int direct = resultSet.getInt("direct");
+				
+				m.put("e", direct);
 
 				String[] rtics = rticstr.split("-");
 
@@ -212,7 +216,7 @@ public class RdLinkIntRticSearch implements ISearch {
 				JSONObject jo = Geojson.link2Pixel(geojson, px, py, z);
 
 				snapshot.setG(jo.getJSONArray("coordinates"));
-
+				
 				list.add(snapshot);
 			}
 		} catch (Exception e) {

@@ -13,3 +13,6 @@ create table POI_COLUMN_STATUS
 alter table POI_COLUMN_STATUS
   add foreign key (PID)
   references IX_POI (PID);
+  
+ commit;
+ exit;

@@ -780,12 +780,12 @@ public class IxPoiSearch implements ISearch {
 				}
 				poiObj.put("classifyRules",classifyRule );
 				    //ckRules赋值，获取检查错误
-				String ckRule="";
-				Object cr=ckRules.get(Integer.toString(pid));
-				if (cr!=null){
-					ckRule=cr.toString();
-				}
+				List<JSONObject> ckRule= (List<JSONObject>) ckRules.get(Integer.toString(pid));
 				poiObj.put("ckRules", ckRule);
+				if (ckRule==null){
+					List<JSONObject> value=new ArrayList<JSONObject>();
+					poiObj.put("ckRules", value);
+				}
 				//大陆作业无值，港澳后续补充
 				poiObj.put("namerefMsg", "");
 				//获取特殊字段

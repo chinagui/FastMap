@@ -146,7 +146,7 @@ public class ColumnSubmitJob extends AbstractJob {
 			}
 			
 			// 修改poi_deep_status表作业项状态
-			updateDeepStatus(pidList, conn, 3);
+			updateDeepStatus(pidList, conn, 3,second);
 			
 			
 			// 重分类
@@ -185,9 +185,9 @@ public class ColumnSubmitJob extends AbstractJob {
 	 * @param conn
 	 * @throws Exception
 	 */
-	public void updateDeepStatus(List<Integer> pidList,Connection conn,int status) throws Exception {
+	public void updateDeepStatus(List<Integer> pidList,Connection conn,int status,String second) throws Exception {
 		StringBuilder sb = new StringBuilder();
-		sb.append("UPDATE poi_column_status SET first_work_status="+status+",second_work_status="+status+",handler=0 WHERE pid in (select to_number(column_value) from table(clob_to_table(?)))");
+		sb.append("UPDATE poi_column_status SET first_work_status="+status+",second_work_status="+status+",handler=0 WHERE work_item_id IN (SELECT cf.work_item_id FROM POI_COLUMN_WORKITEM_CONF cf WHERE cf.second_work_item='"+second+"') AND  pid in (select to_number(column_value) from table(clob_to_table(?)))");
 		
 		PreparedStatement pstmt = null;
 

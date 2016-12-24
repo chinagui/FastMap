@@ -63,6 +63,7 @@ public class PoiColumnValidationJob extends AbstractJob {
 			log.info("清理检查结果");
 			DeepCoreControl deepControl = new DeepCoreControl();
 			JSONObject jsonReq=new JSONObject();
+			jsonReq.put("subtaskId", jobInfo.getTaskId());
 			jsonReq.put("pids", myRequest.getPids());
 			jsonReq.put("ckRules", myRequest.getRules());
 			jsonReq.put("checkType", 1);

@@ -9,7 +9,7 @@ import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.engine.check.core.baseRule;
-import com.navinfo.dataservice.engine.check.helper.DatabaseOperatorResultWithGeo;
+import com.navinfo.dataservice.engine.check.helper.DatabaseOperatorResult;
 
 /**
  * 
@@ -48,44 +48,35 @@ public class GLM34001 extends baseRule {
 	 */
 	private void checkRdLink(RdLink rdLink) throws Exception {
 		//Link种别编辑,触发检查
-		if(rdLink.getKind()==1||rdLink.getKind()==2||rdLink.getKind()==8
+		StringBuilder sb = new StringBuilder();
+		sb.append("SELECT R.GEOMETRY,'[RD_LINK,' || R.LINK_PID || ']' TARGET,R.MESH_ID,");
+		sb.append(" CASE R.KIND WHEN 1 THEN '高速道路上制作了减速带'");
+		sb.append(" WHEN 2 THEN '城市高速上制作了减速带'");
+		sb.append(" WHEN 8 THEN '8级路上制作了减速带'");
+		sb.append(" WHEN 9 THEN '9级路上制作了减速带'");
+		sb.append(" WHEN 10 THEN '10级路上制作了减速带'");
+		sb.append(" WHEN 11 THEN '人渡上制作了减速带'");
+		sb.append(" WHEN 13 THEN '轮渡上制作了减速带' END LOG ");
+		sb.append(" FROM RD_LINK R WHERE R.LINK_PID = "+rdLink.getPid());
+		sb.append(" AND R.KIND IN (1,2,8,9,10,11,13) AND R.U_RECORD <> 2 ");
+		sb.append(" AND EXISTS( ");
+		sb.append(" SELECT 1 FROM RD_SPEEDBUMP S WHERE R.LINK_PID=S.LINK_PID ");
+		sb.append(" AND S.LINK_PID= "+rdLink.getPid());
+		sb.append(" AND S.U_RECORD <> 2)");
+		String sql = sb.toString();
+		log.info("RdLink后检查GLM34001--sql:" + sql);
+		
+		DatabaseOperatorResult getObj = new DatabaseOperatorResult();
+		List<Object> resultList = new ArrayList<Object>();
+		resultList = getObj.exeSelect(this.getConn(), sql);
+		
+		if(!resultList.isEmpty()){
+			this.setCheckResult(resultList.get(0).toString(), resultList.get(1).toString(), (int)resultList.get(2),resultList.get(3).toString());
+		}
+		/*if(rdLink.getKind()==1||rdLink.getKind()==2||rdLink.getKind()==8
 				||rdLink.getKind()==9||rdLink.getKind()==10
 				||rdLink.getKind()==11||rdLink.getKind()==13){
-			StringBuilder sb = new StringBuilder();
-			sb.append("SELECT R.GEOMETRY,'[RD_LINK,' || R.LINK_PID || ']',R.MESH_ID");
-			sb.append(" FROM RD_LINK R WHERE R.LINK_PID = "+rdLink.getPid());
-			sb.append(" AND R.U_RECORD <> 2 ");
-			sb.append(" AND EXISTS( ");
-			sb.append(" SELECT 1 FROM RD_SPEEDBUMP S WHERE R.LINK_PID=S.LINK_PID ");
-			sb.append(" AND S.LINK_PID= "+rdLink.getPid());
-			sb.append(" AND S.U_RECORD <> 2)");
-			String sql = sb.toString();
-			log.info("RdLink后检查GLM34001--sql:" + sql);
-			
-			DatabaseOperatorResultWithGeo getObj = new DatabaseOperatorResultWithGeo();
-			List<Object> resultList = new ArrayList<Object>();
-			resultList = getObj.exeSelect(this.getConn(), sql);
-			
-			if(!resultList.isEmpty()){
-				String log = null;
-				if(rdLink.getKind()==1){
-					log = "高速道路上制作了减速带";
-				}else if(rdLink.getKind()==2){
-					log = "城市高速上制作了减速带";
-				}else if(rdLink.getKind()==8){
-					log = "8级路上制作了减速带";
-				}else if(rdLink.getKind()==9){
-					log = "9级路上制作了减速带";
-				}else if(rdLink.getKind()==10){
-					log = "10级路上制作了减速带";
-				}else if(rdLink.getKind()==11){
-					log = "人渡上制作了减速带";
-				}else if(rdLink.getKind()==13){
-					log = "轮渡上制作了减速带";
-				}
-				this.setCheckResult(resultList.get(0).toString(), resultList.get(1).toString(), (int)resultList.get(2),log);
-			}
-		}
+		}*/
 		
 	}
 

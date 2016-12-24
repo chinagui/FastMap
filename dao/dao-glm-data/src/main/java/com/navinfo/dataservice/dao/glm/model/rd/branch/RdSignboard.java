@@ -43,6 +43,10 @@ public class RdSignboard implements IObj {
 	public RdSignboard() {
 
 	}
+	
+	public String getRowId() {
+		return rowId;
+	}
 
 	public int getPid() {
 		return pid;

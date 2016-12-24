@@ -41,8 +41,13 @@ public class RdLaneTopology implements IObj {
 	
 	public Map<String,RdLaneVia> viaMap = new HashMap<String,RdLaneVia>();
 	
+	
 	public RdLaneTopology() {
 
+	}
+	
+	public String getRowId() {
+		return rowId;
 	}
 
 	@Override
@@ -191,7 +196,6 @@ public class RdLaneTopology implements IObj {
 
 	@Override
 	public void setStatus(ObjStatus os) {
-
 	}
 
 	@Override

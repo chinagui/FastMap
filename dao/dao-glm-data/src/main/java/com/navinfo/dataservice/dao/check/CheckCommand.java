@@ -14,7 +14,7 @@ public class CheckCommand implements ICommand {
 	private List<IRow> glmList;
 	private String logSql;
 	private String wkt;
-	private String listStatus;
+//	private String listStatus;
 
 	@Override
 	public OperType getOperType() {
@@ -68,13 +68,13 @@ public class CheckCommand implements ICommand {
 		this.wkt = wkt;
 	}
 
-	public String getListStatus() {
-		return listStatus;
-	}
-
-	public void setListStatus(String listStatus) {
-		this.listStatus = listStatus;
-	}
+//	public String getListStatus() {
+//		return listStatus;
+//	}
+//
+//	public void setListStatus(String listStatus) {
+//		this.listStatus = listStatus;
+//	}
 	
 
 }

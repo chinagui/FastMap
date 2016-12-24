@@ -2,10 +2,16 @@ package com.navinfo.dataservice.engine.edit.operation.obj.rdcross.update;
 
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
+import org.apache.commons.collections.CollectionUtils;
 
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
-import com.navinfo.dataservice.dao.glm.iface.AlertObject;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISelector;
@@ -15,14 +21,10 @@ import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossLink;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossName;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossNode;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
-import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossSelector;
-import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeSelector;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 public class Operation implements IOperation {
 
@@ -39,6 +41,11 @@ public class Operation implements IOperation {
 
 		this.conn = conn;
 
+	}
+	
+	public Operation(Connection conn) {
+
+		this.conn = conn;
 	}
 
 	private String updateProperty(Result result) throws Exception {
@@ -344,6 +351,100 @@ public class Operation implements IOperation {
 			}
 
 		}
+
+		return null;
+	}
+	
+	public String breakRdLink(RdLink oldLink, List<RdLink> newLinks, Result result) throws Exception {
+
+		boolean isCrossLink = false;
+
+		RdLink breakLink = oldLink;
+
+		for (IRow row : breakLink.getForms()) {
+			
+			RdLinkForm form = (RdLinkForm) row;
+
+			if (form.getFormOfWay() == 50) {
+				
+				isCrossLink = true;
+				
+				break;
+			}
+		}
+
+		if (isCrossLink) {
+			
+			RdCrossSelector crossSelector = new RdCrossSelector(conn);
+
+			List<Integer> linkPid = new ArrayList<>();
+
+			linkPid.add(breakLink.getPid());
+
+			List<RdCross> crossList = crossSelector.loadRdCrossByNodeOrLink(null, linkPid, true);
+			
+			if(CollectionUtils.isEmpty(crossList))
+			{
+				return null;
+			}
+			
+			RdCross cross = crossList.get(0);
+
+			// 是路口内link的，需要新增路口点和路口组成link，删除原路口组成link
+			Set<Integer> nodePids = new HashSet<Integer>();
+
+			for (RdLink link : newLinks) {
+
+				nodePids.add(link.getsNodePid());
+
+				nodePids.add(link.geteNodePid());
+			}
+
+			nodePids.remove(oldLink.getsNodePid());
+
+			nodePids.remove(oldLink.geteNodePid());
+			
+			
+			for (int nodePid : nodePids) {
+				// 新增路口点 rd_cross_node
+
+				RdCrossNode crossNode = new RdCrossNode();
+
+				crossNode.setPid(cross.getPid());
+
+				crossNode.setNodePid(nodePid);
+
+				result.insertObject(crossNode, ObjStatus.INSERT,
+						crossNode.getPid());
+			}
+
+			for (RdLink link : newLinks) {
+				// 新增路口组成link rd_cross_link
+				RdCrossLink crossLink = new RdCrossLink();
+
+				crossLink.setPid(cross.getPid());
+
+				crossLink.setLinkPid(link.getPid());
+
+				result.insertObject(crossLink, ObjStatus.INSERT,
+						crossLink.getPid());
+			}
+
+			// 删除原路口组成link
+			for (IRow row : cross.getLinks()) {
+
+				RdCrossLink crosLink = (RdCrossLink) row;
+
+				if (crosLink.getLinkPid() == breakLink.getPid()) {
+
+					result.insertObject(crosLink, ObjStatus.DELETE,
+							crosLink.getPid());
+					// 打断前只有一条，找到后跳出循环，提高维护效率
+					break;
+				}
+			}
+		}
+
 
 		return null;
 	}

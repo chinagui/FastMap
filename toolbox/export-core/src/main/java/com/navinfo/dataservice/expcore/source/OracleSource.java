@@ -68,7 +68,7 @@ public class OracleSource implements ExportSource {
 			}
 		}catch(Exception e){
 			log.error(e.getMessage(),e);
-			throw new ExportException("初始化源时发生错误:",e);
+			throw new ExportException("初始化源时发生错误:"+e.getMessage(),e);
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
 		}
@@ -139,10 +139,11 @@ public class OracleSource implements ExportSource {
 	public void release() {
 		log.info("释放临时表资源");
 		releaseTempTableResource();
-		log.info("destroy the pooldatasource of the source schema.");
-		if(schema!=null){
-			schema.closePoolDataSource();
-		}
+		//不需要关闭数据源
+//		log.info("destroy the pooldatasource of the source schema.");
+//		if(schema!=null){
+//			schema.closePoolDataSource();
+//		}
 	}
 	@Override
 	public String getTempSuffix() {

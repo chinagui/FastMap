@@ -77,7 +77,7 @@ public class BasicRuleCommand {
 					unLoadPid.add(pid);
 				}
 			}
-			Map<Long,BasicObj> unLoadMap=ObjBatchSelector.selectByPids(getConn(), objType, referSubrow, unLoadPid, isLock, true);
+			Map<Long,BasicObj> unLoadMap=ObjBatchSelector.selectByPids(getConn(), objType, referSubrow, false,unLoadPid, isLock, true);
 			if(referDatasMap==null){referDatasMap=new HashMap<Long,BasicObj>();}
 			referDatasMap.putAll(unLoadMap);
 			referDatas.put(objType, referDatasMap);			

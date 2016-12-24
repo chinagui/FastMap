@@ -41,7 +41,7 @@ public class BatchTestGPR {
 		test.init();
 		Connection conn = DBConnector.getInstance().getConnectionById(19);
 		OperationResult operationResult=new OperationResult();
-		BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", null, 78675641, false);
+		BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", null, true,78675641, false);
 //		operationResult.putObj(obj);
 		IxPoi row=(IxPoi) obj.getMainrow();
 		//row.setKindCode("190100");

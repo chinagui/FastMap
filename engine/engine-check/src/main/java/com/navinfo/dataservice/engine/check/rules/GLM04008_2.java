@@ -25,6 +25,7 @@ import com.navinfo.dataservice.engine.check.helper.DatabaseOperatorResultWithGeo
  * 道路方向编辑服务端后检查
  * 大门方向编辑服务端后检查
  * 新增大门服务端后检查
+ * 大门方向编辑服务端前检查
  */
 public class GLM04008_2 extends baseRule {
 	protected Logger log = Logger.getLogger(this.getClass());
@@ -45,8 +46,45 @@ public class GLM04008_2 extends baseRule {
 			// 大门RdGate
 			if (obj instanceof RdGate) {
 				RdGate rdGate = (RdGate) obj;
-				checkRdGate(rdGate,checkCommand.getOperType());
+				checkRdGatePre(rdGate);
 			}	
+		}
+	}
+
+
+	/**
+	 * @param rdGate
+	 * @throws Exception 
+	 */
+	private void checkRdGatePre(RdGate rdGate) throws Exception {
+		if(rdGate.changedFields.containsKey("dir")){
+			int dir = Integer.parseInt(rdGate.changedFields.get("dir").toString()) ;
+			if(dir!=2){
+				return;
+			}
+			Set<Integer> linkPidSet = new HashSet<Integer>();
+			linkPidSet.add(rdGate.getInLinkPid());
+			linkPidSet.add(rdGate.getOutLinkPid());
+			
+			StringBuilder sb = new StringBuilder();
+
+			sb.append("SELECT 1 FROM RD_LINK R ");
+			sb.append("WHERE R.LINK_PID IN (" + StringUtils.join(linkPidSet.toArray(),",") + ")");
+			sb.append("AND R.U_RECORD != 2 ");
+			sb.append("AND R.DIRECT in (2,3) ");
+
+			String sql = sb.toString();
+			log.info("RdGate前检查GLM04008_2:" + sql);
+
+			DatabaseOperator getObj = new DatabaseOperator();
+			List<Object> resultList = new ArrayList<Object>();
+			resultList = getObj.exeSelect(this.getConn(), sql);
+
+			if(resultList.size()>0){
+				this.setCheckResult("", "", 0);
+			}
+		}else{
+			return;
 		}
 	}
 

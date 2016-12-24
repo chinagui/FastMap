@@ -808,6 +808,20 @@ public class IxPoiObj extends AbstractIxObj {
 	}
 	
 	/*
+	 * 简称标准中文CHI名称组
+	 */
+	public List<IxPoiName> getShortStandardCHIName(){
+		List<IxPoiName> shortCHNameList=new ArrayList<IxPoiName>();
+		List<IxPoiName> subRows=getIxPoiNames();
+		for(IxPoiName br:subRows){
+			if(br.getNameClass()==5&&br.getNameType()==1&&br.getLangCode().equals("CHI")){
+				shortCHNameList.add(br);
+			}
+		}
+		return shortCHNameList;
+	}
+	
+	/*
 	 * 标准中文名称组
 	 */
 	public List<IxPoiName> getStandardCHName(){

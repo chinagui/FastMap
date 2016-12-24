@@ -46,6 +46,7 @@ public class FMA0712 extends BasicCheckRule {
 				List<IxPoiParent> parentObjs = poiObj.getIxPoiParents();
 				if(parentObjs!=null&&parentObjs.size()>0){
 					setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), null);
+					return;
 				}
 			}else{
 				//数据必须存在父子关系，且对应的第一级父分类为“230126”
@@ -60,6 +61,7 @@ public class FMA0712 extends BasicCheckRule {
 				IxPoiName parentOfficeName=parentObj.getOfficeStandardCHName();
 				if(!poiOfficeName.getName().contains(parentOfficeName.getName())){
 					setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), null);
+					return;
 				}
 			}
 		}

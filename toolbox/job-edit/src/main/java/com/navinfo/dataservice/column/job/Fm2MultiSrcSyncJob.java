@@ -259,7 +259,7 @@ public class Fm2MultiSrcSyncJob extends AbstractJob {
 				selConfig.add("IX_POI_GASSTATION");
 				//...
 				if(pidList.size()>0){
-					Map<Long,BasicObj> objs = ObjBatchSelector.selectByPids(conn, ObjectName.IX_POI, selConfig, pidList, true, false);
+					Map<Long,BasicObj> objs = ObjBatchSelector.selectByPids(conn, ObjectName.IX_POI, selConfig, false,pidList, true, false);
 					//设置lifeCycle
 					for(Map.Entry<Long, BasicObj> entry:objs.entrySet()){
 						for(Map.Entry<Integer, Collection<Long>> ent:updatePids.entrySet()){

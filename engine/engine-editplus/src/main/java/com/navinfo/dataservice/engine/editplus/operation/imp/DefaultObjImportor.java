@@ -150,7 +150,7 @@ public class DefaultObjImportor extends AbstractOperation{
 		}else if("ADNODE".equals(objType)){
 			newObjType = ObjectName.AD_NODE;
 		}
-		Map<Long, BasicObj> objs = ObjBatchSelector.selectByPids(conn,newObjType,tabNames,updateMap.keySet(),true,true);
+		Map<Long, BasicObj> objs = ObjBatchSelector.selectByPids(conn,newObjType,tabNames,false,updateMap.keySet(),true,true);
 		//开始导入
 		for (Entry<Long, JSONObject> jo : updateMap.entrySet()) {
 			//日志
@@ -218,7 +218,7 @@ public class DefaultObjImportor extends AbstractOperation{
 		}else if("ADNODE".equals(objType)){
 			newObjType = ObjectName.AD_NODE;
 		}
-		Map<Long, BasicObj> objs = ObjBatchSelector.selectByPids(conn,newObjType,tabNames,deleteMap.keySet(),true,true);
+		Map<Long, BasicObj> objs = ObjBatchSelector.selectByPids(conn,newObjType,tabNames,false,deleteMap.keySet(),true,true);
 		//开始导入
 		for (Map.Entry<Long, JSONObject> jo : deleteMap.entrySet()) {
 			//日志
@@ -255,7 +255,7 @@ public class DefaultObjImportor extends AbstractOperation{
 				Object attValue = json.get(attName);
 				if((attValue==null && (!(attValue instanceof JSONNull)))||StringUtils.isEmpty(attName)
 						||"objStatus".equals(attName)){
-					log.warn("注意：request的json中存在name或者value为空的属性，已经被忽略。");
+					log.warn("注意：request的json中存在name或者value为空的属性，已经被忽略。"+attName);
 					continue;
 				}
 				try{
@@ -316,13 +316,16 @@ public class DefaultObjImportor extends AbstractOperation{
 			}else {
 				List<BasicRow> subRowList = obj.getSubRowByName(subRowName);
 				String rowId = json.getString("rowId");
+				boolean flag = true;
 				for (BasicRow basicRow : subRowList) {
 					if(basicRow.getRowId().equals(rowId)){
 						subRow = basicRow;
+						flag = false;
 						break;
-					}else{
-						throw new Exception("rowId为:"+rowId+"的子表没有查到");
 					}
+				}
+				if(flag){
+					throw new Exception("rowId为:"+rowId+"的子表没有查到");
 				}
 				if("UPDATE".equals(objStatus)){
 					//不作处理
@@ -336,8 +339,8 @@ public class DefaultObjImportor extends AbstractOperation{
 					String attName = (String)it.next();
 					Object attValue = json.get(attName);
 					if((attValue==null && (!(attValue instanceof JSONNull)))
-							||StringUtils.isEmpty(attName)||"objStatus".equals(attName)){
-						log.warn("注意：request的json中存在name或者value为空的属性，已经被忽略。");
+							||StringUtils.isEmpty(attName)||"objStatus".equals(attName)||"pid".equals(attName)){
+						log.warn("注意：request的json中存在name或者value为空的属性，已经被忽略。"+attName);
 						continue;
 					}
 					try{

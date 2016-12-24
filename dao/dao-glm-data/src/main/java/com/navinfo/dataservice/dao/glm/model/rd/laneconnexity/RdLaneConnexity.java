@@ -47,9 +47,15 @@ public class RdLaneConnexity implements IObj {
 	
 	public Map<String,RdLaneVia> viaMap = new HashMap<String,RdLaneVia>();
 
+
 	public RdLaneConnexity() {
 
 	}
+
+	public String getRowId() {
+		return rowId;
+	}
+
 
 	public int getPid() {
 		return pid;
@@ -145,7 +151,6 @@ public class RdLaneConnexity implements IObj {
 
 	@Override
 	public void setStatus(ObjStatus os) {
-
 	}
 
 	@Override

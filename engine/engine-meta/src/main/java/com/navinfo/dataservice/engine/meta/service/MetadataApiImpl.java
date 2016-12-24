@@ -4,18 +4,23 @@ import java.sql.Connection;
 import java.util.List;
 import java.util.Map;
 
+import net.sf.json.JSONObject;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.dbutils.DbUtils;
 import org.springframework.stereotype.Service;
 
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.api.metadata.model.ScPointNameckObj;
+import com.navinfo.dataservice.api.metadata.model.ScPointSpecKindcodeNewObj;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.engine.meta.area.ScPointAdminArea;
 import com.navinfo.dataservice.engine.meta.area.ScPointDeepPlanarea;
 import com.navinfo.dataservice.engine.meta.chain.ChainSelector;
+import com.navinfo.dataservice.engine.meta.character.TyCharacterEgalcharExt;
+import com.navinfo.dataservice.engine.meta.character.TyCharacterFjtHzCheckSelector;
 import com.navinfo.dataservice.engine.meta.character.TyCharacterEgalcharExtCheckSelector;
 import com.navinfo.dataservice.engine.meta.character.TyCharacterFjtHmCheckSelector;
 import com.navinfo.dataservice.engine.meta.engshort.ScEngshortSelector;
@@ -32,6 +37,7 @@ import com.navinfo.dataservice.engine.meta.scPointSpecKindcode.ScPointSpecKindco
 import com.navinfo.dataservice.engine.meta.tmc.selector.TmcSelector;
 import com.navinfo.dataservice.engine.meta.translate.ConvertUtil;
 import com.navinfo.dataservice.engine.meta.translate.EngConverterHelper;
+import com.navinfo.dataservice.engine.meta.wordKind.WordKind;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -254,7 +260,11 @@ public class MetadataApiImpl implements MetadataApi {
 		// TODO Auto-generated method stub
 		return ScPointNameck.getInstance().scPointNameckTypeD7();
 	}
-	
+	/**
+	 * SELECT ADMIN_CODE FROM SC_POINT_DEEP_PLANAREA
+	 * @return List<String> ADMIN_CODE的列表
+	 * @throws Exception
+	 */
 	@Override
 	public List<String> getDeepAdminCodeList() throws Exception {
 		ScPointDeepPlanarea deepPlanarea = new ScPointDeepPlanarea();
@@ -273,6 +283,12 @@ public class MetadataApiImpl implements MetadataApi {
 	public Map<String, String> scPointSpecKindCodeType8() throws Exception {
 		// TODO Auto-generated method stub
 		return ScPointSpecKindcode.getInstance().scPointSpecKindCodeType8();
+	}
+	
+	@Override
+	public Map<String, String> scPointSpecKindCodeType14() throws Exception {
+		// TODO Auto-generated method stub
+		return ScPointSpecKindcode.getInstance().scPointSpecKindCodeType14();
 	}
 
 	/**
@@ -305,5 +321,68 @@ public class MetadataApiImpl implements MetadataApi {
 	@Override
 	public String convFull2Half(String word) throws Exception {
 		 return ConvertUtil.convFull2Half(word);
+	}
+	/**
+	 * 返回“TY_CHARACTER_EGALCHAR_EXT”表中数据。
+	 * @return Map<String, List<String>> key:EXTENTION_TYPE value:CHARACTER字段列表
+	 * @throws Exception
+	 */
+	@Override
+	public Map<String, List<String>> tyCharacterEgalcharExtGetExtentionTypeMap()
+			throws Exception {
+		return TyCharacterEgalcharExt.getInstance().getExtentionTypeMap();
+	}
+	/**
+	 * 返回“TY_CHARACTER_FJT_HZ”表中数据。
+	 * @return Map<String, JSONObject> key:ft value:对应其它
+	 * @throws Exception
+	 */
+	@Override
+	public Map<String, JSONObject> tyCharacterFjtHzCheckSelectorGetFtExtentionTypeMap()
+			throws Exception {
+		return TyCharacterFjtHzCheckSelector.getInstance().getFtExtentionTypeMap();
+	}
+	
+	/**
+	 * 返回“TY_CHARACTER_FJT_HZ”表中数据。
+	 * @return Map<String, JSONObject> key:jt value:对应其它
+	 * @throws Exception
+	 */
+	@Override
+	public Map<String, JSONObject> tyCharacterFjtHzCheckSelectorGetJtExtentionTypeMap()
+			throws Exception {
+		return TyCharacterFjtHzCheckSelector.getInstance().getJtExtentionTypeMap();
+	}
+
+	@Override
+	public String wordKind(String kindCode,String chain) throws Exception {
+		return WordKind.getInstance().getWordKind(kindCode, chain);
+	}
+	/**
+	 * 1.“TY_CHARACTER_EGALCHAR_EXT”表，“EXTENTION_TYPE”字段中，“ENG_H_U”、“ENG_H_L”、“DIGIT_H”、
+	 * “SYMBOL_H”类型对应的“CHARACTER”字段的内容;
+	 * 2.“TY_CHARACTER_EGALCHAR_EXT”表，和 “EXTENTION_TYPE ”字段里“SYMBOL_F”类型，
+	 * 		2.1在全半角对照关系表中（TY_CHARACTER_FULL2HALF表）FULL_WIDTH字段一致，
+	 * 找到FULL_WIDTH字段对应的半角“HALF_WIDTH”,且“HALF_WIDTH”字段非空
+	 * 		2.2.如果“HALF_WIDTH”字段对应的半角字符为空，则FULL_WIDTH字段对应的全角字符也是拼音的合法字符
+	 * @return List<String> 返回合法的所有半角字符列表
+	 */
+	@Override
+	public List<String> halfCharList() throws Exception {
+		// TODO Auto-generated method stub
+		return TyCharacterEgalcharExt.getInstance().getHalfCharList();
+	}
+	/**
+	 * SELECT DISTINCT POI_KIND, RATING, TOPCITY
+	 *   FROM SC_POINT_SPEC_KINDCODE_NEW
+	 *    WHERE TYPE = 2
+	 * @return Map<String, ScPointSpecKindcodeNewObj> key:poi_kind
+	 * @throws Exception
+	 */
+	@Override
+	public Map<String, ScPointSpecKindcodeNewObj> ScPointSpecKindcodeNewType2()
+			throws Exception {
+		// TODO Auto-generated method stub
+		return ScPointSpecKindcode.getInstance().scPointSpecKindCodeType2();
 	}
 }

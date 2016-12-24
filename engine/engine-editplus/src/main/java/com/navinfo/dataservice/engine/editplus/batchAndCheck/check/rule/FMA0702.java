@@ -4,6 +4,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.collections.CollectionUtils;
+
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
@@ -44,10 +46,13 @@ public class FMA0702 extends BasicCheckRule {
 			List<IxPoiName> shortCHNames = poiObj.getShortCHNames();
 			if(shortCHNames==null||shortCHNames.size()==0){
 				setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(),"银行类POI简称作业");
+				return;
 			}
 			if(shortCHNames.size()>1){
 				setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(),"银行类POI简称个数错误");
+				return;
 			}
+			if(CollectionUtils.isEmpty(shortCHNames)){return ;}
 			IxPoiName shortCHName=shortCHNames.get(0);
 			MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 			Map<String, String> typeD10 =metadataApi.scPointNameckTypeD10();
@@ -61,6 +66,7 @@ public class FMA0702 extends BasicCheckRule {
 				name=name.replace(preKey, keyResult.get(preKey));
 				if(!name.equals(shortCHName.getName())){
 					setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(),"银行类POI简称制作错误");
+					return;
 				}				
 			}
 		}

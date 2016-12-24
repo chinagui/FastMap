@@ -78,16 +78,17 @@ public class GLM04006 extends baseRule{
 	 * @throws Exception 
 	 */
 	private void checkRdGateCondition(RdGateCondition rdGateCondition, OperType operType) throws Exception {
-		//通行对象为车辆，触发检查
-		if(rdGateCondition.getValidObj()==0){
 			StringBuilder sb = new StringBuilder();
 
 			sb.append("SELECT 1");
-			sb.append(" FROM RD_LINK R, RD_GATE G");
+			sb.append(" FROM RD_LINK R, RD_GATE G,RD_GATE_CONDITION C");
 			sb.append(" WHERE R.KIND = 10");
+			sb.append(" AND G.PID = C.PID");
+			sb.append(" AND C.VALID_OBJ = 0");
 			sb.append(" AND (R.LINK_PID = G.IN_LINK_PID OR R.LINK_PID = G.OUT_LINK_PID)");
 			sb.append(" AND R.U_RECORD != 2");
 			sb.append(" AND G.U_RECORD != 2");
+			sb.append(" AND C.U_RECORD != 2");
 			sb.append(" AND G.PID = " + rdGateCondition.getPid());
 
 			String sql = sb.toString();
@@ -99,7 +100,6 @@ public class GLM04006 extends baseRule{
 			if (resultList.size()>0) {
 				this.setCheckResult("","[RD_GATE," + rdGateCondition.getPid() + "]", 0);
 			}
-		}
 		
 	}
 
@@ -143,27 +143,32 @@ public class GLM04006 extends baseRule{
 	 */
 	private void checkRdGate(RdGate rdGate, OperType operType) throws Exception {
 		StringBuilder sb = new StringBuilder();
-		for(Entry<String, RdGateCondition> entry:rdGate.rdGateConditionMap.entrySet()){
-			RdGateCondition rdGateCondition = entry.getValue();
-			if(rdGateCondition.getValidObj()==0){
-				Set<Integer> linkPidSet = new HashSet<Integer>();
-				linkPidSet.add(rdGate.getInLinkPid());
-				linkPidSet.add(rdGate.getOutLinkPid());
-				sb.append("SELECT 1 FROM RD_LINK R");
-				sb.append(" WHERE R.U_RECORD != 2 ");
-				sb.append(" AND R.KIND = 10 ");
-				sb.append(" AND R.LINK_PID IN (" + StringUtils.join(linkPidSet.toArray()) + ")");
+		//是否触发检查：如果通行对象包含车辆，则触发检查项
+		boolean flg = false;
+		for(IRow rdGateCondition:rdGate.getCondition()){
+			if(((RdGateCondition) rdGateCondition).getValidObj()==0){
+				flg = true;
+				break;
+			}
+		}
+		if(flg){
+			Set<Integer> linkPidSet = new HashSet<Integer>();
+			linkPidSet.add(rdGate.getInLinkPid());
+			linkPidSet.add(rdGate.getOutLinkPid());
+			sb.append("SELECT 1 FROM RD_LINK R");
+			sb.append(" WHERE R.U_RECORD != 2 ");
+			sb.append(" AND R.KIND = 10 ");
+			sb.append(" AND R.LINK_PID IN (" + StringUtils.join(linkPidSet.toArray()) + ")");
 
-				String sql = sb.toString();
+			String sql = sb.toString();
 
-				DatabaseOperator getObj = new DatabaseOperator();
-				List<Object> resultList = new ArrayList<Object>();
-				resultList = getObj.exeSelect(this.getConn(), sql);
+			DatabaseOperator getObj = new DatabaseOperator();
+			List<Object> resultList = new ArrayList<Object>();
+			resultList = getObj.exeSelect(this.getConn(), sql);
 
-				if(resultList.size()>0){
-					String target = "[RD_GATE," + rdGate.getPid() + "]";
-					this.setCheckResult("", target, 0);
-				}
+			if(resultList.size()>0){
+				String target = "[RD_GATE," + rdGate.getPid() + "]";
+				this.setCheckResult("", target, 0);
 			}
 		}
 	}

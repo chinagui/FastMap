@@ -57,11 +57,6 @@ public class Process extends AbstractProcess<Command> {
 
 			this.prepareData();
 
-			String preCheckMsg = this.preCheck();
-
-			if (preCheckMsg != null) {
-				throw new Exception(preCheckMsg);
-			}
 			// 创建行政区划点有关行政区划线具体操作
 			OpTopo operation = new OpTopo(this.getCommand(), check,
 					this.getConn());
@@ -70,6 +65,12 @@ public class Process extends AbstractProcess<Command> {
 			OpRefAdFace opRefAdFace = new OpRefAdFace(this.getCommand(),
 					this.getConn());
 			opRefAdFace.run(this.getResult());
+			
+			String preCheckMsg = this.preCheck();
+
+			if (preCheckMsg != null) {
+				throw new Exception(preCheckMsg);
+			}
 		} catch (Exception e) {
 
 			this.getConn().rollback();

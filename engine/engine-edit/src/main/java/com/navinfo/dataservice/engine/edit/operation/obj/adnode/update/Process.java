@@ -52,17 +52,15 @@ public class Process extends AbstractProcess<Command> {
 		try {
 			this.prepareData();
 
+			IOperation operation = new Operation(this.getCommand(), this.adnode);
+
+			msg = operation.run(this.getResult());
+
 			String preCheckMsg = this.preCheck();
 
 			if (preCheckMsg != null) {
 				throw new Exception(preCheckMsg);
 			}
-
-			IOperation operation = new Operation(this.getCommand(), this.adnode);
-
-			msg = operation.run(this.getResult());
-
-			this.postCheck();
 
 		} catch (Exception e) {
 

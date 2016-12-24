@@ -55,6 +55,10 @@ public class RdRestrictionDetail implements IObj {
 	public void isetOutNodePid(int outNodePid) {
 		this.outNodePid = outNodePid;
 	}
+	
+	public String getRowId() {
+		return rowId;
+	}
 
 	public RdRestrictionDetail() {
 

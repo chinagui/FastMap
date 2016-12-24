@@ -69,7 +69,6 @@ public class RdGateCondition implements IRow {
 
 	@Override
 	public void setStatus(ObjStatus os) {
-
 	}
 
 	@Override

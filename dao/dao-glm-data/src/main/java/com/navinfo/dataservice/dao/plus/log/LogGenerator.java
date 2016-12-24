@@ -229,7 +229,7 @@ public class LogGenerator {
 		}
 		BasicObjGrid grid = basicObj.getGrid();
 		if(subrow.getGeoPid()!=basicObj.objPid()){
-			BasicObj referObj = ObjSelector.selectByPid(conn, basicObj.objName(), null, subrow.getGeoPid(), true);
+			BasicObj referObj = ObjSelector.selectByPid(conn, basicObj.objName(), null,true, subrow.getGeoPid(), true);
 			grid = referObj.getGrid();
 		}
 		for(String gridId:grid.getGridListBefore()){

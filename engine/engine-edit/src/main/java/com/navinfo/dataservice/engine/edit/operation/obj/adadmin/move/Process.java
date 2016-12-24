@@ -15,7 +15,6 @@ public class Process extends  AbstractProcess<Command>   implements IProcess {
 	 */
 	public Process(AbstractCommand command) throws Exception {
 		super(command);
-		// TODO Auto-generated constructor stub
 	}
 
 	@Override
@@ -27,9 +26,6 @@ public class Process extends  AbstractProcess<Command>   implements IProcess {
 		return false;
 	}
 
-	/* (non-Javadoc)
-	 * @see com.navinfo.dataservice.engine.edit.edit.operation.AbstractProcess#createOperation()
-	 */
 	@Override
 	public String exeOperation() throws Exception {
 		return new Operation(this.getCommand(),moveAdmin).run(this.getResult());

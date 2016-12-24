@@ -125,7 +125,6 @@ public class RdLinkForm implements IRow {
 
 	@Override
 	public void setStatus(ObjStatus os) {
-
 	}
 
 	@Override

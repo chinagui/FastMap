@@ -707,6 +707,7 @@ public class AbstractSelector implements ISelector {
     }
 
     /**
+     * 设置poi edit status字段值
      * @param ixPoi
      * @param isLock
      * @throws Exception
@@ -714,9 +715,11 @@ public class AbstractSelector implements ISelector {
     private void handlePoiEditStatus(IxPoi ixPoi, boolean isLock) throws Exception {
         IxPoiEditStatusSelector ixPoiEditStatusSelector = new IxPoiEditStatusSelector(conn);
 
-        int status = ixPoiEditStatusSelector.loadStatusByRowId(ixPoi.getPid(), isLock);
+        Map<String,Integer> editStatusDataMap = ixPoiEditStatusSelector.loadStatusByRowId(ixPoi.getPid(), isLock);
 
-        ixPoi.setStatus(status);
+        ixPoi.setStatus(editStatusDataMap.get("status"));
+        
+        ixPoi.setStatus(editStatusDataMap.get("freshVerified"));
 
     }
 

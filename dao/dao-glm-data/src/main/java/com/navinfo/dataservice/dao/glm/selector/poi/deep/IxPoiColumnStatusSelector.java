@@ -894,8 +894,11 @@ public List<Integer> getRowIdForSubmit(String firstWorkItem,String secondWorkIte
 			sb.append(" GROUP BY c1.second_work_item");
 
 			pstmt = conn.prepareStatement(sb.toString());
-			pstmt.setString(1, subtask.getGeometry());
-			pstmt.setString(2, subtask.getGeometry());
+			 
+			Clob geoClob =ConnectionUtil.createClob(conn);
+			geoClob.setString(1, subtask.getGeometry());
+			pstmt.setClob(1, geoClob);
+			pstmt.setClob(2, geoClob);
 			
 			resultSet = pstmt.executeQuery();
 			

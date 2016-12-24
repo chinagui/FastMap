@@ -68,8 +68,8 @@ public class GLM08052 extends baseRule {
 		if(ObjStatus.INSERT.equals(rdLaneVia.status())){
 			//修改车信,触发检查
 			StringBuilder sb = new StringBuilder();
-
-			sb.append("WITH T AS (SELECT RL.S_NODE_PID NODE_PID FROM ");
+			
+			sb.append("WITH T AS (SELECT RL.S_NODE_PID NODE_PID,RLC.PID PID FROM ");
 			sb.append(" RD_LANE_CONNEXITY RLC,RD_LANE_TOPOLOGY RLT,RD_LANE_VIA RLV, RD_LINK RL");
 			sb.append(" WHERE RLC.PID=RLT.CONNEXITY_PID AND RLT.TOPOLOGY_ID=RLV.TOPOLOGY_ID");
 			sb.append(" AND RLV.LINK_PID = RL.LINK_PID AND RLC.U_RECORD <>2 AND RLT.U_RECORD <>2");
@@ -80,7 +80,7 @@ public class GLM08052 extends baseRule {
 			sb.append(" AND RLV.LINK_PID = RL.LINK_PID AND RLC.U_RECORD <>2 AND RLT.U_RECORD <>2");
 			sb.append(" AND RLV.U_RECORD <>2 AND RL.U_RECORD <>2 AND RLV.LINK_PID="+rdLaneVia.getLinkPid()+")");
 			sb.append(" SELECT DISTINCT T.PID FROM T, RD_NODE_FORM RNF");
-			sb.append(" WHERE T.NODE_PID = RNF.NODE_PID AND RNF.FORM_OF_WAY = 15");
+			sb.append(" WHERE T.NODE_PID = RNF.NODE_PID AND RNF.FORM_OF_WAY = 15 AND RNF.U_RECORD <> 2");
 			
 			String sql = sb.toString();
 			log.info("RdLaneVia后检查GLM08052--sql:" + sql);
@@ -118,7 +118,7 @@ public class GLM08052 extends baseRule {
 		sb.append(" AND RLV.LINK_PID = RL.LINK_PID AND RLC.U_RECORD <>2 AND RLT.U_RECORD <>2");
 		sb.append(" AND RLV.U_RECORD <>2 AND RL.U_RECORD <>2 AND RLC.PID="+rdLaneConnexity.getPid()+")");
 		sb.append(" SELECT DISTINCT T.NODE_PID FROM T, RD_NODE_FORM RNF");
-		sb.append(" WHERE T.NODE_PID = RNF.NODE_PID AND RNF.FORM_OF_WAY = 15");
+		sb.append(" WHERE T.NODE_PID = RNF.NODE_PID AND RNF.FORM_OF_WAY = 15 AND RNF.U_RECORD <> 2");
 		
 		String sql = sb.toString();
 		log.info("RdLaneConnexity后检查GLM08052--sql:" + sql);

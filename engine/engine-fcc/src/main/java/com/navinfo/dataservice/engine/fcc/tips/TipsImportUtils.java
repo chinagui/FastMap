@@ -173,15 +173,24 @@ public class TipsImportUtils {
 			Geometry g = factory.createMultiPoint(g3.getCoordinates());
 
 			geos.add(g);
-		} else {
+			
+		}  
+		//8002的g_location是feedback中坐标的第一个点，可以不取，如果取了，则坐标相交，solr计算结果返回错误
+		else  if(! sourceType.equals("8002") ){
 
 			Geometry g = GeoTranslator.geojson2Jts(g_location);
-
-			if (!g.isValid()) {
-				throw new Exception("invalid g_location");
+			
+			int glen=g.getNumGeometries();
+			
+			for (int i = 0; i < glen; i++) {
+				
+				if (!g.isValid()) {
+					throw new Exception("invalid g_location");
+				}
+				
+				geos.add(g.getGeometryN(i));
+				
 			}
-
-			geos.add(g);
 		}
 
 		for (int i = 0; i < feedbacks.size(); i++) {

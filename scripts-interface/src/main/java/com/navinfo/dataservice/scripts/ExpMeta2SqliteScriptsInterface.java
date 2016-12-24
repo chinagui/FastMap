@@ -32,30 +32,22 @@ public class ExpMeta2SqliteScriptsInterface {
 		try {
 			conn = DBConnector.getInstance().getMetaConnection();
 			gdbConn = DBConnector.getInstance().getMkConnection();
-			pointChargingChain(conn,sqliteConn);
 			
-			fmControl(conn,sqliteConn);
-			
-			pointFoodtype(conn,sqliteConn);
-			pointPoicodeNew(conn,sqliteConn);
-			pointKindNew(conn,sqliteConn);
-			pointChainCode(conn,sqliteConn);
-			
-			pointBrandFoodtype(conn,sqliteConn);
-			
-			pointCode2Level(conn,sqliteConn);
-			
-			pointNameck(conn,sqliteConn);
-			pointAdminArea(conn,sqliteConn);
-			pointFocus(conn, sqliteConn);
-			pointTruck(conn, sqliteConn);
-			metaPoiIcon(gdbConn, sqliteConn);
-			
-			
-			
-			
-			//fmControl(conn,sqliteConn);
-			//chainCode(conn,sqliteConn);
+			scPointChargingChain(conn,sqliteConn);
+			ciParaControl(conn,sqliteConn);
+			ciParaFood(conn,sqliteConn);
+			ciParaIcon(gdbConn,sqliteConn);
+			ciParaKind(conn,sqliteConn);
+			ciParaKindChain(conn,sqliteConn);
+			ciParaKindMedium(conn,sqliteConn);
+			ciParaKindTop(conn,sqliteConn);
+			ciParaSensitiveWords(conn,sqliteConn);
+			ciParaTel(conn,sqliteConn);
+			scPointFocus(conn,sqliteConn);
+			pointTruck(conn,sqliteConn);
+			scPointNameck(conn,sqliteConn);
+			//scPointChargeManu(conn,sqliteConn);
+			ciParaIcon(gdbConn, sqliteConn);
 			
 			System.out.println("Metadata export end");
 		} catch (Exception e) {
@@ -116,30 +108,37 @@ public class ExpMeta2SqliteScriptsInterface {
 	 */
 	public static List<String> sqliteInit() {
 		List<String> sqliteList = new ArrayList<String>();
+		//1.充电站品牌表：
 		sqliteList.add("CREATE TABLE SC_POINT_CHARGING_CHAIN (chain_name text,chain_code text,hm_flag text,memo text)");
-		sqliteList.add("CREATE TABLE SC_FM_CONTROL (id integer,kind_code text,kind_change integer,parent integer,parent_level integer,important integer,name_keyword text,level text,eng_permit integer,agent integer,region integer,tenant integer,extend integer,extend_photo integer,photo integer,internal integer,chain integer,tel_cs integer,add_cs integer,disp_onlink integer)");
-		//sqliteList.add("CREATE TABLE SC_POINT_CHAIN_CODE (chain_name text,chain_code text,kg_flag text,hm_flag text,memo text,type integer,chain_name_cht text,chain_name_eng text,category integer,weight integer)");
-		sqliteList.add("CREATE TABLE SC_POINT_FOODTYPE (poikind text,foodtype text,type text,kg_flag text,hm_flag text,memo text,foodtypename text,chain text)");
+		//2.小分类业务逻辑控制表
+		sqliteList.add("CREATE TABLE CI_PARA_CONTROL (id integer PRIMARY KEY,kind_id integer,kind_code text,kind_change integer,parent integer,parent_level integer,important integer,name_keyword text,level text,eng_permit integer,agent integer,region integer,tenant integer,extend integer,extend_photo integer,photo integer,internal integer,chain integer,tel_cs integer,add_cs integer,disp_onlink integer)");
+		//3.FOODTYPE值域表
+		sqliteList.add("CREATE TABLE CI_PARA_FOOD (id integer PRIMARY KEY,kind_id integer,food_name text,food_code integer,foodtype integer)");
+		//4.POI Icon表
+		sqliteList.add("CREATE TABLE CI_PARA_ICON (id integer ,idcode text,name_in_nav text,type integer)");
+		//5.POI分类表：
+		sqliteList.add("CREATE TABLE CI_PARA_KIND (id integer PRIMARY KEY,medium_id integer,name text,code integer,kind_code text,description text,region integer,type integer)");
+		//6.品牌分类表：
+		sqliteList.add("CREATE TABLE CI_PARA_KIND_CHAIN (id integer PRIMARY KEY,kind_code text,chain text,chain_name text,foodtype text,level text,chain_type integer)");
+		//7.POI中分类代码表：
+		sqliteList.add("CREATE TABLE CI_PARA_KIND_MEDIUM (id integer PRIMARY KEY,top_id integer,code integer,name text)");
+		//8.POI大分类代码表：
+		sqliteList.add("CREATE TABLE CI_PARA_KIND_TOP (id integer PRIMARY KEY,code integer,name text)");
+		//9.敏感关键字配置表：
+		sqliteList.add("CREATE TABLE CI_PARA_SENSITIVE_WORDS (id integer PRIMARY KEY,sensitive_word text,type integer)");
+		//10.电话区号表：
+		sqliteList.add("CREATE TABLE CI_PARA_TEL (id integer PRIMARY KEY,city_code text,code text,tel_len integer)");
+		//11.客户重点关注POI表：
+		sqliteList.add("CREATE TABLE SC_POINT_FOCUS (id integer PRIMARY KEY,poi_num text,poiname text,memo text,descript text,type integer,poikind text,r_kind text,equal integer,kg_flag text,hm_flag text)");
+		//12.卡车地图标识表：
+		sqliteList.add("CREATE TABLE SC_POINT_TRUCK (id integer PRIMARY KEY,kind_name text,kind text,chain_name text,chain text,depth_information text,memo text,type integer,truck integer)");
+		//13.POI名称相关检查配置表：
+		sqliteList.add("CREATE TABLE SC_POINT_NAMECK (id integer PRIMARY KEY,pre_key text,result_key text,ref_key text,type text,kg_flag text, hm_flag text,memo text,kind text,adminarea text )");
+		//14.充电站充电桩生产商配置表：
+		//sqliteList.add("CREATE TABLE SC_POINT_CHARGE_MANU (serial_id text,full_name text,simply_name text,product_model text,product_type text,voltate text,current text,power text,memo text)");
+		//15.同一关系分类表：
+		sqliteList.add("CREATE TABLE CI_PARA_KIND_SAME (id integer PRIMARY KEY,kind_code text,kind_code_samepoi text )");
 		
-		sqliteList.add("CREATE TABLE SC_POINT_POICODE_NEW (class_name text,class_code text,sub_class_name text,sub_class_code text,kind_name text,kind_code text,mhm_des text,kg_des text,col_des text,descript text,flag text,level text,u_fields text,u_recode integer,icon_name text,type integer,kind_use integer)");
-		sqliteList.add("CREATE TABLE SC_POINT_KIND_NEW (id integer,poikind text,poikind_chain text,poikind_rating integer,poikind_flagcode text,poikind_category integer,r_kind text,r_kind_chain text,r_kind_rating integer,r_kind_flagcode text,r_kind_category integer,type integer,equal integer,kg_flag text,hm_flag text,memo text)");
-		//*********zl 2016.11.30*************
-		sqliteList.add("CREATE TABLE SC_POINT_CHAIN_CODE (chain_name text,chain_code text,kg_flag text,hm_flag text,memo text,type integer,chain_name_cht text,chain_name_eng text,category integer,weight integer)");
-		
-		sqliteList.add("CREATE TABLE SC_POINT_BRAND_FOODTYPE (id text,chi_key text,poikind text,chain text,foodtype text,kg_flag text,hm_flag text,memo text)");
-		
-		sqliteList.add("CREATE TABLE SC_POINT_CODE2LEVEL (id integer,kind_name text,kind_code text,old_poi_level text,new_poi_level text,memo text,descript text,kg_flag text,hm_flag text,chain  text,rating integer,flagcode text,category integer)");
-		
-		
-		sqliteList.add("CREATE TABLE SC_POINT_NAMECK (id text,pre_key text,result_key text,ref_key text,type text,kg_flag text, hm_flag text,memo text,kind text,adminarea text,chain text )");
-		
-		sqliteList.add("CREATE TABLE SC_POINT_ADMINAREA (adminareacode text,province text,province_short text,city text,city_short text,areacode text,district text,district_short text,type text,whole text,postcode text,phonenum_len text,whole_py text,remark text )");
-		sqliteList.add("CREATE TABLE SC_POINT_FOCUS (id integer,poi_num text,poiname text,memo text,descript text,type integer,poikind text,r_kind text,equal integer,kg_flag text,hm_flag text)");
-		
-		sqliteList.add("CREATE TABLE SC_POINT_TRUCK (id integer,kind_name text,kind text,chain_name text,chain text,depth_information text,memo text,type integer,truck integer)");
-
-		sqliteList.add("CREATE TABLE META_POIICON (fid integer,pid text,name text ,type integer)");
-		//***********************************
 		return sqliteList;
 	}
 	
@@ -154,7 +153,7 @@ public class ExpMeta2SqliteScriptsInterface {
 	 * @author zl zhangli5174@navinfo.com
 	 * @date 2016年11月30日 下午1:57:27 
 	 */
-	public static void pointChargingChain(Connection conn,Connection sqliteConn) throws Exception{
+	public static void scPointChargingChain(Connection conn,Connection sqliteConn) throws Exception{
 		System.out.println("Start to export SC_POINT_CHARGING_CHAIN...");
 		String insertSql = "insert into SC_POINT_CHARGING_CHAIN(chain_name,chain_code,hm_flag,memo) values(?,?,?,?)";
 		String selectSql = "select chain_name,chain_code,hm_flag,memo from SC_POINT_CHARGING_CHAIN";
@@ -191,12 +190,21 @@ public class ExpMeta2SqliteScriptsInterface {
 		}
 	}
 	
-	//2
-	// SC_FM_CONTROL
-	public static void fmControl(Connection conn,Connection sqliteConn) throws Exception{
-		System.out.println("Start to export SC_FM_CONTROL...");
-		String insertSql = "insert into SC_FM_CONTROL(id,kind_code,kind_change,parent,parent_level,important,name_keyword,level,eng_permit,agent,region,tenant,extend,extend_photo,photo,internal,chain,tel_cs,add_cs,disp_onlink) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-		//String selectSql = "select id,kind_code,kind_change,parent,parent_level,important,name_keyword,level,eng_permit,agent,region,tenant,extend,extend_photo,photo,internal,chain,tel_cs,add_cs,disp_onlink from SC_FM_CONTROL";
+	/**2
+	 * @Title: fmControl
+	 * @Description: CI_PARA_CONTROL
+	 * @param conn
+	 * @param sqliteConn
+	 * @throws Exception  void
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2016年12月21日 下午7:58:36 
+	 */
+	public static void ciParaControl(Connection conn,Connection sqliteConn) throws Exception{
+		System.out.println("Start to export CI_PARA_CONTROL...");
+		String insertSql = "insert into CI_PARA_CONTROL(id,kind_code,kind_change,parent,parent_level,important,"
+				+ "name_keyword,level,eng_permit,agent,region,tenant,extend,extend_photo,"
+				+ "photo,internal,chain,tel_cs,add_cs,disp_onlink,kind_id) values(null,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 		String selectSql = "select * from SC_FM_CONTROL";
 		Statement pstmt = null;
 		ResultSet resultSet = null;
@@ -209,7 +217,8 @@ public class ExpMeta2SqliteScriptsInterface {
 			int count = 0;
 
 			while (resultSet.next()) {
-				prep.setInt(1, resultSet.getInt("id"));
+				//prep.setInt(1, null);
+				prep.setInt(1, resultSet.getInt("kind_code"));//kind_id
 				prep.setString(2, resultSet.getString("kind_code"));
 				prep.setInt(3, resultSet.getInt("kind_change"));
 				prep.setInt(4, resultSet.getInt("parent"));
@@ -229,6 +238,7 @@ public class ExpMeta2SqliteScriptsInterface {
 				prep.setInt(18, resultSet.getInt("tel_cs"));
 				prep.setInt(19, resultSet.getInt("add_cs"));
 				prep.setInt(20, resultSet.getInt("disp_onlink"));
+				
 				prep.executeUpdate();
 				
 				count += 1;
@@ -237,7 +247,7 @@ public class ExpMeta2SqliteScriptsInterface {
 				}
 			}
 			sqliteConn.commit();
-			System.out.println("SC_FM_CONTROL end");
+			System.out.println("CI_PARA_CONTROL end");
 		} catch (Exception e) {
 			throw e;
 		} finally {
@@ -247,54 +257,10 @@ public class ExpMeta2SqliteScriptsInterface {
 		}
 	}
 	
-	// SC_POINT_CHAIN_CODE
-	/*public static void chainCode(Connection conn,Connection sqliteConn) throws Exception{
-		System.out.println("Start to export SC_POINT_CHAIN_CODE...");
-		String insertSql = "insert into SC_POINT_CHAIN_CODE(chain_name,chain_code,kg_flag,hm_flag,memo,type,chain_name_cht,chain_name_eng,category,weight) values(?,?,?,?,?,?,?,?,?,?)";
-		String selectSql = "select chain_name,chain_code,kg_flag,hm_flag,memo,type,chain_name_cht,chain_name_eng,category,weight from SC_POINT_CHAIN_CODE";
-		Statement pstmt = null;
-		ResultSet resultSet = null;
-		PreparedStatement prep = null;
-		try {
-			prep = sqliteConn.prepareStatement(insertSql);
-			pstmt = conn.createStatement();
-			resultSet = pstmt.executeQuery(selectSql);
-			resultSet.setFetchSize(5000);
-			int count = 0;
-			
-			while (resultSet.next()) {
-				prep.setString(1, resultSet.getString("chain_name"));
-				prep.setString(2, resultSet.getString("chain_code"));
-				prep.setString(3, resultSet.getString("kg_flag"));
-				prep.setString(4, resultSet.getString("hm_flag"));
-				prep.setString(5, resultSet.getString("memo"));
-				prep.setInt(6, resultSet.getInt("type"));
-				prep.setString(7, resultSet.getString("chain_name_cht"));
-				prep.setString(8, resultSet.getString("chain_name_eng"));
-				prep.setInt(9, resultSet.getInt("category"));
-				prep.setInt(10, resultSet.getInt("weight"));
-				prep.executeUpdate();
-				
-				count += 1;
-				if (count % 5000 == 0) {
-					sqliteConn.commit();
-				}
-			}
-			sqliteConn.commit();
-			System.out.println("SC_POINT_CHAIN_CODE end");
-		} catch (Exception e) {
-			throw e;
-		} finally {
-			DBUtils.closeResultSet(resultSet);
-			DBUtils.closeStatement(pstmt);
-			DBUtils.closeStatement(prep);
-		}
-	}*/
-	
 	/**
 	 * 3
 	 * @Title: pointFoodtype
-	 * @Description: SC_POINT_FOODTYPE
+	 * @Description: CI_PARA_FOOD
 	 * @param conn
 	 * @param sqliteConn
 	 * @throws Exception  void
@@ -302,10 +268,11 @@ public class ExpMeta2SqliteScriptsInterface {
 	 * @author zl zhangli5174@navinfo.com
 	 * @date 2016年11月30日 下午1:56:13 
 	 */
-	public static void pointFoodtype(Connection conn,Connection sqliteConn) throws Exception{
-		System.out.println("Start to export SC_POINT_FOODTYPE...");
-		String insertSql = "insert into SC_POINT_FOODTYPE(poikind,foodtype,type,kg_flag,hm_flag,memo,foodtypename,chain) values(?,?,?,?,?,?,?,?)";
-		String selectSql = "select poikind,foodtype,type,kg_flag,hm_flag,memo,foodtypename,chain from SC_POINT_FOODTYPE";
+	public static void ciParaFood(Connection conn,Connection sqliteConn) throws Exception{
+		System.out.println("Start to export CI_PARA_FOOD...");
+		//id,kind_id,food_name,food_code,foodtype
+		String insertSql = "insert into CI_PARA_FOOD(id,kind_id,food_name,food_code,foodtype) values(null,?,?,?,?)";
+		String selectSql = "select poikind,foodtypename,foodtype,type from SC_POINT_FOODTYPE";
 		Statement pstmt = null;
 		ResultSet resultSet = null;
 		PreparedStatement prep = null;
@@ -317,14 +284,18 @@ public class ExpMeta2SqliteScriptsInterface {
 			int count = 0;
 
 			while (resultSet.next()) {
-				prep.setString(1, resultSet.getString("poikind"));
-				prep.setString(2, resultSet.getString("foodtype"));
-				prep.setString(3, resultSet.getString("type"));
-				prep.setString(4, resultSet.getString("kg_flag"));
-				prep.setString(5, resultSet.getString("hm_flag"));
-				prep.setString(6, resultSet.getString("memo"));
-				prep.setString(7, resultSet.getString("foodtypename"));
-				prep.setString(8, resultSet.getString("chain"));
+				prep.setInt(1, resultSet.getInt("poikind"));
+				prep.setString(2, resultSet.getString("foodtypename"));
+				prep.setInt(3, resultSet.getInt("foodtype"));
+				int type = 0;
+				String typestr = resultSet.getString("type");
+				if(typestr.equals("A") || typestr.equals("C")){
+					type = 1;
+				}else if(typestr.equals("B")){
+					type = 2;
+				}
+				prep.setInt(4, type);
+				
 				prep.executeUpdate();
 				
 				count += 1;
@@ -333,7 +304,65 @@ public class ExpMeta2SqliteScriptsInterface {
 				}
 			}
 			sqliteConn.commit();
-			System.out.println("SC_POINT_FOODTYPE end");
+			System.out.println("CI_PARA_FOOD end");
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+			DBUtils.closeStatement(prep);
+		}
+	}
+	/**4
+	 * @Title: ciParaIcon
+	 * @Description: TODO
+	 * @param conn
+	 * @param sqliteConn
+	 * @throws Exception  void
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2016年12月23日 下午8:44:19 
+	 */
+	public static void ciParaIcon(Connection conn,Connection sqliteConn) throws Exception{
+		System.out.println("Start to export CI_PARA_ICON...");
+		//id ,idcode,name_in_nav,type 
+		String insertSql = "insert into CI_PARA_ICON(id ,idcode,name_in_nav,type) values(?,?,?,?)";
+		String selectSql = "select distinct pid, poi_num, name, 1 type from ix_poi p, ix_poi_name n, cmg_building_poi b "
+				+ "	 where p.pid = n.poi_pid and b.poi_pid = p.pid "
+				+ " and not exists (select 1 from ix_poi_icon i1 where i1.poi_pid = p.pid) "
+				+ " UNION all "
+				+ "select distinct pid, poi_num, name, 2 type from ix_poi p, ix_poi_name n, ix_poi_icon i "
+				+ " where p.pid = n.poi_pid  and i.poi_pid = p.pid  "
+				+ " and not exists (select 1 from cmg_building_poi b1 where b1.poi_pid = p.pid) "
+				+ "  union all "
+				+" select distinct pid, poi_num, name, 3 type from ix_poi p, ix_poi_name n, ix_poi_icon i, cmg_building_poi b "
+				+"  where p.pid = n.poi_pid and i.poi_pid = p.pid and b.poi_pid = p.pid " ;
+				
+		Statement pstmt = null;
+		ResultSet resultSet = null;
+		PreparedStatement prep = null;
+		try {
+			prep = sqliteConn.prepareStatement(insertSql);
+			pstmt = conn.createStatement();
+			resultSet = pstmt.executeQuery(selectSql);
+			resultSet.setFetchSize(5000);
+			int count = 0;
+
+			while (resultSet.next()) {
+				prep.setInt(1, resultSet.getInt("pid"));//fid
+				prep.setString(2, resultSet.getString("poi_num"));//pid
+				prep.setString(3, resultSet.getString("name"));
+				prep.setInt(4, resultSet.getInt("type"));
+				
+				prep.executeUpdate();
+				
+				count += 1;
+				if (count % 5000 == 0) {
+					sqliteConn.commit();
+				}
+			}
+			sqliteConn.commit();
+			System.out.println("CI_PARA_ICON end");
 		} catch (Exception e) {
 			throw e;
 		} finally {
@@ -343,11 +372,10 @@ public class ExpMeta2SqliteScriptsInterface {
 		}
 	}
 	
-	
 	/**
-	 * 4
-	 * @Title: pointPoicodeNew
-	 * @Description: SC_POINT_POICODE_NEW
+	 * 5
+	 * @Title: ciParaKind
+	 * @Description: CI_PARA_KIND
 	 * @param conn
 	 * @param sqliteConn
 	 * @throws Exception  void
@@ -355,13 +383,10 @@ public class ExpMeta2SqliteScriptsInterface {
 	 * @author zl zhangli5174@navinfo.com
 	 * @date 2016年11月30日 下午1:56:00 
 	 */
-	public static void pointPoicodeNew(Connection conn,Connection sqliteConn) throws Exception{
-		System.out.println("Start to export SC_POINT_POICODE_NEW...");
-		String insertSql = "insert into SC_POINT_POICODE_NEW(kind_code,kind_name,descript,mhm_des,kind_use,kg_des,class_code,class_name,"
-				+"sub_class_code,sub_class_name,icon_name,u_recode,u_fields,col_des,flag,\"LEVEL\",type ) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-		String selectSql = "select kind_code,kind_name,descript,mhm_des,kind_use,kg_des,class_code,class_name,"
-				+"sub_class_code,sub_class_name,icon_name,u_recode,u_fields,col_des,flag,\"LEVEL\",type  "
-				+"from SC_POINT_POICODE_NEW";
+	public static void ciParaKind(Connection conn,Connection sqliteConn) throws Exception{
+		System.out.println("Start to export CI_PARA_KIND...");
+		String insertSql = "insert into CI_PARA_KIND(id,medium_id,name,code,kind_code,description,region,type) values(?,?,?,?,?,?,?,?)";
+		String selectSql = "select kind_code,class_code,sub_class_code,kind_name,descript,mhm_des,kind_use from SC_POINT_POICODE_NEW";
 		Statement pstmt = null;
 		ResultSet resultSet = null;
 		PreparedStatement prep = null;
@@ -373,23 +398,22 @@ public class ExpMeta2SqliteScriptsInterface {
 			int count = 0;
 
 			while (resultSet.next()) {
-				prep.setString(1, resultSet.getString("kind_code"));
-				prep.setString(2, resultSet.getString("kind_name"));
-				prep.setString(3, resultSet.getString("descript"));
-				prep.setString(4, resultSet.getString("mhm_des"));
-				prep.setInt(5, resultSet.getInt("kind_use"));
-				prep.setString(6, resultSet.getString("kg_des"));
-				prep.setString(7, resultSet.getString("class_code"));
-				prep.setString(8, resultSet.getString("class_name"));
-				prep.setString(9, resultSet.getString("sub_class_code"));
-				prep.setString(10, resultSet.getString("sub_class_name"));
-				prep.setString(11, resultSet.getString("icon_name"));
-				prep.setInt(12, resultSet.getInt("u_recode"));
-				prep.setString(13, resultSet.getString("u_fields"));
-				prep.setString(14, resultSet.getString("col_des"));
-				prep.setString(15, resultSet.getString("flag"));
-				prep.setString(16, resultSet.getString("LEVEL"));
-				prep.setInt(17, resultSet.getInt("type"));
+				prep.setInt(1, resultSet.getInt("kind_code"));
+				prep.setInt(2, Integer.parseInt(resultSet.getString("class_code")+resultSet.getString("sub_class_code")));
+				prep.setString(3, resultSet.getString("kind_name"));
+				prep.setInt(4, Integer.parseInt(resultSet.getString("kind_code").substring(resultSet.getString("kind_code").length()-2)));
+				prep.setString(5, resultSet.getString("kind_code"));
+				prep.setString(6, resultSet.getString("descript"));
+				int region = 0;
+				String regionStr = resultSet.getString("mhm_des");
+				if(regionStr.equals("D")){
+					region = 1;
+				}else if(regionStr.equals("HM") || regionStr.equals("H") || regionStr.equals("M")){
+					region = 2;
+				}
+				prep.setInt(7, region);
+				prep.setInt(8, resultSet.getInt("kind_use"));
+				
 				prep.executeUpdate();
 				
 				count += 1;
@@ -398,7 +422,7 @@ public class ExpMeta2SqliteScriptsInterface {
 				}
 			}
 			sqliteConn.commit();
-			System.out.println("SC_POINT_POICODE_NEW end");
+			System.out.println("CI_PARA_KIND end");
 		} catch (Exception e) {
 			throw e;
 		} finally {
@@ -408,376 +432,264 @@ public class ExpMeta2SqliteScriptsInterface {
 		}
 	}
 	
-		/**
-		 * 5
-		 * @Title: pointKindNew
-		 * @Description: SC_POINT_KIND_NEW
-		 * @param conn
-		 * @param sqliteConn
-		 * @throws Exception  void
-		 * @throws 
-		 * @author zl zhangli5174@navinfo.com
-		 * @date 2016年11月30日 下午1:55:44 
-		 */
-		public static void pointKindNew(Connection conn,Connection sqliteConn) throws Exception{
-			System.out.println("Start to export SC_POINT_KIND_NEW...");
-			String insertSql = "insert into SC_POINT_KIND_NEW(id,poikind,poikind_chain,poikind_rating,poikind_flagcode,poikind_category,r_kind,r_kind_chain,"
-					+"r_kind_rating,r_kind_flagcode,r_kind_category,type,equal,kg_flag,hm_flag,memo ) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-			String selectSql = "select id,poikind,poikind_chain,poikind_rating,poikind_flagcode,poikind_category,r_kind,r_kind_chain,"
-					+"r_kind_rating,r_kind_flagcode,r_kind_category,type,equal,kg_flag,hm_flag,memo  "
-					+"from SC_POINT_KIND_NEW";
-			Statement pstmt = null;
-			ResultSet resultSet = null;
-			PreparedStatement prep = null;
-			try {
-				prep = sqliteConn.prepareStatement(insertSql);
-				pstmt = conn.createStatement();
-				resultSet = pstmt.executeQuery(selectSql);
-				resultSet.setFetchSize(5000);
-				int count = 0;
+	/**
+	 * 6
+	 * @Title: ciParaKindChain
+	 * @Description: CI_PARA_KIND_CHAIN
+	 * @param conn
+	 * @param sqliteConn
+	 * @throws Exception  void
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2016年11月30日 下午1:55:44 
+	 */
+	public static void ciParaKindChain(Connection conn,Connection sqliteConn) throws Exception{
+		System.out.println("Start to export CI_PARA_KIND_CHAIN...");
+		//id ,kind_id ,kind_code ,chain ,chain_name ,foodtype ,level ,chain_type
+		String insertSql = "insert into CI_PARA_KIND_CHAIN(id ,kind_code ,chain ,chain_name ,foodtype ,level ,chain_type ) values(?,?,?,?,?,?,?)";
+		String selectSql = "select n.id,n.poikind,n.r_kind,"
+				+ " (select chain_name from SC_POINT_CHAIN_CODE where chain_code = n.r_kind) chain_name,"
+				+ " (select foodtype from sc_point_brand_foodtype where poikind = n.poikind and chain = n.r_kind) foodtype,"
+				+ "  nvl((select new_poi_level  from sc_point_code2level  where kind_code = n.poikind and category=1 and (new_poi_level = 'A' or new_poi_level = 'B1')),'B1') new_poi_level,"
+				+ " (select type from SC_POINT_CHAIN_CODE where chain_code = n.r_kind)  type "
+				+ " from SC_POINT_KIND_NEW n "
+				+ " where n.type = 8";
+		Statement pstmt = null;
+		ResultSet resultSet = null;
+		PreparedStatement prep = null;
+		try {
+			prep = sqliteConn.prepareStatement(insertSql);
+			pstmt = conn.createStatement();
+			resultSet = pstmt.executeQuery(selectSql);
+			resultSet.setFetchSize(5000);
+			int count = 0;
 
-				while (resultSet.next()) {
-					prep.setInt(1, resultSet.getInt("id"));
-					prep.setString(2, resultSet.getString("poikind"));
-					prep.setString(3, resultSet.getString("poikind_chain"));
-					prep.setInt(4, resultSet.getInt("poikind_rating"));
-					prep.setString(5, resultSet.getString("poikind_flagcode"));
-					prep.setInt(6, resultSet.getInt("poikind_category"));
-					prep.setString(7, resultSet.getString("r_kind"));
-					prep.setString(8, resultSet.getString("r_kind_chain"));
-					prep.setInt(9, resultSet.getInt("r_kind_rating"));
-					prep.setString(10, resultSet.getString("r_kind_flagcode"));
-					prep.setInt(11, resultSet.getInt("r_kind_category"));
-					prep.setInt(12, resultSet.getInt("type"));
-					prep.setInt(13, resultSet.getInt("equal"));
-					prep.setString(14, resultSet.getString("kg_flag"));
-					prep.setString(15, resultSet.getString("hm_flag"));
-					prep.setString(16, resultSet.getString("memo"));
-					prep.executeUpdate();
-					
-					count += 1;
-					if (count % 5000 == 0) {
-						sqliteConn.commit();
-					}
+			while (resultSet.next()) {
+				prep.setInt(1, resultSet.getInt("id"));
+				prep.setString(2, resultSet.getString("poikind"));
+				prep.setString(3, resultSet.getString("r_kind"));
+				prep.setInt(4, resultSet.getInt("chain_name"));
+				prep.setString(5, resultSet.getString("foodtype"));
+				prep.setString(6, resultSet.getString("new_poi_level"));
+				prep.setInt(7, resultSet.getInt("type"));
+				
+				prep.executeUpdate();
+				
+				count += 1;
+				if (count % 5000 == 0) {
+					sqliteConn.commit();
 				}
-				sqliteConn.commit();
-				System.out.println("SC_POINT_KIND_NEW end");
-			} catch (Exception e) {
-				throw e;
-			} finally {
-				DBUtils.closeResultSet(resultSet);
-				DBUtils.closeStatement(pstmt);
-				DBUtils.closeStatement(prep);
 			}
+			sqliteConn.commit();
+			System.out.println("CI_PARA_KIND_CHAIN end");
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+			DBUtils.closeStatement(prep);
 		}
+	}
 		
-		
-		/**
-		 * 6
-		 * @Title: pointChainCode
-		 * @Description: SC_POINT_CHAIN_CODE
-		 * @param conn
-		 * @param sqliteConn
-		 * @throws Exception  void
-		 * @throws 
-		 * @author zl zhangli5174@navinfo.com
-		 * @date 2016年11月30日 下午1:55:30 
-		 */
-		public static void pointChainCode(Connection conn,Connection sqliteConn) throws Exception{
-			System.out.println("Start to export SC_POINT_CHAIN_CODE...");
-			String insertSql = "insert into SC_POINT_CHAIN_CODE(chain_name,chain_code,kg_flag,hm_flag,memo,type,"
-					+"chain_name_cht,chain_name_eng,category,weight ) values(?,?,?,?,?,?,?,?,?,?)";
-			String selectSql = "select chain_name,chain_code,kg_flag,hm_flag,memo,type,"
-					+"chain_name_cht,chain_name_eng,category,weight  "
-					+"from SC_POINT_CHAIN_CODE";
-			Statement pstmt = null;
-			ResultSet resultSet = null;
-			PreparedStatement prep = null;
-			try {
-				prep = sqliteConn.prepareStatement(insertSql);
-				pstmt = conn.createStatement();
-				resultSet = pstmt.executeQuery(selectSql);
-				resultSet.setFetchSize(5000);
-				int count = 0;
+	/**7
+	 * @Title: ciParaKindMedium
+	 * @Description: CI_PARA_KIND_MEDIUM
+	 * @param conn
+	 * @param sqliteConn
+	 * @throws Exception  void
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2016年12月23日 下午8:37:02 
+	 */
+	public static void ciParaKindMedium(Connection conn,Connection sqliteConn) throws Exception{
+		System.out.println("Start to export CI_PARA_KIND_MEDIUM...");
+		String insertSql = "insert into CI_PARA_KIND_MEDIUM(id ,top_id ,code ,name) values(?,?,?,?)";
+		String selectSql = "select distinct class_code ||''|| sub_class_code cc,class_code,sub_class_code,sub_class_name from SC_POINT_POICODE_NEW ";
+		Statement pstmt = null;
+		ResultSet resultSet = null;
+		PreparedStatement prep = null;
+		try {
+			prep = sqliteConn.prepareStatement(insertSql);
+			pstmt = conn.createStatement();
+			resultSet = pstmt.executeQuery(selectSql);
+			resultSet.setFetchSize(5000);
+			int count = 0;
 
-				while (resultSet.next()) {
-					prep.setString(1, resultSet.getString("chain_name"));
-					prep.setString(2, resultSet.getString("chain_code"));
-					prep.setString(3, resultSet.getString("kg_flag"));
-					prep.setString(4, resultSet.getString("hm_flag"));
-					prep.setString(5, resultSet.getString("memo"));
-					prep.setInt(6, resultSet.getInt("type"));
-					prep.setString(7, resultSet.getString("chain_name_cht"));
-					prep.setString(8, resultSet.getString("chain_name_eng"));
-					prep.setInt(9, resultSet.getInt("category"));
-					prep.setInt(10, resultSet.getInt("weight"));
-					prep.executeUpdate();
-					
-					count += 1;
-					if (count % 5000 == 0) {
-						sqliteConn.commit();
-					}
+			while (resultSet.next()) {
+				prep.setInt(1, resultSet.getInt("cc"));
+				prep.setInt(2, resultSet.getInt("class_code"));
+				prep.setInt(3, resultSet.getInt("sub_class_code"));
+				prep.setString(4, resultSet.getString("sub_class_name"));
+				
+				prep.executeUpdate();
+				
+				count += 1;
+				if (count % 5000 == 0) {
+					sqliteConn.commit();
 				}
-				sqliteConn.commit();
-				System.out.println("SC_POINT_CHAIN_CODE end");
-			} catch (Exception e) {
-				throw e;
-			} finally {
-				DBUtils.closeResultSet(resultSet);
-				DBUtils.closeStatement(pstmt);
-				DBUtils.closeStatement(prep);
 			}
+			sqliteConn.commit();
+			System.out.println("CI_PARA_KIND_MEDIUM end");
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+			DBUtils.closeStatement(prep);
 		}
+	}
+		
+	/**8
+	 * @Title: ciParaKindTop
+	 * @Description: CI_PARA_KIND_TOP
+	 * @param conn
+	 * @param sqliteConn
+	 * @throws Exception  void
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2016年12月23日 下午8:38:37 
+	 */
+	public static void ciParaKindTop(Connection conn,Connection sqliteConn) throws Exception{
+		System.out.println("Start to export CI_PARA_KIND_TOP...");
+		//id ,kind_id ,kind_code ,chain ,chain_name ,foodtype ,level ,chain_type
+		String insertSql = "insert into CI_PARA_KIND_TOP(id ,code ,name) values(?,?,?)";
+		String selectSql = "select distinct class_code,class_name from SC_POINT_POICODE_NEW ";
+		Statement pstmt = null;
+		ResultSet resultSet = null;
+		PreparedStatement prep = null;
+		try {
+			prep = sqliteConn.prepareStatement(insertSql);
+			pstmt = conn.createStatement();
+			resultSet = pstmt.executeQuery(selectSql);
+			resultSet.setFetchSize(5000);
+			int count = 0;
 
-		/**
-		 * 7
-		 * @Title: pointBrandFoodtype
-		 * @Description: SC_POINT_BRAND_FOODTYPE
-		 * @param conn
-		 * @param sqliteConn
-		 * @throws Exception  void
-		 * @throws 
-		 * @author zl zhangli5174@navinfo.com
-		 * @date 2016年11月30日 下午1:54:54 
-		 */
-		public static void pointBrandFoodtype(Connection conn,Connection sqliteConn) throws Exception{
-			System.out.println("Start to export SC_POINT_BRAND_FOODTYPE...");
-			String insertSql = "insert into SC_POINT_BRAND_FOODTYPE(id,chi_key,poikind,chain,foodtype,kg_flag,hm_flag,memo"
-					+" ) values(?,?,?,?,?,?,?,?)";
-			String selectSql = "select id,chi_key,poikind,chain,foodtype,kg_flag,hm_flag,memo "
-					//+"chain_name_cht,chain_name_eng,category,weight  "
-					+"from SC_POINT_BRAND_FOODTYPE";
-			Statement pstmt = null;
-			ResultSet resultSet = null;
-			PreparedStatement prep = null;
-			try {
-				prep = sqliteConn.prepareStatement(insertSql);
-				pstmt = conn.createStatement();
-				resultSet = pstmt.executeQuery(selectSql);
-				resultSet.setFetchSize(5000);
-				int count = 0;
-
-				while (resultSet.next()) {
-					prep.setString(1, resultSet.getString("id"));
-					prep.setString(2, resultSet.getString("chi_key"));
-					prep.setString(3, resultSet.getString("poikind"));
-					prep.setString(4, resultSet.getString("chain"));
-					prep.setString(5, resultSet.getString("foodtype"));
-					prep.setString(6, resultSet.getString("kg_flag"));
-					prep.setString(7, resultSet.getString("hm_flag"));
-					prep.setString(8, resultSet.getString("memo"));
-					prep.executeUpdate();
-					
-					count += 1;
-					if (count % 5000 == 0) {
-						sqliteConn.commit();
-					}
+			while (resultSet.next()) {
+				prep.setInt(1, resultSet.getInt("class_code"));
+				prep.setInt(2, resultSet.getInt("class_code"));
+				prep.setString(3, resultSet.getString("class_name"));
+				
+				prep.executeUpdate();
+				
+				count += 1;
+				if (count % 5000 == 0) {
+					sqliteConn.commit();
 				}
-				sqliteConn.commit();
-				System.out.println("SC_POINT_BRAND_FOODTYPE end");
-			} catch (Exception e) {
-				throw e;
-			} finally {
-				DBUtils.closeResultSet(resultSet);
-				DBUtils.closeStatement(pstmt);
-				DBUtils.closeStatement(prep);
 			}
+			sqliteConn.commit();
+			System.out.println("CI_PARA_KIND_TOP end");
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+			DBUtils.closeStatement(prep);
 		}
-		
-		
-		/**
-		 * 8
-		 * @Title: pointCode2Level
-		 * @Description: SC_POINT_CODE2LEVEL
-		 * @param conn
-		 * @param sqliteConn
-		 * @throws Exception  void
-		 * @throws 
-		 * @author zl zhangli5174@navinfo.com
-		 * @date 2016年11月30日 下午2:02:03 
-		 */
-		public static void pointCode2Level(Connection conn,Connection sqliteConn) throws Exception{
-			System.out.println("Start to export SC_POINT_CODE2LEVEL...");
-			String insertSql = "insert into SC_POINT_CODE2LEVEL(id,kind_name,kind_code,old_poi_level,new_poi_level,memo,"
-					+"descript,kg_flag,hm_flag,chain,rating,flagcode,category ) values(?,?,?,?,?,?,?,?,?,?,?,?,?)";
-			String selectSql = "select id,kind_name,kind_code,old_poi_level,new_poi_level,memo, "
-					+"descript,kg_flag,hm_flag,chain,rating,flagcode,category  "
-					+"from SC_POINT_CODE2LEVEL";
-			Statement pstmt = null;
-			ResultSet resultSet = null;
-			PreparedStatement prep = null;
-			try {
-				prep = sqliteConn.prepareStatement(insertSql);
-				pstmt = conn.createStatement();
-				resultSet = pstmt.executeQuery(selectSql);
-				resultSet.setFetchSize(5000);
-				int count = 0;
+	}
+	/**9
+	 * @Title: ciParaSensitiveWords
+	 * @Description: CI_PARA_SENSITIVE_WORDS
+	 * @param conn
+	 * @param sqliteConn
+	 * @throws Exception  void
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2016年12月23日 下午8:40:08 
+	 */
+	public static void ciParaSensitiveWords(Connection conn,Connection sqliteConn) throws Exception{
+		System.out.println("Start to export CI_PARA_SENSITIVE_WORDS...");
+		//id ,kind_id ,kind_code ,chain ,chain_name ,foodtype ,level ,chain_type
+		String insertSql = "insert into CI_PARA_SENSITIVE_WORDS(id,sensitive_word ,type) values(?,?,?)";
+		String selectSql = "select id,sensitive_word,type from SC_SENSITIVE_WORDS ";
+		Statement pstmt = null;
+		ResultSet resultSet = null;
+		PreparedStatement prep = null;
+		try {
+			prep = sqliteConn.prepareStatement(insertSql);
+			pstmt = conn.createStatement();
+			resultSet = pstmt.executeQuery(selectSql);
+			resultSet.setFetchSize(5000);
+			int count = 0;
 
-				while (resultSet.next()) {
-					prep.setInt(1, resultSet.getInt("id"));
-					prep.setString(2, resultSet.getString("kind_name"));
-					prep.setString(3, resultSet.getString("kind_code"));
-					prep.setString(4, resultSet.getString("old_poi_level"));
-					prep.setString(5, resultSet.getString("new_poi_level"));
-					prep.setString(6, resultSet.getString("memo"));
-					prep.setString(7, resultSet.getString("descript"));
-					prep.setString(8, resultSet.getString("kg_flag"));
-					prep.setString(9, resultSet.getString("hm_flag"));
-					prep.setString(10, resultSet.getString("chain"));
-					prep.setInt(11, resultSet.getInt("rating"));
-					prep.setString(12, resultSet.getString("flagcode"));
-					prep.setInt(13, resultSet.getInt("category"));
-					prep.executeUpdate();
-					
-					count += 1;
-					if (count % 5000 == 0) {
-						sqliteConn.commit();
-					}
+			while (resultSet.next()) {
+				prep.setInt(1, resultSet.getInt("id"));
+				prep.setString(2, resultSet.getString("sensitive_word"));
+				prep.setInt(3, resultSet.getInt("type"));
+				prep.executeUpdate();
+				
+				count += 1;
+				if (count % 5000 == 0) {
+					sqliteConn.commit();
 				}
-				sqliteConn.commit();
-				System.out.println("SC_POINT_CODE2LEVEL end");
-			} catch (Exception e) {
-				throw e;
-			} finally {
-				DBUtils.closeResultSet(resultSet);
-				DBUtils.closeStatement(pstmt);
-				DBUtils.closeStatement(prep);
 			}
+			sqliteConn.commit();
+			System.out.println("CI_PARA_SENSITIVE_WORDS end");
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+			DBUtils.closeStatement(prep);
 		}
-		
-		/**
-		 * 9
-		 * @Title: pointNameck
-		 * @Description: SC_POINT_NAMECK
-		 * @param conn
-		 * @param sqliteConn
-		 * @throws Exception  void
-		 * @throws 
-		 * @author zl zhangli5174@navinfo.com
-		 * @date 2016年11月30日 下午2:14:00 
-		 */
-		public static void pointNameck(Connection conn,Connection sqliteConn) throws Exception{
-			System.out.println("Start to export SC_POINT_NAMECK...");
-			String insertSql = "insert into SC_POINT_NAMECK(id,pre_key,result_key,ref_key,type,kg_flag, "
-					+"hm_flag,memo,kind,adminarea,chain ) values(?,?,?,?,?,?,?,?,?,?,?)";
-			String selectSql = "select id,pre_key,result_key,ref_key,type,kg_flag, "
-					+"hm_flag,memo,kind,adminarea,chain   "
-					+"from SC_POINT_NAMECK";
-			Statement pstmt = null;
-			ResultSet resultSet = null;
-			PreparedStatement prep = null;
-			try {
-				prep = sqliteConn.prepareStatement(insertSql);
-				pstmt = conn.createStatement();
-				resultSet = pstmt.executeQuery(selectSql);
-				resultSet.setFetchSize(5000);
-				int count = 0;
+	}
+	
+	/**10
+	 * @Title: ciParaTel
+	 * @Description: CI_PARA_TEL
+	 * @param conn
+	 * @param sqliteConn
+	 * @throws Exception  void
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2016年12月23日 下午8:40:59 
+	 */
+	public static void ciParaTel(Connection conn,Connection sqliteConn) throws Exception{
+		System.out.println("Start to export CI_PARA_TEL...");
+		String insertSql = "insert into CI_PARA_TEL(id,city_code,code,tel_len) values(null,?,?,?)";
+		String selectSql = "select adminareacode,areacode,phonenum_len from SC_POINT_ADMINAREA ";
+		Statement pstmt = null;
+		ResultSet resultSet = null;
+		PreparedStatement prep = null;
+		try {
+			prep = sqliteConn.prepareStatement(insertSql);
+			pstmt = conn.createStatement();
+			resultSet = pstmt.executeQuery(selectSql);
+			resultSet.setFetchSize(5000);
+			int count = 0;
 
-				while (resultSet.next()) {
-					prep.setString(1, resultSet.getString("id"));
-					prep.setString(2, resultSet.getString("pre_key"));
-					prep.setString(3, resultSet.getString("result_key"));
-					prep.setString(4, resultSet.getString("ref_key"));
-					prep.setString(5, resultSet.getString("type"));
-					prep.setString(6, resultSet.getString("kg_flag"));
-					prep.setString(7, resultSet.getString("hm_flag"));
-					prep.setString(8, resultSet.getString("memo"));
-					prep.setString(9, resultSet.getString("kind"));
-					prep.setString(10, resultSet.getString("adminarea"));
-					prep.setString(11, resultSet.getString("chain"));
-					prep.executeUpdate();
-					
-					count += 1;
-					if (count % 5000 == 0) {
-						sqliteConn.commit();
-					}
+			while (resultSet.next()) {
+				prep.setString(1, resultSet.getString("adminareacode"));
+				prep.setString(2, resultSet.getString("areacode"));
+				prep.setInt(3, resultSet.getInt("phonenum_len")+1);
+				prep.executeUpdate();
+				
+				count += 1;
+				if (count % 5000 == 0) {
+					sqliteConn.commit();
 				}
-				sqliteConn.commit();
-				System.out.println("SC_POINT_NAMECK end");
-			} catch (Exception e) {
-				throw e;
-			} finally {
-				DBUtils.closeResultSet(resultSet);
-				DBUtils.closeStatement(pstmt);
-				DBUtils.closeStatement(prep);
 			}
+			sqliteConn.commit();
+			System.out.println("CI_PARA_TEL end");
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+			DBUtils.closeStatement(prep);
 		}
-		
-		
-		/**
-		 * 10
-		 * @Title: pointAdminArea
-		 * @Description: SC_POINT_ADMINAREA
-		 * @param conn
-		 * @param sqliteConn
-		 * @throws Exception  void
-		 * @throws 
-		 * @author zl zhangli5174@navinfo.com
-		 * @date 2016年11月30日 下午2:21:44 
-		 */
-		public static void pointAdminArea(Connection conn,Connection sqliteConn) throws Exception{
-			System.out.println("Start to export SC_POINT_ADMINAREA...");
-			String insertSql = "insert into SC_POINT_ADMINAREA(adminareacode,province,province_short,city,city_short,areacode,district, "
-					+"district_short,type,whole,postcode,phonenum_len,whole_py,remark ) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-			String selectSql = "select adminareacode,province,province_short,city,city_short,areacode,district, "
-					+"district_short,type,whole,postcode,phonenum_len,whole_py,remark  "
-					+"from SC_POINT_ADMINAREA";
-			Statement pstmt = null;
-			ResultSet resultSet = null;
-			PreparedStatement prep = null;
-			try {
-				prep = sqliteConn.prepareStatement(insertSql);
-				pstmt = conn.createStatement();
-				resultSet = pstmt.executeQuery(selectSql);
-				resultSet.setFetchSize(5000);
-				int count = 0;
-
-				while (resultSet.next()) {
-					prep.setString(1, resultSet.getString("adminareacode"));
-					prep.setString(2, resultSet.getString("province"));
-					prep.setString(3, resultSet.getString("province_short"));
-					prep.setString(4, resultSet.getString("city"));
-					prep.setString(5, resultSet.getString("city_short"));
-					prep.setString(6, resultSet.getString("areacode"));
-					prep.setString(7, resultSet.getString("district"));
-					prep.setString(8, resultSet.getString("district_short"));
-					prep.setString(9, resultSet.getString("type"));
-					prep.setString(10, resultSet.getString("whole"));
-					prep.setString(11, resultSet.getString("postcode"));
-					prep.setString(12, resultSet.getString("phonenum_len"));
-					prep.setString(13, resultSet.getString("whole_py"));
-					prep.setString(14, resultSet.getString("remark"));
-					prep.executeUpdate();
-					
-					count += 1;
-					if (count % 5000 == 0) {
-						sqliteConn.commit();
-					}
-				}
-				sqliteConn.commit();
-				System.out.println("SC_POINT_ADMINAREA end");
-			} catch (Exception e) {
-				throw e;
-			} finally {
-				DBUtils.closeResultSet(resultSet);
-				DBUtils.closeStatement(pstmt);
-				DBUtils.closeStatement(prep);
-			}
-		}
-		
-		
-		/**
-		 * 11
-		 * @Title: pointFocus
-		 * @Description: SC_POINT_FOCUS
-		 * @param conn
-		 * @param sqliteConn
-		 * @throws Exception  void
-		 * @throws 
-		 * @author zl zhangli5174@navinfo.com
-		 * @date 2016年11月30日 下午2:28:52 
-		 */
-	public static void pointFocus(Connection conn,Connection sqliteConn) throws Exception{
+	}
+	/**
+	 * 11
+	 * @Title: scPointFocus
+	 * @Description: SC_POINT_FOCUS
+	 * @param conn
+	 * @param sqliteConn
+	 * @throws Exception  void
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2016年11月30日 下午2:28:52 
+	 */
+	public static void scPointFocus(Connection conn,Connection sqliteConn) throws Exception{
 		System.out.println("Start to export SC_POINT_FOCUS...");
 		String insertSql = "insert into SC_POINT_FOCUS(id,poi_num,poiname,memo,descript,type, "
 				+"poikind,r_kind,equal,kg_flag,hm_flag ) values(?,?,?,?,?,?,?,?,?,?,?)";
@@ -823,7 +735,6 @@ public class ExpMeta2SqliteScriptsInterface {
 			DBUtils.closeStatement(prep);
 		}
 	}
-		
 	
 	/**
 	 * 12
@@ -880,32 +791,24 @@ public class ExpMeta2SqliteScriptsInterface {
 			DBUtils.closeStatement(prep);
 		}
 	}
-	
 	/**
 	 * 13
-	 * @Title: metaPoiIcon
-	 * @Description: META_POIICON
+	 * @Title: pointNameck
+	 * @Description: SC_POINT_NAMECK
 	 * @param conn
 	 * @param sqliteConn
 	 * @throws Exception  void
 	 * @throws 
 	 * @author zl zhangli5174@navinfo.com
-	 * @date 2016年11月30日 下午2:52:07 
+	 * @date 2016年11月30日 下午2:14:00 
 	 */
-	public static void metaPoiIcon(Connection conn,Connection sqliteConn) throws Exception{
-		System.out.println("Start to export META_POIICON...");
-		String insertSql = "insert into META_POIICON(fid,pid,name,type) values(?,?,?,?)";
-		String selectSql = "select distinct pid, poi_num, name, 1 type from ix_poi p, ix_poi_name n, cmg_building_poi b "
-				+ "	 where p.pid = n.poi_pid and b.poi_pid = p.pid "
-				+ " and not exists (select 1 from ix_poi_icon i1 where i1.poi_pid = p.pid) "
-				+ " UNION all "
-				+ "select distinct pid, poi_num, name, 2 type from ix_poi p, ix_poi_name n, ix_poi_icon i "
-				+ " where p.pid = n.poi_pid  and i.poi_pid = p.pid  "
-				+ " and not exists (select 1 from cmg_building_poi b1 where b1.poi_pid = p.pid) "
-				+ "  union all "
-				+" select distinct pid, poi_num, name, 3 type from ix_poi p, ix_poi_name n, ix_poi_icon i, cmg_building_poi b "
-				+"  where p.pid = n.poi_pid and i.poi_pid = p.pid and b.poi_pid = p.pid " ;
-				
+	public static void scPointNameck(Connection conn,Connection sqliteConn) throws Exception{
+		System.out.println("Start to export SC_POINT_NAMECK...");
+		String insertSql = "insert into SC_POINT_NAMECK(id,pre_key,result_key,ref_key,type,kg_flag, "
+				+"hm_flag,memo,kind,adminarea ) values(?,?,?,?,?,?,?,?,?,?,?)";
+		String selectSql = "select id,pre_key,result_key,ref_key,type,kg_flag, "
+				+"hm_flag,memo,kind,adminarea  "
+				+"from SC_POINT_NAMECK where type = 4 or type = 6 ";
 		Statement pstmt = null;
 		ResultSet resultSet = null;
 		PreparedStatement prep = null;
@@ -917,10 +820,118 @@ public class ExpMeta2SqliteScriptsInterface {
 			int count = 0;
 
 			while (resultSet.next()) {
-				prep.setInt(1, resultSet.getInt("pid"));//fid
-				prep.setString(2, resultSet.getString("poi_num"));//pid
-				prep.setString(3, resultSet.getString("name"));
-				prep.setInt(4, resultSet.getInt("type"));
+				prep.setString(1, resultSet.getString("id"));
+				prep.setString(2, resultSet.getString("pre_key"));
+				prep.setString(3, resultSet.getString("result_key"));
+				prep.setString(4, resultSet.getString("ref_key"));
+				prep.setString(5, resultSet.getString("type"));
+				prep.setString(6, resultSet.getString("kg_flag"));
+				prep.setString(7, resultSet.getString("hm_flag"));
+				prep.setString(8, resultSet.getString("memo"));
+				prep.setString(9, resultSet.getString("kind"));
+				prep.setString(10, resultSet.getString("adminarea"));
+				//prep.setString(11, resultSet.getString("chain"));
+				prep.executeUpdate();
+				
+				count += 1;
+				if (count % 5000 == 0) {
+					sqliteConn.commit();
+				}
+			}
+			sqliteConn.commit();
+			System.out.println("SC_POINT_NAMECK end");
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+			DBUtils.closeStatement(prep);
+		}
+	}
+	
+	/**14
+	 * @Title: scPointChargeManu
+	 * @Description: SC_POINT_CHARGE_MANU
+	 * @param conn
+	 * @param sqliteConn
+	 * @throws Exception  void
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2016年12月23日 下午8:13:22 
+	 */
+	public static void scPointChargeManu(Connection conn,Connection sqliteConn) throws Exception{
+		System.out.println("Start to export SC_POINT_CHARGE_MANU...");
+		String insertSql = "insert into SC_POINT_CHARGE_MANU(serial_id,full_name,simply_name,product_model,product_type,voltate, "
+				+"current,power,memo ) values(?,?,?,?,?,?,?,?,?)";
+		String selectSql = "select serial_id,full_name,simply_name,product_model,product_type,voltate, "
+				+"current,power,memo  "
+				+"from SC_DEEP_MANUFACTURER";
+		Statement pstmt = null;
+		ResultSet resultSet = null;
+		PreparedStatement prep = null;
+		try {
+			prep = sqliteConn.prepareStatement(insertSql);
+			pstmt = conn.createStatement();
+			resultSet = pstmt.executeQuery(selectSql);
+			resultSet.setFetchSize(5000);
+			int count = 0;
+
+			while (resultSet.next()) {
+				prep.setString(1, resultSet.getString("serial_id"));
+				prep.setString(2, resultSet.getString("full_name"));
+				prep.setString(3, resultSet.getString("simply_name"));
+				prep.setString(4, resultSet.getString("product_model"));
+				prep.setString(5, resultSet.getString("product_type"));
+				prep.setString(6, resultSet.getString("voltate"));
+				prep.setString(7, resultSet.getString("current"));
+				prep.setString(8, resultSet.getString("power"));
+				prep.setString(9, resultSet.getString("memo"));
+				prep.executeUpdate();
+				
+				count += 1;
+				if (count % 5000 == 0) {
+					sqliteConn.commit();
+				}
+			}
+			sqliteConn.commit();
+			System.out.println("SC_POINT_CHARGE_MANU end");
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+			DBUtils.closeStatement(prep);
+		}
+	}
+	/**15
+	 * @Title: ciParaKindSame
+	 * @Description: CI_PARA_KIND_SAME
+	 * @param conn
+	 * @param sqliteConn
+	 * @throws Exception  void
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2016年12月23日 下午9:01:45 
+	 */
+	public static void ciParaKindSame(Connection conn,Connection sqliteConn) throws Exception{
+		System.out.println("Start to export CI_PARA_KIND_SAME...");
+		String insertSql = "insert into CI_PARA_KIND_SAME(id,kind_code,kind_code_samepoi) values(?,?,?)";
+		String selectSql = "select id ,poikind,r_kind  "
+				+"from SC_POINT_KIND_NEW  where type = 5 ";
+		Statement pstmt = null;
+		ResultSet resultSet = null;
+		PreparedStatement prep = null;
+		try {
+			prep = sqliteConn.prepareStatement(insertSql);
+			pstmt = conn.createStatement();
+			resultSet = pstmt.executeQuery(selectSql);
+			resultSet.setFetchSize(5000);
+			int count = 0;
+
+			while (resultSet.next()) {
+				prep.setString(1, resultSet.getString("id"));
+				prep.setString(2, resultSet.getString("poikind"));
+				prep.setString(3, resultSet.getString("r_kind"));
 				
 				prep.executeUpdate();
 				
@@ -930,7 +941,7 @@ public class ExpMeta2SqliteScriptsInterface {
 				}
 			}
 			sqliteConn.commit();
-			System.out.println("META_POIICON end");
+			System.out.println("CI_PARA_KIND_SAME end");
 		} catch (Exception e) {
 			throw e;
 		} finally {
@@ -939,6 +950,9 @@ public class ExpMeta2SqliteScriptsInterface {
 			DBUtils.closeStatement(prep);
 		}
 	}
+		
+
+	
 	public static void export2SqliteByNames(String dir) {
 
 		File mkdirFile = new File(dir);
@@ -968,9 +982,12 @@ public class ExpMeta2SqliteScriptsInterface {
 	}
 	
 	public static void main(String[] args) {
-		//String dir = "f:";  //本地测试用
 		String dir = SystemConfigFactory.getSystemConfig().getValue(
 				PropConstant.downloadFilePathRoot);  //服务器部署路径
+		File metaSqliteFile = new File(dir+"/metadata.sqlite");
+		if(metaSqliteFile.exists()){
+			metaSqliteFile.delete();
+		}
 		export2SqliteByNames(dir+"/metadata");
 	}
 	

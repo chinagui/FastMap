@@ -1,10 +1,7 @@
 package com.navinfo.dataservice.engine.check.rules;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.log4j.Logger;
 
@@ -157,29 +154,30 @@ public class GLM26044 extends baseRule{
 	 */
 	private void checkRdLinkForm(RdLinkForm rdLinkForm) throws Exception {
 		//link属性为路口内link或环岛
-		if(rdLinkForm.getFormOfWay()==50||rdLinkForm.getFormOfWay()==33){
-			StringBuilder sb = new StringBuilder();
+		if(rdLinkForm.changedFields().containsKey("formOfWay")){
+			int formOfWay = Integer.parseInt(rdLinkForm.changedFields().get("formOfWay").toString()) ;
+			if(formOfWay==50||formOfWay==33){
+				StringBuilder sb = new StringBuilder();
 
-			sb.append("SELECT '路口内link属性不能为环岛或特殊交通类型' FROM RD_CROSS_LINK RCL,RD_LINK_FORM RLF");
-			sb.append(" WHERE RCL.LINK_PID = RLF.LINK_PID");
-			sb.append(" AND RLF.U_RECORD <> 2");
-			sb.append(" AND RCL.U_RECORD <> 2");
-			sb.append(" AND RLF.LINK_PID = " + rdLinkForm.getLinkPid());
+				sb.append("SELECT '路口内link属性不能为环岛或特殊交通类型' FROM RD_CROSS_LINK RCL,RD_LINK_FORM RLF");
+				sb.append(" WHERE RCL.LINK_PID = RLF.LINK_PID");
+				sb.append(" AND RLF.U_RECORD <> 2");
+				sb.append(" AND RCL.U_RECORD <> 2");
+				sb.append(" AND RLF.LINK_PID = " + rdLinkForm.getLinkPid());
 
-			String sql = sb.toString();
-			log.info("RdLinkForm后检查GLM26044:" + sql);
+				String sql = sb.toString();
+				log.info("RdLinkForm后检查GLM26044:" + sql);
 
-			DatabaseOperator getObj = new DatabaseOperator();
-			List<Object> resultList = new ArrayList<Object>();
-			resultList = getObj.exeSelect(this.getConn(), sql);
+				DatabaseOperator getObj = new DatabaseOperator();
+				List<Object> resultList = new ArrayList<Object>();
+				resultList = getObj.exeSelect(this.getConn(), sql);
 
-			if(resultList.size()>0){
-				String target = "[RD_LINK," + rdLinkForm.getLinkPid() + "]";
-				this.setCheckResult("", target, 0,resultList.get(0).toString());
+				if(resultList.size()>0){
+					String target = "[RD_LINK," + rdLinkForm.getLinkPid() + "]";
+					this.setCheckResult("", target, 0,resultList.get(0).toString());
+				}
 			}
-
 		}
-		
 	}
 
 	/**

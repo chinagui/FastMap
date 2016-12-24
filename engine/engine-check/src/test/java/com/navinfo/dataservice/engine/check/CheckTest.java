@@ -120,9 +120,9 @@ public class CheckTest {
 		List<IRow> glmList = new ArrayList<IRow>();
 		/*RdLink rdLink  = new RdLink();
 		rdLink.setPid(246342);*/
-//		RdLinkForm rdLinkForm = new RdLinkForm();
-//		rdLinkForm.setLinkPid(246342);
-//		rdLinkForm.setFormOfWay(50);
+		RdLinkForm rdLinkForm = new RdLinkForm();
+		rdLinkForm.setLinkPid(246342);
+		rdLinkForm.setFormOfWay(50);
 		
 		glmList.add(rdLinkForm);
 		cc.setGlmList(glmList);

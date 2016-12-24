@@ -3,6 +3,8 @@ package com.navinfo.dataservice.engine.check.rules;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -21,7 +23,7 @@ import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
  * 关系类型为“路口”的车信、交限、顺行、路口语音引导关系信息，应制作到登记了路口的点上
  */
 public class GLM26017_1 extends baseRule {
-
+	protected Logger log = Logger.getLogger(this.getClass());
 	@Override
 	public void preCheck(CheckCommand checkCommand) throws Exception {
 		// TODO Auto-generated method stub

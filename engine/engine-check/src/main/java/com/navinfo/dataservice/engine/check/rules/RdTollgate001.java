@@ -3,6 +3,8 @@ package com.navinfo.dataservice.engine.check.rules;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
@@ -20,7 +22,7 @@ import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
  * 新增车信,修改车信服务端前检查:RdLaneConnexity	
  * */
 public class RdTollgate001 extends baseRule {
-
+	protected Logger log = Logger.getLogger(this.getClass());
 	/**
 	 * 
 	 */

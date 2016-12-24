@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.navinfo.dataservice.api.metadata.model.ScPointNameckObj;
+import com.navinfo.dataservice.api.metadata.model.ScPointSpecKindcodeNewObj;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -83,7 +84,11 @@ public interface MetadataApi {
 	public Map<String, String> scPointNameckTypeD5() throws Exception;
 	
 	public Map<String, String> scPointNameckTypeD7() throws Exception;
-	
+	/**
+	 * SELECT ADMIN_CODE FROM SC_POINT_DEEP_PLANAREA
+	 * @return List<String> ADMIN_CODE的列表
+	 * @throws Exception
+	 */
 	public List<String> getDeepAdminCodeList() throws Exception;
 
 	/**
@@ -148,5 +153,14 @@ public interface MetadataApi {
 	 */
 	public Map<String, JSONObject> tyCharacterFjtHzCheckSelectorGetJtExtentionTypeMap()
 			throws Exception;
+
+	/**
+	 * SELECT DISTINCT POI_KIND, RATING, TOPCITY
+	 *   FROM SC_POINT_SPEC_KINDCODE_NEW
+	 *    WHERE TYPE = 2
+	 * @return Map<String, ScPointSpecKindcodeNewObj> key:poi_kind
+	 * @throws Exception
+	 */
+	public Map<String, ScPointSpecKindcodeNewObj> ScPointSpecKindcodeNewType2() throws Exception;
 
 }

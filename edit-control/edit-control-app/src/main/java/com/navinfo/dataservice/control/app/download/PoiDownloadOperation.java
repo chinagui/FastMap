@@ -519,7 +519,7 @@ public class PoiDownloadOperation {
 					chargingPoleObj.put("parkingNum", ixPoiChargingplot.getParkingNum());
 					chargingPoleObj.put("floor", ixPoiChargingplot.getFloor());
 					chargingPoleObj.put("locationType", ixPoiChargingplot.getLocationType());
-					chargingPoleObj.put("payment", ixPoiChargingplot.getRowId());
+					chargingPoleObj.put("payment", ixPoiChargingplot.getPayment());
 					chargingPoleObj.put("rowId", ixPoiChargingplot.getRowId());
 					chargingPoleArray.add(chargingPoleObj);
 				}

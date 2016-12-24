@@ -25,6 +25,7 @@ import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.selector.MultiSrcPoiSelectorConfig;
 import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
+import com.navinfo.dataservice.dao.plus.selector.ObjChildrenIncreSelector;
 import com.navinfo.dataservice.dao.plus.selector.ObjSelector;
 import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
 import com.navinfo.dataservice.engine.editplus.convert.MultiSrcPoiConvertor;
@@ -409,5 +410,30 @@ public class SelectorTest {
 			e.printStackTrace();
 		}
 	}
+	
+	@Test
+	public void testtest(){
+		try{
+			Connection conn = null;
+			conn = DBConnector.getInstance().getConnectionById(19);
+			BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", null,true, 2179861, false);
+			Map<Long,BasicObj> result = new HashMap<Long,BasicObj>();
+			result.put((long) 2179861, obj);
+			Set<String> selConfig = new HashSet<String>();
+			selConfig.add("IX_POI_NAME");
+			selConfig.add("IX_POI_ATTRACTION");
+			selConfig.add("IX_POI_CHILDREN");
+			selConfig.add("IX_POI_HOTEL");
+
+			ObjChildrenIncreSelector.increSelect(conn,result, selConfig);
+			System.out.println(obj.getSubrows().keySet());
+			BasicObj temp = obj;
+			System.out.println("Over.");
+		}catch(Exception e){
+			System.out.println("Oops, something wrong...");
+			e.printStackTrace();
+		}
+	}
+
 	
 }

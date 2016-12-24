@@ -30,7 +30,7 @@ public class RdLaneVia implements IRow {
 
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 	
-	private ObjStatus status;
+	protected ObjStatus status;
 
 	public String getRowId() {
 		return rowId;

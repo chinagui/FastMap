@@ -47,6 +47,10 @@ public class RdNodeName implements IObj {
 	public void setPid(int pid) {
 		this.pid = pid;
 	}
+	
+	public String getRowId() {
+		return rowId;
+	}
 
 	public int getNameGroupid() {
 		return nameGroupid;

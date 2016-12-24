@@ -30,7 +30,7 @@ public class RdGate implements IObj {
 	private List<IRow> condition = new ArrayList<IRow>();
 	public Map<String, RdGateCondition> rdGateConditionMap = new HashMap<String, RdGateCondition>();
 
-	private ObjStatus status;
+
 	@Override
 	public String rowId() {
 		return rowId;
@@ -117,12 +117,11 @@ public class RdGate implements IObj {
 
 	@Override
 	public ObjStatus status() {
-		return status;
+		return null;
 	}
 
 	@Override
 	public void setStatus(ObjStatus os) {
-		status = os;
 	}
 
 	@Override

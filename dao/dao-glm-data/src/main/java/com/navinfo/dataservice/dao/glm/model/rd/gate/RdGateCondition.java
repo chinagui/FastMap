@@ -21,7 +21,7 @@ public class RdGateCondition implements IRow {
 	private int validObj = 0;
 	private String timeDomain = "";
 	public Map<String, Object> changedFields = new HashMap<String, Object>();
-	private ObjStatus status;
+
 	public int getPid() {
 		return pid;
 	}
@@ -64,12 +64,11 @@ public class RdGateCondition implements IRow {
 
 	@Override
 	public ObjStatus status() {
-		return status;
+		return null;
 	}
 
 	@Override
 	public void setStatus(ObjStatus os) {
-		status = os;
 	}
 
 	@Override

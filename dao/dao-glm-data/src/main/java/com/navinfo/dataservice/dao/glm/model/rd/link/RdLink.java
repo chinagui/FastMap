@@ -93,7 +93,6 @@ public class RdLink implements IObj {
 
     private int walkFlag;
     private int adasMemo;
-    private ObjStatus status;
 
     public int getAdasMemo() {
         return adasMemo;
@@ -478,12 +477,11 @@ public class RdLink implements IObj {
     @Override
     public ObjStatus status() {
 
-        return status;
+        return null;
     }
 
     @Override
     public void setStatus(ObjStatus os) {
-    	status = os;
     }
 
     @Override

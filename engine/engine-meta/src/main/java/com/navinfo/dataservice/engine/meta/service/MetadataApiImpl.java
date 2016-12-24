@@ -3,6 +3,7 @@ package com.navinfo.dataservice.engine.meta.service;
 import java.sql.Connection;
 import java.util.List;
 import java.util.Map;
+
 import net.sf.json.JSONObject;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.api.metadata.model.ScPointNameckObj;
+import com.navinfo.dataservice.api.metadata.model.ScPointSpecKindcodeNewObj;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
@@ -258,7 +260,11 @@ public class MetadataApiImpl implements MetadataApi {
 		// TODO Auto-generated method stub
 		return ScPointNameck.getInstance().scPointNameckTypeD7();
 	}
-	
+	/**
+	 * SELECT ADMIN_CODE FROM SC_POINT_DEEP_PLANAREA
+	 * @return List<String> ADMIN_CODE的列表
+	 * @throws Exception
+	 */
 	@Override
 	public List<String> getDeepAdminCodeList() throws Exception {
 		ScPointDeepPlanarea deepPlanarea = new ScPointDeepPlanarea();
@@ -365,5 +371,18 @@ public class MetadataApiImpl implements MetadataApi {
 	public List<String> halfCharList() throws Exception {
 		// TODO Auto-generated method stub
 		return TyCharacterEgalcharExt.getInstance().getHalfCharList();
+	}
+	/**
+	 * SELECT DISTINCT POI_KIND, RATING, TOPCITY
+	 *   FROM SC_POINT_SPEC_KINDCODE_NEW
+	 *    WHERE TYPE = 2
+	 * @return Map<String, ScPointSpecKindcodeNewObj> key:poi_kind
+	 * @throws Exception
+	 */
+	@Override
+	public Map<String, ScPointSpecKindcodeNewObj> ScPointSpecKindcodeNewType2()
+			throws Exception {
+		// TODO Auto-generated method stub
+		return ScPointSpecKindcode.getInstance().scPointSpecKindCodeType2();
 	}
 }

@@ -9,11 +9,13 @@ import net.sf.json.JSONObject;
 public class Command extends AbstractCommand {
 
 	private String requester;
-
-//	private int projectId;
+	
+	//分歧主表pid
+	private int objId;
 
 	private JSONObject content;
 	
+	//具体分歧的pid
 	private int pid;
 	
 	public int getPid() {
@@ -23,14 +25,6 @@ public class Command extends AbstractCommand {
 	public void setPid(int pid) {
 		this.pid = pid;
 	}
-
-//	public int getProjectId() {
-//		return projectId;
-//	}
-//
-//	public void setProjectId(int projectId) {
-//		this.projectId = projectId;
-//	}
 
 	public JSONObject getContent() {
 		return content;
@@ -54,16 +48,25 @@ public class Command extends AbstractCommand {
 	public String getRequester() {
 		return requester;
 	}
+	
+	public int getObjId() {
+		return objId;
+	}
+
+	public void setObjId(int objId) {
+		this.objId = objId;
+	}
 
 	public Command(JSONObject json, String requester) {
 		this.requester = requester;
 
-//		this.projectId = json.getInt("projectId");
 		this.setDbId(json.getInt("dbId"));
 
 		this.content = json.getJSONObject("data");
 		
 		this.pid = this.content.getInt("pid");
+		
+		this.objId = json.getInt("objPid");
 
 	}
 

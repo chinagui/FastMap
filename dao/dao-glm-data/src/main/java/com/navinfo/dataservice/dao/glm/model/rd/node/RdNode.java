@@ -58,7 +58,10 @@ public class RdNode implements IObj {
 	public Map<String, RdNodeName> nameMap = new HashMap<String, RdNodeName>();
 	
 	public RdNode() {
-
+	}
+	
+	public String getRowId() {
+		return rowId;
 	}
 
 	public String getReserved() {

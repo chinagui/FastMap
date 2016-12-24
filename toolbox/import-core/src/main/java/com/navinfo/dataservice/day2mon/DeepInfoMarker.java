@@ -52,15 +52,8 @@ public class DeepInfoMarker {
 		super();
 		this.opResult = opResult;
 		this.conn = conn;
-		initLoadDubbo();
 	}
 
-	public void initLoadDubbo() {
-		ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(
-				new String[] { "dubbo-day2mon.xml" });
-		context.start();
-		new ApplicationContextUtil().setApplicationContext(context);
-	}
 
 	public void execute() throws Exception {
 		// TODO:根据OperationResult进行深度信息打标记；
@@ -129,7 +122,7 @@ public class DeepInfoMarker {
 	 * @param kindCode
 	 * @return
 	 */
-	public boolean isParkingPoi(IxPoiObj poiObj, String kindCode) {
+	private boolean isParkingPoi(IxPoiObj poiObj, String kindCode) {
 
 		// KIND_CODE为230210,且IX_POI_PARKING.PARKING_TYPE=2的不抓取
 		List<IxPoiParking> poiParkings = poiObj.getIxPoiParkings();
@@ -161,7 +154,7 @@ public class DeepInfoMarker {
 	 * @param poiObj
 	 * @return
 	 */
-	public boolean isCarrentalPoi(IxPoiObj poiObj, String chain) {
+	private boolean isCarrentalPoi(IxPoiObj poiObj, String chain) {
 		if (carrentalChain.contains(chain)) {
 			List<IxPoiCarrental> poiCarrentals = poiObj.getIxPoiCarrentals();
 			if (poiCarrentals.size() == 0) {
@@ -198,7 +191,7 @@ public class DeepInfoMarker {
 	 * @return
 	 * @throws Exception
 	 */
-	public boolean isDetailPoi(IxPoiObj poiObj) throws Exception {
+	private boolean isDetailPoi(IxPoiObj poiObj) throws Exception {
 		IxPoi poi = (IxPoi) poiObj.getMainrow();
 
 		try {
@@ -211,10 +204,13 @@ public class DeepInfoMarker {
 
 			// 1.直辖市（北京、天津、上海、重庆），admin_code的前两位匹配
 			// 2.其他城市，admin_code的前四位匹配
-			if ((!adminCodeList.contains(adminCode.substring(0, 2)))
-					|| (!adminCodeList.contains(adminCode.substring(0, 4)))) {
-				return false;
+			if(StringUtils.isNotEmpty(adminCode)){
+				if ((!adminCodeList.contains(adminCode.substring(0, 2)))
+						|| (!adminCodeList.contains(adminCode.substring(0, 4)))) {
+					return false;
+				}
 			}
+			
 
 			String kindCode = poi.getKindCode();
 			String chain = poi.getChain();
@@ -316,7 +312,7 @@ public class DeepInfoMarker {
 	 * @return
 	 * @throws Exception
 	 */
-	public boolean isChildPoi(long pid) throws Exception {
+	private boolean isChildPoi(long pid) throws Exception {
 
 		String sql = "select count(1) as num from IX_POI_CHILDREN where CHILD_POI_PID=" + pid;
 
@@ -351,7 +347,7 @@ public class DeepInfoMarker {
 	 * @return
 	 * @throws Exception
 	 */
-	public String getAdminCode(long regionId) throws Exception {
+	private String getAdminCode(long regionId) throws Exception {
 
 		String sql = "select admin_id from ad_admin where region_id=" + regionId;
 
@@ -362,13 +358,12 @@ public class DeepInfoMarker {
 			pstmt = conn.prepareStatement(sql);
 			resultSet = pstmt.executeQuery();
 
-			String adminCode = new String();
 			while (resultSet.next()) {
 				int adminId = resultSet.getInt("admin_id");
-				adminCode = String.valueOf(adminId);
+				return  String.valueOf(adminId);
 			}
 
-			return adminCode;
+			return null;
 		} catch (Exception e) {
 			throw e;
 		} finally {

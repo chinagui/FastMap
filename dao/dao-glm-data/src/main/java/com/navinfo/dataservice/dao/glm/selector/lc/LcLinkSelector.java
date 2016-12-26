@@ -45,11 +45,11 @@ public class LcLinkSelector extends AbstractSelector {
             resultSet = pstmt.executeQuery();
             while (resultSet.next()) {
                 LcLink lcLink = new LcLink();
-                List<IRow> meshes = new LcLinkMeshSelector(conn).loadRowsByParentId(lcLink.getPid(), isLock);
                 ReflectionAttrUtils.executeResultSet(lcLink, resultSet);
 //                for (IRow row : forms) {
 //                    row.setMesh(lcLink.mesh());
 //                }
+                List<IRow> meshes = new LcLinkMeshSelector(conn).loadRowsByParentId(lcLink.getPid(), isLock);
                 lcLink.setMeshes(meshes);
                 for (IRow row : lcLink.getMeshes()) {
                     LcLinkMesh mesh = (LcLinkMesh) row;

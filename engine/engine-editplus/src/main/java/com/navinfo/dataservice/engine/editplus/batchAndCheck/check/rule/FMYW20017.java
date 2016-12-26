@@ -25,6 +25,7 @@ import com.navinfo.dataservice.dao.plus.obj.ObjectName;
  * @author zhangxiaoyi
  */
 public class FMYW20017 extends BasicCheckRule {
+	private MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 
 	@Override
 	public void runCheck(BasicObj obj) throws Exception {
@@ -32,8 +33,7 @@ public class FMYW20017 extends BasicCheckRule {
 			IxPoiObj poiObj=(IxPoiObj) obj;
 			if(!isCheck(poiObj)){return;}
 			IxPoi poi=(IxPoi) poiObj.getMainrow();
-			String kindCode=poi.getKindCode();
-			MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
+			String kindCode=poi.getKindCode();			
 			boolean isImportant=metadataApi.judgeScPointKind(kindCode, poi.getChain());
 			if(!isImportant){
 				setCheckResult(poi.getGeometry(),poiObj,poi.getMeshId(),null);
@@ -64,7 +64,11 @@ public class FMYW20017 extends BasicCheckRule {
 				oldChain=(String) poi.getHisOldValue(IxPoi.CHAIN);
 			}
 			//存在KIND_CODE或CHAIN修改且修改前后在word_kind表中对应的词库不一样；
-			//TODO
+			String newWordKind=metadataApi.wordKind(newKindCode, newChain);
+			String oldWordKind=metadataApi.wordKind(oldKindCode, oldChain);
+			if(newWordKind!=null&&!newKindCode.equals(oldWordKind)){
+				return true;
+			}
 		}
 		//(1)存在IX_POI_NAME的新增；(2)存在IX_POI_NAME的修改；
 		List<IxPoiName> names = poiObj.getIxPoiNames();

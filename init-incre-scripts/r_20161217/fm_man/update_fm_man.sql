@@ -72,7 +72,7 @@ comment on column FM_STAT_DAY2MONTH.accumulative_total
 
 CREATE SEQUENCE day2month_config_seq START WITH 1 MAXVALUE 9999999999;
 
-feedback_type NUMBER(1) default 0 not null;
+alter table infor add feedback_type NUMBER(1) default 0 not null;
 comment on column INFOR.feedback_type
   is '0未反馈 1已反馈';
   

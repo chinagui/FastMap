@@ -17,6 +17,7 @@ public class CheckRule {
 	private Class accessorClass;
 	private Set<String> objNameSet;
 	private Map<String, Set<String>> referSubtableMap;
+	private int ruleLevel;//1 不可忽略 2可忽略
 
 	public CheckRule() {
 		// TODO Auto-generated constructor stub
@@ -100,6 +101,14 @@ public class CheckRule {
 
 	public void setReferSubtableMap(Map<String, Set<String>> referSubtableMap) {
 		this.referSubtableMap = referSubtableMap;
+	}
+
+	public int getRuleLevel() {
+		return ruleLevel;
+	}
+
+	public void setRuleLevel(int ruleLevel) {
+		this.ruleLevel = ruleLevel;
 	}
 
 }

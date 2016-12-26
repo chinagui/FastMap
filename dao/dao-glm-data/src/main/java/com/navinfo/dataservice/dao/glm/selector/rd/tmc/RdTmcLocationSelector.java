@@ -103,4 +103,47 @@ public class RdTmcLocationSelector extends AbstractSelector {
 
 		return tmcLinks;
 	}
+	
+	public List<Integer> loadTmclocationLinkPidByParentId(int groupId, boolean isLock) throws Exception {
+		List<Integer> linkPidList = new ArrayList<>();
+
+		StringBuilder sb = new StringBuilder(
+				"select link_pid from rd_tmclocation_link where GROUP_ID = :1 and U_RECORD !=2");
+
+		if (isLock) {
+
+			sb.append(" for update nowait");
+		}
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+
+			pstmt = getConn().prepareStatement(sb.toString());
+
+			pstmt.setInt(1, groupId);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+
+				int linkPid = resultSet.getInt("link_pid");
+				
+				linkPidList.add(linkPid);
+			}
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+
+			DBUtils.closeResultSet(resultSet);
+
+			DBUtils.closeStatement(pstmt);
+		}
+
+		return linkPidList;
+	}
 }

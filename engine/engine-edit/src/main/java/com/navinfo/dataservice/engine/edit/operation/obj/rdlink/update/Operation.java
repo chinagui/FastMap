@@ -1,20 +1,31 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdlink.update;
 
+import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 import com.navinfo.dataservice.bizcommons.service.RticService;
 import com.navinfo.dataservice.dao.glm.iface.AlertObject;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
-import com.navinfo.dataservice.dao.glm.model.rd.link.*;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkIntRtic;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkLimit;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkLimitTruck;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkName;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkRtic;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkSidewalk;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkSpeedlimit;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkWalkstair;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkZone;
 import com.navinfo.dataservice.dao.glm.model.rd.trafficsignal.RdTrafficsignal;
 import com.navinfo.dataservice.engine.edit.utils.batch.SpeedLimitUtils;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-
-import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 /**
  * RLINK 修改和属性维护
@@ -126,11 +137,6 @@ public class Operation implements IOperation {
         if (content.containsKey("limitTrucks")) {
             JSONArray array = content.getJSONArray("limitTrucks");
             this.saveLimitTrucks(result, array);
-        }
-        // 子表 LINK TMC表
-        if (content.containsKey("tmclocations")) {
-            JSONArray array = content.getJSONArray("tmclocations");
-            this.saveTmcLocations(result, array);
         }
         // 子表 LINK 限速表
         if (content.containsKey("speedlimits")) {
@@ -315,69 +321,6 @@ public class Operation implements IOperation {
                     obj.setLinkPid(this.updateLink.getPid());
                     obj.setMesh(this.updateLink.getMeshId());
                     result.insertObject(obj, ObjStatus.INSERT, updateLink.pid());
-                }
-            }
-        }
-    }
-
-    /***
-     * 子表LINK TMC表维护
-     * 
-     * @param result
-     * @param array
-     * @throws Exception
-     */
-    private void saveTmcLocations(Result result, JSONArray array) throws Exception {
-        for (int i = 0; i < array.size(); i++) {
-            JSONObject json = array.getJSONObject(i);
-            RdTmclocation obj = updateLink.locationMap.get(json.getString("rowId"));
-            if (json.containsKey("objStatus")) {
-                if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
-                    result.insertObject(obj, ObjStatus.DELETE, obj.pid());
-                } else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
-                    boolean isChanged = obj.fillChangeFields(json);
-                    if (isChanged) {
-                        result.insertObject(obj, ObjStatus.UPDATE, obj.pid());
-                    }
-                }
-            }
-            // 修改子表links
-            if (json.containsKey("links")) {
-                JSONArray linkArray = json.getJSONArray("links");
-                saveTmcLocationLinks(result, linkArray, obj);
-            }
-        }
-        result.setPrimaryPid(this.command.getLinkPid());
-    }
-
-    /***
-     * 子表LINK TMC表维护
-     * 
-     * @param result
-     * @param array
-     * @param obj
-     * @throws Exception
-     */
-    private void saveTmcLocationLinks(Result result, JSONArray array, RdTmclocation obj) throws Exception {
-        for (int i = 0; i < array.size(); i++) {
-            JSONObject json = array.getJSONObject(i);
-            RdTmclocationLink link = obj.linkMap.get(json.getString("rowId"));
-            if (json.containsKey("objStatus")) {
-                if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
-                    result.insertObject(link, ObjStatus.DELETE, obj.pid());
-                } else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
-                    // 修改目前只允许修改位置方向
-                    boolean isChanged = link.fillChangeFields(json);
-                    if (isChanged) {
-                        result.insertObject(link, ObjStatus.UPDATE, obj.pid());
-                    }
-                }
-                // 新增
-                else if (ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
-                    RdTmclocationLink insertLink = new RdTmclocationLink();
-                    insertLink.Unserialize(json);
-                    insertLink.setGroupId(obj.getPid());
-                    result.insertObject(insertLink, ObjStatus.INSERT, insertLink.getGroupId());
                 }
             }
         }

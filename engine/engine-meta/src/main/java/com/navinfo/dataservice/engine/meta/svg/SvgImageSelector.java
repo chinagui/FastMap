@@ -16,8 +16,7 @@ import oracle.sql.BLOB;
 
 public class SvgImageSelector {
 
-	public JSONObject searchByName(String name, int pageSize, int pageNum)
-			throws Exception {
+	public JSONObject searchByName(String name, int pageSize, int pageNum) throws Exception {
 
 		JSONObject result = new JSONObject();
 
@@ -43,7 +42,7 @@ public class SvgImageSelector {
 				return result;
 			}
 
-			String sql = "SELECT * FROM (SELECT A.*, ROWNUM RN FROM (SELECT COUNT(1) OVER(PARTITION BY 1) TOTAL, FILE_NAME, FILE_CONTENT, FORMAT, PANEL FROM SC_VECTOR_MATCH WHERE FILE_NAME LIKE :1) A WHERE ROWNUM <= :2) WHERE RN >= :3";
+			String sql = "SELECT * FROM (SELECT A.*, ROWNUM RN FROM (SELECT COUNT(1) OVER(PARTITION BY 1) TOTAL, FILE_NAME, FILE_CONTENT, FORMAT, PANEL FROM SC_VECTOR_MATCH WHERE FILE_NAME LIKE :1 and file_content is not null) A WHERE ROWNUM <= :2) WHERE RN >= :3";
 
 			int startRow = pageNum * pageSize + 1;
 
@@ -68,7 +67,7 @@ public class SvgImageSelector {
 				json.put("fileName", fileName);
 
 				String format = resultSet.getString("format");
-				
+
 				String panel = resultSet.getString("PANEL");
 
 				BLOB blob = (BLOB) resultSet.getBlob("file_content");
@@ -79,11 +78,10 @@ public class SvgImageSelector {
 				is.read(buffer);
 				is.close();
 
-				String fileContent = "data:image/" + format + ";base64,"
-						+ new String(Base64.encodeBase64(buffer));
+				String fileContent = "data:image/" + format + ";base64," + new String(Base64.encodeBase64(buffer));
 
 				json.put("fileContent", fileContent);
-				
+
 				json.put("panel", panel);
 
 				if (total == 0) {

@@ -22,6 +22,8 @@ import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.iface.SpecialMapType;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkName;
+import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkNameSelector;
 import com.navinfo.navicommons.database.sql.DBUtils;
 
 public class SpecialMapUtils {
@@ -1393,6 +1395,7 @@ public class SpecialMapUtils {
 		return list;
 	}
 
+	
 	/**
 	 * 17 道路名内容, 业务说明：按照道路名的顺序该link所有的中文名称标注在link上
 	 * 
@@ -1408,15 +1411,13 @@ public class SpecialMapUtils {
 
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "WITH TMP1 AS (SELECT LINK_PID, GEOMETRY, DIRECT, KIND FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2), TMP2 AS (SELECT /*+ index(N) */ T.LINK_PID, N.NAME_GROUPID, N.SEQ_NUM, T.GEOMETRY, T.DIRECT, T.KIND FROM TMP1 T LEFT JOIN RD_LINK_NAME N ON T.LINK_PID = N.LINK_PID AND N.U_RECORD != 2) SELECT /*+ index(RN) */ T2.*, RN.NAME FROM TMP2 T2 LEFT JOIN RD_NAME RN ON T2.NAME_GROUPID = RN.NAME_GROUPID AND (RN.LANG_CODE = 'CHI' OR RN.LANG_CODE = 'CHT') ORDER BY T2.LINK_PID, T2.SEQ_NUM";
+		String sql = "WITH TMP1 AS (SELECT LINK_PID, DIRECT, KIND, FUNCTION_CLASS, S_NODE_PID, E_NODE_PID, LENGTH, IMI_CODE, GEOMETRY FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2), TMP2 AS (SELECT /*+ index(a) */ A.LINK_PID, LISTAGG(A.TYPE, ';') WITHIN GROUP(ORDER BY A.LINK_PID) LIMITS FROM RD_LINK_LIMIT A, TMP1 B WHERE A.U_RECORD != 2 AND A.LINK_PID = B.LINK_PID GROUP BY A.LINK_PID), TMP3 AS (SELECT /*+ index(a) */ A.LINK_PID, LISTAGG(A.FORM_OF_WAY, ';') WITHIN GROUP(ORDER BY A.LINK_PID) FORMS FROM RD_LINK_FORM A, TMP1 B WHERE A.U_RECORD != 2 AND A.LINK_PID = B.LINK_PID GROUP BY A.LINK_PID) SELECT A.*, B.LIMITS, C.FORMS FROM TMP1 A, TMP2 B, TMP3 C WHERE A.LINK_PID = B.LINK_PID(+) AND A.LINK_PID = C.LINK_PID(+) ";		
 		
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
-
-		int flagLinkPid = 0;
-
-		SearchSnapshot snapshot = null;
+		
+		Set<Integer> linkPids = new HashSet<Integer>();
 
 		try {
 			pstmt = conn.prepareStatement(sql);
@@ -1431,73 +1432,49 @@ public class SpecialMapUtils {
 
 			double py = MercatorProjection.tileYToPixelY(y);
 
-			String content = "";
-
-			String direct = "";
-			
-			String kind ="";
-
 			while (resultSet.next()) {
-
-				int currLinkPid = resultSet.getInt("LINK_PID");
-
-				direct = resultSet.getString("DIRECT");
-				
-				kind = resultSet.getString("KIND");
-
-				if (flagLinkPid != currLinkPid) {
-
-					if (snapshot != null) {
-
-						JSONObject m = new JSONObject();
-
-						m.put("a", kind);
-						
-						m.put("b", content.trim());
-
-						m.put("d", String.valueOf(direct));
-
-						snapshot.setM(m);
-
-						list.add(snapshot);
-					}
-
-					snapshot = new SearchSnapshot();
-
-					content = "";
-
-					snapshot.setT(specialMapType.getValue());
-
-					snapshot.setI(currLinkPid);
-
-					JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
-
-					snapshot.setG(geoArray);
-
-					flagLinkPid = currLinkPid;
-				}
-
-				if (content.length() > 0) {
-					content += "\\";
-				}
-
-				content += resultSet.getString("NAME");
-			}
-			if (snapshot != null) {
+				SearchSnapshot snapshot = new SearchSnapshot();
 
 				JSONObject m = new JSONObject();
 
-				m.put("a", kind);
+				m.put("a", resultSet.getString("kind"));
 				
-				m.put("b", content.trim());
+				m.put("c", resultSet.getString("limits"));
 
-				m.put("d", String.valueOf(direct));
+				m.put("d", resultSet.getString("direct"));
+
+				m.put("e", resultSet.getString("s_node_pid"));
+
+				m.put("f", resultSet.getString("e_node_pid"));
+
+				m.put("h", resultSet.getString("forms"));
+
+				m.put("i", resultSet.getString("function_class"));
+
+				m.put("j", resultSet.getString("imi_code"));
+				
+				m.put("k", resultSet.getString("length"));
 
 				snapshot.setM(m);
 
+				snapshot.setT(4);
+				
+				int linkPid=resultSet.getInt("link_pid");
+
+				snapshot.setI(linkPid);
+				
+				linkPids.add(linkPid);
+
+				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
+
+				JSONObject geojson = Geojson.spatial2Geojson(struct);
+
+				JSONObject jo = Geojson.link2Pixel(geojson, px, py, z);
+
+				snapshot.setG(jo.getJSONArray("coordinates"));
+
 				list.add(snapshot);
 			}
-
 		} catch (Exception e) {
 
 			throw new Exception(e);
@@ -1505,10 +1482,28 @@ public class SpecialMapUtils {
 			DBUtils.closeResultSet(resultSet);
 			DBUtils.closeStatement(pstmt);
 		}
+		
+		RdLinkNameSelector linkNameSelector = new RdLinkNameSelector(this.conn);
+
+		Map<Integer, StringBuilder> nameMap = linkNameSelector
+				.loadAllNameByLinkPids(linkPids);
+
+		for (SearchSnapshot snapshot : list) {
+
+			String name = "";
+
+			if (nameMap.containsKey(snapshot.getI())) {
+
+				name = nameMap.get(snapshot.getI()).toString();
+			}
+
+			JSONObject m = snapshot.getM();
+
+			m.put("b", name);
+		}
 
 		return list;
 	}
-
 	/**
 	 * 18 道路名组数, 业务说明：根据道路名具有的道路名组数特殊渲染link；0~4分别渲染，4以上统一渲染一个颜色
 	 * 

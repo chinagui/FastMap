@@ -41,7 +41,8 @@ public class Check extends AbstractOperation{
 		if (checkResultList==null || checkResultList.size()==0) {return;}		
 		NiValExceptionOperator check = new NiValExceptionOperator(conn);
 		for(int i=0;i<checkResultList.size();i++){			
-			check.insertCheckLog(checkResultList.get(i).getRuleId(), checkResultList.get(i).getLoc(), checkResultList.get(i).getTargets(), checkResultList.get(i).getMeshId(),checkResultList.get(i).getInformation(), "TEST");
+			check.insertCheckLog(checkResultList.get(i).getRuleId(), checkResultList.get(i).getLoc(), 
+					checkResultList.get(i).getTargets(), checkResultList.get(i).getMeshId(),checkResultList.get(i).getInformation(), checkResultList.get(i).getLogLevel(),"TEST");
 		}
 		log.debug("end call insert ni_val");
 	}

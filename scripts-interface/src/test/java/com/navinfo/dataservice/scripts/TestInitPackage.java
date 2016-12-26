@@ -3,6 +3,7 @@
  */
 package com.navinfo.dataservice.scripts;
 
+import java.io.File;
 import java.sql.Connection;
 
 import org.apache.commons.dbutils.DbUtils;
@@ -48,6 +49,10 @@ public class TestInitPackage extends ClassPathXmlAppContextInit{
 	public void testMetadataDonwnload() throws Exception {
 		ExpMeta2SqliteScriptsInterface a =new ExpMeta2SqliteScriptsInterface();
 		String dir = "f:";
+		File metaSqliteFile = new File(dir+"/metadata.sqlite");
+		if(metaSqliteFile.exists()){
+			metaSqliteFile.delete();
+		}
 		a.export2SqliteByNames(dir);
 	}
 }

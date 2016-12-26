@@ -72,9 +72,8 @@ public class Operation implements IOperation {
 
 			this.updateLinks(result, tmclocation, links);
 		}
-		
-		if(!content.containsKey("link"))
-		{
+
+		if (!content.containsKey("link")) {
 			return null;
 		}
 		// 拓补操作更新子表信息
@@ -130,16 +129,15 @@ public class Operation implements IOperation {
 
 					outNodePid = link.geteNodePid();
 				}
-				updateLocationLink(result,link.getPid(), direct, locDirect, tmcLocationLinkMap);
+				updateLocationLink(result, link.getPid(), direct, locDirect, tmcLocationLinkMap);
 				hasHandledLinkPids.add(link.getPid());
 				break;
 			}
 		}
-		//向baseLink计算link方向
+		// 向baseLink计算link方向
 		for (IRow row : linkList) {
 			RdLink link = (RdLink) row;
-			if(!hasHandledLinkPids.contains(link.getPid()))
-			{
+			if (!hasHandledLinkPids.contains(link.getPid())) {
 				boolean flag = false;
 				if (link.getsNodePid() == inNodePid) {
 					// 如果作用方向和该link的起点到终点的划线方向一致，则赋值为'1'
@@ -154,24 +152,22 @@ public class Operation implements IOperation {
 					inNodePid = link.getsNodePid();
 					flag = true;
 				}
-				if(flag)
-				{
-					updateLocationLink(result,link.getPid(), direct, locDirect, tmcLocationLinkMap);
+				if (flag) {
+					updateLocationLink(result, link.getPid(), direct, locDirect, tmcLocationLinkMap);
 					hasHandledLinkPids.add(link.getPid());
 				}
 			}
 		}
-		//向baseLink往前计算link方向
+		// 向baseLink往前计算link方向
 		for (IRow row : linkList) {
 			RdLink link = (RdLink) row;
-			if(!hasHandledLinkPids.contains(link.getPid()))
-			{
+			if (!hasHandledLinkPids.contains(link.getPid())) {
 				boolean flag = false;
 				if (link.geteNodePid() == outNodePid) {
 					// 如果作用方向和该link的起点到终点的划线方向一致，则赋值为'1'
 					direct = 1;
 					// 该link的终点作为下一个link的进入点
-					outNodePid = link.getsNodePid(); 
+					outNodePid = link.getsNodePid();
 					flag = true;
 				} else if (link.getsNodePid() == outNodePid) {
 					// 如果作用方向和该link的起点到终点的划线方向相反，则赋值为'2'
@@ -180,9 +176,8 @@ public class Operation implements IOperation {
 					outNodePid = link.geteNodePid();
 					flag = true;
 				}
-				if(flag)
-				{
-					updateLocationLink(result,link.getPid(), direct, locDirect, tmcLocationLinkMap);
+				if (flag) {
+					updateLocationLink(result, link.getPid(), direct, locDirect, tmcLocationLinkMap);
 					hasHandledLinkPids.add(link.getPid());
 				}
 			}
@@ -220,8 +215,8 @@ public class Operation implements IOperation {
 				obj.put("locDirect", locDirect);
 			}
 			tmcLocationLink.fillChangeFields(obj);
-			
-			//删除需要更新的
+
+			// 删除需要更新的
 			tmcLocationLinkMap.remove(linkPid);
 		} else {
 			tmcLocationLink = new RdTmclocationLink();
@@ -234,19 +229,16 @@ public class Operation implements IOperation {
 
 			tmcLocationLink.setGroupId(command.getPid());
 		}
-		
-		if(tmcLocationLink != null)
-		{
-			//rowId不为空代表是修改的对象是修改操作
-			if(tmcLocationLink.changedFields().size() > 0 && tmcLocationLink.getRowId() != null)
-			{
+
+		if (tmcLocationLink != null) {
+			// rowId不为空代表是修改的对象是修改操作
+			if (tmcLocationLink.changedFields().size() > 0 && tmcLocationLink.getRowId() != null) {
 				result.insertObject(tmcLocationLink, ObjStatus.UPDATE, tmcLocationLink.getGroupId());
 			}
-			if(tmcLocationLink.getRowId() == null)
-			{
+			if (tmcLocationLink.getRowId() == null) {
 				result.insertObject(tmcLocationLink, ObjStatus.INSERT, tmcLocationLink.getGroupId());
 			}
-			
+
 		}
 	}
 
@@ -339,11 +331,6 @@ public class Operation implements IOperation {
 	 */
 	public void breakLinkUpdateTmc(Result result, RdLink oldLink, List<RdLink> newLinks) {
 		List<IRow> tmcLocations = oldLink.getTmclocations();
-		//打断前清空原link的tmc子表数据，防止删除原link删除tmc子表数据
-		if(!oldLink.getTmclocations().isEmpty())
-		{
-			oldLink.getTmclocations().clear();
-		}
 		for (IRow row : tmcLocations) {
 			RdTmclocation location = (RdTmclocation) row;
 
@@ -362,14 +349,13 @@ public class Operation implements IOperation {
 
 					// 打断后新link加入tmclocaitonlink中
 					for (RdLink newLink : newLinks) {
-						//清空新link拷贝的原link上的tmc信息
+						// 清空新link拷贝的原link上的tmc信息
 						List<IRow> tmcLocationList = newLink.getTmclocations();
-						
-						if(CollectionUtils.isNotEmpty(tmcLocationList))
-						{
+
+						if (CollectionUtils.isNotEmpty(tmcLocationList)) {
 							tmcLocationList.clear();
 						}
-						//开始维护新link上的tmc信息
+						// 开始维护新link上的tmc信息
 						RdTmclocationLink newLocationLink = new RdTmclocationLink();
 
 						newLocationLink.setGroupId(groupId);
@@ -386,6 +372,11 @@ public class Operation implements IOperation {
 				}
 			}
 
+		}
+
+		// 打断前清空原link的tmc子表数据，防止删除原link删除tmc子表数据
+		if (!oldLink.getTmclocations().isEmpty()) {
+			oldLink.getTmclocations().clear();
 		}
 	}
 

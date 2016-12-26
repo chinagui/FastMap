@@ -11,7 +11,6 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 import oracle.spatial.geometry.JGeometry;
-import oracle.sql.STRUCT;
 
 import com.navinfo.dataservice.bizcommons.glm.Glm;
 import com.navinfo.dataservice.bizcommons.glm.GlmCache;
@@ -126,7 +125,7 @@ public class NiValExceptionOperator {
 		return list;
 	}
 	
-	private List calGeoAndMeshWithTarget(String targets) throws Exception{
+	private List<Object> calGeoAndMeshWithTarget(String targets) throws Exception{
 		List<Object> list=null;
 		String value=StringUtils.removeBlankChar(targets);
 		if (value != null && value.length() > 2) {
@@ -202,6 +201,11 @@ public class NiValExceptionOperator {
 
 	public void insertCheckLog(String ruleId, String loc, String targets,
 			int meshId, String log, String worker) throws Exception {
+		insertCheckLog(ruleId, loc, targets,meshId, log,1, worker);
+	}
+	
+	public void insertCheckLog(String ruleId, String loc, String targets,
+			int meshId, String log,int logLevel, String worker) throws Exception {
 		logg.debug("start insert ni_val:1");
 		if(loc==null||loc.isEmpty()){
 			List<Object> list=calGeoAndMeshWithTarget(targets);
@@ -242,7 +246,7 @@ public class NiValExceptionOperator {
 			logg.debug("start insert ni_val:2-10");
 			pstmt.setString(7, worker);
 			logg.debug("start insert ni_val:2-11");
-			pstmt.setInt(8, 1);
+			pstmt.setInt(8, logLevel);
 			logg.debug("start insert ni_val:2-12");
 			int res = pstmt.executeUpdate();
 			logg.debug("start insert ni_val:3");

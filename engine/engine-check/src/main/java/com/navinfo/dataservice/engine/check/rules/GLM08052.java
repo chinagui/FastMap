@@ -11,7 +11,6 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneVia;
-import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNodeForm;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
@@ -88,7 +87,7 @@ public class GLM08052 extends baseRule {
 			resultList = getObj.exeSelect(this.getConn(), sql);
 
 			if(!resultList.isEmpty()){
-				String target = "[RD_LANE_CONNEXITY," + (long)resultList.get(0) + "]";
+				String target = "[RD_LANE_CONNEXITY," + resultList.get(0).toString() + "]";
 				this.setCheckResult("", target, 0);
 			}
 		}

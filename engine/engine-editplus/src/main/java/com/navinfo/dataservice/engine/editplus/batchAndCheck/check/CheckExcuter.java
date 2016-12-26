@@ -23,8 +23,12 @@ public class CheckExcuter {
 	public List<NiValException> exeRule(CheckRule checkRule,CheckRuleCommand checkRuleCommand) throws Exception{
 		List<NiValException> checkResult=new ArrayList<NiValException>();
 		log.info("start run rule="+checkRule.getRuleId());
-		if(checkRule.getAccessorType().equals("JAVA")){
-			checkResult=exeJavaRule(checkRule, checkRuleCommand);
+		try{
+			if(checkRule.getAccessorType().equals("JAVA")){
+				checkResult=exeJavaRule(checkRule, checkRuleCommand);
+			}
+		}catch(Exception e){
+			log.error("error run rule="+checkRule.getRuleId(),e);
 		}
 		log.info("end run rule="+checkRule.getRuleId());
 		return checkResult;

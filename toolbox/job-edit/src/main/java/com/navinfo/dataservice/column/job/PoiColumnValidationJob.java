@@ -62,12 +62,17 @@ public class PoiColumnValidationJob extends AbstractJob {
 			// 清理检查结果
 			log.info("清理检查结果");
 			DeepCoreControl deepControl = new DeepCoreControl();
-			JSONObject jsonReq=new JSONObject();
+			List<Integer> pidIntList=new ArrayList<Integer>();
+			for(Long pidTmp:myRequest.getPids()){
+				pidIntList.add(Integer.valueOf(pidTmp.toString()));
+			}
+			deepControl.cleanExByCkRule(conn, pidIntList, myRequest.getRules(), ObjectName.IX_POI);
+			/*JSONObject jsonReq=new JSONObject();
 			jsonReq.put("subtaskId", jobInfo.getTaskId());
 			jsonReq.put("pids", myRequest.getPids());
 			jsonReq.put("ckRules", myRequest.getRules());
 			jsonReq.put("checkType", 1);
-			deepControl.cleanCheck(jsonReq, jobInfo.getUserId());
+			deepControl.cleanCheck(jsonReq, jobInfo.getUserId());*/
 			log.info("PoiColumnValidationJob:获取精编检查数据履历");
 			//获取log
 			Map<Long, List<LogDetail>> logs = PoiLogDetailStat.loadByColEditStatus(conn, myRequest.getPids(),
@@ -141,10 +146,10 @@ public class PoiColumnValidationJob extends AbstractJob {
 					+ "   AND P.TASK_ID="+jobInfo.getTaskId()
 					+ "   AND P.FIRST_WORK_STATUS IN (1,2)";
 			String secondWorkItem=myRequest.getSecondWorkItem();
-			//若针对二级项进行自定义检查，则检查对象应该是二级项状态为待作业，已作业状态
+			//若针对二级项进行自定义检查，则检查对象应该是二级项状态为待作业/已作业状态
 			if(secondWorkItem!=null&&!secondWorkItem.isEmpty()){
 				sql+="   AND C.SECOND_WORK_ITEM = '"+myRequest.getSecondWorkItem()+"'"
-						+"   AND P.SECOND_WORK_STATUS IN (1,2)";
+						+"   AND P.SECOND_WORK_STATUS ="+myRequest.getStatus();
 			}
 			QueryRunner run=new QueryRunner();
 			pids=run.query(conn, sql,new ResultSetHandler<List<Long>>(){

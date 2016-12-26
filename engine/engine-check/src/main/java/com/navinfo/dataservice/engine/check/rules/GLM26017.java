@@ -9,7 +9,6 @@ import org.apache.log4j.Logger;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
-import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.model.rd.directroute.RdDirectroute;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneTopology;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
@@ -92,7 +91,6 @@ public class GLM26017 extends baseRule {
 				if (nodePid == linkObj.getsNodePid()
 						|| nodePid == linkObj.geteNodePid()) {
 					hasSameNode = true;
-					break;
 				}
 				// 进入线和退出线挂接在同一点上，而且这个点未登记路口
 				if (hasSameNode && !isCrossNode(nodePid)) {
@@ -173,30 +171,28 @@ public class GLM26017 extends baseRule {
 	private void checkRdLaneTopology(RdLaneTopology rdLaneTopology) throws Exception {
 		// TODO Auto-generated method stub
 		//修改车信,触发检查
-		if(ObjStatus.UPDATE.equals(rdLaneTopology.status())){
-			StringBuilder sb = new StringBuilder();
-			
-			sb.append("WITH T AS (SELECT RL.S_NODE_PID NODE_PID,RLT.CONNEXITY_PID");
-			sb.append(" FROM RD_LANE_TOPOLOGY RLT, RD_LINK RL WHERE RLT.OUT_LINK_PID = RL.LINK_PID AND RLT.U_RECORD <>2");
-			sb.append(" AND RL.U_RECORD <>2 AND RLT.TOPOLOGY_ID="+rdLaneTopology.getPid());
-			sb.append(" UNION SELECT RL.E_NODE_PID NODE_PID,RLT.CONNEXITY_PID");
-			sb.append(" FROM RD_LANE_TOPOLOGY RLT, RD_LINK RL WHERE RLT.OUT_LINK_PID = RL.LINK_PID");
-			sb.append(" AND RLT.U_RECORD <>2 AND RL.U_RECORD <>2 AND RLT.TOPOLOGY_ID="+rdLaneTopology.getPid()+")");
-			sb.append(" SELECT DISTINCT RLC.PID FROM RD_LANE_CONNEXITY RLC,T");
-			sb.append(" WHERE RLC.PID=T.CONNEXITY_PID AND RLC.U_RECORD <> 2 AND NOT EXISTS");
-			sb.append(" (SELECT 1 FROM RD_CROSS_NODE CN WHERE CN.NODE_PID = RLC.NODE_PID AND CN.U_RECORD <> 2)");
-			
-			String sql = sb.toString();
-			log.info("RdLaneConnexity后检查GLM26017--sql:" + sql);
-			
-			DatabaseOperator getObj = new DatabaseOperator();
-			List<Object> resultList = new ArrayList<Object>();
-			resultList = getObj.exeSelect(this.getConn(), sql);
-			
-			if(!resultList.isEmpty()){
-				String target = "[RD_LANE_CONNEXITY," + (long)resultList.get(0) + "]";
-				this.setCheckResult("", target, 0,"如果车信进入线和退出线挂接在同一点上，而且这个点未登记路口（不属于任何路口），则不允许制作和修改");
-			}
+		StringBuilder sb = new StringBuilder();
+		
+		sb.append("WITH T AS (SELECT RL.S_NODE_PID NODE_PID,RLT.CONNEXITY_PID");
+		sb.append(" FROM RD_LANE_TOPOLOGY RLT, RD_LINK RL WHERE RLT.OUT_LINK_PID = RL.LINK_PID AND RLT.U_RECORD <>2");
+		sb.append(" AND RL.U_RECORD <>2 AND RLT.TOPOLOGY_ID="+rdLaneTopology.getPid());
+		sb.append(" UNION SELECT RL.E_NODE_PID NODE_PID,RLT.CONNEXITY_PID");
+		sb.append(" FROM RD_LANE_TOPOLOGY RLT, RD_LINK RL WHERE RLT.OUT_LINK_PID = RL.LINK_PID");
+		sb.append(" AND RLT.U_RECORD <>2 AND RL.U_RECORD <>2 AND RLT.TOPOLOGY_ID="+rdLaneTopology.getPid()+")");
+		sb.append(" SELECT DISTINCT RLC.PID FROM RD_LANE_CONNEXITY RLC,T");
+		sb.append(" WHERE RLC.PID=T.CONNEXITY_PID AND RLC.U_RECORD <> 2 AND NOT EXISTS");
+		sb.append(" (SELECT 1 FROM RD_CROSS_NODE CN WHERE CN.NODE_PID = RLC.NODE_PID AND CN.U_RECORD <> 2)");
+		
+		String sql = sb.toString();
+		log.info("RdLaneConnexity后检查GLM26017--sql:" + sql);
+		
+		DatabaseOperator getObj = new DatabaseOperator();
+		List<Object> resultList = new ArrayList<Object>();
+		resultList = getObj.exeSelect(this.getConn(), sql);
+		
+		if(!resultList.isEmpty()){
+			String target = "[RD_LANE_CONNEXITY," + resultList.get(0).toString() + "]";
+			this.setCheckResult("", target, 0,"如果车信进入线和退出线挂接在同一点上，而且这个点未登记路口（不属于任何路口），则不允许制作和修改");
 		}
 	}
 }

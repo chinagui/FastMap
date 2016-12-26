@@ -66,7 +66,7 @@ public class SvgImageSelector {
 
 				json.put("fileName", fileName);
 
-				String format = resultSet.getString("format");
+				//String format = resultSet.getString("format");
 
 				String panel = resultSet.getString("PANEL");
 
@@ -78,7 +78,7 @@ public class SvgImageSelector {
 				is.read(buffer);
 				is.close();
 
-				String fileContent = "data:image/" + format + ";base64," + new String(Base64.encodeBase64(buffer));
+				String fileContent = "data:image/svg+xml" + ";base64," + new String(Base64.encodeBase64(buffer));
 
 				json.put("fileContent", fileContent);
 
@@ -105,5 +105,52 @@ public class SvgImageSelector {
 			DbUtils.closeQuietly(pstmt);
 			DbUtils.closeQuietly(conn);
 		}
+	}
+	
+	public byte[] getById(String id) throws Exception {
+
+		String sql = "select file_content from SC_VECTOR_MATCH where file_name = :1";
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		Connection conn = null;
+
+		try {
+
+			conn = DBConnector.getInstance().getMetaConnection();
+
+			pstmt = conn.prepareStatement(sql);
+
+			pstmt.setString(1, id);
+
+			resultSet = pstmt.executeQuery();
+
+			if (resultSet.next()) {
+
+				BLOB blob = (BLOB) resultSet.getBlob("file_content");
+
+				InputStream is = blob.getBinaryStream();
+				int length = (int) blob.length();
+				byte[] buffer = new byte[length];
+				is.read(buffer);
+				is.close();
+
+				return buffer;
+
+			}
+
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+			DbUtils.closeQuietly(conn);
+		}
+
+		return new byte[0];
 	}
 }

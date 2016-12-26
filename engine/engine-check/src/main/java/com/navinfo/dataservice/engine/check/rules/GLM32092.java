@@ -50,11 +50,11 @@ public class GLM32092 extends baseRule{
 				RdLaneCondition rdLaneCondition = (RdLaneCondition)obj;
 				checkRdLaneCondition(rdLaneCondition);
 			}
-			// Link属性编辑RdLink
-			else if (obj instanceof RdLink) {
-				RdLink rdLink = (RdLink) obj;
-				checkRdLink(rdLink,checkCommand.getOperType());
-			}
+//			// Link属性编辑RdLink
+//			else if (obj instanceof RdLink) {
+//				RdLink rdLink = (RdLink) obj;
+//				checkRdLink(rdLink,checkCommand.getOperType());
+//			}
 
 			// Link属性编辑RdLinkForm
 			else if (obj instanceof RdLinkForm) {
@@ -71,7 +71,14 @@ public class GLM32092 extends baseRule{
 	 * @throws Exception 
 	 */
 	private void checkRdLinkForm(RdLinkForm rdLinkForm, OperType operType) throws Exception {
-		if(rdLinkForm.getFormOfWay() == 22){
+		int formOfWay = 0;
+		if(rdLinkForm.changedFields().containsKey("formOfWay")){
+			formOfWay = Integer.parseInt(rdLinkForm.changedFields().get("formOfWay").toString()) ;
+		}else{
+			formOfWay = rdLinkForm.getFormOfWay();
+		}
+		if(formOfWay==22){
+//		if(rdLinkForm.getFormOfWay() == 22){
 			StringBuilder sb = new StringBuilder();
 
 			sb.append("SELECT RL.GEOMETRY,'[RD_LINK,' || RL.LINK_PID || ']',RL.MESH_ID FROM RD_LINK RL");

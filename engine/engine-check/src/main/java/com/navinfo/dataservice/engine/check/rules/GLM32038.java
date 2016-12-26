@@ -19,7 +19,7 @@ import com.navinfo.dataservice.engine.check.helper.DatabaseOperatorResultWithGeo
  * @date 2016年12月9日
  * @Description: GLM32038.java
  * 车道分隔带所在的link不能是交叉点内道路，否则报log
- * 道路属性编辑后检查：RdLink,RdLinkForm
+ * 道路属性编辑后检查：RdLinkForm
  * 新增详细车道后检查
  * 编辑详细车道后检查
  */
@@ -52,11 +52,11 @@ public class GLM32038 extends baseRule{
 				RdLane rdLane = (RdLane) obj;
 				checkRdLane(rdLane,checkCommand.getOperType());
 			}
-			// Link属性编辑
-			else if (obj instanceof RdLink) {
-				RdLink rdLink = (RdLink) obj;
-				checkRdLink(rdLink,checkCommand.getOperType());
-			}	
+//			// Link属性编辑
+//			else if (obj instanceof RdLink) {
+//				RdLink rdLink = (RdLink) obj;
+//				checkRdLink(rdLink,checkCommand.getOperType());
+//			}	
 			// Link属性编辑
 			else if (obj instanceof RdLinkForm) {
 				RdLinkForm rdLinkForm = (RdLinkForm) obj;
@@ -73,7 +73,14 @@ public class GLM32038 extends baseRule{
 	 */
 	private void checkRdLinkForm(RdLinkForm rdLinkForm, OperType operType) throws Exception {
 		//rdLink为交叉点内道路
-		if(rdLinkForm.getFormOfWay()==50){
+		int formOfWay = 0;
+		if(rdLinkForm.changedFields().containsKey("formOfWay")){
+			formOfWay = Integer.parseInt(rdLinkForm.changedFields().get("formOfWay").toString()) ;
+		}else{
+			formOfWay = rdLinkForm.getFormOfWay();
+		}
+		if(formOfWay==50){
+//		if(rdLinkForm.getFormOfWay()==50){
 			StringBuilder sb = new StringBuilder();
 
 			sb.append("SELECT 1 FROM RD_LINK L,RD_LANE RL");
@@ -135,7 +142,14 @@ public class GLM32038 extends baseRule{
 	 */
 	private void checkRdLane(RdLane rdLane, OperType operType) throws Exception {
 		//存在车道分隔带
-		if(rdLane.getLaneDivider()!=0){
+		int laneDivider = 0;
+		if(rdLane.changedFields().containsKey("laneDivider")){
+			laneDivider = Integer.parseInt(rdLane.changedFields().get("laneDivider").toString()) ;
+		}else{
+			laneDivider = rdLane.getLaneDivider();
+		}
+		if(laneDivider!=0){
+//		if(rdLane.getLaneDivider()!=0){
 			StringBuilder sb = new StringBuilder();
 
 			sb.append("SELECT 1 FROM RD_LINK L,RD_LINK_FORM F");

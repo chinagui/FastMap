@@ -89,7 +89,7 @@ public class GLM32060 extends baseRule{
 		resultList = getObj.exeSelect(this.getConn(), sql);
 
 		if(!resultList.isEmpty()){
-			this.setCheckResult("", "[RD_LANE," + rdLink.getPid() + "]", 0,resultList.get(0).toString());
+			this.setCheckResult("", "[RD_LINK," + rdLink.getPid() + "]", 0,resultList.get(0).toString());
 		}	
 		
 	}

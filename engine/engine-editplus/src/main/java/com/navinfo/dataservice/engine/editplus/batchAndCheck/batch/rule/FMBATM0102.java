@@ -50,8 +50,10 @@ public class FMBATM0102 extends BasicBatchRule {
 				MetadataApi metadataApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 				Map<String, String> typeMap8 = metadataApi.scPointSpecKindCodeType8();
 				IxPoiName aliasCHIName = poiObj.getAliasCHIName(br.getNameGroupid());
+				String aliasCHINameStr = "";
+				if(aliasCHIName!=null){aliasCHINameStr=aliasCHIName.getName();}
 				if (((br.getName()).length() > 35) && typeMap8.containsKey(mainPoi.getKindCode())) {
-					if (standardAliasEngName != null) {
+					if (standardAliasEngName != null&&!aliasCHINameStr.isEmpty()) {
 						standardAliasEngName.setName(metadataApi.convertEng(aliasCHIName.getName()));
 					} else {
 						IxPoiName poiName = (IxPoiName) poiObj.createIxPoiName();

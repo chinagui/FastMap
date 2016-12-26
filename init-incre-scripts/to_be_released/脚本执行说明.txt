@@ -1,4 +1,4 @@
-1. update_sys_batch.sql
+﻿1. update_sys_batch.sql
 	功能：月编检查批处理
 	目标库：sys库
 	author: xxx
@@ -11,3 +11,7 @@
   功能：xxxx
   目标库：man库
   author：xxx
+4. fm_sys/update_job_info.sql
+  功能：job_info表字段长度修改
+  目标库：fm_sys
+  author：XXW

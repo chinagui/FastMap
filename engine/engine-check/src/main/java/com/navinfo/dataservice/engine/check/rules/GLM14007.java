@@ -8,9 +8,7 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
-import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.model.rd.directroute.RdDirectroute;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
@@ -33,10 +31,7 @@ public class GLM14007 extends baseRule {
 		// TODO Auto-generated method stub
 		for(IRow row:checkCommand.getGlmList()){
 			//道路属性编辑
-			if(row instanceof RdLink){
-				RdLink rdLink = (RdLink)row;
-				checkRdLink(rdLink);
-			}else if(row instanceof RdLinkForm){
+			if(row instanceof RdLinkForm){
 				RdLinkForm rdLinkForm = (RdLinkForm)row;
 				checkRdLinkForm(rdLinkForm);
 			}
@@ -64,7 +59,7 @@ public class GLM14007 extends baseRule {
 	 * @param rdLink
 	 * @throws Exception 
 	 */
-	private void checkRdLink(RdLink rdLink) throws Exception {
+	/*private void checkRdLink(RdLink rdLink) throws Exception {
 		//道路属性编辑,触发检查
 		//获取子表
 		List<IRow> forms = rdLink.getForms();
@@ -72,7 +67,7 @@ public class GLM14007 extends baseRule {
 			RdLinkForm rdLinkForm = (RdLinkForm) iRow;
 			this.checkRdLinkForm(rdLinkForm);
 		}
-	}
+	}*/
 	/**
 	 * @author Han Shaoming
 	 * @param rdLinkForm

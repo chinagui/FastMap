@@ -62,12 +62,17 @@ public class PoiColumnValidationJob extends AbstractJob {
 			// 清理检查结果
 			log.info("清理检查结果");
 			DeepCoreControl deepControl = new DeepCoreControl();
-			JSONObject jsonReq=new JSONObject();
+			List<Integer> pidIntList=new ArrayList<Integer>();
+			for(Long pidTmp:myRequest.getPids()){
+				pidIntList.add(Integer.valueOf(pidTmp.toString()));
+			}
+			deepControl.cleanExByCkRule(conn, pidIntList, myRequest.getRules(), ObjectName.IX_POI);
+			/*JSONObject jsonReq=new JSONObject();
 			jsonReq.put("subtaskId", jobInfo.getTaskId());
 			jsonReq.put("pids", myRequest.getPids());
 			jsonReq.put("ckRules", myRequest.getRules());
 			jsonReq.put("checkType", 1);
-			deepControl.cleanCheck(jsonReq, jobInfo.getUserId());
+			deepControl.cleanCheck(jsonReq, jobInfo.getUserId());*/
 			log.info("PoiColumnValidationJob:获取精编检查数据履历");
 			//获取log
 			Map<Long, List<LogDetail>> logs = PoiLogDetailStat.loadByColEditStatus(conn, myRequest.getPids(),

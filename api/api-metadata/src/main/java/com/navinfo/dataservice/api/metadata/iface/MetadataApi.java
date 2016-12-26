@@ -101,6 +101,13 @@ public interface MetadataApi {
 	
 	public Map<String, String> scPointSpecKindCodeType8() throws Exception;
 	
+	/**
+	 * 返回SC_POINT_NAMECK中“TYPE”=9的PRE_KEY
+	 * @return List<String> pre_key列表
+	 * @throws Exception
+	 */
+	public List<String> scPointNameckType9() throws Exception;
+	
 	public Map<String, String> scPointSpecKindCodeType14() throws Exception;
 	
 	/**

@@ -18,6 +18,7 @@ public class PoiColumnValidationJobRequest extends AbstractJobRequest {
 	private List<String> rules;
 	private String firstWorkItem;
 	private String secondWorkItem;
+	private int status;
 	private int targetDbId;
 
 	@Override
@@ -88,6 +89,14 @@ public class PoiColumnValidationJobRequest extends AbstractJobRequest {
 
 	public void setTargetDbId(int targetDbId) {
 		this.targetDbId = targetDbId;
+	}
+
+	public int getStatus() {
+		return status;
+	}
+
+	public void setStatus(int status) {
+		this.status = status;
 	}
 
 }

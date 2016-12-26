@@ -9,7 +9,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -112,6 +111,99 @@ public class RdLinkNameSelector extends AbstractSelector {
 
 					map.get(linkPid).add(linkName);
 				}				
+			}
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+		}
+		return map;
+	}
+	
+	
+	/**
+	 * 获取中文名称
+	 * 
+	 * @param linkPids
+	 * @return Map<Integer：linkPid, StringBuilder link的名称内容 多个时以“\”分隔>
+	 * @throws Exception
+	 */
+	public Map<Integer, StringBuilder> loadAllNameByLinkPids(
+			Set<Integer> linkPids) throws Exception {
+
+		Map<Integer, StringBuilder> map = new HashMap<Integer, StringBuilder>();
+
+		if (linkPids.size() == 0) {
+
+			return map;
+		}
+
+		for (int linkPid : linkPids) {
+			StringBuilder sb = new StringBuilder();
+
+			map.put(linkPid, sb);
+		}
+
+		StringBuilder sb = new StringBuilder(
+				"SELECT B.link_pid, A.NAME FROM RD_NAME A, RD_LINK_NAME B WHERE A.NAME_GROUPID = B.NAME_GROUPID AND B.U_RECORD != 2 AND (A.LANG_CODE = 'CHI'  OR A.LANG_CODE = 'CHT' ) ");
+
+		Clob clob = null;
+
+		boolean isClob = false;
+
+		if (linkPids.size() > 1000) {
+
+			isClob = true;
+
+			clob = conn.createClob();
+
+			clob.setString(1, StringUtils.join(linkPids, ","));
+
+			sb.append(" and b.link_pid IN (select to_number(column_value) from table(clob_to_table(?)))");
+
+		} else {
+
+			sb.append(" and b.link_pid IN (" + StringUtils.join(linkPids, ",")
+					+ ")");
+		}
+
+		sb.append(" order by b.name_class,b.seq_num ");
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+
+			if (isClob) {
+
+				if (conn instanceof DruidPooledConnection) {
+					ClobProxyImpl impl = (ClobProxyImpl) clob;
+					pstmt.setClob(1, impl.getRawClob());
+				} else {
+					pstmt.setClob(1, clob);
+				}
+			}
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+
+				String name = resultSet.getString("name");
+
+				int linkPid = resultSet.getInt("link_pid");
+
+				if (map.containsKey(linkPid)) {
+
+					if (map.get(linkPid).length() != 0) {
+						map.get(linkPid).append("\\");
+					}
+					map.get(linkPid).append(name);
+				}
 			}
 		} catch (Exception e) {
 

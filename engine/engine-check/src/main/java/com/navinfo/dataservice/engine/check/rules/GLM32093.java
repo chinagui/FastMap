@@ -220,9 +220,8 @@ public class GLM32093 extends baseRule {
 	 */
 	private void checkRdRestrictionCondition(RdRestrictionCondition rdRestrictionCondition, OperType operType) throws Exception {
 		long vehicle = rdRestrictionCondition.getVehicle();
-		//时间段交限不触发检查
-		if(rdRestrictionCondition.getTimeDomain()==null){
-			return;
+		if(rdRestrictionCondition.changedFields().containsKey("vehicle")){
+			vehicle = Long.parseLong(rdRestrictionCondition.changedFields().get("vehicle").toString()) ;
 		}
 		//存在卡车交限不触发交限
 		if(((vehicle&2147483648L)==2147483648L)&&((vehicle&4)==0)){
@@ -231,6 +230,17 @@ public class GLM32093 extends baseRule {
 		if(((vehicle&2147483648L)==0)&&((vehicle&4)==4)){
 			return;
 		}
+		//时间段交限不触发检查
+		if(rdRestrictionCondition.changedFields().containsKey("timeDomain")){
+			if(rdRestrictionCondition.changedFields().get("timeDomain")==null){
+				return;
+			};
+		}else{
+			if(rdRestrictionCondition.getTimeDomain()==null){
+				return;
+			}
+		}
+
 		StringBuilder sb = new StringBuilder();
 		sb.append("SELECT RR.PID FROM RD_LANE_TOPO_DETAIL RLTD,RD_RESTRICTION RR,RD_RESTRICTION_DETAIL RRD");
 		sb.append(" WHERE RR.PID = RRD.RESTRIC_PID");

@@ -48,7 +48,13 @@ public class RdLaneVia implements IRow {
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) {
 
-		return JSONObject.fromObject(this, JsonUtils.getStrConfig());
+//		return JSONObject.fromObject(this, JsonUtils.getStrConfig());
+		JSONObject json = JSONObject.fromObject(this,JsonUtils.getStrConfig());
+		
+		if (objLevel == ObjLevel.HISTORY) {
+			json.remove("status");
+		}
+		return json;
 	}
 
 	// sNodePid、eNodePid、inNodePid不属于模型字段，使用protected修饰符。

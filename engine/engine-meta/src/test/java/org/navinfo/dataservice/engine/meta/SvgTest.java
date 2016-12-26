@@ -17,6 +17,9 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.engine.meta.svg.SvgImageSelector;
+
+import net.sf.json.JSONObject;
 
 /** 
 * @ClassName: SvgTest 
@@ -67,6 +70,19 @@ public class SvgTest {
 			DbUtils.closeQuietly(resultSet);
 			DbUtils.closeQuietly(pstmt);
 			DbUtils.closeQuietly(conn);
+		}
+	}
+	
+	@Test
+	public void testGetSvgData()
+	{
+		SvgImageSelector selector = new SvgImageSelector();
+		
+		try {
+			JSONObject obj = selector.searchByName("S", 5, 0);
+			System.out.println(obj);
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 }

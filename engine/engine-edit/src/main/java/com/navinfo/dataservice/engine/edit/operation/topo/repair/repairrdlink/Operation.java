@@ -521,8 +521,8 @@ public class Operation implements IOperation {
         rdlaneOperation.breakRdLink(oldLink, newLinks, result);
 
         //tmc维护
-        com.navinfo.dataservice.engine.edit.operation.obj.tmc.update.Operation rdTmcLocationLinkOperation = new com.navinfo.dataservice.engine.edit.operation.obj.tmc.update.Operation(
-                this.conn);
-        rdTmcLocationLinkOperation.breakLinkUpdateTmc(result, oldLink, newLinks);
+//        com.navinfo.dataservice.engine.edit.operation.obj.tmc.update.Operation rdTmcLocationLinkOperation = new com.navinfo.dataservice.engine.edit.operation.obj.tmc.update.Operation(
+//                this.conn);
+//        rdTmcLocationLinkOperation.breakLinkUpdateTmc(result, oldLink, newLinks);
     }
 }

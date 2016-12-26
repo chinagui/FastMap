@@ -21,7 +21,7 @@ import com.navinfo.dataservice.engine.check.helper.DatabaseOperatorResultWithGeo
  * @date 2016年12月12日
  * @Description: LINK为步行街属性，详细车道车辆类型只能允许步行者、配送卡车、急救车，否则报log
  * 实现逻辑：rdLink有公交车属性，rdLaneCondition.vehicle不等于2147483786,2147483509，检查不通过
- * 道路属性编辑后检查:RdLink,RdLinkForm
+ * 道路属性编辑后检查:RdLinkForm
  * 新增详细车道后检查:RdLane
  * 修改详细车道后检查:RdLane,RdLaneCondition
  */
@@ -43,13 +43,13 @@ public class GLM32021 extends baseRule {
 	@Override
 	public void postCheck(CheckCommand checkCommand) throws Exception {
 		for(IRow obj:checkCommand.getGlmList()){
-			//道路属性编辑RdLink
-			if(obj instanceof RdLink){
-				RdLink rdLink = (RdLink)obj;
-				checkRdLink(rdLink);
-			}
+//			//道路属性编辑RdLink
+//			if(obj instanceof RdLink){
+//				RdLink rdLink = (RdLink)obj;
+//				checkRdLink(rdLink);
+//			}
 			//道路属性编辑RdLinkForm
-			else if(obj instanceof RdLinkForm){
+			if(obj instanceof RdLinkForm){
 				RdLinkForm rdLinkForm = (RdLinkForm)obj;
 				checkRdLinkForm(rdLinkForm);
 			}
@@ -73,7 +73,14 @@ public class GLM32021 extends baseRule {
 	 */
 	private void checkRdLaneCondition(RdLaneCondition rdLaneCondition) throws Exception {
 		//车道车辆类型不为2147483786,2147483509触发检查
-		if(rdLaneCondition.getVehicle()!=2147483786L&&rdLaneCondition.getVehicle()!=2147483509L){
+		long vehicle = 0;
+		if(rdLaneCondition.changedFields().containsKey("vehicle")){
+			vehicle = Integer.parseInt(rdLaneCondition.changedFields().get("vehicle").toString()) ;
+		}else{
+			vehicle = rdLaneCondition.getVehicle();
+		}
+		if(vehicle!=2147483786L&&vehicle!=2147483509L){
+//		if(rdLaneCondition.getVehicle()!=2147483786L&&rdLaneCondition.getVehicle()!=2147483509L){
 			StringBuilder sb = new StringBuilder();
 
 			sb.append("SELECT 1");
@@ -135,7 +142,13 @@ public class GLM32021 extends baseRule {
 	 */
 	private void checkRdLinkForm(RdLinkForm rdLinkForm) throws Exception {
 		//道路属性为20，触发检查
-		if(rdLinkForm.getFormOfWay()==20){	
+		int formOfWay = 0;
+		if(rdLinkForm.changedFields().containsKey("formOfWay")){
+			formOfWay = Integer.parseInt(rdLinkForm.changedFields().get("formOfWay").toString()) ;
+		}else{
+			formOfWay = rdLinkForm.getFormOfWay();
+		}
+		if(formOfWay==20){	
 			StringBuilder sb = new StringBuilder();
 
 			sb.append("SELECT 1");

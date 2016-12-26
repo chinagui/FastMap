@@ -788,6 +788,12 @@ public class RdLinkSelector extends AbstractSelector {
         List<IRow> zones = new AbstractSelector(RdLinkZone.class, conn).loadRowsByParentId(rdLink.getPid(), isLock);
 
         rdLink.setZones(zones);
+        
+        //rd_tmclocation_link
+        List<IRow> tmcLocationLinks = new AbstractSelector(RdTmclocationLink.class, conn).loadRowsByParentId(rdLink.getPid(), isLock);
+
+        rdLink.setTmclocations(tmcLocationLinks);
+        
     }
 
     /*

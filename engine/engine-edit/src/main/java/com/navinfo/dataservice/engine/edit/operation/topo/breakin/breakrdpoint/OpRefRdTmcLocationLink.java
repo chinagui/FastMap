@@ -16,10 +16,10 @@ public class OpRefRdTmcLocationLink {
 
 	public String run(Result result, RdLink oldLink, List<RdLink> newLinks) throws Exception {
 
-		// 维护TMC匹配信息
-		com.navinfo.dataservice.engine.edit.operation.obj.tmc.update.Operation rdObjectOperation = new com.navinfo.dataservice.engine.edit.operation.obj.tmc.update.Operation(
-				this.conn);
-		rdObjectOperation.breakLinkUpdateTmc(result, oldLink, newLinks);
+//		// 维护TMC匹配信息
+//		com.navinfo.dataservice.engine.edit.operation.obj.tmc.update.Operation rdObjectOperation = new com.navinfo.dataservice.engine.edit.operation.obj.tmc.update.Operation(
+//				this.conn);
+//		rdObjectOperation.breakLinkUpdateTmc(result, oldLink, newLinks);
 
 		return null;
 	}

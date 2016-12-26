@@ -331,7 +331,7 @@ public class MetaController extends BaseController {
     public void getSvgImageById(HttpServletRequest request,
                                     HttpServletResponse response) throws ServletException, IOException {
 
-        response.setContentType("text/xml;charset=GBK");
+        response.setContentType("text/xml");
 
         String parameter = request.getParameter("parameter");
 

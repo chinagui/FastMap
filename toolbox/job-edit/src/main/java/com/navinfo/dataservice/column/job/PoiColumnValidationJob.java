@@ -144,7 +144,7 @@ public class PoiColumnValidationJob extends AbstractJob {
 					+ "   AND C.FIRST_WORK_ITEM = '"+myRequest.getFirstWorkItem()+"'"
 					+ "   AND P.HANDLER="+jobInfo.getUserId()
 					+ "   AND P.TASK_ID="+jobInfo.getTaskId()
-					+ "   AND P.SECOND_WORK_STATUS IN (1,2)";
+					+ "   AND P.FIRST_WORK_STATUS IN (1,2)";
 			String secondWorkItem=myRequest.getSecondWorkItem();
 			//若针对二级项进行自定义检查，则检查对象应该是二级项状态为待作业/已作业状态
 			if(secondWorkItem!=null&&!secondWorkItem.isEmpty()){

@@ -31,7 +31,7 @@ public class TipsOperateTest {
 		TipsOperator operate=new TipsOperator();
 		
 		try {
-			operate.update("0212055b268d5faff94b59b94ad7aec3348d4f", 123, null, "m");
+			operate.update("0215015ffa9224d4034f38995b6e8a173d9a55", 0, null, "m");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

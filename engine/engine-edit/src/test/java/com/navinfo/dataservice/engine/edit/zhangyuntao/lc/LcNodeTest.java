@@ -89,7 +89,7 @@ public class LcNodeTest extends InitApplication {
 
 	@Test
 	public void move(){
-		String paramtere = "{\"command\":\"MOVE\",\"dbId\":17,\"objId\":320000044,\"data\":{\"longitude\":116.87301993370056,\"latitude\":40.455829687131434},\"type\":\"LUNODE\"}";
+		String paramtere = "{\"command\":\"MOVE\",\"dbId\":17,\"objId\":310000075,\"data\":{\"longitude\":116.52074933052063,\"latitude\":40.083333333333336},\"type\":\"LCNODE\"}";
 		TestUtil.run(paramtere);
 	}
 }

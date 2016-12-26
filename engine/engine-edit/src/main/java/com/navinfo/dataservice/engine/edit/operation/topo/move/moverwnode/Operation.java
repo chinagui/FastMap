@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.edit.operation.topo.move.moverwnode;
 
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,282 +35,277 @@ import net.sf.json.JSONObject;
 
 public class Operation implements IOperation {
 
-	private Command command;
+    private Command command;
 
-	private Connection conn;
+    private Connection conn;
 
-	public Operation(Command command, Connection conn) {
+    public Operation(Command command, Connection conn) {
 
-		this.command = command;
+        this.command = command;
 
-		this.conn = conn;
-	}
+        this.conn = conn;
+    }
 
-	@Override
-	public String run(Result result) throws Exception {
+    @Override
+    public String run(Result result) throws Exception {
 
-		result.setPrimaryPid(this.command.getNodePid());
+        result.setPrimaryPid(this.command.getNodePid());
 
-		this.updateNodeGeometry(result);
+        this.updateNodeGeometry(result);
 
-		this.updateLinkGeomtry(result);
+        this.updateLinkGeomtry(result);
 
-		return null;
-	}
+        return null;
+    }
 
-	private void updateLinkGeomtry(Result result) throws Exception {
+    private void updateLinkGeomtry(Result result) throws Exception {
 
-		for (RwLink link : command.getLinks()) {
+        for (RwLink link : command.getLinks()) {
 
-			JSONObject geojson = getGeojson(link);
+            JSONObject geojson = getGeojson(link);
 
-			Geometry geo = GeoTranslator.geojson2Jts(geojson, 1, 5);
+            Geometry geo = GeoTranslator.geojson2Jts(geojson, 1, 5);
 
-			Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(geo);
+            Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(geo);
+            List<Integer> linkMesh = new ArrayList<>();
+            for (String mesh : meshes)
+                linkMesh.add(Integer.valueOf(mesh));
 
-			if (meshes.size() == 1) {
+            if (meshes.size() == 1 && link.getMeshId() == linkMesh.get(0)) {
 
-				JSONObject updateContent = new JSONObject();
+                JSONObject updateContent = new JSONObject();
 
-				updateContent.put("geometry", geojson);
+                updateContent.put("geometry", geojson);
 
-				updateContent.put("length", GeometryUtils.getLinkLength(geo));
+                updateContent.put("length", GeometryUtils.getLinkLength(geo));
 
-				link.fillChangeFields(updateContent);
+                link.fillChangeFields(updateContent);
 
-				result.insertObject(link, ObjStatus.UPDATE, link.pid());
+                result.insertObject(link, ObjStatus.UPDATE, link.pid());
 
-			} else {
-				// 如果跨图幅就需要打断生成新的link
-				Map<Coordinate, Integer> maps = new HashMap<Coordinate, Integer>();
+            } else {
+                // 如果跨图幅就需要打断生成新的link
+                Map<Coordinate, Integer> maps = new HashMap<Coordinate, Integer>();
 
-				maps.put(geo.getCoordinates()[0], link.getsNodePid());
+                maps.put(geo.getCoordinates()[0], link.getsNodePid());
 
-				maps.put(geo.getCoordinates()[geo.getCoordinates().length - 1], link.geteNodePid());
+                maps.put(geo.getCoordinates()[geo.getCoordinates().length - 1], link.geteNodePid());
 
-				Iterator<String> it = meshes.iterator();
+                Iterator<String> it = meshes.iterator();
 
-				while (it.hasNext()) {
+                while (it.hasNext()) {
 
-					String meshIdStr = it.next();
+                    String meshIdStr = it.next();
 
-					Geometry geomInter = MeshUtils.linkInterMeshPolygon(geo,
-							GeoTranslator.transform(MeshUtils.mesh2Jts(meshIdStr), 1, 5));
-					
-					if(geomInter instanceof GeometryCollection)
-					{
-						int geoNum = geomInter.getNumGeometries();
-						for (int i = 0; i < geoNum; i++) {
-							Geometry subGeo = geomInter.getGeometryN(i);
-							if (subGeo instanceof LineString) {
-								subGeo = GeoTranslator.geojson2Jts(GeoTranslator.jts2Geojson(subGeo), 1, 5);
+                    Geometry geomInter = MeshUtils.linkInterMeshPolygon(geo, GeoTranslator.transform(MeshUtils.mesh2Jts(meshIdStr), 1, 5));
 
-								RwLinkOperateUtils.createRwLinkWithMesh(subGeo, maps, result, link);
-							}
-						}
-					}
-					else
-					{
-						geomInter = GeoTranslator.geojson2Jts(GeoTranslator.jts2Geojson(geomInter), 1, 5);
+                    if (geomInter instanceof GeometryCollection) {
+                        int geoNum = geomInter.getNumGeometries();
+                        for (int i = 0; i < geoNum; i++) {
+                            Geometry subGeo = geomInter.getGeometryN(i);
+                            if (subGeo instanceof LineString) {
+                                subGeo = GeoTranslator.geojson2Jts(GeoTranslator.jts2Geojson(subGeo), 1, 5);
 
-						RwLinkOperateUtils.createRwLinkWithMesh(geomInter, maps, result, link);
-					}
-				}
+                                RwLinkOperateUtils.createRwLinkWithMesh(subGeo, maps, result, link);
+                            }
+                        }
+                    } else {
+                        geomInter = GeoTranslator.geojson2Jts(GeoTranslator.jts2Geojson(geomInter), 1, 5);
 
-				handleRdGsc(link, result);
+                        RwLinkOperateUtils.createRwLinkWithMesh(geomInter, maps, result, link);
+                    }
+                }
 
-				result.insertObject(link, ObjStatus.DELETE, link.pid());
-			}
+                handleRdGsc(link, result);
 
-			updataRelationObj(result);
-		}
-	}
+                result.insertObject(link, ObjStatus.DELETE, link.pid());
+            }
 
-	/**
-	 * 维护关联要素
-	 * 
-	 * @param link
-	 * @param links
-	 * @param result
-	 * @throws Exception
-	 */
-	private void updataRelationObj(Result result) throws Exception {
-	}
+            updataRelationObj(result);
+        }
+    }
 
-	/*
-	 * 修改对应的点的信息
-	 */
-	private void updateNodeGeometry(Result result) throws Exception {
+    /**
+     * 维护关联要素
+     *
+     * @param link
+     * @param links
+     * @param result
+     * @throws Exception
+     */
+    private void updataRelationObj(Result result) throws Exception {
+    }
 
-		// 计算点的几何形状
-		JSONObject geojson = new JSONObject();
+    /*
+     * 修改对应的点的信息
+     */
+    private void updateNodeGeometry(Result result) throws Exception {
 
-		geojson.put("type", "Point");
+        // 计算点的几何形状
+        JSONObject geojson = new JSONObject();
 
-		geojson.put("coordinates", new double[] { command.getLongitude(), command.getLatitude() });
+        geojson.put("type", "Point");
 
-		RwNode rwNode = this.command.getUpdateNode();
+        geojson.put("coordinates", new double[]{command.getLongitude(), command.getLatitude()});
 
-		String meshes[] = MeshUtils.point2Meshes(command.getLongitude(), command.getLatitude());
+        RwNode rwNode = this.command.getUpdateNode();
 
-		Set<String> meshSet = new HashSet<String>(Arrays.asList(meshes));
+        String meshes[] = MeshUtils.point2Meshes(command.getLongitude(), command.getLatitude());
 
-		boolean isChangeMesh = false;
+        Set<String> meshSet = new HashSet<String>(Arrays.asList(meshes));
 
-		for (IRow row : rwNode.getMeshes()) {
-			RwNodeMesh nodeMesh = (RwNodeMesh) row;
+        boolean isChangeMesh = false;
 
-			if (!meshSet.contains(String.valueOf(nodeMesh.getMeshId()))) {
-				isChangeMesh = true;
-				break;
-			}
-		}
-		// 图幅号发生改变后更新图幅号：先删除，后新增
-		if (isChangeMesh) {
-			for (IRow row : rwNode.getMeshes()) {
-				RwNodeMesh nodeMesh = (RwNodeMesh) row;
+        for (IRow row : rwNode.getMeshes()) {
+            RwNodeMesh nodeMesh = (RwNodeMesh) row;
 
-				result.insertObject(nodeMesh, ObjStatus.DELETE, rwNode.getPid());
-			}
+            if (!meshSet.contains(String.valueOf(nodeMesh.getMeshId()))) {
+                isChangeMesh = true;
+                break;
+            }
+        }
+        // 图幅号发生改变后更新图幅号：先删除，后新增
+        if (isChangeMesh) {
+            for (IRow row : rwNode.getMeshes()) {
+                RwNodeMesh nodeMesh = (RwNodeMesh) row;
 
-			for (String mesh : meshes) {
+                result.insertObject(nodeMesh, ObjStatus.DELETE, rwNode.getPid());
+            }
 
-				RwNodeMesh nodeMesh = new RwNodeMesh();
-				nodeMesh.setNodePid(rwNode.getPid());
-				nodeMesh.setMeshId(Integer.parseInt(mesh));
+            for (String mesh : meshes) {
 
-				result.insertObject(nodeMesh, ObjStatus.INSERT, rwNode.getPid());
-			}
-			
-			//如果图幅号大于1个则为图郭点，需要更新node形态为图郭点
-			if(meshSet.size()>1)
-			{
-				rwNode.changedFields().put("form", 4);
-			}
-		}
+                RwNodeMesh nodeMesh = new RwNodeMesh();
+                nodeMesh.setNodePid(rwNode.getPid());
+                nodeMesh.setMeshId(Integer.parseInt(mesh));
 
-		JSONObject updateNodeJson = new JSONObject();
+                result.insertObject(nodeMesh, ObjStatus.INSERT, rwNode.getPid());
+            }
 
-		// 要移动点的project_id
-		updateNodeJson.put("dbId", command.getDbId());
+            //如果图幅号大于1个则为图郭点，需要更新node形态为图郭点
+            if (meshSet.size() > 1) {
+                rwNode.changedFields().put("form", 4);
+            }
+        }
 
-		JSONObject data = new JSONObject();
+        JSONObject updateNodeJson = new JSONObject();
 
-		// 移动点的新几何
-		data.put("geometry", geojson);
+        // 要移动点的project_id
+        updateNodeJson.put("dbId", command.getDbId());
 
-		data.put("pid", this.command.getNodePid());
+        JSONObject data = new JSONObject();
 
-		data.put("objStatus", ObjStatus.UPDATE);
+        // 移动点的新几何
+        data.put("geometry", geojson);
 
-		updateNodeJson.put("data", data);
+        data.put("pid", this.command.getNodePid());
 
-		// 组装打断线的参数
-		com.navinfo.dataservice.engine.edit.operation.obj.rwnode.update.Command updatecommand = new com.navinfo.dataservice.engine.edit.operation.obj.rwnode.update.Command(
-				updateNodeJson, command.getRequester());
+        data.put("objStatus", ObjStatus.UPDATE);
 
-		com.navinfo.dataservice.engine.edit.operation.obj.rwnode.update.Process process = new com.navinfo.dataservice.engine.edit.operation.obj.rwnode.update.Process(
-				updatecommand, result, conn);
-		// 保证是同一个连接
-		process.innerRun();
-	}
+        updateNodeJson.put("data", data);
 
-	/**
-	 * 处理立交关系
-	 * 
-	 * @param link
-	 * @throws Exception
-	 */
-	private void handleRdGsc(RwLink deleteLink, Result result) throws Exception {
+        // 组装打断线的参数
+        com.navinfo.dataservice.engine.edit.operation.obj.rwnode.update.Command updatecommand = new com.navinfo.dataservice.engine.edit.operation.obj.rwnode.update.Command(updateNodeJson, command.getRequester());
 
-		int newLinkPid = 0;
+        com.navinfo.dataservice.engine.edit.operation.obj.rwnode.update.Process process = new com.navinfo.dataservice.engine.edit.operation.obj.rwnode.update.Process(updatecommand, result, conn);
+        // 保证是同一个连接
+        process.innerRun();
+    }
 
-		// 获取 使用未移动的node做端点的新生成的link，该link继承原link的所有立交关系
-		for (IRow row : result.getAddObjects()) {
+    /**
+     * 处理立交关系
+     *
+     * @param link
+     * @throws Exception
+     */
+    private void handleRdGsc(RwLink deleteLink, Result result) throws Exception {
 
-			if (row.objType() != ObjType.RWLINK) {
-				continue;
-			}
+        int newLinkPid = 0;
 
-			RwLink rwLink = (RwLink) row;
+        // 获取 使用未移动的node做端点的新生成的link，该link继承原link的所有立交关系
+        for (IRow row : result.getAddObjects()) {
 
-			if (rwLink.geteNodePid() == this.command.getNodePid()
-					|| rwLink.getsNodePid() == this.command.getNodePid()) {
+            if (row.objType() != ObjType.RWLINK) {
+                continue;
+            }
 
-				newLinkPid = rwLink.pid();
+            RwLink rwLink = (RwLink) row;
 
-				break;
-			}
-		}
+            if (rwLink.geteNodePid() == this.command.getNodePid() || rwLink.getsNodePid() == this.command.getNodePid()) {
 
-		if (newLinkPid == 0) {
-			return;
-		}
+                newLinkPid = rwLink.pid();
 
-		RdGscSelector selector = new RdGscSelector(this.conn);
+                break;
+            }
+        }
 
-		List<RdGsc> rdGscs = selector.loadRdGscLinkByLinkPid(deleteLink.getPid(), "RW_LINK", true);
+        if (newLinkPid == 0) {
+            return;
+        }
 
-		// 将降立交关系link的pid更新为新生成link的pid
-		for (RdGsc gsc : rdGscs) {
+        RdGscSelector selector = new RdGscSelector(this.conn);
 
-			for (RdGscLink gscLink : gsc.rdGscLinkMap.values()) {
+        List<RdGsc> rdGscs = selector.loadRdGscLinkByLinkPid(deleteLink.getPid(), "RW_LINK", true);
 
-				if (gscLink.getLinkPid() == deleteLink.pid() && gscLink.getTableName().equals("RW_LINK")) {
+        // 将降立交关系link的pid更新为新生成link的pid
+        for (RdGsc gsc : rdGscs) {
 
-					JSONObject updateContent = new JSONObject();
+            for (RdGscLink gscLink : gsc.rdGscLinkMap.values()) {
 
-					updateContent.put("linkPid", newLinkPid);
+                if (gscLink.getLinkPid() == deleteLink.pid() && gscLink.getTableName().equals("RW_LINK")) {
 
-					gscLink.fillChangeFields(updateContent);
+                    JSONObject updateContent = new JSONObject();
 
-					result.insertObject(gscLink, ObjStatus.UPDATE, gsc.pid());
-				}
-			}
-		}
-	}
+                    updateContent.put("linkPid", newLinkPid);
 
-	/**
-	 * 获取link更新后的 几何josn对象
-	 * 
-	 * @param link
-	 * @return
-	 */
-	private JSONObject getGeojson(RwLink link) {
-		int nodePid = this.command.getNodePid();
+                    gscLink.fillChangeFields(updateContent);
 
-		double lon = command.getLongitude();
+                    result.insertObject(gscLink, ObjStatus.UPDATE, gsc.pid());
+                }
+            }
+        }
+    }
 
-		double lat = command.getLatitude();
+    /**
+     * 获取link更新后的 几何josn对象
+     *
+     * @param link
+     * @return
+     */
+    private JSONObject getGeojson(RwLink link) {
+        int nodePid = this.command.getNodePid();
 
-		Geometry geom = GeoTranslator.transform(link.getGeometry(), 0.00001, 5);
+        double lon = command.getLongitude();
 
-		Coordinate[] cs = geom.getCoordinates();
+        double lat = command.getLatitude();
 
-		double[][] ps = new double[cs.length][2];
+        Geometry geom = GeoTranslator.transform(link.getGeometry(), 0.00001, 5);
 
-		for (int i = 0; i < cs.length; i++) {
-			ps[i][0] = cs[i].x;
+        Coordinate[] cs = geom.getCoordinates();
 
-			ps[i][1] = cs[i].y;
-		}
+        double[][] ps = new double[cs.length][2];
 
-		if (link.getsNodePid() == nodePid) {
-			ps[0][0] = lon;
+        for (int i = 0; i < cs.length; i++) {
+            ps[i][0] = cs[i].x;
 
-			ps[0][1] = lat;
-		} else {
-			ps[ps.length - 1][0] = lon;
+            ps[i][1] = cs[i].y;
+        }
 
-			ps[ps.length - 1][1] = lat;
-		}
-		JSONObject geojson = new JSONObject();
+        if (link.getsNodePid() == nodePid) {
+            ps[0][0] = lon;
 
-		geojson.put("type", "LineString");
+            ps[0][1] = lat;
+        } else {
+            ps[ps.length - 1][0] = lon;
 
-		geojson.put("coordinates", ps);
+            ps[ps.length - 1][1] = lat;
+        }
+        JSONObject geojson = new JSONObject();
 
-		return geojson;
-	}
+        geojson.put("type", "LineString");
+
+        geojson.put("coordinates", ps);
+
+        return geojson;
+    }
 
 }

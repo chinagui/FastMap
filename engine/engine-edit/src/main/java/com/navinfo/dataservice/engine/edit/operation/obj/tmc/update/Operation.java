@@ -6,17 +6,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.collections.CollectionUtils;
-
 import com.navinfo.dataservice.dao.glm.iface.AlertObject;
+import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
+import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdTmclocation;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdTmclocationLink;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.tmc.RdTmcLocationSelector;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -72,9 +73,8 @@ public class Operation implements IOperation {
 
 			this.updateLinks(result, tmclocation, links);
 		}
-		
-		if(!content.containsKey("link"))
-		{
+
+		if (!content.containsKey("link")) {
 			return null;
 		}
 		// 拓补操作更新子表信息
@@ -130,16 +130,15 @@ public class Operation implements IOperation {
 
 					outNodePid = link.geteNodePid();
 				}
-				updateLocationLink(result,link.getPid(), direct, locDirect, tmcLocationLinkMap);
+				updateLocationLink(result, link.getPid(), direct, locDirect, tmcLocationLinkMap);
 				hasHandledLinkPids.add(link.getPid());
 				break;
 			}
 		}
-		//向baseLink计算link方向
+		// 向baseLink计算link方向
 		for (IRow row : linkList) {
 			RdLink link = (RdLink) row;
-			if(!hasHandledLinkPids.contains(link.getPid()))
-			{
+			if (!hasHandledLinkPids.contains(link.getPid())) {
 				boolean flag = false;
 				if (link.getsNodePid() == inNodePid) {
 					// 如果作用方向和该link的起点到终点的划线方向一致，则赋值为'1'
@@ -154,24 +153,22 @@ public class Operation implements IOperation {
 					inNodePid = link.getsNodePid();
 					flag = true;
 				}
-				if(flag)
-				{
-					updateLocationLink(result,link.getPid(), direct, locDirect, tmcLocationLinkMap);
+				if (flag) {
+					updateLocationLink(result, link.getPid(), direct, locDirect, tmcLocationLinkMap);
 					hasHandledLinkPids.add(link.getPid());
 				}
 			}
 		}
-		//向baseLink往前计算link方向
+		// 向baseLink往前计算link方向
 		for (IRow row : linkList) {
 			RdLink link = (RdLink) row;
-			if(!hasHandledLinkPids.contains(link.getPid()))
-			{
+			if (!hasHandledLinkPids.contains(link.getPid())) {
 				boolean flag = false;
 				if (link.geteNodePid() == outNodePid) {
 					// 如果作用方向和该link的起点到终点的划线方向一致，则赋值为'1'
 					direct = 1;
 					// 该link的终点作为下一个link的进入点
-					outNodePid = link.getsNodePid(); 
+					outNodePid = link.getsNodePid();
 					flag = true;
 				} else if (link.getsNodePid() == outNodePid) {
 					// 如果作用方向和该link的起点到终点的划线方向相反，则赋值为'2'
@@ -180,9 +177,8 @@ public class Operation implements IOperation {
 					outNodePid = link.geteNodePid();
 					flag = true;
 				}
-				if(flag)
-				{
-					updateLocationLink(result,link.getPid(), direct, locDirect, tmcLocationLinkMap);
+				if (flag) {
+					updateLocationLink(result, link.getPid(), direct, locDirect, tmcLocationLinkMap);
 					hasHandledLinkPids.add(link.getPid());
 				}
 			}
@@ -220,8 +216,8 @@ public class Operation implements IOperation {
 				obj.put("locDirect", locDirect);
 			}
 			tmcLocationLink.fillChangeFields(obj);
-			
-			//删除需要更新的
+
+			// 删除需要更新的
 			tmcLocationLinkMap.remove(linkPid);
 		} else {
 			tmcLocationLink = new RdTmclocationLink();
@@ -234,19 +230,16 @@ public class Operation implements IOperation {
 
 			tmcLocationLink.setGroupId(command.getPid());
 		}
-		
-		if(tmcLocationLink != null)
-		{
-			//rowId不为空代表是修改的对象是修改操作
-			if(tmcLocationLink.changedFields().size() > 0 && tmcLocationLink.getRowId() != null)
-			{
+
+		if (tmcLocationLink != null) {
+			// rowId不为空代表是修改的对象是修改操作
+			if (tmcLocationLink.changedFields().size() > 0 && tmcLocationLink.getRowId() != null) {
 				result.insertObject(tmcLocationLink, ObjStatus.UPDATE, tmcLocationLink.getGroupId());
 			}
-			if(tmcLocationLink.getRowId() == null)
-			{
+			if (tmcLocationLink.getRowId() == null) {
 				result.insertObject(tmcLocationLink, ObjStatus.INSERT, tmcLocationLink.getGroupId());
 			}
-			
+
 		}
 	}
 
@@ -328,171 +321,155 @@ public class Operation implements IOperation {
 	}
 
 	/**
-	 * 打断link维护tmc:打断后的link加入tmc组成link中,原tmclocationlink删除
-	 * 
-	 * @param result
-	 *            结果集
-	 * @param oldLink
-	 *            旧link
-	 * @param newLinks
-	 *            新link
-	 */
-	public void breakLinkUpdateTmc(Result result, RdLink oldLink, List<RdLink> newLinks) {
-		List<IRow> tmcLocations = oldLink.getTmclocations();
-		//打断前清空原link的tmc子表数据，防止删除原link删除tmc子表数据
-		if(!oldLink.getTmclocations().isEmpty())
-		{
-			oldLink.getTmclocations().clear();
-		}
-		for (IRow row : tmcLocations) {
-			RdTmclocation location = (RdTmclocation) row;
-
-			for (IRow tmcLinkRow : location.getLinks()) {
-				RdTmclocationLink tmcLink = (RdTmclocationLink) tmcLinkRow;
-
-				if (tmcLink.getLinkPid() == oldLink.getPid()) {
-					// 删除原link在tmclocationlink中的记录
-					result.insertObject(tmcLink, ObjStatus.DELETE, tmcLink.getGroupId());
-
-					int groupId = tmcLink.getGroupId();
-
-					int locDirect = tmcLink.getLocDirect();
-
-					int direct = tmcLink.getDirect();
-
-					// 打断后新link加入tmclocaitonlink中
-					for (RdLink newLink : newLinks) {
-						//清空新link拷贝的原link上的tmc信息
-						List<IRow> tmcLocationList = newLink.getTmclocations();
-						
-						if(CollectionUtils.isNotEmpty(tmcLocationList))
-						{
-							tmcLocationList.clear();
-						}
-						//开始维护新link上的tmc信息
-						RdTmclocationLink newLocationLink = new RdTmclocationLink();
-
-						newLocationLink.setGroupId(groupId);
-
-						newLocationLink.setDirect(direct);
-
-						newLocationLink.setLocDirect(locDirect);
-
-						newLocationLink.setLinkPid(newLink.getPid());
-
-						result.insertObject(newLocationLink, ObjStatus.INSERT, groupId);
-					}
-					break;
-				}
-			}
-
-		}
-	}
-
-	/**
 	 * 删除link维护TMC：删除该tmc的组成link：如果组成link有且只有该link直接删除该tmc匹配信息
 	 * 
 	 * @param result
 	 * @param oldLink
+	 * @throws Exception
 	 */
-	public void deleteLinkUpdateTmc(Result result, List<RdLink> deleteLinks, List<Integer> linkPids) {
+	public void deleteLinkUpdateTmc(Result result, List<RdLink> deleteLinks, List<Integer> linkPids) throws Exception {
+		RdTmcLocationSelector selector = new RdTmcLocationSelector(RdTmclocation.class, conn);
+
+		Map<Integer, List<Integer>> tmcLinkPidMap = new HashMap<>();
+
+		Map<Integer, List<RdTmclocationLink>> tmcLocationLinkMap = new HashMap<>();
 
 		for (RdLink oldLink : deleteLinks) {
-			List<IRow> tmcLocations = oldLink.getTmclocations();
+			List<IRow> links = oldLink.getTmclocations();
 
-			for (IRow row : tmcLocations) {
-				List<Integer> tmclocationLinkPids = new ArrayList<>();
+			for (IRow row : links) {
 
-				RdTmclocation location = (RdTmclocation) row;
+				RdTmclocationLink locationLink = (RdTmclocationLink) row;
 
-				for (IRow linkRow : location.getLinks()) {
-					RdTmclocationLink tmcLink = (RdTmclocationLink) linkRow;
+				int groupId = locationLink.getGroupId();
 
-					tmclocationLinkPids.add(tmcLink.getLinkPid());
+				List<Integer> tmclocationLinkPids = tmcLinkPidMap.get(groupId);
+
+				List<RdTmclocationLink> tmcLocationLinkList = tmcLocationLinkMap.get(groupId);
+
+				if (tmclocationLinkPids == null) {
+					tmclocationLinkPids = new ArrayList<>();
+					
+					tmcLinkPidMap.put(groupId, tmclocationLinkPids);
+				}
+				if (tmcLocationLinkList == null) {
+					tmcLocationLinkList = new ArrayList<>();
+					
+					tmcLocationLinkMap.put(groupId, tmcLocationLinkList);
 				}
 
-				// 如果删除的link包含了全部tmclocationlink,则删除tmclocation对象
-				if (linkPids.containsAll(tmclocationLinkPids)) {
-					result.insertObject(location, ObjStatus.DELETE, location.getPid());
+				tmclocationLinkPids.add(locationLink.getLinkPid());
 
-					continue;
+				tmcLocationLinkList.add(locationLink);
+			}
+
+		}
+
+		for (Map.Entry<Integer, List<Integer>> entry : tmcLinkPidMap.entrySet()) {
+			int groupId = entry.getKey();
+
+			List<Integer> delTmcLinkPidList = entry.getValue();
+			
+			List<Integer> allLinkPidList = selector.loadTmclocationLinkPidByParentId(groupId, true);
+
+			// 如果删除的link包含了全部tmclocationlink,则删除tmclocation对象
+			if (delTmcLinkPidList.containsAll(allLinkPidList)) {
+				IObj tmcLocation = selector.getById(groupId, true, true);
+
+				result.insertObject(tmcLocation, ObjStatus.DELETE, tmcLocation.pid());
+			} else {
+				List<RdTmclocationLink> locationLinkList = tmcLocationLinkMap.get(groupId);
+
+				for (RdTmclocationLink locationLink : locationLinkList) {
+					result.insertObject(locationLink, ObjStatus.DELETE, locationLink.getGroupId());
 				}
-
-				for (IRow tmcLinkRow : location.getLinks()) {
-					RdTmclocationLink tmcLink = (RdTmclocationLink) tmcLinkRow;
-
-					if (tmcLink.getLinkPid() == oldLink.getPid()) {
-						// 删除原link在tmclocationlink中的记录
-						result.insertObject(tmcLink, ObjStatus.DELETE, tmcLink.getGroupId());
-						break;
-					}
-				}
-
 			}
 		}
 	}
 
 	/**
-	 * 删除link、node
-	 * 
+	 * 删除link、noded对tmc信息的影响
 	 * @return
 	 * @throws Exception
 	 */
 	public List<AlertObject> getDeleteInfectRdTmc(List<RdLink> deleteLinks, List<Integer> linkPids) throws Exception {
-
+		RdTmcLocationSelector selector = new RdTmcLocationSelector(RdTmclocation.class, conn);
+		
 		List<AlertObject> alertList = new ArrayList<>();
 
+		Map<Integer, List<Integer>> tmcLinkPidMap = new HashMap<>();
+
+		Map<Integer, List<RdTmclocationLink>> tmcLocationLinkMap = new HashMap<>();
+
 		for (RdLink oldLink : deleteLinks) {
-			List<IRow> tmcLocations = oldLink.getTmclocations();
+			List<IRow> links = oldLink.getTmclocations();
 
-			for (IRow row : tmcLocations) {
-				List<Integer> tmclocationLinkPids = new ArrayList<>();
+			for (IRow row : links) {
 
-				RdTmclocation location = (RdTmclocation) row;
+				RdTmclocationLink locationLink = (RdTmclocationLink) row;
 
-				for (IRow linkRow : location.getLinks()) {
-					RdTmclocationLink tmcLink = (RdTmclocationLink) linkRow;
+				int groupId = locationLink.getGroupId();
 
-					tmclocationLinkPids.add(tmcLink.getLinkPid());
+				List<Integer> tmclocationLinkPids = tmcLinkPidMap.get(groupId);
+
+				List<RdTmclocationLink> tmcLocationLinkList = tmcLocationLinkMap.get(groupId);
+
+				if (tmclocationLinkPids == null) {
+					tmclocationLinkPids = new ArrayList<>();
+					
+					tmcLinkPidMap.put(groupId, tmclocationLinkPids);
+				}
+				if (tmcLocationLinkList == null) {
+					tmcLocationLinkList = new ArrayList<>();
+					
+					tmcLocationLinkMap.put(groupId, tmcLocationLinkList);
 				}
 
-				// 如果删除的link包含了全部tmclocationlink,则删除tmclocation对象
-				if (linkPids.containsAll(tmclocationLinkPids)) {
+				tmclocationLinkPids.add(locationLink.getLinkPid());
+
+				tmcLocationLinkList.add(locationLink);
+
+				tmcLinkPidMap.put(groupId, tmclocationLinkPids);
+			}
+
+		}
+
+		for (Map.Entry<Integer, List<Integer>> entry : tmcLinkPidMap.entrySet()) {
+			int groupId = entry.getKey();
+
+			List<Integer> delTmcLinkPidList = entry.getValue();
+			
+			List<Integer> allLinkPidList = selector.loadTmclocationLinkPidByParentId(groupId, true);
+
+			// 如果删除的link包含了全部tmclocationlink,则删除tmclocation对象
+			if (delTmcLinkPidList.containsAll(allLinkPidList)) {
+				AlertObject alertObj = new AlertObject();
+
+				alertObj.setObjType(ObjType.RDTMCLOCATION);
+
+				alertObj.setPid(groupId);
+
+				alertObj.setStatus(ObjStatus.DELETE);
+
+				if (!alertList.contains(alertObj)) {
+					alertList.add(alertObj);
+				}
+			} else {
+				List<RdTmclocationLink> locationLinkList = tmcLocationLinkMap.get(groupId);
+
+				for (RdTmclocationLink locationLink : locationLinkList) {
 					AlertObject alertObj = new AlertObject();
 
-					alertObj.setObjType(location.objType());
+					alertObj.setObjType(ObjType.RDTMCLOCATION);
 
-					alertObj.setPid(location.getPid());
+					alertObj.setPid(locationLink.getGroupId());
 
-					alertObj.setStatus(ObjStatus.DELETE);
+					alertObj.setStatus(ObjStatus.UPDATE);
 
 					if (!alertList.contains(alertObj)) {
 						alertList.add(alertObj);
 					}
-
-					continue;
 				}
-
-				for (IRow tmcLinkRow : location.getLinks()) {
-					RdTmclocationLink tmcLink = (RdTmclocationLink) tmcLinkRow;
-
-					if (tmcLink.getLinkPid() == oldLink.getPid()) {
-						// 删除原link在tmclocationlink中的记录
-						AlertObject alertObj = new AlertObject();
-
-						alertObj.setObjType(location.objType());
-
-						alertObj.setPid(location.getPid());
-
-						alertObj.setStatus(ObjStatus.UPDATE);
-
-						if (!alertList.contains(alertObj)) {
-							alertList.add(alertObj);
-						}
-						break;
-					}
-				}
-
 			}
 		}
 

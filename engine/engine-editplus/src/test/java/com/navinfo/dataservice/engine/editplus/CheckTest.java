@@ -2,12 +2,14 @@ package com.navinfo.dataservice.engine.editplus;
 
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.dbutils.DbUtils;
+import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
@@ -21,7 +23,10 @@ import com.navinfo.dataservice.dao.plus.selector.ObjSelector;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.check.Check;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.check.CheckCommand;
 import com.navinfo.dataservice.engine.editplus.model.batchAndCheck.NiValException;
+//import com.navinfo.dataservice.engine.editplus.operation.imp.UploadOperationByGather;
 import com.navinfo.navicommons.database.sql.DBUtils;
+
+import net.sf.json.JSONObject;
 
 public class CheckTest {
 
@@ -36,6 +41,22 @@ public class CheckTest {
 		context.start();
 		new ApplicationContextUtil().setApplicationContext(context);
 	}
+//	
+//	@Test
+//	public void test() {
+//		UploadOperationByGather operation = new UploadOperationByGather((long) 0);
+//		try {
+//			Date startTime = new Date();
+//			JSONObject ret = operation.importPoi("F://testpoi.txt");
+//			System.out.println(ret);
+//			Date endTime = new Date();
+//			System.out.println("total time:"+ (endTime.getTime() - startTime.getTime()));
+////			System.out.println(UuidUtils.genUuid());
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
+//
+//	}
 	
 	public static void main(String[] args) throws Exception{
 		System.out.println("start check test");

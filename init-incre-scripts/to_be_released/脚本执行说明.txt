@@ -1,4 +1,17 @@
-﻿1. fm_sys/init_check_rules.sh
-  功能：检查/批处理
-  目标库：sys库
-  author：zxy
+﻿1. update_sys_batch.sql
+	功能：月编检查批处理
+	目标库：sys库
+	author: xxx
+
+﻿2. init_check_rules.sh（drop_check_rules.sql，sysCheck.dmp）
+	功能：xxx
+	目标库：sys库
+	author: xxx
+3.update_fm_man.sh
+  功能：xxxx
+  目标库：man库
+  author：xxx
+4. fm_sys/update_job_info.sql
+  功能：job_info表字段长度修改
+  目标库：fm_sys
+  author：XXW

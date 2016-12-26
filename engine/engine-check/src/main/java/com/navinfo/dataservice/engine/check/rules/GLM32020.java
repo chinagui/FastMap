@@ -18,7 +18,7 @@ import com.navinfo.dataservice.engine.check.helper.DatabaseOperatorResultWithGeo
  * @author songdongyan
  * @date 2016年12月10日
  * @Description: Link属性为公交车专用道，详细车道车辆类型必须只能允许公交车，否则报log
- * 道路属性编辑服务端后检查：RdLink,RdLinkForm
+ * 道路属性编辑服务端后检查：RdLinkForm
  * 新增详细车道后检查:RdLane
  * 修改详细车道后检查:RdLane,RdLaneCondition
  */
@@ -49,15 +49,15 @@ public class GLM32020 extends baseRule {
 				RdLaneCondition rdLaneCondition = (RdLaneCondition)row;
 				checkRdLaneCondition(rdLaneCondition);
 			}
-			//道路属性编辑
-			else if(row instanceof RdLink){
-				RdLink rdLink = (RdLink)row;
-				checkRdLink(rdLink);
-			}
+//			//道路属性编辑
+//			else if(row instanceof RdLink){
+//				RdLink rdLink = (RdLink)row;
+//				checkRdLink(rdLink);
+//			}
 			//道路属性编辑
 			else if(row instanceof RdLinkForm){
 				RdLinkForm rdLinkForm = (RdLinkForm)row;
-				checkRdLink(rdLinkForm);
+				checkRdLinkForm(rdLinkForm);
 			}
 		}
 
@@ -67,9 +67,14 @@ public class GLM32020 extends baseRule {
 	 * @param rdLinkForm
 	 * @throws Exception 
 	 */
-	private void checkRdLink(RdLinkForm rdLinkForm) throws Exception {
-		//link属性为公交车专用道,触发检查
-		if(rdLinkForm.getFormOfWay()==22){
+	private void checkRdLinkForm(RdLinkForm rdLinkForm) throws Exception {
+		int formOfWay = 0;
+		if(rdLinkForm.changedFields().containsKey("formOfWay")){
+			formOfWay = Integer.parseInt(rdLinkForm.changedFields().get("formOfWay").toString()) ;
+		}else{
+			formOfWay = rdLinkForm.getFormOfWay();
+		}
+		if(formOfWay==22){
 			StringBuilder sb = new StringBuilder();
 
 			sb.append("SELECT R.GEOMETRY,'[RD_LINK,' || R.LINK_PID || ']',R.MESH_ID");
@@ -95,6 +100,7 @@ public class GLM32020 extends baseRule {
 		}
 		
 	}
+
 
 	/**
 	 * @param rdLink
@@ -135,7 +141,14 @@ public class GLM32020 extends baseRule {
 	 */
 	private void checkRdLaneCondition(RdLaneCondition rdLaneCondition) throws Exception {
 		//车辆类型不是只包含公交车，触发检查
-		if((rdLaneCondition.getVehicle()!=2147484160L)&&(rdLaneCondition.getVehicle()!=2147483135L)){
+		long vehicle = 0;
+		if(rdLaneCondition.changedFields().containsKey("vehicle")){
+			vehicle = Integer.parseInt(rdLaneCondition.changedFields().get("vehicle").toString()) ;
+		}else{
+			vehicle = rdLaneCondition.getVehicle();
+		}
+		if(vehicle!=2147484160L&&vehicle!=2147483135L){
+//		if((rdLaneCondition.getVehicle()!=2147484160L)&&(rdLaneCondition.getVehicle()!=2147483135L)){
 			StringBuilder sb = new StringBuilder();
 			sb.append("SELECT 1 FROM RD_LINK_FORM LF, RD_LANE L");
 			sb.append(" WHERE LF.LINK_PID = L.LINK_PID");

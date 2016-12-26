@@ -39,15 +39,18 @@ import com.navinfo.dataservice.engine.fcc.tips.TipsSelector;
 import com.navinfo.navicommons.geo.GeoUtils;
 import com.navinfo.navicommons.geo.computation.GridUtils;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.CoordinateArrays;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.MultiLineString;
 
 public class TipsSelectorTest {
 
 	TipsSelector solrSelector = new TipsSelector();
 	
 	
-	private SolrController conn = new SolrController();
+	private static SolrController conn = new SolrController();
 	
 	
 	/*	
@@ -58,13 +61,15 @@ public class TipsSelectorTest {
 		new ApplicationContextUtil().setApplicationContext(context);*/
 
 	//根据网格、类型、作业状态获取tips的snapshot列表（rowkey，点位，类型）
-	//@Test
+	@Test
 	public void testGetSnapshot() {
 		
 		
 	JSONArray grid = JSONArray
-				.fromObject("[59567513,59567512,59567503]");
-	    
+				.fromObject("[59564100,59564101,59564102,59564103,59564110,59564111,59564112,59564113,59564120,59564121,59564122,59564123,59564130,59564131,59564132,59564133]");
+	
+/*	parameter:{"grids":[59564100,59564101,59564102,59564103,59564110,59564111,59564112,59564113,59564120,59564121,59564122,59564123,59564130,59564131,59564132,59564133],
+		"stage":[1,2],"mdFlag":"d","type":"2101","dbId":409}  */
 /*		JSONArray grid = JSONArray
 			.fromObject("[59567232,59567233]");*/
 
@@ -76,8 +81,8 @@ public class TipsSelectorTest {
 		
 		//红绿灯、红绿灯方位、大门、坡度、条件限速、车道限速、车道数、匝道、停车场出入口link、禁止穿行、禁止驶入、提左提右、一般道路方面、路面覆盖、测线
 		//1102、1103 、1104、1106、1111、1113、1202
-		int type = 1501;
-		int dbId = 9;
+		int type = 2101;
+		int dbId = 409;
 		
 		
 		try {
@@ -93,7 +98,7 @@ public class TipsSelectorTest {
 	@Test
 	public void testSearchDataByTileWithGap() {
 		JSONArray types = new JSONArray();
-		types.add(1806);
+	//	types.add(1806);
 	/*	types.add(1205);
 		types.add(1401);
 		types.add(1110);
@@ -115,8 +120,10 @@ public class TipsSelectorTest {
 		//返回的坐标和经纬度加载 {"gap":40,"mdFlag":"d","z":18,"x":216046,"y":99332}  rowkey:0215167ea4a06d6ebd4339a2cbb0f527482c3a.  路演环境数据
 		
 		//{"gap":40,"mdFlag":"d","z":19,"x":431790,"y":198467,"types":["1806"]}  19级别 应该返回数据，但是没有返回
+		
+		//{"gap":40,"mdFlag":"d","z":17,"x":107935,"y":49597}
 		try {
-			System.out.println(solrSelector.searchDataByTileWithGap(431790, 198467, 19,
+			System.out.println(solrSelector.searchDataByTileWithGap(107935, 49597, 17,
 					40, types,"m"));
 			
 		} catch (Exception e) {
@@ -504,15 +511,23 @@ public class TipsSelectorTest {
 		//修改一下solr中的所有数据的wkt
 		public static void main(String[] args) {
 			
+			
 			int fetchNum = Integer.MAX_VALUE;
 			
-			List<JSONObject> snapshots = new ArrayList<JSONObject>();
-
 			SolrQuery query = new SolrQuery();
 
 			query.set("start", 0);
 
-			query.set("rows", fetchNum);
+			query.set("rows", fetchNum); //1510  1507  1514  1512  1514
+			
+			//query.set("q", "s_sourceType:(1512 1510 1507 1514 1507) AND stage :(1 2 3) AND id:(\"021514d7a97574fe9e48f98a4dcdb4948cd321\")");
+			
+			//query.set("q", "s_sourceType:(1512 1510 1507 1514 1507 1511  ) AND stage :(1 2 3) ");
+			
+			//query.set("q", "s_sourceType:(8002 ) AND stage :(1 2 3) ");
+			
+			query.set("q", " stage :(1 2 3)  AND s_sourceType:( * NOT \"8001\" NOT \"8002\" NOT \"1501\")");
+			
 			
 			HttpSolrClient client = SolrConnector.getInstance().getClient();
 
@@ -529,13 +544,71 @@ public class TipsSelectorTest {
 						SolrDocument doc = sdList.get(i);
 
 						JSONObject snapshot = JSONObject.fromObject(doc);
+						
+						System.out.println(snapshot.get("id"));
+						
+					/*	JSONObject  feedbacksO=snapshot.getJSONObject("feedback");
+						
+						JSONArray feedbacks=null;
+						
+						if(feedbacksO!=null){
+							feedbacks=feedbacksO.getJSONArray("f_array");
+						}*/
+						
+						JSONArray feedbacks=null;
+						try{
+						 feedbacks=JSONArray.fromObject(snapshot.getString("feedback"));
+						
+						}catch (Exception e) {
+							try{
+								feedbacks=JSONObject.fromObject(snapshot.getString("feedback")).getJSONArray("f_array");
+							}
+							catch (Exception e1) {
+								feedbacks =new JSONArray();
+							}
+							
+							
+						}
+						
+						String sourceType=snapshot.getString("s_sourceType");
+						
+						JSONObject g_location=JSONObject.fromObject(snapshot.getString("g_location"))  ;
+						
+						 String wkt=generateSolrWkt(snapshot.getString("id"),sourceType,g_location,feedbacks);
+						
+						// wkt=generateSolrWkt(sourceType,g_location,feedbacks);
+						
+						System.out.println("new wkt:"+wkt);
+						
+						boolean isUpdate=false;
+						if(!wkt.equals(snapshot.getString("wkt"))){
+							snapshot.put("wkt", wkt);
+							isUpdate=true;
+						}
+						
+						if(!snapshot.containsKey("t_inStatus")){
+							snapshot.put("t_inStatus", 0);
+							isUpdate=true;
+						}
+						
+						if(!snapshot.containsKey("t_inMeth")){
+							snapshot.put("t_inMeth", 0);
+							isUpdate=true;
+						}
+						
+						if(isUpdate){
+							conn.addTips(snapshot);
+						}
+						
 
-						snapshots.add(snapshot);
 					}
 				} else {
 					// 暂先不处理
 				}
+				client.commit();
 			} catch (Exception e) {
+				
+				e.printStackTrace();
 			}
 
 			
@@ -547,23 +620,30 @@ public class TipsSelectorTest {
 		
 		
 		
-		public static String generateSolrWkt(String sourceType, 
+		public static String generateSolrWkt(String rowkey , String sourceType, 
 				JSONObject g_location, JSONArray feedbacks) throws Exception {
 			List<Geometry> geos = new ArrayList<Geometry>();
 
 			GeometryFactory factory = new GeometryFactory();
-
+			
 			if (sourceType.equals("1501")) {
 				return null;
-			} else {
+			} //8002的g_location是feedback中坐标的第一个点，可以不取，如果取了，则坐标相交，solr计算结果返回错误
+			else  if(! sourceType.equals("8002") ){
 
 				Geometry g = GeoTranslator.geojson2Jts(g_location);
-
-				if (!g.isValid()) {
-					throw new Exception("invalid g_location");
+				
+				int glen=g.getNumGeometries();
+				
+				for (int i = 0; i < glen; i++) {
+					
+					if (!g.isValid()) {
+						throw new Exception("invalid g_location");
+					}
+					
+					geos.add(g.getGeometryN(i));
+					
 				}
-
-				geos.add(g);
 			}
 
 			for (int i = 0; i < feedbacks.size(); i++) {
@@ -581,6 +661,7 @@ public class TipsSelectorTest {
 								.getJSONObject("geo"));
 
 						geos.add(g);
+						
 					}
 
 					break;

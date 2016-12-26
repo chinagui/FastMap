@@ -1,15 +1,5 @@
 package com.navinfo.dataservice.engine.edit.operation.topo.move.movelunode;
 
-import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
@@ -20,6 +10,7 @@ import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.lu.LuFace;
 import com.navinfo.dataservice.dao.glm.model.lu.LuFaceTopo;
 import com.navinfo.dataservice.dao.glm.model.lu.LuLink;
+import com.navinfo.dataservice.dao.glm.model.lu.LuLinkMesh;
 import com.navinfo.dataservice.dao.glm.model.lu.LuNode;
 import com.navinfo.dataservice.dao.glm.model.lu.LuNodeMesh;
 import com.navinfo.dataservice.dao.glm.selector.lu.LuLinkSelector;
@@ -31,8 +22,17 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryCollection;
 import com.vividsolutions.jts.geom.LineString;
-
 import net.sf.json.JSONObject;
+
+import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * 移动土地利用点具体操作类
@@ -99,8 +99,12 @@ public class Operation implements IOperation {
             Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(geo);
             // 修改线的几何属性
             // 如果没有跨图幅只是修改线的几何
-            List<LuLink> links = new ArrayList<LuLink>();
-            if (meshes.size() == 1) {
+            List<LuLink> links = new ArrayList<>();
+            List<String> linkMeshes = new ArrayList<>();
+            for (IRow row : link.getMeshes()) {
+                linkMeshes.add(((LuLinkMesh) row).getMeshId() + "");
+            }
+            if (linkMeshes.containsAll(meshes)) {
                 JSONObject updateContent = new JSONObject();
                 updateContent.put("geometry", geojson);
                 updateContent.put("length", GeometryUtils.getLinkLength(geo));

@@ -5,6 +5,8 @@ import org.junit.Test;
 import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.zhangyuntao.eleceye.TestUtil;
 
+import static com.navinfo.dataservice.dao.glm.iface.ObjType.RDNODE;
+
 /**
  * @Title: RdNodeTest.java
  * @Description: TODO
@@ -46,7 +48,8 @@ public class RdNodeTest extends InitApplication {
 	public void testMove(){
 		String parameter = "{\"command\":\"MOVE\",\"dbId\":42,\"objId\":100025302,\"data\":{\"longitude\":116.50697350502014,\"latitude\":40.141557623890094},\"type\":\"RDNODE\"}";
 		parameter = "{\"command\":\"MOVE\",\"dbId\":42,\"objId\":100025378,\"data\":{\"longitude\":116.50605275367737,\"latitude\":40.142110160100965},\"type\":\"RDNODE\"}";
-		parameter = "{\"command\":\"MOVE\",\"dbId\":17,\"objId\":207000036,\"data\":{\"longitude\":116.12623929977417,\"latitude\":40.49973571496983},\"type\":\"RDNODE\"}";
+		parameter = "{\"command\":\"MOVE\",\"dbId\":17,\"objId\":304002422,\"data\":{\"longitude\":116.51841849088669,\"latitude\":40.083202084525034},\"type\":\"RDNODE\"}";
+		parameter = "{\"command\":\"MOVE\",\"dbId\":17,\"objId\":309002394,\"data\":{\"longitude\":116.5178820490837,\"latitude\":40.08373975500465},\"type\":\"RDNODE\"}";
 		TestUtil.run(parameter);
 	}
 }

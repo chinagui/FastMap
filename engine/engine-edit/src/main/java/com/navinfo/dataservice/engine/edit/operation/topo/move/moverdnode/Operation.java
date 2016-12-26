@@ -95,10 +95,14 @@ public class Operation implements IOperation {
             Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(geo);
             // 修改线的几何属性
             // 如果没有跨图幅只是修改线的几何
-            List<RdLink> links = new ArrayList<RdLink>();
+            List<RdLink> links = new ArrayList<>();
+            List<Integer> linkMeshes = new ArrayList<>();
+            for (String mesh : meshes) {
+                linkMeshes.add(Integer.valueOf(mesh));
+            }
             // 由于使用时原线的几何还没有进行更新，创建新的集合用于存放修改过geometry的link
-            List<RdLink> newGeoLinks = new ArrayList<RdLink>();
-            if (meshes.size() == 1) {
+            List<RdLink> newGeoLinks = new ArrayList<>();
+            if (meshes.size() == 1 && link.getMeshId() == linkMeshes.get(0)) {
                 JSONObject updateContent = new JSONObject();
                 updateContent.put("geometry", geojson);
                 updateContent.put("length", GeometryUtils.getLinkLength(geo));

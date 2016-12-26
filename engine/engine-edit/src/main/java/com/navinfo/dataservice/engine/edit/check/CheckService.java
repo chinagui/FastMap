@@ -125,13 +125,14 @@ public class CheckService {
 			poiRequestJSON.put("firstWorkItem", firstWorkItem);
 			String secondWorkItem = "";
 			if (jsonReq.containsKey("secondWorkItem")) {
-				firstWorkItem = jsonReq.getString("secondWorkItem");
+				secondWorkItem = jsonReq.getString("secondWorkItem");
 			}
+			poiRequestJSON.put("secondWorkItem", secondWorkItem);
 			int status=1;
 			if (jsonReq.containsKey("status")) {
 				status = jsonReq.getInt("status");
 			}
-			poiRequestJSON.put("secondWorkItem", secondWorkItem);
+			poiRequestJSON.put("status", status);
 			jobId=apiService.createJob("poiColumnValidation", poiRequestJSON, userId,subtaskId, "检查");
 		}
 		

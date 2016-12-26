@@ -1,12 +1,6 @@
 package com.navinfo.dataservice.engine.editplus.model.batchAndCheck;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.common.GeoHelper;
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -18,17 +12,19 @@ public class NiValException {
 	private String targets;
 	private int meshId;
 	private String information;
+	private int logLevel;
 	//private List<Map<String, Object>> targetsList=new ArrayList<Map<String,Object>>();
 	
-	public NiValException(String ruleId, String loc, String targets,int meshId,String information){
+	public NiValException(String ruleId, String loc, String targets,int meshId,String information,int logLevel){
 		this.setRuleId(ruleId);
 		this.setLoc(loc);
 		this.setTargets(targets);
 		this.setMeshId(meshId);
 		this.setInformation(information);
+		this.setLogLevel(logLevel);
 	}
 	
-	public NiValException(String ruleId, Geometry geo, String targets,int meshId,String information) throws Exception{
+	public NiValException(String ruleId, Geometry geo, String targets,int meshId,String information,int logLevel) throws Exception{
 		Geometry pointGeo=GeoHelper.getPointFromGeo(geo);
 		String pointWkt = GeoTranslator.jts2Wkt(pointGeo, 0.00001, 5);
 		
@@ -37,6 +33,7 @@ public class NiValException {
 		this.setTargets(targets);
 		this.setMeshId(meshId);
 		this.setInformation(information);
+		this.setLogLevel(logLevel);
 	}
 
 	public String getRuleId() {
@@ -77,6 +74,14 @@ public class NiValException {
 
 	public void setInformation(String information) {
 		this.information = information;
+	}
+
+	public int getLogLevel() {
+		return logLevel;
+	}
+
+	public void setLogLevel(int logLevel) {
+		this.logLevel = logLevel;
 	}
 	
 }

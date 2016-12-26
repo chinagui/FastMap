@@ -77,13 +77,13 @@ public abstract class BasicCheckRule {
 	}
 	
 	public void setCheckResult(String loc, String targets,int meshId){
-		NiValException checkResult=new NiValException(this.checkRule.getRuleId(), loc, targets, meshId,this.checkRule.getLog());
+		NiValException checkResult=new NiValException(checkRule.getRuleId(), loc, targets, meshId,checkRule.getLog(),checkRule.getRuleLevel());
 		splitTargets(targets);
 		this.checkResultList.add(checkResult);
 	}
 	
 	public void setCheckResult(Geometry loc, String targets,int meshId) throws Exception{
-		NiValException checkResult=new NiValException(this.checkRule.getRuleId(), loc, targets, meshId,this.checkRule.getLog());
+		NiValException checkResult=new NiValException(checkRule.getRuleId(), loc, targets, meshId,checkRule.getLog(),checkRule.getRuleLevel());
 		splitTargets(targets);
 		this.checkResultList.add(checkResult);
 	}
@@ -96,7 +96,7 @@ public abstract class BasicCheckRule {
 	public void setCheckResult(BasicObj obj, String log) throws Exception{
 		if(log==null || log.isEmpty()){log=this.checkRule.getLog();}
 		String targets="["+obj.getMainrow().tableName()+","+obj.objPid()+"]";
-		NiValException checkResult=new NiValException(this.checkRule.getRuleId(), "", targets,0,log);
+		NiValException checkResult=new NiValException(checkRule.getRuleId(), "", targets,0,log,checkRule.getRuleLevel());
 		splitTargets(targets);
 		this.checkResultList.add(checkResult);
 	}
@@ -111,19 +111,19 @@ public abstract class BasicCheckRule {
 	public void setCheckResult(Geometry geometry, BasicObj obj,int meshId,String log) throws Exception {
 		if(log==null || log.isEmpty()){log=this.checkRule.getLog();}
 		String targets="["+obj.getMainrow().tableName()+","+obj.objPid()+"]";
-		NiValException checkResult=new NiValException(this.checkRule.getRuleId(), geometry, targets,meshId,log);
+		NiValException checkResult=new NiValException(checkRule.getRuleId(), geometry, targets,meshId,log,checkRule.getRuleLevel());
 		splitTargets(targets);
 		this.checkResultList.add(checkResult);
 	}
 	
 	public void setCheckResult(String loc, String targets,int meshId,String log){
-		NiValException checkResult=new NiValException(this.checkRule.getRuleId(), loc, targets, meshId,log);
+		NiValException checkResult=new NiValException(checkRule.getRuleId(), loc, targets, meshId,log,checkRule.getRuleLevel());
 		splitTargets(targets);
 		this.checkResultList.add(checkResult);
 	}
 	
 	public void setCheckResult(Geometry loc, String targets,int meshId,String log) throws Exception{
-		NiValException checkResult=new NiValException(this.checkRule.getRuleId(), loc, targets, meshId,log);
+		NiValException checkResult=new NiValException(checkRule.getRuleId(), loc, targets, meshId,log,checkRule.getRuleLevel());
 		splitTargets(targets);
 		this.checkResultList.add(checkResult);
 	}

@@ -425,3 +425,5 @@ values ('126', 'poi_deep', 'deepParking', 'FM-ZY-20-154', 1, 2);
 insert into POI_COLUMN_WORKITEM_CONF (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, TYPE, CHECK_FLAG)
 values ('128', 'poi_deep', 'deepParking', 'FM-PARKING', 1, 1);
 commit;
+
+exit;

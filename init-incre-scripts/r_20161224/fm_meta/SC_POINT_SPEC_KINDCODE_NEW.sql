@@ -2137,4 +2137,5 @@ values ('230128', '机场出发/到达门', '', null, '', 1, 'KG', 'DHM', '必�
 insert into SC_POINT_SPEC_KINDCODE_NEW (POI_KIND, POI_KIND_NAME, CHAIN, RATING, FLAGCODE, CATEGORY, KG_FLAG, HM_FLAG, MEMO, ID, TYPE, TOPCITY)
 values ('230129', '城市候机楼', '', null, '', 1, 'KG', 'DHM', '网络搜集英文名对象', 754, 14, null);
 commit;
-EXIT;
+
+exit;

@@ -38,6 +38,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.speedbump.RdSpeedbump;
 import com.navinfo.dataservice.dao.glm.model.rd.speedlimit.RdSpeedlimit;
 import com.navinfo.dataservice.dao.glm.model.rd.tollgate.RdTollgate;
 import com.navinfo.dataservice.dao.glm.model.rd.tollgate.RdTollgateName;
+import com.navinfo.dataservice.dao.glm.model.rd.tollgate.RdTollgatePassage;
 import com.navinfo.dataservice.dao.glm.model.rd.trafficsignal.RdTrafficsignal;
 import com.navinfo.dataservice.dao.glm.model.rd.voiceguide.RdVoiceguide;
 import com.navinfo.dataservice.dao.glm.model.rd.voiceguide.RdVoiceguideDetail;
@@ -124,6 +125,9 @@ public class VariablesFactory {
 		}
 		if (data instanceof RdSe) {
 			rdNodeSet.add(String.valueOf(((RdSe) data).getNodePid()));
+		}
+		if (data instanceof RdTollgate) {
+			rdNodeSet.add(String.valueOf(((RdTollgate) data).getNodePid()));
 		}
 		return rdNodeSet;
 	}
@@ -334,6 +338,10 @@ public class VariablesFactory {
 		if (data instanceof RdTollgateName) {
 			RdTollgateName rdTollgateName = (RdTollgateName) data;
 			rdLinkSet.add(String.valueOf(rdTollgateName.getPid()));
+		}
+		if (data instanceof RdTollgatePassage) {
+			RdTollgatePassage rdTollgatePassage = (RdTollgatePassage) data;
+			rdLinkSet.add(String.valueOf(rdTollgatePassage.getPid()));
 		}
 		return rdLinkSet;
 	}

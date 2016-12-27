@@ -1010,7 +1010,15 @@ public class runTest extends InitApplication {
 		String msg = t.run();
 	}
 	
-	
+	@Test
+	public void run_1226_2() throws Exception {
+
+		String parameter = "{\"command\":\"REPAIR\",\"dbId\":17,\"objId\":690342,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.39619,39.93577],[116.39584153890608,39.93558984701896],[116.3962,39.93541]]},\"catchInfos\":[]},\"type\":\"RDLINK\"}";
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
 	
 	
 			

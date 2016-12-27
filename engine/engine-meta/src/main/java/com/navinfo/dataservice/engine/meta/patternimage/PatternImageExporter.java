@@ -166,8 +166,8 @@ public class PatternImageExporter {
 
 		Connection sqliteConn = createSqlite(dir);
 
-		String sql = "select * from sc_model_match_g where file_name in (";
-
+		//String sql = "select * from sc_model_match_g where file_name in (";
+		String sql = "select  file_name,format,file_content,b_type ,m_type from sc_model_match_g where file_name in (";
 		int i=0;
 		for(String name:names){
 			if (i > 0) {
@@ -178,9 +178,25 @@ public class PatternImageExporter {
 			
 			i++;
 		}
+		sql += ")  "
+//**************zl 2016.12.27********************
+				+ "union all "
+				+ " select file_name,format,file_content,type b_type,'' m_type from SC_VECTOR_MATCH where type = 'RealSign' "
+				+ " and file_name in (";
 
-		sql += ")";
+		int j=0;
+		for(String name:names){
+			if (j > 0) {
+				sql += ",";
+			}
 
+			sql += "'" + name + "'";
+			
+			j++;
+		}
+		sql += ")  ";
+		System.out.println("export2SqliteByNames sql:"+sql);
+//***********************************************
 		exportImage2Sqlite(sqliteConn, sql);
 
 		sqliteConn.close();
@@ -204,7 +220,7 @@ public class PatternImageExporter {
 
 		String sql = "select * from sc_model_match_g where b_type in ('2D','3D') and update_time > to_date('"
 				+ date + "','yyyymmddhh24miss')";
-
+		
 		exportImage2Sqlite(sqliteConn, sql);
 
 		sqliteConn.close();
@@ -233,9 +249,14 @@ public class PatternImageExporter {
 		Connection sqliteConn = createSqlite(dir);
 
 		String sql = "select * from sc_model_match_g where b_type in ('2D','3D')";
+		//**********zl 2016.12.26**********
+		/*String sql = " select file_name,format,file_content,b_type ,m_type from sc_model_match_g  where b_type in ('2D','3D','HEG','CRPG','Dsign','SCHEMATIC','CRCG') "
+				+ " union all "
+				+" select file_name,format,file_content,type b_type,'' m_type from SC_VECTOR_MATCH where type = 'RealSign'";*/
+		//*********************************
 
 		exportImage2Sqlite(sqliteConn, sql);
-
+		
 		sqliteConn.close();
 
 		ZipUtils.zipFile(dir, path + "/" + currentDate + ".zip");

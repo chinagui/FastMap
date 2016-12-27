@@ -5,21 +5,20 @@ package org.navinfo.dataservice.engine.meta;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import javax.imageio.ImageIO;
-import javax.imageio.stream.ImageInputStream;
+
 import org.apache.commons.dbutils.DbUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.engine.meta.patternimage.PatternImageExporter;
-import com.navinfo.dataservice.engine.meta.patternimage.PatternImageImporter;
 import com.navinfo.dataservice.engine.meta.svg.SvgImageSelector;
+
 import net.sf.json.JSONObject;
 
 /** 
@@ -75,17 +74,29 @@ public class SvgTest {
 			DbUtils.closeQuietly(conn);
 		}
 	}
-@Test
+	@Test
 	public void testGetSvgData()
 	{
-		SvgImageSelector selector = new SvgImageSelector();
-		
-		try {
-			JSONObject obj = selector.searchByName("S", 5, 0);
-			System.out.println(obj);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		String parameter = "{\"name\":\"S0CYZ139NE29\",\"pageNum\":0,\"pageSize\":6}";
+
+        try {
+            JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+            String name = jsonReq.getString("name");
+
+            int pageSize = jsonReq.getInt("pageSize");
+
+            int pageNum = jsonReq.getInt("pageNum");
+
+            SvgImageSelector selector = new SvgImageSelector();
+
+            JSONObject data = selector.searchByName(name, pageSize, pageNum);
+            
+            System.out.println(data);
+            
+        } catch (Exception e) {
+        	e.printStackTrace();
+        }
 	}	
 	@Test
 	public void testUpdateSvgExp() throws Exception
@@ -121,30 +132,5 @@ public class SvgTest {
 		conn.close();
 		
 		System.out.println("Done. Total:"+counter);*/
-	}
-	
-	
-	
-	
-	public static void main(String[] args) throws IOException {
-		File file = new File("f:/S0CLL15OC91B.svg");
-		ImageInputStream is = null;
-		try {
-			is = ImageIO.createImageInputStream(file);
-			String[] splits = file.getName().split("\\.");
-			 if(null == is)  
-	            {  
-				 System.out.println("xxxx:  "+splits[0]);
-	            }  
-			 String format = splits[splits.length - 1];
-			 System.out.println("format : "+format);
-			 System.out.println(splits[1]+"  yy:  "+splits[0]);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} finally {
-			//outSteam.close();  
-		    is.close(); 
-		}  
 	}
 }

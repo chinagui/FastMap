@@ -1020,6 +1020,17 @@ public class runTest extends InitApplication {
 		String msg = t.run();
 	}
 	
-	
+	@Test
+	public void run_1227_1() throws Exception {
+
+		String parameter = "{\"command\":\"CREATE\",\"dbId\":17,\"data\":{\"eNodePid\":290417,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.637524664402,40.08026944827676],[116.63706868886948,40.08041105502878]]},\"catchLinks\":[{\"nodePid\":290417,\"seqNum\":1}]},\"type\":\"RDLINK\"}";
+		
+		
+		
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
 			
 }

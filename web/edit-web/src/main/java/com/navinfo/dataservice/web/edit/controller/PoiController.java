@@ -5,16 +5,13 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
-
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.commons.util.Log4jUtils;
@@ -22,8 +19,8 @@ import com.navinfo.dataservice.commons.util.ZipUtils;
 import com.navinfo.dataservice.control.app.download.PoiDownloadOperation;
 import com.navinfo.dataservice.control.app.search.Operation;
 import com.navinfo.dataservice.control.app.upload.UploadOperation;
+import com.navinfo.dataservice.engine.editplus.operation.imp.UploadOperationByGather;
 import com.navinfo.dataservice.engine.photo.CollectorImport;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -105,7 +102,7 @@ public class PoiController extends BaseController{
 			Long userId = tokenObj.getUserId();
 			
 			String filePath = unzipByJobId(jobId,userId);
-
+			//UploadOperationByGather operation = new UploadOperationByGather(userId);
 			UploadOperation operation = new UploadOperation(userId);
 			JSONObject retArray = operation.importPoi(filePath + "/poi.txt");
 			Date endTime = new Date();

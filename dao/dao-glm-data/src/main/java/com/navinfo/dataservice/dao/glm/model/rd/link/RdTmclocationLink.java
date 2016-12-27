@@ -171,12 +171,12 @@ public class RdTmclocationLink implements IRow {
 
 	@Override
 	public String parentPKName() {
-		return "group_id";
+		return "link_pid";
 	}
 
 	@Override
 	public int parentPKValue() {
-		return this.groupId;
+		return this.linkPid;
 	}
 
 	@Override

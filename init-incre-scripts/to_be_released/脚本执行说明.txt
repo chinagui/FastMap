@@ -1,5 +1,4 @@
-﻿1、xxxx.sql
-  功能：xxxx
-  目标库：xxx库
-  验证说明：执行无报错，xxx库中有xx表，且有17条数据（SELECT COUNT(1) FROM xx），且无乱码
-  author：xxx
+1. fm_sys/update_job_info.sql
+  功能：job_info表字段长度修改
+  目标库：fm_sys
+  author：XXW

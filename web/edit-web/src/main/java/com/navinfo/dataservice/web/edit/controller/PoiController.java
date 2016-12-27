@@ -19,7 +19,7 @@ import com.navinfo.dataservice.commons.util.ZipUtils;
 import com.navinfo.dataservice.control.app.download.PoiDownloadOperation;
 import com.navinfo.dataservice.control.app.search.Operation;
 import com.navinfo.dataservice.control.app.upload.UploadOperation;
-import com.navinfo.dataservice.engine.editplus.operation.imp.UploadOperationByGather;
+//import com.navinfo.dataservice.engine.editplus.operation.imp.UploadOperationByGather;
 import com.navinfo.dataservice.engine.photo.CollectorImport;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;

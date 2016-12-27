@@ -3,28 +3,24 @@
  */
 package org.navinfo.dataservice.engine.meta;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
-
 import org.apache.commons.dbutils.DbUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.engine.meta.patternimage.PatternImageExporter;
 import com.navinfo.dataservice.engine.meta.patternimage.PatternImageImporter;
+import com.navinfo.dataservice.engine.meta.svg.SvgImageSelector;
+import net.sf.json.JSONObject;
 
 /** 
 * @ClassName: SvgTest 
@@ -79,7 +75,18 @@ public class SvgTest {
 			DbUtils.closeQuietly(conn);
 		}
 	}
-	
+@Test
+	public void testGetSvgData()
+	{
+		SvgImageSelector selector = new SvgImageSelector();
+		
+		try {
+			JSONObject obj = selector.searchByName("S", 5, 0);
+			System.out.println(obj);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}	
 	@Test
 	public void testUpdateSvgExp() throws Exception
 	{

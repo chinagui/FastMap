@@ -62,7 +62,12 @@ public class GLM32006 extends baseRule {
 	 */
 	private void checkRdLink(RdLink rdLink) throws Exception {
 		//RdLink为双方向，触发检查
-		if(rdLink.getDirect()==1){
+		if(rdLink.changedFields().containsKey("direct")){
+			int direct = Integer.parseInt(rdLink.changedFields().get("direct").toString()) ;
+			//非双方向道路，不触发检查
+			if(direct!=1){
+				return;
+			}
 			StringBuilder sb = new StringBuilder();
 			
 			sb.append("SELECT R.GEOMETRY,'[RD_LINK,' || R.LINK_PID || ']',R.MESH_ID");
@@ -92,7 +97,14 @@ public class GLM32006 extends baseRule {
 	 */
 	private void checkRdLane(RdLane rdLane) throws Exception {
 		//车道方向为“无”，触发检查
-		if(rdLane.getLaneDir()==1){
+		int laneDir = 0;
+		if(rdLane.changedFields().containsKey("laneDir")){
+			laneDir = Integer.parseInt(rdLane.changedFields().get("laneDir").toString()) ;
+		}else{
+			laneDir = rdLane.getLaneDivider();
+		}
+		if(laneDir==1){
+//		if(rdLane.getLaneDir()==1){
 			StringBuilder sb = new StringBuilder();
 
 			sb.append("SELECT 1 FROM RD_LINK L");

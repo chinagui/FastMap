@@ -87,7 +87,7 @@ public class GLM08052 extends baseRule {
 			resultList = getObj.exeSelect(this.getConn(), sql);
 
 			if(!resultList.isEmpty()){
-				String target = "[RD_LANE_CONNEXITY," + (long)resultList.get(0) + "]";
+				String target = "[RD_LANE_CONNEXITY," + resultList.get(0).toString() + "]";
 				this.setCheckResult("", target, 0);
 			}
 		}

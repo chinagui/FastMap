@@ -326,6 +326,38 @@ public class MetaController extends BaseController {
                     ResponseUtils.assembleFailResult(e.getMessage()));
         }
     }
+    
+    @RequestMapping(value = "/svgImage/getById")
+    public void getSvgImageById(HttpServletRequest request,
+                                    HttpServletResponse response) throws ServletException, IOException {
+
+        response.setContentType("text/xml");
+
+        String parameter = request.getParameter("parameter");
+
+        try {
+            JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+            String id = jsonReq.getString("id");
+
+            SvgImageSelector selector = new SvgImageSelector();
+
+            byte[] data = selector.getById(id);
+
+            if (data.length == 0) {
+                throw new Exception("id值不存在");
+            }
+
+            response.getOutputStream().write(data);
+
+        } catch (Exception e) {
+
+            logger.error(e.getMessage(), e);
+
+            response.getWriter().println(
+                    ResponseUtils.assembleFailResult(e.getMessage()));
+        }
+    }
 
     @RequestMapping(value = "/patternImage/search")
     public ModelAndView searchPatternImage(HttpServletRequest request)

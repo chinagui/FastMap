@@ -197,7 +197,7 @@ public class RdLink implements IObj {
 
     public Map<String, RdLinkZone> zoneMap = new HashMap<String, RdLinkZone>();
 
-    public Map<String, RdTmclocation> locationMap = new HashMap<String, RdTmclocation>();
+    public Map<String, RdTmclocationLink> locationLinkMap = new HashMap<String, RdTmclocationLink>();
 
     public RdLink() {
 
@@ -760,29 +760,21 @@ public class RdLink implements IObj {
 
         this.setWalkstairs(walkstairs);
         List<IRow> tmcLocationSources = sourceLink.getTmclocations();
-
-        List<IRow> tmcLocations = new ArrayList<IRow>();
+        
+        List<IRow> tmcLocationLinks = new ArrayList<IRow>();
 
         for (IRow fs : tmcLocationSources) {
 
-            RdTmclocation locationSource = (RdTmclocation) fs;
+            RdTmclocationLink locationLink = new RdTmclocationLink();
 
-            RdTmclocation locationNew = new RdTmclocation();
+            locationLink.copy(fs);
+            
+            locationLink.setLinkPid(this.getPid());
 
-            locationNew.copy(locationSource);
-
-            List<IRow> tmcLocationLinks = locationNew.getLinks();
-
-            for (IRow tmcLinkRow : tmcLocationLinks) {
-                RdTmclocationLink tmcLocationLink = (RdTmclocationLink) tmcLinkRow;
-
-                tmcLocationLink.setLinkPid(this.getPid());
-            }
-
-            tmcLocations.add(locationNew);
+            tmcLocationLinks.add(locationLink);
         }
 
-        this.setTmclocations(tmcLocations);
+        this.setTmclocations(tmcLocationLinks);
     }
 
     @Override
@@ -839,15 +831,15 @@ public class RdLink implements IObj {
         return children;
     }
 
-    public List<IRow> getTmclocations() {
-        return tmclocations;
-    }
+	public List<IRow> getTmclocations() {
+		return tmclocations;
+	}
 
-    public void setTmclocations(List<IRow> tmclocations) {
-        this.tmclocations = tmclocations;
-    }
+	public void setTmclocations(List<IRow> tmclocations) {
+		this.tmclocations = tmclocations;
+	}
 
-    @Override
+	@Override
     public String parentTableName() {
 
         return "rd_link";
@@ -1288,7 +1280,7 @@ public class RdLink implements IObj {
         childList.put(RdLinkSpeedlimit.class, speedlimits);
         childList.put(RdLinkWalkstair.class, walkstairs);
         childList.put(RdLinkZone.class, zones);
-        childList.put(RdTmclocation.class, tmclocations);
+        childList.put(RdTmclocationLink.class, tmclocations);
         return childList;
     }
 
@@ -1305,7 +1297,7 @@ public class RdLink implements IObj {
         childMap.put(RdLinkSpeedlimit.class, speedlimitMap);
         childMap.put(RdLinkWalkstair.class, walkstairMap);
         childMap.put(RdLinkZone.class, zoneMap);
-        childMap.put(RdTmclocation.class, locationMap);
+        childMap.put(RdTmclocationLink.class, locationLinkMap);
         return childMap;
     }
 

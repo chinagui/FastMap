@@ -41,48 +41,47 @@ public class GLM13002 extends baseRule {
 	 */
 	@Override
 	public void preCheck(CheckCommand checkCommand) throws Exception {
-		// TODO Auto-generated method stub
-		return;
+		
 
-//		Map<Integer, Set<Integer>> nodeLinkMap = new HashMap<Integer, Set<Integer>>();
-//
-//		for (IRow obj : checkCommand.getGlmList()) {
-//
-//			if (obj instanceof RdLink) {
-//
-//				RdLink link = (RdLink) obj;
-//
-//				int sNodePid = link.getsNodePid();
-//
-//				int eNodePid = link.geteNodePid();
-//
-//				if (link.changedFields().containsKey("sNodePid")) {
-//					sNodePid = (Integer) link.changedFields().get("sNodePid");
-//				}
-//				if (link.changedFields().containsKey("eNodePid")) {
-//					eNodePid = (Integer) link.changedFields().get("eNodePid");
-//				}
-//
-//				if (!nodeLinkMap.containsKey(sNodePid)) {
-//					Set<Integer> linkPids = new HashSet<Integer>();
-//					nodeLinkMap.put(sNodePid, linkPids);
-//				}
-//				if (!nodeLinkMap.containsKey(eNodePid)) {
-//					Set<Integer> linkPids = new HashSet<Integer>();
-//					nodeLinkMap.put(eNodePid, linkPids);
-//				}
-//				nodeLinkMap.get(sNodePid).add(link.getPid());
-//
-//				nodeLinkMap.get(eNodePid).add(link.getPid());
-//			}
-//		}		
-//		
-//		if(nodeLinkMap.size()<1)
-//		{
-//			return;
-//		}
-//
-//		preCheck(nodeLinkMap);
+		Map<Integer, Set<Integer>> nodeLinkMap = new HashMap<Integer, Set<Integer>>();
+
+		for (IRow obj : checkCommand.getGlmList()) {
+
+			if (obj instanceof RdLink) {
+
+				RdLink link = (RdLink) obj;
+
+				int sNodePid = link.getsNodePid();
+
+				int eNodePid = link.geteNodePid();
+
+				if (link.changedFields().containsKey("sNodePid")) {
+					sNodePid = (Integer) link.changedFields().get("sNodePid");
+				}
+				if (link.changedFields().containsKey("eNodePid")) {
+					eNodePid = (Integer) link.changedFields().get("eNodePid");
+				}
+
+				if (!nodeLinkMap.containsKey(sNodePid)) {
+					Set<Integer> linkPids = new HashSet<Integer>();
+					nodeLinkMap.put(sNodePid, linkPids);
+				}
+				if (!nodeLinkMap.containsKey(eNodePid)) {
+					Set<Integer> linkPids = new HashSet<Integer>();
+					nodeLinkMap.put(eNodePid, linkPids);
+				}
+				nodeLinkMap.get(sNodePid).add(link.getPid());
+
+				nodeLinkMap.get(eNodePid).add(link.getPid());
+			}
+		}		
+		
+		if(nodeLinkMap.size()<1)
+		{
+			return;
+		}
+
+		preCheck(nodeLinkMap);
 	}
 	
 	private void preCheck(Map<Integer, Set<Integer>> nodeLinkMap)

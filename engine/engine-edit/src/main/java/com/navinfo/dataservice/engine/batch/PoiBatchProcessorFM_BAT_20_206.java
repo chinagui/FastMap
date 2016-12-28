@@ -29,6 +29,9 @@ public class PoiBatchProcessorFM_BAT_20_206 implements IBatch {
 			}
 			if (kindcode.equals("230218")) {
 				JSONArray dataArray = new JSONArray();
+				if (poi.getChargingstations()==null||poi.getChargingstations().size()==0) {
+					return result;
+				}
 				IxPoiChargingStation poiChargingStation = (IxPoiChargingStation) poi.getChargingstations().get(0);
 				if (poi.getChargingstations().size()>0) {
 					if (poiChargingStation.getOpenHour() != null) {

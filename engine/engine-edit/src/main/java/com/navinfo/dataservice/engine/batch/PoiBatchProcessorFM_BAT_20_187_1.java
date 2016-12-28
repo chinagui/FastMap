@@ -60,18 +60,19 @@ public class PoiBatchProcessorFM_BAT_20_187_1 implements IBatch {
 					dataArray = dealDelete(poiPlot, oldPlotsMap);
 				} else if (operType == OperType.CREATE) {
 					// 增加父子关系
-					plotsChanged = true;
 					for (IRow tempPlot:poiPlot) {
 						IxPoiChargingPlot chargingPlot = (IxPoiChargingPlot) tempPlot;
 						plotChangeList.add(chargingPlot);
 					}
+					if (plotChangeList.size()>0) {
+						dataArray = dealData(oldPlotsMap,plotChangeList);
+					} 
 				}
 			}else if (uRecord == 2) {
 				// 删除桩poi,特殊处理
 				dataArray = dealDelete(poiPlot, oldPlotsMap);
 			} else {
 				// 判断充电桩是新增、修改还是删除
-				
 				for (int i=0;i<jsonPolt.size();i++) {
 					JSONObject temp = jsonPolt.getJSONObject(i);
 					if (temp.containsKey("PLUG_TYPE")||temp.containsKey("ACDC")||temp.containsKey("MODE")||temp.containsKey("OPEN_TYPE")) {

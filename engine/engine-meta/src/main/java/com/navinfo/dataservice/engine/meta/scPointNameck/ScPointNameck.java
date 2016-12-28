@@ -25,6 +25,8 @@ public class ScPointNameck {
 	private Map<String, String> typeD5 = new HashMap<String, String>();
 	
 	private Map<String, String> typeD7 = new HashMap<String, String>();
+	
+	private List<String> type9=new ArrayList<String>();
 
 	private static class SingletonHolder {
 		private static final ScPointNameck INSTANCE = new ScPointNameck();
@@ -238,6 +240,38 @@ public class ScPointNameck {
 				}
 			}
 			return typeD7;
+	}
+	
+	public List<String> scPointNameckType9() throws Exception {
+		if (type9==null||type9.isEmpty()) {
+			synchronized (this) {
+				if (type9==null||type9.isEmpty()) {
+					try {
+						String sql = "SELECT PRE_KEY"
+								+ "  FROM SC_POINT_NAMECK"
+								+ " WHERE TYPE = 9";
+						PreparedStatement pstmt = null;
+						ResultSet rs = null;
+						Connection conn = null;
+						try {
+							conn = DBConnector.getInstance().getMetaConnection();
+							pstmt = conn.prepareStatement(sql);
+							rs = pstmt.executeQuery();
+							while (rs.next()) {
+								type9.add(rs.getString("PRE_KEY"));					
+							} 
+						} catch (Exception e) {
+							throw new Exception(e);
+						} finally {
+							DbUtils.commitAndCloseQuietly(conn);
+						}
+					} catch (Exception e) {
+						throw new SQLException("加载scpointNameck失败："+ e.getMessage(), e);
+					}
+				}
+			}
+		}
+		return type9;
 	}
 
 

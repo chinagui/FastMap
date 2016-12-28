@@ -12,11 +12,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.sql.DataSource;
+
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.api.datahub.model.DbInfo;
+import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
@@ -348,22 +352,61 @@ public class PoiGridIncreSearch {
 		
 		pidsClob.setString(1, StringUtils.join(pids, ","));
 		
+		//***********zl 2016.12.27**************
+		Clob pidsClob1 = ConnectionUtil.createClob(conn);//所有未删除的poi的pid 的clob
+		Clob pidsClob_del = ConnectionUtil.createClob(conn);//所有删除的poi的pid 的 clob
+		logger.info("查询主表IX_POI中,u_record != 2 的 pid");
+		String poi_sql = " select pid from ix_poi where  pid in (select to_number(column_value) from table(clob_to_table(?))) and u_record != 2";
+		//List<Integer> poiList1 = new ArrayList<Integer>();
+		ResultSetHandler<List<Integer>> rsHandler = new ResultSetHandler<List<Integer>>(){
+			public List<Integer> handle(ResultSet rs) throws SQLException {
+				List<Integer> list1 = new ArrayList<Integer>();
+				while(rs.next()){
+					Integer pid = rs.getInt("pid");
+					list1.add(pid);
+				}
+				return list1;
+			}
+    	};
+    	
+    	List<Integer> poiList1 = run.query(conn, poi_sql,rsHandler,pidsClob);
+    	pidsClob1.setString(1, StringUtils.join(poiList1, ","));
+		logger.info("查询主表IX_POI中,u_record = 2 的 pid");
+		String poi_delete_sql = " select pid from ix_poi where  pid in (select to_number(column_value) from table(clob_to_table(?))) and u_record = 2";
+    	
+		List<Integer> poiList_del = run.query(conn, poi_delete_sql,rsHandler,pidsClob);
+		pidsClob_del.setString(1, StringUtils.join(poiList_del, ","));
+		
+		
 		logger.info("设置子表IX_POI_NAME");
-		
+		Map<Long,List<IRow>> names = null;
+		Map<Long,List<IRow>> names_delete = null;
+		/*String sql="select * from ix_poi_name where "
+				+ "u_record !=2 and "
+				+ "name_class=1 and name_type=2 and lang_code='CHI' and poi_pid in (select to_number(column_value) from table(clob_to_table(?)))";*/
+		//当主表不是逻辑删除时,子表IX_POI_NAME也不下载逻辑删除的
 		String sql="select * from ix_poi_name where "
-				//+ "u_record !=2 and "
+				+ "u_record !=2 and "
 				+ "name_class=1 and name_type=2 and lang_code='CHI' and poi_pid in (select to_number(column_value) from table(clob_to_table(?)))";
-		
-		Map<Long,List<IRow>> names = run.query(conn, sql, new IxPoiNameHandler(),pidsClob);
+		names = run.query(conn, sql, new IxPoiNameHandler(),pidsClob1);
 
 		for(Long pid:names.keySet()){
 			pois.get(pid).setNames(names.get(pid));
 		}
-		
+		//当主表是逻辑删除时,子表IX_POI_NAME下载逻辑删除的最新一条记录
+		String sql_del="select * from ("
+				+ "select row_number() over(partition by poi_pid order by u_date desc) rn, a.*  "
+				+ "from ix_poi_name a  "
+				+ "where  name_class=1 and name_type=2 and lang_code='CHI' "
+				+ "and poi_pid in (select to_number(column_value) from table(clob_to_table(?))) ) where rn = 1";
+		names_delete = run.query(conn, sql_del, new IxPoiNameHandler(),pidsClob_del);
+		for(Long pid:names_delete.keySet()){
+			pois.get(pid).setNames(names_delete.get(pid));
+		}
+		//*************************************
 		logger.info("设置子表IX_POI_ADDRESS");
 		
-		sql="select * from ix_poi_address where "
-				//+ "u_record !=2 and "
+		 sql="select * from ix_poi_address where "
 				+ "name_groupid=1 and lang_code='CHI' and poi_pid in (select to_number(column_value) from table(clob_to_table(?)))";
 		
 		Map<Long,List<IRow>> addresses = run.query(conn, sql, new IxPoiAddressHandler(),pidsClob);
@@ -377,7 +420,7 @@ public class PoiGridIncreSearch {
 		StringBuilder sbParent = new StringBuilder();
 		sbParent.append("WITH A AS(");
 		sbParent.append(" SELECT CH.GROUP_ID,CH.CHILD_POI_PID,CH.RELATION_TYPE,P.PARENT_POI_PID FROM IX_POI_CHILDREN CH,IX_POI_PARENT P WHERE CH.GROUP_ID=P.GROUP_ID AND CH.CHILD_POI_PID IN (select to_number(column_value) PID from table(clob_to_table(?))) "
-			//	+ "AND CH.U_RECORD!=2 "
+				+ "AND CH.U_RECORD!=2 "
 				+ "");
 		sbParent.append(" ),");
 		sbParent.append(" B AS(");
@@ -405,7 +448,7 @@ public class PoiGridIncreSearch {
 		sb.append(" ,ix_poi_children c");
 		sb.append(" WHERE p.group_id=c.group_id");
 		sb.append(" AND p.parent_poi_pid in (select to_number(column_value) from table(clob_to_table(?)))");
-		//sb.append(" AND c.u_record !=2");
+		sb.append(" AND c.u_record !=2");
 		
 		Map<Long,List<IRow>> children = run.query(conn, sb.toString(), new IxPoiChildrenHandler(),pidsClob);
 
@@ -416,7 +459,7 @@ public class PoiGridIncreSearch {
 		logger.info("设置子表IX_POI_CONTACT");
 		
 		sql="select * from ix_poi_contact where "
-				//+ "u_record!=2 and "
+				+ "u_record!=2 and "
 				+ "poi_pid in (select to_number(column_value) from table(clob_to_table(?)))";
 		
 		Map<Long,List<IRow>> contact = run.query(conn, sql, new IxPoiContactHandler(),pidsClob);
@@ -428,7 +471,7 @@ public class PoiGridIncreSearch {
 		logger.info("设置子表IX_POI_RESTAURANT");
 		
 		sql="select * from ix_poi_restaurant WHERE "
-				//+ "u_record !=2 and "
+				+ "u_record !=2 and "
 				+ "poi_pid in (select to_number(column_value) from table(clob_to_table(?)))";
 		
 		Map<Long,List<IRow>> restaurant = run.query(conn, sql, new IxRestaurantHandler(),pidsClob);
@@ -440,7 +483,7 @@ public class PoiGridIncreSearch {
 		logger.info("设置子表IX_POI_PARKING");
 		
 		sql="select * from ix_poi_parking WHERE "
-				//+ "u_record !=2 and "
+				+ "u_record !=2 and "
 				+ "poi_pid in (select to_number(column_value) from table(clob_to_table(?)))";
 		
 		Map<Long,List<IRow>> parking = run.query(conn, sql, new IxParkingHandler(),pidsClob);
@@ -452,7 +495,7 @@ public class PoiGridIncreSearch {
 		logger.info("设置子表IX_POI_HOTEL");
 		
 		sql="select * from ix_poi_hotel WHERE "
-				//+ "u_record !=2 and "
+				+ "u_record !=2 and "
 				+ "poi_pid in (select to_number(column_value) from table(clob_to_table(?)))";
 		
 		Map<Long,List<IRow>> hotel = run.query(conn, sql, new IxHotelHandler(),pidsClob);
@@ -464,7 +507,7 @@ public class PoiGridIncreSearch {
 		logger.info("设置子表IX_POI_GASSTATION");
 		
 		sql="select * from ix_poi_gasstation WHERE "
-				//+ "u_record !=2 and "
+				+ "u_record !=2 and "
 				+ "poi_pid in (select to_number(column_value) from table(clob_to_table(?)))";
 		
 		Map<Long,List<IRow>> gasstation = run.query(conn, sql, new IxGasstationHandler(),pidsClob);
@@ -476,7 +519,7 @@ public class PoiGridIncreSearch {
 		logger.info("设置子表IX_POI_CHARGINGSTATION");
 		
 		 sql = "select * from ix_poi_chargingstation WHERE "
-		 		//+ "u_record !=2 and "
+		 		+ "u_record !=2 and "
 		 		+ "poi_pid in (select to_number(column_value) from table(clob_to_table(?)))";
 		
 		 Map<Long,List<IRow>> chargingstation = run.query(conn, sql, new IxChargingstationHandler(),pidsClob);
@@ -488,7 +531,7 @@ public class PoiGridIncreSearch {
 		logger.info("设置子表IX_POI_CHARGINGPLOT");
 		
 		 sql = "select * from ix_poi_chargingplot WHERE "
-		 		//+ "u_record !=2 and "
+		 		+ "u_record !=2 and "
 		 		+ "poi_pid in (select to_number(column_value) from table(clob_to_table(?)))";
 		
 		 Map<Long,List<IRow>> chargingplot = run.query(conn, sql, new IxChargingplotHandler(),pidsClob);
@@ -506,6 +549,7 @@ public class PoiGridIncreSearch {
 		sbSamepoi.append(" from ix_samepoi s , ix_samepoi_part p  ");
 		sbSamepoi.append(" where s.group_id = p.group_id ");
 		sbSamepoi.append(" and p.poi_pid in (select to_number(column_value) from table(clob_to_table(?))) ");
+		sbSamepoi.append(" and s.u_record != 2 and p.u_record != 2 ");//新增条件 ,不下载已删除的same poi 
 		sbSamepoi.append(" ) ");
 		sbSamepoi.append(" select q.pid,nvl(i.poi_num,'') poi_num from ix_poi i, q1 q where i.pid=q.otherpid ");
 		logger.debug(pidsClob.getSubString((long)1,(int)pidsClob.length()));

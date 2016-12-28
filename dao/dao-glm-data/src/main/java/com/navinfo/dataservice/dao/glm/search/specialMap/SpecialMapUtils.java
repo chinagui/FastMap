@@ -1457,7 +1457,7 @@ public class SpecialMapUtils {
 
 				snapshot.setM(m);
 
-				snapshot.setT(4);
+				snapshot.setT(specialMapType.getValue());
 				
 				int linkPid=resultSet.getInt("link_pid");
 

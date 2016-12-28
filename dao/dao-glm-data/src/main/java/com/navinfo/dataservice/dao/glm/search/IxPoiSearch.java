@@ -812,6 +812,7 @@ public class IxPoiSearch implements ISearch {
 		try{
 			JSONObject dataObj = new JSONObject();
 			dataObj.put("pid", pid);
+			dataObj.put("rowId", poi.getRowId());
 			dataObj.put("poiNum", poi.getPoiNum());
 			dataObj.put("kindCode", poi.getKindCode());
 			dataObj.put("meshId", poi.getMeshId());

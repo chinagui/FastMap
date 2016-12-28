@@ -47,7 +47,7 @@ public class ExpMeta2SqliteScriptsInterface {
 			pointTruck(conn,sqliteConn);
 			scPointNameck(conn,sqliteConn);
 			//scPointChargeManu(conn,sqliteConn);
-			ciParaIcon(gdbConn, sqliteConn);
+			ciParaKindSame(conn, sqliteConn);
 			
 			System.out.println("Metadata export end");
 		} catch (Exception e) {
@@ -468,7 +468,7 @@ public class ExpMeta2SqliteScriptsInterface {
 				prep.setInt(1, resultSet.getInt("id"));
 				prep.setString(2, resultSet.getString("poikind"));
 				prep.setString(3, resultSet.getString("r_kind"));
-				prep.setInt(4, resultSet.getInt("chain_name"));
+				prep.setString(4, resultSet.getString("chain_name"));
 				prep.setString(5, resultSet.getString("foodtype"));
 				prep.setString(6, resultSet.getString("new_poi_level"));
 				prep.setInt(7, resultSet.getInt("type"));
@@ -805,7 +805,7 @@ public class ExpMeta2SqliteScriptsInterface {
 	public static void scPointNameck(Connection conn,Connection sqliteConn) throws Exception{
 		System.out.println("Start to export SC_POINT_NAMECK...");
 		String insertSql = "insert into SC_POINT_NAMECK(id,pre_key,result_key,ref_key,type,kg_flag, "
-				+"hm_flag,memo,kind,adminarea ) values(?,?,?,?,?,?,?,?,?,?,?)";
+				+"hm_flag,memo,kind,adminarea ) values(?,?,?,?,?,?,?,?,?,?)";
 		String selectSql = "select id,pre_key,result_key,ref_key,type,kg_flag, "
 				+"hm_flag,memo,kind,adminarea  "
 				+"from SC_POINT_NAMECK where type = 4 or type = 6 ";

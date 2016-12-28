@@ -39,18 +39,25 @@ public class PoiBatchProcessorFM_BAT_20_187 implements IBatch {
 			IxPoiSelector ixPoiSelector = new IxPoiSelector(conn);
 			List<IRow> childPois = ixPoiSelector.loadByIds(pidList, false, true);
 			
+			List<IRow> allPlots = new ArrayList<IRow>();
+			Map<Integer,String> pidRowIdMap = new HashMap<Integer,String>();
 			for (IRow child:childPois) {
 				IxPoi childPoi = (IxPoi) child;
+				pidRowIdMap.put(childPoi.getPid(), childPoi.getRowId());
 				List<IRow> childPlots = childPoi.getChargingplots();
-				JSONArray dataArray = getChangePlots(childPlots);
-				
+				allPlots.addAll(childPlots);
+			}
+			
+			JSONArray dataArray = getChangePlots(allPlots);
+			for (int i=0;i<dataArray.size();i++) {
+				JSONObject plotJson = dataArray.getJSONObject(i);
 				JSONObject poiObj = new JSONObject();
 				JSONObject changeFields = new JSONObject();
 				changeFields.put("chargingplots", dataArray);
-				changeFields.put("pid", childPoi.getPid());
-				changeFields.put("rowId", childPoi.getRowId());
+				changeFields.put("pid", plotJson.getLong("poiPid"));
+				changeFields.put("rowId", pidRowIdMap.get(plotJson.getInt("poiPid")));
 				poiObj.put("change", changeFields);
-				poiObj.put("pid", childPoi.getPid());
+				poiObj.put("pid", plotJson.getLong("poiPid"));
 				poiObj.put("type", "IXPOI");
 				poiObj.put("command", "BATCH");
 				poiObj.put("dbId", json.getInt("dbId"));
@@ -87,8 +94,7 @@ public class PoiBatchProcessorFM_BAT_20_187 implements IBatch {
 				}
 			}
 		}
-		JSONArray changeArray = getChangeArray(newPlotsList,oldPlotsMap);
-		return changeArray;
+		return getChangeArray(newPlotsList,oldPlotsMap);
 	}
 	
 	// 获取要新赋值的数据
@@ -115,7 +121,7 @@ public class PoiBatchProcessorFM_BAT_20_187 implements IBatch {
 					// 修改旧数据的count值
 					for (IxPoiChargingPlot oldPlots:oldList) {
 						oldPlots.setCount(oldList.size()+1);
-						JSONObject oldChangeFields = newPlots.Serialize(null);
+						JSONObject oldChangeFields = oldPlots.Serialize(null);
 						oldChangeFields.put("objStatus", ObjStatus.UPDATE.toString());
 						oldChangeFields.remove("uDate");
 						changeArray.add(oldChangeFields);
@@ -146,7 +152,7 @@ public class PoiBatchProcessorFM_BAT_20_187 implements IBatch {
 			if (newPlotsMap.containsKey(maxGroupId)) {
 				IxPoiChargingPlot tempPlot = newPlotsMap.get(maxGroupId).get(0);
 				// 判断是否同规格
-				if (newPlots.getPlugType().equals(tempPlot)&&newPlots.getAcdc()==tempPlot.getAcdc()&&newPlots.getMode()==tempPlot.getMode()&&newPlots.getOpenType().equals(tempPlot.getOpenType())) {
+				if (newPlots.getPlugType().equals(tempPlot.getPlugType())&&newPlots.getAcdc()==tempPlot.getAcdc()&&newPlots.getMode()==tempPlot.getMode()&&newPlots.getOpenType().equals(tempPlot.getOpenType())) {
 					List<IxPoiChargingPlot> tempList = newPlotsMap.get(maxGroupId);
 					newPlots.setGroupId(maxGroupId);
 					tempList.add(newPlots);

@@ -6,6 +6,7 @@ import java.util.Map;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.rd.gate.RdGate;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
@@ -46,13 +47,13 @@ public class GLM01570 extends baseRule{
 	@Override
 	public void postCheck(CheckCommand checkCommand) throws Exception {
 		for (IRow obj : checkCommand.getGlmList()) {
-			// 道路属性编辑RdLink
-			if (obj instanceof RdLink) {
-				RdLink rdLink = (RdLink) obj;
-				checkRdLink(rdLink,checkCommand.getOperType());
-			}
+//			// 道路属性编辑RdLink
+//			if (obj instanceof RdLink) {
+//				RdLink rdLink = (RdLink) obj;
+//				checkRdLink(rdLink,checkCommand.getOperType());
+//			}
 			// 道路属性编辑RdLinkForm
-			else if(obj instanceof RdLinkForm){
+			if(obj instanceof RdLinkForm){
 				RdLinkForm rdLinkForm = (RdLinkForm) obj;
 				checkRdLinkForm(rdLinkForm,checkCommand.getOperType());
 			}
@@ -73,7 +74,7 @@ public class GLM01570 extends baseRule{
 	private void checkRdGate(RdGate rdGate, OperType operType) throws Exception {
 		//新增大门
 //		operType=OperType.CREATE;
-		if(operType.equals(OperType.CREATE)){
+		if(rdGate.status().equals(ObjStatus.INSERT)){
 			StringBuilder sb = new StringBuilder();
 
 			sb.append("SELECT 1 FROM RD_GATE RG, RD_LINK_FORM CL1, RD_LINK_FORM CL2");
@@ -107,32 +108,37 @@ public class GLM01570 extends baseRule{
 	 */
 	private void checkRdLinkForm(RdLinkForm rdLinkForm, OperType operType) throws Exception {
 		//风景路线60
-		if(rdLinkForm.getFormOfWay()==60){
-			StringBuilder sb = new StringBuilder();
+		if(rdLinkForm.changedFields().containsKey("functionClass")){
+			int formOfWay = Integer.parseInt(rdLinkForm.changedFields().get("functionClass").toString()) ;
+			//非单向道路，不触发检查
+			if(formOfWay==60){
 
-			sb.append("SELECT 1");
-			sb.append(" FROM RD_LINK R, RD_LINK_FORM F, RD_GATE G");
-			sb.append(" WHERE R.LINK_PID = F.LINK_PID");
-			sb.append(" AND F.FORM_OF_WAY = 60");
-			sb.append(" AND G.IN_LINK_PID = R.LINK_PID");
-			sb.append(" AND G.OUT_LINK_PID = " + rdLinkForm.getLinkPid());
-			sb.append(" UNION ALL");
-			sb.append(" SELECT 1");
-			sb.append(" FROM RD_LINK R, RD_LINK_FORM F, RD_GATE G");
-			sb.append(" WHERE R.LINK_PID = F.LINK_PID");
-			sb.append(" AND F.FORM_OF_WAY = 60");
-			sb.append(" AND G.IN_LINK_PID = " + rdLinkForm.getLinkPid());
-			sb.append(" AND G.OUT_LINK_PID = R.LINK_PID");
-
-			String sql = sb.toString();
-			log.info("RdLink后检查GLM01570:" + sql);
-
-			DatabaseOperator getObj = new DatabaseOperator();
-			List<Object> resultList = new ArrayList<Object>();
-			resultList = getObj.exeSelect(this.getConn(), sql);
-			
-			if(resultList.size() > 0){
-				this.setCheckResult("", "[RD_LINK," + rdLinkForm.getLinkPid() +"]", 0);
+				StringBuilder sb = new StringBuilder();
+	
+				sb.append("SELECT 1");
+				sb.append(" FROM RD_LINK R, RD_LINK_FORM F, RD_GATE G");
+				sb.append(" WHERE R.LINK_PID = F.LINK_PID");
+				sb.append(" AND F.FORM_OF_WAY = 60");
+				sb.append(" AND G.IN_LINK_PID = R.LINK_PID");
+				sb.append(" AND G.OUT_LINK_PID = " + rdLinkForm.getLinkPid());
+				sb.append(" UNION ALL");
+				sb.append(" SELECT 1");
+				sb.append(" FROM RD_LINK R, RD_LINK_FORM F, RD_GATE G");
+				sb.append(" WHERE R.LINK_PID = F.LINK_PID");
+				sb.append(" AND F.FORM_OF_WAY = 60");
+				sb.append(" AND G.IN_LINK_PID = " + rdLinkForm.getLinkPid());
+				sb.append(" AND G.OUT_LINK_PID = R.LINK_PID");
+	
+				String sql = sb.toString();
+				log.info("RdLink后检查GLM01570:" + sql);
+	
+				DatabaseOperator getObj = new DatabaseOperator();
+				List<Object> resultList = new ArrayList<Object>();
+				resultList = getObj.exeSelect(this.getConn(), sql);
+				
+				if(resultList.size() > 0){
+					this.setCheckResult("", "[RD_LINK," + rdLinkForm.getLinkPid() +"]", 0);
+				}
 			}
 		}
 		

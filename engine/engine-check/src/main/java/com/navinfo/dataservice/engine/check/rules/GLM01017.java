@@ -23,19 +23,18 @@ import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
  * @date 下午3:28:00
  * @Description: 轮渡/人渡种别的Link不能作为交限的进入线、经过线或退出线。
  * Link种别编辑服务端前检查:RdLink
- * 新增交限服务端前检查：RdRestriction
  */
 public class GLM01017 extends baseRule{
 	
 	public void preCheck(CheckCommand checkCommand) throws Exception{
 		for (IRow obj : checkCommand.getGlmList()) {
-			// 交限RdRestriction
-			if (obj instanceof RdRestriction) {
-				RdRestriction rdRestriction = (RdRestriction) obj;
-				checkRdRestriction(rdRestriction,checkCommand.getOperType());
-			}	
+//			// 交限RdRestriction
+//			if (obj instanceof RdRestriction) {
+//				RdRestriction rdRestriction = (RdRestriction) obj;
+//				checkRdRestriction(rdRestriction,checkCommand.getOperType());
+//			}	
 			//link种别编辑
-			else if (obj instanceof RdLink) {
+			if (obj instanceof RdLink) {
 				RdLink rdLink = (RdLink) obj;
 				checkRdLink(rdLink,checkCommand.getOperType());
 			}
@@ -48,31 +47,37 @@ public class GLM01017 extends baseRule{
 	 * @throws Exception 
 	 */
 	private void checkRdLink(RdLink rdLink, OperType operType) throws Exception {
-		StringBuilder sb = new StringBuilder();
+		//link种别编辑
+		if(rdLink.changedFields().containsKey("kind")){
+			int kind = Integer.parseInt(rdLink.changedFields().get("kind").toString()) ;
+			//非轮渡/人渡种别的Link,不触发检查
+			if(kind!=11&&kind!=13){
+				return;
+			}
+			
+			StringBuilder sb = new StringBuilder();
 
-		sb.append("SELECT 1 FROM RD_LINK R WHERE R.KIND IN (11,13)");
-		sb.append(" AND R.LINK_PID = " + rdLink.getPid());
-		sb.append(" AND R.U_RECORD <> 2");
-		sb.append(" AND EXISTS (SELECT 1 FROM RD_RESTRICTION RS WHERE RS.IN_LINK_PID = R.LINK_PID AND RS.U_RECORD <> 2)");
-		sb.append(" UNION");
-		sb.append(" SELECT 1 FROM RD_LINK R WHERE R.KIND IN (11,13)");
-		sb.append(" AND R.LINK_PID = " + rdLink.getPid());
-		sb.append(" AND EXISTS (SELECT 1 FROM RD_RESTRICTION_DETAIL RD WHERE RD.OUT_LINK_PID = R.LINK_PID AND RD.U_RECORD <> 2)");
-		sb.append(" UNION");
-		sb.append(" SELECT 1 FROM RD_LINK R WHERE R.KIND IN (11,13)");
-		sb.append(" AND R.LINK_PID = " + rdLink.getPid());
-		sb.append(" AND EXISTS (SELECT 1 FROM RD_RESTRICTION_VIA VIA WHERE VIA.LINK_PID = R.LINK_PID AND VIA.U_RECORD <> 2)");
+			sb.append("SELECT 1 FROM RD_RESTRICTION RS WHERE RS.IN_LINK_PID = " + rdLink.getPid());
+			sb.append(" AND RS.U_RECORD <> 2");
+			sb.append(" UNION");
+			sb.append(" SELECT 1 FROM RD_RESTRICTION_DETAIL RD WHERE RD.OUT_LINK_PID = " + rdLink.getPid());
+			sb.append(" AND RD.U_RECORD <> 2");
+			sb.append(" UNION");
+			sb.append(" SELECT 1 FROM RD_RESTRICTION_VIA VIA WHERE VIA.LINK_PID = " + rdLink.getPid());
+			sb.append(" AND VIA.U_RECORD <> 2");
 
-		String sql = sb.toString();
-		log.info("RdLink前检查GLM01017:" + sql);
+			String sql = sb.toString();
+			log.info("RdLink前检查GLM01017:" + sql);
 
-		DatabaseOperator getObj = new DatabaseOperator();
-		List<Object> resultList = new ArrayList<Object>();
-		resultList = getObj.exeSelect(this.getConn(), sql);
+			DatabaseOperator getObj = new DatabaseOperator();
+			List<Object> resultList = new ArrayList<Object>();
+			resultList = getObj.exeSelect(this.getConn(), sql);
 
-		if(resultList.size()>0){
-			this.setCheckResult("", "", 0);
+			if(resultList.size()>0){
+				this.setCheckResult("", "", 0);
+			}
 		}
+		
 		
 	}
 

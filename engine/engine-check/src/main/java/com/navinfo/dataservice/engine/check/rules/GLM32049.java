@@ -21,7 +21,7 @@ import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
  * 新增详细车道：RdLane
  * 修改详细车道：RdLane
  * 新增收费站后检查：RdTollgate
- * 新增收费站前检查：RdTollgate
+ * 新增收费站前检查：RdTollgate，后来删掉了
  */
 public class GLM32049 extends baseRule{
 	protected Logger log = Logger.getLogger(this.getClass());
@@ -31,13 +31,13 @@ public class GLM32049 extends baseRule{
 	 */
 	@Override
 	public void preCheck(CheckCommand checkCommand) throws Exception {
-		for (IRow obj : checkCommand.getGlmList()) {
-			// 新增收费站RdTollgate
-			if (obj instanceof RdTollgate) {
-				RdTollgate rdTollgate = (RdTollgate) obj;
-				checkRdTollgatePre(rdTollgate);
-			}	
-		}
+//		for (IRow obj : checkCommand.getGlmList()) {
+//			// 新增收费站RdTollgate
+//			if (obj instanceof RdTollgate) {
+//				RdTollgate rdTollgate = (RdTollgate) obj;
+//				checkRdTollgatePre(rdTollgate);
+//			}	
+//		}
 		
 	}
 

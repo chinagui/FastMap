@@ -7,13 +7,10 @@ import java.util.Map;
 import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNodeForm;
-import com.navinfo.dataservice.dao.glm.model.rd.speedlimit.RdSpeedlimit;
 import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeSelector;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
@@ -56,7 +53,7 @@ public class RdLink006 extends baseRule {
 				//Geometry geo2=GeoTranslator.transform(geoNew, 0.00001, 5);
 				Coordinate[] coords = geoNew.getCoordinates();	
 				if(isBorderNode && !MeshUtils.isPointAtMeshBorder(coords[0].x,coords[0].y)){
-					this.setCheckResult("", "", 0);
+					this.setCheckResult("", "[RD_NODE,"+rdNode.getPid()+"]", 0);
 					break;
 					}
 				}

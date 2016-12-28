@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.meta.svg;
 
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -66,8 +67,6 @@ public class SvgImageSelector {
 
 				json.put("fileName", fileName);
 
-				//String format = resultSet.getString("format");
-
 				String panel = resultSet.getString("PANEL");
 
 				BLOB blob = (BLOB) resultSet.getBlob("file_content");
@@ -78,10 +77,15 @@ public class SvgImageSelector {
 				is.read(buffer);
 				is.close();
 
-				String fileContent = "data:image/svg+xml" + ";base64," + new String(Base64.encodeBase64(buffer));
-
+				String xmlFileContent = new String(buffer);
+				json.put("xmlFileContent", xmlFileContent);
+				//svg转png
+				ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+				SvgPngConverter.convertToPng(xmlFileContent, outputStream);
+				outputStream.close();
+				byte[] lens = Base64.encodeBase64(outputStream.toByteArray());
+				String fileContent = "data:image/png;base64," + (new String(lens));
 				json.put("fileContent", fileContent);
-
 				json.put("panel", panel);
 
 				if (total == 0) {
@@ -106,8 +110,8 @@ public class SvgImageSelector {
 			DbUtils.closeQuietly(conn);
 		}
 	}
-	
-	public byte[] getById(String id) throws Exception {
+
+	public String getById(String id) throws Exception {
 
 		String sql = "select file_content from SC_VECTOR_MATCH where file_name = :1";
 
@@ -136,8 +140,8 @@ public class SvgImageSelector {
 				byte[] buffer = new byte[length];
 				is.read(buffer);
 				is.close();
-
-				return buffer;
+				
+				return new String(buffer);
 
 			}
 
@@ -151,6 +155,6 @@ public class SvgImageSelector {
 			DbUtils.closeQuietly(conn);
 		}
 
-		return new byte[0];
+		return "";
 	}
 }

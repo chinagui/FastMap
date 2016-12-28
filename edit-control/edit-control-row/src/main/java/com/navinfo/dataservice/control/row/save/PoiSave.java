@@ -117,6 +117,7 @@ public class PoiSave {
                 }
                 sb.append(childPoiPid).append(",").append(parentPoiPid);
                 result = editApiImpl.runPoi(json);
+                pid = result.getInt("pid");
                 // 其他
             } else {
                 result = editApiImpl.runPoi(json);
@@ -129,7 +130,7 @@ public class PoiSave {
                 }
             }
 
-            if (operType != OperType.DELETE && ObjType.IXSAMEPOI != objType && ObjType.IXPOIPARENT != objType) {
+            if (ObjType.IXSAMEPOI != objType) {
                 json.put("objId", pid);
                 BatchProcess batchProcess = new BatchProcess("row","save");
                 List<String> batchList = batchProcess.getRowRules();

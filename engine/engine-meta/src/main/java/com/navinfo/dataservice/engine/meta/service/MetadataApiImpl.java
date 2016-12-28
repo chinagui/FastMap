@@ -40,7 +40,6 @@ import com.navinfo.dataservice.engine.meta.translate.EngConverterHelper;
 import com.navinfo.dataservice.engine.meta.wordKind.WordKind;
 
 import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 /**
  * @author wangshishuai3966
@@ -384,5 +383,15 @@ public class MetadataApiImpl implements MetadataApi {
 			throws Exception {
 		// TODO Auto-generated method stub
 		return ScPointSpecKindcode.getInstance().scPointSpecKindCodeType2();
+	}
+	/**
+	 * 返回SC_POINT_NAMECK中“TYPE”=9且HM_FLAG<>’HM’的PRE_KEY
+	 * @return List<String> pre_key列表
+	 * @throws Exception
+	 */
+	@Override
+	public List<String> scPointNameckType9() throws Exception {
+		// TODO Auto-generated method stub
+		return ScPointNameck.getInstance().scPointNameckType9();
 	}
 }

@@ -39,6 +39,7 @@ public class RdRestrictionDetail implements IObj {
 	
 	private String rowId;
 
+	protected ObjStatus status;
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 
 	public Map<String, RdRestrictionCondition> conditionMap = new HashMap<String, RdRestrictionCondition>();
@@ -145,12 +146,12 @@ public class RdRestrictionDetail implements IObj {
 	@Override
 	public ObjStatus status() {
 
-		return null;
+		return status;
 	}
 
 	@Override
 	public void setStatus(ObjStatus os) {
-
+		status = os;
 	}
 
 	@Override
@@ -161,8 +162,13 @@ public class RdRestrictionDetail implements IObj {
 
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) {
-
-		return JSONObject.fromObject(this, JsonUtils.getStrConfig());
+		JSONObject json = JSONObject.fromObject(this,JsonUtils.getStrConfig());
+		
+		if (objLevel == ObjLevel.HISTORY) {
+			json.remove("status");
+		}
+		return json;
+//		return JSONObject.fromObject(this, JsonUtils.getStrConfig());
 	}
 
 	@Override

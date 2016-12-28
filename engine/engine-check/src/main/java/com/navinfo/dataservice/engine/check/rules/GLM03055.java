@@ -7,9 +7,7 @@ import java.util.List;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
-import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNodeForm;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
@@ -32,7 +30,7 @@ public class GLM03055 extends baseRule {
 	@Override
 	public void postCheck(CheckCommand checkCommand) throws Exception {
 		for (IRow obj: checkCommand.getGlmList()){
-			if (obj instanceof RdNode){
+			/*if (obj instanceof RdNode){
 				RdNode rdNode = (RdNode) obj;
 				List<Integer> nodeForms = getNodeForms(rdNode.getPid());
 				boolean isObstacleNode = false;
@@ -62,7 +60,8 @@ public class GLM03055 extends baseRule {
 						}
 					}
 				}
-			}else if (obj instanceof RdNodeForm){
+			}else*/ 
+			if (obj instanceof RdNodeForm){
 				RdNodeForm rdNodeForm = (RdNodeForm) obj;
 				List<Integer> nodeForms = getNodeForms(rdNodeForm.getNodePid());
 				boolean isObstacleNode = false;
@@ -92,13 +91,15 @@ public class GLM03055 extends baseRule {
 						}
 					}
 				}
-			}else if (obj instanceof RdLink){
+			}
+			/*else if (obj instanceof RdLink){
 				RdLink rdLink = (RdLink) obj;
 				int rdLinkPid = rdLink.getPid();
 				int sNodePid = rdLink.getsNodePid();
 				int eNodePid = rdLink.geteNodePid();
 				exeRdLinkCheck(rdLinkPid, sNodePid, eNodePid);
-			}else if (obj instanceof RdLinkForm){
+			}*/
+			else if (obj instanceof RdLinkForm){
 				RdLinkForm rdLinkForm = (RdLinkForm) obj;
 				int rdLinkPid = rdLinkForm.getLinkPid();
 				StringBuilder sb = new StringBuilder();

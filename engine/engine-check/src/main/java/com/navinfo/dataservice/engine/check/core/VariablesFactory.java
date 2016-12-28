@@ -30,14 +30,18 @@ import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdTmclocation;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdTmclocationLink;
+import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
+import com.navinfo.dataservice.dao.glm.model.rd.node.RdNodeForm;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionDetail;
+import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionVia;
 import com.navinfo.dataservice.dao.glm.model.rd.se.RdSe;
 import com.navinfo.dataservice.dao.glm.model.rd.slope.RdSlope;
 import com.navinfo.dataservice.dao.glm.model.rd.speedbump.RdSpeedbump;
 import com.navinfo.dataservice.dao.glm.model.rd.speedlimit.RdSpeedlimit;
 import com.navinfo.dataservice.dao.glm.model.rd.tollgate.RdTollgate;
 import com.navinfo.dataservice.dao.glm.model.rd.tollgate.RdTollgateName;
+import com.navinfo.dataservice.dao.glm.model.rd.tollgate.RdTollgatePassage;
 import com.navinfo.dataservice.dao.glm.model.rd.trafficsignal.RdTrafficsignal;
 import com.navinfo.dataservice.dao.glm.model.rd.voiceguide.RdVoiceguide;
 import com.navinfo.dataservice.dao.glm.model.rd.voiceguide.RdVoiceguideDetail;
@@ -105,6 +109,14 @@ public class VariablesFactory {
 			rdNodeSet.add(String.valueOf(rdLink.geteNodePid()));
 			rdNodeSet.add(String.valueOf(rdLink.getsNodePid()));
 		}
+		if (data instanceof RdNode) {
+			RdNode rdNode = (RdNode) data;
+			rdNodeSet.add(String.valueOf(rdNode.getPid()));
+		}
+		if (data instanceof RdNodeForm) {
+			RdNodeForm rdNodeForm = (RdNodeForm) data;
+			rdNodeSet.add(String.valueOf(rdNodeForm.getNodePid()));
+		}
 		if (data instanceof RdBranch) {
 			RdBranch rdBranch = (RdBranch) data;
 			rdNodeSet.add(String.valueOf(rdBranch.getNodePid()));
@@ -124,6 +136,9 @@ public class VariablesFactory {
 		}
 		if (data instanceof RdSe) {
 			rdNodeSet.add(String.valueOf(((RdSe) data).getNodePid()));
+		}
+		if (data instanceof RdTollgate) {
+			rdNodeSet.add(String.valueOf(((RdTollgate) data).getNodePid()));
 		}
 		return rdNodeSet;
 	}
@@ -335,6 +350,10 @@ public class VariablesFactory {
 			RdTollgateName rdTollgateName = (RdTollgateName) data;
 			rdLinkSet.add(String.valueOf(rdTollgateName.getPid()));
 		}
+		if (data instanceof RdTollgatePassage) {
+			RdTollgatePassage rdTollgatePassage = (RdTollgatePassage) data;
+			rdLinkSet.add(String.valueOf(rdTollgatePassage.getPid()));
+		}
 		return rdLinkSet;
 	}
 
@@ -445,6 +464,21 @@ public class VariablesFactory {
 		Set<String> rdLinkSet = new HashSet<String>();
 		if (data instanceof RdBranchDetail) {
 			rdLinkSet.add(String.valueOf(((RdBranchDetail) data).getPid()));
+		}
+		return rdLinkSet;
+	}
+
+	/**
+	 * @param data
+	 * @return
+	 */
+	public static Set<String> getRdRestrictionDetailPid(IRow data) {
+		Set<String> rdLinkSet = new HashSet<String>();
+		if (data instanceof RdRestrictionDetail) {
+			rdLinkSet.add(String.valueOf(((RdRestrictionDetail) data).getPid()));
+		}
+		else if (data instanceof RdRestrictionVia) {
+			rdLinkSet.add(String.valueOf(((RdRestrictionVia) data).getDetailId()));
 		}
 		return rdLinkSet;
 	}

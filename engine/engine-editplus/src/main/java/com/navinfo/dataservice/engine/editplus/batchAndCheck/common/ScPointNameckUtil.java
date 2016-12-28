@@ -52,4 +52,22 @@ public class ScPointNameckUtil {
 		}
 		return matchResult;
 	}
+	
+	/**
+	 * 通用匹配方法,name包含typeData列表中，则返回。
+	 * typeData=['ei','tu'] 
+	 * 若name="ytuy",返回['tu'] ；若name="yty",返回[] 
+	 * @param name
+	 * @param typeData
+	 * @return
+	 */
+	public static List<String> matchType(String name,List<String> typeData){
+		List<String> matchResult=new ArrayList<String>();
+		for(String key:typeData){
+			if(name.contains(key)){
+				matchResult.add(key);
+			}
+		}
+		return matchResult;
+	}
 }

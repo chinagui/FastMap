@@ -4,18 +4,20 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.navinfo.dataservice.engine.meta.translate.EngConverterHelper;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 import org.apache.uima.pear.util.FileUtil;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
+
 import com.navinfo.dataservice.api.fcc.iface.FccApi;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
@@ -51,6 +53,7 @@ import com.navinfo.dataservice.engine.meta.tmc.model.TmcPoint;
 import com.navinfo.dataservice.engine.meta.tmc.selector.TmcLineSelector;
 import com.navinfo.dataservice.engine.meta.tmc.selector.TmcPointSelector;
 import com.navinfo.dataservice.engine.meta.tmc.selector.TmcSelector;
+import com.navinfo.dataservice.engine.meta.translate.EngConverterHelper;
 import com.navinfo.dataservice.engine.meta.truck.TruckSelector;
 import com.navinfo.dataservice.engine.meta.workitem.Workitem;
 
@@ -326,6 +329,37 @@ public class MetaController extends BaseController {
                     ResponseUtils.assembleFailResult(e.getMessage()));
         }
     }
+    
+    @RequestMapping(value = "/svgImage/getById")
+    public void getSvgImageById(HttpServletRequest request,
+                                    HttpServletResponse response) throws ServletException, IOException {
+
+        String parameter = request.getParameter("parameter");
+
+        try {
+            JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+            String id = jsonReq.getString("id");
+
+            SvgImageSelector selector = new SvgImageSelector();
+
+            String data = selector.getById(id);
+
+            if (data.length() == 0) {
+                throw new Exception("id值不存在");
+            }
+            else
+            {
+            	response.getOutputStream().write(data.getBytes());
+            }
+        } catch (Exception e) {
+
+            logger.error(e.getMessage(), e);
+
+            response.getWriter().println(
+                    ResponseUtils.assembleFailResult(e.getMessage()));
+        }
+    }
 
     @RequestMapping(value = "/patternImage/search")
     public ModelAndView searchPatternImage(HttpServletRequest request)
@@ -374,7 +408,7 @@ public class MetaController extends BaseController {
             SvgImageSelector selector = new SvgImageSelector();
 
             JSONObject data = selector.searchByName(name, pageSize, pageNum);
-
+            
             return new ModelAndView("jsonView", success(data));
 
         } catch (Exception e) {

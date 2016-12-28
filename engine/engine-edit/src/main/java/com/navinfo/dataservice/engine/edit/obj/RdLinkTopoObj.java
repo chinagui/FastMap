@@ -20,7 +20,10 @@ import com.navinfo.dataservice.dao.glm.model.rd.tollgate.RdTollgate;
  * @Description: RdLinkTopoObj.java
  */
 public class RdLinkTopoObj {
-	protected List<RdLink> Links;
+	protected List<RdLink> delLinks;
+	protected List<RdLink> addLinks;
+	protected List<RdLink> modLinks;
+	protected Map<Long,Long> inheritRelations;//key是源link，value是继承的link
 	protected Map<Long,List<RdLane>> lanes;//key:link_pid
 	protected List<RdLaneTopoDetail> laneTopoDetails;
 	protected RdTollgate tollage;//inlink,innode参与的收费站
@@ -28,4 +31,5 @@ public class RdLinkTopoObj {
 	protected RdCross cross;//inLink参与的路口
 	protected RdRestriction restriction;//inlink,innode参与的交限
 	protected RdGate gate;//inlink,innode参与的大门
+	
 }

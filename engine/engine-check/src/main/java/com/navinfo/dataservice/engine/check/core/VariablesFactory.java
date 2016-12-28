@@ -30,6 +30,8 @@ import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdTmclocation;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdTmclocationLink;
+import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
+import com.navinfo.dataservice.dao.glm.model.rd.node.RdNodeForm;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionDetail;
 import com.navinfo.dataservice.dao.glm.model.rd.se.RdSe;
@@ -105,6 +107,14 @@ public class VariablesFactory {
 			RdLink rdLink = (RdLink) data;
 			rdNodeSet.add(String.valueOf(rdLink.geteNodePid()));
 			rdNodeSet.add(String.valueOf(rdLink.getsNodePid()));
+		}
+		if (data instanceof RdNode) {
+			RdNode rdNode = (RdNode) data;
+			rdNodeSet.add(String.valueOf(rdNode.getPid()));
+		}
+		if (data instanceof RdNodeForm) {
+			RdNodeForm rdNodeForm = (RdNodeForm) data;
+			rdNodeSet.add(String.valueOf(rdNodeForm.getNodePid()));
 		}
 		if (data instanceof RdBranch) {
 			RdBranch rdBranch = (RdBranch) data;

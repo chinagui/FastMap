@@ -34,6 +34,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNodeForm;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionDetail;
+import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionVia;
 import com.navinfo.dataservice.dao.glm.model.rd.se.RdSe;
 import com.navinfo.dataservice.dao.glm.model.rd.slope.RdSlope;
 import com.navinfo.dataservice.dao.glm.model.rd.speedbump.RdSpeedbump;
@@ -463,6 +464,21 @@ public class VariablesFactory {
 		Set<String> rdLinkSet = new HashSet<String>();
 		if (data instanceof RdBranchDetail) {
 			rdLinkSet.add(String.valueOf(((RdBranchDetail) data).getPid()));
+		}
+		return rdLinkSet;
+	}
+
+	/**
+	 * @param data
+	 * @return
+	 */
+	public static Set<String> getRdRestrictionDetailPid(IRow data) {
+		Set<String> rdLinkSet = new HashSet<String>();
+		if (data instanceof RdRestrictionDetail) {
+			rdLinkSet.add(String.valueOf(((RdRestrictionDetail) data).getPid()));
+		}
+		else if (data instanceof RdRestrictionVia) {
+			rdLinkSet.add(String.valueOf(((RdRestrictionVia) data).getDetailId()));
 		}
 		return rdLinkSet;
 	}

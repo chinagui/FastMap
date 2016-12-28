@@ -49,6 +49,10 @@ public class RdSpeedbump implements IObj {
 		this.pid = pid;
 	}
 
+	public String getRowId() {
+		return rowId;
+	}
+
 	public int getLinkPid() {
 		return linkPid;
 	}

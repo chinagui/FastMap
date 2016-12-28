@@ -1,0 +1,38 @@
+1、POI_COLUMN_OP_CONF.sql
+  功能：月编编辑辅助表，配置月编二级项保存提交用到的检查批处理
+  目标库：月大区库
+  验证说明：执行无报错，月大区库中有POI_COLUMN_OP_CONF表，且有17条数据（SELECT COUNT(1) FROM POI_COLUMN_OP_CONF），且无乱码
+  author：gpr
+
+2、POI_COLUMN_WORKITEM_CONF.sql
+  功能：月编编辑辅助表，配置二级作业项对应的分类检查规则号
+  目标库：月大区库
+  验证说明：执行无报错，月大区库中有POI_COLUMN_WORKITEM_CONF表，且有139条数据（SELECT COUNT(1) POI_COLUMN_WORKITEM_CONF），且无乱码
+  author：gpr
+  
+3、POI_COLUMN_STATUS.sql
+  功能：月编编辑辅助表，月编作业数据状态表
+  目标库：月大区库
+  验证说明：执行无报错，月大区库中有POI_COLUMN_STATUS表
+  author：gpr
+  
+4、SC_POINT_SPEC_KINDCODE_NEW.sql
+  功能：元数据表
+  目标库：元数据库
+  验证说明：执行无报错，元数据库中有SC_POINT_SPEC_KINDCODE_NEW表，且有707条数据（SELECT COUNT(1) FROM SC_POINT_SPEC_KINDCODE_NEW），且无乱码
+  author：gpr
+
+5. fm_sys/init_check_rules.sh
+  功能：检查/批处理
+  目标库：sys库
+  author：zxy
+  
+6. fm_meta/word_kind.sql
+  功能：检查/批处理使用的元数据表
+  目标库：meta库
+  author：zxy
+
+7.update_fm_sysconfig_token.sql
+	功能修改tocken
+  目标库：sys库
+  author：xxw

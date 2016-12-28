@@ -47,7 +47,19 @@ public class FMBAT20115 extends BasicBatchRule {
 		// 存在KIND_CODE或CHAIN的修改履历且修改前后在word_kind表中对应的词库不一样；
 		if (poi.hisOldValueContains(IxPoi.KIND_CODE) || poi.hisOldValueContains(IxPoi.CHAIN)) {
 			String wordNew = metadata.wordKind(poi.getKindCode(), poi.getChain());
-			String wordOld = metadata.wordKind((String)poi.getHisOldValue("kindCode"),(String)poi.getHisOldValue("chain"));
+			String newKindCode = null;
+			String newChain = null;
+			if (poi.hisOldValueContains(IxPoi.KIND_CODE)) {
+				newKindCode = (String)poi.getHisOldValue(IxPoi.KIND_CODE);
+			} else {
+				newKindCode = poi.getKindCode();
+			}
+			if (poi.hisOldValueContains(IxPoi.CHAIN)) {
+				newChain = (String)poi.getHisOldValue(IxPoi.CHAIN);
+			} else {
+				newChain = poi.getChain();
+			}
+			String wordOld = metadata.wordKind(newKindCode,newChain);
 			if (!wordNew.equals(wordOld)) {
 				isChanged = true;
 			}

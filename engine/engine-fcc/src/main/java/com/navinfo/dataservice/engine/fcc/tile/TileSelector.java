@@ -33,9 +33,9 @@ public class TileSelector extends BaseController {
 	 * @return 瓦片数据列表
 	 * @throws Exception
 	 */
-	public static List<String> getRdLinkTiles(int x, int y, int z, int dbId) throws Exception {
+	public static String getRdLinkTiles(int x, int y, int z, int dbId) throws Exception {
 
-		List<String> listResult = new ArrayList<String>();
+		//List<String> listResult = new ArrayList<String>();
 
 		String key = String.format("%02d", z) + String.format("%08d", x)
 				+ String.format("%07d", y);
@@ -43,12 +43,14 @@ public class TileSelector extends BaseController {
 		HBaseController control = new HBaseController();
 		String prefix = SystemConfigFactory.getSystemConfig().getValue("render.table.prefix");
 		ArrayList<KeyValue> list = control.getByRowkey((StringUtils.isEmpty(prefix)?"":prefix+"_")+"RDLINK_"+dbId, key, null);
-
+		String result="";
 		for (KeyValue kv : list) {
-			listResult.add(new String(kv.value()));
+			result=new String(kv.value());
+			if(result!=null&&!result.isEmpty()){break;}
 		}
-
-		return listResult;
+		return result;
+//
+//		return listResult;
 	}
 	
 	/**
@@ -63,9 +65,9 @@ public class TileSelector extends BaseController {
 	 * @return 瓦片数据列表
 	 * @throws Exception
 	 */
-	public static List<String> getRwLinkTiles(int x, int y, int z, int dbId) throws Exception {
+	public static String getRwLinkTiles(int x, int y, int z, int dbId) throws Exception {
 
-		List<String> listResult = new ArrayList<String>();
+		//List<String> listResult = new ArrayList<String>();
 
 		String key = String.format("%02d", z) + String.format("%08d", x)
 				+ String.format("%07d", y);
@@ -75,11 +77,12 @@ public class TileSelector extends BaseController {
 		String prefix = SystemConfigFactory.getSystemConfig().getValue("render.table.prefix");
 		ArrayList<KeyValue> list = control.getByRowkey((StringUtils.isEmpty(prefix)?"":prefix+"_")+"RWLINK_"+dbId, key, null);
 
+		String result="";
 		for (KeyValue kv : list) {
-			listResult.add(new String(kv.value()));
+			result=new String(kv.value());
+			if(result!=null&&!result.isEmpty()){break;}
 		}
-
-		return listResult;
+		return result;
 	}
 	
 	/**
@@ -94,9 +97,9 @@ public class TileSelector extends BaseController {
 	 * @return 瓦片数据列表
 	 * @throws Exception
 	 */
-	public static List<String> getAdLinkTiles(int x, int y, int z, int dbId) throws Exception {
+	public static String getAdLinkTiles(int x, int y, int z, int dbId) throws Exception {
 
-		List<String> listResult = new ArrayList<String>();
+		//List<String> listResult = new ArrayList<String>();
 
 		String key = String.format("%02d", z) + String.format("%08d", x)
 				+ String.format("%07d", y);
@@ -106,11 +109,12 @@ public class TileSelector extends BaseController {
 		String prefix = SystemConfigFactory.getSystemConfig().getValue("render.table.prefix");
 		ArrayList<KeyValue> list = control.getByRowkey((StringUtils.isEmpty(prefix)?"":prefix+"_")+"ADLINK_"+dbId, key, null);
 
+		String result="";
 		for (KeyValue kv : list) {
-			listResult.add(new String(kv.value()));
+			result=new String(kv.value());
+			if(result!=null&&!result.isEmpty()){break;}
 		}
-
-		return listResult;
+		return result;
 	}
 	
 	public static JSONObject getByTiles(List<ObjType> types, int x, int y, int z, int dbId) throws Exception{
@@ -139,7 +143,7 @@ public class TileSelector extends BaseController {
 //		JSONObject data = new JSONObject();
 //		data.put("RDLINK",getRdLinkTiles(53974, 24809, 16, 8));
 		
-		Map<String, List<String>> map = new HashMap<String,List<String>>();
+		Map<String, String> map = new HashMap<String,String>();
 		
 		map.put("RDLINK",getRdLinkTiles(53974, 24809, 16, 8));
 		

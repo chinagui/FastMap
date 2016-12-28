@@ -66,7 +66,7 @@ public class Command extends AbstractCommand {
 		
 		this.pid = this.content.getInt("pid");
 		
-		this.objId = json.getInt("objPid");
+		this.objId = json.getInt("objId");
 
 	}
 

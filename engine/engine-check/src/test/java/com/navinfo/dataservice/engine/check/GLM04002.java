@@ -43,8 +43,8 @@ public class GLM04002 extends baseRule{
 	 * @throws Exception 
 	 */
 	private void checkRdLink(RdLink rdLink) throws Exception {
-		//新增link
-		if(rdLink.status().equals(ObjStatus.INSERT)){
+		//新增link(rowId为空，修改map为空)
+		if(rdLink.rowId()==null&&rdLink.changedFields().isEmpty()){
 			Set<Integer> nodePids = new HashSet<Integer>();
 			nodePids.add(rdLink.geteNodePid());
 			nodePids.add(rdLink.getsNodePid());

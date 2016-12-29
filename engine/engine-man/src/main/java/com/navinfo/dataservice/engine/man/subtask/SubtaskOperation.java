@@ -616,7 +616,7 @@ public class SubtaskOperation {
 		// TODO Auto-generated method stub
 		try{
 			QueryRunner run = new QueryRunner();
-			String selectSql = "select st.SUBTASK_ID ,st.NAME"
+			String selectSql = "select st.SUBTASK_ID ,st.NAME,st.geometry"
 					+ ",st.DESCP,st.PLAN_START_DATE,st.PLAN_END_DATE"
 					+ ",st.STAGE,st.TYPE,st.STATUS"
 					+ ",r.DAILY_DB_ID,r.MONTHLY_DB_ID";
@@ -681,6 +681,7 @@ public class SubtaskOperation {
 				    page.setPageSize(pageSize);
 				    int total = 0;
 					while (rs.next()) {
+						log.debug("start subtask");
 						if(total==0){
 							total=rs.getInt("TOTAL_RECORD_NUM_");
 						}
@@ -709,8 +710,20 @@ public class SubtaskOperation {
 						//日编POI,日编一体化GRID粗编完成度，任务量信息
 						if((1==rs.getInt("STAGE")&&0==rs.getInt("TYPE"))||(1==rs.getInt("STAGE")&&3==rs.getInt("TYPE"))){
 							try {
-								List<Integer> gridIds = getGridIdsBySubtaskId(rs.getInt("SUBTASK_ID"));
-								Map<String,Integer> subtaskStat = subtaskStatRealtime((int)subtask.get("dbId"),rs.getInt("TYPE"),gridIds);
+								STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
+								String wkt="";
+								try {
+									wkt=GeoTranslator.struct2Wkt(struct);
+								} catch (Exception e1) {
+									// TODO Auto-generated catch block
+									e1.printStackTrace();
+								}
+								//log.info("get gridIds");
+								//List<Integer> gridIds = getGridIdsBySubtaskId(rs.getInt("SUBTASK_ID"));
+								//Map<String,Integer> subtaskStat = subtaskStatRealtime((
+								//List<Integer> gridIds = getGridIdsBySubtaskId(rs.getInt("SUBTASK_ID"));
+								log.debug("get stat");
+								Map<String,Integer> subtaskStat = subtaskStatRealtime((int)subtask.get("dbId"),rs.getInt("TYPE"),wkt);
 								if(subtaskStat != null){
 									if(subtaskStat.containsKey("poiFinish")){
 										subtask.put("poiFinish",subtaskStat.get("poiFinish"));
@@ -726,6 +739,7 @@ public class SubtaskOperation {
 									subtask.put("tipsFinish",0);
 									subtask.put("tipsTotal",0);
 								}
+								log.info("end stat");
 							} catch (Exception e) {
 								// TODO Auto-generated catch block
 								e.printStackTrace();
@@ -733,6 +747,7 @@ public class SubtaskOperation {
 						}
 						
 						list.add(subtask);
+						log.debug("end subtask");
 					}
 					page.setTotalCount(total);
 					page.setResult(list);
@@ -759,76 +774,97 @@ public class SubtaskOperation {
 	 * @return
 	 * @throws ServiceException 
 	 */
-	protected static Map<String, Integer> subtaskStatRealtime(Integer dbId, int type, List<Integer> gridIds) throws ServiceException {
+	protected static Map<String, Integer> subtaskStatRealtime(Integer dbId, int type, String wkt) throws ServiceException {
 		// TODO Auto-generated method stub
 		Connection conn = null;
 		try {
-			if(gridIds.isEmpty()){
-				return null;
-			}
+//			if(gridIds.isEmpty()){
+//				return null;
+//			}
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 			Map<String, Integer> stat = new HashMap<String, Integer>();
 			
-			JSONArray gridIdsJsonArray = JSONArray.fromObject(gridIds);
-			
-			String wkt = GridUtils.grids2Wkt(gridIdsJsonArray);
+//			JSONArray gridIdsJsonArray = JSONArray.fromObject(gridIds);
+//			
+//			String wkt = GridUtils.grids2Wkt(gridIdsJsonArray);
+			log.debug("get poi stat");
 			//查询POI总量
 			QueryRunner run = new QueryRunner();
-//			String sql = "select ip.row_id, pes.status, pes.is_upload"
-//					+ " from ix_poi ip, poi_edit_status pes"
-//					+ " where ip.row_id = pes.row_id"
-//					+ " and pes.status = 1"
-//					+ " AND sdo_within_distance(ip.geometry, sdo_geometry('"+ wkt + "', 8307), 'mask=anyinteract') = 'TRUE' ";
-			String sql_unfinish = "select count(1) unfinish"
+			String sql = "select pes.status, count(1) finishNum"
 					+ " from ix_poi ip, poi_edit_status pes"
 					+ " where ip.pid = pes.pid"
-					+ " and pes.status = 1"
-					+ " AND sdo_within_distance(ip.geometry, sdo_geometry('"+ wkt + "', 8307), 'mask=anyinteract') = 'TRUE' ";			
+					//+ " and pes.status = 1"
+					+ " AND sdo_within_distance(ip.geometry, sdo_geometry('"+ wkt + "', 8307), 'mask=anyinteract') = 'TRUE' "
+							+ "group by pes.status ";
 			//POI待作业
-			Integer unfinishPOI = run.query(conn, sql_unfinish, new ResultSetHandler<Integer>() {
+			stat = run.query(conn, sql,new ResultSetHandler<Map<String, Integer>>() {
 				@Override
-				public Integer handle(ResultSet rs) throws SQLException {
+				public Map<String, Integer> handle(ResultSet rs) throws SQLException {
+					Map<String, Integer> stat = new HashMap<String, Integer>();
 					int unfinish = 0;
-					if(rs.next()){
-						unfinish = rs.getInt("unfinish");
+					int total=0;
+					while(rs.next()){
+						int status=rs.getInt("status");
+						if(status==1){unfinish = rs.getInt("finishNum");}
+						total+=rs.getInt("finishNum");
 					}
-					return unfinish;
+					stat.put("poiFinish", total-unfinish);
+					stat.put("poiTotal", total);
+					return stat;
 				}
 			}
 			);
-			
-			String sql_total = "select count(1) toal"
-					+ " from ix_poi ip, poi_edit_status pes"
-					+ " where ip.pid = pes.pid"
-					+ " AND sdo_within_distance(ip.geometry, sdo_geometry('"+ wkt + "', 8307), 'mask=anyinteract') = 'TRUE' ";			
-			//poi总量
-			Integer totalPOI = run.query(conn, sql_total, new ResultSetHandler<Integer>() {
-				@Override
-				public Integer handle(ResultSet rs) throws SQLException {
-					int toal = 0;
-					if(rs.next()){
-						toal = rs.getInt("toal");
-					}
-					return toal;
-				}
-			}
-			);
-			
+//			String sql_unfinish = "select count(1) unfinish"
+//					+ " from ix_poi ip, poi_edit_status pes"
+//					+ " where ip.pid = pes.pid"
+//					+ " and pes.status = 1"
+//					+ " AND sdo_within_distance(ip.geometry, sdo_geometry('"+ wkt + "', 8307), 'mask=anyinteract') = 'TRUE' ";			
+//			//POI待作业
+//			Integer unfinishPOI = run.query(conn, sql_unfinish, new ResultSetHandler<Integer>() {
+//				@Override
+//				public Integer handle(ResultSet rs) throws SQLException {
+//					int unfinish = 0;
+//					if(rs.next()){
+//						unfinish = rs.getInt("unfinish");
+//					}
+//					return unfinish;
+//				}
+//			}
+//			);
+//			log.info("get poi stat2");
+//			
+//			String sql_total = "select count(1) toal"
+//					+ " from ix_poi ip, poi_edit_status pes"
+//					+ " where ip.pid = pes.pid"
+//					+ " AND sdo_within_distance(ip.geometry, sdo_geometry('"+ wkt + "', 8307), 'mask=anyinteract') = 'TRUE' ";			
+//			//poi总量
+//			Integer totalPOI = run.query(conn, sql_total, new ResultSetHandler<Integer>() {
+//				@Override
+//				public Integer handle(ResultSet rs) throws SQLException {
+//					int toal = 0;
+//					if(rs.next()){
+//						toal = rs.getInt("toal");
+//					}
+//					return toal;
+//				}
+//			}
+//			);
 			//int percent = 0;
 			//int percentPOI = 0;
 			//int percentRoad = 0; 
 			//poi数量及完成度
-			stat.put("poiFinish", totalPOI-unfinishPOI);
-			stat.put("poiTotal", totalPOI);
+//			stat.put("poiFinish", totalPOI-unfinishPOI);
+//			stat.put("poiTotal", totalPOI);
 			/*if(0 != unfinishPOI){
 				percentPOI = (totalPOI-unfinishPOI)*100/totalPOI;
 			}else{
 				percentPOI = 100;
 			}*/
 			//type=3,一体化grid粗编子任务。增加道路数量及完成度
+			log.debug("get tips stat");
 			if(3 == type){
 				FccApi api=(FccApi) ApplicationContextUtil.getBean("fccApi");
-				JSONObject resultRoad = api.getSubTaskStats(gridIdsJsonArray);
+				JSONObject resultRoad = api.getSubTaskStatsByWkt(wkt);
 				int tips = resultRoad.getInt("total") + resultRoad.getInt("finished");
 				stat.put("tipsFinish", resultRoad.getInt("finished"));
 				stat.put("tipsTotal", tips);	
@@ -964,8 +1000,10 @@ public class SubtaskOperation {
 						subtask.put("gridIds", gridIds);
 						
 						STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
+						String wkt="";
 						try {
-							subtask.put("geometry", GeoTranslator.struct2Wkt(struct));
+							wkt=GeoTranslator.struct2Wkt(struct);
+							subtask.put("geometry", wkt);
 						} catch (Exception e1) {
 							// TODO Auto-generated catch block
 							e1.printStackTrace();
@@ -999,7 +1037,7 @@ public class SubtaskOperation {
 						//日编POI,日编一体化GRID粗编完成度，任务量信息
 						if((1==rs.getInt("STAGE")&&0==rs.getInt("TYPE"))||(1==rs.getInt("STAGE")&&3==rs.getInt("TYPE"))){
 							try {
-								Map<String,Integer> subtaskStat = subtaskStatRealtime((int)subtask.get("dbId"),rs.getInt("TYPE"),gridIds);
+								Map<String,Integer> subtaskStat = subtaskStatRealtime((int)subtask.get("dbId"),rs.getInt("TYPE"),wkt);
 								if(subtaskStat != null){
 									if(subtaskStat.containsKey("poiFinish")){
 										subtask.put("poiFinish",subtaskStat.get("poiFinish"));

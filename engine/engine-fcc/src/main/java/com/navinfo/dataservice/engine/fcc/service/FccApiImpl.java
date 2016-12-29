@@ -46,5 +46,29 @@ public class FccApiImpl implements FccApi{
 		
 		return result;
 	}
+	
+	@Override
+	public JSONObject getSubTaskStatsByWkt(String wkt) throws Exception {
+		JSONObject result=new JSONObject();
+		
+		if (wkt==null||wkt.isEmpty()) {
+			
+            throw new IllegalArgumentException("参数错误:wkt不能为空。");
+        }
+
+		TipsSelector selector = new TipsSelector();
+		
+		//统计日编总量 stage=1
+		int total=selector.getTipsCountByStageAndWkt(wkt, 1);
+		
+		//统计日编已完成量stage=2 and t_dStatus=1
+		int finished=selector.getTipsCountByStageAndTdStatusAndWkt(wkt,2,1);
+		
+		result.put("total", total);
+		
+		result.put("finished", finished);
+		
+		return result;
+	}
 
 }

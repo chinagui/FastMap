@@ -4,8 +4,6 @@ import java.sql.Connection;
 import java.util.List;
 import java.util.Map;
 
-import net.sf.json.JSONObject;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.dbutils.DbUtils;
 import org.springframework.stereotype.Service;
@@ -20,9 +18,9 @@ import com.navinfo.dataservice.engine.meta.area.ScPointAdminArea;
 import com.navinfo.dataservice.engine.meta.area.ScPointDeepPlanarea;
 import com.navinfo.dataservice.engine.meta.chain.ChainSelector;
 import com.navinfo.dataservice.engine.meta.character.TyCharacterEgalcharExt;
-import com.navinfo.dataservice.engine.meta.character.TyCharacterFjtHzCheckSelector;
 import com.navinfo.dataservice.engine.meta.character.TyCharacterEgalcharExtCheckSelector;
 import com.navinfo.dataservice.engine.meta.character.TyCharacterFjtHmCheckSelector;
+import com.navinfo.dataservice.engine.meta.character.TyCharacterFjtHzCheckSelector;
 import com.navinfo.dataservice.engine.meta.engshort.ScEngshortSelector;
 import com.navinfo.dataservice.engine.meta.kind.KindSelector;
 import com.navinfo.dataservice.engine.meta.kindcode.KindCodeSelector;
@@ -40,6 +38,7 @@ import com.navinfo.dataservice.engine.meta.translate.EngConverterHelper;
 import com.navinfo.dataservice.engine.meta.wordKind.WordKind;
 
 import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 /**
  * @author wangshishuai3966
@@ -394,4 +393,5 @@ public class MetadataApiImpl implements MetadataApi {
 		// TODO Auto-generated method stub
 		return ScPointNameck.getInstance().scPointNameckType9();
 	}
+
 }

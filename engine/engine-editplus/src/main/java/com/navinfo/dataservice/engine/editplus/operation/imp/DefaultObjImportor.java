@@ -280,7 +280,7 @@ public class DefaultObjImportor extends AbstractOperation{
 							JSONArray attArr = (JSONArray)attValue;
 							if(attArr.size()>0){
 								for(int i=0;i<attArr.size();i++){
-									Object subObj = attArr.get(0);
+									Object subObj = attArr.get(i);
 									if(subObj instanceof JSONObject){
 										//为子表
 										JSONObject jo = (JSONObject) subObj;
@@ -317,11 +317,13 @@ public class DefaultObjImportor extends AbstractOperation{
 				List<BasicRow> subRowList = obj.getSubRowByName(subRowName);
 				String rowId = json.getString("rowId");
 				boolean flag = true;
-				for (BasicRow basicRow : subRowList) {
-					if(basicRow.getRowId().equals(rowId)){
-						subRow = basicRow;
-						flag = false;
-						break;
+				if(!subRowList.isEmpty()){
+					for (BasicRow basicRow : subRowList) {
+						if(basicRow.getRowId().equals(rowId)){
+							subRow = basicRow;
+							flag = false;
+							break;
+						}
 					}
 				}
 				if(flag){
@@ -366,7 +368,7 @@ public class DefaultObjImportor extends AbstractOperation{
 							JSONArray attArr = (JSONArray)attValue;
 							if(attArr.size()>0){
 								for(int i=0;i<attArr.size();i++){
-									Object subObj = attArr.get(0);
+									Object subObj = attArr.get(i);
 									if(subObj instanceof JSONObject){
 										//为子表
 										JSONObject jo = (JSONObject) subObj;

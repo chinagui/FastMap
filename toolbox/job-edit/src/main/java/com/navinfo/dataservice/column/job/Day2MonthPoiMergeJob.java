@@ -172,13 +172,13 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 			if(monthConn!=null)monthConn.rollback();
 			if(dailyConn!=null)dailyConn.rollback();
 			log.info("rollback db");
-			log.error(e.getMessage(),e);
 			curSyncInfo.setSyncStatus(FmDay2MonSync.SyncStatusEnum.FAIL.getValue());
 			d2mSyncApi.updateSyncInfo(curSyncInfo);
 			if(logMover!=null){
 				log.info("搬移履历回滚");
 				logMover.rollbackMove();
 			}
+			throw e;
 			
 		}finally{
 			DbUtils.commitAndCloseQuietly(monthConn);

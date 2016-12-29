@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -128,22 +129,26 @@ public class DeepInfoMarker {
 		// KIND_CODE为230210,且IX_POI_PARKING.PARKING_TYPE=2的不抓取
 		List<IxPoiParking> poiParkings = poiObj.getIxPoiParkings();
 		if ("230210".equals(kindCode)) {
-			for (IxPoiParking parking : poiParkings) {
-				String parkingType = parking.getParkingType();
-				if ("2".equals(parkingType)) {
-					return false;
+			if(CollectionUtils.isNotEmpty(poiParkings)){
+				for (IxPoiParking parking : poiParkings) {
+					String parkingType = parking.getParkingType();
+					if ("2".equals(parkingType)) {
+						return false;
+					}
 				}
 			}
 		}
 		List<IxPoiPhoto> poiPhotos = poiObj.getIxPoiPhotos();
-		if (poiPhotos.size() > 0) {
+		if (CollectionUtils.isNotEmpty(poiPhotos)) {
 			return true;
 		}
 		// 无照片，但是有修改parking履历的抓取
-		for (IxPoiParking parking : poiParkings) {
-			if (parking.getHisOpType().equals(OperationType.UPDATE)
-					&& parking.hisOldValueContains(IxPoiParking.PARKING_ID)) {
-				return true;
+		if(CollectionUtils.isNotEmpty(poiParkings)){
+			for (IxPoiParking parking : poiParkings) {
+				if (parking.getHisOpType().equals(OperationType.UPDATE)
+						&& parking.hisOldValueContains(IxPoiParking.PARKING_ID)) {
+					return true;
+				}
 			}
 		}
 		return false;
@@ -158,7 +163,7 @@ public class DeepInfoMarker {
 	private boolean isCarrentalPoi(IxPoiObj poiObj, String chain) {
 		if (carrentalChain.contains(chain)) {
 			List<IxPoiCarrental> poiCarrentals = poiObj.getIxPoiCarrentals();
-			if (poiCarrentals.size() == 0) {
+			if (CollectionUtils.isEmpty(poiCarrentals)) {
 				// CARRENTAL中无记录
 				return true;
 			} else {
@@ -280,6 +285,7 @@ public class DeepInfoMarker {
 			if (hostelKindCode.contains(kindCode)) {
 				if ("120101".equals(kindCode)) {
 					List<IxPoiHotel> poiHotels = poiObj.getIxPoiHotels();
+					if(CollectionUtils.isEmpty(poiHotels)) return false;
 					for (IxPoiHotel hotel : poiHotels) {
 						int rating = hotel.getRating();
 						if (hostelRatings.contains(rating)) {

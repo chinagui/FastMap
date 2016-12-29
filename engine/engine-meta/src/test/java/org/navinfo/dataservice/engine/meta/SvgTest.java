@@ -11,7 +11,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.HashSet;
 import java.util.Set;
-
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
 import org.apache.commons.dbutils.DbUtils;
@@ -21,7 +20,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.engine.meta.patternimage.PatternImageExporter;
-import com.navinfo.dataservice.engine.meta.patternimage.PatternImageImporter;
+//import com.navinfo.dataservice.engine.meta.patternimage.PatternImageImporter;
 import com.navinfo.dataservice.engine.meta.svg.SvgImageSelector;
 import net.sf.json.JSONObject;
 
@@ -100,14 +99,26 @@ public class SvgTest {
 	//@Test
 	public void testGetSvgData()
 	{
-		SvgImageSelector selector = new SvgImageSelector();
-		
-		try {
-			JSONObject obj = selector.searchByName("S", 5, 0);
-			System.out.println(obj);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		String parameter = "{\"name\":\"S0CYZ139NE29\",\"pageNum\":0,\"pageSize\":6}";
+
+        try {
+            JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+            String name = jsonReq.getString("name");
+
+            int pageSize = jsonReq.getInt("pageSize");
+
+            int pageNum = jsonReq.getInt("pageNum");
+
+            SvgImageSelector selector = new SvgImageSelector();
+
+            JSONObject data = selector.searchByName(name, pageSize, pageNum);
+            
+            System.out.println(data);
+            
+        } catch (Exception e) {
+        	e.printStackTrace();
+        }
 	}	
 	//@Test
 	public void testUpdateSvgExp() throws Exception

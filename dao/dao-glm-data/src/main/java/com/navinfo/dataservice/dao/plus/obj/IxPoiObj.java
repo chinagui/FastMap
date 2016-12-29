@@ -32,12 +32,15 @@ import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiHotel;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiIcon;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiIntroduction;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiNameFlag;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiNameTone;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiParent;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiParking;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiPhoto;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiRestaurant;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiTourroute;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiVideo;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxSamepoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxSamepoiPart;
 
 
@@ -677,6 +680,72 @@ public class IxPoiObj extends AbstractIxObj {
 		return ixSamepoiPart;
 	}
 	/**
+	 * 
+	 * @return
+	 * @throws Exception
+	 * 创建一个IxPoiNameFlag对象，完成主键赋值，完成objPid赋值，并将其写入到IxPoi的subrows属性中。
+	 * 暂时没有维护IxPoiNameFlag对象的外键
+	 */
+	public IxPoiNameFlag createIxPoiNameFlag()throws Exception{
+		IxPoiNameFlag ixPoiNameFlag = (IxPoiNameFlag)(ObjFactory.getInstance().createRow("IX_POI_NAME_FLAG", this.objPid()));
+		if(subrows.containsKey("IX_POI_NAME_FLAG")){
+			subrows.get("IX_POI_NAME_FLAG").add(ixPoiNameFlag);
+		}else{
+			List<BasicRow> ixPoiNameFlagList = new ArrayList<BasicRow>();
+			ixPoiNameFlagList.add(ixPoiNameFlag);
+			subrows.put("IX_POI_NAME_FLAG", ixPoiNameFlagList);
+		}
+		return ixPoiNameFlag;
+	}
+	
+	public List<IxPoiNameFlag> getIxPoiNameFlags(){
+		return (List)subrows.get("IX_POI_NAME_FLAG");
+	}
+	/**
+	 * 
+	 * @return
+	 * @throws Exception
+	 * 创建一个IxPoiNameTone对象，完成主键赋值，完成objPid赋值，并将其写入到IxPoi的subrows属性中。
+	 * 暂时没有维护IxPoiNameTone对象的外键
+	 */
+	public IxPoiNameTone createIxPoiNameTone()throws Exception{
+		IxPoiNameTone ixPoiNameTone = (IxPoiNameTone)(ObjFactory.getInstance().createRow("IX_POI_NAME_TONE", this.objPid()));
+		if(subrows.containsKey("IX_POI_NAME_TONE")){
+			subrows.get("IX_POI_NAME_TONE").add(ixPoiNameTone);
+		}else{
+			List<BasicRow> ixPoiNameToneList = new ArrayList<BasicRow>();
+			ixPoiNameToneList.add(ixPoiNameTone);
+			subrows.put("IX_POI_NAME_TONE", ixPoiNameToneList);
+		}
+		return ixPoiNameTone;
+	}
+	
+	public List<IxPoiNameTone> getIxPoiNameTones(){
+		return (List)subrows.get("IX_POI_NAME_TONE");
+	}
+	/**
+	 * 
+	 * @return
+	 * @throws Exception
+	 * 创建一个IxSamepoi对象，完成主键赋值，完成objPid赋值，并将其写入到IxPoi的subrows属性中。
+	 * 暂时没有维护IxSamepoi对象的外键
+	 */
+	public IxSamepoi createIxSamepoi()throws Exception{
+		IxSamepoi ixSamepoi = (IxSamepoi)(ObjFactory.getInstance().createRow("IX_SAMEPOI", this.objPid()));
+		if(subrows.containsKey("IX_SAMEPOI")){
+			subrows.get("IX_SAMEPOI").add(ixSamepoi);
+		}else{
+			List<BasicRow> ixSamepoiList = new ArrayList<BasicRow>();
+			ixSamepoiList.add(ixSamepoi);
+			subrows.put("IX_SAMEPOI", ixSamepoiList);
+		}
+		return ixSamepoi;
+	}
+	
+	public List<IxSamepoi> getIxSamepois(){
+		return (List)subrows.get("IX_SAMEPOI");
+	}
+	/**
 	 * 根据名称分类,名称类型,语言代码获取名称内容
 	 * @author Han Shaoming
 	 * @param langCode
@@ -777,7 +846,17 @@ public class IxPoiObj extends AbstractIxObj {
 			}
 		return null;
 	}
-	
+	/**
+	 * 官方原始英文名
+	 */
+	public IxPoiName getOfficeOriginEngName(){
+		List<IxPoiName> subRows=getIxPoiNames();
+		for(IxPoiName br:subRows){
+			if(br.isOfficeName()&&br.isOriginName()&&br.isEng()){
+				return br;}
+			}
+		return null;
+	}
 	/**
 	 * 简称中文名称
 	 */
@@ -1085,6 +1164,12 @@ catch (Exception e) {
 			return this.createIxPoiCarrental();
 		}else if("samepoiParts".equals(subRowName)){
 			return this.createIxSamepoiPart();
+		}else if("nameFlags".equals(subRowName)){
+			return this.createIxPoiNameFlag();
+		}else if("samepois".equals(subRowName)){
+			return this.createIxSamepoi();
+		}else if("nameTones".equals(subRowName)){
+			return this.createIxPoiNameTone();
 		}else{
 			throw new Exception("字段名为:"+subRowName+"的子表未创建");
 		}
@@ -1151,6 +1236,12 @@ catch (Exception e) {
 			return (List)subrows.get("IX_POI_CARRENTAL");
 		}else if("samepoiParts".equals(subRowName)){
 			return (List)subrows.get("IX_SAMEPOI_PART");
+		}else if("nameFlags".equals(subRowName)){
+			return (List)subrows.get("IX_POI_NAME_FLAG");
+		}else if("samepois".equals(subRowName)){
+			return (List)subrows.get("IX_SAMEPOI");
+		}else if("nameTones".equals(subRowName)){
+			return (List)subrows.get("IX_POI_NAME_TONE");
 		}else{
 			throw new Exception("字段名为:"+subRowName+"的子表未找到");
 		}

@@ -812,6 +812,7 @@ public class IxPoiSearch implements ISearch {
 		try{
 			JSONObject dataObj = new JSONObject();
 			dataObj.put("pid", pid);
+			dataObj.put("rowId", poi.getRowId());
 			dataObj.put("poiNum", poi.getPoiNum());
 			dataObj.put("kindCode", poi.getKindCode());
 			dataObj.put("meshId", poi.getMeshId());
@@ -941,7 +942,7 @@ public class IxPoiSearch implements ISearch {
 	 */
 	private JSONObject getNamesNameFlagNameList(String firstWordItem,String secondWorkItem,IxPoi poi,JSONObject dataObj) throws Exception {
 		JSONArray nameArray = new JSONArray();
-		String nameFlag="";
+		//String nameFlag="";
 		List<IRow> nRows = poi.getNames();
 		try{
 			for (IRow nRow:nRows) {
@@ -962,15 +963,15 @@ public class IxPoiSearch implements ISearch {
 				}
 				nameArray.add(nameObj);
 				//nameFlag赋值
-				if (firstWordItem.equals("poi_englishname")) {
-					if (name.getLangCode().equals("ENG") && name.getNameType() == 2 && name.getNameClass()== 1) {
-						List<IRow> fRows = name.getNameFlags();
-						for (IRow fRow:fRows) {
-							IxPoiNameFlag nFlag = (IxPoiNameFlag) fRow;
-							nameFlag = nFlag.getFlagCode();
-						}
-					}
-				}
+//				if (firstWordItem.equals("poi_englishname")) {
+//					if (name.getLangCode().equals("ENG") && name.getNameType() == 2 && name.getNameClass()== 1) {
+//						List<IRow> fRows = name.getNameFlags();
+//						for (IRow fRow:fRows) {
+//							IxPoiNameFlag nFlag = (IxPoiNameFlag) fRow;
+//							nameFlag = nFlag.getFlagCode();
+//						}
+//					}
+//				}
 				//nameList赋值
 				if (firstWordItem.equals("poi_englishname")) {
 					if (!secondWorkItem.equals("confirmAliasEngName")&&!secondWorkItem.equals("officalStandardAliasEngName")) {
@@ -988,7 +989,7 @@ public class IxPoiSearch implements ISearch {
 				}
 			}
 			dataObj.put("names", nameArray);
-			dataObj.put("nameFlag", nameFlag);
+			//dataObj.put("nameFlag", nameFlag);
 			return dataObj;
 		}catch (Exception e) {
 			throw e;

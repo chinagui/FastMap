@@ -254,7 +254,7 @@ public class DefaultObjImportor extends AbstractOperation{
 				String attName = (String)it.next();
 				Object attValue = json.get(attName);
 				if((attValue==null && (!(attValue instanceof JSONNull)))||StringUtils.isEmpty(attName)
-						||"objStatus".equals(attName)){
+						||"objStatus".equals(attName)||"rowId".equals(attName)){
 					log.warn("注意：request的json中存在name或者value为空的属性，已经被忽略。"+attName);
 					continue;
 				}
@@ -339,7 +339,8 @@ public class DefaultObjImportor extends AbstractOperation{
 					String attName = (String)it.next();
 					Object attValue = json.get(attName);
 					if((attValue==null && (!(attValue instanceof JSONNull)))
-							||StringUtils.isEmpty(attName)||"objStatus".equals(attName)||"pid".equals(attName)){
+							||StringUtils.isEmpty(attName)||"objStatus".equals(attName)
+							||"pid".equals(attName)||"rowId".equals(attName)){
 						log.warn("注意：request的json中存在name或者value为空的属性，已经被忽略。"+attName);
 						continue;
 					}
@@ -361,6 +362,24 @@ public class DefaultObjImportor extends AbstractOperation{
 							}
 							String newAttName = this.camelToUnderline(attName);
 							subRow.setAttrByCol(newAttName, attValue);
+						}else if(attValue instanceof JSONArray){
+							JSONArray attArr = (JSONArray)attValue;
+							if(attArr.size()>0){
+								for(int i=0;i<attArr.size();i++){
+									Object subObj = attArr.get(0);
+									if(subObj instanceof JSONObject){
+										//为子表
+										JSONObject jo = (JSONObject) subObj;
+										this.setSubAttrValue(jo, obj, attName);
+									}else{
+										throw new Exception(attName+"为数组类型，其内部格式为不支持的json结构");
+									}
+								}
+							}
+						}else if (attValue instanceof JSONObject) {
+							//为子表
+							JSONObject subJo = (JSONObject) attValue;
+							this.setSubAttrValue(subJo, obj, attName);
 						}
 					}catch(Exception e){
 						log.error(e.getMessage(),e);

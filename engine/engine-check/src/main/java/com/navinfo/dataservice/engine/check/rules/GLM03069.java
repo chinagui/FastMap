@@ -2,10 +2,10 @@ package com.navinfo.dataservice.engine.check.rules;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
-import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNodeForm;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
@@ -28,20 +28,20 @@ public class GLM03069 extends baseRule{
 	@Override
 	public void postCheck(CheckCommand checkCommand) throws Exception {
 		for(IRow obj: checkCommand.getGlmList()){
-			if (obj instanceof RdNode){
-				RdNode rdNode = (RdNode) obj;
-				List<IRow> forms = rdNode.getForms();
+			if (obj instanceof RdNodeForm){
 				boolean isBorderNode = false;
-				for (IRow form: forms){
-					RdNodeForm rdNodeForm = (RdNodeForm) form;
-					if (rdNodeForm.getFormOfWay() == 2){
-						isBorderNode = true;
-						break;
-					}
+				RdNodeForm rdNodeForm = (RdNodeForm) obj;
+				Map<String, Object> changedFields = rdNodeForm.changedFields();
+				int formOfWay = 1;
+				if(changedFields.containsKey("formOfWay")){
+					formOfWay = (int) changedFields.get("formOfWay");
+				}
+				if (formOfWay == 2){
+					isBorderNode = true;
 				}
 				if (isBorderNode){
 					//图廓点
-					int rdNodePid = rdNode.getPid();
+					int rdNodePid = rdNodeForm.getNodePid();
 					StringBuilder sb = new StringBuilder();
 			        sb.append("select rn.LINK_PID from RD_LINK rn where (rn.E_NODE_PID= ");
 			        sb.append(rdNodePid);
@@ -68,11 +68,10 @@ public class GLM03069 extends baseRule{
 						List<Object> resultList1=new ArrayList<Object>();
 						resultList1=getObj1.exeSelect(this.getConn(), sql1);
 						if (resultList1.size() != 2){
-							this.setCheckResult("", "[RD_NODE,"+rdNode.getPid()+"]", 0);
+							this.setCheckResult("", "[RD_NODE,"+rdNodeForm.getNodePid()+"]", 0);
 						}
 					}else if (resultList.size() > 2){
-						String log = "图廓点挂接了2个以上link";
-						this.setCheckResult("", "[RD_NODE,"+rdNode.getPid()+"]", 0, log);
+						this.setCheckResult("", "[RD_NODE,"+rdNodeForm.getNodePid()+"]", 0);
 					}
 				}
 			}

@@ -2,6 +2,7 @@ package com.navinfo.dataservice.engine.check.rules;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -34,7 +35,8 @@ public class GLM03004 extends baseRule{
 		for (IRow obj: checkCommand.getGlmList()){
 			if (obj instanceof RdNode){
 				RdNode rdNode = (RdNode) obj;
-				int kind = rdNode.getKind();
+				Map<String, Object> changedFields = rdNode.changedFields();
+				int kind = (int) changedFields.get("kind");
 				//路上点
 				if (kind == 3){
 					//查询node点挂接的link

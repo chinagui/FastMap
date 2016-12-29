@@ -1,13 +1,14 @@
 package com.navinfo.dataservice.engine.check.rules;
 
 import java.util.List;
+import java.util.Map;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNodeForm;
-import com.navinfo.dataservice.dao.glm.model.rd.node.RdNodeMesh;
+import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeSelector;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 
 /** 
@@ -31,24 +32,24 @@ public class GLM03085 extends baseRule {
 		
 		for (IRow obj: checkCommand.getGlmList()){
 			//获取RdNode信息
-			if (obj instanceof RdNode){
-				RdNode rdNode = (RdNode)obj;
-				double rdNodeX = rdNode.getGeometry().getCoordinate().x;
-				double rdNodeY = rdNode.getGeometry().getCoordinate().y;
-				//判断点是不是在图廓线上
-				if (MeshUtils.isPointAtMeshBorderWith100000(rdNodeX, rdNodeY)){
-					List<IRow> fromList = rdNode.getForms();
-					for (IRow form: fromList){
-						RdNodeForm rdNodeForm = (RdNodeForm) form;
-						int formOfWay = rdNodeForm.getFormOfWay();
+			if (obj instanceof RdNodeForm){
+				RdNodeForm rdNodeForm = (RdNodeForm)obj;
+				int nodePid = rdNodeForm.getNodePid();
+				//查询主表
+				RdNodeSelector nodeSelector=new RdNodeSelector(this.getConn());
+				String sql = "SELECT * FROM RD_NODE WHERE NODE_PID="+nodePid;
+				List<RdNode> rdNodes = nodeSelector.loadBySql(sql, false);
+				if(!rdNodes.isEmpty()){
+					RdNode rdNode=rdNodes.get(0);
+					double rdNodeX = rdNode.getGeometry().getCoordinate().x;
+					double rdNodeY = rdNode.getGeometry().getCoordinate().y;
+					//判断点是不是在图廓线上
+					if (MeshUtils.isPointAtMeshBorderWith100000(rdNodeX, rdNodeY)){
+						Map<String, Object> changedFields = rdNodeForm.changedFields();
+						int formOfWay = (int) changedFields.get("formOfWay");
 						//点的形态不是图廓点
 						if (formOfWay != 2){
-							List<IRow> meshList = rdNode.getMeshes();
-							if (!meshList.isEmpty()){
-								RdNodeMesh rdNodeMesh = (RdNodeMesh)meshList.get(0);
-								int meshId = rdNodeMesh.getMeshId();
-								this.setCheckResult(rdNode.getGeometry(), "[RD_NODE,"+rdNode.getPid()+"]", meshId);
-							}
+							this.setCheckResult("", "[RD_NODE,"+nodePid+"]", 0);
 						}
 					}
 				}

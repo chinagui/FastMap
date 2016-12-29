@@ -10,6 +10,7 @@ import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.directroute.RdDirectroute;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneTopology;
+import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionDetail;
 import com.navinfo.dataservice.dao.glm.model.rd.voiceguide.RdVoiceguideDetail;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
@@ -61,9 +62,47 @@ public class GLM26017_1 extends baseRule {
 				RdDirectroute rdDirectroute = (RdDirectroute)row;
 				checkRdDirectroute(rdDirectroute);
 			} 
+			//交限关系类型
+			else if(row instanceof RdRestrictionDetail){
+				RdRestrictionDetail rdDirectroute = (RdRestrictionDetail)row;
+				checkRdRestrictionDetail(rdDirectroute);
+			} 
 		}
 	}
 	
+	/**
+	 * @param rdDirectroute
+	 * @throws Exception 
+	 */
+	private void checkRdRestrictionDetail(RdRestrictionDetail rdRestrictionDetail) throws Exception {
+		if(rdRestrictionDetail.changedFields().containsKey("relationshipType")){
+			int relationshipType = Integer.parseInt(rdRestrictionDetail.changedFields().get("relationshipType").toString());
+			if(relationshipType==1){
+				StringBuilder sb = new StringBuilder();
+
+				sb.append("SELECT 1 FROM RD_RESTRICTION RR");
+				sb.append(" WHERE RR.U_RECORD <> 2");
+				sb.append(" AND RR.PID = "+rdRestrictionDetail.getRestricPid());
+				sb.append(" AND AND NOT EXISTS (SELECT 1 FROM RD_CROSS_NODE RCN WHERE RCN.NODE_PID = RR.NODE_PID AND RCN.U_RECORD <> 2)");
+				
+				String sql = sb.toString();
+				log.info("RdRestrictionDetail检查GLM26017_1--sql:" + sql);
+				
+				DatabaseOperator getObj = new DatabaseOperator();
+				List<Object> resultList = new ArrayList<Object>();
+				resultList = getObj.exeSelect(this.getConn(), sql);
+				
+				if(!resultList.isEmpty()){
+					String target = "[RD_RESTRICTION," + rdRestrictionDetail.getRestricPid() + "]";
+					this.setCheckResult("", target, 0,"关系类型为“路口”的交限，应制作到登记了路口的点上");
+				}
+			}
+		}
+		
+	}
+
+
+
 	/**
 	 * @author Han Shaoming
 	 * @param rdVoiceguideDetail

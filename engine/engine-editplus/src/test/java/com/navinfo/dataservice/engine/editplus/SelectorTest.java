@@ -388,8 +388,13 @@ public class SelectorTest {
 					+ "\"addresses\":[{\"nameGroupid\":1,\"srcFlag\":1,"
 					+ "\"poiPid\":69159,\"rowId\":\"D476DB9402074216A28607D8D8C9C71D\","
 					+ "\"langCode\":\"CHI\",\"fullname\":\"北京\",\"objStatus\": \"UPDATE\"}]}}";*/
-			String data = "{\"names\":[{\"name\":\"北京华军中医医院\",\"rowId\":\"3AE1FCF65D1F92F7E050A8C08304EE4C\""
-					+ ",\"pid\":335,\"objStatus\":\"UPDATE\"}],\"pid\":335}";
+			/*String data = "{\"names\":[{\"name\":\"北京华军中医医院\",\"rowId\":\"\""
+					+ ",\"pid\":335,\"objStatus\":\"INSERT\"}],\"pid\":335}";*/
+			String data = "{\"names\":[{\"name\":\"Beijing Huajun Traditional Controversial Chinese "
+					+ "Medicine Hospital 11\",\"rowId\":\"3AE1FCF65D2092F7E050A8C08304EE4C\",\"pid\":8069341,"
+					+ "\"objStatus\":\"UPDATE\",\"nameFlags\":[{\"nameId\":8069341,\"flagCode\":\"002000030000\","
+					+ "\"rowId\":\"\",\"objStatus\":\"INSERT\"}]}],\"rowId\":\"3AE1FB4B0B6492F7E050A8C08304EE4C\","
+					+ "\"pid\":335}";
 			JSONObject jo = JSONObject.fromObject(data);
 			System.out.println("导入的json数据"+data);
 			//Map<String, JSONObject> addMap = new HashMap<String, JSONObject>();

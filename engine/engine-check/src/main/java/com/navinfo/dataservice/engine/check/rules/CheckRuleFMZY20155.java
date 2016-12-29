@@ -46,7 +46,6 @@ public class CheckRuleFMZY20155 extends baseRule {
 		{
 			IxPoiParking poiPark = (IxPoiParking) row;
 			String remark=poiPark.getRemark(); 
-			Arrays.asList(defaultList).contains('|');
 			if (StringUtils.isNotEmpty(remark) && (remark.indexOf("\\|")<0) && (!defaultList.contains(remark))){
                 log="大陆停车场收费备注的值没有'|'时，值不在{0,1,2,3,4,5,6,7}中";
                 this.setCheckResult(ixPoi.getGeometry(), "[IX_POI,"+ixPoi.getPid()+"]", ixPoi.getMeshId(),log);

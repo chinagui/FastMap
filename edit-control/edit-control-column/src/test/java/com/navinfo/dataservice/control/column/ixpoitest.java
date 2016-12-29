@@ -104,8 +104,8 @@ public class ixpoitest {
 			checkRules.add("FM-YW-20-225");
 			checkRules.add("FM-YW-20-235");
 			
-			DeepCoreControl deep = new DeepCoreControl();
-			deep.deepCheckRun(pids, checkRules, "IXPOI", "UPDATE", conn);
+//			DeepCoreControl deep = new DeepCoreControl();
+//			deep.deepCheckRun(pids, checkRules, "IXPOI", "UPDATE", conn);
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {

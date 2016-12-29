@@ -645,6 +645,21 @@ public class TipsSelector {
 			throws Exception {
 
 		String wkt = GridUtils.grids2Wkt(grids);
+		return getTipsCountByStageAndWkt(wkt,stages);
+	}
+	
+	/**
+	 * 统计子任务的tips总作业量,grid范围内滿足stage的数据条数
+	 * 
+	 * @param grids
+	 * @param stages
+	 * @return
+	 * @throws Exception
+	 */
+	public int getTipsCountByStageAndWkt(String wkt, int stages)
+			throws Exception {
+
+		//String wkt = GridUtils.grids2Wkt(grids);
 		
 		JSONArray stageJsonArr=new JSONArray();
 		
@@ -667,8 +682,20 @@ public class TipsSelector {
 	 */
 	public int getTipsCountByStageAndTdStatus(JSONArray grids, int stages, int tdStatus)
 			throws Exception {
-
 		String wkt = GridUtils.grids2Wkt(grids);
+		return getTipsCountByStageAndTdStatusAndWkt(wkt,stages,tdStatus);
+	}
+	
+	/**
+	 * 统计子任务的tips总作业量,grid范围内滿足stage、tdStatus的数据条数
+	 * 
+	 * @param grids
+	 * @param stages
+	 * @return
+	 * @throws Exception
+	 */
+	public int getTipsCountByStageAndTdStatusAndWkt(String wkt, int stages, int tdStatus)
+			throws Exception {
 
 		List<JSONObject> tips = conn.queryTips(wkt, stages,tdStatus);
 

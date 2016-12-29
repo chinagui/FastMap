@@ -70,7 +70,6 @@ public class ColumnSubmitJob extends AbstractJob {
 			int type = 1;
 			
 			IxPoiOpConfSelector ixPoiOpConfSelector = new IxPoiOpConfSelector(conn);
-			
 			IxPoiColumnStatusSelector ixPoiDeepStatusSelector = new IxPoiColumnStatusSelector(conn);
 			
 			List<String> secondWorkList = new ArrayList<String>();

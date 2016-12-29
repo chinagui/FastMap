@@ -66,7 +66,6 @@ public class ColumnSaveJob extends AbstractJob {
 			
 			int dbId = subtask.getDbId();
 			conn = DBConnector.getInstance().getConnectionById(dbId);
-			
 			log.info("dbId:"+dbId);
 			
 			DefaultObjImportor importor = new DefaultObjImportor(conn,null);

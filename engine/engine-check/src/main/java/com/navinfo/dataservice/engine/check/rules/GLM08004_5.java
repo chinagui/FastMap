@@ -10,32 +10,28 @@ import org.apache.commons.lang.StringUtils;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
-import com.navinfo.dataservice.dao.glm.iface.ObjType;
-import com.navinfo.dataservice.dao.glm.iface.OperType;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionDetail;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionVia;
-import com.navinfo.dataservice.engine.check.CheckEngine;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
 
-
-
-
 /** 
- * @ClassName: GLM01017
+ * @ClassName: GLM08004_5
  * @author songdongyan
- * @date 下午3:28:00
- * @Description: 轮渡/人渡种别的Link不能作为交限的进入线、经过线或退出线。
- * Link种别编辑服务端前检查:RdLink
+ * @date 2016年12月28日
+ * @Description: 出租车专用道（加了永久穿行限制，并且车辆类型同时且只制作了允许出租车、急救车和行人的link）不能作为交限（包括路口和线线结构里的所有交限）的进入线或者退出线（也查线线经过线，但不查线线经过线为交叉口内link的情况）
  * 新增交限/卡车交限：RdRestriction
  * 修改交限/卡车交限：RdRestrictionDetail(新增，修改outLinkPid),RdRestrictionVia(新增，修改LinkPid)
  */
-public class GLM01017 extends baseRule{
-	
-	public void preCheck(CheckCommand checkCommand) throws Exception{
-		for (IRow obj : checkCommand.getGlmList()) {
+public class GLM08004_5 extends baseRule {
+
+	/* (non-Javadoc)
+	 * @see com.navinfo.dataservice.engine.check.core.baseRule#preCheck(com.navinfo.dataservice.dao.check.CheckCommand)
+	 */
+	@Override
+	public void preCheck(CheckCommand checkCommand) throws Exception {
+		for(IRow obj:checkCommand.getGlmList()){
 			//新增交限/卡车交限
 			if(obj instanceof RdRestriction ){
 				RdRestriction restriObj=(RdRestriction) obj;
@@ -53,51 +49,7 @@ public class GLM01017 extends baseRule{
 				RdRestrictionVia rdRestrictionVia=(RdRestrictionVia) obj;
 				checkRdRestrictionVia(rdRestrictionVia,checkCommand);
 			}
-			//link种别编辑
-			else if (obj instanceof RdLink) {
-				RdLink rdLink = (RdLink) obj;
-				checkRdLink(rdLink,checkCommand.getOperType());
-			}
 		}
-	}
-	
-	/**
-	 * @param rdLink
-	 * @param operType
-	 * @throws Exception 
-	 */
-	private void checkRdLink(RdLink rdLink, OperType operType) throws Exception {
-		//link种别编辑
-		if(rdLink.changedFields().containsKey("kind")){
-			int kind = Integer.parseInt(rdLink.changedFields().get("kind").toString()) ;
-			//非轮渡/人渡种别的Link,不触发检查
-			if(kind!=11&&kind!=13){
-				return;
-			}
-			
-			StringBuilder sb = new StringBuilder();
-
-			sb.append("SELECT 1 FROM RD_RESTRICTION RS WHERE RS.IN_LINK_PID = " + rdLink.getPid());
-			sb.append(" AND RS.U_RECORD <> 2");
-			sb.append(" UNION");
-			sb.append(" SELECT 1 FROM RD_RESTRICTION_DETAIL RD WHERE RD.OUT_LINK_PID = " + rdLink.getPid());
-			sb.append(" AND RD.U_RECORD <> 2");
-			sb.append(" UNION");
-			sb.append(" SELECT 1 FROM RD_RESTRICTION_VIA VIA WHERE VIA.LINK_PID = " + rdLink.getPid());
-			sb.append(" AND VIA.U_RECORD <> 2");
-
-			String sql = sb.toString();
-			log.info("RdLink前检查GLM01017:" + sql);
-
-			DatabaseOperator getObj = new DatabaseOperator();
-			List<Object> resultList = new ArrayList<Object>();
-			resultList = getObj.exeSelect(this.getConn(), sql);
-
-			if(resultList.size()>0){
-				this.setCheckResult("", "", 0);
-			}
-		}
-		
 		
 	}
 
@@ -119,14 +71,20 @@ public class GLM01017 extends baseRule{
 			}
 		}
 		if(linkPid!=0){
-			StringBuilder sb = new StringBuilder();
+			//检查经过线
+			StringBuilder sb2 = new StringBuilder();
 
-			sb.append(" SELECT 1 FROM RD_LINK R WHERE R.KIND IN (13,11)");
-			sb.append(" AND R.U_RECORD <> 2");
-			sb.append(" AND R.LINK_PID =" + linkPid);
+			sb2.append("SELECT 1 FROM RD_LINK_LIMIT RLL WHERE RLL.TYPE = 2 ");
+			sb2.append(" AND RLL.VEHICLE = 2147484040");
+			sb2.append(" AND RLL.TIME_DOMAIN IS NULL");
+			sb2.append(" AND RLL.U_RECORD <> 2");
+			sb2.append(" AND RLL.LINK_PID =" + linkPid);
+			sb2.append(" AND NOT EXISTS (SELECT 1 FROM RD_LINK_FORM RLF WHERE RLF.LINK_PID = RLL.LINK_PID");
+			sb2.append(" AND RLF.FORM_OF_WAY = 50");
+			sb2.append(" AND RLF.U_RECORD <> 2)");
 
-			String sql2 = sb.toString();
-			log.info("RdRestrictionVia前检查GLM01017:" + sql2);
+			String sql2 = sb2.toString();
+			log.info("RdRestrictionVia前检查GLM08004_5:" + sql2);
 
 			DatabaseOperator getObj = new DatabaseOperator();
 			List<Object> resultList = new ArrayList<Object>();
@@ -147,7 +105,8 @@ public class GLM01017 extends baseRule{
 	private void checkRdRestrictionDetail(RdRestrictionDetail rdRestrictionDetail, CheckCommand checkCommand) throws Exception {
 		Set<Integer> linkPids = new HashSet<Integer>();
 		if(rdRestrictionDetail.status().equals(ObjStatus.INSERT)){
-			linkPids.add(rdRestrictionDetail.getOutLinkPid());
+			int outLinkPid = rdRestrictionDetail.getOutLinkPid();
+			linkPids.add(outLinkPid);
 			for(IRow rdRestrictionViaObj:rdRestrictionDetail.getVias()){
 				RdRestrictionVia rdRestrictionVia = (RdRestrictionVia)rdRestrictionViaObj;
 				linkPids.add(rdRestrictionVia.getLinkPid());
@@ -163,12 +122,14 @@ public class GLM01017 extends baseRule{
 		if(!linkPids.isEmpty()){
 			StringBuilder sb = new StringBuilder();
 
-			sb.append(" SELECT 1 FROM RD_LINK R WHERE R.KIND IN (13,11)");
-			sb.append(" AND R.U_RECORD <> 2");
-			sb.append(" AND R.LINK_PID IN (" + StringUtils.join(linkPids.toArray(),",") +")");
+			sb.append("SELECT 1 FROM RD_LINK_LIMIT RLL WHERE RLL.TYPE = 2 ");
+			sb.append(" AND RLL.VEHICLE = 2147484040");
+			sb.append(" AND RLL.TIME_DOMAIN IS NULL");
+			sb.append(" AND RLL.U_RECORD <> 2");
+			sb.append(" AND RLL.LINK_PID IN (" + StringUtils.join(linkPids.toArray(),",") +")");
 
 			String sql = sb.toString();
-			log.info("RdRestrictionDetail前检查GLM01017:" + sql);
+			log.info("RdRestrictionDetail前检查GLM08004_5:" + sql);
 
 			DatabaseOperator getObj = new DatabaseOperator();
 			List<Object> resultList = new ArrayList<Object>();
@@ -185,8 +146,10 @@ public class GLM01017 extends baseRule{
 	 * @throws Exception 
 	 */
 	private void checkRdRestriction(RdRestriction restriObj) throws Exception {
-		//进入线与退出线与经过线
+		//进入线与退出线
 		Set<Integer> linkPids = new HashSet<Integer>();
+		//经过线
+		Set<Integer> viaLinkPids = new HashSet<Integer>();
 		
 		linkPids.add(restriObj.getInLinkPid());
 		for(IRow objTmp:restriObj.getDetails()){
@@ -194,19 +157,20 @@ public class GLM01017 extends baseRule{
 			linkPids.add(detailObj.getOutLinkPid());
 			for(IRow rdRestrictionViaObj:detailObj.getVias()){
 				RdRestrictionVia rdRestrictionVia = (RdRestrictionVia)rdRestrictionViaObj;
-				linkPids.add(rdRestrictionVia.getLinkPid());
-				
+				viaLinkPids.add(rdRestrictionVia.getLinkPid());
 			}
 		}
-
+		//检查进入线/退出线
 		StringBuilder sb = new StringBuilder();
 
-		sb.append(" SELECT 1 FROM RD_LINK R WHERE R.KIND IN (13,11)");
-		sb.append(" AND R.U_RECORD <> 2");
-		sb.append(" AND R.LINK_PID IN (" + StringUtils.join(linkPids.toArray(),",") +")");
+		sb.append("SELECT 1 FROM RD_LINK_LIMIT RLL WHERE RLL.TYPE = 2 ");
+		sb.append(" AND RLL.VEHICLE = 2147484040");
+		sb.append(" AND RLL.TIME_DOMAIN IS NULL");
+		sb.append(" AND RLL.U_RECORD <> 2");
+		sb.append(" AND RLL.LINK_PID IN (" + StringUtils.join(linkPids.toArray(),",") +")");
 
 		String sql = sb.toString();
-		log.info("RdRestriction前检查GLM01017:" + sql);
+		log.info("RdRestriction前检查GLM08004_5:" + sql);
 
 		DatabaseOperator getObj = new DatabaseOperator();
 		List<Object> resultList = new ArrayList<Object>();
@@ -215,38 +179,36 @@ public class GLM01017 extends baseRule{
 		if(resultList.size()>0){
 			this.setCheckResult("", "", 0);
 		}
+		//检查经过线
+		StringBuilder sb2 = new StringBuilder();
+
+		sb2.append("SELECT 1 FROM RD_LINK_LIMIT RLL WHERE RLL.TYPE = 2 ");
+		sb2.append(" AND RLL.VEHICLE = 2147484040");
+		sb2.append(" AND RLL.TIME_DOMAIN IS NULL");
+		sb2.append(" AND RLL.U_RECORD <> 2");
+		sb2.append(" AND RLL.LINK_PID IN (" + StringUtils.join(viaLinkPids.toArray(),",") +")");
+		sb2.append(" AND NOT EXISTS (SELECT 1 FROM RD_LINK_FORM RLF WHERE RLF.LINK_PID = RLL.LINK_PID");
+		sb2.append(" AND RLF.FORM_OF_WAY = 50");
+		sb2.append(" AND RLF.U_RECORD <> 2)");
+
+		String sql2 = sb2.toString();
+		log.info("RdRestriction前检查GLM08004_5:" + sql2);
+
+		resultList = getObj.exeSelect(this.getConn(), sql2);
+
+		if(resultList.size()>0){
+			this.setCheckResult("", "", 0);
+		}
 		
 	}
 
-
-	public void postCheck(CheckCommand checkCommand) throws Exception{
-
-	}
-	
-	public static void main(String[] args) throws Exception{
-		List<IRow> details = new ArrayList<IRow>();
-		RdRestrictionDetail rdRestrictionDetail = new RdRestrictionDetail();
-		rdRestrictionDetail.setOutLinkPid( 197951);
-		rdRestrictionDetail.setPid(14076);
-		rdRestrictionDetail.setRestricPid(11883);
-		details.add(rdRestrictionDetail);
+	/* (non-Javadoc)
+	 * @see com.navinfo.dataservice.engine.check.core.baseRule#postCheck(com.navinfo.dataservice.dao.check.CheckCommand)
+	 */
+	@Override
+	public void postCheck(CheckCommand checkCommand) throws Exception {
+		// TODO Auto-generated method stub
 		
-		RdRestriction rdRestriction = new RdRestriction();
-		rdRestriction.setInLinkPid(197954);
-		rdRestriction.setDetails(details);
-		rdRestriction.setNodePid(175447);
-		rdRestriction.setPid(11883);
-		
-		List<IRow> objList = new ArrayList<IRow>();
-		objList.add(rdRestriction);
-		
-		//检查调用
-		CheckCommand checkCommand=new CheckCommand();
-		checkCommand.setGlmList(objList);
-		checkCommand.setOperType(OperType.CREATE);
-		checkCommand.setObjType(ObjType.RDRESTRICTION);
-		CheckEngine checkEngine=new CheckEngine(checkCommand);
-		System.out.println(checkEngine.preCheck());
 	}
 
 }

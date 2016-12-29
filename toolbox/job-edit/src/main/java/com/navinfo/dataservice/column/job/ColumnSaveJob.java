@@ -76,8 +76,6 @@ public class ColumnSaveJob extends AbstractJob {
 			importor.operate(command);
 			importor.persistChangeLog(OperationSegment.SG_COLUMN, userId);
 			
-//			columnSave(data,conn);
-			
 			for (int i=0;i<data.size();i++) {
 				int pid = data.getJSONObject(i).getInt("objId");
 				pidList.add(pid);

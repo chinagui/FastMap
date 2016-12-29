@@ -79,6 +79,7 @@ public class ColumnSubmitJob extends AbstractJob {
 			} else {
 				secondWorkList.add(secondWorkItem);
 			}
+			
 			for (String second:secondWorkList) {
 				// 查询可提交数据
 				pidList = ixPoiDeepStatusSelector.getRowIdForSubmit(firstWorkItem, second, taskId);

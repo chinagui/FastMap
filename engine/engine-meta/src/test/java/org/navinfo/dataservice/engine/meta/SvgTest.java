@@ -9,6 +9,9 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
 import org.apache.commons.dbutils.DbUtils;
@@ -75,7 +78,26 @@ public class SvgTest {
 			DbUtils.closeQuietly(conn);
 		}
 	}
-@Test
+	@Test
+	public void testGetDataByName()
+	{
+		PatternImageExporter export = new PatternImageExporter();
+		Set<String> set = new HashSet<String>();
+		 set.add("00ff000a");
+		 set.add("00ff000d");
+		 set.add("S0CLL15OC91A");
+		 set.add("S0CLL15OC91B");
+		 set.add("S0CLL15OCA0A");
+		 set.add("S0CLL15OCA0D");
+		try {
+			export.export2SqliteByNames("f:/PatternImg", set);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+	//@Test
 	public void testGetSvgData()
 	{
 		SvgImageSelector selector = new SvgImageSelector();
@@ -87,7 +109,7 @@ public class SvgTest {
 			e.printStackTrace();
 		}
 	}	
-	@Test
+	//@Test
 	public void testUpdateSvgExp() throws Exception
 	{
 		String path = "f:/";

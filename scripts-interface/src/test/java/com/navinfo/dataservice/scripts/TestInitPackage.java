@@ -48,7 +48,7 @@ public class TestInitPackage extends ClassPathXmlAppContextInit{
 	@Test
 	public void testMetadataDonwnload() throws Exception {
 		ExpMeta2SqliteScriptsInterface a =new ExpMeta2SqliteScriptsInterface();
-		String dir = "f:";
+		String dir = "f:/metadata";
 		File metaSqliteFile = new File(dir+"/metadata.sqlite");
 		if(metaSqliteFile.exists()){
 			metaSqliteFile.delete();

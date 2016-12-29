@@ -129,10 +129,12 @@ public class DeepInfoMarker {
 		// KIND_CODE为230210,且IX_POI_PARKING.PARKING_TYPE=2的不抓取
 		List<IxPoiParking> poiParkings = poiObj.getIxPoiParkings();
 		if ("230210".equals(kindCode)) {
-			for (IxPoiParking parking : poiParkings) {
-				String parkingType = parking.getParkingType();
-				if ("2".equals(parkingType)) {
-					return false;
+			if(CollectionUtils.isNotEmpty(poiParkings)){
+				for (IxPoiParking parking : poiParkings) {
+					String parkingType = parking.getParkingType();
+					if ("2".equals(parkingType)) {
+						return false;
+					}
 				}
 			}
 		}
@@ -141,10 +143,12 @@ public class DeepInfoMarker {
 			return true;
 		}
 		// 无照片，但是有修改parking履历的抓取
-		for (IxPoiParking parking : poiParkings) {
-			if (parking.getHisOpType().equals(OperationType.UPDATE)
-					&& parking.hisOldValueContains(IxPoiParking.PARKING_ID)) {
-				return true;
+		if(CollectionUtils.isNotEmpty(poiParkings)){
+			for (IxPoiParking parking : poiParkings) {
+				if (parking.getHisOpType().equals(OperationType.UPDATE)
+						&& parking.hisOldValueContains(IxPoiParking.PARKING_ID)) {
+					return true;
+				}
 			}
 		}
 		return false;

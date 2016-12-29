@@ -89,28 +89,26 @@ public class ColumnSubmitJob extends AbstractJob {
 			
 			OperationResult operationResult=new OperationResult();
 			
-				List<Long> pids = new ArrayList<Long>();
-				for (int pid:pidList) {
-					pids.add((long)pid);
-				}
-				
-				PoiLogDetailStat logDetail = new PoiLogDetailStat();
-				Map<Long,List<LogDetail>> submitLogs = logDetail.loadByColEditStatus(conn, pids, userId, taskId, firstWorkItem, second);
-			List<BasicObj> objList = new ArrayList<BasicObj>();
-				ObjHisLogParser logParser = new ObjHisLogParser();
+			List<Long> pids = new ArrayList<Long>();
 			for (int pid:pidList) {
-				BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", null,true, pid, false);
-					if (submitLogs.containsKey(pid)) {
-						logParser.parse(obj, submitLogs.get(pid));
-					}
-				objList.add(obj);
+				pids.add((long)pid);
+			}
+			
+			PoiLogDetailStat logDetail = new PoiLogDetailStat();
+			Map<Long,List<LogDetail>> submitLogs = logDetail.loadByColEditStatus(conn, pids, userId, taskId, firstWorkItem, second);
+			List<BasicObj> objList = new ArrayList<BasicObj>();
+			ObjHisLogParser logParser = new ObjHisLogParser();
+			for (int pid:pidList) {
+			BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", null,true, pid, false);
+				if (submitLogs.containsKey(pid)) {
+					logParser.parse(obj, submitLogs.get(pid));
 				}
-				
+			objList.add(obj);
+			}
 				
 			operationResult.putAll(objList);
 			
-			
-				PoiColumnOpConf columnOpConf = ixPoiOpConfSelector.getDeepOpConf(firstWorkItem,second, type);
+			PoiColumnOpConf columnOpConf = ixPoiOpConfSelector.getDeepOpConf(firstWorkItem,second, type);
 				
 			// 批处理
 			if (columnOpConf.getSaveExebatch() == 1) {
@@ -118,10 +116,9 @@ public class ColumnSubmitJob extends AbstractJob {
 				for (String ruleId:columnOpConf.getSaveBatchrules().split(",")) {
 					batchCommand.setRuleId(ruleId);
 				}
-				
 				Batch batch=new Batch(conn,operationResult);
 				batch.operate(batchCommand);
-					batch.persistChangeLog(OperationSegment.SG_COLUMN, userId);
+				batch.persistChangeLog(OperationSegment.SG_COLUMN, userId);
 			}
 			
 			// 检查

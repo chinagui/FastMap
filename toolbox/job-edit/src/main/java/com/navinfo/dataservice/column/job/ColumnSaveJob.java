@@ -66,7 +66,6 @@ public class ColumnSaveJob extends AbstractJob {
 			
 			int dbId = subtask.getDbId();
 			conn = DBConnector.getInstance().getConnectionById(dbId);
-			
 			log.info("dbId:"+dbId);
 			
 			DefaultObjImportor importor = new DefaultObjImportor(conn,null);
@@ -75,8 +74,6 @@ public class ColumnSaveJob extends AbstractJob {
 			DefaultObjImportorCommand command = new DefaultObjImportorCommand(editJson);
 			importor.operate(command);
 			importor.persistChangeLog(OperationSegment.SG_COLUMN, userId);
-			
-//			columnSave(data,conn);
 			
 			for (int i=0;i<data.size();i++) {
 				int pid = data.getJSONObject(i).getInt("objId");
@@ -103,14 +100,16 @@ public class ColumnSaveJob extends AbstractJob {
 			// 批处理
 			log.info("执行批处理");
 			if (columnOpConf.getSaveExebatch() == 1) {
-				BatchCommand batchCommand=new BatchCommand();		
-				for (String ruleId:columnOpConf.getSaveBatchrules().split(",")) {
-					batchCommand.setRuleId(ruleId);
-				}
+				BatchCommand batchCommand=new BatchCommand();	
+				if (columnOpConf.getSaveBatchrules() != null) {
+					for (String ruleId:columnOpConf.getSaveBatchrules().split(",")) {
+						batchCommand.setRuleId(ruleId);
+					}
 
-				Batch batch=new Batch(conn,operationResult);
-				batch.operate(batchCommand);
-				batch.persistChangeLog(OperationSegment.SG_COLUMN, userId);
+					Batch batch=new Batch(conn,operationResult);
+					batch.operate(batchCommand);
+					batch.persistChangeLog(OperationSegment.SG_COLUMN, userId);
+				}
 			}
 			
 			
@@ -119,37 +118,44 @@ public class ColumnSaveJob extends AbstractJob {
 			if (columnOpConf.getSaveExecheck() == 1) {
 				CheckCommand checkCommand=new CheckCommand();		
 				List<String> checkList=new ArrayList<String>();
-				for (String ckRule:columnOpConf.getSaveCkrules().split(",")) {
-					checkList.add(ckRule);
+				if (columnOpConf.getSaveCkrules() != null) {
+					for (String ckRule:columnOpConf.getSaveCkrules().split(",")) {
+						checkList.add(ckRule);
+					}
+					checkCommand.setRuleIdList(checkList);
+					
+					Check check=new Check(conn,operationResult);
+					check.operate(checkCommand);
 				}
-				checkCommand.setRuleIdList(checkList);
-				
-				Check check=new Check(conn,operationResult);
-				check.operate(checkCommand);
 			}
 			
 			
 			// 重分类
 			log.info("执行重分类");
 			if (columnOpConf.getSaveExeclassify()==1) {
-				HashMap<String,Object> classifyMap = new HashMap<String,Object>();
-				classifyMap.put("userId", userId);
-				classifyMap.put("ckRules", columnOpConf.getSaveCkrules());
-				classifyMap.put("classifyRules", columnOpConf.getSaveClassifyrules());
-				
-				classifyMap.put("pids", pidList);
-				ColumnCoreOperation columnCoreOperation = new ColumnCoreOperation();
-				columnCoreOperation.runClassify(classifyMap,conn);
+				if (columnOpConf.getSaveCkrules() != null && columnOpConf.getSaveClassifyrules() != null) {
+					HashMap<String,Object> classifyMap = new HashMap<String,Object>();
+					classifyMap.put("userId", userId);
+					classifyMap.put("ckRules", columnOpConf.getSaveCkrules());
+					classifyMap.put("classifyRules", columnOpConf.getSaveClassifyrules());
+					
+					classifyMap.put("pids", pidList);
+					ColumnCoreOperation columnCoreOperation = new ColumnCoreOperation();
+					columnCoreOperation.runClassify(classifyMap,conn);
+				}
 			}
 			
 			// 清理重分类检查结果
 			log.info("清理重分类检查结果");
 			List<String> ckRules = new ArrayList<String>();
 			String classifyrules = columnOpConf.getSaveClassifyrules();
-			for (String classifyrule:classifyrules.split(",")) {
-				ckRules.add(classifyrule);
+			if (classifyrules != null) {
+				for (String classifyrule:classifyrules.split(",")) {
+					ckRules.add(classifyrule);
+				}
+				deepControl.cleanExByCkRule(conn, pidList, ckRules, "IX_POI");
 			}
-			deepControl.cleanExByCkRule(conn, pidList, ckRules, "IX_POI");
+			
 			
 			conn.commit();
 			log.info("月编保存完成");

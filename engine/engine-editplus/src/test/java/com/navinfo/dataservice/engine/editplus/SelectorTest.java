@@ -390,11 +390,8 @@ public class SelectorTest {
 					+ "\"langCode\":\"CHI\",\"fullname\":\"北京\",\"objStatus\": \"UPDATE\"}]}}";*/
 			/*String data = "{\"names\":[{\"name\":\"北京华军中医医院\",\"rowId\":\"\""
 					+ ",\"pid\":335,\"objStatus\":\"INSERT\"}],\"pid\":335}";*/
-			String data = "{\"names\":[{\"name\":\"Beijing Huajun Traditional Controversial Chinese "
-					+ "Medicine Hospital 11\",\"rowId\":\"3AE1FCF65D2092F7E050A8C08304EE4C\",\"pid\":8069341,"
-					+ "\"objStatus\":\"UPDATE\",\"nameFlags\":[{\"nameId\":8069341,\"flagCode\":\"002000030000\","
-					+ "\"rowId\":\"\",\"objStatus\":\"INSERT\"}]}],\"rowId\":\"3AE1FB4B0B6492F7E050A8C08304EE4C\","
-					+ "\"pid\":335}";
+			//String data = "{\"names\":[{\"name\":\"Xihongmen South Brg Toll Gate 2222\",\"rowId\":\"3AE1FCF65D2392F7E050A8C08304EE4C\",\"pid\":8069342,\"objStatus\":\"UPDATE\",\"nameFlags\":[{\"flagCode\":\"002000010000\",\"rowId\":\"3AE1FE47011392F7E050A8C08304EE4C\",\"objStatus\":\"UPDATE\"}]}],\"rowId\":\"3AE1FB4B0B6592F7E050A8C08304EE4C\",\"pid\":336}";
+			String data = "{\"names\":[{\"pid\": 0,\"poiPid\": 335,\"nameGroupid\": 1,\"langCode\": \"ENG\",\"nameClass\": 3,\"nameType\": 2,\"name\": \"111\",\"nameFlags\": [],\"rowId\": \"\",\"objStatus\": \"INSERT\"},{\"pid\": 0,\"poiPid\": 335,\"nameGroupid\": 1,\"langCode\": \"ENG\",\"nameClass\": 3,\"nameType\": 2,\"name\": \"222\",\"nameFlags\": [],\"rowId\": \"\",\"objStatus\": \"INSERT\"}],\"rowId\": \"3AE1FB4B0B6492F7E050A8C08304EE4C\",\"pid\": 335}";
 			JSONObject jo = JSONObject.fromObject(data);
 			System.out.println("导入的json数据"+data);
 			//Map<String, JSONObject> addMap = new HashMap<String, JSONObject>();

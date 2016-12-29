@@ -139,7 +139,7 @@ public class DeepInfoMarker {
 			}
 		}
 		List<IxPoiPhoto> poiPhotos = poiObj.getIxPoiPhotos();
-		if (poiPhotos.size() > 0) {
+		if (CollectionUtils.isNotEmpty(poiPhotos)) {
 			return true;
 		}
 		// 无照片，但是有修改parking履历的抓取

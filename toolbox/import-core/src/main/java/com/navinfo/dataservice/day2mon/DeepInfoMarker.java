@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -280,6 +281,7 @@ public class DeepInfoMarker {
 			if (hostelKindCode.contains(kindCode)) {
 				if ("120101".equals(kindCode)) {
 					List<IxPoiHotel> poiHotels = poiObj.getIxPoiHotels();
+					if(CollectionUtils.isEmpty(poiHotels)) return false;
 					for (IxPoiHotel hotel : poiHotels) {
 						int rating = hotel.getRating();
 						if (hostelRatings.contains(rating)) {

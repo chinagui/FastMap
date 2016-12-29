@@ -29,8 +29,8 @@ public class PoiBatchProcessorFM_BAT_20_186_1 implements IBatch {
 			if (!kindcode.equals("230218") || uRecord ==2 || children.size() == 0) {
 				return result;
 			}
-			
-			if (!json.containsKey("addresses")&&!json.containsKey("contacts")) {
+			JSONObject poiData = json.getJSONObject("data");
+			if (!poiData.containsKey("addresses")&&!poiData.containsKey("contacts")) {
 				return result;
 			}
 			List<Integer> pidList = new ArrayList<Integer>();
@@ -46,7 +46,7 @@ public class PoiBatchProcessorFM_BAT_20_186_1 implements IBatch {
 				
 				// 删除子的地址，覆盖为父的地址
 				JSONArray addressArray = new JSONArray();
-				if (json.containsKey("addresses")) {
+				if (poiData.containsKey("addresses")) {
 					List<IRow> childAddresses = childPoi.getAddresses();
 					for (IRow childAddress:childAddresses) {
 						IxPoiAddress childAdd = (IxPoiAddress) childAddress;
@@ -70,7 +70,7 @@ public class PoiBatchProcessorFM_BAT_20_186_1 implements IBatch {
 				
 				// 删除子的电话，更新为父的电话
 				JSONArray contactsArray = new JSONArray();
-				if (json.containsKey("contacts")) {
+				if (poiData.containsKey("contacts")) {
 					List<IRow> childContacts = childPoi.getContacts();
 					for (IRow childContact:childContacts) {
 						IxPoiContact childCon = (IxPoiContact) childContact;

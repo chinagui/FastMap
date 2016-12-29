@@ -66,6 +66,21 @@ public class CheckUtil {
 		}
     	return false;
     }
+    
+    /**
+     * 是否合法英文字符
+     * @param str
+     * @return 字符为数字，字母，符号（-_/:;'""~^.,?!*()<>$%&#@+半角空格），返回true；否则false
+     */
+    public static boolean isValidEngChar(String str){
+    	Pattern p1 = Pattern.compile("[A-Za-z0-9\\-_/:;'\"~^.,?!*()<>$%&#@+ ]{1}");
+		Matcher m1 = p1.matcher(str);
+		if (m1.matches()) {
+			return true;
+		}
+    	return false;
+    }
+    
     /**
      * wordList="下铺 下铺"，index=2，返回true；否则false
      * @param wordList

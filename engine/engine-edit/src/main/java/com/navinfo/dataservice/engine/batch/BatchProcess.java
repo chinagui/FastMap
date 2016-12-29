@@ -10,6 +10,7 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
+import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 import com.navinfo.dataservice.engine.batch.util.IBatch;
@@ -41,10 +42,21 @@ public class BatchProcess {
 	public void execute(JSONObject json,Connection conn,EditApiImpl editApiImpl, List<String> batchList) throws Exception {
 		JSONObject poiObj = new JSONObject();
 		try {
+			OperType operType = Enum.valueOf(OperType.class,
+                    json.getString("command"));
 			
 			IxPoiSelector ixPoiSelector = new IxPoiSelector(conn);
-
-			IxPoi poi = (IxPoi) ixPoiSelector.loadById(json.getInt("objId"), false);
+			
+			IxPoi poi = new IxPoi();
+			if (operType != OperType.DELETE) {
+				poi = (IxPoi) ixPoiSelector.loadById(json.getInt("objId"), false);
+			} else {
+				poi = (IxPoi) ixPoiSelector.loadAllById(json.getInt("objId"), false);
+				batchList = new ArrayList<String>();
+				batchList.add("com.navinfo.dataservice.engine.batch.PoiBatchProcessorFM_BAT_20_185_1");
+				batchList.add("com.navinfo.dataservice.engine.batch.PoiBatchProcessorFM_BAT_20_187_1");
+			}
+			
 			
 			// 修改为参数传入 -- zpp 2016.11.17 
 			//List<String> batchList = getRowRules();

@@ -106,13 +106,64 @@ public class IxPoiName extends BasicRow {
 		}
 	}
 	
+	public boolean isOfficeName(){
+		if(this.nameClass==1){return true;}
+		else{return false;}
+	}
+	/**
+	 * nameClass 别名 alias
+	 * @return
+	 */
+	public boolean isAliasName(){
+		if(this.nameClass==3){return true;}
+		else{return false;}
+	}
+	/**
+	 * nameClass 子冠父名 parent
+	 * @return
+	 */
+	public boolean isParentName(){
+		if(this.nameClass==9){return true;}
+		else{return false;}
+	}
+	/**
+	 * nameClass 站点线路 station
+	 * @return
+	 */
+	public boolean isStationName(){
+		if(this.nameClass==8){return true;}
+		else{return false;}
+	}
+	/**
+	 * nameClass 菜单 Menu
+	 * @return
+	 */
+	public boolean isMenuName(){
+		if(this.nameClass==4){return true;}
+		else{return false;}
+	}
+	/**
+	 * nameClass 曾用名
+	 * @return
+	 */
+	public boolean isUsedName(){
+		if(this.nameClass==6){return true;}
+		else{return false;}
+	}
+	/**
+	 * nameClass 简称
+	 * @return
+	 */
 	public boolean isShortName(){
 		if(this.nameClass==5){return true;}
 		else{return false;}
 	}
-	
-	public boolean isOfficeName(){
-		if(this.nameClass==1){return true;}
+	/**
+	 * nameClass 古称
+	 * @return
+	 */
+	public boolean isOldName(){
+		if(this.nameClass==7){return true;}
 		else{return false;}
 	}
 	
@@ -125,7 +176,7 @@ public class IxPoiName extends BasicRow {
 		if(this.nameType==1){return true;}
 		else{return false;}
 	}
-	
+		
 	public boolean isCH(){
 		if(this.langCode.equals("CHI")||this.langCode.equals("CHT")){return true;}
 		else{return false;}
@@ -140,6 +191,25 @@ public class IxPoiName extends BasicRow {
 	public String tableName() {
 		return "IX_POI_NAME";
 	}
+	
+	//1表示标准，2表示原始
+    public String getTypeName(){
+        if (1==nameType){return "标准";}
+        if (2==nameType){return "原始";}
+        return null;
+    }
+
+    public String getClassName(){
+        if (1==nameClass){return "官方";}
+        if (3==nameClass){return "别名";}
+        if (4==nameClass){return "菜单";}
+        if (5==nameClass){return "简称";}
+        if (6==nameClass){return "曾用名";}
+        if (7==nameClass){return "古称";}
+        if (8==nameClass){return "站点线路名";}
+        if (9==nameClass){return "子冠父名";}
+        return null;
+    }
 	
 	public static final String NAME_ID = "NAME_ID";
 	public static final String POI_PID = "POI_PID";

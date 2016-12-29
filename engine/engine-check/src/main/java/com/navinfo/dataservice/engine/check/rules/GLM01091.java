@@ -96,7 +96,12 @@ public class GLM01091 extends baseRule {
 	 */
 	private void checkRdLink(RdLink rdLink, OperType operType) throws Exception {
 		//rd_link修改功能等级=5
-		if(rdLink.getFunctionClass()!=5){
+		if(rdLink.changedFields().containsKey("functionClass")){
+			int functionClass = Integer.parseInt(rdLink.changedFields().get("functionClass").toString()) ;
+			//非单向道路，不触发检查
+			if(functionClass!=5){
+				return;
+			}
 			StringBuilder sb = new StringBuilder();
 
 			sb.append("SELECT R.GEOMETRY, '[RD_LINK,' || R.LINK_PID || ']', R.MESH_ID");

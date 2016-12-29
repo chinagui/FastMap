@@ -72,22 +72,25 @@ public class GLM26017 extends baseRule {
 	 */
 	private void checkRdRestrictionDetail(RdRestrictionDetail rdRestrictionDetail) throws Exception {
 		//是否触发检查条件：新增退出线、修改退出线
-		boolean flg = false;
+		int outLinkPid = 0; 
 		if(rdRestrictionDetail.status().equals(ObjStatus.INSERT)){
-			flg = true;
+			outLinkPid = rdRestrictionDetail.getOutLinkPid();
 		}
 		else if(rdRestrictionDetail.status().equals(ObjStatus.UPDATE)){
 			if(rdRestrictionDetail.changedFields().containsKey("outLinkPid")){
-				flg = true;
+				outLinkPid = Integer.parseInt(rdRestrictionDetail.changedFields().get("outLinkPid").toString());
 			}
 		}
 		
-		if(flg){
+		if(outLinkPid!=0){
 			StringBuilder sb = new StringBuilder();
-			
-			sb.append("SELECT 1 FROM RD_RESTRICTION_DETAIL RRD ,RD_RESTRICTION RR");
+
+			sb.append("SELECT 1 FROM RD_RESTRICTION_DETAIL RRD ,RD_RESTRICTION RR,RD_LINK R");
 			sb.append(" WHERE RRD.RESTRIC_PID = " + rdRestrictionDetail.getRestricPid());
 			sb.append(" AND RR.PID = RRD.RESTRIC_PID");
+			sb.append(" AND R.LINK_PID = " + outLinkPid);
+			sb.append(" AND (R.S_NODE_PID = RR.NODE_PID OR R.E_NODE_PID = RR.NODE_PID)");
+			sb.append(" AND R.U_RECORD <> 2");
 			sb.append(" AND RRD.U_RECORD <> 2");
 			sb.append(" AND RR.U_RECORD <> 2");
 			sb.append(" AND NOT EXISTS (SELECT 1 FROM RD_CROSS_NODE RCN WHERE RCN.NODE_PID = RR.NODE_PID AND RCN.U_RECORD <> 2)");

@@ -21,7 +21,6 @@ import com.navinfo.dataservice.engine.meta.character.TyCharacterEgalcharExt;
 import com.navinfo.dataservice.engine.meta.character.TyCharacterEgalcharExtCheckSelector;
 import com.navinfo.dataservice.engine.meta.character.TyCharacterFjtHmCheckSelector;
 import com.navinfo.dataservice.engine.meta.character.TyCharacterFjtHzCheckSelector;
-import com.navinfo.dataservice.engine.meta.ciparatel.CiParaTel;
 import com.navinfo.dataservice.engine.meta.engshort.ScEngshortSelector;
 import com.navinfo.dataservice.engine.meta.kind.KindSelector;
 import com.navinfo.dataservice.engine.meta.kindcode.KindCodeSelector;
@@ -395,9 +394,4 @@ public class MetadataApiImpl implements MetadataApi {
 		return ScPointNameck.getInstance().scPointNameckType9();
 	}
 
-	@Override
-	public Map<String, String> getCodeLength(String adminCode) throws Exception {
-		CiParaTel cipara = new CiParaTel();
-		return cipara.getCodeLength(adminCode);
-	}
 }

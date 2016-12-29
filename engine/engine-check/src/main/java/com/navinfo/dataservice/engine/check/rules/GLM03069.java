@@ -32,10 +32,12 @@ public class GLM03069 extends baseRule{
 				boolean isBorderNode = false;
 				RdNodeForm rdNodeForm = (RdNodeForm) obj;
 				Map<String, Object> changedFields = rdNodeForm.changedFields();
-				int formOfWay = (int) changedFields.get("formOfWay");
+				int formOfWay = 1;
+				if(changedFields.containsKey("formOfWay")){
+					formOfWay = (int) changedFields.get("formOfWay");
+				}
 				if (formOfWay == 2){
 					isBorderNode = true;
-					break;
 				}
 				if (isBorderNode){
 					//图廓点

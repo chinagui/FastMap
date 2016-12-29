@@ -115,6 +115,10 @@ public class RdCross implements IObj {
 		this.kgFlag = kgFlag;
 	}
 
+	public String getRowId() {
+		return rowId;
+	}
+
 	@Override
 	public String tableName() {
 

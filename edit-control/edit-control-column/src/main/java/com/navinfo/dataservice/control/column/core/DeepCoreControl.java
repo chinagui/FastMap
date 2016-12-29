@@ -4,33 +4,38 @@ import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.dbutils.DbUtils;
+import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.api.edit.upload.EditJson;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
-import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.exception.DataNotChangeException;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
-import com.navinfo.dataservice.dao.check.CheckCommand;
-import com.navinfo.dataservice.dao.glm.iface.IRow;
-import com.navinfo.dataservice.dao.glm.iface.ObjType;
-import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiColumnStatusSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiDeepStatusSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
-import com.navinfo.dataservice.engine.batch.BatchProcess;
-import com.navinfo.dataservice.engine.check.CheckEngine;
-import com.navinfo.dataservice.engine.edit.service.EditApiImpl;
+import com.navinfo.dataservice.dao.plus.obj.BasicObj;
+import com.navinfo.dataservice.dao.plus.operation.OperationResult;
+import com.navinfo.dataservice.dao.plus.operation.OperationSegment;
+import com.navinfo.dataservice.dao.plus.selector.ObjSelector;
+import com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.Batch;
+import com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.BatchCommand;
+import com.navinfo.dataservice.engine.editplus.batchAndCheck.check.Check;
+import com.navinfo.dataservice.engine.editplus.batchAndCheck.check.CheckCommand;
+import com.navinfo.dataservice.engine.editplus.operation.imp.DefaultObjImportor;
+import com.navinfo.dataservice.engine.editplus.operation.imp.DefaultObjImportorCommand;
+import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.DBUtils;
 
 import net.sf.json.JSONArray;
@@ -99,34 +104,6 @@ public class DeepCoreControl {
 			DBUtils.closeConnection(conn);
 			DBUtils.closeResultSet(resultSet);
 			DBUtils.closeStatement(pstmt);
-		}
-	}
-	
-	/**
-	 * 深度信息检查执行方法
-	 * 
-	 * @param pids
-	 * @param checkResultList
-	 * @param objType
-	 * @param operType
-	 * @param conn
-	 * @throws Exception
-	 */
-	public void deepCheckRun(List<Integer> pids,JSONArray checkResultList,String objType,String operType,Connection conn) throws Exception {
-		try {
-			logger.debug("开始执行检查项"+checkResultList);
-			logger.debug("检查数据:"+pids);
-			IxPoiSelector selector = new IxPoiSelector(conn);
-			List<IRow> datas = selector.loadByIds(pids, false, true);
-			CheckCommand checkCommand = new CheckCommand();			
-			checkCommand.setObjType(Enum.valueOf(ObjType.class,objType));
-			checkCommand.setOperType(Enum.valueOf(OperType.class,operType));
-			checkCommand.setGlmList(datas);
-			CheckEngine cEngine=new CheckEngine(checkCommand,conn);
-			cEngine.checkByRules(checkResultList, "POST");	
-			logger.debug("检查完毕");
-		} catch (Exception e) {
-			throw e;
 		}
 	}
 	
@@ -300,9 +277,9 @@ public class DeepCoreControl {
 
             JSONObject json = JSONObject.fromObject(parameter);
 
-            ObjType objType = Enum.valueOf(ObjType.class,"IXPOI");
             int dbId = json.getInt("dbId");
             int objId = json.getInt("objId");
+            String secondWorkItem = json.getString("secondWorkItem");
 
             conn = DBConnector.getInstance().getConnectionById(dbId);
 
@@ -317,13 +294,19 @@ public class DeepCoreControl {
             }
             
             json.put("command", "UPDATE");
-
-            EditApiImpl editApiImpl = new EditApiImpl(conn);
-            editApiImpl.setToken(userId);
-            result = editApiImpl.runPoi(json);
             
-            StringBuffer sb = new StringBuffer();
-            sb.append(String.valueOf(objId));
+            DefaultObjImportor importor = new DefaultObjImportor(conn,null);
+			EditJson editJson = new EditJson();
+			editJson.addJsonPoi(json);
+			DefaultObjImportorCommand command = new DefaultObjImportorCommand(editJson);
+			importor.operate(command);
+			importor.persistChangeLog(OperationSegment.SG_COLUMN, userId);
+
+//            EditApiImpl editApiImpl = new EditApiImpl(conn);
+//            editApiImpl.setToken(userId);
+//            result = editApiImpl.runPoi(json);
+            
+			OperationResult operationResult=importor.getResult();
 
             //更新数据状态
             updateDeepStatus(pids, conn, 0);
@@ -331,12 +314,13 @@ public class DeepCoreControl {
             cleanCheckResult(pids,conn);
             
     		//获取后检查需要执行规则列表
-    		List<String> fields = Arrays.asList("categorys", "subcategory");
-    		List<String> values = Arrays.asList("poi深度信息", "IX_POI_PARKING");
-			IxPoiDeepStatusSelector ixPoiDeepStatusSelector = new IxPoiDeepStatusSelector(conn);
-			JSONArray checkResultList = ixPoiDeepStatusSelector.getCheckRulesByCondition(fields,values);
+            List<String> checkList=getCheckRuleList(conn,secondWorkItem);
+            
     		//执行检查
-            deepCheckRun(pids,checkResultList,objType.toString(),"UPDATE",conn);
+			CheckCommand checkCommand=new CheckCommand();		
+			checkCommand.setRuleIdList(checkList);
+			Check check=new Check(conn,operationResult);
+			check.operate(checkCommand);
             
             return result;
         } catch (DataNotChangeException e) {
@@ -360,8 +344,6 @@ public class DeepCoreControl {
      * @Gaopr POI深度信息作业提交
      */
 	public JSONObject release(String parameter, long userId) throws Exception {
-		
-		ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
 		
 		List<Integer> pidList = new ArrayList<Integer>();
         Connection conn = null;
@@ -407,7 +389,7 @@ public class DeepCoreControl {
      */
 	public void updateDeepStatus(List<Integer> pidList,Connection conn,int flag) throws Exception {
 		StringBuilder sb = new StringBuilder();
-		Timestamp timeStamp = new Timestamp(new Date().getTime());
+		
         if (pidList.isEmpty()){
         	return;
         }
@@ -503,9 +485,23 @@ public class DeepCoreControl {
 			List<String> workItemIds = poiColumnSelector.getWorkItemIds(firstWorkItem, secondWorkItem);
 			poiColumnSelector.dataSetLock(applyDataPids, workItemIds, userId, taskId, timeStamp);
 			
+			OperationResult operationResult=new OperationResult();
+			List<BasicObj> objList = new ArrayList<BasicObj>();
+			for (int pid:applyDataPids) {
+				BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", null,true, pid, false);
+				objList.add(obj);
+			}
+			operationResult.putAll(objList);
+			
 			// 深度信息批处理 -- 作业前批
 			List<String> batchRuleList = getDeepBatchRules(secondWorkItem);
-			exeBatch(conn, applyDataPids, batchRuleList, dbId);
+			BatchCommand batchCommand=new BatchCommand();
+			for (String rule:batchRuleList) {
+				batchCommand.setRuleId(rule);
+			}
+			Batch batch=new Batch(conn,operationResult);
+			batch.operate(batchCommand);
+			batch.persistChangeLog(OperationSegment.SG_COLUMN, userId);
 			
 			return applyCount;
 		} catch (Exception e) {
@@ -527,47 +523,16 @@ public class DeepCoreControl {
 		List<String> rules = new ArrayList<String>();
 		if ("deepDetail".equals(secondWorkItem)){
 			// 通用
-			rules.add("FM_BAT_20_195");
-			rules.add("FM_BAT_20_196");
+			rules.add("FMBAT20195");
+			rules.add("FMBAT20196");
 		}else if ("deepParking".equals(secondWorkItem)){
 			// 停车场
-			rules.add("FM_BAT_20_198");
+			rules.add("FMBAT20198");
 		}else if ("deepCarrental".equals(secondWorkItem)){
 			// 汽车租赁
-			rules.add("FM_BAT_20_197");
+			rules.add("FMBAT20197");
 		}
-		StringBuilder sb = new StringBuilder();
-		sb.append("SELECT process_path FROM batch_rule WHERE rule_code in (");
-		String temp = "";
-		for (String rule:rules) {
-			sb.append(temp);
-			sb.append("'"+rule+"'");
-			temp = ",";
-		}
-		sb.append(")");
-		
-		PreparedStatement pstmt = null;
-
-		ResultSet resultSet = null;
-		
-		Connection conn = null;
-		try {
-			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
-			pstmt = conn.prepareStatement(sb.toString());
-			resultSet = pstmt.executeQuery();
-			List<String> batchList = new ArrayList<String>();
-			
-			while (resultSet.next()) {
-				batchList.add(resultSet.getString("process_path"));
-			}
-			return batchList;
-		} catch (Exception e) {
-			throw e;
-		} finally {
-			DbUtils.closeQuietly(resultSet);
-			DbUtils.closeQuietly(pstmt);
-			DbUtils.closeQuietly(conn);
-		}
+			return rules;
 	}
 	
 	/**
@@ -646,36 +611,6 @@ public class DeepCoreControl {
 			DbUtils.closeQuietly(pstmt);
 		}
 	}
-	
-	
-	/**
-	 * 深度信息申请数据后-作业前批处理
-	 * @param conn
-	 * @param pids
-	 * @param type
-	 * @throws Exception 
-	 */
-	public void exeBatch(Connection conn, List<Integer> pids, List<String> batchRules, int dbId) throws Exception{
-
-		try {
-			
-			//执行批处理
-			for (int pid: pids) {
-				
-				JSONObject poiObj = new JSONObject();
-				poiObj.put("objId", pid);
-				poiObj.put("dbId", dbId);
-				
-				//调用批处理
-				BatchProcess batchProcess = new BatchProcess();
-				batchProcess.execute(poiObj, conn, new EditApiImpl(conn), batchRules);
-				
-			}
-		} catch (Exception e) {
-			throw e;
-		}
-	}
-	
 	
 	/**
 	 * 深度信息查询poi
@@ -890,6 +825,41 @@ public class DeepCoreControl {
 		List<String> md5List = getMd5List(conn,pids,ckRules,objType);
 		cleanCheckException(md5List,conn);
 		cleanCheckObj(md5List,conn);
+	}
+	
+	/**
+	 * 查询深度信息检查项
+	 * @param conn
+	 * @param secondWorkItem
+	 * @return
+	 * @throws Exception
+	 */
+	private List<String> getCheckRuleList(Connection conn,String secondWorkItem) throws Exception{
+		try{
+			List<String> rules = new ArrayList<String>();
+			
+			String sql="SELECT DISTINCT WORK_ITEM_ID"
+					+ "  FROM POI_COLUMN_WORKITEM_CONF C"
+					+ " WHERE C.FIRST_WORK_ITEM = 'poi_deep'"
+					+ "   AND CHECK_FLAG IN (2, 3)"
+					+ "   AND C.SECOND_WORK_ITEM='" + secondWorkItem + "'";
+
+			QueryRunner run=new QueryRunner();
+			rules=run.query(conn, sql, new ResultSetHandler<List<String>>(){
+
+				@Override
+				public List<String> handle(ResultSet rs) throws SQLException {
+					List<String> rules=new ArrayList<String>();
+					while(rs.next()){
+						rules.add(rs.getString("WORK_ITEM_ID"));
+					}
+					return rules;
+				}});
+			return rules;
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			throw e;
+		}
 	}
 	
 }

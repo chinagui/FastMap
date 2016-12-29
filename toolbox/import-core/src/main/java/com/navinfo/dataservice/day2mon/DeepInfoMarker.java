@@ -47,6 +47,7 @@ public class DeepInfoMarker {
 	private List<String> bankKindCode = Arrays.asList("150101");
 	private List<String> hostelKindCode = Arrays.asList("120101", "120102");
 	private List<String> otherKindCode = Arrays.asList("130501", "130105", "110200");
+	private List<Integer> hostelRatings = Arrays.asList(3, 13, 4, 14, 5, 15);
 
 	public DeepInfoMarker(OperationResult opResult, Connection conn) {
 		super();
@@ -191,7 +192,6 @@ public class DeepInfoMarker {
 	 * @return
 	 * @throws Exception
 	 */
-	private static final List<Integer> ratings = Arrays.asList(3, 13, 4, 14, 5, 15);
 	private boolean isDetailPoi(IxPoiObj poiObj) throws Exception {
 		IxPoi poi = (IxPoi) poiObj.getMainrow();
 
@@ -282,7 +282,7 @@ public class DeepInfoMarker {
 					List<IxPoiHotel> poiHotels = poiObj.getIxPoiHotels();
 					for (IxPoiHotel hotel : poiHotels) {
 						int rating = hotel.getRating();
-						if (ratings.contains(rating)) {
+						if (hostelRatings.contains(rating)) {
 							return true;
 						}
 					}

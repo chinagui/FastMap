@@ -140,7 +140,10 @@ public class GLM08052 extends baseRule {
 		//node属性编辑
 		int nodePid = rdNodeForm.getNodePid();
 		Map<String, Object> changedFields = rdNodeForm.changedFields();
-		int formOfWay = (int) changedFields.get("formOfWay");
+		int formOfWay = 1;
+		if(changedFields.containsKey("formOfWay")){
+			formOfWay = (int) changedFields.get("formOfWay");
+		}
 		this.check(nodePid,formOfWay);
 	}
 	

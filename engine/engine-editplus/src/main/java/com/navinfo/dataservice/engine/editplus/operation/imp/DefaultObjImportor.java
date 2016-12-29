@@ -254,7 +254,7 @@ public class DefaultObjImportor extends AbstractOperation{
 				String attName = (String)it.next();
 				Object attValue = json.get(attName);
 				if((attValue==null && (!(attValue instanceof JSONNull)))||StringUtils.isEmpty(attName)
-						||"objStatus".equals(attName)){
+						||"objStatus".equals(attName)||"rowId".equals(attName)){
 					log.warn("注意：request的json中存在name或者value为空的属性，已经被忽略。"+attName);
 					continue;
 				}
@@ -339,7 +339,8 @@ public class DefaultObjImportor extends AbstractOperation{
 					String attName = (String)it.next();
 					Object attValue = json.get(attName);
 					if((attValue==null && (!(attValue instanceof JSONNull)))
-							||StringUtils.isEmpty(attName)||"objStatus".equals(attName)||"pid".equals(attName)){
+							||StringUtils.isEmpty(attName)||"objStatus".equals(attName)
+							||"pid".equals(attName)||"rowId".equals(attName)){
 						log.warn("注意：request的json中存在name或者value为空的属性，已经被忽略。"+attName);
 						continue;
 					}

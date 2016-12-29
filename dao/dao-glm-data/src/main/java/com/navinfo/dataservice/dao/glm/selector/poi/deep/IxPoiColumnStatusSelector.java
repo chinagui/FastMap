@@ -457,7 +457,7 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 	 */
 	public JSONObject queryCKLogByPidfirstWorkItem(List<Integer> pids,String firstWorkItem,String secondWorkItem,String tbNm) throws Exception {
 		StringBuilder sb = new StringBuilder();
-		sb.append(" SELECT CO.PID,NE.RULEID,NE.INFORMATION,NE.\"LEVEL\"");
+		sb.append(" SELECT CO.PID,NE.RULEID,CO.MD5_CODE,NE.INFORMATION,NE.\"LEVEL\"");
 		//sb.append(" LISTAGG('RULEID:' || NE.RULEID || ',' || 'log:' || NE.INFORMATION ||'LEVEL:' || NE.\"LEVEL\",'__|__') WITHIN GROUP(ORDER BY CO.PID) LOGMSG");
 		sb.append(" FROM CK_RESULT_OBJECT CO, NI_VAL_EXCEPTION NE");
 		sb.append(" WHERE CO.MD5_CODE = NE.MD5_CODE");
@@ -499,6 +499,8 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 				ckLog.put("ruleId", resultSet.getString("RULEID"));
 				ckLog.put("log", resultSet.getString("INFORMATION"));
 				ckLog.put("level", resultSet.getString("LEVEL"));
+				ckLog.put("md5Code", resultSet.getString("MD5_CODE"));
+				
 				if(poiWorkItem.containsKey(keyPid)){
 					List<JSONObject> oldValue= (List<JSONObject>) poiWorkItem.get(keyPid);
 					oldValue.add(ckLog);

@@ -81,7 +81,7 @@ public class ColumnSaveJob extends AbstractJob {
 			}
 			
 			// 修改poi_column_status表作业项状态
-			updateColumnStatus(pidList, conn, 2);
+			updateColumnStatus(pidList, conn, 2,secondWorkItem);
 			
 			// TODO 区分大陆/港澳
 			int type = 1;
@@ -190,9 +190,9 @@ public class ColumnSaveJob extends AbstractJob {
 	 * @param conn
 	 * @throws Exception
 	 */
-	public void updateColumnStatus(List<Integer> pidList,Connection conn,int status) throws Exception {
+	public void updateColumnStatus(List<Integer> pidList,Connection conn,int status,String second) throws Exception {
 		StringBuilder sb = new StringBuilder();
-		sb.append("UPDATE poi_column_status SET first_work_status="+status+",second_work_status="+status+" WHERE pid in (select to_number(column_value) from table(clob_to_table(?)))");
+		sb.append("UPDATE poi_column_status SET first_work_status="+status+",second_work_status="+status+" WHERE  work_item_id IN (SELECT cf.work_item_id FROM POI_COLUMN_WORKITEM_CONF cf WHERE cf.second_work_item='"+second+"') AND  pid in (select to_number(column_value) from table(clob_to_table(?)))");
 		
 		PreparedStatement pstmt = null;
 

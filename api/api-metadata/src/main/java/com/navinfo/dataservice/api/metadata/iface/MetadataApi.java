@@ -169,5 +169,10 @@ public interface MetadataApi {
 	 * @throws Exception
 	 */
 	public Map<String, ScPointSpecKindcodeNewObj> ScPointSpecKindcodeNewType2() throws Exception;
+	
+	/**
+	 * 根据行政区划查询对应的区号及电话长度
+	 */
+	public Map<String,String> getCodeLength(String adminCode) throws Exception;
 
 }

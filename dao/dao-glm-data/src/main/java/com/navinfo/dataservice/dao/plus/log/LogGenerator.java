@@ -26,7 +26,7 @@ import com.navinfo.navicommons.database.QueryRunner;
  */
 public class LogGenerator {
 	String insertLogActionSql = "INSERT INTO LOG_ACTION (ACT_ID,US_ID,OP_CMD,SRC_DB,STK_ID) VALUES (?,?,?,?,?)";
-	String insertLogOperationSql = "INSERT INTO LOG_OPERATION (OP_ID,ACT_ID,OP_DT,OP_SEQ) VALUES (?,?,SYSDATE,?)";
+	String insertLogOperationSql = "INSERT INTO LOG_OPERATION (OP_ID,ACT_ID,OP_DT,OP_SEQ) VALUES (?,?,SYSDATE,LOG_OP_SEQ.NEXTVAL)";
 	String insertLogDetailSql = "INSERT INTO LOG_DETAIL (OP_ID,ROW_ID,OB_NM,OB_PID,GEO_NM,GEO_PID,TB_NM,OLD,NEW,FD_LST,OP_TP,TB_ROW_ID) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
 	String insertLogDetailGridSql = "INSERT INTO LOG_DETAIL_GRID (LOG_ROW_ID,GRID_ID,GRID_TYPE) VALUES (?,?,?)";
 	PreparedStatement perstmtLogAction = null;
@@ -36,7 +36,14 @@ public class LogGenerator {
 
 	public void writeLog(Connection conn,boolean isUnionOperation,OperationResult result,String opCmd,int srcDb,long userId,int subtaskId) throws Exception{
 		Collection<BasicObj> allObjs = result.getAllObjs();
-		writeLog( conn, isUnionOperation, allObjs, opCmd, srcDb, userId,subtaskId);
+		try{
+			writeLog( conn, isUnionOperation, allObjs, opCmd, srcDb, userId,subtaskId);
+		}finally{
+			DbUtils.closeQuietly(perstmtLogAction);
+			DbUtils.closeQuietly(perstmtLogOperation);
+			DbUtils.closeQuietly(perstmtLogDetail);
+			DbUtils.closeQuietly(perstmtLogDetailGrid);
+		}
 	}
 	/**
 	 * 生成履历
@@ -104,7 +111,6 @@ public class LogGenerator {
 					}
 					perstmtLogOperation.setString(1, geoChangeOpId);
 					perstmtLogOperation.setString(2, actId);
-					perstmtLogOperation.setLong(3, getOpSeq(conn));
 					perstmtLogOperation.addBatch();
 					opId = geoChangeOpId;
 				}else{
@@ -114,7 +120,6 @@ public class LogGenerator {
 					opId = UuidUtils.genUuid();
 					perstmtLogOperation.setString(1, opId);
 					perstmtLogOperation.setString(2, actId);
-					perstmtLogOperation.setLong(3, getOpSeq(conn));
 					perstmtLogOperation.addBatch();
 				}
 
@@ -246,26 +251,4 @@ public class LogGenerator {
 		}
 		
 	}
-	/**
-	 * 获取OP_SEQ
-	 * @param conn
-	 * @return
-	 * @throws Exception
-	 */
-	private long getOpSeq(Connection conn) throws Exception{
-		try{
-			QueryRunner run = new QueryRunner();
-
-			String querySql = "select LOG_OP_SEQ.NEXTVAL as OP_SEQ from dual";
-
-			int opSeg = Integer.valueOf(run
-					.query(conn, querySql, new MapHandler()).get("OP_SEQ")
-					.toString());
-			return opSeg;
-		}catch(Exception e){
-			DbUtils.rollbackAndCloseQuietly(conn);
-			throw new Exception(e.getMessage());
-		}
-	}
-	
 }

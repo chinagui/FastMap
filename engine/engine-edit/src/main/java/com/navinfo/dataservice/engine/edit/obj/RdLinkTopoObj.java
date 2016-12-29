@@ -3,6 +3,7 @@ package com.navinfo.dataservice.engine.edit.obj;
 import java.util.List;
 import java.util.Map;
 
+import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
 import com.navinfo.dataservice.dao.glm.model.rd.gate.RdGate;
 import com.navinfo.dataservice.dao.glm.model.rd.lane.RdLane;
@@ -23,6 +24,7 @@ public class RdLinkTopoObj {
 	protected List<RdLink> delLinks;
 	protected List<RdLink> addLinks;
 	protected List<RdLink> modLinks;
+	protected List<RdLink> relLinks;
 	protected Map<Long,Long> inheritRelations;//key是源link，value是继承的link
 	protected Map<Long,List<RdLane>> lanes;//key:link_pid
 	protected List<RdLaneTopoDetail> laneTopoDetails;
@@ -32,4 +34,8 @@ public class RdLinkTopoObj {
 	protected RdRestriction restriction;//inlink,innode参与的交限
 	protected RdGate gate;//inlink,innode参与的大门
 	
+	public List<RdLinkForkObj> getForks(){
+		
+		return null;
+	}
 }

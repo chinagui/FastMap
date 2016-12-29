@@ -191,6 +191,7 @@ public class DeepInfoMarker {
 	 * @return
 	 * @throws Exception
 	 */
+	private static final List<Integer> ratings = Arrays.asList(3, 13, 4, 14, 5, 15);
 	private boolean isDetailPoi(IxPoiObj poiObj) throws Exception {
 		IxPoi poi = (IxPoi) poiObj.getMainrow();
 
@@ -281,7 +282,6 @@ public class DeepInfoMarker {
 					List<IxPoiHotel> poiHotels = poiObj.getIxPoiHotels();
 					for (IxPoiHotel hotel : poiHotels) {
 						int rating = hotel.getRating();
-						List<Integer> ratings = Arrays.asList(3, 13, 4, 14, 5, 15);
 						if (ratings.contains(rating)) {
 							return true;
 						}

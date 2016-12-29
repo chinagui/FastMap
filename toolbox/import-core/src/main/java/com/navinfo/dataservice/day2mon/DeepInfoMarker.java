@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -47,6 +48,7 @@ public class DeepInfoMarker {
 	private List<String> bankKindCode = Arrays.asList("150101");
 	private List<String> hostelKindCode = Arrays.asList("120101", "120102");
 	private List<String> otherKindCode = Arrays.asList("130501", "130105", "110200");
+	private List<Integer> hostelRatings = Arrays.asList(3, 13, 4, 14, 5, 15);
 
 	public DeepInfoMarker(OperationResult opResult, Connection conn) {
 		super();
@@ -279,10 +281,10 @@ public class DeepInfoMarker {
 			if (hostelKindCode.contains(kindCode)) {
 				if ("120101".equals(kindCode)) {
 					List<IxPoiHotel> poiHotels = poiObj.getIxPoiHotels();
+					if(CollectionUtils.isEmpty(poiHotels)) return false;
 					for (IxPoiHotel hotel : poiHotels) {
 						int rating = hotel.getRating();
-						List<Integer> ratings = Arrays.asList(3, 13, 4, 14, 5, 15);
-						if (ratings.contains(rating)) {
+						if (hostelRatings.contains(rating)) {
 							return true;
 						}
 					}

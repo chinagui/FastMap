@@ -15,6 +15,7 @@ import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionDetail;
 import com.navinfo.dataservice.engine.check.core.baseRule;
+import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
 import com.navinfo.dataservice.engine.check.helper.DatabaseOperatorResultWithGeo;
 
 /** 
@@ -79,7 +80,7 @@ public class GLM08033 extends baseRule {
 					+ "where FORM_OF_WAY = 50 AND U_RECORD != 2 and link_pid in =" + outLinkPid;
 			log.info("RdRestrictionDetail前检查GLM08033:" + sql);
 
-			DatabaseOperatorResultWithGeo getObj = new DatabaseOperatorResultWithGeo();
+			DatabaseOperator getObj = new DatabaseOperator();
 			List<Object> resultList = new ArrayList<Object>();
 			resultList = getObj.exeSelect(this.getConn(), sql);
 			
@@ -119,7 +120,7 @@ public class GLM08033 extends baseRule {
 					+ "where FORM_OF_WAY = 50 AND U_RECORD != 2 and link_pid in ("+StringUtils.join(linkPids, ",")+")";
 			log.info("RdRestriction前检查GLM08033:" + sql);
 
-			DatabaseOperatorResultWithGeo getObj = new DatabaseOperatorResultWithGeo();
+			DatabaseOperator getObj = new DatabaseOperator();
 			List<Object> resultList = new ArrayList<Object>();
 			resultList = getObj.exeSelect(this.getConn(), sql);
 			

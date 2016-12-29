@@ -13,8 +13,11 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
 import com.navinfo.dataservice.dao.plus.model.basic.ChangeLog;
+import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
+import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
 import com.navinfo.dataservice.dao.plus.selector.ObjSelector;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.Batch;
@@ -41,8 +44,9 @@ public class BatchTestGPR {
 		test.init();
 		Connection conn = DBConnector.getInstance().getConnectionById(19);
 		OperationResult operationResult=new OperationResult();
-		BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", null, true,78675641, false);
+		BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", null, false,78675641, false);
 //		operationResult.putObj(obj);
+		IxPoiObj poiObj=(IxPoiObj) obj;
 		IxPoi row=(IxPoi) obj.getMainrow();
 		//row.setKindCode("190100");
 		ChangeLog logg=new ChangeLog();
@@ -52,17 +56,18 @@ public class BatchTestGPR {
 		List<ChangeLog> logList=new ArrayList<ChangeLog>();
 		logList.add(logg);
 		row.setHisChangeLogs(logList);
+		row.setOpType(OperationType.UPDATE);
 		operationResult.putObj(obj);
 		
 		BatchCommand batchCommand=new BatchCommand();	
-		batchCommand.setRuleId("FM-BAT-M01-01");
+		batchCommand.setRuleId("FM-BAT-20-177");
 		//batchCommand.setOperationName("day2month");
 		Batch batch=new Batch(conn,operationResult);
 		batch.operate(batchCommand);
 		System.out.println(batch.getName());
 		batch.persistChangeLog(1, 2);
 		DbUtils.commitAndCloseQuietly(conn);
-		System.out.println("end batch test FM-BAT-20-138");
+		System.out.println("end batch test FM-BAT-M01-02");
 	}
 
 }

@@ -72,7 +72,6 @@ public class Operation implements IOperation {
     }
 
     private void updatePassage(Result result, JSONArray array) throws Exception {
-        @SuppressWarnings("unchecked")
         Iterator<JSONObject> iterator = array.iterator();
         RdTollgatePassage passage = null;
         JSONObject jsonPassage = null;
@@ -80,23 +79,20 @@ public class Operation implements IOperation {
             jsonPassage = iterator.next();
             if (jsonPassage.containsKey("objStatus")) {
                 String objStatus = jsonPassage.getString("objStatus");
-                passage = this.command.getTollgate().tollgatePassageMap
-                        .get(jsonPassage.getString("rowId"));
                 if (ObjStatus.UPDATE.toString().equals(objStatus)) {
+                    passage = this.command.getTollgate().tollgatePassageMap.get(jsonPassage.getString("rowId"));
                     boolean isChange = passage.fillChangeFields(jsonPassage);
                     if (isChange) {
-                        result.insertObject(passage, ObjStatus.UPDATE,
-                                passage.getPid());
+                        result.insertObject(passage, ObjStatus.UPDATE, passage.getPid());
                     }
                 } else if (ObjStatus.DELETE.toString().equals(objStatus)) {
-                    result.insertObject(passage, ObjStatus.DELETE,
-                            passage.getPid());
+                    passage = this.command.getTollgate().tollgatePassageMap.get(jsonPassage.getString("rowId"));
+                    result.insertObject(passage, ObjStatus.DELETE, passage.getPid());
                 } else if (ObjStatus.INSERT.toString().equals(objStatus)) {
                     passage = new RdTollgatePassage();
                     passage.Unserialize(jsonPassage);
                     passage.setPid(this.command.getTollgate().getPid());
-                    result.insertObject(passage, ObjStatus.INSERT,
-                            passage.getPid());
+                    result.insertObject(passage, ObjStatus.INSERT, passage.getPid());
                 }
             }
         }
@@ -104,7 +100,6 @@ public class Operation implements IOperation {
     }
 
     private void updateName(Result result, JSONArray array) throws Exception {
-        @SuppressWarnings("unchecked")
         Iterator<JSONObject> iterator = array.iterator();
         RdTollgateName name = null;
         JSONObject jsonName = null;
@@ -112,25 +107,21 @@ public class Operation implements IOperation {
             jsonName = iterator.next();
             if (jsonName.containsKey("objStatus")) {
                 String objStatus = jsonName.getString("objStatus");
-                name = this.command.getTollgate().tollgateNameMap.get(jsonName
-                        .getString("rowId"));
                 if (ObjStatus.UPDATE.toString().equals(objStatus)) {
+                    name = this.command.getTollgate().tollgateNameMap.get(jsonName.getString("rowId"));
                     boolean isChange = name.fillChangeFields(jsonName);
                     if (isChange) {
-                        result.insertObject(name, ObjStatus.UPDATE,
-                                name.getPid());
+                        result.insertObject(name, ObjStatus.UPDATE, name.getPid());
                     }
                 } else if (ObjStatus.DELETE.toString().equals(objStatus)) {
-                    result.insertObject(name, ObjStatus.DELETE,
-                            name.getPid());
+                    name = this.command.getTollgate().tollgateNameMap.get(jsonName.getString("rowId"));
+                    result.insertObject(name, ObjStatus.DELETE, name.getPid());
                 } else if (ObjStatus.INSERT.toString().equals(objStatus)) {
                     name = new RdTollgateName();
                     name.Unserialize(jsonName);
-                    name.setNameId(PidUtil.getInstance()
-                            .applyRdTollgateNamePid());
+                    name.setNameId(PidUtil.getInstance().applyRdTollgateNamePid());
                     name.setPid(this.command.getTollgate().getPid());
-                    result.insertObject(name, ObjStatus.INSERT,
-                            name.getPid());
+                    result.insertObject(name, ObjStatus.INSERT, name.getPid());
                 }
             }
         }
@@ -146,8 +137,7 @@ public class Operation implements IOperation {
      * @return
      * @throws Exception
      */
-    public String breakRdTollgate(Result result, int oldLinkPid,
-                                  List<RdLink> newLinks) throws Exception {
+    public String breakRdTollgate(Result result, int oldLinkPid, List<RdLink> newLinks) throws Exception {
         RdTollgateSelector selector = new RdTollgateSelector(this.conn);
         // 查询所有与被删除RdLink关联的收费站
         List<RdTollgate> rdTollgates = selector.loadRdTollgatesWithLinkPid(
@@ -191,112 +181,113 @@ public class Operation implements IOperation {
      */
     private void caleRdlaneForRdTollgate(Result result, int passageNum) throws Exception {
         if (passageNum > 0) {
-            com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation operation = new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation(
+            com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation operation = new com
+                    .navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation(
                     conn);
             operation.setTollgate(this.command.getTollgate());
             operation.setPassageNum(passageNum);
             operation.refRdLaneForTollgate(result);
         }
     }
-    
+
     /**
-	 * 分离节点
-	 * 
-	 * @param link
-	 * @param nodePid
-	 * @param rdlinks
-	 * @param result
-	 * @throws Exception
-	 */
-	public void departNode(RdLink link, int nodePid, List<RdLink> rdlinks,
-			Result result) throws Exception {
+     * 分离节点
+     *
+     * @param link
+     * @param nodePid
+     * @param rdlinks
+     * @param result
+     * @throws Exception
+     */
+    public void departNode(RdLink link, int nodePid, List<RdLink> rdlinks,
+                           Result result) throws Exception {
 
-		List<Integer> nodePids = new ArrayList<Integer>();
+        List<Integer> nodePids = new ArrayList<Integer>();
 
-		nodePids.add(nodePid);
+        nodePids.add(nodePid);
 
-		departNode(link, nodePids, rdlinks, result);
-	}
-    
-	/**
-	 * 分离节点
-	 * 
-	 * @param link
-	 * @param nodePid
-	 * @param rdlinks
-	 * @param result
-	 * @throws Exception
-	 */
-	public void departNode(RdLink link, List<Integer> nodePids,
-			List<RdLink> rdlinks, Result result) throws Exception {
+        departNode(link, nodePids, rdlinks, result);
+    }
 
-		int linkPid = link.getPid();
+    /**
+     * 分离节点
+     *
+     * @param link
+     * @param nodePid
+     * @param rdlinks
+     * @param result
+     * @throws Exception
+     */
+    public void departNode(RdLink link, List<Integer> nodePids,
+                           List<RdLink> rdlinks, Result result) throws Exception {
 
-		// 跨图幅处理的link为进入线的RdTollgate
-		Map<Integer, RdTollgate> tollgateInLink = null;
+        int linkPid = link.getPid();
 
-		// 跨图幅处理的link为退出线的RdTollgate
-		Map<Integer, RdTollgate> tollgateOutLink = null;
+        // 跨图幅处理的link为进入线的RdTollgate
+        Map<Integer, RdTollgate> tollgateInLink = null;
 
-		if (rdlinks != null && rdlinks.size() > 1) {
+        // 跨图幅处理的link为退出线的RdTollgate
+        Map<Integer, RdTollgate> tollgateOutLink = null;
 
-			tollgateInLink = new HashMap<Integer, RdTollgate>();
+        if (rdlinks != null && rdlinks.size() > 1) {
 
-			tollgateOutLink = new HashMap<Integer, RdTollgate>();
-		}
+            tollgateInLink = new HashMap<Integer, RdTollgate>();
 
-		RdTollgateSelector selector = new RdTollgateSelector(this.conn);
+            tollgateOutLink = new HashMap<Integer, RdTollgate>();
+        }
 
-		// 在link上的RdTollgate
-		List<RdTollgate> tollgates = selector.loadRdTollgatesWithLinkPid(
-				linkPid, true);
+        RdTollgateSelector selector = new RdTollgateSelector(this.conn);
 
-		for (int nodePid : nodePids) {
-			for (RdTollgate tollgate : tollgates) {
-				if (tollgate.getNodePid() == nodePid) {
-					result.insertObject(tollgate, ObjStatus.DELETE,
-							tollgate.getPid());
-				} else if (tollgateInLink != null
-						&& tollgate.getInLinkPid() == linkPid) {
-					tollgateInLink.put(tollgate.getPid(), tollgate);
-				} else if (tollgateOutLink != null
-						&& tollgate.getOutLinkPid() == linkPid) {
-					tollgateOutLink.put(tollgate.getPid(), tollgate);
-				}
-			}
+        // 在link上的RdTollgate
+        List<RdTollgate> tollgates = selector.loadRdTollgatesWithLinkPid(
+                linkPid, true);
 
-			if (tollgateOutLink == null || tollgateInLink == null) {
+        for (int nodePid : nodePids) {
+            for (RdTollgate tollgate : tollgates) {
+                if (tollgate.getNodePid() == nodePid) {
+                    result.insertObject(tollgate, ObjStatus.DELETE,
+                            tollgate.getPid());
+                } else if (tollgateInLink != null
+                        && tollgate.getInLinkPid() == linkPid) {
+                    tollgateInLink.put(tollgate.getPid(), tollgate);
+                } else if (tollgateOutLink != null
+                        && tollgate.getOutLinkPid() == linkPid) {
+                    tollgateOutLink.put(tollgate.getPid(), tollgate);
+                }
+            }
 
-				return;
-			}
+            if (tollgateOutLink == null || tollgateInLink == null) {
 
-			int connectNode = link.getsNodePid() == nodePid ? link
-					.geteNodePid() : link.getsNodePid();
+                return;
+            }
 
-			for (RdLink rdlink : rdlinks) {
+            int connectNode = link.getsNodePid() == nodePid ? link
+                    .geteNodePid() : link.getsNodePid();
 
-				if (rdlink.getsNodePid() != connectNode
-						&& rdlink.geteNodePid() != connectNode) {
+            for (RdLink rdlink : rdlinks) {
 
-					continue;
-				}
+                if (rdlink.getsNodePid() != connectNode
+                        && rdlink.geteNodePid() != connectNode) {
 
-				for (RdTollgate tollgate : tollgateInLink.values()) {
+                    continue;
+                }
 
-					tollgate.changedFields().put("inLinkPid", rdlink.getPid());
+                for (RdTollgate tollgate : tollgateInLink.values()) {
 
-					result.insertObject(tollgate, ObjStatus.UPDATE,
-							tollgate.pid());
-				}
+                    tollgate.changedFields().put("inLinkPid", rdlink.getPid());
 
-				for (RdTollgate tollgate : tollgateOutLink.values()) {
+                    result.insertObject(tollgate, ObjStatus.UPDATE,
+                            tollgate.pid());
+                }
 
-					tollgate.changedFields().put("outLinkPid", rdlink.getPid());
+                for (RdTollgate tollgate : tollgateOutLink.values()) {
 
-					result.insertObject(tollgate, ObjStatus.UPDATE,
-							tollgate.pid());
-				}
-			}
-		}
-	}
+                    tollgate.changedFields().put("outLinkPid", rdlink.getPid());
+
+                    result.insertObject(tollgate, ObjStatus.UPDATE,
+                            tollgate.pid());
+                }
+            }
+        }
+    }
 }

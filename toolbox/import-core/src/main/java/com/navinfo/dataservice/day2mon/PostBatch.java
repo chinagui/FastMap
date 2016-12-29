@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -77,19 +78,24 @@ public class PostBatch {
 				if (ixPoi.getPid() == pid) {
 					List<BasicRow> nameList = obj.getSubrows().get("IX_POI_NAME");
 					Long nameId = 0l;
-					for (BasicRow name:nameList) {
-						IxPoiName poiName = (IxPoiName) name;
-						if (poiName.getLangCode().equals("ENG")&&poiName.getNameType()==2&&poiName.getNameClass()==1) {
-							nameId = poiName.getNameId();
+					if(CollectionUtils.isNotEmpty(nameList)){
+						for (BasicRow name:nameList) {
+							IxPoiName poiName = (IxPoiName) name;
+							if (poiName.getLangCode().equals("ENG")&&poiName.getNameType()==2&&poiName.getNameClass()==1) {
+								nameId = poiName.getNameId();
+							}
 						}
 					}
 					List<BasicRow> flagList = obj.getSubrows().get("IX_POI_NAME_FLAG");
-					for (BasicRow flag:flagList) {
-						IxPoiNameFlag poiFlag = (IxPoiNameFlag) flag;
-						if (poiFlag.getNameId() == nameId) {
-							poiFlag.setFlagCode(sourceFlag);
+					if(CollectionUtils.isNotEmpty(flagList)){
+						for (BasicRow flag:flagList) {
+							IxPoiNameFlag poiFlag = (IxPoiNameFlag) flag;
+							if (poiFlag.getNameId() == nameId) {
+								poiFlag.setFlagCode(sourceFlag);
+							}
 						}
 					}
+					
 					objList.add(obj);
 				}
 			}

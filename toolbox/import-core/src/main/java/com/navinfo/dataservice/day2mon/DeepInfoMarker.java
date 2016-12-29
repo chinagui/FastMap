@@ -139,7 +139,7 @@ public class DeepInfoMarker {
 			}
 		}
 		List<IxPoiPhoto> poiPhotos = poiObj.getIxPoiPhotos();
-		if (poiPhotos.size() > 0) {
+		if (CollectionUtils.isNotEmpty(poiPhotos)) {
 			return true;
 		}
 		// 无照片，但是有修改parking履历的抓取
@@ -163,7 +163,7 @@ public class DeepInfoMarker {
 	private boolean isCarrentalPoi(IxPoiObj poiObj, String chain) {
 		if (carrentalChain.contains(chain)) {
 			List<IxPoiCarrental> poiCarrentals = poiObj.getIxPoiCarrentals();
-			if (poiCarrentals.size() == 0) {
+			if (CollectionUtils.isEmpty(poiCarrentals)) {
 				// CARRENTAL中无记录
 				return true;
 			} else {

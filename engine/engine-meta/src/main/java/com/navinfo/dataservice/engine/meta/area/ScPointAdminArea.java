@@ -265,9 +265,10 @@ public class ScPointAdminArea {
 				public JSONObject handle(ResultSet rs) throws SQLException {
 					JSONObject object  = new JSONObject();
 					while(rs.next()){
-						object.put("code", rs.getString("areacode"));
-						object.put("telLength", rs.getInt("phonenum_len"));
-						object.put("adminId", rs.getString("adminareacode"));
+						JSONObject temp = new JSONObject();
+						temp.put("code", rs.getString("areacode"));
+						temp.put("telLength", rs.getInt("phonenum_len"));
+						object.put(rs.getString("adminareacode"),temp );
 					}
 					return object;
 				}

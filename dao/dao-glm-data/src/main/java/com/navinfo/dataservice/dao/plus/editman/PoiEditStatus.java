@@ -185,9 +185,8 @@ public class PoiEditStatus {
 			}
 			new QueryRunner().batch(conn, sb.toString(),values);
 		}catch(Exception e){
-			DbUtils.rollbackAndCloseQuietly(conn);
 			logger.error(e.getMessage(),e);
-			throw new Exception("多源POI打标签失败");
+			throw new Exception("POI打标签失败");
 		}
 	}
 

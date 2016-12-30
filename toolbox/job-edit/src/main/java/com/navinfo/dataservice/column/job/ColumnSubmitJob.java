@@ -138,9 +138,11 @@ public class ColumnSubmitJob extends AbstractJob {
 						
 						// pidList替换为无检查错误的pidList
 						Map<String, Map<Long, Set<String>>> errorMap = check.getErrorPidMap();
-						Map<Long, Set<String>> poiMap = errorMap.get("IX_POI");
-						for (long pid:poiMap.keySet()) {
-							pidList.remove(pid);
+						if (errorMap != null) {
+							Map<Long, Set<String>> poiMap = errorMap.get("IX_POI");
+							for (long pid:poiMap.keySet()) {
+								pidList.remove(pid);
+							}
 						}
 					}
 				}

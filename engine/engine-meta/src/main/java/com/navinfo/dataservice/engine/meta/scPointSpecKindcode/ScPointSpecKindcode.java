@@ -4,7 +4,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.dbutils.DbUtils;
@@ -16,7 +18,7 @@ public class ScPointSpecKindcode {
 	private Map<String,ScPointSpecKindcodeNewObj> typeMap2= new HashMap<String,ScPointSpecKindcodeNewObj>();
 	private Map<String, String> typeMap8= new HashMap<String, String>();
 	
-	private Map<String, String> typeMap14= new HashMap<String, String>();
+	private Map<String, List<String>> typeMap14= new HashMap<String, List<String>>();
 
 	private static class SingletonHolder {
 		private static final ScPointSpecKindcode INSTANCE = new ScPointSpecKindcode();
@@ -56,7 +58,7 @@ public class ScPointSpecKindcode {
 			}
 			return typeMap8;
 	}
-	public Map<String, String> scPointSpecKindCodeType14() throws Exception{
+	public Map<String, List<String>> scPointSpecKindCodeType14() throws Exception{
 		if (typeMap14==null||typeMap14.isEmpty()) {
 				synchronized (this) {
 					if (typeMap14==null||typeMap14.isEmpty()) {
@@ -71,7 +73,12 @@ public class ScPointSpecKindcode {
 								pstmt = conn.prepareStatement(sql);
 								rs = pstmt.executeQuery();
 								while (rs.next()) {
-									typeMap14.put(rs.getString("POI_KIND"), rs.getString("RATING"));					
+									List<String> ratings = new ArrayList<String>();
+									if(typeMap14.containsKey(rs.getString("POI_KIND"))){
+										ratings = typeMap14.get(rs.getString("POI_KIND"));
+									}
+									ratings.add(rs.getString("RATING"));
+									typeMap14.put(rs.getString("POI_KIND"),ratings);					
 								} 
 							} catch (Exception e) {
 								throw new Exception(e);

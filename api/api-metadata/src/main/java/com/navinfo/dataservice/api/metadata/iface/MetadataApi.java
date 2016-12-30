@@ -108,7 +108,7 @@ public interface MetadataApi {
 	 */
 	public List<String> scPointNameckType9() throws Exception;
 	
-	public Map<String, String> scPointSpecKindCodeType14() throws Exception;
+	public Map<String, List<String>> scPointSpecKindCodeType14() throws Exception;
 	
 	/**
 	 * 重要分类判断方法

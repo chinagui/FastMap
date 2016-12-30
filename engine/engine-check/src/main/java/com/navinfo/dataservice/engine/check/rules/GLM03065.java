@@ -98,6 +98,24 @@ public class GLM03065 extends baseRule {
 		List<Integer> nodePids = new ArrayList<Integer>();
 		nodePids.add(rdLink.getsNodePid());
 		nodePids.add(rdLink.geteNodePid());
+		//分离节点
+		Map<String, Object> changedFields = rdLink.changedFields();
+		if(!changedFields.isEmpty()){
+			Integer sNodePid = null;
+			Integer eNodePid = null;
+			if(changedFields.containsKey("sNodePid")){
+				sNodePid = (Integer) changedFields.get("sNodePid");
+				if(sNodePid != null){
+					nodePids.add(sNodePid);
+				}
+			}
+			if(changedFields.containsKey("eNodePid")){
+				eNodePid = (Integer) changedFields.get("eNodePid");
+				if(eNodePid != null){
+					nodePids.add(eNodePid);
+				}
+			}
+		}
 		for (Integer nodePid : nodePids) {
 			boolean check = this.check(nodePid);
 
@@ -123,7 +141,7 @@ public class GLM03065 extends baseRule {
 		sb.append(" AND R.LINK_PID = RF.LINK_PID AND F.FORM_OF_WAY = 13 AND RF.FORM_OF_WAY = 31");
 		sb.append(" AND N.U_RECORD <> 2 AND F.U_RECORD <> 2 AND R.U_RECORD <> 2 AND RF.U_RECORD <> 2");
 		sb.append(" AND (R.S_NODE_PID = N.NODE_PID OR R.E_NODE_PID = N.NODE_PID)");
-		sb.append(" GROUP BY N.NODE_PID HAVING COUNT(1) <> 2");
+		sb.append(" GROUP BY N.NODE_PID HAVING COUNT(1) > 2");
 		String sql = sb.toString();
 		log.info("后检查GLM03065--sql:" + sql);
 		

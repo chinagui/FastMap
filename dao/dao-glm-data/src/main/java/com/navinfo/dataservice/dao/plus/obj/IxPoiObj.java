@@ -857,6 +857,19 @@ public class IxPoiObj extends AbstractIxObj {
 			}
 		return null;
 	}
+	
+	/**
+	 * 官方原始英文名
+	 */
+	public IxPoiName getOfficeStandardEngName(){
+		List<IxPoiName> subRows=getIxPoiNames();
+		for(IxPoiName br:subRows){
+			if(br.isOfficeName()&&br.isStandardName()&&br.isEng()){
+				return br;}
+			}
+		return null;
+	}
+	
 	/**
 	 * 简称中文名称
 	 */

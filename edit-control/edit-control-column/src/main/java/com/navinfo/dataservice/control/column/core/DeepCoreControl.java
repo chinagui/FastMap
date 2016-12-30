@@ -309,7 +309,7 @@ public class DeepCoreControl {
 			OperationResult operationResult=importor.getResult();
 
             //更新数据状态
-            updateDeepStatus(pids, conn, 0);
+            updateDeepStatus(pids, conn, 0,secondWorkItem);
             //调用清理检查结果方法
             cleanCheckResult(pids,conn);
             
@@ -366,7 +366,7 @@ public class DeepCoreControl {
 			sucReleaseTotal = pidList.size();
 			
 			// 修改poi_deep_status表作业项状态
-			updateDeepStatus(pidList, conn, 1);
+			updateDeepStatus(pidList, conn, 1,secondWorkItem);
 			result.put("sucReleaseTotal", sucReleaseTotal);
             return result;
         } catch (DataNotChangeException e) {

@@ -31,7 +31,8 @@ public class BatchCommand extends AbstractCommand {
 
 	public void setOperationName(String operationName) throws Exception {
 		this.operationName = operationName;
-		ruleIdList = BatchRuleFactory.getInstance().loadByOperationName(operationName);
+		if(this.ruleIdList==null||ruleIdList.isEmpty()){
+			ruleIdList = BatchRuleFactory.getInstance().loadByOperationName(operationName);}
 	}
 
 }

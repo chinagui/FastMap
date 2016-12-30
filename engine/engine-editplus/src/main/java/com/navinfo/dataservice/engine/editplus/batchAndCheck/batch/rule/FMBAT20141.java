@@ -40,7 +40,7 @@ public class FMBAT20141 extends BasicBatchRule {
 					String newName=name.getName();
 					if(!newName.equals(oldName)){
 						//批拼音
-						name.setNamePhonetic(metadataApi.pyConvert(newName)[0]);
+						name.setNamePhonetic(metadataApi.pyConvert(newName)[1]);
 					}
 					
 				}

@@ -73,7 +73,7 @@ public class FMBAT20138 extends BasicBatchRule {
 						newShortSubrow.setName(newShortName);
 						newShortSubrow.setNameGroupid(poiObj.getMaxGroupIdFromNames()+1);
 						//批拼音
-						newShortSubrow.setNamePhonetic(metadataApi.pyConvert(newShortName)[0]);	
+						newShortSubrow.setNamePhonetic(metadataApi.pyConvert(newShortName)[1]);	
 						return;
 					}
 					//如果数据中存在简称，当“RESULT_KEY”字段内容+官方标准化中文名称中未被替换的其余部分在简称名称能找到时，则不处理；
@@ -92,7 +92,7 @@ public class FMBAT20138 extends BasicBatchRule {
 					newShortSubrow.setName(newShortName);
 					newShortSubrow.setNameGroupid(poiObj.getMaxGroupIdFromNames()+1);
 					//批拼音
-					newShortSubrow.setNamePhonetic(metadataApi.pyConvert(newShortName)[0]);				
+					newShortSubrow.setNamePhonetic(metadataApi.pyConvert(newShortName)[1]);				
 				}
 			}	
 		}		

@@ -142,8 +142,6 @@ public class ColumnCoreOperation {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new SQLException("从poi_column_status表删除作业标记信息出错，原因：" + e.getMessage(), e);
-		} finally {
-			DbUtils.commitAndCloseQuietly(conn);
 		}
 
 	}

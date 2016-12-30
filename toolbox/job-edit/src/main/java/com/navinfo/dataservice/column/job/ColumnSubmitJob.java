@@ -111,7 +111,7 @@ public class ColumnSubmitJob extends AbstractJob {
 				PoiColumnOpConf columnOpConf = ixPoiOpConfSelector.getDeepOpConf(firstWorkItem,second, type);
 					
 				// 批处理
-				if (columnOpConf.getSaveExebatch() == 1) {
+				if (columnOpConf.getSubmitExebatch() == 1) {
 					if (columnOpConf.getSubmitBatchrules() != null) {
 						BatchCommand batchCommand=new BatchCommand();		
 						for (String ruleId:columnOpConf.getSubmitBatchrules().split(",")) {
@@ -124,7 +124,7 @@ public class ColumnSubmitJob extends AbstractJob {
 				}
 				
 				// 检查
-				if (columnOpConf.getSaveExecheck() == 1) {
+				if (columnOpConf.getSubmitExecheck() == 1) {
 					if (columnOpConf.getSubmitCkrules() != null) {
 						CheckCommand checkCommand=new CheckCommand();		
 						List<String> checkList=new ArrayList<String>();

@@ -62,7 +62,7 @@ public class GLM09017 extends baseRule{
 				StringBuilder sb = new StringBuilder();
 
 				sb.append("SELECT 1 FROM RD_LINK RL,RD_WARNINGINFO RW");
-				sb.append(" WHERE RW.LINK_PID = " + rdWarninginfo.getPid());
+				sb.append(" WHERE RW.LINK_PID = " + rdWarninginfo.getLinkPid());
 				sb.append(" AND RL.DIRECT IN (2, 3)");
 				sb.append(" AND RL.LINK_PID = RW.LINK_PID");
 				sb.append(" AND RW.U_RECORD <> 2");

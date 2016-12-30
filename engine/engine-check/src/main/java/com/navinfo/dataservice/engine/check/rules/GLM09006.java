@@ -45,7 +45,7 @@ public class GLM09006 extends baseRule{
 
 		sb.append("SELECT 1 FROM RD_WARNINGINFO RW");
 		sb.append(" WHERE RW.NODE_PID = " + rdWarninginfo.getNodePid());
-		sb.append(" AND RW.LINK_PID = 1" + rdWarninginfo.getLinkPid());
+		sb.append(" AND RW.LINK_PID = " + rdWarninginfo.getLinkPid());
 		sb.append(" AND RW.U_RECORD <> 2");
 		sb.append(" HAVING COUNT(1) >= 6");
 

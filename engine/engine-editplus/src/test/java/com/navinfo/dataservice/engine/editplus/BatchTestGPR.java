@@ -44,7 +44,7 @@ public class BatchTestGPR {
 		test.init();
 		Connection conn = DBConnector.getInstance().getConnectionById(19);
 		OperationResult operationResult=new OperationResult();
-		BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", null, false,78675641, false);
+		BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", null, false,320000162, false);
 //		operationResult.putObj(obj);
 		IxPoiObj poiObj=(IxPoiObj) obj;
 		IxPoi row=(IxPoi) obj.getMainrow();
@@ -60,7 +60,7 @@ public class BatchTestGPR {
 		operationResult.putObj(obj);
 		
 		BatchCommand batchCommand=new BatchCommand();	
-		batchCommand.setRuleId("FM-BAT-20-177");
+		batchCommand.setRuleId("FM_BAT_20_198");
 		//batchCommand.setOperationName("day2month");
 		Batch batch=new Batch(conn,operationResult);
 		batch.operate(batchCommand);

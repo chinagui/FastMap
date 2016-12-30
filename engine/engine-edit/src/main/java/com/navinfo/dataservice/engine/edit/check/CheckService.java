@@ -77,7 +77,7 @@ public class CheckService {
 			metaValidationRequestJSON.put("executeDBId", metaDbid);//元数据库dbId
 			metaValidationRequestJSON.put("kdbDBId", metaDbid);//元数据库dbId
 			metaValidationRequestJSON.put("ruleIds", ruleList);
-			metaValidationRequestJSON.put("timeOut", 0);
+			metaValidationRequestJSON.put("timeOut", 600);
 			jobId=apiService.createJob("checkCore", metaValidationRequestJSON, userId,subtaskId, "元数据库检查");
 			//System.out.println("jobId == "+jobId);
 			}

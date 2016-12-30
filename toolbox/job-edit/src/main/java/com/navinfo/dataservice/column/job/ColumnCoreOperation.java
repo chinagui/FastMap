@@ -64,7 +64,9 @@ public class ColumnCoreOperation {
 				// poi_deep_status不存在的作业项，要插入
 				checkResultList.retainAll(ckRules);
 				checkResultList.removeAll(existClassifyList);
-				insertWorkItem(checkResultList, conn, pid, userId, taskId);
+				if (checkResultList.size()>0) {
+					insertWorkItem(checkResultList, conn, pid, userId, taskId);
+				}
 
 				// 重分类回退，本次要重分类classifyRules,检查结果中没有，若poi_deep_status存在,需从poi_deep_status中删掉
 				List currentClassifyRules = classifyRules;

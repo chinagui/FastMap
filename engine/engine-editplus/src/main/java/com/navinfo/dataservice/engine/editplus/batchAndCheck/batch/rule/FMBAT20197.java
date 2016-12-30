@@ -19,7 +19,17 @@ public class FMBAT20197 extends BasicBatchRule {
 	private JSONObject chainWebsite = new JSONObject();
 	private JSONObject chainContact = new JSONObject();
 	
-	public void init() {
+
+	@Override
+	public void loadReferDatas(Collection<BasicObj> batchDataList)
+			throws Exception {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	//月编无删除数据
+	public void runBatch(BasicObj obj) throws Exception {
 		// chainWebsite init
 		chainWebsite.put("8007", "http://www.top1.cn/");
 		chainWebsite.put("8006", "http://www.1hai.cn");
@@ -49,19 +59,6 @@ public class FMBAT20197 extends BasicBatchRule {
 		chainContact.put("36AF", "4000600112");
 		chainContact.put("3958", "4008080899");
 		chainContact.put("3959", "4009208050");
-	}
-
-
-	@Override
-	public void loadReferDatas(Collection<BasicObj> batchDataList)
-			throws Exception {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	//月编无删除数据
-	public void runBatch(BasicObj obj) throws Exception {
 		if(obj.objName().equals(ObjectName.IX_POI)){
 			IxPoiObj poiObj=(IxPoiObj) obj;
 			IxPoi poi=(IxPoi) poiObj.getMainrow();

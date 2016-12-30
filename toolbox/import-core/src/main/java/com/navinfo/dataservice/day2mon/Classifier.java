@@ -19,6 +19,7 @@ public class Classifier {
 	private Connection conn;
 	private List<String> namelist1 = new ArrayList<String>();
 	private List<String> namelist2 = new ArrayList<String>();
+	private List<String> namelist3 = new ArrayList<String>();
 	private List<String> othernamelist = new ArrayList<String>();
 	
 	public Classifier(Map<String, Map<Long, Set<String>>> checkResult,Connection conn) {
@@ -38,6 +39,8 @@ public class Classifier {
 		namelist2.add("FM-A07-02");
 		namelist2.add("FM-A07-11");
 		namelist2.add("FM-A07-12");
+		
+		namelist3.add("FM-M01-01");
 		
 		othernamelist.add("FM-A04-18");
 	}
@@ -59,7 +62,23 @@ public class Classifier {
 			// poi_englishname
 			Set<String> workItemIdEngName = new HashSet<String>();
 			int engNameHandler = 1;
-			if (ruleList.contains("FM-YW-20-013")) {
+			if (ruleList.contains("FM-M01-02")) {
+				workItemIdEngName.add("FM-M01-02");
+				ruleList.remove("FM-M01-02");
+				if (ruleList.contains("FM-YW-20-013")) {
+					ruleList.remove("FM-YW-20-013");
+				}
+				if (ruleList.contains("FM-YW-20-012")) {
+					ruleList.remove("FM-YW-20-012");
+				}
+				if (ruleList.contains("FM-YW-20-014")) {
+					ruleList.remove("FM-YW-20-014");
+				}
+				if (ruleList.contains("FM-YW-20-017")) {
+					ruleList.remove("FM-YW-20-017");
+				}
+ 				isEng = true;
+			}else if (ruleList.contains("FM-YW-20-013")) {
 				workItemIdEngName.add("FM-YW-20-013");
 				ruleList.remove("FM-YW-20-013");
 				if (ruleList.contains("FM-YW-20-012")) {
@@ -115,6 +134,13 @@ public class Classifier {
 						nameHandler = 107020;
 					}
 					break;
+				}
+			}
+			
+			for (String name1:namelist3) {
+				if(ruleList.contains(name1)) {
+					workItemIdName.add(name1);
+					isName = true;
 				}
 			}
 			

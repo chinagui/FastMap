@@ -36,7 +36,10 @@ public class GLM03004 extends baseRule{
 			if (obj instanceof RdNode){
 				RdNode rdNode = (RdNode) obj;
 				Map<String, Object> changedFields = rdNode.changedFields();
-				int kind = (int) changedFields.get("kind");
+				int kind = 1;
+				if(changedFields.containsKey("kind")){
+					kind = (int) changedFields.get("kind");
+				}
 				//路上点
 				if (kind == 3){
 					//查询node点挂接的link

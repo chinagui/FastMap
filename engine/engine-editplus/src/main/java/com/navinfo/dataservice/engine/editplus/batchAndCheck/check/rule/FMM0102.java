@@ -1,8 +1,12 @@
 package com.navinfo.dataservice.engine.editplus.batchAndCheck.check.rule;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
@@ -10,9 +14,11 @@ import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiHotel;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiParent;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
+import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
 /**
  *检查条件： 
  *对象POI新增或者修改(改名称、改分类)
@@ -24,11 +30,21 @@ import com.navinfo.dataservice.dao.plus.obj.ObjectName;
  * @author gaopengrong
  */
 public class FMM0102 extends BasicCheckRule {
+	List<Long> childIds = new ArrayList<Long>();
 	
 	@Override
 	public void loadReferDatas(Collection<BasicObj> batchDataList)
 			throws Exception {
-		// TODO Auto-generated method stub
+		Set<Long> pidList=new HashSet<Long>();
+		for(BasicObj obj:batchDataList){
+			pidList.add(obj.objPid());
+		}
+		childIds = IxPoiSelector.getChildrenPidsByParentPid(getCheckRuleCommand().getConn(), pidList);
+		Set<String> referSubrow=new HashSet<String>();
+		referSubrow.add("IX_POI_NAME");
+		//要修改父信息，所以此处isLock=true
+		Map<Long, BasicObj> referObjs = getCheckRuleCommand().loadReferObjs(childIds, ObjectName.IX_POI, referSubrow, true);
+		myReferDataMap.put(ObjectName.IX_POI, referObjs);
 	}
 
 	@Override
@@ -45,20 +61,36 @@ public class FMM0102 extends BasicCheckRule {
 				return;
 			}
 			MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
-			Map<String, String> type14= metadataApi.scPointSpecKindCodeType14();
+			Map<String, List<String>>  type14= metadataApi.scPointSpecKindCodeType14();
 			
 			
 			List<IxPoiHotel> hotels= poiObj.getIxPoiHotels();
 			for(IxPoiHotel hotel:hotels){
 				int rating= hotel.getRating();
 				if (type14.containsKey(newKindCode)){
-					if(String.valueOf(rating).equals(type14.get(newKindCode))){
+					if(type14.get(newKindCode).contains(String.valueOf(rating))){
 						String log="网络搜集英文作业！";
 						setCheckResult(poi.getGeometry(), "[IX_POI,"+poi.getPid()+"]", poi.getMeshId(),log);
 						return;
 					}
 				}
 
+			}
+			if(childIds.size()==0){return;}
+			for(long childId:childIds){
+				BasicObj childObj=myReferDataMap.get(ObjectName.IX_POI).get(childId);
+				IxPoiObj childPoiObj=(IxPoiObj) childObj;
+				IxPoi cPoi=(IxPoi) childPoiObj.getMainrow(); 
+				IxPoiName cName=childPoiObj.getOfficeStandardCHIName();
+				if(cName!=null){
+					String cNameStr= cName.getName();
+					IxPoiName pName=poiObj.getOfficeStandardCHIName();
+					String pNameStr= pName.getName();
+					if(cNameStr.contains(pNameStr)){
+						String log="网络搜集英文作业！";
+						setCheckResult(cPoi.getGeometry(), "[IX_POI,"+cPoi.getPid()+"]", cPoi.getMeshId(),log);
+					}
+				}
 			}
 		}
 	}

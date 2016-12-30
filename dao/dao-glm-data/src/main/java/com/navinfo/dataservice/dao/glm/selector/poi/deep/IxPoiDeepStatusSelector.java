@@ -3,12 +3,9 @@ package com.navinfo.dataservice.dao.glm.selector.poi.deep;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.apache.commons.dbutils.DbUtils;
 
-import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.log.LogReader;
@@ -49,15 +46,11 @@ public class IxPoiDeepStatusSelector extends AbstractSelector{
 		JSONArray deepCheckRules = getdeepCheckRules(type);
 		
 		int status = jsonReq.getInt("status");
-		int pageNum  =jsonReq.getInt("pageNum");
-		int pageSize = jsonReq.getInt("pageSize");
 		
 		JSONObject result = new JSONObject();
 		JSONArray array = new JSONArray();
 		int total = 0;
-		int startRow = (pageNum - 1) * pageSize + 1;
-		int endRow = pageNum * pageSize;
-		String sql = "";
+
 		StringBuilder bufferCondition = new StringBuilder();
 		
 		bufferCondition.append("select COUNT(1) OVER(PARTITION BY 1) total, ipn.poi_pid pid, ipn.name, p.kind_code ");
@@ -76,16 +69,12 @@ public class IxPoiDeepStatusSelector extends AbstractSelector{
 			// pid精确查询
 			bufferCondition.append(" and p.pid = " + jsonReq.getInt("pid"));
 		}
-		sql = getSqlFromBufferCondition(bufferCondition, false);
 		
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
 		try {
-			pstmt = conn.prepareStatement(sql);
-			
-			pstmt.setInt(1, endRow);
-			pstmt.setInt(2, startRow);
+			pstmt = conn.prepareStatement(bufferCondition.toString());
 			
 			resultSet = pstmt.executeQuery();
 			while (resultSet.next()) {

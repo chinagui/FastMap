@@ -64,7 +64,7 @@ public class FMM0102 extends BasicCheckRule {
 	}
 	private boolean isCheck(IxPoiObj poiObj){
 		IxPoi poi=(IxPoi) poiObj.getMainrow();
-		if(br.getHisOpType().equals(OperationType.INSERT)){return true;}
+		if(poi.getHisOpType().equals(OperationType.INSERT)){return true;}
 		if(poi.hisOldValueContains(IxPoi.KIND_CODE)){
 			String oldKindCode=(String) poi.getHisOldValue(IxPoi.KIND_CODE);
 			String newKindCode=poi.getKindCode();

@@ -22,7 +22,7 @@ public class FMYW20053 extends BasicCheckRule {
 		if(obj.objName().equals(ObjectName.IX_POI)){
 			IxPoiObj poiObj=(IxPoiObj) obj;
 			IxPoi poi=(IxPoi) poiObj.getMainrow();
-			IxPoiName name = poiObj.getOfficeStandardEngName();
+			IxPoiName name = poiObj.getOfficeOriginEngName();
 			String nameStr= name.getName();
 			if(nameStr.length()>35){
 				setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), null);

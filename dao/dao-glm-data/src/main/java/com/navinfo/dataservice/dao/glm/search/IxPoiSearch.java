@@ -29,6 +29,7 @@ import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiColumnStatusSelect
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiAddressSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiNameSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
+import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiParentSelector;
 import com.navinfo.dataservice.dao.log.LogReader;
 import com.navinfo.dataservice.dao.glm.search.AdAdminSearch;
 import com.vividsolutions.jts.geom.Geometry;
@@ -913,8 +914,10 @@ public class IxPoiSearch implements ISearch {
 	private JSONObject getParentName(String secondWorkItem,IxPoi poi,JSONObject dataObj) throws Exception {
 		try{
 			if (secondWorkItem.equals("nameUnify")) {
-				List<IRow> pRows = poi.getParents();
+				int cPid=poi.getPid();
 				int parentPoiPid = 0;
+				IxPoiParentSelector parents= new IxPoiParentSelector(conn);
+				List<IRow> pRows =parents.loadParentRowsByChildrenId(cPid, false);
 				for (IRow pRow:pRows) {
 					IxPoiParent parent = (IxPoiParent) pRow;
 					parentPoiPid = parent.getParentPoiPid();

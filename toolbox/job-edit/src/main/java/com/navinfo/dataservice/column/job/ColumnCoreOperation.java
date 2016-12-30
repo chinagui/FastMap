@@ -41,11 +41,11 @@ public class ColumnCoreOperation {
 			List pidList = (List) mapParams.get("pids"); // 每条数据需包含pid
 			List ckRules = new ArrayList();
 			for(int i=0;i<strCkRules.length;i++){
-				ckRules.add("'"+strCkRules[i]+"'");
+				ckRules.add(strCkRules[i]);
 			}
 			List classifyRules = new ArrayList();
 			for(int i=0;i<strClassifyRules.length;i++){
-				classifyRules.add("'"+strClassifyRules[i]+"'");
+				classifyRules.add(strClassifyRules[i]);
 			}
 			for (int i = 0; i < pidList.size(); i++) {
 				int pid = (Integer) pidList.get(i);

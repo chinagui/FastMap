@@ -25,14 +25,14 @@ public class GLM01031 extends baseRule {
 					if (rdLink.changedFields().containsKey("length")) {
 						double length = (double) rdLink.changedFields().get("length");
 						if (length <= 2 && !this.isJiaoChaLink(rdLink)) {
-							this.setCheckResult("", "", 0);
+							this.setCheckResult("", "", 0,this.getRuleLog()+"PID:"+rdLink.getPid());
 							return;
 						}
 					}
 				} 
 				//新增link
 				else if (rdLink.getLength() <= 2 && !this.isJiaoChaLink(rdLink)) {
-					this.setCheckResult("", "", 0);
+					this.setCheckResult("", "", 0,this.getRuleLog()+"PID:"+rdLink.getPid());
 					return;
 				}
 			}

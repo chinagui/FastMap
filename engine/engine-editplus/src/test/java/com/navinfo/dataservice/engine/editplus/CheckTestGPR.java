@@ -13,6 +13,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.plus.model.basic.ChangeLog;
+import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
@@ -42,21 +43,22 @@ public class CheckTestGPR {
 		test.init();
 		Connection conn = DBConnector.getInstance().getConnectionById(19);
 		OperationResult operationResult=new OperationResult();
-		BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", null,true, 70, false);
+		BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", null,true, 206000151, false);
 		IxPoi row=(IxPoi) obj.getMainrow();
 		//row.setKindCode("190100");
 		ChangeLog logg=new ChangeLog();
 		Map<String, Object> oldValues=new HashMap<String, Object>();
-		oldValues.put("KIND_CODE", "0");
+		oldValues.put("KIND_CODE", "123456");
 		logg.setOldValues(oldValues);
 		List<ChangeLog> logList=new ArrayList<ChangeLog>();
 		logList.add(logg);
 		row.setHisChangeLogs(logList);
+		row.setOpType(OperationType.UPDATE);
 		operationResult.putObj(obj);
 		
 		CheckCommand checkCommand=new CheckCommand();		
 		List<String> ruleIdList=new ArrayList<String>();
-		ruleIdList.add("FM-GLM60254");
+		ruleIdList.add("FM-M01-02");
 		checkCommand.setRuleIdList(ruleIdList);
 		
 		Check check=new Check(conn,operationResult);

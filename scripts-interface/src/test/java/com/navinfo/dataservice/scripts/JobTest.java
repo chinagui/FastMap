@@ -115,8 +115,8 @@ public class JobTest {
 			//int jobId=777;
 			JobInfo jobInfo = JobService.getInstance().getJobById(jobId);
 			AbstractJob job = JobCreateStrategy.createAsMethod(jobInfo);
-//			job.run();
-			job.execute();
+			job.run();
+//			job.execute();
 			job.getJobInfo().getResponse();
 			
 			System.out.println("Over.");

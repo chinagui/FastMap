@@ -9,7 +9,9 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
@@ -159,7 +161,7 @@ public class SvgTest {
 	
 	
 	
-	public static void main(String[] args) throws IOException {
+	/*public static void main(String[] args) throws IOException {
 		File file = new File("f:/S0CLL15OC91B.svg");
 		ImageInputStream is = null;
 		try {
@@ -179,5 +181,55 @@ public class SvgTest {
 			//outSteam.close();  
 		    is.close(); 
 		}  
+	}*/
+	public static void main(String[] args) {
+		List<String> ruleList=new ArrayList<String>();
+		ruleList.add("CHR60009");
+		ruleList.add("CHR60010");
+		ruleList.add("CHR60011");
+		ruleList.add("CHR60012");
+		ruleList.add("CHR60013");
+		ruleList.add("CHR60014");
+		ruleList.add("CHR61009");
+		ruleList.add("CHR61010");
+		ruleList.add("CHR61011");
+		ruleList.add("CHR61012");
+		ruleList.add("CHR61013");
+		ruleList.add("CHR61014");
+		ruleList.add("CHR63415");
+		ruleList.add("CHR63419");
+		ruleList.add("CHR63423");
+		ruleList.add("CHR63428");
+		ruleList.add("CHR63436");
+		ruleList.add("CHR70107");
+		ruleList.add("CHR70108");
+		ruleList.add("CHR70109");
+		ruleList.add("CHR70110");
+		ruleList.add("CHR70111");
+		ruleList.add("CHR70112");
+		ruleList.add("CHR71024");
+		ruleList.add("CHR71025");
+		ruleList.add("CHR71026");
+		ruleList.add("CHR71027");
+		ruleList.add("CHR71028");
+		ruleList.add("CHR71041");
+		ruleList.add("CHR73040");
+		ruleList.add("CHR73041");
+		ruleList.add("CHR73042");
+		ruleList.add("CHR73043");
+		ruleList.add("CHR73044");
+		ruleList.add("CHR73045");
+		ruleList.add("COM01001");
+		ruleList.add("COM01003");
+		ruleList.add("COM20552");
+		ruleList.add("COM60104");
+		JSONObject metaValidationRequestJSON=new JSONObject();
+		metaValidationRequestJSON.put("executeDBId", 106);//元数据库dbId
+		metaValidationRequestJSON.put("kdbDBId", 106);//元数据库dbId
+		metaValidationRequestJSON.put("ruleIds", ruleList);
+		metaValidationRequestJSON.put("timeOut", 600);
+		
+		System.out.println(metaValidationRequestJSON);
 	}
+	
 }

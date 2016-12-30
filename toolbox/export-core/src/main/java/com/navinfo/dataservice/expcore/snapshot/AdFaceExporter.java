@@ -47,7 +47,7 @@ public class AdFaceExporter {
 
 		int count = 0;
 		
-		WKT wkt = new WKT();
+		//WKT wkt = new WKT();
 		
 		while (rs.next()) {
 			
@@ -56,7 +56,7 @@ public class AdFaceExporter {
 			STRUCT struct = (STRUCT) rs.getObject("geometry");
 			String geom = GeoTranslator.struct2Wkt(struct);
 			//String geom = new String(wkt.fromJGeometry(wkt.toJGeometry(rs.getBytes("geometry"))));
-			System.out.println("face_pid:"+rs.getInt("face_pid")+" ,count : "+(count+1)+" geom"+ geom);
+			//System.out.println("face_pid:"+rs.getInt("face_pid")+" ,count : "+(count+1)+" geom"+ geom);
 			pstm.setString(3, geom);
 			pstm.setString(4, String.valueOf(rs.getInt("mesh_id")));
 			pstm.setString(5, operateDate);

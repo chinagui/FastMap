@@ -289,7 +289,7 @@ public class DeepCoreControl {
             //rowIdList = getRowIdsByPids(conn,pids);
             
             if (poiData.size() == 0) {
-            	updateDeepStatus(pids, conn, 0);
+            	updateDeepStatus(pids, conn, 0,secondWorkItem);
                 return result;
             }
             
@@ -387,16 +387,16 @@ public class DeepCoreControl {
      * @param pids conn flag(0:保存 1:提交)
      * @throws Exception
      */
-	public void updateDeepStatus(List<Integer> pidList,Connection conn,int flag) throws Exception {
+	public void updateDeepStatus(List<Integer> pidList,Connection conn,int flag,String secondWorkItem) throws Exception {
 		StringBuilder sb = new StringBuilder();
 		
         if (pidList.isEmpty()){
         	return;
         }
         if (flag==0) {
-        	sb.append(" UPDATE poi_column_status T1 SET T1.SECOND_WORK_STATUS= 2  WHERE pid in (");
+        	sb.append(" UPDATE poi_column_status T1 SET T1.SECOND_WORK_STATUS= 2  WHERE  T1.work_item_id IN (SELECT cf.work_item_id FROM POI_COLUMN_WORKITEM_CONF cf WHERE cf.second_work_item='"+secondWorkItem+"') AND T1.pid in (");
         } else {
-        	sb.append(" UPDATE poi_column_status T1 SET T1.SECOND_WORK_STATUS= 3,T1.HANDLER=0  WHERE pid in (");
+        	sb.append(" UPDATE poi_column_status T1 SET T1.SECOND_WORK_STATUS= 3,T1.HANDLER=0  WHERE  T1.work_item_id IN (SELECT cf.work_item_id FROM POI_COLUMN_WORKITEM_CONF cf WHERE cf.second_work_item='"+secondWorkItem+"') AND T1.pid in (");
         }
 		
 		PreparedStatement pstmt = null;

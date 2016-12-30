@@ -244,17 +244,6 @@ public class IxPoiObj extends AbstractIxObj {
 		}
 		return ixPoiChildren;
 	}
-	public IxPoiChildren createIxPoiChildren()throws Exception{
-		IxPoiChildren ixPoiChildren = (IxPoiChildren)(ObjFactory.getInstance().createRow("IX_POI_CHILDREN", this.objPid()));
-		if(subrows.containsKey("IX_POI_CHILDREN")){
-			subrows.get("IX_POI_CHILDREN").add(ixPoiChildren);
-		}else{
-			List<BasicRow> ixPoiChildrenList = new ArrayList<BasicRow>();
-			ixPoiChildrenList.add(ixPoiChildren);
-			subrows.put("IX_POI_CHILDREN", ixPoiChildrenList);
-		}
-		return ixPoiChildren;
-	}
 	
 	public List<IxPoiParent> getIxPoiParents(){
 		return (List)subrows.get("IX_POI_PARENT");
@@ -668,8 +657,9 @@ public class IxPoiObj extends AbstractIxObj {
 	 * 创建一个IxSamepoiPart对象，完成主键赋值，完成objPid赋值，完成并将其写入到IxPoi的subrows属性中。
 	 * 暂时没有维护IxSamepoiPart对象的外键
 	 */
-	public IxSamepoiPart createIxSamepoiPart()throws Exception{
+	public IxSamepoiPart createIxSamepoiPart(long groupId)throws Exception{
 		IxSamepoiPart ixSamepoiPart = (IxSamepoiPart)(ObjFactory.getInstance().createRow("IX_SAMEPOI_PART", this.objPid()));
+		ixSamepoiPart.setGroupId(groupId);
 		if(subrows.containsKey("IX_SAMEPOI_PART")){
 			subrows.get("IX_SAMEPOI_PART").add(ixSamepoiPart);
 		}else{
@@ -686,8 +676,9 @@ public class IxPoiObj extends AbstractIxObj {
 	 * 创建一个IxPoiNameFlag对象，完成主键赋值，完成objPid赋值，并将其写入到IxPoi的subrows属性中。
 	 * 暂时没有维护IxPoiNameFlag对象的外键
 	 */
-	public IxPoiNameFlag createIxPoiNameFlag()throws Exception{
+	public IxPoiNameFlag createIxPoiNameFlag(long nameId)throws Exception{
 		IxPoiNameFlag ixPoiNameFlag = (IxPoiNameFlag)(ObjFactory.getInstance().createRow("IX_POI_NAME_FLAG", this.objPid()));
+		ixPoiNameFlag.setNameId(nameId);
 		if(subrows.containsKey("IX_POI_NAME_FLAG")){
 			subrows.get("IX_POI_NAME_FLAG").add(ixPoiNameFlag);
 		}else{
@@ -708,8 +699,9 @@ public class IxPoiObj extends AbstractIxObj {
 	 * 创建一个IxPoiNameTone对象，完成主键赋值，完成objPid赋值，并将其写入到IxPoi的subrows属性中。
 	 * 暂时没有维护IxPoiNameTone对象的外键
 	 */
-	public IxPoiNameTone createIxPoiNameTone()throws Exception{
+	public IxPoiNameTone createIxPoiNameTone(long nameId)throws Exception{
 		IxPoiNameTone ixPoiNameTone = (IxPoiNameTone)(ObjFactory.getInstance().createRow("IX_POI_NAME_TONE", this.objPid()));
+		ixPoiNameTone.setNameId(nameId);
 		if(subrows.containsKey("IX_POI_NAME_TONE")){
 			subrows.get("IX_POI_NAME_TONE").add(ixPoiNameTone);
 		}else{
@@ -1124,8 +1116,6 @@ catch (Exception e) {
 			return this.createIxPoiName();
 		}else if("parents".equals(subRowName)){
 			return this.createIxPoiParent();
-		}else if("children".equals(subRowName)){
-			return this.createIxPoiChildren();
 		}else if("photos".equals(subRowName)){
 			return this.createIxPoiPhoto();
 		}else if("videoes".equals(subRowName)){
@@ -1162,17 +1152,29 @@ catch (Exception e) {
 			return this.createIxPoiRestaurant();
 		}else if("carrentals".equals(subRowName)){
 			return this.createIxPoiCarrental();
-		}else if("samepoiParts".equals(subRowName)){
-			return this.createIxSamepoiPart();
-		}else if("nameFlags".equals(subRowName)){
-			return this.createIxPoiNameFlag();
 		}else if("samepois".equals(subRowName)){
 			return this.createIxSamepoi();
-		}else if("nameTones".equals(subRowName)){
-			return this.createIxPoiNameTone();
 		}else{
 			throw new Exception("字段名为:"+subRowName+"的子表未创建");
 		}
+	}
+	
+	/**
+	 * 根据json中的key创建三级对象
+	 */
+	@Override
+	public BasicRow createSubSubRowByName(String subRowName, long subId) throws Exception {
+		// TODO Auto-generated method stub
+		if("nameFlags".equals(subRowName)){
+			return this.createIxPoiNameFlag(subId);
+		}else if("nameTones".equals(subRowName)){
+			return this.createIxPoiNameTone(subId);
+		}else if("samepoiParts".equals(subRowName)){
+			return this.createIxSamepoiPart(subId);
+		}else if("children".equals(subRowName)){
+			return this.createIxPoiChildren(subId);
+		}
+		return null;
 	}
 	
 	/**
@@ -1246,6 +1248,7 @@ catch (Exception e) {
 			throw new Exception("字段名为:"+subRowName+"的子表未找到");
 		}
 	}
+	
 	
 
 }

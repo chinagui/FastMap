@@ -372,7 +372,7 @@ public class DefaultObjImportor extends AbstractOperation{
 									if(subObj instanceof JSONObject){
 										//为子表
 										JSONObject jo = (JSONObject) subObj;
-										this.setSubAttrValue(jo, obj, attName);
+										this.setSubSubAttrValue(jo, obj, attName,(long) subRow.getAttrByColName(subRow.primaryKey()));
 									}else{
 										throw new Exception(attName+"为数组类型，其内部格式为不支持的json结构");
 									}
@@ -381,7 +381,81 @@ public class DefaultObjImportor extends AbstractOperation{
 						}else if (attValue instanceof JSONObject) {
 							//为子表
 							JSONObject subJo = (JSONObject) attValue;
-							this.setSubAttrValue(subJo, obj, attName);
+							this.setSubSubAttrValue(subJo, obj, attName,(long) subRow.getAttrByColName(subRow.primaryKey()));
+						}
+					}catch(Exception e){
+						log.error(e.getMessage(),e);
+						throw new Exception("Request解析过程中可能未找到方法,原因为:"+e.getMessage(),e);
+					}
+				}
+			}else{
+				throw new Exception("未找到字段名为:"+subRowName+"的子表");
+			}
+		}
+	}
+	
+	@SuppressWarnings("rawtypes")
+	public void setSubSubAttrValue(JSONObject json,BasicObj obj,String subRowName, long subId)throws Exception{
+		BasicRow subRow =null;
+		if(json==null) {
+			log.warn("注意：未传入的解析json对象，request未被初始化");
+		}else{
+			String objStatus = json.getString("objStatus");
+			//处理子表
+			if("INSERT".equals(objStatus)){
+				subRow = obj.createSubSubRowByName(subRowName, subId);
+			}else {
+				List<BasicRow> subRowList = obj.getSubRowByName(subRowName);
+				String rowId = json.getString("rowId");
+				boolean flag = true;
+				if(!subRowList.isEmpty()){
+					for (BasicRow basicRow : subRowList) {
+						if(basicRow.getRowId().equals(rowId)){
+							subRow = basicRow;
+							flag = false;
+							break;
+						}
+					}
+				}
+				if(flag){
+					throw new Exception("rowId为:"+rowId+"的子表没有查到");
+				}
+				if("UPDATE".equals(objStatus)){
+					//不作处理
+				}else if("DELETE".equals(objStatus)){
+					obj.deleteSubrow(subRow);
+					return;
+				}
+			}
+			if(subRow != null){
+				for(Iterator it = json.keys();it.hasNext();){
+					String attName = (String)it.next();
+					Object attValue = json.get(attName);
+					if((attValue==null && (!(attValue instanceof JSONNull)))
+							||StringUtils.isEmpty(attName)||"objStatus".equals(attName)
+							||"pid".equals(attName)||"rowId".equals(attName)
+							||"nameId".equals(attName)||"groupId".equals(attName)){
+						log.warn("注意：request的json中存在name或者value为空的属性，已经被忽略。"+attName);
+						continue;
+					}
+					try{
+						if(attValue instanceof String
+								||attValue instanceof Integer
+								||attValue instanceof Long
+								||attValue instanceof Double
+								||attValue instanceof Boolean
+								||attValue instanceof JSONNull
+								){
+							//数据类型转换
+							if(attValue instanceof Integer){
+								Field field = this.getFieldByName(subRow.getClass(), attName);
+								if("Long".equalsIgnoreCase(field.getType().getName())){
+									attValue = Long.valueOf((Integer)attValue);
+									log.info("转换字段:"+attName);
+								}
+							}
+							String newAttName = this.camelToUnderline(attName);
+							subRow.setAttrByCol(newAttName, attValue);
 						}
 					}catch(Exception e){
 						log.error(e.getMessage(),e);

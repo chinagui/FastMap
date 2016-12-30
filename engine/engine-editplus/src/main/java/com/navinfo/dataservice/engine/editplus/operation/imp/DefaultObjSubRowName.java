@@ -22,6 +22,7 @@ public class DefaultObjSubRowName {
 	public static Set<String> getIxPoiTabNames(Map<Long, JSONObject> objMap) throws Exception{
 		//添加所需的子表
 		Set<String> tabNames = new HashSet<String>();
+		Set<String> subRowNames = new HashSet<String>();
 		if(objMap != null && objMap.size()>0){
 			for(Entry<Long, JSONObject> entry : objMap.entrySet()){
 				JSONObject json = entry.getValue();
@@ -32,7 +33,42 @@ public class DefaultObjSubRowName {
 							||StringUtils.isEmpty(subRowName)||"objStatus".equals(subRowName)){
 						continue;
 					}
-					if(attValue instanceof JSONArray||attValue instanceof JSONObject){
+					if(attValue instanceof JSONArray){
+						subRowNames.add(subRowName);
+						JSONArray attArr = (JSONArray)attValue;
+						if(attArr.size()>0){
+							for(int i=0;i<attArr.size();i++){
+								Object subObj = attArr.get(0);
+								if(subObj instanceof JSONObject){
+									//为子表
+									JSONObject jo = (JSONObject) subObj;
+									for(Iterator ite = jo.keys();ite.hasNext();){
+										String subRow = (String)ite.next();
+										Object attValue01 = jo.get(subRow);
+										if(attValue01 instanceof JSONArray||attValue01 instanceof JSONObject){
+											subRowNames.add(subRow);
+										}
+									}
+								}else{
+									throw new Exception(subRowName+"为数组类型，其内部格式为不支持的json结构");
+								}
+							}
+						}
+					}else if (attValue instanceof JSONObject) {
+						//为子表
+						subRowNames.add(subRowName);
+						JSONObject subJo = (JSONObject) attValue;
+						for(Iterator it02 = subJo.keys();it02.hasNext();){
+							String subRow02 = (String)it02.next();
+							Object attValue02 = subJo.get(subRow02);
+							if(attValue02 instanceof JSONArray||attValue02 instanceof JSONObject){
+								subRowNames.add(subRow02);
+							}
+						}
+					}
+				}
+				if(!subRowNames.isEmpty()){
+					for (String subRowName : subRowNames) {
 						if("addresses".equals(subRowName)){
 							tabNames.add("IX_POI_ADDRESS");
 						}else if("audioes".equals(subRowName)){
@@ -89,6 +125,12 @@ public class DefaultObjSubRowName {
 							tabNames.add("IX_POI_CARRENTAL");
 						}else if("samepoiParts".equals(subRowName)){
 							tabNames.add("IX_SAMEPOI_PART");
+						}else if("nameFlags".equals(subRowName)){
+							tabNames.add("IX_POI_NAME_FLAG");
+						}else if("samepois".equals(subRowName)){
+							tabNames.add("IX_SAMEPOI");
+						}else if("nameTones".equals(subRowName)){
+							tabNames.add("IX_POI_NAME_TONE");
 						}else{
 							throw new Exception("字段名为:"+subRowName+"的子表未找到");
 						}
@@ -98,4 +140,5 @@ public class DefaultObjSubRowName {
 		}
 		return tabNames;
 	}
+	
 }

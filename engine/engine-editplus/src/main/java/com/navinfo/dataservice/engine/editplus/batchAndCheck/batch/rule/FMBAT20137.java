@@ -70,7 +70,7 @@ public class FMBAT20137 extends BasicBatchRule {
 				}
 				br.setName(newName);
 				//批拼音
-				br.setNamePhonetic(metadataApi.pyConvert(newName)[0]);
+				br.setNamePhonetic(metadataApi.pyConvert(newName)[1]);
 			}
 			//品牌chain不能是9005和9006
 			if(newKindCode.equals("150101")){
@@ -89,7 +89,7 @@ public class FMBAT20137 extends BasicBatchRule {
 						}
 					br.setName(newName);
 					//批拼音
-					br.setNamePhonetic(metadataApi.pyConvert(newName)[0]);
+					br.setNamePhonetic(metadataApi.pyConvert(newName)[1]);
 				}
 			}
 			

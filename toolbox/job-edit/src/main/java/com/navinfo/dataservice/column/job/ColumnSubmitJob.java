@@ -70,7 +70,6 @@ public class ColumnSubmitJob extends AbstractJob {
 			int type = 1;
 			
 			IxPoiOpConfSelector ixPoiOpConfSelector = new IxPoiOpConfSelector(conn);
-			
 			IxPoiColumnStatusSelector ixPoiDeepStatusSelector = new IxPoiColumnStatusSelector(conn);
 			
 			List<String> secondWorkList = new ArrayList<String>();
@@ -79,92 +78,102 @@ public class ColumnSubmitJob extends AbstractJob {
 			} else {
 				secondWorkList.add(secondWorkItem);
 			}
+			
 			for (String second:secondWorkList) {
 				// 查询可提交数据
 				pidList = ixPoiDeepStatusSelector.getRowIdForSubmit(firstWorkItem, second, taskId);
 				
-			// 清理检查结果
-			DeepCoreControl deepControl = new DeepCoreControl();
-			deepControl.cleanCheckResult(pidList, conn);
-			
-			OperationResult operationResult=new OperationResult();
-			
-			List<Long> pids = new ArrayList<Long>();
-			for (int pid:pidList) {
-				pids.add((long)pid);
-			}
-			
-			PoiLogDetailStat logDetail = new PoiLogDetailStat();
-			Map<Long,List<LogDetail>> submitLogs = logDetail.loadByColEditStatus(conn, pids, userId, taskId, firstWorkItem, second);
-			List<BasicObj> objList = new ArrayList<BasicObj>();
-			ObjHisLogParser logParser = new ObjHisLogParser();
-			for (int pid:pidList) {
-			BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", null,true, pid, false);
-				if (submitLogs.containsKey(pid)) {
-					logParser.parse(obj, submitLogs.get(pid));
-				}
-			objList.add(obj);
-			}
+				// 清理检查结果
+				DeepCoreControl deepControl = new DeepCoreControl();
+				deepControl.cleanCheckResult(pidList, conn);
 				
-			operationResult.putAll(objList);
-			
-			PoiColumnOpConf columnOpConf = ixPoiOpConfSelector.getDeepOpConf(firstWorkItem,second, type);
+				OperationResult operationResult=new OperationResult();
 				
-			// 批处理
-			if (columnOpConf.getSaveExebatch() == 1) {
-				BatchCommand batchCommand=new BatchCommand();		
-				for (String ruleId:columnOpConf.getSaveBatchrules().split(",")) {
-					batchCommand.setRuleId(ruleId);
-				}
-				Batch batch=new Batch(conn,operationResult);
-				batch.operate(batchCommand);
-				batch.persistChangeLog(OperationSegment.SG_COLUMN, userId);
-			}
-			
-			// 检查
-			if (columnOpConf.getSaveExecheck() == 1) {
-				CheckCommand checkCommand=new CheckCommand();		
-				List<String> checkList=new ArrayList<String>();
-				for (String ckRule:columnOpConf.getSaveCkrules().split(",")) {
-					checkList.add(ckRule);
-				}
-				checkCommand.setRuleIdList(checkList);
-				
-				Check check=new Check(conn,operationResult);
-				check.operate(checkCommand);
-				
-				// pidList替换为无检查错误的pidList
-				Map<String, Map<Long, Set<String>>> errorMap = check.getErrorPidMap();
-				Map<Long, Set<String>> poiMap = errorMap.get("IX_POI");
-				for (long pid:poiMap.keySet()) {
-					pidList.remove(pid);
+				List<Long> pids = new ArrayList<Long>();
+				for (int pid:pidList) {
+					pids.add((long)pid);
 				}
 				
-			}
-			
-			// 修改poi_deep_status表作业项状态
-			updateDeepStatus(pidList, conn, 3,second);
-			
-			
-			// 重分类
-			if (columnOpConf.getSubmitExeclassify()==1) {
-				HashMap<String,Object> classifyMap = new HashMap<String,Object>();
-				classifyMap.put("userId", userId);
-				classifyMap.put("ckRules", columnOpConf.getSaveCkrules());
-				classifyMap.put("classifyRules", columnOpConf.getSaveClassifyrules());
+				PoiLogDetailStat logDetail = new PoiLogDetailStat();
+				Map<Long,List<LogDetail>> submitLogs = logDetail.loadByColEditStatus(conn, pids, userId, taskId, firstWorkItem, second);
+				List<BasicObj> objList = new ArrayList<BasicObj>();
+				ObjHisLogParser logParser = new ObjHisLogParser();
+				for (int pid:pidList) {
+				BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", null,true, pid, false);
+					if (submitLogs.containsKey(pid)) {
+						logParser.parse(obj, submitLogs.get(pid));
+					}
+				objList.add(obj);
+				}
+					
+				operationResult.putAll(objList);
 				
-				classifyMap.put("pids", pidList);
-				ColumnCoreOperation columnCoreOperation = new ColumnCoreOperation();
-				columnCoreOperation.runClassify(classifyMap,conn);
-			}
-			
-			// 清理重分类检查结果
-			List<String> ckRules = new ArrayList<String>();
-			String classifyrules = columnOpConf.getSaveClassifyrules();
-			for (String classifyrule:classifyrules.split(",")) {
-				ckRules.add(classifyrule);
-			}
-			deepControl.cleanExByCkRule(conn, pidList, ckRules, "IX_POI");
+				PoiColumnOpConf columnOpConf = ixPoiOpConfSelector.getDeepOpConf(firstWorkItem,second, type);
+					
+				// 批处理
+				if (columnOpConf.getSubmitExebatch() == 1) {
+					if (columnOpConf.getSubmitBatchrules() != null) {
+						BatchCommand batchCommand=new BatchCommand();		
+						for (String ruleId:columnOpConf.getSubmitBatchrules().split(",")) {
+							batchCommand.setRuleId(ruleId);
+						}
+						Batch batch=new Batch(conn,operationResult);
+						batch.operate(batchCommand);
+						batch.persistChangeLog(OperationSegment.SG_COLUMN, userId);
+					}
+				}
+				
+				// 检查
+				if (columnOpConf.getSubmitExecheck() == 1) {
+					if (columnOpConf.getSubmitCkrules() != null) {
+						CheckCommand checkCommand=new CheckCommand();		
+						List<String> checkList=new ArrayList<String>();
+						for (String ckRule:columnOpConf.getSubmitCkrules().split(",")) {
+							checkList.add(ckRule);
+						}
+						checkCommand.setRuleIdList(checkList);
+						
+						Check check=new Check(conn,operationResult);
+						check.operate(checkCommand);
+						
+						// pidList替换为无检查错误的pidList
+						Map<String, Map<Long, Set<String>>> errorMap = check.getErrorPidMap();
+						if (errorMap != null) {
+							Map<Long, Set<String>> poiMap = errorMap.get("IX_POI");
+							for (long pid:poiMap.keySet()) {
+								pidList.remove(pid);
+							}
+						}
+					}
+				}
+				
+				// 修改poi_deep_status表作业项状态
+				updateDeepStatus(pidList, conn, 3,second);
+				
+				
+				// 重分类
+				if (columnOpConf.getSubmitExeclassify()==1) {
+					if (columnOpConf.getSubmitCkrules() != null && columnOpConf.getSubmitClassifyrules() != null) {
+						HashMap<String,Object> classifyMap = new HashMap<String,Object>();
+						classifyMap.put("userId", userId);
+						classifyMap.put("ckRules", columnOpConf.getSubmitCkrules());
+						classifyMap.put("classifyRules", columnOpConf.getSubmitClassifyrules());
+						
+						classifyMap.put("pids", pidList);
+						ColumnCoreOperation columnCoreOperation = new ColumnCoreOperation();
+						columnCoreOperation.runClassify(classifyMap,conn);
+					}
+				}
+				
+				// 清理重分类检查结果
+				List<String> ckRules = new ArrayList<String>();
+				String classifyrules = columnOpConf.getSubmitCkrules();
+				if (classifyrules != null) {
+					for (String classifyrule:classifyrules.split(",")) {
+						ckRules.add(classifyrule);
+					}
+					deepControl.cleanExByCkRule(conn, pidList, ckRules, "IX_POI");
+				}
 			}
 			
 			conn.commit();

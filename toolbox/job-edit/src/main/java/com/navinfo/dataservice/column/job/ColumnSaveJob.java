@@ -141,7 +141,7 @@ public class ColumnSaveJob extends AbstractJob {
 					
 					classifyMap.put("pids", pidList);
 					ColumnCoreOperation columnCoreOperation = new ColumnCoreOperation();
-					columnCoreOperation.runClassify(classifyMap,conn);
+					columnCoreOperation.runClassify(classifyMap,conn,taskId);
 				}
 			}
 			

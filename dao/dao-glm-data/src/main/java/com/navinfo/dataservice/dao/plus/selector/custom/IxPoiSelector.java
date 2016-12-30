@@ -99,7 +99,38 @@ public class IxPoiSelector {
 		}
 		return null;
 	}
-	
+	public static List<Long> getChildrenPidsByParentPid(Connection conn,Set<Long> pidList) throws ServiceException{
+		List<Long> childPids = new ArrayList<Long>();
+		if(pidList.isEmpty()){
+			return childPids;
+		}
+		try{
+			String sql = "SELECT DISTINCT IPC.CHILD_POI_PID"
+					+ " FROM IX_POI_PARENT IPP,IX_POI_CHILDREN IPC"
+					+ " WHERE IPC.GROUP_ID = IPP.GROUP_ID"
+					+ " AND IPP.PARENT_POI_PID IN (" + StringUtils.join(pidList.toArray(),",") + ")";
+			
+			ResultSetHandler<List<Long>> rsHandler = new ResultSetHandler<List<Long>>() {
+				public List<Long> handle(ResultSet rs) throws SQLException {
+					List<Long> result = new ArrayList<Long>();
+					while (rs.next()) {
+						long childPid = rs.getLong("CHILD_POI_PID");
+						result.add(childPid);
+					}
+					return result;
+				}
+			};
+			
+			log.info("getIxPoiParentMapByChildrenPidList查询主表："+sql);
+			childPids = new QueryRunner().query(conn,sql, rsHandler);
+			return childPids;
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询失败，原因为:"+e.getMessage(),e);
+		}
+
+	}
 	public static Map<Long,Long> getParentPidsByChildrenPids(Connection conn,Set<Long> pidList) throws ServiceException{
 		Map<Long,Long> childPidParentPid = new HashMap<Long,Long>();
 		if(pidList.isEmpty()){

@@ -98,6 +98,24 @@ public class GLM03065 extends baseRule {
 		List<Integer> nodePids = new ArrayList<Integer>();
 		nodePids.add(rdLink.getsNodePid());
 		nodePids.add(rdLink.geteNodePid());
+		//分离节点
+		Map<String, Object> changedFields = rdLink.changedFields();
+		if(!changedFields.isEmpty()){
+			Integer sNodePid = null;
+			Integer eNodePid = null;
+			if(changedFields.containsKey("sNodePid")){
+				sNodePid = (Integer) changedFields.get("sNodePid");
+				if(sNodePid != null){
+					nodePids.add(sNodePid);
+				}
+			}
+			if(changedFields.containsKey("eNodePid")){
+				eNodePid = (Integer) changedFields.get("eNodePid");
+				if(eNodePid != null){
+					nodePids.add(eNodePid);
+				}
+			}
+		}
 		for (Integer nodePid : nodePids) {
 			boolean check = this.check(nodePid);
 

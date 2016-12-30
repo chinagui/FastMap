@@ -312,8 +312,10 @@ public abstract class BasicObj {
 		return false;
 	}
 	
-	//根据json中的key创建对象
+	//根据json中的key创建二级对象
 	public abstract BasicRow createSubRowByName(String subRowName) throws Exception;
+	//根据json中的key创建三级对象
+	public abstract BasicRow createSubSubRowByName(String subRowName,long subId) throws Exception;
 	//根据json中的key获取对象
 	public abstract List<BasicRow> getSubRowByName(String subRowName) throws Exception;
 

@@ -141,7 +141,7 @@ public class GLM03065 extends baseRule {
 		sb.append(" AND R.LINK_PID = RF.LINK_PID AND F.FORM_OF_WAY = 13 AND RF.FORM_OF_WAY = 31");
 		sb.append(" AND N.U_RECORD <> 2 AND F.U_RECORD <> 2 AND R.U_RECORD <> 2 AND RF.U_RECORD <> 2");
 		sb.append(" AND (R.S_NODE_PID = N.NODE_PID OR R.E_NODE_PID = N.NODE_PID)");
-		sb.append(" GROUP BY N.NODE_PID HAVING COUNT(1) <> 2");
+		sb.append(" GROUP BY N.NODE_PID HAVING COUNT(1) > 2");
 		String sql = sb.toString();
 		log.info("后检查GLM03065--sql:" + sql);
 		

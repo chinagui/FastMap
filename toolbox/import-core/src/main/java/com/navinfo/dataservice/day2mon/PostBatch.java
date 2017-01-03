@@ -156,7 +156,7 @@ public class PostBatch {
 	private void deteal200140() throws Exception {
 		int handler = 200140;
 		List<Long> pidList = getPidByHandler(handler);
-		handler = 200150;
+		handler = 201150;
 		pidList.addAll(getPidByHandler(handler));
 		log.info("特殊处理200140和200150:"+pidList.toString());
 		OperationResult operationResult=new OperationResult();

@@ -29,7 +29,7 @@ public class androidtest {
 		Date startTime = new Date();
 		JSONArray gridDateList = new JSONArray();
 		JSONObject grid = new JSONObject();
-		grid.put("grid", "60560233");//60562422//60562203//60560233
+		grid.put("grid", "60560303");//60562422//60562203//60560233
 
 		grid.put("date", "");
 		gridDateList.add(grid);

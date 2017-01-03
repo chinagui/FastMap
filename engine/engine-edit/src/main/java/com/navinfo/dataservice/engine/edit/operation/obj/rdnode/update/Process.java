@@ -50,6 +50,7 @@ public class Process extends AbstractProcess<Command> {
 
 			msg = operation.run(this.getResult());
 
+			super.recordData();
 			this.postCheck();
 
 		} catch (Exception e) {

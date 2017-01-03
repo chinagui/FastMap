@@ -946,7 +946,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate{
 				
 				newDeep=deep;
 				
-				newDeep.put("fc", deep.get("fc"));
+				newDeep.put("fc", deepInfo.get("fc"));
 			}
 
 		    
@@ -988,6 +988,8 @@ public class PretreatmentTipsOperator extends BaseTipsOperate{
 			htab.close();
 
 		} catch (IOException e) {
+			
+			e.printStackTrace();
 			
 			logger.error(e.getMessage(), e);
 			

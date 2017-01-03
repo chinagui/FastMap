@@ -15,6 +15,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.util.StringUtils;
+import com.navinfo.dataservice.engine.fcc.tips.BaseTipsOperate;
 import com.navinfo.dataservice.engine.fcc.tips.EdgeMatchTipsOperator;
 
 /**
@@ -130,14 +131,10 @@ public class EdgeMatchTipsController extends BaseController {
 			if (StringUtils.isEmpty(rowkey)) {
 				throw new IllegalArgumentException("参数错误：rowkey不能为空。");
 			}
-			
 
-			EdgeMatchTipsOperator op = new EdgeMatchTipsOperator();
+			BaseTipsOperate op = new BaseTipsOperate();
 			
-			
-			int stage=2; //接边标识和fc预处理都默认为2
-			
-			op.updateFeedbackMemo(rowkey, user,memo,stage);
+			op.updateFeedbackMemo(rowkey, user,memo);
 
 			return new ModelAndView("jsonView", success());
 

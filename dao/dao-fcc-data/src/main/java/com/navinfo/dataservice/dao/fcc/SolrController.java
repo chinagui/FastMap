@@ -53,9 +53,15 @@ public class SolrController {
 		
 		doc.addField("t_dStatus", json.getInt("t_dStatus"));
 		
-        doc.addField("t_inStatus", json.getInt("t_inStatus"));
+        //doc.addField("t_inStatus", json.getInt("t_inStatus"));
 		
 		doc.addField("t_inMeth", json.getInt("t_inMeth"));
+		
+		doc.addField("t_pStatus", json.getInt("t_pStatus"));
+		
+		doc.addField("t_dInProc", json.getInt("t_dInProc"));
+		
+		doc.addField("t_mInProc", json.getInt("t_mInProc"));
 		
 		doc.addField("handler", json.getInt("handler"));
 		

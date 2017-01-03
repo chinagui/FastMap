@@ -14,6 +14,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.util.StringUtils;
+import com.navinfo.dataservice.engine.fcc.tips.BaseTipsOperate;
 import com.navinfo.dataservice.engine.fcc.tips.PretreatmentTipsOperator;
 
 /**
@@ -194,7 +195,103 @@ public class PretreatmentTipsController extends BaseController {
 	}
 
 
+	/**
+	 * @Description:fc预处理tips提交(按范围提交？？) ?????????
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException
+	 * @author: y
+	 * @time:2016-11-15 上午9:50:32
+	 */
+	@RequestMapping(value = "/tip/submitPre")
+	public ModelAndView editMemo(HttpServletRequest request)
+			throws ServletException, IOException {
+		String parameter = request.getParameter("parameter");
+		try {
+			if (StringUtils.isEmpty(parameter)) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
 
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			String memo = jsonReq.getString("memo");
+
+			String rowkey = jsonReq.getString("rowkey");
+			
+			int user = jsonReq.getInt("user");
+
+			if (StringUtils.isEmpty(rowkey)) {
+				throw new IllegalArgumentException("参数错误：rowkey不能为空。");
+			}
+
+			BaseTipsOperate op = new BaseTipsOperate();
+			
+			op.updateFeedbackMemo(rowkey, user,memo);
+
+			return new ModelAndView("jsonView", success());
+
+		} catch (Exception e) {
+
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
+	
+	
+
+	/**
+	 * @Description:fc预处理同时编辑备注和fc
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException
+	 * @author: y
+	 * @time:2016-11-15 上午9:50:32
+	 */
+	@RequestMapping(value = "/tip/pretreatmen/editMemoAndFc")
+	public ModelAndView editMemoAndFc(HttpServletRequest request)
+			throws ServletException, IOException {
+		String parameter = request.getParameter("parameter");
+		try {
+			if (StringUtils.isEmpty(parameter)) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			String memo = jsonReq.getString("memo");
+			
+			JSONObject deep=null;
+			if(jsonReq.containsKey("deep")){
+				
+				deep = jsonReq.getJSONObject("deep");
+				
+			}
+
+			String rowkey = jsonReq.getString("rowkey");
+			
+			int user = jsonReq.getInt("user");
+
+			if (StringUtils.isEmpty(rowkey)) {
+				throw new IllegalArgumentException("参数错误：rowkey不能为空。");
+			}
+
+			PretreatmentTipsOperator op = new PretreatmentTipsOperator();
+			
+			op.updateFeedbackMemoAndDeep(rowkey, user,memo,deep);
+
+			return new ModelAndView("jsonView", success());
+
+		} catch (Exception e) {
+
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
+	
 	
 	
 

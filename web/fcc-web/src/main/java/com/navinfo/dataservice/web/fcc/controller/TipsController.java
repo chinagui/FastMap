@@ -32,11 +32,12 @@ import com.navinfo.dataservice.commons.util.ZipUtils;
 import com.navinfo.dataservice.engine.audio.Audio;
 import com.navinfo.dataservice.engine.audio.AudioImport;
 import com.navinfo.dataservice.engine.dropbox.manger.UploadService;
+import com.navinfo.dataservice.engine.fcc.patternImage.PatternImageExporter;
+import com.navinfo.dataservice.engine.fcc.patternImage.PatternImageImporter;
 import com.navinfo.dataservice.engine.fcc.tips.TipsExporter;
 import com.navinfo.dataservice.engine.fcc.tips.TipsOperator;
 import com.navinfo.dataservice.engine.fcc.tips.TipsSelector;
 import com.navinfo.dataservice.engine.fcc.tips.TipsUpload;
-import com.navinfo.dataservice.engine.meta.patternimage.PatternImageExporter;
 import com.navinfo.dataservice.engine.photo.CollectorImport;
 
 @Controller
@@ -197,6 +198,8 @@ public class TipsController extends BaseController {
 			CollectorImport.importPhoto(photoMap, filePath );
 			
 			AudioImport.importAudio(audioMap,filePath);
+			
+			//PatternImageImporter.importImage(filePath + "/"+ "JVImage.txt",filePath +"/JVImage"); //JVImage为模式图的文件夹
 			
 			JSONObject result = new JSONObject();
 

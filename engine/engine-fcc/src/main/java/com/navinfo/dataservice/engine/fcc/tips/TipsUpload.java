@@ -320,10 +320,14 @@ public class TipsUpload {
 				
 				json.put("t_mStatus", 0);
 				
-				json.put("t_inStatus", 0);
-				
 				json.put("t_inMeth", 0);
 				
+                json.put("t_pStatus", 0);
+				
+				json.put("t_dInProc", 0);
+				
+				json.put("t_mInProc", 0);
+					
 				//道路名测线
 				if(sourceType.equals("1901")){
 					roadNameTips.put(rowkey, json);
@@ -507,8 +511,8 @@ public class TipsUpload {
 		
 		JSONObject jsonTrack =TipsUtils.generateTrackJson(3, TipsUpload.IMPORT_STATE,json.getInt("t_handler"),
 				json.getInt("t_command"), null, json.getString("t_operateDate"),currentDate,
-				json.getInt("t_cStatus"),json.getInt("t_dStatus"),json.getInt("t_mStatus"),
-				json.getInt("t_inStatus"),json.getInt("t_inMeth"));
+				json.getInt("t_cStatus"),json.getInt("t_dStatus"),json.getInt("t_mStatus"),json.getInt("t_inMeth")
+				,json.getInt("t_pStatus"),json.getInt("t_dInProc"),json.getInt("t_mInProc"));
 
 		put.addColumn("data".getBytes(), "track".getBytes(), jsonTrack
 				.toString().getBytes());
@@ -624,8 +628,8 @@ public class TipsUpload {
 		JSONObject jsonTrack = TipsUtils.generateTrackJson(lifecycle,TipsUpload.IMPORT_STATE,
 				json.getInt("t_handler"), json.getInt("t_command"),
 				oldTip.getJSONArray("t_trackInfo"),json.getString("t_operateDate"),currentDate,
-				json.getInt("t_cStatus"),json.getInt("t_dStatus"),json.getInt("t_mStatus"),
-				json.getInt("t_inStatus"),json.getInt("t_inMeth"));
+				json.getInt("t_cStatus"),json.getInt("t_dStatus"),json.getInt("t_mStatus"),json.getInt("t_inMeth")
+				,json.getInt("t_pStatus"),json.getInt("t_dInProc"),json.getInt("t_mInProc"));
 
 		put.addColumn("data".getBytes(), "track".getBytes(), jsonTrack
 				.toString().getBytes());

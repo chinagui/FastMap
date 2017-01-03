@@ -34,18 +34,19 @@ public class ColumnCoreOperation {
 	 * @throws Exception
 	 */
 	@SuppressWarnings("rawtypes")
-	public void runClassify(HashMap mapParams, Connection conn) throws Exception {
+	public void runClassify(HashMap mapParams, Connection conn, int taskId) throws Exception {
 		try {
 			String[] strCkRules = ((String) mapParams.get("ckRules")).split(",");
 			String[] strClassifyRules = ((String) mapParams.get("classifyRules")).split(",");
+			int userId = (Integer) mapParams.get("userId");
 			List pidList = (List) mapParams.get("pids"); // 每条数据需包含pid
 			List ckRules = new ArrayList();
 			for(int i=0;i<strCkRules.length;i++){
-				ckRules.add("'"+strCkRules[i]+"'");
+				ckRules.add(strCkRules[i]);
 			}
 			List classifyRules = new ArrayList();
 			for(int i=0;i<strClassifyRules.length;i++){
-				classifyRules.add("'"+strClassifyRules[i]+"'");
+				classifyRules.add(strClassifyRules[i]);
 			}
 			for (int i = 0; i < pidList.size(); i++) {
 				int pid = (Integer) pidList.get(i);
@@ -63,7 +64,9 @@ public class ColumnCoreOperation {
 				// poi_deep_status不存在的作业项，要插入
 				checkResultList.retainAll(ckRules);
 				checkResultList.removeAll(existClassifyList);
-				insertWorkItem(checkResultList, conn, pid);
+				if (checkResultList.size()>0) {
+					insertWorkItem(checkResultList, conn, pid, userId, taskId);
+				}
 
 				// 重分类回退，本次要重分类classifyRules,检查结果中没有，若poi_deep_status存在,需从poi_deep_status中删掉
 				List currentClassifyRules = classifyRules;
@@ -85,21 +88,25 @@ public class ColumnCoreOperation {
 	 * @param pid
 	 * @throws Exception
 	 */
-	public void insertWorkItem(List<String> checkResultList, Connection conn, int pid) throws Exception {
-		StringBuilder sb = new StringBuilder();
-		sb.append(
-				"insert into poi_column_status(pid,work_item_id,first_work_status,second_work_status,handler) values(?,?,?,?,?) ");
-
+	public void insertWorkItem(List<String> checkResultList, Connection conn, int pid,int userId,int taskId) throws Exception {
 		PreparedStatement pstmt = null;
 
 		try {
-			pstmt = conn.prepareStatement(sb.toString());
+			
 			for (String workItem : checkResultList) {
-				pstmt.setInt(1, pid);
-				pstmt.setString(2, workItem);
-				pstmt.setInt(3, 1);
-				pstmt.setInt(4, 1);
-				pstmt.setInt(5, 0);
+				
+				StringBuilder sb = new StringBuilder();
+				sb.append("MERGE INTO poi_column_status T1 ");
+				sb.append(" USING (SELECT "+userId+" as b," + taskId + " as c,'" + workItem
+						+ "' as d," + " sysdate as e," + pid + " as f " + "  FROM dual) T2 ");
+				sb.append(" ON ( T1.pid=T2.f and T1.work_item_id = T2.d) ");
+				sb.append(" WHEN MATCHED THEN ");
+				sb.append(" UPDATE SET T1.handler = T2.b,T1.task_id= T2.c,T1.first_work_status = 1,T1.second_work_status = 1,T1.apply_date = T2.e ");
+				sb.append(" WHEN NOT MATCHED THEN ");
+				sb.append(" INSERT (T1.pid,T1.work_item_id,T1.first_work_status,T1.second_work_status,T1.handler,T1.task_id,T1.apply_date) VALUES"
+						+ " (T2.f,T2.d,1,1,T2.b,T2.c,T2.e)");
+				
+				pstmt = conn.prepareStatement(sb.toString());
 				pstmt.addBatch();
 			}
 

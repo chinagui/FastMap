@@ -75,7 +75,7 @@ public class PoiBatchProcessorFM_BAT_20_187_1 implements IBatch {
 				// 判断充电桩是新增、修改还是删除
 				for (int i=0;i<jsonPolt.size();i++) {
 					JSONObject temp = jsonPolt.getJSONObject(i);
-					if (temp.containsKey("PLUG_TYPE")||temp.containsKey("ACDC")||temp.containsKey("MODE")||temp.containsKey("OPEN_TYPE")) {
+					if (temp.containsKey("plug_type")||temp.containsKey("acdc")||temp.containsKey("mode")||temp.containsKey("open_type")) {
 						plotsChanged = true;
 						if (temp.getString("objStatus").equals(OperType.DELETE.toString()) ) {
 							if (deleteMap.containsKey(temp.getInt("groupId"))) {
@@ -110,15 +110,26 @@ public class PoiBatchProcessorFM_BAT_20_187_1 implements IBatch {
 				}
 			}
 			
+			Map<Long,JSONArray> retObj = new HashMap<Long,JSONArray>();
 			for (int i=0;i<dataArray.size();i++) {
+				JSONArray tempArray = new JSONArray();
 				JSONObject plotJson = dataArray.getJSONObject(i);
+				Long pid = plotJson.getLong("poiPid");
+				if (retObj.containsKey(pid)) {
+					tempArray = retObj.get(pid);
+				}
+				tempArray.add(plotJson);
+				retObj.put(pid, tempArray);
+			}
+			
+			for (Long pid:retObj.keySet()) {
 				JSONObject poiObj = new JSONObject();
 				JSONObject changeFields = new JSONObject();
-				changeFields.put("chargingplots", dataArray);
-				changeFields.put("pid", plotJson.getLong("poiPid"));
-				changeFields.put("rowId", plotJson.getString("rowId"));
+				JSONArray tempArray = retObj.get(pid);
+				changeFields.put("chargingplots", tempArray);
+				changeFields.put("pid", pid);
 				poiObj.put("change", changeFields);
-				poiObj.put("pid", plotJson.getLong("poiPid"));
+				poiObj.put("pid", pid);
 				poiObj.put("type", "IXPOI");
 				poiObj.put("command", "BATCH");
 				poiObj.put("dbId", json.getInt("dbId"));

@@ -6,11 +6,13 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import org.apache.commons.dbutils.DbUtils;
 import org.sqlite.SQLiteConfig;
-import com.ibm.icu.text.SimpleDateFormat;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
@@ -51,9 +53,11 @@ public class ExpMeta2SqliteScriptsInterface {
 			
 			System.out.println("Metadata export end");
 		} catch (Exception e) {
+			e.printStackTrace();
 			throw e;
 		} finally {
-			DBUtils.closeConnection(conn);
+			DbUtils.closeQuietly(conn);
+			DbUtils.closeQuietly(gdbConn);
 		}
 	}
 
@@ -953,7 +957,7 @@ public class ExpMeta2SqliteScriptsInterface {
 		
 
 	
-	public static void export2SqliteByNames(String dir) {
+	public static void export2SqliteByNames(String dir) throws Exception{
 
 		File mkdirFile = new File(dir);
 
@@ -973,6 +977,7 @@ public class ExpMeta2SqliteScriptsInterface {
 			sqliteConn.close();
 		} catch (Exception e) {
 			System.out.println(e);
+			throw e;
 		}finally{
 			File metaSqliteFile = new File(dir+"/metadata.sqlite");
 			if(metaSqliteFile.exists()){
@@ -982,13 +987,21 @@ public class ExpMeta2SqliteScriptsInterface {
 	}
 	
 	public static void main(String[] args) {
-		String dir = SystemConfigFactory.getSystemConfig().getValue(
-				PropConstant.downloadFilePathRoot);  //服务器部署路径
-		File metaSqliteFile = new File(dir+"/metadata.sqlite");
-		if(metaSqliteFile.exists()){
-			metaSqliteFile.delete();
+		try{
+			//初始化context
+			JobScriptsInterface.initContext();
+			
+			String dir = SystemConfigFactory.getSystemConfig().getValue(
+					PropConstant.downloadFilePathRoot);  //服务器部署路径
+			File metaSqliteFile = new File(dir+"/metadata.sqlite");
+			if(metaSqliteFile.exists()){
+				metaSqliteFile.delete();
+			}
+			export2SqliteByNames(dir+"/metadata");
+		}catch(Exception e){
+			System.out.println("Oops, something wrong...");
+			e.printStackTrace();
 		}
-		export2SqliteByNames(dir+"/metadata");
 	}
 	
 }

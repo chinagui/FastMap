@@ -51,7 +51,6 @@ public class TipsExportTest extends InitApplication{
 		initContext();
 	}
 
-	//private Connection conn;
 
 	public TipsExportTest() throws Exception {
 	}
@@ -88,6 +87,12 @@ public class TipsExportTest extends InitApplication{
 			
 			parameter="{\"condition\":[{\"grid\":59567220,\"date\":\"20161210112535\"}]}";
 			
+			parameter="{\"condition\":[{\"grid\":60561212,\"date\":\"20161226094523\"},{\"grid\":60561203,\"date\":\"20161226094523\"},{\"grid\":60561222,\"date\":\"20161226094523\"},{\"grid\":60561221,\"date\":\"20161226094523\"},{\"grid\":60561211,\"date\":\"20161226094523\"},{\"grid\":60561230,\"date\":\"20161226094523\"},{\"grid\":60561201,\"date\":\"20161226094523\"},{\"grid\":60561213,\"date\":\"20161226094523\"},{\"grid\":60561231,\"date\":\"20161226094523\"},{\"grid\":60561233,\"date\":\"20161226094523\"},{\"grid\":60561220,\"date\":\"20161226094523\"},{\"grid\":60561200,\"date\":\"20161226094523\"},{\"grid\":60561232,\"date\":\"20161226094523\"},{\"grid\":60561210,\"date\":\"20161226094523\"},{\"grid\":60561223,\"date\":\"20161226094523\"},{\"grid\":60561202,\"date\":\"20161226094523\"}]}";
+			
+			parameter="{\"condition\":[{\"grid\":60561222,\"date\":\"20161226130604\"}]}";
+			
+			parameter="{\"condition\":[{\"grid\":60561201,\"date\":\"20161226130604\"}]}";
+			
 			String uuid = UuidUtils.genUuid();
 			
 			JSONObject jsonReq=JSONObject.fromObject(parameter);
@@ -109,8 +114,6 @@ public class TipsExportTest extends InitApplication{
 			int expCount=op.export(condition, filePath, "tips.txt", images);
 			
 			System.out.println("导出成功:"+filePath);
-			System.out.println(op.export(condition, filePath, "tips.txt", images));
-			
 			
 			JSONObject data=null;
 			if(expCount>0){

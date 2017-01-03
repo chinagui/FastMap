@@ -12,15 +12,17 @@ import com.navinfo.dataservice.commons.photo.Photo;
 import com.navinfo.dataservice.engine.audio.Audio;
 import com.navinfo.dataservice.engine.audio.AudioImport;
 import com.navinfo.dataservice.engine.dropbox.manger.UploadService;
+import com.navinfo.dataservice.engine.fcc.patternImage.PatternImageImporter;
 import com.navinfo.dataservice.engine.fcc.tips.TipsUpload;
 import com.navinfo.dataservice.engine.photo.CollectorImport;
 
 public class TipsImportTest extends InitApplication {
 
+	
 	@Override
-	//@Before
+	@Before
 	public void init() {
-	//	initContext();
+		initContext();
 	}
 
 	@Test
@@ -36,7 +38,7 @@ public class TipsImportTest extends InitApplication {
 
 			//String filePath = upload.unzipByJobId(jobId); //服务测试
 
-			String filePath = "E:\\03 ni_robot\\Nav_Robot\\10测试数据\\01上传下载\\音频测试数据\\1427"; //本地测试用
+			String filePath = "E:\\03 ni_robot\\Nav_Robot\\10测试数据\\01上传下载\\音频测试数据\\1425"; //本地测试用
 			
 			//String filePath="E:\\03 ni_robot\\Nav_Robot\\10测试数据\\01上传下载\\upload\\893";
 			
@@ -51,6 +53,8 @@ public class TipsImportTest extends InitApplication {
 			CollectorImport.importPhoto(photoMap, filePath );
 			
 			AudioImport.importAudio(audioMap,filePath);
+			
+			//PatternImageImporter.importImage(filePath + "/"+ "JVImage.txt",filePath+"/JVImage"); //JVImage为模式图的文件夹
 			
 			JSONObject result = new JSONObject();
 

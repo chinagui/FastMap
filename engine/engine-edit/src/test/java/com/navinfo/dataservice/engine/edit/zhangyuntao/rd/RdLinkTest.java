@@ -32,7 +32,8 @@ public class RdLinkTest extends InitApplication {
 
     @Test
     public void testUpdate() {
-        String parameter = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"RDLINK\",\"objId\":575750,\"data\":{\"forms\":[{\"auxiFlag\":76,\"rowId\":\"3AE1FBE7366B92F7E050A8C08304EE4C\",\"objStatus\":\"UPDATE\"}],\"pid\":575750}}";
+        String parameter = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"RDLINK\",\"objId\":307002679," +
+                "\"data\":{\"functionClass\":1,\"pid\":307002679,\"objStatus\":\"UPDATE\"}}";
         TestUtil.run(parameter);
     }
 
@@ -40,7 +41,7 @@ public class RdLinkTest extends InitApplication {
     public void update() {
         String parameter = "{\"command\":\"BREAK\",\"dbId\":42,\"objId\":100008435,\"data\":{\"longitude\":116.4702206995429,\"latitude\":40.08258242178863},\"type\":\"RDLINK\"}";
         parameter = "{\"command\":\"UPDATE\",\"dbId\":42,\"type\":\"RDLINK\",\"objId\":589615,\"data\":{\"kind\":3,\"pid\":589615,\"objStatus\":\"UPDATE\"}}";
-        parameter = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"RDLINK\",\"objId\":305003119,\"data\":{\"imiCode\":1,\"pid\":305003119,\"objStatus\":\"UPDATE\"}}";
+        parameter = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"RDLINK\",\"objId\":310003106,\"data\":{\"imiCode\":1,\"pid\":305003119,\"objStatus\":\"UPDATE\"}}";
 
         //        try {
         //            Connection conn = DBConnector.getInstance().getConnectionById(42);

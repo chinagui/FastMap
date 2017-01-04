@@ -22,7 +22,7 @@ public class AdAdminPart implements IRow {
 	private int groupId;
 	private int regionIdDown;
     private String rowId;
-    private String objType;
+    protected String objType;
     public String getRowId() {
 		return rowId;
 	}

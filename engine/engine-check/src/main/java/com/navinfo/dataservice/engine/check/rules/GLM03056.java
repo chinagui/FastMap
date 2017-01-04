@@ -77,7 +77,7 @@ public class GLM03056 extends baseRule {
 		// TODO Auto-generated method stub
 		Map<String, Object> changedFields = rdNodeForm.changedFields();
 		int formOfWay = 1;
-		if(changedFields.containsKey("formOfWay")){
+		if(changedFields != null && changedFields.containsKey("formOfWay")){
 			formOfWay = (int) changedFields.get("formOfWay");
 		}
 		if(formOfWay == 15){

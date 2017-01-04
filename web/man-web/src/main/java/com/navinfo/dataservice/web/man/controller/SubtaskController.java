@@ -363,6 +363,42 @@ public class SubtaskController extends BaseController {
 	}
 	
 	/*
+	 * 关闭单个子任务。
+	 */
+	//@ApiOperation(value = "关闭subtask", notes = "关闭subtask")  
+	@RequestMapping(value = { "/subtask/closeOne" })
+	public ModelAndView closeOne(@ApiParam(required =true, name = "access_token", value="接口调用凭证")@RequestParam( value = "access_token") String access_token
+			,@ApiParam(required =true, name = "parameter", value="{<br/>\"subtaskId\":12#子任务<br/>	}")@RequestParam( value = "parameter") String parameter
+			,HttpServletRequest request){
+		try{		
+			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
+			long userId=tokenObj.getUserId();
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if(dataJson==null){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			
+			if(!dataJson.containsKey("subtaskId")){
+				throw new IllegalArgumentException("subtaskId不能为空。");
+			}
+			
+			int subtaskId = dataJson.getInt("subtaskId");
+			
+			String message = SubtaskService.getInstance().closeOne(subtaskId,userId);
+			if((message!=null)&&(!message.isEmpty())){
+				return new ModelAndView("jsonView", exception(message));
+			}else{
+				return new ModelAndView("jsonView", success(message));
+			}
+		
+		}catch(Exception e){
+			log.error("批量关闭失败，原因："+e.getMessage(), e);
+			//NullResponse result = new NullResponse(-1,e.getMessage(),null);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+	
+	/*
 	 * 删除子任务，前端只有草稿状态的子任务有删除按钮
 	 */
 	//@ApiOperation(value = "删除subtask", notes = "删除subtask")  

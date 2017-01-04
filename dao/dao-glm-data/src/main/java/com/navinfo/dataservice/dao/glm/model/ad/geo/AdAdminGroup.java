@@ -24,7 +24,7 @@ public class AdAdminGroup implements IObj {
 	private int regionIdUp;
 	private int pid;
     private String rowId;
-    private String objType;
+    protected String objType;
     private Map<String, Object> changedFields = new HashMap<String, Object>();
     private List<IRow> parts = new ArrayList<IRow>();
     public Map<String, AdAdminPart> adAdminPartMap = new HashMap<String, AdAdminPart>();
@@ -64,6 +64,10 @@ public class AdAdminGroup implements IObj {
 
 	public void setObjType(String objType) {
 		this.objType = objType;
+	}
+
+	public String getRowId() {
+		return rowId;
 	}
 
 	@Override

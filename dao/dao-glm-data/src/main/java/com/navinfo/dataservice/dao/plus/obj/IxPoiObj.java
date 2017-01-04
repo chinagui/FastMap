@@ -1010,10 +1010,26 @@ public class IxPoiObj extends AbstractIxObj {
 			}
 		return null;
 	}
+	public IxPoiAddress getChiAddress(){
+		List<IxPoiAddress> subRows=getIxPoiAddresses();
+		for(IxPoiAddress br:subRows){
+			if(br.getLangCode().equals("CHI")){
+				return br;}
+			}
+		return null;
+	}
 	public IxPoiAddress getENGAddress(long nameGroupId){
 		List<IxPoiAddress> subRows=getIxPoiAddresses();
 		for(IxPoiAddress br:subRows){
 			if(br.getLangCode().equals("ENG")&&br.getNameGroupid()==nameGroupId){
+				return br;}
+			}
+		return null;
+	}
+	public IxPoiAddress getPORAddress(long nameGroupId){
+		List<IxPoiAddress> subRows=getIxPoiAddresses();
+		for(IxPoiAddress br:subRows){
+			if(br.getLangCode().equals("POR")&&br.getNameGroupid()==nameGroupId){
 				return br;}
 			}
 		return null;

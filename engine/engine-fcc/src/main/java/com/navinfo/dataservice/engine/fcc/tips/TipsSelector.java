@@ -139,24 +139,15 @@ public class TipsSelector {
 					m.put("a", json.getString("t_mStatus"));
 
 				}
+				
 
 				m.put("b", json.getString("t_lifecycle"));
 
 				JSONObject g_guide = JSONObject.fromObject(json
 						.getString("g_guide"));
 				
-				//特殊处理 
-				if(type==8001){
-					
-				}
-				if(type==8002){
-					
-				}
-				//其他的
-				else{
-					m.put("h", g_guide.getJSONArray("coordinates"));
-				}
-				
+				//8001和8002的的数据，新增guide已经赋值，无需特殊处理了
+				m.put("h", g_guide.getJSONArray("coordinates"));
 				
 
 				JSONObject deep = JSONObject.fromObject(json.getString("deep"));

@@ -124,9 +124,12 @@ public class TipsOperateTest2 extends InitApplication{
 		
 		int stage=2; //接边标识和fc预处理都默认为2
 		
-		op.updateFeedbackMemo(rowkey, user,memo,stage);
+		op.updateFeedbackMemo(rowkey, user,memo);
 
 		System.out.println("修改成功");
+		
+		
+		
 		
 		
 		
@@ -178,6 +181,54 @@ public class TipsOperateTest2 extends InitApplication{
 		
 	}
 	
+	
+	@Test
+	public void modifyMemoAndDeep() throws Exception {
+		
+		String  parameter=null;
+		//0280017b8ead071595417cb3305ac9d8e49d73
+		parameter="{\"rowkey\":\"0280015f277b085e8047fd881a0f23fc5dfec6\",\"memo\":\"示例备注信息\",\"user\":10402,\"stage\":2,\"deep\":{\"fc\":4}}";
+		
+		try{
+		if (StringUtils.isEmpty(parameter)) {
+			throw new IllegalArgumentException("parameter参数不能为空。");
+		}
+
+		JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+		String memo = jsonReq.getString("memo");
+
+		String rowkey = jsonReq.getString("rowkey");
+		
+		int user = jsonReq.getInt("user");
+		
+		JSONObject deep=null;
+		if(jsonReq.containsKey("deep")){
+			
+			deep = jsonReq.getJSONObject("deep");
+			
+		}
+
+		if (StringUtils.isEmpty(rowkey)) {
+			throw new IllegalArgumentException("参数错误：rowkey不能为空。");
+		}
+		
+
+		PretreatmentTipsOperator op = new PretreatmentTipsOperator();
+		
+		
+		int stage=2; //接边标识和fc预处理都默认为2
+		
+		op.updateFeedbackMemoAndDeep(rowkey, user, memo, deep);
+
+		System.out.println("修改成功");
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		
+		
+	}
 	
 	
 	@Test

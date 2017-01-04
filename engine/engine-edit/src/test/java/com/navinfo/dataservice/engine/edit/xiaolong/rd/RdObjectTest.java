@@ -129,7 +129,7 @@ public class RdObjectTest extends InitApplication {
 
 	@Test
 	public void testDelRdObject() {
-		String parameter = "{\"command\":\"DELETE\",\"type\":\"RDOBJECT\",\"dbId\":42,\"objId\":100000041}";
+		String parameter = "{\"command\":\"CREATE\",\"dbId\":19,\"objId\":19613202,\"data\":{\"longitude\":116.44155588183112,\"latitude\":40.02823890353918},\"type\":\"RDNODE\"}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

@@ -144,7 +144,7 @@ public class ReflectionAttrUtils {
 		case IXSAMEPOI:
 			return "IX_SAMEPOI";
 		case RDHGWGLIMIT:
-			return "RD_HGWGLIMIT";
+			return "RD_HGWG_LIMIT";
 		case RDMILEAGEPILE:
 			return "RD_MILEAGEPILE";
 		case RDTMCLOCATION:

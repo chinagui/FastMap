@@ -483,6 +483,8 @@ public class ColumnCoreControl {
 			return result;
 		} catch (Exception e) {
 			throw e;
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
 }

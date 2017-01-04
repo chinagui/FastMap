@@ -6,6 +6,7 @@ import java.util.Map;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.model.rd.voiceguide.RdVoiceguide;
 import com.navinfo.dataservice.dao.glm.model.rd.voiceguide.RdVoiceguideDetail;
 import com.navinfo.dataservice.engine.check.core.baseRule;
@@ -53,7 +54,7 @@ public class GLM18005 extends baseRule {
 	private void checkRdVoiceguide(RdVoiceguide rdVoiceguide) throws Exception {
 		// TODO Auto-generated method stub
 		//判断新增
-		if(rdVoiceguide.getRowId().isEmpty()){
+		if(ObjStatus.INSERT.equals(rdVoiceguide.status())){
 			boolean check = this.check(rdVoiceguide.getPid());
 			
 			if(check){

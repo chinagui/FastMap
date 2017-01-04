@@ -3,6 +3,8 @@ package com.navinfo.dataservice.engine.edit.operation.obj.adadmingroup.update;
 import java.sql.Connection;
 import java.util.List;
 
+import org.apache.commons.collections.CollectionUtils;
+
 import com.google.gson.Gson;
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
@@ -11,7 +13,7 @@ import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdminGroup;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdminPart;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdminTree;
-
+import com.vividsolutions.jts.util.CollectionUtil;
 
 import net.sf.json.JSONObject;
 
@@ -107,11 +109,17 @@ public class Operation implements IOperation {
 				result.insertObject(part, ObjStatus.DELETE, groupId);
 			}
 		}
-
+		//递归查询子节点，递归调用该方法直到子节点为空
 		List<AdAdminTree> treeList = tree.getChildren();
-
-		for (AdAdminTree ad : treeList) {
-			handleAdAdminTree(ad, result);
+		if(CollectionUtils.isNotEmpty(treeList))
+		{
+			for (AdAdminTree ad : treeList) {
+				handleAdAdminTree(ad, result);
+			}
+		}	
+		else
+		{
+			return;
 		}
 	}
 }

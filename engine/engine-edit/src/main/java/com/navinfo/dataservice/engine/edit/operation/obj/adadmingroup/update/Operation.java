@@ -13,7 +13,6 @@ import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdminGroup;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdminPart;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdminTree;
-import com.vividsolutions.jts.util.CollectionUtil;
 
 import net.sf.json.JSONObject;
 
@@ -104,7 +103,7 @@ public class Operation implements IOperation {
 			if (ObjStatus.UPDATE.toString().equals(partType)) {
 				result.insertObject(part, ObjStatus.UPDATE, groupId);
 			}
-			if(ObjStatus.DELETE.toString().equals(groupType))
+			if(ObjStatus.DELETE.toString().equals(partType))
 			{
 				result.insertObject(part, ObjStatus.DELETE, groupId);
 			}

@@ -81,7 +81,7 @@ public class Operation implements IOperation {
 			}
 
 			if (ObjStatus.UPDATE.toString().equals(groupType)) {
-				group.setRegionIdUp(tree.getRegionId());
+				group.changedFields().put("regionIdUp", tree.getRegionId());
 				result.insertObject(group, ObjStatus.UPDATE, groupId);
 			}
 			if(ObjStatus.DELETE.toString().equals(groupType))
@@ -101,6 +101,8 @@ public class Operation implements IOperation {
 			}
 
 			if (ObjStatus.UPDATE.toString().equals(partType)) {
+				part.changedFields().put("groupId", part.getGroupId());
+				part.setGroupId(0);
 				result.insertObject(part, ObjStatus.UPDATE, groupId);
 			}
 			if(ObjStatus.DELETE.toString().equals(partType))

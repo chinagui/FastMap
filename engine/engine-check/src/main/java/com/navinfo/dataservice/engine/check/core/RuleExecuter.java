@@ -113,6 +113,8 @@ public class RuleExecuter {
 			{variablevalue=VariablesFactory.getRdSeOutLinkPid(data);break;}
 			case RDRESTRICTIONDETAIL_PID:
 			{variablevalue=VariablesFactory.getRdRestrictionDetailPid(data);break;}
+			case RDOBJECT_PID:
+			{variablevalue=VariablesFactory.getRdObjectPid(data);break;}
 		}
 		if(!variablesValueMap.containsKey(variable)){
 			variablesValueMap.put(variable, new HashSet<String>());}

@@ -132,7 +132,7 @@ public class RdLinkTest extends InitApplication {
 	@Test
 	public void testGetByElementCondition()
 	{
-		String parameter = "{\"dbId\":17,\"pageNum\":1,\"pageSize\":5,\"data\":{\"pid\":\"300000041\"},\"type\":\"RDLANECONNEXITY\"}";
+		String parameter = "{\"dbId\":19,\"pageNum\":1,\"pageSize\":5,\"data\":{\"pid\":\"612846\"},\"type\":\"RDINTER\"}";
 
 		Connection conn = null;
 
@@ -182,9 +182,9 @@ public class RdLinkTest extends InitApplication {
 		try {
 			conn = DBConnector.getInstance().getConnectionById(17);
 
-			RdGscSearch search = new RdGscSearch(conn);
+			RdLinkSearch search = new RdLinkSearch(conn);
 			
-			List<SearchSnapshot> data = search.searchDataByTileWithGap(107994, 49493, 17, 10);
+			List<SearchSnapshot> data = search.searchDataByTileWithGap(220933, 98013, 18, 10);
 			
 			System.out.println("data:"+ResponseUtils.assembleRegularResult(data));
 

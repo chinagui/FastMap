@@ -3,6 +3,8 @@ package com.navinfo.dataservice.engine.edit.operation.obj.adadmingroup.update;
 import java.sql.Connection;
 import java.util.List;
 
+import org.apache.commons.collections.CollectionUtils;
+
 import com.google.gson.Gson;
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
@@ -11,7 +13,6 @@ import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdminGroup;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdminPart;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdminTree;
-
 
 import net.sf.json.JSONObject;
 
@@ -83,6 +84,11 @@ public class Operation implements IOperation {
 				group.setRegionIdUp(tree.getRegionId());
 				result.insertObject(group, ObjStatus.UPDATE, groupId);
 			}
+			if(ObjStatus.DELETE.toString().equals(groupType))
+			{
+				group.setRegionIdUp(tree.getRegionId());
+				result.insertObject(group, ObjStatus.DELETE, groupId);
+			}
 		}
 
 		// 在循环遍历过程中，给ObjType赋值的的树中的节点需要进行修改
@@ -97,12 +103,22 @@ public class Operation implements IOperation {
 			if (ObjStatus.UPDATE.toString().equals(partType)) {
 				result.insertObject(part, ObjStatus.UPDATE, groupId);
 			}
+			if(ObjStatus.DELETE.toString().equals(partType))
+			{
+				result.insertObject(part, ObjStatus.DELETE, groupId);
+			}
 		}
-
+		//递归查询子节点，递归调用该方法直到子节点为空
 		List<AdAdminTree> treeList = tree.getChildren();
-
-		for (AdAdminTree ad : treeList) {
-			handleAdAdminTree(ad, result);
+		if(CollectionUtils.isNotEmpty(treeList))
+		{
+			for (AdAdminTree ad : treeList) {
+				handleAdAdminTree(ad, result);
+			}
+		}	
+		else
+		{
+			return;
 		}
 	}
 }

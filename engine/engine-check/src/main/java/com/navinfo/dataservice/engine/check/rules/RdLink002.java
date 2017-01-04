@@ -37,10 +37,10 @@ public class RdLink002 extends baseRule {
 				if(changedFields==null || !changedFields.containsKey("geometry")){continue;}
 				if(changedFields.containsKey("eNodePid") || changedFields.containsKey("sNodePid")){continue;}
 				Geometry geo=GeoTranslator.transform(rdLink.getGeometry(), 0.00001, 5);
-				Coordinate[] coordOlds = geo.getCoordinates();	
+				Coordinate[] coordOlds = geo.getCoordinates();
 				JSONObject geojson=(JSONObject) changedFields.get("geometry");
 				Geometry geoNew=GeoTranslator.geojson2Jts(geojson);
-				Coordinate[] coords = geoNew.getCoordinates();	
+				Coordinate[] coords = geoNew.getCoordinates();
 				//是否移动端点
 				if(coords[0].equals(coordOlds[0])){
 					if(isCorner(coords[0].x,coords[0].y)){
@@ -65,7 +65,7 @@ public class RdLink002 extends baseRule {
 			}
 			}
 	}
-	
+
 	private boolean isCorner(double x,double y){
 		String[] meshes = MeshUtils.point2Meshes(x,y);
 		if(meshes.length==4){return true;}
@@ -74,5 +74,5 @@ public class RdLink002 extends baseRule {
 
 	@Override
 	public void postCheck(CheckCommand checkCommand) throws Exception {}
-	
+
 	}

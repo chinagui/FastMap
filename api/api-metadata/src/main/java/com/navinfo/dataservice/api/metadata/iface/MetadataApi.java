@@ -169,5 +169,7 @@ public interface MetadataApi {
 	 * @throws Exception
 	 */
 	public Map<String, ScPointSpecKindcodeNewObj> ScPointSpecKindcodeNewType2() throws Exception;
+	
+	public JSONObject tyCharacterEgalcharExt() throws Exception;
 
 }

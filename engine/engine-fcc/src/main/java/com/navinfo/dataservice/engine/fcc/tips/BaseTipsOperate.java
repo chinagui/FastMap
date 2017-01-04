@@ -185,7 +185,7 @@ public class BaseTipsOperate {
 
 		get.addColumn("data".getBytes(), "feedback".getBytes());
 		
-		get.addColumn("deep".getBytes(), "deep".getBytes());
+		get.addColumn("data".getBytes(), "deep".getBytes());
 
 		gets.add(get);
 

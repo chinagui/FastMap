@@ -28,6 +28,8 @@ public class RdRoad implements IObj {
 	private List<IRow> links = new ArrayList<>();
 
 	public Map<String, RdRoadLink> linkMap = new HashMap<String, RdRoadLink>();
+	
+	protected ObjStatus status;
 
 	public int getPid() {
 		return pid;
@@ -66,11 +68,12 @@ public class RdRoad implements IObj {
 
 	@Override
 	public ObjStatus status() {
-		return null;
+		return status;
 	}
 
 	@Override
 	public void setStatus(ObjStatus os) {
+		status = os;
 	}
 
 	@Override
@@ -188,8 +191,15 @@ public class RdRoad implements IObj {
 
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) throws Exception {
-		JSONObject json = JSONObject.fromObject(this, JsonUtils.getStrConfig());
-
+//		JSONObject json = JSONObject.fromObject(this, JsonUtils.getStrConfig());
+//
+//		return json;
+		
+		JSONObject json = JSONObject.fromObject(this,JsonUtils.getStrConfig());
+		
+		if (objLevel == ObjLevel.HISTORY) {
+			json.remove("status");
+		}
 		return json;
 	}
 

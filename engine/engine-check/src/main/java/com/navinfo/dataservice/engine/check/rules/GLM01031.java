@@ -10,56 +10,55 @@ import com.navinfo.dataservice.engine.check.core.baseRule;
 
 /**
  * Rdlink html GLM01031 后台 道路link长度应大于2米（交叉点内link不查）？？？
- * 
- * @author zhangxiaoyi
  *
+ * @author zhangxiaoyi
  */
 public class GLM01031 extends baseRule {
 
-	public void preCheck(CheckCommand checkCommand) {
-		for (IRow obj : checkCommand.getGlmList()) {
-			if (obj instanceof RdLink) {
-				RdLink rdLink = (RdLink) obj;
-				//修改link
-				if (rdLink.changedFields().size() > 0) {
-					if (rdLink.changedFields().containsKey("length")) {
-						double length = (double) rdLink.changedFields().get("length");
-						if (length <= 2 && !this.isJiaoChaLink(rdLink)) {
-							this.setCheckResult("", "", 0,this.getRuleLog()+"PID:"+rdLink.getPid());
-							return;
-						}
-					}
-				} 
-				//新增link
-				else if (rdLink.getLength() <= 2 && !this.isJiaoChaLink(rdLink)) {
-					this.setCheckResult("", "", 0,this.getRuleLog()+"PID:"+rdLink.getPid());
-					return;
-				}
-			}
-		}
-	}
+    public void preCheck(CheckCommand checkCommand) {
+        for (IRow obj : checkCommand.getGlmList()) {
+            if (obj instanceof RdLink) {
+                RdLink rdLink = (RdLink) obj;
+                //修改link
+                if (rdLink.changedFields().size() > 0) {
+                    if (rdLink.changedFields().containsKey("length")) {
+                        double length = (double) rdLink.changedFields().get("length");
+                        if (length <= 2 && !this.isJiaoChaLink(rdLink)) {
+                            this.setCheckResult("", "", 0, this.getRuleLog() + "PID:" + rdLink.getPid());
+                            return;
+                        }
+                    }
+                }
+                //新增link
+                else if (rdLink.getLength() <= 2 && !this.isJiaoChaLink(rdLink)) {
+                    this.setCheckResult("", "", 0, this.getRuleLog() + "PID:" + rdLink.getPid());
+                    return;
+                }
+            }
+        }
+    }
 
-	/**
-	 * 除起终点，Link的形状点不能在图廓上
-	 * 
-	 * @param geo
-	 * @return 有形状点在图廓上，return true；否则false
-	 */
-	private boolean isJiaoChaLink(RdLink rdLink) {
-		List<IRow> forms = rdLink.getForms();
-		if (forms.size() == 0) {
-			return false;
-		}
-		for (int i = 0; i < forms.size(); i++) {
-			RdLinkForm form = (RdLinkForm) forms.get(i);
-			if (form.getFormOfWay() == 50) {
-				return true;
-			}
-		}
-		return false;
-	}
+    /**
+     * 是否为交叉点内link
+     *
+     * @param rdLink
+     * @return 是，return true；否 return false
+     */
+    private boolean isJiaoChaLink(RdLink rdLink) {
+        List<IRow> forms = rdLink.getForms();
+        if (forms.size() == 0) {
+            return false;
+        }
+        for (int i = 0; i < forms.size(); i++) {
+            RdLinkForm form = (RdLinkForm) forms.get(i);
+            if (form.getFormOfWay() == 50) {
+                return true;
+            }
+        }
+        return false;
+    }
 
-	public void postCheck(CheckCommand checkCommand) throws Exception {
-	}
+    public void postCheck(CheckCommand checkCommand) throws Exception {
+    }
 
 }

@@ -142,7 +142,7 @@ public class GLM03065 extends baseRule {
 		// TODO Auto-generated method stub
 		Map<String, Object> changedFields = rdLinkForm.changedFields();
 		int formOfWay = 1;
-		if(changedFields.containsKey("formOfWay")){
+		if(changedFields != null && changedFields.containsKey("formOfWay")){
 			formOfWay = (int) changedFields.get("formOfWay");
 		}
 		if(formOfWay == 31){

@@ -83,6 +83,11 @@ public class Operation implements IOperation {
 				group.setRegionIdUp(tree.getRegionId());
 				result.insertObject(group, ObjStatus.UPDATE, groupId);
 			}
+			if(ObjStatus.DELETE.toString().equals(groupType))
+			{
+				group.setRegionIdUp(tree.getRegionId());
+				result.insertObject(group, ObjStatus.DELETE, groupId);
+			}
 		}
 
 		// 在循环遍历过程中，给ObjType赋值的的树中的节点需要进行修改
@@ -96,6 +101,10 @@ public class Operation implements IOperation {
 
 			if (ObjStatus.UPDATE.toString().equals(partType)) {
 				result.insertObject(part, ObjStatus.UPDATE, groupId);
+			}
+			if(ObjStatus.DELETE.toString().equals(groupType))
+			{
+				result.insertObject(part, ObjStatus.DELETE, groupId);
 			}
 		}
 

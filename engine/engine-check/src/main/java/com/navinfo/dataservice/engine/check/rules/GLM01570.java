@@ -74,7 +74,7 @@ public class GLM01570 extends baseRule {
     private void checkRdGate(RdGate rdGate, OperType operType) throws Exception {
         //新增大门
 //		operType=OperType.CREATE;
-        if (operType.equals(ObjStatus.INSERT)) {
+        if (operType.equals(OperType.CREATE)) {
             StringBuilder sb = new StringBuilder();
 
             sb.append("SELECT 1 FROM RD_GATE RG, RD_LINK_FORM CL1, RD_LINK_FORM CL2");

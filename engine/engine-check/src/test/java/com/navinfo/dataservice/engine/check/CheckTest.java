@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.navinfo.dataservice.dao.glm.model.rd.gate.RdGate;
 import com.navinfo.dataservice.engine.check.rules.GLM01570;
 import org.apache.commons.dbutils.DbUtils;
 import org.junit.Before;
@@ -139,11 +140,12 @@ public class CheckTest {
         Connection conn = DBConnector.getInstance().getConnectionById(19);
         CheckCommand cc = new CheckCommand();
         List<IRow> glmList = new ArrayList<>();
-        RdLinkForm form = new RdLinkForm();
-        form.setLinkPid(209003106);
-        form.setFormOfWay(60);
-        glmList.add(form);
+        RdGate gate = new RdGate();
+        gate.setInLinkPid(209003106);
+        gate.setOutLinkPid(303003128);
+        glmList.add(gate);
         cc.setGlmList(glmList);
+        cc.setOperType(OperType.CREATE);
         GLM01570 c = new GLM01570();
         c.setConn(conn);
         c.postCheck(cc);

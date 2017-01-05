@@ -213,10 +213,10 @@ COMMENT ON COLUMN LOG_DAY_RELEASE.REL_POI_LOCK
 COMMENT ON COLUMN LOG_DAY_RELEASE.REL_ALL_LOCK
   IS 'POI+ROAD出品锁状态';
 --ADD INDEXES
-create bitmap index IDX_LOG_DAY_REL_1 on LOG_DAY_RELEASE (rel_poi_sta);
-create bitmap index IDX_LOG_DAY_REL_2 on LOG_DAY_RELEASE (rel_all_sta);
-create bitmap index IDX_LOG_DAY_REL_3 on LOG_DAY_RELEASE (rel_poi_lock);
-create bitmap index IDX_LOG_DAY_REL_4 on LOG_DAY_RELEASE (rel_all_lock);
+create index IDX_LOG_DAY_REL_1 on LOG_DAY_RELEASE (rel_poi_sta);
+create index IDX_LOG_DAY_REL_2 on LOG_DAY_RELEASE (rel_all_sta);
+create index IDX_LOG_DAY_REL_3 on LOG_DAY_RELEASE (rel_poi_lock);
+create index IDX_LOG_DAY_REL_4 on LOG_DAY_RELEASE (rel_all_lock);
 
 
 /* ck */

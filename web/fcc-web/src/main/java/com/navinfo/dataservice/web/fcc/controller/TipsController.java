@@ -424,7 +424,7 @@ public class TipsController extends BaseController {
             }
             
             //值域验证
-            if(!"m".equals(mdFlag)&&!"d".equals(mdFlag)){
+            if(!"m".equals(mdFlag)&&!"d".equals(mdFlag)&&!"f".equals(mdFlag)){
             	 throw new IllegalArgumentException("参数错误:mdflag值域错误。");
             }
 

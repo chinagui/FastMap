@@ -795,7 +795,6 @@ public class TipsSelector {
 		try {
 
 			oraConn = DBConnector.getInstance().getConnectionById(dbId);
-			;
 
 			RdLinkSelector selector = new RdLinkSelector(oraConn);
 

@@ -563,9 +563,15 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 	 * @return
 	 * @throws Exception
 	 */
-	public List<String> queryClassifyByPid(int pid) throws Exception {
+	public List<String> queryClassifyByPid(int pid,List classifyRules) throws Exception {
 		StringBuilder sb = new StringBuilder();
-		sb.append("SELECT work_item_id FROM poi_column_status s where s.pid=:1 and s.first_work_status=1 ");
+		sb.append("SELECT work_item_id FROM poi_column_status s where s.pid=:1 and s.first_work_status in (1,2) and work_item_id in (");
+		for (Object rules:classifyRules) {
+			sb.append("'" + rules + "'");
+			sb.append(",");
+		}
+		sb.setLength(sb.length()-1);
+		sb.append(")");
 
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;

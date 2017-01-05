@@ -388,4 +388,9 @@ public class MetadataApiImpl implements MetadataApi {
 		return tyCharacterSelector.getCheckMap();
 	}
 
+	@Override
+	public Map<String, Map<String, String>> scPointNameckTypeD6() throws Exception {
+		return ScPointNameck.getInstance().scPointNameckTypeD6();
+	}
+
 }

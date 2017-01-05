@@ -74,7 +74,7 @@ public class FMA0405 extends BasicCheckRule {
 					return;
 				}
 				for(ScPointNameckObj nameckObj:keyResult){
-					if(originNameStr.contains(nameckObj.getPreKey())){
+					if(originNameStr.contains(nameckObj.getPreKey())&&!standardNameStr.contains(nameckObj.getResultKey())){
 						String log="有简化的POI名称统一：“"+nameckObj.getPreKey()+"”,应简化为“"+nameckObj.getResultKey()+"”";
 						setCheckResult(poi.getGeometry(), "[IX_POI,"+poi.getPid()+"]", poi.getMeshId(),log);
 					}

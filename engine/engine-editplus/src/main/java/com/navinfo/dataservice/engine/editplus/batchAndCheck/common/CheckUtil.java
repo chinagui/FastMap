@@ -48,6 +48,9 @@ public class CheckUtil {
 	 * @return boolean 符合《空格规则表》，返回true；否则返回false
 	 */
 	public static String blankRuleErrStr(String word){
+		if (word == null) {
+			return null;
+		}
 		int spaceIndex = word.indexOf(' ');
 		if (spaceIndex > 0) {
 			String beforeWord=word.substring(0, spaceIndex-1);
@@ -85,7 +88,7 @@ public class CheckUtil {
 				return word + ",空格前是不能是非数字、字母、中文之外的字符";
 			}
 		}
-		return "";
+		return null;
 	}
 	
 	public static boolean isOther(String str) {

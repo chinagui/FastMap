@@ -1206,4 +1206,5 @@ public class TipsSelector {
 
 		return array;
 	}
+	
 }

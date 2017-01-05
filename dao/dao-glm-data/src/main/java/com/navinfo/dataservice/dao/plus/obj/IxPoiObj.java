@@ -1002,6 +1002,15 @@ public class IxPoiObj extends AbstractIxObj {
 		return null;
 	}
 	
+	public IxPoiAddress getCHAddress(){
+		List<IxPoiAddress> subRows=getIxPoiAddresses();
+		for(IxPoiAddress br:subRows){
+			if(br.getLangCode().equals("CHI")||br.getLangCode().equals("CHT")){
+				return br;}
+			}
+		return null;
+	}
+	
 	public IxPoiAddress getCHIAddress(){
 		List<IxPoiAddress> subRows=getIxPoiAddresses();
 		for(IxPoiAddress br:subRows){

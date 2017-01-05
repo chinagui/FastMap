@@ -46,6 +46,8 @@ public class RdObjectName implements IRow {
 	
 	private String rowId;
 	
+	protected ObjStatus status;
+	
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 	
 	public String getLangCode() {
@@ -125,12 +127,12 @@ public class RdObjectName implements IRow {
 
 	@Override
 	public ObjStatus status() {
-		return null;
+		return status;
 	}
 
 	@Override
 	public void setStatus(ObjStatus os) {
-
+		status = os;
 	}
 
 	@Override
@@ -246,9 +248,15 @@ public class RdObjectName implements IRow {
 
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) throws Exception {
-		JSONObject json = JSONObject.fromObject(this, JsonUtils.getStrConfig());
-
+		JSONObject json = JSONObject.fromObject(this,JsonUtils.getStrConfig());
+		
+		if (objLevel == ObjLevel.HISTORY) {
+			json.remove("status");
+		}
 		return json;
+//		JSONObject json = JSONObject.fromObject(this, JsonUtils.getStrConfig());
+//
+//		return json;
 	}
 
 	@Override

@@ -12,6 +12,7 @@ import java.util.Map;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
+import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
@@ -59,6 +60,8 @@ public class RdObject implements IObj {
 	public Map<String,RdObjectInter> interMap = new HashMap<>();
 	
 	public Map<String,RdObjectRoad> roadMap = new HashMap<>();
+	
+	protected ObjStatus status;
 
 	public List<IRow> getNodes() {
 		return nodes;
@@ -137,11 +140,12 @@ public class RdObject implements IObj {
 
 	@Override
 	public ObjStatus status() {
-		return null;
+		return status;
 	}
 
 	@Override
 	public void setStatus(ObjStatus os) {
+		status = os;
 	}
 
 	@Override
@@ -312,9 +316,16 @@ public class RdObject implements IObj {
 
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) throws Exception {
-		JsonConfig jsonConfig = Geojson.geoJsonConfig(0.00001, 5);
+//		JsonConfig jsonConfig = Geojson.geoJsonConfig(0.00001, 5);
+//
+//		return JSONObject.fromObject(this, jsonConfig);
+		JSONObject json = JSONObject.fromObject(this, JsonUtils.getStrConfig());
 
-		return JSONObject.fromObject(this, jsonConfig);
+		if (objLevel == ObjLevel.HISTORY) {
+			json.remove("status");
+		}
+
+		return json;
 	}
 
 	@Override

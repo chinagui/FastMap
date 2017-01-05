@@ -35,6 +35,8 @@ public class RdObjectInter implements IRow {
 	
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 	
+	protected ObjStatus status;
+	
 	//额外加的links，配合web快速查询
 	protected List<IRow> links = new ArrayList<>();
 	
@@ -94,12 +96,12 @@ public class RdObjectInter implements IRow {
 
 	@Override
 	public ObjStatus status() {
-		return null;
+		return status;
 	}
 
 	@Override
 	public void setStatus(ObjStatus os) {
-
+		status = os;
 	}
 
 	@Override
@@ -212,6 +214,7 @@ public class RdObjectInter implements IRow {
 			json.remove("links");
 			
 			json.remove("nodes");
+			json.remove("status");
 		}
 
 		return json;

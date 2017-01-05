@@ -349,6 +349,7 @@ public class TipsController extends BaseController {
 		}
 	}
 
+	
 	@RequestMapping(value = "/tip/getBySpatial")
 	public ModelAndView getBySpatial(HttpServletRequest request
 			) throws ServletException, IOException {

@@ -1215,7 +1215,6 @@ public class TipsSelector {
 
 			array.add(snapshot);
 		}
-
 		return array;
 	}
 	

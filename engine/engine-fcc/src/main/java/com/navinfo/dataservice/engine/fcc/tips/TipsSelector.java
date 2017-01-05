@@ -105,9 +105,15 @@ public class TipsSelector {
 
 				stages.add(3);
 			}
+			//f是预处理渲染，如果不是，则需要过滤没有提交的预处理tips
+			boolean isPre=false;
+			
+			if("f".equals(mdFlag)){
+				isPre=true;
+			}
 
 			List<JSONObject> snapshots = conn.queryTipsWebType(wkt, types,
-					stages, false);
+					stages, false,isPre);
 
 			for (JSONObject json : snapshots) {
 
@@ -709,8 +715,15 @@ public class TipsSelector {
 		JSONArray jsonData = new JSONArray();
 
 		String wkt = GridUtils.grids2Wkt(grids);
+		
+		//f是预处理渲染，如果不是，则需要过滤没有提交的预处理tips
+		boolean isPre=false;
+		
+		if("f".equals(mdFlag)){
+			isPre=true;
+		}
 
-		List<JSONObject> tips = conn.queryTipsWeb(wkt, type, stages);
+		List<JSONObject> tips = conn.queryTipsWeb(wkt, type, stages,isPre);
 
 		Map<Integer, String> map = null;
 
@@ -1183,7 +1196,6 @@ public class TipsSelector {
 		return 0;
 	}
 
-
 	/**
 	 * 范围查询Tips 分类查询
 	 * 
@@ -1195,7 +1207,7 @@ public class TipsSelector {
 			throws Exception {
 		JSONArray array = new JSONArray();
 
-		List<JSONObject> snapshots = conn.queryTipsWeb(wkt, type, stages);
+		List<JSONObject> snapshots = conn.queryTipsWeb(wkt, type, stages,false);
 
 		for (JSONObject snapshot : snapshots) {
 
@@ -1203,7 +1215,6 @@ public class TipsSelector {
 
 			array.add(snapshot);
 		}
-
 		return array;
 	}
 	

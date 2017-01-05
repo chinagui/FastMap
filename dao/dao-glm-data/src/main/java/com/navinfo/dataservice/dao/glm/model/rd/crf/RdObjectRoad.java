@@ -32,6 +32,8 @@ public class RdObjectRoad implements IRow {
 	private int roadPid;
 
 	private String rowId;
+	
+	protected ObjStatus status;
 
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 	
@@ -82,12 +84,12 @@ public class RdObjectRoad implements IRow {
 
 	@Override
 	public ObjStatus status() {
-		return null;
+		return status;
 	}
 
 	@Override
 	public void setStatus(ObjStatus os) {
-
+		status = os;
 	}
 
 	@Override
@@ -198,6 +200,7 @@ public class RdObjectRoad implements IRow {
 		if(objLevel.toString().equals(ObjLevel.HISTORY.toString()))
 		{
 			json.remove("links");
+			json.remove("status");
 		}
 		
 		return json;

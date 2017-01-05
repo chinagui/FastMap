@@ -1196,7 +1196,6 @@ public class TipsSelector {
 		return 0;
 	}
 
-
 	/**
 	 * 范围查询Tips 分类查询
 	 * 

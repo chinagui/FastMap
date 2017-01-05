@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.check;
+package com.navinfo.dataservice.engine.check.rules;
 
 import java.util.ArrayList;
 import java.util.HashSet;

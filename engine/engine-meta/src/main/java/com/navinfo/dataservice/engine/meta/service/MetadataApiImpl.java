@@ -183,22 +183,10 @@ public class MetadataApiImpl implements MetadataApi {
 
 	@Override
 	public JSONObject getCharacterMap() throws Exception {
-		Connection conn = null;
-		try {
 
-			conn = DBConnector.getInstance().getMetaConnection();
+		TyCharacterEgalcharExtCheckSelector tyCharacterSelector = new TyCharacterEgalcharExtCheckSelector();
 
-			TyCharacterEgalcharExtCheckSelector tyCharacterSelector = new TyCharacterEgalcharExtCheckSelector(conn);
-
-			JSONObject characterMap = tyCharacterSelector.getCharacterMap();
-
-			return characterMap;
-
-		} catch (Exception e) {
-			throw e;
-		} finally {
-			DbUtils.closeQuietly(conn);
-		}
+		return tyCharacterSelector.getCharacterMap();
 
 	}
 	
@@ -284,7 +272,7 @@ public class MetadataApiImpl implements MetadataApi {
 	}
 	
 	@Override
-	public Map<String, String> scPointSpecKindCodeType14() throws Exception {
+	public Map<String, List<String>>  scPointSpecKindCodeType14() throws Exception {
 		// TODO Auto-generated method stub
 		return ScPointSpecKindcode.getInstance().scPointSpecKindCodeType14();
 	}
@@ -392,6 +380,12 @@ public class MetadataApiImpl implements MetadataApi {
 	public List<String> scPointNameckType9() throws Exception {
 		// TODO Auto-generated method stub
 		return ScPointNameck.getInstance().scPointNameckType9();
+	}
+
+	@Override
+	public JSONObject tyCharacterEgalcharExt() throws Exception {
+		TyCharacterEgalcharExtCheckSelector tyCharacterSelector = new TyCharacterEgalcharExtCheckSelector();
+		return tyCharacterSelector.getCheckMap();
 	}
 
 }

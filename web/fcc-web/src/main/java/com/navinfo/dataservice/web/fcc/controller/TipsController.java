@@ -32,11 +32,12 @@ import com.navinfo.dataservice.commons.util.ZipUtils;
 import com.navinfo.dataservice.engine.audio.Audio;
 import com.navinfo.dataservice.engine.audio.AudioImport;
 import com.navinfo.dataservice.engine.dropbox.manger.UploadService;
+import com.navinfo.dataservice.engine.fcc.patternImage.PatternImageExporter;
+import com.navinfo.dataservice.engine.fcc.patternImage.PatternImageImporter;
 import com.navinfo.dataservice.engine.fcc.tips.TipsExporter;
 import com.navinfo.dataservice.engine.fcc.tips.TipsOperator;
 import com.navinfo.dataservice.engine.fcc.tips.TipsSelector;
 import com.navinfo.dataservice.engine.fcc.tips.TipsUpload;
-import com.navinfo.dataservice.engine.meta.patternimage.PatternImageExporter;
 import com.navinfo.dataservice.engine.photo.CollectorImport;
 
 @Controller
@@ -198,6 +199,8 @@ public class TipsController extends BaseController {
 			
 			AudioImport.importAudio(audioMap,filePath);
 			
+			//PatternImageImporter.importImage(filePath + "/"+ "JVImage.txt",filePath +"/JVImage"); //JVImage为模式图的文件夹
+			
 			JSONObject result = new JSONObject();
 
 			result.put("total", tipsUploader.getTotal());
@@ -346,6 +349,7 @@ public class TipsController extends BaseController {
 		}
 	}
 
+	
 	@RequestMapping(value = "/tip/getBySpatial")
 	public ModelAndView getBySpatial(HttpServletRequest request
 			) throws ServletException, IOException {
@@ -421,7 +425,7 @@ public class TipsController extends BaseController {
             }
             
             //值域验证
-            if(!"m".equals(mdFlag)&&!"d".equals(mdFlag)){
+            if(!"m".equals(mdFlag)&&!"d".equals(mdFlag)&&!"f".equals(mdFlag)){
             	 throw new IllegalArgumentException("参数错误:mdflag值域错误。");
             }
 

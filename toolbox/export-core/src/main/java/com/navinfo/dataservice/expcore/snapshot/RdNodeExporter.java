@@ -34,8 +34,17 @@ public class RdNodeExporter {
 
 		PreparedStatement prep = sqliteConn.prepareStatement(insertSql);
 
-		String sql = "select b.node_pid,b.geometry,c.mesh_id,a.is_main from rd_cross_node a,rd_node b,rd_node_mesh c where c.node_pid=b.node_pid and a.node_pid=b.node_pid and a.u_record!=2 and b.u_record!=2 and c.mesh_id in (select to_number(column_value) from table(clob_to_table(?)))";
-
+		//String sql = "select b.node_pid,b.geometry,c.mesh_id,a.is_main from rd_cross_node a,rd_node b,rd_node_mesh c where c.node_pid=b.node_pid and a.node_pid=b.node_pid and a.u_record!=2 and b.u_record!=2 and c.mesh_id in (select to_number(column_value) from table(clob_to_table(?)))";
+		String sql = "select * from "
+				+ " (select  a.node_pid,a.is_main, "
+					+" (select  b.geometry from rd_node b where b.u_record != 2 and b.node_pid = a.node_pid ) geometry ,"
+					+" (select distinct min(c.mesh_id) from rd_node_mesh c where c.u_record != 2 and c.node_pid = a.node_pid  group by c.node_pid) mesh_id "
+					+" from "
+						+" (select distinct d.node_pid ,max(d.is_main) is_main from  rd_cross_node d where d.u_record != 2  group by d.node_pid ) a "
+						+ ") "
+				+ " where  mesh_id in (select to_number(column_value) from table(clob_to_table(?)))";
+		System.out.println("sql:  "+sql);
+		
 		Clob clob = conn.createClob();
 		clob.setString(1, StringUtils.join(meshes, ","));
 

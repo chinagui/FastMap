@@ -6,11 +6,13 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import org.apache.commons.dbutils.DbUtils;
 import org.sqlite.SQLiteConfig;
-import com.ibm.icu.text.SimpleDateFormat;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
@@ -51,9 +53,11 @@ public class ExpMeta2SqliteScriptsInterface {
 			
 			System.out.println("Metadata export end");
 		} catch (Exception e) {
+			e.printStackTrace();
 			throw e;
 		} finally {
-			DBUtils.closeConnection(conn);
+			DbUtils.closeQuietly(conn);
+			DbUtils.closeQuietly(gdbConn);
 		}
 	}
 
@@ -110,10 +114,10 @@ public class ExpMeta2SqliteScriptsInterface {
 		List<String> sqliteList = new ArrayList<String>();
 		//1.充电站品牌表：
 		sqliteList.add("CREATE TABLE SC_POINT_CHARGING_CHAIN (chain_name text,chain_code text,hm_flag text,memo text)");
-		//2.小分类业务逻辑控制表
-		sqliteList.add("CREATE TABLE CI_PARA_CONTROL (id integer PRIMARY KEY,kind_id integer,kind_code text,kind_change integer,parent integer,parent_level integer,important integer,name_keyword text,level text,eng_permit integer,agent integer,region integer,tenant integer,extend integer,extend_photo integer,photo integer,internal integer,chain integer,tel_cs integer,add_cs integer,disp_onlink integer)");
+		//2.小分类业务逻辑控制表  //kind_id integer,
+		sqliteList.add("CREATE TABLE CI_PARA_CONTROL (id integer PRIMARY KEY,kind_code text,kind_change integer,parent integer,parent_level integer,important integer,name_keyword text,level text,eng_permit integer,agent integer,region integer,tenant integer,extend integer,extend_photo integer,photo integer,internal integer,chain integer,tel_cs integer,add_cs integer,disp_onlink integer)");
 		//3.FOODTYPE值域表
-		sqliteList.add("CREATE TABLE CI_PARA_FOOD (id integer PRIMARY KEY,kind_id integer,food_name text,food_code integer,foodtype integer)");
+		sqliteList.add("CREATE TABLE CI_PARA_FOOD (id integer PRIMARY KEY,kind_code text,food_name text,food_code integer,foodtype integer)");
 		//4.POI Icon表
 		sqliteList.add("CREATE TABLE CI_PARA_ICON (id integer ,idcode text,name_in_nav text,type integer)");
 		//5.POI分类表：
@@ -204,7 +208,7 @@ public class ExpMeta2SqliteScriptsInterface {
 		System.out.println("Start to export CI_PARA_CONTROL...");
 		String insertSql = "insert into CI_PARA_CONTROL(id,kind_code,kind_change,parent,parent_level,important,"
 				+ "name_keyword,level,eng_permit,agent,region,tenant,extend,extend_photo,"
-				+ "photo,internal,chain,tel_cs,add_cs,disp_onlink,kind_id) values(null,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+				+ "photo,internal,chain,tel_cs,add_cs,disp_onlink) values(null,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 		String selectSql = "select * from SC_FM_CONTROL";
 		Statement pstmt = null;
 		ResultSet resultSet = null;
@@ -218,26 +222,26 @@ public class ExpMeta2SqliteScriptsInterface {
 
 			while (resultSet.next()) {
 				//prep.setInt(1, null);
-				prep.setInt(1, resultSet.getInt("kind_code"));//kind_id
-				prep.setString(2, resultSet.getString("kind_code"));
-				prep.setInt(3, resultSet.getInt("kind_change"));
-				prep.setInt(4, resultSet.getInt("parent"));
-				prep.setInt(5, resultSet.getInt("parent_level"));
-				prep.setInt(6, resultSet.getInt("important"));
-				prep.setString(7, resultSet.getString("name_keyword"));
-				prep.setString(8, resultSet.getString("level"));
-				prep.setInt(9, resultSet.getInt("eng_permit"));
-				prep.setInt(10, resultSet.getInt("agent"));
-				prep.setInt(11, resultSet.getInt("region"));
-				prep.setInt(12, resultSet.getInt("tenant"));
-				prep.setInt(13, resultSet.getInt("extend"));
-				prep.setInt(14, resultSet.getInt("extend_photo"));
-				prep.setInt(15, resultSet.getInt("photo"));
-				prep.setInt(16, resultSet.getInt("internal"));
-				prep.setInt(17, resultSet.getInt("chain"));
-				prep.setInt(18, resultSet.getInt("tel_cs"));
-				prep.setInt(19, resultSet.getInt("add_cs"));
-				prep.setInt(20, resultSet.getInt("disp_onlink"));
+				//prep.setInt(1, resultSet.getInt("kind_code"));//kind_id
+				prep.setString(1, resultSet.getString("kind_code"));
+				prep.setInt(2, resultSet.getInt("kind_change"));
+				prep.setInt(3, resultSet.getInt("parent"));
+				prep.setInt(4, resultSet.getInt("parent_level"));
+				prep.setInt(5, resultSet.getInt("important"));
+				prep.setString(6, resultSet.getString("name_keyword"));
+				prep.setString(7, resultSet.getString("level"));
+				prep.setInt(8, resultSet.getInt("eng_permit"));
+				prep.setInt(9, resultSet.getInt("agent"));
+				prep.setInt(10, resultSet.getInt("region"));
+				prep.setInt(11, resultSet.getInt("tenant"));
+				prep.setInt(12, resultSet.getInt("extend"));
+				prep.setInt(13, resultSet.getInt("extend_photo"));
+				prep.setInt(14, resultSet.getInt("photo"));
+				prep.setInt(15, resultSet.getInt("internal"));
+				prep.setInt(16, resultSet.getInt("chain"));
+				prep.setInt(17, resultSet.getInt("tel_cs"));
+				prep.setInt(18, resultSet.getInt("add_cs"));
+				prep.setInt(19, resultSet.getInt("disp_onlink"));
 				
 				prep.executeUpdate();
 				
@@ -271,7 +275,7 @@ public class ExpMeta2SqliteScriptsInterface {
 	public static void ciParaFood(Connection conn,Connection sqliteConn) throws Exception{
 		System.out.println("Start to export CI_PARA_FOOD...");
 		//id,kind_id,food_name,food_code,foodtype
-		String insertSql = "insert into CI_PARA_FOOD(id,kind_id,food_name,food_code,foodtype) values(null,?,?,?,?)";
+		String insertSql = "insert into CI_PARA_FOOD(id,kind_code,food_name,food_code,foodtype) values(null,?,?,?,?)";
 		String selectSql = "select poikind,foodtypename,foodtype,type from SC_POINT_FOODTYPE";
 		Statement pstmt = null;
 		ResultSet resultSet = null;
@@ -953,7 +957,7 @@ public class ExpMeta2SqliteScriptsInterface {
 		
 
 	
-	public static void export2SqliteByNames(String dir) {
+	public static void export2SqliteByNames(String dir) throws Exception{
 
 		File mkdirFile = new File(dir);
 
@@ -973,6 +977,7 @@ public class ExpMeta2SqliteScriptsInterface {
 			sqliteConn.close();
 		} catch (Exception e) {
 			System.out.println(e);
+			throw e;
 		}finally{
 			File metaSqliteFile = new File(dir+"/metadata.sqlite");
 			if(metaSqliteFile.exists()){
@@ -982,13 +987,21 @@ public class ExpMeta2SqliteScriptsInterface {
 	}
 	
 	public static void main(String[] args) {
-		String dir = SystemConfigFactory.getSystemConfig().getValue(
-				PropConstant.downloadFilePathRoot);  //服务器部署路径
-		File metaSqliteFile = new File(dir+"/metadata.sqlite");
-		if(metaSqliteFile.exists()){
-			metaSqliteFile.delete();
+		try{
+			//初始化context
+			JobScriptsInterface.initContext();
+			
+			String dir = SystemConfigFactory.getSystemConfig().getValue(
+					PropConstant.downloadFilePathRoot);  //服务器部署路径
+			File metaSqliteFile = new File(dir+"/metadata.sqlite");
+			if(metaSqliteFile.exists()){
+				metaSqliteFile.delete();
+			}
+			export2SqliteByNames(dir+"/metadata");
+		}catch(Exception e){
+			System.out.println("Oops, something wrong...");
+			e.printStackTrace();
 		}
-		export2SqliteByNames(dir+"/metadata");
 	}
 	
 }

@@ -201,22 +201,22 @@ public class HBaseOperateTest {
 			scan.addColumn(Bytes.toBytes("data"),Bytes.toBytes("track"));
 			//scan.addFamily(Bytes.toBytes("attribute"));
 			
-			RegexStringComparator comp = new RegexStringComparator(".],\"t_cStatus\"."); // or (\W|^)test(\W|$) if you want complete words only  
+/*			RegexStringComparator comp = new RegexStringComparator(".],\"t_cStatus\"."); // or (\W|^)test(\W|$) if you want complete words only  
 			
 			//SubstringComparator comp = new SubstringComparator("test"); 
 
 			SingleColumnValueFilter filter = new SingleColumnValueFilter(Bytes.toBytes("data"), Bytes.toBytes("track"),CompareOp.NOT_EQUAL, comp);
-			//查询t_lifecycle=1
+			*///查询t_lifecycle=1
 			//RegexStringComparator comp2 = new RegexStringComparator(".\"t_lifecycle\":1,."); 
 			
-			//RegexStringComparator comp2 = new RegexStringComparator(".\"t_lifecycle\":0,."); 
+			RegexStringComparator comp2 = new RegexStringComparator("\"handler\":2922"); 
 			
-			//SingleColumnValueFilter filter2 = new SingleColumnValueFilter(Bytes.toBytes("data"), Bytes.toBytes("track"),CompareOp.EQUAL, comp2);
+			SingleColumnValueFilter filter2 = new SingleColumnValueFilter(Bytes.toBytes("data"), Bytes.toBytes("track"),CompareOp.EQUAL, comp2);
 			
-			filter.setFilterIfMissing(true);
-			//filter2.setFilterIfMissing(true);
-			//scan.setFilter(filter2);
-			scan.setFilter(filter);
+			//filter.setFilterIfMissing(true);
+			filter2.setFilterIfMissing(true);
+			scan.setFilter(filter2);
+			//scan.setFilter(filter);
 			
 			//scan 'tracklines_sprint5',{COLUMN => 'attribute', FILTER =>"(SingleColumnValueFilter('attribute','attribute:a_uuid',=,'binary:uuid1'))"}
 
@@ -235,6 +235,8 @@ public class HBaseOperateTest {
 				count++;
 
 				//update(new String(r.getRow()));
+				
+				deleteRow(new String(r.getRow()));
 			}
 			System.out.println("总条数："+count);
 			
@@ -470,15 +472,17 @@ public class HBaseOperateTest {
 
 	public static void main(String[] args) throws Exception {
 		HBaseOperateTest test = new HBaseOperateTest();
-		String rowkey = "021606597d72114ef24985bc35dade8993e6b1";
+		String rowkey = "028002011320838c194aeb8e3039886bf760c6";
 		// test.QueryAll();
 		// test.QueryByCondition1(rowkey);
 		 
+		 test. QueryByCondition4();
+		 
 		//test.testDbCopy();
-		JSONObject geoJson=JSONObject.fromObject("{\"type\":\"LineString\",\"coordinates\":[[116.69374,39.90471],[116.69376,39.9047],[116.69381,39.90468],[116.69387,39.90465],[116.69391,39.90463],[116.69395,39.90459],[116.69395,39.90458],[116.69392,39.90457],[116.6939,39.90456],[116.69387,39.90455],[116.69384,39.90455],[116.69381,39.90456],[116.69377,39.90458],[116.69376,39.9046],[116.69376,39.90461],[116.69378,39.90461],[116.69379,39.90461],[116.69382,39.90459],[116.69383,39.90457],[116.69382,39.90455],[116.69382,39.90454],[116.69379,39.90452],[116.69376,39.9045],[116.69373,39.90449],[116.6937,39.90449],[116.69366,39.90451],[116.69366,39.90451]]}");
+	/*	JSONObject geoJson=JSONObject.fromObject("{\"type\":\"LineString\",\"coordinates\":[[116.69374,39.90471],[116.69376,39.9047],[116.69381,39.90468],[116.69387,39.90465],[116.69391,39.90463],[116.69395,39.90459],[116.69395,39.90458],[116.69392,39.90457],[116.6939,39.90456],[116.69387,39.90455],[116.69384,39.90455],[116.69381,39.90456],[116.69377,39.90458],[116.69376,39.9046],[116.69376,39.90461],[116.69378,39.90461],[116.69379,39.90461],[116.69382,39.90459],[116.69383,39.90457],[116.69382,39.90455],[116.69382,39.90454],[116.69379,39.90452],[116.69376,39.9045],[116.69373,39.90449],[116.6937,39.90449],[116.69366,39.90451],[116.69366,39.90451]]}");
 		
 		Geometry geo=GeoTranslator.geojson2Jts(geoJson);
-		System.out.println(GeoTranslator.jts2Wkt(geo));
+		System.out.println(GeoTranslator.jts2Wkt(geo));*/
 		
 		
 		// test.QueryByCondition4();

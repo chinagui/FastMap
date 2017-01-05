@@ -105,9 +105,15 @@ public class TipsSelector {
 
 				stages.add(3);
 			}
+			//f是预处理渲染，如果不是，则需要过滤没有提交的预处理tips
+			boolean isPre=false;
+			
+			if("f".equals(mdFlag)){
+				isPre=true;
+			}
 
 			List<JSONObject> snapshots = conn.queryTipsWebType(wkt, types,
-					stages, false);
+					stages, false,isPre);
 
 			for (JSONObject json : snapshots) {
 
@@ -139,24 +145,15 @@ public class TipsSelector {
 					m.put("a", json.getString("t_mStatus"));
 
 				}
+				
 
 				m.put("b", json.getString("t_lifecycle"));
 
 				JSONObject g_guide = JSONObject.fromObject(json
 						.getString("g_guide"));
 				
-				//特殊处理 
-				if(type==8001){
-					
-				}
-				if(type==8002){
-					
-				}
-				//其他的
-				else{
-					m.put("h", g_guide.getJSONArray("coordinates"));
-				}
-				
+				//8001和8002的的数据，新增guide已经赋值，无需特殊处理了
+				m.put("h", g_guide.getJSONArray("coordinates"));
 				
 
 				JSONObject deep = JSONObject.fromObject(json.getString("deep"));
@@ -191,7 +188,7 @@ public class TipsSelector {
 						|| type == 1404 || type == 1804 || type == 1108
 						|| type == 1112 || type == 1306 || type == 1410
 						|| type == 1310 || type == 1204 || type == 1311
-						|| type == 1308) {
+						|| type == 1308 || type == 1114 || type == 1115) {
 
 					if (deep.containsKey("agl")) {
 						m.put("c", String.valueOf(deep.getDouble("agl")));
@@ -308,11 +305,9 @@ public class TipsSelector {
 				} else if (type == 1705) {
 					m.put("c", deep.getString("name"));
 				} else if (type == 1707) {
-					m.put("c", deep.getString("rdNm"));
+					m.put("c", deep.getString("rdName"));
 					m.put("d", deep.getString("num"));
 					m.put("e", deep.getString("src"));
-				} else if (type == 1209) {
-					m.put("c", deep.getString("name"));
 				} else if (type == 1202) {
 					m.put("c", String.valueOf(deep.getInt("num")));
 				}
@@ -720,8 +715,15 @@ public class TipsSelector {
 		JSONArray jsonData = new JSONArray();
 
 		String wkt = GridUtils.grids2Wkt(grids);
+		
+		//f是预处理渲染，如果不是，则需要过滤没有提交的预处理tips
+		boolean isPre=false;
+		
+		if("f".equals(mdFlag)){
+			isPre=true;
+		}
 
-		List<JSONObject> tips = conn.queryTipsWeb(wkt, type, stages);
+		List<JSONObject> tips = conn.queryTipsWeb(wkt, type, stages,isPre);
 
 		Map<Integer, String> map = null;
 
@@ -737,7 +739,7 @@ public class TipsSelector {
 						|| type == 1109 || type == 1111 || type == 1113
 						|| type == 1202 || type == 1207 || type == 1208
 						|| type == 1304 || type == 1305 || type == 1308
-						|| type == 1311) {
+						|| type == 1311 || type == 1114 || type == 1115) {
 					JSONObject f = deep.getJSONObject("f");
 
 					if (f != null && ! f.isNullObject()) {
@@ -806,7 +808,6 @@ public class TipsSelector {
 		try {
 
 			oraConn = DBConnector.getInstance().getConnectionById(dbId);
-			;
 
 			RdLinkSelector selector = new RdLinkSelector(oraConn);
 
@@ -875,7 +876,7 @@ public class TipsSelector {
 						|| type == 1109 || type == 1111 || type == 1113 
 						|| type == 1202 || type == 1207 || type == 1208 
 						|| type == 1304 || type == 1305 || type == 1308 
-						|| type == 1311) {
+						|| type == 1311 || type == 1114 || type == 1115) {
 					JSONObject f = deep.getJSONObject("f");
 					if (f != null && ! f.isNullObject()) {
 						// type=1 :道路LINK，有名称，则显示道路名称，如果没有，则显示“无名路”
@@ -928,7 +929,7 @@ public class TipsSelector {
 								valueStr = valueStr.substring(1);
 							}
 							name += "(" + valueStr + "km/h)";
-						} else if (type == 1101 || type == 1111) {
+						} else if (type == 1101 || type == 1111 || type == 1114 || type == 1115) {
 
 							double value = deep.getDouble("value");
 
@@ -1093,7 +1094,7 @@ public class TipsSelector {
 				} else if (type == 1704 || type == 1510 || type == 1107
 						|| type == 1507 || type == 1511 || type == 1601
 						|| type == 1602 || type == 1509 || type == 1705
-						|| type == 1607 || type == 1209) {
+						|| type == 1607 ) {
 
 					String name = deep.getString("name");
 
@@ -1124,7 +1125,7 @@ public class TipsSelector {
 				// 里程桩
 				else if (type == 1707) {
 					m.put("e",
-							deep.getString("rdNm") + "("
+							deep.getString("rdName") + "("
 									+ deep.getString("num") + ")");
 				}
 				 else if (type == 1501) {
@@ -1195,60 +1196,6 @@ public class TipsSelector {
 		return 0;
 	}
 
-	public static void main(String[] args) throws Exception {
-		// JSONArray ja =
-		// searchDataBySpatial("POLYGON ((113.70469 26.62879, 119.70818 26.62879, 119.70818 29.62948, 113.70469 29.62948, 113.70469 26.62879))");
-
-		// System.out.println(ja.size());
-
-		// System.out.println(checkUpdate("59567201","20151227163723"));
-		// ConfigLoader
-		// .initDBConn("C:/Users/wangshishuai3966/Desktop/config.properties");
-		/*
-		 * TipsSelector selector = new TipsSelector(); JSONArray types = new
-		 * JSONArray(); types.add(1515);
-		 * //selector.searchDataByTileWithGap(107946, 49617, 17, 20, types);
-		 * selector.searchDataByRowkey("123"); //
-		 * System.out.println(selector.searchDataByRowkey
-		 * ("0212014bb47de20366413db30504af53243a00")); JSONArray grid =
-		 * JSONArray .fromObject(
-		 * "[59567101,59567102,59567103,59567104,59567201,60560301,60560302,60560303,60560304]"
-		 * ); System.out.println(grid); JSONArray stage = new JSONArray();
-		 * stage.add(1); int type = 1101; int projectId=11;
-		 */
-		// System.out.println(selector.getSnapshot(grid, stage, type,
-		// projectId,"m"));
-		// System.out.println(selector.getStats(a, b));
-
-		// JSONArray types = new JSONArray();
-		// types.add(1301);
-		// types.add(1901);
-		// System.out.println(selector.searchDataByTileWithGap(107944, 49615,
-		// 17,
-		// 20, types));
-
-		JSONArray grids = new JSONArray();
-		grids.add(59567513);
-		grids.add(59567513);
-		grids.add(59567503);
-		
-		String wkt = GridUtils.grids2Wkt(grids);
-
-		System.out.println("0000000000----" + wkt);
-		//POLYGON ((116.4375 40, 116.4375 40.02083, 116.46875 40.02083, 116.46875 40, 116.46875 39.97917, 116.46875 39.95833, 116.4375 39.95833, 116.4375 39.97917, 116.4375 40))
-		//POLYGON ((116.4375 40, 116.4375 40.02083, 116.46875 40.02083, 116.46875 40, 116.46875 39.97917, 116.46875 39.95833, 116.4375 39.95833, 116.4375 39.97917, 116.4375 40))
-		JSONObject b=new JSONObject();
-		
-		
-		
-		b.put("g_location", JSONObject.fromObject("{\"type\":\"Point\",\"coordinates\":[116.45815,40.00135]}"));
-		
-		Geometry g = GeoTranslator.geojson2Jts(JSONObject.fromObject("{\"type\":\"Point\",\"coordinates\":[116.45815,40.00135]}"));
-		
-		System.out.println(g);
-		
-	}
-
 	/**
 	 * 范围查询Tips 分类查询
 	 * 
@@ -1260,7 +1207,7 @@ public class TipsSelector {
 			throws Exception {
 		JSONArray array = new JSONArray();
 
-		List<JSONObject> snapshots = conn.queryTipsWeb(wkt, type, stages);
+		List<JSONObject> snapshots = conn.queryTipsWeb(wkt, type, stages,false);
 
 		for (JSONObject snapshot : snapshots) {
 
@@ -1268,7 +1215,7 @@ public class TipsSelector {
 
 			array.add(snapshot);
 		}
-
 		return array;
 	}
+	
 }

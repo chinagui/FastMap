@@ -37,13 +37,11 @@ import com.vividsolutions.jts.geom.Point;
  * @Description: TODO
  * 
  */
-public class PretreatmentTipsOperator {
+public class PretreatmentTipsOperator extends BaseTipsOperate{
 
 	static String FC_SOURCE_TYPE = "8001"; // FC预处理理tips
 
 	static int FC_DEFAULT_STAGE = 2;
-
-	private SolrController solr = new SolrController();
 
 	private static final Logger logger = Logger
 			.getLogger(PretreatmentTipsOperator.class);
@@ -97,24 +95,22 @@ public class PretreatmentTipsOperator {
 			feedbackObj.put("f_array", f_array);
 
 			// 3.track
-			int stage = 2;
+			int stage = 5;  //0 初始化；1 外业采集；2 内业日编；3 内业月编；4 GDB增量； 5内业预处理  
 
 			int t_lifecycle = 3;
 			int t_command = 0;
 			int t_cStatus = 0;
 			int t_dStatus = 0;
 			int t_mStatus = 0;
-			int t_inStatus = 0;
-			int t_inMeth = 1;
+			//int t_inStatus = 0;
+			int t_inMeth = 0;
+			int t_pStatus = 0;
+			int t_dInProc = 0;
+			int t_mInProc = 0;  
 
 			JSONObject jsonTrack = TipsUtils.generateTrackJson(t_lifecycle,stage,
 					user, t_command, null, currentDate,currentDate, t_cStatus, t_dStatus,
-					t_mStatus, t_inStatus, t_inMeth);
-
-			// 4.geometry
-			JSONObject jsonGeom = new JSONObject();
-			jsonGeom.put("g_location", lineGeometry);
-			jsonGeom.put("g_guide", TipsUtils.OBJECT_NULL_DEFAULT_VALUE);
+					t_mStatus, t_inMeth,t_pStatus,t_dInProc,t_mInProc);
 
 			// source
 			int s_sourceCode = 14;
@@ -138,6 +134,12 @@ public class PretreatmentTipsOperator {
 
 				}
 			}
+			
+			// 4.geometry
+			JSONObject jsonGeom = new JSONObject();
+			JSONObject g_guide = deepNew.getJSONObject("geo") ;
+			jsonGeom.put("g_location", lineGeometry);
+			jsonGeom.put("g_guide", g_guide);
 
 			// put
 			Put put = new Put(rowkey.getBytes());
@@ -161,7 +163,7 @@ public class PretreatmentTipsOperator {
 			JSONObject solrIndex = TipsUtils.generateSolrIndex(rowkey, stage,
 					currentDate, currentDate, t_lifecycle, t_command, user,
 					t_cStatus, t_dStatus, t_mStatus, sourceType, s_sourceCode,
-					null, lineGeometry, deepNew, f_array, s_reliability,t_inStatus,t_inMeth);
+					g_guide, lineGeometry, deepNew, f_array, s_reliability,t_inMeth,t_pStatus,t_dInProc,t_mInProc);
 
 			solr.addTips(solrIndex);
 
@@ -260,21 +262,27 @@ public class PretreatmentTipsOperator {
 			String date = DateUtils.dateToString(new Date(), DateUtils.DATE_COMPACTED_FORMAT);
 
 			track = addTrackInfo(user, track,date);
+			
+			track.put("t_lifecycle", 2);
 
 			// 2.update geometry
 
 			JSONObject geometry = JSONObject.fromObject(new String(result
 					.getValue("data".getBytes(), "geometry".getBytes())));
 
-			geometry.put("g_location", lineGeometry.toString().getBytes());
+			geometry.put("g_location", lineGeometry);
+			
+			JSONObject  guideNew=getMidPointByGeometry(lineGeometry);
+			
+			geometry.put("g_guide", guideNew);
 
 			// 2.update deep.geo(根据新的几何信息计算几何中心点)
 
 			JSONObject deep = JSONObject.fromObject(new String(result.getValue(
 					"data".getBytes(), "deep".getBytes())));
 
-			deep.put("geo", getMidPointByGeometry(lineGeometry));
-
+			deep.put("geo", guideNew);
+			
 			put.addColumn("data".getBytes(), "track".getBytes(), track
 					.toString().getBytes());
 
@@ -287,14 +295,27 @@ public class PretreatmentTipsOperator {
 			// update solr
 
 			JSONObject solrIndex = solr.getById(rowkey);
+			
+			solrIndex.put("t_lifecycle", 2);
 
 			solrIndex.put("t_date", date);
 
 			solrIndex.put("handler", user);
 
 			solrIndex.put("g_location", lineGeometry);
+			
+			solrIndex.put("g_guide", guideNew);
 
 			solrIndex.put("deep", deep);
+			
+			JSONArray feedBackArr=JSONArray.fromObject(solrIndex.get("feedback"));
+			
+			if(feedBackArr==null){
+				feedBackArr=new JSONArray();
+			}
+			
+			solrIndex.put("wkt", TipsImportUtils.generateSolrWkt(
+					String.valueOf(FC_SOURCE_TYPE), deep, lineGeometry, feedBackArr));
 
 			solr.addTips(solrIndex);
 
@@ -454,21 +475,39 @@ public class PretreatmentTipsOperator {
 			JSONObject g_location2=cutGeoResult.get(1);
 			
 			
-			JSONObject g_guide=JSONObject.fromObject(solrIndex.get("g_guide"));
+			//JSONObject g_guide=JSONObject.fromObject(solrIndex.get("g_guide"));
+			
+			JSONObject  g_guide1=getMidPointByGeometry(g_location1);
+			
+			JSONObject  g_guide2=getMidPointByGeometry(g_location2);
 			
 			geo1.put("g_location", g_location1);
 			
-			geo1.put("g_guide",g_guide);
+			geo1.put("g_guide",g_guide1);
 			
 			geo2.put("g_location", g_location2);
 			
-			geo2.put("g_guide", g_guide);
-			
-			
+			geo2.put("g_guide", g_guide2);
 			
 			solrIndex.put("g_location", g_location1);
 
 			newSolrIndex.put("g_location", g_location2);
+			
+			solrIndex.put("g_guide", g_guide1);
+
+			newSolrIndex.put("g_guide", g_guide2);
+			
+			JSONArray feedBackArr=JSONArray.fromObject(solrIndex.get("feedback"));
+			
+			if(feedBackArr==null){
+				feedBackArr=new JSONArray();
+			}
+			
+			solrIndex.put("wkt", TipsImportUtils.generateSolrWkt(
+					String.valueOf(FC_SOURCE_TYPE), null, g_location1, feedBackArr));
+			
+			newSolrIndex.put("wkt", TipsImportUtils.generateSolrWkt(
+					String.valueOf(FC_SOURCE_TYPE), null, g_location2, feedBackArr));
 			
 			
 			put.addColumn("data".getBytes(), "geometry".getBytes(), geo1
@@ -483,7 +522,7 @@ public class PretreatmentTipsOperator {
 			if(FC_SOURCE_TYPE.equals(solrIndex.getString("s_sourceType"))){
 				
 				updateFcTipDeep(solrIndex, newPut, put, newSolrIndex,
-						g_location1, g_location2);
+						g_guide1, g_guide2);
 				
 			}
 			
@@ -570,14 +609,14 @@ public class PretreatmentTipsOperator {
 	 * @time:2016-11-18 下午7:58:46
 	 */
 	private void updateFcTipDeep(JSONObject solrIndex, Put newPut, Put put,
-			JSONObject newSolrIndex, JSONObject g_location1,
-			JSONObject g_location2) throws Exception {
+			JSONObject newSolrIndex, JSONObject g_guide1,
+			JSONObject g_guide2) throws Exception {
 		
 		
 		JSONObject deep1=JSONObject.fromObject(solrIndex.get("deep"));;
 		
 		// 几何中心点
-		JSONObject pointGeo1 = getMidPointByGeometry(g_location1);
+		JSONObject pointGeo1 = g_guide1;
 
 
 		deep1.put("geo", pointGeo1);
@@ -586,7 +625,7 @@ public class PretreatmentTipsOperator {
 		JSONObject deep2=JSONObject.fromObject(solrIndex.get("deep"));;
 		
 		// 几何中心点
-		JSONObject  pointGeo2= getMidPointByGeometry(g_location2);
+		JSONObject  pointGeo2= g_guide2;
 
 
 		deep2.put("geo", pointGeo2);
@@ -600,7 +639,6 @@ public class PretreatmentTipsOperator {
 		solrIndex.put("deep", deep1);
 		
 		newSolrIndex.put("deep", deep2);
-		
 		
 	}
 
@@ -675,6 +713,85 @@ public class PretreatmentTipsOperator {
 
 		return result;
 	}
+	
+	
+	/**
+	 * @Description:提交（FC预处理完成，提交给web，提交后web可见）
+	 * @param rowkey
+	 * @param user
+	 * @param memo
+	 * @author: y
+	 * @throws Exception
+	 * @time:2016-11-16 上午11:29:03
+	 */
+	public void submit2Web(String rowkey, int user, String memo,
+			int stage) throws Exception {
+
+		try {
+
+			Connection hbaseConn = HBaseConnector.getInstance().getConnection();
+
+			Table htab = hbaseConn.getTable(TableName
+					.valueOf(HBaseConstant.tipTab));
+
+			// 获取到改前的 feddback和track
+			JSONObject oldTip = getOldTips(rowkey, htab);
+
+			// 1.更新track
+			JSONObject track = oldTip.getJSONObject("track");
+
+			JSONArray trackInfoArr = track.getJSONArray("t_trackInfo");
+
+			String date = DateUtils.dateToString(new Date(), "yyyyMMddHHmmss");
+
+			// 新增一个trackInfo
+			JSONObject jsonTrackInfo = new JSONObject();
+
+			jsonTrackInfo.put("stage", stage);
+
+			jsonTrackInfo.put("date", date);
+
+			jsonTrackInfo.put("handler", user);
+
+			trackInfoArr.add(jsonTrackInfo);
+
+			track.put("t_trackInfo", trackInfoArr);
+			
+			track.put("t_pStatus", 1);
+			
+			track.put("t_lifecycle", 2); //提交不修改t_lifecycle？
+
+			Put put = new Put(rowkey.getBytes());
+
+			put.addColumn("data".getBytes(), "track".getBytes(), track
+					.toString().getBytes());
+
+			// 同步更新solr
+			JSONObject solrIndex = solr.getById(rowkey);
+			
+			solrIndex.put("t_lifecycle", 2);
+
+			solrIndex.put("t_pStatus", 1);
+
+			solrIndex.put("t_date", date);
+
+			solrIndex.put("handler", user);
+
+			solr.addTips(solrIndex);
+
+			htab.put(put);
+			
+			htab.close();
+
+		} catch (IOException e) {
+			
+			logger.error(e.getMessage(), e);
+			
+			throw new Exception("改备注信息出错：rowkey:"+rowkey+"原因：" + e.getMessage(), e);
+		}
+
+	}
+
 	
 	
 	/**
@@ -765,6 +882,153 @@ public class PretreatmentTipsOperator {
 		return resultGeoList;
 	}
 	
+	
+	/**
+	 * @Description:更新备注信息和fc的功能等级
+	 * @param rowkey
+	 * @param user
+	 * @param memo
+	 * @author: y
+	 * @throws Exception
+	 * @time:2016-11-16 上午11:29:03
+	 */
+	public void updateFeedbackMemoAndDeep(String rowkey, int user, String memo,JSONObject deepInfo) throws Exception {
+
+		try {
+
+			Connection hbaseConn = HBaseConnector.getInstance().getConnection();
+
+			Table htab = hbaseConn.getTable(TableName
+					.valueOf(HBaseConstant.tipTab));
+			//获取solr数据
+			JSONObject solrIndex = solr.getById(rowkey);
+			
+			String sourceType=solrIndex.getString("s_sourceType");
+			
+			int stage=2;
+			//如果是预处理的tips则stage=5
+			
+			if(solrIndex.getString("s_sourceType").equals(PretreatmentTipsOperator.FC_SOURCE_TYPE)){
+				stage=5; 
+			}
+
+			// 获取到改钱的 feddback和track
+			JSONObject oldTip = getOldTips(rowkey, htab);
+
+			// 1.更新feddback和track
+			JSONObject track = oldTip.getJSONObject("track");
+
+			JSONArray trackInfoArr = track.getJSONArray("t_trackInfo");
+
+			String date = DateUtils.dateToString(new Date(), "yyyyMMddHHmmss");
+
+			// 新增一个trackInfo
+			JSONObject jsonTrackInfo = new JSONObject();
+
+			jsonTrackInfo.put("stage", stage);
+
+			jsonTrackInfo.put("date", date);
+
+			jsonTrackInfo.put("handler", user);
+
+			trackInfoArr.add(jsonTrackInfo);
+
+			track.put("t_trackInfo", trackInfoArr);
+			
+			track.put("t_lifecycle", 2);
+
+			// 2.更新feedback
+
+			// 新增一个f_array type=3的是文字
+			JSONObject feedBack = oldTip.getJSONObject("feedback");
+
+			JSONArray f_array = feedBack.getJSONArray("f_array");
+
+
+			for (Object object : f_array) {
+
+				JSONObject obj = JSONObject.fromObject(object);
+				
+				//先删掉
+
+				if (obj.getInt("type") == 3) {
+					
+					f_array.remove(obj);
+
+					break;
+				}
+			}
+			// 如果count=0,则说明原来没有备注，则，增加一条
+
+			int type = 3; // 文字
+
+			JSONObject newFeedback = TipsUtils.newFeedback(user, memo, type,
+					date);
+
+			f_array.add(newFeedback);
+
+			// 更新feedback
+			feedBack.put("f_array", f_array);
+			
+			JSONObject newDeep=null;
+			
+			if( FC_SOURCE_TYPE.equals(sourceType)&& deepInfo!=null&&!deepInfo.isNullObject()) {
+				
+				JSONObject deep=oldTip.getJSONObject("deep");
+				
+				newDeep=deep;
+				
+				newDeep.put("fc", deepInfo.get("fc"));
+			}
+
+		    
+		    
+			Put put = new Put(rowkey.getBytes());
+
+			put.addColumn("data".getBytes(), "track".getBytes(), track
+					.toString().getBytes());
+
+			put.addColumn("data".getBytes(), "feedback".getBytes(), feedBack
+					.toString().getBytes());
+			
+			if(newDeep!=null){
+				put.addColumn("data".getBytes(), "deep".getBytes(), newDeep
+						.toString().getBytes());
+			}
+
+			// 同步更新solr
+
+			solrIndex.put("stage", stage); 
+
+			solrIndex.put("t_date", date);
+
+			//
+			solrIndex.put("t_lifecycle", 2);
+
+			solrIndex.put("handler", user);
+
+			solrIndex.put("feedback", f_array);
+			
+			if(newDeep!=null){
+				solrIndex.put("deep", newDeep);
+			}
+
+			solr.addTips(solrIndex);
+
+			htab.put(put);
+			
+			htab.close();
+
+		} catch (IOException e) {
+			
+			e.printStackTrace();
+			
+			logger.error(e.getMessage(), e);
+			
+			throw new Exception("改备注信息出错：rowkey:"+rowkey+"原因：" + e.getMessage(), e);
+		}
+
+	}
 	
 	
 

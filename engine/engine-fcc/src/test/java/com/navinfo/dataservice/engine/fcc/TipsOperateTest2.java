@@ -124,9 +124,12 @@ public class TipsOperateTest2 extends InitApplication{
 		
 		int stage=2; //接边标识和fc预处理都默认为2
 		
-		op.updateFeedbackMemo(rowkey, user,memo,stage);
+		op.updateFeedbackMemo(rowkey, user,memo);
 
 		System.out.println("修改成功");
+		
+		
+		
 		
 		
 		
@@ -139,7 +142,7 @@ public class TipsOperateTest2 extends InitApplication{
 		
 		String  parameter=null;
 		//0280017b8ead071595417cb3305ac9d8e49d73
-		parameter="{\"geometry\":{\"coordinates\":[[116.48153,40.01378],[116.48297,40.01363]],\"type\":\"LineString\"},\"user\":123,\"sourceType\":\"8001\", \"memo\" :\"testMemo\",\"deep\": {\"fc\":8,\"geo\":null} }}";
+		parameter="{\"geometry\":{\"coordinates\":[[116.48153,40.01378],[116.48297,40.01363]],\"type\":\"LineString\"},\"user\":2922,\"sourceType\":\"8001\", \"memo\" :\"testMemo\",\"deep\": {\"fc\":8,\"geo\":null} }}";
 		
 
 		if (StringUtils.isEmpty(parameter)) {
@@ -179,6 +182,54 @@ public class TipsOperateTest2 extends InitApplication{
 	}
 	
 	
+	@Test
+	public void modifyMemoAndDeep() throws Exception {
+		
+		String  parameter=null;
+		//0280017b8ead071595417cb3305ac9d8e49d73
+		parameter="{\"rowkey\":\"0280015f277b085e8047fd881a0f23fc5dfec6\",\"memo\":\"示例备注信息\",\"user\":10402,\"stage\":2,\"deep\":{\"fc\":4}}";
+		
+		try{
+		if (StringUtils.isEmpty(parameter)) {
+			throw new IllegalArgumentException("parameter参数不能为空。");
+		}
+
+		JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+		String memo = jsonReq.getString("memo");
+
+		String rowkey = jsonReq.getString("rowkey");
+		
+		int user = jsonReq.getInt("user");
+		
+		JSONObject deep=null;
+		if(jsonReq.containsKey("deep")){
+			
+			deep = jsonReq.getJSONObject("deep");
+			
+		}
+
+		if (StringUtils.isEmpty(rowkey)) {
+			throw new IllegalArgumentException("参数错误：rowkey不能为空。");
+		}
+		
+
+		PretreatmentTipsOperator op = new PretreatmentTipsOperator();
+		
+		
+		int stage=2; //接边标识和fc预处理都默认为2
+		
+		op.updateFeedbackMemoAndDeep(rowkey, user, memo, deep);
+
+		System.out.println("修改成功");
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		
+		
+	}
+	
 	
 	@Test
 	public void testCutLine() throws Exception {
@@ -212,6 +263,43 @@ public class TipsOperateTest2 extends InitApplication{
 		op.breakLine(rowkey, pointGeo, user);
 
 		System.out.println("预处理tips打断成功");
+	}
+	
+	
+	@Test
+	public void testEditShape() throws Exception {
+		
+		//logger.info("/tip/editShape: "+parameter);
+		
+		String parameter="{\"geometry\":{\"coordinates\":[[115.48153,40.01378],[115.48297,40.01363],[116.49000,40.34567]],\"type\":\"LineString\"},\"user\":2922,\"rowkey\":\"028001713565273810448d8b80b163f336aad0\" }}";
+		
+		if (StringUtils.isEmpty(parameter)) {
+			throw new IllegalArgumentException("parameter参数不能为空。");
+		}
+
+		JSONObject jsonReq = JSONObject.fromObject(parameter);
+		
+		String rowkey=jsonReq.getString("rowkey");
+		
+		JSONObject tipsGeometry = jsonReq.getJSONObject("geometry"); //修改改坐标
+		
+		//String memo=jsonReq.getString("memo"); //改备注
+		
+		int user = jsonReq.getInt("user");
+
+		if (StringUtils.isEmpty(rowkey)) {
+			throw new IllegalArgumentException("参数错误：rowkey不能为空。");
+		}
+		
+		
+		if (tipsGeometry.isNullObject()||tipsGeometry==null) {
+			throw new IllegalArgumentException("参数错误：geometry不能为空。");
+		}
+		
+		PretreatmentTipsOperator op = new PretreatmentTipsOperator();
+
+		op.editGeo(rowkey, tipsGeometry, user);
+		
 	}
 	
 	/**

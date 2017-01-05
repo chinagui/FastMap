@@ -40,24 +40,35 @@ public class PoiBatchProcessorFM_BAT_20_187 implements IBatch {
 			List<IRow> childPois = ixPoiSelector.loadByIds(pidList, false, true);
 			
 			List<IRow> allPlots = new ArrayList<IRow>();
-			Map<Integer,String> pidRowIdMap = new HashMap<Integer,String>();
 			for (IRow child:childPois) {
 				IxPoi childPoi = (IxPoi) child;
-				pidRowIdMap.put(childPoi.getPid(), childPoi.getRowId());
 				List<IRow> childPlots = childPoi.getChargingplots();
 				allPlots.addAll(childPlots);
 			}
 			
 			JSONArray dataArray = getChangePlots(allPlots);
+			
+			
+			Map<Long,JSONArray> retObj = new HashMap<Long,JSONArray>();
 			for (int i=0;i<dataArray.size();i++) {
+				JSONArray tempArray = new JSONArray();
 				JSONObject plotJson = dataArray.getJSONObject(i);
+				Long pid = plotJson.getLong("poiPid");
+				if (retObj.containsKey(pid)) {
+					tempArray = retObj.get(pid);
+				}
+				tempArray.add(plotJson);
+				retObj.put(pid, tempArray);
+			}
+			
+			for (Long pid:retObj.keySet()) {
 				JSONObject poiObj = new JSONObject();
 				JSONObject changeFields = new JSONObject();
-				changeFields.put("chargingplots", dataArray);
-				changeFields.put("pid", plotJson.getLong("poiPid"));
-				changeFields.put("rowId", pidRowIdMap.get(plotJson.getInt("poiPid")));
+				JSONArray tempArray = retObj.get(pid);
+				changeFields.put("chargingplots", tempArray);
+				changeFields.put("pid", pid);
 				poiObj.put("change", changeFields);
-				poiObj.put("pid", plotJson.getLong("poiPid"));
+				poiObj.put("pid", pid);
 				poiObj.put("type", "IXPOI");
 				poiObj.put("command", "BATCH");
 				poiObj.put("dbId", json.getInt("dbId"));

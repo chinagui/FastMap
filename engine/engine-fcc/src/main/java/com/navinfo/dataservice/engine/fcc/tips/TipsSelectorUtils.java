@@ -6,12 +6,20 @@ public class TipsSelectorUtils {
 		
 		switch(kind){
 		
-		case 1:return "限速";
-		case 13:return "非机动车道";
-		case 15:return "公交车道";
-		case 16:return "禁止左右转";
+		case 1:return "限速摄像头";
+		case 10:return "交通信号灯摄像头";
+		case 12:return "单行线摄像头";
+		case 13:return "非机动车道摄像头";
+		case 14:return "出入口摄像头";
+		case 15:return "公交车道摄像头";
+		case 16:return "禁止左/右转摄像头";
+		case 18:return "应急车道摄像头";
+		case 19:return "交通标线摄像头";
 		case 20:return "区间测速开始";
 		case 21:return "区间测速结束";
+		case 22:return "违章停车摄像头";
+		case 23 :return "限行限号摄像头";
+		case 98:return "其他";
 		}
 		
 		return null;

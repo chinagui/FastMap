@@ -38,34 +38,40 @@ public class FMYW20026 extends BasicCheckRule {
 			IxPoiObj poiObj=(IxPoiObj) obj;
 			IxPoi poi=(IxPoi) poiObj.getMainrow();
 			//存在IxPoiAddress新增或者修改履历
-			IxPoiAddress address=poiObj.getCHIAddress();
+			IxPoiAddress address=poiObj.getCHAddress();
 			if(address.getHisOpType().equals(OperationType.INSERT)||(address.getHisOpType().equals(OperationType.UPDATE))){
-				String oldRoadNme=(String) address.getHisOldValue(IxPoiAddress.ROADNAME);
-				String newRoadNme=(String) address.getRoadname();
-				String oldAddrName=(String) address.getHisOldValue(IxPoiAddress.ADDRNAME);
-				String newAddrName=(String) address.getAddrname();
-				if (newRoadNme.equals(oldRoadNme)&&newAddrName.equals(oldAddrName)){return;}
-				String roadNmePhonetic=(String) address.getRoadnamePhonetic();
-				String addrNamePhonetic=(String) address.getAddrnamePhonetic();
-				String RAName=newRoadNme+newAddrName;
-				String RANamePhonetic=roadNmePhonetic+addrNamePhonetic;
 				
-				String[] RANameStr= RAName.split("|");
-				//String[] RANamePhoneticStr= RANamePhonetic.split("|");
+				MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 				
-				for (String nameStr:RANameStr){
-					//检查SC_POINT_NAMECK表中TYPE=5且HM_FLAG<>’HM’名称包含关键字且拼音与配置表中拼音不相同的报出
-					MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
-					Map<String, String> typeD5 = metadataApi.scPointNameckTypeD5();
-					Map<String, String> keyResult5=ScPointNameckUtil.matchType(nameStr, typeD5);
+				String allStr = address.getProvince()+"|"+address.getCity()+"|"+address.getCounty()+"|"+address.getTown()+"|"
+						+address.getPlace()+"|"+address.getStreet()+"|"+address.getLandmark()+"|"+address.getPrefix()+"|"+address.getHousenum()+"|"
+						+address.getType()+"|"+address.getSubnum()+"|"+address.getSurfix()+"|"+address.getEstab()+"|"+address.getBuilding()+"|"
+						+address.getUnit()+"|"+address.getFloor()+"|"+address.getRoom()+"|"+address.getAddons();
+				String allStrPhonetic = address.getProvPhonetic()+"|"+address.getCityPhonetic()+"|"+address.getCountyPhonetic()+"|"+address.getTownPhonetic()+"|"
+						+address.getPlacePhonetic()+"|"+address.getStreetPhonetic()+"|"+address.getLandmarkPhonetic()+"|"+address.getPrefixPhonetic()+"|"+address.getHousenumPhonetic()+"|"
+						+address.getTypePhonetic()+"|"+address.getSubnumPhonetic()+"|"+address.getSurfixPhonetic()+"|"+address.getEstabPhonetic()+"|"+address.getBuildingPhonetic()+"|"
+						+address.getUnitPhonetic()+"|"+address.getFloorPhonetic()+"|"+address.getRoomPhonetic()+"|"+address.getAddonsPhonetic();
+				String[] allStrSplit= allStr.split("\\|");
+				//检查SC_POINT_NAMECK表中TYPE=5且HM_FLAG<>’HM’名称包含关键字且拼音与配置表中拼音不相同的报出
+				Map<String, String> typeD5 = metadataApi.scPointNameckTypeD5();
+				for (String strSplit:allStrSplit){	
+					Map<String, String> keyResult5=ScPointNameckUtil.matchType(strSplit, typeD5);
 					for(String preKey:keyResult5.keySet()){
-						if (!RANamePhonetic.contains(keyResult5.get(preKey))){
+						if (!allStrPhonetic.contains(keyResult5.get(preKey))){
 							String log="ROADNAME+ADDRNAME包含多音字“"+preKey+"”,且拼音与配置表中拼音不相同";
 							setCheckResult(poi.getGeometry(), "[IX_POI,"+poi.getPid()+"]", poi.getMeshId(),log);
 						}
 					}
+				}
+
+				String newRoadNme= address.getRoadname();
+				String newAddrName= address.getAddrname();
+				String RAName=newRoadNme+"|"+newAddrName;
+				
+				String[] RANameStr= RAName.split("\\|");
+				Map<String, String> typeD7 = metadataApi.scPointNameckTypeD7();
+				for (String nameStr:RANameStr){
 					//检查SC_POINT_NAMECK表中TYPE=7且HM_FLAG<>’HM’只要名称中包含关键字的报出
-					Map<String, String> typeD7 = metadataApi.scPointNameckTypeD7();
 					Map<String, String> keyResult7=ScPointNameckUtil.matchType(nameStr, typeD7);
 					if (keyResult7.size()!=0){
 						String log="ROADNAME+ADDRNAME中包含关键字“"+(keyResult7.keySet()).toString()+"”";

@@ -1,4 +1,5 @@
-1. fm_sys/update_job_info.sql
-  功能：job_info表字段长度修改
+1. fm_sys/xxx.sql
+  功能：xxxxxxxxx
   目标库：fm_sys
-  author：XXW
+  author：xxx
+  

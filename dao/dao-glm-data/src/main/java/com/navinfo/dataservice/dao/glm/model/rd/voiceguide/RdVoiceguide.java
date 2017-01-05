@@ -33,6 +33,8 @@ public class RdVoiceguide implements IObj {
 	private List<IRow> details = new ArrayList<IRow>();
 
 	public Map<String, RdVoiceguideDetail> detailMap = new HashMap<String, RdVoiceguideDetail>();
+	
+	protected ObjStatus status;
 
 	public int getPid() {
 		return pid;
@@ -88,12 +90,12 @@ public class RdVoiceguide implements IObj {
 	@Override
 	public ObjStatus status() {
 		// TODO Auto-generated method stub
-		return null;
+		return status;
 	}
 
 	@Override
 	public void setStatus(ObjStatus os) {
-		// TODO Auto-generated method stub
+		status = os;
 
 	}
 
@@ -202,7 +204,13 @@ public class RdVoiceguide implements IObj {
 
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) throws Exception {
-		return JSONObject.fromObject(this, JsonUtils.getStrConfig());
+		//return JSONObject.fromObject(this, JsonUtils.getStrConfig());
+		JSONObject json = JSONObject.fromObject(this,JsonUtils.getStrConfig());
+		
+		if (objLevel == ObjLevel.HISTORY) {
+			json.remove("status");
+		}
+		return json;
 	}
 
 	@Override

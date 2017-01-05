@@ -78,6 +78,10 @@ public class GdbDataExporter {
 		System.out.println("exporting rdlinegsc");
 
 		RdGscExporter.run(sqliteConn, stmt, conn, operateDate, meshes);
+		
+		System.out.println("exporting adface");
+
+		AdFaceExporter.run(sqliteConn, stmt, conn, operateDate, meshes);
 
 		sqliteConn.close();
 

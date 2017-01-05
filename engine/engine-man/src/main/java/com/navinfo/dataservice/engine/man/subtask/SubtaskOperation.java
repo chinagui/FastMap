@@ -959,6 +959,10 @@ public class SubtaskOperation {
 
 			if (bean.getStatus() != null) {
 				conditonSql+=" and t.STATUS = "+ bean.getStatus();
+			}else{
+				if(0 == platForm){//采集端
+					conditonSql+=" and t.STATUS in (0,1)";
+				}
 			}
 			selectSql+=conditonSql;
 			selectSql+=conditonSql+" order by subtask_id desc";

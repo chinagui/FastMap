@@ -1,21 +1,23 @@
 package com.navinfo.dataservice.engine.check.rules;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
-import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
-import com.navinfo.dataservice.dao.glm.selector.rd.gsc.RdGscSelector;
-import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
+import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.engine.check.core.baseRule;
-import com.navinfo.dataservice.engine.check.helper.GeoHelper;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.LineString;
-import com.vividsolutions.jts.geom.Point;
+import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
 
-/*
+/**
  * SHAPING_CHECK_CROSS_RDLINK_RDLINK	两条Link相交，必须做立交或者打断	两条Link相交，必须做立交或者打断
+ * 该位置已有节点,同一坐标不能有两个节点,请创建点点立交
+ * 移动端点 服务端后检查:
+ * 分离节点 服务端后检查:
  */
 
 public class PermitCheckNoRepeatNode extends baseRule {
@@ -30,6 +32,19 @@ public class PermitCheckNoRepeatNode extends baseRule {
 
 	@Override
 	public void postCheck(CheckCommand checkCommand) throws Exception {
+		for(IRow row:checkCommand.getGlmList()){
+			//移动端点
+			if (row instanceof RdNode){
+				RdNode rdNode = (RdNode) row;
+				this.checkRdNode(rdNode);
+			}
+			//分离节点
+			else if (row instanceof RdLink){
+				RdLink rdLink = (RdLink) row;
+				this.checkRdLink(rdLink);
+			}
+		}
+		/*
 		for (IRow obj : checkCommand.getGlmList()) {
 			if (obj instanceof RdLink) {
 				RdLink rdLink = (RdLink) obj;
@@ -107,5 +122,87 @@ public class PermitCheckNoRepeatNode extends baseRule {
 				}
 			}
 		}
+		*/
+	}
+	
+	/**
+	 * @author Han Shaoming
+	 * @param rdNode
+	 * @throws Exception 
+	 */
+	private void checkRdNode(RdNode rdNode) throws Exception {
+		// TODO Auto-generated method stub
+		boolean check = this.check(rdNode.getPid());
+
+		if(check){
+			String target = "[RD_NODE," + rdNode.getPid() + "]";
+			this.setCheckResult("", target, 0);
+		}
+	}
+	
+	/**
+	 * @author Han Shaoming
+	 * @param rdLink
+	 * @throws Exception 
+	 */
+	private void checkRdLink(RdLink rdLink) throws Exception {
+		// TODO Auto-generated method stub
+		Set<Integer> nodePids = new HashSet<Integer>();
+		//分离节点
+		Map<String, Object> changedFields = rdLink.changedFields();
+		if(!changedFields.isEmpty()){
+			Integer sNodePid = null;
+			Integer eNodePid = null;
+			if(changedFields.containsKey("sNodePid")){
+				sNodePid = (Integer) changedFields.get("sNodePid");
+				if(sNodePid != null){
+					nodePids.add(sNodePid);
+				}
+			}
+			if(changedFields.containsKey("eNodePid")){
+				eNodePid = (Integer) changedFields.get("eNodePid");
+				if(eNodePid != null){
+					nodePids.add(eNodePid);
+				}
+			}
+		}
+		for (Integer nodePid : nodePids) {
+			boolean check = this.check(nodePid);
+
+			if(check){
+				String target = "[RD_LINK," + rdLink.getPid() + "]";
+				this.setCheckResult("", target, 0);
+			}
+		}
+	}
+
+	/**
+	 * 
+	 * @author Han Shaoming
+	 * @param nodePid
+	 * @return
+	 * @throws Exception 
+	 */
+	private boolean check(Integer nodePid) throws Exception {
+		// TODO Auto-generated method stub
+		boolean flag = false;
+		StringBuilder sb = new StringBuilder();
+		  
+		sb.append("SELECT B.NODE_PID FROM RD_NODE A, RD_NODE B");
+		sb.append("  WHERE A.NODE_PID = "+nodePid);
+		sb.append(" AND B.NODE_PID <> A.NODE_PID AND A.U_RECORD <> 2 AND B.U_RECORD <> 2");
+		sb.append(" AND SDO_RELATE(B.GEOMETRY, A.GEOMETRY, 'MASK=EQUAL') = 'TRUE'");
+		
+		String sql = sb.toString();
+		log.info("后检查PERMIT_CHECK_NO_REPEAT_NODE--sql:" + sql);
+		
+		DatabaseOperator getObj = new DatabaseOperator();
+		List<Object> resultList = new ArrayList<Object>();
+		resultList = getObj.exeSelect(this.getConn(), sql);
+		
+		if(!resultList.isEmpty()){
+			flag = true;
+		}
+		return flag;
 	}
 }

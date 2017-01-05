@@ -64,7 +64,7 @@ public class FMZY20238 extends BasicCheckRule {
 						}
 						
 						if (!characterMap.has(str)){
-							illegalChar+=illegalChar;
+							illegalChar+=str;
 						}
 					}
 					//注：特殊字符是合法字符，因此不做特殊判断

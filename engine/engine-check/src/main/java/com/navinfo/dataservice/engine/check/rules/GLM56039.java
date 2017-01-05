@@ -61,7 +61,7 @@ public class GLM56039 extends baseRule {
 				}
 			}
 			//条件线限速限速条件
-			else if(changedFields.containsKey("speedDependent")){
+			if(changedFields.containsKey("speedDependent")){
 				int speedDependent = (int) changedFields.get("speedDependent");
 				if(speedDependent != 6 && speedDependent != 10 && speedDependent != 12){
 					boolean check = this.check(rdLinkSpeedlimit.getLinkPid());
@@ -85,7 +85,7 @@ public class GLM56039 extends baseRule {
 		boolean flag = false;
 		StringBuilder sb = new StringBuilder();
 		   
-		sb.append("SELECT RLS.LINK_PID FROM RD_LINK_SPEEDLIMIT RLS");
+		sb.append("SELECT DISTINCT RLS.LINK_PID FROM RD_LINK_SPEEDLIMIT RLS");
 		sb.append(" WHERE RLS.LINK_PID = "+pid);
 		sb.append(" AND RLS.U_RECORD <>2 AND RLS.TIME_DOMAIN IS NOT NULL");
 		sb.append(" AND RLS.SPEED_DEPENDENT NOT IN (6,10,12)");

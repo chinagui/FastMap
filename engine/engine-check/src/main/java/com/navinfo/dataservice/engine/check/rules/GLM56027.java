@@ -80,7 +80,7 @@ public class GLM56027 extends baseRule {
 		boolean flag = false;
 		StringBuilder sb = new StringBuilder();
 		  
-		sb.append("SELECT RLS.LINK_PID FROM RD_LINK_SPEEDLIMIT RLS");
+		sb.append("SELECT DISTINCT RLS.LINK_PID FROM RD_LINK_SPEEDLIMIT RLS");
 		sb.append(" WHERE RLS.LINK_PID = "+pid);
 		sb.append(" AND RLS.U_RECORD <>2");
 		sb.append(" AND RLS.SPEED_TYPE = 3 AND RLS.SPEED_DEPENDENT = 0");
@@ -107,7 +107,7 @@ public class GLM56027 extends baseRule {
 		boolean flag = false;
 		StringBuilder sb = new StringBuilder();
 		  
-		sb.append("SELECT RLS.LINK_PID FROM RD_LINK_SPEEDLIMIT RLS");
+		sb.append("SELECT DISTINCT RLS.LINK_PID FROM RD_LINK_SPEEDLIMIT RLS");
 		sb.append(" WHERE RLS.LINK_PID = "+pid);
 		sb.append(" AND RLS.U_RECORD <>2");
 		sb.append(" AND RLS.SPEED_TYPE <> 3 AND RLS.SPEED_DEPENDENT <> 0");

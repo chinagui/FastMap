@@ -69,7 +69,7 @@ public class GLM56026 extends baseRule {
 		boolean flag = false;
 		StringBuilder sb = new StringBuilder();
 		  
-		sb.append("SELECT RLS.LINK_PID FROM RD_LINK_SPEEDLIMIT RLS");
+		sb.append("SELECT DISTINCT RLS.LINK_PID FROM RD_LINK_SPEEDLIMIT RLS");
 		sb.append(" WHERE RLS.LINK_PID = "+pid);
 		sb.append(" AND RLS.U_RECORD <>2 GROUP BY RLS.LINK_PID,");
 		sb.append(" RLS.SPEED_TYPE,RLS.SPEED_DEPENDENT HAVING COUNT(1) > 1");

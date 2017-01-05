@@ -51,7 +51,7 @@ public class GLM56034 extends baseRule {
 			//条件线限速时间段
 			if(changedFields.containsKey("timeDomain")){
 				String timeDomain = (String) changedFields.get("timeDomain");
-				if(timeDomain == null){
+				if("[]".equals(timeDomain)){
 					boolean check = this.check(rdLinkSpeedlimit.getLinkPid());
 					
 					if(check){
@@ -61,7 +61,7 @@ public class GLM56034 extends baseRule {
 				}
 			}
 			//条件线限速限速条件
-			else if(changedFields.containsKey("speedDependent")){
+			if(changedFields.containsKey("speedDependent")){
 				int speedDependent = (int) changedFields.get("speedDependent");
 				if(speedDependent == 10 || speedDependent == 12){
 					boolean check = this.check(rdLinkSpeedlimit.getLinkPid());
@@ -85,10 +85,10 @@ public class GLM56034 extends baseRule {
 		boolean flag = false;
 		StringBuilder sb = new StringBuilder();
 		   
-		sb.append("SELECT RLS.LINK_PID FROM RD_LINK_SPEEDLIMIT RLS");
+		sb.append("SELECT DISTINCT RLS.LINK_PID FROM RD_LINK_SPEEDLIMIT RLS");
 		sb.append(" WHERE RLS.LINK_PID = "+pid);
 		sb.append(" AND RLS.U_RECORD <>2 AND RLS.SPEED_DEPENDENT IN (10,12)");
-		sb.append(" AND RLS.TIME_DOMAIN IS NULL");
+		sb.append(" AND RLS.TIME_DOMAIN ='[]'");
 		String sql = sb.toString();
 		log.info("后检查GLM56034--sql:" + sql);
 		

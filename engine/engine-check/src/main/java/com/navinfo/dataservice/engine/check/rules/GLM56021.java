@@ -61,7 +61,7 @@ public class GLM56021 extends baseRule {
 				}
 			}
 			//点限速限速类型
-			else if(changedFields.containsKey("speedType")){
+			if(changedFields.containsKey("speedType")){
 				int speedType = (int) changedFields.get("speedType");
 				if(speedType != 0){
 					boolean check = this.check(rdSpeedlimit.getPid());

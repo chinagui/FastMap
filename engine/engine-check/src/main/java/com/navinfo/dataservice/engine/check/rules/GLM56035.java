@@ -49,7 +49,7 @@ public class GLM56035 extends baseRule {
 		if(!changedFields.isEmpty()){
 			//点限速限速值
 			if(changedFields.containsKey("speedValue")){
-				int speedValue = Integer.parseInt((String) changedFields.get("speedValue"));
+				int speedValue = (int) changedFields.get("speedValue");
 				if(speedValue == 0){
 					boolean check = this.check(rdSpeedlimit.getPid());
 					

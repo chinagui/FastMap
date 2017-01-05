@@ -55,7 +55,7 @@ public class GLM15007 extends baseRule {
 			//条件线限速限速值,普通线限速限速值
 			//顺方向 
 			if(changedFields.containsKey("fromSpeedLimit")){
-				int fromSpeedLimit = Integer.parseInt((String) changedFields.get("fromSpeedLimit"));
+				int fromSpeedLimit = (int) changedFields.get("fromSpeedLimit");
 				if(fromSpeedLimit == 0){
 					boolean check = this.check(rdLinkSpeedlimit.getLinkPid());
 					
@@ -66,8 +66,8 @@ public class GLM15007 extends baseRule {
 				}
 			}
 			//逆方向
-			else if(changedFields.containsKey("toSpeedLimit")){
-				int toSpeedLimit = Integer.parseInt((String) changedFields.get("toSpeedLimit"));
+			if(changedFields.containsKey("toSpeedLimit")){
+				int toSpeedLimit = (int) changedFields.get("toSpeedLimit");
 				if(toSpeedLimit == 0){
 					boolean check = this.check(rdLinkSpeedlimit.getLinkPid());
 					
@@ -79,7 +79,7 @@ public class GLM15007 extends baseRule {
 			}
 			//条件线限速限速来源,普通线限速限速来源
 			//顺方向 
-			else if(changedFields.containsKey("fromLimitSrc")){
+			if(changedFields.containsKey("fromLimitSrc")){
 				int fromLimitSrc = (int) changedFields.get("fromLimitSrc");
 				if(fromLimitSrc != 0){
 					boolean check = this.check(rdLinkSpeedlimit.getLinkPid());
@@ -91,7 +91,7 @@ public class GLM15007 extends baseRule {
 				}
 			}
 			//逆方向
-			else if(changedFields.containsKey("toLimitSrc")){
+			if(changedFields.containsKey("toLimitSrc")){
 				int toLimitSrc = (int) changedFields.get("toLimitSrc");
 				if(toLimitSrc != 0){
 					boolean check = this.check(rdLinkSpeedlimit.getLinkPid());
@@ -115,7 +115,7 @@ public class GLM15007 extends baseRule {
 		boolean flag = false;
 		StringBuilder sb = new StringBuilder();
 		     
-		sb.append("SELECT L.LINK_PID FROM RD_LINK_SPEEDLIMIT RLS, RD_LINK L WHERE RLS.LINK_PID = L.LINK_PID");
+		sb.append("SELECT DISTINCT L.LINK_PID FROM RD_LINK_SPEEDLIMIT RLS, RD_LINK L WHERE RLS.LINK_PID = L.LINK_PID");
 		sb.append(" AND L.LINK_PID = "+pid);
 		sb.append(" AND L.U_RECORD <>2 AND RLS.U_RECORD <>2 AND L.DIRECT IN (2, 3)");
 		sb.append(" AND ((RLS.FROM_SPEED_LIMIT = 0 AND RLS.FROM_LIMIT_SRC <> 0)");

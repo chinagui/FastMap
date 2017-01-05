@@ -51,7 +51,7 @@ public class GLM56025 extends baseRule {
 			//条件线限速限速值
 			//顺方向 
 			if(changedFields.containsKey("fromSpeedLimit")){
-				int fromSpeedLimit = Integer.parseInt((String) changedFields.get("fromSpeedLimit"));
+				int fromSpeedLimit = (int) changedFields.get("fromSpeedLimit");
 				if(fromSpeedLimit != 0){
 					boolean check = this.check(rdLinkSpeedlimit.getLinkPid());
 					
@@ -62,8 +62,8 @@ public class GLM56025 extends baseRule {
 				}
 			}
 			//逆方向
-			else if(changedFields.containsKey("toSpeedLimit")){
-				int toSpeedLimit = Integer.parseInt((String) changedFields.get("toSpeedLimit"));
+			if(changedFields.containsKey("toSpeedLimit")){
+				int toSpeedLimit = (int) changedFields.get("toSpeedLimit");
 				if(toSpeedLimit != 0){
 					boolean check = this.check(rdLinkSpeedlimit.getLinkPid());
 					
@@ -75,7 +75,7 @@ public class GLM56025 extends baseRule {
 			}
 			//条件线限速限速来源
 			//顺方向 
-			else if(changedFields.containsKey("fromLimitSrc")){
+			if(changedFields.containsKey("fromLimitSrc")){
 				int fromLimitSrc = (int) changedFields.get("fromLimitSrc");
 				if(fromLimitSrc != 1){
 					boolean check = this.check(rdLinkSpeedlimit.getLinkPid());
@@ -87,7 +87,7 @@ public class GLM56025 extends baseRule {
 				}
 			}
 			//逆方向
-			else if(changedFields.containsKey("toLimitSrc")){
+			if(changedFields.containsKey("toLimitSrc")){
 				int toLimitSrc = (int) changedFields.get("toLimitSrc");
 				if(toLimitSrc != 1){
 					boolean check = this.check(rdLinkSpeedlimit.getLinkPid());
@@ -111,7 +111,7 @@ public class GLM56025 extends baseRule {
 		boolean flag = false;
 		StringBuilder sb = new StringBuilder();
 		    
-		sb.append("SELECT RLS.LINK_PID FROM RD_LINK_SPEEDLIMIT RLS");
+		sb.append("SELECT DISTINCT RLS.LINK_PID FROM RD_LINK_SPEEDLIMIT RLS");
 		sb.append(" WHERE RLS.LINK_PID = "+pid);
 		sb.append(" AND RLS.U_RECORD <>2 AND RLS.SPEED_TYPE <> 0");
 		sb.append(" AND ((RLS.FROM_SPEED_LIMIT <> 0 AND RLS.FROM_LIMIT_SRC <> 1)");

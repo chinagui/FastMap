@@ -270,7 +270,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate{
 			JSONObject geometry = JSONObject.fromObject(new String(result
 					.getValue("data".getBytes(), "geometry".getBytes())));
 
-			geometry.put("g_location", lineGeometry.toString().getBytes());
+			geometry.put("g_location", lineGeometry);
 
 			// 2.update deep.geo(根据新的几何信息计算几何中心点)
 

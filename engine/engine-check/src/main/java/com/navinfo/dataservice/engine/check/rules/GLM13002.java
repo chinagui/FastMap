@@ -18,154 +18,153 @@ import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.navicommons.database.sql.DBUtils;
 
 
-/** 
- * @ClassName: GLM13002
+/**
  * @author luyao
+ * @ClassName: GLM13002
  * @date 2016年12月27日
- * @Description: 
- * 收费站	word	GLM13034	后台	
+ * @Description: 收费站    word	GLM13034	后台
  * 检查对象:RD_LINK
  * 检查原则：关系型收费站主点的挂接link数必须是2
- * */
+ */
 public class GLM13002 extends baseRule {
 
-	/**
-	 * 
-	 */
-	public GLM13002() {
-		// TODO Auto-generated constructor stub
-	}
+    /**
+     *
+     */
+    public GLM13002() {
+        // TODO Auto-generated constructor stub
+    }
 
-	/* (non-Javadoc)
-	 * @see com.navinfo.dataservice.engine.check.core.baseRule#preCheck(com.navinfo.dataservice.dao.check.CheckCommand)
-	 */
-	@Override
-	public void preCheck(CheckCommand checkCommand) throws Exception {
-		
+    /* (non-Javadoc)
+     * @see com.navinfo.dataservice.engine.check.core.baseRule#preCheck(com.navinfo.dataservice.dao.check.CheckCommand)
+     */
+    @Override
+    public void preCheck(CheckCommand checkCommand) throws Exception {
 
-		Map<Integer, Set<Integer>> nodeLinkMap = new HashMap<Integer, Set<Integer>>();
 
-		for (IRow obj : checkCommand.getGlmList()) {
+        Map<Integer, Set<Integer>> nodeLinkMap = new HashMap<Integer, Set<Integer>>();
 
-			if (obj instanceof RdLink) {
+        for (IRow obj : checkCommand.getGlmList()) {
 
-				RdLink link = (RdLink) obj;
+            if (obj instanceof RdLink) {
 
-				int sNodePid = link.getsNodePid();
+                RdLink link = (RdLink) obj;
 
-				int eNodePid = link.geteNodePid();
+                int sNodePid = link.getsNodePid();
 
-				if (link.changedFields().containsKey("sNodePid")) {
-					sNodePid = (Integer) link.changedFields().get("sNodePid");
-				}
-				if (link.changedFields().containsKey("eNodePid")) {
-					eNodePid = (Integer) link.changedFields().get("eNodePid");
-				}
+                int eNodePid = link.geteNodePid();
 
-				if (!nodeLinkMap.containsKey(sNodePid)) {
-					Set<Integer> linkPids = new HashSet<Integer>();
-					nodeLinkMap.put(sNodePid, linkPids);
-				}
-				if (!nodeLinkMap.containsKey(eNodePid)) {
-					Set<Integer> linkPids = new HashSet<Integer>();
-					nodeLinkMap.put(eNodePid, linkPids);
-				}
-				nodeLinkMap.get(sNodePid).add(link.getPid());
+                if (link.changedFields().containsKey("sNodePid")) {
+                    sNodePid = (Integer) link.changedFields().get("sNodePid");
+                }
+                if (link.changedFields().containsKey("eNodePid")) {
+                    eNodePid = (Integer) link.changedFields().get("eNodePid");
+                }
 
-				nodeLinkMap.get(eNodePid).add(link.getPid());
-			}
-		}		
-		
-		if(nodeLinkMap.size()<1)
-		{
-			return;
-		}
+                if (!nodeLinkMap.containsKey(sNodePid)) {
+                    Set<Integer> linkPids = new HashSet<Integer>();
+                    nodeLinkMap.put(sNodePid, linkPids);
+                }
+                if (!nodeLinkMap.containsKey(eNodePid)) {
+                    Set<Integer> linkPids = new HashSet<Integer>();
+                    nodeLinkMap.put(eNodePid, linkPids);
+                }
+                nodeLinkMap.get(sNodePid).add(link.getPid());
 
-		preCheck(nodeLinkMap);
-	}
-	
-	private void preCheck(Map<Integer, Set<Integer>> nodeLinkMap)
-			throws Exception {
+                nodeLinkMap.get(eNodePid).add(link.getPid());
+            }
+        }
 
-		List<Integer> nodePids = new ArrayList<Integer>();
+        if (nodeLinkMap.size() < 1) {
+            return;
+        }
 
-		nodePids.addAll(nodeLinkMap.keySet());
+        preCheck(nodeLinkMap);
+    }
 
-		String inClause = null;
+    private void preCheck(Map<Integer, Set<Integer>> nodeLinkMap)
+            throws Exception {
 
-		Clob pidClod = null;
+        List<Integer> nodePids = new ArrayList<Integer>();
 
-		String ids = StringUtils.getInteStr(nodePids);
+        nodePids.addAll(nodeLinkMap.keySet());
 
-		if (nodePids.size() > 1000) {
+        String inClause = null;
 
-			pidClod = this.getConn().createClob();
+        Clob pidClod = null;
 
-			pidClod.setString(1, ids);
+        String ids = StringUtils.getInteStr(nodePids);
 
-			inClause = " IN (select to_number(pid) from table(clob_to_table(?))) ";
+        if (nodePids.size() > 1000) {
 
-		} else {
+            pidClod = this.getConn().createClob();
 
-			inClause = " IN ( " + ids + " ) ";
-		}
+            pidClod.setString(1, ids);
 
-		String sql = "SELECT LINK_PID,N.NODE_PID FROM RD_LINK T, RD_NODE N WHERE N.NODE_PID IN (SELECT T.NODE_PID FROM RD_TOLLGATE T WHERE T.NODE_PID  "
-				+ inClause
-				+ " ) AND (T.S_NODE_PID = N.NODE_PID OR T.E_NODE_PID = N.NODE_PID)";
+            inClause = " IN (select to_number(pid) from table(clob_to_table(?))) ";
 
-		PreparedStatement pstmt = null;
+        } else {
 
-		ResultSet resultSet = null;
+            inClause = " IN ( " + ids + " ) ";
+        }
 
-		try {
-			pstmt = this.getConn().prepareStatement(sql);
+        String sql = "SELECT LINK_PID,N.NODE_PID FROM RD_LINK T, RD_NODE N WHERE N.NODE_PID IN (SELECT T.NODE_PID " +
+                "FROM RD_TOLLGATE T WHERE T.U_RECORD <> 2 AND T.NODE_PID  "
+                + inClause
+                + " ) AND (T.S_NODE_PID = N.NODE_PID OR T.E_NODE_PID = N.NODE_PID)";
 
-			if (nodePids.size() > 1000) {
-				
-				pstmt.setClob(1, pidClod);
-			}
+        PreparedStatement pstmt = null;
 
-			resultSet = pstmt.executeQuery();
+        ResultSet resultSet = null;
 
-			while (resultSet.next()) {
+        try {
+            pstmt = this.getConn().prepareStatement(sql);
 
-				int nodePid = resultSet.getInt("NODE_PID");
-				
-				int linkPid = resultSet.getInt("LINK_PID");
+            if (nodePids.size() > 1000) {
 
-				if (nodeLinkMap.containsKey(nodePid)) {
-					
-					nodeLinkMap.get(nodePid).add(linkPid);
+                pstmt.setClob(1, pidClod);
+            }
 
-					if (nodeLinkMap.get(nodePid).size() > 2) {
-						
-						this.setCheckResult("", "", 0);
-						
-						return;
-					}
-				}
-			}
-			
-		} catch (Exception e) {
+            resultSet = pstmt.executeQuery();
 
-			throw new Exception(e);
-		} finally {
-			
-			DBUtils.closeResultSet(resultSet);
-			
-			DBUtils.closeStatement(pstmt);
-		}
-	}
-	
-	
-	/* (non-Javadoc)
-	 * @see com.navinfo.dataservice.engine.check.core.baseRule#postCheck(com.navinfo.dataservice.dao.check.CheckCommand)
-	 */
-	@Override
-	public void postCheck(CheckCommand checkCommand) throws Exception {
-		// TODO Auto-generated method stub
+            while (resultSet.next()) {
 
-	}
+                int nodePid = resultSet.getInt("NODE_PID");
+
+                int linkPid = resultSet.getInt("LINK_PID");
+
+                if (nodeLinkMap.containsKey(nodePid)) {
+
+                    nodeLinkMap.get(nodePid).add(linkPid);
+
+                    if (nodeLinkMap.get(nodePid).size() > 2) {
+
+                        this.setCheckResult("", "", 0);
+
+                        return;
+                    }
+                }
+            }
+
+        } catch (Exception e) {
+
+            throw new Exception(e);
+        } finally {
+
+            DBUtils.closeResultSet(resultSet);
+
+            DBUtils.closeStatement(pstmt);
+        }
+    }
+
+
+    /* (non-Javadoc)
+     * @see com.navinfo.dataservice.engine.check.core.baseRule#postCheck(com.navinfo.dataservice.dao.check.CheckCommand)
+     */
+    @Override
+    public void postCheck(CheckCommand checkCommand) throws Exception {
+        // TODO Auto-generated method stub
+
+    }
 
 }

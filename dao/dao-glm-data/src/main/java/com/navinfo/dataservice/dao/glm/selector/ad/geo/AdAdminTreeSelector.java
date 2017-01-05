@@ -59,10 +59,11 @@ public class AdAdminTreeSelector extends AbstractSelector {
 		List<Integer> regionIdList = getChildRegion(beiJinTree.getGroup().getPid(), isLock);
 
 		for (Integer childRegionId : regionIdList) {
-			AdAdminTree childTree = loadRowsByRegionId(childRegionId, isLock, 0);
-
-			result.getChildren().get(0).getChildren().add(childTree);
-
+			AdAdminTree childTree = loadRowsByRegionId(childRegionId, isLock, beiJinTree.getGroup().getPid());
+			if(childTree != null)
+			{
+				result.getChildren().get(0).getChildren().add(childTree);
+			}
 		}
 
 		return result;

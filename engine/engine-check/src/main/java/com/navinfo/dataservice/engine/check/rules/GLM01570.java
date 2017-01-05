@@ -48,15 +48,15 @@ public class GLM01570 extends baseRule {
     public void postCheck(CheckCommand checkCommand) throws Exception {
         for (IRow obj : checkCommand.getGlmList()) {
 //			// 道路属性编辑RdLink
-            if (obj instanceof RdLink) {
-                RdLink rdLink = (RdLink) obj;
-                checkRdLink(rdLink, checkCommand.getOperType());
+//            if (obj instanceof RdLink) {
+//                RdLink rdLink = (RdLink) obj;
+//                checkRdLink(rdLink, checkCommand.getOperType());
+//            }
+            // 道路属性编辑RdLinkForm
+            if (obj instanceof RdLinkForm) {
+                RdLinkForm rdLinkForm = (RdLinkForm) obj;
+                checkRdLinkForm(rdLinkForm, checkCommand.getOperType());
             }
-//			// 道路属性编辑RdLinkForm
-//			if(obj instanceof RdLinkForm){
-//				RdLinkForm rdLinkForm = (RdLinkForm) obj;
-//				checkRdLinkForm(rdLinkForm,checkCommand.getOperType());
-//			}
             // 大门RdGate
             else if (obj instanceof RdGate) {
                 RdGate rdGate = (RdGate) obj;
@@ -74,7 +74,7 @@ public class GLM01570 extends baseRule {
     private void checkRdGate(RdGate rdGate, OperType operType) throws Exception {
         //新增大门
 //		operType=OperType.CREATE;
-        if (operType.equals(ObjStatus.INSERT)) {
+        if (operType.equals(OperType.CREATE)) {
             StringBuilder sb = new StringBuilder();
 
             sb.append("SELECT 1 FROM RD_GATE RG, RD_LINK_FORM CL1, RD_LINK_FORM CL2");
@@ -107,41 +107,40 @@ public class GLM01570 extends baseRule {
      * @throws Exception
      */
     private void checkRdLinkForm(RdLinkForm rdLinkForm, OperType operType) throws Exception {
+        int formOfWay = rdLinkForm.getFormOfWay();
         //风景路线60
-        if (rdLinkForm.changedFields().containsKey("functionClass")) {
-            int formOfWay = Integer.parseInt(rdLinkForm.changedFields().get("functionClass").toString());
-            //非单向道路，不触发检查
-            if (formOfWay == 60) {
+        if (rdLinkForm.changedFields().containsKey("formOfWay")) {
+            formOfWay = Integer.parseInt(rdLinkForm.changedFields().get("formOfWay").toString());
+        }
+        //非单向道路，不触发检查
+        if (formOfWay == 60) {
+            StringBuilder sb = new StringBuilder();
 
-                StringBuilder sb = new StringBuilder();
+            sb.append("SELECT 1");
+            sb.append(" FROM RD_LINK R, RD_LINK_FORM F, RD_GATE G");
+            sb.append(" WHERE R.LINK_PID = F.LINK_PID");
+            sb.append(" AND F.FORM_OF_WAY = 60");
+            sb.append(" AND G.IN_LINK_PID = R.LINK_PID");
+            sb.append(" AND G.OUT_LINK_PID = " + rdLinkForm.getLinkPid());
+            sb.append(" UNION ALL");
+            sb.append(" SELECT 1");
+            sb.append(" FROM RD_LINK R, RD_LINK_FORM F, RD_GATE G");
+            sb.append(" WHERE R.LINK_PID = F.LINK_PID");
+            sb.append(" AND F.FORM_OF_WAY = 60");
+            sb.append(" AND G.IN_LINK_PID = " + rdLinkForm.getLinkPid());
+            sb.append(" AND G.OUT_LINK_PID = R.LINK_PID");
 
-                sb.append("SELECT 1");
-                sb.append(" FROM RD_LINK R, RD_LINK_FORM F, RD_GATE G");
-                sb.append(" WHERE R.LINK_PID = F.LINK_PID");
-                sb.append(" AND F.FORM_OF_WAY = 60");
-                sb.append(" AND G.IN_LINK_PID = R.LINK_PID");
-                sb.append(" AND G.OUT_LINK_PID = " + rdLinkForm.getLinkPid());
-                sb.append(" UNION ALL");
-                sb.append(" SELECT 1");
-                sb.append(" FROM RD_LINK R, RD_LINK_FORM F, RD_GATE G");
-                sb.append(" WHERE R.LINK_PID = F.LINK_PID");
-                sb.append(" AND F.FORM_OF_WAY = 60");
-                sb.append(" AND G.IN_LINK_PID = " + rdLinkForm.getLinkPid());
-                sb.append(" AND G.OUT_LINK_PID = R.LINK_PID");
+            String sql = sb.toString();
+            log.info("RdLink后检查GLM01570:" + sql);
 
-                String sql = sb.toString();
-                log.info("RdLink后检查GLM01570:" + sql);
+            DatabaseOperator getObj = new DatabaseOperator();
+            List<Object> resultList = new ArrayList<Object>();
+            resultList = getObj.exeSelect(this.getConn(), sql);
 
-                DatabaseOperator getObj = new DatabaseOperator();
-                List<Object> resultList = new ArrayList<Object>();
-                resultList = getObj.exeSelect(this.getConn(), sql);
-
-                if (resultList.size() > 0) {
-                    this.setCheckResult("", "[RD_LINK," + rdLinkForm.getLinkPid() + "]", 0);
-                }
+            if (resultList.size() > 0) {
+                this.setCheckResult("", "[RD_LINK," + rdLinkForm.getLinkPid() + "]", 0);
             }
         }
-
     }
 
     /**

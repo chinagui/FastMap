@@ -45,8 +45,8 @@ public class FMBAT20164 extends BasicBatchRule {
 			engFullname = porAddress.getFullname();
 		}
 		
-		if(chiFullname!=null&&engFullname==null){poiObj.deleteSubrow(engAddress);}
-		if(chiFullname!=null&&porFullname==null){poiObj.deleteSubrow(porAddress);}
+		if(chiFullname!=null&&engFullname==null&&engAddress!=null){poiObj.deleteSubrow(engAddress);}
+		if(chiFullname!=null&&porFullname==null&&porAddress!=null){poiObj.deleteSubrow(porAddress);}
 
 	}
 

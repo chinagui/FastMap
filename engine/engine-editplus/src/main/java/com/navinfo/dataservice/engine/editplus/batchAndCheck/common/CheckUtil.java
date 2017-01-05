@@ -52,7 +52,7 @@ public class CheckUtil {
 			return null;
 		}
 		int spaceIndex = word.indexOf(' ');
-		if (spaceIndex > 0) {
+		if (spaceIndex > 0 && spaceIndex<word.length()-1) {
 			String beforeWord=word.substring(0, spaceIndex-1);
 			String afterWord=word.substring(spaceIndex+1);
 			if (isLetter(beforeWord) && isChinese(afterWord)) {

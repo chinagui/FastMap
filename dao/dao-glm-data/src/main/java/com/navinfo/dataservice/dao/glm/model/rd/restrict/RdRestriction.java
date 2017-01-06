@@ -119,7 +119,7 @@ public class RdRestriction implements IObj {
 	public JSONObject Serialize(ObjLevel objLevel) {
 		
 //		return JSONObject.fromObject(this);
-		JSONObject json = JSONObject.fromObject(this,JsonUtils.getStrConfig());
+		JSONObject json = JSONObject.fromObject(this);
 		
 		if (objLevel == ObjLevel.HISTORY) {
 			json.remove("status");

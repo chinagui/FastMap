@@ -319,7 +319,8 @@ public class RdObject implements IObj {
 //		JsonConfig jsonConfig = Geojson.geoJsonConfig(0.00001, 5);
 //
 //		return JSONObject.fromObject(this, jsonConfig);
-		JSONObject json = JSONObject.fromObject(this, JsonUtils.getStrConfig());
+		JsonConfig jsonConfig = Geojson.geoJsonConfig(0.00001, 5);
+		JSONObject json = JSONObject.fromObject(this, jsonConfig);
 
 		if (objLevel == ObjLevel.HISTORY) {
 			json.remove("status");

@@ -1,5 +1,5 @@
-1. fm_sys/xxx.sql
-  功能：xxxxxxxxx
+1. fm_sys/update_glm_grid_map.sql
+  功能：更新RD_INTER的GRID配置
   目标库：fm_sys
-  author：xxx
+  author：张小龙
   

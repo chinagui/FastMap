@@ -45,7 +45,7 @@ public class CheckTestGPR {
 		test.init();
 		Connection conn = DBConnector.getInstance().getConnectionById(19);
 		OperationResult operationResult=new OperationResult();
-		BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", null,false,203000150, false);
+		BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", null,false,335, false);
 		//IxPoi row=(IxPoi) obj.getMainrow();
 		IxPoiObj poiObj=(IxPoiObj) obj;
 		IxPoiAddress chiAddress = poiObj.getCHAddress();

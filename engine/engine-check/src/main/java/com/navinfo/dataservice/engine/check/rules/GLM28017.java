@@ -61,8 +61,8 @@ public class GLM28017 extends baseRule {
 	 */
 	private void check(int pid) throws Exception {
 		StringBuilder sb = new StringBuilder();
-
-		sb.append("SELECT RIN.PID FROM RD_INTER_NODE RIN");
+		sb.append("SELECT COUNT(1) FROM (");
+		sb.append("SELECT DISTINCT RIN.PID FROM RD_INTER_NODE RIN");
 		sb.append(" WHERE RIN.NODE_PID IN");
 		sb.append(" (");
 		sb.append(" SELECT R.S_NODE_PID");
@@ -93,9 +93,7 @@ public class GLM28017 extends baseRule {
 		sb.append(" AND R.LINK_PID IN (SELECT RRL.LINK_PID FROM RD_ROAD_LINK RRL WHERE RRL.U_RECORD <> 2 AND RRL.PID = "
 				+ pid + ")");
 		sb.append(" )");
-		sb.append(" AND RIN.U_RECORD <> 2");
-		sb.append(" GROUP BY RIN.PID");
-		sb.append(" HAVING COUNT(1) <> 2");
+		sb.append(" AND RIN.U_RECORD <> 2)");
 
 		String sql = sb.toString();
 		log.info("RdRoad后检查GLM28017:" + sql);
@@ -104,7 +102,7 @@ public class GLM28017 extends baseRule {
 		List<Object> resultList = new ArrayList<Object>();
 		resultList = getObj.exeSelect(this.getConn(), sql);
 
-		if (resultList.size() > 0) {
+		if (Integer.parseInt(resultList.get(0).toString())>2) {
 			String target = "[RD_ROAD," + pid + "]";
 			this.setCheckResult("", target, 0);
 		}

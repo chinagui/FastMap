@@ -45,4 +45,12 @@ public class CheckCommand extends AbstractCommand {
 		this.operationName = operationName;
 		ruleIdList=CheckRuleFactory.getInstance().loadByOperationName(operationName);
 	}
+
+	@Override
+	public String toString() {
+		return "CheckCommand [ruleIdList=" + ruleIdList + ", operationName=" + operationName + ", isSaveResult="
+				+ isSaveResult + ", isErrorReturn=" + isErrorReturn + "]";
+	}
+	
+	
 }

@@ -56,23 +56,17 @@ public class ColumnCoreOperation {
 				IxPoiColumnStatusSelector columnStatusSelector = new IxPoiColumnStatusSelector(conn);
 
 				// 取poi_column_status中打标记结果
-				List existClassifyList = columnStatusSelector.queryClassifyByPid(pid);
+				List existClassifyList = columnStatusSelector.queryClassifyByPid(pid,classifyRules);
 
-				// 检查结果与poi_deep_status中结果，进行差分处理
-				List currentCheckResult = checkResultList;
-
-				// poi_deep_status不存在的作业项，要插入
-				checkResultList.retainAll(ckRules);
-				checkResultList.removeAll(existClassifyList);
+				// poi_deep_status不存在的作业项插入,存在的更新
+				checkResultList.retainAll(classifyRules);
 				if (checkResultList.size()>0) {
 					insertWorkItem(checkResultList, conn, pid, userId, taskId);
 				}
 
 				// 重分类回退，本次要重分类classifyRules,检查结果中没有，若poi_deep_status存在,需从poi_deep_status中删掉
-				List currentClassifyRules = classifyRules;
-				classifyRules.removeAll(currentCheckResult);
-				classifyRules.retainAll(existClassifyList);
-				deleteWorkItem(classifyRules, conn, pid);
+				existClassifyList.removeAll(checkResultList);
+				deleteWorkItem(existClassifyList, conn, pid);
 			}
 
 		} catch (Exception e) {

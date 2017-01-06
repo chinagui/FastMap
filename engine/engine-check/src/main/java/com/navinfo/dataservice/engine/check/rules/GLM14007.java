@@ -77,7 +77,7 @@ public class GLM14007 extends baseRule {
 		//道路属性编辑,触发检查
 		Map<String, Object> changedFields = rdLinkForm.changedFields();
 		int formOfWay = 1;
-		if(changedFields.containsKey("formOfWay")){
+		if(changedFields != null && changedFields.containsKey("formOfWay")){
 			formOfWay = (int) changedFields.get("formOfWay");
 		}
 		if(formOfWay == 50){

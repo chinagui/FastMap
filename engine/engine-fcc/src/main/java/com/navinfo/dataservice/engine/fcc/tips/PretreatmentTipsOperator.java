@@ -163,7 +163,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate{
 			JSONObject solrIndex = TipsUtils.generateSolrIndex(rowkey, stage,
 					currentDate, currentDate, t_lifecycle, t_command, user,
 					t_cStatus, t_dStatus, t_mStatus, sourceType, s_sourceCode,
-					g_guide, lineGeometry, deepNew, f_array, s_reliability,t_inMeth,t_pStatus,t_dInProc,t_mInProc);
+					g_guide, lineGeometry, deepNew, feedbackObj, s_reliability,t_inMeth,t_pStatus,t_dInProc,t_mInProc);
 
 			solr.addTips(solrIndex);
 
@@ -270,15 +270,19 @@ public class PretreatmentTipsOperator extends BaseTipsOperate{
 			JSONObject geometry = JSONObject.fromObject(new String(result
 					.getValue("data".getBytes(), "geometry".getBytes())));
 
-			geometry.put("g_location", lineGeometry.toString().getBytes());
+			geometry.put("g_location", lineGeometry);
+			
+			JSONObject  guideNew=getMidPointByGeometry(lineGeometry);
+			
+			geometry.put("g_guide", guideNew);
 
 			// 2.update deep.geo(根据新的几何信息计算几何中心点)
 
 			JSONObject deep = JSONObject.fromObject(new String(result.getValue(
 					"data".getBytes(), "deep".getBytes())));
 
-			deep.put("geo", getMidPointByGeometry(lineGeometry));
-
+			deep.put("geo", guideNew);
+			
 			put.addColumn("data".getBytes(), "track".getBytes(), track
 					.toString().getBytes());
 
@@ -299,8 +303,15 @@ public class PretreatmentTipsOperator extends BaseTipsOperate{
 			solrIndex.put("handler", user);
 
 			solrIndex.put("g_location", lineGeometry);
+			
+			solrIndex.put("g_guide", guideNew);
 
 			solrIndex.put("deep", deep);
+			
+			JSONObject feedbackObj=JSONObject.fromObject(solrIndex.get("feedback"));
+			
+			solrIndex.put("wkt", TipsImportUtils.generateSolrWkt(
+					String.valueOf(FC_SOURCE_TYPE), deep, lineGeometry, feedbackObj));
 
 			solr.addTips(solrIndex);
 
@@ -460,21 +471,36 @@ public class PretreatmentTipsOperator extends BaseTipsOperate{
 			JSONObject g_location2=cutGeoResult.get(1);
 			
 			
-			JSONObject g_guide=JSONObject.fromObject(solrIndex.get("g_guide"));
+			//JSONObject g_guide=JSONObject.fromObject(solrIndex.get("g_guide"));
+			
+			JSONObject  g_guide1=getMidPointByGeometry(g_location1);
+			
+			JSONObject  g_guide2=getMidPointByGeometry(g_location2);
 			
 			geo1.put("g_location", g_location1);
 			
-			geo1.put("g_guide",g_guide);
+			geo1.put("g_guide",g_guide1);
 			
 			geo2.put("g_location", g_location2);
 			
-			geo2.put("g_guide", g_guide);
-			
-			
+			geo2.put("g_guide", g_guide2);
 			
 			solrIndex.put("g_location", g_location1);
 
 			newSolrIndex.put("g_location", g_location2);
+			
+			solrIndex.put("g_guide", g_guide1);
+
+			newSolrIndex.put("g_guide", g_guide2);
+			
+			//旧的feedback两个都是一样的，取一个就好了
+			JSONObject feedbackObj=JSONObject.fromObject(solrIndex.get("feedback"));
+			
+			solrIndex.put("wkt", TipsImportUtils.generateSolrWkt(
+					String.valueOf(FC_SOURCE_TYPE), null, g_location1, feedbackObj));
+			
+			newSolrIndex.put("wkt", TipsImportUtils.generateSolrWkt(
+					String.valueOf(FC_SOURCE_TYPE), null, g_location2, feedbackObj));
 			
 			
 			put.addColumn("data".getBytes(), "geometry".getBytes(), geo1
@@ -489,7 +515,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate{
 			if(FC_SOURCE_TYPE.equals(solrIndex.getString("s_sourceType"))){
 				
 				updateFcTipDeep(solrIndex, newPut, put, newSolrIndex,
-						g_location1, g_location2);
+						g_guide1, g_guide2);
 				
 			}
 			
@@ -576,14 +602,14 @@ public class PretreatmentTipsOperator extends BaseTipsOperate{
 	 * @time:2016-11-18 下午7:58:46
 	 */
 	private void updateFcTipDeep(JSONObject solrIndex, Put newPut, Put put,
-			JSONObject newSolrIndex, JSONObject g_location1,
-			JSONObject g_location2) throws Exception {
+			JSONObject newSolrIndex, JSONObject g_guide1,
+			JSONObject g_guide2) throws Exception {
 		
 		
 		JSONObject deep1=JSONObject.fromObject(solrIndex.get("deep"));;
 		
 		// 几何中心点
-		JSONObject pointGeo1 = getMidPointByGeometry(g_location1);
+		JSONObject pointGeo1 = g_guide1;
 
 
 		deep1.put("geo", pointGeo1);
@@ -592,7 +618,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate{
 		JSONObject deep2=JSONObject.fromObject(solrIndex.get("deep"));;
 		
 		// 几何中心点
-		JSONObject  pointGeo2= getMidPointByGeometry(g_location2);
+		JSONObject  pointGeo2= g_guide2;
 
 
 		deep2.put("geo", pointGeo2);
@@ -606,7 +632,6 @@ public class PretreatmentTipsOperator extends BaseTipsOperate{
 		solrIndex.put("deep", deep1);
 		
 		newSolrIndex.put("deep", deep2);
-		
 		
 	}
 
@@ -692,10 +717,9 @@ public class PretreatmentTipsOperator extends BaseTipsOperate{
 	 * @throws Exception
 	 * @time:2016-11-16 上午11:29:03
 	 */
-	public void submit2Web(String rowkey, int user, String memo,
-			int stage) throws Exception {
+	public void submit2Web(JSONArray  grids,int user) throws Exception {
 
-		try {
+		/*try {
 
 			Connection hbaseConn = HBaseConnector.getInstance().getConnection();
 
@@ -755,9 +779,9 @@ public class PretreatmentTipsOperator extends BaseTipsOperate{
 			
 			logger.error(e.getMessage(), e);
 			
-			throw new Exception("改备注信息出错：rowkey:"+rowkey+"原因：" + e.getMessage(), e);
+			//throw new Exception("改备注信息出错：rowkey:"+rowkey+"原因：" + e.getMessage(), e);
 		}
-
+*/
 	}
 
 	

@@ -31,6 +31,7 @@ import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiNameSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiParentSelector;
 import com.navinfo.dataservice.dao.log.LogReader;
+import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.glm.search.AdAdminSearch;
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -998,6 +999,13 @@ public class IxPoiSearch implements ISearch {
 			throw e;
 		}
 	}
+	private String stringIsNull(String str){
+		String newStr = "";
+		if(str==null){
+			return newStr;
+		}
+		return str;
+	}
 	/**
 	 * 处理地址组相关字段
 	 * @param firstWordItem
@@ -1018,20 +1026,41 @@ public class IxPoiSearch implements ISearch {
 					JSONObject addrObj = address.Serialize(null);
 					/**特殊处理：特殊处理：当二级作业项为：addrPinyin时，对'langCode'== 'CHI'的记录，添加字段addrNameMultiPinyin、roadNameMultiPinyin、fullNameMultiPinyin，
 					 取值原则：对address中字段addrName、roadName、fullName存在多音字分别获取其对应的拼音*/
-					if (secondWorkItem.equals("addrPinyin")){	
+					//由于现在数据addrname和roadname本身为空，因此给前台组合addrnameStr和roadnameStr返回
+					if (secondWorkItem.equals("addrPinyin")){
+						
+						String addrnameStr = stringIsNull(address.getProvince())+"|"+stringIsNull(address.getCity())+"|"+stringIsNull(address.getCounty())+"|"+stringIsNull(address.getTown())+"|"+
+								stringIsNull(address.getPlace())+"|"+stringIsNull(address.getStreet());
+						
+						String roadnameStr = stringIsNull(address.getLandmark())+"|"+stringIsNull(address.getPrefix())+"|"+stringIsNull(address.getHousenum())+"|"
+								+stringIsNull(address.getType())+"|"+stringIsNull(address.getSubnum())+"|"+stringIsNull(address.getSurfix())+"|"+stringIsNull(address.getEstab())+"|"+stringIsNull(address.getBuilding())+"|"
+								+stringIsNull(address.getUnit())+"|"+stringIsNull(address.getFloor())+"|"+stringIsNull(address.getRoom())+"|"+stringIsNull(address.getAddons());
+						
+						String addrnamePhoneticStr = stringIsNull(address.getProvPhonetic())+"|"+stringIsNull(address.getCityPhonetic())+"|"+stringIsNull(address.getCountyPhonetic())+"|"+stringIsNull(address.getTownPhonetic())+"|"
+								+stringIsNull(address.getPlacePhonetic())+"|"+stringIsNull(address.getStreetPhonetic());
+						
+						String roadnamePhoneticStr = stringIsNull(address.getLandmarkPhonetic())+"|"+stringIsNull(address.getPrefixPhonetic())+"|"+stringIsNull(address.getHousenumPhonetic())+"|"
+								+stringIsNull(address.getTypePhonetic())+"|"+stringIsNull(address.getSubnumPhonetic())+"|"+stringIsNull(address.getSurfixPhonetic())+"|"+stringIsNull(address.getEstabPhonetic())+"|"+stringIsNull(address.getBuildingPhonetic())+"|"
+								+stringIsNull(address.getUnitPhonetic())+"|"+stringIsNull(address.getFloorPhonetic())+"|"+stringIsNull(address.getRoomPhonetic())+"|"+stringIsNull(address.getAddonsPhonetic());
+						
+						addrObj.put("addrnameStr", addrnameStr);
+						addrObj.put("roadnameStr", roadnameStr);
+						addrObj.put("addrnamePhoneticStr", addrnamePhoneticStr);
+						addrObj.put("roadnamePhoneticStr", roadnamePhoneticStr);
+						
 						if (address.getLangCode().equals("CHI")) {
-							if (address.getAddrname()!=null && !address.getAddrname().isEmpty()) {
-								List<List<String>> addrNameMultiPinyin = pyConvertor(address.getAddrname());
-								addrObj.put("addrNameMultiPinyin", addrNameMultiPinyin);
+							if (addrnameStr!=null && !addrnameStr.isEmpty()) {
+								List<List<String>> addrnameMultiPinyin = pyConvertor(addrnameStr);
+								addrObj.put("addrNameMultiPinyin", addrnameMultiPinyin);
 							}
-							if (address.getRoadname()!=null && !address.getRoadname().isEmpty()) {
-								List<List<String>> roadNameMultiPinyin = pyConvertor(address.getRoadname());
-								addrObj.put("roadNameMultiPinyin", roadNameMultiPinyin);
+							if (roadnameStr!=null && !roadnameStr.isEmpty()) {
+								List<List<String>> roadnameMultiPinyin = pyConvertor(roadnameStr);
+								addrObj.put("roadNameMultiPinyin", roadnameMultiPinyin);
 							}
-							if (address.getFullname()!=null && !address.getFullname().isEmpty()) {
-								List<List<String>> fullNameMultiPinyin = pyConvertor(address.getFullname());
-								addrObj.put("fullNameMultiPinyin", fullNameMultiPinyin);
-							}
+//							if (address.getFullname()!=null && !address.getFullname().isEmpty()) {
+//								List<List<String>> fullNameMultiPinyin = pyConvertor(address.getFullname());
+//								addrObj.put("fullNameMultiPinyin", fullNameMultiPinyin);
+//							}
 						}	
 					}
 					addrArray.add(addrObj);

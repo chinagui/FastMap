@@ -5,6 +5,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -50,7 +52,7 @@ public class IxPoiSelector extends AbstractSelector {
 	 * @return
 	 * @throws Exception
 	 */
-	public JSONObject loadPids(boolean isLock, int pid, String pidName,
+	public JSONObject loadPids(boolean isLock, String pidName,
 			int type, String g, int pageSize, int pageNum) throws Exception {
 
 		JSONObject result = new JSONObject();
@@ -76,13 +78,27 @@ public class IxPoiSelector extends AbstractSelector {
 		buffer.append(" AND ps.work_type=1 AND ps.status = " + type + "");
 		buffer.append(" AND sdo_within_distance(ip.geometry, sdo_geometry(    '"
 				+ g + "'  , 8307), 'mask=anyinteract') = 'TRUE' ");
-		if (pid != 0) {
-			buffer.append(" AND ip.pid = " + pid + "");
-		} else {
-			if (StringUtils.isNotBlank(pidName)) {
-				buffer.append(" AND ipn.name like '%" + pidName + "%'");
+		
+		if (!pidName.isEmpty()) {
+			Pattern pattern = Pattern.compile("[0-9]*"); 
+			Matcher isNum = pattern.matcher(pidName);
+			if( isNum.matches() ){
+				buffer.append(" AND (ip.pid = " + pidName + " OR ipn.name like '%" + pidName + "%') ");
+			}else{
+				if (StringUtils.isNotBlank(pidName)) {
+					buffer.append(" AND ipn.name like '%" + pidName + "%'");
+				}
 			}
 		}
+
+		
+//		if (pid != 0) {
+//			buffer.append(" AND ip.pid = " + pid + "");
+//		} else {
+//			if (StringUtils.isNotBlank(pidName)) {
+//				buffer.append(" AND ipn.name like '%" + pidName + "%'");
+//			}
+//		}
 
 		buffer.append(" ) c");
 		buffer.append(" WHERE ROWNUM <= :1) ");

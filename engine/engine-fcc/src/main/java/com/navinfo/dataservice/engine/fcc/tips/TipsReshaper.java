@@ -140,12 +140,13 @@ public class TipsReshaper {
 			solrIndex.put("deep", deep);
 
 			// feedback
+			JSONObject feedbackjo =new JSONObject();
 			JSONArray feedbacks = new JSONArray();
 
 			if (result.containsColumn("data".getBytes(), "feedback".getBytes())) {
 				String feedback = new String(result.getValue("data".getBytes(),
 						"feedback".getBytes()));
-				JSONObject feedbackjo = JSONObject.fromObject(feedback);
+				feedbackjo = JSONObject.fromObject(feedback);
 
 				feedbacks = feedbackjo.getJSONArray("f_array");
 			}
@@ -154,7 +155,7 @@ public class TipsReshaper {
 
 			// wkt
 			solrIndex.put("wkt", TipsImportUtils.generateSolrWkt(sourceType,
-					deepjo, g_location, feedbacks));
+					deepjo, g_location, feedbackjo));
 			
 			solr.addTips(solrIndex);
 

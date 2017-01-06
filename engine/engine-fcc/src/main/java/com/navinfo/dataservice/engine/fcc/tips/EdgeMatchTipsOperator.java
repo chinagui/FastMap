@@ -150,7 +150,7 @@ public class EdgeMatchTipsOperator extends BaseTipsOperate{
 			JSONObject solrIndex = TipsUtils.generateSolrIndex(rowkey, stage,
 					currentDate, currentDate, t_lifecycle, t_command, user,
 					t_cStatus, t_dStatus, t_mStatus, S_SOURCETYPE, s_sourceCode,
-					g_guide, g_location, null, f_array, s_reliability,t_inMeth,t_pStatus,t_dInProc,t_mInProc);
+					g_guide, g_location, null, feedbackObj , s_reliability,t_inMeth,t_pStatus,t_dInProc,t_mInProc);
 
 			solr.addTips(solrIndex);
 

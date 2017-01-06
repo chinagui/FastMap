@@ -1,5 +1,9 @@
 package com.navinfo.dataservice.dao.plus.model.ixpoi;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
 
 /** 
@@ -458,6 +462,37 @@ public class IxPoiAddress extends BasicRow {
 		}
 		return false;
 	}
+	
+	/**
+	 * 将中文地址拆分后的15个字段
+	 * 按照“附加信息、房间号、楼层、楼门号、楼栋号、附属设施名、后缀、子号、类型名、门牌号、前缀、标志物名、街巷名、地名小区名、乡镇街道办”
+	 * 进行合并
+	 * @return splitAddStr
+	 */
+	public String getChiSplitAddr() {
+		List<String> splitAddList = new ArrayList<String>();
+		splitAddList.add(this.getAddons());
+        splitAddList.add(this.getRoom());
+        splitAddList.add(this.getFloor());
+        splitAddList.add(this.getUnit());
+        splitAddList.add(this.getBuilding());
+        splitAddList.add(this.getEstab());
+        splitAddList.add(this.getSurfix());
+        splitAddList.add(this.getSubnum());
+        splitAddList.add(this.getType());
+        splitAddList.add(this.getHousenum());
+        splitAddList.add(this.getPrefix());
+        splitAddList.add(this.getLandmark());
+        if (StringUtils.isNotEmpty(this.getRoadname())){
+        	splitAddList.add(this.getStreet());
+        	splitAddList.add(this.getPlace());
+        	splitAddList.add(this.getTown());
+        }
+        
+        String splitAddStr = splitAddList.toString().replace("[", "").replace("]", "").replaceAll(",","");
+        return splitAddStr;
+	}
+	
 	
 	@Override
 	public String tableName() {

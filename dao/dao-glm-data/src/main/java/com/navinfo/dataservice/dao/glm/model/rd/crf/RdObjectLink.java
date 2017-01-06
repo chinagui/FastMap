@@ -31,6 +31,7 @@ public class RdObjectLink implements IRow {
 	private int linkPid;
 	
 	private String rowId;
+	protected ObjStatus status;
 	
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 	
@@ -71,12 +72,12 @@ public class RdObjectLink implements IRow {
 
 	@Override
 	public ObjStatus status() {
-		return null;
+		return status;
 	}
 
 	@Override
 	public void setStatus(ObjStatus os) {
-
+		status = os;
 	}
 
 	@Override
@@ -182,8 +183,16 @@ public class RdObjectLink implements IRow {
 
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) throws Exception {
+//		JSONObject json = JSONObject.fromObject(this, JsonUtils.getStrConfig());
+//
+//		return json;
 		JSONObject json = JSONObject.fromObject(this, JsonUtils.getStrConfig());
-
+		
+		if(objLevel.toString().equals(ObjLevel.HISTORY.toString()))
+		{
+			json.remove("status");
+		}
+		
 		return json;
 	}
 

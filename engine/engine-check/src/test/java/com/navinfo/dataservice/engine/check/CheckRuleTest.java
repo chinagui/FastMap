@@ -33,6 +33,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionCondition;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionDetail;
+import com.navinfo.dataservice.dao.glm.model.rd.road.RdRoad;
 import com.navinfo.dataservice.dao.glm.model.rd.tollgate.RdTollgate;
 import com.navinfo.dataservice.engine.check.core.CheckRule;
 import com.navinfo.dataservice.engine.check.rules.CrossingLaneOutlinkDirect;
@@ -48,6 +49,7 @@ import com.navinfo.dataservice.engine.check.rules.GLM19001_2;
 import com.navinfo.dataservice.engine.check.rules.GLM19001_3;
 import com.navinfo.dataservice.engine.check.rules.GLM19014;
 import com.navinfo.dataservice.engine.check.rules.GLM26044;
+import com.navinfo.dataservice.engine.check.rules.GLM28018;
 import com.navinfo.dataservice.engine.check.rules.GLM32005;
 import com.navinfo.dataservice.engine.check.rules.GLM32006;
 import com.navinfo.dataservice.engine.check.rules.GLM32020;
@@ -1338,6 +1340,26 @@ public class CheckRuleTest {
 		RdLane002 c = new RdLane002();
 		c.setConn(conn);
 		c.preCheck(cc);
+		List result = c.getCheckResultList();
+		
+		System.out.println("end");
+	}
+	
+	@Test
+	public void testGLM28018() throws Exception{
+		Connection conn=DBConnector.getInstance().getConnectionById(19);
+		CheckCommand cc = new CheckCommand();
+		List<IRow> glmList = new ArrayList<IRow>();
+		RdRoad rdRoad  = new RdRoad();
+//		rdRoad.setPid(6493);
+		rdRoad.setPid(307000007);
+		rdRoad.setStatus(ObjStatus.INSERT);
+		glmList.add(rdRoad);
+
+		cc.setGlmList(glmList);
+		GLM28018 c = new GLM28018();
+		c.setConn(conn);
+		c.postCheck(cc);
 		List result = c.getCheckResultList();
 		
 		System.out.println("end");

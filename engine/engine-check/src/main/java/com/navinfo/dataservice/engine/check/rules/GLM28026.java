@@ -148,8 +148,8 @@ public class GLM28026 extends baseRule{
 			}
 			
 			for(IRow iRow:rdObject.getLinks()){
-				RdLink rdLink = (RdLink)iRow;
-				linkPidSet.add(rdLink.getPid());
+				RdObjectLink rdLink = (RdObjectLink)iRow;
+				linkPidSet.add(rdLink.getLinkPid());
 			}
 			if(interPidSet.isEmpty()&&roadPidSet.isEmpty()&&linkPidSet.isEmpty()){
 				return;

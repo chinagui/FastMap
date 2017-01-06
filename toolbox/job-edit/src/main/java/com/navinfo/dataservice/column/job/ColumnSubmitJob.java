@@ -179,6 +179,7 @@ public class ColumnSubmitJob extends AbstractJob {
 			conn.commit();
 			
 		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
 			throw new JobException(e);
 		} finally {
 			DbUtils.closeQuietly(conn);

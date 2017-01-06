@@ -160,6 +160,7 @@ public class ColumnSaveJob extends AbstractJob {
 			conn.commit();
 			log.info("月编保存完成");
 		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
 			throw new JobException(e);
 		} finally {
 			DbUtils.closeQuietly(conn);

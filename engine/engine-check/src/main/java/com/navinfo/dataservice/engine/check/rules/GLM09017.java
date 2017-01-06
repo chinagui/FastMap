@@ -101,7 +101,6 @@ public class GLM09017 extends baseRule{
 				sb.append(" WHERE RW.LINK_PID = " + rdLink.getPid());
 				sb.append(" AND RW.TYPE_CODE = '20301'");
 				sb.append(" AND RW.U_RECORD <> 2");
-				sb.append(" AND F.LINK_PID = " + rdLink.getPid());
 
 				String sql = sb.toString();
 				log.info("RdLink后检查GLM09017:" + sql);

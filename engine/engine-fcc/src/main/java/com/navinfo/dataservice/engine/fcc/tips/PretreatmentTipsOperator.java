@@ -163,7 +163,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate{
 			JSONObject solrIndex = TipsUtils.generateSolrIndex(rowkey, stage,
 					currentDate, currentDate, t_lifecycle, t_command, user,
 					t_cStatus, t_dStatus, t_mStatus, sourceType, s_sourceCode,
-					g_guide, lineGeometry, deepNew, f_array, s_reliability,t_inMeth,t_pStatus,t_dInProc,t_mInProc);
+					g_guide, lineGeometry, deepNew, feedbackObj, s_reliability,t_inMeth,t_pStatus,t_dInProc,t_mInProc);
 
 			solr.addTips(solrIndex);
 
@@ -308,14 +308,10 @@ public class PretreatmentTipsOperator extends BaseTipsOperate{
 
 			solrIndex.put("deep", deep);
 			
-			JSONArray feedBackArr=JSONArray.fromObject(solrIndex.get("feedback"));
-			
-			if(feedBackArr==null){
-				feedBackArr=new JSONArray();
-			}
+			JSONObject feedbackObj=JSONObject.fromObject(solrIndex.get("feedback"));
 			
 			solrIndex.put("wkt", TipsImportUtils.generateSolrWkt(
-					String.valueOf(FC_SOURCE_TYPE), deep, lineGeometry, feedBackArr));
+					String.valueOf(FC_SOURCE_TYPE), deep, lineGeometry, feedbackObj));
 
 			solr.addTips(solrIndex);
 
@@ -497,17 +493,14 @@ public class PretreatmentTipsOperator extends BaseTipsOperate{
 
 			newSolrIndex.put("g_guide", g_guide2);
 			
-			JSONArray feedBackArr=JSONArray.fromObject(solrIndex.get("feedback"));
-			
-			if(feedBackArr==null){
-				feedBackArr=new JSONArray();
-			}
+			//旧的feedback两个都是一样的，取一个就好了
+			JSONObject feedbackObj=JSONObject.fromObject(solrIndex.get("feedback"));
 			
 			solrIndex.put("wkt", TipsImportUtils.generateSolrWkt(
-					String.valueOf(FC_SOURCE_TYPE), null, g_location1, feedBackArr));
+					String.valueOf(FC_SOURCE_TYPE), null, g_location1, feedbackObj));
 			
 			newSolrIndex.put("wkt", TipsImportUtils.generateSolrWkt(
-					String.valueOf(FC_SOURCE_TYPE), null, g_location2, feedBackArr));
+					String.valueOf(FC_SOURCE_TYPE), null, g_location2, feedbackObj));
 			
 			
 			put.addColumn("data".getBytes(), "geometry".getBytes(), geo1
@@ -724,10 +717,9 @@ public class PretreatmentTipsOperator extends BaseTipsOperate{
 	 * @throws Exception
 	 * @time:2016-11-16 上午11:29:03
 	 */
-	public void submit2Web(String rowkey, int user, String memo,
-			int stage) throws Exception {
+	public void submit2Web(JSONArray  grids,int user) throws Exception {
 
-		try {
+		/*try {
 
 			Connection hbaseConn = HBaseConnector.getInstance().getConnection();
 
@@ -787,9 +779,9 @@ public class PretreatmentTipsOperator extends BaseTipsOperate{
 			
 			logger.error(e.getMessage(), e);
 			
-			throw new Exception("改备注信息出错：rowkey:"+rowkey+"原因：" + e.getMessage(), e);
+			//throw new Exception("改备注信息出错：rowkey:"+rowkey+"原因：" + e.getMessage(), e);
 		}
-
+*/
 	}
 
 	

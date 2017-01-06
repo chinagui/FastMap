@@ -154,9 +154,16 @@ public class ixpoitest {
 			System.out.println(e.getMessage());
 		}
 	}
+	private String stringIsNull(String str){
+		String newStr = "";
+		if(str==null){
+			return newStr;
+		}
+		return str;
+	}
 	@Test
 	public void testColumnQuery() throws Exception{
-		String parameter = "{\"taskId\":84,\"firstWorkItem\":\"poi_name\",\"secondWorkItem\":\"nameUnify\",\"status\":2}";
+		String parameter = "{\"taskId\":1182,\"firstWorkItem\":\"poi_address\",\"secondWorkItem\":\"addrPinyin\",\"status\":1}";
 		try {
 			JSONObject param = JSONObject.fromObject(parameter);
 			long userId =2;

@@ -10,7 +10,7 @@ import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 /**
- * FM_GLM60189	英文地址长度检查	D
+ * FM-GLM60189	英文地址长度检查	D
  * 检查条件：该POI发生变更(新增或修改主子表、删除子表)
  * 检查原则：英文地址（语言代码是英文的“地址全称”）长度超过50个字符且为非重要分类的POI，报出：非重要分类的英文地址长度不成超过50
  * @author zhangxiaoyi
@@ -24,6 +24,7 @@ public class FMGLM60189 extends BasicCheckRule {
 			IxPoiObj poiObj=(IxPoiObj) obj;
 			IxPoi poi=(IxPoi) poiObj.getMainrow();
 			List<IxPoiAddress> addrs = poiObj.getIxPoiAddresses();
+			if (addrs == null || addrs.size() == 0){return;}
 			for(IxPoiAddress addTmp:addrs){
 				if(addTmp.isEng()){
 					MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");

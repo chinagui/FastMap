@@ -171,5 +171,9 @@ public interface MetadataApi {
 	public Map<String, ScPointSpecKindcodeNewObj> ScPointSpecKindcodeNewType2() throws Exception;
 	
 	public JSONObject tyCharacterEgalcharExt() throws Exception;
+	
+	public Map<String, Map<String, String>> scPointNameckTypeD6() throws Exception;
+	
+	public List<String> getAddrck(int type,String hmFlag) throws Exception;
 
 }

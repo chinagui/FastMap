@@ -80,7 +80,8 @@ public class GLM28024 extends baseRule{
 		resultList = getObj.exeSelect(this.getConn(), sql2);
 		
 		if(resultList.size()>0){
-			this.setCheckResult("", "", 0);
+			String target = "[RD_OBJECT," + rdObjectLink.getPid() + "]";
+			this.setCheckResult("", target, 0);
 		}
 		
 	}
@@ -129,7 +130,8 @@ public class GLM28024 extends baseRule{
 		resultList = getObj.exeSelect(this.getConn(), sql2);
 		
 		if(resultList.size()>0){
-			this.setCheckResult("", "", 0);
+			String target = "[RD_OBJECT," + rdObjectInter.getPid() + "]";
+			this.setCheckResult("", target, 0);
 		}
 		
 	}
@@ -178,7 +180,8 @@ public class GLM28024 extends baseRule{
 		resultList = getObj.exeSelect(this.getConn(), sql2);
 		
 		if(resultList.size()>0){
-			this.setCheckResult("", "", 0);
+			String target = "[RD_OBJECT," + rdObjectRoad.getPid() + "]";
+			this.setCheckResult("", target, 0);
 		}
 		
 	}
@@ -228,7 +231,8 @@ public class GLM28024 extends baseRule{
 			resultList = getObj.exeSelect(this.getConn(), sql2);
 			
 			if(resultList.size()>0){
-				this.setCheckResult("", "", 0);
+				String target = "[RD_OBJECT," + rdObject.getPid() + "]";
+				this.setCheckResult("", target, 0);
 			}
 		}
 		

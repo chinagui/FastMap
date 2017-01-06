@@ -152,6 +152,7 @@ public class TipsUtils {
 		index.put("s_reliability", 100);
 
 		return index;
+		
 	}
 	
 

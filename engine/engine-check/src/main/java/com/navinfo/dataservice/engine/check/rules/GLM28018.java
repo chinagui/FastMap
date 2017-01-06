@@ -130,17 +130,16 @@ public class GLM28018 extends baseRule{
 		int i = 0;
 		while(i<list1.size()){
 			int nodePid = list1.get(i);
+			i++;
 			for(RdLink rdLink:rdLinkList){
 				if(rdLink.getsNodePid() == nodePid){
 					if(!rdInterNodeMap.containsKey(rdLink.geteNodePid())){
 						list1.add(rdLink.geteNodePid());
-						i++;
 						break;
 					}else{
 						//保存终点
 						startEndNodeMap.put(startNode1, rdLink.geteNodePid());
 						EndNodePidSet.add(rdLink.geteNodePid());
-						i++;
 						break;
 					}	
 				}
@@ -148,19 +147,18 @@ public class GLM28018 extends baseRule{
 		}
 		//第二条路链
 		i = 0;
-		while(i<list1.size()){
+		while(i<list2.size()){
 			int nodePid = list2.get(i);
+			i++;
 			for(RdLink rdLink:rdLinkList){
 				if(rdLink.getsNodePid() == nodePid){
 					if(!rdInterNodeMap.containsKey(rdLink.geteNodePid())){
 						list2.add(rdLink.geteNodePid());
-						i++;
 						break;
 					}else{
 						//保存终点
 						startEndNodeMap.put(startNode2, rdLink.geteNodePid());
 						EndNodePidSet.add(rdLink.geteNodePid());
-						i++;
 						break;
 					}	
 				}

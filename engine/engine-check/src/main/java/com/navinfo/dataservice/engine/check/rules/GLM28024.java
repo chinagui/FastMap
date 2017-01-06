@@ -33,6 +33,213 @@ public class GLM28024 extends baseRule{
 	 */
 	@Override
 	public void preCheck(CheckCommand checkCommand) throws Exception {
+		
+	}
+
+	/**
+	 * @param rdObjectLink
+	 * @throws Exception 
+	 */
+	private void checkRdObjectLink(RdObjectLink rdObjectLink) throws Exception {
+		//所有涉及的link
+		String sql = "SELECT RIL.LINK_PID FROM RD_OBJECT_INTER ROI,RD_INTER_LINK RIL"
+				+ " WHERE ROI.INTER_PID = RIL.PID"
+				+ " AND ROI.U_RECORD <> 2"
+				+ " AND RIL.U_RECORD <> 2"
+				+ " AND ROI.PID = " + rdObjectLink.getPid()
+				+ " UNION"
+				+ " SELECT RRL.LINK_PID FROM RD_OBJECT_ROAD ROR,RD_ROAD_LINK RRL"
+				+ " WHERE ROR.ROAD_PID = RRL.PID"
+				+ " AND ROR.U_RECORD <> 2"
+				+ " AND RRL.U_RECORD <> 2"
+				+ " AND ROR.PID = " + rdObjectLink.getPid()
+				+ " UNION"
+				+ " SELECT ROL.LINK_PID FROM RD_OBJECT_LINK ROL"
+				+ " WHERE ROL.U_RECORD <> 2"
+				+ " AND ROL.PID = " + rdObjectLink.getPid();
+		
+		StringBuilder sb = new StringBuilder();
+
+		sb.append("SELECT 1 FROM RD_LINK R1,RD_LINK R2,RD_LINK R3");
+		sb.append(" WHERE (R1.S_NODE_PID = R2.S_NODE_PID OR R1.S_NODE_PID = R2.E_NODE_PID)");
+		sb.append(" AND(R1.E_NODE_PID = R3.S_NODE_PID OR R1.E_NODE_PID = R3.E_NODE_PID)");
+		sb.append(" AND R1.U_RECORD <> 2");
+		sb.append(" AND R2.U_RECORD <> 2");
+		sb.append(" AND R3.U_RECORD <> 2");
+		sb.append(" AND R2.LINK_PID <> R3.LINK_PID");
+		sb.append(" AND R1.LINK_PID <> R2.LINK_PID");
+		sb.append(" AND R1.LINK_PID <> R3.LINK_PID");
+		sb.append(" AND R2.LINK_PID IN (" + sql + ")");
+		sb.append(" AND R3.LINK_PID IN (" + sql + ")");
+		sb.append(" AND R1.LINK_PID NOT IN (" + sql + ")");
+		String sql2 = sb.toString();
+		log.info("RdObjectLink前检查GLM28024:" + sql2);
+		
+		DatabaseOperator getObj = new DatabaseOperator();
+		List<Object> resultList = new ArrayList<Object>();
+		resultList = getObj.exeSelect(this.getConn(), sql2);
+		
+		if(resultList.size()>0){
+			this.setCheckResult("", "", 0);
+		}
+		
+	}
+
+	/**
+	 * @param rdObjectInter
+	 * @throws Exception 
+	 */
+	private void checkRdObjectInter(RdObjectInter rdObjectInter) throws Exception {
+		//所有涉及的link
+		String sql = "SELECT RIL.LINK_PID FROM RD_OBJECT_INTER ROI,RD_INTER_LINK RIL"
+				+ " WHERE ROI.INTER_PID = RIL.PID"
+				+ " AND ROI.U_RECORD <> 2"
+				+ " AND RIL.U_RECORD <> 2"
+				+ " AND ROI.PID = " + rdObjectInter.getPid()
+				+ " UNION"
+				+ " SELECT RRL.LINK_PID FROM RD_OBJECT_ROAD ROR,RD_ROAD_LINK RRL"
+				+ " WHERE ROR.ROAD_PID = RRL.PID"
+				+ " AND ROR.U_RECORD <> 2"
+				+ " AND RRL.U_RECORD <> 2"
+				+ " AND ROR.PID = " + rdObjectInter.getPid()
+				+ " UNION"
+				+ " SELECT ROL.LINK_PID FROM RD_OBJECT_LINK ROL"
+				+ " WHERE ROL.U_RECORD <> 2"
+				+ " AND ROL.PID = " + rdObjectInter.getPid();
+		
+		StringBuilder sb = new StringBuilder();
+
+		sb.append("SELECT 1 FROM RD_LINK R1,RD_LINK R2,RD_LINK R3");
+		sb.append(" WHERE (R1.S_NODE_PID = R2.S_NODE_PID OR R1.S_NODE_PID = R2.E_NODE_PID)");
+		sb.append(" AND(R1.E_NODE_PID = R3.S_NODE_PID OR R1.E_NODE_PID = R3.E_NODE_PID)");
+		sb.append(" AND R1.U_RECORD <> 2");
+		sb.append(" AND R2.U_RECORD <> 2");
+		sb.append(" AND R3.U_RECORD <> 2");
+		sb.append(" AND R2.LINK_PID <> R3.LINK_PID");
+		sb.append(" AND R1.LINK_PID <> R2.LINK_PID");
+		sb.append(" AND R1.LINK_PID <> R3.LINK_PID");
+		sb.append(" AND R2.LINK_PID IN (" + sql + ")");
+		sb.append(" AND R3.LINK_PID IN (" + sql + ")");
+		sb.append(" AND R1.LINK_PID NOT IN (" + sql + ")");
+		String sql2 = sb.toString();
+		log.info("RdObjectInter前检查GLM28024:" + sql2);
+		
+		DatabaseOperator getObj = new DatabaseOperator();
+		List<Object> resultList = new ArrayList<Object>();
+		resultList = getObj.exeSelect(this.getConn(), sql2);
+		
+		if(resultList.size()>0){
+			this.setCheckResult("", "", 0);
+		}
+		
+	}
+
+	/**
+	 * @param rdObjectRoad
+	 * @throws Exception 
+	 */
+	private void checkRdObjectRoad(RdObjectRoad rdObjectRoad) throws Exception {
+		//所有涉及的link
+		String sql = "SELECT RIL.LINK_PID FROM RD_OBJECT_INTER ROI,RD_INTER_LINK RIL"
+				+ " WHERE ROI.INTER_PID = RIL.PID"
+				+ " AND ROI.U_RECORD <> 2"
+				+ " AND RIL.U_RECORD <> 2"
+				+ " AND ROI.PID = " + rdObjectRoad.getPid()
+				+ " UNION"
+				+ " SELECT RRL.LINK_PID FROM RD_OBJECT_ROAD ROR,RD_ROAD_LINK RRL"
+				+ " WHERE ROR.ROAD_PID = RRL.PID"
+				+ " AND ROR.U_RECORD <> 2"
+				+ " AND RRL.U_RECORD <> 2"
+				+ " AND ROR.PID = " + rdObjectRoad.getPid()
+				+ " UNION"
+				+ " SELECT ROL.LINK_PID FROM RD_OBJECT_LINK ROL"
+				+ " WHERE ROL.U_RECORD <> 2"
+				+ " AND ROL.PID = " + rdObjectRoad.getPid();
+		
+		StringBuilder sb = new StringBuilder();
+
+		sb.append("SELECT 1 FROM RD_LINK R1,RD_LINK R2,RD_LINK R3");
+		sb.append(" WHERE (R1.S_NODE_PID = R2.S_NODE_PID OR R1.S_NODE_PID = R2.E_NODE_PID)");
+		sb.append(" AND(R1.E_NODE_PID = R3.S_NODE_PID OR R1.E_NODE_PID = R3.E_NODE_PID)");
+		sb.append(" AND R1.U_RECORD <> 2");
+		sb.append(" AND R2.U_RECORD <> 2");
+		sb.append(" AND R3.U_RECORD <> 2");
+		sb.append(" AND R2.LINK_PID <> R3.LINK_PID");
+		sb.append(" AND R1.LINK_PID <> R2.LINK_PID");
+		sb.append(" AND R1.LINK_PID <> R3.LINK_PID");
+		sb.append(" AND R2.LINK_PID IN (" + sql + ")");
+		sb.append(" AND R3.LINK_PID IN (" + sql + ")");
+		sb.append(" AND R1.LINK_PID NOT IN (" + sql + ")");
+		String sql2 = sb.toString();
+		log.info("RdObjectRoad前检查GLM28024:" + sql2);
+		
+		DatabaseOperator getObj = new DatabaseOperator();
+		List<Object> resultList = new ArrayList<Object>();
+		resultList = getObj.exeSelect(this.getConn(), sql2);
+		
+		if(resultList.size()>0){
+			this.setCheckResult("", "", 0);
+		}
+		
+	}
+
+	/**
+	 * @param rdObject
+	 * @throws Exception 
+	 */
+	private void checkRdObject(RdObject rdObject) throws Exception {
+		if(rdObject.status().equals(ObjStatus.INSERT)){
+			//所有涉及的link
+			String sql = "SELECT RIL.LINK_PID FROM RD_OBJECT_INTER ROI,RD_INTER_LINK RIL"
+					+ " WHERE ROI.INTER_PID = RIL.PID"
+					+ " AND ROI.U_RECORD <> 2"
+					+ " AND RIL.U_RECORD <> 2"
+					+ " AND ROI.PID = " + rdObject.getPid()
+					+ " UNION"
+					+ " SELECT RRL.LINK_PID FROM RD_OBJECT_ROAD ROR,RD_ROAD_LINK RRL"
+					+ " WHERE ROR.ROAD_PID = RRL.PID"
+					+ " AND ROR.U_RECORD <> 2"
+					+ " AND RRL.U_RECORD <> 2"
+					+ " AND ROR.PID = " + rdObject.getPid()
+					+ " UNION"
+					+ " SELECT ROL.LINK_PID FROM RD_OBJECT_LINK ROL"
+					+ " WHERE ROL.U_RECORD <> 2"
+					+ " AND ROL.PID = " + rdObject.getPid();
+			
+			StringBuilder sb = new StringBuilder();
+
+			sb.append("SELECT 1 FROM RD_LINK R1,RD_LINK R2,RD_LINK R3");
+			sb.append(" WHERE (R1.S_NODE_PID = R2.S_NODE_PID OR R1.S_NODE_PID = R2.E_NODE_PID)");
+			sb.append(" AND(R1.E_NODE_PID = R3.S_NODE_PID OR R1.E_NODE_PID = R3.E_NODE_PID)");
+			sb.append(" AND R1.U_RECORD <> 2");
+			sb.append(" AND R2.U_RECORD <> 2");
+			sb.append(" AND R3.U_RECORD <> 2");
+			sb.append(" AND R2.LINK_PID <> R3.LINK_PID");
+			sb.append(" AND R1.LINK_PID <> R2.LINK_PID");
+			sb.append(" AND R1.LINK_PID <> R3.LINK_PID");
+			sb.append(" AND R2.LINK_PID IN (" + sql + ")");
+			sb.append(" AND R3.LINK_PID IN (" + sql + ")");
+			sb.append(" AND R1.LINK_PID NOT IN (" + sql + ")");
+			String sql2 = sb.toString();
+			log.info("RdObject前检查GLM28024:" + sql2);
+			
+			DatabaseOperator getObj = new DatabaseOperator();
+			List<Object> resultList = new ArrayList<Object>();
+			resultList = getObj.exeSelect(this.getConn(), sql2);
+			
+			if(resultList.size()>0){
+				this.setCheckResult("", "", 0);
+			}
+		}
+		
+		
+	}
+
+	/* (non-Javadoc)
+	 * @see com.navinfo.dataservice.engine.check.core.baseRule#postCheck(com.navinfo.dataservice.dao.check.CheckCommand)
+	 */
+	@Override
+	public void postCheck(CheckCommand checkCommand) throws Exception {
 		for(IRow obj : checkCommand.getGlmList()){
 			if (obj instanceof RdObject){
 				RdObject rdObject = (RdObject)obj;
@@ -52,119 +259,6 @@ public class GLM28024 extends baseRule{
 			}
 		}
 		
-	}
-
-	/**
-	 * @param rdObjectLink
-	 */
-	private void checkRdObjectLink(RdObjectLink rdObjectLink) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	/**
-	 * @param rdObjectInter
-	 */
-	private void checkRdObjectInter(RdObjectInter rdObjectInter) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	/**
-	 * @param rdObjectRoad
-	 */
-	private void checkRdObjectRoad(RdObjectRoad rdObjectRoad) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	/**
-	 * @param rdObject
-	 * @throws Exception 
-	 */
-	private void checkRdObject(RdObject rdObject) throws Exception {
-		if(rdObject.status().equals(ObjStatus.INSERT)){
-			
-			Set<Integer> interPidSet = new HashSet<Integer>();
-			Set<Integer> roadPidSet = new HashSet<Integer>();
-			Set<Integer> linkPidSet = new HashSet<Integer>();
-			
-			for(IRow iRow:rdObject.getInters()){
-				RdObjectInter rdObjectInter = (RdObjectInter)iRow;
-				interPidSet.add(rdObjectInter.getInterPid());
-			}
-			for(IRow iRow:rdObject.getRoads()){
-				RdObjectRoad rdObjectRoad = (RdObjectRoad)iRow;
-				roadPidSet.add(rdObjectRoad.getRoadPid());
-			}
-			
-			for(IRow iRow:rdObject.getLinks()){
-				RdLink rdLink = (RdLink)iRow;
-				linkPidSet.add(rdLink.getPid());
-			}
-			if(interPidSet.isEmpty()&&roadPidSet.isEmpty()&&linkPidSet.isEmpty()){
-				return;
-			}
-			
-			String sql = "";
-			List<String> sqlList = new ArrayList<String>();
-			if(!interPidSet.isEmpty()){
-				String sqlT = "SELECT RIL.LINK_PID FROM RD_INTER_LINK RIL"
-						+ " WHERE RIL.U_RECORD <> 2"
-						+ " AND RIL.PID IN (" + StringUtils.join(interPidSet.toArray(),",") + ")";
-				sqlList.add(sqlT);
-			}
-			if(!roadPidSet.isEmpty()){
-				String sqlT = "SELECT RRL.LINK_PID FROM RD_ROAD_LINK RRL"
-						+ " WHERE RRL.U_RECORD <> 2"
-						+ " AND RRL.PID IN (" + StringUtils.join(roadPidSet.toArray(),",") + ")";
-				sqlList.add(sqlT);
-			}
-			if(!linkPidSet.isEmpty()){
-				String sqlT = "SELECT R.LINK_PID FROM RD_LINK R"
-						+ " WHERE R.U_RECORD <> 2"
-						+ " AND R.LINK_PID IN (" + StringUtils.join(linkPidSet.toArray(),",") + ")"	;					
-				sqlList.add(sqlT);
-			}
-
-			sql = StringUtils.join(sqlList.toArray()," UNION ");
-			log.info("RdObject前检查GLM28024:" + sql);
-
-			StringBuilder sb = new StringBuilder();
-
-			sb.append("SELECT 1 FROM RD_LINK R1,RD_LINK R2,RD_LINK R3");
-			sb.append(" WHERE (R1.S_NODE_PID = R2.S_NODE_PID OR R1.S_NODE_PID = R2.E_NODE_PID)");
-			sb.append(" AND(R1.E_NODE_PID = R3.S_NODE_PID OR R1.E_NODE_PID = R3.E_NODE_PID)");
-			sb.append(" AND R1.U_RECORD <> 2");
-			sb.append(" AND R2.U_RECORD <> 2");
-			sb.append(" AND R3.U_RECORD <> 2");
-			sb.append(" AND R2.LINK_PID <> R3.LINK_PID");
-			sb.append(" AND R1.LINK_PID <> R2.LINK_PID");
-			sb.append(" AND R1.LINK_PID <> R3.LINK_PID");
-			sb.append(" AND R2.LINK_PID IN (" + sql + ")");
-			sb.append(" AND R3.LINK_PID IN (" + sql + ")");
-			sb.append(" AND R1.LINK_PID NOT IN (" + sql + ")");
-			String sql2 = sb.toString();
-			log.info("RdInter前检查GLM28024:" + sql2);
-			
-			DatabaseOperator getObj = new DatabaseOperator();
-			List<Object> resultList = new ArrayList<Object>();
-			resultList = getObj.exeSelect(this.getConn(), sql2);
-			
-			if(resultList.size()>0){
-				this.setCheckResult("", "", 0);
-			}
-		}
-		
-		
-	}
-
-	/* (non-Javadoc)
-	 * @see com.navinfo.dataservice.engine.check.core.baseRule#postCheck(com.navinfo.dataservice.dao.check.CheckCommand)
-	 */
-	@Override
-	public void postCheck(CheckCommand checkCommand) throws Exception {
-		// TODO Auto-generated method stub
 		
 	}
 

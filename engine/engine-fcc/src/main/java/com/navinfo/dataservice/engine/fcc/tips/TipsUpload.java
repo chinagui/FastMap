@@ -296,7 +296,10 @@ public class TipsUpload {
 					newFeedbacks.add(newFeedback);
 				}
 
-				json.put("feedback", newFeedbacks);
+				JSONObject  feedbackObj=new JSONObject();
+				feedbackObj.put("f_array", newFeedbacks);
+				json.put("feedback", feedbackObj);
+				
 
 				String sourceType = json.getString("s_sourceType");
 
@@ -411,12 +414,12 @@ public class TipsUpload {
 			String rowkey = new String(result.getRow());
 
 			try {
-				JSONObject jo = new JSONObject();
+				JSONObject jo = new JSONObject();  
 
 				String track = new String(result.getValue("data".getBytes(),
 						"track".getBytes()));
 
-				jo.putAll(JSONObject.fromObject(track));
+				jo.put("track",track);
 
 				if (result.containsColumn("data".getBytes(),
 						"feedback".getBytes())) {
@@ -432,6 +435,7 @@ public class TipsUpload {
 				oldTips.put(rowkey, jo);
 			} catch (Exception e) {
 				logger.error(e.getMessage(),e.getCause());
+				throw e;
 			}
 		}
 	}
@@ -549,9 +553,9 @@ public class TipsUpload {
 		put.addColumn("data".getBytes(), "deep".getBytes(),
 				json.getString("deep").getBytes());
 
-		JSONObject feedback = new JSONObject();
+		JSONObject feedback = json.getJSONObject("feedback");
 
-		feedback.put("f_array", json.getJSONArray("feedback"));
+		//feedback.put("f_array", json.getJSONArray("feedback"));
 
 		put.addColumn("data".getBytes(), "feedback".getBytes(), feedback
 				.toString().getBytes());
@@ -624,10 +628,12 @@ public class TipsUpload {
 		Put put = new Put(rowkey.getBytes());
 
 		int lifecycle = json.getInt("t_lifecycle");
+		
+		JSONObject oldTrack=oldTip.getJSONObject("track");
 
 		JSONObject jsonTrack = TipsUtils.generateTrackJson(lifecycle,TipsUpload.IMPORT_STATE,
 				json.getInt("t_handler"), json.getInt("t_command"),
-				oldTip.getJSONArray("t_trackInfo"),json.getString("t_operateDate"),currentDate,
+				oldTrack.getJSONArray("t_trackInfo"),json.getString("t_operateDate"),currentDate,
 				json.getInt("t_cStatus"),json.getInt("t_dStatus"),json.getInt("t_mStatus"),json.getInt("t_inMeth")
 				,json.getInt("t_pStatus"),json.getInt("t_dInProc"),json.getInt("t_mInProc"));
 
@@ -666,18 +672,18 @@ public class TipsUpload {
 
 		put.addColumn("data".getBytes(), "deep".getBytes(),
 				json.getString("deep").getBytes());
+		
+		/*JSONObject oldFeedBack = oldTip.getJSONObject("feedback");
 
-		JSONObject feedback = oldTip.getJSONObject("feedback");
+		if (oldFeedBack.isNullObject()) {
 
-		if (feedback.isNullObject()) {
+			oldFeedBack = new JSONObject();
 
-			feedback = new JSONObject();
-
-			feedback.put("f_array", new JSONArray());
+			oldFeedBack.put("f_array", new JSONArray());
 
 		}
 
-		JSONArray fArray = feedback.getJSONArray("f_array");
+		JSONArray fArray = oldFeedBack.getJSONArray("f_array");
 
 		JSONArray newFArray = new JSONArray();
 
@@ -699,9 +705,9 @@ public class TipsUpload {
 			} else {
 				newFArray.add(jo);
 			}
-		}
+		}*/
 
-		JSONArray newFeedbacks = json.getJSONArray("feedback");
+		/*JSONArray newFeedbacks = json.getJSONArray("feedback");
 
 		for (int i = 0; i < newFeedbacks.size(); i++) {
 			JSONObject newFeedback = newFeedbacks.getJSONObject(i);
@@ -720,11 +726,13 @@ public class TipsUpload {
 
 		if (graph != null) {
 			newFArray.add(graph);
-		}
+		}*/
 
-		feedback.put("f_array", newFArray);
-
-		json.put("feedback", newFArray);
+	/*	oldFeedBack.put("f_array", newFArray);
+	 * 
+	 * 
+*/
+		JSONObject feedback = json.getJSONObject("feedback");
 
 		put.addColumn("data".getBytes(), "feedback".getBytes(), feedback
 				.toString().getBytes());
@@ -787,9 +795,11 @@ public class TipsUpload {
 	}
 
 	private int canUpdate(JSONObject oldTips, String operateDate) {
-		int lifecycle = oldTips.getInt("t_lifecycle");
+		JSONObject oldTrack= oldTips.getJSONObject("track");
+		
+		int lifecycle = oldTrack.getInt("t_lifecycle");
 
-		JSONArray tracks = oldTips.getJSONArray("t_trackInfo");
+		JSONArray tracks = oldTrack.getJSONArray("t_trackInfo");
 		
 		String lastDate = null;
 		

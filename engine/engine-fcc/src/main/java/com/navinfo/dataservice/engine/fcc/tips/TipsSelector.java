@@ -371,13 +371,16 @@ public class TipsSelector {
 				}
 
 				else if (type == 1801 || type == 1806||  type == 8002) {
-					JSONArray feedbacks = JSONArray.fromObject(json
+					
+					JSONObject  feebackObj= JSONObject.fromObject(json
 							.getString("feedback"));
+					
+					JSONArray f_array = feebackObj.getJSONArray("f_array");
 
 					JSONArray a = new JSONArray();
 
-					for (int j = 0; j < feedbacks.size(); j++) {
-						JSONObject feedback = feedbacks.getJSONObject(j);
+					for (int j = 0; j < f_array.size(); j++) {
+						JSONObject feedback = f_array.getJSONObject(j);
 
 						if (feedback.getInt("type") == 6) {
 							JSONArray content = feedback

@@ -142,7 +142,7 @@ public class TipsUtils {
 
 		String sourceType = json.getString("s_sourceType");
 
-		JSONArray feedbacks = json.getJSONArray("feedback");
+		JSONObject feedbacks = json.getJSONObject("feedback");
 
 		index.put("feedback", feedbacks.toString());
 
@@ -183,7 +183,7 @@ public class TipsUtils {
 			int t_command, int t_handler, int t_cStatus, int t_dStatus,
 			int t_mStatus, String sourceType, int s_sourceCode,
 			JSONObject g_guide, JSONObject g_location, JSONObject deep,
-			JSONArray feedBackArr, int s_reliability,int t_inMeth,
+			JSONObject feedbackObj, int s_reliability,int t_inMeth,
 			int t_pStatus,int t_dInProc,int t_mInProc) throws Exception {
 		JSONObject index = new JSONObject();
 
@@ -245,11 +245,15 @@ public class TipsUtils {
 			
 			index.put("deep", TipsUtils.OBJECT_NULL_DEFAULT_VALUE);
 		}
+	/*	JSONArray f_array=new JSONArray(); 
+		if(feedbackObj!=null){
+			f_array=feedbackObj.getJSONArray("f_array");
+		}*/
 
-		index.put("feedback", feedBackArr.toString());
+		index.put("feedback", feedbackObj);
 
 		index.put("wkt", TipsImportUtils.generateSolrWkt(
-				String.valueOf(sourceType), deep, g_location, feedBackArr));
+				String.valueOf(sourceType), deep, g_location, feedbackObj));
 
 		index.put("s_reliability", s_reliability);
 

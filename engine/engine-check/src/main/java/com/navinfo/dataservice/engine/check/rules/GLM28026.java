@@ -86,16 +86,19 @@ public class GLM28026 extends baseRule{
 			sb.append(" WHERE ROI.U_RECORD <> 2");
 			sb.append(" AND RIL1.U_RECORD <> 2");
 			sb.append(" AND RIL1.PID = ROI.INTER_PID");
+			sb.append(" AND ROI.PID <>" + rdObjectLink.getPid());
 			sb.append(" AND RIL1.LINK_PID IN (" + sql_p + ")");
 			sb.append(" UNION");
 			sb.append(" SELECT ROR.PID FROM RD_OBJECT_ROAD ROR,RD_ROAD_LINK RRL1");
 			sb.append(" WHERE ROR.U_RECORD <> 2");
 			sb.append(" AND RRL1.U_RECORD <> 2");
 			sb.append(" AND ROR.ROAD_PID = RRL1.PID");
+			sb.append(" AND ROR.PID <>" + rdObjectLink.getPid());
 			sb.append(" AND RRL1.LINK_PID IN (" + sql_p + ")");
 			sb.append(" UNION");
 			sb.append(" SELECT ROL.PID FROM RD_OBJECT_LINK ROL");
 			sb.append(" WHERE ROL.U_RECORD <> 2");
+			sb.append(" AND ROL.PID <>" + rdObjectLink.getPid());
 			sb.append(" AND ROL.LINK_PID IN (" + sql_p + ")");
 
 			String sqlCheck = sb.toString();
@@ -103,7 +106,7 @@ public class GLM28026 extends baseRule{
 			
 			DatabaseOperator getObj = new DatabaseOperator();
 			List<Object> resultList = new ArrayList<Object>();
-			resultList = getObj.exeSelect(this.getConn(), sql);
+			resultList = getObj.exeSelect(this.getConn(), sqlCheck);
 			
 			if(resultList.size()>0){
 				this.setCheckResult("", "", 0);
@@ -143,16 +146,19 @@ public class GLM28026 extends baseRule{
 			sb.append(" WHERE ROI.U_RECORD <> 2");
 			sb.append(" AND RIL1.U_RECORD <> 2");
 			sb.append(" AND RIL1.PID = ROI.INTER_PID");
+			sb.append(" AND ROI.PID <>" + rdObjectRoad.getPid());
 			sb.append(" AND RIL1.LINK_PID IN (" + sql_p + ")");
 			sb.append(" UNION");
 			sb.append(" SELECT ROR.PID FROM RD_OBJECT_ROAD ROR,RD_ROAD_LINK RRL1");
 			sb.append(" WHERE ROR.U_RECORD <> 2");
 			sb.append(" AND RRL1.U_RECORD <> 2");
 			sb.append(" AND ROR.ROAD_PID = RRL1.PID");
+			sb.append(" AND ROR.PID <>" + rdObjectRoad.getPid());
 			sb.append(" AND RRL1.LINK_PID IN (" + sql_p + ")");
 			sb.append(" UNION");
 			sb.append(" SELECT ROL.PID FROM RD_OBJECT_LINK ROL");
 			sb.append(" WHERE ROL.U_RECORD <> 2");
+			sb.append(" AND ROL.PID <>" + rdObjectRoad.getPid());
 			sb.append(" AND ROL.LINK_PID IN (" + sql_p + ")");
 
 			String sqlCheck = sb.toString();
@@ -160,7 +166,7 @@ public class GLM28026 extends baseRule{
 			
 			DatabaseOperator getObj = new DatabaseOperator();
 			List<Object> resultList = new ArrayList<Object>();
-			resultList = getObj.exeSelect(this.getConn(), sql);
+			resultList = getObj.exeSelect(this.getConn(), sqlCheck);
 			
 			if(resultList.size()>0){
 				this.setCheckResult("", "", 0);
@@ -311,16 +317,19 @@ public class GLM28026 extends baseRule{
 			sb.append(" WHERE ROI.U_RECORD <> 2");
 			sb.append(" AND RIL1.U_RECORD <> 2");
 			sb.append(" AND RIL1.PID = ROI.INTER_PID");
+			sb.append(" AND ROI.PID <>" + rdObjectInter.getPid());
 			sb.append(" AND RIL1.LINK_PID IN (" + sql_p + ")");
 			sb.append(" UNION");
 			sb.append(" SELECT ROR.PID FROM RD_OBJECT_ROAD ROR,RD_ROAD_LINK RRL1");
 			sb.append(" WHERE ROR.U_RECORD <> 2");
 			sb.append(" AND RRL1.U_RECORD <> 2");
 			sb.append(" AND ROR.ROAD_PID = RRL1.PID");
+			sb.append(" AND ROR.PID <>" + rdObjectInter.getPid());
 			sb.append(" AND RRL1.LINK_PID IN (" + sql_p + ")");
 			sb.append(" UNION");
 			sb.append(" SELECT ROL.PID FROM RD_OBJECT_LINK ROL");
 			sb.append(" WHERE ROL.U_RECORD <> 2");
+			sb.append(" AND ROL.PID <>" + rdObjectInter.getPid());
 			sb.append(" AND ROL.LINK_PID IN (" + sql_p + ")");
 
 			String sqlCheck = sb.toString();
@@ -328,7 +337,7 @@ public class GLM28026 extends baseRule{
 			
 			DatabaseOperator getObj = new DatabaseOperator();
 			List<Object> resultList = new ArrayList<Object>();
-			resultList = getObj.exeSelect(this.getConn(), sql);
+			resultList = getObj.exeSelect(this.getConn(), sqlCheck);
 			
 			if(resultList.size()>0){
 				this.setCheckResult("", "", 0);

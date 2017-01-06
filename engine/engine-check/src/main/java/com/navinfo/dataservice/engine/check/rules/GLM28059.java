@@ -42,7 +42,7 @@ public class GLM28059 extends baseRule{
 	 * @param rdObjectName
 	 */
 	private void checkRdObjectName(RdObjectName rdObjectName) {
-		String target = "[RD_ROAD," + rdObjectName.getPid() + "]";
+		String target = "[RD_OBJECT," + rdObjectName.getPid() + "]";
 		//新增RdObjectName
 		if(rdObjectName.status().equals(ObjStatus.INSERT)){
 			if(rdObjectName.getName()==null||rdObjectName.getName().isEmpty()){

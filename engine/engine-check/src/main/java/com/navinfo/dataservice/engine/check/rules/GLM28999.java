@@ -46,7 +46,7 @@ public class GLM28999 extends baseRule{
 	 * @throws Exception 
 	 */
 	private void checkRdObjectName(RdObjectName rdObjectName) throws Exception {
-		String target = "[RD_ROAD," + rdObjectName.getPid() + "]";
+		String target = "[RD_OBJECT," + rdObjectName.getPid() + "]";
 		//新增RdObjectName
 		if(rdObjectName.status().equals(ObjStatus.INSERT)){
 			//名称来源

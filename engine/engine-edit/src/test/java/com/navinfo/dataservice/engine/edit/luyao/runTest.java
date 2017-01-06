@@ -1032,5 +1032,101 @@ public class runTest extends InitApplication {
 
 		String msg = t.run();
 	}
-			
+	
+	
+	@Test
+	public void run_1227_2() throws Exception {
+
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":19,\"type\":\"RDNODE\",\"objId\":200002455,\"data\":{\"kind\":2,\"pid\":200002455,\"objStatus\":\"UPDATE\"}}";
+		
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+	
+	@Test
+	public void run_1229_1() throws Exception {
+
+		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDTOLLGATE\",\"dbId\":17,\"data\":{\"inLinkPid\":308003107,\"outLinkPid\":320003013,\"nodePid\":302002408}}";
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+	
+	
+	@Test
+	public void run_1229_2() throws Exception {
+
+		String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDTOLLGATE\",\"dbId\":17,\"data\":{\"type\":0,\"rowId\":\"4EACEF96A92342EF992EBF2AE76D9C18\",\"pid\":304000018,\"objStatus\":\"UPDATE\",\"passages\":[{\"cardType\":0,\"rowId\":\"26A8A884DB6E4B36959072F0B591DBD2\",\"pid\":304000018,\"objStatus\":\"UPDATE\"}]}}";
+		
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+	
+	@Test
+	public void run_1229_3() throws Exception {
+
+		String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDTOLLGATE\",\"dbId\":17,\"data\":{\"names\":[{\"pid\":0,\"nameGroupid\":1,\"langCode\":\"CHI\",\"name\":\"收费符收费符收费符收费符收费符收费符收费符收费符收费符收费符收费符收费符收费符收费符收费\",\"phonetic\":\"Shou Fu Shou Fei Fu Shou Fei Fu Shou Fei Fu Shou Fei Fu Shou Fei Fu Shou Fei Fu Shou Fei Fu Shou Fei Fu Shou Fei Fu Shou Fei Fu Shou Fei Fu Shou Fei Fu Shou Fei Fu Shou Fei Fu Shou Fei\",\"rowId\":\"\",\"objStatus\":\"INSERT\"}],\"rowId\":\"4EACEF96A92342EF992EBF2AE76D9C18\",\"pid\":304000018}}";
+		
+		
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}	
+	
+	
+		@Test
+	public void run_1229_4() throws Exception {
+
+		String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDTOLLGATE\",\"dbId\":17,\"data\":{\"passageNum\":0,\"rowId\":\"9ED3B4049CAD4722A1F831E6B52303B5\",\"pid\":310000012,\"objStatus\":\"UPDATE\",\"etcFigureCode\":\"\",\"passages\":[{\"pid\":310000012,\"seqNum\":1,\"tollForm\":0,\"cardType\":0,\"vehicle\":0,\"rowId\":\"6C89A279EB5F43219231A5F3F2E567EB\",\"objStatus\":\"DELETE\"}]}}";
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}	
+	
+		@Test
+	public void run_1229_5() throws Exception {
+
+		String parameter = "";
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+
+	@Test
+	public void run_0104_1() throws Exception {
+
+		String parameter = "{\"command\":\"CREATE\",\"dbId\":19,\"type\":\"RDBRANCH\",\"data\":{\"branchType\":3,\"inLinkPid\":302003134,\"nodePid\":206002438,\"outLinkPid\":308003160}}";
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+	
+	@Test
+	public void run_0106_1() throws Exception {
+
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":19,\"type\":\"RDLINK\",\"objId\":303003140,\"data\":{\"kind\":2,\"pid\":303003140,\"objStatus\":\"UPDATE\",\"routeAdopt\":4}}";
+		
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+@Test
+	public void run_0106_2() throws Exception {
+
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":19,\"type\":\"RDLINK\",\"objId\":201003135,\"data\":{\"kind\":2,\"pid\":201003135,\"objStatus\":\"UPDATE\"}}";
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
 }

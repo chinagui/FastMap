@@ -73,7 +73,7 @@ public class GLM12004 extends baseRule {
 
 		if(check){
 			
-			String target = "[RdBranch," + rdBranch.getPid() + "]";
+			String target = "[RD_BRANCH," + rdBranch.getPid() + "]";
 			
 			this.setCheckResult("", target, 0);
 		}
@@ -115,7 +115,7 @@ public class GLM12004 extends baseRule {
 			
 			if(check){
 				
-				String target = "[RdBranch," +String.valueOf( branchPid) + "]";
+				String target = "[RD_BRANCH," + branchPid + "]";
 				
 				this.setCheckResult("", target, 0);
 			}

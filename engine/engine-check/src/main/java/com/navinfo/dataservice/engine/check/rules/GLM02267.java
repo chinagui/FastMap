@@ -302,7 +302,7 @@ public class GLM02267 extends baseRule{
 			resultList = getObj.exeSelect(this.getConn(), sql);
 			
 			if(Integer.parseInt(resultList.get(0).toString())==0){
-				String target = "[RD_ROAD," + rdObjectName.getPid() + "]";
+				String target = "[RD_OBJECT," + rdObjectName.getPid() + "]";
 				this.setCheckResult("", target, 0);
 			}
 		}

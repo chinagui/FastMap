@@ -51,7 +51,7 @@ public class GLM56034 extends baseRule {
 			//条件线限速时间段
 			if(changedFields.containsKey("timeDomain")){
 				String timeDomain = (String) changedFields.get("timeDomain");
-				if("[]".equals(timeDomain)){
+				if("[]".equals(timeDomain) || timeDomain == null){
 					boolean check = this.check(rdLinkSpeedlimit.getLinkPid());
 					
 					if(check){
@@ -88,7 +88,7 @@ public class GLM56034 extends baseRule {
 		sb.append("SELECT DISTINCT RLS.LINK_PID FROM RD_LINK_SPEEDLIMIT RLS");
 		sb.append(" WHERE RLS.LINK_PID = "+pid);
 		sb.append(" AND RLS.U_RECORD <>2 AND RLS.SPEED_DEPENDENT IN (10,12)");
-		sb.append(" AND RLS.TIME_DOMAIN ='[]'");
+		sb.append(" AND (RLS.TIME_DOMAIN ='[]' OR RLS.TIME_DOMAIN IS NULL)");
 		String sql = sb.toString();
 		log.info("后检查GLM56034--sql:" + sql);
 		

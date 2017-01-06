@@ -87,7 +87,8 @@ public class GLM15008 extends baseRule {
 		   
 		sb.append("SELECT RS.PID FROM RD_SPEEDLIMIT RS");
 		sb.append(" WHERE RS.PID= "+pid);
-		sb.append(" AND RS.U_RECORD <>2 AND RS.REC_STATUS_IN <> 2 AND RS.TIME_DOMAIN IS NOT NULL");
+		sb.append(" AND RS.U_RECORD <>2 AND RS.REC_STATUS_IN <> 2 ");
+		sb.append(" AND RS.TIME_DOMAIN IS NOT NULL AND RS.TIME_DOMAIN <>'[]'");
 		sb.append(" AND (RS.SPEED_TYPE <> 3 OR RS.SPEED_DEPENDENT NOT IN (6,10))");
 		String sql = sb.toString();
 		log.info("后检查GLM15008--sql:" + sql);

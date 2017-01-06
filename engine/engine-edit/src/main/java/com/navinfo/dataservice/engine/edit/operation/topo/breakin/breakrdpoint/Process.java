@@ -327,15 +327,15 @@ public class Process extends AbstractProcess<Command> {
 				log.info("PREPARE DATA USE TIME   "
 						+ String.valueOf(preDataTime - startTime));
 
-				log.info("PREPARE CHECK BEGIN");
-				String preCheckMsg = this.preCheck();
-				long prCheckTime = System.currentTimeMillis();
-				log.info("PREPARE CHECK END");
-				log.info("PREPARE CHECK USE TIME   "
-						+ String.valueOf(prCheckTime - preDataTime));
-				if (preCheckMsg != null) {
-					throw new Exception(preCheckMsg);
-				}
+//				log.info("PREPARE CHECK BEGIN");
+//				String preCheckMsg = this.preCheck();
+//				long prCheckTime = System.currentTimeMillis();
+//				log.info("PREPARE CHECK END");
+//				log.info("PREPARE CHECK USE TIME   "
+//						+ String.valueOf(prCheckTime - preDataTime));
+//				if (preCheckMsg != null) {
+//					throw new Exception(preCheckMsg);
+//				}
 				log.info("START MAIN RDLINK BREAK");
 				IOperation operation = null;
 
@@ -346,7 +346,9 @@ public class Process extends AbstractProcess<Command> {
 				long mainRDLinkTime = System.currentTimeMillis();
 				log.info("END MAIN RDLINK BREAK");
 				log.info("MAIN RDLINK BREAK USE TIME  "
-						+ String.valueOf(mainRDLinkTime - prCheckTime));
+						+ String.valueOf(mainRDLinkTime ));
+//				log.info("MAIN RDLINK BREAK USE TIME  "
+//						+ String.valueOf(mainRDLinkTime - prCheckTime));
 				log.info("START ATTRRELATION ");
 				updataRelationObj();
 				long attrrelationTime = System.currentTimeMillis();
@@ -354,7 +356,6 @@ public class Process extends AbstractProcess<Command> {
 				log.info("MAIN ATTRRELATION USE TIME  "
 						+ String.valueOf(attrrelationTime - mainRDLinkTime));
 
-				log.info("START RECORD  ");
 				// 设置主pid值（primary key），用于web显示对应的node的属性面板
 				if (!this.getCommand().getOperType().equals(OperType.DELETE)
 						&& !this.getCommand().getObjType()
@@ -368,6 +369,18 @@ public class Process extends AbstractProcess<Command> {
 					handleResult(this.getCommand().getObjType(), this
 							.getCommand().getOperType(), this.getResult());
 				}
+				
+				log.info("PREPARE CHECK BEGIN");
+				String preCheckMsg = this.preCheck();
+				long prCheckTime = System.currentTimeMillis();
+				log.info("PREPARE CHECK END");
+				log.info("PREPARE CHECK USE TIME   "
+						+ String.valueOf(prCheckTime - preDataTime));
+				if (preCheckMsg != null) {
+					throw new Exception(preCheckMsg);
+				}
+				
+				log.info("START RECORD  ");
 				this.recordData();
 				long recordTime = System.currentTimeMillis();
 				log.info("END RECORD  ");

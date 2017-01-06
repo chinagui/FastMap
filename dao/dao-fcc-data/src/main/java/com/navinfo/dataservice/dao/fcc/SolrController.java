@@ -53,9 +53,15 @@ public class SolrController {
 		
 		doc.addField("t_dStatus", json.getInt("t_dStatus"));
 		
-        doc.addField("t_inStatus", json.getInt("t_inStatus"));
+        //doc.addField("t_inStatus", json.getInt("t_inStatus"));
 		
 		doc.addField("t_inMeth", json.getInt("t_inMeth"));
+		
+		doc.addField("t_pStatus", json.getInt("t_pStatus"));
+		
+		doc.addField("t_dInProc", json.getInt("t_dInProc"));
+		
+		doc.addField("t_mInProc", json.getInt("t_mInProc"));
 		
 		doc.addField("handler", json.getInt("handler"));
 		
@@ -217,7 +223,19 @@ public class SolrController {
 		return snapshots;
 	}
 
-	public List<JSONObject> queryTipsWeb(String wkt, int type, JSONArray stages)
+	/**
+	 * @Description:按照wkt  ,tip类型 \stage查询tips
+	 * @param wkt
+	 * @param type
+	 * @param stages
+	 * @param isPre 是否是预处理平台，默认不是
+	 * @return
+	 * @throws SolrServerException
+	 * @throws IOException
+	 * @author: y
+	 * @time:2017-1-5 下午3:25:50
+	 */
+	public List<JSONObject> queryTipsWeb(String wkt, int type, JSONArray stages,boolean isPre)
 			throws SolrServerException, IOException {
 		List<JSONObject> snapshots = new ArrayList<JSONObject>();
 
@@ -245,6 +263,12 @@ public class SolrController {
 			}
 
 			builder.append(")");
+		}
+		
+		//不是预处理，则需要过滤预处理没提交的tips,t_pStatus=0是没有提交的
+		
+		if(!isPre){
+			builder.append("AND -(t_pStatus:0 AND s_sourceType:8001)");
 		}
 
 		SolrQuery query = new SolrQuery();
@@ -428,78 +452,8 @@ public class SolrController {
 
 	public List<JSONObject> queryTipsWebType(String wkt, JSONArray types,JSONArray stages,boolean filterDelete)
 			throws SolrServerException, IOException {
-		List<JSONObject> snapshots = new ArrayList<JSONObject>();
-
-		StringBuilder builder = new StringBuilder();
-		
-		//builder.append("wkt:\"intersects(" + wkt + ")\"  AND stage:(1 2 3)");
-		
-		builder.append("wkt:\"intersects(" + wkt + ")\" " );
-
-		if(filterDelete) {
-            //过滤删除的数据
-			builder.append(" AND -t_lifecycle:1 " );
-		}
-		
-		if (stages.size() > 0) {
-
-			builder.append(" AND stage:(");
-
-			for (int i = 0; i < stages.size(); i++) {
-				int stage = stages.getInt(i);
-
-				if (i > 0) {
-					builder.append(" ");
-				}
-				builder.append(stage);
-			}
-
-			builder.append(")");
-		}
-
-		if (types.size() > 0) {
-
-			builder.append(" AND s_sourceType:(");
-
-			for (int i = 0; i < types.size(); i++) {
-				String type = types.getString(i);
-
-				if (i > 0) {
-					builder.append(" ");
-				}
-				builder.append(type);
-			}
-
-			builder.append(")");
-		}
-
-		SolrQuery query = new SolrQuery();
-
-		query.set("q", builder.toString());
-
-		query.set("start", 0);
-
-		query.set("rows", fetchNum);
-
-		QueryResponse response = client.query(query);
-
-		SolrDocumentList sdList = response.getResults();
-
-		long totalNum = sdList.getNumFound();
-
-		if (totalNum <= fetchNum) {
-			for (int i = 0; i < totalNum; i++) {
-				SolrDocument doc = sdList.get(i);
-
-				JSONObject snapshot = JSONObject.fromObject(doc);
-
-				snapshots.add(snapshot);
-			}
-		} else {
-			// 暂先不处理
-		}
-
-		return snapshots;
+		//默认不是预处理的tips
+		return queryTipsWebType(wkt, types, stages, filterDelete,false);
 	}
 
 	public JSONObject getById(String id) throws Exception {
@@ -584,6 +538,100 @@ public class SolrController {
 		
 		client.commit();
 		
+	}
+
+	/**
+	 * @Description:渲染接口
+	 * @param wkt
+	 * @param types
+	 * @param stages
+	 * @param b
+	 * @param isPre
+	 * @return
+	 * @author: y
+	 * @throws IOException 
+	 * @throws SolrServerException 
+	 * @time:2017-1-5 下午2:03:57
+	 */
+	public List<JSONObject> queryTipsWebType(String wkt, JSONArray types,
+			JSONArray stages, boolean filterDelete, boolean isPre) throws SolrServerException, IOException {
+		List<JSONObject> snapshots = new ArrayList<JSONObject>();
+
+		StringBuilder builder = new StringBuilder();
+		
+		//builder.append("wkt:\"intersects(" + wkt + ")\"  AND stage:(1 2 3)");
+		
+		builder.append("wkt:\"intersects(" + wkt + ")\" " );
+
+		if(filterDelete) {
+            //过滤删除的数据
+			builder.append(" AND -t_lifecycle:1 " );
+		}
+		
+		if (stages.size() > 0) {
+
+			builder.append(" AND stage:(");
+
+			for (int i = 0; i < stages.size(); i++) {
+				int stage = stages.getInt(i);
+
+				if (i > 0) {
+					builder.append(" ");
+				}
+				builder.append(stage);
+			}
+
+			builder.append(")");
+		}
+
+		if (types.size() > 0) {
+
+			builder.append(" AND s_sourceType:(");
+
+			for (int i = 0; i < types.size(); i++) {
+				String type = types.getString(i);
+
+				if (i > 0) {
+					builder.append(" ");
+				}
+				builder.append(type);
+			}
+
+			builder.append(")");
+		}
+		//不是预处理，则需要过滤预处理没提交的tips,t_pStatus=0是没有提交的
+		
+		if(!isPre){
+			builder.append("AND -(t_pStatus:0 AND s_sourceType:8001)");
+		}
+
+		SolrQuery query = new SolrQuery();
+
+		query.set("q", builder.toString());
+
+		query.set("start", 0);
+
+		query.set("rows", fetchNum);
+
+		QueryResponse response = client.query(query);
+
+		SolrDocumentList sdList = response.getResults();
+
+		long totalNum = sdList.getNumFound();
+
+		if (totalNum <= fetchNum) {
+			for (int i = 0; i < totalNum; i++) {
+				SolrDocument doc = sdList.get(i);
+
+				JSONObject snapshot = JSONObject.fromObject(doc);
+
+				snapshots.add(snapshot);
+			}
+		} else {
+			// 暂先不处理
+		}
+
+		return snapshots;
 	}
 
 }

@@ -75,7 +75,7 @@ public class GLM26017_1 extends baseRule {
 	 * @throws Exception 
 	 */
 	private void checkRdRestrictionDetail(RdRestrictionDetail rdRestrictionDetail) throws Exception {
-		if(rdRestrictionDetail.changedFields().containsKey("relationshipType")){
+		if(rdRestrictionDetail.changedFields() != null && rdRestrictionDetail.changedFields().containsKey("relationshipType")){
 			int relationshipType = Integer.parseInt(rdRestrictionDetail.changedFields().get("relationshipType").toString());
 			if(relationshipType==1){
 				StringBuilder sb = new StringBuilder();
@@ -111,7 +111,10 @@ public class GLM26017_1 extends baseRule {
 	private void checkRdVoiceguideDetail(RdVoiceguideDetail rdVoiceguideDetail) throws Exception {
 		// TODO Auto-generated method stub
 		Map<String, Object> changedFields = rdVoiceguideDetail.changedFields();
-		int relationshipType = Integer.parseInt((String) changedFields.get("relationshipType"));
+		int relationshipType = 1;
+		if(changedFields != null && changedFields.containsKey("relationshipType")){
+			relationshipType = Integer.parseInt((String) changedFields.get("relationshipType"));
+		}
 		if(relationshipType == 1){
 			StringBuilder sb = new StringBuilder();
 			
@@ -142,7 +145,10 @@ public class GLM26017_1 extends baseRule {
 	private void checkRdDirectroute(RdDirectroute rdDirectroute) throws Exception {
 		// TODO Auto-generated method stub
 		Map<String, Object> changedFields = rdDirectroute.changedFields();
-		int relationshipType = (int) changedFields.get("relationshipType");
+		int relationshipType = 1;
+		if(changedFields != null && changedFields.containsKey("relationshipType")){
+			relationshipType = (int) changedFields.get("relationshipType");
+		}
 		if(relationshipType == 1){
 			StringBuilder sb = new StringBuilder();
 			
@@ -173,7 +179,10 @@ public class GLM26017_1 extends baseRule {
 	private void checkRdLaneTopology(RdLaneTopology rdLaneTopology) throws Exception {
 		// TODO Auto-generated method stub
 		Map<String, Object> changedFields = rdLaneTopology.changedFields();
-		int relationshipType = Integer.parseInt((String) changedFields.get("relationshipType"));
+		int relationshipType = 1;
+		if(changedFields != null && changedFields.containsKey("relationshipType")){
+			relationshipType = Integer.parseInt((String) changedFields.get("relationshipType"));
+		}
 		if(relationshipType == 1){
 			//修改车信,触发检查
 			StringBuilder sb = new StringBuilder();

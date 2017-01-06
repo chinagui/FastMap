@@ -28,6 +28,8 @@ public class RdLinkForm implements IRow {
 	private int auxiFlag;
 
 	private int kgFlag;
+	
+	protected ObjStatus status;
 
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 
@@ -85,8 +87,14 @@ public class RdLinkForm implements IRow {
 
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) {
+		JSONObject json = JSONObject.fromObject(this, JsonUtils.getStrConfig());
 
-		return JSONObject.fromObject(this, JsonUtils.getStrConfig());
+		if (objLevel == ObjLevel.HISTORY) {
+			json.remove("status");
+		}
+
+		return json;
+//		return JSONObject.fromObject(this, JsonUtils.getStrConfig());
 	}
 
 	@Override
@@ -120,11 +128,12 @@ public class RdLinkForm implements IRow {
 	@Override
 	public ObjStatus status() {
 
-		return null;
+		return status;
 	}
 
 	@Override
 	public void setStatus(ObjStatus os) {
+		status = os;
 	}
 
 	@Override

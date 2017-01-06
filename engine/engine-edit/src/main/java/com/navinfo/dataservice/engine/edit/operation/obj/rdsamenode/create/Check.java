@@ -2,10 +2,7 @@ package com.navinfo.dataservice.engine.edit.operation.obj.rdsamenode.create;
 
 import java.sql.Connection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-
-import org.apache.commons.collections.CollectionUtils;
 
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameNodePart;
@@ -56,30 +53,6 @@ public class Check {
 				throw new Exception("node点：" + nodePid + "已经存在同一关系，不能重复创建");
 			}
 		}
-
-		// 检查node是否属于某一单一link的起点和终点
-		checkNodesForOneLink(nodePids, conn);
 	}
 
-
-	/**
-	 * @param nodePids
-	 * @throws IllegalAccessException
-	 * @throws InstantiationException
-	 */
-	private void checkNodesForOneLink(Map<String, StringBuilder> nodePids, Connection conn) throws Exception {
-		for (Map.Entry<String, StringBuilder> entry : nodePids.entrySet()) {
-			String tableName = entry.getKey().replace("_NODE", "_LINK");
-
-			String nodePidStr = entry.getValue().toString();
-
-			RdSameNodeSelector selector = new RdSameNodeSelector(conn);
-
-			List<Integer> linkPidList = selector.loadLinkByNodePids(tableName, nodePidStr, false);
-
-			if (CollectionUtils.isNotEmpty(linkPidList)) {
-				throw new Exception("同一条link的两个点不能做同一点");
-			}
-		}
-	}
 }

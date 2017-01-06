@@ -1,5 +1,7 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdslope.create;
 
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.operation.AbstractProcess;
 
@@ -11,8 +13,7 @@ public class Process extends AbstractProcess<Command> {
 
 	@Override
 	public boolean prepareData() throws Exception {
-
-		return false;
+		return true;
 	}
 
 	@Override

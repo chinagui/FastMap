@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.edit.luyao;
 
 import java.sql.Connection;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -547,6 +548,14 @@ public class commonTest extends InitApplication {
 		
 		
 		System.out.print("");
+	}
+	
+	@Test
+	public void testStringFormat() {
+		String strFormat=MessageFormat.format("字符串{0}测试{1}", 0,"!");		
+		
+		
+		System.out.print(strFormat);
 	}
 
 }

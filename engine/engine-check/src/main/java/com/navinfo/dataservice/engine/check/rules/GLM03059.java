@@ -55,7 +55,7 @@ public class GLM03059 extends baseRule {
 		// TODO Auto-generated method stub
 		Map<String, Object> changedFields = rdLink.changedFields();
 		int kind = 7;
-		if(changedFields.containsKey("kind")){
+		if(changedFields != null && changedFields.containsKey("kind")){
 			kind = (int) changedFields.get("kind");
 		}
 		if(kind == 1 || kind == 2){
@@ -90,7 +90,7 @@ public class GLM03059 extends baseRule {
 		// TODO Auto-generated method stub
 		Map<String, Object> changedFields = rdNodeForm.changedFields();
 		int formOfWay = 1;
-		if(changedFields.containsKey("formOfWay")){
+		if(changedFields != null && changedFields.containsKey("formOfWay")){
 			formOfWay = (int) changedFields.get("formOfWay");
 		}
 		if(formOfWay == 15){

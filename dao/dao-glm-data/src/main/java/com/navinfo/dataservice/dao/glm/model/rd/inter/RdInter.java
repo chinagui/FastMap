@@ -37,7 +37,7 @@ public class RdInter implements IObj {
 	private List<IRow> links = new ArrayList<>();
 	
 	private List<IRow> nodes = new ArrayList<>();
-	
+	protected ObjStatus status;
 	public Map<String, RdInterLink> linkMap = new HashMap<String, RdInterLink>();
 	
 	public Map<String, RdInterNode> nodeMap = new HashMap<String, RdInterNode>();
@@ -87,11 +87,12 @@ public class RdInter implements IObj {
 
 	@Override
 	public ObjStatus status() {
-		return null;
+		return status;
 	}
 
 	@Override
 	public void setStatus(ObjStatus os) {
+		status = os;
 	}
 
 	@Override
@@ -221,8 +222,14 @@ public class RdInter implements IObj {
 
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) throws Exception {
-		JSONObject json = JSONObject.fromObject(this, JsonUtils.getStrConfig());
-
+//		JSONObject json = JSONObject.fromObject(this, JsonUtils.getStrConfig());
+//
+//		return json;
+		JSONObject json = JSONObject.fromObject(this,JsonUtils.getStrConfig());
+		
+		if (objLevel == ObjLevel.HISTORY) {
+			json.remove("status");
+		}
 		return json;
 	}
 

@@ -1,8 +1,10 @@
 package com.navinfo.dataservice.engine.check.rules;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -75,7 +77,7 @@ public class GLM03056 extends baseRule {
 		// TODO Auto-generated method stub
 		Map<String, Object> changedFields = rdNodeForm.changedFields();
 		int formOfWay = 1;
-		if(changedFields.containsKey("formOfWay")){
+		if(changedFields != null && changedFields.containsKey("formOfWay")){
 			formOfWay = (int) changedFields.get("formOfWay");
 		}
 		if(formOfWay == 15){
@@ -95,7 +97,7 @@ public class GLM03056 extends baseRule {
 	 */
 	private void checkRdLink(RdLink rdLink) throws Exception {
 		// TODO Auto-generated method stub
-		List<Integer> nodePids = new ArrayList<Integer>();
+		Set<Integer> nodePids = new HashSet<Integer>();
 		nodePids.add(rdLink.getsNodePid());
 		nodePids.add(rdLink.geteNodePid());
 		//分离节点

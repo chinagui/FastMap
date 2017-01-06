@@ -11,9 +11,7 @@ import net.sf.json.JSONObject;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.Delete;
-import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.Put;
-import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.log4j.Logger;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -22,12 +20,9 @@ import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
-import com.navinfo.dataservice.dao.fcc.SolrController;
 
-public class EdgeMatchTipsOperator {
+public class EdgeMatchTipsOperator extends BaseTipsOperate{
 
-	private SolrController solr = new SolrController();
-	
 	static String S_SOURCETYPE="8002";//接边标识tips类型
 
 	private static final Logger logger = Logger
@@ -96,12 +91,15 @@ public class EdgeMatchTipsOperator {
 			int t_cStatus = 0;
 			int t_dStatus = 0;
 			int t_mStatus = 0;
-			int t_inStatus = 0;
-			int t_inMeth = 1;
+			//int t_inStatus = 0;
+			int t_inMeth = 0;
+			int t_pStatus = 0;
+			int t_dInProc = 0;
+			int t_mInProc = 0;  
 
 			JSONObject jsonTrack = TipsUtils.generateTrackJson(t_lifecycle,stage,
 					user, t_command, null, currentDate,currentDate,t_cStatus, t_dStatus,
-					t_mStatus, t_inStatus, t_inMeth);
+					t_mStatus, t_inMeth,t_pStatus,t_dInProc,t_mInProc);
 
 			// 4.geometry
 			JSONObject jsonGeom = new JSONObject();
@@ -152,7 +150,7 @@ public class EdgeMatchTipsOperator {
 			JSONObject solrIndex = TipsUtils.generateSolrIndex(rowkey, stage,
 					currentDate, currentDate, t_lifecycle, t_command, user,
 					t_cStatus, t_dStatus, t_mStatus, S_SOURCETYPE, s_sourceCode,
-					g_guide, g_location, null, f_array, s_reliability,t_inStatus,t_inMeth);
+					g_guide, g_location, null, feedbackObj , s_reliability,t_inMeth,t_pStatus,t_dInProc,t_mInProc);
 
 			solr.addTips(solrIndex);
 
@@ -175,179 +173,7 @@ public class EdgeMatchTipsOperator {
 
 	}
 
-	/**
-	 * @Description:TOOD
-	 * @param rowkey
-	 * @param user
-	 * @param memo
-	 * @author: y
-	 * @throws Exception
-	 * @time:2016-11-16 上午11:29:03
-	 */
-	public void updateFeedbackMemo(String rowkey, int user, String memo,
-			int stage) throws Exception {
-
-		try {
-
-			Connection hbaseConn = HBaseConnector.getInstance().getConnection();
-
-			Table htab = hbaseConn.getTable(TableName
-					.valueOf(HBaseConstant.tipTab));
-
-			// 获取到改钱的 feddback和track
-			JSONObject oldTip = getOldTips(rowkey, htab);
-
-			// 1.更新feddback和track
-			JSONObject track = oldTip.getJSONObject("track");
-
-			JSONArray trackInfoArr = track.getJSONArray("t_trackInfo");
-
-			String date = DateUtils.dateToString(new Date(), "yyyyMMddHHmmss");
-
-			// 新增一个trackInfo
-			JSONObject jsonTrackInfo = new JSONObject();
-
-			jsonTrackInfo.put("stage", stage);
-
-			jsonTrackInfo.put("date", date);
-
-			jsonTrackInfo.put("handler", user);
-
-			trackInfoArr.add(jsonTrackInfo);
-
-			track.put("t_trackInfo", trackInfoArr);
-
-			// track.put("t_lifecycle", lifeCycle);//不需要需改 ????
-
-			// 2.更新feedback
-
-			// 新增一个f_array type=3的是文字
-			JSONObject feedBack = oldTip.getJSONObject("feedback");
-
-			JSONArray f_array = feedBack.getJSONArray("f_array");
-
-
-			for (Object object : f_array) {
-
-				JSONObject obj = JSONObject.fromObject(object);
-				
-				//先删掉
-
-				if (obj.getInt("type") == 3) {
-					
-					f_array.remove(obj);
-
-					break;
-				}
-			}
-			// 如果count=0,则说明原来没有备注，则，增加一条
-
-			int type = 3; // 文字
-
-			JSONObject newFeedback = TipsUtils.newFeedback(user, memo, type,
-					date);
-
-			f_array.add(newFeedback);
-
-			// 更新feedback
-			feedBack.put("f_array", f_array);
-
-			Put put = new Put(rowkey.getBytes());
-
-			put.addColumn("data".getBytes(), "track".getBytes(), track
-					.toString().getBytes());
-
-			put.addColumn("data".getBytes(), "feedback".getBytes(), feedBack
-					.toString().getBytes());
-
-			// 同步更新solr
-			JSONObject solrIndex = solr.getById(rowkey);
-
-			//solrIndex.put("stage", stage);
-
-			solrIndex.put("t_date", date);
-
-			// ???????????lifyCycle要不要更新?已确认，不需要修改。作业不关心
-			// solrIndex.put("t_lifecycle", 2);
-
-			solrIndex.put("handler", user);
-
-			solrIndex.put("feedback", f_array);
-
-			solr.addTips(solrIndex);
-
-			htab.put(put);
-			
-			htab.close();
-
-		} catch (IOException e) {
-			
-			logger.error(e.getMessage(), e);
-			
-			throw new Exception("改备注信息出错：rowkey:"+rowkey+"原因：" + e.getMessage(), e);
-		}
-
-	}
-
-	/**
-	 * @Description:获取到tips改前的信息
-	 * @param rowkey
-	 * @param htab
-	 * @return
-	 * @author: y
-	 * @throws Exception 
-	 * @time:2016-11-16 下午2:16:44
-	 */
-	private JSONObject getOldTips(String rowkey, Table htab) throws Exception {
-		JSONObject oldTip = null;
-		List<Get> gets = new ArrayList<Get>();
-
-		Get get = new Get(rowkey.getBytes());
-
-		get.addColumn("data".getBytes(), "track".getBytes());
-
-		get.addColumn("data".getBytes(), "feedback".getBytes());
-
-		gets.add(get);
-
-		Result[] results = htab.get(gets);
-
-		for (Result result : results) {
-
-			if (result.isEmpty()) {
-				continue;
-			}
-
-			// String rowkey = new String(result.getRow());
-
-			try {
-				JSONObject jo = new JSONObject();
-
-				String track = new String(result.getValue("data".getBytes(),
-						"track".getBytes()));
-
-				jo.put("track",track);
-
-				if (result.containsColumn("data".getBytes(),
-						"feedback".getBytes())) {
-					JSONObject feedback = JSONObject.fromObject(new String(
-							result.getValue("data".getBytes(),
-									"feedback".getBytes())));
-
-					jo.put("feedback", feedback);
-				} else {
-					jo.put("feedback", TipsUtils.OBJECT_NULL_DEFAULT_VALUE);
-				}
-				oldTip = jo;
-			} catch (Exception e) {
-				logger.error("根据rowkey查询tips信息出错：" + rowkey + "\n" + e.getMessage(), e.getCause());
-				
-				throw new Exception(
-						"根据rowkey查询tips信息出错：" + rowkey + "\n" + e.getMessage(), e);
-			}
-		}
-		return oldTip;
-	}
+	
 
 	/**
 	 * @Description:删除tips

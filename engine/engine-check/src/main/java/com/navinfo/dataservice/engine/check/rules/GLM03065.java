@@ -1,14 +1,18 @@
 package com.navinfo.dataservice.engine.check.rules;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNodeForm;
+import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
 
@@ -19,7 +23,7 @@ import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
  * @Description TODO
  * 隧道属性Node点挂接隧道link数不能大于2
  * node属性编辑,移动端点 服务端后检查:
- * 新增LINK,分离节点 服务端后检查:
+ * 道路属性编辑,分离节点 服务端后检查:
  */
 public class GLM03065 extends baseRule {
 
@@ -43,10 +47,15 @@ public class GLM03065 extends baseRule {
 				RdNodeForm rdNodeForm = (RdNodeForm) row;
 				this.checkRdNodeForm(rdNodeForm);
 			}
-			//新增LINK,分离节点
+			//分离节点
 			else if (row instanceof RdLink){
 				RdLink rdLink = (RdLink) row;
 				this.checkRdLink(rdLink);
+			}
+			//道路属性编辑
+			else if (row instanceof RdLinkForm){
+				RdLinkForm rdLinkForm = (RdLinkForm) row;
+				this.checkRdLinkForm(rdLinkForm);
 			}
 		}
 	}
@@ -75,7 +84,7 @@ public class GLM03065 extends baseRule {
 		// TODO Auto-generated method stub
 		Map<String, Object> changedFields = rdNodeForm.changedFields();
 		int formOfWay = 1;
-		if(changedFields.containsKey("formOfWay")){
+		if(changedFields != null && changedFields.containsKey("formOfWay")){
 			formOfWay = (int) changedFields.get("formOfWay");
 		}
 		if(formOfWay == 13){
@@ -95,9 +104,7 @@ public class GLM03065 extends baseRule {
 	 */
 	private void checkRdLink(RdLink rdLink) throws Exception {
 		// TODO Auto-generated method stub
-		List<Integer> nodePids = new ArrayList<Integer>();
-		nodePids.add(rdLink.getsNodePid());
-		nodePids.add(rdLink.geteNodePid());
+		Set<Integer> nodePids = new HashSet<Integer>();
 		//分离节点
 		Map<String, Object> changedFields = rdLink.changedFields();
 		if(!changedFields.isEmpty()){
@@ -126,6 +133,38 @@ public class GLM03065 extends baseRule {
 		}
 	}
 	
+	/**
+	 * @author Han Shaoming
+	 * @param rdLinkForm
+	 * @throws Exception 
+	 */
+	private void checkRdLinkForm(RdLinkForm rdLinkForm) throws Exception {
+		// TODO Auto-generated method stub
+		Map<String, Object> changedFields = rdLinkForm.changedFields();
+		int formOfWay = 1;
+		if(changedFields != null && changedFields.containsKey("formOfWay")){
+			formOfWay = (int) changedFields.get("formOfWay");
+		}
+		if(formOfWay == 31){
+			
+			RdLinkSelector linkSelector = new RdLinkSelector(this.getConn());
+			RdLink rdLink = (RdLink) linkSelector.loadByIdOnlyRdLink(rdLinkForm.getLinkPid(), false);
+			if(rdLink != null){
+				Set<Integer> nodePids = new HashSet<Integer>();
+				nodePids.add(rdLink.getsNodePid());
+				nodePids.add(rdLink.geteNodePid());
+				for (Integer nodePid : nodePids) {
+					boolean check = this.check(nodePid);
+
+					if(check){
+						String target = "[RD_LINK," + rdLink.getPid() + "]";
+						this.setCheckResult("", target, 0);
+					}
+				}
+			}
+		}
+	}
+
 	/**
 	 * @author Han Shaoming
 	 * @param rdNodeForm

@@ -11,6 +11,7 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.dao.plus.editman.PoiEditStatus;
 import com.navinfo.dataservice.dao.plus.glm.GlmFactory;
 import com.navinfo.dataservice.dao.plus.glm.GlmTable;
@@ -27,7 +28,7 @@ import com.navinfo.navicommons.database.sql.RunnableSQL;
  * @Description: Operation.java
  */
 public abstract class AbstractOperation {
-	protected Logger log = Logger.getLogger(this.getClass());
+	protected Logger log = LoggerRepos.getLogger(this.getClass());
 	protected OperationResult result;
 	protected Connection conn;
 	protected boolean unionOperation=false;//设置true，会在生成履历时把所有有几何修改的对象合并到一个operation

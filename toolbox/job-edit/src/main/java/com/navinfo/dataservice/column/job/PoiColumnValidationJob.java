@@ -151,6 +151,7 @@ public class PoiColumnValidationJob extends AbstractJob {
 				sql+="   AND C.SECOND_WORK_ITEM = '"+myRequest.getSecondWorkItem()+"'"
 						+"   AND P.SECOND_WORK_STATUS ="+myRequest.getStatus();
 			}
+			log.info(sql);
 			QueryRunner run=new QueryRunner();
 			pids=run.query(conn, sql,new ResultSetHandler<List<Long>>(){
 

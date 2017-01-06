@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 
 import net.sf.json.JSONArray;
@@ -21,6 +22,7 @@ public class Command extends AbstractCommand {
 	private String requester;
 	private int inNodePid;// 进入点
 	private int outLinkPid;// 退出线
+
 	private double length;// 总长度
 	private List<Integer> seriesLinkPids;// 持续links
 

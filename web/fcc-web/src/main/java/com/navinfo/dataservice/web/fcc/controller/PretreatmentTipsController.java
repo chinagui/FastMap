@@ -5,6 +5,7 @@ import java.io.IOException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import org.apache.log4j.Logger;
@@ -196,7 +197,7 @@ public class PretreatmentTipsController extends BaseController {
 
 
 	/**
-	 * @Description:fc预处理tips提交(按范围提交？？) ?????????
+	 * @Description:fc预处理tips提交(按范围提交) 
 	 * @param request
 	 * @return
 	 * @throws ServletException
@@ -205,7 +206,7 @@ public class PretreatmentTipsController extends BaseController {
 	 * @time:2016-11-15 上午9:50:32
 	 */
 	@RequestMapping(value = "/tip/submitPre")
-	public ModelAndView editMemo(HttpServletRequest request)
+	public ModelAndView submit(HttpServletRequest request)
 			throws ServletException, IOException {
 		String parameter = request.getParameter("parameter");
 		try {
@@ -215,19 +216,18 @@ public class PretreatmentTipsController extends BaseController {
 
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
-			String memo = jsonReq.getString("memo");
+			JSONArray grids = jsonReq.getJSONArray("grids");
 
-			String rowkey = jsonReq.getString("rowkey");
-			
+
+			if (grids==null||grids.size()==0) {
+                throw new IllegalArgumentException("参数错误:grids不能为空。");
+            }
+
 			int user = jsonReq.getInt("user");
-
-			if (StringUtils.isEmpty(rowkey)) {
-				throw new IllegalArgumentException("参数错误：rowkey不能为空。");
-			}
-
-			BaseTipsOperate op = new BaseTipsOperate();
 			
-			op.updateFeedbackMemo(rowkey, user,memo);
+			PretreatmentTipsOperator op = new PretreatmentTipsOperator();
+			
+			op.submit2Web(grids, user);
 
 			return new ModelAndView("jsonView", success());
 

@@ -70,7 +70,7 @@ public class RdSameNodeTest extends InitApplication {
 	
 	@Test
 	public void testAddRdSameNode() {
-		String parameter = "{\"command\":\"CREATE\",\"dbId\":17,\"type\":\"RDSAMENODE\",\"data\":{\"nodes\":[{\"nodePid\":\"300002057\",\"type\":\"RDNODE\",\"isMain\":1},{\"nodePid\":\"304000025\",\"type\":\"LUNODE\",\"isMain\":0}]}}";
+		String parameter = "{\"command\":\"CREATE\",\"dbId\":17,\"type\":\"RDSAMENODE\",\"data\":{\"nodes\":[{\"nodePid\":469282,\"type\":\"RDNODE\",\"isMain\":1},{\"nodePid\":203000032,\"type\":\"ADNODE\",\"isMain\":0}]}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

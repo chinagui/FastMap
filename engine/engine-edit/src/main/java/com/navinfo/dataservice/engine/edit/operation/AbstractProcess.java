@@ -137,26 +137,26 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 		this.checkCommand.setGlmList(glmList);
 		String msg = checkEngine.preCheck();
 		return msg;
-		
-//		this.checkCommand.setGlmList(this.getResult().getAddObjects());
-//		this.checkCommand.setListStatus("ADD");
-//		String msg = checkEngine.preCheck();
-//
-//		if (msg != null && !msg.isEmpty()) {
-//			return msg;
-//		}
-//
-//		this.checkCommand.setGlmList(this.getResult().getUpdateObjects());
-//		this.checkCommand.setListStatus("UPDATE");
-//		msg = checkEngine.preCheck();
-//		if (msg != null && !msg.isEmpty()) {
-//			return msg;
-//		}
-//
-//		this.checkCommand.setGlmList(this.getResult().getDelObjects());
-//		this.checkCommand.setListStatus("DEL");
-//		msg = checkEngine.preCheck();
-//		return msg;
+
+		// this.checkCommand.setGlmList(this.getResult().getAddObjects());
+		// this.checkCommand.setListStatus("ADD");
+		// String msg = checkEngine.preCheck();
+		//
+		// if (msg != null && !msg.isEmpty()) {
+		// return msg;
+		// }
+		//
+		// this.checkCommand.setGlmList(this.getResult().getUpdateObjects());
+		// this.checkCommand.setListStatus("UPDATE");
+		// msg = checkEngine.preCheck();
+		// if (msg != null && !msg.isEmpty()) {
+		// return msg;
+		// }
+		//
+		// this.checkCommand.setGlmList(this.getResult().getDelObjects());
+		// this.checkCommand.setListStatus("DEL");
+		// msg = checkEngine.preCheck();
+		// return msg;
 	}
 
 	// 构造前检查参数。前检查，如果command中的构造不满足前检查参数需求，则需重写该方法，具体可参考createPostCheckGlmList
@@ -201,13 +201,13 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 					&& !this.getCommand().getObjType().equals(ObjType.LCFACE)) {
 				handleResult(this.getCommand().getObjType(), this.getCommand().getOperType(), result);
 			}
-			
+
 			String preCheckMsg = this.preCheck();
 
 			if (preCheckMsg != null) {
 				throw new Exception(preCheckMsg);
 			}
-			
+			this.updateRdLane();
 			this.recordData();
 			long startPostCheckTime = System.currentTimeMillis();
 			log.info("BEGIN  POSTCHECK ");
@@ -260,6 +260,8 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 			if (preCheckMsg != null) {
 				throw new Exception(preCheckMsg);
 			}
+			this.updateRdLane();
+			
 			this.recordData();
 
 			this.postCheck();
@@ -275,6 +277,17 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 		}
 
 		return msg;
+	}
+
+	/**
+	 * 被动维护详细车道
+	 * @throws Exception
+	 */
+	public void updateRdLane() throws Exception {
+		com.navinfo.dataservice.engine.edit.operation.obj.rdlane.update.OpRefRelationObj operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdlane.update.OpRefRelationObj(
+				getConn(), getResult());
+
+		operation.updateRdLane(getCommand().getObjType());
 	}
 
 	/**
@@ -305,13 +318,13 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 		glmList.addAll(this.getResult().getUpdateObjects());
 		this.checkCommand.setGlmList(glmList);
 		this.checkEngine.postCheck();
-//		this.checkCommand.setGlmList(this.getResult().getAddObjects());
-//		this.checkCommand.setListStatus("ADD");
-//		this.checkEngine.postCheck();
-//
-//		this.checkCommand.setGlmList(this.getResult().getUpdateObjects());
-//		this.checkCommand.setListStatus("UPDATE");
-//		this.checkEngine.postCheck();
+		// this.checkCommand.setGlmList(this.getResult().getAddObjects());
+		// this.checkCommand.setListStatus("ADD");
+		// this.checkEngine.postCheck();
+		//
+		// this.checkCommand.setGlmList(this.getResult().getUpdateObjects());
+		// this.checkCommand.setListStatus("UPDATE");
+		// this.checkEngine.postCheck();
 
 	}
 
@@ -340,9 +353,9 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 		lw.generateLog(command, result);
 		OperatorFactory.recordData(conn, result);
 		lw.recordLog(command, result);
-		try{
+		try {
 			PoiMsgPublisher.publish(result);
-		}catch(Exception e){
+		} catch (Exception e) {
 			log.error(e, e);
 		}
 		return true;
@@ -392,8 +405,7 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 			List<IRow> allIRows = new ArrayList<>();
 			allIRows.addAll(result.getUpdateObjects());
 			allObjPidList.addAll(result.getListUpdateIRowObPid());
-			if(CollectionUtils.isEmpty(allObjPidList))
-			{
+			if (CollectionUtils.isEmpty(allObjPidList)) {
 				allIRows.addAll(result.getAddObjects());
 				allObjPidList.addAll(result.getListAddIRowObPid());
 			}

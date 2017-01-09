@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.rule.BasicBatchRule;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.check.rule.BasicCheckRule;
 import com.navinfo.dataservice.engine.editplus.model.batchAndCheck.BatchRuleCommand;
@@ -14,7 +15,7 @@ import com.navinfo.dataservice.engine.editplus.model.batchAndCheck.CheckRule;
 import com.navinfo.dataservice.engine.editplus.model.batchAndCheck.NiValException;
 
 public class CheckExcuter {
-	private static Logger log = Logger.getLogger(CheckExcuter.class);
+	private Logger log =LoggerRepos.getLogger(this.getClass());
 
 	public CheckExcuter() {
 		// TODO Auto-generated constructor stub

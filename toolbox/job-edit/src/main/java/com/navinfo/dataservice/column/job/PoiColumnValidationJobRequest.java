@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.column.job;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.navinfo.dataservice.jobframework.exception.JobCreateException;
@@ -56,7 +57,11 @@ public class PoiColumnValidationJobRequest extends AbstractJobRequest {
 	}
 
 	public void setPids(List<Long> pids) {
-		this.pids = pids;
+		this.pids=new ArrayList<Long>();
+		for(Object tmp:pids){
+			this.pids.add(Long.valueOf(tmp.toString()));
+		}
+		//this.pids = pids;
 	}
 
 	public List<String> getRules() {

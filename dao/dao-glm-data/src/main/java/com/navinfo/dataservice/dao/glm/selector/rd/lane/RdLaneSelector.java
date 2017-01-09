@@ -273,12 +273,12 @@ public class RdLaneSelector extends AbstractSelector {
 		{
 			sb.append(" AND LINK_PID not in( "+StringUtils.getInteStr(pidList)+") ");
 		}
-		sb.append(" ), TMP4 AS (SELECT 24, A.BRANCH_PID as PID, IN_LINK_PID AS LINK_PID FROM RD_BRANCH A, RD_BRANCH_DETAIL B WHERE A.IN_LINK_PID = :5 AND A.BRANCH_PID = B.BRANCH_PID AND B.BRANCH_TYPE = 0 ");
+		sb.append(" ), TMP4 AS (SELECT 24, A.BRANCH_PID as PID, IN_LINK_PID AS LINK_PID FROM RD_BRANCH A, RD_BRANCH_DETAIL B WHERE A.IN_LINK_PID = :5 AND A.BRANCH_PID = B.BRANCH_PID AND B.BRANCH_TYPE = 0 AND A.U_RECORD !=2 AND B.U_RECORD !=2 ");
 		if(level == 24 && CollectionUtils.isNotEmpty(pidList))
 		{
 			sb.append(" AND BRANCH_PID not in( "+StringUtils.getInteStr(pidList)+") ");
 		}
-		sb.append(" UNION SELECT 24, A.BRANCH_PID as PID, IN_LINK_PID AS LINK_PID FROM RD_BRANCH A, RD_BRANCH_DETAIL B WHERE A.OUT_LINK_PID = :6 AND A.BRANCH_PID = B.BRANCH_PID AND B.BRANCH_TYPE = 0 ");
+		sb.append(" UNION SELECT 24, A.BRANCH_PID as PID, IN_LINK_PID AS LINK_PID FROM RD_BRANCH A, RD_BRANCH_DETAIL B WHERE A.OUT_LINK_PID = :6 AND A.BRANCH_PID = B.BRANCH_PID AND B.BRANCH_TYPE = 0 AND A.U_RECORD !=2 AND B.U_RECORD !=2 ");
 		if(level == 24 && CollectionUtils.isNotEmpty(pidList))
 		{
 			sb.append(" AND BRANCH_PID not in( "+StringUtils.getInteStr(pidList)+") ");
@@ -320,7 +320,10 @@ public class RdLaneSelector extends AbstractSelector {
 				
 				int pid = resultSet.getInt(2);
 				
-				infoList.add(pid);
+				if(!infoList.contains(pid))
+				{
+					infoList.add(pid);
+				}
 			}
 		} catch (Exception e) {
 

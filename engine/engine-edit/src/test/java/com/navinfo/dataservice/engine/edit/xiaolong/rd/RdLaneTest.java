@@ -39,7 +39,7 @@ public class RdLaneTest extends InitApplication{
 	@Test
 	public void testUpdateRdLaneByLinkDirect()
 	{	
-		String parameter = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"RDLINK\",\"objId\":309003117,\"data\":{\"direct\":1,\"pid\":309003117,\"objStatus\":\"UPDATE\",\"laneClass\":2}}";
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"RDLINK\",\"objId\":206000006,\"data\":{\"direct\":3,\"pid\":206000006,\"objStatus\":\"UPDATE\"}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
@@ -91,7 +91,7 @@ public class RdLaneTest extends InitApplication{
 	@Test
 	public void testUpdateByRdBranchPattern()
 	{
-		String parameter = "{\"type\":\"RDBRANCH\",\"command\":\"UPDATE\",\"dbId\":17,\"data\":{\"details\":[{\"patternCode\":\"80211009\",\"rowId\":\"27375B0A9384423F990EF868D69DFF0B\",\"pid\":210000026,\"objStatus\":\"UPDATE\",\"arrowCode\":\"10211009\"}],\"pid\":303000047},\"objId\":303000047}";
+		String parameter = "{\"type\":\"RDBRANCH\",\"command\":\"UPDATE\",\"dbId\":17,\"data\":{\"details\":[{\"patternCode\":\"80211009\",\"rowId\":\"B7DB167556E047828F3614313E497F83\",\"pid\":306000039,\"objStatus\":\"UPDATE\",\"arrowCode\":\"10211009\"}],\"pid\":220000035},\"objId\":220000035}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

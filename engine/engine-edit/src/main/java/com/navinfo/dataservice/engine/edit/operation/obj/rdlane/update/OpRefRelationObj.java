@@ -81,7 +81,7 @@ public class OpRefRelationObj {
 
 	private static AbstractSelector abstractSelector;
 
-	private static RdLaneSelector rdLaneSelector;
+	private RdLaneSelector rdLaneSelector;
 
 	private int laneDirect = 1;
 
@@ -239,15 +239,16 @@ public class OpRefRelationObj {
 				RdBranchDetail detail = (RdBranchDetail) row;
 				abstractSelector.setCls(RdBranch.class);
 				RdBranch branch = (RdBranch) abstractSelector.loadById(detail.getBranchPid(), true, true);
-				if (row.changedFields().containsKey("patternCode")) {
+				//判断是高速分歧并且模式图变更
+				if (detail.getBranchType() ==0 && row.changedFields().containsKey("patternCode")) {
 					String patternCode = (String) row.changedFields().get("patternCode");
 					if (patternCode.equals("80261009") || patternCode.equals("80271009")
 							|| patternCode.equals("80361009")) {
 						return;
 					}
 					branch.getDetails().add(detail);
-					handleRowList(BRANCH_PATTERN_CODE_24, branch.getInLinkPid(), row, updateLevelMap);
-					handleRowList(BRANCH_PATTERN_CODE_24, branch.getOutLinkPid(), row, updateLevelMap);
+					handleRowList(BRANCH_PATTERN_CODE_24, branch.getInLinkPid(), branch, updateLevelMap);
+					handleRowList(BRANCH_PATTERN_CODE_24, branch.getOutLinkPid(), branch, updateLevelMap);
 				}
 				break;
 			// link上更新限制信息：1.由车辆类型限制修改为非车辆类型限制2.由非车辆类型限制修改为车辆类型限制
@@ -322,11 +323,12 @@ public class OpRefRelationObj {
 				}
 				break;
 			// 删除高速分歧，分歧上包含影响详细车道的模式图
-			case RDBRANCHDETAIL:
+			case RDBRANCH:
 				RdBranch branch = (RdBranch) row;
-				// branch.getDetails();
-				String patternCode = "";
-				if (patternCode.equals("80261009") || patternCode.equals("80271009")
+				RdBranchDetail detail = (RdBranchDetail) branch.getDetails().get(0);
+				String patternCode = detail.getPatternCode();
+				//必须是高速分歧和3个例外模式图号的删除才走通道进行更新
+				if (detail.getBranchType() != 0 || patternCode.equals("80261009") || patternCode.equals("80271009")
 						|| patternCode.equals("80361009")) {
 					return;
 				}
@@ -491,9 +493,11 @@ public class OpRefRelationObj {
 			updateByRdCrossLink(pid, (RdLinkForm) row);
 			break;
 		case BRANCH_PATTERN_CODE_24:
-			updateByRdBranchPattern(pid, (RdBranch) row);
+			runNextLevelFlag = updateByRdBranchPattern(pid, (RdBranch) row);
+			break;
 		case LINK_LANE_NUM_25:
 			updateByRdLinkLaneNum(pid, (RdLink) row);
+			break;
 		default:
 			break;
 		}
@@ -599,7 +603,10 @@ public class OpRefRelationObj {
 		operation.caleRdLinesForRdLinkCross(result);
 	}
 
-	private void updateByRdBranchPattern(int pid, RdBranch rdBranch) throws Exception {
+	private boolean updateByRdBranchPattern(int pid, RdBranch rdBranch) throws Exception {
+		//是否需要走下一个优先级的维护
+		boolean flag = false;
+		
 		RdBranch branch = rdBranch;
 
 		if (rdBranch == null) {
@@ -608,11 +615,24 @@ public class OpRefRelationObj {
 			branch = (RdBranch) abstractSelector.loadAllById(pid, true, true);
 		}
 
-		com.navinfo.dataservice.engine.edit.operation.obj.rdlane.update.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdlane.update.Operation();
+		com.navinfo.dataservice.engine.edit.operation.obj.rdlane.update.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdlane.update.Operation(conn);
 
 		RdBranchDetail detail = (RdBranchDetail) branch.getDetails().get(0);
 		
-		operation.autoHandleByRdBranch(branch, detail.getPatternCode(),result);
+		if(detail.changedFields().containsKey("patternCode"))
+		{
+			Map<ObjStatus, List<RdLane>> rdLaneMap = operation.autoHandleByRdBranch(branch, String.valueOf(detail.changedFields().get("patternCode")),result);
+			if(rdLaneMap.isEmpty())
+			{
+				flag = true;
+			}
+		}
+		else
+		{
+			flag = true;
+		}
+		
+		return flag;
 	}
 
 	private void updateByRdLinkLaneNum(int pid, RdLink rdLink) throws Exception {

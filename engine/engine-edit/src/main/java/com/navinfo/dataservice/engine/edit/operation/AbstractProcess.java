@@ -285,7 +285,7 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 	 */
 	public void updateRdLane() throws Exception {
 		com.navinfo.dataservice.engine.edit.operation.obj.rdlane.update.OpRefRelationObj operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdlane.update.OpRefRelationObj(
-				getConn(), getResult());
+				this.getConn(), getResult());
 
 		operation.updateRdLane(getCommand().getObjType());
 	}

@@ -5,20 +5,25 @@ package org.navinfo.dataservice.engine.meta;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import javax.imageio.ImageIO;
+import javax.imageio.stream.ImageInputStream;
 import org.apache.commons.dbutils.DbUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.engine.meta.patternimage.PatternImageExporter;
+//import com.navinfo.dataservice.engine.meta.patternimage.PatternImageImporter;
 import com.navinfo.dataservice.engine.meta.svg.SvgImageSelector;
-
 import net.sf.json.JSONObject;
 
 /** 
@@ -75,6 +80,25 @@ public class SvgTest {
 		}
 	}
 	@Test
+	public void testGetDataByName()
+	{
+		PatternImageExporter export = new PatternImageExporter();
+		Set<String> set = new HashSet<String>();
+		 set.add("00ff000a");
+		 set.add("00ff000d");
+		 set.add("S0CLL15OC91A");
+		 set.add("S0CLL15OC91B");
+		 set.add("S0CLL15OCA0A");
+		 set.add("S0CLL15OCA0D");
+		try {
+			export.export2SqliteByNames("f:/PatternImg", set);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+	//@Test
 	public void testGetSvgData()
 	{
 		String parameter = "{\"name\":\"S0CYZ139NE29\",\"pageNum\":0,\"pageSize\":6}";
@@ -98,7 +122,7 @@ public class SvgTest {
         	e.printStackTrace();
         }
 	}	
-	@Test
+	//@Test
 	public void testUpdateSvgExp() throws Exception
 	{
 		String path = "f:/";
@@ -133,4 +157,79 @@ public class SvgTest {
 		
 		System.out.println("Done. Total:"+counter);*/
 	}
+	
+	
+	
+	
+	/*public static void main(String[] args) throws IOException {
+		File file = new File("f:/S0CLL15OC91B.svg");
+		ImageInputStream is = null;
+		try {
+			is = ImageIO.createImageInputStream(file);
+			String[] splits = file.getName().split("\\.");
+			 if(null == is)  
+	            {  
+				 System.out.println("xxxx:  "+splits[0]);
+	            }  
+			 String format = splits[splits.length - 1];
+			 System.out.println("format : "+format);
+			 System.out.println(splits[1]+"  yy:  "+splits[0]);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+			//outSteam.close();  
+		    is.close(); 
+		}  
+	}*/
+	public static void main(String[] args) {
+		List<String> ruleList=new ArrayList<String>();
+		ruleList.add("CHR60009");
+		ruleList.add("CHR60010");
+		ruleList.add("CHR60011");
+		ruleList.add("CHR60012");
+		ruleList.add("CHR60013");
+		ruleList.add("CHR60014");
+		ruleList.add("CHR61009");
+		ruleList.add("CHR61010");
+		ruleList.add("CHR61011");
+		ruleList.add("CHR61012");
+		ruleList.add("CHR61013");
+		ruleList.add("CHR61014");
+		ruleList.add("CHR63415");
+		ruleList.add("CHR63419");
+		ruleList.add("CHR63423");
+		ruleList.add("CHR63428");
+		ruleList.add("CHR63436");
+		ruleList.add("CHR70107");
+		ruleList.add("CHR70108");
+		ruleList.add("CHR70109");
+		ruleList.add("CHR70110");
+		ruleList.add("CHR70111");
+		ruleList.add("CHR70112");
+		ruleList.add("CHR71024");
+		ruleList.add("CHR71025");
+		ruleList.add("CHR71026");
+		ruleList.add("CHR71027");
+		ruleList.add("CHR71028");
+		ruleList.add("CHR71041");
+		ruleList.add("CHR73040");
+		ruleList.add("CHR73041");
+		ruleList.add("CHR73042");
+		ruleList.add("CHR73043");
+		ruleList.add("CHR73044");
+		ruleList.add("CHR73045");
+		ruleList.add("COM01001");
+		ruleList.add("COM01003");
+		ruleList.add("COM20552");
+		ruleList.add("COM60104");
+		JSONObject metaValidationRequestJSON=new JSONObject();
+		metaValidationRequestJSON.put("executeDBId", 106);//元数据库dbId
+		metaValidationRequestJSON.put("kdbDBId", 106);//元数据库dbId
+		metaValidationRequestJSON.put("ruleIds", ruleList);
+		metaValidationRequestJSON.put("timeOut", 600);
+		
+		System.out.println(metaValidationRequestJSON);
+	}
+	
 }

@@ -12,6 +12,9 @@ import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchSchematic;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSeriesbranch;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSignasreal;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSignboard;
+import com.navinfo.dataservice.dao.glm.model.rd.crf.RdObject;
+import com.navinfo.dataservice.dao.glm.model.rd.crf.RdObjectInter;
+import com.navinfo.dataservice.dao.glm.model.rd.crf.RdObjectRoad;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossName;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossNode;
@@ -479,6 +482,24 @@ public class VariablesFactory {
 		}
 		else if (data instanceof RdRestrictionVia) {
 			rdLinkSet.add(String.valueOf(((RdRestrictionVia) data).getDetailId()));
+		}
+		return rdLinkSet;
+	}
+
+	/**
+	 * @param data
+	 * @return
+	 */
+	public static Set<String> getRdObjectPid(IRow data) {
+		Set<String> rdLinkSet = new HashSet<String>();
+		if (data instanceof RdObject) {
+			rdLinkSet.add(String.valueOf(((RdObject) data).getPid()));
+		}
+		else if (data instanceof RdObjectInter) {
+			rdLinkSet.add(String.valueOf(((RdObjectInter) data).getPid()));
+		}
+		else if (data instanceof RdObjectRoad) {
+			rdLinkSet.add(String.valueOf(((RdObjectRoad) data).getPid()));
 		}
 		return rdLinkSet;
 	}

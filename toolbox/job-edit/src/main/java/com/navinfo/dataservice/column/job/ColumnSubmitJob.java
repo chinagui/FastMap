@@ -138,9 +138,11 @@ public class ColumnSubmitJob extends AbstractJob {
 						
 						// pidList替换为无检查错误的pidList
 						Map<String, Map<Long, Set<String>>> errorMap = check.getErrorPidMap();
-						Map<Long, Set<String>> poiMap = errorMap.get("IX_POI");
-						for (long pid:poiMap.keySet()) {
-							pidList.remove(pid);
+						if (errorMap != null) {
+							Map<Long, Set<String>> poiMap = errorMap.get("IX_POI");
+							for (long pid:poiMap.keySet()) {
+								pidList.remove(pid);
+							}
 						}
 					}
 				}
@@ -159,7 +161,7 @@ public class ColumnSubmitJob extends AbstractJob {
 						
 						classifyMap.put("pids", pidList);
 						ColumnCoreOperation columnCoreOperation = new ColumnCoreOperation();
-						columnCoreOperation.runClassify(classifyMap,conn);
+						columnCoreOperation.runClassify(classifyMap,conn,taskId);
 					}
 				}
 				
@@ -174,12 +176,12 @@ public class ColumnSubmitJob extends AbstractJob {
 				}
 			}
 			
-			conn.commit();
 			
 		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
 			throw new JobException(e);
 		} finally {
-			DbUtils.closeQuietly(conn);
+			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
 	

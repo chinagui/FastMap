@@ -141,7 +141,7 @@ public class ColumnSaveJob extends AbstractJob {
 					
 					classifyMap.put("pids", pidList);
 					ColumnCoreOperation columnCoreOperation = new ColumnCoreOperation();
-					columnCoreOperation.runClassify(classifyMap,conn);
+					columnCoreOperation.runClassify(classifyMap,conn,taskId);
 				}
 			}
 			
@@ -156,13 +156,12 @@ public class ColumnSaveJob extends AbstractJob {
 				deepControl.cleanExByCkRule(conn, pidList, ckRules, "IX_POI");
 			}
 			
-			
-			conn.commit();
 			log.info("月编保存完成");
 		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
 			throw new JobException(e);
 		} finally {
-			DbUtils.closeQuietly(conn);
+			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
 	

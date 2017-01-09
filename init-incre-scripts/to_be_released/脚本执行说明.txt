@@ -1,9 +1,4 @@
-1. fm_sys/update_job_info.sql
-  功能：job_info表字段长度修改
-  目标库：fm_sys
-  author：XXW
-  
-1. fm_regiondb_month/POI_COLUMN_OP_CONF.sql
-  功能：POI_COLUMN_OP_CONF表数据更新
-  目标库：月库
-  author：张晓毅
+1. fm_sys/xxx.sql
+	功能：xxxxxx
+	目标库：fm_sys
+	author：xxx

@@ -113,17 +113,18 @@ public class PoiQuery {
 			Subtask subtask = apiService.queryBySubtaskId(subtaskId);
 			int pageNum = jsonReq.getInt("pageNum");
 			int pageSize = jsonReq.getInt("pageSize");
-			int pid = 0;
+			//int pid = 0;
+			//20170106_gpr:pid和name搜索合成一个字段；
 			String pidName = "";
 			if (jsonReq.containsKey("pidName")) {
 				pidName = jsonReq.getString("pidName");
 			}
-			if (jsonReq.containsKey("pid")) {
-				pid = jsonReq.getInt("pid");
-			}
+//			if (jsonReq.containsKey("pid")) {
+//				pid = jsonReq.getInt("pid");
+//			}
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 			IxPoiSelector selector = new IxPoiSelector(conn);
-			resultJson = selector.loadPids(false, pid, pidName, type,
+			resultJson = selector.loadPids(false, pidName, type,
 					subtask.getGeometry(), pageSize, pageNum);
 
 		} catch (Exception e) {

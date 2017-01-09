@@ -153,7 +153,7 @@ public class TipsImportUtils {
 	}
 
 	public static String generateSolrWkt(String sourceType, JSONObject deep,
-			JSONObject g_location, JSONArray feedbacks) throws Exception {
+			JSONObject g_location, JSONObject feedback) throws Exception {
 		List<Geometry> geos = new ArrayList<Geometry>();
 
 		GeometryFactory factory = new GeometryFactory();
@@ -192,13 +192,18 @@ public class TipsImportUtils {
 				
 			}
 		}
+		
+		JSONArray f_array=new JSONArray();
+		
+		if(feedback!=null&&!feedback.isNullObject()){
+			f_array=feedback.getJSONArray("f_array");
+		}
+		for (int i = 0; i < f_array.size(); i++) {
+			JSONObject arrInfo = f_array.getJSONObject(i);
 
-		for (int i = 0; i < feedbacks.size(); i++) {
-			JSONObject feedback = feedbacks.getJSONObject(i);
-
-			if (feedback.getInt("type") == 6) {
+			if (arrInfo.getInt("type") == 6) {
 				// 草图
-				JSONArray content = feedback.getJSONArray("content");
+				JSONArray content = arrInfo.getJSONArray("content");
 
 				for (int j = 0; j < content.size(); j++) {
 

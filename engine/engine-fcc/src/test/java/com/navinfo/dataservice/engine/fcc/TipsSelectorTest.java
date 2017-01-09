@@ -1,6 +1,5 @@
 package com.navinfo.dataservice.engine.fcc;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -19,7 +18,6 @@ import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.solr.client.solrj.SolrQuery;
-import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
@@ -36,14 +34,10 @@ import com.navinfo.dataservice.dao.fcc.SolrConnector;
 import com.navinfo.dataservice.dao.fcc.SolrController;
 import com.navinfo.dataservice.engine.fcc.service.FccApiImpl;
 import com.navinfo.dataservice.engine.fcc.tips.TipsSelector;
-import com.navinfo.navicommons.geo.GeoUtils;
 import com.navinfo.navicommons.geo.computation.GridUtils;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.CoordinateArrays;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.MultiLineString;
 
 public class TipsSelectorTest {
 
@@ -98,7 +92,7 @@ public class TipsSelectorTest {
 	@Test
 	public void testSearchDataByTileWithGap() {
 		JSONArray types = new JSONArray();
-	//	types.add(1806);
+		types.add(8001);
 	/*	types.add(1205);
 		types.add(1401);
 		types.add(1110);
@@ -122,9 +116,13 @@ public class TipsSelectorTest {
 		//{"gap":40,"mdFlag":"d","z":19,"x":431790,"y":198467,"types":["1806"]}  19级别 应该返回数据，但是没有返回
 		
 		//{"gap":40,"mdFlag":"d","z":17,"x":107935,"y":49597}
+		
+		//{"gap":10,"mdFlag":"d","types":["8001"],"z":18,"x":215886,"y":99229}
+		
+		//{"gap":40,"mdFlag":"d","z":20,"x":863556,"y":396914}
 		try {
-			System.out.println(solrSelector.searchDataByTileWithGap(107935, 49597, 17,
-					40, types,"m"));
+			System.out.println(solrSelector.searchDataByTileWithGap(863556, 396914, 20,
+					40, types,"d"));
 			
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -353,7 +351,7 @@ public class TipsSelectorTest {
 	    		String wkt;
 				try {
 					wkt = GridUtils.grids2Wkt(grids);
-					List<JSONObject> tips = conn.queryTipsWeb(wkt, type, stages);
+					List<JSONObject> tips = conn.queryTipsWeb(wkt, type, stages,false);
 					if(tips==null||tips.size()==0){
 						System.out.println("type:"+type+"在"+grids+"没有找到");
 					}
@@ -547,27 +545,12 @@ public class TipsSelectorTest {
 						
 						System.out.println(snapshot.get("id"));
 						
-					/*	JSONObject  feedbacksO=snapshot.getJSONObject("feedback");
+						JSONObject  feedbacksO=snapshot.getJSONObject("feedback");
 						
 						JSONArray feedbacks=null;
 						
 						if(feedbacksO!=null){
 							feedbacks=feedbacksO.getJSONArray("f_array");
-						}*/
-						
-						JSONArray feedbacks=null;
-						try{
-						 feedbacks=JSONArray.fromObject(snapshot.getString("feedback"));
-						
-						}catch (Exception e) {
-							try{
-								feedbacks=JSONObject.fromObject(snapshot.getString("feedback")).getJSONArray("f_array");
-							}
-							catch (Exception e1) {
-								feedbacks =new JSONArray();
-							}
-							
-							
 						}
 						
 						String sourceType=snapshot.getString("s_sourceType");

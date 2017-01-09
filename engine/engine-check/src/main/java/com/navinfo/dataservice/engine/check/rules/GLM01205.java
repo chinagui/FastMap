@@ -29,6 +29,7 @@ public class GLM01205 extends baseRule {
 
 	@Override
 	public void postCheck(CheckCommand checkCommand) throws Exception {
+		// TODO_CHECK 检查未考虑修改后值问题
 		List<Integer> linkPidList=new ArrayList<Integer>();
 		for(IRow obj : checkCommand.getGlmList()){
 			if (obj instanceof RdLink){

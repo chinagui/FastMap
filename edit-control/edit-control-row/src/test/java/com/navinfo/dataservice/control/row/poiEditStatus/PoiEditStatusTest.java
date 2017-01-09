@@ -10,6 +10,9 @@ import java.util.Map;
 import org.junit.Test;
 
 import com.navinfo.dataservice.dao.plus.editman.PoiEditStatus;
+import com.navinfo.dataservice.control.row.query.PoiQuery;
+
+import net.sf.json.JSONObject;
 
 /** 
  * @ClassName: PoiEditStatusTest
@@ -56,5 +59,13 @@ public class PoiEditStatusTest {
 		Collection<Long> pids2 = PoiEditStatus.pidFilterByEditStatus(conn,insertList,3);
 
 		System.out.println("ok");
+	}
+	@Test
+	public void test2() throws Exception{
+		String parameter= "{\"dbId\":17,\"subtaskId\":\"132\",\"type\":1,\"pageNum\":1,\"pageSize\":20000,\"pidName\":\"1235\"}";
+		PoiQuery aa= new PoiQuery();
+		JSONObject result = aa.getPoiList(parameter);
+
+		System.out.println("result");
 	}
 }

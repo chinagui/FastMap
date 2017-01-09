@@ -608,7 +608,7 @@ public Page listCheckResults(JSONObject params, JSONArray tips, JSONArray ruleCo
 	}
 	
 	
-	public List loadByPid(int pid, List ckRule)
+	public List loadByPid(int pid, List<String> ckRule)
 			throws Exception {
 
 		List ruleList =new ArrayList() ;
@@ -618,8 +618,14 @@ public Page listCheckResults(JSONObject params, JSONArray tips, JSONArray ruleCo
 		ResultSet rs = null;
 		
 		String ckRules = "(";
-		ckRules += StringUtils.join(ckRule.toArray(), ",") + ")";
-
+		
+		for (String rule:ckRule) {
+			ckRules += "'" + rule +"',";
+		}
+		ckRules = ckRules.substring(0, ckRules.length()-1);
+		
+		ckRules += ")";
+		
 		StringBuilder sql = new StringBuilder("SELECT n.ruleid FROM ck_result_object c,ni_val_exception n WHERE c.pid="+pid+" AND c.md5_code=n.md5_code AND n.ruleid IN "+ckRules);                          
 
 		try {

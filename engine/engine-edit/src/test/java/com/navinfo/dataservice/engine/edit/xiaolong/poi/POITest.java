@@ -186,7 +186,7 @@ public class POITest extends InitApplication {
 
 	@Test
 	public void testGetPoiList() {
-		String parameter = "{\"dbId\":17,\"subtaskId\":22,\"type\":1,\"pageNum\":1,\"pageSize\":20,\"pidName\":\"\",\"pid\":0}";
+		String parameter = "{\"dbId\":17,\"subtaskId\":\"132\",\"type\":1,\"pageNum\":1,\"pageSize\":20000,\"pidName\":\"89288010\"}";
 		Connection conn = null;
 		Connection manConn = null;
 		try {
@@ -211,7 +211,7 @@ public class POITest extends InitApplication {
 			}
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 			IxPoiSelector selector = new IxPoiSelector(conn);
-			JSONObject jsonObject = selector.loadPids(false, pid, pidName, type, subtask.getGeometry(), pageSize,
+			JSONObject jsonObject = selector.loadPids(false, pidName, type, subtask.getGeometry(), pageSize,
 					pageNum);
 			System.out.println(jsonObject.toString());
 		} catch (Exception e) {

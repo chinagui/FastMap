@@ -15,6 +15,7 @@ import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
 import com.navinfo.dataservice.dao.plus.model.basic.ChangeLog;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiAddress;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
@@ -44,30 +45,31 @@ public class BatchTestGPR {
 		test.init();
 		Connection conn = DBConnector.getInstance().getConnectionById(19);
 		OperationResult operationResult=new OperationResult();
-		BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", null, false,78675641, false);
+		BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", null, false,320000162, false);
 //		operationResult.putObj(obj);
 		IxPoiObj poiObj=(IxPoiObj) obj;
-		IxPoi row=(IxPoi) obj.getMainrow();
+		IxPoiAddress chiAddress = poiObj.getChiAddress();
+		//IxPoi row=(IxPoi) obj.getMainrow();
 		//row.setKindCode("190100");
 		ChangeLog logg=new ChangeLog();
 		Map<String, Object> oldValues=new HashMap<String, Object>();
-		oldValues.put("KIND_CODE", "123");
+		oldValues.put("PREFIX", "123");
 		logg.setOldValues(oldValues);
 		List<ChangeLog> logList=new ArrayList<ChangeLog>();
 		logList.add(logg);
-		row.setHisChangeLogs(logList);
-		row.setOpType(OperationType.UPDATE);
+		chiAddress.setHisChangeLogs(logList);
+		chiAddress.setOpType(OperationType.UPDATE);
 		operationResult.putObj(obj);
 		
 		BatchCommand batchCommand=new BatchCommand();	
-		batchCommand.setRuleId("FM-BAT-20-177");
+		batchCommand.setRuleId("FM-BAT-20-142");
 		//batchCommand.setOperationName("day2month");
 		Batch batch=new Batch(conn,operationResult);
 		batch.operate(batchCommand);
 		System.out.println(batch.getName());
 		batch.persistChangeLog(1, 2);
 		DbUtils.commitAndCloseQuietly(conn);
-		System.out.println("end batch test FM-BAT-M01-02");
+		System.out.println("end batch test FM-BAT-20-164");
 	}
 
 }

@@ -1,8 +1,5 @@
 package com.navinfo.dataservice.engine.check.rules;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
@@ -13,6 +10,9 @@ import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.helper.GeoHelper;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /*
  * SHAPING_CHECK_CROSS_RDLINK_RDLINK	两条Link相交，必须做立交或者打断	两条Link相交，必须做立交或者打断

@@ -1,8 +1,6 @@
 package com.navinfo.dataservice.day2mon;
 
 import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -52,9 +50,10 @@ public class Check {
 //		checkList.add("FM-GLM60189");
 //		checkCommand.setRuleIdList(checkList);
 		checkCommand.setOperationName("CHECK_DAY2MONTH");
+		log.info("当前执行检查项:"+checkCommand.getRuleIdList());
 		checkCommand.setSaveResult(false);
 //		log.info("要执行的检查项:"+checkList.toString());
-		
+		log.info("当前数据:"+opResult.getAllObjs());
 		com.navinfo.dataservice.engine.editplus.batchAndCheck.check.Check check=new com.navinfo.dataservice.engine.editplus.batchAndCheck.check.Check(conn,opResult);
 		check.operate(checkCommand);
 		

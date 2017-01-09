@@ -79,6 +79,9 @@ public class Operation implements IOperation {
 				}
 				slope.setSlopeVias(rdSlopeVias);
 
+			} else {
+
+				this.breakOutLink(result, slope);
 			}
 		}
 		result.insertObject(slope, ObjStatus.INSERT, slope.pid());
@@ -110,24 +113,28 @@ public class Operation implements IOperation {
 	 * @throws Exception
 	 */
 	public RdLink breakRelation(Result result) throws Exception {
-		RdLink resultLink =null;
+		RdLink resultLink = null;
 		int size = this.command.getSeriesLinkPids().size();
 		if (this.command.getLength() > 150) {
-			// 在130m出做打断功能
-			RdLinkSelector linkSelector = new RdLinkSelector(this.conn);
-			// 获取最后接续link前一个link
-			RdLink preLink = this.getPreRdLink(size, linkSelector);
-			// 获取当前link
-			IRow currentRow = linkSelector.loadByIdOnlyRdLink(this.command
-					.getSeriesLinkPids().get(size - 1), true);
-			RdLink currentlink = (RdLink) currentRow;
-			// 获取打断位置长度单位米
-			double breakLength = this.getBreaklength(preLink, currentlink);
-			// 获取打断新生成的link加入到坡度的接续线
-			 resultLink = this.getResultBreakLink(currentlink, preLink,
-					breakLength, result);
-			this.command.getSeriesLinkPids().set(size - 1, resultLink.getPid());
-			
+			if (size > 0) {
+				// 在130m出做打断功能
+				RdLinkSelector linkSelector = new RdLinkSelector(this.conn);
+				// 获取最后接续link前一个link
+				RdLink preLink = this.getPreRdLink(size, linkSelector);
+				// 获取当前link
+				IRow currentRow = linkSelector.loadByIdOnlyRdLink(this.command
+						.getSeriesLinkPids().get(size - 1), true);
+				RdLink currentlink = (RdLink) currentRow;
+				// 获取打断位置长度单位米
+				double breakLength = this.getBreaklength(preLink, currentlink);
+				// 获取打断新生成的link加入到坡度的接续线
+				resultLink = this.getResultBreakLink(currentlink, preLink,
+						breakLength, result);
+				this.command.getSeriesLinkPids().set(size - 1,
+						resultLink.getPid());
+			} else {
+				resultLink = this.getBreakOutLink(result);
+			}
 
 		}
 		return resultLink;
@@ -155,6 +162,43 @@ public class Operation implements IOperation {
 		RdLink resultLink = null;
 		for (RdLink link : links) {
 			if (this.isIntersectionLink(preLink, link)) {
+				resultLink = link;
+				break;
+			}
+		}
+		return resultLink;
+	}
+
+	/***
+	 * 退出线超过150m自动在130 m出打断
+	 * 
+	 * @param result
+	 * @param slope
+	 * @throws Exception
+	 */
+	private void breakOutLink(Result result, RdSlope slope) throws Exception {
+		if (this.command.getLength() > 150) {
+
+			slope.setLinkPid(this.getBreakOutLink(result).getPid());
+
+		}
+	}
+
+	private RdLink getBreakOutLink(Result result) throws Exception {
+		// 获取打断的线的几何
+		RdLink outLink = (RdLink) new RdLinkSelector(conn).loadByIdOnlyRdLink(this.command.getOutLinkPid(), true);
+		LineString lineString = (LineString) GeoTranslator.transform(
+				outLink.getGeometry(), 0.00001, 5);
+		// 获取打断点的位置
+		Coordinate coordinate = GeometryUtils.getPointOnLineStringDistance(
+				lineString, this.getBreakOutLinkLength(outLink));
+		// 获取打断后新生成的link
+		List<RdLink> links = this.breakLink(result,
+				this.command.getOutLinkPid(), coordinate);
+		RdLink resultLink = null;
+		for (RdLink link : links) {
+			if (link.getsNodePid() == this.command.getInNodePid()
+					|| link.geteNodePid() == this.command.getInNodePid()) {
 				resultLink = link;
 				break;
 			}
@@ -194,10 +238,23 @@ public class Operation implements IOperation {
 	private double getBreaklength(RdLink preLink, RdLink currentlink) {
 		if (currentlink.getsNodePid() == preLink.getsNodePid()
 				|| currentlink.getsNodePid() == preLink.geteNodePid()) {
-			return currentlink.getLength() - this.command.getLength() +130;
+			return currentlink.getLength() - this.command.getLength() + 130;
 		} else {
 			return this.command.getLength() - 130;
 		}
+	}
+
+	/***
+	 * 获取退出link打断的位置length
+	 * 
+	 * @param outLink
+	 * @return
+	 */
+	private double getBreakOutLinkLength(RdLink outLink) {
+		if (outLink.getsNodePid() == this.command.getInNodePid()) {
+			return 130;
+		}
+		return this.command.getLength() - 130;
 	}
 
 	/***

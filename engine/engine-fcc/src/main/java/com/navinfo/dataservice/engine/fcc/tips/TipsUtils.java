@@ -22,7 +22,7 @@ public class TipsUtils {
 
 	static String STRING_NULL_DEFAULT_VALUE="";
 	/**
-	 * 组装Track
+	 * 组装Track(上传、接边、预处理都调用)
 	 * 
 	 * @param lifecycle
 	 * @param handler
@@ -35,8 +35,8 @@ public class TipsUtils {
 	 */
 	public static JSONObject generateTrackJson(int lifecycle,int stage, int handler,
 			int command, JSONArray oldTrackInfo, String t_operateDate,
-			String currentDate, int t_cStatus, int t_dStatus, int t_mStatus, int t_inStatus,
-			int t_inMeth) {
+			String currentDate, int t_cStatus, int t_dStatus, int t_mStatus,
+			int t_inMeth, int t_pStatus, int t_dInProc, int t_mInProc) {
 
 		JSONObject jsonTrack = new JSONObject();
 
@@ -52,9 +52,15 @@ public class TipsUtils {
 
 		jsonTrack.put("t_mStatus", t_mStatus);
 
-		jsonTrack.put("t_inStatus", t_inStatus);
+		//jsonTrack.put("t_inStatus", t_inStatus);
 
 		jsonTrack.put("t_inMeth", t_inMeth);
+		
+		jsonTrack.put("t_pStatus", t_pStatus);
+		
+		jsonTrack.put("t_dInProc", t_dInProc);
+		
+		jsonTrack.put("t_mInProc", t_mInProc);
 
 		JSONObject jsonTrackInfo = new JSONObject();
 
@@ -76,6 +82,15 @@ public class TipsUtils {
 		return jsonTrack;
 	}
 
+	/**
+	 * @Description:生成tip索引信息(目前上传用)
+	 * @param json（上传txt生成的json）
+	 * @param currentDate
+	 * @return
+	 * @throws Exception
+	 * @author: y
+	 * @time:2016-12-27 上午10:08:16
+	 */
 	public static JSONObject generateSolrIndex(JSONObject json,
 			String currentDate) throws Exception {
 
@@ -101,9 +116,15 @@ public class TipsUtils {
 
 		index.put("t_mStatus", json.getInt("t_mStatus"));
 		
-		index.put("t_inStatus", json.getInt("t_inStatus"));
+		//index.put("t_inStatus", json.getInt("t_inStatus"));
 
 		index.put("t_inMeth", json.getInt("t_inMeth"));
+		
+		index.put("t_dInProc", json.getInt("t_dInProc"));
+		
+		index.put("t_mInProc", json.getInt("t_mInProc"));
+		
+		index.put("t_pStatus", json.getInt("t_pStatus"));
 
 		index.put("s_sourceType", json.getString("s_sourceType"));
 
@@ -121,7 +142,7 @@ public class TipsUtils {
 
 		String sourceType = json.getString("s_sourceType");
 
-		JSONArray feedbacks = json.getJSONArray("feedback");
+		JSONObject feedbacks = json.getJSONObject("feedback");
 
 		index.put("feedback", feedbacks.toString());
 
@@ -131,10 +152,12 @@ public class TipsUtils {
 		index.put("s_reliability", 100);
 
 		return index;
+		
 	}
+	
 
 	/**
-	 * @Description:新增，根据字段值，新增一个sorl Json
+	 * @Description:新增，根据字段值，新增一个sorl Json(街边 预计处理用)
 	 * @param rowkey
 	 * @param stage
 	 * @param operateDate
@@ -162,7 +185,8 @@ public class TipsUtils {
 			int t_command, int t_handler, int t_cStatus, int t_dStatus,
 			int t_mStatus, String sourceType, int s_sourceCode,
 			JSONObject g_guide, JSONObject g_location, JSONObject deep,
-			JSONArray feedBackArr, int s_reliability,int t_inStatus,int t_inMeth) throws Exception {
+			JSONObject feedbackObj, int s_reliability,int t_inMeth,
+			int t_pStatus,int t_dInProc,int t_mInProc) throws Exception {
 		JSONObject index = new JSONObject();
 
 		index.put("id", rowkey);
@@ -185,10 +209,16 @@ public class TipsUtils {
 
 		index.put("t_mStatus", t_mStatus);
 		
-		index.put("t_inStatus", t_inStatus);
-
+		//index.put("t_inStatus", t_inStatus);
+		
 		index.put("t_inMeth", t_inMeth);
 
+		index.put("t_pStatus", t_pStatus);
+		
+		index.put("t_dInProc", t_dInProc);
+		
+		index.put("t_mInProc", t_mInProc);
+		
 		index.put("s_sourceType", sourceType);
 
 		index.put("s_sourceCode", s_sourceCode);
@@ -217,11 +247,15 @@ public class TipsUtils {
 			
 			index.put("deep", TipsUtils.OBJECT_NULL_DEFAULT_VALUE);
 		}
+	/*	JSONArray f_array=new JSONArray(); 
+		if(feedbackObj!=null){
+			f_array=feedbackObj.getJSONArray("f_array");
+		}*/
 
-		index.put("feedback", feedBackArr.toString());
+		index.put("feedback", feedbackObj);
 
 		index.put("wkt", TipsImportUtils.generateSolrWkt(
-				String.valueOf(sourceType), deep, g_location, feedBackArr));
+				String.valueOf(sourceType), deep, g_location, feedbackObj));
 
 		index.put("s_reliability", s_reliability);
 
@@ -241,7 +275,7 @@ public class TipsUtils {
 	}
 
 	/**
-	 * @Description:TOOD
+	 * @Description:根据备注信息生成一个feedback的一条记录（接边预处理用）
 	 * @param user
 	 * @param memo
 	 * @param type

@@ -38,6 +38,7 @@ public class RdLinkName implements IRow {
 	private int code;
 	
 	protected String name;
+	protected ObjStatus status;
 
 	public String getInputTime() {
 		return inputTime;
@@ -132,6 +133,7 @@ public class RdLinkName implements IRow {
 
 		if (objLevel == ObjLevel.HISTORY) {
 			json.remove("name");
+			json.remove("status");
 		}
 
 		return json;
@@ -169,12 +171,12 @@ public class RdLinkName implements IRow {
 	@Override
 	public ObjStatus status() {
 
-		return null;
+		return status;
 	}
 
 	@Override
 	public void setStatus(ObjStatus os) {
-
+		status = os;
 	}
 
 	@Override

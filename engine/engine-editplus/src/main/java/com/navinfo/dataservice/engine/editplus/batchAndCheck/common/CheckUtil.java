@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiAddress;
+
 public class CheckUtil {
 	/**
 	 * 检查规则的《空格规则表》，详细内容见检查附件
@@ -36,6 +38,62 @@ public class CheckUtil {
 				if(checkResult){continue;}
 				else{return checkResult;}
 			}
+		}
+		return true;
+	}
+	
+	/**
+	 * 检查规则的《空格规则表》，返回对应的提示信息
+	 * @param word
+	 * @return boolean 符合《空格规则表》，返回true；否则返回false
+	 */
+	public static String blankRuleErrStr(String word){
+		if (word == null) {
+			return null;
+		}
+		int spaceIndex = word.indexOf(' ');
+		if (spaceIndex > 0 && spaceIndex<word.length()-1) {
+			String beforeWord=word.substring(0, spaceIndex-1);
+			String afterWord=word.substring(spaceIndex+1);
+			if (isLetter(beforeWord) && isChinese(afterWord)) {
+				return word + ",空格前是英文，空格后中文";
+			}
+			if (isLetter(beforeWord) && isOther(afterWord)) {
+				return word + ",空格前是英文，空格后是其他的符号";
+			}
+			if (isChinese(beforeWord) && isLetter(afterWord)) {
+				return word + ",空格前是中文，空格后为英文";
+			}
+			if (isChinese(beforeWord) && isChinese(afterWord)) {
+				if (!beforeWord.equals(afterWord)) {
+					return word + ",空格前是中文，空格后中文且和前面的中文不同";
+				}
+			}
+			if (isChinese(beforeWord) && isDigit(afterWord)) {
+				return word + ",空格前是中文，空格后为数字";
+			}
+			if (isChinese(beforeWord) && isOther(afterWord)) {
+				return word + ",空格前是中文，空格后是其他的符号";
+			}
+			if (isDigit(beforeWord) && isChinese(afterWord)) {
+				return word + ",空格前是数字，空格后中文";
+			}
+			if (isDigit(beforeWord) && isOther(afterWord)) {
+				return word + ",空格前是数字，空格后是其他的符号";
+			}
+			if (isDigit(beforeWord) && isOther(afterWord)) {
+				return word + ",空格前是数字，空格后是其他的符号";
+			}
+			if (isOther(beforeWord)) {
+				return word + ",空格前是不能是非数字、字母、中文之外的字符";
+			}
+		}
+		return null;
+	}
+	
+	public static boolean isOther(String str) {
+		if (isChinese(str) || isDigit(str) || isLetter(str)) {
+			return false;
 		}
 		return true;
 	}
@@ -134,7 +192,9 @@ public class CheckUtil {
 			errorList.add("多个空格");
 		}
 		//4、回车符检查：不能包含回车符；
-		if (word.contains("\n")||word.contains("\r")) {
+		Pattern pattern = Pattern.compile("\\r|\n");
+		Matcher matcher = pattern.matcher(word);
+		if (matcher.find()){
 			errorList.add("回车符");
 		}
 		//5、Tab符检查：不能包含Tab符号；
@@ -183,4 +243,70 @@ public class CheckUtil {
         }
         return null;
     }
+    
+    /**
+     * 将地址拆分的18个字段合成一个地址
+     * @param addr
+     * @return
+     * @throws Exception
+     */
+    public static String getMergerAddr(IxPoiAddress addr) throws Exception {
+		String mergeAddr = "";
+		if (addr.getProvince() != null) {
+			mergeAddr += addr.getProvince();
+		}
+		if (addr.getCity() != null) {
+			mergeAddr += addr.getCity();
+		}
+		if (addr.getCounty() != null) {
+			mergeAddr += addr.getCounty();
+		}
+		if (addr.getTown() != null) {
+			mergeAddr += addr.getTown();
+		}
+		if (addr.getPlace() != null) {
+			mergeAddr += addr.getPlace();
+		}
+		if (addr.getStreet() != null) {
+			mergeAddr += addr.getStreet();
+		}
+		if (addr.getLandmark() != null) {
+			mergeAddr += addr.getLandmark();
+		}
+		if (addr.getPrefix() != null) {
+			mergeAddr += addr.getPrefix();
+		}
+		if (addr.getHousenum() != null) {
+			mergeAddr += addr.getHousenum();
+		}
+		if (addr.getType() != null) {
+			mergeAddr += addr.getType();
+		}
+		if (addr.getSubnum() != null) {
+			mergeAddr += addr.getSubnum();
+		}
+		if (addr.getSurfix() != null) {
+			mergeAddr += addr.getSurfix();
+		}
+		if (addr.getEstab() != null) {
+			mergeAddr += addr.getEstab();
+		}
+		if (addr.getBuilding() != null) {
+			mergeAddr += addr.getBuilding();
+		}
+		if (addr.getUnit() != null) {
+			mergeAddr += addr.getUnit();
+		}
+		if (addr.getFloor() != null) {
+			mergeAddr += addr.getFloor();
+		}
+		if (addr.getRoom() != null) {
+			mergeAddr += addr.getRoom();
+		}
+		if (addr.getAddons() != null) {
+			mergeAddr += addr.getAddons();
+		}
+		return mergeAddr;
+	}
+    
 }

@@ -24,7 +24,7 @@ public class AdAdminTest extends InitApplication {
 	
 	@Test
 	public void testAdd() {
-		String parameter = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"ADADMIN\",\"objId\":300000007,\"data\":{\"names\":[{\"pid\":0,\"rowId\":\"\",\"regionId\":0,\"nameGroupid\":2,\"langCode\":\"CHI\",\"nameClass\":1,\"name\":\"名称\",\"phonetic\":\"Ming+Cheng\",\"srcFlag\":0,\"objStatus\":\"INSERT\"},{\"pid\":0,\"rowId\":\"\",\"regionId\":0,\"nameGroupid\":1,\"langCode\":\"ENG\",\"nameClass\":1,\"name\":\"名称\",\"phonetic\":\"Ming+Cheng\",\"srcFlag\":0,\"objStatus\":\"INSERT\"},{\"pid\":0,\"rowId\":\"\",\"regionId\":0,\"nameGroupid\":1,\"langCode\":\"CHI\",\"nameClass\":1,\"name\":\"名称\",\"phonetic\":\"Ming+Cheng\",\"srcFlag\":0,\"objStatus\":\"INSERT\"}],\"pid\":300000007}}";
+		String parameter = "{\"command\":\"DELETE\",\"dbId\":17,\"type\":\"ADLINK\",\"objId\":201000067}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

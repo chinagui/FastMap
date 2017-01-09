@@ -59,7 +59,9 @@ public class Process extends AbstractProcess<Command> {
                 if (preCheckMsg != null) {
                     throw new Exception(preCheckMsg);
                 }
-
+                
+                updateRdLane();
+                
                 recordData();
 
                 postCheck();

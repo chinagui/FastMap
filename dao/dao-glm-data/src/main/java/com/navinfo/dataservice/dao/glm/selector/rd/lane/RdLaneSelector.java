@@ -276,14 +276,15 @@ public class RdLaneSelector extends AbstractSelector {
 		sb.append(" ), TMP4 AS (SELECT 24, A.BRANCH_PID as PID, IN_LINK_PID AS LINK_PID FROM RD_BRANCH A, RD_BRANCH_DETAIL B WHERE A.IN_LINK_PID = :5 AND A.BRANCH_PID = B.BRANCH_PID AND B.BRANCH_TYPE = 0 AND A.U_RECORD !=2 AND B.U_RECORD !=2 ");
 		if(level == 24 && CollectionUtils.isNotEmpty(pidList))
 		{
-			sb.append(" AND BRANCH_PID not in( "+StringUtils.getInteStr(pidList)+") ");
+			sb.append(" AND A.BRANCH_PID not in( "+StringUtils.getInteStr(pidList)+") ");
 		}
 		sb.append(" UNION SELECT 24, A.BRANCH_PID as PID, IN_LINK_PID AS LINK_PID FROM RD_BRANCH A, RD_BRANCH_DETAIL B WHERE A.OUT_LINK_PID = :6 AND A.BRANCH_PID = B.BRANCH_PID AND B.BRANCH_TYPE = 0 AND A.U_RECORD !=2 AND B.U_RECORD !=2 ");
 		if(level == 24 && CollectionUtils.isNotEmpty(pidList))
 		{
-			sb.append(" AND BRANCH_PID not in( "+StringUtils.getInteStr(pidList)+") ");
+			sb.append(" AND A.BRANCH_PID not in( "+StringUtils.getInteStr(pidList)+") ");
 		}
-		sb.append(" ) SELECT * FROM TMP1 UNION SELECT * FROM TMP2 UNION SELECT * FROM TMP3 UNION SELECT * FROM TMP4 ");
+		sb.append(" ),TMP5 AS (	SELECT 25, LINK_PID AS PID, LINK_PID AS LINK_PID FROM RD_LANE WHERE LINK_PID = :7 AND U_RECORD != 2 AND SRC_FLAG = 2) ");
+		sb.append(" SELECT * FROM TMP1 UNION SELECT * FROM TMP2 UNION SELECT * FROM TMP3 UNION SELECT * FROM TMP4 UNION SELECT * FROM TMP5 ");
 		
 		PreparedStatement pstmt = null;
 
@@ -303,6 +304,8 @@ public class RdLaneSelector extends AbstractSelector {
 			pstmt.setInt(5, linkPid);
 			
 			pstmt.setInt(6, linkPid);
+			
+			pstmt.setInt(7, linkPid);
 
 			resultSet = pstmt.executeQuery();
 

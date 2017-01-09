@@ -91,7 +91,20 @@ public class RdLaneTest extends InitApplication{
 	@Test
 	public void testUpdateByRdBranchPattern()
 	{
-		String parameter = "{\"type\":\"RDBRANCH\",\"command\":\"UPDATE\",\"dbId\":17,\"data\":{\"details\":[{\"patternCode\":\"80211009\",\"rowId\":\"B7DB167556E047828F3614313E497F83\",\"pid\":306000039,\"objStatus\":\"UPDATE\",\"arrowCode\":\"10211009\"}],\"pid\":220000035},\"objId\":220000035}";
+		String parameter = "{\"type\":\"RDBRANCH\",\"command\":\"UPDATE\",\"dbId\":17,\"data\":{\"details\":[{\"patternCode\":\"80211009\",\"rowId\":\"F309CB33349E440BB968F86230506DC8\",\"pid\":208000044,\"objStatus\":\"UPDATE\",\"arrowCode\":\"10211009\"}],\"pid\":304000052},\"objId\":304000052}";
+		Transaction t = new Transaction(parameter);
+		try {
+			String msg = t.run();
+			System.out.println(msg);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void testUpdateRdLaneByDeleteBranch()
+	{
+		String parameter = "{\"command\":\"DELETE\",\"dbId\":17,\"type\":\"RDBRANCH\",\"detailId\":208000044,\"rowId\":\"\",\"branchType\":0}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

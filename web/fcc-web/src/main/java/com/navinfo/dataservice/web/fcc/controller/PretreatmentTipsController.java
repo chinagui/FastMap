@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.navinfo.dataservice.commons.springmvc.BaseController;
+import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.engine.fcc.tips.PretreatmentTipsOperator;
 
@@ -294,6 +295,23 @@ public class PretreatmentTipsController extends BaseController {
 			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
 	}
+	
+	
+    
+	/**
+	 * @Description:从request的token中获取userId
+	 * @param request
+	 * @return
+	 * @author: y
+	 * @time:2017-1-9 下午3:33:49
+	 */
+	protected   int getUserIdFromRequest(HttpServletRequest request) {
+		AccessToken  token=(AccessToken)request.getAttribute("token");
+		
+		int userId=(int)token.getUserId() ;
+		return userId;
+	}
+	
 	
 	
 	

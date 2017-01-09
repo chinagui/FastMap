@@ -312,7 +312,5 @@ public class PretreatmentTipsController extends BaseController {
 	}
 	
 	
-	
-	
 
 }

@@ -117,7 +117,11 @@ public class PoiSave {
                 }
                 sb.append(childPoiPid).append(",").append(parentPoiPid);
                 result = editApiImpl.runPoi(json);
-                pid = result.getInt("pid");
+                if (OperType.CREATE != operType) {
+                    pid = json.getInt("objId");
+                } else {
+                    pid = result.getInt("pid");
+                }
                 // 其他
             } else {
                 result = editApiImpl.runPoi(json);

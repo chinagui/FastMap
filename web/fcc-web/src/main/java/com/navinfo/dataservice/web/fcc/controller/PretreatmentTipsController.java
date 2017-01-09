@@ -297,15 +297,14 @@ public class PretreatmentTipsController extends BaseController {
 	}
 	
 	
-    
 	/**
 	 * @Description:从request的token中获取userId
 	 * @param request
 	 * @return
-	 * @author: y
+	 * @author: liya
 	 * @time:2017-1-9 下午3:33:49
 	 */
-	protected   int getUserIdFromRequest(HttpServletRequest request) {
+	private   int getUserIdFromRequest(HttpServletRequest request) {
 		AccessToken  token=(AccessToken)request.getAttribute("token");
 		
 		int userId=(int)token.getUserId() ;

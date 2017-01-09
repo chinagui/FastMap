@@ -29,8 +29,8 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 	private T command;
 	private Result result;
 	private Connection conn;
-	private CheckCommand checkCommand = new CheckCommand();
-	private CheckEngine checkEngine = null;
+	protected CheckCommand checkCommand = new CheckCommand();
+	protected CheckEngine checkEngine = null;
 	public static Logger log = Logger.getLogger(AbstractProcess.class);
 
 	/**
@@ -137,26 +137,6 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 		this.checkCommand.setGlmList(glmList);
 		String msg = checkEngine.preCheck();
 		return msg;
-		
-//		this.checkCommand.setGlmList(this.getResult().getAddObjects());
-//		this.checkCommand.setListStatus("ADD");
-//		String msg = checkEngine.preCheck();
-//
-//		if (msg != null && !msg.isEmpty()) {
-//			return msg;
-//		}
-//
-//		this.checkCommand.setGlmList(this.getResult().getUpdateObjects());
-//		this.checkCommand.setListStatus("UPDATE");
-//		msg = checkEngine.preCheck();
-//		if (msg != null && !msg.isEmpty()) {
-//			return msg;
-//		}
-//
-//		this.checkCommand.setGlmList(this.getResult().getDelObjects());
-//		this.checkCommand.setListStatus("DEL");
-//		msg = checkEngine.preCheck();
-//		return msg;
 	}
 
 	// 构造前检查参数。前检查，如果command中的构造不满足前检查参数需求，则需重写该方法，具体可参考createPostCheckGlmList
@@ -303,15 +283,9 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 		List<IRow> glmList = new ArrayList<IRow>();
 		glmList.addAll(this.getResult().getAddObjects());
 		glmList.addAll(this.getResult().getUpdateObjects());
+//		glmList.addAll(this.getResult().getDelObjects());
 		this.checkCommand.setGlmList(glmList);
 		this.checkEngine.postCheck();
-//		this.checkCommand.setGlmList(this.getResult().getAddObjects());
-//		this.checkCommand.setListStatus("ADD");
-//		this.checkEngine.postCheck();
-//
-//		this.checkCommand.setGlmList(this.getResult().getUpdateObjects());
-//		this.checkCommand.setListStatus("UPDATE");
-//		this.checkEngine.postCheck();
 
 	}
 

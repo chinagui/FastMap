@@ -34,7 +34,7 @@ public class FMBAT20141 extends BasicBatchRule {
 			List<IxPoiName> br=poiObj.getIxPoiNames();
 			MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 			for(IxPoiName name:br){
-				if(name.getNameClass()==1&&(name.getHisOpType().equals(OperationType.INSERT)
+				if(name.getNameType()==1&&(name.getHisOpType().equals(OperationType.INSERT)
 						||(name.getHisOpType().equals(OperationType.UPDATE)&&name.hisOldValueContains(IxPoiName.NAME)))){
 					String oldName=(String) name.getHisOldValue(IxPoiName.NAME);
 					String newName=name.getName();

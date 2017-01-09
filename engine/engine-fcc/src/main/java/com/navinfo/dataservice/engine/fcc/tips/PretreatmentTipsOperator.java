@@ -3,7 +3,12 @@ package com.navinfo.dataservice.engine.fcc.tips;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.swing.undo.CannotUndoException;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -20,11 +25,13 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
 import com.navinfo.dataservice.dao.fcc.SolrController;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
+import com.navinfo.navicommons.geo.computation.GridUtils;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
 
@@ -718,70 +725,148 @@ public class PretreatmentTipsOperator extends BaseTipsOperate{
 	 * @time:2016-11-16 上午11:29:03
 	 */
 	public void submit2Web(JSONArray  grids,int user) throws Exception {
+		
+		
+		try{
+			
+			String wkt = GridUtils.grids2Wkt(grids);
+			
+			List<JSONObject> snapshots=solr.queryHasNotSubmitPreTipsByWktAndUser(wkt,user);
+			
+			String currentDate=StringUtils.getCurrentTime();
+			
+			List<Get> gets = new ArrayList<Get>();
+			
+			for (JSONObject solrIndex : snapshots) {
+				
+				String rowkey=solrIndex.getString("id");
+				
+				Get get = new Get(rowkey.getBytes());
 
-		/*try {
+				get.addColumn("data".getBytes(), "track".getBytes());
 
+				get.addColumn("data".getBytes(), "feedback".getBytes());
+
+				gets.add(get);
+				
+				solrIndex.put("t_pStatus", 1);  //更新t_pStatus=1 
+				
+				solrIndex.put("t_date", currentDate);  //更新t_date
+				
+				solrIndex.put("t_lifecycle", 2);
+				
+				
+				solr.addTips(solrIndex);
+				
+			}
 			Connection hbaseConn = HBaseConnector.getInstance().getConnection();
-
-			Table htab = hbaseConn.getTable(TableName
-					.valueOf(HBaseConstant.tipTab));
-
-			// 获取到改前的 feddback和track
-			JSONObject oldTip = getOldTips(rowkey, htab);
-
-			// 1.更新track
-			JSONObject track = oldTip.getJSONObject("track");
-
-			JSONArray trackInfoArr = track.getJSONArray("t_trackInfo");
-
-			String date = DateUtils.dateToString(new Date(), "yyyyMMddHHmmss");
-
-			// 新增一个trackInfo
-			JSONObject jsonTrackInfo = new JSONObject();
-
-			jsonTrackInfo.put("stage", stage);
-
-			jsonTrackInfo.put("date", date);
-
-			jsonTrackInfo.put("handler", user);
-
-			trackInfoArr.add(jsonTrackInfo);
-
-			track.put("t_trackInfo", trackInfoArr);
 			
-			track.put("t_pStatus", 1);
+			Table htab = hbaseConn
+					.getTable(TableName.valueOf(HBaseConstant.tipTab));
 			
-			track.put("t_lifecycle", 2); //提交不修改t_lifecycle？
-
-			Put put = new Put(rowkey.getBytes());
-
-			put.addColumn("data".getBytes(), "track".getBytes(), track
-					.toString().getBytes());
-
-			// 同步更新solr
-			JSONObject solrIndex = solr.getById(rowkey);
+			Map<String, JSONObject> tipsTracks=loadTipsTrack(htab,gets);
 			
-			solrIndex.put("t_lifecycle", 2);
-
-			solrIndex.put("t_pStatus", 1);
-
-			solrIndex.put("t_date", date);
-
-			solrIndex.put("handler", user);
-
-			solr.addTips(solrIndex);
-
-			htab.put(put);
 			
-			htab.close();
+			Set<String> keys=tipsTracks.keySet(); 
+			
+			for (String rowkey : keys) {
+				
+				// 1.更新feddback和track
+				JSONObject track = tipsTracks.get(rowkey).getJSONObject("track");
+
+				JSONArray trackInfoArr = track.getJSONArray("t_trackInfo");
+
+				// 新增一个trackInfo
+				JSONObject jsonTrackInfo = new JSONObject();
+
+				jsonTrackInfo.put("date", currentDate);
+
+				jsonTrackInfo.put("handler", user);
+				
+				jsonTrackInfo.put("stage", 5);
+
+				trackInfoArr.add(jsonTrackInfo);
+
+				track.put("t_trackInfo", trackInfoArr);
+				
+				track.put("t_lifecycle", 2);
+				
+				track.put("t_pStatus", 1); //已提交
+				
+				track.put("t_date", currentDate );
+				
+				//更新hbase
+				
+				Put put = new Put(rowkey.getBytes());
+				
+				put.addColumn("data".getBytes(), "track".getBytes(), track.toString()
+						.getBytes());
+
+				htab.put(put);
+				
+			}
 
 		} catch (IOException e) {
 			
 			logger.error(e.getMessage(), e);
 			
-			//throw new Exception("改备注信息出错：rowkey:"+rowkey+"原因：" + e.getMessage(), e);
+			throw new Exception("tips提交出错，原因：" + e.getMessage(), e);
 		}
-*/
+	}
+	
+	
+	
+	
+	/**
+	 * 从Hbase读取Tips信息（只有track）
+	 * @param htab
+	 * @param gets
+	 * @throws Exception
+	 */
+	private Map<String, JSONObject> loadTipsTrack(Table htab, List<Get> gets) throws Exception {
+		
+		Map<String, JSONObject> tips = new HashMap<String, JSONObject>();
+
+		if (0 == gets.size()) {
+			return tips;
+		}
+
+		Result[] results = htab.get(gets);
+
+		for (Result result : results) {
+
+			if (result.isEmpty()) {
+				continue;
+			}
+
+			String rowkey = new String(result.getRow());
+
+			try {
+				JSONObject jo = new JSONObject();  
+
+				String track = new String(result.getValue("data".getBytes(),
+						"track".getBytes()));
+
+				jo.put("track",track);
+
+		/*		if (result.containsColumn("data".getBytes(),
+						"feedback".getBytes())) {
+					JSONObject feedback = JSONObject.fromObject(new String(
+							result.getValue("data".getBytes(),
+									"feedback".getBytes())));
+
+					jo.put("feedback", feedback);
+				} else {
+					jo.put("feedback", TipsUtils.OBJECT_NULL_DEFAULT_VALUE);
+				}*/
+
+				tips.put(rowkey, jo);
+			} catch (Exception e) {
+				logger.error(e.getMessage(),e.getCause());
+				throw e;
+			}
+		}
+		return tips;
 	}
 
 	

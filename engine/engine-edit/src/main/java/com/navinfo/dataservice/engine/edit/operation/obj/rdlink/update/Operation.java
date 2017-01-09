@@ -585,118 +585,11 @@ public class Operation implements IOperation {
      * @throws Exception
      */
     private void updataRelationObj(Result result) throws Exception {
-        this.refRdLaneForRdlinkKind(result);
         this.calSpeedLimit(updateLink, command.getUpdateContent(), result);
         // this.updateRdLane(result);
         // 信号灯维护
         this.updateRdTraffic(result);
 
-    }
-
-    /**
-     * 修改属性维护详细车道信息 但当一个link发生多信息变更时，按如下要素优先级顺序进行判断，当且仅当该变更要素为该对象的最高优先级要素且发生变更时，
-     * 才需要按该要素启动自动维护。 Level1：link种别变更 Level2：交叉口内link属性变更>link车道数变更。
-     * 说明：Level1影响详细车道有无有的判断
-     * ，当其不发生变更时，不影响level2的判断，当其发生变化时，如果变为无，则不用判断level2，如果变更为有
-     * ，则最终车道数依据level2进行内容进行判断。
-     * Level2为影响详细车道记录变更的要素优先级，level1不变更时，不考虑level1要素的影响。
-     * 其中，link车辆类型变更与link属性变更，
-     * 不会影响详细车道记录，仅会影响到详细车道中的车辆类型限制信息，故两者优先级如下：link车辆类型变更>link属性变更
-     * 当同一link的车道记录与车辆类型均需要变更维护时，先维护车道记录，再维护车道上的车辆类型限制信息。
-     * 
-     * @param result
-     * @throws Exception
-     */
-    private void updateRdLane(Result result) throws Exception {
-        // link 种类修改维护详细车道
-        this.refRdLaneForRdlinkKind(result);
-        if (this.getKindFlag() == 2) {
-            return;
-        }
-        // link 方向修改维护详细车道
-        this.refRdLaneForRdlinkDirect(result);
-        //
-        this.refRdLaneForRdLinkCross(result);
-        // 车道数变更维护车道信息
-        this.refRdLaneForRdLinkLaneNum(result);
-
-    }
-
-    /***
-     * 方向修改维护详细车道信息
-     * 
-     * @param result
-     * @throws Exception
-     */
-    private void refRdLaneForRdlinkDirect(Result result) throws Exception {
-        if (this.command.getUpdateContent().containsKey("direct")) {
-            int direct = this.command.getUpdateContent().getInt("direct");
-            com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation operation = new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation(
-                    conn);
-            operation.setLinkDirect(direct);
-            operation.setLink(this.updateLink);
-            operation.caleRdlinesForRdlinkDirect(result);
-        }
-    }
-
-    /***
-     * 种类变更维护车道信息 zhaokk
-     * 
-     * @param result
-     * @throws Exception
-     */
-    private void refRdLaneForRdlinkKind(Result result) throws Exception {
-        if (this.command.getUpdateContent().containsKey("kind")) {
-            int kind = this.command.getUpdateContent().getInt("kind");
-            if (this.updateLink.getKind() != kind) {
-                com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation operation = new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation(
-                        conn);
-                operation.setLink(this.updateLink);
-                // 新增详细车道
-                if (this.updateLink.getKind() <= KIND && kind > KIND) {
-                    this.setKindFlag(1);
-                    operation.setKindFlag(1);
-                    operation.caleRdLinesForRdLinkKind(result);
-                }
-                // 删除详细车道
-                if (this.updateLink.getKind() > KIND && kind <= KIND) {
-                    this.setKindFlag(2);
-                    operation.setKindFlag(2);
-                    operation.caleRdLinesForRdLinkKind(result);
-                }
-            }
-        }
-    }
-
-    /***
-     * link车道数变更
-     * 
-     * @throws Exception
-     */
-
-    private void refRdLaneForRdLinkLaneNum(Result result) throws Exception {
-        JSONObject content = this.command.getUpdateContent();
-        int laneNum = 0;
-        int laneLeft = 0;
-        int laneRight = 0;
-        if (content.containsKey("laneNum") || content.containsKey("laneLeft") || content.containsKey("laneRight")) {
-            if (content.containsKey("laneNum")) {
-                laneNum = content.getInt("laneNum");
-            }
-            if (content.containsKey("laneLeft")) {
-                laneLeft = content.getInt("laneLeft");
-            }
-            if (content.containsKey("laneRight")) {
-                laneRight = content.getInt("laneNum");
-            }
-            com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation operation = new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation(
-                    conn);
-            operation.setLink(this.updateLink);
-            operation.setLaneNum(laneNum);
-            operation.setLaneLeft(laneLeft);
-            operation.setLaneRight(laneRight);
-            operation.caleRdLinesForLaneNum(result);
-        }
     }
 
     /***
@@ -752,9 +645,8 @@ public class Operation implements IOperation {
             com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation operation = new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation(
                     conn);
             operation.setLimit(limit);
-            // operation.setFlag(flag);
             operation.setLink(this.updateLink);
-            operation.refRdLaneForRdlinkLimit(result);
+            operation.refRdLaneForRdlinkLimit(result,flag);
         }
 
     }

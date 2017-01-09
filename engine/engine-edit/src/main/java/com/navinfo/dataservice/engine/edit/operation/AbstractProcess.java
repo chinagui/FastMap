@@ -187,7 +187,7 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 			if (preCheckMsg != null) {
 				throw new Exception(preCheckMsg);
 			}
-			
+			this.updateRdLane();
 			this.recordData();
 			long startPostCheckTime = System.currentTimeMillis();
 			log.info("BEGIN  POSTCHECK ");
@@ -240,6 +240,8 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 			if (preCheckMsg != null) {
 				throw new Exception(preCheckMsg);
 			}
+			this.updateRdLane();
+			
 			this.recordData();
 
 			this.postCheck();
@@ -255,6 +257,17 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 		}
 
 		return msg;
+	}
+
+	/**
+	 * 被动维护详细车道
+	 * @throws Exception
+	 */
+	public void updateRdLane() throws Exception {
+		com.navinfo.dataservice.engine.edit.operation.obj.rdlane.update.OpRefRelationObj operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdlane.update.OpRefRelationObj(
+				this.getConn(), getResult());
+
+		operation.updateRdLane(getCommand().getObjType());
 	}
 
 	/**
@@ -366,8 +379,7 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 			List<IRow> allIRows = new ArrayList<>();
 			allIRows.addAll(result.getUpdateObjects());
 			allObjPidList.addAll(result.getListUpdateIRowObPid());
-			if(CollectionUtils.isEmpty(allObjPidList))
-			{
+			if (CollectionUtils.isEmpty(allObjPidList)) {
 				allIRows.addAll(result.getAddObjects());
 				allObjPidList.addAll(result.getListAddIRowObPid());
 			}

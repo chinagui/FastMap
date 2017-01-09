@@ -31,7 +31,7 @@ public class CheckRuleLoader {
 				if (!checkRuleMap.containsKey(ruleId)) {
 					try {
 						
-						String sql = "SELECT RULE_ID, ACCESSOR, ACCESSOR_TYPE, OBJ_NAME_SET, REFER_SUBTABLE_MAP,LOG"
+						String sql = "SELECT RULE_ID, ACCESSOR, ACCESSOR_TYPE, OBJ_NAME_SET, REFER_SUBTABLE_MAP,LOG,RULE_LEVEL"
 								+ "  FROM CHECK_PLUS"
 								+ "  where RULE_ID = ? AND STATUS='E'";
 						PreparedStatement pstmt = null;
@@ -47,6 +47,7 @@ public class CheckRuleLoader {
 								String accessorType=resultSet.getString("ACCESSOR_TYPE");
 								String objNameSet=resultSet.getString("OBJ_NAME_SET");
 								String referSubtableMap=resultSet.getString("REFER_SUBTABLE_MAP");
+								int level=resultSet.getInt("RULE_LEVEL");
 								CheckRule checkRule=new CheckRule();
 								checkRule.setRuleId(ruleId);
 								checkRule.setAccessorType(accessorType);
@@ -54,6 +55,7 @@ public class CheckRuleLoader {
 								checkRule.setObjNameSet(objNameSet);
 								checkRule.setReferSubtableMap(referSubtableMap);
 								checkRule.setLog(resultSet.getString("LOG"));
+								checkRule.setRuleLevel(level);
 								checkRuleMap.put(ruleId,checkRule);					
 							} 
 						} catch (Exception e) {

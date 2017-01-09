@@ -14,8 +14,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.navinfo.dataservice.commons.springmvc.BaseController;
+import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.commons.util.StringUtils;
-import com.navinfo.dataservice.engine.fcc.tips.BaseTipsOperate;
 import com.navinfo.dataservice.engine.fcc.tips.PretreatmentTipsOperator;
 
 /**
@@ -56,7 +56,8 @@ public class PretreatmentTipsController extends BaseController {
 			
 			JSONObject tipsGeometry = jsonReq.getJSONObject("geometry");
 			
-			int user = jsonReq.getInt("user");
+			
+			int userId = getUserIdFromRequest(request);
 
 			String sourceType = jsonReq.getString("sourceType");
 			
@@ -74,8 +75,8 @@ public class PretreatmentTipsController extends BaseController {
 			}
 			
 			PretreatmentTipsOperator op = new PretreatmentTipsOperator();
-
-			op.create(sourceType, tipsGeometry, user,deep,memo);
+			
+			op.create(sourceType, tipsGeometry, userId,deep,memo);
 
 			return new ModelAndView("jsonView", success());
 
@@ -86,8 +87,11 @@ public class PretreatmentTipsController extends BaseController {
 			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
 	}
-	
-	
+
+
+
+
+
 	
 	
 	/**
@@ -118,7 +122,7 @@ public class PretreatmentTipsController extends BaseController {
 			
 			//String memo=jsonReq.getString("memo"); //改备注
 			
-			int user = jsonReq.getInt("user");
+			int user = getUserIdFromRequest(request);
 
 			if (StringUtils.isEmpty(rowkey)) {
 				throw new IllegalArgumentException("参数错误：rowkey不能为空。");
@@ -171,7 +175,7 @@ public class PretreatmentTipsController extends BaseController {
 			
 			JSONObject pointGeo = jsonReq.getJSONObject("pointGeo"); //修改改坐标(点几何)
 			
-			int user = jsonReq.getInt("user");
+			int user = getUserIdFromRequest(request);
 
 			if (StringUtils.isEmpty(rowkey)) {
 				throw new IllegalArgumentException("参数错误：rowkey不能为空。");
@@ -223,7 +227,7 @@ public class PretreatmentTipsController extends BaseController {
                 throw new IllegalArgumentException("参数错误:grids不能为空。");
             }
 
-			int user = jsonReq.getInt("user");
+			int user = getUserIdFromRequest(request);
 			
 			PretreatmentTipsOperator op = new PretreatmentTipsOperator();
 			
@@ -272,7 +276,7 @@ public class PretreatmentTipsController extends BaseController {
 
 			String rowkey = jsonReq.getString("rowkey");
 			
-			int user = jsonReq.getInt("user");
+			int user = getUserIdFromRequest(request);
 
 			if (StringUtils.isEmpty(rowkey)) {
 				throw new IllegalArgumentException("参数错误：rowkey不能为空。");
@@ -292,6 +296,20 @@ public class PretreatmentTipsController extends BaseController {
 		}
 	}
 	
+	
+	/**
+	 * @Description:从request的token中获取userId
+	 * @param request
+	 * @return
+	 * @author: liya
+	 * @time:2017-1-9 下午3:33:49
+	 */
+	private   int getUserIdFromRequest(HttpServletRequest request) {
+		AccessToken  token=(AccessToken)request.getAttribute("token");
+		
+		int userId=(int)token.getUserId() ;
+		return userId;
+	}
 	
 	
 

@@ -22,10 +22,13 @@ import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
+import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeSelector;
 import com.navinfo.dataservice.dao.log.LogWriter;
@@ -115,6 +118,15 @@ public class NiValExceptionOperator {
 				String sql=objectNode.getMeshSql();
 				sql=sql.replace("!OBJECT_PID!", pid);
 				RdNode node=nodeSelector.loadBySql(sql, false).get(0);
+				Geometry geo=node.getGeometry();
+				geometryMap.put(key, node.getGeometry());
+				meshMap.put(key, Integer.valueOf(MeshUtils.point2Meshes(geo.getCoordinate().x*0.00001, geo.getCoordinate().y*0.00001)[0]));
+			}
+			if(objectNode.getMeshTable().equals("IX_POI")){
+				IxPoiSelector poiSelector=new IxPoiSelector(conn);
+				String sql=objectNode.getMeshSql();
+				sql=sql.replace("!OBJECT_PID!", pid);
+				IxPoi node=(IxPoi) poiSelector.loadBySql(sql, false,false).get(0);
 				Geometry geo=node.getGeometry();
 				geometryMap.put(key, node.getGeometry());
 				meshMap.put(key, Integer.valueOf(MeshUtils.point2Meshes(geo.getCoordinate().x*0.00001, geo.getCoordinate().y*0.00001)[0]));

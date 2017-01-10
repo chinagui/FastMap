@@ -18,7 +18,7 @@ import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
  * 线限速的限速类型为“特定条件”时，限速条件不能为“无”；当限速条件不为“无”时，限速类型必须为“特定条件”，否则报log
  * 条件线限速限速条件	服务端后检查
  */
-public class GLM56027 extends baseRule {
+public class GLM56027_1 extends baseRule {
 
 	@Override
 	public void preCheck(CheckCommand checkCommand) throws Exception {
@@ -58,14 +58,14 @@ public class GLM56027 extends baseRule {
 						this.setCheckResult("", target, 0,"线限速的限速类型为“特定条件”时，限速条件不能为“无”");
 					}
 				}
-				else if(speedDependent != 0){
+				/*else if(speedDependent != 0){
 					boolean check = this.check(rdLinkSpeedlimit.getLinkPid());
 					
 					if(check){
 						String target = "[RD_LINK," + rdLinkSpeedlimit.getLinkPid() + "]";
 						this.setCheckResult("", target, 0,"当限速条件不为“无”时，限速类型必须为“特定条件”");
 					}
-				}
+				}*/
 			}
 		}
 	}

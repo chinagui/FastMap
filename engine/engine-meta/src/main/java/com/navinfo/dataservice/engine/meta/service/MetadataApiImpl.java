@@ -29,6 +29,7 @@ import com.navinfo.dataservice.engine.meta.pinyin.PinyinConvertSelector;
 import com.navinfo.dataservice.engine.meta.pinyin.PinyinConverter;
 import com.navinfo.dataservice.engine.meta.rdname.RdNameImportor;
 import com.navinfo.dataservice.engine.meta.scEngshortList.ScEngshortList;
+import com.navinfo.dataservice.engine.meta.scPointAddrAdmin.ScPointAddrAdmin;
 import com.navinfo.dataservice.engine.meta.scPointAddrck.ScPointAddrck;
 import com.navinfo.dataservice.engine.meta.scPointEngKeyWords.ScPointEngKeyWords;
 import com.navinfo.dataservice.engine.meta.scPointNameck.ScPointNameck;
@@ -398,6 +399,11 @@ public class MetadataApiImpl implements MetadataApi {
 	public List<String> getAddrck(int type, String hmFlag) throws Exception {
 		ScPointAddrck addrck = new ScPointAddrck();
 		return addrck.getAddrckList(type, hmFlag);
+	}
+
+	@Override
+	public Map<String, Integer> getAddrAdminMap() throws Exception {
+		return ScPointAddrAdmin.getInstance().scEngshortListMap();
 	}
 
 }

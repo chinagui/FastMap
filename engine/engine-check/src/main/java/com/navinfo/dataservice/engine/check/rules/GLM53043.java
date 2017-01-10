@@ -54,14 +54,14 @@ public class GLM53043 extends baseRule{
 	private void checkRdLinkRtic(RdLinkRtic rdLinkRtic) throws Exception {
 		if(rdLinkRtic.status().equals(ObjStatus.INSERT)){
 			if(rdLinkRtic.getRank()==0){
-				String target = "[RD_LINK_RTIC," + rdLinkRtic.getLinkPid() + "]";
+				String target = "[RD_LINK," + rdLinkRtic.getLinkPid() + "]";
 				this.setCheckResult("", target, 0);
 			}
 		}else if(rdLinkRtic.status().equals(ObjStatus.UPDATE)){
 			if(rdLinkRtic.changedFields().containsKey("rank")){
 				int rank = Integer.parseInt(rdLinkRtic.changedFields().get("rank").toString());
 				if(rank==0){
-					String target = "[RD_LINK_RTIC," + rdLinkRtic.getLinkPid() + "]";
+					String target = "[RD_LINK," + rdLinkRtic.getLinkPid() + "]";
 					this.setCheckResult("", target, 0);
 				}
 			}

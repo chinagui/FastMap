@@ -210,7 +210,7 @@ public class CityService {
 		Connection conn = null;
 		try{
 			QueryRunner run = new QueryRunner();
-
+			conn = DBConnector.getInstance().getManConnection();
 			String querySql = "select c.city_id from city c, task t where c.city_id = t.city_id and t.latest = 1 and t.task_id = " + taskId;
 
 			int cityId = Integer.valueOf(run
@@ -221,6 +221,8 @@ public class CityService {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
 }

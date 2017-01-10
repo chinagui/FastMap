@@ -384,7 +384,7 @@ public class OpRefRelationObj {
 				if (level == LINK_LANE_VEHICLE_31) {
 					RdLinkLimit limit = (RdLinkLimit) rowList.get(0);
 
-					updateByRdLinkVehicle(null, limit, 2);
+					updateByRdLinkVehicle(limit.getLinkPid(), limit);
 				}
 				break;
 			}
@@ -423,7 +423,7 @@ public class OpRefRelationObj {
 				if (level == LINK_LANE_VEHICLE_31) {
 					RdLinkLimit limit = (RdLinkLimit) rowList.get(0);
 
-					updateByRdLinkVehicle(null, limit, 1);
+					updateByRdLinkVehicle(limit.getLinkPid(), limit);
 
 					break;
 				} else if (level == LINK_FORM_32) {
@@ -503,6 +503,9 @@ public class OpRefRelationObj {
 			break;
 		case LINK_LANE_NUM_25:
 			updateByRdLinkLaneNum(pid, (RdLink) row);
+			break;
+		case LINK_LANE_VEHICLE_31:
+			updateByRdLinkVehicle(pid, (RdLinkLimit) row);
 			break;
 		default:
 			break;
@@ -726,11 +729,17 @@ public class OpRefRelationObj {
 		operation.refRdLaneForRdlinkForm(result);
 	}
 
-	private void updateByRdLinkVehicle(RdLane lane, RdLinkLimit limit, int flag) throws Exception {
+	private void updateByRdLinkVehicle(int linkPid, RdLinkLimit limit) throws Exception {
 
 		com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation operation = new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation(
 				conn);
-
+		int flag = 1;
+		
+		if(limit.status() == ObjStatus.DELETE)
+		{
+			flag = 2;
+		}
+		
 		operation.refRdLaneForRdlinkLimit(result, limit, flag);
 	}
 

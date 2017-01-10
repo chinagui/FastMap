@@ -7,9 +7,8 @@ import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdElectroniceye;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Geometry;
-import net.sf.json.JSONObject;
 
-import static com.sun.tools.doclint.Entity.ge;
+import net.sf.json.JSONObject;
 
 /**
  * Created by chaixin on 2017/1/9 0009.

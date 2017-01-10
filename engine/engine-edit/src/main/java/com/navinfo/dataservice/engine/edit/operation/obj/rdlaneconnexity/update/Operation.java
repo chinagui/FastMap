@@ -52,8 +52,7 @@ public class Operation implements IOperation {
 
 		if (content.containsKey("objStatus")) {
 
-			if (ObjStatus.DELETE.toString().equals(
-					content.getString("objStatus"))) {
+			if (ObjStatus.DELETE.toString().equals(content.getString("objStatus"))) {
 				result.insertObject(lane, ObjStatus.DELETE, lane.pid());
 
 				return null;
@@ -91,50 +90,41 @@ public class Operation implements IOperation {
 				JSONObject json = topos.getJSONObject(i);
 
 				int topoPid = 0;
-				
-				if (json.containsKey("objStatus")) {
-					
-					if (!ObjStatus.INSERT.toString().equals(
-							json.getString("objStatus"))) {
 
-						RdLaneTopology topo = lane.topologyMap.get(json
-								.getInt("pid"));
+				if (json.containsKey("objStatus")) {
+
+					if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
+
+						RdLaneTopology topo = lane.topologyMap.get(json.getInt("pid"));
 
 						if (topo == null) {
-							throw new Exception("pid=" + json.getInt("pid")
-									+ "的rd_lane_topology不存在");
+							throw new Exception("pid=" + json.getInt("pid") + "的rd_lane_topology不存在");
 						}
 
-						if (ObjStatus.DELETE.toString().equals(
-								json.getString("objStatus"))) {
+						if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
 
 							topoPids.remove(topo.getPid());
 
-							result.insertObject(topo, ObjStatus.DELETE,
-									lane.pid());
+							result.insertObject(topo, ObjStatus.DELETE, lane.pid());
 							continue;
-						} else if (ObjStatus.UPDATE.toString().equals(
-								json.getString("objStatus"))) {
+						} else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
 
 							topo.fillChangeFields(json);
-							
-							if(topo.changedFields().containsKey("outLinkPid"))
-							{
-								int inNodePid = lane.getNodePid();
-										
-								int outLinkPid = json.getInt("outLinkPid");
-								
-								CalLinkOperateUtils calLinkOperateUtils = new CalLinkOperateUtils();
 
-								int relationShipType = calLinkOperateUtils.getRelationShipType(conn,
-										inNodePid, outLinkPid);
-								
+							if (topo.changedFields().containsKey("outLinkPid")) {
+								int inNodePid = lane.getNodePid();
+
+								int outLinkPid = json.getInt("outLinkPid");
+
+								CalLinkOperateUtils calLinkOperateUtils = new CalLinkOperateUtils(conn);
+
+								int relationShipType = calLinkOperateUtils.getRelationShipType(inNodePid, outLinkPid);
+
 								topo.changedFields().put("relationshipType", relationShipType);
 							}
 
 							if (!topo.changedFields().isEmpty()) {
-								result.insertObject(topo, ObjStatus.UPDATE,
-										lane.pid());
+								result.insertObject(topo, ObjStatus.UPDATE, lane.pid());
 							}
 						}
 					} else {
@@ -142,26 +132,24 @@ public class Operation implements IOperation {
 
 						topo.Unserialize(json);
 
-						topo.setPid(PidUtil.getInstance()
-								.applyLaneTopologyPid());
+						topo.setPid(PidUtil.getInstance().applyLaneTopologyPid());
 
 						topo.setConnexityPid(lane.getPid());
 
 						topo.setMesh(lane.mesh());
-						
-						topoPid = topo.getPid();
-						
-						int inNodePid = lane.getNodePid();
-						
-						int outLinkPid = topo.getOutLinkPid();
-						
-						CalLinkOperateUtils calLinkOperateUtils = new CalLinkOperateUtils();
 
-						int relationShipType = calLinkOperateUtils.getRelationShipType(conn,
-								inNodePid, outLinkPid);
-						
+						topoPid = topo.getPid();
+
+						int inNodePid = lane.getNodePid();
+
+						int outLinkPid = topo.getOutLinkPid();
+
+						CalLinkOperateUtils calLinkOperateUtils = new CalLinkOperateUtils(conn);
+
+						int relationShipType = calLinkOperateUtils.getRelationShipType(inNodePid, outLinkPid);
+
 						topo.setRelationshipType(relationShipType);
-						
+
 						result.insertObject(topo, ObjStatus.INSERT, lane.pid());
 
 						topoPids.add(topo.getPid());
@@ -177,61 +165,46 @@ public class Operation implements IOperation {
 
 						if (viajson.containsKey("objStatus")) {
 
-							if (!ObjStatus.INSERT.toString().equals(
-									viajson.getString("objStatus"))) {
+							if (!ObjStatus.INSERT.toString().equals(viajson.getString("objStatus"))) {
 
-								RdLaneVia via = lane.viaMap.get(viajson
-										.getString("rowId"));
+								RdLaneVia via = lane.viaMap.get(viajson.getString("rowId"));
 
 								if (via == null) {
-									throw new Exception("rowId="
-											+ viajson.getString("rowId")
-											+ "的rd_lane_via不存在");
+									throw new Exception("rowId=" + viajson.getString("rowId") + "的rd_lane_via不存在");
 								}
 
-								if (ObjStatus.DELETE.toString().equals(
-										viajson.getString("objStatus"))) {
-									result.insertObject(via, ObjStatus.DELETE,
-											lane.pid());
+								if (ObjStatus.DELETE.toString().equals(viajson.getString("objStatus"))) {
+									result.insertObject(via, ObjStatus.DELETE, lane.pid());
 
 									continue;
-								} else if (ObjStatus.UPDATE.toString().equals(
-										viajson.getString("objStatus"))) {
+								} else if (ObjStatus.UPDATE.toString().equals(viajson.getString("objStatus"))) {
 
-									boolean isChanged = via
-											.fillChangeFields(viajson);
+									boolean isChanged = via.fillChangeFields(viajson);
 
 									if (isChanged) {
-										result.insertObject(via,
-												ObjStatus.UPDATE, lane.pid());
+										result.insertObject(via, ObjStatus.UPDATE, lane.pid());
 									}
 								}
 							} else {
 								RdLaneVia via = new RdLaneVia();
 
 								via.setSeqNum(viajson.getInt("seqNum"));
-								
+
 								via.setGroupId(viajson.getInt("groupId"));
-								
+
 								via.setLinkPid(viajson.getInt("linkPid"));
-								
-								if(viajson.containsKey("topologyId") && viajson.getInt("topologyId") !=0)
-								{
+
+								if (viajson.containsKey("topologyId") && viajson.getInt("topologyId") != 0) {
 									via.setTopologyId(viajson.getInt("topologyId"));
-								}
-								else if(json.containsKey("pid") && json.getInt("pid") !=0)
-								{
+								} else if (json.containsKey("pid") && json.getInt("pid") != 0) {
 									via.setTopologyId(json.getInt("pid"));
-								}
-								else
-								{
+								} else {
 									via.setTopologyId(topoPid);
 								}
 
 								via.setMesh(lane.mesh());
 
-								result.insertObject(via, ObjStatus.INSERT,
-										lane.pid());
+								result.insertObject(via, ObjStatus.INSERT, lane.pid());
 
 								continue;
 							}
@@ -277,7 +250,7 @@ public class Operation implements IOperation {
 		 */
 
 	}
-	
+
 	/**
 	 * 分离节点
 	 * 
@@ -287,8 +260,7 @@ public class Operation implements IOperation {
 	 * @param result
 	 * @throws Exception
 	 */
-	public void departNode(RdLink link, int nodePid, List<RdLink> rdlinks,
-			Result result) throws Exception {
+	public void departNode(RdLink link, int nodePid, List<RdLink> rdlinks, Result result) throws Exception {
 
 		List<Integer> nodePids = new ArrayList<Integer>();
 
@@ -297,8 +269,7 @@ public class Operation implements IOperation {
 		departNode(link, nodePids, rdlinks, result);
 	}
 
-	public void departNode(RdLink link, List<Integer> nodePids,
-			List<RdLink> rdlinks, Result result) throws Exception {
+	public void departNode(RdLink link, List<Integer> nodePids, List<RdLink> rdlinks, Result result) throws Exception {
 
 		int linkPid = link.getPid();
 
@@ -321,24 +292,20 @@ public class Operation implements IOperation {
 			topologyMesh = new HashMap<Integer, RdLaneTopology>();
 		}
 
-		RdLaneConnexitySelector selector = new RdLaneConnexitySelector(
-				this.conn);
-		
+		RdLaneConnexitySelector selector = new RdLaneConnexitySelector(this.conn);
+
 		for (int nodePid : nodePids) {
 			// link作为进入线的RdLaneConnexity
-			List<RdLaneConnexity> laneConnexitys = selector.loadByLink(linkPid,
-					1, true);
+			List<RdLaneConnexity> laneConnexitys = selector.loadByLink(linkPid, 1, true);
 
-			getInLinkDepartInfo(nodePid, laneConnexitys, connexityDepart,
-					connexityMesh);
+			getInLinkDepartInfo(nodePid, laneConnexitys, connexityDepart, connexityMesh);
 
 			// link作为退出线的RdLaneConnexity
 			laneConnexitys = selector.loadByLink(linkPid, 2, true);
 
 			Map<Integer, RdLaneTopology> topologyTmp = new HashMap<Integer, RdLaneTopology>();
 
-			getOutLinkDepartInfo(nodePid, linkPid, laneConnexitys, topologyTmp,
-					topologyMesh);
+			getOutLinkDepartInfo(nodePid, linkPid, laneConnexitys, topologyTmp, topologyMesh);
 
 			for (RdLaneConnexity laneConnexity : laneConnexitys) {
 
@@ -349,8 +316,7 @@ public class Operation implements IOperation {
 
 				if (laneConnexity.getTopos().size() > 1) {
 
-					RdLaneTopology delTopology = topologyTmp.get(laneConnexity
-							.getPid());
+					RdLaneTopology delTopology = topologyTmp.get(laneConnexity.getPid());
 
 					topologyDepart.put(delTopology.getPid(), delTopology);
 
@@ -362,14 +328,12 @@ public class Operation implements IOperation {
 
 			for (RdLaneTopology delTopology : topologyDepart.values()) {
 
-				result.insertObject(delTopology, ObjStatus.DELETE,
-						delTopology.parentPKValue());
+				result.insertObject(delTopology, ObjStatus.DELETE, delTopology.parentPKValue());
 			}
 
 			for (RdLaneConnexity laneConnexity : connexityDepart.values()) {
 
-				result.insertObject(laneConnexity, ObjStatus.DELETE,
-						laneConnexity.pid());
+				result.insertObject(laneConnexity, ObjStatus.DELETE, laneConnexity.pid());
 			}
 
 			if (connexityMesh == null || topologyMesh == null) {
@@ -377,33 +341,27 @@ public class Operation implements IOperation {
 				return;
 			}
 
-			int connectNode = link.getsNodePid() == nodePid ? link
-					.geteNodePid() : link.getsNodePid();
+			int connectNode = link.getsNodePid() == nodePid ? link.geteNodePid() : link.getsNodePid();
 
 			for (RdLink rdlink : rdlinks) {
 
-				if (rdlink.getsNodePid() != connectNode
-						&& rdlink.geteNodePid() != connectNode) {
+				if (rdlink.getsNodePid() != connectNode && rdlink.geteNodePid() != connectNode) {
 
 					continue;
 				}
 
 				for (RdLaneConnexity laneConnexity : connexityMesh.values()) {
 
-					laneConnexity.changedFields().put("inLinkPid",
-							rdlink.getPid());
+					laneConnexity.changedFields().put("inLinkPid", rdlink.getPid());
 
-					result.insertObject(laneConnexity, ObjStatus.UPDATE,
-							laneConnexity.pid());
+					result.insertObject(laneConnexity, ObjStatus.UPDATE, laneConnexity.pid());
 				}
 
 				for (RdLaneTopology laneTopology : topologyMesh.values()) {
 
-					laneTopology.changedFields().put("outLinkPid",
-							rdlink.getPid());
+					laneTopology.changedFields().put("outLinkPid", rdlink.getPid());
 
-					result.insertObject(laneTopology, ObjStatus.UPDATE,
-							laneTopology.parentPKValue());
+					result.insertObject(laneTopology, ObjStatus.UPDATE, laneTopology.parentPKValue());
 				}
 			}
 		}
@@ -422,15 +380,14 @@ public class Operation implements IOperation {
 	 *            分离点不是进入点的车信
 	 * @throws Exception
 	 */
-	private void getInLinkDepartInfo(int nodePid,
-			List<RdLaneConnexity> laneConnexitys,
-			Map<Integer, RdLaneConnexity> connexityDepart,
-			Map<Integer, RdLaneConnexity> connexityMesh) throws Exception {
+	private void getInLinkDepartInfo(int nodePid, List<RdLaneConnexity> laneConnexitys,
+			Map<Integer, RdLaneConnexity> connexityDepart, Map<Integer, RdLaneConnexity> connexityMesh)
+			throws Exception {
 
 		for (RdLaneConnexity laneConnexity : laneConnexitys) {
 
 			if (laneConnexity.getNodePid() == nodePid) {
-				
+
 				connexityDepart.put(laneConnexity.getPid(), laneConnexity);
 
 			} else if (connexityMesh != null) {
@@ -455,10 +412,8 @@ public class Operation implements IOperation {
 	 *            分离点不是退出线的进入点的车信
 	 * @throws Exception
 	 */
-	private void getOutLinkDepartInfo(int nodePid, int linkPid,
-			List<RdLaneConnexity> laneConnexitys,
-			Map<Integer, RdLaneTopology> topologyTmp,
-			Map<Integer, RdLaneTopology> topologyMesh) throws Exception {
+	private void getOutLinkDepartInfo(int nodePid, int linkPid, List<RdLaneConnexity> laneConnexitys,
+			Map<Integer, RdLaneTopology> topologyTmp, Map<Integer, RdLaneTopology> topologyMesh) throws Exception {
 
 		RdLinkSelector rdLinkSelector = new RdLinkSelector(this.conn);
 
@@ -504,8 +459,7 @@ public class Operation implements IOperation {
 					}
 				}
 
-				List<IRow> linkViaRows = rdLinkSelector.loadByIds(linkPids,
-						true, false);
+				List<IRow> linkViaRows = rdLinkSelector.loadByIds(linkPids, true, false);
 
 				boolean isConnect = false;
 
@@ -514,8 +468,7 @@ public class Operation implements IOperation {
 					RdLink rdLink = (RdLink) rowLink;
 
 					// 经过线挂接与退出线的分离node挂接
-					if (rdLink.geteNodePid() == nodePid
-							|| rdLink.getsNodePid() == nodePid) {
+					if (rdLink.geteNodePid() == nodePid || rdLink.getsNodePid() == nodePid) {
 
 						isConnect = true;
 
@@ -534,10 +487,8 @@ public class Operation implements IOperation {
 			}
 		}
 	}
-	
 
-	public void breakRdLink(RdLink deleteLink, List<RdLink> newLinks,
-			Result result) throws Exception {
+	public void breakRdLink(RdLink deleteLink, List<RdLink> newLinks, Result result) throws Exception {
 		if (this.command != null || conn == null) {
 
 			return;
@@ -546,8 +497,7 @@ public class Operation implements IOperation {
 		RdLaneConnexitySelector selector = new RdLaneConnexitySelector(conn);
 
 		// link为进入线
-		List<RdLaneConnexity> laneConnexitys = selector.loadByLink(
-				deleteLink.getPid(), 1, true);
+		List<RdLaneConnexity> laneConnexitys = selector.loadByLink(deleteLink.getPid(), 1, true);
 
 		for (RdLaneConnexity laneConnexity : laneConnexitys) {
 
@@ -555,8 +505,7 @@ public class Operation implements IOperation {
 		}
 
 		// link为退出线
-		laneConnexitys = selector.loadByLink(deleteLink.getPid(),
-				2, true);
+		laneConnexitys = selector.loadByLink(deleteLink.getPid(), 2, true);
 
 		for (RdLaneConnexity laneConnexity : laneConnexitys) {
 
@@ -564,8 +513,7 @@ public class Operation implements IOperation {
 		}
 
 		// link为经过线
-		laneConnexitys = selector.loadByLink(deleteLink.getPid(),
-				3, true);
+		laneConnexitys = selector.loadByLink(deleteLink.getPid(), 3, true);
 
 		for (RdLaneConnexity laneConnexity : laneConnexitys) {
 
@@ -574,18 +522,15 @@ public class Operation implements IOperation {
 
 	}
 
-	private void breakInLink(RdLaneConnexity laneConnexity, List<RdLink> newLinks,
-			Result result) {
+	private void breakInLink(RdLaneConnexity laneConnexity, List<RdLink> newLinks, Result result) {
 
 		for (RdLink link : newLinks) {
 
-			if (link.getsNodePid() == laneConnexity.getNodePid()
-					|| link.geteNodePid() == laneConnexity.getNodePid()) {
+			if (link.getsNodePid() == laneConnexity.getNodePid() || link.geteNodePid() == laneConnexity.getNodePid()) {
 
 				laneConnexity.changedFields().put("inLinkPid", link.getPid());
 
-				result.insertObject(laneConnexity, ObjStatus.UPDATE,
-						laneConnexity.pid());
+				result.insertObject(laneConnexity, ObjStatus.UPDATE, laneConnexity.pid());
 
 				break;
 			}
@@ -593,8 +538,8 @@ public class Operation implements IOperation {
 		}
 	}
 
-	private void breakOutLink(RdLink deleteLink, RdLaneConnexity laneConnexity,
-			List<RdLink> newLinks, Result result) throws Exception {
+	private void breakOutLink(RdLink deleteLink, RdLaneConnexity laneConnexity, List<RdLink> newLinks, Result result)
+			throws Exception {
 
 		for (IRow rowTopo : laneConnexity.getTopos()) {
 
@@ -614,15 +559,13 @@ public class Operation implements IOperation {
 
 			} else {
 
-				RdLaneVia lastVia = (RdLaneVia) topo.getVias()
-						.get(0);
+				RdLaneVia lastVia = (RdLaneVia) topo.getVias().get(0);
 
 				for (IRow rowVia : topo.getVias()) {
 
 					RdLaneVia via = (RdLaneVia) rowVia;
 
-					if (lastVia.getGroupId() == via.getGroupId()
-							&& lastVia.getSeqNum() < via.getSeqNum()) {
+					if (lastVia.getGroupId() == via.getGroupId() && lastVia.getSeqNum() < via.getSeqNum()) {
 
 						lastVia = via;
 					}
@@ -630,11 +573,10 @@ public class Operation implements IOperation {
 
 				RdLinkSelector rdLinkSelector = new RdLinkSelector(this.conn);
 
-				List<Integer> linkPids = rdLinkSelector.loadLinkPidByNodePid(
-						deleteLink.getsNodePid(), false);
+				List<Integer> linkPids = rdLinkSelector.loadLinkPidByNodePid(deleteLink.getsNodePid(), false);
 
-				connectionNodePid = linkPids.contains(lastVia.getLinkPid()) ? deleteLink
-						.getsNodePid() : deleteLink.geteNodePid();
+				connectionNodePid = linkPids.contains(lastVia.getLinkPid()) ? deleteLink.getsNodePid()
+						: deleteLink.geteNodePid();
 			}
 
 			if (connectionNodePid == 0) {
@@ -644,13 +586,11 @@ public class Operation implements IOperation {
 
 			for (RdLink link : newLinks) {
 
-				if (link.getsNodePid() == connectionNodePid
-						|| link.geteNodePid() == connectionNodePid) {
+				if (link.getsNodePid() == connectionNodePid || link.geteNodePid() == connectionNodePid) {
 
 					topo.changedFields().put("outLinkPid", link.getPid());
 
-					result.insertObject(topo, ObjStatus.UPDATE,
-							laneConnexity.pid());
+					result.insertObject(topo, ObjStatus.UPDATE, laneConnexity.pid());
 
 					break;
 				}
@@ -659,8 +599,8 @@ public class Operation implements IOperation {
 		}
 	}
 
-	private void breakPassLink(RdLink deleteLink, RdLaneConnexity laneConnexity,
-			List<RdLink> newLinks, Result result) throws Exception {
+	private void breakPassLink(RdLink deleteLink, RdLaneConnexity laneConnexity, List<RdLink> newLinks, Result result)
+			throws Exception {
 
 		for (IRow rowTopo : laneConnexity.getTopos()) {
 
@@ -674,8 +614,7 @@ public class Operation implements IOperation {
 				RdLaneVia via = (RdLaneVia) row;
 
 				if (viaGroupId.get(via.getGroupId()) == null) {
-					viaGroupId.put(via.getGroupId(),
-							new ArrayList<RdLaneVia>());
+					viaGroupId.put(via.getGroupId(), new ArrayList<RdLaneVia>());
 				}
 
 				viaGroupId.get(via.getGroupId()).add(via);
@@ -727,15 +666,12 @@ public class Operation implements IOperation {
 						}
 					}
 
-					RdLinkSelector rdLinkSelector = new RdLinkSelector(
-							this.conn);
+					RdLinkSelector rdLinkSelector = new RdLinkSelector(this.conn);
 
-					List<Integer> linkPids = rdLinkSelector
-							.loadLinkPidByNodePid(deleteLink.getsNodePid(),
-									false);
+					List<Integer> linkPids = rdLinkSelector.loadLinkPidByNodePid(deleteLink.getsNodePid(), false);
 
-					connectionNodePid = linkPids.contains(preLinkPid) ? deleteLink
-							.getsNodePid() : deleteLink.geteNodePid();
+					connectionNodePid = linkPids.contains(preLinkPid) ? deleteLink.getsNodePid()
+							: deleteLink.geteNodePid();
 				}
 
 				if (newLinks.get(0).getsNodePid() == connectionNodePid
@@ -753,8 +689,7 @@ public class Operation implements IOperation {
 
 						newVia.setSeqNum(breakVia.getSeqNum() + i);
 
-						result.insertObject(newVia, ObjStatus.INSERT,
-								topo.parentPKValue());
+						result.insertObject(newVia, ObjStatus.INSERT, topo.parentPKValue());
 					}
 
 				} else {
@@ -769,27 +704,22 @@ public class Operation implements IOperation {
 
 						newVia.setLinkPid(newLinks.get(i - 1).getPid());
 
-						newVia.setSeqNum(breakVia.getSeqNum() + newLinks.size()
-								- i);
+						newVia.setSeqNum(breakVia.getSeqNum() + newLinks.size() - i);
 
-						result.insertObject(newVia, ObjStatus.INSERT,
-								topo.parentPKValue());
+						result.insertObject(newVia, ObjStatus.INSERT, topo.parentPKValue());
 					}
 				}
 
-				result.insertObject(breakVia, ObjStatus.DELETE,
-						topo.parentPKValue());
+				result.insertObject(breakVia, ObjStatus.DELETE, topo.parentPKValue());
 
 				// 维护后续经过线序号
 				for (RdLaneVia via : viaGroup) {
 
 					if (via.getSeqNum() > breakVia.getSeqNum()) {
 
-						via.changedFields().put("seqNum",
-								via.getSeqNum() + newLinks.size() - 1);
+						via.changedFields().put("seqNum", via.getSeqNum() + newLinks.size() - 1);
 
-						result.insertObject(via, ObjStatus.UPDATE,
-								topo.parentPKValue());
+						result.insertObject(via, ObjStatus.UPDATE, topo.parentPKValue());
 					}
 				}
 			}

@@ -145,9 +145,16 @@ public class TipsSelector {
 					m.put("a", json.getString("t_mStatus"));
 
 				}
-				
 
-				m.put("b", json.getString("t_lifecycle"));
+				JSONObject deep = JSONObject.fromObject(json.getString("deep"));
+				
+				//fc预处理8001要求返回功能等级
+				if(type == 8001){
+					m.put("b", deep.getString("fc"));
+					
+				}else{
+					m.put("b", json.getString("t_lifecycle"));
+				}
 
 				JSONObject g_guide = JSONObject.fromObject(json
 						.getString("g_guide"));
@@ -155,9 +162,6 @@ public class TipsSelector {
 				//8001和8002的的数据，新增guide已经赋值，无需特殊处理了
 				m.put("h", g_guide.getJSONArray("coordinates"));
 				
-
-				JSONObject deep = JSONObject.fromObject(json.getString("deep"));
-
 				// g字段重新赋值的（显示坐标：取Tips的geo）
 				if (type == 1604 || type == 1601 || type == 1602
 						|| type == 1605 || type == 1606 || type == 1607) {

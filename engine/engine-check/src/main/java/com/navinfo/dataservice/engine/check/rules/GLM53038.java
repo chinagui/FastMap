@@ -47,14 +47,14 @@ public class GLM53038 extends baseRule{
 	private void checkRdLinkRtic(RdLinkRtic rdLinkRtic) throws Exception {
 		if(rdLinkRtic.status().equals(ObjStatus.INSERT)){
 			if(rdLinkRtic.getRticDir() == 0){
-				String target = "[RD_LINK_RTIC," + rdLinkRtic.getLinkPid() + "]";
+				String target = "[RD_LINK," + rdLinkRtic.getLinkPid() + "]";
 				this.setCheckResult("", target, 0);
 			}
 		}else if(rdLinkRtic.status().equals(ObjStatus.UPDATE)){
 			if(rdLinkRtic.changedFields().containsKey("rticDir")){
 				int rticDir = Integer.parseInt(rdLinkRtic.changedFields().get("rticDir").toString());
 				if(rticDir==0){
-					String target = "[RD_LINK_RTIC," + rdLinkRtic.getLinkPid() + "]";
+					String target = "[RD_LINK," + rdLinkRtic.getLinkPid() + "]";
 					this.setCheckResult("", target, 0);
 				}
 			}

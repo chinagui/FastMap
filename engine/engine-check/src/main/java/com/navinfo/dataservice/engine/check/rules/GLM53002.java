@@ -45,7 +45,7 @@ public class GLM53002 extends baseRule{
 	 * @param rdLinkRtic
 	 */
 	private void checkRdLinkRtic(RdLinkRtic rdLinkRtic) {
-		String target = "[RD_LINK_RTIC," + rdLinkRtic.getLinkPid() + "]";
+		String target = "[RD_LINK," + rdLinkRtic.getLinkPid() + "]";
 		if(rdLinkRtic.status().equals(ObjStatus.INSERT)){
 			if((rdLinkRtic.getCode()<1)||(rdLinkRtic.getCode()>4095)){
 				this.setCheckResult("", target, 0);

@@ -59,7 +59,7 @@ public class GLM53016_2 extends baseRule{
 
 			sb2.append("SELECT 1 FROM RD_LINK_RTIC R");
 			sb2.append(" WHERE R.U_RECORD <> 2");
-			sb2.append(" AND L.LINK_PID = " + rdLink.getPid());
+			sb2.append(" AND R.LINK_PID = " + rdLink.getPid());
 
 			String sql2 = sb2.toString();
 			log.info("RdLink后检查GLM53016_2:" + sql2);

@@ -78,7 +78,7 @@ public class GLM53006 extends baseRule{
 			resultList = getObj.exeSelect(this.getConn(), sql2);
 
 			if(resultList.size()>0){
-				String target = "[RD_LINK_RTIC," + rdLinkRtic.getLinkPid() + "]";
+				String target = "[RD_LINK," + rdLinkRtic.getLinkPid() + "]";
 				this.setCheckResult("", target, 0);
 			}
 		}

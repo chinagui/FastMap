@@ -328,7 +328,7 @@ public class OpRefRelationObj {
 				RdBranchDetail detail = (RdBranchDetail) branch.getDetails().get(0);
 				String patternCode = detail.getPatternCode();
 				//必须是高速分歧和3个例外模式图号的删除才走通道进行更新
-				if (detail.getBranchType() != 0 || patternCode.equals("80261009") || patternCode.equals("80271009")
+				if (patternCode == null || detail.getBranchType() != 0 || patternCode.equals("80261009") || patternCode.equals("80271009")
 						|| patternCode.equals("80361009")) {
 					return;
 				}
@@ -350,7 +350,8 @@ public class OpRefRelationObj {
 	}
 
 	/**
-	 * 对所有link的详细车道影响要素进行优先级排序 车信的进入线不可能是交叉口内link
+	 * 对所有link的详细车道影响要素进行优先级排序 
+	 * 车信的进入线不可能是交叉口内link
 	 * 收费站进入link挂接的退出link只能有一条，分歧要求进入线挂接的link至少要3条，所以有收费站的link上不会有分歧。
 	 * 有收费站的link上如果有车信，那么link不能为交叉口内link
 	 * 
@@ -444,6 +445,10 @@ public class OpRefRelationObj {
 	 * @throws Exception
 	 */
 	public void updateByLevel(int level, Map<Integer, List<Integer>> laneInfoList, IRow row) throws Exception {
+		if(level > 25)
+		{
+			return;
+		}
 		// 如果link上存在优先级高的要素，则不需要重新维护详细车道信息
 		if (laneInfoList.get(level - 1) != null) {
 			return;

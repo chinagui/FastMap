@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import com.alibaba.druid.sql.visitor.functions.Char;
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.geom.AngleCalculator;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
@@ -142,8 +143,13 @@ public class Operation implements IOperation {
 
 		List<RdBranch> rdBranchs = rdBranchSelector.loadRdBranchByLinkNode(
 				targetBranch.getInLinkPid(), targetBranch.getNodePid(), true);
+		
+		if(patternCode.length()<8)
+		{
+			return rdLaneInfo;
+		}
 
-		String position78 = patternCode.substring(6, 7);
+		String position78 = patternCode.substring(6, 8);
 
 		List<Integer> linkPids = new ArrayList<Integer>();
 
@@ -167,7 +173,7 @@ public class Operation implements IOperation {
 		RdLink inLink = (RdLink) RdLinkSelector.loadById(
 				targetBranch.getInLinkPid(), true, true);
 		
-		int inCount = Integer.parseInt(patternCode.substring(4, 4));
+		int inCount = Integer.parseInt(patternCode.substring(4,5));
 
 		updateLane(inLink, targetBranch.getNodePid(), inCount, result);
 

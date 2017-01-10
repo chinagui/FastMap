@@ -96,6 +96,8 @@ public class TipsSelector {
 				stages.add(1);
 
 				stages.add(2);
+				
+				stages.add(5);
 
 			} else if ("m".equals(mdFlag)) {
 
@@ -104,6 +106,8 @@ public class TipsSelector {
 				stages.add(2);
 
 				stages.add(3);
+				
+				stages.add(5);
 			}
 			//f是预处理渲染，如果不是，则需要过滤没有提交的预处理tips
 			boolean isPre=false;

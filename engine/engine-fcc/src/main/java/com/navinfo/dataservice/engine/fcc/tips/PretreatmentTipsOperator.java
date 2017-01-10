@@ -1084,7 +1084,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate{
 
 			solrIndex.put("handler", user);
 
-			solrIndex.put("feedback", f_array);
+			solrIndex.put("feedback", feedBack);
 			
 			if(newDeep!=null){
 				solrIndex.put("deep", newDeep);

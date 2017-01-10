@@ -27,9 +27,14 @@ public class OpRefAdFace implements IOperation {
         AdAdminSelector selector = new AdAdminSelector(conn);
         for (AdFace adFace : command.getFaces()) {
             result.insertObject(adFace, ObjStatus.DELETE, adFace.getPid());
+            if (0 == adFace.getRegionId())
+                continue;
             AdAdmin admin = (AdAdmin) selector.loadById(adFace.getRegionId(), true);
-            if(null != admin){
-                if (null != admin && (admin.getAdminType() == 0 || admin.getAdminType() == 1 || admin.getAdminType() == 2 || admin.getAdminType() == 2.5 || admin.getAdminType() == 3 || admin.getAdminType() == 3.5 || admin.getAdminType() == 4 || admin.getAdminType() == 4.5 || admin.getAdminType() == 4.8 || admin.getAdminType() == 5 || admin.getAdminType() == 6 || admin.getAdminType() == 7))
+            if (null != admin) {
+                if (null != admin && (admin.getAdminType() == 0 || admin.getAdminType() == 1 || admin.getAdminType()
+                        == 2 || admin.getAdminType() == 2.5 || admin.getAdminType() == 3 || admin.getAdminType() ==
+                        3.5 || admin.getAdminType() == 4 || admin.getAdminType() == 4.5 || admin.getAdminType() ==
+                        4.8 || admin.getAdminType() == 5 || admin.getAdminType() == 6 || admin.getAdminType() == 7))
                     AdminIDBatchUtils.updateAdminID(adFace, null, conn, result);
             }
         }

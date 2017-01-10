@@ -1,6 +1,11 @@
 package com.navinfo.dataservice.dao.plus.model.ixpoi;
 
+import com.navinfo.dataservice.commons.util.JsonUtils;
+import com.navinfo.dataservice.dao.glm.iface.ISerializable;
+import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
+
+import net.sf.json.JSONObject;
 
 /** 
 * @ClassName:  IxPoiHotel 
@@ -8,7 +13,7 @@ import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
 * @date 2016-11-18 11:36:16 
 * @Description: TODO
 */
-public class IxPoiHotel extends BasicRow {
+public class IxPoiHotel extends BasicRow implements ISerializable{
 	protected long hotelId ;
 	protected long poiPid ;
 	protected String creditCard ;
@@ -231,5 +236,17 @@ public class IxPoiHotel extends BasicRow {
 	public static final String CITY = "CITY";
 	public static final String PHOTO_NAME = "PHOTO_NAME";
 	public static final String TRAVELGUIDE_FLAG = "TRAVELGUIDE_FLAG";
+
+	//*********zl 2017.01.05 ***********
+	@Override
+	public JSONObject Serialize(ObjLevel objLevel) throws Exception {
+		return JSONObject.fromObject(this, JsonUtils.getStrConfig());
+	}
+
+	@Override
+	public boolean Unserialize(JSONObject json) throws Exception {
+		// TODO Auto-generated method stub
+		return false;
+	}
 
 }

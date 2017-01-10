@@ -302,6 +302,39 @@ public class TipsOperateTest2 extends InitApplication{
 		
 	}
 	
+	
+	
+	
+	@Test
+	public void testSubmitPre() throws Exception {
+		
+		String parameter="{\"grids\":[60560303],\"user\":123}";
+		
+		try {
+			if (StringUtils.isEmpty(parameter)) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			JSONArray grids = jsonReq.getJSONArray("grids");
+
+
+			if (grids==null||grids.size()==0) {
+                throw new IllegalArgumentException("参数错误:grids不能为空。");
+            }
+
+			int user = jsonReq.getInt("user");
+			
+			PretreatmentTipsOperator op = new PretreatmentTipsOperator();
+			
+			op.submit2Web(grids, user);
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+	}
+	
 	/**
 	 * 参数的验证
 	 * 

@@ -29,7 +29,7 @@ public class Day2MonthPoiMergeJobTest {
 		request.element("cityId", "2");
 	    int jobId=(int) apiService.createJob("day2MonSyncJob", request, 3,0, "日落月");
 	    System.out.println(jobId);
-try{
+	    try{
 	
 			JobInfo jobInfo = JobService.getInstance().getJobById(jobId);
 			AbstractJob job = new Day2MonthPoiMergeJob(jobInfo);

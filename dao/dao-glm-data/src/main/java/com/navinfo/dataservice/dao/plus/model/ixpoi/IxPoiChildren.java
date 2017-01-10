@@ -1,6 +1,11 @@
 package com.navinfo.dataservice.dao.plus.model.ixpoi;
 
+import com.navinfo.dataservice.commons.util.JsonUtils;
+import com.navinfo.dataservice.dao.glm.iface.ISerializable;
+import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
+
+import net.sf.json.JSONObject;
 
 /** 
 * @ClassName:  IxPoiChildren 
@@ -8,7 +13,7 @@ import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
 * @date 2016-11-18 11:32:51 
 * @Description: TODO
 */
-public class IxPoiChildren extends BasicRow {
+public class IxPoiChildren  extends BasicRow implements ISerializable{
 	protected long groupId ;
 	protected long childPoiPid ;
 	protected int relationType ;
@@ -57,5 +62,18 @@ public class IxPoiChildren extends BasicRow {
 	public static final String GROUP_ID = "GROUP_ID";
 	public static final String CHILD_POI_PID = "CHILD_POI_PID";
 	public static final String RELATION_TYPE = "RELATION_TYPE";
+
+	//*********zl 2017.01.05 ***********
+		@Override
+		public JSONObject Serialize(ObjLevel objLevel) throws Exception {
+			return JSONObject.fromObject(this, JsonUtils.getStrConfig());
+		}
+
+		@Override
+		public boolean Unserialize(JSONObject json) throws Exception {
+			// TODO Auto-generated method stub
+			return false;
+		}
+	//*********zl 2017.01.05 ***********
 
 }

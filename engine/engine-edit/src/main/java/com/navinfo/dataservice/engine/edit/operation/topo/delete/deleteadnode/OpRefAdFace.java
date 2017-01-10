@@ -31,9 +31,14 @@ public class OpRefAdFace implements IOperation {
         log.debug("删除行政区划点对应的面关系");
         for (AdFace face : command.getFaces()) {
             result.insertObject(face, ObjStatus.DELETE, face.pid());
+            if (0 == face.getRegionId())
+                continue;
             AdAdmin admin = (AdAdmin) selector.loadById(face.getRegionId(), true);
-            if(null != admin) {
-                if (null != admin && (admin.getAdminType() == 0 || admin.getAdminType() == 1 || admin.getAdminType() == 2 || admin.getAdminType() == 2.5 || admin.getAdminType() == 3 || admin.getAdminType() == 3.5 || admin.getAdminType() == 4 || admin.getAdminType() == 4.5 || admin.getAdminType() == 4.8 || admin.getAdminType() == 5 || admin.getAdminType() == 6 || admin.getAdminType() == 7))
+            if (null != admin) {
+                if (null != admin && (admin.getAdminType() == 0 || admin.getAdminType() == 1 || admin.getAdminType()
+                        == 2 || admin.getAdminType() == 2.5 || admin.getAdminType() == 3 || admin.getAdminType() ==
+                        3.5 || admin.getAdminType() == 4 || admin.getAdminType() == 4.5 || admin.getAdminType() ==
+                        4.8 || admin.getAdminType() == 5 || admin.getAdminType() == 6 || admin.getAdminType() == 7))
                     AdminIDBatchUtils.updateAdminID(face, null, conn, result);
             }
             result.setPrimaryPid(face.getPid());

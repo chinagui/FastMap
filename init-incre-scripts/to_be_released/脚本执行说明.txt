@@ -1,5 +1,4 @@
 1. fm_sys/xxx.sql
-  功能：xxxxxxxxx
-  目标库：fm_sys
-  author：xxx
-  
+	功能：xxxxxx
+	目标库：fm_sys
+	author：xxx

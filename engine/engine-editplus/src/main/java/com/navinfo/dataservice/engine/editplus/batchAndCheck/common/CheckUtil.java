@@ -192,7 +192,9 @@ public class CheckUtil {
 			errorList.add("多个空格");
 		}
 		//4、回车符检查：不能包含回车符；
-		if (word.contains("\n")||word.contains("\r")) {
+		Pattern pattern = Pattern.compile("\\r|\n");
+		Matcher matcher = pattern.matcher(word);
+		if (matcher.find()){
 			errorList.add("回车符");
 		}
 		//5、Tab符检查：不能包含Tab符号；

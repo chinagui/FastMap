@@ -113,7 +113,7 @@ public class GLM28055 extends baseRule{
 		if(rdInterLink.status().equals(ObjStatus.INSERT)){
 			StringBuilder sb = new StringBuilder();
 
-			sb.append("SELECT 1 RD_LINK R");
+			sb.append("SELECT 1 FROM RD_LINK R");
 			sb.append(" WHERE R.U_RECORD <> 2");
 			sb.append(" AND R.MULTI_DIGITIZED = 0");
 			sb.append(" AND R.LINK_PID = " + rdInterLink.getLinkPid());
@@ -171,7 +171,7 @@ public class GLM28055 extends baseRule{
 		if(rdRoadLink.status().equals(ObjStatus.INSERT)){
 			StringBuilder sb = new StringBuilder();
 
-			sb.append("SELECT 1 RD_LINK R");
+			sb.append("SELECT 1 FROM RD_LINK R");
 			sb.append(" WHERE R.U_RECORD <> 2");
 			sb.append(" AND R.MULTI_DIGITIZED = 0");
 			sb.append(" AND R.LINK_PID = " + rdRoadLink.getLinkPid());

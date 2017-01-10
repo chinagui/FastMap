@@ -6,17 +6,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import net.sf.json.JSONObject;
-
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
-
 import com.navinfo.dataservice.dao.glm.iface.Result;
-
 import com.navinfo.dataservice.dao.glm.model.rd.lane.RdLane;
 import com.navinfo.dataservice.dao.glm.model.rd.lane.RdLaneCondition;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
@@ -26,6 +22,9 @@ import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkLimit;
 import com.navinfo.dataservice.dao.glm.model.rd.tollgate.RdTollgate;
 import com.navinfo.dataservice.dao.glm.selector.rd.lane.RdLaneSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
+import com.navinfo.dataservice.engine.edit.operation.obj.rdlane.update.OpRefRelationObj;
+
+import net.sf.json.JSONObject;
 
 /**
  * 详细车道批量操作
@@ -45,6 +44,16 @@ public class Operation implements IOperation {
 	private List<String> lanInfos;
 	private int passageNum;
 	private int linkDirect;
+	// 车道的方向
+	private int laneDirect;
+
+	public int getLaneDirect() {
+		return laneDirect;
+	}
+
+	public void setLaneDirect(int laneDirect) {
+		this.laneDirect = laneDirect;
+	}
 
 	public int getLinkDirect() {
 		return linkDirect;
@@ -233,8 +242,7 @@ public class Operation implements IOperation {
 	 * @param result
 	 * @throws Exception
 	 */
-	private void caleRdlanes(List<RdLane> lanes, int linkPid,
-			Map<Integer, RdLane> map, int laneDir, Result result)
+	private void caleRdlanes(List<RdLane> lanes, int linkPid, Map<Integer, RdLane> map, int laneDir, Result result)
 			throws Exception {
 
 		for (RdLane lane : lanes) {
@@ -242,21 +250,18 @@ public class Operation implements IOperation {
 		}
 		// 获取当前传入的车道信息
 		for (int m = 0; m < this.command.getLaneInfos().size(); m++) {
-			JSONObject jsonLaneInfo = this.command.getLaneInfos()
-					.getJSONObject(m);
+			JSONObject jsonLaneInfo = this.command.getLaneInfos().getJSONObject(m);
 			// 判断此车道信息是否存在
 			if (map.containsKey(jsonLaneInfo.getInt("pid"))) {
 				// 如果传入的车道数和库中车道数一样不予处理
 				if (jsonLaneInfo.size() == 1
-						&& map.get(jsonLaneInfo.getInt("pid")).getLaneNum() == this.command
-								.getLaneInfos().size()) {
+						&& map.get(jsonLaneInfo.getInt("pid")).getLaneNum() == this.command.getLaneInfos().size()) {
 					continue;
 				}
 				// 如果存在车道数，且传入的车道总数和原有库中的不一致，走修改功能
 				jsonLaneInfo.put("laneNum", this.command.getLaneInfos().size());
 				com.navinfo.dataservice.engine.edit.operation.obj.rdlane.update.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdlane.update.Operation();
-				operation.updateRdLane(result, jsonLaneInfo,
-						map.get(jsonLaneInfo.getInt("pid")));
+				operation.updateRdLane(result, jsonLaneInfo, map.get(jsonLaneInfo.getInt("pid")));
 				// 移除已经修改的车道信息
 				map.remove(jsonLaneInfo.getInt("pid"));
 			}
@@ -286,12 +291,10 @@ public class Operation implements IOperation {
 	 * @param laneDir
 	 * @throws Exception
 	 */
-	private void createRdLane(Result result, JSONObject jsonLaneInfo,
-			int linkPid, int laneDir) throws Exception {
+	private void createRdLane(Result result, JSONObject jsonLaneInfo, int linkPid, int laneDir) throws Exception {
 		RdLane lane = new RdLane();
 		if (jsonLaneInfo.getInt("pid") != 0) {
-			lane = (RdLane) new RdLaneSelector(conn).loadById(
-					jsonLaneInfo.getInt("pid"), true, true);
+			lane = (RdLane) new RdLaneSelector(conn).loadById(jsonLaneInfo.getInt("pid"), true, true);
 		}
 		// 申请PId
 		int lanePid = PidUtil.getInstance().applyRdLanePid();
@@ -304,7 +307,7 @@ public class Operation implements IOperation {
 		// 车道序号
 		if (jsonLaneInfo.containsKey("seqNum")) {
 			lane.setSeqNum(jsonLaneInfo.getInt("seqNum"));
-		}// 箭头方向
+		} // 箭头方向
 		if (jsonLaneInfo.containsKey("arrowDir")) {
 			lane.setArrowDir(jsonLaneInfo.getString("arrowDir"));
 
@@ -312,7 +315,7 @@ public class Operation implements IOperation {
 		// 中央隔离带
 		if (jsonLaneInfo.containsKey("centerDivider")) {
 			lane.setCenterDivider(jsonLaneInfo.getInt("centerDivider"));
-		}// 车道标识
+		} // 车道标识
 		if (jsonLaneInfo.containsKey("laneForming")) {
 			lane.setLaneForming(jsonLaneInfo.getInt("laneForming"));
 		}
@@ -328,8 +331,7 @@ public class Operation implements IOperation {
 		if (jsonLaneInfo.containsKey("conditions")) {
 			List<IRow> conditionRows = new ArrayList<IRow>();
 			for (int i = 0; i < jsonLaneInfo.getJSONArray("conditions").size(); i++) {
-				JSONObject conditionObject = jsonLaneInfo.getJSONArray(
-						"conditions").getJSONObject(i);
+				JSONObject conditionObject = jsonLaneInfo.getJSONArray("conditions").getJSONObject(i);
 				RdLaneCondition condition = new RdLaneCondition();
 				condition.setLanePid(lanePid);
 				// 车道方向
@@ -338,8 +340,7 @@ public class Operation implements IOperation {
 				}
 				// 车道限制时间
 				if (conditionObject.containsKey("vehicleTime")) {
-					condition.setVehicleTime(conditionObject
-							.getString("vehicleTime"));
+					condition.setVehicleTime(conditionObject.getString("vehicleTime"));
 				}
 				// 车辆类型
 				if (conditionObject.containsKey("vehicle")) {
@@ -347,8 +348,7 @@ public class Operation implements IOperation {
 				}
 				// 方向时间段
 				if (conditionObject.containsKey("directionTime")) {
-					condition.setDirectionTime(conditionObject
-							.getString("directionTime"));
+					condition.setDirectionTime(conditionObject.getString("directionTime"));
 				}
 				conditionRows.add(condition);
 
@@ -360,7 +360,7 @@ public class Operation implements IOperation {
 		result.insertObject(lane, ObjStatus.INSERT, lane.getPid());
 
 	}
-
+	
 	/***
 	 * 创建车道信息
 	 * 
@@ -371,8 +371,7 @@ public class Operation implements IOperation {
 	 * @param laneNum
 	 * @throws Exception
 	 */
-	private void createRdlane(Result result, int linkPid, int seqNum,
-			int laneDir, int laneNum) throws Exception {
+	private void createRdlane(Result result, int linkPid, int seqNum, int laneDir, int laneNum) throws Exception {
 		RdLane rdLane = new RdLane();
 		rdLane.setPid(PidUtil.getInstance().applyRdLanePid());
 		rdLane.setLinkPid(linkPid);
@@ -393,8 +392,8 @@ public class Operation implements IOperation {
 	 * @param arrowDir
 	 * @throws Exception
 	 */
-	private void createRdlane(Result result, int linkPid, int seqNum,
-			int laneDir, int laneNum, String arrowDir) throws Exception {
+	private void createRdlane(Result result, int linkPid, int seqNum, int laneDir, int laneNum, String arrowDir)
+			throws Exception {
 		RdLane rdLane = new RdLane();
 		rdLane.setPid(PidUtil.getInstance().applyRdLanePid());
 		rdLane.setLinkPid(linkPid);
@@ -413,11 +412,9 @@ public class Operation implements IOperation {
 	 * @param laneDir
 	 * @throws Exception
 	 */
-	private void createRdLane(Result result, int linkPid, int laneDir)
-			throws Exception {
+	private void createRdLane(Result result, int linkPid, int laneDir) throws Exception {
 		for (int m = 0; m < this.command.getLaneInfos().size(); m++) {
-			this.createRdLane(result, this.command.getLaneInfos()
-					.getJSONObject(m), linkPid, laneDir);
+			this.createRdLane(result, this.command.getLaneInfos().getJSONObject(m), linkPid, laneDir);
 		}
 
 	}
@@ -431,8 +428,7 @@ public class Operation implements IOperation {
 	 * @return
 	 * @throws Exception
 	 */
-	private Map<Integer, List<RdLane>> caleRdLanesForDir(int i, RdLink link)
-			throws Exception {
+	private Map<Integer, List<RdLane>> caleRdLanesForDir(int i, RdLink link) throws Exception {
 		int laneDir = 1;
 		Map<Integer, List<RdLane>> map = new HashMap<Integer, List<RdLane>>();
 		List<RdLane> lanes = new ArrayList<RdLane>();
@@ -442,19 +438,15 @@ public class Operation implements IOperation {
 		if (link.getDirect() == 1) {
 			if (i == 0) {
 				laneDir = this.command.getLaneDir();
-				lanes = new RdLaneSelector(conn).loadByLink(link.getPid(),
-						this.command.getLaneDir(), true);
+				lanes = new RdLaneSelector(conn).loadByLink(link.getPid(), this.command.getLaneDir(), true);
 			} else {
 				RdLink preLink = (RdLink) this.command.getLinks().get(i - 1);
-				if (preLink.getsNodePid() == link.geteNodePid()
-						|| preLink.geteNodePid() == link.getsNodePid()) {
-					lanes = new RdLaneSelector(conn).loadByLink(link.getPid(),
-							2, true);
+				if (preLink.getsNodePid() == link.geteNodePid() || preLink.geteNodePid() == link.getsNodePid()) {
+					lanes = new RdLaneSelector(conn).loadByLink(link.getPid(), 2, true);
 					laneDir = 2;
 				} else {
 					laneDir = 3;
-					lanes = new RdLaneSelector(conn).loadByLink(link.getPid(),
-							3, true);
+					lanes = new RdLaneSelector(conn).loadByLink(link.getPid(), 3, true);
 
 				}
 			}
@@ -470,8 +462,7 @@ public class Operation implements IOperation {
 	 * @param result
 	 * @throws Exception
 	 */
-	public void caleLanesforCreateRdLinks(List<RdLink> links, Result result)
-			throws Exception {
+	public void caleLanesforCreateRdLinks(List<RdLink> links, Result result) throws Exception {
 		for (RdLink link : links) {
 			this.createRdLaneForLinkRLanes(result, link, false);
 		}
@@ -485,8 +476,10 @@ public class Operation implements IOperation {
 	 * @param result
 	 */
 	public void caleRdLinesForRdLinkKind(Result result) throws Exception {
-		List<RdLane> lanes = new RdLaneSelector(conn).loadByLink(this.getLink()
-				.getPid(), 1, true);
+
+		int linkPid = this.getLink().getPid();
+
+		List<RdLane> lanes = new RdLaneSelector(conn).loadByLink(linkPid, 0, true);
 		if (this.getKindFlag() == 2) {
 			if (lanes.size() > 0) {
 				for (RdLane lane : lanes) {
@@ -499,7 +492,11 @@ public class Operation implements IOperation {
 		} else {
 			// 新增车道信息
 			if (lanes.size() <= 0) {
-				this.createRdLaneForLinkRLanes(result, link, true);
+				OpRefRelationObj operation = new OpRefRelationObj(conn, result);
+
+				Map<Integer, List<Integer>> laneInfoList = operation.getRdlaneSelector().getLaneInfoByLinkPid(linkPid,
+						OpRefRelationObj.LINK_TOLLGATE_21, null);
+				operation.updateByLevel(OpRefRelationObj.LINK_TOLLGATE_21, laneInfoList,null);
 			}
 		}
 
@@ -514,26 +511,40 @@ public class Operation implements IOperation {
 	 * @throws Exception
 	 */
 	public void caleRdlinesForRdlinkDirect(Result result) throws Exception {
+		// link方向修改为双方向
 		if (this.getLinkDirect() == 1) {
+			// 默认的新增详细车道的方向，具体看在link的那个方向上新增，重新赋值
+			int laneDirect = 1;
 
-			List<RdLane> lanes = new RdLaneSelector(conn).loadByLink(this
-					.getLink().getPid(), 0, true);
+			List<RdLane> lanes = new RdLaneSelector(conn).loadByLink(this.getLink().getPid(), 0, true);
 			if (this.getLink().getDirect() == 2) {
-
 				for (RdLane lane : lanes) {
 					this.updateLaneForDir(result, lane, 2);
 				}
+				// 已有的车道方向是2，如果要新增则在3方向上新增
+				laneDirect = 3;
 			}
 			if (this.getLink().getDirect() == 3) {
 				for (RdLane lane : lanes) {
 					this.updateLaneForDir(result, lane, 3);
 				}
+				// 已有的车道方向是3，如果要新增则在2方向上新增
+				laneDirect = 2;
+			}
+			if (lanes.size() != 2) {
+				OpRefRelationObj operation = new OpRefRelationObj(conn, result);
+
+				operation.setLaneDirect(laneDirect);
+
+				Map<Integer, List<Integer>> laneInfoList = operation.getRdlaneSelector()
+						.getLaneInfoByLinkPid(this.getLink().getPid(), OpRefRelationObj.LINK_TOLLGATE_21, null);
+				operation.updateByLevel(OpRefRelationObj.LINK_TOLLGATE_21, laneInfoList,null);
 			}
 
 		}
+		// 修改link方向为单方向
 		if (this.getLinkDirect() == 2 || this.getLinkDirect() == 3) {
-			List<RdLane> lanes = new RdLaneSelector(conn).loadByLink(this
-					.getLink().getPid(), 0, true);
+			List<RdLane> lanes = new RdLaneSelector(conn).loadByLink(this.getLink().getPid(), 0, true);
 			for (RdLane lane : lanes) {
 				if (lane.getLaneDir() == 2) {
 					if (this.getLinkDirect() == 2) {
@@ -563,10 +574,10 @@ public class Operation implements IOperation {
 	 */
 	public void caleRdLinesForLaneNum(Result result) throws Exception {
 		RdLink link = new RdLink();
-		link.setDirect(this.getLink().getPid());
-		this.setLaneNum(this.getLaneNum());
-		this.setLaneLeft(this.getLink().getLaneLeft());
-		this.setLaneRight(this.getLaneRight());
+		link.setPid(this.getLink().getPid());
+		link.setLaneNum(this.getLaneNum());
+		link.setLaneLeft(this.getLaneLeft());
+		link.setLaneRight(this.getLaneRight());
 		this.createRdLaneForLinkRLanes(result, link, true);
 	}
 
@@ -583,20 +594,16 @@ public class Operation implements IOperation {
 			this.createRdLaneForLinkRLanes(result, link, true);
 		} else {
 			// 加载单方向link上详细车道信息
-			if (this.getLink().getDirect() == 2
-					|| this.getLink().getDirect() == 3) {
-				List<RdLane> lanes = new RdLaneSelector(conn).loadByLink(this
-						.getLink().getPid(), 1, true);
+			if (this.getLink().getDirect() == 2 || this.getLink().getDirect() == 3) {
+				List<RdLane> lanes = new RdLaneSelector(conn).loadByLink(this.getLink().getPid(), 1, true);
 				// 维护单方向link信息
 				this.createAndDellanesOfCross(result, lanes, 1);
 			}
 			if (this.getLink().getDirect() == 1) {
 				// 加载顺方向的车道信息
-				List<RdLane> lanes2 = new RdLaneSelector(conn).loadByLink(this
-						.getLink().getPid(), 2, true);
+				List<RdLane> lanes2 = new RdLaneSelector(conn).loadByLink(this.getLink().getPid(), 2, true);
 				// 加载逆方向的车道信息
-				List<RdLane> lanes3 = new RdLaneSelector(conn).loadByLink(this
-						.getLink().getPid(), 3, true);
+				List<RdLane> lanes3 = new RdLaneSelector(conn).loadByLink(this.getLink().getPid(), 3, true);
 				// 维护顺逆方向的车道信息
 				this.createAndDellanesOfCross(result, lanes2, 2);
 				this.createAndDellanesOfCross(result, lanes3, 3);
@@ -616,8 +623,7 @@ public class Operation implements IOperation {
 	 *            车道方向
 	 * @throws Exception
 	 */
-	private void createAndDellanesOfCross(Result result, List<RdLane> lanes,
-			int laneDir) throws Exception {
+	private void createAndDellanesOfCross(Result result, List<RdLane> lanes, int laneDir) throws Exception {
 		if (lanes.size() == 0) {
 			// 车道方向 为 laneDir
 			// 车道总数 1
@@ -650,9 +656,28 @@ public class Operation implements IOperation {
 	 * 
 	 * @throws Exception
 	 */
-	public void refRdLaneForRdlinkLimit(Result result) throws Exception {
-		List<RdLane> lanes = new RdLaneSelector(conn).loadByLink(this.getLink()
-				.getPid(), this.getLimit().getLimitDir(), true);
+	public void refRdLaneForRdlinkLimit(Result result, RdLinkLimit limit, int flag) throws Exception {
+		if (limit.getType() == 2
+				&& (limit.getLimitDir() == 1 || limit.getLimitDir() == 2 || limit.getLimitDir() == 3)) {
+			refRdLaneForRdlinkLimit(result, flag);
+		}
+
+	}
+
+	/****
+	 * link车辆类型限制变更 1、 当link上添加或删除车辆类型限制时，或进行车辆类型或时间段变更时，需要进行详细车道维护 2、
+	 * 当link上添加车辆类型及时间段时，则该link上对应方向上所有车道均添加该车辆类型限制及时间
+	 * 3、当link上删除车辆类型及时间时，则该link上对应方向上所有车道均删除该车辆类型限制及时间
+	 * 4、当link车辆类型或时间段变更时，则该link上对应该方向上所有车道更新为link上车辆类型及时间 说明：
+	 * ①在进行车道车辆类型更新时，如果Rd_lane_Condtion中不存在记录的，需要先增加对应车道的记录，再添加车辆类型及时间
+	 * ②在进行车道类型删除更新时，如果删除车辆类型或时间段后，RD_LANE_CONDTION中该车道的方向时间段及车辆类型均为空，
+	 * 则该RD_LANE_CONDTION记录需要删除。
+	 * 
+	 * @throws Exception
+	 */
+	public void refRdLaneForRdlinkLimit(Result result, int flag) throws Exception {
+		List<RdLane> lanes = new RdLaneSelector(conn).loadByLink(this.getLink().getPid(), this.getLimit().getLimitDir(),
+				true);
 
 		for (RdLane lane : lanes) {
 			List<IRow> rows = lane.getConditions();
@@ -660,15 +685,13 @@ public class Operation implements IOperation {
 				result.insertObject(row, ObjStatus.DELETE, lane.getPid());
 			}
 			// 需要修改
-			/*
-			 * if (1 == 1) { RdLaneCondition condition = new RdLaneCondition();
-			 * condition.setLanePid(lane.getPid());
-			 * condition.setVehicleTime(this.getLimit().getTimeDomain());
-			 * condition.setVehicle(this.getLimit().getVehicle());
-			 * result.insertObject(condition, ObjStatus.UPDATE, lane.getPid());
-			 * }
-			 */
-
+			if (flag == 1) {
+				RdLaneCondition condition = new RdLaneCondition();
+				condition.setLanePid(lane.getPid());
+				condition.setVehicleTime(this.getLimit().getTimeDomain());
+				condition.setVehicle(this.getLimit().getVehicle());
+				result.insertObject(condition, ObjStatus.UPDATE, lane.getPid());
+			}
 		}
 	}
 
@@ -688,8 +711,7 @@ public class Operation implements IOperation {
 	 * @throws Exception
 	 */
 	public void refRdLaneForRdlinkForm(Result result) throws Exception {
-		List<RdLane> lanes = new RdLaneSelector(conn).loadByLink(this.getLink()
-				.getPid(), 1, true);
+		List<RdLane> lanes = new RdLaneSelector(conn).loadByLink(this.getLink().getPid(), 1, true);
 		for (RdLane lane : lanes) {
 			List<IRow> rows = lane.getConditions();
 			if (rows.size() > 0) {
@@ -698,24 +720,20 @@ public class Operation implements IOperation {
 					if (this.getFormCrossFlag() == 1) {
 						if (this.getForm().getFormOfWay() == 20) {
 							if (condition.getVehicle() != 2147483786L) {
-								condition.changedFields().put("vehicle",
-										2147483786L);
+								condition.changedFields().put("vehicle", 2147483786L);
 
 							}
 
 						}
 						if (this.getForm().getFormOfWay() == 22) {
 							if (condition.getVehicle() != 2147484160L) {
-								condition.changedFields().put("vehicle",
-										2147484160L);
+								condition.changedFields().put("vehicle", 2147484160L);
 							}
 						}
-						result.insertObject(condition, ObjStatus.UPDATE,
-								lane.getPid());
+						result.insertObject(condition, ObjStatus.UPDATE, lane.getPid());
 					}
 					if (this.getFormCrossFlag() == 2) {
-						result.insertObject(condition, ObjStatus.DELETE,
-								lane.getPid());
+						result.insertObject(condition, ObjStatus.DELETE, lane.getPid());
 					}
 				}
 			}
@@ -731,14 +749,12 @@ public class Operation implements IOperation {
 	 * @param result
 	 * @throws Exception
 	 */
-	public void refRdLaneForRdLaneconnexity(Result result) throws Exception {
+	public void refRdLaneForRdLaneconnexity(Result result, int laneDir) throws Exception {
 		int linkPid = this.getConnexity().getInLinkPid();
 		List<String> laneInfos = this.getLanInfos();
 		int nodePid = this.getConnexity().getNodePid();
-		int laneDir = 1;
 
-		List<RdLane> lanes = this.caleRdLanesForDir(linkPid, nodePid, laneDir,
-				0);
+		List<RdLane> lanes = this.caleRdLanesForDir(linkPid, nodePid, laneDir, 0);
 
 		if (lanes.size() >= laneInfos.size()) {
 			for (int i = laneInfos.size(); i < lanes.size(); i++) {
@@ -746,12 +762,10 @@ public class Operation implements IOperation {
 			}
 			for (int i = 0; i < laneInfos.size(); i++) {
 				if (laneInfos.get(i) != lanes.get(i).getArrowDir()) {
-					this.createRdlane(result, linkPid, laneInfos.size(),
-							laneDir, i + 1, laneInfos.get(i));
+					this.createRdlane(result, linkPid, laneInfos.size(), laneDir, i + 1, laneInfos.get(i));
 				} else {
 					if (laneInfos.size() != lanes.size()) {
-						this.updateLaneForAttr(result, lanes.get(i),
-								laneInfos.size());
+						this.updateLaneForAttr(result, lanes.get(i), laneInfos.size());
 					}
 				}
 
@@ -759,19 +773,14 @@ public class Operation implements IOperation {
 
 		} else {
 			for (int i = lanes.size(); i < laneInfos.size(); i++) {
-				this.createRdlane(result, linkPid, laneInfos.size(), laneDir,
-						i + 1, laneInfos.get(i));
+				this.createRdlane(result, linkPid, laneInfos.size(), laneDir, i + 1, laneInfos.get(i));
 			}
 			for (int i = 0; i < lanes.size(); i++) {
-				if (laneInfos.get(i) != lanes.get(i).getArrowDir()) {
-
+				if (!laneInfos.get(i).contains(lanes.get(i).getArrowDir())) {
 					this.deleteLane(result, lanes.get(i));
-
 				} else {
 					if (laneInfos.size() != lanes.size()) {
-						this.updateLaneForAttr(result, lanes.get(i),
-								laneInfos.size());
-
+						this.updateLaneForAttr(result, lanes.get(i), laneInfos.size());
 					}
 				}
 
@@ -802,8 +811,7 @@ public class Operation implements IOperation {
 	 * @param seqNum
 	 * @throws Exception
 	 */
-	private void updateLaneForAttr(Result result, RdLane lane, int seqNum)
-			throws Exception {
+	private void updateLaneForAttr(Result result, RdLane lane, int seqNum) throws Exception {
 		lane.changedFields().put("seqNum", seqNum);
 		result.insertObject(lane, ObjStatus.UPDATE, lane.getPid());
 	}
@@ -816,8 +824,7 @@ public class Operation implements IOperation {
 	 * @param seqNum
 	 * @throws Exception
 	 */
-	private void updateLaneForDir(Result result, RdLane lane, int laneDir)
-			throws Exception {
+	private void updateLaneForDir(Result result, RdLane lane, int laneDir) throws Exception {
 		lane.changedFields().put("laneDir", laneDir);
 		result.insertObject(lane, ObjStatus.UPDATE, lane.getPid());
 	}
@@ -840,10 +847,8 @@ public class Operation implements IOperation {
 		int outLinkPid = this.getTollgate().getOutLinkPid();
 		int nodePid = this.getTollgate().getNodePid();
 		int laneDir = 1;
-		List<RdLane> inLanes = this.caleRdLanesForDir(inLinkPid, nodePid,
-				laneDir, 0);
-		List<RdLane> outLanes = this.caleRdLanesForDir(outLinkPid, nodePid,
-				laneDir, 1);
+		List<RdLane> inLanes = this.caleRdLanesForDir(inLinkPid, nodePid, laneDir, 0);
+		List<RdLane> outLanes = this.caleRdLanesForDir(outLinkPid, nodePid, laneDir, 1);
 		this.calefRdLaneForTollgate(result, inLanes, inLinkPid, laneDir);
 		this.calefRdLaneForTollgate(result, outLanes, outLinkPid, laneDir);
 
@@ -861,17 +866,14 @@ public class Operation implements IOperation {
 	 *            车道方向
 	 * @throws Exception
 	 */
-	private void calefRdLaneForTollgate(Result result, List<RdLane> lanes,
-			int linkPid, int laneDir) throws Exception {
+	private void calefRdLaneForTollgate(Result result, List<RdLane> lanes, int linkPid, int laneDir) throws Exception {
 		if (this.getPassageNum() != lanes.size()) {
 			if (this.getPassageNum() > lanes.size()) {
 				for (int i = lanes.size(); i < this.getPassageNum(); i++) {
-					this.createRdlane(result, linkPid, i + 1, laneDir,
-							this.getPassageNum());
+					this.createRdlane(result, linkPid, i + 1, laneDir, this.getPassageNum());
 				}
 				for (int i = 0; i < lanes.size(); i++) {
-					this.updateLaneForAttr(result, lanes.get(i),
-							this.getPassageNum());
+					this.updateLaneForAttr(result, lanes.get(i), this.getPassageNum());
 				}
 			}
 			if (this.getPassageNum() < lanes.size()) {
@@ -879,17 +881,14 @@ public class Operation implements IOperation {
 					this.deleteLane(result, lanes.get(i));
 				}
 				for (int i = 0; i < this.getPassageNum(); i++) {
-					this.updateLaneForAttr(result, lanes.get(i),
-							this.getPassageNum());
+					this.updateLaneForAttr(result, lanes.get(i), this.getPassageNum());
 				}
 			}
 		}
 	}
 
-	private List<RdLane> caleRdLanesForDir(int linkPid, int nodePid,
-			int laneDir, int flag) throws Exception {
-		RdLink link = (RdLink) new RdLinkSelector(this.conn).loadById(linkPid,
-				true, false);
+	private List<RdLane> caleRdLanesForDir(int linkPid, int nodePid, int laneDir, int flag) throws Exception {
+		RdLink link = (RdLink) new RdLinkSelector(this.conn).loadById(linkPid, true, false);
 		if (link.getDirect() == 1) {
 			if (nodePid == link.geteNodePid()) {
 				if (flag == 1) {
@@ -917,24 +916,20 @@ public class Operation implements IOperation {
 	 * @param result
 	 * @throws Exception
 	 */
-	public void breakRdLink(RdLink link, List<RdLink> links, Result result)
-			throws Exception {
+	public void breakRdLink(RdLink link, List<RdLink> links, Result result) throws Exception {
 		// 线修行移动分离不是跨图幅不用维护
 		if (links.size() == 1) {
 			return;
 		}
 		boolean flag = false;
 		RdLinkSelector linkSelector = new RdLinkSelector(conn);
-		List<RdLink> sLinks = linkSelector.loadByNodePid(link.getsNodePid(),
-				false);
-		List<RdLink> eLinks = linkSelector.loadByNodePid(link.geteNodePid(),
-				false);
+		List<RdLink> sLinks = linkSelector.loadByNodePid(link.getsNodePid(), false);
+		List<RdLink> eLinks = linkSelector.loadByNodePid(link.geteNodePid(), false);
 		if (sLinks.size() < 3 && eLinks.size() < 3) {
 			flag = true;
 		}
 		// 加载原有Link上的车道信息
-		List<RdLane> lanes = new RdLaneSelector(conn).loadByLink(link.getPid(),
-				0, true);
+		List<RdLane> lanes = new RdLaneSelector(conn).loadByLink(link.getPid(), 0, true);
 		// 删除原有车道信息
 		for (RdLane lane : lanes) {
 			result.insertObject(lane, ObjStatus.DELETE, lane.getPid());
@@ -945,8 +940,7 @@ public class Operation implements IOperation {
 				RdLane rdLane = new RdLane();
 				rdLane.copy(lane);
 				if (lane.getArrowDir() != "o" && lane.getArrowDir() != "9") {
-					if (rdLink.getsNodePid() == link.getsNodePid()
-							|| rdLink.getsNodePid() == link.geteNodePid()
+					if (rdLink.getsNodePid() == link.getsNodePid() || rdLink.getsNodePid() == link.geteNodePid()
 							|| rdLink.geteNodePid() == link.getsNodePid()
 							|| rdLink.geteNodePid() == link.geteNodePid()) {
 						if (flag) {
@@ -988,8 +982,7 @@ public class Operation implements IOperation {
 	 * @param result
 	 * @throws Exception
 	 */
-	private void createRdLaneForLinkRLanes(Result result, RdLink link,
-			boolean laneFlag) throws Exception {
+	private void createRdLaneForLinkRLanes(Result result, RdLink link, boolean laneFlag) throws Exception {
 		// 加载link上原有左右车道信息
 		List<RdLane> leftLanes = new ArrayList<RdLane>();
 		List<RdLane> rightLanes = new ArrayList<RdLane>();
@@ -997,15 +990,13 @@ public class Operation implements IOperation {
 		if (link.getLaneLeft() != 0 && link.getLaneWidthRight() != 0) {
 			// 如果修改link的左右车道信息 或者link是修改不是新增 加载原有link上左右车道信息
 			if (laneFlag) {
-				leftLanes = new RdLaneSelector(conn).loadByLink(this.getLink()
-						.getPid(), 3, true);
-				rightLanes = new RdLaneSelector(conn).loadByLink(this.getLink()
-						.getPid(), 2, true);
+				leftLanes = new RdLaneSelector(conn).loadByLink(this.getLink().getPid(), 3, true);
+				rightLanes = new RdLaneSelector(conn).loadByLink(this.getLink().getPid(), 2, true);
 			}
 			// 维护左车道信息
-			this.caleRdlanesForNum(result, leftLanes,link, link.getLaneLeft(), 3);
+			this.caleRdlanesForNum(result, leftLanes, link, link.getLaneLeft(), 3);
 			// 维护有车道信息
-			this.caleRdlanesForNum(result, rightLanes,link, link.getLaneRight(), 2);
+			this.caleRdlanesForNum(result, rightLanes, link, link.getLaneRight(), 2);
 		}
 		// 如果link的左右车道为0按照link的总车道数维护信息车道信息
 		else {
@@ -1015,28 +1006,22 @@ public class Operation implements IOperation {
 					// 如果修改link的左右车道信息 或者link是修改不是新增 加载原有link上左右车道信息
 					if (laneFlag) {
 
-						leftLanes = new RdLaneSelector(conn).loadByLink(this
-								.getLink().getPid(), 3, true);
-						rightLanes = new RdLaneSelector(conn).loadByLink(this
-								.getLink().getPid(), 2, true);
+						leftLanes = new RdLaneSelector(conn).loadByLink(this.getLink().getPid(), 3, true);
+						rightLanes = new RdLaneSelector(conn).loadByLink(this.getLink().getPid(), 2, true);
 
 					}
 					// 维护左车道信息
-					this.caleRdlanesForNum(result, leftLanes,
-							link, (link.getLaneNum() + 1) / 2, 3);
+					this.caleRdlanesForNum(result, leftLanes, link, (link.getLaneNum() + 1) / 2, 3);
 					// 维护右车道信息
-					this.caleRdlanesForNum(result, rightLanes,
-							link, (link.getLaneNum() + 1) / 2, 2);
+					this.caleRdlanesForNum(result, rightLanes, link, (link.getLaneNum() + 1) / 2, 2);
 					// 如果原有link为单方向 忽略左右车道信息 生成车道方向为无
 					if (link.getDirect() == 2 || link.getDirect() == 3) {
 						List<RdLane> lanes = new ArrayList<RdLane>();
 						if (laneFlag) {
-							lanes = new RdLaneSelector(conn).loadByLink(this
-									.getLink().getPid(), 0, true);
+							lanes = new RdLaneSelector(conn).loadByLink(this.getLink().getPid(), 0, true);
 						}
 						// 生成车道方向为无的车道
-						this.caleRdlanesForNum(result, lanes,
-								link, link.getLaneNum(), 1);
+						this.caleRdlanesForNum(result, lanes, link, link.getLaneNum(), 1);
 
 					}
 
@@ -1052,15 +1037,15 @@ public class Operation implements IOperation {
 	 * @param result
 	 * @param lanes
 	 *            原有车道信息
-	 * @param link 
+	 * @param link
 	 * @param currentNum
 	 *            当前车道总数
 	 * @param laneDir
 	 *            车道方向
 	 * @throws Exception
 	 */
-	private void caleRdlanesForNum(Result result, List<RdLane> lanes,
-			RdLink link, int currentNum, int laneDir) throws Exception {
+	private void caleRdlanesForNum(Result result, List<RdLane> lanes, RdLink link, int currentNum, int laneDir)
+			throws Exception {
 		// 如果原有车道数 大于当前车道数 相等不予处理：
 		// 1.按照当前车道数数量更新原有车道总数
 		// 2.多余的车道信息删除掉
@@ -1086,8 +1071,7 @@ public class Operation implements IOperation {
 					this.updateLaneForAttr(result, lanes.get(i), currentNum);
 				} else {
 					// 创建车道信息
-					this.createRdlane(result, link.getPid(), i + 1, laneDir,
-							currentNum);
+					this.createRdlane(result, link.getPid(), i + 1, laneDir, currentNum);
 				}
 
 			}

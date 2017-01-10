@@ -5,18 +5,22 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
-import oracle.sql.STRUCT;
-
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.dbutils.DbUtils;
 
 import com.navinfo.dataservice.commons.geom.Geojson;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.model.rd.lane.RdLane;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
+import com.navinfo.navicommons.database.sql.DBUtils;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import oracle.sql.STRUCT;
 
 /***
  * 
@@ -44,8 +48,7 @@ public class RdLaneSelector extends AbstractSelector {
 	 * @return
 	 * @throws Exception
 	 */
-	public List<RdLane> loadByLink(int linkPid, int laneDir, boolean isLock)
-			throws Exception {
+	public List<RdLane> loadByLink(int linkPid, int laneDir, boolean isLock) throws Exception {
 
 		List<RdLane> lanes = new ArrayList<RdLane>();
 
@@ -73,8 +76,7 @@ public class RdLaneSelector extends AbstractSelector {
 			resultSet = pstmt.executeQuery();
 
 			while (resultSet.next()) {
-				RdLane slope = (RdLane) this.loadById(
-						resultSet.getInt("lane_pid"), false);
+				RdLane slope = (RdLane) this.loadById(resultSet.getInt("lane_pid"), false);
 				lanes.add(slope);
 			}
 
@@ -99,8 +101,7 @@ public class RdLaneSelector extends AbstractSelector {
 	 * @throws Exception
 	 */
 
-	public List<RdLane> loadByLinks(List<Integer> linkPids, int laneDir,
-			boolean isLock) throws Exception {
+	public List<RdLane> loadByLinks(List<Integer> linkPids, int laneDir, boolean isLock) throws Exception {
 
 		List<RdLane> lanes = new ArrayList<RdLane>();
 
@@ -109,10 +110,8 @@ public class RdLaneSelector extends AbstractSelector {
 		ResultSet resultSet = null;
 
 		try {
-			String ids = org.apache.commons.lang.StringUtils
-					.join(linkPids, ",");
-			String sql = "SELECT lane_pid FROM rd_lane WHERE link_pid in ("
-					+ ids + ") and  u_record !=2 ";
+			String ids = org.apache.commons.lang.StringUtils.join(linkPids, ",");
+			String sql = "SELECT lane_pid FROM rd_lane WHERE link_pid in (" + ids + ") and  u_record !=2 ";
 			if (laneDir != 0) {
 				sql += " and lane_dir = :1 ";
 			}
@@ -128,8 +127,7 @@ public class RdLaneSelector extends AbstractSelector {
 			resultSet = pstmt.executeQuery();
 
 			while (resultSet.next()) {
-				RdLane rdlane = (RdLane) this.loadById(
-						resultSet.getInt("lane_pid"), false);
+				RdLane rdlane = (RdLane) this.loadById(resultSet.getInt("lane_pid"), false);
 				lanes.add(rdlane);
 			}
 
@@ -151,8 +149,7 @@ public class RdLaneSelector extends AbstractSelector {
 	 * @return
 	 * @throws Exception
 	 */
-	public JSONArray loadByLinks(List<Integer> linkPids, boolean isLock)
-			throws Exception {
+	public JSONArray loadByLinks(List<Integer> linkPids, boolean isLock) throws Exception {
 		JSONArray arrayResult = new JSONArray();
 		List<Integer> pids = new ArrayList<Integer>();
 
@@ -161,8 +158,7 @@ public class RdLaneSelector extends AbstractSelector {
 		ResultSet resultSet = null;
 
 		try {
-			String ids = org.apache.commons.lang.StringUtils
-					.join(linkPids, ",");
+			String ids = org.apache.commons.lang.StringUtils.join(linkPids, ",");
 			String sql = "SELECT ra.link_pid, ra.lane_pid,rl.geometry,rl.s_node_pid,rl.e_node_pid,rl.direct, rl.length FROM rd_lane ra,rd_link rl WHERE ra.link_pid = rl.link_pid and ra.link_pid in ("
 					+ ids + ") and  rl.u_record !=2 and  ra.u_record !=2 ";
 
@@ -170,9 +166,7 @@ public class RdLaneSelector extends AbstractSelector {
 			if (isLock) {
 				sql += " for update nowait";
 			}
-			pstmt = conn.prepareStatement(sql,
-					ResultSet.TYPE_SCROLL_INSENSITIVE,
-					ResultSet.CONCUR_UPDATABLE);
+			pstmt = conn.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
 
 			resultSet = pstmt.executeQuery();
 			JSONArray array = new JSONArray();
@@ -223,8 +217,7 @@ public class RdLaneSelector extends AbstractSelector {
 	 * @param jsonObject
 	 * @throws SQLException
 	 */
-	private void setAttr(ResultSet resultSet, List<Integer> pids,
-			JSONObject jsonObject) throws Exception {
+	private void setAttr(ResultSet resultSet, List<Integer> pids, JSONObject jsonObject) throws Exception {
 		STRUCT struct = (STRUCT) resultSet.getObject("geometry");
 		jsonObject.put("linkPid", resultSet.getInt("link_pid"));
 		jsonObject.put("direct", resultSet.getInt("direct"));
@@ -242,11 +235,108 @@ public class RdLaneSelector extends AbstractSelector {
 	 * @param array
 	 * @throws Exception
 	 */
-	private void setRdlanesToArray(ResultSet resultSet, JSONArray array)
-			throws Exception {
-		RdLane slope = (RdLane) this.loadById(resultSet.getInt("lane_pid"),
-				false);
+	private void setRdlanesToArray(ResultSet resultSet, JSONArray array) throws Exception {
+		RdLane slope = (RdLane) this.loadById(resultSet.getInt("lane_pid"), false);
 		array.add(slope);
 	}
 
+	/**
+	 * 根据linkPid查询该link上存在的影响详细车道的其他要素pid集合
+	 * @param linkPid linkPid
+	 * @param type 要素类型
+	 * @param pidList 排除的要素类型
+	 * @return 影响详细车道的其他要素pid集合
+	 * @throws Exception
+	 */
+	public Map<Integer, List<Integer>> getLaneInfoByLinkPid(int linkPid,int level,List<Integer> pidList) throws Exception {
+		Map<Integer, List<Integer>> laneInfo = new HashMap<Integer, List<Integer>>();
+		
+		StringBuilder sb = new StringBuilder(
+				"WITH TMP1 AS (SELECT 21, PID, IN_LINK_PID AS LINK_PID FROM RD_TOLLGATE WHERE IN_LINK_PID = :1 AND U_RECORD != 2 AND PASSAGE_NUM >0 ");
+		String pidNotInSql = " AND PID not in( "+StringUtils.getInteStr(pidList)+") ";
+		if(level == 21 && CollectionUtils.isNotEmpty(pidList))
+		{
+			sb.append(pidNotInSql);
+		}
+		sb.append(" UNION SELECT 21, PID, OUT_LINK_PID AS LINK_PID FROM RD_TOLLGATE WHERE OUT_LINK_PID = :2 AND U_RECORD != 2 ");
+		if(level == 21 && CollectionUtils.isNotEmpty(pidList))
+		{
+			sb.append(pidNotInSql);
+		}
+		sb.append(" ), TMP2 AS (SELECT 22, PID, IN_LINK_PID AS LINK_PID FROM RD_LANE_CONNEXITY WHERE IN_LINK_PID = :3 AND U_RECORD != 2 ");
+		if(level == 22 && CollectionUtils.isNotEmpty(pidList))
+		{
+			sb.append(pidNotInSql);
+		}
+		sb.append(" ), TMP3 AS (SELECT 23, LINK_PID AS PID, LINK_PID AS LINK_PID FROM RD_LINK_FORM WHERE LINK_PID = :4 AND FORM_OF_WAY = 50 AND U_RECORD != 2 ");
+		if(level == 23 && CollectionUtils.isNotEmpty(pidList))
+		{
+			sb.append(" AND LINK_PID not in( "+StringUtils.getInteStr(pidList)+") ");
+		}
+		sb.append(" ), TMP4 AS (SELECT 24, A.BRANCH_PID as PID, IN_LINK_PID AS LINK_PID FROM RD_BRANCH A, RD_BRANCH_DETAIL B WHERE A.IN_LINK_PID = :5 AND A.BRANCH_PID = B.BRANCH_PID AND B.BRANCH_TYPE = 0 AND A.U_RECORD !=2 AND B.U_RECORD !=2 ");
+		if(level == 24 && CollectionUtils.isNotEmpty(pidList))
+		{
+			sb.append(" AND A.BRANCH_PID not in( "+StringUtils.getInteStr(pidList)+") ");
+		}
+		sb.append(" UNION SELECT 24, A.BRANCH_PID as PID, IN_LINK_PID AS LINK_PID FROM RD_BRANCH A, RD_BRANCH_DETAIL B WHERE A.OUT_LINK_PID = :6 AND A.BRANCH_PID = B.BRANCH_PID AND B.BRANCH_TYPE = 0 AND A.U_RECORD !=2 AND B.U_RECORD !=2 ");
+		if(level == 24 && CollectionUtils.isNotEmpty(pidList))
+		{
+			sb.append(" AND A.BRANCH_PID not in( "+StringUtils.getInteStr(pidList)+") ");
+		}
+		sb.append(" ),TMP5 AS (	SELECT 25, LINK_PID AS PID, LINK_PID AS LINK_PID FROM RD_LANE WHERE LINK_PID = :7 AND U_RECORD != 2 AND SRC_FLAG = 2) ");
+		sb.append(" SELECT * FROM TMP1 UNION SELECT * FROM TMP2 UNION SELECT * FROM TMP3 UNION SELECT * FROM TMP4 UNION SELECT * FROM TMP5 ");
+		
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+
+			pstmt.setInt(1, linkPid);
+
+			pstmt.setInt(2, linkPid);
+			
+			pstmt.setInt(3, linkPid);
+			
+			pstmt.setInt(4, linkPid);
+			
+			pstmt.setInt(5, linkPid);
+			
+			pstmt.setInt(6, linkPid);
+			
+			pstmt.setInt(7, linkPid);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+				int laneLevel = resultSet.getInt(1);
+				
+				List<Integer> infoList = laneInfo.get(level);
+				
+				if(infoList == null)
+				{
+					infoList = new ArrayList<>();
+					
+					laneInfo.put(laneLevel, infoList);
+				}
+				
+				int pid = resultSet.getInt(2);
+				
+				if(!infoList.contains(pid))
+				{
+					infoList.add(pid);
+				}
+			}
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+		}
+
+		return laneInfo;
+	}
 }

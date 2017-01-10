@@ -130,17 +130,16 @@ public class GLM28018 extends baseRule{
 		int i = 0;
 		while(i<list1.size()){
 			int nodePid = list1.get(i);
+			i++;
 			for(RdLink rdLink:rdLinkList){
 				if(rdLink.getsNodePid() == nodePid){
 					if(!rdInterNodeMap.containsKey(rdLink.geteNodePid())){
 						list1.add(rdLink.geteNodePid());
-						i++;
 						break;
 					}else{
 						//保存终点
-						startEndNodeMap.put(startNode1, nodePid);
-						EndNodePidSet.add(nodePid);
-						i++;
+						startEndNodeMap.put(startNode1, rdLink.geteNodePid());
+						EndNodePidSet.add(rdLink.geteNodePid());
 						break;
 					}	
 				}
@@ -148,19 +147,18 @@ public class GLM28018 extends baseRule{
 		}
 		//第二条路链
 		i = 0;
-		while(i<list1.size()){
+		while(i<list2.size()){
 			int nodePid = list2.get(i);
+			i++;
 			for(RdLink rdLink:rdLinkList){
 				if(rdLink.getsNodePid() == nodePid){
 					if(!rdInterNodeMap.containsKey(rdLink.geteNodePid())){
 						list2.add(rdLink.geteNodePid());
-						i++;
 						break;
 					}else{
 						//保存终点
-						startEndNodeMap.put(startNode2, nodePid);
-						EndNodePidSet.add(nodePid);
-						i++;
+						startEndNodeMap.put(startNode2, rdLink.geteNodePid());
+						EndNodePidSet.add(rdLink.geteNodePid());
 						break;
 					}	
 				}
@@ -172,12 +170,25 @@ public class GLM28018 extends baseRule{
 			return false;
 		}
 		//查终点与起点是否属于一个CRFI
-		if(rdInterNodeMap.get(startNode1)!=rdInterNodeMap.get(startEndNodeMap.get(startNode1))){
+		int a = rdInterNodeMap.get(startNode1);
+		int b = startEndNodeMap.get(startNode2);
+		int c = rdInterNodeMap.get(b);
+		if(a!=c){
 			return false;
 		}
-		if(rdInterNodeMap.get(startNode2)!=rdInterNodeMap.get(startEndNodeMap.get(startNode2))){
+		
+		a = rdInterNodeMap.get(startNode2);
+		b = startEndNodeMap.get(startNode1);
+		c = rdInterNodeMap.get(b);
+		if(a!=c){
 			return false;
 		}
+//		if((rdInterNodeMap.get(startNode1))!=(rdInterNodeMap.get(startEndNodeMap.get(startNode2)))){
+//			return false;
+//		}
+//		if((rdInterNodeMap.get(startNode2))!=(rdInterNodeMap.get(startEndNodeMap.get(startNode1)))){
+//			return false;
+//		}
 		
 		return true;
 	}

@@ -79,7 +79,7 @@ public class OpRefRelationObj {
 
 	private Connection conn = null;
 
-	private static AbstractSelector abstractSelector;
+	private AbstractSelector abstractSelector;
 
 	private RdLaneSelector rdLaneSelector;
 
@@ -427,9 +427,9 @@ public class OpRefRelationObj {
 
 					break;
 				} else if (level == LINK_FORM_32) {
-					RdLink link = (RdLink) rowList.get(0);
+					RdLinkForm linkForm = (RdLinkForm) rowList.get(0);
 
-					updateByRdLinkForm(null, 0, link);
+					updateByRdLinkForm(null, linkForm.getLinkPid(), null);
 
 					break;
 				}
@@ -445,6 +445,7 @@ public class OpRefRelationObj {
 	 * @throws Exception
 	 */
 	public void updateByLevel(int level, Map<Integer, List<Integer>> laneInfoList, IRow row) throws Exception {
+		//递归调用超出范围的直接返回
 		if(level > 25)
 		{
 			return;

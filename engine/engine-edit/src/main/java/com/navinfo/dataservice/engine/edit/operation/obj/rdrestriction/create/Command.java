@@ -1,13 +1,14 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdrestriction.create;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class Command extends AbstractCommand {
 
@@ -16,8 +17,15 @@ public class Command extends AbstractCommand {
     private int inLinkPid;
 
     private int nodePid;
+    
+    //退出线的集合
+    private List<Integer> outLinkPidList = new ArrayList<>();
 
-    private List<Integer> outLinkPids;
+    //不需要计算退出线的交限		
+    private JSONArray outLinkObjs;
+    
+    //需要计算退出线的交限
+    private JSONArray calOutLinkObjs;
 
     private String restricInfos;
 
@@ -31,7 +39,15 @@ public class Command extends AbstractCommand {
         return inLinkPid;
     }
 
-    public void setInLinkPid(int inLinkPid) {
+    public List<Integer> getOutLinkPidList() {
+		return outLinkPidList;
+	}
+
+	public void setOutLinkPidList(List<Integer> outLinkPidList) {
+		this.outLinkPidList = outLinkPidList;
+	}
+
+	public void setInLinkPid(int inLinkPid) {
         this.inLinkPid = inLinkPid;
     }
 
@@ -43,15 +59,23 @@ public class Command extends AbstractCommand {
         this.nodePid = nodePid;
     }
 
-    public List<Integer> getOutLinkPids() {
-        return outLinkPids;
-    }
+    public JSONArray getOutLinkObjs() {
+		return outLinkObjs;
+	}
 
-    public void setOutLinkPids(List<Integer> outLinkPids) {
-        this.outLinkPids = outLinkPids;
-    }
+	public void setOutLinkObjs(JSONArray outLinkObjs) {
+		this.outLinkObjs = outLinkObjs;
+	}
+	
+	public JSONArray getCalOutLinkObjs() {
+		return calOutLinkObjs;
+	}
 
-    public String getRestricInfos() {
+	public void setCalOutLinkObjs(JSONArray calOutLinkObjs) {
+		this.calOutLinkObjs = calOutLinkObjs;
+	}
+
+	public String getRestricInfos() {
         return restricInfos;
     }
 
@@ -84,24 +108,40 @@ public class Command extends AbstractCommand {
         this.nodePid = data.getInt("nodePid");
 
         this.inLinkPid = data.getInt("inLinkPid");
-
-        outLinkPids = new ArrayList<>();
-
-        if (data.containsKey("outLinkPids")) {
-            JSONArray array = data.getJSONArray("outLinkPids");
-
-            for (int i = 0; i < array.size(); i++) {
-
-                int pid = array.getInt(i);
-
-                if (!outLinkPids.contains(pid)) {
-                    outLinkPids.add(pid);
-                }
-            }
-        }
+        
+        outLinkObjs = new JSONArray();
+        
+        calOutLinkObjs = new JSONArray();
+        
+        StringBuffer buf = new StringBuffer();
 
         if (data.containsKey("infos")) {
-            restricInfos = data.getString("infos");
+        	JSONArray infosArray = data.getJSONArray("infos");
+        	
+        	for(int i = 0;i<infosArray.size();i++)
+        	{
+        		JSONObject infoObj = infosArray.getJSONObject(i);
+        		
+        		String info = infoObj.getString("arrow");
+        		
+        		buf.append(info);
+        		
+        		buf.append(",");
+        		
+        		if(infoObj.containsKey("outLinkPid"))
+        		{
+        			int outLinkPid = infoObj.getInt("outLinkPid");
+        			
+        			outLinkPidList.add(outLinkPid);
+        			
+        			outLinkObjs.add(infoObj);
+        		}
+        		else
+        		{
+        			calOutLinkObjs.add(infoObj);
+        		}
+        	}
+        	restricInfos = buf.deleteCharAt(buf.lastIndexOf(",")).toString();
         }
         if (data.containsKey("restricType")) {
             restricType = data.getInt("restricType");

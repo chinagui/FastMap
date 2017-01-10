@@ -6,18 +6,18 @@ import java.util.List;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkRtic;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkIntRtic;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
 
 /** 
- * @ClassName: GLM53006
+ * @ClassName: GLM53054
  * @author songdongyan
- * @date 2017年1月9日
+ * @date 2017年1月10日
  * @Description: link为双方向时，如果上下行都制作了RTIC信息，则RTIC上下行等级应一致
- * 车厂RTIC上下行标识编辑
+ * 互联网RTIC上下行标识编辑
  */
-public class GLM53006 extends baseRule{
+public class GLM53054 extends baseRule{
 
 	/* (non-Javadoc)
 	 * @see com.navinfo.dataservice.engine.check.core.baseRule#preCheck(com.navinfo.dataservice.dao.check.CheckCommand)
@@ -35,9 +35,9 @@ public class GLM53006 extends baseRule{
 	public void postCheck(CheckCommand checkCommand) throws Exception {
 		for(IRow obj:checkCommand.getGlmList()){
 			//新增/修改RdLinkRtic
-			if(obj instanceof RdLinkRtic ){
-				RdLinkRtic rdLinkRtic=(RdLinkRtic) obj;
-				checkRdLinkRtic(rdLinkRtic);
+			if(obj instanceof RdLinkIntRtic ){
+				RdLinkIntRtic rdLinkRtic=(RdLinkIntRtic) obj;
+				checkRdLinkIntRtic(rdLinkRtic);
 			}
 			
 		}
@@ -48,7 +48,7 @@ public class GLM53006 extends baseRule{
 	 * @param rdLinkRtic
 	 * @throws Exception 
 	 */
-	private void checkRdLinkRtic(RdLinkRtic rdLinkRtic) throws Exception {
+	private void checkRdLinkIntRtic(RdLinkIntRtic rdLinkRtic) throws Exception {
 		boolean checkFlag = false;
 		
 		if(rdLinkRtic.status().equals(ObjStatus.INSERT)){
@@ -61,7 +61,7 @@ public class GLM53006 extends baseRule{
 		if(checkFlag){
 			StringBuilder sb2 = new StringBuilder();
 
-			sb2.append("SELECT 1 FROM RD_LINK_RTIC R1, RD_LINK_RTIC R2");
+			sb2.append("SELECT 1 FROM RD_LINK_INT_RTIC R1, RD_LINK_INT_RTIC R2");
 			sb2.append(" WHERE R1.LINK_PID = R2.LINK_PID");
 			sb2.append(" AND R1.UPDOWN_FLAG < R2.UPDOWN_FLAG");
 			sb2.append(" AND R1.RANK <> R2.RANK");
@@ -85,3 +85,4 @@ public class GLM53006 extends baseRule{
 	}
 
 }
+

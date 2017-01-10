@@ -402,7 +402,7 @@ public class MetadataApiImpl implements MetadataApi {
 	}
 
 	@Override
-	public Map<String, Integer> getAddrAdminMap() throws Exception {
+	public Map<String, Map<String,String>> getAddrAdminMap() throws Exception {
 		return ScPointAddrAdmin.getInstance().scEngshortListMap();
 	}
 

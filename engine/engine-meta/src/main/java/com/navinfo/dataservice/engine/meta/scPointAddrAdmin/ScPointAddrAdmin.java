@@ -13,7 +13,7 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 
 public class ScPointAddrAdmin {
 	
-	private Map<String, Integer> addrAdminMap= new HashMap<String, Integer>();
+	private Map<String, Map<String,String>> addrAdminMap= new HashMap<String, Map<String,String>>();
 
 	private static class SingletonHolder {
 		private static final ScPointAddrAdmin INSTANCE = new ScPointAddrAdmin();
@@ -23,12 +23,12 @@ public class ScPointAddrAdmin {
 		return SingletonHolder.INSTANCE;
 	}
 	
-	public Map<String, Integer> scEngshortListMap() throws Exception{
+	public Map<String, Map<String,String>> scEngshortListMap() throws Exception{
 		if (addrAdminMap==null||addrAdminMap.isEmpty()) {
 				synchronized (this) {
 					if (addrAdminMap==null||addrAdminMap.isEmpty()) {
 						try {
-							String sql = "select t.admin_name,t.admin_level from SC_POINT_ADDR_ADMIN t";
+							String sql = "select t.admin_id,t.admin_name,t.admin_level from SC_POINT_ADDR_ADMIN t";
 								
 							PreparedStatement pstmt = null;
 							ResultSet rs = null;
@@ -38,7 +38,10 @@ public class ScPointAddrAdmin {
 								pstmt = conn.prepareStatement(sql);
 								rs = pstmt.executeQuery();
 								while (rs.next()) {
-									addrAdminMap.put(rs.getString("admin_name"), rs.getInt("admin_level"));					
+									Map<String,String> tempMap = new HashMap<String,String>();
+									tempMap.put("adminId", rs.getString("admin_id"));
+									tempMap.put("adminLevel", rs.getString("admin_level"));
+									addrAdminMap.put(rs.getString("admin_name"), tempMap);					
 								} 
 							} catch (Exception e) {
 								throw new Exception(e);

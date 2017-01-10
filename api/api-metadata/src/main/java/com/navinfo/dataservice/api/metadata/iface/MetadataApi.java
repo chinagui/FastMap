@@ -176,6 +176,6 @@ public interface MetadataApi {
 	
 	public List<String> getAddrck(int type,String hmFlag) throws Exception;
 	
-	public Map<String, Integer> getAddrAdminMap() throws Exception;
+	public Map<String, Map<String,String>> getAddrAdminMap() throws Exception;
 
 }

@@ -429,7 +429,7 @@ public class OpRefRelationObj {
 				} else if (level == LINK_FORM_32) {
 					RdLinkForm linkForm = (RdLinkForm) rowList.get(0);
 
-					updateByRdLinkForm(null, linkForm.getLinkPid(), null);
+					updateByRdLinkForm(abstractSelector, linkForm.getLinkPid(), null);
 
 					break;
 				}

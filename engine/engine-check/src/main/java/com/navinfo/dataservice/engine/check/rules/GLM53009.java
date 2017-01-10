@@ -56,9 +56,9 @@ public class GLM53009  extends baseRule{
 	 */
 	private void checkRdLink(RdLink rdLink) throws Exception {
 		boolean checkFlag = false;
-		if(rdLink.changedFields().containsKey("kink")){
-			int kink = Integer.parseInt(rdLink.changedFields().get("kink").toString());
-			if((kink!=2)){
+		if(rdLink.changedFields().containsKey("kind")){
+			int kind = Integer.parseInt(rdLink.changedFields().get("kind").toString());
+			if((kind!=2)){
 				checkFlag = true;
 			}
 		}
@@ -68,7 +68,7 @@ public class GLM53009  extends baseRule{
 			sb2.append("SELECT 1 FROM RD_LINK_RTIC R");
 			sb2.append(" WHERE R.RANK = 2");
 			sb2.append(" AND R.U_RECORD <> 2");
-			sb2.append(" AND L.LINK_PID = " + rdLink.getPid());
+			sb2.append(" AND R.LINK_PID = " + rdLink.getPid());
 
 			String sql2 = sb2.toString();
 			log.info("RdLink后检查GLM53009:" + sql2);

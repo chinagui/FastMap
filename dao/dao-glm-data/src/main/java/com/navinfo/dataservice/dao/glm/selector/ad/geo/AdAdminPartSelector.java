@@ -28,7 +28,7 @@ public class AdAdminPartSelector extends AbstractSelector  {
 	public AdAdminPart loadByRegionId(int id, boolean isLock) throws Exception {
 		AdAdminPart part = null;
 
-		String sql = "select * from ad_admin_part where region_id_down =:1";
+		String sql = "select * from ad_admin_part where region_id_down =:1 and u_record !=2";
 		
 		if (isLock) {
 			sql += " for update nowait";

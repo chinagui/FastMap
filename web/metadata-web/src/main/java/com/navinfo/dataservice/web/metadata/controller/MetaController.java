@@ -1155,6 +1155,7 @@ public class MetaController extends BaseController {
     public ModelAndView queryAreaCodeByRegionId(HttpServletRequest request)
             throws ServletException, IOException {
     	String parameter = request.getParameter("parameter");
+    	Connection conn = null;
 
         try {
         	
@@ -1166,7 +1167,7 @@ public class MetaController extends BaseController {
         	ManApi apiService = (ManApi) ApplicationContextUtil.getBean("manApi");
         	Subtask subtask = apiService.queryBySubtaskId(taskId);
 			int dbId = subtask.getDbId();
-			Connection conn = DBConnector.getInstance().getConnectionById(dbId);
+			conn = DBConnector.getInstance().getConnectionById(dbId);
         	
         	AdAdminSearch adAdminSearch = new AdAdminSearch(conn);
 			AdAdmin adAdmin = (AdAdmin) adAdminSearch.searchDataByPid(regionId);
@@ -1183,7 +1184,9 @@ public class MetaController extends BaseController {
             logger.error(e.getMessage(), e);
 
             return new ModelAndView("jsonView", fail(e.getMessage()));
-        }
+	    } finally {
+	        DbUtils.closeQuietly(conn);
+	    }
     }
 
 }

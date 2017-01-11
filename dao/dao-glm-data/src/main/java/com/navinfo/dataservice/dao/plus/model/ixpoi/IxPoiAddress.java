@@ -462,6 +462,16 @@ public class IxPoiAddress extends BasicRow {
 		}
 		return false;
 	}
+	/**
+	 * 是否葡文地址，langCode IN (POR)就算
+	 * @return
+	 */
+	public boolean isPor() {
+		if(this.langCode.equals("POR")){
+			return true;
+		}
+		return false;
+	}
 	
 	/**
 	 * 将中文地址拆分后的15个字段

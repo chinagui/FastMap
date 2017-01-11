@@ -79,9 +79,9 @@ public class OpRefRelationObj {
 
 	private Connection conn = null;
 
-	private static AbstractSelector abstractSelector;
+	private AbstractSelector abstractSelector;
 
-	private static RdLaneSelector rdLaneSelector;
+	private RdLaneSelector rdLaneSelector;
 
 	private int laneDirect = 1;
 
@@ -239,15 +239,16 @@ public class OpRefRelationObj {
 				RdBranchDetail detail = (RdBranchDetail) row;
 				abstractSelector.setCls(RdBranch.class);
 				RdBranch branch = (RdBranch) abstractSelector.loadById(detail.getBranchPid(), true, true);
-				if (row.changedFields().containsKey("patternCode")) {
+				//判断是高速分歧并且模式图变更
+				if (detail.getBranchType() ==0 && row.changedFields().containsKey("patternCode")) {
 					String patternCode = (String) row.changedFields().get("patternCode");
 					if (patternCode.equals("80261009") || patternCode.equals("80271009")
 							|| patternCode.equals("80361009")) {
 						return;
 					}
 					branch.getDetails().add(detail);
-					handleRowList(BRANCH_PATTERN_CODE_24, branch.getInLinkPid(), row, updateLevelMap);
-					handleRowList(BRANCH_PATTERN_CODE_24, branch.getOutLinkPid(), row, updateLevelMap);
+					handleRowList(BRANCH_PATTERN_CODE_24, branch.getInLinkPid(), branch, updateLevelMap);
+					handleRowList(BRANCH_PATTERN_CODE_24, branch.getOutLinkPid(), branch, updateLevelMap);
 				}
 				break;
 			// link上更新限制信息：1.由车辆类型限制修改为非车辆类型限制2.由非车辆类型限制修改为车辆类型限制
@@ -322,11 +323,12 @@ public class OpRefRelationObj {
 				}
 				break;
 			// 删除高速分歧，分歧上包含影响详细车道的模式图
-			case RDBRANCHDETAIL:
+			case RDBRANCH:
 				RdBranch branch = (RdBranch) row;
-				// branch.getDetails();
-				String patternCode = "";
-				if (patternCode.equals("80261009") || patternCode.equals("80271009")
+				RdBranchDetail detail = (RdBranchDetail) branch.getDetails().get(0);
+				String patternCode = detail.getPatternCode();
+				//必须是高速分歧和3个例外模式图号的删除才走通道进行更新
+				if (patternCode == null || detail.getBranchType() != 0 || patternCode.equals("80261009") || patternCode.equals("80271009")
 						|| patternCode.equals("80361009")) {
 					return;
 				}
@@ -348,7 +350,8 @@ public class OpRefRelationObj {
 	}
 
 	/**
-	 * 对所有link的详细车道影响要素进行优先级排序 车信的进入线不可能是交叉口内link
+	 * 对所有link的详细车道影响要素进行优先级排序 
+	 * 车信的进入线不可能是交叉口内link
 	 * 收费站进入link挂接的退出link只能有一条，分歧要求进入线挂接的link至少要3条，所以有收费站的link上不会有分歧。
 	 * 有收费站的link上如果有车信，那么link不能为交叉口内link
 	 * 
@@ -381,7 +384,7 @@ public class OpRefRelationObj {
 				if (level == LINK_LANE_VEHICLE_31) {
 					RdLinkLimit limit = (RdLinkLimit) rowList.get(0);
 
-					updateByRdLinkVehicle(null, limit, 2);
+					updateByRdLinkVehicle(limit.getLinkPid(), limit);
 				}
 				break;
 			}
@@ -420,13 +423,13 @@ public class OpRefRelationObj {
 				if (level == LINK_LANE_VEHICLE_31) {
 					RdLinkLimit limit = (RdLinkLimit) rowList.get(0);
 
-					updateByRdLinkVehicle(null, limit, 1);
+					updateByRdLinkVehicle(limit.getLinkPid(), limit);
 
 					break;
 				} else if (level == LINK_FORM_32) {
-					RdLink link = (RdLink) rowList.get(0);
+					RdLinkForm linkForm = (RdLinkForm) rowList.get(0);
 
-					updateByRdLinkForm(null, 0, link);
+					updateByRdLinkForm(abstractSelector, linkForm.getLinkPid(), null);
 
 					break;
 				}
@@ -442,6 +445,11 @@ public class OpRefRelationObj {
 	 * @throws Exception
 	 */
 	public void updateByLevel(int level, Map<Integer, List<Integer>> laneInfoList, IRow row) throws Exception {
+		//递归调用超出范围的直接返回
+		if(level > 25)
+		{
+			return;
+		}
 		// 如果link上存在优先级高的要素，则不需要重新维护详细车道信息
 		if (laneInfoList.get(level - 1) != null) {
 			return;
@@ -491,9 +499,14 @@ public class OpRefRelationObj {
 			updateByRdCrossLink(pid, (RdLinkForm) row);
 			break;
 		case BRANCH_PATTERN_CODE_24:
-			updateByRdBranchPattern(pid, (RdBranch) row);
+			runNextLevelFlag = updateByRdBranchPattern(pid, (RdBranch) row);
+			break;
 		case LINK_LANE_NUM_25:
 			updateByRdLinkLaneNum(pid, (RdLink) row);
+			break;
+		case LINK_LANE_VEHICLE_31:
+			updateByRdLinkVehicle(pid, (RdLinkLimit) row);
+			break;
 		default:
 			break;
 		}
@@ -599,7 +612,10 @@ public class OpRefRelationObj {
 		operation.caleRdLinesForRdLinkCross(result);
 	}
 
-	private void updateByRdBranchPattern(int pid, RdBranch rdBranch) throws Exception {
+	private boolean updateByRdBranchPattern(int pid, RdBranch rdBranch) throws Exception {
+		//是否需要走下一个优先级的维护
+		boolean flag = false;
+		
 		RdBranch branch = rdBranch;
 
 		if (rdBranch == null) {
@@ -608,11 +624,24 @@ public class OpRefRelationObj {
 			branch = (RdBranch) abstractSelector.loadAllById(pid, true, true);
 		}
 
-		com.navinfo.dataservice.engine.edit.operation.obj.rdlane.update.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdlane.update.Operation();
+		com.navinfo.dataservice.engine.edit.operation.obj.rdlane.update.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdlane.update.Operation(conn);
 
 		RdBranchDetail detail = (RdBranchDetail) branch.getDetails().get(0);
 		
-		operation.autoHandleByRdBranch(branch, detail.getPatternCode(),result);
+		if(detail.changedFields().containsKey("patternCode"))
+		{
+			Map<ObjStatus, List<RdLane>> rdLaneMap = operation.autoHandleByRdBranch(branch, String.valueOf(detail.changedFields().get("patternCode")),result);
+			if(rdLaneMap.isEmpty())
+			{
+				flag = true;
+			}
+		}
+		else
+		{
+			flag = true;
+		}
+		
+		return flag;
 	}
 
 	private void updateByRdLinkLaneNum(int pid, RdLink rdLink) throws Exception {
@@ -700,11 +729,17 @@ public class OpRefRelationObj {
 		operation.refRdLaneForRdlinkForm(result);
 	}
 
-	private void updateByRdLinkVehicle(RdLane lane, RdLinkLimit limit, int flag) throws Exception {
+	private void updateByRdLinkVehicle(int linkPid, RdLinkLimit limit) throws Exception {
 
 		com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation operation = new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation(
 				conn);
-
+		int flag = 1;
+		
+		if(limit.status() == ObjStatus.DELETE)
+		{
+			flag = 2;
+		}
+		
 		operation.refRdLaneForRdlinkLimit(result, limit, flag);
 	}
 

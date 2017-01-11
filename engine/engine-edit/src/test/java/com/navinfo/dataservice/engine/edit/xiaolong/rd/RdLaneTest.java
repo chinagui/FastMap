@@ -26,7 +26,7 @@ public class RdLaneTest extends InitApplication{
 	@Test
 	public void testUpdatRdLaneByLinkKind()
 	{
-		String parameter = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"RDLINK\",\"objId\":309003117,\"data\":{\"kind\":9,\"pid\":309003117,\"objStatus\":\"UPDATE\",\"routeAdopt\":0,\"laneNum\":3,\"laneClass\":2,\"limits\":[{\"linkPid\":309003117,\"rowId\":\"\",\"type\":3,\"limitDir\":0,\"timeDomain\":\"\",\"vehicle\":0,\"tollType\":9,\"weather\":9,\"inputTime\":\"\",\"processFlag\":2,\"objStatus\":\"INSERT\"}]}}";
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"RDLINK\",\"objId\":202003101,\"data\":{\"kind\":9,\"pid\":202003101,\"objStatus\":\"UPDATE\"}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
@@ -39,7 +39,7 @@ public class RdLaneTest extends InitApplication{
 	@Test
 	public void testUpdateRdLaneByLinkDirect()
 	{	
-		String parameter = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"RDLINK\",\"objId\":309003117,\"data\":{\"direct\":1,\"pid\":309003117,\"objStatus\":\"UPDATE\",\"laneClass\":2}}";
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"RDLINK\",\"objId\":206000006,\"data\":{\"direct\":3,\"pid\":206000006,\"objStatus\":\"UPDATE\"}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
@@ -91,7 +91,33 @@ public class RdLaneTest extends InitApplication{
 	@Test
 	public void testUpdateByRdBranchPattern()
 	{
-		String parameter = "{\"type\":\"RDBRANCH\",\"command\":\"UPDATE\",\"dbId\":17,\"data\":{\"details\":[{\"patternCode\":\"80211009\",\"rowId\":\"27375B0A9384423F990EF868D69DFF0B\",\"pid\":210000026,\"objStatus\":\"UPDATE\",\"arrowCode\":\"10211009\"}],\"pid\":303000047},\"objId\":303000047}";
+		String parameter = "{\"type\":\"RDBRANCH\",\"command\":\"UPDATE\",\"dbId\":17,\"data\":{\"details\":[{\"patternCode\":\"80211009\",\"rowId\":\"F309CB33349E440BB968F86230506DC8\",\"pid\":208000044,\"objStatus\":\"UPDATE\",\"arrowCode\":\"10211009\"}],\"pid\":304000052},\"objId\":304000052}";
+		Transaction t = new Transaction(parameter);
+		try {
+			String msg = t.run();
+			System.out.println(msg);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void testUpdateRdLaneByDeleteBranch()
+	{
+		String parameter = "{\"command\":\"DELETE\",\"dbId\":17,\"type\":\"RDBRANCH\",\"detailId\":208000044,\"rowId\":\"\",\"branchType\":0}";
+		Transaction t = new Transaction(parameter);
+		try {
+			String msg = t.run();
+			System.out.println(msg);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void testUpdateByLinkForm()
+	{
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":19,\"type\":\"RDLINK\",\"objId\":205003159,\"data\":{\"forms\":[{\"linkPid\":205003159,\"rowId\":\"\",\"formOfWay\":22,\"extendedForm\":0,\"auxiFlag\":0,\"kgFlag\":0,\"objStatus\":\"INSERT\"}],\"pid\":205003159}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

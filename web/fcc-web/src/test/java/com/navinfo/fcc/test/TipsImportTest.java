@@ -24,7 +24,7 @@ public class TipsImportTest extends InitApplication {
 		initContext();
 	}
 
-	// @Test
+	 @Test
 	public void test() {
 		String parameter = "{\"jobId\":123}";
 		try {
@@ -74,7 +74,7 @@ public class TipsImportTest extends InitApplication {
 	}
 
 	// 单纯的上传txt测试
-	@Test
+	//@Test
 	public  void testBeforeCut() {
 
 		Map<String, Photo> photoMap = new HashMap<String, Photo>();
@@ -108,7 +108,7 @@ public class TipsImportTest extends InitApplication {
 	}
 
 	// 单纯的上传txt测试
-	@Test
+	//@Test
 	public void testAfterCut() {
 
 		Map<String, Photo> photoMap = new HashMap<String, Photo>();

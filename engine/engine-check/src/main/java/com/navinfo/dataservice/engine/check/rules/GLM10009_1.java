@@ -100,15 +100,6 @@ public class GLM10009_1 extends baseRule {
 
 		if (rdLink.changedFields() != null) {
 			if (rdLink.changedFields().containsKey("kind")) {
-				if ((int) rdLink.changedFields().get("kind") >= 9) {
-					checkFlg = true;
-				}
-			}
-		}
-
-		// 修改RdLink
-		if (rdLink.status().equals(ObjStatus.UPDATE)) {
-			if (rdLink.changedFields().containsKey("kind")) {
 				if (rdLink.getKind() < 9 || rdLink.getKind() != 0) {
 					int kind = Integer.parseInt(rdLink.changedFields()
 							.get("kind").toString());
@@ -116,7 +107,6 @@ public class GLM10009_1 extends baseRule {
 						checkFlg = true;
 					}
 				}
-
 			}
 		}
 		// 执行检查
@@ -136,7 +126,7 @@ public class GLM10009_1 extends baseRule {
 		sb.append(" SELECT L.LINK_PID ");
 		sb.append("  FROM RD_SLOPE S, RD_LINK L ");
 		sb.append(" WHERE S.U_RECORD != 2 ");
-		sb.append(" AND L.U_RECORD != 2 AND S.LINK_PID = L.LINK_PID AND AND L.LINK_PID = "
+		sb.append(" AND L.U_RECORD != 2 AND S.LINK_PID = L.LINK_PID  AND L.LINK_PID = "
 				+ linkPid);
 		sb.append(" UNION ALL ");
 		sb.append(" SELECT L.LINK_PID ");

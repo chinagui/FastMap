@@ -54,6 +54,7 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 	protected Map<String,String> errLog = new HashMap<String,String>();
 	protected List<PoiRelation> parentPid = new ArrayList<PoiRelation>();
 	protected Map<Long,String> sourceTypes = new HashMap<Long,String>();
+	protected List<PoiRelation> samePoiRel = new ArrayList<PoiRelation>();
 	
 	public Map<Long, String> getSourceTypes() {
 		return sourceTypes;
@@ -476,6 +477,18 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 				
 				// 同一关系
 				//处理同一关系
+				String sameFid = null;
+				if(!JSONUtils.isNull(jo.get("sameFid")) && StringUtils.isNotEmpty(jo.getString("sameFid"))){
+					sameFid = jo.getString("sameFid");
+				}
+				PoiRelation sr = new PoiRelation();
+				sr.setSameFid(sameFid);
+				sr.setPid(ixPoi.getPid());
+				sr.setPoiRelationType(PoiRelationType.SAME_POI);
+				samePoiRel.add(sr);
+//				if(jo.containsKey("sameFid")){
+//					createSamePoi(jo,ixPoi.getPid());
+//				}
 				/*String samepoi = null;
 				if(!JSONUtils.isNull(jo.get("sameFid"))){
 					samepoi = jo.getString("sameFid");
@@ -606,6 +619,14 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 			}
 		}
 		return false;
+	}
+
+	private void createSamePoi(JSONObject jo, long pid) {
+		JSONObject sameObj = jo.getJSONObject("sameFid");
+		if(sameObj != null && StringUtils.isNotEmpty(jo.getString("sameFid"))){//存在同一关系
+			
+		}
+		
 	}
 
 	/**

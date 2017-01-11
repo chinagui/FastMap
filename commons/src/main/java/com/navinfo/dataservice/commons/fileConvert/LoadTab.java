@@ -57,13 +57,14 @@ public class LoadTab {
 		Feature oFeature = null; 
 		 // 下面开始遍历图层中的要素 
 		while ((oFeature =layer.GetNextFeature()) != null) {
-			log.debug("当前处理第" + oFeature.GetFID() + "个:\n属性值："); 
+			//log.debug("当前处理第" + oFeature.GetFID() + "个:\n属性值："); 
 			Map<String, Object> oneColumnMap=new HashMap<String, Object>();
 			// 获取要素中的属性表内容 
 			for (String columnName:columnNameList) { 
 				String upperName=columnName.toUpperCase();
 				int columnIndex=oDefn.GetFieldIndex(columnName);
 				FieldDefn oFieldDefn= oDefn.GetFieldDefn(columnIndex); 
+				if(oFieldDefn==null){continue;}
 				int type =oFieldDefn.GetFieldType(); 
 				switch (type) { 
 					case ogr.OFTString:	

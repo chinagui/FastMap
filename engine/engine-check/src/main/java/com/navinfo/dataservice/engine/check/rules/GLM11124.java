@@ -17,15 +17,15 @@ import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
 
 
 /**
- * @ClassName GLM12004
+ * @ClassName GLM11124
  * @author luyao 
- * @date 2017年1月4日 
+ * @date 2017年1月11日 
  * @Description TODO
- * 3d的进入线和退出线种别不能同时是高速（包括高速和城高种别）或者是9级路
- * 新增\修改3D分歧 服务端后检查:
+ * 进入线、退出线任意一条是8级及8级以下道路等级，则报log
+ * 新增\修改高速实景图分歧 服务端后检查:
  * Link种别变更 服务端后检查:
  */
-public class GLM12004 extends baseRule {
+public class GLM11124 extends baseRule {
 	
 	protected Logger log = Logger.getLogger(this.getClass());
 
@@ -86,15 +86,13 @@ public class GLM12004 extends baseRule {
 	 */
 	private void checkRdLink(Set<Integer>linkPids) throws Exception {
 		
-		String strFormat = "SELECT T.BRANCH_PID FROM RD_BRANCH T, RD_BRANCH_DETAIL D WHERE (T.IN_LINK_PID = {0} OR T.OUT_LINK_PID = {1}) AND D.BRANCH_PID = T.BRANCH_PID AND D.BRANCH_TYPE = 3 AND T.U_RECORD <> 2 AND D.U_RECORD <> 2";
-
+		String strFormat = "SELECT T.BRANCH_PID FROM RD_BRANCH T, RD_BRANCH_REALIMAGE R WHERE (T.IN_LINK_PID = {0} OR T.OUT_LINK_PID = {1}) AND R.BRANCH_PID = T.BRANCH_PID AND T.U_RECORD <> 2 AND R.U_RECORD <> 2";
+		
 		Set<Integer> branchPids = new HashSet<Integer>();
 
 		for (int linkPid : linkPids) {
 
 			String sql = MessageFormat.format(strFormat,String.valueOf( linkPid), String.valueOf( linkPid));
-
-			log.info("后检查GLM12004--sql:" + sql);
 
 			DatabaseOperator getObj = new DatabaseOperator();
 			
@@ -110,32 +108,27 @@ public class GLM12004 extends baseRule {
 			}
 		}
 		for (int branchPid : branchPids) {
-			
-			boolean check =check(branchPid);
-			
-			if(check){
-				
+
+			boolean check = check(branchPid);
+
+			if (check) {
+
 				String target = "[RD_BRANCH," + branchPid + "]";
-				
+
 				this.setCheckResult("", target, 0);
 			}
 		}
 	}
 	
-	/**
-	 * @author luyao
-	 * @param 
-	 * @throws Exception 
-	 */
+	
+	
 	private boolean check(int branchPid) throws Exception {
 		// TODO Auto-generated method stub
 		boolean flag = false;
 		
-		String strFormat="SELECT B.BRANCH_PID FROM RD_BRANCH B, RD_BRANCH_DETAIL D, RD_LINK L1, RD_LINK L2 WHERE B.BRANCH_PID = D.BRANCH_PID AND D.BRANCH_TYPE = 3 AND B.IN_LINK_PID = L1.LINK_PID AND B.OUT_LINK_PID = L2.LINK_PID AND L1.KIND IN (1, 2) AND L2.KIND IN (1, 2) AND B.BRANCH_PID = {0} AND (D.PATTERN_CODE IS NULL OR D.PATTERN_CODE NOT IN ('80000001', '80000002', '80000003', '80000004', '80000200', '80100000', '80100001', '80000800', '80000802', '80000801', '80000803', '80000000')) AND L1.U_RECORD <> 2 AND L2.U_RECORD <> 2 AND B.U_RECORD <> 2 AND D.U_RECORD <> 2 UNION ALL SELECT B.BRANCH_PID FROM RD_BRANCH B, RD_BRANCH_DETAIL D, RD_LINK L1, RD_LINK L2 WHERE B.BRANCH_PID = D.BRANCH_PID AND D.BRANCH_TYPE = 3 AND B.IN_LINK_PID = L1.LINK_PID AND B.OUT_LINK_PID = L2.LINK_PID AND L1.KIND = 9 AND L2.KIND = 9 AND B.BRANCH_PID = {1} AND (D.PATTERN_CODE IS NULL OR D.PATTERN_CODE NOT IN ('80000001', '80000002', '80000003', '80000004', '80000200', '80100000', '80100001', '80000800', '80000802', '80000801', '80000803', '80000000')) AND B.U_RECORD <> 2 AND D.U_RECORD <> 2 AND L1.U_RECORD <> 2 AND L2.U_RECORD <> 2 ";
+		String strFormat="SELECT  RB.BRANCH_PID FROM RD_BRANCH RB, RD_BRANCH_REALIMAGE RBR, RD_LINK RL WHERE RB.BRANCH_PID = {0} AND RB.BRANCH_PID = RBR.BRANCH_PID AND RB.U_RECORD != 2 AND RBR.U_RECORD != 2 AND RL.U_RECORD != 2 AND RBR.IMAGE_TYPE = 0 AND (RL.LINK_PID = RB.IN_LINK_PID OR RL.LINK_PID = RB.OUT_LINK_PID) AND RL.KIND >= 8";
 		
-		String sql =MessageFormat.format(strFormat,String.valueOf( branchPid),String.valueOf( branchPid));		
-	
-		log.info("后检查GLM12004--sql:" + sql);
+		String sql =MessageFormat.format(strFormat,String.valueOf( branchPid),String.valueOf( branchPid));			
 		
 		DatabaseOperator getObj = new DatabaseOperator();
 		List<Object> resultList = new ArrayList<Object>();

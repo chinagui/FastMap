@@ -17,15 +17,15 @@ import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
 
 
 /**
- * @ClassName GLM12004
+ * @ClassName GLM11024
  * @author luyao 
- * @date 2017年1月4日 
+ * @date 2017年1月11日 
  * @Description TODO
- * 3d的进入线和退出线种别不能同时是高速（包括高速和城高种别）或者是9级路
- * 新增\修改3D分歧 服务端后检查:
+ * 该方面分歧有分歧模式图号，那么进入线和退出线都必须是高速或城高，否则报Log1；该方面分歧没有分歧模式图号，那么该分歧应该是普通道路方面分歧且进入线是普通道路，否则报log2
+ * 新增\修改方面分歧 服务端后检查:
  * Link种别变更 服务端后检查:
  */
-public class GLM12004 extends baseRule {
+public class GLM11024 extends baseRule {
 	
 	protected Logger log = Logger.getLogger(this.getClass());
 
@@ -69,13 +69,13 @@ public class GLM12004 extends baseRule {
 	 */
 	private void checkRdBranch(RdBranch rdBranch) throws Exception {
 		
-		boolean check = this.check(rdBranch.getPid());
+		String strLog = check(rdBranch.getPid());
 
-		if(check){
-			
+		if (strLog != null) {
+
 			String target = "[RD_BRANCH," + rdBranch.getPid() + "]";
-			
-			this.setCheckResult("", target, 0);
+
+			this.setCheckResult("", target, 0, strLog);
 		}
 	}
 
@@ -86,15 +86,13 @@ public class GLM12004 extends baseRule {
 	 */
 	private void checkRdLink(Set<Integer>linkPids) throws Exception {
 		
-		String strFormat = "SELECT T.BRANCH_PID FROM RD_BRANCH T, RD_BRANCH_DETAIL D WHERE (T.IN_LINK_PID = {0} OR T.OUT_LINK_PID = {1}) AND D.BRANCH_PID = T.BRANCH_PID AND D.BRANCH_TYPE = 3 AND T.U_RECORD <> 2 AND D.U_RECORD <> 2";
+		String strFormat = "SELECT T.BRANCH_PID FROM RD_BRANCH T, RD_BRANCH_DETAIL D WHERE (T.IN_LINK_PID = {0} OR T.OUT_LINK_PID = {1}) AND D.BRANCH_PID = T.BRANCH_PID AND D.BRANCH_TYPE = 1 AND T.U_RECORD <> 2 AND D.U_RECORD <> 2";
 
 		Set<Integer> branchPids = new HashSet<Integer>();
 
 		for (int linkPid : linkPids) {
 
 			String sql = MessageFormat.format(strFormat,String.valueOf( linkPid), String.valueOf( linkPid));
-
-			log.info("后检查GLM12004--sql:" + sql);
 
 			DatabaseOperator getObj = new DatabaseOperator();
 			
@@ -110,14 +108,14 @@ public class GLM12004 extends baseRule {
 			}
 		}
 		for (int branchPid : branchPids) {
-			
-			boolean check =check(branchPid);
-			
-			if(check){
-				
+
+			String strLog = check(branchPid);
+
+			if (strLog != null) {
+
 				String target = "[RD_BRANCH," + branchPid + "]";
-				
-				this.setCheckResult("", target, 0);
+
+				this.setCheckResult("", target, 0, strLog);
 			}
 		}
 	}
@@ -127,24 +125,25 @@ public class GLM12004 extends baseRule {
 	 * @param 
 	 * @throws Exception 
 	 */
-	private boolean check(int branchPid) throws Exception {
+	private String check(int branchPid) throws Exception {
 		// TODO Auto-generated method stub
-		boolean flag = false;
+		String strLog = null;
 		
-		String strFormat="SELECT B.BRANCH_PID FROM RD_BRANCH B, RD_BRANCH_DETAIL D, RD_LINK L1, RD_LINK L2 WHERE B.BRANCH_PID = D.BRANCH_PID AND D.BRANCH_TYPE = 3 AND B.IN_LINK_PID = L1.LINK_PID AND B.OUT_LINK_PID = L2.LINK_PID AND L1.KIND IN (1, 2) AND L2.KIND IN (1, 2) AND B.BRANCH_PID = {0} AND (D.PATTERN_CODE IS NULL OR D.PATTERN_CODE NOT IN ('80000001', '80000002', '80000003', '80000004', '80000200', '80100000', '80100001', '80000800', '80000802', '80000801', '80000803', '80000000')) AND L1.U_RECORD <> 2 AND L2.U_RECORD <> 2 AND B.U_RECORD <> 2 AND D.U_RECORD <> 2 UNION ALL SELECT B.BRANCH_PID FROM RD_BRANCH B, RD_BRANCH_DETAIL D, RD_LINK L1, RD_LINK L2 WHERE B.BRANCH_PID = D.BRANCH_PID AND D.BRANCH_TYPE = 3 AND B.IN_LINK_PID = L1.LINK_PID AND B.OUT_LINK_PID = L2.LINK_PID AND L1.KIND = 9 AND L2.KIND = 9 AND B.BRANCH_PID = {1} AND (D.PATTERN_CODE IS NULL OR D.PATTERN_CODE NOT IN ('80000001', '80000002', '80000003', '80000004', '80000200', '80100000', '80100001', '80000800', '80000802', '80000801', '80000803', '80000000')) AND B.U_RECORD <> 2 AND D.U_RECORD <> 2 AND L1.U_RECORD <> 2 AND L2.U_RECORD <> 2 ";
+		String strFormat="SELECT ''高速分歧进入退出线必须都是高速或成高'' AS LOG FROM RD_BRANCH B, RD_BRANCH_DETAIL D, RD_LINK L1, RD_LINK L2 WHERE B.BRANCH_PID = {0} AND B.BRANCH_PID = D.BRANCH_PID AND B.IN_LINK_PID = L1.LINK_PID AND B.OUT_LINK_PID = L2.LINK_PID AND D.PATTERN_CODE IS NOT NULL AND D.BRANCH_TYPE = 1 AND (L1.KIND NOT IN (1, 2) OR L2.KIND NOT IN (1, 2)) AND B.U_RECORD <> 2 AND D.U_RECORD <> 2 AND L1.U_RECORD <> 2 AND L2.U_RECORD <> 2 UNION ALL SELECT ''普通分歧进入退出线必须都是普通道路'' AS LOG FROM RD_BRANCH B, RD_BRANCH_DETAIL D, RD_LINK L1 WHERE B.BRANCH_PID = {1} AND B.BRANCH_PID = D.BRANCH_PID AND B.IN_LINK_PID = L1.LINK_PID AND D.BRANCH_TYPE = 1 AND D.PATTERN_CODE IS NULL AND L1.KIND IN (1, 2) AND B.U_RECORD <> 2 AND D.U_RECORD <> 2 AND L1.U_RECORD <> 2";
 		
-		String sql =MessageFormat.format(strFormat,String.valueOf( branchPid),String.valueOf( branchPid));		
+		String sql = MessageFormat.format(strFormat, String.valueOf(branchPid),
+				String.valueOf(branchPid), String.valueOf(branchPid));	
 	
-		log.info("后检查GLM12004--sql:" + sql);
+		log.info("后检查GLM11024--sql:" + sql);
 		
 		DatabaseOperator getObj = new DatabaseOperator();
 		List<Object> resultList = new ArrayList<Object>();
 		resultList = getObj.exeSelect(this.getConn(), sql);
 		
-		if(!resultList.isEmpty()){
-			flag = true;
+		if (!resultList.isEmpty()) {
+			strLog = String.valueOf(resultList.get(0));
 		}
-		return flag;
+		return strLog;
 	}
 
 }

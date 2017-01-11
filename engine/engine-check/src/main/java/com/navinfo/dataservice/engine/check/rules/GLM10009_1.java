@@ -6,10 +6,10 @@ import java.util.List;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
-import com.navinfo.dataservice.dao.glm.model.rd.crf.RdObjectName;
+
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkName;
+
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
 
@@ -101,7 +101,7 @@ public class GLM10009_1 extends baseRule {
 		if (rdLink.changedFields() != null) {
 			if (rdLink.changedFields().containsKey("kind")) {
 				if ((int) rdLink.changedFields().get("kind") >= 9) {
-					checkRdLinkKind(rdLink);
+					checkFlg = true;
 				}
 			}
 		}
@@ -119,7 +119,7 @@ public class GLM10009_1 extends baseRule {
 
 			}
 		}
-		//执行检查
+		// 执行检查
 		if (checkFlg) {
 
 			checkRdLink(rdLink.getPid());

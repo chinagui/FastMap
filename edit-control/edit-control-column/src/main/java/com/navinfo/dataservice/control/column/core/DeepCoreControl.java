@@ -472,7 +472,7 @@ public class DeepCoreControl {
 			//实际申请到的数据pids
 			List<Integer> applyDataPids = new ArrayList<Integer>();
 			if (pids.size() >= canApply){
-				applyDataPids = pids.subList(0, canApply-1);
+				applyDataPids = pids.subList(0, canApply);
 			}else{
 				//库里面查询出的数据量小于当前用户可申请的量，即锁定库中查询出的数据
 				applyDataPids = pids;

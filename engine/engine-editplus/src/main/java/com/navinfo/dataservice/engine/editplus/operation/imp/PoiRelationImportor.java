@@ -7,11 +7,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
-import org.apache.solr.common.util.Hash;
-
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiChildren;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiParent;
@@ -151,9 +148,6 @@ public class PoiRelationImportor extends AbstractOperation{
 		loadSameObjByFids(conn,sameFidPid,tabNames,pidSamePoiPid,emptyFidPids);
 		//加载子对象原始父对象
 		log.info("加载子对象原始父对象");
-		//<childPid,parentPid>,用于解除原始父子关系
-		Map<Long,Long> pidOriginSamePoiPid = new HashMap<Long,Long>();
-		pidOriginSamePoiPid = loadOriginSamePoiObjs(conn,pidSamePoiPid,tabNames,pidOriginSamePoiPid);
 		//处理父子关系
 		log.info("遍历pidSamePoiPid,维护关系");
 		handleSamepoiRelation(conn,pidSamePoiPid,emptyFidPids);
@@ -248,46 +242,6 @@ public class PoiRelationImportor extends AbstractOperation{
 					throw new ServiceException("查询失败，原因为:"+e.getMessage(),e);
 				}
 	}
-
-
-	private Map<Long, Long> loadOriginSamePoiObjs(Connection conn, Map<Long, Long> pidSamePoiPid, Set<String> tabNames,
-			Map<Long, Long> pidOriginSamePoiPid) throws ServiceException {
-		//加载子对象原始samepoi对象
-		try{
-			//获取当前poi对象原始同组对象pid   map<thispid,samepoiPid>
-			pidOriginSamePoiPid = IxPoiSelector.getSamePoiPidsByThisPids(conn, pidSamePoiPid.keySet());
-			//pidOriginSamePoiPid  是 map<thisPid,samePoiPid>
-			//需要加载的原始父对象Pid
-			Map<Long,Long> pidOriginSamePoiPidNeedToBeLoad = new HashMap<Long,Long>();
-			for(Map.Entry<Long, Long> entry:pidOriginSamePoiPid.entrySet()){
-				if(!result.isObjExist(ObjectName.IX_POI, entry.getValue())){
-					pidOriginSamePoiPidNeedToBeLoad.put(entry.getKey(), entry.getValue());
-				}
-			}
-			//************需要  ixsamepoi Obj****************
-			//<thisPid,groupid>
-			//Map<Long,Long> pidOriginGroupIdNeedToBeLoad = IxPoiSelector.getGroupIdByPids(conn,pidOriginSamePoiPidNeedToBeLoad);
-			//加载子对象原始父对象
-			Map<Long,BasicObj> originSamepoiMap = new HashMap<Long,BasicObj>();
-			if(!pidOriginSamePoiPidNeedToBeLoad.isEmpty()){
-				originSamepoiMap = ObjBatchSelector.selectByPids(conn, ObjectName.IX_POI, tabNames, false,pidOriginSamePoiPidNeedToBeLoad.values(), true, true);
-			}
-
-			log.info("将缺失的samepoi对象加载到OperationResult");
-			for(Map.Entry<Long, BasicObj> entry:originSamepoiMap.entrySet()){
-				if(!result.isObjExist(entry.getValue())){
-					result.putObj(entry.getValue());
-				}
-		}
-			log.info("OperationResult所有POI对象加载父子关系子表");
-			return pidOriginSamePoiPid;
-		}catch(Exception e){
-			DbUtils.rollbackAndCloseQuietly(conn);
-			log.error(e.getMessage(), e);
-			throw new ServiceException("查询失败，原因为:"+e.getMessage(),e);
-		}
-	}
-
 
 	private void loadSameObjByFids(Connection conn, Map<String, Long> sameFidPid, Set<String> tabNames,
 			Map<Long, Long> pidSamePoiPid,List<Long> emptyFidPids) throws ServiceException {
@@ -618,28 +572,10 @@ public class PoiRelationImportor extends AbstractOperation{
 		
 	}
 
-
 	@Override
 	public String getName() {
 		// TODO Auto-generated method stub
 		return "PoiRelationImportor";
 	}
 	
-	
-	
-	public static void main(String[] args) {
-		 Map<String, Long> sameFidPid = new HashMap<>();
-		 sameFidPid.put("111", (long) 121);
-		 sameFidPid.put("222", (long) 221);
-		 sameFidPid.put("333", (long) 321);
-		 sameFidPid.put(null, (long) 421);
-		 sameFidPid.put("333", (long) 521);
-		 System.out.println(sameFidPid.size());
-		 
-		 for(String key : sameFidPid.keySet()){
-			 System.out.println("key: "+key+"   "+sameFidPid.get(key));
-		 }
-		// System.out.println();
-		 
-	}
 }

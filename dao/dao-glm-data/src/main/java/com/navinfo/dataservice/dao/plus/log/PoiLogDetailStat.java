@@ -50,7 +50,7 @@ public class PoiLogDetailStat {
 	 */
 	public static Map<Long,List<LogDetail>> loadByColEditStatus(Connection conn,Collection<Long> pids, long userId, 
 			long taskId, String firstWorkItem, String secondWorkItem)throws Exception{
-		if(pids==null||pids.size()==0)return null;
+		//if(pids==null||pids.size()==0)return null;
 		StringBuilder sb = new StringBuilder();
 		sb.append("SELECT T.OB_NM,T.OB_PID,T.TB_NM,T.OLD,T.NEW,T.FD_LST,T.OP_TP,T.TB_ROW_ID "
 				+ "FROM LOG_DETAIL T,LOG_OPERATION LP,POI_COLUMN_STATUS P, POI_COLUMN_WORKITEM_CONF C "

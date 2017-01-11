@@ -20,7 +20,7 @@ import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 
 public class AdAdminGroup implements IObj {
-	private int groupId;
+	protected int groupId;
 	private int regionIdUp;
 	private int pid;
     private String rowId;
@@ -196,6 +196,8 @@ public class AdAdminGroup implements IObj {
 
 			JSONObject json = JSONObject.fromObject(this, JsonUtils.getStrConfig());
 
+			json.remove("groupId");
+			
 			return json;
 		}
 		else if (objLevel == ObjLevel.BRIEF) {

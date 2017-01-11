@@ -62,6 +62,7 @@ public class Check extends AbstractOperation{
 			}
 			checkRuleList.add(rule);
 			Map<String, Set<String>> tmpMap = rule.getReferSubtableMap();
+			if(tmpMap==null){continue;}
 			for(String manObjName:tmpMap.keySet()){
 				Set<String> tmpSubtableSet=tmpMap.get(manObjName);
 				if(selConfig.containsKey(manObjName)){

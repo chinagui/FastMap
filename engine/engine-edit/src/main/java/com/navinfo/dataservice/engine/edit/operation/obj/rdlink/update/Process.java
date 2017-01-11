@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdlink.update;
 
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,6 +13,8 @@ import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkIntRtic;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkRtic;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.operation.AbstractProcess;
@@ -59,7 +62,9 @@ public class Process extends AbstractProcess<Command> {
                 if (preCheckMsg != null) {
                     throw new Exception(preCheckMsg);
                 }
-
+                
+                updateRdLane();
+                
                 recordData();
 
                 postCheck();
@@ -109,6 +114,30 @@ public class Process extends AbstractProcess<Command> {
 
         return null;
     }
+    
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.navinfo.dataservice.dao.glm.iface.IProcess#postCheck()
+	 */
+	@Override
+	public void postCheck() throws Exception {
+		// TODO Auto-generated method stub
+		// this.createPostCheckGlmList();
+		List<IRow> glmList = new ArrayList<IRow>();
+		glmList.addAll(this.getResult().getAddObjects());
+		glmList.addAll(this.getResult().getUpdateObjects());
+		for(IRow irow:this.getResult().getDelObjects()){
+			if(irow instanceof RdLinkRtic){
+				glmList.add(irow);
+			}else if(irow instanceof RdLinkIntRtic){
+				glmList.add(irow);
+			}
+		}
+		this.checkCommand.setGlmList(glmList);
+		this.checkEngine.postCheck();
+
+	}
 
     @Override
     public String exeOperation() throws Exception {

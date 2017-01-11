@@ -60,8 +60,7 @@ public class Operation implements IOperation {
 		// 主表是否变化
 		if (content.containsKey("objStatus")) {
 
-			if (ObjStatus.DELETE.toString().equals(
-					content.getString("objStatus"))) {
+			if (ObjStatus.DELETE.toString().equals(content.getString("objStatus"))) {
 				result.insertObject(branch, ObjStatus.DELETE, branch.pid());
 
 				return null;
@@ -106,8 +105,7 @@ public class Operation implements IOperation {
 	 * @param result
 	 * @throws Exception
 	 */
-	private void updateLinkInfo(JSONObject content, Result result)
-			throws Exception {
+	private void updateLinkInfo(JSONObject content, Result result) throws Exception {
 
 		// 前台未修改退出线，直接返回
 		if (!content.containsKey("outLinkPid")) {
@@ -121,20 +119,18 @@ public class Operation implements IOperation {
 			return;
 		}
 
-		CalLinkOperateUtils calLinkOperateUtils = new CalLinkOperateUtils();
+		CalLinkOperateUtils calLinkOperateUtils = new CalLinkOperateUtils(conn);
 
-		int relationShipType = calLinkOperateUtils.getRelationShipType(conn,
-				this.branch.getNodePid(), outPid);
+		int relationShipType = calLinkOperateUtils.getRelationShipType(this.branch.getNodePid(), outPid);
 
 		// 前台未修改关系类型且关系类型改变
-		if (this.branch.getRelationshipType() != relationShipType
-				&& !content.containsKey("relationshipType")) {
+		if (this.branch.getRelationshipType() != relationShipType && !content.containsKey("relationshipType")) {
 
 			content.put("relationshipType", relationShipType);
 		}
 
-		List<Integer> viaLinks = calLinkOperateUtils.calViaLinks(conn,
-				this.branch.getInLinkPid(), this.branch.getNodePid(), outPid);
+		List<Integer> viaLinks = calLinkOperateUtils.calViaLinks(conn, this.branch.getInLinkPid(),
+				this.branch.getNodePid(), outPid);
 		// 删除原经过线
 		for (IRow row : this.branch.getVias()) {
 			result.insertObject(row, ObjStatus.DELETE, branch.pid());
@@ -168,8 +164,7 @@ public class Operation implements IOperation {
 	 * @param content
 	 * @throws Exception
 	 */
-	private void updateBranchDetail(Result result, JSONObject content)
-			throws Exception {
+	private void updateBranchDetail(Result result, JSONObject content) throws Exception {
 		if (!content.containsKey("details")) {
 			return;
 		}
@@ -182,48 +177,39 @@ public class Operation implements IOperation {
 
 			if (json.containsKey("objStatus")) {
 
-				if (!ObjStatus.INSERT.toString().equals(
-						json.getString("objStatus"))) {
+				if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
 
-					RdBranchDetail detail = branch.detailMap.get(json
-							.getInt("pid"));
+					RdBranchDetail detail = branch.detailMap.get(json.getInt("pid"));
 
 					if (detail == null) {
-						throw new Exception("detailId=" + json.getInt("pid")
-								+ "的rd_branch_detail不存在");
+						throw new Exception("detailId=" + json.getInt("pid") + "的rd_branch_detail不存在");
 					}
 
-					if (ObjStatus.DELETE.toString().equals(
-							json.getString("objStatus"))) {
-						result.insertObject(detail, ObjStatus.DELETE,
-								branch.getPid());
+					if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
+						result.insertObject(detail, ObjStatus.DELETE, branch.getPid());
 
 						continue;
 
-					} else if (ObjStatus.UPDATE.toString().equals(
-							json.getString("objStatus"))) {
+					} else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
 
 						if (json.containsKey("arrowCode")) {
 							String arrowCode = json.getString("arrowCode");
 
-							if (StringUtils.isNotEmpty(arrowCode)
-									&& arrowCode.length() > 10) {
+							if (StringUtils.isNotEmpty(arrowCode) && arrowCode.length() > 10) {
 								throw new Exception("分歧箭头图号码超过了10位");
 							}
 
 						} else if (json.containsKey("patternCode")) {
 							String patternCode = json.getString("patternCode");
 
-							if (StringUtils.isNotEmpty(patternCode)
-									&& patternCode.length() > 10) {
+							if (StringUtils.isNotEmpty(patternCode) && patternCode.length() > 10) {
 								throw new Exception("分歧模式图号码超过了10位");
 							}
 						}
 						boolean isChanged = detail.fillChangeFields(json);
 
 						if (isChanged) {
-							result.insertObject(detail, ObjStatus.UPDATE,
-									branch.pid());
+							result.insertObject(detail, ObjStatus.UPDATE, branch.pid());
 						}
 					}
 				} else {
@@ -255,34 +241,26 @@ public class Operation implements IOperation {
 					JSONObject cond = names.getJSONObject(j);
 
 					if (!cond.containsKey("objStatus")) {
-						throw new Exception(
-								"传入请求内容格式错误，conditions不存在操作类型objStatus");
+						throw new Exception("传入请求内容格式错误，conditions不存在操作类型objStatus");
 					}
 
-					if (!ObjStatus.INSERT.toString().equals(
-							cond.getString("objStatus"))) {
+					if (!ObjStatus.INSERT.toString().equals(cond.getString("objStatus"))) {
 
-						RdBranchName name = detail.nameMap.get(cond
-								.getInt("pid"));
+						RdBranchName name = detail.nameMap.get(cond.getInt("pid"));
 
 						if (name == null) {
-							throw new Exception("pid=" + cond.getInt("pid")
-									+ "的rd_branch_name不存在");
+							throw new Exception("pid=" + cond.getInt("pid") + "的rd_branch_name不存在");
 						}
 
-						if (ObjStatus.DELETE.toString().equals(
-								cond.getString("objStatus"))) {
-							result.insertObject(name, ObjStatus.DELETE,
-									branch.getPid());
+						if (ObjStatus.DELETE.toString().equals(cond.getString("objStatus"))) {
+							result.insertObject(name, ObjStatus.DELETE, branch.getPid());
 
-						} else if (ObjStatus.UPDATE.toString().equals(
-								cond.getString("objStatus"))) {
+						} else if (ObjStatus.UPDATE.toString().equals(cond.getString("objStatus"))) {
 
 							boolean isChanged = name.fillChangeFields(cond);
 
 							if (isChanged) {
-								result.insertObject(name, ObjStatus.UPDATE,
-										branch.pid());
+								result.insertObject(name, ObjStatus.UPDATE, branch.pid());
 							}
 						}
 					} else {
@@ -296,8 +274,7 @@ public class Operation implements IOperation {
 
 						name.setPid(PidUtil.getInstance().applyBranchNameId());
 
-						result.insertObject(name, ObjStatus.INSERT,
-								branch.pid());
+						result.insertObject(name, ObjStatus.INSERT, branch.pid());
 					}
 				}
 			}
@@ -311,8 +288,7 @@ public class Operation implements IOperation {
 	 * @param content
 	 * @throws Exception
 	 */
-	private void updateSignboard(Result result, JSONObject content)
-			throws Exception {
+	private void updateSignboard(Result result, JSONObject content) throws Exception {
 		if (!content.containsKey("signboards")) {
 			return;
 		}
@@ -325,31 +301,24 @@ public class Operation implements IOperation {
 
 			if (json.containsKey("objStatus")) {
 
-				if (!ObjStatus.INSERT.toString().equals(
-						json.getString("objStatus"))) {
+				if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
 
-					RdSignboard signboard = branch.signboardMap.get(json
-							.getInt("pid"));
+					RdSignboard signboard = branch.signboardMap.get(json.getInt("pid"));
 
 					if (signboard == null) {
-						throw new Exception("SIGNBOARD_ID="
-								+ json.getInt("pid") + "的RdSignboard不存在");
+						throw new Exception("SIGNBOARD_ID=" + json.getInt("pid") + "的RdSignboard不存在");
 					}
 
-					if (ObjStatus.DELETE.toString().equals(
-							json.getString("objStatus"))) {
-						result.insertObject(signboard, ObjStatus.DELETE,
-								branch.getPid());
+					if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
+						result.insertObject(signboard, ObjStatus.DELETE, branch.getPid());
 
 						continue;
-					} else if (ObjStatus.UPDATE.toString().equals(
-							json.getString("objStatus"))) {
+					} else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
 
 						boolean isChanged = signboard.fillChangeFields(json);
 
 						if (isChanged) {
-							result.insertObject(signboard, ObjStatus.UPDATE,
-									branch.pid());
+							result.insertObject(signboard, ObjStatus.UPDATE, branch.pid());
 						}
 					}
 				} else {
@@ -363,8 +332,7 @@ public class Operation implements IOperation {
 
 					signboard.setMesh(branch.mesh());
 
-					result.insertObject(signboard, ObjStatus.INSERT,
-							branch.pid());
+					result.insertObject(signboard, ObjStatus.INSERT, branch.pid());
 
 					continue;
 				}
@@ -382,12 +350,10 @@ public class Operation implements IOperation {
 					JSONObject cond = names.getJSONObject(j);
 
 					if (!cond.containsKey("objStatus")) {
-						throw new Exception(
-								"传入请求内容格式错误，conditions不存在操作类型objStatus");
+						throw new Exception("传入请求内容格式错误，conditions不存在操作类型objStatus");
 					}
 
-					if (!ObjStatus.INSERT.toString().equals(
-							cond.getString("objStatus"))) {
+					if (!ObjStatus.INSERT.toString().equals(cond.getString("objStatus"))) {
 
 						for (IRow row : signboard.getNames()) {
 							RdSignboardName name = (RdSignboardName) row;
@@ -395,27 +361,21 @@ public class Operation implements IOperation {
 							signboard.nameMap.put(name.getPid(), name);
 						}
 
-						RdSignboardName name = signboard.nameMap.get(cond
-								.getInt("pid"));
+						RdSignboardName name = signboard.nameMap.get(cond.getInt("pid"));
 
 						if (name == null) {
-							throw new Exception("NAME_ID=" + cond.getInt("pid")
-									+ "的RdSignboardName不存在");
+							throw new Exception("NAME_ID=" + cond.getInt("pid") + "的RdSignboardName不存在");
 						}
 
-						if (ObjStatus.DELETE.toString().equals(
-								cond.getString("objStatus"))) {
-							result.insertObject(name, ObjStatus.DELETE,
-									branch.getPid());
+						if (ObjStatus.DELETE.toString().equals(cond.getString("objStatus"))) {
+							result.insertObject(name, ObjStatus.DELETE, branch.getPid());
 
-						} else if (ObjStatus.UPDATE.toString().equals(
-								cond.getString("objStatus"))) {
+						} else if (ObjStatus.UPDATE.toString().equals(cond.getString("objStatus"))) {
 
 							boolean isChanged = name.fillChangeFields(cond);
 
 							if (isChanged) {
-								result.insertObject(name, ObjStatus.UPDATE,
-										branch.pid());
+								result.insertObject(name, ObjStatus.UPDATE, branch.pid());
 							}
 						}
 					} else {
@@ -427,11 +387,9 @@ public class Operation implements IOperation {
 
 						name.setMesh(branch.mesh());
 
-						name.setPid(PidUtil.getInstance()
-								.applyRdSignboardName());
+						name.setPid(PidUtil.getInstance().applyRdSignboardName());
 
-						result.insertObject(name, ObjStatus.INSERT,
-								branch.pid());
+						result.insertObject(name, ObjStatus.INSERT, branch.pid());
 					}
 				}
 			}
@@ -445,8 +403,7 @@ public class Operation implements IOperation {
 	 * @param content
 	 * @throws Exception
 	 */
-	private void updateSignasreal(Result result, JSONObject content)
-			throws Exception {
+	private void updateSignasreal(Result result, JSONObject content) throws Exception {
 		if (!content.containsKey("signasreals")) {
 			return;
 		}
@@ -461,31 +418,24 @@ public class Operation implements IOperation {
 				continue;
 			}
 
-			if (!ObjStatus.INSERT.toString()
-					.equals(json.getString("objStatus"))) {
+			if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
 
-				RdSignasreal signasreal = branch.signasrealMap.get(json
-						.getInt("pid"));
+				RdSignasreal signasreal = branch.signasrealMap.get(json.getInt("pid"));
 
 				if (signasreal == null) {
-					throw new Exception("SIGNBOARD_ID=" + json.getInt("pid")
-							+ "的RdSignasreal不存在");
+					throw new Exception("SIGNBOARD_ID=" + json.getInt("pid") + "的RdSignasreal不存在");
 				}
 
-				if (ObjStatus.DELETE.toString().equals(
-						json.getString("objStatus"))) {
-					result.insertObject(signasreal, ObjStatus.DELETE,
-							branch.getPid());
+				if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
+					result.insertObject(signasreal, ObjStatus.DELETE, branch.getPid());
 
 					continue;
-				} else if (ObjStatus.UPDATE.toString().equals(
-						json.getString("objStatus"))) {
+				} else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
 
 					boolean isChanged = signasreal.fillChangeFields(json);
 
 					if (isChanged) {
-						result.insertObject(signasreal, ObjStatus.UPDATE,
-								branch.pid());
+						result.insertObject(signasreal, ObjStatus.UPDATE, branch.pid());
 					}
 				}
 			} else {
@@ -511,8 +461,7 @@ public class Operation implements IOperation {
 	 * @param content
 	 * @throws Exception
 	 */
-	private void updateSchematic(Result result, JSONObject content)
-			throws Exception {
+	private void updateSchematic(Result result, JSONObject content) throws Exception {
 		if (!content.containsKey("schematics")) {
 			return;
 		}
@@ -527,30 +476,23 @@ public class Operation implements IOperation {
 				continue;
 			}
 
-			if (!ObjStatus.INSERT.toString()
-					.equals(json.getString("objStatus"))) {
+			if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
 
-				RdBranchSchematic schematic = branch.schematicMap.get(json
-						.getInt("pid"));
+				RdBranchSchematic schematic = branch.schematicMap.get(json.getInt("pid"));
 
 				if (schematic == null) {
-					throw new Exception("SCHEMATIC_ID=" + json.getInt("pid")
-							+ "的RdBranchSchematic不存在");
+					throw new Exception("SCHEMATIC_ID=" + json.getInt("pid") + "的RdBranchSchematic不存在");
 				}
 
-				if (ObjStatus.DELETE.toString().equals(
-						json.getString("objStatus"))) {
-					result.insertObject(schematic, ObjStatus.DELETE,
-							branch.getPid());
+				if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
+					result.insertObject(schematic, ObjStatus.DELETE, branch.getPid());
 					continue;
-				} else if (ObjStatus.UPDATE.toString().equals(
-						json.getString("objStatus"))) {
+				} else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
 
 					boolean isChanged = schematic.fillChangeFields(json);
 
 					if (isChanged) {
-						result.insertObject(schematic, ObjStatus.UPDATE,
-								branch.pid());
+						result.insertObject(schematic, ObjStatus.UPDATE, branch.pid());
 					}
 				}
 			} else {
@@ -576,8 +518,7 @@ public class Operation implements IOperation {
 	 * @param content
 	 * @throws Exception
 	 */
-	private void updateBranchRealimage(Result result, JSONObject content)
-			throws Exception {
+	private void updateBranchRealimage(Result result, JSONObject content) throws Exception {
 		if (!content.containsKey("realimages")) {
 			return;
 		}
@@ -592,31 +533,24 @@ public class Operation implements IOperation {
 				continue;
 			}
 
-			if (!ObjStatus.INSERT.toString()
-					.equals(json.getString("objStatus"))) {
+			if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
 
-				RdBranchRealimage realimage = branch.realimageMap.get(json
-						.getString("rowId"));
+				RdBranchRealimage realimage = branch.realimageMap.get(json.getString("rowId"));
 
 				if (realimage == null) {
-					throw new Exception("ROWID=" + json.getString("rowId")
-							+ "的RdBranchRealimage不存在");
+					throw new Exception("ROWID=" + json.getString("rowId") + "的RdBranchRealimage不存在");
 				}
 
-				if (ObjStatus.DELETE.toString().equals(
-						json.getString("objStatus"))) {
-					result.insertObject(realimage, ObjStatus.DELETE,
-							branch.getPid());
+				if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
+					result.insertObject(realimage, ObjStatus.DELETE, branch.getPid());
 
 					continue;
-				} else if (ObjStatus.UPDATE.toString().equals(
-						json.getString("objStatus"))) {
+				} else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
 
 					boolean isChanged = realimage.fillChangeFields(json);
 
 					if (isChanged) {
-						result.insertObject(realimage, ObjStatus.UPDATE,
-								branch.pid());
+						result.insertObject(realimage, ObjStatus.UPDATE, branch.pid());
 					}
 				}
 			} else {
@@ -641,8 +575,7 @@ public class Operation implements IOperation {
 	 * @throws Exception
 	 */
 
-	private void updateSeriesbranch(Result result, JSONObject content)
-			throws Exception {
+	private void updateSeriesbranch(Result result, JSONObject content) throws Exception {
 		if (!content.containsKey("seriesbranches")) {
 			return;
 		}
@@ -657,31 +590,24 @@ public class Operation implements IOperation {
 				continue;
 			}
 
-			if (!ObjStatus.INSERT.toString()
-					.equals(json.getString("objStatus"))) {
+			if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
 
-				RdSeriesbranch seriesbranche = branch.seriesbranchMap.get(json
-						.getString("rowId"));
+				RdSeriesbranch seriesbranche = branch.seriesbranchMap.get(json.getString("rowId"));
 
 				if (seriesbranche == null) {
-					throw new Exception("ROWID=" + json.getString("rowId")
-							+ "的RdSeriesbranch不存在");
+					throw new Exception("ROWID=" + json.getString("rowId") + "的RdSeriesbranch不存在");
 				}
 
-				if (ObjStatus.DELETE.toString().equals(
-						json.getString("objStatus"))) {
-					result.insertObject(seriesbranche, ObjStatus.DELETE,
-							branch.getPid());
+				if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
+					result.insertObject(seriesbranche, ObjStatus.DELETE, branch.getPid());
 
 					continue;
-				} else if (ObjStatus.UPDATE.toString().equals(
-						json.getString("objStatus"))) {
+				} else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
 
 					boolean isChanged = seriesbranche.fillChangeFields(json);
 
 					if (isChanged) {
-						result.insertObject(seriesbranche, ObjStatus.UPDATE,
-								branch.pid());
+						result.insertObject(seriesbranche, ObjStatus.UPDATE, branch.pid());
 					}
 				}
 			} else {
@@ -693,13 +619,11 @@ public class Operation implements IOperation {
 
 				seriesbranche.setMesh(branch.mesh());
 
-				result.insertObject(seriesbranche, ObjStatus.INSERT,
-						branch.pid());
+				result.insertObject(seriesbranche, ObjStatus.INSERT, branch.pid());
 			}
 		}
 	}
-	
-	
+
 	/**
 	 * 分离节点
 	 * 
@@ -709,8 +633,7 @@ public class Operation implements IOperation {
 	 * @param result
 	 * @throws Exception
 	 */
-	public void departNode(RdLink link, int nodePid, List<RdLink> rdlinks,
-			Result result) throws Exception {
+	public void departNode(RdLink link, int nodePid, List<RdLink> rdlinks, Result result) throws Exception {
 
 		List<Integer> nodePids = new ArrayList<Integer>();
 
@@ -728,8 +651,7 @@ public class Operation implements IOperation {
 	 * @param result
 	 * @throws Exception
 	 */
-	public void departNode(RdLink link, List<Integer> nodePids,
-			List<RdLink> rdlinks, Result result) throws Exception {
+	public void departNode(RdLink link, List<Integer> nodePids, List<RdLink> rdlinks, Result result) throws Exception {
 
 		int linkPid = link.getPid();
 
@@ -761,19 +683,15 @@ public class Operation implements IOperation {
 
 				if (branch.getNodePid() == nodePid) {
 
-					result.insertObject(branch, ObjStatus.DELETE,
-							branch.getPid());
+					result.insertObject(branch, ObjStatus.DELETE, branch.getPid());
 
 					continue;
 				}
 
 				// 分离node是经过线和退出线的连接node
-				if (branch.getVias().size() > 0
-						&& branch.getOutLinkPid() == linkPid
-						&& isConnect(branch, nodePid)) {
+				if (branch.getVias().size() > 0 && branch.getOutLinkPid() == linkPid && isConnect(branch, nodePid)) {
 
-					result.insertObject(branch, ObjStatus.DELETE,
-							branch.getPid());
+					result.insertObject(branch, ObjStatus.DELETE, branch.getPid());
 
 					continue;
 
@@ -783,8 +701,7 @@ public class Operation implements IOperation {
 
 					branchInLink.put(branch.getPid(), branch);
 
-				} else if (branchOutLink != null
-						&& branch.getOutLinkPid() == linkPid) {
+				} else if (branchOutLink != null && branch.getOutLinkPid() == linkPid) {
 
 					branchOutLink.put(branch.getPid(), branch);
 				}
@@ -795,13 +712,11 @@ public class Operation implements IOperation {
 				return;
 			}
 
-			int connectNode = link.getsNodePid() == nodePid ? link
-					.geteNodePid() : link.getsNodePid();
+			int connectNode = link.getsNodePid() == nodePid ? link.geteNodePid() : link.getsNodePid();
 
 			for (RdLink rdlink : rdlinks) {
 
-				if (rdlink.getsNodePid() != connectNode
-						&& rdlink.geteNodePid() != connectNode) {
+				if (rdlink.getsNodePid() != connectNode && rdlink.geteNodePid() != connectNode) {
 
 					continue;
 				}
@@ -838,8 +753,7 @@ public class Operation implements IOperation {
 			}
 		}
 
-		List<IRow> linkViaRows = rdLinkSelector
-				.loadByIds(linkPids, true, false);
+		List<IRow> linkViaRows = rdLinkSelector.loadByIds(linkPids, true, false);
 
 		boolean isConnect = false;
 
@@ -848,8 +762,7 @@ public class Operation implements IOperation {
 			RdLink rdLink = (RdLink) rowLink;
 
 			// 经过线与退出线的分离node挂接
-			if (rdLink.geteNodePid() == nodePid
-					|| rdLink.getsNodePid() == nodePid) {
+			if (rdLink.geteNodePid() == nodePid || rdLink.getsNodePid() == nodePid) {
 
 				isConnect = true;
 
@@ -871,8 +784,7 @@ public class Operation implements IOperation {
 	 * @param conn
 	 * @throws Exception
 	 */
-	public void breakRdLink(RdLink oldLink, List<RdLink> newLinks, Result result)
-			throws Exception {
+	public void breakRdLink(RdLink oldLink, List<RdLink> newLinks, Result result) throws Exception {
 
 		if (conn == null) {
 			return;
@@ -880,8 +792,7 @@ public class Operation implements IOperation {
 
 		RdBranchSelector selector = new RdBranchSelector(conn);
 
-		List<RdBranch> branchs = selector.loadByLinkPid(oldLink.getPid(), 1,
-				true);
+		List<RdBranch> branchs = selector.loadByLinkPid(oldLink.getPid(), 1, true);
 
 		for (RdBranch branch : branchs) {
 
@@ -922,13 +833,11 @@ public class Operation implements IOperation {
 	 * @param newLinks
 	 * @param result
 	 */
-	private void breakInLink(RdBranch branch, List<RdLink> newLinks,
-			Result result) {
+	private void breakInLink(RdBranch branch, List<RdLink> newLinks, Result result) {
 
 		for (RdLink link : newLinks) {
 
-			if (branch.getNodePid() == link.getsNodePid()
-					|| branch.getNodePid() == link.geteNodePid()) {
+			if (branch.getNodePid() == link.getsNodePid() || branch.getNodePid() == link.geteNodePid()) {
 
 				branch.changedFields().put("inLinkPid", link.getPid());
 
@@ -946,8 +855,7 @@ public class Operation implements IOperation {
 	 * @param result
 	 * @throws Exception
 	 */
-	private void breakOutLink(RdBranch branch, RdLink oldLink,
-			List<RdLink> newLinks, Result result) throws Exception {
+	private void breakOutLink(RdBranch branch, RdLink oldLink, List<RdLink> newLinks, Result result) throws Exception {
 
 		int connectionNodePid = 0;
 
@@ -965,8 +873,7 @@ public class Operation implements IOperation {
 
 				RdBranchVia via = (RdBranchVia) rowVia;
 
-				if (lastVia.getGroupId() == via.getGroupId()
-						&& lastVia.getSeqNum() < via.getSeqNum()) {
+				if (lastVia.getGroupId() == via.getGroupId() && lastVia.getSeqNum() < via.getSeqNum()) {
 
 					lastVia = via;
 				}
@@ -974,8 +881,7 @@ public class Operation implements IOperation {
 
 			RdLinkSelector rdLinkSelector = new RdLinkSelector(this.conn);
 
-			List<Integer> linkPids = rdLinkSelector.loadLinkPidByNodePid(
-					oldLink.getsNodePid(), false);
+			List<Integer> linkPids = rdLinkSelector.loadLinkPidByNodePid(oldLink.getsNodePid(), false);
 
 			if (linkPids.contains(lastVia.getLinkPid())) {
 
@@ -992,8 +898,7 @@ public class Operation implements IOperation {
 		}
 
 		for (RdLink link : newLinks) {
-			if (connectionNodePid == link.getsNodePid()
-					|| connectionNodePid == link.geteNodePid()) {
+			if (connectionNodePid == link.getsNodePid() || connectionNodePid == link.geteNodePid()) {
 
 				branch.changedFields().put("outLinkPid", link.getPid());
 
@@ -1013,8 +918,7 @@ public class Operation implements IOperation {
 	 * @param result
 	 * @throws Exception
 	 */
-	private void breakPassLink(RdBranch branch, RdLink oldLink,
-			List<RdLink> newLinks, Result result) throws Exception {
+	private void breakPassLink(RdBranch branch, RdLink oldLink, List<RdLink> newLinks, Result result) throws Exception {
 
 		if (branch.getVias().size() == 0) {
 			return;
@@ -1079,11 +983,9 @@ public class Operation implements IOperation {
 
 				RdLinkSelector rdLinkSelector = new RdLinkSelector(this.conn);
 
-				List<Integer> linkPids = rdLinkSelector.loadLinkPidByNodePid(
-						oldLink.getsNodePid(), false);
+				List<Integer> linkPids = rdLinkSelector.loadLinkPidByNodePid(oldLink.getsNodePid(), false);
 
-				connectionNodePid = linkPids.contains(preLinkPid) ? oldLink
-						.getsNodePid() : oldLink.geteNodePid();
+				connectionNodePid = linkPids.contains(preLinkPid) ? oldLink.getsNodePid() : oldLink.geteNodePid();
 			}
 
 			if (newLinks.get(0).getsNodePid() == connectionNodePid
@@ -1101,8 +1003,7 @@ public class Operation implements IOperation {
 
 					newVia.setSeqNum(oldVia.getSeqNum() + i);
 
-					result.insertObject(newVia, ObjStatus.INSERT,
-							newVia.getBranchPid());
+					result.insertObject(newVia, ObjStatus.INSERT, newVia.getBranchPid());
 				}
 
 			} else {
@@ -1118,8 +1019,7 @@ public class Operation implements IOperation {
 
 					newVia.setSeqNum(oldVia.getSeqNum() + newLinks.size() - i);
 
-					result.insertObject(newVia, ObjStatus.INSERT,
-							newVia.getBranchPid());
+					result.insertObject(newVia, ObjStatus.INSERT, newVia.getBranchPid());
 				}
 			}
 
@@ -1130,11 +1030,9 @@ public class Operation implements IOperation {
 
 				if (via.getSeqNum() > oldVia.getSeqNum()) {
 
-					via.changedFields().put("seqNum",
-							via.getSeqNum() + newLinks.size() - 1);
+					via.changedFields().put("seqNum", via.getSeqNum() + newLinks.size() - 1);
 
-					result.insertObject(via, ObjStatus.UPDATE,
-							via.getBranchPid());
+					result.insertObject(via, ObjStatus.UPDATE, via.getBranchPid());
 				}
 			}
 		}

@@ -96,6 +96,8 @@ public class TipsSelector {
 				stages.add(1);
 
 				stages.add(2);
+				
+				stages.add(5);
 
 			} else if ("m".equals(mdFlag)) {
 
@@ -104,6 +106,8 @@ public class TipsSelector {
 				stages.add(2);
 
 				stages.add(3);
+				
+				stages.add(5);
 			}
 			//f是预处理渲染，如果不是，则需要过滤没有提交的预处理tips
 			boolean isPre=false;
@@ -145,9 +149,16 @@ public class TipsSelector {
 					m.put("a", json.getString("t_mStatus"));
 
 				}
-				
 
-				m.put("b", json.getString("t_lifecycle"));
+				JSONObject deep = JSONObject.fromObject(json.getString("deep"));
+				
+				//fc预处理8001要求返回功能等级
+				if(type == 8001){
+					m.put("b", deep.getString("fc"));
+					
+				}else{
+					m.put("b", json.getString("t_lifecycle"));
+				}
 
 				JSONObject g_guide = JSONObject.fromObject(json
 						.getString("g_guide"));
@@ -155,9 +166,6 @@ public class TipsSelector {
 				//8001和8002的的数据，新增guide已经赋值，无需特殊处理了
 				m.put("h", g_guide.getJSONArray("coordinates"));
 				
-
-				JSONObject deep = JSONObject.fromObject(json.getString("deep"));
-
 				// g字段重新赋值的（显示坐标：取Tips的geo）
 				if (type == 1604 || type == 1601 || type == 1602
 						|| type == 1605 || type == 1606 || type == 1607) {

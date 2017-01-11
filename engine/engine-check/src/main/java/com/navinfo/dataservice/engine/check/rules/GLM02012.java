@@ -54,9 +54,9 @@ public class GLM02012 extends baseRule {
 				List<Object> resultList = this.check(rdLinkName.getLinkPid());
 
 				if (!resultList.isEmpty()) {
-					for (int i = 0; i < resultList.size(); i++) {
-						this.setCheckResult(resultList.get(i).toString(), resultList.get(i).toString(),
-								(int) resultList.get(i), resultList.get(i).toString());
+					for (int i = 0; i < resultList.size()/4; i++) {
+						this.setCheckResult(resultList.get(i).toString(), resultList.get(i+1).toString(),
+								(int) resultList.get(i+2), resultList.get(i+3).toString());
 					}
 				}
 			}
@@ -65,9 +65,9 @@ public class GLM02012 extends baseRule {
 				List<Object> resultList = this.check(rdLinkName.getLinkPid());
 
 				if (!resultList.isEmpty()) {
-					for (int i = 0; i < resultList.size(); i++) {
-						this.setCheckResult(resultList.get(i).toString(), resultList.get(i).toString(),
-								(int) resultList.get(i), resultList.get(i).toString());
+					for (int i = 0; i < resultList.size()/4; i++) {
+						this.setCheckResult(resultList.get(i).toString(), resultList.get(i+1).toString(),
+								(int) resultList.get(i+2), resultList.get(i+3).toString());
 					}
 				}
 			}

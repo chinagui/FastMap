@@ -9,7 +9,7 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkName;
 import com.navinfo.dataservice.engine.check.core.baseRule;
-import com.navinfo.dataservice.engine.check.helper.DatabaseOperatorResult;
+import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
 
 /**
  * @ClassName GLM02243
@@ -69,7 +69,7 @@ public class GLM02243 extends baseRule {
 					String sql = sb.toString();
 					log.info("道路属性编辑后检查GLM02243--sql:" + sql);
 
-					DatabaseOperatorResult getObj = new DatabaseOperatorResult();
+					DatabaseOperator getObj = new DatabaseOperator();
 					List<Object> resultList = new ArrayList<Object>();
 					resultList = getObj.exeSelect(this.getConn(), sql);
 					if (!resultList.isEmpty()) {
@@ -103,7 +103,7 @@ public class GLM02243 extends baseRule {
 					String sql = sb.toString();
 					log.info("名称类型编辑后检查GLM02243--sql:" + sql);
 
-					DatabaseOperatorResult getObj = new DatabaseOperatorResult();
+					DatabaseOperator getObj = new DatabaseOperator();
 					List<Object> resultList = new ArrayList<Object>();
 					resultList = getObj.exeSelect(this.getConn(), sql);
 					if (!resultList.isEmpty()) {

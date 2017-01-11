@@ -54,8 +54,8 @@ public class GLM02264 extends baseRule {
 					List<Object> resultList = this.check(rdLinkName.getLinkPid());
 					
 					if(!resultList.isEmpty()){
-						this.setCheckResult(resultList.get(0).toString(), resultList.get(0).toString(), 
-								(int)resultList.get(0),resultList.get(0).toString());
+						this.setCheckResult(resultList.get(0).toString(), resultList.get(1).toString(), 
+								(int)resultList.get(2),resultList.get(3).toString());
 					}
 				}
 			}
@@ -75,7 +75,7 @@ public class GLM02264 extends baseRule {
 		sb.append(" FROM RD_LINK_NAME RLN WHERE RLN.LINK_PID ="+pid);
 		sb.append(" AND RLN.U_RECORD <> 2)");
 		sb.append(" SELECT 0 AS GEOMETRY, '[RD_LINK,' || T.LINK_PID || ']' TARGET,0 AS MESH_ID,");
-		sb.append(" LISTAGG(TYPE, '、') WITHIN GROUP(ORDER BY LINK_PID) || '名称类型错误' LOG");
+		sb.append(" '\"' || LISTAGG (TYPE, '、') WITHIN GROUP (ORDER BY LINK_PID) || '\"名称类型错误' LOG");
 		sb.append(" FROM T GROUP BY T.LINK_PID");
 		String sql = sb.toString();
 		log.info("后检查GLM02264--sql:" + sql);

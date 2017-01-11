@@ -8,7 +8,7 @@ import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkName;
 import com.navinfo.dataservice.engine.check.core.baseRule;
-import com.navinfo.dataservice.engine.check.helper.DatabaseOperatorResult;
+import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
 
 /**
  * @ClassName GLM02218
@@ -80,7 +80,7 @@ public class GLM02218 extends baseRule {
 		String sql = sb.toString();
 		log.info("后检查GLM02218--sql:" + sql);
 		
-		DatabaseOperatorResult getObj = new DatabaseOperatorResult();
+		DatabaseOperator getObj = new DatabaseOperator();
 		List<Object> resultList = new ArrayList<Object>();
 		resultList = getObj.exeSelect(this.getConn(), sql);
 		

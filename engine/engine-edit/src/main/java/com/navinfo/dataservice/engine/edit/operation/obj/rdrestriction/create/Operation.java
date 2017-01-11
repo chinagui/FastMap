@@ -11,7 +11,6 @@ import java.util.Map;
 import org.apache.commons.collections.CollectionUtils;
 
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
-import com.navinfo.dataservice.commons.geom.AngleCalculator;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -20,7 +19,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionCondition;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionDetail;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionVia;
-import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
+import com.navinfo.dataservice.engine.edit.utils.CalLinkOperateUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.LineSegment;
 
@@ -83,7 +82,9 @@ public class Operation implements IOperation {
 		List<IRow> details = new ArrayList<>();
 
 		if (calOutLinkObjs.size() > 0) {
-			List<Integer> outLinkPids = getInNodeLinkPids();
+			CalLinkOperateUtils calLinkOperateUtils = new CalLinkOperateUtils(conn);
+			
+			List<Integer> outLinkPids = calLinkOperateUtils.getInNodeLinkPids(this.command.getNodePid(),this.command.getInLinkPid(),this.command.getOutLinkPidList());
 
 			if (CollectionUtils.isEmpty(outLinkPids)) {
 				throw new Exception("进入点挂接的link没有合适的退出线");
@@ -101,7 +102,7 @@ public class Operation implements IOperation {
 					outLinkPids.removeAll(infoMap.keySet());
 
 					// 选取正北或者正南方向夹角最小的退出线
-					int outLinkPid = getMinAngleOutLinkPidOnArrowDir(outLinkPids, calIntInfo(arrow), infoMap);
+					int outLinkPid = CalLinkOperateUtils.getMinAngleOutLinkPidOnArrowDir(outLinkPids, CalLinkOperateUtils.calIntInfo(arrow),outLinkSegmentMap,inLinkSegment);
 
 					if (outLinkPid == 0) {
 						throw new Exception("交限限制信息为:" + arrow + "未自动计算出退出线，创建交限失败，请手动指定退出线");
@@ -154,78 +155,6 @@ public class Operation implements IOperation {
 		result.insertObject(restrict, ObjStatus.INSERT, restrict.pid());
 
 		return null;
-	}
-
-	/**
-	 * 获取最小夹角的退出线
-	 *
-	 * @param outLinkPids
-	 *            退出线
-	 * @param infoMap
-	 * @param infoList
-	 *            交限信息
-	 */
-	private int getMinAngleOutLinkPidOnArrowDir(List<Integer> outLinkPids, int arrow, Map<Integer, String> infoMap) {
-		// 最小夹角对应的退出线
-		int minAngleOutLinkPid = 0;
-
-		// 最小夹角
-		double temAngle = 361;
-
-		List<Integer> resultOutLinkPids = new ArrayList<>();
-
-		resultOutLinkPids.addAll(outLinkPids);
-
-		for (Integer outPid : resultOutLinkPids) {
-			LineSegment outLinkSegment = outLinkSegmentMap.get(outPid);
-
-			if (outLinkSegment != null) {
-				// 获取线的夹角
-				double angle = AngleCalculator.getAngle(inLinkSegment, outLinkSegment);
-				// 计算交限信息
-				int restricInfo = this.calRestricInfo(angle);
-
-				if (arrow == restricInfo) {
-					// link计算的夹角比上个link的夹角小的替换最小夹角和对应的linkPid
-					if (angle < temAngle) {
-
-						temAngle = angle;
-
-						minAngleOutLinkPid = outPid;
-					}
-				}
-			}
-
-		}
-
-		return minAngleOutLinkPid;
-	}
-
-	/**
-	 * 计算进入点联通的线(排除进入线和已经选择该link作为退出线的)
-	 *
-	 * @return
-	 */
-	private List<Integer> getInNodeLinkPids() {
-		RdLinkSelector selector = new RdLinkSelector(conn);
-
-		List<Integer> linkPids = new ArrayList<>();
-
-		try {
-			linkPids = selector.loadLinkPidByNodePid(command.getNodePid(), true);
-
-			if (CollectionUtils.isNotEmpty(linkPids)) {
-				// 剔除进入线，防止进入线和退出线是一条线
-				if (linkPids.contains(command.getInLinkPid())) {
-					linkPids.remove(linkPids.indexOf(command.getInLinkPid()));
-				}
-
-				// 删除已经作为指定方向的退出线
-				linkPids.removeAll(command.getOutLinkPidList());
-			}
-		} catch (Exception e) {
-		}
-		return linkPids;
 	}
 
 	/**
@@ -348,25 +277,6 @@ public class Operation implements IOperation {
 	}
 
 	/**
-	 * 计算限制信息
-	 *
-	 * @param angle
-	 * @return
-	 */
-	private int calRestricInfo(double angle) {
-		if (angle > 45 && angle <= 135) {
-			return 3;
-		} else if (angle > 135 && angle <= 225) {
-			return 4;
-		} else if (angle > 225 && angle <= 315) {
-			return 2;
-		} else {
-			return 1;
-		}
-
-	}
-
-	/**
 	 * 创建Detial对象
 	 *
 	 * @param restrict
@@ -409,7 +319,7 @@ public class Operation implements IOperation {
 
 			detail.setRestricPid(restrict.getPid());
 
-			detail.setRestricInfo(calIntInfo(info));
+			detail.setRestricInfo(CalLinkOperateUtils.calIntInfo(info));
 
 			detail.setRelationshipType(relationTypeMap.get(detail.getOutLinkPid()));
 
@@ -463,21 +373,5 @@ public class Operation implements IOperation {
 		condition.setVehicle(4);
 		conditions.add(condition);
 		return conditions;
-	}
-
-	/**
-	 * 计算箭头的限制信息
-	 * 
-	 * @param arrow
-	 * @param infoMap
-	 */
-	private int calIntInfo(String arrow) {
-		if (arrow.contains("[")) {
-			// 理论值带[]
-			return Integer.parseInt(arrow.substring(1, 2));
-		} else {
-			// 实际值不带
-			return Integer.parseInt(arrow);
-		}
 	}
 }

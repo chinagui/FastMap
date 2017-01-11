@@ -501,7 +501,7 @@ public class SearchProcess {
 
 					int outLinkPid = condition.getInt("outLinkPid");
 
-					CalLinkOperateUtils calLinkOperateUtils = new CalLinkOperateUtils();
+					CalLinkOperateUtils calLinkOperateUtils = new CalLinkOperateUtils(conn);
 
 					// 计算经过线
 					List<Integer> viaList = calLinkOperateUtils.calViaLinks(
@@ -509,7 +509,7 @@ public class SearchProcess {
 
 					// 计算关系类型
 					int relationShipType = calLinkOperateUtils
-							.getRelationShipType(conn, nodePid, outLinkPid);
+							.getRelationShipType(nodePid, outLinkPid);
 
 					JSONObject obj = new JSONObject();
 

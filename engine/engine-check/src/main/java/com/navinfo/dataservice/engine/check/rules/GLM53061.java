@@ -50,7 +50,7 @@ public class GLM53061 extends baseRule{
 		boolean checkFlag = false;
 		if(rdLink.changedFields().containsKey("kind")){
 			int kind = Integer.parseInt(rdLink.changedFields().get("kind").toString());
-			if((kind < 8)){
+			if((kind > 8)){
 				checkFlag = true;
 			}
 		}

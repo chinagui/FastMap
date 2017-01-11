@@ -26,7 +26,7 @@ public class RdLaneTest extends InitApplication{
 	@Test
 	public void testUpdatRdLaneByLinkKind()
 	{
-		String parameter = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"RDLINK\",\"objId\":202003101,\"data\":{\"kind\":9,\"pid\":202003101,\"objStatus\":\"UPDATE\"}}";
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":19,\"type\":\"RDLINK\",\"objId\":204003141,\"data\":{\"kind\":9,\"pid\":204003141,\"objStatus\":\"UPDATE\",\"routeAdopt\":0,\"limits\":[{\"linkPid\":204003141,\"rowId\":\"\",\"type\":3,\"limitDir\":0,\"timeDomain\":\"\",\"vehicle\":0,\"tollType\":9,\"weather\":9,\"inputTime\":\"\",\"processFlag\":2,\"objStatus\":\"INSERT\"}]}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

@@ -23,6 +23,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkLimit;
 import com.navinfo.dataservice.dao.glm.model.rd.tollgate.RdTollgate;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.lane.RdLaneSelector;
 
 /**
@@ -619,9 +620,9 @@ public class OpRefRelationObj {
 		RdBranch branch = rdBranch;
 
 		if (rdBranch == null) {
-			abstractSelector.setCls(RdBranch.class);
+			RdBranchSelector selector = new RdBranchSelector(conn);
 
-			branch = (RdBranch) abstractSelector.loadAllById(pid, true, true);
+			branch = (RdBranch) selector.loadByDetailId(pid, 0, null, true);
 		}
 
 		com.navinfo.dataservice.engine.edit.operation.obj.rdlane.update.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdlane.update.Operation(conn);
@@ -634,6 +635,24 @@ public class OpRefRelationObj {
 			if(rdLaneMap.isEmpty())
 			{
 				flag = true;
+			}
+		}
+		//通过降级需要根据高速分歧模式图维护详细车道
+		else if(rdBranch == null)
+		{
+			String patternCode = detail.getPatternCode();
+			
+			if (patternCode == null || patternCode.equals("80261009") || patternCode.equals("80271009")
+					|| patternCode.equals("80361009")) {
+				flag = true;
+			}
+			else
+			{
+				Map<ObjStatus, List<RdLane>> rdLaneMap = operation.autoHandleByRdBranch(branch, patternCode,result);
+				if(rdLaneMap.isEmpty())
+				{
+					flag = true;
+				}
 			}
 		}
 		else

@@ -28,7 +28,7 @@ public class RdRestrictionTest extends InitApplication{
 
 	@Test
 	public void testDeleteRestriction() {
-		String parameter = "{\"command\":\"DELETE\",\"type\":\"RDRESTRICTION\",\"dbId\":42,\"objId\": 100000480}";
+		String parameter = "{ \"command\": \"UPDATE\", \"type\": \"RDRESTRICTION\", \"dbId\": 19, \"data\": { \"restricInfo\": \"3,[4]\", \"pid\": 302000049, \"objStatus\": \"UPDATE\", \"details\": [{ \"pid\": 0, \"restricPid\": 0, \"outLinkPid\": 0, \"flag\": 1, \"restricInfo\": 3, \"type\": 1, \"relationshipType\": 1, \"conditions\": [], \"vias\": [], \"objStatus\": \"INSERT\" }] } }";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

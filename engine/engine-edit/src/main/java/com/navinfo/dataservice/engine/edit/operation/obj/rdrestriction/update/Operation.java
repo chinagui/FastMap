@@ -324,16 +324,28 @@ public class Operation implements IOperation {
 	}
 
 	/**
-	 * @param inLinkPid
-	 * @param nodePid
-	 * @param calOutLinkPidDetails2
+	 * 自动计算退出线
+	 * @param inLinkPid 进入线
+	 * @param nodePid 进入点
+	 * @param calOutLinkPidDetails 需要自动计算退出线的detail对象
 	 * @throws Exception
 	 */
 	private void handleCalOutLinkRes(List<RdRestrictionDetail> details, int nodePid, int inLinkPid) throws Exception {
 		for (RdRestrictionDetail detail : details) {
+			
 			int info = detail.getRestricInfo();
-
+			
+			if(detail.changedFields().containsKey("restricInfo"))
+			{
+				info = (int) detail.changedFields().get("restricInfo");
+			}
+			
 			int flag = detail.getFlag();
+			
+			if(detail.changedFields().containsKey("flag"))
+			{
+				flag = (int) detail.changedFields().get("flag");
+			}
 
 			String resInfo = String.valueOf(info);
 
@@ -356,7 +368,16 @@ public class Operation implements IOperation {
 				if (outLinkPid == 0) {
 					throw new Exception("交限限制信息为:" + resInfo + "未自动计算出退出线，修改交限失败，请手动指定退出线");
 				} else {
-					detail.setOutLinkPid(outLinkPid);
+					//新增
+					if(detail.status() == ObjStatus.INSERT)
+					{
+						detail.setOutLinkPid(outLinkPid);
+					}
+					else
+					{
+						//修改
+						detail.changedFields().put("outLinkPid", outLinkPid);
+					}
 				}
 			}
 		}

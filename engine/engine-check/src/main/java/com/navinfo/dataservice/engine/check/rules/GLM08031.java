@@ -61,7 +61,7 @@ public class GLM08031 extends baseRule {
 			for(IRow obj:checkCommand.getGlmList()){
 				if(obj instanceof RdRestrictionVia){
 					RdRestrictionVia rdRestrictionVia = (RdRestrictionVia)obj;
-					if(rdRestrictionVia.getGroupId() == rdRestrictionDetail.getPid()){
+					if(rdRestrictionVia.getDetailId() == rdRestrictionDetail.getPid()){
 						if(rdRestrictionVia.status().equals(ObjStatus.DELETE)){
 							viaNum --;
 						}else if(rdRestrictionVia.status().equals(ObjStatus.INSERT)){

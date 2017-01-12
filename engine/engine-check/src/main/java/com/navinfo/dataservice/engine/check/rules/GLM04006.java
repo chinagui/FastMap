@@ -172,7 +172,7 @@ public class GLM04006 extends baseRule{
 			sb.append("SELECT 1 FROM RD_LINK R");
 			sb.append(" WHERE R.U_RECORD != 2 ");
 			sb.append(" AND R.KIND = 10 ");
-			sb.append(" AND R.LINK_PID IN (" + StringUtils.join(linkPidSet.toArray()) + ")");
+			sb.append(" AND R.LINK_PID IN (" + StringUtils.join(linkPidSet.toArray(),",") + ")");
 
 			String sql = sb.toString();
 

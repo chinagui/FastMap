@@ -512,7 +512,6 @@ public class SubtaskService {
 
 			ResultSetHandler<Map<String, Object>> rsHandler = new ResultSetHandler<Map<String, Object>>() {
 				public Map<String, Object> handle(ResultSet rs) throws SQLException {
-					StaticsApi staticApi=(StaticsApi) ApplicationContextUtil.getBean("staticsApi");
 					if (rs.next()) {
 						Map<String, Object> subtask = new HashMap<String, Object>();
 						subtask.put("subtaskId", rs.getInt("SUBTASK_ID"));
@@ -576,7 +575,13 @@ public class SubtaskService {
 						subtask.put("executerId",rs.getInt("EXECUTER_ID"));
 						
 						if(1 == rs.getInt("STATUS")){
-							SubtaskStatInfo stat = staticApi.getStatBySubtask(rs.getInt("SUBTASK_ID"));
+							SubtaskStatInfo stat = new SubtaskStatInfo();
+							try{	
+								StaticsApi staticApi=(StaticsApi) ApplicationContextUtil.getBean("staticsApi");
+								stat = staticApi.getStatBySubtask(rs.getInt("SUBTASK_ID"));
+							} catch (Exception e) {
+								log.warn("subtask query error",e);
+							}
 							subtask.put("percent",stat.getPercent());
 						}
 						subtask.put("version",SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));

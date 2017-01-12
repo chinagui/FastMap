@@ -644,9 +644,13 @@ public class OpRefRelationObj {
 
 	private void updateByRdCrossLink(int pid, RdLinkForm form) throws Exception {
 		// link的交叉口形态状态：新增是1，删除是2
-		int formCrossFlag = 1;
-
-		if (form.status() == ObjStatus.UPDATE) {
+		int formCrossFlag = 0;
+		//form为null说明是通过递归level进行维护，则按新增处理
+		if(form == null)
+		{
+			formCrossFlag = 1;
+		}
+		else if (form.status() == ObjStatus.UPDATE) {
 			int sourceFormOfWay = form.getFormOfWay();
 			// 判断是否是删除了交叉口形态
 			if (form.changedFields().containsKey("formOfWay")) {
@@ -658,19 +662,21 @@ public class OpRefRelationObj {
 		} else if (form.status() == ObjStatus.DELETE) {
 			formCrossFlag = 2;
 		}
+		if(formCrossFlag != 0)
+		{
+			abstractSelector.setCls(RdLink.class);
 
-		abstractSelector.setCls(RdLink.class);
+			RdLink link = (RdLink) abstractSelector.loadAllById(pid, true, true);
 
-		RdLink link = (RdLink) abstractSelector.loadAllById(pid, true, true);
+			com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation operation = new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation(
+					conn);
 
-		com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation operation = new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation(
-				conn);
+			operation.setLink(link);
 
-		operation.setLink(link);
+			operation.setFormCrossFlag(formCrossFlag);
 
-		operation.setFormCrossFlag(formCrossFlag);
-
-		operation.caleRdLinesForRdLinkCross(result);
+			operation.caleRdLinesForRdLinkCross(result);
+		}
 	}
 
 	private boolean updateByRdBranchPattern(int pid, RdBranch rdBranch) throws Exception {

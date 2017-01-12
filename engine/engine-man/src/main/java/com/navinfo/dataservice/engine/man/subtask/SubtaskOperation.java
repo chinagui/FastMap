@@ -2540,6 +2540,7 @@ public class SubtaskOperation {
 					+ " and sgm.grid_id in (" + gridIdsStr + ")"
 					+ " and s.subtask_id = sgm.subtask_id"
 					+ " and s.exe_user_id = u.user_id"
+					+ " and s.status=1"
 					+ " and s.subtask_id <> " + subtaskId
 					+ " order by sgm.grid_id";
 			

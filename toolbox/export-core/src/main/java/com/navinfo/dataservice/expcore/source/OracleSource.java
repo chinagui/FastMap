@@ -107,7 +107,7 @@ public class OracleSource implements ExportSource {
 			sqlExec.execute(new ByteArrayInputStream(builder.toString().getBytes()));
 		} catch(Exception e){
 			log.error("初始化源.创建临时表时发生错误。",e);
-			throw new ExportException("初始化源.创建临时表时发生错误。",e);
+			throw new ExportException("初始化源.创建临时表时发生错误。"+e.getMessage(),e);
 		}finally {
 			if (is != null) {
 				try{

@@ -1,12 +1,7 @@
 package com.navinfo.dataservice.engine.editplus.batchAndCheck.check.rule;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import oracle.net.aso.f;
 
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
@@ -15,14 +10,14 @@ import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 /**
- * FM-GLM60247-01
- * 检查对象：Lifecycle！=1（删除）
+ * FM-GLM60248-01
+ * 检查条件：Lifecycle！=1（删除）
  * 检查原则：
- * 分类(kindCode)为110102（西餐），POI（官方原始中文名）含“牛排”，并且风味类型（FOOD_TYPE）非"1001"（国际化）、“3007”（牛排）、
- * “3008”（三明治）、“3010”、“3011”、“3013”（比萨）或为空的记录，报log：分类为西餐的牛排的餐饮风味类型错误
+ * 检查分类(kindCode)为110102（西餐），POI名称（name）（官方原始中文名）含"比萨"，“比薩”，"牛排"，"三明治"，“三文治”，
+ * 并且风味类型（FOOD_TYPE）为"1001"（国际化）的记录，报log：分类为西餐的牛排、三明治，三文治的餐饮风味类型错误
  * @author zhangxiaoyi
  */
-public class FMGLM6024701 extends BasicCheckRule {
+public class FMGLM6024801 extends BasicCheckRule {
 	
 	@Override
 	public void runCheck(BasicObj obj) throws Exception {
@@ -36,18 +31,14 @@ public class FMGLM6024701 extends BasicCheckRule {
 			if(name==null){return;}
 			String nameStr = name.getName();
 			if(nameStr==null||nameStr.isEmpty()){return;}
-			if(!nameStr.contains("牛排")){return;}
+			if(!nameStr.contains("比萨")&&!nameStr.contains("比薩")&&!nameStr.contains("牛排")
+					&&!nameStr.contains("三明治")&&!nameStr.contains("三文治")){return;}
 			List<IxPoiRestaurant> restList = poiObj.getIxPoiRestaurants();
-			if(restList==null||restList.isEmpty()){
-				setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), null);
-				return;}
-			String[] tmp = new String[]{"1001","3007","3008","3010","3011","3013"};
+			if(restList==null||restList.isEmpty()){return;}
 			for(IxPoiRestaurant res:restList){
 				String foodtype=res.getFoodType();
-				if(foodtype==null||foodtype.isEmpty()){
-					setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), null);
-					return;}
-				if(!Arrays.asList(tmp).contains(foodtype)){
+				if(foodtype==null||foodtype.isEmpty()){continue;}
+				if(foodtype.equals("1001")){
 					setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), null);
 					return;}
 			}

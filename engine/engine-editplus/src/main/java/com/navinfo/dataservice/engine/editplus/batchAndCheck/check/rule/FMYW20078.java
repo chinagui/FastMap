@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.editplus.batchAndCheck.check.rule;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -19,17 +20,16 @@ import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.common.CheckUtil;
 /**
- * FM-CHR73002	繁体字检查	D	
  * 检查条件：
- * 该POI发生变更(新增或修改主子表、删除子表)；
+ * 以下条件其中之一满足时，需要进行检查：
+ * (1)存在官方中文地址IX_POI_ADDRESS新增且FULLNAME不为空； 
+ * (2)存在官方中文地址IX_POI_ADDRESS修改且FULLNAME不为空；
  * 检查原则：
- * 18个中文字段(LANGCODE="CHI")不能有繁体字。查找的繁体字在TY_CHARACTER_FJT_HZ中所在行的CONVERT字段的值：
- * 1、如果是2表示必须转化，报log：“XX”为“**”是繁体字，对应的简体字是**，必须转化
+ * 中文地址全称（FULLNAME）中含有“国道、省道、县道、乡道、G、S、X、Y”中的一个时，报log：地址中含有国省道，请确认
  * @author gaopengrong
  *
  */
-public class FMCHR73002 extends BasicCheckRule {
-	MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
+public class FMYW20078 extends BasicCheckRule {
 	@Override
 	public void runCheck(BasicObj obj) throws Exception {
 		if(obj.objName().equals(ObjectName.IX_POI)){
@@ -37,23 +37,18 @@ public class FMCHR73002 extends BasicCheckRule {
 			IxPoi poi=(IxPoi) poiObj.getMainrow();
 			List<IxPoiAddress> addrs = poiObj.getIxPoiAddresses();
 			if(addrs.size()==0){return;}
+			List<String> wordList=Arrays.asList("国道","省道","县道","乡道","G","S","X","Y");
 			for(IxPoiAddress addr:addrs){
 				if(addr.getLangCode().equals("CHI")){
-					Map<String, JSONObject> ft = metadataApi.tyCharacterFjtHzCheckSelectorGetFtExtentionTypeMap();
-					String mergeAddr = CheckUtil.getMergerAddr(addr);
-					if(mergeAddr==null||mergeAddr.isEmpty()){continue;}
-					for(char item:mergeAddr.toCharArray()){
-						String str=String.valueOf(item);
-						if(ft.containsKey(str)){
-							JSONObject data= ft.get(str);
-							Object convert= data.get("convert");
-							if(convert.equals(2)){
-								String jt=(String) data.get("jt");
-								String log="“"+str+"”是繁体字，对应的简体字是“"+jt+"”，必须转化";
-								setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(),log);
-							}
+					String fullname = addr.getFullname();
+					String error = "";
+					if(fullname==null||fullname.isEmpty()){continue;}
+					for(String word:wordList){
+						if(fullname.contains(word)){
+							error=error+word;
 						}
 					}
+					if(error.length()>0){setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "地址中含有国省道，请确认");}
 				}
 			}
 		}

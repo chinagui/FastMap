@@ -8,24 +8,20 @@ import java.util.Set;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
-import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchName;
-import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
-import com.navinfo.dataservice.dao.glm.selector.rd.gsc.RdGscSelector;
-import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
-import com.navinfo.dataservice.engine.check.helper.GeoHelper;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.Point;
 
-/*
- * BRANCH_CHECK_SAME_LANGCODE	同一组分歧名称中，不能存在两条语言代码相同的名称
+
+/**
+ * @ClassName GLM11063
+ * @author luyao
+ * @date 2017年1月12日
+ * @Description TODO
+ * 分歧名称中“中文”不允许有半角字符、全角小写字母；
+ * 分歧名称信息编辑 服务端后检查:
  */
-
-
-public class BRANCH_CHECK_SAME_LANGCODE extends baseRule {
+public class GLM11064 extends baseRule {
 
 	@Override
 	public void preCheck(CheckCommand checkCommand) throws Exception {
@@ -85,9 +81,9 @@ public class BRANCH_CHECK_SAME_LANGCODE extends baseRule {
 	 */
 	private void check(String branchPid) throws Exception {
 		
-		String strFormat = "SELECT DISTINCT RB.BRANCH_PID FROM RD_BRANCH RB, RD_BRANCH_DETAIL RBD, RD_BRANCH_NAME RBN1,RD_BRANCH_NAME RBN2 WHERE RB.BRANCH_PID = {0} AND RB.BRANCH_PID = RBD.BRANCH_PID AND RBD.DETAIL_ID = RBN1.DETAIL_ID AND RBD.DETAIL_ID = RBN2.DETAIL_ID AND RBN1.NAME_GROUPID=RBN2.NAME_GROUPID AND RBN1.NAME_ID<>RBN2.NAME_ID AND RBN1.LANG_CODE=RBN2.LANG_CODE AND RB.U_RECORD != 2 AND RBD.U_RECORD != 2 AND RBN1.U_RECORD != 2 AND RBN2.U_RECORD != 2";
+		String strFormat = "SELECT DISTINCT  RB.BRANCH_PID   FROM RD_BRANCH RB, RD_BRANCH_DETAIL RBD, RD_BRANCH_NAME RBN WHERE RB.BRANCH_PID =  RDBRANCH_PID    AND RB.BRANCH_PID = RBD.BRANCH_PID  AND RBD.DETAIL_ID = RBN.DETAIL_ID  AND RBN.LANG_CODE IN ('CHI', 'CHT') AND (TO_MULTI_BYTE(RBN.NAME) != RBN.NAME OR REGEXP_LIKE(RBN.NAME, '[ａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚ]')) AND RB.U_RECORD <> 2   AND RBD.U_RECORD <> 2   AND RBN.U_RECORD <> 2";
 		
-		String sql = MessageFormat.format(strFormat, branchPid);
+		String sql = strFormat.replaceAll("RDBRANCH_PID", branchPid);
 
 		DatabaseOperator getObj = new DatabaseOperator();
 
@@ -96,6 +92,7 @@ public class BRANCH_CHECK_SAME_LANGCODE extends baseRule {
 		resultList = getObj.exeSelect(this.getConn(), sql);
 
 		if (!resultList.isEmpty()) {
+			
 			String target = "[RD_BRANCH," + branchPid + "]";
 			
 			this.setCheckResult("", target, 0);

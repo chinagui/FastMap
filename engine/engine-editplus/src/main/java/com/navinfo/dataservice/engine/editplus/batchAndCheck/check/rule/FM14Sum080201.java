@@ -114,11 +114,11 @@ public class FM14Sum080201 extends BasicCheckRule {
 		}
 		//同点的设施，名称（name）、地址（address）、分类和品牌相同,当分类={230210,230213,230214}时，需要增加停车场建筑物类型一起判断
 		if(pid2!=null&&pid2.size()>0){
-			String pids=pid1.toString().replace("[", "").replace("]", "");
+			String pids=pid2.toString().replace("[", "").replace("]", "");
 			Connection conn = this.getCheckRuleCommand().getConn();
 			List<Clob> values=new ArrayList<Clob>();
 			String pidString="";
-			if(pid1.size()>1000){
+			if(pid2.size()>1000){
 				Clob clob=ConnectionUtil.createClob(conn);
 				clob.setString(1, pids);
 				pidString=" PID IN (select to_number(column_value) from table(clob_to_table(?)))";

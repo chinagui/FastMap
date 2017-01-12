@@ -369,8 +369,9 @@ public class TipsSelector {
 
 					if (type == 1601 || type == 1602) {
 
-						m.put("d", geojson.getString("name"));
+						m.put("d", deep.getString("name"));
 					}
+					
 
 				}else if (type ==  8001   ) {
 
@@ -445,6 +446,7 @@ public class TipsSelector {
 
 			}
 		} catch (Exception e) {
+			logger.error("渲染报错，数据错误："+e.getMessage());
 			throw e;
 		} finally {
 			try {

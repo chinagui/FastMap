@@ -6,6 +6,7 @@ import java.util.Map;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkName;
 import com.navinfo.dataservice.engine.check.core.baseRule;
@@ -53,30 +54,41 @@ public class GLM02243 extends baseRule {
 	 */
 	private void checkRdLinkForm(RdLinkForm rdLinkForm) throws Exception {
 		// TODO Auto-generated method stub
-		Map<String, Object> changedFields = rdLinkForm.changedFields();
-		if(!changedFields.isEmpty()){
-			//道路属性编辑
-			if(changedFields.containsKey("formOfWay")){
-				int formOfWay = (int) changedFields.get("formOfWay");
-				if(formOfWay == 12 || formOfWay == 13){
-					StringBuilder sb = new StringBuilder();
-					
-					sb.append("SELECT F.LINK_PID FROM RD_LINK_FORM F, RD_LINK_NAME LN");
-					sb.append(" WHERE F.LINK_PID ="+rdLinkForm.getLinkPid());
-					sb.append(" AND F.LINK_PID = LN.LINK_PID");
-					sb.append(" AND LN.NAME_TYPE NOT IN (1, 2)");
-					sb.append(" AND F.U_RECORD <>2 AND LN.U_RECORD <>2");
-					String sql = sb.toString();
-					log.info("道路属性编辑后检查GLM02243--sql:" + sql);
-
-					DatabaseOperator getObj = new DatabaseOperator();
-					List<Object> resultList = new ArrayList<Object>();
-					resultList = getObj.exeSelect(this.getConn(), sql);
-					if (!resultList.isEmpty()) {
-						String target = "[RD_LINK," + rdLinkForm.getLinkPid() + "]";
-						this.setCheckResult("", target, 0);
+		boolean checkFlag = false;
+		if(rdLinkForm.status().equals(ObjStatus.UPDATE)){
+			Map<String, Object> changedFields = rdLinkForm.changedFields();
+			if(!changedFields.isEmpty()){
+				//道路属性编辑
+				if(changedFields.containsKey("formOfWay")){
+					int formOfWay = (int) changedFields.get("formOfWay");
+					if(formOfWay == 12 || formOfWay == 13){
+					checkFlag = true;
 					}
 				}
+			}
+		}else if (rdLinkForm.status().equals(ObjStatus.INSERT)){
+			int formOfWay = rdLinkForm.getFormOfWay();
+			if(formOfWay == 12 || formOfWay == 13){
+				checkFlag = true;
+			}
+		}
+		if(checkFlag){
+			StringBuilder sb = new StringBuilder();
+			
+			sb.append("SELECT F.LINK_PID FROM RD_LINK_FORM F, RD_LINK_NAME LN");
+			sb.append(" WHERE F.LINK_PID ="+rdLinkForm.getLinkPid());
+			sb.append(" AND F.LINK_PID = LN.LINK_PID");
+			sb.append(" AND LN.NAME_TYPE NOT IN (1, 2)");
+			sb.append(" AND F.U_RECORD <>2 AND LN.U_RECORD <>2");
+			String sql = sb.toString();
+			log.info("道路属性编辑后检查GLM02243--sql:" + sql);
+
+			DatabaseOperator getObj = new DatabaseOperator();
+			List<Object> resultList = new ArrayList<Object>();
+			resultList = getObj.exeSelect(this.getConn(), sql);
+			if (!resultList.isEmpty()) {
+				String target = "[RD_LINK," + rdLinkForm.getLinkPid() + "]";
+				this.setCheckResult("", target, 0);
 			}
 		}
 	}

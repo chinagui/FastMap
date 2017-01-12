@@ -6,6 +6,7 @@ import java.util.Map;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkName;
 import com.navinfo.dataservice.engine.check.core.baseRule;
@@ -60,20 +61,34 @@ public class GLM02257 extends baseRule {
 	 */
 	private void checkRdLinkForm(RdLinkForm rdLinkForm) throws Exception {
 		// TODO Auto-generated method stub
-		Map<String, Object> changedFields = rdLinkForm.changedFields();
-		if(!changedFields.isEmpty()){
-			//道路属性编辑
-			if(changedFields.containsKey("formOfWay")){
-				int formOfWay = (int) changedFields.get("formOfWay");
-				if(formOfWay == 31){
-					List<Object> resultList = this.check(rdLinkForm.getLinkPid());
-					
-					if (!resultList.isEmpty()) {
-						for (int i = 0; i < resultList.size()/4; i++) {
-							this.setCheckResult(resultList.get(i).toString(), resultList.get(i+1).toString(),
-									(int) resultList.get(i+3), resultList.get(i+2).toString());
-						}
+		boolean checkFlag = false;
+		if(rdLinkForm.status().equals(ObjStatus.UPDATE)){
+			Map<String, Object> changedFields = rdLinkForm.changedFields();
+			if(!changedFields.isEmpty()){
+				//道路属性编辑
+				if(changedFields.containsKey("formOfWay")){
+					int formOfWay = (int) changedFields.get("formOfWay");
+					if(formOfWay == 31){
+					checkFlag = true;
 					}
+				}
+			}
+		}else if (rdLinkForm.status().equals(ObjStatus.INSERT)){
+			int formOfWay = rdLinkForm.getFormOfWay();
+			if(formOfWay == 31){
+				checkFlag = true;
+			}
+		}
+		if(checkFlag){
+			List<Object> resultList = this.check(rdLinkForm.getLinkPid());
+			
+			if (!resultList.isEmpty()) {
+				int j = 0;
+				for (int i = 0; i < resultList.size()/4; i++) {
+					
+					this.setCheckResult(resultList.get(j).toString(), resultList.get(j+1).toString(),
+							(int) resultList.get(j+2), resultList.get(j+3).toString());
+					j +=4;
 				}
 			}
 		}
@@ -93,9 +108,12 @@ public class GLM02257 extends baseRule {
 				List<Object> resultList = this.check(rdLinkName.getLinkPid());
 
 				if (!resultList.isEmpty()) {
+					int j = 0;
 					for (int i = 0; i < resultList.size()/4; i++) {
-						this.setCheckResult(resultList.get(i).toString(), resultList.get(i+1).toString(),
-								(int) resultList.get(i+3), resultList.get(i+2).toString());
+						
+						this.setCheckResult(resultList.get(j).toString(), resultList.get(j+1).toString(),
+								(int) resultList.get(j+2), resultList.get(j+3).toString());
+						j +=4;
 					}
 				}
 			}
@@ -104,9 +122,12 @@ public class GLM02257 extends baseRule {
 				List<Object> resultList = this.check(rdLinkName.getLinkPid());
 
 				if (!resultList.isEmpty()) {
+					int j = 0;
 					for (int i = 0; i < resultList.size()/4; i++) {
-						this.setCheckResult(resultList.get(i).toString(), resultList.get(i+1).toString(),
-								(int) resultList.get(i+3), resultList.get(i+2).toString());
+						
+						this.setCheckResult(resultList.get(j).toString(), resultList.get(j+1).toString(),
+								(int) resultList.get(j+2), resultList.get(j+3).toString());
+						j +=4;
 					}
 				}
 			}
@@ -115,9 +136,12 @@ public class GLM02257 extends baseRule {
 				List<Object> resultList = this.check(rdLinkName.getLinkPid());
 
 				if (!resultList.isEmpty()) {
+					int j = 0;
 					for (int i = 0; i < resultList.size()/4; i++) {
-						this.setCheckResult(resultList.get(i).toString(), resultList.get(i+1).toString(),
-								(int) resultList.get(i+3), resultList.get(i+2).toString());
+						
+						this.setCheckResult(resultList.get(j).toString(), resultList.get(j+1).toString(),
+								(int) resultList.get(j+2), resultList.get(j+3).toString());
+						j +=4;
 					}
 				}
 			}

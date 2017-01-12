@@ -6,6 +6,7 @@ import java.util.Map;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkName;
 import com.navinfo.dataservice.engine.check.core.baseRule;
@@ -52,31 +53,47 @@ public class GLM02251 extends baseRule {
 	 */
 	private void checkRdLinkForm(RdLinkForm rdLinkForm) throws Exception {
 		// TODO Auto-generated method stub
-		Map<String, Object> changedFields = rdLinkForm.changedFields();
-		if(!changedFields.isEmpty()){
-			//道路属性编辑
-			if(changedFields.containsKey("formOfWay")){
-				int formOfWay = (int) changedFields.get("formOfWay");
-				if(formOfWay != 52){
-					StringBuilder sb = new StringBuilder();
-					
-					sb.append("SELECT RLN.LINK_PID FROM RD_LINK_NAME RLN");
-					sb.append(" WHERE RLN.LINK_PID = "+rdLinkForm.getLinkPid());
-					sb.append(" AND RLN.U_RECORD <>2 AND RLN.NAME_TYPE = 6");
-					sb.append(" AND NOT EXISTS(SELECT 1 FROM RD_LINK_FORM RF");
-					sb.append(" WHERE RLN.LINK_PID = RF.LINK_PID");
-					sb.append(" AND RF.U_RECORD <>2 AND RF.FORM_OF_WAY = 52)");
-					String sql = sb.toString();
-					log.info("道路属性编辑后检查GLM02251--sql:" + sql);
-
-					DatabaseOperator getObj = new DatabaseOperator();
-					List<Object> resultList = new ArrayList<Object>();
-					resultList = getObj.exeSelect(this.getConn(), sql);
-					if (!resultList.isEmpty()) {
-						String target = "[RD_LINK," + rdLinkForm.getLinkPid() + "]";
-						this.setCheckResult("", target, 0);
+		boolean checkFlag = false;
+		if(rdLinkForm.status().equals(ObjStatus.UPDATE)){
+			Map<String, Object> changedFields = rdLinkForm.changedFields();
+			if(!changedFields.isEmpty()){
+				//道路属性编辑
+				if(changedFields.containsKey("formOfWay")){
+					int formOfWay = (int) changedFields.get("formOfWay");
+					if(formOfWay != 52){
+					checkFlag = true;
 					}
 				}
+			}
+		}else if (rdLinkForm.status().equals(ObjStatus.INSERT)){
+			int formOfWay = rdLinkForm.getFormOfWay();
+			if(formOfWay != 52){
+				checkFlag = true;
+			}
+		}else if (rdLinkForm.status().equals(ObjStatus.DELETE)){
+			int formOfWay = rdLinkForm.getFormOfWay();
+			if(formOfWay == 52){
+				checkFlag = true;
+			}
+		}
+		if(checkFlag){
+			StringBuilder sb = new StringBuilder();
+			
+			sb.append("SELECT RLN.LINK_PID FROM RD_LINK_NAME RLN");
+			sb.append(" WHERE RLN.LINK_PID = "+rdLinkForm.getLinkPid());
+			sb.append(" AND RLN.U_RECORD <>2 AND RLN.NAME_TYPE = 6");
+			sb.append(" AND NOT EXISTS(SELECT 1 FROM RD_LINK_FORM RF");
+			sb.append(" WHERE RLN.LINK_PID = RF.LINK_PID");
+			sb.append(" AND RF.U_RECORD <>2 AND RF.FORM_OF_WAY = 52)");
+			String sql = sb.toString();
+			log.info("道路属性编辑后检查GLM02251--sql:" + sql);
+
+			DatabaseOperator getObj = new DatabaseOperator();
+			List<Object> resultList = new ArrayList<Object>();
+			resultList = getObj.exeSelect(this.getConn(), sql);
+			if (!resultList.isEmpty()) {
+				String target = "[RD_LINK," + rdLinkForm.getLinkPid() + "]";
+				this.setCheckResult("", target, 0);
 			}
 		}
 	}

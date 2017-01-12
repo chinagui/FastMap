@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
@@ -44,19 +45,30 @@ public class GLM02265 extends baseRule {
 	 */
 	private void checkRdLinkForm(RdLinkForm rdLinkForm) throws Exception {
 		// TODO Auto-generated method stub
-		Map<String, Object> changedFields = rdLinkForm.changedFields();
-		if(!changedFields.isEmpty()){
-			//道路属性编辑
-			if(changedFields.containsKey("formOfWay")){
-				int formOfWay = (int) changedFields.get("formOfWay");
-				if(formOfWay == 34){
-					boolean check = this.check(rdLinkForm.getLinkPid());
-					
-					if(check){
-						String target = "[RD_LINK," + rdLinkForm.getLinkPid() + "]";
-						this.setCheckResult("", target, 0);
+		boolean checkFlag = false;
+		if(rdLinkForm.status().equals(ObjStatus.UPDATE)){
+			Map<String, Object> changedFields = rdLinkForm.changedFields();
+			if(!changedFields.isEmpty()){
+				//道路属性编辑
+				if(changedFields.containsKey("formOfWay")){
+					int formOfWay = (int) changedFields.get("formOfWay");
+					if(formOfWay == 34){
+					checkFlag = true;
 					}
 				}
+			}
+		}else if (rdLinkForm.status().equals(ObjStatus.INSERT)){
+			int formOfWay = rdLinkForm.getFormOfWay();
+			if(formOfWay == 34){
+				checkFlag = true;
+			}
+		}
+		if(checkFlag){
+			boolean check = this.check(rdLinkForm.getLinkPid());
+			
+			if(check){
+				String target = "[RD_LINK," + rdLinkForm.getLinkPid() + "]";
+				this.setCheckResult("", target, 0);
 			}
 		}
 	}

@@ -422,8 +422,6 @@ public class SolrController {
 		List<JSONObject> snapshots = new ArrayList<JSONObject>();
 		
 		String param = "wkt:\"intersects(" + wkt + ")\"";
-		
-		param="*:*";
 
 		String fq = "";
 
@@ -438,6 +436,9 @@ public class SolrController {
 				}
 			}
 		}
+		
+		//取掉fc预处理没有提交的tips
+		fq+=" AND -(t_pStatus:0 AND s_sourceType:8001)";
 
 		SolrQuery query = new SolrQuery();
 

@@ -29,6 +29,8 @@ public class RdLinkLimit implements IRow {
 	
 	private long vehicle;
 	
+	protected ObjStatus status;
+	
 	public long getVehicle() {
 		return vehicle;
 	}
@@ -126,7 +128,13 @@ public class RdLinkLimit implements IRow {
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) {
 
-		return JSONObject.fromObject(this,JsonUtils.getStrConfig());
+		JSONObject json = JSONObject.fromObject(this, JsonUtils.getStrConfig());
+
+		if (objLevel == ObjLevel.HISTORY) {
+			json.remove("status");
+		}
+
+		return json;
 	}
 
 	@Override
@@ -159,13 +167,12 @@ public class RdLinkLimit implements IRow {
 
 	@Override
 	public ObjStatus status() {
-
-		return null;
+		return status;
 	}
 
 	@Override
 	public void setStatus(ObjStatus os) {
-
+		this.status = os;
 	}
 
 	@Override

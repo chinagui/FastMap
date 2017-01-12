@@ -110,7 +110,7 @@ public class Operation implements IOperation {
 	}
 
 	private int kindFlag;// link种别修改标识 kind 1新增 2删除
-	private int formCrossFlag;// 交叉口link判断 1 新增 2 删除
+	private int formCrossFlag;// 交叉口link判断 1 新增 2 修改 3 删除
 
 	public int getFormCrossFlag() {
 		return formCrossFlag;
@@ -660,41 +660,39 @@ public class Operation implements IOperation {
 	 * 
 	 * @throws Exception
 	 */
-	public void refRdLaneForRdlinkLimit(Result result, RdLinkLimit limit, int flag) throws Exception {
-		if (limit.getType() == 2
-				&& (limit.getLimitDir() == 1 || limit.getLimitDir() == 2 || limit.getLimitDir() == 3)) {
-			refRdLaneForRdlinkLimit(result, flag);
-		}
-
-	}
-
-	/****
-	 * link车辆类型限制变更 1、 当link上添加或删除车辆类型限制时，或进行车辆类型或时间段变更时，需要进行详细车道维护 2、
-	 * 当link上添加车辆类型及时间段时，则该link上对应方向上所有车道均添加该车辆类型限制及时间
-	 * 3、当link上删除车辆类型及时间时，则该link上对应方向上所有车道均删除该车辆类型限制及时间
-	 * 4、当link车辆类型或时间段变更时，则该link上对应该方向上所有车道更新为link上车辆类型及时间 说明：
-	 * ①在进行车道车辆类型更新时，如果Rd_lane_Condtion中不存在记录的，需要先增加对应车道的记录，再添加车辆类型及时间
-	 * ②在进行车道类型删除更新时，如果删除车辆类型或时间段后，RD_LANE_CONDTION中该车道的方向时间段及车辆类型均为空，
-	 * 则该RD_LANE_CONDTION记录需要删除。
-	 * 
-	 * @throws Exception
-	 */
-	public void refRdLaneForRdlinkLimit(Result result, int flag) throws Exception {
-		List<RdLane> lanes = new RdLaneSelector(conn).loadByLink(this.getLink().getPid(), this.getLimit().getLimitDir(),
-				true);
-
+	public void refRdLaneForRdlinkLimit(Result result, List<RdLane> lanes,int flag) throws Exception {
 		for (RdLane lane : lanes) {
 			List<IRow> rows = lane.getConditions();
-			for (IRow row : rows) {
-				result.insertObject(row, ObjStatus.DELETE, lane.getPid());
+			//需要修改
+			if(flag == 2)
+			{
+				for (IRow row : rows) {
+					RdLaneCondition condition = (RdLaneCondition) row;
+					if(!condition.getDirectionTime().equals(this.getLimit().getTimeDomain()))
+					{
+						row.changedFields().put("vehicleTime", this.getLimit().getTimeDomain());
+					}
+					if(condition.getVehicle() != this.getLimit().getVehicle())
+					{
+						row.changedFields().put("vehicle",this.getLimit().getVehicle());
+					}
+					result.insertObject(row, ObjStatus.UPDATE, lane.getPid());
+				}
 			}
-			// 需要修改
-			if (flag == 1) {
+			//需要删除
+			else if(flag == 3)
+			{
+				for (IRow row : rows) {
+					result.insertObject(row, ObjStatus.DELETE, lane.getPid());
+				}
+			}
+			// 需要新增
+			else if (flag == 1) {
 				RdLaneCondition condition = new RdLaneCondition();
 				condition.setLanePid(lane.getPid());
 				condition.setVehicleTime(this.getLimit().getTimeDomain());
 				condition.setVehicle(this.getLimit().getVehicle());
-				result.insertObject(condition, ObjStatus.UPDATE, lane.getPid());
+				result.insertObject(condition, ObjStatus.INSERT, lane.getPid());
 			}
 		}
 	}
@@ -714,30 +712,44 @@ public class Operation implements IOperation {
 	 * @param form
 	 * @throws Exception
 	 */
-	public void refRdLaneForRdlinkForm(Result result) throws Exception {
+	public void refRdLaneForRdlinkForm(Result result,int formOfWay) throws Exception {
 		List<RdLane> lanes = new RdLaneSelector(conn).loadByLink(this.getLink().getPid(), 1, true);
 		for (RdLane lane : lanes) {
 			List<IRow> rows = lane.getConditions();
 			if (rows.size() > 0) {
 				for (IRow row : rows) {
 					RdLaneCondition condition = (RdLaneCondition) row;
-					if (this.getFormCrossFlag() == 1) {
-						if (this.getForm().getFormOfWay() == 20) {
+					if (this.getFormCrossFlag() == 2) {
+						if (formOfWay == 20) {
 							if (condition.getVehicle() != 2147483786L) {
 								condition.changedFields().put("vehicle", 2147483786L);
-
 							}
-
 						}
-						if (this.getForm().getFormOfWay() == 22) {
+						if (formOfWay == 22) {
 							if (condition.getVehicle() != 2147484160L) {
 								condition.changedFields().put("vehicle", 2147484160L);
 							}
 						}
 						result.insertObject(condition, ObjStatus.UPDATE, lane.getPid());
 					}
-					if (this.getFormCrossFlag() == 2) {
+					else if (this.getFormCrossFlag() == 3) {
 						result.insertObject(condition, ObjStatus.DELETE, lane.getPid());
+					}
+					else if(this.getFormCrossFlag() ==1)
+					{
+						RdLaneCondition newLaneCondition = new RdLaneCondition();
+						
+						newLaneCondition.setLanePid(lane.getPid());
+						
+						if(formOfWay == 20)
+						{
+							newLaneCondition.setVehicle(2147483786L);
+						}
+						else if(formOfWay == 22)
+						{
+							newLaneCondition.setVehicle(2147484160L);
+						}
+						result.insertObject(newLaneCondition, ObjStatus.INSERT, lane.getPid());
 					}
 				}
 			}

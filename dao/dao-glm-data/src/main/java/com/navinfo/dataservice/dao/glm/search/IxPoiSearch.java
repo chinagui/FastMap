@@ -981,7 +981,9 @@ public class IxPoiSearch implements ISearch {
 					if (!secondWorkItem.equals("confirmAliasEngName")&&!secondWorkItem.equals("officalStandardAliasEngName")) {
 						List<String> nameList = new ArrayList<String>();
 						if (name.getLangCode().equals("ENG") && name.getNameType() == 2 && name.getNameClass()== 1) {
-							String[] wordList = name.getName().split(" ");
+							String nameStr = name.getName();
+							if(nameStr==null||nameStr.isEmpty()){continue;}
+							String[] wordList = nameStr.split(" ");
 							for (String word:wordList) {
 								if (ENGSHORTMAP.containsKey(word)) {
 									nameList.add(word + "&" + ENGSHORTMAP.get(word));
@@ -1067,7 +1069,9 @@ public class IxPoiSearch implements ISearch {
 					//addressList赋值
 					List<String> addrList = new ArrayList<String>();
 					if (address.getLangCode().equals("ENG")) {
-						String[] wordList = address.getFullname().split(" ");
+						String fullname = address.getFullname();
+						if(fullname==null||fullname.isEmpty()){continue;}
+						String[] wordList = fullname.split(" ");
 						for (String word:wordList) {
 							if (ENGSHORTMAP.containsKey(word)) {
 								addrList.add(word + "&" + ENGSHORTMAP.get(word));

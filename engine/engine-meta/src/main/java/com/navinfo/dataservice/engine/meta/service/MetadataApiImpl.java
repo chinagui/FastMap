@@ -50,6 +50,24 @@ import net.sf.json.JSONObject;
 @Service("metadataApi")
 public class MetadataApiImpl implements MetadataApi {
 	/**
+	 * SELECT poikind,foodtype FROM SC_POINT_FOODTYPE WHERE MEMO='饮品'
+	 * @return  Map<String, String> SC_POINT_FOODTYP的饮品的对应表：key：foodtype value:kind
+	 * @throws Exception
+	 */
+	@Override
+	public Map<String, String> scPointFoodtypeDrinkMap() throws Exception{
+		return ScPointFoodtype.getInstance().scPointFoodtypeDrinkMap();
+	}
+	/**
+	 * SELECT foodtype FROM SC_POINT_FOODTYPE WHERE POIKIND='110302'
+	 * @return List<String> foodtype列表,即SC_POINT_FOODTYP的poikind=110302的foodtype列表
+	 * @throws Exception
+	 */
+	@Override
+	public List<String> scPointFoodtype110302FoodTypes() throws Exception{
+		return ScPointFoodtype.getInstance().scPointFoodtype110302FoodTypes();
+	}
+	/**
 	 * select poikind,chain,foodType from SC_POINT_BRAND_FOODTYPE
 	 * @return Map<String, String> key:poikind|chain value:foodType
 	 * @throws Exception

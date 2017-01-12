@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
@@ -16,7 +15,6 @@ import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneTopology;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionDetail;
-import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionVia;
 import com.navinfo.dataservice.dao.glm.model.rd.voiceguide.RdVoiceguide;
 import com.navinfo.dataservice.dao.glm.model.rd.voiceguide.RdVoiceguideDetail;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
@@ -115,11 +113,11 @@ public class GLM26017 extends baseRule {
 	 * @throws Exception 
 	 */
 	private void checkRdVoiceguide(RdVoiceguide guideObj) throws Exception {
-		Map<String, Object> changedFields = guideObj.changedFields();
+		//Map<String, Object> changedFields = guideObj.changedFields();
 		// 新增执行该检查
-		if (changedFields != null && !changedFields.isEmpty()) {
+		/*if (changedFields != null && !changedFields.isEmpty()) {
 			return;
-		}
+		}*/
 		List<Integer> outLinkPidList = new ArrayList<Integer>();
 		for (IRow detail : guideObj.getDetails()) {
 			outLinkPidList.add(((RdVoiceguideDetail) detail)

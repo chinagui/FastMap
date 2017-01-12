@@ -357,6 +357,7 @@ public class Operation implements IOperation {
 			lane.setConditions(conditionRows);
 
 		}
+		lane.setSrcFlag(2);
 		result.insertObject(lane, ObjStatus.INSERT, lane.getPid());
 
 	}
@@ -378,6 +379,8 @@ public class Operation implements IOperation {
 		rdLane.setSeqNum(seqNum);
 		rdLane.setLaneDir(laneDir);
 		rdLane.setLaneNum(laneNum);
+		//车道来源赋值为程序
+		rdLane.setSrcFlag(2);
 		result.insertObject(rdLane, ObjStatus.INSERT, rdLane.getPid());
 	}
 
@@ -400,6 +403,7 @@ public class Operation implements IOperation {
 		rdLane.setSeqNum(seqNum);
 		rdLane.setLaneDir(laneDir);
 		rdLane.setLaneNum(laneNum);
+		rdLane.setSrcFlag(2);
 		rdLane.setArrowDir(arrowDir);
 		result.insertObject(rdLane, ObjStatus.INSERT, rdLane.getPid());
 	}

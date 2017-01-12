@@ -22,201 +22,208 @@ import net.sf.json.JSONObject;
 
 public class EleceyeTest extends InitApplication {
 
-	@Override
-	@Before
-	public void init() {
-		super.initContext();
-	}
+    @Override
+    @Before
+    public void init() {
+        super.initContext();
+    }
 
-	@Test
-	public void createEleceye() {
-		// String requester = "{'dbId':42,'command':'CREATE','type':'RDELECTRONICEYE','data':{'direct':3,'longitude':116.50291868782932,'latitude':40.01112911418436,'linkPid':85518434}}";
-		String requester = "{\"command\":\"CREATE\",\"dbId\":17,\"type\":\"RDELECTRONICEYE\",\"data\":{\"linkPid\":304001064,\"direct\":2,\"longitude\":116.17265,\"latitude\":40.56482}}";
-		TestUtil.run(requester);
-	}
-	
-	@Test
-	public void moveEleceye() {
-		// String requester = "{'dbId':42,'command':'CREATE','type':'RDELECTRONICEYE','data':{'direct':3,'longitude':116.50291868782932,'latitude':40.01112911418436,'linkPid':85518434}}";
-		String requester = "{\"command\":\"MOVE\",\"dbId\":42,\"type\":\"RDELECTRONICEYE\",\"data\":{\"linkPid\":19613252,\"pid\":32943645,\"longitude\":116.46281037031202,\"latitude\":40.007310083841214}}";
-		TestUtil.run(requester);
-	}
+    @Test
+    public void createEleceye() {
+        // String requester = "{'dbId':42,'command':'CREATE','type':'RDELECTRONICEYE','data':{'direct':3,
+        // 'longitude':116.50291868782932,'latitude':40.01112911418436,'linkPid':85518434}}";
+        String requester = "{\"command\":\"CREATE\",\"dbId\":17,\"type\":\"RDELECTRONICEYE\"," +
+				"\"data\":{\"linkPid\":304001064,\"direct\":2,\"longitude\":116.17265,\"latitude\":40.56482}}";
+        TestUtil.run(requester);
+    }
 
-	@Test
-	public void updateEleceye() {
-		String requester = "{\"command\":\"UPDATE\",\"type\":\"RDELECTRONICEYE\",\"dbId\":42,\"data\":{\"location\":4,\"rowId\":\"3524E60474A46E1AE050A8C08304BA17\",\"pid\":32943645,\"objStatus\":\"UPDATE\"}}";
-		TestUtil.run(requester);
-	}
+    @Test
+    public void moveEleceye() {
+        // String requester = "{'dbId':42,'command':'CREATE','type':'RDELECTRONICEYE','data':{'direct':3,
+		// 'longitude':116.50291868782932,'latitude':40.01112911418436,'linkPid':85518434}}";
+        String requester = "{\"command\":\"MOVE\",\"type\":\"RDELECTRONICEYE\",\"dbId\":19," +
+                "\"data\":{\"linkPid\":\"304003203\",\"pid\":\"203000017\",\"latitude\":\"40.046086741889646\"," +
+                "\"longitude\":\"116.50039570281758\"}}";
+        TestUtil.run(requester);
+    }
 
-	@Test
-	public void deleteEleceye() {
-		String requester = "{'dbId':43,'command':'DELETE','type':'RDELECTRONICEYE','objId':100281916}";
-		TestUtil.run(requester);
-	}
+    @Test
+    public void updateEleceye() {
+        String requester = "{\"command\":\"UPDATE\",\"type\":\"RDELECTRONICEYE\",\"dbId\":42," +
+				"\"data\":{\"location\":4,\"rowId\":\"3524E60474A46E1AE050A8C08304BA17\",\"pid\":32943645," +
+				"\"objStatus\":\"UPDATE\"}}";
+        TestUtil.run(requester);
+    }
 
-	@Test
-	public void getEleceye() {
-		try {
-			Connection conn = DBConnector.getInstance().getConnectionById(42);
-			RdElectroniceyeSelector selector = new RdElectroniceyeSelector(conn);
-			RdElectroniceye eleceye = (RdElectroniceye) selector.loadById(46800247, false);
-			eleceye.getPairs();
-			eleceye.getParts();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+    @Test
+    public void deleteEleceye() {
+        String requester = "{'dbId':43,'command':'DELETE','type':'RDELECTRONICEYE','objId':100281916}";
+        TestUtil.run(requester);
+    }
 
-	}
+    @Test
+    public void getEleceye() {
+        try {
+            Connection conn = DBConnector.getInstance().getConnectionById(42);
+            RdElectroniceyeSelector selector = new RdElectroniceyeSelector(conn);
+            RdElectroniceye eleceye = (RdElectroniceye) selector.loadById(46800247, false);
+            eleceye.getPairs();
+            eleceye.getParts();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
-	@Test
-	public void getEleceyes() {
-		try {
-			Connection conn = DBConnector.getInstance().getConnectionById(43);
-			RdElectroniceyeSelector selector = new RdElectroniceyeSelector(conn);
-			List<RdElectroniceye> list = selector.loadListByRdLinkId(13677569, false);
-			for (RdElectroniceye eleceye : list) {
-				System.out.println(eleceye.pid());
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+    }
 
-	}
+    @Test
+    public void getEleceyes() {
+        try {
+            Connection conn = DBConnector.getInstance().getConnectionById(43);
+            RdElectroniceyeSelector selector = new RdElectroniceyeSelector(conn);
+            List<RdElectroniceye> list = selector.loadListByRdLinkId(13677569, false);
+            for (RdElectroniceye eleceye : list) {
+                System.out.println(eleceye.pid());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
-	@Test
-	public void testSearch() throws Exception {
-		String parameter = "{\"dbId\":42,\"type\":\"RDELECTRONICEYE\",\"pid\":100281928}";
-		JSONObject jsonReq = JSONObject.fromObject(parameter);
+    }
 
-		String objType = jsonReq.getString("type");
+    @Test
+    public void testSearch() throws Exception {
+        String parameter = "{\"dbId\":42,\"type\":\"RDELECTRONICEYE\",\"pid\":100281928}";
+        JSONObject jsonReq = JSONObject.fromObject(parameter);
 
-		int dbId = jsonReq.getInt("dbId");
+        String objType = jsonReq.getString("type");
 
-		int pid = jsonReq.getInt("pid");
-		SearchProcess p = new SearchProcess(DBConnector.getInstance().getConnectionById(dbId));
-		List<ObjType> list = new ArrayList<ObjType>();
-		list.add(ObjType.valueOf(objType));
+        int dbId = jsonReq.getInt("dbId");
 
-		JSONObject json = p.searchDataByTileWithGap(list, 107947, 49592, 17, 80);
-		System.out.println(json);
+        int pid = jsonReq.getInt("pid");
+        SearchProcess p = new SearchProcess(DBConnector.getInstance().getConnectionById(dbId));
+        List<ObjType> list = new ArrayList<ObjType>();
+        list.add(ObjType.valueOf(objType));
 
-		IObj obj = p.searchDataByPid(ObjType.valueOf(objType), pid);
-		// System.out.println(obj.Serialize(ObjLevel.FULL));
-	}
+        JSONObject json = p.searchDataByTileWithGap(list, 107947, 49592, 17, 80);
+        System.out.println(json);
 
-	@Test
-	public void testSearchById() throws Exception {
-		String parameter = "{\"dbId\":42,\"type\":\"RDELECTRONICEYE\",\"pid\":100281943}";
-		JSONObject jsonReq = JSONObject.fromObject(parameter);
+        IObj obj = p.searchDataByPid(ObjType.valueOf(objType), pid);
+        // System.out.println(obj.Serialize(ObjLevel.FULL));
+    }
 
-		String objType = jsonReq.getString("type");
+    @Test
+    public void testSearchById() throws Exception {
+        String parameter = "{\"dbId\":42,\"type\":\"RDELECTRONICEYE\",\"pid\":100281943}";
+        JSONObject jsonReq = JSONObject.fromObject(parameter);
 
-		int dbId = jsonReq.getInt("dbId");
+        String objType = jsonReq.getString("type");
 
-		Connection conn = DBConnector.getInstance().getConnectionById(dbId);
+        int dbId = jsonReq.getInt("dbId");
 
-		int pid = jsonReq.getInt("pid");
+        Connection conn = DBConnector.getInstance().getConnectionById(dbId);
 
-		SearchProcess p = new SearchProcess(conn);
+        int pid = jsonReq.getInt("pid");
 
-		IObj obj = p.searchDataByPid(ObjType.valueOf(objType), pid);
+        SearchProcess p = new SearchProcess(conn);
 
-		obj.Serialize(ObjLevel.FULL);
-	}
+        IObj obj = p.searchDataByPid(ObjType.valueOf(objType), pid);
 
-	@Test
-	public void testSerialize() {
-		RdElectroniceye eye = new RdElectroniceye();
-		eye.setPid(1);
-		eye.setCreationDate(null);
-		try {
-			System.out.println(eye.Serialize(ObjLevel.FULL));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
+        obj.Serialize(ObjLevel.FULL);
+    }
 
-	@Test
-	public void testSearchGap() throws Exception {
-		String parameter = "{\"dbId\":42,\"gap\":80,\"types\":[\"RDELECTRONICEYE\"],\"z\":17,\"x\":107945,\"y\":49586}";
+    @Test
+    public void testSerialize() {
+        RdElectroniceye eye = new RdElectroniceye();
+        eye.setPid(1);
+        eye.setCreationDate(null);
+        try {
+            System.out.println(eye.Serialize(ObjLevel.FULL));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
-		Connection conn = null;
+    @Test
+    public void testSearchGap() throws Exception {
+        String parameter = "{\"dbId\":42,\"gap\":80,\"types\":[\"RDELECTRONICEYE\"],\"z\":17,\"x\":107945,\"y\":49586}";
 
-		JSONObject jsonReq = JSONObject.fromObject(parameter);
+        Connection conn = null;
 
-		JSONArray type = jsonReq.getJSONArray("types");
+        JSONObject jsonReq = JSONObject.fromObject(parameter);
 
-		int dbId = jsonReq.getInt("dbId");
+        JSONArray type = jsonReq.getJSONArray("types");
 
-		int x = jsonReq.getInt("x");
+        int dbId = jsonReq.getInt("dbId");
 
-		int y = jsonReq.getInt("y");
+        int x = jsonReq.getInt("x");
 
-		int z = jsonReq.getInt("z");
+        int y = jsonReq.getInt("y");
 
-		int gap = 0;
+        int z = jsonReq.getInt("z");
 
-		if (jsonReq.containsKey("gap")) {
-			gap = jsonReq.getInt("gap");
-		}
+        int gap = 0;
 
-		List<ObjType> types = new ArrayList<ObjType>();
+        if (jsonReq.containsKey("gap")) {
+            gap = jsonReq.getInt("gap");
+        }
 
-		for (int i = 0; i < type.size(); i++) {
-			types.add(ObjType.valueOf(type.getString(i)));
-		}
+        List<ObjType> types = new ArrayList<ObjType>();
 
-		JSONObject data = null;
+        for (int i = 0; i < type.size(); i++) {
+            types.add(ObjType.valueOf(type.getString(i)));
+        }
 
-		if (z <= 16) {
+        JSONObject data = null;
 
-			List<ObjType> tileTypes = new ArrayList<ObjType>();
+        if (z <= 16) {
 
-			List<ObjType> gdbTypes = new ArrayList<ObjType>();
+            List<ObjType> tileTypes = new ArrayList<ObjType>();
 
-			for (ObjType t : types) {
-				if (t == ObjType.RDLINK || t == ObjType.ADLINK || t == ObjType.RWLINK) {
-					tileTypes.add(t);
-				} else {
-					gdbTypes.add(t);
-				}
-			}
+            List<ObjType> gdbTypes = new ArrayList<ObjType>();
 
-			if (!gdbTypes.isEmpty()) {
+            for (ObjType t : types) {
+                if (t == ObjType.RDLINK || t == ObjType.ADLINK || t == ObjType.RWLINK) {
+                    tileTypes.add(t);
+                } else {
+                    gdbTypes.add(t);
+                }
+            }
 
-				conn = DBConnector.getInstance().getConnectionById(dbId);
+            if (!gdbTypes.isEmpty()) {
 
-				SearchProcess p = new SearchProcess(conn);
+                conn = DBConnector.getInstance().getConnectionById(dbId);
 
-				JSONObject jo = p.searchDataByTileWithGap(gdbTypes, x, y, z, gap);
+                SearchProcess p = new SearchProcess(conn);
 
-				if (data == null) {
-					data = new JSONObject();
-				}
+                JSONObject jo = p.searchDataByTileWithGap(gdbTypes, x, y, z, gap);
 
-				data.putAll(jo);
-			}
+                if (data == null) {
+                    data = new JSONObject();
+                }
 
-			if (!tileTypes.isEmpty()) {
-				JSONObject jo = new JSONObject();
+                data.putAll(jo);
+            }
 
-				if (data == null) {
-					data = new JSONObject();
-				}
+            if (!tileTypes.isEmpty()) {
+                JSONObject jo = new JSONObject();
 
-				data.putAll(jo);
-			}
+                if (data == null) {
+                    data = new JSONObject();
+                }
 
-		} else {
-			conn = DBConnector.getInstance().getConnectionById(dbId);
+                data.putAll(jo);
+            }
 
-			SearchProcess p = new SearchProcess(conn);
+        } else {
+            conn = DBConnector.getInstance().getConnectionById(dbId);
 
-			data = p.searchDataByTileWithGap(types, x, y, z, gap);
+            SearchProcess p = new SearchProcess(conn);
 
-		}
+            data = p.searchDataByTileWithGap(types, x, y, z, gap);
 
-		System.out.println(ResponseUtils.assembleRegularResult(data));
-	}
+        }
+
+        System.out.println(ResponseUtils.assembleRegularResult(data));
+    }
 
 }

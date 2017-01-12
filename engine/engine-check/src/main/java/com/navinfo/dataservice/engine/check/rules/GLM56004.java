@@ -35,21 +35,25 @@ public class GLM56004 extends baseRule {
 			ObjType objType = obj.objType();
 			Geometry geo = null;
 			String tableName = null;
+			int linkPid = 0;
 			switch (objType) {
 			case RDLINK:
 				RdLink link = (RdLink) obj;
 				geo = link.getGeometry();
 				tableName = link.tableName();
+				linkPid = link.getPid();
 				break;
 			case RWLINK:
 				RwLink rwLink = (RwLink) obj;
 				geo = rwLink.getGeometry();
 				tableName = rwLink.tableName();
+				linkPid = rwLink.getPid();
 				break;
 			case LCLINK:
 				LcLink lcLink = (LcLink) obj;
 				geo = lcLink.getGeometry();
 				tableName = lcLink.tableName();
+				linkPid = lcLink.getPid();
 				break;
 			default:
 				break;
@@ -66,7 +70,7 @@ public class GLM56004 extends baseRule {
 				// 自相交的点是否建立立交
 				String sql = "SELECT G.*" + "  FROM RD_GSC G, RD_GSC_LINK L" + " WHERE G.PID = L.PID"
 						+ "   AND L.TABLE_NAME = '"+tableName.toUpperCase()+"' AND G.U_RECORD != 2 AND L.U_RECORD != 2 " + "   AND L.LINK_PID="
-						+ obj.parentPKValue();
+						+ linkPid;
 				RdGscSelector gscSelector = new RdGscSelector(getConn());
 				List<RdGsc> gscList = gscSelector.loadBySql(sql, false);
 
@@ -86,7 +90,7 @@ public class GLM56004 extends baseRule {
 					}
 				}
 				if (intersError.size() > 0) {
-					this.setCheckResult(intersError.get(0), "["+tableName.toUpperCase()+"," + obj.parentPKValue() + "]", obj.mesh());
+					this.setCheckResult(intersError.get(0), "["+tableName.toUpperCase()+"," + linkPid + "]", obj.mesh());
 				}
 			}
 		}

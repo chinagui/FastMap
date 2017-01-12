@@ -285,6 +285,12 @@ public abstract class BasicRow{
 			if(columnName.equals("LEVEL")){
 				columnName = "\"LEVEL\"";
 			}
+			if(columnName.equals("MODE")){
+				columnName = "\"MODE\"";
+			}
+			if(columnName.equals("CURRENT")){
+				columnName = "\"CURRENT\"";
+			}
 			if(glmColumn.getType().equals(GlmColumn.TYPE_NUMBER)
 					||glmColumn.getType().equals(GlmColumn.TYPE_VARCHAR)
 					||glmColumn.getType().equals(GlmColumn.TYPE_RAW)){

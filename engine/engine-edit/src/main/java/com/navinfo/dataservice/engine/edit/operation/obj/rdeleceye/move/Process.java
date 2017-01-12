@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdeleceye.move;
 
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdElectroniceye;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.rd.eleceye.RdElectroniceyeSelector;
@@ -27,8 +28,13 @@ public class Process extends AbstractProcess<Command> {
     @Override
     public boolean prepareData() throws Exception {
         // 根据EleceyePid加载需要更新的RdElectroniceye
-        this.getCommand().setEleceye((RdElectroniceye) new RdElectroniceyeSelector(this.getConn()).loadById(this.getCommand().getPid(), true));
-        this.getCommand().setLink((RdLink) new RdLinkSelector(getConn()).loadById(getCommand().getContent().getInt("linkPid"), true));
+        RdLinkSelector selector = new RdLinkSelector(getConn());
+        this.getCommand().setEleceye((RdElectroniceye) new RdElectroniceyeSelector(this.getConn()).loadById(this
+                .getCommand().getPid(), true));
+        this.getCommand().setLink((RdLink) selector.loadById(getCommand().getContent().getInt("linkPid"), true));
+        RdLink sourceLink = (RdLink) selector.loadById(getCommand().getEleceye().getLinkPid(), true);
+        Check check = new Check(getCommand(), getConn(), sourceLink, getCommand().getLink());
+//        check.precheck();
         return false;
     }
 

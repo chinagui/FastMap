@@ -20,7 +20,7 @@ import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
  * 检查条件：
  *     以下条件中（1）、（2）满足其中之一，（3）必须满足时，进行检查：
  *     (1)存在IX_POI_NAME新增；
- *     (2)存在IX_POI_NAME修改或修改分类存在；
+ *     (2)存在IX_POI_NAME修改；
  *     (3) 数据必须存在父子关系，且对应的第一级父分类为“230126”；
  *     检查原则：
  *     ① 子的官方标准化中文名称包含第一级父的官方标准化中文名称的记录，将子POI记录报出来；
@@ -93,20 +93,20 @@ public class FMA0712 extends BasicCheckRule {
 	/**
 	 * 以下条件其中之一满足时，需要进行检查：
 	 * (1)存在IX_POI_NAME新增；
-	 * (2)存在IX_POI_NAME修改或修改分类存在；
+	 * (2)存在IX_POI_NAME修改；
 	 * @param poiObj
 	 * @return true满足检查条件，false不满足检查条件
 	 * @throws Exception 
 	 */
 	private boolean isCheck(IxPoiObj poiObj) throws Exception{
 		IxPoi poi=(IxPoi) poiObj.getMainrow();
-		if(poi.hisOldValueContains(IxPoi.KIND_CODE)){
+		/*if(poi.hisOldValueContains(IxPoi.KIND_CODE)){
 			String newKindCode=poi.getKindCode();
 			String oldKindCode=(String) poi.getHisOldValue(IxPoi.KIND_CODE);
 			if(!newKindCode.equals(oldKindCode)){
 				return true;
 			}
-		}
+		}*/
 		//(1)存在IX_POI_NAME的新增；(2)存在IX_POI_NAME的修改；
 		List<IxPoiName> names = poiObj.getIxPoiNames();
 		for (IxPoiName br:names){

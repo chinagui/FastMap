@@ -4,6 +4,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -385,6 +387,33 @@ public class KindCodeSelector {
 			DBUtils.closeStatement(pstmt);
 		}
 	}
+	/**
+	 * SELECT DISTINCT KIND_CODE FROM SC_POINT_POICODE_NEW WHERE MHM_DES LIKE '%D%' AND KIND_USE=1
+	 * 大陆的kind列表
+	 * @return List<String>：KIND_CODE列表
+	 * @throws Exception
+	 */
+	public List<String> getKindCodeDList() throws Exception {	
+		String sql = "select distinct t.kind_code from SC_POINT_POICODE_NEW t";
+		sql +=" where MHM_DES LIKE '%D%' AND KIND_USE=1";		
+		ResultSet resultSet = null;		
+		PreparedStatement pstmt = null;		
+		List<String> kindCodeMap = new ArrayList<String>();		
+		try {
+			pstmt = conn.prepareStatement(sql);			
+			resultSet = pstmt.executeQuery();			
+			while (resultSet.next()) {
+				kindCodeMap.add(resultSet.getString("kind_code"));
+			}			
+			return kindCodeMap;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+		}
+	}
+	
 	/**
 	 * 根据kindCode获取KIND_NAME
 	 * 

@@ -1,6 +1,11 @@
 package com.navinfo.dataservice.dao.plus.model.ixpoi;
 
+import com.navinfo.dataservice.commons.util.JsonUtils;
+import com.navinfo.dataservice.dao.glm.iface.ISerializable;
+import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
+
+import net.sf.json.JSONObject;
 
 /** 
 * @ClassName:  IxPoiChargingplot 
@@ -8,7 +13,7 @@ import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
 * @date 2016-11-18 11:35:20 
 * @Description: TODO
 */
-public class IxPoiChargingplot extends BasicRow {
+public class IxPoiChargingplot extends BasicRow implements ISerializable{
 	protected long poiPid ;
 	protected int groupId ;
 	protected int count ;
@@ -241,5 +246,17 @@ public class IxPoiChargingplot extends BasicRow {
 	public static final String FLOOR = "FLOOR";
 	public static final String LOCATION_TYPE = "LOCATION_TYPE";
 	public static final String PAYMENT = "PAYMENT";
+
+	//*********zl 2017.01.05 ***********
+	@Override
+	public JSONObject Serialize(ObjLevel objLevel) throws Exception {
+		return JSONObject.fromObject(this, JsonUtils.getStrConfig());
+	}
+
+	@Override
+	public boolean Unserialize(JSONObject json) throws Exception {
+		// TODO Auto-generated method stub
+		return false;
+	}
 
 }

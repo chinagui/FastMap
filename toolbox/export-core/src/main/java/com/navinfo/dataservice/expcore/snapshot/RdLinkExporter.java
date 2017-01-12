@@ -445,7 +445,11 @@ public class RdLinkExporter {
 			if (formSet.contains(52)) {
 				return 13;
 			} else {
-				return 14;
+				if(!formSet.contains(12) && !formSet.contains(13) 
+						&& !formSet.contains(53) && !formSet.contains(54) ){
+					return 14;
+				}
+				
 			}
 		}
 

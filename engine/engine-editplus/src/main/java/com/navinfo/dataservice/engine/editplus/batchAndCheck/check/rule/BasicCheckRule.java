@@ -10,6 +10,7 @@ import org.apache.log4j.Logger;
 
 import sun.tools.tree.ThisExpression;
 
+import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.plus.glm.GlmFactory;
 import com.navinfo.dataservice.dao.plus.glm.GlmObject;
@@ -25,7 +26,7 @@ import com.navinfo.dataservice.engine.editplus.model.batchAndCheck.NiValExceptio
 import com.vividsolutions.jts.geom.Geometry;
 
 public abstract class BasicCheckRule {
-	protected Logger log = Logger.getLogger(this.getClass());
+	protected Logger log = LoggerRepos.getLogger(this.getClass());
 	private CheckRuleCommand checkRuleCommand;
 	private CheckRule checkRule;
 	List<NiValException> checkResultList=new ArrayList<NiValException>();

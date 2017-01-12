@@ -39,14 +39,18 @@ public class PoiBatchProcessorFM_BAT_20_187 implements IBatch {
 			IxPoiSelector ixPoiSelector = new IxPoiSelector(conn);
 			List<IRow> childPois = ixPoiSelector.loadByIds(pidList, false, true);
 			
-			List<IRow> allPlots = new ArrayList<IRow>();
+			// 取出所有子桩
+			List<IxPoiChargingPlot> allPlots = new ArrayList<IxPoiChargingPlot>();
 			for (IRow child:childPois) {
 				IxPoi childPoi = (IxPoi) child;
 				List<IRow> childPlots = childPoi.getChargingplots();
-				allPlots.addAll(childPlots);
+				for (IRow temp:childPlots) {
+					allPlots.add((IxPoiChargingPlot)temp);
+				}
+				
 			}
 			
-			JSONArray dataArray = getChangePlots(allPlots);
+			JSONArray dataArray = detealNewData(allPlots);
 			
 			
 			Map<Long,JSONArray> retObj = new HashMap<Long,JSONArray>();
@@ -83,92 +87,34 @@ public class PoiBatchProcessorFM_BAT_20_187 implements IBatch {
 		}
 	}
 	
-	// 获取更新的内容
-	private JSONArray getChangePlots(List<IRow> childPlots) throws Exception{
-		List<IxPoiChargingPlot> newPlotsList = new ArrayList<IxPoiChargingPlot>(); 
-		Map<Integer,List<IxPoiChargingPlot>> oldPlotsMap = new HashMap<Integer,List<IxPoiChargingPlot>>();
-		// 数据归类，分为需要新增groupId的数据，和已分组的数据
-		for (IRow plots:childPlots) {
-			IxPoiChargingPlot chargingPlot = (IxPoiChargingPlot) plots;
-			int groupId = chargingPlot.getGroupId();
-			if (groupId == 0) {
-				newPlotsList.add(chargingPlot);
-			} else {
-				if (oldPlotsMap.containsKey(groupId)) {
-					List<IxPoiChargingPlot> tempList = oldPlotsMap.get(groupId);
-					tempList.add(chargingPlot);
-					oldPlotsMap.put(groupId, tempList);
-				} else {
-					List<IxPoiChargingPlot> tempList = new ArrayList<IxPoiChargingPlot>();
-					tempList.add(chargingPlot);
-					oldPlotsMap.put(groupId, tempList);
-				}
-			}
-		}
-		return getChangeArray(newPlotsList,oldPlotsMap);
-	}
-	
-	// 获取要新赋值的数据
-	private JSONArray getChangeArray(List<IxPoiChargingPlot> newPlotsList,Map<Integer,List<IxPoiChargingPlot>> oldPlotsMap) throws Exception {
-		JSONArray changeArray = new JSONArray();
-		// 判断新增数据中，是否存在与已存在组同规格的数据
-		for(Integer oldGroupId:oldPlotsMap.keySet()) {
-			List<IxPoiChargingPlot> oldList = oldPlotsMap.get(oldGroupId);
-			IxPoiChargingPlot oldPlot = oldList.get(0);
-			String plug = oldPlot.getPlugType();
-			int acdc = oldPlot.getAcdc();
-			int mode = oldPlot.getMode();
-			String open = oldPlot.getOpenType();
-			for (IxPoiChargingPlot newPlots:newPlotsList) {
-				if (newPlots.getPlugType().equals(plug)&&newPlots.getAcdc()==acdc&&newPlots.getMode()==mode&&newPlots.getOpenType().equals(open)) {
-					// 相同，增加groupId,count
-					newPlotsList.remove(newPlots);
-					newPlots.setGroupId(oldGroupId);
-					newPlots.setCount(oldList.size()+1);
-					JSONObject changeFields = newPlots.Serialize(null);
-					changeFields.put("objStatus", ObjStatus.UPDATE.toString());
-					changeFields.remove("uDate");
-					changeArray.add(changeFields);
-					// 修改旧数据的count值
-					for (IxPoiChargingPlot oldPlots:oldList) {
-						oldPlots.setCount(oldList.size()+1);
-						JSONObject oldChangeFields = oldPlots.Serialize(null);
-						oldChangeFields.put("objStatus", ObjStatus.UPDATE.toString());
-						oldChangeFields.remove("uDate");
-						changeArray.add(oldChangeFields);
-					}
-				}
-			}
-		}
-		// 新数据分组，增加groupId
-		if (newPlotsList.size()>0) {
-			// 获取当前最大groupId
-			int maxGroupId = 0;
-			if (oldPlotsMap.size()>0) {
-				maxGroupId = getMaxGroupId(oldPlotsMap);
-			}
-			changeArray.addAll(detealNewData(maxGroupId,newPlotsList));
-		}
-		
-		return changeArray;
-	}
-	
-	// 处理新增数据的分组
-	private JSONArray detealNewData(int maxGroupId,List<IxPoiChargingPlot> newPlotsList) throws Exception {
+	/**
+	 * 重新分组所有桩
+	 * @param maxGroupId
+	 * @param newPlotsList
+	 * @return
+	 * @throws Exception
+	 */
+	private JSONArray detealNewData(List<IxPoiChargingPlot> newPlotsList) throws Exception {
 		Map<Integer,List<IxPoiChargingPlot>> newPlotsMap = new HashMap<Integer,List<IxPoiChargingPlot>>();
 		JSONArray changDate = new JSONArray();
-		maxGroupId += 1;
+		int maxGroupId = 1;
 		// 将新增的数据分组
 		for (IxPoiChargingPlot newPlots:newPlotsList) {
 			if (newPlotsMap.containsKey(maxGroupId)) {
-				IxPoiChargingPlot tempPlot = newPlotsMap.get(maxGroupId).get(0);
-				// 判断是否同规格
-				if (newPlots.getPlugType().equals(tempPlot.getPlugType())&&newPlots.getAcdc()==tempPlot.getAcdc()&&newPlots.getMode()==tempPlot.getMode()&&newPlots.getOpenType().equals(tempPlot.getOpenType())) {
-					List<IxPoiChargingPlot> tempList = newPlotsMap.get(maxGroupId);
-					newPlots.setGroupId(maxGroupId);
-					tempList.add(newPlots);
-					newPlotsMap.put(maxGroupId, tempList);
-				} else {
+				boolean flag = false;
+				for (int tempGroupId:newPlotsMap.keySet()) {
+					IxPoiChargingPlot tempPlot = newPlotsMap.get(tempGroupId).get(0);
+					// 判断是否同规格
+					if (newPlots.getPlugType().equals(tempPlot.getPlugType())&&newPlots.getAcdc()==tempPlot.getAcdc()&&newPlots.getMode()==tempPlot.getMode()&&newPlots.getOpenType().equals(tempPlot.getOpenType())) {
+						flag = true;
+						List<IxPoiChargingPlot> tempList = newPlotsMap.get(tempPlot.getGroupId());
+						newPlots.setGroupId(tempPlot.getGroupId());
+						tempList.add(newPlots);
+						newPlotsMap.put(tempPlot.getGroupId(), tempList);
+						break;
+					} 
+				}
+				if (!flag) {
 					maxGroupId += 1;
 					List<IxPoiChargingPlot> tempList = new ArrayList<IxPoiChargingPlot>();
 					newPlots.setGroupId(maxGroupId);
@@ -197,19 +143,4 @@ public class PoiBatchProcessorFM_BAT_20_187 implements IBatch {
 		return changDate;
 	}
 	
-	// 获取当前最大的groupId
-	private int getMaxGroupId(Map<Integer,List<IxPoiChargingPlot>> oldPlotsMap) {
-		int maxGroupId = 0;
-		for (Integer gourpId:oldPlotsMap.keySet()) {
-			if (maxGroupId == 0) {
-				maxGroupId = gourpId;
-			} else {
-				if (gourpId>maxGroupId) {
-					maxGroupId = gourpId;
-				}
-			}
-		}
-		return maxGroupId;
-	}
-
 }

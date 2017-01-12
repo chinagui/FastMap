@@ -32,7 +32,7 @@ public class AdFaceExporter {
 
 		PreparedStatement pstm = sqliteConn.prepareStatement(insertSql);
 
-		String sql = "select a.face_pid,a.mesh_id,nvl((select distinct d.admin_id from ad_admin d where a.region_id = d.admin_id),0) admin_id, a.geometry from ad_face a where a.u_record != 2  and a.mesh_id in (select to_number(column_value) from table(clob_to_table(?)))";
+		String sql = "select a.face_pid,a.mesh_id,nvl((select distinct d.admin_id from ad_admin d where a.region_id = d.region_id),0) admin_id, a.geometry from ad_face a where a.u_record != 2  and a.mesh_id in (select to_number(column_value) from table(clob_to_table(?)))";
 
 		Clob clob = conn.createClob();
 		clob.setString(1, StringUtils.join(meshes, ","));

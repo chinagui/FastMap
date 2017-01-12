@@ -29,8 +29,11 @@ import com.navinfo.dataservice.engine.meta.pinyin.PinyinConvertSelector;
 import com.navinfo.dataservice.engine.meta.pinyin.PinyinConverter;
 import com.navinfo.dataservice.engine.meta.rdname.RdNameImportor;
 import com.navinfo.dataservice.engine.meta.scEngshortList.ScEngshortList;
+import com.navinfo.dataservice.engine.meta.scPointAddrAdmin.ScPointAddrAdmin;
 import com.navinfo.dataservice.engine.meta.scPointAddrck.ScPointAddrck;
+import com.navinfo.dataservice.engine.meta.scPointBrandFoodtype.ScPointBrandFoodtype;
 import com.navinfo.dataservice.engine.meta.scPointEngKeyWords.ScPointEngKeyWords;
+import com.navinfo.dataservice.engine.meta.scPointFoodtype.ScPointFoodtype;
 import com.navinfo.dataservice.engine.meta.scPointNameck.ScPointNameck;
 import com.navinfo.dataservice.engine.meta.scPointSpecKindcode.ScPointSpecKindcode;
 import com.navinfo.dataservice.engine.meta.tmc.selector.TmcSelector;
@@ -46,6 +49,62 @@ import net.sf.json.JSONObject;
  */
 @Service("metadataApi")
 public class MetadataApiImpl implements MetadataApi {
+	/**
+	 * SELECT poikind,foodtype FROM SC_POINT_FOODTYPE WHERE MEMO='饮品'
+	 * @return  Map<String, String> SC_POINT_FOODTYP的饮品的对应表：key：foodtype value:kind
+	 * @throws Exception
+	 */
+	@Override
+	public Map<String, String> scPointFoodtypeDrinkMap() throws Exception{
+		return ScPointFoodtype.getInstance().scPointFoodtypeDrinkMap();
+	}
+	/**
+	 * SELECT foodtype FROM SC_POINT_FOODTYPE WHERE POIKIND='110302'
+	 * @return List<String> foodtype列表,即SC_POINT_FOODTYP的poikind=110302的foodtype列表
+	 * @throws Exception
+	 */
+	@Override
+	public List<String> scPointFoodtype110302FoodTypes() throws Exception{
+		return ScPointFoodtype.getInstance().scPointFoodtype110302FoodTypes();
+	}
+	/**
+	 * select poikind,chain,foodType from SC_POINT_BRAND_FOODTYPE
+	 * @return Map<String, String> key:poikind|chain value:foodType
+	 * @throws Exception
+	 */
+	@Override
+	public Map<String, String> scPointBrandFoodtypeKindBrandMap() throws Exception{
+		return ScPointBrandFoodtype.getInstance().scPointBrandFoodtypeKindBrandMap();
+	}
+	/**
+	 * select poiKind from SC_POINT_FOODTYP
+	 * @return List<String> SC_POINT_FOODTYP的poikind列表
+	 * @throws Exception
+	 */
+	@Override
+	public List<String> scPointFoodtypeKindList() throws Exception{
+		return ScPointFoodtype.getInstance().scPointFoodtypeKindList();
+	}
+	
+	/**
+	 * SELECT DISTINCT KIND_CODE FROM SC_POINT_POICODE_NEW WHERE MHM_DES LIKE '%D%' AND KIND_USE=1
+	 * 大陆的kind列表
+	 * @return List<String>：KIND_CODE列表
+	 * @throws Exception
+	 */
+	@Override
+	public List<String> getKindCodeDList() throws Exception {
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getMetaConnection();
+			KindCodeSelector selector=new KindCodeSelector(conn);
+			return selector.getKindCodeDList();
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(conn);
+		}
+	}
 
 	@Override
 	public int queryAdminIdByLocation(double longitude, double latitude) throws Exception {
@@ -398,6 +457,11 @@ public class MetadataApiImpl implements MetadataApi {
 	public List<String> getAddrck(int type, String hmFlag) throws Exception {
 		ScPointAddrck addrck = new ScPointAddrck();
 		return addrck.getAddrckList(type, hmFlag);
+	}
+
+	@Override
+	public Map<String, Map<String,String>> getAddrAdminMap() throws Exception {
+		return ScPointAddrAdmin.getInstance().scEngshortListMap();
 	}
 
 }

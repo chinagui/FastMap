@@ -154,19 +154,19 @@ public class Check {
 				this.releaseSource(pstmt, resultSet);
 				
 				//GLM01015
-				sql = "select a.link_pid from rd_link a where a.link_pid = :1 and  exists (select null from rd_link b where a.link_pid != b.link_pid and a.s_node_pid in (b.s_node_pid,b.e_node_pid) and a.e_node_pid in (b.s_node_pid,b.e_node_pid) and b.u_record!=2)";
-				
-				pstmt = conn.prepareStatement(sql);
-				
-				pstmt.setInt(1, rdLink.getPid());
-				
-				resultSet = pstmt.executeQuery();
-				
-				if (resultSet.next()){
-					check.insertCheckLog("GLM01015", pointWkt, "[RD_LINK,"+rdLink.getPid()+"]", rdLink.getMeshId(), "TEST");
-				}
-				
-				this.releaseSource(pstmt, resultSet);
+//				sql = "select a.link_pid from rd_link a where a.link_pid = :1 and  exists (select null from rd_link b where a.link_pid != b.link_pid and a.s_node_pid in (b.s_node_pid,b.e_node_pid) and a.e_node_pid in (b.s_node_pid,b.e_node_pid) and b.u_record!=2)";
+//
+//				pstmt = conn.prepareStatement(sql);
+//
+//				pstmt.setInt(1, rdLink.getPid());
+//
+//				resultSet = pstmt.executeQuery();
+//
+//				if (resultSet.next()){
+//					check.insertCheckLog("GLM01015", pointWkt, "[RD_LINK,"+rdLink.getPid()+"]", rdLink.getMeshId(), "TEST");
+//				}
+//
+//				this.releaseSource(pstmt, resultSet);
 				
 				//GLM56004
 				if (!rdLink.getGeometry().isSimple()){

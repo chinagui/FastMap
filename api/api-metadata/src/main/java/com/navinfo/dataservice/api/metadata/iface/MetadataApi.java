@@ -175,5 +175,41 @@ public interface MetadataApi {
 	public Map<String, Map<String, String>> scPointNameckTypeD6() throws Exception;
 	
 	public List<String> getAddrck(int type,String hmFlag) throws Exception;
+	
+	public Map<String, Map<String,String>> getAddrAdminMap() throws Exception;
+	/**
+	 * SELECT DISTINCT KIND_CODE FROM SC_POINT_POICODE_NEW WHERE MHM_DES LIKE '%D%' AND KIND_USE=1
+	 * 大陆的kind列表
+	 * @return List<String>：KIND_CODE列表
+	 * @throws Exception
+	 */
+	public List<String> getKindCodeDList() throws Exception;
+
+	/**
+	 * select poiKind from SC_POINT_FOODTYP
+	 * @return List<String> SC_POINT_FOODTYP的poikind列表
+	 * @throws Exception
+	 */
+	public List<String> scPointFoodtypeKindList() throws Exception;
+
+	/**
+	 * select poikind,chain,foodType from SC_POINT_BRAND_FOODTYPE
+	 * @return Map<String, String> key:poikind|chain value:foodType
+	 * @throws Exception
+	 */
+	public Map<String, String> scPointBrandFoodtypeKindBrandMap() throws Exception;
+
+	/**
+	 * SELECT poikind,foodtype FROM SC_POINT_FOODTYPE WHERE MEMO='饮品'
+	 * @return  Map<String, String> SC_POINT_FOODTYP的饮品的对应表：key：foodtype value:kind
+	 * @throws Exception
+	 */
+	public Map<String, String> scPointFoodtypeDrinkMap() throws Exception;
+	/**
+	 * SELECT foodtype FROM SC_POINT_FOODTYPE WHERE POIKIND='110302'
+	 * @return List<String> foodtype列表,即SC_POINT_FOODTYP的poikind=110302的foodtype列表
+	 * @throws Exception
+	 */
+	public List<String> scPointFoodtype110302FoodTypes() throws Exception;
 
 }

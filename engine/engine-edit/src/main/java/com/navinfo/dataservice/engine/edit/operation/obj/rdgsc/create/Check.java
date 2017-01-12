@@ -44,7 +44,7 @@ public class Check {
 		boolean flag = RdGscOperateUtils.checkIsHasGsc(gscGeo, map.values(), conn);
 
 		if (flag) {
-			throw new Exception("同一点位不能重复创建立交");
+			throw new Exception("已有立交的地方，不可以再次制作立交；如果需要制作，可以先删除原始立交，然后重新制作[GLM20090]");
 		}
 	}
 

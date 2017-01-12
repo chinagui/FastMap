@@ -8,6 +8,7 @@ import java.util.Set;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
@@ -140,13 +141,25 @@ public class GLM03065 extends baseRule {
 	 */
 	private void checkRdLinkForm(RdLinkForm rdLinkForm) throws Exception {
 		// TODO Auto-generated method stub
-		Map<String, Object> changedFields = rdLinkForm.changedFields();
-		int formOfWay = 1;
-		if(changedFields != null && changedFields.containsKey("formOfWay")){
-			formOfWay = (int) changedFields.get("formOfWay");
+		boolean checkFlag = false;
+		if(rdLinkForm.status().equals(ObjStatus.UPDATE)){
+			Map<String, Object> changedFields = rdLinkForm.changedFields();
+			if(!changedFields.isEmpty()){
+				//道路属性编辑
+				if(changedFields.containsKey("formOfWay")){
+					int formOfWay = (int) changedFields.get("formOfWay");
+					if(formOfWay == 31){
+					checkFlag = true;
+					}
+				}
+			}
+		}else if (rdLinkForm.status().equals(ObjStatus.INSERT)){
+			int formOfWay = rdLinkForm.getFormOfWay();
+			if(formOfWay == 31){
+				checkFlag = true;
+			}
 		}
-		if(formOfWay == 31){
-			
+		if(checkFlag){
 			RdLinkSelector linkSelector = new RdLinkSelector(this.getConn());
 			RdLink rdLink = (RdLink) linkSelector.loadByIdOnlyRdLink(rdLinkForm.getLinkPid(), false);
 			if(rdLink != null){
